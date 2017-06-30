@@ -50,6 +50,6 @@ The following attributes are exported:
 * `locked` - Whether the device is locked
 * `billing_cycle` - The billing cycle of the device (monthly or hourly)
 * `operating_system` - The operating system running on the device
-* `status` - The status of the device
+* `state` - The status of the device
 * `created` - The timestamp for when the device was created
 * `updated` - The timestamp for the last time the device was updated
