@@ -53,3 +53,4 @@ The following attributes are exported:
 * `state` - The status of the device
 * `created` - The timestamp for when the device was created
 * `updated` - The timestamp for the last time the device was updated
+* `tags` - Tags attached to the device
