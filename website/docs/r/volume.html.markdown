@@ -66,5 +66,6 @@ The following attributes are exported:
 * `state` - The state of the volume
 * `locked` - Whether the volume is locked or not
 * `project_id ` - The project id the volume is in
+* `attachments` - A list of attachments, each with it's own `href` attribute
 * `created` - The timestamp for when the volume was created
 * `updated` - The timestamp for the last time the volume was updated
