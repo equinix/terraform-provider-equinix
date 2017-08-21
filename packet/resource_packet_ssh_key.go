@@ -13,11 +13,6 @@ func resourcePacketSSHKey() *schema.Resource {
 		Delete: resourcePacketSSHKeyDelete,
 
 		Schema: map[string]*schema.Schema{
-			"id": &schema.Schema{
-				Type:     schema.TypeString,
-				Computed: true,
-			},
-
 			"name": &schema.Schema{
 				Type:     schema.TypeString,
 				Required: true,
