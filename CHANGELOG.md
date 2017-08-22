@@ -1,4 +1,9 @@
 ## 0.1.1 (Unreleased)
+
+IMPROVEMENTS:
+
+* resource/packet_device: Add `public_ipv4_subnet_size` field [GH-7]
+
 ## 0.1.0 (June 21, 2017)
 
 NOTES:
