@@ -36,6 +36,7 @@ The following arguments are supported:
 * `plan` - (Required) The hardware config slug
 * `billing_cycle` - (Required) monthly or hourly
 * `user_data` (Optional) - A string of the desired User Data for the device.
+* `public_ipv4_subnet_size` (Optional) - Size of allocated subnet, more info in [guide doc](https://help.packet.net/technical/networking/custom-subnet-size).
 
 ## Attributes Reference
 
