@@ -156,8 +156,18 @@ func resourcePacketDeviceCreate(d *schema.ResourceData, meta interface{}) error 
 		createRequest.UserData = attr.(string)
 	}
 
-	if createRequest.OS == "custom_ipxe" {
-		createRequest.IPXEScriptUrl = d.Get("ipxe_script_url").(string)
+	if attr, ok := d.GetOk("ipxe_script_url"); ok {
+		createRequest.IPXEScriptUrl = attr.(string)
+	}
+
+	if createRequest.OS == "custom_ipxe" && createRequest.IPXEScriptUrl == "" {
+		return friendlyError(errors.New("\"ipxe_script_url\" argument not provided." +
+			" It is required when \"custom_ipxe\" OS is selected."))
+	}
+
+	if createRequest.OS != "custom_ipxe" && createRequest.IPXEScriptUrl != "" {
+		return friendlyError(errors.New("\"ipxe_script_url\" argument provided, but" +
+			" OS is not \"custom_ipxe\". Please verify and fix device arguments."))
 	}
 
 	if attr, ok := d.GetOk("always_pxe"); ok {
