@@ -194,7 +194,7 @@ resource "packet_device" "test_ipxe_script_url" {
   hostname         = "test_ipxe_script_url"
   plan             = "baremetal_0"
   facility         = "sjc1"
-  operating_system = "ubuntu_16_04"
+  operating_system = "custom_ipxe"
   billing_cycle    = "hourly"
   project_id       = "${packet_project.test.id}"
   ipxe_script_url  = "https://boot.netboot.xyz"
@@ -209,7 +209,7 @@ resource "packet_device" "test_always_pxe" {
   hostname         = "test_always_pxe"
   plan             = "baremetal_0"
   facility         = "sjc1"
-  operating_system = "ubuntu_16_04"
+  operating_system = "custom_ipxe"
   billing_cycle    = "hourly"
   project_id       = "${packet_project.test.id}"
   always_pxe       = true
