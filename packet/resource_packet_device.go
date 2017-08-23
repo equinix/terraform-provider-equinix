@@ -119,6 +119,17 @@ func resourcePacketDevice() *schema.Resource {
 				ForceNew: true,
 			},
 
+			"ipxe_script_url": &schema.Schema{
+				Type:     schema.TypeString,
+				Optional: true,
+			},
+
+			"always_pxe": &schema.Schema{
+				Type:     schema.TypeBool,
+				Optional: true,
+				Default:  false,
+			},
+
 			"tags": &schema.Schema{
 				Type:     schema.TypeList,
 				Optional: true,
@@ -143,6 +154,14 @@ func resourcePacketDeviceCreate(d *schema.ResourceData, meta interface{}) error 
 
 	if attr, ok := d.GetOk("user_data"); ok {
 		createRequest.UserData = attr.(string)
+	}
+
+	if createRequest.OS == "custom_ipxe" {
+		createRequest.IPXEScriptUrl = d.Get("ipxe_script_url").(string)
+	}
+
+	if attr, ok := d.GetOk("always_pxe"); ok {
+		createRequest.AlwaysPXE = attr.(bool)
 	}
 
 	tags := d.Get("tags.#").(int)
