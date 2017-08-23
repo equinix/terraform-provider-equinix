@@ -220,6 +220,8 @@ func resourcePacketDeviceRead(d *schema.ResourceData, meta interface{}) error {
 	d.Set("locked", device.Locked)
 	d.Set("created", device.Created)
 	d.Set("updated", device.Updated)
+	d.Set("ipxe_script_url", device.IPXEScriptUrl)
+	d.Set("always_pxe", device.AlwaysPXE)
 
 	tags := make([]string, 0, len(device.Tags))
 	for _, tag := range device.Tags {
