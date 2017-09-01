@@ -179,9 +179,11 @@ func resourcePacketDeviceCreate(d *schema.ResourceData, meta interface{}) error 
 		createRequest.HardwareReservationID = attr.(string)
 	}
 
-	if createRequest.OS == "custom_ipxe" && createRequest.IPXEScriptURL == "" {
-		return friendlyError(errors.New("\"ipxe_script_url\" argument not provided." +
-			" It is required when \"custom_ipxe\" OS is selected."))
+	if createRequest.OS == "custom_ipxe" {
+		if createRequest.IPXEScriptURL == "" && createRequest.UserData == "" {
+			return friendlyError(errors.New("\"ipxe_script_url\" or \"user_data\"" +
+				" must be provided when \"custom_ipxe\" OS is selected."))
+		}
 	}
 
 	if createRequest.OS != "custom_ipxe" && createRequest.IPXEScriptURL != "" {
