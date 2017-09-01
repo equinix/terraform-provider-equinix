@@ -144,7 +144,7 @@ func resourcePacketDeviceCreate(d *schema.ResourceData, meta interface{}) error 
 	client := meta.(*packngo.Client)
 
 	createRequest := &packngo.DeviceCreateRequest{
-		HostName:             d.Get("hostname").(string),
+		Hostname:             d.Get("hostname").(string),
 		Plan:                 d.Get("plan").(string),
 		Facility:             d.Get("facility").(string),
 		OS:                   d.Get("operating_system").(string),
@@ -158,15 +158,15 @@ func resourcePacketDeviceCreate(d *schema.ResourceData, meta interface{}) error 
 	}
 
 	if attr, ok := d.GetOk("ipxe_script_url"); ok {
-		createRequest.IPXEScriptUrl = attr.(string)
+		createRequest.IPXEScriptURL = attr.(string)
 	}
 
-	if createRequest.OS == "custom_ipxe" && createRequest.IPXEScriptUrl == "" {
+	if createRequest.OS == "custom_ipxe" && createRequest.IPXEScriptURL == "" {
 		return friendlyError(errors.New("\"ipxe_script_url\" argument not provided." +
 			" It is required when \"custom_ipxe\" OS is selected."))
 	}
 
-	if createRequest.OS != "custom_ipxe" && createRequest.IPXEScriptUrl != "" {
+	if createRequest.OS != "custom_ipxe" && createRequest.IPXEScriptURL != "" {
 		return friendlyError(errors.New("\"ipxe_script_url\" argument provided, but" +
 			" OS is not \"custom_ipxe\". Please verify and fix device arguments."))
 	}
@@ -231,7 +231,7 @@ func resourcePacketDeviceRead(d *schema.ResourceData, meta interface{}) error {
 	d.Set("locked", device.Locked)
 	d.Set("created", device.Created)
 	d.Set("updated", device.Updated)
-	d.Set("ipxe_script_url", device.IPXEScriptUrl)
+	d.Set("ipxe_script_url", device.IPXEScriptURL)
 	d.Set("always_pxe", device.AlwaysPXE)
 
 	tags := make([]string, 0, len(device.Tags))
@@ -250,14 +250,14 @@ func resourcePacketDeviceRead(d *schema.ResourceData, meta interface{}) error {
 			"address": ip.Address,
 			"gateway": ip.Gateway,
 			"family":  ip.AddressFamily,
-			"cidr":    ip.Cidr,
+			"cidr":    ip.CIDR,
 			"public":  ip.Public,
 		}
 		networks = append(networks, network)
 
 		if ip.AddressFamily == 4 && ip.Public == true {
 			host = ip.Address
-			ipv4SubnetSize = ip.Cidr
+			ipv4SubnetSize = ip.CIDR
 		}
 	}
 	d.Set("network", networks)
