@@ -80,3 +80,4 @@ The following attributes are exported:
 * `updated` - The timestamp for the last time the device was updated
 * `tags` - Tags attached to the device
 * `hardware_reservation_id` - The id of hardware reservation which this device occupies
+* `root_password` - Root password to the server (disabled after 24 hours)
