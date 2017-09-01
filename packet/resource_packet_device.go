@@ -108,8 +108,9 @@ func resourcePacketDevice() *schema.Resource {
 			},
 
 			"user_data": &schema.Schema{
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:      schema.TypeString,
+				Optional:  true,
+				Sensitive: true,
 			},
 
 			"public_ipv4_subnet_size": &schema.Schema{
