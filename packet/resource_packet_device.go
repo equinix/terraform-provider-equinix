@@ -128,8 +128,9 @@ func resourcePacketDevice() *schema.Resource {
 			},
 
 			"ipxe_script_url": &schema.Schema{
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:          schema.TypeString,
+				Optional:      true,
+				ConflictsWith: []string{"user_data"},
 			},
 
 			"always_pxe": &schema.Schema{
