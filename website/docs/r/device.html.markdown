@@ -60,6 +60,7 @@ The following arguments are supported:
   doc.
 * `always_pxe` (Optional) - If true, a device with OS `custom_ipxe` will
   continue to boot via iPXE on reboots.
+* `hardware_reservation_id` (Optional) - The id of hardware reservation where you want this device deployed
 
 ## Attributes Reference
 
@@ -78,3 +79,4 @@ The following attributes are exported:
 * `created` - The timestamp for when the device was created
 * `updated` - The timestamp for the last time the device was updated
 * `tags` - Tags attached to the device
+* `hardware_reservation_id` - The id of hardware reservation which this device occupies
