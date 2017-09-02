@@ -2,6 +2,7 @@ package packet
 
 import (
 	"fmt"
+	"net"
 	"regexp"
 	"testing"
 
@@ -29,6 +30,7 @@ func TestAccPacketDevice_Basic(t *testing.T) {
 				Config: fmt.Sprintf(testAccCheckPacketDeviceConfig_basic, rs),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckPacketDeviceExists(r, &device),
+					testAccCheckPacketDeviceNetwork(r),
 					testAccCheckPacketDeviceAttributes(&device),
 					resource.TestCheckResourceAttr(
 						r, "public_ipv4_subnet_size", "31"),
@@ -58,6 +60,7 @@ func TestAccPacketDevice_RequestSubnet(t *testing.T) {
 				Config: fmt.Sprintf(testAccCheckPacketDeviceConfig_request_subnet, rs),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckPacketDeviceExists(r, &device),
+					testAccCheckPacketDeviceNetwork(r),
 					resource.TestCheckResourceAttr(
 						r, "public_ipv4_subnet_size", "29"),
 				),
@@ -80,6 +83,7 @@ func TestAccPacketDevice_IPXEScriptUrl(t *testing.T) {
 				Config: fmt.Sprintf(testAccCheckPacketDeviceConfig_ipxe_script_url, rs),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckPacketDeviceExists(r, &device),
+					testAccCheckPacketDeviceNetwork(r),
 					resource.TestCheckResourceAttr(
 						r, "ipxe_script_url", "https://boot.netboot.xyz"),
 				),
@@ -102,6 +106,7 @@ func TestAccPacketDevice_AlwaysPXE(t *testing.T) {
 				Config: fmt.Sprintf(testAccCheckPacketDeviceConfig_always_pxe, rs),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckPacketDeviceExists(r, &device),
+					testAccCheckPacketDeviceNetwork(r),
 					resource.TestCheckResourceAttr(
 						r, "always_pxe", "true"),
 				),
@@ -202,6 +207,43 @@ func testAccCheckPacketDeviceExists(n string, device *packngo.Device) resource.T
 		}
 
 		*device = *foundDevice
+
+		return nil
+	}
+}
+
+func testAccCheckPacketDeviceNetwork(n string) resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		var ip net.IP
+		var k, v string
+		rs, ok := s.RootModule().Resources[n]
+		if !ok {
+			return fmt.Errorf("Not found: %s", n)
+		}
+
+		k = "access_public_ipv6"
+		v = rs.Primary.Attributes[k]
+		ip = net.ParseIP(v)
+		if ip == nil {
+			return fmt.Errorf("\"%s\" is not a valid IP address: %s",
+				k, v)
+		}
+
+		k = "access_public_ipv4"
+		v = rs.Primary.Attributes[k]
+		ip = net.ParseIP(v)
+		if ip == nil {
+			return fmt.Errorf("\"%s\" is not a valid IP address: %s",
+				k, v)
+		}
+
+		k = "access_private_ipv4"
+		v = rs.Primary.Attributes[k]
+		ip = net.ParseIP(v)
+		if ip == nil {
+			return fmt.Errorf("\"%s\" is not a valid IP address: %s",
+				k, v)
+		}
 
 		return nil
 	}
