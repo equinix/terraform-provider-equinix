@@ -3,7 +3,7 @@
 IMPROVEMENTS:
 
 * resource/packet_device: Add `public_ipv4_subnet_size` field [GH-7]
-* resource/packet_device: Add `hardware_reservation_id` field [GH-7]
+* resource/packet_device: Add `hardware_reservation_id` field [GH-14]
 
 ## 0.1.0 (June 21, 2017)
 
