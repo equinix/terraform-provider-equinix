@@ -3,6 +3,7 @@ package packet
 import (
 	"errors"
 	"fmt"
+	"path"
 	"time"
 
 	"github.com/hashicorp/terraform/helper/resource"
@@ -131,6 +132,12 @@ func resourcePacketDevice() *schema.Resource {
 				Default:  false,
 			},
 
+			"hardware_reservation_id": &schema.Schema{
+				Type:     schema.TypeString,
+				Optional: true,
+				ForceNew: true,
+			},
+
 			"tags": &schema.Schema{
 				Type:     schema.TypeList,
 				Optional: true,
@@ -159,6 +166,10 @@ func resourcePacketDeviceCreate(d *schema.ResourceData, meta interface{}) error 
 
 	if attr, ok := d.GetOk("ipxe_script_url"); ok {
 		createRequest.IPXEScriptURL = attr.(string)
+	}
+
+	if attr, ok := d.GetOk("hardware_reservation_id"); ok {
+		createRequest.HardwareReservationID = attr.(string)
 	}
 
 	if createRequest.OS == "custom_ipxe" && createRequest.IPXEScriptURL == "" {
@@ -233,6 +244,10 @@ func resourcePacketDeviceRead(d *schema.ResourceData, meta interface{}) error {
 	d.Set("updated", device.Updated)
 	d.Set("ipxe_script_url", device.IPXEScriptURL)
 	d.Set("always_pxe", device.AlwaysPXE)
+
+	if len(device.HardwareReservation.Href) > 0 {
+		d.Set("hardware_reservation_id", path.Base(device.HardwareReservation.Href))
+	}
 
 	tags := make([]string, 0, len(device.Tags))
 	for _, tag := range device.Tags {
