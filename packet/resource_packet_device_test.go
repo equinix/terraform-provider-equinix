@@ -31,6 +31,8 @@ func TestAccPacketDevice_Basic(t *testing.T) {
 						r, "ipxe_script_url", ""),
 					resource.TestCheckResourceAttr(
 						r, "always_pxe", "false"),
+					resource.TestCheckResourceAttrSet(
+						r, "root_password"),
 				),
 			},
 		},

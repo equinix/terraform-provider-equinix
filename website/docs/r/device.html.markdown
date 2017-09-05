@@ -11,6 +11,11 @@ description: |-
 Provides a Packet device resource. This can be used to create,
 modify, and delete devices.
 
+~> **Note:** All arguments including the root_password and user_data will be stored in
+ the raw state as plain-text.
+[Read more about sensitive data in state](/docs/state/sensitive-data.html).
+
+
 ## Example Usage
 
 ```hcl
@@ -80,3 +85,4 @@ The following attributes are exported:
 * `updated` - The timestamp for the last time the device was updated
 * `tags` - Tags attached to the device
 * `hardware_reservation_id` - The id of hardware reservation which this device occupies
+* `root_password` - Root password to the server (disabled after 24 hours)

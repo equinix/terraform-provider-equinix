@@ -60,6 +60,12 @@ func resourcePacketDevice() *schema.Resource {
 				Computed: true,
 			},
 
+			"root_password": &schema.Schema{
+				Type:      schema.TypeString,
+				Computed:  true,
+				Sensitive: true,
+			},
+
 			"locked": &schema.Schema{
 				Type:     schema.TypeBool,
 				Computed: true,
@@ -244,6 +250,7 @@ func resourcePacketDeviceRead(d *schema.ResourceData, meta interface{}) error {
 	d.Set("updated", device.Updated)
 	d.Set("ipxe_script_url", device.IPXEScriptURL)
 	d.Set("always_pxe", device.AlwaysPXE)
+	d.Set("root_password", device.RootPassword)
 
 	if len(device.HardwareReservation.Href) > 0 {
 		d.Set("hardware_reservation_id", path.Base(device.HardwareReservation.Href))
