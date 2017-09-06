@@ -2,6 +2,7 @@ package packet
 
 import (
 	"fmt"
+	"regexp"
 	"testing"
 
 	"github.com/hashicorp/terraform/helper/acctest"
@@ -9,6 +10,10 @@ import (
 	"github.com/hashicorp/terraform/terraform"
 	"github.com/packethost/packngo"
 )
+
+// Regexp vars for use with resource.ExpectError
+var matchErrConflictsWith = regexp.MustCompile(".* conflicts with .*")
+var matchErrMustBeProvided = regexp.MustCompile(".* must be provided when .*")
 
 func TestAccPacketDevice_Basic(t *testing.T) {
 	var device packngo.Device
@@ -105,6 +110,50 @@ func TestAccPacketDevice_AlwaysPXE(t *testing.T) {
 	})
 }
 
+func TestAccPacketDevice_ConflictingFields(t *testing.T) {
+	var device packngo.Device
+	rs := acctest.RandString(10)
+	r := "packet_device.test_ipxe_conflict"
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckPacketDeviceDestroy,
+		Steps: []resource.TestStep{
+			resource.TestStep{
+				Config: fmt.Sprintf(testAccCheckPacketDeviceConfig_ipxe_conflict, rs),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckPacketDeviceExists(r, &device),
+				),
+				ExpectError: matchErrConflictsWith,
+			},
+		},
+	})
+}
+
+func TestAccPacketDevice_IPXEConfigMissing(t *testing.T) {
+	var device packngo.Device
+	rs := acctest.RandString(10)
+	r := "packet_device.test_ipxe_config_missing"
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckPacketDeviceDestroy,
+		Steps: []resource.TestStep{
+			resource.TestStep{
+				Config: fmt.Sprintf(testAccCheckPacketDeviceConfig_ipxe_missing, rs),
+				Check: resource.ComposeTestCheckFunc(
+					// resource.TestCheckNoResourceAttr("r", "user_data"),
+					// resource.TestCheckNoResourceAttr("r", "ipxe_script_url"),
+					testAccCheckPacketDeviceExists(r, &device),
+				),
+				ExpectError: matchErrMustBeProvided,
+			},
+		},
+	})
+}
+
 func testAccCheckPacketDeviceDestroy(s *terraform.State) error {
 	client := testAccProvider.Meta().(*packngo.Client)
 
@@ -174,7 +223,7 @@ resource "packet_device" "test" {
 
 var testAccCheckPacketDeviceConfig_request_subnet = `
 resource "packet_project" "test" {
-    name = "TerraformTestProject-%s"
+  name = "TerraformTestProject-%s"
 }
 
 resource "packet_device" "test_subnet_29" {
@@ -189,7 +238,7 @@ resource "packet_device" "test_subnet_29" {
 
 var testAccCheckPacketDeviceConfig_ipxe_script_url = `
 resource "packet_project" "test" {
-    name = "TerraformTestProject-%s"
+  name = "TerraformTestProject-%s"
 }
 
 resource "packet_device" "test_ipxe_script_url" {
@@ -204,7 +253,7 @@ resource "packet_device" "test_ipxe_script_url" {
 
 var testAccCheckPacketDeviceConfig_always_pxe = `
 resource "packet_project" "test" {
-    name = "TerraformTestProject-%s"
+  name = "TerraformTestProject-%s"
 }
 
 resource "packet_device" "test_always_pxe" {
@@ -215,5 +264,37 @@ resource "packet_device" "test_always_pxe" {
   billing_cycle    = "hourly"
   project_id       = "${packet_project.test.id}"
   ipxe_script_url  = "https://boot.netboot.xyz"
+  always_pxe       = true
+}`
+
+var testAccCheckPacketDeviceConfig_ipxe_conflict = `
+resource "packet_project" "test" {
+  name = "TerraformTestProject-%s"
+}
+
+resource "packet_device" "test_ipxe_conflict" {
+  hostname         = "test-ipxe-conflict"
+  plan             = "baremetal_0"
+  facility         = "sjc1"
+  operating_system = "custom_ipxe"
+  user_data        = "#!ipxe\nset conflict ipxe_script_url"
+  billing_cycle    = "hourly"
+  project_id       = "${packet_project.test.id}"
+  ipxe_script_url  = "https://boot.netboot.xyz"
+  always_pxe       = true
+}`
+
+var testAccCheckPacketDeviceConfig_ipxe_missing = `
+resource "packet_project" "test" {
+  name = "TerraformTestProject-%s"
+}
+
+resource "packet_device" "test_ipxe_missing" {
+  hostname         = "test-ipxe-missing"
+  plan             = "baremetal_0"
+  facility         = "sjc1"
+  operating_system = "custom_ipxe"
+  billing_cycle    = "hourly"
+  project_id       = "${packet_project.test.id}"
   always_pxe       = true
 }`
