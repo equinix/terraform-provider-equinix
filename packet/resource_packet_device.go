@@ -71,6 +71,21 @@ func resourcePacketDevice() *schema.Resource {
 				Computed: true,
 			},
 
+			"access_public_ipv6": &schema.Schema{
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+
+			"access_public_ipv4": &schema.Schema{
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+
+			"access_private_ipv4": &schema.Schema{
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+
 			"network": &schema.Schema{
 				Type:     schema.TypeList,
 				Computed: true,
@@ -280,9 +295,19 @@ func resourcePacketDeviceRead(d *schema.ResourceData, meta interface{}) error {
 		}
 		networks = append(networks, network)
 
-		if ip.AddressFamily == 4 && ip.Public == true {
-			host = ip.Address
-			ipv4SubnetSize = ip.CIDR
+		// Initial device IPs are fixed and marked as "Management"
+		if ip.Management {
+			if ip.AddressFamily == 4 {
+				if ip.Public {
+					host = ip.Address
+					ipv4SubnetSize = ip.CIDR
+					d.Set("access_public_ipv4", ip.Address)
+				} else {
+					d.Set("access_private_ipv4", ip.Address)
+				}
+			} else {
+				d.Set("access_public_ipv6", ip.Address)
+			}
 		}
 	}
 	d.Set("network", networks)

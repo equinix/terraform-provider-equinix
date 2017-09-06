@@ -76,7 +76,10 @@ The following attributes are exported:
 * `project_id`- The ID of the project the device belongs to
 * `facility` - The facility the device is in
 * `plan` - The hardware config of the device
-* `network` - The private and public v4 and v6 IPs assigned to the device
+* `network` - The device's private and public IP (v4 and v6) network details
+* `access_public_ipv6` - The ipv6 maintenance IP assigned to the device
+* `access_public_ipv4` - The ipv4 maintenance IP assigned to the device
+* `access_private_ipv4` - The ipv4 private IP assigned to the device
 * `locked` - Whether the device is locked
 * `billing_cycle` - The billing cycle of the device (monthly or hourly)
 * `operating_system` - The operating system running on the device
