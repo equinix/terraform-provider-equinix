@@ -23,6 +23,8 @@ func Provider() terraform.ResourceProvider {
 			"packet_project":           resourcePacketProject(),
 			"packet_volume":            resourcePacketVolume(),
 			"packet_volume_attachment": resourcePacketVolumeAttachment(),
+			"packet_reserved_ip_block": resourcePacketReservedIPBlock(),
+			"packet_ip_attachment":     resourcePacketIPAttachment(),
 		},
 
 		ConfigureFunc: providerConfigure,
