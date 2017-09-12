@@ -1,5 +1,9 @@
 ## 0.1.1 (Unreleased)
 
+INTERNAL:
+
+* provider: Add logging transport for HTTP client (`DEBUG` log now contains all HTTP requests & responses) [GH-25]
+
 IMPROVEMENTS:
 
 * resource/packet_device: Add `public_ipv4_subnet_size` field [GH-7]
