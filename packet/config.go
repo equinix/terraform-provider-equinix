@@ -2,6 +2,7 @@ package packet
 
 import (
 	"github.com/hashicorp/go-cleanhttp"
+	"github.com/hashicorp/terraform/helper/logging"
 	"github.com/packethost/packngo"
 )
 
@@ -15,5 +16,7 @@ type Config struct {
 
 // Client() returns a new client for accessing Packet's API.
 func (c *Config) Client() *packngo.Client {
-	return packngo.NewClient(consumerToken, c.AuthToken, cleanhttp.DefaultClient())
+	client := cleanhttp.DefaultClient()
+	client.Transport = logging.NewTransport("Packet", client.Transport)
+	return packngo.NewClient(consumerToken, c.AuthToken, client)
 }
