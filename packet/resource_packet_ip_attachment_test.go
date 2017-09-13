@@ -20,7 +20,7 @@ func TestAccPacketIPAttachment_Basic(t *testing.T) {
 		CheckDestroy: testAccCheckPacketIPAttachmentDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: fmt.Sprintf(testAccCheckPacketIPAttachmentConfig_Basic, rs),
+				Config: testAccCheckPacketIPAttachmentConfig_Basic(rs),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(
 						"packet_ip_attachment.test", "public", "true"),
@@ -53,7 +53,8 @@ func testAccCheckPacketIPAttachmentDestroy(s *terraform.State) error {
 	return nil
 }
 
-const testAccCheckPacketIPAttachmentConfig_Basic = `
+func testAccCheckPacketIPAttachmentConfig_Basic(name string) string {
+	return fmt.Sprintf(`
 resource "packet_project" "test" {
     name = "%s"
 }
@@ -77,6 +78,5 @@ resource "packet_reserved_ip_block" "test" {
 resource "packet_ip_attachment" "test" {
 	device_id = "${packet_device.test.id}"
 	cidr_notation = "${cidrhost(packet_reserved_ip_block.test.cidr_notation,0)}/32"
+}`, name)
 }
-
-`

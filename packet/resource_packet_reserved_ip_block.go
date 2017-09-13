@@ -1,55 +1,74 @@
 package packet
 
 import (
+	"errors"
 	"fmt"
 
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/packethost/packngo"
 )
 
-var (
-	computedFields = map[string]schema.ValueType{
-		"address":        schema.TypeString,
-		"gateway":        schema.TypeString,
-		"network":        schema.TypeString,
-		"netmask":        schema.TypeString,
-		"cidr":           schema.TypeInt,
-		"address_family": schema.TypeInt,
-		"public":         schema.TypeBool,
-		"management":     schema.TypeBool,
-		"manageable":     schema.TypeBool,
+func packetIPComputedFields() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"address": {
+			Type:     schema.TypeString,
+			Computed: true,
+		},
+		"gateway": {
+			Type:     schema.TypeString,
+			Computed: true,
+		},
+		"network": {
+			Type:     schema.TypeString,
+			Computed: true,
+		},
+		"netmask": {
+			Type:     schema.TypeString,
+			Computed: true,
+		},
+		"cidr": {
+			Type:     schema.TypeInt,
+			Computed: true,
+		},
+		"address_family": {
+			Type:     schema.TypeInt,
+			Computed: true,
+		},
+		"public": {
+			Type:     schema.TypeBool,
+			Computed: true,
+		},
+		"management": {
+			Type:     schema.TypeBool,
+			Computed: true,
+		},
+		"manageable": {
+			Type:     schema.TypeBool,
+			Computed: true,
+		},
 	}
-)
+}
 
 func resourcePacketReservedIPBlock() *schema.Resource {
-	reservedBlockSchema := map[string]*schema.Schema{
-		"project_id": &schema.Schema{
-			Type:     schema.TypeString,
-			Required: true,
-			ForceNew: true,
-		},
-
-		"facility": &schema.Schema{
-			Type:     schema.TypeString,
-			Required: true,
-			ForceNew: true,
-		},
-
-		"quantity": &schema.Schema{
-			Type:     schema.TypeInt,
-			Required: true,
-			ForceNew: true,
-		},
-		"cidr_notation": &schema.Schema{
-			Type:     schema.TypeString,
-			Computed: true,
-		},
+	reservedBlockSchema := packetIPComputedFields()
+	reservedBlockSchema["project_id"] = &schema.Schema{
+		Type:     schema.TypeString,
+		Required: true,
+		ForceNew: true,
 	}
-	for k, v := range computedFields {
-		reservedBlockSchema[k] = &schema.Schema{
-			Type:     v,
-			Computed: true,
-		}
+	reservedBlockSchema["facility"] = &schema.Schema{
+		Type:     schema.TypeString,
+		Required: true,
+		ForceNew: true,
+	}
+	reservedBlockSchema["quantity"] = &schema.Schema{
+		Type:     schema.TypeInt,
+		Required: true,
+		ForceNew: true,
+	}
+	reservedBlockSchema["cidr_notation"] = &schema.Schema{
+		Type:     schema.TypeString,
+		Computed: true,
 	}
 
 	return &schema.Resource{
@@ -97,7 +116,7 @@ func resourcePacketReservedIPBlockRead(d *schema.ResourceData, meta interface{})
 
 	if len(id) == 0 {
 		if len(cidrNotation) == 0 {
-			return fmt.Errorf("can't read device %v", d)
+			return errors.New("can't read reserved IP block: both ID and cidr_notation fields are empty")
 		}
 		reservedBlock, _, err = client.ProjectIPs.GetByCIDR(projectID, cidrNotation)
 		if err != nil {

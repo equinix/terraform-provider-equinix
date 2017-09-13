@@ -20,7 +20,7 @@ func TestAccPacketReservedIPBlock_Basic(t *testing.T) {
 		CheckDestroy: testAccCheckPacketReservedIPBlockDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: fmt.Sprintf(testAccCheckPacketReservedIPBlockConfig_basic, rs),
+				Config: testAccCheckPacketReservedIPBlockConfig_basic(rs),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(
 						"packet_reserved_ip_block.test", "facility", "ewr1"),
@@ -53,7 +53,8 @@ func testAccCheckPacketReservedIPBlockDestroy(s *terraform.State) error {
 	return nil
 }
 
-const testAccCheckPacketReservedIPBlockConfig_basic = `
+func testAccCheckPacketReservedIPBlockConfig_basic(name string) string {
+	return fmt.Sprintf(`
 resource "packet_project" "foobar" {
     name = "%s"
 }
@@ -62,4 +63,5 @@ resource "packet_reserved_ip_block" "test" {
     project_id = "${packet_project.foobar.id}"
     facility = "ewr1"
 	quantity = 2
-}`
+}`, name)
+}

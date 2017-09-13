@@ -9,25 +9,17 @@ import (
 )
 
 func resourcePacketIPAttachment() *schema.Resource {
-	ipAttachmentSchema := map[string]*schema.Schema{
-		"device_id": &schema.Schema{
-			Type:     schema.TypeString,
-			ForceNew: true,
-			Required: true,
-		},
-		"cidr_notation": &schema.Schema{
-			Type:     schema.TypeString,
-			ForceNew: true,
-			Required: true,
-		},
+	ipAttachmentSchema := packetIPComputedFields()
+	ipAttachmentSchema["device_id"] = &schema.Schema{
+		Type:     schema.TypeString,
+		ForceNew: true,
+		Required: true,
 	}
-	for k, v := range computedFields {
-		ipAttachmentSchema[k] = &schema.Schema{
-			Type:     v,
-			Computed: true,
-		}
+	ipAttachmentSchema["cidr_notation"] = &schema.Schema{
+		Type:     schema.TypeString,
+		ForceNew: true,
+		Required: true,
 	}
-
 	return &schema.Resource{
 		Create: resourcePacketIPAttachmentCreate,
 		Read:   resourcePacketIPAttachmentRead,
@@ -48,7 +40,6 @@ func resourcePacketIPAttachmentCreate(d *schema.ResourceData, meta interface{}) 
 	req := packngo.AddressStruct{Address: ipa}
 
 	assignment, _, err := client.DeviceIPs.Assign(deviceID, &req)
-
 	if err != nil {
 		return fmt.Errorf("error assigning address %s to device %s: %s", ipa, deviceID, err)
 	}

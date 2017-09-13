@@ -23,7 +23,7 @@ Once IP block is allocated or imported, an address from it can be assigned to de
 ## Example Usage
 
 ```hcl
-Allocate /30 block of max 2 public IPv4 addresses in Parsippany, NJ (ewr1) for myproject
+# Allocate /30 block of max 2 public IPv4 addresses in Parsippany, NJ (ewr1) for myproject
 
 resource "packet_reserved_ip_block" "two_elastic_addresses" {
     project_id = "${packet_project.myproject.id}"
