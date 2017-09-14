@@ -65,7 +65,7 @@ The following arguments are supported:
   doc.
 * `always_pxe` (Optional) - If true, a device with OS `custom_ipxe` will
   continue to boot via iPXE on reboots.
-* `hardware_reservation_id` (Optional) - The id of hardware reservation where you want this device deployed
+* `hardware_reservation_id` (Optional) - The id of hardware reservation where you want this device deployed, or `next-available` if you want to pick your next available reservation automatically.
 
 ## Attributes Reference
 

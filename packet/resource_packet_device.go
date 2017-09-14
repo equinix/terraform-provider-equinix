@@ -157,7 +157,14 @@ func resourcePacketDevice() *schema.Resource {
 			"hardware_reservation_id": &schema.Schema{
 				Type:     schema.TypeString,
 				Optional: true,
+				Computed: true,
 				ForceNew: true,
+				DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
+					if new == "next-available" && len(old) > 0 {
+						return true
+					}
+					return false
+				},
 			},
 
 			"tags": &schema.Schema{
