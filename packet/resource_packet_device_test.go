@@ -13,8 +13,8 @@ import (
 )
 
 // Regexp vars for use with resource.ExpectError
-var matchErrConflictsWith = regexp.MustCompile(".* conflicts with .*")
 var matchErrMustBeProvided = regexp.MustCompile(".* must be provided when .*")
+var matchErrShouldNotBeAnIPXE = regexp.MustCompile(`.*"user_data" should not be an iPXE.*`)
 
 func TestAccPacketDevice_Basic(t *testing.T) {
 	var device packngo.Device
@@ -86,27 +86,6 @@ func TestAccPacketDevice_IPXEScriptUrl(t *testing.T) {
 					testAccCheckPacketDeviceNetwork(r),
 					resource.TestCheckResourceAttr(
 						r, "ipxe_script_url", "https://boot.netboot.xyz"),
-				),
-			},
-		},
-	})
-}
-
-func TestAccPacketDevice_AlwaysPXE(t *testing.T) {
-	var device packngo.Device
-	rs := acctest.RandString(10)
-	r := "packet_device.test_always_pxe"
-
-	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckPacketDeviceDestroy,
-		Steps: []resource.TestStep{
-			resource.TestStep{
-				Config: fmt.Sprintf(testAccCheckPacketDeviceConfig_always_pxe, rs),
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckPacketDeviceExists(r, &device),
-					testAccCheckPacketDeviceNetwork(r),
 					resource.TestCheckResourceAttr(
 						r, "always_pxe", "true"),
 				),
@@ -115,7 +94,7 @@ func TestAccPacketDevice_AlwaysPXE(t *testing.T) {
 	})
 }
 
-func TestAccPacketDevice_ConflictingFields(t *testing.T) {
+func TestAccPacketDevice_IPXEConflictingFields(t *testing.T) {
 	var device packngo.Device
 	rs := acctest.RandString(10)
 	r := "packet_device.test_ipxe_conflict"
@@ -130,7 +109,7 @@ func TestAccPacketDevice_ConflictingFields(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckPacketDeviceExists(r, &device),
 				),
-				ExpectError: matchErrConflictsWith,
+				ExpectError: matchErrShouldNotBeAnIPXE,
 			},
 		},
 	})
@@ -149,8 +128,6 @@ func TestAccPacketDevice_IPXEConfigMissing(t *testing.T) {
 			resource.TestStep{
 				Config: fmt.Sprintf(testAccCheckPacketDeviceConfig_ipxe_missing, rs),
 				Check: resource.ComposeTestCheckFunc(
-					// resource.TestCheckNoResourceAttr("r", "user_data"),
-					// resource.TestCheckNoResourceAttr("r", "ipxe_script_url"),
 					testAccCheckPacketDeviceExists(r, &device),
 				),
 				ExpectError: matchErrMustBeProvided,
@@ -288,21 +265,7 @@ resource "packet_device" "test_ipxe_script_url" {
   plan             = "baremetal_0"
   facility         = "sjc1"
   operating_system = "custom_ipxe"
-  billing_cycle    = "hourly"
-  project_id       = "${packet_project.test.id}"
-  ipxe_script_url  = "https://boot.netboot.xyz"
-}`
-
-var testAccCheckPacketDeviceConfig_always_pxe = `
-resource "packet_project" "test" {
-  name = "TerraformTestProject-%s"
-}
-
-resource "packet_device" "test_always_pxe" {
-  hostname         = "test-always-pxe"
-  plan             = "baremetal_0"
-  facility         = "sjc1"
-  operating_system = "custom_ipxe"
+  user_data        = "#!/bin/sh\ntouch /tmp/test"
   billing_cycle    = "hourly"
   project_id       = "${packet_project.test.id}"
   ipxe_script_url  = "https://boot.netboot.xyz"
