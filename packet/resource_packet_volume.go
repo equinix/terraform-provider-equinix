@@ -143,7 +143,7 @@ func resourcePacketVolumeCreate(d *schema.ResourceData, meta interface{}) error 
 		}
 	}
 
-	newVolume, _, err := client.Volumes.Create(createRequest)
+	newVolume, _, err := client.Volumes.Create(createRequest, d.Get("project_id").(string))
 	if err != nil {
 		return friendlyError(err)
 	}
@@ -233,7 +233,7 @@ func resourcePacketVolumeRead(d *schema.ResourceData, meta interface{}) error {
 	}
 	d.Set("snapshot_policies", snapshot_policies)
 
-	attachments := make([]*packngo.Attachment, 0, len(volume.Attachments))
+	attachments := make([]*packngo.VolumeAttachment, 0, len(volume.Attachments))
 	for _, attachment := range volume.Attachments {
 		attachments = append(attachments, attachment)
 	}
