@@ -64,13 +64,14 @@ func (r *Response) populateRate() {
 
 // ErrorResponse is the http response used on errrors
 type ErrorResponse struct {
-	Response *http.Response
-	Errors   []string `json:"errors"`
+	Response    *http.Response
+	Errors      []string `json:"errors"`
+	SingleError string   `json:"error"`
 }
 
 func (r *ErrorResponse) Error() string {
-	return fmt.Sprintf("%v %v: %d %v",
-		r.Response.Request.Method, r.Response.Request.URL, r.Response.StatusCode, strings.Join(r.Errors, ", "))
+	return fmt.Sprintf("%v %v: %d %v %v",
+		r.Response.Request.Method, r.Response.Request.URL, r.Response.StatusCode, strings.Join(r.Errors, ", "), r.SingleError)
 }
 
 // Client is the base API Client
@@ -86,18 +87,19 @@ type Client struct {
 	RateLimit Rate
 
 	// Packet Api Objects
-	Plans            PlanService
-	Users            UserService
-	Emails           EmailService
-	SSHKeys          SSHKeyService
-	Devices          DeviceService
-	Projects         ProjectService
-	Facilities       FacilityService
-	OperatingSystems OSService
-	DeviceIPs        DeviceIPService
-	ProjectIPs       ProjectIPService
-	Volumes          VolumeService
-	SpotMarket       SpotMarketService
+	Plans             PlanService
+	Users             UserService
+	Emails            EmailService
+	SSHKeys           SSHKeyService
+	Devices           DeviceService
+	Projects          ProjectService
+	Facilities        FacilityService
+	OperatingSystems  OSService
+	DeviceIPs         DeviceIPService
+	ProjectIPs        ProjectIPService
+	Volumes           VolumeService
+	VolumeAttachments VolumeAttachmentService
+	SpotMarket        SpotMarketService
 }
 
 // NewRequest inits a new http request with the proper headers
@@ -205,6 +207,7 @@ func NewClientWithBaseURL(consumerToken string, apiKey string, httpClient *http.
 	c.DeviceIPs = &DeviceIPServiceOp{client: c}
 	c.ProjectIPs = &ProjectIPServiceOp{client: c}
 	c.Volumes = &VolumeServiceOp{client: c}
+	c.VolumeAttachments = &VolumeAttachmentServiceOp{client: c}
 	c.SpotMarket = &SpotMarketServiceOp{client: c}
 
 	return c, nil
