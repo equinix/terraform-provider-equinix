@@ -16,6 +16,9 @@ func resourcePacketVolume() *schema.Resource {
 		Read:   resourcePacketVolumeRead,
 		Update: resourcePacketVolumeUpdate,
 		Delete: resourcePacketVolumeDelete,
+		Importer: &schema.ResourceImporter{
+			State: schema.ImportStatePassthrough,
+		},
 
 		Schema: map[string]*schema.Schema{
 			"project_id": &schema.Schema{
@@ -118,7 +121,6 @@ func resourcePacketVolumeCreate(d *schema.ResourceData, meta interface{}) error 
 	createRequest := &packngo.VolumeCreateRequest{
 		PlanID:     d.Get("plan").(string),
 		FacilityID: d.Get("facility").(string),
-		ProjectID:  d.Get("project_id").(string),
 		Size:       d.Get("size").(int),
 	}
 
