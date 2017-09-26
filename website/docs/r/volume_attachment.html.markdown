@@ -18,7 +18,7 @@ Once attached by Terraform, they must then be mounted using the `packet_block_at
 
 ```hcl
   resource "packet_project" "test_project" {
-      name = test-project"
+      name = "test-project"
   }
 
   resource "packet_device" "test_device_va" {
