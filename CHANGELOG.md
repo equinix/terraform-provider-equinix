@@ -9,6 +9,7 @@ IMPROVEMENTS:
 * resource/packet_device: Add `public_ipv4_subnet_size` field [GH-7]
 * resource/packet_device: Add `hardware_reservation_id` field [GH-14]
 * resource/packet_device: Add `root_password` attribute [GH-15]
+* resource/packet_volume_attachment: Add resource for attaching volumes [GH-9]
 
 ## 0.1.0 (June 21, 2017)
 
