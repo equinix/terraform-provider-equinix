@@ -34,6 +34,11 @@ func TestAccPacketReservedIPBlock_Basic(t *testing.T) {
 						"packet_reserved_ip_block.test", "management", "false"),
 				),
 			},
+			resource.TestStep{
+				ResourceName:      "packet_reserved_ip_block.test",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
 		},
 	})
 }

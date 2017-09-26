@@ -3,6 +3,7 @@ package packet
 import (
 	"errors"
 	"fmt"
+	"path"
 
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/packethost/packngo"
@@ -75,6 +76,9 @@ func resourcePacketReservedIPBlock() *schema.Resource {
 		Create: resourcePacketReservedIPBlockCreate,
 		Read:   resourcePacketReservedIPBlockRead,
 		Delete: resourcePacketReservedIPBlockDelete,
+		Importer: &schema.ResourceImporter{
+			State: schema.ImportStatePassthrough,
+		},
 
 		Schema: reservedBlockSchema,
 	}
@@ -142,6 +146,7 @@ func resourcePacketReservedIPBlockRead(d *schema.ResourceData, meta interface{})
 	d.Set("management", reservedBlock.Management)
 	d.Set("manageable", reservedBlock.Manageable)
 	d.Set("quantity", cidrToQuantity[reservedBlock.CIDR])
+	d.Set("project_id", path.Base(reservedBlock.Project.Href))
 	d.Set("cidr_notation", fmt.Sprintf("%s/%d", reservedBlock.Address, reservedBlock.CIDR))
 
 	return nil
