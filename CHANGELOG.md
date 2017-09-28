@@ -12,7 +12,7 @@ IMPROVEMENTS:
 * resource/packet_volume_attachment: Add resource for attaching volumes [GH-9]
 * resource/packet_reserved_ip_block: Add resource for reserving blocks of IP addresses [GH-21]
 * resource/packet_ip_attachment: Add resource for attaching floating IP addresses to devices [GH-21]
-
+* resource/packet_devce: Allow to use next-available hardware reservation [GH-26]
 ## 0.1.0 (June 21, 2017)
 
 NOTES:
