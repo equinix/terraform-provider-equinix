@@ -38,6 +38,27 @@ func TestAccPacketReservedIPBlock_Basic(t *testing.T) {
 	})
 }
 
+func TestAccPacketReservedIPBlock_importBasic(t *testing.T) {
+
+	rs := acctest.RandString(10)
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckPacketReservedIPBlockDestroy,
+		Steps: []resource.TestStep{
+			resource.TestStep{
+				Config: testAccCheckPacketReservedIPBlockConfig_basic(rs),
+			},
+			resource.TestStep{
+				ResourceName:      "packet_reserved_ip_block.test",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+		},
+	})
+}
+
 func testAccCheckPacketReservedIPBlockDestroy(s *terraform.State) error {
 	client := testAccProvider.Meta().(*packngo.Client)
 
