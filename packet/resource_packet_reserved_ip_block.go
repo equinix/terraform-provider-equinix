@@ -1,7 +1,6 @@
 package packet
 
 import (
-	"errors"
 	"fmt"
 	"path"
 
@@ -113,24 +112,12 @@ func resourcePacketReservedIPBlockCreate(d *schema.ResourceData, meta interface{
 func resourcePacketReservedIPBlockRead(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*packngo.Client)
 	id := d.Id()
-	cidrNotation := d.Get("cidr_notation").(string)
-	projectID := d.Get("project_id").(string)
 	var reservedBlock *packngo.IPAddressReservation
 	var err error
 
-	if len(id) == 0 {
-		if len(cidrNotation) == 0 {
-			return errors.New("can't read reserved IP block: both ID and cidr_notation fields are empty")
-		}
-		reservedBlock, _, err = client.ProjectIPs.GetByCIDR(projectID, cidrNotation)
-		if err != nil {
-			return fmt.Errorf("Error re-reading IP block with CIDR notation %s: %s", cidrNotation, err)
-		}
-	} else {
-		reservedBlock, _, err = client.ProjectIPs.Get(id)
-		if err != nil {
-			return fmt.Errorf("Error reading IP address block with ID %s: %s", id, err)
-		}
+	reservedBlock, _, err = client.ProjectIPs.Get(id)
+	if err != nil {
+		return fmt.Errorf("Error reading IP address block with ID %s: %s", id, err)
 	}
 	cidrToQuantity := map[int]int{32: 1, 31: 2, 30: 4, 29: 8, 28: 16, 27: 32, 26: 64, 25: 128, 24: 256}
 
