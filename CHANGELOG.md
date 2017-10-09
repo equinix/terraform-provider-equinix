@@ -1,5 +1,4 @@
-## 1.1.1 (Unreleased)
-## 1.1.0 (October 9. 2017)
+## 1.1.0 (Unreleased)
 
 INTERNAL:
 
