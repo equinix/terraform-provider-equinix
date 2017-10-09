@@ -1,4 +1,10 @@
-## 1.0.1 (Unreleased)
+## 1.1.1 (Unreleased)
+## 1.1.0 (October 9. 2017)
+
+INTERNAL:
+
+* Capture breaking change in the Packet API ((https://github.com/packethost/packngo/pull/47))
+
 ## 1.0.0 (September 28, 2017)
 
 INTERNAL:
