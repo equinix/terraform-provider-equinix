@@ -105,6 +105,7 @@ func resourcePacketReservedIPBlockCreate(d *schema.ResourceData, meta interface{
 	d.Set("facility", facility)
 	d.Set("quantity", quantity)
 	d.Set("project_id", projectID)
+	d.SetId(blockAddr.ID)
 
 	return resourcePacketReservedIPBlockRead(d, meta)
 }
