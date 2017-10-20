@@ -1,6 +1,9 @@
 package packet
 
 import (
+	"encoding/json"
+	"fmt"
+
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/hashicorp/terraform/terraform"
 )
@@ -29,6 +32,33 @@ func Provider() terraform.ResourceProvider {
 
 		ConfigureFunc: providerConfigure,
 	}
+}
+
+func normalizeJSON(jsonValue interface{}) (string, error) {
+	var j map[string]interface{}
+	if jsonValue == nil {
+		return "", nil
+	}
+	switch jsonValue.(type) {
+	case string:
+		s := jsonValue.(string)
+		if s == "" {
+			return "", nil
+		}
+		err := json.Unmarshal([]byte(s), &j)
+		if err != nil {
+			return s, err
+		}
+	case map[string]interface{}:
+		j = jsonValue.(map[string]interface{})
+	default:
+		return "", fmt.Errorf("%v is not recognized as a JSON value", jsonValue)
+	}
+	bytes, err := json.Marshal(j)
+	if err != nil {
+		return "", fmt.Errorf("error marshaling intermediate map %v", j)
+	}
+	return string(bytes[:]), nil
 }
 
 func providerConfigure(d *schema.ResourceData) (interface{}, error) {
