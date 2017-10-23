@@ -69,7 +69,7 @@ func resourcePacketIPAttachmentRead(d *schema.ResourceData, meta interface{}) er
 
 	d.Set("device_id", path.Base(assignment.AssignedTo.Href))
 	d.Set("cidr_notation",
-		fmt.Sprintf("%s/%d", assignment.Address, assignment.CIDR))
+		fmt.Sprintf("%s/%d", assignment.Network, assignment.CIDR))
 
 	return nil
 }

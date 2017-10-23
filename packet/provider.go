@@ -16,6 +16,9 @@ func Provider() terraform.ResourceProvider {
 				Description: "The API auth key for API operations.",
 			},
 		},
+		DataSourcesMap: map[string]*schema.Resource{
+			"packet_precreated_ip_block": dataSourcePacketPreCreatedIPBlock(),
+		},
 
 		ResourcesMap: map[string]*schema.Resource{
 			"packet_device":            resourcePacketDevice(),
