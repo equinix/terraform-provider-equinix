@@ -1,4 +1,9 @@
 ## 1.1.1 (Unreleased)
+
+IMPROVEMENTS:
+
+* datasource/packet_precreated_ip_block: Add Datasource for precreated IP blocks, so that users can assign subnets from those ([#36](https://github.com/terraform-providers/terraform-provider-packet/issues/36))
+
 ## 1.1.0 (October 09, 2017)
 
 INTERNAL:
