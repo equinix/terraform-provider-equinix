@@ -101,7 +101,6 @@ func resourcePacketReservedIPBlockCreate(d *schema.ResourceData, meta interface{
 		return fmt.Errorf("Error reserving IP address block: %s", err)
 	}
 
-	d.Set("cidr_notation", blockAddr.Address)
 	d.Set("facility", facility)
 	d.Set("quantity", quantity)
 	d.Set("project_id", projectID)
@@ -110,15 +109,8 @@ func resourcePacketReservedIPBlockCreate(d *schema.ResourceData, meta interface{
 	return resourcePacketReservedIPBlockRead(d, meta)
 }
 
-func resourcePacketReservedIPBlockRead(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*packngo.Client)
-	id := d.Id()
-
-	reservedBlock, _, err := client.ProjectIPs.Get(id)
-	if err != nil {
-		return fmt.Errorf("Error reading IP address block with ID %s: %s", id, err)
-	}
-	cidrToQuantity := map[int]int{32: 1, 31: 2, 30: 4, 29: 8, 28: 16, 27: 32, 26: 64, 25: 128, 24: 256}
+func loadBlock(d *schema.ResourceData, reservedBlock *packngo.IPAddressReservation) error {
+	ipv4CIDRToQuantity := map[int]int{32: 1, 31: 2, 30: 4, 29: 8, 28: 16, 27: 32, 26: 64, 25: 128, 24: 256}
 
 	d.SetId(reservedBlock.ID)
 	d.Set("address", reservedBlock.Address)
@@ -131,9 +123,37 @@ func resourcePacketReservedIPBlockRead(d *schema.ResourceData, meta interface{})
 	d.Set("public", reservedBlock.Public)
 	d.Set("management", reservedBlock.Management)
 	d.Set("manageable", reservedBlock.Manageable)
-	d.Set("quantity", cidrToQuantity[reservedBlock.CIDR])
+	if reservedBlock.AddressFamily == 4 {
+		d.Set("quantity", ipv4CIDRToQuantity[reservedBlock.CIDR])
+	} else {
+		// In Packet, reserved IPv6 block is allocated when device is run in a proejct.
+		// It's always /56, and it can't be crated with Terraform, only imported.
+		// The longest assignable prefix is /64, making it max 256 subnets per block.
+		// The following logic will hold as long as /64 is the smallest assignable subnet size.
+		bits := 64 - reservedBlock.CIDR
+		if bits > 30 {
+			return fmt.Errorf("Strange (too small) CIDR prefix: %d", reservedBlock.CIDR)
+		}
+		d.Set("quantity", 1<<uint(bits))
+	}
 	d.Set("project_id", path.Base(reservedBlock.Project.Href))
-	d.Set("cidr_notation", fmt.Sprintf("%s/%d", reservedBlock.Address, reservedBlock.CIDR))
+	d.Set("cidr_notation", fmt.Sprintf("%s/%d", reservedBlock.Network, reservedBlock.CIDR))
+	return nil
+
+}
+
+func resourcePacketReservedIPBlockRead(d *schema.ResourceData, meta interface{}) error {
+	client := meta.(*packngo.Client)
+	id := d.Id()
+
+	reservedBlock, _, err := client.ProjectIPs.Get(id)
+	if err != nil {
+		return fmt.Errorf("Error reading IP address block with ID %s: %s", id, err)
+	}
+	err = loadBlock(d, reservedBlock)
+	if err != nil {
+		return err
+	}
 
 	return nil
 }
