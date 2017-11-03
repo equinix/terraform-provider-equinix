@@ -1,4 +1,8 @@
-## 1.1.1 (Unreleased)
+## 1.2.0 (Unreleased)
+
+BACKWARDS INCOMPATIBILITIES / NOTES:
+
+* [#37](https://github.com/terraform-providers/terraform-provider-packet/issues/37), changes computation of packet_reserved_ip_block.cidr_notation. In case you use that attribute down the chain, you will need to refresh and recreate the resource in which you use it.
 
 IMPROVEMENTS:
 
