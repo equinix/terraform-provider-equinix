@@ -4,12 +4,15 @@ import (
 	"errors"
 	"fmt"
 	"path"
+	"regexp"
 	"time"
 
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/packethost/packngo"
 )
+
+var matchIPXEScript = regexp.MustCompile(`(?i)^#![i]?pxe`)
 
 func resourcePacketDevice() *schema.Resource {
 	return &schema.Resource{
@@ -143,9 +146,8 @@ func resourcePacketDevice() *schema.Resource {
 			},
 
 			"ipxe_script_url": &schema.Schema{
-				Type:          schema.TypeString,
-				Optional:      true,
-				ConflictsWith: []string{"user_data"},
+				Type:     schema.TypeString,
+				Optional: true,
 			},
 
 			"always_pxe": &schema.Schema{
@@ -205,6 +207,15 @@ func resourcePacketDeviceCreate(d *schema.ResourceData, meta interface{}) error 
 		if createRequest.IPXEScriptURL == "" && createRequest.UserData == "" {
 			return friendlyError(errors.New("\"ipxe_script_url\" or \"user_data\"" +
 				" must be provided when \"custom_ipxe\" OS is selected."))
+		}
+
+		// ipxe_script_url + user_data is OK, unless user_data is an ipxe script in
+		// which case it's an error.
+		if createRequest.IPXEScriptURL != "" {
+			if matchIPXEScript.MatchString(createRequest.UserData) {
+				return friendlyError(errors.New("\"user_data\" should not be an iPXE " +
+					"script when \"ipxe_script_url\" is also provided."))
+			}
 		}
 	}
 
