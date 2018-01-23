@@ -528,6 +528,18 @@
 			"versionExact": "v0.10.3"
 		},
 		{
+			"checksumSHA1": "Fzbv+N7hFXOtrR6E7ZcHT3jEE9s=",
+			"path": "github.com/hashicorp/terraform/helper/structure",
+			"revision": "9504d17bd9dd3cfb6339d11ceddb8805535fd1b3",
+			"revisionTime": "2017-09-08T20:40:31Z"
+		},
+		{
+			"checksumSHA1": "fezCwKJ4akxRr3v3Bti0firO240=",
+			"path": "github.com/hashicorp/terraform/helper/validation",
+			"revision": "9504d17bd9dd3cfb6339d11ceddb8805535fd1b3",
+			"revisionTime": "2017-09-08T20:40:31Z"
+		},
+		{
 			"checksumSHA1": "yFWmdS6yEJZpRJzUqd/mULqCYGk=",
 			"path": "github.com/hashicorp/terraform/moduledeps",
 			"revision": "1511d447e78d8106787875265f96d3a3a03005d5",
@@ -620,10 +632,10 @@
 			"revisionTime": "2016-10-03T17:45:16Z"
 		},
 		{
-			"checksumSHA1": "6MfBLocz5Iqqh/K/rygGX3LlVz0=",
+			"checksumSHA1": "8GNfpHLvPtloUw0jN3AMfgj770o=",
 			"path": "github.com/packethost/packngo",
-			"revision": "e70fa589581796f9faf190dc677a2d76a09bb16e",
-			"revisionTime": "2017-10-09T15:49:01Z",
+			"revision": "06a1f16440fe8d01cba287799ef05835322e51e0",
+			"revisionTime": "2017-10-19T13:22:01Z",
 			"version": "master",
 			"versionExact": "master"
 		},

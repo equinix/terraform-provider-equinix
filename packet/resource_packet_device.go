@@ -3,12 +3,16 @@ package packet
 import (
 	"errors"
 	"fmt"
+	"log"
 	"path"
 	"regexp"
 	"time"
 
+	"github.com/hashicorp/errwrap"
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
+	"github.com/hashicorp/terraform/helper/structure"
+	"github.com/hashicorp/terraform/helper/validation"
 	"github.com/packethost/packngo"
 )
 
@@ -175,6 +179,16 @@ func resourcePacketDevice() *schema.Resource {
 				Optional: true,
 				Elem:     &schema.Schema{Type: schema.TypeString},
 			},
+			"storage": &schema.Schema{
+				Type:     schema.TypeString,
+				Optional: true,
+				ForceNew: true,
+				StateFunc: func(v interface{}) string {
+					s, _ := structure.NormalizeJsonString(v)
+					return s
+				},
+				ValidateFunc: validation.ValidateJsonString,
+			},
 		},
 	}
 }
@@ -238,6 +252,14 @@ func resourcePacketDeviceCreate(d *schema.ResourceData, meta interface{}) error 
 		}
 	}
 
+	if attr, ok := d.GetOk("storage"); ok {
+		s, err := structure.NormalizeJsonString(attr.(string))
+		if err != nil {
+			return errwrap.Wrapf("storage param contains invalid JSON: {{err}}", err)
+		}
+		createRequest.Storage = s
+	}
+
 	newDevice, _, err := client.Devices.Create(createRequest)
 	if err != nil {
 		return friendlyError(err)
@@ -288,6 +310,9 @@ func resourcePacketDeviceRead(d *schema.ResourceData, meta interface{}) error {
 	d.Set("ipxe_script_url", device.IPXEScriptURL)
 	d.Set("always_pxe", device.AlwaysPXE)
 	d.Set("root_password", device.RootPassword)
+	if err := d.Set("storage", device.Storage); err != nil {
+		log.Printf("[ERR] Error setting storage for (%s): %s", d.Id(), err)
+	}
 
 	if len(device.HardwareReservation.Href) > 0 {
 		d.Set("hardware_reservation_id", path.Base(device.HardwareReservation.Href))

@@ -42,6 +42,74 @@ resource "packet_device" "pxe1" {
   ipxe_script_url  = "https://rawgit.com/cloudnativelabs/pxe/master/packet/coreos-stable-packet.ipxe"
   always_pxe       = "false"
   user_data        = "${data.ignition_config.example.rendered}"
+  }
+```
+
+```
+# Deploy device on next-available reserved hardware and do custom partitioning.
+resource "packet_device" "web1" {
+  hostname         = "tftest"
+  plan             = "baremetal_0"
+  facility         = "sjc1"
+  operating_system = "ubuntu_16_04"
+  billing_cycle    = "hourly"
+  project_id       = "${packet_project.cool_project.id}"
+  hardware_reservation_id = "next-available"
+  storage = <<EOS
+{
+  "disks": [
+    {
+      "device": "/dev/sda",
+      "wipeTable": true,
+      "partitions": [
+        {
+          "label": "BIOS",
+          "number": 1,
+          "size": 4096
+        },
+        {
+          "label": "SWAP",
+          "number": 2,
+          "size": "3993600"
+        },
+        {
+          "label": "ROOT",
+          "number": 3,
+          "size": 0
+        }
+      ]
+    }
+  ],
+  "filesystems": [
+    {
+      "mount": {
+        "device": "/dev/sda3",
+        "format": "ext4",
+        "point": "/",
+        "create": {
+          "options": [
+            "-L",
+            "ROOT"
+          ]
+        }
+      }
+    },
+    {
+      "mount": {
+        "device": "/dev/sda2",
+        "format": "swap",
+        "point": "none",
+        "create": {
+          "options": [
+            "-L",
+            "SWAP"
+          ]
+        }
+      }
+    }
+  ]
+}
+  EOS
 }
 ```
 
@@ -66,6 +134,7 @@ The following arguments are supported:
 * `always_pxe` (Optional) - If true, a device with OS `custom_ipxe` will
   continue to boot via iPXE on reboots.
 * `hardware_reservation_id` (Optional) - The id of hardware reservation where you want this device deployed, or `next-available` if you want to pick your next available reservation automatically.
+* `storage` (Optional) - JSON for custom partitioning. Only usable on reserved hardware. More information in in the [Custom Partitioning and RAID](https://help.packet.net/technical/storage/custom-partitioning-raid) doc.
 
 ## Attributes Reference
 
