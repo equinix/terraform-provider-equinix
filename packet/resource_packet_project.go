@@ -18,11 +18,6 @@ func resourcePacketProject() *schema.Resource {
 				Required: true,
 			},
 
-			"payment_method": &schema.Schema{
-				Type:     schema.TypeString,
-				Optional: true,
-			},
-
 			"created": &schema.Schema{
 				Type:     schema.TypeString,
 				Computed: true,
@@ -40,8 +35,7 @@ func resourcePacketProjectCreate(d *schema.ResourceData, meta interface{}) error
 	client := meta.(*packngo.Client)
 
 	createRequest := &packngo.ProjectCreateRequest{
-		Name:          d.Get("name").(string),
-		PaymentMethod: d.Get("payment_method").(string),
+		Name: d.Get("name").(string),
 	}
 
 	project, _, err := client.Projects.Create(createRequest)
@@ -85,10 +79,6 @@ func resourcePacketProjectUpdate(d *schema.ResourceData, meta interface{}) error
 	updateRequest := &packngo.ProjectUpdateRequest{
 		ID:   d.Get("id").(string),
 		Name: d.Get("name").(string),
-	}
-
-	if attr, ok := d.GetOk("payment_method"); ok {
-		updateRequest.PaymentMethod = attr.(string)
 	}
 
 	_, _, err := client.Projects.Update(updateRequest)
