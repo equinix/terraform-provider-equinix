@@ -91,9 +91,15 @@ func resourcePacketSSHKeyUpdate(d *schema.ResourceData, meta interface{}) error 
 	client := meta.(*packngo.Client)
 
 	updateRequest := &packngo.SSHKeyUpdateRequest{
-		ID:    d.Get("id").(string),
-		Label: d.Get("name").(string),
-		Key:   d.Get("public_key").(string),
+		ID: d.Id(),
+	}
+
+	if d.HasChange("name") {
+		updateRequest.Label = d.Get("name").(string)
+	}
+
+	if d.HasChange("public_key") {
+		updateRequest.Key = d.Get("public_key").(string)
 	}
 
 	_, _, err := client.SSHKeys.Update(updateRequest)
