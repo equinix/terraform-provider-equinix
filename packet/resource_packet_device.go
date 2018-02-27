@@ -3,7 +3,6 @@ package packet
 import (
 	"errors"
 	"fmt"
-	"log"
 	"path"
 	"regexp"
 	"time"
@@ -310,9 +309,11 @@ func resourcePacketDeviceRead(d *schema.ResourceData, meta interface{}) error {
 	d.Set("ipxe_script_url", device.IPXEScriptURL)
 	d.Set("always_pxe", device.AlwaysPXE)
 	d.Set("root_password", device.RootPassword)
-	if err := d.Set("storage", device.Storage); err != nil {
-		log.Printf("[ERR] Error setting storage for (%s): %s", d.Id(), err)
+	storageString, err := structure.FlattenJsonToString(device.Storage)
+	if err != nil {
+		return fmt.Errorf("[ERR] Error getting storage JSON string for device (%s): %s", d.Id(), err)
 	}
+	d.Set("storage", storageString)
 
 	if len(device.HardwareReservation.Href) > 0 {
 		d.Set("hardware_reservation_id", path.Base(device.HardwareReservation.Href))
