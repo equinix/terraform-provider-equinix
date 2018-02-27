@@ -1,6 +1,9 @@
 package packngo
 
-import "fmt"
+import (
+	"fmt"
+	"strings"
+)
 
 const deviceBasePath = "/devices"
 
@@ -8,6 +11,7 @@ const deviceBasePath = "/devices"
 type DeviceService interface {
 	List(ProjectID string) ([]Device, *Response, error)
 	Get(string) (*Device, *Response, error)
+	GetExtra(deviceID string, includes, excludes []string) (*Device, *Response, error)
 	Create(*DeviceCreateRequest) (*Device, *Response, error)
 	Update(string, *DeviceUpdateRequest) (*Device, *Response, error)
 	Delete(string) (*Response, error)
@@ -50,6 +54,7 @@ type Device struct {
 	SpotInstance        bool                   `json:"spot_instance,omitempty"`
 	SpotPriceMax        float64                `json:"spot_price_max,omitempty"`
 	TerminationTime     *Timestamp             `json:"termination_time,omitempty"`
+	NetworkPorts        []Port                 `json:"network_ports,omitempty"`
 }
 
 type ProvisionEvent struct {
@@ -119,14 +124,9 @@ type DeviceServiceOp struct {
 // List returns devices on a project
 func (s *DeviceServiceOp) List(projectID string) ([]Device, *Response, error) {
 	path := fmt.Sprintf("%s/%s/devices?include=facility", projectBasePath, projectID)
-
-	req, err := s.client.NewRequest("GET", path, nil)
-	if err != nil {
-		return nil, nil, err
-	}
-
 	root := new(devicesRoot)
-	resp, err := s.client.Do(req, root)
+
+	resp, err := s.client.DoRequest("GET", path, nil, root)
 	if err != nil {
 		return nil, resp, err
 	}
@@ -136,15 +136,21 @@ func (s *DeviceServiceOp) List(projectID string) ([]Device, *Response, error) {
 
 // Get returns a device by id
 func (s *DeviceServiceOp) Get(deviceID string) (*Device, *Response, error) {
-	path := fmt.Sprintf("%s/%s?include=facility", deviceBasePath, deviceID)
+	return s.GetExtra(deviceID, []string{"facility"}, nil)
+}
 
-	req, err := s.client.NewRequest("GET", path, nil)
-	if err != nil {
-		return nil, nil, err
+// GetExtra returns a device by id. Specifying either includes/excludes provides more or less desired
+// detailed information about resources which would otherwise be represented with an href link
+func (s *DeviceServiceOp) GetExtra(deviceID string, includes, excludes []string) (*Device, *Response, error) {
+	path := fmt.Sprintf("%s/%s", deviceBasePath, deviceID)
+	if includes != nil {
+		path += fmt.Sprintf("?include=%s", strings.Join(includes, ","))
+	} else if excludes != nil {
+		path += fmt.Sprintf("?exclude=%s", strings.Join(excludes, ","))
 	}
-
 	device := new(Device)
-	resp, err := s.client.Do(req, device)
+
+	resp, err := s.client.DoRequest("GET", path, nil, device)
 	if err != nil {
 		return nil, resp, err
 	}
@@ -155,14 +161,9 @@ func (s *DeviceServiceOp) Get(deviceID string) (*Device, *Response, error) {
 // Create creates a new device
 func (s *DeviceServiceOp) Create(createRequest *DeviceCreateRequest) (*Device, *Response, error) {
 	path := fmt.Sprintf("%s/%s/devices", projectBasePath, createRequest.ProjectID)
-
-	req, err := s.client.NewRequest("POST", path, createRequest)
-	if err != nil {
-		return nil, nil, err
-	}
-
 	device := new(Device)
-	resp, err := s.client.Do(req, device)
+
+	resp, err := s.client.DoRequest("POST", path, createRequest, device)
 	if err != nil {
 		return nil, resp, err
 	}
@@ -173,14 +174,9 @@ func (s *DeviceServiceOp) Create(createRequest *DeviceCreateRequest) (*Device, *
 // Update updates an existing device
 func (s *DeviceServiceOp) Update(deviceID string, updateRequest *DeviceUpdateRequest) (*Device, *Response, error) {
 	path := fmt.Sprintf("%s/%s?include=facility", deviceBasePath, deviceID)
-
-	req, err := s.client.NewRequest("PUT", path, updateRequest)
-	if err != nil {
-		return nil, nil, err
-	}
-
 	device := new(Device)
-	resp, err := s.client.Do(req, device)
+
+	resp, err := s.client.DoRequest("PUT", path, updateRequest, device)
 	if err != nil {
 		return nil, resp, err
 	}
@@ -192,59 +188,31 @@ func (s *DeviceServiceOp) Update(deviceID string, updateRequest *DeviceUpdateReq
 func (s *DeviceServiceOp) Delete(deviceID string) (*Response, error) {
 	path := fmt.Sprintf("%s/%s", deviceBasePath, deviceID)
 
-	req, err := s.client.NewRequest("DELETE", path, nil)
-	if err != nil {
-		return nil, err
-	}
-
-	resp, err := s.client.Do(req, nil)
-
-	return resp, err
+	return s.client.DoRequest("DELETE", path, nil, nil)
 }
 
 // Reboot reboots on a device
 func (s *DeviceServiceOp) Reboot(deviceID string) (*Response, error) {
 	path := fmt.Sprintf("%s/%s/actions", deviceBasePath, deviceID)
-
 	action := &DeviceActionRequest{Type: "reboot"}
-	req, err := s.client.NewRequest("POST", path, action)
-	if err != nil {
-		return nil, err
-	}
 
-	resp, err := s.client.Do(req, nil)
-
-	return resp, err
+	return s.client.DoRequest("POST", path, action, nil)
 }
 
 // PowerOff powers on a device
 func (s *DeviceServiceOp) PowerOff(deviceID string) (*Response, error) {
 	path := fmt.Sprintf("%s/%s/actions", deviceBasePath, deviceID)
-
 	action := &DeviceActionRequest{Type: "power_off"}
-	req, err := s.client.NewRequest("POST", path, action)
-	if err != nil {
-		return nil, err
-	}
 
-	resp, err := s.client.Do(req, nil)
-
-	return resp, err
+	return s.client.DoRequest("POST", path, action, nil)
 }
 
 // PowerOn powers on a device
 func (s *DeviceServiceOp) PowerOn(deviceID string) (*Response, error) {
 	path := fmt.Sprintf("%s/%s/actions", deviceBasePath, deviceID)
-
 	action := &DeviceActionRequest{Type: "power_on"}
-	req, err := s.client.NewRequest("POST", path, action)
-	if err != nil {
-		return nil, err
-	}
 
-	resp, err := s.client.Do(req, nil)
-
-	return resp, err
+	return s.client.DoRequest("POST", path, action, nil)
 }
 
 type lockDeviceType struct {
@@ -254,30 +222,15 @@ type lockDeviceType struct {
 // Lock sets a device to "locked"
 func (s *DeviceServiceOp) Lock(deviceID string) (*Response, error) {
 	path := fmt.Sprintf("%s/%s", deviceBasePath, deviceID)
-
 	action := lockDeviceType{Locked: true}
-	req, err := s.client.NewRequest("PATCH", path, action)
-	if err != nil {
-		return nil, err
-	}
 
-	resp, err := s.client.Do(req, nil)
-
-	return resp, err
-
+	return s.client.DoRequest("PATCH", path, action, nil)
 }
 
 // Unlock sets a device to "locked"
 func (s *DeviceServiceOp) Unlock(deviceID string) (*Response, error) {
 	path := fmt.Sprintf("%s/%s", deviceBasePath, deviceID)
-
 	action := lockDeviceType{Locked: false}
-	req, err := s.client.NewRequest("PATCH", path, action)
-	if err != nil {
-		return nil, err
-	}
 
-	resp, err := s.client.Do(req, nil)
-
-	return resp, err
+	return s.client.DoRequest("PATCH", path, action, nil)
 }
