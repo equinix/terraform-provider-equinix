@@ -135,6 +135,8 @@ The following arguments are supported:
   continue to boot via iPXE on reboots.
 * `hardware_reservation_id` (Optional) - The id of hardware reservation where you want this device deployed, or `next-available` if you want to pick your next available reservation automatically.
 * `storage` (Optional) - JSON for custom partitioning. Only usable on reserved hardware. More information in in the [Custom Partitioning and RAID](https://help.packet.net/technical/storage/custom-partitioning-raid) doc.
+* `tags` - Tags attached to the device
+* `description` - Description string for the device
 
 ## Attributes Reference
 
@@ -156,5 +158,6 @@ The following attributes are exported:
 * `created` - The timestamp for when the device was created
 * `updated` - The timestamp for the last time the device was updated
 * `tags` - Tags attached to the device
+* `description` - Description string for the device
 * `hardware_reservation_id` - The id of hardware reservation which this device occupies
 * `root_password` - Root password to the server (disabled after 24 hours)

@@ -46,6 +46,44 @@ func TestAccPacketDevice_Basic(t *testing.T) {
 	})
 }
 
+func TestAccPacketDevice_Update(t *testing.T) {
+	var device packngo.Device
+	rs := acctest.RandString(10)
+	rInt := acctest.RandInt()
+	r := "packet_device.test"
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckPacketDeviceDestroy,
+		Steps: []resource.TestStep{
+			resource.TestStep{
+				Config: testAccCheckPacketDeviceConfig_varname(rInt, rs),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckPacketDeviceExists(r, &device),
+					resource.TestCheckResourceAttr(r, "hostname", fmt.Sprintf("test-device-%d", rInt)),
+				),
+			},
+			resource.TestStep{
+				Config: testAccCheckPacketDeviceConfig_varname(rInt+1, rs),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckPacketDeviceExists(r, &device),
+					resource.TestCheckResourceAttr(r, "hostname", fmt.Sprintf("test-device-%d", rInt+1)),
+				),
+			},
+			resource.TestStep{
+				Config: testAccCheckPacketDeviceConfig_varname(rInt+1, rs),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckPacketDeviceExists(r, &device),
+					resource.TestCheckResourceAttr(r, "hostname", fmt.Sprintf("test-device-%d", rInt+1)),
+					resource.TestCheckResourceAttr(r, "description", fmt.Sprintf("test-desc-%d", rInt+1)),
+					resource.TestCheckResourceAttr(r, "tags.0", fmt.Sprintf("%d", rInt+1)),
+				),
+			},
+		},
+	})
+}
+
 func TestAccPacketDevice_RequestSubnet(t *testing.T) {
 	var device packngo.Device
 	rs := acctest.RandString(10)
@@ -61,8 +99,7 @@ func TestAccPacketDevice_RequestSubnet(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckPacketDeviceExists(r, &device),
 					testAccCheckPacketDeviceNetwork(r),
-					resource.TestCheckResourceAttr(
-						r, "public_ipv4_subnet_size", "29"),
+					resource.TestCheckResourceAttr(r, "public_ipv4_subnet_size", "29"),
 				),
 			},
 		},
@@ -224,6 +261,25 @@ func testAccCheckPacketDeviceNetwork(n string) resource.TestCheckFunc {
 
 		return nil
 	}
+}
+
+func testAccCheckPacketDeviceConfig_varname(rInt int, projSuffix string) string {
+	return fmt.Sprintf(`
+resource "packet_project" "test" {
+    name = "TerraformTestProject-%s"
+}
+
+resource "packet_device" "test" {
+  hostname         = "test-device-%d"
+  description      = "test-desc-%d"
+  plan             = "baremetal_0"
+  facility         = "sjc1"
+  operating_system = "ubuntu_16_04"
+  billing_cycle    = "hourly"
+  project_id       = "${packet_project.test.id}"
+  tags             = ["%d"]
+}
+`, projSuffix, rInt, rInt, rInt)
 }
 
 var testAccCheckPacketDeviceConfig_basic = `
