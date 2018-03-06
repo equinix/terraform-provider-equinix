@@ -47,7 +47,7 @@ func TestAccPacketDevice_Basic(t *testing.T) {
 }
 
 func TestAccPacketDevice_Update(t *testing.T) {
-	var device packngo.Device
+	var d1, d2, d3, d4 packngo.Device
 	rs := acctest.RandString(10)
 	rInt := acctest.RandInt()
 	r := "packet_device.test"
@@ -60,24 +60,35 @@ func TestAccPacketDevice_Update(t *testing.T) {
 			resource.TestStep{
 				Config: testAccCheckPacketDeviceConfig_varname(rInt, rs),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckPacketDeviceExists(r, &device),
+					testAccCheckPacketDeviceExists(r, &d1),
 					resource.TestCheckResourceAttr(r, "hostname", fmt.Sprintf("test-device-%d", rInt)),
 				),
 			},
 			resource.TestStep{
 				Config: testAccCheckPacketDeviceConfig_varname(rInt+1, rs),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckPacketDeviceExists(r, &device),
+					testAccCheckPacketDeviceExists(r, &d2),
 					resource.TestCheckResourceAttr(r, "hostname", fmt.Sprintf("test-device-%d", rInt+1)),
+					testAccCheckPacketSameDevice(t, &d1, &d2),
 				),
 			},
 			resource.TestStep{
-				Config: testAccCheckPacketDeviceConfig_varname(rInt+1, rs),
+				Config: testAccCheckPacketDeviceConfig_varname(rInt+2, rs),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckPacketDeviceExists(r, &device),
-					resource.TestCheckResourceAttr(r, "hostname", fmt.Sprintf("test-device-%d", rInt+1)),
-					resource.TestCheckResourceAttr(r, "description", fmt.Sprintf("test-desc-%d", rInt+1)),
-					resource.TestCheckResourceAttr(r, "tags.0", fmt.Sprintf("%d", rInt+1)),
+					testAccCheckPacketDeviceExists(r, &d3),
+					resource.TestCheckResourceAttr(r, "hostname", fmt.Sprintf("test-device-%d", rInt+2)),
+					resource.TestCheckResourceAttr(r, "description", fmt.Sprintf("test-desc-%d", rInt+2)),
+					resource.TestCheckResourceAttr(r, "tags.0", fmt.Sprintf("%d", rInt+2)),
+					testAccCheckPacketSameDevice(t, &d2, &d3),
+				),
+			},
+			resource.TestStep{
+				Config: testAccCheckPacketDeviceConfig_no_description(rInt+3, rs),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckPacketDeviceExists(r, &d4),
+					resource.TestCheckResourceAttr(r, "hostname", fmt.Sprintf("test-device-%d", rInt+3)),
+					resource.TestCheckResourceAttr(r, "tags.0", fmt.Sprintf("%d", rInt+3)),
+					testAccCheckPacketSameDevice(t, &d3, &d4),
 				),
 			},
 		},
@@ -226,6 +237,15 @@ func testAccCheckPacketDeviceExists(n string, device *packngo.Device) resource.T
 	}
 }
 
+func testAccCheckPacketSameDevice(t *testing.T, before, after *packngo.Device) resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		if before.ID != after.ID {
+			t.Fatalf("Expected device to be the same, but it was recreated: %s -> %s", before.ID, after.ID)
+		}
+		return nil
+	}
+}
+
 func testAccCheckPacketDeviceNetwork(n string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		var ip net.IP
@@ -261,6 +281,24 @@ func testAccCheckPacketDeviceNetwork(n string) resource.TestCheckFunc {
 
 		return nil
 	}
+}
+
+func testAccCheckPacketDeviceConfig_no_description(rInt int, projSuffix string) string {
+	return fmt.Sprintf(`
+resource "packet_project" "test" {
+    name = "TerraformTestProject-%s"
+}
+
+resource "packet_device" "test" {
+  hostname         = "test-device-%d"
+  plan             = "baremetal_0"
+  facility         = "sjc1"
+  operating_system = "ubuntu_16_04"
+  billing_cycle    = "hourly"
+  project_id       = "${packet_project.test.id}"
+  tags             = ["%d"]
+}
+`, projSuffix, rInt, rInt)
 }
 
 func testAccCheckPacketDeviceConfig_varname(rInt int, projSuffix string) string {
