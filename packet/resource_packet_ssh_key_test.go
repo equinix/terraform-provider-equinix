@@ -37,6 +37,43 @@ func TestAccPacketSSHKey_Basic(t *testing.T) {
 	})
 }
 
+func TestAccPacketSSHKey_Update(t *testing.T) {
+	var key packngo.SSHKey
+	rInt := acctest.RandInt()
+	publicKeyMaterial, _, err := acctest.RandSSHKeyPair("")
+	if err != nil {
+		t.Fatalf("Cannot generate test SSH key pair: %s", err)
+	}
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckPacketSSHKeyDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckPacketSSHKeyConfig_basic(rInt, publicKeyMaterial),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckPacketSSHKeyExists("packet_ssh_key.foobar", &key),
+					resource.TestCheckResourceAttr(
+						"packet_ssh_key.foobar", "name", fmt.Sprintf("foobar-%d", rInt)),
+					resource.TestCheckResourceAttr(
+						"packet_ssh_key.foobar", "public_key", publicKeyMaterial),
+				),
+			},
+			{
+				Config: testAccCheckPacketSSHKeyConfig_basic(rInt+1, publicKeyMaterial),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckPacketSSHKeyExists("packet_ssh_key.foobar", &key),
+					resource.TestCheckResourceAttr(
+						"packet_ssh_key.foobar", "name", fmt.Sprintf("foobar-%d", rInt+1)),
+					resource.TestCheckResourceAttr(
+						"packet_ssh_key.foobar", "public_key", publicKeyMaterial),
+				),
+			},
+		},
+	})
+}
+
 func testAccCheckPacketSSHKeyDestroy(s *terraform.State) error {
 	client := testAccProvider.Meta().(*packngo.Client)
 
