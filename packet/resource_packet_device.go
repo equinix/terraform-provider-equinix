@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"path"
+	"reflect"
 	"regexp"
 	"time"
 
@@ -34,7 +35,11 @@ func resourcePacketDevice() *schema.Resource {
 			"hostname": &schema.Schema{
 				Type:     schema.TypeString,
 				Required: true,
-				ForceNew: true,
+			},
+
+			"description": &schema.Schema{
+				Type:     schema.TypeString,
+				Optional: true,
 			},
 
 			"operating_system": &schema.Schema{
@@ -319,11 +324,7 @@ func resourcePacketDeviceRead(d *schema.ResourceData, meta interface{}) error {
 		d.Set("hardware_reservation_id", path.Base(device.HardwareReservation.Href))
 	}
 
-	tags := make([]string, 0, len(device.Tags))
-	for _, tag := range device.Tags {
-		tags = append(tags, tag)
-	}
-	d.Set("tags", tags)
+	d.Set("tags", device.Tags)
 
 	var (
 		ipv4SubnetSize int
@@ -382,7 +383,40 @@ func resourcePacketDeviceUpdate(d *schema.ResourceData, meta interface{}) error 
 			return friendlyError(err)
 		}
 	}
+	ur := packngo.DeviceUpdateRequest{}
 
+	if d.HasChange("description") {
+		ur.Description = d.Get("description").(string)
+	}
+	if d.HasChange("hostname") {
+		ur.Hostname = d.Get("hostname").(string)
+	}
+	if d.HasChange("tags") {
+		ts := d.Get("tags")
+		sts := []string{}
+
+		switch ts.(type) {
+		case []interface{}:
+			for _, v := range ts.([]interface{}) {
+				sts = append(sts, v.(string))
+			}
+			ur.Tags = sts
+		default:
+			return friendlyError(fmt.Errorf("garbage in tags: %s", ts))
+		}
+	}
+	if d.HasChange("ipxe_script_url") {
+		ur.IPXEScriptURL = d.Get("ipxe_script_url").(string)
+	}
+	if d.HasChange("always_pxe") {
+		ur.AlwaysPXE = d.Get("always_pxe").(bool)
+	}
+	if !reflect.DeepEqual(ur, packngo.DeviceUpdateRequest{}) {
+		if _, _, err := client.Devices.Update(d.Id(), &ur); err != nil {
+			return friendlyError(err)
+		}
+
+	}
 	return resourcePacketDeviceRead(d, meta)
 }
 
