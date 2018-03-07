@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/hashicorp/terraform/helper/acctest"
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/terraform"
 	"github.com/packethost/packngo"
@@ -11,6 +12,7 @@ import (
 
 func TestAccPacketProject_Basic(t *testing.T) {
 	var project packngo.Project
+	rInt := acctest.RandInt()
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -18,18 +20,45 @@ func TestAccPacketProject_Basic(t *testing.T) {
 		CheckDestroy: testAccCheckPacketProjectDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckPacketProjectConfig_basic,
+				Config: testAccCheckPacketProjectConfig_basic(rInt),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckPacketProjectExists("packet_project.foobar", &project),
-					testAccCheckPacketProjectAttributes(&project),
 					resource.TestCheckResourceAttr(
-						"packet_project.foobar", "name", "foobar"),
+						"packet_project.foobar", "name", fmt.Sprintf("foobar-%d", rInt)),
 				),
 			},
 		},
 	})
 }
 
+func TestAccPacketProject_Update(t *testing.T) {
+	var project packngo.Project
+	rInt := acctest.RandInt()
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckPacketProjectDestroy,
+		Steps: []resource.TestStep{
+			resource.TestStep{
+				Config: testAccCheckPacketProjectConfig_basic(rInt),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckPacketProjectExists("packet_project.foobar", &project),
+					resource.TestCheckResourceAttr(
+						"packet_project.foobar", "name", fmt.Sprintf("foobar-%d", rInt)),
+				),
+			},
+			resource.TestStep{
+				Config: testAccCheckPacketProjectConfig_basic(rInt + 1),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckPacketProjectExists("packet_project.foobar", &project),
+					resource.TestCheckResourceAttr(
+						"packet_project.foobar", "name", fmt.Sprintf("foobar-%d", rInt+1)),
+				),
+			},
+		},
+	})
+}
 func testAccCheckPacketProjectDestroy(s *terraform.State) error {
 	client := testAccProvider.Meta().(*packngo.Client)
 
@@ -43,15 +72,6 @@ func testAccCheckPacketProjectDestroy(s *terraform.State) error {
 	}
 
 	return nil
-}
-
-func testAccCheckPacketProjectAttributes(project *packngo.Project) resource.TestCheckFunc {
-	return func(s *terraform.State) error {
-		if project.Name != "foobar" {
-			return fmt.Errorf("Bad name: %s", project.Name)
-		}
-		return nil
-	}
 }
 
 func testAccCheckPacketProjectExists(n string, project *packngo.Project) resource.TestCheckFunc {
@@ -80,7 +100,10 @@ func testAccCheckPacketProjectExists(n string, project *packngo.Project) resourc
 	}
 }
 
-var testAccCheckPacketProjectConfig_basic = fmt.Sprintf(`
+func testAccCheckPacketProjectConfig_basic(r int) string {
+
+	return fmt.Sprintf(`
 resource "packet_project" "foobar" {
-    name = "foobar"
-}`)
+    name = "foobar-%d"
+}`, r)
+}

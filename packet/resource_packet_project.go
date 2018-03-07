@@ -1,9 +1,16 @@
 package packet
 
 import (
+	"path"
+	"regexp"
+	"strings"
+
 	"github.com/hashicorp/terraform/helper/schema"
+	"github.com/hashicorp/terraform/helper/validation"
 	"github.com/packethost/packngo"
 )
+
+var uuidRE = regexp.MustCompile("^[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-4[a-fA-F0-9]{3}-[8|9|aA|bB][a-fA-F0-9]{3}-[a-fA-F0-9]{12}$")
 
 func resourcePacketProject() *schema.Resource {
 	return &schema.Resource{
@@ -26,6 +33,15 @@ func resourcePacketProject() *schema.Resource {
 			"updated": &schema.Schema{
 				Type:     schema.TypeString,
 				Computed: true,
+			},
+			"payment_method_id": &schema.Schema{
+				Type:     schema.TypeString,
+				Optional: true,
+				Computed: true,
+				DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
+					return strings.ToLower(strings.Trim(old, `"`)) == strings.ToLower(strings.Trim(new, `"`))
+				},
+				ValidateFunc: validation.StringMatch(uuidRE, "must be a valid UUID"),
 			},
 		},
 	}
@@ -51,7 +67,7 @@ func resourcePacketProjectCreate(d *schema.ResourceData, meta interface{}) error
 func resourcePacketProjectRead(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*packngo.Client)
 
-	key, _, err := client.Projects.Get(d.Id())
+	proj, _, err := client.Projects.Get(d.Id())
 	if err != nil {
 		err = friendlyError(err)
 
@@ -65,22 +81,24 @@ func resourcePacketProjectRead(d *schema.ResourceData, meta interface{}) error {
 		return err
 	}
 
-	d.Set("id", key.ID)
-	d.Set("name", key.Name)
-	d.Set("created", key.Created)
-	d.Set("updated", key.Updated)
+	d.Set("id", proj.ID)
+	d.Set("payment_method_id", path.Base(proj.PaymentMethod.URL))
+	d.Set("name", proj.Name)
+	d.Set("created", proj.Created)
+	d.Set("updated", proj.Updated)
 
 	return nil
 }
 
 func resourcePacketProjectUpdate(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*packngo.Client)
-
-	updateRequest := &packngo.ProjectUpdateRequest{
-		ID:   d.Get("id").(string),
-		Name: d.Get("name").(string),
+	updateRequest := &packngo.ProjectUpdateRequest{ID: d.Id()}
+	if d.HasChange("name") {
+		updateRequest.Name = d.Get("name").(string)
 	}
-
+	if d.HasChange("payment_method_id") {
+		updateRequest.PaymentMethodID = d.Get("payment_method_id").(string)
+	}
 	_, _, err := client.Projects.Update(updateRequest)
 	if err != nil {
 		return friendlyError(err)
