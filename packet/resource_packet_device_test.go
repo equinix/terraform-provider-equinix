@@ -118,7 +118,7 @@ func TestAccPacketDevice_RequestSubnet(t *testing.T) {
 }
 
 func TestAccPacketDevice_IPXEScriptUrl(t *testing.T) {
-	var device packngo.Device
+	var device, d2 packngo.Device
 	rs := acctest.RandString(10)
 	r := "packet_device.test_ipxe_script_url"
 
@@ -128,7 +128,7 @@ func TestAccPacketDevice_IPXEScriptUrl(t *testing.T) {
 		CheckDestroy: testAccCheckPacketDeviceDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: fmt.Sprintf(testAccCheckPacketDeviceConfig_ipxe_script_url, rs),
+				Config: testAccCheckPacketDeviceConfig_ipxe_script_url(rs, "https://boot.netboot.xyz", "true"),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckPacketDeviceExists(r, &device),
 					testAccCheckPacketDeviceNetwork(r),
@@ -136,6 +136,18 @@ func TestAccPacketDevice_IPXEScriptUrl(t *testing.T) {
 						r, "ipxe_script_url", "https://boot.netboot.xyz"),
 					resource.TestCheckResourceAttr(
 						r, "always_pxe", "true"),
+				),
+			},
+			resource.TestStep{
+				Config: testAccCheckPacketDeviceConfig_ipxe_script_url(rs, "https://new.netboot.xyz", "false"),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckPacketDeviceExists(r, &d2),
+					testAccCheckPacketDeviceNetwork(r),
+					resource.TestCheckResourceAttr(
+						r, "ipxe_script_url", "https://new.netboot.xyz"),
+					resource.TestCheckResourceAttr(
+						r, "always_pxe", "false"),
+					testAccCheckPacketSameDevice(t, &device, &d2),
 				),
 			},
 		},
@@ -320,6 +332,27 @@ resource "packet_device" "test" {
 `, projSuffix, rInt, rInt, rInt)
 }
 
+func testAccCheckPacketDeviceConfig_varname_pxe(rInt int, projSuffix string) string {
+	return fmt.Sprintf(`
+resource "packet_project" "test" {
+    name = "TerraformTestProject-%s"
+}
+
+resource "packet_device" "test" {
+  hostname         = "test-device-%d"
+  description      = "test-desc-%d"
+  plan             = "baremetal_0"
+  facility         = "sjc1"
+  operating_system = "ubuntu_16_04"
+  billing_cycle    = "hourly"
+  project_id       = "${packet_project.test.id}"
+  tags             = ["%d"]
+  always_pxe       = true
+  ipxe_script_url  = "http://matchbox.foo.wtf:8080/boot.ipxe"
+}
+`, projSuffix, rInt, rInt, rInt)
+}
+
 var testAccCheckPacketDeviceConfig_basic = `
 resource "packet_project" "test" {
     name = "TerraformTestProject-%s"
@@ -349,12 +382,14 @@ resource "packet_device" "test_subnet_29" {
   public_ipv4_subnet_size = 29
 }`
 
-var testAccCheckPacketDeviceConfig_ipxe_script_url = `
+func testAccCheckPacketDeviceConfig_ipxe_script_url(projSuffix, url, pxe string) string {
+	return fmt.Sprintf(`
 resource "packet_project" "test" {
   name = "TerraformTestProject-%s"
 }
 
-resource "packet_device" "test_ipxe_script_url" {
+resource "packet_device" "test_ipxe_script_url"  {
+
   hostname         = "test-ipxe-script-url"
   plan             = "baremetal_0"
   facility         = "sjc1"
@@ -362,9 +397,10 @@ resource "packet_device" "test_ipxe_script_url" {
   user_data        = "#!/bin/sh\ntouch /tmp/test"
   billing_cycle    = "hourly"
   project_id       = "${packet_project.test.id}"
-  ipxe_script_url  = "https://boot.netboot.xyz"
-  always_pxe       = true
-}`
+  ipxe_script_url  = "%s"
+  always_pxe       = "%s"
+}`, projSuffix, url, pxe)
+}
 
 var testAccCheckPacketDeviceConfig_ipxe_conflict = `
 resource "packet_project" "test" {
