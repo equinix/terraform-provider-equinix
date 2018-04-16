@@ -1,4 +1,13 @@
 ## 1.2.1 (Unreleased)
+
+IMPROVEMENTS:
+
+- #57 fix for update of PXE attributes of device resource
+- #52 fix for project resource update
+- #49 fix for crash on SSH key update
+- #50 fix for device update, adds `description` attribute
+
+
 ## 1.2.0 (January 23, 2018)
 
 BACKWARDS INCOMPATIBILITIES / NOTES:
