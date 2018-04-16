@@ -2,10 +2,10 @@
 
 IMPROVEMENTS:
 
-- #57 fix for update of PXE attributes of device resource
-- #52 fix for project resource update
-- #49 fix for crash on SSH key update
-- #50 fix for device update, adds `description` attribute
+- [#57](https://github.com/terraform-providers/terraform-provider-packet/issues/57), fix for update of PXE attributes of device resource
+- [#52](https://github.com/terraform-providers/terraform-provider-packet/issues/52) fix for project resource update
+- [#49](https://github.com/terraform-providers/terraform-provider-packet/issues/49) fix for crash on SSH key update
+- [#50](https://github.com/terraform-providers/terraform-provider-packet/issues/50) fix for device update, adds `description` attribute
 
 
 ## 1.2.0 (January 23, 2018)
