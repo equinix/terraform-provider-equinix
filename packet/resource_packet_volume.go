@@ -247,23 +247,20 @@ func resourcePacketVolumeRead(d *schema.ResourceData, meta interface{}) error {
 func resourcePacketVolumeUpdate(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*packngo.Client)
 
-	updateRequest := &packngo.VolumeUpdateRequest{
-		ID: d.Get("id").(string),
-	}
+	updateRequest := &packngo.VolumeUpdateRequest{}
 
-	if attr, ok := d.GetOk("description"); ok {
-		updateRequest.Description = attr.(string)
+	if d.HasChange("description") {
+		vDesc := d.Get("description").(string)
+		updateRequest.Description = &vDesc
 	}
-
-	if attr, ok := d.GetOk("plan"); ok {
-		updateRequest.Plan = attr.(string)
+	if d.HasChange("plan") {
+		vPlan := d.Get("plan").(string)
+		updateRequest.Plan = &vPlan
 	}
-
-	_, _, err := client.Volumes.Update(updateRequest)
+	_, _, err := client.Volumes.Update(d.Id(), updateRequest)
 	if err != nil {
 		return friendlyError(err)
 	}
-
 	return resourcePacketVolumeRead(d, meta)
 }
 
