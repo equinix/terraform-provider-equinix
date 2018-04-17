@@ -1,4 +1,9 @@
 ## 1.2.2 (Unreleased)
+
+IMPROVEMENTS:
+
+- [#58](https://github.com/terraform-providers/terraform-provider-packet/issues/58), properly fix resource updates
+
 ## 1.2.1 (April 16, 2018)
 
 IMPROVEMENTS:
