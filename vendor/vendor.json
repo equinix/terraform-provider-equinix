@@ -760,10 +760,10 @@
 			"revisionTime": "2016-10-03T17:45:16Z"
 		},
 		{
-			"checksumSHA1": "AGEiMq4ETRhC/2xN1oWGAdoG74M=",
+			"checksumSHA1": "LXp5yu5AZg/Ao1HXhyX39gPLvBE=",
 			"path": "github.com/packethost/packngo",
-			"revision": "237640a14130b7756ce74ef575187d5a106b70d4",
-			"revisionTime": "2018-04-13T09:54:43Z",
+			"revision": "304c6c66dd279f40c3cf4fe470cca1589236cc2d",
+			"revisionTime": "2018-04-17T10:55:24Z",
 			"version": "master",
 			"versionExact": "master"
 		},

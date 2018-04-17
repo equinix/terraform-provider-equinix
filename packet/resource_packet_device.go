@@ -386,10 +386,12 @@ func resourcePacketDeviceUpdate(d *schema.ResourceData, meta interface{}) error 
 	ur := packngo.DeviceUpdateRequest{}
 
 	if d.HasChange("description") {
-		ur.Description = d.Get("description").(string)
+		dDesc := d.Get("description").(string)
+		ur.Description = &dDesc
 	}
 	if d.HasChange("hostname") {
-		ur.Hostname = d.Get("hostname").(string)
+		dHostname := d.Get("hostname").(string)
+		ur.Hostname = &dHostname
 	}
 	if d.HasChange("tags") {
 		ts := d.Get("tags")
@@ -400,16 +402,18 @@ func resourcePacketDeviceUpdate(d *schema.ResourceData, meta interface{}) error 
 			for _, v := range ts.([]interface{}) {
 				sts = append(sts, v.(string))
 			}
-			ur.Tags = sts
+			ur.Tags = &sts
 		default:
 			return friendlyError(fmt.Errorf("garbage in tags: %s", ts))
 		}
 	}
 	if d.HasChange("ipxe_script_url") {
-		ur.IPXEScriptURL = d.Get("ipxe_script_url").(string)
+		dUrl := d.Get("ipxe_script_url").(string)
+		ur.IPXEScriptURL = &dUrl
 	}
 	if d.HasChange("always_pxe") {
-		ur.AlwaysPXE = d.Get("always_pxe").(bool)
+		dPXE := d.Get("always_pxe").(bool)
+		ur.AlwaysPXE = &dPXE
 	}
 	if !reflect.DeepEqual(ur, packngo.DeviceUpdateRequest{}) {
 		if _, _, err := client.Devices.Update(d.Id(), &ur); err != nil {

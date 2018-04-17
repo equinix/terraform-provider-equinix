@@ -92,14 +92,16 @@ func resourcePacketProjectRead(d *schema.ResourceData, meta interface{}) error {
 
 func resourcePacketProjectUpdate(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*packngo.Client)
-	updateRequest := &packngo.ProjectUpdateRequest{ID: d.Id()}
+	updateRequest := &packngo.ProjectUpdateRequest{}
 	if d.HasChange("name") {
-		updateRequest.Name = d.Get("name").(string)
+		pName := d.Get("name").(string)
+		updateRequest.Name = &pName
 	}
 	if d.HasChange("payment_method_id") {
-		updateRequest.PaymentMethodID = d.Get("payment_method_id").(string)
+		pPayment := d.Get("payment_method_id").(string)
+		updateRequest.PaymentMethodID = &pPayment
 	}
-	_, _, err := client.Projects.Update(updateRequest)
+	_, _, err := client.Projects.Update(d.Id(), updateRequest)
 	if err != nil {
 		return friendlyError(err)
 	}

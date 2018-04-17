@@ -90,19 +90,19 @@ func resourcePacketSSHKeyRead(d *schema.ResourceData, meta interface{}) error {
 func resourcePacketSSHKeyUpdate(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*packngo.Client)
 
-	updateRequest := &packngo.SSHKeyUpdateRequest{
-		ID: d.Id(),
-	}
+	updateRequest := &packngo.SSHKeyUpdateRequest{}
 
 	if d.HasChange("name") {
-		updateRequest.Label = d.Get("name").(string)
+		kName := d.Get("name").(string)
+		updateRequest.Label = &kName
 	}
 
 	if d.HasChange("public_key") {
-		updateRequest.Key = d.Get("public_key").(string)
+		kKey := d.Get("public_key").(string)
+		updateRequest.Key = &kKey
 	}
 
-	_, _, err := client.SSHKeys.Update(updateRequest)
+	_, _, err := client.SSHKeys.Update(d.Id(), updateRequest)
 	if err != nil {
 		return friendlyError(err)
 	}
