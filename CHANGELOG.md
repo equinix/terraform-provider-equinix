@@ -1,4 +1,7 @@
 ## 1.2.3 (Unreleased)
+
+- [#61](https://github.com/terraform-providers/terraform-provider-packet/issues/61), fix volume resource update
+
 ## 1.2.2 (April 17, 2018)
 
 IMPROVEMENTS:
