@@ -51,6 +51,7 @@ The following arguments are supported:
 * `billing_cycle` - The billing cycle, defaults to "hourly"
 * `description` - Optional description for the volume
 * `snapshot_policies` - Optional list of snapshot policies
+* `locked` - Lock or unlock the volume
 
 ## Attributes Reference
 

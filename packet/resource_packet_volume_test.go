@@ -36,6 +36,73 @@ func TestAccPacketVolume_Basic(t *testing.T) {
 	})
 }
 
+func TestAccPacketVolume_Update(t *testing.T) {
+	var volume, v1, v2, v3, v4 packngo.Volume
+
+	rs := acctest.RandString(10)
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckPacketVolumeDestroy,
+		Steps: []resource.TestStep{
+			resource.TestStep{
+				Config: testAccCheckPacketVolumeConfig_var(rs, 10, "descstr", "storage_1", true),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckPacketVolumeExists("packet_volume.foobar", &volume),
+					resource.TestCheckResourceAttr(
+						"packet_volume.foobar", "locked", "true"),
+				),
+			},
+			resource.TestStep{
+				Config: testAccCheckPacketVolumeConfig_var(rs, 10, "descstr", "storage_1", false),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckPacketVolumeExists("packet_volume.foobar", &v1),
+					resource.TestCheckResourceAttr(
+						"packet_volume.foobar", "locked", "false"),
+					testAccCheckPacketSameVolume(t, &volume, &v1),
+				),
+			},
+			resource.TestStep{
+				Config: testAccCheckPacketVolumeConfig_var(rs, 10, "descstr2", "storage_2", false),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckPacketVolumeExists("packet_volume.foobar", &v2),
+					resource.TestCheckResourceAttr(
+						"packet_volume.foobar", "description", "descstr2"),
+					testAccCheckPacketSameVolume(t, &volume, &v2),
+				),
+			},
+			resource.TestStep{
+				Config: testAccCheckPacketVolumeConfig_var(rs, 20, "descstr2", "storage_2", false),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckPacketVolumeExists("packet_volume.foobar", &v3),
+					resource.TestCheckResourceAttr(
+						"packet_volume.foobar", "size", "20"),
+					testAccCheckPacketSameVolume(t, &volume, &v3),
+				),
+			},
+			resource.TestStep{
+				Config: testAccCheckPacketVolumeConfig_var(rs, 22, "descstr2", "storage_2", true),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckPacketVolumeExists("packet_volume.foobar", &v4),
+					resource.TestCheckResourceAttr(
+						"packet_volume.foobar", "locked", "true"),
+					testAccCheckPacketSameVolume(t, &volume, &v4),
+				),
+			},
+			resource.TestStep{
+				Config: testAccCheckPacketVolumeConfig_var(rs, 25, "descstr2", "storage_2", false),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckPacketVolumeExists("packet_volume.foobar", &v4),
+					resource.TestCheckResourceAttr(
+						"packet_volume.foobar", "locked", "false"),
+					testAccCheckPacketSameVolume(t, &volume, &v4),
+				),
+			},
+		},
+	})
+}
+
 func testAccCheckPacketVolumeDestroy(s *terraform.State) error {
 	client := testAccProvider.Meta().(*packngo.Client)
 
@@ -49,6 +116,15 @@ func testAccCheckPacketVolumeDestroy(s *terraform.State) error {
 	}
 
 	return nil
+}
+
+func testAccCheckPacketSameVolume(t *testing.T, before, after *packngo.Volume) resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		if before.ID != after.ID {
+			t.Fatalf("Expected volume to be the same, but it was recreated: %s -> %s", before.ID, after.ID)
+		}
+		return nil
+	}
 }
 
 func testAccCheckPacketVolumeExists(n string, volume *packngo.Volume) resource.TestCheckFunc {
@@ -90,3 +166,21 @@ resource "packet_volume" "foobar" {
     facility = "ewr1"
     snapshot_policies = { snapshot_frequency = "1day", snapshot_count = 7 }
 }`
+
+func testAccCheckPacketVolumeConfig_var(projSuffix string, size int, desc string, planID string, locked bool) string {
+	return fmt.Sprintf(`
+resource "packet_project" "foobar" {
+    name = "TerraformTestProject-%s"
+}
+
+resource "packet_volume" "foobar" {
+    billing_cycle = "hourly"
+    size = %d
+    description = "%s"
+    project_id = "${packet_project.foobar.id}"
+    facility = "ewr1"
+    plan = "%s"
+    locked = %t
+}
+`, projSuffix, size, desc, planID, locked)
+}
