@@ -122,6 +122,7 @@ func resourcePacketVolumeCreate(d *schema.ResourceData, meta interface{}) error 
 		PlanID:     d.Get("plan").(string),
 		FacilityID: d.Get("facility").(string),
 		Size:       d.Get("size").(int),
+		Locked:     d.Get("locked").(bool),
 	}
 
 	if attr, ok := d.GetOk("billing_cycle"); ok {
@@ -247,20 +248,55 @@ func resourcePacketVolumeRead(d *schema.ResourceData, meta interface{}) error {
 func resourcePacketVolumeUpdate(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*packngo.Client)
 
+	if d.HasChange("locked") {
+		// the change is true => false, i.e. unlock
+		if !d.Get("locked").(bool) {
+			if _, err := client.Volumes.Unlock(d.Id()); err != nil {
+				return friendlyError(err)
+			}
+		}
+	}
+
 	updateRequest := &packngo.VolumeUpdateRequest{}
 
+	sendAttrUpdate := false
+
 	if d.HasChange("description") {
+		sendAttrUpdate = true
 		vDesc := d.Get("description").(string)
 		updateRequest.Description = &vDesc
 	}
 	if d.HasChange("plan") {
+		sendAttrUpdate = true
 		vPlan := d.Get("plan").(string)
-		updateRequest.Plan = &vPlan
+		updateRequest.PlanID = &vPlan
 	}
-	_, _, err := client.Volumes.Update(d.Id(), updateRequest)
-	if err != nil {
-		return friendlyError(err)
+	if d.HasChange("size") {
+		sendAttrUpdate = true
+		vSize := d.Get("size").(int)
+		updateRequest.Size = &vSize
 	}
+	if d.HasChange("billing_cycle") {
+		sendAttrUpdate = true
+		vCycle := d.Get("billing_cycle").(string)
+		updateRequest.BillingCycle = &vCycle
+	}
+
+	if sendAttrUpdate {
+		_, _, err := client.Volumes.Update(d.Id(), updateRequest)
+		if err != nil {
+			return friendlyError(err)
+		}
+	}
+	if d.HasChange("locked") {
+		// the change is false => true, i.e. lock
+		if d.Get("locked").(bool) {
+			if _, err := client.Volumes.Lock(d.Id()); err != nil {
+				return friendlyError(err)
+			}
+		}
+	}
+
 	return resourcePacketVolumeRead(d, meta)
 }
 
