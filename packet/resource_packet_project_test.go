@@ -101,9 +101,41 @@ func testAccCheckPacketProjectExists(n string, project *packngo.Project) resourc
 }
 
 func testAccCheckPacketProjectConfig_basic(r int) string {
-
 	return fmt.Sprintf(`
 resource "packet_project" "foobar" {
     name = "foobar-%d"
 }`, r)
+}
+
+func testAccCheckPacketProjectOrgConfig(r string) string {
+	return fmt.Sprintf(`
+resource "packet_organization" "test" {
+	name = "foobar-%s"
+}
+
+resource "packet_project" "foobar" {
+		name = "foobar-%s"
+		organization_id = "${packet_organization.test.id}"
+}`, r, r)
+}
+
+func TestAccPacketProjectOrg(t *testing.T) {
+	var project packngo.Project
+	rn := acctest.RandStringFromCharSet(12, "abcdef0123456789")
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckPacketProjectDestroy,
+		Steps: []resource.TestStep{
+			resource.TestStep{
+				Config: testAccCheckPacketProjectOrgConfig(rn),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckPacketProjectExists("packet_project.foobar", &project),
+					resource.TestCheckResourceAttr(
+						"packet_project.foobar", "name", fmt.Sprintf("foobar-%s", rn)),
+				),
+			},
+		},
+	})
 }

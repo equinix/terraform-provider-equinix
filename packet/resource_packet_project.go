@@ -34,10 +34,22 @@ func resourcePacketProject() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
+
 			"payment_method_id": &schema.Schema{
 				Type:     schema.TypeString,
 				Optional: true,
 				Computed: true,
+				DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
+					return strings.ToLower(strings.Trim(old, `"`)) == strings.ToLower(strings.Trim(new, `"`))
+				},
+				ValidateFunc: validation.StringMatch(uuidRE, "must be a valid UUID"),
+			},
+
+			"organization_id": &schema.Schema{
+				Type:     schema.TypeString,
+				Optional: true,
+				Computed: true,
+				ForceNew: true,
 				DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
 					return strings.ToLower(strings.Trim(old, `"`)) == strings.ToLower(strings.Trim(new, `"`))
 				},
@@ -51,7 +63,8 @@ func resourcePacketProjectCreate(d *schema.ResourceData, meta interface{}) error
 	client := meta.(*packngo.Client)
 
 	createRequest := &packngo.ProjectCreateRequest{
-		Name: d.Get("name").(string),
+		Name:           d.Get("name").(string),
+		OrganizationID: d.Get("organization_id").(string),
 	}
 
 	project, _, err := client.Projects.Create(createRequest)
@@ -84,6 +97,7 @@ func resourcePacketProjectRead(d *schema.ResourceData, meta interface{}) error {
 	d.Set("id", proj.ID)
 	d.Set("payment_method_id", path.Base(proj.PaymentMethod.URL))
 	d.Set("name", proj.Name)
+	d.Set("organization_id", path.Base(proj.Organization.URL))
 	d.Set("created", proj.Created)
 	d.Set("updated", proj.Updated)
 
