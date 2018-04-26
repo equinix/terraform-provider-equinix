@@ -120,21 +120,33 @@ func resourcePacketOrganizationRead(d *schema.ResourceData, meta interface{}) er
 func resourcePacketOrganizationUpdate(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*packngo.Client)
 
-	name := d.Get("name").(string)
-	description := d.Get("description").(string)
-	website := d.Get("website").(string)
-	twitter := d.Get("twitter").(string)
-	logo := d.Get("logo").(string)
+	updateRequest := &packngo.OrganizationUpdateRequest{}
 
-	updateRequest := &packngo.OrganizationUpdateRequest{
-		Name:        &name,
-		Description: &description,
-		Website:     &website,
-		Twitter:     &twitter,
-		Logo:        &logo,
+	if d.HasChange("name") {
+		oName := d.Get("name").(string)
+		updateRequest.Name = &oName
 	}
 
-	_, _, err := client.Organizations.Update(d.Get("id").(string), updateRequest)
+	if d.HasChange("description") {
+		oDescription := d.Get("description").(string)
+		updateRequest.Description = &oDescription
+	}
+
+	if d.HasChange("website") {
+		oWebsite := d.Get("website").(string)
+		updateRequest.Website = &oWebsite
+	}
+
+	if d.HasChange("twitter") {
+		oTwitter := d.Get("twitter").(string)
+		updateRequest.Twitter = &oTwitter
+	}
+
+	if d.HasChange("logo") {
+		oLogo := d.Get("logo").(string)
+		updateRequest.Logo = &oLogo
+	}
+	_, _, err := client.Organizations.Update(d.Id(), updateRequest)
 	if err != nil {
 		return friendlyError(err)
 	}
