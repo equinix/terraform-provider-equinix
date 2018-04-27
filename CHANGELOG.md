@@ -1,4 +1,4 @@
-## 1.2.3 (Unreleased)
+## 1.2.3 (April 27, 2018)
 
 - [#61](https://github.com/terraform-providers/terraform-provider-packet/issues/61), fix volume resource update
 - [#63](https://https://github.com/terraform-providers/terraform-provider-packet/pull/63), add Organization resource, add org attirbute to project resource
