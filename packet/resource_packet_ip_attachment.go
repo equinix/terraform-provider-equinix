@@ -2,6 +2,7 @@ package packet
 
 import (
 	"fmt"
+	"log"
 	"path"
 
 	"github.com/hashicorp/terraform/helper/schema"
@@ -53,7 +54,15 @@ func resourcePacketIPAttachmentRead(d *schema.ResourceData, meta interface{}) er
 	client := meta.(*packngo.Client)
 	assignment, _, err := client.DeviceIPs.Get(d.Id())
 	if err != nil {
-		return fmt.Errorf("can't read assignment %v: %s", d, err)
+		err = friendlyError(err)
+
+		// If the IP attachment was already destroyed, mark as succesfully gone.
+		if isNotFound(err) {
+			log.Printf("[DEBUG] IP attachment %q not found or has been deleted", d.Id())
+			d.SetId("")
+			return nil
+		}
+		return err
 	}
 
 	d.SetId(assignment.ID)
@@ -77,12 +86,17 @@ func resourcePacketIPAttachmentRead(d *schema.ResourceData, meta interface{}) er
 func resourcePacketIPAttachmentDelete(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*packngo.Client)
 
-	id := d.Id()
-
-	_, err := client.DeviceIPs.Unassign(id)
-
+	_, err := client.DeviceIPs.Unassign(d.Id())
 	if err != nil {
-		return fmt.Errorf("Error removing assingment %v: %s", d, err)
+		err = friendlyError(err)
+
+		// If the IP attachment was already destroyed, mark as succesfully gone.
+		if isNotFound(err) {
+			log.Printf("[DEBUG] The IP attachment %q not found or has been deleted", d.Id())
+			d.SetId("")
+			return nil
+		}
+		return err
 	}
 
 	d.SetId("")
