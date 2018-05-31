@@ -1,8 +1,8 @@
-## 1.2.4 (Unreleased)
+## 1.2.4 (May 31, 2018)
 
 BUG FIXES:
 
-- `r/packet_ip_attachment` - handling IP attachments being deleted outside of Terraform [GH-68]
+- `r/packet_ip_attachment` - handling IP attachments being deleted outside of Terraform ([#68](https://github.com/terraform-providers/terraform-provider-packet/issues/68))
 
 ## 1.2.3 (April 27, 2018)
 
