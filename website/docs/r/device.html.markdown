@@ -45,7 +45,7 @@ resource "packet_device" "pxe1" {
   }
 ```
 
-```
+```hcl
 # Deploy device on next-available reserved hardware and do custom partitioning.
 resource "packet_device" "web1" {
   hostname         = "tftest"
@@ -119,7 +119,7 @@ The following arguments are supported:
 
 * `hostname` - (Required) The device name
 * `project_id` - (Required) The id of the project in which to create the device
-* `operating_system` - (Required) The operating system slug
+* `operating_system` - (Required) The operating system slug, NOTE: To find the slugs, try clicking on the drop down and converting any spaces or "."s to "_" (underscores). If that doesn't work, visit https://www.packet.net/developers/api/operatingsystems/ and use the API.
 * `facility` - (Required) The facility in which to create the device
 * `plan` - (Required) The hardware config slug
 * `billing_cycle` - (Required) monthly or hourly
