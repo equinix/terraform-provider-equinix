@@ -20,6 +20,7 @@ type DeviceService interface {
 	PowerOn(string) (*Response, error)
 	Lock(string) (*Response, error)
 	Unlock(string) (*Response, error)
+	ListEvents(string, *ListOptions) ([]Event, *Response, error)
 }
 
 type devicesRoot struct {
@@ -45,7 +46,7 @@ type Device struct {
 	Plan                *Plan                  `json:"plan,omitempty"`
 	Facility            *Facility              `json:"facility,omitempty"`
 	Project             *Project               `json:"project,omitempty"`
-	ProvisionEvents     []*ProvisionEvent      `json:"provisioning_events,omitempty"`
+	ProvisionEvents     []*Event               `json:"provisioning_events,omitempty"`
 	ProvisionPer        float32                `json:"provisioning_percentage,omitempty"`
 	UserData            string                 `json:"userdata,omitempty"`
 	RootPassword        string                 `json:"root_password,omitempty"`
@@ -56,17 +57,7 @@ type Device struct {
 	SpotPriceMax        float64                `json:"spot_price_max,omitempty"`
 	TerminationTime     *Timestamp             `json:"termination_time,omitempty"`
 	NetworkPorts        []Port                 `json:"network_ports,omitempty"`
-}
-
-type ProvisionEvent struct {
-	ID            string     `json:"id"`
-	Body          string     `json:"body"`
-	CreatedAt     *Timestamp `json:"created_at,omitempty"`
-	Href          string     `json:"href"`
-	Interpolated  string     `json:"interpolated"`
-	Relationships []Href     `json:"relationships"`
-	State         string     `json:"state"`
-	Type          string     `json:"type"`
+	CustomData          map[string]interface{} `json:"customdata,omitempty"`
 }
 
 func (d Device) String() string {
@@ -91,6 +82,7 @@ type DeviceCreateRequest struct {
 	SpotInstance          bool       `json:"spot_instance,omitempty"`
 	SpotPriceMax          float64    `json:"spot_price_max,omitempty,string"`
 	TerminationTime       *Timestamp `json:"termination_time,omitempty"`
+	CustomData            string     `json:"customdata,omitempty"`
 }
 
 // DeviceUpdateRequest type used to update a Packet device
@@ -102,6 +94,7 @@ type DeviceUpdateRequest struct {
 	Tags          *[]string `json:"tags,omitempty"`
 	AlwaysPXE     *bool     `json:"always_pxe,omitempty"`
 	IPXEScriptURL *string   `json:"ipxe_script_url,omitempty"`
+	CustomData    *string   `json:"customdata,omitempty"`
 }
 
 func (d DeviceCreateRequest) String() string {
@@ -251,4 +244,11 @@ func (s *DeviceServiceOp) Unlock(deviceID string) (*Response, error) {
 	action := lockType{Locked: false}
 
 	return s.client.DoRequest("PATCH", path, action, nil)
+}
+
+// ListEvents returns list of device events
+func (s *DeviceServiceOp) ListEvents(deviceID string, listOpt *ListOptions) ([]Event, *Response, error) {
+	path := fmt.Sprintf("%s/%s%s", deviceBasePath, deviceID, eventBasePath)
+
+	return list(s.client, path, listOpt)
 }

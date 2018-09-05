@@ -18,6 +18,7 @@ func Provider() terraform.ResourceProvider {
 		},
 		DataSourcesMap: map[string]*schema.Resource{
 			"packet_precreated_ip_block": dataSourcePacketPreCreatedIPBlock(),
+			"packet_operating_system":    dataSourceOperatingSystem(),
 		},
 
 		ResourcesMap: map[string]*schema.Resource{

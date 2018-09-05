@@ -17,11 +17,12 @@ import (
 )
 
 const (
-	libraryVersion = "0.1.0"
-	baseURL        = "https://api.packet.net/"
-	userAgent      = "packngo/" + libraryVersion
-	mediaType      = "application/json"
-	debugEnvVar    = "PACKNGO_DEBUG"
+	packetTokenEnvVar = "PACKET_AUTH_TOKEN"
+	libraryVersion    = "0.1.0"
+	baseURL           = "https://api.packet.net/"
+	userAgent         = "packngo/" + libraryVersion
+	mediaType         = "application/json"
+	debugEnvVar       = "PACKNGO_DEBUG"
 
 	headerRateLimit     = "X-RateLimit-Limit"
 	headerRateRemaining = "X-RateLimit-Remaining"
@@ -42,7 +43,7 @@ type ListOptions struct {
 
 func (l *ListOptions) createURL() (url string) {
 	if l.Includes != "" {
-		url += fmt.Sprintf("includes=%s", l.Includes)
+		url += fmt.Sprintf("include=%s", l.Includes)
 	}
 
 	if l.Page != 0 {
@@ -141,7 +142,13 @@ type Client struct {
 	Volumes                VolumeService
 	VolumeAttachments      VolumeAttachmentService
 	SpotMarket             SpotMarketService
+	SpotMarketRequests     SpotMarketRequestService
 	Organizations          OrganizationService
+	TwoFactorAuth          TwoFactorAuthService
+	VPN                    VPNService
+	HardwareReservations   HardwareReservationService
+	Events                 EventService
+	Notifications          NotificationService
 }
 
 // NewRequest inits a new http request with the proper headers
@@ -231,11 +238,39 @@ func (c *Client) DoRequest(method, path string, body, v interface{}) (*Response,
 	return c.Do(req, v)
 }
 
-// NewClient initializes and returns a Client, use this to get an API Client to operate on
+// DoRequestWithHeader same as DoRequest
+func (c *Client) DoRequestWithHeader(method string, headers map[string]string, path string, body, v interface{}) (*Response, error) {
+	req, err := c.NewRequest(method, path, body)
+	for k, v := range headers {
+		req.Header.Add(k, v)
+	}
+
+	if c.debug {
+		o, _ := httputil.DumpRequestOut(req, true)
+		log.Printf("\n=======[REQUEST]=============\n%s\n", string(o))
+	}
+	if err != nil {
+		return nil, err
+	}
+	return c.Do(req, v)
+}
+
+// NewClient initializes and returns a Client
+func NewClient() (*Client, error) {
+	apiToken := os.Getenv(packetTokenEnvVar)
+	if apiToken == "" {
+		return nil, fmt.Errorf("you must export %s", packetTokenEnvVar)
+	}
+	c := NewClientWithAuth("packngo lib", apiToken, nil)
+	return c, nil
+
+}
+
+// NewClientWithAuth initializes and returns a Client, use this to get an API Client to operate on
 // N.B.: Packet's API certificate requires Go 1.5+ to successfully parse. If you are using
 // an older version of Go, pass in a custom http.Client with a custom TLS configuration
 // that sets "InsecureSkipVerify" to "true"
-func NewClient(consumerToken string, apiKey string, httpClient *http.Client) *Client {
+func NewClientWithAuth(consumerToken string, apiKey string, httpClient *http.Client) *Client {
 	client, _ := NewClientWithBaseURL(consumerToken, apiKey, httpClient, baseURL)
 	return client
 }
@@ -273,6 +308,12 @@ func NewClientWithBaseURL(consumerToken string, apiKey string, httpClient *http.
 	c.Volumes = &VolumeServiceOp{client: c}
 	c.VolumeAttachments = &VolumeAttachmentServiceOp{client: c}
 	c.SpotMarket = &SpotMarketServiceOp{client: c}
+	c.TwoFactorAuth = &TwoFactorAuthServiceOp{client: c}
+	c.VPN = &VPNServiceOp{client: c}
+	c.HardwareReservations = &HardwareReservationServiceOp{client: c}
+	c.SpotMarketRequests = &SpotMarketRequestServiceOp{client: c}
+	c.Events = &EventServiceOp{client: c}
+	c.Notifications = &NotificationServiceOp{client: c}
 
 	return c, nil
 }
