@@ -1,9 +1,9 @@
 ---
 layout: "packet"
-page_title: "Packet: opearating_system"
+page_title: "Packet: operating_system"
 sidebar_current: "docs-packet-datasource-operating-system"
 description: |-
-  Get an operationg on a Packet Operating System image
+  Get a Packet operating system image
 ---
 
 # packet\_operating\_system
@@ -20,6 +20,15 @@ data "packet_operating_system" "example" {
   provisionable_on = "baremetal_1"
 }
 
+resource "packet_device" "server" {
+  hostname         = "tf.coreos2"
+  plan             = "baremetal_1"
+  facility         = "ewr1"
+  operating_system = "${data.packet_operating_system.example.id}"
+  billing_cycle    = "hourly"
+  project_id       = "${packet_project.cool_project.id}"
+}
+
 ```
 
 ## Argument Reference
@@ -31,5 +40,5 @@ data "packet_operating_system" "example" {
 
 ## Attributes Reference
 
- * `operating_system` - Opearting system of a device.
+ * `operating_system` - Operating system of a device.
 
