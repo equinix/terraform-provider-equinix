@@ -2,7 +2,7 @@
 
 FEATURES:
 
-* **New Data Source:** `packet_operating_system` ([#70](https://github.com/terraform-providers/terraform-provider-profitbricks/pull/70))
+* **New Data Source:** `packet_operating_system` ([#70](https://github.com/terraform-providers/terraform-provider-packet/pull/70))
   
 
 ## 1.2.4 (May 31, 2018)
