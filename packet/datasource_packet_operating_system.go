@@ -29,6 +29,10 @@ func dataSourceOperatingSystem() *schema.Resource {
 				Type:     schema.TypeString,
 				Optional: true,
 			},
+			"slug": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
 		},
 	}
 }
@@ -119,6 +123,7 @@ func dataSourcePacketOperatingSystemRead(d *schema.ResourceData, meta interface{
 		d.Set("name", v.Name)
 		d.Set("distro", v.Distro)
 		d.Set("version", v.Version)
+		d.Set("slug", v.Slug)
 		d.SetId(v.Slug)
 	}
 	return nil
