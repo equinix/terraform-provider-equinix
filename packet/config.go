@@ -14,9 +14,9 @@ type Config struct {
 	AuthToken string
 }
 
-// Client() returns a new client for accessing Packet's API.
+// Client returns a new client for accessing Packet's API.
 func (c *Config) Client() *packngo.Client {
 	client := cleanhttp.DefaultClient()
 	client.Transport = logging.NewTransport("Packet", client.Transport)
-	return packngo.NewClient(consumerToken, c.AuthToken, client)
+	return packngo.NewClientWithAuth(consumerToken, c.AuthToken, client)
 }
