@@ -3,12 +3,12 @@ layout: "packet"
 page_title: "Packet: spot_market_price"
 sidebar_current: "docs-packet-datasource-spot-market-price"
 description: |-
-  Get a Packet Spot Market Prices
+  Get a Packet Spot Market Price
 ---
 
 # packet\_operating\_system
 
-Use this data source to get Packet Spot Market Prices.
+Use this data source to get Packet Spot Market Price.
 
 ## Example Usage
 
@@ -24,3 +24,6 @@ data "packet_spot_market_price" "example" {
  * `facility` - (Required) Name of the facility.
  * `plan` - (Required) Name of the plan.
 
+## Attributes Reference
+
+ * `price` - Current spot market price for given plan in given facility.
