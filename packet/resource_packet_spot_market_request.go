@@ -189,12 +189,12 @@ func resourcePacketSpotMarketRequestCreate(d *schema.ResourceData, meta interfac
 func resourcePacketSpotMarketRequestRead(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*packngo.Client)
 
-	smr, _, err := client.SpotMarketRequests.Get(d.Id(), &packngo.ListOptions{Includes: "devices,facilities"})
+	smr, _, err := client.SpotMarketRequests.Get(d.Id(), &packngo.ListOptions{Includes: "project,devices,facilities"})
 	if err != nil {
 		return err
 	}
 
-	deviceIDs := []string{}
+	deviceIDs := make([]string, len(smr.Devices))
 	for i, d := range smr.Devices {
 		deviceIDs[i] = d.ID
 	}

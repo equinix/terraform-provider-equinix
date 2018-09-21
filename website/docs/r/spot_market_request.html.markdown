@@ -17,7 +17,7 @@ manage spot market requests on your account.
 # Create a spot market request
 resource "packet_spot_market_request" "req" {
   project_id      = "${packet_project.cool_project.id}"
-  "max_bid_price" = 100.00
+  "max_bid_price" = 0.03
   "facilities"    = ["ewr1"]
   "devices_min"   = 1
   "devices_max"   = 1
@@ -26,7 +26,7 @@ resource "packet_spot_market_request" "req" {
     "hostname"         = "testspot"
     "billing_cycle"    = "hourly"
     "operating_system" = "coreos_stable"
-    "plan"             = "baremetal_1"
+    "plan"             = "baremetal_0"
   }
 }
 ```
