@@ -72,12 +72,12 @@ func testAccCheckPacketSpotMarketRequestExists(n string, key *packngo.SpotMarket
 }
 
 var testAccCheckPacketSpotMarketRequestConfig_basic = `
-	//   resource "packet_project" "test" {
-	// 	name = "TerraformTestProject-%s"
-	//   }
+	  resource "packet_project" "test" {
+		name = "TerraformTestProject-SMR"
+	  }
 	  
 	  resource "packet_spot_market_request" "request" {
-		project_id      = "93125c2a-8b78-4d4f-a3c4-7367d6b7cca8"
+		project_id      = "${packet_project.test.id}"
 		"max_bid_price" = 100.00
 		"facilities"    = ["ewr1"]
 		"devices_min"   = 1
