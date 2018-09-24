@@ -225,6 +225,7 @@ func resourcePacketVolumeRead(d *schema.ResourceData, meta interface{}) error {
 	d.Set("locked", volume.Locked)
 	d.Set("created", volume.Created)
 	d.Set("updated", volume.Updated)
+	d.Set("project_id", volume.Project.ID)
 
 	snapshot_policies := make([]map[string]interface{}, 0, len(volume.SnapshotPolicies))
 	for _, snapshot_policy := range volume.SnapshotPolicies {
