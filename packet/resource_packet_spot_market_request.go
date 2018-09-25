@@ -1,6 +1,8 @@
 package packet
 
 import (
+	"time"
+
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/packethost/packngo"
 )
@@ -99,11 +101,6 @@ func resourcePacketSpotMarketRequest() *schema.Resource {
 				Required: true,
 				ForceNew: true,
 			},
-			"devices": &schema.Schema{
-				Type:     schema.TypeList,
-				Computed: true,
-				Elem:     &schema.Schema{Type: schema.TypeString},
-			},
 		},
 	}
 }
@@ -181,6 +178,10 @@ func resourcePacketSpotMarketRequestCreate(d *schema.ResourceData, meta interfac
 		return err
 	}
 
+	// Wait so it can start provisioning.
+	time.Sleep(3 * time.Second)
+	smr, _, err = client.SpotMarketRequests.Get(smr.ID, &packngo.ListOptions{Includes: "devices,facilities"})
+
 	d.SetId(smr.ID)
 
 	return resourcePacketSpotMarketRequestRead(d, meta)
@@ -205,7 +206,6 @@ func resourcePacketSpotMarketRequestRead(d *schema.ResourceData, meta interface{
 			facilityIDs[i] = f.ID
 		}
 	}
-	d.Set("devices", smr.Devices)
 	d.Set("project_id", smr.Project.ID)
 
 	return nil
