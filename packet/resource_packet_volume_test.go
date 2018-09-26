@@ -127,6 +127,24 @@ func testAccCheckPacketSameVolume(t *testing.T, before, after *packngo.Volume) r
 	}
 }
 
+func TestAccPacketVolume_importBasic(t *testing.T) {
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckPacketVolumeDestroy,
+		Steps: []resource.TestStep{
+			resource.TestStep{
+				Config: testAccCheckPacketVolumeConfig_basic,
+			},
+			resource.TestStep{
+				ResourceName:      "packet_volume.foobar",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+		},
+	})
+}
+
 func testAccCheckPacketVolumeExists(n string, volume *packngo.Volume) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]

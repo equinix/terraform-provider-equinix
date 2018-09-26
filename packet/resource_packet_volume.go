@@ -202,7 +202,7 @@ func newVolumeStateRefreshFunc(d *schema.ResourceData, attribute string, meta in
 func resourcePacketVolumeRead(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*packngo.Client)
 
-	volume, _, err := client.Volumes.Get(d.Id())
+	volume, _, err := client.Volumes.GetExtra(d.Id(), []string{"project", "snapshot_policies", "facility"}, nil)
 	if err != nil {
 		err = friendlyError(err)
 

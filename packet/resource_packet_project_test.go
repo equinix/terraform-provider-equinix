@@ -139,3 +139,23 @@ func TestAccPacketProjectOrg(t *testing.T) {
 		},
 	})
 }
+
+func TestAccPacketProject_importBasic(t *testing.T) {
+	rInt := acctest.RandInt()
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckPacketProjectDestroy,
+		Steps: []resource.TestStep{
+			resource.TestStep{
+				Config: testAccCheckPacketProjectConfig_basic(rInt),
+			},
+			resource.TestStep{
+				ResourceName:      "packet_project.foobar",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+		},
+	})
+}

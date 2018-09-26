@@ -295,6 +295,24 @@ func testAccCheckPacketDeviceNetwork(n string) resource.TestCheckFunc {
 	}
 }
 
+func TestAccPacketDevice_importBasic(t *testing.T) {
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckPacketDeviceDestroy,
+		Steps: []resource.TestStep{
+			resource.TestStep{
+				Config: testAccCheckPacketDeviceConfig_basic,
+			},
+			resource.TestStep{
+				ResourceName:      "packet_device.test",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+		},
+	})
+}
+
 func testAccCheckPacketDeviceConfig_no_description(rInt int, projSuffix string) string {
 	return fmt.Sprintf(`
 resource "packet_project" "test" {
