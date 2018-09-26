@@ -1,6 +1,8 @@
 package packet
 
 import (
+	"time"
+
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/hashicorp/terraform/terraform"
 )
@@ -42,4 +44,11 @@ func providerConfigure(d *schema.ResourceData) (interface{}, error) {
 		AuthToken: d.Get("auth_token").(string),
 	}
 	return config.Client(), nil
+}
+
+var resourceDefaultTimeouts = &schema.ResourceTimeout{
+	Create:  schema.DefaultTimeout(60 * time.Minute),
+	Update:  schema.DefaultTimeout(60 * time.Minute),
+	Delete:  schema.DefaultTimeout(60 * time.Minute),
+	Default: schema.DefaultTimeout(60 * time.Minute),
 }

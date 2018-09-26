@@ -23,7 +23,7 @@ func TestAccPacketSpotMarketRequest_Basic(t *testing.T) {
 					testAccCheckPacketSpotMarketRequestExists("packet_spot_market_request.request", &key),
 					resource.TestCheckResourceAttr("packet_spot_market_request.request", "devices_max", "1"),
 					resource.TestCheckResourceAttr("packet_spot_market_request.request", "devices_min", "1"),
-					resource.TestCheckResourceAttr("packet_spot_market_request.request", "max_bid_price", "100"),
+					resource.TestCheckResourceAttr("packet_spot_market_request.request", "max_bid_price", "0.03"),
 				),
 			},
 		},
@@ -78,10 +78,11 @@ var testAccCheckPacketSpotMarketRequestConfig_basic = `
 	  
 	  resource "packet_spot_market_request" "request" {
 		project_id      = "${packet_project.test.id}"
-		"max_bid_price" = 100.00
+		"max_bid_price" = 0.03
 		"facilities"    = ["ewr1"]
 		"devices_min"   = 1
 		"devices_max"   = 1
+		"wait_for_devices" = true
 	  
 		"instance_parameters" {
 		  "hostname"         = "testspot"

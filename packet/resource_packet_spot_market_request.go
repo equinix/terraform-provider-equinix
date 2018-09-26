@@ -3,6 +3,7 @@ package packet
 import (
 	"time"
 
+	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/packethost/packngo"
 )
@@ -101,12 +102,19 @@ func resourcePacketSpotMarketRequest() *schema.Resource {
 				Required: true,
 				ForceNew: true,
 			},
+			"wait_for_devices": &schema.Schema{
+				Type:     schema.TypeBool,
+				Optional: true,
+				ForceNew: true,
+			},
 		},
+		Timeouts: resourceDefaultTimeouts,
 	}
 }
 
 func resourcePacketSpotMarketRequestCreate(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*packngo.Client)
+	var waitForDevices bool
 
 	facilitiesRaw := d.Get("facilities").([]interface{})
 	facilities := []string{}
@@ -141,6 +149,10 @@ func resourcePacketSpotMarketRequestCreate(d *schema.ResourceData, meta interfac
 				params.Features = append(params.Features, i.(string))
 			}
 		}
+	}
+
+	if val, ok := d.GetOk("wait_for_devices"); ok {
+		waitForDevices = val.(bool)
 	}
 
 	if val, ok := d.GetOk("instance_parameters.0.locked"); ok {
@@ -178,11 +190,24 @@ func resourcePacketSpotMarketRequestCreate(d *schema.ResourceData, meta interfac
 		return err
 	}
 
-	// Wait so it can start provisioning.
-	time.Sleep(3 * time.Second)
-	smr, _, err = client.SpotMarketRequests.Get(smr.ID, &packngo.ListOptions{Includes: "devices,facilities"})
-
 	d.SetId(smr.ID)
+
+	if waitForDevices {
+		stateConf := &resource.StateChangeConf{
+			Pending:        []string{"not_done"},
+			Target:         []string{"done"},
+			Refresh:        resourceStateRefreshFunc(d, meta),
+			Timeout:        d.Timeout(schema.TimeoutCreate),
+			MinTimeout:     5 * time.Second,
+			Delay:          3 * time.Second, // Wait 10 secs before starting
+			NotFoundChecks: 600,             //Setting high number, to support long timeouts
+		}
+
+		_, err = stateConf.WaitForState()
+		if err != nil {
+			return err
+		}
+	}
 
 	return resourcePacketSpotMarketRequestRead(d, meta)
 }
@@ -213,11 +238,69 @@ func resourcePacketSpotMarketRequestRead(d *schema.ResourceData, meta interface{
 
 func resourcePacketSpotMarketRequestDelete(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*packngo.Client)
-	id := d.Id()
+	var waitForDevices bool
 
-	_, err := client.SpotMarketRequests.Delete(id, true)
+	if val, ok := d.GetOk("wait_for_devices"); ok {
+		waitForDevices = val.(bool)
+	}
+	if waitForDevices {
+		smr, _, err := client.SpotMarketRequests.Get(d.Id(), &packngo.ListOptions{Includes: "devices,facilities"})
+		if err != nil {
+			return nil
+		}
+
+		stateConf := &resource.StateChangeConf{
+			Pending:        []string{"not_done"},
+			Target:         []string{"done"},
+			Refresh:        resourceStateRefreshFunc(d, meta),
+			Timeout:        d.Timeout(schema.TimeoutDelete),
+			MinTimeout:     5 * time.Second,
+			Delay:          3 * time.Second, // Wait 10 secs before starting
+			NotFoundChecks: 600,             //Setting high number, to support long timeouts
+		}
+
+		_, err = stateConf.WaitForState()
+		if err != nil {
+			return err
+		}
+
+		for _, d := range smr.Devices {
+			_, err := client.Devices.Delete(d.ID)
+			if err != nil {
+				return err
+			}
+		}
+	}
+	_, err := client.SpotMarketRequests.Delete(d.Id(), true)
 	if err != nil {
 		return nil
 	}
 	return nil
+}
+
+func resourceStateRefreshFunc(d *schema.ResourceData, meta interface{}) resource.StateRefreshFunc {
+	return func() (interface{}, string, error) {
+		client := meta.(*packngo.Client)
+
+		smr, _, err := client.SpotMarketRequests.Get(d.Id(), &packngo.ListOptions{Includes: "devices,facilities"})
+		if err != nil {
+			return nil, "", err
+
+		}
+		var finished bool
+
+		for _, d := range smr.Devices {
+
+			dev, _, _ := client.Devices.Get(d.ID)
+			if dev.State != "active" {
+				break
+			} else {
+				finished = true
+			}
+		}
+		if finished {
+			return smr, "done", nil
+		}
+		return nil, "not_done", nil
+	}
 }
