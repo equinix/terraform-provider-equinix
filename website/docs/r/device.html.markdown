@@ -126,15 +126,15 @@ The following arguments are supported:
 * `user_data` (Optional) - A string of the desired User Data for the device.
 * `public_ipv4_subnet_size` (Optional) - Size of allocated subnet, more
   information is in the
-  [Custom Subnet Size](https://help.packet.net/technical/networking/custom-subnet-size) doc.
+  [Custom Subnet Size](https://help.packet.net/article/55-custom-subnet-size) doc.
 * `ipxe_script_url` (Optional) - URL pointing to a hosted iPXE script. More
   information is in the
-  [Custom iPXE](https://help.packet.net/technical/infrastructure/custom-ipxe)
+  [Custom iPXE](https://help.packet.net/article/26-custom-ipxe)
   doc.
 * `always_pxe` (Optional) - If true, a device with OS `custom_ipxe` will
   continue to boot via iPXE on reboots.
 * `hardware_reservation_id` (Optional) - The id of hardware reservation where you want this device deployed, or `next-available` if you want to pick your next available reservation automatically.
-* `storage` (Optional) - JSON for custom partitioning. Only usable on reserved hardware. More information in in the [Custom Partitioning and RAID](https://help.packet.net/technical/storage/custom-partitioning-raid) doc.
+* `storage` (Optional) - JSON for custom partitioning. Only usable on reserved hardware. More information in in the [Custom Partitioning and RAID](https://help.packet.net/article/61-custom-partitioning-raid) doc.
 * `tags` - Tags attached to the device
 * `description` - Description string for the device
 
