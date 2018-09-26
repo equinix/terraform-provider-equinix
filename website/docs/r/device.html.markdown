@@ -119,22 +119,22 @@ The following arguments are supported:
 
 * `hostname` - (Required) The device name
 * `project_id` - (Required) The id of the project in which to create the device
-* `operating_system` - (Required) The operating system slug. To find the slug, or visit [Operating Systems API docs](https://www.packet.net/developers/api/operatingsystems/), set your API auth token in the top of the page and see JSON from the API response.
-* `facility` - (Required) The facility in which to create the device. To find the facility code, visit [Facilities API docs](https://www.packet.net/developers/api/facilities/), set your API auth token in the top of the page and see JSON from the API response.
-* `plan` - (Required) The device plan slug. To find the plan slug, visit [Device plans API docs](https://www.packet.net/developers/api/plans/), set your auth token in the top of the page and see JSON from the API response.
+* `operating_system` - (Required) The operating system slug. To find the slug, or visit [Operating Systems API docs](https://www.packet.net/developers/api/#operatingsystems), set your API auth token in the top of the page and see JSON from the API response.
+* `facility` - (Required) The facility in which to create the device. To find the facility code, visit [Facilities API docs](https://www.packet.net/developers/api/#facilities), set your API auth token in the top of the page and see JSON from the API response.
+* `plan` - (Required) The device plan slug. To find the plan slug, visit [Device plans API docs](https://www.packet.net/developers/api/#plans), set your auth token in the top of the page and see JSON from the API response.
 * `billing_cycle` - (Required) monthly or hourly
 * `user_data` (Optional) - A string of the desired User Data for the device.
 * `public_ipv4_subnet_size` (Optional) - Size of allocated subnet, more
   information is in the
-  [Custom Subnet Size](https://help.packet.net/technical/networking/custom-subnet-size) doc.
+  [Custom Subnet Size](https://help.packet.net/article/55-custom-subnet-size) doc.
 * `ipxe_script_url` (Optional) - URL pointing to a hosted iPXE script. More
   information is in the
-  [Custom iPXE](https://help.packet.net/technical/infrastructure/custom-ipxe)
+  [Custom iPXE](https://help.packet.net/article/26-custom-ipxe)
   doc.
 * `always_pxe` (Optional) - If true, a device with OS `custom_ipxe` will
   continue to boot via iPXE on reboots.
 * `hardware_reservation_id` (Optional) - The id of hardware reservation where you want this device deployed, or `next-available` if you want to pick your next available reservation automatically.
-* `storage` (Optional) - JSON for custom partitioning. Only usable on reserved hardware. More information in in the [Custom Partitioning and RAID](https://help.packet.net/technical/storage/custom-partitioning-raid) doc.
+* `storage` (Optional) - JSON for custom partitioning. Only usable on reserved hardware. More information in in the [Custom Partitioning and RAID](https://help.packet.net/article/61-custom-partitioning-raid) doc.
 * `tags` - Tags attached to the device
 * `description` - Description string for the device
 
