@@ -119,9 +119,9 @@ The following arguments are supported:
 
 * `hostname` - (Required) The device name
 * `project_id` - (Required) The id of the project in which to create the device
-* `operating_system` - (Required) The operating system slug. To find the slug, or visit [Operating Systems API docs](https://www.packet.net/developers/api/operatingsystems/), set your API auth token in the top of the page and see JSON from the API response.
-* `facility` - (Required) The facility in which to create the device. To find the facility code, visit [Facilities API docs](https://www.packet.net/developers/api/facilities/), set your API auth token in the top of the page and see JSON from the API response.
-* `plan` - (Required) The device plan slug. To find the plan slug, visit [Device plans API docs](https://www.packet.net/developers/api/plans/), set your auth token in the top of the page and see JSON from the API response.
+* `operating_system` - (Required) The operating system slug. To find the slug, or visit [Operating Systems API docs](https://www.packet.net/developers/api/#operatingsystems), set your API auth token in the top of the page and see JSON from the API response.
+* `facility` - (Required) The facility in which to create the device. To find the facility code, visit [Facilities API docs](https://www.packet.net/developers/api/#facilities), set your API auth token in the top of the page and see JSON from the API response.
+* `plan` - (Required) The device plan slug. To find the plan slug, visit [Device plans API docs](https://www.packet.net/developers/api/#plans), set your auth token in the top of the page and see JSON from the API response.
 * `billing_cycle` - (Required) monthly or hourly
 * `user_data` (Optional) - A string of the desired User Data for the device.
 * `public_ipv4_subnet_size` (Optional) - Size of allocated subnet, more
