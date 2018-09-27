@@ -40,5 +40,5 @@ The following arguments are supported:
 * `facilities` - (Required) Facility IDs where devices should be created
 * `instance_parameters` - (Required) Device parameters. See device resource for details
 * `project_id` - (Required) Project ID
-* `wait_for_devices` - (Optional) Wait 10 minutes for spot market requests to be fulfilled and the devices active.
+* `wait_for_devices` - (Optional) Wait 10 minutes for spot market requests to be fulfilled and the devices to become active
    
