@@ -18,7 +18,9 @@ func resourcePacketProject() *schema.Resource {
 		Read:   resourcePacketProjectRead,
 		Update: resourcePacketProjectUpdate,
 		Delete: resourcePacketProjectDelete,
-
+		Importer: &schema.ResourceImporter{
+			State: schema.ImportStatePassthrough,
+		},
 		Schema: map[string]*schema.Schema{
 			"name": &schema.Schema{
 				Type:     schema.TypeString,

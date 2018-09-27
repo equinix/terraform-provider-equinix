@@ -24,7 +24,9 @@ func resourcePacketDevice() *schema.Resource {
 		Read:   resourcePacketDeviceRead,
 		Update: resourcePacketDeviceUpdate,
 		Delete: resourcePacketDeviceDelete,
-
+		Importer: &schema.ResourceImporter{
+			State: schema.ImportStatePassthrough,
+		},
 		Schema: map[string]*schema.Schema{
 			"project_id": &schema.Schema{
 				Type:     schema.TypeString,
@@ -289,7 +291,7 @@ func resourcePacketDeviceCreate(d *schema.ResourceData, meta interface{}) error 
 func resourcePacketDeviceRead(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*packngo.Client)
 
-	device, _, err := client.Devices.Get(d.Id())
+	device, _, err := client.Devices.GetExtra(d.Id(), []string{"project"}, nil)
 	if err != nil {
 		err = friendlyError(err)
 
@@ -302,7 +304,7 @@ func resourcePacketDeviceRead(d *schema.ResourceData, meta interface{}) error {
 		return err
 	}
 
-	d.Set("name", device.Hostname)
+	d.Set("hostname", device.Hostname)
 	d.Set("plan", device.Plan.Slug)
 	d.Set("facility", device.Facility.Code)
 	d.Set("operating_system", device.OS.Slug)
@@ -314,6 +316,7 @@ func resourcePacketDeviceRead(d *schema.ResourceData, meta interface{}) error {
 	d.Set("ipxe_script_url", device.IPXEScriptURL)
 	d.Set("always_pxe", device.AlwaysPXE)
 	d.Set("root_password", device.RootPassword)
+	d.Set("project_id", device.Project.ID)
 	storageString, err := structure.FlattenJsonToString(device.Storage)
 	if err != nil {
 		return fmt.Errorf("[ERR] Error getting storage JSON string for device (%s): %s", d.Id(), err)

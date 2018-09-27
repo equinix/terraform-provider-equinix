@@ -21,7 +21,7 @@ func TestAccPacketVolume_Basic(t *testing.T) {
 		CheckDestroy: testAccCheckPacketVolumeDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: fmt.Sprintf(testAccCheckPacketVolumeConfig_basic, rs),
+				Config: testAccCheckPacketVolumeConfig_basic(rs),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckPacketVolumeExists("packet_volume.foobar", &volume),
 					resource.TestCheckResourceAttr(
@@ -127,6 +127,26 @@ func testAccCheckPacketSameVolume(t *testing.T, before, after *packngo.Volume) r
 	}
 }
 
+func TestAccPacketVolume_importBasic(t *testing.T) {
+	rs := acctest.RandString(10)
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckPacketVolumeDestroy,
+		Steps: []resource.TestStep{
+			resource.TestStep{
+				Config: testAccCheckPacketVolumeConfig_var(rs, 10, "descstr", "storage_1", false),
+			},
+			resource.TestStep{
+				ResourceName:      "packet_volume.foobar",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+		},
+	})
+}
+
 func testAccCheckPacketVolumeExists(n string, volume *packngo.Volume) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
@@ -153,8 +173,9 @@ func testAccCheckPacketVolumeExists(n string, volume *packngo.Volume) resource.T
 	}
 }
 
-const testAccCheckPacketVolumeConfig_basic = `
-resource "packet_project" "foobar" {
+func testAccCheckPacketVolumeConfig_basic(projectSuffix string) string {
+	return fmt.Sprintf(
+		`resource "packet_project" "foobar" {
     name = "%s"
 }
 
@@ -165,7 +186,8 @@ resource "packet_volume" "foobar" {
     project_id = "${packet_project.foobar.id}"
     facility = "ewr1"
     snapshot_policies = { snapshot_frequency = "1day", snapshot_count = 7 }
-}`
+}`, projectSuffix)
+}
 
 func testAccCheckPacketVolumeConfig_var(projSuffix string, size int, desc string, planID string, locked bool) string {
 	return fmt.Sprintf(`

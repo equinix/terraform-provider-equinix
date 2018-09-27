@@ -27,7 +27,7 @@ func TestAccPacketDevice_Basic(t *testing.T) {
 		CheckDestroy: testAccCheckPacketDeviceDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: fmt.Sprintf(testAccCheckPacketDeviceConfig_basic, rs),
+				Config: testAccCheckPacketDeviceConfig_basic(rs),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckPacketDeviceExists(r, &device),
 					testAccCheckPacketDeviceNetwork(r),
@@ -295,6 +295,26 @@ func testAccCheckPacketDeviceNetwork(n string) resource.TestCheckFunc {
 	}
 }
 
+func TestAccPacketDevice_importBasic(t *testing.T) {
+	rs := acctest.RandString(10)
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckPacketDeviceDestroy,
+		Steps: []resource.TestStep{
+			resource.TestStep{
+				Config: testAccCheckPacketDeviceConfig_basic(rs),
+			},
+			resource.TestStep{
+				ResourceName:      "packet_device.test",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+		},
+	})
+}
+
 func testAccCheckPacketDeviceConfig_no_description(rInt int, projSuffix string) string {
 	return fmt.Sprintf(`
 resource "packet_project" "test" {
@@ -353,7 +373,8 @@ resource "packet_device" "test" {
 `, projSuffix, rInt, rInt, rInt)
 }
 
-var testAccCheckPacketDeviceConfig_basic = `
+func testAccCheckPacketDeviceConfig_basic(projSuffix string) string {
+	return fmt.Sprintf(`
 resource "packet_project" "test" {
     name = "TerraformTestProject-%s"
 }
@@ -365,7 +386,8 @@ resource "packet_device" "test" {
   operating_system = "ubuntu_16_04"
   billing_cycle    = "hourly"
   project_id       = "${packet_project.test.id}"
-}`
+}`, projSuffix)
+}
 
 var testAccCheckPacketDeviceConfig_request_subnet = `
 resource "packet_project" "test" {
