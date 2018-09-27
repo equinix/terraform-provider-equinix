@@ -9,7 +9,7 @@ description: |-
 # packet\_volume
 
 Provides a Packet Spot Market Request resource to allow you to
-manage spot market requests on your account.
+manage spot market requests on your account. https://help.packet.net/en-us/article/20-spot-market 
 
 ## Example Usage
 
@@ -40,4 +40,5 @@ The following arguments are supported:
 * `facilities` - (Required) Facility IDs where devices should be created
 * `instance_parameters` - (Required) Device parameters. See device resource for details
 * `project_id` - (Required) Project ID
+* `wait_for_devices` - (Optional) Wait 10 minutes for spot market requests to be fulfilled and the devices active.
    
