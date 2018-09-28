@@ -1,3 +1,4 @@
+## 1.2.6 (Unreleased)
 ## 1.2.5 (September 28, 2018)
 
 FEATURES:
