@@ -1,6 +1,8 @@
 package packet
 
 import (
+	"time"
+
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/hashicorp/terraform/terraform"
 )
@@ -23,14 +25,15 @@ func Provider() terraform.ResourceProvider {
 		},
 
 		ResourcesMap: map[string]*schema.Resource{
-			"packet_device":            resourcePacketDevice(),
-			"packet_ssh_key":           resourcePacketSSHKey(),
-			"packet_project":           resourcePacketProject(),
-			"packet_organization":      resourcePacketOrganization(),
-			"packet_volume":            resourcePacketVolume(),
-			"packet_volume_attachment": resourcePacketVolumeAttachment(),
-			"packet_reserved_ip_block": resourcePacketReservedIPBlock(),
-			"packet_ip_attachment":     resourcePacketIPAttachment(),
+			"packet_device":              resourcePacketDevice(),
+			"packet_ssh_key":             resourcePacketSSHKey(),
+			"packet_project":             resourcePacketProject(),
+			"packet_organization":        resourcePacketOrganization(),
+			"packet_volume":              resourcePacketVolume(),
+			"packet_volume_attachment":   resourcePacketVolumeAttachment(),
+			"packet_reserved_ip_block":   resourcePacketReservedIPBlock(),
+			"packet_ip_attachment":       resourcePacketIPAttachment(),
+			"packet_spot_market_request": resourcePacketSpotMarketRequest(),
 		},
 
 		ConfigureFunc: providerConfigure,
@@ -42,4 +45,11 @@ func providerConfigure(d *schema.ResourceData) (interface{}, error) {
 		AuthToken: d.Get("auth_token").(string),
 	}
 	return config.Client(), nil
+}
+
+var resourceDefaultTimeouts = &schema.ResourceTimeout{
+	Create:  schema.DefaultTimeout(60 * time.Minute),
+	Update:  schema.DefaultTimeout(60 * time.Minute),
+	Delete:  schema.DefaultTimeout(60 * time.Minute),
+	Default: schema.DefaultTimeout(60 * time.Minute),
 }
