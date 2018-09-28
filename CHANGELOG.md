@@ -2,8 +2,19 @@
 
 FEATURES:
 
-* **New Data Source:** `packet_operating_system` ([#70](https://github.com/terraform-providers/terraform-provider-packet/pull/70))
-  
+* [#72](https://github.com/terraform-providers/terraform-provider-packet/pull/72) resource/packet_spot_market_request: New resource for Spot Market Request for devices.
+* [#71](https://github.com/terraform-providers/terraform-provider-packet/pull/71) datasource/packet_spot_market_price: New datasource for lookup of current hourly spot market price of devices based on location and plan
+* [#70](https://github.com/terraform-providers/terraform-provider-packet/pull/70) datasource/packet_operating_system: New datasource for OS lookup
+
+IMPROVEMENTS:
+
+- [#73](https://github.com/terraform-providers/terraform-provider-packet/pull/73) - devices, projects and volumes are now importable (see `terraform import` doc)
+- [#69](https://github.com/terraform-providers/terraform-provider-packet/pull/69) - in Device docs, explain how to get OS slugs
+
+BUG FIXES:
+
+- [#74](https://github.com/terraform-providers/terraform-provider-packet/issues/74) fix of broken links in device and ip_attachment docs
+
 
 ## 1.2.4 (May 31, 2018)
 
