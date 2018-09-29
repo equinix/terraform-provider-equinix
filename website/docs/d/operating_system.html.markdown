@@ -40,5 +40,6 @@ resource "packet_device" "server" {
 
 ## Attributes Reference
 
- * `operating_system` - Operating system of a device.
+ * `id` - Operating system slug
+ * `slug` - Operating system slug (same as `id`)
 
