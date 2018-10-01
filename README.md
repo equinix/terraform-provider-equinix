@@ -32,7 +32,11 @@ $ make build
 
 Using the provider
 ----------------------
-## Fill in for each provider
+
+The packet provider will be installed on `terraform init` of a template using any of the `packet_*` resources.
+
+Available resource and datasources are documented at [https://www.terraform.io/docs/providers/packet/index.html](https://www.terraform.io/docs/providers/packet/index.html).
+
 
 Developing the Provider
 ---------------------------
