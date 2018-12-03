@@ -39,7 +39,7 @@ func testAccCheckPacketOrgDestroy(s *terraform.State) error {
 		if rs.Type != "packet_organization" {
 			continue
 		}
-		if _, _, err := client.Organizations.Get(rs.Primary.ID); err == nil {
+		if _, _, err := client.Organizations.Get(rs.Primary.ID, nil); err == nil {
 			return fmt.Errorf("Organization still exists")
 		}
 	}
@@ -68,7 +68,7 @@ func testAccCheckPacketOrgExists(n string, org *packngo.Organization) resource.T
 
 		client := testAccProvider.Meta().(*packngo.Client)
 
-		foundOrg, _, err := client.Organizations.Get(rs.Primary.ID)
+		foundOrg, _, err := client.Organizations.Get(rs.Primary.ID, nil)
 		if err != nil {
 			return err
 		}

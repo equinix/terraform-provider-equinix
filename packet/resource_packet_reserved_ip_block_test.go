@@ -66,7 +66,7 @@ func testAccCheckPacketReservedIPBlockDestroy(s *terraform.State) error {
 		if rs.Type != "packet_reserved_ip_block" {
 			continue
 		}
-		if _, _, err := client.ProjectIPs.Get(rs.Primary.ID); err == nil {
+		if _, _, err := client.ProjectIPs.Get(rs.Primary.ID, nil); err == nil {
 			return fmt.Errorf("Reserved IP block still exists")
 		}
 	}

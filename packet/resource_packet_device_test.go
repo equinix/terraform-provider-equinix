@@ -203,7 +203,7 @@ func testAccCheckPacketDeviceDestroy(s *terraform.State) error {
 		if rs.Type != "packet_device" {
 			continue
 		}
-		if _, _, err := client.Devices.Get(rs.Primary.ID); err == nil {
+		if _, _, err := client.Devices.Get(rs.Primary.ID, nil); err == nil {
 			return fmt.Errorf("Device still exists")
 		}
 	}
@@ -235,7 +235,7 @@ func testAccCheckPacketDeviceExists(n string, device *packngo.Device) resource.T
 
 		client := testAccProvider.Meta().(*packngo.Client)
 
-		foundDevice, _, err := client.Devices.Get(rs.Primary.ID)
+		foundDevice, _, err := client.Devices.Get(rs.Primary.ID, nil)
 		if err != nil {
 			return err
 		}

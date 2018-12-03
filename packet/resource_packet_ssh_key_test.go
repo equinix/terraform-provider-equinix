@@ -81,7 +81,7 @@ func testAccCheckPacketSSHKeyDestroy(s *terraform.State) error {
 		if rs.Type != "packet_ssh_key" {
 			continue
 		}
-		if _, _, err := client.SSHKeys.Get(rs.Primary.ID); err == nil {
+		if _, _, err := client.SSHKeys.Get(rs.Primary.ID, nil); err == nil {
 			return fmt.Errorf("SSH key still exists")
 		}
 	}
@@ -101,7 +101,7 @@ func testAccCheckPacketSSHKeyExists(n string, key *packngo.SSHKey) resource.Test
 
 		client := testAccProvider.Meta().(*packngo.Client)
 
-		foundKey, _, err := client.SSHKeys.Get(rs.Primary.ID)
+		foundKey, _, err := client.SSHKeys.Get(rs.Primary.ID, nil)
 		if err != nil {
 			return err
 		}

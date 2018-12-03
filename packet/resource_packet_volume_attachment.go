@@ -59,7 +59,7 @@ func resourcePacketVolumeAttachmentCreate(d *schema.ResourceData, meta interface
 
 func resourcePacketVolumeAttachmentRead(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*packngo.Client)
-	va, _, err := client.VolumeAttachments.Get(d.Id())
+	va, _, err := client.VolumeAttachments.Get(d.Id(), nil)
 	if err != nil {
 		return err
 	}

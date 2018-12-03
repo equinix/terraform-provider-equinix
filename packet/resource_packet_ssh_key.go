@@ -63,7 +63,7 @@ func resourcePacketSSHKeyCreate(d *schema.ResourceData, meta interface{}) error 
 func resourcePacketSSHKeyRead(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*packngo.Client)
 
-	key, _, err := client.SSHKeys.Get(d.Id())
+	key, _, err := client.SSHKeys.Get(d.Id(), nil)
 	if err != nil {
 		err = friendlyError(err)
 

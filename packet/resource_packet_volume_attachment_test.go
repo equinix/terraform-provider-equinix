@@ -45,7 +45,7 @@ func testAccCheckPacketVolumeAttachmentDestroy(s *terraform.State) error {
 		if rs.Type != "packet_volume_attachment" {
 			continue
 		}
-		if _, _, err := client.VolumeAttachments.Get(rs.Primary.ID); err == nil {
+		if _, _, err := client.VolumeAttachments.Get(rs.Primary.ID, nil); err == nil {
 			return fmt.Errorf("VolumeAttachment still exists")
 		}
 	}

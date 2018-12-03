@@ -91,7 +91,7 @@ func resourcePacketOrganizationCreate(d *schema.ResourceData, meta interface{}) 
 func resourcePacketOrganizationRead(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*packngo.Client)
 
-	key, _, err := client.Organizations.Get(d.Id())
+	key, _, err := client.Organizations.Get(d.Id(), nil)
 	if err != nil {
 		err = friendlyError(err)
 

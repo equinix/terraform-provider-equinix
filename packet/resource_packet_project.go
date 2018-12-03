@@ -82,7 +82,7 @@ func resourcePacketProjectCreate(d *schema.ResourceData, meta interface{}) error
 func resourcePacketProjectRead(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*packngo.Client)
 
-	proj, _, err := client.Projects.Get(d.Id())
+	proj, _, err := client.Projects.Get(d.Id(), nil)
 	if err != nil {
 		err = friendlyError(err)
 

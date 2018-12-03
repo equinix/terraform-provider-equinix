@@ -52,7 +52,7 @@ func resourcePacketIPAttachmentCreate(d *schema.ResourceData, meta interface{}) 
 
 func resourcePacketIPAttachmentRead(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*packngo.Client)
-	assignment, _, err := client.DeviceIPs.Get(d.Id())
+	assignment, _, err := client.DeviceIPs.Get(d.Id(), nil)
 	if err != nil {
 		err = friendlyError(err)
 

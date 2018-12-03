@@ -45,7 +45,7 @@ func testAccCheckPacketIPAttachmentDestroy(s *terraform.State) error {
 		if rs.Type != "packet_ip_attachment" {
 			continue
 		}
-		if _, _, err := client.ProjectIPs.Get(rs.Primary.ID); err == nil {
+		if _, _, err := client.ProjectIPs.Get(rs.Primary.ID, nil); err == nil {
 			return fmt.Errorf("IP attachment still exists")
 		}
 	}
