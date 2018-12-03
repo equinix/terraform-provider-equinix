@@ -110,7 +110,7 @@ func testAccCheckPacketVolumeDestroy(s *terraform.State) error {
 		if rs.Type != "packet_volume" {
 			continue
 		}
-		if _, _, err := client.Volumes.Get(rs.Primary.ID); err == nil {
+		if _, _, err := client.Volumes.Get(rs.Primary.ID, nil); err == nil {
 			return fmt.Errorf("Volume still exists")
 		}
 	}
@@ -159,7 +159,7 @@ func testAccCheckPacketVolumeExists(n string, volume *packngo.Volume) resource.T
 
 		client := testAccProvider.Meta().(*packngo.Client)
 
-		foundVolume, _, err := client.Volumes.Get(rs.Primary.ID)
+		foundVolume, _, err := client.Volumes.Get(rs.Primary.ID, nil)
 		if err != nil {
 			return err
 		}

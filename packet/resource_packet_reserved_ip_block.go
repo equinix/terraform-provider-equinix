@@ -146,7 +146,7 @@ func resourcePacketReservedIPBlockRead(d *schema.ResourceData, meta interface{})
 	client := meta.(*packngo.Client)
 	id := d.Id()
 
-	reservedBlock, _, err := client.ProjectIPs.Get(id)
+	reservedBlock, _, err := client.ProjectIPs.Get(id, nil)
 	if err != nil {
 		return fmt.Errorf("Error reading IP address block with ID %s: %s", id, err)
 	}

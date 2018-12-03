@@ -205,7 +205,7 @@ func resourcePacketDeviceCreate(d *schema.ResourceData, meta interface{}) error 
 	createRequest := &packngo.DeviceCreateRequest{
 		Hostname:             d.Get("hostname").(string),
 		Plan:                 d.Get("plan").(string),
-		Facility:             d.Get("facility").(string),
+		Facility:             []string{d.Get("facility").(string)},
 		OS:                   d.Get("operating_system").(string),
 		BillingCycle:         d.Get("billing_cycle").(string),
 		ProjectID:            d.Get("project_id").(string),
@@ -291,7 +291,7 @@ func resourcePacketDeviceCreate(d *schema.ResourceData, meta interface{}) error 
 func resourcePacketDeviceRead(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*packngo.Client)
 
-	device, _, err := client.Devices.GetExtra(d.Id(), []string{"project"}, nil)
+	device, _, err := client.Devices.Get(d.Id(), &packngo.GetOptions{Includes: []string{"project"}})
 	if err != nil {
 		err = friendlyError(err)
 
@@ -458,7 +458,7 @@ func newDeviceStateRefreshFunc(d *schema.ResourceData, attribute string, meta in
 		}
 
 		if attr, ok := d.GetOk(attribute); ok {
-			device, _, err := client.Devices.Get(d.Id())
+			device, _, err := client.Devices.Get(d.Id(), &packngo.GetOptions{Includes: []string{"project"}})
 			if err != nil {
 				return nil, "", friendlyError(err)
 			}

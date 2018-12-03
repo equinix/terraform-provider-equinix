@@ -66,7 +66,7 @@ func testAccCheckPacketProjectDestroy(s *terraform.State) error {
 		if rs.Type != "packet_project" {
 			continue
 		}
-		if _, _, err := client.Projects.Get(rs.Primary.ID); err == nil {
+		if _, _, err := client.Projects.Get(rs.Primary.ID, nil); err == nil {
 			return fmt.Errorf("Project still exists")
 		}
 	}
@@ -86,7 +86,7 @@ func testAccCheckPacketProjectExists(n string, project *packngo.Project) resourc
 
 		client := testAccProvider.Meta().(*packngo.Client)
 
-		foundProject, _, err := client.Projects.Get(rs.Primary.ID)
+		foundProject, _, err := client.Projects.Get(rs.Primary.ID, nil)
 		if err != nil {
 			return err
 		}

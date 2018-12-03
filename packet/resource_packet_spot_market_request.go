@@ -215,7 +215,7 @@ func resourcePacketSpotMarketRequestCreate(d *schema.ResourceData, meta interfac
 func resourcePacketSpotMarketRequestRead(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*packngo.Client)
 
-	smr, _, err := client.SpotMarketRequests.Get(d.Id(), &packngo.ListOptions{Includes: "project,devices,facilities"})
+	smr, _, err := client.SpotMarketRequests.Get(d.Id(), &packngo.GetOptions{Includes: []string{"project", "devices", "facilities"}})
 	if err != nil {
 		return err
 	}
@@ -244,7 +244,7 @@ func resourcePacketSpotMarketRequestDelete(d *schema.ResourceData, meta interfac
 		waitForDevices = val.(bool)
 	}
 	if waitForDevices {
-		smr, _, err := client.SpotMarketRequests.Get(d.Id(), &packngo.ListOptions{Includes: "devices,facilities"})
+		smr, _, err := client.SpotMarketRequests.Get(d.Id(), &packngo.GetOptions{Includes: []string{"project", "devices", "facilities"}})
 		if err != nil {
 			return nil
 		}
@@ -281,8 +281,8 @@ func resourcePacketSpotMarketRequestDelete(d *schema.ResourceData, meta interfac
 func resourceStateRefreshFunc(d *schema.ResourceData, meta interface{}) resource.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 		client := meta.(*packngo.Client)
+		smr, _, err := client.SpotMarketRequests.Get(d.Id(), &packngo.GetOptions{Includes: []string{"project", "devices", "facilities"}})
 
-		smr, _, err := client.SpotMarketRequests.Get(d.Id(), &packngo.ListOptions{Includes: "devices,facilities"})
 		if err != nil {
 			return nil, "", err
 
@@ -291,7 +291,7 @@ func resourceStateRefreshFunc(d *schema.ResourceData, meta interface{}) resource
 
 		for _, d := range smr.Devices {
 
-			dev, _, _ := client.Devices.Get(d.ID)
+			dev, _, _ := client.Devices.Get(d.ID, nil)
 			if dev.State != "active" {
 				break
 			} else {
