@@ -139,6 +139,7 @@ The following arguments are supported:
 * `tags` - Tags attached to the device
 * `description` - Description string for the device
 * `project_ssh_key_ids` - Array of IDs of the project SSH keys which should be added to the device. If you omit this, SSH keys of all the members of the parent project will be added to the device. If you specify this array, only the listed project SSH keys will be added. Project SSH keys can be created with the [packet_project_ssh_key][packet_project_ssh_key.html] resource.
+* `network_type` - Network type of device, used for [Layer 2 networking](https://support.packet.com/kb/articles/layer-2-overview). Allowed values are `layer3`, `hybrid`, `layer2-individual` and `layer2-bonded`. Default is `layer3`. 
 
 ## Attributes Reference
 

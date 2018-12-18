@@ -118,6 +118,42 @@ func resourcePacketDevice() *schema.Resource {
 				Computed: true,
 			},
 
+			"network_type": &schema.Schema{
+				Type:         schema.TypeString,
+				Optional:     true,
+				Default:      "layer3",
+				ValidateFunc: validation.StringInSlice([]string{"layer3", "layer2-bonded", "layer2-individual", "hybrid"}, false),
+			},
+
+			"ports": &schema.Schema{
+				Type:     schema.TypeList,
+				Computed: true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"name": &schema.Schema{
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"id": &schema.Schema{
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"type": &schema.Schema{
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"mac": &schema.Schema{
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"bonded": &schema.Schema{
+							Type:     schema.TypeBool,
+							Computed: true,
+						},
+					},
+				},
+			},
+
 			"network": {
 				Type:     schema.TypeList,
 				Computed: true,
@@ -253,7 +289,7 @@ func resourcePacketDeviceCreate(d *schema.ResourceData, meta interface{}) error 
 		ProjectID:            d.Get("project_id").(string),
 		PublicIPv4SubnetSize: d.Get("public_ipv4_subnet_size").(int),
 	}
-
+	targetNetworkState := d.Get("network_type").(string)
 	if attr, ok := d.GetOk("user_data"); ok {
 		createRequest.UserData = attr.(string)
 	}
@@ -328,7 +364,51 @@ func resourcePacketDeviceCreate(d *schema.ResourceData, meta interface{}) error 
 		return err
 	}
 
+	_, err = waitForDeviceAttribute(d, "layer3", []string{"hybrid", "layer2-bonded", "layer2-individual"}, "network_type", meta)
+
+	if targetNetworkState != "layer3" {
+		_, err := client.DevicePorts.DeviceToNetworkType(newDevice.ID, targetNetworkState)
+		if err != nil {
+			return err
+		}
+	}
+
 	return resourcePacketDeviceRead(d, meta)
+}
+
+func getNetworkInfo(ips []*packngo.IPAddressAssignment) ([]map[string]interface{},
+	int, string, string, string, string) {
+	var (
+		ipv4SubnetSize                   int
+		host, public4, public6, private4 string
+		networks                         = make([]map[string]interface{}, 0, 1)
+	)
+	for _, ip := range ips {
+		network := map[string]interface{}{
+			"address": ip.Address,
+			"gateway": ip.Gateway,
+			"family":  ip.AddressFamily,
+			"cidr":    ip.CIDR,
+			"public":  ip.Public,
+		}
+		networks = append(networks, network)
+
+		// Initial device IPs are fixed and marked as "Management"
+		if ip.Management {
+			if ip.AddressFamily == 4 {
+				if ip.Public {
+					host = ip.Address
+					ipv4SubnetSize = ip.CIDR
+					public4 = ip.Address
+				} else {
+					private4 = ip.Address
+				}
+			} else {
+				public6 = ip.Address
+			}
+		}
+	}
+	return networks, ipv4SubnetSize, host, public4, private4, public6
 }
 
 func resourcePacketDeviceRead(d *schema.ResourceData, meta interface{}) error {
@@ -369,6 +449,7 @@ func resourcePacketDeviceRead(d *schema.ResourceData, meta interface{}) error {
 	if len(device.HardwareReservation.Href) > 0 {
 		d.Set("hardware_reservation_id", path.Base(device.HardwareReservation.Href))
 	}
+	d.Set("network_type", device.NetworkType)
 
 	d.Set("tags", device.Tags)
 	keyIDs := []string{}
@@ -376,37 +457,7 @@ func resourcePacketDeviceRead(d *schema.ResourceData, meta interface{}) error {
 		keyIDs = append(keyIDs, filepath.Base(k.URL))
 	}
 	d.Set("ssh_key_ids", keyIDs)
-
-	var (
-		ipv4SubnetSize int
-		host           string
-		networks       = make([]map[string]interface{}, 0, 1)
-	)
-	for _, ip := range device.Network {
-		network := map[string]interface{}{
-			"address": ip.Address,
-			"gateway": ip.Gateway,
-			"family":  ip.AddressFamily,
-			"cidr":    ip.CIDR,
-			"public":  ip.Public,
-		}
-		networks = append(networks, network)
-
-		// Initial device IPs are fixed and marked as "Management"
-		if ip.Management {
-			if ip.AddressFamily == 4 {
-				if ip.Public {
-					host = ip.Address
-					ipv4SubnetSize = ip.CIDR
-					d.Set("access_public_ipv4", ip.Address)
-				} else {
-					d.Set("access_private_ipv4", ip.Address)
-				}
-			} else {
-				d.Set("access_public_ipv6", ip.Address)
-			}
-		}
-	}
+	networks, ipv4SubnetSize, host, public4, private4, public6 := getNetworkInfo(device.Network)
 
 	sort.SliceStable(networks, func(i, j int) bool {
 		famI := networks[i]["family"].(int)
@@ -418,6 +469,12 @@ func resourcePacketDeviceRead(d *schema.ResourceData, meta interface{}) error {
 
 	d.Set("network", networks)
 	d.Set("public_ipv4_subnet_size", ipv4SubnetSize)
+	d.Set("access_public_ipv4", public4)
+	d.Set("access_private_ipv4", private4)
+	d.Set("access_public_ipv6", public6)
+
+	ports := getPorts(device.NetworkPorts)
+	d.Set("ports", ports)
 
 	if host != "" {
 		d.SetConnInfo(map[string]string{
@@ -439,7 +496,21 @@ func getNetworkRank(family int, public bool) int {
 		return 2
 	}
 	return 3
+}
 
+func getPorts(ps []packngo.Port) []map[string]interface{} {
+	ret := make([]map[string]interface{}, 0, 1)
+	for _, p := range ps {
+		port := map[string]interface{}{
+			"name":   p.Name,
+			"id":     p.ID,
+			"type":   p.Type,
+			"mac":    p.Data.MAC,
+			"bonded": p.Data.Bonded,
+		}
+		ret = append(ret, port)
+	}
+	return ret
 }
 
 func resourcePacketDeviceUpdate(d *schema.ResourceData, meta interface{}) error {
@@ -493,6 +564,13 @@ func resourcePacketDeviceUpdate(d *schema.ResourceData, meta interface{}) error 
 			return friendlyError(err)
 		}
 
+	}
+	if d.HasChange("network_type") {
+		targetType := d.Get("network_type").(string)
+		_, err := client.DevicePorts.DeviceToNetworkType(d.Id(), targetType)
+		if err != nil {
+			return err
+		}
 	}
 	return resourcePacketDeviceRead(d, meta)
 }

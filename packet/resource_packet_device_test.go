@@ -36,7 +36,7 @@ func TestAccPacketDevice_FacilityList(t *testing.T) {
 	})
 }
 
-func TestAccPacketDevice_NetworkOrder(t *testing.T) {
+func TestAccPacketDevice_NetworkPortsOrder(t *testing.T) {
 	var device packngo.Device
 	rs := acctest.RandString(10)
 	r := "packet_device.test"
@@ -51,6 +51,7 @@ func TestAccPacketDevice_NetworkOrder(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckPacketDeviceExists(r, &device),
 					testAccCheckPacketDeviceNetworkOrder(r),
+					testAccCheckPacketDevicePortsOrder(r),
 				),
 			},
 		},
@@ -75,6 +76,8 @@ func TestAccPacketDevice_Basic(t *testing.T) {
 					testAccCheckPacketDeviceAttributes(&device),
 					resource.TestCheckResourceAttr(
 						r, "public_ipv4_subnet_size", "31"),
+					resource.TestCheckResourceAttr(
+						r, "network_type", "layer3"),
 					resource.TestCheckResourceAttr(
 						r, "ipxe_script_url", ""),
 					resource.TestCheckResourceAttr(
@@ -189,6 +192,44 @@ func TestAccPacketDevice_IPXEScriptUrl(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						r, "always_pxe", "false"),
 					testAccCheckPacketSameDevice(t, &device, &d2),
+				),
+			},
+		},
+	})
+}
+
+func testAccCheckPacketDeviceConfig_L2(projSuffix string) string {
+	return fmt.Sprintf(`
+resource "packet_project" "test" {
+    name = "TerraformTestProject-%s"
+}
+
+resource "packet_device" "test" {
+  hostname         = "test"
+  plan             = "m1.xlarge.x86"
+  facilities       = ["ewr1"]
+  operating_system = "ubuntu_16_04"
+  billing_cycle    = "hourly"
+  project_id       = "${packet_project.test.id}"
+  network_type     = "layer2-bonded"
+
+}
+`, projSuffix)
+}
+
+func TestAccPacketDevice_L2(t *testing.T) {
+	rs := acctest.RandString(10)
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckPacketDeviceDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckPacketDeviceConfig_L2(rs),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(
+						"packet_device.test", "network_type", "layer2-bonded"),
 				),
 			},
 		},
@@ -333,6 +374,25 @@ func testAccCheckPacketSameDevice(t *testing.T, before, after *packngo.Device) r
 	return func(s *terraform.State) error {
 		if before.ID != after.ID {
 			t.Fatalf("Expected device to be the same, but it was recreated: %s -> %s", before.ID, after.ID)
+		}
+		return nil
+	}
+}
+
+func testAccCheckPacketDevicePortsOrder(n string) resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		rs, ok := s.RootModule().Resources[n]
+		if !ok {
+			return fmt.Errorf("Not found: %s", n)
+		}
+		if rs.Primary.Attributes["ports.0.name"] != "eth0" {
+			return fmt.Errorf("first port should be eth0")
+		}
+		if rs.Primary.Attributes["ports.1.name"] != "eth1" {
+			return fmt.Errorf("second port should be eth1")
+		}
+		if rs.Primary.Attributes["ports.2.name"] != "bond0" {
+			return fmt.Errorf("third port should be bond0")
 		}
 		return nil
 	}
