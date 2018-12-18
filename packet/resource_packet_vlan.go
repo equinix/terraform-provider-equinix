@@ -59,14 +59,13 @@ func resourcePacketVlanRead(d *schema.ResourceData, meta interface{}) error {
 	vlan, _, err := c.ProjectVirtualNetworks.Get(d.Id(),
 		&packngo.GetOptions{Includes: []string{"assigned_to"}})
 	if err != nil {
-		return friendlyError(err)
 
 		if isNotFound(err) {
 			d.SetId("")
 			return nil
 		}
+		return friendlyError(err)
 
-		return err
 	}
 	d.Set("description", vlan.Description)
 	d.Set("project_id", vlan.Project.ID)
