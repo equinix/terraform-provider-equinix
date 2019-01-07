@@ -19,7 +19,7 @@ func TestAccPacketProject_Basic(t *testing.T) {
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckPacketProjectDestroy,
 		Steps: []resource.TestStep{
-			resource.TestStep{
+			{
 				Config: testAccCheckPacketProjectConfig_basic(rInt),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckPacketProjectExists("packet_project.foobar", &project),
@@ -40,7 +40,7 @@ func TestAccPacketProject_Update(t *testing.T) {
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckPacketProjectDestroy,
 		Steps: []resource.TestStep{
-			resource.TestStep{
+			{
 				Config: testAccCheckPacketProjectConfig_basic(rInt),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckPacketProjectExists("packet_project.foobar", &project),
@@ -48,7 +48,7 @@ func TestAccPacketProject_Update(t *testing.T) {
 						"packet_project.foobar", "name", fmt.Sprintf("foobar-%d", rInt)),
 				),
 			},
-			resource.TestStep{
+			{
 				Config: testAccCheckPacketProjectConfig_basic(rInt + 1),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckPacketProjectExists("packet_project.foobar", &project),
@@ -128,7 +128,7 @@ func TestAccPacketProjectOrg(t *testing.T) {
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckPacketProjectDestroy,
 		Steps: []resource.TestStep{
-			resource.TestStep{
+			{
 				Config: testAccCheckPacketProjectOrgConfig(rn),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckPacketProjectExists("packet_project.foobar", &project),
@@ -148,10 +148,10 @@ func TestAccPacketProject_importBasic(t *testing.T) {
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckPacketProjectDestroy,
 		Steps: []resource.TestStep{
-			resource.TestStep{
+			{
 				Config: testAccCheckPacketProjectConfig_basic(rInt),
 			},
-			resource.TestStep{
+			{
 				ResourceName:      "packet_project.foobar",
 				ImportState:       true,
 				ImportStateVerify: true,

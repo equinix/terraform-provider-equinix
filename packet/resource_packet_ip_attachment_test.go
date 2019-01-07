@@ -19,7 +19,7 @@ func TestAccPacketIPAttachment_Basic(t *testing.T) {
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckPacketIPAttachmentDestroy,
 		Steps: []resource.TestStep{
-			resource.TestStep{
+			{
 				Config: testAccCheckPacketIPAttachmentConfig_Basic(rs),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(
@@ -29,7 +29,7 @@ func TestAccPacketIPAttachment_Basic(t *testing.T) {
 						"packet_device.test", "id"),
 				),
 			},
-			resource.TestStep{
+			{
 				ResourceName:      "packet_ip_attachment.test",
 				ImportState:       true,
 				ImportStateVerify: true,

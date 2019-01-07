@@ -22,22 +22,22 @@ func resourcePacketProject() *schema.Resource {
 			State: schema.ImportStatePassthrough,
 		},
 		Schema: map[string]*schema.Schema{
-			"name": &schema.Schema{
+			"name": {
 				Type:     schema.TypeString,
 				Required: true,
 			},
 
-			"created": &schema.Schema{
+			"created": {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
 
-			"updated": &schema.Schema{
+			"updated": {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
 
-			"payment_method_id": &schema.Schema{
+			"payment_method_id": {
 				Type:     schema.TypeString,
 				Optional: true,
 				Computed: true,
@@ -47,7 +47,7 @@ func resourcePacketProject() *schema.Resource {
 				ValidateFunc: validation.StringMatch(uuidRE, "must be a valid UUID"),
 			},
 
-			"organization_id": &schema.Schema{
+			"organization_id": {
 				Type:     schema.TypeString,
 				Optional: true,
 				Computed: true,

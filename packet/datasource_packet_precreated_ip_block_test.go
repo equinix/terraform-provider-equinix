@@ -16,7 +16,7 @@ func TestAccPacketPreCreatedIPBlock_Basic(t *testing.T) {
 		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
-			resource.TestStep{
+			{
 				Config: testPreCreatedIPBlockConfig_Basic(rs),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(
@@ -26,7 +26,7 @@ func TestAccPacketPreCreatedIPBlock_Basic(t *testing.T) {
 						"packet_device.test", "id"),
 				),
 			},
-			resource.TestStep{
+			{
 				ResourceName:      "packet_ip_attachment.test",
 				ImportState:       true,
 				ImportStateVerify: true,

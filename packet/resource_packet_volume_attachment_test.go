@@ -18,7 +18,7 @@ func TestAccPacketVolumeAttachment_Basic(t *testing.T) {
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckPacketVolumeAttachmentDestroy,
 		Steps: []resource.TestStep{
-			resource.TestStep{
+			{
 				Config: testAccCheckPacketVolumeAttachmentConfig_basic(rs),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrPair(
@@ -29,7 +29,7 @@ func TestAccPacketVolumeAttachment_Basic(t *testing.T) {
 						"packet_device.test", "id"),
 				),
 			},
-			resource.TestStep{
+			{
 				ResourceName:      "packet_volume_attachment.test",
 				ImportState:       true,
 				ImportStateVerify: true,

@@ -17,7 +17,7 @@ func TestAccOrgCreate(t *testing.T) {
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckPacketOrgDestroy,
 		Steps: []resource.TestStep{
-			resource.TestStep{
+			{
 				Config: testAccCheckPacketOrgConfigBasic,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckPacketOrgExists("packet_organization.test", &org),
