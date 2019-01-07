@@ -31,6 +31,28 @@ func TestAccPacketProject_Basic(t *testing.T) {
 	})
 }
 
+func TestAccPacketProject_BGP(t *testing.T) {
+	var project packngo.Project
+	rInt := acctest.RandInt()
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckPacketProjectDestroy,
+		Steps: []resource.TestStep{
+			resource.TestStep{
+				Config: testAccCheckPacketProjectConfig_BGP(rInt),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckPacketProjectExists("packet_project.foobar", &project),
+					resource.TestCheckResourceAttr(
+						"packet_project.foobar", "bgp_config.0.md5",
+						"C179c28c41a85b"),
+				),
+			},
+		},
+	})
+}
+
 func TestAccPacketProject_Update(t *testing.T) {
 	var project packngo.Project
 	rInt := acctest.RandInt()
@@ -104,6 +126,18 @@ func testAccCheckPacketProjectConfig_basic(r int) string {
 	return fmt.Sprintf(`
 resource "packet_project" "foobar" {
     name = "foobar-%d"
+}`, r)
+}
+
+func testAccCheckPacketProjectConfig_BGP(r int) string {
+	return fmt.Sprintf(`
+resource "packet_project" "foobar" {
+    name = "foobar-%d"
+	bgp_config {
+		deployment_type = "local"
+		md5 = "C179c28c41a85b"
+		asn = 65000
+	}
 }`, r)
 }
 
