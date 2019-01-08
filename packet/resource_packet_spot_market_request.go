@@ -15,94 +15,94 @@ func resourcePacketSpotMarketRequest() *schema.Resource {
 		Delete: resourcePacketSpotMarketRequestDelete,
 
 		Schema: map[string]*schema.Schema{
-			"devices_min": &schema.Schema{
+			"devices_min": {
 				Type:     schema.TypeInt,
 				Required: true,
 				ForceNew: true,
 			},
-			"devices_max": &schema.Schema{
+			"devices_max": {
 				Type:     schema.TypeInt,
 				Required: true,
 				ForceNew: true,
 			},
-			"max_bid_price": &schema.Schema{
+			"max_bid_price": {
 				Type:     schema.TypeFloat,
 				Required: true,
 				ForceNew: true,
 			},
-			"facilities": &schema.Schema{
+			"facilities": {
 				Type:     schema.TypeList,
 				Required: true,
 				Elem:     &schema.Schema{Type: schema.TypeString},
 				ForceNew: true,
 			},
-			"instance_parameters": &schema.Schema{
+			"instance_parameters": {
 				Type:     schema.TypeList,
 				Required: true,
 				MaxItems: 1,
 				ForceNew: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"billing_cycle": &schema.Schema{
+						"billing_cycle": {
 							Type:     schema.TypeString,
 							Required: true,
 						},
-						"plan": &schema.Schema{
+						"plan": {
 							Type:     schema.TypeString,
 							Required: true,
 						},
-						"operating_system": &schema.Schema{
+						"operating_system": {
 							Type:     schema.TypeString,
 							Required: true,
 						},
-						"hostname": &schema.Schema{
+						"hostname": {
 							Type:     schema.TypeString,
 							Required: true,
 						},
-						"termintation_time": &schema.Schema{
+						"termintation_time": {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
-						"always_pxe": &schema.Schema{
+						"always_pxe": {
 							Type:     schema.TypeString,
 							Optional: true,
 						},
-						"description": &schema.Schema{
+						"description": {
 							Type:     schema.TypeString,
 							Optional: true,
 						},
-						"features": &schema.Schema{
+						"features": {
 							Type:     schema.TypeList,
 							Optional: true,
 							Elem:     &schema.Schema{Type: schema.TypeString},
 						},
-						"locked": &schema.Schema{
+						"locked": {
 							Type:     schema.TypeString,
 							Optional: true,
 						},
-						"project_ssh_keys": &schema.Schema{
+						"project_ssh_keys": {
 							Type:     schema.TypeList,
 							Optional: true,
 							Elem:     &schema.Schema{Type: schema.TypeString},
 						},
-						"user_ssh_keys": &schema.Schema{
+						"user_ssh_keys": {
 							Type:     schema.TypeList,
 							Optional: true,
 							Elem:     &schema.Schema{Type: schema.TypeString},
 						},
-						"userdata": &schema.Schema{
+						"userdata": {
 							Type:     schema.TypeString,
 							Optional: true,
 						},
 					},
 				},
 			},
-			"project_id": &schema.Schema{
+			"project_id": {
 				Type:     schema.TypeString,
 				Required: true,
 				ForceNew: true,
 			},
-			"wait_for_devices": &schema.Schema{
+			"wait_for_devices": {
 				Type:     schema.TypeBool,
 				Optional: true,
 				ForceNew: true,

@@ -13,41 +13,41 @@ func resourcePacketOrganization() *schema.Resource {
 		Delete: resourcePacketOrganizationDelete,
 
 		Schema: map[string]*schema.Schema{
-			"name": &schema.Schema{
+			"name": {
 				Type:     schema.TypeString,
 				Required: true,
 			},
 
-			"description": &schema.Schema{
+			"description": {
 				Type:     schema.TypeString,
 				Optional: true,
 				Required: false,
 			},
 
-			"website": &schema.Schema{
+			"website": {
 				Type:     schema.TypeString,
 				Optional: true,
 				Required: false,
 			},
 
-			"twitter": &schema.Schema{
+			"twitter": {
 				Type:     schema.TypeString,
 				Optional: true,
 				Required: false,
 			},
 
-			"logo": &schema.Schema{
+			"logo": {
 				Type:     schema.TypeString,
 				Optional: true,
 				Required: false,
 			},
 
-			"created": &schema.Schema{
+			"created": {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
 
-			"updated": &schema.Schema{
+			"updated": {
 				Type:     schema.TypeString,
 				Computed: true,
 			},

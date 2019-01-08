@@ -26,7 +26,7 @@ func TestAccPacketDevice_Basic(t *testing.T) {
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckPacketDeviceDestroy,
 		Steps: []resource.TestStep{
-			resource.TestStep{
+			{
 				Config: testAccCheckPacketDeviceConfig_basic(rs),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckPacketDeviceExists(r, &device),
@@ -57,14 +57,14 @@ func TestAccPacketDevice_Update(t *testing.T) {
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckPacketDeviceDestroy,
 		Steps: []resource.TestStep{
-			resource.TestStep{
+			{
 				Config: testAccCheckPacketDeviceConfig_varname(rInt, rs),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckPacketDeviceExists(r, &d1),
 					resource.TestCheckResourceAttr(r, "hostname", fmt.Sprintf("test-device-%d", rInt)),
 				),
 			},
-			resource.TestStep{
+			{
 				Config: testAccCheckPacketDeviceConfig_varname(rInt+1, rs),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckPacketDeviceExists(r, &d2),
@@ -72,7 +72,7 @@ func TestAccPacketDevice_Update(t *testing.T) {
 					testAccCheckPacketSameDevice(t, &d1, &d2),
 				),
 			},
-			resource.TestStep{
+			{
 				Config: testAccCheckPacketDeviceConfig_varname(rInt+2, rs),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckPacketDeviceExists(r, &d3),
@@ -82,7 +82,7 @@ func TestAccPacketDevice_Update(t *testing.T) {
 					testAccCheckPacketSameDevice(t, &d2, &d3),
 				),
 			},
-			resource.TestStep{
+			{
 				Config: testAccCheckPacketDeviceConfig_no_description(rInt+3, rs),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckPacketDeviceExists(r, &d4),
@@ -105,7 +105,7 @@ func TestAccPacketDevice_RequestSubnet(t *testing.T) {
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckPacketDeviceDestroy,
 		Steps: []resource.TestStep{
-			resource.TestStep{
+			{
 				Config: fmt.Sprintf(testAccCheckPacketDeviceConfig_request_subnet, rs),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckPacketDeviceExists(r, &device),
@@ -127,7 +127,7 @@ func TestAccPacketDevice_IPXEScriptUrl(t *testing.T) {
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckPacketDeviceDestroy,
 		Steps: []resource.TestStep{
-			resource.TestStep{
+			{
 				Config: testAccCheckPacketDeviceConfig_ipxe_script_url(rs, "https://boot.netboot.xyz", "true"),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckPacketDeviceExists(r, &device),
@@ -138,7 +138,7 @@ func TestAccPacketDevice_IPXEScriptUrl(t *testing.T) {
 						r, "always_pxe", "true"),
 				),
 			},
-			resource.TestStep{
+			{
 				Config: testAccCheckPacketDeviceConfig_ipxe_script_url(rs, "https://new.netboot.xyz", "false"),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckPacketDeviceExists(r, &d2),
@@ -164,7 +164,7 @@ func TestAccPacketDevice_IPXEConflictingFields(t *testing.T) {
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckPacketDeviceDestroy,
 		Steps: []resource.TestStep{
-			resource.TestStep{
+			{
 				Config: fmt.Sprintf(testAccCheckPacketDeviceConfig_ipxe_conflict, rs),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckPacketDeviceExists(r, &device),
@@ -185,7 +185,7 @@ func TestAccPacketDevice_IPXEConfigMissing(t *testing.T) {
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckPacketDeviceDestroy,
 		Steps: []resource.TestStep{
-			resource.TestStep{
+			{
 				Config: fmt.Sprintf(testAccCheckPacketDeviceConfig_ipxe_missing, rs),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckPacketDeviceExists(r, &device),
@@ -303,10 +303,10 @@ func TestAccPacketDevice_importBasic(t *testing.T) {
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckPacketDeviceDestroy,
 		Steps: []resource.TestStep{
-			resource.TestStep{
+			{
 				Config: testAccCheckPacketDeviceConfig_basic(rs),
 			},
-			resource.TestStep{
+			{
 				ResourceName:      "packet_device.test",
 				ImportState:       true,
 				ImportStateVerify: true,
