@@ -6,7 +6,7 @@ description: |-
   Provides a resource for Packet Virtual Network.
 ---
 
-# packet\_vlan
+# packet_vlan
 
 Provides a resource to allow users to manage Virtual Networks in their projects. VLANs are used in [Layer 2 networking setup](https://packet.kayako.com/article/57-layer-2-overview).
 

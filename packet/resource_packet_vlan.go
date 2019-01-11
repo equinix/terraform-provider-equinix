@@ -14,23 +14,23 @@ func resourcePacketVlan() *schema.Resource {
 			State: schema.ImportStatePassthrough,
 		},
 		Schema: map[string]*schema.Schema{
-			"project_id": &schema.Schema{
+			"project_id": {
 				Type:     schema.TypeString,
 				Required: true,
 				ForceNew: true,
 			},
-			"description": &schema.Schema{
+			"description": {
 				Type:     schema.TypeString,
 				Required: false,
 				Optional: true,
 				ForceNew: true,
 			},
-			"facility": &schema.Schema{
+			"facility": {
 				Type:     schema.TypeString,
 				Required: true,
 				ForceNew: true,
 			},
-			"vxlan": &schema.Schema{
+			"vxlan": {
 				Type:     schema.TypeInt,
 				Computed: true,
 			},
@@ -59,7 +59,6 @@ func resourcePacketVlanRead(d *schema.ResourceData, meta interface{}) error {
 	vlan, _, err := c.ProjectVirtualNetworks.Get(d.Id(),
 		&packngo.GetOptions{Includes: []string{"assigned_to"}})
 	if err != nil {
-
 		if isNotFound(err) {
 			d.SetId("")
 			return nil
@@ -80,7 +79,5 @@ func resourcePacketVlanDelete(d *schema.ResourceData, meta interface{}) error {
 	if err != nil {
 		return friendlyError(err)
 	}
-
-	d.SetId("")
 	return nil
 }
