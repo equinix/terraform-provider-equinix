@@ -81,10 +81,6 @@ func resourcePacketProject() *schema.Resource {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
-						"route_object": &schema.Schema{
-							Type:     schema.TypeString,
-							Computed: true,
-						},
 						"max_prefix": &schema.Schema{
 							Type:     schema.TypeInt,
 							Computed: true,
@@ -207,9 +203,6 @@ func flattenBGPConfig(l *packngo.BGPConfig) []map[string]interface{} {
 	}
 	if l.DeploymentType != "" {
 		r["deployment_type"] = l.DeploymentType
-	}
-	if l.RouteObject != "" {
-		r["route_object"] = l.RouteObject
 	}
 	if l.Md5 != "" {
 		r["md5"] = l.Md5
