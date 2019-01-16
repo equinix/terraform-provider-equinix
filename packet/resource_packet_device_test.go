@@ -16,6 +16,27 @@ import (
 var matchErrMustBeProvided = regexp.MustCompile(".* must be provided when .*")
 var matchErrShouldNotBeAnIPXE = regexp.MustCompile(`.*"user_data" should not be an iPXE.*`)
 
+func TestAccPacketDevice_NetworkOrder(t *testing.T) {
+	var device packngo.Device
+	rs := acctest.RandString(10)
+	r := "packet_device.test"
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckPacketDeviceDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckPacketDeviceConfig_basic(rs),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckPacketDeviceExists(r, &device),
+					testAccCheckPacketDeviceNetworkOrder(r),
+				),
+			},
+		},
+	})
+}
+
 func TestAccPacketDevice_Basic(t *testing.T) {
 	var device packngo.Device
 	rs := acctest.RandString(10)
@@ -253,6 +274,31 @@ func testAccCheckPacketSameDevice(t *testing.T, before, after *packngo.Device) r
 	return func(s *terraform.State) error {
 		if before.ID != after.ID {
 			t.Fatalf("Expected device to be the same, but it was recreated: %s -> %s", before.ID, after.ID)
+		}
+		return nil
+	}
+}
+
+func testAccCheckPacketDeviceNetworkOrder(n string) resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		rs, ok := s.RootModule().Resources[n]
+		if !ok {
+			return fmt.Errorf("Not found: %s", n)
+		}
+		if rs.Primary.Attributes["network.0.family"] != "4" {
+			return fmt.Errorf("first netowrk should be private IPv4")
+		}
+		if rs.Primary.Attributes["network.0.public"] == "true" {
+			return fmt.Errorf("first netowrk should be private IPv4")
+		}
+		if rs.Primary.Attributes["network.1.family"] != "4" {
+			return fmt.Errorf("second netowrk should be public IPv4")
+		}
+		if rs.Primary.Attributes["network.1.public"] == "false" {
+			return fmt.Errorf("first netowrk should be public IPv4")
+		}
+		if rs.Primary.Attributes["network.2.family"] != "6" {
+			return fmt.Errorf("second netowrk should be public IPv6")
 		}
 		return nil
 	}

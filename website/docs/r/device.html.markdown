@@ -147,7 +147,13 @@ The following attributes are exported:
 * `project_id`- The ID of the project the device belongs to
 * `facility` - The facility the device is in
 * `plan` - The hardware config of the device
-* `network` - The device's private and public IP (v4 and v6) network details
+* `network` - The device's private and public IP (v4 and v6) network details. When a device is run without any special network configuration, it will have 3 newtworks: private IPv4, public IPv4 and an IPv6 in this order. The fields of the network attribute are:
+  * `address` - IPv4 or IPv6 address string
+  * `cidr` - bit length of the network mask of the address
+  * `gateway` - address of router
+  * `public` - whether address is routable from the Internet
+  * `family` - IP version - "4" or "6"
+ 
 * `access_public_ipv6` - The ipv6 maintenance IP assigned to the device
 * `access_public_ipv4` - The ipv4 maintenance IP assigned to the device
 * `access_private_ipv4` - The ipv4 private IP assigned to the device
