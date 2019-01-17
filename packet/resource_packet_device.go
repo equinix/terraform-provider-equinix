@@ -6,6 +6,7 @@ import (
 	"path"
 	"reflect"
 	"regexp"
+	"sort"
 	"time"
 
 	"github.com/hashicorp/errwrap"
@@ -359,6 +360,15 @@ func resourcePacketDeviceRead(d *schema.ResourceData, meta interface{}) error {
 			}
 		}
 	}
+
+	sort.SliceStable(networks, func(i, j int) bool {
+		famI := networks[i]["family"].(int)
+		famJ := networks[j]["family"].(int)
+		pubI := networks[i]["public"].(bool)
+		pubJ := networks[j]["public"].(bool)
+		return getNetworkRank(famI, pubI) < getNetworkRank(famJ, pubJ)
+	})
+
 	d.Set("network", networks)
 	d.Set("public_ipv4_subnet_size", ipv4SubnetSize)
 
@@ -370,6 +380,19 @@ func resourcePacketDeviceRead(d *schema.ResourceData, meta interface{}) error {
 	}
 
 	return nil
+}
+
+func getNetworkRank(family int, public bool) int {
+	switch {
+	case family == 4 && !public:
+		return 0
+	case family == 4 && public:
+		return 1
+	case family == 6:
+		return 2
+	}
+	return 3
+
 }
 
 func resourcePacketDeviceUpdate(d *schema.ResourceData, meta interface{}) error {
