@@ -156,26 +156,17 @@ func resourcePacketProjectRead(d *schema.ResourceData, meta interface{}) error {
 		return err
 	}
 
-	d.Partial(true)
-
 	d.SetId(proj.ID)
 	d.Set("payment_method_id", path.Base(proj.PaymentMethod.URL))
-	d.SetPartial("payment_method_id")
 	d.Set("name", proj.Name)
-	d.SetPartial("name")
 	d.Set("organization_id", path.Base(proj.Organization.URL))
-	d.SetPartial("organization_id")
 	d.Set("created", proj.Created)
-	d.SetPartial("created")
 	d.Set("updated", proj.Updated)
-	d.SetPartial("updated")
 
 	bgpConf, _, err := client.BGPConfig.Get(proj.ID, nil)
-	if err != nil {
-		err = friendlyError(err)
-		return err
-	}
-	if bgpConf != nil {
+	d.Set("bgp_config", []interface{}{})
+
+	if (err == nil) && (bgpConf != nil) {
 		// guard against an empty struct
 		if bgpConf.ID != "" {
 			err := d.Set("bgp_config", flattenBGPConfig(bgpConf))
@@ -185,7 +176,6 @@ func resourcePacketProjectRead(d *schema.ResourceData, meta interface{}) error {
 			}
 		}
 	}
-	d.Partial(false)
 	return nil
 }
 
