@@ -44,7 +44,7 @@ The following arguments are supported:
 
 The `bgp_config` block supports:
 * `asn` - Autonomous System Numer for local BGP deployment
-* `md5` - (Optional) MD5 sum of password for BGP session
+* `md5` - (Optional) Password for BGP session in plaintext (not a checksum)
 * `deployment_type` - `private` or `public`, the `private` is likely to be usable immediately, the `public` will need to be review by Packet engineers
 
 ## Attributes Reference
@@ -59,7 +59,4 @@ The following attributes are exported:
 
 The `bgp_config` block additionally exports: 
 * `status` - status of BGP configuration in the project
-* `max_prefix` - `private` or `public`, the `private` is likely to be usable immediately, the `public` will need to be review by Packet engineers
-* `route_object`
-* `ranges`
-* `max_prefix`
+* `max_prefix` - The maximum number of route filters allowed per server
