@@ -66,8 +66,9 @@ func resourcePacketProject() *schema.Resource {
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"deployment_type": &schema.Schema{
-							Type:     schema.TypeString,
-							Required: true,
+							Type:         schema.TypeString,
+							Required:     true,
+							ValidateFunc: validation.StringInSlice([]string{"local", "global"}, false),
 						},
 						"asn": &schema.Schema{
 							Type:     schema.TypeInt,
@@ -96,8 +97,12 @@ func expandBGPConfig(d *schema.ResourceData) packngo.CreateBGPConfigRequest {
 	bgpCreateRequest := packngo.CreateBGPConfigRequest{
 		DeploymentType: d.Get("bgp_config.0.deployment_type").(string),
 		Asn:            d.Get("bgp_config.0.asn").(int),
-		Md5:            d.Get("bgp_config.0.md5").(string),
 	}
+	md5, ok := d.GetOk("bgp_config.0.md5")
+	if ok {
+		bgpCreateRequest.Md5 = md5.(string)
+	}
+
 	return bgpCreateRequest
 
 }
@@ -116,17 +121,6 @@ func resourcePacketProjectCreate(d *schema.ResourceData, meta interface{}) error
 	}
 
 	d.SetId(project.ID)
-
-	if _, ok := d.GetOk("bgp_config"); !ok {
-		d.Set("bgp_config", []interface{}{})
-	} else {
-
-		bgpCreateRequest := expandBGPConfig(d)
-		_, err := client.BGPConfig.Create(project.ID, bgpCreateRequest)
-		if err != nil {
-			return friendlyError(err)
-		}
-	}
 
 	_, hasBGPConfig := d.GetOk("bgp_config")
 	if hasBGPConfig {
@@ -164,7 +158,6 @@ func resourcePacketProjectRead(d *schema.ResourceData, meta interface{}) error {
 	d.Set("updated", proj.Updated)
 
 	bgpConf, _, err := client.BGPConfig.Get(proj.ID, nil)
-	d.Set("bgp_config", []interface{}{})
 
 	if (err == nil) && (bgpConf != nil) {
 		// guard against an empty struct

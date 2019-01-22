@@ -32,7 +32,7 @@ func TestAccPacketProject_Basic(t *testing.T) {
 	})
 }
 
-func TestAccPacketProject_BGP(t *testing.T) {
+func TestAccPacketProject_BGPBasic(t *testing.T) {
 	var project packngo.Project
 	rInt := acctest.RandInt()
 
@@ -42,12 +42,12 @@ func TestAccPacketProject_BGP(t *testing.T) {
 		CheckDestroy: testAccCheckPacketProjectDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckPacketProjectConfig_BGP(rInt, "2SFsdfsg43)"),
+				Config: testAccCheckPacketProjectConfig_BGP(rInt, "2SFsdfsg43"),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckPacketProjectExists("packet_project.foobar", &project),
 					resource.TestCheckResourceAttr(
 						"packet_project.foobar", "bgp_config.0.md5",
-						"C179c28c41a85b"),
+						"2SFsdfsg43"),
 				),
 			},
 		},
@@ -114,6 +114,7 @@ func TestAccPacketProject_BGPUpdate(t *testing.T) {
 				Config: testAccCheckPacketProjectConfig_BGP(rInt, "fdsfsdf432F"),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckPacketProjectExists(res, &p2),
+					resource.TestCheckResourceAttr(res, "bgp_config.0.md5", "fdsfsdf432F"),
 					testAccCheckPacketSameProject(t, &p1, &p2),
 				),
 			},
@@ -121,6 +122,7 @@ func TestAccPacketProject_BGPUpdate(t *testing.T) {
 				Config: testAccCheckPacketProjectConfig_BGP(rInt, "fdsfsdf432G"),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckPacketProjectExists(res, &p3),
+					resource.TestCheckResourceAttr(res, "bgp_config.0.md5", "fdsfsdf432G"),
 					testAccCheckPacketSameProject(t, &p2, &p3),
 				),
 			},

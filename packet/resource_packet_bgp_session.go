@@ -4,6 +4,7 @@ import (
 	"log"
 
 	"github.com/hashicorp/terraform/helper/schema"
+	"github.com/hashicorp/terraform/helper/validation"
 	"github.com/packethost/packngo"
 )
 
@@ -23,9 +24,10 @@ func resourcePacketBGPSession() *schema.Resource {
 				ForceNew: true,
 			},
 			"address_family": {
-				Type:     schema.TypeString,
-				Required: true,
-				ForceNew: true,
+				Type:         schema.TypeString,
+				Required:     true,
+				ForceNew:     true,
+				ValidateFunc: validation.StringInSlice([]string{"ipv4", "ipv6"}, false),
 			},
 
 			"status": {
@@ -56,6 +58,10 @@ func resourcePacketBGPSessionRead(d *schema.ResourceData, meta interface{}) erro
 	bgpSession, _, err := client.BGPSessions.Get(d.Id(),
 		&packngo.GetOptions{Includes: []string{"device"}})
 	if err != nil {
+		if isNotFound(err) {
+			d.SetId("")
+			return nil
+		}
 		return err
 	}
 	d.Set("device_id", bgpSession.Device.ID)
