@@ -42,6 +42,8 @@ The following arguments are supported:
 * `organization_id` - The UUID of Organization under which you want to create the project. If you leave it out, the project will be create under your the default Organization of your account.
 * bgp_config - Optional BGP settings. Refer to [Packet guide for BGP](https://support.packet.com/kb/articles/bgp).
 
+Once you set the BGP config in a project, it can't be removed (due to a limitation in the Packet API). It can be updated.
+
 The `bgp_config` block supports:
 * `asn` - Autonomous System Numer for local BGP deployment
 * `md5` - (Optional) Password for BGP session in plaintext (not a checksum)

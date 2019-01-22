@@ -1,6 +1,7 @@
 package packet
 
 import (
+	"fmt"
 	"path"
 	"regexp"
 	"strings"
@@ -61,7 +62,6 @@ func resourcePacketProject() *schema.Resource {
 				Type:     schema.TypeList,
 				MaxItems: 1,
 				Optional: true,
-				Computed: true,
 				ForceNew: false,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
@@ -220,9 +220,37 @@ func resourcePacketProjectUpdate(d *schema.ResourceData, meta interface{}) error
 		pPayment := d.Get("payment_method_id").(string)
 		updateRequest.PaymentMethodID = &pPayment
 	}
-	_, _, err := client.Projects.Update(d.Id(), updateRequest)
-	if err != nil {
-		return friendlyError(err)
+	if d.HasChange("bgp_config") {
+		o, n := d.GetChange("bgp_config")
+		oldarr := o.([]interface{})
+		newarr := n.([]interface{})
+		if len(newarr) == 1 {
+			bgpCreateRequest := expandBGPConfig(d)
+			_, err := client.BGPConfig.Create(d.Id(), bgpCreateRequest)
+			if err != nil {
+				return friendlyError(err)
+			}
+		} else {
+			if len(oldarr) == 1 {
+				m := oldarr[0].(map[string]interface{})
+
+				bgpConfStr := fmt.Sprintf(
+					"bgp_config {\n"+
+						"  deployment_type = \"%s\"\n"+
+						"  md5 = \"%s\"\n"+
+						"  asn = %d\n"+
+						"}", m["deployment_type"].(string), m["md5"].(string),
+					m["asn"].(int))
+
+				errStr := fmt.Errorf("BGP Config can not be removed from a project, please add back\n%s", bgpConfStr)
+				return friendlyError(errStr)
+			}
+		}
+	} else {
+		_, _, err := client.Projects.Update(d.Id(), updateRequest)
+		if err != nil {
+			return friendlyError(err)
+		}
 	}
 
 	return resourcePacketProjectRead(d, meta)
