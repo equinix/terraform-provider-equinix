@@ -2,6 +2,7 @@ package packet
 
 import (
 	"fmt"
+	"regexp"
 	"testing"
 
 	"github.com/hashicorp/terraform/helper/acctest"
@@ -25,6 +26,28 @@ func TestAccPacketProject_Basic(t *testing.T) {
 					testAccCheckPacketProjectExists("packet_project.foobar", &project),
 					resource.TestCheckResourceAttr(
 						"packet_project.foobar", "name", fmt.Sprintf("foobar-%d", rInt)),
+				),
+			},
+		},
+	})
+}
+
+func TestAccPacketProject_BGPBasic(t *testing.T) {
+	var project packngo.Project
+	rInt := acctest.RandInt()
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckPacketProjectDestroy,
+		Steps: []resource.TestStep{
+			resource.TestStep{
+				Config: testAccCheckPacketProjectConfig_BGP(rInt, "2SFsdfsg43"),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckPacketProjectExists("packet_project.foobar", &project),
+					resource.TestCheckResourceAttr(
+						"packet_project.foobar", "bgp_config.0.md5",
+						"2SFsdfsg43"),
 				),
 			},
 		},
@@ -59,6 +82,58 @@ func TestAccPacketProject_Update(t *testing.T) {
 		},
 	})
 }
+
+func testAccCheckPacketSameProject(t *testing.T, before, after *packngo.Project) resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		if before.ID != after.ID {
+			t.Fatalf("Expected device to be the same, but it was recreated: %s -> %s", before.ID, after.ID)
+		}
+		return nil
+	}
+}
+
+func TestAccPacketProject_BGPUpdate(t *testing.T) {
+	var p1, p2, p3 packngo.Project
+	rInt := acctest.RandInt()
+	res := "packet_project.foobar"
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckPacketProjectDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckPacketProjectConfig_basic(rInt),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckPacketProjectExists(res, &p1),
+					resource.TestCheckResourceAttr(res, "name",
+						fmt.Sprintf("foobar-%d", rInt)),
+				),
+			},
+			{
+				Config: testAccCheckPacketProjectConfig_BGP(rInt, "fdsfsdf432F"),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckPacketProjectExists(res, &p2),
+					resource.TestCheckResourceAttr(res, "bgp_config.0.md5", "fdsfsdf432F"),
+					testAccCheckPacketSameProject(t, &p1, &p2),
+				),
+			},
+			{
+				Config: testAccCheckPacketProjectConfig_BGP(rInt, "fdsfsdf432G"),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckPacketProjectExists(res, &p3),
+					resource.TestCheckResourceAttr(res, "bgp_config.0.md5", "fdsfsdf432G"),
+					testAccCheckPacketSameProject(t, &p2, &p3),
+				),
+			},
+			{
+				Config:      testAccCheckPacketProjectConfig_basic(rInt),
+				ExpectError: regexp.MustCompile("can not be removed"),
+			},
+		},
+	})
+}
+
 func testAccCheckPacketProjectDestroy(s *terraform.State) error {
 	client := testAccProvider.Meta().(*packngo.Client)
 
@@ -105,6 +180,18 @@ func testAccCheckPacketProjectConfig_basic(r int) string {
 resource "packet_project" "foobar" {
     name = "foobar-%d"
 }`, r)
+}
+
+func testAccCheckPacketProjectConfig_BGP(r int, pass string) string {
+	return fmt.Sprintf(`
+resource "packet_project" "foobar" {
+    name = "foobar-%d"
+	bgp_config {
+		deployment_type = "local"
+		md5 = "%s"
+		asn = 65000
+	}
+}`, r, pass)
 }
 
 func testAccCheckPacketProjectOrgConfig(r string) string {

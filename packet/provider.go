@@ -35,6 +35,7 @@ func Provider() terraform.ResourceProvider {
 			"packet_ip_attachment":       resourcePacketIPAttachment(),
 			"packet_spot_market_request": resourcePacketSpotMarketRequest(),
 			"packet_vlan":                resourcePacketVlan(),
+			"packet_bgp_session":         resourcePacketBGPSession(),
 		},
 
 		ConfigureFunc: providerConfigure,

@@ -1,6 +1,7 @@
 package packet
 
 import (
+	"fmt"
 	"path"
 	"regexp"
 	"strings"
@@ -57,8 +58,52 @@ func resourcePacketProject() *schema.Resource {
 				},
 				ValidateFunc: validation.StringMatch(uuidRE, "must be a valid UUID"),
 			},
+			"bgp_config": &schema.Schema{
+				Type:     schema.TypeList,
+				MaxItems: 1,
+				Optional: true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"deployment_type": &schema.Schema{
+							Type:         schema.TypeString,
+							Required:     true,
+							ValidateFunc: validation.StringInSlice([]string{"local", "global"}, false),
+						},
+						"asn": &schema.Schema{
+							Type:     schema.TypeInt,
+							Required: true,
+						},
+						"md5": &schema.Schema{
+							Type:     schema.TypeString,
+							Optional: true,
+						},
+						"status": &schema.Schema{
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"max_prefix": &schema.Schema{
+							Type:     schema.TypeInt,
+							Computed: true,
+						},
+					},
+				},
+			},
 		},
 	}
+}
+
+func expandBGPConfig(d *schema.ResourceData) packngo.CreateBGPConfigRequest {
+	bgpCreateRequest := packngo.CreateBGPConfigRequest{
+		DeploymentType: d.Get("bgp_config.0.deployment_type").(string),
+		Asn:            d.Get("bgp_config.0.asn").(int),
+	}
+	md5, ok := d.GetOk("bgp_config.0.md5")
+	if ok {
+		bgpCreateRequest.Md5 = md5.(string)
+	}
+
+	return bgpCreateRequest
+
 }
 
 func resourcePacketProjectCreate(d *schema.ResourceData, meta interface{}) error {
@@ -76,6 +121,14 @@ func resourcePacketProjectCreate(d *schema.ResourceData, meta interface{}) error
 
 	d.SetId(project.ID)
 
+	_, hasBGPConfig := d.GetOk("bgp_config")
+	if hasBGPConfig {
+		bgpCR := expandBGPConfig(d)
+		_, err := client.BGPConfig.Create(project.ID, bgpCR)
+		if err != nil {
+			return friendlyError(err)
+		}
+	}
 	return resourcePacketProjectRead(d, meta)
 }
 
@@ -96,14 +149,56 @@ func resourcePacketProjectRead(d *schema.ResourceData, meta interface{}) error {
 		return err
 	}
 
-	d.Set("id", proj.ID)
+	d.SetId(proj.ID)
 	d.Set("payment_method_id", path.Base(proj.PaymentMethod.URL))
 	d.Set("name", proj.Name)
 	d.Set("organization_id", path.Base(proj.Organization.URL))
 	d.Set("created", proj.Created)
 	d.Set("updated", proj.Updated)
 
+	bgpConf, _, err := client.BGPConfig.Get(proj.ID, nil)
+
+	if (err == nil) && (bgpConf != nil) {
+		// guard against an empty struct
+		if bgpConf.ID != "" {
+			err := d.Set("bgp_config", flattenBGPConfig(bgpConf))
+			if err != nil {
+				err = friendlyError(err)
+				return err
+			}
+		}
+	}
 	return nil
+}
+
+func flattenBGPConfig(l *packngo.BGPConfig) []map[string]interface{} {
+	result := make([]map[string]interface{}, 0, 1)
+
+	if l == nil {
+		return nil
+	}
+
+	r := make(map[string]interface{})
+
+	if l.Status != "" {
+		r["status"] = l.Status
+	}
+	if l.DeploymentType != "" {
+		r["deployment_type"] = l.DeploymentType
+	}
+	if l.Md5 != "" {
+		r["md5"] = l.Md5
+	}
+	if l.Asn != 0 {
+		r["asn"] = l.Asn
+	}
+	if l.MaxPrefix != 0 {
+		r["max_prefix"] = l.MaxPrefix
+	}
+
+	result = append(result, r)
+
+	return result
 }
 
 func resourcePacketProjectUpdate(d *schema.ResourceData, meta interface{}) error {
@@ -117,9 +212,37 @@ func resourcePacketProjectUpdate(d *schema.ResourceData, meta interface{}) error
 		pPayment := d.Get("payment_method_id").(string)
 		updateRequest.PaymentMethodID = &pPayment
 	}
-	_, _, err := client.Projects.Update(d.Id(), updateRequest)
-	if err != nil {
-		return friendlyError(err)
+	if d.HasChange("bgp_config") {
+		o, n := d.GetChange("bgp_config")
+		oldarr := o.([]interface{})
+		newarr := n.([]interface{})
+		if len(newarr) == 1 {
+			bgpCreateRequest := expandBGPConfig(d)
+			_, err := client.BGPConfig.Create(d.Id(), bgpCreateRequest)
+			if err != nil {
+				return friendlyError(err)
+			}
+		} else {
+			if len(oldarr) == 1 {
+				m := oldarr[0].(map[string]interface{})
+
+				bgpConfStr := fmt.Sprintf(
+					"bgp_config {\n"+
+						"  deployment_type = \"%s\"\n"+
+						"  md5 = \"%s\"\n"+
+						"  asn = %d\n"+
+						"}", m["deployment_type"].(string), m["md5"].(string),
+					m["asn"].(int))
+
+				errStr := fmt.Errorf("BGP Config can not be removed from a project, please add back\n%s", bgpConfStr)
+				return friendlyError(errStr)
+			}
+		}
+	} else {
+		_, _, err := client.Projects.Update(d.Id(), updateRequest)
+		if err != nil {
+			return friendlyError(err)
+		}
 	}
 
 	return resourcePacketProjectRead(d, meta)
