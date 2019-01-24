@@ -62,7 +62,6 @@ func resourcePacketProject() *schema.Resource {
 				Type:     schema.TypeList,
 				MaxItems: 1,
 				Optional: true,
-				ForceNew: false,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"deployment_type": &schema.Schema{
