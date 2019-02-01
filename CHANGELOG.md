@@ -1,4 +1,15 @@
 ## 1.2.6 (Unreleased)
+
+FEATURES:
+
+* [#88](https://github.com/terraform-providers/terraform-provider-packet/pull/88) Support for BGP resources
+* [#87](https://github.com/terraform-providers/terraform-provider-packet/pull/87) Upgrade to Go 1.11
+* [#85](https://github.com/terraform-providers/terraform-provider-packet/pull/85) resource/packet_vlan: New resource for VLANs
+
+IMPROVEMENTS:
+
+* [#89](https://github.com/terraform-providers/terraform-provider-packet/pull/89) Impose explicit order on network configurations in device resource
+
 ## 1.2.5 (September 28, 2018)
 
 FEATURES:
