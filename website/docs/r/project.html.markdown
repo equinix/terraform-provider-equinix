@@ -21,6 +21,7 @@ resource "packet_project" "tf_project_1" {
 ```
 
 Example with BGP config
+
 ```hcl
 # Create a new Project
 resource "packet_project" "tf_project_1" {
