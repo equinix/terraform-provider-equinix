@@ -52,9 +52,10 @@ func resourcePacketDevice() *schema.Resource {
 			},
 
 			"facility": {
-				Type:     schema.TypeString,
-				Required: true,
-				ForceNew: true,
+				Type:         schema.TypeString,
+				Required:     true,
+				ForceNew:     true,
+				ValidateFunc: validation.StringInSlice(packngo.Facilities, false),
 			},
 
 			"plan": {
