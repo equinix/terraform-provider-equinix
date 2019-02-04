@@ -105,8 +105,8 @@ EOF
     vars = {
         floating_ip    = "${packet_reserved_ip_block.addr.address}"
         floating_cidr  = "${packet_reserved_ip_block.addr.cidr}"
-        private_ipv4   = "${packet_device.test.network.0.address}"
-        gateway_ip     = "${packet_device.test.network.0.gateway}"
+        private_ipv4   = "${packet_device.test.network.2.address}"
+        gateway_ip     = "${packet_device.test.network.2.gateway}"
         bgp_password   = "${var.bgp_password}"
     }
 }
