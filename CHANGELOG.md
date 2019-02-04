@@ -1,4 +1,9 @@
-## 1.4.0 (Unreleased)
+## 1.3.1 (Unreleased)
+
+IMPROVEMENTS:
+
+- [#92](https://github.com/terraform-providers/terraform-provider-packet/pull/92) Hotfix of device network order, back to: 0. Public IPv4, 1. IPv6, 2. Private IPv4
+
 ## 1.3.0 (February 01, 2019)
 
 FEATURES:
