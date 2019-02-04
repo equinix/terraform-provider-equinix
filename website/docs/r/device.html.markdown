@@ -147,11 +147,16 @@ The following attributes are exported:
 * `project_id`- The ID of the project the device belongs to
 * `facility` - The facility the device is in
 * `plan` - The hardware config of the device
-* `network` - The device's private and public IP (v4 and v6) network details. When a device is run without any special network configuration, it will have 3 newtworks: private IPv4, public IPv4 and an IPv6 in this order. The fields of the network attribute are:
+* `network` - The device's private and public IP (v4 and v6) network details. When a device is run without any special network configuration, it will have 3 networks: 
+  * Public IPv4 at `packet_device.name.network.0`
+  * IPv6 at `packet_device.name.network.1`
+  * Private IPv4 at `packet_device.name.network.2`
+  Elastic addresses then stack by type - an assigned public IPv4 will go after the management public IPv4 (to index 1), and will then shift the indices of the IPv6 and private IPv4. Assigned private IPv4 will go after the management private IPv4 (to the end of the network list).
+  The fields of the network attributes are:
   * `address` - IPv4 or IPv6 address string
   * `cidr` - bit length of the network mask of the address
   * `gateway` - address of router
-  * `public` - whether address is routable from the Internet
+  * `public` - whether the address is routable from the Internet
   * `family` - IP version - "4" or "6"
  
 * `access_public_ipv6` - The ipv6 maintenance IP assigned to the device

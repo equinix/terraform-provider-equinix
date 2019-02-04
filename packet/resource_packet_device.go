@@ -385,11 +385,11 @@ func resourcePacketDeviceRead(d *schema.ResourceData, meta interface{}) error {
 
 func getNetworkRank(family int, public bool) int {
 	switch {
-	case family == 4 && !public:
-		return 0
 	case family == 4 && public:
-		return 1
+		return 0
 	case family == 6:
+		return 1
+	case family == 4 && public:
 		return 2
 	}
 	return 3

@@ -286,19 +286,19 @@ func testAccCheckPacketDeviceNetworkOrder(n string) resource.TestCheckFunc {
 			return fmt.Errorf("Not found: %s", n)
 		}
 		if rs.Primary.Attributes["network.0.family"] != "4" {
-			return fmt.Errorf("first netowrk should be private IPv4")
-		}
-		if rs.Primary.Attributes["network.0.public"] == "true" {
-			return fmt.Errorf("first netowrk should be private IPv4")
-		}
-		if rs.Primary.Attributes["network.1.family"] != "4" {
-			return fmt.Errorf("second netowrk should be public IPv4")
-		}
-		if rs.Primary.Attributes["network.1.public"] == "false" {
 			return fmt.Errorf("first netowrk should be public IPv4")
 		}
-		if rs.Primary.Attributes["network.2.family"] != "6" {
+		if rs.Primary.Attributes["network.0.public"] != "true" {
+			return fmt.Errorf("first netowrk should be public IPv4")
+		}
+		if rs.Primary.Attributes["network.1.family"] != "6" {
 			return fmt.Errorf("second netowrk should be public IPv6")
+		}
+		if rs.Primary.Attributes["network.2.family"] != "4" {
+			return fmt.Errorf("third netowrk should be private IPv4")
+		}
+		if rs.Primary.Attributes["network.2.public"] == "true" {
+			return fmt.Errorf("third netowrk should be private IPv4")
 		}
 		return nil
 	}
