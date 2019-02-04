@@ -120,7 +120,8 @@ The following arguments are supported:
 * `hostname` - (Required) The device name
 * `project_id` - (Required) The id of the project in which to create the device
 * `operating_system` - (Required) The operating system slug. To find the slug, or visit [Operating Systems API docs](https://www.packet.net/developers/api/#operatingsystems), set your API auth token in the top of the page and see JSON from the API response.
-* `facility` - (Required) The facility in which to create the device. To find the facility code, visit [Facilities API docs](https://www.packet.net/developers/api/#facilities), set your API auth token in the top of the page and see JSON from the API response.
+* `facility` - (Deprecated) The facility in which to create the device.
+* `facilities` - List of facility codes with deployment preferences. Packet API will go through the list and will deploy your device to first facility with free capacity. List items must be facility codes or `any` (a wildcard). To find the facility code, visit [Facilities API docs](https://www.packet.net/developers/api/#facilities), set your API auth token in the top of the page and see JSON from the API response.
 * `plan` - (Required) The device plan slug. To find the plan slug, visit [Device plans API docs](https://www.packet.net/developers/api/#plans), set your auth token in the top of the page and see JSON from the API response.
 * `billing_cycle` - (Required) monthly or hourly
 * `user_data` (Optional) - A string of the desired User Data for the device.
@@ -145,7 +146,7 @@ The following attributes are exported:
 * `id` - The ID of the device
 * `hostname`- The hostname of the device
 * `project_id`- The ID of the project the device belongs to
-* `facility` - The facility the device is in
+* `facility` - The facility where the device is deployed.
 * `plan` - The hardware config of the device
 * `network` - The device's private and public IP (v4 and v6) network details. When a device is run without any special network configuration, it will have 3 newtworks: private IPv4, public IPv4 and an IPv6 in this order. The fields of the network attribute are:
   * `address` - IPv4 or IPv6 address string
