@@ -1,4 +1,9 @@
 ## 1.3.2 (Unreleased)
+
+IMPROVEMENTS:
+
+- [#95](https://github.com/terraform-providers/terraform-provider-packet/pull/95) Hotfix - facility df2 was missing from API lib listing
+
 ## 1.3.1 (February 04, 2019)
 
 IMPROVEMENTS:
