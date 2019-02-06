@@ -17,6 +17,7 @@ type DeviceService interface {
 	PowerOff(string) (*Response, error)
 	PowerOn(string) (*Response, error)
 	Lock(string) (*Response, error)
+
 	Unlock(string) (*Response, error)
 	ListBGPSessions(deviceID string, listOpt *ListOptions) ([]BGPSession, *Response, error)
 	ListEvents(string, *ListOptions) ([]Event, *Response, error)
