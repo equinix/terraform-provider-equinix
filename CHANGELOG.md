@@ -1,4 +1,4 @@
-## 1.3.2 (Unreleased)
+## 1.3.2 (February 06, 2019)
 
 IMPROVEMENTS:
 
