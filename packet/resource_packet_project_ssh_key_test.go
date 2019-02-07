@@ -60,6 +60,10 @@ func TestAccPacketProjectSSHKey_Basic(t *testing.T) {
 						"packet_device.test", "ssh_key_ids.0",
 						"packet_project_ssh_key.test", "id",
 					),
+					resource.TestCheckResourceAttrPair(
+						"packet_project.test", "id",
+						"packet_project_ssh_key.test", "project_id",
+					),
 				),
 			},
 		},
