@@ -138,6 +138,7 @@ The following arguments are supported:
 * `storage` (Optional) - JSON for custom partitioning. Only usable on reserved hardware. More information in in the [Custom Partitioning and RAID](https://help.packet.net/article/61-custom-partitioning-raid) doc.
 * `tags` - Tags attached to the device
 * `description` - Description string for the device
+* `project_ssh_key_ids` - Array if IDs of the project SSH keys which should be added to the device. If you omit this, SSH keys of all the members of the parent project will be added to the device. If you specify this array, only the listed project SSH keys will be added. Project SSH keys can be created with the [packet_project_ssh_key][packet_project_ssh_key.html] resource.
 
 ## Attributes Reference
 
@@ -173,3 +174,4 @@ The following attributes are exported:
 * `description` - Description string for the device
 * `hardware_reservation_id` - The id of hardware reservation which this device occupies
 * `root_password` - Root password to the server (disabled after 24 hours)
+* `ssh_key_ids` - List of IDs of SSH keys deployed in the device, can be both user and project SSH keys
