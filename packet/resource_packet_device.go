@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"path"
+	"path/filepath"
 	"reflect"
 	"regexp"
 	"sort"
@@ -86,7 +87,6 @@ func resourcePacketDevice() *schema.Resource {
 				Required: true,
 				ForceNew: true,
 			},
-
 			"state": {
 				Type:     schema.TypeString,
 				Computed: true,
@@ -214,6 +214,17 @@ func resourcePacketDevice() *schema.Resource {
 				},
 				ValidateFunc: validation.ValidateJsonString,
 			},
+			"project_ssh_key_ids": {
+				Type:     schema.TypeList,
+				Optional: true,
+				ForceNew: true,
+				Elem:     &schema.Schema{Type: schema.TypeString},
+			},
+			"ssh_key_ids": {
+				Type:     schema.TypeList,
+				Computed: true,
+				Elem:     &schema.Schema{Type: schema.TypeString},
+			},
 		},
 	}
 }
@@ -280,13 +291,14 @@ func resourcePacketDeviceCreate(d *schema.ResourceData, meta interface{}) error 
 		createRequest.AlwaysPXE = attr.(bool)
 	}
 
+	projectKeys := d.Get("project_ssh_key_ids.#").(int)
+	if projectKeys > 0 {
+		createRequest.ProjectSSHKeys = convertStringArr(d.Get("project_ssh_key_ids").([]interface{}))
+	}
+
 	tags := d.Get("tags.#").(int)
 	if tags > 0 {
-		createRequest.Tags = make([]string, 0, tags)
-		for i := 0; i < tags; i++ {
-			key := fmt.Sprintf("tags.%d", i)
-			createRequest.Tags = append(createRequest.Tags, d.Get(key).(string))
-		}
+		createRequest.Tags = convertStringArr(d.Get("tags").([]interface{}))
 	}
 
 	if attr, ok := d.GetOk("storage"); ok {
@@ -359,6 +371,11 @@ func resourcePacketDeviceRead(d *schema.ResourceData, meta interface{}) error {
 	}
 
 	d.Set("tags", device.Tags)
+	keyIDs := []string{}
+	for _, k := range device.SSHKeys {
+		keyIDs = append(keyIDs, filepath.Base(k.URL))
+	}
+	d.Set("ssh_key_ids", keyIDs)
 
 	var (
 		ipv4SubnetSize int
