@@ -52,10 +52,27 @@ func resourcePacketDevice() *schema.Resource {
 			},
 
 			"facility": {
-				Type:         schema.TypeString,
-				Required:     true,
-				ForceNew:     true,
-				ValidateFunc: validation.StringInSlice(packngo.Facilities, false),
+				Type:          schema.TypeString,
+				Optional:      true,
+				ForceNew:      true,
+				ValidateFunc:  validation.StringInSlice(packngo.Facilities, false),
+				Deprecated:    "Use the 'facilities' array instead.",
+				ConflictsWith: []string{"facilities"},
+				DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
+					// ignore set of empty facility "" => "xxx1"
+					if new == "" {
+						return true
+					}
+					return false
+				},
+			},
+
+			"facilities": {
+				Type:          schema.TypeList,
+				Optional:      true,
+				ForceNew:      true,
+				Elem:          &schema.Schema{Type: schema.TypeString},
+				ConflictsWith: []string{"facility"},
 			},
 
 			"plan": {
@@ -204,10 +221,22 @@ func resourcePacketDevice() *schema.Resource {
 func resourcePacketDeviceCreate(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*packngo.Client)
 
+	var facs []string
+	f, ok := d.GetOk("facility")
+
+	if ok {
+		facs = []string{f.(string)}
+	} else {
+		facs = convertStringArr(d.Get("facilities").([]interface{}))
+		if len(facs) == 0 {
+			return fmt.Errorf("You must set either 'facilities' or 'facility'")
+		}
+	}
+
 	createRequest := &packngo.DeviceCreateRequest{
 		Hostname:             d.Get("hostname").(string),
 		Plan:                 d.Get("plan").(string),
-		Facility:             []string{d.Get("facility").(string)},
+		Facility:             facs,
 		OS:                   d.Get("operating_system").(string),
 		BillingCycle:         d.Get("billing_cycle").(string),
 		ProjectID:            d.Get("project_id").(string),

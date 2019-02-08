@@ -16,6 +16,26 @@ import (
 var matchErrMustBeProvided = regexp.MustCompile(".* must be provided when .*")
 var matchErrShouldNotBeAnIPXE = regexp.MustCompile(`.*"user_data" should not be an iPXE.*`)
 
+func TestAccPacketDevice_FacilityList(t *testing.T) {
+	var device packngo.Device
+	rs := acctest.RandString(10)
+	r := "packet_device.test"
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckPacketDeviceDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckPacketDeviceConfig_facility_list(rs),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckPacketDeviceExists(r, &device),
+				),
+			},
+		},
+	})
+}
+
 func TestAccPacketDevice_NetworkOrder(t *testing.T) {
 	var device packngo.Device
 	rs := acctest.RandString(10)
@@ -448,7 +468,25 @@ resource "packet_device" "test_subnet_29" {
   billing_cycle    = "hourly"
   project_id       = "${packet_project.test.id}"
   public_ipv4_subnet_size = 29
-}`
+}
+`
+
+func testAccCheckPacketDeviceConfig_facility_list(projSuffix string) string {
+	return fmt.Sprintf(`
+resource "packet_project" "test" {
+  name = "TerraformTestProject-%s"
+}
+
+resource "packet_device" "test"  {
+
+  hostname         = "test-ipxe-script-url"
+  plan             = "baremetal_0"
+  facilities       = ["sjc1", "any"]
+  operating_system = "ubuntu_16_04"
+  billing_cycle    = "hourly"
+  project_id       = "${packet_project.test.id}"
+}`, projSuffix)
+}
 
 func testAccCheckPacketDeviceConfig_ipxe_script_url(projSuffix, url, pxe string) string {
 	return fmt.Sprintf(`
