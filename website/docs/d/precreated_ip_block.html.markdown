@@ -58,7 +58,8 @@ resource "packet_ip_attachment" "from_ipv6_block" {
  * `project_id` - (Required) ID of the project where the searched block should be.
  * `address_family` - (Required) 4 or 6, depending on which block you are looking for.
  * `public` - (Required) Whether to look for public or private block. 
- * `facility` - (Required) Facility of the searched block.
+ * `global` - (Optional) Whether to look for global block. Default is false for backward compatibility.
+ * `facility` - (Optional) Facility of the searched block. (Optional) Only allowed for non-global blocks.
 
 ## Attributes Reference
 

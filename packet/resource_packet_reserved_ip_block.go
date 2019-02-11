@@ -5,6 +5,7 @@ import (
 	"path"
 
 	"github.com/hashicorp/terraform/helper/schema"
+	"github.com/hashicorp/terraform/helper/validation"
 	"github.com/packethost/packngo"
 )
 
@@ -14,11 +15,15 @@ func packetIPComputedFields() map[string]*schema.Schema {
 			Type:     schema.TypeString,
 			Computed: true,
 		},
-		"gateway": {
-			Type:     schema.TypeString,
+		"address_family": {
+			Type:     schema.TypeInt,
 			Computed: true,
 		},
-		"network": {
+		"cidr": {
+			Type:     schema.TypeInt,
+			Computed: true,
+		},
+		"gateway": {
 			Type:     schema.TypeString,
 			Computed: true,
 		},
@@ -26,15 +31,11 @@ func packetIPComputedFields() map[string]*schema.Schema {
 			Type:     schema.TypeString,
 			Computed: true,
 		},
-		"cidr": {
-			Type:     schema.TypeInt,
+		"network": {
+			Type:     schema.TypeString,
 			Computed: true,
 		},
-		"address_family": {
-			Type:     schema.TypeInt,
-			Computed: true,
-		},
-		"public": {
+		"manageable": {
 			Type:     schema.TypeBool,
 			Computed: true,
 		},
@@ -42,29 +43,50 @@ func packetIPComputedFields() map[string]*schema.Schema {
 			Type:     schema.TypeBool,
 			Computed: true,
 		},
-		"manageable": {
-			Type:     schema.TypeBool,
-			Computed: true,
-		},
 	}
 }
 
+func packetIPResourceComputedFields() map[string]*schema.Schema {
+	s := packetIPComputedFields()
+	s["address_family"] = &schema.Schema{
+		Type:     schema.TypeInt,
+		Computed: true,
+	}
+	s["public"] = &schema.Schema{
+		Type:     schema.TypeBool,
+		Computed: true,
+	}
+	s["global"] = &schema.Schema{
+		Type:     schema.TypeBool,
+		Computed: true,
+	}
+	return s
+}
+
 func resourcePacketReservedIPBlock() *schema.Resource {
-	reservedBlockSchema := packetIPComputedFields()
+	reservedBlockSchema := packetIPResourceComputedFields()
 	reservedBlockSchema["project_id"] = &schema.Schema{
 		Type:     schema.TypeString,
 		Required: true,
 		ForceNew: true,
 	}
 	reservedBlockSchema["facility"] = &schema.Schema{
-		Type:     schema.TypeString,
-		Required: true,
-		ForceNew: true,
+		Type:         schema.TypeString,
+		Optional:     true,
+		ForceNew:     true,
+		ValidateFunc: validation.StringInSlice(packngo.Facilities, false),
 	}
 	reservedBlockSchema["quantity"] = &schema.Schema{
 		Type:     schema.TypeInt,
 		Required: true,
 		ForceNew: true,
+	}
+	reservedBlockSchema["type"] = &schema.Schema{
+		Type:         schema.TypeString,
+		ForceNew:     true,
+		Default:      "public_ipv4",
+		Optional:     true,
+		ValidateFunc: validation.StringInSlice([]string{"public_ipv4", "global_ipv4"}, false),
 	}
 	reservedBlockSchema["cidr_notation"] = &schema.Schema{
 		Type:     schema.TypeString,
@@ -85,13 +107,21 @@ func resourcePacketReservedIPBlock() *schema.Resource {
 
 func resourcePacketReservedIPBlockCreate(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*packngo.Client)
-	facility := d.Get("facility").(string)
 	quantity := d.Get("quantity").(int)
+	typ := d.Get("type").(string)
 
 	req := packngo.IPReservationRequest{
-		Type:     "public_ipv4",
+		Type:     typ,
 		Quantity: quantity,
-		Facility: &facility,
+	}
+	f, ok := d.GetOk("facility")
+
+	if ok && typ == "global_ipv4" {
+		return fmt.Errorf("Facility can not be set for type == global_ipv4")
+	}
+	fs := f.(string)
+	if typ == "public_ipv4" {
+		req.Facility = &fs
 	}
 
 	projectID := d.Get("project_id").(string)
@@ -101,12 +131,30 @@ func resourcePacketReservedIPBlockCreate(d *schema.ResourceData, meta interface{
 		return fmt.Errorf("Error reserving IP address block: %s", err)
 	}
 
-	d.Set("facility", facility)
-	d.Set("quantity", quantity)
 	d.Set("project_id", projectID)
 	d.SetId(blockAddr.ID)
 
 	return resourcePacketReservedIPBlockRead(d, meta)
+}
+
+func getGlobalBool(r *packngo.IPAddressReservation) bool {
+	if r.Global != nil {
+		return *(r.Global)
+	}
+	return false
+}
+
+func getType(r *packngo.IPAddressReservation) (string, error) {
+	globalBool := getGlobalBool(r)
+	switch {
+	case !r.Public:
+		return fmt.Sprintf("private_ipv%d", r.AddressFamily), nil
+	case r.Public && !globalBool:
+		return fmt.Sprintf("public_ipv%d", r.AddressFamily), nil
+	case r.Public && globalBool:
+		return fmt.Sprintf("global_ipv%d", r.AddressFamily), nil
+	}
+	return "", fmt.Errorf("Unknown reservation type %+v", r)
 }
 
 func loadBlock(d *schema.ResourceData, reservedBlock *packngo.IPAddressReservation) error {
@@ -114,12 +162,19 @@ func loadBlock(d *schema.ResourceData, reservedBlock *packngo.IPAddressReservati
 
 	d.SetId(reservedBlock.ID)
 	d.Set("address", reservedBlock.Address)
-	d.Set("facility", reservedBlock.Facility.Code)
+	if reservedBlock.Facility != nil {
+		d.Set("facility", reservedBlock.Facility.Code)
+	}
 	d.Set("gateway", reservedBlock.Gateway)
 	d.Set("network", reservedBlock.Network)
 	d.Set("netmask", reservedBlock.Netmask)
 	d.Set("address_family", reservedBlock.AddressFamily)
 	d.Set("cidr", reservedBlock.CIDR)
+	typ, err := getType(reservedBlock)
+	if err != nil {
+		return err
+	}
+	d.Set("type", typ)
 	d.Set("public", reservedBlock.Public)
 	d.Set("management", reservedBlock.Management)
 	d.Set("manageable", reservedBlock.Manageable)
@@ -148,9 +203,14 @@ func resourcePacketReservedIPBlockRead(d *schema.ResourceData, meta interface{})
 
 	reservedBlock, _, err := client.ProjectIPs.Get(id, nil)
 	if err != nil {
+		if isNotFound(err) {
+			d.SetId("")
+			return nil
+		}
 		return fmt.Errorf("Error reading IP address block with ID %s: %s", id, err)
 	}
 	err = loadBlock(d, reservedBlock)
+	d.Set("global", getGlobalBool(reservedBlock))
 	if err != nil {
 		return err
 	}
