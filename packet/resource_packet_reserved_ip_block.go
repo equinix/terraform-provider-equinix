@@ -91,7 +91,7 @@ func resourcePacketReservedIPBlockCreate(d *schema.ResourceData, meta interface{
 	req := packngo.IPReservationRequest{
 		Type:     "public_ipv4",
 		Quantity: quantity,
-		Facility: facility,
+		Facility: &facility,
 	}
 
 	projectID := d.Get("project_id").(string)
