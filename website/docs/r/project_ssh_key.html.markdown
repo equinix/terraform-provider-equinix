@@ -16,7 +16,7 @@ If you supply a list of project SSH keys when creating a new device, only the li
 
 ```hcl
 resource "packet_project" "test" {
-	name = "test"
+    name = "test"
 }
 
 resource "packet_project_ssh_key" "test" {
@@ -31,7 +31,7 @@ resource "packet_device" "test" {
     facility            = "ewr1"
     operating_system    = "ubuntu_16_04"
     billing_cycle       = "hourly"
-	project_ssh_key_ids = ["${packet_project_ssh_key.test.id}"]
+    project_ssh_key_ids = ["${packet_project_ssh_key.test.id}"]
     project_id          = "${packet_project.test.id}"
 }
 ```
