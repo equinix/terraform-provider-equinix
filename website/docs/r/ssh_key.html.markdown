@@ -8,10 +8,9 @@ description: |-
 
 # packet\_ssh_key
 
-Provides a Packet SSH key resource to allow you manage SSH
-keys on your account. All SSH keys on your account are loaded on
-all new devices, they do not have to be explicitly declared on
-device creation.
+Provides a resource to manage User SSH keys on your Packet user account. If you create a new device in a project, all the keys of the project's collaborators will be injected to the device.
+
+The link between User SSH key and device is implicit. If you want to make sure that a key will be copied to a device, you must ensure that the device resource `depends_on` the key resource.
 
 ## Example Usage
 
@@ -21,6 +20,19 @@ resource "packet_ssh_key" "key1" {
   name       = "terraform-1"
   public_key = "${file("/home/terraform/.ssh/id_rsa.pub")}"
 }
+
+# Create new device with "key1" included. The device resource "depends_on" the
+# key, in order to make sure the key is created before the device.
+resource "packet_device" "test" {
+  hostname         = "test-device"
+  plan             = "baremetal_0"
+  facility         = "sjc1"
+  operating_system = "ubuntu_16_04"
+  billing_cycle    = "hourly"
+  project_id       = "${packet_project.test.id}"
+  depends_on       = ["packet_ssh_key.key1"]
+}
+
 ```
 
 ## Argument Reference
