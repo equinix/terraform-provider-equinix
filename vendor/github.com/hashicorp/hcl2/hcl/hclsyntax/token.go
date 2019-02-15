@@ -110,7 +110,6 @@ type scanMode int
 const (
 	scanNormal scanMode = iota
 	scanTemplate
-	scanIdentOnly
 )
 
 type tokenAccum struct {
