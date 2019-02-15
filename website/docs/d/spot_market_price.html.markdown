@@ -15,7 +15,7 @@ Use this data source to get Packet Spot Market Price.
 ```hcl
 data "packet_spot_market_price" "example" {
   facility = "ewr1"
-  plan     = "baremetal_1"
+  plan     = "c1.small.x86"
 }
 ```
 

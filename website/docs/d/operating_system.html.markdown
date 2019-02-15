@@ -17,12 +17,12 @@ data "packet_operating_system" "example" {
   name             = "Container Linux"
   distro           = "coreos"
   version          = "alpha"
-  provisionable_on = "baremetal_1"
+  provisionable_on = "c1.small.x86"
 }
 
 resource "packet_device" "server" {
   hostname         = "tf.coreos2"
-  plan             = "baremetal_1"
+  plan             = "c1.small.x86"
   facility         = "ewr1"
   operating_system = "${data.packet_operating_system.example.id}"
   billing_cycle    = "hourly"

@@ -23,7 +23,7 @@ Once attached by Terraform, they must then be mounted using the `packet_block_at
 
   resource "packet_device" "test_device_va" {
       hostname         = "terraform-test-device-va"
-      plan             = "baremetal_0"
+      plan             = "t1.small.x86"
       facility         = "ewr1"
       operating_system = "ubuntu_16_04"
       billing_cycle    = "hourly"

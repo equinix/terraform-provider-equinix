@@ -30,7 +30,7 @@ resource "packet_project" "cool_project" {
 # Create a device and add it to tf_project_1
 resource "packet_device" "web1" {
   hostname         = "tf.coreos2"
-  plan             = "baremetal_1"
+  plan             = "c1.small.x86"
   facility         = "ewr1"
   operating_system = "coreos_stable"
   billing_cycle    = "hourly"
