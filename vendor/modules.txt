@@ -139,7 +139,7 @@ github.com/mitchellh/hashstructure
 github.com/mitchellh/mapstructure
 # github.com/mitchellh/reflectwalk v0.0.0-20161003174516-92573fe8d000
 github.com/mitchellh/reflectwalk
-# github.com/packethost/packngo v0.0.0-20190211152738-b7b517a127ae
+# github.com/packethost/packngo v0.1.1-0.20190213154534-caf7bb8cb104
 github.com/packethost/packngo
 # github.com/posener/complete v0.0.0-20170829171112-9f41f7636a72
 github.com/posener/complete
@@ -161,7 +161,7 @@ github.com/zclconf/go-cty/cty/function/stdlib
 github.com/zclconf/go-cty/cty/set
 github.com/zclconf/go-cty/cty/gocty
 github.com/zclconf/go-cty/cty/json
-# golang.org/x/crypto v0.0.0-20170808112155-b176d7def5d7
+# golang.org/x/crypto v0.0.0-20190211182817-74369b46fc67
 golang.org/x/crypto/openpgp
 golang.org/x/crypto/bcrypt
 golang.org/x/crypto/ssh
@@ -172,9 +172,12 @@ golang.org/x/crypto/openpgp/s2k
 golang.org/x/crypto/blowfish
 golang.org/x/crypto/curve25519
 golang.org/x/crypto/ed25519
+golang.org/x/crypto/internal/chacha20
+golang.org/x/crypto/poly1305
 golang.org/x/crypto/cast5
 golang.org/x/crypto/openpgp/elgamal
 golang.org/x/crypto/ed25519/internal/edwards25519
+golang.org/x/crypto/internal/subtle
 # golang.org/x/net v0.0.0-20180306060152-d25186b37f34
 golang.org/x/net/context
 golang.org/x/net/html
@@ -185,7 +188,7 @@ golang.org/x/net/http2/hpack
 golang.org/x/net/idna
 golang.org/x/net/lex/httplex
 golang.org/x/net/internal/timeseries
-# golang.org/x/sys v0.0.0-20170901181214-7ddbeae9ae08
+# golang.org/x/sys v0.0.0-20190209173611-3b5209105503
 golang.org/x/sys/unix
 # golang.org/x/text v0.0.0-20180302201248-b7ef84aaf62a
 golang.org/x/text/unicode/norm

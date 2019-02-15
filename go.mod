@@ -38,18 +38,15 @@ require (
 	github.com/mitchellh/hashstructure v0.0.0-20160209213820-6b17d669fac5 // indirect
 	github.com/mitchellh/mapstructure v0.0.0-20170307201123-53818660ed49 // indirect
 	github.com/mitchellh/reflectwalk v0.0.0-20161003174516-92573fe8d000 // indirect
-	github.com/packethost/packngo v0.0.0-20190211152738-b7b517a127ae
+	github.com/packethost/packngo v0.1.1-0.20190213154534-caf7bb8cb104
 	github.com/posener/complete v0.0.0-20170829171112-9f41f7636a72 // indirect
 	github.com/satori/go.uuid v0.0.0-20160927100844-b061729afc07 // indirect
 	github.com/smartystreets/assertions v0.0.0-20190116191733-b6c0e53d7304 // indirect
 	github.com/smartystreets/goconvey v0.0.0-20181108003508-044398e4856c // indirect
-	github.com/stretchr/testify v1.3.0 // indirect
 	github.com/ulikunitz/xz v0.5.4 // indirect
 	github.com/zclconf/go-cty v0.0.0-20180302160414-49fa5e03c418 // indirect
-	golang.org/x/crypto v0.0.0-20170808112155-b176d7def5d7 // indirect
 	golang.org/x/net v0.0.0-20180306060152-d25186b37f34 // indirect
 	golang.org/x/sync v0.0.0-20181221193216-37e7f081c4d4 // indirect
-	golang.org/x/sys v0.0.0-20170901181214-7ddbeae9ae08 // indirect
 	golang.org/x/text v0.0.0-20180302201248-b7ef84aaf62a // indirect
 	google.golang.org/genproto v0.0.0-20170904050139-595979c8a7bf // indirect
 	google.golang.org/grpc v0.0.0-20170901234541-91999f444f2a // indirect
