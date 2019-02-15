@@ -37,7 +37,7 @@ resource "packet_reserved_ip_block" "two_elastic_addresses" {
 resource "packet_reserved_ip_block" "test" {
     project_id = "${packet_project.myproject.id}"
     type     = "global_ipv4"
-	quantity = 1
+    quantity = 1
 }`
 ```
 
