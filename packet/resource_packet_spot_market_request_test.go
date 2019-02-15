@@ -88,6 +88,6 @@ var testAccCheckPacketSpotMarketRequestConfig_basic = `
 		  "hostname"         = "testspot"
 		  "billing_cycle"    = "hourly"
 		  "operating_system" = "coreos_stable"
-		  "plan"             = "baremetal_0"
+		  "plan"             = "t1.small.x86"
 		}
 	  }`

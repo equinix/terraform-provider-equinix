@@ -22,7 +22,7 @@ modify, and delete devices.
 # Create a device and add it to cool_project
 resource "packet_device" "web1" {
   hostname         = "tf.coreos2"
-  plan             = "baremetal_1"
+  plan             = "t1.small.x86"
   facility         = "ewr1"
   operating_system = "coreos_stable"
   billing_cycle    = "hourly"
@@ -34,7 +34,7 @@ resource "packet_device" "web1" {
 # Same as above, but boot via iPXE initially, using the Ignition Provider for provisioning
 resource "packet_device" "pxe1" {
   hostname         = "tf.coreos2-pxe"
-  plan             = "baremetal_1"
+  plan             = "t1.small.x86"
   facility         = "ewr1"
   operating_system = "custom_ipxe"
   billing_cycle    = "hourly"
@@ -49,7 +49,7 @@ resource "packet_device" "pxe1" {
 # Deploy device on next-available reserved hardware and do custom partitioning.
 resource "packet_device" "web1" {
   hostname         = "tftest"
-  plan             = "baremetal_0"
+  plan             = "t1.small.x86"
   facility         = "sjc1"
   operating_system = "ubuntu_16_04"
   billing_cycle    = "hourly"

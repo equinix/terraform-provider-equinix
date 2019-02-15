@@ -63,7 +63,7 @@ resource "packet_project" "test" {
 
 resource "packet_device" "test" {
     hostname         = "terraform-test-bgp-sesh"
-    plan             = "baremetal_0"
+    plan             = "t1.small.x86"
     facility         = "ewr1"
     operating_system = "ubuntu_16_04"
     billing_cycle    = "hourly"

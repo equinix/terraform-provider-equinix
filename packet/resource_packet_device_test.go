@@ -389,7 +389,7 @@ resource "packet_project" "test" {
 
 resource "packet_device" "test" {
   hostname         = "test-device-%d"
-  plan             = "baremetal_0"
+  plan             = "t1.small.x86"
   facility         = "sjc1"
   operating_system = "ubuntu_16_04"
   billing_cycle    = "hourly"
@@ -408,7 +408,7 @@ resource "packet_project" "test" {
 resource "packet_device" "test" {
   hostname         = "test-device-%d"
   description      = "test-desc-%d"
-  plan             = "baremetal_0"
+  plan             = "t1.small.x86"
   facility         = "sjc1"
   operating_system = "ubuntu_16_04"
   billing_cycle    = "hourly"
@@ -427,7 +427,7 @@ resource "packet_project" "test" {
 resource "packet_device" "test" {
   hostname         = "test-device-%d"
   description      = "test-desc-%d"
-  plan             = "baremetal_0"
+  plan             = "t1.small.x86"
   facility         = "sjc1"
   operating_system = "ubuntu_16_04"
   billing_cycle    = "hourly"
@@ -447,7 +447,7 @@ resource "packet_project" "test" {
 
 resource "packet_device" "test" {
   hostname         = "test-device"
-  plan             = "baremetal_0"
+  plan             = "t1.small.x86"
   facility         = "sjc1"
   operating_system = "ubuntu_16_04"
   billing_cycle    = "hourly"
@@ -462,7 +462,7 @@ resource "packet_project" "test" {
 
 resource "packet_device" "test_subnet_29" {
   hostname         = "test-subnet-29"
-  plan             = "baremetal_0"
+  plan             = "t1.small.x86"
   facility         = "sjc1"
   operating_system = "ubuntu_16_04"
   billing_cycle    = "hourly"
@@ -480,7 +480,7 @@ resource "packet_project" "test" {
 resource "packet_device" "test"  {
 
   hostname         = "test-ipxe-script-url"
-  plan             = "baremetal_0"
+  plan             = "t1.small.x86"
   facilities       = ["sjc1", "any"]
   operating_system = "ubuntu_16_04"
   billing_cycle    = "hourly"
@@ -497,7 +497,7 @@ resource "packet_project" "test" {
 resource "packet_device" "test_ipxe_script_url"  {
 
   hostname         = "test-ipxe-script-url"
-  plan             = "baremetal_0"
+  plan             = "t1.small.x86"
   facility         = "sjc1"
   operating_system = "custom_ipxe"
   user_data        = "#!/bin/sh\ntouch /tmp/test"
@@ -515,7 +515,7 @@ resource "packet_project" "test" {
 
 resource "packet_device" "test_ipxe_conflict" {
   hostname         = "test-ipxe-conflict"
-  plan             = "baremetal_0"
+  plan             = "t1.small.x86"
   facility         = "sjc1"
   operating_system = "custom_ipxe"
   user_data        = "#!ipxe\nset conflict ipxe_script_url"
@@ -532,7 +532,7 @@ resource "packet_project" "test" {
 
 resource "packet_device" "test_ipxe_missing" {
   hostname         = "test-ipxe-missing"
-  plan             = "baremetal_0"
+  plan             = "t1.small.x86"
   facility         = "sjc1"
   operating_system = "custom_ipxe"
   billing_cycle    = "hourly"
