@@ -126,8 +126,8 @@ func loadBlock(d *schema.ResourceData, reservedBlock *packngo.IPAddressReservati
 	if reservedBlock.AddressFamily == 4 {
 		d.Set("quantity", ipv4CIDRToQuantity[reservedBlock.CIDR])
 	} else {
-		// In Packet, reserved IPv6 block is allocated when device is run in a proejct.
-		// It's always /56, and it can't be crated with Terraform, only imported.
+		// In Packet, a reserved IPv6 block is allocated when a device is run in a project.
+		// It's always /56, and it can't be created with Terraform, only imported.
 		// The longest assignable prefix is /64, making it max 256 subnets per block.
 		// The following logic will hold as long as /64 is the smallest assignable subnet size.
 		bits := 64 - reservedBlock.CIDR
