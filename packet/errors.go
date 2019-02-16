@@ -2,7 +2,6 @@ package packet
 
 import (
 	"net/http"
-	"strconv"
 	"strings"
 
 	"github.com/packethost/packngo"
@@ -11,12 +10,10 @@ import (
 func friendlyError(err error) error {
 	if e, ok := err.(*packngo.ErrorResponse); ok {
 		errors := Errors(e.Errors)
-		/*
-		 ** if packngo gives us blank error strings, populate them with something useful
-                 ** this is useful so the user gets some sort of indication of a failure rather than a blank message
-		 */
+		// if packngo gives us blank error strings, populate them with something useful
+		// this is useful so the user gets some sort of indication of a failure rather than a blank message
 		if 0 == len(errors) {
-			errors = Errors{strconv.Itoa(e.Response.StatusCode) + " " + http.StatusText(e.Response.StatusCode)}
+			errors = Errors{e.SingleError}
 		}
 		return &ErrorResponse{
 			StatusCode: e.Response.StatusCode,
