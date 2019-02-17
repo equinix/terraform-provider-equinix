@@ -39,7 +39,7 @@ resource "packet_project" "tf_project_1" {
 The following arguments are supported:
 
 * `name` - (Required) The name of the Project on Packet.net
-* `payment_method_id` - The UUID of payment method for this project. If you keep it empty, Packet API will pick your default Payment Method.
+* `payment_method_id` - The UUID of payment method for this project that belongs to the same organization_id. If you keep it empty, Packet API will pick your default Payment Method.
 * `organization_id` - The UUID of Organization under which you want to create the project. If you leave it out, the project will be create under your the default Organization of your account.
 * bgp_config - Optional BGP settings. Refer to [Packet guide for BGP](https://support.packet.com/kb/articles/bgp).
 
@@ -55,7 +55,7 @@ The `bgp_config` block supports:
 The following attributes are exported:
 
 * `id` - The unique ID of the project
-* `payment_method_id` - The UUID of payment method for this project.
+* `payment_method_id` - The UUID of payment method for this project,needing to belong to the same organization_id.
 * `organization_id` - The UUID of this project's parent organization.
 * `created` - The timestamp for when the Project was created
 * `updated` - The timestamp for the last time the Project was updated
