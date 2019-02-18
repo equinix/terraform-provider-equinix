@@ -1,4 +1,19 @@
 ## 1.4.0 (Unreleased)
+
+FEATURES:
+
+- [#101](https://github.com/terraform-providers/terraform-provider-packet/pull/101) Bump Go version to 1.11.5 and switch to Go Modules
+- [#96](https://github.com/terraform-providers/terraform-provider-packet/pull/96) New resource/packet_project_ssh_key: Resource for Project SSH Keys
+- [#93](https://github.com/terraform-providers/terraform-provider-packet/pull/93) resource/packet_device: Allow list of facilities and "any" facility
+
+IMPROVEMENTS:
+
+- Various doc improvements
+
+BUG FIXES:
+
+- [#104](https://github.com/terraform-providers/terraform-provider-packet/pull/104) Fix empty error messages on invalid credentials
+
 ## 1.3.2 (February 06, 2019)
 
 IMPROVEMENTS:
