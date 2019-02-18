@@ -13,7 +13,7 @@ Requirements
 -	[Terraform](https://www.terraform.io/downloads.html) 0.10.x
 -	[Go](https://golang.org/doc/install) 1.11 (to build the provider plugin)
 
-Building The Provider
+Building the provider
 ---------------------
 
 Clone repository to: `$GOPATH/src/github.com/terraform-providers/terraform-provider-packet`
@@ -38,7 +38,7 @@ The packet provider will be installed on `terraform init` of a template using an
 Available resource and datasources are documented at [https://www.terraform.io/docs/providers/packet/index.html](https://www.terraform.io/docs/providers/packet/index.html).
 
 
-Developing the Provider
+Developing the provider
 ---------------------------
 
 If you wish to work on the provider, you'll first need [Go](http://www.golang.org) installed on your machine (version 1.11+ is *required*). You'll also need to correctly setup a [GOPATH](http://golang.org/doc/code.html#GOPATH), as well as adding `$GOPATH/bin` to your `$PATH`.
@@ -52,25 +52,30 @@ $ $GOPATH/bin/terraform-provider-packet
 ...
 ```
 
-In order to test the provider, you can simply run `make test`.
+
+Testing provider code
+---------------------------
+
+We have mostly acceptance tests in the provider. There's no point for you to run them all, but you should run the one covering the functionality which you change. The acceptance test run will cost you some money, so feel free to abstain. The acceptance test suite will be run for your PR during the review process.
+
+To run an acceptance test, find the relevant test function in `*_test.go` (for example TestAccPacketDevice_Basic), and run it as
 
 ```sh
-$ make test
+TF_ACC=1 go test -v -timeout=20m -run=TestAccPacketDevice_Basic
 ```
 
-In order to run the full suite of Acceptance tests, run `make testacc`.
-
-*Note:* Acceptance tests create real resources, and often cost money to run.
+If you want to see HTTP traffic, set `TF_LOG=DEBUG`, i.e.
 
 ```sh
-$ make testacc
+TF_LOG=DEBUG TF_ACC=1 go test -v -timeout=20m -run=TestAccPacketDevice_Basic
 ```
 
 
-Testing the Provider with Terraform
+
+Testing the provider with Terraform
 ---------------------------------------
 
-Once you've built the plugin binary (see Developing the Provider above), it can be incorporated within your Terraform environment using the `-plugin-dir` option. Subsequent runs of Terraform will then use the plugin from your development environment.
+Once you've built the plugin binary (see [Developing the provider](#developing-the-provider) above), it can be incorporated within your Terraform environment using the `-plugin-dir` option. Subsequent runs of Terraform will then use the plugin from your development environment.
 
 ```sh
 $ terraform init -plugin-dir $GOPATH/bin
