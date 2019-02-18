@@ -8,13 +8,13 @@ description: |-
 
 # packet\_project
 
-Provides a Packet Project resource to allow you manage devices
+Provides a Packet project resource to allow you manage devices
 in your projects.
 
 ## Example Usage
 
 ```hcl
-# Create a new Project
+# Create a new project
 resource "packet_project" "tf_project_1" {
   name           = "Terraform Fun"
 }
@@ -38,10 +38,10 @@ resource "packet_project" "tf_project_1" {
 
 The following arguments are supported:
 
-* `name` - (Required) The name of the Project on Packet.net
-* `payment_method_id` - The UUID of payment method for this project. If you keep it empty, Packet API will pick your default Payment Method.
-* `organization_id` - The UUID of Organization under which you want to create the project. If you leave it out, the project will be create under your the default Organization of your account.
-* bgp_config - Optional BGP settings. Refer to [Packet guide for BGP](https://support.packet.com/kb/articles/bgp).
+* `name` - (Required) The name of the project on Packet.net
+* `organization_id` - The UUID of organization under which you want to create the project. If you leave it out, the project will be create under your the default organization of your account.
+* `payment_method_id` - The UUID of payment method for this project. The payment method and the project need to belong to the same organization (passed with `organization_id`, or default).
+* `bgp_config` - Optional BGP settings. Refer to [Packet guide for BGP](https://support.packet.com/kb/articles/bgp).
 
 Once you set the BGP config in a project, it can't be removed (due to a limitation in the Packet API). It can be updated.
 
@@ -55,10 +55,10 @@ The `bgp_config` block supports:
 The following attributes are exported:
 
 * `id` - The unique ID of the project
-* `payment_method_id` - The UUID of payment method for this project.
+* `payment_method_id` - The UUID of payment method for this project. 
 * `organization_id` - The UUID of this project's parent organization.
-* `created` - The timestamp for when the Project was created
-* `updated` - The timestamp for the last time the Project was updated
+* `created` - The timestamp for when the project was created
+* `updated` - The timestamp for the last time the project was updated
 
 The `bgp_config` block additionally exports: 
 * `status` - status of BGP configuration in the project
