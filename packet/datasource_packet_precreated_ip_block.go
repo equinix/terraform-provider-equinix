@@ -59,6 +59,10 @@ func dataSourcePacketReservedIPBlockRead(d *schema.ResourceData, meta interface{
 	public := d.Get("public").(bool)
 	global := d.Get("global").(bool)
 
+	if !public && global {
+		return fmt.Errorf("Private (non-public) global IP address blocks are not supported in Packet")
+	}
+
 	fval, fok := d.GetOk("facility")
 	if fok && global {
 		return fmt.Errorf("You can't specify facility for global IP block - addresses from global blocks can be assigned to devices across several facilities")
