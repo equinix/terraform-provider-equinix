@@ -5,6 +5,36 @@ import (
 	"github.com/packethost/packngo"
 )
 
+func packetSSHKeyCommonFields() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"name": {
+			Type:     schema.TypeString,
+			Required: true,
+		},
+
+		"public_key": {
+			Type:     schema.TypeString,
+			Required: true,
+			ForceNew: true,
+		},
+		"fingerprint": {
+			Type:     schema.TypeString,
+			Computed: true,
+		},
+
+		"created": {
+			Type:     schema.TypeString,
+			Computed: true,
+		},
+
+		"updated": {
+			Type:     schema.TypeString,
+			Computed: true,
+		},
+	}
+
+}
+
 func resourcePacketSSHKey() *schema.Resource {
 	return &schema.Resource{
 		Create: resourcePacketSSHKeyCreate,
@@ -12,33 +42,7 @@ func resourcePacketSSHKey() *schema.Resource {
 		Update: resourcePacketSSHKeyUpdate,
 		Delete: resourcePacketSSHKeyDelete,
 
-		Schema: map[string]*schema.Schema{
-			"name": {
-				Type:     schema.TypeString,
-				Required: true,
-			},
-
-			"public_key": {
-				Type:     schema.TypeString,
-				Required: true,
-				ForceNew: true,
-			},
-
-			"fingerprint": {
-				Type:     schema.TypeString,
-				Computed: true,
-			},
-
-			"created": {
-				Type:     schema.TypeString,
-				Computed: true,
-			},
-
-			"updated": {
-				Type:     schema.TypeString,
-				Computed: true,
-			},
-		},
+		Schema: packetSSHKeyCommonFields(),
 	}
 }
 
@@ -50,12 +54,20 @@ func resourcePacketSSHKeyCreate(d *schema.ResourceData, meta interface{}) error 
 		Key:   d.Get("public_key").(string),
 	}
 
+	projectID, isProjectKey := d.GetOk("project_id")
+	if isProjectKey {
+		createRequest.ProjectID = projectID.(string)
+	}
+
 	key, _, err := client.SSHKeys.Create(createRequest)
 	if err != nil {
 		return friendlyError(err)
 	}
 
 	d.SetId(key.ID)
+	if isProjectKey {
+		return resourcePacketProjectSSHKeyRead(d, meta)
+	}
 
 	return resourcePacketSSHKeyRead(d, meta)
 }
