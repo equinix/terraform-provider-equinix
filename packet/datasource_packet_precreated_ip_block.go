@@ -61,7 +61,7 @@ func dataSourcePacketReservedIPBlockRead(d *schema.ResourceData, meta interface{
 
 	fval, fok := d.GetOk("facility")
 	if fok && global {
-		return fmt.Errorf("You can't specify facility for global IP block - addresses from global blocks can be assigned to devices in any facility")
+		return fmt.Errorf("You can't specify facility for global IP block - addresses from global blocks can be assigned to devices across several facilities")
 	}
 
 	if fok {

@@ -48,8 +48,8 @@ The following arguments are supported:
 
 * `project_id` - (Required) The packet project ID where to allocate the address block
 * `quantity` - (Required) The number of allocated /32 addresses, a power of 2
-* `facility` - (Optional) Facility where to allocate the public IP address block, makes sense only for type==public_ipv4
 * `type` - (Optional) Either "global_ipv4" or "public_ipv4", defaults to "public_ipv4" for backward compatibility
+* `facility` - (Optional) Facility where to allocate the public IP address block, makes sense only for type==public_ipv4, must be empty for type==global_ipv4
 
 
 ## Attributes Reference
