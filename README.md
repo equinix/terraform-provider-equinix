@@ -65,3 +65,13 @@ In order to run the full suite of Acceptance tests, run `make testacc`.
 ```sh
 $ make testacc
 ```
+
+
+Testing the Provider with Terraform
+---------------------------------------
+
+Once you've built the plugin binary (see Developing the Provider above), it can be incorporated within your Terraform environment using the `-plugin-dir` option. Subsequent runs of Terraform will then use the plugin from your development environment.
+
+```sh
+$ terraform init -plugin-dir $GOPATH/bin
+```
