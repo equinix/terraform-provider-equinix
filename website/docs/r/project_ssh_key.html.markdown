@@ -8,7 +8,7 @@ description: |-
 
 # packet_project_ssh_key
 
-Provides a Packet project SSH key resource to manage project-specific SSH keys. On contrary to user SSHK keys, project SSH keys are used to exclusively populate `authorized_keys` in new devices.
+Provides a Packet project SSH key resource to manage project-specific SSH keys. On contrary to user SSH keys, project SSH keys are used to exclusively populate `authorized_keys` in new devices.
 
 If you supply a list of project SSH keys when creating a new device, only the listed keys are used; user SSH keys are ignored.
 
