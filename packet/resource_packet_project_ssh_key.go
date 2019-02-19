@@ -27,8 +27,15 @@ func resourcePacketProjectSSHKeyRead(d *schema.ResourceData, meta interface{}) e
 	projectID := d.Get("project_id").(string)
 	projectKeys, _, err := client.SSHKeys.ProjectList(projectID)
 	if err != nil {
-		return friendlyError(err)
+		err = friendlyError(err)
+		if isNotFound(err) {
+			d.SetId("")
+			return nil
+		}
+
+		return err
 	}
+
 	keyFound := false
 	for _, k := range projectKeys {
 		if k.ID == d.Id() {

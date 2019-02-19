@@ -203,6 +203,7 @@ func resourcePacketReservedIPBlockRead(d *schema.ResourceData, meta interface{})
 
 	reservedBlock, _, err := client.ProjectIPs.Get(id, nil)
 	if err != nil {
+		err = friendlyError(err)
 		if isNotFound(err) {
 			d.SetId("")
 			return nil
