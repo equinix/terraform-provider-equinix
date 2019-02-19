@@ -9,62 +9,41 @@ import (
 )
 
 func dataSourcePacketPreCreatedIPBlock() *schema.Resource {
+	s := packetIPComputedFields()
+	s["project_id"] = &schema.Schema{
+		Type:     schema.TypeString,
+		Required: true,
+	}
+	s["global"] = &schema.Schema{
+		Type:     schema.TypeBool,
+		Optional: true,
+		Default:  false,
+	}
+	s["public"] = &schema.Schema{
+		Type:     schema.TypeBool,
+		Required: true,
+	}
+
+	s["facility"] = &schema.Schema{
+		Type:     schema.TypeString,
+		Optional: true,
+	}
+	s["address_family"] = &schema.Schema{
+		Type:     schema.TypeInt,
+		Required: true,
+	}
+	s["cidr_notation"] = &schema.Schema{
+		Type:     schema.TypeString,
+		Computed: true,
+	}
+	s["quantity"] = &schema.Schema{
+		Type:     schema.TypeInt,
+		Computed: true,
+	}
+
 	return &schema.Resource{
-		Read: dataSourcePacketReservedIPBlockRead,
-		Schema: map[string]*schema.Schema{
-			"project_id": {
-				Type:     schema.TypeString,
-				Required: true,
-			},
-			"address_family": {
-				Type:     schema.TypeInt,
-				Required: true,
-			},
-			"public": {
-				Type:     schema.TypeBool,
-				Required: true,
-			},
-			"facility": {
-				Type:     schema.TypeString,
-				Required: true,
-			},
-			"quantity": {
-				Type:     schema.TypeInt,
-				Computed: true,
-			},
-			"cidr_notation": {
-				Type:     schema.TypeString,
-				Computed: true,
-			},
-			"address": {
-				Type:     schema.TypeString,
-				Computed: true,
-			},
-			"gateway": {
-				Type:     schema.TypeString,
-				Computed: true,
-			},
-			"network": {
-				Type:     schema.TypeString,
-				Computed: true,
-			},
-			"netmask": {
-				Type:     schema.TypeString,
-				Computed: true,
-			},
-			"cidr": {
-				Type:     schema.TypeInt,
-				Computed: true,
-			},
-			"management": {
-				Type:     schema.TypeBool,
-				Computed: true,
-			},
-			"manageable": {
-				Type:     schema.TypeBool,
-				Computed: true,
-			},
-		},
+		Read:   dataSourcePacketReservedIPBlockRead,
+		Schema: s,
 	}
 }
 
@@ -78,13 +57,36 @@ func dataSourcePacketReservedIPBlockRead(d *schema.ResourceData, meta interface{
 	}
 	ipv := d.Get("address_family").(int)
 	public := d.Get("public").(bool)
-	facility := d.Get("facility").(string)
+	global := d.Get("global").(bool)
 
-	for _, ip := range ips {
-		if ip.Public == public && ip.AddressFamily == ipv && facility == ip.Facility.Code {
-			loadBlock(d, &ip)
-			break
+	if !public && global {
+		return fmt.Errorf("Private (non-public) global IP address blocks are not supported in Packet")
+	}
+
+	fval, fok := d.GetOk("facility")
+	if fok && global {
+		return fmt.Errorf("You can't specify facility for global IP block - addresses from global blocks can be assigned to devices across several facilities")
+	}
+
+	if fok {
+		// lookup of not-global block
+		facility := fval.(string)
+		for _, ip := range ips {
+			if ip.Public == public && ip.AddressFamily == ipv && facility == ip.Facility.Code {
+				loadBlock(d, &ip)
+				break
+			}
 		}
+	} else {
+		// lookup of global block
+		for _, ip := range ips {
+			blockGlobal := getGlobalBool(&ip)
+			if ip.Public == public && ip.AddressFamily == ipv && blockGlobal {
+				loadBlock(d, &ip)
+				break
+			}
+		}
+
 	}
 	if d.Get("cidr_notation") == "" {
 		return fmt.Errorf("Could not find matching reserved block, all IPs were %v", ips)

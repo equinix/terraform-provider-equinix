@@ -10,7 +10,7 @@ import (
 )
 
 func resourcePacketIPAttachment() *schema.Resource {
-	ipAttachmentSchema := packetIPComputedFields()
+	ipAttachmentSchema := packetIPResourceComputedFields()
 	ipAttachmentSchema["device_id"] = &schema.Schema{
 		Type:     schema.TypeString,
 		ForceNew: true,
@@ -75,6 +75,12 @@ func resourcePacketIPAttachmentRead(d *schema.ResourceData, meta interface{}) er
 	d.Set("public", assignment.Public)
 	d.Set("management", assignment.Management)
 	d.Set("manageable", assignment.Manageable)
+
+	g := false
+	if assignment.Global != nil {
+		g = *(assignment.Global)
+	}
+	d.Set("global", g)
 
 	d.Set("device_id", path.Base(assignment.AssignedTo.Href))
 	d.Set("cidr_notation",
