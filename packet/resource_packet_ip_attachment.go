@@ -94,15 +94,7 @@ func resourcePacketIPAttachmentDelete(d *schema.ResourceData, meta interface{}) 
 
 	_, err := client.DeviceIPs.Unassign(d.Id())
 	if err != nil {
-		err = friendlyError(err)
-
-		// If the IP attachment was already destroyed, mark as succesfully gone.
-		if isNotFound(err) {
-			log.Printf("[DEBUG] The IP attachment %q not found or has been deleted", d.Id())
-			d.SetId("")
-			return nil
-		}
-		return err
+		return friendlyError(err)
 	}
 
 	d.SetId("")

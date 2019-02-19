@@ -61,6 +61,7 @@ func resourcePacketVolumeAttachmentRead(d *schema.ResourceData, meta interface{}
 	client := meta.(*packngo.Client)
 	va, _, err := client.VolumeAttachments.Get(d.Id(), nil)
 	if err != nil {
+		err = friendlyError(err)
 		if isNotFound(err) {
 			d.SetId("")
 			return nil

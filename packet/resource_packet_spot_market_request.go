@@ -217,6 +217,7 @@ func resourcePacketSpotMarketRequestRead(d *schema.ResourceData, meta interface{
 
 	smr, _, err := client.SpotMarketRequests.Get(d.Id(), &packngo.GetOptions{Includes: []string{"project", "devices", "facilities"}})
 	if err != nil {
+		err = friendlyError(err)
 		if isNotFound(err) {
 			d.SetId("")
 			return nil

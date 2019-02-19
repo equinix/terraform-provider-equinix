@@ -58,6 +58,7 @@ func resourcePacketBGPSessionRead(d *schema.ResourceData, meta interface{}) erro
 	bgpSession, _, err := client.BGPSessions.Get(d.Id(),
 		&packngo.GetOptions{Includes: []string{"device"}})
 	if err != nil {
+		err = friendlyError(err)
 		if isNotFound(err) {
 			d.SetId("")
 			return nil
