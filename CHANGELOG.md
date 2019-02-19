@@ -8,6 +8,8 @@ FEATURES:
 
 IMPROVEMENTS:
 
+- [#99](https://github.com/terraform-providers/terraform-provider-packet/pull/99) resource/packet_reserved_ip_block: extend to allow for Global floating IP blocks
+
 - Various doc improvements
 
 BUG FIXES:
