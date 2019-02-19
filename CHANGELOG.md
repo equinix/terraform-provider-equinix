@@ -15,6 +15,7 @@ IMPROVEMENTS:
 BUG FIXES:
 
 - [#104](https://github.com/terraform-providers/terraform-provider-packet/pull/104) Fix empty error messages on invalid credentials
+- [#111](https://github.com/terraform-providers/terraform-provider-packet/pull/111) Fix handling of resources deleted out of Terraform
 
 ## 1.3.2 (February 06, 2019)
 
