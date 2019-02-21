@@ -56,7 +56,7 @@ func resourcePacketDevice() *schema.Resource {
 				Type:          schema.TypeString,
 				Optional:      true,
 				ForceNew:      true,
-				ValidateFunc:  validateFacility,
+				ValidateFunc:  validateFacilityForDevice,
 				Deprecated:    "Use the 'facilities' array instead.",
 				ConflictsWith: []string{"facilities"},
 				DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
@@ -549,4 +549,11 @@ func powerOnAndWait(d *schema.ResourceData, meta interface{}) error {
 
 	_, err = waitForDeviceAttribute(d, "active", []string{"off"}, "state", client)
 	return err
+}
+
+func validateFacilityForDevice(v interface{}, k string) (ws []string, errors []error) {
+	if k == "any" {
+		errors = append(errors, fmt.Errorf(`Cannot user facility: "any"`))
+	}
+	return
 }

@@ -71,10 +71,9 @@ func resourcePacketReservedIPBlock() *schema.Resource {
 		ForceNew: true,
 	}
 	reservedBlockSchema["facility"] = &schema.Schema{
-		Type:         schema.TypeString,
-		Optional:     true,
-		ForceNew:     true,
-		ValidateFunc: validateFacility,
+		Type:     schema.TypeString,
+		Optional: true,
+		ForceNew: true,
 	}
 	reservedBlockSchema["quantity"] = &schema.Schema{
 		Type:     schema.TypeInt,
