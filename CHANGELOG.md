@@ -1,4 +1,8 @@
 ## 1.5.0 (Unreleased)
+
+IMPROVEMENTS:
+- [#112](https://github.com/terraform-providers/terraform-provider-packet/pull/112) Remove strict validation for facilities, in order to allow non-public private facilities and testing new facilites
+  
 ## 1.4.0 (February 19, 2019)
 
 FEATURES:
