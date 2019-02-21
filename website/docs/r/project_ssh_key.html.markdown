@@ -42,7 +42,7 @@ The following arguments are supported:
 
 * `name` - (Required) The name of the SSH key for identification
 * `public_key` - (Required) The public key. If this is a file, it can be read using the file interpolation function
-* `project_id - (Required) The ID of parent project
+* `project_id` - (Required) The ID of parent project
 
 ## Attributes Reference
 
