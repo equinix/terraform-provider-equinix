@@ -553,7 +553,7 @@ func powerOnAndWait(d *schema.ResourceData, meta interface{}) error {
 
 func validateFacilityForDevice(v interface{}, k string) (ws []string, errors []error) {
 	if k == "any" {
-		errors = append(errors, fmt.Errorf(`Cannot user facility: "any"`))
+		errors = append(errors, fmt.Errorf(`Cannot use facility: "any"`))
 	}
 	return
 }
