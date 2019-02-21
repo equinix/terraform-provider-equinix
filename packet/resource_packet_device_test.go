@@ -195,6 +195,45 @@ func TestAccPacketDevice_IPXEScriptUrl(t *testing.T) {
 	})
 }
 
+func testAccCheckPacketDeviceConfig_AnyFacility(projSuffix string) string {
+	return fmt.Sprintf(`
+resource "packet_project" "test" {
+    name = "TerraformTestProject-%s"
+}
+
+resource "packet_device" "test" {
+  hostname         = "test"
+  plan             = "t1.small.x86"
+  facility         = "any"
+  operating_system = "ubuntu_16_04"
+  billing_cycle    = "hourly"
+  project_id       = "${packet_project.test.id}"
+}
+`, projSuffix)
+}
+
+var matchErrAnyFacility = regexp.MustCompile(`.*Cannot use facility: "any".*`)
+
+func TestAccPacketDevice_AnyFacility(t *testing.T) {
+	var device packngo.Device
+	rs := acctest.RandString(10)
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckPacketDeviceDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckPacketDeviceConfig_AnyFacility(rs),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckPacketDeviceExists("packet_device.test", &device),
+				),
+				ExpectError: matchErrAnyFacility,
+			},
+		},
+	})
+}
+
 func TestAccPacketDevice_IPXEConflictingFields(t *testing.T) {
 	var device packngo.Device
 	rs := acctest.RandString(10)
