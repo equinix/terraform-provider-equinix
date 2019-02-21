@@ -74,7 +74,7 @@ func resourcePacketReservedIPBlock() *schema.Resource {
 		Type:         schema.TypeString,
 		Optional:     true,
 		ForceNew:     true,
-		ValidateFunc: validation.StringInSlice(packngo.Facilities, false),
+		ValidateFunc: validateFacility,
 	}
 	reservedBlockSchema["quantity"] = &schema.Schema{
 		Type:     schema.TypeInt,

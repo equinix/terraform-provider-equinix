@@ -56,7 +56,7 @@ func resourcePacketDevice() *schema.Resource {
 				Type:          schema.TypeString,
 				Optional:      true,
 				ForceNew:      true,
-				ValidateFunc:  validation.StringInSlice(packngo.Facilities, false),
+				ValidateFunc:  validateFacility,
 				Deprecated:    "Use the 'facilities' array instead.",
 				ConflictsWith: []string{"facilities"},
 				DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
