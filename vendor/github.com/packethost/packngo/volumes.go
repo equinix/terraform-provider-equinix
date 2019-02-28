@@ -1,54 +1,34 @@
 package packngo
 
-import (
-	"fmt"
-)
+import "fmt"
 
-const (
-	volumeBasePath      = "/storage"
-	attachmentsBasePath = "/attachments"
-)
+const volumeBasePath = "/storage"
 
 // VolumeService interface defines available Volume methods
 type VolumeService interface {
-	List(string, *ListOptions) ([]Volume, *Response, error)
-	Get(string, *GetOptions) (*Volume, *Response, error)
-	Update(string, *VolumeUpdateRequest) (*Volume, *Response, error)
+	Get(string) (*Volume, *Response, error)
+	Update(*VolumeUpdateRequest) (*Volume, *Response, error)
 	Delete(string) (*Response, error)
-	Create(*VolumeCreateRequest, string) (*Volume, *Response, error)
-	Lock(string) (*Response, error)
-	Unlock(string) (*Response, error)
-}
-
-// VolumeAttachmentService defines attachment methdods
-type VolumeAttachmentService interface {
-	Get(string, *GetOptions) (*VolumeAttachment, *Response, error)
-	Create(string, string) (*VolumeAttachment, *Response, error)
-	Delete(string) (*Response, error)
-}
-
-type volumesRoot struct {
-	Volumes []Volume `json:"volumes"`
-	Meta    meta     `json:"meta"`
+	Create(*VolumeCreateRequest) (*Volume, *Response, error)
 }
 
 // Volume represents a volume
 type Volume struct {
-	Attachments      []*VolumeAttachment `json:"attachments,omitempty"`
-	BillingCycle     string              `json:"billing_cycle,omitempty"`
-	Created          string              `json:"created_at,omitempty"`
-	Description      string              `json:"description,omitempty"`
-	Facility         *Facility           `json:"facility,omitempty"`
-	Href             string              `json:"href,omitempty"`
-	ID               string              `json:"id"`
-	Locked           bool                `json:"locked,omitempty"`
-	Name             string              `json:"name,omitempty"`
-	Plan             *Plan               `json:"plan,omitempty"`
-	Project          *Project            `json:"project,omitempty"`
-	Size             int                 `json:"size,omitempty"`
-	SnapshotPolicies []*SnapshotPolicy   `json:"snapshot_policies,omitempty"`
-	State            string              `json:"state,omitempty"`
-	Updated          string              `json:"updated_at,omitempty"`
+	ID               string            `json:"id"`
+	Name             string            `json:"name,omitempty"`
+	Description      string            `json:"description,omitempty"`
+	Size             int               `json:"size,omitempty"`
+	State            string            `json:"state,omitempty"`
+	Locked           bool              `json:"locked,omitempty"`
+	BillingCycle     string            `json:"billing_cycle,omitempty"`
+	Created          string            `json:"created_at,omitempty"`
+	Updated          string            `json:"updated_at,omitempty"`
+	Href             string            `json:"href,omitempty"`
+	SnapshotPolicies []*SnapshotPolicy `json:"snapshot_policies,omitempty"`
+	Attachments      []*Attachment     `json:"attachments,omitempty"`
+	Plan             *Plan             `json:"plan,omitempty"`
+	Facility         *Facility         `json:"facility,omitempty"`
+	Project          *Project          `json:"project,omitempty"`
 }
 
 // SnapshotPolicy used to execute actions on volume
@@ -59,18 +39,24 @@ type SnapshotPolicy struct {
 	SnapshotCount     int    `json:"snapshot_count,omitempty"`
 }
 
+// Attachment used to execute actions on volume
+type Attachment struct {
+	ID   string `json:"id"`
+	Href string `json:"href"`
+}
+
 func (v Volume) String() string {
 	return Stringify(v)
 }
 
 // VolumeCreateRequest type used to create a Packet volume
 type VolumeCreateRequest struct {
-	BillingCycle     string            `json:"billing_cycle"`
-	Description      string            `json:"description,omitempty"`
-	Locked           bool              `json:"locked,omitempty"`
 	Size             int               `json:"size"`
+	BillingCycle     string            `json:"billing_cycle"`
+	ProjectID        string            `json:"project_id"`
 	PlanID           string            `json:"plan_id"`
 	FacilityID       string            `json:"facility_id"`
+	Description      string            `json:"description,omitempty"`
 	SnapshotPolicies []*SnapshotPolicy `json:"snapshot_policies,omitempty"`
 }
 
@@ -80,27 +66,13 @@ func (v VolumeCreateRequest) String() string {
 
 // VolumeUpdateRequest type used to update a Packet volume
 type VolumeUpdateRequest struct {
-	Description  *string `json:"description,omitempty"`
-	PlanID       *string `json:"plan_id,omitempty"`
-	Size         *int    `json:"size,omitempty"`
-	BillingCycle *string `json:"billing_cycle,omitempty"`
-}
-
-// VolumeAttachment is a type from Packet API
-type VolumeAttachment struct {
-	Href   string `json:"href"`
-	ID     string `json:"id"`
-	Volume Volume `json:"volume"`
-	Device Device `json:"device"`
+	ID          string `json:"id"`
+	Description string `json:"description,omitempty"`
+	Plan        string `json:"plan,omitempty"`
 }
 
 func (v VolumeUpdateRequest) String() string {
 	return Stringify(v)
-}
-
-// VolumeAttachmentServiceOp implements VolumeService
-type VolumeAttachmentServiceOp struct {
-	client *Client
 }
 
 // VolumeServiceOp implements VolumeService
@@ -108,40 +80,16 @@ type VolumeServiceOp struct {
 	client *Client
 }
 
-// List returns the volumes for a project
-func (v *VolumeServiceOp) List(projectID string, listOpt *ListOptions) (volumes []Volume, resp *Response, err error) {
-	params := createListOptionsURL(listOpt)
-	path := fmt.Sprintf("%s/%s%s?%s", projectBasePath, projectID, volumeBasePath, params)
-
-	for {
-		subset := new(volumesRoot)
-
-		resp, err = v.client.DoRequest("GET", path, nil, subset)
-		if err != nil {
-			return nil, resp, err
-		}
-
-		volumes = append(volumes, subset.Volumes...)
-
-		if subset.Meta.Next != nil && (listOpt == nil || listOpt.Page == 0) {
-			path = subset.Meta.Next.Href
-			if params != "" {
-				path = fmt.Sprintf("%s&%s", path, params)
-			}
-			continue
-		}
-
-		return
-	}
-}
-
 // Get returns a volume by id
-func (v *VolumeServiceOp) Get(volumeID string, getOpt *GetOptions) (*Volume, *Response, error) {
-	params := createGetOptionsURL(getOpt)
-	path := fmt.Sprintf("%s/%s?%s", volumeBasePath, volumeID, params)
-	volume := new(Volume)
+func (v *VolumeServiceOp) Get(volumeID string) (*Volume, *Response, error) {
+	path := fmt.Sprintf("%s/%s?include=facility,snapshot_policies,attachments.device", volumeBasePath, volumeID)
+	req, err := v.client.NewRequest("GET", path, nil)
+	if err != nil {
+		return nil, nil, err
+	}
 
-	resp, err := v.client.DoRequest("GET", path, nil, volume)
+	volume := new(Volume)
+	resp, err := v.client.Do(req, volume)
 	if err != nil {
 		return nil, resp, err
 	}
@@ -150,11 +98,15 @@ func (v *VolumeServiceOp) Get(volumeID string, getOpt *GetOptions) (*Volume, *Re
 }
 
 // Update updates a volume
-func (v *VolumeServiceOp) Update(id string, updateRequest *VolumeUpdateRequest) (*Volume, *Response, error) {
-	path := fmt.Sprintf("%s/%s", volumeBasePath, id)
-	volume := new(Volume)
+func (v *VolumeServiceOp) Update(updateRequest *VolumeUpdateRequest) (*Volume, *Response, error) {
+	path := fmt.Sprintf("%s/%s", volumeBasePath, updateRequest.ID)
+	req, err := v.client.NewRequest("PATCH", path, updateRequest)
+	if err != nil {
+		return nil, nil, err
+	}
 
-	resp, err := v.client.DoRequest("PATCH", path, updateRequest, volume)
+	volume := new(Volume)
+	resp, err := v.client.Do(req, volume)
 	if err != nil {
 		return nil, resp, err
 	}
@@ -166,73 +118,29 @@ func (v *VolumeServiceOp) Update(id string, updateRequest *VolumeUpdateRequest) 
 func (v *VolumeServiceOp) Delete(volumeID string) (*Response, error) {
 	path := fmt.Sprintf("%s/%s", volumeBasePath, volumeID)
 
-	return v.client.DoRequest("DELETE", path, nil, nil)
+	req, err := v.client.NewRequest("DELETE", path, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	resp, err := v.client.Do(req, nil)
+
+	return resp, err
 }
 
 // Create creates a new volume for a project
-func (v *VolumeServiceOp) Create(createRequest *VolumeCreateRequest, projectID string) (*Volume, *Response, error) {
-	url := fmt.Sprintf("%s/%s%s", projectBasePath, projectID, volumeBasePath)
-	volume := new(Volume)
+func (v *VolumeServiceOp) Create(createRequest *VolumeCreateRequest) (*Volume, *Response, error) {
+	url := fmt.Sprintf("%s/%s%s", projectBasePath, createRequest.ProjectID, volumeBasePath)
+	req, err := v.client.NewRequest("POST", url, createRequest)
+	if err != nil {
+		return nil, nil, err
+	}
 
-	resp, err := v.client.DoRequest("POST", url, createRequest, volume)
+	volume := new(Volume)
+	resp, err := v.client.Do(req, volume)
 	if err != nil {
 		return nil, resp, err
 	}
 
 	return volume, resp, err
-}
-
-// Attachments
-
-// Create Attachment, i.e. attach volume to a device
-func (v *VolumeAttachmentServiceOp) Create(volumeID, deviceID string) (*VolumeAttachment, *Response, error) {
-	url := fmt.Sprintf("%s/%s%s", volumeBasePath, volumeID, attachmentsBasePath)
-	volAttachParam := map[string]string{
-		"device_id": deviceID,
-	}
-	volumeAttachment := new(VolumeAttachment)
-
-	resp, err := v.client.DoRequest("POST", url, volAttachParam, volumeAttachment)
-	if err != nil {
-		return nil, resp, err
-	}
-	return volumeAttachment, resp, nil
-}
-
-// Get gets attachment by id
-func (v *VolumeAttachmentServiceOp) Get(attachmentID string, getOpt *GetOptions) (*VolumeAttachment, *Response, error) {
-	params := createGetOptionsURL(getOpt)
-
-	path := fmt.Sprintf("%s%s/%s?%s", volumeBasePath, attachmentsBasePath, attachmentID, params)
-	volumeAttachment := new(VolumeAttachment)
-
-	resp, err := v.client.DoRequest("GET", path, nil, volumeAttachment)
-	if err != nil {
-		return nil, resp, err
-	}
-
-	return volumeAttachment, resp, nil
-}
-
-// Delete deletes attachment by id
-func (v *VolumeAttachmentServiceOp) Delete(attachmentID string) (*Response, error) {
-	path := fmt.Sprintf("%s%s/%s", volumeBasePath, attachmentsBasePath, attachmentID)
-
-	return v.client.DoRequest("DELETE", path, nil, nil)
-}
-
-// Lock sets a volume to "locked"
-func (s *VolumeServiceOp) Lock(id string) (*Response, error) {
-	path := fmt.Sprintf("%s/%s", volumeBasePath, id)
-	action := lockType{Locked: true}
-
-	return s.client.DoRequest("PATCH", path, action, nil)
-}
-
-// Unlock sets a volume to "unlocked"
-func (s *VolumeServiceOp) Unlock(id string) (*Response, error) {
-	path := fmt.Sprintf("%s/%s", volumeBasePath, id)
-	action := lockType{Locked: false}
-
-	return s.client.DoRequest("PATCH", path, action, nil)
 }

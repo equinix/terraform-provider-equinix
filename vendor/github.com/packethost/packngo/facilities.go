@@ -1,12 +1,10 @@
 package packngo
 
-import "fmt"
-
 const facilityBasePath = "/facilities"
 
 // FacilityService interface defines available facility methods
 type FacilityService interface {
-	List(*ListOptions) ([]Facility, *Response, error)
+	List() ([]Facility, *Response, error)
 }
 
 type facilityRoot struct {
@@ -41,13 +39,15 @@ type FacilityServiceOp struct {
 	client *Client
 }
 
-// List returns all facilities
-func (s *FacilityServiceOp) List(listOpt *ListOptions) ([]Facility, *Response, error) {
-	root := new(facilityRoot)
-	params := createListOptionsURL(listOpt)
-	path := fmt.Sprintf("%s?%s", facilityBasePath, params)
+// List returns all available Packet facilities
+func (s *FacilityServiceOp) List() ([]Facility, *Response, error) {
+	req, err := s.client.NewRequest("GET", facilityBasePath, nil)
+	if err != nil {
+		return nil, nil, err
+	}
 
-	resp, err := s.client.DoRequest("GET", path, nil, root)
+	root := new(facilityRoot)
+	resp, err := s.client.Do(req, root)
 	if err != nil {
 		return nil, resp, err
 	}
