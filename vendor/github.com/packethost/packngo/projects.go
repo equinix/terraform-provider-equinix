@@ -1,42 +1,39 @@
 package packngo
 
-import "fmt"
+import (
+	"fmt"
+)
 
 const projectBasePath = "/projects"
 
 // ProjectService interface defines available project methods
 type ProjectService interface {
-	List() ([]Project, *Response, error)
-	Get(string) (*Project, *Response, error)
+	List(listOpt *ListOptions) ([]Project, *Response, error)
+	Get(string, *GetOptions) (*Project, *Response, error)
 	Create(*ProjectCreateRequest) (*Project, *Response, error)
-	Update(*ProjectUpdateRequest) (*Project, *Response, error)
+	Update(string, *ProjectUpdateRequest) (*Project, *Response, error)
 	Delete(string) (*Response, error)
-	ListIPAddresses(string) ([]IPAddress, *Response, error)
-	ListVolumes(string) ([]Volume, *Response, error)
-}
-
-type ipsRoot struct {
-	IPAddresses []IPAddress `json:"ip_addresses"`
-}
-
-type volumesRoot struct {
-	Volumes []Volume `json:"volumes"`
+	ListBGPSessions(projectID string, listOpt *ListOptions) ([]BGPSession, *Response, error)
+	ListEvents(string, *ListOptions) ([]Event, *Response, error)
 }
 
 type projectsRoot struct {
 	Projects []Project `json:"projects"`
+	Meta     meta      `json:"meta"`
 }
 
 // Project represents a Packet project
 type Project struct {
-	ID      string   `json:"id"`
-	Name    string   `json:"name,omitempty"`
-	Created string   `json:"created_at,omitempty"`
-	Updated string   `json:"updated_at,omitempty"`
-	Users   []User   `json:"members,omitempty"`
-	Devices []Device `json:"devices,omitempty"`
-	SSHKeys []SSHKey `json:"ssh_keys,omitempty"`
-	URL     string   `json:"href,omitempty"`
+	ID            string        `json:"id"`
+	Name          string        `json:"name,omitempty"`
+	Organization  Organization  `json:"organization,omitempty"`
+	Created       string        `json:"created_at,omitempty"`
+	Updated       string        `json:"updated_at,omitempty"`
+	Users         []User        `json:"members,omitempty"`
+	Devices       []Device      `json:"devices,omitempty"`
+	SSHKeys       []SSHKey      `json:"ssh_keys,omitempty"`
+	URL           string        `json:"href,omitempty"`
+	PaymentMethod PaymentMethod `json:"payment_method,omitempty"`
 }
 
 func (p Project) String() string {
@@ -45,8 +42,9 @@ func (p Project) String() string {
 
 // ProjectCreateRequest type used to create a Packet project
 type ProjectCreateRequest struct {
-	Name          string `json:"name"`
-	PaymentMethod string `json:"payment_method,omitempty"`
+	Name            string `json:"name"`
+	PaymentMethodID string `json:"payment_method_id,omitempty"`
+	OrganizationID  string `json:"organization_id,omitempty"`
 }
 
 func (p ProjectCreateRequest) String() string {
@@ -55,9 +53,8 @@ func (p ProjectCreateRequest) String() string {
 
 // ProjectUpdateRequest type used to update a Packet project
 type ProjectUpdateRequest struct {
-	ID            string `json:"id"`
-	Name          string `json:"name,omitempty"`
-	PaymentMethod string `json:"payment_method,omitempty"`
+	Name            *string `json:"name,omitempty"`
+	PaymentMethodID *string `json:"payment_method_id,omitempty"`
 }
 
 func (p ProjectUpdateRequest) String() string {
@@ -69,64 +66,50 @@ type ProjectServiceOp struct {
 	client *Client
 }
 
-func (s *ProjectServiceOp) ListIPAddresses(projectID string) ([]IPAddress, *Response, error) {
-	url := fmt.Sprintf("%s/%s/ips", projectBasePath, projectID)
-	req, err := s.client.NewRequest("GET", url, nil)
-	if err != nil {
-		return nil, nil, err
-	}
-
-	root := new(ipsRoot)
-	resp, err := s.client.Do(req, root)
-	if err != nil {
-		return nil, resp, err
-	}
-
-	return root.IPAddresses, resp, err
-}
-
 // List returns the user's projects
-func (s *ProjectServiceOp) List() ([]Project, *Response, error) {
-	req, err := s.client.NewRequest("GET", projectBasePath, nil)
-	if err != nil {
-		return nil, nil, err
-	}
-
+func (s *ProjectServiceOp) List(listOpt *ListOptions) (projects []Project, resp *Response, err error) {
+	params := createListOptionsURL(listOpt)
 	root := new(projectsRoot)
-	resp, err := s.client.Do(req, root)
-	if err != nil {
-		return nil, resp, err
-	}
 
-	return root.Projects, resp, err
+	path := fmt.Sprintf("%s?%s", projectBasePath, params)
+
+	for {
+		resp, err = s.client.DoRequest("GET", path, nil, root)
+		if err != nil {
+			return nil, resp, err
+		}
+
+		projects = append(projects, root.Projects...)
+
+		if root.Meta.Next != nil && (listOpt == nil || listOpt.Page == 0) {
+			path = root.Meta.Next.Href
+			if params != "" {
+				path = fmt.Sprintf("%s&%s", path, params)
+			}
+			continue
+		}
+
+		return
+	}
 }
 
 // Get returns a project by id
-func (s *ProjectServiceOp) Get(projectID string) (*Project, *Response, error) {
-	path := fmt.Sprintf("%s/%s", projectBasePath, projectID)
-	req, err := s.client.NewRequest("GET", path, nil)
-	if err != nil {
-		return nil, nil, err
-	}
-
+func (s *ProjectServiceOp) Get(projectID string, getOpt *GetOptions) (*Project, *Response, error) {
+	params := createGetOptionsURL(getOpt)
+	path := fmt.Sprintf("%s/%s?%s", projectBasePath, projectID, params)
 	project := new(Project)
-	resp, err := s.client.Do(req, project)
+	resp, err := s.client.DoRequest("GET", path, nil, project)
 	if err != nil {
 		return nil, resp, err
 	}
-
 	return project, resp, err
 }
 
 // Create creates a new project
 func (s *ProjectServiceOp) Create(createRequest *ProjectCreateRequest) (*Project, *Response, error) {
-	req, err := s.client.NewRequest("POST", projectBasePath, createRequest)
-	if err != nil {
-		return nil, nil, err
-	}
-
 	project := new(Project)
-	resp, err := s.client.Do(req, project)
+
+	resp, err := s.client.DoRequest("POST", projectBasePath, createRequest, project)
 	if err != nil {
 		return nil, resp, err
 	}
@@ -135,15 +118,11 @@ func (s *ProjectServiceOp) Create(createRequest *ProjectCreateRequest) (*Project
 }
 
 // Update updates a project
-func (s *ProjectServiceOp) Update(updateRequest *ProjectUpdateRequest) (*Project, *Response, error) {
-	path := fmt.Sprintf("%s/%s", projectBasePath, updateRequest.ID)
-	req, err := s.client.NewRequest("PATCH", path, updateRequest)
-	if err != nil {
-		return nil, nil, err
-	}
-
+func (s *ProjectServiceOp) Update(id string, updateRequest *ProjectUpdateRequest) (*Project, *Response, error) {
+	path := fmt.Sprintf("%s/%s", projectBasePath, id)
 	project := new(Project)
-	resp, err := s.client.Do(req, project)
+
+	resp, err := s.client.DoRequest("PATCH", path, updateRequest, project)
 	if err != nil {
 		return nil, resp, err
 	}
@@ -155,29 +134,39 @@ func (s *ProjectServiceOp) Update(updateRequest *ProjectUpdateRequest) (*Project
 func (s *ProjectServiceOp) Delete(projectID string) (*Response, error) {
 	path := fmt.Sprintf("%s/%s", projectBasePath, projectID)
 
-	req, err := s.client.NewRequest("DELETE", path, nil)
-	if err != nil {
-		return nil, err
-	}
-
-	resp, err := s.client.Do(req, nil)
-
-	return resp, err
+	return s.client.DoRequest("DELETE", path, nil, nil)
 }
 
-// List returns Volumes for a project
-func (s *ProjectServiceOp) ListVolumes(projectID string) ([]Volume, *Response, error) {
-	url := fmt.Sprintf("%s/%s%s", projectBasePath, projectID, volumeBasePath)
-	req, err := s.client.NewRequest("GET", url, nil)
-	if err != nil {
-		return nil, nil, err
-	}
+// ListBGPSessions returns all BGP Sessions associated with the project
+func (s *ProjectServiceOp) ListBGPSessions(projectID string, listOpt *ListOptions) (bgpSessions []BGPSession, resp *Response, err error) {
+	params := createListOptionsURL(listOpt)
+	path := fmt.Sprintf("%s/%s%s?%s", projectBasePath, projectID, bgpSessionBasePath, params)
 
-	root := new(volumesRoot)
-	resp, err := s.client.Do(req, root)
-	if err != nil {
-		return nil, resp, err
-	}
+	for {
+		subset := new(bgpSessionsRoot)
 
-	return root.Volumes, resp, err
+		resp, err = s.client.DoRequest("GET", path, nil, subset)
+		if err != nil {
+			return nil, resp, err
+		}
+
+		bgpSessions = append(bgpSessions, subset.Sessions...)
+
+		if subset.Meta.Next != nil && (listOpt == nil || listOpt.Page == 0) {
+			path = subset.Meta.Next.Href
+			if params != "" {
+				path = fmt.Sprintf("%s&%s", path, params)
+			}
+			continue
+		}
+
+		return
+	}
+}
+
+// ListEvents returns list of project events
+func (s *ProjectServiceOp) ListEvents(projectID string, listOpt *ListOptions) ([]Event, *Response, error) {
+	path := fmt.Sprintf("%s/%s%s", projectBasePath, projectID, eventBasePath)
+
+	return listEvents(s.client, path, listOpt)
 }
