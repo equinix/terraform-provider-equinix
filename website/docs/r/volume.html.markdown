@@ -21,7 +21,7 @@ scripts.
 resource "packet_volume" "volume1" {
   description   = "terraform-volume-1"
   facility      = "ewr1"
-  project_id    = "${packet_project.cool_project.id}"
+  project_id    = "${local.project_id}"
   plan          = "storage_1"
   size          = 100
   billing_cycle = "hourly"

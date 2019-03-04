@@ -13,16 +13,12 @@ Provides a resource to allow users to manage Virtual Networks in their projects.
 ## Example Usage
 
 ```hcl
-# Create a new VLAN in project "dev" in datacenter "ewr1"
-
-resource "packet_project" "dev" { 
-  name = "Dev"
-}
+# Create a new VLAN in datacenter "ewr1"
 
 resource "packet_vlan" "vlan1" {
   description = "VLAN in New Jersey"
   facility    = "ewr1"
-  project_id  = "${packet_project.dev.id}"
+  project_id  = "${local.project_id}"
 }
 ```
 

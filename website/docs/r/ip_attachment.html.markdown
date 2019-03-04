@@ -25,16 +25,16 @@ Device and reserved block must be in the same facility.
 
 # Reserve /30 block of max 2 public IPv4 addresses in Parsippany, NJ (ewr1) for myproject
 resource "packet_reserved_ip_block" "myblock" {
-    project_id = "${packet_project.myproject.id}"
-    facility = "ewr1"
-	quantity = 2
+  project_id = "${local.project_id}"
+  facility = "ewr1"
+  quantity = 2
 }
 
 # Assign /32 subnet (single address) from reserved block to a device
 resource "packet_ip_attachment" "first_address_assingment" {
-    device_id = "${packet_device.mydevice.id}"
-    # following interpolation will result to sth like "147.229.10.152/32"
-    cidr_notation = "${cidrhost(packet_reserved_ip_block.myblock.cidr_notation,0)}/32"
+  device_id = "${packet_device.mydevice.id}"
+  # following interpolation will result to sth like "147.229.10.152/32"
+  cidr_notation = "${cidrhost(packet_reserved_ip_block.myblock.cidr_notation,0)}/32"
 }
 
 ```
