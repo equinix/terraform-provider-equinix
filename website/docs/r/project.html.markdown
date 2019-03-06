@@ -46,6 +46,7 @@ The following arguments are supported:
 Once you set the BGP config in a project, it can't be removed (due to a limitation in the Packet API). It can be updated.
 
 The `bgp_config` block supports:
+
 * `asn` - Autonomous System Numer for local BGP deployment
 * `md5` - (Optional) Password for BGP session in plaintext (not a checksum)
 * `deployment_type` - `private` or `public`, the `private` is likely to be usable immediately, the `public` will need to be review by Packet engineers
@@ -61,5 +62,6 @@ The following attributes are exported:
 * `updated` - The timestamp for the last time the project was updated
 
 The `bgp_config` block additionally exports: 
+
 * `status` - status of BGP configuration in the project
 * `max_prefix` - The maximum number of route filters allowed per server
