@@ -16,17 +16,17 @@ manage spot market requests on your account. https://help.packet.net/en-us/artic
 ```hcl
 # Create a spot market request
 resource "packet_spot_market_request" "req" {
-  project_id      = "${packet_project.cool_project.id}"
-  "max_bid_price" = 0.03
-  "facilities"    = ["ewr1"]
-  "devices_min"   = 1
-  "devices_max"   = 1
+  project_id    = "${local.project_id}"
+  max_bid_price = 0.03
+  facilities    = ["ewr1"]
+  devices_min   = 1
+  devices_max   = 1
 
-  "instance_parameters" {
-    "hostname"         = "testspot"
-    "billing_cycle"    = "hourly"
-    "operating_system" = "coreos_stable"
-    "plan"             = "t1.small.x86"
+  instance_parameters {
+    hostname         = "testspot"
+    billing_cycle    = "hourly"
+    operating_system = "coreos_stable"
+    plan             = "t1.small.x86"
   }
 }
 ```

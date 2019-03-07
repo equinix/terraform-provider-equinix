@@ -29,7 +29,7 @@ resource "packet_device" "test" {
   facility         = "sjc1"
   operating_system = "ubuntu_16_04"
   billing_cycle    = "hourly"
-  project_id       = "${packet_project.test.id}"
+  project_id       = "${local.project_id}"
   depends_on       = ["packet_ssh_key.key1"]
 }
 

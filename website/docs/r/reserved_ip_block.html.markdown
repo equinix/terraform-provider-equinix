@@ -27,17 +27,17 @@ Once IP block is allocated or imported, an address from it can be assigned to de
 # Allocate /30 block of max 2 public IPv4 addresses in Parsippany, NJ (ewr1) for myproject
 
 resource "packet_reserved_ip_block" "two_elastic_addresses" {
-    project_id = "${packet_project.myproject.id}"
-    facility = "ewr1"
-    quantity = 2
+  project_id = "${local.project_id}"
+  facility = "ewr1"
+  quantity = 2
 }
 
 # Allocate 1 global floating IP, which can be assigned to device in any facility
 
 resource "packet_reserved_ip_block" "test" {
-    project_id = "${packet_project.myproject.id}"
-    type     = "global_ipv4"
-    quantity = 1
+  project_id = "${local.project_id}"
+  type     = "global_ipv4"
+  quantity = 1
 }`
 ```
 
