@@ -106,10 +106,6 @@ github.com/oklog/run v1.0.0/go.mod h1:dlhp/R75TPv97u0XWUtDeV/lRKWPKSdTuV0TZvrmrQ
 github.com/onsi/ginkgo v1.6.0/go.mod h1:lLunBs/Ym6LB5Z9jYTR76FiuTmxDTDusOGeTQH+WWjE=
 github.com/onsi/ginkgo v1.7.0/go.mod h1:lLunBs/Ym6LB5Z9jYTR76FiuTmxDTDusOGeTQH+WWjE=
 github.com/onsi/gomega v1.4.3/go.mod h1:ex+gbHU/CVuBBDIJjb2X0qEXbFg53c61hWP/1CpauHY=
-github.com/packethost/packngo v0.1.1-0.20190307113954-ae217f1bfbda h1:xUgvjCaLBccN+ZHLhKzNIjtWlvebOHcAZfFz0/CXUng=
-github.com/packethost/packngo v0.1.1-0.20190307113954-ae217f1bfbda/go.mod h1:RQHg5xR1F614BwJyepfMqrKN+32IH0i7yX+ey43rEeQ=
-github.com/packethost/packngo v0.1.1-0.20190311131659-13285df5f4de h1:jD24n/CWgGQbp89Sqqj3qPmYi27epnqpl4e/j8XFf5o=
-github.com/packethost/packngo v0.1.1-0.20190311131659-13285df5f4de/go.mod h1:RQHg5xR1F614BwJyepfMqrKN+32IH0i7yX+ey43rEeQ=
 github.com/packethost/packngo v0.1.1-0.20190311133839-fa12a7bceb6e h1:SNpY6uhrqUchi7Milp2YkNP/pgOVfLDQyLbMpPFXzp4=
 github.com/packethost/packngo v0.1.1-0.20190311133839-fa12a7bceb6e/go.mod h1:RQHg5xR1F614BwJyepfMqrKN+32IH0i7yX+ey43rEeQ=
 github.com/pmezard/go-difflib v1.0.0 h1:4DBwDE0NGyQoBHbLQYPwSUPoCMWR5BEzIk/f1lZbAQM=
