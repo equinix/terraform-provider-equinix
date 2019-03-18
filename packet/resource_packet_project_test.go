@@ -54,6 +54,43 @@ func TestAccPacketProject_BGPBasic(t *testing.T) {
 	})
 }
 
+func TestAccPacketProject_BackendTransferUpdate(t *testing.T) {
+	var project packngo.Project
+	rInt := acctest.RandInt()
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckPacketProjectDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckPacketProjectConfig_basic(rInt),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckPacketProjectExists("packet_project.foobar", &project),
+					resource.TestCheckResourceAttr(
+						"packet_project.foobar", "backend_transfer", "false"),
+				),
+			},
+			{
+				Config: testAccCheckPacketProjectConfig_BT(rInt),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckPacketProjectExists("packet_project.foobar", &project),
+					resource.TestCheckResourceAttr(
+						"packet_project.foobar", "backend_transfer", "true"),
+				),
+			},
+			{
+				Config: testAccCheckPacketProjectConfig_basic(rInt),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckPacketProjectExists("packet_project.foobar", &project),
+					resource.TestCheckResourceAttr(
+						"packet_project.foobar", "backend_transfer", "false"),
+				),
+			},
+		},
+	})
+}
+
 func TestAccPacketProject_Update(t *testing.T) {
 	var project packngo.Project
 	rInt := acctest.RandInt()
@@ -173,6 +210,14 @@ func testAccCheckPacketProjectExists(n string, project *packngo.Project) resourc
 
 		return nil
 	}
+}
+
+func testAccCheckPacketProjectConfig_BT(r int) string {
+	return fmt.Sprintf(`
+resource "packet_project" "foobar" {
+    name = "foobar-%d"
+	backend_transfer = true
+}`, r)
 }
 
 func testAccCheckPacketProjectConfig_basic(r int) string {
