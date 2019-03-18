@@ -38,7 +38,7 @@ resource "packet_project" "tf_project_1" {
 
 The following arguments are supported:
 
-* `name` - (Required) The name of the project on Packet.net
+* `name` - (Required) The name of the project
 * `organization_id` - The UUID of organization under which you want to create the project. If you leave it out, the project will be create under your the default organization of your account.
 * `payment_method_id` - The UUID of payment method for this project. The payment method and the project need to belong to the same organization (passed with `organization_id`, or default).
 * `bgp_config` - Optional BGP settings. Refer to [Packet guide for BGP](https://support.packet.com/kb/articles/bgp).
