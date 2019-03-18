@@ -20,8 +20,8 @@ resource "packet_project" "test" {
 
 resource "packet_device" "test" {
   hostname         = "test"
-  plan             = "m1.xlarge.x86"
-  facility         = "ewr1"
+  plan             = "s1.large.x86"
+  facility         = "dfw2"
   operating_system = "ubuntu_16_04"
   billing_cycle    = "hourly"
   project_id       = "${packet_project.test.id}"
@@ -30,13 +30,13 @@ resource "packet_device" "test" {
 
 resource "packet_vlan" "test1" {
   description = "VLAN in New Jersey"
-  facility    = "ewr1"
+  facility    = "dfw2"
   project_id  = "${packet_project.test.id}"
 }
 
 resource "packet_vlan" "test2" {
   description = "VLAN in New Jersey"
-  facility    = "ewr1"
+  facility    = "dfw2"
   project_id  = "${packet_project.test.id}"
 }
 
@@ -88,8 +88,8 @@ resource "packet_project" "test" {
 
 resource "packet_device" "test" {
   hostname         = "test"
-  plan             = "m1.xlarge.x86"
-  facility         = "ewr1"
+  plan             = "s1.large.x86"
+  facility         = "dfw2"
   operating_system = "ubuntu_16_04"
   billing_cycle    = "hourly"
   project_id       = "${packet_project.test.id}"
@@ -98,7 +98,7 @@ resource "packet_device" "test" {
 
 resource "packet_vlan" "test" {
   description = "VLAN in New Jersey"
-  facility    = "ewr1"
+  facility    = "dfw2"
   project_id  = "${packet_project.test.id}"
 }
 

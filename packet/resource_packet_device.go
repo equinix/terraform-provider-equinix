@@ -376,13 +376,17 @@ func resourcePacketDeviceCreate(d *schema.ResourceData, meta interface{}) error 
 	return resourcePacketDeviceRead(d, meta)
 }
 
-func getNetworkInfo(ips []*packngo.IPAddressAssignment) ([]map[string]interface{},
-	int, string, string, string, string) {
-	var (
-		ipv4SubnetSize                   int
-		host, public4, public6, private4 string
-		networks                         = make([]map[string]interface{}, 0, 1)
-	)
+type NetworkInfo struct {
+	Networks       []map[string]interface{}
+	IPv4SubnetSize int
+	Host           string
+	PublicIPv4     string
+	PublicIPv6     string
+	PrivateIPv4    string
+}
+
+func getNetworkInfo(ips []*packngo.IPAddressAssignment) NetworkInfo {
+	ni := NetworkInfo{Networks: make([]map[string]interface{}, 0, 1)}
 	for _, ip := range ips {
 		network := map[string]interface{}{
 			"address": ip.Address,
@@ -391,24 +395,24 @@ func getNetworkInfo(ips []*packngo.IPAddressAssignment) ([]map[string]interface{
 			"cidr":    ip.CIDR,
 			"public":  ip.Public,
 		}
-		networks = append(networks, network)
+		ni.Networks = append(ni.Networks, network)
 
 		// Initial device IPs are fixed and marked as "Management"
 		if ip.Management {
 			if ip.AddressFamily == 4 {
 				if ip.Public {
-					host = ip.Address
-					ipv4SubnetSize = ip.CIDR
-					public4 = ip.Address
+					ni.Host = ip.Address
+					ni.IPv4SubnetSize = ip.CIDR
+					ni.PublicIPv4 = ip.Address
 				} else {
-					private4 = ip.Address
+					ni.PrivateIPv4 = ip.Address
 				}
 			} else {
-				public6 = ip.Address
+				ni.PublicIPv6 = ip.Address
 			}
 		}
 	}
-	return networks, ipv4SubnetSize, host, public4, private4, public6
+	return ni
 }
 
 func resourcePacketDeviceRead(d *schema.ResourceData, meta interface{}) error {
@@ -457,29 +461,29 @@ func resourcePacketDeviceRead(d *schema.ResourceData, meta interface{}) error {
 		keyIDs = append(keyIDs, filepath.Base(k.URL))
 	}
 	d.Set("ssh_key_ids", keyIDs)
-	networks, ipv4SubnetSize, host, public4, private4, public6 := getNetworkInfo(device.Network)
+	networkInfo := getNetworkInfo(device.Network)
 
-	sort.SliceStable(networks, func(i, j int) bool {
-		famI := networks[i]["family"].(int)
-		famJ := networks[j]["family"].(int)
-		pubI := networks[i]["public"].(bool)
-		pubJ := networks[j]["public"].(bool)
+	sort.SliceStable(networkInfo.Networks, func(i, j int) bool {
+		famI := networkInfo.Networks[i]["family"].(int)
+		famJ := networkInfo.Networks[j]["family"].(int)
+		pubI := networkInfo.Networks[i]["public"].(bool)
+		pubJ := networkInfo.Networks[j]["public"].(bool)
 		return getNetworkRank(famI, pubI) < getNetworkRank(famJ, pubJ)
 	})
 
-	d.Set("network", networks)
-	d.Set("public_ipv4_subnet_size", ipv4SubnetSize)
-	d.Set("access_public_ipv4", public4)
-	d.Set("access_private_ipv4", private4)
-	d.Set("access_public_ipv6", public6)
+	d.Set("network", networkInfo.Networks)
+	d.Set("public_ipv4_subnet_size", networkInfo.IPv4SubnetSize)
+	d.Set("access_public_ipv4", networkInfo.PublicIPv4)
+	d.Set("access_private_ipv4", networkInfo.PrivateIPv4)
+	d.Set("access_public_ipv6", networkInfo.PublicIPv6)
 
 	ports := getPorts(device.NetworkPorts)
 	d.Set("ports", ports)
 
-	if host != "" {
+	if networkInfo.Host != "" {
 		d.SetConnInfo(map[string]string{
 			"type": "ssh",
-			"host": host,
+			"host": networkInfo.Host,
 		})
 	}
 

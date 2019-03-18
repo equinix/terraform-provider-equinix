@@ -152,8 +152,6 @@ func resourcePacketPortVlanAttachmentDelete(d *schema.ResourceData, meta interfa
 		if err != nil {
 			return friendlyError(err)
 		}
-
 	}
-
 	return nil
 }

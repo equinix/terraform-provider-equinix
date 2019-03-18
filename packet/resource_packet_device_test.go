@@ -385,14 +385,14 @@ func testAccCheckPacketDevicePortsOrder(n string) resource.TestCheckFunc {
 		if !ok {
 			return fmt.Errorf("Not found: %s", n)
 		}
-		if rs.Primary.Attributes["ports.0.name"] != "eth0" {
-			return fmt.Errorf("first port should be eth0")
+		if rs.Primary.Attributes["ports.0.name"] != "bond0" {
+			return fmt.Errorf("first port should be bond0")
 		}
-		if rs.Primary.Attributes["ports.1.name"] != "eth1" {
-			return fmt.Errorf("second port should be eth1")
+		if rs.Primary.Attributes["ports.1.name"] != "eth0" {
+			return fmt.Errorf("second port should be eth0")
 		}
-		if rs.Primary.Attributes["ports.2.name"] != "bond0" {
-			return fmt.Errorf("third port should be bond0")
+		if rs.Primary.Attributes["ports.2.name"] != "eth1" {
+			return fmt.Errorf("third port should be eth1")
 		}
 		return nil
 	}
