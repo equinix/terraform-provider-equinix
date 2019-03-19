@@ -38,6 +38,12 @@ func resourcePacketProject() *schema.Resource {
 				Computed: true,
 			},
 
+			"backend_transfer": {
+				Type:     schema.TypeBool,
+				Optional: true,
+				Default:  false,
+			},
+
 			"payment_method_id": {
 				Type:     schema.TypeString,
 				Optional: true,
@@ -129,6 +135,15 @@ func resourcePacketProjectCreate(d *schema.ResourceData, meta interface{}) error
 			return friendlyError(err)
 		}
 	}
+
+	backendTransfer := d.Get("backend_transfer").(bool)
+	if backendTransfer {
+		pur := packngo.ProjectUpdateRequest{BackendTransfer: &backendTransfer}
+		_, _, err := client.Projects.Update(project.ID, &pur)
+		if err != nil {
+			return friendlyError(err)
+		}
+	}
 	return resourcePacketProjectRead(d, meta)
 }
 
@@ -155,6 +170,7 @@ func resourcePacketProjectRead(d *schema.ResourceData, meta interface{}) error {
 	d.Set("organization_id", path.Base(proj.Organization.URL))
 	d.Set("created", proj.Created)
 	d.Set("updated", proj.Updated)
+	d.Set("backend_transfer", proj.BackendTransfer)
 
 	bgpConf, _, err := client.BGPConfig.Get(proj.ID, nil)
 
@@ -211,6 +227,10 @@ func resourcePacketProjectUpdate(d *schema.ResourceData, meta interface{}) error
 	if d.HasChange("payment_method_id") {
 		pPayment := d.Get("payment_method_id").(string)
 		updateRequest.PaymentMethodID = &pPayment
+	}
+	if d.HasChange("backend_transfer") {
+		pBT := d.Get("backend_transfer").(bool)
+		updateRequest.BackendTransfer = &pBT
 	}
 	if d.HasChange("bgp_config") {
 		o, n := d.GetChange("bgp_config")
