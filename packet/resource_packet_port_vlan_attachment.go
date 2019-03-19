@@ -3,7 +3,6 @@ package packet
 import (
 	"fmt"
 	"log"
-	"path/filepath"
 
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/packethost/packngo"
@@ -35,10 +34,14 @@ func resourcePacketPortVlanAttachment() *schema.Resource {
 				Required: true,
 				ForceNew: true,
 			},
-			"vlan_id": {
-				Type:     schema.TypeString,
+			"vlan_vnid": {
+				Type:     schema.TypeInt,
 				Required: true,
 				ForceNew: true,
+			},
+			"vlan_id": {
+				Type:     schema.TypeString,
+				Computed: true,
 			},
 			"port_id": {
 				Type:     schema.TypeString,
@@ -50,11 +53,11 @@ func resourcePacketPortVlanAttachment() *schema.Resource {
 
 func resourcePacketPortVlanAttachmentCreate(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*packngo.Client)
-	dID := d.Get("device_id").(string)
+	deviceID := d.Get("device_id").(string)
 	pName := d.Get("port_name").(string)
-	vID := d.Get("vlan_id").(string)
-	log.Printf("[DEBUG] Attaching Port (%s) to VLAN (%s)\n", pName, vID)
-	dev, _, err := client.Devices.Get(dID, &packngo.GetOptions{Includes: []string{"network_ports"}})
+	vlanVNID := d.Get("vlan_vnid").(int)
+
+	dev, _, err := client.Devices.Get(deviceID, &packngo.GetOptions{Includes: []string{"virtual_networks"}})
 	if err != nil {
 		return err
 	}
@@ -67,7 +70,7 @@ func resourcePacketPortVlanAttachmentCreate(d *schema.ResourceData, meta interfa
 			portFound = true
 			port = p
 			for _, n := range p.AttachedVirtualNetworks {
-				if vID == (filepath.Base(n.Href)) {
+				if vlanVNID == n.VXLAN {
 					vlanFound = true
 					break
 				}
@@ -76,11 +79,26 @@ func resourcePacketPortVlanAttachmentCreate(d *schema.ResourceData, meta interfa
 		}
 	}
 	if !portFound {
-		return fmt.Errorf("Device %s doesn't have port %s", dID, pName)
+		return fmt.Errorf("Device %s doesn't have port %s", deviceID, pName)
 	}
 	if vlanFound {
-		log.Printf("Port %s already has VLAN %s assigned", pName, vID)
+		log.Printf("Port %s already has VLAN %d assigned", pName, vlanVNID)
 		return nil
+	}
+
+	vlanID := ""
+	facility := dev.Facility.Code
+	vlans, _, err := client.ProjectVirtualNetworks.List(dev.Project.ID, nil)
+	if err != nil {
+		return err
+	}
+	for _, n := range vlans.VirtualNetworks {
+		if (n.VXLAN == vlanVNID) && (n.FacilityCode == facility) {
+			vlanID = n.ID
+		}
+	}
+	if len(vlanID) == 0 {
+		return fmt.Errorf("VLAN with VNID %d doesn't exist in facilty %s", vlanVNID, facility)
 	}
 
 	if port.Data.Bonded {
@@ -90,37 +108,39 @@ func resourcePacketPortVlanAttachmentCreate(d *schema.ResourceData, meta interfa
 		}
 	}
 
-	par := &packngo.PortAssignRequest{PortID: port.ID, VirtualNetworkID: vID}
+	par := &packngo.PortAssignRequest{PortID: port.ID, VirtualNetworkID: vlanID}
 
 	_, _, err = client.DevicePorts.Assign(par)
 	if err != nil {
 		return err
 	}
 
-	d.SetId(port.ID + ":" + vID)
+	d.SetId(port.ID + ":" + vlanID)
 	return resourcePacketPortVlanAttachmentRead(d, meta)
 }
 
 func resourcePacketPortVlanAttachmentRead(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*packngo.Client)
-	dID := d.Get("device_id").(string)
+	deviceID := d.Get("device_id").(string)
 	pName := d.Get("port_name").(string)
-	vID := d.Get("vlan_id").(string)
+	vlanVNID := d.Get("vlan_vnid").(int)
 
-	dev, _, err := client.Devices.Get(dID, &packngo.GetOptions{Includes: []string{"network_ports"}})
+	dev, _, err := client.Devices.Get(deviceID, &packngo.GetOptions{Includes: []string{"virtual_networks"}})
 	if err != nil {
 		return err
 	}
 	portFound := false
 	vlanFound := false
 	portID := ""
+	vlanID := ""
 	for _, p := range dev.NetworkPorts {
 		if p.Name == pName {
 			portFound = true
 			portID = p.ID
 			for _, n := range p.AttachedVirtualNetworks {
-				if vID == (filepath.Base(n.Href)) {
+				if vlanVNID == n.VXLAN {
 					vlanFound = true
+					vlanID = n.ID
 					break
 				}
 			}
@@ -128,8 +148,9 @@ func resourcePacketPortVlanAttachmentRead(d *schema.ResourceData, meta interface
 		}
 	}
 	d.Set("port_id", portID)
+	d.Set("vlan_id", vlanID)
 	if !portFound {
-		return fmt.Errorf("Device %s doesn't have port %s", dID, pName)
+		return fmt.Errorf("Device %s doesn't have port %s", deviceID, pName)
 	}
 	if !vlanFound {
 		d.SetId(portID)
@@ -139,8 +160,8 @@ func resourcePacketPortVlanAttachmentRead(d *schema.ResourceData, meta interface
 
 func resourcePacketPortVlanAttachmentDelete(d *schema.ResourceData, meta interface{}) error {
 	pID := d.Get("port_id").(string)
-	vID := d.Get("vlan_id").(string)
-	par := &packngo.PortAssignRequest{PortID: pID, VirtualNetworkID: vID}
+	vlanID := d.Get("vlan_id").(string)
+	par := &packngo.PortAssignRequest{PortID: pID, VirtualNetworkID: vlanID}
 	client := meta.(*packngo.Client)
 	portPtr, _, err := client.DevicePorts.Unassign(par)
 	if err != nil {

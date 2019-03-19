@@ -42,13 +42,13 @@ resource "packet_vlan" "test2" {
 
 resource "packet_port_vlan_attachment" "test1" {
   device_id = "${packet_device.test.id}"
-  vlan_id = "${packet_vlan.test1.id}"
+  vlan_vnid = "${packet_vlan.test1.vxlan}"
   port_name = "eth1"
 }
 
 resource "packet_port_vlan_attachment" "test2" {
   device_id = "${packet_device.test.id}"
-  vlan_id = "${packet_vlan.test2.id}"
+  vlan_vnid = "${packet_vlan.test2.vxlan}"
   port_name = "eth1"
 }
 
@@ -104,7 +104,7 @@ resource "packet_vlan" "test" {
 
 resource "packet_port_vlan_attachment" "test" {
   device_id = "${packet_device.test.id}"
-  vlan_id = "${packet_vlan.test.id}"
+  vlan_vnid = "${packet_vlan.test.vxlan}"
   port_name = "eth1"
   force_bond = false
 }`, name)

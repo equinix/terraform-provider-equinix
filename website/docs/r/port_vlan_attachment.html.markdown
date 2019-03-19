@@ -42,7 +42,7 @@ resource "packet_device" "test" {
 resource "packet_port_vlan_attachment" "test" {
   device_id = "${packet_device.test.id}"
   port_name = "eth1"
-  vlan_id = "${packet_vlan.test.id}"
+  vlan_vnid = "${packet_vlan.test.vxlan}"
 }
 
 
@@ -72,13 +72,13 @@ resource "packet_vlan" "test2" {
 
 resource "packet_port_vlan_attachment" "test1" {
   device_id = "${packet_device.test.id}"
-  vlan_id = "${packet_vlan.test1.id}"
+  vlan_vnid = "${packet_vlan.test1.vxlan}"
   port_name = "eth1"
 }
 
 resource "packet_port_vlan_attachment" "test2" {
   device_id = "${packet_device.test.id}"
-  vlan_id = "${packet_vlan.test2.id}"
+  vlan_vnid = "${packet_vlan.test2.vxlan}"
   port_name = "eth1"
 }
 ```
@@ -89,9 +89,11 @@ The following arguments are supported:
 
 * `device_id` - (Required) ID of device to be assigned to the VLAN
 * `port_name` - (Required) Name of network port to be assigned to the VLAN
-* `vlan_id` - (Required) ID of target VLAN
 * `force_bond` - Add port back to the bond when this resource is removed. Default is false.
+* `vlan_vnid` - VXLAN Network Identifier, integer
 
 ## Attribute Referece
 
 * `id` - UUID of device port used in the assignment
+* `vlan_id` - UUID of VLAN API resource
+* `port_id` - UUID of device port
