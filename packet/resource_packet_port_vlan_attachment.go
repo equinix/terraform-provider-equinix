@@ -57,7 +57,7 @@ func resourcePacketPortVlanAttachmentCreate(d *schema.ResourceData, meta interfa
 	pName := d.Get("port_name").(string)
 	vlanVNID := d.Get("vlan_vnid").(int)
 
-	dev, _, err := client.Devices.Get(deviceID, &packngo.GetOptions{Includes: []string{"virtual_networks"}})
+	dev, _, err := client.Devices.Get(deviceID, &packngo.GetOptions{Includes: []string{"virtual_networks,project"}})
 	if err != nil {
 		return err
 	}
@@ -125,7 +125,7 @@ func resourcePacketPortVlanAttachmentRead(d *schema.ResourceData, meta interface
 	pName := d.Get("port_name").(string)
 	vlanVNID := d.Get("vlan_vnid").(int)
 
-	dev, _, err := client.Devices.Get(deviceID, &packngo.GetOptions{Includes: []string{"virtual_networks"}})
+	dev, _, err := client.Devices.Get(deviceID, &packngo.GetOptions{Includes: []string{"virtual_networks,project"}})
 	if err != nil {
 		return err
 	}
