@@ -1,4 +1,4 @@
-## 1.5.0 (Unreleased)
+## 1.5.0 (March 20, 2019)
 
 IMPROVEMENTS:
 - [#114](https://github.com/terraform-providers/terraform-provider-packet/pull/114) Bump Terraform version to 0.11.11 in order to see JSON from HTTP responses
