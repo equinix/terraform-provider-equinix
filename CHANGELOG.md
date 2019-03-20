@@ -1,4 +1,14 @@
 ## 1.5.0 (Unreleased)
+
+IMPROVEMENTS:
+- [#114](https://github.com/terraform-providers/terraform-provider-packet/pull/114) Bump Terraform version to 0.11.11 in order to see JSON from HTTP responses
+- Documentation fixes
+- Packet Go library updates
+- [#122](https://github.com/terraform-providers/terraform-provider-packet/pull/122) backend_transfer attribute in packet_project
+
+FEATURES:
+- [#86](https://github.com/terraform-providers/terraform-provider-packet/pull/86) Layer 2 support: network_type attribute in packet_device, new resource packet_port_vlan_attachment
+
 ## 1.4.1 (February 21, 2019)
 
 IMPROVEMENTS:
