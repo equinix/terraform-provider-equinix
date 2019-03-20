@@ -283,6 +283,12 @@ func resourcePacketDevice() *schema.Resource {
 				Computed: true,
 				Elem:     &schema.Schema{Type: schema.TypeString},
 			},
+			"wait_for_reservation_deprovision": {
+				Type:     schema.TypeBool,
+				Optional: true,
+				Default:  false,
+				ForceNew: false,
+			},
 		},
 	}
 }
@@ -342,6 +348,11 @@ func resourcePacketDeviceCreate(d *schema.ResourceData, meta interface{}) error 
 
 	if attr, ok := d.GetOk("hardware_reservation_id"); ok {
 		createRequest.HardwareReservationID = attr.(string)
+	} else {
+		wfrd := "wait_for_reservation_deprovision"
+		if d.Get(wfrd).(bool) {
+			return friendlyError(fmt.Errorf("You can't set %s when not using a hardware reservation", wfrd))
+		}
 	}
 
 	if createRequest.OS == "custom_ipxe" {
@@ -638,8 +649,34 @@ func resourcePacketDeviceDelete(d *schema.ResourceData, meta interface{}) error 
 	if _, err := client.Devices.Delete(d.Id()); err != nil {
 		return friendlyError(err)
 	}
-
 	return nil
+}
+
+func reservationProvisionableRefresh(id string, meta interface{}) resource.StateRefreshFunc {
+	client := meta.(*packngo.Client)
+	return func() (interface{}, string, error) {
+		r, _, err := client.HardwareReservations.Get(id, nil)
+		if err != nil {
+			return nil, "", friendlyError(err)
+		}
+		provisionableString := "false"
+		if r.Provisionable {
+			provisionableString = "true"
+		}
+		return r, provisionableString, nil
+	}
+}
+
+func waitUntilReservationProvisionable(id string, meta interface{}) error {
+	stateConf := &resource.StateChangeConf{
+		Pending:    []string{"false"},
+		Target:     []string{"true"},
+		Refresh:    reservationProvisionableRefresh(id, meta),
+		Timeout:    60 * time.Minute,
+		Delay:      10 * time.Second,
+		MinTimeout: 3 * time.Second,
+	}
+	return stateConf.WaitForState()
 }
 
 func waitForDeviceAttribute(d *schema.ResourceData, target string, pending []string, attribute string, meta interface{}) (interface{}, error) {
