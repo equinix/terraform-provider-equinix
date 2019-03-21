@@ -646,8 +646,17 @@ func resourcePacketDeviceUpdate(d *schema.ResourceData, meta interface{}) error 
 func resourcePacketDeviceDelete(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*packngo.Client)
 
+	resId, ok := d.GetOk("hardware_reservation_id")
 	if _, err := client.Devices.Delete(d.Id()); err != nil {
 		return friendlyError(err)
+	}
+	if ok {
+		if d.Get("wait_for_reservation_deprovision").(bool) {
+			_, err := waitUntilReservationProvisionable(resId.(string), meta)
+			if err != nil {
+				return err
+			}
+		}
 	}
 	return nil
 }
@@ -667,7 +676,7 @@ func reservationProvisionableRefresh(id string, meta interface{}) resource.State
 	}
 }
 
-func waitUntilReservationProvisionable(id string, meta interface{}) error {
+func waitUntilReservationProvisionable(id string, meta interface{}) (interface{}, error) {
 	stateConf := &resource.StateChangeConf{
 		Pending:    []string{"false"},
 		Target:     []string{"true"},
