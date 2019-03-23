@@ -31,7 +31,7 @@ resource "packet_reserved_ip_block" "myblock" {
 }
 
 # Assign /32 subnet (single address) from reserved block to a device
-resource "packet_ip_attachment" "first_address_assingment" {
+resource "packet_ip_attachment" "first_address_assignment" {
   device_id = "${packet_device.mydevice.id}"
   # following interpolation will result to sth like "147.229.10.152/32"
   cidr_notation = "${cidrhost(packet_reserved_ip_block.myblock.cidr_notation,0)}/32"
