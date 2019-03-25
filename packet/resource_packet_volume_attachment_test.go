@@ -62,7 +62,7 @@ resource "packet_project" "test" {
 resource "packet_device" "test" {
     hostname         = "terraform-test-device-va"
     plan             = "t1.small.x86"
-    facility         = "ewr1"
+    facilities       = ["ewr1"]
     operating_system = "ubuntu_16_04"
     billing_cycle    = "hourly"
     project_id       = "${packet_project.test.id}"
@@ -74,7 +74,10 @@ resource "packet_volume" "test" {
     size = 100
     project_id = "${packet_project.test.id}"
     facility = "ewr1"
-    snapshot_policies = { snapshot_frequency = "1day", snapshot_count = 7 }
+    snapshot_policies {
+	    snapshot_frequency = "1day"
+		snapshot_count = 7
+	}
 }
 
 resource "packet_volume_attachment" "test" {

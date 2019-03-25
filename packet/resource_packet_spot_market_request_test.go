@@ -77,17 +77,17 @@ var testAccCheckPacketSpotMarketRequestConfig_basic = `
 	  }
 	  
 	  resource "packet_spot_market_request" "request" {
-		project_id      = "${packet_project.test.id}"
-		"max_bid_price" = 0.03
-		"facilities"    = ["ewr1"]
-		"devices_min"   = 1
-		"devices_max"   = 1
-		"wait_for_devices" = true
-	  
-		"instance_parameters" {
-		  "hostname"         = "testspot"
-		  "billing_cycle"    = "hourly"
-		  "operating_system" = "coreos_stable"
-		  "plan"             = "t1.small.x86"
+		project_id       = "${packet_project.test.id}"
+		max_bid_price    = 0.03
+		facilities       = ["ewr1"]
+		devices_min      = 1
+		devices_max      = 1
+		wait_for_devices = true
+
+		instance_parameters {
+		  hostname         = "testspot"
+		  billing_cycle    = "hourly"
+		  operating_system = "coreos_stable"
+		  plan             = "t1.small.x86"
 		}
 	  }`

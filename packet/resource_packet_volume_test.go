@@ -185,7 +185,10 @@ resource "packet_volume" "foobar" {
     size = 100
     project_id = "${packet_project.foobar.id}"
     facility = "ewr1"
-    snapshot_policies = { snapshot_frequency = "1day", snapshot_count = 7 }
+    snapshot_policies { 
+		snapshot_frequency = "1day"
+		snapshot_count = 7
+	}
 }`, projectSuffix)
 }
 
