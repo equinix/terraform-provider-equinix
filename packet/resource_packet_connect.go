@@ -147,5 +147,11 @@ func resourcePacketConnectDelete(d *schema.ResourceData, meta interface{}) error
 	if err != nil {
 		return friendlyError(err)
 	}
+
+	_, err = client.Connects.Delete(d.Id(), pc.ProjectID)
+	if err != nil {
+		return friendlyError(err)
+	}
+
 	return nil
 }
