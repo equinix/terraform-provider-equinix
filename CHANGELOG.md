@@ -1,4 +1,11 @@
 ## 1.6.0 (Unreleased)
+
+IMPROVEMENTS:
+- Documetnation fixes
+
+FEATURES:
+- [#132](https://github.com/terraform-providers/terraform-provider-packet/pull/132) New resource /packet_connect: connection to VLANs in other cloud providers
+
 ## 1.5.0 (March 20, 2019)
 
 IMPROVEMENTS:
