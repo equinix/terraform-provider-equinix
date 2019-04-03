@@ -24,6 +24,8 @@ func TestAccPacketBGPSession_Basic(t *testing.T) {
 					resource.TestCheckResourceAttrPair(
 						"packet_device.test", "id",
 						"packet_bgp_session.test", "device_id"),
+					resource.TestCheckResourceAttr(
+						"packet_bgp_session.test", "default_route", "true"),
 				),
 			},
 			resource.TestStep{
@@ -73,5 +75,6 @@ resource "packet_device" "test" {
 resource "packet_bgp_session" "test" {
 	device_id = "${packet_device.test.id}"
 	address_family = "ipv4"
+	default_route = true
 }`, name)
 }

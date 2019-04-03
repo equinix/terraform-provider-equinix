@@ -29,6 +29,12 @@ func resourcePacketBGPSession() *schema.Resource {
 				ForceNew:     true,
 				ValidateFunc: validation.StringInSlice([]string{"ipv4", "ipv6"}, false),
 			},
+			"default_route": {
+				Type:     schema.TypeBool,
+				Optional: true,
+				Default:  false,
+				ForceNew: true,
+			},
 
 			"status": {
 				Type:     schema.TypeString,
@@ -42,9 +48,12 @@ func resourcePacketBGPSessionCreate(d *schema.ResourceData, meta interface{}) er
 	client := meta.(*packngo.Client)
 	dID := d.Get("device_id").(string)
 	addressFamily := d.Get("address_family").(string)
+	defaultRoute := d.Get("default_route").(bool)
 	log.Printf("[DEBUG] creating %s BGP session to device (%s)\n", addressFamily, dID)
 	bgpSession, _, err := client.BGPSessions.Create(
-		dID, packngo.CreateBGPSessionRequest{AddressFamily: "ipv4"})
+		dID, packngo.CreateBGPSessionRequest{
+			AddressFamily: "ipv4",
+			DefaultRoute:  &defaultRoute})
 	if err != nil {
 		return friendlyError(err)
 	}
@@ -65,9 +74,16 @@ func resourcePacketBGPSessionRead(d *schema.ResourceData, meta interface{}) erro
 		}
 		return err
 	}
+	defaultRoute := false
+	if bgpSession.DefaultRoute != nil {
+		if *(bgpSession.DefaultRoute) {
+			defaultRoute = true
+		}
+	}
 	d.Set("device_id", bgpSession.Device.ID)
 	d.Set("address_family", bgpSession.AddressFamily)
 	d.Set("status", bgpSession.Status)
+	d.Set("default_route", defaultRoute)
 	d.SetId(bgpSession.ID)
 	return nil
 }
