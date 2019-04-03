@@ -158,7 +158,8 @@ resource "null_resource" "configure_bird" {
 The following arguments are supported:
 
 * `device_id` - (Required) ID of device 
-* `address_family` - `ipv4` or `ipv6`
+* `address_family` - (Required) `ipv4` or `ipv6`
+* `default_route` - (Optional) Boolean flag to set the default route policy. False by default.
 
 ## Attributes Reference
 
