@@ -1,4 +1,4 @@
-## 1.7.0 (Unreleased)
+## 1.7.0 (April 04, 2019)
 
 IMPROVEMENTS:
 - [#135](https://github.com/terraform-providers/terraform-provider-packet/pull/135) Add default_policy flag to packet_bgp_session resource
