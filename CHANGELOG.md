@@ -1,4 +1,8 @@
-## 1.8.0 (Unreleased)
+## 1.7.1 (Unreleased)
+
+BUG FIXES:
+- [#137](https://github.com/terraform-providers/terraform-provider-packet/pull/137) Remove Disbond call from port-vlan-attachment creation function, in order to fix use-case for layer2-bonded
+
 ## 1.7.0 (April 04, 2019)
 
 IMPROVEMENTS:
