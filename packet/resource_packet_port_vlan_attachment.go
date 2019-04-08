@@ -101,13 +101,6 @@ func resourcePacketPortVlanAttachmentCreate(d *schema.ResourceData, meta interfa
 		return fmt.Errorf("VLAN with VNID %d doesn't exist in facilty %s", vlanVNID, facility)
 	}
 
-	if port.Data.Bonded {
-		_, _, err := client.DevicePorts.Disbond(&packngo.DisbondRequest{PortID: port.ID, BulkDisable: false})
-		if err != nil {
-			return friendlyError(err)
-		}
-	}
-
 	par := &packngo.PortAssignRequest{PortID: port.ID, VirtualNetworkID: vlanID}
 
 	_, _, err = client.DevicePorts.Assign(par)
