@@ -12,6 +12,74 @@ import (
 	"github.com/packethost/packngo"
 )
 
+func testAccCheckPacketPortVlanAttachmentConfig_L2Bonded(name string) string {
+	return fmt.Sprintf(`
+resource "packet_project" "test" {
+    name = "%s"
+}
+
+resource "packet_device" "test" {
+  hostname         = "test"
+  plan             = "s1.large.x86"
+  facility         = "dfw2"
+  operating_system = "ubuntu_16_04"
+  billing_cycle    = "hourly"
+  project_id       = "${packet_project.test.id}"
+  network_type     = "layer2-bonded"
+}
+
+resource "packet_vlan" "test1" {
+  description = "VLAN in New Jersey"
+  facility    = "dfw2"
+  project_id  = "${packet_project.test.id}"
+}
+
+resource "packet_vlan" "test2" {
+  description = "VLAN in New Jersey"
+  facility    = "dfw2"
+  project_id  = "${packet_project.test.id}"
+}
+
+resource "packet_port_vlan_attachment" "test1" {
+  device_id = "${packet_device.test.id}"
+  vlan_vnid = "${packet_vlan.test1.vxlan}"
+  port_name = "bond0"
+}
+
+resource "packet_port_vlan_attachment" "test2" {
+  device_id = "${packet_device.test.id}"
+  vlan_vnid = "${packet_vlan.test2.vxlan}"
+  port_name = "bond0"
+}
+
+`, name)
+}
+
+func TestAccPacketPortVlanAttachment_L2Bonded(t *testing.T) {
+
+	rs := acctest.RandString(10)
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckPacketPortVlanAttachmentDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckPacketPortVlanAttachmentConfig_L2Bonded(rs),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(
+						"packet_port_vlan_attachment.test1", "port_name", "bond0"),
+					resource.TestCheckResourceAttr(
+						"packet_port_vlan_attachment.test2", "port_name", "bond0"),
+					resource.TestCheckResourceAttrPair(
+						"packet_port_vlan_attachment.test1", "device_id",
+						"packet_device.test", "id"),
+				),
+			},
+		},
+	})
+}
+
 func testAccCheckPacketPortVlanAttachmentConfig_L2Individual(name string) string {
 	return fmt.Sprintf(`
 resource "packet_project" "test" {
