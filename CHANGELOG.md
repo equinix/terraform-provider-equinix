@@ -1,4 +1,4 @@
-## 1.7.2 (Unreleased)
+## 1.7.2 (April 10, 2019)
 
 BUG FIXES:
 - [#140](https://github.com/terraform-providers/terraform-provider-packet/pull/140) Relax the network_type attribute of packet_device, fixing #138
