@@ -1,4 +1,9 @@
 ## 1.7.2 (Unreleased)
+
+BUG FIXES:
+- [#140](https://github.com/terraform-providers/terraform-provider-packet/pull/140) Relax the network_type attribute of packet_device, fixing #138
+- [#139](https://github.com/terraform-providers/terraform-provider-packet/pull/139) Fix facility json tag for packet_sport_market_request
+
 ## 1.7.1 (April 08, 2019)
 
 BUG FIXES:
