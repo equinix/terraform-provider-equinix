@@ -121,8 +121,13 @@ func resourcePacketDevice() *schema.Resource {
 			"network_type": &schema.Schema{
 				Type:         schema.TypeString,
 				Optional:     true,
-				Default:      "layer3",
 				ValidateFunc: validation.StringInSlice([]string{"layer3", "layer2-bonded", "layer2-individual", "hybrid"}, false),
+				DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
+					if new == "" {
+						return true
+					}
+					return false
+				},
 			},
 
 			"ports": &schema.Schema{
@@ -289,7 +294,7 @@ func resourcePacketDeviceCreate(d *schema.ResourceData, meta interface{}) error 
 		ProjectID:            d.Get("project_id").(string),
 		PublicIPv4SubnetSize: d.Get("public_ipv4_subnet_size").(int),
 	}
-	targetNetworkState := d.Get("network_type").(string)
+	targetNetworkState, nTypeOk := d.GetOk("network_type")
 	if attr, ok := d.GetOk("user_data"); ok {
 		createRequest.UserData = attr.(string)
 	}
@@ -364,12 +369,15 @@ func resourcePacketDeviceCreate(d *schema.ResourceData, meta interface{}) error 
 		return err
 	}
 
-	_, err = waitForDeviceAttribute(d, "layer3", []string{"hybrid", "layer2-bonded", "layer2-individual"}, "network_type", meta)
+	if nTypeOk {
+		_, err = waitForDeviceAttribute(d, "layer3", []string{"hybrid", "layer2-bonded", "layer2-individual"}, "network_type", meta)
 
-	if targetNetworkState != "layer3" {
-		_, err := client.DevicePorts.DeviceToNetworkType(newDevice.ID, targetNetworkState)
-		if err != nil {
-			return err
+		tns := targetNetworkState.(string)
+		if tns != "layer3" {
+			_, err := client.DevicePorts.DeviceToNetworkType(newDevice.ID, tns)
+			if err != nil {
+				return err
+			}
 		}
 	}
 
@@ -570,10 +578,13 @@ func resourcePacketDeviceUpdate(d *schema.ResourceData, meta interface{}) error 
 
 	}
 	if d.HasChange("network_type") {
-		targetType := d.Get("network_type").(string)
-		_, err := client.DevicePorts.DeviceToNetworkType(d.Id(), targetType)
-		if err != nil {
-			return err
+		target, ok := d.GetOk("network_type")
+		if ok {
+			targetType := target.(string)
+			_, err := client.DevicePorts.DeviceToNetworkType(d.Id(), targetType)
+			if err != nil {
+				return err
+			}
 		}
 	}
 	return resourcePacketDeviceRead(d, meta)
