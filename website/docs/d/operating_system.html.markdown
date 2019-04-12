@@ -23,7 +23,7 @@ data "packet_operating_system" "example" {
 resource "packet_device" "server" {
   hostname         = "tf.coreos2"
   plan             = "c1.small.x86"
-  facility         = "ewr1"
+  facilities       = ["ewr1"]
   operating_system = "${data.packet_operating_system.example.id}"
   billing_cycle    = "hourly"
   project_id       = "${local.project_id}"

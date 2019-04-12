@@ -21,7 +21,7 @@ resource "packet_project" "test" {
 resource "packet_device" "test" {
   hostname         = "test"
   plan             = "s1.large.x86"
-  facility         = "dfw2"
+  facilities       = ["dfw2"]
   operating_system = "ubuntu_16_04"
   billing_cycle    = "hourly"
   project_id       = "${packet_project.test.id}"
@@ -89,7 +89,7 @@ resource "packet_project" "test" {
 resource "packet_device" "test" {
   hostname         = "test"
   plan             = "s1.large.x86"
-  facility         = "dfw2"
+  facilities       = ["dfw2"]
   operating_system = "ubuntu_16_04"
   billing_cycle    = "hourly"
   project_id       = "${packet_project.test.id}"
@@ -157,7 +157,7 @@ resource "packet_project" "test" {
 resource "packet_device" "test" {
   hostname         = "test"
   plan             = "s1.large.x86"
-  facility         = "dfw2"
+  facilities       = ["dfw2"]
   operating_system = "ubuntu_16_04"
   billing_cycle    = "hourly"
   project_id       = "${packet_project.test.id}"

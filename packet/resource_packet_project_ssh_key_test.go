@@ -26,7 +26,7 @@ resource "packet_project_ssh_key" "test" {
 resource "packet_device" "test" {
     hostname            = "test"
     plan                = "baremetal_0"
-    facility            = "ewr1"
+    facilities          = ["ewr1"]
     operating_system    = "ubuntu_16_04"
     billing_cycle       = "hourly"
     project_ssh_key_ids = ["${packet_project_ssh_key.test.id}"]

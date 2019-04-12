@@ -51,7 +51,7 @@ resource "packet_port_vlan_attachment" "test" {
 resource "packet_device" "test" {
   hostname         = "test"
   plan             = "m1.xlarge.x86"
-  facility         = "ewr1"
+  facilities       = ["ewr1"]
   operating_system = "ubuntu_16_04"
   billing_cycle    = "hourly"
   project_id       = "${local.project_id}"
