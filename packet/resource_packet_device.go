@@ -65,7 +65,7 @@ func resourcePacketDevice() *schema.Resource {
 
 			"facilities": {
 				Type:     schema.TypeList,
-				Optional: true,
+				Required: true,
 				ForceNew: true,
 				Elem:     &schema.Schema{Type: schema.TypeString},
 			},
@@ -435,9 +435,7 @@ func resourcePacketDeviceRead(d *schema.ResourceData, meta interface{}) error {
 
 	d.Set("hostname", device.Hostname)
 	d.Set("plan", device.Plan.Slug)
-	d.Set("facilities", []string{device.Facility.Code})
 	d.Set("deployed_facility", device.Facility.Code)
-
 	d.Set("operating_system", device.OS.Slug)
 	d.Set("state", device.State)
 	d.Set("billing_cycle", device.BillingCycle)
