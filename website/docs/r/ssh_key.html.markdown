@@ -26,7 +26,7 @@ resource "packet_ssh_key" "key1" {
 resource "packet_device" "test" {
   hostname         = "test-device"
   plan             = "t1.small.x86"
-  facility         = "sjc1"
+  facilities       = ["sjc1"]
   operating_system = "ubuntu_16_04"
   billing_cycle    = "hourly"
   project_id       = "${local.project_id}"

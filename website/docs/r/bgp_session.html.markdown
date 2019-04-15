@@ -49,7 +49,7 @@ resource "packet_reserved_ip_block" "addr" {
 resource "packet_device" "test" {
   hostname         = "terraform-test-bgp-sesh"
   plan             = "t1.small.x86"
-  facility         = "ewr1"
+  facilities       = ["ewr1"]
   operating_system = "ubuntu_16_04"
   billing_cycle    = "hourly"
   project_id       = "${local.project_id}"

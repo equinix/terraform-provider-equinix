@@ -84,6 +84,8 @@ func TestAccPacketDevice_Basic(t *testing.T) {
 						r, "always_pxe", "false"),
 					resource.TestCheckResourceAttrSet(
 						r, "root_password"),
+					resource.TestCheckResourceAttrPair(
+						r, "deployed_facility", r, "facilities.0"),
 				),
 			},
 		},
@@ -231,45 +233,6 @@ func TestAccPacketDevice_L2(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						"packet_device.test", "network_type", "layer2-bonded"),
 				),
-			},
-		},
-	})
-}
-
-func testAccCheckPacketDeviceConfig_AnyFacility(projSuffix string) string {
-	return fmt.Sprintf(`
-resource "packet_project" "test" {
-    name = "TerraformTestProject-%s"
-}
-
-resource "packet_device" "test" {
-  hostname         = "test"
-  plan             = "t1.small.x86"
-  facility         = "any"
-  operating_system = "ubuntu_16_04"
-  billing_cycle    = "hourly"
-  project_id       = "${packet_project.test.id}"
-}
-`, projSuffix)
-}
-
-var matchErrAnyFacility = regexp.MustCompile(`.*Cannot use facility: "any".*`)
-
-func TestAccPacketDevice_AnyFacility(t *testing.T) {
-	var device packngo.Device
-	rs := acctest.RandString(10)
-
-	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckPacketDeviceDestroy,
-		Steps: []resource.TestStep{
-			{
-				Config: testAccCheckPacketDeviceConfig_AnyFacility(rs),
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckPacketDeviceExists("packet_device.test", &device),
-				),
-				ExpectError: matchErrAnyFacility,
 			},
 		},
 	})
@@ -489,7 +452,7 @@ resource "packet_project" "test" {
 resource "packet_device" "test" {
   hostname         = "test-device-%d"
   plan             = "t1.small.x86"
-  facility         = "sjc1"
+  facilities       = ["sjc1"]
   operating_system = "ubuntu_16_04"
   billing_cycle    = "hourly"
   project_id       = "${packet_project.test.id}"
@@ -508,7 +471,7 @@ resource "packet_device" "test" {
   hostname         = "test-device-%d"
   description      = "test-desc-%d"
   plan             = "t1.small.x86"
-  facility         = "sjc1"
+  facilities       = ["sjc1"]
   operating_system = "ubuntu_16_04"
   billing_cycle    = "hourly"
   project_id       = "${packet_project.test.id}"
@@ -527,7 +490,7 @@ resource "packet_device" "test" {
   hostname         = "test-device-%d"
   description      = "test-desc-%d"
   plan             = "t1.small.x86"
-  facility         = "sjc1"
+  facilities       = ["sjc1"]
   operating_system = "ubuntu_16_04"
   billing_cycle    = "hourly"
   project_id       = "${packet_project.test.id}"
@@ -547,7 +510,7 @@ resource "packet_project" "test" {
 resource "packet_device" "test" {
   hostname         = "test-device"
   plan             = "t1.small.x86"
-  facility         = "sjc1"
+  facilities       = ["sjc1"]
   operating_system = "ubuntu_16_04"
   billing_cycle    = "hourly"
   project_id       = "${packet_project.test.id}"
@@ -562,7 +525,7 @@ resource "packet_project" "test" {
 resource "packet_device" "test_subnet_29" {
   hostname         = "test-subnet-29"
   plan             = "t1.small.x86"
-  facility         = "sjc1"
+  facilities       = ["sjc1"]
   operating_system = "ubuntu_16_04"
   billing_cycle    = "hourly"
   project_id       = "${packet_project.test.id}"
@@ -597,7 +560,7 @@ resource "packet_device" "test_ipxe_script_url"  {
 
   hostname         = "test-ipxe-script-url"
   plan             = "t1.small.x86"
-  facility         = "sjc1"
+  facilities       = ["sjc1"]
   operating_system = "custom_ipxe"
   user_data        = "#!/bin/sh\ntouch /tmp/test"
   billing_cycle    = "hourly"
@@ -615,7 +578,7 @@ resource "packet_project" "test" {
 resource "packet_device" "test_ipxe_conflict" {
   hostname         = "test-ipxe-conflict"
   plan             = "t1.small.x86"
-  facility         = "sjc1"
+  facilities       = ["sjc1"]
   operating_system = "custom_ipxe"
   user_data        = "#!ipxe\nset conflict ipxe_script_url"
   billing_cycle    = "hourly"
@@ -632,7 +595,7 @@ resource "packet_project" "test" {
 resource "packet_device" "test_ipxe_missing" {
   hostname         = "test-ipxe-missing"
   plan             = "t1.small.x86"
-  facility         = "sjc1"
+  facilities       = ["sjc1"]
   operating_system = "custom_ipxe"
   billing_cycle    = "hourly"
   project_id       = "${packet_project.test.id}"

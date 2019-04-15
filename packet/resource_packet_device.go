@@ -52,28 +52,35 @@ func resourcePacketDevice() *schema.Resource {
 				ForceNew: true,
 			},
 
+			"deployed_facility": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+
 			"facility": {
-				Type:          schema.TypeString,
-				Optional:      true,
-				ForceNew:      true,
-				ValidateFunc:  validateFacilityForDevice,
-				Deprecated:    "Use the 'facilities' array instead.",
-				ConflictsWith: []string{"facilities"},
+				Type:     schema.TypeString,
+				Optional: true,
+				Removed:  "Use the \"facilities\" array instead, i.e. change \n  facility = \"ewr1\"\nto \n  facilities = [\"ewr1\"]",
+			},
+
+			"facilities": {
+				Type:     schema.TypeList,
+				Required: true,
+				Elem:     &schema.Schema{Type: schema.TypeString},
+				ForceNew: true,
+				MinItems: 1,
 				DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
-					// ignore set of empty facility "" => "xxx1"
-					if new == "" {
+					fsRaw := d.Get("facilities")
+					fs := convertStringArr(fsRaw.([]interface{}))
+					df := d.Get("deployed_facility").(string)
+					if contains(fs, df) {
+						return true
+					}
+					if contains(fs, "any") && (len(df) != 0) {
 						return true
 					}
 					return false
 				},
-			},
-
-			"facilities": {
-				Type:          schema.TypeList,
-				Optional:      true,
-				ForceNew:      true,
-				Elem:          &schema.Schema{Type: schema.TypeString},
-				ConflictsWith: []string{"facility"},
 			},
 
 			"plan": {
@@ -441,7 +448,8 @@ func resourcePacketDeviceRead(d *schema.ResourceData, meta interface{}) error {
 
 	d.Set("hostname", device.Hostname)
 	d.Set("plan", device.Plan.Slug)
-	d.Set("facility", device.Facility.Code)
+	d.Set("deployed_facility", device.Facility.Code)
+	d.Set("facilities", []string{device.Facility.Code})
 	d.Set("operating_system", device.OS.Slug)
 	d.Set("state", device.State)
 	d.Set("billing_cycle", device.BillingCycle)
