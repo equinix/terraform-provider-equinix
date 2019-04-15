@@ -76,6 +76,9 @@ func resourcePacketDevice() *schema.Resource {
 					if contains(fs, df) {
 						return true
 					}
+					if contains(fs, "any") && (len(df) != 0) {
+						return true
+					}
 					return false
 				},
 			},
