@@ -60,14 +60,24 @@ func resourcePacketDevice() *schema.Resource {
 			"facility": {
 				Type:     schema.TypeString,
 				Optional: true,
-				Removed:  "Use the 'facilities' array instead, i.e. change facility = \"ewr1\" to facilities = [\"ewr1\"].",
+				Removed:  "Use the \"facilities\" array instead, i.e. change \n  facility = \"ewr1\"\nto \n  facilities = [\"ewr1\"]",
 			},
 
 			"facilities": {
 				Type:     schema.TypeList,
 				Required: true,
-				ForceNew: true,
 				Elem:     &schema.Schema{Type: schema.TypeString},
+				ForceNew: true,
+				MinItems: 1,
+				DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
+					fsRaw := d.Get("facilities")
+					fs := convertStringArr(fsRaw.([]interface{}))
+					df := d.Get("deployed_facility").(string)
+					if contains(fs, df) {
+						return true
+					}
+					return false
+				},
 			},
 
 			"plan": {
@@ -436,6 +446,7 @@ func resourcePacketDeviceRead(d *schema.ResourceData, meta interface{}) error {
 	d.Set("hostname", device.Hostname)
 	d.Set("plan", device.Plan.Slug)
 	d.Set("deployed_facility", device.Facility.Code)
+	d.Set("facilities", []string{device.Facility.Code})
 	d.Set("operating_system", device.OS.Slug)
 	d.Set("state", device.State)
 	d.Set("billing_cycle", device.BillingCycle)
