@@ -1,3 +1,7 @@
+## 2.0.0 (Unreleased)
+- [#142](https://github.com/terraform-providers/terraform-provider-packet/pull/142) Remove deprecated facility, fix import of packet_device
+
+
 ## 1.7.2 (April 10, 2019)
 
 BUG FIXES:
