@@ -15,7 +15,7 @@ import (
 func testAccCheckPacketPortVlanAttachmentConfig_L2Bonded(name string) string {
 	return fmt.Sprintf(`
 resource "packet_project" "test" {
-    name = "%s"
+    name = "TerraformTestProject-%s"
 }
 
 resource "packet_device" "test" {
@@ -83,7 +83,7 @@ func TestAccPacketPortVlanAttachment_L2Bonded(t *testing.T) {
 func testAccCheckPacketPortVlanAttachmentConfig_L2Individual(name string) string {
 	return fmt.Sprintf(`
 resource "packet_project" "test" {
-    name = "%s"
+    name = "TerraformTestProject-%s"
 }
 
 resource "packet_device" "test" {
@@ -151,7 +151,7 @@ func TestAccPacketPortVlanAttachment_L2Individual(t *testing.T) {
 func testAccCheckPacketPortVlanAttachmentConfig_Hybrid(name string) string {
 	return fmt.Sprintf(`
 resource "packet_project" "test" {
-    name = "%s"
+    name = "TerraformTestProject-%s"
 }
 
 resource "packet_device" "test" {
@@ -235,4 +235,76 @@ func testAccCheckPacketPortVlanAttachmentDestroy(s *terraform.State) error {
 	}
 
 	return nil
+}
+
+func testAccCheckPacketPortVlanAttachmentConfig_L2Native(name string) string {
+	return fmt.Sprintf(`
+resource "packet_project" "test" {
+    name = "TerraformTestProject-%s"
+}
+
+resource "packet_device" "test" {
+  hostname         = "test"
+  plan             = "s1.large.x86"
+  facilities       = ["dfw2"]
+  operating_system = "ubuntu_16_04"
+  billing_cycle    = "hourly"
+  project_id       = "${packet_project.test.id}"
+  network_type     = "layer2-individual"
+}
+
+resource "packet_vlan" "test1" {
+  description = "VLAN in New Jersey"
+  facility    = "dfw2"
+  project_id  = "${packet_project.test.id}"
+}
+
+resource "packet_vlan" "test2" {
+  description = "VLAN in New Jersey"
+  facility    = "dfw2"
+  project_id  = "${packet_project.test.id}"
+}
+
+resource "packet_port_vlan_attachment" "test1" {
+  device_id = "${packet_device.test.id}"
+  vlan_vnid = "${packet_vlan.test1.vxlan}"
+  port_name = "eth1"
+}
+
+resource "packet_port_vlan_attachment" "test2" {
+  device_id = "${packet_device.test.id}"
+  vlan_vnid = "${packet_vlan.test2.vxlan}"
+  native    = true
+  port_name = "eth1"
+  depends_on = ["packet_port_vlan_attachment.test1"]
+}
+
+`, name)
+}
+
+func TestAccPacketPortVlanAttachment_L2Native(t *testing.T) {
+
+	rs := acctest.RandString(10)
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckPacketPortVlanAttachmentDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckPacketPortVlanAttachmentConfig_L2Native(rs),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(
+						"packet_port_vlan_attachment.test1", "port_name", "eth1"),
+					resource.TestCheckResourceAttr(
+						"packet_port_vlan_attachment.test2", "port_name", "eth1"),
+					resource.TestCheckResourceAttr(
+						"packet_port_vlan_attachment.test2", "native", "true"),
+					resource.TestCheckResourceAttrPair(
+						"packet_port_vlan_attachment.test1", "device_id",
+						"packet_device.test", "id"),
+				),
+			},
+		},
+	})
 }

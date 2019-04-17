@@ -13,6 +13,7 @@ func resourcePacketPortVlanAttachment() *schema.Resource {
 		Create: resourcePacketPortVlanAttachmentCreate,
 		Read:   resourcePacketPortVlanAttachmentRead,
 		Delete: resourcePacketPortVlanAttachmentDelete,
+		Update: resourcePacketPortVlanAttachmentUpdate,
 		Importer: &schema.ResourceImporter{
 			State: schema.ImportStatePassthrough,
 		},
@@ -47,6 +48,11 @@ func resourcePacketPortVlanAttachment() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
+			"native": {
+				Type:     schema.TypeBool,
+				Optional: true,
+				Default:  false,
+			},
 		},
 	}
 }
@@ -57,79 +63,19 @@ func resourcePacketPortVlanAttachmentCreate(d *schema.ResourceData, meta interfa
 	pName := d.Get("port_name").(string)
 	vlanVNID := d.Get("vlan_vnid").(int)
 
-	dev, _, err := client.Devices.Get(deviceID, &packngo.GetOptions{Includes: []string{"virtual_networks,project"}})
+	dev, _, err := client.Devices.Get(deviceID, &packngo.GetOptions{Includes: []string{"virtual_networks,project,native_virtual_network"}})
 	if err != nil {
 		return err
 	}
 
 	portFound := false
 	vlanFound := false
+	vlanID := ""
 	var port packngo.Port
 	for _, p := range dev.NetworkPorts {
 		if p.Name == pName {
 			portFound = true
 			port = p
-			for _, n := range p.AttachedVirtualNetworks {
-				if vlanVNID == n.VXLAN {
-					vlanFound = true
-					break
-				}
-			}
-			break
-		}
-	}
-	if !portFound {
-		return fmt.Errorf("Device %s doesn't have port %s", deviceID, pName)
-	}
-	if vlanFound {
-		log.Printf("Port %s already has VLAN %d assigned", pName, vlanVNID)
-		return nil
-	}
-
-	vlanID := ""
-	facility := dev.Facility.Code
-	vlans, _, err := client.ProjectVirtualNetworks.List(dev.Project.ID, nil)
-	if err != nil {
-		return err
-	}
-	for _, n := range vlans.VirtualNetworks {
-		if (n.VXLAN == vlanVNID) && (n.FacilityCode == facility) {
-			vlanID = n.ID
-		}
-	}
-	if len(vlanID) == 0 {
-		return fmt.Errorf("VLAN with VNID %d doesn't exist in facilty %s", vlanVNID, facility)
-	}
-
-	par := &packngo.PortAssignRequest{PortID: port.ID, VirtualNetworkID: vlanID}
-
-	_, _, err = client.DevicePorts.Assign(par)
-	if err != nil {
-		return err
-	}
-
-	d.SetId(port.ID + ":" + vlanID)
-	return resourcePacketPortVlanAttachmentRead(d, meta)
-}
-
-func resourcePacketPortVlanAttachmentRead(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*packngo.Client)
-	deviceID := d.Get("device_id").(string)
-	pName := d.Get("port_name").(string)
-	vlanVNID := d.Get("vlan_vnid").(int)
-
-	dev, _, err := client.Devices.Get(deviceID, &packngo.GetOptions{Includes: []string{"virtual_networks,project"}})
-	if err != nil {
-		return err
-	}
-	portFound := false
-	vlanFound := false
-	portID := ""
-	vlanID := ""
-	for _, p := range dev.NetworkPorts {
-		if p.Name == pName {
-			portFound = true
-			portID = p.ID
 			for _, n := range p.AttachedVirtualNetworks {
 				if vlanVNID == n.VXLAN {
 					vlanFound = true
@@ -140,22 +86,127 @@ func resourcePacketPortVlanAttachmentRead(d *schema.ResourceData, meta interface
 			break
 		}
 	}
-	d.Set("port_id", portID)
-	d.Set("vlan_id", vlanID)
+	if !portFound {
+		return fmt.Errorf("Device %s doesn't have port %s", deviceID, pName)
+	}
+	par := &packngo.PortAssignRequest{PortID: port.ID}
+	if vlanFound {
+		log.Printf("Port %s already has VLAN %d assigned", pName, vlanVNID)
+		par.VirtualNetworkID = vlanID
+	} else {
+		facility := dev.Facility.Code
+		vlans, _, err := client.ProjectVirtualNetworks.List(dev.Project.ID, nil)
+		if err != nil {
+			return err
+		}
+		for _, n := range vlans.VirtualNetworks {
+			if (n.VXLAN == vlanVNID) && (n.FacilityCode == facility) {
+				vlanID = n.ID
+			}
+		}
+		if len(vlanID) == 0 {
+			return fmt.Errorf("VLAN with VNID %d doesn't exist in facilty %s", vlanVNID, facility)
+		}
+
+		par.VirtualNetworkID = vlanID
+
+		_, _, err = client.DevicePorts.Assign(par)
+		if err != nil {
+			return err
+		}
+	}
+
+	d.SetId(port.ID + ":" + vlanID)
+
+	native := d.Get("native").(bool)
+	if native {
+		_, _, err = client.DevicePorts.AssignNative(par)
+		if err != nil {
+			return err
+		}
+	}
+
+	return resourcePacketPortVlanAttachmentRead(d, meta)
+}
+
+func resourcePacketPortVlanAttachmentRead(d *schema.ResourceData, meta interface{}) error {
+	client := meta.(*packngo.Client)
+	deviceID := d.Get("device_id").(string)
+	pName := d.Get("port_name").(string)
+	vlanVNID := d.Get("vlan_vnid").(int)
+
+	dev, _, err := client.Devices.Get(deviceID, &packngo.GetOptions{Includes: []string{"virtual_networks,project,native_virtual_network"}})
+	if err != nil {
+		return err
+	}
+	portFound := false
+	vlanFound := false
+	portID := ""
+	vlanID := ""
+	vlanNative := false
+	for _, p := range dev.NetworkPorts {
+		if p.Name == pName {
+			portFound = true
+			portID = p.ID
+			for _, n := range p.AttachedVirtualNetworks {
+				if vlanVNID == n.VXLAN {
+					vlanFound = true
+					vlanID = n.ID
+					if p.NativeVirtualNetwork != nil {
+						vlanNative = vlanID == p.NativeVirtualNetwork.ID
+					}
+					break
+				}
+			}
+			break
+		}
+	}
 	if !portFound {
 		return fmt.Errorf("Device %s doesn't have port %s", deviceID, pName)
 	}
 	if !vlanFound {
-		d.SetId(portID)
+		d.SetId("")
 	}
+	d.Set("port_id", portID)
+	d.Set("vlan_id", vlanID)
+	d.Set("native", vlanNative)
 	return nil
 }
 
+func resourcePacketPortVlanAttachmentUpdate(d *schema.ResourceData, meta interface{}) error {
+	client := meta.(*packngo.Client)
+	if d.HasChange("native") {
+		native := d.Get("native").(bool)
+		portID := d.Get("port_id").(string)
+		if native {
+			vlanID := d.Get("vlan_id").(string)
+			par := &packngo.PortAssignRequest{PortID: portID, VirtualNetworkID: vlanID}
+			_, _, err := client.DevicePorts.AssignNative(par)
+			if err != nil {
+				return err
+			}
+		} else {
+			_, _, err := client.DevicePorts.UnassignNative(portID)
+			if err != nil {
+				return err
+			}
+		}
+	}
+	return resourcePacketPortVlanAttachmentRead(d, meta)
+}
+
 func resourcePacketPortVlanAttachmentDelete(d *schema.ResourceData, meta interface{}) error {
+	client := meta.(*packngo.Client)
 	pID := d.Get("port_id").(string)
 	vlanID := d.Get("vlan_id").(string)
+	native := d.Get("native").(bool)
+	if native {
+		_, _, err := client.DevicePorts.UnassignNative(pID)
+		if err != nil {
+			return err
+		}
+	}
 	par := &packngo.PortAssignRequest{PortID: pID, VirtualNetworkID: vlanID}
-	client := meta.(*packngo.Client)
 	portPtr, _, err := client.DevicePorts.Unassign(par)
 	if err != nil {
 		return err
