@@ -61,7 +61,7 @@ resource "packet_device" "test" {
 resource "packet_vlan" "test1" {
   description = "VLAN in New Jersey"
   facility    = "ewr1"
-  project_id  = "${packet_project.test.id}"
+  project_id  = "${local.project_id}"
 }
 
 resource "packet_vlan" "test2" {
