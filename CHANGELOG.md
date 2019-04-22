@@ -1,4 +1,6 @@
 ## 2.0.0 (Unreleased)
+
+- [#144](https://github.com/terraform-providers/terraform-provider-packet/pull/144) Support for Native VLAN in packet_port_vlan_attachment
 - [#142](https://github.com/terraform-providers/terraform-provider-packet/pull/142) Remove deprecated facility, fix import of packet_device
 
 
