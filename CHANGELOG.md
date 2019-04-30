@@ -1,4 +1,7 @@
 ## 2.1.0 (Unreleased)
+
+- [#145](https://github.com/terraform-providers/terraform-provider-packet/pull/145) Terraform SDK upgrade with compatibility for Terraform v0.12
+
 ## 2.0.0 (April 23, 2019)
 
 - [#144](https://github.com/terraform-providers/terraform-provider-packet/pull/144) Support for Native VLAN in packet_port_vlan_attachment
