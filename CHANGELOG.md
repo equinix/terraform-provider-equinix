@@ -1,4 +1,4 @@
-## 2.1.0 (Unreleased)
+## 2.1.0 (April 30, 2019)
 
 - [#145](https://github.com/terraform-providers/terraform-provider-packet/pull/145) Terraform SDK upgrade with compatibility for Terraform v0.12
 
