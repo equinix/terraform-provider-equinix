@@ -359,7 +359,11 @@ func resourcePacketDeviceCreate(d *schema.ResourceData, meta interface{}) error 
 
 	newDevice, _, err := client.Devices.Create(createRequest)
 	if err != nil {
-		return friendlyError(err)
+		retErr := friendlyError(err)
+		if isNotFound(retErr) {
+			retErr = fmt.Errorf("%s, make sure project \"%s\" exists", retErr, createRequest.ProjectID)
+		}
+		return retErr
 	}
 
 	d.SetId(newDevice.ID)
