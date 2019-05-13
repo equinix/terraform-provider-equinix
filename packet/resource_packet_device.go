@@ -62,7 +62,16 @@ func resourcePacketDevice() *schema.Resource {
 				Optional: true,
 				Removed:  "Use the \"facilities\" array instead, i.e. change \n  facility = \"ewr1\"\nto \n  facilities = [\"ewr1\"]",
 			},
-
+			"ip_address_types": {
+				Type:     schema.TypeSet,
+				Optional: true,
+				Elem: &schema.Schema{
+					Type:         schema.TypeString,
+					ValidateFunc: validation.StringInSlice([]string{"public_ipv4", "private_ipv4", "public_ipv6"}, false),
+				},
+				MaxItems: 3,
+				ForceNew: true,
+			},
 			"facilities": {
 				Type:     schema.TypeList,
 				Required: true,
@@ -292,10 +301,30 @@ func resourcePacketDeviceCreate(d *schema.ResourceData, meta interface{}) error 
 		}
 	}
 
+	addressTypes := convertStringArr(d.Get("ip_address_types").(*schema.Set).List())
+	addressTypesSlice := make([]packngo.IPAddressCreateRequest, len(addressTypes))
+
+	for i, at := range addressTypes {
+		iacr := packngo.IPAddressCreateRequest{}
+		switch at {
+		case "public_ipv4":
+			iacr.AddressFamily = 4
+			iacr.Public = true
+		case "private_ipv4":
+			iacr.AddressFamily = 4
+			iacr.Public = false
+		case "public_ipv6":
+			iacr.AddressFamily = 6
+			iacr.Public = true
+		}
+		addressTypesSlice[i] = iacr
+	}
+
 	createRequest := &packngo.DeviceCreateRequest{
 		Hostname:             d.Get("hostname").(string),
 		Plan:                 d.Get("plan").(string),
 		Facility:             facs,
+		IPAddresses:          addressTypesSlice,
 		OS:                   d.Get("operating_system").(string),
 		BillingCycle:         d.Get("billing_cycle").(string),
 		ProjectID:            d.Get("project_id").(string),
