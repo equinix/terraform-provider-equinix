@@ -1,4 +1,4 @@
-## 2.2.0 (Unreleased)
+## 2.2.0 (May 13, 2019)
 
 IMPROVEMENTS:
 - [#150](https://github.com/terraform-providers/terraform-provider-packet/pull/150) New ip_address_types attribute for packet_device
