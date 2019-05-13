@@ -70,6 +70,7 @@ func resourcePacketDevice() *schema.Resource {
 					ValidateFunc: validation.StringInSlice([]string{"public_ipv4", "private_ipv4", "public_ipv6"}, false),
 				},
 				MaxItems: 3,
+				MinItems: 1,
 				ForceNew: true,
 			},
 			"facilities": {
