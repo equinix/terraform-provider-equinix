@@ -168,6 +168,12 @@ The following attributes are exported:
   * `family` - IP version - "4" or "6"
 * `operating_system` - The operating system running on the device
 * `plan` - The hardware config of the device
+* `ports` - Ports assigned to the device
+  * `name` - Name of the port (e.g. `eth0`, or `bond0`)
+  * `id` - ID of the port
+  * `type` - Type of the port (e.g. `NetworkPort` or `NetworkBondPort`)
+  * `mac` - MAC address assigned to the port
+  * `bonded` - Whether this port is part of a bond in bonded network setup
 * `project_id`- The ID of the project the device belongs to
 * `root_password` - Root password to the server (disabled after 24 hours)
 * `ssh_key_ids` - List of IDs of SSH keys deployed in the device, can be both user and project SSH keys
