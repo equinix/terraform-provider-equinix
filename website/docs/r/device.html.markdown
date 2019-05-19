@@ -6,12 +6,12 @@ description: |-
   Provides a Packet device resource. This can be used to create, modify, and delete devices.
 ---
 
-# packet\_device
+# packet_device
 
 Provides a Packet device resource. This can be used to create,
 modify, and delete devices.
 
-~> **Note:** All arguments including the root_password and user_data will be stored in
+~> **Note:** All arguments including the `root_password` and `user_data` will be stored in
  the raw state as plain-text.
 [Read more about sensitive data in state](/docs/state/sensitive-data.html).
 
@@ -42,7 +42,7 @@ resource "packet_device" "pxe1" {
   ipxe_script_url  = "https://rawgit.com/cloudnativelabs/pxe/master/packet/coreos-stable-packet.ipxe"
   always_pxe       = "false"
   user_data        = "${data.ignition_config.example.rendered}"
-  }
+}
 ```
 
 ```hcl
@@ -109,7 +109,7 @@ resource "packet_device" "web1" {
     }
   ]
 }
-  EOS
+EOS
 }
 ```
 
@@ -145,11 +145,17 @@ The following arguments are supported:
 
 The following attributes are exported:
 
-* `id` - The ID of the device
-* `hostname`- The hostname of the device
-* `project_id`- The ID of the project the device belongs to
+* `access_private_ipv4` - The ipv4 private IP assigned to the device
+* `access_public_ipv4` - The ipv4 maintenance IP assigned to the device
+* `access_public_ipv6` - The ipv6 maintenance IP assigned to the device
+* `billing_cycle` - The billing cycle of the device (monthly or hourly)
+* `created` - The timestamp for when the device was created
 * `deployed_facility` - The facility where the device is deployed.
-* `plan` - The hardware config of the device
+* `description` - Description string for the device
+* `hardware_reservation_id` - The id of hardware reservation which this device occupies
+* `hostname`- The hostname of the device
+* `id` - The ID of the device
+* `locked` - Whether the device is locked
 * `network` - The device's private and public IP (v4 and v6) network details. When a device is run without any special network configuration, it will have 3 networks: 
   * Public IPv4 at `packet_device.name.network.0`
   * IPv6 at `packet_device.name.network.1`
@@ -161,17 +167,17 @@ The following attributes are exported:
   * `gateway` - address of router
   * `public` - whether the address is routable from the Internet
   * `family` - IP version - "4" or "6"
-* `access_public_ipv6` - The ipv6 maintenance IP assigned to the device
-* `access_public_ipv4` - The ipv4 maintenance IP assigned to the device
-* `access_private_ipv4` - The ipv4 private IP assigned to the device
-* `locked` - Whether the device is locked
-* `billing_cycle` - The billing cycle of the device (monthly or hourly)
 * `operating_system` - The operating system running on the device
-* `state` - The status of the device
-* `created` - The timestamp for when the device was created
-* `updated` - The timestamp for the last time the device was updated
-* `tags` - Tags attached to the device
-* `description` - Description string for the device
-* `hardware_reservation_id` - The id of hardware reservation which this device occupies
+* `plan` - The hardware config of the device
+* `ports` - Ports assigned to the device
+  * `name` - Name of the port (e.g. `eth0`, or `bond0`)
+  * `id` - ID of the port
+  * `type` - Type of the port (e.g. `NetworkPort` or `NetworkBondPort`)
+  * `mac` - MAC address assigned to the port
+  * `bonded` - Whether this port is part of a bond in bonded network setup
+* `project_id`- The ID of the project the device belongs to
 * `root_password` - Root password to the server (disabled after 24 hours)
 * `ssh_key_ids` - List of IDs of SSH keys deployed in the device, can be both user and project SSH keys
+* `state` - The status of the device
+* `tags` - Tags attached to the device
+* `updated` - The timestamp for the last time the device was updated
