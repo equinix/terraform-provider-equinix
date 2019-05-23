@@ -3,11 +3,13 @@ package packet
 import (
 	"time"
 
+	"github.com/hashicorp/terraform/helper/mutexkv"
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/hashicorp/terraform/terraform"
 )
 
-// Provider returns a schema.Provider for managing Packet infrastructure.
+var packetMutexKV = mutexkv.NewMutexKV()
+
 func Provider() terraform.ResourceProvider {
 	return &schema.Provider{
 		Schema: map[string]*schema.Schema{
