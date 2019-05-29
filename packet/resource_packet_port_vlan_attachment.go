@@ -63,7 +63,9 @@ func resourcePacketPortVlanAttachmentCreate(d *schema.ResourceData, meta interfa
 	pName := d.Get("port_name").(string)
 	vlanVNID := d.Get("vlan_vnid").(int)
 
-	dev, _, err := client.Devices.Get(deviceID, &packngo.GetOptions{Includes: []string{"virtual_networks,project,native_virtual_network"}})
+	dev, _, err := client.Devices.Get(deviceID, &packngo.GetOptions{
+		Includes: []string{"virtual_networks,project,native_virtual_network"},
+	})
 	if err != nil {
 		return err
 	}
@@ -89,6 +91,7 @@ func resourcePacketPortVlanAttachmentCreate(d *schema.ResourceData, meta interfa
 	if !portFound {
 		return fmt.Errorf("Device %s doesn't have port %s", deviceID, pName)
 	}
+
 	par := &packngo.PortAssignRequest{PortID: port.ID}
 	if vlanFound {
 		log.Printf("Port %s already has VLAN %d assigned", pName, vlanVNID)
@@ -109,6 +112,12 @@ func resourcePacketPortVlanAttachmentCreate(d *schema.ResourceData, meta interfa
 		}
 
 		par.VirtualNetworkID = vlanID
+
+		// Packet doesn't allow multiple VLANs to be assigned
+		// to the same port at the same time
+		lockId := "vlan-attachment-" + port.ID
+		packetMutexKV.Lock(lockId)
+		defer packetMutexKV.Unlock(lockId)
 
 		_, _, err = client.DevicePorts.Assign(par)
 		if err != nil {

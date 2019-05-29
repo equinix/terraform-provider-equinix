@@ -179,7 +179,6 @@ resource "packet_port_vlan_attachment" "test" {
 }
 
 func TestAccPacketPortVlanAttachment_Hybrid(t *testing.T) {
-
 	rs := acctest.RandString(10)
 
 	resource.Test(t, resource.TestCase{
@@ -195,6 +194,66 @@ func TestAccPacketPortVlanAttachment_Hybrid(t *testing.T) {
 					resource.TestCheckResourceAttrPair(
 						"packet_port_vlan_attachment.test", "device_id",
 						"packet_device.test", "id"),
+				),
+			},
+		},
+	})
+}
+
+func testAccCheckPacketPortVlanAttachmentConfig_HybridMultipleVlans(name string) string {
+	return fmt.Sprintf(`
+resource "packet_project" "test" {
+  name = "TerraformTestProject-%s"
+}
+
+resource "packet_device" "test" {
+  hostname         = "test"
+  plan             = "s1.large.x86"
+  facilities       = ["dfw2"]
+  operating_system = "ubuntu_16_04"
+  billing_cycle    = "hourly"
+  project_id       = packet_project.test.id
+  network_type     = "hybrid"
+}
+
+resource "packet_vlan" "test" {
+  count       = 3
+  description = "VLAN in New Jersey"
+  facility    = "dfw2"
+  project_id  = packet_project.test.id
+}
+
+resource "packet_port_vlan_attachment" "test" {
+  count     = length(packet_vlan.test)
+  device_id = packet_device.test.id
+  vlan_vnid = packet_vlan.test[count.index].vxlan
+  port_name = "eth1"
+}`, name)
+}
+
+func TestAccPacketPortVlanAttachment_HybridMultipleVlans(t *testing.T) {
+	rs := acctest.RandString(10)
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckPacketPortVlanAttachmentDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckPacketPortVlanAttachmentConfig_HybridMultipleVlans(rs),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(
+						"packet_port_vlan_attachment.test.0", "port_name", "eth1"),
+					resource.TestCheckResourceAttrPair(
+						"packet_port_vlan_attachment.test.0", "device_id", "packet_device.test", "id"),
+					resource.TestCheckResourceAttr(
+						"packet_port_vlan_attachment.test.1", "port_name", "eth1"),
+					resource.TestCheckResourceAttrPair(
+						"packet_port_vlan_attachment.test.1", "device_id", "packet_device.test", "id"),
+					resource.TestCheckResourceAttr(
+						"packet_port_vlan_attachment.test.2", "port_name", "eth1"),
+					resource.TestCheckResourceAttrPair(
+						"packet_port_vlan_attachment.test.2", "device_id", "packet_device.test", "id"),
 				),
 			},
 		},
