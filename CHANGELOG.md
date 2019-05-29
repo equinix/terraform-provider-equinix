@@ -1,4 +1,7 @@
 ## 2.2.1 (Unreleased)
+
+- resource/packet_port_vlan_attachment: Avoid parallel assignment [GH-152]
+
 ## 2.2.0 (May 13, 2019)
 
 IMPROVEMENTS:
