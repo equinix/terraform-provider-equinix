@@ -1,3 +1,4 @@
+## 2.3.0 (Unreleased)
 ## 2.2.1 (June 05, 2019)
 
 - resource/packet_port_vlan_attachment: Avoid parallel assignment ([#152](https://github.com/terraform-providers/terraform-provider-packet/issues/152))
