@@ -18,7 +18,7 @@ func TestAccPacketBGPSession_Basic(t *testing.T) {
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckPacketBGPSessionDestroy,
 		Steps: []resource.TestStep{
-			resource.TestStep{
+			{
 				Config: testAccCheckPacketBGPSessionConfig_basic(rs),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrPair(
@@ -28,7 +28,7 @@ func TestAccPacketBGPSession_Basic(t *testing.T) {
 						"packet_bgp_session.test", "default_route", "true"),
 				),
 			},
-			resource.TestStep{
+			{
 				ResourceName:      "packet_bgp_session.test",
 				ImportState:       true,
 				ImportStateVerify: true,

@@ -41,7 +41,7 @@ func TestAccPacketProject_BGPBasic(t *testing.T) {
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckPacketProjectDestroy,
 		Steps: []resource.TestStep{
-			resource.TestStep{
+			{
 				Config: testAccCheckPacketProjectConfig_BGP(rInt, "2SFsdfsg43"),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckPacketProjectExists("packet_project.foobar", &project),
