@@ -39,7 +39,7 @@ func testPreCreatedIPBlockConfig_Basic(name string) string {
 	return fmt.Sprintf(`
 
 resource "packet_project" "test" {
-    name = "%s"
+    name = "tfacc-precreated_ip_block-%s"
 }
 
 resource "packet_device" "test" {

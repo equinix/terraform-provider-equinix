@@ -78,7 +78,7 @@ func testAccCheckPacketVlanDestroyed(s *terraform.State) error {
 func testAccCheckPacketVlanConfig_var(projSuffix, facility, desc string) string {
 	return fmt.Sprintf(`
 resource "packet_project" "foobar" {
-    name = "TerraformTestProject-%s"
+    name = "tfacc-vlan-%s"
 }
 
 resource "packet_vlan" "foovlan" {

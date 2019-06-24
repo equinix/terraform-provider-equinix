@@ -55,7 +55,7 @@ func testAccCheckPacketBGPSessionDestroy(s *terraform.State) error {
 func testAccCheckPacketBGPSessionConfig_basic(name string) string {
 	return fmt.Sprintf(`
 resource "packet_project" "test" {
-    name = "%s"
+    name = "tfacc-bgp_session-%s"
 	bgp_config {
 		deployment_type = "local"
 		md5 = "C179c28c41a85b"

@@ -56,7 +56,7 @@ func testAccCheckPacketVolumeAttachmentDestroy(s *terraform.State) error {
 func testAccCheckPacketVolumeAttachmentConfig_basic(name string) string {
 	return fmt.Sprintf(`
 resource "packet_project" "test" {
-    name = "%s"
+    name = "tfacc-volume_attachment-%s"
 }
 
 resource "packet_device" "test" {

@@ -25,7 +25,7 @@ func TestAccPacketProject_Basic(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckPacketProjectExists("packet_project.foobar", &project),
 					resource.TestCheckResourceAttr(
-						"packet_project.foobar", "name", fmt.Sprintf("foobar-%d", rInt)),
+						"packet_project.foobar", "name", fmt.Sprintf("tfacc-project-%d", rInt)),
 				),
 			},
 		},
@@ -105,7 +105,7 @@ func TestAccPacketProject_Update(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckPacketProjectExists("packet_project.foobar", &project),
 					resource.TestCheckResourceAttr(
-						"packet_project.foobar", "name", fmt.Sprintf("foobar-%d", rInt)),
+						"packet_project.foobar", "name", fmt.Sprintf("tfacc-project-%d", rInt)),
 				),
 			},
 			{
@@ -113,7 +113,7 @@ func TestAccPacketProject_Update(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckPacketProjectExists("packet_project.foobar", &project),
 					resource.TestCheckResourceAttr(
-						"packet_project.foobar", "name", fmt.Sprintf("foobar-%d", rInt+1)),
+						"packet_project.foobar", "name", fmt.Sprintf("tfacc-project-%d", rInt+1)),
 				),
 			},
 		},
@@ -215,7 +215,7 @@ func testAccCheckPacketProjectExists(n string, project *packngo.Project) resourc
 func testAccCheckPacketProjectConfig_BT(r int) string {
 	return fmt.Sprintf(`
 resource "packet_project" "foobar" {
-    name = "foobar-%d"
+    name = "tfacc-project-%d"
 	backend_transfer = true
 }`, r)
 }
@@ -223,14 +223,14 @@ resource "packet_project" "foobar" {
 func testAccCheckPacketProjectConfig_basic(r int) string {
 	return fmt.Sprintf(`
 resource "packet_project" "foobar" {
-    name = "foobar-%d"
+    name = "tfacc-project-%d"
 }`, r)
 }
 
 func testAccCheckPacketProjectConfig_BGP(r int, pass string) string {
 	return fmt.Sprintf(`
 resource "packet_project" "foobar" {
-    name = "foobar-%d"
+    name = "tfacc-project-%d"
 	bgp_config {
 		deployment_type = "local"
 		md5 = "%s"
@@ -242,11 +242,11 @@ resource "packet_project" "foobar" {
 func testAccCheckPacketProjectOrgConfig(r string) string {
 	return fmt.Sprintf(`
 resource "packet_organization" "test" {
-	name = "foobar-%s"
+	name = "tfacc-project-%s"
 }
 
 resource "packet_project" "foobar" {
-		name = "foobar-%s"
+		name = "tfacc-project-%s"
 		organization_id = "${packet_organization.test.id}"
 }`, r, r)
 }
@@ -265,7 +265,7 @@ func TestAccPacketProjectOrg(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckPacketProjectExists("packet_project.foobar", &project),
 					resource.TestCheckResourceAttr(
-						"packet_project.foobar", "name", fmt.Sprintf("foobar-%s", rn)),
+						"packet_project.foobar", "name", fmt.Sprintf("tfacc-project-%s", rn)),
 				),
 			},
 		},

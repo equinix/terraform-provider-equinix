@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/hashicorp/terraform/helper/acctest"
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/terraform"
 	"github.com/packethost/packngo"
@@ -11,6 +12,7 @@ import (
 
 func TestAccPacketSpotMarketRequest_Basic(t *testing.T) {
 	var key packngo.SpotMarketRequest
+	rs := acctest.RandString(10)
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -18,7 +20,7 @@ func TestAccPacketSpotMarketRequest_Basic(t *testing.T) {
 		CheckDestroy: testAccCheckPacketSSHKeyDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckPacketSpotMarketRequestConfig_basic,
+				Config: testAccCheckPacketSpotMarketRequestConfig_basic(rs),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckPacketSpotMarketRequestExists("packet_spot_market_request.request", &key),
 					resource.TestCheckResourceAttr("packet_spot_market_request.request", "devices_max", "1"),
@@ -71,23 +73,25 @@ func testAccCheckPacketSpotMarketRequestExists(n string, key *packngo.SpotMarket
 	}
 }
 
-var testAccCheckPacketSpotMarketRequestConfig_basic = `
-	  resource "packet_project" "test" {
-		name = "TerraformTestProject-SMR"
-	  }
-	  
-	  resource "packet_spot_market_request" "request" {
-		project_id       = "${packet_project.test.id}"
-		max_bid_price    = 0.03
-		facilities       = ["ewr1"]
-		devices_min      = 1
-		devices_max      = 1
-		wait_for_devices = true
+func testAccCheckPacketSpotMarketRequestConfig_basic(name string) string {
+	return fmt.Sprintf(`
+resource "packet_project" "test" {
+  name = "tfacc-spot_market_request-%s"
+}
 
-		instance_parameters {
-		  hostname         = "testspot"
-		  billing_cycle    = "hourly"
-		  operating_system = "coreos_stable"
-		  plan             = "t1.small.x86"
-		}
-	  }`
+resource "packet_spot_market_request" "request" {
+  project_id       = "${packet_project.test.id}"
+  max_bid_price    = 0.03
+  facilities       = ["ewr1"]
+  devices_min      = 1
+  devices_max      = 1
+  wait_for_devices = true
+
+  instance_parameters {
+    hostname         = "testspot"
+    billing_cycle    = "hourly"
+    operating_system = "coreos_stable"
+    plan             = "t1.small.x86"
+  }
+}`, name)
+}
