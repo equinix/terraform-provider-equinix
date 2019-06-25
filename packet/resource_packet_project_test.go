@@ -144,7 +144,7 @@ func TestAccPacketProject_BGPUpdate(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckPacketProjectExists(res, &p1),
 					resource.TestCheckResourceAttr(res, "name",
-						fmt.Sprintf("foobar-%d", rInt)),
+						fmt.Sprintf("tfacc-project-%d", rInt)),
 				),
 			},
 			{
