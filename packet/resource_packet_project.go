@@ -64,30 +64,30 @@ func resourcePacketProject() *schema.Resource {
 				},
 				ValidateFunc: validation.StringMatch(uuidRE, "must be a valid UUID"),
 			},
-			"bgp_config": &schema.Schema{
+			"bgp_config": {
 				Type:     schema.TypeList,
 				MaxItems: 1,
 				Optional: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"deployment_type": &schema.Schema{
+						"deployment_type": {
 							Type:         schema.TypeString,
 							Required:     true,
 							ValidateFunc: validation.StringInSlice([]string{"local", "global"}, false),
 						},
-						"asn": &schema.Schema{
+						"asn": {
 							Type:     schema.TypeInt,
 							Required: true,
 						},
-						"md5": &schema.Schema{
+						"md5": {
 							Type:     schema.TypeString,
 							Optional: true,
 						},
-						"status": &schema.Schema{
+						"status": {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
-						"max_prefix": &schema.Schema{
+						"max_prefix": {
 							Type:     schema.TypeInt,
 							Computed: true,
 						},

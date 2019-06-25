@@ -15,7 +15,7 @@ import (
 func testAccCheckPacketPortVlanAttachmentConfig_L2Bonded(name string) string {
 	return fmt.Sprintf(`
 resource "packet_project" "test" {
-    name = "TerraformTestProject-%s"
+    name = "tfacc-port_vlan_attachment-%s"
 }
 
 resource "packet_device" "test" {
@@ -83,7 +83,7 @@ func TestAccPacketPortVlanAttachment_L2Bonded(t *testing.T) {
 func testAccCheckPacketPortVlanAttachmentConfig_L2Individual(name string) string {
 	return fmt.Sprintf(`
 resource "packet_project" "test" {
-    name = "TerraformTestProject-%s"
+    name = "tfacc-port_vlan_attachment-%s"
 }
 
 resource "packet_device" "test" {
@@ -151,7 +151,7 @@ func TestAccPacketPortVlanAttachment_L2Individual(t *testing.T) {
 func testAccCheckPacketPortVlanAttachmentConfig_Hybrid(name string) string {
 	return fmt.Sprintf(`
 resource "packet_project" "test" {
-    name = "TerraformTestProject-%s"
+    name = "tfacc-port_vlan_attachment-%s"
 }
 
 resource "packet_device" "test" {
@@ -203,7 +203,7 @@ func TestAccPacketPortVlanAttachment_Hybrid(t *testing.T) {
 func testAccCheckPacketPortVlanAttachmentConfig_HybridMultipleVlans(name string) string {
 	return fmt.Sprintf(`
 resource "packet_project" "test" {
-  name = "TerraformTestProject-%s"
+  name = "tfacc-port_vlan_attachment-%s"
 }
 
 resource "packet_device" "test" {
@@ -299,7 +299,7 @@ func testAccCheckPacketPortVlanAttachmentDestroy(s *terraform.State) error {
 func testAccCheckPacketPortVlanAttachmentConfig_L2Native(name string) string {
 	return fmt.Sprintf(`
 resource "packet_project" "test" {
-    name = "TerraformTestProject-%s"
+    name = "tfacc-port_vlan_attachment-%s"
 }
 
 resource "packet_device" "test" {

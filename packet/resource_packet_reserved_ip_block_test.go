@@ -13,7 +13,7 @@ import (
 func testAccCheckPacketReservedIPBlockConfig_Global(name string) string {
 	return fmt.Sprintf(`
 resource "packet_project" "foobar" {
-    name = "%s"
+    name = "tfacc-reserved_ip_block-%s"
 }
 
 resource "packet_reserved_ip_block" "test" {
@@ -26,7 +26,7 @@ resource "packet_reserved_ip_block" "test" {
 func testAccCheckPacketReservedIPBlockConfig_Public(name string) string {
 	return fmt.Sprintf(`
 resource "packet_project" "foobar" {
-    name = "%s"
+    name = "tfacc-reserved_ip_block-%s"
 }
 
 resource "packet_reserved_ip_block" "test" {

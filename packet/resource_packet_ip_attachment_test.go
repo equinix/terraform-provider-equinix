@@ -56,7 +56,7 @@ func testAccCheckPacketIPAttachmentDestroy(s *terraform.State) error {
 func testAccCheckPacketIPAttachmentConfig_Basic(name string) string {
 	return fmt.Sprintf(`
 resource "packet_project" "test" {
-    name = "%s"
+    name = "tfacc-ip_attachment-%s"
 }
 
 resource "packet_device" "test" {

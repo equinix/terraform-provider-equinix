@@ -11,10 +11,10 @@ import (
 	"github.com/packethost/packngo"
 )
 
-func packetProjectSSHKeyConfig_Basic(publicSshKey string) string {
+func packetProjectSSHKeyConfig_Basic(name, publicSshKey string) string {
 	return fmt.Sprintf(`
 resource "packet_project" "test" {
-    name = "test"
+    name = "tfacc-project_ssh_key-%s"
 }
 
 resource "packet_project_ssh_key" "test" {
@@ -33,16 +33,17 @@ resource "packet_device" "test" {
     project_id          = "${packet_project.test.id}"
 }
 
-`, publicSshKey)
+`, name, publicSshKey)
 }
 
 func TestAccPacketProjectSSHKey_Basic(t *testing.T) {
+	rs := acctest.RandString(10)
 	var key packngo.SSHKey
 	publicKeyMaterial, _, err := acctest.RandSSHKeyPair("")
 	if err != nil {
 		t.Fatalf("Cannot generate test SSH key pair: %s", err)
 	}
-	cfg := packetProjectSSHKeyConfig_Basic(publicKeyMaterial)
+	cfg := packetProjectSSHKeyConfig_Basic(rs, publicKeyMaterial)
 	log.Printf(cfg)
 
 	resource.Test(t, resource.TestCase{

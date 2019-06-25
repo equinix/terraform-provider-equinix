@@ -203,7 +203,7 @@ func TestAccPacketDevice_IPXEScriptUrl(t *testing.T) {
 func testAccCheckPacketDeviceConfig_L2(projSuffix string) string {
 	return fmt.Sprintf(`
 resource "packet_project" "test" {
-    name = "TerraformTestProject-%s"
+    name = "tfacc-device-%s"
 }
 
 resource "packet_device" "test" {
@@ -446,7 +446,7 @@ func TestAccPacketDevice_importBasic(t *testing.T) {
 func testAccCheckPacketDeviceConfig_no_description(rInt int, projSuffix string) string {
 	return fmt.Sprintf(`
 resource "packet_project" "test" {
-    name = "TerraformTestProject-%s"
+    name = "tfacc-device-%s"
 }
 
 resource "packet_device" "test" {
@@ -464,7 +464,7 @@ resource "packet_device" "test" {
 func testAccCheckPacketDeviceConfig_varname(rInt int, projSuffix string) string {
 	return fmt.Sprintf(`
 resource "packet_project" "test" {
-    name = "TerraformTestProject-%s"
+    name = "tfacc-device-%s"
 }
 
 resource "packet_device" "test" {
@@ -483,7 +483,7 @@ resource "packet_device" "test" {
 func testAccCheckPacketDeviceConfig_varname_pxe(rInt int, projSuffix string) string {
 	return fmt.Sprintf(`
 resource "packet_project" "test" {
-    name = "TerraformTestProject-%s"
+    name = "tfacc-device-%s"
 }
 
 resource "packet_device" "test" {
@@ -504,7 +504,7 @@ resource "packet_device" "test" {
 func testAccCheckPacketDeviceConfig_basic(projSuffix string) string {
 	return fmt.Sprintf(`
 resource "packet_project" "test" {
-    name = "TerraformTestProject-%s"
+    name = "tfacc-device-%s"
 }
 
 resource "packet_device" "test" {
@@ -519,7 +519,7 @@ resource "packet_device" "test" {
 
 var testAccCheckPacketDeviceConfig_request_subnet = `
 resource "packet_project" "test" {
-  name = "TerraformTestProject-%s"
+  name = "tfacc-device-%s"
 }
 
 resource "packet_device" "test_subnet_29" {
@@ -536,7 +536,7 @@ resource "packet_device" "test_subnet_29" {
 func testAccCheckPacketDeviceConfig_facility_list(projSuffix string) string {
 	return fmt.Sprintf(`
 resource "packet_project" "test" {
-  name = "TerraformTestProject-%s"
+  name = "tfacc-device-%s"
 }
 
 resource "packet_device" "test"  {
@@ -553,7 +553,7 @@ resource "packet_device" "test"  {
 func testAccCheckPacketDeviceConfig_ipxe_script_url(projSuffix, url, pxe string) string {
 	return fmt.Sprintf(`
 resource "packet_project" "test" {
-  name = "TerraformTestProject-%s"
+  name = "tfacc-device-%s"
 }
 
 resource "packet_device" "test_ipxe_script_url"  {
@@ -572,7 +572,7 @@ resource "packet_device" "test_ipxe_script_url"  {
 
 var testAccCheckPacketDeviceConfig_ipxe_conflict = `
 resource "packet_project" "test" {
-  name = "TerraformTestProject-%s"
+  name = "tfacc-device-%s"
 }
 
 resource "packet_device" "test_ipxe_conflict" {
@@ -589,7 +589,7 @@ resource "packet_device" "test_ipxe_conflict" {
 
 var testAccCheckPacketDeviceConfig_ipxe_missing = `
 resource "packet_project" "test" {
-  name = "TerraformTestProject-%s"
+  name = "tfacc-device-%s"
 }
 
 resource "packet_device" "test_ipxe_missing" {

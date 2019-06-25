@@ -176,7 +176,7 @@ func testAccCheckPacketVolumeExists(n string, volume *packngo.Volume) resource.T
 func testAccCheckPacketVolumeConfig_basic(projectSuffix string) string {
 	return fmt.Sprintf(
 		`resource "packet_project" "foobar" {
-    name = "%s"
+    name = "tfacc-volume-%s"
 }
 
 resource "packet_volume" "foobar" {
@@ -195,7 +195,7 @@ resource "packet_volume" "foobar" {
 func testAccCheckPacketVolumeConfig_var(projSuffix string, size int, desc string, planID string, locked bool) string {
 	return fmt.Sprintf(`
 resource "packet_project" "foobar" {
-    name = "TerraformTestProject-%s"
+    name = "tfacc-volume-%s"
 }
 
 resource "packet_volume" "foobar" {

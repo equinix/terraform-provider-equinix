@@ -135,7 +135,7 @@ func resourcePacketDevice() *schema.Resource {
 				Computed: true,
 			},
 
-			"network_type": &schema.Schema{
+			"network_type": {
 				Type:         schema.TypeString,
 				Optional:     true,
 				ValidateFunc: validation.StringInSlice([]string{"layer3", "layer2-bonded", "layer2-individual", "hybrid"}, false),
@@ -147,28 +147,28 @@ func resourcePacketDevice() *schema.Resource {
 				},
 			},
 
-			"ports": &schema.Schema{
+			"ports": {
 				Type:     schema.TypeList,
 				Computed: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"name": &schema.Schema{
+						"name": {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
-						"id": &schema.Schema{
+						"id": {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
-						"type": &schema.Schema{
+						"type": {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
-						"mac": &schema.Schema{
+						"mac": {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
-						"bonded": &schema.Schema{
+						"bonded": {
 							Type:     schema.TypeBool,
 							Computed: true,
 						},
