@@ -60,7 +60,6 @@ func dataSourcePacketDevice() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-
 			"access_private_ipv4": {
 				Type:     schema.TypeString,
 				Computed: true,
@@ -95,18 +94,15 @@ func dataSourcePacketDevice() *schema.Resource {
 				},
 				Computed: true,
 			},
-
 			"root_password": {
 				Type:      schema.TypeString,
 				Computed:  true,
 				Sensitive: true,
 			},
-
 			"always_pxe": {
 				Type:     schema.TypeBool,
 				Computed: true,
 			},
-
 			"ipxe_script_url": {
 				Type:     schema.TypeString,
 				Computed: true,
@@ -120,22 +116,18 @@ func dataSourcePacketDevice() *schema.Resource {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
-
 						"gateway": {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
-
 						"family": {
 							Type:     schema.TypeInt,
 							Computed: true,
 						},
-
 						"cidr": {
 							Type:     schema.TypeInt,
 							Computed: true,
 						},
-
 						"public": {
 							Type:     schema.TypeBool,
 							Computed: true,
