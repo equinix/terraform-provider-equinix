@@ -43,8 +43,8 @@ The following arguments are supported:
 The following attributes are exported:
 
 * `access_private_ipv4` - The ipv4 private IP assigned to the device
-* `access_public_ipv4` - The ipv4 maintenance IP assigned to the device
-* `access_public_ipv6` - The ipv6 maintenance IP assigned to the device
+* `access_public_ipv4` - The ipv4 management IP assigned to the device
+* `access_public_ipv6` - The ipv6 management IP assigned to the device
 * `billing_cycle` - The billing cycle of the device (monthly or hourly)
 * `facility` - The facility where the device is deployed.
 * `description` - Description string for the device
@@ -57,9 +57,9 @@ The following attributes are exported:
   Elastic addresses then stack by type - an assigned public IPv4 will go after the management public IPv4 (to index 1), and will then shift the indices of the IPv6 and private IPv4. Assigned private IPv4 will go after the management private IPv4 (to the end of the network list).
   The fields of the network attributes are:
   * `address` - IPv4 or IPv6 address string
-  * `cidr` - bit length of the network mask of the address
-  * `gateway` - address of router
-  * `public` - whether the address is routable from the Internet
+  * `cidr` - Bit length of the network mask of the address
+  * `gateway` - Address of router
+  * `public` - Whether the address is routable from the Internet
   * `family` - IP version - "4" or "6"
 * `network_type` - L2 network type of the device, one of "layer3", "layer2-bonded", "layer2-individual", "hybrid"
 * `operating_system` - The operating system running on the device
@@ -70,7 +70,7 @@ The following attributes are exported:
   * `type` - Type of the port (e.g. `NetworkPort` or `NetworkBondPort`)
   * `mac` - MAC address assigned to the port
   * `bonded` - Whether this port is part of a bond in bonded network setup
-* `root_password` - Root password to the server (disabled after 24 hours)
-* `ssh_key_ids` - List of IDs of SSH keys deployed in the device, can be both user and project SSH keys
+* `root_password` - Root password to the server (if still available)
+* `ssh_key_ids` - List of IDs of SSH keys deployed in the device, can be both user or project SSH keys
 * `state` - The state of the device
 * `tags` - Tags attached to the device
