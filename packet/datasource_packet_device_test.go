@@ -2,7 +2,6 @@ package packet
 
 import (
 	"fmt"
-	"regexp"
 	"testing"
 
 	"github.com/hashicorp/terraform/helper/acctest"
@@ -13,8 +12,9 @@ func TestAccDataSourcePacketDevice_Basic(t *testing.T) {
 	projectName := fmt.Sprintf("ds-device-%s", acctest.RandString(10))
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { testAccPreCheck(t) },
-		Providers: testAccProviders,
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckPacketDeviceDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: testDataSourcePacketDeviceConfig_Basic(projectName),
@@ -24,11 +24,14 @@ func TestAccDataSourcePacketDevice_Basic(t *testing.T) {
 					resource.TestCheckResourceAttrPair(
 						"packet_device.test", "id",
 						"data.packet_device.test", "id"),
+					resource.TestCheckResourceAttrPair(
+						"packet_device.test", "operating_system",
+						"data.packet_device.test", "operating_system"),
+					resource.TestCheckResourceAttr(
+						"data.packet_device.test", "always_pxe", "false"),
+					resource.TestCheckResourceAttrSet(
+						"data.packet_device.test", "access_public_ipv4"),
 				),
-			},
-			{
-				Config:      testDataSourcePacketDeviceConfig_Nonexistent(projectName),
-				ExpectError: regexp.MustCompile("no device found with hostname.*"),
 			},
 		},
 	})
@@ -52,17 +55,5 @@ resource "packet_device" "test" {
 data "packet_device" "test" {
   project_id       = packet_project.test.id
   hostname         = packet_device.test.hostname
-}`, projSuffix)
-}
-
-func testDataSourcePacketDeviceConfig_Nonexistent(projSuffix string) string {
-	return fmt.Sprintf(`
-resource "packet_project" "test" {
-    name = "tfacc-project-%s"
-}
-
-data "packet_device" "test" {
-  project_id       = packet_project.test.id
-  hostname         = "no-such-device"
 }`, projSuffix)
 }
