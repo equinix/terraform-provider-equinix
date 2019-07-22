@@ -16,20 +16,26 @@ func dataSourcePacketDevice() *schema.Resource {
 		Read: dataSourcePacketDeviceRead,
 		Schema: map[string]*schema.Schema{
 			"hostname": {
-				Type:     schema.TypeString,
-				Required: true,
+				Type:          schema.TypeString,
+				Optional:      true,
+				Computed:      true,
+				ConflictsWith: []string{"device_id"},
 			},
 			"project_id": {
-				Type:     schema.TypeString,
-				Required: true,
+				Type:          schema.TypeString,
+				Optional:      true,
+				Computed:      true,
+				ConflictsWith: []string{"device_id"},
 			},
 			"description": {
 				Type:     schema.TypeString,
-				Optional: true,
-			},
-			"id": {
-				Type:     schema.TypeString,
 				Computed: true,
+			},
+			"device_id": {
+				Type:          schema.TypeString,
+				Optional:      true,
+				Computed:      true,
+				ConflictsWith: []string{"project_id", "hostname"},
 			},
 			"facility": {
 				Type:     schema.TypeString,
@@ -170,20 +176,42 @@ func dataSourcePacketDevice() *schema.Resource {
 func dataSourcePacketDeviceRead(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*packngo.Client)
 
-	hostname := d.Get("hostname").(string)
-	projectId := d.Get("project_id").(string)
+	hostnameRaw, hostnameOK := d.GetOk("hostname")
+	projectIdRaw, projectIdOK := d.GetOk("project_id")
+	deviceIdRaw, deviceIdOK := d.GetOk("device_id")
 
-	ds, _, err := client.Devices.List(projectId, nil)
-	if err != nil {
-		return err
+	if !deviceIdOK && !hostnameOK {
+		return fmt.Errorf("You must supply device_id or hostname")
+	}
+	var device *packngo.Device
+	if hostnameOK {
+		if !projectIdOK {
+			return fmt.Errorf("If you lookup via hostname, you must supply project_id")
+		}
+		hostname := hostnameRaw.(string)
+		projectId := projectIdRaw.(string)
+
+		ds, _, err := client.Devices.List(projectId, nil)
+		if err != nil {
+			return err
+		}
+
+		device, err = findDeviceByHostname(ds, hostname)
+		if err != nil {
+			return err
+		}
+	} else {
+		deviceId := deviceIdRaw.(string)
+		var err error
+		device, _, err = client.Devices.Get(deviceId, nil)
+		if err != nil {
+			return err
+		}
 	}
 
-	device, err := findDeviceByHostname(ds, hostname)
-
-	if err != nil {
-		return err
-	}
-
+	d.Set("hostname", device.Hostname)
+	d.Set("project_id", device.Project.ID)
+	d.Set("device_id", device.ID)
 	d.Set("plan", device.Plan.Slug)
 	d.Set("facility", device.Facility.Code)
 	d.Set("operating_system", device.OS.Slug)
@@ -192,7 +220,6 @@ func dataSourcePacketDeviceRead(d *schema.ResourceData, meta interface{}) error 
 	d.Set("ipxe_script_url", device.IPXEScriptURL)
 	d.Set("always_pxe", device.AlwaysPXE)
 	d.Set("root_password", device.RootPassword)
-	d.Set("project_id", device.Project.ID)
 	storageString, err := structure.FlattenJsonToString(device.Storage)
 	if err != nil {
 		return fmt.Errorf("[ERR] Error getting storage JSON string for device (%s): %s", d.Id(), err)
