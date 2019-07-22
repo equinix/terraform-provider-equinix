@@ -27,6 +27,7 @@ func Provider() terraform.ResourceProvider {
 			"packet_spot_market_price":   dataSourceSpotMarketPrice(),
 			"packet_device":              dataSourcePacketDevice(),
 			"packet_project":             dataSourcePacketProject(),
+			"packet_spot_market_request": dataSourcePacketSpotMarketRequest(),
 		},
 
 		ResourcesMap: map[string]*schema.Resource{
