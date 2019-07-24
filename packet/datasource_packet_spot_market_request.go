@@ -1,6 +1,8 @@
 package packet
 
 import (
+	"strings"
+
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/packethost/packngo"
 )
@@ -42,6 +44,6 @@ func dataSourcePacketSpotMarketRequestRead(d *schema.ResourceData, meta interfac
 		deviceIDs[i] = d.ID
 	}
 	d.Set("device_ids", deviceIDs)
-	d.SetId("id")
+	d.SetId(id + strings.Join(deviceIDs, "-"))
 	return nil
 }
