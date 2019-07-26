@@ -2,6 +2,7 @@ package packet
 
 import (
 	"fmt"
+	"log"
 	"path/filepath"
 
 	"github.com/hashicorp/terraform/helper/schema"
@@ -10,10 +11,7 @@ import (
 
 func dataSourcePacketOrganization() *schema.Resource {
 	return &schema.Resource{
-		Create: resourcePacketOrganizationCreate,
-		Read:   resourcePacketOrganizationRead,
-		Update: resourcePacketOrganizationUpdate,
-		Delete: resourcePacketOrganizationDelete,
+		Read: dataSourcePacketOrganizationRead,
 
 		Schema: map[string]*schema.Schema{
 			"name": {
@@ -46,7 +44,7 @@ func dataSourcePacketOrganization() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-			"projects": {
+			"project_ids": {
 				Type:     schema.TypeList,
 				Computed: true,
 				Elem:     &schema.Schema{Type: schema.TypeString},
@@ -95,6 +93,7 @@ func dataSourcePacketOrganizationRead(d *schema.ResourceData, meta interface{}) 
 		}
 	} else {
 		orgId := orgIdRaw.(string)
+		log.Println(orgId)
 		var err error
 		org, _, err = client.Organizations.Get(orgId, nil)
 		if err != nil {
@@ -107,7 +106,7 @@ func dataSourcePacketOrganizationRead(d *schema.ResourceData, meta interface{}) 
 		projectIds = append(projectIds, filepath.Base(p.URL))
 	}
 
-	d.Set("orgnanization_id", org.ID)
+	d.Set("organization_id", org.ID)
 	d.Set("name", org.Name)
 	d.Set("description", org.Description)
 	d.Set("website", org.Website)
