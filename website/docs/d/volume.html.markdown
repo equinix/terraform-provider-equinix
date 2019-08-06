@@ -47,4 +47,4 @@ The following attributes are exported:
 * `facility` - The facility slug the volume resides in
 * `state` - The state of the volume
 * `locked` - Whether the volume is locked or not
-* `attachment_ids` - UUIDs of device-volume attachment API resources for this volume
+* `device_ids` - UUIDs of devices to which this volume is attached

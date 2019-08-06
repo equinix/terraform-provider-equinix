@@ -82,7 +82,7 @@ func dataSourcePacketVolume() *schema.Resource {
 				},
 			},
 
-			"attachment_ids": {
+			"device_ids": {
 				Type:     schema.TypeList,
 				Computed: true,
 				Elem:     &schema.Schema{Type: schema.TypeString},
@@ -119,7 +119,7 @@ func dataSourcePacketVolumeRead(d *schema.ResourceData, meta interface{}) error 
 		name := nameRaw.(string)
 		projectId := projectIdRaw.(string)
 
-		vs, _, err := client.Volumes.List(projectId, nil)
+		vs, _, err := client.Volumes.List(projectId, &packngo.ListOptions{Includes: []string{"attachments.device"}})
 		if err != nil {
 			return err
 		}
@@ -131,7 +131,7 @@ func dataSourcePacketVolumeRead(d *schema.ResourceData, meta interface{}) error 
 	} else {
 		volumeId := volumeIdRaw.(string)
 		var err error
-		volume, _, err = client.Volumes.Get(volumeId, nil)
+		volume, _, err = client.Volumes.Get(volumeId, &packngo.GetOptions{Includes: []string{"attachments.device"}})
 		if err != nil {
 			return err
 		}
@@ -159,13 +159,13 @@ func dataSourcePacketVolumeRead(d *schema.ResourceData, meta interface{}) error 
 	}
 	d.Set("snapshot_policies", snapshot_policies)
 
-	attachmentIds := []string{}
+	deviceIds := []string{}
 
 	for _, a := range volume.Attachments {
-		attachmentIds = append(attachmentIds, path.Base(a.Href))
+		deviceIds = append(deviceIds, path.Base(a.Device.Href))
 	}
 
-	d.Set("attachment_ids", attachmentIds)
+	d.Set("device_ids", deviceIds)
 	d.SetId(volume.ID)
 
 	return nil

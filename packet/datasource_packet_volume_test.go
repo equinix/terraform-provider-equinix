@@ -30,8 +30,8 @@ func TestAccPacketVolumeDataSource_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						"packet_volume.test", "size", "100"),
 					resource.TestCheckResourceAttrPair(
-						"data.packet_volume.test", "attachment_ids.0",
-						"packet_volume_attachment.test", "id"),
+						"data.packet_volume.test", "device_ids.0",
+						"packet_device.test", "id"),
 				),
 			},
 		},
