@@ -1,4 +1,4 @@
-## 2.3.0 (Unreleased)
+## 2.3.0 (August 07, 2019)
 
 BUG FIXES:
 - [#156](https://github.com/terraform-providers/terraform-provider-packet/issues/156) Fix filtering logic in packet_operating_system datasource
