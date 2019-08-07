@@ -1,4 +1,14 @@
 ## 2.3.0 (Unreleased)
+
+BUG FIXES:
+- [#156](https://github.com/terraform-providers/terraform-provider-packet/issues/156) Fix filtering logic in packet_operating_system datasource
+
+IMPROVEMENTS:
+- [#125](https://github.com/terraform-providers/terraform-provider-packet/issues/125) Add argument `wait_for_reservation_deprovision` to packet_device, in order to wait for proper deprovision of reserved hardware, and avoid errors when attempting to create devices in recently-released hardware reservations.
+
+FEATURES:
+- [#158](https://github.com/terraform-providers/terraform-provider-packet/issues/158) New datasource for packet_device
+
 ## 2.2.1 (June 05, 2019)
 
 - resource/packet_port_vlan_attachment: Avoid parallel assignment ([#152](https://github.com/terraform-providers/terraform-provider-packet/issues/152))
