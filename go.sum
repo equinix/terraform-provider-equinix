@@ -287,6 +287,8 @@ github.com/packethost/packngo v0.1.1-0.20190507131943-1343be729ca2 h1:072axQiUaV
 github.com/packethost/packngo v0.1.1-0.20190507131943-1343be729ca2/go.mod h1:RQHg5xR1F614BwJyepfMqrKN+32IH0i7yX+ey43rEeQ=
 github.com/packethost/packngo v0.1.1-0.20190814133801-f4deb251ed38 h1:mDBKkbT6varc7Lm7b9TJq/4c3gfxTnu0kPGfE8vFUEo=
 github.com/packethost/packngo v0.1.1-0.20190814133801-f4deb251ed38/go.mod h1:RQHg5xR1F614BwJyepfMqrKN+32IH0i7yX+ey43rEeQ=
+github.com/packethost/packngo v0.1.1-0.20190814142431-3f3bfdfcb88b h1:FNWDRwKg4NBhALev6jMyaxbf7Y0H2ay5+LqrYo7I7cA=
+github.com/packethost/packngo v0.1.1-0.20190814142431-3f3bfdfcb88b/go.mod h1:RQHg5xR1F614BwJyepfMqrKN+32IH0i7yX+ey43rEeQ=
 github.com/pascaldekloe/goe v0.0.0-20180627143212-57f6aae5913c/go.mod h1:lzWF7FIEvWOWxwDKqyGYQf6ZUaNfKdP144TG7ZOy1lc=
 github.com/pkg/errors v0.0.0-20170505043639-c605e284fe17 h1:chPfVn+gpAM5CTpTyVU9j8J+xgRGwmoDlNDLjKnJiYo=
 github.com/pkg/errors v0.0.0-20170505043639-c605e284fe17/go.mod h1:bwawxfHBFNV+L2hUp1rHADufV3IMtnDRdf1r5NINEl0=
