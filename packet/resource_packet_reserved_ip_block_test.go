@@ -19,6 +19,7 @@ resource "packet_project" "foobar" {
 resource "packet_reserved_ip_block" "test" {
     project_id = "${packet_project.foobar.id}"
     type     = "global_ipv4"
+	description = "testdesc"
 	quantity = 1
 }`, name)
 }
@@ -30,10 +31,10 @@ resource "packet_project" "foobar" {
 }
 
 resource "packet_reserved_ip_block" "test" {
-    project_id = "${packet_project.foobar.id}"
-    facility = "ewr1"
-    type     = "public_ipv4"
-	quantity = 2
+    project_id  = "${packet_project.foobar.id}"
+    facility    = "ewr1"
+    type        = "public_ipv4"
+	quantity    = 2
 }`, name)
 }
 
@@ -51,6 +52,8 @@ func TestAccPacketReservedIPBlock_Global(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(
 						"packet_reserved_ip_block.test", "quantity", "1"),
+					resource.TestCheckResourceAttr(
+						"packet_reserved_ip_block.test", "description", "testdesc"),
 					resource.TestCheckResourceAttr(
 						"packet_reserved_ip_block.test", "type", "global_ipv4"),
 					resource.TestCheckResourceAttr(
