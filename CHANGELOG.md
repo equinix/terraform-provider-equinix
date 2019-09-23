@@ -1,4 +1,10 @@
 ## 2.4.0 (Unreleased)
+
+IMPROVEMENTS:
+- [#168](https://github.com/terraform-providers/terraform-provider-packet/issues/168) Mention that users should use Full HW reservation ID
+- [#163](https://github.com/terraform-providers/terraform-provider-packet/issues/163) Add description attribute to packet_reserved_ip_block
+
+
 ## 2.3.0 (August 07, 2019)
 
 BUG FIXES:
