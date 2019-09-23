@@ -1,4 +1,4 @@
-## 2.4.0 (Unreleased)
+## 2.4.0 (September 23, 2019)
 
 IMPROVEMENTS:
 - [#168](https://github.com/terraform-providers/terraform-provider-packet/issues/168) Mention that users should use Full HW reservation ID
