@@ -118,7 +118,7 @@ EOS
 The following arguments are supported:
 
 * `hostname` - (Required) The device name
-* `project_id` - (Required) The id of the project in which to create the device
+* `project_id` - (Required) The ID of the project in which to create the device
 * `operating_system` - (Required) The operating system slug. To find the slug, or visit [Operating Systems API docs](https://www.packet.com/developers/api/#operatingsystems), set your API auth token in the top of the page and see JSON from the API response.
 * `facilities` - List of facility codes with deployment preferences. Packet API will go through the list and will deploy your device to first facility with free capacity. List items must be facility codes or `any` (a wildcard). To find the facility code, visit [Facilities API docs](https://www.packet.com/developers/api/#facilities), set your API auth token in the top of the page and see JSON from the API response.
 * `plan` - (Required) The device plan slug. To find the plan slug, visit [Device plans API docs](https://www.packet.com/developers/api/#plans), set your auth token in the top of the page and see JSON from the API response.
@@ -133,7 +133,7 @@ The following arguments are supported:
   doc.
 * `always_pxe` (Optional) - If true, a device with OS `custom_ipxe` will
   continue to boot via iPXE on reboots.
-* `hardware_reservation_id` (Optional) - The id of hardware reservation where you want this device deployed, or `next-available` if you want to pick your next available reservation automatically.
+* `hardware_reservation_id` (Optional) - The `full ID` of the hardware reservation where you want this device deployed, or `next-available` if you want to pick your next available reservation automatically.
 * `storage` (Optional) - JSON for custom partitioning. Only usable on reserved hardware. More information in in the [Custom Partitioning and RAID](https://support.packet.com/kb/articles/custom-partitioning-raid) doc.
 * `tags` - Tags attached to the device
 * `description` - Description string for the device
@@ -153,7 +153,7 @@ The following attributes are exported:
 * `created` - The timestamp for when the device was created
 * `deployed_facility` - The facility where the device is deployed.
 * `description` - Description string for the device
-* `hardware_reservation_id` - The id of hardware reservation which this device occupies
+* `hardware_reservation_id` - The ID of hardware reservation which this device occupies
 * `hostname`- The hostname of the device
 * `id` - The ID of the device
 * `locked` - Whether the device is locked
