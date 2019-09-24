@@ -222,7 +222,6 @@ func resourcePacketDevice() *schema.Resource {
 			"user_data": {
 				Type:      schema.TypeString,
 				Optional:  true,
-				ForceNew:  true,
 				Sensitive: true,
 			},
 
@@ -597,6 +596,10 @@ func resourcePacketDeviceUpdate(d *schema.ResourceData, meta interface{}) error 
 	if d.HasChange("description") {
 		dDesc := d.Get("description").(string)
 		ur.Description = &dDesc
+	}
+	if d.HasChange("user_data") {
+		dUserData := d.Get("user_data").(string)
+		ur.UserData = &dUserData
 	}
 	if d.HasChange("hostname") {
 		dHostname := d.Get("hostname").(string)
