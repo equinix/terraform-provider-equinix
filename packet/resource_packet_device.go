@@ -410,7 +410,7 @@ func resourcePacketDeviceCreate(d *schema.ResourceData, meta interface{}) error 
 	d.SetId(newDevice.ID)
 
 	// Wait for the device so we can get the networking attributes that show up after a while.
-	_, err = waitForDeviceAttribute(d, "active", []string{"queued", "provisioning"}, "state", meta)
+	_, err = waitForDeviceAttribute(d, []string{"active", "failed"}, []string{"queued", "provisioning"}, "state", meta)
 	if err != nil {
 		if isForbidden(err) {
 			// If the device doesn't get to the active state, we can't recover it from here.
@@ -420,9 +420,14 @@ func resourcePacketDeviceCreate(d *schema.ResourceData, meta interface{}) error 
 		}
 		return err
 	}
+	state := d.Get("state").(string)
+	if state != "active" {
+		d.SetId("")
+		return friendlyError(fmt.Errorf("Device in non-active state \"%s\"", state))
+	}
 
 	if nTypeOk {
-		_, err = waitForDeviceAttribute(d, "layer3", []string{"hybrid", "layer2-bonded", "layer2-individual"}, "network_type", meta)
+		_, err = waitForDeviceAttribute(d, []string{"layer3"}, []string{"hybrid", "layer2-bonded", "layer2-individual"}, "network_type", meta)
 
 		tns := targetNetworkState.(string)
 		if tns != "layer3" {
@@ -688,10 +693,10 @@ func waitUntilReservationProvisionable(id string, meta interface{}) (interface{}
 	return stateConf.WaitForState()
 }
 
-func waitForDeviceAttribute(d *schema.ResourceData, target string, pending []string, attribute string, meta interface{}) (interface{}, error) {
+func waitForDeviceAttribute(d *schema.ResourceData, targets []string, pending []string, attribute string, meta interface{}) (interface{}, error) {
 	stateConf := &resource.StateChangeConf{
 		Pending:    pending,
-		Target:     []string{target},
+		Target:     targets,
 		Refresh:    newDeviceStateRefreshFunc(d, attribute, meta),
 		Timeout:    60 * time.Minute,
 		Delay:      10 * time.Second,
@@ -728,8 +733,15 @@ func powerOnAndWait(d *schema.ResourceData, meta interface{}) error {
 		return friendlyError(err)
 	}
 
-	_, err = waitForDeviceAttribute(d, "active", []string{"off"}, "state", client)
-	return err
+	_, err = waitForDeviceAttribute(d, []string{"active", "failed"}, []string{"off"}, "state", client)
+	if err != nil {
+		return err
+	}
+	state := d.Get("state").(string)
+	if state != "active" {
+		return friendlyError(fmt.Errorf("Device in non-active state \"%s\"", state))
+	}
+	return nil
 }
 
 func validateFacilityForDevice(v interface{}, k string) (ws []string, errors []error) {
