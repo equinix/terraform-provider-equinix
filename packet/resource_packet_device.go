@@ -22,6 +22,11 @@ var matchIPXEScript = regexp.MustCompile(`(?i)^#![i]?pxe`)
 
 func resourcePacketDevice() *schema.Resource {
 	return &schema.Resource{
+		Timeouts: &schema.ResourceTimeout{
+			Create: schema.DefaultTimeout(20 * time.Minute),
+			Update: schema.DefaultTimeout(20 * time.Minute),
+			Delete: schema.DefaultTimeout(20 * time.Minute),
+		},
 		Create: resourcePacketDeviceCreate,
 		Read:   resourcePacketDeviceRead,
 		Update: resourcePacketDeviceUpdate,
