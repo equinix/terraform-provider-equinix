@@ -59,9 +59,13 @@ func TestAccPacketDevice_NetworkPortsOrder(t *testing.T) {
 }
 
 func TestAccPacketDevice_Basic(t *testing.T) {
-	var device packngo.Device
+	var device, deviceWithUserData packngo.Device
 	rs := acctest.RandString(10)
 	r := "packet_device.test"
+	testUD := `#cloud-config
+runcmd:
+ - [ ls, -l, / ]
+`
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -86,6 +90,14 @@ func TestAccPacketDevice_Basic(t *testing.T) {
 						r, "root_password"),
 					resource.TestCheckResourceAttrPair(
 						r, "deployed_facility", r, "facilities.0"),
+				),
+			},
+			{
+				Config: testAccCheckPacketDeviceConfig_basicUserData(rs, testUD),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckPacketDeviceExists(r, &deviceWithUserData),
+					resource.TestCheckResourceAttr(r, "user_data", testUD),
+					testAccCheckPacketSameDevice(t, &device, &deviceWithUserData),
 				),
 			},
 		},
@@ -515,6 +527,28 @@ resource "packet_device" "test" {
   billing_cycle    = "hourly"
   project_id       = "${packet_project.test.id}"
 }`, projSuffix)
+}
+
+func testAccCheckPacketDeviceConfig_basicUserData(projSuffix, ud string) string {
+	return fmt.Sprintf(`
+resource "packet_project" "test" {
+    name = "tfacc-device-%s"
+}
+
+locals {
+	ud = <<EOS
+%sEOS
+}
+
+resource "packet_device" "test" {
+  hostname         = "test-device"
+  plan             = "t1.small.x86"
+  facilities       = ["sjc1"]
+  operating_system = "ubuntu_16_04"
+  billing_cycle    = "hourly"
+  project_id       = "${packet_project.test.id}"
+  user_data        = "${local.ud}"
+}`, projSuffix, ud)
 }
 
 var testAccCheckPacketDeviceConfig_request_subnet = `
