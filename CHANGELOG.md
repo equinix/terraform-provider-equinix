@@ -1,4 +1,14 @@
-## 2.4.1 (Unreleased)
+## 2.5.0 (Unreleased)
+
+IMPROVEMENTS:
+- [#173](https://github.com/terraform-providers/terraform-provider-packet/issues/173) Migrate to TF Plugin SDK
+- [#174](https://github.com/terraform-providers/terraform-provider-packet/issues/174) Add timeouts to packet_device
+- [#169](https://github.com/terraform-providers/terraform-provider-packet/issues/169) Make userdata not ForceNew
+- [#171](https://github.com/terraform-providers/terraform-provider-packet/issues/171) New datasource for selecting preallocated IP blocks in a project
+
+BUG FIXES:
+- [#175](https://github.com/terraform-providers/terraform-provider-packet/issues/175) Better error when device fails to provision
+
 ## 2.4.0 (September 23, 2019)
 
 IMPROVEMENTS:
