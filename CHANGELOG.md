@@ -1,4 +1,4 @@
-## 2.5.0 (Unreleased)
+## 2.5.0 (October 18, 2019)
 
 IMPROVEMENTS:
 - [#173](https://github.com/terraform-providers/terraform-provider-packet/issues/173) Migrate to TF Plugin SDK
