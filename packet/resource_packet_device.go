@@ -525,6 +525,11 @@ func resourcePacketDeviceRead(d *schema.ResourceData, meta interface{}) error {
 	}
 	d.Set("network_type", device.NetworkType)
 
+	wfrd := "wait_for_reservation_deprovision"
+	if _, ok := d.GetOk(wfrd); !ok {
+		d.Set(wfrd, nil)
+	}
+
 	d.Set("tags", device.Tags)
 	keyIDs := []string{}
 	for _, k := range device.SSHKeys {
