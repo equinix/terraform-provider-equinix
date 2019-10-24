@@ -296,7 +296,10 @@ func resourceStateRefreshFunc(d *schema.ResourceData, meta interface{}) resource
 
 		for _, d := range smr.Devices {
 
-			dev, _, _ := client.Devices.Get(d.ID, nil)
+			dev, _, err := client.Devices.Get(d.ID, nil)
+			if err != nil {
+				return nil, "failed", err
+			}
 			if dev.State != "active" {
 				break
 			} else {
