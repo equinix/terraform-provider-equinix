@@ -8,6 +8,7 @@ IMPROVEMENTS:
 
 BUG FIXES:
 - [#180](https://github.com/terraform-providers/terraform-provider-packet/pull/159) Fixes device import 
+- [#183](https://github.com/terraform-providers/terraform-provider-packet/pull/184) Added missing error handling when waiting for spot instances to complete
 
 ## 2.5.0 (October 18, 2019)
 
