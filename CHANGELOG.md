@@ -1,4 +1,14 @@
-## 2.5.1 (Unreleased)
+## 2.6.0 (Unreleased)
+
+IMPROVEMENTS:
+- [#162](https://github.com/terraform-providers/terraform-provider-packet/pull/162) Datasource for packet_volume
+- [#161](https://github.com/terraform-providers/terraform-provider-packet/pull/161) Datasource for packet_project
+- [#160](https://github.com/terraform-providers/terraform-provider-packet/pull/160) Datasource for packet_organization
+- [#159](https://github.com/terraform-providers/terraform-provider-packet/pull/159) Datasource for packet_spotmarket_request
+
+BUG FIXES:
+- [#180](https://github.com/terraform-providers/terraform-provider-packet/pull/159) Fixes device import 
+
 ## 2.5.0 (October 18, 2019)
 
 IMPROVEMENTS:
