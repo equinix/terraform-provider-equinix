@@ -18,7 +18,7 @@ Provides a Packet device datasource.
 ## Example Usage
 
 ```hcl
-# Fetch a device data and show it's ID
+# Fetch a device data by hostname and show it's ID
 
 data "packet_device" "test" {
   project_id       = "${local.project_id}"
@@ -31,12 +31,25 @@ output "id" {
 
 ```
 
+```hcl
+# Fetch a device data by ID and show its public IPv4
+
+data "packet_device" "test" {
+
+output "ipv4" {
+  value = "${data.packet_device.test.access_public_ipv4}"
+}
+```
+
 ## Argument Reference
 
 The following arguments are supported:
 
-* `hostname` - (Required) The device name
-* `project_id` - (Required) The id of the project in which the devices exists
+* `hostname` - The device name
+* `project_id` - The id of the project in which the devices exists
+* `device_id` - Device ID
+
+User can lookup devices either by `device_id` or `project_id` and `hostname`.
 
 ## Attributes Reference
 
