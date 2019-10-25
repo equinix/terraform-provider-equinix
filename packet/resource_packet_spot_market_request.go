@@ -1,6 +1,7 @@
 package packet
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
@@ -289,7 +290,7 @@ func resourceStateRefreshFunc(d *schema.ResourceData, meta interface{}) resource
 		smr, _, err := client.SpotMarketRequests.Get(d.Id(), &packngo.GetOptions{Includes: []string{"project", "devices", "facilities"}})
 
 		if err != nil {
-			return nil, "", err
+			return nil, "", fmt.Errorf("Failed to fetch Spot market request with following error: %s", err.Error())
 
 		}
 		var finished bool
@@ -298,7 +299,7 @@ func resourceStateRefreshFunc(d *schema.ResourceData, meta interface{}) resource
 
 			dev, _, err := client.Devices.Get(d.ID, nil)
 			if err != nil {
-				return nil, "failed", err
+				return nil, "", fmt.Errorf("Failed to fetch Device with following error: %s", err.Error())
 			}
 			if dev.State != "active" {
 				break
