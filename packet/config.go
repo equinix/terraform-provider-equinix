@@ -1,7 +1,9 @@
 package packet
 
 import (
-	"github.com/hashicorp/go-cleanhttp"
+	"time"
+
+	"github.com/hashicorp/go-retryablehttp"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/logging"
 	"github.com/packethost/packngo"
 )
@@ -16,7 +18,13 @@ type Config struct {
 
 // Client returns a new client for accessing Packet's API.
 func (c *Config) Client() *packngo.Client {
-	client := cleanhttp.DefaultClient()
-	client.Transport = logging.NewTransport("Packet", client.Transport)
-	return packngo.NewClientWithAuth(consumerToken, c.AuthToken, client)
+	httpClient := retryablehttp.NewClient()
+	httpClient.RetryWaitMin = time.Second
+	httpClient.RetryWaitMax = 30 * time.Second
+	httpClient.RetryMax = 10
+	httpClient.HTTPClient.Transport = logging.NewTransport(
+		"Packet",
+		httpClient.HTTPClient.Transport)
+
+	return packngo.NewClientWithAuth(consumerToken, c.AuthToken, httpClient)
 }
