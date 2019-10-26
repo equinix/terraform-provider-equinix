@@ -90,6 +90,8 @@ github.com/hashicorp/go-multierror
 # github.com/hashicorp/go-plugin v1.0.1
 github.com/hashicorp/go-plugin
 github.com/hashicorp/go-plugin/internal/plugin
+# github.com/hashicorp/go-retryablehttp v0.6.2
+github.com/hashicorp/go-retryablehttp
 # github.com/hashicorp/go-safetemp v1.0.0
 github.com/hashicorp/go-safetemp
 # github.com/hashicorp/go-uuid v1.0.1
@@ -198,7 +200,7 @@ github.com/mitchellh/mapstructure
 github.com/mitchellh/reflectwalk
 # github.com/oklog/run v1.0.0
 github.com/oklog/run
-# github.com/packethost/packngo v0.1.1-0.20190814142431-3f3bfdfcb88b
+# github.com/packethost/packngo v0.2.1-0.20191025141128-714bffd09a95
 github.com/packethost/packngo
 # github.com/posener/complete v1.2.1
 github.com/posener/complete
