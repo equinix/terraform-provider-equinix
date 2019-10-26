@@ -1,6 +1,8 @@
 ## 2.6.0 (Unreleased)
 
 IMPROVEMENTS:
+- [#187](https://github.com/terraform-providers/terraform-provider-packet/pull/187) Bump Go version to 1.13
+- [#186](https://github.com/terraform-providers/terraform-provider-packet/pull/186) Update Packet SDK in order to use retryable HTTP client
 - [#162](https://github.com/terraform-providers/terraform-provider-packet/pull/162) Datasource for packet_volume
 - [#161](https://github.com/terraform-providers/terraform-provider-packet/pull/161) Datasource for packet_project
 - [#160](https://github.com/terraform-providers/terraform-provider-packet/pull/160) Datasource for packet_organization
