@@ -13,3 +13,5 @@ require (
 	github.com/vmihailenco/msgpack v4.0.1+incompatible // indirect
 	golang.org/x/sys v0.0.0-20190804053845-51ab0e2deafa // indirect
 )
+
+go 1.13
