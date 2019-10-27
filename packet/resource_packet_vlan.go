@@ -70,6 +70,7 @@ func resourcePacketVlanRead(d *schema.ResourceData, meta interface{}) error {
 	d.Set("description", vlan.Description)
 	d.Set("project_id", vlan.Project.ID)
 	d.Set("vxlan", vlan.VXLAN)
+	d.Set("facility", vlan.FacilityCode)
 	return nil
 }
 
