@@ -88,3 +88,24 @@ resource "packet_vlan" "foovlan" {
 }
 `, projSuffix, facility, desc)
 }
+
+func TestAccPacketVlan_importBasic(t *testing.T) {
+	rs := acctest.RandString(10)
+	fac := "ewr1"
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckPacketVlanDestroyed,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckPacketVlanConfig_var(rs, fac, "testvlan"),
+			},
+			{
+				ResourceName:      "packet_vlan.foovlan",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+		},
+	})
+}
