@@ -1,4 +1,4 @@
-## 2.6.0 (Unreleased)
+## 2.6.0 (October 28, 2019)
 
 IMPROVEMENTS:
 - [#187](https://github.com/terraform-providers/terraform-provider-packet/pull/187) Bump Go version to 1.13
