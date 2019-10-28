@@ -74,6 +74,28 @@ func TestAccPacketSSHKey_Update(t *testing.T) {
 	})
 }
 
+func TestAccPacketSSHKey_importBasic(t *testing.T) {
+	sshKey, _, err := acctest.RandSSHKeyPair("")
+	if err != nil {
+		t.Fatalf("Cannot generate test SSH key pair: %s", err)
+	}
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckPacketSSHKeyDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckPacketSSHKeyConfig_basic(acctest.RandInt(), sshKey),
+			},
+			{
+				ResourceName:      "packet_ssh_key.foobar",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+		},
+	})
+}
+
 func testAccCheckPacketSSHKeyDestroy(s *terraform.State) error {
 	client := testAccProvider.Meta().(*packngo.Client)
 
