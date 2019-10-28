@@ -32,6 +32,24 @@ func TestAccOrgCreate(t *testing.T) {
 	})
 }
 
+func TestAccOrg_importBasic(t *testing.T) {
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckPacketOrgDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckPacketOrgConfigBasic,
+			},
+			{
+				ResourceName:      "packet_organization.test",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+		},
+	})
+}
+
 func testAccCheckPacketOrgDestroy(s *terraform.State) error {
 	client := testAccProvider.Meta().(*packngo.Client)
 
