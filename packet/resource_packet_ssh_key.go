@@ -41,6 +41,9 @@ func resourcePacketSSHKey() *schema.Resource {
 		Read:   resourcePacketSSHKeyRead,
 		Update: resourcePacketSSHKeyUpdate,
 		Delete: resourcePacketSSHKeyDelete,
+		Importer: &schema.ResourceImporter{
+			State: schema.ImportStatePassthrough,
+		},
 
 		Schema: packetSSHKeyCommonFields(),
 	}
