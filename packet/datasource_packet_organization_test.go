@@ -22,11 +22,11 @@ func TestAccOrgDataSource_Basic(t *testing.T) {
 					testAccCheckPacketOrgExists("packet_organization.test", &org),
 					testAccCheckPacketOrgAttributes(&org),
 					resource.TestCheckResourceAttr(
-						"packet_organization.test", "name", "foobar"),
+						"packet_organization.test", "name", "foobar2"),
 					resource.TestCheckResourceAttr(
 						"packet_organization.test", "description", "quux"),
 					resource.TestCheckResourceAttr(
-						"data.packet_organization.test", "name", "foobar"),
+						"data.packet_organization.test", "name", "foobar2"),
 					resource.TestCheckResourceAttrPair(
 						"data.packet_organization.test2", "id", "packet_organization.test", "id"),
 				),
@@ -37,7 +37,7 @@ func TestAccOrgDataSource_Basic(t *testing.T) {
 
 var testAccCheckPacketOrgDataSourceConfigBasic = fmt.Sprintf(`
 resource "packet_organization" "test" {
-		name = "foobar"
+		name = "foobar2"
 		description = "quux"
 }
 
