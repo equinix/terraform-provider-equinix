@@ -21,7 +21,6 @@ func TestAccOrgCreate(t *testing.T) {
 				Config: testAccCheckPacketOrgConfigBasic,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckPacketOrgExists("packet_organization.test", &org),
-					testAccCheckPacketOrgAttributes(&org),
 					resource.TestCheckResourceAttr(
 						"packet_organization.test", "name", "foobar"),
 					resource.TestCheckResourceAttr(
@@ -63,15 +62,6 @@ func testAccCheckPacketOrgDestroy(s *terraform.State) error {
 	}
 
 	return nil
-}
-
-func testAccCheckPacketOrgAttributes(org *packngo.Organization) resource.TestCheckFunc {
-	return func(s *terraform.State) error {
-		if org.Name != "foobar" {
-			return fmt.Errorf("Bad name: %s", org.Name)
-		}
-		return nil
-	}
 }
 
 func testAccCheckPacketOrgExists(n string, org *packngo.Organization) resource.TestCheckFunc {
