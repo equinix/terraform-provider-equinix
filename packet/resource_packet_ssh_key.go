@@ -1,6 +1,8 @@
 package packet
 
 import (
+	"path"
+
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/packethost/packngo"
 )
@@ -28,6 +30,10 @@ func packetSSHKeyCommonFields() map[string]*schema.Schema {
 		},
 
 		"updated": {
+			Type:     schema.TypeString,
+			Computed: true,
+		},
+		"owner_id": {
 			Type:     schema.TypeString,
 			Computed: true,
 		},
@@ -68,9 +74,6 @@ func resourcePacketSSHKeyCreate(d *schema.ResourceData, meta interface{}) error 
 	}
 
 	d.SetId(key.ID)
-	if isProjectKey {
-		return resourcePacketProjectSSHKeyRead(d, meta)
-	}
 
 	return resourcePacketSSHKeyRead(d, meta)
 }
@@ -92,12 +95,19 @@ func resourcePacketSSHKeyRead(d *schema.ResourceData, meta interface{}) error {
 		return err
 	}
 
+	ownerID := path.Base(key.Owner.Href)
+
 	d.Set("id", key.ID)
 	d.Set("name", key.Label)
 	d.Set("public_key", key.Key)
 	d.Set("fingerprint", key.FingerPrint)
+	d.Set("owner_id", ownerID)
 	d.Set("created", key.Created)
 	d.Set("updated", key.Updated)
+
+	if key.Owner.Href[:10] == "/projects/" {
+		d.Set("project_id", ownerID)
+	}
 
 	return nil
 }
