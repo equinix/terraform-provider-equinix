@@ -51,5 +51,6 @@ The following attributes are exported:
 * `name` - The name of the SSH key
 * `public_key` - The text of the public key
 * `fingerprint` - The fingerprint of the SSH key
+* `owner_id` - The UUID of the Packet API User who owns this key
 * `created` - The timestamp for when the SSH key was created
 * `updated` - The timestamp for the last time the SSH key was updated
