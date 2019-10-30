@@ -74,11 +74,6 @@ func resourcePacketSSHKeyCreate(d *schema.ResourceData, meta interface{}) error 
 	}
 
 	d.SetId(key.ID)
-	/*
-		if isProjectKey {
-			return resourcePacketProjectSSHKeyRead(d, meta)
-		}
-	*/
 
 	return resourcePacketSSHKeyRead(d, meta)
 }
