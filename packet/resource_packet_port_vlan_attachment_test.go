@@ -157,7 +157,7 @@ resource "packet_project" "test" {
 resource "packet_device" "test" {
   hostname         = "test"
   plan             = "s1.large.x86"
-  facilities       = ["dfw2"]
+  facilities       = ["nrt1"]
   operating_system = "ubuntu_16_04"
   billing_cycle    = "hourly"
   project_id       = "${packet_project.test.id}"
@@ -165,8 +165,8 @@ resource "packet_device" "test" {
 }
 
 resource "packet_vlan" "test" {
-  description = "VLAN in New Jersey"
-  facility    = "dfw2"
+  description = "test vlan"
+  facility    = "nrt1"
   project_id  = "${packet_project.test.id}"
 }
 
@@ -178,7 +178,7 @@ resource "packet_port_vlan_attachment" "test" {
 }`, name)
 }
 
-func TestAccPacketPortVlanAttachment_Hybrid(t *testing.T) {
+func TestAccPacketPortVlanAttachment_HybridBasic(t *testing.T) {
 	rs := acctest.RandString(10)
 
 	resource.Test(t, resource.TestCase{
@@ -209,7 +209,7 @@ resource "packet_project" "test" {
 resource "packet_device" "test" {
   hostname         = "test"
   plan             = "s1.large.x86"
-  facilities       = ["dfw2"]
+  facilities       = ["nrt1"]
   operating_system = "ubuntu_16_04"
   billing_cycle    = "hourly"
   project_id       = packet_project.test.id
@@ -218,8 +218,8 @@ resource "packet_device" "test" {
 
 resource "packet_vlan" "test" {
   count       = 3
-  description = "VLAN in New Jersey"
-  facility    = "dfw2"
+  description = "test VLAN"
+  facility    = "nrt1"
   project_id  = packet_project.test.id
 }
 
