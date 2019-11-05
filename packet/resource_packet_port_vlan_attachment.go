@@ -216,6 +216,9 @@ func resourcePacketPortVlanAttachmentDelete(d *schema.ResourceData, meta interfa
 		}
 	}
 	par := &packngo.PortAssignRequest{PortID: pID, VirtualNetworkID: vlanID}
+	lockId := "vlan-detachment-" + pID
+	packetMutexKV.Lock(lockId)
+	defer packetMutexKV.Unlock(lockId)
 	portPtr, _, err := client.DevicePorts.Unassign(par)
 	if err != nil {
 		return err
