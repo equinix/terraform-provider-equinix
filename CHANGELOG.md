@@ -1,3 +1,4 @@
+## 2.6.2 (Unreleased)
 ## 2.6.1 (November 05, 2019)
 
 IMPROVEMENTS:
