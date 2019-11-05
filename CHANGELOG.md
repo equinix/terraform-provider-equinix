@@ -1,4 +1,4 @@
-## 2.6.1 (Unreleased)
+## 2.6.1 (November 05, 2019)
 
 IMPROVEMENTS:
 - Resource imports
