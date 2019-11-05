@@ -1,4 +1,18 @@
 ## 2.6.1 (Unreleased)
+
+IMPROVEMENTS:
+- Resource imports
+  - [#188](https://github.com/terraform-providers/terraform-provider-packet/pull/188) packet_vlan
+  - [#189](https://github.com/terraform-providers/terraform-provider-packet/pull/189) packet_ssh_key
+  - [#190](https://github.com/terraform-providers/terraform-provider-packet/pull/190) packet_organization
+  - [#193](https://github.com/terraform-providers/terraform-provider-packet/pull/193) packet_project_ssh_key
+   
+
+BUG FIXES:
+- [#194](https://github.com/terraform-providers/terraform-provider-packet/pull/194) HTTP client hotfix - don't retry on HTTP responses with 5xx status code
+- [#196](https://github.com/terraform-providers/terraform-provider-packet/pull/196) Add mutext to guard VLAN detachment
+
+
 ## 2.6.0 (October 28, 2019)
 
 IMPROVEMENTS:
