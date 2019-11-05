@@ -21,7 +21,7 @@ resource "packet_project" "test" {
 resource "packet_device" "test" {
   hostname         = "test"
   plan             = "s1.large.x86"
-  facilities       = ["dfw2"]
+  facilities       = ["nrt1"]
   operating_system = "ubuntu_16_04"
   billing_cycle    = "hourly"
   project_id       = "${packet_project.test.id}"
@@ -29,14 +29,14 @@ resource "packet_device" "test" {
 }
 
 resource "packet_vlan" "test1" {
-  description = "VLAN in New Jersey"
-  facility    = "dfw2"
+  description = "test VLAN 1"
+  facility    = "nrt1"
   project_id  = "${packet_project.test.id}"
 }
 
 resource "packet_vlan" "test2" {
-  description = "VLAN in New Jersey"
-  facility    = "dfw2"
+  description = "test VLAN 2"
+  facility    = "nrt1"
   project_id  = "${packet_project.test.id}"
 }
 
