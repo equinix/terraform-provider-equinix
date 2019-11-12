@@ -1,3 +1,5 @@
+// WARNING: Packet Connect has been deprecated!
+
 package packet
 
 import (
@@ -8,6 +10,7 @@ import (
 	"github.com/packethost/packngo"
 )
 
+// Deprecated: Packet Connect has been deprecated.
 func resourcePacketConnect() *schema.Resource {
 	return &schema.Resource{
 		Create: resourcePacketConnectCreate,
@@ -61,6 +64,7 @@ func resourcePacketConnect() *schema.Resource {
 	}
 }
 
+// Deprecated: Packet Connect has been deprecated.
 func waitForConnectStatus(d *schema.ResourceData, target string, pending string, meta interface{}) (interface{}, error) {
 	stateConf := &resource.StateChangeConf{
 		Pending:    []string{pending},
@@ -73,6 +77,7 @@ func waitForConnectStatus(d *schema.ResourceData, target string, pending string,
 	return stateConf.WaitForState()
 }
 
+// Deprecated: Packet Connect has been deprecated.
 func connectRefreshFunc(d *schema.ResourceData, meta interface{}) resource.StateRefreshFunc {
 	client := meta.(*packngo.Client)
 
@@ -94,6 +99,7 @@ func connectRefreshFunc(d *schema.ResourceData, meta interface{}) resource.State
 	}
 }
 
+// Deprecated: Packet Connect has been deprecated.
 func resourcePacketConnectCreate(d *schema.ResourceData, meta interface{}) error {
 	c := meta.(*packngo.Client)
 	createRequest := &packngo.ConnectCreateRequest{
@@ -120,6 +126,7 @@ func resourcePacketConnectCreate(d *schema.ResourceData, meta interface{}) error
 	return resourcePacketConnectRead(d, meta)
 }
 
+// Deprecated: Packet Connect has been deprecated.
 func resourcePacketConnectRead(d *schema.ResourceData, meta interface{}) error {
 	c := meta.(*packngo.Client)
 	pc, _, err := c.Connects.Get(d.Id(), d.Get("project_id").(string), nil)
@@ -136,6 +143,7 @@ func resourcePacketConnectRead(d *schema.ResourceData, meta interface{}) error {
 	return nil
 }
 
+// Deprecated: Packet Connect has been deprecated.
 func resourcePacketConnectDelete(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*packngo.Client)
 
