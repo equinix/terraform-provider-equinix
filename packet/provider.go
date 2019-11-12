@@ -47,7 +47,7 @@ func Provider() terraform.ResourceProvider {
 			"packet_bgp_session":          resourcePacketBGPSession(),
 			"packet_port_vlan_attachment": resourcePacketPortVlanAttachment(),
 			// WARNING: Packet Connect has been deprecated!
-			"packet_connect":              resourcePacketConnect(),
+			"packet_connect": resourcePacketConnect(),
 		},
 
 		ConfigureFunc: providerConfigure,
