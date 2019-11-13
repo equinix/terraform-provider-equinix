@@ -60,6 +60,7 @@ func resourcePacketConnect() *schema.Resource {
 				Computed: true,
 			},
 		},
+		DeprecationMessage: "Packet Connect has now been deprecated, and will be removed in a later release."
 	}
 }
 
