@@ -38,6 +38,7 @@ minimize them and move towards a 1.0 release.
 - Sync with packet.net api change to /projects/{id}/ips which no longer returns
   the address in CIDR form
 - Removed package level exported functions that should have never existed
+- Packet Connect has been marked as deprecated
 
 ## [0.1.0] - 2017-08-17
 
