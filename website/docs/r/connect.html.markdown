@@ -6,7 +6,7 @@ description: |-
   Provides a resource for Packet Connect, which is now deprecated and will be fully removed in release 2.7.0.
 ---
 
-# packet_connect [DEPRECATED]
+# packet_connect
 
 Provides a resource for [Packet Connect](https://www.packet.com/cloud/all-features/packet-connect/), a link between Packet VLANs and VLANs in other cloud providers, which is now deprecated. Packet Connect will be fully removed in release 2.7.0.
 

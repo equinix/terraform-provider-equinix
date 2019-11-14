@@ -1,4 +1,4 @@
-// WARNING: Packet Connect has been deprecated, and will be removed in a later release!
+// WARNING: Packet Connect has been deprecated, and will be removed in release 2.7.0.
 
 package packet
 
@@ -60,7 +60,7 @@ func resourcePacketConnect() *schema.Resource {
 				Computed: true,
 			},
 		},
-		DeprecationMessage: "Packet Connect has now been deprecated, and will be removed in a later release.",
+		DeprecationMessage: "packet_connect has now been deprecated, and will be removed in release 2.7.0.",
 	}
 }
 
