@@ -22,7 +22,6 @@ minimize them and move towards a 1.0 release.
 - Add ListProject function to the SSHKeys interface
 - Operations for switching between Network Modes, aka "L2 support"
   Support for Organization, Payment Method and Billing address resources
-- Deprecation warnings for Packet Connect
 
 ### Fixed
 - User.Emails json tag is fixed to match api response
@@ -38,7 +37,6 @@ minimize them and move towards a 1.0 release.
 - Sync with packet.net api change to /projects/{id}/ips which no longer returns
   the address in CIDR form
 - Removed package level exported functions that should have never existed
-- Packet Connect has been marked as deprecated
 
 ## [0.1.0] - 2017-08-17
 
