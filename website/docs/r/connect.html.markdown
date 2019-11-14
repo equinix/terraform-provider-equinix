@@ -1,14 +1,14 @@
 ---
 layout: "packet"
-page_title: "Packet: packet_connect [DEPRECATED]"
+page_title: "Packet: packet_connect"
 sidebar_current: "docs-packet-resource-connect"
 description: |-
-  Provides a resource for Packet Connect, which is now deprecated and will be fully removed in a later release.
+  Provides a resource for Packet Connect, which is now deprecated and will be fully removed in release 2.7.0.
 ---
 
 # packet_connect [DEPRECATED]
 
-Provides a resource for [Packet Connect](https://www.packet.com/cloud/all-features/packet-connect/), a link between Packet VLANs and VLANs in other cloud providers, which is now deprecated. Packet Connect will be fully removed in a later release.
+Provides a resource for [Packet Connect](https://www.packet.com/cloud/all-features/packet-connect/), a link between Packet VLANs and VLANs in other cloud providers, which is now deprecated. Packet Connect will be fully removed in release 2.7.0.
 
 ## Example Usage
 
