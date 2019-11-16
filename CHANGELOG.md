@@ -3,6 +3,8 @@
 FEATURES
 - [#198] (https://github.com/terraform-providers/terraform-provider-packet/issues/198) Deprecated resource: packet_connect
 
+IMPROVEMENTS:
+- fix of snapshot_policies example in packet_volume documentation
 
 ## 2.6.1 (November 05, 2019)
 
