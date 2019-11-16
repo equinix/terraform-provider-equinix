@@ -1,4 +1,9 @@
 ## 2.6.2 (Unreleased)
+
+FEATURES
+- [#198] (https://github.com/terraform-providers/terraform-provider-packet/issues/198) Deprecated resource: packet_connect
+
+
 ## 2.6.1 (November 05, 2019)
 
 IMPROVEMENTS:
