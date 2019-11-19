@@ -1,4 +1,4 @@
-## 2.7.0 (Unreleased)
+## 2.7.0 (November 19, 2019)
 
 FEATURES
 - [#201] (https://github.com/terraform-providers/terraform-provider-packet/issues/201) Removed resorce packet_connect
