@@ -3,6 +3,7 @@
 package packet
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
@@ -98,45 +99,11 @@ func connectRefreshFunc(d *schema.ResourceData, meta interface{}) resource.State
 }
 
 func resourcePacketConnectCreate(d *schema.ResourceData, meta interface{}) error {
-	c := meta.(*packngo.Client)
-	createRequest := &packngo.ConnectCreateRequest{
-		ProjectID:       d.Get("project_id").(string),
-		ProviderID:      d.Get("provider_id").(string),
-		Name:            d.Get("name").(string),
-		Facility:        d.Get("facility").(string),
-		ProviderPayload: d.Get("provider_payload").(string),
-		VLAN:            d.Get("vxlan").(int),
-		PortSpeed:       d.Get("port_speed").(int),
-		Description:     d.Get("name").(string),
-		Tags:            []string{d.Get("name").(string)},
-	}
-
-	pc, _, err := c.Connects.Create(createRequest)
-	if err != nil {
-		return friendlyError(err)
-	}
-	d.SetId(pc.ID)
-	_, err = waitForConnectStatus(d, "PROVISIONED", "PROVISIONING", meta)
-	if err != nil {
-		return friendlyError(err)
-	}
-	return resourcePacketConnectRead(d, meta)
+	return fmt.Errorf("packet_connect is deprecated in provider version 2.7.0")
 }
 
 func resourcePacketConnectRead(d *schema.ResourceData, meta interface{}) error {
-	c := meta.(*packngo.Client)
-	pc, _, err := c.Connects.Get(d.Id(), d.Get("project_id").(string), nil)
-	if err != nil {
-		return friendlyError(err)
-	}
-	d.Set("name", pc.Name)
-	d.Set("provider_id", pc.ProviderID)
-	d.Set("provider_payload", pc.ProviderPayload)
-	d.Set("status", pc.Status)
-	d.Set("port_speed", pc.PortSpeed)
-	d.Set("vxlan", pc.VLAN)
-
-	return nil
+	return fmt.Errorf("packet_connect is deprecated in provider version 2.7.0")
 }
 
 func resourcePacketConnectDelete(d *schema.ResourceData, meta interface{}) error {
