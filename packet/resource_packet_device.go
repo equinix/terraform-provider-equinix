@@ -712,7 +712,7 @@ func waitForDeviceAttribute(d *schema.ResourceData, targets []string, pending []
 		Target:     targets,
 		Refresh:    newDeviceStateRefreshFunc(d, attribute, meta),
 		Timeout:    60 * time.Minute,
-		Delay:      20 * time.Second,
+		Delay:      10 * time.Second,
 		MinTimeout: 3 * time.Second,
 	}
 	return stateConf.WaitForState()
