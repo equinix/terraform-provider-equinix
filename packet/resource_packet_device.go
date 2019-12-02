@@ -8,6 +8,7 @@ import (
 	"reflect"
 	"regexp"
 	"sort"
+	"sync"
 	"time"
 
 	"github.com/hashicorp/errwrap"
@@ -19,6 +20,8 @@ import (
 )
 
 var matchIPXEScript = regexp.MustCompile(`(?i)^#![i]?pxe`)
+var wgMap = map[string]*sync.WaitGroup{}
+var wgMutex = sync.Mutex{}
 
 func resourcePacketDevice() *schema.Resource {
 	return &schema.Resource{
@@ -414,7 +417,7 @@ func resourcePacketDeviceCreate(d *schema.ResourceData, meta interface{}) error 
 	d.SetId(newDevice.ID)
 
 	// Wait for the device so we can get the networking attributes that show up after a while.
-	_, err = waitForDeviceAttribute(d, []string{"active", "failed"}, []string{"queued", "provisioning"}, "state", meta)
+	state, err := waitForDeviceAttribute(d, []string{"active", "failed"}, []string{"queued", "provisioning"}, "state", meta)
 	if err != nil {
 		if isForbidden(err) {
 			// If the device doesn't get to the active state, we can't recover it from here.
@@ -424,14 +427,16 @@ func resourcePacketDeviceCreate(d *schema.ResourceData, meta interface{}) error 
 		}
 		return err
 	}
-	state := d.Get("state").(string)
 	if state != "active" {
 		d.SetId("")
 		return friendlyError(fmt.Errorf("Device in non-active state \"%s\"", state))
 	}
 
 	if nTypeOk {
-		_, err = waitForDeviceAttribute(d, []string{"layer3"}, []string{"hybrid", "layer2-bonded", "layer2-individual"}, "network_type", meta)
+		_, err := waitForDeviceAttribute(d, []string{"layer3"}, []string{"hybrid", "layer2-bonded", "layer2-individual"}, "network_type", meta)
+		if err != nil {
+			return err
+		}
 
 		tns := targetNetworkState.(string)
 		if tns != "layer3" {
@@ -670,7 +675,7 @@ func resourcePacketDeviceDelete(d *schema.ResourceData, meta interface{}) error 
 	}
 	if ok {
 		if d.Get("wait_for_reservation_deprovision").(bool) {
-			_, err := waitUntilReservationProvisionable(resId.(string), meta)
+			err := waitUntilReservationProvisionable(resId.(string), meta)
 			if err != nil {
 				return err
 			}
@@ -679,63 +684,82 @@ func resourcePacketDeviceDelete(d *schema.ResourceData, meta interface{}) error 
 	return nil
 }
 
-func reservationProvisionableRefresh(id string, meta interface{}) resource.StateRefreshFunc {
-	client := meta.(*packngo.Client)
-	return func() (interface{}, string, error) {
-		r, _, err := client.HardwareReservations.Get(id, nil)
-		if err != nil {
-			return nil, "", friendlyError(err)
-		}
-		provisionableString := "false"
-		if r.Provisionable {
-			provisionableString = "true"
-		}
-		return r, provisionableString, nil
-	}
-}
-
-func waitUntilReservationProvisionable(id string, meta interface{}) (interface{}, error) {
+func waitUntilReservationProvisionable(id string, meta interface{}) error {
 	stateConf := &resource.StateChangeConf{
-		Pending:    []string{"false"},
-		Target:     []string{"true"},
-		Refresh:    reservationProvisionableRefresh(id, meta),
-		Timeout:    60 * time.Minute,
-		Delay:      10 * time.Second,
-		MinTimeout: 3 * time.Second,
-	}
-	return stateConf.WaitForState()
-}
-
-func waitForDeviceAttribute(d *schema.ResourceData, targets []string, pending []string, attribute string, meta interface{}) (interface{}, error) {
-	stateConf := &resource.StateChangeConf{
-		Pending:    pending,
-		Target:     targets,
-		Refresh:    newDeviceStateRefreshFunc(d, attribute, meta),
-		Timeout:    60 * time.Minute,
-		Delay:      10 * time.Second,
-		MinTimeout: 3 * time.Second,
-	}
-	return stateConf.WaitForState()
-}
-
-func newDeviceStateRefreshFunc(d *schema.ResourceData, attribute string, meta interface{}) resource.StateRefreshFunc {
-	client := meta.(*packngo.Client)
-
-	return func() (interface{}, string, error) {
-		if err := resourcePacketDeviceRead(d, meta); err != nil {
-			return nil, "", err
-		}
-
-		if attr, ok := d.GetOk(attribute); ok {
-			device, _, err := client.Devices.Get(d.Id(), &packngo.GetOptions{Includes: []string{"project"}})
+		Pending: []string{"false"},
+		Target:  []string{"true"},
+		Refresh: func() (interface{}, string, error) {
+			client := meta.(*packngo.Client)
+			r, _, err := client.HardwareReservations.Get(id, nil)
 			if err != nil {
-				return nil, "", friendlyError(err)
+				return 42, "error", friendlyError(err)
 			}
-			return &device, attr.(string), nil
-		}
-
-		return nil, "", nil
+			provisionableString := "false"
+			if r.Provisionable {
+				provisionableString = "true"
+			}
+			return 42, provisionableString, nil
+		},
+		Timeout:    60 * time.Minute,
+		Delay:      10 * time.Second,
+		MinTimeout: 3 * time.Second,
 	}
+	_, err := stateConf.WaitForState()
+	return err
+}
+
+func getWaitForDeviceLock(deviceID string) *sync.WaitGroup {
+	wgMutex.Lock()
+	defer wgMutex.Unlock()
+	wg, ok := wgMap[deviceID]
+	if !ok {
+		wg = &sync.WaitGroup{}
+		wgMap[deviceID] = wg
+	}
+	return wg
+}
+
+func waitForDeviceAttribute(d *schema.ResourceData, targets []string, pending []string, attribute string, meta interface{}) (string, error) {
+
+	wg := getWaitForDeviceLock(d.Id())
+	wg.Wait()
+
+	wgMutex.Lock()
+	wg.Add(1)
+	wgMutex.Unlock()
+
+	defer func() {
+		wgMutex.Lock()
+		wg.Done()
+		wgMutex.Unlock()
+	}()
+
+	if attribute != "state" && attribute != "network_type" {
+		return "", fmt.Errorf("unsupported attr to wait for: %s", attribute)
+	}
+
+	stateConf := &resource.StateChangeConf{
+		Pending: pending,
+		Target:  targets,
+		Refresh: func() (interface{}, string, error) {
+			client := meta.(*packngo.Client)
+			device, _, err := client.Devices.Get(d.Id(), &packngo.GetOptions{Includes: []string{"project"}})
+			if err == nil {
+				retAttrVal := device.State
+				if attribute == "network_type" {
+					retAttrVal = device.NetworkType
+				}
+				return retAttrVal, retAttrVal, nil
+			}
+			return "error", "error", err
+		},
+		Timeout:    60 * time.Minute,
+		Delay:      10 * time.Second,
+		MinTimeout: 3 * time.Second,
+	}
+	attrval, err := stateConf.WaitForState()
+
+	return attrval.(string), err
 }
 
 // powerOnAndWait Powers on the device and waits for it to be active.
