@@ -1,6 +1,8 @@
 ## 2.7.1 (Unreleased)
 
 - [#202](https://github.com/terraform-providers/terraform-provider-packet/pull/202) packet_volume_attachment documenation: show how to run attach script via Terraform
+- [#203](https://github.com/terraform-providers/terraform-provider-packet/pull/203) Fix disappearing API queries in long waits, e.g. when creating ESXi device
+
 
 ## 2.7.0 (November 19, 2019)
 
