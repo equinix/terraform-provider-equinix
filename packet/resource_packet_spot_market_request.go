@@ -271,7 +271,7 @@ func resourcePacketSpotMarketRequestDelete(d *schema.ResourceData, meta interfac
 		}
 
 		for _, d := range smr.Devices {
-			_, err := client.Devices.Delete(d.ID)
+			_, err := client.Devices.Delete(d.ID, true)
 			if err != nil {
 				return err
 			}

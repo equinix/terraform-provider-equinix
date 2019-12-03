@@ -670,7 +670,7 @@ func resourcePacketDeviceDelete(d *schema.ResourceData, meta interface{}) error 
 	client := meta.(*packngo.Client)
 
 	resId, ok := d.GetOk("hardware_reservation_id")
-	if _, err := client.Devices.Delete(d.Id()); err != nil {
+	if _, err := client.Devices.Delete(d.Id(), false); err != nil {
 		return friendlyError(err)
 	}
 	if ok {
