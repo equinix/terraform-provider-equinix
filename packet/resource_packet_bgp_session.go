@@ -52,7 +52,7 @@ func resourcePacketBGPSessionCreate(d *schema.ResourceData, meta interface{}) er
 	log.Printf("[DEBUG] creating %s BGP session to device (%s)\n", addressFamily, dID)
 	bgpSession, _, err := client.BGPSessions.Create(
 		dID, packngo.CreateBGPSessionRequest{
-			AddressFamily: "ipv4",
+			AddressFamily: addressFamily,
 			DefaultRoute:  &defaultRoute})
 	if err != nil {
 		return friendlyError(err)

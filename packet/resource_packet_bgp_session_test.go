@@ -26,6 +26,10 @@ func TestAccPacketBGPSession_Basic(t *testing.T) {
 						"packet_bgp_session.test", "device_id"),
 					resource.TestCheckResourceAttr(
 						"packet_bgp_session.test", "default_route", "true"),
+					resource.TestCheckResourceAttr(
+						"packet_bgp_session.test4", "address_family", "ipv4"),
+					resource.TestCheckResourceAttr(
+						"packet_bgp_session.test6", "address_family", "ipv6"),
 				),
 			},
 			{
@@ -72,9 +76,16 @@ resource "packet_device" "test" {
     project_id       = "${packet_project.test.id}"
 }
 
-resource "packet_bgp_session" "test" {
+resource "packet_bgp_session" "test4 {
 	device_id = "${packet_device.test.id}"
 	address_family = "ipv4"
 	default_route = true
-}`, name)
+}
+
+resource "packet_bgp_session" "test6" {
+	device_id = "${packet_device.test.id}"
+	address_family = "ipv6"
+	default_route = true
+}
+`, name)
 }
