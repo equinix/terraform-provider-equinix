@@ -23,13 +23,22 @@ func TestAccPacketBGPSession_Basic(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrPair(
 						"packet_device.test", "id",
-						"packet_bgp_session.test", "device_id"),
+						"packet_bgp_session.test4", "device_id"),
+					resource.TestCheckResourceAttrPair(
+						"packet_device.test", "id",
+						"packet_bgp_session.test6", "device_id"),
 					resource.TestCheckResourceAttr(
-						"packet_bgp_session.test", "default_route", "true"),
+						"packet_bgp_session.test4", "default_route", "true"),
+					resource.TestCheckResourceAttr(
+						"packet_bgp_session.test6", "default_route", "true"),
+					resource.TestCheckResourceAttr(
+						"packet_bgp_session.test4", "address_family", "ipv4"),
+					resource.TestCheckResourceAttr(
+						"packet_bgp_session.test6", "address_family", "ipv6"),
 				),
 			},
 			{
-				ResourceName:      "packet_bgp_session.test",
+				ResourceName:      "packet_bgp_session.test4",
 				ImportState:       true,
 				ImportStateVerify: true,
 			},
@@ -72,9 +81,16 @@ resource "packet_device" "test" {
     project_id       = "${packet_project.test.id}"
 }
 
-resource "packet_bgp_session" "test" {
+resource "packet_bgp_session" "test4" {
 	device_id = "${packet_device.test.id}"
 	address_family = "ipv4"
 	default_route = true
-}`, name)
+}
+
+resource "packet_bgp_session" "test6" {
+	device_id = "${packet_device.test.id}"
+	address_family = "ipv6"
+	default_route = true
+}
+`, name)
 }
