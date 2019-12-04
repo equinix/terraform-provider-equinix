@@ -134,6 +134,7 @@ The following arguments are supported:
 * `always_pxe` (Optional) - If true, a device with OS `custom_ipxe` will
   continue to boot via iPXE on reboots.
 * `hardware_reservation_id` (Optional) - The `full ID` of the hardware reservation where you want this device deployed, or `next-available` if you want to pick your next available reservation automatically.
+  Please be careful if using hw reservation UUID and `next-available` together for the same pool of resevations. It might happen that the reservation which Packet API will pick as next-available is the reservation which you refer with UUID in another packet_device resource. To fix this, have the `next-available` resource  [explicitly depend_on](https://learn.hashicorp.com/terraform/getting-started/dependencies.html#implicit-and-explicit-dependencies) the resource with hw reservation UUID, so that the latter is created first.
 * `storage` (Optional) - JSON for custom partitioning. Only usable on reserved hardware. More information in in the [Custom Partitioning and RAID](https://support.packet.com/kb/articles/custom-partitioning-raid) doc.
 * `tags` - Tags attached to the device
 * `description` - Description string for the device
