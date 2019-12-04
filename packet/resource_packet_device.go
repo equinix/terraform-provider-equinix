@@ -296,6 +296,12 @@ func resourcePacketDevice() *schema.Resource {
 				Default:  false,
 				ForceNew: false,
 			},
+			"force_detach_volumes": {
+				Type:     schema.TypeBool,
+				Optional: true,
+				Default:  false,
+				ForceNew: false,
+			},
 		},
 	}
 }
@@ -534,6 +540,10 @@ func resourcePacketDeviceRead(d *schema.ResourceData, meta interface{}) error {
 	if _, ok := d.GetOk(wfrd); !ok {
 		d.Set(wfrd, nil)
 	}
+	fdv := "force_detach_volumes"
+	if _, ok := d.GetOk(fdv); !ok {
+		d.Set(fdv, nil)
+	}
 
 	d.Set("tags", device.Tags)
 	keyIDs := []string{}
@@ -669,12 +679,20 @@ func resourcePacketDeviceUpdate(d *schema.ResourceData, meta interface{}) error 
 func resourcePacketDeviceDelete(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*packngo.Client)
 
-	resId, ok := d.GetOk("hardware_reservation_id")
-	if _, err := client.Devices.Delete(d.Id(), false); err != nil {
+	fdvIf, fdvOk := d.GetOk("force_detach_volumes")
+	fdv := false
+	if fdvOk && fdvIf.(bool) {
+		fdv = true
+	}
+
+	if _, err := client.Devices.Delete(d.Id(), fdv); err != nil {
 		return friendlyError(err)
 	}
-	if ok {
-		if d.Get("wait_for_reservation_deprovision").(bool) {
+
+	resId, resIdOk := d.GetOk("hardware_reservation_id")
+	if resIdOk {
+		wfrd, wfrdOK := d.GetOk("wait_for_reservation_deprovision")
+		if wfrdOK && wfrd.(bool) {
 			err := waitUntilReservationProvisionable(resId.(string), meta)
 			if err != nil {
 				return err
