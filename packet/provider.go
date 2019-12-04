@@ -11,6 +11,7 @@ import (
 var packetMutexKV = mutexkv.NewMutexKV()
 
 func Provider() terraform.ResourceProvider {
+
 	return &schema.Provider{
 		Schema: map[string]*schema.Schema{
 			"auth_token": {
@@ -46,8 +47,6 @@ func Provider() terraform.ResourceProvider {
 			"packet_vlan":                 resourcePacketVlan(),
 			"packet_bgp_session":          resourcePacketBGPSession(),
 			"packet_port_vlan_attachment": resourcePacketPortVlanAttachment(),
-			// WARNING: Packet Connect has been deprecated!
-			"packet_connect": resourcePacketConnect(),
 		},
 
 		ConfigureFunc: providerConfigure,

@@ -9,7 +9,7 @@ require (
 	github.com/hashicorp/hil v0.0.0-20190212132231-97b3a9cdfa93 // indirect
 	github.com/hashicorp/terraform-plugin-sdk v1.0.0
 	github.com/mattn/go-colorable v0.1.1 // indirect
-	github.com/packethost/packngo v0.2.1-0.20191030123207-e34c34ef3c41
+	github.com/packethost/packngo v0.2.1-0.20191121150456-ac94adc96a1f
 	github.com/vmihailenco/msgpack v4.0.1+incompatible // indirect
 	golang.org/x/sys v0.0.0-20190804053845-51ab0e2deafa // indirect
 )
