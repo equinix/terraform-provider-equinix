@@ -1,4 +1,4 @@
-## 2.7.2 (Unreleased)
+## 2.7.2 (December 06, 2019)
 
 IMPROVEMENTS:
 
