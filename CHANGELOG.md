@@ -1,7 +1,19 @@
 ## 2.7.2 (Unreleased)
+
+IMPROVEMENTS:
+
+- [#205](https://github.com/terraform-providers/terraform-provider-packet/pull/205) packet_device: allow to force-detach volume on resource removal
+- [#208](https://github.com/terraform-providers/terraform-provider-packet/pull/208) packet_device: add caution note to hardware_reservation_id
+
+BUG FIXES:
+- [#207](https://github.com/terraform-providers/terraform-provider-packet/pull/205) packet_bgp_session: fix ignored ipv6 value in address_family attribute
+
 ## 2.7.1 (December 03, 2019)
 
+IMPROVEMENTS:
 - [#202](https://github.com/terraform-providers/terraform-provider-packet/pull/202) packet_volume_attachment documenation: show how to run attach script via Terraform
+
+BUG FIXES:
 - [#203](https://github.com/terraform-providers/terraform-provider-packet/pull/203) Fix disappearing API queries in long waits, e.g. when creating ESXi device
 
 
