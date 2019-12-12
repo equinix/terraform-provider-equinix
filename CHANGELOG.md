@@ -1,4 +1,4 @@
-## 2.7.3 (Unreleased)
+## 2.7.3 (December 12, 2019)
 
 IMPROVEMENTS:
 - [#210](https://github.com/terraform-providers/terraform-provider-packet/pull/210) Distinguish HTTP 404 NotFound from API and from loadbalancer.
