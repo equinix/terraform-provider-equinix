@@ -28,7 +28,7 @@ func TestAccPacketSSHKey_Basic(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckPacketSSHKeyExists("packet_ssh_key.foobar", &key),
 					resource.TestCheckResourceAttr(
-						"packet_ssh_key.foobar", "name", fmt.Sprintf("foobar-%d", rInt)),
+						"packet_ssh_key.foobar", "name", fmt.Sprintf("tfacc-user-key-%d", rInt)),
 					resource.TestCheckResourceAttr(
 						"packet_ssh_key.foobar", "public_key", publicKeyMaterial),
 					resource.TestCheckResourceAttrSet(
@@ -82,7 +82,7 @@ func TestAccPacketSSHKey_Update(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckPacketSSHKeyExists("packet_ssh_key.foobar", &key),
 					resource.TestCheckResourceAttr(
-						"packet_ssh_key.foobar", "name", fmt.Sprintf("foobar-%d", rInt)),
+						"packet_ssh_key.foobar", "name", fmt.Sprintf("tfacc-user-key-%d", rInt)),
 					resource.TestCheckResourceAttr(
 						"packet_ssh_key.foobar", "public_key", publicKeyMaterial),
 				),
@@ -92,7 +92,7 @@ func TestAccPacketSSHKey_Update(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckPacketSSHKeyExists("packet_ssh_key.foobar", &key),
 					resource.TestCheckResourceAttr(
-						"packet_ssh_key.foobar", "name", fmt.Sprintf("foobar-%d", rInt+1)),
+						"packet_ssh_key.foobar", "name", fmt.Sprintf("tfacc-user-key-%d", rInt+1)),
 					resource.TestCheckResourceAttr(
 						"packet_ssh_key.foobar", "public_key", publicKeyMaterial),
 				),
@@ -190,7 +190,7 @@ func testAccCheckPacketSSHKeyExists(n string, key *packngo.SSHKey) resource.Test
 func testAccCheckPacketSSHKeyConfig_basic(rInt int, publicSshKey string) string {
 	return fmt.Sprintf(`
 resource "packet_ssh_key" "foobar" {
-    name = "foobar-%d"
+    name = "tfacc-user-key-%d"
     public_key = "%s"
 }`, rInt, publicSshKey)
 }
@@ -199,11 +199,11 @@ func testAccCheckPacketSSHKeyConfig_projectBasic(rInt int, publicSshKey string) 
 	return fmt.Sprintf(`
 
 resource "packet_project" "test" {
-    name = "test-%d"
+    name = "tfacc-project-key-test-%d"
 }
 
 resource "packet_project_ssh_key" "foobar" {
-    name = "foobar-%d"
+    name = "tfacc-project-key-%d"
     public_key = "%s"
 	project_id = packet_project.test.id
 }`, rInt, rInt, publicSshKey)

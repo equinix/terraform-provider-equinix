@@ -46,7 +46,7 @@ resource "packet_spot_market_request" "req" {
   wait_for_devices = true
 
   instance_parameters {
-    hostname         = "testspot"
+    hostname         = "tfacc-testspot"
     billing_cycle    = "hourly"
     operating_system = "ubuntu_16_04"
     plan             = "t1.small.x86"

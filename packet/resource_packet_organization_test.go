@@ -22,7 +22,7 @@ func TestAccOrgCreate(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckPacketOrgExists("packet_organization.test", &org),
 					resource.TestCheckResourceAttr(
-						"packet_organization.test", "name", "foobar"),
+						"packet_organization.test", "name", "tfacc-org"),
 					resource.TestCheckResourceAttr(
 						"packet_organization.test", "description", "quux"),
 				),
@@ -92,6 +92,6 @@ func testAccCheckPacketOrgExists(n string, org *packngo.Organization) resource.T
 
 var testAccCheckPacketOrgConfigBasic = fmt.Sprintf(`
 resource "packet_organization" "test" {
-		name = "foobar"
+		name = "tfacc-org"
 		description = "quux"
 }`)

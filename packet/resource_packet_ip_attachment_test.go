@@ -60,7 +60,7 @@ resource "packet_project" "test" {
 }
 
 resource "packet_device" "test" {
-  hostname         = "test"
+  hostname         = "tfacc-device-ip-attachment-test"
   plan             = "t1.small.x86"
   facilities       = ["ewr1"]
   operating_system = "ubuntu_16_04"

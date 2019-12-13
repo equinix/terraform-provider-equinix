@@ -88,7 +88,7 @@ resource "packet_spot_market_request" "request" {
   wait_for_devices = true
 
   instance_parameters {
-    hostname         = "testspot"
+    hostname         = "tfacc-testspot"
     billing_cycle    = "hourly"
     operating_system = "coreos_stable"
     plan             = "t1.small.x86"

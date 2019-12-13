@@ -19,7 +19,7 @@ resource "packet_project" "test" {
 }
 
 resource "packet_device" "test" {
-  hostname         = "test"
+  hostname         = "tfacc-device-port-vlan-attachment-test"
   plan             = "s1.large.x86"
   facilities       = ["nrt1"]
   operating_system = "ubuntu_16_04"
@@ -87,7 +87,7 @@ resource "packet_project" "test" {
 }
 
 resource "packet_device" "test" {
-  hostname         = "test"
+  hostname         = "tfacc-vlan-l2i-test"
   plan             = "s1.large.x86"
   facilities       = ["nrt1"]
   operating_system = "ubuntu_16_04"
@@ -155,7 +155,7 @@ resource "packet_project" "test" {
 }
 
 resource "packet_device" "test" {
-  hostname         = "test"
+  hostname         = "tfacc-device-hybrid-test"
   plan             = "s1.large.x86"
   facilities       = ["nrt1"]
   operating_system = "ubuntu_16_04"
@@ -207,7 +207,7 @@ resource "packet_project" "test" {
 }
 
 resource "packet_device" "test" {
-  hostname         = "test"
+  hostname         = "tfacc-device-hmv-test"
   plan             = "s1.large.x86"
   facilities       = ["nrt1"]
   operating_system = "ubuntu_16_04"
@@ -303,7 +303,7 @@ resource "packet_project" "test" {
 }
 
 resource "packet_device" "test" {
-  hostname         = "test"
+  hostname         = "tfacc-device-l2n-test"
   plan             = "s1.large.x86"
   facilities       = ["nrt1"]
   operating_system = "ubuntu_16_04"

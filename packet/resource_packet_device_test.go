@@ -119,14 +119,14 @@ func TestAccPacketDevice_Update(t *testing.T) {
 				Config: testAccCheckPacketDeviceConfig_varname(rInt, rs),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckPacketDeviceExists(r, &d1),
-					resource.TestCheckResourceAttr(r, "hostname", fmt.Sprintf("test-device-%d", rInt)),
+					resource.TestCheckResourceAttr(r, "hostname", fmt.Sprintf("tfacc-test-device-%d", rInt)),
 				),
 			},
 			{
 				Config: testAccCheckPacketDeviceConfig_varname(rInt+1, rs),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckPacketDeviceExists(r, &d2),
-					resource.TestCheckResourceAttr(r, "hostname", fmt.Sprintf("test-device-%d", rInt+1)),
+					resource.TestCheckResourceAttr(r, "hostname", fmt.Sprintf("tfacc-test-device-%d", rInt+1)),
 					testAccCheckPacketSameDevice(t, &d1, &d2),
 				),
 			},
@@ -134,7 +134,7 @@ func TestAccPacketDevice_Update(t *testing.T) {
 				Config: testAccCheckPacketDeviceConfig_varname(rInt+2, rs),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckPacketDeviceExists(r, &d3),
-					resource.TestCheckResourceAttr(r, "hostname", fmt.Sprintf("test-device-%d", rInt+2)),
+					resource.TestCheckResourceAttr(r, "hostname", fmt.Sprintf("tfacc-test-device-%d", rInt+2)),
 					resource.TestCheckResourceAttr(r, "description", fmt.Sprintf("test-desc-%d", rInt+2)),
 					resource.TestCheckResourceAttr(r, "tags.0", fmt.Sprintf("%d", rInt+2)),
 					testAccCheckPacketSameDevice(t, &d2, &d3),
@@ -144,7 +144,7 @@ func TestAccPacketDevice_Update(t *testing.T) {
 				Config: testAccCheckPacketDeviceConfig_no_description(rInt+3, rs),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckPacketDeviceExists(r, &d4),
-					resource.TestCheckResourceAttr(r, "hostname", fmt.Sprintf("test-device-%d", rInt+3)),
+					resource.TestCheckResourceAttr(r, "hostname", fmt.Sprintf("tfacc-test-device-%d", rInt+3)),
 					resource.TestCheckResourceAttr(r, "tags.0", fmt.Sprintf("%d", rInt+3)),
 					testAccCheckPacketSameDevice(t, &d3, &d4),
 				),
@@ -215,11 +215,11 @@ func TestAccPacketDevice_IPXEScriptUrl(t *testing.T) {
 func testAccCheckPacketDeviceConfig_L2(projSuffix string) string {
 	return fmt.Sprintf(`
 resource "packet_project" "test" {
-    name = "tfacc-device-%s"
+    name = "tfacc-project-%s"
 }
 
 resource "packet_device" "test" {
-  hostname         = "test"
+  hostname         = "tfacc-device-L2-test"
   plan             = "m1.xlarge.x86"
   facilities       = ["ewr1"]
   operating_system = "ubuntu_16_04"
@@ -308,7 +308,7 @@ func testAccCheckPacketDeviceDestroy(s *terraform.State) error {
 
 func testAccCheckPacketDeviceAttributes(device *packngo.Device) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
-		if device.Hostname != "test-device" {
+		if device.Hostname != "tfacc-test-device" {
 			return fmt.Errorf("Bad name: %s", device.Hostname)
 		}
 		if device.State != "active" {
@@ -462,7 +462,7 @@ resource "packet_project" "test" {
 }
 
 resource "packet_device" "test" {
-  hostname         = "test-device-%d"
+  hostname         = "tfacc-test-device-%d"
   plan             = "t1.small.x86"
   facilities       = ["sjc1"]
   operating_system = "ubuntu_16_04"
@@ -480,7 +480,7 @@ resource "packet_project" "test" {
 }
 
 resource "packet_device" "test" {
-  hostname         = "test-device-%d"
+  hostname         = "tfacc-test-device-%d"
   description      = "test-desc-%d"
   plan             = "t1.small.x86"
   facilities       = ["sjc1"]
@@ -499,7 +499,7 @@ resource "packet_project" "test" {
 }
 
 resource "packet_device" "test" {
-  hostname         = "test-device-%d"
+  hostname         = "tfacc-test-device-%d"
   description      = "test-desc-%d"
   plan             = "t1.small.x86"
   facilities       = ["sjc1"]
@@ -520,7 +520,7 @@ resource "packet_project" "test" {
 }
 
 resource "packet_device" "test" {
-  hostname         = "test-device"
+  hostname         = "tfacc-test-device"
   plan             = "t1.small.x86"
   facilities       = ["sjc1"]
   operating_system = "ubuntu_16_04"
@@ -541,7 +541,7 @@ locals {
 }
 
 resource "packet_device" "test" {
-  hostname         = "test-device"
+  hostname         = "tfacc-test-device"
   plan             = "t1.small.x86"
   facilities       = ["sjc1"]
   operating_system = "ubuntu_16_04"
@@ -575,7 +575,7 @@ resource "packet_project" "test" {
 
 resource "packet_device" "test"  {
 
-  hostname         = "test-ipxe-script-url"
+  hostname         = "tfacc-device-test-ipxe-script-url"
   plan             = "t1.small.x86"
   facilities       = ["sjc1", "any"]
   operating_system = "ubuntu_16_04"
@@ -592,7 +592,7 @@ resource "packet_project" "test" {
 
 resource "packet_device" "test_ipxe_script_url"  {
 
-  hostname         = "test-ipxe-script-url"
+  hostname         = "tfacc-device-test-ipxe-script-url"
   plan             = "t1.small.x86"
   facilities       = ["sjc1"]
   operating_system = "custom_ipxe"
@@ -610,7 +610,7 @@ resource "packet_project" "test" {
 }
 
 resource "packet_device" "test_ipxe_conflict" {
-  hostname         = "test-ipxe-conflict"
+  hostname         = "tfacc-device-test-ipxe-conflict"
   plan             = "t1.small.x86"
   facilities       = ["sjc1"]
   operating_system = "custom_ipxe"
@@ -627,7 +627,7 @@ resource "packet_project" "test" {
 }
 
 resource "packet_device" "test_ipxe_missing" {
-  hostname         = "test-ipxe-missing"
+  hostname         = "tfacc-device-test-ipxe-missing"
   plan             = "t1.small.x86"
   facilities       = ["sjc1"]
   operating_system = "custom_ipxe"
