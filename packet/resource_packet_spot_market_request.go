@@ -109,7 +109,10 @@ func resourcePacketSpotMarketRequest() *schema.Resource {
 				ForceNew: true,
 			},
 		},
-		Timeouts: resourceDefaultTimeouts,
+		Timeouts: &schema.ResourceTimeout{
+			Create: schema.DefaultTimeout(20 * time.Minute),
+			Delete: schema.DefaultTimeout(20 * time.Minute),
+		},
 	}
 }
 
