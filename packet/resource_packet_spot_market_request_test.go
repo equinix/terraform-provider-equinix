@@ -25,7 +25,6 @@ func TestAccPacketSpotMarketRequest_Basic(t *testing.T) {
 					testAccCheckPacketSpotMarketRequestExists("packet_spot_market_request.request", &key),
 					resource.TestCheckResourceAttr("packet_spot_market_request.request", "devices_max", "1"),
 					resource.TestCheckResourceAttr("packet_spot_market_request.request", "devices_min", "1"),
-					resource.TestCheckResourceAttr("packet_spot_market_request.request", "max_bid_price", "0.03"),
 				),
 			},
 		},
@@ -79,9 +78,15 @@ resource "packet_project" "test" {
   name = "tfacc-spot_market_request-%s"
 }
 
+data "packet_spot_market_price" "test" {
+  facility = "ewr1"
+  plan     = "baremetal_0"
+}
+
+
 resource "packet_spot_market_request" "request" {
   project_id       = "${packet_project.test.id}"
-  max_bid_price    = 0.03
+  max_bid_price    = data.packet_spot_market_price.test.price * 1.2
   facilities       = ["ewr1"]
   devices_min      = 1
   devices_max      = 1
@@ -91,7 +96,7 @@ resource "packet_spot_market_request" "request" {
     hostname         = "tfacc-testspot"
     billing_cycle    = "hourly"
     operating_system = "coreos_stable"
-    plan             = "t1.small.x86"
+    plan             = "baremetal_0"
   }
 }`, name)
 }
