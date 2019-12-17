@@ -18,13 +18,13 @@ resource "packet_project" "test" {
 }
 
 resource "packet_project_ssh_key" "test" {
-    name = "test"
+    name = "tfacc-project-key-test"
     public_key = "%s"
     project_id = "${packet_project.test.id}"
 }
 
 resource "packet_device" "test" {
-    hostname            = "test"
+    hostname            = "tfacc-device-key-test"
     plan                = "baremetal_0"
     facilities          = ["ewr1"]
     operating_system    = "ubuntu_16_04"

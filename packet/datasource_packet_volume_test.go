@@ -45,7 +45,7 @@ resource "packet_project" "test" {
 }
 
 resource "packet_device" "test" {
-    hostname         = "terraform-test-device-volume-datasource"
+    hostname         = "tfacc-device-volume-datasource"
     plan             = "t1.small.x86"
     facilities       = ["ewr1"]
     operating_system = "ubuntu_16_04"

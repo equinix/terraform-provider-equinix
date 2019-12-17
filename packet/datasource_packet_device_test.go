@@ -20,7 +20,7 @@ func TestAccDataSourcePacketDevice_Basic(t *testing.T) {
 				Config: testDataSourcePacketDeviceConfig_Basic(projectName),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(
-						"data.packet_device.test", "hostname", "test-device"),
+						"data.packet_device.test", "hostname", "tfacc-test-device"),
 					resource.TestCheckResourceAttrPair(
 						"packet_device.test", "id",
 						"data.packet_device.test", "id"),
@@ -44,7 +44,7 @@ resource "packet_project" "test" {
 }
 
 resource "packet_device" "test" {
-  hostname         = "test-device"
+  hostname         = "tfacc-test-device"
   plan             = "t1.small.x86"
   facilities       = ["sjc1"]
   operating_system = "ubuntu_16_04"
@@ -70,7 +70,7 @@ func TestAccDataSourcePacketDevice_ByID(t *testing.T) {
 				Config: testDataSourcePacketDeviceConfig_ByID(projectName),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(
-						"data.packet_device.test", "hostname", "test-device"),
+						"data.packet_device.test", "hostname", "tfacc-test-device"),
 					resource.TestCheckResourceAttrPair(
 						"packet_device.test", "id",
 						"data.packet_device.test", "id"),
@@ -94,7 +94,7 @@ resource "packet_project" "test" {
 }
 
 resource "packet_device" "test" {
-  hostname         = "test-device"
+  hostname         = "tfacc-test-device"
   plan             = "t1.small.x86"
   facilities       = ["sjc1"]
   operating_system = "ubuntu_16_04"

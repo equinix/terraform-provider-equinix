@@ -43,7 +43,7 @@ resource "packet_project" "test" {
 }
 
 resource "packet_device" "test" {
-  hostname         = "tftest"
+  hostname         = "tfacc-test-device-ip-blockt"
   plan             = "t1.small.x86"
   facilities       = ["ewr1"]
   operating_system = "ubuntu_16_04"
