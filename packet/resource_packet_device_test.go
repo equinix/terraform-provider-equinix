@@ -18,6 +18,7 @@ func init() {
 	resource.AddTestSweepers("packet_device", &resource.Sweeper{
 		Name: "packet_device",
 		F:    testSweepDevices,
+        Dependencies: []string{"packet_volume"},
 	})
 }
 
