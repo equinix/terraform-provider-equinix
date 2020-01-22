@@ -41,7 +41,7 @@ The following attributes are exported:
 * `created` - The timestamp for when the project was created
 * `updated` - The timestamp for the last time the project was updated
 * `user_ids` - List of UUIDs of user accounts which beling to this project
-* `bgp_config` - Optional BGP settings. Refer to [Packet guide for BGP](https://support.packet.com/kb/articles/bgp).
+* `bgp_config` - Optional BGP settings. Refer to [Packet guide for BGP](https://www.packet.com/developers/docs/network/advanced/local-and-global-bgp/).
 
 The `bgp_config` block contains:
   * `asn` - Autonomous System Numer for local BGP deployment

@@ -8,7 +8,7 @@ description: |-
 
 # packet_bgp_session
 
-Provides a resource to manage BGP sessions in Packet Host. Refer to [Packet BGP documentation](https://support.packet.com/kb/articles/bgp) for more details.
+Provides a resource to manage BGP sessions in Packet Host. Refer to [Packet BGP documentation](https://www.packet.com/developers/docs/network/advanced/local-and-global-bgp/) for more details.
 
 You need to have BGP config enabled in your project.
 

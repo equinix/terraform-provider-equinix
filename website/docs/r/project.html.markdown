@@ -41,8 +41,8 @@ The following arguments are supported:
 * `name` - (Required) The name of the project
 * `organization_id` - The UUID of organization under which you want to create the project. If you leave it out, the project will be create under your the default organization of your account.
 * `payment_method_id` - The UUID of payment method for this project. The payment method and the project need to belong to the same organization (passed with `organization_id`, or default).
-* `backend_transfer` - Enable or disable [Backend Transfer](https://support.packet.com/kb/articles/backend-transfer), default is false
-* `bgp_config` - Optional BGP settings. Refer to [Packet guide for BGP](https://support.packet.com/kb/articles/bgp).
+* `backend_transfer` - Enable or disable [Backend Transfer](https://www.packet.com/developers/docs/network/basic/backend-transfer/), default is false
+* `bgp_config` - Optional BGP settings. Refer to [Packet guide for BGP](https://www.packet.com/developers/docs/network/advanced/local-and-global-bgp/).
 
 Once you set the BGP config in a project, it can't be removed (due to a limitation in the Packet API). It can be updated.
 
