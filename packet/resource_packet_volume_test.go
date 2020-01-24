@@ -95,7 +95,7 @@ func TestAccPacketVolume_Update(t *testing.T) {
 		CheckDestroy: testAccCheckPacketVolumeDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckPacketVolumeConfig_var(rs, 10, "descstr", "storage_1", true),
+				Config: testAccCheckPacketVolumeConfig_var(rs, 100, "descstr", "storage_1", true),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckPacketVolumeExists("packet_volume.foobar", &volume),
 					resource.TestCheckResourceAttr(
@@ -103,7 +103,7 @@ func TestAccPacketVolume_Update(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccCheckPacketVolumeConfig_var(rs, 10, "descstr", "storage_1", false),
+				Config: testAccCheckPacketVolumeConfig_var(rs, 100, "descstr", "storage_1", false),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckPacketVolumeExists("packet_volume.foobar", &v1),
 					resource.TestCheckResourceAttr(
@@ -112,7 +112,7 @@ func TestAccPacketVolume_Update(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccCheckPacketVolumeConfig_var(rs, 10, "descstr2", "storage_2", false),
+				Config: testAccCheckPacketVolumeConfig_var(rs, 100, "descstr2", "storage_2", false),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckPacketVolumeExists("packet_volume.foobar", &v2),
 					resource.TestCheckResourceAttr(
@@ -121,16 +121,16 @@ func TestAccPacketVolume_Update(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccCheckPacketVolumeConfig_var(rs, 20, "descstr2", "storage_2", false),
+				Config: testAccCheckPacketVolumeConfig_var(rs, 102, "descstr2", "storage_2", false),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckPacketVolumeExists("packet_volume.foobar", &v3),
 					resource.TestCheckResourceAttr(
-						"packet_volume.foobar", "size", "20"),
+						"packet_volume.foobar", "size", "102"),
 					testAccCheckPacketSameVolume(t, &volume, &v3),
 				),
 			},
 			{
-				Config: testAccCheckPacketVolumeConfig_var(rs, 22, "descstr2", "storage_2", true),
+				Config: testAccCheckPacketVolumeConfig_var(rs, 104, "descstr2", "storage_2", true),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckPacketVolumeExists("packet_volume.foobar", &v4),
 					resource.TestCheckResourceAttr(
@@ -139,7 +139,7 @@ func TestAccPacketVolume_Update(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccCheckPacketVolumeConfig_var(rs, 25, "descstr2", "storage_2", false),
+				Config: testAccCheckPacketVolumeConfig_var(rs, 106, "descstr2", "storage_2", false),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckPacketVolumeExists("packet_volume.foobar", &v4),
 					resource.TestCheckResourceAttr(
