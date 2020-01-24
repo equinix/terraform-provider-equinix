@@ -1,4 +1,14 @@
 ## 2.7.4 (Unreleased)
+
+IMPROVEMENTS:
+- Add sweepers for Acceptance tests of Projects, Devices and Volumes
+- Prefix names of testing resources with `tfacc-`, to mark them for sweepers
+- Fixed links in docs to capture migration of Packet Knowledge Base
+
+BUG FIXES:
+ - Fix bug when devices were added to Terraform state
+ - Update volumes sizes in Acceptance Tests
+
 ## 2.7.3 (December 12, 2019)
 
 IMPROVEMENTS:
