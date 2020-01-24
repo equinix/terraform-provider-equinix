@@ -184,7 +184,7 @@ func TestAccPacketVolume_importBasic(t *testing.T) {
 		CheckDestroy: testAccCheckPacketVolumeDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckPacketVolumeConfig_var(rs, 10, "descstr", "storage_1", false),
+				Config: testAccCheckPacketVolumeConfig_var(rs, 100, "descstr", "storage_1", false),
 			},
 			{
 				ResourceName:      "packet_volume.foobar",
