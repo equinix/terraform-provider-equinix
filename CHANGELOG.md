@@ -1,4 +1,4 @@
-## 2.7.4 (Unreleased)
+## 2.7.4 (January 24, 2020)
 
 IMPROVEMENTS:
 - Add sweepers for Acceptance tests of Projects, Devices and Volumes
