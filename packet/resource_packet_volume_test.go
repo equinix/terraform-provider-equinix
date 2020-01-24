@@ -2,6 +2,8 @@ package packet
 
 import (
 	"fmt"
+	"log"
+	"strings"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
@@ -9,6 +11,52 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
 	"github.com/packethost/packngo"
 )
+
+func init() {
+	resource.AddTestSweepers("packet_volume", &resource.Sweeper{
+		Name: "packet_volume",
+		F:    testSweepVolumes,
+	})
+}
+
+func testSweepVolumes(region string) error {
+	log.Printf("[DEBUG] Sweeping volumes")
+	meta, err := sharedConfigForRegion(region)
+	if err != nil {
+		return fmt.Errorf("Error getting client for sweeping volumes: %s", err)
+	}
+	client := meta.(*packngo.Client)
+
+	ps, _, err := client.Projects.List(nil)
+	if err != nil {
+		return fmt.Errorf("Error getting project list for sweepeing volumes: %s", err)
+	}
+	pids := []string{}
+	for _, p := range ps {
+		if strings.HasPrefix(p.Name, "tfacc-") {
+			pids = append(pids, p.ID)
+		}
+	}
+	vids := []string{}
+	for _, pid := range pids {
+		vs, _, err := client.Volumes.List(pid, nil)
+		if err != nil {
+			return fmt.Errorf("Error listing volumes to sweep: %s", err)
+		}
+		for _, v := range vs {
+			vids = append(vids, v.ID)
+		}
+	}
+
+	for _, vid := range vids {
+		log.Printf("Removing volume %s", vid)
+		_, err := client.Volumes.Delete(vid)
+		if err != nil {
+			return fmt.Errorf("Error deleting volume %s", err)
+		}
+	}
+	return nil
+}
 
 func TestAccPacketVolume_Basic(t *testing.T) {
 	var volume packngo.Volume
@@ -47,7 +95,7 @@ func TestAccPacketVolume_Update(t *testing.T) {
 		CheckDestroy: testAccCheckPacketVolumeDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckPacketVolumeConfig_var(rs, 10, "descstr", "storage_1", true),
+				Config: testAccCheckPacketVolumeConfig_var(rs, 100, "descstr", "storage_1", true),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckPacketVolumeExists("packet_volume.foobar", &volume),
 					resource.TestCheckResourceAttr(
@@ -55,7 +103,7 @@ func TestAccPacketVolume_Update(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccCheckPacketVolumeConfig_var(rs, 10, "descstr", "storage_1", false),
+				Config: testAccCheckPacketVolumeConfig_var(rs, 100, "descstr", "storage_1", false),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckPacketVolumeExists("packet_volume.foobar", &v1),
 					resource.TestCheckResourceAttr(
@@ -64,7 +112,7 @@ func TestAccPacketVolume_Update(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccCheckPacketVolumeConfig_var(rs, 10, "descstr2", "storage_2", false),
+				Config: testAccCheckPacketVolumeConfig_var(rs, 100, "descstr2", "storage_2", false),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckPacketVolumeExists("packet_volume.foobar", &v2),
 					resource.TestCheckResourceAttr(
@@ -73,16 +121,16 @@ func TestAccPacketVolume_Update(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccCheckPacketVolumeConfig_var(rs, 20, "descstr2", "storage_2", false),
+				Config: testAccCheckPacketVolumeConfig_var(rs, 102, "descstr2", "storage_2", false),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckPacketVolumeExists("packet_volume.foobar", &v3),
 					resource.TestCheckResourceAttr(
-						"packet_volume.foobar", "size", "20"),
+						"packet_volume.foobar", "size", "102"),
 					testAccCheckPacketSameVolume(t, &volume, &v3),
 				),
 			},
 			{
-				Config: testAccCheckPacketVolumeConfig_var(rs, 22, "descstr2", "storage_2", true),
+				Config: testAccCheckPacketVolumeConfig_var(rs, 104, "descstr2", "storage_2", true),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckPacketVolumeExists("packet_volume.foobar", &v4),
 					resource.TestCheckResourceAttr(
@@ -91,7 +139,7 @@ func TestAccPacketVolume_Update(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccCheckPacketVolumeConfig_var(rs, 25, "descstr2", "storage_2", false),
+				Config: testAccCheckPacketVolumeConfig_var(rs, 106, "descstr2", "storage_2", false),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckPacketVolumeExists("packet_volume.foobar", &v4),
 					resource.TestCheckResourceAttr(

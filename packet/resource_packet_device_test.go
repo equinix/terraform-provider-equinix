@@ -16,8 +16,9 @@ import (
 
 func init() {
 	resource.AddTestSweepers("packet_device", &resource.Sweeper{
-		Name: "packet_device",
-		F:    testSweepDevices,
+		Name:         "packet_device",
+		F:            testSweepDevices,
+		Dependencies: []string{"packet_volume"},
 	})
 }
 
@@ -46,9 +47,7 @@ func testSweepDevices(region string) error {
 			return fmt.Errorf("Error listing devices to sweep: %s", err)
 		}
 		for _, d := range ds {
-			if strings.HasPrefix(d.Hostname, "tfacc-") {
-				dids = append(dids, d.ID)
-			}
+			dids = append(dids, d.ID)
 		}
 	}
 
