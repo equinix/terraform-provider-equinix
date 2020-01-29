@@ -26,7 +26,7 @@ To learn more about Layer 2 networking in Packet, refer to
 resource "packet_vlan" "test" {
   description = "VLAN in New Jersey"
   facility    = "ewr1"
-  project_id  = "${local.project_id}"
+  project_id  = local.project_id
 }
 
 resource "packet_device" "test" {
@@ -35,14 +35,14 @@ resource "packet_device" "test" {
   facilities       = ["ewr1"]
   operating_system = "ubuntu_16_04"
   billing_cycle    = "hourly"
-  project_id       = "${local.project_id}"
+  project_id       = local.project_id
   network_type     = "hybrid"
 }
 
 resource "packet_port_vlan_attachment" "test" {
-  device_id = "${packet_device.test.id}"
+  device_id = packet_device.test.id
   port_name = "eth1"
-  vlan_vnid = "${packet_vlan.test.vxlan}"
+  vlan_vnid = packet_vlan.test.vxlan
 }
 
 
@@ -54,31 +54,31 @@ resource "packet_device" "test" {
   facilities       = ["ewr1"]
   operating_system = "ubuntu_16_04"
   billing_cycle    = "hourly"
-  project_id       = "${local.project_id}"
+  project_id       = local.project_id
   network_type     = "layer2-individual"
 }
 
 resource "packet_vlan" "test1" {
   description = "VLAN in New Jersey"
   facility    = "ewr1"
-  project_id  = "${local.project_id}"
+  project_id  = local.project_id
 }
 
 resource "packet_vlan" "test2" {
   description = "VLAN in New Jersey"
   facility    = "ewr1"
-  project_id  = "${local.project_id}"
+  project_id  = local.project_id
 }
 
 resource "packet_port_vlan_attachment" "test1" {
-  device_id = "${packet_device.test.id}"
-  vlan_vnid = "${packet_vlan.test1.vxlan}"
+  device_id = packet_device.test.id
+  vlan_vnid = packet_vlan.test1.vxlan
   port_name = "eth1"
 }
 
 resource "packet_port_vlan_attachment" "test2" {
-  device_id  = "${packet_device.test.id}"
-  vlan_vnid  = "${packet_vlan.test2.vxlan}"
+  device_id  = packet_device.test.id
+  vlan_vnid  = packet_vlan.test2.vxlan
   port_name  = "eth1"
   native     = true
   depends_on = ["packet_port_vlan_attachment.test1"]

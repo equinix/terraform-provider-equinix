@@ -29,13 +29,13 @@ resource "packet_device" "web1" {
   facilities       = ["ewr1"]
   operating_system = "ubuntu_16_04"
   billing_cycle    = "hourly"
-  project_id       = "${local.project_id}"
+  project_id       = local.project_id
   
 }
 
 data "packet_precreated_ip_block" "test" {
   facility         = "ewr1"
-  project_id       = "${local.project_id}"
+  project_id       = local.project_id
   address_family   = 6
   public           = true
 }
@@ -44,8 +44,8 @@ data "packet_precreated_ip_block" "test" {
 # The cirdsubnet interpolation will pick second /64 subnet from the precreated block.
 
 resource "packet_ip_attachment" "from_ipv6_block" {
-  device_id = "${packet_device.web1.id}"
-  cidr_notation = "${cidrsubnet(data.packet_precreated_ip_block.test.cidr_notation,8,2)}"
+  device_id = packet_device.web1.id
+  cidr_notation = cidrsubnet(data.packet_precreated_ip_block.test.cidr_notation,8,2)
 }
 
 ```

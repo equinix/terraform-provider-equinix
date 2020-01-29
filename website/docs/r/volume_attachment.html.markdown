@@ -25,21 +25,21 @@ resource "packet_device" "test_device_va" {
   facilities       = ["ewr1"]
   operating_system = "ubuntu_16_04"
   billing_cycle    = "hourly"
-  project_id       = "${local.project_id}"
+  project_id       = local.project_id
 }
 
 resource "packet_volume" "test_volume_va" {
   plan = "storage_1"
   billing_cycle = "hourly"
   size = 100
-  project_id = "${local.project_id}"
+  project_id = local.project_id
   facility = "ewr1"
   snapshot_policies = { snapshot_frequency = "1day", snapshot_count = 7 }
 }
 
 resource "packet_volume_attachment" "test_volume_attachment" {
-  device_id = "${packet_device.test_device_va.id}"
-  volume_id = "${packet_volume.test_volume_va.id}"
+  device_id = packet_device.test_device_va.id
+  volume_id = packet_volume.test_volume_va.id
 }
 ```
 
