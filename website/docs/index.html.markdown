@@ -20,7 +20,7 @@ Be cautious when using the `packet_project` resource. Packet is invoicing per pr
 ```hcl
 # Configure the Packet Provider. 
 provider "packet" {
-  auth_token = "${var.auth_token}"
+  auth_token = var.auth_token
 }
 
 # Declare your project ID
@@ -46,10 +46,10 @@ resource "packet_device" "web1" {
   facilities         = ["ewr1"]
   operating_system = "ubuntu_16_04"
   billing_cycle    = "hourly"
-  project_id       = "${local.project_id}"
+  project_id       = local.project_id
 
   # if you have created project with packet_project resource, refer to its ID
-  # project_id       = "${packet_project.cool_project.id}"
+  # project_id       = packet_project.cool_project.id
 }
 ```
 

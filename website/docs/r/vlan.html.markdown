@@ -22,7 +22,7 @@ To learn more about Layer 2 networking in Packet, refer to
 resource "packet_vlan" "vlan1" {
   description = "VLAN in New Jersey"
   facility    = "ewr1"
-  project_id  = "${local.project_id}"
+  project_id  = local.project_id
 }
 ```
 

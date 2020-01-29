@@ -18,7 +18,7 @@ The link between User SSH key and device is implicit. If you want to make sure t
 # Create a new SSH key
 resource "packet_ssh_key" "key1" {
   name       = "terraform-1"
-  public_key = "${file("/home/terraform/.ssh/id_rsa.pub")}"
+  public_key = file("/home/terraform/.ssh/id_rsa.pub")
 }
 
 # Create new device with "key1" included. The device resource "depends_on" the
@@ -29,7 +29,7 @@ resource "packet_device" "test" {
   facilities       = ["sjc1"]
   operating_system = "ubuntu_16_04"
   billing_cycle    = "hourly"
-  project_id       = "${local.project_id}"
+  project_id       = local.project_id
   depends_on       = ["packet_ssh_key.key1"]
 }
 

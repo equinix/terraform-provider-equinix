@@ -35,13 +35,13 @@ locals {
 #   name = "testpro"
 #   bgp_config {
 #      deployment_type = "local"
-#      md5 = "${local.bgp_password}"
+#      md5 = local.bgp_password
 #      asn = 65000
 #   }
 # }
 
 resource "packet_reserved_ip_block" "addr" {
-  project_id = "${local.project_id}"
+  project_id = local.project_id
   facility = "ewr1"
   quantity = 1
 }
@@ -52,11 +52,11 @@ resource "packet_device" "test" {
   facilities       = ["ewr1"]
   operating_system = "ubuntu_16_04"
   billing_cycle    = "hourly"
-  project_id       = "${local.project_id}"
+  project_id       = local.project_id
 }
 
 resource "packet_bgp_session" "test" {
-  device_id = "${packet_device.test.id}"
+  device_id = packet_device.test.id
   address_family = "ipv4"
 }
 
@@ -70,8 +70,8 @@ iface lo:0 inet static
 EOF
 
   vars = {
-    floating_ip       = "${packet_reserved_ip_block.addr.address}"
-    floating_netmask  = "${packet_reserved_ip_block.addr.netmask}"
+    floating_ip       = packet_reserved_ip_block.addr.address
+    floating_netmask  = packet_reserved_ip_block.addr.netmask
   }
 }
 
@@ -98,16 +98,16 @@ protocol bgp {
     export filter packet_bgp;
     local as 65000;
     neighbor $${gateway_ip} as 65530;
-    password "$${bgp_password}"; 
+    password "$${bgp_password; 
 }
 EOF
 
   vars = {
-    floating_ip    = "${packet_reserved_ip_block.addr.address}"
-    floating_cidr  = "${packet_reserved_ip_block.addr.cidr}"
-    private_ipv4   = "${packet_device.test.network.2.address}"
-    gateway_ip     = "${packet_device.test.network.2.gateway}"
-    bgp_password   = "${local.bgp_password}"
+    floating_ip    = packet_reserved_ip_block.addr.address
+    floating_cidr  = packet_reserved_ip_block.addr.cidr
+    private_ipv4   = packet_device.test.network.2.address
+    gateway_ip     = packet_device.test.network.2.gateway
+    bgp_password   = local.bgp_password
   }
 }
 
@@ -115,8 +115,8 @@ resource "null_resource" "configure_bird" {
 
   connection {
     type = "ssh"
-    host = "${packet_device.test.access_public_ipv4}"
-    private_key = "${file("/home/tomk/keys/tkarasek_key.pem")}"
+    host = packet_device.test.access_public_ipv4
+    private_key = file("/home/tomk/keys/tkarasek_key.pem")
     agent = false
   }
 
@@ -128,17 +128,17 @@ resource "null_resource" "configure_bird" {
   }
 
   triggers = {
-    template = "${data.template_file.bird_conf_template.rendered}"
-    template = "${data.template_file.interface_lo0.rendered}"
+    template = data.template_file.bird_conf_template.rendered
+    template = data.template_file.interface_lo0.rendered
   }
 
   provisioner "file" {
-    content     = "${data.template_file.bird_conf_template.rendered}"
+    content     = data.template_file.bird_conf_template.rendered
     destination = "/etc/bird/bird.conf"
   }
 
   provisioner "file" {
-    content     = "${data.template_file.interface_lo0.rendered}"
+    content     = data.template_file.interface_lo0.rendered
     destination = "/etc/network/interfaces.d/lo0"
   }
 

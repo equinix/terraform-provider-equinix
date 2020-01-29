@@ -16,7 +16,7 @@ manage spot market requests on your account. For more detail on Spot Market, see
 ```hcl
 # Create a spot market request
 resource "packet_spot_market_request" "req" {
-  project_id    = "${local.project_id}"
+  project_id    = local.project_id
   max_bid_price = 0.03
   facilities    = ["ewr1"]
   devices_min   = 1

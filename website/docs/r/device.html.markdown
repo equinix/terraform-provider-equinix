@@ -26,7 +26,7 @@ resource "packet_device" "web1" {
   facilities       = ["ewr1"]
   operating_system = "coreos_stable"
   billing_cycle    = "hourly"
-  project_id       = "${local.project_id}"
+  project_id       = local.project_id
 }
 ```
 
@@ -38,10 +38,10 @@ resource "packet_device" "pxe1" {
   facilities       = ["ewr1"]
   operating_system = "custom_ipxe"
   billing_cycle    = "hourly"
-  project_id       = "${local.project_id}"
+  project_id       = local.project_id
   ipxe_script_url  = "https://rawgit.com/cloudnativelabs/pxe/master/packet/coreos-stable-packet.ipxe"
   always_pxe       = "false"
-  user_data        = "${data.ignition_config.example.rendered}"
+  user_data        = data.ignition_config.example.rendered
 }
 ```
 
@@ -53,7 +53,7 @@ resource "packet_device" "web1" {
   facilities       = ["sjc1"]
   operating_system = "ubuntu_16_04"
   billing_cycle    = "hourly"
-  project_id       = "${local.project_id}"
+  project_id       = local.project_id
   hardware_reservation_id = "next-available"
   storage = <<EOS
 {
