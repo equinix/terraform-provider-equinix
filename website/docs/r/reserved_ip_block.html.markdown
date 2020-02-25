@@ -23,8 +23,10 @@ Once IP block is allocated or imported, an address from it can be assigned to de
 
 ## Example Usage
 
+Allocate reserved IP blocks:
+
 ```hcl
-# Allocate /30 block of max 2 public IPv4 addresses in Parsippany, NJ (ewr1) for myproject
+# Allocate /31 block of max 2 public IPv4 addresses in Parsippany, NJ (ewr1) for myproject
 
 resource "packet_reserved_ip_block" "two_elastic_addresses" {
   project_id = local.project_id
@@ -39,6 +41,38 @@ resource "packet_reserved_ip_block" "test" {
   type     = "global_ipv4"
   quantity = 1
 }`
+```
+
+Allocate a block and run a device with public IPv4 from the block
+
+```hcl
+# Allocate /31 block of max 2 public IPv4 addresses in Parsippany, NJ (ewr1)
+
+resource "packet_reserved_ip_block" "example" {
+  project_id = local.project_id
+  facility = "ewr1"
+  quantity = 2
+}
+
+# Run a device with both public IPv4 from the block assigned
+
+resource "packet_device" "nodes" {
+  project_id       = local.project_id
+  facilities       = ["ewr1"]
+  plan             = "t1.small.x86"
+  operating_system = "ubuntu_16_04"
+  hostname         = "test"
+  billing_cycle    = "hourly"
+  ip_address {
+     type = "public_ipv4"
+     cidr = "31"
+     reservation_ids = [packet_reserved_ip_block.example.id]
+  }
+  ip_address {
+     type = "private_ipv4"
+  }
+}
+
 ```
 
 

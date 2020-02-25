@@ -18,8 +18,9 @@ modify, and delete devices.
 
 ## Example Usage
 
+Create a device and add it to cool_project
+
 ```hcl
-# Create a device and add it to cool_project
 resource "packet_device" "web1" {
   hostname         = "tf.coreos2"
   plan             = "t1.small.x86"
@@ -30,8 +31,9 @@ resource "packet_device" "web1" {
 }
 ```
 
+Same as above, but boot via iPXE initially, using the Ignition Provider for provisioning
+
 ```hcl
-# Same as above, but boot via iPXE initially, using the Ignition Provider for provisioning
 resource "packet_device" "pxe1" {
   hostname         = "tf.coreos2-pxe"
   plan             = "t1.small.x86"
@@ -45,8 +47,26 @@ resource "packet_device" "pxe1" {
 }
 ```
 
+Create a device without a public IP address, with only a /30 private IPv4 subnet (4 IP addresses)
+
 ```hcl
-# Deploy device on next-available reserved hardware and do custom partitioning.
+resource "packet_device" "web1" {
+  hostname         = "tf.coreos2"
+  plan             = "t1.small.x86"
+  facilities       = ["ewr1"]
+  operating_system = "coreos_stable"
+  billing_cycle    = "hourly"
+  project_id       = local.project_id
+  ip_address {
+      type = "private_ipv4"
+      cidr = 30
+  }
+}
+```
+
+Deploy device on next-available reserved hardware and do custom partitioning.
+
+```hcl
 resource "packet_device" "web1" {
   hostname         = "tftest"
   plan             = "t1.small.x86"
@@ -138,11 +158,21 @@ The following arguments are supported:
 * `storage` (Optional) - JSON for custom partitioning. Only usable on reserved hardware. More information in in the [Custom Partitioning and RAID](https://www.packet.com/developers/docs/servers/key-features/cpr/) doc.
 * `tags` - Tags attached to the device
 * `description` - Description string for the device
-* `project_ssh_key_ids` - Array of IDs of the project SSH keys which should be added to the device. If you omit this, SSH keys of all the members of the parent project will be added to the device. If you specify this array, only the listed project SSH keys will be added. Project SSH keys can be created with the [packet_project_ssh_key][packet_project_ssh_key.html] resource.
+* `project_ssh_key_ids` - Array of IDs of the project SSH keys which should be added to the device. If you omit this, SSH keys of all the members of the parent project will be added to the device. If you specify this array, only the listed project SSH keys will be added. Project SSH keys can be created with the [packet_project_ssh_key][https://www.terraform.io/docs/providers/packet/r/project_ssh_key.html] resource.
 * `network_type` (Optional) - Network type of device, used for [Layer 2 networking](https://www.packet.com/developers/docs/network/advanced/layer-2/). Allowed values are `layer3`, `hybrid`, `layer2-individual` and `layer2-bonded`. If you keep it empty, Terraform will not handle the network type of the device.
-* `ip_address_types` (Optional) - A set containing one or more of [`private_ipv4`, `public_ipv4`, `public_ipv6`]. It specifies which IP address types a new device should obtain. If omitted, a created device will obtain all 3 addresses. If you only want private IPv4 address for the new device, pass [`private_ipv4`].
+* `ip_address` (Optional) - A list of IP address types for the device (structure is documented below). 
+* `ip_address_types` (Deprecated) - A set containing one or more of [`private_ipv4`, `public_ipv4`, `public_ipv6`]. It specifies which IP address types a new device should obtain. If omitted, a created device will obtain all 3 addresses. If you only want private IPv4 address for the new device, pass [`private_ipv4`].
 * `wait_for_reservation_deprovision` (Optional) - Only used for devices in reserved hardware. If set, the deletion of this device will block until the hardware reservation is marked provisionable (about 4 minutes in August 2019).
 * `force_detach_volumes` (Optional) - Delete device even if it has volumes attached. Only applies for destroy action.
+
+The `ip_address` block has 3 fields:
+* `type` - One of [`private_ipv4`, `public_ipv4`, `public_ipv6`]
+* `cidr` - CIDR suffix for IP address block to be assigned, i.e. amount of addresses.
+* `reservation_ids` - String of UUID of [IP block reservations](https://www.terraform.io/docs/providers/packet/r/reserved_ip_block.html) from which the public IPv4 address should be taken.
+
+You can supply one `ip_address` block per IP address type. If you use the `ip_address` you must always pass a block for `private_ipv4`.
+
+To learn more about using the reserved IP addresses for new devices, see the examples in the [packet_reserved_ip_block](https://www.terraform.io/docs/providers/packet/r/reserved_ip_block.html) documentation.
 
 ## Attributes Reference
 

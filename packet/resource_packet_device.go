@@ -8,6 +8,7 @@ import (
 	"reflect"
 	"regexp"
 	"sort"
+	"strings"
 	"sync"
 	"time"
 
@@ -22,6 +23,7 @@ import (
 var matchIPXEScript = regexp.MustCompile(`(?i)^#![i]?pxe`)
 var wgMap = map[string]*sync.WaitGroup{}
 var wgMutex = sync.Mutex{}
+var ipAddressTypes = []string{"public_ipv4", "private_ipv4", "public_ipv6"}
 
 func resourcePacketDevice() *schema.Resource {
 	return &schema.Resource{
@@ -75,11 +77,13 @@ func resourcePacketDevice() *schema.Resource {
 				Optional: true,
 				Elem: &schema.Schema{
 					Type:         schema.TypeString,
-					ValidateFunc: validation.StringInSlice([]string{"public_ipv4", "private_ipv4", "public_ipv6"}, false),
+					ValidateFunc: validation.StringInSlice(ipAddressTypes, false),
 				},
-				MaxItems: 3,
-				MinItems: 1,
-				ForceNew: true,
+				MaxItems:      3,
+				MinItems:      1,
+				ForceNew:      true,
+				Deprecated:    "Deprecated in favor of 'ip_address' attribute.",
+				ConflictsWith: []string{"ip_address"},
 			},
 			"facilities": {
 				Type:     schema.TypeList,
@@ -99,6 +103,14 @@ func resourcePacketDevice() *schema.Resource {
 					}
 					return false
 				},
+			},
+			"ip_address": {
+				Type:          schema.TypeList,
+				Optional:      true,
+				Description:   "Inbound rules for this security group",
+				Elem:          ipAddressSchema(),
+				MinItems:      1,
+				ConflictsWith: []string{"ip_address_types"},
 			},
 
 			"plan": {
@@ -306,6 +318,56 @@ func resourcePacketDevice() *schema.Resource {
 	}
 }
 
+func getOldIPAddressSlice(arr []string) []packngo.IPAddressCreateRequest {
+	addressTypesSlice := make([]packngo.IPAddressCreateRequest, len(arr))
+
+	for i, at := range arr {
+		iacr := packngo.IPAddressCreateRequest{}
+		switch at {
+		case "public_ipv4":
+			iacr.AddressFamily = 4
+			iacr.Public = true
+		case "private_ipv4":
+			iacr.AddressFamily = 4
+			iacr.Public = false
+		case "public_ipv6":
+			iacr.AddressFamily = 6
+			iacr.Public = true
+		}
+		addressTypesSlice[i] = iacr
+	}
+	return addressTypesSlice
+}
+
+func ifToIPCreateRequest(m interface{}) packngo.IPAddressCreateRequest {
+	iacr := packngo.IPAddressCreateRequest{}
+	ia := m.(map[string]interface{})
+	at := ia["type"].(string)
+	switch at {
+	case "public_ipv4":
+		iacr.AddressFamily = 4
+		iacr.Public = true
+	case "private_ipv4":
+		iacr.AddressFamily = 4
+		iacr.Public = false
+	case "public_ipv6":
+		iacr.AddressFamily = 6
+		iacr.Public = true
+	}
+	iacr.CIDR = ia["cidr"].(int)
+	iacr.Reservations = convertStringArr(ia["reservation_ids"].([]interface{}))
+	return iacr
+}
+
+func getNewIPAddressSlice(arr []interface{}) []packngo.IPAddressCreateRequest {
+	addressTypesSlice := make([]packngo.IPAddressCreateRequest, len(arr))
+
+	for i, m := range arr {
+		addressTypesSlice[i] = ifToIPCreateRequest(m)
+	}
+	return addressTypesSlice
+}
+
 func resourcePacketDeviceCreate(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*packngo.Client)
 
@@ -321,23 +383,14 @@ func resourcePacketDeviceCreate(d *schema.ResourceData, meta interface{}) error 
 		}
 	}
 
-	addressTypes := convertStringArr(d.Get("ip_address_types").(*schema.Set).List())
-	addressTypesSlice := make([]packngo.IPAddressCreateRequest, len(addressTypes))
-
-	for i, at := range addressTypes {
-		iacr := packngo.IPAddressCreateRequest{}
-		switch at {
-		case "public_ipv4":
-			iacr.AddressFamily = 4
-			iacr.Public = true
-		case "private_ipv4":
-			iacr.AddressFamily = 4
-			iacr.Public = false
-		case "public_ipv6":
-			iacr.AddressFamily = 6
-			iacr.Public = true
-		}
-		addressTypesSlice[i] = iacr
+	var addressTypesSlice []packngo.IPAddressCreateRequest
+	_, ok = d.GetOk("ip_address")
+	if ok {
+		arr := d.Get("ip_address").([]interface{})
+		addressTypesSlice = getNewIPAddressSlice(arr)
+	} else {
+		arr := convertStringArr(d.Get("ip_address_types").(*schema.Set).List())
+		addressTypesSlice = getOldIPAddressSlice(arr)
 	}
 
 	createRequest := &packngo.DeviceCreateRequest{
@@ -805,4 +858,32 @@ func validateFacilityForDevice(v interface{}, k string) (ws []string, errors []e
 		errors = append(errors, fmt.Errorf(`Cannot use facility: "any"`))
 	}
 	return
+}
+
+func ipAddressSchema() *schema.Resource {
+	return &schema.Resource{
+		Schema: map[string]*schema.Schema{
+			"type": {
+				Type:         schema.TypeString,
+				Required:     true,
+				ValidateFunc: validation.StringInSlice(ipAddressTypes, false),
+				Description:  fmt.Sprintf("one of %s", strings.Join(ipAddressTypes, ",")),
+			},
+			"cidr": {
+				Type:        schema.TypeInt,
+				Optional:    true,
+				Description: "CIDR suffix for IP block assigned to this device",
+			},
+			"reservation_ids": {
+				Type:        schema.TypeList,
+				Optional:    true,
+				Description: "IDs of reservations to pick the blocks from",
+				MinItems:    1,
+				Elem: &schema.Schema{
+					Type:         schema.TypeString,
+					ValidateFunc: validation.StringMatch(uuidRE, "must be a valid UUID"),
+				},
+			},
+		},
+	}
 }

@@ -133,3 +133,57 @@ func testAccCheckPacketReservedIPBlockDestroy(s *terraform.State) error {
 
 	return nil
 }
+
+func testAccPacketReservedIP_Device(name string) string {
+	return fmt.Sprintf(`
+resource "packet_project" "foobar" {
+    name = "tfacc-reserved_ip_block-%s"
+}
+
+resource "packet_reserved_ip_block" "test" {
+    project_id  = packet_project.foobar.id
+    facility    = "ewr1"
+    type        = "public_ipv4"
+	quantity    = 2
+}
+
+resource "packet_device" "test" {
+  project_id       = packet_project.foobar.id
+  facilities       = ["ewr1"]
+  plan             = "t1.small.x86"
+  operating_system = "ubuntu_16_04"
+  hostname         = "tfacc-reserved-ip-device"
+  billing_cycle    = "hourly"
+  ip_address {
+     type = "public_ipv4"
+     cidr = "31"
+     reservation_ids = [packet_reserved_ip_block.test.id]
+  }
+  ip_address {
+     type = "private_ipv4"
+  }
+}
+`, name)
+}
+
+func TestAccPacketReservedIPDevice(t *testing.T) {
+
+	rs := acctest.RandString(10)
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckPacketReservedIPBlockDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccPacketReservedIP_Device(rs),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttrPair(
+						"packet_reserved_ip_block.test", "address",
+						"packet_device.network[0].address", "address",
+					),
+				),
+			},
+		},
+	})
+}
