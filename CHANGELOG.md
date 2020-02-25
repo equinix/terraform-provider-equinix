@@ -1,4 +1,9 @@
 ## 2.7.5 (Unreleased)
+
+FEATURES:
+- [#223](https://github.com/terraform-providers/terraform-provider-packet/pull/223) Add new list argument `ip_address` to `packet_device` to allow finer control of assigning subnets from reserved IP blocks to devices
+- Deprecate `ip_address_types` for `packet_device`
+
 ## 2.7.4 (January 24, 2020)
 
 IMPROVEMENTS:
