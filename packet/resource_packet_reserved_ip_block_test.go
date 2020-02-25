@@ -179,8 +179,8 @@ func TestAccPacketReservedIPDevice(t *testing.T) {
 				Config: testAccPacketReservedIP_Device(rs),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrPair(
-						"packet_reserved_ip_block.test", "address",
-						"packet_device.test", "network.0.address",
+						"packet_reserved_ip_block.test", "gateway",
+						"packet_device.test", "network.0.gateway",
 					),
 				),
 			},
