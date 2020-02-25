@@ -180,8 +180,8 @@ github.com/oklog/run v1.0.0/go.mod h1:dlhp/R75TPv97u0XWUtDeV/lRKWPKSdTuV0TZvrmrQ
 github.com/onsi/ginkgo v1.6.0/go.mod h1:lLunBs/Ym6LB5Z9jYTR76FiuTmxDTDusOGeTQH+WWjE=
 github.com/onsi/ginkgo v1.7.0/go.mod h1:lLunBs/Ym6LB5Z9jYTR76FiuTmxDTDusOGeTQH+WWjE=
 github.com/onsi/gomega v1.4.3/go.mod h1:ex+gbHU/CVuBBDIJjb2X0qEXbFg53c61hWP/1CpauHY=
-github.com/packethost/packngo v0.2.1-0.20191121150456-ac94adc96a1f h1:v0wmpiLqYzfGtqmaVb4jxojC1WHzQY3JQKXDxg3IKeU=
-github.com/packethost/packngo v0.2.1-0.20191121150456-ac94adc96a1f/go.mod h1:lTgI4wr0T6uAIArEQtlx1wu+n0cEy+opDJpIBAHvQ34=
+github.com/packethost/packngo v0.2.1-0.20200224173249-1156d996f0d5 h1:zYQI6m89hXkqnR1urzsl6xMpEP525Vh4kmUB+pF5fHo=
+github.com/packethost/packngo v0.2.1-0.20200224173249-1156d996f0d5/go.mod h1:lTgI4wr0T6uAIArEQtlx1wu+n0cEy+opDJpIBAHvQ34=
 github.com/pierrec/lz4 v2.0.5+incompatible/go.mod h1:pdkljMzZIN41W+lC3N2tnIh5sFi+IEE17M5jbnwPHcY=
 github.com/pmezard/go-difflib v1.0.0 h1:4DBwDE0NGyQoBHbLQYPwSUPoCMWR5BEzIk/f1lZbAQM=
 github.com/pmezard/go-difflib v1.0.0/go.mod h1:iKH77koFhYxTK1pcRnkKkqfTogsbg7gZNVY4sRDYZ/4=
