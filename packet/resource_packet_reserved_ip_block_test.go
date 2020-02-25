@@ -156,7 +156,7 @@ resource "packet_device" "test" {
   billing_cycle    = "hourly"
   ip_address {
      type = "public_ipv4"
-     cidr = "31"
+     cidr = 31
      reservation_ids = [packet_reserved_ip_block.test.id]
   }
   ip_address {
@@ -180,7 +180,7 @@ func TestAccPacketReservedIPDevice(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrPair(
 						"packet_reserved_ip_block.test", "address",
-						"packet_device.network[0].address", "address",
+						"packet_device.network.0.address", "address",
 					),
 				),
 			},

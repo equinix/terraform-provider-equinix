@@ -65,7 +65,7 @@ resource "packet_device" "nodes" {
   billing_cycle    = "hourly"
   ip_address {
      type = "public_ipv4"
-     cidr = "31"
+     cidr = 31
      reservation_ids = [packet_reserved_ip_block.example.id]
   }
   ip_address {
