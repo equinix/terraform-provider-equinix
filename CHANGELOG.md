@@ -1,4 +1,4 @@
-## 2.7.5 (Unreleased)
+## 2.7.5 (February 26, 2020)
 
 FEATURES:
 - [#223](https://github.com/terraform-providers/terraform-provider-packet/pull/223) Add new list argument `ip_address` to `packet_device` to allow finer control of assigning subnets from reserved IP blocks to devices
