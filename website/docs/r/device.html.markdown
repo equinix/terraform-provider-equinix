@@ -166,6 +166,7 @@ The following arguments are supported:
 * `force_detach_volumes` (Optional) - Delete device even if it has volumes attached. Only applies for destroy action.
 
 The `ip_address` block has 3 fields:
+
 * `type` - One of [`private_ipv4`, `public_ipv4`, `public_ipv6`]
 * `cidr` - CIDR suffix for IP address block to be assigned, i.e. amount of addresses.
 * `reservation_ids` - String of UUID of [IP block reservations](https://www.terraform.io/docs/providers/packet/r/reserved_ip_block.html) from which the public IPv4 address should be taken.
