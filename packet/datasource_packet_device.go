@@ -229,7 +229,12 @@ func dataSourcePacketDeviceRead(d *schema.ResourceData, meta interface{}) error 
 	if len(device.HardwareReservation.Href) > 0 {
 		d.Set("hardware_reservation_id", path.Base(device.HardwareReservation.Href))
 	}
-	d.Set("network_type", device.NetworkType)
+	networkType, err := device.GetNetworkType()
+	if err != nil {
+		return err
+	}
+
+	d.Set("network_type", networkType)
 
 	d.Set("tags", device.Tags)
 

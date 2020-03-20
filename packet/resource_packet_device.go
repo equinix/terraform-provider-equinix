@@ -588,7 +588,11 @@ func resourcePacketDeviceRead(d *schema.ResourceData, meta interface{}) error {
 	if len(device.HardwareReservation.Href) > 0 {
 		d.Set("hardware_reservation_id", path.Base(device.HardwareReservation.Href))
 	}
-	d.Set("network_type", device.NetworkType)
+	networkType, err := device.GetNetworkType()
+	if err != nil {
+		return err
+	}
+	d.Set("network_type", networkType)
 
 	wfrd := "wait_for_reservation_deprovision"
 	if _, ok := d.GetOk(wfrd); !ok {
@@ -819,7 +823,11 @@ func waitForDeviceAttribute(d *schema.ResourceData, targets []string, pending []
 			if err == nil {
 				retAttrVal := device.State
 				if attribute == "network_type" {
-					retAttrVal = device.NetworkType
+					networkType, nterr := device.GetNetworkType()
+					if nterr != nil {
+						return "error", "error", nterr
+					}
+					retAttrVal = networkType
 				}
 				return retAttrVal, retAttrVal, nil
 			}
