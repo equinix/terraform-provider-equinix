@@ -161,7 +161,6 @@ The following arguments are supported:
 * `project_ssh_key_ids` - Array of IDs of the project SSH keys which should be added to the device. If you omit this, SSH keys of all the members of the parent project will be added to the device. If you specify this array, only the listed project SSH keys will be added. Project SSH keys can be created with the [packet_project_ssh_key][https://www.terraform.io/docs/providers/packet/r/project_ssh_key.html] resource.
 * `network_type` (Optional) - Network type of device, used for [Layer 2 networking](https://www.packet.com/developers/docs/network/advanced/layer-2/). Allowed values are `layer3`, `hybrid`, `layer2-individual` and `layer2-bonded`. If you keep it empty, Terraform will not handle the network type of the device.
 * `ip_address` (Optional) - A list of IP address types for the device (structure is documented below). 
-* `ip_address_types` (Deprecated) - A set containing one or more of [`private_ipv4`, `public_ipv4`, `public_ipv6`]. It specifies which IP address types a new device should obtain. If omitted, a created device will obtain all 3 addresses. If you only want private IPv4 address for the new device, pass [`private_ipv4`].
 * `wait_for_reservation_deprovision` (Optional) - Only used for devices in reserved hardware. If set, the deletion of this device will block until the hardware reservation is marked provisionable (about 4 minutes in August 2019).
 * `force_detach_volumes` (Optional) - Delete device even if it has volumes attached. Only applies for destroy action.
 

@@ -74,16 +74,12 @@ func resourcePacketDevice() *schema.Resource {
 			},
 			"ip_address_types": {
 				Type:     schema.TypeSet,
-				Optional: true,
+				Computed: true,
 				Elem: &schema.Schema{
 					Type:         schema.TypeString,
 					ValidateFunc: validation.StringInSlice(ipAddressTypes, false),
 				},
-				MaxItems:      3,
-				MinItems:      1,
-				ForceNew:      true,
-				Deprecated:    "Deprecated in favor of 'ip_address' attribute.",
-				ConflictsWith: []string{"ip_address"},
+				Removed: "Deprecated in favor of 'ip_address' attribute.",
 			},
 			"facilities": {
 				Type:     schema.TypeList,
@@ -246,10 +242,12 @@ func resourcePacketDevice() *schema.Resource {
 			},
 
 			"public_ipv4_subnet_size": {
-				Type:     schema.TypeInt,
-				Computed: true,
-				Optional: true,
-				ForceNew: true,
+				Type:          schema.TypeInt,
+				Computed:      true,
+				Optional:      true,
+				ForceNew:      true,
+				Deprecated:    "Deprecated in favor of 'ip_address' attribute.",
+				ConflictsWith: []string{"ip_address"},
 			},
 
 			"ipxe_script_url": {
@@ -388,9 +386,6 @@ func resourcePacketDeviceCreate(d *schema.ResourceData, meta interface{}) error 
 	if ok {
 		arr := d.Get("ip_address").([]interface{})
 		addressTypesSlice = getNewIPAddressSlice(arr)
-	} else {
-		arr := convertStringArr(d.Get("ip_address_types").(*schema.Set).List())
-		addressTypesSlice = getOldIPAddressSlice(arr)
 	}
 
 	createRequest := &packngo.DeviceCreateRequest{
