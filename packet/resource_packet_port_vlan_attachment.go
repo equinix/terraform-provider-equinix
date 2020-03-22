@@ -225,7 +225,13 @@ func resourcePacketPortVlanAttachmentDelete(d *schema.ResourceData, meta interfa
 	}
 	forceBond := d.Get("force_bond").(bool)
 	if forceBond && (len(portPtr.AttachedVirtualNetworks) == 0) {
-		_, _, err = client.DevicePorts.Bond(&packngo.BondRequest{PortID: pID, BulkEnable: false})
+		deviceID := d.Get("device_id").(string)
+		portName := d.Get("port_name").(string)
+		port, err := client.DevicePorts.GetPortByName(deviceID, portName)
+		if err != nil {
+			return friendlyError(err)
+		}
+		_, _, err = client.DevicePorts.Bond(port, false)
 		if err != nil {
 			return friendlyError(err)
 		}
