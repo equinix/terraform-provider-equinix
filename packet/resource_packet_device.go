@@ -79,7 +79,7 @@ func resourcePacketDevice() *schema.Resource {
 					Type:         schema.TypeString,
 					ValidateFunc: validation.StringInSlice(ipAddressTypes, false),
 				},
-				Removed: "Deprecated in favor of 'ip_address' attribute.",
+				Removed: "Removed in favor of 'ip_address' attribute.",
 			},
 			"facilities": {
 				Type:     schema.TypeList,
@@ -106,7 +106,7 @@ func resourcePacketDevice() *schema.Resource {
 				Description:   "Inbound rules for this security group",
 				Elem:          ipAddressSchema(),
 				MinItems:      1,
-				ConflictsWith: []string{"ip_address_types"},
+				ConflictsWith: []string{"public_ipv4_subnet_size"},
 			},
 
 			"plan": {
@@ -314,27 +314,6 @@ func resourcePacketDevice() *schema.Resource {
 			},
 		},
 	}
-}
-
-func getOldIPAddressSlice(arr []string) []packngo.IPAddressCreateRequest {
-	addressTypesSlice := make([]packngo.IPAddressCreateRequest, len(arr))
-
-	for i, at := range arr {
-		iacr := packngo.IPAddressCreateRequest{}
-		switch at {
-		case "public_ipv4":
-			iacr.AddressFamily = 4
-			iacr.Public = true
-		case "private_ipv4":
-			iacr.AddressFamily = 4
-			iacr.Public = false
-		case "public_ipv6":
-			iacr.AddressFamily = 6
-			iacr.Public = true
-		}
-		addressTypesSlice[i] = iacr
-	}
-	return addressTypesSlice
 }
 
 func ifToIPCreateRequest(m interface{}) packngo.IPAddressCreateRequest {

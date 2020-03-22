@@ -2,6 +2,7 @@
 
 IMPROVEMENTS:
 - [#225](https://github.com/terraform-providers/terraform-provider-packet/pull/225) Bump packngo to version correctly handling hybrid mode for n2.xlarge device plan
+- [#226](https://github.com/terraform-providers/terraform-provider-packet/pull/226) Remove deprecated code for ip_address_type attribute of the packet_device resource
 
 ## 2.7.5 (February 26, 2020)
 
