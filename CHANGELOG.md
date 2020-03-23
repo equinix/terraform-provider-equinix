@@ -1,4 +1,4 @@
-## 2.8.0 (Unreleased)
+## 2.8.0 (March 23, 2020)
 
 IMPROVEMENTS:
 - [#225](https://github.com/terraform-providers/terraform-provider-packet/pull/225) Bump packngo to version correctly handling hybrid mode for n2.xlarge device plan
