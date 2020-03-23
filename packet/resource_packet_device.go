@@ -74,16 +74,12 @@ func resourcePacketDevice() *schema.Resource {
 			},
 			"ip_address_types": {
 				Type:     schema.TypeSet,
-				Optional: true,
+				Computed: true,
 				Elem: &schema.Schema{
 					Type:         schema.TypeString,
 					ValidateFunc: validation.StringInSlice(ipAddressTypes, false),
 				},
-				MaxItems:      3,
-				MinItems:      1,
-				ForceNew:      true,
-				Deprecated:    "Deprecated in favor of 'ip_address' attribute.",
-				ConflictsWith: []string{"ip_address"},
+				Removed: "Removed in favor of 'ip_address' attribute.",
 			},
 			"facilities": {
 				Type:     schema.TypeList,
@@ -110,7 +106,7 @@ func resourcePacketDevice() *schema.Resource {
 				Description:   "Inbound rules for this security group",
 				Elem:          ipAddressSchema(),
 				MinItems:      1,
-				ConflictsWith: []string{"ip_address_types"},
+				ConflictsWith: []string{"public_ipv4_subnet_size"},
 			},
 
 			"plan": {
@@ -246,10 +242,12 @@ func resourcePacketDevice() *schema.Resource {
 			},
 
 			"public_ipv4_subnet_size": {
-				Type:     schema.TypeInt,
-				Computed: true,
-				Optional: true,
-				ForceNew: true,
+				Type:          schema.TypeInt,
+				Computed:      true,
+				Optional:      true,
+				ForceNew:      true,
+				Deprecated:    "Deprecated in favor of 'ip_address' attribute.",
+				ConflictsWith: []string{"ip_address"},
 			},
 
 			"ipxe_script_url": {
@@ -318,27 +316,6 @@ func resourcePacketDevice() *schema.Resource {
 	}
 }
 
-func getOldIPAddressSlice(arr []string) []packngo.IPAddressCreateRequest {
-	addressTypesSlice := make([]packngo.IPAddressCreateRequest, len(arr))
-
-	for i, at := range arr {
-		iacr := packngo.IPAddressCreateRequest{}
-		switch at {
-		case "public_ipv4":
-			iacr.AddressFamily = 4
-			iacr.Public = true
-		case "private_ipv4":
-			iacr.AddressFamily = 4
-			iacr.Public = false
-		case "public_ipv6":
-			iacr.AddressFamily = 6
-			iacr.Public = true
-		}
-		addressTypesSlice[i] = iacr
-	}
-	return addressTypesSlice
-}
-
 func ifToIPCreateRequest(m interface{}) packngo.IPAddressCreateRequest {
 	iacr := packngo.IPAddressCreateRequest{}
 	ia := m.(map[string]interface{})
@@ -388,9 +365,6 @@ func resourcePacketDeviceCreate(d *schema.ResourceData, meta interface{}) error 
 	if ok {
 		arr := d.Get("ip_address").([]interface{})
 		addressTypesSlice = getNewIPAddressSlice(arr)
-	} else {
-		arr := convertStringArr(d.Get("ip_address_types").(*schema.Set).List())
-		addressTypesSlice = getOldIPAddressSlice(arr)
 	}
 
 	createRequest := &packngo.DeviceCreateRequest{

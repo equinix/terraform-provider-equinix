@@ -156,8 +156,8 @@ resource "packet_project" "test" {
 
 resource "packet_device" "test" {
   hostname         = "tfacc-device-hybrid-test"
-  plan             = "s1.large.x86"
-  facilities       = ["nrt1"]
+  plan             = "n2.xlarge.x86"
+  facilities       = ["dfw2"]
   operating_system = "ubuntu_16_04"
   billing_cycle    = "hourly"
   project_id       = "${packet_project.test.id}"
@@ -166,7 +166,7 @@ resource "packet_device" "test" {
 
 resource "packet_vlan" "test" {
   description = "test vlan"
-  facility    = "nrt1"
+  facility    = "dfw2"
   project_id  = "${packet_project.test.id}"
 }
 
