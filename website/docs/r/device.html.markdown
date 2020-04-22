@@ -85,7 +85,7 @@ resource "packet_device" "web1" {
         {
           "label": "BIOS",
           "number": 1,
-          "size": 4096
+          "size": "4096"
         },
         {
           "label": "SWAP",
@@ -95,7 +95,7 @@ resource "packet_device" "web1" {
         {
           "label": "ROOT",
           "number": 3,
-          "size": 0
+          "size": "0"
         }
       ]
     }
@@ -156,6 +156,7 @@ The following arguments are supported:
 * `hardware_reservation_id` (Optional) - The `full ID` of the hardware reservation where you want this device deployed, or `next-available` if you want to pick your next available reservation automatically.
   Please be careful when using hw reservation UUID and `next-available` together for the same pool of resevations. It might happen that the reservation which Packet API will pick as `next-available` is the reservation which you refer with UUID in another packet_device resource. If that happens, and the packet_device with the UUID is created later, resource creation will fail because the reservation is already in use (by the resource created with `next-available`). To workaround this, have the `next-available` resource  [explicitly depend_on](https://learn.hashicorp.com/terraform/getting-started/dependencies.html#implicit-and-explicit-dependencies) the resource with hw reservation UUID, so that the latter is created first. For more details, see [issue #176](https://github.com/terraform-providers/terraform-provider-packet/issues/176).
 * `storage` (Optional) - JSON for custom partitioning. Only usable on reserved hardware. More information in in the [Custom Partitioning and RAID](https://www.packet.com/developers/docs/servers/key-features/cpr/) doc.
+  * Please note that the disks.partitions.size attribute must be a string, not an integer. It can be a number string, or size notation string, e.g. "4G" or "8M" (for gigabytes and megabytes).
 * `tags` - Tags attached to the device
 * `description` - Description string for the device
 * `project_ssh_key_ids` - Array of IDs of the project SSH keys which should be added to the device. If you omit this, SSH keys of all the members of the parent project will be added to the device. If you specify this array, only the listed project SSH keys will be added. Project SSH keys can be created with the [packet_project_ssh_key][https://www.terraform.io/docs/providers/packet/r/project_ssh_key.html] resource.
