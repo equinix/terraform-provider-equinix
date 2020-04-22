@@ -1,6 +1,7 @@
 package packet
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"path"
@@ -435,7 +436,12 @@ func resourcePacketDeviceCreate(d *schema.ResourceData, meta interface{}) error 
 		if err != nil {
 			return errwrap.Wrapf("storage param contains invalid JSON: {{err}}", err)
 		}
-		createRequest.Storage = s
+		var cpr packngo.CPR
+		err = json.Unmarshal([]byte(s), &cpr)
+		if err != nil {
+			return errwrap.Wrapf("Error parsing Storage string: {{err}}", err)
+		}
+		createRequest.Storage = &cpr
 	}
 
 	newDevice, _, err := client.Devices.Create(createRequest)
@@ -553,11 +559,18 @@ func resourcePacketDeviceRead(d *schema.ResourceData, meta interface{}) error {
 	d.Set("always_pxe", device.AlwaysPXE)
 	d.Set("root_password", device.RootPassword)
 	d.Set("project_id", device.Project.ID)
-	storageString, err := structure.FlattenJsonToString(device.Storage)
-	if err != nil {
-		return fmt.Errorf("[ERR] Error getting storage JSON string for device (%s): %s", d.Id(), err)
+	if device.Storage != nil {
+		rawStorageBytes, err := json.Marshal(device.Storage)
+		if err != nil {
+			return fmt.Errorf("[ERR] Error getting storage JSON string for device (%s): %s", d.Id(), err)
+		}
+
+		storageString, err := structure.NormalizeJsonString(string(rawStorageBytes))
+		if err != nil {
+			return fmt.Errorf("[ERR] Errori normalizing storage JSON string for device (%s): %s", d.Id(), err)
+		}
+		d.Set("storage", storageString)
 	}
-	d.Set("storage", storageString)
 
 	if len(device.HardwareReservation.Href) > 0 {
 		d.Set("hardware_reservation_id", path.Base(device.HardwareReservation.Href))
