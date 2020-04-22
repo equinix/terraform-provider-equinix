@@ -1,4 +1,4 @@
-## 2.8.1 (Unreleased)
+## 2.8.1 (April 22, 2020)
 
 BUG FIXES:
 - [#231](https://github.com/terraform-providers/terraform-provider-packet/pull/231) Fix storage param for packet_device 
