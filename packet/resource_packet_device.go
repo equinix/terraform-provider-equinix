@@ -308,11 +308,6 @@ func resourcePacketDevice() *schema.Resource {
 				Default:  false,
 				ForceNew: false,
 			},
-			"bgp_neighbors": {
-				Type:     schema.TypeList,
-				Computed: true,
-				Elem:     bgpNeighborSchema(),
-			},
 		},
 	}
 }
