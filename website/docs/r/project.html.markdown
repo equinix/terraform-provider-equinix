@@ -48,7 +48,7 @@ Once you set the BGP config in a project, it can't be removed (due to a limitati
 
 The `bgp_config` block supports:
 
-* `asn` - Autonomous System Numer for local BGP deployment
+* `asn` - Autonomous System Number for local BGP deployment
 * `md5` - (Optional) Password for BGP session in plaintext (not a checksum)
 * `deployment_type` - `private` or `public`, the `private` is likely to be usable immediately, the `public` will need to be review by Packet engineers
 
