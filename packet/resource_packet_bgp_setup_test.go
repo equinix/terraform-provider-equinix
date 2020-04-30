@@ -10,16 +10,16 @@ import (
 	"github.com/packethost/packngo"
 )
 
-func TestAccPacketBGPSession_Basic(t *testing.T) {
+func TestAccPacketBGPSetup_Basic(t *testing.T) {
 	rs := acctest.RandString(10)
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckPacketBGPSessionDestroy,
+		CheckDestroy: testAccCheckPacketBGPSetupDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckPacketBGPSessionConfig_basic(rs),
+				Config: testAccCheckPacketBGPSetupConfig_basic(rs),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrPair(
 						"packet_device.test", "id",
@@ -35,6 +35,9 @@ func TestAccPacketBGPSession_Basic(t *testing.T) {
 						"packet_bgp_session.test4", "address_family", "ipv4"),
 					resource.TestCheckResourceAttr(
 						"packet_bgp_session.test6", "address_family", "ipv6"),
+					// there will be 2 BGP neighbors, for IPv4 and IPv6
+					resource.TestCheckResourceAttr(
+						"data.packet_device_bgp_neighbors.test", "bgp_neighbors.#", "2"),
 				),
 			},
 			{
@@ -46,7 +49,7 @@ func TestAccPacketBGPSession_Basic(t *testing.T) {
 	})
 }
 
-func testAccCheckPacketBGPSessionDestroy(s *terraform.State) error {
+func testAccCheckPacketBGPSetupDestroy(s *terraform.State) error {
 	client := testAccProvider.Meta().(*packngo.Client)
 
 	for _, rs := range s.RootModule().Resources {
@@ -61,7 +64,7 @@ func testAccCheckPacketBGPSessionDestroy(s *terraform.State) error {
 	return nil
 }
 
-func testAccCheckPacketBGPSessionConfig_basic(name string) string {
+func testAccCheckPacketBGPSetupConfig_basic(name string) string {
 	return fmt.Sprintf(`
 resource "packet_project" "test" {
     name = "tfacc-bgp_session-%s"
@@ -91,6 +94,10 @@ resource "packet_bgp_session" "test6" {
 	device_id = "${packet_device.test.id}"
 	address_family = "ipv6"
 	default_route = true
+}
+
+data "packet_device_bgp_neighbors" "test" {
+  device_id  = packet_bgp_session.test4.device_id
 }
 `, name)
 }
