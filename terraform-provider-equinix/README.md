@@ -86,7 +86,7 @@ resource "equinix_ecx_l2_connection" "redundant_self" {
 
 #### Argument Reference
 The following arguments are supported:
-* `name` - *(Required)* Name of the primary connection - An alpha-numeric 24 characters string which can include only hyphens and underscores ('-' & '_').
+* `name` - *(Required)* Name of the primary connection - An alpha-numeric 24 characters string which can include only hyphens and underscores ('-' & '\_').
 * `profile_uuid` - *(Required)* Unique identifier of the provider's service profile.
 * `speed` - *(Required)* Speed/Bandwidth to be allocated to the connection.
 * `speed_unit` - *(Required)* Unit of the speed/bandwidth to be allocated to the connection.
@@ -116,7 +116,7 @@ In addition to the arguments listed above, the following computed attributes are
 * `status` - Status of the connection
 * `redundant_uuid` - Unique identifier of the redundant connection (i.e. secondary connection)
 
-#### Update operation behaviour
+#### Update operation behavior
 As for now, update of ECXF L2 connection implies removal of old connection (in redundant scenario - both primary and secondary connections), and creation of new one, with required set of attributes.
 
 
@@ -124,21 +124,21 @@ Building the provider
 ------------------
 1. Clone Equinix Terraform SDK repository
 
-  *Equinix Terraform SDK contains provider source code along with code of required librarires and corresponding tools.*
+  *Equinix Terraform SDK contains provider source code along with code of required libraries and corresponding tools.*
 
   **NOTE**: in future, Equinix Go repositories may be released under open source license and moved to Github
 
-    ```
-    $ git clone https://oauth2:ACCESS_TOKEN@git.equinix.com/developer-platform/equinix-terraform-sdk.git
-    ```
+   ```
+   $ git clone https://oauth2:ACCESS_TOKEN@git.equinix.com/developer-platform/equinix-terraform-sdk.git
+   ```
 
 2. Build the provider
 
    Enter the provider directory and build the provider:
-    ```
-    $ cd equinix-terraform-sdk/terraform-provider-equinix
-    $ make build
-    ```
+   ```
+   $ cd equinix-terraform-sdk/terraform-provider-equinix
+   $ make build
+   ```
 
 3. Install the provider
 
@@ -151,23 +151,24 @@ Developing the provider
 ------------------
 * use Go programming best practices, *gofmt, go_vet, golint, ineffassign*, etc.
 * enter the provider directory
-   ```
-   $ cd equinix-terraform-sdk/terraform-provider-equinix
-   ```
+  ```
+  $ cd equinix-terraform-sdk/terraform-provider-equinix
+  ```
 * to build, use make `build` target
-   ```
-   $ make build
-   ```
+  ```
+  $ make build
+  ```
 * to run unit tests, use make `test` target
-   ```
-   $ make test
-   ```
+  ```
+  $ make test
+  ```
 * to run acceptance tests, use make `testacc` target
 
-   **NOTE**: acceptance tests create resources on real infrastructure, thus may be subject for costs. In order to run acceptance tests, you must set necessary provider configuration attributes.
-   ```
-   $ export EQUINIX_API_ENDPOINT=https://api.equinix.com"
-   $ export EQUINIX_API_CLIENTID=someID
-   $ export EQUINIX_API_CLIENTSECRET=someSecret
-   $ make testacc
-   ```
+  **NOTE**: acceptance tests create resources on real infrastructure, thus may be subject for costs. In order to run acceptance tests, you must set necessary provider configuration attributes.
+
+  ```
+  $ export EQUINIX_API_ENDPOINT=https://api.equinix.com"
+  $ export EQUINIX_API_CLIENTID=someID
+  $ export EQUINIX_API_CLIENTSECRET=someSecret
+  $ make testacc
+  ```
