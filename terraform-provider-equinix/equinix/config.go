@@ -2,8 +2,8 @@ package equinix
 
 import (
 	"context"
-	ecx "ecx-go-client/v3"
 	"ecx-go-client/v3/oauth2"
+	"ecx-go-client/v3"
 	"fmt"
 	"time"
 )

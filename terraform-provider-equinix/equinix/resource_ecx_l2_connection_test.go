@@ -97,9 +97,10 @@ func TestECXL2Connection_connectionsFromResourceData(t *testing.T) {
 	d.Set(ecxL2ConnectionSchemaNames["SecondaryConnection"], []map[string]interface{}{secConn})
 
 	//when
-	primary, secondary := createECXL2Connections(d)
+	primary, secondary, err := createECXL2Connections(d)
 
 	//then
+	assert.Nil(t, err, "Error should not be present")
 	assert.NotNil(t, primary, "Primary connection should be present")
 	l2ConnSchemaMatchesFields(t, *primary, primaryConnFields, d)
 	assert.NotNil(t, secondary, "Secondary connection should be present")
