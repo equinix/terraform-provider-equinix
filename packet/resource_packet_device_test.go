@@ -128,8 +128,6 @@ runcmd:
 					testAccCheckPacketDeviceNetwork(r),
 					testAccCheckPacketDeviceAttributes(&device),
 					resource.TestCheckResourceAttr(
-						r, "public_ipv4_subnet_size", "31"),
-					resource.TestCheckResourceAttr(
 						r, "network_type", "layer3"),
 					resource.TestCheckResourceAttr(
 						r, "ipxe_script_url", ""),
@@ -196,28 +194,6 @@ func TestAccPacketDevice_Update(t *testing.T) {
 					resource.TestCheckResourceAttr(r, "hostname", fmt.Sprintf("tfacc-test-device-%d", rInt+3)),
 					resource.TestCheckResourceAttr(r, "tags.0", fmt.Sprintf("%d", rInt+3)),
 					testAccCheckPacketSameDevice(t, &d3, &d4),
-				),
-			},
-		},
-	})
-}
-
-func TestAccPacketDevice_RequestSubnet(t *testing.T) {
-	var device packngo.Device
-	rs := acctest.RandString(10)
-	r := "packet_device.test_subnet_29"
-
-	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckPacketDeviceDestroy,
-		Steps: []resource.TestStep{
-			{
-				Config: fmt.Sprintf(testAccCheckPacketDeviceConfig_request_subnet, rs),
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckPacketDeviceExists(r, &device),
-					testAccCheckPacketDeviceNetwork(r),
-					resource.TestCheckResourceAttr(r, "public_ipv4_subnet_size", "29"),
 				),
 			},
 		},
@@ -599,22 +575,6 @@ resource "packet_device" "test" {
   user_data        = "${local.ud}"
 }`, projSuffix, ud)
 }
-
-var testAccCheckPacketDeviceConfig_request_subnet = `
-resource "packet_project" "test" {
-  name = "tfacc-device-%s"
-}
-
-resource "packet_device" "test_subnet_29" {
-  hostname         = "test-subnet-29"
-  plan             = "t1.small.x86"
-  facilities       = ["sjc1"]
-  operating_system = "ubuntu_16_04"
-  billing_cycle    = "hourly"
-  project_id       = "${packet_project.test.id}"
-  public_ipv4_subnet_size = 29
-}
-`
 
 func testAccCheckPacketDeviceConfig_facility_list(projSuffix string) string {
 	return fmt.Sprintf(`

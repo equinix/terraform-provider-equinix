@@ -71,10 +71,6 @@ func dataSourcePacketDevice() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-			"public_ipv4_subnet_size": {
-				Type:     schema.TypeInt,
-				Computed: true,
-			},
 			"tags": {
 				Type:     schema.TypeList,
 				Computed: true,
@@ -262,7 +258,6 @@ func dataSourcePacketDeviceRead(d *schema.ResourceData, meta interface{}) error 
 	})
 
 	d.Set("network", networkInfo.Networks)
-	d.Set("public_ipv4_subnet_size", networkInfo.IPv4SubnetSize)
 	d.Set("access_public_ipv4", networkInfo.PublicIPv4)
 	d.Set("access_private_ipv4", networkInfo.PrivateIPv4)
 	d.Set("access_public_ipv6", networkInfo.PublicIPv6)
