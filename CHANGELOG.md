@@ -1,4 +1,9 @@
 ## 2.9.0 (Unreleased)
+
+FEATURES:
+- [#235](https://github.com/terraform-providers/terraform-provider-packet/pull/235) Removed public_ipv4_subnet_size attr of packet_device. It's deprecated and replaced by ip_address attribute
+- [#232](https://github.com/terraform-providers/terraform-provider-packet/pull/232) New datasource packet_device_bgp_neighbors
+
 ## 2.8.1 (April 22, 2020)
 
 BUG FIXES:
