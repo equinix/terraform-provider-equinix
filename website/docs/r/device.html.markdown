@@ -144,9 +144,6 @@ The following arguments are supported:
 * `plan` - (Required) The device plan slug. To find the plan slug, visit [Device plans API docs](https://www.packet.com/developers/api/plans), set your auth token in the top of the page and see JSON from the API response.
 * `billing_cycle` - (Required) monthly or hourly
 * `user_data` (Optional) - A string of the desired User Data for the device.
-* `public_ipv4_subnet_size` (Deprecated) - Size of allocated subnet, more
-  information is in the
-  [Custom Subnet Size](https://www.packet.com/developers/docs/servers/key-features/custom-subnet-size/) doc.
 * `ipxe_script_url` (Optional) - URL pointing to a hosted iPXE script. More
   information is in the
   [Custom iPXE](https://www.packet.com/developers/docs/servers/operating-systems/custom-ipxe/)

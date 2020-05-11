@@ -97,12 +97,11 @@ func resourcePacketDevice() *schema.Resource {
 				},
 			},
 			"ip_address": {
-				Type:          schema.TypeList,
-				Optional:      true,
-				Description:   "Inbound rules for this security group",
-				Elem:          ipAddressSchema(),
-				MinItems:      1,
-				ConflictsWith: []string{"public_ipv4_subnet_size"},
+				Type:        schema.TypeList,
+				Optional:    true,
+				Description: "Inbound rules for this security group",
+				Elem:        ipAddressSchema(),
+				MinItems:    1,
 			},
 
 			"plan": {
@@ -237,15 +236,6 @@ func resourcePacketDevice() *schema.Resource {
 				Sensitive: true,
 			},
 
-			"public_ipv4_subnet_size": {
-				Type:          schema.TypeInt,
-				Computed:      true,
-				Optional:      true,
-				ForceNew:      true,
-				Deprecated:    "Deprecated in favor of 'ip_address' attribute.",
-				ConflictsWith: []string{"ip_address"},
-			},
-
 			"ipxe_script_url": {
 				Type:     schema.TypeString,
 				Optional: true,
@@ -335,14 +325,13 @@ func resourcePacketDeviceCreate(d *schema.ResourceData, meta interface{}) error 
 	}
 
 	createRequest := &packngo.DeviceCreateRequest{
-		Hostname:             d.Get("hostname").(string),
-		Plan:                 d.Get("plan").(string),
-		Facility:             facs,
-		IPAddresses:          addressTypesSlice,
-		OS:                   d.Get("operating_system").(string),
-		BillingCycle:         d.Get("billing_cycle").(string),
-		ProjectID:            d.Get("project_id").(string),
-		PublicIPv4SubnetSize: d.Get("public_ipv4_subnet_size").(int),
+		Hostname:     d.Get("hostname").(string),
+		Plan:         d.Get("plan").(string),
+		Facility:     facs,
+		IPAddresses:  addressTypesSlice,
+		OS:           d.Get("operating_system").(string),
+		BillingCycle: d.Get("billing_cycle").(string),
+		ProjectID:    d.Get("project_id").(string),
 	}
 	targetNetworkState, nTypeOk := d.GetOk("network_type")
 	if attr, ok := d.GetOk("user_data"); ok {
@@ -534,7 +523,6 @@ func resourcePacketDeviceRead(d *schema.ResourceData, meta interface{}) error {
 	})
 
 	d.Set("network", networkInfo.Networks)
-	d.Set("public_ipv4_subnet_size", networkInfo.IPv4SubnetSize)
 	d.Set("access_public_ipv4", networkInfo.PublicIPv4)
 	d.Set("access_private_ipv4", networkInfo.PrivateIPv4)
 	d.Set("access_public_ipv6", networkInfo.PublicIPv6)
