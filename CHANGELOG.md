@@ -1,4 +1,4 @@
-## 2.9.0 (Unreleased)
+## 2.9.0 (May 12, 2020)
 
 FEATURES:
 - [#235](https://github.com/terraform-providers/terraform-provider-packet/pull/235) Removed public_ipv4_subnet_size attr of packet_device. It's deprecated and replaced by ip_address attribute
