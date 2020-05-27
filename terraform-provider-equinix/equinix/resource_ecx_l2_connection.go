@@ -10,8 +10,8 @@ import (
 )
 
 const (
-	//recreateDelay in seconds
-	recreateDelay = 5
+	//ecxL2ConnectionRecreateDelay in seconds
+	ecxL2ConnectionRecreateDelay = 5
 )
 
 var ecxL2ConnectionSchemaNames = map[string]string{
@@ -174,11 +174,9 @@ func createECXL2ConnectionResourceSchema() map[string]*schema.Schema {
 
 func resourceECXL2ConnectionCreate(d *schema.ResourceData, m interface{}) error {
 	conf := m.(*Config)
-	primary, secondary, err := createECXL2Connections(d)
-	if err != nil {
-		return err
-	}
+	primary, secondary := createECXL2Connections(d)
 	var resp *ecx.L2Connection
+	var err error
 	if secondary != nil {
 		resp, err = conf.ecx.CreateL2RedundantConnection(*primary, *secondary)
 	} else {
@@ -201,7 +199,6 @@ func resourceECXL2ConnectionRead(d *schema.ResourceData, m interface{}) error {
 	if err != nil {
 		return fmt.Errorf("cannot fetch primary connection due to %v", err)
 	}
-	log.Printf("Primary's redundant UUID %v", primary.RedundantUUID)
 	if primary.RedundantUUID != "" {
 		secondary, err = conf.ecx.GetL2Connection(primary.RedundantUUID)
 		if err != nil {
@@ -216,7 +213,7 @@ func resourceECXL2ConnectionRead(d *schema.ResourceData, m interface{}) error {
 
 func resourceECXL2ConnectionUpdate(d *schema.ResourceData, m interface{}) error {
 	resourceECXL2ConnectionDelete(d, m)
-	time.Sleep(recreateDelay * time.Second)
+	time.Sleep(ecxL2ConnectionRecreateDelay * time.Second)
 	return resourceECXL2ConnectionCreate(d, m)
 }
 
@@ -241,28 +238,7 @@ func resourceECXL2ConnectionDelete(d *schema.ResourceData, m interface{}) error 
 	return nil
 }
 
-func hasECXErrorCode(errors []ecx.Error, code string) bool {
-	for _, err := range errors {
-		if err.ErrorCode == code {
-			return true
-		}
-	}
-	return false
-}
-
-func setToStringSlice(set *schema.Set) []string {
-	return listToStringSlice(set.List())
-}
-
-func listToStringSlice(list []interface{}) []string {
-	result := make([]string, len(list))
-	for i, v := range list {
-		result[i] = fmt.Sprint(v)
-	}
-	return result
-}
-
-func createECXL2Connections(d *schema.ResourceData) (*ecx.L2Connection, *ecx.L2Connection, error) {
+func createECXL2Connections(d *schema.ResourceData) (*ecx.L2Connection, *ecx.L2Connection) {
 	primary := ecx.L2Connection{}
 	primary.UUID = d.Get(ecxL2ConnectionSchemaNames["UUID"]).(string)
 	primary.Name = d.Get(ecxL2ConnectionSchemaNames["Name"]).(string)
@@ -272,7 +248,7 @@ func createECXL2Connections(d *schema.ResourceData) (*ecx.L2Connection, *ecx.L2C
 	if status, ok := d.GetOk(ecxL2ConnectionSchemaNames["Status"]); ok {
 		primary.Status = status.(string)
 	}
-	primary.Notifications = setToStringSlice(d.Get(ecxL2ConnectionSchemaNames["Notifications"]).(*schema.Set))
+	primary.Notifications = expandSetToStringList(d.Get(ecxL2ConnectionSchemaNames["Notifications"]).(*schema.Set))
 	if poNum, ok := d.GetOk(ecxL2ConnectionSchemaNames["PurchaseOrderNumber"]); ok {
 		primary.PurchaseOrderNumber = poNum.(string)
 	}
@@ -299,34 +275,13 @@ func createECXL2Connections(d *schema.ResourceData) (*ecx.L2Connection, *ecx.L2C
 		primary.RedundantUUID = redID.(string)
 	}
 	if secConns, ok := d.GetOk(ecxL2ConnectionSchemaNames["SecondaryConnection"]); ok {
-		secConnsList := secConns.(*schema.Set).List()
-		if len(secConnsList) != 1 {
-			return nil, nil, fmt.Errorf("%s block defined with wrong number of occurences - should be 1, have %v", ecxL2ConnectionSchemaNames["SecondaryConnection"], len(secConnsList))
+		secConnSet := secConns.(*schema.Set)
+		if secConnSet.Len() > 0 {
+			secConns := expandECXL2ConnectionSecondary(secConnSet)
+			return &primary, &secConns[0]
 		}
-		secConn := secConnsList[0].(map[string]interface{})
-		secondary := ecx.L2Connection{}
-		secondary.UUID = secConn[ecxL2ConnectionSchemaNames["UUID"]].(string)
-		secondary.Name = secConn[ecxL2ConnectionSchemaNames["Name"]].(string)
-		if status, ok := secConn[ecxL2ConnectionSchemaNames["Status"]]; ok {
-			secondary.Status = status.(string)
-		}
-		secondary.PortUUID = secConn[ecxL2ConnectionSchemaNames["PortUUID"]].(string)
-		secondary.VlanSTag = secConn[ecxL2ConnectionSchemaNames["VlanSTag"]].(int)
-		if cTag, ok := secConn[ecxL2ConnectionSchemaNames["VlanCTag"]]; ok {
-			secondary.VlanCTag = cTag.(int)
-		}
-		if zPortUUID, ok := secConn[ecxL2ConnectionSchemaNames["ZSidePortUUID"]]; ok {
-			secondary.ZSidePortUUID = zPortUUID.(string)
-		}
-		if zSTag, ok := secConn[ecxL2ConnectionSchemaNames["ZSideVlanSTag"]]; ok {
-			secondary.ZSideVlanSTag = zSTag.(int)
-		}
-		if zCTag, ok := secConn[ecxL2ConnectionSchemaNames["ZSideVlanCTag"]]; ok {
-			secondary.ZSideVlanCTag = zCTag.(int)
-		}
-		return &primary, &secondary, nil
 	}
-	return &primary, nil, nil
+	return &primary, nil
 }
 
 func updateECXL2ConnectionResource(primary *ecx.L2Connection, secondary *ecx.L2Connection, d *schema.ResourceData) error {
@@ -385,20 +340,60 @@ func updateECXL2ConnectionResource(primary *ecx.L2Connection, secondary *ecx.L2C
 		return fmt.Errorf("error reading RedundantUUID: %s", err)
 	}
 	if secondary != nil {
-		secConn := make(map[string]interface{})
-		secConn[ecxL2ConnectionSchemaNames["UUID"]] = secondary.UUID
-		secConn[ecxL2ConnectionSchemaNames["Name"]] = secondary.Name
-		secConn[ecxL2ConnectionSchemaNames["Status"]] = secondary.Status
-		secConn[ecxL2ConnectionSchemaNames["PortUUID"]] = secondary.PortUUID
-		secConn[ecxL2ConnectionSchemaNames["VlanSTag"]] = secondary.VlanSTag
-		secConn[ecxL2ConnectionSchemaNames["VlanCTag"]] = secondary.VlanCTag
-		secConn[ecxL2ConnectionSchemaNames["ZSidePortUUID"]] = secondary.ZSidePortUUID
-		secConn[ecxL2ConnectionSchemaNames["ZSideVlanSTag"]] = secondary.ZSideVlanSTag
-		secConn[ecxL2ConnectionSchemaNames["ZSideVlanCTag"]] = secondary.ZSideVlanCTag
-		secConnList := []map[string]interface{}{secConn}
-		if err := d.Set(ecxL2ConnectionSchemaNames["SecondaryConnection"], secConnList); err != nil {
+		if err := d.Set(ecxL2ConnectionSchemaNames["SecondaryConnection"], flattenECXL2ConnectionSecondary(*secondary)); err != nil {
 			return fmt.Errorf("error reading SecondaryConnection: %s", err)
 		}
 	}
 	return nil
+}
+
+func flattenECXL2ConnectionSecondary(conn ecx.L2Connection) interface{} {
+	transformed := make(map[string]interface{})
+	transformed[ecxL2ConnectionSchemaNames["UUID"]] = conn.UUID
+	transformed[ecxL2ConnectionSchemaNames["Name"]] = conn.Name
+	transformed[ecxL2ConnectionSchemaNames["Status"]] = conn.Status
+	transformed[ecxL2ConnectionSchemaNames["PortUUID"]] = conn.PortUUID
+	transformed[ecxL2ConnectionSchemaNames["VlanSTag"]] = conn.VlanSTag
+	transformed[ecxL2ConnectionSchemaNames["VlanCTag"]] = conn.VlanCTag
+	transformed[ecxL2ConnectionSchemaNames["ZSidePortUUID"]] = conn.ZSidePortUUID
+	transformed[ecxL2ConnectionSchemaNames["ZSideVlanSTag"]] = conn.ZSideVlanSTag
+	transformed[ecxL2ConnectionSchemaNames["ZSideVlanCTag"]] = conn.ZSideVlanCTag
+	return []map[string]interface{}{transformed}
+}
+
+func expandECXL2ConnectionSecondary(connections *schema.Set) []ecx.L2Connection {
+	transformed := make([]ecx.L2Connection, 0, connections.Len())
+	for _, conn := range connections.List() {
+		connMap := conn.(map[string]interface{})
+		c := ecx.L2Connection{}
+		if v, ok := connMap[ecxL2ConnectionSchemaNames["UUID"]]; ok {
+			c.UUID = v.(string)
+		}
+		if v, ok := connMap[ecxL2ConnectionSchemaNames["Name"]]; ok {
+			c.Name = v.(string)
+		}
+		if v, ok := connMap[ecxL2ConnectionSchemaNames["Status"]]; ok {
+			c.Status = v.(string)
+		}
+		if v, ok := connMap[ecxL2ConnectionSchemaNames["PortUUID"]]; ok {
+			c.PortUUID = v.(string)
+		}
+		if v, ok := connMap[ecxL2ConnectionSchemaNames["VlanSTag"]]; ok {
+			c.VlanSTag = v.(int)
+		}
+		if cTag, ok := connMap[ecxL2ConnectionSchemaNames["VlanCTag"]]; ok {
+			c.VlanCTag = cTag.(int)
+		}
+		if zPortUUID, ok := connMap[ecxL2ConnectionSchemaNames["ZSidePortUUID"]]; ok {
+			c.ZSidePortUUID = zPortUUID.(string)
+		}
+		if zSTag, ok := connMap[ecxL2ConnectionSchemaNames["ZSideVlanSTag"]]; ok {
+			c.ZSideVlanSTag = zSTag.(int)
+		}
+		if zCTag, ok := connMap[ecxL2ConnectionSchemaNames["ZSideVlanCTag"]]; ok {
+			c.ZSideVlanCTag = zCTag.(int)
+		}
+		transformed = append(transformed, c)
+	}
+	return transformed
 }

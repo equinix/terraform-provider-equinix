@@ -2,7 +2,6 @@ package equinix
 
 import (
 	ecx "ecx-go-client/v3"
-	"reflect"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
@@ -54,13 +53,13 @@ func TestECXL2Connection_resourceDataFromConnections(t *testing.T) {
 
 	//Then
 	assert.Nil(t, err, "Schema update should not return an error")
-	l2ConnSchemaMatchesFields(t, primary, primaryConnFields, d)
+	sourceMatchesTargetSchema(t, primary, primaryConnFields, d, ecxL2ConnectionSchemaNames)
 
 	secConns := d.Get(ecxL2ConnectionSchemaNames["SecondaryConnection"])
 	assert.IsType(t, &schema.Set{}, secConns, "Secondary connection schema type is set")
 	secConnsList := secConns.(*schema.Set).List()
 	assert.Equal(t, 1, len(secConnsList), "There is only one secondary connection")
-	l2ConnSchemaMatchesFields(t, secondary, secondaryConnFields, secConnsList[0])
+	sourceMatchesTargetSchema(t, secondary, secondaryConnFields, secConnsList[0], ecxL2ConnectionSchemaNames)
 }
 
 func TestECXL2Connection_connectionsFromResourceData(t *testing.T) {
@@ -97,37 +96,11 @@ func TestECXL2Connection_connectionsFromResourceData(t *testing.T) {
 	d.Set(ecxL2ConnectionSchemaNames["SecondaryConnection"], []map[string]interface{}{secConn})
 
 	//when
-	primary, secondary, err := createECXL2Connections(d)
+	primary, secondary := createECXL2Connections(d)
 
 	//then
-	assert.Nil(t, err, "Error should not be present")
 	assert.NotNil(t, primary, "Primary connection should be present")
-	l2ConnSchemaMatchesFields(t, *primary, primaryConnFields, d)
+	sourceMatchesTargetSchema(t, *primary, primaryConnFields, d, ecxL2ConnectionSchemaNames)
 	assert.NotNil(t, secondary, "Secondary connection should be present")
-	l2ConnSchemaMatchesFields(t, *secondary, secondaryConnFields, secConn)
-}
-
-func l2ConnSchemaMatchesFields(t *testing.T, source interface{}, fieldNames []string, d interface{}) {
-	val := reflect.ValueOf(source)
-	for _, fName := range fieldNames {
-		val := val.FieldByName(fName)
-		assert.NotEmptyf(t, val, "Value of a field %v not found", fName)
-		var schemaValue interface{}
-		switch d.(type) {
-		case *schema.ResourceData:
-			schemaValue = d.(*schema.ResourceData).Get(ecxL2ConnectionSchemaNames[fName])
-		case map[string]interface{}:
-			schemaValue = d.(map[string]interface{})[ecxL2ConnectionSchemaNames[fName]]
-		default:
-			assert.Fail(t, "Schema type not supported")
-		}
-		switch val.Kind() {
-		case reflect.String, reflect.Int:
-			assert.Equal(t, val.Interface(), schemaValue, fName+" matches")
-		case reflect.Slice:
-			assert.ElementsMatch(t, val.Interface().([]string), schemaValue.(*schema.Set).List(), fName+" matches")
-		default:
-			assert.Failf(t, "Type of field not supported: field %v, type %v", fName, val.Kind())
-		}
-	}
+	sourceMatchesTargetSchema(t, *secondary, secondaryConnFields, secConn, ecxL2ConnectionSchemaNames)
 }

@@ -1,6 +1,8 @@
 package equinix
 
 import (
+	"ecx-go-client/v3"
+	"fmt"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
@@ -17,34 +19,35 @@ const (
 func Provider() terraform.ResourceProvider {
 	provider := &schema.Provider{
 		Schema: map[string]*schema.Schema{
-			"endpoint": &schema.Schema{
+			"endpoint": {
 				Type:     schema.TypeString,
 				Optional: true,
 				DefaultFunc: schema.MultiEnvDefaultFunc([]string{
 					endpointEnvVar,
 				}, nil),
 			},
-			"client_id": &schema.Schema{
+			"client_id": {
 				Type:     schema.TypeString,
 				Optional: true,
 				DefaultFunc: schema.MultiEnvDefaultFunc([]string{
 					clientIDEnvVar,
 				}, nil),
 			},
-			"client_secret": &schema.Schema{
+			"client_secret": {
 				Type:     schema.TypeString,
 				Optional: true,
 				DefaultFunc: schema.MultiEnvDefaultFunc([]string{
 					clientSecretEnvVar,
 				}, nil),
 			},
-			"request_timeout": &schema.Schema{
+			"request_timeout": {
 				Type:     schema.TypeInt,
 				Optional: true,
 			},
 		},
 		ResourcesMap: map[string]*schema.Resource{
-			"equinix_ecx_l2_connection": resourceECXL2Connection(),
+			"equinix_ecx_l2_connection":     resourceECXL2Connection(),
+			"equinix_ecx_l2_serviceprofile": resourceECXL2ServiceProfile(),
 		},
 	}
 
@@ -72,4 +75,22 @@ func configureProvider(d *schema.ResourceData, p *schema.Provider) (interface{},
 		return nil, err
 	}
 	return &config, nil
+}
+
+func expandSetToStringList(set *schema.Set) []string {
+	list := set.List()
+	result := make([]string, len(list))
+	for i, v := range list {
+		result[i] = fmt.Sprint(v)
+	}
+	return result
+}
+
+func hasECXErrorCode(errors []ecx.Error, code string) bool {
+	for _, err := range errors {
+		if err.ErrorCode == code {
+			return true
+		}
+	}
+	return false
 }

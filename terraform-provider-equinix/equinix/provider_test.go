@@ -3,12 +3,14 @@ package equinix
 import (
 	"fmt"
 	"os"
+	"reflect"
 	"regexp"
 	"strings"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
+	"github.com/stretchr/testify/assert"
 )
 
 var testAccProviders map[string]terraform.ResourceProvider
@@ -52,4 +54,43 @@ func nprintf(format string, params map[string]interface{}) string {
 		format = strings.Replace(format, "%{"+key+"}", strVal, -1)
 	}
 	return format
+}
+
+func sourceMatchesTargetSchema(t *testing.T, source interface{}, sourceFields []string, target interface{}, targetFields map[string]string) {
+	val := reflect.ValueOf(source)
+	for _, fName := range sourceFields {
+		val := val.FieldByName(fName)
+		assert.NotEmptyf(t, val, "Value of a field %v not found", fName)
+		var schemaValue interface{}
+		switch target.(type) {
+		case *schema.ResourceData:
+			schemaValue = target.(*schema.ResourceData).Get(targetFields[fName])
+		case map[string]interface{}:
+			schemaValue = target.(map[string]interface{})[targetFields[fName]]
+		default:
+			assert.Fail(t, "Target type not supported")
+		}
+		switch val.Kind() {
+		case reflect.String, reflect.Int, reflect.Bool, reflect.Float64:
+			assert.Equal(t, val.Interface(), schemaValue, fName+" matches")
+		case reflect.Slice:
+			assert.ElementsMatch(t, val.Interface().([]string), schemaValue.(*schema.Set).List(), fName+" matches")
+		default:
+			assert.Failf(t, "Type of field not supported: field %v, type %v", fName, val.Kind())
+		}
+	}
+}
+
+func structToSchemaMap(src interface{}, schema map[string]string) map[string]interface{} {
+	ret := make(map[string]interface{})
+	val := reflect.ValueOf(src)
+	typ := val.Type()
+	for i := 0; i < val.NumField(); i++ {
+		schemaName, ok := schema[typ.Field(i).Name]
+		if !ok {
+			continue
+		}
+		ret[schemaName] = val.Field(i).Interface()
+	}
+	return ret
 }
