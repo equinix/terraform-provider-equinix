@@ -9,7 +9,7 @@ all: default
 	
 test:
 	echo $(TEST) | \
-		xargs -t ${GOCMD} test $(TESTARGS)
+		xargs -t ${GOCMD} test -v $(TESTARGS)
 
 testacc:
 	TF_ACC=1 TF_SCHEMA_PANIC_ON_ERROR=1 ${GOCMD} test $(TEST) -v $(TESTARGS)
