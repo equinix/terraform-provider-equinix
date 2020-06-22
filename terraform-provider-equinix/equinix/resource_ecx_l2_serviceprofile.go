@@ -1,7 +1,7 @@
 package equinix
 
 import (
-	"ecx-go-client/v3"
+	"ecx-go/v3"
 	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"

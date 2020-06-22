@@ -2,7 +2,7 @@ package equinix
 
 import (
 	"context"
-	"ecx-go-client/v3"
+	"ecx-go/v3"
 	"fmt"
 	"oauth2-go"
 	"time"
@@ -37,7 +37,7 @@ func (c *Config) Load(ctx context.Context) error {
 		BaseURL:      c.BaseURL}
 	authClient := authConfig.New(ctx)
 	authClient.Timeout = c.requestTimeout()
-	c.ecx = ecx.NewClient(c.BaseURL, authClient)
+	c.ecx = ecx.NewClient(ctx, c.BaseURL, authClient)
 	return nil
 }
 

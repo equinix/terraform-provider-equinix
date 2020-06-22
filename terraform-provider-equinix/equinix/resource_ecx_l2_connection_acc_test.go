@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"testing"
 
-	ecx "ecx-go-client/v3"
+	"ecx-go/v3"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"

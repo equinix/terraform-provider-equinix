@@ -1,7 +1,7 @@
 package equinix
 
 import (
-	ecx "ecx-go-client/v3"
+	"ecx-go/v3"
 	"fmt"
 	"log"
 	"time"
