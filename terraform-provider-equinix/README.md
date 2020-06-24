@@ -95,6 +95,10 @@ The following arguments are supported:
 * `port_uuid` - *(Required)* Unique identifier of the buyer's port from which the connection would originate.
 * `vlan_stag` - *(Required)* S-Tag/Outer-Tag of the connection - a numeric character ranging from 2 - 4094.
 * `vlan_ctag` - *(Optional)* C-Tag/Inner-Tag of the connection - a numeric character ranging from 2 - 4094.
+* `named_tag` - *(Optional)* The type of peering to set up in case when connecting to Azure Express Route. One of _"Public"_, _"Private"_, _"Microsoft"_, _"Manual"_
+* `additional_info` - *(Optional)* one or more additional information key-value objects
+  * `name` - *(Required)* additional information key
+  * `value` - *(Required)* additional information value
 * `zside_port_uuid` - *(Optional)* Unique identifier of the port on the Z side.
 * `zside_vlan_stag` - *(Optional)* S-Tag/Outer-Tag of the connection on the Z side.
 * `zside_vlan_ctag` - *(Optional)* C-Tag/Inner-Tag of the connection on the Z side.

@@ -26,6 +26,8 @@ var ecxL2ConnectionSchemaNames = map[string]string{
 	"PortUUID":            "port_uuid",
 	"VlanSTag":            "vlan_stag",
 	"VlanCTag":            "vlan_ctag",
+	"NamedTag":            "named_tag",
+	"AdditionalInfo":      "additional_info",
 	"ZSidePortUUID":       "zside_port_uuid",
 	"ZSideVlanSTag":       "zside_vlan_stag",
 	"ZSideVlanCTag":       "zside_vlan_ctag",
@@ -34,6 +36,11 @@ var ecxL2ConnectionSchemaNames = map[string]string{
 	"AuthorizationKey":    "authorization_key",
 	"RedundantUUID":       "redundant_uuid",
 	"SecondaryConnection": "secondary_connection",
+}
+
+var ecxL2ConnectionAdditionalInfoSchemaNames = map[string]string{
+	"Name":  "name",
+	"Value": "value",
 }
 
 func resourceECXL2Connection() *schema.Resource {
@@ -95,6 +102,27 @@ func createECXL2ConnectionResourceSchema() map[string]*schema.Schema {
 		ecxL2ConnectionSchemaNames["VlanCTag"]: {
 			Type:     schema.TypeInt,
 			Optional: true,
+		},
+		ecxL2ConnectionSchemaNames["NamedTag"]: {
+			Type:     schema.TypeString,
+			Optional: true,
+		},
+		ecxL2ConnectionSchemaNames["AdditionalInfo"]: {
+			Type:     schema.TypeSet,
+			Optional: true,
+			MinItems: 1,
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					ecxL2ConnectionAdditionalInfoSchemaNames["Name"]: {
+						Type:     schema.TypeString,
+						Required: true,
+					},
+					ecxL2ConnectionAdditionalInfoSchemaNames["Value"]: {
+						Type:     schema.TypeString,
+						Required: true,
+					},
+				},
+			},
 		},
 		ecxL2ConnectionSchemaNames["ZSidePortUUID"]: {
 			Type:     schema.TypeString,
@@ -257,6 +285,12 @@ func createECXL2Connections(d *schema.ResourceData) (*ecx.L2Connection, *ecx.L2C
 	if cTag, ok := d.GetOk(ecxL2ConnectionSchemaNames["VlanCTag"]); ok {
 		primary.VlanCTag = cTag.(int)
 	}
+	if v, ok := d.GetOk(ecxL2ConnectionSchemaNames["NamedTag"]); ok {
+		primary.NamedTag = v.(string)
+	}
+	if v, ok := d.GetOk(ecxL2ConnectionSchemaNames["AdditionalInfo"]); ok {
+		primary.AdditionalInfo = expandECXL2ConnectionAdditionalInfo(v.(*schema.Set))
+	}
 	if zPortUUID, ok := d.GetOk(ecxL2ConnectionSchemaNames["ZSidePortUUID"]); ok {
 		primary.ZSidePortUUID = zPortUUID.(string)
 	}
@@ -317,6 +351,12 @@ func updateECXL2ConnectionResource(primary *ecx.L2Connection, secondary *ecx.L2C
 	}
 	if err := d.Set(ecxL2ConnectionSchemaNames["VlanCTag"], primary.VlanCTag); err != nil {
 		return fmt.Errorf("error reading VlanCTag: %s", err)
+	}
+	if err := d.Set(ecxL2ConnectionSchemaNames["NamedTag"], primary.NamedTag); err != nil {
+		return fmt.Errorf("error reading NamedTag: %s", err)
+	}
+	if err := d.Set(ecxL2ConnectionSchemaNames["AdditionalInfo"], flattenECXL2ConnectionAdditionalInfo(primary.AdditionalInfo)); err != nil {
+		return fmt.Errorf("error reading AdditionalInfo: %s", err)
 	}
 	if err := d.Set(ecxL2ConnectionSchemaNames["ZSidePortUUID"], primary.ZSidePortUUID); err != nil {
 		return fmt.Errorf("error reading ZSidePortUUID: %s", err)
@@ -394,6 +434,29 @@ func expandECXL2ConnectionSecondary(connections *schema.Set) []ecx.L2Connection 
 			c.ZSideVlanCTag = zCTag.(int)
 		}
 		transformed = append(transformed, c)
+	}
+	return transformed
+}
+
+func flattenECXL2ConnectionAdditionalInfo(infos []ecx.L2ConnectionAdditionalInfo) interface{} {
+	transformed := make([]interface{}, 0, len(infos))
+	for _, info := range infos {
+		transformed = append(transformed, map[string]interface{}{
+			ecxL2ConnectionAdditionalInfoSchemaNames["Name"]:  info.Name,
+			ecxL2ConnectionAdditionalInfoSchemaNames["Value"]: info.Value,
+		})
+	}
+	return transformed
+}
+
+func expandECXL2ConnectionAdditionalInfo(infos *schema.Set) []ecx.L2ConnectionAdditionalInfo {
+	transformed := make([]ecx.L2ConnectionAdditionalInfo, 0, infos.Len())
+	for _, info := range infos.List() {
+		infoMap := info.(map[string]interface{})
+		transformed = append(transformed, ecx.L2ConnectionAdditionalInfo{
+			Name:  infoMap[ecxL2ConnectionAdditionalInfoSchemaNames["Name"]].(string),
+			Value: infoMap[ecxL2ConnectionAdditionalInfoSchemaNames["Value"]].(string),
+		})
 	}
 	return transformed
 }

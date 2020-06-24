@@ -9,7 +9,7 @@ import (
 )
 
 var primaryConnFields = []string{"UUID", "Name", "ProfileUUID", "Speed", "SpeedUnit", "Status", "Notifications", "PurchaseOrderNumber",
-	"PortUUID", "VlanSTag", "VlanCTag", "ZSidePortUUID", "ZSideVlanSTag", "ZSideVlanCTag", "SellerRegion", "SellerMetroCode",
+	"PortUUID", "VlanSTag", "VlanCTag", "NamedTag", "ZSidePortUUID", "ZSideVlanSTag", "ZSideVlanCTag", "SellerRegion", "SellerMetroCode",
 	"AuthorizationKey", "RedundantUUID"}
 
 var secondaryConnFields = []string{"UUID", "Name", "Status", "PortUUID", "VlanSTag", "VlanCTag",
@@ -30,6 +30,7 @@ func TestECXL2Connection_resourceDataFromConnections(t *testing.T) {
 		PortUUID:            "primaryPortUUID",
 		VlanSTag:            100,
 		VlanCTag:            101,
+		NamedTag:            "Private",
 		ZSidePortUUID:       "primaryZSidePortUUID",
 		ZSideVlanSTag:       200,
 		ZSideVlanCTag:       201,
@@ -60,6 +61,12 @@ func TestECXL2Connection_resourceDataFromConnections(t *testing.T) {
 	secConnsList := secConns.(*schema.Set).List()
 	assert.Equal(t, 1, len(secConnsList), "There is only one secondary connection")
 	sourceMatchesTargetSchema(t, secondary, secondaryConnFields, secConnsList[0], ecxL2ConnectionSchemaNames)
+
+	infos := d.Get(ecxL2ConnectionSchemaNames["AdditionalInfo"]).(*schema.Set)
+	assert.Equal(t, len(primary.AdditionalInfo), infos.Len(), "Number of additional infos matches")
+	for i := range primary.AdditionalInfo {
+		assert.True(t, infos.Contains(structToSchemaMap(primary.AdditionalInfo[i], ecxL2ConnectionAdditionalInfoSchemaNames)), "Connection additional info is defined in schema")
+	}
 }
 
 func TestECXL2Connection_connectionsFromResourceData(t *testing.T) {
@@ -76,6 +83,7 @@ func TestECXL2Connection_connectionsFromResourceData(t *testing.T) {
 	d.Set(ecxL2ConnectionSchemaNames["PortUUID"], "portUUID")
 	d.Set(ecxL2ConnectionSchemaNames["VlanSTag"], 100)
 	d.Set(ecxL2ConnectionSchemaNames["VlanCTag"], 200)
+	d.Set(ecxL2ConnectionSchemaNames["NamedTag"], "Private")
 	d.Set(ecxL2ConnectionSchemaNames["ZSidePortUUID"], "zSidePortUUID")
 	d.Set(ecxL2ConnectionSchemaNames["ZSideVlanSTag"], 500)
 	d.Set(ecxL2ConnectionSchemaNames["ZSideVlanCTag"], 600)
@@ -103,4 +111,10 @@ func TestECXL2Connection_connectionsFromResourceData(t *testing.T) {
 	sourceMatchesTargetSchema(t, *primary, primaryConnFields, d, ecxL2ConnectionSchemaNames)
 	assert.NotNil(t, secondary, "Secondary connection should be present")
 	sourceMatchesTargetSchema(t, *secondary, secondaryConnFields, secConn, ecxL2ConnectionSchemaNames)
+
+	infos := d.Get(ecxL2ConnectionSchemaNames["AdditionalInfo"]).(*schema.Set)
+	assert.Equal(t, len(primary.AdditionalInfo), infos.Len(), "Number of additional infos matches")
+	for i := range primary.AdditionalInfo {
+		assert.True(t, infos.Contains(structToSchemaMap(primary.AdditionalInfo[i], ecxL2ConnectionAdditionalInfoSchemaNames)), "Connection additional info is defined in schema")
+	}
 }
