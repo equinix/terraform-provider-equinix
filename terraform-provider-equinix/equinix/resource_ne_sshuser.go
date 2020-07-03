@@ -143,8 +143,10 @@ func updateNeSSHUserResource(user *ne.SSHUser, d *schema.ResourceData) error {
 	if err := d.Set(neSSHUserSchemaNames["Username"], user.Username); err != nil {
 		return fmt.Errorf("error reading Username: %s", err)
 	}
-	if err := d.Set(neSSHUserSchemaNames["Password"], user.Password); err != nil {
-		return fmt.Errorf("error reading Password: %s", err)
+	if user.Password != "" {
+		if err := d.Set(neSSHUserSchemaNames["Password"], user.Password); err != nil {
+			return fmt.Errorf("error reading Password: %s", err)
+		}
 	}
 	if err := d.Set(neSSHUserSchemaNames["MetroCodes"], user.MetroCodes); err != nil {
 		return fmt.Errorf("error reading MetroCodes: %s", err)

@@ -2,7 +2,6 @@ package equinix
 
 import (
 	"fmt"
-	"log"
 	"ne-go"
 	"reflect"
 
@@ -329,12 +328,6 @@ func resourceNeDeviceDelete(d *schema.ResourceData, m interface{}) error {
 			}
 		}*/
 		return err
-	}
-	//remove secondary device, don't fail on error as there is no partial state on delete
-	if redID, ok := d.GetOk(neDeviceSchemaNames["RedundantUUID"]); ok {
-		if err := conf.ne.DeleteDevice(redID.(string)); err != nil {
-			log.Printf("[WARN] error removing secondary device with UUID %s, due to %s", redID.(string), err)
-		}
 	}
 	return nil
 }
