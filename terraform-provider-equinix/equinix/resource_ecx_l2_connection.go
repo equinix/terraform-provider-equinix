@@ -4,14 +4,8 @@ import (
 	"ecx-go/v3"
 	"fmt"
 	"log"
-	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
-)
-
-const (
-	//ecxL2ConnectionRecreateDelay in seconds
-	ecxL2ConnectionRecreateDelay = 5
 )
 
 var ecxL2ConnectionSchemaNames = map[string]string{
@@ -47,7 +41,6 @@ func resourceECXL2Connection() *schema.Resource {
 	return &schema.Resource{
 		Create: resourceECXL2ConnectionCreate,
 		Read:   resourceECXL2ConnectionRead,
-		Update: resourceECXL2ConnectionUpdate,
 		Delete: resourceECXL2ConnectionDelete,
 		Schema: createECXL2ConnectionResourceSchema(),
 	}
@@ -62,18 +55,22 @@ func createECXL2ConnectionResourceSchema() map[string]*schema.Schema {
 		ecxL2ConnectionSchemaNames["Name"]: {
 			Type:     schema.TypeString,
 			Required: true,
+			ForceNew: true,
 		},
 		ecxL2ConnectionSchemaNames["ProfileUUID"]: {
 			Type:     schema.TypeString,
 			Required: true,
+			ForceNew: true,
 		},
 		ecxL2ConnectionSchemaNames["Speed"]: {
 			Type:     schema.TypeInt,
 			Required: true,
+			ForceNew: true,
 		},
 		ecxL2ConnectionSchemaNames["SpeedUnit"]: {
 			Type:     schema.TypeString,
 			Required: true,
+			ForceNew: true,
 		},
 		ecxL2ConnectionSchemaNames["Status"]: {
 			Type:     schema.TypeString,
@@ -82,6 +79,7 @@ func createECXL2ConnectionResourceSchema() map[string]*schema.Schema {
 		ecxL2ConnectionSchemaNames["Notifications"]: {
 			Type:     schema.TypeSet,
 			Required: true,
+			ForceNew: true,
 			MinItems: 1,
 			Elem: &schema.Schema{
 				Type: schema.TypeString,
@@ -90,26 +88,32 @@ func createECXL2ConnectionResourceSchema() map[string]*schema.Schema {
 		ecxL2ConnectionSchemaNames["PurchaseOrderNumber"]: {
 			Type:     schema.TypeString,
 			Optional: true,
+			ForceNew: true,
 		},
 		ecxL2ConnectionSchemaNames["PortUUID"]: {
 			Type:     schema.TypeString,
 			Required: true,
+			ForceNew: true,
 		},
 		ecxL2ConnectionSchemaNames["VlanSTag"]: {
 			Type:     schema.TypeInt,
 			Required: true,
+			ForceNew: true,
 		},
 		ecxL2ConnectionSchemaNames["VlanCTag"]: {
 			Type:     schema.TypeInt,
 			Optional: true,
+			ForceNew: true,
 		},
 		ecxL2ConnectionSchemaNames["NamedTag"]: {
 			Type:     schema.TypeString,
 			Optional: true,
+			ForceNew: true,
 		},
 		ecxL2ConnectionSchemaNames["AdditionalInfo"]: {
 			Type:     schema.TypeSet,
 			Optional: true,
+			ForceNew: true,
 			MinItems: 1,
 			Elem: &schema.Resource{
 				Schema: map[string]*schema.Schema{
@@ -127,26 +131,32 @@ func createECXL2ConnectionResourceSchema() map[string]*schema.Schema {
 		ecxL2ConnectionSchemaNames["ZSidePortUUID"]: {
 			Type:     schema.TypeString,
 			Optional: true,
+			ForceNew: true,
 		},
 		ecxL2ConnectionSchemaNames["ZSideVlanSTag"]: {
 			Type:     schema.TypeInt,
 			Optional: true,
+			ForceNew: true,
 		},
 		ecxL2ConnectionSchemaNames["ZSideVlanCTag"]: {
 			Type:     schema.TypeInt,
 			Optional: true,
+			ForceNew: true,
 		},
 		ecxL2ConnectionSchemaNames["SellerRegion"]: {
 			Type:     schema.TypeString,
 			Required: true,
+			ForceNew: true,
 		},
 		ecxL2ConnectionSchemaNames["SellerMetroCode"]: {
 			Type:     schema.TypeString,
 			Required: true,
+			ForceNew: true,
 		},
 		ecxL2ConnectionSchemaNames["AuthorizationKey"]: {
 			Type:     schema.TypeString,
 			Optional: true,
+			ForceNew: true,
 		},
 		ecxL2ConnectionSchemaNames["RedundantUUID"]: {
 			Type:     schema.TypeString,
@@ -155,6 +165,7 @@ func createECXL2ConnectionResourceSchema() map[string]*schema.Schema {
 		ecxL2ConnectionSchemaNames["SecondaryConnection"]: {
 			Type:     schema.TypeSet,
 			Optional: true,
+			ForceNew: true,
 			MaxItems: 1,
 			Elem: &schema.Resource{
 				Schema: map[string]*schema.Schema{
@@ -164,34 +175,42 @@ func createECXL2ConnectionResourceSchema() map[string]*schema.Schema {
 					},
 					ecxL2ConnectionSchemaNames["Name"]: {
 						Type:     schema.TypeString,
+						ForceNew: true,
 						Required: true,
 					},
 					ecxL2ConnectionSchemaNames["Status"]: {
 						Type:     schema.TypeString,
+						ForceNew: true,
 						Computed: true,
 					},
 					ecxL2ConnectionSchemaNames["PortUUID"]: {
 						Type:     schema.TypeString,
+						ForceNew: true,
 						Required: true,
 					},
 					ecxL2ConnectionSchemaNames["VlanSTag"]: {
 						Type:     schema.TypeInt,
+						ForceNew: true,
 						Required: true,
 					},
 					ecxL2ConnectionSchemaNames["VlanCTag"]: {
 						Type:     schema.TypeInt,
+						ForceNew: true,
 						Optional: true,
 					},
 					ecxL2ConnectionSchemaNames["ZSidePortUUID"]: {
 						Type:     schema.TypeString,
+						ForceNew: true,
 						Optional: true,
 					},
 					ecxL2ConnectionSchemaNames["ZSideVlanSTag"]: {
 						Type:     schema.TypeInt,
+						ForceNew: true,
 						Optional: true,
 					},
 					ecxL2ConnectionSchemaNames["ZSideVlanCTag"]: {
 						Type:     schema.TypeInt,
+						ForceNew: true,
 						Optional: true,
 					},
 				},
@@ -237,12 +256,6 @@ func resourceECXL2ConnectionRead(d *schema.ResourceData, m interface{}) error {
 		return err
 	}
 	return nil
-}
-
-func resourceECXL2ConnectionUpdate(d *schema.ResourceData, m interface{}) error {
-	resourceECXL2ConnectionDelete(d, m)
-	time.Sleep(ecxL2ConnectionRecreateDelay * time.Second)
-	return resourceECXL2ConnectionCreate(d, m)
 }
 
 func resourceECXL2ConnectionDelete(d *schema.ResourceData, m interface{}) error {
