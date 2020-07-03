@@ -9,9 +9,12 @@ require (
 	github.com/hashicorp/terraform-config-inspect v0.0.0-20191212124732-c6ae6269b9d7 // indirect
 	github.com/hashicorp/terraform-plugin-sdk v1.10.0
 	github.com/stretchr/testify v1.6.0
+	ne-go v1.0.0
 	oauth2-go v1.0.0
 )
 
 replace oauth2-go v1.0.0 => ../oauth2-go
 
 replace ecx-go/v3 v3.0.0 => ../ecx-go
+
+replace ne-go v1.0.0 => ../ne-go

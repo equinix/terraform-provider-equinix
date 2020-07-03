@@ -4,6 +4,7 @@ import (
 	"context"
 	"ecx-go/v3"
 	"fmt"
+	"ne-go"
 	"oauth2-go"
 	"time"
 )
@@ -17,6 +18,7 @@ type Config struct {
 	RequestTimeout time.Duration
 
 	ecx ecx.Client
+	ne  ne.Client
 }
 
 //Load function validates configuration structure fields and configures
@@ -38,6 +40,7 @@ func (c *Config) Load(ctx context.Context) error {
 	authClient := authConfig.New(ctx)
 	authClient.Timeout = c.requestTimeout()
 	c.ecx = ecx.NewClient(ctx, c.BaseURL, authClient)
+	c.ne = ne.NewClient(ctx, c.BaseURL, authClient)
 	return nil
 }
 
