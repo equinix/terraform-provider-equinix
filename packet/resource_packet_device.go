@@ -234,6 +234,7 @@ func resourcePacketDevice() *schema.Resource {
 				Type:      schema.TypeString,
 				Optional:  true,
 				Sensitive: true,
+				ForceNew:  true,
 			},
 
 			"ipxe_script_url": {
