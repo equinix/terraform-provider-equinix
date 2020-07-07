@@ -132,16 +132,19 @@ func createECXL2ConnectionResourceSchema() map[string]*schema.Schema {
 			Type:     schema.TypeString,
 			Optional: true,
 			ForceNew: true,
+			Computed: true,
 		},
 		ecxL2ConnectionSchemaNames["ZSideVlanSTag"]: {
 			Type:     schema.TypeInt,
 			Optional: true,
 			ForceNew: true,
+			Computed: true,
 		},
 		ecxL2ConnectionSchemaNames["ZSideVlanCTag"]: {
 			Type:     schema.TypeInt,
 			Optional: true,
 			ForceNew: true,
+			Computed: true,
 		},
 		ecxL2ConnectionSchemaNames["SellerRegion"]: {
 			Type:     schema.TypeString,
