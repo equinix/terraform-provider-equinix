@@ -1,4 +1,4 @@
-## 2.10.0 (Unreleased)
+## 2.10.0 (July 07, 2020)
 
 FEATURES:
 - [#237] (https://github.com/terraform-providers/terraform-provider-packet/pull/237) Switch `userdata` attribute of packet_device to ForceNew
