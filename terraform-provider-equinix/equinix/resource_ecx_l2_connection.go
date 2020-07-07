@@ -371,8 +371,10 @@ func updateECXL2ConnectionResource(primary *ecx.L2Connection, secondary *ecx.L2C
 	if err := d.Set(ecxL2ConnectionSchemaNames["VlanCTag"], primary.VlanCTag); err != nil {
 		return fmt.Errorf("error reading VlanCTag: %s", err)
 	}
-	if err := d.Set(ecxL2ConnectionSchemaNames["NamedTag"], primary.NamedTag); err != nil {
-		return fmt.Errorf("error reading NamedTag: %s", err)
+	if primary.NamedTag != "" {
+		if err := d.Set(ecxL2ConnectionSchemaNames["NamedTag"], primary.NamedTag); err != nil {
+			return fmt.Errorf("error reading NamedTag: %s", err)
+		}
 	}
 	if err := d.Set(ecxL2ConnectionSchemaNames["AdditionalInfo"], flattenECXL2ConnectionAdditionalInfo(primary.AdditionalInfo)); err != nil {
 		return fmt.Errorf("error reading AdditionalInfo: %s", err)
