@@ -187,9 +187,14 @@ func waitForDeviceAttribute(d *schema.ResourceData, targets []string, pending []
 		Delay:      10 * time.Second,
 		MinTimeout: 3 * time.Second,
 	}
-	attrval, err := stateConf.WaitForState()
 
-	return attrval.(string), err
+	attrValRaw, err := stateConf.WaitForState()
+
+	if v, ok := attrValRaw.(string); ok {
+		return v, err
+	}
+
+	return "", err
 }
 
 // powerOnAndWait Powers on the device and waits for it to be active.
