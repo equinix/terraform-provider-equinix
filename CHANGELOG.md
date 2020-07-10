@@ -1,8 +1,12 @@
-## 2.11.0 (Unreleased)
+## 2.10.1 (Unreleased)
+
+BUG FIXES:
+- [#239](https://github.com/terraform-providers/terraform-provider-packet/pull/239) Fix conversion from nil during WaitForState loops
+
 ## 2.10.0 (July 07, 2020)
 
 FEATURES:
-- [#237] (https://github.com/terraform-providers/terraform-provider-packet/pull/237) Switch `userdata` attribute of packet_device to ForceNew
+- [#237](https://github.com/terraform-providers/terraform-provider-packet/pull/237) Switch `userdata` attribute of packet_device to ForceNew
 
 ## 2.9.0 (May 12, 2020)
 
