@@ -1,4 +1,4 @@
-## 2.10.1 (Unreleased)
+## 2.10.1 (July 10, 2020)
 
 BUG FIXES:
 - [#239](https://github.com/terraform-providers/terraform-provider-packet/pull/239) Fix conversion from nil during WaitForState loops
