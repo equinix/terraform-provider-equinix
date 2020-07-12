@@ -225,44 +225,6 @@ func TestAccPacketDevice_IPXEScriptUrl(t *testing.T) {
 	})
 }
 
-func testAccCheckPacketDeviceConfig_L2(projSuffix string) string {
-	return fmt.Sprintf(`
-resource "packet_project" "test" {
-    name = "tfacc-project-%s"
-}
-
-resource "packet_device" "test" {
-  hostname         = "tfacc-device-L2-test"
-  plan             = "m1.xlarge.x86"
-  facilities       = ["ewr1"]
-  operating_system = "ubuntu_16_04"
-  billing_cycle    = "hourly"
-  project_id       = "${packet_project.test.id}"
-  network_type     = "layer2-bonded"
-
-}
-`, projSuffix)
-}
-
-func TestAccPacketDevice_L2(t *testing.T) {
-	rs := acctest.RandString(10)
-
-	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckPacketDeviceDestroy,
-		Steps: []resource.TestStep{
-			{
-				Config: testAccCheckPacketDeviceConfig_L2(rs),
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr(
-						"packet_device.test", "network_type", "layer2-bonded"),
-				),
-			},
-		},
-	})
-}
-
 func TestAccPacketDevice_IPXEConflictingFields(t *testing.T) {
 	var device packngo.Device
 	rs := acctest.RandString(10)

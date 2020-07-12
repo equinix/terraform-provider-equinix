@@ -157,7 +157,6 @@ The following arguments are supported:
 * `tags` - Tags attached to the device
 * `description` - Description string for the device
 * `project_ssh_key_ids` - Array of IDs of the project SSH keys which should be added to the device. If you omit this, SSH keys of all the members of the parent project will be added to the device. If you specify this array, only the listed project SSH keys will be added. Project SSH keys can be created with the [packet_project_ssh_key][https://www.terraform.io/docs/providers/packet/r/project_ssh_key.html] resource.
-* `network_type` (Optional) - Network type of device, used for [Layer 2 networking](https://www.packet.com/developers/docs/network/advanced/layer-2/). Allowed values are `layer3`, `hybrid`, `layer2-individual` and `layer2-bonded`. If you keep it empty, Terraform will not handle the network type of the device.
 * `ip_address` (Optional) - A list of IP address types for the device (structure is documented below). 
 * `wait_for_reservation_deprovision` (Optional) - Only used for devices in reserved hardware. If set, the deletion of this device will block until the hardware reservation is marked provisionable (about 4 minutes in August 2019).
 * `force_detach_volumes` (Optional) - Delete device even if it has volumes attached. Only applies for destroy action.
@@ -198,6 +197,7 @@ The following attributes are exported:
   * `gateway` - address of router
   * `public` - whether the address is routable from the Internet
   * `family` - IP version - "4" or "6"
+* `network_mode` Network mode of a device, used in [Layer 2 networking](https://www.packet.com/developers/docs/network/advanced/layer-2/). Will be one of `layer3`, `hybrid`, `layer2-individual` and `layer2-bonded`.
 * `operating_system` - The operating system running on the device
 * `plan` - The hardware config of the device
 * `ports` - Ports assigned to the device

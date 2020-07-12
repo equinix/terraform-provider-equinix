@@ -37,11 +37,15 @@ resource "packet_device" "test" {
   operating_system = "ubuntu_16_04"
   billing_cycle    = "hourly"
   project_id       = local.project_id
-  network_type     = "hybrid"
+}
+
+resource "packet_device_network_mode" "test" {
+  device_id = packet_device.test.id
+  mode = "hybrid"
 }
 
 resource "packet_port_vlan_attachment" "test" {
-  device_id = packet_device.test.id
+  device_id = packet_device_network_mode.test.id
   port_name = "eth1"
   vlan_vnid = packet_vlan.test.vxlan
 }
@@ -56,7 +60,11 @@ resource "packet_device" "test" {
   operating_system = "ubuntu_16_04"
   billing_cycle    = "hourly"
   project_id       = local.project_id
-  network_type     = "layer2-individual"
+}
+
+resource "packet_device_network_mode" "test" {
+  device_id = packet_device.test.id
+  mode = "layer2-individual"
 }
 
 resource "packet_vlan" "test1" {
@@ -72,13 +80,13 @@ resource "packet_vlan" "test2" {
 }
 
 resource "packet_port_vlan_attachment" "test1" {
-  device_id = packet_device.test.id
+  device_id = packet_device_network_mode.test.id
   vlan_vnid = packet_vlan.test1.vxlan
   port_name = "eth1"
 }
 
 resource "packet_port_vlan_attachment" "test2" {
-  device_id  = packet_device.test.id
+  device_id  = packet_device_network_mode.test.id
   vlan_vnid  = packet_vlan.test2.vxlan
   port_name  = "eth1"
   native     = true
