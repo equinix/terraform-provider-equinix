@@ -41,6 +41,7 @@ func resourceECXL2Connection() *schema.Resource {
 	return &schema.Resource{
 		Create: resourceECXL2ConnectionCreate,
 		Read:   resourceECXL2ConnectionRead,
+		Update: resourceECXL2ConnectionUpdate,
 		Delete: resourceECXL2ConnectionDelete,
 		Schema: createECXL2ConnectionResourceSchema(),
 	}
@@ -55,7 +56,6 @@ func createECXL2ConnectionResourceSchema() map[string]*schema.Schema {
 		ecxL2ConnectionSchemaNames["Name"]: {
 			Type:     schema.TypeString,
 			Required: true,
-			ForceNew: true,
 		},
 		ecxL2ConnectionSchemaNames["ProfileUUID"]: {
 			Type:     schema.TypeString,
@@ -65,12 +65,10 @@ func createECXL2ConnectionResourceSchema() map[string]*schema.Schema {
 		ecxL2ConnectionSchemaNames["Speed"]: {
 			Type:     schema.TypeInt,
 			Required: true,
-			ForceNew: true,
 		},
 		ecxL2ConnectionSchemaNames["SpeedUnit"]: {
 			Type:     schema.TypeString,
 			Required: true,
-			ForceNew: true,
 		},
 		ecxL2ConnectionSchemaNames["Status"]: {
 			Type:     schema.TypeString,
@@ -259,6 +257,22 @@ func resourceECXL2ConnectionRead(d *schema.ResourceData, m interface{}) error {
 		return err
 	}
 	return nil
+}
+
+func resourceECXL2ConnectionUpdate(d *schema.ResourceData, m interface{}) error {
+	conf := m.(*Config)
+	updateReq := conf.ecx.NewL2ConnectionUpdateRequest(d.Id())
+	if v, ok := d.GetOk(ecxL2ConnectionSchemaNames["Name"]); ok && d.HasChange(ecxL2ConnectionSchemaNames["Name"]) {
+		updateReq.WithName(v.(string))
+	}
+	if d.HasChanges(ecxL2ConnectionSchemaNames["Speed"], ecxL2ConnectionSchemaNames["SpeedUnit"]) {
+		updateReq.WithBandwidth(d.Get(ecxL2ConnectionSchemaNames["Speed"]).(int),
+			d.Get(ecxL2ConnectionSchemaNames["SpeedUnit"]).(string))
+	}
+	if err := updateReq.Execute(); err != nil {
+		return err
+	}
+	return resourceECXL2ConnectionRead(d, m)
 }
 
 func resourceECXL2ConnectionDelete(d *schema.ResourceData, m interface{}) error {
