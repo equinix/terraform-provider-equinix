@@ -12,10 +12,10 @@ import (
 func TestAccECXL2ServiceProfile(t *testing.T) {
 	context := map[string]interface{}{
 		"resourceName":                       "test_profile",
-		"percentage_alert":                   20.5,
-		"customspeed_allowed":                false,
+		"bandwidth_alert_threshold":          20.5,
+		"speed_customization_allowed":        false,
 		"oversubscription_allowed":           false,
-		"api_available":                      false,
+		"api_integration":                    false,
 		"authkey_label":                      "Virtual Circuit OCID",
 		"connection_name_label":              "Connection",
 		"ctag_label":                         "Seller-Side C-Tag",
@@ -86,10 +86,10 @@ func testAccECXL2ServiceProfileExists(resourceName string, profile *ecx.L2Servic
 func testAccECXL2ServiceProfile(ctx map[string]interface{}) string {
 	return nprintf(`
 resource "equinix_ecx_l2_serviceprofile" "%{resourceName}" {
-	percentage_alert                   = %{percentage_alert}
-	customspeed_allowed                = %{customspeed_allowed}
+	bandwidth_alert_threshold          = %{bandwidth_alert_threshold}
+	speed_customization_allowed        = %{speed_customization_allowed}
 	oversubscription_allowed           = %{oversubscription_allowed}
-	api_available                      = %{api_available}
+	api_integration                    = %{api_integration}
 	authkey_label                      = "%{authkey_label}"
 	connection_name_label              = "%{connection_name_label}"
 	ctag_label                         = "%{ctag_label}"

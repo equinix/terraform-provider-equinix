@@ -41,6 +41,7 @@ func resourceECXL2Connection() *schema.Resource {
 	return &schema.Resource{
 		Create: resourceECXL2ConnectionCreate,
 		Read:   resourceECXL2ConnectionRead,
+		Update: resourceECXL2ConnectionUpdate,
 		Delete: resourceECXL2ConnectionDelete,
 		Schema: createECXL2ConnectionResourceSchema(),
 	}
@@ -55,7 +56,6 @@ func createECXL2ConnectionResourceSchema() map[string]*schema.Schema {
 		ecxL2ConnectionSchemaNames["Name"]: {
 			Type:     schema.TypeString,
 			Required: true,
-			ForceNew: true,
 		},
 		ecxL2ConnectionSchemaNames["ProfileUUID"]: {
 			Type:     schema.TypeString,
@@ -65,12 +65,10 @@ func createECXL2ConnectionResourceSchema() map[string]*schema.Schema {
 		ecxL2ConnectionSchemaNames["Speed"]: {
 			Type:     schema.TypeInt,
 			Required: true,
-			ForceNew: true,
 		},
 		ecxL2ConnectionSchemaNames["SpeedUnit"]: {
 			Type:     schema.TypeString,
 			Required: true,
-			ForceNew: true,
 		},
 		ecxL2ConnectionSchemaNames["Status"]: {
 			Type:     schema.TypeString,
@@ -132,16 +130,19 @@ func createECXL2ConnectionResourceSchema() map[string]*schema.Schema {
 			Type:     schema.TypeString,
 			Optional: true,
 			ForceNew: true,
+			Computed: true,
 		},
 		ecxL2ConnectionSchemaNames["ZSideVlanSTag"]: {
 			Type:     schema.TypeInt,
 			Optional: true,
 			ForceNew: true,
+			Computed: true,
 		},
 		ecxL2ConnectionSchemaNames["ZSideVlanCTag"]: {
 			Type:     schema.TypeInt,
 			Optional: true,
 			ForceNew: true,
+			Computed: true,
 		},
 		ecxL2ConnectionSchemaNames["SellerRegion"]: {
 			Type:     schema.TypeString,
@@ -258,6 +259,22 @@ func resourceECXL2ConnectionRead(d *schema.ResourceData, m interface{}) error {
 	return nil
 }
 
+func resourceECXL2ConnectionUpdate(d *schema.ResourceData, m interface{}) error {
+	conf := m.(*Config)
+	updateReq := conf.ecx.NewL2ConnectionUpdateRequest(d.Id())
+	if v, ok := d.GetOk(ecxL2ConnectionSchemaNames["Name"]); ok && d.HasChange(ecxL2ConnectionSchemaNames["Name"]) {
+		updateReq.WithName(v.(string))
+	}
+	if d.HasChanges(ecxL2ConnectionSchemaNames["Speed"], ecxL2ConnectionSchemaNames["SpeedUnit"]) {
+		updateReq.WithBandwidth(d.Get(ecxL2ConnectionSchemaNames["Speed"]).(int),
+			d.Get(ecxL2ConnectionSchemaNames["SpeedUnit"]).(string))
+	}
+	if err := updateReq.Execute(); err != nil {
+		return err
+	}
+	return resourceECXL2ConnectionRead(d, m)
+}
+
 func resourceECXL2ConnectionDelete(d *schema.ResourceData, m interface{}) error {
 	conf := m.(*Config)
 	if err := conf.ecx.DeleteL2Connection(d.Id()); err != nil {
@@ -365,8 +382,10 @@ func updateECXL2ConnectionResource(primary *ecx.L2Connection, secondary *ecx.L2C
 	if err := d.Set(ecxL2ConnectionSchemaNames["VlanCTag"], primary.VlanCTag); err != nil {
 		return fmt.Errorf("error reading VlanCTag: %s", err)
 	}
-	if err := d.Set(ecxL2ConnectionSchemaNames["NamedTag"], primary.NamedTag); err != nil {
-		return fmt.Errorf("error reading NamedTag: %s", err)
+	if primary.NamedTag != "" {
+		if err := d.Set(ecxL2ConnectionSchemaNames["NamedTag"], primary.NamedTag); err != nil {
+			return fmt.Errorf("error reading NamedTag: %s", err)
+		}
 	}
 	if err := d.Set(ecxL2ConnectionSchemaNames["AdditionalInfo"], flattenECXL2ConnectionAdditionalInfo(primary.AdditionalInfo)); err != nil {
 		return fmt.Errorf("error reading AdditionalInfo: %s", err)
@@ -393,14 +412,21 @@ func updateECXL2ConnectionResource(primary *ecx.L2Connection, secondary *ecx.L2C
 		return fmt.Errorf("error reading RedundantUUID: %s", err)
 	}
 	if secondary != nil {
-		if err := d.Set(ecxL2ConnectionSchemaNames["SecondaryConnection"], flattenECXL2ConnectionSecondary(*secondary)); err != nil {
+		var prev *ecx.L2Connection
+		if v, ok := d.GetOk(ecxL2ConnectionSchemaNames["SecondaryConnection"]); ok {
+			vSet := v.(*schema.Set)
+			if vSet.Len() > 0 {
+				prev = &expandECXL2ConnectionSecondary(vSet)[0]
+			}
+		}
+		if err := d.Set(ecxL2ConnectionSchemaNames["SecondaryConnection"], flattenECXL2ConnectionSecondary(prev, secondary)); err != nil {
 			return fmt.Errorf("error reading SecondaryConnection: %s", err)
 		}
 	}
 	return nil
 }
 
-func flattenECXL2ConnectionSecondary(conn ecx.L2Connection) interface{} {
+func flattenECXL2ConnectionSecondary(prev, conn *ecx.L2Connection) interface{} {
 	transformed := make(map[string]interface{})
 	transformed[ecxL2ConnectionSchemaNames["UUID"]] = conn.UUID
 	transformed[ecxL2ConnectionSchemaNames["Name"]] = conn.Name
@@ -408,9 +434,15 @@ func flattenECXL2ConnectionSecondary(conn ecx.L2Connection) interface{} {
 	transformed[ecxL2ConnectionSchemaNames["PortUUID"]] = conn.PortUUID
 	transformed[ecxL2ConnectionSchemaNames["VlanSTag"]] = conn.VlanSTag
 	transformed[ecxL2ConnectionSchemaNames["VlanCTag"]] = conn.VlanCTag
-	transformed[ecxL2ConnectionSchemaNames["ZSidePortUUID"]] = conn.ZSidePortUUID
-	transformed[ecxL2ConnectionSchemaNames["ZSideVlanSTag"]] = conn.ZSideVlanSTag
-	transformed[ecxL2ConnectionSchemaNames["ZSideVlanCTag"]] = conn.ZSideVlanCTag
+	if prev == nil || (prev != nil && prev.ZSidePortUUID != "") {
+		transformed[ecxL2ConnectionSchemaNames["ZSidePortUUID"]] = conn.ZSidePortUUID
+	}
+	if prev == nil || (prev != nil && prev.ZSideVlanSTag != 0) {
+		transformed[ecxL2ConnectionSchemaNames["ZSideVlanSTag"]] = conn.ZSideVlanSTag
+	}
+	if prev == nil || (prev != nil && prev.ZSideVlanCTag != 0) {
+		transformed[ecxL2ConnectionSchemaNames["ZSideVlanCTag"]] = conn.ZSideVlanCTag
+	}
 	return []map[string]interface{}{transformed}
 }
 
