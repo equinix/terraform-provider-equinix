@@ -11,7 +11,7 @@ import (
 var spFieldsToTest = []string{"UUID", "State", "AlertPercentage", "AllowCustomSpeed", "AllowOverSubscription", "APIAvailable", "AuthKeyLabel",
 	"ConnectionNameLabel", "CTagLabel", "EnableAutoGenerateServiceKey", "EquinixManagedPortAndVlan", "IntegrationID", "Name",
 	"OnBandwidthThresholdNotification", "OnProfileApprovalRejectNotification", "OnVcApprovalRejectionNotification", "OverSubscription",
-	"Private", "PrivateUserEmails", "RequiredRedundancy", "SpeedFromAPI", "TagType", "VlanSameAsPrimary"}
+	"Private", "PrivateUserEmails", "RequiredRedundancy", "SpeedFromAPI", "TagType", "VlanSameAsPrimary", "Description"}
 var featuresFieldsToTest = []string{"CloudReach", "TestProfile"}
 var portFieldsToTest = []string{"ID", "MetroCode"}
 var bandFieldsToTest = []string{"Speed", "SpeedUnit"}
@@ -63,6 +63,7 @@ func TestECXL2ServiceProfile_resourceDataFromDomain(t *testing.T) {
 		SpeedFromAPI:      false,
 		TagType:           "tagType",
 		VlanSameAsPrimary: false,
+		Description:       "Test Profile",
 	}
 
 	//When
