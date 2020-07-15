@@ -46,8 +46,9 @@ func Provider() terraform.ResourceProvider {
 			},
 		},
 		ResourcesMap: map[string]*schema.Resource{
-			"equinix_ecx_l2_connection":     resourceECXL2Connection(),
-			"equinix_ecx_l2_serviceprofile": resourceECXL2ServiceProfile(),
+			"equinix_ecx_l2_connection":          resourceECXL2Connection(),
+			"equinix_ecx_l2_connection_accepter": resourceECXL2ConnectionAccepter(),
+			"equinix_ecx_l2_serviceprofile":      resourceECXL2ServiceProfile(),
 		},
 	}
 
