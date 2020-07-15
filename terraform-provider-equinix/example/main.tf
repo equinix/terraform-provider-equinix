@@ -127,6 +127,12 @@ resource "equinix_ecx_l2_connection" "tf-azure-dot1q-mic" {
   }
 }
 
+resource "equinix_ecx_l2_connection_accepter" "aws_dot1q" {
+  connection_id = equinix_ecx_l2_connection.aws_dot1q.id
+  access_key    = "AK123456"
+  secret_key    = "SK123456"
+}
+
 //Azure Express Route connection using a Dot1q port - Manual
 resource "equinix_ecx_l2_connection" "tf-azure-dot1q-man" {
   name                  = "tf-azure-dot1q-man-pri"
