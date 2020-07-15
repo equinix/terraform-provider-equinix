@@ -2,11 +2,14 @@ package equinix
 
 import (
 	"fmt"
+	"math/rand"
 	"os"
 	"reflect"
 	"regexp"
 	"strings"
+	"sync"
 	"testing"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
@@ -93,4 +96,27 @@ func structToSchemaMap(src interface{}, schema map[string]string) map[string]int
 		ret[schemaName] = val.Field(i).Interface()
 	}
 	return ret
+}
+
+func randInt(n int) int {
+	src := rand.NewSource(time.Now().UnixNano())
+	var mu sync.Mutex
+	mu.Lock()
+	i := rand.New(src).Intn(n)
+	mu.Unlock()
+	return i
+}
+
+func randString(length int) string {
+	src := rand.NewSource(time.Now().UnixNano())
+	result := make([]byte, length)
+	set := "abcdefghijklmnopqrstuvwxyz012346789"
+	var mu sync.Mutex
+	mu.Lock()
+	r := rand.New(src)
+	for i := 0; i < length; i++ {
+		result[i] = set[r.Intn(len(set))]
+	}
+	mu.Unlock()
+	return string(result)
 }
