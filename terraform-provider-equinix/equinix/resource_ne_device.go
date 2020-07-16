@@ -28,6 +28,9 @@ var neDeviceSchemaNames = map[string]string{
 	"Throughput":          "throughput",
 	"ThroughputUnit":      "throughput_unit",
 	"VendorConfig":        "vendor_configuration",
+	"ManagementType":      "equinix_managed",
+	"CoreCount":           "cpu_cores",
+	"InterfaceCount":      "interface_count",
 	"Secondary":           "secondary",
 	//computed
 	"DeviceSerialNo": "serial_number",
@@ -178,6 +181,23 @@ func createNeDeviceSchema() map[string]*schema.Schema {
 		neDeviceSchemaNames["Version"]: {
 			Type:     schema.TypeString,
 			Required: true,
+			ForceNew: true,
+		},
+		neDeviceSchemaNames["ManagementType"]: {
+			Type:     schema.TypeBool,
+			Optional: true,
+			Default:  false,
+			ForceNew: true,
+		},
+		neDeviceSchemaNames["CoreCount"]: {
+			Type:     schema.TypeInt,
+			Required: true,
+			ForceNew: true,
+		},
+		neDeviceSchemaNames["InterfaceCount"]: {
+			Type:     schema.TypeInt,
+			Optional: true,
+			Computed: true,
 			ForceNew: true,
 		},
 		//Computed
@@ -395,8 +415,17 @@ func createNeDevices(d *schema.ResourceData) (*ne.Device, *ne.Device) {
 			primary.VendorConfig = &expandNeDeviceVendorConfig(confSet)[0]
 		}
 	}
+	if v, ok := d.GetOk(neDeviceSchemaNames["ManagementType"]); ok {
+		primary.ManagementType = expandNeManagementType(v.(bool))
+	}
 	if v, ok := d.GetOk(neDeviceSchemaNames["Version"]); ok {
 		primary.Version = v.(string)
+	}
+	if v, ok := d.GetOk(neDeviceSchemaNames["CoreCount"]); ok {
+		primary.CoreCount = v.(int)
+	}
+	if v, ok := d.GetOk(neDeviceSchemaNames["InterfaceCount"]); ok {
+		primary.InterfaceCount = v.(int)
 	}
 	if v, ok := d.GetOk(neDeviceSchemaNames["Secondary"]); ok {
 		secSet := v.(*schema.Set)
@@ -495,6 +524,15 @@ func updateNeDeviceResource(primary *ne.Device, secondary *ne.Device, d *schema.
 	if err := d.Set(neDeviceSchemaNames["Version"], primary.Version); err != nil {
 		return fmt.Errorf("error reading Version: %s", err)
 	}
+	if err := d.Set(neDeviceSchemaNames["ManagementType"], flattenNeManagementType(primary.ManagementType)); err != nil {
+		return fmt.Errorf("error reading ManagementType: %s", err)
+	}
+	if err := d.Set(neDeviceSchemaNames["CoreCount"], primary.CoreCount); err != nil {
+		return fmt.Errorf("error reading CoreCount: %s", err)
+	}
+	if err := d.Set(neDeviceSchemaNames["InterfaceCount"], primary.InterfaceCount); err != nil {
+		return fmt.Errorf("error reading InterfaceCount: %s", err)
+	}
 	if err := d.Set(neDeviceSchemaNames["DeviceSerialNo"], primary.DeviceSerialNo); err != nil {
 		return fmt.Errorf("error reading DeviceSerialNo: %s", err)
 	}
@@ -565,6 +603,20 @@ func flattenNeDeviceSecondary(device ne.Device) interface{} {
 	transformed[neDeviceSchemaNames["Status"]] = device.Status
 	transformed[neDeviceSchemaNames["UUID"]] = device.UUID
 	return []map[string]interface{}{transformed}
+}
+
+func flattenNeManagementType(mgmtType string) bool {
+	if mgmtType == "EQUINIX-CONFIGURED" {
+		return true
+	}
+	return false
+}
+
+func expandNeManagementType(equinixManaged bool) string {
+	if equinixManaged {
+		return "EQUINIX-CONFIGURED"
+	}
+	return "SELF-CONFIGURED"
 }
 
 func expandNeDeviceVendorConfig(features *schema.Set) []ne.DeviceVendorConfig {

@@ -8,7 +8,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-var primaryDevFields = []string{"AccountNumber", "ACL", "AdditionalBandwidth", "DeviceTypeCode", "HostName", "LicenseFileID", "LicenseKey", "LicenseSecret", "LicenseToken", "LicenseType", "MetroCode", "Name", "Notifications", "PackageCode", "PurchaseOrderNumber", "TermLength", "Throughput", "ThroughputUnit", "Version"}
+var primaryDevFields = []string{"AccountNumber", "ACL", "AdditionalBandwidth", "DeviceTypeCode", "HostName", "LicenseFileID", "LicenseKey", "LicenseSecret", "LicenseToken", "LicenseType", "MetroCode", "Name", "Notifications", "PackageCode", "PurchaseOrderNumber", "TermLength", "Throughput", "ThroughputUnit", "Version", "CoreCount", "InterfaceCount"}
 var secondaryDevFields = []string{"AccountNumber", "ACL", "AdditionalBandwidth", "HostName", "LicenseFileID", "LicenseKey", "LicenseSecret", "LicenseToken", "MetroCode", "Name", "Notifications"}
 var vendorConfigFields = []string{"SiteID", "SystemIPAddress"}
 
@@ -37,7 +37,9 @@ func TestNeDevice_resourceDataFromDomain(t *testing.T) {
 		VendorConfig: &ne.DeviceVendorConfig{
 			SiteID:          "someSystemID",
 			SystemIPAddress: "someSystemIPAddress"},
-		Version: "16.12.1e",
+		Version:        "16.12.1e",
+		CoreCount:      4,
+		InterfaceCount: 10,
 	}
 	secondary := ne.Device{
 		AccountNumber:       "7890",
@@ -98,6 +100,8 @@ func TestNeDevice_domainFromResourceData(t *testing.T) {
 	d.Set(neDeviceSchemaNames["Throughput"], 5)
 	d.Set(neDeviceSchemaNames["ThroughputUnit"], "Gbps")
 	d.Set(neDeviceSchemaNames["Version"], "16.12.1e")
+	d.Set(neDeviceSchemaNames["CoreCount"], 2)
+	d.Set(neDeviceSchemaNames["InterfaceCount"], 12)
 	priVendorConf := flattenNeDeviceVendorConfig(&ne.DeviceVendorConfig{
 		SiteID:          "someSiteID",
 		SystemIPAddress: "someSystemIPAddress"})
