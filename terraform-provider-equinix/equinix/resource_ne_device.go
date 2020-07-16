@@ -295,6 +295,10 @@ func resourceNeDeviceRead(d *schema.ResourceData, m interface{}) error {
 	if err != nil {
 		return fmt.Errorf("cannot fetch primary device due to %v", err)
 	}
+	if primary.Status == "DEPROVISIONED" {
+		d.SetId("")
+		return nil
+	}
 	if primary.RedundantUUID != "" {
 		secondary, err = conf.ne.GetDevice(primary.RedundantUUID)
 		if err != nil {
@@ -415,9 +419,7 @@ func createNeDevices(d *schema.ResourceData) (*ne.Device, *ne.Device) {
 			primary.VendorConfig = &expandNeDeviceVendorConfig(confSet)[0]
 		}
 	}
-	if v, ok := d.GetOk(neDeviceSchemaNames["ManagementType"]); ok {
-		primary.ManagementType = expandNeManagementType(v.(bool))
-	}
+	primary.ManagementType = expandNeManagementType(d.Get(neDeviceSchemaNames["ManagementType"]).(bool))
 	if v, ok := d.GetOk(neDeviceSchemaNames["Version"]); ok {
 		primary.Version = v.(string)
 	}
