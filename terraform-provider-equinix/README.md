@@ -250,7 +250,14 @@ Developing the provider
   $ make test
   ```
 * to run acceptance tests, use make `testacc` target
+  ```
+  $ make testacc
+  ```
+  Check "Running acceptance tests" section for more details.
+  
 
+Running acceptance tests
+------------------
   **NOTE**: acceptance tests create resources on real infrastructure, thus may be subject for costs. In order to run acceptance tests, you must set necessary provider configuration attributes.
 
   ```
@@ -259,3 +266,21 @@ Developing the provider
   $ export EQUINIX_API_CLIENTSECRET=someSecret
   $ make testacc
   ```
+
+### ECX L2 connection acceptance tests
+ECX Layer 2 connection acceptance tests use below parameters, that can be set to match with desired tesing environment. If not set, defaults values, **from Sandbox enviroment** are used.
+
+* **TF_ACC_ECX_L2_AWS_SP_ID** - sets UUID of Layer2 service profile for AWS
+* **TF_ACC_ECX_L2_AZURE_SP_ID** - sets UUID of Layer2 service profile for Azure 
+* **TF_ACC_ECX_PRI_DOT1Q_PORT_ID** - sets UUID of Dot1Q encapsulated port on primary device
+* **TF_ACC_ECX_SEC_DOT1Q_PORT_ID** - sets UUID of Dot1Q encapsulated port on secondary device
+
+Example - running tests on Sandbox environment but with defined ports:
+```
+  $ export EQUINIX_API_ENDPOINT=https://sandboxapi.equinix.com"
+  $ export EQUINIX_API_CLIENTID=someID
+  $ export EQUINIX_API_CLIENTSECRET=someSecret
+  $ export TF_ACC_ECX_PRI_DOT1Q_PORT_ID="6ca3704b-c660-4c6f-9e66-3282f8de787b"
+  $ export TF_ACC_ECX_SEC_DOT1Q_PORT_ID="7a80ab13-4e04-455c-82e3-79d962d0c0c3"
+  $ make testacc
+```
