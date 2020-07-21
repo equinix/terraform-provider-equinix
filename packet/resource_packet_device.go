@@ -63,20 +63,6 @@ func resourcePacketDevice() *schema.Resource {
 				Computed: true,
 			},
 
-			"facility": {
-				Type:     schema.TypeString,
-				Optional: true,
-				Removed:  "Use the \"facilities\" array instead, i.e. change \n  facility = \"ewr1\"\nto \n  facilities = [\"ewr1\"]",
-			},
-			"ip_address_types": {
-				Type:     schema.TypeSet,
-				Computed: true,
-				Elem: &schema.Schema{
-					Type:         schema.TypeString,
-					ValidateFunc: validation.StringInSlice(ipAddressTypes, false),
-				},
-				Removed: "Removed in favor of 'ip_address' attribute.",
-			},
 			"facilities": {
 				Type:     schema.TypeList,
 				Required: true,
@@ -145,17 +131,10 @@ func resourcePacketDevice() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-
 			"network_type": {
-				Type:         schema.TypeString,
-				Optional:     true,
-				ValidateFunc: validation.StringInSlice([]string{"layer3", "layer2-bonded", "layer2-individual", "hybrid"}, false),
-				DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
-					if new == "" {
-						return true
-					}
-					return false
-				},
+				Type:       schema.TypeString,
+				Computed:   true,
+				Deprecated: "You should handle Network Type with the new packet_device_network_type resource.",
 			},
 
 			"ports": {
@@ -306,20 +285,10 @@ func resourcePacketDevice() *schema.Resource {
 func resourcePacketDeviceCreate(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*packngo.Client)
 
-	var facs []string
-	f, ok := d.GetOk("facility")
-
-	if ok {
-		facs = []string{f.(string)}
-	} else {
-		facs = convertStringArr(d.Get("facilities").([]interface{}))
-		if len(facs) == 0 {
-			return fmt.Errorf("You must set either 'facilities' or 'facility'")
-		}
-	}
+	facs := convertStringArr(d.Get("facilities").([]interface{}))
 
 	var addressTypesSlice []packngo.IPAddressCreateRequest
-	_, ok = d.GetOk("ip_address")
+	_, ok := d.GetOk("ip_address")
 	if ok {
 		arr := d.Get("ip_address").([]interface{})
 		addressTypesSlice = getNewIPAddressSlice(arr)
@@ -334,7 +303,6 @@ func resourcePacketDeviceCreate(d *schema.ResourceData, meta interface{}) error 
 		BillingCycle: d.Get("billing_cycle").(string),
 		ProjectID:    d.Get("project_id").(string),
 	}
-	targetNetworkState, nTypeOk := d.GetOk("network_type")
 	if attr, ok := d.GetOk("user_data"); ok {
 		createRequest.UserData = attr.(string)
 	}
@@ -427,21 +395,13 @@ func resourcePacketDeviceCreate(d *schema.ResourceData, meta interface{}) error 
 		d.SetId("")
 		return fmt.Errorf("Device in non-active state \"%s\"", state)
 	}
-
-	if nTypeOk {
-		_, err := waitForDeviceAttribute(d, []string{"layer3"}, []string{"hybrid", "layer2-bonded", "layer2-individual"}, "network_type", meta)
-		if err != nil {
-			return err
-		}
-
-		tns := targetNetworkState.(string)
-		if tns != "layer3" {
-			_, err := client.DevicePorts.DeviceToNetworkType(newDevice.ID, tns)
-			if err != nil {
-				return err
-			}
-		}
-	}
+	/*
+			    Possibly wait for device network state
+		    	_, err := waitForDeviceAttribute(d, []string{"layer3"}, []string{"hybrid", "layer2-bonded", "layer2-individual"}, "network_type", meta)
+		        if err != nil {
+					return err
+				}
+	*/
 
 	return resourcePacketDeviceRead(d, meta)
 }
@@ -596,16 +556,6 @@ func resourcePacketDeviceUpdate(d *schema.ResourceData, meta interface{}) error 
 			return friendlyError(err)
 		}
 
-	}
-	if d.HasChange("network_type") {
-		target, ok := d.GetOk("network_type")
-		if ok {
-			targetType := target.(string)
-			_, err := client.DevicePorts.DeviceToNetworkType(d.Id(), targetType)
-			if err != nil {
-				return err
-			}
-		}
 	}
 	return resourcePacketDeviceRead(d, meta)
 }

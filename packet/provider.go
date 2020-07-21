@@ -36,6 +36,7 @@ func Provider() terraform.ResourceProvider {
 
 		ResourcesMap: map[string]*schema.Resource{
 			"packet_device":               resourcePacketDevice(),
+			"packet_device_network_type":  resourcePacketDeviceNetworkType(),
 			"packet_ssh_key":              resourcePacketSSHKey(),
 			"packet_project_ssh_key":      resourcePacketProjectSSHKey(),
 			"packet_project":              resourcePacketProject(),

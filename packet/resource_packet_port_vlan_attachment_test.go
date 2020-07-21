@@ -12,7 +12,7 @@ import (
 	"github.com/packethost/packngo"
 )
 
-func testAccCheckPacketPortVlanAttachmentConfig_L2Bonded(name string) string {
+func testAccCheckPacketPortVlanAttachmentConfig_L2Bonded_1(name string) string {
 	return fmt.Sprintf(`
 resource "packet_project" "test" {
     name = "tfacc-port_vlan_attachment-%s"
@@ -25,8 +25,13 @@ resource "packet_device" "test" {
   operating_system = "ubuntu_16_04"
   billing_cycle    = "hourly"
   project_id       = "${packet_project.test.id}"
-  network_type     = "layer2-bonded"
 }
+`, name)
+}
+
+func testAccCheckPacketPortVlanAttachmentConfig_L2Bonded_2(name string) string {
+	return fmt.Sprintf(`
+%s
 
 resource "packet_vlan" "test1" {
   description = "test VLAN 1"
@@ -40,19 +45,24 @@ resource "packet_vlan" "test2" {
   project_id  = "${packet_project.test.id}"
 }
 
+resource "packet_device_network_type" "test" {
+  device_id = packet_device.test.id
+  type = "layer2-bonded"
+}
+
 resource "packet_port_vlan_attachment" "test1" {
-  device_id = "${packet_device.test.id}"
+  device_id = packet_device_network_type.test.id
   vlan_vnid = "${packet_vlan.test1.vxlan}"
   port_name = "bond0"
 }
 
 resource "packet_port_vlan_attachment" "test2" {
-  device_id = "${packet_device.test.id}"
+  device_id = packet_device_network_type.test.id
   vlan_vnid = "${packet_vlan.test2.vxlan}"
   port_name = "bond0"
 }
 
-`, name)
+`, testAccCheckPacketPortVlanAttachmentConfig_L2Bonded_1(name))
 }
 
 func TestAccPacketPortVlanAttachment_L2Bonded(t *testing.T) {
@@ -65,7 +75,13 @@ func TestAccPacketPortVlanAttachment_L2Bonded(t *testing.T) {
 		CheckDestroy: testAccCheckPacketPortVlanAttachmentDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckPacketPortVlanAttachmentConfig_L2Bonded(rs),
+				Config: testAccCheckPacketPortVlanAttachmentConfig_L2Bonded_1(rs),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("packet_device.test", "network_type", "layer3"),
+				),
+			},
+			{
+				Config: testAccCheckPacketPortVlanAttachmentConfig_L2Bonded_2(rs),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(
 						"packet_port_vlan_attachment.test1", "port_name", "bond0"),
@@ -74,13 +90,14 @@ func TestAccPacketPortVlanAttachment_L2Bonded(t *testing.T) {
 					resource.TestCheckResourceAttrPair(
 						"packet_port_vlan_attachment.test1", "device_id",
 						"packet_device.test", "id"),
+					resource.TestCheckResourceAttr("packet_device_network_type.test", "type", "layer2-bonded"),
 				),
 			},
 		},
 	})
 }
 
-func testAccCheckPacketPortVlanAttachmentConfig_L2Individual(name string) string {
+func testAccCheckPacketPortVlanAttachmentConfig_L2Individual_1(name string) string {
 	return fmt.Sprintf(`
 resource "packet_project" "test" {
     name = "tfacc-port_vlan_attachment-%s"
@@ -93,8 +110,13 @@ resource "packet_device" "test" {
   operating_system = "ubuntu_16_04"
   billing_cycle    = "hourly"
   project_id       = "${packet_project.test.id}"
-  network_type     = "layer2-individual"
 }
+`, name)
+}
+
+func testAccCheckPacketPortVlanAttachmentConfig_L2Individual_2(name string) string {
+	return fmt.Sprintf(`
+%s
 
 resource "packet_vlan" "test1" {
   description = "test VLAN 1"
@@ -108,19 +130,24 @@ resource "packet_vlan" "test2" {
   project_id  = "${packet_project.test.id}"
 }
 
+resource "packet_device_network_type" "test" {
+  device_id = packet_device.test.id
+  type = "layer2-individual"
+}
+
 resource "packet_port_vlan_attachment" "test1" {
-  device_id = "${packet_device.test.id}"
+  device_id = packet_device_network_type.test.id
   vlan_vnid = "${packet_vlan.test1.vxlan}"
   port_name = "eth1"
 }
 
 resource "packet_port_vlan_attachment" "test2" {
-  device_id = "${packet_device.test.id}"
+  device_id = packet_device_network_type.test.id
   vlan_vnid = "${packet_vlan.test2.vxlan}"
   port_name = "eth1"
 }
 
-`, name)
+`, testAccCheckPacketPortVlanAttachmentConfig_L2Individual_1(name))
 }
 
 func TestAccPacketPortVlanAttachment_L2Individual(t *testing.T) {
@@ -133,7 +160,14 @@ func TestAccPacketPortVlanAttachment_L2Individual(t *testing.T) {
 		CheckDestroy: testAccCheckPacketPortVlanAttachmentDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckPacketPortVlanAttachmentConfig_L2Individual(rs),
+				Config: testAccCheckPacketPortVlanAttachmentConfig_L2Individual_1(rs),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(
+						"packet_device.test", "network_type", "layer3"),
+				),
+			},
+			{
+				Config: testAccCheckPacketPortVlanAttachmentConfig_L2Individual_2(rs),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(
 						"packet_port_vlan_attachment.test1", "port_name", "eth1"),
@@ -142,13 +176,15 @@ func TestAccPacketPortVlanAttachment_L2Individual(t *testing.T) {
 					resource.TestCheckResourceAttrPair(
 						"packet_port_vlan_attachment.test1", "device_id",
 						"packet_device.test", "id"),
+					resource.TestCheckResourceAttr(
+						"packet_device_network_type.test", "type", "layer2-individual"),
 				),
 			},
 		},
 	})
 }
 
-func testAccCheckPacketPortVlanAttachmentConfig_Hybrid(name string) string {
+func testAccCheckPacketPortVlanAttachmentConfig_Hybrid_1(name string) string {
 	return fmt.Sprintf(`
 resource "packet_project" "test" {
     name = "tfacc-port_vlan_attachment-%s"
@@ -161,7 +197,16 @@ resource "packet_device" "test" {
   operating_system = "ubuntu_16_04"
   billing_cycle    = "hourly"
   project_id       = "${packet_project.test.id}"
-  network_type     = "hybrid"
+}`, name)
+}
+
+func testAccCheckPacketPortVlanAttachmentConfig_Hybrid_2(name string) string {
+	return fmt.Sprintf(`
+%s 
+
+resource "packet_device_network_type" "test" {
+  device_id = packet_device.test.id
+  type = "hybrid"
 }
 
 resource "packet_vlan" "test" {
@@ -171,11 +216,11 @@ resource "packet_vlan" "test" {
 }
 
 resource "packet_port_vlan_attachment" "test" {
-  device_id = "${packet_device.test.id}"
+  device_id = packet_device_network_type.test.id
   vlan_vnid = "${packet_vlan.test.vxlan}"
   port_name = "eth1"
   force_bond = false
-}`, name)
+}`, testAccCheckPacketPortVlanAttachmentConfig_Hybrid_1(name))
 }
 
 func TestAccPacketPortVlanAttachment_HybridBasic(t *testing.T) {
@@ -187,20 +232,29 @@ func TestAccPacketPortVlanAttachment_HybridBasic(t *testing.T) {
 		CheckDestroy: testAccCheckPacketPortVlanAttachmentDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckPacketPortVlanAttachmentConfig_Hybrid(rs),
+				Config: testAccCheckPacketPortVlanAttachmentConfig_Hybrid_1(rs),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(
+						"packet_device.test", "network_type", "layer3"),
+				),
+			},
+			{
+				Config: testAccCheckPacketPortVlanAttachmentConfig_Hybrid_2(rs),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(
 						"packet_port_vlan_attachment.test", "port_name", "eth1"),
 					resource.TestCheckResourceAttrPair(
 						"packet_port_vlan_attachment.test", "device_id",
 						"packet_device.test", "id"),
+					resource.TestCheckResourceAttr(
+						"packet_device_network_type.test", "type", "hybrid"),
 				),
 			},
 		},
 	})
 }
 
-func testAccCheckPacketPortVlanAttachmentConfig_HybridMultipleVlans(name string) string {
+func testAccCheckPacketPortVlanAttachmentConfig_HybridMultipleVlans_1(name string) string {
 	return fmt.Sprintf(`
 resource "packet_project" "test" {
   name = "tfacc-port_vlan_attachment-%s"
@@ -213,8 +267,12 @@ resource "packet_device" "test" {
   operating_system = "ubuntu_16_04"
   billing_cycle    = "hourly"
   project_id       = packet_project.test.id
-  network_type     = "hybrid"
+}`, name)
 }
+
+func testAccCheckPacketPortVlanAttachmentConfig_HybridMultipleVlans_2(name string) string {
+	return fmt.Sprintf(`
+%s
 
 resource "packet_vlan" "test" {
   count       = 3
@@ -223,12 +281,17 @@ resource "packet_vlan" "test" {
   project_id  = packet_project.test.id
 }
 
+resource "packet_device_network_type" "test" {
+  device_id = packet_device.test.id
+  type = "hybrid"
+}
+
 resource "packet_port_vlan_attachment" "test" {
   count     = length(packet_vlan.test)
-  device_id = packet_device.test.id
+  device_id = packet_device_network_type.test.id
   vlan_vnid = packet_vlan.test[count.index].vxlan
   port_name = "eth1"
-}`, name)
+}`, testAccCheckPacketPortVlanAttachmentConfig_HybridMultipleVlans_1(name))
 }
 
 func TestAccPacketPortVlanAttachment_HybridMultipleVlans(t *testing.T) {
@@ -240,7 +303,14 @@ func TestAccPacketPortVlanAttachment_HybridMultipleVlans(t *testing.T) {
 		CheckDestroy: testAccCheckPacketPortVlanAttachmentDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckPacketPortVlanAttachmentConfig_HybridMultipleVlans(rs),
+				Config: testAccCheckPacketPortVlanAttachmentConfig_HybridMultipleVlans_1(rs),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(
+						"packet_device.test", "network_type", "layer3"),
+				),
+			},
+			{
+				Config: testAccCheckPacketPortVlanAttachmentConfig_HybridMultipleVlans_2(rs),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(
 						"packet_port_vlan_attachment.test.0", "port_name", "eth1"),
@@ -254,6 +324,8 @@ func TestAccPacketPortVlanAttachment_HybridMultipleVlans(t *testing.T) {
 						"packet_port_vlan_attachment.test.2", "port_name", "eth1"),
 					resource.TestCheckResourceAttrPair(
 						"packet_port_vlan_attachment.test.2", "device_id", "packet_device.test", "id"),
+					resource.TestCheckResourceAttr(
+						"packet_device_network_type.test", "type", "hybrid"),
 				),
 			},
 		},
@@ -296,7 +368,7 @@ func testAccCheckPacketPortVlanAttachmentDestroy(s *terraform.State) error {
 	return nil
 }
 
-func testAccCheckPacketPortVlanAttachmentConfig_L2Native(name string) string {
+func testAccCheckPacketPortVlanAttachmentConfig_L2Native_1(name string) string {
 	return fmt.Sprintf(`
 resource "packet_project" "test" {
     name = "tfacc-port_vlan_attachment-%s"
@@ -309,8 +381,12 @@ resource "packet_device" "test" {
   operating_system = "ubuntu_16_04"
   billing_cycle    = "hourly"
   project_id       = "${packet_project.test.id}"
-  network_type     = "layer2-individual"
+}`, name)
 }
+
+func testAccCheckPacketPortVlanAttachmentConfig_L2Native_2(name string) string {
+	return fmt.Sprintf(`
+%s
 
 resource "packet_vlan" "test1" {
   description = "test VLAN 1"
@@ -324,21 +400,26 @@ resource "packet_vlan" "test2" {
   project_id  = "${packet_project.test.id}"
 }
 
+resource "packet_device_network_type" "test" {
+  device_id = packet_device.test.id
+  type = "layer2-individual"
+}
+
 resource "packet_port_vlan_attachment" "test1" {
-  device_id = "${packet_device.test.id}"
+  device_id = packet_device_network_type.test.id
   vlan_vnid = "${packet_vlan.test1.vxlan}"
   port_name = "eth1"
 }
 
 resource "packet_port_vlan_attachment" "test2" {
-  device_id = "${packet_device.test.id}"
+  device_id = packet_device_network_type.test.id
   vlan_vnid = "${packet_vlan.test2.vxlan}"
   native    = true
   port_name = "eth1"
   depends_on = ["packet_port_vlan_attachment.test1"]
 }
 
-`, name)
+`, testAccCheckPacketPortVlanAttachmentConfig_L2Native_1(name))
 }
 
 func TestAccPacketPortVlanAttachment_L2Native(t *testing.T) {
@@ -351,7 +432,14 @@ func TestAccPacketPortVlanAttachment_L2Native(t *testing.T) {
 		CheckDestroy: testAccCheckPacketPortVlanAttachmentDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckPacketPortVlanAttachmentConfig_L2Native(rs),
+				Config: testAccCheckPacketPortVlanAttachmentConfig_L2Native_1(rs),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(
+						"packet_device.test", "network_type", "layer3"),
+				),
+			},
+			{
+				Config: testAccCheckPacketPortVlanAttachmentConfig_L2Native_2(rs),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(
 						"packet_port_vlan_attachment.test1", "port_name", "eth1"),
@@ -362,6 +450,8 @@ func TestAccPacketPortVlanAttachment_L2Native(t *testing.T) {
 					resource.TestCheckResourceAttrPair(
 						"packet_port_vlan_attachment.test1", "device_id",
 						"packet_device.test", "id"),
+					resource.TestCheckResourceAttr(
+						"packet_device_network_type.test", "type", "layer2-individual"),
 				),
 			},
 		},
