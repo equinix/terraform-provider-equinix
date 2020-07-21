@@ -1,4 +1,9 @@
-## 2.11.0 (Unreleased)
+## 3.0.0 (Unreleased)
+
+IMPROVEMENTS:
+- [#240](https://github.com/terraform-providers/terraform-provider-packet/pull/240) New resource `packet_device_network_type` for handling network modes of devices.
+- removal of deleted attributes in `packet_device`: facility and ip_address_types
+
 ## 2.10.1 (July 10, 2020)
 
 BUG FIXES:
