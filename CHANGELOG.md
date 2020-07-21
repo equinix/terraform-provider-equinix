@@ -1,4 +1,4 @@
-## 3.0.0 (Unreleased)
+## 3.0.0 (July 21, 2020)
 
 IMPROVEMENTS:
 - [#240](https://github.com/terraform-providers/terraform-provider-packet/pull/240) New resource `packet_device_network_type` for handling network modes of devices.
