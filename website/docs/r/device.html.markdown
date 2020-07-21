@@ -197,7 +197,7 @@ The following attributes are exported:
   * `gateway` - address of router
   * `public` - whether the address is routable from the Internet
   * `family` - IP version - "4" or "6"
-* `network_mode` Network mode of a device, used in [Layer 2 networking](https://www.packet.com/developers/docs/network/advanced/layer-2/). Will be one of `layer3`, `hybrid`, `layer2-individual` and `layer2-bonded`.
+* `network_type` Network type of a device, used in [Layer 2 networking](https://www.packet.com/developers/docs/network/advanced/layer-2/). Will be one of `layer3`, `hybrid`, `layer2-individual` and `layer2-bonded`.
 * `operating_system` - The operating system running on the device
 * `plan` - The hardware config of the device
 * `ports` - Ports assigned to the device

@@ -39,13 +39,13 @@ resource "packet_device" "test" {
   project_id       = local.project_id
 }
 
-resource "packet_device_network_mode" "test" {
+resource "packet_device_network_type" "test" {
   device_id = packet_device.test.id
-  mode = "hybrid"
+  type = "hybrid"
 }
 
 resource "packet_port_vlan_attachment" "test" {
-  device_id = packet_device_network_mode.test.id
+  device_id = packet_device_network_type.test.id
   port_name = "eth1"
   vlan_vnid = packet_vlan.test.vxlan
 }
@@ -62,9 +62,9 @@ resource "packet_device" "test" {
   project_id       = local.project_id
 }
 
-resource "packet_device_network_mode" "test" {
+resource "packet_device_network_type" "test" {
   device_id = packet_device.test.id
-  mode = "layer2-individual"
+  type = "layer2-individual"
 }
 
 resource "packet_vlan" "test1" {
@@ -80,13 +80,13 @@ resource "packet_vlan" "test2" {
 }
 
 resource "packet_port_vlan_attachment" "test1" {
-  device_id = packet_device_network_mode.test.id
+  device_id = packet_device_network_type.test.id
   vlan_vnid = packet_vlan.test1.vxlan
   port_name = "eth1"
 }
 
 resource "packet_port_vlan_attachment" "test2" {
-  device_id  = packet_device_network_mode.test.id
+  device_id  = packet_device_network_type.test.id
   vlan_vnid  = packet_vlan.test2.vxlan
   port_name  = "eth1"
   native     = true
