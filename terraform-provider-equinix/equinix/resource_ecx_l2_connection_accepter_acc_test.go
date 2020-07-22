@@ -2,7 +2,6 @@ package equinix
 
 import (
 	"fmt"
-	"log"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
@@ -30,7 +29,6 @@ func TestAccECXL2ConnectionAccepter(t *testing.T) {
 		"access_key":             "AKIAGGJKJU7BC3QJKYQ",
 		"secret_key":             "CXGJW1lWbqENEqSkBAK",
 	}
-	log.Printf("Config is %s", testAccECXL2ConnectionAccepter(context))
 	connectionResourceName := fmt.Sprintf("equinix_ecx_l2_connection.%s", context["connectionResourceName"].(string))
 	accepterResourceName := fmt.Sprintf("equinix_ecx_l2_connection_accepter.%s", context["accepterResourceName"].(string))
 	resource.Test(t, resource.TestCase{
