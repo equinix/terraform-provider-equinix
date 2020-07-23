@@ -64,6 +64,22 @@ data "equinix_ecx_port" "tf-pri-dot1q" {
 * `bandwidth` - Port Bandwidth in bytes.
 * `status` - Port status that indicates whether a port has been assigned or is ready for connection.
 
+### ECX Layer2 Seller Profile data source
+Data source `equinix_ecx_l2_sellerprofile` is used to fetch attributes of ECX Layer2 Seller Profile (like UUID) with a given profile name.
+
+Example usage:
+```
+data "equinix_ecx_l2_sellerprofile" "tf-aws" {
+  name = "AWS Direct Connect"
+}
+```
+
+#### Argument Reference
+* `name` - *(Required)* Name of seller profile
+
+#### Attributes Reference
+* `uuid` - Unique identifier of seller profile
+
 ### ECX L2 connection resource
 Resource `equinix_ecx_l2_connection` is used to manage layer 2 connections in Equinix Cloud Exchange (ECX) Fabric.
 

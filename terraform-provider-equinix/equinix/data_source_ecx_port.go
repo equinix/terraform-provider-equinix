@@ -22,7 +22,7 @@ var ecxPortSchemaNames = map[string]string{
 
 func dataSourceECXPort() *schema.Resource {
 	return &schema.Resource{
-		Read: resourceECXPortRead,
+		Read: dataSourceECXPortRead,
 		Schema: map[string]*schema.Schema{
 			ecxPortSchemaNames["UUID"]: {
 				Type:     schema.TypeString,
@@ -68,17 +68,29 @@ func dataSourceECXPort() *schema.Resource {
 	}
 }
 
-func resourceECXPortRead(d *schema.ResourceData, m interface{}) error {
+func dataSourceECXPortRead(d *schema.ResourceData, m interface{}) error {
 	conf := m.(*Config)
 	name := d.Get(ecxPortSchemaNames["Name"]).(string)
-	port, err := conf.ecx.GetUserPort(name)
+	ports, err := conf.ecx.GetUserPorts()
 	if err != nil {
 		return err
 	}
-	return updateECXPortResource(port, d)
+	var filteredPorts []ecx.Port
+	for _, port := range ports {
+		if port.Name == name {
+			filteredPorts = append(filteredPorts, port)
+		}
+	}
+	if len(filteredPorts) < 1 {
+		return fmt.Errorf("profile query returned no results, please change your search criteria")
+	}
+	if len(filteredPorts) > 1 {
+		return fmt.Errorf("query returned more than one result, please try more specific search criteria")
+	}
+	return updateECXPortResource(ports[0], d)
 }
 
-func updateECXPortResource(port *ecx.Port, d *schema.ResourceData) error {
+func updateECXPortResource(port ecx.Port, d *schema.ResourceData) error {
 	d.SetId(port.UUID)
 	if err := d.Set(ecxPortSchemaNames["UUID"], port.UUID); err != nil {
 		return fmt.Errorf("error reading UUID: %s", err)
