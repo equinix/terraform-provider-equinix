@@ -87,7 +87,7 @@ func dataSourceECXPortRead(d *schema.ResourceData, m interface{}) error {
 	if len(filteredPorts) > 1 {
 		return fmt.Errorf("query returned more than one result, please try more specific search criteria")
 	}
-	return updateECXPortResource(ports[0], d)
+	return updateECXPortResource(filteredPorts[0], d)
 }
 
 func updateECXPortResource(port ecx.Port, d *schema.ResourceData) error {
