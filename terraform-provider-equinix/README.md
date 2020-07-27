@@ -39,6 +39,47 @@ export EQUINIX_API_CLIENTID=someID
 export EQUINIX_API_CLIENTSECRET=someSecret
 ```
 
+### ECX Port data source
+Data source `equinix_ecx_port` is used to fetch attributes of ECX port (like UUID) with given port name.
+
+Example usage:
+```
+data "equinix_ecx_port" "tf-pri-dot1q" {
+  name = "sit-001-CX-NY5-NL-Dot1q-BO-10G-PRI-JP-157"
+}
+```
+
+#### Argument Reference
+* `name` - *(Required)* Name of the port
+
+#### Attributes Reference
+* `uuid` - Unique identifier of the port
+* `status` - Status of the connection
+* `region` - Region in which the port resides
+*	`ibx` - Equinix IBX where the port resides.
+* `metro_code` - The metro code of the metro where the port resides
+* `priority` - The priority of the device (primary / secondary) where the port resides
+* `encapsulation` - The VLAN encapsulation of the port (Dot1q or QinQ)
+* `buyout` - Indicates whether the port supports unlimited connections. If  "false", the port is a standard port with limited connections. If  "true", the port is an "unlimited connections" port that allows multiple connections at no additional charge. 
+* `bandwidth` - Port Bandwidth in bytes.
+* `status` - Port status that indicates whether a port has been assigned or is ready for connection.
+
+### ECX Layer2 Seller Profile data source
+Data source `equinix_ecx_l2_sellerprofile` is used to fetch attributes of ECX Layer2 Seller Profile (like UUID) with a given profile name.
+
+Example usage:
+```
+data "equinix_ecx_l2_sellerprofile" "tf-aws" {
+  name = "AWS Direct Connect"
+}
+```
+
+#### Argument Reference
+* `name` - *(Required)* Name of seller profile
+
+#### Attributes Reference
+* `uuid` - Unique identifier of seller profile
+
 ### ECX L2 connection resource
 Resource `equinix_ecx_l2_connection` is used to manage layer 2 connections in Equinix Cloud Exchange (ECX) Fabric.
 
@@ -266,6 +307,10 @@ Running acceptance tests
   $ export EQUINIX_API_CLIENTSECRET=someSecret
   $ make testacc
   ```
+
+### ECX Port acceptance tests
+ECX Port data source acceptance tests use below parameters, that can be set to match with desired tesing environment. If not set, defaults values, **from Sandbox enviroment** are used.
+* **TF_ACC_ECX_PORT_NAME** - sets name of the port used in data source
 
 ### ECX L2 connection acceptance tests
 ECX Layer 2 connection acceptance tests use below parameters, that can be set to match with desired tesing environment. If not set, defaults values, **from Sandbox enviroment** are used.

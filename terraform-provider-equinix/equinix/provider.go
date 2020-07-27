@@ -45,6 +45,10 @@ func Provider() terraform.ResourceProvider {
 				Optional: true,
 			},
 		},
+		DataSourcesMap: map[string]*schema.Resource{
+			"equinix_ecx_port":             dataSourceECXPort(),
+			"equinix_ecx_l2_sellerprofile": dataSourceECXL2SellerProfile(),
+		},
 		ResourcesMap: map[string]*schema.Resource{
 			"equinix_ecx_l2_connection":          resourceECXL2Connection(),
 			"equinix_ecx_l2_connection_accepter": resourceECXL2ConnectionAccepter(),

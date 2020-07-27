@@ -247,6 +247,10 @@ func resourceECXL2ConnectionRead(d *schema.ResourceData, m interface{}) error {
 	if err != nil {
 		return fmt.Errorf("cannot fetch primary connection due to %v", err)
 	}
+	if primary.Status == "DEPROVISIONING" || primary.Status == "DEPROVISIONED" {
+		d.SetId("")
+		return nil
+	}
 	if primary.RedundantUUID != "" {
 		secondary, err = conf.ecx.GetL2Connection(primary.RedundantUUID)
 		if err != nil {
