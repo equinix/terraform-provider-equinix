@@ -1,9 +1,12 @@
 ## 3.1.0 (Unreleased)
 ## 3.0.0 (July 21, 2020)
 
+BREAKING CHANGES:
+- [#240](https://github.com/terraform-providers/terraform-provider-packet/pull/240) Attribute `packet_device.network_type` is now read-only. Writes (and Reads, when writes are used) should use `packet_device_network_type`.
+
 IMPROVEMENTS:
 - [#240](https://github.com/terraform-providers/terraform-provider-packet/pull/240) New resource `packet_device_network_type` for handling network modes of devices.
-- removal of deleted attributes in `packet_device`: facility and ip_address_types
+- removal of deleted `packet_device` attributes: `facility` (deprecated in 2.0.0) and `ip_address_types` (removed in 2.7.5)
 
 ## 2.10.1 (July 10, 2020)
 
