@@ -2,9 +2,9 @@ package equinix
 
 import (
 	"context"
-	"ecx-go/v3"
 	"fmt"
-	"oauth2-go"
+	"github.com/equinix/ecx-go"
+	"github.com/equinix/oauth2-go"
 	"time"
 )
 

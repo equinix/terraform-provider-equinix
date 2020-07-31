@@ -1,8 +1,7 @@
 package main
 
 import (
-	"terraform-provider-equinix/equinix"
-
+	"github.com/equinix/terraform-provider-equinix/equinix"
 	"github.com/hashicorp/terraform-plugin-sdk/plugin"
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
 )

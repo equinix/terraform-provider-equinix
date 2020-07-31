@@ -1,9 +1,9 @@
 package equinix
 
 import (
-	"ecx-go/v3"
 	"testing"
 
+	"github.com/equinix/ecx-go"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/stretchr/testify/assert"
 )
