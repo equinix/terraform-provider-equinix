@@ -145,7 +145,7 @@ func createECXL2ConnectionResourceSchema() map[string]*schema.Schema {
 			Optional:     true,
 			ForceNew:     true,
 			Computed:     true,
-			ValidateFunc: validation.IntBetween(2, 4092),
+			ValidateFunc: validation.StringIsNotEmpty,
 		},
 		ecxL2ConnectionSchemaNames["ZSideVlanSTag"]: {
 			Type:         schema.TypeInt,
