@@ -77,7 +77,12 @@ func sourceMatchesTargetSchema(t *testing.T, source interface{}, sourceFields []
 		case reflect.String, reflect.Int, reflect.Bool, reflect.Float64:
 			assert.Equal(t, val.Interface(), schemaValue, fName+" matches")
 		case reflect.Slice:
-			assert.ElementsMatch(t, val.Interface().([]string), schemaValue.(*schema.Set).List(), fName+" matches")
+			if v, ok := schemaValue.(*schema.Set); ok {
+				assert.ElementsMatch(t, val.Interface().([]string), v.List(), fName+" matches")
+			}
+			if v, ok := schemaValue.([]string); ok {
+				assert.ElementsMatch(t, val.Interface().([]string), v, fName+" matches")
+			}
 		default:
 			assert.Failf(t, "Type of field not supported: field %v, type %v", fName, val.Kind())
 		}

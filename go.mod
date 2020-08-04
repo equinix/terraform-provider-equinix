@@ -5,6 +5,7 @@ go 1.14
 require (
 	github.com/aws/aws-sdk-go v1.33.5 // indirect
 	github.com/equinix/ecx-go v1.0.1-0.20200804121842-ef4a988b4678
+	github.com/equinix/ne-go v0.0.0-20200804160236-0fb6c7fde544
 	github.com/equinix/oauth2-go v1.0.0
 	github.com/hashicorp/go-getter v1.4.2-0.20200106182914-9813cbd4eb02 // indirect
 	github.com/hashicorp/go-plugin v1.3.0 // indirect

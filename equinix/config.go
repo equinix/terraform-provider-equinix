@@ -3,9 +3,11 @@ package equinix
 import (
 	"context"
 	"fmt"
-	"github.com/equinix/ecx-go"
-	"github.com/equinix/oauth2-go"
 	"time"
+
+	"github.com/equinix/ecx-go"
+	"github.com/equinix/ne-go"
+	"github.com/equinix/oauth2-go"
 )
 
 //Config is the configuration structure used to instantiate the Equinix
@@ -17,6 +19,7 @@ type Config struct {
 	RequestTimeout time.Duration
 
 	ecx ecx.Client
+	ne  ne.Client
 }
 
 //Load function validates configuration structure fields and configures
@@ -38,6 +41,7 @@ func (c *Config) Load(ctx context.Context) error {
 	authClient := authConfig.New(ctx)
 	authClient.Timeout = c.requestTimeout()
 	c.ecx = ecx.NewClient(ctx, c.BaseURL, authClient)
+	c.ne = ne.NewClient(ctx, c.BaseURL, authClient)
 	return nil
 }
 

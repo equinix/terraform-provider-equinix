@@ -53,6 +53,8 @@ func Provider() terraform.ResourceProvider {
 			"equinix_ecx_l2_connection":          resourceECXL2Connection(),
 			"equinix_ecx_l2_connection_accepter": resourceECXL2ConnectionAccepter(),
 			"equinix_ecx_l2_serviceprofile":      resourceECXL2ServiceProfile(),
+			"equinix_ne_device":                  resourceNeDevice(),
+			"equinix_ne_sshuser":                 resourceNeSSHUser(),
 		},
 	}
 
