@@ -5,6 +5,7 @@ import (
 
 	"github.com/equinix/ecx-go"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
 )
 
 var ecxPortSchemaNames = map[string]string{
@@ -29,8 +30,9 @@ func dataSourceECXPort() *schema.Resource {
 				Computed: true,
 			},
 			ecxPortSchemaNames["Name"]: {
-				Type:     schema.TypeString,
-				Required: true,
+				Type:         schema.TypeString,
+				Required:     true,
+				ValidateFunc: validation.StringIsNotEmpty,
 			},
 			ecxPortSchemaNames["Region"]: {
 				Type:     schema.TypeString,

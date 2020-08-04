@@ -5,6 +5,7 @@ import (
 
 	"github.com/equinix/ecx-go"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
 )
 
 var ecxL2SellerProfileSchemaNames = map[string]string{
@@ -21,8 +22,9 @@ func dataSourceECXL2SellerProfile() *schema.Resource {
 				Computed: true,
 			},
 			ecxL2SellerProfileSchemaNames["Name"]: {
-				Type:     schema.TypeString,
-				Required: true,
+				Type:         schema.TypeString,
+				Required:     true,
+				ValidateFunc: validation.StringIsNotEmpty,
 			},
 		},
 	}
