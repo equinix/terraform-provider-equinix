@@ -133,8 +133,9 @@ The following arguments are supported:
 * `speed_unit` - *(Required)* Unit of the speed/bandwidth to be allocated to the connection.
 * `notifications` - *(Required)* A list of email addresses that would be notified when there are any updates on this connection.
 * `purchase_order_number` - *(Optional)* Test field to link the purchase order numbers to the connection on Equinix which would be reflected on the invoice.
-* `port_uuid` - *(Required)* Unique identifier of the buyer's port from which the connection would originate.
-* `vlan_stag` - *(Required)* S-Tag/Outer-Tag of the connection - a numeric character ranging from 2 - 4094.
+* `port_uuid` - *(Required when device_uuid is not set)* Unique identifier of the buyer's port from which the connection would originate.
+* `device_uuid` - *(Required when port_uuid is not set)* Unique identifier of the  Network Edge virtual device from which the connection would originate.
+* `vlan_stag` - *(Required when port_uuid is set)* S-Tag/Outer-Tag of the connection - a numeric character ranging from 2 - 4094.
 * `vlan_ctag` - *(Optional)* C-Tag/Inner-Tag of the connection - a numeric character ranging from 2 - 4094.
 * `named_tag` - *(Optional)* The type of peering to set up in case when connecting to Azure Express Route. One of _"Public"_, _"Private"_, _"Microsoft"_, _"Manual"_
 * `additional_info` - *(Optional)* one or more additional information key-value objects
@@ -143,13 +144,14 @@ The following arguments are supported:
 * `zside_port_uuid` - *(Optional)* Unique identifier of the port on the Z side.
 * `zside_vlan_stag` - *(Optional)* S-Tag/Outer-Tag of the connection on the Z side.
 * `zside_vlan_ctag` - *(Optional)* C-Tag/Inner-Tag of the connection on the Z side.
-* `seller_region` - *(Required)* The region in which the seller port resides.
-* `seller_metro_code` - *(Required)* The metro code that denotes the connection’s destination (Z side).
+* `seller_region` - *(Optional)* The region in which the seller port resides.
+* `seller_metro_code` - *(Optional)* The metro code that denotes the connection’s destination (Z side).
 * `authorization_key` - *(Optional)* Text field based on the service profile you want to connect to.
 * `secondary_connection` - *(Optional)* Definition of secondary connection for redundant connectivity. Most attributes are derived from primary connection, except below:
   * `name` - *(Required)*
-  * `port_uuid` - *(Required)*
-  * `vlan_stag` - *(Required)*
+  * `port_uuid` - *(Required when device_uuid is not set)*
+  * `device_uuid` - *(Required when port_uuid is not set)*
+  * `vlan_stag` - *(Required when port_uuid is set)* 
   * `vlan_ctag` - *(Optional)*
   * `zside_port_uuid` - *(Optional)*
   * `zside_vlan_stag` - *(Optional)*
