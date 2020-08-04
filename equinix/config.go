@@ -2,11 +2,12 @@ package equinix
 
 import (
 	"context"
-	"ecx-go/v3"
 	"fmt"
-	"ne-go"
-	"oauth2-go"
 	"time"
+
+	"github.com/equinix/ecx-go"
+	"github.com/equinix/ne-go"
+	"github.com/equinix/oauth2-go"
 )
 
 //Config is the configuration structure used to instantiate the Equinix

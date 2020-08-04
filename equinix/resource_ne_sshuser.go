@@ -3,8 +3,8 @@ package equinix
 import (
 	"fmt"
 	"log"
-	"ne-go"
 
+	"github.com/equinix/ne-go"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 )
 

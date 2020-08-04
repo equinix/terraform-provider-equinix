@@ -1,9 +1,10 @@
 package equinix
 
 import (
-	"ecx-go/v3"
+	"fmt"
 	"log"
-    "fmt"
+
+	"github.com/equinix/ecx-go"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 )
 
@@ -47,14 +48,14 @@ func resourceECXL2ConnectionAccepterCreate(d *schema.ResourceData, m interface{}
 	req := ecx.L2ConnectionToConfirm{}
 	var err error
 
-    connID := d.Get(ecxL2ConnectionAccepterSchemaNames["ConnectionId"]).(string)
+	connID := d.Get(ecxL2ConnectionAccepterSchemaNames["ConnectionId"]).(string)
 	req.AccessKey = d.Get(ecxL2ConnectionAccepterSchemaNames["AccessKey"]).(string)
 	req.SecretKey = d.Get(ecxL2ConnectionAccepterSchemaNames["SecretKey"]).(string)
 
 	if _, err = conf.ecx.ConfirmL2Connection(connID, req); err != nil {
 		return err
 	}
-	  
+
 	d.SetId(connID)
 	return resourceECXL2ConnectionAccepterRead(d, m)
 }
@@ -62,27 +63,27 @@ func resourceECXL2ConnectionAccepterCreate(d *schema.ResourceData, m interface{}
 func resourceECXL2ConnectionAccepterRead(d *schema.ResourceData, m interface{}) error {
 	conf := m.(*Config)
 	var err error
-  	var conn *ecx.L2Connection
+	var conn *ecx.L2Connection
 
 	conn, err = conf.ecx.GetL2Connection(d.Id())
 	if err != nil {
 		return err
 	}
-    if conn == nil {
-        log.Printf("[WARN] ECX L2 connection (%s) not found, removing from state", d.Id())
-        d.SetId("")
-        return nil
+	if conn == nil {
+		log.Printf("[WARN] ECX L2 connection (%s) not found, removing from state", d.Id())
+		d.SetId("")
+		return nil
 	}
 
-    if err := updateECXL2ConnectionAccepterResource(conn, d); err != nil {
+	if err := updateECXL2ConnectionAccepterResource(conn, d); err != nil {
 		return err
 	}
 	return nil
 }
 
 func resourceECXL2ConnectionAccepterDelete(d *schema.ResourceData, m interface{}) error {
-	log.Printf("[WARN] [equinix_ecx_l2_connection_accepter] Will not delete ECX L2 connection (%s)" + 
-	"Terraform will remove this resource from the state file, however resources may remain.", d.Id())
+	log.Printf("[WARN] [equinix_ecx_l2_connection_accepter] Will not delete ECX L2 connection (%s)"+
+		"Terraform will remove this resource from the state file, however resources may remain.", d.Id())
 	return nil
 }
 

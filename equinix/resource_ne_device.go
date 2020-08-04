@@ -2,10 +2,10 @@ package equinix
 
 import (
 	"fmt"
-	"ne-go"
 	"reflect"
 	"regexp"
 
+	"github.com/equinix/ne-go"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
 )

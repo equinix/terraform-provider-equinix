@@ -1,9 +1,9 @@
 package equinix
 
 import (
-	"ne-go"
 	"testing"
 
+	"github.com/equinix/ne-go"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/stretchr/testify/assert"
 )
