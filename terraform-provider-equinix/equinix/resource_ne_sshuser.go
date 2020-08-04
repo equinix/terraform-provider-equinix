@@ -12,7 +12,6 @@ var neSSHUserSchemaNames = map[string]string{
 	"UUID":        "uuid",
 	"Username":    "username",
 	"Password":    "password",
-	"MetroCodes":  "metros",
 	"DeviceUUIDs": "devices",
 }
 
@@ -40,13 +39,6 @@ func createNeSSHUserResourceSchema() map[string]*schema.Schema {
 		neSSHUserSchemaNames["Password"]: {
 			Type:     schema.TypeString,
 			Required: true,
-		},
-		neSSHUserSchemaNames["MetroCodes"]: {
-			Type:     schema.TypeSet,
-			Computed: true,
-			Elem: &schema.Schema{
-				Type: schema.TypeString,
-			},
 		},
 		neSSHUserSchemaNames["DeviceUUIDs"]: {
 			Type:     schema.TypeSet,
@@ -127,9 +119,6 @@ func createNeSSHUser(d *schema.ResourceData) ne.SSHUser {
 	if v, ok := d.GetOk(neSSHUserSchemaNames["Password"]); ok {
 		user.Password = v.(string)
 	}
-	if v, ok := d.GetOk(neSSHUserSchemaNames["MetroCodes"]); ok {
-		user.MetroCodes = expandSetToStringList(v.(*schema.Set))
-	}
 	if v, ok := d.GetOk(neSSHUserSchemaNames["DeviceUUIDs"]); ok {
 		user.DeviceUUIDs = expandSetToStringList(v.(*schema.Set))
 	}
@@ -147,9 +136,6 @@ func updateNeSSHUserResource(user *ne.SSHUser, d *schema.ResourceData) error {
 		if err := d.Set(neSSHUserSchemaNames["Password"], user.Password); err != nil {
 			return fmt.Errorf("error reading Password: %s", err)
 		}
-	}
-	if err := d.Set(neSSHUserSchemaNames["MetroCodes"], user.MetroCodes); err != nil {
-		return fmt.Errorf("error reading MetroCodes: %s", err)
 	}
 	if err := d.Set(neSSHUserSchemaNames["DeviceUUIDs"], user.DeviceUUIDs); err != nil {
 		return fmt.Errorf("error reading DeviceUUIDs: %s", err)
