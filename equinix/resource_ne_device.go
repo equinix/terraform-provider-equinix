@@ -134,7 +134,7 @@ func createNeDeviceSchema() map[string]*schema.Schema {
 			ForceNew: true,
 		},
 		neDeviceSchemaNames["IsBYOL"]: {
-			Type:     schema.TypeString,
+			Type:     schema.TypeBool,
 			Optional: true,
 			Default:  false,
 			ForceNew: true,
@@ -218,7 +218,7 @@ func createNeDeviceSchema() map[string]*schema.Schema {
 			ValidateFunc: validation.IntAtLeast(1),
 		},
 		neDeviceSchemaNames["IsSelfManaged"]: {
-			Type:     schema.TypeString,
+			Type:     schema.TypeBool,
 			Optional: true,
 			Default:  false,
 			ForceNew: true,
@@ -226,7 +226,9 @@ func createNeDeviceSchema() map[string]*schema.Schema {
 		neDeviceSchemaNames["Interfaces"]: {
 			Type:     schema.TypeList,
 			Computed: true,
-			Elem:     createNeDeviceInterfaceSchema(),
+			Elem: &schema.Resource{
+				Schema: createNeDeviceInterfaceSchema(),
+			},
 		},
 		neDeviceSchemaNames["Secondary"]: {
 			Type:     schema.TypeSet,
@@ -297,12 +299,12 @@ func createNeDeviceSchema() map[string]*schema.Schema {
 					},
 					neDeviceSchemaNames["AccountNumber"]: {
 						Type:     schema.TypeString,
-						Optional: true,
+						Required: true,
 						//ForceNew: true,
 					},
 					neDeviceSchemaNames["Notifications"]: {
 						Type:     schema.TypeSet,
-						Optional: true,
+						Required: true,
 						//ForceNew: true,
 						MinItems: 1,
 						Elem: &schema.Schema{
@@ -326,7 +328,9 @@ func createNeDeviceSchema() map[string]*schema.Schema {
 					neDeviceSchemaNames["Interfaces"]: {
 						Type:     schema.TypeList,
 						Computed: true,
-						Elem:     createNeDeviceInterfaceSchema(),
+						Elem: &schema.Resource{
+							Schema: createNeDeviceInterfaceSchema(),
+						},
 					},
 				},
 			},
