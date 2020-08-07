@@ -13,7 +13,7 @@ The provider needs to be configured with the proper credentials before it can be
 
 Use the navigation to the left to read about the available resources.
 
-Be cautious when using the `packet_project` resource. Packet is invoicing per project, so creating man new projects will cause your Packet bill to fragment. If you want to keep your Packet bill simple, please re-use your existing projects.
+Be cautious when using the `packet_project` resource. Packet is invoicing per project, so creating many new projects will cause your Packet bill to fragment. If you want to keep your Packet bill simple, please re-use your existing projects.
 
 ## Example Usage
 
