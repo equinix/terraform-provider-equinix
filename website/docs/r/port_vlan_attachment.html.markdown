@@ -41,7 +41,7 @@ resource "packet_device" "test" {
 
 resource "packet_device_network_type" "test" {
   device_id = packet_device.test.id
-  type = "hybrid"
+  type      = "hybrid"
 }
 
 resource "packet_port_vlan_attachment" "test" {
@@ -49,7 +49,6 @@ resource "packet_port_vlan_attachment" "test" {
   port_name = "eth1"
   vlan_vnid = packet_vlan.test.vxlan
 }
-
 
 # Layer 2 network
 
@@ -64,7 +63,7 @@ resource "packet_device" "test" {
 
 resource "packet_device_network_type" "test" {
   device_id = packet_device.test.id
-  type = "layer2-individual"
+  type      = "layer2-individual"
 }
 
 resource "packet_vlan" "test1" {
