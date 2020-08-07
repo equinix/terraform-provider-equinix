@@ -29,12 +29,15 @@ resource "packet_device" "test_device_va" {
 }
 
 resource "packet_volume" "test_volume_va" {
-  plan = "storage_1"
+  plan          = "storage_1"
   billing_cycle = "hourly"
-  size = 100
-  project_id = local.project_id
-  facility = "ewr1"
-  snapshot_policies = { snapshot_frequency = "1day", snapshot_count = 7 }
+  size          = 100
+  project_id    = local.project_id
+  facility      = "ewr1"
+  snapshot_policies = {
+    snapshot_frequency = "1day",
+    snapshot_count     = 7
+  }
 }
 
 resource "packet_volume_attachment" "test_volume_attachment" {
@@ -49,25 +52,24 @@ After applying above hcl, in order to use the volume in the OS of the device, yo
 resource "null_resource" "run_attach_scripts" {
   // re-run the attachment script if any of these resources change
   triggers = {
-	device_id = packet_device.test_device_va.id
-	volume_id = packet_volume.test_volume_va.id
+    device_id = packet_device.test_device_va.id
+    volume_id = packet_volume.test_volume_va.id
   }
   connection {
-    type     = "ssh"
-    user     = "root"
+    type        = "ssh"
+    user        = "root"
     private_key = file("/home/user/.ssh/id.dsa")
-    host     = packet_device.test_device_va.access_public_ipv4
+    host        = packet_device.test_device_va.access_public_ipv4
   }
   provisioner "remote-exec" {
     // run the attach script twice for larger chance of success
-	inline = [
-			"packet-block-storage-attach",
-			"packet-block-storage-attach",
+    inline = [
+      "packet-block-storage-attach",
+      "packet-block-storage-attach",
     ]
   }
   depends_on = [packet_volume_attachment.test_volume_attachment]
 }
-
 ```
 
 ## Argument Reference
