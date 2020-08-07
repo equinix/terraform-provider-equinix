@@ -30,7 +30,7 @@ The following arguments are supported:
 * `name` - The organization name
 * `organization_id` - The UUID of the organization resource
 
-Exactly one of the `name` or `organization_id` must be given.
+Exactly one of `name` or `organization_id` must be given.
 
 ## Attributes Reference
 
