@@ -21,20 +21,18 @@ Provides a Packet device datasource.
 # Fetch a device data by hostname and show it's ID
 
 data "packet_device" "test" {
-  project_id       = local.project_id
-  hostname         = "mydevice"
-}`
+  project_id = local.project_id
+  hostname   = "mydevice"
+}
 
 output "id" {
   value = data.packet_device.test.id
 }
-
 ```
 
 ```hcl
 # Fetch a device data by ID and show its public IPv4
-
-data "packet_device" "test" {
+data "packet_device" "test" {}
 
 output "ipv4" {
   value = data.packet_device.test.access_public_ipv4
