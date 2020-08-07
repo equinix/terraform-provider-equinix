@@ -14,9 +14,8 @@ Use this datasource to retrieve attributes of the Project API resource.
 
 ```hcl
 # Get Project by name and print UUIDs of its users
-
 data "packet_project" "tf_project_1" {
-  name           = "Terraform Fun"
+  name = "Terraform Fun"
 }
 
 output "users_of_Terraform_Fun" {
@@ -49,4 +48,3 @@ The `bgp_config` block contains:
   * `deployment_type` - `private` or `public`, the `private` is likely to be usable immediately, the `public` will need to be review by Packet engineers
   * `status` - status of BGP configuration in the project
   * `max_prefix` - The maximum number of route filters allowed per server
-
