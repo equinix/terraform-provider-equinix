@@ -41,6 +41,7 @@ var neDeviceSchemaNames = map[string]string{
 	"CoreCount":           "core_count",
 	"IsSelfManaged":       "self_managed",
 	"Interfaces":          "interface",
+	"VendorConfiguration": "vendor_configuration",
 	"Secondary":           "secondary_device",
 }
 
@@ -107,19 +108,20 @@ func createNeDeviceSchema() map[string]*schema.Schema {
 		},
 		neDeviceSchemaNames["Throughput"]: {
 			Type:         schema.TypeInt,
-			Required:     true,
+			Optional:     true,
 			ForceNew:     true,
 			ValidateFunc: validation.IntAtLeast(1),
 		},
 		neDeviceSchemaNames["ThroughputUnit"]: {
 			Type:         schema.TypeString,
-			Required:     true,
+			Optional:     true,
 			ForceNew:     true,
+			RequiredWith: []string{neDeviceSchemaNames["Throughput"]},
 			ValidateFunc: validation.StringInSlice([]string{"Mbps", "Gbps"}, false),
 		},
 		neDeviceSchemaNames["HostName"]: {
 			Type:         schema.TypeString,
-			Required:     true,
+			Optional:     true,
 			ForceNew:     true,
 			ValidateFunc: validation.StringLenBetween(1, 15),
 		},
@@ -230,6 +232,14 @@ func createNeDeviceSchema() map[string]*schema.Schema {
 				Schema: createNeDeviceInterfaceSchema(),
 			},
 		},
+		neDeviceSchemaNames["VendorConfiguration"]: {
+			Type:     schema.TypeMap,
+			Optional: true,
+			ForceNew: true,
+			Elem: &schema.Schema{
+				Type: schema.TypeString,
+			},
+		},
 		neDeviceSchemaNames["Secondary"]: {
 			Type:     schema.TypeSet,
 			Optional: true,
@@ -271,7 +281,7 @@ func createNeDeviceSchema() map[string]*schema.Schema {
 					},
 					neDeviceSchemaNames["HostName"]: {
 						Type:     schema.TypeString,
-						Required: true,
+						Optional: true,
 						//ForceNew:     true,
 						ValidateFunc: validation.StringLenBetween(1, 15),
 					},
@@ -330,6 +340,13 @@ func createNeDeviceSchema() map[string]*schema.Schema {
 						Computed: true,
 						Elem: &schema.Resource{
 							Schema: createNeDeviceInterfaceSchema(),
+						},
+					},
+					neDeviceSchemaNames["VendorConfiguration"]: {
+						Type:     schema.TypeMap,
+						Optional: true,
+						Elem: &schema.Schema{
+							Type: schema.TypeString,
 						},
 					},
 				},
@@ -555,6 +572,9 @@ func createNeDevices(d *schema.ResourceData) (*ne.Device, *ne.Device) {
 	//if v, ok := d.GetOk(neDeviceSchemaNames["Interfaces"]); ok {
 	//	primary.Interfaces = expandNeDeviceInterfaces.(v.(*schema.Set)))
 	//}
+	if v, ok := d.GetOk(neDeviceSchemaNames["VendorConfiguration"]); ok {
+		primary.VendorConfiguration = expandInterfaceMapToStringMap(v.(map[string]interface{}))
+	}
 	if v, ok := d.GetOk(neDeviceSchemaNames["Secondary"]); ok {
 		secondarySet := v.(*schema.Set)
 		if secondarySet.Len() > 0 {
@@ -656,6 +676,9 @@ func updateNeDeviceResource(primary *ne.Device, secondary *ne.Device, d *schema.
 	if err := d.Set(neDeviceSchemaNames["Interfaces"], flattenNeDeviceInterfaces(primary.Interfaces)); err != nil {
 		return fmt.Errorf("error reading Interfaces: %s", err)
 	}
+	if err := d.Set(neDeviceSchemaNames["VendorConfiguration"], primary.VendorConfiguration); err != nil {
+		return fmt.Errorf("error reading VendorConfiguration: %s", err)
+	}
 	if secondary != nil {
 		if err := d.Set(neDeviceSchemaNames["Secondary"], flattenNeDeviceSecondary(*secondary)); err != nil {
 			return fmt.Errorf("error reading Secondary: %s", err)
@@ -683,6 +706,7 @@ func flattenNeDeviceSecondary(device ne.Device) interface{} {
 	transformed[neDeviceSchemaNames["RedundancyType"]] = device.RedundancyType
 	transformed[neDeviceSchemaNames["RedundantUUID"]] = device.RedundantUUID
 	transformed[neDeviceSchemaNames["AdditionalBandwidth"]] = device.AdditionalBandwidth
+	transformed[neDeviceSchemaNames["VendorConfiguration"]] = device.VendorConfiguration
 	return []map[string]interface{}{transformed}
 }
 
@@ -741,6 +765,9 @@ func expandNeDeviceSecondary(devices *schema.Set) []ne.Device {
 		}
 		if v, ok := devMap[neDeviceSchemaNames["AdditionalBandwidth"]]; ok {
 			dev.AdditionalBandwidth = v.(int)
+		}
+		if v, ok := devMap[neDeviceSchemaNames["VendorConfiguration"]]; ok {
+			dev.VendorConfiguration = expandInterfaceMapToStringMap(v.(map[string]interface{}))
 		}
 		transformed = append(transformed, dev)
 	}

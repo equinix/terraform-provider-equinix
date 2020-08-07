@@ -98,6 +98,14 @@ func expandSetToStringList(set *schema.Set) []string {
 	return result
 }
 
+func expandInterfaceMapToStringMap(mapIn map[string]interface{}) map[string]string {
+	mapOut := make(map[string]string)
+	for k, v := range mapIn {
+		mapOut[k] = fmt.Sprintf("%v", v)
+	}
+	return mapOut
+}
+
 func hasECXErrorCode(errors []ecx.Error, code string) bool {
 	for _, err := range errors {
 		if err.ErrorCode == code {

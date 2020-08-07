@@ -50,10 +50,8 @@ github.com/envoyproxy/go-control-plane v0.9.1-0.20191026205805-5f8ba28d4473/go.m
 github.com/envoyproxy/protoc-gen-validate v0.1.0/go.mod h1:iSmxcyjqTsJpI2R4NaDN7+kN2VEUnK/pcBlmesArF7c=
 github.com/equinix/ecx-go v1.0.1-0.20200804121842-ef4a988b4678 h1:lZc6stdnsjvzqCNGjAup1DECAm7UfJCj1C43tYaasS8=
 github.com/equinix/ecx-go v1.0.1-0.20200804121842-ef4a988b4678/go.mod h1:vJiZ3x5rYC0vj5A5uca+wi419Ml2WrvXyv+fzmxeRkE=
-github.com/equinix/ne-go v0.0.0-20200805133253-f784e42f5c93 h1:j/pNE2q4efZDIlm7Zop3yY9jnWejtkSWQhtbX0NvVdI=
-github.com/equinix/ne-go v0.0.0-20200805133253-f784e42f5c93/go.mod h1:h82iKVTvvJd8fO+AqBkG/9Mlh3F/E+oO1sH8dClRMDU=
-github.com/equinix/ne-go v0.0.0-20200805134144-dcffba497a64 h1:Z7Sk8EIrkDjPSGf3CXgvpcUaohnJC5YCF+TCgijXb9I=
-github.com/equinix/ne-go v0.0.0-20200805134144-dcffba497a64/go.mod h1:h82iKVTvvJd8fO+AqBkG/9Mlh3F/E+oO1sH8dClRMDU=
+github.com/equinix/ne-go v0.0.0-20200807094859-5fe5f71cb350 h1:DzZ5LxRTF4Jk88MdwEV6YxVPyoftIYS1lDLstMCMd8E=
+github.com/equinix/ne-go v0.0.0-20200807094859-5fe5f71cb350/go.mod h1:h82iKVTvvJd8fO+AqBkG/9Mlh3F/E+oO1sH8dClRMDU=
 github.com/equinix/oauth2-go v1.0.0 h1:fHtAPGq82PdgtK5vEThs8Vwz6f7D/8SX4tE3NJu+KcU=
 github.com/equinix/oauth2-go v1.0.0/go.mod h1:4pulXvUNMktJlewLPnUeJyMW52iCoF1aM+A/Z5xY1ws=
 github.com/fatih/color v1.7.0 h1:DkWD4oS2D8LGGgTQ6IvwJJXSL5Vp2ffcQg58nFV38Ys=
