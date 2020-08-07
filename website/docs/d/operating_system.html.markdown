@@ -28,7 +28,6 @@ resource "packet_device" "server" {
   billing_cycle    = "hourly"
   project_id       = local.project_id
 }
-
 ```
 
 ## Argument Reference
@@ -42,4 +41,3 @@ resource "packet_device" "server" {
 
  * `id` - Operating system slug
  * `slug` - Operating system slug (same as `id`)
-
