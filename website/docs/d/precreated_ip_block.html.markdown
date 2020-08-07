@@ -14,7 +14,6 @@ You can then use the cidrsubnet TF builtin function to derive subnets.
 ## Example Usage
 
 ```hcl
-
 # Create device in your project and then assign /64 subnet from precreated block
 # to the new device
 
@@ -30,24 +29,23 @@ resource "packet_device" "web1" {
   operating_system = "ubuntu_16_04"
   billing_cycle    = "hourly"
   project_id       = local.project_id
-  
+
 }
 
 data "packet_precreated_ip_block" "test" {
-  facility         = "ewr1"
-  project_id       = local.project_id
-  address_family   = 6
-  public           = true
+  facility       = "ewr1"
+  project_id     = local.project_id
+  address_family = 6
+  public         = true
 }
 
 # The precreated IPv6 blocks are /56, so to get /64, we specify 8 more bits for network.
 # The cirdsubnet interpolation will pick second /64 subnet from the precreated block.
 
 resource "packet_ip_attachment" "from_ipv6_block" {
-  device_id = packet_device.web1.id
-  cidr_notation = cidrsubnet(data.packet_precreated_ip_block.test.cidr_notation,8,2)
+  device_id     = packet_device.web1.id
+  cidr_notation = cidrsubnet(data.packet_precreated_ip_block.test.cidr_notation, 8, 2)
 }
-
 ```
 
 ## Argument Reference
@@ -61,4 +59,3 @@ resource "packet_ip_attachment" "from_ipv6_block" {
 ## Attributes Reference
 
  * `cidr_notation` - CIDR notation of the looked up block.
-
