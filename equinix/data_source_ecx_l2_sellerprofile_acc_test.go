@@ -26,6 +26,12 @@ func TestAccECXL2SellerProfile(t *testing.T) {
 				Config: testAccECXL2SellerProfile(context),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(resourceName, "uuid"),
+					resource.TestCheckResourceAttrSet(resourceName, "description"),
+					resource.TestCheckResourceAttrSet(resourceName, "speed_from_api"),
+					resource.TestCheckResourceAttrSet(resourceName, "speed_customization_allowed"),
+					resource.TestCheckResourceAttrSet(resourceName, "redundancy_required"),
+					resource.TestCheckResourceAttrSet(resourceName, "encapsulation"),
+					resource.TestCheckResourceAttrSet(resourceName, "organization_name"),
 				),
 			},
 		},
