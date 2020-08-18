@@ -27,6 +27,7 @@ var neDeviceSchemaNames = map[string]string{
 	"IsBYOL":              "byol",
 	"LicenseToken":        "license_token",
 	"ACLs":                "acls",
+	"ACLStatus":           "acls_status",
 	"SSHIPAddress":        "ssh_ip_address",
 	"SSHIPFqdn":           "ssh_ip_fqdn",
 	"AccountNumber":       "account_number",
@@ -154,6 +155,10 @@ func createNeDeviceSchema() map[string]*schema.Schema {
 				Type:         schema.TypeString,
 				ValidateFunc: validation.IsCIDR,
 			},
+		},
+		neDeviceSchemaNames["ACLStatus"]: {
+			Type:     schema.TypeString,
+			Computed: true,
 		},
 		neDeviceSchemaNames["SSHIPAddress"]: {
 			Type:     schema.TypeString,
@@ -299,6 +304,10 @@ func createNeDeviceSchema() map[string]*schema.Schema {
 							ValidateFunc: validation.IsCIDR,
 						},
 					},
+					neDeviceSchemaNames["ACLStatus"]: {
+						Type:     schema.TypeString,
+						Computed: true,
+					},
 					neDeviceSchemaNames["SSHIPAddress"]: {
 						Type:     schema.TypeString,
 						Computed: true,
@@ -412,8 +421,8 @@ func resourceNeDeviceCreate(d *schema.ResourceData, m interface{}) error {
 func resourceNeDeviceRead(d *schema.ResourceData, m interface{}) error {
 	conf := m.(*Config)
 	var err error
-	var primary *ne.Device
-	var secondary *ne.Device
+	var primary, secondary *ne.Device
+	var primaryACLs, secondaryACLs *ne.DeviceACLs
 	primary, err = conf.ne.GetDevice(d.Id())
 	if err != nil {
 		return fmt.Errorf("cannot fetch primary device due to %v", err)
@@ -422,13 +431,24 @@ func resourceNeDeviceRead(d *schema.ResourceData, m interface{}) error {
 		d.SetId("")
 		return nil
 	}
+	primaryACLs, err = conf.ne.GetDeviceACLs(d.Id())
+	if err != nil {
+		return fmt.Errorf("cannot fetch pirmary device ACLs due to %v", err)
+	}
 	if primary.RedundantUUID != "" {
 		secondary, err = conf.ne.GetDevice(primary.RedundantUUID)
 		if err != nil {
 			return fmt.Errorf("cannot fetch secondary device due to %v", err)
 		}
+		secondaryACLs, err = conf.ne.GetDeviceACLs(primary.RedundantUUID)
+		if err != nil {
+			return fmt.Errorf("cannot fetch secondary device ACLs due to %v", err)
+		}
 	}
 	if err = updateNeDeviceResource(primary, secondary, d); err != nil {
+		return err
+	}
+	if err = updateNeDeviceResourceACLs(primaryACLs, secondaryACLs, d); err != nil {
 		return err
 	}
 	return nil
@@ -449,7 +469,7 @@ func resourceNeDeviceUpdate(d *schema.ResourceData, m interface{}) error {
 	if v, ok := d.GetOk(neDeviceSchemaNames["AdditionalBandwidth"]); ok && d.HasChange(neDeviceSchemaNames["AdditionalBandwidth"]) {
 		updateReq.WithAdditionalBandwidth(v.(int))
 	}
-	if v, ok := d.GetOk(neDeviceSchemaNames["ACL"]); ok && d.HasChange(neDeviceSchemaNames["ACL"]) {
+	if v, ok := d.GetOk(neDeviceSchemaNames["ACLs"]); ok && d.HasChange(neDeviceSchemaNames["ACLs"]) {
 		updateReq.WithACLs(expandSetToStringList(v.(*schema.Set)))
 	}
 	if err := updateReq.Execute(); err != nil {
@@ -458,10 +478,12 @@ func resourceNeDeviceUpdate(d *schema.ResourceData, m interface{}) error {
 	if a, b := d.GetChange(neDeviceSchemaNames["Secondary"]); d.HasChange(neDeviceSchemaNames["Secondary"]) {
 		if v, ok := d.GetOk(neDeviceSchemaNames["RedundantUUID"]); ok {
 			secUpdateReq := conf.ne.NewDeviceUpdateRequest(v.(string))
-			return neDeviceSecondaryUpdate(secUpdateReq, a.(*schema.Set), b.(*schema.Set))
+			if err := neDeviceSecondaryUpdate(secUpdateReq, a.(*schema.Set), b.(*schema.Set)); err != nil {
+				return err
+			}
 		}
 	}
-	return nil
+	return resourceNeDeviceRead(d, m)
 }
 
 func resourceNeDeviceDelete(d *schema.ResourceData, m interface{}) error {
@@ -569,9 +591,6 @@ func createNeDevices(d *schema.ResourceData) (*ne.Device, *ne.Device) {
 	if v, ok := d.GetOk(neDeviceSchemaNames["IsSelfManaged"]); ok {
 		primary.IsSelfManaged = v.(bool)
 	}
-	//if v, ok := d.GetOk(neDeviceSchemaNames["Interfaces"]); ok {
-	//	primary.Interfaces = expandNeDeviceInterfaces.(v.(*schema.Set)))
-	//}
 	if v, ok := d.GetOk(neDeviceSchemaNames["VendorConfiguration"]); ok {
 		primary.VendorConfiguration = expandInterfaceMapToStringMap(v.(map[string]interface{}))
 	}
@@ -631,9 +650,6 @@ func updateNeDeviceResource(primary *ne.Device, secondary *ne.Device, d *schema.
 	if err := d.Set(neDeviceSchemaNames["LicenseToken"], primary.LicenseToken); err != nil {
 		return fmt.Errorf("error reading LicenseToken: %s", err)
 	}
-	if err := d.Set(neDeviceSchemaNames["ACLs"], primary.ACLs); err != nil {
-		return fmt.Errorf("error reading ACLs: %s", err)
-	}
 	if err := d.Set(neDeviceSchemaNames["SSHIPAddress"], primary.SSHIPAddress); err != nil {
 		return fmt.Errorf("error reading SSHIPAddress: %s", err)
 	}
@@ -687,6 +703,28 @@ func updateNeDeviceResource(primary *ne.Device, secondary *ne.Device, d *schema.
 	return nil
 }
 
+func updateNeDeviceResourceACLs(primaryACLs, secondaryACLs *ne.DeviceACLs, d *schema.ResourceData) error {
+	if err := d.Set(neDeviceSchemaNames["ACLs"], primaryACLs.ACLs); err != nil {
+		return fmt.Errorf("error reading ACLs: %s", err)
+	}
+	if err := d.Set(neDeviceSchemaNames["ACLStatus"], primaryACLs.Status); err != nil {
+		return fmt.Errorf("error reading ACLStatus: %s", err)
+	}
+	if secondaryACLs != nil {
+		secondarySet := d.Get(neDeviceSchemaNames["Secondary"]).(*schema.Set)
+		if secondarySet.Len() != 1 {
+			return fmt.Errorf("cannot update secondary device ACLs: secondary set size is not equal to 1")
+		}
+		secondary := secondarySet.List()[0].(map[string]interface{})
+		secondary[neDeviceSchemaNames["ACLs"]] = secondaryACLs.ACLs
+		secondary[neDeviceSchemaNames["ACLStatus"]] = secondaryACLs.Status
+		if err := d.Set(neDeviceSchemaNames["Secondary"], []map[string]interface{}{secondary}); err != nil {
+			return fmt.Errorf("error reading Secondary: %s", err)
+		}
+	}
+	return nil
+}
+
 func flattenNeDeviceSecondary(device ne.Device) interface{} {
 	transformed := make(map[string]interface{})
 	transformed[neDeviceSchemaNames["UUID"]] = device.UUID
@@ -698,7 +736,6 @@ func flattenNeDeviceSecondary(device ne.Device) interface{} {
 	transformed[neDeviceSchemaNames["Region"]] = device.Region
 	transformed[neDeviceSchemaNames["HostName"]] = device.HostName
 	transformed[neDeviceSchemaNames["LicenseToken"]] = device.LicenseToken
-	transformed[neDeviceSchemaNames["ACLs"]] = device.ACLs
 	transformed[neDeviceSchemaNames["SSHIPAddress"]] = device.SSHIPAddress
 	transformed[neDeviceSchemaNames["SSHIPFqdn"]] = device.SSHIPFqdn
 	transformed[neDeviceSchemaNames["AccountNumber"]] = device.AccountNumber
@@ -706,6 +743,7 @@ func flattenNeDeviceSecondary(device ne.Device) interface{} {
 	transformed[neDeviceSchemaNames["RedundancyType"]] = device.RedundancyType
 	transformed[neDeviceSchemaNames["RedundantUUID"]] = device.RedundantUUID
 	transformed[neDeviceSchemaNames["AdditionalBandwidth"]] = device.AdditionalBandwidth
+	transformed[neDeviceSchemaNames["Interfaces"]] = flattenNeDeviceInterfaces(device.Interfaces)
 	transformed[neDeviceSchemaNames["VendorConfiguration"]] = device.VendorConfiguration
 	return []map[string]interface{}{transformed}
 }
@@ -825,8 +863,8 @@ func neDeviceSecondaryUpdate(req ne.DeviceUpdateRequest, a, b *schema.Set) error
 	if !reflect.DeepEqual(aMap[neDeviceSchemaNames["AdditionalBandwidth"]], bMap[neDeviceSchemaNames["AdditionalBandwidth"]]) {
 		req.WithAdditionalBandwidth(bMap[neDeviceSchemaNames["AdditionalBandwidth"]].(int))
 	}
-	if !reflect.DeepEqual(aMap[neDeviceSchemaNames["ACL"]], bMap[neDeviceSchemaNames["ACL"]]) {
-		req.WithACLs(expandSetToStringList(bMap[neDeviceSchemaNames["ACL"]].(*schema.Set)))
+	if !reflect.DeepEqual(aMap[neDeviceSchemaNames["ACLs"]], bMap[neDeviceSchemaNames["ACLs"]]) {
+		req.WithACLs(expandSetToStringList(bMap[neDeviceSchemaNames["ACLs"]].(*schema.Set)))
 	}
 	return req.Execute()
 }
