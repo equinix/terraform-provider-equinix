@@ -12,22 +12,21 @@ The Terraform Equinix provider is a plugin for Terraform that allows for lifecyc
 ![GitHub](https://img.shields.io/github/license/equinix/terraform-provider-equinix)
 
 ---
-Requirements
-------------------
+
+## Requirements
 * [Terraform](https://www.terraform.io/downloads.html) 0.12+
 * [Go](https://golang.org/doc/install) 1.14+ (to build provider plugin)
 
 ## Quick starts
-* Using the provider
+* [Using the provider](#using-the-provider)
   * [Provider configuration](#provider-configuration)
   * [Data source: ECXF port](#ecx-port-data-source)
-  * [Data source: ECXF Layer2 Seller Profile](#ecx-layer2-seller-profile-data-source)
-  * [Resource: ECXF Layer2 connection](#ecx-l2-connection-resource)
-  * [Resource: ECX Layer2 service profile](#ecx-l2-service-profile-resource)
+  * [Data source: ECXF layer 2 seller profile](#ecx-layer2-seller-profile-data-source)
+  * [Resource: ECXF layer 2 connection](#ecx-l2-connection-resource)
+  * [Resource: ECXF layer 2 service profile](#ecx-l2-service-profile-resource)
 * [Developing the provider](#developing-the-provider)
 
-Using the provider
-------------------
+## Using the provider
 
 ### Provider configuration
 Equinix provider requires few basic configuration parameters to operate:
