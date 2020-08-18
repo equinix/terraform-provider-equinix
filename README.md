@@ -1,19 +1,33 @@
-Terraform Provider for Equinix Platform
-==================
-* Contact us : https://developer.equinix.com/contact-us
+<a href="https://terraform.io">
+    <img src="https://cdn.rawgit.com/hashicorp/terraform-website/master/content/source/assets/images/logo-hashicorp.svg" alt="Terraform logo" title="Terraform" align="right" height="50" />
+</a>
 
-<img src="https://cdn.rawgit.com/hashicorp/terraform-website/master/content/source/assets/images/logo-hashicorp.svg" width="600px">
+# Terraform Provider for Equinix Platform
 
+The Terraform Equinix provider is a plugin for Terraform that allows for lifecycle management of Equinix Platform resources.
+
+[![Build Status](https://travis-ci.com/equinix/terraform-provider-equinix.svg?branch=master)](https://travis-ci.com/github/equinix/terraform-provider-equinix)
+[![Go Report Card](https://goreportcard.com/badge/github.com/equinix/terraform-provider-equinix)](https://goreportcard.com/report/github.com/equinix/terraform-provider-equinix)
+[![GoDoc](https://godoc.org/github.com/go-resty/resty?status.svg)](https://godoc.org/github.com/equinix/terraform-provider-equinix)
+![GitHub](https://img.shields.io/github/license/equinix/terraform-provider-equinix)
+
+---
 Requirements
 ------------------
 * [Terraform](https://www.terraform.io/downloads.html) 0.12+
 * [Go](https://golang.org/doc/install) 1.14+ (to build provider plugin)
 
+## Quick starts
+* Using the provider
+  * [Provider configuration](#provider-configuration)
+  * [Data source: ECXF port](#ecx-port-data-source)
+  * [Data source: ECXF Layer2 Seller Profile](#ecx-layer2-seller-profile-data-source)
+  * [Resource: ECXF Layer2 connection](#ecx-l2-connection-resource)
+  * [Resource: ECX Layer2 service profile](#ecx-l2-service-profile-resource)
+* [Developing the provider](#developing-the-provider)
+
 Using the provider
 ------------------
-**NOTE**: dedicated documentation page will be created in future
-
-The Equinix provider is used to manage Equinix Platform infrastructure using Terraform.
 
 ### Provider configuration
 Equinix provider requires few basic configuration parameters to operate:
@@ -296,12 +310,11 @@ Building the provider
   $ make install
   ```
 
-Developing the provider
-------------------
+## Developing the provider
 * use Go programming best practices, *gofmt, go_vet, golint, ineffassign*, etc.
 * enter the provider directory
   ```
-  $ cd equinix-terraform-sdk/terraform-provider-equinix
+  $ cd terraform-provider-equinix
   ```
 * to build, use make `build` target
   ```
@@ -318,8 +331,7 @@ Developing the provider
   Check "Running acceptance tests" section for more details.
   
 
-Running acceptance tests
-------------------
+### Running acceptance tests
   **NOTE**: acceptance tests create resources on real infrastructure, thus may be subject for costs. In order to run acceptance tests, you must set necessary provider configuration attributes.
 
   ```
@@ -329,11 +341,11 @@ Running acceptance tests
   $ make testacc
   ```
 
-### ECX Port acceptance tests
+#### ECX Port acceptance tests
 ECX Port data source acceptance tests use below parameters, that can be set to match with desired tesing environment. If not set, defaults values, **from Sandbox enviroment** are used.
 * **TF_ACC_ECX_PORT_NAME** - sets name of the port used in data source
 
-### ECX L2 connection acceptance tests
+#### ECX L2 connection acceptance tests
 ECX Layer 2 connection acceptance tests use below parameters, that can be set to match with desired tesing environment. If not set, defaults values, **from Sandbox enviroment** are used.
 
 * **TF_ACC_ECX_L2_AWS_SP_ID** - sets UUID of Layer2 service profile for AWS
