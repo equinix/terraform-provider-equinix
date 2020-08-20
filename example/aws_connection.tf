@@ -1,3 +1,8 @@
+provider "equinix" {
+  client_id     = "your_client_id"
+  client_secret = "your_client_secret"
+}
+
 data "equinix_ecx_l2_sellerprofile" "aws" {
   name = "AWS Direct Connect"
 }

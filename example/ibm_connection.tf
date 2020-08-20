@@ -1,3 +1,8 @@
+provider "equinix" {
+  client_id     = "your_client_id"
+  client_secret = "your_client_secret"
+}
+
 data "equinix_ecx_port" "dot1q-1-pri" {
   name = "sit-001-CX-DC5-NL-Dot1q-BO-10G-PRI-JUN-27"
 }

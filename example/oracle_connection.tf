@@ -1,6 +1,6 @@
-provider equinix {
-  client_id     = ""
-  client_secret = ""
+provider "equinix" {
+  client_id     = "your_client_id"
+  client_secret = "your_client_secret"
 }
 
 data "equinix_ecx_port" "dot1q-1-pri" {

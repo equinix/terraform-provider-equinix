@@ -1,3 +1,8 @@
+provider "equinix" {
+  client_id     = "your_client_id"
+  client_secret = "your_client_secret"
+}
+
 provider "google" {
   credentials = file("account.json")
   project     = "my-project-id"
