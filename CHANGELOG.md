@@ -1,4 +1,9 @@
 ## 3.1.0 (Unreleased)
+## 3.0.1 (August 20, 2020)
+
+BREAKING CHANGES:
+- [#246](https://github.com/packethost/terraform-provider-packet/pull/246) Updates URLs to reflect move from terraform-providers/terraform-provider-packet to packethost/terraform-provider-packet
+
 ## 3.0.0 (July 21, 2020)
 
 BREAKING CHANGES:
