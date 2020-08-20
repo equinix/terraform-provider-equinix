@@ -14,6 +14,4 @@ require (
 	gopkg.in/yaml.v2 v2.2.8 // indirect
 )
 
-replace github.com/packethost/terraform-provider-packet => ../terraform-provider-packet
-
 go 1.13
