@@ -16,17 +16,17 @@ Requirements
 Building the provider
 ---------------------
 
-Clone repository to: `$GOPATH/src/github.com/terraform-providers/terraform-provider-packet`
+Clone repository to: `$GOPATH/src/github.com/packethost/terraform-provider-packet`
 
 ```sh
-$ mkdir -p $GOPATH/src/github.com/terraform-providers; cd $GOPATH/src/github.com/terraform-providers
-$ git clone git@github.com:terraform-providers/terraform-provider-packet
+$ mkdir -p $GOPATH/src/github.com/packethost; cd $GOPATH/src/github.com/packethost
+$ git clone git@github.com:packethost/terraform-provider-packet
 ```
 
 Enter the provider directory and build the provider
 
 ```sh
-$ cd $GOPATH/src/github.com/terraform-providers/terraform-provider-packet
+$ cd $GOPATH/src/github.com/packethost/terraform-provider-packet
 $ make build
 ```
 
