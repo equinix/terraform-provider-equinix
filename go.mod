@@ -8,11 +8,12 @@ require (
 	github.com/hashicorp/terraform-plugin-sdk v1.0.0
 	github.com/mattn/go-colorable v0.1.1 // indirect
 	github.com/packethost/packngo v0.2.1-0.20200424110205-36917dbc292f
-	github.com/terraform-providers/terraform-provider-packet v1.7.2
 	github.com/vmihailenco/msgpack v4.0.1+incompatible // indirect
 	golang.org/x/net v0.0.0-20191004110552-13f9640d40b9 // indirect
 	golang.org/x/sys v0.0.0-20191022100944-742c48ecaeb7 // indirect
 	gopkg.in/yaml.v2 v2.2.8 // indirect
 )
+
+replace github.com/packethost/terraform-provider-packet => ../terraform-provider-packet
 
 go 1.13
