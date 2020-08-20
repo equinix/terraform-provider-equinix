@@ -18,7 +18,6 @@ To learn more about Layer 2 networking in Packet, refer to
 
 ```hcl
 # Create a new VLAN in datacenter "ewr1"
-
 resource "packet_vlan" "vlan1" {
   description = "VLAN in New Jersey"
   facility    = "ewr1"

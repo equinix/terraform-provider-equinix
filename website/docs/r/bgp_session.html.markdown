@@ -42,8 +42,8 @@ locals {
 
 resource "packet_reserved_ip_block" "addr" {
   project_id = local.project_id
-  facility = "ewr1"
-  quantity = 1
+  facility   = "ewr1"
+  quantity   = 1
 }
 
 resource "packet_device" "test" {
@@ -56,7 +56,7 @@ resource "packet_device" "test" {
 }
 
 resource "packet_bgp_session" "test" {
-  device_id = packet_device.test.id
+  device_id      = packet_device.test.id
   address_family = "ipv4"
 }
 
@@ -70,8 +70,8 @@ iface lo:0 inet static
 EOF
 
   vars = {
-    floating_ip       = packet_reserved_ip_block.addr.address
-    floating_netmask  = packet_reserved_ip_block.addr.netmask
+    floating_ip      = packet_reserved_ip_block.addr.address
+    floating_netmask = packet_reserved_ip_block.addr.netmask
   }
 }
 
@@ -98,26 +98,26 @@ protocol bgp {
     export filter packet_bgp;
     local as 65000;
     neighbor $${gateway_ip} as 65530;
-    password "$${bgp_password; 
+    password "$${bgp_password;
 }
 EOF
 
   vars = {
-    floating_ip    = packet_reserved_ip_block.addr.address
-    floating_cidr  = packet_reserved_ip_block.addr.cidr
-    private_ipv4   = packet_device.test.network.2.address
-    gateway_ip     = packet_device.test.network.2.gateway
-    bgp_password   = local.bgp_password
+    floating_ip   = packet_reserved_ip_block.addr.address
+    floating_cidr = packet_reserved_ip_block.addr.cidr
+    private_ipv4  = packet_device.test.network.2.address
+    gateway_ip    = packet_device.test.network.2.gateway
+    bgp_password  = local.bgp_password
   }
 }
 
 resource "null_resource" "configure_bird" {
 
   connection {
-    type = "ssh"
-    host = packet_device.test.access_public_ipv4
+    type        = "ssh"
+    host        = packet_device.test.access_public_ipv4
     private_key = file("/home/tomk/keys/tkarasek_key.pem")
-    agent = false
+    agent       = false
   }
 
   provisioner "remote-exec" {

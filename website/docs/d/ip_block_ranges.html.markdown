@@ -17,7 +17,6 @@ The datasource has 4 list attributes: `global_ipv4`, `public_ipv4`, `private_ipv
 ## Example Usage
 
 ```hcl
-
 # List CIDR expressions of all the allocated IP block in you project.
 
 # Declare your project ID
@@ -26,13 +25,12 @@ locals {
 }
 
 data "packet_ip_block_ranges" "test" {
-  project_id       = local.project_id
+  project_id = local.project_id
 }
 
 output "out" {
   value = data.packet_ip_block_ranges.test
 }
-
 ```
 
 ## Argument Reference

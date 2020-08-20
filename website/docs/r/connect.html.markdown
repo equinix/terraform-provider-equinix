@@ -8,5 +8,4 @@ description: |-
 
 # packet_connect
 
-Packet Connect was removed in release 2.7.0.
-
+Packet Connect was removed in release `2.7.0` of the provider.

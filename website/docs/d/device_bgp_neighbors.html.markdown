@@ -20,7 +20,7 @@ To learn more about using BGP in Packet, see the [packet_bgp_session](../r/bgp_s
 # Get Project by name and print UUIDs of its users
 
 data "packet_device_bgp_neighbors" "test" {
-  device_id  = "4c641195-25e5-4c3c-b2b7-4cd7a42c7b40"
+  device_id = "4c641195-25e5-4c3c-b2b7-4cd7a42c7b40"
 }
 
 output "bgp_neighbors_listing" {
@@ -48,8 +48,7 @@ The following attributes are exported:
   * `peer_as` - Peer AS number (different than customer_as for EBGP)
   * `peer_ips` - Array of IP addresses of this neighbor's peers
   * `routes_in` - Array of incoming routes. Each route has attributes:
-      * `route` - CIDR expression of route (ip/mask)
+      * `route` - CIDR expression of route (IP/mask)
       * `exact` - (bool) Whether the route is exact
   * `routes_out` - Array of outgoing routes in the same format
-
-
+  

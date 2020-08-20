@@ -16,7 +16,7 @@ in your projects.
 ```hcl
 # Create a new project
 resource "packet_project" "tf_project_1" {
-  name           = "Terraform Fun"
+  name = "Terraform Fun"
 }
 ```
 
@@ -25,11 +25,11 @@ Example with BGP config
 ```hcl
 # Create a new Project
 resource "packet_project" "tf_project_1" {
-  name           = "tftest"
+  name = "tftest"
   bgp_config {
     deployment_type = "local"
-    md5 = "C179c28c41a85b"
-    asn = 65000
+    md5             = "C179c28c41a85b"
+    asn             = 65000
   }
 }
 ```

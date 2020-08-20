@@ -32,7 +32,6 @@ resource "packet_device" "test" {
   project_id       = local.project_id
   depends_on       = ["packet_ssh_key.key1"]
 }
-
 ```
 
 ## Argument Reference

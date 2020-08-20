@@ -26,14 +26,14 @@ resource "packet_volume" "volume1" {
   size          = 100
   billing_cycle = "hourly"
 
-  snapshot_policies  {
+  snapshot_policies {
     snapshot_frequency = "1day"
-    snapshot_count = 7
+    snapshot_count     = 7
   }
 
-  snapshot_policies  {
+  snapshot_policies {
     snapshot_frequency = "1month"
-    snapshot_count = 6
+    snapshot_count     = 6
   }
 }
 ```

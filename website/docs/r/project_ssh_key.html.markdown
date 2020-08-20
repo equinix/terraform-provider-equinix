@@ -14,7 +14,6 @@ Project SSH keys will only be populated onto servers that belong to that project
 ## Example Usage
 
 ```hcl
-
 locals {
   project_id = "<UUID_of_your_project>"
 }

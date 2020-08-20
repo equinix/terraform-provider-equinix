@@ -30,28 +30,27 @@ Allocate reserved IP blocks:
 
 resource "packet_reserved_ip_block" "two_elastic_addresses" {
   project_id = local.project_id
-  facility = "ewr1"
-  quantity = 2
+  facility   = "ewr1"
+  quantity   = 2
 }
 
 # Allocate 1 global floating IP, which can be assigned to device in any facility
 
 resource "packet_reserved_ip_block" "test" {
   project_id = local.project_id
-  type     = "global_ipv4"
-  quantity = 1
-}`
+  type       = "global_ipv4"
+  quantity   = 1
+}
 ```
 
 Allocate a block and run a device with public IPv4 from the block
 
 ```hcl
 # Allocate /31 block of max 2 public IPv4 addresses in Parsippany, NJ (ewr1)
-
 resource "packet_reserved_ip_block" "example" {
   project_id = local.project_id
-  facility = "ewr1"
-  quantity = 2
+  facility   = "ewr1"
+  quantity   = 2
 }
 
 # Run a device with both public IPv4 from the block assigned
@@ -63,16 +62,17 @@ resource "packet_device" "nodes" {
   operating_system = "ubuntu_16_04"
   hostname         = "test"
   billing_cycle    = "hourly"
+
   ip_address {
-     type = "public_ipv4"
-     cidr = 31
-     reservation_ids = [packet_reserved_ip_block.example.id]
+    type            = "public_ipv4"
+    cidr            = 31
+    reservation_ids = [packet_reserved_ip_block.example.id]
   }
+
   ip_address {
-     type = "private_ipv4"
+    type = "private_ipv4"
   }
 }
-
 ```
 
 
@@ -93,7 +93,7 @@ The following attributes are exported:
 
 * `facility` - The facility where the block was allocated, empty for global blocks
 * `project_id` - To which project the addresses beling
-* `quantity` - Number of /32 addresses in the block
+* `quantity` - Number of "/32" addresses in the block
 * `id` - The unique ID of the block
 * `cidr_notation` - Address and mask in CIDR notation, e.g. "147.229.15.30/31"
 * `network` - Network IP address portion of the block specification
@@ -103,6 +103,6 @@ The following attributes are exported:
 * `public` - boolean flag whether addresses from a block are public
 * `global` - boolean flag whether addresses from a block are global (i.e. can be assigned in any facility)
 
-Idempotent reference to a first /32 address from a reserved block might look like 
-`join("/", [cidrhost(packet_reserved_ip_block.myblock.cidr_notation,0), "32"])
-`
+Idempotent reference to a first "/32" address from a reserved block might look like this:
+
+`join("/", [cidrhost(packet_reserved_ip_block.myblock.cidr_notation,0), "32"])`
