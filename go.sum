@@ -117,6 +117,10 @@ github.com/envoyproxy/go-control-plane v0.9.1-0.20191026205805-5f8ba28d4473/go.m
 github.com/envoyproxy/protoc-gen-validate v0.1.0/go.mod h1:iSmxcyjqTsJpI2R4NaDN7+kN2VEUnK/pcBlmesArF7c=
 github.com/equinix/ecx-go v1.0.1-0.20200812084835-ca745007e989 h1:9GWU/wLvVuCGdJPPXxJHi+ur+KlIntnBY/WfmVIp2m8=
 github.com/equinix/ecx-go v1.0.1-0.20200812084835-ca745007e989/go.mod h1:vJiZ3x5rYC0vj5A5uca+wi419Ml2WrvXyv+fzmxeRkE=
+github.com/equinix/ecx-go v1.0.1-0.20200820132311-a169f5029acb h1:L3QUXftykHWjs4o65P6BPMQH7CJf6tOxsxnSMVy5mM4=
+github.com/equinix/ecx-go v1.0.1-0.20200820132311-a169f5029acb/go.mod h1:vJiZ3x5rYC0vj5A5uca+wi419Ml2WrvXyv+fzmxeRkE=
+github.com/equinix/ecx-go v1.0.1-0.20200821123920-f1a9c5f4c1a2 h1:HToPvi4VCEiMAszk7OEDu6YOLEepkPdhkH3XmBSOBX0=
+github.com/equinix/ecx-go v1.0.1-0.20200821123920-f1a9c5f4c1a2/go.mod h1:vJiZ3x5rYC0vj5A5uca+wi419Ml2WrvXyv+fzmxeRkE=
 github.com/equinix/ne-go v0.0.0-20200807094859-5fe5f71cb350 h1:DzZ5LxRTF4Jk88MdwEV6YxVPyoftIYS1lDLstMCMd8E=
 github.com/equinix/ne-go v0.0.0-20200807094859-5fe5f71cb350/go.mod h1:h82iKVTvvJd8fO+AqBkG/9Mlh3F/E+oO1sH8dClRMDU=
 github.com/equinix/ne-go v0.0.0-20200817142317-4f21b07ad368 h1:jxcradSY4HL2eqirxMuSwRerlim4XeSxBdzNupQ2o9Y=

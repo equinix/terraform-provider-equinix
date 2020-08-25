@@ -116,6 +116,7 @@ func createECXL2ConnectionResourceSchema() map[string]*schema.Schema {
 		ecxL2ConnectionSchemaNames["VlanSTag"]: {
 			Type:          schema.TypeInt,
 			Optional:      true,
+			Computed:      true,
 			ForceNew:      true,
 			ValidateFunc:  validation.IntBetween(2, 4092),
 			RequiredWith:  []string{ecxL2ConnectionSchemaNames["PortUUID"]},
@@ -191,6 +192,7 @@ func createECXL2ConnectionResourceSchema() map[string]*schema.Schema {
 		ecxL2ConnectionSchemaNames["AuthorizationKey"]: {
 			Type:         schema.TypeString,
 			Optional:     true,
+			Computed:     true,
 			ForceNew:     true,
 			ValidateFunc: validation.StringIsNotEmpty,
 		},
@@ -499,7 +501,9 @@ func flattenECXL2ConnectionSecondary(prev, conn *ecx.L2Connection) interface{} {
 	transformed[ecxL2ConnectionSchemaNames["Status"]] = conn.Status
 	transformed[ecxL2ConnectionSchemaNames["PortUUID"]] = conn.PortUUID
 	transformed[ecxL2ConnectionSchemaNames["DeviceUUID"]] = conn.DeviceUUID
-	transformed[ecxL2ConnectionSchemaNames["VlanSTag"]] = conn.VlanSTag
+	if prev == nil || (prev != nil && prev.VlanSTag != 0) {
+		transformed[ecxL2ConnectionSchemaNames["VlanSTag"]] = conn.VlanSTag
+	}
 	transformed[ecxL2ConnectionSchemaNames["VlanCTag"]] = conn.VlanCTag
 	if prev == nil || (prev != nil && prev.ZSidePortUUID != "") {
 		transformed[ecxL2ConnectionSchemaNames["ZSidePortUUID"]] = conn.ZSidePortUUID

@@ -5,7 +5,7 @@ go 1.14
 require (
 	github.com/asaskevich/govalidator v0.0.0-20200428143746-21a406dcc535 // indirect
 	github.com/aws/aws-sdk-go v1.33.5 // indirect
-	github.com/equinix/ecx-go v1.0.1-0.20200812084835-ca745007e989
+	github.com/equinix/ecx-go v1.0.1-0.20200821123920-f1a9c5f4c1a2
 	github.com/equinix/ne-go v0.0.0-20200817145720-fa050eb7dce0
 	github.com/equinix/oauth2-go v1.0.0
 	github.com/hashicorp/terraform v0.13.0
