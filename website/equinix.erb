@@ -1,0 +1,45 @@
+<% wrap_layout :inner do %>
+  <% content_for :sidebar do %>
+    <div class="docs-sidebar hidden-print affix-top" role="complementary">
+      <ul class="nav docs-sidenav">
+        <li<%= sidebar_current("docs-home") %>>
+          <a href="/docs/providers/index.html">All Providers</a>
+        </li>
+
+        <li<%= sidebar_current("docs-equinix-index") %>>
+          <a href="/docs/providers/equinix/index.html">Equinix Provider</a>
+       </li>
+
+       <li<%= sidebar_current("docs-equinix-datasource") %>>
+         <a href="#">Data Sources</a>
+         <ul class="nav nav-visible">
+           <li<%= sidebar_current("docs-equinix-datasource-ecx-l2-sellerprofile") %>>
+             <a href="/docs/providers/equinix/d/ecx_l2_sellerprofile.html">equinix_ecx_l2_sellerprofile</a>
+           </li>
+           <li<%= sidebar_current("docs-equinix-datasource-ecx-port") %>>
+             <a href="/docs/providers/equinix/d/ecx_port.html">equinix_ecx_port</a>
+           </li>
+         </ul>
+       </li>
+
+
+        <li<%= sidebar_current("docs-equinix-resource") %>>
+          <a href="#">Resources</a>
+          <ul class="nav nav-visible">
+            <li<%= sidebar_current("docs-equinix-resource-ecx-l2-connection") %>>
+              <a href="/docs/providers/equinix/r/ecx_l2_connection.html">equinix_l2_connection</a>
+            </li>
+           <li<%= sidebar_current("docs-equinix-resource-ecx-l2-connection-accepter") %>>
+             <a href="/docs/providers/equinix/r/ecx_l2_connection_accepter.html">equinix_ecx_l2_connection_accepter</a>
+           </li>
+            <li<%= sidebar_current("docs-equinix-resource-ecx-l2-serviceprofile") %>>
+              <a href="/docs/providers/equinix/r/ecx_l2_serviceprofile.html">equinix_ecx_l2_serviceprofile</a>
+            </li>
+          </ul>
+        </li>
+      </ul>
+    </div>
+  <% end %>
+
+  <%= yield %>
+  <% end %>
