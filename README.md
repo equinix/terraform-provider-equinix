@@ -20,17 +20,17 @@ The Terraform Equinix provider is a plugin for Terraform that allows for lifecyc
 
 ## Using the provider
 
-See the [Equinix Provider documentation](website/docs/index.html) to get started using the Equinix
-provider.
+See the [Equinix Provider documentation](docs/index.md) to get started using the
+Equinix provider.
 
-- [Data source: ECXF port](website/docs/d/ecx_port.html)
+- [Data source: ECXF port](docs/data-sources/ecx_port.md)
 - [Data source: ECXF layer 2 seller
-  profile](website/docs/d/ecx_l2_sellerprofile.html)
-- [Resource: ECXF layer 2 connection](website/docs/r/ecx_l2_connection.html)
+  profile](docs/data-sources/ecx_l2_sellerprofile.md)
+- [Resource: ECXF layer 2 connection](docs/resources/ecx_l2_connection.md)
 - [Resource: ECXF layer 2 connection
-  accepter](website/docs/r/ecx_l2_connection_accepter.html)
+  accepter](docs/resources/ecx_l2_connection_accepter.md)
 - [Resource: ECXF layer 2 service
-  profile](website/docs/r/ecx_l2_serviceprofile.html)
+  profile](docs/resources/ecx_l2_serviceprofile.md)
 
 ## Building the provider
 
