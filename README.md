@@ -34,14 +34,10 @@ Equinix provider.
 
 ## Building the provider
 
-1. Clone Equinix Terraform SDK repository
-
-   _Equinix Terraform SDK contains provider source code along with code of required libraries and corresponding tools._
-
-   **NOTE**: in future, Equinix Go repositories may be released under open source license and moved to Github
+1. Clone Equinix Terraform Provider repository
 
    ```sh
-   git clone https://oauth2:ACCESS_TOKEN@git.equinix.com/developer-platform/equinix-terraform-sdk.git
+   git clone https://github.com/equinix/terraform-provider-equinix.git
    ```
 
 2. Build the provider
@@ -49,17 +45,17 @@ Equinix provider.
    Enter the provider directory and build the provider:
 
    ```sh
-   cd equinix-terraform-sdk/terraform-provider-equinix
+   cd terraform-provider-equinix
    make build
    ```
 
 3. Install the provider
 
-Provider binary can be installed in terraform plugins directory `~/.terraform.d/plugins` by running make with _install_ target:
+   Provider binary can be installed in terraform plugins directory `~/.terraform.d/plugins` by running make with _install_ target:
 
-```sh
-make install
-```
+   ```sh
+   make install
+   ```
 
 ## Developing the provider
 
@@ -95,7 +91,7 @@ make install
 **NOTE**: acceptance tests create resources on real infrastructure, thus may be subject for costs. In order to run acceptance tests, you must set necessary provider configuration attributes.
 
 ```sh
-export EQUINIX_API_ENDPOINT=https://api.equinix.com"
+export EQUINIX_API_ENDPOINT=https://api.equinix.com
 export EQUINIX_API_CLIENTID=someID
 export EQUINIX_API_CLIENTSECRET=someSecret
 make testacc
@@ -103,13 +99,13 @@ make testacc
 
 #### ECX Port acceptance tests
 
-ECX Port data source acceptance tests use below parameters, that can be set to match with desired tesing environment. If not set, defaults values, **from Sandbox enviroment** are used.
+ECX Port data source acceptance tests use below parameters, that can be set to match with desired testing environment. If not set, defaults values, **from Sandbox environment** are used.
 
 - **TF_ACC_ECX_PORT_NAME** - sets name of the port used in data source
 
 #### ECX L2 connection acceptance tests
 
-ECX Layer 2 connection acceptance tests use below parameters, that can be set to match with desired tesing environment. If not set, defaults values, **from Sandbox enviroment** are used.
+ECX Layer 2 connection acceptance tests use below parameters, that can be set to match with desired testing environment. If not set, defaults values, **from Sandbox environment** are used.
 
 - **TF_ACC_ECX_L2_AWS_SP_ID** - sets UUID of Layer2 service profile for AWS
 - **TF_ACC_ECX_L2_AZURE_SP_ID** - sets UUID of Layer2 service profile for Azure
@@ -119,7 +115,7 @@ ECX Layer 2 connection acceptance tests use below parameters, that can be set to
 Example - running tests on Sandbox environment but with defined ports:
 
 ```sh
-export EQUINIX_API_ENDPOINT=https://sandboxapi.equinix.com"
+export EQUINIX_API_ENDPOINT=https://sandboxapi.equinix.com
 export EQUINIX_API_CLIENTID=someID
 export EQUINIX_API_CLIENTSECRET=someSecret
 export TF_ACC_ECX_PRI_DOT1Q_PORT_ID="6ca3704b-c660-4c6f-9e66-3282f8de787b"
