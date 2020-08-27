@@ -12,6 +12,10 @@ The Equinix provider is used to interact with the resources supported by
 Equinix. The provider needs to be configured with the proper credentials before
 it can be used.
 
+For information about obtaining API key and secret refer to
+[Generating Client ID and Client Secret key](https://developer.equinix.com/docs/ecx-getting-started#generating-client-id-and-client-secret-key)
+from [Equinix Developer Platform portal](https://developer.equinix.com).
+
 Use the navigation to the left to read about the available resources.
 
 ## Example Usage
