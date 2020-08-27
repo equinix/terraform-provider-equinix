@@ -39,7 +39,7 @@ var ecxL2ServiceProfileSchemaNames = map[string]string{
 }
 
 var ecxL2ServiceProfileFeaturesSchemaNames = map[string]string{
-	"CloudReach":  "cloud_reach",
+	"CloudReach":  "allow_remote_connections",
 	"TestProfile": "test_profile",
 }
 
@@ -83,7 +83,7 @@ func createECXL2ServiceProfileResourceSchema() map[string]*schema.Schema {
 		},
 		ecxL2ServiceProfileSchemaNames["AllowOverSubscription"]: {
 			Type:     schema.TypeBool,
-			Required: true,
+			Optional: true,
 		},
 		ecxL2ServiceProfileSchemaNames["APIAvailable"]: {
 			Type:         schema.TypeBool,
@@ -149,6 +149,7 @@ func createECXL2ServiceProfileResourceSchema() map[string]*schema.Schema {
 		ecxL2ServiceProfileSchemaNames["OverSubscription"]: {
 			Type:     schema.TypeString,
 			Optional: true,
+			Default:  "1x",
 		},
 		ecxL2ServiceProfileSchemaNames["Private"]: {
 			Type:         schema.TypeBool,
@@ -179,7 +180,7 @@ func createECXL2ServiceProfileResourceSchema() map[string]*schema.Schema {
 		},
 		ecxL2ServiceProfileSchemaNames["VlanSameAsPrimary"]: {
 			Type:     schema.TypeBool,
-			Required: true,
+			Optional: true,
 		},
 		ecxL2ServiceProfileSchemaNames["Features"]: {
 			Type:     schema.TypeSet,

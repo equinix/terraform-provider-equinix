@@ -111,8 +111,8 @@ resource "equinix_ecx_l2_serviceprofile" "%{resourceName}" {
 	tag_type                           = "%{tag_type}"
 	secondary_vlan_from_primary        = %{secondary_vlan_from_primary}
 	features {
-	  cloud_reach  = %{features_cloud_reach}
-	  test_profile = %{features_test_profile}
+	  allow_remote_connections  = %{features_cloud_reach}
+	  test_profile              = %{features_test_profile}
 	}
 	port {
 	  uuid       = "%{port0_uuid}"
