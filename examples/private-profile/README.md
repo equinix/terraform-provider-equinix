@@ -6,8 +6,8 @@ Example service profile will be available for use only for selected users.
 It will also leverage Equinix API integration and allow to derive speed
 from connection API calls.
 Refer to [ECXF layer 2 service
-  profile resource documentation](docs/resources/ecx_l2_serviceprofile.md) for
-more details about possible service profile options.
+profile resource documentation](../../docs/resources/ecx_l2_serviceprofile.md) for
+more details about possible service profile options..
 
 ## Adjust variables
 
