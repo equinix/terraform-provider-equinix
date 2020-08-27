@@ -6,6 +6,7 @@ import (
 
 	"github.com/equinix/ecx-go"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
 )
 
@@ -20,29 +21,27 @@ func Provider() terraform.ResourceProvider {
 	provider := &schema.Provider{
 		Schema: map[string]*schema.Schema{
 			"endpoint": {
-				Type:     schema.TypeString,
-				Optional: true,
-				DefaultFunc: schema.MultiEnvDefaultFunc([]string{
-					endpointEnvVar,
-				}, nil),
+				Type:         schema.TypeString,
+				Optional:     true,
+				DefaultFunc:  schema.EnvDefaultFunc(endpointEnvVar, "https://api.equinix.com"),
+				ValidateFunc: validation.IsURLWithHTTPorHTTPS,
 			},
 			"client_id": {
-				Type:     schema.TypeString,
-				Optional: true,
-				DefaultFunc: schema.MultiEnvDefaultFunc([]string{
-					clientIDEnvVar,
-				}, nil),
+				Type:         schema.TypeString,
+				Optional:     true,
+				DefaultFunc:  schema.EnvDefaultFunc(clientIDEnvVar, nil),
+				ValidateFunc: validation.StringIsNotEmpty,
 			},
 			"client_secret": {
-				Type:     schema.TypeString,
-				Optional: true,
-				DefaultFunc: schema.MultiEnvDefaultFunc([]string{
-					clientSecretEnvVar,
-				}, nil),
+				Type:         schema.TypeString,
+				Optional:     true,
+				DefaultFunc:  schema.EnvDefaultFunc(clientSecretEnvVar, nil),
+				ValidateFunc: validation.StringIsNotEmpty,
 			},
 			"request_timeout": {
-				Type:     schema.TypeInt,
-				Optional: true,
+				Type:         schema.TypeInt,
+				Optional:     true,
+				ValidateFunc: validation.IntAtLeast(1),
 			},
 		},
 		DataSourcesMap: map[string]*schema.Resource{

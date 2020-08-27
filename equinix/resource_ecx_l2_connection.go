@@ -63,8 +63,10 @@ func createECXL2ConnectionResourceSchema() map[string]*schema.Schema {
 		},
 		ecxL2ConnectionSchemaNames["ProfileUUID"]: {
 			Type:         schema.TypeString,
-			Required:     true,
+			Optional:     true,
+			Computed:     true,
 			ForceNew:     true,
+			AtLeastOneOf: []string{ecxL2ConnectionSchemaNames["ProfileUUID"], ecxL2ConnectionSchemaNames["ZSidePortUUID"]},
 			ValidateFunc: validation.StringIsNotEmpty,
 		},
 		ecxL2ConnectionSchemaNames["Speed"]: {
