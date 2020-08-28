@@ -32,6 +32,9 @@ Equinix provider.
 - [Resource: ECXF layer 2 service
   profile](docs/resources/ecx_l2_serviceprofile.md)
 
+See [Equinix Provider Examples](examples/) for use case driven guides to managing
+Equinix services with Terraform.
+
 ## Building the provider
 
 1. Clone Equinix Terraform Provider repository
