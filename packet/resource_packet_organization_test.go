@@ -30,7 +30,7 @@ func testSweepOrganizations(region string) error {
 
 	os, _, err := client.Organizations.List(nil)
 	if err != nil {
-		return fmt.Errorf("Error getting org list for sweepeing organizations: %s", err)
+		return fmt.Errorf("Error getting org list for sweeping organizations: %s", err)
 	}
 	oids := []string{}
 	for _, o := range os {

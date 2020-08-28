@@ -108,7 +108,7 @@ func resourcePacketOrganizationRead(d *schema.ResourceData, meta interface{}) er
 		return err
 	}
 
-	d.Set("id", key.ID)
+	d.SetId(key.ID)
 	d.Set("name", key.Name)
 	d.Set("description", key.Description)
 	d.Set("website", key.Website)

@@ -51,7 +51,7 @@ func dataSourcePacketReservedIPBlockRead(d *schema.ResourceData, meta interface{
 	client := meta.(*packngo.Client)
 	projectID := d.Get("project_id").(string)
 	log.Println("[DEBUG] packet_precreated_ip_block - getting list of IPs in a project")
-	ips, _, err := client.ProjectIPs.List(projectID)
+	ips, _, err := client.ProjectIPs.List(projectID, nil)
 	if err != nil {
 		return err
 	}

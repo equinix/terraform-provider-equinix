@@ -31,7 +31,7 @@ func testSweepProjects(region string) error {
 
 	ps, _, err := client.Projects.List(nil)
 	if err != nil {
-		return fmt.Errorf("Error getting project list for sweepeing projects: %s", err)
+		return fmt.Errorf("Error getting project list for sweeping projects: %s", err)
 	}
 	pids := []string{}
 	for _, p := range ps {

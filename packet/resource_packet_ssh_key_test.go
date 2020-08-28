@@ -2,6 +2,9 @@ package packet
 
 import (
 	"fmt"
+	"log"
+	"net/http"
+	"strings"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
@@ -9,6 +12,41 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
 	"github.com/packethost/packngo"
 )
+
+func init() {
+	resource.AddTestSweepers("packet_ssh_key", &resource.Sweeper{
+		Name: "packet_ssh_key",
+		F:    testSweepSSHKeys,
+	})
+}
+
+func testSweepSSHKeys(region string) error {
+	log.Printf("[DEBUG] Sweeping ssh keys")
+	meta, err := sharedConfigForRegion(region)
+	if err != nil {
+		return fmt.Errorf("Error getting client for sweeping ssh keys: %s", err)
+	}
+	client := meta.(*packngo.Client)
+
+	sshkeys, _, err := client.SSHKeys.List()
+	if err != nil {
+		return fmt.Errorf("Error getting list for sweeping ssh keys: %s", err)
+	}
+	ids := []string{}
+	for _, k := range sshkeys {
+		if strings.HasPrefix(k.Label, "tfacc-") {
+			ids = append(ids, k.ID)
+		}
+	}
+	for _, id := range ids {
+		log.Printf("Removing ssh key %s", id)
+		resp, err := client.SSHKeys.Delete(id)
+		if err != nil && resp.StatusCode != http.StatusNotFound {
+			return fmt.Errorf("Error deleting ssh key %s", err)
+		}
+	}
+	return nil
+}
 
 func TestAccPacketSSHKey_Basic(t *testing.T) {
 	var key packngo.SSHKey
