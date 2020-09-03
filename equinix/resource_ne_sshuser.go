@@ -37,8 +37,9 @@ func createNeSSHUserResourceSchema() map[string]*schema.Schema {
 			ForceNew: true,
 		},
 		neSSHUserSchemaNames["Password"]: {
-			Type:     schema.TypeString,
-			Required: true,
+			Type:      schema.TypeString,
+			Sensitive: true,
+			Required:  true,
 		},
 		neSSHUserSchemaNames["DeviceUUIDs"]: {
 			Type:     schema.TypeSet,
@@ -65,7 +66,7 @@ func resourceNeSSHUserCreate(d *schema.ResourceData, m interface{}) error {
 	userUpdateReq := conf.ne.NewSSHUserUpdateRequest(uuid)
 	userUpdateReq.WithDeviceChange([]string{}, user.DeviceUUIDs[1:len(user.DeviceUUIDs)])
 	if err := userUpdateReq.Execute(); err != nil {
-		log.Printf("[WARN] failed to assign devies to newly created user")
+		log.Printf("[WARN] failed to assign devices to newly created user")
 	}
 	return resourceNeSSHUserRead(d, m)
 }

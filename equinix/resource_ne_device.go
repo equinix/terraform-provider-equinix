@@ -3,9 +3,10 @@ package equinix
 import (
 	"fmt"
 	"reflect"
-	"regexp"
+	"time"
 
 	"github.com/equinix/ne-go"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
 )
@@ -64,6 +65,9 @@ func resourceNeDevice() *schema.Resource {
 		Update: resourceNeDeviceUpdate,
 		Delete: resourceNeDeviceDelete,
 		Schema: createNeDeviceSchema(),
+		Timeouts: &schema.ResourceTimeout{
+			Create: schema.DefaultTimeout(30 * time.Minute),
+		},
 	}
 }
 
@@ -77,7 +81,7 @@ func createNeDeviceSchema() map[string]*schema.Schema {
 			Type:         schema.TypeString,
 			Required:     true,
 			ForceNew:     true,
-			ValidateFunc: validation.StringLenBetween(1, 50),
+			ValidateFunc: validation.StringLenBetween(3, 50),
 		},
 		neDeviceSchemaNames["TypeCode"]: {
 			Type:         schema.TypeString,
@@ -97,7 +101,7 @@ func createNeDeviceSchema() map[string]*schema.Schema {
 			Type:         schema.TypeString,
 			Required:     true,
 			ForceNew:     true,
-			ValidateFunc: validation.StringMatch(regexp.MustCompile("^[A-Z]{2}$"), "MetroCode must consist of two capital letters"),
+			ValidateFunc: stringIsMetroCode(),
 		},
 		neDeviceSchemaNames["IBX"]: {
 			Type:     schema.TypeString,
@@ -124,17 +128,19 @@ func createNeDeviceSchema() map[string]*schema.Schema {
 			Type:         schema.TypeString,
 			Optional:     true,
 			ForceNew:     true,
-			ValidateFunc: validation.StringLenBetween(1, 15),
+			ValidateFunc: validation.StringLenBetween(2, 15),
 		},
 		neDeviceSchemaNames["PackageCode"]: {
-			Type:     schema.TypeString,
-			Required: true,
-			ForceNew: true,
+			Type:         schema.TypeString,
+			Required:     true,
+			ForceNew:     true,
+			ValidateFunc: validation.StringIsNotEmpty,
 		},
 		neDeviceSchemaNames["Version"]: {
-			Type:     schema.TypeString,
-			Required: true,
-			ForceNew: true,
+			Type:         schema.TypeString,
+			Required:     true,
+			ForceNew:     true,
+			ValidateFunc: validation.StringIsNotEmpty,
 		},
 		neDeviceSchemaNames["IsBYOL"]: {
 			Type:     schema.TypeBool,
@@ -143,9 +149,10 @@ func createNeDeviceSchema() map[string]*schema.Schema {
 			ForceNew: true,
 		},
 		neDeviceSchemaNames["LicenseToken"]: {
-			Type:     schema.TypeString,
-			Optional: true,
-			ForceNew: true,
+			Type:         schema.TypeString,
+			Optional:     true,
+			ForceNew:     true,
+			ValidateFunc: validation.StringIsNotEmpty,
 		},
 		neDeviceSchemaNames["ACLs"]: {
 			Type:     schema.TypeSet,
@@ -169,9 +176,10 @@ func createNeDeviceSchema() map[string]*schema.Schema {
 			Computed: true,
 		},
 		neDeviceSchemaNames["AccountNumber"]: {
-			Type:     schema.TypeString,
-			Required: true,
-			ForceNew: true,
+			Type:         schema.TypeString,
+			Required:     true,
+			ForceNew:     true,
+			ValidateFunc: validation.StringIsNotEmpty,
 		},
 		neDeviceSchemaNames["Notifications"]: {
 			Type:     schema.TypeSet,
@@ -180,12 +188,13 @@ func createNeDeviceSchema() map[string]*schema.Schema {
 			MinItems: 1,
 			Elem: &schema.Schema{
 				Type:         schema.TypeString,
-				ValidateFunc: validation.StringMatch(regexp.MustCompile("^[^ @]+@[^ @]+$"), "Notification list can contain only valid email addresses"),
+				ValidateFunc: stringIsEmailAddress(),
 			},
 		},
 		neDeviceSchemaNames["PurchaseOrderNumber"]: {
-			Type:     schema.TypeString,
-			Optional: true,
+			Type:         schema.TypeString,
+			Optional:     true,
+			ValidateFunc: validation.StringLenBetween(1, 30),
 		},
 		neDeviceSchemaNames["RedundancyType"]: {
 			Type:     schema.TypeString,
@@ -207,9 +216,10 @@ func createNeDeviceSchema() map[string]*schema.Schema {
 			ValidateFunc: validation.IntAtLeast(1),
 		},
 		neDeviceSchemaNames["OrderReference"]: {
-			Type:     schema.TypeString,
-			Optional: true,
-			ForceNew: true,
+			Type:         schema.TypeString,
+			Optional:     true,
+			ForceNew:     true,
+			ValidateFunc: validation.StringLenBetween(1, 100),
 		},
 		neDeviceSchemaNames["InterfaceCount"]: {
 			Type:         schema.TypeInt,
@@ -242,7 +252,8 @@ func createNeDeviceSchema() map[string]*schema.Schema {
 			Optional: true,
 			ForceNew: true,
 			Elem: &schema.Schema{
-				Type: schema.TypeString,
+				Type:         schema.TypeString,
+				ValidateFunc: validation.StringIsNotEmpty,
 			},
 		},
 		neDeviceSchemaNames["Secondary"]: {
@@ -257,10 +268,9 @@ func createNeDeviceSchema() map[string]*schema.Schema {
 						Computed: true,
 					},
 					neDeviceSchemaNames["Name"]: {
-						Type:     schema.TypeString,
-						Required: true,
-						//ForceNew:     true,
-						ValidateFunc: validation.StringLenBetween(1, 50),
+						Type:         schema.TypeString,
+						Required:     true,
+						ValidateFunc: validation.StringLenBetween(3, 50),
 					},
 					neDeviceSchemaNames["Status"]: {
 						Type:     schema.TypeString,
@@ -271,10 +281,9 @@ func createNeDeviceSchema() map[string]*schema.Schema {
 						Computed: true,
 					},
 					neDeviceSchemaNames["MetroCode"]: {
-						Type:     schema.TypeString,
-						Required: true,
-						//ForceNew:     true,
-						ValidateFunc: validation.StringMatch(regexp.MustCompile("^[A-Z]{2}$"), "MetroCode must consist of two capital letters"),
+						Type:         schema.TypeString,
+						Required:     true,
+						ValidateFunc: stringIsMetroCode(),
 					},
 					neDeviceSchemaNames["IBX"]: {
 						Type:     schema.TypeString,
@@ -285,15 +294,14 @@ func createNeDeviceSchema() map[string]*schema.Schema {
 						Computed: true,
 					},
 					neDeviceSchemaNames["HostName"]: {
-						Type:     schema.TypeString,
-						Optional: true,
-						//ForceNew:     true,
-						ValidateFunc: validation.StringLenBetween(1, 15),
+						Type:         schema.TypeString,
+						Optional:     true,
+						ValidateFunc: validation.StringLenBetween(2, 15),
 					},
 					neDeviceSchemaNames["LicenseToken"]: {
-						Type:     schema.TypeString,
-						Optional: true,
-						//ForceNew: true,
+						Type:         schema.TypeString,
+						Optional:     true,
+						ValidateFunc: validation.StringIsNotEmpty,
 					},
 					neDeviceSchemaNames["ACLs"]: {
 						Type:     schema.TypeSet,
@@ -317,18 +325,17 @@ func createNeDeviceSchema() map[string]*schema.Schema {
 						Computed: true,
 					},
 					neDeviceSchemaNames["AccountNumber"]: {
-						Type:     schema.TypeString,
-						Required: true,
-						//ForceNew: true,
+						Type:         schema.TypeString,
+						Required:     true,
+						ValidateFunc: validation.StringIsNotEmpty,
 					},
 					neDeviceSchemaNames["Notifications"]: {
 						Type:     schema.TypeSet,
 						Required: true,
-						//ForceNew: true,
 						MinItems: 1,
 						Elem: &schema.Schema{
 							Type:         schema.TypeString,
-							ValidateFunc: validation.StringMatch(regexp.MustCompile("^[^ @]+@[^ @]+$"), "Notification list can contain only valid email addresses"),
+							ValidateFunc: stringIsEmailAddress(),
 						},
 					},
 					neDeviceSchemaNames["RedundancyType"]: {
@@ -355,7 +362,8 @@ func createNeDeviceSchema() map[string]*schema.Schema {
 						Type:     schema.TypeMap,
 						Optional: true,
 						Elem: &schema.Schema{
-							Type: schema.TypeString,
+							Type:         schema.TypeString,
+							ValidateFunc: validation.StringIsNotEmpty,
 						},
 					},
 				},
@@ -415,6 +423,30 @@ func resourceNeDeviceCreate(d *schema.ResourceData, m interface{}) error {
 		return err
 	}
 	d.SetId(uuid)
+
+	createStateConf := &resource.StateChangeConf{
+		Pending: []string{
+			ne.DeviceStateInitializing,
+			ne.DeviceStateProvisioning,
+			ne.DeviceStateWaitingSecondary,
+		},
+		Target: []string{
+			ne.DeviceStateProvisioned,
+		},
+		Timeout:    d.Timeout(schema.TimeoutCreate),
+		Delay:      10 * time.Second,
+		MinTimeout: 5 * time.Second,
+		Refresh: func() (interface{}, string, error) {
+			resp, err := conf.ne.GetDevice(d.Id())
+			if err != nil {
+				return nil, "", err
+			}
+			return resp, resp.Status, nil
+		},
+	}
+	if _, err := createStateConf.WaitForState(); err != nil {
+		return fmt.Errorf("error waiting for device (%s) to be created: %s", d.Id(), err)
+	}
 	return resourceNeDeviceRead(d, m)
 }
 
@@ -427,13 +459,13 @@ func resourceNeDeviceRead(d *schema.ResourceData, m interface{}) error {
 	if err != nil {
 		return fmt.Errorf("cannot fetch primary device due to %v", err)
 	}
-	if primary.Status == "DEPROVISIONED" {
+	if primary.Status == ne.DeviceStateDeprovisioning || primary.Status == ne.DeviceStateDeprovisioned {
 		d.SetId("")
 		return nil
 	}
 	primaryACLs, err = conf.ne.GetDeviceACLs(d.Id())
 	if err != nil {
-		return fmt.Errorf("cannot fetch pirmary device ACLs due to %v", err)
+		return fmt.Errorf("cannot fetch primary device ACLs due to %v", err)
 	}
 	if primary.RedundantUUID != "" {
 		secondary, err = conf.ne.GetDevice(primary.RedundantUUID)
@@ -489,13 +521,13 @@ func resourceNeDeviceUpdate(d *schema.ResourceData, m interface{}) error {
 func resourceNeDeviceDelete(d *schema.ResourceData, m interface{}) error {
 	conf := m.(*Config)
 	if err := conf.ne.DeleteDevice(d.Id()); err != nil {
-		/*ecxRestErr, ok := err.(ecx.RestError)
-		if ok {
-			//IC-LAYER2-4021 = Connection already deleted
-			if hasECXErrorCode(ecxRestErr.Errors, "IC-LAYER2-4021") {
-				return nil
+		if neRestErr, ok := err.(ne.RestError); ok {
+			for _, detailedErr := range neRestErr.Errors {
+				if detailedErr.ErrorCode == ne.ErrorCodeDeviceRemoved {
+					return nil
+				}
 			}
-		}*/
+		}
 		return err
 	}
 	return nil
