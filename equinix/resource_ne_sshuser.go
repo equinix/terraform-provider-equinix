@@ -6,6 +6,7 @@ import (
 
 	"github.com/equinix/ne-go"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
 )
 
 var neSSHUserSchemaNames = map[string]string{
@@ -32,21 +33,24 @@ func createNeSSHUserResourceSchema() map[string]*schema.Schema {
 			Computed: true,
 		},
 		neSSHUserSchemaNames["Username"]: {
-			Type:     schema.TypeString,
-			Required: true,
-			ForceNew: true,
+			Type:         schema.TypeString,
+			Required:     true,
+			ForceNew:     true,
+			ValidateFunc: validation.StringLenBetween(3, 32),
 		},
 		neSSHUserSchemaNames["Password"]: {
-			Type:      schema.TypeString,
-			Sensitive: true,
-			Required:  true,
+			Type:         schema.TypeString,
+			Sensitive:    true,
+			Required:     true,
+			ValidateFunc: validation.StringLenBetween(8, 20),
 		},
 		neSSHUserSchemaNames["DeviceUUIDs"]: {
 			Type:     schema.TypeSet,
 			Required: true,
 			MinItems: 1,
 			Elem: &schema.Schema{
-				Type: schema.TypeString,
+				Type:         schema.TypeString,
+				ValidateFunc: validation.StringIsNotEmpty,
 			},
 		},
 	}

@@ -12,9 +12,10 @@ import (
 )
 
 const (
-	endpointEnvVar     = "EQUINIX_API_ENDPOINT"
-	clientIDEnvVar     = "EQUINIX_API_CLIENTID"
-	clientSecretEnvVar = "EQUINIX_API_CLIENTSECRET"
+	endpointEnvVar      = "EQUINIX_API_ENDPOINT"
+	clientIDEnvVar      = "EQUINIX_API_CLIENTID"
+	clientSecretEnvVar  = "EQUINIX_API_CLIENTSECRET"
+	clientTimeoutEnvVar = "EQUINIX_API_TIMEOUT"
 )
 
 //Provider returns Equinix terraform ResourceProvider
@@ -42,6 +43,7 @@ func Provider() terraform.ResourceProvider {
 			"request_timeout": {
 				Type:         schema.TypeInt,
 				Optional:     true,
+				DefaultFunc:  schema.EnvDefaultFunc(clientTimeoutEnvVar, nil),
 				ValidateFunc: validation.IntAtLeast(1),
 			},
 		},

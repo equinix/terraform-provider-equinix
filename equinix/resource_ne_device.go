@@ -80,7 +80,6 @@ func createNeDeviceSchema() map[string]*schema.Schema {
 		neDeviceSchemaNames["Name"]: {
 			Type:         schema.TypeString,
 			Required:     true,
-			ForceNew:     true,
 			ValidateFunc: validation.StringLenBetween(3, 50),
 		},
 		neDeviceSchemaNames["TypeCode"]: {
@@ -113,22 +112,21 @@ func createNeDeviceSchema() map[string]*schema.Schema {
 		},
 		neDeviceSchemaNames["Throughput"]: {
 			Type:         schema.TypeInt,
-			Optional:     true,
+			Required:     true,
 			ForceNew:     true,
 			ValidateFunc: validation.IntAtLeast(1),
 		},
 		neDeviceSchemaNames["ThroughputUnit"]: {
 			Type:         schema.TypeString,
-			Optional:     true,
+			Required:     true,
 			ForceNew:     true,
-			RequiredWith: []string{neDeviceSchemaNames["Throughput"]},
 			ValidateFunc: validation.StringInSlice([]string{"Mbps", "Gbps"}, false),
 		},
 		neDeviceSchemaNames["HostName"]: {
 			Type:         schema.TypeString,
-			Optional:     true,
+			Required:     true,
 			ForceNew:     true,
-			ValidateFunc: validation.StringLenBetween(2, 15),
+			ValidateFunc: validation.StringLenBetween(2, 10),
 		},
 		neDeviceSchemaNames["PackageCode"]: {
 			Type:         schema.TypeString,
@@ -184,7 +182,6 @@ func createNeDeviceSchema() map[string]*schema.Schema {
 		neDeviceSchemaNames["Notifications"]: {
 			Type:     schema.TypeSet,
 			Required: true,
-			ForceNew: true,
 			MinItems: 1,
 			Elem: &schema.Schema{
 				Type:         schema.TypeString,
@@ -207,8 +204,7 @@ func createNeDeviceSchema() map[string]*schema.Schema {
 		neDeviceSchemaNames["TermLength"]: {
 			Type:         schema.TypeInt,
 			Required:     true,
-			ForceNew:     true,
-			ValidateFunc: validation.IntAtLeast(1),
+			ValidateFunc: validation.IntInSlice([]int{1, 12, 24, 36}),
 		},
 		neDeviceSchemaNames["AdditionalBandwidth"]: {
 			Type:         schema.TypeInt,
@@ -295,7 +291,7 @@ func createNeDeviceSchema() map[string]*schema.Schema {
 					},
 					neDeviceSchemaNames["HostName"]: {
 						Type:         schema.TypeString,
-						Optional:     true,
+						Required:     true,
 						ValidateFunc: validation.StringLenBetween(2, 15),
 					},
 					neDeviceSchemaNames["LicenseToken"]: {

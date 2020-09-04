@@ -2,6 +2,9 @@ GOCMD=go
 TEST?=$$(go list ./... |grep -v 'vendor')
 INSTALL_DIR=~/.terraform.d/plugins
 BINARY=terraform-provider-equinix
+TESTARGS=-timeout 30m
+SWEEP_DIR?=./equinix
+SWEEPARGS=timeout 60m
 
 default: clean build test
 
@@ -13,6 +16,10 @@ test:
 
 testacc:
 	TF_ACC=1 TF_SCHEMA_PANIC_ON_ERROR=1 ${GOCMD} test $(TEST) -v $(TESTARGS)
+
+sweep:
+	@echo "WARNING: This will destroy infrastructure. Use only in development accounts."
+	go test $(SWEEP_DIR) -v -sweep=all $(SWEEPARGS)
 
 build:
 	${GOCMD} build -o ${BINARY}

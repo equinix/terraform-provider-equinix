@@ -33,14 +33,14 @@ func TestProvider(t *testing.T) {
 }
 
 func testAccPreCheck(t *testing.T) {
-	if v := os.Getenv(endpointEnvVar); v == "" {
-		t.Fatalf("%s env variable has to be set", endpointEnvVar)
+	if _, err := getFromEnv(endpointEnvVar); err != nil {
+		t.Fatalf("%s", err)
 	}
-	if v := os.Getenv(clientIDEnvVar); v == "" {
-		t.Fatalf("%s env variable has to be set", clientIDEnvVar)
+	if _, err := getFromEnv(clientIDEnvVar); err != nil {
+		t.Fatalf("%s", err)
 	}
-	if v := os.Getenv(clientSecretEnvVar); v == "" {
-		t.Fatalf("%s env variable has to be set", clientSecretEnvVar)
+	if _, err := getFromEnv(clientSecretEnvVar); err != nil {
+		t.Fatalf("%s", err)
 	}
 }
 
@@ -124,4 +124,11 @@ func randString(length int) string {
 	}
 	mu.Unlock()
 	return string(result)
+}
+
+func getFromEnv(varName string) (string, error) {
+	if v := os.Getenv(varName); v != "" {
+		return v, nil
+	}
+	return "", fmt.Errorf("environmental variable '%s' is not set", varName)
 }
