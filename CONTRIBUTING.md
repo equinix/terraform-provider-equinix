@@ -2,7 +2,7 @@
   Thx for your interest! We're so glad you're here. 
 
 ### Important Resources
-  - bugs: [https://github.com/packethost/terraform-provider-packet/issues](https://github.com/packet-labs/terraform-packet-distributed-minio/issues)
+  - bugs: [https://github.com/packethost/terraform-provider-packet/issues](https://github.com/packethost/terraform-provider-packet/issues)
 
 ### Code of Conduct
 Available via [https://github.com/packethost/terraform-provider-packet/blob/master/.github/CODE_OF_CONDUCT.md](https://github.com/packethost/terraform-provider-packet/blob/master/.github/CODE_OF_CONDUCT.md)
