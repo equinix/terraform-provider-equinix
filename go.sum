@@ -140,6 +140,8 @@ github.com/equinix/ne-go v0.0.0-20200904130649-e4a2ed21810d h1:tFWI6fd9oSi/BwR+Q
 github.com/equinix/ne-go v0.0.0-20200904130649-e4a2ed21810d/go.mod h1:h82iKVTvvJd8fO+AqBkG/9Mlh3F/E+oO1sH8dClRMDU=
 github.com/equinix/ne-go v0.0.0-20200914135901-525068a90799 h1:iuZKSGBJ9Etv20X0BS/7GLq5Dm5ppXK8nS1X+GcqAgI=
 github.com/equinix/ne-go v0.0.0-20200914135901-525068a90799/go.mod h1:h82iKVTvvJd8fO+AqBkG/9Mlh3F/E+oO1sH8dClRMDU=
+github.com/equinix/ne-go v0.0.0-20200916131647-68cb4ab45b36 h1:qVIxmFSuIH3ySHTrbvtCTq9Ew7tr4uJjNnf0mD7OpAo=
+github.com/equinix/ne-go v0.0.0-20200916131647-68cb4ab45b36/go.mod h1:h82iKVTvvJd8fO+AqBkG/9Mlh3F/E+oO1sH8dClRMDU=
 github.com/equinix/oauth2-go v1.0.0 h1:fHtAPGq82PdgtK5vEThs8Vwz6f7D/8SX4tE3NJu+KcU=
 github.com/equinix/oauth2-go v1.0.0/go.mod h1:4pulXvUNMktJlewLPnUeJyMW52iCoF1aM+A/Z5xY1ws=
 github.com/evanphx/json-patch v0.0.0-20190203023257-5858425f7550/go.mod h1:50XU6AFN0ol/bzJsmQLiYLvXMP4fmwYFNcr97nuDLSk=
