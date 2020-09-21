@@ -52,6 +52,7 @@ func Provider() terraform.ResourceProvider {
 			"equinix_ecx_l2_sellerprofile": dataSourceECXL2SellerProfile(),
 			"equinix_ne_account":           dataSourceNeAccount(),
 			"equinix_ne_device_type":       dataSourceNeDeviceType(),
+			"equinix_ne_device_software":   dataSourceNeDeviceSoftware(),
 		},
 		ResourcesMap: map[string]*schema.Resource{
 			"equinix_ecx_l2_connection":          resourceECXL2Connection(),
@@ -120,4 +121,22 @@ func stringIsMetroCode() schema.SchemaValidateFunc {
 
 func stringIsEmailAddress() schema.SchemaValidateFunc {
 	return validation.StringMatch(regexp.MustCompile("^[^ @]+@[^ @]+$"), "not valid email address")
+}
+
+func stringsFound(source []string, target []string) bool {
+	for i := range source {
+		if !isStringInSlice(source[i], target) {
+			return false
+		}
+	}
+	return true
+}
+
+func isStringInSlice(needle string, hay []string) bool {
+	for i := range hay {
+		if needle == hay[i] {
+			return true
+		}
+	}
+	return false
 }

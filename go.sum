@@ -142,6 +142,10 @@ github.com/equinix/ne-go v0.0.0-20200914135901-525068a90799 h1:iuZKSGBJ9Etv20X0B
 github.com/equinix/ne-go v0.0.0-20200914135901-525068a90799/go.mod h1:h82iKVTvvJd8fO+AqBkG/9Mlh3F/E+oO1sH8dClRMDU=
 github.com/equinix/ne-go v0.0.0-20200916131647-68cb4ab45b36 h1:qVIxmFSuIH3ySHTrbvtCTq9Ew7tr4uJjNnf0mD7OpAo=
 github.com/equinix/ne-go v0.0.0-20200916131647-68cb4ab45b36/go.mod h1:h82iKVTvvJd8fO+AqBkG/9Mlh3F/E+oO1sH8dClRMDU=
+github.com/equinix/ne-go v0.0.0-20200921144221-11fa9e8d030c h1:60b0vMSKu6ts0M+dBshRKiy6Griw9mZOBVzWpN+C1aw=
+github.com/equinix/ne-go v0.0.0-20200921144221-11fa9e8d030c/go.mod h1:h82iKVTvvJd8fO+AqBkG/9Mlh3F/E+oO1sH8dClRMDU=
+github.com/equinix/ne-go v0.0.0-20200921164034-6b0e1c1a1d4b h1:OAVbnf70fVyI3BhnUkYZRL8juAilPgZ3G+brI03vE/s=
+github.com/equinix/ne-go v0.0.0-20200921164034-6b0e1c1a1d4b/go.mod h1:i/RqWCjYDpgowehi96mpOD8wUF2GJKUCxOimzzJ3UxI=
 github.com/equinix/oauth2-go v1.0.0 h1:fHtAPGq82PdgtK5vEThs8Vwz6f7D/8SX4tE3NJu+KcU=
 github.com/equinix/oauth2-go v1.0.0/go.mod h1:4pulXvUNMktJlewLPnUeJyMW52iCoF1aM+A/Z5xY1ws=
 github.com/evanphx/json-patch v0.0.0-20190203023257-5858425f7550/go.mod h1:50XU6AFN0ol/bzJsmQLiYLvXMP4fmwYFNcr97nuDLSk=
@@ -587,6 +591,8 @@ golang.org/x/net v0.0.0-20200513185701-a91f0712d120/go.mod h1:qpuaurCH72eLCgpAm/
 golang.org/x/net v0.0.0-20200602114024-627f9648deb9/go.mod h1:qpuaurCH72eLCgpAm/N6yyVIVM9cpaDIP3A8BGJEC5A=
 golang.org/x/net v0.0.0-20200707034311-ab3426394381 h1:VXak5I6aEWmAXeQjA+QSZzlgNrpq9mjcfDemuexIKsU=
 golang.org/x/net v0.0.0-20200707034311-ab3426394381/go.mod h1:/O7V0waA8r7cgGh81Ro3o1hOxt32SMVPicZroKQ2sZA=
+golang.org/x/net v0.0.0-20200822124328-c89045814202 h1:VvcQYSHwXgi7W+TpUR6A9g6Up98WAHf3f/ulnJ62IyA=
+golang.org/x/net v0.0.0-20200822124328-c89045814202/go.mod h1:/O7V0waA8r7cgGh81Ro3o1hOxt32SMVPicZroKQ2sZA=
 golang.org/x/oauth2 v0.0.0-20180821212333-d2e6202438be/go.mod h1:N/0e6XlmueqKjAGxoOufVs8QHGRruUQn6yWY3a++T0U=
 golang.org/x/oauth2 v0.0.0-20190226205417-e64efc72b421/go.mod h1:gOpvHmFTYa4IltrdGE7lF6nIHvwfUNPOp7c8zoXwtLw=
 golang.org/x/oauth2 v0.0.0-20190604053449-0f29369cfe45/go.mod h1:gOpvHmFTYa4IltrdGE7lF6nIHvwfUNPOp7c8zoXwtLw=

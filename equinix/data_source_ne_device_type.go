@@ -83,7 +83,7 @@ func dataSourceDeviceTypeRead(d *schema.ResourceData, m interface{}) error {
 		if category != "" && !strings.EqualFold(deviceType.Category, category) {
 			continue
 		}
-		if !metroCodesFound(metroCodes, deviceType.MetroCodes) {
+		if !stringsFound(metroCodes, deviceType.MetroCodes) {
 			continue
 		}
 		filtered = append(filtered, deviceType)
@@ -118,22 +118,4 @@ func updateNeDeviceTypeResource(deviceType ne.DeviceType, d *schema.ResourceData
 		return fmt.Errorf("error reading MetroCodes: %s", err)
 	}
 	return nil
-}
-
-func metroCodesFound(source []string, target []string) bool {
-	for i := range source {
-		if !isStringInSlice(source[i], target) {
-			return false
-		}
-	}
-	return true
-}
-
-func isStringInSlice(needle string, hay []string) bool {
-	for i := range hay {
-		if needle == hay[i] {
-			return true
-		}
-	}
-	return false
 }
