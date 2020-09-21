@@ -1,4 +1,12 @@
 ## 3.1.0 (Unreleased)
+
+FEATURES:
+- [#249](https://github.com/packethost/terraform-provider-packet/pull/249) New datasource `packet_project_ssh_key`
+
+IMPROVEMENTS:
+- Packngo updated to [v0.3.0](https://github.com/packethost/packngo/releases/tag/v0.3.0)
+- Test sweeper added for SSH keys
+
 ## 3.0.1 (August 20, 2020)
 
 BREAKING CHANGES:

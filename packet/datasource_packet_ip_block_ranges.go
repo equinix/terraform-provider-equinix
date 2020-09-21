@@ -57,7 +57,7 @@ func faclityMatch(ref, ipFacility string) bool {
 func dataSourcePacketIPBlockRangesRead(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*packngo.Client)
 	projectID := d.Get("project_id").(string)
-	ips, _, err := client.ProjectIPs.List(projectID)
+	ips, _, err := client.ProjectIPs.List(projectID, nil)
 	if err != nil {
 		return err
 	}

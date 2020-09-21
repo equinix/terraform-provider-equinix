@@ -97,7 +97,7 @@ func resourcePacketSSHKeyRead(d *schema.ResourceData, meta interface{}) error {
 
 	ownerID := path.Base(key.Owner.Href)
 
-	d.Set("id", key.ID)
+	d.SetId(key.ID)
 	d.Set("name", key.Label)
 	d.Set("public_key", key.Key)
 	d.Set("fingerprint", key.FingerPrint)

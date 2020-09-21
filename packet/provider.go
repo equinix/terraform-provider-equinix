@@ -30,6 +30,7 @@ func Provider() terraform.ResourceProvider {
 			"packet_device":               dataSourcePacketDevice(),
 			"packet_device_bgp_neighbors": dataSourcePacketDeviceBGPNeighbors(),
 			"packet_project":              dataSourcePacketProject(),
+			"packet_project_ssh_key":      dataSourcePacketProjectSSHKey(),
 			"packet_spot_market_request":  dataSourcePacketSpotMarketRequest(),
 			"packet_volume":               dataSourcePacketVolume(),
 		},
