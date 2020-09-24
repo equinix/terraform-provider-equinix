@@ -1,3 +1,10 @@
+## 1.1.0 (Unreleased)
+
+ENHANCEMENTS:
+
+- resource/equinix_ecx_l2_connection: added `provider_status` and
+ `redundancy_type` attributes
+
 ## 1.0.0 (August 02, 2020)
 
 NOTES:

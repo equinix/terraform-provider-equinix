@@ -8,7 +8,8 @@ description: |-
 
 # equinix_ecx_l2_connection
 
-Resource `equinix_ecx_l2_connection` is used to manage layer 2 connections in Equinix Cloud Exchange (ECX) Fabric.
+Resource `equinix_ecx_l2_connection` is used to manage layer 2 connections in
+Equinix Cloud Exchange (ECX) Fabric.
 
 ## Example Usage
 
@@ -60,17 +61,26 @@ resource "equinix_ecx_l2_connection" "redundant_self" {
 
 The following arguments are supported:
 
-- `name` - _(Required)_ Name of the primary connection - An alpha-numeric 24 characters string which can include only hyphens and underscores ('-' & '\_').
+- `name` - _(Required)_ Name of the primary connection - An alpha-numeric 24 characters
+string which can include only hyphens and underscores ('-' & '\_').
 - `profile_uuid` - _(Required)_ Unique identifier of the provider's service profile.
 - `speed` - _(Required)_ Speed/Bandwidth to be allocated to the connection.
-- `speed_unit` - _(Required)_ Unit of the speed/bandwidth to be allocated to the connection.
-- `notifications` - _(Required)_ A list of email addresses that would be notified when there are any updates on this connection.
-- `purchase_order_number` - _(Optional)_ Test field to link the purchase order numbers to the connection on Equinix which would be reflected on the invoice.
-- `port_uuid` - _(Required when device_uuid is not set)_ Unique identifier of the buyer's port from which the connection would originate.
-- `device_uuid` - _(Required when port_uuid is not set)_ Unique identifier of the Network Edge virtual device from which the connection would originate.
-- `vlan_stag` - _(Required when port_uuid is set)_ S-Tag/Outer-Tag of the connection - a numeric character ranging from 2 - 4094.
-- `vlan_ctag` - _(Optional)_ C-Tag/Inner-Tag of the connection - a numeric character ranging from 2 - 4094.
-- `named_tag` - _(Optional)_ The type of peering to set up in case when connecting to Azure Express Route. One of _"Public"_, _"Private"_, _"Microsoft"_, _"Manual"_
+- `speed_unit` - _(Required)_ Unit of the speed/bandwidth to be allocated
+to the connection.
+- `notifications` - _(Required)_ A list of email addresses that would be notified
+when there are any updates on this connection.
+- `purchase_order_number` - _(Optional)_ Test field to link the purchase order
+numbers to the connection on Equinix which would be reflected on the invoice.
+- `port_uuid` - _(Required when device_uuid is not set)_ Unique identifier of
+the buyer's port from which the connection would originate.
+- `device_uuid` - _(Required when port_uuid is not set)_ Unique identifier of
+the Network Edge virtual device from which the connection would originate.
+- `vlan_stag` - _(Required when port_uuid is set)_ S-Tag/Outer-Tag of the connection
+\- a numeric character ranging from 2 - 4094.
+- `vlan_ctag` - _(Optional)_ C-Tag/Inner-Tag of the connection - a numeric 
+character ranging from 2 - 4094.
+- `named_tag` - _(Optional)_ The type of peering to set up in case when connecting
+to Azure Express Route. One of _"Public"_, _"Private"_, _"Microsoft"_, _"Manual"_
 - `additional_info` - _(Optional)_ one or more additional information key-value objects
   - `name` - _(Required)_ additional information key
   - `value` - _(Required)_ additional information value
@@ -78,9 +88,13 @@ The following arguments are supported:
 - `zside_vlan_stag` - _(Optional)_ S-Tag/Outer-Tag of the connection on the Z side.
 - `zside_vlan_ctag` - _(Optional)_ C-Tag/Inner-Tag of the connection on the Z side.
 - `seller_region` - _(Optional)_ The region in which the seller port resides.
-- `seller_metro_code` - _(Optional)_ The metro code that denotes the connection’s destination (Z side).
-- `authorization_key` - _(Optional)_ Text field based on the service profile you want to connect to.
-- `secondary_connection` - _(Optional)_ Definition of secondary connection for redundant connectivity. Most attributes are derived from primary connection, except below:
+- `seller_metro_code` - _(Optional)_ The metro code that denotes the connection’s
+destination (Z side).
+- `authorization_key` - _(Optional)_ Text field based on the service profile
+you want to connect to.
+- `secondary_connection` - _(Optional)_ Definition of secondary connection for
+ redundant connectivity. Most attributes are derived from primary connection,
+ except below:
   - `name` - _(Required)_
   - `port_uuid` - _(Required when device_uuid is not set)_
   - `device_uuid` - _(Required when port_uuid is not set)_
@@ -92,12 +106,24 @@ The following arguments are supported:
 
 ## Attributes Reference
 
-In addition to the arguments listed above, the following computed attributes are exported:
+In addition to the arguments listed above, the following computed attributes
+are exported:
 
 - `uuid` - Unique identifier of the connection
-- `status` - Status of the connection
-- `redundant_uuid` - Unique identifier of the redundant connection (i.e. secondary connection)
+- `status` - Status of the connection on ECXF side
+- `provider_status` - status of the connection at the service provider's end
+- `redundant_uuid` - Unique identifier of the redundant connection
+(i.e. secondary connection)
+- `redundancy_type` - type of connection, either primary or secondary
 
 ## Update operation behavior
 
-As for now, update of ECXF L2 connection implies removal of old connection (in redundant scenario - both primary and secondary connections), and creation of new one, with required set of attributes.
+Update of most arguments will force replacement of a connection (including related
+redundant connection in HA setup).
+
+Following arguments can be updated. **NOTE** that ECXF may still forbid updates depending
+on current connection state, used service provider or number of updates requested
+during the day.
+
+- `name`
+- `speed` and `speed_unit`
