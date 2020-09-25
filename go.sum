@@ -109,8 +109,8 @@ github.com/elazarl/goproxy v0.0.0-20170405201442-c4fc26588b6e/go.mod h1:/Zj4wYkg
 github.com/emicklei/go-restful v0.0.0-20170410110728-ff4f55a20633/go.mod h1:otzb+WCGbkyDHkqmQmT5YD2WR4BBwUdeQoFo8l/7tVs=
 github.com/envoyproxy/go-control-plane v0.9.1-0.20191026205805-5f8ba28d4473/go.mod h1:YTl/9mNaCwkRvm6d1a2C3ymFceY/DCBVvsKhRF0iEA4=
 github.com/envoyproxy/protoc-gen-validate v0.1.0/go.mod h1:iSmxcyjqTsJpI2R4NaDN7+kN2VEUnK/pcBlmesArF7c=
-github.com/equinix/ecx-go v1.1.1-0.20200924092542-a0b61a9b6f7b h1:iehgX0tp67sskUkwNCvVFF+WEJ7Jod8bHkptHWWEFMI=
-github.com/equinix/ecx-go v1.1.1-0.20200924092542-a0b61a9b6f7b/go.mod h1:vJiZ3x5rYC0vj5A5uca+wi419Ml2WrvXyv+fzmxeRkE=
+github.com/equinix/ecx-go v1.1.1-0.20200925144351-de5b9a4dda49 h1:SnNYtKHESNSX+MlattxiqfaMkPh3uhLYdROZ6lr+8s8=
+github.com/equinix/ecx-go v1.1.1-0.20200925144351-de5b9a4dda49/go.mod h1:vJiZ3x5rYC0vj5A5uca+wi419Ml2WrvXyv+fzmxeRkE=
 github.com/equinix/oauth2-go v1.0.0 h1:fHtAPGq82PdgtK5vEThs8Vwz6f7D/8SX4tE3NJu+KcU=
 github.com/equinix/oauth2-go v1.0.0/go.mod h1:4pulXvUNMktJlewLPnUeJyMW52iCoF1aM+A/Z5xY1ws=
 github.com/evanphx/json-patch v0.0.0-20190203023257-5858425f7550/go.mod h1:50XU6AFN0ol/bzJsmQLiYLvXMP4fmwYFNcr97nuDLSk=

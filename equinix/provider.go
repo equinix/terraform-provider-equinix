@@ -98,3 +98,12 @@ func hasECXErrorCode(errors []ecx.Error, code string) bool {
 	}
 	return false
 }
+
+func isStringInSlice(needle string, hay []string) bool {
+	for i := range hay {
+		if needle == hay[i] {
+			return true
+		}
+	}
+	return false
+}
