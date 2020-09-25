@@ -4,8 +4,10 @@ import (
 	"fmt"
 	"log"
 	"regexp"
+	"time"
 
 	"github.com/equinix/ecx-go"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
 )
@@ -49,6 +51,9 @@ func resourceECXL2Connection() *schema.Resource {
 		Update: resourceECXL2ConnectionUpdate,
 		Delete: resourceECXL2ConnectionDelete,
 		Schema: createECXL2ConnectionResourceSchema(),
+		Timeouts: &schema.ResourceTimeout{
+			Create: schema.DefaultTimeout(1 * time.Minute),
+		},
 	}
 }
 
@@ -314,6 +319,32 @@ func resourceECXL2ConnectionCreate(d *schema.ResourceData, m interface{}) error 
 		return err
 	}
 	d.SetId(resp.UUID)
+
+	createStateConf := &resource.StateChangeConf{
+		Pending: []string{
+			ecx.ConnectionStatusProvisioning,
+			ecx.ConnectionStatusPendingAutoApproval,
+		},
+		Target: []string{
+			ecx.ConnectionStatusProvisioned,
+			ecx.ConnectionStatusPendingApproval,
+			ecx.ConnectionStatusPendingBGPPeering,
+			ecx.ConnectionStatusPendingProviderVlan,
+		},
+		Timeout:    d.Timeout(schema.TimeoutCreate),
+		Delay:      1 * time.Second,
+		MinTimeout: 2 * time.Second,
+		Refresh: func() (interface{}, string, error) {
+			resp, err := conf.ecx.GetL2Connection(d.Id())
+			if err != nil {
+				return nil, "", err
+			}
+			return resp, resp.Status, nil
+		},
+	}
+	if _, err := createStateConf.WaitForState(); err != nil {
+		return fmt.Errorf("error waiting for connection (%s) to be created: %s", d.Id(), err)
+	}
 	return resourceECXL2ConnectionRead(d, m)
 }
 
@@ -327,7 +358,12 @@ func resourceECXL2ConnectionRead(d *schema.ResourceData, m interface{}) error {
 	if err != nil {
 		return fmt.Errorf("cannot fetch primary connection due to %v", err)
 	}
-	if primary.Status == "DEPROVISIONING" || primary.Status == "DEPROVISIONED" {
+	if isStringInSlice(primary.Status, []string{
+		ecx.ConnectionStatusPendingDelete,
+		ecx.ConnectionStatusDeprovisioning,
+		ecx.ConnectionStatusDeprovisioned,
+		ecx.ConnectionStatusDeleted,
+	}) {
 		d.SetId("")
 		return nil
 	}

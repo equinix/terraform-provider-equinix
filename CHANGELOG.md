@@ -4,6 +4,8 @@ ENHANCEMENTS:
 
 - resource/equinix_ecx_l2_connection: added `provider_status` and
  `redundancy_type` attributes
+- resource/equinix_ecx_l2_connection: creation awaits for desired
+connection state before succeeding
 
 ## 1.0.0 (August 02, 2020)
 

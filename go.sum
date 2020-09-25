@@ -126,6 +126,12 @@ github.com/equinix/ecx-go v1.0.1-0.20200821123920-f1a9c5f4c1a2 h1:HToPvi4VCEiMAs
 github.com/equinix/ecx-go v1.0.1-0.20200821123920-f1a9c5f4c1a2/go.mod h1:vJiZ3x5rYC0vj5A5uca+wi419Ml2WrvXyv+fzmxeRkE=
 github.com/equinix/ecx-go v1.1.1-0.20200924092542-a0b61a9b6f7b h1:iehgX0tp67sskUkwNCvVFF+WEJ7Jod8bHkptHWWEFMI=
 github.com/equinix/ecx-go v1.1.1-0.20200924092542-a0b61a9b6f7b/go.mod h1:vJiZ3x5rYC0vj5A5uca+wi419Ml2WrvXyv+fzmxeRkE=
+github.com/equinix/ecx-go v1.1.1-0.20200925114830-ee769cd6b06b h1:eaBWxx94JSfEJQKZhyNJ4tZlYrYYByI+CUzfzfoQLpk=
+github.com/equinix/ecx-go v1.1.1-0.20200925114830-ee769cd6b06b/go.mod h1:vJiZ3x5rYC0vj5A5uca+wi419Ml2WrvXyv+fzmxeRkE=
+github.com/equinix/ecx-go v1.1.1-0.20200925143550-96e78e671bc1 h1:CYCMcI1IuJl26/keLcGHeOn+NSaqNR+OZErgSPgp57w=
+github.com/equinix/ecx-go v1.1.1-0.20200925143550-96e78e671bc1/go.mod h1:vJiZ3x5rYC0vj5A5uca+wi419Ml2WrvXyv+fzmxeRkE=
+github.com/equinix/ecx-go v1.1.1-0.20200925144351-de5b9a4dda49 h1:SnNYtKHESNSX+MlattxiqfaMkPh3uhLYdROZ6lr+8s8=
+github.com/equinix/ecx-go v1.1.1-0.20200925144351-de5b9a4dda49/go.mod h1:vJiZ3x5rYC0vj5A5uca+wi419Ml2WrvXyv+fzmxeRkE=
 github.com/equinix/ne-go v0.0.0-20200807094859-5fe5f71cb350 h1:DzZ5LxRTF4Jk88MdwEV6YxVPyoftIYS1lDLstMCMd8E=
 github.com/equinix/ne-go v0.0.0-20200807094859-5fe5f71cb350/go.mod h1:h82iKVTvvJd8fO+AqBkG/9Mlh3F/E+oO1sH8dClRMDU=
 github.com/equinix/ne-go v0.0.0-20200817142317-4f21b07ad368 h1:jxcradSY4HL2eqirxMuSwRerlim4XeSxBdzNupQ2o9Y=
