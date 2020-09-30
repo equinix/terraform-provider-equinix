@@ -6,7 +6,7 @@ require (
 	github.com/asaskevich/govalidator v0.0.0-20200428143746-21a406dcc535 // indirect
 	github.com/aws/aws-sdk-go v1.33.5
 	github.com/equinix/ecx-go v1.1.1-0.20200925144351-de5b9a4dda49
-	github.com/equinix/ne-go v0.0.0-20200921164034-6b0e1c1a1d4b
+	github.com/equinix/ne-go v0.0.0-20200929134455-fa98a4bfa085
 	github.com/equinix/oauth2-go v1.0.0
 	github.com/go-openapi/errors v0.19.6 // indirect
 	github.com/go-openapi/strfmt v0.19.5 // indirect
