@@ -13,7 +13,6 @@ Provides a Packet device datasource.
  the raw state as plain-text.
 [Read more about sensitive data in state](/docs/state/sensitive-data.html).
 
-
 ## Example Usage
 
 ```hcl
@@ -60,7 +59,7 @@ The following attributes are exported:
 * `description` - Description string for the device
 * `hardware_reservation_id` - The id of hardware reservation which this device occupies
 * `id` - The ID of the device
-* `network` - The device's private and public IP (v4 and v6) network details. When a device is run without any special network configuration, it will have 3 networks: 
+* `network` - The device's private and public IP (v4 and v6) network details. When a device is run without any special network configuration, it will have 3 networks:
   * Public IPv4 at `packet_device.name.network.0`
   * IPv6 at `packet_device.name.network.1`
   * Private IPv4 at `packet_device.name.network.2`

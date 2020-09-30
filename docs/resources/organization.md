@@ -29,7 +29,6 @@ The following arguments are supported:
 * `twitter` - Twitter handle
 * `logo` - Logo URL
 
-
 ## Attributes Reference
 
 The following attributes are exported:

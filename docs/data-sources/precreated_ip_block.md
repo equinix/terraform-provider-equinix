@@ -49,12 +49,12 @@ resource "packet_ip_attachment" "from_ipv6_block" {
 
 ## Argument Reference
 
- * `project_id` - (Required) ID of the project where the searched block should be.
- * `address_family` - (Required) 4 or 6, depending on which block you are looking for.
- * `public` - (Required) Whether to look for public or private block. 
- * `global` - (Optional) Whether to look for global block. Default is false for backward compatibility.
- * `facility` - (Optional) Facility of the searched block. (Optional) Only allowed for non-global blocks.
+* `project_id` - (Required) ID of the project where the searched block should be.
+* `address_family` - (Required) 4 or 6, depending on which block you are looking for.
+* `public` - (Required) Whether to look for public or private block.
+* `global` - (Optional) Whether to look for global block. Default is false for backward compatibility.
+* `facility` - (Optional) Facility of the searched block. (Optional) Only allowed for non-global blocks.
 
 ## Attributes Reference
 
- * `cidr_notation` - CIDR notation of the looked up block.
+* `cidr_notation` - CIDR notation of the looked up block.

@@ -9,8 +9,6 @@ description: |-
 
 Provides a Packet spot_market_request datasource. The datasource will contain list of device IDs created by referenced Spot Market Request.
 
-
-
 ## Example Usage
 
 ```hcl
@@ -53,7 +51,7 @@ output "ips" {
 With the code as `main.tf`, first create the spot market request:
 
 ```
-$ terraform apply -target packet_spot_market_request.req
+terraform apply -target packet_spot_market_request.req
 ```
 
 When the terraform run ends, run a full apply, and the IPv4 addresses will be printed:
@@ -62,7 +60,7 @@ When the terraform run ends, run a full apply, and the IPv4 addresses will be pr
 $ terraform apply
 
 [...]
- 
+
 ips = [
   "947.85.199.231",
   "947.85.194.181",

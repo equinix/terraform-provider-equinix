@@ -20,9 +20,9 @@ data "packet_spot_market_price" "example" {
 
 ## Argument Reference
 
- * `facility` - (Required) Name of the facility.
- * `plan` - (Required) Name of the plan.
+* `facility` - (Required) Name of the facility.
+* `plan` - (Required) Name of the plan.
 
 ## Attributes Reference
 
- * `price` - Current spot market price for given plan in given facility.
+* `price` - Current spot market price for given plan in given facility.

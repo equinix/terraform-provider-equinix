@@ -39,7 +39,7 @@ The following attributes are exported:
 
 * `id` - The unique ID of the volume
 * `name` - The name of the volume
-* `project_id ` - The project id the volume is in
+* `project_id` - The project id the volume is in
 * `size` - The size in GB of the volume
 * `plan` - Performance plan the volume is on
 * `billing_cycle` - The billing cycle, defaults to hourly

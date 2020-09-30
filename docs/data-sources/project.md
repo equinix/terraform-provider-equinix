@@ -42,8 +42,9 @@ The following attributes are exported:
 * `bgp_config` - Optional BGP settings. Refer to [Packet guide for BGP](https://www.packet.com/developers/docs/network/advanced/local-and-global-bgp/).
 
 The `bgp_config` block contains:
-  * `asn` - Autonomous System Numer for local BGP deployment
-  * `md5` - Password for BGP session in plaintext (not a checksum)
-  * `deployment_type` - `private` or `public`, the `private` is likely to be usable immediately, the `public` will need to be review by Packet engineers
-  * `status` - status of BGP configuration in the project
-  * `max_prefix` - The maximum number of route filters allowed per server
+
+* `asn` - Autonomous System Numer for local BGP deployment
+* `md5` - Password for BGP session in plaintext (not a checksum)
+* `deployment_type` - `private` or `public`, the `private` is likely to be usable immediately, the `public` will need to be review by Packet engineers
+* `status` - status of BGP configuration in the project
+* `max_prefix` - The maximum number of route filters allowed per server

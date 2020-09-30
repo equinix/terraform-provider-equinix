@@ -56,13 +56,13 @@ The `bgp_config` block supports:
 The following attributes are exported:
 
 * `id` - The unique ID of the project
-* `payment_method_id` - The UUID of payment method for this project. 
+* `payment_method_id` - The UUID of payment method for this project.
 * `organization_id` - The UUID of this project's parent organization.
 * `backend_transfer` - Whether Backend Transfer is enabled for this project.
 * `created` - The timestamp for when the project was created
 * `updated` - The timestamp for the last time the project was updated
 
-The `bgp_config` block additionally exports: 
+The `bgp_config` block additionally exports:
 
 * `status` - status of BGP configuration in the project
 * `max_prefix` - The maximum number of route filters allowed per server

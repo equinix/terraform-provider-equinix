@@ -14,7 +14,6 @@ modify, and delete devices.
  the raw state as plain-text.
 [Read more about sensitive data in state](/docs/state/sensitive-data.html).
 
-
 ## Example Usage
 
 Create a device and add it to cool_project
@@ -156,7 +155,7 @@ The following arguments are supported:
 * `tags` - Tags attached to the device
 * `description` - Description string for the device
 * `project_ssh_key_ids` - Array of IDs of the project SSH keys which should be added to the device. If you omit this, SSH keys of all the members of the parent project will be added to the device. If you specify this array, only the listed project SSH keys will be added. Project SSH keys can be created with the [packet_project_ssh_key][https://www.terraform.io/docs/providers/packet/r/project_ssh_key.html] resource.
-* `ip_address` (Optional) - A list of IP address types for the device (structure is documented below). 
+* `ip_address` (Optional) - A list of IP address types for the device (structure is documented below).
 * `wait_for_reservation_deprovision` (Optional) - Only used for devices in reserved hardware. If set, the deletion of this device will block until the hardware reservation is marked provisionable (about 4 minutes in August 2019).
 * `force_detach_volumes` (Optional) - Delete device even if it has volumes attached. Only applies for destroy action.
 
@@ -185,7 +184,7 @@ The following attributes are exported:
 * `hostname`- The hostname of the device
 * `id` - The ID of the device
 * `locked` - Whether the device is locked
-* `network` - The device's private and public IP (v4 and v6) network details. When a device is run without any special network configuration, it will have 3 networks: 
+* `network` - The device's private and public IP (v4 and v6) network details. When a device is run without any special network configuration, it will have 3 networks:
   * Public IPv4 at `packet_device.name.network.0`
   * IPv6 at `packet_device.name.network.1`
   * Private IPv4 at `packet_device.name.network.2`

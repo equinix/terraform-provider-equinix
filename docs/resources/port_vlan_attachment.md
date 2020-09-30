@@ -15,8 +15,8 @@ If you need this resource to add the port back to bond on removal, set `force_bo
 
 To learn more about Layer 2 networking in Packet, refer to
 
-* https://www.packet.com/resources/guides/layer-2-configurations/ 
-* https://www.packet.com/developers/docs/network/advanced/layer-2/
+* <https://www.packet.com/resources/guides/layer-2-configurations/>
+* <https://www.packet.com/developers/docs/network/advanced/layer-2/>
 
 ## Example Usage
 
@@ -100,7 +100,7 @@ The following arguments are supported:
 * `port_name` - (Required) Name of network port to be assigned to the VLAN
 * `force_bond` - Add port back to the bond when this resource is removed. Default is false.
 * `vlan_vnid` - VXLAN Network Identifier, integer
-* `native` - (Optional) Mark this VLAN a native VLAN on the port. This can be used only if this assignment assigns second or further VLAN to the port. To ensure that this attachment is not first on a port, you can use `depends_on` pointing to another packet_port_vlan_attachment, just like in the layer2-individual example above. 
+* `native` - (Optional) Mark this VLAN a native VLAN on the port. This can be used only if this assignment assigns second or further VLAN to the port. To ensure that this attachment is not first on a port, you can use `depends_on` pointing to another packet_port_vlan_attachment, just like in the layer2-individual example above.
 
 ## Attribute Referece
 

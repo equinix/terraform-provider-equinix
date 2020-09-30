@@ -47,7 +47,7 @@ The following attributes are exported:
   * `peer_as` - Peer AS number (different than customer_as for EBGP)
   * `peer_ips` - Array of IP addresses of this neighbor's peers
   * `routes_in` - Array of incoming routes. Each route has attributes:
-      * `route` - CIDR expression of route (IP/mask)
-      * `exact` - (bool) Whether the route is exact
+    * `route` - CIDR expression of route (IP/mask)
+    * `exact` - (bool) Whether the route is exact
   * `routes_out` - Array of outgoing routes in the same format
   

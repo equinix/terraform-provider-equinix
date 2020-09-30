@@ -17,7 +17,7 @@ Be cautious when using the `packet_project` resource. Packet is invoicing per pr
 ## Example Usage
 
 ```hcl
-# Configure the Packet Provider. 
+# Configure the Packet Provider.
 provider "packet" {
   auth_token = var.auth_token
 }
@@ -33,7 +33,7 @@ locals {
 }
 
 # If you want to create a fresh project, you can create one with packet_project
-# 
+#
 # resource "packet_project" "cool_project" {
 #   name           = "My First Terraform Project"
 # }

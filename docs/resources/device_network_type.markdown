@@ -12,8 +12,8 @@ This resource controls network type of Packet devices.
 
 To learn more about Layer 2 networking in Packet, refer to
 
-* https://www.packet.com/resources/guides/layer-2-configurations/
-* https://www.packet.com/developers/docs/network/advanced/layer-2/
+* <https://www.packet.com/resources/guides/layer-2-configurations/>
+* <https://www.packet.com/developers/docs/network/advanced/layer-2/>
 
 ## Example Usage
 
@@ -35,15 +35,13 @@ resource "packet_device_network_type" "test" {
 
 If you are attaching VLAN to a device (i.e. using packet_port_vlan_attachment), link the device ID from this resource, in order to make the port attachment implicitly dependent on the state of the network type. If you link the device ID from the packet_device resource, Terraform will not wait for the network type change. See examples in [packet_port_vlan_attachment](port_vlan_attachment.html).
 
-
 ## Import
 
 This resource can also be imported using existing device ID:
 
 ```
-$ terraform import packet_device_network_type {existing device_id}
+terraform import packet_device_network_type {existing device_id}
 ```
-
 
 ## Argument Reference
 

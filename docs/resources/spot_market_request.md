@@ -8,7 +8,7 @@ description: |-
 # packet\_spot\_market\_request
 
 Provides a Packet Spot Market Request resource to allow you to
-manage spot market requests on your account. For more detail on Spot Market, see [this article in Packet documentaion](https://www.packet.com/developers/docs/getting-started/deployment-options/spot-market/).
+manage spot market requests on your account. For more detail on Spot Market, see [this article in Packet documentation](https://www.packet.com/developers/docs/getting-started/deployment-options/spot-market/).
 
 ## Example Usage
 
@@ -41,7 +41,6 @@ The following arguments are supported:
 * `instance_parameters` - (Required) Device parameters. See device resource for details
 * `project_id` - (Required) Project ID
 * `wait_for_devices` - (Optional) On resource creation - wait until all desired devices are active, on resource destruction - wait until devices are removed
-
 
 ### Timeouts
 
