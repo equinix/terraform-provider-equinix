@@ -1,7 +1,6 @@
 ---
-layout: "packet"
 page_title: "Packet: packet_organization"
-sidebar_current: "docs-packet-datasource-organization"
+subcategory: ""
 description: |-
   Provides a Packet Organization datasource. This can be used to read existing Organizations.
 ---

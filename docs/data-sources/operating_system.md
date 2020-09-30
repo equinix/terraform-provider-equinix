@@ -1,7 +1,6 @@
 ---
-layout: "packet"
 page_title: "Packet: operating_system"
-sidebar_current: "docs-packet-datasource-operating-system"
+subcategory: ""
 description: |-
   Get a Packet operating system image
 ---

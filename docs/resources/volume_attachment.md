@@ -1,7 +1,6 @@
 ---
-layout: "packet"
 page_title: "Packet: packet_volume_attachment"
-sidebar_current: "docs-packet-resource-volume-attachment"
+subcategory: ""
 description: |-
   Provides attachment of volumes to devices in the Packet Host.
 ---

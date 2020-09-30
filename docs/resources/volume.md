@@ -1,7 +1,6 @@
 ---
-layout: "packet"
 page_title: "Packet: packet_volume"
-sidebar_current: "docs-packet-resource-volume"
+subcategory: ""
 description: |-
   Provides a Packet Block Storage Volume Resource.
 ---

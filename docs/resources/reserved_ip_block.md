@@ -1,7 +1,6 @@
 ---
-layout: "packet"
 page_title: "Packet: packet_reserved_ip_block"
-sidebar_current: "docs-packet-resource-resevered-ip-block"
+subcategory: ""
 description: |-
   Provides a Resource for reserving IP addresses in the Packet Host
 ---

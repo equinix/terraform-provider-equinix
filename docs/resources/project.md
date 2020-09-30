@@ -1,7 +1,6 @@
 ---
-layout: "packet"
 page_title: "Packet: packet_project"
-sidebar_current: "docs-packet-resource-project"
+subcategory: ""
 description: |-
   Provides a Packet Project resource.
 ---

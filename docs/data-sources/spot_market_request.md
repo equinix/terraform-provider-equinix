@@ -1,7 +1,6 @@
 ---
-layout: "packet"
 page_title: "Packet: packet_spot_market_request"
-sidebar_current: "docs-packet-datasource-spot-market-request"
+subcategory: ""
 description: |-
   Provides a datasource for existing Spot Market Requests in the Packet host.
 ---

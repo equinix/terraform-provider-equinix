@@ -1,9 +1,8 @@
 ---
-layout: "packet"
+layout: ""
 page_title: "Provider: Packet"
-sidebar_current: "docs-packet-index"
 description: |-
-  The Packet provider is used to interact with the resources supported by Packet. The provider needs to be configured with the proper credentials before it can be used.
+  The Packet provider is used to interact with the Packet Host API.
 ---
 
 # Packet Provider

@@ -1,7 +1,6 @@
 ---
-layout: "packet"
 page_title: "Packet: spot_market_price"
-sidebar_current: "docs-packet-datasource-spot-market-price"
+subcategory: ""
 description: |-
   Get a Packet Spot Market Price
 ---

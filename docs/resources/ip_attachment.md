@@ -1,7 +1,6 @@
 ---
-layout: "packet"
 page_title: "Packet: packet_ip_attachment"
-sidebar_current: "docs-packet-resource-ip-attachment"
+subcategory: ""
 description: |-
   Provides a Resource for Attaching IP Subnets from a Reserved Block to a Device
 ---

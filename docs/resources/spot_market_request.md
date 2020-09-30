@@ -1,7 +1,6 @@
 ---
-layout: "packet"
 page_title: "Packet: packet_spot_market_request"
-sidebar_current: "docs-packet-spot-market-request"
+subcategory: ""
 description: |-
   Provides a Packet Spot Market Request Resource.
 ---

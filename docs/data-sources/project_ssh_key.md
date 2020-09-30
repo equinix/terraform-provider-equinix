@@ -1,7 +1,6 @@
 ---
-layout: "packet"
 page_title: "Packet: packet_project_ssh_key"
-sidebar_current: "docs-packet-datasource-project-ssh-key"
+subcategory: ""
 description: |-
   Provides a Packet Project SSH Key datasource.
 ---

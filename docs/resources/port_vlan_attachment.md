@@ -1,7 +1,6 @@
 ---
-layout: "packet"
 page_title: "Packet: packet_port_vlan_attachment"
-sidebar_current: "docs-packet-resource-port-vlan-attachment"
+subcategory: ""
 description: |-
   Provides a Resource for Attaching VLANs to Device Ports
 ---

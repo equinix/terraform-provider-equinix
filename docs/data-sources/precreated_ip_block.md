@@ -1,7 +1,6 @@
 ---
-layout: "packet"
 page_title: "Packet: precreated_ip_block"
-sidebar_current: "docs-packet-datasource-precreated-ip-block"
+subcategory: ""
 description: |-
   Load automatically created IP blocks from your Packet project
 ---

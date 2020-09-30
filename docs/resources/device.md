@@ -1,7 +1,6 @@
 ---
-layout: "packet"
-page_title: "Packet: packet_device"
-sidebar_current: "docs-packet-resource-device"
+page_title: "Packet: packet_device resource"
+subcategory: ""
 description: |-
   Provides a Packet device resource. This can be used to create, modify, and delete devices.
 ---

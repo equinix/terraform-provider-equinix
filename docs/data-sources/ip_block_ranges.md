@@ -1,7 +1,6 @@
 ---
-layout: "packet"
 page_title: "Packet: ip_block_ranges"
-sidebar_current: "docs-packet-datasource-ip-block-ranges"
+subcategory: ""
 description: |-
   List IP address ranges allocated to a project
 ---

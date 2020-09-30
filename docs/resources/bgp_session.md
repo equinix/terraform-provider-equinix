@@ -1,7 +1,6 @@
 ---
-layout: "packet"
 page_title: "Packet: packet_bgp_session"
-sidebar_current: "docs-packet-resource-bgp-session"
+subcategory: ""
 description: |-
   BGP session in Packet Host
 ---

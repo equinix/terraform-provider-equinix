@@ -1,7 +1,6 @@
 ---
-layout: "packet"
 page_title: "Packet: packet_project"
-sidebar_current: "docs-packet-datasource-project"
+subcategory: ""
 description: |-
   Provides a Packet Project datasource.
 ---

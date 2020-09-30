@@ -1,7 +1,6 @@
 ---
-layout: "packet"
 page_title: "Packet: packet_device"
-sidebar_current: "docs-packet-datasource-device"
+subcategory: ""
 description: |-
   Provides a Packet device datasource. This can be used to read existing devices.
 ---

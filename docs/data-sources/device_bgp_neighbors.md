@@ -1,7 +1,6 @@
 ---
-layout: "packet"
 page_title: "Packet: packet_device_bgp_neighbors"
-sidebar_current: "docs-packet-datasource-device-bgp-neighbors"
+subcategory: ""
 description: |-
   Provides a datasource for listing BGP neighbors of a Packet device
 ---

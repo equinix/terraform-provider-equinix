@@ -1,7 +1,6 @@
 ---
-layout: "packet"
 page_title: "Packet: packet_vlan"
-sidebar_current: "docs-packet-resource-vlan"
+subcategory: ""
 description: |-
   Provides a resource for Packet Virtual Network.
 ---
