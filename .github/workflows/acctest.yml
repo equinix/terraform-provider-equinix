@@ -77,3 +77,9 @@ jobs:
         PACKET_AUTH_TOKEN: ${{ secrets.PACKET_AUTH_TOKEN }}
       run: |
         go test -v -cover ./packet
+    - name: Sweeper
+      if: ${{ always() }}
+      env:
+        PACKET_AUTH_TOKEN: ${{ secrets.PACKET_AUTH_TOKEN }}
+      run: |
+        go test ./packet -v -sweep="tf_test"
