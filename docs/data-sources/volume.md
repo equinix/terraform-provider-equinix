@@ -14,8 +14,8 @@ Provides a Packet Block Storage Volume datasource to allow you to read existing 
 ```hcl
 # Read a volume by project ID and name
 data "packet_volume" "volume1" {
-  name          = "terraform-volume-1"
-  project_id    = local.project_id
+  name       = "terraform-volume-1"
+  project_id = local.project_id
 }
 
 output "volume_size" {

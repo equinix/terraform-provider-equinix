@@ -56,8 +56,8 @@ resource "packet_device" "web1" {
   billing_cycle    = "hourly"
   project_id       = local.project_id
   ip_address {
-      type = "private_ipv4"
-      cidr = 30
+    type = "private_ipv4"
+    cidr = 30
   }
 }
 ```
@@ -66,14 +66,14 @@ Deploy device on next-available reserved hardware and do custom partitioning.
 
 ```hcl
 resource "packet_device" "web1" {
-  hostname         = "tftest"
-  plan             = "t1.small.x86"
-  facilities       = ["sjc1"]
-  operating_system = "ubuntu_16_04"
-  billing_cycle    = "hourly"
-  project_id       = local.project_id
+  hostname                = "tftest"
+  plan                    = "t1.small.x86"
+  facilities              = ["sjc1"]
+  operating_system        = "ubuntu_16_04"
+  billing_cycle           = "hourly"
+  project_id              = local.project_id
   hardware_reservation_id = "next-available"
-  storage = <<EOS
+  storage                 = <<EOS
 {
   "disks": [
     {
