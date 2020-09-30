@@ -70,7 +70,10 @@ jobs:
       env:
         TF_ACC: "1"
         TF_ACC_TERRAFORM_VERSION: ${{ matrix.terraform }}
+        TF_SCHEMA_PANIC_ON_ERROR: "1"
+        # TF_LOG: "DEBUG"
+        #
 
         PACKET_AUTH_TOKEN: ${{ secrets.PACKET_AUTH_TOKEN }}
       run: |
-        go test -v -cover -run=TestAccPacketProject_Basic ./packet
+        go test -v -cover ./packet
