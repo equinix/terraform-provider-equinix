@@ -70,7 +70,7 @@ jobs:
       env:
         TF_ACC: "1"
         TF_ACC_TERRAFORM_VERSION: ${{ matrix.terraform }}
-        TF_SCHEMA_PANIC_ON_ERROR: "1"
+        # TF_SCHEMA_PANIC_ON_ERROR: "1"
         # TF_LOG: "DEBUG"
         #
 
