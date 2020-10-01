@@ -76,7 +76,7 @@ jobs:
 
         PACKET_AUTH_TOKEN: ${{ secrets.PACKET_AUTH_TOKEN }}
       run: |
-        go test -v -cover ./packet
+        go test -v -cover -parallel 4 -timeout 120m ./packet
     - name: Sweeper
       if: ${{ always() }}
       env:
