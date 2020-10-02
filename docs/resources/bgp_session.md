@@ -1,7 +1,6 @@
 ---
-layout: "packet"
 page_title: "Packet: packet_bgp_session"
-sidebar_current: "docs-packet-resource-bgp-session"
+subcategory: ""
 description: |-
   BGP session in Packet Host
 ---
@@ -12,11 +11,11 @@ Provides a resource to manage BGP sessions in Packet Host. Refer to [Packet BGP 
 
 You need to have BGP config enabled in your project.
 
-BGP session must be linked to a device running [BIRD](https://bird.network.cz) or other BGP routing daemon which will control route advertisements via the session to Packet's upstream routers. 
+BGP session must be linked to a device running [BIRD](https://bird.network.cz) or other BGP routing daemon which will control route advertisements via the session to Packet's upstream routers.
 
 ## Example Usage
 
-Following HCL illustrates usage of the BGP features in Packet. It will 
+Following HCL illustrates usage of the BGP features in Packet. It will
 
 * spawn a device in a new BGP-enabled project
 * reserve a floating IPv4 address in the project in the same location as the device
@@ -157,7 +156,7 @@ resource "null_resource" "configure_bird" {
 
 The following arguments are supported:
 
-* `device_id` - (Required) ID of device 
+* `device_id` - (Required) ID of device
 * `address_family` - (Required) `ipv4` or `ipv6`
 * `default_route` - (Optional) Boolean flag to set the default route policy. False by default.
 

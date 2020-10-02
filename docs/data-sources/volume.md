@@ -1,7 +1,6 @@
 ---
-layout: "packet"
 page_title: "Packet: packet_volume"
-sidebar_current: "docs-packet-datasource-volume"
+subcategory: ""
 description: |-
   Provides a Packet Block Storage Volume Datasource.
 ---
@@ -15,8 +14,8 @@ Provides a Packet Block Storage Volume datasource to allow you to read existing 
 ```hcl
 # Read a volume by project ID and name
 data "packet_volume" "volume1" {
-  name          = "terraform-volume-1"
-  project_id    = local.project_id
+  name       = "terraform-volume-1"
+  project_id = local.project_id
 }
 
 output "volume_size" {
@@ -40,7 +39,7 @@ The following attributes are exported:
 
 * `id` - The unique ID of the volume
 * `name` - The name of the volume
-* `project_id ` - The project id the volume is in
+* `project_id` - The project id the volume is in
 * `size` - The size in GB of the volume
 * `plan` - Performance plan the volume is on
 * `billing_cycle` - The billing cycle, defaults to hourly

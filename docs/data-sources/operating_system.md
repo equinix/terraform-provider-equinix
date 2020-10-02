@@ -1,7 +1,6 @@
 ---
-layout: "packet"
 page_title: "Packet: operating_system"
-sidebar_current: "docs-packet-datasource-operating-system"
+subcategory: ""
 description: |-
   Get a Packet operating system image
 ---
@@ -32,12 +31,12 @@ resource "packet_device" "server" {
 
 ## Argument Reference
 
- * `distro` - (Optional) Name of the OS distribution.
- * `name` - (Optional) Name or part of the name of the distribution. Case insensitive.
- * `provisionable_on` - (Optional) Plan name.
- * `version` - (Optional) Version of the distribution
+* `distro` - (Optional) Name of the OS distribution.
+* `name` - (Optional) Name or part of the name of the distribution. Case insensitive.
+* `provisionable_on` - (Optional) Plan name.
+* `version` - (Optional) Version of the distribution
 
 ## Attributes Reference
 
- * `id` - Operating system slug
- * `slug` - Operating system slug (same as `id`)
+* `id` - Operating system slug
+* `slug` - Operating system slug (same as `id`)

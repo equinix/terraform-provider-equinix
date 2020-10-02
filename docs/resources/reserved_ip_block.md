@@ -1,7 +1,6 @@
 ---
-layout: "packet"
 page_title: "Packet: packet_reserved_ip_block"
-sidebar_current: "docs-packet-resource-resevered-ip-block"
+subcategory: ""
 description: |-
   Provides a Resource for reserving IP addresses in the Packet Host
 ---
@@ -75,7 +74,6 @@ resource "packet_device" "nodes" {
 }
 ```
 
-
 ## Argument Reference
 
 The following arguments are supported:
@@ -85,7 +83,6 @@ The following arguments are supported:
 * `type` - (Optional) Either "global_ipv4" or "public_ipv4", defaults to "public_ipv4" for backward compatibility
 * `facility` - (Optional) Facility where to allocate the public IP address block, makes sense only for type==public_ipv4, must be empty for type==global_ipv4
 * `description` - (Optional) Arbitrary description
-
 
 ## Attributes Reference
 

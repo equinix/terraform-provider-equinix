@@ -1,7 +1,6 @@
 ---
-layout: "packet"
 page_title: "Packet: packet_organization"
-sidebar_current: "docs-packet-resource-organization"
+subcategory: ""
 description: |-
   Provides a Packet Organization resource.
 ---
@@ -29,7 +28,6 @@ The following arguments are supported:
 * `website` - Website link
 * `twitter` - Twitter handle
 * `logo` - Logo URL
-
 
 ## Attributes Reference
 

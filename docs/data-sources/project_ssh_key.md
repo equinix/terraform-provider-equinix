@@ -1,7 +1,6 @@
 ---
-layout: "packet"
 page_title: "Packet: packet_project_ssh_key"
-sidebar_current: "docs-packet-datasource-project-ssh-key"
+subcategory: ""
 description: |-
   Provides a Packet Project SSH Key datasource.
 ---
@@ -15,7 +14,7 @@ Use this datasource to retrieve attributes of a Project SSH Key API resource.
 ```hcl
 # Get Project SSH Key by name
 data "packet_project_ssh_key" "my_key" {
-  search = "username@hostname"
+  search     = "username@hostname"
   project_id = local.project_id
 }
 ```

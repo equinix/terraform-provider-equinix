@@ -1,7 +1,6 @@
 ---
-layout: "packet"
 page_title: "Packet: packet_ssh_key"
-sidebar_current: "docs-packet-resource-ssh-key"
+subcategory: ""
 description: |-
   Provides a Packet SSH key resource.
 ---

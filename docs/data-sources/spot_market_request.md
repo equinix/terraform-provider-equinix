@@ -1,7 +1,6 @@
 ---
-layout: "packet"
 page_title: "Packet: packet_spot_market_request"
-sidebar_current: "docs-packet-datasource-spot-market-request"
+subcategory: ""
 description: |-
   Provides a datasource for existing Spot Market Requests in the Packet host.
 ---
@@ -9,8 +8,6 @@ description: |-
 # packet_spot_market_request
 
 Provides a Packet spot_market_request datasource. The datasource will contain list of device IDs created by referenced Spot Market Request.
-
-
 
 ## Example Usage
 
@@ -54,7 +51,7 @@ output "ips" {
 With the code as `main.tf`, first create the spot market request:
 
 ```
-$ terraform apply -target packet_spot_market_request.req
+terraform apply -target packet_spot_market_request.req
 ```
 
 When the terraform run ends, run a full apply, and the IPv4 addresses will be printed:
@@ -63,7 +60,7 @@ When the terraform run ends, run a full apply, and the IPv4 addresses will be pr
 $ terraform apply
 
 [...]
- 
+
 ips = [
   "947.85.199.231",
   "947.85.194.181",

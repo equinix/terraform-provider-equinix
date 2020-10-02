@@ -1,7 +1,6 @@
 ---
-layout: "packet"
 page_title: "Packet: ip_block_ranges"
-sidebar_current: "docs-packet-datasource-ip-block-ranges"
+subcategory: ""
 description: |-
   List IP address ranges allocated to a project
 ---
@@ -35,12 +34,12 @@ output "out" {
 
 ## Argument Reference
 
- * `project_id` - (Required) ID of the project from which to list the blocks. 
- * `facility` - (Optional) Facility code filtering the IP blocks. Global IPv4 blcoks will be listed anyway. If you omit this, all the block from the project will be listed.
+* `project_id` - (Required) ID of the project from which to list the blocks.
+* `facility` - (Optional) Facility code filtering the IP blocks. Global IPv4 blcoks will be listed anyway. If you omit this, all the block from the project will be listed.
 
 ## Attributes Reference
 
- * `global_ipv4` - list of CIDR expressions for Global IPv4 blocks in the project
- * `public_ipv4` - list of CIDR expressions for Public IPv4 blocks in the project
- * `private_ipv4` - list of CIDR expressions for Private IPv4 blocks in the project
- * `ipv6` - list of CIDR expressions for IPv6 blocks in the project
+* `global_ipv4` - list of CIDR expressions for Global IPv4 blocks in the project
+* `public_ipv4` - list of CIDR expressions for Public IPv4 blocks in the project
+* `private_ipv4` - list of CIDR expressions for Private IPv4 blocks in the project
+* `ipv6` - list of CIDR expressions for IPv6 blocks in the project

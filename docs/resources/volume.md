@@ -1,7 +1,6 @@
 ---
-layout: "packet"
 page_title: "Packet: packet_volume"
-sidebar_current: "docs-packet-resource-volume"
+subcategory: ""
 description: |-
   Provides a Packet Block Storage Volume Resource.
 ---
@@ -64,7 +63,7 @@ The following attributes are exported:
 * `facility` - The facility slug the volume resides in
 * `state` - The state of the volume
 * `locked` - Whether the volume is locked or not
-* `project_id ` - The project id the volume is in
+* `project_id` - The project id the volume is in
 * `attachments` - A list of attachments, each with it's own `href` attribute
 * `created` - The timestamp for when the volume was created
 * `updated` - The timestamp for the last time the volume was updated

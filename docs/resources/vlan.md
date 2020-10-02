@@ -1,7 +1,6 @@
 ---
-layout: "packet"
 page_title: "Packet: packet_vlan"
-sidebar_current: "docs-packet-resource-vlan"
+subcategory: ""
 description: |-
   Provides a resource for Packet Virtual Network.
 ---
@@ -11,8 +10,9 @@ description: |-
 Provides a resource to allow users to manage Virtual Networks in their projects.
 
 To learn more about Layer 2 networking in Packet, refer to
-* https://www.packet.com/resources/guides/layer-2-configurations/
-* https://www.packet.com/developers/docs/network/advanced/layer-2/
+
+* <https://www.packet.com/resources/guides/layer-2-configurations/>
+* <https://www.packet.com/developers/docs/network/advanced/layer-2/>
 
 ## Example Usage
 
