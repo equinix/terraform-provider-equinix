@@ -1,6 +1,8 @@
 package equinix
 
 import (
+	"fmt"
+	"strconv"
 	"strings"
 	"testing"
 	"time"
@@ -27,11 +29,19 @@ func sharedConfigForRegion(region string) (*Config, error) {
 	if err != nil {
 		return nil, err
 	}
+	clientTimeout, err := getFromEnv(clientTimeoutEnvVar)
+	if err != nil {
+		return nil, err
+	}
+	clientTimeoutInt, err := strconv.Atoi(clientTimeout)
+	if err != nil {
+		return nil, fmt.Errorf("cannot convert value of %sa env variable to int", clientTimeoutEnvVar)
+	}
 	return &Config{
 		BaseURL:        endpoint,
 		ClientID:       clientID,
 		ClientSecret:   clientSecret,
-		RequestTimeout: 20 * time.Second,
+		RequestTimeout: time.Duration(clientTimeoutInt) * time.Second,
 	}, nil
 }
 
