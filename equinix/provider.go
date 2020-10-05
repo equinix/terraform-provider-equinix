@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/equinix/ecx-go"
+	"github.com/equinix/rest-go"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
@@ -90,9 +90,17 @@ func expandSetToStringList(set *schema.Set) []string {
 	return result
 }
 
-func hasECXErrorCode(errors []ecx.Error, code string) bool {
+func expandInterfaceMapToStringMap(mapIn map[string]interface{}) map[string]string {
+	mapOut := make(map[string]string)
+	for k, v := range mapIn {
+		mapOut[k] = fmt.Sprintf("%v", v)
+	}
+	return mapOut
+}
+
+func hasApplicationErrorCode(errors []rest.ApplicationError, code string) bool {
 	for _, err := range errors {
-		if err.ErrorCode == code {
+		if err.Code == code {
 			return true
 		}
 	}

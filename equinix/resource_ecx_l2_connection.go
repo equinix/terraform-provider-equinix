@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/equinix/ecx-go"
+	"github.com/equinix/rest-go"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
@@ -396,10 +397,10 @@ func resourceECXL2ConnectionUpdate(d *schema.ResourceData, m interface{}) error 
 func resourceECXL2ConnectionDelete(d *schema.ResourceData, m interface{}) error {
 	conf := m.(*Config)
 	if err := conf.ecx.DeleteL2Connection(d.Id()); err != nil {
-		ecxRestErr, ok := err.(ecx.RestError)
+		restErr, ok := err.(rest.Error)
 		if ok {
 			//IC-LAYER2-4021 = Connection already deleted
-			if hasECXErrorCode(ecxRestErr.Errors, "IC-LAYER2-4021") {
+			if hasApplicationErrorCode(restErr.ApplicationErrors, "IC-LAYER2-4021") {
 				return nil
 			}
 		}
