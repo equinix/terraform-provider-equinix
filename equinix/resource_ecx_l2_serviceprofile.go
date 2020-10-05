@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/equinix/ecx-go"
+	"github.com/equinix/rest-go"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
 )
@@ -274,10 +275,10 @@ func resourceECXL2ServiceProfileUpdate(d *schema.ResourceData, m interface{}) er
 func resourceECXL2ServiceProfileDelete(d *schema.ResourceData, m interface{}) error {
 	conf := m.(*Config)
 	if err := conf.ecx.DeleteL2ServiceProfile(d.Id()); err != nil {
-		ecxRestErr, ok := err.(ecx.RestError)
+		restErr, ok := err.(rest.Error)
 		if ok {
 			//IC-PROFILE-004 =  profile does not exist
-			if hasECXErrorCode(ecxRestErr.Errors, "IC-PROFILE-004") {
+			if hasApplicationErrorCode(restErr.ApplicationErrors, "IC-PROFILE-004") {
 				return nil
 			}
 		}
