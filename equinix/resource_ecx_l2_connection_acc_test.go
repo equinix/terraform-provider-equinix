@@ -1,7 +1,9 @@
 package equinix
 
 import (
+	"context"
 	"fmt"
+	"log"
 	"testing"
 
 	"github.com/equinix/ecx-go"
@@ -11,25 +13,71 @@ import (
 )
 
 const (
-	priPortEnvVar = "TF_ACC_ECX_PRI_DOT1Q_PORT_ID"
-	secPortEnvVar = "TF_ACC_ECX_SEC_DOT1Q_PORT_ID"
-	awsSpEnvVar   = "TF_ACC_ECX_L2_AWS_SP_ID"
-	azureSpEnvVar = "TF_ACC_ECX_L2_AZURE_SP_ID"
+	priPortEnvVar = "TF_ACC_ECX_PRI_DOT1Q_PORT_NAME"
+	secPortEnvVar = "TF_ACC_ECX_SEC_DOT1Q_PORT_NAME"
+	awsSpEnvVar   = "TF_ACC_ECX_L2_AWS_SP_NAME"
+	azureSpEnvVar = "TF_ACC_ECX_L2_AZURE_SP_NAME"
 )
+
+func init() {
+	resource.AddTestSweepers("ECXL2Connection", &resource.Sweeper{
+		Name: "ECXL2Connection",
+		F:    testSweepECXL2Connections,
+	})
+}
+
+func testSweepECXL2Connections(region string) error {
+	config, err := sharedConfigForRegion(region)
+	if err != nil {
+		return err
+	}
+	if err := config.Load(context.Background()); err != nil {
+		log.Printf("[INFO][SWEEPER_LOG] error loading configuration: %s", err)
+		return err
+	}
+	conns, err := config.ecx.GetL2OutgoingConnections([]string{
+		ecx.ConnectionStatusNotAvailable,
+		ecx.ConnectionStatusPendingAutoApproval,
+		ecx.ConnectionStatusPendingBGPPeering,
+		ecx.ConnectionStatusProvisioned,
+		ecx.ConnectionStatusProvisioning,
+		ecx.ConnectionStatusRejected,
+	})
+	if err != nil {
+		log.Printf("[INFO][SWEEPER_LOG] error fetching ECXL2Connection list: %s", err)
+		return err
+	}
+	nonSweepableCount := 0
+	for _, conn := range conns {
+		if !isSweepableTestResource(conn.Name) {
+			nonSweepableCount++
+			continue
+		}
+		if err := config.ecx.DeleteL2Connection(conn.UUID); err != nil {
+			log.Printf("[INFO][SWEEPER_LOG] error deleting ECXL2Connection resource %s (%s): %s", conn.UUID, conn.Name, err)
+		} else {
+			log.Printf("[INFO][SWEEPER_LOG] sent delete request for ECXL2Connection resource %s (%s)", conn.UUID, conn.Name)
+		}
+	}
+	if nonSweepableCount > 0 {
+		log.Printf("[INFO][SWEEPER_LOG] %d items were non-sweepable and skipped.", nonSweepableCount)
+	}
+	return nil
+}
 
 func TestAccECXL2ConnectionAWSDot1Q(t *testing.T) {
 	t.Parallel()
-	portID, _ := schema.EnvDefaultFunc(priPortEnvVar, "0cbc3f5e-308e-4043-916f-2a2788818bf3")()
-	spID, _ := schema.EnvDefaultFunc(awsSpEnvVar, "496e149f-cc04-4ef6-af8f-ac657da78be6")()
+	portName, _ := schema.EnvDefaultFunc(priPortEnvVar, "sit-001-CX-SV1-NL-Dot1q-BO-10G-PRI-JUN-33")()
+	spName, _ := schema.EnvDefaultFunc(awsSpEnvVar, "AWS Direct Connect")()
 	context := map[string]interface{}{
-		"resourceName":          "tf-aws-dot1q",
-		"name":                  fmt.Sprintf("tf-tst-%s", randString(6)),
-		"profile_uuid":          spID.(string),
+		"port_name":             portName.(string),
+		"profile_name":          spName.(string),
+		"resourceName":          "tst-aws-dot1q",
+		"name":                  fmt.Sprintf("%s-%s", tstResourcePrefix, randString(6)),
 		"speed":                 50,
 		"speed_unit":            "MB",
 		"notifications":         []string{"marry@equinix.com", "john@equinix.com"},
-		"purchase_order_number": "1234567890",
-		"port_uuid":             portID.(string),
+		"purchase_order_number": randString(10),
 		"vlan_stag":             randInt(2000),
 		"seller_region":         "us-west-2",
 		"seller_metro_code":     "SV",
@@ -46,6 +94,8 @@ func TestAccECXL2ConnectionAWSDot1Q(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccECXL2ConnectionExists(resourceName, &testConn),
 					testAccECXL2ConnectionAttributes(&testConn, context),
+					resource.TestCheckResourceAttrSet(resourceName, "status"),
+					resource.TestCheckResourceAttrSet(resourceName, "provider_status"),
 				),
 			},
 		},
@@ -54,25 +104,24 @@ func TestAccECXL2ConnectionAWSDot1Q(t *testing.T) {
 
 func TestAccECXL2ConnectionAzureDot1QPub(t *testing.T) {
 	t.Parallel()
-	priPortID, _ := schema.EnvDefaultFunc(priPortEnvVar, "0cbc3f5e-308e-4043-916f-2a2788818bf3")()
-	secPortID, _ := schema.EnvDefaultFunc(secPortEnvVar, "e3bad661-cdb0-484e-9699-ec5492bd623b")()
-	spID, _ := schema.EnvDefaultFunc(azureSpEnvVar, "9915c38f-568f-4c06-b7a2-cef6b6e67847")()
+	priPortName, _ := schema.EnvDefaultFunc(priPortEnvVar, "sit-001-CX-SV1-NL-Dot1q-BO-10G-PRI-JUN-33")()
+	secPortName, _ := schema.EnvDefaultFunc(secPortEnvVar, "sit-001-CX-SV5-NL-Dot1q-BO-10G-SEC-JUN-36")()
+	spName, _ := schema.EnvDefaultFunc(azureSpEnvVar, "Azure Express Route")()
 	context := map[string]interface{}{
+		"pri_port_name":         priPortName.(string),
+		"sec_port_name":         secPortName.(string),
+		"profile_name":          spName.(string),
 		"resourceName":          "tf-azure-dot1q-pub",
-		"name":                  fmt.Sprintf("tf-tst-%s", randString(6)),
-		"profile_uuid":          spID.(string),
+		"name":                  fmt.Sprintf("%s-%s", tstResourcePrefix, randString(6)),
 		"speed":                 50,
 		"speed_unit":            "MB",
 		"notifications":         []string{"marry@equinix.com", "john@equinix.com"},
-		"purchase_order_number": "1234567890",
-		"port_uuid":             priPortID.(string),
+		"purchase_order_number": randString(10),
 		"vlan_stag":             randInt(2000),
-		"seller_region":         "us-west-2",
 		"seller_metro_code":     "SV",
-		"authorization_key":     "123456789016",
+		"authorization_key":     "123456789069",
 		"named_tag":             "Public",
-		"secondary_name":        fmt.Sprintf("tf-tst-%s", randString(6)),
-		"secondary_port_uuid":   secPortID.(string),
+		"secondary_name":        fmt.Sprintf("%s-%s", tstResourcePrefix, randString(6)),
 		"secondary_vlan_stag":   randInt(2000),
 	}
 	resourceName := fmt.Sprintf("equinix_ecx_l2_connection.%s", context["resourceName"].(string))
@@ -88,6 +137,10 @@ func TestAccECXL2ConnectionAzureDot1QPub(t *testing.T) {
 					testAccECXL2ConnectionAttributes(&primary, context),
 					testAccECXL2ConnectionSecondaryExists(&primary, &secondary),
 					testAccECXL2ConnectionSecondaryAttributes(&secondary, context),
+					resource.TestCheckResourceAttrSet(resourceName, "status"),
+					resource.TestCheckResourceAttrSet(resourceName, "provider_status"),
+					resource.TestCheckResourceAttrSet(resourceName, "redundancy_type"),
+					resource.TestCheckResourceAttrSet(resourceName, "redundant_uuid"),
 				),
 			},
 		},
@@ -96,40 +149,59 @@ func TestAccECXL2ConnectionAzureDot1QPub(t *testing.T) {
 
 func testAccECXL2ConnectionAWSDot1Q(ctx map[string]interface{}) string {
 	return nprintf(`
+data "equinix_ecx_l2_sellerprofile" "profile" {
+  name = "%{profile_name}"
+}
+
+data "equinix_ecx_port" "port" {
+  name = "%{port_name}"
+}
+
 resource "equinix_ecx_l2_connection" "%{resourceName}" {
- name = "%{name}"
- profile_uuid = "%{profile_uuid}"
- speed = %{speed}
- speed_unit = "%{speed_unit}"
- notifications = %{notifications}
- purchase_order_number = "%{purchase_order_number}"
- port_uuid = "%{port_uuid}"
- vlan_stag = %{vlan_stag}
- seller_region = "%{seller_region}"
- seller_metro_code = "%{seller_metro_code}"
- authorization_key = "%{authorization_key}"
+  name = "%{name}"
+  profile_uuid = data.equinix_ecx_l2_sellerprofile.profile.uuid
+  speed = %{speed}
+  speed_unit = "%{speed_unit}"
+  notifications = %{notifications}
+  purchase_order_number = "%{purchase_order_number}"
+  port_uuid = data.equinix_ecx_port.port.uuid
+  vlan_stag = %{vlan_stag}
+  seller_region = "%{seller_region}"
+  seller_metro_code = "%{seller_metro_code}"
+  authorization_key = "%{authorization_key}"
 }
 `, ctx)
 }
 
 func testAccECXL2ConnectionAzureDot1QPub(ctx map[string]interface{}) string {
 	return nprintf(`
+data "equinix_ecx_l2_sellerprofile" "profile" {
+  name = "%{profile_name}"
+}
+	  
+data "equinix_ecx_port" "port-pri" {
+  name = "%{pri_port_name}"
+}
+
+data "equinix_ecx_port" "port-sec" {
+  name = "%{sec_port_name}"
+}
+
 resource "equinix_ecx_l2_connection" "%{resourceName}" {
   name = "%{name}"
-  profile_uuid = "%{profile_uuid}"
+  profile_uuid = data.equinix_ecx_l2_sellerprofile.profile.uuid
   speed = %{speed}
   speed_unit = "%{speed_unit}"
   notifications = %{notifications}
   purchase_order_number = "%{purchase_order_number}"
-  port_uuid = "%{port_uuid}"
+  port_uuid = data.equinix_ecx_port.port-pri.uuid
   vlan_stag = %{vlan_stag}
-  seller_region = "%{seller_region}"
   seller_metro_code = "%{seller_metro_code}"
   authorization_key = "%{authorization_key}"
   named_tag = "%{named_tag}"
   secondary_connection {
     name = "%{secondary_name}"
-    port_uuid = "%{secondary_port_uuid}"
+    port_uuid = data.equinix_ecx_port.port-sec.uuid
     vlan_stag = %{secondary_vlan_stag}
   }
 }

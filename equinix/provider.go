@@ -11,9 +11,10 @@ import (
 )
 
 const (
-	endpointEnvVar     = "EQUINIX_API_ENDPOINT"
-	clientIDEnvVar     = "EQUINIX_API_CLIENTID"
-	clientSecretEnvVar = "EQUINIX_API_CLIENTSECRET"
+	endpointEnvVar      = "EQUINIX_API_ENDPOINT"
+	clientIDEnvVar      = "EQUINIX_API_CLIENTID"
+	clientSecretEnvVar  = "EQUINIX_API_CLIENTSECRET"
+	clientTimeoutEnvVar = "EQUINIX_API_TIMEOUT"
 )
 
 //Provider returns Equinix terraform ResourceProvider

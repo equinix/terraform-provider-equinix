@@ -120,3 +120,10 @@ func randString(length int) string {
 	mu.Unlock()
 	return string(result)
 }
+
+func getFromEnv(varName string) (string, error) {
+	if v := os.Getenv(varName); v != "" {
+		return v, nil
+	}
+	return "", fmt.Errorf("environmental variable '%s' is not set", varName)
+}
