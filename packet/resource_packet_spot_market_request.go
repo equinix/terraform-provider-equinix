@@ -2,6 +2,7 @@ package packet
 
 import (
 	"fmt"
+	"log"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
@@ -223,6 +224,7 @@ func resourcePacketSpotMarketRequestRead(d *schema.ResourceData, meta interface{
 	if err != nil {
 		err = friendlyError(err)
 		if isNotFound(err) {
+			log.Printf("[WARN] SpotMarketRequest (%s) not found, removing from state", d.Id())
 			d.SetId("")
 			return nil
 		}
@@ -294,7 +296,6 @@ func resourceStateRefreshFunc(d *schema.ResourceData, meta interface{}) resource
 
 		if err != nil {
 			return nil, "", fmt.Errorf("Failed to fetch Spot market request with following error: %s", err.Error())
-
 		}
 		var finished bool
 

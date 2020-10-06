@@ -2,6 +2,7 @@ package packet
 
 import (
 	"fmt"
+	"log"
 	"path"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
@@ -213,6 +214,7 @@ func resourcePacketReservedIPBlockRead(d *schema.ResourceData, meta interface{})
 	if err != nil {
 		err = friendlyError(err)
 		if isNotFound(err) {
+			log.Printf("[WARN] Reserved IP Block (%s) not found, removing from state", d.Id())
 			d.SetId("")
 			return nil
 		}

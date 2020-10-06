@@ -7,12 +7,13 @@ import (
 	"github.com/packethost/packngo"
 )
 
+// friendlyError improves error messages when the API error is blank or in an
+// alternate format (as is the case with invalid token or loadbalancer errors)
 func friendlyError(err error) error {
 	if e, ok := err.(*packngo.ErrorResponse); ok {
 		resp := e.Response
 		errors := Errors(e.Errors)
-		// if packngo gives us blank error strings, populate them with something useful
-		// this is useful so the user gets some sort of indication of a failure rather than a blank message
+
 		if 0 == len(errors) {
 			errors = Errors{e.SingleError}
 		}

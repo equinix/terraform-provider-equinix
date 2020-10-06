@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"log"
 	"path"
 	"path/filepath"
 	"reflect"
@@ -413,8 +414,9 @@ func resourcePacketDeviceRead(d *schema.ResourceData, meta interface{}) error {
 	if err != nil {
 		err = friendlyError(err)
 
-		// If the device somehow already destroyed, mark as succesfully gone.
+		// If the device somehow already destroyed, mark as successfully gone.
 		if isNotFound(err) {
+			log.Printf("[WARN] Device (%s) not found, removing from state", d.Id())
 			d.SetId("")
 			return nil
 		}

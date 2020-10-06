@@ -58,7 +58,7 @@ func resourcePacketIPAttachmentRead(d *schema.ResourceData, meta interface{}) er
 
 		// If the IP attachment was already destroyed, mark as succesfully gone.
 		if isNotFound(err) {
-			log.Printf("[DEBUG] IP attachment %q not found or has been deleted", d.Id())
+			log.Printf("[WARN] IP attachment (%q) not found, removing from state", d.Id())
 			d.SetId("")
 			return nil
 		}

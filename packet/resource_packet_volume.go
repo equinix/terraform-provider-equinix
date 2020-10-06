@@ -2,6 +2,7 @@ package packet
 
 import (
 	"fmt"
+	"log"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
@@ -188,8 +189,9 @@ func resourcePacketVolumeRead(d *schema.ResourceData, meta interface{}) error {
 	if err != nil {
 		err = friendlyError(err)
 
-		// If the volume somehow already destroyed, mark as succesfully gone.
+		// If the volume somehow already destroyed, mark as successfully gone.
 		if isNotFound(err) {
+			log.Printf("[WARN] Volume (%s) not found, removing from state", d.Id())
 			d.SetId("")
 			return nil
 		}

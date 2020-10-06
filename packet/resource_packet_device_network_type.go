@@ -1,6 +1,8 @@
 package packet
 
 import (
+	"log"
+
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
 	"github.com/packethost/packngo"
@@ -79,7 +81,16 @@ func resourcePacketDeviceNetworkTypeRead(d *schema.ResourceData, meta interface{
 	client := meta.(*packngo.Client)
 
 	_, devNType, err := getDevIDandNetworkType(d, client)
+
 	if err != nil {
+		err = friendlyError(err)
+
+		if isNotFound(err) {
+			log.Printf("[WARN] Device (%s) for Network Type request not found, removing from state", d.Id())
+			d.SetId("")
+			return nil
+		}
+
 		return err
 	}
 
