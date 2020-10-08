@@ -1,11 +1,5 @@
 name: Acceptance Tests
 on:
-  pull_request:
-    paths-ignore:
-      - 'LICENSE'
-      - '**.md'
-      - 'website/**'
-      - 'docs/**'
   push:
     paths-ignore:
       - 'LICENSE'
