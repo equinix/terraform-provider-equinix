@@ -146,6 +146,13 @@ func resourcePacketPortVlanAttachmentRead(d *schema.ResourceData, meta interface
 
 	dev, _, err := client.Devices.Get(deviceID, &packngo.GetOptions{Includes: []string{"virtual_networks,project,native_virtual_network"}})
 	if err != nil {
+		err = friendlyError(err)
+
+		if isNotFound(err) {
+			log.Printf("[WARN] Device (%s) for Port Vlan Attachment not found, removing from state", d.Id())
+			d.SetId("")
+			return nil
+		}
 		return err
 	}
 	portFound := false
@@ -171,6 +178,8 @@ func resourcePacketPortVlanAttachmentRead(d *schema.ResourceData, meta interface
 		}
 	}
 	if !portFound {
+		// TODO(displague) should we clear state if the port is unexpectedly
+		// gone? Can we treat this like a deletion?
 		return fmt.Errorf("Device %s doesn't have port %s", deviceID, pName)
 	}
 	if !vlanFound {

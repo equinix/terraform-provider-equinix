@@ -1,6 +1,7 @@
 package packet
 
 import (
+	"log"
 	"path"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
@@ -88,6 +89,7 @@ func resourcePacketSSHKeyRead(d *schema.ResourceData, meta interface{}) error {
 		// If the key is somehow already destroyed, mark as
 		// succesfully gone
 		if isNotFound(err) {
+			log.Printf("[WARN] SSHKey (%s) not found, removing from state", d.Id())
 			d.SetId("")
 			return nil
 		}

@@ -63,6 +63,7 @@ func resourcePacketVolumeAttachmentRead(d *schema.ResourceData, meta interface{}
 	if err != nil {
 		err = friendlyError(err)
 		if isNotFound(err) {
+			log.Printf("[WARN] Volume Attachment (%s) not found, removing from state", d.Id())
 			d.SetId("")
 			return nil
 		}
