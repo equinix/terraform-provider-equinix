@@ -10,7 +10,8 @@ connection state before succeeding ([#15](https://github.com/equinix/terraform-p
 FEATURES:
 
 - **New Resource**: `equinix_ne_device` ([#4](https://github.com/equinix/terraform-provider-equinix/issues/4))
-- **New Resource**: `equinix_ne_sshuser` ([#4](https://github.com/equinix/terraform-provider-equinix/issues/4)
+- **New Resource**: `equinix_ne_sshuser` ([#4](https://github.com/equinix/terraform-provider-equinix/issues/4))
+- **New Resource**: `equinix_ne_bgp` ([#16](https://github.com/equinix/terraform-provider-equinix/issues/16))
 - **New Data source**: `equinix_ne_account` ([#13](https://github.com/equinix/terraform-provider-equinix/issues/13))
 - **New Data source**: `equinix_ne_device_type` ([#13](https://github.com/equinix/terraform-provider-equinix/issues/13))
 - **New Data source**: `equinix_ne_device_software` ([#13](https://github.com/equinix/terraform-provider-equinix/issues/13))

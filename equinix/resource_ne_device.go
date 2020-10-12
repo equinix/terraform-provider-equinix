@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/equinix/ne-go"
+	"github.com/equinix/rest-go"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
@@ -517,9 +518,9 @@ func resourceNeDeviceUpdate(d *schema.ResourceData, m interface{}) error {
 func resourceNeDeviceDelete(d *schema.ResourceData, m interface{}) error {
 	conf := m.(*Config)
 	if err := conf.ne.DeleteDevice(d.Id()); err != nil {
-		if neRestErr, ok := err.(ne.RestError); ok {
-			for _, detailedErr := range neRestErr.Errors {
-				if detailedErr.ErrorCode == ne.ErrorCodeDeviceRemoved {
+		if restErr, ok := err.(rest.Error); ok {
+			for _, detailedErr := range restErr.ApplicationErrors {
+				if detailedErr.Code == ne.ErrorCodeDeviceRemoved {
 					return nil
 				}
 			}

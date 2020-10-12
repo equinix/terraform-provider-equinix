@@ -90,7 +90,7 @@ func resourceNeSSHUserRead(d *schema.ResourceData, m interface{}) error {
 func resourceNeSSHUserUpdate(d *schema.ResourceData, m interface{}) error {
 	conf := m.(*Config)
 	updateReq := conf.ne.NewSSHUserUpdateRequest(d.Id())
-	if v, ok := d.GetOk(neSSHUserSchemaNames["Password"]); ok && d.HasChange(neDeviceSchemaNames["Password"]) {
+	if v, ok := d.GetOk(neSSHUserSchemaNames["Password"]); ok && d.HasChange(neSSHUserSchemaNames["Password"]) {
 		updateReq.WithNewPassword(v.(string))
 	}
 	if d.HasChange(neSSHUserSchemaNames["DeviceUUIDs"]) {
