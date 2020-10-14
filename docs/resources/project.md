@@ -1,14 +1,16 @@
 ---
-page_title: "Packet: packet_project"
+page_title: "Equinix Metal: packet_project"
 subcategory: ""
 description: |-
-  Provides a Packet Project resource.
+  Provides an Equinix Metal Project resource.
 ---
 
 # packet\_project
 
-Provides a Packet project resource to allow you manage devices
+Provides an Equinix Metal project resource to allow you manage devices
 in your projects.
+
+-> Keep in mind that Equinix Metal invoicing is per project, so creating many `packet_project` resources will affect the rendered invoice. If you want to keep your Equinix Metal bill simple and easy to review, please re-use your existing projects.
 
 ## Example Usage
 
@@ -40,16 +42,16 @@ The following arguments are supported:
 * `name` - (Required) The name of the project
 * `organization_id` - The UUID of organization under which you want to create the project. If you leave it out, the project will be create under your the default organization of your account.
 * `payment_method_id` - The UUID of payment method for this project. The payment method and the project need to belong to the same organization (passed with `organization_id`, or default).
-* `backend_transfer` - Enable or disable [Backend Transfer](https://www.packet.com/developers/docs/network/basic/backend-transfer/), default is false
-* `bgp_config` - Optional BGP settings. Refer to [Packet guide for BGP](https://www.packet.com/developers/docs/network/advanced/local-and-global-bgp/).
+* `backend_transfer` - Enable or disable [Backend Transfer](https://metal.equinix.com/developers/docs/networking/backend-transfer/), default is false
+* `bgp_config` - Optional BGP settings. Refer to [Equinix Metal guide for BGP](https://metal.equinix.com/developers/docs/networking/local-global-bgp/).
 
-Once you set the BGP config in a project, it can't be removed (due to a limitation in the Packet API). It can be updated.
+Once you set the BGP config in a project, it can't be removed (due to a limitation in the Equinix Metal API). It can be updated.
 
 The `bgp_config` block supports:
 
 * `asn` - Autonomous System Number for local BGP deployment
 * `md5` - (Optional) Password for BGP session in plaintext (not a checksum)
-* `deployment_type` - `private` or `public`, the `private` is likely to be usable immediately, the `public` will need to be review by Packet engineers
+* `deployment_type` - `private` or `public`, the `private` is likely to be usable immediately, the `public` will need to be review by Equinix Metal engineers
 
 ## Attributes Reference
 

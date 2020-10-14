@@ -1,13 +1,13 @@
 ---
-page_title: "Packet: packet_volume_attachment"
+page_title: "Equinix Metal: packet_volume_attachment"
 subcategory: ""
 description: |-
-  Provides attachment of volumes to devices in the Packet Host.
+  Provides attachment of volumes to devices in the Equinix Metal Host.
 ---
 
 # packet\_volume\_attachment
 
-Provides attachment of Packet Block Storage Volume to Devices.
+Provides attachment of Equinix Metal Block Storage Volume to Devices.
 
 Device and volume must be in the same location (facility).
 

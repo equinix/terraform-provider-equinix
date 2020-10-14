@@ -1,13 +1,13 @@
 ---
-page_title: "Packet: packet_device resource"
+page_title: "Equinix Metal: packet_device resource"
 subcategory: ""
 description: |-
-  Provides a Packet device resource. This can be used to create, modify, and delete devices.
+  Provides an Equinix Metal device resource. This can be used to create, modify, and delete devices.
 ---
 
 # packet_device
 
-Provides a Packet device resource. This can be used to create,
+Provides an Equinix Metal device resource. This can be used to create,
 modify, and delete devices.
 
 ~> **Note:** All arguments including the `root_password` and `user_data` will be stored in
@@ -137,24 +137,24 @@ The following arguments are supported:
 
 * `hostname` - (Required) The device name
 * `project_id` - (Required) The ID of the project in which to create the device
-* `operating_system` - (Required) The operating system slug. To find the slug, or visit [Operating Systems API docs](https://www.packet.com/developers/api/operatingsystems), set your API auth token in the top of the page and see JSON from the API response.
-* `facilities` - List of facility codes with deployment preferences. Packet API will go through the list and will deploy your device to first facility with free capacity. List items must be facility codes or `any` (a wildcard). To find the facility code, visit [Facilities API docs](https://www.packet.com/developers/api/facilities), set your API auth token in the top of the page and see JSON from the API response.
-* `plan` - (Required) The device plan slug. To find the plan slug, visit [Device plans API docs](https://www.packet.com/developers/api/plans), set your auth token in the top of the page and see JSON from the API response.
+* `operating_system` - (Required) The operating system slug. To find the slug, or visit [Operating Systems API docs](https://metal.equinix.com/developers/api/operatingsystems), set your API auth token in the top of the page and see JSON from the API response.
+* `facilities` - List of facility codes with deployment preferences. Equinix Metal API will go through the list and will deploy your device to first facility with free capacity. List items must be facility codes or `any` (a wildcard). To find the facility code, visit [Facilities API docs](https://metal.equinix.com/developers/api/facilities/), set your API auth token in the top of the page and see JSON from the API response.
+* `plan` - (Required) The device plan slug. To find the plan slug, visit [Device plans API docs](https://metal.equinix.com/developers/api/plans), set your auth token in the top of the page and see JSON from the API response.
 * `billing_cycle` - (Required) monthly or hourly
 * `user_data` (Optional) - A string of the desired User Data for the device.
 * `ipxe_script_url` (Optional) - URL pointing to a hosted iPXE script. More
   information is in the
-  [Custom iPXE](https://www.packet.com/developers/docs/servers/operating-systems/custom-ipxe/)
+  [Custom iPXE](https://metal.equinix.com/developers/docs/servers/custom-ipxe/)
   doc.
 * `always_pxe` (Optional) - If true, a device with OS `custom_ipxe` will
   continue to boot via iPXE on reboots.
 * `hardware_reservation_id` (Optional) - The `full ID` of the hardware reservation where you want this device deployed, or `next-available` if you want to pick your next available reservation automatically.
-  Please be careful when using hw reservation UUID and `next-available` together for the same pool of resevations. It might happen that the reservation which Packet API will pick as `next-available` is the reservation which you refer with UUID in another packet_device resource. If that happens, and the packet_device with the UUID is created later, resource creation will fail because the reservation is already in use (by the resource created with `next-available`). To workaround this, have the `next-available` resource  [explicitly depend_on](https://learn.hashicorp.com/terraform/getting-started/dependencies.html#implicit-and-explicit-dependencies) the resource with hw reservation UUID, so that the latter is created first. For more details, see [issue #176](https://github.com/packethost/terraform-provider-packet/issues/176).
-* `storage` (Optional) - JSON for custom partitioning. Only usable on reserved hardware. More information in in the [Custom Partitioning and RAID](https://www.packet.com/developers/docs/servers/key-features/cpr/) doc.
+  Please be careful when using hw reservation UUID and `next-available` together for the same pool of reservations. It might happen that the reservation which Equinix Metal API will pick as `next-available` is the reservation which you refer with UUID in another packet_device resource. If that happens, and the packet_device with the UUID is created later, resource creation will fail because the reservation is already in use (by the resource created with `next-available`). To workaround this, have the `next-available` resource  [explicitly depend_on](https://learn.hashicorp.com/terraform/getting-started/dependencies.html#implicit-and-explicit-dependencies) the resource with hw reservation UUID, so that the latter is created first. For more details, see [issue #176](https://github.com/packethost/terraform-provider-packet/issues/176).
+* `storage` (Optional) - JSON for custom partitioning. Only usable on reserved hardware. More information in in the [Custom Partitioning and RAID](https://metal.equinix.com/developers/docs/servers/custom-partitioning-raid/) doc.
   * Please note that the disks.partitions.size attribute must be a string, not an integer. It can be a number string, or size notation string, e.g. "4G" or "8M" (for gigabytes and megabytes).
 * `tags` - Tags attached to the device
 * `description` - Description string for the device
-* `project_ssh_key_ids` - Array of IDs of the project SSH keys which should be added to the device. If you omit this, SSH keys of all the members of the parent project will be added to the device. If you specify this array, only the listed project SSH keys will be added. Project SSH keys can be created with the [packet_project_ssh_key][https://www.terraform.io/docs/providers/packet/r/project_ssh_key.html] resource.
+* `project_ssh_key_ids` - Array of IDs of the project SSH keys which should be added to the device. If you omit this, SSH keys of all the members of the parent project will be added to the device. If you specify this array, only the listed project SSH keys will be added. Project SSH keys can be created with the [packet_project_ssh_key](project_ssh_key.md) resource.
 * `ip_address` (Optional) - A list of IP address types for the device (structure is documented below).
 * `wait_for_reservation_deprovision` (Optional) - Only used for devices in reserved hardware. If set, the deletion of this device will block until the hardware reservation is marked provisionable (about 4 minutes in August 2019).
 * `force_detach_volumes` (Optional) - Delete device even if it has volumes attached. Only applies for destroy action.
@@ -163,11 +163,11 @@ The `ip_address` block has 3 fields:
 
 * `type` - One of [`private_ipv4`, `public_ipv4`, `public_ipv6`]
 * `cidr` - CIDR suffix for IP address block to be assigned, i.e. amount of addresses.
-* `reservation_ids` - String of UUID of [IP block reservations](https://www.terraform.io/docs/providers/packet/r/reserved_ip_block.html) from which the public IPv4 address should be taken.
+* `reservation_ids` - String of UUID of [IP block reservations](reserved_ip_block.md) from which the public IPv4 address should be taken.
 
 You can supply one `ip_address` block per IP address type. If you use the `ip_address` you must always pass a block for `private_ipv4`.
 
-To learn more about using the reserved IP addresses for new devices, see the examples in the [packet_reserved_ip_block](https://www.terraform.io/docs/providers/packet/r/reserved_ip_block.html) documentation.
+To learn more about using the reserved IP addresses for new devices, see the examples in the [packet_reserved_ip_block](reserved_ip_block.md) documentation.
 
 ## Attributes Reference
 
@@ -195,7 +195,7 @@ The following attributes are exported:
   * `gateway` - address of router
   * `public` - whether the address is routable from the Internet
   * `family` - IP version - "4" or "6"
-* `network_type` Network type of a device, used in [Layer 2 networking](https://www.packet.com/developers/docs/network/advanced/layer-2/). Will be one of `layer3`, `hybrid`, `layer2-individual` and `layer2-bonded`.
+* `network_type` Network type of a device, used in [Layer 2 networking](https://metal.equinix.com/developers/docs/networking/layer2/). Will be one of `layer3`, `hybrid`, `layer2-individual` and `layer2-bonded`.
 * `operating_system` - The operating system running on the device
 * `plan` - The hardware config of the device
 * `ports` - Ports assigned to the device

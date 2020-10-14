@@ -1,18 +1,18 @@
 ---
-page_title: "Packet: packet_vlan"
+page_title: "Equinix Metal: packet_vlan"
 subcategory: ""
 description: |-
-  Provides a resource for Packet Virtual Network.
+  Provides a resource for Equinix Metal Virtual Network.
 ---
 
 # packet_vlan
 
 Provides a resource to allow users to manage Virtual Networks in their projects.
 
-To learn more about Layer 2 networking in Packet, refer to
+To learn more about Layer 2 networking in Equinix Metal, refer to
 
-* <https://www.packet.com/resources/guides/layer-2-configurations/>
-* <https://www.packet.com/developers/docs/network/advanced/layer-2/>
+* <https://metal.equinix.com/developers/docs/networking/layer2/>
+* <https://metal.equinix.com/developers/docs/networking/layer2-configs/>
 
 ## Example Usage
 

@@ -1,13 +1,13 @@
 ---
-page_title: "Packet: packet_organization"
+page_title: "Equinix Metal: packet_organization"
 subcategory: ""
 description: |-
-  Provides a Packet Organization datasource. This can be used to read existing Organizations.
+  Provides an Equinix Metal Organization datasource. This can be used to read existing Organizations.
 ---
 
 # packet_organization
 
-Provides a Packet organization datasource.
+Provides an Equinix Metal organization datasource.
 
 ## Example Usage
 

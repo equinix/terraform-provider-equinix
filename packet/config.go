@@ -47,7 +47,7 @@ func PacketRetryPolicy(ctx context.Context, resp *http.Response, err error) (boo
 	return false, nil
 }
 
-// Client returns a new client for accessing Packet's API.
+// Client returns a new client for accessing Equinix Metal's API.
 func (c *Config) Client() *packngo.Client {
 	httpClient := retryablehttp.NewClient()
 	httpClient.RetryWaitMin = time.Second
@@ -55,7 +55,7 @@ func (c *Config) Client() *packngo.Client {
 	httpClient.RetryMax = 10
 	httpClient.CheckRetry = PacketRetryPolicy
 	httpClient.HTTPClient.Transport = logging.NewTransport(
-		"Packet",
+		"Equinix Metal",
 		httpClient.HTTPClient.Transport)
 
 	return packngo.NewClientWithAuth(consumerToken, c.AuthToken, httpClient)

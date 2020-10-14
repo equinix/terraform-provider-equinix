@@ -1,21 +1,21 @@
 ---
-page_title: "Packet: packet_bgp_session"
+page_title: "Equinix Metal: packet_bgp_session"
 subcategory: ""
 description: |-
-  BGP session in Packet Host
+  BGP session in Equinix Metal Host
 ---
 
 # packet_bgp_session
 
-Provides a resource to manage BGP sessions in Packet Host. Refer to [Packet BGP documentation](https://www.packet.com/developers/docs/network/advanced/local-and-global-bgp/) for more details.
+Provides a resource to manage BGP sessions in Equinix Metal Host. Refer to [Equinix Metal BGP documentation](https://metal.equinix.com/developers/docs/networking/local-global-bgp/) for more details.
 
 You need to have BGP config enabled in your project.
 
-BGP session must be linked to a device running [BIRD](https://bird.network.cz) or other BGP routing daemon which will control route advertisements via the session to Packet's upstream routers.
+BGP session must be linked to a device running [BIRD](https://bird.network.cz) or other BGP routing daemon which will control route advertisements via the session to Equinix Metal's upstream routers.
 
 ## Example Usage
 
-Following HCL illustrates usage of the BGP features in Packet. It will
+Following HCL illustrates usage of the BGP features in Equinix Metal. It will
 
 * spawn a device in a new BGP-enabled project
 * reserve a floating IPv4 address in the project in the same location as the device

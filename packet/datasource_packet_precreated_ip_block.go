@@ -60,7 +60,7 @@ func dataSourcePacketReservedIPBlockRead(d *schema.ResourceData, meta interface{
 	global := d.Get("global").(bool)
 
 	if !public && global {
-		return fmt.Errorf("Private (non-public) global IP address blocks are not supported in Packet")
+		return fmt.Errorf("Private (non-public) global IP address blocks are not supported in Equinix Metal")
 	}
 
 	fval, fok := d.GetOk("facility")

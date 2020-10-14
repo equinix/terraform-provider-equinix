@@ -1,13 +1,13 @@
 ---
-page_title: "Packet: spot_market_price"
+page_title: "Equinix Metal: spot_market_price"
 subcategory: ""
 description: |-
-  Get a Packet Spot Market Price
+  Get an Equinix Metal Spot Market Price
 ---
 
 # packet\_operating\_system
 
-Use this data source to get Packet Spot Market Price.
+Use this data source to get Equinix Metal Spot Market Price.
 
 ## Example Usage
 

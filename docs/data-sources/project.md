@@ -1,8 +1,8 @@
 ---
-page_title: "Packet: packet_project"
+page_title: "Equinix Metal: packet_project"
 subcategory: ""
 description: |-
-  Provides a Packet Project datasource.
+  Provides an Equinix Metal Project datasource.
 ---
 
 # packet\_project
@@ -38,13 +38,13 @@ The following attributes are exported:
 * `backend_transfer` - Whether Backend Transfer is enabled for this project
 * `created` - The timestamp for when the project was created
 * `updated` - The timestamp for the last time the project was updated
-* `user_ids` - List of UUIDs of user accounts which beling to this project
-* `bgp_config` - Optional BGP settings. Refer to [Packet guide for BGP](https://www.packet.com/developers/docs/network/advanced/local-and-global-bgp/).
+* `user_ids` - List of UUIDs of user accounts which belong to this project
+* `bgp_config` - Optional BGP settings. Refer to [Equinix Metal guide for BGP](https://metal.equinix.com/developers/docs/networking/local-global-bgp/).
 
 The `bgp_config` block contains:
 
-* `asn` - Autonomous System Numer for local BGP deployment
+* `asn` - Autonomous System Number for local BGP deployment
 * `md5` - Password for BGP session in plaintext (not a checksum)
-* `deployment_type` - `private` or `public`, the `private` is likely to be usable immediately, the `public` will need to be review by Packet engineers
+* `deployment_type` - `private` or `public`, the `private` is likely to be usable immediately, the `public` will need to be review by Equinix Metal engineers
 * `status` - status of BGP configuration in the project
 * `max_prefix` - The maximum number of route filters allowed per server

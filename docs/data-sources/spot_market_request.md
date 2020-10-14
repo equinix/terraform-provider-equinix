@@ -1,13 +1,13 @@
 ---
-page_title: "Packet: packet_spot_market_request"
+page_title: "Equinix Metal: packet_spot_market_request"
 subcategory: ""
 description: |-
-  Provides a datasource for existing Spot Market Requests in the Packet host.
+  Provides a datasource for existing Spot Market Requests in the Equinix Metal host.
 ---
 
 # packet_spot_market_request
 
-Provides a Packet spot_market_request datasource. The datasource will contain list of device IDs created by referenced Spot Market Request.
+Provides an Equinix Metal spot_market_request datasource. The datasource will contain list of device IDs created by referenced Spot Market Request.
 
 ## Example Usage
 

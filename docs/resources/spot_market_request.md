@@ -1,14 +1,14 @@
 ---
-page_title: "Packet: packet_spot_market_request"
+page_title: "Equinix Metal: packet_spot_market_request"
 subcategory: ""
 description: |-
-  Provides a Packet Spot Market Request Resource.
+  Provides an Equinix Metal Spot Market Request Resource.
 ---
 
 # packet\_spot\_market\_request
 
-Provides a Packet Spot Market Request resource to allow you to
-manage spot market requests on your account. For more detail on Spot Market, see [this article in Packet documentation](https://www.packet.com/developers/docs/getting-started/deployment-options/spot-market/).
+Provides an Equinix Metal Spot Market Request resource to allow you to
+manage spot market requests on your account. For more detail on Spot Market, see [this article in Equinix Metal documentation](https://metal.equinix.com/developers/docs/deploy/spot-market/).
 
 ## Example Usage
 
