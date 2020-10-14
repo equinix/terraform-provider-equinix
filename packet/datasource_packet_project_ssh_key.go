@@ -15,7 +15,7 @@ func dataSourcePacketProjectSSHKey() *schema.Resource {
 		Schema: map[string]*schema.Schema{
 			"search": {
 				Type:         schema.TypeString,
-				Description:  "The name, fingerprint, id, or public_key of the SSH Key to search for in the Packet project",
+				Description:  "The name, fingerprint, id, or public_key of the SSH Key to search for in the Equinix Metal project",
 				Optional:     true,
 				ValidateFunc: validation.NoZeroValues,
 			},
@@ -28,18 +28,18 @@ func dataSourcePacketProjectSSHKey() *schema.Resource {
 			},
 			"project_id": {
 				Type:         schema.TypeString,
-				Description:  "The Packet project id of the Packet SSH Key",
+				Description:  "The Equinix Metal project id of the Equinix Metal SSH Key",
 				Required:     true,
 				ValidateFunc: validation.NoZeroValues,
 			},
 			"name": {
 				Type:        schema.TypeString,
-				Description: "The label of the Packet SSH Key",
+				Description: "The label of the Equinix Metal SSH Key",
 				Computed:    true,
 			},
 			"public_key": {
 				Type:        schema.TypeString,
-				Description: "The public SSH key that will be authorized for SSH access on Packet devices provisioned with this key",
+				Description: "The public SSH key that will be authorized for SSH access on Equinix Metal devices provisioned with this key",
 				Computed:    true,
 			},
 			"fingerprint": {

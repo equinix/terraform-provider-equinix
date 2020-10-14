@@ -1,13 +1,13 @@
 ---
-page_title: "Packet: packet_project_ssh_key"
+page_title: "Equinix Metal: packet_project_ssh_key"
 subcategory: ""
 description: |-
-  Provides a Packet Project SSH key resource.
+  Provides an Equinix Metal Project SSH key resource.
 ---
 
 # packet_project_ssh_key
 
-Provides a Packet project SSH key resource to manage project-specific SSH keys.
+Provides an Equinix Metal project SSH key resource to manage project-specific SSH keys.
 Project SSH keys will only be populated onto servers that belong to that project, in contrast to User SSH Keys.
 
 ## Example Usage

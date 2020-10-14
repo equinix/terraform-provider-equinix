@@ -1,8 +1,8 @@
 ---
-page_title: "Packet: packet_connect"
+page_title: "Equinix Metal: packet_connect"
 subcategory: ""
 description: |-
-  Packet Connect resource was removed in version 2.7.0.
+  Equinix Metal Connect resource was removed in version 2.7.0.
 ---
 
 # packet_connect

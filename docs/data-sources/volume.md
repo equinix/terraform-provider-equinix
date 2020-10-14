@@ -1,13 +1,13 @@
 ---
-page_title: "Packet: packet_volume"
+page_title: "Equinix Metal: packet_volume"
 subcategory: ""
 description: |-
-  Provides a Packet Block Storage Volume Datasource.
+  Provides an Equinix Metal Block Storage Volume Datasource.
 ---
 
 # packet\_volume
 
-Provides a Packet Block Storage Volume datasource to allow you to read existing volumes.
+Provides an Equinix Metal Block Storage Volume datasource to allow you to read existing volumes.
 
 ## Example Usage
 
@@ -29,7 +29,7 @@ The following arguments are supported:
 
 * `volume_id` ID of volume for lookup
 * `name` - Name of volume for lookup
-* `project_id` - The ID the parent Packet project (for lookup by name)
+* `project_id` - The ID the parent Equinix Metal project (for lookup by name)
 
 Either `volume_id` or both `project_id` and `name` must be specified.
 

@@ -1,13 +1,13 @@
 ---
-page_title: "Packet: packet_ssh_key"
+page_title: "Equinix Metal: packet_ssh_key"
 subcategory: ""
 description: |-
-  Provides a Packet SSH key resource.
+  Provides an Equinix Metal SSH key resource.
 ---
 
 # packet\_ssh_key
 
-Provides a resource to manage User SSH keys on your Packet user account. If you create a new device in a project, all the keys of the project's collaborators will be injected to the device.
+Provides a resource to manage User SSH keys on your Equinix Metal user account. If you create a new device in a project, all the keys of the project's collaborators will be injected to the device.
 
 The link between User SSH key and device is implicit. If you want to make sure that a key will be copied to a device, you must ensure that the device resource `depends_on` the key resource.
 
@@ -49,6 +49,6 @@ The following attributes are exported:
 * `name` - The name of the SSH key
 * `public_key` - The text of the public key
 * `fingerprint` - The fingerprint of the SSH key
-* `owner_id` - The UUID of the Packet API User who owns this key
+* `owner_id` - The UUID of the Equinix Metal API User who owns this key
 * `created` - The timestamp for when the SSH key was created
 * `updated` - The timestamp for the last time the SSH key was updated

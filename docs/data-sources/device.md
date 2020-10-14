@@ -1,13 +1,13 @@
 ---
-page_title: "Packet: packet_device"
+page_title: "Equinix Metal: packet_device"
 subcategory: ""
 description: |-
-  Provides a Packet device datasource. This can be used to read existing devices.
+  Provides an Equinix Metal device datasource. This can be used to read existing devices.
 ---
 
 # packet_device
 
-Provides a Packet device datasource.
+Provides an Equinix Metal device datasource.
 
 ~> **Note:** All arguments including the `root_password` and `user_data` will be stored in
  the raw state as plain-text.

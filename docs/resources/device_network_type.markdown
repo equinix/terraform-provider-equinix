@@ -1,23 +1,23 @@
 ---
 layout: "packet"
-page_title: "Packet: packet_device_network_type"
+page_title: "Equinix Metal: packet_device_network_type"
 sidebar_current: "docs-packet-resource-device-network-type"
 description: |-
-  Provides a resource to manage network type of Packet devices.
+  Provides a resource to manage network type of Equinix Metal devices.
 ---
 
 # packet_device_network_type
 
-This resource controls network type of Packet devices.
+This resource controls network type of Equinix Metal devices.
 
-To learn more about Layer 2 networking in Packet, refer to
+To learn more about Layer 2 networking in Equinix Metal, refer to
 
-* <https://www.packet.com/resources/guides/layer-2-configurations/>
-* <https://www.packet.com/developers/docs/network/advanced/layer-2/>
+* <https://metal.equinix.com/developers/docs/networking/layer2/>
+* <https://metal.equinix.com/developers/docs/networking/layer2-configs/>
 
 ## Example Usage
 
-```
+```hcl
 resource "packet_device" "test" {
   hostname         = "tfacc-device-port-vlan-attachment-test"
   plan             = "s1.large.x86"
@@ -39,7 +39,7 @@ If you are attaching VLAN to a device (i.e. using packet_port_vlan_attachment), 
 
 This resource can also be imported using existing device ID:
 
-```
+```sh
 terraform import packet_device_network_type {existing device_id}
 ```
 

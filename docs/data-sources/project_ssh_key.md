@@ -1,8 +1,8 @@
 ---
-page_title: "Packet: packet_project_ssh_key"
+page_title: "Equinix Metal: packet_project_ssh_key"
 subcategory: ""
 description: |-
-  Provides a Packet Project SSH Key datasource.
+  Provides an Equinix Metal Project SSH Key datasource.
 ---
 
 # packet\_project\_ssh\_key
@@ -24,9 +24,9 @@ data "packet_project_ssh_key" "my_key" {
 The following arguments are supported:
 
 * `search` - (Optional) The name, fingerprint, or public_key of the SSH Key to search for
-  in the Packet project
-* `id` - (Optional) The id of the SSH Key to search for in the Packet project
-* `project_id` - The Packet project id of the Packet SSH Key
+  in the Equinix Metal project
+* `id` - (Optional) The id of the SSH Key to search for in the Equinix Metal project
+* `project_id` - The Equinix Metal project id of the Equinix Metal SSH Key
 
 One of either `search` or `id` must be provided along with `project_id`.
 

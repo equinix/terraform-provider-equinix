@@ -1,13 +1,13 @@
 ---
-page_title: "Packet: operating_system"
+page_title: "Equinix Metal: operating_system"
 subcategory: ""
 description: |-
-  Get a Packet operating system image
+  Get an Equinix Metal operating system image
 ---
 
 # packet\_operating\_system
 
-Use this data source to get Packet Operating System image.
+Use this data source to get Equinix Metal Operating System image.
 
 ## Example Usage
 

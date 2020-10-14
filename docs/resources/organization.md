@@ -1,13 +1,13 @@
 ---
-page_title: "Packet: packet_organization"
+page_title: "Equinix Metal: packet_organization"
 subcategory: ""
 description: |-
-  Provides a Packet Organization resource.
+  Provides an Equinix Metal Organization resource.
 ---
 
 # packet\_organization
 
-Provides a resource to manage organization resource in Packet.
+Provides a resource to manage organization resource in Equinix Metal.
 
 ## Example Usage
 

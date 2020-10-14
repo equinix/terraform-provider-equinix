@@ -1,13 +1,13 @@
 ---
-page_title: "Packet: precreated_ip_block"
+page_title: "Equinix Metal: precreated_ip_block"
 subcategory: ""
 description: |-
-  Load automatically created IP blocks from your Packet project
+  Load automatically created IP blocks from your Equinix Metal project
 ---
 
 # packet\_precreated\_ip\_block
 
-Use this data source to get CIDR expression for precreated IPv6 and IPv4 blocks in Packet.
+Use this data source to get CIDR expression for precreated IPv6 and IPv4 blocks in Equinix Metal.
 You can then use the cidrsubnet TF builtin function to derive subnets.
 
 ## Example Usage

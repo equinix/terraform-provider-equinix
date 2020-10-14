@@ -113,7 +113,7 @@ func resourcePacketPortVlanAttachmentCreate(d *schema.ResourceData, meta interfa
 
 		par.VirtualNetworkID = vlanID
 
-		// Packet doesn't allow multiple VLANs to be assigned
+		// Equinix Metal doesn't allow multiple VLANs to be assigned
 		// to the same port at the same time
 		lockId := "vlan-attachment-" + port.ID
 		packetMutexKV.Lock(lockId)

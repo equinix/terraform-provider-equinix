@@ -1,30 +1,30 @@
 ---
 layout: ""
-page_title: "Provider: Packet"
+page_title: "Provider: Equinix Metal"
 description: |-
-  The Packet provider is used to interact with the Packet Host API.
+  The Equinix Metal provider is used to interact with the Equinix Metal Host API.
 ---
 
-# Packet Provider
+# Equinix Metal Provider
 
-The Packet provider is used to interact with the resources supported by Packet.
+[Packet is now Equinix Metal!](https://blog.equinix.com/blog/2020/10/06/equinix-metal-metal-and-more/)
+
+The Equinix Metal (`packet`) provider is used to interact with the resources supported by [Equinix Metal](https://metal.equinix.com/).
 The provider needs to be configured with the proper credentials before it can be used.
 
 Use the navigation to the left to read about the available resources.
 
-Be cautious when using the `packet_project` resource. Packet is invoicing per project, so creating many new projects will cause your Packet bill to fragment. If you want to keep your Packet bill simple, please re-use your existing projects.
-
 ## Example Usage
 
 ```hcl
-# Configure the Packet Provider.
+# Configure the Equinix Metal Provider.
 provider "packet" {
   auth_token = var.auth_token
 }
 
 # Declare your project ID
 #
-# You can find ID of your project form the URL in the Packet web app.
+# You can find ID of your project form the URL in the Equinix Metal web app.
 # For example, if you see your devices listed at
 # https://app.packet.net/projects/352000fb2-ee46-4673-93a8-de2c2bdba33b
 # .. then 352000fb2-ee46-4673-93a8-de2c2bdba33b is your project ID.
@@ -56,5 +56,5 @@ resource "packet_device" "web1" {
 
 The following arguments are supported:
 
-* `auth_token` - (Required) This is your Packet API Auth token. This can also be specified
+* `auth_token` - (Required) This is your Equinix Metal API Auth token. This can also be specified
   with the `PACKET_AUTH_TOKEN` shell environment variable.

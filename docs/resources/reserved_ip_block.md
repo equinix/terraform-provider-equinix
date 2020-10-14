@@ -1,15 +1,15 @@
 ---
-page_title: "Packet: packet_reserved_ip_block"
+page_title: "Equinix Metal: packet_reserved_ip_block"
 subcategory: ""
 description: |-
-  Provides a Resource for reserving IP addresses in the Packet Host
+  Provides a Resource for reserving IP addresses in the Equinix Metal Host
 ---
 
 # packet\_reserved\_ip\_block
 
 Provides a resource to create and manage blocks of reserved IP addresses in a project.
 
-When a user provisions first device in a facility, Packet API automatically allocates IPv6/56 and private IPv4/25 blocks.
+When a user provisions first device in a facility, Equinix Metal API automatically allocates IPv6/56 and private IPv4/25 blocks.
 The new device then gets IPv6 and private IPv4 addresses from those block. It also gets a public IPv4/31 address.
 Every new device in the project and facility will automatically get IPv6 and private IPv4 addresses from these pre-allocated blocks.
 The IPv6 and private IPv4 blocks can't be created, only imported. With this resource, it's possible to create either public IPv4 blocks or global IPv4 blocks.

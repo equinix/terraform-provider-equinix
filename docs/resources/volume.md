@@ -1,13 +1,13 @@
 ---
-page_title: "Packet: packet_volume"
+page_title: "Equinix Metal: packet_volume"
 subcategory: ""
 description: |-
-  Provides a Packet Block Storage Volume Resource.
+  Provides an Equinix Metal Block Storage Volume Resource.
 ---
 
 # packet\_volume
 
-Provides a Packet Block Storage Volume resource to allow you to
+Provides an Equinix Metal Block Storage Volume resource to allow you to
 manage block volumes on your account.
 Once created by Terraform, they must then be attached and mounted
 using the api and `packet_block_attach` and `packet_block_detach`

@@ -388,7 +388,7 @@ func resourcePacketDeviceCreate(d *schema.ResourceData, meta interface{}) error 
 		if isForbidden(fErr) {
 			// If the device doesn't get to the active state, we can't recover it from here.
 
-			return errors.New("provisioning time limit exceeded; the Packet team will investigate")
+			return errors.New("provisioning time limit exceeded; the Equinix Metal team will investigate")
 		}
 		return fErr
 	}
