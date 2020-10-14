@@ -7,7 +7,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 )
 
-func TestAccNeDeviceSoftware(t *testing.T) {
+func TestAccNetworkDeviceSoftwareDataSource(t *testing.T) {
 	t.Parallel()
 	context := map[string]interface{}{
 		"resourceName":  "csrLatest",
@@ -16,13 +16,13 @@ func TestAccNeDeviceSoftware(t *testing.T) {
 		"packages":      []string{"IPBASE"},
 		"most_recent":   true,
 	}
-	resourceName := fmt.Sprintf("data.equinix_ne_device_software.%s", context["resourceName"].(string))
+	resourceName := fmt.Sprintf("data.equinix_network_device_software.%s", context["resourceName"].(string))
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccNeDeviceSoftware(context),
+				Config: testAccNetworkDeviceSoftwareDataSource(context),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(resourceName, "version"),
 					resource.TestCheckResourceAttrSet(resourceName, "image_name"),
@@ -36,9 +36,9 @@ func TestAccNeDeviceSoftware(t *testing.T) {
 	})
 }
 
-func testAccNeDeviceSoftware(ctx map[string]interface{}) string {
+func testAccNetworkDeviceSoftwareDataSource(ctx map[string]interface{}) string {
 	return nprintf(`
-data "equinix_ne_device_software" "%{resourceName}" {
+data "equinix_network_device_software" "%{resourceName}" {
   device_type   = "%{device_type}"
   version_regex = "%{version_regex}"
   packages      = %{packages}

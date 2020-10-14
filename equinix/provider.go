@@ -48,19 +48,19 @@ func Provider() terraform.ResourceProvider {
 			},
 		},
 		DataSourcesMap: map[string]*schema.Resource{
-			"equinix_ecx_port":             dataSourceECXPort(),
-			"equinix_ecx_l2_sellerprofile": dataSourceECXL2SellerProfile(),
-			"equinix_ne_account":           dataSourceNeAccount(),
-			"equinix_ne_device_type":       dataSourceNeDeviceType(),
-			"equinix_ne_device_software":   dataSourceNeDeviceSoftware(),
-			"equinix_ne_device_platform":   dataSourceNeDevicePlatform(),
+			"equinix_ecx_port":                dataSourceECXPort(),
+			"equinix_ecx_l2_sellerprofile":    dataSourceECXL2SellerProfile(),
+			"equinix_network_account":         dataSourceNetworkAccount(),
+			"equinix_network_device_type":     dataSourceNetworkDeviceType(),
+			"equinix_network_device_software": dataSourceNetworkDeviceSoftware(),
+			"equinix_network_device_platform": dataSourceNetworkDevicePlatform(),
 		},
 		ResourcesMap: map[string]*schema.Resource{
 			"equinix_ecx_l2_connection":          resourceECXL2Connection(),
 			"equinix_ecx_l2_connection_accepter": resourceECXL2ConnectionAccepter(),
 			"equinix_ecx_l2_serviceprofile":      resourceECXL2ServiceProfile(),
-			"equinix_ne_device":                  resourceNeDevice(),
-			"equinix_ne_sshuser":                 resourceNeSSHUser(),
+			"equinix_network_device":             resourceNetworkDevice(),
+			"equinix_network_ssh_user":           resourceNetworkSSHUser(),
 		},
 	}
 

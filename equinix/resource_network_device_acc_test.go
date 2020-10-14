@@ -12,18 +12,17 @@ import (
 )
 
 const (
-	neDeviceAccountEnvVar = "TF_ACC_NE_DEVICE_ACCOUNT"
-	neDeviceMetroEnvVar   = "TF_ACC_NE_DEVICE_METRO"
+	networkDeviceMetroEnvVar = "TF_ACC_NETWORK_DEVICE_METRO"
 )
 
 func init() {
-	resource.AddTestSweepers("NeDevice", &resource.Sweeper{
-		Name: "NeDevice",
-		F:    testSweepNeDevice,
+	resource.AddTestSweepers("NetworkDevice", &resource.Sweeper{
+		Name: "NetworkDevice",
+		F:    testSweepNetworkDevice,
 	})
 }
 
-func testSweepNeDevice(region string) error {
+func testSweepNetworkDevice(region string) error {
 	config, err := sharedConfigForRegion(region)
 	if err != nil {
 		return err
@@ -39,7 +38,7 @@ func testSweepNeDevice(region string) error {
 		ne.DeviceStateWaitingSecondary,
 		ne.DeviceStateFailed})
 	if err != nil {
-		log.Printf("[INFO][SWEEPER_LOG] error fetching NEDevice list: %s", err)
+		log.Printf("[INFO][SWEEPER_LOG] error fetching NetworkDevice list: %s", err)
 		return err
 	}
 	for _, device := range devices {
@@ -50,18 +49,17 @@ func testSweepNeDevice(region string) error {
 			continue
 		}
 		if err := config.ne.DeleteDevice(device.UUID); err != nil {
-			log.Printf("[INFO][SWEEPER_LOG] error deleting NeDevice resource %s (%s): %s", device.UUID, device.Name, err)
+			log.Printf("[INFO][SWEEPER_LOG] error deleting NetworkDevice resource %s (%s): %s", device.UUID, device.Name, err)
 		} else {
-			log.Printf("[INFO][SWEEPER_LOG] sent delete request for NeDevice resource %s (%s)", device.UUID, device.Name)
+			log.Printf("[INFO][SWEEPER_LOG] sent delete request for NetworkDevice resource %s (%s)", device.UUID, device.Name)
 		}
 	}
 	return nil
 }
 
-func TestAccNeDeviceAndUser(t *testing.T) {
+func TestAccNetworkDeviceAndUser(t *testing.T) {
 	t.Parallel()
-	accountNumber, _ := schema.EnvDefaultFunc(neDeviceAccountEnvVar, "200471")()
-	metro, _ := schema.EnvDefaultFunc(neDeviceMetroEnvVar, "SV")()
+	metro, _ := schema.EnvDefaultFunc(networkDeviceMetroEnvVar, "DC")()
 	context := map[string]interface{}{
 		"resourceName":            "tst-csr1000v",
 		"name":                    fmt.Sprintf("%s-%s", tstResourcePrefix, randString(6)),
@@ -74,7 +72,6 @@ func TestAccNeDeviceAndUser(t *testing.T) {
 		"hostname":                fmt.Sprintf("tf-%s", randString(6)),
 		"acls":                    []string{"10.0.0.0/24", "1.1.1.1/32"},
 		"term_length":             1,
-		"account_number":          accountNumber.(string),
 		"version":                 "16.09.05",
 		"core_count":              2,
 		"secondary-name":          fmt.Sprintf("%s-%s", tstResourcePrefix, randString(6)),
@@ -85,14 +82,14 @@ func TestAccNeDeviceAndUser(t *testing.T) {
 		"username":                fmt.Sprintf("%s-%s", tstResourcePrefix, randString(6)),
 		"password":                randString(10),
 	}
-	resourceName := fmt.Sprintf("equinix_ne_device.%s", context["resourceName"].(string))
-	userResourceName := fmt.Sprintf("equinix_ne_sshuser.%s", context["userResourceName"].(string))
+	resourceName := fmt.Sprintf("equinix_network_device.%s", context["resourceName"].(string))
+	userResourceName := fmt.Sprintf("equinix_network_ssh_user.%s", context["userResourceName"].(string))
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccNeDeviceAndUser(context),
+				Config: testAccNetworkDeviceAndUser(context),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(resourceName, "uuid"),
 					resource.TestCheckResourceAttrSet(resourceName, "status"),
@@ -100,7 +97,7 @@ func TestAccNeDeviceAndUser(t *testing.T) {
 					resource.TestCheckResourceAttrSet(resourceName, "ibx"),
 					resource.TestCheckResourceAttrSet(resourceName, "region"),
 					resource.TestCheckResourceAttrSet(resourceName, "interface_count"),
-					resource.TestCheckResourceAttrSet(resourceName, "redundant_uuid"),
+					resource.TestCheckResourceAttrSet(resourceName, "redundant_id"),
 					resource.TestCheckResourceAttrSet(resourceName, "redundancy_type"),
 					resource.TestCheckResourceAttrSet(userResourceName, "uuid"),
 				),
@@ -109,38 +106,43 @@ func TestAccNeDeviceAndUser(t *testing.T) {
 	})
 }
 
-func testAccNeDeviceAndUser(ctx map[string]interface{}) string {
+func testAccNetworkDeviceAndUser(ctx map[string]interface{}) string {
 	return nprintf(`
-resource "equinix_ne_device" "%{resourceName}" {
+data "equinix_network_account" "test" {
+  metro_code = "%{metro_code}"
+  status     = "Active"
+}
+
+resource "equinix_network_device" "%{resourceName}" {
 	name            = "%{name}"
 	throughput      = %{throughput}
 	throughput_unit = "%{throughput_unit}"
-	metro_code      = "%{metro_code}"
+	metro_code      = data.equinix_network_account.test.metro_code
 	type_code       = "%{type_code}"
 	package_code    = "%{package_code}"
 	notifications   = %{notifications}
 	hostname        = "%{hostname}"
 	acls            = %{acls}
 	term_length     = %{term_length}
-	account_number  = "%{account_number}"
+	account_number  = data.equinix_network_account.test.number
 	version         = "%{version}"
 	core_count      = %{core_count}
 	secondary_device {
 		name           = "%{secondary-name}"
-		metro_code     = "%{metro_code}"
+		metro_code     = data.equinix_network_account.test.metro_code
 		hostname       = "%{secondary-hostname}"
 		acls           = %{secondary-acls} 
 		notifications  = %{secondary-notifications}
-		account_number = "%{account_number}"
+		account_number = data.equinix_network_account.test.number
 	  }
 }
 
-resource "equinix_ne_sshuser" "%{userResourceName}" {
+resource "equinix_network_ssh_user" "%{userResourceName}" {
 	username = "%{username}"
 	password = "%{password}"
-	devices = [
-	  equinix_ne_device.%{resourceName}.uuid,
-	  equinix_ne_device.%{resourceName}.redundant_uuid
+	device_ids = [
+	  equinix_network_device.%{resourceName}.uuid,
+	  equinix_network_device.%{resourceName}.redundant_uuid
 	]
   }
 `, ctx)

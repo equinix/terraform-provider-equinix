@@ -7,7 +7,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 )
 
-func TestAccNeDevicePlatform(t *testing.T) {
+func TestAccNetworkDevicePlatformDataSource(t *testing.T) {
 	t.Parallel()
 	context := map[string]interface{}{
 		"resourceName": "csrLarge",
@@ -15,13 +15,13 @@ func TestAccNeDevicePlatform(t *testing.T) {
 		"flavor":       "large",
 		"packages":     []string{"IPBASE"},
 	}
-	resourceName := fmt.Sprintf("data.equinix_ne_device_platform.%s", context["resourceName"].(string))
+	resourceName := fmt.Sprintf("data.equinix_network_device_platform.%s", context["resourceName"].(string))
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccNeDevicePlatform(context),
+				Config: testAccNetworkDevicePlatformDataSource(context),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(resourceName, "flavor"),
 					resource.TestCheckResourceAttrSet(resourceName, "core_count"),
@@ -33,9 +33,9 @@ func TestAccNeDevicePlatform(t *testing.T) {
 	})
 }
 
-func testAccNeDevicePlatform(ctx map[string]interface{}) string {
+func testAccNetworkDevicePlatformDataSource(ctx map[string]interface{}) string {
 	return nprintf(`
-data "equinix_ne_device_platform" "%{resourceName}" {
+data "equinix_network_device_platform" "%{resourceName}" {
   device_type = "%{device_type}"
   flavor      = "%{flavor}"
   packages    = %{packages}

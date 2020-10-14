@@ -9,7 +9,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
 )
 
-var neAccountSchemaNames = map[string]string{
+var networkAccountSchemaNames = map[string]string{
 	"Name":      "name",
 	"Number":    "number",
 	"Status":    "status",
@@ -17,31 +17,31 @@ var neAccountSchemaNames = map[string]string{
 	"MetroCode": "metro_code",
 }
 
-func dataSourceNeAccount() *schema.Resource {
+func dataSourceNetworkAccount() *schema.Resource {
 	return &schema.Resource{
-		Read: dataSourceNeAccountRead,
+		Read: dataSourceNetworkAccountRead,
 		Schema: map[string]*schema.Schema{
-			neAccountSchemaNames["Name"]: {
+			networkAccountSchemaNames["Name"]: {
 				Type:         schema.TypeString,
 				Optional:     true,
 				Computed:     true,
 				ValidateFunc: validation.StringIsNotEmpty,
 			},
-			neAccountSchemaNames["Number"]: {
+			networkAccountSchemaNames["Number"]: {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-			neAccountSchemaNames["Status"]: {
+			networkAccountSchemaNames["Status"]: {
 				Type:         schema.TypeString,
 				Optional:     true,
 				Computed:     true,
 				ValidateFunc: validation.StringInSlice([]string{"Active", "Processing", "Submitted", "Staged"}, true),
 			},
-			neAccountSchemaNames["UCMID"]: {
+			networkAccountSchemaNames["UCMID"]: {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-			neAccountSchemaNames["MetroCode"]: {
+			networkAccountSchemaNames["MetroCode"]: {
 				Type:         schema.TypeString,
 				Required:     true,
 				ValidateFunc: stringIsMetroCode(),
@@ -50,11 +50,11 @@ func dataSourceNeAccount() *schema.Resource {
 	}
 }
 
-func dataSourceNeAccountRead(d *schema.ResourceData, m interface{}) error {
+func dataSourceNetworkAccountRead(d *schema.ResourceData, m interface{}) error {
 	conf := m.(*Config)
-	metro := d.Get(neAccountSchemaNames["MetroCode"]).(string)
-	name := d.Get(neAccountSchemaNames["Name"]).(string)
-	status := d.Get(neAccountSchemaNames["Status"]).(string)
+	metro := d.Get(networkAccountSchemaNames["MetroCode"]).(string)
+	name := d.Get(networkAccountSchemaNames["Name"]).(string)
+	status := d.Get(networkAccountSchemaNames["Status"]).(string)
 	accounts, err := conf.ne.GetAccounts(metro)
 	if err != nil {
 		return err
@@ -70,29 +70,29 @@ func dataSourceNeAccountRead(d *schema.ResourceData, m interface{}) error {
 		filtered = append(filtered, account)
 	}
 	if len(filtered) < 1 {
-		return fmt.Errorf("account query returned no results, please change your search criteria")
+		return fmt.Errorf("network account query returned no results, please change your search criteria")
 	}
 	if len(filtered) > 1 {
-		return fmt.Errorf("account query returned more than one result, please try more specific search criteria")
+		return fmt.Errorf("network account query returned more than one result, please try more specific search criteria")
 	}
-	return updateNeAccountResource(filtered[0], metro, d)
+	return updateNetworkAccountResource(filtered[0], metro, d)
 }
 
-func updateNeAccountResource(account ne.Account, metroCode string, d *schema.ResourceData) error {
+func updateNetworkAccountResource(account ne.Account, metroCode string, d *schema.ResourceData) error {
 	d.SetId(fmt.Sprintf("%s-%s", metroCode, account.Name))
-	if err := d.Set(neAccountSchemaNames["Name"], account.Name); err != nil {
+	if err := d.Set(networkAccountSchemaNames["Name"], account.Name); err != nil {
 		return fmt.Errorf("error reading Name: %s", err)
 	}
-	if err := d.Set(neAccountSchemaNames["Number"], account.Number); err != nil {
+	if err := d.Set(networkAccountSchemaNames["Number"], account.Number); err != nil {
 		return fmt.Errorf("error reading Number: %s", err)
 	}
-	if err := d.Set(neAccountSchemaNames["Status"], account.Status); err != nil {
+	if err := d.Set(networkAccountSchemaNames["Status"], account.Status); err != nil {
 		return fmt.Errorf("error reading Status: %s", err)
 	}
-	if err := d.Set(neAccountSchemaNames["UCMID"], account.UCMID); err != nil {
+	if err := d.Set(networkAccountSchemaNames["UCMID"], account.UCMID); err != nil {
 		return fmt.Errorf("error reading UCMID: %s", err)
 	}
-	if err := d.Set(neAccountSchemaNames["MetroCode"], metroCode); err != nil {
+	if err := d.Set(networkAccountSchemaNames["MetroCode"], metroCode); err != nil {
 		return fmt.Errorf("error reading MetroCode: %s", err)
 	}
 	return nil

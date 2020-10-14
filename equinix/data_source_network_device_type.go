@@ -9,7 +9,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
 )
 
-var neDeviceTypeSchemaNames = map[string]string{
+var networkDeviceTypeSchemaNames = map[string]string{
 	"Name":        "name",
 	"Code":        "code",
 	"Description": "description",
@@ -18,37 +18,37 @@ var neDeviceTypeSchemaNames = map[string]string{
 	"MetroCodes":  "metro_codes",
 }
 
-func dataSourceNeDeviceType() *schema.Resource {
+func dataSourceNetworkDeviceType() *schema.Resource {
 	return &schema.Resource{
-		Read: dataSourceDeviceTypeRead,
+		Read: dataSourceNetworkDeviceTypeRead,
 		Schema: map[string]*schema.Schema{
-			neDeviceTypeSchemaNames["Name"]: {
+			networkDeviceTypeSchemaNames["Name"]: {
 				Type:         schema.TypeString,
 				Optional:     true,
 				Computed:     true,
 				ValidateFunc: validation.StringIsNotEmpty,
 			},
-			neDeviceTypeSchemaNames["Code"]: {
+			networkDeviceTypeSchemaNames["Code"]: {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-			neDeviceTypeSchemaNames["Description"]: {
+			networkDeviceTypeSchemaNames["Description"]: {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-			neDeviceTypeSchemaNames["Vendor"]: {
+			networkDeviceTypeSchemaNames["Vendor"]: {
 				Type:         schema.TypeString,
 				Optional:     true,
 				Computed:     true,
 				ValidateFunc: validation.StringIsNotEmpty,
 			},
-			neDeviceTypeSchemaNames["Category"]: {
+			networkDeviceTypeSchemaNames["Category"]: {
 				Type:         schema.TypeString,
 				Optional:     true,
 				Computed:     true,
 				ValidateFunc: validation.StringInSlice([]string{"Router", "Firewall", "SDWAN"}, true),
 			},
-			neDeviceTypeSchemaNames["MetroCodes"]: {
+			networkDeviceTypeSchemaNames["MetroCodes"]: {
 				Type:     schema.TypeSet,
 				Optional: true,
 				Computed: true,
@@ -62,13 +62,13 @@ func dataSourceNeDeviceType() *schema.Resource {
 	}
 }
 
-func dataSourceDeviceTypeRead(d *schema.ResourceData, m interface{}) error {
+func dataSourceNetworkDeviceTypeRead(d *schema.ResourceData, m interface{}) error {
 	conf := m.(*Config)
 	types, err := conf.ne.GetDeviceTypes()
-	name := d.Get(neDeviceTypeSchemaNames["Name"]).(string)
-	vendor := d.Get(neDeviceTypeSchemaNames["Vendor"]).(string)
-	category := d.Get(neDeviceTypeSchemaNames["Category"]).(string)
-	metroCodes := expandSetToStringList(d.Get(neDeviceTypeSchemaNames["MetroCodes"]).(*schema.Set))
+	name := d.Get(networkDeviceTypeSchemaNames["Name"]).(string)
+	vendor := d.Get(networkDeviceTypeSchemaNames["Vendor"]).(string)
+	category := d.Get(networkDeviceTypeSchemaNames["Category"]).(string)
+	metroCodes := expandSetToStringList(d.Get(networkDeviceTypeSchemaNames["MetroCodes"]).(*schema.Set))
 	if err != nil {
 		return err
 	}
@@ -89,32 +89,32 @@ func dataSourceDeviceTypeRead(d *schema.ResourceData, m interface{}) error {
 		filtered = append(filtered, deviceType)
 	}
 	if len(filtered) < 1 {
-		return fmt.Errorf("device type query returned no results, please change your search criteria")
+		return fmt.Errorf("network device type query returned no results, please change your search criteria")
 	}
 	if len(filtered) > 1 {
-		return fmt.Errorf("device type query returned more than one result, please try more specific search criteria")
+		return fmt.Errorf("network device type query returned more than one result, please try more specific search criteria")
 	}
-	return updateNeDeviceTypeResource(filtered[0], d)
+	return updateNetworkDeviceTypeResource(filtered[0], d)
 }
 
-func updateNeDeviceTypeResource(deviceType ne.DeviceType, d *schema.ResourceData) error {
+func updateNetworkDeviceTypeResource(deviceType ne.DeviceType, d *schema.ResourceData) error {
 	d.SetId(deviceType.Code)
-	if err := d.Set(neDeviceTypeSchemaNames["Name"], deviceType.Name); err != nil {
+	if err := d.Set(networkDeviceTypeSchemaNames["Name"], deviceType.Name); err != nil {
 		return fmt.Errorf("error reading Name: %s", err)
 	}
-	if err := d.Set(neDeviceTypeSchemaNames["Code"], deviceType.Code); err != nil {
+	if err := d.Set(networkDeviceTypeSchemaNames["Code"], deviceType.Code); err != nil {
 		return fmt.Errorf("error reading Code: %s", err)
 	}
-	if err := d.Set(neDeviceTypeSchemaNames["Description"], deviceType.Description); err != nil {
+	if err := d.Set(networkDeviceTypeSchemaNames["Description"], deviceType.Description); err != nil {
 		return fmt.Errorf("error reading Description: %s", err)
 	}
-	if err := d.Set(neDeviceTypeSchemaNames["Vendor"], deviceType.Vendor); err != nil {
+	if err := d.Set(networkDeviceTypeSchemaNames["Vendor"], deviceType.Vendor); err != nil {
 		return fmt.Errorf("error reading Vendor: %s", err)
 	}
-	if err := d.Set(neDeviceTypeSchemaNames["Category"], deviceType.Category); err != nil {
+	if err := d.Set(networkDeviceTypeSchemaNames["Category"], deviceType.Category); err != nil {
 		return fmt.Errorf("error reading Category: %s", err)
 	}
-	if err := d.Set(neDeviceTypeSchemaNames["MetroCodes"], deviceType.MetroCodes); err != nil {
+	if err := d.Set(networkDeviceTypeSchemaNames["MetroCodes"], deviceType.MetroCodes); err != nil {
 		return fmt.Errorf("error reading MetroCodes: %s", err)
 	}
 	return nil

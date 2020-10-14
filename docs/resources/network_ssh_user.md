@@ -1,14 +1,14 @@
 ---
 layout: "equinix"
-page_title: "Equinix: ne_sshuser"
-sidebar_current: "docs-equinix-resource-ne-sshuser"
+page_title: "Equinix: equinix_network_ssh_user"
+subcategory: ""
 description: |-
- Provides Network Edge SSH user resource.
+ Provides Network Edge SSH user resource
 ---
 
-# Resource: ne_sshuser
+# Resource: equinix_network_ssh_user
 
-Resource `equinix_ne_sshuser` allows creation and management of Network Edge
+Resource `equinix_network_ssh_user` allows creation and management of Network Edge
 SSH users.
 
 ## Example Usage
@@ -17,10 +17,10 @@ SSH users.
 # Create SSH user with password auth method and associate it with
 # two virtual network devices
 
-resource "equinix_ne_sshuser" "john" {
+resource "equinix_network_ssh_user" "john" {
   username = "john"
   password = "secret"
-  devices = [
+  device_ids = [
     equinix_ne_device.csr1000v-ha.uuid,
     equinix_ne_device.csr1000v-ha.redundant_uuid
   ]
@@ -31,7 +31,7 @@ resource "equinix_ne_sshuser" "john" {
 
 * `username` - (Required) SSH user login name
 * `password` - (Required) SSH user password
-* `devices` - (Required) list of device identifiers to which user will have access
+* `device_ids` - (Required) list of device identifiers to which user will have access
 
 ## Attributes Reference
 

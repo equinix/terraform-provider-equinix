@@ -1,17 +1,17 @@
 ---
 layout: "equinix"
-page_title: "Equinix: ne_device"
-sidebar_current: "docs-equinix-resource-ne-device"
+page_title: "Equinix: equinix_network_device"
+subcategory: ""
 description: |-
- Provides Network Edge device resource.
+ Provides Network Edge device resource
 ---
 
-# Resource: ne_device
+# Resource: equinix_network_device
 
-Resource `equinix_ne_device` allows creation and management of Network Edge virtual
-network devices.
+Resource `equinix_network_device` allows creation and management of Network Edge
+virtual network devices.
 
-Network Edge virtual devices can be created in two modes:
+Network Edge virtual network devices can be created in two modes:
 
 * **managed** (default) where Equinix manages connectivity and services in the
 device and customer gets limited access to the device
@@ -32,35 +32,35 @@ It is the only licensing mode for *self-configured* devices
 # Create pair of redundant, managed CSR1000V routers with license subscription
 # in two different metro locations
 
-data "equinix_ne_account" "dc" {
+data "equinix_network_account" "dc" {
   metro_code = "DC"
 }
 
-data "equinix_ne_account" "sv" {
+data "equinix_network_account" "sv" {
   metro_code = "SV"
 }
 
-resource "equinix_ne_device" "csr1000v-ha" {
+resource "equinix_network_device" "csr1000v-ha" {
   name            = "tf-csr1000v-p"
   throughput      = 500
   throughput_unit = "Mbps"
-  metro_code      = data.equinix_ne_account.dc.metro_code
+  metro_code      = data.equinix_network_account.dc.metro_code
   type_code       = "CSR1000V"
   package_code    = "SEC"
   notifications   = ["john@equinix.com", "marry@equinix.com", "fred@equinix.com"]
   hostname        = "csr1000v-p"
   acls            = ["10.0.0.0/24", "192.168.0.0/24", "1.1.1.1/32"]
   term_length     = 6
-  account_number  = data.equinix_ne_account.dc.number
+  account_number  = data.equinix_network_account.dc.number
   version         = "16.09.05"
   core_count      = 2
   secondary_device {
     name           = "tf-csr1000v-s"
-    metro_code     = data.equinix_ne_account.sv.metro_code
+    metro_code     = data.equinix_network_account.sv.metro_code
     hostname       = "csr1000v-s"
     acls           = ["1.1.1.1/32", "2.2.2.2/32", "4.4.4.4/32", "5.5.5.5/32"]
     notifications  = ["john@equinix.com", "marry@equinix.com"]
-    account_number = data.equinix_ne_account.sv.number
+    account_number = data.equinix_network_account.sv.number
   }
 }
 ```
