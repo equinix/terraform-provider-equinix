@@ -73,7 +73,9 @@ func dataSourcePacketReservedIPBlockRead(d *schema.ResourceData, meta interface{
 		facility := fval.(string)
 		for _, ip := range ips {
 			if ip.Public == public && ip.AddressFamily == ipv && facility == ip.Facility.Code {
-				loadBlock(d, &ip)
+				if err := loadBlock(d, &ip); err != nil {
+					return err
+				}
 				break
 			}
 		}
@@ -82,7 +84,9 @@ func dataSourcePacketReservedIPBlockRead(d *schema.ResourceData, meta interface{
 		for _, ip := range ips {
 			blockGlobal := getGlobalBool(&ip)
 			if ip.Public == public && ip.AddressFamily == ipv && blockGlobal {
-				loadBlock(d, &ip)
+				if err := loadBlock(d, &ip); err != nil {
+					return err
+				}
 				break
 			}
 		}

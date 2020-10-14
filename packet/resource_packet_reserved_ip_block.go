@@ -170,40 +170,49 @@ func loadBlock(d *schema.ResourceData, reservedBlock *packngo.IPAddressReservati
 	ipv4CIDRToQuantity := map[int]int{32: 1, 31: 2, 30: 4, 29: 8, 28: 16, 27: 32, 26: 64, 25: 128, 24: 256}
 
 	d.SetId(reservedBlock.ID)
-	d.Set("address", reservedBlock.Address)
-	if reservedBlock.Facility != nil {
-		d.Set("facility", reservedBlock.Facility.Code)
-	}
-	d.Set("gateway", reservedBlock.Gateway)
-	d.Set("network", reservedBlock.Network)
-	d.Set("netmask", reservedBlock.Netmask)
-	d.Set("address_family", reservedBlock.AddressFamily)
-	d.Set("cidr", reservedBlock.CIDR)
+
 	typ, err := getType(reservedBlock)
 	if err != nil {
 		return err
 	}
-	d.Set("type", typ)
-	d.Set("public", reservedBlock.Public)
-	d.Set("management", reservedBlock.Management)
-	d.Set("manageable", reservedBlock.Manageable)
+	quantity := 0
 	if reservedBlock.AddressFamily == 4 {
-		d.Set("quantity", ipv4CIDRToQuantity[reservedBlock.CIDR])
+		quantity = ipv4CIDRToQuantity[reservedBlock.CIDR]
 	} else {
-		// In Equinix Metal, a reserved IPv6 block is allocated when a device is run in a project.
-		// It's always /56, and it can't be created with Terraform, only imported.
-		// The longest assignable prefix is /64, making it max 256 subnets per block.
-		// The following logic will hold as long as /64 is the smallest assignable subnet size.
+		// In Equinix Metal, a reserved IPv6 block is allocated when a device is
+		// run in a project. It's always /56, and it can't be created with
+		// Terraform, only imported. The longest assignable prefix is /64,
+		// making it max 256 subnets per block. The following logic will hold as
+		// long as /64 is the smallest assignable subnet size.
 		bits := 64 - reservedBlock.CIDR
 		if bits > 30 {
 			return fmt.Errorf("Strange (too small) CIDR prefix: %d", reservedBlock.CIDR)
 		}
-		d.Set("quantity", 1<<uint(bits))
+		quantity = 1 << uint(bits)
 	}
-	d.Set("project_id", path.Base(reservedBlock.Project.Href))
-	d.Set("cidr_notation", fmt.Sprintf("%s/%d", reservedBlock.Network, reservedBlock.CIDR))
-	return nil
 
+	err = setMap(d, map[string]interface{}{
+		"address": reservedBlock.Address,
+		"facility": func(d *schema.ResourceData, k string) error {
+			if reservedBlock.Facility == nil {
+				return nil
+			}
+			return d.Set(k, reservedBlock.Facility.Code)
+		},
+		"gateway":        reservedBlock.Gateway,
+		"network":        reservedBlock.Network,
+		"netmask":        reservedBlock.Netmask,
+		"address_family": reservedBlock.AddressFamily,
+		"cidr":           reservedBlock.CIDR,
+		"type":           typ,
+		"public":         reservedBlock.Public,
+		"management":     reservedBlock.Management,
+		"manageable":     reservedBlock.Manageable,
+		"quantity":       quantity,
+		"project_id":     path.Base(reservedBlock.Project.Href),
+		"cidr_notation":  fmt.Sprintf("%s/%d", reservedBlock.Network, reservedBlock.CIDR),
+	})
+	return err
 }
 
 func resourcePacketReservedIPBlockRead(d *schema.ResourceData, meta interface{}) error {
@@ -221,13 +230,14 @@ func resourcePacketReservedIPBlockRead(d *schema.ResourceData, meta interface{})
 		return fmt.Errorf("Error reading IP address block with ID %s: %s", id, err)
 	}
 	err = loadBlock(d, reservedBlock)
+	if err != nil {
+		return err
+	}
+
 	if (reservedBlock.Description != nil) && (*(reservedBlock.Description) != "") {
 		d.Set("description", *(reservedBlock.Description))
 	}
 	d.Set("global", getGlobalBool(reservedBlock))
-	if err != nil {
-		return err
-	}
 
 	return nil
 }
