@@ -21,6 +21,11 @@ management of Equinix Platform resources.
 
 ## Using the provider
 
+**NOTE:** Equinix provider is pending official approval and verification by HashiCorp.
+Until then, provider has to be installed manually as third-party provider plugin.
+
+See the [Installation guide](INSTALLATION.md) for manual plugin installation instructions.
+
 See the [Equinix Provider documentation](docs/index.md) to get started using the
 Equinix provider.
 
