@@ -7,20 +7,20 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 )
 
-func TestAccNeAccount(t *testing.T) {
+func TestAccNetworkAccountDataSource(t *testing.T) {
 	t.Parallel()
 	context := map[string]interface{}{
 		"resourceName": "tf-account",
 		"metro_code":   "SV",
 		"status":       "active",
 	}
-	resourceName := fmt.Sprintf("data.equinix_ne_account.%s", context["resourceName"].(string))
+	resourceName := fmt.Sprintf("data.equinix_network_account.%s", context["resourceName"].(string))
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccNeAccount(context),
+				Config: testAccNetworkAccountDataSource(context),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(resourceName, "name"),
 					resource.TestCheckResourceAttrSet(resourceName, "number"),
@@ -32,9 +32,9 @@ func TestAccNeAccount(t *testing.T) {
 	})
 }
 
-func testAccNeAccount(ctx map[string]interface{}) string {
+func testAccNetworkAccountDataSource(ctx map[string]interface{}) string {
 	return nprintf(`
-data "equinix_ne_account" "%{resourceName}" {
+data "equinix_network_account" "%{resourceName}" {
   metro_code = "%{metro_code}"
   status     = "%{status}"
 }

@@ -11,7 +11,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
 )
 
-var neDeviceSoftwareSchemaNames = map[string]string{
+var networkDeviceSoftwareSchemaNames = map[string]string{
 	"DeviceTypeCode":   "device_type",
 	"Version":          "version",
 	"VersionRegex":     "version_regex",
@@ -24,48 +24,48 @@ var neDeviceSoftwareSchemaNames = map[string]string{
 	"MostRecent":       "most_recent",
 }
 
-const dateLayout = "2006-01-02"
+const networkDeviceSoftwareDateLayout = "2006-01-02"
 
-func dataSourceNeDeviceSoftware() *schema.Resource {
+func dataSourceNetworkDeviceSoftware() *schema.Resource {
 	return &schema.Resource{
-		Read: dataSourceNeDeviceSoftwareRead,
+		Read: dataSourceNetworkDeviceSoftwareRead,
 		Schema: map[string]*schema.Schema{
-			neDeviceSoftwareSchemaNames["DeviceTypeCode"]: {
+			networkDeviceSoftwareSchemaNames["DeviceTypeCode"]: {
 				Type:         schema.TypeString,
 				Required:     true,
 				ValidateFunc: validation.StringIsNotEmpty,
 			},
-			neDeviceSoftwareSchemaNames["Version"]: {
+			networkDeviceSoftwareSchemaNames["Version"]: {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-			neDeviceSoftwareSchemaNames["VersionRegex"]: {
+			networkDeviceSoftwareSchemaNames["VersionRegex"]: {
 				Type:         schema.TypeString,
 				Optional:     true,
 				ValidateFunc: validation.StringIsValidRegExp,
 			},
-			neDeviceSoftwareSchemaNames["ImageName"]: {
+			networkDeviceSoftwareSchemaNames["ImageName"]: {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-			neDeviceSoftwareSchemaNames["Date"]: {
+			networkDeviceSoftwareSchemaNames["Date"]: {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-			neDeviceSoftwareSchemaNames["Status"]: {
+			networkDeviceSoftwareSchemaNames["Status"]: {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-			neDeviceSoftwareSchemaNames["IsStable"]: {
+			networkDeviceSoftwareSchemaNames["IsStable"]: {
 				Type:     schema.TypeBool,
 				Computed: true,
 				Optional: true,
 			},
-			neDeviceSoftwareSchemaNames["ReleaseNotesLink"]: {
+			networkDeviceSoftwareSchemaNames["ReleaseNotesLink"]: {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-			neDeviceSoftwareSchemaNames["PackageCodes"]: {
+			networkDeviceSoftwareSchemaNames["PackageCodes"]: {
 				Type:     schema.TypeSet,
 				Optional: true,
 				Computed: true,
@@ -75,7 +75,7 @@ func dataSourceNeDeviceSoftware() *schema.Resource {
 					ValidateFunc: validation.StringIsNotEmpty,
 				},
 			},
-			neDeviceSoftwareSchemaNames["MostRecent"]: {
+			networkDeviceSoftwareSchemaNames["MostRecent"]: {
 				Type:     schema.TypeBool,
 				Optional: true,
 				Default:  false,
@@ -84,23 +84,23 @@ func dataSourceNeDeviceSoftware() *schema.Resource {
 	}
 }
 
-func dataSourceNeDeviceSoftwareRead(d *schema.ResourceData, m interface{}) error {
+func dataSourceNetworkDeviceSoftwareRead(d *schema.ResourceData, m interface{}) error {
 	conf := m.(*Config)
-	typeCode := d.Get(neDeviceSoftwareSchemaNames["DeviceTypeCode"]).(string)
-	pkgCodes := expandSetToStringList(d.Get(neDeviceSoftwareSchemaNames["PackageCodes"]).(*schema.Set))
+	typeCode := d.Get(networkDeviceSoftwareSchemaNames["DeviceTypeCode"]).(string)
+	pkgCodes := expandSetToStringList(d.Get(networkDeviceSoftwareSchemaNames["PackageCodes"]).(*schema.Set))
 	versions, err := conf.ne.GetDeviceSoftwareVersions(typeCode)
 	if err != nil {
 		return err
 	}
 	var filtered []ne.DeviceSoftwareVersion
 	for _, version := range versions {
-		if v, ok := d.GetOk(neDeviceSoftwareSchemaNames["VersionRegex"]); ok {
+		if v, ok := d.GetOk(networkDeviceSoftwareSchemaNames["VersionRegex"]); ok {
 			r := regexp.MustCompile(v.(string))
 			if !r.MatchString(version.Version) {
 				continue
 			}
 		}
-		if v, ok := d.GetOk(neDeviceSoftwareSchemaNames["IsStable"]); ok && v.(bool) == version.IsStable {
+		if v, ok := d.GetOk(networkDeviceSoftwareSchemaNames["IsStable"]); ok && v.(bool) == version.IsStable {
 			continue
 		}
 		if !stringsFound(pkgCodes, version.PackageCodes) {
@@ -109,42 +109,42 @@ func dataSourceNeDeviceSoftwareRead(d *schema.ResourceData, m interface{}) error
 		filtered = append(filtered, version)
 	}
 	if len(filtered) < 1 {
-		return fmt.Errorf("device software query returned no results, please change your search criteria")
+		return fmt.Errorf("network device software query returned no results, please change your search criteria")
 	}
 	if len(filtered) > 1 {
-		if !d.Get(neDeviceSoftwareSchemaNames["MostRecent"]).(bool) {
-			return fmt.Errorf("device software query returned more than one result, please try more specific search criteria")
+		if !d.Get(networkDeviceSoftwareSchemaNames["MostRecent"]).(bool) {
+			return fmt.Errorf("network device software query returned more than one result, please try more specific search criteria")
 		}
 		sort.Slice(filtered, func(i, j int) bool {
-			iTime, _ := time.Parse(dateLayout, filtered[i].Date)
-			jTime, _ := time.Parse(dateLayout, filtered[j].Date)
+			iTime, _ := time.Parse(networkDeviceSoftwareDateLayout, filtered[i].Date)
+			jTime, _ := time.Parse(networkDeviceSoftwareDateLayout, filtered[j].Date)
 			return iTime.Unix() > jTime.Unix()
 		})
 	}
-	return updateNeDeviceSoftwareResource(filtered[0], typeCode, d)
+	return updateNetworkDeviceSoftwareResource(filtered[0], typeCode, d)
 }
 
-func updateNeDeviceSoftwareResource(version ne.DeviceSoftwareVersion, typeCode string, d *schema.ResourceData) error {
+func updateNetworkDeviceSoftwareResource(version ne.DeviceSoftwareVersion, typeCode string, d *schema.ResourceData) error {
 	d.SetId(fmt.Sprintf("%s-%s", typeCode, version.Version))
-	if err := d.Set(neDeviceSoftwareSchemaNames["Version"], version.Version); err != nil {
+	if err := d.Set(networkDeviceSoftwareSchemaNames["Version"], version.Version); err != nil {
 		return fmt.Errorf("error reading Version: %s", err)
 	}
-	if err := d.Set(neDeviceSoftwareSchemaNames["ImageName"], version.ImageName); err != nil {
+	if err := d.Set(networkDeviceSoftwareSchemaNames["ImageName"], version.ImageName); err != nil {
 		return fmt.Errorf("error reading ImageName: %s", err)
 	}
-	if err := d.Set(neDeviceSoftwareSchemaNames["Date"], version.Date); err != nil {
+	if err := d.Set(networkDeviceSoftwareSchemaNames["Date"], version.Date); err != nil {
 		return fmt.Errorf("error reading Date: %s", err)
 	}
-	if err := d.Set(neDeviceSoftwareSchemaNames["Status"], version.Status); err != nil {
+	if err := d.Set(networkDeviceSoftwareSchemaNames["Status"], version.Status); err != nil {
 		return fmt.Errorf("error reading Status: %s", err)
 	}
-	if err := d.Set(neDeviceSoftwareSchemaNames["IsStable"], version.IsStable); err != nil {
+	if err := d.Set(networkDeviceSoftwareSchemaNames["IsStable"], version.IsStable); err != nil {
 		return fmt.Errorf("error reading IsStable: %s", err)
 	}
-	if err := d.Set(neDeviceSoftwareSchemaNames["ReleaseNotesLink"], version.ReleaseNotesLink); err != nil {
+	if err := d.Set(networkDeviceSoftwareSchemaNames["ReleaseNotesLink"], version.ReleaseNotesLink); err != nil {
 		return fmt.Errorf("error reading ReleaseNotesLink: %s", err)
 	}
-	if err := d.Set(neDeviceSoftwareSchemaNames["PackageCodes"], version.PackageCodes); err != nil {
+	if err := d.Set(networkDeviceSoftwareSchemaNames["PackageCodes"], version.PackageCodes); err != nil {
 		return fmt.Errorf("error reading PackageCodes: %s", err)
 	}
 	return nil

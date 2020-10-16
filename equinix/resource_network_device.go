@@ -12,7 +12,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
 )
 
-var neDeviceSchemaNames = map[string]string{
+var networkDeviceSchemaNames = map[string]string{
 	"UUID":                "uuid",
 	"Name":                "name",
 	"TypeCode":            "type_code",
@@ -59,101 +59,101 @@ var neDeviceInterfaceSchemaNames = map[string]string{
 	"Type":              "type",
 }
 
-func resourceNeDevice() *schema.Resource {
+func resourceNetworkDevice() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceNeDeviceCreate,
-		Read:   resourceNeDeviceRead,
-		Update: resourceNeDeviceUpdate,
-		Delete: resourceNeDeviceDelete,
-		Schema: createNeDeviceSchema(),
+		Create: resourceNetworkDeviceCreate,
+		Read:   resourceNetworkDeviceRead,
+		Update: resourceNetworkDeviceUpdate,
+		Delete: resourceNetworkDeviceDelete,
+		Schema: createNetworkDeviceSchema(),
 		Timeouts: &schema.ResourceTimeout{
 			Create: schema.DefaultTimeout(30 * time.Minute),
 		},
 	}
 }
 
-func createNeDeviceSchema() map[string]*schema.Schema {
+func createNetworkDeviceSchema() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
-		neDeviceSchemaNames["UUID"]: {
+		networkDeviceSchemaNames["UUID"]: {
 			Type:     schema.TypeString,
 			Computed: true,
 		},
-		neDeviceSchemaNames["Name"]: {
+		networkDeviceSchemaNames["Name"]: {
 			Type:         schema.TypeString,
 			Required:     true,
 			ValidateFunc: validation.StringLenBetween(3, 50),
 		},
-		neDeviceSchemaNames["TypeCode"]: {
+		networkDeviceSchemaNames["TypeCode"]: {
 			Type:         schema.TypeString,
 			Required:     true,
 			ForceNew:     true,
 			ValidateFunc: validation.StringIsNotEmpty,
 		},
-		neDeviceSchemaNames["Status"]: {
+		networkDeviceSchemaNames["Status"]: {
 			Type:     schema.TypeString,
 			Computed: true,
 		},
-		neDeviceSchemaNames["LicenseStatus"]: {
+		networkDeviceSchemaNames["LicenseStatus"]: {
 			Type:     schema.TypeString,
 			Computed: true,
 		},
-		neDeviceSchemaNames["MetroCode"]: {
+		networkDeviceSchemaNames["MetroCode"]: {
 			Type:         schema.TypeString,
 			Required:     true,
 			ForceNew:     true,
 			ValidateFunc: stringIsMetroCode(),
 		},
-		neDeviceSchemaNames["IBX"]: {
+		networkDeviceSchemaNames["IBX"]: {
 			Type:     schema.TypeString,
 			Computed: true,
 		},
-		neDeviceSchemaNames["Region"]: {
+		networkDeviceSchemaNames["Region"]: {
 			Type:     schema.TypeString,
 			Computed: true,
 		},
-		neDeviceSchemaNames["Throughput"]: {
+		networkDeviceSchemaNames["Throughput"]: {
 			Type:         schema.TypeInt,
 			Required:     true,
 			ForceNew:     true,
 			ValidateFunc: validation.IntAtLeast(1),
 		},
-		neDeviceSchemaNames["ThroughputUnit"]: {
+		networkDeviceSchemaNames["ThroughputUnit"]: {
 			Type:         schema.TypeString,
 			Required:     true,
 			ForceNew:     true,
 			ValidateFunc: validation.StringInSlice([]string{"Mbps", "Gbps"}, false),
 		},
-		neDeviceSchemaNames["HostName"]: {
+		networkDeviceSchemaNames["HostName"]: {
 			Type:         schema.TypeString,
 			Required:     true,
 			ForceNew:     true,
 			ValidateFunc: validation.StringLenBetween(2, 10),
 		},
-		neDeviceSchemaNames["PackageCode"]: {
+		networkDeviceSchemaNames["PackageCode"]: {
 			Type:         schema.TypeString,
 			Required:     true,
 			ForceNew:     true,
 			ValidateFunc: validation.StringIsNotEmpty,
 		},
-		neDeviceSchemaNames["Version"]: {
+		networkDeviceSchemaNames["Version"]: {
 			Type:         schema.TypeString,
 			Required:     true,
 			ForceNew:     true,
 			ValidateFunc: validation.StringIsNotEmpty,
 		},
-		neDeviceSchemaNames["IsBYOL"]: {
+		networkDeviceSchemaNames["IsBYOL"]: {
 			Type:     schema.TypeBool,
 			Optional: true,
 			Default:  false,
 			ForceNew: true,
 		},
-		neDeviceSchemaNames["LicenseToken"]: {
+		networkDeviceSchemaNames["LicenseToken"]: {
 			Type:         schema.TypeString,
 			Optional:     true,
 			ForceNew:     true,
 			ValidateFunc: validation.StringIsNotEmpty,
 		},
-		neDeviceSchemaNames["ACLs"]: {
+		networkDeviceSchemaNames["ACLs"]: {
 			Type:     schema.TypeSet,
 			Optional: true,
 			MinItems: 1,
@@ -162,25 +162,25 @@ func createNeDeviceSchema() map[string]*schema.Schema {
 				ValidateFunc: validation.IsCIDR,
 			},
 		},
-		neDeviceSchemaNames["ACLStatus"]: {
+		networkDeviceSchemaNames["ACLStatus"]: {
 			Type:     schema.TypeString,
 			Computed: true,
 		},
-		neDeviceSchemaNames["SSHIPAddress"]: {
+		networkDeviceSchemaNames["SSHIPAddress"]: {
 			Type:     schema.TypeString,
 			Computed: true,
 		},
-		neDeviceSchemaNames["SSHIPFqdn"]: {
+		networkDeviceSchemaNames["SSHIPFqdn"]: {
 			Type:     schema.TypeString,
 			Computed: true,
 		},
-		neDeviceSchemaNames["AccountNumber"]: {
+		networkDeviceSchemaNames["AccountNumber"]: {
 			Type:         schema.TypeString,
 			Required:     true,
 			ForceNew:     true,
 			ValidateFunc: validation.StringIsNotEmpty,
 		},
-		neDeviceSchemaNames["Notifications"]: {
+		networkDeviceSchemaNames["Notifications"]: {
 			Type:     schema.TypeSet,
 			Required: true,
 			MinItems: 1,
@@ -189,62 +189,62 @@ func createNeDeviceSchema() map[string]*schema.Schema {
 				ValidateFunc: stringIsEmailAddress(),
 			},
 		},
-		neDeviceSchemaNames["PurchaseOrderNumber"]: {
+		networkDeviceSchemaNames["PurchaseOrderNumber"]: {
 			Type:         schema.TypeString,
 			Optional:     true,
 			ValidateFunc: validation.StringLenBetween(1, 30),
 		},
-		neDeviceSchemaNames["RedundancyType"]: {
+		networkDeviceSchemaNames["RedundancyType"]: {
 			Type:     schema.TypeString,
 			Computed: true,
 		},
-		neDeviceSchemaNames["RedundantUUID"]: {
+		networkDeviceSchemaNames["RedundantUUID"]: {
 			Type:     schema.TypeString,
 			Computed: true,
 		},
-		neDeviceSchemaNames["TermLength"]: {
+		networkDeviceSchemaNames["TermLength"]: {
 			Type:         schema.TypeInt,
 			Required:     true,
 			ValidateFunc: validation.IntInSlice([]int{1, 12, 24, 36}),
 		},
-		neDeviceSchemaNames["AdditionalBandwidth"]: {
+		networkDeviceSchemaNames["AdditionalBandwidth"]: {
 			Type:         schema.TypeInt,
 			Optional:     true,
 			ValidateFunc: validation.IntAtLeast(1),
 		},
-		neDeviceSchemaNames["OrderReference"]: {
+		networkDeviceSchemaNames["OrderReference"]: {
 			Type:         schema.TypeString,
 			Optional:     true,
 			ForceNew:     true,
 			ValidateFunc: validation.StringLenBetween(1, 100),
 		},
-		neDeviceSchemaNames["InterfaceCount"]: {
+		networkDeviceSchemaNames["InterfaceCount"]: {
 			Type:         schema.TypeInt,
 			Optional:     true,
 			Computed:     true,
 			ForceNew:     true,
 			ValidateFunc: validation.IntAtLeast(1),
 		},
-		neDeviceSchemaNames["CoreCount"]: {
+		networkDeviceSchemaNames["CoreCount"]: {
 			Type:         schema.TypeInt,
 			Required:     true,
 			ForceNew:     true,
 			ValidateFunc: validation.IntAtLeast(1),
 		},
-		neDeviceSchemaNames["IsSelfManaged"]: {
+		networkDeviceSchemaNames["IsSelfManaged"]: {
 			Type:     schema.TypeBool,
 			Optional: true,
 			Default:  false,
 			ForceNew: true,
 		},
-		neDeviceSchemaNames["Interfaces"]: {
+		networkDeviceSchemaNames["Interfaces"]: {
 			Type:     schema.TypeList,
 			Computed: true,
 			Elem: &schema.Resource{
-				Schema: createNeDeviceInterfaceSchema(),
+				Schema: createNetworkDeviceInterfaceSchema(),
 			},
 		},
-		neDeviceSchemaNames["VendorConfiguration"]: {
+		networkDeviceSchemaNames["VendorConfiguration"]: {
 			Type:     schema.TypeMap,
 			Optional: true,
 			ForceNew: true,
@@ -253,54 +253,54 @@ func createNeDeviceSchema() map[string]*schema.Schema {
 				ValidateFunc: validation.StringIsNotEmpty,
 			},
 		},
-		neDeviceSchemaNames["Secondary"]: {
+		networkDeviceSchemaNames["Secondary"]: {
 			Type:     schema.TypeSet,
 			Optional: true,
 			ForceNew: true,
 			MaxItems: 1,
 			Elem: &schema.Resource{
 				Schema: map[string]*schema.Schema{
-					neDeviceSchemaNames["UUID"]: {
+					networkDeviceSchemaNames["UUID"]: {
 						Type:     schema.TypeString,
 						Computed: true,
 					},
-					neDeviceSchemaNames["Name"]: {
+					networkDeviceSchemaNames["Name"]: {
 						Type:         schema.TypeString,
 						Required:     true,
 						ValidateFunc: validation.StringLenBetween(3, 50),
 					},
-					neDeviceSchemaNames["Status"]: {
+					networkDeviceSchemaNames["Status"]: {
 						Type:     schema.TypeString,
 						Computed: true,
 					},
-					neDeviceSchemaNames["LicenseStatus"]: {
+					networkDeviceSchemaNames["LicenseStatus"]: {
 						Type:     schema.TypeString,
 						Computed: true,
 					},
-					neDeviceSchemaNames["MetroCode"]: {
+					networkDeviceSchemaNames["MetroCode"]: {
 						Type:         schema.TypeString,
 						Required:     true,
 						ValidateFunc: stringIsMetroCode(),
 					},
-					neDeviceSchemaNames["IBX"]: {
+					networkDeviceSchemaNames["IBX"]: {
 						Type:     schema.TypeString,
 						Computed: true,
 					},
-					neDeviceSchemaNames["Region"]: {
+					networkDeviceSchemaNames["Region"]: {
 						Type:     schema.TypeString,
 						Computed: true,
 					},
-					neDeviceSchemaNames["HostName"]: {
+					networkDeviceSchemaNames["HostName"]: {
 						Type:         schema.TypeString,
 						Required:     true,
 						ValidateFunc: validation.StringLenBetween(2, 15),
 					},
-					neDeviceSchemaNames["LicenseToken"]: {
+					networkDeviceSchemaNames["LicenseToken"]: {
 						Type:         schema.TypeString,
 						Optional:     true,
 						ValidateFunc: validation.StringIsNotEmpty,
 					},
-					neDeviceSchemaNames["ACLs"]: {
+					networkDeviceSchemaNames["ACLs"]: {
 						Type:     schema.TypeSet,
 						Optional: true,
 						MinItems: 1,
@@ -309,24 +309,24 @@ func createNeDeviceSchema() map[string]*schema.Schema {
 							ValidateFunc: validation.IsCIDR,
 						},
 					},
-					neDeviceSchemaNames["ACLStatus"]: {
+					networkDeviceSchemaNames["ACLStatus"]: {
 						Type:     schema.TypeString,
 						Computed: true,
 					},
-					neDeviceSchemaNames["SSHIPAddress"]: {
+					networkDeviceSchemaNames["SSHIPAddress"]: {
 						Type:     schema.TypeString,
 						Computed: true,
 					},
-					neDeviceSchemaNames["SSHIPFqdn"]: {
+					networkDeviceSchemaNames["SSHIPFqdn"]: {
 						Type:     schema.TypeString,
 						Computed: true,
 					},
-					neDeviceSchemaNames["AccountNumber"]: {
+					networkDeviceSchemaNames["AccountNumber"]: {
 						Type:         schema.TypeString,
 						Required:     true,
 						ValidateFunc: validation.StringIsNotEmpty,
 					},
-					neDeviceSchemaNames["Notifications"]: {
+					networkDeviceSchemaNames["Notifications"]: {
 						Type:     schema.TypeSet,
 						Required: true,
 						MinItems: 1,
@@ -335,27 +335,27 @@ func createNeDeviceSchema() map[string]*schema.Schema {
 							ValidateFunc: stringIsEmailAddress(),
 						},
 					},
-					neDeviceSchemaNames["RedundancyType"]: {
+					networkDeviceSchemaNames["RedundancyType"]: {
 						Type:     schema.TypeString,
 						Computed: true,
 					},
-					neDeviceSchemaNames["RedundantUUID"]: {
+					networkDeviceSchemaNames["RedundantUUID"]: {
 						Type:     schema.TypeString,
 						Computed: true,
 					},
-					neDeviceSchemaNames["AdditionalBandwidth"]: {
+					networkDeviceSchemaNames["AdditionalBandwidth"]: {
 						Type:         schema.TypeInt,
 						Optional:     true,
 						ValidateFunc: validation.IntAtLeast(1),
 					},
-					neDeviceSchemaNames["Interfaces"]: {
+					networkDeviceSchemaNames["Interfaces"]: {
 						Type:     schema.TypeList,
 						Computed: true,
 						Elem: &schema.Resource{
-							Schema: createNeDeviceInterfaceSchema(),
+							Schema: createNetworkDeviceInterfaceSchema(),
 						},
 					},
-					neDeviceSchemaNames["VendorConfiguration"]: {
+					networkDeviceSchemaNames["VendorConfiguration"]: {
 						Type:     schema.TypeMap,
 						Optional: true,
 						Elem: &schema.Schema{
@@ -369,7 +369,7 @@ func createNeDeviceSchema() map[string]*schema.Schema {
 	}
 }
 
-func createNeDeviceInterfaceSchema() map[string]*schema.Schema {
+func createNetworkDeviceInterfaceSchema() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
 		neDeviceInterfaceSchemaNames["ID"]: {
 			Type:     schema.TypeInt,
@@ -406,9 +406,9 @@ func createNeDeviceInterfaceSchema() map[string]*schema.Schema {
 	}
 }
 
-func resourceNeDeviceCreate(d *schema.ResourceData, m interface{}) error {
+func resourceNetworkDeviceCreate(d *schema.ResourceData, m interface{}) error {
 	conf := m.(*Config)
-	primary, secondary := createNeDevices(d)
+	primary, secondary := createNetworkDevices(d)
 	var uuid string
 	var err error
 	if secondary != nil {
@@ -442,19 +442,19 @@ func resourceNeDeviceCreate(d *schema.ResourceData, m interface{}) error {
 		},
 	}
 	if _, err := createStateConf.WaitForState(); err != nil {
-		return fmt.Errorf("error waiting for device (%s) to be created: %s", d.Id(), err)
+		return fmt.Errorf("error waiting for network device (%s) to be created: %s", d.Id(), err)
 	}
-	return resourceNeDeviceRead(d, m)
+	return resourceNetworkDeviceRead(d, m)
 }
 
-func resourceNeDeviceRead(d *schema.ResourceData, m interface{}) error {
+func resourceNetworkDeviceRead(d *schema.ResourceData, m interface{}) error {
 	conf := m.(*Config)
 	var err error
 	var primary, secondary *ne.Device
 	var primaryACLs, secondaryACLs *ne.DeviceACLs
 	primary, err = conf.ne.GetDevice(d.Id())
 	if err != nil {
-		return fmt.Errorf("cannot fetch primary device due to %v", err)
+		return fmt.Errorf("cannot fetch primary network device due to %v", err)
 	}
 	if primary.Status == ne.DeviceStateDeprovisioning || primary.Status == ne.DeviceStateDeprovisioned {
 		d.SetId("")
@@ -462,60 +462,60 @@ func resourceNeDeviceRead(d *schema.ResourceData, m interface{}) error {
 	}
 	primaryACLs, err = conf.ne.GetDeviceACLs(d.Id())
 	if err != nil {
-		return fmt.Errorf("cannot fetch primary device ACLs due to %v", err)
+		return fmt.Errorf("cannot fetch primary network device ACLs due to %v", err)
 	}
 	if primary.RedundantUUID != "" {
 		secondary, err = conf.ne.GetDevice(primary.RedundantUUID)
 		if err != nil {
-			return fmt.Errorf("cannot fetch secondary device due to %v", err)
+			return fmt.Errorf("cannot fetch secondary network device due to %v", err)
 		}
 		secondaryACLs, err = conf.ne.GetDeviceACLs(primary.RedundantUUID)
 		if err != nil {
-			return fmt.Errorf("cannot fetch secondary device ACLs due to %v", err)
+			return fmt.Errorf("cannot fetch secondary network device ACLs due to %v", err)
 		}
 	}
-	if err = updateNeDeviceResource(primary, secondary, d); err != nil {
+	if err = updateNetworkDeviceResource(primary, secondary, d); err != nil {
 		return err
 	}
-	if err = updateNeDeviceResourceACLs(primaryACLs, secondaryACLs, d); err != nil {
+	if err = updateNetworkDeviceResourceACLs(primaryACLs, secondaryACLs, d); err != nil {
 		return err
 	}
 	return nil
 }
 
-func resourceNeDeviceUpdate(d *schema.ResourceData, m interface{}) error {
+func resourceNetworkDeviceUpdate(d *schema.ResourceData, m interface{}) error {
 	conf := m.(*Config)
 	updateReq := conf.ne.NewDeviceUpdateRequest(d.Id())
-	if v, ok := d.GetOk(neDeviceSchemaNames["Name"]); ok && d.HasChange(neDeviceSchemaNames["Name"]) {
+	if v, ok := d.GetOk(networkDeviceSchemaNames["Name"]); ok && d.HasChange(networkDeviceSchemaNames["Name"]) {
 		updateReq.WithDeviceName(v.(string))
 	}
-	if v, ok := d.GetOk(neDeviceSchemaNames["TermLength"]); ok && d.HasChange(neDeviceSchemaNames["TermLength"]) {
+	if v, ok := d.GetOk(networkDeviceSchemaNames["TermLength"]); ok && d.HasChange(networkDeviceSchemaNames["TermLength"]) {
 		updateReq.WithTermLength(v.(int))
 	}
-	if v, ok := d.GetOk(neDeviceSchemaNames["Notifications"]); ok && d.HasChange(neDeviceSchemaNames["Notifications"]) {
+	if v, ok := d.GetOk(networkDeviceSchemaNames["Notifications"]); ok && d.HasChange(networkDeviceSchemaNames["Notifications"]) {
 		updateReq.WithNotifications(expandSetToStringList(v.(*schema.Set)))
 	}
-	if v, ok := d.GetOk(neDeviceSchemaNames["AdditionalBandwidth"]); ok && d.HasChange(neDeviceSchemaNames["AdditionalBandwidth"]) {
+	if v, ok := d.GetOk(networkDeviceSchemaNames["AdditionalBandwidth"]); ok && d.HasChange(networkDeviceSchemaNames["AdditionalBandwidth"]) {
 		updateReq.WithAdditionalBandwidth(v.(int))
 	}
-	if v, ok := d.GetOk(neDeviceSchemaNames["ACLs"]); ok && d.HasChange(neDeviceSchemaNames["ACLs"]) {
+	if v, ok := d.GetOk(networkDeviceSchemaNames["ACLs"]); ok && d.HasChange(networkDeviceSchemaNames["ACLs"]) {
 		updateReq.WithACLs(expandSetToStringList(v.(*schema.Set)))
 	}
 	if err := updateReq.Execute(); err != nil {
 		return err
 	}
-	if a, b := d.GetChange(neDeviceSchemaNames["Secondary"]); d.HasChange(neDeviceSchemaNames["Secondary"]) {
-		if v, ok := d.GetOk(neDeviceSchemaNames["RedundantUUID"]); ok {
+	if a, b := d.GetChange(networkDeviceSchemaNames["Secondary"]); d.HasChange(networkDeviceSchemaNames["Secondary"]) {
+		if v, ok := d.GetOk(networkDeviceSchemaNames["RedundantUUID"]); ok {
 			secUpdateReq := conf.ne.NewDeviceUpdateRequest(v.(string))
-			if err := neDeviceSecondaryUpdate(secUpdateReq, a.(*schema.Set), b.(*schema.Set)); err != nil {
+			if err := networkDeviceSecondaryUpdate(secUpdateReq, a.(*schema.Set), b.(*schema.Set)); err != nil {
 				return err
 			}
 		}
 	}
-	return resourceNeDeviceRead(d, m)
+	return resourceNetworkDeviceRead(d, m)
 }
 
-func resourceNeDeviceDelete(d *schema.ResourceData, m interface{}) error {
+func resourceNetworkDeviceDelete(d *schema.ResourceData, m interface{}) error {
 	conf := m.(*Config)
 	if err := conf.ne.DeleteDevice(d.Id()); err != nil {
 		if restErr, ok := err.(rest.Error); ok {
@@ -530,310 +530,310 @@ func resourceNeDeviceDelete(d *schema.ResourceData, m interface{}) error {
 	return nil
 }
 
-func createNeDevices(d *schema.ResourceData) (*ne.Device, *ne.Device) {
+func createNetworkDevices(d *schema.ResourceData) (*ne.Device, *ne.Device) {
 	var primary *ne.Device = &ne.Device{}
 	var secondary *ne.Device
-	if v, ok := d.GetOk(neDeviceSchemaNames["UUID"]); ok {
+	if v, ok := d.GetOk(networkDeviceSchemaNames["UUID"]); ok {
 		primary.UUID = v.(string)
 	}
-	if v, ok := d.GetOk(neDeviceSchemaNames["Name"]); ok {
+	if v, ok := d.GetOk(networkDeviceSchemaNames["Name"]); ok {
 		primary.Name = v.(string)
 	}
-	if v, ok := d.GetOk(neDeviceSchemaNames["TypeCode"]); ok {
+	if v, ok := d.GetOk(networkDeviceSchemaNames["TypeCode"]); ok {
 		primary.TypeCode = v.(string)
 	}
-	if v, ok := d.GetOk(neDeviceSchemaNames["Status"]); ok {
+	if v, ok := d.GetOk(networkDeviceSchemaNames["Status"]); ok {
 		primary.Status = v.(string)
 	}
-	if v, ok := d.GetOk(neDeviceSchemaNames["LicenseStatus"]); ok {
+	if v, ok := d.GetOk(networkDeviceSchemaNames["LicenseStatus"]); ok {
 		primary.LicenseStatus = v.(string)
 	}
-	if v, ok := d.GetOk(neDeviceSchemaNames["MetroCode"]); ok {
+	if v, ok := d.GetOk(networkDeviceSchemaNames["MetroCode"]); ok {
 		primary.MetroCode = v.(string)
 	}
-	if v, ok := d.GetOk(neDeviceSchemaNames["IBX"]); ok {
+	if v, ok := d.GetOk(networkDeviceSchemaNames["IBX"]); ok {
 		primary.IBX = v.(string)
 	}
-	if v, ok := d.GetOk(neDeviceSchemaNames["Region"]); ok {
+	if v, ok := d.GetOk(networkDeviceSchemaNames["Region"]); ok {
 		primary.Region = v.(string)
 	}
-	if v, ok := d.GetOk(neDeviceSchemaNames["Throughput"]); ok {
+	if v, ok := d.GetOk(networkDeviceSchemaNames["Throughput"]); ok {
 		primary.Throughput = v.(int)
 	}
-	if v, ok := d.GetOk(neDeviceSchemaNames["ThroughputUnit"]); ok {
+	if v, ok := d.GetOk(networkDeviceSchemaNames["ThroughputUnit"]); ok {
 		primary.ThroughputUnit = v.(string)
 	}
-	if v, ok := d.GetOk(neDeviceSchemaNames["HostName"]); ok {
+	if v, ok := d.GetOk(networkDeviceSchemaNames["HostName"]); ok {
 		primary.HostName = v.(string)
 	}
-	if v, ok := d.GetOk(neDeviceSchemaNames["PackageCode"]); ok {
+	if v, ok := d.GetOk(networkDeviceSchemaNames["PackageCode"]); ok {
 		primary.PackageCode = v.(string)
 	}
-	if v, ok := d.GetOk(neDeviceSchemaNames["Version"]); ok {
+	if v, ok := d.GetOk(networkDeviceSchemaNames["Version"]); ok {
 		primary.Version = v.(string)
 	}
-	if v, ok := d.GetOk(neDeviceSchemaNames["IsBYOL"]); ok {
+	if v, ok := d.GetOk(networkDeviceSchemaNames["IsBYOL"]); ok {
 		primary.IsBYOL = v.(bool)
 	}
-	if v, ok := d.GetOk(neDeviceSchemaNames["LicenseToken"]); ok {
+	if v, ok := d.GetOk(networkDeviceSchemaNames["LicenseToken"]); ok {
 		primary.LicenseToken = v.(string)
 	}
-	if v, ok := d.GetOk(neDeviceSchemaNames["ACLs"]); ok {
+	if v, ok := d.GetOk(networkDeviceSchemaNames["ACLs"]); ok {
 		primary.ACLs = expandSetToStringList(v.(*schema.Set))
 	}
-	if v, ok := d.GetOk(neDeviceSchemaNames["SSHIPAddress"]); ok {
+	if v, ok := d.GetOk(networkDeviceSchemaNames["SSHIPAddress"]); ok {
 		primary.SSHIPAddress = v.(string)
 	}
-	if v, ok := d.GetOk(neDeviceSchemaNames["SSHIPFqdn"]); ok {
+	if v, ok := d.GetOk(networkDeviceSchemaNames["SSHIPFqdn"]); ok {
 		primary.SSHIPFqdn = v.(string)
 	}
-	if v, ok := d.GetOk(neDeviceSchemaNames["AccountNumber"]); ok {
+	if v, ok := d.GetOk(networkDeviceSchemaNames["AccountNumber"]); ok {
 		primary.AccountNumber = v.(string)
 	}
-	if v, ok := d.GetOk(neDeviceSchemaNames["Notifications"]); ok {
+	if v, ok := d.GetOk(networkDeviceSchemaNames["Notifications"]); ok {
 		primary.Notifications = expandSetToStringList(v.(*schema.Set))
 	}
-	if v, ok := d.GetOk(neDeviceSchemaNames["PurchaseOrderNumber"]); ok {
+	if v, ok := d.GetOk(networkDeviceSchemaNames["PurchaseOrderNumber"]); ok {
 		primary.PurchaseOrderNumber = v.(string)
 	}
-	if v, ok := d.GetOk(neDeviceSchemaNames["RedundancyType"]); ok {
+	if v, ok := d.GetOk(networkDeviceSchemaNames["RedundancyType"]); ok {
 		primary.RedundancyType = v.(string)
 	}
-	if v, ok := d.GetOk(neDeviceSchemaNames["RedundantUUID"]); ok {
+	if v, ok := d.GetOk(networkDeviceSchemaNames["RedundantUUID"]); ok {
 		primary.RedundantUUID = v.(string)
 	}
-	if v, ok := d.GetOk(neDeviceSchemaNames["TermLength"]); ok {
+	if v, ok := d.GetOk(networkDeviceSchemaNames["TermLength"]); ok {
 		primary.TermLength = v.(int)
 	}
-	if v, ok := d.GetOk(neDeviceSchemaNames["AdditionalBandwidth"]); ok {
+	if v, ok := d.GetOk(networkDeviceSchemaNames["AdditionalBandwidth"]); ok {
 		primary.AdditionalBandwidth = v.(int)
 	}
-	if v, ok := d.GetOk(neDeviceSchemaNames["OrderReference"]); ok {
+	if v, ok := d.GetOk(networkDeviceSchemaNames["OrderReference"]); ok {
 		primary.OrderReference = v.(string)
 	}
-	if v, ok := d.GetOk(neDeviceSchemaNames["InterfaceCount"]); ok {
+	if v, ok := d.GetOk(networkDeviceSchemaNames["InterfaceCount"]); ok {
 		primary.InterfaceCount = v.(int)
 	}
-	if v, ok := d.GetOk(neDeviceSchemaNames["CoreCount"]); ok {
+	if v, ok := d.GetOk(networkDeviceSchemaNames["CoreCount"]); ok {
 		primary.CoreCount = v.(int)
 	}
-	if v, ok := d.GetOk(neDeviceSchemaNames["IsSelfManaged"]); ok {
+	if v, ok := d.GetOk(networkDeviceSchemaNames["IsSelfManaged"]); ok {
 		primary.IsSelfManaged = v.(bool)
 	}
-	if v, ok := d.GetOk(neDeviceSchemaNames["VendorConfiguration"]); ok {
+	if v, ok := d.GetOk(networkDeviceSchemaNames["VendorConfiguration"]); ok {
 		primary.VendorConfiguration = expandInterfaceMapToStringMap(v.(map[string]interface{}))
 	}
-	if v, ok := d.GetOk(neDeviceSchemaNames["Secondary"]); ok {
+	if v, ok := d.GetOk(networkDeviceSchemaNames["Secondary"]); ok {
 		secondarySet := v.(*schema.Set)
 		if secondarySet.Len() > 0 {
-			secondaries := expandNeDeviceSecondary(secondarySet)
+			secondaries := expandNetworkDeviceSecondary(secondarySet)
 			secondary = &secondaries[0]
 		}
 	}
 	return primary, secondary
 }
 
-func updateNeDeviceResource(primary *ne.Device, secondary *ne.Device, d *schema.ResourceData) error {
-	if err := d.Set(neDeviceSchemaNames["UUID"], primary.UUID); err != nil {
+func updateNetworkDeviceResource(primary *ne.Device, secondary *ne.Device, d *schema.ResourceData) error {
+	if err := d.Set(networkDeviceSchemaNames["UUID"], primary.UUID); err != nil {
 		return fmt.Errorf("error reading UUID: %s", err)
 	}
-	if err := d.Set(neDeviceSchemaNames["Name"], primary.Name); err != nil {
+	if err := d.Set(networkDeviceSchemaNames["Name"], primary.Name); err != nil {
 		return fmt.Errorf("error reading Name: %s", err)
 	}
-	if err := d.Set(neDeviceSchemaNames["TypeCode"], primary.TypeCode); err != nil {
+	if err := d.Set(networkDeviceSchemaNames["TypeCode"], primary.TypeCode); err != nil {
 		return fmt.Errorf("error reading TypeCode: %s", err)
 	}
-	if err := d.Set(neDeviceSchemaNames["Status"], primary.Status); err != nil {
+	if err := d.Set(networkDeviceSchemaNames["Status"], primary.Status); err != nil {
 		return fmt.Errorf("error reading Status: %s", err)
 	}
-	if err := d.Set(neDeviceSchemaNames["LicenseStatus"], primary.LicenseStatus); err != nil {
+	if err := d.Set(networkDeviceSchemaNames["LicenseStatus"], primary.LicenseStatus); err != nil {
 		return fmt.Errorf("error reading LicenseStatus: %s", err)
 	}
-	if err := d.Set(neDeviceSchemaNames["MetroCode"], primary.MetroCode); err != nil {
+	if err := d.Set(networkDeviceSchemaNames["MetroCode"], primary.MetroCode); err != nil {
 		return fmt.Errorf("error reading MetroCode: %s", err)
 	}
-	if err := d.Set(neDeviceSchemaNames["IBX"], primary.IBX); err != nil {
+	if err := d.Set(networkDeviceSchemaNames["IBX"], primary.IBX); err != nil {
 		return fmt.Errorf("error reading IBX: %s", err)
 	}
-	if err := d.Set(neDeviceSchemaNames["Region"], primary.Region); err != nil {
+	if err := d.Set(networkDeviceSchemaNames["Region"], primary.Region); err != nil {
 		return fmt.Errorf("error reading Region: %s", err)
 	}
-	if err := d.Set(neDeviceSchemaNames["Throughput"], primary.Throughput); err != nil {
+	if err := d.Set(networkDeviceSchemaNames["Throughput"], primary.Throughput); err != nil {
 		return fmt.Errorf("error reading Throughput: %s", err)
 	}
-	if err := d.Set(neDeviceSchemaNames["ThroughputUnit"], primary.ThroughputUnit); err != nil {
+	if err := d.Set(networkDeviceSchemaNames["ThroughputUnit"], primary.ThroughputUnit); err != nil {
 		return fmt.Errorf("error reading ThroughputUnit: %s", err)
 	}
-	if err := d.Set(neDeviceSchemaNames["HostName"], primary.HostName); err != nil {
+	if err := d.Set(networkDeviceSchemaNames["HostName"], primary.HostName); err != nil {
 		return fmt.Errorf("error reading HostName: %s", err)
 	}
-	if err := d.Set(neDeviceSchemaNames["PackageCode"], primary.PackageCode); err != nil {
+	if err := d.Set(networkDeviceSchemaNames["PackageCode"], primary.PackageCode); err != nil {
 		return fmt.Errorf("error reading PackageCode: %s", err)
 	}
-	if err := d.Set(neDeviceSchemaNames["Version"], primary.Version); err != nil {
+	if err := d.Set(networkDeviceSchemaNames["Version"], primary.Version); err != nil {
 		return fmt.Errorf("error reading Version: %s", err)
 	}
-	if err := d.Set(neDeviceSchemaNames["IsBYOL"], primary.IsBYOL); err != nil {
+	if err := d.Set(networkDeviceSchemaNames["IsBYOL"], primary.IsBYOL); err != nil {
 		return fmt.Errorf("error reading IsBYOL: %s", err)
 	}
-	if err := d.Set(neDeviceSchemaNames["LicenseToken"], primary.LicenseToken); err != nil {
+	if err := d.Set(networkDeviceSchemaNames["LicenseToken"], primary.LicenseToken); err != nil {
 		return fmt.Errorf("error reading LicenseToken: %s", err)
 	}
-	if err := d.Set(neDeviceSchemaNames["SSHIPAddress"], primary.SSHIPAddress); err != nil {
+	if err := d.Set(networkDeviceSchemaNames["SSHIPAddress"], primary.SSHIPAddress); err != nil {
 		return fmt.Errorf("error reading SSHIPAddress: %s", err)
 	}
-	if err := d.Set(neDeviceSchemaNames["SSHIPFqdn"], primary.SSHIPFqdn); err != nil {
+	if err := d.Set(networkDeviceSchemaNames["SSHIPFqdn"], primary.SSHIPFqdn); err != nil {
 		return fmt.Errorf("error reading SSHIPFqdn: %s", err)
 	}
-	if err := d.Set(neDeviceSchemaNames["AccountNumber"], primary.AccountNumber); err != nil {
+	if err := d.Set(networkDeviceSchemaNames["AccountNumber"], primary.AccountNumber); err != nil {
 		return fmt.Errorf("error reading AccountNumber: %s", err)
 	}
-	if err := d.Set(neDeviceSchemaNames["Notifications"], primary.Notifications); err != nil {
+	if err := d.Set(networkDeviceSchemaNames["Notifications"], primary.Notifications); err != nil {
 		return fmt.Errorf("error reading Notifications: %s", err)
 	}
-	if err := d.Set(neDeviceSchemaNames["PurchaseOrderNumber"], primary.PurchaseOrderNumber); err != nil {
+	if err := d.Set(networkDeviceSchemaNames["PurchaseOrderNumber"], primary.PurchaseOrderNumber); err != nil {
 		return fmt.Errorf("error reading PurchaseOrderNumber: %s", err)
 	}
-	if err := d.Set(neDeviceSchemaNames["RedundancyType"], primary.RedundancyType); err != nil {
+	if err := d.Set(networkDeviceSchemaNames["RedundancyType"], primary.RedundancyType); err != nil {
 		return fmt.Errorf("error reading RedundancyType: %s", err)
 	}
-	if err := d.Set(neDeviceSchemaNames["RedundantUUID"], primary.RedundantUUID); err != nil {
+	if err := d.Set(networkDeviceSchemaNames["RedundantUUID"], primary.RedundantUUID); err != nil {
 		return fmt.Errorf("error reading RedundantUUID: %s", err)
 	}
-	if err := d.Set(neDeviceSchemaNames["TermLength"], primary.TermLength); err != nil {
+	if err := d.Set(networkDeviceSchemaNames["TermLength"], primary.TermLength); err != nil {
 		return fmt.Errorf("error reading TermLength: %s", err)
 	}
-	if err := d.Set(neDeviceSchemaNames["AdditionalBandwidth"], primary.AdditionalBandwidth); err != nil {
+	if err := d.Set(networkDeviceSchemaNames["AdditionalBandwidth"], primary.AdditionalBandwidth); err != nil {
 		return fmt.Errorf("error reading AdditionalBandwidth: %s", err)
 	}
-	if err := d.Set(neDeviceSchemaNames["OrderReference"], primary.OrderReference); err != nil {
+	if err := d.Set(networkDeviceSchemaNames["OrderReference"], primary.OrderReference); err != nil {
 		return fmt.Errorf("error reading OrderReference: %s", err)
 	}
-	if err := d.Set(neDeviceSchemaNames["InterfaceCount"], primary.InterfaceCount); err != nil {
+	if err := d.Set(networkDeviceSchemaNames["InterfaceCount"], primary.InterfaceCount); err != nil {
 		return fmt.Errorf("error reading InterfaceCount: %s", err)
 	}
-	if err := d.Set(neDeviceSchemaNames["CoreCount"], primary.CoreCount); err != nil {
+	if err := d.Set(networkDeviceSchemaNames["CoreCount"], primary.CoreCount); err != nil {
 		return fmt.Errorf("error reading CoreCount: %s", err)
 	}
-	if err := d.Set(neDeviceSchemaNames["IsSelfManaged"], primary.IsSelfManaged); err != nil {
+	if err := d.Set(networkDeviceSchemaNames["IsSelfManaged"], primary.IsSelfManaged); err != nil {
 		return fmt.Errorf("error reading IsSelfManaged: %s", err)
 	}
-	if err := d.Set(neDeviceSchemaNames["Interfaces"], flattenNeDeviceInterfaces(primary.Interfaces)); err != nil {
+	if err := d.Set(networkDeviceSchemaNames["Interfaces"], flattenNetworkDeviceInterfaces(primary.Interfaces)); err != nil {
 		return fmt.Errorf("error reading Interfaces: %s", err)
 	}
-	if err := d.Set(neDeviceSchemaNames["VendorConfiguration"], primary.VendorConfiguration); err != nil {
+	if err := d.Set(networkDeviceSchemaNames["VendorConfiguration"], primary.VendorConfiguration); err != nil {
 		return fmt.Errorf("error reading VendorConfiguration: %s", err)
 	}
 	if secondary != nil {
-		if err := d.Set(neDeviceSchemaNames["Secondary"], flattenNeDeviceSecondary(*secondary)); err != nil {
+		if err := d.Set(networkDeviceSchemaNames["Secondary"], flattenNetworkDeviceSecondary(*secondary)); err != nil {
 			return fmt.Errorf("error reading Secondary: %s", err)
 		}
 	}
 	return nil
 }
 
-func updateNeDeviceResourceACLs(primaryACLs, secondaryACLs *ne.DeviceACLs, d *schema.ResourceData) error {
-	if err := d.Set(neDeviceSchemaNames["ACLs"], primaryACLs.ACLs); err != nil {
+func updateNetworkDeviceResourceACLs(primaryACLs, secondaryACLs *ne.DeviceACLs, d *schema.ResourceData) error {
+	if err := d.Set(networkDeviceSchemaNames["ACLs"], primaryACLs.ACLs); err != nil {
 		return fmt.Errorf("error reading ACLs: %s", err)
 	}
-	if err := d.Set(neDeviceSchemaNames["ACLStatus"], primaryACLs.Status); err != nil {
+	if err := d.Set(networkDeviceSchemaNames["ACLStatus"], primaryACLs.Status); err != nil {
 		return fmt.Errorf("error reading ACLStatus: %s", err)
 	}
 	if secondaryACLs != nil {
-		secondarySet := d.Get(neDeviceSchemaNames["Secondary"]).(*schema.Set)
+		secondarySet := d.Get(networkDeviceSchemaNames["Secondary"]).(*schema.Set)
 		if secondarySet.Len() != 1 {
 			return fmt.Errorf("cannot update secondary device ACLs: secondary set size is not equal to 1")
 		}
 		secondary := secondarySet.List()[0].(map[string]interface{})
-		secondary[neDeviceSchemaNames["ACLs"]] = secondaryACLs.ACLs
-		secondary[neDeviceSchemaNames["ACLStatus"]] = secondaryACLs.Status
-		if err := d.Set(neDeviceSchemaNames["Secondary"], []map[string]interface{}{secondary}); err != nil {
+		secondary[networkDeviceSchemaNames["ACLs"]] = secondaryACLs.ACLs
+		secondary[networkDeviceSchemaNames["ACLStatus"]] = secondaryACLs.Status
+		if err := d.Set(networkDeviceSchemaNames["Secondary"], []map[string]interface{}{secondary}); err != nil {
 			return fmt.Errorf("error reading Secondary: %s", err)
 		}
 	}
 	return nil
 }
 
-func flattenNeDeviceSecondary(device ne.Device) interface{} {
+func flattenNetworkDeviceSecondary(device ne.Device) interface{} {
 	transformed := make(map[string]interface{})
-	transformed[neDeviceSchemaNames["UUID"]] = device.UUID
-	transformed[neDeviceSchemaNames["Name"]] = device.Name
-	transformed[neDeviceSchemaNames["Status"]] = device.Status
-	transformed[neDeviceSchemaNames["LicenseStatus"]] = device.LicenseStatus
-	transformed[neDeviceSchemaNames["MetroCode"]] = device.MetroCode
-	transformed[neDeviceSchemaNames["IBX"]] = device.IBX
-	transformed[neDeviceSchemaNames["Region"]] = device.Region
-	transformed[neDeviceSchemaNames["HostName"]] = device.HostName
-	transformed[neDeviceSchemaNames["LicenseToken"]] = device.LicenseToken
-	transformed[neDeviceSchemaNames["SSHIPAddress"]] = device.SSHIPAddress
-	transformed[neDeviceSchemaNames["SSHIPFqdn"]] = device.SSHIPFqdn
-	transformed[neDeviceSchemaNames["AccountNumber"]] = device.AccountNumber
-	transformed[neDeviceSchemaNames["Notifications"]] = device.Notifications
-	transformed[neDeviceSchemaNames["RedundancyType"]] = device.RedundancyType
-	transformed[neDeviceSchemaNames["RedundantUUID"]] = device.RedundantUUID
-	transformed[neDeviceSchemaNames["AdditionalBandwidth"]] = device.AdditionalBandwidth
-	transformed[neDeviceSchemaNames["Interfaces"]] = flattenNeDeviceInterfaces(device.Interfaces)
-	transformed[neDeviceSchemaNames["VendorConfiguration"]] = device.VendorConfiguration
+	transformed[networkDeviceSchemaNames["UUID"]] = device.UUID
+	transformed[networkDeviceSchemaNames["Name"]] = device.Name
+	transformed[networkDeviceSchemaNames["Status"]] = device.Status
+	transformed[networkDeviceSchemaNames["LicenseStatus"]] = device.LicenseStatus
+	transformed[networkDeviceSchemaNames["MetroCode"]] = device.MetroCode
+	transformed[networkDeviceSchemaNames["IBX"]] = device.IBX
+	transformed[networkDeviceSchemaNames["Region"]] = device.Region
+	transformed[networkDeviceSchemaNames["HostName"]] = device.HostName
+	transformed[networkDeviceSchemaNames["LicenseToken"]] = device.LicenseToken
+	transformed[networkDeviceSchemaNames["SSHIPAddress"]] = device.SSHIPAddress
+	transformed[networkDeviceSchemaNames["SSHIPFqdn"]] = device.SSHIPFqdn
+	transformed[networkDeviceSchemaNames["AccountNumber"]] = device.AccountNumber
+	transformed[networkDeviceSchemaNames["Notifications"]] = device.Notifications
+	transformed[networkDeviceSchemaNames["RedundancyType"]] = device.RedundancyType
+	transformed[networkDeviceSchemaNames["RedundantUUID"]] = device.RedundantUUID
+	transformed[networkDeviceSchemaNames["AdditionalBandwidth"]] = device.AdditionalBandwidth
+	transformed[networkDeviceSchemaNames["Interfaces"]] = flattenNetworkDeviceInterfaces(device.Interfaces)
+	transformed[networkDeviceSchemaNames["VendorConfiguration"]] = device.VendorConfiguration
 	return []map[string]interface{}{transformed}
 }
 
-func expandNeDeviceSecondary(devices *schema.Set) []ne.Device {
+func expandNetworkDeviceSecondary(devices *schema.Set) []ne.Device {
 	transformed := make([]ne.Device, 0, devices.Len())
 	for _, device := range devices.List() {
 		devMap := device.(map[string]interface{})
 		dev := ne.Device{}
-		if v, ok := devMap[neDeviceSchemaNames["UUID"]]; ok {
+		if v, ok := devMap[networkDeviceSchemaNames["UUID"]]; ok {
 			dev.UUID = v.(string)
 		}
-		if v, ok := devMap[neDeviceSchemaNames["Name"]]; ok {
+		if v, ok := devMap[networkDeviceSchemaNames["Name"]]; ok {
 			dev.Name = v.(string)
 		}
-		if v, ok := devMap[neDeviceSchemaNames["Status"]]; ok {
+		if v, ok := devMap[networkDeviceSchemaNames["Status"]]; ok {
 			dev.Status = v.(string)
 		}
-		if v, ok := devMap[neDeviceSchemaNames["LicenseStatus"]]; ok {
+		if v, ok := devMap[networkDeviceSchemaNames["LicenseStatus"]]; ok {
 			dev.LicenseStatus = v.(string)
 		}
-		if v, ok := devMap[neDeviceSchemaNames["MetroCode"]]; ok {
+		if v, ok := devMap[networkDeviceSchemaNames["MetroCode"]]; ok {
 			dev.MetroCode = v.(string)
 		}
-		if v, ok := devMap[neDeviceSchemaNames["IBX"]]; ok {
+		if v, ok := devMap[networkDeviceSchemaNames["IBX"]]; ok {
 			dev.IBX = v.(string)
 		}
-		if v, ok := devMap[neDeviceSchemaNames["Region"]]; ok {
+		if v, ok := devMap[networkDeviceSchemaNames["Region"]]; ok {
 			dev.Region = v.(string)
 		}
-		if v, ok := devMap[neDeviceSchemaNames["HostName"]]; ok {
+		if v, ok := devMap[networkDeviceSchemaNames["HostName"]]; ok {
 			dev.HostName = v.(string)
 		}
-		if v, ok := devMap[neDeviceSchemaNames["LicenseToken"]]; ok {
+		if v, ok := devMap[networkDeviceSchemaNames["LicenseToken"]]; ok {
 			dev.LicenseToken = v.(string)
 		}
-		if v, ok := devMap[neDeviceSchemaNames["ACLs"]]; ok {
+		if v, ok := devMap[networkDeviceSchemaNames["ACLs"]]; ok {
 			dev.ACLs = expandSetToStringList(v.(*schema.Set))
 		}
-		if v, ok := devMap[neDeviceSchemaNames["SSHIPAddress"]]; ok {
+		if v, ok := devMap[networkDeviceSchemaNames["SSHIPAddress"]]; ok {
 			dev.SSHIPAddress = v.(string)
 		}
-		if v, ok := devMap[neDeviceSchemaNames["SSHIPFqdn"]]; ok {
+		if v, ok := devMap[networkDeviceSchemaNames["SSHIPFqdn"]]; ok {
 			dev.SSHIPFqdn = v.(string)
 		}
-		if v, ok := devMap[neDeviceSchemaNames["AccountNumber"]]; ok {
+		if v, ok := devMap[networkDeviceSchemaNames["AccountNumber"]]; ok {
 			dev.AccountNumber = v.(string)
 		}
-		if v, ok := devMap[neDeviceSchemaNames["Notifications"]]; ok {
+		if v, ok := devMap[networkDeviceSchemaNames["Notifications"]]; ok {
 			dev.Notifications = expandSetToStringList(v.(*schema.Set))
 		}
-		if v, ok := devMap[neDeviceSchemaNames["RedundancyType"]]; ok {
+		if v, ok := devMap[networkDeviceSchemaNames["RedundancyType"]]; ok {
 			dev.RedundancyType = v.(string)
 		}
-		if v, ok := devMap[neDeviceSchemaNames["RedundantUUID"]]; ok {
+		if v, ok := devMap[networkDeviceSchemaNames["RedundantUUID"]]; ok {
 			dev.RedundantUUID = v.(string)
 		}
-		if v, ok := devMap[neDeviceSchemaNames["AdditionalBandwidth"]]; ok {
+		if v, ok := devMap[networkDeviceSchemaNames["AdditionalBandwidth"]]; ok {
 			dev.AdditionalBandwidth = v.(int)
 		}
-		if v, ok := devMap[neDeviceSchemaNames["VendorConfiguration"]]; ok {
+		if v, ok := devMap[networkDeviceSchemaNames["VendorConfiguration"]]; ok {
 			dev.VendorConfiguration = expandInterfaceMapToStringMap(v.(map[string]interface{}))
 		}
 		transformed = append(transformed, dev)
@@ -841,7 +841,7 @@ func expandNeDeviceSecondary(devices *schema.Set) []ne.Device {
 	return transformed
 }
 
-func flattenNeDeviceInterfaces(interfaces []ne.DeviceInterface) interface{} {
+func flattenNetworkDeviceInterfaces(interfaces []ne.DeviceInterface) interface{} {
 	transformed := make([]interface{}, len(interfaces))
 	for i := range interfaces {
 		transformed[i] = map[string]interface{}{
@@ -858,7 +858,7 @@ func flattenNeDeviceInterfaces(interfaces []ne.DeviceInterface) interface{} {
 	return transformed
 }
 
-func expandDeviceInterfaces(interfaces *schema.Set) []ne.DeviceInterface {
+func expandNetworkDeviceInterfaces(interfaces *schema.Set) []ne.DeviceInterface {
 	interfacesList := interfaces.List()
 	transformed := make([]ne.DeviceInterface, len(interfacesList))
 	for i := range interfacesList {
@@ -877,23 +877,23 @@ func expandDeviceInterfaces(interfaces *schema.Set) []ne.DeviceInterface {
 	return transformed
 }
 
-func neDeviceSecondaryUpdate(req ne.DeviceUpdateRequest, a, b *schema.Set) error {
+func networkDeviceSecondaryUpdate(req ne.DeviceUpdateRequest, a, b *schema.Set) error {
 	if req == nil || a.Len() < 0 || b.Len() < 0 {
 		return nil
 	}
 	aMap := a.List()[0].(map[string]interface{})
 	bMap := b.List()[0].(map[string]interface{})
-	if !reflect.DeepEqual(aMap[neDeviceSchemaNames["Name"]], bMap[neDeviceSchemaNames["Name"]]) {
-		req.WithDeviceName(bMap[neDeviceSchemaNames["Name"]].(string))
+	if !reflect.DeepEqual(aMap[networkDeviceSchemaNames["Name"]], bMap[networkDeviceSchemaNames["Name"]]) {
+		req.WithDeviceName(bMap[networkDeviceSchemaNames["Name"]].(string))
 	}
-	if !reflect.DeepEqual(aMap[neDeviceSchemaNames["Notifications"]], bMap[neDeviceSchemaNames["Notifications"]]) {
-		req.WithNotifications(expandSetToStringList(bMap[neDeviceSchemaNames["Notifications"]].(*schema.Set)))
+	if !reflect.DeepEqual(aMap[networkDeviceSchemaNames["Notifications"]], bMap[networkDeviceSchemaNames["Notifications"]]) {
+		req.WithNotifications(expandSetToStringList(bMap[networkDeviceSchemaNames["Notifications"]].(*schema.Set)))
 	}
-	if !reflect.DeepEqual(aMap[neDeviceSchemaNames["AdditionalBandwidth"]], bMap[neDeviceSchemaNames["AdditionalBandwidth"]]) {
-		req.WithAdditionalBandwidth(bMap[neDeviceSchemaNames["AdditionalBandwidth"]].(int))
+	if !reflect.DeepEqual(aMap[networkDeviceSchemaNames["AdditionalBandwidth"]], bMap[networkDeviceSchemaNames["AdditionalBandwidth"]]) {
+		req.WithAdditionalBandwidth(bMap[networkDeviceSchemaNames["AdditionalBandwidth"]].(int))
 	}
-	if !reflect.DeepEqual(aMap[neDeviceSchemaNames["ACLs"]], bMap[neDeviceSchemaNames["ACLs"]]) {
-		req.WithACLs(expandSetToStringList(bMap[neDeviceSchemaNames["ACLs"]].(*schema.Set)))
+	if !reflect.DeepEqual(aMap[networkDeviceSchemaNames["ACLs"]], bMap[networkDeviceSchemaNames["ACLs"]]) {
+		req.WithACLs(expandSetToStringList(bMap[networkDeviceSchemaNames["ACLs"]].(*schema.Set)))
 	}
 	return req.Execute()
 }

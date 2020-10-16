@@ -8,7 +8,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
 )
 
-var neDevicePlatformSchemaNames = map[string]string{
+var networkDevicePlatformSchemaNames = map[string]string{
 	"DeviceTypeCode":  "device_type",
 	"Flavor":          "flavor",
 	"CoreCount":       "core_count",
@@ -19,35 +19,35 @@ var neDevicePlatformSchemaNames = map[string]string{
 	"LicenseOptions":  "license_options",
 }
 
-func dataSourceNeDevicePlatform() *schema.Resource {
+func dataSourceNetworkDevicePlatform() *schema.Resource {
 	return &schema.Resource{
-		Read: dataSourceNeDevicePlatformRead,
+		Read: dataSourceNetworkDevicePlatformRead,
 		Schema: map[string]*schema.Schema{
-			neDevicePlatformSchemaNames["DeviceTypeCode"]: {
+			networkDevicePlatformSchemaNames["DeviceTypeCode"]: {
 				Type:         schema.TypeString,
 				Required:     true,
 				ValidateFunc: validation.StringIsNotEmpty,
 			},
-			neDevicePlatformSchemaNames["Flavor"]: {
+			networkDevicePlatformSchemaNames["Flavor"]: {
 				Type:         schema.TypeString,
 				Optional:     true,
 				Computed:     true,
 				ValidateFunc: validation.StringInSlice([]string{"small", "medium", "large", "xlarge"}, false),
 			},
-			neDevicePlatformSchemaNames["CoreCount"]: {
+			networkDevicePlatformSchemaNames["CoreCount"]: {
 				Type:     schema.TypeInt,
 				Optional: true,
 				Computed: true,
 			},
-			neDevicePlatformSchemaNames["Memory"]: {
+			networkDevicePlatformSchemaNames["Memory"]: {
 				Type:     schema.TypeInt,
 				Computed: true,
 			},
-			neDevicePlatformSchemaNames["MemoryUnit"]: {
+			networkDevicePlatformSchemaNames["MemoryUnit"]: {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-			neDevicePlatformSchemaNames["PackageCodes"]: {
+			networkDevicePlatformSchemaNames["PackageCodes"]: {
 				Type:     schema.TypeSet,
 				Optional: true,
 				Computed: true,
@@ -57,7 +57,7 @@ func dataSourceNeDevicePlatform() *schema.Resource {
 					ValidateFunc: validation.StringIsNotEmpty,
 				},
 			},
-			neDevicePlatformSchemaNames["ManagementTypes"]: {
+			networkDevicePlatformSchemaNames["ManagementTypes"]: {
 				Type:     schema.TypeSet,
 				Optional: true,
 				Computed: true,
@@ -67,7 +67,7 @@ func dataSourceNeDevicePlatform() *schema.Resource {
 					ValidateFunc: validation.StringInSlice([]string{"EQUINIX-CONFIGURED", "SELF-CONFIGURED"}, false),
 				},
 			},
-			neDevicePlatformSchemaNames["LicenseOptions"]: {
+			networkDevicePlatformSchemaNames["LicenseOptions"]: {
 				Type:     schema.TypeSet,
 				Optional: true,
 				Computed: true,
@@ -81,34 +81,34 @@ func dataSourceNeDevicePlatform() *schema.Resource {
 	}
 }
 
-func dataSourceNeDevicePlatformRead(d *schema.ResourceData, m interface{}) error {
+func dataSourceNetworkDevicePlatformRead(d *schema.ResourceData, m interface{}) error {
 	conf := m.(*Config)
-	typeCode := d.Get(neDevicePlatformSchemaNames["DeviceTypeCode"]).(string)
+	typeCode := d.Get(networkDevicePlatformSchemaNames["DeviceTypeCode"]).(string)
 	platforms, err := conf.ne.GetDevicePlatforms(typeCode)
 	if err != nil {
 		return err
 	}
 	var filtered []ne.DevicePlatform
 	for _, platform := range platforms {
-		if v, ok := d.GetOk(neDevicePlatformSchemaNames["Flavor"]); ok && platform.Flavor != v.(string) {
+		if v, ok := d.GetOk(networkDevicePlatformSchemaNames["Flavor"]); ok && platform.Flavor != v.(string) {
 			continue
 		}
-		if v, ok := d.GetOk(neDevicePlatformSchemaNames["CoreCount"]); ok && platform.CoreCount != v.(int) {
+		if v, ok := d.GetOk(networkDevicePlatformSchemaNames["CoreCount"]); ok && platform.CoreCount != v.(int) {
 			continue
 		}
-		if v, ok := d.GetOk(neDevicePlatformSchemaNames["PackageCodes"]); ok {
+		if v, ok := d.GetOk(networkDevicePlatformSchemaNames["PackageCodes"]); ok {
 			pkgCodes := expandSetToStringList(v.(*schema.Set))
 			if !stringsFound(pkgCodes, platform.PackageCodes) {
 				continue
 			}
 		}
-		if v, ok := d.GetOk(neDevicePlatformSchemaNames["ManagementTypes"]); ok {
+		if v, ok := d.GetOk(networkDevicePlatformSchemaNames["ManagementTypes"]); ok {
 			mgmtTypes := expandSetToStringList(v.(*schema.Set))
 			if !stringsFound(mgmtTypes, platform.ManagementTypes) {
 				continue
 			}
 		}
-		if v, ok := d.GetOk(neDevicePlatformSchemaNames["LicenseOptions"]); ok {
+		if v, ok := d.GetOk(networkDevicePlatformSchemaNames["LicenseOptions"]); ok {
 			licOptions := expandSetToStringList(v.(*schema.Set))
 			if !stringsFound(licOptions, platform.LicenseOptions) {
 				continue
@@ -117,35 +117,35 @@ func dataSourceNeDevicePlatformRead(d *schema.ResourceData, m interface{}) error
 		filtered = append(filtered, platform)
 	}
 	if len(filtered) < 1 {
-		return fmt.Errorf("device platform query returned no results, please change your search criteria")
+		return fmt.Errorf("network device platform query returned no results, please change your search criteria")
 	}
 	if len(filtered) > 1 {
-		return fmt.Errorf("device platform query returned more than one result, please try more specific search criteria")
+		return fmt.Errorf("network device platform query returned more than one result, please try more specific search criteria")
 	}
-	return updateNeDevicePlatformResource(filtered[0], typeCode, d)
+	return updateNetworkDevicePlatformResource(filtered[0], typeCode, d)
 }
 
-func updateNeDevicePlatformResource(platform ne.DevicePlatform, typeCode string, d *schema.ResourceData) error {
+func updateNetworkDevicePlatformResource(platform ne.DevicePlatform, typeCode string, d *schema.ResourceData) error {
 	d.SetId(fmt.Sprintf("%s-%s", typeCode, platform.Flavor))
-	if err := d.Set(neDevicePlatformSchemaNames["Flavor"], platform.Flavor); err != nil {
+	if err := d.Set(networkDevicePlatformSchemaNames["Flavor"], platform.Flavor); err != nil {
 		return fmt.Errorf("error reading Flavor: %s", err)
 	}
-	if err := d.Set(neDevicePlatformSchemaNames["CoreCount"], platform.CoreCount); err != nil {
+	if err := d.Set(networkDevicePlatformSchemaNames["CoreCount"], platform.CoreCount); err != nil {
 		return fmt.Errorf("error reading CoreCount: %s", err)
 	}
-	if err := d.Set(neDevicePlatformSchemaNames["Memory"], platform.Memory); err != nil {
+	if err := d.Set(networkDevicePlatformSchemaNames["Memory"], platform.Memory); err != nil {
 		return fmt.Errorf("error reading Memory: %s", err)
 	}
-	if err := d.Set(neDevicePlatformSchemaNames["MemoryUnit"], platform.MemoryUnit); err != nil {
+	if err := d.Set(networkDevicePlatformSchemaNames["MemoryUnit"], platform.MemoryUnit); err != nil {
 		return fmt.Errorf("error reading MemoryUnit: %s", err)
 	}
-	if err := d.Set(neDevicePlatformSchemaNames["PackageCodes"], platform.PackageCodes); err != nil {
+	if err := d.Set(networkDevicePlatformSchemaNames["PackageCodes"], platform.PackageCodes); err != nil {
 		return fmt.Errorf("error reading PackageCodes: %s", err)
 	}
-	if err := d.Set(neDevicePlatformSchemaNames["ManagementTypes"], platform.ManagementTypes); err != nil {
+	if err := d.Set(networkDevicePlatformSchemaNames["ManagementTypes"], platform.ManagementTypes); err != nil {
 		return fmt.Errorf("error reading ManagementTypes: %s", err)
 	}
-	if err := d.Set(neDevicePlatformSchemaNames["LicenseOptions"], platform.LicenseOptions); err != nil {
+	if err := d.Set(networkDevicePlatformSchemaNames["LicenseOptions"], platform.LicenseOptions); err != nil {
 		return fmt.Errorf("error reading LicenseOptions: %s", err)
 	}
 	return nil

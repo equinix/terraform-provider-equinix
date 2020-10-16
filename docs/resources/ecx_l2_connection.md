@@ -1,12 +1,12 @@
 ---
 layout: "equinix"
-page_title: "Equinix: ecx_l2_connection"
-sidebar_current: "docs-equinix-datasource-ecx-l2-connection"
+page_title: "Equinix: equinix_ecx_l2_connection"
+subcategory: ""
 description: |-
-  Get an ECX L2 connection resource.
+  Provides ECX Fabric Layer 2 connection resource
 ---
 
-# equinix_ecx_l2_connection
+# Resource: equinix_ecx_l2_connection
 
 Resource `equinix_ecx_l2_connection` is used to manage layer 2 connections in
 Equinix Cloud Exchange (ECX) Fabric.
@@ -77,7 +77,7 @@ the buyer's port from which the connection would originate.
 the Network Edge virtual device from which the connection would originate.
 - `vlan_stag` - _(Required when port_uuid is set)_ S-Tag/Outer-Tag of the connection
 \- a numeric character ranging from 2 - 4094.
-- `vlan_ctag` - _(Optional)_ C-Tag/Inner-Tag of the connection - a numeric 
+- `vlan_ctag` - _(Optional)_ C-Tag/Inner-Tag of the connection - a numeric
 character ranging from 2 - 4094.
 - `named_tag` - _(Optional)_ The type of peering to set up in case when connecting
 to Azure Express Route. One of _"Public"_, _"Private"_, _"Microsoft"_, _"Manual"_

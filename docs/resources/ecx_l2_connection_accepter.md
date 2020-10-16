@@ -1,18 +1,20 @@
 ---
 layout: "equinix"
 page_title: "Equinix: equinix_ecx_l2_connection_accepter"
-sidebar_current: "docs-equinix-resource-ecx-l2-connection-accepter"
+subcategory: ""
 description: |-
-  Provides a Resource for Attaching IP Subnets from a Reserved Block to a Device
+  Provides ECX Fabric Layer 2 connection accepter resource
 ---
 
-# equinix\_ecx\_l2\_connection\_accepter
+# Resource: equinix_ecx_l2_connection_accepter
 
-Resource to approve hosted Layer 2 connections.
+Resource `equinix_ecx_l2_connection_accepter` is used to accept layer2 connection
+on provider side.
 
-The resource relies on the Equinix Cloud Exchange Fabric API. The parameters and
-attributes available map to the fields described at
-<https://developer.equinix.com/catalog/buyerv3#operation/performUserActionUsingPATCH>
+Resource leverages ECX Fabric integration with service providers.
+Currently supported providers are:
+
+* `AWS` (AWS Direct Connect)
 
 ## Example Usage
 
@@ -26,9 +28,9 @@ resource "equinix_ecx_l2_connection_accepter" "accepter" {
 
 ## Argument Reference
 
-* `connection_id`
-* `access_key`
-* `secret_key`
+* `connection_id` - (Required) Identifier of Layer 2 connection that will be accepted
+* `access_key` - (Required) Access Key used to accept connection on provider side
+* `secret_key` - (Required) Secret Key used to accept connection on provider side
 
 ## Attribute Reference
 

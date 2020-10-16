@@ -9,15 +9,15 @@ connection state before succeeding ([#15](https://github.com/equinix/terraform-p
 
 FEATURES:
 
-- **New Resource**: `equinix_ne_device` ([#4](https://github.com/equinix/terraform-provider-equinix/issues/4))
-- **New Resource**: `equinix_ne_sshuser` ([#4](https://github.com/equinix/terraform-provider-equinix/issues/4))
-- **New Resource**: `equinix_ne_bgp` ([#16](https://github.com/equinix/terraform-provider-equinix/issues/16))
-- **New Data source**: `equinix_ne_account` ([#13](https://github.com/equinix/terraform-provider-equinix/issues/13))
-- **New Data source**: `equinix_ne_device_type` ([#13](https://github.com/equinix/terraform-provider-equinix/issues/13))
-- **New Data source**: `equinix_ne_device_software` ([#13](https://github.com/equinix/terraform-provider-equinix/issues/13))
-- **New Data source**: `equinix_ne_device_platform` ([#13](https://github.com/equinix/terraform-provider-equinix/issues/13))
+- **New Resource**: `equinix_network_device` ([#4](https://github.com/equinix/terraform-provider-equinix/issues/4))
+- **New Resource**: `equinix_network_ssh_user` ([#4](https://github.com/equinix/terraform-provider-equinix/issues/4))
+- **New Resource**: `equinix_network_bgp"` ([#16](https://github.com/equinix/terraform-provider-equinix/issues/16))
+- **New Data source**: `equinix_network_account` ([#13](https://github.com/equinix/terraform-provider-equinix/issues/13))
+- **New Data source**: `equinix_network_device_type` ([#13](https://github.com/equinix/terraform-provider-equinix/issues/13))
+- **New Data source**: `equinix_network_device_software` ([#13](https://github.com/equinix/terraform-provider-equinix/issues/13))
+- **New Data source**: `equinix_network_device_platform` ([#13](https://github.com/equinix/terraform-provider-equinix/issues/13))
 
-## 1.0.0 (August 02, 2020)
+## 1.0.0 (September 02, 2020)
 
 NOTES:
 

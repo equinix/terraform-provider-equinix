@@ -9,42 +9,42 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
 )
 
-var neSSHUserSchemaNames = map[string]string{
+var networkSSHUserSchemaNames = map[string]string{
 	"UUID":        "uuid",
 	"Username":    "username",
 	"Password":    "password",
-	"DeviceUUIDs": "devices",
+	"DeviceUUIDs": "device_ids",
 }
 
-func resourceNeSSHUser() *schema.Resource {
+func resourceNetworkSSHUser() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceNeSSHUserCreate,
-		Read:   resourceNeSSHUserRead,
-		Update: resourceNeSSHUserUpdate,
-		Delete: resourceNeSSHUserDelete,
-		Schema: createNeSSHUserResourceSchema(),
+		Create: resourceNetworkSSHUserCreate,
+		Read:   resourceNetworkSSHUserRead,
+		Update: resourceNetworkSSHUserUpdate,
+		Delete: resourceNetworkSSHUserDelete,
+		Schema: createNetworkSSHUserResourceSchema(),
 	}
 }
 
-func createNeSSHUserResourceSchema() map[string]*schema.Schema {
+func createNetworkSSHUserResourceSchema() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
-		neSSHUserSchemaNames["UUID"]: {
+		networkSSHUserSchemaNames["UUID"]: {
 			Type:     schema.TypeString,
 			Computed: true,
 		},
-		neSSHUserSchemaNames["Username"]: {
+		networkSSHUserSchemaNames["Username"]: {
 			Type:         schema.TypeString,
 			Required:     true,
 			ForceNew:     true,
 			ValidateFunc: validation.StringLenBetween(3, 32),
 		},
-		neSSHUserSchemaNames["Password"]: {
+		networkSSHUserSchemaNames["Password"]: {
 			Type:         schema.TypeString,
 			Sensitive:    true,
 			Required:     true,
 			ValidateFunc: validation.StringLenBetween(8, 20),
 		},
-		neSSHUserSchemaNames["DeviceUUIDs"]: {
+		networkSSHUserSchemaNames["DeviceUUIDs"]: {
 			Type:     schema.TypeSet,
 			Required: true,
 			MinItems: 1,
@@ -56,9 +56,9 @@ func createNeSSHUserResourceSchema() map[string]*schema.Schema {
 	}
 }
 
-func resourceNeSSHUserCreate(d *schema.ResourceData, m interface{}) error {
+func resourceNetworkSSHUserCreate(d *schema.ResourceData, m interface{}) error {
 	conf := m.(*Config)
-	user := createNeSSHUser(d)
+	user := createNetworkSSHUser(d)
 	if len(user.DeviceUUIDs) < 0 {
 		return fmt.Errorf("create ssh-user failed: user needs to have at least one device defined")
 	}
@@ -72,29 +72,29 @@ func resourceNeSSHUserCreate(d *schema.ResourceData, m interface{}) error {
 	if err := userUpdateReq.Execute(); err != nil {
 		log.Printf("[WARN] failed to assign devices to newly created user")
 	}
-	return resourceNeSSHUserRead(d, m)
+	return resourceNetworkSSHUserRead(d, m)
 }
 
-func resourceNeSSHUserRead(d *schema.ResourceData, m interface{}) error {
+func resourceNetworkSSHUserRead(d *schema.ResourceData, m interface{}) error {
 	conf := m.(*Config)
 	user, err := conf.ne.GetSSHUser(d.Id())
 	if err != nil {
 		return err
 	}
-	if err := updateNeSSHUserResource(user, d); err != nil {
+	if err := updateNetworkSSHUserResource(user, d); err != nil {
 		return err
 	}
 	return nil
 }
 
-func resourceNeSSHUserUpdate(d *schema.ResourceData, m interface{}) error {
+func resourceNetworkSSHUserUpdate(d *schema.ResourceData, m interface{}) error {
 	conf := m.(*Config)
 	updateReq := conf.ne.NewSSHUserUpdateRequest(d.Id())
-	if v, ok := d.GetOk(neSSHUserSchemaNames["Password"]); ok && d.HasChange(neSSHUserSchemaNames["Password"]) {
+	if v, ok := d.GetOk(networkSSHUserSchemaNames["Password"]); ok && d.HasChange(networkSSHUserSchemaNames["Password"]) {
 		updateReq.WithNewPassword(v.(string))
 	}
-	if d.HasChange(neSSHUserSchemaNames["DeviceUUIDs"]) {
-		a, b := d.GetChange(neSSHUserSchemaNames["DeviceUUIDs"])
+	if d.HasChange(networkSSHUserSchemaNames["DeviceUUIDs"]) {
+		a, b := d.GetChange(networkSSHUserSchemaNames["DeviceUUIDs"])
 		aList := expandSetToStringList(a.(*schema.Set))
 		bList := expandSetToStringList(b.(*schema.Set))
 		updateReq.WithDeviceChange(aList, bList)
@@ -102,10 +102,10 @@ func resourceNeSSHUserUpdate(d *schema.ResourceData, m interface{}) error {
 	if err := updateReq.Execute(); err != nil {
 		return err
 	}
-	return resourceNeSSHUserRead(d, m)
+	return resourceNetworkSSHUserRead(d, m)
 }
 
-func resourceNeSSHUserDelete(d *schema.ResourceData, m interface{}) error {
+func resourceNetworkSSHUserDelete(d *schema.ResourceData, m interface{}) error {
 	conf := m.(*Config)
 	if err := conf.ne.DeleteSSHUser(d.Id()); err != nil {
 		return err
@@ -113,36 +113,36 @@ func resourceNeSSHUserDelete(d *schema.ResourceData, m interface{}) error {
 	return nil
 }
 
-func createNeSSHUser(d *schema.ResourceData) ne.SSHUser {
+func createNetworkSSHUser(d *schema.ResourceData) ne.SSHUser {
 	user := ne.SSHUser{}
-	if v, ok := d.GetOk(neSSHUserSchemaNames["UUID"]); ok {
+	if v, ok := d.GetOk(networkSSHUserSchemaNames["UUID"]); ok {
 		user.UUID = v.(string)
 	}
-	if v, ok := d.GetOk(neSSHUserSchemaNames["Username"]); ok {
+	if v, ok := d.GetOk(networkSSHUserSchemaNames["Username"]); ok {
 		user.Username = v.(string)
 	}
-	if v, ok := d.GetOk(neSSHUserSchemaNames["Password"]); ok {
+	if v, ok := d.GetOk(networkSSHUserSchemaNames["Password"]); ok {
 		user.Password = v.(string)
 	}
-	if v, ok := d.GetOk(neSSHUserSchemaNames["DeviceUUIDs"]); ok {
+	if v, ok := d.GetOk(networkSSHUserSchemaNames["DeviceUUIDs"]); ok {
 		user.DeviceUUIDs = expandSetToStringList(v.(*schema.Set))
 	}
 	return user
 }
 
-func updateNeSSHUserResource(user *ne.SSHUser, d *schema.ResourceData) error {
-	if err := d.Set(neSSHUserSchemaNames["UUID"], user.UUID); err != nil {
+func updateNetworkSSHUserResource(user *ne.SSHUser, d *schema.ResourceData) error {
+	if err := d.Set(networkSSHUserSchemaNames["UUID"], user.UUID); err != nil {
 		return fmt.Errorf("error reading UUID: %s", err)
 	}
-	if err := d.Set(neSSHUserSchemaNames["Username"], user.Username); err != nil {
+	if err := d.Set(networkSSHUserSchemaNames["Username"], user.Username); err != nil {
 		return fmt.Errorf("error reading Username: %s", err)
 	}
 	if user.Password != "" {
-		if err := d.Set(neSSHUserSchemaNames["Password"], user.Password); err != nil {
+		if err := d.Set(networkSSHUserSchemaNames["Password"], user.Password); err != nil {
 			return fmt.Errorf("error reading Password: %s", err)
 		}
 	}
-	if err := d.Set(neSSHUserSchemaNames["DeviceUUIDs"], user.DeviceUUIDs); err != nil {
+	if err := d.Set(networkSSHUserSchemaNames["DeviceUUIDs"], user.DeviceUUIDs); err != nil {
 		return fmt.Errorf("error reading DeviceUUIDs: %s", err)
 	}
 	return nil
