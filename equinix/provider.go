@@ -61,7 +61,7 @@ func Provider() terraform.ResourceProvider {
 			"equinix_ecx_l2_serviceprofile":      resourceECXL2ServiceProfile(),
 			"equinix_network_device":             resourceNetworkDevice(),
 			"equinix_network_ssh_user":           resourceNetworkSSHUser(),
-			"equinix_ne_bgp":                     resourceNeBGP(),
+			"equinix_network_bgp":                resourceNetworkBGP(),
 		},
 	}
 

@@ -40,8 +40,7 @@ func TestAccNeBGP(t *testing.T) {
 		"bgp_remote_asn":         22211,
 		"bgp_authentication_key": "secret",
 	}
-	//log.Printf("Config is %s", testAccNeBGP(context))
-	resourceName := fmt.Sprintf("equinix_ne_bgp.%s", context["bgp_resourceName"].(string))
+	resourceName := fmt.Sprintf("equinix_network_bgp.%s", context["bgp_resourceName"].(string))
 	var bgpConfig ne.BGPConfiguration
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
@@ -53,7 +52,7 @@ func TestAccNeBGP(t *testing.T) {
 					testAccNeBGPExists(resourceName, &bgpConfig),
 					testAccNeBGPAttributes(bgpConfig, context),
 					resource.TestCheckResourceAttrSet(resourceName, "uuid"),
-					resource.TestCheckResourceAttrSet(resourceName, "device_uuid"),
+					resource.TestCheckResourceAttrSet(resourceName, "device_id"),
 					resource.TestCheckResourceAttrSet(resourceName, "provisioning_status"),
 					resource.TestCheckResourceAttrSet(resourceName, "state"),
 				),
@@ -64,12 +63,12 @@ func TestAccNeBGP(t *testing.T) {
 
 func testAccNeBGP(ctx map[string]interface{}) string {
 	return nprintf(`
-data "equinix_ne_account" "test" {
+data "equinix_network_account" "test" {
   metro_code = "%{device_metro_code}"
   status     = "Active"
 }
 
-resource "equinix_ne_device" "%{device_resourceName}" {
+resource "equinix_network_device" "%{device_resourceName}" {
   name            = "%{device_name}"
   throughput      = %{device_throughput}
   throughput_unit = "%{device_throughput_unit}"
@@ -94,14 +93,14 @@ resource "equinix_ecx_l2_connection" "%{conn_resourceName}" {
   speed             = %{conn_speed}
   speed_unit        = "%{conn_speed_unit}"
   notifications     = %{conn_notifications}
-  device_uuid       = equinix_ne_device.%{device_resourceName}.uuid
+  device_uuid       = equinix_network_device.%{device_resourceName}.uuid
   seller_region     = "%{conn_seller_region}"
   seller_metro_code = "%{conn_seller_metro_code}"
   authorization_key = "%{conn_authorization_key}"
 }
 
-resource "equinix_ne_bgp" "%{bgp_resourceName}" {
-  connection_uuid    = equinix_ecx_l2_connection."%{conn_resourceName}".uuid
+resource "equinix_network_bgp" "%{bgp_resourceName}" {
+  connection_id      = equinix_ecx_l2_connection."%{conn_resourceName}".uuid
   local_ip_address   = "%{bgp_local_ip_address}"
   local_asn          = %{bgp_local_asn}
   remote_ip_address  = "%{bgp_remote_ip_address}"

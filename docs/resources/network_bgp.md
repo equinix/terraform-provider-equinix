@@ -1,15 +1,14 @@
 ---
 layout: "equinix"
-page_title: "Equinix: ne_bgp"
-sidebar_current: "docs-equinix-resource-ne-bgp"
-
+page_title: "Equinix: equinix_network_bgp"
+subcategory: ""
 description: |-
  Provides Network Edge BGP peering resource.
 ---
 
-# Resource: ne_bgp
+# Resource: equinix_network_bgp
 
-Resource `equinix_ne_bgp` allows creation and management of Network Edge
+Resource `equinix_network_bgp` allows creation and management of Network Edge
 BGP peering configurations.
 
 ## Example Usage
@@ -18,8 +17,8 @@ BGP peering configurations.
 # Create BGP peering configuration on a existing connection
 # between network device and service provider
 
-resource "equinix_ne_bgp" "test" {
-  connection_uuid    = "54014acf-9730-4b55-a791-459283d05fb1"
+resource "equinix_network_bgp" "test" {
+  connection_id      = "54014acf-9730-4b55-a791-459283d05fb1"
   local_ip_address   = "10.1.1.1/30"
   local_asn          = 12345
   remote_ip_address  = "10.1.1.2"
@@ -30,7 +29,7 @@ resource "equinix_ne_bgp" "test" {
 
 ## Argument Reference
 
-* `connection_uuid` - (Required) identifier of a connection established between
+* `connection_id` - (Required) identifier of a connection established between
 network device and remote service provider
 * `local_ip_address` - (Required) IP address in CIDR format of a local device
 * `local_asn` - (Required) Local ASN number
@@ -41,7 +40,7 @@ network device and remote service provider
 ## Attributes Reference
 
 * `uuid` - BGP peering configuration universally unique identifier
-* `device_uuid` - universally unique identifier of a network device that
+* `device_id` - universally unique identifier of a network device that
 forms a connection with a given BGP peering
 * `state` - BGP peer state, one of:
   * Idle
@@ -52,5 +51,6 @@ forms a connection with a given BGP peering
   * Established
 * `provisioning_status` - BGP peering configuration provisioning status, one of:
   * PROVISIONING
+  * PENDING_UPDATE
   * PROVISIONED
   * FAILED

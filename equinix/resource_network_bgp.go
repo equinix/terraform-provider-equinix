@@ -12,10 +12,10 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
 )
 
-var neBGPSchemaNames = map[string]string{
+var networkBGPSchemaNames = map[string]string{
 	"UUID":               "uuid",
-	"ConnectionUUID":     "connection_uuid",
-	"DeviceUUID":         "device_uuid",
+	"ConnectionUUID":     "connection_id",
+	"DeviceUUID":         "device_id",
 	"LocalIPAddress":     "local_ip_address",
 	"LocalASN":           "local_asn",
 	"RemoteIPAddress":    "remote_ip_address",
@@ -25,74 +25,74 @@ var neBGPSchemaNames = map[string]string{
 	"ProvisioningStatus": "provisioning_status",
 }
 
-func resourceNeBGP() *schema.Resource {
+func resourceNetworkBGP() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceNeBGPCreate,
-		Read:   resourceNeBGPRead,
-		Update: resourceNeBGPUpdate,
-		Delete: resourceNeBGPDelete,
-		Schema: createNeBGPResourceSchema(),
+		Create: resourceNetworkBGPCreate,
+		Read:   resourceNetworkBGPRead,
+		Update: resourceNetworkBGPUpdate,
+		Delete: resourceNetworkBGPDelete,
+		Schema: createNetworkBGPResourceSchema(),
 		Timeouts: &schema.ResourceTimeout{
 			Create: schema.DefaultTimeout(1 * time.Minute),
 		},
 	}
 }
 
-func createNeBGPResourceSchema() map[string]*schema.Schema {
+func createNetworkBGPResourceSchema() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
-		neBGPSchemaNames["UUID"]: {
+		networkBGPSchemaNames["UUID"]: {
 			Type:     schema.TypeString,
 			Computed: true,
 		},
-		neBGPSchemaNames["ConnectionUUID"]: {
+		networkBGPSchemaNames["ConnectionUUID"]: {
 			Type:         schema.TypeString,
 			Required:     true,
 			ForceNew:     true,
 			ValidateFunc: validation.StringIsNotEmpty,
 		},
-		neBGPSchemaNames["DeviceUUID"]: {
+		networkBGPSchemaNames["DeviceUUID"]: {
 			Type:     schema.TypeString,
 			Computed: true,
 		},
-		neBGPSchemaNames["LocalIPAddress"]: {
+		networkBGPSchemaNames["LocalIPAddress"]: {
 			Type:         schema.TypeString,
 			Required:     true,
 			ValidateFunc: validation.IsCIDR,
 		},
-		neBGPSchemaNames["LocalASN"]: {
+		networkBGPSchemaNames["LocalASN"]: {
 			Type:         schema.TypeInt,
 			Required:     true,
 			ValidateFunc: validation.IntAtLeast(1),
 		},
-		neBGPSchemaNames["RemoteIPAddress"]: {
+		networkBGPSchemaNames["RemoteIPAddress"]: {
 			Type:         schema.TypeString,
 			Required:     true,
-			ValidateFunc: validation.IsCIDR,
+			ValidateFunc: validation.IsIPv4Address,
 		},
-		neBGPSchemaNames["RemoteASN"]: {
+		networkBGPSchemaNames["RemoteASN"]: {
 			Type:         schema.TypeInt,
 			Required:     true,
 			ValidateFunc: validation.IntAtLeast(1),
 		},
-		neBGPSchemaNames["AuthenticationKey"]: {
+		networkBGPSchemaNames["AuthenticationKey"]: {
 			Type:         schema.TypeString,
 			Required:     true,
 			ValidateFunc: validation.StringIsNotEmpty,
 		},
-		neBGPSchemaNames["State"]: {
+		networkBGPSchemaNames["State"]: {
 			Type:     schema.TypeString,
 			Computed: true,
 		},
-		neBGPSchemaNames["ProvisioningStatus"]: {
+		networkBGPSchemaNames["ProvisioningStatus"]: {
 			Type:     schema.TypeString,
 			Computed: true,
 		},
 	}
 }
 
-func resourceNeBGPCreate(d *schema.ResourceData, m interface{}) error {
+func resourceNetworkBGPCreate(d *schema.ResourceData, m interface{}) error {
 	conf := m.(*Config)
-	bgp := createNEBGPConfiguration(d)
+	bgp := createNetworkBGPConfiguration(d)
 	existingBGP, err := conf.ne.GetBGPConfigurationForConnection(bgp.ConnectionUUID)
 	//Reuse existing configuration, as there was no possibility to remove it due to API limitations
 	if err == nil {
@@ -107,20 +107,21 @@ func resourceNeBGPCreate(d *schema.ResourceData, m interface{}) error {
 			return fmt.Errorf("failed to update BGP configuration '%s': %s", existingBGP.UUID, updateErr)
 		}
 		d.SetId(existingBGP.UUID)
-		return resourceNeBGPRead(d, m)
+	} else {
+		restErr, ok := err.(rest.Error)
+		if !ok || restErr.HTTPCode != http.StatusNotFound {
+			return fmt.Errorf("failed to fetch BGP configuration for connection '%s': %s", bgp.ConnectionUUID, err)
+		}
+		uuid, err := conf.ne.CreateBGPConfiguration(bgp)
+		if err != nil {
+			return err
+		}
+		d.SetId(uuid)
 	}
-	restErr, ok := err.(rest.Error)
-	if !ok || restErr.HTTPCode != http.StatusNotFound {
-		return fmt.Errorf("failed to fetch BGP configuration for connection '%s': %s", bgp.ConnectionUUID, err)
-	}
-	uuid, err := conf.ne.CreateBGPConfiguration(bgp)
-	if err != nil {
-		return err
-	}
-	d.SetId(uuid)
 	createStateConf := &resource.StateChangeConf{
 		Pending: []string{
 			ne.BGPProvisioningStatusProvisioning,
+			ne.BGPProvisioningStatusPendingUpdate,
 		},
 		Target: []string{
 			ne.BGPProvisioningStatusProvisioned,
@@ -129,7 +130,7 @@ func resourceNeBGPCreate(d *schema.ResourceData, m interface{}) error {
 		Delay:      2 * time.Second,
 		MinTimeout: 2 * time.Second,
 		Refresh: func() (interface{}, string, error) {
-			resp, err := conf.ne.GetBGPConfiguration(uuid)
+			resp, err := conf.ne.GetBGPConfiguration(d.Id())
 			if err != nil {
 				return nil, "", err
 			}
@@ -139,115 +140,115 @@ func resourceNeBGPCreate(d *schema.ResourceData, m interface{}) error {
 	if _, err := createStateConf.WaitForState(); err != nil {
 		return fmt.Errorf("error waiting for BGP configuration (%s) to be created: %s", d.Id(), err)
 	}
-	return resourceNeBGPRead(d, m)
+	return resourceNetworkBGPRead(d, m)
 }
 
-func resourceNeBGPRead(d *schema.ResourceData, m interface{}) error {
+func resourceNetworkBGPRead(d *schema.ResourceData, m interface{}) error {
 	conf := m.(*Config)
 	bgp, err := conf.ne.GetBGPConfiguration(d.Id())
 	if err != nil {
 		return err
 	}
-	if err := updateNeBGPResource(bgp, d); err != nil {
+	if err := updateNetworkBGPResource(bgp, d); err != nil {
 		return err
 	}
 	return nil
 }
 
-func resourceNeBGPUpdate(d *schema.ResourceData, m interface{}) error {
+func resourceNetworkBGPUpdate(d *schema.ResourceData, m interface{}) error {
 	conf := m.(*Config)
 	updateReq := conf.ne.NewBGPConfigurationUpdateRequest(d.Id())
-	if v, ok := d.GetOk(neBGPSchemaNames["LocalIPAddress"]); ok && d.HasChange(neBGPSchemaNames["LocalIPAddress"]) {
+	if v, ok := d.GetOk(networkBGPSchemaNames["LocalIPAddress"]); ok {
 		updateReq.WithLocalIPAddress(v.(string))
 	}
-	if v, ok := d.GetOk(neBGPSchemaNames["LocalASN"]); ok && d.HasChange(neBGPSchemaNames["LocalASN"]) {
+	if v, ok := d.GetOk(networkBGPSchemaNames["LocalASN"]); ok {
 		updateReq.WithLocalASN(v.(int))
 	}
-	if v, ok := d.GetOk(neBGPSchemaNames["RemoteIPAddress"]); ok && d.HasChange(neBGPSchemaNames["RemoteIPAddress"]) {
+	if v, ok := d.GetOk(networkBGPSchemaNames["RemoteIPAddress"]); ok {
 		updateReq.WithRemoteIPAddress(v.(string))
 	}
-	if v, ok := d.GetOk(neBGPSchemaNames["RemoteASN"]); ok && d.HasChange(neBGPSchemaNames["RemoteASN"]) {
+	if v, ok := d.GetOk(networkBGPSchemaNames["RemoteASN"]); ok {
 		updateReq.WithRemoteASN(v.(int))
 	}
-	if v, ok := d.GetOk(neBGPSchemaNames["AuthenticationKey"]); ok && d.HasChange(neBGPSchemaNames["AuthenticationKey"]) {
+	if v, ok := d.GetOk(networkBGPSchemaNames["AuthenticationKey"]); ok {
 		updateReq.WithAuthenticationKey(v.(string))
 	}
 	if err := updateReq.Execute(); err != nil {
 		return err
 	}
-	return resourceNeBGPRead(d, m)
+	return resourceNetworkBGPRead(d, m)
 }
 
-func resourceNeBGPDelete(d *schema.ResourceData, m interface{}) error {
+func resourceNetworkBGPDelete(d *schema.ResourceData, m interface{}) error {
 	//BGP configuration removal is not possible with NE public APIs
 	d.SetId("")
 	return nil
 }
 
-func createNEBGPConfiguration(d *schema.ResourceData) ne.BGPConfiguration {
+func createNetworkBGPConfiguration(d *schema.ResourceData) ne.BGPConfiguration {
 	bgp := ne.BGPConfiguration{}
-	if v, ok := d.GetOk(neBGPSchemaNames["UUID"]); ok {
+	if v, ok := d.GetOk(networkBGPSchemaNames["UUID"]); ok {
 		bgp.UUID = v.(string)
 	}
-	if v, ok := d.GetOk(neBGPSchemaNames["ConnectionUUID"]); ok {
+	if v, ok := d.GetOk(networkBGPSchemaNames["ConnectionUUID"]); ok {
 		bgp.ConnectionUUID = v.(string)
 	}
-	if v, ok := d.GetOk(neBGPSchemaNames["DeviceUUID"]); ok {
+	if v, ok := d.GetOk(networkBGPSchemaNames["DeviceUUID"]); ok {
 		bgp.DeviceUUID = v.(string)
 	}
-	if v, ok := d.GetOk(neBGPSchemaNames["LocalIPAddress"]); ok {
+	if v, ok := d.GetOk(networkBGPSchemaNames["LocalIPAddress"]); ok {
 		bgp.LocalIPAddress = v.(string)
 	}
-	if v, ok := d.GetOk(neBGPSchemaNames["LocalASN"]); ok {
+	if v, ok := d.GetOk(networkBGPSchemaNames["LocalASN"]); ok {
 		bgp.LocalASN = v.(int)
 	}
-	if v, ok := d.GetOk(neBGPSchemaNames["RemoteIPAddress"]); ok {
+	if v, ok := d.GetOk(networkBGPSchemaNames["RemoteIPAddress"]); ok {
 		bgp.RemoteIPAddress = v.(string)
 	}
-	if v, ok := d.GetOk(neBGPSchemaNames["RemoteASN"]); ok {
+	if v, ok := d.GetOk(networkBGPSchemaNames["RemoteASN"]); ok {
 		bgp.RemoteASN = v.(int)
 	}
-	if v, ok := d.GetOk(neBGPSchemaNames["AuthenticationKey"]); ok {
+	if v, ok := d.GetOk(networkBGPSchemaNames["AuthenticationKey"]); ok {
 		bgp.AuthenticationKey = v.(string)
 	}
-	if v, ok := d.GetOk(neBGPSchemaNames["State"]); ok {
+	if v, ok := d.GetOk(networkBGPSchemaNames["State"]); ok {
 		bgp.State = v.(string)
 	}
-	if v, ok := d.GetOk(neBGPSchemaNames["ProvisioningStatus"]); ok {
+	if v, ok := d.GetOk(networkBGPSchemaNames["ProvisioningStatus"]); ok {
 		bgp.ProvisioningStatus = v.(string)
 	}
 	return bgp
 }
 
-func updateNeBGPResource(bgp *ne.BGPConfiguration, d *schema.ResourceData) error {
-	if err := d.Set(neBGPSchemaNames["UUID"], bgp.UUID); err != nil {
+func updateNetworkBGPResource(bgp *ne.BGPConfiguration, d *schema.ResourceData) error {
+	if err := d.Set(networkBGPSchemaNames["UUID"], bgp.UUID); err != nil {
 		return fmt.Errorf("error reading UUID: %s", err)
 	}
-	if err := d.Set(neBGPSchemaNames["ConnectionUUID"], bgp.ConnectionUUID); err != nil {
+	if err := d.Set(networkBGPSchemaNames["ConnectionUUID"], bgp.ConnectionUUID); err != nil {
 		return fmt.Errorf("error reading ConnectionUUID: %s", err)
 	}
-	if err := d.Set(neBGPSchemaNames["DeviceUUID"], bgp.DeviceUUID); err != nil {
+	if err := d.Set(networkBGPSchemaNames["DeviceUUID"], bgp.DeviceUUID); err != nil {
 		return fmt.Errorf("error reading DeviceUUID: %s", err)
 	}
-	if err := d.Set(neBGPSchemaNames["LocalIPAddress"], bgp.LocalIPAddress); err != nil {
+	if err := d.Set(networkBGPSchemaNames["LocalIPAddress"], bgp.LocalIPAddress); err != nil {
 		return fmt.Errorf("error reading LocalIPAddress: %s", err)
 	}
-	if err := d.Set(neBGPSchemaNames["LocalASN"], bgp.LocalASN); err != nil {
+	if err := d.Set(networkBGPSchemaNames["LocalASN"], bgp.LocalASN); err != nil {
 		return fmt.Errorf("error reading LocalASN: %s", err)
 	}
-	if err := d.Set(neBGPSchemaNames["RemoteIPAddress"], bgp.RemoteIPAddress); err != nil {
+	if err := d.Set(networkBGPSchemaNames["RemoteIPAddress"], bgp.RemoteIPAddress); err != nil {
 		return fmt.Errorf("error reading RemoteIPAddress: %s", err)
 	}
-	if err := d.Set(neBGPSchemaNames["RemoteASN"], bgp.RemoteASN); err != nil {
+	if err := d.Set(networkBGPSchemaNames["RemoteASN"], bgp.RemoteASN); err != nil {
 		return fmt.Errorf("error reading RemoteASN: %s", err)
 	}
-	if err := d.Set(neBGPSchemaNames["AuthenticationKey"], bgp.AuthenticationKey); err != nil {
+	if err := d.Set(networkBGPSchemaNames["AuthenticationKey"], bgp.AuthenticationKey); err != nil {
 		return fmt.Errorf("error reading AuthenticationKey: %s", err)
 	}
-	if err := d.Set(neBGPSchemaNames["State"], bgp.State); err != nil {
+	if err := d.Set(networkBGPSchemaNames["State"], bgp.State); err != nil {
 		return fmt.Errorf("error reading State: %s", err)
 	}
-	if err := d.Set(neBGPSchemaNames["ProvisioningStatus"], bgp.ProvisioningStatus); err != nil {
+	if err := d.Set(networkBGPSchemaNames["ProvisioningStatus"], bgp.ProvisioningStatus); err != nil {
 		return fmt.Errorf("error reading ProvisioningStatus: %s", err)
 	}
 	return nil

@@ -5,7 +5,7 @@ go 1.14
 require (
 	github.com/aws/aws-sdk-go v1.33.5 // indirect
 	github.com/equinix/ecx-go v1.1.1-0.20201002123657-56da4443056b
-	github.com/equinix/ne-go v0.0.0-20201007134112-4d906e6d860a
+	github.com/equinix/ne-go v0.0.0-20201022132904-751afeb9b85e
 	github.com/equinix/oauth2-go v1.0.0
 	github.com/equinix/rest-go v1.0.0
 	github.com/hashicorp/terraform v0.13.0
