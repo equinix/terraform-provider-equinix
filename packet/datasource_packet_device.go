@@ -188,7 +188,7 @@ func dataSourcePacketDeviceRead(d *schema.ResourceData, meta interface{}) error 
 		hostname := hostnameRaw.(string)
 		projectId := projectIdRaw.(string)
 
-		ds, _, err := client.Devices.List(projectId, nil)
+		ds, _, err := client.Devices.List(projectId, &packngo.ListOptions{Search: hostname})
 		if err != nil {
 			return err
 		}
@@ -225,7 +225,7 @@ func dataSourcePacketDeviceRead(d *schema.ResourceData, meta interface{}) error 
 
 		storageString, err := structure.NormalizeJsonString(string(rawStorageBytes))
 		if err != nil {
-			return fmt.Errorf("[ERR] Errori normalizing storage JSON string for device (%s): %s", d.Id(), err)
+			return fmt.Errorf("[ERR] Error normalizing storage JSON string for device (%s): %s", d.Id(), err)
 		}
 		d.Set("storage", storageString)
 	}
@@ -233,10 +233,7 @@ func dataSourcePacketDeviceRead(d *schema.ResourceData, meta interface{}) error 
 	if len(device.HardwareReservation.Href) > 0 {
 		d.Set("hardware_reservation_id", path.Base(device.HardwareReservation.Href))
 	}
-	networkType, err := device.GetNetworkType()
-	if err != nil {
-		return err
-	}
+	networkType := device.GetNetworkType()
 
 	d.Set("network_type", networkType)
 

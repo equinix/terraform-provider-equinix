@@ -43,10 +43,8 @@ func getDevIDandNetworkType(d *schema.ResourceData, c *packngo.Client) (string, 
 	if err != nil {
 		return "", "", err
 	}
-	devType, err := dev.GetNetworkType()
-	if err != nil {
-		return "", "", err
-	}
+	devType := dev.GetNetworkType()
+
 	return dev.ID, devType, nil
 }
 
