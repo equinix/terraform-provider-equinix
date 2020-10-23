@@ -113,12 +113,8 @@ github.com/elazarl/goproxy v0.0.0-20170405201442-c4fc26588b6e/go.mod h1:/Zj4wYkg
 github.com/emicklei/go-restful v0.0.0-20170410110728-ff4f55a20633/go.mod h1:otzb+WCGbkyDHkqmQmT5YD2WR4BBwUdeQoFo8l/7tVs=
 github.com/envoyproxy/go-control-plane v0.9.1-0.20191026205805-5f8ba28d4473/go.mod h1:YTl/9mNaCwkRvm6d1a2C3ymFceY/DCBVvsKhRF0iEA4=
 github.com/envoyproxy/protoc-gen-validate v0.1.0/go.mod h1:iSmxcyjqTsJpI2R4NaDN7+kN2VEUnK/pcBlmesArF7c=
-github.com/equinix/ecx-go v1.1.1-0.20201002123657-56da4443056b h1:MFqI8Bc6v7+2Xpsz9Vk0pjip6GmFZsLWUbDsZEhvkFU=
-github.com/equinix/ecx-go v1.1.1-0.20201002123657-56da4443056b/go.mod h1:B/FA0Lho9Rv8mjIDelFYHxno3+qB8z5EEsnoczy5sb4=
-github.com/equinix/ne-go v0.0.0-20201007134112-4d906e6d860a h1:M8+jUFKZP9+Rcndsx5cM7cj/Rmt1Ew0vbwRTP/AR6zc=
-github.com/equinix/ne-go v0.0.0-20201007134112-4d906e6d860a/go.mod h1:pI9xgjynUBKwNocpzQWATr2AmSyVzmdxoQbRzYGYILs=
-github.com/equinix/ne-go v0.0.0-20201016123005-d8bfe1cb0202 h1:Wle8YIfw0m2rTeKj4MziyXD4xUZ3uXSYfyeSq9Vs98o=
-github.com/equinix/ne-go v0.0.0-20201016123005-d8bfe1cb0202/go.mod h1:pI9xgjynUBKwNocpzQWATr2AmSyVzmdxoQbRzYGYILs=
+github.com/equinix/ecx-go v1.1.1-0.20201023100944-3b536961663e h1:RHu32rQFPCryG+9p6yOJpwgG3RyQQUDHkrHBexf3QAI=
+github.com/equinix/ecx-go v1.1.1-0.20201023100944-3b536961663e/go.mod h1:B/FA0Lho9Rv8mjIDelFYHxno3+qB8z5EEsnoczy5sb4=
 github.com/equinix/ne-go v0.0.0-20201022132904-751afeb9b85e h1:j52ZgfAi4cO2jUg4jGzrEUcs+/v9gZa/qLN5Cp3I3sk=
 github.com/equinix/ne-go v0.0.0-20201022132904-751afeb9b85e/go.mod h1:pI9xgjynUBKwNocpzQWATr2AmSyVzmdxoQbRzYGYILs=
 github.com/equinix/oauth2-go v1.0.0 h1:fHtAPGq82PdgtK5vEThs8Vwz6f7D/8SX4tE3NJu+KcU=

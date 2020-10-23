@@ -2,6 +2,7 @@
 
 ENHANCEMENTS:
 
+- resource/equinix_ecx_l2_connection: added `device_interface_id` argument ([#18](https://github.com/equinix/terraform-provider-equinix/issues/18))
 - resource/equinix_ecx_l2_connection: added `provider_status` and
  `redundancy_type` attributes ([#14](https://github.com/equinix/terraform-provider-equinix/issues/14))
 - resource/equinix_ecx_l2_connection: creation awaits for desired
