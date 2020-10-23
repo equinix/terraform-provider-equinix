@@ -25,6 +25,7 @@ var ecxL2ConnectionSchemaNames = map[string]string{
 	"PurchaseOrderNumber": "purchase_order_number",
 	"PortUUID":            "port_uuid",
 	"DeviceUUID":          "device_uuid",
+	"DeviceInterfaceID":   "device_interface_id",
 	"VlanSTag":            "vlan_stag",
 	"VlanCTag":            "vlan_ctag",
 	"NamedTag":            "named_tag",
@@ -125,6 +126,12 @@ func createECXL2ConnectionResourceSchema() map[string]*schema.Schema {
 			ForceNew:      true,
 			ValidateFunc:  validation.StringIsNotEmpty,
 			AtLeastOneOf:  []string{ecxL2ConnectionSchemaNames["PortUUID"], ecxL2ConnectionSchemaNames["DeviceUUID"]},
+			ConflictsWith: []string{ecxL2ConnectionSchemaNames["PortUUID"]},
+		},
+		ecxL2ConnectionSchemaNames["DeviceInterfaceID"]: {
+			Type:          schema.TypeInt,
+			Optional:      true,
+			ForceNew:      true,
 			ConflictsWith: []string{ecxL2ConnectionSchemaNames["PortUUID"]},
 		},
 		ecxL2ConnectionSchemaNames["VlanSTag"]: {
@@ -255,6 +262,12 @@ func createECXL2ConnectionResourceSchema() map[string]*schema.Schema {
 						Optional:      true,
 						ValidateFunc:  validation.StringIsNotEmpty,
 						AtLeastOneOf:  []string{ecxL2ConnectionSchemaNames["PortUUID"], ecxL2ConnectionSchemaNames["DeviceUUID"]},
+						ConflictsWith: []string{ecxL2ConnectionSchemaNames["PortUUID"]},
+					},
+					ecxL2ConnectionSchemaNames["DeviceInterfaceID"]: {
+						Type:          schema.TypeInt,
+						Optional:      true,
+						ForceNew:      true,
 						ConflictsWith: []string{ecxL2ConnectionSchemaNames["PortUUID"]},
 					},
 					ecxL2ConnectionSchemaNames["VlanSTag"]: {
@@ -450,6 +463,9 @@ func createECXL2Connections(d *schema.ResourceData) (*ecx.L2Connection, *ecx.L2C
 	if v, ok := d.GetOk(ecxL2ConnectionSchemaNames["DeviceUUID"]); ok {
 		primary.DeviceUUID = v.(string)
 	}
+	if v, ok := d.GetOk(ecxL2ConnectionSchemaNames["DeviceInterfaceID"]); ok {
+		primary.DeviceInterfaceID = v.(int)
+	}
 	if v, ok := d.GetOk(ecxL2ConnectionSchemaNames["VlanSTag"]); ok {
 		primary.VlanSTag = v.(int)
 	}
@@ -629,6 +645,9 @@ func expandECXL2ConnectionSecondary(connections *schema.Set) []ecx.L2Connection 
 		}
 		if v, ok := connMap[ecxL2ConnectionSchemaNames["DeviceUUID"]]; ok {
 			c.DeviceUUID = v.(string)
+		}
+		if v, ok := connMap[ecxL2ConnectionSchemaNames["DeviceInterfaceID"]]; ok {
+			c.DeviceInterfaceID = v.(int)
 		}
 		if v, ok := connMap[ecxL2ConnectionSchemaNames["VlanSTag"]]; ok {
 			c.VlanSTag = v.(int)
