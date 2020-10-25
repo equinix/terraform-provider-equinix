@@ -20,9 +20,9 @@ To learn more about Layer 2 networking in Equinix Metal, refer to
 
 ## Example Usage
 
-```hcl
-# Hybrid network type
+### Hybrid network type
 
+```hcl
 resource "packet_vlan" "test" {
   description = "VLAN in New Jersey"
   facility    = "ewr1"
@@ -49,8 +49,11 @@ resource "packet_port_vlan_attachment" "test" {
   vlan_vnid = packet_vlan.test.vxlan
 }
 
-# Layer 2 network
+```
 
+### Layer 2 network
+
+```hcl
 resource "packet_device" "test" {
   hostname         = "test"
   plan             = "m1.xlarge.x86"
