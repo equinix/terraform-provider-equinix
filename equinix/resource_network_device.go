@@ -444,6 +444,19 @@ func resourceNetworkDeviceCreate(d *schema.ResourceData, m interface{}) error {
 	if _, err := createStateConf.WaitForState(); err != nil {
 		return fmt.Errorf("error waiting for network device (%s) to be created: %s", d.Id(), err)
 	}
+	licenseStateConf := *createStateConf
+	licenseStateConf.Pending = []string{ne.DeviceLicenseStateApplying}
+	licenseStateConf.Target = []string{ne.DeviceLicenseStateRegistered}
+	licenseStateConf.Refresh = func() (interface{}, string, error) {
+		resp, err := conf.ne.GetDevice(d.Id())
+		if err != nil {
+			return nil, "", err
+		}
+		return resp, resp.LicenseStatus, nil
+	}
+	if _, err := licenseStateConf.WaitForState(); err != nil {
+		return fmt.Errorf("error waiting for network device (%s) to register license: %s", d.Id(), err)
+	}
 	return resourceNetworkDeviceRead(d, m)
 }
 
