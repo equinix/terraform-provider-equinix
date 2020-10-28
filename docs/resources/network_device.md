@@ -122,7 +122,7 @@ device configurations
 * `ssh_ip_fqdn` - FQDN to use for SSH connectivity with the device
 * `redundancy_type` - Indicates if device is primary or secondary
 (in HA configuration)
-* `redundant_uuid` - Universally unique identifier for a redundant device
+* `redundant_id` - Universally unique identifier for a redundant device
 (in HA configuration)
 * `interface` - List of device interfaces
   * `id` - interface identifier

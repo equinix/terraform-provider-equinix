@@ -36,7 +36,7 @@ var networkDeviceSchemaNames = map[string]string{
 	"Notifications":       "notifications",
 	"PurchaseOrderNumber": "purchase_order_number",
 	"RedundancyType":      "redundancy_type",
-	"RedundantUUID":       "redundant_uuid",
+	"RedundantUUID":       "redundant_id",
 	"TermLength":          "term_length",
 	"AdditionalBandwidth": "additional_bandwidth",
 	"OrderReference":      "order_reference",

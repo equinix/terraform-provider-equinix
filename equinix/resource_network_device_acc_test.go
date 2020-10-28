@@ -60,7 +60,7 @@ func testSweepNetworkDevice(region string) error {
 
 func TestAccNetworkDeviceAndUser(t *testing.T) {
 	t.Parallel()
-	metro, _ := schema.EnvDefaultFunc(networkDeviceMetroEnvVar, "DC")()
+	metro, _ := schema.EnvDefaultFunc(networkDeviceMetroEnvVar, "SV")()
 	context := map[string]interface{}{
 		"resourceName":            "tst-csr1000v",
 		"name":                    fmt.Sprintf("%s-%s", tstResourcePrefix, randString(6)),
@@ -78,7 +78,7 @@ func TestAccNetworkDeviceAndUser(t *testing.T) {
 		"order_reference":         randString(10),
 		"interface_count":         24,
 		"secondary-name":          fmt.Sprintf("%s-%s", tstResourcePrefix, randString(6)),
-		"secondary-hostname":      randString(6),
+		"secondary-hostname":      fmt.Sprintf("tf-%s", randString(6)),
 		"secondary-notifications": []string{"secondary@equinix.com"},
 		"userResourceName":        "tst-user",
 		"username":                fmt.Sprintf("%s-%s", tstResourcePrefix, randString(6)),
@@ -87,6 +87,7 @@ func TestAccNetworkDeviceAndUser(t *testing.T) {
 	resourceName := fmt.Sprintf("equinix_network_device.%s", context["resourceName"].(string))
 	userResourceName := fmt.Sprintf("equinix_network_ssh_user.%s", context["userResourceName"].(string))
 	var primary, secondary ne.Device
+	var user ne.SSHUser
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
@@ -95,18 +96,19 @@ func TestAccNetworkDeviceAndUser(t *testing.T) {
 				Config: testAccNetworkDeviceAndUser(context),
 				Check: resource.ComposeTestCheckFunc(
 					testAccNeDeviceExists(resourceName, &primary),
-					testAccNeDeviceAttributes(primary, context),
+					testAccNeDeviceAttributes(&primary, context),
+					testAccNeDeviceSecondaryExists(&primary, &secondary),
+					testAccNeDeviceSecondaryAttributes(&secondary, context),
+					testAccNeDeviceRedundancyAttributes(&primary, &secondary),
 					resource.TestCheckResourceAttrSet(resourceName, "uuid"),
 					resource.TestCheckResourceAttr(resourceName, "status", ne.DeviceStateProvisioned),
-					resource.TestCheckResourceAttrSet(resourceName, "license_status"),
+					resource.TestCheckResourceAttr(resourceName, "license_status", ne.DeviceLicenseStateRegistered),
 					resource.TestCheckResourceAttrSet(resourceName, "ibx"),
 					resource.TestCheckResourceAttrSet(resourceName, "region"),
 					resource.TestCheckResourceAttrSet(resourceName, "ssh_ip_address"),
 					resource.TestCheckResourceAttrSet(resourceName, "ssh_ip_fqdn"),
-					resource.TestCheckResourceAttrSet(resourceName, "redundant_id"),
-					resource.TestCheckResourceAttr(resourceName, "redundancy_type", "PRIMARY"),
-					testAccNeDeviceSecondaryExists(primary.RedundantUUID, &secondary),
-					testAccNeDeviceSecondaryAttributes(secondary, context),
+					testAccNeSSHUserExists(userResourceName, &user),
+					testAccNeSSHUserAttributes(&user, []*ne.Device{&primary, &secondary}, context),
 					resource.TestCheckResourceAttrSet(userResourceName, "uuid"),
 				),
 			},
@@ -150,8 +152,8 @@ resource "equinix_network_ssh_user" "%{userResourceName}" {
 	username = "%{username}"
 	password = "%{password}"
 	device_ids = [
-	  equinix_network_device.%{resourceName}.uuid,
-	  equinix_network_device.%{resourceName}.redundant_uuid
+	  equinix_network_device.%{resourceName}.id,
+	  equinix_network_device.%{resourceName}.redundant_id
 	]
   }
 `, ctx)
@@ -176,22 +178,22 @@ func testAccNeDeviceExists(resourceName string, device *ne.Device) resource.Test
 	}
 }
 
-func testAccNeDeviceSecondaryExists(uuid string, device *ne.Device) resource.TestCheckFunc {
+func testAccNeDeviceSecondaryExists(primary, secondary *ne.Device) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
-		if uuid == "" {
+		if primary.RedundantUUID == "" {
 			return fmt.Errorf("secondary device UUID is not set")
 		}
 		client := testAccProvider.Meta().(*Config).ne
-		resp, err := client.GetDevice(uuid)
+		resp, err := client.GetDevice(primary.RedundantUUID)
 		if err != nil {
-			return fmt.Errorf("error when fetching network device '%s': %s", uuid, err)
+			return fmt.Errorf("error when fetching network device '%s': %s", primary.RedundantUUID, err)
 		}
-		*device = *resp
+		*secondary = *resp
 		return nil
 	}
 }
 
-func testAccNeDeviceAttributes(device ne.Device, ctx map[string]interface{}) resource.TestCheckFunc {
+func testAccNeDeviceAttributes(device *ne.Device, ctx map[string]interface{}) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		if v, ok := ctx["name"]; ok && device.Name != v.(string) {
 			return fmt.Errorf("name does not match %v - %v", device.Name, v)
@@ -245,7 +247,7 @@ func testAccNeDeviceAttributes(device ne.Device, ctx map[string]interface{}) res
 	}
 }
 
-func testAccNeDeviceSecondaryAttributes(device ne.Device, ctx map[string]interface{}) resource.TestCheckFunc {
+func testAccNeDeviceSecondaryAttributes(device *ne.Device, ctx map[string]interface{}) resource.TestCheckFunc {
 	secCtx := make(map[string]interface{})
 	for key, value := range ctx {
 		secCtx[key] = value
@@ -254,4 +256,22 @@ func testAccNeDeviceSecondaryAttributes(device ne.Device, ctx map[string]interfa
 	secCtx["hostname"] = ctx["secondary-hostname"]
 	secCtx["notifications"] = ctx["secondary-notifications"]
 	return testAccNeDeviceAttributes(device, secCtx)
+}
+
+func testAccNeDeviceRedundancyAttributes(primary, secondary *ne.Device) resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		if primary.RedundancyType != "PRIMARY" {
+			return fmt.Errorf("redundancy_type does not match %v - %v", primary.RedundancyType, "PRIMARY")
+		}
+		if primary.RedundantUUID != secondary.UUID {
+			return fmt.Errorf("redundant_id does not match %v - %v", primary.RedundantUUID, secondary.UUID)
+		}
+		if secondary.RedundancyType != "SECONDARY" {
+			return fmt.Errorf("redundancy_type does not match %v - %v", secondary.RedundancyType, "SECONDARY")
+		}
+		if secondary.RedundantUUID != primary.UUID {
+			return fmt.Errorf("redundant_id does not match %v - %v", secondary.RedundantUUID, primary.UUID)
+		}
+		return nil
+	}
 }
