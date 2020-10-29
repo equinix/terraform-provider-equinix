@@ -14,14 +14,15 @@ in your projects.
 
 ## Example Usage
 
+### Create a new project
+
 ```hcl
-# Create a new project
 resource "packet_project" "tf_project_1" {
   name = "Terraform Fun"
 }
 ```
 
-Example with BGP config
+### Example with BGP config
 
 ```hcl
 # Create a new Project
@@ -34,6 +35,31 @@ resource "packet_project" "tf_project_1" {
   }
 }
 ```
+
+### Enabling BGP in an existing project
+
+If you want to enable BGP in an existing Packet project, you should first create a resource in your TF config for the existing projects. Set your BGP configuration.
+
+```hcl
+resource "packet_project" "existing_project" {
+  name = "The name of the project (if different, will rewrite)"
+  bgp_config {
+    deployment_type = "local"
+    md5             = "C179c28c41a85b"
+    asn             = 65000
+  }
+}
+```
+
+Then, find out the UUID of the existing project, and import it to your TF state.
+
+```
+$ terraform import packet_project.existing_project e188d7db-46a7-46cb-8969-e63ec22695d5
+```
+
+Your existing project is now loaded in your local TF state, and linked to the resource with given name.
+
+After running `terraform apply`, the project will be updated with configuration provided in the TF template.
 
 ## Argument Reference
 

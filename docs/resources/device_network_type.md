@@ -15,7 +15,11 @@ To learn more about Layer 2 networking in Equinix Metal, refer to
 * <https://metal.equinix.com/developers/docs/networking/layer2/>
 * <https://metal.equinix.com/developers/docs/networking/layer2-configs/>
 
+If you are attaching VLAN to a device (i.e. using packet_port_vlan_attachment), link the device ID from this resource, in order to make the port attachment implicitly dependent on the state of the network type. If you link the device ID from the packet_device resource, Terraform will not wait for the network type change. See examples in [packet_port_vlan_attachment](port_vlan_attachment).
+
 ## Example Usage
+
+### Create one s1.large device and put it to hybrid network mode
 
 ```hcl
 resource "packet_device" "test" {
@@ -33,7 +37,46 @@ resource "packet_device_network_type" "test" {
 }
 ```
 
-If you are attaching VLAN to a device (i.e. using packet_port_vlan_attachment), link the device ID from this resource, in order to make the port attachment implicitly dependent on the state of the network type. If you link the device ID from the packet_device resource, Terraform will not wait for the network type change. See examples in [packet_port_vlan_attachment](port_vlan_attachment.html).
+### Create two devices in hybrid mode and add a VLAN to their eth1 ports
+
+```hcl
+locals {
+    project_id = "<uuid>"
+    device_count = 2
+}
+
+resource "packet_vlan" "test" {
+  facility    = "nrt1"
+  project_id  = local.project_id
+}
+
+
+resource "packet_device" "test" {
+  count            = local.device_count
+  hostname         = "test${count.index}"
+  plan             = "s1.large.x86"
+  facilities       = ["nrt1"]
+  operating_system = "ubuntu_16_04"
+  billing_cycle    = "hourly"
+  project_id       = local.project_id
+}
+
+resource "packet_device_network_type" "test" {
+  count     = local.device_count
+  device_id = packet_device.test[count.index].id
+  type      = "hybrid"
+}
+
+
+resource "packet_port_vlan_attachment" "test" {
+  count     = local.device_count
+  device_id = packet_device_network_type.test[count.index].id
+  port_name = "eth1"
+  vlan_vnid = packet_vlan.test.vxlan
+}
+
+```
+
 
 ## Import
 
