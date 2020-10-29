@@ -2,6 +2,8 @@
 
 ENHANCEMENTS:
 
+- resource/equinix_ecx_l2_connection: removal awaits for desired
+connection state before succeeding ([#21](https://github.com/equinix/terraform-provider-equinix/issues/21))
 - resource/equinix_ecx_l2_connection: added `device_interface_id` argument ([#18](https://github.com/equinix/terraform-provider-equinix/issues/18))
 - resource/equinix_ecx_l2_connection: added `provider_status` and
  `redundancy_type` attributes ([#14](https://github.com/equinix/terraform-provider-equinix/issues/14))
@@ -10,13 +12,13 @@ connection state before succeeding ([#15](https://github.com/equinix/terraform-p
 
 FEATURES:
 
-- **New Resource**: `equinix_network_device` ([#4](https://github.com/equinix/terraform-provider-equinix/issues/4))
-- **New Resource**: `equinix_network_ssh_user` ([#4](https://github.com/equinix/terraform-provider-equinix/issues/4))
-- **New Resource**: `equinix_network_bgp"` ([#16](https://github.com/equinix/terraform-provider-equinix/issues/16))
+- **New Resource**: `equinix_network_bgp` ([#16](https://github.com/equinix/terraform-provider-equinix/issues/16))
 - **New Data source**: `equinix_network_account` ([#13](https://github.com/equinix/terraform-provider-equinix/issues/13))
 - **New Data source**: `equinix_network_device_type` ([#13](https://github.com/equinix/terraform-provider-equinix/issues/13))
 - **New Data source**: `equinix_network_device_software` ([#13](https://github.com/equinix/terraform-provider-equinix/issues/13))
 - **New Data source**: `equinix_network_device_platform` ([#13](https://github.com/equinix/terraform-provider-equinix/issues/13))
+- **New Resource**: `equinix_network_device` ([#4](https://github.com/equinix/terraform-provider-equinix/issues/4))
+- **New Resource**: `equinix_network_ssh_user` ([#4](https://github.com/equinix/terraform-provider-equinix/issues/4))
 
 ## 1.0.0 (September 02, 2020)
 
