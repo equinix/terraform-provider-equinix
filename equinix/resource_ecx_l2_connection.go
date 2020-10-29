@@ -54,7 +54,8 @@ func resourceECXL2Connection() *schema.Resource {
 		Delete: resourceECXL2ConnectionDelete,
 		Schema: createECXL2ConnectionResourceSchema(),
 		Timeouts: &schema.ResourceTimeout{
-			Create: schema.DefaultTimeout(1 * time.Minute),
+			Create: schema.DefaultTimeout(5 * time.Minute),
+			Delete: schema.DefaultTimeout(5 * time.Minute),
 		},
 	}
 }
@@ -344,7 +345,7 @@ func resourceECXL2ConnectionCreate(d *schema.ResourceData, m interface{}) error 
 			ecx.ConnectionStatusPendingProviderVlan,
 		},
 		Timeout:    d.Timeout(schema.TimeoutCreate),
-		Delay:      1 * time.Second,
+		Delay:      2 * time.Second,
 		MinTimeout: 2 * time.Second,
 		Refresh: func() (interface{}, string, error) {
 			resp, err := conf.ecx.GetL2Connection(d.Id())
@@ -424,6 +425,28 @@ func resourceECXL2ConnectionDelete(d *schema.ResourceData, m interface{}) error 
 		if err := conf.ecx.DeleteL2Connection(redID.(string)); err != nil {
 			log.Printf("[WARN] error removing secondary connection with UUID %s, due to %s", redID.(string), err)
 		}
+	}
+	deleteStateConf := &resource.StateChangeConf{
+		Pending: []string{
+			ecx.ConnectionStatusDeprovisioning,
+		},
+		Target: []string{
+			ecx.ConnectionStatusPendingDelete,
+			ecx.ConnectionStatusDeprovisioned,
+		},
+		Timeout:    d.Timeout(schema.TimeoutDelete),
+		Delay:      2 * time.Second,
+		MinTimeout: 2 * time.Second,
+		Refresh: func() (interface{}, string, error) {
+			resp, err := conf.ecx.GetL2Connection(d.Id())
+			if err != nil {
+				return nil, "", err
+			}
+			return resp, resp.Status, nil
+		},
+	}
+	if _, err := deleteStateConf.WaitForState(); err != nil {
+		return fmt.Errorf("error waiting for connection (%s) to be removed: %s", d.Id(), err)
 	}
 	return nil
 }
