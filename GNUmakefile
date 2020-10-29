@@ -2,19 +2,24 @@ TEST?=$$(go list ./... |grep -v 'vendor')
 GOFMT_FILES?=$$(find . -name '*.go' |grep -v vendor)
 WEBSITE_REPO=github.com/hashicorp/terraform-website
 PKG_NAME=packet
+GOPATH?=$(HOME)/go
 
 default: build
 
 build: fmtcheck
 	go install
 
+sweep:
+	@echo "WARNING: This will destroy infrastructure. Use only in development accounts."
+	go test $(TEST) -v -sweep=$(SWEEP) $(SWEEPARGS)
+
 test: fmtcheck
-	go test $(TEST) || exit 1
+	go test -i $(TEST) || exit 1
 	echo $(TEST) | \
-		xargs -t -n4 go test $(TESTARGS) -timeout=30s -parallel=4
+		xargs -t -n4 go test $(TESTARGS) -timeout=30s -parallel=10
 
 testacc: fmtcheck
-	TF_ACC=1 go test $(TEST) -v $(TESTARGS) -timeout 120m
+	TF_ACC=1 go test $(TEST) -v $(TESTARGS) -timeout=120m -parallel=10
 
 vet:
 	@echo "go vet ."
@@ -34,6 +39,7 @@ fmtcheck:
 errcheck:
 	@sh -c "'$(CURDIR)/scripts/errcheck.sh'"
 
+
 test-compile:
 	@if [ "$(TEST)" = "./..." ]; then \
 		echo "ERROR: Set TEST to a specific package. For example,"; \
@@ -41,20 +47,6 @@ test-compile:
 		exit 1; \
 	fi
 	go test -c $(TEST) $(TESTARGS)
-
-website:
-ifeq (,$(wildcard $(GOPATH)/src/$(WEBSITE_REPO)))
-	echo "$(WEBSITE_REPO) not found in your GOPATH (necessary for layouts and assets), get-ting..."
-	git clone https://$(WEBSITE_REPO) $(GOPATH)/src/$(WEBSITE_REPO)
-endif
-	@$(MAKE) -C $(GOPATH)/src/$(WEBSITE_REPO) website-provider PROVIDER_PATH=$(shell pwd) PROVIDER_NAME=$(PKG_NAME)
-
-website-test:
-ifeq (,$(wildcard $(GOPATH)/src/$(WEBSITE_REPO)))
-	echo "$(WEBSITE_REPO) not found in your GOPATH (necessary for layouts and assets), get-ting..."
-	git clone https://$(WEBSITE_REPO) $(GOPATH)/src/$(WEBSITE_REPO)
-endif
-	@$(MAKE) -C $(GOPATH)/src/$(WEBSITE_REPO) website-provider-test PROVIDER_PATH=$(shell pwd) PROVIDER_NAME=$(PKG_NAME)
 
 docs-lint:
 	@echo "==> Checking docs against linters..."
@@ -72,5 +64,24 @@ docs-lint-fix:
 	@misspell -w -source=text docs/
 	@docker run -v $(PWD):/markdown 06kellyjac/markdownlint-cli --fix docs/
 
-.PHONY: build test testacc vet fmt fmtcheck errcheck test-compile website website-test
+tfproviderlint:
+	@echo "==> Checking provider code against bflad/tfproviderlint..."
+	@docker run -v $(PWD):/src bflad/tfproviderlint ./... || (echo; \
+		echo "Unexpected issues found in code with bflad/tfproviderlint."; \
+		echo "To apply automated fixes for check that support them, run 'make tfproviderlint-fix'."; \
+		exit 1)
+
+tfproviderlint-fix:
+	@echo "==> Applying fixes with bflad/tfproviderlint..."
+	@docker run -v $(PWD):/src bflad/tfproviderlint -fix ./...
+
+tfproviderdocs-check:
+	@echo "==> Check provider docs with bflad/tfproviderdocs..."
+	@docker run -v $(PWD):/src bflad/tfproviderdocs check -provider-name=packet || (echo; \
+		echo "Unexpected issues found in code with bflad/tfproviderdocs."; \
+		exit 1)
+
+
+
+.PHONY: build test testacc vet fmt fmtcheck errcheck test-compile docs-lint docs-lint-fix tfproviderlint tfproviderlint-fix tfproviderdocs-check
 
