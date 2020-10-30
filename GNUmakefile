@@ -14,9 +14,7 @@ sweep:
 	go test $(TEST) -v -sweep=$(SWEEP) $(SWEEPARGS)
 
 test: fmtcheck
-	go test -i $(TEST) || exit 1
-	echo $(TEST) | \
-		xargs -t -n4 go test $(TESTARGS) -timeout=30s -parallel=10
+	go test $(TEST) -v $(TESTARGS) -timeout=30s -parallel=10
 
 testacc: fmtcheck
 	TF_ACC=1 go test $(TEST) -v $(TESTARGS) -timeout=120m -parallel=10
@@ -80,8 +78,6 @@ tfproviderdocs-check:
 	@docker run -v $(PWD):/src bflad/tfproviderdocs check -provider-name=packet || (echo; \
 		echo "Unexpected issues found in code with bflad/tfproviderdocs."; \
 		exit 1)
-
-
 
 .PHONY: build test testacc vet fmt fmtcheck errcheck test-compile docs-lint docs-lint-fix tfproviderlint tfproviderlint-fix tfproviderdocs-check
 
