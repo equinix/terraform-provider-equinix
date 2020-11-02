@@ -43,6 +43,7 @@ func Provider() terraform.ResourceProvider {
 			"request_timeout": {
 				Type:         schema.TypeInt,
 				Optional:     true,
+				Default:      30,
 				DefaultFunc:  schema.EnvDefaultFunc(clientTimeoutEnvVar, nil),
 				ValidateFunc: validation.IntAtLeast(1),
 			},
