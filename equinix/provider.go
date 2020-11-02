@@ -62,6 +62,7 @@ func Provider() terraform.ResourceProvider {
 			"equinix_network_device":             resourceNetworkDevice(),
 			"equinix_network_ssh_user":           resourceNetworkSSHUser(),
 			"equinix_network_bgp":                resourceNetworkBGP(),
+			"equinix_network_acl_template":       resourceNetworkACLTemplate(),
 		},
 	}
 
@@ -91,13 +92,17 @@ func configureProvider(d *schema.ResourceData, p *schema.Provider) (interface{},
 	return &config, nil
 }
 
-func expandSetToStringList(set *schema.Set) []string {
-	list := set.List()
+func expandListToStringList(list []interface{}) []string {
 	result := make([]string, len(list))
 	for i, v := range list {
 		result[i] = fmt.Sprint(v)
 	}
 	return result
+}
+
+func expandSetToStringList(set *schema.Set) []string {
+	list := set.List()
+	return expandListToStringList(list)
 }
 
 func expandInterfaceMapToStringMap(mapIn map[string]interface{}) map[string]string {
@@ -123,6 +128,12 @@ func stringIsMetroCode() schema.SchemaValidateFunc {
 
 func stringIsEmailAddress() schema.SchemaValidateFunc {
 	return validation.StringMatch(regexp.MustCompile("^[^ @]+@[^ @]+$"), "not valid email address")
+}
+
+func stringIsPortDefinition() schema.SchemaValidateFunc {
+	return validation.StringMatch(
+		regexp.MustCompile("^(([0-9]+(,[0-9]+){0,9})|([0-9]+-[0-9]+)|(any))$"),
+		"port definition has to be: up to 10 comma sepparated numbers (22,23), range (20-23) or word 'any'")
 }
 
 func stringsFound(source []string, target []string) bool {

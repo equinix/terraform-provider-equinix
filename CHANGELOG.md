@@ -12,6 +12,7 @@ connection state before succeeding ([#15](https://github.com/equinix/terraform-p
 
 FEATURES:
 
+- **New Resource**: `equinix_network_acl_template` ([#19](https://github.com/equinix/terraform-provider-equinix/issues/19))
 - **New Resource**: `equinix_network_bgp` ([#16](https://github.com/equinix/terraform-provider-equinix/issues/16))
 - **New Data source**: `equinix_network_account` ([#13](https://github.com/equinix/terraform-provider-equinix/issues/13))
 - **New Data source**: `equinix_network_device_type` ([#13](https://github.com/equinix/terraform-provider-equinix/issues/13))

@@ -28,8 +28,7 @@ var networkDeviceSchemaNames = map[string]string{
 	"Version":             "version",
 	"IsBYOL":              "byol",
 	"LicenseToken":        "license_token",
-	"ACLs":                "acls",
-	"ACLStatus":           "acls_status",
+	"ACLTemplateUUID":     "acl_template_id",
 	"SSHIPAddress":        "ssh_ip_address",
 	"SSHIPFqdn":           "ssh_ip_fqdn",
 	"AccountNumber":       "account_number",
@@ -153,18 +152,10 @@ func createNetworkDeviceSchema() map[string]*schema.Schema {
 			ForceNew:     true,
 			ValidateFunc: validation.StringIsNotEmpty,
 		},
-		networkDeviceSchemaNames["ACLs"]: {
-			Type:     schema.TypeSet,
-			Optional: true,
-			MinItems: 1,
-			Elem: &schema.Schema{
-				Type:         schema.TypeString,
-				ValidateFunc: validation.IsCIDR,
-			},
-		},
-		networkDeviceSchemaNames["ACLStatus"]: {
-			Type:     schema.TypeString,
-			Computed: true,
+		networkDeviceSchemaNames["ACLTemplateUUID"]: {
+			Type:         schema.TypeString,
+			Optional:     true,
+			ValidateFunc: validation.StringIsNotEmpty,
 		},
 		networkDeviceSchemaNames["SSHIPAddress"]: {
 			Type:     schema.TypeString,
@@ -300,18 +291,10 @@ func createNetworkDeviceSchema() map[string]*schema.Schema {
 						Optional:     true,
 						ValidateFunc: validation.StringIsNotEmpty,
 					},
-					networkDeviceSchemaNames["ACLs"]: {
-						Type:     schema.TypeSet,
-						Optional: true,
-						MinItems: 1,
-						Elem: &schema.Schema{
-							Type:         schema.TypeString,
-							ValidateFunc: validation.IsCIDR,
-						},
-					},
-					networkDeviceSchemaNames["ACLStatus"]: {
-						Type:     schema.TypeString,
-						Computed: true,
+					networkDeviceSchemaNames["ACLTemplateUUID"]: {
+						Type:         schema.TypeString,
+						Optional:     true,
+						ValidateFunc: validation.StringIsNotEmpty,
 					},
 					networkDeviceSchemaNames["SSHIPAddress"]: {
 						Type:     schema.TypeString,
@@ -464,7 +447,6 @@ func resourceNetworkDeviceRead(d *schema.ResourceData, m interface{}) error {
 	conf := m.(*Config)
 	var err error
 	var primary, secondary *ne.Device
-	var primaryACLs, secondaryACLs *ne.DeviceACLs
 	primary, err = conf.ne.GetDevice(d.Id())
 	if err != nil {
 		return fmt.Errorf("cannot fetch primary network device due to %v", err)
@@ -473,24 +455,13 @@ func resourceNetworkDeviceRead(d *schema.ResourceData, m interface{}) error {
 		d.SetId("")
 		return nil
 	}
-	primaryACLs, err = conf.ne.GetDeviceACLs(d.Id())
-	if err != nil {
-		return fmt.Errorf("cannot fetch primary network device ACLs due to %v", err)
-	}
 	if primary.RedundantUUID != "" {
 		secondary, err = conf.ne.GetDevice(primary.RedundantUUID)
 		if err != nil {
 			return fmt.Errorf("cannot fetch secondary network device due to %v", err)
 		}
-		secondaryACLs, err = conf.ne.GetDeviceACLs(primary.RedundantUUID)
-		if err != nil {
-			return fmt.Errorf("cannot fetch secondary network device ACLs due to %v", err)
-		}
 	}
 	if err = updateNetworkDeviceResource(primary, secondary, d); err != nil {
-		return err
-	}
-	if err = updateNetworkDeviceResourceACLs(primaryACLs, secondaryACLs, d); err != nil {
 		return err
 	}
 	return nil
@@ -511,8 +482,8 @@ func resourceNetworkDeviceUpdate(d *schema.ResourceData, m interface{}) error {
 	if v, ok := d.GetOk(networkDeviceSchemaNames["AdditionalBandwidth"]); ok && d.HasChange(networkDeviceSchemaNames["AdditionalBandwidth"]) {
 		updateReq.WithAdditionalBandwidth(v.(int))
 	}
-	if v, ok := d.GetOk(networkDeviceSchemaNames["ACLs"]); ok && d.HasChange(networkDeviceSchemaNames["ACLs"]) {
-		updateReq.WithACLs(expandSetToStringList(v.(*schema.Set)))
+	if v, ok := d.GetOk(networkDeviceSchemaNames["ACLTemplateUUID"]); ok && d.HasChange(networkDeviceSchemaNames["ACLTemplateUUID"]) {
+		updateReq.WithACLTemplate(v.(string))
 	}
 	if err := updateReq.Execute(); err != nil {
 		return err
@@ -591,8 +562,8 @@ func createNetworkDevices(d *schema.ResourceData) (*ne.Device, *ne.Device) {
 	if v, ok := d.GetOk(networkDeviceSchemaNames["LicenseToken"]); ok {
 		primary.LicenseToken = v.(string)
 	}
-	if v, ok := d.GetOk(networkDeviceSchemaNames["ACLs"]); ok {
-		primary.ACLs = expandSetToStringList(v.(*schema.Set))
+	if v, ok := d.GetOk(networkDeviceSchemaNames["ACLTemplateUUID"]); ok {
+		primary.ACLTemplateUUID = v.(string)
 	}
 	if v, ok := d.GetOk(networkDeviceSchemaNames["SSHIPAddress"]); ok {
 		primary.SSHIPAddress = v.(string)
@@ -692,6 +663,9 @@ func updateNetworkDeviceResource(primary *ne.Device, secondary *ne.Device, d *sc
 	if err := d.Set(networkDeviceSchemaNames["LicenseToken"], primary.LicenseToken); err != nil {
 		return fmt.Errorf("error reading LicenseToken: %s", err)
 	}
+	if err := d.Set(networkDeviceSchemaNames["ACLTemplateUUID"], primary.ACLTemplateUUID); err != nil {
+		return fmt.Errorf("error reading ACLTemplateUUID: %s", err)
+	}
 	if err := d.Set(networkDeviceSchemaNames["SSHIPAddress"], primary.SSHIPAddress); err != nil {
 		return fmt.Errorf("error reading SSHIPAddress: %s", err)
 	}
@@ -745,28 +719,6 @@ func updateNetworkDeviceResource(primary *ne.Device, secondary *ne.Device, d *sc
 	return nil
 }
 
-func updateNetworkDeviceResourceACLs(primaryACLs, secondaryACLs *ne.DeviceACLs, d *schema.ResourceData) error {
-	if err := d.Set(networkDeviceSchemaNames["ACLs"], primaryACLs.ACLs); err != nil {
-		return fmt.Errorf("error reading ACLs: %s", err)
-	}
-	if err := d.Set(networkDeviceSchemaNames["ACLStatus"], primaryACLs.Status); err != nil {
-		return fmt.Errorf("error reading ACLStatus: %s", err)
-	}
-	if secondaryACLs != nil {
-		secondarySet := d.Get(networkDeviceSchemaNames["Secondary"]).(*schema.Set)
-		if secondarySet.Len() != 1 {
-			return fmt.Errorf("cannot update secondary device ACLs: secondary set size is not equal to 1")
-		}
-		secondary := secondarySet.List()[0].(map[string]interface{})
-		secondary[networkDeviceSchemaNames["ACLs"]] = secondaryACLs.ACLs
-		secondary[networkDeviceSchemaNames["ACLStatus"]] = secondaryACLs.Status
-		if err := d.Set(networkDeviceSchemaNames["Secondary"], []map[string]interface{}{secondary}); err != nil {
-			return fmt.Errorf("error reading Secondary: %s", err)
-		}
-	}
-	return nil
-}
-
 func flattenNetworkDeviceSecondary(device ne.Device) interface{} {
 	transformed := make(map[string]interface{})
 	transformed[networkDeviceSchemaNames["UUID"]] = device.UUID
@@ -778,6 +730,7 @@ func flattenNetworkDeviceSecondary(device ne.Device) interface{} {
 	transformed[networkDeviceSchemaNames["Region"]] = device.Region
 	transformed[networkDeviceSchemaNames["HostName"]] = device.HostName
 	transformed[networkDeviceSchemaNames["LicenseToken"]] = device.LicenseToken
+	transformed[networkDeviceSchemaNames["ACLTemplateUUID"]] = device.ACLTemplateUUID
 	transformed[networkDeviceSchemaNames["SSHIPAddress"]] = device.SSHIPAddress
 	transformed[networkDeviceSchemaNames["SSHIPFqdn"]] = device.SSHIPFqdn
 	transformed[networkDeviceSchemaNames["AccountNumber"]] = device.AccountNumber
@@ -822,8 +775,8 @@ func expandNetworkDeviceSecondary(devices *schema.Set) []ne.Device {
 		if v, ok := devMap[networkDeviceSchemaNames["LicenseToken"]]; ok {
 			dev.LicenseToken = v.(string)
 		}
-		if v, ok := devMap[networkDeviceSchemaNames["ACLs"]]; ok {
-			dev.ACLs = expandSetToStringList(v.(*schema.Set))
+		if v, ok := devMap[networkDeviceSchemaNames["ACLTemplateUUID"]]; ok {
+			dev.ACLTemplateUUID = v.(string)
 		}
 		if v, ok := devMap[networkDeviceSchemaNames["SSHIPAddress"]]; ok {
 			dev.SSHIPAddress = v.(string)
@@ -905,8 +858,8 @@ func networkDeviceSecondaryUpdate(req ne.DeviceUpdateRequest, a, b *schema.Set) 
 	if !reflect.DeepEqual(aMap[networkDeviceSchemaNames["AdditionalBandwidth"]], bMap[networkDeviceSchemaNames["AdditionalBandwidth"]]) {
 		req.WithAdditionalBandwidth(bMap[networkDeviceSchemaNames["AdditionalBandwidth"]].(int))
 	}
-	if !reflect.DeepEqual(aMap[networkDeviceSchemaNames["ACLs"]], bMap[networkDeviceSchemaNames["ACLs"]]) {
-		req.WithACLs(expandSetToStringList(bMap[networkDeviceSchemaNames["ACLs"]].(*schema.Set)))
+	if !reflect.DeepEqual(aMap[networkDeviceSchemaNames["ACLTemplateUUID"]], bMap[networkDeviceSchemaNames["ACLTemplateUUID"]]) {
+		req.WithACLTemplate(bMap[networkDeviceSchemaNames["ACLTemplateUUID"]].(string))
 	}
 	return req.Execute()
 }

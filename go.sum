@@ -117,6 +117,10 @@ github.com/equinix/ecx-go v1.1.1-0.20201023100944-3b536961663e h1:RHu32rQFPCryG+
 github.com/equinix/ecx-go v1.1.1-0.20201023100944-3b536961663e/go.mod h1:B/FA0Lho9Rv8mjIDelFYHxno3+qB8z5EEsnoczy5sb4=
 github.com/equinix/ne-go v0.0.0-20201022132904-751afeb9b85e h1:j52ZgfAi4cO2jUg4jGzrEUcs+/v9gZa/qLN5Cp3I3sk=
 github.com/equinix/ne-go v0.0.0-20201022132904-751afeb9b85e/go.mod h1:pI9xgjynUBKwNocpzQWATr2AmSyVzmdxoQbRzYGYILs=
+github.com/equinix/ne-go v0.0.0-20201029140708-ea923d01abc2 h1:24NwqFvMX74XkbE3Iymqi7j9IoY16o/LAnL/MnCSxKQ=
+github.com/equinix/ne-go v0.0.0-20201029140708-ea923d01abc2/go.mod h1:pI9xgjynUBKwNocpzQWATr2AmSyVzmdxoQbRzYGYILs=
+github.com/equinix/ne-go v0.0.0-20201102115129-c87af2b9df47 h1:38PKthH/apqN12CQngS75p7b2pESCPQDeWtT8BdWnlo=
+github.com/equinix/ne-go v0.0.0-20201102115129-c87af2b9df47/go.mod h1:pI9xgjynUBKwNocpzQWATr2AmSyVzmdxoQbRzYGYILs=
 github.com/equinix/oauth2-go v1.0.0 h1:fHtAPGq82PdgtK5vEThs8Vwz6f7D/8SX4tE3NJu+KcU=
 github.com/equinix/oauth2-go v1.0.0/go.mod h1:4pulXvUNMktJlewLPnUeJyMW52iCoF1aM+A/Z5xY1ws=
 github.com/equinix/rest-go v1.0.0 h1:97muJSYnz06poKq7YMgmMuM/YicbDc0adgO//zlwuk0=
