@@ -2,6 +2,7 @@
 
 ENHANCEMENTS:
 
+- resource/equinix_ecx_l2_connection_accepter: added `aws_connection_id` attribute
 - resource/equinix_ecx_l2_connection: removal awaits for desired
 connection state before succeeding ([#21](https://github.com/equinix/terraform-provider-equinix/issues/21))
 - resource/equinix_ecx_l2_connection: added `device_interface_id` argument ([#18](https://github.com/equinix/terraform-provider-equinix/issues/18))
