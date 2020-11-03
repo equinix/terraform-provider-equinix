@@ -10,22 +10,21 @@ import (
 
 func TestAccECXL2ConnectionAccepter(t *testing.T) {
 	t.Parallel()
-	portID, _ := schema.EnvDefaultFunc(priPortEnvVar, "0cbc3f5e-308e-4043-916f-2a2788818bf3")()
-	spID, _ := schema.EnvDefaultFunc(awsSpEnvVar, "496e149f-cc04-4ef6-af8f-ac657da78be6")()
+	portName, _ := schema.EnvDefaultFunc(priPortEnvVar, "sit-001-CX-SV1-NL-Dot1q-BO-10G-PRI-JUN-33")()
+	spName, _ := schema.EnvDefaultFunc(awsSpEnvVar, "AWS Direct Connect")()
 	context := map[string]interface{}{
-		"connectionResourceName": "tf-aws-dot1q",
+		"connectionResourceName": "conn",
 		"name":                   fmt.Sprintf("tf-tst-%s", randString(6)),
-		"profile_uuid":           spID.(string),
+		"profile_name":           spName.(string),
 		"speed":                  50,
 		"speed_unit":             "MB",
 		"notifications":          []string{"marry@equinix.com", "john@equinix.com"},
-		"purchase_order_number":  "1234567890",
-		"port_uuid":              portID.(string),
+		"port_name":              portName.(string),
 		"vlan_stag":              randInt(2000),
 		"seller_region":          "us-west-2",
 		"seller_metro_code":      "SV",
 		"authorization_key":      "123456789012",
-		"accepterResourceName":   "tf-accepter",
+		"accepterResourceName":   "accepter",
 		"access_key":             "AKIAGGJKJU7BC3QJKYQ",
 		"secret_key":             "CXGJW1lWbqENEqSkBAK",
 	}
@@ -40,6 +39,7 @@ func TestAccECXL2ConnectionAccepter(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(accepterResourceName, "connection_id"),
 					resource.TestCheckResourceAttrPair(accepterResourceName, "connection_id", connectionResourceName, "id"),
+					resource.TestCheckResourceAttrSet(accepterResourceName, "aws_connection_id"),
 				),
 			},
 		},
@@ -48,25 +48,36 @@ func TestAccECXL2ConnectionAccepter(t *testing.T) {
 
 func testAccECXL2ConnectionAccepter(ctx map[string]interface{}) string {
 	return nprintf(`
-# Connection
+data "equinix_ecx_l2_sellerprofile" "aws" {
+  name = "%{profile_name}"
+}
+	  
+data "equinix_ecx_port" "port" {
+  name = "%{port_name}"
+}
+
+locals {
+  aws_first_metro        = tolist(data.equinix_ecx_l2_sellerprofile.aws.metro)[0]
+  aws_first_metro_region = keys(local.aws_first_metro.regions)[0]
+}
+
 resource "equinix_ecx_l2_connection" "%{connectionResourceName}" {
-  name = "%{name}"
-  profile_uuid = "%{profile_uuid}"
-  speed = %{speed}
-  speed_unit = "%{speed_unit}"
-  notifications = %{notifications}
-  purchase_order_number = "%{purchase_order_number}"
-  port_uuid = "%{port_uuid}"
-  vlan_stag = %{vlan_stag}
-  seller_region = "%{seller_region}"
-  seller_metro_code = "%{seller_metro_code}"
+  name              = "%{name}"
+  profile_uuid      = data.equinix_ecx_l2_sellerprofile.aws.id
+  speed             = %{speed}
+  speed_unit        = "%{speed_unit}"
+  notifications     = %{notifications}
+  port_uuid         = data.equinix_ecx_port.port.id
+  vlan_stag         = %{vlan_stag}
+  seller_region     = local.aws_first_metro_region
+  seller_metro_code = local.aws_first_metro.code
   authorization_key = "%{authorization_key}"
 }
-# Accepter
+
 resource "equinix_ecx_l2_connection_accepter" "%{accepterResourceName}" {
    connection_id = equinix_ecx_l2_connection.%{connectionResourceName}.id
-   access_key = "%{access_key}"
-   secret_key = "%{secret_key}"
+   access_key    = "%{access_key}"
+   secret_key    = "%{secret_key}"
 }
 `, ctx)
 }
