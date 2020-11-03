@@ -6,12 +6,14 @@ import (
 
 	"github.com/equinix/ecx-go"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
 )
 
 var ecxL2ConnectionAccepterSchemaNames = map[string]string{
-	"ConnectionId": "connection_id",
-	"AccessKey":    "access_key",
-	"SecretKey":    "secret_key",
+	"ConnectionId":    "connection_id",
+	"AccessKey":       "access_key",
+	"SecretKey":       "secret_key",
+	"AWSConnectionID": "aws_connection_id",
 }
 
 func resourceECXL2ConnectionAccepter() *schema.Resource {
@@ -26,19 +28,26 @@ func resourceECXL2ConnectionAccepter() *schema.Resource {
 func createECXL2ConnectionAccepterResourceSchema() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
 		ecxL2ConnectionAccepterSchemaNames["ConnectionId"]: {
-			Type:     schema.TypeString,
-			Required: true,
-			ForceNew: true,
+			Type:         schema.TypeString,
+			Required:     true,
+			ForceNew:     true,
+			ValidateFunc: validation.StringIsNotEmpty,
 		},
 		ecxL2ConnectionAccepterSchemaNames["AccessKey"]: {
-			Type:     schema.TypeString,
-			Required: true,
-			ForceNew: true,
+			Type:         schema.TypeString,
+			Required:     true,
+			ForceNew:     true,
+			ValidateFunc: validation.StringIsNotEmpty,
 		},
 		ecxL2ConnectionAccepterSchemaNames["SecretKey"]: {
+			Type:         schema.TypeString,
+			Required:     true,
+			ForceNew:     true,
+			ValidateFunc: validation.StringIsNotEmpty,
+		},
+		ecxL2ConnectionAccepterSchemaNames["AWSConnectionID"]: {
 			Type:     schema.TypeString,
-			Required: true,
-			ForceNew: true,
+			Computed: true,
 		},
 	}
 }
@@ -46,35 +55,32 @@ func createECXL2ConnectionAccepterResourceSchema() map[string]*schema.Schema {
 func resourceECXL2ConnectionAccepterCreate(d *schema.ResourceData, m interface{}) error {
 	conf := m.(*Config)
 	req := ecx.L2ConnectionToConfirm{}
-	var err error
-
 	connID := d.Get(ecxL2ConnectionAccepterSchemaNames["ConnectionId"]).(string)
 	req.AccessKey = d.Get(ecxL2ConnectionAccepterSchemaNames["AccessKey"]).(string)
 	req.SecretKey = d.Get(ecxL2ConnectionAccepterSchemaNames["SecretKey"]).(string)
 
-	if _, err = conf.ecx.ConfirmL2Connection(connID, req); err != nil {
+	if _, err := conf.ecx.ConfirmL2Connection(connID, req); err != nil {
 		return err
 	}
-
 	d.SetId(connID)
 	return resourceECXL2ConnectionAccepterRead(d, m)
 }
 
 func resourceECXL2ConnectionAccepterRead(d *schema.ResourceData, m interface{}) error {
 	conf := m.(*Config)
-	var err error
-	var conn *ecx.L2Connection
-
-	conn, err = conf.ecx.GetL2Connection(d.Id())
+	conn, err := conf.ecx.GetL2Connection(d.Id())
 	if err != nil {
 		return err
 	}
-	if conn == nil {
-		log.Printf("[WARN] ECX L2 connection (%s) not found, removing from state", d.Id())
+	if conn == nil || isStringInSlice(conn.Status, []string{
+		ecx.ConnectionStatusPendingDelete,
+		ecx.ConnectionStatusDeprovisioning,
+		ecx.ConnectionStatusDeprovisioned,
+		ecx.ConnectionStatusDeleted,
+	}) {
 		d.SetId("")
 		return nil
 	}
-
 	if err := updateECXL2ConnectionAccepterResource(conn, d); err != nil {
 		return err
 	}
@@ -90,6 +96,21 @@ func resourceECXL2ConnectionAccepterDelete(d *schema.ResourceData, m interface{}
 func updateECXL2ConnectionAccepterResource(conn *ecx.L2Connection, d *schema.ResourceData) error {
 	if err := d.Set(ecxL2ConnectionAccepterSchemaNames["ConnectionId"], conn.UUID); err != nil {
 		return fmt.Errorf("error reading connection UUID: %s", err)
+	}
+	var awsConnectionID string
+	for _, action := range conn.Actions {
+		if action.OperationID != "CONFIRM_CONNECTION" {
+			continue
+		}
+		for _, actionData := range action.RequiredData {
+			if actionData.Key != "awsConnectionId" {
+				continue
+			}
+			awsConnectionID = actionData.Value
+		}
+	}
+	if err := d.Set(ecxL2ConnectionAccepterSchemaNames["AWSConnectionID"], awsConnectionID); err != nil {
+		return fmt.Errorf("error reading connection AWSConnectionID: %s", err)
 	}
 	return nil
 }

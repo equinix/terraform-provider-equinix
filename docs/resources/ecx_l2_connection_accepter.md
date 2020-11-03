@@ -18,9 +18,9 @@ attributes available map to the fields described at
 
 ```hcl
 resource "equinix_ecx_l2_connection_accepter" "accepter" {
-  connection_id = "xxxxx191-xx70-xxxx-xx04-xxxxxxxa37xx"
-  access_key = "AKIAIXKQARIFBC3QJKYQ"
-  secret_key = "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"
+  connection_id = equinix_ecx_l2_connection.awsConn.id
+  access_key    = "AKIAIXKQARIFBC3QJKYQ"
+  secret_key    = "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"
 }
 ```
 
@@ -32,4 +32,5 @@ resource "equinix_ecx_l2_connection_accepter" "accepter" {
 
 ## Attribute Reference
 
-This resource exports no additional attributes.
+* `aws_connection_id` - the ID of a hosted Direct Connect connection on AWS side,
+applicable for accepter resource with connections to AWS only
