@@ -63,7 +63,7 @@ func (v Volume) String() string {
 	return Stringify(v)
 }
 
-// VolumeCreateRequest type used to create a Packet volume
+// VolumeCreateRequest type used to create an Equinix Metal volume
 type VolumeCreateRequest struct {
 	BillingCycle     string            `json:"billing_cycle"`
 	Description      string            `json:"description,omitempty"`
@@ -78,7 +78,7 @@ func (v VolumeCreateRequest) String() string {
 	return Stringify(v)
 }
 
-// VolumeUpdateRequest type used to update a Packet volume
+// VolumeUpdateRequest type used to update an Equinix Metal volume
 type VolumeUpdateRequest struct {
 	Description  *string `json:"description,omitempty"`
 	PlanID       *string `json:"plan_id,omitempty"`
@@ -86,7 +86,7 @@ type VolumeUpdateRequest struct {
 	BillingCycle *string `json:"billing_cycle,omitempty"`
 }
 
-// VolumeAttachment is a type from Packet API
+// VolumeAttachment is a type from Equinix Metal API
 type VolumeAttachment struct {
 	Href   string `json:"href"`
 	ID     string `json:"id"`
@@ -110,7 +110,7 @@ type VolumeServiceOp struct {
 
 // List returns the volumes for a project
 func (v *VolumeServiceOp) List(projectID string, listOpt *ListOptions) (volumes []Volume, resp *Response, err error) {
-	params := createListOptionsURL(listOpt)
+	params := urlQuery(listOpt)
 	path := fmt.Sprintf("%s/%s%s?%s", projectBasePath, projectID, volumeBasePath, params)
 
 	for {
@@ -137,7 +137,7 @@ func (v *VolumeServiceOp) List(projectID string, listOpt *ListOptions) (volumes 
 
 // Get returns a volume by id
 func (v *VolumeServiceOp) Get(volumeID string, getOpt *GetOptions) (*Volume, *Response, error) {
-	params := createGetOptionsURL(getOpt)
+	params := urlQuery(getOpt)
 	path := fmt.Sprintf("%s/%s?%s", volumeBasePath, volumeID, params)
 	volume := new(Volume)
 
@@ -201,7 +201,7 @@ func (v *VolumeAttachmentServiceOp) Create(volumeID, deviceID string) (*VolumeAt
 
 // Get gets attachment by id
 func (v *VolumeAttachmentServiceOp) Get(attachmentID string, getOpt *GetOptions) (*VolumeAttachment, *Response, error) {
-	params := createGetOptionsURL(getOpt)
+	params := urlQuery(getOpt)
 
 	path := fmt.Sprintf("%s%s/%s?%s", volumeBasePath, attachmentsBasePath, attachmentID, params)
 	volumeAttachment := new(VolumeAttachment)

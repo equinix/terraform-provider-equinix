@@ -2,7 +2,7 @@ package packngo
 
 import "fmt"
 
-// API documentation https://www.packet.net/developers/api/organizations/
+// API documentation https://metal.equinix.com/developers/api/organizations/
 const organizationBasePath = "/organizations"
 
 // OrganizationService interface defines available organization methods
@@ -21,7 +21,7 @@ type organizationsRoot struct {
 	Meta          meta           `json:"meta"`
 }
 
-// Organization represents a Packet organization
+// Organization represents an Equinix Metal organization
 type Organization struct {
 	ID           string    `json:"id"`
 	Name         string    `json:"name,omitempty"`
@@ -47,7 +47,7 @@ func (o Organization) String() string {
 	return Stringify(o)
 }
 
-// OrganizationCreateRequest type used to create a Packet organization
+// OrganizationCreateRequest type used to create an Equinix Metal organization
 type OrganizationCreateRequest struct {
 	Name        string `json:"name"`
 	Description string `json:"description"`
@@ -60,7 +60,7 @@ func (o OrganizationCreateRequest) String() string {
 	return Stringify(o)
 }
 
-// OrganizationUpdateRequest type used to update a Packet organization
+// OrganizationUpdateRequest type used to update an Equinix Metal organization
 type OrganizationUpdateRequest struct {
 	Name        *string `json:"name,omitempty"`
 	Description *string `json:"description,omitempty"`
@@ -80,7 +80,7 @@ type OrganizationServiceOp struct {
 
 // List returns the user's organizations
 func (s *OrganizationServiceOp) List(listOpt *ListOptions) (orgs []Organization, resp *Response, err error) {
-	params := createListOptionsURL(listOpt)
+	params := urlQuery(listOpt)
 	root := new(organizationsRoot)
 
 	path := fmt.Sprintf("%s?%s", organizationBasePath, params)
@@ -106,7 +106,7 @@ func (s *OrganizationServiceOp) List(listOpt *ListOptions) (orgs []Organization,
 
 // Get returns a organization by id
 func (s *OrganizationServiceOp) Get(organizationID string, getOpt *GetOptions) (*Organization, *Response, error) {
-	params := createGetOptionsURL(getOpt)
+	params := urlQuery(getOpt)
 	path := fmt.Sprintf("%s/%s?%s", organizationBasePath, organizationID, params)
 	organization := new(Organization)
 

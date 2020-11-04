@@ -15,6 +15,7 @@ type ProjectService interface {
 	Delete(string) (*Response, error)
 	ListBGPSessions(projectID string, listOpt *ListOptions) ([]BGPSession, *Response, error)
 	ListEvents(string, *ListOptions) ([]Event, *Response, error)
+	ListSSHKeys(projectID string, searchOpt *SearchOptions) ([]SSHKey, *Response, error)
 }
 
 type projectsRoot struct {
@@ -22,7 +23,7 @@ type projectsRoot struct {
 	Meta     meta      `json:"meta"`
 }
 
-// Project represents a Packet project
+// Project represents an Equinix Metal project
 type Project struct {
 	ID              string        `json:"id"`
 	Name            string        `json:"name,omitempty"`
@@ -41,7 +42,7 @@ func (p Project) String() string {
 	return Stringify(p)
 }
 
-// ProjectCreateRequest type used to create a Packet project
+// ProjectCreateRequest type used to create an Equinix Metal project
 type ProjectCreateRequest struct {
 	Name            string `json:"name"`
 	PaymentMethodID string `json:"payment_method_id,omitempty"`
@@ -52,7 +53,7 @@ func (p ProjectCreateRequest) String() string {
 	return Stringify(p)
 }
 
-// ProjectUpdateRequest type used to update a Packet project
+// ProjectUpdateRequest type used to update an Equinix Metal project
 type ProjectUpdateRequest struct {
 	Name            *string `json:"name,omitempty"`
 	PaymentMethodID *string `json:"payment_method_id,omitempty"`
@@ -65,12 +66,12 @@ func (p ProjectUpdateRequest) String() string {
 
 // ProjectServiceOp implements ProjectService
 type ProjectServiceOp struct {
-	client *Client
+	client requestDoer
 }
 
 // List returns the user's projects
 func (s *ProjectServiceOp) List(listOpt *ListOptions) (projects []Project, resp *Response, err error) {
-	params := createListOptionsURL(listOpt)
+	params := urlQuery(listOpt)
 	root := new(projectsRoot)
 
 	path := fmt.Sprintf("%s?%s", projectBasePath, params)
@@ -97,7 +98,7 @@ func (s *ProjectServiceOp) List(listOpt *ListOptions) (projects []Project, resp 
 
 // Get returns a project by id
 func (s *ProjectServiceOp) Get(projectID string, getOpt *GetOptions) (*Project, *Response, error) {
-	params := createGetOptionsURL(getOpt)
+	params := urlQuery(getOpt)
 	path := fmt.Sprintf("%s/%s?%s", projectBasePath, projectID, params)
 	project := new(Project)
 	resp, err := s.client.DoRequest("GET", path, nil, project)
@@ -141,7 +142,7 @@ func (s *ProjectServiceOp) Delete(projectID string) (*Response, error) {
 
 // ListBGPSessions returns all BGP Sessions associated with the project
 func (s *ProjectServiceOp) ListBGPSessions(projectID string, listOpt *ListOptions) (bgpSessions []BGPSession, resp *Response, err error) {
-	params := createListOptionsURL(listOpt)
+	params := urlQuery(listOpt)
 	path := fmt.Sprintf("%s/%s%s?%s", projectBasePath, projectID, bgpSessionBasePath, params)
 
 	for {
@@ -164,6 +165,23 @@ func (s *ProjectServiceOp) ListBGPSessions(projectID string, listOpt *ListOption
 
 		return
 	}
+}
+
+// ListSSHKeys returns all SSH Keys associated with the project
+func (s *ProjectServiceOp) ListSSHKeys(projectID string, searchOpt *SearchOptions) (sshKeys []SSHKey, resp *Response, err error) {
+	params := urlQuery(searchOpt)
+	path := fmt.Sprintf("%s/%s%s?%s", projectBasePath, projectID, sshKeyBasePath, params)
+
+	subset := new(sshKeyRoot)
+
+	resp, err = s.client.DoRequest("GET", path, nil, subset)
+	if err != nil {
+		return nil, resp, err
+	}
+
+	sshKeys = append(sshKeys, subset.SSHKeys...)
+
+	return
 }
 
 // ListEvents returns list of project events
