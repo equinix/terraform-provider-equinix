@@ -96,6 +96,10 @@ func resourcePacketSpotMarketRequest() *schema.Resource {
 							Type:     schema.TypeString,
 							Optional: true,
 						},
+						"customdata": {
+							Type:     schema.TypeString,
+							Optional: true,
+						},
 					},
 				},
 			},
@@ -137,6 +141,10 @@ func resourcePacketSpotMarketRequestCreate(d *schema.ResourceData, meta interfac
 
 	if val, ok := d.GetOk("instance_parameters.0.userdata"); ok {
 		params.UserData = val.(string)
+	}
+
+	if val, ok := d.GetOk("instance_parameters.0.customdata"); ok {
+		params.CustomData = val.(string)
 	}
 
 	if val, ok := d.GetOk("instance_parameters.0.always_pxe"); ok {

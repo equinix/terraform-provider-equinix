@@ -142,6 +142,7 @@ The following arguments are supported:
 * `plan` - (Required) The device plan slug. To find the plan slug, visit [Device plans API docs](https://metal.equinix.com/developers/api/plans), set your auth token in the top of the page and see JSON from the API response.
 * `billing_cycle` - (Required) monthly or hourly
 * `user_data` (Optional) - A string of the desired User Data for the device.
+* `custom_data` (Optional) - A string of the desired Custom Data for the device.
 * `ipxe_script_url` (Optional) - URL pointing to a hosted iPXE script. More
   information is in the
   [Custom iPXE](https://metal.equinix.com/developers/docs/servers/custom-ipxe/)

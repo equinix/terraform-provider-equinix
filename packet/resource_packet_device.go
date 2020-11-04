@@ -217,6 +217,13 @@ func resourcePacketDevice() *schema.Resource {
 				ForceNew:  true,
 			},
 
+			"custom_data": {
+				Type:      schema.TypeString,
+				Optional:  true,
+				Sensitive: true,
+				ForceNew:  true,
+			},
+
 			"ipxe_script_url": {
 				Type:     schema.TypeString,
 				Optional: true,
@@ -306,6 +313,10 @@ func resourcePacketDeviceCreate(d *schema.ResourceData, meta interface{}) error 
 	}
 	if attr, ok := d.GetOk("user_data"); ok {
 		createRequest.UserData = attr.(string)
+	}
+
+	if attr, ok := d.GetOk("custom_data"); ok {
+		createRequest.CustomData = attr.(string)
 	}
 
 	if attr, ok := d.GetOk("ipxe_script_url"); ok {
@@ -526,6 +537,10 @@ func resourcePacketDeviceUpdate(d *schema.ResourceData, meta interface{}) error 
 	if d.HasChange("user_data") {
 		dUserData := d.Get("user_data").(string)
 		ur.UserData = &dUserData
+	}
+	if d.HasChange("custom_data") {
+		dCustomData := d.Get("custom_data").(string)
+		ur.CustomData = &dCustomData
 	}
 	if d.HasChange("hostname") {
 		dHostname := d.Get("hostname").(string)
