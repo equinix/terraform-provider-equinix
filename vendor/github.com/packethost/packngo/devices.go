@@ -28,11 +28,12 @@ type devicesRoot struct {
 	Meta    meta     `json:"meta"`
 }
 
-// Device represents a Packet device from API
+// Device represents an Equinix Metal device from API
 type Device struct {
 	ID                  string                 `json:"id"`
 	Href                string                 `json:"href,omitempty"`
 	Hostname            string                 `json:"hostname,omitempty"`
+	Description         *string                `json:"description,omitempty"`
 	State               string                 `json:"state,omitempty"`
 	Created             string                 `json:"created_at,omitempty"`
 	Updated             string                 `json:"updated_at,omitempty"`
@@ -49,6 +50,7 @@ type Device struct {
 	ProvisionEvents     []*Event               `json:"provisioning_events,omitempty"`
 	ProvisionPer        float32                `json:"provisioning_percentage,omitempty"`
 	UserData            string                 `json:"userdata,omitempty"`
+	User                string                 `json:"user,omitempty"`
 	RootPassword        string                 `json:"root_password,omitempty"`
 	IPXEScriptURL       string                 `json:"ipxe_script_url,omitempty"`
 	AlwaysPXE           bool                   `json:"always_pxe,omitempty"`
@@ -212,7 +214,7 @@ type CPR struct {
 	} `json:"filesystems"`
 }
 
-// DeviceCreateRequest type used to create a Packet device
+// DeviceCreateRequest type used to create an Equinix Metal device
 type DeviceCreateRequest struct {
 	Hostname              string     `json:"hostname"`
 	Plan                  string     `json:"plan"`
@@ -223,6 +225,7 @@ type DeviceCreateRequest struct {
 	UserData              string     `json:"userdata"`
 	Storage               *CPR       `json:"storage,omitempty"`
 	Tags                  []string   `json:"tags"`
+	Description           string     `json:"description,omitempty"`
 	IPXEScriptURL         string     `json:"ipxe_script_url,omitempty"`
 	PublicIPv4SubnetSize  int        `json:"public_ipv4_subnet_size,omitempty"`
 	AlwaysPXE             bool       `json:"always_pxe,omitempty"`
@@ -245,7 +248,7 @@ type DeviceCreateRequest struct {
 	IPAddresses    []IPAddressCreateRequest `json:"ip_addresses,omitempty"`
 }
 
-// DeviceUpdateRequest type used to update a Packet device
+// DeviceUpdateRequest type used to update an Equinix Metal device
 type DeviceUpdateRequest struct {
 	Hostname      *string   `json:"hostname,omitempty"`
 	Description   *string   `json:"description,omitempty"`
@@ -282,7 +285,7 @@ type DeviceServiceOp struct {
 // List returns devices on a project
 func (s *DeviceServiceOp) List(projectID string, listOpt *ListOptions) (devices []Device, resp *Response, err error) {
 	listOpt = makeSureListOptionsInclude(listOpt, "facility")
-	params := createListOptionsURL(listOpt)
+	params := urlQuery(listOpt)
 	path := fmt.Sprintf("%s/%s%s?%s", projectBasePath, projectID, deviceBasePath, params)
 
 	for {
@@ -310,7 +313,7 @@ func (s *DeviceServiceOp) List(projectID string, listOpt *ListOptions) (devices 
 // Get returns a device by id
 func (s *DeviceServiceOp) Get(deviceID string, getOpt *GetOptions) (*Device, *Response, error) {
 	getOpt = makeSureGetOptionsInclude(getOpt, "facility")
-	params := createGetOptionsURL(getOpt)
+	params := urlQuery(getOpt)
 
 	path := fmt.Sprintf("%s/%s?%s", deviceBasePath, deviceID, params)
 	device := new(Device)
@@ -400,7 +403,7 @@ func (s *DeviceServiceOp) Unlock(deviceID string) (*Response, error) {
 
 func (s *DeviceServiceOp) ListBGPNeighbors(deviceID string, listOpt *ListOptions) ([]BGPNeighbor, *Response, error) {
 	root := new(bgpNeighborsRoot)
-	params := createListOptionsURL(listOpt)
+	params := urlQuery(listOpt)
 	path := fmt.Sprintf("%s/%s%s?%s", deviceBasePath, deviceID, bgpNeighborsBasePath, params)
 
 	resp, err := s.client.DoRequest("GET", path, nil, root)
@@ -413,7 +416,7 @@ func (s *DeviceServiceOp) ListBGPNeighbors(deviceID string, listOpt *ListOptions
 
 // ListBGPSessions returns all BGP Sessions associated with the device
 func (s *DeviceServiceOp) ListBGPSessions(deviceID string, listOpt *ListOptions) (bgpSessions []BGPSession, resp *Response, err error) {
-	params := createListOptionsURL(listOpt)
+	params := urlQuery(listOpt)
 	path := fmt.Sprintf("%s/%s%s?%s", deviceBasePath, deviceID, bgpSessionBasePath, params)
 
 	for {

@@ -32,7 +32,7 @@ type DeviceIPService interface {
 // ProjectIPService handles reservation of IP address blocks for a project.
 type ProjectIPService interface {
 	Get(reservationID string, getOpt *GetOptions) (*IPAddressReservation, *Response, error)
-	List(projectID string) ([]IPAddressReservation, *Response, error)
+	List(projectID string, listOpt *ListOptions) ([]IPAddressReservation, *Response, error)
 	Request(projectID string, ipReservationReq *IPReservationRequest) (*IPAddressReservation, *Response, error)
 	Remove(ipReservationID string) (*Response, error)
 	AvailableAddresses(ipReservationID string, r *AvailableRequest) ([]string, *Response, error)
@@ -61,12 +61,12 @@ type IpAddressCommon struct { //nolint:golint
 // IPAddressReservation is created when user sends IP reservation request for a project (considering it's within quota).
 type IPAddressReservation struct {
 	IpAddressCommon
-	Assignments []Href    `json:"assignments"`
-	Facility    *Facility `json:"facility,omitempty"`
-	Available   string    `json:"available"`
-	Addon       bool      `json:"addon"`
-	Bill        bool      `json:"bill"`
-	Description *string   `json:"details"`
+	Assignments []*IPAddressAssignment `json:"assignments"`
+	Facility    *Facility              `json:"facility,omitempty"`
+	Available   string                 `json:"available"`
+	Addon       bool                   `json:"addon"`
+	Bill        bool                   `json:"bill"`
+	Description *string                `json:"details"`
 }
 
 // AvailableResponse is a type for listing of available addresses from a reserved block.
@@ -93,6 +93,9 @@ type IPReservationRequest struct {
 	Facility    *string                `json:"facility,omitempty"`
 	Tags        []string               `json:"tags,omitempty"`
 	CustomData  map[string]interface{} `json:"customdata,omitempty"`
+	// FailOnApprovalRequired if the IP request cannot be approved automatically, rather than sending to
+	// the longer Equinix Metal approval process, fail immediately with a 422 error
+	FailOnApprovalRequired bool `json:"fail_on_approval_required,omitempty"`
 }
 
 // AddressStruct is a helper type for request/response with dict like {"address": ... }
@@ -142,7 +145,7 @@ func (i *DeviceIPServiceOp) Assign(deviceID string, assignRequest *AddressStruct
 
 // Get returns assignment by ID.
 func (i *DeviceIPServiceOp) Get(assignmentID string, getOpt *GetOptions) (*IPAddressAssignment, *Response, error) {
-	params := createGetOptionsURL(getOpt)
+	params := urlQuery(getOpt)
 	path := fmt.Sprintf("%s/%s?%s", ipBasePath, assignmentID, params)
 	ipa := new(IPAddressAssignment)
 
@@ -156,7 +159,7 @@ func (i *DeviceIPServiceOp) Get(assignmentID string, getOpt *GetOptions) (*IPAdd
 
 // List list all of the IP address assignments on a device
 func (i *DeviceIPServiceOp) List(deviceID string, listOpt *ListOptions) ([]IPAddressAssignment, *Response, error) {
-	params := createListOptionsURL(listOpt)
+	params := urlQuery(listOpt)
 
 	path := fmt.Sprintf("%s/%s%s?%s", deviceBasePath, deviceID, ipBasePath, params)
 
@@ -182,7 +185,7 @@ type ProjectIPServiceOp struct {
 
 // Get returns reservation by ID.
 func (i *ProjectIPServiceOp) Get(reservationID string, getOpt *GetOptions) (*IPAddressReservation, *Response, error) {
-	params := createGetOptionsURL(getOpt)
+	params := urlQuery(getOpt)
 	path := fmt.Sprintf("%s/%s?%s", ipBasePath, reservationID, params)
 	ipr := new(IPAddressReservation)
 
@@ -195,8 +198,10 @@ func (i *ProjectIPServiceOp) Get(reservationID string, getOpt *GetOptions) (*IPA
 }
 
 // List provides a list of IP resevations for a single project.
-func (i *ProjectIPServiceOp) List(projectID string) ([]IPAddressReservation, *Response, error) {
-	path := fmt.Sprintf("%s/%s%s", projectBasePath, projectID, ipBasePath)
+func (i *ProjectIPServiceOp) List(projectID string, listOpt *ListOptions) ([]IPAddressReservation, *Response, error) {
+	params := urlQuery(listOpt)
+
+	path := fmt.Sprintf("%s/%s%s?%s", projectBasePath, projectID, ipBasePath, params)
 	reservations := new(struct {
 		Reservations []IPAddressReservation `json:"ip_addresses"`
 	})

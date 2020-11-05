@@ -15,7 +15,7 @@ type planRoot struct {
 	Plans []Plan `json:"plans"`
 }
 
-// Plan represents a Packet service plan
+// Plan represents an Equinix Metal service plan
 type Plan struct {
 	ID              string     `json:"id"`
 	Slug            string     `json:"slug,omitempty"`
@@ -114,7 +114,7 @@ type PlanServiceOp struct {
 // List method returns all available plans
 func (s *PlanServiceOp) List(listOpt *ListOptions) ([]Plan, *Response, error) {
 	root := new(planRoot)
-	params := createListOptionsURL(listOpt)
+	params := urlQuery(listOpt)
 	path := fmt.Sprintf("%s?%s", planBasePath, params)
 
 	resp, err := s.client.DoRequest("GET", path, nil, root)

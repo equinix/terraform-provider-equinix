@@ -22,7 +22,7 @@ type BGPSessionServiceOp struct {
 	client *Client
 }
 
-// BGPSession represents a Packet BGP Session
+// BGPSession represents an Equinix Metal BGP Session
 type BGPSession struct {
 	ID            string   `json:"id,omitempty"`
 	Status        string   `json:"status,omitempty"`
@@ -85,7 +85,7 @@ func (s *BGPSessionServiceOp) Delete(id string) (*Response, error) {
 
 // Get function
 func (s *BGPSessionServiceOp) Get(id string, getOpt *GetOptions) (session *BGPSession, response *Response, err error) {
-	params := createGetOptionsURL(getOpt)
+	params := urlQuery(getOpt)
 	path := fmt.Sprintf("%s/%s?%s", bgpSessionBasePath, id, params)
 	session = new(BGPSession)
 	response, err = s.client.DoRequest("GET", path, nil, session)
