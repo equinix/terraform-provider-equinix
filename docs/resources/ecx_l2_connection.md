@@ -96,8 +96,6 @@ resource "equinix_ecx_l2_connection" "router-gcp" {
 }
 ```
 
-
-
 ## Argument Reference
 
 The following arguments are supported:
@@ -159,6 +157,16 @@ are exported:
 - `redundant_uuid` - Unique identifier of the redundant connection
 (i.e. secondary connection)
 - `redundancy_type` - type of connection, either primary or secondary
+- `zside_port_uuid` - when not provided as an argument, it is identifier of the
+z-side port, assigned by the Fabric
+- `zside_vlan_stag` - when not provided as an argument, it is S-Tag/Outer-Tag of
+ the connection on the Z side, assigned by the Fabric
+- `zside_vlan_ctag` - when not provided as an argument, it is C-Tag/Inner-Tag of
+ the connection on the Z side, assigned by the Fabric
+- `secondary`
+  - `zside_port_uuid` - as for primary connection
+  - `zside_vlan_stag` - as for primary connection
+  - `zside_vlan_ctag` - as for primary connection
 
 ## Update operation behavior
 
