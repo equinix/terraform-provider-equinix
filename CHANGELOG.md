@@ -2,6 +2,7 @@
 
 FEATURES:
 
+- **New Resource**: `equinix_network_ssh_key` ([#25](https://github.com/equinix/terraform-provider-equinix/issues/25))
 - **New Resource**: `equinix_network_bgp` ([#16](https://github.com/equinix/terraform-provider-equinix/issues/16))
 - **New Data source**: `equinix_network_account` ([#13](https://github.com/equinix/terraform-provider-equinix/issues/13))
 - **New Data source**: `equinix_network_device_type` ([#13](https://github.com/equinix/terraform-provider-equinix/issues/13))

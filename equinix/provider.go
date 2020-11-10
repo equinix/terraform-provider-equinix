@@ -63,6 +63,7 @@ func Provider() terraform.ResourceProvider {
 			"equinix_network_device":             resourceNetworkDevice(),
 			"equinix_network_ssh_user":           resourceNetworkSSHUser(),
 			"equinix_network_bgp":                resourceNetworkBGP(),
+			"equinix_network_ssh_key":            resourceNetworkSSHKey(),
 		},
 	}
 
