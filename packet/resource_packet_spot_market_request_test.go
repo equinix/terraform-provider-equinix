@@ -95,7 +95,7 @@ resource "packet_spot_market_request" "request" {
   instance_parameters {
     hostname         = "tfacc-testspot"
     billing_cycle    = "hourly"
-    operating_system = "coreos_stable"
+    operating_system = "ubuntu_18_04"
     plan             = "baremetal_0"
   }
 }`, name)
