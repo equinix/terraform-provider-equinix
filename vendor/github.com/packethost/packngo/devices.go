@@ -6,6 +6,13 @@ import (
 
 const deviceBasePath = "/devices"
 
+const (
+	NetworkTypeHybrid       = "hybrid"
+	NetworkTypeL2Bonded     = "layer2-bonded"
+	NetworkTypeL2Individual = "layer2-individual"
+	NetworkTypeL3           = "layer3"
+)
+
 // DeviceService interface defines available device methods
 type DeviceService interface {
 	List(ProjectID string, listOpt *ListOptions) ([]Device, *Response, error)
@@ -146,29 +153,61 @@ func (d *Device) GetPortByName(name string) (*Port, error) {
 	return nil, fmt.Errorf("Port %s not found in device %s", name, d.ID)
 }
 
-func (d *Device) GetNetworkType() (string, error) {
-	numOfBonds := d.NumOfBonds()
-	if (numOfBonds < 1) || (numOfBonds > 2) {
-		return "", fmt.Errorf("Wrong number of Bond ports")
+type ports map[string]*Port
+
+func (ports ports) allBonded() bool {
+	if ports == nil {
+		return false
 	}
-	bond0, err := d.GetPortByName("bond0")
-	if err != nil {
-		return "", err
+
+	if len(ports) == 0 {
+		return false
 	}
-	if numOfBonds == 2 {
-		bond1, err := d.GetPortByName("bond1")
-		if err != nil {
-			return "", err
+
+	for _, p := range ports {
+		if (p == nil) || (!p.Data.Bonded) {
+			return false
 		}
-		if bond0.NetworkType == bond1.NetworkType {
-			return bond0.NetworkType, nil
-		}
-		if (bond0.NetworkType == "layer3") && (bond1.NetworkType == "layer2-individual") {
-			return "hybrid", nil
-		}
-		return "", fmt.Errorf("Strange 2-bond ports conf - bond0: %s, bond1: %s", bond0.NetworkType, bond1.NetworkType)
 	}
-	return bond0.NetworkType, nil
+	return true
+}
+
+func (d *Device) HasManagementIPs() bool {
+	for _, ip := range d.Network {
+		if ip.Management {
+			return true
+		}
+	}
+	return false
+}
+
+// GetNetworkType returns a composite network type identification for a device
+// based on the plan, network_type, and IP management state of the device.
+// GetNetworkType provides the same composite state rendered in the Packet
+// Portal for a given device.
+func (d *Device) GetNetworkType() string {
+	if d.Plan != nil {
+		if d.Plan.Slug == "baremetal_0" || d.Plan.Slug == "baremetal_1" {
+			return NetworkTypeL3
+		}
+		if d.Plan.Slug == "baremetal_1e" {
+			return NetworkTypeHybrid
+		}
+	}
+
+	bonds := ports(d.GetBondPorts())
+	phys := ports(d.GetPhysicalPorts())
+
+	if bonds.allBonded() {
+		if phys.allBonded() {
+			if !d.HasManagementIPs() {
+				return NetworkTypeL2Bonded
+			}
+			return NetworkTypeL3
+		}
+		return NetworkTypeHybrid
+	}
+	return NetworkTypeL2Individual
 }
 
 type IPAddressCreateRequest struct {
@@ -283,8 +322,17 @@ type DeviceServiceOp struct {
 }
 
 // List returns devices on a project
+//
+// Regarding ListOptions.Search: The API documentation does not provide guidance
+// on the fields that will be searched using this parameter, so this behavior is
+// undefined and prone to change.
+//
+// As of 2020-10-20, ListOptions.Search will look for matches in the following
+// Device properties: Hostname, Description, Tags, ID, ShortID, Network.Address,
+// Plan.Name, Plan.Slug, Facility.Code, Facility.Name, OS.Name, OS.Slug,
+// HardwareReservation.ID, HardwareReservation.ShortID
 func (s *DeviceServiceOp) List(projectID string, listOpt *ListOptions) (devices []Device, resp *Response, err error) {
-	listOpt = makeSureListOptionsInclude(listOpt, "facility")
+	listOpt = listOpt.Including("facility")
 	params := urlQuery(listOpt)
 	path := fmt.Sprintf("%s/%s%s?%s", projectBasePath, projectID, deviceBasePath, params)
 
@@ -312,7 +360,7 @@ func (s *DeviceServiceOp) List(projectID string, listOpt *ListOptions) (devices 
 
 // Get returns a device by id
 func (s *DeviceServiceOp) Get(deviceID string, getOpt *GetOptions) (*Device, *Response, error) {
-	getOpt = makeSureGetOptionsInclude(getOpt, "facility")
+	getOpt = getOpt.Including("facility")
 	params := urlQuery(getOpt)
 
 	path := fmt.Sprintf("%s/%s?%s", deviceBasePath, deviceID, params)

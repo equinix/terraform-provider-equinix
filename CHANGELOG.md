@@ -1,12 +1,14 @@
 ## 3.1.0 (Unreleased)
 
 BREAKING CHANGES:
-- packngo updated to v0.4.1, changing the API endpoint from api.packet.net to api.equinix.com/metal/v1
+- packngo updated to v0.4.1+, changing the API endpoint from api.packet.net to api.equinix.com/metal/v1
 
 FEATURES:
 - [#249](https://github.com/packethost/terraform-provider-packet/pull/249) New datasource `packet_project_ssh_key`
 
 IMPROVEMENTS:
+- `packet_device` datasource should query by hostname much faster
+- `packet_device_network_type` conversions should be more reliable
 - Test sweeper added for SSH keys
 - Acceptance testing moved to Github Actions
 - Improved logging when resources are not found and removed from state

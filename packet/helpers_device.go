@@ -173,10 +173,7 @@ func waitForDeviceAttribute(d *schema.ResourceData, targets []string, pending []
 			if err == nil {
 				retAttrVal := device.State
 				if attribute == "network_type" {
-					networkType, nterr := device.GetNetworkType()
-					if nterr != nil {
-						return "error", "error", nterr
-					}
+					networkType := device.GetNetworkType()
 					retAttrVal = networkType
 				}
 				return retAttrVal, retAttrVal, nil
