@@ -40,6 +40,10 @@ func dataSourcePacketPreCreatedIPBlock() *schema.Resource {
 		Type:     schema.TypeInt,
 		Computed: true,
 	}
+	s["type"] = &schema.Schema{
+		Type:     schema.TypeString,
+		Computed: true,
+	}
 
 	return &schema.Resource{
 		Read:   dataSourcePacketReservedIPBlockRead,
