@@ -1,5 +1,10 @@
 ## 1.1.0 (Unreleased)
 
+ENHANCEMENTS:
+
+- resource/equinix_ecx_l2_connection_accepter: creation awaits for desired
+connection provider state before succeeding ([#26](https://github.com/equinix/terraform-provider-equinix/issues/26))
+
 FEATURES:
 
 - **New Resource**: `equinix_network_bgp` ([#16](https://github.com/equinix/terraform-provider-equinix/issues/16))
