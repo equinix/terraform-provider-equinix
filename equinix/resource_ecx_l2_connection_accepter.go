@@ -3,8 +3,10 @@ package equinix
 import (
 	"fmt"
 	"log"
+	"time"
 
 	"github.com/equinix/ecx-go"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
 )
@@ -22,6 +24,9 @@ func resourceECXL2ConnectionAccepter() *schema.Resource {
 		Read:   resourceECXL2ConnectionAccepterRead,
 		Delete: resourceECXL2ConnectionAccepterDelete,
 		Schema: createECXL2ConnectionAccepterResourceSchema(),
+		Timeouts: &schema.ResourceTimeout{
+			Create: schema.DefaultTimeout(5 * time.Minute),
+		},
 	}
 }
 
@@ -63,6 +68,28 @@ func resourceECXL2ConnectionAccepterCreate(d *schema.ResourceData, m interface{}
 		return err
 	}
 	d.SetId(connID)
+
+	createStateConf := &resource.StateChangeConf{
+		Pending: []string{
+			ecx.ConnectionStatusPendingApproval,
+		},
+		Target: []string{
+			ecx.ConnectionStatusProvisioned,
+		},
+		Timeout:    d.Timeout(schema.TimeoutCreate),
+		Delay:      1 * time.Second,
+		MinTimeout: 1 * time.Second,
+		Refresh: func() (interface{}, string, error) {
+			resp, err := conf.ecx.GetL2Connection(connID)
+			if err != nil {
+				return nil, "", err
+			}
+			return resp, resp.Status, nil
+		},
+	}
+	if _, err := createStateConf.WaitForState(); err != nil {
+		return fmt.Errorf("error waiting for connection %q to be approved: %s", connID, err)
+	}
 	return resourceECXL2ConnectionAccepterRead(d, m)
 }
 
