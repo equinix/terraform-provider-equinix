@@ -1,7 +1,8 @@
 # ECX Fabric Layer2 Connection to AWS
 
 This example shows how create layer 2 connection between ECX Fabric port
-aud AWS Direct Connect.
+and AWS Direct Connect, including creation of Direct Connect private
+virtual interface.
 
 ## Adjust variables
 
@@ -14,8 +15,9 @@ obtained same way as above
 * `equinix_port_name` - name of ECX Fabric port that you want to connect
 to AWS i.e. *EQUINIX_SVC-FR4-CX-PRI-01*
 * `aws_account_id` - AWS account identifier
-* `aws_access_key` - AWS access key *(used for accepting connection on AWS side)*
-* `aws_secret_key` - AWS secret key *(used as above)*
+* `aws_access_key` - AWS access key
+* `aws_secret_key` - AWS secret key
+* `aws_region` - AWS region
 
 ## Initialize
 

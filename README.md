@@ -17,126 +17,21 @@ management of Equinix Platform resources.
 ## Requirements
 
 - [Terraform](https://www.terraform.io/downloads.html) 0.12+
-- [Go](https://golang.org/doc/install) 1.14+ (to build provider plugin)
 
 ## Using the provider
 
-**NOTE:** Equinix provider is pending official approval and verification by HashiCorp.
-Until then, provider has to be installed manually as third-party provider plugin.
+The Equinix provider will be installed automatically from official Terraform
+registry on `terraform init`.
 
-See the [Installation guide](INSTALLATION.md) for manual plugin installation instructions.
+See the [Equinix Provider documentation](https://registry.terraform.io/providers/equinix/equinix/latest/docs)
+to get started using the Equinix provider.
 
-See the [Equinix Provider documentation](docs/index.md) to get started using the
-Equinix provider.
+## Documentation
 
-- [Data source: ECXF port](docs/data-sources/ecx_port.md)
-- [Data source: ECXF layer 2 seller
-  profile](docs/data-sources/ecx_l2_sellerprofile.md)
-- [Resource: ECXF layer 2 connection](docs/resources/ecx_l2_connection.md)
-- [Resource: ECXF layer 2 connection
-  accepter](docs/resources/ecx_l2_connection_accepter.md)
-- [Resource: ECXF layer 2 service
-  profile](docs/resources/ecx_l2_serviceprofile.md)
-
-See [Equinix Provider Examples](examples/) for use case driven guides to managing
-Equinix services with Terraform.
-
-## Building the provider
-
-1. Clone Equinix Terraform Provider repository
-
-   ```sh
-   git clone https://github.com/equinix/terraform-provider-equinix.git
-   ```
-
-2. Build the provider
-
-   Enter the provider directory and build the provider:
-
-   ```sh
-   cd terraform-provider-equinix
-   make build
-   ```
-
-3. Install the provider
-
-   Provider binary can be installed in terraform plugins directory `~/.terraform.d/plugins`
-   by running make with _install_ target:
-
-   ```sh
-   make install
-   ```
+- full documentation is available on [Terraform Registry website](https://registry.terraform.io/providers/equinix/equinix/latest/docs)
+- use case driven guides can be found in [Equinix Provider examples directory](examples/)
 
 ## Developing the provider
 
-- use Go programming best practices, _gofmt, go_vet, golint, ineffassign_, etc.
-- enter the provider directory
-
-  ```sh
-  cd terraform-provider-equinix
-  ```
-
-- to build, use make `build` target
-
-  ```sh
-  make build
-  ```
-
-- to run unit tests, use make `test` target
-
-  ```sh
-  make test
-  ```
-
-- to run acceptance tests, use make `testacc` target
-
-  ```sh
-  make testacc
-  ```
-
-  Check "Running acceptance tests" section for more details.
-
-### Running acceptance tests
-
-**NOTE**: acceptance tests create resources on real infrastructure, thus may be
-subject for costs. In order to run acceptance tests, you must set necessary provider
-configuration attributes.
-
-```sh
-export EQUINIX_API_ENDPOINT=https://api.equinix.com
-export EQUINIX_API_CLIENTID=someID
-export EQUINIX_API_CLIENTSECRET=someSecret
-make testacc
-```
-
-#### ECX Port acceptance tests
-
-ECX Port data source acceptance tests use below parameters, that can be set to
-match with desired testing environment. If not set, defaults values,
-**from Sandbox environment** are used.
-
-- **TF_ACC_ECX_PORT_NAME** - sets name of the port used in data source
-
-#### ECX L2 connection acceptance tests
-
-ECX Layer 2 connection acceptance tests use below parameters, that can be set to
-match with desired testing environment. If not set, defaults values,
-**from Sandbox environment** are used.
-
-- **TF_ACC_ECX_L2_AWS_SP_NAME** - sets name of Layer2 service profile for AWS
-- **TF_ACC_ECX_L2_AZURE_SP_NAME** - sets name of Layer2 service profile for Azure
-- **TF_ACC_ECX_PRI_DOT1Q_PORT_NAME** - sets name of Dot1Q encapsulated port on
-primary device
-- **TF_ACC_ECX_SEC_DOT1Q_PORT_NAME** - sets name of Dot1Q encapsulated port on
-secondary device
-
-Example - running tests on Sandbox environment but with defined ports:
-
-```sh
-export EQUINIX_API_ENDPOINT=https://sandboxapi.equinix.com
-export EQUINIX_API_CLIENTID=someID
-export EQUINIX_API_CLIENTSECRET=someSecret
-export TF_ACC_ECX_PRI_DOT1Q_PORT_NAME="sit-001-CX-SV1-NL-Dot1q-BO-10G-PRI-JUN-33"
-export TF_ACC_ECX_SEC_DOT1Q_PORT_NAME="sit-001-CX-SV5-NL-Dot1q-BO-10G-SEC-JUN-36"
-make testacc
-```
+Check [Equinix provider development](DEVELOPMENT.md) for guides on building
+and developing the provider.
