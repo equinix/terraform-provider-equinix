@@ -5,6 +5,11 @@ ENHANCEMENTS:
 - resource/equinix_ecx_l2_connection_accepter: creation awaits for desired
 connection provider state before succeeding ([#26](https://github.com/equinix/terraform-provider-equinix/issues/26))
 
+BUG FIXES:
+
+- resource/equinix_ecx_l2_connection: z-side port identifier, vlan C-tag and vlan S-tag 
+for secondary connection are properly populated with values from the Fabric ([#24](https://github.com/equinix/terraform-provider-equinix/issues/24))
+
 FEATURES:
 
 - **New Resource**: `equinix_network_acl_template` ([#19](https://github.com/equinix/terraform-provider-equinix/issues/19))

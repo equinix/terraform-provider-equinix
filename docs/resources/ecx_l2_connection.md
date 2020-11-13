@@ -141,10 +141,7 @@ you want to connect to.
   - `port_uuid` - (Required when device_uuid is not set)
   - `device_uuid` - (Required when port_uuid is not set)
   - `vlan_stag` - (Required when port_uuid is set)
-  - `vlan_ctag` - (Optional)
-  - `zside_port_uuid` - (Optional)
-  - `zside_vlan_stag` - (Optional)
-  - `zside_vlan_ctag` - (Optional)
+  - `vlan_ctag` - (Optional, can be set with port_uuid)
 
 ## Attributes Reference
 
