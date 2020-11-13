@@ -287,22 +287,16 @@ func createECXL2ConnectionResourceSchema() map[string]*schema.Schema {
 						ConflictsWith: []string{ecxL2ConnectionSchemaNames["DeviceUUID"]},
 					},
 					ecxL2ConnectionSchemaNames["ZSidePortUUID"]: {
-						Type:         schema.TypeString,
-						ForceNew:     true,
-						Optional:     true,
-						ValidateFunc: validation.StringIsNotEmpty,
+						Type:     schema.TypeString,
+						Computed: true,
 					},
 					ecxL2ConnectionSchemaNames["ZSideVlanSTag"]: {
-						Type:         schema.TypeInt,
-						ForceNew:     true,
-						Optional:     true,
-						ValidateFunc: validation.IntBetween(2, 4092),
+						Type:     schema.TypeInt,
+						Computed: true,
 					},
 					ecxL2ConnectionSchemaNames["ZSideVlanCTag"]: {
-						Type:         schema.TypeInt,
-						ForceNew:     true,
-						Optional:     true,
-						ValidateFunc: validation.IntBetween(2, 4092),
+						Type:     schema.TypeInt,
+						Computed: true,
 					},
 					ecxL2ConnectionSchemaNames["RedundantUUID"]: {
 						Type:     schema.TypeString,
@@ -468,12 +462,6 @@ func createECXL2Connections(d *schema.ResourceData) (*ecx.L2Connection, *ecx.L2C
 	if v, ok := d.GetOk(ecxL2ConnectionSchemaNames["SpeedUnit"]); ok {
 		primary.SpeedUnit = v.(string)
 	}
-	if v, ok := d.GetOk(ecxL2ConnectionSchemaNames["Status"]); ok {
-		primary.Status = v.(string)
-	}
-	if v, ok := d.GetOk(ecxL2ConnectionSchemaNames["ProviderStatus"]); ok {
-		primary.ProviderStatus = v.(string)
-	}
 	if v, ok := d.GetOk(ecxL2ConnectionSchemaNames["Notifications"]); ok {
 		primary.Notifications = expandSetToStringList(v.(*schema.Set))
 	}
@@ -519,12 +507,6 @@ func createECXL2Connections(d *schema.ResourceData) (*ecx.L2Connection, *ecx.L2C
 	if v, ok := d.GetOk(ecxL2ConnectionSchemaNames["AuthorizationKey"]); ok {
 		primary.AuthorizationKey = v.(string)
 	}
-	if v, ok := d.GetOk(ecxL2ConnectionSchemaNames["RedundantUUID"]); ok {
-		primary.RedundantUUID = v.(string)
-	}
-	if v, ok := d.GetOk(ecxL2ConnectionSchemaNames["RedundancyType"]); ok {
-		primary.RedundancyType = v.(string)
-	}
 	if v, ok := d.GetOk(ecxL2ConnectionSchemaNames["SecondaryConnection"]); ok {
 		secConnSet := v.(*schema.Set)
 		if secConnSet.Len() > 0 {
@@ -567,13 +549,20 @@ func updateECXL2ConnectionResource(primary *ecx.L2Connection, secondary *ecx.L2C
 		return fmt.Errorf("error reading PortUUID: %s", err)
 	}
 	if err := d.Set(ecxL2ConnectionSchemaNames["DeviceUUID"], primary.DeviceUUID); err != nil {
-		return fmt.Errorf("error reading PortUUID: %s", err)
+		return fmt.Errorf("error reading DeviceUUID: %s", err)
+	}
+	if primary.DeviceInterfaceID > 0 {
+		if err := d.Set(ecxL2ConnectionSchemaNames["DeviceInterfaceID"], primary.DeviceInterfaceID); err != nil {
+			return fmt.Errorf("error reading DeviceInterfaceID: %s", err)
+		}
 	}
 	if err := d.Set(ecxL2ConnectionSchemaNames["VlanSTag"], primary.VlanSTag); err != nil {
 		return fmt.Errorf("error reading VlanSTag: %s", err)
 	}
-	if err := d.Set(ecxL2ConnectionSchemaNames["VlanCTag"], primary.VlanCTag); err != nil {
-		return fmt.Errorf("error reading VlanCTag: %s", err)
+	if primary.VlanCTag > 0 {
+		if err := d.Set(ecxL2ConnectionSchemaNames["VlanCTag"], primary.VlanCTag); err != nil {
+			return fmt.Errorf("error reading VlanCTag: %s", err)
+		}
 	}
 	if primary.NamedTag != "" {
 		if err := d.Set(ecxL2ConnectionSchemaNames["NamedTag"], primary.NamedTag); err != nil {
@@ -586,11 +575,15 @@ func updateECXL2ConnectionResource(primary *ecx.L2Connection, secondary *ecx.L2C
 	if err := d.Set(ecxL2ConnectionSchemaNames["ZSidePortUUID"], primary.ZSidePortUUID); err != nil {
 		return fmt.Errorf("error reading ZSidePortUUID: %s", err)
 	}
-	if err := d.Set(ecxL2ConnectionSchemaNames["ZSideVlanSTag"], primary.ZSideVlanSTag); err != nil {
-		return fmt.Errorf("error reading ZSideVlanSTag: %s", err)
+	if primary.ZSideVlanSTag > 0 {
+		if err := d.Set(ecxL2ConnectionSchemaNames["ZSideVlanSTag"], primary.ZSideVlanSTag); err != nil {
+			return fmt.Errorf("error reading ZSideVlanSTag: %s", err)
+		}
 	}
-	if err := d.Set(ecxL2ConnectionSchemaNames["ZSideVlanCTag"], primary.ZSideVlanCTag); err != nil {
-		return fmt.Errorf("error reading ZSideVlanCTag: %s", err)
+	if primary.ZSideVlanCTag > 0 {
+		if err := d.Set(ecxL2ConnectionSchemaNames["ZSideVlanCTag"], primary.ZSideVlanCTag); err != nil {
+			return fmt.Errorf("error reading ZSideVlanCTag: %s", err)
+		}
 	}
 	if err := d.Set(ecxL2ConnectionSchemaNames["SellerRegion"], primary.SellerRegion); err != nil {
 		return fmt.Errorf("error reading SellerRegion: %s", err)
@@ -608,21 +601,14 @@ func updateECXL2ConnectionResource(primary *ecx.L2Connection, secondary *ecx.L2C
 		return fmt.Errorf("error reading RedundancyType: %s", err)
 	}
 	if secondary != nil {
-		var prev *ecx.L2Connection
-		if v, ok := d.GetOk(ecxL2ConnectionSchemaNames["SecondaryConnection"]); ok {
-			vSet := v.(*schema.Set)
-			if vSet.Len() > 0 {
-				prev = &expandECXL2ConnectionSecondary(vSet)[0]
-			}
-		}
-		if err := d.Set(ecxL2ConnectionSchemaNames["SecondaryConnection"], flattenECXL2ConnectionSecondary(prev, secondary)); err != nil {
+		if err := d.Set(ecxL2ConnectionSchemaNames["SecondaryConnection"], flattenECXL2ConnectionSecondary(secondary)); err != nil {
 			return fmt.Errorf("error reading SecondaryConnection: %s", err)
 		}
 	}
 	return nil
 }
 
-func flattenECXL2ConnectionSecondary(prev, conn *ecx.L2Connection) interface{} {
+func flattenECXL2ConnectionSecondary(conn *ecx.L2Connection) interface{} {
 	transformed := make(map[string]interface{})
 	transformed[ecxL2ConnectionSchemaNames["UUID"]] = conn.UUID
 	transformed[ecxL2ConnectionSchemaNames["Name"]] = conn.Name
@@ -630,17 +616,12 @@ func flattenECXL2ConnectionSecondary(prev, conn *ecx.L2Connection) interface{} {
 	transformed[ecxL2ConnectionSchemaNames["ProviderStatus"]] = conn.ProviderStatus
 	transformed[ecxL2ConnectionSchemaNames["PortUUID"]] = conn.PortUUID
 	transformed[ecxL2ConnectionSchemaNames["DeviceUUID"]] = conn.DeviceUUID
+	transformed[ecxL2ConnectionSchemaNames["DeviceInterfaceID"]] = conn.DeviceInterfaceID
 	transformed[ecxL2ConnectionSchemaNames["VlanSTag"]] = conn.VlanSTag
 	transformed[ecxL2ConnectionSchemaNames["VlanCTag"]] = conn.VlanCTag
-	if prev == nil || (prev != nil && prev.ZSidePortUUID != "") {
-		transformed[ecxL2ConnectionSchemaNames["ZSidePortUUID"]] = conn.ZSidePortUUID
-	}
-	if prev == nil || (prev != nil && prev.ZSideVlanSTag != 0) {
-		transformed[ecxL2ConnectionSchemaNames["ZSideVlanSTag"]] = conn.ZSideVlanSTag
-	}
-	if prev == nil || (prev != nil && prev.ZSideVlanCTag != 0) {
-		transformed[ecxL2ConnectionSchemaNames["ZSideVlanCTag"]] = conn.ZSideVlanCTag
-	}
+	transformed[ecxL2ConnectionSchemaNames["ZSidePortUUID"]] = conn.ZSidePortUUID
+	transformed[ecxL2ConnectionSchemaNames["ZSideVlanSTag"]] = conn.ZSideVlanSTag
+	transformed[ecxL2ConnectionSchemaNames["ZSideVlanCTag"]] = conn.ZSideVlanCTag
 	transformed[ecxL2ConnectionSchemaNames["RedundantUUID"]] = conn.RedundantUUID
 	transformed[ecxL2ConnectionSchemaNames["RedundancyType"]] = conn.RedundancyType
 	return []map[string]interface{}{transformed}
@@ -657,12 +638,6 @@ func expandECXL2ConnectionSecondary(connections *schema.Set) []ecx.L2Connection 
 		if v, ok := connMap[ecxL2ConnectionSchemaNames["Name"]]; ok {
 			c.Name = v.(string)
 		}
-		if v, ok := connMap[ecxL2ConnectionSchemaNames["Status"]]; ok {
-			c.Status = v.(string)
-		}
-		if v, ok := connMap[ecxL2ConnectionSchemaNames["ProviderStatus"]]; ok {
-			c.ProviderStatus = v.(string)
-		}
 		if v, ok := connMap[ecxL2ConnectionSchemaNames["PortUUID"]]; ok {
 			c.PortUUID = v.(string)
 		}
@@ -677,21 +652,6 @@ func expandECXL2ConnectionSecondary(connections *schema.Set) []ecx.L2Connection 
 		}
 		if cTag, ok := connMap[ecxL2ConnectionSchemaNames["VlanCTag"]]; ok {
 			c.VlanCTag = cTag.(int)
-		}
-		if zPortUUID, ok := connMap[ecxL2ConnectionSchemaNames["ZSidePortUUID"]]; ok {
-			c.ZSidePortUUID = zPortUUID.(string)
-		}
-		if zSTag, ok := connMap[ecxL2ConnectionSchemaNames["ZSideVlanSTag"]]; ok {
-			c.ZSideVlanSTag = zSTag.(int)
-		}
-		if zCTag, ok := connMap[ecxL2ConnectionSchemaNames["ZSideVlanCTag"]]; ok {
-			c.ZSideVlanCTag = zCTag.(int)
-		}
-		if v, ok := connMap[ecxL2ConnectionSchemaNames["RedundantUUID"]]; ok {
-			c.RedundantUUID = v.(string)
-		}
-		if v, ok := connMap[ecxL2ConnectionSchemaNames["RedundancyType"]]; ok {
-			c.RedundancyType = v.(string)
 		}
 		transformed = append(transformed, c)
 	}

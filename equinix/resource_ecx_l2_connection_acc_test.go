@@ -96,6 +96,7 @@ func TestAccECXL2ConnectionAWSDot1Q(t *testing.T) {
 					testAccECXL2ConnectionAttributes(&testConn, context),
 					resource.TestCheckResourceAttrSet(resourceName, "status"),
 					resource.TestCheckResourceAttrSet(resourceName, "provider_status"),
+					resource.TestCheckResourceAttrSet(resourceName, "zside_port_uuid"),
 				),
 			},
 		},
@@ -313,15 +314,6 @@ func testAccECXL2ConnectionSecondaryAttributes(conn *ecx.L2Connection, ctx map[s
 		}
 		if v, ok := ctx["secondary_vlan_ctag"]; ok && conn.VlanCTag != v.(int) {
 			return fmt.Errorf("vlanCTag does not match %v - %v", conn.VlanCTag, v)
-		}
-		if v, ok := ctx["secondary_zside_port_uuid"]; ok && conn.ZSidePortUUID != v.(string) {
-			return fmt.Errorf("zSidePortUUID does not match %v - %v", conn.ZSidePortUUID, v)
-		}
-		if v, ok := ctx["secondary_zside_vlan_stag"]; ok && conn.ZSideVlanSTag != v.(int) {
-			return fmt.Errorf("zSideVlanSTag does not match %v - %v", conn.ZSideVlanSTag, v)
-		}
-		if v, ok := ctx["secondary_zside_vlan_ctag"]; ok && conn.ZSideVlanCTag != v.(int) {
-			return fmt.Errorf("zSideVlanCTag does not match %v - %v", conn.ZSideVlanCTag, v)
 		}
 		return nil
 	}
