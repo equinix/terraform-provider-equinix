@@ -1,7 +1,7 @@
 TEST?=$$(go list ./... |grep -v 'vendor')
 GOFMT_FILES?=$$(find . -name '*.go' |grep -v vendor)
 WEBSITE_REPO=github.com/hashicorp/terraform-website
-PKG_NAME=packet
+PKG_NAME=metal
 GOPATH?=$(HOME)/go
 
 default: build
@@ -75,7 +75,7 @@ tfproviderlint-fix:
 
 tfproviderdocs-check:
 	@echo "==> Check provider docs with bflad/tfproviderdocs..."
-	@docker run -v $(PWD):/src bflad/tfproviderdocs check -provider-name=packet || (echo; \
+	@docker run -v $(PWD):/src bflad/tfproviderdocs check -provider-name=metal || (echo; \
 		echo "Unexpected issues found in code with bflad/tfproviderdocs."; \
 		exit 1)
 

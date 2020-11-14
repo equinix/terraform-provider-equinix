@@ -1,29 +1,29 @@
 ---
-page_title: "Equinix Metal: packet_device_bgp_neighbors"
+page_title: "Equinix Metal: metal_device_bgp_neighbors"
 subcategory: ""
 description: |-
   Provides a datasource for listing BGP neighbors of an Equinix Metal device
 ---
 
-# packet_device_bgp_neighbors
+# metal_device_bgp_neighbors
 
 Use this datasource to retrieve list of BGP neighbors of a device in the Equinix Metal host.
 
 To have any BGP neighbors listed, the device must be in [BGP-enabled project](../r/project.html) and have a [BGP session](../r/bgp_session.html) assigned.
 
-To learn more about using BGP in Equinix Metal, see the [packet_bgp_session](../r/bgp_session.html) resource documentation.
+To learn more about using BGP in Equinix Metal, see the [metal_bgp_session](../r/bgp_session.html) resource documentation.
 
 ## Example Usage
 
 ```hcl
 # Get Project by name and print UUIDs of its users
 
-data "packet_device_bgp_neighbors" "test" {
+data "metal_device_bgp_neighbors" "test" {
   device_id = "4c641195-25e5-4c3c-b2b7-4cd7a42c7b40"
 }
 
 output "bgp_neighbors_listing" {
-  value = data.packet_device_bgp_neighbors.test.bgp_neighbors
+  value = data.metal_device_bgp_neighbors.test.bgp_neighbors
 }
 ```
 

@@ -1,4 +1,4 @@
-module github.com/packethost/terraform-provider-packet
+module github.com/equinix/terraform-provider-equinix-metal
 
 require (
 	github.com/apparentlymart/go-dump v0.0.0-20190214190832-042adf3cf4a0 // indirect

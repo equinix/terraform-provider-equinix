@@ -5,7 +5,7 @@ description: |-
   Load automatically created IP blocks from your Equinix Metal project
 ---
 
-# packet\_precreated\_ip\_block
+# metal\_precreated\_ip\_block
 
 Use this data source to get CIDR expression for precreated IPv6 and IPv4 blocks in Equinix Metal.
 You can then use the cidrsubnet TF builtin function to derive subnets.
@@ -21,7 +21,7 @@ locals {
   project_id = "<UUID_of_your_project>"
 }
 
-resource "packet_device" "web1" {
+resource "metal_device" "web1" {
   hostname         = "web1"
   plan             = "t1.small.x86"
   facilities       = ["ewr1"]
@@ -31,7 +31,7 @@ resource "packet_device" "web1" {
 
 }
 
-data "packet_precreated_ip_block" "test" {
+data "metal_precreated_ip_block" "test" {
   facility       = "ewr1"
   project_id     = local.project_id
   address_family = 6
@@ -41,9 +41,9 @@ data "packet_precreated_ip_block" "test" {
 # The precreated IPv6 blocks are /56, so to get /64, we specify 8 more bits for network.
 # The cirdsubnet interpolation will pick second /64 subnet from the precreated block.
 
-resource "packet_ip_attachment" "from_ipv6_block" {
-  device_id     = packet_device.web1.id
-  cidr_notation = cidrsubnet(data.packet_precreated_ip_block.test.cidr_notation, 8, 2)
+resource "metal_ip_attachment" "from_ipv6_block" {
+  device_id     = metal_device.web1.id
+  cidr_notation = cidrsubnet(data.metal_precreated_ip_block.test.cidr_notation, 8, 2)
 }
 ```
 

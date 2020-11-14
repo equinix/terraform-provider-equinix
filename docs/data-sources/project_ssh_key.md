@@ -1,11 +1,11 @@
 ---
-page_title: "Equinix Metal: packet_project_ssh_key"
+page_title: "Equinix Metal: metal_project_ssh_key"
 subcategory: ""
 description: |-
   Provides an Equinix Metal Project SSH Key datasource.
 ---
 
-# packet\_project\_ssh\_key
+# metal\_project\_ssh\_key
 
 Use this datasource to retrieve attributes of a Project SSH Key API resource.
 
@@ -13,7 +13,7 @@ Use this datasource to retrieve attributes of a Project SSH Key API resource.
 
 ```hcl
 # Get Project SSH Key by name
-data "packet_project_ssh_key" "my_key" {
+data "metal_project_ssh_key" "my_key" {
   search     = "username@hostname"
   project_id = local.project_id
 }

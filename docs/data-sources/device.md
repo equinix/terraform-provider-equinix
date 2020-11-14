@@ -1,11 +1,11 @@
 ---
-page_title: "Equinix Metal: packet_device"
+page_title: "Equinix Metal: metal_device"
 subcategory: ""
 description: |-
   Provides an Equinix Metal device datasource. This can be used to read existing devices.
 ---
 
-# packet_device
+# metal_device
 
 Provides an Equinix Metal device datasource.
 
@@ -18,22 +18,22 @@ Provides an Equinix Metal device datasource.
 ```hcl
 # Fetch a device data by hostname and show it's ID
 
-data "packet_device" "test" {
+data "metal_device" "test" {
   project_id = local.project_id
   hostname   = "mydevice"
 }
 
 output "id" {
-  value = data.packet_device.test.id
+  value = data.metal_device.test.id
 }
 ```
 
 ```hcl
 # Fetch a device data by ID and show its public IPv4
-data "packet_device" "test" {}
+data "metal_device" "test" {}
 
 output "ipv4" {
-  value = data.packet_device.test.access_public_ipv4
+  value = data.metal_device.test.access_public_ipv4
 }
 ```
 
@@ -60,9 +60,9 @@ The following attributes are exported:
 * `hardware_reservation_id` - The id of hardware reservation which this device occupies
 * `id` - The ID of the device
 * `network` - The device's private and public IP (v4 and v6) network details. When a device is run without any special network configuration, it will have 3 networks:
-  * Public IPv4 at `packet_device.name.network.0`
-  * IPv6 at `packet_device.name.network.1`
-  * Private IPv4 at `packet_device.name.network.2`
+  * Public IPv4 at `metal_device.name.network.0`
+  * IPv6 at `metal_device.name.network.1`
+  * Private IPv4 at `metal_device.name.network.2`
   Elastic addresses then stack by type - an assigned public IPv4 will go after the management public IPv4 (to index 1), and will then shift the indices of the IPv6 and private IPv4. Assigned private IPv4 will go after the management private IPv4 (to the end of the network list).
   The fields of the network attributes are:
   * `address` - IPv4 or IPv6 address string

@@ -5,25 +5,25 @@ description: |-
   Get an Equinix Metal operating system image
 ---
 
-# packet\_operating\_system
+# metal\_operating\_system
 
 Use this data source to get Equinix Metal Operating System image.
 
 ## Example Usage
 
 ```hcl
-data "packet_operating_system" "example" {
+data "metal_operating_system" "example" {
   name             = "Container Linux"
   distro           = "coreos"
   version          = "alpha"
   provisionable_on = "c1.small.x86"
 }
 
-resource "packet_device" "server" {
+resource "metal_device" "server" {
   hostname         = "tf.coreos2"
   plan             = "c1.small.x86"
   facilities       = ["ewr1"]
-  operating_system = data.packet_operating_system.example.id
+  operating_system = data.metal_operating_system.example.id
   billing_cycle    = "hourly"
   project_id       = local.project_id
 }

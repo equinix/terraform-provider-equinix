@@ -1,11 +1,11 @@
 ---
-page_title: "Equinix Metal: packet_bgp_session"
+page_title: "Equinix Metal: metal_bgp_session"
 subcategory: ""
 description: |-
   BGP session in Equinix Metal Host
 ---
 
-# packet_bgp_session
+# metal_bgp_session
 
 Provides a resource to manage BGP sessions in Equinix Metal Host. Refer to [Equinix Metal BGP documentation](https://metal.equinix.com/developers/docs/networking/local-global-bgp/) for more details.
 
@@ -30,7 +30,7 @@ locals {
 
 # you need to enable BGP config for the project. If you decide to create new
 # project, you can use the bgp_config section to enable BGP.
-# resource "packet_project" "test" {
+# resource "metal_project" "test" {
 #   name = "testpro"
 #   bgp_config {
 #      deployment_type = "local"
@@ -39,13 +39,13 @@ locals {
 #   }
 # }
 
-resource "packet_reserved_ip_block" "addr" {
+resource "metal_reserved_ip_block" "addr" {
   project_id = local.project_id
   facility   = "ewr1"
   quantity   = 1
 }
 
-resource "packet_device" "test" {
+resource "metal_device" "test" {
   hostname         = "terraform-test-bgp-sesh"
   plan             = "t1.small.x86"
   facilities       = ["ewr1"]
@@ -54,8 +54,8 @@ resource "packet_device" "test" {
   project_id       = local.project_id
 }
 
-resource "packet_bgp_session" "test" {
-  device_id      = packet_device.test.id
+resource "metal_bgp_session" "test" {
+  device_id      = metal_device.test.id
   address_family = "ipv4"
 }
 
@@ -69,15 +69,15 @@ iface lo:0 inet static
 EOF
 
   vars = {
-    floating_ip      = packet_reserved_ip_block.addr.address
-    floating_netmask = packet_reserved_ip_block.addr.netmask
+    floating_ip      = metal_reserved_ip_block.addr.address
+    floating_netmask = metal_reserved_ip_block.addr.netmask
   }
 }
 
 data "template_file" "bird_conf_template" {
 
   template = <<EOF
-filter packet_bgp {
+filter metal_bgp {
     if net = $${floating_ip}/$${floating_cidr} then accept;
 }
 router id $${private_ipv4};
@@ -94,7 +94,7 @@ protocol device {
     scan time 10;
 }
 protocol bgp {
-    export filter packet_bgp;
+    export filter metal_bgp;
     local as 65000;
     neighbor $${gateway_ip} as 65530;
     password "$${bgp_password;
@@ -102,10 +102,10 @@ protocol bgp {
 EOF
 
   vars = {
-    floating_ip   = packet_reserved_ip_block.addr.address
-    floating_cidr = packet_reserved_ip_block.addr.cidr
-    private_ipv4  = packet_device.test.network.2.address
-    gateway_ip    = packet_device.test.network.2.gateway
+    floating_ip   = metal_reserved_ip_block.addr.address
+    floating_cidr = metal_reserved_ip_block.addr.cidr
+    private_ipv4  = metal_device.test.network.2.address
+    gateway_ip    = metal_device.test.network.2.gateway
     bgp_password  = local.bgp_password
   }
 }
@@ -114,7 +114,7 @@ resource "null_resource" "configure_bird" {
 
   connection {
     type        = "ssh"
-    host        = packet_device.test.access_public_ipv4
+    host        = metal_device.test.access_public_ipv4
     private_key = file("/home/tomk/keys/tkarasek_key.pem")
     agent       = false
   }

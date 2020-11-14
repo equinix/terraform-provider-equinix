@@ -5,7 +5,7 @@ description: |-
   List IP address ranges allocated to a project
 ---
 
-# packet\_ip\_block\_ranges
+# metal\_ip\_block\_ranges
 
 Use this datasource to get CIDR expressions for allocated IP blocks of all the types in a project, optionally filtered by facility.
 
@@ -23,12 +23,12 @@ locals {
   project_id = "<UUID_of_your_project>"
 }
 
-data "packet_ip_block_ranges" "test" {
+data "metal_ip_block_ranges" "test" {
   project_id = local.project_id
 }
 
 output "out" {
-  value = data.packet_ip_block_ranges.test
+  value = data.metal_ip_block_ranges.test
 }
 ```
 

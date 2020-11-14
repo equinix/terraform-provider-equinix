@@ -1,11 +1,11 @@
 ---
-page_title: "Equinix Metal: packet_organization"
+page_title: "Equinix Metal: metal_organization"
 subcategory: ""
 description: |-
   Provides an Equinix Metal Organization datasource. This can be used to read existing Organizations.
 ---
 
-# packet_organization
+# metal_organization
 
 Provides an Equinix Metal organization datasource.
 
@@ -13,12 +13,12 @@ Provides an Equinix Metal organization datasource.
 
 ```hcl
 # Fetch a organization data and show projects which belong to it
-data "packet_organization" "test" {
+data "metal_organization" "test" {
   organization_id = local.org_id
 }
 
 output "projects_in_the_org" {
-  value = data.packet_organization.test.project_ids
+  value = data.metal_organization.test.project_ids
 }
 ```
 

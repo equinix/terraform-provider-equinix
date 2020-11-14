@@ -1,24 +1,24 @@
 ---
-page_title: "Equinix Metal: packet_volume_attachment"
+page_title: "Equinix Metal: metal_volume_attachment"
 subcategory: ""
 description: |-
   Provides attachment of volumes to devices in the Equinix Metal Host.
 ---
 
-# packet\_volume\_attachment
+# metal\_volume\_attachment
 
 Provides attachment of Equinix Metal Block Storage Volume to Devices.
 
 Device and volume must be in the same location (facility).
 
-Once attached by Terraform, they must then be mounted using the `packet-block-storage-attach` and `packet-block-storage-detach` scripts, which are presinstalled on most OS images. They can also be found in [https://github.com/packethost/packet-block-storage](https://github.com/packethost/packet-block-storage).
+Once attached by Terraform, they must then be mounted using the `metal-block-storage-attach` and `metal-block-storage-detach` scripts, which are presinstalled on most OS images. They can also be found in [https://github.com/equinix/metal-block-storage](https://github.com/equinix/metal-block-storage).
 
 ## Example Usage
 
 Follwing example will create a device, a volume, and then it will attach the volume to the device over the API.
 
 ```hcl
-resource "packet_device" "test_device_va" {
+resource "metal_device" "test_device_va" {
   hostname         = "terraform-test-device-va"
   plan             = "t1.small.x86"
   facilities       = ["ewr1"]
@@ -27,7 +27,7 @@ resource "packet_device" "test_device_va" {
   project_id       = local.project_id
 }
 
-resource "packet_volume" "test_volume_va" {
+resource "metal_volume" "test_volume_va" {
   plan          = "storage_1"
   billing_cycle = "hourly"
   size          = 100
@@ -39,35 +39,35 @@ resource "packet_volume" "test_volume_va" {
   }
 }
 
-resource "packet_volume_attachment" "test_volume_attachment" {
-  device_id = packet_device.test_device_va.id
-  volume_id = packet_volume.test_volume_va.id
+resource "metal_volume_attachment" "test_volume_attachment" {
+  device_id = metal_device.test_device_va.id
+  volume_id = metal_volume.test_volume_va.id
 }
 ```
 
-After applying above hcl, in order to use the volume in the OS of the device, you need to run the attach script. You can run `packet-block-storage-attach` manually over SSH, or you can extend the hcl with following snippet to attach it over remote-exec with Terraform.
+After applying above hcl, in order to use the volume in the OS of the device, you need to run the attach script. You can run `metal-block-storage-attach` manually over SSH, or you can extend the hcl with following snippet to attach it over remote-exec with Terraform.
 
 ```hcl
 resource "null_resource" "run_attach_scripts" {
   // re-run the attachment script if any of these resources change
   triggers = {
-    device_id = packet_device.test_device_va.id
-    volume_id = packet_volume.test_volume_va.id
+    device_id = metal_device.test_device_va.id
+    volume_id = metal_volume.test_volume_va.id
   }
   connection {
     type        = "ssh"
     user        = "root"
     private_key = file("/home/user/.ssh/id.dsa")
-    host        = packet_device.test_device_va.access_public_ipv4
+    host        = metal_device.test_device_va.access_public_ipv4
   }
   provisioner "remote-exec" {
     // run the attach script twice for larger chance of success
     inline = [
-      "packet-block-storage-attach",
-      "packet-block-storage-attach",
+      "metal-block-storage-attach",
+      "metal-block-storage-attach",
     ]
   }
-  depends_on = [packet_volume_attachment.test_volume_attachment]
+  depends_on = [metal_volume_attachment.test_volume_attachment]
 }
 ```
 

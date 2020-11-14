@@ -1,11 +1,11 @@
 ---
-page_title: "Equinix Metal: packet_port_vlan_attachment"
+page_title: "Equinix Metal: metal_port_vlan_attachment"
 subcategory: ""
 description: |-
   Provides a Resource for Attaching VLANs to Device Ports
 ---
 
-# packet_port_vlan_attachment
+# metal_port_vlan_attachment
 
 Provides a resource to attach device ports to VLANs.
 
@@ -23,13 +23,13 @@ To learn more about Layer 2 networking in Equinix Metal, refer to
 ### Hybrid network type
 
 ```hcl
-resource "packet_vlan" "test" {
+resource "metal_vlan" "test" {
   description = "VLAN in New Jersey"
   facility    = "ewr1"
   project_id  = local.project_id
 }
 
-resource "packet_device" "test" {
+resource "metal_device" "test" {
   hostname         = "test"
   plan             = "m1.xlarge.x86"
   facilities       = ["ewr1"]
@@ -38,15 +38,15 @@ resource "packet_device" "test" {
   project_id       = local.project_id
 }
 
-resource "packet_device_network_type" "test" {
-  device_id = packet_device.test.id
+resource "metal_device_network_type" "test" {
+  device_id = metal_device.test.id
   type      = "hybrid"
 }
 
-resource "packet_port_vlan_attachment" "test" {
-  device_id = packet_device_network_type.test.id
+resource "metal_port_vlan_attachment" "test" {
+  device_id = metal_device_network_type.test.id
   port_name = "eth1"
-  vlan_vnid = packet_vlan.test.vxlan
+  vlan_vnid = metal_vlan.test.vxlan
 }
 
 ```
@@ -54,7 +54,7 @@ resource "packet_port_vlan_attachment" "test" {
 ### Layer 2 network
 
 ```hcl
-resource "packet_device" "test" {
+resource "metal_device" "test" {
   hostname         = "test"
   plan             = "m1.xlarge.x86"
   facilities       = ["ewr1"]
@@ -63,35 +63,35 @@ resource "packet_device" "test" {
   project_id       = local.project_id
 }
 
-resource "packet_device_network_type" "test" {
-  device_id = packet_device.test.id
+resource "metal_device_network_type" "test" {
+  device_id = metal_device.test.id
   type      = "layer2-individual"
 }
 
-resource "packet_vlan" "test1" {
+resource "metal_vlan" "test1" {
   description = "VLAN in New Jersey"
   facility    = "ewr1"
   project_id  = local.project_id
 }
 
-resource "packet_vlan" "test2" {
+resource "metal_vlan" "test2" {
   description = "VLAN in New Jersey"
   facility    = "ewr1"
   project_id  = local.project_id
 }
 
-resource "packet_port_vlan_attachment" "test1" {
-  device_id = packet_device_network_type.test.id
-  vlan_vnid = packet_vlan.test1.vxlan
+resource "metal_port_vlan_attachment" "test1" {
+  device_id = metal_device_network_type.test.id
+  vlan_vnid = metal_vlan.test1.vxlan
   port_name = "eth1"
 }
 
-resource "packet_port_vlan_attachment" "test2" {
-  device_id  = packet_device_network_type.test.id
-  vlan_vnid  = packet_vlan.test2.vxlan
+resource "metal_port_vlan_attachment" "test2" {
+  device_id  = metal_device_network_type.test.id
+  vlan_vnid  = metal_vlan.test2.vxlan
   port_name  = "eth1"
   native     = true
-  depends_on = ["packet_port_vlan_attachment.test1"]
+  depends_on = ["metal_port_vlan_attachment.test1"]
 }
 ```
 
@@ -103,7 +103,7 @@ The following arguments are supported:
 * `port_name` - (Required) Name of network port to be assigned to the VLAN
 * `force_bond` - Add port back to the bond when this resource is removed. Default is false.
 * `vlan_vnid` - VXLAN Network Identifier, integer
-* `native` - (Optional) Mark this VLAN a native VLAN on the port. This can be used only if this assignment assigns second or further VLAN to the port. To ensure that this attachment is not first on a port, you can use `depends_on` pointing to another packet_port_vlan_attachment, just like in the layer2-individual example above.
+* `native` - (Optional) Mark this VLAN a native VLAN on the port. This can be used only if this assignment assigns second or further VLAN to the port. To ensure that this attachment is not first on a port, you can use `depends_on` pointing to another metal_port_vlan_attachment, just like in the layer2-individual example above.
 
 ## Attribute Referece
 

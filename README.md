@@ -1,8 +1,8 @@
 # Equinix Metal Terraform Provider
 
-[![GitHub release](https://img.shields.io/github/release/packethost/terraform-provider-packet/all.svg?style=flat-square)](https://github.com/packethost/terraform-provider-packet/releases)
+[![GitHub release](https://img.shields.io/github/release/equinix/terraform-provider-equinix-metal/all.svg?style=flat-square)](https://github.com/equinix/terraform-provider-equinix-metal/releases)
 ![](https://img.shields.io/badge/Stability-Maintained-green.svg)
-[![Go Report Card](https://goreportcard.com/badge/github.com/packethost/terraform-provider-packet)](https://goreportcard.com/report/github.com/packethost/terraform-provider-packet)
+[![Go Report Card](https://goreportcard.com/badge/github.com/equinix/terraform-provider-equinix-metal)](https://goreportcard.com/report/github.com/equinix/terraform-provider-equinix-metal)
 
 [![Slack](https://slack.equinixmetal.com/badge.svg)](https://slack.equinixmetal.com)
 [![Twitter Follow](https://img.shields.io/twitter/follow/equinixmetal.svg?style=social&label=Follow)](https://twitter.com/intent/follow?screen_name=equinixmetal)
@@ -11,13 +11,13 @@
 
 [Packet is now Equinix Metal!](https://blog.equinix.com/blog/2020/10/06/equinix-metal-metal-and-more/)
 
-This repository is [Maintained](https://github.com/packethost/standards/blob/master/maintained-statement.md) meaning that this software is supported by Equinix Metal and its community - available to use in production environments.
+This repository is [Maintained](https://github.com/equinix/standards/blob/master/maintained-statement.md) meaning that this software is supported by Equinix Metal and its community - available to use in production environments.
 
 ## Using the provider
 
-The Equinix Metal provider will be installed on `terraform init` of a template using any of the `packet_*` resources.
+The Equinix Metal provider will be installed on `terraform init` of a template using any of the `metal_*` resources.
 
-See <https://registry.terraform.io/providers/packethost/packet/latest/docs> for documentation on the resources included in this provider.
+See <https://registry.terraform.io/providers/equinix/metal/latest/docs> for documentation on the resources included in this provider.
 
 ## Requirements
 
@@ -26,17 +26,17 @@ See <https://registry.terraform.io/providers/packethost/packet/latest/docs> for 
 
 ## Building the provider
 
-Clone repository to: `$GOPATH/src/github.com/packethost/terraform-provider-packet`
+Clone repository to: `$GOPATH/src/github.com/equinix/terraform-provider-equinix-metal`
 
 ```sh
-mkdir -p $GOPATH/src/github.com/packethost; cd $GOPATH/src/github.com/packethost
-git clone git@github.com:packethost/terraform-provider-packet
+mkdir -p $GOPATH/src/github.com/equinix; cd $GOPATH/src/github.com/equinix
+git clone git@github.com:equinix/terraform-provider-equinix-metal
 ```
 
 Enter the provider directory and build the provider
 
 ```sh
-cd $GOPATH/src/github.com/packethost/terraform-provider-packet
+cd $GOPATH/src/github.com/equinix/terraform-provider-equinix-metal
 make build
 ```
 
@@ -49,7 +49,7 @@ To compile the provider, run `make build`. This will build the provider and put 
 ```sh
 $ make bin
 ...
-$ $GOPATH/bin/terraform-provider-packet
+$ $GOPATH/bin/terraform-provider-equinix-metal
 ...
 ```
 
@@ -57,16 +57,16 @@ $ $GOPATH/bin/terraform-provider-packet
 
 We have mostly acceptance tests in the provider. There's no point for you to run them all, but you should run the one covering the functionality which you change. The acceptance test run will cost you some money, so feel free to abstain. The acceptance test suite will be run for your PR during the review process.
 
-To run an acceptance test, find the relevant test function in `*_test.go` (for example TestAccPacketDevice_Basic), and run it as
+To run an acceptance test, find the relevant test function in `*_test.go` (for example TestAccMetalDevice_Basic), and run it as
 
 ```sh
-TF_ACC=1 go test -v -timeout=20m -run=TestAccPacketDevice_Basic
+TF_ACC=1 go test -v -timeout=20m -run=TestAccMetalDevice_Basic
 ```
 
 If you want to see HTTP traffic, set `TF_LOG=DEBUG`, i.e.
 
 ```sh
-TF_LOG=DEBUG TF_ACC=1 go test -v -timeout=20m -run=TestAccPacketDevice_Basic
+TF_LOG=DEBUG TF_ACC=1 go test -v -timeout=20m -run=TestAccMetalDevice_Basic
 ```
 
 ## Testing the provider with Terraform

@@ -70,10 +70,10 @@ jobs:
 
         PACKET_AUTH_TOKEN: ${{ secrets.PACKET_AUTH_TOKEN }}
       run: |
-        go test -v -cover -parallel 4 -timeout 120m ./packet
+        go test -v -cover -parallel 4 -timeout 120m ./metal
     - name: Sweeper
       if: ${{ always() }}
       env:
         PACKET_AUTH_TOKEN: ${{ secrets.PACKET_AUTH_TOKEN }}
       run: |
-        go test ./packet -v -sweep="tf_test"
+        go test ./metal -v -sweep="tf_test"

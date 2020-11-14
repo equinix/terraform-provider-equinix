@@ -1,11 +1,11 @@
 ---
-page_title: "Equinix Metal: packet_organization"
+page_title: "Equinix Metal: metal_organization"
 subcategory: ""
 description: |-
   Provides an Equinix Metal Organization resource.
 ---
 
-# packet\_organization
+# metal\_organization
 
 Provides a resource to manage organization resource in Equinix Metal.
 
@@ -13,7 +13,7 @@ Provides a resource to manage organization resource in Equinix Metal.
 
 ```hcl
 # Create a new Project
-resource "packet_organization" "tf_organization_1" {
+resource "metal_organization" "tf_organization_1" {
   name        = "foobar"
   description = "quux"
 }
