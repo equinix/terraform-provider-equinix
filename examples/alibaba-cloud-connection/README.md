@@ -18,6 +18,11 @@ same way as above
 * `equinix_port_name` - name of ECX Fabric port that you want to connect to
 Alibaba i.e. *EQUINIX_SVC-FR4-CX-PRI-01*
 * `alibaba_account_id` - Alibaba Cloud Account ID
+Equinix metro location with AWS presence for connection's destination.
+Given metro location has to be within given AWS region
+* `alibaba_region` - Alibaba Cloud region
+* `alibaba_metro_code` - Equinix metro location with Alibaba presence for connection's
+destination. Given metro location has to correspond with given Alibaba region
 
 ## Initialize
 
