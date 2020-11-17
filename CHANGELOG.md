@@ -1,5 +1,10 @@
 ## 1.1.0 (Unreleased)
 
+ENHANCEMENTS:
+
+- resource/equinix_ecx_l2_service_profile: introduced schema validations,
+updated acceptance tests and resource documentation
+
 FEATURES:
 
 - **New Resource**: `equinix_network_acl_template` ([#19](https://github.com/equinix/terraform-provider-equinix/issues/19))

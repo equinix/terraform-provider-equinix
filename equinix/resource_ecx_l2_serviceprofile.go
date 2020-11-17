@@ -75,8 +75,9 @@ func createECXL2ServiceProfileResourceSchema() map[string]*schema.Schema {
 			Computed: true,
 		},
 		ecxL2ServiceProfileSchemaNames["AlertPercentage"]: {
-			Type:     schema.TypeFloat,
-			Required: true,
+			Type:         schema.TypeFloat,
+			Optional:     true,
+			ValidateFunc: validation.FloatBetween(1, 99),
 		},
 		ecxL2ServiceProfileSchemaNames["AllowCustomSpeed"]: {
 			Type:     schema.TypeBool,
@@ -92,20 +93,25 @@ func createECXL2ServiceProfileResourceSchema() map[string]*schema.Schema {
 			RequiredWith: []string{ecxL2ServiceProfileSchemaNames["IntegrationID"]},
 		},
 		ecxL2ServiceProfileSchemaNames["AuthKeyLabel"]: {
-			Type:     schema.TypeString,
-			Optional: true,
+			Type:         schema.TypeString,
+			Optional:     true,
+			ValidateFunc: validation.StringLenBetween(1, 50),
 		},
 		ecxL2ServiceProfileSchemaNames["ConnectionNameLabel"]: {
-			Type:     schema.TypeString,
-			Required: true,
+			Type:         schema.TypeString,
+			Optional:     true,
+			Default:      "Connection",
+			ValidateFunc: validation.StringLenBetween(1, 50),
 		},
 		ecxL2ServiceProfileSchemaNames["CTagLabel"]: {
-			Type:     schema.TypeString,
-			Optional: true,
+			Type:         schema.TypeString,
+			Optional:     true,
+			ValidateFunc: validation.StringLenBetween(1, 50),
 		},
 		ecxL2ServiceProfileSchemaNames["Description"]: {
-			Type:     schema.TypeString,
-			Optional: true,
+			Type:         schema.TypeString,
+			Optional:     true,
+			ValidateFunc: validation.StringLenBetween(1, 250),
 		},
 		ecxL2ServiceProfileSchemaNames["EnableAutoGenerateServiceKey"]: {
 			Type:     schema.TypeBool,
@@ -116,19 +122,22 @@ func createECXL2ServiceProfileResourceSchema() map[string]*schema.Schema {
 			Optional: true,
 		},
 		ecxL2ServiceProfileSchemaNames["IntegrationID"]: {
-			Type:     schema.TypeString,
-			Optional: true,
+			Type:         schema.TypeString,
+			Optional:     true,
+			ValidateFunc: validation.StringLenBetween(1, 50),
 		},
 		ecxL2ServiceProfileSchemaNames["Name"]: {
-			Type:     schema.TypeString,
-			Required: true,
+			Type:         schema.TypeString,
+			Required:     true,
+			ValidateFunc: validation.StringLenBetween(1, 50),
 		},
 		ecxL2ServiceProfileSchemaNames["OnBandwidthThresholdNotification"]: {
 			Type:     schema.TypeSet,
 			Required: true,
 			MinItems: 1,
 			Elem: &schema.Schema{
-				Type: schema.TypeString,
+				Type:         schema.TypeString,
+				ValidateFunc: stringIsEmailAddress(),
 			},
 		},
 		ecxL2ServiceProfileSchemaNames["OnProfileApprovalRejectNotification"]: {
@@ -136,7 +145,8 @@ func createECXL2ServiceProfileResourceSchema() map[string]*schema.Schema {
 			Required: true,
 			MinItems: 1,
 			Elem: &schema.Schema{
-				Type: schema.TypeString,
+				Type:         schema.TypeString,
+				ValidateFunc: stringIsEmailAddress(),
 			},
 		},
 		ecxL2ServiceProfileSchemaNames["OnVcApprovalRejectionNotification"]: {
@@ -144,13 +154,15 @@ func createECXL2ServiceProfileResourceSchema() map[string]*schema.Schema {
 			Required: true,
 			MinItems: 1,
 			Elem: &schema.Schema{
-				Type: schema.TypeString,
+				Type:         schema.TypeString,
+				ValidateFunc: stringIsEmailAddress(),
 			},
 		},
 		ecxL2ServiceProfileSchemaNames["OverSubscription"]: {
-			Type:     schema.TypeString,
-			Optional: true,
-			Default:  "1x",
+			Type:         schema.TypeString,
+			Optional:     true,
+			Default:      "1x",
+			RequiredWith: []string{ecxL2ServiceProfileSchemaNames["AllowOverSubscription"]},
 		},
 		ecxL2ServiceProfileSchemaNames["Private"]: {
 			Type:         schema.TypeBool,
@@ -162,7 +174,8 @@ func createECXL2ServiceProfileResourceSchema() map[string]*schema.Schema {
 			Optional: true,
 			MinItems: 1,
 			Elem: &schema.Schema{
-				Type: schema.TypeString,
+				Type:         schema.TypeString,
+				ValidateFunc: stringIsEmailAddress(),
 			},
 		},
 		ecxL2ServiceProfileSchemaNames["RequiredRedundancy"]: {
@@ -176,8 +189,10 @@ func createECXL2ServiceProfileResourceSchema() map[string]*schema.Schema {
 			RequiredWith: []string{ecxL2ServiceProfileSchemaNames["APIAvailable"]},
 		},
 		ecxL2ServiceProfileSchemaNames["TagType"]: {
-			Type:     schema.TypeString,
-			Optional: true,
+			Type:         schema.TypeString,
+			Optional:     true,
+			Default:      "CTAGED",
+			ValidateFunc: validation.StringInSlice([]string{"CTAGED", "NAMED", "BOTH"}, false),
 		},
 		ecxL2ServiceProfileSchemaNames["VlanSameAsPrimary"]: {
 			Type:     schema.TypeBool,
@@ -207,12 +222,14 @@ func createECXL2ServiceProfileResourceSchema() map[string]*schema.Schema {
 			Elem: &schema.Resource{
 				Schema: map[string]*schema.Schema{
 					ecxL2ServiceProfilePortSchemaNames["ID"]: {
-						Type:     schema.TypeString,
-						Required: true,
+						Type:         schema.TypeString,
+						Required:     true,
+						ValidateFunc: validation.StringIsNotEmpty,
 					},
 					ecxL2ServiceProfilePortSchemaNames["MetroCode"]: {
-						Type:     schema.TypeString,
-						Required: true,
+						Type:         schema.TypeString,
+						Required:     true,
+						ValidateFunc: stringIsMetroCode(),
 					},
 				},
 			},
