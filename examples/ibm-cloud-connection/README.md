@@ -18,6 +18,9 @@ obtained same way as above
 * `equinix_port_name` - name of ECX Fabric port that you want to connect
 to IBM i.e. *EQUINIX_SVC-FR4-CX-PRI-01*
 * `ibm_account_id` - IBM Cloud Account ID
+* `ibm_region` - IBM Cloud region for a connection
+* `ibm_metro_code` - Equinix metro location with IBM presence for connection's
+destination. Given metro location code has to correspond with given IBM Cloud region
 
 ## Initialize
 

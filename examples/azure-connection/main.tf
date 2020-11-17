@@ -4,7 +4,6 @@ provider "equinix" {
 }
 
 provider "azurerm" {
-  version = "=2.22.0"
   features {}
 }
 
@@ -22,7 +21,7 @@ data "equinix_ecx_port" "dot1q-1-sec" {
 
 resource "azurerm_resource_group" "demo" {
   name     = "TFDemo"
-  location = "West Europe"
+  location = var.azure_location
 }
 
 resource "azurerm_express_route_circuit" "demo" {
@@ -46,17 +45,16 @@ resource "azurerm_express_route_circuit_authorization" "demo" {
 }
 
 resource "equinix_ecx_l2_connection" "azure-dot1q-pub" {
-  name                  = "tf-azure-dot1q-pub-pri"
-  profile_uuid          = data.equinix_ecx_l2_sellerprofile.azure.uuid
-  speed                 = azurerm_express_route_circuit.demo.bandwidth_in_mbps
-  speed_unit            = "MB"
-  notifications         = ["example@equinix.com"]
-  purchase_order_number = "1234567890"
-  port_uuid             = data.equinix_ecx_port.dot1q-1-pri.uuid
-  vlan_stag             = 1010
-  seller_metro_code     = "DA"
-  authorization_key     = azurerm_express_route_circuit_authorization.demo.authorization_key
-  named_tag             = "Public"
+  name              = "tf-azure-dot1q-pub-pri"
+  profile_uuid      = data.equinix_ecx_l2_sellerprofile.azure.uuid
+  speed             = azurerm_express_route_circuit.demo.bandwidth_in_mbps
+  speed_unit        = "MB"
+  notifications     = ["example@equinix.com"]
+  port_uuid         = data.equinix_ecx_port.dot1q-1-pri.uuid
+  vlan_stag         = 1010
+  seller_metro_code = var.azure_metro_code
+  authorization_key = azurerm_express_route_circuit_authorization.demo.authorization_key
+  named_tag         = "Public"
   secondary_connection {
     name      = "tf-azure-dot1q-pub-sec"
     port_uuid = data.equinix_ecx_port.dot1q-1-sec.uuid

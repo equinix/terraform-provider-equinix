@@ -12,10 +12,13 @@ variable "oci_fingerprint" {}
 
 variable "oci_private_key_path" {}
 
-variable "oci_region" {}
 
 variable "oci_compartment_id" {}
 
 variable "oci_fastconnect_provider" {
   default = "Equinix"
 }
+
+variable "oci_region" {}
+
+variable "oci_metro_code" {}

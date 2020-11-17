@@ -34,15 +34,14 @@ resource "google_compute_interconnect_attachment" "test-1" {
 }
 
 resource "equinix_ecx_l2_connection" "gcpi-dot1q" {
-  name                  = "tf-gcpi-dot1q"
-  profile_uuid          = data.equinix_ecx_l2_sellerprofile.gcpi-1.uuid
-  speed                 = 50
-  speed_unit            = "MB"
-  notifications         = ["example@equinix.com"]
-  purchase_order_number = "1234567890"
-  port_uuid             = data.equinix_ecx_port.dot1q-pri.uuid
-  vlan_stag             = 1600
-  seller_region         = google_compute_interconnect_attachment.test-1.region
-  seller_metro_code     = "SV"
-  authorization_key     = google_compute_interconnect_attachment.test-1.pairing_key
+  name              = "tf-gcpi-dot1q"
+  profile_uuid      = data.equinix_ecx_l2_sellerprofile.gcpi-1.uuid
+  speed             = 50
+  speed_unit        = "MB"
+  notifications     = ["example@equinix.com"]
+  port_uuid         = data.equinix_ecx_port.dot1q-pri.uuid
+  vlan_stag         = 1600
+  seller_region     = google_compute_interconnect_attachment.test-1.region
+  seller_metro_code = var.gcp_metro_code
+  authorization_key = google_compute_interconnect_attachment.test-1.pairing_key
 }

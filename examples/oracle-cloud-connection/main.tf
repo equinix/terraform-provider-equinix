@@ -55,15 +55,14 @@ data "equinix_ecx_port" "dot1q-1-pri" {
 }
 
 resource "equinix_ecx_l2_connection" "oci-dot1q" {
-  name                  = "tf-oci-dot1q"
-  profile_uuid          = data.equinix_ecx_l2_sellerprofile.oci.uuid
-  speed                 = 1
-  speed_unit            = "GB"
-  notifications         = ["example@equinix.com"]
-  purchase_order_number = "1234567890"
-  port_uuid             = data.equinix_ecx_port.dot1q-1-pri.uuid
-  vlan_stag             = 3030
-  seller_region         = var.oci_region
-  seller_metro_code     = "FR"
-  authorization_key     = oci_core_virtual_circuit.oci_virtual_circuit.id //Virtual Circuit OCID
+  name              = "tf-oci-dot1q"
+  profile_uuid      = data.equinix_ecx_l2_sellerprofile.oci.uuid
+  speed             = 1
+  speed_unit        = "GB"
+  notifications     = ["example@equinix.com"]
+  port_uuid         = data.equinix_ecx_port.dot1q-1-pri.uuid
+  vlan_stag         = 3030
+  seller_region     = var.oci_region
+  seller_metro_code = var.oci_metro_code
+  authorization_key = oci_core_virtual_circuit.oci_virtual_circuit.id //Virtual Circuit OCID
 }

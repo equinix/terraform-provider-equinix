@@ -17,7 +17,7 @@ data "equinix_ecx_port" "dot1q-pri" {
   name = var.equinix_port_name
 }
 
-resource "equinix_ecx_l2_connection" "aws-dot1q" {
+resource "equinix_ecx_l2_connection" "example" {
   name              = "tf-aws-dot1q"
   profile_uuid      = data.equinix_ecx_l2_sellerprofile.aws.uuid
   speed             = 50
@@ -26,23 +26,32 @@ resource "equinix_ecx_l2_connection" "aws-dot1q" {
   port_uuid         = data.equinix_ecx_port.dot1q-pri.uuid
   vlan_stag         = 1010
   seller_region     = var.aws_region
-  seller_metro_code = "DC"
+  seller_metro_code = var.aws_metro_code
   authorization_key = var.aws_account_id
 }
 
-resource "equinix_ecx_l2_connection_accepter" "aws-dot1q" {
-  connection_id = equinix_ecx_l2_connection.aws-dot1q.id
+resource "equinix_ecx_l2_connection_accepter" "example" {
+  connection_id = equinix_ecx_l2_connection.example.id
   access_key    = var.aws_access_key
   secret_key    = var.aws_secret_key
 }
 
-resource "aws_dx_private_virtual_interface" "private-vif" {
-  connection_id    = equinix_ecx_l2_connection_accepter.aws-dot1q.aws_connection_id
-  name             = "vif-test"
-  vlan             = equinix_ecx_l2_connection.aws-dot1q.zside_vlan_stag
+resource "aws_dx_private_virtual_interface" "example" {
+  connection_id    = equinix_ecx_l2_connection_accepter.example.aws_connection_id
+  name             = "example"
+  vlan             = equinix_ecx_l2_connection.example.zside_vlan_stag
   address_family   = "ipv4"
   bgp_asn          = 64999
   amazon_address   = "169.254.0.1/30"
   customer_address = "169.254.0.2/30"
   bgp_auth_key     = "secret"
+  vpn_gateway_id   = aws_vpn_gateway.example.id
+}
+
+resource "aws_vpc" "example" {
+  cidr_block = "10.255.255.0/28"
+}
+
+resource "aws_vpn_gateway" "example" {
+  vpc_id = aws_vpc.example.id
 }

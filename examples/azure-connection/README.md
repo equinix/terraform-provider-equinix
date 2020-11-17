@@ -16,6 +16,10 @@ obtained same way as above
 to connect to Azure i.e. *EQUINIX_SVC-FR4-CX-PRI-01*
 * `equinix_sec_port_name` - name of ECX Fabric secondary port that you want to
 connect to Azure i.e. *EQUINIX_SVC-FR4-CX-SEC-01*
+* `azure_location` - The name of the Azure resource group location
+* `azure_peering_location` - The name of the ExpressRoute peering location
+* `azure_metro_code` - Equinix metro location with Azure presence for connection's
+destination. Given metro location has to correspond with given Azure peering location
 
 ## Azure login
 
