@@ -183,7 +183,6 @@ The following attributes are exported:
 * `deployed_facility` - The facility where the device is deployed.
 * `deployed_hardware_reservation_id` - ID of hardware reservation where this device was deployed. It is useful when using the `next-available` hardware reservation.
 * `description` - Description string for the device
-* `hardware_reservation_id` - The ID of hardware reservation which this device occupies
 * `hostname`- The hostname of the device
 * `id` - The ID of the device
 * `locked` - Whether the device is locked
