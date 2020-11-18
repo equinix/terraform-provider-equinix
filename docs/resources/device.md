@@ -180,6 +180,7 @@ The following attributes are exported:
 * `billing_cycle` - The billing cycle of the device (monthly or hourly)
 * `created` - The timestamp for when the device was created
 * `deployed_facility` - The facility where the device is deployed.
+* `deployed_hardware_reservation_id` - ID of hw reservation where this device was deployed. It is useful when using the `next-available` hw reservation.
 * `description` - Description string for the device
 * `hardware_reservation_id` - The ID of hardware reservation which this device occupies
 * `hostname`- The hostname of the device

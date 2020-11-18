@@ -235,6 +235,26 @@ func resourcePacketDevice() *schema.Resource {
 				Default:  false,
 			},
 
+			"deployed_hardware_reservation_id": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+
+			"hardware_reservation_id": {
+				Type:     schema.TypeString,
+				Optional: true,
+				ForceNew: true,
+				DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
+					dhwr, ok := d.GetOk("deployed_hardware_reservation_id")
+					if ok {
+						if dhwr == new {
+							return true
+						}
+					}
+					return false
+				},
+			},
+
 			"hardware_reservation_id": {
 				Type:     schema.TypeString,
 				Optional: true,
@@ -463,7 +483,7 @@ func resourcePacketDeviceRead(d *schema.ResourceData, meta interface{}) error {
 	}
 
 	if len(device.HardwareReservation.Href) > 0 {
-		d.Set("hardware_reservation_id", path.Base(device.HardwareReservation.Href))
+		d.Set("deployed_hardware_reservation_id", path.Base(device.HardwareReservation.Href))
 	}
 	networkType := device.GetNetworkType()
 	d.Set("network_type", networkType)
