@@ -150,7 +150,7 @@ The following arguments are supported:
 * `always_pxe` (Optional) - If true, a device with OS `custom_ipxe` will
   continue to boot via iPXE on reboots.
 * `hardware_reservation_id` (Optional) - The `full ID` of the hardware reservation where you want this device deployed, or `next-available` if you want to pick your next available reservation automatically.
-  Please be careful when using hw reservation UUID and `next-available` together for the same pool of reservations. It might happen that the reservation which Equinix Metal API will pick as `next-available` is the reservation which you refer with UUID in another packet_device resource. If that happens, and the packet_device with the UUID is created later, resource creation will fail because the reservation is already in use (by the resource created with `next-available`). To workaround this, have the `next-available` resource  [explicitly depend_on](https://learn.hashicorp.com/terraform/getting-started/dependencies.html#implicit-and-explicit-dependencies) the resource with hw reservation UUID, so that the latter is created first. For more details, see [issue #176](https://github.com/packethost/terraform-provider-packet/issues/176).
+  Please be careful when using hardware reservation UUID and `next-available` together for the same pool of reservations. It might happen that the reservation which Equinix Metal API will pick as `next-available` is the reservation which you refer with UUID in another packet_device resource. If that happens, and the packet_device with the UUID is created later, resource creation will fail because the reservation is already in use (by the resource created with `next-available`). To workaround this, have the `next-available` resource  [explicitly depend_on](https://learn.hashicorp.com/terraform/getting-started/dependencies.html#implicit-and-explicit-dependencies) the resource with hardware reservation UUID, so that the latter is created first. For more details, see [issue #176](https://github.com/packethost/terraform-provider-packet/issues/176).
 * `storage` (Optional) - JSON for custom partitioning. Only usable on reserved hardware. More information in in the [Custom Partitioning and RAID](https://metal.equinix.com/developers/docs/servers/custom-partitioning-raid/) doc.
   * Please note that the disks.partitions.size attribute must be a string, not an integer. It can be a number string, or size notation string, e.g. "4G" or "8M" (for gigabytes and megabytes).
 * `tags` - Tags attached to the device
@@ -180,7 +180,7 @@ The following attributes are exported:
 * `billing_cycle` - The billing cycle of the device (monthly or hourly)
 * `created` - The timestamp for when the device was created
 * `deployed_facility` - The facility where the device is deployed.
-* `deployed_hardware_reservation_id` - ID of hw reservation where this device was deployed. It is useful when using the `next-available` hw reservation.
+* `deployed_hardware_reservation_id` - ID of hardware reservation where this device was deployed. It is useful when using the `next-available` hardware reservation.
 * `description` - Description string for the device
 * `hardware_reservation_id` - The ID of hardware reservation which this device occupies
 * `hostname`- The hostname of the device
