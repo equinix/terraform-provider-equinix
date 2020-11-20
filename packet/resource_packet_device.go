@@ -246,25 +246,7 @@ func resourcePacketDevice() *schema.Resource {
 				ForceNew: true,
 				DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
 					dhwr, ok := d.GetOk("deployed_hardware_reservation_id")
-					if ok {
-						if dhwr == new {
-							return true
-						}
-					}
-					return false
-				},
-			},
-
-			"hardware_reservation_id": {
-				Type:     schema.TypeString,
-				Optional: true,
-				Computed: true,
-				ForceNew: true,
-				DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
-					if new == "next-available" && len(old) > 0 {
-						return true
-					}
-					return false
+					return ok && dhwr == new
 				},
 			},
 
