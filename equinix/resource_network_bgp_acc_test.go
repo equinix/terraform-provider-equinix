@@ -20,7 +20,7 @@ func TestAccNeBGP(t *testing.T) {
 	metro, _ := schema.EnvDefaultFunc(networkDeviceMetroEnvVar, "SV")()
 	spName, _ := schema.EnvDefaultFunc(spEnvVar, "AWS Direct Connect")()
 	authKey, _ := schema.EnvDefaultFunc(authkeyEnvVar, "123456789012")()
-	context := map[string]interface{}{
+	contextBasic := map[string]interface{}{
 		"device_resourceName":    "test",
 		"device_name":            fmt.Sprintf("%s-%s", tstResourcePrefix, randString(6)),
 		"device_throughput":      500,
@@ -45,21 +45,31 @@ func TestAccNeBGP(t *testing.T) {
 		"bgp_local_asn":          12345,
 		"bgp_remote_ip_address":  "1.1.1.2",
 		"bgp_remote_asn":         22211,
-		"bgp_authentication_key": "secret",
 	}
-	resourceName := fmt.Sprintf("equinix_network_bgp.%s", context["bgp_resourceName"].(string))
+	contextUpdate := copyMap(contextBasic)
+	contextUpdate["bgp_authentication_key"] = randString(10)
+	resourceName := fmt.Sprintf("equinix_network_bgp.%s", contextBasic["bgp_resourceName"].(string))
 	var bgpConfig ne.BGPConfiguration
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccNeBGP(context),
+				Config: testAccNeBGP(contextBasic),
 				Check: resource.ComposeTestCheckFunc(
 					testAccNeBGPExists(resourceName, &bgpConfig),
-					testAccNeBGPAttributes(&bgpConfig, context),
+					testAccNeBGPAttributes(&bgpConfig, contextBasic),
 					resource.TestCheckResourceAttrSet(resourceName, "uuid"),
 					resource.TestCheckResourceAttr(resourceName, "provisioning_status", ne.BGPProvisioningStatusProvisioned),
+				),
+			},
+			{
+				Config: testAccNeBGPUpdate(contextUpdate),
+				Check: resource.ComposeTestCheckFunc(
+					testAccNeBGPExists(resourceName, &bgpConfig),
+					testAccNeBGPAttributes(&bgpConfig, contextUpdate),
+					resource.TestCheckResourceAttrSet(resourceName, "uuid"),
+					resource.TestCheckResourceAttr(resourceName, "provisioning_status", ne.BGPProvisioningStatusPendingUpdate),
 				),
 			},
 		},
@@ -67,6 +77,59 @@ func TestAccNeBGP(t *testing.T) {
 }
 
 func testAccNeBGP(ctx map[string]interface{}) string {
+	return nprintf(`
+data "equinix_network_account" "test" {
+  metro_code = "%{device_metro_code}"
+  status     = "Active"
+}
+
+resource "equinix_network_device" "%{device_resourceName}" {
+  name            = "%{device_name}"
+  throughput      = %{device_throughput}
+  throughput_unit = "%{device_throughput_unit}"
+  metro_code      = data.equinix_network_account.test.metro_code
+  type_code       = "%{device_type_code}"
+  package_code    = "%{device_package_code}"
+  notifications   = %{device_notifications}
+  hostname        = "%{device_hostname}"
+  term_length     = %{device_term_length}
+  account_number  = data.equinix_network_account.test.number
+  version         = "%{device_version}"
+  core_count      = %{device_core_count}
+}
+
+data "equinix_ecx_l2_sellerprofile" "test" {
+  name = "%{conn_profile_name}"
+}
+
+locals {
+  sp_first_metro        = tolist(data.equinix_ecx_l2_sellerprofile.test.metro)[0]
+  sp_first_metro_region = keys(local.sp_first_metro.regions)[0]
+}
+
+resource "equinix_ecx_l2_connection" "%{conn_resourceName}" {
+  name              = "%{conn_name}"
+  profile_uuid      = data.equinix_ecx_l2_sellerprofile.test.uuid
+  speed             = %{conn_speed}
+  speed_unit        = "%{conn_speed_unit}"
+  notifications     = %{conn_notifications}
+  device_uuid       = equinix_network_device.%{device_resourceName}.uuid
+  seller_region     = local.sp_first_metro_region
+  seller_metro_code = local.sp_first_metro.code
+  authorization_key = "%{conn_authorization_key}"
+}
+
+resource "equinix_network_bgp" "%{bgp_resourceName}" {
+  connection_id      = equinix_ecx_l2_connection.%{conn_resourceName}.id
+  local_ip_address   = "%{bgp_local_ip_address}"
+  local_asn          = %{bgp_local_asn}
+  remote_ip_address  = "%{bgp_remote_ip_address}"
+  remote_asn         = %{bgp_remote_asn}
+}
+`, ctx)
+}
+
+func testAccNeBGPUpdate(ctx map[string]interface{}) string {
 	return nprintf(`
 data "equinix_network_account" "test" {
   metro_code = "%{device_metro_code}"

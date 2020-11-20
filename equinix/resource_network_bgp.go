@@ -76,8 +76,8 @@ func createNetworkBGPResourceSchema() map[string]*schema.Schema {
 		},
 		networkBGPSchemaNames["AuthenticationKey"]: {
 			Type:         schema.TypeString,
-			Required:     true,
-			ValidateFunc: validation.StringIsNotEmpty,
+			Optional:     true,
+			ValidateFunc: validation.StringLenBetween(6, 60),
 		},
 		networkBGPSchemaNames["State"]: {
 			Type:     schema.TypeString,
