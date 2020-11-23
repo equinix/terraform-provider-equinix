@@ -66,8 +66,9 @@ func resourcePacketSpotMarketRequest() *schema.Resource {
 							Computed: true,
 						},
 						"always_pxe": {
-							Type:     schema.TypeString,
+							Type:     schema.TypeBool,
 							Optional: true,
+							Default:  false,
 						},
 						"description": {
 							Type:     schema.TypeString,
