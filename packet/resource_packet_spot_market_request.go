@@ -104,6 +104,11 @@ func resourcePacketSpotMarketRequest() *schema.Resource {
 							Type:     schema.TypeString,
 							Optional: true,
 						},
+						"tags": {
+							Type:     schema.TypeList,
+							Optional: true,
+							Elem:     &schema.Schema{Type: schema.TypeString},
+						},
 					},
 				},
 			},
@@ -206,6 +211,15 @@ func resourcePacketSpotMarketRequestCreate(d *schema.ResourceData, meta interfac
 		for _, i := range temp {
 			if i != nil {
 				params.ProjectSSHKeys = append(params.ProjectSSHKeys, i.(string))
+			}
+		}
+	}
+
+	if val, ok := d.GetOk("instance_parameters.0.tags"); ok {
+		temp := val.([]interface{})
+		for _, i := range temp {
+			if i != nil {
+				params.Tags = append(params.Tags, i.(string))
 			}
 		}
 	}
