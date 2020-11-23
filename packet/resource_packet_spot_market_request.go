@@ -100,6 +100,10 @@ func resourcePacketSpotMarketRequest() *schema.Resource {
 							Type:     schema.TypeString,
 							Optional: true,
 						},
+						"ipxe_script_url": {
+							Type:     schema.TypeString,
+							Optional: true,
+						},
 					},
 				},
 			},
@@ -147,8 +151,33 @@ func resourcePacketSpotMarketRequestCreate(d *schema.ResourceData, meta interfac
 		params.CustomData = val.(string)
 	}
 
+	if val, ok := d.GetOk("instance_parameters.0.ipxe_script_url"); ok {
+		params.IPXEScriptURL = val.(string)
+	}
+
 	if val, ok := d.GetOk("instance_parameters.0.always_pxe"); ok {
 		params.AlwaysPXE = val.(bool)
+	}
+	
+	if params.OperatingSystem == "custom_ipxe" {
+		if params.IPXEScriptURL == "" && params.UserData == "" {
+			return fmt.Errorf("\"ipxe_script_url\" or \"user_data\"" +
+				" must be provided when \"custom_ipxe\" OS is selected.")
+		}
+
+		// ipxe_script_url + user_data is OK, unless user_data is an ipxe script in
+		// which case it's an error.
+		if params.IPXEScriptURL != "" {
+			if matchIPXEScript.MatchString(params.UserData) {
+				return fmt.Errorf("\"user_data\" should not be an iPXE " +
+					"script when \"ipxe_script_url\" is also provided.")
+			}
+		}
+	}
+
+	if params.OperatingSystem != "custom_ipxe" && params.IPXEScriptURL != "" {
+		return fmt.Errorf("\"ipxe_script_url\" argument provided, but" +
+			" OS is not \"custom_ipxe\". Please verify and fix device arguments.")
 	}
 
 	if val, ok := d.GetOk("instance_parameters.0.description"); ok {
