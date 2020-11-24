@@ -45,6 +45,9 @@ func testSweepNetworkACLTemplate(region string) error {
 			log.Printf("[INFO][SWEEPER_LOG] sent delete request for NetworkACLTemplate resource %s (%s)", template.UUID, template.Name)
 		}
 	}
+	if nonSweepableCount > 0 {
+		log.Printf("[INFO][SWEEPER_LOG] %d items were non-sweepable and skipped.", nonSweepableCount)
+	}
 	return nil
 }
 

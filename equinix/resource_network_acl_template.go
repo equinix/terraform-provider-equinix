@@ -2,8 +2,11 @@ package equinix
 
 import (
 	"fmt"
+	"log"
+	"net/http"
 
 	"github.com/equinix/ne-go"
+	"github.com/equinix/rest-go"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
 )
@@ -130,7 +133,13 @@ func resourceNetworkACLTemplateRead(d *schema.ResourceData, m interface{}) error
 	conf := m.(*Config)
 	template, err := conf.ne.GetACLTemplate(d.Id())
 	if err != nil {
-		return nil
+		if restErr, ok := err.(rest.Error); ok {
+			if restErr.HTTPCode == http.StatusNotFound {
+				d.SetId("")
+				return nil
+			}
+		}
+		return err
 	}
 	if err := updateACLTemplateResource(template, d); err != nil {
 		return err
@@ -149,6 +158,11 @@ func resourceNetworkACLTemplateUpdate(d *schema.ResourceData, m interface{}) err
 
 func resourceNetworkACLTemplateDelete(d *schema.ResourceData, m interface{}) error {
 	conf := m.(*Config)
+	if devID, ok := d.GetOk(networkACLTemplateSchemaNames["DeviceUUID"]); ok {
+		if err := conf.ne.NewDeviceUpdateRequest(devID.(string)).WithACLTemplate("").Execute(); err != nil {
+			log.Printf("[WARN] could not unassign ACL template %q from device %q: %s", d.Id(), devID, err)
+		}
+	}
 	if err := conf.ne.DeleteACLTemplate(d.Id()); err != nil {
 		return err
 	}

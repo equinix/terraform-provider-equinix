@@ -42,8 +42,10 @@ func testSweepNetworkDevice(region string) error {
 		log.Printf("[INFO][SWEEPER_LOG] error fetching NetworkDevice list: %s", err)
 		return err
 	}
+	nonSweepableCount := 0
 	for _, device := range devices {
 		if !isSweepableTestResource(device.Name) {
+			nonSweepableCount++
 			continue
 		}
 		if device.RedundancyType != "PRIMARY" {
@@ -54,6 +56,9 @@ func testSweepNetworkDevice(region string) error {
 		} else {
 			log.Printf("[INFO][SWEEPER_LOG] sent delete request for NetworkDevice resource %s (%s)", device.UUID, device.Name)
 		}
+	}
+	if nonSweepableCount > 0 {
+		log.Printf("[INFO][SWEEPER_LOG] %d items were non-sweepable and skipped.", nonSweepableCount)
 	}
 	return nil
 }
@@ -126,6 +131,8 @@ func TestAccNetworkDeviceAndUser(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccNetworkACLTemplateExists(priACLResourceName, &primaryACL),
 					testAccNetworkACLTemplateExists(secACLResourceName, &secondaryACL),
+					testAccNeDeviceExists(resourceName, &primary),
+					testAccNeDeviceSecondaryExists(&primary, &secondary),
 					testAccNeDeviceACLs(&primary, &secondary, &primaryACL, &secondaryACL),
 				),
 			},
@@ -364,17 +371,17 @@ func testAccNeDeviceRedundancyAttributes(primary, secondary *ne.Device) resource
 
 func testAccNeDeviceACLs(primary, secondary *ne.Device, primaryACL, secondaryACL *ne.ACLTemplate) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
-		if primary.ACLTemplateUUID != primaryACL.UUID {
-			return fmt.Errorf("Primary device %s template UUID does not match %v - %v", primary.UUID, primary.ACLTemplateUUID, primaryACL.UUID)
-		}
-		if secondary.ACLTemplateUUID != secondary.UUID {
-			return fmt.Errorf("Secondary device %s template UUID does not match %v - %v", secondary.UUID, secondary.ACLTemplateUUID, secondaryACL.UUID)
-		}
 		if primaryACL.DeviceUUID != primary.UUID {
 			return fmt.Errorf("Primary ACL %s device UUID does not match %v - %v", primaryACL.UUID, primaryACL.DeviceUUID, primary.UUID)
 		}
 		if secondaryACL.DeviceUUID != secondary.UUID {
 			return fmt.Errorf("Secondary ACL %s device UUID does not match %v - %v", secondaryACL.UUID, secondaryACL.DeviceUUID, secondary.UUID)
+		}
+		if primaryACL.DeviceACLStatus != ne.ACLDeviceStatusProvisioned {
+			return fmt.Errorf("Primary ACL %s device_acl_status does not match %v - %v", primaryACL.UUID, primaryACL.DeviceACLStatus, ne.ACLDeviceStatusProvisioned)
+		}
+		if secondaryACL.DeviceACLStatus != ne.ACLDeviceStatusProvisioned {
+			return fmt.Errorf("Secondary ACL %s device_acl_status does not match %v - %v", secondaryACL.UUID, secondaryACL.DeviceACLStatus, ne.ACLDeviceStatusProvisioned)
 		}
 		return nil
 	}

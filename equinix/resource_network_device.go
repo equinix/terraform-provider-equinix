@@ -2,6 +2,7 @@ package equinix
 
 import (
 	"fmt"
+	"log"
 	"reflect"
 	"time"
 
@@ -67,6 +68,7 @@ func resourceNetworkDevice() *schema.Resource {
 		Schema: createNetworkDeviceSchema(),
 		Timeouts: &schema.ResourceTimeout{
 			Create: schema.DefaultTimeout(30 * time.Minute),
+			Update: schema.DefaultTimeout(5 * time.Minute),
 		},
 	}
 }
@@ -468,32 +470,29 @@ func resourceNetworkDeviceRead(d *schema.ResourceData, m interface{}) error {
 }
 
 func resourceNetworkDeviceUpdate(d *schema.ResourceData, m interface{}) error {
+	supportedChanges := []string{"Name", "TermLength", "Notifications", "AdditionalBandwidth", "ACLTemplateUUID"}
 	conf := m.(*Config)
 	updateReq := conf.ne.NewDeviceUpdateRequest(d.Id())
-	if v, ok := d.GetOk(networkDeviceSchemaNames["Name"]); ok && d.HasChange(networkDeviceSchemaNames["Name"]) {
-		updateReq.WithDeviceName(v.(string))
-	}
-	if v, ok := d.GetOk(networkDeviceSchemaNames["TermLength"]); ok && d.HasChange(networkDeviceSchemaNames["TermLength"]) {
-		updateReq.WithTermLength(v.(int))
-	}
-	if v, ok := d.GetOk(networkDeviceSchemaNames["Notifications"]); ok && d.HasChange(networkDeviceSchemaNames["Notifications"]) {
-		updateReq.WithNotifications(expandSetToStringList(v.(*schema.Set)))
-	}
-	if v, ok := d.GetOk(networkDeviceSchemaNames["AdditionalBandwidth"]); ok && d.HasChange(networkDeviceSchemaNames["AdditionalBandwidth"]) {
-		updateReq.WithAdditionalBandwidth(v.(int))
-	}
-	if v, ok := d.GetOk(networkDeviceSchemaNames["ACLTemplateUUID"]); ok && d.HasChange(networkDeviceSchemaNames["ACLTemplateUUID"]) {
-		updateReq.WithACLTemplate(v.(string))
-	}
-	if err := updateReq.Execute(); err != nil {
+	primaryChanges := getNetworkDeviceChanges(supportedChanges, d)
+	if err := fillNetworkDeviceUpdateRequest(updateReq, primaryChanges).Execute(); err != nil {
 		return err
 	}
-	if a, b := d.GetChange(networkDeviceSchemaNames["Secondary"]); d.HasChange(networkDeviceSchemaNames["Secondary"]) {
-		if v, ok := d.GetOk(networkDeviceSchemaNames["RedundantUUID"]); ok {
-			secUpdateReq := conf.ne.NewDeviceUpdateRequest(v.(string))
-			if err := networkDeviceSecondaryUpdate(secUpdateReq, a.(*schema.Set), b.(*schema.Set)); err != nil {
-				return err
-			}
+	var secondaryChanges map[string]interface{}
+	if v, ok := d.GetOk(networkDeviceSchemaNames["RedundantUUID"]); ok {
+		secondaryUpdateReq := conf.ne.NewDeviceUpdateRequest(v.(string))
+		secondaryChanges = getNetworkDeviceChangesSecondary(supportedChanges, d)
+		if err := fillNetworkDeviceUpdateRequest(secondaryUpdateReq, secondaryChanges).Execute(); err != nil {
+			return err
+		}
+	}
+	for _, stateChangeConf := range getNetworkDeviceStateChangeConfigs(conf.ne, d, primaryChanges) {
+		if _, err := stateChangeConf.WaitForState(); err != nil {
+			return fmt.Errorf("error waiting for network device %q to be updated: %s", d.Id(), err)
+		}
+	}
+	for _, stateChangeConf := range getNetworkDeviceStateChangeConfigs(conf.ne, d, secondaryChanges) {
+		if _, err := stateChangeConf.WaitForState(); err != nil {
+			return fmt.Errorf("error waiting for network device %q to be updated: %s", d.Get(networkDeviceSchemaNames["RedundantUUID"]), err)
 		}
 	}
 	return resourceNetworkDeviceRead(d, m)
@@ -501,6 +500,23 @@ func resourceNetworkDeviceUpdate(d *schema.ResourceData, m interface{}) error {
 
 func resourceNetworkDeviceDelete(d *schema.ResourceData, m interface{}) error {
 	conf := m.(*Config)
+	if v, ok := d.GetOk(networkDeviceSchemaNames["ACLTemplateUUID"]); ok {
+		if err := conf.ne.NewDeviceUpdateRequest(d.Id()).WithACLTemplate("").Execute(); err != nil {
+			log.Printf("[WARN] could not unassign ACL template %q from device %q: %s", v, d.Id(), err)
+		}
+	}
+	if v, ok := d.GetOk(networkDeviceSchemaNames["Secondary"]); ok {
+		secondarySet := v.(*schema.Set)
+		if secondarySet.Len() > 0 {
+			secondaries := expandNetworkDeviceSecondary(secondarySet)
+			secondary := &secondaries[0]
+			if secondary.ACLTemplateUUID != "" {
+				if err := conf.ne.NewDeviceUpdateRequest(secondary.UUID).WithACLTemplate("").Execute(); err != nil {
+					log.Printf("[WARN] could not unassign ACL template %q from device %q: %s", v, secondary.UUID, err)
+				}
+			}
+		}
+	}
 	if err := conf.ne.DeleteDevice(d.Id()); err != nil {
 		if restErr, ok := err.(rest.Error); ok {
 			for _, detailedErr := range restErr.ApplicationErrors {
@@ -843,23 +859,87 @@ func expandNetworkDeviceInterfaces(interfaces *schema.Set) []ne.DeviceInterface 
 	return transformed
 }
 
-func networkDeviceSecondaryUpdate(req ne.DeviceUpdateRequest, a, b *schema.Set) error {
-	if req == nil || a.Len() < 0 || b.Len() < 0 {
-		return nil
+func getNetworkDeviceChanges(keys []string, d *schema.ResourceData) map[string]interface{} {
+	changed := make(map[string]interface{})
+	for _, key := range keys {
+		if schemaKey, ok := networkDeviceSchemaNames[key]; ok {
+			if v := d.Get(schemaKey); v != nil && d.HasChange(schemaKey) {
+				changed[key] = v
+			}
+		}
 	}
-	aMap := a.List()[0].(map[string]interface{})
-	bMap := b.List()[0].(map[string]interface{})
-	if !reflect.DeepEqual(aMap[networkDeviceSchemaNames["Name"]], bMap[networkDeviceSchemaNames["Name"]]) {
-		req.WithDeviceName(bMap[networkDeviceSchemaNames["Name"]].(string))
+	return changed
+}
+
+func getNetworkDeviceChangesSecondary(keys []string, d *schema.ResourceData) map[string]interface{} {
+	changed := make(map[string]interface{})
+	if !d.HasChange(networkDeviceSchemaNames["Secondary"]) {
+		return changed
 	}
-	if !reflect.DeepEqual(aMap[networkDeviceSchemaNames["Notifications"]], bMap[networkDeviceSchemaNames["Notifications"]]) {
-		req.WithNotifications(expandSetToStringList(bMap[networkDeviceSchemaNames["Notifications"]].(*schema.Set)))
+	a, b := d.GetChange(networkDeviceSchemaNames["Secondary"])
+	aSet := a.(*schema.Set)
+	bSet := b.(*schema.Set)
+	if aSet.Len() < 1 || bSet.Len() < 1 {
+		return changed
 	}
-	if !reflect.DeepEqual(aMap[networkDeviceSchemaNames["AdditionalBandwidth"]], bMap[networkDeviceSchemaNames["AdditionalBandwidth"]]) {
-		req.WithAdditionalBandwidth(bMap[networkDeviceSchemaNames["AdditionalBandwidth"]].(int))
+	aMap := aSet.List()[0].(map[string]interface{})
+	bMap := bSet.List()[0].(map[string]interface{})
+	for _, key := range keys {
+		if schemaKey, ok := networkDeviceSchemaNames[key]; ok {
+			if !reflect.DeepEqual(aMap[schemaKey], bMap[schemaKey]) {
+				changed[key] = bMap[schemaKey]
+			}
+		}
 	}
-	if !reflect.DeepEqual(aMap[networkDeviceSchemaNames["ACLTemplateUUID"]], bMap[networkDeviceSchemaNames["ACLTemplateUUID"]]) {
-		req.WithACLTemplate(bMap[networkDeviceSchemaNames["ACLTemplateUUID"]].(string))
+	return changed
+}
+
+func fillNetworkDeviceUpdateRequest(updateReq ne.DeviceUpdateRequest, changes map[string]interface{}) ne.DeviceUpdateRequest {
+	for change, changeValue := range changes {
+		switch change {
+		case "Name":
+			updateReq.WithDeviceName(changeValue.(string))
+		case "TermLength":
+			updateReq.WithTermLength(changeValue.(int))
+		case "Notifications":
+			updateReq.WithNotifications((expandSetToStringList(changeValue.(*schema.Set))))
+		case "AdditionalBandwidth":
+			updateReq.WithAdditionalBandwidth(changeValue.(int))
+		case "ACLTemplateUUID":
+			updateReq.WithACLTemplate(changeValue.(string))
+		}
 	}
-	return req.Execute()
+	return updateReq
+}
+
+func getNetworkDeviceStateChangeConfigs(c ne.Client, d *schema.ResourceData, changes map[string]interface{}) []*resource.StateChangeConf {
+	configs := make([]*resource.StateChangeConf, 0, len(changes))
+	for change, changeValue := range changes {
+		switch change {
+		case "ACLTemplateUUID":
+			aclTempID, ok := changeValue.(string)
+			if !ok || aclTempID == "" {
+				break
+			}
+			configs = append(configs, &resource.StateChangeConf{
+				Pending: []string{
+					ne.ACLDeviceStatusProvisioning,
+				},
+				Target: []string{
+					ne.ACLDeviceStatusProvisioned,
+				},
+				Timeout:    d.Timeout(schema.TimeoutUpdate),
+				Delay:      1 * time.Second,
+				MinTimeout: 1 * time.Second,
+				Refresh: func() (interface{}, string, error) {
+					resp, err := c.GetACLTemplate(aclTempID)
+					if err != nil {
+						return nil, "", err
+					}
+					return resp, resp.DeviceACLStatus, nil
+				},
+			})
+		}
+	}
+	return configs
 }
