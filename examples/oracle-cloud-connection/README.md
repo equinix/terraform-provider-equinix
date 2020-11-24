@@ -18,8 +18,11 @@ to Oracle i.e. *EQUINIX_SVC-FR4-CX-PRI-01*
 * `oci_user_ocid` - user's Oracle Cloud Identifier
 * `oci_private_key_path` - API Singing private key
 * `oci_fingerprint` - API signing private key's fingerprint
-* `oci_region` - Oracle Cloud region to connect to
 * `oci_compartment_id` - Compartment's Oracle Cloud Identifier
+* `oci_region` - Oracle Cloud region to connect to
+* `oci_metro_code` - Equinix metro location with Oracle presence for connection's
+destination. Given metro location code has to correspond with given Oracle cloud
+region
 
 ## Initialize
 

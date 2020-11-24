@@ -1,8 +1,14 @@
 ## 1.1.0 (Unreleased)
 
+ENHANCEMENTS:
+
+- resource/equinix_ecx_l2_service_profile: introduced schema validations,
+updated acceptance tests and resource documentation
+
 FEATURES:
 
 - **New Resource**: `equinix_network_ssh_key` ([#25](https://github.com/equinix/terraform-provider-equinix/issues/25))
+- **New Resource**: `equinix_network_acl_template` ([#19](https://github.com/equinix/terraform-provider-equinix/issues/19))
 - **New Resource**: `equinix_network_bgp` ([#16](https://github.com/equinix/terraform-provider-equinix/issues/16))
 - **New Data source**: `equinix_network_account` ([#13](https://github.com/equinix/terraform-provider-equinix/issues/13))
 - **New Data source**: `equinix_network_device_type` ([#13](https://github.com/equinix/terraform-provider-equinix/issues/13))
@@ -10,6 +16,19 @@ FEATURES:
 - **New Data source**: `equinix_network_device_platform` ([#13](https://github.com/equinix/terraform-provider-equinix/issues/13))
 - **New Resource**: `equinix_network_device` ([#4](https://github.com/equinix/terraform-provider-equinix/issues/4))
 - **New Resource**: `equinix_network_ssh_user` ([#4](https://github.com/equinix/terraform-provider-equinix/issues/4))
+
+## 1.0.2 (November 17, 2020)
+
+ENHANCEMENTS:
+
+- resource/equinix_ecx_l2_connection_accepter: creation awaits for desired
+connection provider state before succeeding ([#26](https://github.com/equinix/terraform-provider-equinix/issues/26))
+
+BUG FIXES:
+
+- resource/equinix_ecx_l2_connection: z-side port identifier, vlan C-tag and vlan
+S-tag for secondary connection are properly populated with values from the Fabric
+([#24](https://github.com/equinix/terraform-provider-equinix/issues/24))
 
 ## 1.0.1 (November 09, 2020)
 

@@ -42,8 +42,10 @@ func testSweepNetworkDevice(region string) error {
 		log.Printf("[INFO][SWEEPER_LOG] error fetching NetworkDevice list: %s", err)
 		return err
 	}
+	nonSweepableCount := 0
 	for _, device := range devices {
 		if !isSweepableTestResource(device.Name) {
+			nonSweepableCount++
 			continue
 		}
 		if device.RedundancyType != "PRIMARY" {
@@ -54,6 +56,9 @@ func testSweepNetworkDevice(region string) error {
 		} else {
 			log.Printf("[INFO][SWEEPER_LOG] sent delete request for NetworkDevice resource %s (%s)", device.UUID, device.Name)
 		}
+	}
+	if nonSweepableCount > 0 {
+		log.Printf("[INFO][SWEEPER_LOG] %d items were non-sweepable and skipped.", nonSweepableCount)
 	}
 	return nil
 }
@@ -83,11 +88,20 @@ func TestAccNetworkDeviceAndUser(t *testing.T) {
 		"userResourceName":        "tst-user",
 		"username":                fmt.Sprintf("%s-%s", tstResourcePrefix, randString(6)),
 		"password":                randString(10),
+		"acl-resourceName":        "acl-pri",
+		"acl-name":                fmt.Sprintf("%s-%s", tstResourcePrefix, randString(6)),
+		"acl-description":         randString(50),
+		"acl2-resourceName":       "acl-sec",
+		"acl2-name":               fmt.Sprintf("%s-%s", tstResourcePrefix, randString(6)),
+		"acl2-description":        randString(50),
 	}
 	resourceName := fmt.Sprintf("equinix_network_device.%s", context["resourceName"].(string))
 	userResourceName := fmt.Sprintf("equinix_network_ssh_user.%s", context["userResourceName"].(string))
+	priACLResourceName := fmt.Sprintf("equinix_network_acl_template.%s", context["acl-resourceName"].(string))
+	secACLResourceName := fmt.Sprintf("equinix_network_acl_template.%s", context["acl2-resourceName"].(string))
 	var primary, secondary ne.Device
 	var user ne.SSHUser
+	var primaryACL, secondaryACL ne.ACLTemplate
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
@@ -110,6 +124,16 @@ func TestAccNetworkDeviceAndUser(t *testing.T) {
 					testAccNeSSHUserExists(userResourceName, &user),
 					testAccNeSSHUserAttributes(&user, []*ne.Device{&primary, &secondary}, context),
 					resource.TestCheckResourceAttrSet(userResourceName, "uuid"),
+				),
+			},
+			{
+				Config: testAccNetworkDeviceAndUserAddACLs(context),
+				Check: resource.ComposeTestCheckFunc(
+					testAccNetworkACLTemplateExists(priACLResourceName, &primaryACL),
+					testAccNetworkACLTemplateExists(secACLResourceName, &secondaryACL),
+					testAccNeDeviceExists(resourceName, &primary),
+					testAccNeDeviceSecondaryExists(&primary, &secondary),
+					testAccNeDeviceACLs(&primary, &secondary, &primaryACL, &secondaryACL),
 				),
 			},
 		},
@@ -155,7 +179,76 @@ resource "equinix_network_ssh_user" "%{userResourceName}" {
 	  equinix_network_device.%{resourceName}.id,
 	  equinix_network_device.%{resourceName}.redundant_id
 	]
-  }
+}
+`, ctx)
+}
+
+func testAccNetworkDeviceAndUserAddACLs(ctx map[string]interface{}) string {
+	return nprintf(`
+data "equinix_network_account" "test" {
+  metro_code = "%{metro_code}"
+  status     = "Active"
+}
+
+resource "equinix_network_acl_template" "%{acl-resourceName}" {
+	name          = "%{acl-name}"
+	description   = "%{acl-description}"
+	metro_code    = data.equinix_network_account.test.metro_code
+	inbound_rule {
+		subnets  = ["10.0.0.0/24"]
+		protocol = "IP"
+		src_port = "any"
+		dst_port = "any"
+	}
+}
+
+resource "equinix_network_acl_template" "%{acl2-resourceName}" {
+	name          = "%{acl2-name}"
+	description   = "%{acl2-description}"
+	metro_code    = data.equinix_network_account.test.metro_code
+	inbound_rule {
+		subnets  = ["192.0.0.0/24"]
+		protocol = "IP"
+		src_port = "any"
+		dst_port = "any"
+	}
+}
+
+resource "equinix_network_device" "%{resourceName}" {
+	name                  = "%{name}"
+	throughput            = %{throughput}
+	throughput_unit       = "%{throughput_unit}"
+	metro_code            = data.equinix_network_account.test.metro_code
+	type_code             = "%{type_code}"
+	package_code          = "%{package_code}"
+	notifications         = %{notifications}
+	hostname              = "%{hostname}"
+	term_length           = %{term_length}
+	account_number        = data.equinix_network_account.test.number
+	version               = "%{version}"
+	core_count            = %{core_count}
+	purchase_order_number = "%{purchase_order_number}"
+	order_reference       = "%{order_reference}"
+	interface_count       = %{interface_count}
+	acl_template_id       = equinix_network_acl_template.%{acl-resourceName}.id
+	secondary_device {
+		name            = "%{secondary-name}"
+		metro_code      = data.equinix_network_account.test.metro_code
+		hostname        = "%{secondary-hostname}"
+		notifications   = %{secondary-notifications}
+		account_number  = data.equinix_network_account.test.number
+		acl_template_id = equinix_network_acl_template.%{acl2-resourceName}.id
+	  }
+}
+
+resource "equinix_network_ssh_user" "%{userResourceName}" {
+	username = "%{username}"
+	password = "%{password}"
+	device_ids = [
+	  equinix_network_device.%{resourceName}.id,
+	  equinix_network_device.%{resourceName}.redundant_id
+	]
+}
 `, ctx)
 }
 
@@ -271,6 +364,24 @@ func testAccNeDeviceRedundancyAttributes(primary, secondary *ne.Device) resource
 		}
 		if secondary.RedundantUUID != primary.UUID {
 			return fmt.Errorf("redundant_id does not match %v - %v", secondary.RedundantUUID, primary.UUID)
+		}
+		return nil
+	}
+}
+
+func testAccNeDeviceACLs(primary, secondary *ne.Device, primaryACL, secondaryACL *ne.ACLTemplate) resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		if primaryACL.DeviceUUID != primary.UUID {
+			return fmt.Errorf("Primary ACL %s device UUID does not match %v - %v", primaryACL.UUID, primaryACL.DeviceUUID, primary.UUID)
+		}
+		if secondaryACL.DeviceUUID != secondary.UUID {
+			return fmt.Errorf("Secondary ACL %s device UUID does not match %v - %v", secondaryACL.UUID, secondaryACL.DeviceUUID, secondary.UUID)
+		}
+		if primaryACL.DeviceACLStatus != ne.ACLDeviceStatusProvisioned {
+			return fmt.Errorf("Primary ACL %s device_acl_status does not match %v - %v", primaryACL.UUID, primaryACL.DeviceACLStatus, ne.ACLDeviceStatusProvisioned)
+		}
+		if secondaryACL.DeviceACLStatus != ne.ACLDeviceStatusProvisioned {
+			return fmt.Errorf("Secondary ACL %s device_acl_status does not match %v - %v", secondaryACL.UUID, secondaryACL.DeviceACLStatus, ne.ACLDeviceStatusProvisioned)
 		}
 		return nil
 	}

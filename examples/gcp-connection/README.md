@@ -14,8 +14,10 @@ registering app in the developer platform
 obtained same way as above
 * `equinix_port_name` - name of ECX Fabric port that you want to connect
 to GCP i.e. *EQUINIX_SVC-FR4-CX-PRI-01*
-* `gcp_region` -  GCP region for connection
 * `gcp_project_name` - GCP project name
+* `gcp_region` -  GCP region for a connection
+* `gcp_metro_code` -  Equinix metro location with GCP presence for connection's destination.
+Given metro location has to correspond with given GCP region
 
 ## GCP login
 

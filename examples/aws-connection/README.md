@@ -18,6 +18,8 @@ to AWS i.e. *EQUINIX_SVC-FR4-CX-PRI-01*
 * `aws_access_key` - AWS access key
 * `aws_secret_key` - AWS secret key
 * `aws_region` - AWS region
+* `aws_metro_code` - Equinix metro location with AWS presence for connection's destination.
+Given metro location has to correspond with given AWS region
 
 ## Initialize
 

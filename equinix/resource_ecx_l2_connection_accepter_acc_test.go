@@ -4,8 +4,10 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/equinix/ecx-go"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/terraform"
 )
 
 func TestAccECXL2ConnectionAccepter(t *testing.T) {
@@ -30,6 +32,7 @@ func TestAccECXL2ConnectionAccepter(t *testing.T) {
 	}
 	connectionResourceName := fmt.Sprintf("equinix_ecx_l2_connection.%s", context["connectionResourceName"].(string))
 	accepterResourceName := fmt.Sprintf("equinix_ecx_l2_connection_accepter.%s", context["accepterResourceName"].(string))
+	var testConn ecx.L2Connection
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
@@ -40,6 +43,8 @@ func TestAccECXL2ConnectionAccepter(t *testing.T) {
 					resource.TestCheckResourceAttrSet(accepterResourceName, "connection_id"),
 					resource.TestCheckResourceAttrPair(accepterResourceName, "connection_id", connectionResourceName, "id"),
 					resource.TestCheckResourceAttrSet(accepterResourceName, "aws_connection_id"),
+					testAccECXL2ConnectionExists(connectionResourceName, &testConn),
+					testAccECXL2ConnectionAccepterStatus(&testConn),
 				),
 			},
 		},
@@ -80,4 +85,13 @@ resource "equinix_ecx_l2_connection_accepter" "%{accepterResourceName}" {
    secret_key    = "%{secret_key}"
 }
 `, ctx)
+}
+
+func testAccECXL2ConnectionAccepterStatus(conn *ecx.L2Connection) resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		if conn.ProviderStatus != ecx.ConnectionStatusProvisioned {
+			return fmt.Errorf("provider_status does not match %v - %v", ecx.ConnectionStatusProvisioned, conn.ProviderStatus)
+		}
+		return nil
+	}
 }

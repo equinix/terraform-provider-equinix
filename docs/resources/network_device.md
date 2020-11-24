@@ -49,18 +49,16 @@ resource "equinix_network_device" "csr1000v-ha" {
   package_code    = "SEC"
   notifications   = ["john@equinix.com", "marry@equinix.com", "fred@equinix.com"]
   hostname        = "csr1000v-p"
-  acls            = ["10.0.0.0/24", "192.168.0.0/24", "1.1.1.1/32"]
   term_length     = 6
   account_number  = data.equinix_network_account.dc.number
   version         = "16.09.05"
   core_count      = 2
   secondary_device {
-    name           = "tf-csr1000v-s"
-    metro_code     = data.equinix_network_account.sv.metro_code
-    hostname       = "csr1000v-s"
-    acls           = ["1.1.1.1/32", "2.2.2.2/32", "4.4.4.4/32", "5.5.5.5/32"]
-    notifications  = ["john@equinix.com", "marry@equinix.com"]
-    account_number = data.equinix_network_account.sv.number
+    name            = "tf-csr1000v-s"
+    metro_code      = data.equinix_network_account.sv.metro_code
+    hostname        = "csr1000v-s"
+    notifications   = ["john@equinix.com", "marry@equinix.com"]
+    account_number  = data.equinix_network_account.sv.number
   }
 }
 ```
@@ -79,8 +77,7 @@ resource "equinix_network_device" "csr1000v-ha" {
 *bring your own license* or *subscription* (default)
 * `license_token` - (Optional) License Token can be provided for some device types
 in BYOL licensing mode
-* `acls` - (Optional) List of IP address subnets that will be loaded as an access
-control list for users accessing a device
+* `acl_template_id` - Identifier of an ACL template that will be applied on the device
 * `account_number` - (Required) Billing account number for a device
 * `notifications` - (Required) List of email addresses that will receive device
 status notifications
@@ -104,7 +101,7 @@ device configurations
   * `metro_code` - (Required) Metro location of a device
   * `hostname` - (Required) Device hostname
   * `license_token` - (Optional) License Token can be provided for some device types
-  * `acls` - (Optional) List of IP address subnets that will be loaded as an access
+to the device
   * `account_number` - (Required) Billing account number for a device
   * `notifications` - (Required) List of email addresses that will receive device
   * `additional_bandwidth` - (Optional) Additional Internet bandwidth, in Mbps,
@@ -115,7 +112,6 @@ device configurations
 * `uuid` - Device universally unique identifier
 * `status` - Device provisioning status
 * `license_status` - Device license registration status
-* `acls_status` - Device ACL provisioning
 * `ibx` - Name of Equinix exchange
 * `region` - Region in which device metro is located
 * `ssh_ip_address` - IP address to use for SSH connectivity with the device

@@ -35,7 +35,7 @@ network device and remote service provider
 * `local_asn` - (Required) Local ASN number
 * `remote_ip_address` - (Required) IP address of remote peer
 * `remote_asn` - (Required) Remote ASN number
-* `authentication_key` - (Required) shared key used for BGP peer authentication
+* `authentication_key` - (Optional) shared key used for BGP peer authentication
 
 ## Attributes Reference
 
