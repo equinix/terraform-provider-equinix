@@ -45,6 +45,7 @@ var networkDeviceSchemaNames = map[string]string{
 	"IsSelfManaged":       "self_managed",
 	"Interfaces":          "interface",
 	"VendorConfiguration": "vendor_configuration",
+	"UserPublicKey":       "ssh_key",
 	"Secondary":           "secondary_device",
 }
 
@@ -59,6 +60,11 @@ var neDeviceInterfaceSchemaNames = map[string]string{
 	"Type":              "type",
 }
 
+var neDeviceUserKeySchemaNames = map[string]string{
+	"Username": "username",
+	"KeyName":  "key_name",
+}
+
 func resourceNetworkDevice() *schema.Resource {
 	return &schema.Resource{
 		Create: resourceNetworkDeviceCreate,
@@ -67,7 +73,7 @@ func resourceNetworkDevice() *schema.Resource {
 		Delete: resourceNetworkDeviceDelete,
 		Schema: createNetworkDeviceSchema(),
 		Timeouts: &schema.ResourceTimeout{
-			Create: schema.DefaultTimeout(30 * time.Minute),
+			Create: schema.DefaultTimeout(60 * time.Minute),
 			Update: schema.DefaultTimeout(5 * time.Minute),
 		},
 	}
@@ -114,13 +120,13 @@ func createNetworkDeviceSchema() map[string]*schema.Schema {
 		},
 		networkDeviceSchemaNames["Throughput"]: {
 			Type:         schema.TypeInt,
-			Required:     true,
+			Optional:     true,
 			ForceNew:     true,
 			ValidateFunc: validation.IntAtLeast(1),
 		},
 		networkDeviceSchemaNames["ThroughputUnit"]: {
 			Type:         schema.TypeString,
-			Required:     true,
+			Optional:     true,
 			ForceNew:     true,
 			ValidateFunc: validation.StringInSlice([]string{"Mbps", "Gbps"}, false),
 		},
@@ -246,6 +252,16 @@ func createNetworkDeviceSchema() map[string]*schema.Schema {
 				ValidateFunc: validation.StringIsNotEmpty,
 			},
 		},
+		networkDeviceSchemaNames["UserPublicKey"]: {
+			Type:     schema.TypeSet,
+			Optional: true,
+			ForceNew: true,
+			MinItems: 1,
+			MaxItems: 1,
+			Elem: &schema.Resource{
+				Schema: createNetworkDeviceUserKeySchema(),
+			},
+		},
 		networkDeviceSchemaNames["Secondary"]: {
 			Type:     schema.TypeSet,
 			Optional: true,
@@ -348,6 +364,17 @@ func createNetworkDeviceSchema() map[string]*schema.Schema {
 							ValidateFunc: validation.StringIsNotEmpty,
 						},
 					},
+					networkDeviceSchemaNames["UserPublicKey"]: {
+						Type:     schema.TypeSet,
+						Optional: true,
+						ForceNew: true,
+						MinItems: 1,
+						MaxItems: 1,
+						//RequiredWith: []string{networkDeviceSchemaNames["UserPublicKey"]},
+						Elem: &schema.Resource{
+							Schema: createNetworkDeviceUserKeySchema(),
+						},
+					},
 				},
 			},
 		},
@@ -391,6 +418,21 @@ func createNetworkDeviceInterfaceSchema() map[string]*schema.Schema {
 	}
 }
 
+func createNetworkDeviceUserKeySchema() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		neDeviceUserKeySchemaNames["Username"]: {
+			Type:         schema.TypeString,
+			Required:     true,
+			ValidateFunc: validation.StringIsNotEmpty,
+		},
+		neDeviceUserKeySchemaNames["KeyName"]: {
+			Type:         schema.TypeString,
+			Required:     true,
+			ValidateFunc: validation.StringIsNotEmpty,
+		},
+	}
+}
+
 func resourceNetworkDeviceCreate(d *schema.ResourceData, m interface{}) error {
 	conf := m.(*Config)
 	primary, secondary := createNetworkDevices(d)
@@ -429,18 +471,20 @@ func resourceNetworkDeviceCreate(d *schema.ResourceData, m interface{}) error {
 	if _, err := createStateConf.WaitForState(); err != nil {
 		return fmt.Errorf("error waiting for network device (%s) to be created: %s", d.Id(), err)
 	}
-	licenseStateConf := *createStateConf
-	licenseStateConf.Pending = []string{ne.DeviceLicenseStateApplying}
-	licenseStateConf.Target = []string{ne.DeviceLicenseStateRegistered}
-	licenseStateConf.Refresh = func() (interface{}, string, error) {
-		resp, err := conf.ne.GetDevice(d.Id())
-		if err != nil {
-			return nil, "", err
+	if !primary.IsBYOL {
+		licenseStateConf := *createStateConf
+		licenseStateConf.Pending = []string{ne.DeviceLicenseStateApplying}
+		licenseStateConf.Target = []string{ne.DeviceLicenseStateRegistered}
+		licenseStateConf.Refresh = func() (interface{}, string, error) {
+			resp, err := conf.ne.GetDevice(d.Id())
+			if err != nil {
+				return nil, "", err
+			}
+			return resp, resp.LicenseStatus, nil
 		}
-		return resp, resp.LicenseStatus, nil
-	}
-	if _, err := licenseStateConf.WaitForState(); err != nil {
-		return fmt.Errorf("error waiting for network device (%s) to register license: %s", d.Id(), err)
+		if _, err := licenseStateConf.WaitForState(); err != nil {
+			return fmt.Errorf("error waiting for network device (%s) to register license: %s", d.Id(), err)
+		}
 	}
 	return resourceNetworkDeviceRead(d, m)
 }
@@ -623,6 +667,12 @@ func createNetworkDevices(d *schema.ResourceData) (*ne.Device, *ne.Device) {
 	if v, ok := d.GetOk(networkDeviceSchemaNames["VendorConfiguration"]); ok {
 		primary.VendorConfiguration = expandInterfaceMapToStringMap(v.(map[string]interface{}))
 	}
+	if v, ok := d.GetOk(networkDeviceSchemaNames["UserPublicKey"]); ok {
+		userKeys := expandNetworkDeviceUserKeys(v.(*schema.Set))
+		if len(userKeys) > 0 {
+			primary.UserPublicKey = userKeys[0]
+		}
+	}
 	if v, ok := d.GetOk(networkDeviceSchemaNames["Secondary"]); ok {
 		secondarySet := v.(*schema.Set)
 		if secondarySet.Len() > 0 {
@@ -727,6 +777,9 @@ func updateNetworkDeviceResource(primary *ne.Device, secondary *ne.Device, d *sc
 	if err := d.Set(networkDeviceSchemaNames["VendorConfiguration"], primary.VendorConfiguration); err != nil {
 		return fmt.Errorf("error reading VendorConfiguration: %s", err)
 	}
+	if err := d.Set(networkDeviceSchemaNames["UserPublicKey"], flattenNetworkDeviceUserKeys([]*ne.DeviceUserPublicKey{primary.UserPublicKey})); err != nil {
+		return fmt.Errorf("error reading VendorConfiguration: %s", err)
+	}
 	if secondary != nil {
 		if err := d.Set(networkDeviceSchemaNames["Secondary"], flattenNetworkDeviceSecondary(*secondary)); err != nil {
 			return fmt.Errorf("error reading Secondary: %s", err)
@@ -756,6 +809,7 @@ func flattenNetworkDeviceSecondary(device ne.Device) interface{} {
 	transformed[networkDeviceSchemaNames["AdditionalBandwidth"]] = device.AdditionalBandwidth
 	transformed[networkDeviceSchemaNames["Interfaces"]] = flattenNetworkDeviceInterfaces(device.Interfaces)
 	transformed[networkDeviceSchemaNames["VendorConfiguration"]] = device.VendorConfiguration
+	transformed[networkDeviceSchemaNames["UserPublicKey"]] = flattenNetworkDeviceUserKeys([]*ne.DeviceUserPublicKey{device.UserPublicKey})
 	return []map[string]interface{}{transformed}
 }
 
@@ -818,6 +872,12 @@ func expandNetworkDeviceSecondary(devices *schema.Set) []ne.Device {
 		if v, ok := devMap[networkDeviceSchemaNames["VendorConfiguration"]]; ok {
 			dev.VendorConfiguration = expandInterfaceMapToStringMap(v.(map[string]interface{}))
 		}
+		if v, ok := devMap[networkDeviceSchemaNames["UserPublicKey"]]; ok {
+			userKeys := expandNetworkDeviceUserKeys(v.(*schema.Set))
+			if len(userKeys) > 0 {
+				dev.UserPublicKey = userKeys[0]
+			}
+		}
 		transformed = append(transformed, dev)
 	}
 	return transformed
@@ -854,6 +914,32 @@ func expandNetworkDeviceInterfaces(interfaces *schema.Set) []ne.DeviceInterface 
 			IPAddress:         interfaceMap[neDeviceInterfaceSchemaNames["IPAddress"]].(string),
 			AssignedType:      interfaceMap[neDeviceInterfaceSchemaNames["AssignedType"]].(string),
 			Type:              interfaceMap[neDeviceInterfaceSchemaNames["Type"]].(string),
+		}
+	}
+	return transformed
+}
+
+func flattenNetworkDeviceUserKeys(userKeys []*ne.DeviceUserPublicKey) interface{} {
+	transformed := make([]interface{}, 0, len(userKeys))
+	for i := range userKeys {
+		if userKeys[i] != nil {
+			transformed = append(transformed, map[string]interface{}{
+				neDeviceUserKeySchemaNames["Username"]: userKeys[i].Username,
+				neDeviceUserKeySchemaNames["KeyName"]:  userKeys[i].KeyName,
+			})
+		}
+	}
+	return transformed
+}
+
+func expandNetworkDeviceUserKeys(userKeys *schema.Set) []*ne.DeviceUserPublicKey {
+	userKeysList := userKeys.List()
+	transformed := make([]*ne.DeviceUserPublicKey, len(userKeysList))
+	for i := range userKeysList {
+		userKeyMap := userKeysList[i].(map[string]interface{})
+		transformed[i] = &ne.DeviceUserPublicKey{
+			Username: userKeyMap[neDeviceUserKeySchemaNames["Username"]].(string),
+			KeyName:  userKeyMap[neDeviceUserKeySchemaNames["KeyName"]].(string),
 		}
 	}
 	return transformed

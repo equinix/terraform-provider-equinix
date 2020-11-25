@@ -68,8 +68,8 @@ resource "equinix_network_device" "csr1000v-ha" {
 * `name` - (Required) Device name
 * `type_code` - (Required) Device type code
 * `metro_code` - (Required) Metro location of a device
-* `throughput` - (Required) License throughput for a device
-* `throughput_unit` - (Required) License throughput unit (Mbps or Gbps)
+* `throughput` - (Optional) License throughput for a device
+* `throughput_unit` - (Optional) License throughput unit (Mbps or Gbps)
 * `hostname` - (Required) Device hostname
 * `package_code` - (Required) Code of a software package used for a device
 * `version` - (Required) Software version for a device
@@ -95,6 +95,11 @@ specified then default number for a given device type will be used.
 or Equinix managed (default)
 * `vendor_configuration` - (Optional) map of device parameters and values that
 are vendor specific and can or have to be provided for some device types
+* `ssh-key` - (Optional) up to one definition of SSH key that will be provisioned
+on a device
+  * `ssh-key.#.username` - (Required) username associated with given key
+  * `ssh-key.#.name` - (Required) name of SSH key as defined in
+`equinix_network_ssh_key` resource
 * `secondary_device` - (Optional) Definition of secondary device for redundant
 device configurations
   * `name` - (Required) Device name
@@ -121,11 +126,19 @@ to the device
 * `redundant_id` - Universally unique identifier for a redundant device
 (in HA configuration)
 * `interface` - List of device interfaces
-  * `id` - interface identifier
-  * `name` - interface name
-  * `status` -  interface status (AVAILABLE, RESERVED, ASSIGNED)
-  * `operational_status` - interface operation status (up or down)
-  * `mac_address` - interface MAC address
-  * `ip_address` - interface IP address
-  * `assigned_type` - interface management type (Equinix Managed or empty)
-  * `type` - interface type
+  * `interface.#.id` - interface identifier
+  * `interface.#.name` - interface name
+  * `interface.#.status` -  interface status (AVAILABLE, RESERVED, ASSIGNED)
+  * `interface.#.operational_status` - interface operation status (up or down)
+  * `interface.#.mac_address` - interface MAC address
+  * `interface.#.ip_address` - interface IP address
+  * `interface.#.assigned_type` - interface management type (Equinix Managed or empty)
+  * `interface.#.type` - interface type
+
+## Timeouts
+
+This resource provides the following [Timeouts configuration](https://www.terraform.io/docs/configuration/resources.html#operation-timeouts)
+options:
+
+* create - Default is 60 minutes
+* update - Default is 5 minutes
