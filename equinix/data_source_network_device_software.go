@@ -100,7 +100,7 @@ func dataSourceNetworkDeviceSoftwareRead(d *schema.ResourceData, m interface{}) 
 				continue
 			}
 		}
-		if v, ok := d.GetOk(networkDeviceSoftwareSchemaNames["IsStable"]); ok && v.(bool) == version.IsStable {
+		if v, ok := d.GetOk(networkDeviceSoftwareSchemaNames["IsStable"]); ok && v.(bool) != version.IsStable {
 			continue
 		}
 		if !stringsFound(pkgCodes, version.PackageCodes) {
@@ -118,6 +118,9 @@ func dataSourceNetworkDeviceSoftwareRead(d *schema.ResourceData, m interface{}) 
 		sort.Slice(filtered, func(i, j int) bool {
 			iTime, _ := time.Parse(networkDeviceSoftwareDateLayout, filtered[i].Date)
 			jTime, _ := time.Parse(networkDeviceSoftwareDateLayout, filtered[j].Date)
+			if iTime.Unix() == jTime.Unix() {
+				return filtered[i].Version > filtered[j].Version
+			}
 			return iTime.Unix() > jTime.Unix()
 		})
 	}
