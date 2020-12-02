@@ -164,7 +164,7 @@ func resourcePacketSpotMarketRequestCreate(d *schema.ResourceData, meta interfac
 	if val, ok := d.GetOk("instance_parameters.0.always_pxe"); ok {
 		params.AlwaysPXE = val.(bool)
 	}
-	
+
 	if params.OperatingSystem == "custom_ipxe" {
 		if params.IPXEScriptURL == "" && params.UserData == "" {
 			return fmt.Errorf("\"ipxe_script_url\" or \"user_data\"" +
