@@ -68,33 +68,36 @@ resource "equinix_network_device" "csr1000v-ha" {
 * `name` - (Required) Device name
 * `type_code` - (Required) Device type code
 * `metro_code` - (Required) Metro location of a device
-* `throughput` - (Optional) License throughput for a device
-* `throughput_unit` - (Optional) License throughput unit (Mbps or Gbps)
-* `hostname` - (Required) Device hostname
+* `hostname` - (Optional) Device hostname
 * `package_code` - (Required) Code of a software package used for a device
 * `version` - (Required) Software version for a device
+* `core_count` - (Required) Number of CPU cores for a device
+* `term_length` - (Required) Term length
+* `self_managed` - (Optional) Boolean value determining if device will be self-managed
+or Equinix managed (default)
 * `byol` - (Optional) Boolean value determining if device licensing mode will be
 *bring your own license* or *subscription* (default)
 * `license_token` - (Optional) License Token can be provided for some device types
 in BYOL licensing mode
-* `acl_template_id` - Identifier of an ACL template that will be applied on the device
+* `license_file` - (Optional) Path to the license file that will be uploaded and
+applied on a device. Applicable for some devices types in BYOL licensing mode
+* `throughput` - (Optional) License throughput for a device
+* `throughput_unit` - (Optional) License throughput unit (Mbps or Gbps)
 * `account_number` - (Required) Billing account number for a device
 * `notifications` - (Required) List of email addresses that will receive device
 status notifications
 * `purchase_order_number` - (Optional) Purchase order number associated
 with a device order
-* `term_length` - (Required) Term length
-* `additional_bandwidth` - (Optional) Additional Internet bandwidth, in Mbps,
-that will be added for the device in addition to 15Mbps included by default
 * `order_reference` - (Optional) Name/number used to identify device order on
 the invoice
+* `acl_template_id` - (Optional) Identifier of an ACL template that
+will be applied on the device
+* `additional_bandwidth` - (Optional) Additional Internet bandwidth, in Mbps,
+that will be added for the device in addition to 15Mbps included by default
 * `interface_count` - (Optional) Number of network interfaces on a device. If not
 specified then default number for a given device type will be used.
-* `core_count` - (Required) Number of CPU cores for a device
-* `self_managed` - (Optional) Boolean value determining if device will be self-managed
-or Equinix managed (default)
-* `vendor_configuration` - (Optional) map of device parameters and values that
-are vendor specific and can or have to be provided for some device types
+* `vendor_configuration` - (Optional) map of vendor specific configuration parameters
+for a device
 * `ssh-key` - (Optional) up to one definition of SSH key that will be provisioned
 on a device
   * `ssh-key.#.username` - (Required) username associated with given key
@@ -102,21 +105,47 @@ on a device
 `equinix_network_ssh_key` resource
 * `secondary_device` - (Optional) Definition of secondary device for redundant
 device configurations
-  * `name` - (Required) Device name
-  * `metro_code` - (Required) Metro location of a device
-  * `hostname` - (Required) Device hostname
-  * `license_token` - (Optional) License Token can be provided for some device types
-to the device
-  * `account_number` - (Required) Billing account number for a device
-  * `notifications` - (Required) List of email addresses that will receive device
-  * `additional_bandwidth` - (Optional) Additional Internet bandwidth, in Mbps,
-  * `vendor_configuration` - (Optional) map of device parameters and values that
+  * `secondary_device.#.name` - (Required) Secondary device name
+  * `secondary_device.#.metro_code` - (Required) Metro location of a secondary device
+  * `secondary_device.#.hostname` - (Optional) Secondary device hostname
+  * `secondary_device.#.license_token` - (Optional) License Token can be provided
+ for some device types o the device
+  * `secondary_device.#.license_file` - (Optional) Path to the license file that
+  will be uploaded and applied on a secondary device. Applicable for some devices
+  types in BYOL licensing mode
+  * `secondary_device.#.account_number` - (Required) Billing account number for
+  secondary device
+  * `secondary_device.#.notifications` - (Required) List of email addresses that
+  will receive notifications about secondary device
+  * `secondary_device.#.additional_bandwidth` - (Optional) Additional Internet
+ bandwidth, in Mbps, for a secondary device
+  * `secondary_device.#.vendor_configuration` - (Optional) map of vendor specific
+ configuration parameters for a secondary device
+  * `secondary_device.#.acl_template_id` - Identifier of an ACL template that will
+  be applied on a secondary device
+  * `ssh-key` - (Optional) up to one definition of SSH key that will be provisioned
+on a secondary device
+    * `ssh-key.#.username` - (Required) username associated with given key
+    * `ssh-key.#.name` - (Required) name of SSH key as defined in
+      `equinix_network_ssh_key` resource
 
 ## Attributes Reference
 
 * `uuid` - Device universally unique identifier
 * `status` - Device provisioning status
+  * INITIALIZING
+  * PROVISIONING
+  * WAITING_FOR_PRIMARY
+  * WAITING_FOR_SECONDARY
+  * FAILED
+  * PROVISIONED
+  * DEPROVISIONING
+  * DEPROVISIONED
 * `license_status` - Device license registration status
+  * APPLYING_LICENSE
+  * REGISTERED
+  * APPLIED
+  * REGISTRATION_FAILED
 * `ibx` - Name of Equinix exchange
 * `region` - Region in which device metro is located
 * `ssh_ip_address` - IP address to use for SSH connectivity with the device
@@ -141,4 +170,4 @@ This resource provides the following [Timeouts configuration](https://www.terraf
 options:
 
 * create - Default is 60 minutes
-* update - Default is 5 minutes
+* update - Default is 10 minutes
