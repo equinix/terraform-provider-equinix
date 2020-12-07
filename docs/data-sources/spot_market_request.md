@@ -1,11 +1,11 @@
 ---
-page_title: "Equinix Metal: packet_spot_market_request"
+page_title: "Equinix Metal: metal_spot_market_request"
 subcategory: ""
 description: |-
   Provides a datasource for existing Spot Market Requests in the Equinix Metal host.
 ---
 
-# packet_spot_market_request
+# metal_spot_market_request
 
 Provides an Equinix Metal spot_market_request datasource. The datasource will contain list of device IDs created by referenced Spot Market Request.
 
@@ -14,7 +14,7 @@ Provides an Equinix Metal spot_market_request datasource. The datasource will co
 ```hcl
 # Create a Spot Market Request, and print public IPv4 of the created devices, if any.
 
-resource "packet_spot_market_request" "req" {
+resource "metal_spot_market_request" "req" {
   project_id       = local.project_id
   max_bid_price    = 0.1
   facilities       = ["ewr1"]
@@ -30,28 +30,28 @@ resource "packet_spot_market_request" "req" {
   }
 }
 
-data "packet_spot_market_request" "dreq" {
-  request_id = packet_spot_market_request.req.id
+data "metal_spot_market_request" "dreq" {
+  request_id = metal_spot_market_request.req.id
 }
 
 output "ids" {
-  value = data.packet_spot_market_request.dreq.device_ids
+  value = data.metal_spot_market_request.dreq.device_ids
 }
 
-data "packet_device" "devs" {
-  count     = length(data.packet_spot_market_request.dreq.device_ids)
-  device_id = data.packet_spot_market_request.dreq.device_ids[count.index]
+data "metal_device" "devs" {
+  count     = length(data.metal_spot_market_request.dreq.device_ids)
+  device_id = data.metal_spot_market_request.dreq.device_ids[count.index]
 }
 
 output "ips" {
-  value = [for d in data.packet_device.devs : d.access_public_ipv4]
+  value = [for d in data.metal_device.devs : d.access_public_ipv4]
 }
 ```
 
 With the code as `main.tf`, first create the spot market request:
 
 ```
-terraform apply -target packet_spot_market_request.req
+terraform apply -target metal_spot_market_request.req
 ```
 
 When the terraform run ends, run a full apply, and the IPv4 addresses will be printed:

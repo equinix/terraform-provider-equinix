@@ -1,3 +1,17 @@
+## 3.2.0 (December 02, 2020)
+
+BREAKING CHANGES:
+- attribute `hardware_reservation_id` of the `packet_device` resource is not intended to be read anymore. Users should read `deployed_hardware_reservation_id` to find out to which hardware reservation a device was deployed.
+
+FEATURES:
+- [#294](https://github.com/packethost/terraform-provider-packet/pull/294) New parameters `tags` and `ipxe_script_url` for `packet_spot_market_request`
+
+IMPROVEMENTS:
+- [#290](https://github.com/packethost/terraform-provider-packet/pull/290) Updated base containers of github actions to fix CVE-2020-15528
+- [#295](https://github.com/packethost/terraform-provider-packet/pull/295) Version of packngo updated to 0.5.1
+- [#296](https://github.com/packethost/terraform-provider-packet/pull/296) Split hardware reservation ID to a parameter and a read-only attribute in `packet_device`
+
+
 ## 3.1.0 (November 13, 2020)
 
 BREAKING CHANGES:
@@ -7,7 +21,7 @@ FEATURES:
 - [#249](https://github.com/packethost/terraform-provider-packet/pull/249) New datasource `packet_project_ssh_key`
 
 IMPROVEMENTS:
-- [#276] `packet_device` datasource should query by hostname much faster
+- [#276](https://github.com/packethost/terraform-provider-packet/pull/276) `packet_device` datasource should query by hostname much faster
 - `packet_device_network_type` conversions should be more reliable
 - Test sweeper added for SSH keys
 - Acceptance testing moved to Github Actions

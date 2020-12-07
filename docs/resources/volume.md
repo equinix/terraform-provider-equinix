@@ -1,23 +1,23 @@
 ---
-page_title: "Equinix Metal: packet_volume"
+page_title: "Equinix Metal: metal_volume"
 subcategory: ""
 description: |-
   Provides an Equinix Metal Block Storage Volume Resource.
 ---
 
-# packet\_volume
+# metal\_volume
 
 Provides an Equinix Metal Block Storage Volume resource to allow you to
 manage block volumes on your account.
 Once created by Terraform, they must then be attached and mounted
-using the api and `packet_block_attach` and `packet_block_detach`
+using the api and `metal_block_attach` and `metal_block_detach`
 scripts.
 
 ## Example Usage
 
 ```hcl
 # Create a new block volume
-resource "packet_volume" "volume1" {
+resource "metal_volume" "volume1" {
   description   = "terraform-volume-1"
   facility      = "ewr1"
   project_id    = local.project_id
@@ -43,7 +43,7 @@ The following arguments are supported:
 
 * `plan` - (Required) The service plan slug of the volume
 * `facility` - (Required) The facility to create the volume in
-* `project_id` - (Required) The packet project ID to deploy the volume in
+* `project_id` - (Required) The metal project ID to deploy the volume in
 * `size` - (Required) The size in GB to make the volume
 * `billing_cycle` - The billing cycle, defaults to "hourly"
 * `description` - Optional description for the volume

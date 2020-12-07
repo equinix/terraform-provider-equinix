@@ -1,11 +1,11 @@
 ---
-page_title: "Equinix Metal: packet_volume"
+page_title: "Equinix Metal: metal_volume"
 subcategory: ""
 description: |-
   Provides an Equinix Metal Block Storage Volume Datasource.
 ---
 
-# packet\_volume
+# metal\_volume
 
 Provides an Equinix Metal Block Storage Volume datasource to allow you to read existing volumes.
 
@@ -13,13 +13,13 @@ Provides an Equinix Metal Block Storage Volume datasource to allow you to read e
 
 ```hcl
 # Read a volume by project ID and name
-data "packet_volume" "volume1" {
+data "metal_volume" "volume1" {
   name       = "terraform-volume-1"
   project_id = local.project_id
 }
 
 output "volume_size" {
-  value = data.packet_volume.volume1.size
+  value = data.metal_volume.volume1.size
 }
 ```
 

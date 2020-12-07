@@ -1,11 +1,11 @@
 ---
-page_title: "Equinix Metal: packet_project"
+page_title: "Equinix Metal: metal_project"
 subcategory: ""
 description: |-
   Provides an Equinix Metal Project datasource.
 ---
 
-# packet\_project
+# metal\_project
 
 Use this datasource to retrieve attributes of the Project API resource.
 
@@ -13,12 +13,12 @@ Use this datasource to retrieve attributes of the Project API resource.
 
 ```hcl
 # Get Project by name and print UUIDs of its users
-data "packet_project" "tf_project_1" {
+data "metal_project" "tf_project_1" {
   name = "Terraform Fun"
 }
 
 output "users_of_Terraform_Fun" {
-  value = data.packet_project.tf_project_1.user_ids
+  value = data.metal_project.tf_project_1.user_ids
 }
 ```
 

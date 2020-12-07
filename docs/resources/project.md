@@ -1,23 +1,23 @@
 ---
-page_title: "Equinix Metal: packet_project"
+page_title: "Equinix Metal: metal_project"
 subcategory: ""
 description: |-
   Provides an Equinix Metal Project resource.
 ---
 
-# packet\_project
+# metal\_project
 
 Provides an Equinix Metal project resource to allow you manage devices
 in your projects.
 
--> Keep in mind that Equinix Metal invoicing is per project, so creating many `packet_project` resources will affect the rendered invoice. If you want to keep your Equinix Metal bill simple and easy to review, please re-use your existing projects.
+-> Keep in mind that Equinix Metal invoicing is per project, so creating many `metal_project` resources will affect the rendered invoice. If you want to keep your Equinix Metal bill simple and easy to review, please re-use your existing projects.
 
 ## Example Usage
 
 ### Create a new project
 
 ```hcl
-resource "packet_project" "tf_project_1" {
+resource "metal_project" "tf_project_1" {
   name = "Terraform Fun"
 }
 ```
@@ -26,7 +26,7 @@ resource "packet_project" "tf_project_1" {
 
 ```hcl
 # Create a new Project
-resource "packet_project" "tf_project_1" {
+resource "metal_project" "tf_project_1" {
   name = "tftest"
   bgp_config {
     deployment_type = "local"
@@ -38,10 +38,10 @@ resource "packet_project" "tf_project_1" {
 
 ### Enabling BGP in an existing project
 
-If you want to enable BGP in an existing Packet project, you should first create a resource in your TF config for the existing projects. Set your BGP configuration.
+If you want to enable BGP in an existing Equinix Metal project, you should first create a resource in your TF config for the existing projects. Set your BGP configuration.
 
 ```hcl
-resource "packet_project" "existing_project" {
+resource "metal_project" "existing_project" {
   name = "The name of the project (if different, will rewrite)"
   bgp_config {
     deployment_type = "local"
@@ -54,7 +54,7 @@ resource "packet_project" "existing_project" {
 Then, find out the UUID of the existing project, and import it to your TF state.
 
 ```
-$ terraform import packet_project.existing_project e188d7db-46a7-46cb-8969-e63ec22695d5
+$ terraform import metal_project.existing_project e188d7db-46a7-46cb-8969-e63ec22695d5
 ```
 
 Your existing project is now loaded in your local TF state, and linked to the resource with given name.

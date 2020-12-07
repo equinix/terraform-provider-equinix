@@ -5,14 +5,14 @@ description: |-
   Get an Equinix Metal Spot Market Price
 ---
 
-# packet\_operating\_system
+# metal\_operating\_system
 
 Use this data source to get Equinix Metal Spot Market Price.
 
 ## Example Usage
 
 ```hcl
-data "packet_spot_market_price" "example" {
+data "metal_spot_market_price" "example" {
   facility = "ewr1"
   plan     = "c1.small.x86"
 }

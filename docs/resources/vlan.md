@@ -1,11 +1,11 @@
 ---
-page_title: "Equinix Metal: packet_vlan"
+page_title: "Equinix Metal: metal_vlan"
 subcategory: ""
 description: |-
   Provides a resource for Equinix Metal Virtual Network.
 ---
 
-# packet_vlan
+# metal_vlan
 
 Provides a resource to allow users to manage Virtual Networks in their projects.
 
@@ -18,7 +18,7 @@ To learn more about Layer 2 networking in Equinix Metal, refer to
 
 ```hcl
 # Create a new VLAN in datacenter "ewr1"
-resource "packet_vlan" "vlan1" {
+resource "metal_vlan" "vlan1" {
   description = "VLAN in New Jersey"
   facility    = "ewr1"
   project_id  = local.project_id

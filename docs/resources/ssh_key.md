@@ -1,11 +1,11 @@
 ---
-page_title: "Equinix Metal: packet_ssh_key"
+page_title: "Equinix Metal: metal_ssh_key"
 subcategory: ""
 description: |-
   Provides an Equinix Metal SSH key resource.
 ---
 
-# packet\_ssh_key
+# metal\_ssh_key
 
 Provides a resource to manage User SSH keys on your Equinix Metal user account. If you create a new device in a project, all the keys of the project's collaborators will be injected to the device.
 
@@ -15,21 +15,21 @@ The link between User SSH key and device is implicit. If you want to make sure t
 
 ```hcl
 # Create a new SSH key
-resource "packet_ssh_key" "key1" {
+resource "metal_ssh_key" "key1" {
   name       = "terraform-1"
   public_key = file("/home/terraform/.ssh/id_rsa.pub")
 }
 
 # Create new device with "key1" included. The device resource "depends_on" the
 # key, in order to make sure the key is created before the device.
-resource "packet_device" "test" {
+resource "metal_device" "test" {
   hostname         = "test-device"
   plan             = "t1.small.x86"
   facilities       = ["sjc1"]
   operating_system = "ubuntu_16_04"
   billing_cycle    = "hourly"
   project_id       = local.project_id
-  depends_on       = ["packet_ssh_key.key1"]
+  depends_on       = ["metal_ssh_key.key1"]
 }
 ```
 

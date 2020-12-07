@@ -1,12 +1,12 @@
 ---
-layout: "packet"
-page_title: "Equinix Metal: packet_device_network_type"
-sidebar_current: "docs-packet-resource-device-network-type"
+layout: "metal"
+page_title: "Equinix Metal: metal_device_network_type"
+sidebar_current: "docs-metal-resource-device-network-type"
 description: |-
   Provides a resource to manage network type of Equinix Metal devices.
 ---
 
-# packet_device_network_type
+# metal_device_network_type
 
 This resource controls network type of Equinix Metal devices.
 
@@ -15,14 +15,14 @@ To learn more about Layer 2 networking in Equinix Metal, refer to
 * <https://metal.equinix.com/developers/docs/networking/layer2/>
 * <https://metal.equinix.com/developers/docs/networking/layer2-configs/>
 
-If you are attaching VLAN to a device (i.e. using packet_port_vlan_attachment), link the device ID from this resource, in order to make the port attachment implicitly dependent on the state of the network type. If you link the device ID from the packet_device resource, Terraform will not wait for the network type change. See examples in [packet_port_vlan_attachment](port_vlan_attachment).
+If you are attaching VLAN to a device (i.e. using metal_port_vlan_attachment), link the device ID from this resource, in order to make the port attachment implicitly dependent on the state of the network type. If you link the device ID from the metal_device resource, Terraform will not wait for the network type change. See examples in [metal_port_vlan_attachment](port_vlan_attachment).
 
 ## Example Usage
 
 ### Create one s1.large device and put it to hybrid network mode
 
 ```hcl
-resource "packet_device" "test" {
+resource "metal_device" "test" {
   hostname         = "tfacc-device-port-vlan-attachment-test"
   plan             = "s1.large.x86"
   facilities       = ["nrt1"]
@@ -31,8 +31,8 @@ resource "packet_device" "test" {
   project_id       = local.project_id
 }
 
-resource "packet_device_network_type" "test" {
-  device_id = packet_device.test.id
+resource "metal_device_network_type" "test" {
+  device_id = metal_device.test.id
   type      = "hybrid"
 }
 ```
@@ -45,13 +45,13 @@ locals {
     device_count = 2
 }
 
-resource "packet_vlan" "test" {
+resource "metal_vlan" "test" {
   facility    = "nrt1"
   project_id  = local.project_id
 }
 
 
-resource "packet_device" "test" {
+resource "metal_device" "test" {
   count            = local.device_count
   hostname         = "test${count.index}"
   plan             = "s1.large.x86"
@@ -61,18 +61,18 @@ resource "packet_device" "test" {
   project_id       = local.project_id
 }
 
-resource "packet_device_network_type" "test" {
+resource "metal_device_network_type" "test" {
   count     = local.device_count
-  device_id = packet_device.test[count.index].id
+  device_id = metal_device.test[count.index].id
   type      = "hybrid"
 }
 
 
-resource "packet_port_vlan_attachment" "test" {
+resource "metal_port_vlan_attachment" "test" {
   count     = local.device_count
-  device_id = packet_device_network_type.test[count.index].id
+  device_id = metal_device_network_type.test[count.index].id
   port_name = "eth1"
-  vlan_vnid = packet_vlan.test.vxlan
+  vlan_vnid = metal_vlan.test.vxlan
 }
 
 ```
@@ -83,7 +83,7 @@ resource "packet_port_vlan_attachment" "test" {
 This resource can also be imported using existing device ID:
 
 ```sh
-terraform import packet_device_network_type {existing device_id}
+terraform import metal_device_network_type {existing device_id}
 ```
 
 ## Argument Reference

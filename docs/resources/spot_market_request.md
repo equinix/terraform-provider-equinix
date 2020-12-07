@@ -1,11 +1,11 @@
 ---
-page_title: "Equinix Metal: packet_spot_market_request"
+page_title: "Equinix Metal: metal_spot_market_request"
 subcategory: ""
 description: |-
   Provides an Equinix Metal Spot Market Request Resource.
 ---
 
-# packet\_spot\_market\_request
+# metal\_spot\_market\_request
 
 Provides an Equinix Metal Spot Market Request resource to allow you to
 manage spot market requests on your account. For more detail on Spot Market, see [this article in Equinix Metal documentation](https://metal.equinix.com/developers/docs/deploy/spot-market/).
@@ -14,7 +14,7 @@ manage spot market requests on your account. For more detail on Spot Market, see
 
 ```hcl
 # Create a spot market request
-resource "packet_spot_market_request" "req" {
+resource "metal_spot_market_request" "req" {
   project_id    = local.project_id
   max_bid_price = 0.03
   facilities    = ["ewr1"]

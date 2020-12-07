@@ -1,11 +1,11 @@
 ---
-page_title: "Equinix Metal: packet_ip_attachment"
+page_title: "Equinix Metal: metal_ip_attachment"
 subcategory: ""
 description: |-
   Provides a Resource for Attaching IP Subnets from a Reserved Block to a Device
 ---
 
-# packet\_ip\_attachment
+# metal\_ip\_attachment
 
 Provides a resource to attach elastic IP subnets to devices.
 
@@ -22,17 +22,17 @@ Device and reserved block must be in the same facility.
 
 ```hcl
 # Reserve /30 block of max 2 public IPv4 addresses in Parsippany, NJ (ewr1) for myproject
-resource "packet_reserved_ip_block" "myblock" {
+resource "metal_reserved_ip_block" "myblock" {
   project_id = local.project_id
   facility   = "ewr1"
   quantity   = 2
 }
 
 # Assign /32 subnet (single address) from reserved block to a device
-resource "packet_ip_attachment" "first_address_assignment" {
-  device_id = packet_device.mydevice.id
+resource "metal_ip_attachment" "first_address_assignment" {
+  device_id = metal_device.mydevice.id
   # following expression will result to sth like "147.229.10.152/32"
-  cidr_notation = join("/", [cidrhost(packet_reserved_ip_block.myblock.cidr_notation, 0), "32"])
+  cidr_notation = join("/", [cidrhost(metal_reserved_ip_block.myblock.cidr_notation, 0), "32"])
 }
 ```
 
