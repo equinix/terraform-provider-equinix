@@ -11,11 +11,11 @@ Provides attachment of Equinix Metal Block Storage Volume to Devices.
 
 Device and volume must be in the same location (facility).
 
-Once attached by Terraform, they must then be mounted using the `metal-block-storage-attach` and `metal-block-storage-detach` scripts, which are presinstalled on most OS images. They can also be found in [https://github.com/equinix/metal-block-storage](https://github.com/equinix/metal-block-storage).
+Once attached by Terraform, they must then be mounted using the `packet-block-storage-attach` and `packet-block-storage-detach` scripts, which are pre-installed on most OS images. They can also be found in [https://github.com/packethost/packet-block-storage](https://github.com/packethost/packet-block-storage).
 
 ## Example Usage
 
-Follwing example will create a device, a volume, and then it will attach the volume to the device over the API.
+The following example will create a device, a volume, and then it will attach the volume to the device over the API.
 
 ```hcl
 resource "metal_device" "test_device_va" {
@@ -45,7 +45,7 @@ resource "metal_volume_attachment" "test_volume_attachment" {
 }
 ```
 
-After applying above hcl, in order to use the volume in the OS of the device, you need to run the attach script. You can run `metal-block-storage-attach` manually over SSH, or you can extend the hcl with following snippet to attach it over remote-exec with Terraform.
+After applying above hcl, in order to use the volume in the OS of the device, you need to run the attach script. You can run `packet-block-storage-attach` manually over SSH, or you can extend the hcl with following snippet to attach it over remote-exec with Terraform.
 
 ```hcl
 resource "null_resource" "run_attach_scripts" {
@@ -63,8 +63,8 @@ resource "null_resource" "run_attach_scripts" {
   provisioner "remote-exec" {
     // run the attach script twice for larger chance of success
     inline = [
-      "metal-block-storage-attach",
-      "metal-block-storage-attach",
+      "packet-block-storage-attach",
+      "packet-block-storage-attach",
     ]
   }
   depends_on = [metal_volume_attachment.test_volume_attachment]

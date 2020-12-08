@@ -9,34 +9,29 @@
 
 <img src="https://metal.equinix.com/metal/images/logo/equinix-metal-full.svg" width="600px">
 
-[Packet is now Equinix Metal!](https://blog.equinix.com/blog/2020/10/06/equinix-metal-metal-and-more/)
-
-This repository is [Maintained](https://github.com/equinix/standards/blob/master/maintained-statement.md) meaning that this software is supported by Equinix Metal and its community - available to use in production environments.
+This repository is [Maintained](https://github.com/packethost/standards/blob/master/maintained-statement.md) meaning that this software is supported by Equinix Metal and its community - available to use in production environments.
 
 ## Using the provider
 
 The Equinix Metal provider will be installed on `terraform init` of a template using any of the `metal_*` resources.
 
-See <https://registry.terraform.io/providers/equinix/metal/latest/docs> for documentation on the resources included in this provider.
+See <https://registry.terraform.io/providers/equinix/equinix-metal/latest/docs> for documentation on the resources included in this provider.
 
+### Migrating from Packet
+
+[Packet is now Equinix Metal!](https://blog.equinix.com/blog/2020/10/06/equinix-metal-metal-and-more/) See [Issue #1](https://github.com/equinix/terraform-provider-equinix-metal/issues/1) for more details on migrating existing projects.
 ## Requirements
 
-- [Terraform 0.12+](https://www.terraform.io/downloads.html) (for v3.0.0 of this provider and newer)
+- [Terraform 0.12+](https://www.terraform.io/downloads.html) (for v1.0.0 of this provider and newer)
 - [Go](https://golang.org/doc/install) 1.13 (to build the provider plugin)
 
 ## Building the provider
 
-Clone repository to: `$GOPATH/src/github.com/equinix/terraform-provider-equinix-metal`
+Clone the repository, enter the provider directory, and build the provider.
 
 ```sh
-mkdir -p $GOPATH/src/github.com/equinix; cd $GOPATH/src/github.com/equinix
 git clone git@github.com:equinix/terraform-provider-equinix-metal
-```
-
-Enter the provider directory and build the provider
-
-```sh
-cd $GOPATH/src/github.com/equinix/terraform-provider-equinix-metal
+cd terraform-provider-equinix-metal
 make build
 ```
 
