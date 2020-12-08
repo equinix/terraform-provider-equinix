@@ -2,7 +2,7 @@
 
 BREAKING CHANGES:
 
-- [#1](https://github.com/equinix/terraform-provider-equinix-metal/issues/1)
+- [#1](https://github.com/equinix/terraform-provider-metal/issues/1)
   Users migrating from the Packet provider, please follow the instructions at
   the linked issue. In short, all v3.2.0 Packet provider resources have been
   renamed.
