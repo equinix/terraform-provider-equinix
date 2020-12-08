@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/equinix/terraform-provider-equinix-metal/metal"
+	"github.com/equinix/terraform-provider-metal/metal"
 	"github.com/hashicorp/terraform-plugin-sdk/plugin"
 )
 

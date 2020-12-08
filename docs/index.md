@@ -17,6 +17,15 @@ Use the navigation to the left to read about the available resources.
 ## Example Usage
 
 ```hcl
+terraform {
+  required_providers {
+    metal = {
+      source = "equinix/metal"
+      # version = "1.0.0"
+    }
+  }
+}
+
 # Configure the Equinix Metal Provider.
 provider "metal" {
   auth_token = var.auth_token

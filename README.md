@@ -1,8 +1,8 @@
 # Equinix Metal Terraform Provider
 
-[![GitHub release](https://img.shields.io/github/release/equinix/terraform-provider-equinix-metal/all.svg?style=flat-square)](https://github.com/equinix/terraform-provider-equinix-metal/releases)
+[![GitHub release](https://img.shields.io/github/release/equinix/terraform-provider-metal/all.svg?style=flat-square)](https://github.com/equinix/terraform-provider-metal/releases)
 ![](https://img.shields.io/badge/Stability-Maintained-green.svg)
-[![Go Report Card](https://goreportcard.com/badge/github.com/equinix/terraform-provider-equinix-metal)](https://goreportcard.com/report/github.com/equinix/terraform-provider-equinix-metal)
+[![Go Report Card](https://goreportcard.com/badge/github.com/equinix/terraform-provider-metal)](https://goreportcard.com/report/github.com/equinix/terraform-provider-metal)
 
 [![Slack](https://slack.equinixmetal.com/badge.svg)](https://slack.equinixmetal.com)
 [![Twitter Follow](https://img.shields.io/twitter/follow/equinixmetal.svg?style=social&label=Follow)](https://twitter.com/intent/follow?screen_name=equinixmetal)
@@ -19,7 +19,7 @@ See <https://registry.terraform.io/providers/equinix/equinix-metal/latest/docs> 
 
 ### Migrating from Packet
 
-[Packet is now Equinix Metal!](https://blog.equinix.com/blog/2020/10/06/equinix-metal-metal-and-more/) See [Issue #1](https://github.com/equinix/terraform-provider-equinix-metal/issues/1) for more details on migrating existing projects.
+[Packet is now Equinix Metal!](https://blog.equinix.com/blog/2020/10/06/equinix-metal-metal-and-more/) See [Issue #1](https://github.com/equinix/terraform-provider-metal/issues/1) for more details on migrating existing projects.
 ## Requirements
 
 - [Terraform 0.12+](https://www.terraform.io/downloads.html) (for v1.0.0 of this provider and newer)
@@ -30,8 +30,8 @@ See <https://registry.terraform.io/providers/equinix/equinix-metal/latest/docs> 
 Clone the repository, enter the provider directory, and build the provider.
 
 ```sh
-git clone git@github.com:equinix/terraform-provider-equinix-metal
-cd terraform-provider-equinix-metal
+git clone git@github.com:equinix/terraform-provider-metal
+cd terraform-provider-metal
 make build
 ```
 
@@ -44,7 +44,7 @@ To compile the provider, run `make build`. This will build the provider and put 
 ```sh
 $ make bin
 ...
-$ $GOPATH/bin/terraform-provider-equinix-metal
+$ $GOPATH/bin/terraform-provider-metal
 ...
 ```
 
