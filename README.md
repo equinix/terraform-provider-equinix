@@ -30,6 +30,8 @@ to get started using the Equinix provider.
 
 - full documentation is available on [Terraform Registry website](https://registry.terraform.io/providers/equinix/equinix/latest/docs)
 - use case driven guides can be found in [Equinix Provider examples directory](examples/)
+- collection of modules can be found in
+[Terraform Equinix modules directory](modules/)
 
 ## Developing the provider
 

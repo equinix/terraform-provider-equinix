@@ -4,8 +4,8 @@ This example shows how create layer2 public seller profile.
 
 Example seller profile will have set of available connection speeds defined and
 two ports assigned for those connections. Refer to [ECXF layer 2 service
-profile resource documentation](../../docs/resources/ecx_l2_serviceprofile.md) for
-more details about possible service profile options.
+profile resource documentation](../../../docs/resources/ecx_l2_serviceprofile.md)
+for more details about possible service profile options.
 
 ## Adjust variables
 
