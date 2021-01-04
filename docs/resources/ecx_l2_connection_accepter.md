@@ -3,32 +3,55 @@ layout: "equinix"
 page_title: "Equinix: equinix_ecx_l2_connection_accepter"
 sidebar_current: "docs-equinix-resource-ecx-l2-connection-accepter"
 description: |-
-  Provides a Resource for Attaching IP Subnets from a Reserved Block to a Device
+  Provides Equinix Fabric Layer 2 connection accepter resource
 ---
 
 # equinix\_ecx\_l2\_connection\_accepter
 
 Resource to approve hosted Layer 2 connections.
 
-The resource relies on the Equinix Cloud Exchange Fabric API. The parameters and
-attributes available map to the fields described at
-<https://developer.equinix.com/catalog/buyerv3#operation/performUserActionUsingPATCH>
+Resource leverages Equinix Fabric integration with service providers.
+Currently supported providers are:
+
+* `AWS` (AWS Direct Connect)
 
 ## Example Usage
 
 ```hcl
 resource "equinix_ecx_l2_connection_accepter" "accepter" {
   connection_id = equinix_ecx_l2_connection.awsConn.id
-  access_key    = "AKIAIXKQARIFBC3QJKYQ"
-  secret_key    = "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"
 }
 ```
 
+## AWS Authentication
+
+The `equinix_ecx_l2_connection_accepter` resource offers flexible means of providing
+AWS credentials. The following methods are supported and evaluated in a given order:
+
+* static credentials - uses `access_key` and `secret_key` resource arguments
+* environmental variables - uses `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY`
+ environmental variables
+* shared credentials/configuration file - uses [AWS credentials or configuration
+file](https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-files.html).
+This method also supports profile configuration by setting `aws_profile`
+argument or `AWS_PROFILE` environmental variable
+
+**Please note** that it is not
+recommended to keep credentials in any Terraform configuration.
+
 ## Argument Reference
 
+<<<<<<< HEAD
 * `connection_id`
 * `access_key`
 * `secret_key`
+=======
+* `connection_id` - (Required) Identifier of Layer 2 connection that will be accepted
+* `access_key` - (Optional) Access Key used to accept connection on provider side
+* `secret_key` - (Optional) Secret Key used to accept connection on provider side
+* `aws_profile` - (Optional) AWS Profile Name for retrieving credentials from
+ shared credentials file
+>>>>>>> 14fcdd4... GH-38 ecx_l2_conn_accepter: AWS creds can be provided by env vars and shared config as well
 
 ## Attribute Reference
 
