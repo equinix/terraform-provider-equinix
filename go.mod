@@ -3,7 +3,7 @@ module github.com/equinix/terraform-provider-equinix
 go 1.14
 
 require (
-	github.com/aws/aws-sdk-go v1.35.27 // indirect
+	github.com/aws/aws-sdk-go v1.36.19
 	github.com/equinix/ecx-go v1.1.1-0.20201104105741-5ef516ad9f84
 	github.com/equinix/ne-go v0.0.0-20201202153356-6f852fb8a0eb
 	github.com/equinix/oauth2-go v1.0.0
