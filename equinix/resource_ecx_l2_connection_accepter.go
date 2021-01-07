@@ -27,7 +27,7 @@ func resourceECXL2ConnectionAccepter() *schema.Resource {
 		Delete: resourceECXL2ConnectionAccepterDelete,
 		Schema: createECXL2ConnectionAccepterResourceSchema(),
 		Timeouts: &schema.ResourceTimeout{
-			Create: schema.DefaultTimeout(5 * time.Minute),
+			Create: schema.DefaultTimeout(10 * time.Minute),
 		},
 	}
 }
@@ -87,6 +87,7 @@ func resourceECXL2ConnectionAccepterCreate(d *schema.ResourceData, m interface{}
 
 	createStateConf := &resource.StateChangeConf{
 		Pending: []string{
+			ecx.ConnectionStatusProvisioning,
 			ecx.ConnectionStatusPendingApproval,
 		},
 		Target: []string{
@@ -100,11 +101,11 @@ func resourceECXL2ConnectionAccepterCreate(d *schema.ResourceData, m interface{}
 			if err != nil {
 				return nil, "", err
 			}
-			return resp, resp.Status, nil
+			return resp, resp.ProviderStatus, nil
 		},
 	}
 	if _, err := createStateConf.WaitForState(); err != nil {
-		return fmt.Errorf("error waiting for connection %q to be approved: %s", connID, err)
+		return fmt.Errorf("error waiting for connection %q to be provisioned on provider side: %s", connID, err)
 	}
 	return resourceECXL2ConnectionAccepterRead(d, m)
 }
