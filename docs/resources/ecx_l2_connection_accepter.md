@@ -6,7 +6,7 @@ description: |-
   Provides Equinix Fabric Layer 2 connection accepter resource
 ---
 
-# equinix\_ecx\_l2\_connection\_accepter
+# Resource: equinix_ecx_l2_connection_accepter
 
 Resource to approve hosted Layer 2 connections.
 

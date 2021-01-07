@@ -3,13 +3,13 @@ layout: "equinix"
 page_title: "Equinix: ecx_l2_connection"
 sidebar_current: "docs-equinix-datasource-ecx-l2-connection"
 description: |-
-  Get an ECX L2 connection resource.
+  Get an Equinix Fabric L2 connection resource.
 ---
 
-# equinix_ecx_l2_connection
+# Resource: equinix_ecx_l2_connection
 
 Resource `equinix_ecx_l2_connection` is used to manage layer 2 connections in
-Equinix Cloud Exchange (ECX) Fabric.
+Equinix Fabric.
 
 ## Example Usage
 
@@ -170,9 +170,9 @@ z-side port, assigned by the Fabric
 Update of most arguments will force replacement of a connection (including related
 redundant connection in HA setup).
 
-Following arguments can be updated. **NOTE** that ECXF may still forbid updates depending
-on current connection state, used service provider or number of updates requested
-during the day.
+Following arguments can be updated. **NOTE** that Equinix Fabric may still forbid
+updates depending on current connection state, used service provider or number of
+updates requested during the day.
 
 - `name`
 - `speed` and `speed_unit`

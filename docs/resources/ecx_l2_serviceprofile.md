@@ -6,14 +6,10 @@ description: |-
   Provides an ECX L2 service profile resource.
 ---
 
-# equinix_ecx_l2_serviceprofile
+# Resource: equinix_ecx_l2_serviceprofile
 
 Resource `equinix_ecx_l2_serviceprofile` is used to manage layer 2 service profiles
 in Equinix Fabric.
-
-This resource relies on the Equinix Cloud Exchange Fabric API. The parameters
-and attributes available map to the fields described at
-<https://developer.equinix.com/catalog/sellerv3#operation/getProfileByIdOrNameUsingGET>.
 
 ## Example Usage
 

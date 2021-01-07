@@ -3,16 +3,13 @@ layout: "equinix"
 page_title: "Equinix: equinix_ecx_port"
 sidebar_current: "docs-equinix-datasource-ecx-port"
 description: |-
-  Provides a Equinix ecx_port datasource. This can be used to read existing ecx_ports.
+  Get the named Equinix Fabric port.
 ---
 
-# equinix_ecx_port
+# Data Source: equinix_ecx_port
 
-Data source `equinix_ecx_port` is used to fetch attributes of ECX port (like UUID) with given port name.
-
-The data source relies on the Equinix Cloud Exchange Fabric API. The parameters
-and attributes map to the fields described at
-<https://developer.equinix.com/docs/ecx-layer-2-buyer-apis-v3#get-user-port>.
+Data source `equinix_ecx_port` is used to fetch attributes of Equinix Fabric port
+with given port name.
 
 ## Example Usage
 
