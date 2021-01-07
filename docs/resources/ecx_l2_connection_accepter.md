@@ -41,17 +41,11 @@ recommended to keep credentials in any Terraform configuration.
 
 ## Argument Reference
 
-<<<<<<< HEAD
-* `connection_id`
-* `access_key`
-* `secret_key`
-=======
 * `connection_id` - (Required) Identifier of Layer 2 connection that will be accepted
 * `access_key` - (Optional) Access Key used to accept connection on provider side
 * `secret_key` - (Optional) Secret Key used to accept connection on provider side
 * `aws_profile` - (Optional) AWS Profile Name for retrieving credentials from
  shared credentials file
->>>>>>> 14fcdd4... GH-38 ecx_l2_conn_accepter: AWS creds can be provided by env vars and shared config as well
 
 ## Attribute Reference
 
