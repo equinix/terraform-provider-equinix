@@ -2,6 +2,8 @@
 
 ENHANCEMENTS:
 
+- resource/equinix_ecx_l2_connection_accepter: AWS credentials can be provided
+using additional ways: environmental variables and shared configuration files
 - resource/equinix_ecx_l2_service_profile: introduced schema validations,
 updated acceptance tests and resource documentation
 
@@ -14,6 +16,12 @@ FEATURES:
 - **New Data source**: `equinix_network_device_platform` ([#13](https://github.com/equinix/terraform-provider-equinix/issues/13))
 - **New Resource**: `equinix_network_device` ([#4](https://github.com/equinix/terraform-provider-equinix/issues/4))
 - **New Resource**: `equinix_network_ssh_user` ([#4](https://github.com/equinix/terraform-provider-equinix/issues/4))
+
+BUG FIXES:
+
+- resource/equinix_ecx_l2_connection_accepter: creation waits for PROVISIONED provider
+status of the connection before succeeding
+([#37](https://github.com/equinix/terraform-provider-equinix/issues/37))
 
 ## 1.0.2 (November 17, 2020)
 

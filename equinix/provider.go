@@ -2,6 +2,7 @@ package equinix
 
 import (
 	"fmt"
+	"regexp"
 	"time"
 
 	"github.com/equinix/rest-go"
@@ -107,6 +108,14 @@ func hasApplicationErrorCode(errors []rest.ApplicationError, code string) bool {
 		}
 	}
 	return false
+}
+
+func stringIsMetroCode() schema.SchemaValidateFunc {
+	return validation.StringMatch(regexp.MustCompile("^[A-Z]{2}$"), "MetroCode must consist of two capital letters")
+}
+
+func stringIsEmailAddress() schema.SchemaValidateFunc {
+	return validation.StringMatch(regexp.MustCompile("^[^ @]+@[^ @]+$"), "not valid email address")
 }
 
 func isStringInSlice(needle string, hay []string) bool {
