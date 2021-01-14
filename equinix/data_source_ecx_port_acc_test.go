@@ -9,22 +9,20 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 )
 
-const portEnvVar = "TF_ACC_ECX_PORT_NAME"
-
-func TestAccECXPort(t *testing.T) {
+func TestAccFabricPort(t *testing.T) {
 	t.Parallel()
-	portName, _ := schema.EnvDefaultFunc(portEnvVar, "smandalika@equinix.com1-SV1-Dot1q-L-Primary-161350")()
+	portName, _ := schema.EnvDefaultFunc(priPortEnvVar, "smandalika@equinix.com1-SV1-Dot1q-L-Primary-161350")()
 	context := map[string]interface{}{
-		"resourceName": "tf-port",
-		"name":         portName,
+		"port-resourceName": "test",
+		"port-name":         portName,
 	}
-	resourceName := fmt.Sprintf("data.equinix_ecx_port.%s", context["resourceName"].(string))
+	resourceName := fmt.Sprintf("data.equinix_ecx_port.%s", context["port-resourceName"].(string))
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccECXPort(context),
+				Config: newTestAccConfig(context).withPort().build(),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(resourceName, "uuid"),
 					resource.TestCheckResourceAttrSet(resourceName, "region"),
@@ -41,7 +39,7 @@ func TestAccECXPort(t *testing.T) {
 	})
 }
 
-func testAccECXPort(ctx map[string]interface{}) string {
+func testAccECXPortt(ctx map[string]interface{}) string {
 	return nprintf(`
 data "equinix_ecx_port" "%{resourceName}" {
   name = "%{name}"

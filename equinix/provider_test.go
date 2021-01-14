@@ -19,6 +19,11 @@ import (
 var testAccProviders map[string]terraform.ResourceProvider
 var testAccProvider *schema.Provider
 
+type testAccConfig struct {
+	ctx    map[string]interface{}
+	config string
+}
+
 func init() {
 	testAccProvider = Provider().(*schema.Provider)
 	testAccProviders = map[string]terraform.ResourceProvider{
@@ -42,6 +47,17 @@ func testAccPreCheck(t *testing.T) {
 	if _, err := getFromEnv(clientSecretEnvVar); err != nil {
 		t.Fatalf("%s", err)
 	}
+}
+
+func newTestAccConfig(ctx map[string]interface{}) *testAccConfig {
+	return &testAccConfig{
+		ctx:    ctx,
+		config: "",
+	}
+}
+
+func (t *testAccConfig) build() string {
+	return t.config
 }
 
 func nprintf(format string, params map[string]interface{}) string {

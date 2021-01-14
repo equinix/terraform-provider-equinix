@@ -9,10 +9,11 @@ import (
 )
 
 var primaryConnFields = []string{"UUID", "Name", "ProfileUUID", "Speed", "SpeedUnit", "Notifications", "PurchaseOrderNumber",
-	"PortUUID", "DeviceUUID", "DeviceInterfaceID", "VlanSTag", "VlanCTag", "NamedTag", "ZSidePortUUID", "ZSideVlanSTag", "ZSideVlanCTag", "SellerRegion", "SellerMetroCode",
-	"AuthorizationKey"}
+	"PortUUID", "DeviceUUID", "DeviceInterfaceID", "VlanSTag", "VlanCTag", "NamedTag", "ZSidePortUUID", "ZSideVlanSTag",
+	"ZSideVlanCTag", "SellerRegion", "SellerMetroCode", "AuthorizationKey"}
 
-var secondaryConnFields = []string{"UUID", "Name", "PortUUID", "DeviceUUID", "DeviceInterfaceID", "VlanSTag", "VlanCTag"}
+var secondaryConnFields = []string{"Name", "PortUUID", "Speed", "SpeedUnit", "DeviceUUID", "DeviceInterfaceID",
+	"VlanSTag", "VlanCTag", "SellerMetroCode", "SellerRegion", "AuthorizationKey"}
 
 func TestECXL2Connection_resourceDataFromConnections(t *testing.T) {
 	//Given
@@ -43,12 +44,18 @@ func TestECXL2Connection_resourceDataFromConnections(t *testing.T) {
 	secondary := ecx.L2Connection{
 		UUID:              "sec-uu-id",
 		Name:              "secName",
+		ProfileUUID:       "0ab14289-1bb1-4e30-bf10-fd933beaaa2a",
 		Status:            "DELETED",
 		PortUUID:          "secondaryPortUUID",
 		DeviceUUID:        "secondaryDeviceUUID",
 		DeviceInterfaceID: 20,
 		VlanSTag:          690,
 		VlanCTag:          691,
+		Speed:             1,
+		SpeedUnit:         "GB",
+		SellerRegion:      "eu-west-2",
+		SellerMetroCode:   "FR",
+		AuthorizationKey:  "key-2",
 		RedundantUUID:     "uu-id",
 		RedundancyType:    "secondary"}
 
@@ -100,6 +107,9 @@ func TestECXL2Connection_connectionsFromResourceData(t *testing.T) {
 	secConn := make(map[string]interface{})
 	secConn[ecxL2ConnectionSchemaNames["UUID"]] = "sec-uu-id"
 	secConn[ecxL2ConnectionSchemaNames["Name"]] = "sec-name"
+	secConn[ecxL2ConnectionSchemaNames["ProfileUUID"]] = "0ab14289-1bb1-4e30-bf10-fd933beaaa2a"
+	secConn[ecxL2ConnectionSchemaNames["Speed"]] = 1
+	secConn[ecxL2ConnectionSchemaNames["SpeedUnit"]] = "GB"
 	secConn[ecxL2ConnectionSchemaNames["Status"]] = "PROVISIONED"
 	secConn[ecxL2ConnectionSchemaNames["PortUUID"]] = "sec-portUUID"
 	secConn[ecxL2ConnectionSchemaNames["DeviceUUID"]] = "sec-deviceUUID"
@@ -109,6 +119,9 @@ func TestECXL2Connection_connectionsFromResourceData(t *testing.T) {
 	secConn[ecxL2ConnectionSchemaNames["ZSidePortUUID"]] = "zSidePortUUID"
 	secConn[ecxL2ConnectionSchemaNames["ZSideVlanSTag"]] = 5000
 	secConn[ecxL2ConnectionSchemaNames["ZSideVlanCTag"]] = 6000
+	secConn[ecxL2ConnectionSchemaNames["SellerRegion"]] = "eu-west-2"
+	secConn[ecxL2ConnectionSchemaNames["SellerMetroCode"]] = "FR"
+	secConn[ecxL2ConnectionSchemaNames["AuthorizationKey"]] = "key-2"
 	secConn[ecxL2ConnectionSchemaNames["RedundantUUID"]] = "uu-id"
 	secConn[ecxL2ConnectionSchemaNames["RedundancyType"]] = "secondary"
 	d.Set(ecxL2ConnectionSchemaNames["SecondaryConnection"], []map[string]interface{}{secConn})

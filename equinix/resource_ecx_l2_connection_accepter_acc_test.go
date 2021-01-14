@@ -13,7 +13,7 @@ import (
 func TestAccECXL2ConnectionAccepter(t *testing.T) {
 	t.Parallel()
 	portName, _ := schema.EnvDefaultFunc(priPortEnvVar, "sit-001-CX-SV1-NL-Dot1q-BO-10G-PRI-JUN-33")()
-	spName, _ := schema.EnvDefaultFunc(awsSpEnvVar, "AWS Direct Connect")()
+	spName, _ := schema.EnvDefaultFunc(priSpEnvVar, "AWS Direct Connect")()
 	context := map[string]interface{}{
 		"connectionResourceName": "conn",
 		"name":                   fmt.Sprintf("tf-tst-%s", randString(6)),
