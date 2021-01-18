@@ -135,13 +135,28 @@ destination (Z side).
 - `authorization_key` - (Optional) Text field based on the service profile
 you want to connect to.
 - `secondary_connection` - (Optional) Definition of secondary connection for
- redundant connectivity. Most attributes are derived from primary connection,
- except below:
-  - `name` - (Required)
-  - `port_uuid` - (Required when device_uuid is not set)
-  - `device_uuid` - (Required when port_uuid is not set)
-  - `vlan_stag` - (Required when port_uuid is set)
-  - `vlan_ctag` - (Optional, can be set with port_uuid)
+ redundant connectivity.
+
+The `secondary_connection` block supports the following arguments:
+
+- `name` - (Required) secondary connection name
+- `speed` - (Optional) Speed/Bandwidth to be allocated to the connection.
+- `speed_unit` - (Optional) Unit of the speed/bandwidth to be allocated
+to the connection.
+- `port_uuid` - (Required when `device_uuid` is not set) Identifier of
+the buyer's port from which the connection would originate.
+- `device_uuid` - (Required when `port_uuid` is not set) Identifier of
+the Network Edge virtual device from which the connection would originate.
+- `device_interface_id` - (Optional) Applicable with `device_uuid`, identifier of
+ network interface on a given device. If not specified then first available interface
+ will be selected.
+- `vlan_stag` - (Required when `port_uuid` is set)
+- `vlan_ctag` - (Optional, can be set with `port_uuid`)
+- `seller_metro_code` - (Optional) The metro code that denotes the connection’s
+destination (Z side).
+- `seller_region` - (Optional) The region in which the seller port resides.
+- `authorization_key` - (Optional) Text field based on the service profile
+you want to connect to.
 
 ## Attributes Reference
 
@@ -160,10 +175,10 @@ z-side port, assigned by the Fabric
  the connection on the Z side, assigned by the Fabric
 - `zside_vlan_ctag` - when not provided as an argument, it is C-Tag/Inner-Tag of
  the connection on the Z side, assigned by the Fabric
-- `secondary`
-  - `zside_port_uuid` - as for primary connection
-  - `zside_vlan_stag` - as for primary connection
-  - `zside_vlan_ctag` - as for primary connection
+- `secondary_connection`:
+  - `zside_port_uuid`
+  - `zside_vlan_stag`
+  - `zside_vlan_ctag`
 
 ## Update operation behavior
 

@@ -2,6 +2,7 @@ package equinix
 
 import (
 	"fmt"
+	"reflect"
 	"regexp"
 	"time"
 
@@ -153,4 +154,24 @@ func isStringInSlice(needle string, hay []string) bool {
 		}
 	}
 	return false
+}
+
+func getResourceDataChangedKeys(keys []string, d *schema.ResourceData) map[string]interface{} {
+	changed := make(map[string]interface{})
+	for _, key := range keys {
+		if v := d.Get(key); v != nil && d.HasChange(key) {
+			changed[key] = v
+		}
+	}
+	return changed
+}
+
+func getMapChangedKeys(keys []string, old, new map[string]interface{}) map[string]interface{} {
+	changed := make(map[string]interface{})
+	for _, key := range keys {
+		if !reflect.DeepEqual(old[key], new[key]) {
+			changed[key] = new[key]
+		}
+	}
+	return changed
 }

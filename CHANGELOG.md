@@ -12,6 +12,23 @@ FEATURES:
 - **New Resource**: `equinix_network_device` ([#4](https://github.com/equinix/terraform-provider-equinix/issues/4))
 - **New Resource**: `equinix_network_ssh_user` ([#4](https://github.com/equinix/terraform-provider-equinix/issues/4))
 
+ENHANCEMENTS:
+
+- Equinix provider: setting `TF_LOG` to `TRACE` enables logging of Equinix REST
+API requests and responses
+- resource/equinix_ecx_l2_connection: internal representation of secondary connection
+block has changed from Set to List. This enables plan to better communicate secondary
+connection changes and allows using `Optional` + `Computed` schema options
+([#39](https://github.com/equinix/terraform-provider-equinix/issues/39))
+- resource/equinix_ecx_l2_connection: added additional arguments for `secondary_connection`
+([#18](https://github.com/equinix/terraform-provider-equinix/issues/18)):
+  - `speed` 
+  - `speed_unit`
+  - `profile_uuid`
+  - `authorization_key`
+  - `seller_metro_code`
+  - `seller_region`
+
 ## 1.0.3 (January 07, 2021)
 
 ENHANCEMENTS:

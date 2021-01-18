@@ -84,6 +84,8 @@ func TestAccFabricL2Connection_Port_Single(t *testing.T) {
 		"connection-seller_metro_code":     "SV",
 		"connection-authorization_key":     "123456789012",
 	}
+	contextWithChanges := copyMap(context)
+	contextWithChanges["connection-name"] = fmt.Sprintf("%s-%s", tstResourcePrefix, randString(6))
 	resourceName := fmt.Sprintf("equinix_ecx_l2_connection.%s", context["connection-resourceName"].(string))
 	var testConn ecx.L2Connection
 	resource.Test(t, resource.TestCase{
@@ -93,9 +95,19 @@ func TestAccFabricL2Connection_Port_Single(t *testing.T) {
 			{
 				Config: newTestAccConfig(context).withPort().withConnection().build(),
 				Check: resource.ComposeTestCheckFunc(
-					testAccECXL2ConnectionExists(resourceName, &testConn),
-					testAccECXL2ConnectionAttributes(&testConn, context),
-					resource.TestCheckResourceAttrSet(resourceName, "status"),
+					testAccFabricL2ConnectionExists(resourceName, &testConn),
+					testAccFabricL2ConnectionAttributes(&testConn, context),
+					resource.TestCheckResourceAttr(resourceName, "status", ecx.ConnectionStatusProvisioned),
+					resource.TestCheckResourceAttrSet(resourceName, "provider_status"),
+					resource.TestCheckResourceAttrSet(resourceName, "zside_port_uuid"),
+				),
+			},
+			{
+				Config: newTestAccConfig(contextWithChanges).withPort().withConnection().build(),
+				Check: resource.ComposeTestCheckFunc(
+					testAccFabricL2ConnectionExists(resourceName, &testConn),
+					testAccFabricL2ConnectionAttributes(&testConn, contextWithChanges),
+					resource.TestCheckResourceAttr(resourceName, "status", ecx.ConnectionStatusProvisioned),
 					resource.TestCheckResourceAttrSet(resourceName, "provider_status"),
 					resource.TestCheckResourceAttrSet(resourceName, "zside_port_uuid"),
 				),
@@ -123,12 +135,14 @@ func TestAccFabricL2Connection_Port_HA(t *testing.T) {
 		"connection-purchase_order_number": randString(10),
 		"connection-vlan_stag":             randInt(2000),
 		"connection-seller_metro_code":     "SV",
-		"connection-authorization_key":     "123456789069",
+		"connection-authorization_key":     randString(12),
 		"connection-named_tag":             "Public",
 		"connection-secondary_name":        fmt.Sprintf("%s-%s", tstResourcePrefix, randString(6)),
 		"connection-secondary_vlan_stag":   randInt(2000),
 	}
-	log.Printf("Config is %s", newTestAccConfig(context).withPort().withConnection().build())
+	contextWithChanges := copyMap(context)
+	contextWithChanges["connection-name"] = fmt.Sprintf("%s-%s", tstResourcePrefix, randString(6))
+	contextWithChanges["connection-secondary_name"] = fmt.Sprintf("%s-%s", tstResourcePrefix, randString(6))
 	resourceName := fmt.Sprintf("equinix_ecx_l2_connection.%s", context["connection-resourceName"].(string))
 	var primary, secondary ecx.L2Connection
 	resource.Test(t, resource.TestCase{
@@ -138,21 +152,32 @@ func TestAccFabricL2Connection_Port_HA(t *testing.T) {
 			{
 				Config: newTestAccConfig(context).withPort().withConnection().build(),
 				Check: resource.ComposeTestCheckFunc(
-					testAccECXL2ConnectionExists(resourceName, &primary),
-					testAccECXL2ConnectionAttributes(&primary, context),
-					testAccECXL2ConnectionSecondaryExists(&primary, &secondary),
-					testAccECXL2ConnectionSecondaryAttributes(&secondary, context),
-					resource.TestCheckResourceAttrSet(resourceName, "status"),
+					testAccFabricL2ConnectionExists(resourceName, &primary),
+					testAccFabricL2ConnectionAttributes(&primary, context),
+					testAccFabricL2ConnectionSecondaryExists(&primary, &secondary),
+					testAccFabricL2ConnectionSecondaryAttributes(&secondary, context),
+					resource.TestCheckResourceAttr(resourceName, "status", ecx.ConnectionStatusProvisioned),
 					resource.TestCheckResourceAttrSet(resourceName, "provider_status"),
-					resource.TestCheckResourceAttrSet(resourceName, "redundancy_type"),
-					resource.TestCheckResourceAttrSet(resourceName, "redundant_uuid"),
+					testAccFabricL2ConnectionRedundancyAttributes(&primary, &secondary),
+				),
+			},
+			{
+				Config: newTestAccConfig(contextWithChanges).withPort().withConnection().build(),
+				Check: resource.ComposeTestCheckFunc(
+					testAccFabricL2ConnectionExists(resourceName, &primary),
+					testAccFabricL2ConnectionAttributes(&primary, contextWithChanges),
+					testAccFabricL2ConnectionSecondaryExists(&primary, &secondary),
+					testAccFabricL2ConnectionSecondaryAttributes(&secondary, contextWithChanges),
+					resource.TestCheckResourceAttr(resourceName, "status", ecx.ConnectionStatusProvisioned),
+					resource.TestCheckResourceAttrSet(resourceName, "provider_status"),
+					testAccFabricL2ConnectionRedundancyAttributes(&primary, &secondary),
 				),
 			},
 		},
 	})
 }
 
-func TestAccFabricL2Connection_Device_HA_GCP(t *testing.T) {
+func TestAccFabricL2Connection_Device_HA(t *testing.T) {
 	t.Parallel()
 	deviceMetro, _ := schema.EnvDefaultFunc(networkDeviceMetroEnvVar, "SV")()
 	priSPName, _ := schema.EnvDefaultFunc("TF_ACC_FABRIC_PRI_L2_SP_NAME", "Google Cloud Partner Interconnect Zone 1")()
@@ -198,9 +223,6 @@ func TestAccFabricL2Connection_Device_HA_GCP(t *testing.T) {
 		"connection-secondary_authorization_key":   "531ba3dc-121d-5ee1-acf3-402343ac3af7/us-west1/2",
 		"connection-secondary_device_interface_id": 5,
 	}
-	conf := newTestAccConfig(context).withDevice().withSSHKey().
-		withConnection().build()
-	log.Printf("Config is %s", conf)
 	connResourceName := fmt.Sprintf("equinix_ecx_l2_connection.%s", context["connection-resourceName"].(string))
 	var primary, secondary ecx.L2Connection
 	resource.Test(t, resource.TestCase{
@@ -211,78 +233,17 @@ func TestAccFabricL2Connection_Device_HA_GCP(t *testing.T) {
 				Config: newTestAccConfig(context).withDevice().withSSHKey().
 					withConnection().build(),
 				Check: resource.ComposeTestCheckFunc(
-					testAccECXL2ConnectionExists(connResourceName, &primary),
-					testAccECXL2ConnectionAttributes(&primary, context),
-					testAccECXL2ConnectionSecondaryExists(&primary, &secondary),
-					testAccECXL2ConnectionSecondaryAttributes(&secondary, context),
+					testAccFabricL2ConnectionExists(connResourceName, &primary),
+					testAccFabricL2ConnectionAttributes(&primary, context),
+					testAccFabricL2ConnectionSecondaryExists(&primary, &secondary),
+					testAccFabricL2ConnectionSecondaryAttributes(&secondary, context),
 				),
 			},
 		},
 	})
 }
 
-func testAccECXL2ConnectionAWSDot1Q(ctx map[string]interface{}) string {
-	return nprintf(`
-data "equinix_ecx_l2_sellerprofile" "profile" {
-  name = "%{profile_name}"
-}
-
-data "equinix_ecx_port" "port" {
-  name = "%{port_name}"
-}
-
-resource "equinix_ecx_l2_connection" "%{resourceName}" {
-  name = "%{name}"
-  profile_uuid = data.equinix_ecx_l2_sellerprofile.profile.uuid
-  speed = %{speed}
-  speed_unit = "%{speed_unit}"
-  notifications = %{notifications}
-  purchase_order_number = "%{purchase_order_number}"
-  port_uuid = data.equinix_ecx_port.port.uuid
-  vlan_stag = %{vlan_stag}
-  seller_region = "%{seller_region}"
-  seller_metro_code = "%{seller_metro_code}"
-  authorization_key = "%{authorization_key}"
-}
-`, ctx)
-}
-
-func testAccECXL2ConnectionAzureDot1QPub(ctx map[string]interface{}) string {
-	return nprintf(`
-data "equinix_ecx_l2_sellerprofile" "profile" {
-  name = "%{profile_name}"
-}
-	  
-data "equinix_ecx_port" "port-pri" {
-  name = "%{pri_port_name}"
-}
-
-data "equinix_ecx_port" "port-sec" {
-  name = "%{sec_port_name}"
-}
-
-resource "equinix_ecx_l2_connection" "%{resourceName}" {
-  name = "%{name}"
-  profile_uuid = data.equinix_ecx_l2_sellerprofile.profile.uuid
-  speed = %{speed}
-  speed_unit = "%{speed_unit}"
-  notifications = %{notifications}
-  purchase_order_number = "%{purchase_order_number}"
-  port_uuid = data.equinix_ecx_port.port-pri.uuid
-  vlan_stag = %{vlan_stag}
-  seller_metro_code = "%{seller_metro_code}"
-  authorization_key = "%{authorization_key}"
-  named_tag = "%{named_tag}"
-  secondary_connection {
-    name = "%{secondary_name}"
-    port_uuid = data.equinix_ecx_port.port-sec.uuid
-    vlan_stag = %{secondary_vlan_stag}
-  }
-}
-`, ctx)
-}
-
-func testAccECXL2ConnectionExists(resourceName string, conn *ecx.L2Connection) resource.TestCheckFunc {
+func testAccFabricL2ConnectionExists(resourceName string, conn *ecx.L2Connection) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[resourceName]
 		if !ok {
@@ -305,7 +266,7 @@ func testAccECXL2ConnectionExists(resourceName string, conn *ecx.L2Connection) r
 	}
 }
 
-func testAccECXL2ConnectionSecondaryExists(primary *ecx.L2Connection, secondary *ecx.L2Connection) resource.TestCheckFunc {
+func testAccFabricL2ConnectionSecondaryExists(primary *ecx.L2Connection, secondary *ecx.L2Connection) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		client := testAccProvider.Meta().(*Config).ecx
 		if primary.RedundantUUID == "" {
@@ -320,7 +281,7 @@ func testAccECXL2ConnectionSecondaryExists(primary *ecx.L2Connection, secondary 
 	}
 }
 
-func testAccECXL2ConnectionAttributes(conn *ecx.L2Connection, ctx map[string]interface{}) resource.TestCheckFunc {
+func testAccFabricL2ConnectionAttributes(conn *ecx.L2Connection, ctx map[string]interface{}) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		if v, ok := ctx["connection-name"]; ok && conn.Name != v.(string) {
 			return fmt.Errorf("name does not match %v - %v", conn.Name, v)
@@ -371,7 +332,7 @@ func testAccECXL2ConnectionAttributes(conn *ecx.L2Connection, ctx map[string]int
 	}
 }
 
-func testAccECXL2ConnectionSecondaryAttributes(conn *ecx.L2Connection, ctx map[string]interface{}) resource.TestCheckFunc {
+func testAccFabricL2ConnectionSecondaryAttributes(conn *ecx.L2Connection, ctx map[string]interface{}) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		if v, ok := ctx["connection-secondary_name"]; ok && conn.Name != v.(string) {
 			return fmt.Errorf("connection secondary name does not match %v - %v", conn.Name, v)
@@ -404,41 +365,35 @@ func testAccECXL2ConnectionSecondaryAttributes(conn *ecx.L2Connection, ctx map[s
 	}
 }
 
-func slicesMatch(s1, s2 []string) bool {
-	if len(s1) != len(s2) {
-		return false
-	}
-	visited := make([]bool, len(s1))
-	for i := 0; i < len(s1); i++ {
-		found := false
-		for j := 0; j < len(s2); j++ {
-			if visited[j] {
-				continue
-			}
-			if s1[i] == s2[j] {
-				visited[j] = true
-				found = true
-				break
-			}
+func testAccFabricL2ConnectionRedundancyAttributes(primary, secondary *ecx.L2Connection) resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		if primary.RedundancyType != "primary" {
+			return fmt.Errorf("primary connection redundancy type does not match  %v - %v", primary.RedundancyType, "primary")
 		}
-		if !found {
-			return false
+		if primary.RedundantUUID != secondary.UUID {
+			return fmt.Errorf("primary connection redundant UUID does not match  %v - %v", primary.RedundantUUID, secondary.UUID)
 		}
+		if secondary.RedundancyType != "secondary" {
+			return fmt.Errorf("secondary connection redundancy type does not match  %v - %v", primary.RedundancyType, "secondary")
+		}
+		if secondary.RedundantUUID != primary.UUID {
+			return fmt.Errorf("secondary connection redundant UUID does not match  %v - %v", secondary.RedundantUUID, primary.UUID)
+		}
+		return nil
 	}
-	return true
 }
 
 func (t *testAccConfig) withConnection() *testAccConfig {
-	t.config += testAccECXL2Connection(t.ctx)
+	t.config += testAccFabricL2Connection(t.ctx)
 	return t
 }
 
 func (t *testAccConfig) withPort() *testAccConfig {
-	t.config += testAccECXPort(t.ctx)
+	t.config += testAccFabricPort(t.ctx)
 	return t
 }
 
-func testAccECXPort(ctx map[string]interface{}) string {
+func testAccFabricPort(ctx map[string]interface{}) string {
 	var config string
 	config += nprintf(`
 data "equinix_ecx_port" "%{port-resourceName}" {
@@ -454,7 +409,7 @@ data "equinix_ecx_port" "%{port-secondary_resourceName}" {
 	return config
 }
 
-func testAccECXL2Connection(ctx map[string]interface{}) string {
+func testAccFabricL2Connection(ctx map[string]interface{}) string {
 	var config string
 	config += nprintf(`
 data "equinix_ecx_l2_sellerprofile" "pri" {
@@ -475,12 +430,15 @@ resource "equinix_ecx_l2_connection" "%{connection-resourceName}" {
   speed                 = %{connection-speed}
   speed_unit            = "%{connection-speed_unit}"
   notifications         = %{connection-notifications}
-  purchase_order_number = "%{connection-purchase_order_number}"
   seller_metro_code     = "%{connection-seller_metro_code}"
   authorization_key     = "%{connection-authorization_key}"`, ctx)
+	if _, ok := ctx["purchase_order_number"]; ok {
+		config += nprintf(`
+  purchase_order_number = "%{connection-purchase_order_number}"`, ctx)
+	}
 	if _, ok := ctx["connection-seller_region"]; ok {
 		config += nprintf(`
-	seller_region             = "%{connection-seller_region}"`, ctx)
+  seller_region         = "%{connection-seller_region}"`, ctx)
 	}
 	if _, ok := ctx["port-resourceName"]; ok {
 		config += nprintf(`
@@ -520,7 +478,7 @@ resource "equinix_ecx_l2_connection" "%{connection-resourceName}" {
 		}
 		if _, ok := ctx["device-secondary_name"]; ok {
 			config += nprintf(`
-    device_uuid         = equinix_network_device.%{device-secondary_name}.redundant_id`, ctx)
+    device_uuid         = equinix_network_device.%{device-resourceName}.redundant_id`, ctx)
 		}
 		if _, ok := ctx["connection-secondary_vlan_stag"]; ok {
 			config += nprintf(`

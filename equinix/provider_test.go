@@ -11,6 +11,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/equinix/rest-go"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
 	"github.com/stretchr/testify/assert"
@@ -36,6 +37,47 @@ func TestProvider(t *testing.T) {
 		t.Fatalf("err: %s", err)
 	}
 }
+
+func TestPrivder_hasApplicationErrorCode(t *testing.T) {
+	//given
+	code := "ERR-505"
+	errors := []rest.ApplicationError{
+		{
+			Code: "ERR-505",
+		},
+		{
+			Code: randString(10),
+		},
+	}
+	//when
+	result := hasApplicationErrorCode(errors, code)
+	//then
+	assert.True(t, result, "Error list contains error with given code")
+}
+
+func TestProvider_stringsFound(t *testing.T) {
+	//given
+	needles := []string{"key1", "key5"}
+	hay := []string{"key1", "key2", "Key3", "key4", "key5"}
+	//when
+	result := stringsFound(needles, hay)
+	//then
+	assert.True(t, result, "Given strings were found")
+}
+
+func TestProvider_stringsFound_negative(t *testing.T) {
+	//given
+	needles := []string{"key1", "key6"}
+	hay := []string{"key1", "key2", "Key3", "key4", "key5"}
+	//when
+	result := stringsFound(needles, hay)
+	//then
+	assert.False(t, result, "Given strings were found")
+}
+
+//‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾
+// Test helper functions
+//_______________________________________________________________________
 
 func testAccPreCheck(t *testing.T) {
 	if _, err := getFromEnv(endpointEnvVar); err != nil {
@@ -155,4 +197,28 @@ func copyMap(source map[string]interface{}) map[string]interface{} {
 		target[k] = v
 	}
 	return target
+}
+
+func slicesMatch(s1, s2 []string) bool {
+	if len(s1) != len(s2) {
+		return false
+	}
+	visited := make([]bool, len(s1))
+	for i := 0; i < len(s1); i++ {
+		found := false
+		for j := 0; j < len(s2); j++ {
+			if visited[j] {
+				continue
+			}
+			if s1[i] == s2[j] {
+				visited[j] = true
+				found = true
+				break
+			}
+		}
+		if !found {
+			return false
+		}
+	}
+	return true
 }

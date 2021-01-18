@@ -10,84 +10,64 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
 )
 
-func TestAccECXL2ConnectionAccepter(t *testing.T) {
+func TestAccFabricL2Connection_Port_Single_Accepter(t *testing.T) {
 	t.Parallel()
 	portName, _ := schema.EnvDefaultFunc(priPortEnvVar, "sit-001-CX-SV1-NL-Dot1q-BO-10G-PRI-JUN-33")()
 	spName, _ := schema.EnvDefaultFunc(priSpEnvVar, "AWS Direct Connect")()
 	context := map[string]interface{}{
-		"connectionResourceName": "conn",
-		"name":                   fmt.Sprintf("tf-tst-%s", randString(6)),
-		"profile_name":           spName.(string),
-		"speed":                  50,
-		"speed_unit":             "MB",
-		"notifications":          []string{"marry@equinix.com", "john@equinix.com"},
-		"port_name":              portName.(string),
-		"vlan_stag":              randInt(2000),
-		"seller_region":          "us-west-2",
-		"seller_metro_code":      "SV",
-		"authorization_key":      "123456789012",
-		"accepterResourceName":   "accepter",
-		"access_key":             "AKIAGGJKJU7BC3QJKYQ",
-		"secret_key":             "CXGJW1lWbqENEqSkBAK",
+		"port-resourceName":            "test",
+		"port-name":                    portName.(string),
+		"connection-resourceName":      "test",
+		"connection-name":              fmt.Sprintf("tf-tst-%s", randString(6)),
+		"connection-profile_name":      spName.(string),
+		"connection-speed":             50,
+		"connection-speed_unit":        "MB",
+		"connection-notifications":     []string{"marry@equinix.com", "john@equinix.com"},
+		"connection-vlan_stag":         randInt(2000),
+		"connection-seller_region":     "us-west-2",
+		"connection-seller_metro_code": "SV",
+		"connection-authorization_key": "123456789012",
+		"accepter-resourceName":        "test",
+		"accepter-access_key":          "AKIAGGJKJU7BC3QJKYQ",
+		"accepter-secret_key":          "CXGJW1lWbqENEqSkBAK",
 	}
-	connectionResourceName := fmt.Sprintf("equinix_ecx_l2_connection.%s", context["connectionResourceName"].(string))
-	accepterResourceName := fmt.Sprintf("equinix_ecx_l2_connection_accepter.%s", context["accepterResourceName"].(string))
+	connectionResourceName := fmt.Sprintf("equinix_ecx_l2_connection.%s", context["connection-resourceName"].(string))
+	accepterResourceName := fmt.Sprintf("equinix_ecx_l2_connection_accepter.%s", context["accepter-resourceName"].(string))
 	var testConn ecx.L2Connection
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccECXL2ConnectionAccepter(context),
+				Config: newTestAccConfig(context).withPort().withConnection().withAccepter().build(),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(accepterResourceName, "connection_id"),
 					resource.TestCheckResourceAttrPair(accepterResourceName, "connection_id", connectionResourceName, "id"),
 					resource.TestCheckResourceAttrSet(accepterResourceName, "aws_connection_id"),
-					testAccECXL2ConnectionExists(connectionResourceName, &testConn),
-					testAccECXL2ConnectionAccepterStatus(&testConn),
+					testAccFabricL2ConnectionExists(connectionResourceName, &testConn),
+					testAccFabricL2ConnectionAccepterStatus(&testConn),
 				),
 			},
 		},
 	})
 }
 
-func testAccECXL2ConnectionAccepter(ctx map[string]interface{}) string {
+func (t *testAccConfig) withAccepter() *testAccConfig {
+	t.config += testAccFabricL2ConnectionAccepter(t.ctx)
+	return t
+}
+
+func testAccFabricL2ConnectionAccepter(ctx map[string]interface{}) string {
 	return nprintf(`
-data "equinix_ecx_l2_sellerprofile" "aws" {
-  name = "%{profile_name}"
-}
-	  
-data "equinix_ecx_port" "port" {
-  name = "%{port_name}"
-}
-
-locals {
-  aws_first_metro        = tolist(data.equinix_ecx_l2_sellerprofile.aws.metro)[0]
-  aws_first_metro_region = keys(local.aws_first_metro.regions)[0]
-}
-
-resource "equinix_ecx_l2_connection" "%{connectionResourceName}" {
-  name              = "%{name}"
-  profile_uuid      = data.equinix_ecx_l2_sellerprofile.aws.id
-  speed             = %{speed}
-  speed_unit        = "%{speed_unit}"
-  notifications     = %{notifications}
-  port_uuid         = data.equinix_ecx_port.port.id
-  vlan_stag         = %{vlan_stag}
-  seller_region     = local.aws_first_metro_region
-  seller_metro_code = local.aws_first_metro.code
-  authorization_key = "%{authorization_key}"
-}
-
-resource "equinix_ecx_l2_connection_accepter" "%{accepterResourceName}" {
-   connection_id = equinix_ecx_l2_connection.%{connectionResourceName}.id
-   access_key    = "%{access_key}"
-   secret_key    = "%{secret_key}"
+resource "equinix_ecx_l2_connection_accepter" "%{accepter-resourceName}" {
+   connection_id = equinix_ecx_l2_connection.%{connection-resourceName}.id
+   access_key    = "%{accepter-access_key}"
+   secret_key    = "%{accepter-secret_key}"
 }
 `, ctx)
 }
 
-func testAccECXL2ConnectionAccepterStatus(conn *ecx.L2Connection) resource.TestCheckFunc {
+func testAccFabricL2ConnectionAccepterStatus(conn *ecx.L2Connection) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		if conn.ProviderStatus != ecx.ConnectionStatusProvisioned {
 			return fmt.Errorf("provider_status does not match %v - %v", ecx.ConnectionStatusProvisioned, conn.ProviderStatus)

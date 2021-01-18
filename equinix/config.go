@@ -8,6 +8,7 @@ import (
 	"github.com/equinix/ecx-go"
 	"github.com/equinix/ne-go"
 	"github.com/equinix/oauth2-go"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/logging"
 )
 
 //Config is the configuration structure used to instantiate the Equinix
@@ -40,6 +41,7 @@ func (c *Config) Load(ctx context.Context) error {
 		BaseURL:      c.BaseURL}
 	authClient := authConfig.New(ctx)
 	authClient.Timeout = c.requestTimeout()
+	authClient.Transport = logging.NewTransport("Equinix", authClient.Transport)
 	c.ecx = ecx.NewClient(ctx, c.BaseURL, authClient)
 	c.ne = ne.NewClient(ctx, c.BaseURL, authClient)
 	return nil

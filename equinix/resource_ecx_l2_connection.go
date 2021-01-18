@@ -3,7 +3,6 @@ package equinix
 import (
 	"fmt"
 	"log"
-	"regexp"
 	"time"
 
 	"github.com/equinix/ecx-go"
@@ -104,7 +103,7 @@ func createECXL2ConnectionResourceSchema() map[string]*schema.Schema {
 			MinItems: 1,
 			Elem: &schema.Schema{
 				Type:         schema.TypeString,
-				ValidateFunc: validation.StringMatch(regexp.MustCompile("^[^ @]+@[^ @]+$"), "Notification list can contain only valid email addresses"),
+				ValidateFunc: stringIsEmailAddress(),
 			},
 		},
 		ecxL2ConnectionSchemaNames["PurchaseOrderNumber"]: {
@@ -126,7 +125,6 @@ func createECXL2ConnectionResourceSchema() map[string]*schema.Schema {
 			Optional:      true,
 			ForceNew:      true,
 			ValidateFunc:  validation.StringIsNotEmpty,
-			AtLeastOneOf:  []string{ecxL2ConnectionSchemaNames["PortUUID"], ecxL2ConnectionSchemaNames["DeviceUUID"]},
 			ConflictsWith: []string{ecxL2ConnectionSchemaNames["PortUUID"]},
 		},
 		ecxL2ConnectionSchemaNames["DeviceInterfaceID"]: {
@@ -209,7 +207,7 @@ func createECXL2ConnectionResourceSchema() map[string]*schema.Schema {
 			Optional:     true,
 			Computed:     true,
 			ForceNew:     true,
-			ValidateFunc: validation.StringMatch(regexp.MustCompile("^[A-Z]{2}$"), "MetroCode must consist of two capital letters"),
+			ValidateFunc: stringIsMetroCode(),
 		},
 		ecxL2ConnectionSchemaNames["AuthorizationKey"]: {
 			Type:         schema.TypeString,
@@ -227,7 +225,7 @@ func createECXL2ConnectionResourceSchema() map[string]*schema.Schema {
 			Computed: true,
 		},
 		ecxL2ConnectionSchemaNames["SecondaryConnection"]: {
-			Type:     schema.TypeSet,
+			Type:     schema.TypeList,
 			Optional: true,
 			ForceNew: true,
 			MaxItems: 1,
@@ -239,25 +237,27 @@ func createECXL2ConnectionResourceSchema() map[string]*schema.Schema {
 					},
 					ecxL2ConnectionSchemaNames["Name"]: {
 						Type:         schema.TypeString,
-						ForceNew:     true,
 						Required:     true,
 						ValidateFunc: validation.StringLenBetween(1, 24),
 					},
 					ecxL2ConnectionSchemaNames["ProfileUUID"]: {
 						Type:         schema.TypeString,
 						Optional:     true,
+						Computed:     true,
 						ForceNew:     true,
 						ValidateFunc: validation.StringIsNotEmpty,
 					},
 					ecxL2ConnectionSchemaNames["Speed"]: {
 						Type:         schema.TypeInt,
 						Optional:     true,
+						Computed:     true,
 						ForceNew:     true,
 						ValidateFunc: validation.IntAtLeast(1),
 					},
 					ecxL2ConnectionSchemaNames["SpeedUnit"]: {
 						Type:         schema.TypeString,
 						Optional:     true,
+						Computed:     true,
 						ForceNew:     true,
 						ValidateFunc: validation.StringInSlice([]string{"MB", "GB"}, false),
 					},
@@ -270,36 +270,43 @@ func createECXL2ConnectionResourceSchema() map[string]*schema.Schema {
 						Computed: true,
 					},
 					ecxL2ConnectionSchemaNames["PortUUID"]: {
-						Type:          schema.TypeString,
-						ForceNew:      true,
-						Optional:      true,
-						ValidateFunc:  validation.StringIsNotEmpty,
-						ConflictsWith: []string{ecxL2ConnectionSchemaNames["DeviceUUID"]},
+						Type:         schema.TypeString,
+						ForceNew:     true,
+						Optional:     true,
+						ValidateFunc: validation.StringIsNotEmpty,
+						AtLeastOneOf: []string{ecxL2ConnectionSchemaNames["SecondaryConnection"] + ".0." + ecxL2ConnectionSchemaNames["PortUUID"],
+							ecxL2ConnectionSchemaNames["SecondaryConnection"] + ".0." + ecxL2ConnectionSchemaNames["DeviceUUID"]},
+						ConflictsWith: []string{ecxL2ConnectionSchemaNames["SecondaryConnection"] + ".0." + ecxL2ConnectionSchemaNames["DeviceUUID"]},
 					},
 					ecxL2ConnectionSchemaNames["DeviceUUID"]: {
 						Type:          schema.TypeString,
 						ForceNew:      true,
 						Optional:      true,
 						ValidateFunc:  validation.StringIsNotEmpty,
-						ConflictsWith: []string{ecxL2ConnectionSchemaNames["PortUUID"]},
+						ConflictsWith: []string{ecxL2ConnectionSchemaNames["SecondaryConnection"] + ".0." + ecxL2ConnectionSchemaNames["PortUUID"]},
 					},
 					ecxL2ConnectionSchemaNames["DeviceInterfaceID"]: {
 						Type:          schema.TypeInt,
 						Optional:      true,
+						Computed:      true,
 						ForceNew:      true,
-						ConflictsWith: []string{ecxL2ConnectionSchemaNames["PortUUID"]},
+						ConflictsWith: []string{ecxL2ConnectionSchemaNames["SecondaryConnection"] + ".0." + ecxL2ConnectionSchemaNames["PortUUID"]},
 					},
 					ecxL2ConnectionSchemaNames["VlanSTag"]: {
-						Type:         schema.TypeInt,
-						ForceNew:     true,
-						Optional:     true,
-						ValidateFunc: validation.IntBetween(2, 4092),
+						Type:          schema.TypeInt,
+						ForceNew:      true,
+						Optional:      true,
+						Computed:      true,
+						ValidateFunc:  validation.IntBetween(2, 4092),
+						RequiredWith:  []string{ecxL2ConnectionSchemaNames["SecondaryConnection"] + ".0." + ecxL2ConnectionSchemaNames["PortUUID"]},
+						ConflictsWith: []string{ecxL2ConnectionSchemaNames["SecondaryConnection"] + ".0." + ecxL2ConnectionSchemaNames["DeviceUUID"]},
 					},
 					ecxL2ConnectionSchemaNames["VlanCTag"]: {
-						Type:         schema.TypeInt,
-						ForceNew:     true,
-						Optional:     true,
-						ValidateFunc: validation.IntBetween(2, 4092),
+						Type:          schema.TypeInt,
+						ForceNew:      true,
+						Optional:      true,
+						ValidateFunc:  validation.IntBetween(2, 4092),
+						ConflictsWith: []string{ecxL2ConnectionSchemaNames["SecondaryConnection"] + ".0." + ecxL2ConnectionSchemaNames["DeviceUUID"]},
 					},
 					ecxL2ConnectionSchemaNames["ZSidePortUUID"]: {
 						Type:     schema.TypeString,
@@ -316,18 +323,21 @@ func createECXL2ConnectionResourceSchema() map[string]*schema.Schema {
 					ecxL2ConnectionSchemaNames["SellerRegion"]: {
 						Type:         schema.TypeString,
 						Optional:     true,
+						Computed:     true,
 						ForceNew:     true,
 						ValidateFunc: validation.StringIsNotEmpty,
 					},
 					ecxL2ConnectionSchemaNames["SellerMetroCode"]: {
 						Type:         schema.TypeString,
 						Optional:     true,
+						Computed:     true,
 						ForceNew:     true,
-						ValidateFunc: validation.StringMatch(regexp.MustCompile("^[A-Z]{2}$"), "MetroCode must consist of two capital letters"),
+						ValidateFunc: stringIsMetroCode(),
 					},
 					ecxL2ConnectionSchemaNames["AuthorizationKey"]: {
 						Type:         schema.TypeString,
 						Optional:     true,
+						Computed:     true,
 						ForceNew:     true,
 						ValidateFunc: validation.StringIsNotEmpty,
 					},
@@ -421,16 +431,20 @@ func resourceECXL2ConnectionRead(d *schema.ResourceData, m interface{}) error {
 
 func resourceECXL2ConnectionUpdate(d *schema.ResourceData, m interface{}) error {
 	conf := m.(*Config)
-	updateReq := conf.ecx.NewL2ConnectionUpdateRequest(d.Id())
-	if v, ok := d.GetOk(ecxL2ConnectionSchemaNames["Name"]); ok && d.HasChange(ecxL2ConnectionSchemaNames["Name"]) {
-		updateReq.WithName(v.(string))
-	}
-	if d.HasChanges(ecxL2ConnectionSchemaNames["Speed"], ecxL2ConnectionSchemaNames["SpeedUnit"]) {
-		updateReq.WithBandwidth(d.Get(ecxL2ConnectionSchemaNames["Speed"]).(int),
-			d.Get(ecxL2ConnectionSchemaNames["SpeedUnit"]).(string))
-	}
-	if err := updateReq.Execute(); err != nil {
+	supportedChanges := []string{ecxL2ConnectionSchemaNames["Name"],
+		ecxL2ConnectionSchemaNames["Speed"],
+		ecxL2ConnectionSchemaNames["SpeedUnit"]}
+	primaryChanges := getResourceDataChangedKeys(supportedChanges, d)
+	primaryUpdateReq := conf.ecx.NewL2ConnectionUpdateRequest(d.Id())
+	if err := fillFabricL2ConnectionUpdateRequest(primaryUpdateReq, primaryChanges).Execute(); err != nil {
 		return err
+	}
+	if v, ok := d.GetOk(ecxL2ConnectionSchemaNames["RedundantUUID"]); ok {
+		secondaryChanges := getFabricL2ConnectionSecondaryChanges(supportedChanges, d)
+		secondaryUpdateReq := conf.ecx.NewL2ConnectionUpdateRequest(v.(string))
+		if err := fillFabricL2ConnectionUpdateRequest(secondaryUpdateReq, secondaryChanges).Execute(); err != nil {
+			return err
+		}
 	}
 	return resourceECXL2ConnectionRead(d, m)
 }
@@ -479,10 +493,8 @@ func resourceECXL2ConnectionDelete(d *schema.ResourceData, m interface{}) error 
 }
 
 func createECXL2Connections(d *schema.ResourceData) (*ecx.L2Connection, *ecx.L2Connection) {
-	primary := ecx.L2Connection{}
-	if v, ok := d.GetOk(ecxL2ConnectionSchemaNames["UUID"]); ok {
-		primary.UUID = v.(string)
-	}
+	var primary, secondary *ecx.L2Connection
+	primary = &ecx.L2Connection{}
 	if v, ok := d.GetOk(ecxL2ConnectionSchemaNames["Name"]); ok {
 		primary.Name = v.(string)
 	}
@@ -541,13 +553,9 @@ func createECXL2Connections(d *schema.ResourceData) (*ecx.L2Connection, *ecx.L2C
 		primary.AuthorizationKey = v.(string)
 	}
 	if v, ok := d.GetOk(ecxL2ConnectionSchemaNames["SecondaryConnection"]); ok {
-		secConnSet := v.(*schema.Set)
-		if secConnSet.Len() > 0 {
-			secConns := expandECXL2ConnectionSecondary(secConnSet)
-			return &primary, &secConns[0]
-		}
+		secondary = expandECXL2ConnectionSecondary(v.([]interface{}))
 	}
-	return &primary, nil
+	return primary, secondary
 }
 
 func updateECXL2ConnectionResource(primary *ecx.L2Connection, secondary *ecx.L2Connection, d *schema.ResourceData) error {
@@ -663,53 +671,53 @@ func flattenECXL2ConnectionSecondary(conn *ecx.L2Connection) interface{} {
 	transformed[ecxL2ConnectionSchemaNames["AuthorizationKey"]] = conn.AuthorizationKey
 	transformed[ecxL2ConnectionSchemaNames["RedundantUUID"]] = conn.RedundantUUID
 	transformed[ecxL2ConnectionSchemaNames["RedundancyType"]] = conn.RedundancyType
-	return []map[string]interface{}{transformed}
+	return []interface{}{transformed}
 }
 
-func expandECXL2ConnectionSecondary(connections *schema.Set) []ecx.L2Connection {
-	transformed := make([]ecx.L2Connection, 0, connections.Len())
-	for _, conn := range connections.List() {
-		connMap := conn.(map[string]interface{})
-		c := ecx.L2Connection{}
-		if v, ok := connMap[ecxL2ConnectionSchemaNames["Name"]]; ok {
-			c.Name = v.(string)
-		}
-		if v, ok := connMap[ecxL2ConnectionSchemaNames["ProfileUUID"]]; ok {
-			c.ProfileUUID = v.(string)
-		}
-		if v, ok := connMap[ecxL2ConnectionSchemaNames["Speed"]]; ok {
-			c.Speed = v.(int)
-		}
-		if v, ok := connMap[ecxL2ConnectionSchemaNames["SpeedUnit"]]; ok {
-			c.SpeedUnit = v.(string)
-		}
-		if v, ok := connMap[ecxL2ConnectionSchemaNames["PortUUID"]]; ok {
-			c.PortUUID = v.(string)
-		}
-		if v, ok := connMap[ecxL2ConnectionSchemaNames["DeviceUUID"]]; ok {
-			c.DeviceUUID = v.(string)
-		}
-		if v, ok := connMap[ecxL2ConnectionSchemaNames["DeviceInterfaceID"]]; ok {
-			c.DeviceInterfaceID = v.(int)
-		}
-		if v, ok := connMap[ecxL2ConnectionSchemaNames["VlanSTag"]]; ok {
-			c.VlanSTag = v.(int)
-		}
-		if v, ok := connMap[ecxL2ConnectionSchemaNames["VlanCTag"]]; ok {
-			c.VlanCTag = v.(int)
-		}
-		if v, ok := connMap[ecxL2ConnectionSchemaNames["SellerRegion"]]; ok {
-			c.SellerRegion = v.(string)
-		}
-		if v, ok := connMap[ecxL2ConnectionSchemaNames["SellerMetroCode"]]; ok {
-			c.SellerMetroCode = v.(string)
-		}
-		if v, ok := connMap[ecxL2ConnectionSchemaNames["AuthorizationKey"]]; ok {
-			c.AuthorizationKey = v.(string)
-		}
-		transformed = append(transformed, c)
+func expandECXL2ConnectionSecondary(conns []interface{}) *ecx.L2Connection {
+	if len(conns) < 1 {
+		log.Printf("[WARN] resource_ecx_l2_connection expanding empty secondary connection collection")
+		return nil
 	}
-	return transformed
+	conn := conns[0].(map[string]interface{})
+	transformed := ecx.L2Connection{}
+	if v, ok := conn[ecxL2ConnectionSchemaNames["Name"]]; ok {
+		transformed.Name = v.(string)
+	}
+	if v, ok := conn[ecxL2ConnectionSchemaNames["ProfileUUID"]]; ok {
+		transformed.ProfileUUID = v.(string)
+	}
+	if v, ok := conn[ecxL2ConnectionSchemaNames["Speed"]]; ok {
+		transformed.Speed = v.(int)
+	}
+	if v, ok := conn[ecxL2ConnectionSchemaNames["SpeedUnit"]]; ok {
+		transformed.SpeedUnit = v.(string)
+	}
+	if v, ok := conn[ecxL2ConnectionSchemaNames["PortUUID"]]; ok {
+		transformed.PortUUID = v.(string)
+	}
+	if v, ok := conn[ecxL2ConnectionSchemaNames["DeviceUUID"]]; ok {
+		transformed.DeviceUUID = v.(string)
+	}
+	if v, ok := conn[ecxL2ConnectionSchemaNames["DeviceInterfaceID"]]; ok {
+		transformed.DeviceInterfaceID = v.(int)
+	}
+	if v, ok := conn[ecxL2ConnectionSchemaNames["VlanSTag"]]; ok {
+		transformed.VlanSTag = v.(int)
+	}
+	if v, ok := conn[ecxL2ConnectionSchemaNames["VlanCTag"]]; ok {
+		transformed.VlanCTag = v.(int)
+	}
+	if v, ok := conn[ecxL2ConnectionSchemaNames["SellerRegion"]]; ok {
+		transformed.SellerRegion = v.(string)
+	}
+	if v, ok := conn[ecxL2ConnectionSchemaNames["SellerMetroCode"]]; ok {
+		transformed.SellerMetroCode = v.(string)
+	}
+	if v, ok := conn[ecxL2ConnectionSchemaNames["AuthorizationKey"]]; ok {
+		transformed.AuthorizationKey = v.(string)
+	}
+	return &transformed
 }
 
 func flattenECXL2ConnectionAdditionalInfo(infos []ecx.L2ConnectionAdditionalInfo) interface{} {
@@ -733,4 +741,33 @@ func expandECXL2ConnectionAdditionalInfo(infos *schema.Set) []ecx.L2ConnectionAd
 		})
 	}
 	return transformed
+}
+
+func getFabricL2ConnectionSecondaryChanges(keys []string, d *schema.ResourceData) map[string]interface{} {
+	changed := make(map[string]interface{})
+	if !d.HasChange(ecxL2ConnectionSchemaNames["SecondaryConnection"]) {
+		return changed
+	}
+	old, new := d.GetChange(ecxL2ConnectionSchemaNames["SecondaryConnection"])
+	oldList := old.([]interface{})
+	newList := new.([]interface{})
+	if len(oldList) < 1 || len(newList) < 1 {
+		log.Printf("[WARN] resource_ecx_l2_connection comparing empty secondary connection collections")
+		return changed
+	}
+	return getMapChangedKeys(keys, oldList[0].(map[string]interface{}), newList[0].(map[string]interface{}))
+}
+
+func fillFabricL2ConnectionUpdateRequest(updateReq ecx.L2ConnectionUpdateRequest, changes map[string]interface{}) ecx.L2ConnectionUpdateRequest {
+	for change, changeValue := range changes {
+		switch change {
+		case ecxL2ConnectionSchemaNames["Name"]:
+			updateReq.WithName(changeValue.(string))
+		case ecxL2ConnectionSchemaNames["Speed"]:
+			updateReq.WithSpeed(changeValue.(int))
+		case ecxL2ConnectionSchemaNames["SpeedUnit"]:
+			updateReq.WithSpeedUnit(changeValue.(string))
+		}
+	}
+	return updateReq
 }
