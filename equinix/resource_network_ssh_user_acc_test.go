@@ -47,6 +47,28 @@ func testSweepNetworkSSHUser(region string) error {
 	return nil
 }
 
+func testAccNetworkDeviceUser(ctx map[string]interface{}) string {
+	config := nprintf(`
+resource "equinix_network_ssh_user" "%{user-resourceName}" {
+  username = "%{user-username}"
+  password = "%{user-password}"
+  device_ids = [
+    equinix_network_device.%{device-resourceName}.id`, ctx)
+	if _, ok := ctx["secondary-name"]; ok {
+		config += nprintf(`,
+    equinix_network_device.%{device-resourceName}.redundant_id`, ctx)
+	}
+	config += `
+  ]
+}`
+	return config
+}
+
+func (t *testAccConfig) withSSHUser() *testAccConfig {
+	t.config += testAccNetworkDeviceUser(t.ctx)
+	return t
+}
+
 func testAccNeSSHUserExists(resourceName string, user *ne.SSHUser) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[resourceName]

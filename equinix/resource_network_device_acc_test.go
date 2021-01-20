@@ -99,8 +99,8 @@ func TestAccNetworkDevice_CSR100V_HA_Managed_Sub(t *testing.T) {
 	contextWithACLs["acl-metroCode"] = metro.(string)
 	contextWithACLs["acl-secondary_resourceName"] = "acl-sec"
 	contextWithACLs["acl-secondary_name"] = fmt.Sprintf("%s-%s", tstResourcePrefix, randString(6))
-	contextWithACLs["acl_secondary_description"] = randString(50)
-	contextWithACLs["acl_secondary_metroCode"] = metro.(string)
+	contextWithACLs["acl-secondary_description"] = randString(50)
+	contextWithACLs["acl-secondary_metroCode"] = metro.(string)
 	deviceResourceName := fmt.Sprintf("equinix_network_device.%s", context["device-resourceName"].(string))
 	userResourceName := fmt.Sprintf("equinix_network_ssh_user.%s", context["user-resourceName"].(string))
 	priACLResourceName := fmt.Sprintf("equinix_network_acl_template.%s", contextWithACLs["acl-resourceName"].(string))
@@ -171,15 +171,35 @@ func TestAccNetworkDevice_vSRX_HA_Managed_BYOL(t *testing.T) {
 		"device-secondary_license_file":  licFile.(string),
 		"device-secondary_hostname":      fmt.Sprintf("tf-%s", randString(6)),
 		"device-secondary_notifications": []string{"secondary@equinix.com"},
+		"acl-resourceName":               "acl-pri",
+		"acl-name":                       fmt.Sprintf("%s-%s", tstResourcePrefix, randString(6)),
+		"acl-description":                randString(50),
+		"acl-metroCode":                  metro.(string),
+		"acl-secondary_resourceName":     "acl-sec",
+		"acl-secondary_name":             fmt.Sprintf("%s-%s", tstResourcePrefix, randString(6)),
+		"acl-secondary_description":      randString(50),
+		"acl-secondary_metroCode":        metro.(string),
 	}
+	contextWithChanges := copyMap(context)
+	contextWithChanges["device-name"] = fmt.Sprintf("%s-%s", tstResourcePrefix, randString(6))
+	contextWithChanges["device-additional_bandwidth"] = 100
+	contextWithChanges["device-notifications"] = []string{"jerry@equinix.com", "tom@equinix.com"}
+	contextWithChanges["device-secondary_name"] = fmt.Sprintf("%s-%s", tstResourcePrefix, randString(6))
+	contextWithChanges["device-secondary_additional_bandwidth"] = 100
+	contextWithChanges["device-secondary_notifications"] = []string{"miki@equinix.com", "mini@equinix.com"}
+	contextWithChanges["user-resourceName"] = "test"
+	contextWithChanges["user-username"] = fmt.Sprintf("%s-%s", tstResourcePrefix, randString(6))
+	contextWithChanges["user-password"] = randString(10)
 	deviceResourceName := fmt.Sprintf("equinix_network_device.%s", context["device-resourceName"].(string))
+	userResourceName := fmt.Sprintf("equinix_network_device.%s", contextWithChanges["user-resourceName"].(string))
 	var primary, secondary ne.Device
+	var user ne.SSHUser
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: newTestAccConfig(context).withDevice().build(),
+				Config: newTestAccConfig(context).withDevice().withACL().build(),
 				Check: resource.ComposeTestCheckFunc(
 					testAccNeDeviceExists(deviceResourceName, &primary),
 					testAccNeDeviceAttributes(&primary, context),
@@ -194,6 +214,19 @@ func TestAccNetworkDevice_vSRX_HA_Managed_BYOL(t *testing.T) {
 					resource.TestCheckResourceAttrSet(deviceResourceName, "ssh_ip_address"),
 					resource.TestCheckResourceAttrSet(deviceResourceName, "ssh_ip_fqdn"),
 					resource.TestCheckResourceAttrSet(deviceResourceName, "license_file_id"),
+				),
+			},
+			{
+				Config: newTestAccConfig(contextWithChanges).withDevice().withACL().withSSHUser().build(),
+				Check: resource.ComposeTestCheckFunc(
+					testAccNeDeviceExists(deviceResourceName, &primary),
+					testAccNeDeviceAttributes(&primary, contextWithChanges),
+					testAccNeDeviceStatusAttributes(&primary, ne.DeviceStateProvisioned, ne.DeviceLicenseStateRegistered),
+					testAccNeDeviceSecondaryExists(&primary, &secondary),
+					testAccNeDeviceSecondaryAttributes(&secondary, contextWithChanges),
+					testAccNeDeviceStatusAttributes(&secondary, ne.DeviceStateProvisioned, ne.DeviceLicenseStateRegistered),
+					testAccNeSSHUserExists(userResourceName, &user),
+					testAccNeSSHUserAttributes(&user, []*ne.Device{&primary, &secondary}, contextWithChanges),
 				),
 			},
 		},
@@ -404,11 +437,6 @@ func (t *testAccConfig) withDevice() *testAccConfig {
 	return t
 }
 
-func (t *testAccConfig) withSSHUser() *testAccConfig {
-	t.config += testAccNetworkDeviceUser(t.ctx)
-	return t
-}
-
 func (t *testAccConfig) withACL() *testAccConfig {
 	t.config += testAccNetworkDeviceACL(t.ctx)
 	return t
@@ -442,6 +470,10 @@ resource "equinix_network_device" "%{device-resourceName}" {
   core_count            = %{device-core_count}
   purchase_order_number = "%{device-purchase_order_number}"
   order_reference       = "%{device-order_reference}"`, ctx)
+	if _, ok := ctx["device-additional_bandwidth"]; ok {
+		config += nprintf(`
+  additional_bandwidth       = "%{device-additional_bandwidth}"`, ctx)
+	}
 	if _, ok := ctx["device-throughput"]; ok {
 		config += nprintf(`
   throughput            = %{device-throughput}
@@ -473,17 +505,21 @@ resource "equinix_network_device" "%{device-resourceName}" {
 	if _, ok := ctx["device-secondary_name"]; ok {
 		config += nprintf(`
   secondary_device {
-    name            = "%{device-secondary_name}"
-    metro_code      = "%{device-metro_code}"
-    notifications   = %{device-secondary_notifications}
-    account_number  = data.equinix_network_account.test.number`, ctx)
+    name                 = "%{device-secondary_name}"
+    metro_code           = "%{device-metro_code}"
+    notifications        = %{device-secondary_notifications}
+	account_number       = data.equinix_network_account.test.number`, ctx)
+		if _, ok := ctx["device-secondary_additional_bandwidth"]; ok {
+			config += nprintf(`
+    additional_bandwidth = "%{device-secondary_additional_bandwidth}"`, ctx)
+		}
 		if _, ok := ctx["device-secondary_hostname"]; ok {
 			config += nprintf(`
-    hostname        = "%{device-secondary_hostname}"`, ctx)
+    hostname             = "%{device-secondary_hostname}"`, ctx)
 		}
 		if _, ok := ctx["acl-secondary_resourceName"]; ok {
 			config += nprintf(`
-    acl_template_id = equinix_network_acl_template.%{acl-secondary_resourceName}.id`, ctx)
+    acl_template_id      = equinix_network_acl_template.%{acl-secondary_resourceName}.id`, ctx)
 		}
 		if _, ok := ctx["sshkey-resourceName"]; ok {
 			config += nprintf(`
@@ -494,29 +530,12 @@ resource "equinix_network_device" "%{device-resourceName}" {
 		}
 		if _, ok := ctx["device-secondary_license_file"]; ok {
 			config += nprintf(`
-    license_file    = "%{device-secondary_license_file}"`, ctx)
+    license_file         = "%{device-secondary_license_file}"`, ctx)
 		}
 		config += `
   }`
 	}
 	config += `
-}`
-	return config
-}
-
-func testAccNetworkDeviceUser(ctx map[string]interface{}) string {
-	config := nprintf(`
-resource "equinix_network_ssh_user" "%{user-resourceName}" {
-  username = "%{user-username}"
-  password = "%{user-password}"
-  device_ids = [
-    equinix_network_device.%{device-resourceName}.id`, ctx)
-	if _, ok := ctx["secondary-name"]; ok {
-		config += nprintf(`,
-    equinix_network_device.%{device-resourceName}.redundant_id`, ctx)
-	}
-	config += `
-  ]
 }`
 	return config
 }

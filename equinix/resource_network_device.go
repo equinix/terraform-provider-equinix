@@ -5,7 +5,6 @@ import (
 	"log"
 	"os"
 	"path/filepath"
-	"reflect"
 	"time"
 
 	"github.com/equinix/ne-go"
@@ -163,14 +162,13 @@ func createNetworkDeviceSchema() map[string]*schema.Schema {
 			Optional:      true,
 			ForceNew:      true,
 			ValidateFunc:  validation.StringIsNotEmpty,
-			ConflictsWith: []string{networkDeviceSchemaNames["LicenseFileID"]},
+			ConflictsWith: []string{networkDeviceSchemaNames["LicenseFile"]},
 		},
 		networkDeviceSchemaNames["LicenseFile"]: {
-			Type:          schema.TypeString,
-			Optional:      true,
-			ForceNew:      true,
-			ValidateFunc:  validation.StringIsNotEmpty,
-			ConflictsWith: []string{networkDeviceSchemaNames["LicenseToken"]},
+			Type:         schema.TypeString,
+			Optional:     true,
+			ForceNew:     true,
+			ValidateFunc: validation.StringIsNotEmpty,
 		},
 		networkDeviceSchemaNames["LicenseFileID"]: {
 			Type:     schema.TypeString,
@@ -207,6 +205,7 @@ func createNetworkDeviceSchema() map[string]*schema.Schema {
 		networkDeviceSchemaNames["PurchaseOrderNumber"]: {
 			Type:         schema.TypeString,
 			Optional:     true,
+			ForceNew:     true,
 			ValidateFunc: validation.StringLenBetween(1, 30),
 		},
 		networkDeviceSchemaNames["RedundancyType"]: {
@@ -279,7 +278,7 @@ func createNetworkDeviceSchema() map[string]*schema.Schema {
 			},
 		},
 		networkDeviceSchemaNames["Secondary"]: {
-			Type:     schema.TypeSet,
+			Type:     schema.TypeList,
 			Optional: true,
 			ForceNew: true,
 			MaxItems: 1,
@@ -305,6 +304,7 @@ func createNetworkDeviceSchema() map[string]*schema.Schema {
 					networkDeviceSchemaNames["MetroCode"]: {
 						Type:         schema.TypeString,
 						Required:     true,
+						ForceNew:     true,
 						ValidateFunc: stringIsMetroCode(),
 					},
 					networkDeviceSchemaNames["IBX"]: {
@@ -318,16 +318,20 @@ func createNetworkDeviceSchema() map[string]*schema.Schema {
 					networkDeviceSchemaNames["HostName"]: {
 						Type:         schema.TypeString,
 						Optional:     true,
+						ForceNew:     true,
 						ValidateFunc: validation.StringLenBetween(2, 15),
 					},
 					networkDeviceSchemaNames["LicenseToken"]: {
-						Type:         schema.TypeString,
-						Optional:     true,
-						ValidateFunc: validation.StringIsNotEmpty,
+						Type:          schema.TypeString,
+						Optional:      true,
+						ForceNew:      true,
+						ValidateFunc:  validation.StringIsNotEmpty,
+						ConflictsWith: []string{networkDeviceSchemaNames["Secondary"] + ".0." + networkDeviceSchemaNames["LicenseFile"]},
 					},
 					networkDeviceSchemaNames["LicenseFile"]: {
 						Type:         schema.TypeString,
 						Optional:     true,
+						ForceNew:     true,
 						ValidateFunc: validation.StringIsNotEmpty,
 					},
 					networkDeviceSchemaNames["LicenseFileID"]: {
@@ -350,6 +354,7 @@ func createNetworkDeviceSchema() map[string]*schema.Schema {
 					networkDeviceSchemaNames["AccountNumber"]: {
 						Type:         schema.TypeString,
 						Required:     true,
+						ForceNew:     true,
 						ValidateFunc: validation.StringIsNotEmpty,
 					},
 					networkDeviceSchemaNames["Notifications"]: {
@@ -384,6 +389,7 @@ func createNetworkDeviceSchema() map[string]*schema.Schema {
 					networkDeviceSchemaNames["VendorConfiguration"]: {
 						Type:     schema.TypeMap,
 						Optional: true,
+						ForceNew: true,
 						Elem: &schema.Schema{
 							Type:         schema.TypeString,
 							ValidateFunc: validation.StringIsNotEmpty,
@@ -462,8 +468,11 @@ func resourceNetworkDeviceCreate(d *schema.ResourceData, m interface{}) error {
 	primary, secondary := createNetworkDevices(d)
 	var primaryID, secondaryID string
 	var err error
-	if err := uploadAndSetDeviceLicenseFiles(conf.ne, d, primary, secondary); err != nil {
-		return err
+	if err := uploadDeviceLicenseFile(conf.ne, primary.TypeCode, primary); err != nil {
+		return fmt.Errorf("could not upload primary device license file due to %s", err)
+	}
+	if err := uploadDeviceLicenseFile(conf.ne, primary.TypeCode, secondary); err != nil {
+		return fmt.Errorf("could not upload secondary device license file due to %s", err)
 	}
 	if secondary != nil {
 		primaryID, secondaryID, err = conf.ne.CreateRedundantDevice(*primary, *secondary)
@@ -518,17 +527,19 @@ func resourceNetworkDeviceRead(d *schema.ResourceData, m interface{}) error {
 }
 
 func resourceNetworkDeviceUpdate(d *schema.ResourceData, m interface{}) error {
-	supportedChanges := []string{"Name", "TermLength", "Notifications", "AdditionalBandwidth", "ACLTemplateUUID"}
 	conf := m.(*Config)
+	supportedChanges := []string{networkDeviceSchemaNames["Name"], networkDeviceSchemaNames["TermLength"],
+		networkDeviceSchemaNames["Notifications"], networkDeviceSchemaNames["AdditionalBandwidth"],
+		networkDeviceSchemaNames["ACLTemplateUUID"]}
 	updateReq := conf.ne.NewDeviceUpdateRequest(d.Id())
-	primaryChanges := getNetworkDeviceChanges(supportedChanges, d)
+	primaryChanges := getResourceDataChangedKeys(supportedChanges, d)
 	if err := fillNetworkDeviceUpdateRequest(updateReq, primaryChanges).Execute(); err != nil {
 		return err
 	}
 	var secondaryChanges map[string]interface{}
 	if v, ok := d.GetOk(networkDeviceSchemaNames["RedundantUUID"]); ok {
+		secondaryChanges = getResourceDataListElementChanges(supportedChanges, networkDeviceSchemaNames["Secondary"], 0, d)
 		secondaryUpdateReq := conf.ne.NewDeviceUpdateRequest(v.(string))
-		secondaryChanges = getNetworkDeviceChangesSecondary(supportedChanges, d)
 		if err := fillNetworkDeviceUpdateRequest(secondaryUpdateReq, secondaryChanges).Execute(); err != nil {
 			return err
 		}
@@ -554,15 +565,12 @@ func resourceNetworkDeviceDelete(d *schema.ResourceData, m interface{}) error {
 		}
 	}
 	if v, ok := d.GetOk(networkDeviceSchemaNames["Secondary"]); ok {
-		if secondaryMap, err := getSecondaryNetworkDeviceMap(v.(*schema.Set)); err == nil {
-			secondary := expandNetworkDeviceSecondary(secondaryMap)
+		if secondary := expandNetworkDeviceSecondary(v.([]interface{})); secondary != nil {
 			if secondary.ACLTemplateUUID != "" {
 				if err := conf.ne.NewDeviceUpdateRequest(secondary.UUID).WithACLTemplate("").Execute(); err != nil {
 					log.Printf("[WARN] could not unassign ACL template %q from device %q: %s", v, secondary.UUID, err)
 				}
 			}
-		} else {
-			log.Printf("[WARN] could not get secondary device map from schema due to error: %s", err)
 		}
 	}
 	if err := conf.ne.DeleteDevice(d.Id()); err != nil {
@@ -579,31 +587,16 @@ func resourceNetworkDeviceDelete(d *schema.ResourceData, m interface{}) error {
 }
 
 func createNetworkDevices(d *schema.ResourceData) (*ne.Device, *ne.Device) {
-	var primary *ne.Device = &ne.Device{}
-	var secondary *ne.Device
-	if v, ok := d.GetOk(networkDeviceSchemaNames["UUID"]); ok {
-		primary.UUID = v.(string)
-	}
+	var primary, secondary *ne.Device
+	primary = &ne.Device{}
 	if v, ok := d.GetOk(networkDeviceSchemaNames["Name"]); ok {
 		primary.Name = v.(string)
 	}
 	if v, ok := d.GetOk(networkDeviceSchemaNames["TypeCode"]); ok {
 		primary.TypeCode = v.(string)
 	}
-	if v, ok := d.GetOk(networkDeviceSchemaNames["Status"]); ok {
-		primary.Status = v.(string)
-	}
-	if v, ok := d.GetOk(networkDeviceSchemaNames["LicenseStatus"]); ok {
-		primary.LicenseStatus = v.(string)
-	}
 	if v, ok := d.GetOk(networkDeviceSchemaNames["MetroCode"]); ok {
 		primary.MetroCode = v.(string)
-	}
-	if v, ok := d.GetOk(networkDeviceSchemaNames["IBX"]); ok {
-		primary.IBX = v.(string)
-	}
-	if v, ok := d.GetOk(networkDeviceSchemaNames["Region"]); ok {
-		primary.Region = v.(string)
 	}
 	if v, ok := d.GetOk(networkDeviceSchemaNames["Throughput"]); ok {
 		primary.Throughput = v.(int)
@@ -626,17 +619,11 @@ func createNetworkDevices(d *schema.ResourceData) (*ne.Device, *ne.Device) {
 	if v, ok := d.GetOk(networkDeviceSchemaNames["LicenseToken"]); ok {
 		primary.LicenseToken = v.(string)
 	}
-	if v, ok := d.GetOk(networkDeviceSchemaNames["LicenseFileID"]); ok {
-		primary.LicenseFileID = v.(string)
+	if v, ok := d.GetOk(networkDeviceSchemaNames["LicenseFile"]); ok {
+		primary.LicenseFile = v.(string)
 	}
 	if v, ok := d.GetOk(networkDeviceSchemaNames["ACLTemplateUUID"]); ok {
 		primary.ACLTemplateUUID = v.(string)
-	}
-	if v, ok := d.GetOk(networkDeviceSchemaNames["SSHIPAddress"]); ok {
-		primary.SSHIPAddress = v.(string)
-	}
-	if v, ok := d.GetOk(networkDeviceSchemaNames["SSHIPFqdn"]); ok {
-		primary.SSHIPFqdn = v.(string)
 	}
 	if v, ok := d.GetOk(networkDeviceSchemaNames["AccountNumber"]); ok {
 		primary.AccountNumber = v.(string)
@@ -646,12 +633,6 @@ func createNetworkDevices(d *schema.ResourceData) (*ne.Device, *ne.Device) {
 	}
 	if v, ok := d.GetOk(networkDeviceSchemaNames["PurchaseOrderNumber"]); ok {
 		primary.PurchaseOrderNumber = v.(string)
-	}
-	if v, ok := d.GetOk(networkDeviceSchemaNames["RedundancyType"]); ok {
-		primary.RedundancyType = v.(string)
-	}
-	if v, ok := d.GetOk(networkDeviceSchemaNames["RedundantUUID"]); ok {
-		primary.RedundantUUID = v.(string)
 	}
 	if v, ok := d.GetOk(networkDeviceSchemaNames["TermLength"]); ok {
 		primary.TermLength = v.(int)
@@ -681,11 +662,7 @@ func createNetworkDevices(d *schema.ResourceData) (*ne.Device, *ne.Device) {
 		}
 	}
 	if v, ok := d.GetOk(networkDeviceSchemaNames["Secondary"]); ok {
-		if secondaryMap, err := getSecondaryNetworkDeviceMap(v.(*schema.Set)); err == nil {
-			secondary = expandNetworkDeviceSecondary(secondaryMap)
-		} else {
-			log.Printf("[WARN] could not get secondary device map from schema due to error: %s", err)
-		}
+		secondary = expandNetworkDeviceSecondary(v.([]interface{}))
 	}
 	return primary, secondary
 }
@@ -791,20 +768,18 @@ func updateNetworkDeviceResource(primary *ne.Device, secondary *ne.Device, d *sc
 		return fmt.Errorf("error reading VendorConfiguration: %s", err)
 	}
 	if secondary != nil {
-		secondaryMap := flattenNetworkDeviceSecondary(*secondary).(map[string]interface{})
 		if v, ok := d.GetOk(networkDeviceSchemaNames["Secondary"]); ok {
-			if currentSecondaryMap, err := getSecondaryNetworkDeviceMap(v.(*schema.Set)); err == nil {
-				secondaryMap[networkDeviceSchemaNames["LicenseFile"]] = currentSecondaryMap[networkDeviceSchemaNames["LicenseFile"]]
-			}
+			secondaryFromSchema := expandNetworkDeviceSecondary(v.([]interface{}))
+			secondary.LicenseFile = secondaryFromSchema.LicenseFile
 		}
-		if err := d.Set(networkDeviceSchemaNames["Secondary"], []map[string]interface{}{secondaryMap}); err != nil {
+		if err := d.Set(networkDeviceSchemaNames["Secondary"], flattenNetworkDeviceSecondary(secondary)); err != nil {
 			return fmt.Errorf("error reading Secondary: %s", err)
 		}
 	}
 	return nil
 }
 
-func flattenNetworkDeviceSecondary(device ne.Device) interface{} {
+func flattenNetworkDeviceSecondary(device *ne.Device) interface{} {
 	transformed := make(map[string]interface{})
 	transformed[networkDeviceSchemaNames["UUID"]] = device.UUID
 	transformed[networkDeviceSchemaNames["Name"]] = device.Name
@@ -816,6 +791,7 @@ func flattenNetworkDeviceSecondary(device ne.Device) interface{} {
 	transformed[networkDeviceSchemaNames["HostName"]] = device.HostName
 	transformed[networkDeviceSchemaNames["LicenseToken"]] = device.LicenseToken
 	transformed[networkDeviceSchemaNames["LicenseFileID"]] = device.LicenseFileID
+	transformed[networkDeviceSchemaNames["LicenseFile"]] = device.LicenseFile
 	transformed[networkDeviceSchemaNames["ACLTemplateUUID"]] = device.ACLTemplateUUID
 	transformed[networkDeviceSchemaNames["SSHIPAddress"]] = device.SSHIPAddress
 	transformed[networkDeviceSchemaNames["SSHIPFqdn"]] = device.SSHIPFqdn
@@ -827,83 +803,53 @@ func flattenNetworkDeviceSecondary(device ne.Device) interface{} {
 	transformed[networkDeviceSchemaNames["Interfaces"]] = flattenNetworkDeviceInterfaces(device.Interfaces)
 	transformed[networkDeviceSchemaNames["VendorConfiguration"]] = device.VendorConfiguration
 	transformed[networkDeviceSchemaNames["UserPublicKey"]] = flattenNetworkDeviceUserKeys([]*ne.DeviceUserPublicKey{device.UserPublicKey})
-	return transformed
+	return []interface{}{transformed}
 }
 
-func expandNetworkDeviceSecondary(secondaryMap map[string]interface{}) *ne.Device {
-	secondary := ne.Device{}
-	if v, ok := secondaryMap[networkDeviceSchemaNames["UUID"]]; ok {
-		secondary.UUID = v.(string)
+func expandNetworkDeviceSecondary(devices []interface{}) *ne.Device {
+	if len(devices) < 1 {
+		log.Printf("[WARN] resource_network_device expanding empty secondary device collection")
+		return nil
 	}
-	if v, ok := secondaryMap[networkDeviceSchemaNames["Name"]]; ok {
-		secondary.Name = v.(string)
+	device := devices[0].(map[string]interface{})
+	transformed := &ne.Device{}
+	if v, ok := device[networkDeviceSchemaNames["Name"]]; ok {
+		transformed.Name = v.(string)
 	}
-	if v, ok := secondaryMap[networkDeviceSchemaNames["Status"]]; ok {
-		secondary.Status = v.(string)
+	if v, ok := device[networkDeviceSchemaNames["MetroCode"]]; ok {
+		transformed.MetroCode = v.(string)
 	}
-	if v, ok := secondaryMap[networkDeviceSchemaNames["LicenseStatus"]]; ok {
-		secondary.LicenseStatus = v.(string)
+	if v, ok := device[networkDeviceSchemaNames["HostName"]]; ok {
+		transformed.HostName = v.(string)
 	}
-	if v, ok := secondaryMap[networkDeviceSchemaNames["MetroCode"]]; ok {
-		secondary.MetroCode = v.(string)
+	if v, ok := device[networkDeviceSchemaNames["LicenseToken"]]; ok {
+		transformed.LicenseToken = v.(string)
 	}
-	if v, ok := secondaryMap[networkDeviceSchemaNames["IBX"]]; ok {
-		secondary.IBX = v.(string)
+	if v, ok := device[networkDeviceSchemaNames["LicenseFile"]]; ok {
+		transformed.LicenseFile = v.(string)
 	}
-	if v, ok := secondaryMap[networkDeviceSchemaNames["Region"]]; ok {
-		secondary.Region = v.(string)
+	if v, ok := device[networkDeviceSchemaNames["ACLTemplateUUID"]]; ok {
+		transformed.ACLTemplateUUID = v.(string)
 	}
-	if v, ok := secondaryMap[networkDeviceSchemaNames["HostName"]]; ok {
-		secondary.HostName = v.(string)
+	if v, ok := device[networkDeviceSchemaNames["AccountNumber"]]; ok {
+		transformed.AccountNumber = v.(string)
 	}
-	if v, ok := secondaryMap[networkDeviceSchemaNames["LicenseToken"]]; ok {
-		secondary.LicenseToken = v.(string)
+	if v, ok := device[networkDeviceSchemaNames["Notifications"]]; ok {
+		transformed.Notifications = expandSetToStringList(v.(*schema.Set))
 	}
-	if v, ok := secondaryMap[networkDeviceSchemaNames["LicenseFileID"]]; ok {
-		secondary.LicenseFileID = v.(string)
+	if v, ok := device[networkDeviceSchemaNames["AdditionalBandwidth"]]; ok {
+		transformed.AdditionalBandwidth = v.(int)
 	}
-	if v, ok := secondaryMap[networkDeviceSchemaNames["ACLTemplateUUID"]]; ok {
-		secondary.ACLTemplateUUID = v.(string)
+	if v, ok := device[networkDeviceSchemaNames["VendorConfiguration"]]; ok {
+		transformed.VendorConfiguration = expandInterfaceMapToStringMap(v.(map[string]interface{}))
 	}
-	if v, ok := secondaryMap[networkDeviceSchemaNames["SSHIPAddress"]]; ok {
-		secondary.SSHIPAddress = v.(string)
-	}
-	if v, ok := secondaryMap[networkDeviceSchemaNames["SSHIPFqdn"]]; ok {
-		secondary.SSHIPFqdn = v.(string)
-	}
-	if v, ok := secondaryMap[networkDeviceSchemaNames["AccountNumber"]]; ok {
-		secondary.AccountNumber = v.(string)
-	}
-	if v, ok := secondaryMap[networkDeviceSchemaNames["Notifications"]]; ok {
-		secondary.Notifications = expandSetToStringList(v.(*schema.Set))
-	}
-	if v, ok := secondaryMap[networkDeviceSchemaNames["RedundancyType"]]; ok {
-		secondary.RedundancyType = v.(string)
-	}
-	if v, ok := secondaryMap[networkDeviceSchemaNames["RedundantUUID"]]; ok {
-		secondary.RedundantUUID = v.(string)
-	}
-	if v, ok := secondaryMap[networkDeviceSchemaNames["AdditionalBandwidth"]]; ok {
-		secondary.AdditionalBandwidth = v.(int)
-	}
-	if v, ok := secondaryMap[networkDeviceSchemaNames["VendorConfiguration"]]; ok {
-		secondary.VendorConfiguration = expandInterfaceMapToStringMap(v.(map[string]interface{}))
-	}
-	if v, ok := secondaryMap[networkDeviceSchemaNames["UserPublicKey"]]; ok {
+	if v, ok := device[networkDeviceSchemaNames["UserPublicKey"]]; ok {
 		userKeys := expandNetworkDeviceUserKeys(v.(*schema.Set))
 		if len(userKeys) > 0 {
-			secondary.UserPublicKey = userKeys[0]
+			transformed.UserPublicKey = userKeys[0]
 		}
 	}
-	return &secondary
-}
-
-func getSecondaryNetworkDeviceMap(secondarySet *schema.Set) (map[string]interface{}, error) {
-	if secondarySet.Len() != 1 {
-		return nil, fmt.Errorf("illegal number of secondary device configurations: expected 1, have %d", secondarySet.Len())
-	}
-	secondary := secondarySet.List()[0]
-	return secondary.(map[string]interface{}), nil
+	return transformed
 }
 
 func flattenNetworkDeviceInterfaces(interfaces []ne.DeviceInterface) interface{} {
@@ -918,25 +864,6 @@ func flattenNetworkDeviceInterfaces(interfaces []ne.DeviceInterface) interface{}
 			neDeviceInterfaceSchemaNames["IPAddress"]:         interfaces[i].IPAddress,
 			neDeviceInterfaceSchemaNames["AssignedType"]:      interfaces[i].AssignedType,
 			neDeviceInterfaceSchemaNames["Type"]:              interfaces[i].Type,
-		}
-	}
-	return transformed
-}
-
-func expandNetworkDeviceInterfaces(interfaces *schema.Set) []ne.DeviceInterface {
-	interfacesList := interfaces.List()
-	transformed := make([]ne.DeviceInterface, len(interfacesList))
-	for i := range interfacesList {
-		interfaceMap := interfacesList[i].(map[string]interface{})
-		transformed[i] = ne.DeviceInterface{
-			ID:                interfaceMap[neDeviceInterfaceSchemaNames["ID"]].(int),
-			Name:              interfaceMap[neDeviceInterfaceSchemaNames["Name"]].(string),
-			Status:            interfaceMap[neDeviceInterfaceSchemaNames["Status"]].(string),
-			OperationalStatus: interfaceMap[neDeviceInterfaceSchemaNames["OperationalStatus"]].(string),
-			MACAddress:        interfaceMap[neDeviceInterfaceSchemaNames["MACAddress"]].(string),
-			IPAddress:         interfaceMap[neDeviceInterfaceSchemaNames["IPAddress"]].(string),
-			AssignedType:      interfaceMap[neDeviceInterfaceSchemaNames["AssignedType"]].(string),
-			Type:              interfaceMap[neDeviceInterfaceSchemaNames["Type"]].(string),
 		}
 	}
 	return transformed
@@ -968,51 +895,18 @@ func expandNetworkDeviceUserKeys(userKeys *schema.Set) []*ne.DeviceUserPublicKey
 	return transformed
 }
 
-func getNetworkDeviceChanges(keys []string, d *schema.ResourceData) map[string]interface{} {
-	changed := make(map[string]interface{})
-	for _, key := range keys {
-		if schemaKey, ok := networkDeviceSchemaNames[key]; ok {
-			if v := d.Get(schemaKey); v != nil && d.HasChange(schemaKey) {
-				changed[key] = v
-			}
-		}
-	}
-	return changed
-}
-
-func getNetworkDeviceChangesSecondary(keys []string, d *schema.ResourceData) map[string]interface{} {
-	changed := make(map[string]interface{})
-	if !d.HasChange(networkDeviceSchemaNames["Secondary"]) {
-		return changed
-	}
-	a, b := d.GetChange(networkDeviceSchemaNames["Secondary"])
-	aMap, aErr := getSecondaryNetworkDeviceMap(a.(*schema.Set))
-	bMap, bErr := getSecondaryNetworkDeviceMap(b.(*schema.Set))
-	if aErr != nil || bErr != nil {
-		return changed
-	}
-	for _, key := range keys {
-		if schemaKey, ok := networkDeviceSchemaNames[key]; ok {
-			if !reflect.DeepEqual(aMap[schemaKey], bMap[schemaKey]) {
-				changed[key] = bMap[schemaKey]
-			}
-		}
-	}
-	return changed
-}
-
 func fillNetworkDeviceUpdateRequest(updateReq ne.DeviceUpdateRequest, changes map[string]interface{}) ne.DeviceUpdateRequest {
 	for change, changeValue := range changes {
 		switch change {
-		case "Name":
+		case networkDeviceSchemaNames["Name"]:
 			updateReq.WithDeviceName(changeValue.(string))
-		case "TermLength":
+		case networkDeviceSchemaNames["TermLength"]:
 			updateReq.WithTermLength(changeValue.(int))
-		case "Notifications":
+		case networkDeviceSchemaNames["Notifications"]:
 			updateReq.WithNotifications((expandSetToStringList(changeValue.(*schema.Set))))
-		case "AdditionalBandwidth":
+		case networkDeviceSchemaNames["AdditionalBandwidth"]:
 			updateReq.WithAdditionalBandwidth(changeValue.(int))
-		case "ACLTemplateUUID":
+		case networkDeviceSchemaNames["ACLTemplateUUID"]:
 			updateReq.WithACLTemplate(changeValue.(string))
 		}
 	}
@@ -1051,51 +945,26 @@ func getNetworkDeviceStateChangeConfigs(c ne.Client, d *schema.ResourceData, cha
 	return configs
 }
 
-func uploadAndSetDeviceLicenseFiles(c ne.Client, d *schema.ResourceData, primary, secondary *ne.Device) error {
-	priLicenseFile := d.Get(networkDeviceSchemaNames["LicenseFile"]).(string)
-	if !d.Get(networkDeviceSchemaNames["IsBYOL"]).(bool) || priLicenseFile == "" {
+func uploadDeviceLicenseFile(c ne.Client, typeCode string, device *ne.Device) error {
+	if device == nil || device.LicenseFile == "" {
 		return nil
 	}
-	priLicenseFileID, err := uploadNetworkDeviceLicenseFile(c, priLicenseFile, primary.MetroCode, primary.TypeCode)
+	fileName := filepath.Base(device.LicenseFile)
+	file, err := os.Open(device.LicenseFile)
 	if err != nil {
-		return fmt.Errorf("error uploading primary device license file %q: %s", priLicenseFile, err)
-	}
-	primary.LicenseFileID = priLicenseFileID
-	if secondary == nil {
-		return nil
-	}
-	secondaryMap, err := getSecondaryNetworkDeviceMap(d.Get(networkDeviceSchemaNames["Secondary"]).(*schema.Set))
-	if err != nil {
-		return fmt.Errorf("error uploading secondary device license file: %s", err)
-	}
-	secondaryLicenseFile, ok := secondaryMap[networkDeviceSchemaNames["LicenseFile"]].(string)
-	if !ok {
-		return nil
-	}
-	secondaryLicenseFileID, err := uploadNetworkDeviceLicenseFile(c, secondaryLicenseFile, secondary.MetroCode, primary.TypeCode)
-	if err != nil {
-		return fmt.Errorf("error uploading secondary device license file %q: %s", secondaryLicenseFile, err)
-	}
-	secondary.LicenseFileID = secondaryLicenseFileID
-	return nil
-}
-
-func uploadNetworkDeviceLicenseFile(c ne.Client, filePath, metroCode, deviceTypeCode string) (string, error) {
-	fileName := filepath.Base(filePath)
-	file, err := os.Open(filePath)
-	if err != nil {
-		return "", err
+		return err
 	}
 	defer func() {
 		if err := file.Close(); err != nil {
-			log.Printf("[WARN] could not close file %q due to an error: %s", filePath, err)
+			log.Printf("[WARN] could not close file %q due to an error: %s", device.LicenseFile, err)
 		}
 	}()
-	fileID, err := c.UploadLicenseFile(metroCode, deviceTypeCode, ne.DeviceManagementTypeSelf, ne.DeviceLicenseModeBYOL, fileName, file)
+	fileID, err := c.UploadLicenseFile(device.MetroCode, typeCode, ne.DeviceManagementTypeSelf, ne.DeviceLicenseModeBYOL, fileName, file)
 	if err != nil {
-		return "", err
+		return err
 	}
-	return fileID, nil
+	device.LicenseFileID = fileID
+	return nil
 }
 
 func createNetworkDeviceProvisioningWaitConfiguration(c ne.Client, timeout time.Duration, uuid string) *resource.StateChangeConf {

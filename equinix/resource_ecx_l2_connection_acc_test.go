@@ -432,7 +432,7 @@ resource "equinix_ecx_l2_connection" "%{connection-resourceName}" {
   notifications         = %{connection-notifications}
   seller_metro_code     = "%{connection-seller_metro_code}"
   authorization_key     = "%{connection-authorization_key}"`, ctx)
-	if _, ok := ctx["purchase_order_number"]; ok {
+	if _, ok := ctx["connection-purchase_order_number"]; ok {
 		config += nprintf(`
   purchase_order_number = "%{connection-purchase_order_number}"`, ctx)
 	}

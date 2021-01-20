@@ -440,7 +440,7 @@ func resourceECXL2ConnectionUpdate(d *schema.ResourceData, m interface{}) error 
 		return err
 	}
 	if v, ok := d.GetOk(ecxL2ConnectionSchemaNames["RedundantUUID"]); ok {
-		secondaryChanges := getFabricL2ConnectionSecondaryChanges(supportedChanges, d)
+		secondaryChanges := getResourceDataListElementChanges(supportedChanges, ecxL2ConnectionSchemaNames["SecondaryConnection"], 0, d)
 		secondaryUpdateReq := conf.ecx.NewL2ConnectionUpdateRequest(v.(string))
 		if err := fillFabricL2ConnectionUpdateRequest(secondaryUpdateReq, secondaryChanges).Execute(); err != nil {
 			return err
@@ -741,21 +741,6 @@ func expandECXL2ConnectionAdditionalInfo(infos *schema.Set) []ecx.L2ConnectionAd
 		})
 	}
 	return transformed
-}
-
-func getFabricL2ConnectionSecondaryChanges(keys []string, d *schema.ResourceData) map[string]interface{} {
-	changed := make(map[string]interface{})
-	if !d.HasChange(ecxL2ConnectionSchemaNames["SecondaryConnection"]) {
-		return changed
-	}
-	old, new := d.GetChange(ecxL2ConnectionSchemaNames["SecondaryConnection"])
-	oldList := old.([]interface{})
-	newList := new.([]interface{})
-	if len(oldList) < 1 || len(newList) < 1 {
-		log.Printf("[WARN] resource_ecx_l2_connection comparing empty secondary connection collections")
-		return changed
-	}
-	return getMapChangedKeys(keys, oldList[0].(map[string]interface{}), newList[0].(map[string]interface{}))
 }
 
 func fillFabricL2ConnectionUpdateRequest(updateReq ecx.L2ConnectionUpdateRequest, changes map[string]interface{}) ecx.L2ConnectionUpdateRequest {
