@@ -191,7 +191,7 @@ func TestAccNetworkDevice_vSRX_HA_Managed_BYOL(t *testing.T) {
 	contextWithChanges["user-username"] = fmt.Sprintf("%s-%s", tstResourcePrefix, randString(6))
 	contextWithChanges["user-password"] = randString(10)
 	deviceResourceName := fmt.Sprintf("equinix_network_device.%s", context["device-resourceName"].(string))
-	userResourceName := fmt.Sprintf("equinix_network_device.%s", contextWithChanges["user-resourceName"].(string))
+	userResourceName := fmt.Sprintf("equinix_network_ssh_user.%s", contextWithChanges["user-resourceName"].(string))
 	var primary, secondary ne.Device
 	var user ne.SSHUser
 	resource.Test(t, resource.TestCase{

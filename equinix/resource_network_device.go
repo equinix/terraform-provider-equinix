@@ -2,6 +2,7 @@ package equinix
 
 import (
 	"fmt"
+	"io"
 	"log"
 	"os"
 	"path/filepath"
@@ -78,6 +79,7 @@ func resourceNetworkDevice() *schema.Resource {
 		Timeouts: &schema.ResourceTimeout{
 			Create: schema.DefaultTimeout(60 * time.Minute),
 			Update: schema.DefaultTimeout(10 * time.Minute),
+			Delete: schema.DefaultTimeout(10 * time.Minute),
 		},
 	}
 }
@@ -132,6 +134,7 @@ func createNetworkDeviceSchema() map[string]*schema.Schema {
 			Optional:     true,
 			ForceNew:     true,
 			ValidateFunc: validation.StringInSlice([]string{"Mbps", "Gbps"}, false),
+			RequiredWith: []string{networkDeviceSchemaNames["Throughput"]},
 		},
 		networkDeviceSchemaNames["HostName"]: {
 			Type:         schema.TypeString,
@@ -466,37 +469,48 @@ func createNetworkDeviceUserKeySchema() map[string]*schema.Schema {
 func resourceNetworkDeviceCreate(d *schema.ResourceData, m interface{}) error {
 	conf := m.(*Config)
 	primary, secondary := createNetworkDevices(d)
-	var primaryID, secondaryID string
 	var err error
-	if err := uploadDeviceLicenseFile(conf.ne, primary.TypeCode, primary); err != nil {
+	if err := uploadDeviceLicenseFile(os.Open, conf.ne.UploadLicenseFile, primary.TypeCode, primary); err != nil {
 		return fmt.Errorf("could not upload primary device license file due to %s", err)
 	}
-	if err := uploadDeviceLicenseFile(conf.ne, primary.TypeCode, secondary); err != nil {
+	if err := uploadDeviceLicenseFile(os.Open, conf.ne.UploadLicenseFile, primary.TypeCode, secondary); err != nil {
 		return fmt.Errorf("could not upload secondary device license file due to %s", err)
 	}
 	if secondary != nil {
-		primaryID, secondaryID, err = conf.ne.CreateRedundantDevice(*primary, *secondary)
+		primary.UUID, secondary.UUID, err = conf.ne.CreateRedundantDevice(*primary, *secondary)
 	} else {
-		primaryID, err = conf.ne.CreateDevice(*primary)
+		primary.UUID, err = conf.ne.CreateDevice(*primary)
 	}
 	if err != nil {
 		return err
 	}
-	d.SetId(primaryID)
-	provWaitConfigs := []*resource.StateChangeConf{createNetworkDeviceProvisioningWaitConfiguration(conf.ne, d.Timeout(schema.TimeoutCreate), primaryID)}
-	licWaitConfigs := []*resource.StateChangeConf{createNetworkDeviceLicenseWaitConfiguration(conf.ne, d.Timeout(schema.TimeoutCreate), primaryID)}
-	if secondary != nil {
-		provWaitConfigs = append(provWaitConfigs, createNetworkDeviceProvisioningWaitConfiguration(conf.ne, d.Timeout(schema.TimeoutCreate), secondaryID))
-		licWaitConfigs = append(licWaitConfigs, createNetworkDeviceLicenseWaitConfiguration(conf.ne, d.Timeout(schema.TimeoutCreate), secondaryID))
+	d.SetId(primary.UUID)
+	waitConfigs := []*resource.StateChangeConf{
+		createNetworkDeviceStatusProvisioningWaitConfiguration(conf.ne.GetDevice, primary.UUID, 5*time.Second, d.Timeout(schema.TimeoutCreate)),
+		createNetworkDeviceLicenseStatusWaitConfiguration(conf.ne.GetDevice, primary.UUID, 5*time.Second, d.Timeout(schema.TimeoutCreate)),
 	}
-	for i := range provWaitConfigs {
-		if _, err := provWaitConfigs[i].WaitForState(); err != nil {
-			return fmt.Errorf("error waiting for network device (%s) to be created: %s", primaryID, err)
+	if primary.ACLTemplateUUID != "" {
+		waitConfigs = append(waitConfigs,
+			createNetworkDeviceACLStatusWaitConfiguration(conf.ne.GetACLTemplate, primary.ACLTemplateUUID, 1*time.Second, d.Timeout(schema.TimeoutUpdate)),
+		)
+	}
+	if secondary != nil {
+		waitConfigs = append(waitConfigs,
+			createNetworkDeviceStatusProvisioningWaitConfiguration(conf.ne.GetDevice, secondary.UUID, 5*time.Second, d.Timeout(schema.TimeoutCreate)),
+			createNetworkDeviceLicenseStatusWaitConfiguration(conf.ne.GetDevice, secondary.UUID, 5*time.Second, d.Timeout(schema.TimeoutCreate)),
+		)
+		if secondary.ACLTemplateUUID != "" {
+			waitConfigs = append(waitConfigs,
+				createNetworkDeviceACLStatusWaitConfiguration(conf.ne.GetACLTemplate, secondary.ACLTemplateUUID, 1*time.Second, d.Timeout(schema.TimeoutUpdate)),
+			)
 		}
 	}
-	for i := range licWaitConfigs {
-		if _, err := licWaitConfigs[i].WaitForState(); err != nil {
-			return fmt.Errorf("error waiting for network device (%s) license to be applied: %s", primaryID, err)
+	for _, config := range waitConfigs {
+		if config == nil {
+			continue
+		}
+		if _, err := config.WaitForState(); err != nil {
+			return fmt.Errorf("error waiting for network device (%s) to be created: %s", primary.UUID, err)
 		}
 	}
 	return resourceNetworkDeviceRead(d, m)
@@ -582,6 +596,9 @@ func resourceNetworkDeviceDelete(d *schema.ResourceData, m interface{}) error {
 			}
 		}
 		return err
+	}
+	if _, err := createNetworkDeviceStatusDeleteWaitConfiguration(conf.ne.GetDevice, d.Id(), 5*time.Second, d.Timeout(schema.TimeoutDelete)).WaitForState(); err != nil {
+		return fmt.Errorf("error waiting for device (%s) to be removed: %s", d.Id(), err)
 	}
 	return nil
 }
@@ -813,6 +830,9 @@ func expandNetworkDeviceSecondary(devices []interface{}) *ne.Device {
 	}
 	device := devices[0].(map[string]interface{})
 	transformed := &ne.Device{}
+	if v, ok := device[networkDeviceSchemaNames["UUID"]]; ok {
+		transformed.UUID = v.(string)
+	}
 	if v, ok := device[networkDeviceSchemaNames["Name"]]; ok {
 		transformed.Name = v.(string)
 	}
@@ -922,35 +942,23 @@ func getNetworkDeviceStateChangeConfigs(c ne.Client, d *schema.ResourceData, cha
 			if !ok || aclTempID == "" {
 				break
 			}
-			configs = append(configs, &resource.StateChangeConf{
-				Pending: []string{
-					ne.ACLDeviceStatusProvisioning,
-				},
-				Target: []string{
-					ne.ACLDeviceStatusProvisioned,
-				},
-				Timeout:    d.Timeout(schema.TimeoutUpdate),
-				Delay:      1 * time.Second,
-				MinTimeout: 1 * time.Second,
-				Refresh: func() (interface{}, string, error) {
-					resp, err := c.GetACLTemplate(aclTempID)
-					if err != nil {
-						return nil, "", err
-					}
-					return resp, resp.DeviceACLStatus, nil
-				},
-			})
+			configs = append(configs,
+				createNetworkDeviceACLStatusWaitConfiguration(c.GetACLTemplate, aclTempID, 1*time.Second, d.Timeout(schema.TimeoutUpdate)),
+			)
 		}
 	}
 	return configs
 }
 
-func uploadDeviceLicenseFile(c ne.Client, typeCode string, device *ne.Device) error {
+type openFile func(name string) (*os.File, error)
+type uploadLicenseFile func(metroCode, deviceTypeCode, deviceManagementMode, licenseMode, fileName string, reader io.Reader) (string, error)
+
+func uploadDeviceLicenseFile(openFunc openFile, uploadFunc uploadLicenseFile, typeCode string, device *ne.Device) error {
 	if device == nil || device.LicenseFile == "" {
 		return nil
 	}
 	fileName := filepath.Base(device.LicenseFile)
-	file, err := os.Open(device.LicenseFile)
+	file, err := openFunc(device.LicenseFile)
 	if err != nil {
 		return err
 	}
@@ -959,7 +967,7 @@ func uploadDeviceLicenseFile(c ne.Client, typeCode string, device *ne.Device) er
 			log.Printf("[WARN] could not close file %q due to an error: %s", device.LicenseFile, err)
 		}
 	}()
-	fileID, err := c.UploadLicenseFile(device.MetroCode, typeCode, ne.DeviceManagementTypeSelf, ne.DeviceLicenseModeBYOL, fileName, file)
+	fileID, err := uploadFunc(device.MetroCode, typeCode, ne.DeviceManagementTypeSelf, ne.DeviceLicenseModeBYOL, fileName, file)
 	if err != nil {
 		return err
 	}
@@ -967,21 +975,40 @@ func uploadDeviceLicenseFile(c ne.Client, typeCode string, device *ne.Device) er
 	return nil
 }
 
-func createNetworkDeviceProvisioningWaitConfiguration(c ne.Client, timeout time.Duration, uuid string) *resource.StateChangeConf {
+type getDevice func(uuid string) (*ne.Device, error)
+type getACL func(uuid string) (*ne.ACLTemplate, error)
+
+func createNetworkDeviceStatusProvisioningWaitConfiguration(fetchFunc getDevice, id string, delay time.Duration, timeout time.Duration) *resource.StateChangeConf {
+	pending := []string{
+		ne.DeviceStateInitializing,
+		ne.DeviceStateProvisioning,
+		ne.DeviceStateWaitingSecondary,
+	}
+	target := []string{
+		ne.DeviceStateProvisioned,
+	}
+	return createNetworkDeviceStatusWaitConfiguration(fetchFunc, id, delay, timeout, target, pending)
+}
+
+func createNetworkDeviceStatusDeleteWaitConfiguration(fetchFunc getDevice, id string, delay time.Duration, timeout time.Duration) *resource.StateChangeConf {
+	pending := []string{
+		ne.DeviceStateDeprovisioning,
+	}
+	target := []string{
+		ne.DeviceStateDeprovisioned,
+	}
+	return createNetworkDeviceStatusWaitConfiguration(fetchFunc, id, delay, timeout, target, pending)
+}
+
+func createNetworkDeviceStatusWaitConfiguration(fetchFunc getDevice, id string, delay time.Duration, timeout time.Duration, target []string, pending []string) *resource.StateChangeConf {
 	return &resource.StateChangeConf{
-		Pending: []string{
-			ne.DeviceStateInitializing,
-			ne.DeviceStateProvisioning,
-			ne.DeviceStateWaitingSecondary,
-		},
-		Target: []string{
-			ne.DeviceStateProvisioned,
-		},
+		Pending:    pending,
+		Target:     target,
 		Timeout:    timeout,
-		Delay:      5 * time.Second,
-		MinTimeout: 5 * time.Second,
+		Delay:      0,
+		MinTimeout: delay,
 		Refresh: func() (interface{}, string, error) {
-			resp, err := c.GetDevice(uuid)
+			resp, err := fetchFunc(id)
 			if err != nil {
 				return nil, "", err
 			}
@@ -990,25 +1017,48 @@ func createNetworkDeviceProvisioningWaitConfiguration(c ne.Client, timeout time.
 	}
 }
 
-func createNetworkDeviceLicenseWaitConfiguration(c ne.Client, timeout time.Duration, uuid string) *resource.StateChangeConf {
+func createNetworkDeviceLicenseStatusWaitConfiguration(fetchFunc getDevice, id string, delay time.Duration, timeout time.Duration) *resource.StateChangeConf {
+	pending := []string{
+		ne.DeviceLicenseStateApplying,
+		"",
+	}
+	target := []string{
+		ne.DeviceLicenseStateRegistered,
+		ne.DeviceLicenseStateApplied,
+	}
 	return &resource.StateChangeConf{
-		Pending: []string{
-			ne.DeviceLicenseStateApplying,
-			"",
-		},
-		Target: []string{
-			ne.DeviceLicenseStateRegistered,
-			ne.DeviceLicenseStateApplied,
-		},
+		Pending:    pending,
+		Target:     target,
 		Timeout:    timeout,
-		Delay:      5 * time.Second,
-		MinTimeout: 5 * time.Second,
+		Delay:      0,
+		MinTimeout: delay,
 		Refresh: func() (interface{}, string, error) {
-			resp, err := c.GetDevice(uuid)
+			resp, err := fetchFunc(id)
 			if err != nil {
 				return nil, "", err
 			}
 			return resp, resp.LicenseStatus, nil
+		},
+	}
+}
+
+func createNetworkDeviceACLStatusWaitConfiguration(fetchFunc getACL, id string, delay time.Duration, timeout time.Duration) *resource.StateChangeConf {
+	return &resource.StateChangeConf{
+		Pending: []string{
+			ne.ACLDeviceStatusProvisioning,
+		},
+		Target: []string{
+			ne.ACLDeviceStatusProvisioned,
+		},
+		Timeout:    timeout,
+		Delay:      0,
+		MinTimeout: delay,
+		Refresh: func() (interface{}, string, error) {
+			resp, err := fetchFunc(id)
+			if err != nil {
+				return nil, "", err
+			}
+			return resp, resp.DeviceACLStatus, nil
 		},
 	}
 }

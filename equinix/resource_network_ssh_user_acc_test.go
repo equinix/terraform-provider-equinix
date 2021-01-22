@@ -54,7 +54,7 @@ resource "equinix_network_ssh_user" "%{user-resourceName}" {
   password = "%{user-password}"
   device_ids = [
     equinix_network_device.%{device-resourceName}.id`, ctx)
-	if _, ok := ctx["secondary-name"]; ok {
+	if _, ok := ctx["device-secondary_name"]; ok {
 		config += nprintf(`,
     equinix_network_device.%{device-resourceName}.redundant_id`, ctx)
 	}

@@ -2,7 +2,10 @@ package equinix
 
 import (
 	"fmt"
+	"io"
+	"os"
 	"testing"
+	"time"
 
 	"github.com/equinix/ne-go"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
@@ -246,6 +249,7 @@ func TestNetworkDevice_expandSecondary(t *testing.T) {
 	}
 	input := []interface{}{
 		map[string]interface{}{
+			networkDeviceSchemaNames["UUID"]:                "0452fa68-8246-48b1-a1b2-817fb4baddcb",
 			networkDeviceSchemaNames["Name"]:                "device",
 			networkDeviceSchemaNames["MetroCode"]:           "SV",
 			networkDeviceSchemaNames["HostName"]:            "SV5",
@@ -267,6 +271,7 @@ func TestNetworkDevice_expandSecondary(t *testing.T) {
 		},
 	}
 	expected := &ne.Device{
+		UUID:                input[0].(map[string]interface{})[networkDeviceSchemaNames["UUID"]].(string),
 		Name:                input[0].(map[string]interface{})[networkDeviceSchemaNames["Name"]].(string),
 		MetroCode:           input[0].(map[string]interface{})[networkDeviceSchemaNames["MetroCode"]].(string),
 		HostName:            input[0].(map[string]interface{})[networkDeviceSchemaNames["HostName"]].(string),
@@ -286,4 +291,113 @@ func TestNetworkDevice_expandSecondary(t *testing.T) {
 	//then
 	assert.NotNil(t, out, "Output is not empty")
 	assert.Equal(t, expected, out, "Output matches expected result")
+}
+
+func TestNetworkDevice_uploadLicenseFile(t *testing.T) {
+	//given
+	fileName := "test.lic"
+	licenseFileID := "someTestID"
+	device := &ne.Device{LicenseFile: "/path/to/" + fileName, MetroCode: "SV", TypeCode: "VSRX"}
+	var rxMetroCode, rxFileName, rxTypeCode, rxMgmtMode, rxLicMode string
+	uploadFunc := func(metroCode, deviceTypeCode, deviceManagementMode, licenseMode, fileName string, reader io.Reader) (string, error) {
+		rxMetroCode = metroCode
+		rxFileName = fileName
+		rxTypeCode = deviceTypeCode
+		rxMgmtMode = deviceManagementMode
+		rxLicMode = licenseMode
+		return licenseFileID, nil
+	}
+	openFunc := func(name string) (*os.File, error) {
+		return &os.File{}, nil
+	}
+	//when
+	err := uploadDeviceLicenseFile(openFunc, uploadFunc, device.TypeCode, device)
+	//then
+	assert.Nil(t, err, "License upload function does not return any error")
+	assert.Equal(t, licenseFileID, device.LicenseFileID, "Device LicenseFileID matches")
+	assert.Equal(t, device.MetroCode, rxMetroCode, "Received metroCode matches")
+	assert.Equal(t, device.TypeCode, rxTypeCode, "Received typeCode matches")
+	assert.Equal(t, fileName, rxFileName, "Received fileName matches")
+	assert.Equal(t, ne.DeviceManagementTypeSelf, rxMgmtMode, "Received management mode matches")
+	assert.Equal(t, ne.DeviceLicenseModeBYOL, rxLicMode, "Received management mode matches")
+}
+
+func TestNetworkDevice_statusProvisioningWaitConfiguration(t *testing.T) {
+	//given
+	deviceID := "test"
+	var queriedDeviceID string
+	fetchFunc := func(uuid string) (*ne.Device, error) {
+		queriedDeviceID = uuid
+		return &ne.Device{Status: ne.DeviceStateProvisioned}, nil
+	}
+	delay := 100 * time.Millisecond
+	timeout := 10 * time.Minute
+	//when
+	waitConfig := createNetworkDeviceStatusProvisioningWaitConfiguration(fetchFunc, deviceID, delay, timeout)
+	_, err := waitConfig.WaitForState()
+	//then
+	assert.Nil(t, err, "WaitForState does not return an error")
+	assert.Equal(t, deviceID, queriedDeviceID, "Queried device ID matches")
+	assert.Equal(t, timeout, waitConfig.Timeout, "Device status wait configuration timeout matches")
+	assert.Equal(t, delay, waitConfig.MinTimeout, "Device status wait configuration min timeout matches")
+}
+
+func TestNetworkDevice_statusDeleteWaitConfiguration(t *testing.T) {
+	//given
+	deviceID := "test"
+	var queriedDeviceID string
+	fetchFunc := func(uuid string) (*ne.Device, error) {
+		queriedDeviceID = uuid
+		return &ne.Device{Status: ne.DeviceStateDeprovisioned}, nil
+	}
+	delay := 100 * time.Millisecond
+	timeout := 10 * time.Minute
+	//when
+	waitConfig := createNetworkDeviceStatusDeleteWaitConfiguration(fetchFunc, deviceID, delay, timeout)
+	_, err := waitConfig.WaitForState()
+	//then
+	assert.Nil(t, err, "WaitForState does not return an error")
+	assert.Equal(t, deviceID, queriedDeviceID, "Queried device ID matches")
+	assert.Equal(t, timeout, waitConfig.Timeout, "Device status wait configuration timeout matches")
+	assert.Equal(t, delay, waitConfig.MinTimeout, "Device status wait configuration min timeout matches")
+}
+
+func TestNetworkDevice_licenseStatusWaitConfiguration(t *testing.T) {
+	//given
+	deviceID := "test"
+	var queriedDeviceID string
+	fetchFunc := func(uuid string) (*ne.Device, error) {
+		queriedDeviceID = uuid
+		return &ne.Device{LicenseStatus: ne.DeviceLicenseStateApplied}, nil
+	}
+	delay := 100 * time.Millisecond
+	timeout := 10 * time.Minute
+	//when
+	waitConfig := createNetworkDeviceLicenseStatusWaitConfiguration(fetchFunc, deviceID, delay, timeout)
+	_, err := waitConfig.WaitForState()
+	//then
+	assert.Nil(t, err, "WaitForState does not return an error")
+	assert.Equal(t, deviceID, queriedDeviceID, "Queried device ID matches")
+	assert.Equal(t, timeout, waitConfig.Timeout, "Device status wait configuration timeout matches")
+	assert.Equal(t, delay, waitConfig.MinTimeout, "Device status wait configuration min timeout matches")
+}
+
+func TestNetworkDevice_ACLStatusWaitConfiguration(t *testing.T) {
+	//given
+	aclID := "test"
+	var receivedACLID string
+	fetchFunc := func(uuid string) (*ne.ACLTemplate, error) {
+		receivedACLID = uuid
+		return &ne.ACLTemplate{DeviceACLStatus: ne.ACLDeviceStatusProvisioned}, nil
+	}
+	delay := 100 * time.Millisecond
+	timeout := 10 * time.Minute
+	//when
+	waitConfig := createNetworkDeviceACLStatusWaitConfiguration(fetchFunc, aclID, delay, timeout)
+	_, err := waitConfig.WaitForState()
+	//then
+	assert.Nil(t, err, "WaitForState does not return an error")
+	assert.Equal(t, aclID, receivedACLID, "Queried ACL id matches")
+	assert.Equal(t, timeout, waitConfig.Timeout, "Device status wait configuration timeout matches")
+	assert.Equal(t, delay, waitConfig.MinTimeout, "Device status wait configuration min timeout matches")
 }
