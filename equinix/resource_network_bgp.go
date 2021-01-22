@@ -77,6 +77,7 @@ func createNetworkBGPResourceSchema() map[string]*schema.Schema {
 		networkBGPSchemaNames["AuthenticationKey"]: {
 			Type:         schema.TypeString,
 			Optional:     true,
+			Sensitive:    true,
 			ValidateFunc: validation.StringLenBetween(6, 60),
 		},
 		networkBGPSchemaNames["State"]: {
@@ -96,17 +97,11 @@ func resourceNetworkBGPCreate(d *schema.ResourceData, m interface{}) error {
 	existingBGP, err := conf.ne.GetBGPConfigurationForConnection(bgp.ConnectionUUID)
 	//Reuse existing configuration, as there was no possibility to remove it due to API limitations
 	if err == nil {
-		updateErr := conf.ne.NewBGPConfigurationUpdateRequest(existingBGP.UUID).
-			WithRemoteIPAddress(bgp.RemoteIPAddress).
-			WithRemoteASN(bgp.RemoteASN).
-			WithLocalIPAddress(bgp.LocalIPAddress).
-			WithLocalASN(bgp.LocalASN).
-			WithAuthenticationKey(bgp.AuthenticationKey).
-			Execute()
-		if updateErr != nil {
+		bgp.UUID = existingBGP.UUID
+		if updateErr := createNetworkBGPUpdateRequest(conf.ne.NewBGPConfigurationUpdateRequest, &bgp); updateErr != nil {
 			return fmt.Errorf("failed to update BGP configuration '%s': %s", existingBGP.UUID, updateErr)
 		}
-		d.SetId(existingBGP.UUID)
+		d.SetId(bgp.UUID)
 	} else {
 		restErr, ok := err.(rest.Error)
 		if !ok || restErr.HTTPCode != http.StatusNotFound {
@@ -118,26 +113,7 @@ func resourceNetworkBGPCreate(d *schema.ResourceData, m interface{}) error {
 		}
 		d.SetId(uuid)
 	}
-	createStateConf := &resource.StateChangeConf{
-		Pending: []string{
-			ne.BGPProvisioningStatusProvisioning,
-			ne.BGPProvisioningStatusPendingUpdate,
-		},
-		Target: []string{
-			ne.BGPProvisioningStatusProvisioned,
-		},
-		Timeout:    d.Timeout(schema.TimeoutCreate),
-		Delay:      2 * time.Second,
-		MinTimeout: 2 * time.Second,
-		Refresh: func() (interface{}, string, error) {
-			resp, err := conf.ne.GetBGPConfiguration(d.Id())
-			if err != nil {
-				return nil, "", err
-			}
-			return resp, resp.ProvisioningStatus, nil
-		},
-	}
-	if _, err := createStateConf.WaitForState(); err != nil {
+	if _, err := createBGPConfigStatusProvisioningWaitConfiguration(conf.ne.GetBGPConfiguration, d.Id(), 2*time.Second, d.Timeout(schema.TimeoutCreate)).WaitForState(); err != nil {
 		return fmt.Errorf("error waiting for BGP configuration (%s) to be created: %s", d.Id(), err)
 	}
 	return resourceNetworkBGPRead(d, m)
@@ -157,23 +133,8 @@ func resourceNetworkBGPRead(d *schema.ResourceData, m interface{}) error {
 
 func resourceNetworkBGPUpdate(d *schema.ResourceData, m interface{}) error {
 	conf := m.(*Config)
-	updateReq := conf.ne.NewBGPConfigurationUpdateRequest(d.Id())
-	if v, ok := d.GetOk(networkBGPSchemaNames["LocalIPAddress"]); ok {
-		updateReq.WithLocalIPAddress(v.(string))
-	}
-	if v, ok := d.GetOk(networkBGPSchemaNames["LocalASN"]); ok {
-		updateReq.WithLocalASN(v.(int))
-	}
-	if v, ok := d.GetOk(networkBGPSchemaNames["RemoteIPAddress"]); ok {
-		updateReq.WithRemoteIPAddress(v.(string))
-	}
-	if v, ok := d.GetOk(networkBGPSchemaNames["RemoteASN"]); ok {
-		updateReq.WithRemoteASN(v.(int))
-	}
-	if v, ok := d.GetOk(networkBGPSchemaNames["AuthenticationKey"]); ok {
-		updateReq.WithAuthenticationKey(v.(string))
-	}
-	if err := updateReq.Execute(); err != nil {
+	bgpConfig := createNetworkBGPConfiguration(d)
+	if err := createNetworkBGPUpdateRequest(conf.ne.NewBGPConfigurationUpdateRequest, &bgpConfig).Execute(); err != nil {
 		return err
 	}
 	return resourceNetworkBGPRead(d, m)
@@ -193,9 +154,6 @@ func createNetworkBGPConfiguration(d *schema.ResourceData) ne.BGPConfiguration {
 	if v, ok := d.GetOk(networkBGPSchemaNames["ConnectionUUID"]); ok {
 		bgp.ConnectionUUID = v.(string)
 	}
-	if v, ok := d.GetOk(networkBGPSchemaNames["DeviceUUID"]); ok {
-		bgp.DeviceUUID = v.(string)
-	}
 	if v, ok := d.GetOk(networkBGPSchemaNames["LocalIPAddress"]); ok {
 		bgp.LocalIPAddress = v.(string)
 	}
@@ -210,12 +168,6 @@ func createNetworkBGPConfiguration(d *schema.ResourceData) ne.BGPConfiguration {
 	}
 	if v, ok := d.GetOk(networkBGPSchemaNames["AuthenticationKey"]); ok {
 		bgp.AuthenticationKey = v.(string)
-	}
-	if v, ok := d.GetOk(networkBGPSchemaNames["State"]); ok {
-		bgp.State = v.(string)
-	}
-	if v, ok := d.GetOk(networkBGPSchemaNames["ProvisioningStatus"]); ok {
-		bgp.ProvisioningStatus = v.(string)
 	}
 	return bgp
 }
@@ -252,4 +204,39 @@ func updateNetworkBGPResource(bgp *ne.BGPConfiguration, d *schema.ResourceData) 
 		return fmt.Errorf("error reading ProvisioningStatus: %s", err)
 	}
 	return nil
+}
+
+type bgpUpdateRequest func(uuid string) ne.BGPUpdateRequest
+
+func createNetworkBGPUpdateRequest(requestFunc bgpUpdateRequest, bgp *ne.BGPConfiguration) ne.BGPUpdateRequest {
+	return requestFunc(bgp.UUID).
+		WithRemoteIPAddress(bgp.RemoteIPAddress).
+		WithRemoteASN(bgp.RemoteASN).
+		WithLocalIPAddress(bgp.LocalIPAddress).
+		WithLocalASN(bgp.LocalASN).
+		WithAuthenticationKey(bgp.AuthenticationKey)
+}
+
+type getBGPConfig func(uuid string) (*ne.BGPConfiguration, error)
+
+func createBGPConfigStatusProvisioningWaitConfiguration(fetchFunc getBGPConfig, id string, delay time.Duration, timeout time.Duration) *resource.StateChangeConf {
+	return &resource.StateChangeConf{
+		Pending: []string{
+			ne.BGPProvisioningStatusProvisioning,
+			ne.BGPProvisioningStatusPendingUpdate,
+		},
+		Target: []string{
+			ne.BGPProvisioningStatusProvisioned,
+		},
+		Timeout:    timeout,
+		Delay:      0,
+		MinTimeout: delay,
+		Refresh: func() (interface{}, string, error) {
+			resp, err := fetchFunc(id)
+			if err != nil {
+				return nil, "", err
+			}
+			return resp, resp.ProvisioningStatus, nil
+		},
+	}
 }
