@@ -10,64 +10,65 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
 )
 
-const (
-	spEnvVar      = "TF_ACC_ECX_L2_SP_NAME"
-	authkeyEnvVar = "TF_ACC_ECX_L2_AUTHKEY"
-)
-
-func TestAccNeBGP(t *testing.T) {
+func TestAccNetworkBGP(t *testing.T) {
 	t.Parallel()
 	metro, _ := schema.EnvDefaultFunc(networkDeviceMetroEnvVar, "SV")()
-	spName, _ := schema.EnvDefaultFunc(spEnvVar, "AWS Direct Connect")()
-	authKey, _ := schema.EnvDefaultFunc(authkeyEnvVar, "123456789012")()
-	contextBasic := map[string]interface{}{
-		"device_resourceName":    "test",
-		"device_name":            fmt.Sprintf("%s-%s", tstResourcePrefix, randString(6)),
-		"device_throughput":      500,
-		"device_throughput_unit": "Mbps",
-		"device_metro_code":      metro.(string),
-		"device_type_code":       "CSR1000V",
-		"device_package_code":    "SEC",
-		"device_notifications":   []string{"marry@equinix.com", "john@equinix.com"},
-		"device_hostname":        fmt.Sprintf("tf-%s", randString(6)),
-		"device_term_length":     1,
-		"device_version":         "16.09.05",
-		"device_core_count":      2,
-		"conn_resourceName":      "test",
-		"conn_name":              fmt.Sprintf("%s-%s", tstResourcePrefix, randString(6)),
-		"conn_profile_name":      spName.(string),
-		"conn_speed":             50,
-		"conn_speed_unit":        "MB",
-		"conn_notifications":     []string{"marry@equinix.com", "john@equinix.com"},
-		"conn_authorization_key": authKey.(string),
-		"bgp_resourceName":       "test",
-		"bgp_local_ip_address":   "1.1.1.1/30",
-		"bgp_local_asn":          12345,
-		"bgp_remote_ip_address":  "1.1.1.2",
-		"bgp_remote_asn":         22211,
+	spName, _ := schema.EnvDefaultFunc(priSpEnvVar, "AWS Direct Connect")()
+	context := map[string]interface{}{
+		"device-resourceName":          "test",
+		"device-self_managed":          true,
+		"device-byol":                  true,
+		"device-name":                  fmt.Sprintf("%s-%s", tstResourcePrefix, randString(6)),
+		"device-throughput":            500,
+		"device-throughput_unit":       "Mbps",
+		"device-metro_code":            metro.(string),
+		"device-type_code":             "CSR1000V",
+		"device-package_code":          "SEC",
+		"device-notifications":         []string{"marry@equinix.com", "john@equinix.com"},
+		"device-hostname":              fmt.Sprintf("tf-%s", randString(6)),
+		"device-term_length":           1,
+		"device-version":               "16.09.05",
+		"device-core_count":            2,
+		"sshkey-resourceName":          "test",
+		"sshkey-name":                  fmt.Sprintf("%s-%s", tstResourcePrefix, randString(6)),
+		"sshkey-public_key":            "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQCXdzXBHaVpKpdO0udnB+4JOgUq7APO2rPXfrevvlZrps98AtlwXXVWZ5duRH5NFNfU4G9HCSiAPsebgjY0fG85tcShpXfHfACLt0tBW8XhfLQP2T6S50FQ1brBdURMDCMsD7duOXqvc0dlbs2/KcswHvuUmqVzob3bz7n1bQ48wIHsPg4ARqYhy5LN3OkllJH/6GEfqi8lKZx01/P/gmJMORcJujuOyXRB+F2iXBVYdhjML3Qg4+tEekBcVZOxUbERRZ0pvQ52Y6wUhn2VsjljixyqeOdmD0m6DayDQgSWms6bKPpBqN7zhXXk4qe8bXT4tQQba65b2CQ2A91jw2KgM/YZNmjyUJ+Rf1cQosJf9twqbAZDZ6rAEmj9zzvQ5vD/CGuzxdVMkePLlUK4VGjPu7cVzhXrnq4318WqZ5/lNiCST8NQ0fssChN8ANUzr/p/wwv3faFMVNmjxXTZMsbMFT/fbb2MVVuqNFN65drntlg6/xEao8gZROuRYiakBx8= user@host",
+		"connection-resourceName":      "test",
+		"connection-name":              fmt.Sprintf("%s-%s", tstResourcePrefix, randString(6)),
+		"connection-profile_name":      spName.(string),
+		"connection-speed":             50,
+		"connection-speed_unit":        "MB",
+		"connection-notifications":     []string{"marry@equinix.com", "john@equinix.com"},
+		"connection-seller_metro_code": "SV",
+		"connection-seller_region":     "us-west-1",
+		"connection-authorization_key": "123456789012",
+		"bgp-resourceName":             "test",
+		"bgp-local_ip_address":         "1.1.1.1/30",
+		"bgp-local_asn":                12345,
+		"bgp-remote_ip_address":        "1.1.1.2",
+		"bgp-remote_asn":               22211,
 	}
-	contextUpdate := copyMap(contextBasic)
-	contextUpdate["bgp_authentication_key"] = randString(10)
-	resourceName := fmt.Sprintf("equinix_network_bgp.%s", contextBasic["bgp_resourceName"].(string))
+	contextWithChanges := copyMap(context)
+	contextWithChanges["bgp-authentication_key"] = randString(10)
+	resourceName := fmt.Sprintf("equinix_network_bgp.%s", context["bgp-resourceName"].(string))
 	var bgpConfig ne.BGPConfiguration
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccNeBGP(contextBasic),
+				Config: newTestAccConfig(context).withDevice().withSSHKey().withConnection().withBGP().build(),
 				Check: resource.ComposeTestCheckFunc(
 					testAccNeBGPExists(resourceName, &bgpConfig),
-					testAccNeBGPAttributes(&bgpConfig, contextBasic),
+					testAccNeBGPAttributes(&bgpConfig, context),
 					resource.TestCheckResourceAttrSet(resourceName, "uuid"),
 					resource.TestCheckResourceAttr(resourceName, "provisioning_status", ne.BGPProvisioningStatusProvisioned),
 				),
 			},
 			{
-				Config: testAccNeBGPUpdate(contextUpdate),
+				Config: newTestAccConfig(contextWithChanges).withDevice().withSSHKey().withConnection().withBGP().build(),
 				Check: resource.ComposeTestCheckFunc(
 					testAccNeBGPExists(resourceName, &bgpConfig),
-					testAccNeBGPAttributes(&bgpConfig, contextUpdate),
+					testAccNeBGPAttributes(&bgpConfig, contextWithChanges),
 					resource.TestCheckResourceAttrSet(resourceName, "uuid"),
 					resource.TestCheckResourceAttr(resourceName, "provisioning_status", ne.BGPProvisioningStatusPendingUpdate),
 				),
@@ -76,111 +77,42 @@ func TestAccNeBGP(t *testing.T) {
 	})
 }
 
-func testAccNeBGP(ctx map[string]interface{}) string {
-	return nprintf(`
-data "equinix_network_account" "test" {
-  metro_code = "%{device_metro_code}"
-  status     = "Active"
+func (t *testAccConfig) withBGP() *testAccConfig {
+	t.config += testAccNetworkBGP(t.ctx)
+	return t
 }
 
-resource "equinix_network_device" "%{device_resourceName}" {
-  name            = "%{device_name}"
-  throughput      = %{device_throughput}
-  throughput_unit = "%{device_throughput_unit}"
-  metro_code      = data.equinix_network_account.test.metro_code
-  type_code       = "%{device_type_code}"
-  package_code    = "%{device_package_code}"
-  notifications   = %{device_notifications}
-  hostname        = "%{device_hostname}"
-  term_length     = %{device_term_length}
-  account_number  = data.equinix_network_account.test.number
-  version         = "%{device_version}"
-  core_count      = %{device_core_count}
-}
-
-data "equinix_ecx_l2_sellerprofile" "test" {
-  name = "%{conn_profile_name}"
-}
-
-locals {
-  sp_first_metro        = tolist(data.equinix_ecx_l2_sellerprofile.test.metro)[0]
-  sp_first_metro_region = keys(local.sp_first_metro.regions)[0]
-}
-
-resource "equinix_ecx_l2_connection" "%{conn_resourceName}" {
-  name              = "%{conn_name}"
-  profile_uuid      = data.equinix_ecx_l2_sellerprofile.test.uuid
-  speed             = %{conn_speed}
-  speed_unit        = "%{conn_speed_unit}"
-  notifications     = %{conn_notifications}
-  device_uuid       = equinix_network_device.%{device_resourceName}.uuid
-  seller_region     = local.sp_first_metro_region
-  seller_metro_code = local.sp_first_metro.code
-  authorization_key = "%{conn_authorization_key}"
-}
-
-resource "equinix_network_bgp" "%{bgp_resourceName}" {
-  connection_id      = equinix_ecx_l2_connection.%{conn_resourceName}.id
-  local_ip_address   = "%{bgp_local_ip_address}"
-  local_asn          = %{bgp_local_asn}
-  remote_ip_address  = "%{bgp_remote_ip_address}"
-  remote_asn         = %{bgp_remote_asn}
-}
-`, ctx)
-}
-
-func testAccNeBGPUpdate(ctx map[string]interface{}) string {
-	return nprintf(`
-data "equinix_network_account" "test" {
-  metro_code = "%{device_metro_code}"
-  status     = "Active"
-}
-
-resource "equinix_network_device" "%{device_resourceName}" {
-  name            = "%{device_name}"
-  throughput      = %{device_throughput}
-  throughput_unit = "%{device_throughput_unit}"
-  metro_code      = data.equinix_network_account.test.metro_code
-  type_code       = "%{device_type_code}"
-  package_code    = "%{device_package_code}"
-  notifications   = %{device_notifications}
-  hostname        = "%{device_hostname}"
-  term_length     = %{device_term_length}
-  account_number  = data.equinix_network_account.test.number
-  version         = "%{device_version}"
-  core_count      = %{device_core_count}
-}
-
-data "equinix_ecx_l2_sellerprofile" "test" {
-  name = "%{conn_profile_name}"
-}
-
-locals {
-  sp_first_metro        = tolist(data.equinix_ecx_l2_sellerprofile.test.metro)[0]
-  sp_first_metro_region = keys(local.sp_first_metro.regions)[0]
-}
-
-resource "equinix_ecx_l2_connection" "%{conn_resourceName}" {
-  name              = "%{conn_name}"
-  profile_uuid      = data.equinix_ecx_l2_sellerprofile.test.uuid
-  speed             = %{conn_speed}
-  speed_unit        = "%{conn_speed_unit}"
-  notifications     = %{conn_notifications}
-  device_uuid       = equinix_network_device.%{device_resourceName}.uuid
-  seller_region     = local.sp_first_metro_region
-  seller_metro_code = local.sp_first_metro.code
-  authorization_key = "%{conn_authorization_key}"
-}
-
-resource "equinix_network_bgp" "%{bgp_resourceName}" {
-  connection_id      = equinix_ecx_l2_connection.%{conn_resourceName}.id
-  local_ip_address   = "%{bgp_local_ip_address}"
-  local_asn          = %{bgp_local_asn}
-  remote_ip_address  = "%{bgp_remote_ip_address}"
-  remote_asn         = %{bgp_remote_asn}
-  authentication_key = "%{bgp_authentication_key}"
-}
-`, ctx)
+func testAccNetworkBGP(ctx map[string]interface{}) string {
+	var config string
+	config += nprintf(`
+resource "equinix_network_bgp" "%{bgp-resourceName}" {
+  connection_id      = equinix_ecx_l2_connection.%{connection-resourceName}.id
+  local_ip_address   = "%{bgp-local_ip_address}"
+  local_asn          = %{bgp-local_asn}
+  remote_ip_address  = "%{bgp-remote_ip_address}"
+  remote_asn         = %{bgp-remote_asn}`, ctx)
+	if _, ok := ctx["bgp-authentication_key"]; ok {
+		config += nprintf(`
+  authentication_key = "%{bgp-authentication_key}"`, ctx)
+	}
+	config += `
+}`
+	if _, ok := ctx["connection-secondary_name"]; ok {
+		config += nprintf(`
+resource "equinix_network_bgp" "%{bgp-secondary_resourceName}" {
+  connection_id      = equinix_ecx_l2_connection.%{connection-resourceName}.id
+  local_ip_address   = "%{bgp-secondary_local_ip_address}"
+  local_asn          = %{bgp-secondary_local_asn}
+  remote_ip_address  = "%{bgp-secondary_remote_ip_address}"
+  remote_asn         = %{bgp-secondary_remote_asn}`, ctx)
+		if _, ok := ctx["bgp-secondary_authentication_key"]; ok {
+			config += nprintf(`
+  authentication_key = "%{bgp-secondary_authentication_key}"`, ctx)
+		}
+		config += `
+}`
+	}
+	return config
 }
 
 func testAccNeBGPExists(resourceName string, bgpConfig *ne.BGPConfiguration) resource.TestCheckFunc {
@@ -204,22 +136,22 @@ func testAccNeBGPExists(resourceName string, bgpConfig *ne.BGPConfiguration) res
 
 func testAccNeBGPAttributes(bgpConfig *ne.BGPConfiguration, ctx map[string]interface{}) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
-		if v, ok := ctx["bgp_local_ip_address"]; ok && bgpConfig.LocalIPAddress != v.(string) {
+		if v, ok := ctx["bgp-local_ip_address"]; ok && bgpConfig.LocalIPAddress != v.(string) {
 			return fmt.Errorf("local_ip_address does not match %v - %v", bgpConfig.LocalIPAddress, v)
 		}
-		if v, ok := ctx["bgp_local_asn"]; ok && bgpConfig.LocalASN != v.(int) {
+		if v, ok := ctx["bgp-local_asn"]; ok && bgpConfig.LocalASN != v.(int) {
 			return fmt.Errorf("local_asn does not match %v - %v", bgpConfig.LocalASN, v)
 		}
-		if v, ok := ctx["bgp_remote_ip_address"]; ok && bgpConfig.RemoteIPAddress != v.(string) {
+		if v, ok := ctx["bgp-remote_ip_address"]; ok && bgpConfig.RemoteIPAddress != v.(string) {
 			return fmt.Errorf("remote_ip_address does not match %v - %v", bgpConfig.RemoteIPAddress, v)
 		}
-		if v, ok := ctx["bgp_remote_asn"]; ok && bgpConfig.RemoteASN != v.(int) {
+		if v, ok := ctx["bgp-remote_asn"]; ok && bgpConfig.RemoteASN != v.(int) {
 			return fmt.Errorf("remote_asn does not match %v - %v", bgpConfig.RemoteASN, v)
 		}
-		if v, ok := ctx["bgp_authentication_key"]; ok && bgpConfig.AuthenticationKey != v.(string) {
+		if v, ok := ctx["bgp-authentication_key"]; ok && bgpConfig.AuthenticationKey != v.(string) {
 			return fmt.Errorf("authentication_key does not match %v - %v", bgpConfig.AuthenticationKey, v)
 		}
-		if v, ok := ctx["conn_resourceName"]; ok {
+		if v, ok := ctx["connection-resourceName"]; ok {
 			connResourceName := "equinix_ecx_l2_connection." + v.(string)
 			rs, ok := s.RootModule().Resources[connResourceName]
 			if !ok {
@@ -229,7 +161,7 @@ func testAccNeBGPAttributes(bgpConfig *ne.BGPConfiguration, ctx map[string]inter
 				return fmt.Errorf("connection_id does not match %v - %v", bgpConfig.ConnectionUUID, rs.Primary.ID)
 			}
 		}
-		if v, ok := ctx["device_resourceName"]; ok {
+		if v, ok := ctx["device-resourceName"]; ok {
 			deviceResourceName := "equinix_network_device." + v.(string)
 			rs, ok := s.RootModule().Resources[deviceResourceName]
 			if !ok {

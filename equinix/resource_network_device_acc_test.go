@@ -467,12 +467,18 @@ resource "equinix_network_device" "%{device-resourceName}" {
   term_length           = %{device-term_length}
   account_number        = data.equinix_network_account.test.number
   version               = "%{device-version}"
-  core_count            = %{device-core_count}
-  purchase_order_number = "%{device-purchase_order_number}"
+  core_count            = %{device-core_count}`, ctx)
+	if _, ok := ctx["device-purchase_order_number"]; ok {
+		config += nprintf(`
+  purchase_order_number = "%{device-purchase_order_number}"`, ctx)
+	}
+	if _, ok := ctx["device-purchase_order_number"]; ok {
+		config += nprintf(`
   order_reference       = "%{device-order_reference}"`, ctx)
+	}
 	if _, ok := ctx["device-additional_bandwidth"]; ok {
 		config += nprintf(`
-  additional_bandwidth       = "%{device-additional_bandwidth}"`, ctx)
+  additional_bandwidth  = "%{device-additional_bandwidth}"`, ctx)
 	}
 	if _, ok := ctx["device-throughput"]; ok {
 		config += nprintf(`
