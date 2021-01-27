@@ -470,10 +470,10 @@ func resourceNetworkDeviceCreate(d *schema.ResourceData, m interface{}) error {
 	conf := m.(*Config)
 	primary, secondary := createNetworkDevices(d)
 	var err error
-	if err := uploadDeviceLicenseFile(os.Open, conf.ne.UploadLicenseFile, primary.TypeCode, primary); err != nil {
+	if err := uploadDeviceLicenseFile(os.Open, conf.ne.UploadLicenseFile, ne.StringValue(primary.TypeCode), primary); err != nil {
 		return fmt.Errorf("could not upload primary device license file due to %s", err)
 	}
-	if err := uploadDeviceLicenseFile(os.Open, conf.ne.UploadLicenseFile, primary.TypeCode, secondary); err != nil {
+	if err := uploadDeviceLicenseFile(os.Open, conf.ne.UploadLicenseFile, ne.StringValue(primary.TypeCode), secondary); err != nil {
 		return fmt.Errorf("could not upload secondary device license file due to %s", err)
 	}
 	if secondary != nil {
@@ -484,24 +484,24 @@ func resourceNetworkDeviceCreate(d *schema.ResourceData, m interface{}) error {
 	if err != nil {
 		return err
 	}
-	d.SetId(primary.UUID)
+	d.SetId(ne.StringValue(primary.UUID))
 	waitConfigs := []*resource.StateChangeConf{
-		createNetworkDeviceStatusProvisioningWaitConfiguration(conf.ne.GetDevice, primary.UUID, 5*time.Second, d.Timeout(schema.TimeoutCreate)),
-		createNetworkDeviceLicenseStatusWaitConfiguration(conf.ne.GetDevice, primary.UUID, 5*time.Second, d.Timeout(schema.TimeoutCreate)),
+		createNetworkDeviceStatusProvisioningWaitConfiguration(conf.ne.GetDevice, ne.StringValue(primary.UUID), 5*time.Second, d.Timeout(schema.TimeoutCreate)),
+		createNetworkDeviceLicenseStatusWaitConfiguration(conf.ne.GetDevice, ne.StringValue(primary.UUID), 5*time.Second, d.Timeout(schema.TimeoutCreate)),
 	}
-	if primary.ACLTemplateUUID != "" {
+	if ne.StringValue(primary.ACLTemplateUUID) != "" {
 		waitConfigs = append(waitConfigs,
-			createNetworkDeviceACLStatusWaitConfiguration(conf.ne.GetACLTemplate, primary.ACLTemplateUUID, 1*time.Second, d.Timeout(schema.TimeoutUpdate)),
+			createNetworkDeviceACLStatusWaitConfiguration(conf.ne.GetACLTemplate, ne.StringValue(primary.ACLTemplateUUID), 1*time.Second, d.Timeout(schema.TimeoutUpdate)),
 		)
 	}
 	if secondary != nil {
 		waitConfigs = append(waitConfigs,
-			createNetworkDeviceStatusProvisioningWaitConfiguration(conf.ne.GetDevice, secondary.UUID, 5*time.Second, d.Timeout(schema.TimeoutCreate)),
-			createNetworkDeviceLicenseStatusWaitConfiguration(conf.ne.GetDevice, secondary.UUID, 5*time.Second, d.Timeout(schema.TimeoutCreate)),
+			createNetworkDeviceStatusProvisioningWaitConfiguration(conf.ne.GetDevice, ne.StringValue(secondary.UUID), 5*time.Second, d.Timeout(schema.TimeoutCreate)),
+			createNetworkDeviceLicenseStatusWaitConfiguration(conf.ne.GetDevice, ne.StringValue(secondary.UUID), 5*time.Second, d.Timeout(schema.TimeoutCreate)),
 		)
-		if secondary.ACLTemplateUUID != "" {
+		if ne.StringValue(secondary.ACLTemplateUUID) != "" {
 			waitConfigs = append(waitConfigs,
-				createNetworkDeviceACLStatusWaitConfiguration(conf.ne.GetACLTemplate, secondary.ACLTemplateUUID, 1*time.Second, d.Timeout(schema.TimeoutUpdate)),
+				createNetworkDeviceACLStatusWaitConfiguration(conf.ne.GetACLTemplate, ne.StringValue(secondary.ACLTemplateUUID), 1*time.Second, d.Timeout(schema.TimeoutUpdate)),
 			)
 		}
 	}
@@ -510,7 +510,7 @@ func resourceNetworkDeviceCreate(d *schema.ResourceData, m interface{}) error {
 			continue
 		}
 		if _, err := config.WaitForState(); err != nil {
-			return fmt.Errorf("error waiting for network device (%s) to be created: %s", primary.UUID, err)
+			return fmt.Errorf("error waiting for network device (%s) to be created: %s", ne.StringValue(primary.UUID), err)
 		}
 	}
 	return resourceNetworkDeviceRead(d, m)
@@ -524,12 +524,12 @@ func resourceNetworkDeviceRead(d *schema.ResourceData, m interface{}) error {
 	if err != nil {
 		return fmt.Errorf("cannot fetch primary network device due to %v", err)
 	}
-	if primary.Status == ne.DeviceStateDeprovisioning || primary.Status == ne.DeviceStateDeprovisioned {
+	if isStringInSlice(ne.StringValue(primary.Status), []string{ne.DeviceStateDeprovisioning, ne.DeviceStateDeprovisioned}) {
 		d.SetId("")
 		return nil
 	}
-	if primary.RedundantUUID != "" {
-		secondary, err = conf.ne.GetDevice(primary.RedundantUUID)
+	if ne.StringValue(primary.RedundantUUID) != "" {
+		secondary, err = conf.ne.GetDevice(ne.StringValue(primary.RedundantUUID))
 		if err != nil {
 			return fmt.Errorf("cannot fetch secondary network device due to %v", err)
 		}
@@ -558,12 +558,12 @@ func resourceNetworkDeviceUpdate(d *schema.ResourceData, m interface{}) error {
 			return err
 		}
 	}
-	for _, stateChangeConf := range getNetworkDeviceStateChangeConfigs(conf.ne, d, primaryChanges) {
+	for _, stateChangeConf := range getNetworkDeviceStateChangeConfigs(conf.ne, d.Id(), d.Timeout(schema.TimeoutUpdate), primaryChanges) {
 		if _, err := stateChangeConf.WaitForState(); err != nil {
 			return fmt.Errorf("error waiting for network device %q to be updated: %s", d.Id(), err)
 		}
 	}
-	for _, stateChangeConf := range getNetworkDeviceStateChangeConfigs(conf.ne, d, secondaryChanges) {
+	for _, stateChangeConf := range getNetworkDeviceStateChangeConfigs(conf.ne, d.Get(networkDeviceSchemaNames["RedundantUUID"]).(string), d.Timeout(schema.TimeoutUpdate), secondaryChanges) {
 		if _, err := stateChangeConf.WaitForState(); err != nil {
 			return fmt.Errorf("error waiting for network device %q to be updated: %s", d.Get(networkDeviceSchemaNames["RedundantUUID"]), err)
 		}
@@ -580,9 +580,9 @@ func resourceNetworkDeviceDelete(d *schema.ResourceData, m interface{}) error {
 	}
 	if v, ok := d.GetOk(networkDeviceSchemaNames["Secondary"]); ok {
 		if secondary := expandNetworkDeviceSecondary(v.([]interface{})); secondary != nil {
-			if secondary.ACLTemplateUUID != "" {
-				if err := conf.ne.NewDeviceUpdateRequest(secondary.UUID).WithACLTemplate("").Execute(); err != nil {
-					log.Printf("[WARN] could not unassign ACL template %q from device %q: %s", v, secondary.UUID, err)
+			if ne.StringValue(secondary.ACLTemplateUUID) != "" {
+				if err := conf.ne.NewDeviceUpdateRequest(ne.StringValue(secondary.UUID)).WithACLTemplate("").Execute(); err != nil {
+					log.Printf("[WARN] could not unassign ACL template %q from device %q: %s", v, ne.StringValue(secondary.UUID), err)
 				}
 			}
 		}
@@ -607,67 +607,67 @@ func createNetworkDevices(d *schema.ResourceData) (*ne.Device, *ne.Device) {
 	var primary, secondary *ne.Device
 	primary = &ne.Device{}
 	if v, ok := d.GetOk(networkDeviceSchemaNames["Name"]); ok {
-		primary.Name = v.(string)
+		primary.Name = ne.String(v.(string))
 	}
 	if v, ok := d.GetOk(networkDeviceSchemaNames["TypeCode"]); ok {
-		primary.TypeCode = v.(string)
+		primary.TypeCode = ne.String(v.(string))
 	}
 	if v, ok := d.GetOk(networkDeviceSchemaNames["MetroCode"]); ok {
-		primary.MetroCode = v.(string)
+		primary.MetroCode = ne.String(v.(string))
 	}
 	if v, ok := d.GetOk(networkDeviceSchemaNames["Throughput"]); ok {
-		primary.Throughput = v.(int)
+		primary.Throughput = ne.Int(v.(int))
 	}
 	if v, ok := d.GetOk(networkDeviceSchemaNames["ThroughputUnit"]); ok {
-		primary.ThroughputUnit = v.(string)
+		primary.ThroughputUnit = ne.String(v.(string))
 	}
 	if v, ok := d.GetOk(networkDeviceSchemaNames["HostName"]); ok {
-		primary.HostName = v.(string)
+		primary.HostName = ne.String(v.(string))
 	}
 	if v, ok := d.GetOk(networkDeviceSchemaNames["PackageCode"]); ok {
-		primary.PackageCode = v.(string)
+		primary.PackageCode = ne.String(v.(string))
 	}
 	if v, ok := d.GetOk(networkDeviceSchemaNames["Version"]); ok {
-		primary.Version = v.(string)
+		primary.Version = ne.String(v.(string))
 	}
 	if v, ok := d.GetOk(networkDeviceSchemaNames["IsBYOL"]); ok {
-		primary.IsBYOL = v.(bool)
+		primary.IsBYOL = ne.Bool(v.(bool))
 	}
 	if v, ok := d.GetOk(networkDeviceSchemaNames["LicenseToken"]); ok {
-		primary.LicenseToken = v.(string)
+		primary.LicenseToken = ne.String(v.(string))
 	}
 	if v, ok := d.GetOk(networkDeviceSchemaNames["LicenseFile"]); ok {
-		primary.LicenseFile = v.(string)
+		primary.LicenseFile = ne.String(v.(string))
 	}
 	if v, ok := d.GetOk(networkDeviceSchemaNames["ACLTemplateUUID"]); ok {
-		primary.ACLTemplateUUID = v.(string)
+		primary.ACLTemplateUUID = ne.String(v.(string))
 	}
 	if v, ok := d.GetOk(networkDeviceSchemaNames["AccountNumber"]); ok {
-		primary.AccountNumber = v.(string)
+		primary.AccountNumber = ne.String(v.(string))
 	}
 	if v, ok := d.GetOk(networkDeviceSchemaNames["Notifications"]); ok {
 		primary.Notifications = expandSetToStringList(v.(*schema.Set))
 	}
 	if v, ok := d.GetOk(networkDeviceSchemaNames["PurchaseOrderNumber"]); ok {
-		primary.PurchaseOrderNumber = v.(string)
+		primary.PurchaseOrderNumber = ne.String(v.(string))
 	}
 	if v, ok := d.GetOk(networkDeviceSchemaNames["TermLength"]); ok {
-		primary.TermLength = v.(int)
+		primary.TermLength = ne.Int(v.(int))
 	}
 	if v, ok := d.GetOk(networkDeviceSchemaNames["AdditionalBandwidth"]); ok {
-		primary.AdditionalBandwidth = v.(int)
+		primary.AdditionalBandwidth = ne.Int(v.(int))
 	}
 	if v, ok := d.GetOk(networkDeviceSchemaNames["OrderReference"]); ok {
-		primary.OrderReference = v.(string)
+		primary.OrderReference = ne.String(v.(string))
 	}
 	if v, ok := d.GetOk(networkDeviceSchemaNames["InterfaceCount"]); ok {
-		primary.InterfaceCount = v.(int)
+		primary.InterfaceCount = ne.Int(v.(int))
 	}
 	if v, ok := d.GetOk(networkDeviceSchemaNames["CoreCount"]); ok {
-		primary.CoreCount = v.(int)
+		primary.CoreCount = ne.Int(v.(int))
 	}
 	if v, ok := d.GetOk(networkDeviceSchemaNames["IsSelfManaged"]); ok {
-		primary.IsSelfManaged = v.(bool)
+		primary.IsSelfManaged = ne.Bool(v.(bool))
 	}
 	if v, ok := d.GetOk(networkDeviceSchemaNames["VendorConfiguration"]); ok {
 		primary.VendorConfiguration = expandInterfaceMapToStringMap(v.(map[string]interface{}))
@@ -831,34 +831,34 @@ func expandNetworkDeviceSecondary(devices []interface{}) *ne.Device {
 	device := devices[0].(map[string]interface{})
 	transformed := &ne.Device{}
 	if v, ok := device[networkDeviceSchemaNames["UUID"]]; ok {
-		transformed.UUID = v.(string)
+		transformed.UUID = ne.String(v.(string))
 	}
 	if v, ok := device[networkDeviceSchemaNames["Name"]]; ok {
-		transformed.Name = v.(string)
+		transformed.Name = ne.String(v.(string))
 	}
 	if v, ok := device[networkDeviceSchemaNames["MetroCode"]]; ok {
-		transformed.MetroCode = v.(string)
+		transformed.MetroCode = ne.String(v.(string))
 	}
 	if v, ok := device[networkDeviceSchemaNames["HostName"]]; ok {
-		transformed.HostName = v.(string)
+		transformed.HostName = ne.String(v.(string))
 	}
 	if v, ok := device[networkDeviceSchemaNames["LicenseToken"]]; ok {
-		transformed.LicenseToken = v.(string)
+		transformed.LicenseToken = ne.String(v.(string))
 	}
 	if v, ok := device[networkDeviceSchemaNames["LicenseFile"]]; ok {
-		transformed.LicenseFile = v.(string)
+		transformed.LicenseFile = ne.String(v.(string))
 	}
 	if v, ok := device[networkDeviceSchemaNames["ACLTemplateUUID"]]; ok {
-		transformed.ACLTemplateUUID = v.(string)
+		transformed.ACLTemplateUUID = ne.String(v.(string))
 	}
 	if v, ok := device[networkDeviceSchemaNames["AccountNumber"]]; ok {
-		transformed.AccountNumber = v.(string)
+		transformed.AccountNumber = ne.String(v.(string))
 	}
 	if v, ok := device[networkDeviceSchemaNames["Notifications"]]; ok {
 		transformed.Notifications = expandSetToStringList(v.(*schema.Set))
 	}
 	if v, ok := device[networkDeviceSchemaNames["AdditionalBandwidth"]]; ok {
-		transformed.AdditionalBandwidth = v.(int)
+		transformed.AdditionalBandwidth = ne.Int(v.(int))
 	}
 	if v, ok := device[networkDeviceSchemaNames["VendorConfiguration"]]; ok {
 		transformed.VendorConfiguration = expandInterfaceMapToStringMap(v.(map[string]interface{}))
@@ -908,8 +908,8 @@ func expandNetworkDeviceUserKeys(userKeys *schema.Set) []*ne.DeviceUserPublicKey
 	for i := range userKeysList {
 		userKeyMap := userKeysList[i].(map[string]interface{})
 		transformed[i] = &ne.DeviceUserPublicKey{
-			Username: userKeyMap[neDeviceUserKeySchemaNames["Username"]].(string),
-			KeyName:  userKeyMap[neDeviceUserKeySchemaNames["KeyName"]].(string),
+			Username: ne.String(userKeyMap[neDeviceUserKeySchemaNames["Username"]].(string)),
+			KeyName:  ne.String(userKeyMap[neDeviceUserKeySchemaNames["KeyName"]].(string)),
 		}
 	}
 	return transformed
@@ -933,17 +933,21 @@ func fillNetworkDeviceUpdateRequest(updateReq ne.DeviceUpdateRequest, changes ma
 	return updateReq
 }
 
-func getNetworkDeviceStateChangeConfigs(c ne.Client, d *schema.ResourceData, changes map[string]interface{}) []*resource.StateChangeConf {
+func getNetworkDeviceStateChangeConfigs(c ne.Client, deviceID string, timeout time.Duration, changes map[string]interface{}) []*resource.StateChangeConf {
 	configs := make([]*resource.StateChangeConf, 0, len(changes))
 	for change, changeValue := range changes {
 		switch change {
-		case "ACLTemplateUUID":
+		case networkDeviceSchemaNames["ACLTemplateUUID"]:
 			aclTempID, ok := changeValue.(string)
 			if !ok || aclTempID == "" {
 				break
 			}
 			configs = append(configs,
-				createNetworkDeviceACLStatusWaitConfiguration(c.GetACLTemplate, aclTempID, 1*time.Second, d.Timeout(schema.TimeoutUpdate)),
+				createNetworkDeviceACLStatusWaitConfiguration(c.GetACLTemplate, aclTempID, 1*time.Second, timeout),
+			)
+		case networkDeviceSchemaNames["AdditionalBandwidth"]:
+			configs = append(configs,
+				createNetworkDeviceAdditionalBandwidthStatusWaitConfiguration(c.GetDeviceAdditionalBandwidthDetails, deviceID, 1*time.Second, timeout),
 			)
 		}
 	}
@@ -951,23 +955,23 @@ func getNetworkDeviceStateChangeConfigs(c ne.Client, d *schema.ResourceData, cha
 }
 
 type openFile func(name string) (*os.File, error)
-type uploadLicenseFile func(metroCode, deviceTypeCode, deviceManagementMode, licenseMode, fileName string, reader io.Reader) (string, error)
+type uploadLicenseFile func(metroCode, deviceTypeCode, deviceManagementMode, licenseMode, fileName string, reader io.Reader) (*string, error)
 
 func uploadDeviceLicenseFile(openFunc openFile, uploadFunc uploadLicenseFile, typeCode string, device *ne.Device) error {
-	if device == nil || device.LicenseFile == "" {
+	if device == nil || ne.StringValue(device.LicenseFile) == "" {
 		return nil
 	}
-	fileName := filepath.Base(device.LicenseFile)
-	file, err := openFunc(device.LicenseFile)
+	fileName := filepath.Base(ne.StringValue(device.LicenseFile))
+	file, err := openFunc(ne.StringValue(device.LicenseFile))
 	if err != nil {
 		return err
 	}
 	defer func() {
 		if err := file.Close(); err != nil {
-			log.Printf("[WARN] could not close file %q due to an error: %s", device.LicenseFile, err)
+			log.Printf("[WARN] could not close file %q due to an error: %s", ne.StringValue(device.LicenseFile), err)
 		}
 	}()
-	fileID, err := uploadFunc(device.MetroCode, typeCode, ne.DeviceManagementTypeSelf, ne.DeviceLicenseModeBYOL, fileName, file)
+	fileID, err := uploadFunc(ne.StringValue(device.MetroCode), typeCode, ne.DeviceManagementTypeSelf, ne.DeviceLicenseModeBYOL, fileName, file)
 	if err != nil {
 		return err
 	}
@@ -977,6 +981,7 @@ func uploadDeviceLicenseFile(openFunc openFile, uploadFunc uploadLicenseFile, ty
 
 type getDevice func(uuid string) (*ne.Device, error)
 type getACL func(uuid string) (*ne.ACLTemplate, error)
+type getAdditionalBandwidthDetails func(uuid string) (*ne.DeviceAdditionalBandwidthDetails, error)
 
 func createNetworkDeviceStatusProvisioningWaitConfiguration(fetchFunc getDevice, id string, delay time.Duration, timeout time.Duration) *resource.StateChangeConf {
 	pending := []string{
@@ -1012,7 +1017,7 @@ func createNetworkDeviceStatusWaitConfiguration(fetchFunc getDevice, id string, 
 			if err != nil {
 				return nil, "", err
 			}
-			return resp, resp.Status, nil
+			return resp, ne.StringValue(resp.Status), nil
 		},
 	}
 }
@@ -1037,7 +1042,7 @@ func createNetworkDeviceLicenseStatusWaitConfiguration(fetchFunc getDevice, id s
 			if err != nil {
 				return nil, "", err
 			}
-			return resp, resp.LicenseStatus, nil
+			return resp, ne.StringValue(resp.LicenseStatus), nil
 		},
 	}
 }
@@ -1058,7 +1063,28 @@ func createNetworkDeviceACLStatusWaitConfiguration(fetchFunc getACL, id string, 
 			if err != nil {
 				return nil, "", err
 			}
-			return resp, resp.DeviceACLStatus, nil
+			return resp, ne.StringValue(resp.DeviceACLStatus), nil
+		},
+	}
+}
+
+func createNetworkDeviceAdditionalBandwidthStatusWaitConfiguration(fetchFunc getAdditionalBandwidthDetails, deviceID string, delay time.Duration, timeout time.Duration) *resource.StateChangeConf {
+	return &resource.StateChangeConf{
+		Pending: []string{
+			ne.DeviceAdditionalBandwidthStatusProvisioning,
+		},
+		Target: []string{
+			ne.DeviceAdditionalBandwidthStatusProvisioned,
+		},
+		Timeout:    timeout,
+		Delay:      0,
+		MinTimeout: delay,
+		Refresh: func() (interface{}, string, error) {
+			resp, err := fetchFunc(deviceID)
+			if err != nil {
+				return nil, "", err
+			}
+			return resp, ne.StringValue(resp.Status), nil
 		},
 	}
 }

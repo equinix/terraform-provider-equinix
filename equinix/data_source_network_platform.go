@@ -90,10 +90,10 @@ func dataSourceNetworkDevicePlatformRead(d *schema.ResourceData, m interface{}) 
 	}
 	var filtered []ne.DevicePlatform
 	for _, platform := range platforms {
-		if v, ok := d.GetOk(networkDevicePlatformSchemaNames["Flavor"]); ok && platform.Flavor != v.(string) {
+		if v, ok := d.GetOk(networkDevicePlatformSchemaNames["Flavor"]); ok && ne.StringValue(platform.Flavor) != v.(string) {
 			continue
 		}
-		if v, ok := d.GetOk(networkDevicePlatformSchemaNames["CoreCount"]); ok && platform.CoreCount != v.(int) {
+		if v, ok := d.GetOk(networkDevicePlatformSchemaNames["CoreCount"]); ok && ne.IntValue(platform.CoreCount) != v.(int) {
 			continue
 		}
 		if v, ok := d.GetOk(networkDevicePlatformSchemaNames["PackageCodes"]); ok {
@@ -126,7 +126,7 @@ func dataSourceNetworkDevicePlatformRead(d *schema.ResourceData, m interface{}) 
 }
 
 func updateNetworkDevicePlatformResource(platform ne.DevicePlatform, typeCode string, d *schema.ResourceData) error {
-	d.SetId(fmt.Sprintf("%s-%s", typeCode, platform.Flavor))
+	d.SetId(fmt.Sprintf("%s-%s", typeCode, ne.StringValue(platform.Flavor)))
 	if err := d.Set(networkDevicePlatformSchemaNames["Flavor"], platform.Flavor); err != nil {
 		return fmt.Errorf("error reading Flavor: %s", err)
 	}

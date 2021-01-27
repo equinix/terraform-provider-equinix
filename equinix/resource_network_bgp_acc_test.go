@@ -136,20 +136,20 @@ func testAccNeBGPExists(resourceName string, bgpConfig *ne.BGPConfiguration) res
 
 func testAccNeBGPAttributes(bgpConfig *ne.BGPConfiguration, ctx map[string]interface{}) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
-		if v, ok := ctx["bgp-local_ip_address"]; ok && bgpConfig.LocalIPAddress != v.(string) {
-			return fmt.Errorf("local_ip_address does not match %v - %v", bgpConfig.LocalIPAddress, v)
+		if v, ok := ctx["bgp-local_ip_address"]; ok && ne.StringValue(bgpConfig.LocalIPAddress) != v.(string) {
+			return fmt.Errorf("local_ip_address does not match %v - %v", ne.StringValue(bgpConfig.LocalIPAddress), v)
 		}
-		if v, ok := ctx["bgp-local_asn"]; ok && bgpConfig.LocalASN != v.(int) {
-			return fmt.Errorf("local_asn does not match %v - %v", bgpConfig.LocalASN, v)
+		if v, ok := ctx["bgp-local_asn"]; ok && ne.IntValue(bgpConfig.LocalASN) != v.(int) {
+			return fmt.Errorf("local_asn does not match %v - %v", ne.IntValue(bgpConfig.LocalASN), v)
 		}
-		if v, ok := ctx["bgp-remote_ip_address"]; ok && bgpConfig.RemoteIPAddress != v.(string) {
-			return fmt.Errorf("remote_ip_address does not match %v - %v", bgpConfig.RemoteIPAddress, v)
+		if v, ok := ctx["bgp-remote_ip_address"]; ok && ne.StringValue(bgpConfig.RemoteIPAddress) != v.(string) {
+			return fmt.Errorf("remote_ip_address does not match %v - %v", ne.StringValue(bgpConfig.RemoteIPAddress), v)
 		}
-		if v, ok := ctx["bgp-remote_asn"]; ok && bgpConfig.RemoteASN != v.(int) {
-			return fmt.Errorf("remote_asn does not match %v - %v", bgpConfig.RemoteASN, v)
+		if v, ok := ctx["bgp-remote_asn"]; ok && ne.IntValue(bgpConfig.RemoteASN) != v.(int) {
+			return fmt.Errorf("remote_asn does not match %v - %v", ne.IntValue(bgpConfig.RemoteASN), v)
 		}
-		if v, ok := ctx["bgp-authentication_key"]; ok && bgpConfig.AuthenticationKey != v.(string) {
-			return fmt.Errorf("authentication_key does not match %v - %v", bgpConfig.AuthenticationKey, v)
+		if v, ok := ctx["bgp-authentication_key"]; ok && ne.StringValue(bgpConfig.AuthenticationKey) != v.(string) {
+			return fmt.Errorf("authentication_key does not match %v - %v", ne.StringValue(bgpConfig.AuthenticationKey), v)
 		}
 		if v, ok := ctx["connection-resourceName"]; ok {
 			connResourceName := "equinix_ecx_l2_connection." + v.(string)
@@ -157,7 +157,7 @@ func testAccNeBGPAttributes(bgpConfig *ne.BGPConfiguration, ctx map[string]inter
 			if !ok {
 				return fmt.Errorf("related connection resource not found: %s", connResourceName)
 			}
-			if bgpConfig.ConnectionUUID != rs.Primary.ID {
+			if ne.StringValue(bgpConfig.ConnectionUUID) != rs.Primary.ID {
 				return fmt.Errorf("connection_id does not match %v - %v", bgpConfig.ConnectionUUID, rs.Primary.ID)
 			}
 		}
@@ -167,7 +167,7 @@ func testAccNeBGPAttributes(bgpConfig *ne.BGPConfiguration, ctx map[string]inter
 			if !ok {
 				return fmt.Errorf("related device resource not found: %s", deviceResourceName)
 			}
-			if bgpConfig.DeviceUUID != rs.Primary.ID {
+			if ne.StringValue(bgpConfig.DeviceUUID) != rs.Primary.ID {
 				return fmt.Errorf("device_id does not match %v - %v", bgpConfig.DeviceUUID, rs.Primary.ID)
 			}
 		}

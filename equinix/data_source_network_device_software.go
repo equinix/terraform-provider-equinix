@@ -96,11 +96,11 @@ func dataSourceNetworkDeviceSoftwareRead(d *schema.ResourceData, m interface{}) 
 	for _, version := range versions {
 		if v, ok := d.GetOk(networkDeviceSoftwareSchemaNames["VersionRegex"]); ok {
 			r := regexp.MustCompile(v.(string))
-			if !r.MatchString(version.Version) {
+			if !r.MatchString(ne.StringValue(version.Version)) {
 				continue
 			}
 		}
-		if v, ok := d.GetOk(networkDeviceSoftwareSchemaNames["IsStable"]); ok && v.(bool) != version.IsStable {
+		if v, ok := d.GetOk(networkDeviceSoftwareSchemaNames["IsStable"]); ok && ne.Bool(v.(bool)) != version.IsStable {
 			continue
 		}
 		if !stringsFound(pkgCodes, version.PackageCodes) {
@@ -116,10 +116,10 @@ func dataSourceNetworkDeviceSoftwareRead(d *schema.ResourceData, m interface{}) 
 			return fmt.Errorf("network device software query returned more than one result, please try more specific search criteria")
 		}
 		sort.Slice(filtered, func(i, j int) bool {
-			iTime, _ := time.Parse(networkDeviceSoftwareDateLayout, filtered[i].Date)
-			jTime, _ := time.Parse(networkDeviceSoftwareDateLayout, filtered[j].Date)
+			iTime, _ := time.Parse(networkDeviceSoftwareDateLayout, ne.StringValue(filtered[i].Date))
+			jTime, _ := time.Parse(networkDeviceSoftwareDateLayout, ne.StringValue(filtered[j].Date))
 			if iTime.Unix() == jTime.Unix() {
-				return filtered[i].Version > filtered[j].Version
+				return ne.StringValue(filtered[i].Version) > ne.StringValue(filtered[j].Version)
 			}
 			return iTime.Unix() > jTime.Unix()
 		})
@@ -128,7 +128,7 @@ func dataSourceNetworkDeviceSoftwareRead(d *schema.ResourceData, m interface{}) 
 }
 
 func updateNetworkDeviceSoftwareResource(version ne.DeviceSoftwareVersion, typeCode string, d *schema.ResourceData) error {
-	d.SetId(fmt.Sprintf("%s-%s", typeCode, version.Version))
+	d.SetId(fmt.Sprintf("%s-%s", typeCode, ne.StringValue(version.Version)))
 	if err := d.Set(networkDeviceSoftwareSchemaNames["Version"], version.Version); err != nil {
 		return fmt.Errorf("error reading Version: %s", err)
 	}

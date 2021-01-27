@@ -11,12 +11,12 @@ import (
 func TestNetworkSSHKey_createFromResourceData(t *testing.T) {
 	//given
 	expected := ne.SSHPublicKey{
-		Name:  "testKey",
-		Value: "testKeyValue",
+		Name:  ne.String("testKey"),
+		Value: ne.String("testKeyValue"),
 	}
 	rawData := map[string]interface{}{
-		networkSSHKeySchemaNames["Name"]:  expected.Name,
-		networkSSHKeySchemaNames["Value"]: expected.Value,
+		networkSSHKeySchemaNames["Name"]:  ne.StringValue(expected.Name),
+		networkSSHKeySchemaNames["Value"]: ne.StringValue(expected.Value),
 	}
 	d := schema.TestResourceDataRaw(t, createNetworkSSHKeyResourceSchema(), rawData)
 	//when
@@ -28,16 +28,16 @@ func TestNetworkSSHKey_createFromResourceData(t *testing.T) {
 func TestNetworkSSHKey_updateResourceData(t *testing.T) {
 	//given
 	input := &ne.SSHPublicKey{
-		UUID:  "059c3020-aec5-44ca-816c-235435f16df9",
-		Name:  "testKey",
-		Value: "testKeyValue",
+		UUID:  ne.String("059c3020-aec5-44ca-816c-235435f16df9"),
+		Name:  ne.String("testKey"),
+		Value: ne.String("testKeyValue"),
 	}
 	d := schema.TestResourceDataRaw(t, createNetworkSSHKeyResourceSchema(), make(map[string]interface{}))
 	//when
 	err := updateNetworkSSHKeyResource(input, d)
 	//then
 	assert.Nil(t, err, "Update of resource data does not return error")
-	assert.Equal(t, input.UUID, d.Get(networkSSHKeySchemaNames["UUID"]), "UUID matches")
-	assert.Equal(t, input.Name, d.Get(networkSSHKeySchemaNames["Name"]), "Name matches")
-	assert.Equal(t, input.Value, d.Get(networkSSHKeySchemaNames["Value"]), "Value matches")
+	assert.Equal(t, ne.StringValue(input.UUID), d.Get(networkSSHKeySchemaNames["UUID"]), "UUID matches")
+	assert.Equal(t, ne.StringValue(input.Name), d.Get(networkSSHKeySchemaNames["Name"]), "Name matches")
+	assert.Equal(t, ne.StringValue(input.Value), d.Get(networkSSHKeySchemaNames["Value"]), "Value matches")
 }

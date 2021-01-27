@@ -34,14 +34,14 @@ func testSweepNetworkSSHKey(region string) error {
 	}
 	nonSweepableCount := 0
 	for _, key := range keys {
-		if !isSweepableTestResource(key.Name) {
+		if !isSweepableTestResource(ne.StringValue(key.Name)) {
 			nonSweepableCount++
 			continue
 		}
-		if err := config.ne.DeleteSSHPublicKey(key.UUID); err != nil {
-			log.Printf("[INFO][SWEEPER_LOG] error deleting NetworkSSHKey resource %s (%s): %s", key.UUID, key.Name, err)
+		if err := config.ne.DeleteSSHPublicKey(ne.StringValue(key.UUID)); err != nil {
+			log.Printf("[INFO][SWEEPER_LOG] error deleting NetworkSSHKey resource %s (%s): %s", ne.StringValue(key.UUID), ne.StringValue(key.Name), err)
 		} else {
-			log.Printf("[INFO][SWEEPER_LOG] sent delete request for NetworkSSHKey resource %s (%s)", key.UUID, key.Name)
+			log.Printf("[INFO][SWEEPER_LOG] sent delete request for NetworkSSHKey resource %s (%s)", ne.StringValue(key.UUID), ne.StringValue(key.Name))
 		}
 	}
 	if nonSweepableCount > 0 {
@@ -105,11 +105,11 @@ func testAccNetworkSSHKeyExists(resourceName string, key *ne.SSHPublicKey) resou
 
 func testAccNetworkSSHKeyAttributes(key *ne.SSHPublicKey, ctx map[string]interface{}) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
-		if v, ok := ctx["name"]; ok && key.Name != v.(string) {
-			return fmt.Errorf("name does not match %v - %v", key.Name, v)
+		if v, ok := ctx["name"]; ok && ne.StringValue(key.Name) != v.(string) {
+			return fmt.Errorf("name does not match %v - %v", ne.StringValue(key.Name), v)
 		}
-		if v, ok := ctx["public_key"]; ok && key.Value != v.(string) {
-			return fmt.Errorf("public_key does not match %v - %v", key.Value, v)
+		if v, ok := ctx["public_key"]; ok && ne.StringValue(key.Value) != v.(string) {
+			return fmt.Errorf("public_key does not match %v - %v", ne.StringValue(key.Value), v)
 		}
 		return nil
 	}

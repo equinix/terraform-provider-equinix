@@ -5,13 +5,15 @@ import (
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 )
 
 func TestAccNetworkAccountDataSource(t *testing.T) {
 	t.Parallel()
+	metro, _ := schema.EnvDefaultFunc(networkDeviceMetroEnvVar, "SV")()
 	context := map[string]interface{}{
 		"resourceName": "tf-account",
-		"metro_code":   "SV",
+		"metro_code":   metro.(string),
 		"status":       "active",
 	}
 	resourceName := fmt.Sprintf("data.equinix_network_account.%s", context["resourceName"].(string))

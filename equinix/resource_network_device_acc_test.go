@@ -45,17 +45,17 @@ func testSweepNetworkDevice(region string) error {
 	}
 	nonSweepableCount := 0
 	for _, device := range devices {
-		if !isSweepableTestResource(device.Name) {
+		if !isSweepableTestResource(ne.StringValue(device.Name)) {
 			nonSweepableCount++
 			continue
 		}
-		if device.RedundancyType != "PRIMARY" {
+		if ne.StringValue(device.RedundancyType) != "PRIMARY" {
 			continue
 		}
-		if err := config.ne.DeleteDevice(device.UUID); err != nil {
-			log.Printf("[INFO][SWEEPER_LOG] error deleting NetworkDevice resource %s (%s): %s", device.UUID, device.Name, err)
+		if err := config.ne.DeleteDevice(ne.StringValue(device.UUID)); err != nil {
+			log.Printf("[INFO][SWEEPER_LOG] error deleting NetworkDevice resource %s (%s): %s", ne.StringValue(device.UUID), ne.StringValue(device.Name), err)
 		} else {
-			log.Printf("[INFO][SWEEPER_LOG] sent delete request for NetworkDevice resource %s (%s)", device.UUID, device.Name)
+			log.Printf("[INFO][SWEEPER_LOG] sent delete request for NetworkDevice resource %s (%s)", ne.StringValue(device.UUID), ne.StringValue(device.Name))
 		}
 	}
 	if nonSweepableCount > 0 {
@@ -306,13 +306,13 @@ func testAccNeDeviceExists(resourceName string, device *ne.Device) resource.Test
 
 func testAccNeDeviceSecondaryExists(primary, secondary *ne.Device) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
-		if primary.RedundantUUID == "" {
+		if ne.StringValue(primary.RedundantUUID) == "" {
 			return fmt.Errorf("secondary device UUID is not set")
 		}
 		client := testAccProvider.Meta().(*Config).ne
-		resp, err := client.GetDevice(primary.RedundantUUID)
+		resp, err := client.GetDevice(ne.StringValue(primary.RedundantUUID))
 		if err != nil {
-			return fmt.Errorf("error when fetching network device '%s': %s", primary.RedundantUUID, err)
+			return fmt.Errorf("error when fetching network device '%s': %s", ne.StringValue(primary.RedundantUUID), err)
 		}
 		*secondary = *resp
 		return nil
@@ -321,53 +321,53 @@ func testAccNeDeviceSecondaryExists(primary, secondary *ne.Device) resource.Test
 
 func testAccNeDeviceAttributes(device *ne.Device, ctx map[string]interface{}) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
-		if v, ok := ctx["device-name"]; ok && device.Name != v.(string) {
-			return fmt.Errorf("name does not match %v - %v", device.Name, v)
+		if v, ok := ctx["device-name"]; ok && ne.StringValue(device.Name) != v.(string) {
+			return fmt.Errorf("name does not match %v - %v", ne.StringValue(device.Name), v)
 		}
-		if v, ok := ctx["device-self_managed"]; ok && device.IsSelfManaged != v.(bool) {
-			return fmt.Errorf("self_managed does not match %v - %v", device.IsSelfManaged, v)
+		if v, ok := ctx["device-self_managed"]; ok && ne.BoolValue(device.IsSelfManaged) != v.(bool) {
+			return fmt.Errorf("self_managed does not match %v - %v", ne.BoolValue(device.IsSelfManaged), v)
 		}
-		if v, ok := ctx["device-byol"]; ok && device.IsBYOL != v.(bool) {
-			return fmt.Errorf("byol does not match %v - %v", device.IsBYOL, v)
+		if v, ok := ctx["device-byol"]; ok && ne.BoolValue(device.IsBYOL) != v.(bool) {
+			return fmt.Errorf("byol does not match %v - %v", ne.BoolValue(device.IsBYOL), v)
 		}
-		if v, ok := ctx["device-throughput"]; ok && device.Throughput != v.(int) {
-			return fmt.Errorf("throughput does not match %v - %v", device.Throughput, v)
+		if v, ok := ctx["device-throughput"]; ok && ne.IntValue(device.Throughput) != v.(int) {
+			return fmt.Errorf("throughput does not match %v - %v", ne.IntValue(device.Throughput), v)
 		}
-		if v, ok := ctx["device-throughput_unit"]; ok && device.ThroughputUnit != v.(string) {
-			return fmt.Errorf("throughput_unit does not match %v - %v", device.ThroughputUnit, v)
+		if v, ok := ctx["device-throughput_unit"]; ok && ne.StringValue(device.ThroughputUnit) != v.(string) {
+			return fmt.Errorf("throughput_unit does not match %v - %v", ne.StringValue(device.ThroughputUnit), v)
 		}
-		if v, ok := ctx["device-metro_code"]; ok && device.MetroCode != v.(string) {
-			return fmt.Errorf("metro_code does not match %v - %v", device.MetroCode, v)
+		if v, ok := ctx["device-metro_code"]; ok && ne.StringValue(device.MetroCode) != v.(string) {
+			return fmt.Errorf("metro_code does not match %v - %v", ne.StringValue(device.MetroCode), v)
 		}
-		if v, ok := ctx["device-type_code"]; ok && device.TypeCode != v.(string) {
-			return fmt.Errorf("type_code does not match %v - %v", device.TypeCode, v)
+		if v, ok := ctx["device-type_code"]; ok && ne.StringValue(device.TypeCode) != v.(string) {
+			return fmt.Errorf("type_code does not match %v - %v", ne.StringValue(device.TypeCode), v)
 		}
-		if v, ok := ctx["device-package_code"]; ok && device.PackageCode != v.(string) {
-			return fmt.Errorf("device-package_code does not match %v - %v", device.PackageCode, v)
+		if v, ok := ctx["device-package_code"]; ok && ne.StringValue(device.PackageCode) != v.(string) {
+			return fmt.Errorf("device-package_code does not match %v - %v", ne.StringValue(device.PackageCode), v)
 		}
 		if v, ok := ctx["device-notifications"]; ok && !slicesMatch(device.Notifications, v.([]string)) {
 			return fmt.Errorf("device-notifications does not match %v - %v", device.Notifications, v)
 		}
-		if v, ok := ctx["device-hostname"]; ok && device.HostName != v.(string) {
-			return fmt.Errorf("device-hostname does not match %v - %v", device.HostName, v)
+		if v, ok := ctx["device-hostname"]; ok && ne.StringValue(device.HostName) != v.(string) {
+			return fmt.Errorf("device-hostname does not match %v - %v", ne.StringValue(device.HostName), v)
 		}
-		if v, ok := ctx["device-term_length"]; ok && device.TermLength != v.(int) {
-			return fmt.Errorf("device-term_length does not match %v - %v", device.TermLength, v)
+		if v, ok := ctx["device-term_length"]; ok && ne.IntValue(device.TermLength) != v.(int) {
+			return fmt.Errorf("device-term_length does not match %v - %v", ne.IntValue(device.TermLength), v)
 		}
-		if v, ok := ctx["device-version"]; ok && device.Version != v.(string) {
-			return fmt.Errorf("device-version does not match %v - %v", device.Version, v)
+		if v, ok := ctx["device-version"]; ok && ne.StringValue(device.Version) != v.(string) {
+			return fmt.Errorf("device-version does not match %v - %v", ne.StringValue(device.Version), v)
 		}
-		if v, ok := ctx["device-core_count"]; ok && device.CoreCount != v.(int) {
-			return fmt.Errorf("device-core_count does not match %v - %v", device.CoreCount, v)
+		if v, ok := ctx["device-core_count"]; ok && ne.IntValue(device.CoreCount) != v.(int) {
+			return fmt.Errorf("device-core_count does not match %v - %v", ne.IntValue(device.CoreCount), v)
 		}
-		if v, ok := ctx["device-purchase_order_number"]; ok && device.PurchaseOrderNumber != v.(string) {
-			return fmt.Errorf("device-purchase_order_number does not match %v - %v", device.PurchaseOrderNumber, v)
+		if v, ok := ctx["device-purchase_order_number"]; ok && ne.StringValue(device.PurchaseOrderNumber) != v.(string) {
+			return fmt.Errorf("device-purchase_order_number does not match %v - %v", ne.StringValue(device.PurchaseOrderNumber), v)
 		}
-		if v, ok := ctx["device-order_reference"]; ok && device.OrderReference != v.(string) {
-			return fmt.Errorf("device-order_reference does not match %v - %v", device.OrderReference, v)
+		if v, ok := ctx["device-order_reference"]; ok && ne.StringValue(device.OrderReference) != v.(string) {
+			return fmt.Errorf("device-order_reference does not match %v - %v", ne.StringValue(device.OrderReference), v)
 		}
-		if v, ok := ctx["device-interface_count"]; ok && device.InterfaceCount != v.(int) {
-			return fmt.Errorf("device-interface_count does not match %v - %v", device.InterfaceCount, v)
+		if v, ok := ctx["device-interface_count"]; ok && ne.IntValue(device.InterfaceCount) != v.(int) {
+			return fmt.Errorf("device-interface_count does not match %v - %v", ne.IntValue(device.InterfaceCount), v)
 		}
 		return nil
 	}
@@ -386,17 +386,17 @@ func testAccNeDeviceSecondaryAttributes(device *ne.Device, ctx map[string]interf
 
 func testAccNeDeviceRedundancyAttributes(primary, secondary *ne.Device) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
-		if primary.RedundancyType != "PRIMARY" {
-			return fmt.Errorf("redundancy_type does not match %v - %v", primary.RedundancyType, "PRIMARY")
+		if ne.StringValue(primary.RedundancyType) != "PRIMARY" {
+			return fmt.Errorf("redundancy_type does not match %v - %v", ne.StringValue(primary.RedundancyType), "PRIMARY")
 		}
-		if primary.RedundantUUID != secondary.UUID {
-			return fmt.Errorf("redundant_id does not match %v - %v", primary.RedundantUUID, secondary.UUID)
+		if ne.StringValue(primary.RedundantUUID) != ne.StringValue(secondary.UUID) {
+			return fmt.Errorf("redundant_id does not match %v - %v", ne.StringValue(primary.RedundantUUID), secondary.UUID)
 		}
-		if secondary.RedundancyType != "SECONDARY" {
-			return fmt.Errorf("redundancy_type does not match %v - %v", secondary.RedundancyType, "SECONDARY")
+		if ne.StringValue(secondary.RedundancyType) != "SECONDARY" {
+			return fmt.Errorf("redundancy_type does not match %v - %v", ne.StringValue(secondary.RedundancyType), "SECONDARY")
 		}
-		if secondary.RedundantUUID != primary.UUID {
-			return fmt.Errorf("redundant_id does not match %v - %v", secondary.RedundantUUID, primary.UUID)
+		if ne.StringValue(secondary.RedundantUUID) != ne.StringValue(primary.UUID) {
+			return fmt.Errorf("redundant_id does not match %v - %v", ne.StringValue(secondary.RedundantUUID), primary.UUID)
 		}
 		return nil
 	}
@@ -404,11 +404,11 @@ func testAccNeDeviceRedundancyAttributes(primary, secondary *ne.Device) resource
 
 func testAccNeDeviceStatusAttributes(device *ne.Device, provStatus, licStatus string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
-		if device.Status != provStatus {
-			return fmt.Errorf("status for device %q does not match  %v - %v", device.UUID, device.Status, provStatus)
+		if ne.StringValue(device.Status) != provStatus {
+			return fmt.Errorf("status for device %q does not match  %v - %v", ne.StringValue(device.UUID), ne.StringValue(device.Status), provStatus)
 		}
-		if device.LicenseStatus != licStatus {
-			return fmt.Errorf("license_status for device %q does not match  %v - %v", device.UUID, device.LicenseStatus, licStatus)
+		if ne.StringValue(device.LicenseStatus) != licStatus {
+			return fmt.Errorf("license_status for device %q does not match  %v - %v", ne.StringValue(device.UUID), ne.StringValue(device.LicenseStatus), licStatus)
 		}
 		return nil
 	}
@@ -416,17 +416,17 @@ func testAccNeDeviceStatusAttributes(device *ne.Device, provStatus, licStatus st
 
 func testAccNeDeviceACLs(primary, secondary *ne.Device, primaryACL, secondaryACL *ne.ACLTemplate) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
-		if primaryACL.DeviceUUID != primary.UUID {
-			return fmt.Errorf("Primary ACL %s device UUID does not match %v - %v", primaryACL.UUID, primaryACL.DeviceUUID, primary.UUID)
+		if ne.StringValue(primaryACL.DeviceUUID) != ne.StringValue(primary.UUID) {
+			return fmt.Errorf("Primary ACL %s device UUID does not match %v - %v", ne.StringValue(primaryACL.UUID), ne.StringValue(primaryACL.DeviceUUID), ne.StringValue(primary.UUID))
 		}
-		if secondaryACL.DeviceUUID != secondary.UUID {
-			return fmt.Errorf("Secondary ACL %s device UUID does not match %v - %v", secondaryACL.UUID, secondaryACL.DeviceUUID, secondary.UUID)
+		if ne.StringValue(secondaryACL.DeviceUUID) != ne.StringValue(secondary.UUID) {
+			return fmt.Errorf("Secondary ACL %s device UUID does not match %v - %v", ne.StringValue(secondaryACL.UUID), ne.StringValue(secondaryACL.DeviceUUID), ne.StringValue(secondary.UUID))
 		}
-		if primaryACL.DeviceACLStatus != ne.ACLDeviceStatusProvisioned {
-			return fmt.Errorf("Primary ACL %s device_acl_status does not match %v - %v", primaryACL.UUID, primaryACL.DeviceACLStatus, ne.ACLDeviceStatusProvisioned)
+		if ne.StringValue(primaryACL.DeviceACLStatus) != ne.ACLDeviceStatusProvisioned {
+			return fmt.Errorf("Primary ACL %s device_acl_status does not match %v - %v", ne.StringValue(primaryACL.UUID), ne.StringValue(primaryACL.DeviceACLStatus), ne.ACLDeviceStatusProvisioned)
 		}
-		if secondaryACL.DeviceACLStatus != ne.ACLDeviceStatusProvisioned {
-			return fmt.Errorf("Secondary ACL %s device_acl_status does not match %v - %v", secondaryACL.UUID, secondaryACL.DeviceACLStatus, ne.ACLDeviceStatusProvisioned)
+		if ne.StringValue(secondaryACL.DeviceACLStatus) != ne.ACLDeviceStatusProvisioned {
+			return fmt.Errorf("Secondary ACL %s device_acl_status does not match %v - %v", ne.StringValue(secondaryACL.UUID), ne.StringValue(secondaryACL.DeviceACLStatus), ne.ACLDeviceStatusProvisioned)
 		}
 		return nil
 	}

@@ -74,13 +74,13 @@ func dataSourceNetworkDeviceTypeRead(d *schema.ResourceData, m interface{}) erro
 	}
 	filtered := make([]ne.DeviceType, 0, len(types))
 	for _, deviceType := range types {
-		if name != "" && deviceType.Name != name {
+		if name != "" && ne.StringValue(deviceType.Name) != name {
 			continue
 		}
-		if vendor != "" && deviceType.Vendor != vendor {
+		if vendor != "" && ne.StringValue(deviceType.Vendor) != vendor {
 			continue
 		}
-		if category != "" && !strings.EqualFold(deviceType.Category, category) {
+		if category != "" && !strings.EqualFold(ne.StringValue(deviceType.Category), category) {
 			continue
 		}
 		if !stringsFound(metroCodes, deviceType.MetroCodes) {
@@ -98,7 +98,7 @@ func dataSourceNetworkDeviceTypeRead(d *schema.ResourceData, m interface{}) erro
 }
 
 func updateNetworkDeviceTypeResource(deviceType ne.DeviceType, d *schema.ResourceData) error {
-	d.SetId(deviceType.Code)
+	d.SetId(ne.StringValue(deviceType.Code))
 	if err := d.Set(networkDeviceTypeSchemaNames["Name"], deviceType.Name); err != nil {
 		return fmt.Errorf("error reading Name: %s", err)
 	}

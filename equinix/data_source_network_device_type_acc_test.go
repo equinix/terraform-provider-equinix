@@ -5,15 +5,17 @@ import (
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 )
 
 func TestAccNetworkDeviceTypeDataSource(t *testing.T) {
 	t.Parallel()
+	metro, _ := schema.EnvDefaultFunc(networkDeviceMetroEnvVar, "SV")()
 	context := map[string]interface{}{
 		"resourceName": "router",
 		"category":     "Router",
 		"vendor":       "Cisco",
-		"metro_codes":  []string{"DC"},
+		"metro_codes":  []string{metro.(string)},
 	}
 	resourceName := fmt.Sprintf("data.equinix_network_device_type.%s", context["resourceName"].(string))
 	resource.Test(t, resource.TestCase{

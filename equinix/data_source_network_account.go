@@ -61,10 +61,10 @@ func dataSourceNetworkAccountRead(d *schema.ResourceData, m interface{}) error {
 	}
 	var filtered []ne.Account
 	for _, account := range accounts {
-		if name != "" && account.Name != name {
+		if name != "" && ne.StringValue(account.Name) != name {
 			continue
 		}
-		if status != "" && !strings.EqualFold(account.Status, status) {
+		if status != "" && !strings.EqualFold(ne.StringValue(account.Status), status) {
 			continue
 		}
 		filtered = append(filtered, account)
@@ -79,7 +79,7 @@ func dataSourceNetworkAccountRead(d *schema.ResourceData, m interface{}) error {
 }
 
 func updateNetworkAccountResource(account ne.Account, metroCode string, d *schema.ResourceData) error {
-	d.SetId(fmt.Sprintf("%s-%s", metroCode, account.Name))
+	d.SetId(fmt.Sprintf("%s-%s", metroCode, ne.StringValue(account.Name)))
 	if err := d.Set(networkAccountSchemaNames["Name"], account.Name); err != nil {
 		return fmt.Errorf("error reading Name: %s", err)
 	}

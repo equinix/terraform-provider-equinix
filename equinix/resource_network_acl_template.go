@@ -125,7 +125,7 @@ func resourceNetworkACLTemplateCreate(d *schema.ResourceData, m interface{}) err
 	if err != nil {
 		return err
 	}
-	d.SetId(uuid)
+	d.SetId(ne.StringValue(uuid))
 	return resourceNetworkACLTemplateRead(d, m)
 }
 
@@ -172,13 +172,13 @@ func resourceNetworkACLTemplateDelete(d *schema.ResourceData, m interface{}) err
 func createACLTemplate(d *schema.ResourceData) ne.ACLTemplate {
 	template := ne.ACLTemplate{}
 	if v, ok := d.GetOk(networkACLTemplateSchemaNames["Name"]); ok {
-		template.Name = v.(string)
+		template.Name = ne.String(v.(string))
 	}
 	if v, ok := d.GetOk(networkACLTemplateSchemaNames["Description"]); ok {
-		template.Description = v.(string)
+		template.Description = ne.String(v.(string))
 	}
 	if v, ok := d.GetOk(networkACLTemplateSchemaNames["MetroCode"]); ok {
-		template.MetroCode = v.(string)
+		template.MetroCode = ne.String(v.(string))
 	}
 	if v, ok := d.GetOk(networkACLTemplateSchemaNames["InboundRules"]); ok {
 		template.InboundRules = expandACLTemplateInboundRules(v.([]interface{}))
@@ -216,19 +216,19 @@ func expandACLTemplateInboundRules(rules []interface{}) []ne.ACLTemplateInboundR
 	for i := range rules {
 		ruleMap := rules[i].(map[string]interface{})
 		rule := ne.ACLTemplateInboundRule{}
-		rule.SeqNo = i + 1
-		rule.SrcType = "SUBNET"
+		rule.SeqNo = ne.Int(i + 1)
+		rule.SrcType = ne.String("SUBNET")
 		if v, ok := ruleMap[networkACLTemplateInboundRuleSchemaNames["Subnets"]]; ok {
 			rule.Subnets = expandListToStringList(v.([]interface{}))
 		}
 		if v, ok := ruleMap[networkACLTemplateInboundRuleSchemaNames["Protocol"]]; ok {
-			rule.Protocol = v.(string)
+			rule.Protocol = ne.String(v.(string))
 		}
 		if v, ok := ruleMap[networkACLTemplateInboundRuleSchemaNames["SrcPort"]]; ok {
-			rule.SrcPort = v.(string)
+			rule.SrcPort = ne.String(v.(string))
 		}
 		if v, ok := ruleMap[networkACLTemplateInboundRuleSchemaNames["DstPort"]]; ok {
-			rule.DstPort = v.(string)
+			rule.DstPort = ne.String(v.(string))
 		}
 		transformed[i] = rule
 	}

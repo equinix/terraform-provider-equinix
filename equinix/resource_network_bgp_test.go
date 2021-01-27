@@ -12,20 +12,20 @@ import (
 func TestNetworkBGP_createFromResourceData(t *testing.T) {
 	//given
 	expected := ne.BGPConfiguration{
-		ConnectionUUID:    "6ca8d0df-c71a-4475-a835-53c2df1e6667",
-		LocalIPAddress:    "1.1.1.1/32",
-		LocalASN:          15344,
-		RemoteIPAddress:   "2.2.2.2",
-		RemoteASN:         60421,
-		AuthenticationKey: "secret",
+		ConnectionUUID:    ne.String("6ca8d0df-c71a-4475-a835-53c2df1e6667"),
+		LocalIPAddress:    ne.String("1.1.1.1/32"),
+		LocalASN:          ne.Int(15344),
+		RemoteIPAddress:   ne.String("2.2.2.2"),
+		RemoteASN:         ne.Int(60421),
+		AuthenticationKey: ne.String("secret"),
 	}
 	rawData := map[string]interface{}{
-		networkBGPSchemaNames["ConnectionUUID"]:    expected.ConnectionUUID,
-		networkBGPSchemaNames["LocalIPAddress"]:    expected.LocalIPAddress,
-		networkBGPSchemaNames["LocalASN"]:          expected.LocalASN,
-		networkBGPSchemaNames["RemoteIPAddress"]:   expected.RemoteIPAddress,
-		networkBGPSchemaNames["RemoteASN"]:         expected.RemoteASN,
-		networkBGPSchemaNames["AuthenticationKey"]: expected.AuthenticationKey,
+		networkBGPSchemaNames["ConnectionUUID"]:    ne.StringValue(expected.ConnectionUUID),
+		networkBGPSchemaNames["LocalIPAddress"]:    ne.StringValue(expected.LocalIPAddress),
+		networkBGPSchemaNames["LocalASN"]:          ne.IntValue(expected.LocalASN),
+		networkBGPSchemaNames["RemoteIPAddress"]:   ne.StringValue(expected.RemoteIPAddress),
+		networkBGPSchemaNames["RemoteASN"]:         ne.IntValue(expected.RemoteASN),
+		networkBGPSchemaNames["AuthenticationKey"]: ne.StringValue(expected.AuthenticationKey),
 	}
 	d := schema.TestResourceDataRaw(t, createNetworkBGPResourceSchema(), rawData)
 	//when
@@ -37,32 +37,32 @@ func TestNetworkBGP_createFromResourceData(t *testing.T) {
 func TestNetworkBGP_updateResourceData(t *testing.T) {
 	//when
 	input := ne.BGPConfiguration{
-		UUID:               "0cb9759d-58ab-44e6-9c10-6a3cfd18cefb",
-		DeviceUUID:         "8895983f-00f9-42f1-a387-85248f2aab49",
-		ConnectionUUID:     "6ca8d0df-c71a-4475-a835-53c2df1e6667",
-		LocalIPAddress:     "1.1.1.1/32",
-		LocalASN:           15344,
-		RemoteIPAddress:    "2.2.2.2",
-		RemoteASN:          60421,
-		AuthenticationKey:  "secret",
-		State:              "established",
-		ProvisioningStatus: ne.BGPProvisioningStatusProvisioned,
+		UUID:               ne.String("0cb9759d-58ab-44e6-9c10-6a3cfd18cefb"),
+		DeviceUUID:         ne.String("8895983f-00f9-42f1-a387-85248f2aab49"),
+		ConnectionUUID:     ne.String("6ca8d0df-c71a-4475-a835-53c2df1e6667"),
+		LocalIPAddress:     ne.String("1.1.1.1/32"),
+		LocalASN:           ne.Int(15344),
+		RemoteIPAddress:    ne.String("2.2.2.2"),
+		RemoteASN:          ne.Int(60421),
+		AuthenticationKey:  ne.String("secret"),
+		State:              ne.String("established"),
+		ProvisioningStatus: ne.String(ne.BGPProvisioningStatusProvisioned),
 	}
 	d := schema.TestResourceDataRaw(t, createNetworkBGPResourceSchema(), make(map[string]interface{}))
 	//when
 	err := updateNetworkBGPResource(&input, d)
 	//then
 	assert.Nil(t, err, "Update of resource data does not return error")
-	assert.Equal(t, input.UUID, d.Get(networkBGPSchemaNames["UUID"]), "UUID matches")
-	assert.Equal(t, input.DeviceUUID, d.Get(networkBGPSchemaNames["DeviceUUID"]), "DeviceUUID matches")
-	assert.Equal(t, input.ConnectionUUID, d.Get(networkBGPSchemaNames["ConnectionUUID"]), "ConnectionUUID matches")
-	assert.Equal(t, input.LocalIPAddress, d.Get(networkBGPSchemaNames["LocalIPAddress"]), "LocalIPAddress matches")
-	assert.Equal(t, input.LocalASN, d.Get(networkBGPSchemaNames["LocalASN"]), "LocalASN matches")
-	assert.Equal(t, input.RemoteIPAddress, d.Get(networkBGPSchemaNames["RemoteIPAddress"]), "RemoteIPAddress matches")
-	assert.Equal(t, input.RemoteASN, d.Get(networkBGPSchemaNames["RemoteASN"]), "RemoteASN matches")
-	assert.Equal(t, input.AuthenticationKey, d.Get(networkBGPSchemaNames["AuthenticationKey"]), "AuthenticationKey matches")
-	assert.Equal(t, input.State, d.Get(networkBGPSchemaNames["State"]), "State matches")
-	assert.Equal(t, input.ProvisioningStatus, d.Get(networkBGPSchemaNames["ProvisioningStatus"]), "ProvisioningStatus matches")
+	assert.Equal(t, ne.StringValue(input.UUID), d.Get(networkBGPSchemaNames["UUID"]), "UUID matches")
+	assert.Equal(t, ne.StringValue(input.DeviceUUID), d.Get(networkBGPSchemaNames["DeviceUUID"]), "DeviceUUID matches")
+	assert.Equal(t, ne.StringValue(input.ConnectionUUID), d.Get(networkBGPSchemaNames["ConnectionUUID"]), "ConnectionUUID matches")
+	assert.Equal(t, ne.StringValue(input.LocalIPAddress), d.Get(networkBGPSchemaNames["LocalIPAddress"]), "LocalIPAddress matches")
+	assert.Equal(t, ne.IntValue(input.LocalASN), d.Get(networkBGPSchemaNames["LocalASN"]), "LocalASN matches")
+	assert.Equal(t, ne.StringValue(input.RemoteIPAddress), d.Get(networkBGPSchemaNames["RemoteIPAddress"]), "RemoteIPAddress matches")
+	assert.Equal(t, ne.IntValue(input.RemoteASN), d.Get(networkBGPSchemaNames["RemoteASN"]), "RemoteASN matches")
+	assert.Equal(t, ne.StringValue(input.AuthenticationKey), d.Get(networkBGPSchemaNames["AuthenticationKey"]), "AuthenticationKey matches")
+	assert.Equal(t, ne.StringValue(input.State), d.Get(networkBGPSchemaNames["State"]), "State matches")
+	assert.Equal(t, ne.StringValue(input.ProvisioningStatus), d.Get(networkBGPSchemaNames["ProvisioningStatus"]), "ProvisioningStatus matches")
 }
 
 type mockedBGPUpdateRequest struct {
@@ -107,20 +107,20 @@ func TestNetworkBGP_createUpdateRequest(t *testing.T) {
 		return req
 	}
 	bgp := ne.BGPConfiguration{
-		LocalIPAddress:    "1.1.1.1/32",
-		LocalASN:          15344,
-		RemoteIPAddress:   "2.2.2.2",
-		RemoteASN:         60421,
-		AuthenticationKey: "secret",
+		LocalIPAddress:    ne.String("1.1.1.1/32"),
+		LocalASN:          ne.Int(15344),
+		RemoteIPAddress:   ne.String("2.2.2.2"),
+		RemoteASN:         ne.Int(60421),
+		AuthenticationKey: ne.String("secret"),
 	}
 	//when
 	createNetworkBGPUpdateRequest(f, &bgp)
 	//then
-	assert.Equal(t, bgp.RemoteIPAddress, req.data["remoteIPAddress"], "RemoteIPAddress matches")
-	assert.Equal(t, bgp.RemoteASN, req.data["remoteASN"], "RemoteASN matches")
-	assert.Equal(t, bgp.LocalIPAddress, req.data["localIPAddress"], "LocalIPAddress matches")
-	assert.Equal(t, bgp.LocalASN, req.data["localASN"], "LocalASN matches")
-	assert.Equal(t, bgp.AuthenticationKey, req.data["authenticationKey"], "AuthenticationKey matches")
+	assert.Equal(t, ne.StringValue(bgp.RemoteIPAddress), req.data["remoteIPAddress"], "RemoteIPAddress matches")
+	assert.Equal(t, ne.IntValue(bgp.RemoteASN), req.data["remoteASN"], "RemoteASN matches")
+	assert.Equal(t, ne.StringValue(bgp.LocalIPAddress), req.data["localIPAddress"], "LocalIPAddress matches")
+	assert.Equal(t, ne.IntValue(bgp.LocalASN), req.data["localASN"], "LocalASN matches")
+	assert.Equal(t, ne.StringValue(bgp.AuthenticationKey), req.data["authenticationKey"], "AuthenticationKey matches")
 }
 
 func TestNetworkBGP_statusProvisioningWaitConfiguration(t *testing.T) {
@@ -129,7 +129,7 @@ func TestNetworkBGP_statusProvisioningWaitConfiguration(t *testing.T) {
 	var queriedID string
 	fetchFunc := func(uuid string) (*ne.BGPConfiguration, error) {
 		queriedID = uuid
-		return &ne.BGPConfiguration{ProvisioningStatus: ne.BGPProvisioningStatusProvisioned}, nil
+		return &ne.BGPConfiguration{ProvisioningStatus: ne.String(ne.BGPProvisioningStatusProvisioned)}, nil
 	}
 	delay := 100 * time.Millisecond
 	timeout := 10 * time.Minute

@@ -35,14 +35,14 @@ func testSweepNetworkACLTemplate(region string) error {
 	}
 	nonSweepableCount := 0
 	for _, template := range templates {
-		if !isSweepableTestResource(template.Name) {
+		if !isSweepableTestResource(ne.StringValue(template.Name)) {
 			nonSweepableCount++
 			continue
 		}
-		if err := config.ne.DeleteACLTemplate(template.UUID); err != nil {
-			log.Printf("[INFO][SWEEPER_LOG] error deleting NetworkACLTemplate resource %s (%s): %s", template.UUID, template.Name, err)
+		if err := config.ne.DeleteACLTemplate(ne.StringValue(template.UUID)); err != nil {
+			log.Printf("[INFO][SWEEPER_LOG] error deleting NetworkACLTemplate resource %s (%s): %s", ne.StringValue(template.UUID), ne.StringValue(template.Name), err)
 		} else {
-			log.Printf("[INFO][SWEEPER_LOG] sent delete request for NetworkACLTemplate resource %s (%s)", template.UUID, template.Name)
+			log.Printf("[INFO][SWEEPER_LOG] sent delete request for NetworkACLTemplate resource %s (%s)", ne.StringValue(template.UUID), ne.StringValue(template.Name))
 		}
 	}
 	if nonSweepableCount > 0 {
@@ -142,36 +142,36 @@ func testAccNetworkACLTemplateExists(resourceName string, template *ne.ACLTempla
 
 func testAccNetworkACLTemplateAttributes(template *ne.ACLTemplate, ctx map[string]interface{}) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
-		if v, ok := ctx["name"]; ok && template.Name != v.(string) {
-			return fmt.Errorf("name does not match %v - %v", template.Name, v)
+		if v, ok := ctx["name"]; ok && ne.StringValue(template.Name) != v.(string) {
+			return fmt.Errorf("name does not match %v - %v", ne.StringValue(template.Name), v)
 		}
-		if v, ok := ctx["description"]; ok && template.Description != v.(string) {
-			return fmt.Errorf("name does not match %v - %v", template.Description, v)
+		if v, ok := ctx["description"]; ok && ne.StringValue(template.Description) != v.(string) {
+			return fmt.Errorf("name does not match %v - %v", ne.StringValue(template.Description), v)
 		}
-		if v, ok := ctx["metro_code"]; ok && template.MetroCode != v.(string) {
-			return fmt.Errorf("name does not match %v - %v", template.MetroCode, v)
+		if v, ok := ctx["metro_code"]; ok && ne.StringValue(template.MetroCode) != v.(string) {
+			return fmt.Errorf("name does not match %v - %v", ne.StringValue(template.MetroCode), v)
 		}
 		if len(template.InboundRules) != 3 {
 			return fmt.Errorf("number of inbound rules does not match %v - %v", len(template.InboundRules), 3)
 		}
 		for i := 0; i < 3; i++ {
-			if template.InboundRules[i].SeqNo != i+1 {
-				return fmt.Errorf("inbound_rule %d seqNo does not match %v - %v", i+1, template.InboundRules[i].SeqNo, i+1)
+			if ne.IntValue(template.InboundRules[i].SeqNo) != i+1 {
+				return fmt.Errorf("inbound_rule %d seqNo does not match %v - %v", i+1, ne.IntValue(template.InboundRules[i].SeqNo), i+1)
 			}
-			if template.InboundRules[i].SrcType != "SUBNET" {
-				return fmt.Errorf("inbound_rule %d srcType does not match %v - %v", i+1, template.InboundRules[i].SrcType, "SUBNET")
+			if ne.StringValue(template.InboundRules[i].SrcType) != "SUBNET" {
+				return fmt.Errorf("inbound_rule %d srcType does not match %v - %v", i+1, ne.StringValue(template.InboundRules[i].SrcType), "SUBNET")
 			}
 			if v, ok := ctx[fmt.Sprintf("inbound_rule_%d_subnets", i+1)]; ok && !slicesMatch(template.InboundRules[i].Subnets, v.([]string)) {
 				return fmt.Errorf("inbound_rule %d subnets does not match %v - %v", i+1, template.InboundRules[i].Subnets, v)
 			}
-			if v, ok := ctx[fmt.Sprintf("inbound_rule_%d_protocol", i+1)]; ok && template.InboundRules[i].Protocol != v.(string) {
-				return fmt.Errorf("inbound_rule %d protocol does not match %v - %v", i+1, template.InboundRules[i].Protocol, v)
+			if v, ok := ctx[fmt.Sprintf("inbound_rule_%d_protocol", i+1)]; ok && ne.StringValue(template.InboundRules[i].Protocol) != v.(string) {
+				return fmt.Errorf("inbound_rule %d protocol does not match %v - %v", i+1, ne.StringValue(template.InboundRules[i].Protocol), v)
 			}
-			if v, ok := ctx[fmt.Sprintf("inbound_rule_%d_src_port", i+1)]; ok && template.InboundRules[i].SrcPort != v.(string) {
-				return fmt.Errorf("inbound_rule %d src_port does not match %v - %v", i+1, template.InboundRules[i].SrcPort, v)
+			if v, ok := ctx[fmt.Sprintf("inbound_rule_%d_src_port", i+1)]; ok && ne.StringValue(template.InboundRules[i].SrcPort) != v.(string) {
+				return fmt.Errorf("inbound_rule %d src_port does not match %v - %v", i+1, ne.StringValue(template.InboundRules[i].SrcPort), v)
 			}
-			if v, ok := ctx[fmt.Sprintf("inbound_rule_%d_dst_port", i+1)]; ok && template.InboundRules[i].DstPort != v.(string) {
-				return fmt.Errorf("inbound_rule %d dst_port does not match %v - %v", i+1, template.InboundRules[i].DstPort, v)
+			if v, ok := ctx[fmt.Sprintf("inbound_rule_%d_dst_port", i+1)]; ok && ne.StringValue(template.InboundRules[i].DstPort) != v.(string) {
+				return fmt.Errorf("inbound_rule %d dst_port does not match %v - %v", i+1, ne.StringValue(template.InboundRules[i].DstPort), v)
 			}
 		}
 		return nil

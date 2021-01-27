@@ -35,13 +35,13 @@ func testSweepNetworkSSHUser(region string) error {
 		return err
 	}
 	for _, user := range users {
-		if !isSweepableTestResource(user.Username) {
+		if !isSweepableTestResource(ne.StringValue(user.Username)) {
 			continue
 		}
-		if err := config.ne.DeleteSSHUser(user.UUID); err != nil {
-			log.Printf("[INFO][SWEEPER_LOG] error deleting NetworkSSHUser resource %s (%s): %s", user.UUID, user.Username, err)
+		if err := config.ne.DeleteSSHUser(ne.StringValue(user.UUID)); err != nil {
+			log.Printf("[INFO][SWEEPER_LOG] error deleting NetworkSSHUser resource %s (%s): %s", ne.StringValue(user.UUID), ne.StringValue(user.Username), err)
 		} else {
-			log.Printf("[INFO][SWEEPER_LOG] sent delete request for NetworkSSHUser resource %s (%s)", user.UUID, user.Username)
+			log.Printf("[INFO][SWEEPER_LOG] sent delete request for NetworkSSHUser resource %s (%s)", ne.StringValue(user.UUID), ne.StringValue(user.Username))
 		}
 	}
 	return nil
@@ -90,12 +90,12 @@ func testAccNeSSHUserExists(resourceName string, user *ne.SSHUser) resource.Test
 
 func testAccNeSSHUserAttributes(user *ne.SSHUser, devices []*ne.Device, ctx map[string]interface{}) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
-		if v, ok := ctx["username"]; ok && user.Username != v.(string) {
-			return fmt.Errorf("name does not match %v - %v", user.Username, v)
+		if v, ok := ctx["username"]; ok && ne.StringValue(user.Username) != v.(string) {
+			return fmt.Errorf("name does not match %v - %v", ne.StringValue(user.Username), v)
 		}
 		deviceIDs := make([]string, len(devices))
 		for i := range devices {
-			deviceIDs[i] = devices[i].UUID
+			deviceIDs[i] = ne.StringValue(devices[i].UUID)
 		}
 		if !slicesMatch(deviceIDs, user.DeviceUUIDs) {
 			return fmt.Errorf("device_ids does not match %v - %v", deviceIDs, user.DeviceUUIDs)

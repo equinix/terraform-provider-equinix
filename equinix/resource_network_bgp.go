@@ -94,24 +94,24 @@ func createNetworkBGPResourceSchema() map[string]*schema.Schema {
 func resourceNetworkBGPCreate(d *schema.ResourceData, m interface{}) error {
 	conf := m.(*Config)
 	bgp := createNetworkBGPConfiguration(d)
-	existingBGP, err := conf.ne.GetBGPConfigurationForConnection(bgp.ConnectionUUID)
+	existingBGP, err := conf.ne.GetBGPConfigurationForConnection(ne.StringValue(bgp.ConnectionUUID))
 	//Reuse existing configuration, as there was no possibility to remove it due to API limitations
 	if err == nil {
 		bgp.UUID = existingBGP.UUID
 		if updateErr := createNetworkBGPUpdateRequest(conf.ne.NewBGPConfigurationUpdateRequest, &bgp); updateErr != nil {
-			return fmt.Errorf("failed to update BGP configuration '%s': %s", existingBGP.UUID, updateErr)
+			return fmt.Errorf("failed to update BGP configuration '%s': %s", ne.StringValue(existingBGP.UUID), updateErr)
 		}
-		d.SetId(bgp.UUID)
+		d.SetId(ne.StringValue(bgp.UUID))
 	} else {
 		restErr, ok := err.(rest.Error)
 		if !ok || restErr.HTTPCode != http.StatusNotFound {
-			return fmt.Errorf("failed to fetch BGP configuration for connection '%s': %s", bgp.ConnectionUUID, err)
+			return fmt.Errorf("failed to fetch BGP configuration for connection '%s': %s", ne.StringValue(bgp.ConnectionUUID), err)
 		}
 		uuid, err := conf.ne.CreateBGPConfiguration(bgp)
 		if err != nil {
 			return err
 		}
-		d.SetId(uuid)
+		d.SetId(ne.StringValue(uuid))
 	}
 	if _, err := createBGPConfigStatusProvisioningWaitConfiguration(conf.ne.GetBGPConfiguration, d.Id(), 2*time.Second, d.Timeout(schema.TimeoutCreate)).WaitForState(); err != nil {
 		return fmt.Errorf("error waiting for BGP configuration (%s) to be created: %s", d.Id(), err)
@@ -149,25 +149,25 @@ func resourceNetworkBGPDelete(d *schema.ResourceData, m interface{}) error {
 func createNetworkBGPConfiguration(d *schema.ResourceData) ne.BGPConfiguration {
 	bgp := ne.BGPConfiguration{}
 	if v, ok := d.GetOk(networkBGPSchemaNames["UUID"]); ok {
-		bgp.UUID = v.(string)
+		bgp.UUID = ne.String(v.(string))
 	}
 	if v, ok := d.GetOk(networkBGPSchemaNames["ConnectionUUID"]); ok {
-		bgp.ConnectionUUID = v.(string)
+		bgp.ConnectionUUID = ne.String(v.(string))
 	}
 	if v, ok := d.GetOk(networkBGPSchemaNames["LocalIPAddress"]); ok {
-		bgp.LocalIPAddress = v.(string)
+		bgp.LocalIPAddress = ne.String(v.(string))
 	}
 	if v, ok := d.GetOk(networkBGPSchemaNames["LocalASN"]); ok {
-		bgp.LocalASN = v.(int)
+		bgp.LocalASN = ne.Int(v.(int))
 	}
 	if v, ok := d.GetOk(networkBGPSchemaNames["RemoteIPAddress"]); ok {
-		bgp.RemoteIPAddress = v.(string)
+		bgp.RemoteIPAddress = ne.String(v.(string))
 	}
 	if v, ok := d.GetOk(networkBGPSchemaNames["RemoteASN"]); ok {
-		bgp.RemoteASN = v.(int)
+		bgp.RemoteASN = ne.Int(v.(int))
 	}
 	if v, ok := d.GetOk(networkBGPSchemaNames["AuthenticationKey"]); ok {
-		bgp.AuthenticationKey = v.(string)
+		bgp.AuthenticationKey = ne.String(v.(string))
 	}
 	return bgp
 }
@@ -209,12 +209,12 @@ func updateNetworkBGPResource(bgp *ne.BGPConfiguration, d *schema.ResourceData) 
 type bgpUpdateRequest func(uuid string) ne.BGPUpdateRequest
 
 func createNetworkBGPUpdateRequest(requestFunc bgpUpdateRequest, bgp *ne.BGPConfiguration) ne.BGPUpdateRequest {
-	return requestFunc(bgp.UUID).
-		WithRemoteIPAddress(bgp.RemoteIPAddress).
-		WithRemoteASN(bgp.RemoteASN).
-		WithLocalIPAddress(bgp.LocalIPAddress).
-		WithLocalASN(bgp.LocalASN).
-		WithAuthenticationKey(bgp.AuthenticationKey)
+	return requestFunc(ne.StringValue(bgp.UUID)).
+		WithRemoteIPAddress(ne.StringValue(bgp.RemoteIPAddress)).
+		WithRemoteASN(ne.IntValue(bgp.RemoteASN)).
+		WithLocalIPAddress(ne.StringValue(bgp.LocalIPAddress)).
+		WithLocalASN(ne.IntValue(bgp.LocalASN)).
+		WithAuthenticationKey(ne.StringValue(bgp.AuthenticationKey))
 }
 
 type getBGPConfig func(uuid string) (*ne.BGPConfiguration, error)
@@ -236,7 +236,7 @@ func createBGPConfigStatusProvisioningWaitConfiguration(fetchFunc getBGPConfig, 
 			if err != nil {
 				return nil, "", err
 			}
-			return resp, resp.ProvisioningStatus, nil
+			return resp, ne.StringValue(resp.ProvisioningStatus), nil
 		},
 	}
 }

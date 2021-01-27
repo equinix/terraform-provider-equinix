@@ -57,7 +57,7 @@ func resourceNetworkSSHKeyCreate(d *schema.ResourceData, m interface{}) error {
 	if err != nil {
 		return err
 	}
-	d.SetId(uuid)
+	d.SetId(ne.StringValue(uuid))
 	return resourceNetworkSSHKeyRead(d, m)
 }
 
@@ -71,6 +71,7 @@ func resourceNetworkSSHKeyRead(d *schema.ResourceData, m interface{}) error {
 				return nil
 			}
 		}
+		return err
 	}
 	if err := updateNetworkSSHKeyResource(key, d); err != nil {
 		return err
@@ -96,10 +97,10 @@ func resourceNetworkSSHKeyDelete(d *schema.ResourceData, m interface{}) error {
 func createNetworkSSHKey(d *schema.ResourceData) ne.SSHPublicKey {
 	key := ne.SSHPublicKey{}
 	if v, ok := d.GetOk(networkSSHKeySchemaNames["Name"]); ok {
-		key.Name = v.(string)
+		key.Name = ne.String(v.(string))
 	}
 	if v, ok := d.GetOk(networkSSHKeySchemaNames["Value"]); ok {
-		key.Value = v.(string)
+		key.Value = ne.String(v.(string))
 	}
 	return key
 }

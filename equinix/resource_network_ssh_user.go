@@ -62,12 +62,12 @@ func resourceNetworkSSHUserCreate(d *schema.ResourceData, m interface{}) error {
 	if len(user.DeviceUUIDs) < 0 {
 		return fmt.Errorf("create ssh-user failed: user needs to have at least one device defined")
 	}
-	uuid, err := conf.ne.CreateSSHUser(user.Username, user.Password, user.DeviceUUIDs[0])
+	uuid, err := conf.ne.CreateSSHUser(ne.StringValue(user.Username), ne.StringValue(user.Password), user.DeviceUUIDs[0])
 	if err != nil {
 		return err
 	}
-	d.SetId(uuid)
-	userUpdateReq := conf.ne.NewSSHUserUpdateRequest(uuid)
+	d.SetId(ne.StringValue(uuid))
+	userUpdateReq := conf.ne.NewSSHUserUpdateRequest(ne.StringValue(uuid))
 	userUpdateReq.WithDeviceChange([]string{}, user.DeviceUUIDs[1:len(user.DeviceUUIDs)])
 	if err := userUpdateReq.Execute(); err != nil {
 		log.Printf("[WARN] failed to assign devices to newly created user")
@@ -116,13 +116,13 @@ func resourceNetworkSSHUserDelete(d *schema.ResourceData, m interface{}) error {
 func createNetworkSSHUser(d *schema.ResourceData) ne.SSHUser {
 	user := ne.SSHUser{}
 	if v, ok := d.GetOk(networkSSHUserSchemaNames["UUID"]); ok {
-		user.UUID = v.(string)
+		user.UUID = ne.String(v.(string))
 	}
 	if v, ok := d.GetOk(networkSSHUserSchemaNames["Username"]); ok {
-		user.Username = v.(string)
+		user.Username = ne.String(v.(string))
 	}
 	if v, ok := d.GetOk(networkSSHUserSchemaNames["Password"]); ok {
-		user.Password = v.(string)
+		user.Password = ne.String(v.(string))
 	}
 	if v, ok := d.GetOk(networkSSHUserSchemaNames["DeviceUUIDs"]); ok {
 		user.DeviceUUIDs = expandSetToStringList(v.(*schema.Set))
@@ -137,7 +137,7 @@ func updateNetworkSSHUserResource(user *ne.SSHUser, d *schema.ResourceData) erro
 	if err := d.Set(networkSSHUserSchemaNames["Username"], user.Username); err != nil {
 		return fmt.Errorf("error reading Username: %s", err)
 	}
-	if user.Password != "" {
+	if ne.StringValue(user.Password) != "" {
 		if err := d.Set(networkSSHUserSchemaNames["Password"], user.Password); err != nil {
 			return fmt.Errorf("error reading Password: %s", err)
 		}
