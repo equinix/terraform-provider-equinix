@@ -15,7 +15,7 @@ This repository is [Maintained](https://github.com/packethost/standards/blob/mas
 
 The Equinix Metal provider will be installed on `terraform init` of a template using any of the `metal_*` resources.
 
-See <https://registry.terraform.io/providers/equinix/equinix-metal/latest/docs> for documentation on the resources included in this provider.
+See <https://registry.terraform.io/providers/equinix/metal/latest/docs> for documentation on the resources included in this provider.
 
 ### Migrating from Packet
 
