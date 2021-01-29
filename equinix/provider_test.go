@@ -173,6 +173,50 @@ func TestProvider_mapChanges(t *testing.T) {
 	assert.Equal(t, expected, result, "Function returns valid key changes")
 }
 
+func TestProvider_isEmpty(t *testing.T) {
+	//given
+	input := []interface{}{
+		"test",
+		"",
+		nil,
+		123,
+		0,
+		43.43,
+	}
+	expected := []bool{
+		false,
+		true,
+		true,
+		false,
+		true,
+		false,
+		true,
+	}
+	//when then
+	for i := range input {
+		assert.Equal(t, expected[i], isEmpty(input[i]), "Input %v produces expected result %v", input[i], expected[i])
+	}
+}
+
+func TestProvider_setSchemaValueIfNotEmpty(t *testing.T) {
+	//given
+	key := "test"
+	s := map[string]*schema.Schema{
+		key: {
+			Type:     schema.TypeString,
+			Optional: true,
+		}}
+	var b *int
+	b = nil
+	d := schema.TestResourceDataRaw(t, s, make(map[string]interface{}))
+	//when
+	setSchemaValueIfNotEmpty(key, b, d)
+	//then
+	_, ok := d.GetOk(key)
+	assert.False(t, ok, "Key was not set")
+
+}
+
 //‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾
 // Test helper functions
 //_______________________________________________________________________
@@ -213,50 +257,6 @@ func nprintf(format string, params map[string]interface{}) string {
 		format = strings.Replace(format, "%{"+key+"}", strVal, -1)
 	}
 	return format
-}
-
-func sourceMatchesTargetSchema(t *testing.T, source interface{}, sourceFields []string, target interface{}, targetFields map[string]string) {
-	val := reflect.ValueOf(source)
-	for _, fName := range sourceFields {
-		val := val.FieldByName(fName)
-		assert.NotEmptyf(t, val, "Value of a field %v not found", fName)
-		var schemaValue interface{}
-		switch target.(type) {
-		case *schema.ResourceData:
-			schemaValue = target.(*schema.ResourceData).Get(targetFields[fName])
-		case map[string]interface{}:
-			schemaValue = target.(map[string]interface{})[targetFields[fName]]
-		default:
-			assert.Fail(t, "Target type not supported")
-		}
-		switch val.Kind() {
-		case reflect.String, reflect.Int, reflect.Bool, reflect.Float64:
-			assert.Equal(t, val.Interface(), schemaValue, fName+" matches")
-		case reflect.Slice:
-			if v, ok := schemaValue.(*schema.Set); ok {
-				assert.ElementsMatch(t, val.Interface().([]string), v.List(), fName+" matches")
-			}
-			if v, ok := schemaValue.([]string); ok {
-				assert.ElementsMatch(t, val.Interface().([]string), v, fName+" matches")
-			}
-		default:
-			assert.Failf(t, "Type of field not supported: field %v, type %v", fName, val.Kind())
-		}
-	}
-}
-
-func structToSchemaMap(src interface{}, schema map[string]string) map[string]interface{} {
-	ret := make(map[string]interface{})
-	val := reflect.ValueOf(src)
-	typ := val.Type()
-	for i := 0; i < val.NumField(); i++ {
-		schemaName, ok := schema[typ.Field(i).Name]
-		if !ok {
-			continue
-		}
-		ret[schemaName] = val.Field(i).Interface()
-	}
-	return ret
 }
 
 func randInt(n int) int {

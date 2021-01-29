@@ -11,45 +11,45 @@ import (
 
 func TestFabricL2Connection_createFromResourceData(t *testing.T) {
 	rawData := map[string]interface{}{
-		ecxL2ConnectionSchemaNames["Name"]:                randString(36),
-		ecxL2ConnectionSchemaNames["ProfileUUID"]:         randString(36),
+		ecxL2ConnectionSchemaNames["Name"]:                "kekewrmMwe",
+		ecxL2ConnectionSchemaNames["ProfileUUID"]:         "5d113752-996b-4b59-8e21-8927e7b98058",
 		ecxL2ConnectionSchemaNames["Speed"]:               50,
 		ecxL2ConnectionSchemaNames["SpeedUnit"]:           "MB",
-		ecxL2ConnectionSchemaNames["PurchaseOrderNumber"]: randString(36),
-		ecxL2ConnectionSchemaNames["PortUUID"]:            randString(36),
-		ecxL2ConnectionSchemaNames["DeviceUUID"]:          randString(36),
-		ecxL2ConnectionSchemaNames["DeviceInterfaceID"]:   randInt(10),
-		ecxL2ConnectionSchemaNames["VlanSTag"]:            randInt(2000),
-		ecxL2ConnectionSchemaNames["VlanCTag"]:            randInt(2000),
-		ecxL2ConnectionSchemaNames["NamedTag"]:            randString(36),
-		ecxL2ConnectionSchemaNames["ZSidePortUUID"]:       randString(36),
-		ecxL2ConnectionSchemaNames["ZSideVlanSTag"]:       randInt(2000),
-		ecxL2ConnectionSchemaNames["ZSideVlanCTag"]:       randInt(2000),
-		ecxL2ConnectionSchemaNames["SellerRegion"]:        randString(10),
-		ecxL2ConnectionSchemaNames["SellerMetroCode"]:     randString(2),
-		ecxL2ConnectionSchemaNames["AuthorizationKey"]:    randString(10),
+		ecxL2ConnectionSchemaNames["PurchaseOrderNumber"]: "234242353",
+		ecxL2ConnectionSchemaNames["PortUUID"]:            "52c00d7f-c310-458e-9426-1d7549e1f600",
+		ecxL2ConnectionSchemaNames["DeviceUUID"]:          "5f1483f4-c479-424d-98c5-43a266aae25c",
+		ecxL2ConnectionSchemaNames["DeviceInterfaceID"]:   5,
+		ecxL2ConnectionSchemaNames["VlanSTag"]:            1043,
+		ecxL2ConnectionSchemaNames["VlanCTag"]:            2045,
+		ecxL2ConnectionSchemaNames["NamedTag"]:            "Public",
+		ecxL2ConnectionSchemaNames["ZSidePortUUID"]:       "52c00d7f-c310-458e-9426-1d7549e1f600",
+		ecxL2ConnectionSchemaNames["ZSideVlanSTag"]:       420,
+		ecxL2ConnectionSchemaNames["ZSideVlanCTag"]:       1056,
+		ecxL2ConnectionSchemaNames["SellerRegion"]:        "werwerewr",
+		ecxL2ConnectionSchemaNames["SellerMetroCode"]:     "SV",
+		ecxL2ConnectionSchemaNames["AuthorizationKey"]:    "123456789012",
 	}
 	d := schema.TestResourceDataRaw(t, createECXL2ConnectionResourceSchema(), rawData)
 	d.Set(ecxL2ConnectionSchemaNames["Notifications"], []string{"test@test.com"})
 	expectedPrimary := &ecx.L2Connection{
-		Name:                rawData[ecxL2ConnectionSchemaNames["Name"]].(string),
-		ProfileUUID:         rawData[ecxL2ConnectionSchemaNames["ProfileUUID"]].(string),
-		Speed:               rawData[ecxL2ConnectionSchemaNames["Speed"]].(int),
-		SpeedUnit:           rawData[ecxL2ConnectionSchemaNames["SpeedUnit"]].(string),
+		Name:                ecx.String(rawData[ecxL2ConnectionSchemaNames["Name"]].(string)),
+		ProfileUUID:         ecx.String(rawData[ecxL2ConnectionSchemaNames["ProfileUUID"]].(string)),
+		Speed:               ecx.Int(rawData[ecxL2ConnectionSchemaNames["Speed"]].(int)),
+		SpeedUnit:           ecx.String(rawData[ecxL2ConnectionSchemaNames["SpeedUnit"]].(string)),
 		Notifications:       []string{"test@test.com"},
-		PurchaseOrderNumber: rawData[ecxL2ConnectionSchemaNames["PurchaseOrderNumber"]].(string),
-		PortUUID:            rawData[ecxL2ConnectionSchemaNames["PortUUID"]].(string),
-		DeviceUUID:          rawData[ecxL2ConnectionSchemaNames["DeviceUUID"]].(string),
-		DeviceInterfaceID:   rawData[ecxL2ConnectionSchemaNames["DeviceInterfaceID"]].(int),
-		VlanSTag:            rawData[ecxL2ConnectionSchemaNames["VlanSTag"]].(int),
-		VlanCTag:            rawData[ecxL2ConnectionSchemaNames["VlanCTag"]].(int),
-		NamedTag:            rawData[ecxL2ConnectionSchemaNames["NamedTag"]].(string),
-		ZSidePortUUID:       rawData[ecxL2ConnectionSchemaNames["ZSidePortUUID"]].(string),
-		ZSideVlanSTag:       rawData[ecxL2ConnectionSchemaNames["ZSideVlanSTag"]].(int),
-		ZSideVlanCTag:       rawData[ecxL2ConnectionSchemaNames["ZSideVlanCTag"]].(int),
-		SellerRegion:        rawData[ecxL2ConnectionSchemaNames["SellerRegion"]].(string),
-		SellerMetroCode:     rawData[ecxL2ConnectionSchemaNames["SellerMetroCode"]].(string),
-		AuthorizationKey:    rawData[ecxL2ConnectionSchemaNames["AuthorizationKey"]].(string),
+		PurchaseOrderNumber: ecx.String(rawData[ecxL2ConnectionSchemaNames["PurchaseOrderNumber"]].(string)),
+		PortUUID:            ecx.String(rawData[ecxL2ConnectionSchemaNames["PortUUID"]].(string)),
+		DeviceUUID:          ecx.String(rawData[ecxL2ConnectionSchemaNames["DeviceUUID"]].(string)),
+		DeviceInterfaceID:   ecx.Int(rawData[ecxL2ConnectionSchemaNames["DeviceInterfaceID"]].(int)),
+		VlanSTag:            ecx.Int(rawData[ecxL2ConnectionSchemaNames["VlanSTag"]].(int)),
+		VlanCTag:            ecx.Int(rawData[ecxL2ConnectionSchemaNames["VlanCTag"]].(int)),
+		NamedTag:            ecx.String(rawData[ecxL2ConnectionSchemaNames["NamedTag"]].(string)),
+		ZSidePortUUID:       ecx.String(rawData[ecxL2ConnectionSchemaNames["ZSidePortUUID"]].(string)),
+		ZSideVlanSTag:       ecx.Int(rawData[ecxL2ConnectionSchemaNames["ZSideVlanSTag"]].(int)),
+		ZSideVlanCTag:       ecx.Int(rawData[ecxL2ConnectionSchemaNames["ZSideVlanCTag"]].(int)),
+		SellerRegion:        ecx.String(rawData[ecxL2ConnectionSchemaNames["SellerRegion"]].(string)),
+		SellerMetroCode:     ecx.String(rawData[ecxL2ConnectionSchemaNames["SellerMetroCode"]].(string)),
+		AuthorizationKey:    ecx.String(rawData[ecxL2ConnectionSchemaNames["AuthorizationKey"]].(string)),
 	}
 
 	//when
@@ -65,85 +65,85 @@ func TestFabricL2Connection_updateResourceData(t *testing.T) {
 	//given
 	d := schema.TestResourceDataRaw(t, createECXL2ConnectionResourceSchema(), make(map[string]interface{}))
 	input := &ecx.L2Connection{
-		UUID:                randString(36),
-		Name:                randString(36),
-		ProfileUUID:         randString(36),
-		Speed:               50,
-		SpeedUnit:           "MB",
-		Status:              ecx.ConnectionStatusProvisioned,
-		ProviderStatus:      ecx.ConnectionStatusProvisioned,
+		UUID:                ecx.String(randString(36)),
+		Name:                ecx.String(randString(36)),
+		ProfileUUID:         ecx.String(randString(36)),
+		Speed:               ecx.Int(50),
+		SpeedUnit:           ecx.String("MB"),
+		Status:              ecx.String(ecx.ConnectionStatusProvisioned),
+		ProviderStatus:      ecx.String(ecx.ConnectionStatusProvisioned),
 		Notifications:       []string{"bla@bla.com"},
-		PurchaseOrderNumber: randString(10),
-		PortUUID:            randString(36),
-		DeviceUUID:          randString(36),
-		DeviceInterfaceID:   randInt(10),
-		VlanSTag:            randInt(2000),
-		VlanCTag:            randInt(2000),
-		NamedTag:            randString(100),
-		AdditionalInfo:      []ecx.L2ConnectionAdditionalInfo{{Name: randString(10), Value: randString(10)}},
-		ZSidePortUUID:       randString(36),
-		ZSideVlanCTag:       randInt(2000),
-		ZSideVlanSTag:       randInt(2000),
-		SellerRegion:        randString(10),
-		SellerMetroCode:     randString(2),
-		AuthorizationKey:    randString(10),
-		RedundantUUID:       randString(36),
-		RedundancyType:      randString(10),
+		PurchaseOrderNumber: ecx.String(randString(10)),
+		PortUUID:            ecx.String(randString(36)),
+		DeviceUUID:          ecx.String(randString(36)),
+		DeviceInterfaceID:   ecx.Int(randInt(10)),
+		VlanSTag:            ecx.Int(randInt(2000)),
+		VlanCTag:            ecx.Int(randInt(2000)),
+		NamedTag:            ecx.String(randString(100)),
+		AdditionalInfo:      []ecx.L2ConnectionAdditionalInfo{{Name: ecx.String(randString(10)), Value: ecx.String(randString(10))}},
+		ZSidePortUUID:       ecx.String(randString(36)),
+		ZSideVlanCTag:       ecx.Int(randInt(2000)),
+		ZSideVlanSTag:       ecx.Int(randInt(2000)),
+		SellerRegion:        ecx.String(randString(10)),
+		SellerMetroCode:     ecx.String(randString(2)),
+		AuthorizationKey:    ecx.String(randString(10)),
+		RedundantUUID:       ecx.String(randString(36)),
+		RedundancyType:      ecx.String(randString(10)),
 	}
 	//when
 	err := updateECXL2ConnectionResource(input, nil, d)
 
 	//then
 	assert.Nil(t, err, "Update of resource data does not return error")
-	assert.Equal(t, input.UUID, d.Get(ecxL2ConnectionSchemaNames["UUID"]), "UUID matches")
-	assert.Equal(t, input.Name, d.Get(ecxL2ConnectionSchemaNames["Name"]), "Name matches")
-	assert.Equal(t, input.ProfileUUID, d.Get(ecxL2ConnectionSchemaNames["ProfileUUID"]), "ProfileUUID matches")
-	assert.Equal(t, input.Speed, d.Get(ecxL2ConnectionSchemaNames["Speed"]), "Speed matches")
-	assert.Equal(t, input.SpeedUnit, d.Get(ecxL2ConnectionSchemaNames["SpeedUnit"]), "SpeedUnit matches")
-	assert.Equal(t, input.Status, d.Get(ecxL2ConnectionSchemaNames["Status"]), "Status matches")
-	assert.Equal(t, input.ProviderStatus, d.Get(ecxL2ConnectionSchemaNames["ProviderStatus"]), "ProviderStatus matches")
+	assert.Equal(t, ecx.StringValue(input.UUID), d.Get(ecxL2ConnectionSchemaNames["UUID"]), "UUID matches")
+	assert.Equal(t, ecx.StringValue(input.Name), d.Get(ecxL2ConnectionSchemaNames["Name"]), "Name matches")
+	assert.Equal(t, ecx.StringValue(input.ProfileUUID), d.Get(ecxL2ConnectionSchemaNames["ProfileUUID"]), "ProfileUUID matches")
+	assert.Equal(t, ecx.IntValue(input.Speed), d.Get(ecxL2ConnectionSchemaNames["Speed"]), "Speed matches")
+	assert.Equal(t, ecx.StringValue(input.SpeedUnit), d.Get(ecxL2ConnectionSchemaNames["SpeedUnit"]), "SpeedUnit matches")
+	assert.Equal(t, ecx.StringValue(input.Status), d.Get(ecxL2ConnectionSchemaNames["Status"]), "Status matches")
+	assert.Equal(t, ecx.StringValue(input.ProviderStatus), d.Get(ecxL2ConnectionSchemaNames["ProviderStatus"]), "ProviderStatus matches")
 	assert.Equal(t, input.Notifications, expandSetToStringList(d.Get(ecxL2ConnectionSchemaNames["Notifications"]).(*schema.Set)), "Notifications matches")
-	assert.Equal(t, input.PurchaseOrderNumber, d.Get(ecxL2ConnectionSchemaNames["PurchaseOrderNumber"]), "PurchaseOrderNumber matches")
-	assert.Equal(t, input.PortUUID, d.Get(ecxL2ConnectionSchemaNames["PortUUID"]), "PortUUID matches")
-	assert.Equal(t, input.DeviceUUID, d.Get(ecxL2ConnectionSchemaNames["DeviceUUID"]), "DeviceUUID matches")
-	assert.Equal(t, input.DeviceInterfaceID, d.Get(ecxL2ConnectionSchemaNames["DeviceInterfaceID"]), "DeviceInterfaceID matches")
-	assert.Equal(t, input.VlanSTag, d.Get(ecxL2ConnectionSchemaNames["VlanSTag"]), "VlanSTag matches")
-	assert.Equal(t, input.VlanCTag, d.Get(ecxL2ConnectionSchemaNames["VlanCTag"]), "VlanCTag matches")
-	assert.Equal(t, input.NamedTag, d.Get(ecxL2ConnectionSchemaNames["NamedTag"]), "NamedTag matches")
+	assert.Equal(t, ecx.StringValue(input.PurchaseOrderNumber), d.Get(ecxL2ConnectionSchemaNames["PurchaseOrderNumber"]), "PurchaseOrderNumber matches")
+	assert.Equal(t, ecx.StringValue(input.PortUUID), d.Get(ecxL2ConnectionSchemaNames["PortUUID"]), "PortUUID matches")
+	assert.Equal(t, ecx.StringValue(input.DeviceUUID), d.Get(ecxL2ConnectionSchemaNames["DeviceUUID"]), "DeviceUUID matches")
+	assert.Equal(t, ecx.IntValue(input.DeviceInterfaceID), d.Get(ecxL2ConnectionSchemaNames["DeviceInterfaceID"]), "DeviceInterfaceID matches")
+	assert.Equal(t, ecx.IntValue(input.VlanSTag), d.Get(ecxL2ConnectionSchemaNames["VlanSTag"]), "VlanSTag matches")
+	assert.Equal(t, ecx.IntValue(input.VlanCTag), d.Get(ecxL2ConnectionSchemaNames["VlanCTag"]), "VlanCTag matches")
+	assert.Equal(t, ecx.StringValue(input.NamedTag), d.Get(ecxL2ConnectionSchemaNames["NamedTag"]), "NamedTag matches")
 	assert.Equal(t, input.AdditionalInfo, expandECXL2ConnectionAdditionalInfo(d.Get(ecxL2ConnectionSchemaNames["AdditionalInfo"]).(*schema.Set)), "AdditionalInfo matches")
-	assert.Equal(t, input.ZSidePortUUID, d.Get(ecxL2ConnectionSchemaNames["ZSidePortUUID"]), "ZSidePortUUID matches")
-	assert.Equal(t, input.ZSideVlanCTag, d.Get(ecxL2ConnectionSchemaNames["ZSideVlanCTag"]), "ZSideVlanCTag matches")
-	assert.Equal(t, input.ZSideVlanSTag, d.Get(ecxL2ConnectionSchemaNames["ZSideVlanSTag"]), "ZSideVlanSTag matches")
-	assert.Equal(t, input.SellerRegion, d.Get(ecxL2ConnectionSchemaNames["SellerRegion"]), "SellerRegion matches")
-	assert.Equal(t, input.SellerMetroCode, d.Get(ecxL2ConnectionSchemaNames["SellerMetroCode"]), "SellerMetroCode matches")
-	assert.Equal(t, input.AuthorizationKey, d.Get(ecxL2ConnectionSchemaNames["AuthorizationKey"]), "AuthorizationKey matches")
-	assert.Equal(t, input.RedundantUUID, d.Get(ecxL2ConnectionSchemaNames["RedundantUUID"]), "RedundantUUID matches")
-	assert.Equal(t, input.RedundancyType, d.Get(ecxL2ConnectionSchemaNames["RedundancyType"]), "RedundancyType matches")
+	assert.Equal(t, ecx.StringValue(input.ZSidePortUUID), d.Get(ecxL2ConnectionSchemaNames["ZSidePortUUID"]), "ZSidePortUUID matches")
+	assert.Equal(t, ecx.IntValue(input.ZSideVlanCTag), d.Get(ecxL2ConnectionSchemaNames["ZSideVlanCTag"]), "ZSideVlanCTag matches")
+	assert.Equal(t, ecx.IntValue(input.ZSideVlanSTag), d.Get(ecxL2ConnectionSchemaNames["ZSideVlanSTag"]), "ZSideVlanSTag matches")
+	assert.Equal(t, ecx.StringValue(input.SellerRegion), d.Get(ecxL2ConnectionSchemaNames["SellerRegion"]), "SellerRegion matches")
+	assert.Equal(t, ecx.StringValue(input.SellerMetroCode), d.Get(ecxL2ConnectionSchemaNames["SellerMetroCode"]), "SellerMetroCode matches")
+	assert.Equal(t, ecx.StringValue(input.AuthorizationKey), d.Get(ecxL2ConnectionSchemaNames["AuthorizationKey"]), "AuthorizationKey matches")
+	assert.Equal(t, ecx.StringValue(input.RedundantUUID), d.Get(ecxL2ConnectionSchemaNames["RedundantUUID"]), "RedundantUUID matches")
+	assert.Equal(t, ecx.StringValue(input.RedundancyType), d.Get(ecxL2ConnectionSchemaNames["RedundancyType"]), "RedundancyType matches")
 }
 
 func TestFabricL2Connection_flattenSecondary(t *testing.T) {
 	//given
 	input := &ecx.L2Connection{
-		UUID:              randString(36),
-		Name:              randString(36),
-		ProfileUUID:       randString(36),
-		Speed:             50,
-		SpeedUnit:         "MB",
-		Status:            ecx.ConnectionStatusProvisioned,
-		ProviderStatus:    ecx.ConnectionStatusProvisioned,
-		PortUUID:          randString(36),
-		DeviceUUID:        randString(36),
-		DeviceInterfaceID: randInt(10),
-		VlanSTag:          randInt(2000),
-		VlanCTag:          randInt(2000),
-		ZSidePortUUID:     randString(36),
-		ZSideVlanCTag:     randInt(2000),
-		ZSideVlanSTag:     randInt(2000),
-		SellerRegion:      randString(10),
-		SellerMetroCode:   randString(2),
-		AuthorizationKey:  randString(10),
-		RedundantUUID:     randString(36),
-		RedundancyType:    randString(10),
+		UUID:              ecx.String(randString(36)),
+		Name:              ecx.String(randString(36)),
+		ProfileUUID:       ecx.String(randString(36)),
+		Speed:             ecx.Int(50),
+		SpeedUnit:         ecx.String("MB"),
+		Status:            ecx.String(ecx.ConnectionStatusProvisioned),
+		ProviderStatus:    ecx.String(ecx.ConnectionStatusProvisioned),
+		PortUUID:          ecx.String(randString(36)),
+		DeviceUUID:        ecx.String(randString(36)),
+		DeviceInterfaceID: ecx.Int(randInt(10)),
+		VlanSTag:          ecx.Int(randInt(2000)),
+		VlanCTag:          ecx.Int(randInt(2000)),
+		ZSidePortUUID:     ecx.String(randString(36)),
+		ZSideVlanCTag:     ecx.Int(randInt(2000)),
+		ZSideVlanSTag:     ecx.Int(randInt(2000)),
+		SellerRegion:      ecx.String(randString(10)),
+		SellerMetroCode:   ecx.String(randString(2)),
+		AuthorizationKey:  ecx.String(randString(10)),
+		RedundantUUID:     ecx.String(randString(36)),
+		RedundancyType:    ecx.String(randString(10)),
 	}
 	expected := []interface{}{
 		map[string]interface{}{
@@ -182,33 +182,33 @@ func TestFabricL2Connection_expandSecondary(t *testing.T) {
 	//given
 	input := []interface{}{
 		map[string]interface{}{
-			ecxL2ConnectionSchemaNames["Name"]:              randString(36),
-			ecxL2ConnectionSchemaNames["ProfileUUID"]:       randString(36),
+			ecxL2ConnectionSchemaNames["Name"]:              "testName",
+			ecxL2ConnectionSchemaNames["ProfileUUID"]:       "529574df-1dfb-4fad-b904-8edd3920e8b7",
 			ecxL2ConnectionSchemaNames["Speed"]:             50,
 			ecxL2ConnectionSchemaNames["SpeedUnit"]:         "MB",
-			ecxL2ConnectionSchemaNames["PortUUID"]:          randString(36),
-			ecxL2ConnectionSchemaNames["DeviceUUID"]:        randString(36),
-			ecxL2ConnectionSchemaNames["DeviceInterfaceID"]: randInt(10),
-			ecxL2ConnectionSchemaNames["VlanSTag"]:          randInt(2000),
-			ecxL2ConnectionSchemaNames["VlanCTag"]:          randInt(2000),
-			ecxL2ConnectionSchemaNames["SellerRegion"]:      randString(10),
-			ecxL2ConnectionSchemaNames["SellerMetroCode"]:   randString(2),
-			ecxL2ConnectionSchemaNames["AuthorizationKey"]:  randString(10),
+			ecxL2ConnectionSchemaNames["PortUUID"]:          "8640622d-e4fd-4118-8e0e-566fc5af8f6a",
+			ecxL2ConnectionSchemaNames["DeviceUUID"]:        "af93a177-5f3d-4102-b231-c15fc49ca099",
+			ecxL2ConnectionSchemaNames["DeviceInterfaceID"]: 6,
+			ecxL2ConnectionSchemaNames["VlanSTag"]:          434,
+			ecxL2ConnectionSchemaNames["VlanCTag"]:          0,
+			ecxL2ConnectionSchemaNames["SellerRegion"]:      "",
+			ecxL2ConnectionSchemaNames["SellerMetroCode"]:   "SV",
+			ecxL2ConnectionSchemaNames["AuthorizationKey"]:  "123456789012",
 		},
 	}
 	expected := &ecx.L2Connection{
-		Name:              input[0].(map[string]interface{})[ecxL2ConnectionSchemaNames["Name"]].(string),
-		ProfileUUID:       input[0].(map[string]interface{})[ecxL2ConnectionSchemaNames["ProfileUUID"]].(string),
-		Speed:             input[0].(map[string]interface{})[ecxL2ConnectionSchemaNames["Speed"]].(int),
-		SpeedUnit:         input[0].(map[string]interface{})[ecxL2ConnectionSchemaNames["SpeedUnit"]].(string),
-		PortUUID:          input[0].(map[string]interface{})[ecxL2ConnectionSchemaNames["PortUUID"]].(string),
-		DeviceUUID:        input[0].(map[string]interface{})[ecxL2ConnectionSchemaNames["DeviceUUID"]].(string),
-		DeviceInterfaceID: input[0].(map[string]interface{})[ecxL2ConnectionSchemaNames["DeviceInterfaceID"]].(int),
-		VlanSTag:          input[0].(map[string]interface{})[ecxL2ConnectionSchemaNames["VlanSTag"]].(int),
-		VlanCTag:          input[0].(map[string]interface{})[ecxL2ConnectionSchemaNames["VlanCTag"]].(int),
-		SellerRegion:      input[0].(map[string]interface{})[ecxL2ConnectionSchemaNames["SellerRegion"]].(string),
-		SellerMetroCode:   input[0].(map[string]interface{})[ecxL2ConnectionSchemaNames["SellerMetroCode"]].(string),
-		AuthorizationKey:  input[0].(map[string]interface{})[ecxL2ConnectionSchemaNames["AuthorizationKey"]].(string),
+		Name:              ecx.String(input[0].(map[string]interface{})[ecxL2ConnectionSchemaNames["Name"]].(string)),
+		ProfileUUID:       ecx.String(input[0].(map[string]interface{})[ecxL2ConnectionSchemaNames["ProfileUUID"]].(string)),
+		Speed:             ecx.Int(input[0].(map[string]interface{})[ecxL2ConnectionSchemaNames["Speed"]].(int)),
+		SpeedUnit:         ecx.String(input[0].(map[string]interface{})[ecxL2ConnectionSchemaNames["SpeedUnit"]].(string)),
+		PortUUID:          ecx.String(input[0].(map[string]interface{})[ecxL2ConnectionSchemaNames["PortUUID"]].(string)),
+		DeviceUUID:        ecx.String(input[0].(map[string]interface{})[ecxL2ConnectionSchemaNames["DeviceUUID"]].(string)),
+		DeviceInterfaceID: ecx.Int(input[0].(map[string]interface{})[ecxL2ConnectionSchemaNames["DeviceInterfaceID"]].(int)),
+		VlanSTag:          ecx.Int(input[0].(map[string]interface{})[ecxL2ConnectionSchemaNames["VlanSTag"]].(int)),
+		VlanCTag:          nil,
+		SellerRegion:      nil,
+		SellerMetroCode:   ecx.String(input[0].(map[string]interface{})[ecxL2ConnectionSchemaNames["SellerMetroCode"]].(string)),
+		AuthorizationKey:  ecx.String(input[0].(map[string]interface{})[ecxL2ConnectionSchemaNames["AuthorizationKey"]].(string)),
 	}
 
 	//when
@@ -223,8 +223,8 @@ func TestFabricL2Connection_flattenAdditionalInfo(t *testing.T) {
 	//given
 	input := []ecx.L2ConnectionAdditionalInfo{
 		{
-			Name:  randString(32),
-			Value: randString(32),
+			Name:  ecx.String(randString(32)),
+			Value: ecx.String(randString(32)),
 		},
 	}
 	expected := []interface{}{
@@ -255,8 +255,8 @@ func TestFabricL2Connection_expandAdditionalInfo(t *testing.T) {
 	inputList := input.List()
 	expected := []ecx.L2ConnectionAdditionalInfo{
 		{
-			Name:  inputList[0].(map[string]interface{})[ecxL2ConnectionAdditionalInfoSchemaNames["Name"]].(string),
-			Value: inputList[0].(map[string]interface{})[ecxL2ConnectionAdditionalInfoSchemaNames["Value"]].(string),
+			Name:  ecx.String(inputList[0].(map[string]interface{})[ecxL2ConnectionAdditionalInfoSchemaNames["Name"]].(string)),
+			Value: ecx.String(inputList[0].(map[string]interface{})[ecxL2ConnectionAdditionalInfoSchemaNames["Value"]].(string)),
 		},
 	}
 	//when

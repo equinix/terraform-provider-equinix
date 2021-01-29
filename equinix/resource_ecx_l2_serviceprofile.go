@@ -259,11 +259,11 @@ func createECXL2ServiceProfileResourceSchema() map[string]*schema.Schema {
 func resourceECXL2ServiceProfileCreate(d *schema.ResourceData, m interface{}) error {
 	conf := m.(*Config)
 	profile := createECXL2ServiceProfile(d)
-	resp, err := conf.ecx.CreateL2ServiceProfile(*profile)
+	uuid, err := conf.ecx.CreateL2ServiceProfile(*profile)
 	if err != nil {
 		return err
 	}
-	d.SetId(resp.UUID)
+	d.SetId(ecx.StringValue(uuid))
 	return resourceECXL2ServiceProfileRead(d, m)
 }
 
@@ -282,8 +282,7 @@ func resourceECXL2ServiceProfileRead(d *schema.ResourceData, m interface{}) erro
 func resourceECXL2ServiceProfileUpdate(d *schema.ResourceData, m interface{}) error {
 	conf := m.(*Config)
 	profile := createECXL2ServiceProfile(d)
-	_, err := conf.ecx.UpdateL2ServiceProfile(*profile)
-	if err != nil {
+	if err := conf.ecx.UpdateL2ServiceProfile(*profile); err != nil {
 		return err
 	}
 	return resourceECXL2ServiceProfileRead(d, m)
@@ -307,46 +306,46 @@ func resourceECXL2ServiceProfileDelete(d *schema.ResourceData, m interface{}) er
 func createECXL2ServiceProfile(d *schema.ResourceData) *ecx.L2ServiceProfile {
 	profile := ecx.L2ServiceProfile{}
 	if v, ok := d.GetOk(ecxL2ServiceProfileSchemaNames["UUID"]); ok {
-		profile.UUID = v.(string)
+		profile.UUID = ecx.String(v.(string))
 	}
 	if v, ok := d.GetOk(ecxL2ServiceProfileSchemaNames["State"]); ok {
-		profile.State = v.(string)
+		profile.State = ecx.String(v.(string))
 	}
 	if v, ok := d.GetOk(ecxL2ServiceProfileSchemaNames["AlertPercentage"]); ok {
-		profile.AlertPercentage = v.(float64)
+		profile.AlertPercentage = ecx.Float64(v.(float64))
 	}
 	if v, ok := d.GetOk(ecxL2ServiceProfileSchemaNames["AllowCustomSpeed"]); ok {
-		profile.AllowCustomSpeed = v.(bool)
+		profile.AllowCustomSpeed = ecx.Bool(v.(bool))
 	}
 	if v, ok := d.GetOk(ecxL2ServiceProfileSchemaNames["AllowOverSubscription"]); ok {
-		profile.AllowOverSubscription = v.(bool)
+		profile.AllowOverSubscription = ecx.Bool(v.(bool))
 	}
 	if v, ok := d.GetOk(ecxL2ServiceProfileSchemaNames["APIAvailable"]); ok {
-		profile.APIAvailable = v.(bool)
+		profile.APIAvailable = ecx.Bool(v.(bool))
 	}
 	if v, ok := d.GetOk(ecxL2ServiceProfileSchemaNames["AuthKeyLabel"]); ok {
-		profile.AuthKeyLabel = v.(string)
+		profile.AuthKeyLabel = ecx.String(v.(string))
 	}
 	if v, ok := d.GetOk(ecxL2ServiceProfileSchemaNames["ConnectionNameLabel"]); ok {
-		profile.ConnectionNameLabel = v.(string)
+		profile.ConnectionNameLabel = ecx.String(v.(string))
 	}
 	if v, ok := d.GetOk(ecxL2ServiceProfileSchemaNames["CTagLabel"]); ok {
-		profile.CTagLabel = v.(string)
+		profile.CTagLabel = ecx.String(v.(string))
 	}
 	if v, ok := d.GetOk(ecxL2ServiceProfileSchemaNames["Description"]); ok {
-		profile.Description = v.(string)
+		profile.Description = ecx.String(v.(string))
 	}
 	if v, ok := d.GetOk(ecxL2ServiceProfileSchemaNames["EnableAutoGenerateServiceKey"]); ok {
-		profile.EnableAutoGenerateServiceKey = v.(bool)
+		profile.EnableAutoGenerateServiceKey = ecx.Bool(v.(bool))
 	}
 	if v, ok := d.GetOk(ecxL2ServiceProfileSchemaNames["EquinixManagedPortAndVlan"]); ok {
-		profile.EquinixManagedPortAndVlan = v.(bool)
+		profile.EquinixManagedPortAndVlan = ecx.Bool(v.(bool))
 	}
 	if v, ok := d.GetOk(ecxL2ServiceProfileSchemaNames["IntegrationID"]); ok {
-		profile.IntegrationID = v.(string)
+		profile.IntegrationID = ecx.String(v.(string))
 	}
 	if v, ok := d.GetOk(ecxL2ServiceProfileSchemaNames["Name"]); ok {
-		profile.Name = v.(string)
+		profile.Name = ecx.String(v.(string))
 	}
 	if v, ok := d.GetOk(ecxL2ServiceProfileSchemaNames["OnBandwidthThresholdNotification"]); ok {
 		profile.OnBandwidthThresholdNotification = expandSetToStringList(v.(*schema.Set))
@@ -358,25 +357,25 @@ func createECXL2ServiceProfile(d *schema.ResourceData) *ecx.L2ServiceProfile {
 		profile.OnVcApprovalRejectionNotification = expandSetToStringList(v.(*schema.Set))
 	}
 	if v, ok := d.GetOk(ecxL2ServiceProfileSchemaNames["OverSubscription"]); ok {
-		profile.OverSubscription = v.(string)
+		profile.OverSubscription = ecx.String(v.(string))
 	}
 	if v, ok := d.GetOk(ecxL2ServiceProfileSchemaNames["Private"]); ok {
-		profile.Private = v.(bool)
+		profile.Private = ecx.Bool(v.(bool))
 	}
 	if v, ok := d.GetOk(ecxL2ServiceProfileSchemaNames["PrivateUserEmails"]); ok {
 		profile.PrivateUserEmails = expandSetToStringList(v.(*schema.Set))
 	}
 	if v, ok := d.GetOk(ecxL2ServiceProfileSchemaNames["RequiredRedundancy"]); ok {
-		profile.RequiredRedundancy = v.(bool)
+		profile.RequiredRedundancy = ecx.Bool(v.(bool))
 	}
 	if v, ok := d.GetOk(ecxL2ServiceProfileSchemaNames["SpeedFromAPI"]); ok {
-		profile.SpeedFromAPI = v.(bool)
+		profile.SpeedFromAPI = ecx.Bool(v.(bool))
 	}
 	if v, ok := d.GetOk(ecxL2ServiceProfileSchemaNames["TagType"]); ok {
-		profile.TagType = v.(string)
+		profile.TagType = ecx.String(v.(string))
 	}
 	if v, ok := d.GetOk(ecxL2ServiceProfileSchemaNames["VlanSameAsPrimary"]); ok {
-		profile.VlanSameAsPrimary = v.(bool)
+		profile.VlanSameAsPrimary = ecx.Bool(v.(bool))
 	}
 	if v, ok := d.GetOk(ecxL2ServiceProfileSchemaNames["Features"]); ok {
 		featureSet := v.(*schema.Set)
@@ -512,8 +511,8 @@ func expandECXL2ServiceProfileFeatures(features *schema.Set) []ecx.L2ServiceProf
 	for _, feature := range features.List() {
 		featureMap := feature.(map[string]interface{})
 		transformed = append(transformed, ecx.L2ServiceProfileFeatures{
-			CloudReach:  featureMap[ecxL2ServiceProfileFeaturesSchemaNames["CloudReach"]].(bool),
-			TestProfile: featureMap[ecxL2ServiceProfileFeaturesSchemaNames["TestProfile"]].(bool),
+			CloudReach:  ecx.Bool(featureMap[ecxL2ServiceProfileFeaturesSchemaNames["CloudReach"]].(bool)),
+			TestProfile: ecx.Bool(featureMap[ecxL2ServiceProfileFeaturesSchemaNames["TestProfile"]].(bool)),
 		})
 	}
 	return transformed
@@ -524,8 +523,8 @@ func expandECXL2ServiceProfilePorts(ports *schema.Set) []ecx.L2ServiceProfilePor
 	for _, port := range ports.List() {
 		portMap := port.(map[string]interface{})
 		transformed = append(transformed, ecx.L2ServiceProfilePort{
-			ID:        portMap[ecxL2ServiceProfilePortSchemaNames["ID"]].(string),
-			MetroCode: portMap[ecxL2ServiceProfilePortSchemaNames["MetroCode"]].(string),
+			ID:        ecx.String(portMap[ecxL2ServiceProfilePortSchemaNames["ID"]].(string)),
+			MetroCode: ecx.String(portMap[ecxL2ServiceProfilePortSchemaNames["MetroCode"]].(string)),
 		})
 	}
 	return transformed
@@ -536,8 +535,8 @@ func expandECXL2ServiceProfileSpeedBands(bands *schema.Set) []ecx.L2ServiceProfi
 	for _, band := range bands.List() {
 		bandMap := band.(map[string]interface{})
 		transformed = append(transformed, ecx.L2ServiceProfileSpeedBand{
-			Speed:     bandMap[ecxL2ServiceProfileSpeedBandSchemaNames["Speed"]].(int),
-			SpeedUnit: bandMap[ecxL2ServiceProfileSpeedBandSchemaNames["SpeedUnit"]].(string),
+			Speed:     ecx.Int(bandMap[ecxL2ServiceProfileSpeedBandSchemaNames["Speed"]].(int)),
+			SpeedUnit: ecx.String(bandMap[ecxL2ServiceProfileSpeedBandSchemaNames["SpeedUnit"]].(string)),
 		})
 	}
 	return transformed

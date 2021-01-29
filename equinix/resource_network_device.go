@@ -830,34 +830,34 @@ func expandNetworkDeviceSecondary(devices []interface{}) *ne.Device {
 	}
 	device := devices[0].(map[string]interface{})
 	transformed := &ne.Device{}
-	if v, ok := device[networkDeviceSchemaNames["UUID"]]; ok {
+	if v, ok := device[networkDeviceSchemaNames["UUID"]]; ok && !isEmpty(v) {
 		transformed.UUID = ne.String(v.(string))
 	}
-	if v, ok := device[networkDeviceSchemaNames["Name"]]; ok {
+	if v, ok := device[networkDeviceSchemaNames["Name"]]; ok && !isEmpty(v) {
 		transformed.Name = ne.String(v.(string))
 	}
-	if v, ok := device[networkDeviceSchemaNames["MetroCode"]]; ok {
+	if v, ok := device[networkDeviceSchemaNames["MetroCode"]]; ok && !isEmpty(v) {
 		transformed.MetroCode = ne.String(v.(string))
 	}
-	if v, ok := device[networkDeviceSchemaNames["HostName"]]; ok {
+	if v, ok := device[networkDeviceSchemaNames["HostName"]]; ok && !isEmpty(v) {
 		transformed.HostName = ne.String(v.(string))
 	}
-	if v, ok := device[networkDeviceSchemaNames["LicenseToken"]]; ok {
+	if v, ok := device[networkDeviceSchemaNames["LicenseToken"]]; ok && !isEmpty(v) {
 		transformed.LicenseToken = ne.String(v.(string))
 	}
-	if v, ok := device[networkDeviceSchemaNames["LicenseFile"]]; ok {
+	if v, ok := device[networkDeviceSchemaNames["LicenseFile"]]; ok && !isEmpty(v) {
 		transformed.LicenseFile = ne.String(v.(string))
 	}
-	if v, ok := device[networkDeviceSchemaNames["ACLTemplateUUID"]]; ok {
+	if v, ok := device[networkDeviceSchemaNames["ACLTemplateUUID"]]; ok && !isEmpty(v) {
 		transformed.ACLTemplateUUID = ne.String(v.(string))
 	}
-	if v, ok := device[networkDeviceSchemaNames["AccountNumber"]]; ok {
+	if v, ok := device[networkDeviceSchemaNames["AccountNumber"]]; ok && !isEmpty(v) {
 		transformed.AccountNumber = ne.String(v.(string))
 	}
 	if v, ok := device[networkDeviceSchemaNames["Notifications"]]; ok {
 		transformed.Notifications = expandSetToStringList(v.(*schema.Set))
 	}
-	if v, ok := device[networkDeviceSchemaNames["AdditionalBandwidth"]]; ok {
+	if v, ok := device[networkDeviceSchemaNames["AdditionalBandwidth"]]; ok && !isEmpty(v) {
 		transformed.AdditionalBandwidth = ne.Int(v.(int))
 	}
 	if v, ok := device[networkDeviceSchemaNames["VendorConfiguration"]]; ok {

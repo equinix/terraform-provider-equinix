@@ -358,17 +358,17 @@ func createECXL2ConnectionResourceSchema() map[string]*schema.Schema {
 func resourceECXL2ConnectionCreate(d *schema.ResourceData, m interface{}) error {
 	conf := m.(*Config)
 	primary, secondary := createECXL2Connections(d)
-	var resp *ecx.L2Connection
+	var primaryID *string
 	var err error
 	if secondary != nil {
-		resp, err = conf.ecx.CreateL2RedundantConnection(*primary, *secondary)
+		primaryID, _, err = conf.ecx.CreateL2RedundantConnection(*primary, *secondary)
 	} else {
-		resp, err = conf.ecx.CreateL2Connection(*primary)
+		primaryID, err = conf.ecx.CreateL2Connection(*primary)
 	}
 	if err != nil {
 		return err
 	}
-	d.SetId(resp.UUID)
+	d.SetId(ecx.StringValue(primaryID))
 
 	createStateConf := &resource.StateChangeConf{
 		Pending: []string{
@@ -389,7 +389,7 @@ func resourceECXL2ConnectionCreate(d *schema.ResourceData, m interface{}) error 
 			if err != nil {
 				return nil, "", err
 			}
-			return resp, resp.Status, nil
+			return resp, ecx.StringValue(resp.Status), nil
 		},
 	}
 	if _, err := createStateConf.WaitForState(); err != nil {
@@ -408,7 +408,7 @@ func resourceECXL2ConnectionRead(d *schema.ResourceData, m interface{}) error {
 	if err != nil {
 		return fmt.Errorf("cannot fetch primary connection due to %v", err)
 	}
-	if isStringInSlice(primary.Status, []string{
+	if isStringInSlice(ecx.StringValue(primary.Status), []string{
 		ecx.ConnectionStatusPendingDelete,
 		ecx.ConnectionStatusDeprovisioning,
 		ecx.ConnectionStatusDeprovisioned,
@@ -417,8 +417,8 @@ func resourceECXL2ConnectionRead(d *schema.ResourceData, m interface{}) error {
 		d.SetId("")
 		return nil
 	}
-	if primary.RedundantUUID != "" {
-		secondary, err = conf.ecx.GetL2Connection(primary.RedundantUUID)
+	if ecx.StringValue(primary.RedundantUUID) != "" {
+		secondary, err = conf.ecx.GetL2Connection(ecx.StringValue(primary.RedundantUUID))
 		if err != nil {
 			return fmt.Errorf("cannot fetch secondary connection due to %v", err)
 		}
@@ -483,7 +483,7 @@ func resourceECXL2ConnectionDelete(d *schema.ResourceData, m interface{}) error 
 			if err != nil {
 				return nil, "", err
 			}
-			return resp, resp.Status, nil
+			return resp, ecx.StringValue(resp.Status), nil
 		},
 	}
 	if _, err := deleteStateConf.WaitForState(); err != nil {
@@ -496,61 +496,61 @@ func createECXL2Connections(d *schema.ResourceData) (*ecx.L2Connection, *ecx.L2C
 	var primary, secondary *ecx.L2Connection
 	primary = &ecx.L2Connection{}
 	if v, ok := d.GetOk(ecxL2ConnectionSchemaNames["Name"]); ok {
-		primary.Name = v.(string)
+		primary.Name = ecx.String(v.(string))
 	}
 	if v, ok := d.GetOk(ecxL2ConnectionSchemaNames["ProfileUUID"]); ok {
-		primary.ProfileUUID = v.(string)
+		primary.ProfileUUID = ecx.String(v.(string))
 	}
 	if v, ok := d.GetOk(ecxL2ConnectionSchemaNames["Speed"]); ok {
-		primary.Speed = v.(int)
+		primary.Speed = ecx.Int(v.(int))
 	}
 	if v, ok := d.GetOk(ecxL2ConnectionSchemaNames["SpeedUnit"]); ok {
-		primary.SpeedUnit = v.(string)
+		primary.SpeedUnit = ecx.String(v.(string))
 	}
 	if v, ok := d.GetOk(ecxL2ConnectionSchemaNames["Notifications"]); ok {
 		primary.Notifications = expandSetToStringList(v.(*schema.Set))
 	}
 	if v, ok := d.GetOk(ecxL2ConnectionSchemaNames["PurchaseOrderNumber"]); ok {
-		primary.PurchaseOrderNumber = v.(string)
+		primary.PurchaseOrderNumber = ecx.String(v.(string))
 	}
 	if v, ok := d.GetOk(ecxL2ConnectionSchemaNames["PortUUID"]); ok {
-		primary.PortUUID = v.(string)
+		primary.PortUUID = ecx.String(v.(string))
 	}
 	if v, ok := d.GetOk(ecxL2ConnectionSchemaNames["DeviceUUID"]); ok {
-		primary.DeviceUUID = v.(string)
+		primary.DeviceUUID = ecx.String(v.(string))
 	}
 	if v, ok := d.GetOk(ecxL2ConnectionSchemaNames["DeviceInterfaceID"]); ok {
-		primary.DeviceInterfaceID = v.(int)
+		primary.DeviceInterfaceID = ecx.Int(v.(int))
 	}
 	if v, ok := d.GetOk(ecxL2ConnectionSchemaNames["VlanSTag"]); ok {
-		primary.VlanSTag = v.(int)
+		primary.VlanSTag = ecx.Int(v.(int))
 	}
 	if v, ok := d.GetOk(ecxL2ConnectionSchemaNames["VlanCTag"]); ok {
-		primary.VlanCTag = v.(int)
+		primary.VlanCTag = ecx.Int(v.(int))
 	}
 	if v, ok := d.GetOk(ecxL2ConnectionSchemaNames["NamedTag"]); ok {
-		primary.NamedTag = v.(string)
+		primary.NamedTag = ecx.String(v.(string))
 	}
 	if v, ok := d.GetOk(ecxL2ConnectionSchemaNames["AdditionalInfo"]); ok {
 		primary.AdditionalInfo = expandECXL2ConnectionAdditionalInfo(v.(*schema.Set))
 	}
 	if v, ok := d.GetOk(ecxL2ConnectionSchemaNames["ZSidePortUUID"]); ok {
-		primary.ZSidePortUUID = v.(string)
+		primary.ZSidePortUUID = ecx.String(v.(string))
 	}
 	if v, ok := d.GetOk(ecxL2ConnectionSchemaNames["ZSideVlanSTag"]); ok {
-		primary.ZSideVlanSTag = v.(int)
+		primary.ZSideVlanSTag = ecx.Int(v.(int))
 	}
 	if v, ok := d.GetOk(ecxL2ConnectionSchemaNames["ZSideVlanCTag"]); ok {
-		primary.ZSideVlanCTag = v.(int)
+		primary.ZSideVlanCTag = ecx.Int(v.(int))
 	}
 	if v, ok := d.GetOk(ecxL2ConnectionSchemaNames["SellerRegion"]); ok {
-		primary.SellerRegion = v.(string)
+		primary.SellerRegion = ecx.String(v.(string))
 	}
 	if v, ok := d.GetOk(ecxL2ConnectionSchemaNames["SellerMetroCode"]); ok {
-		primary.SellerMetroCode = v.(string)
+		primary.SellerMetroCode = ecx.String(v.(string))
 	}
 	if v, ok := d.GetOk(ecxL2ConnectionSchemaNames["AuthorizationKey"]); ok {
-		primary.AuthorizationKey = v.(string)
+		primary.AuthorizationKey = ecx.String(v.(string))
 	}
 	if v, ok := d.GetOk(ecxL2ConnectionSchemaNames["SecondaryConnection"]); ok {
 		secondary = expandECXL2ConnectionSecondary(v.([]interface{}))
@@ -559,86 +559,76 @@ func createECXL2Connections(d *schema.ResourceData) (*ecx.L2Connection, *ecx.L2C
 }
 
 func updateECXL2ConnectionResource(primary *ecx.L2Connection, secondary *ecx.L2Connection, d *schema.ResourceData) error {
-	if err := d.Set(ecxL2ConnectionSchemaNames["UUID"], primary.UUID); err != nil {
+	if err := setSchemaValueIfNotEmpty(ecxL2ConnectionSchemaNames["UUID"], primary.UUID, d); err != nil {
 		return fmt.Errorf("error reading UUID: %s", err)
 	}
-	if err := d.Set(ecxL2ConnectionSchemaNames["Name"], primary.Name); err != nil {
+	if err := setSchemaValueIfNotEmpty(ecxL2ConnectionSchemaNames["Name"], primary.Name, d); err != nil {
 		return fmt.Errorf("error reading Name: %s", err)
 	}
-	if err := d.Set(ecxL2ConnectionSchemaNames["ProfileUUID"], primary.ProfileUUID); err != nil {
+	if err := setSchemaValueIfNotEmpty(ecxL2ConnectionSchemaNames["ProfileUUID"], primary.ProfileUUID, d); err != nil {
 		return fmt.Errorf("error reading ProfileUUID: %s", err)
 	}
-	if err := d.Set(ecxL2ConnectionSchemaNames["Speed"], primary.Speed); err != nil {
+	if err := setSchemaValueIfNotEmpty(ecxL2ConnectionSchemaNames["Speed"], primary.Speed, d); err != nil {
 		return fmt.Errorf("error reading Speed: %s", err)
 	}
-	if err := d.Set(ecxL2ConnectionSchemaNames["SpeedUnit"], primary.SpeedUnit); err != nil {
+	if err := setSchemaValueIfNotEmpty(ecxL2ConnectionSchemaNames["SpeedUnit"], primary.SpeedUnit, d); err != nil {
 		return fmt.Errorf("error reading SpeedUnit: %s", err)
 	}
-	if err := d.Set(ecxL2ConnectionSchemaNames["Status"], primary.Status); err != nil {
+	if err := setSchemaValueIfNotEmpty(ecxL2ConnectionSchemaNames["Status"], primary.Status, d); err != nil {
 		return fmt.Errorf("error reading Status: %s", err)
 	}
-	if err := d.Set(ecxL2ConnectionSchemaNames["ProviderStatus"], primary.ProviderStatus); err != nil {
+	if err := setSchemaValueIfNotEmpty(ecxL2ConnectionSchemaNames["ProviderStatus"], primary.ProviderStatus, d); err != nil {
 		return fmt.Errorf("error reading ProviderStatus: %s", err)
 	}
-	if err := d.Set(ecxL2ConnectionSchemaNames["Notifications"], primary.Notifications); err != nil {
+	if err := setSchemaValueIfNotEmpty(ecxL2ConnectionSchemaNames["Notifications"], primary.Notifications, d); err != nil {
 		return fmt.Errorf("error reading Notifications: %s", err)
 	}
-	if err := d.Set(ecxL2ConnectionSchemaNames["PurchaseOrderNumber"], primary.PurchaseOrderNumber); err != nil {
+	if err := setSchemaValueIfNotEmpty(ecxL2ConnectionSchemaNames["PurchaseOrderNumber"], primary.PurchaseOrderNumber, d); err != nil {
 		return fmt.Errorf("error reading PurchaseOrderNumber: %s", err)
 	}
-	if err := d.Set(ecxL2ConnectionSchemaNames["PortUUID"], primary.PortUUID); err != nil {
+	if err := setSchemaValueIfNotEmpty(ecxL2ConnectionSchemaNames["PortUUID"], primary.PortUUID, d); err != nil {
 		return fmt.Errorf("error reading PortUUID: %s", err)
 	}
-	if err := d.Set(ecxL2ConnectionSchemaNames["DeviceUUID"], primary.DeviceUUID); err != nil {
+	if err := setSchemaValueIfNotEmpty(ecxL2ConnectionSchemaNames["DeviceUUID"], primary.DeviceUUID, d); err != nil {
 		return fmt.Errorf("error reading DeviceUUID: %s", err)
 	}
-	if primary.DeviceInterfaceID > 0 {
-		if err := d.Set(ecxL2ConnectionSchemaNames["DeviceInterfaceID"], primary.DeviceInterfaceID); err != nil {
-			return fmt.Errorf("error reading DeviceInterfaceID: %s", err)
-		}
+	if err := setSchemaValueIfNotEmpty(ecxL2ConnectionSchemaNames["DeviceInterfaceID"], primary.DeviceInterfaceID, d); err != nil {
+		return fmt.Errorf("error reading DeviceInterfaceID: %s", err)
 	}
-	if err := d.Set(ecxL2ConnectionSchemaNames["VlanSTag"], primary.VlanSTag); err != nil {
+	if err := setSchemaValueIfNotEmpty(ecxL2ConnectionSchemaNames["VlanSTag"], primary.VlanSTag, d); err != nil {
 		return fmt.Errorf("error reading VlanSTag: %s", err)
 	}
-	if primary.VlanCTag > 0 {
-		if err := d.Set(ecxL2ConnectionSchemaNames["VlanCTag"], primary.VlanCTag); err != nil {
-			return fmt.Errorf("error reading VlanCTag: %s", err)
-		}
+	if err := setSchemaValueIfNotEmpty(ecxL2ConnectionSchemaNames["VlanCTag"], primary.VlanCTag, d); err != nil {
+		return fmt.Errorf("error reading VlanCTag: %s", err)
 	}
-	if primary.NamedTag != "" {
-		if err := d.Set(ecxL2ConnectionSchemaNames["NamedTag"], primary.NamedTag); err != nil {
-			return fmt.Errorf("error reading NamedTag: %s", err)
-		}
+	if err := setSchemaValueIfNotEmpty(ecxL2ConnectionSchemaNames["NamedTag"], primary.NamedTag, d); err != nil {
+		return fmt.Errorf("error reading NamedTag: %s", err)
 	}
 	if err := d.Set(ecxL2ConnectionSchemaNames["AdditionalInfo"], flattenECXL2ConnectionAdditionalInfo(primary.AdditionalInfo)); err != nil {
 		return fmt.Errorf("error reading AdditionalInfo: %s", err)
 	}
-	if err := d.Set(ecxL2ConnectionSchemaNames["ZSidePortUUID"], primary.ZSidePortUUID); err != nil {
+	if err := setSchemaValueIfNotEmpty(ecxL2ConnectionSchemaNames["ZSidePortUUID"], primary.ZSidePortUUID, d); err != nil {
 		return fmt.Errorf("error reading ZSidePortUUID: %s", err)
 	}
-	if primary.ZSideVlanSTag > 0 {
-		if err := d.Set(ecxL2ConnectionSchemaNames["ZSideVlanSTag"], primary.ZSideVlanSTag); err != nil {
-			return fmt.Errorf("error reading ZSideVlanSTag: %s", err)
-		}
+	if err := setSchemaValueIfNotEmpty(ecxL2ConnectionSchemaNames["ZSideVlanSTag"], primary.ZSideVlanSTag, d); err != nil {
+		return fmt.Errorf("error reading ZSideVlanSTag: %s", err)
 	}
-	if primary.ZSideVlanCTag > 0 {
-		if err := d.Set(ecxL2ConnectionSchemaNames["ZSideVlanCTag"], primary.ZSideVlanCTag); err != nil {
-			return fmt.Errorf("error reading ZSideVlanCTag: %s", err)
-		}
+	if err := setSchemaValueIfNotEmpty(ecxL2ConnectionSchemaNames["ZSideVlanCTag"], primary.ZSideVlanCTag, d); err != nil {
+		return fmt.Errorf("error reading ZSideVlanCTag: %s", err)
 	}
-	if err := d.Set(ecxL2ConnectionSchemaNames["SellerRegion"], primary.SellerRegion); err != nil {
+	if err := setSchemaValueIfNotEmpty(ecxL2ConnectionSchemaNames["SellerRegion"], primary.SellerRegion, d); err != nil {
 		return fmt.Errorf("error reading SellerRegion: %s", err)
 	}
-	if err := d.Set(ecxL2ConnectionSchemaNames["SellerMetroCode"], primary.SellerMetroCode); err != nil {
+	if err := setSchemaValueIfNotEmpty(ecxL2ConnectionSchemaNames["SellerMetroCode"], primary.SellerMetroCode, d); err != nil {
 		return fmt.Errorf("error reading SellerMetroCode: %s", err)
 	}
-	if err := d.Set(ecxL2ConnectionSchemaNames["AuthorizationKey"], primary.AuthorizationKey); err != nil {
+	if err := setSchemaValueIfNotEmpty(ecxL2ConnectionSchemaNames["AuthorizationKey"], primary.AuthorizationKey, d); err != nil {
 		return fmt.Errorf("error reading AuthorizationKey: %s", err)
 	}
-	if err := d.Set(ecxL2ConnectionSchemaNames["RedundantUUID"], primary.RedundantUUID); err != nil {
+	if err := setSchemaValueIfNotEmpty(ecxL2ConnectionSchemaNames["RedundantUUID"], primary.RedundantUUID, d); err != nil {
 		return fmt.Errorf("error reading RedundantUUID: %s", err)
 	}
-	if err := d.Set(ecxL2ConnectionSchemaNames["RedundancyType"], primary.RedundancyType); err != nil {
+	if err := setSchemaValueIfNotEmpty(ecxL2ConnectionSchemaNames["RedundancyType"], primary.RedundancyType, d); err != nil {
 		return fmt.Errorf("error reading RedundancyType: %s", err)
 	}
 	if secondary != nil {
@@ -682,40 +672,40 @@ func expandECXL2ConnectionSecondary(conns []interface{}) *ecx.L2Connection {
 	conn := conns[0].(map[string]interface{})
 	transformed := ecx.L2Connection{}
 	if v, ok := conn[ecxL2ConnectionSchemaNames["Name"]]; ok {
-		transformed.Name = v.(string)
+		transformed.Name = ecx.String(v.(string))
 	}
-	if v, ok := conn[ecxL2ConnectionSchemaNames["ProfileUUID"]]; ok {
-		transformed.ProfileUUID = v.(string)
+	if v, ok := conn[ecxL2ConnectionSchemaNames["ProfileUUID"]]; ok && !isEmpty(v) {
+		transformed.ProfileUUID = ecx.String(v.(string))
 	}
-	if v, ok := conn[ecxL2ConnectionSchemaNames["Speed"]]; ok {
-		transformed.Speed = v.(int)
+	if v, ok := conn[ecxL2ConnectionSchemaNames["Speed"]]; ok && !isEmpty(v) {
+		transformed.Speed = ecx.Int(v.(int))
 	}
-	if v, ok := conn[ecxL2ConnectionSchemaNames["SpeedUnit"]]; ok {
-		transformed.SpeedUnit = v.(string)
+	if v, ok := conn[ecxL2ConnectionSchemaNames["SpeedUnit"]]; ok && !isEmpty(v) {
+		transformed.SpeedUnit = ecx.String(v.(string))
 	}
-	if v, ok := conn[ecxL2ConnectionSchemaNames["PortUUID"]]; ok {
-		transformed.PortUUID = v.(string)
+	if v, ok := conn[ecxL2ConnectionSchemaNames["PortUUID"]]; ok && !isEmpty(v) {
+		transformed.PortUUID = ecx.String(v.(string))
 	}
-	if v, ok := conn[ecxL2ConnectionSchemaNames["DeviceUUID"]]; ok {
-		transformed.DeviceUUID = v.(string)
+	if v, ok := conn[ecxL2ConnectionSchemaNames["DeviceUUID"]]; ok && !isEmpty(v) {
+		transformed.DeviceUUID = ecx.String(v.(string))
 	}
-	if v, ok := conn[ecxL2ConnectionSchemaNames["DeviceInterfaceID"]]; ok {
-		transformed.DeviceInterfaceID = v.(int)
+	if v, ok := conn[ecxL2ConnectionSchemaNames["DeviceInterfaceID"]]; ok && !isEmpty(v) {
+		transformed.DeviceInterfaceID = ecx.Int(v.(int))
 	}
-	if v, ok := conn[ecxL2ConnectionSchemaNames["VlanSTag"]]; ok {
-		transformed.VlanSTag = v.(int)
+	if v, ok := conn[ecxL2ConnectionSchemaNames["VlanSTag"]]; ok && !isEmpty(v) {
+		transformed.VlanSTag = ecx.Int(v.(int))
 	}
-	if v, ok := conn[ecxL2ConnectionSchemaNames["VlanCTag"]]; ok {
-		transformed.VlanCTag = v.(int)
+	if v, ok := conn[ecxL2ConnectionSchemaNames["VlanCTag"]]; ok && !isEmpty(v) {
+		transformed.VlanCTag = ecx.Int(v.(int))
 	}
-	if v, ok := conn[ecxL2ConnectionSchemaNames["SellerRegion"]]; ok {
-		transformed.SellerRegion = v.(string)
+	if v, ok := conn[ecxL2ConnectionSchemaNames["SellerRegion"]]; ok && !isEmpty(v) {
+		transformed.SellerRegion = ecx.String(v.(string))
 	}
-	if v, ok := conn[ecxL2ConnectionSchemaNames["SellerMetroCode"]]; ok {
-		transformed.SellerMetroCode = v.(string)
+	if v, ok := conn[ecxL2ConnectionSchemaNames["SellerMetroCode"]]; ok && !isEmpty(v) {
+		transformed.SellerMetroCode = ecx.String(v.(string))
 	}
-	if v, ok := conn[ecxL2ConnectionSchemaNames["AuthorizationKey"]]; ok {
-		transformed.AuthorizationKey = v.(string)
+	if v, ok := conn[ecxL2ConnectionSchemaNames["AuthorizationKey"]]; ok && !isEmpty(v) {
+		transformed.AuthorizationKey = ecx.String(v.(string))
 	}
 	return &transformed
 }
@@ -736,8 +726,8 @@ func expandECXL2ConnectionAdditionalInfo(infos *schema.Set) []ecx.L2ConnectionAd
 	for _, info := range infos.List() {
 		infoMap := info.(map[string]interface{})
 		transformed = append(transformed, ecx.L2ConnectionAdditionalInfo{
-			Name:  infoMap[ecxL2ConnectionAdditionalInfoSchemaNames["Name"]].(string),
-			Value: infoMap[ecxL2ConnectionAdditionalInfoSchemaNames["Value"]].(string),
+			Name:  ecx.String(infoMap[ecxL2ConnectionAdditionalInfoSchemaNames["Name"]].(string)),
+			Value: ecx.String(infoMap[ecxL2ConnectionAdditionalInfoSchemaNames["Value"]].(string)),
 		})
 	}
 	return transformed

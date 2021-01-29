@@ -6,6 +6,7 @@ import (
 	"regexp"
 	"time"
 
+	"github.com/equinix/ecx-go"
 	"github.com/equinix/rest-go"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
@@ -197,4 +198,42 @@ func getMapChangedKeys(keys []string, old, new map[string]interface{}) map[strin
 		}
 	}
 	return changed
+}
+
+func isEmpty(v interface{}) bool {
+	switch v.(type) {
+	case int:
+		return v.(int) == 0
+	case *int:
+		return ecx.IntValue(v.(*int)) == 0
+	case string:
+		return v.(string) == ""
+	case *string:
+		return ecx.StringValue(v.(*string)) == ""
+	case nil:
+		return true
+	default:
+		return false
+	}
+}
+
+func isEmptyOld(v interface{}) bool {
+	if v == nil {
+		return true
+	}
+	val := reflect.ValueOf(v)
+	if val.IsZero() {
+		return true
+	}
+	if val.Kind() == reflect.Ptr {
+		val = val.Elem()
+	}
+	return val.IsZero()
+}
+
+func setSchemaValueIfNotEmpty(key string, value interface{}, d *schema.ResourceData) error {
+	if !isEmpty(value) {
+		return d.Set(key, value)
+	}
+	return nil
 }

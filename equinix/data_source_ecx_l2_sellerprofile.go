@@ -178,13 +178,13 @@ func dataSourceECXL2SellerProfileRead(d *schema.ResourceData, m interface{}) err
 	}
 	var filteredProfiles []ecx.L2ServiceProfile
 	for _, profile := range profiles {
-		if name != "" && profile.Name != name {
+		if name != "" && ecx.StringValue(profile.Name) != name {
 			continue
 		}
-		if orgName != "" && profile.OrganizationName != orgName {
+		if orgName != "" && ecx.StringValue(profile.OrganizationName) != orgName {
 			continue
 		}
-		if orgGlobalName != "" && profile.GlobalOrganization != orgGlobalName {
+		if orgGlobalName != "" && ecx.StringValue(profile.GlobalOrganization) != orgGlobalName {
 			continue
 		}
 		filteredProfiles = append(filteredProfiles, profile)
@@ -199,7 +199,7 @@ func dataSourceECXL2SellerProfileRead(d *schema.ResourceData, m interface{}) err
 }
 
 func updateECXL2SellerProfileResource(profile ecx.L2ServiceProfile, d *schema.ResourceData) error {
-	d.SetId(profile.UUID)
+	d.SetId(ecx.StringValue(profile.UUID))
 	if err := d.Set(ecxL2SellerProfileSchemaNames["UUID"], profile.UUID); err != nil {
 		return fmt.Errorf("error reading UUID: %s", err)
 	}

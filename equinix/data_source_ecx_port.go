@@ -79,7 +79,7 @@ func dataSourceECXPortRead(d *schema.ResourceData, m interface{}) error {
 	}
 	var filteredPorts []ecx.Port
 	for _, port := range ports {
-		if port.Name == name {
+		if ecx.StringValue(port.Name) == name {
 			filteredPorts = append(filteredPorts, port)
 		}
 	}
@@ -93,7 +93,7 @@ func dataSourceECXPortRead(d *schema.ResourceData, m interface{}) error {
 }
 
 func updateECXPortResource(port ecx.Port, d *schema.ResourceData) error {
-	d.SetId(port.UUID)
+	d.SetId(ecx.StringValue(port.UUID))
 	if err := d.Set(ecxPortSchemaNames["UUID"], port.UUID); err != nil {
 		return fmt.Errorf("error reading UUID: %s", err)
 	}

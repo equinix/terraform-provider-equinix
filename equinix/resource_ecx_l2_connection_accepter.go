@@ -77,8 +77,8 @@ func resourceECXL2ConnectionAccepterCreate(d *schema.ResourceData, m interface{}
 		return fmt.Errorf("error retrieving AWS credentials: %s", err)
 	}
 	log.Printf("[INFO] using AWS credentials provided by %s", creds.ProviderName)
-	req.AccessKey = creds.AccessKeyID
-	req.SecretKey = creds.SecretAccessKey
+	req.AccessKey = ecx.String(creds.AccessKeyID)
+	req.SecretKey = ecx.String(creds.SecretAccessKey)
 	connID := d.Get(ecxL2ConnectionAccepterSchemaNames["ConnectionId"]).(string)
 	if _, err := conf.ecx.ConfirmL2Connection(connID, req); err != nil {
 		return err
@@ -101,7 +101,7 @@ func resourceECXL2ConnectionAccepterCreate(d *schema.ResourceData, m interface{}
 			if err != nil {
 				return nil, "", err
 			}
-			return resp, resp.ProviderStatus, nil
+			return resp, ecx.StringValue(resp.ProviderStatus), nil
 		},
 	}
 	if _, err := createStateConf.WaitForState(); err != nil {
@@ -116,7 +116,7 @@ func resourceECXL2ConnectionAccepterRead(d *schema.ResourceData, m interface{}) 
 	if err != nil {
 		return err
 	}
-	if conn == nil || isStringInSlice(conn.Status, []string{
+	if conn == nil || isStringInSlice(ecx.StringValue(conn.Status), []string{
 		ecx.ConnectionStatusPendingDelete,
 		ecx.ConnectionStatusDeprovisioning,
 		ecx.ConnectionStatusDeprovisioned,
@@ -151,13 +151,13 @@ func updateECXL2ConnectionAccepterResource(conn *ecx.L2Connection, d *schema.Res
 	if err := d.Set(ecxL2ConnectionAccepterSchemaNames["SecretKey"], creds.SecretAccessKey); err != nil {
 		return fmt.Errorf("error reading AWS secretAccessKey: %s", err)
 	}
-	var awsConnectionID string
+	var awsConnectionID *string
 	for _, action := range conn.Actions {
-		if action.OperationID != "CONFIRM_CONNECTION" {
+		if ecx.StringValue(action.OperationID) != "CONFIRM_CONNECTION" {
 			continue
 		}
 		for _, actionData := range action.RequiredData {
-			if actionData.Key != "awsConnectionId" {
+			if ecx.StringValue(actionData.Key) != "awsConnectionId" {
 				continue
 			}
 			awsConnectionID = actionData.Value

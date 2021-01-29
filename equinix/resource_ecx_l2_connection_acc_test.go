@@ -49,14 +49,14 @@ func testSweepECXL2Connections(region string) error {
 	}
 	nonSweepableCount := 0
 	for _, conn := range conns {
-		if !isSweepableTestResource(conn.Name) {
+		if !isSweepableTestResource(ecx.StringValue(conn.Name)) {
 			nonSweepableCount++
 			continue
 		}
-		if err := config.ecx.DeleteL2Connection(conn.UUID); err != nil {
-			log.Printf("[INFO][SWEEPER_LOG] error deleting ECXL2Connection resource %s (%s): %s", conn.UUID, conn.Name, err)
+		if err := config.ecx.DeleteL2Connection(ecx.StringValue(conn.UUID)); err != nil {
+			log.Printf("[INFO][SWEEPER_LOG] error deleting ECXL2Connection resource %s (%s): %s", ecx.StringValue(conn.UUID), ecx.StringValue(conn.Name), err)
 		} else {
-			log.Printf("[INFO][SWEEPER_LOG] sent delete request for ECXL2Connection resource %s (%s)", conn.UUID, conn.Name)
+			log.Printf("[INFO][SWEEPER_LOG] sent delete request for ECXL2Connection resource %s (%s)", ecx.StringValue(conn.UUID), ecx.StringValue(conn.Name))
 		}
 	}
 	if nonSweepableCount > 0 {
@@ -258,7 +258,7 @@ func testAccFabricL2ConnectionExists(resourceName string, conn *ecx.L2Connection
 		if err != nil {
 			return fmt.Errorf("error when fetching L2 connection %v", err)
 		}
-		if resp.UUID != rs.Primary.ID {
+		if ecx.StringValue(resp.UUID) != rs.Primary.ID {
 			return fmt.Errorf("resource ID does not match %v - %v", rs.Primary.ID, resp.UUID)
 		}
 		*conn = *resp
@@ -269,10 +269,10 @@ func testAccFabricL2ConnectionExists(resourceName string, conn *ecx.L2Connection
 func testAccFabricL2ConnectionSecondaryExists(primary *ecx.L2Connection, secondary *ecx.L2Connection) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		client := testAccProvider.Meta().(*Config).ecx
-		if primary.RedundantUUID == "" {
+		if ecx.StringValue(primary.RedundantUUID) == "" {
 			return fmt.Errorf("primary connection has no RedundantUUID set")
 		}
-		resp, err := client.GetL2Connection(primary.RedundantUUID)
+		resp, err := client.GetL2Connection(ecx.StringValue(primary.RedundantUUID))
 		if err != nil {
 			return fmt.Errorf("error when fetching L2 connection %v", err)
 		}
@@ -283,50 +283,50 @@ func testAccFabricL2ConnectionSecondaryExists(primary *ecx.L2Connection, seconda
 
 func testAccFabricL2ConnectionAttributes(conn *ecx.L2Connection, ctx map[string]interface{}) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
-		if v, ok := ctx["connection-name"]; ok && conn.Name != v.(string) {
-			return fmt.Errorf("name does not match %v - %v", conn.Name, v)
+		if v, ok := ctx["connection-name"]; ok && ecx.StringValue(conn.Name) != v.(string) {
+			return fmt.Errorf("name does not match %v - %v", ecx.StringValue(conn.Name), v)
 		}
-		if v, ok := ctx["connection-speed"]; ok && conn.Speed != v.(int) {
-			return fmt.Errorf("speed does not match %v - %v", conn.Speed, v)
+		if v, ok := ctx["connection-speed"]; ok && ecx.IntValue(conn.Speed) != v.(int) {
+			return fmt.Errorf("speed does not match %v - %v", ecx.IntValue(conn.Speed), v)
 		}
-		if v, ok := ctx["connection-speed_unit"]; ok && conn.SpeedUnit != v.(string) {
-			return fmt.Errorf("speedUnit does not match %v - %v", conn.SpeedUnit, v)
+		if v, ok := ctx["connection-speed_unit"]; ok && ecx.StringValue(conn.SpeedUnit) != v.(string) {
+			return fmt.Errorf("speedUnit does not match %v - %v", ecx.StringValue(conn.SpeedUnit), v)
 		}
 		if v, ok := ctx["connection-notifications"]; ok && !slicesMatch(conn.Notifications, v.([]string)) {
 			return fmt.Errorf("notifications does not match %v - %v", conn.Notifications, v)
 		}
-		if v, ok := ctx["connection-purchase_order_number"]; ok && conn.PurchaseOrderNumber != v.(string) {
-			return fmt.Errorf("purchaseOrderNumber does not match %v - %v", conn.PurchaseOrderNumber, v)
+		if v, ok := ctx["connection-purchase_order_number"]; ok && ecx.StringValue(conn.PurchaseOrderNumber) != v.(string) {
+			return fmt.Errorf("purchaseOrderNumber does not match %v - %v", ecx.StringValue(conn.PurchaseOrderNumber), v)
 		}
-		if v, ok := ctx["connection-device_interface_id"]; ok && conn.DeviceInterfaceID != v.(int) {
-			return fmt.Errorf("deviceInterfaceID does not match %v - %v", conn.DeviceInterfaceID, v)
+		if v, ok := ctx["connection-device_interface_id"]; ok && ecx.IntValue(conn.DeviceInterfaceID) != v.(int) {
+			return fmt.Errorf("deviceInterfaceID does not match %v - %v", ecx.IntValue(conn.DeviceInterfaceID), v)
 		}
-		if v, ok := ctx["connection-vlan_stag"]; ok && conn.VlanSTag != v.(int) {
-			return fmt.Errorf("vlanSTag does not match %v - %v", conn.VlanSTag, v)
+		if v, ok := ctx["connection-vlan_stag"]; ok && ecx.IntValue(conn.VlanSTag) != v.(int) {
+			return fmt.Errorf("vlanSTag does not match %v - %v", ecx.IntValue(conn.VlanSTag), v)
 		}
-		if v, ok := ctx["connection-vlan_ctag"]; ok && conn.VlanCTag != v.(int) {
-			return fmt.Errorf("vlanCTag does not match %v - %v", conn.VlanCTag, v)
+		if v, ok := ctx["connection-vlan_ctag"]; ok && ecx.IntValue(conn.VlanCTag) != v.(int) {
+			return fmt.Errorf("vlanCTag does not match %v - %v", ecx.IntValue(conn.VlanCTag), v)
 		}
-		if v, ok := ctx["connection-zside_port_uuid"]; ok && conn.ZSidePortUUID != v.(string) {
-			return fmt.Errorf("zSidePortUUID does not match %v - %v", conn.ZSidePortUUID, v)
+		if v, ok := ctx["connection-zside_port_uuid"]; ok && ecx.StringValue(conn.ZSidePortUUID) != v.(string) {
+			return fmt.Errorf("zSidePortUUID does not match %v - %v", ecx.StringValue(conn.ZSidePortUUID), v)
 		}
-		if v, ok := ctx["connection-zside_vlan_stag"]; ok && conn.ZSideVlanSTag != v.(int) {
-			return fmt.Errorf("zSideVlanSTag does not match %v - %v", conn.ZSideVlanSTag, v)
+		if v, ok := ctx["connection-zside_vlan_stag"]; ok && ecx.IntValue(conn.ZSideVlanSTag) != v.(int) {
+			return fmt.Errorf("zSideVlanSTag does not match %v - %v", ecx.IntValue(conn.ZSideVlanSTag), v)
 		}
-		if v, ok := ctx["connection-zside_vlan_ctag"]; ok && conn.ZSideVlanCTag != v.(int) {
-			return fmt.Errorf("zSideVlanCTag does not match %v - %v", conn.ZSideVlanCTag, v)
+		if v, ok := ctx["connection-zside_vlan_ctag"]; ok && ecx.IntValue(conn.ZSideVlanCTag) != v.(int) {
+			return fmt.Errorf("zSideVlanCTag does not match %v - %v", ecx.IntValue(conn.ZSideVlanCTag), v)
 		}
-		if v, ok := ctx["connection-named_tag"]; ok && conn.NamedTag != v.(string) {
-			return fmt.Errorf("named_tag does not match %v - %v", conn.NamedTag, v)
+		if v, ok := ctx["connection-named_tag"]; ok && ecx.StringValue(conn.NamedTag) != v.(string) {
+			return fmt.Errorf("named_tag does not match %v - %v", ecx.StringValue(conn.NamedTag), v)
 		}
-		if v, ok := ctx["connection-seller_region"]; ok && conn.SellerRegion != v.(string) {
-			return fmt.Errorf("sellerRegion does not match %v - %v", conn.SellerRegion, v)
+		if v, ok := ctx["connection-seller_region"]; ok && ecx.StringValue(conn.SellerRegion) != v.(string) {
+			return fmt.Errorf("sellerRegion does not match %v - %v", ecx.StringValue(conn.SellerRegion), v)
 		}
-		if v, ok := ctx["connection-seller_metro_code"]; ok && conn.SellerMetroCode != v.(string) {
-			return fmt.Errorf("sellerMetroCode does not match %v - %v", conn.SellerMetroCode, v)
+		if v, ok := ctx["connection-seller_metro_code"]; ok && ecx.StringValue(conn.SellerMetroCode) != v.(string) {
+			return fmt.Errorf("sellerMetroCode does not match %v - %v", ecx.StringValue(conn.SellerMetroCode), v)
 		}
-		if v, ok := ctx["connection-authorization_key"]; ok && conn.AuthorizationKey != v.(string) {
-			return fmt.Errorf("authorizationKey does not match %v - %v", conn.AuthorizationKey, v)
+		if v, ok := ctx["connection-authorization_key"]; ok && ecx.StringValue(conn.AuthorizationKey) != v.(string) {
+			return fmt.Errorf("authorizationKey does not match %v - %v", ecx.StringValue(conn.AuthorizationKey), v)
 		}
 		return nil
 	}
@@ -334,32 +334,32 @@ func testAccFabricL2ConnectionAttributes(conn *ecx.L2Connection, ctx map[string]
 
 func testAccFabricL2ConnectionSecondaryAttributes(conn *ecx.L2Connection, ctx map[string]interface{}) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
-		if v, ok := ctx["connection-secondary_name"]; ok && conn.Name != v.(string) {
-			return fmt.Errorf("connection secondary name does not match %v - %v", conn.Name, v)
+		if v, ok := ctx["connection-secondary_name"]; ok && ecx.StringValue(conn.Name) != v.(string) {
+			return fmt.Errorf("connection secondary name does not match %v - %v", ecx.StringValue(conn.Name), v)
 		}
-		if v, ok := ctx["connection-secondary_speed"]; ok && conn.Speed != v.(int) {
-			return fmt.Errorf("connection secondary speed does not match %v - %v", conn.Speed, v)
+		if v, ok := ctx["connection-secondary_speed"]; ok && ecx.IntValue(conn.Speed) != v.(int) {
+			return fmt.Errorf("connection secondary speed does not match %v - %v", ecx.IntValue(conn.Speed), v)
 		}
-		if v, ok := ctx["connection-secondary_speed_unit"]; ok && conn.SpeedUnit != v.(string) {
-			return fmt.Errorf("connection secondary speed unit does not match %v - %v", conn.SpeedUnit, v)
+		if v, ok := ctx["connection-secondary_speed_unit"]; ok && ecx.StringValue(conn.SpeedUnit) != v.(string) {
+			return fmt.Errorf("connection secondary speed unit does not match %v - %v", ecx.StringValue(conn.SpeedUnit), v)
 		}
-		if v, ok := ctx["connection-secondary_device_interface_id"]; ok && conn.DeviceInterfaceID != v.(int) {
-			return fmt.Errorf("connection secondary device interface id does not match %v - %v", conn.DeviceInterfaceID, v)
+		if v, ok := ctx["connection-secondary_device_interface_id"]; ok && ecx.IntValue(conn.DeviceInterfaceID) != v.(int) {
+			return fmt.Errorf("connection secondary device interface id does not match %v - %v", ecx.IntValue(conn.DeviceInterfaceID), v)
 		}
-		if v, ok := ctx["connection-secondary_vlan_stag"]; ok && conn.VlanSTag != v.(int) {
-			return fmt.Errorf("connection secondary vlanSTag does not match %v - %v", conn.VlanSTag, v)
+		if v, ok := ctx["connection-secondary_vlan_stag"]; ok && ecx.IntValue(conn.VlanSTag) != v.(int) {
+			return fmt.Errorf("connection secondary vlanSTag does not match %v - %v", ecx.IntValue(conn.VlanSTag), v)
 		}
-		if v, ok := ctx["connection-secondary_vlan_ctag"]; ok && conn.VlanCTag != v.(int) {
-			return fmt.Errorf("connection secondary vlanCTag does not match %v - %v", conn.VlanCTag, v)
+		if v, ok := ctx["connection-secondary_vlan_ctag"]; ok && ecx.IntValue(conn.VlanCTag) != v.(int) {
+			return fmt.Errorf("connection secondary vlanCTag does not match %v - %v", ecx.IntValue(conn.VlanCTag), v)
 		}
-		if v, ok := ctx["connection-secondary-seller_region"]; ok && conn.SellerRegion != v.(string) {
-			return fmt.Errorf("connection secondary seller region does not match %v - %v", conn.SellerRegion, v)
+		if v, ok := ctx["connection-secondary-seller_region"]; ok && ecx.StringValue(conn.SellerRegion) != v.(string) {
+			return fmt.Errorf("connection secondary seller region does not match %v - %v", ecx.StringValue(conn.SellerRegion), v)
 		}
-		if v, ok := ctx["connection-secondary-seller_metro_code"]; ok && conn.SellerMetroCode != v.(string) {
-			return fmt.Errorf("connection secondary seller metro code does not match %v - %v", conn.SellerMetroCode, v)
+		if v, ok := ctx["connection-secondary-seller_metro_code"]; ok && ecx.StringValue(conn.SellerMetroCode) != v.(string) {
+			return fmt.Errorf("connection secondary seller metro code does not match %v - %v", ecx.StringValue(conn.SellerMetroCode), v)
 		}
-		if v, ok := ctx["connection-secondary_authorization_key"]; ok && conn.AuthorizationKey != v.(string) {
-			return fmt.Errorf("connection secondary authorization_key code does not match %v - %v", conn.AuthorizationKey, v)
+		if v, ok := ctx["connection-secondary_authorization_key"]; ok && ecx.StringValue(conn.AuthorizationKey) != v.(string) {
+			return fmt.Errorf("connection secondary authorization_key code does not match %v - %v", ecx.StringValue(conn.AuthorizationKey), v)
 		}
 		return nil
 	}
@@ -367,17 +367,17 @@ func testAccFabricL2ConnectionSecondaryAttributes(conn *ecx.L2Connection, ctx ma
 
 func testAccFabricL2ConnectionRedundancyAttributes(primary, secondary *ecx.L2Connection) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
-		if primary.RedundancyType != "primary" {
-			return fmt.Errorf("primary connection redundancy type does not match  %v - %v", primary.RedundancyType, "primary")
+		if ecx.StringValue(primary.RedundancyType) != "primary" {
+			return fmt.Errorf("primary connection redundancy type does not match  %v - %v", ecx.StringValue(primary.RedundancyType), "primary")
 		}
-		if primary.RedundantUUID != secondary.UUID {
-			return fmt.Errorf("primary connection redundant UUID does not match  %v - %v", primary.RedundantUUID, secondary.UUID)
+		if ecx.StringValue(primary.RedundantUUID) != ecx.StringValue(secondary.UUID) {
+			return fmt.Errorf("primary connection redundant UUID does not match  %v - %v", ecx.StringValue(primary.RedundantUUID), ecx.StringValue(secondary.UUID))
 		}
-		if secondary.RedundancyType != "secondary" {
-			return fmt.Errorf("secondary connection redundancy type does not match  %v - %v", primary.RedundancyType, "secondary")
+		if ecx.StringValue(secondary.RedundancyType) != "secondary" {
+			return fmt.Errorf("secondary connection redundancy type does not match  %v - %v", ecx.StringValue(secondary.RedundancyType), "secondary")
 		}
-		if secondary.RedundantUUID != primary.UUID {
-			return fmt.Errorf("secondary connection redundant UUID does not match  %v - %v", secondary.RedundantUUID, primary.UUID)
+		if ecx.StringValue(secondary.RedundantUUID) != ecx.StringValue(primary.UUID) {
+			return fmt.Errorf("secondary connection redundant UUID does not match  %v - %v", ecx.StringValue(secondary.RedundantUUID), ecx.StringValue(primary.UUID))
 		}
 		return nil
 	}

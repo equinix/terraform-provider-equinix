@@ -69,7 +69,7 @@ resource "equinix_ecx_l2_connection_accepter" "%{accepter-resourceName}" {
 
 func testAccFabricL2ConnectionAccepterStatus(conn *ecx.L2Connection) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
-		if conn.ProviderStatus != ecx.ConnectionStatusProvisioned {
+		if ecx.StringValue(conn.ProviderStatus) != ecx.ConnectionStatusProvisioned {
 			return fmt.Errorf("provider_status does not match %v - %v", ecx.ConnectionStatusProvisioned, conn.ProviderStatus)
 		}
 		return nil
