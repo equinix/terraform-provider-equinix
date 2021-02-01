@@ -1,14 +1,16 @@
 package equinix
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"net/http"
 
 	"github.com/equinix/ne-go"
 	"github.com/equinix/rest-go"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 )
 
 var networkACLTemplateSchemaNames = map[string]string{
@@ -32,11 +34,11 @@ var networkACLTemplateInboundRuleSchemaNames = map[string]string{
 
 func resourceNetworkACLTemplate() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceNetworkACLTemplateCreate,
-		Read:   resourceNetworkACLTemplateRead,
-		Update: resourceNetworkACLTemplateUpdate,
-		Delete: resourceNetworkACLTemplateDelete,
-		Schema: createNetworkACLTemplateSchema(),
+		CreateContext: resourceNetworkACLTemplateCreate,
+		ReadContext:   resourceNetworkACLTemplateRead,
+		UpdateContext: resourceNetworkACLTemplateUpdate,
+		DeleteContext: resourceNetworkACLTemplateDelete,
+		Schema:        createNetworkACLTemplateSchema(),
 	}
 }
 
@@ -118,55 +120,61 @@ func createNetworkACLTemplateInboundRuleSchema() map[string]*schema.Schema {
 	}
 }
 
-func resourceNetworkACLTemplateCreate(d *schema.ResourceData, m interface{}) error {
+func resourceNetworkACLTemplateCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	conf := m.(*Config)
+	var diags diag.Diagnostics
 	template := createACLTemplate(d)
 	uuid, err := conf.ne.CreateACLTemplate(template)
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 	d.SetId(ne.StringValue(uuid))
-	return resourceNetworkACLTemplateRead(d, m)
+	diags = append(diags, resourceNetworkACLTemplateRead(ctx, d, m)...)
+	return diags
 }
 
-func resourceNetworkACLTemplateRead(d *schema.ResourceData, m interface{}) error {
+func resourceNetworkACLTemplateRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	conf := m.(*Config)
+	var diags diag.Diagnostics
 	template, err := conf.ne.GetACLTemplate(d.Id())
 	if err != nil {
 		if restErr, ok := err.(rest.Error); ok {
 			if restErr.HTTPCode == http.StatusNotFound {
 				d.SetId("")
-				return nil
+				return diags
 			}
 		}
-		return err
+		return diag.FromErr(err)
 	}
 	if err := updateACLTemplateResource(template, d); err != nil {
-		return err
+		return diag.FromErr(err)
 	}
-	return nil
+	return diags
 }
 
-func resourceNetworkACLTemplateUpdate(d *schema.ResourceData, m interface{}) error {
+func resourceNetworkACLTemplateUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	conf := m.(*Config)
+	var diags diag.Diagnostics
 	template := createACLTemplate(d)
 	if err := conf.ne.ReplaceACLTemplate(d.Id(), template); err != nil {
-		return err
+		return diag.FromErr(err)
 	}
-	return resourceNetworkACLTemplateRead(d, m)
+	diags = append(diags, resourceNetworkACLTemplateRead(ctx, d, m)...)
+	return diags
 }
 
-func resourceNetworkACLTemplateDelete(d *schema.ResourceData, m interface{}) error {
+func resourceNetworkACLTemplateDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	conf := m.(*Config)
+	var diags diag.Diagnostics
 	if devID, ok := d.GetOk(networkACLTemplateSchemaNames["DeviceUUID"]); ok {
 		if err := conf.ne.NewDeviceUpdateRequest(devID.(string)).WithACLTemplate("").Execute(); err != nil {
 			log.Printf("[WARN] could not unassign ACL template %q from device %q: %s", d.Id(), devID, err)
 		}
 	}
 	if err := conf.ne.DeleteACLTemplate(d.Id()); err != nil {
-		return err
+		return diag.FromErr(err)
 	}
-	return nil
+	return diags
 }
 
 func createACLTemplate(d *schema.ResourceData) ne.ACLTemplate {

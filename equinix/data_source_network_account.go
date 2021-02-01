@@ -1,12 +1,14 @@
 package equinix
 
 import (
+	"context"
 	"fmt"
 	"strings"
 
 	"github.com/equinix/ne-go"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 )
 
 var networkAccountSchemaNames = map[string]string{
@@ -19,7 +21,7 @@ var networkAccountSchemaNames = map[string]string{
 
 func dataSourceNetworkAccount() *schema.Resource {
 	return &schema.Resource{
-		Read: dataSourceNetworkAccountRead,
+		ReadContext: dataSourceNetworkAccountRead,
 		Schema: map[string]*schema.Schema{
 			networkAccountSchemaNames["Name"]: {
 				Type:         schema.TypeString,
@@ -50,14 +52,15 @@ func dataSourceNetworkAccount() *schema.Resource {
 	}
 }
 
-func dataSourceNetworkAccountRead(d *schema.ResourceData, m interface{}) error {
+func dataSourceNetworkAccountRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	conf := m.(*Config)
+	var diags diag.Diagnostics
 	metro := d.Get(networkAccountSchemaNames["MetroCode"]).(string)
 	name := d.Get(networkAccountSchemaNames["Name"]).(string)
 	status := d.Get(networkAccountSchemaNames["Status"]).(string)
 	accounts, err := conf.ne.GetAccounts(metro)
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 	var filtered []ne.Account
 	for _, account := range accounts {
@@ -70,12 +73,15 @@ func dataSourceNetworkAccountRead(d *schema.ResourceData, m interface{}) error {
 		filtered = append(filtered, account)
 	}
 	if len(filtered) < 1 {
-		return fmt.Errorf("network account query returned no results, please change your search criteria")
+		return diag.Errorf("network account query returned no results, please change your search criteria")
 	}
 	if len(filtered) > 1 {
-		return fmt.Errorf("network account query returned more than one result, please try more specific search criteria")
+		return diag.Errorf("network account query returned more than one result, please try more specific search criteria")
 	}
-	return updateNetworkAccountResource(filtered[0], metro, d)
+	if err := updateNetworkAccountResource(filtered[0], metro, d); err != nil {
+		return diag.FromErr(err)
+	}
+	return diags
 }
 
 func updateNetworkAccountResource(account ne.Account, metroCode string, d *schema.ResourceData) error {

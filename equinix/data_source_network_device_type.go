@@ -1,12 +1,14 @@
 package equinix
 
 import (
+	"context"
 	"fmt"
 	"strings"
 
 	"github.com/equinix/ne-go"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 )
 
 var networkDeviceTypeSchemaNames = map[string]string{
@@ -20,7 +22,7 @@ var networkDeviceTypeSchemaNames = map[string]string{
 
 func dataSourceNetworkDeviceType() *schema.Resource {
 	return &schema.Resource{
-		Read: dataSourceNetworkDeviceTypeRead,
+		ReadContext: dataSourceNetworkDeviceTypeRead,
 		Schema: map[string]*schema.Schema{
 			networkDeviceTypeSchemaNames["Name"]: {
 				Type:         schema.TypeString,
@@ -62,15 +64,16 @@ func dataSourceNetworkDeviceType() *schema.Resource {
 	}
 }
 
-func dataSourceNetworkDeviceTypeRead(d *schema.ResourceData, m interface{}) error {
+func dataSourceNetworkDeviceTypeRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	conf := m.(*Config)
+	var diags diag.Diagnostics
 	types, err := conf.ne.GetDeviceTypes()
 	name := d.Get(networkDeviceTypeSchemaNames["Name"]).(string)
 	vendor := d.Get(networkDeviceTypeSchemaNames["Vendor"]).(string)
 	category := d.Get(networkDeviceTypeSchemaNames["Category"]).(string)
 	metroCodes := expandSetToStringList(d.Get(networkDeviceTypeSchemaNames["MetroCodes"]).(*schema.Set))
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 	filtered := make([]ne.DeviceType, 0, len(types))
 	for _, deviceType := range types {
@@ -89,12 +92,15 @@ func dataSourceNetworkDeviceTypeRead(d *schema.ResourceData, m interface{}) erro
 		filtered = append(filtered, deviceType)
 	}
 	if len(filtered) < 1 {
-		return fmt.Errorf("network device type query returned no results, please change your search criteria")
+		return diag.Errorf("network device type query returned no results, please change your search criteria")
 	}
 	if len(filtered) > 1 {
-		return fmt.Errorf("network device type query returned more than one result, please try more specific search criteria")
+		return diag.Errorf("network device type query returned more than one result, please try more specific search criteria")
 	}
-	return updateNetworkDeviceTypeResource(filtered[0], d)
+	if err := updateNetworkDeviceTypeResource(filtered[0], d); err != nil {
+		return diag.FromErr(err)
+	}
+	return diags
 }
 
 func updateNetworkDeviceTypeResource(deviceType ne.DeviceType, d *schema.ResourceData) error {

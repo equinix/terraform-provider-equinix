@@ -1,11 +1,13 @@
 package equinix
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/equinix/ecx-go"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 )
 
 var ecxPortSchemaNames = map[string]string{
@@ -23,7 +25,7 @@ var ecxPortSchemaNames = map[string]string{
 
 func dataSourceECXPort() *schema.Resource {
 	return &schema.Resource{
-		Read: dataSourceECXPortRead,
+		ReadContext: dataSourceECXPortRead,
 		Schema: map[string]*schema.Schema{
 			ecxPortSchemaNames["UUID"]: {
 				Type:     schema.TypeString,
@@ -70,12 +72,13 @@ func dataSourceECXPort() *schema.Resource {
 	}
 }
 
-func dataSourceECXPortRead(d *schema.ResourceData, m interface{}) error {
+func dataSourceECXPortRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	conf := m.(*Config)
+	var diags diag.Diagnostics
 	name := d.Get(ecxPortSchemaNames["Name"]).(string)
 	ports, err := conf.ecx.GetUserPorts()
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 	var filteredPorts []ecx.Port
 	for _, port := range ports {
@@ -84,12 +87,15 @@ func dataSourceECXPortRead(d *schema.ResourceData, m interface{}) error {
 		}
 	}
 	if len(filteredPorts) < 1 {
-		return fmt.Errorf("profile query returned no results, please change your search criteria")
+		return diag.Errorf("profile query returned no results, please change your search criteria")
 	}
 	if len(filteredPorts) > 1 {
-		return fmt.Errorf("query returned more than one result, please try more specific search criteria")
+		return diag.Errorf("query returned more than one result, please try more specific search criteria")
 	}
-	return updateECXPortResource(filteredPorts[0], d)
+	if err := updateECXPortResource(filteredPorts[0], d); err != nil {
+		return diag.FromErr(err)
+	}
+	return diags
 }
 
 func updateECXPortResource(port ecx.Port, d *schema.ResourceData) error {

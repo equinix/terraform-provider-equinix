@@ -2,11 +2,13 @@ package equinix
 
 import (
 	"bytes"
+	"context"
 	"fmt"
 
 	"github.com/equinix/ecx-go"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/hashicorp/terraform/helper/hashcode"
 )
 
@@ -42,7 +44,7 @@ var ecxL2SellerProfileAdditionalInfosSchemaNames = map[string]string{
 
 func dataSourceECXL2SellerProfile() *schema.Resource {
 	return &schema.Resource{
-		Read: dataSourceECXL2SellerProfileRead,
+		ReadContext: dataSourceECXL2SellerProfileRead,
 		Schema: map[string]*schema.Schema{
 			ecxL2SellerProfileSchemaNames["UUID"]: {
 				Type:     schema.TypeString,
@@ -167,14 +169,15 @@ func dataSourceECXL2SellerProfile() *schema.Resource {
 	}
 }
 
-func dataSourceECXL2SellerProfileRead(d *schema.ResourceData, m interface{}) error {
+func dataSourceECXL2SellerProfileRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	conf := m.(*Config)
+	var diags diag.Diagnostics
 	name := d.Get(ecxL2SellerProfileSchemaNames["Name"]).(string)
 	orgName := d.Get(ecxL2SellerProfileSchemaNames["OrganizationName"]).(string)
 	orgGlobalName := d.Get(ecxL2SellerProfileSchemaNames["GlobalOrganization"]).(string)
 	profiles, err := conf.ecx.GetL2SellerProfiles()
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 	var filteredProfiles []ecx.L2ServiceProfile
 	for _, profile := range profiles {
@@ -190,12 +193,15 @@ func dataSourceECXL2SellerProfileRead(d *schema.ResourceData, m interface{}) err
 		filteredProfiles = append(filteredProfiles, profile)
 	}
 	if len(filteredProfiles) < 1 {
-		return fmt.Errorf("profile query returned no results, please change your search criteria")
+		return diag.Errorf("profile query returned no results, please change your search criteria")
 	}
 	if len(filteredProfiles) > 1 {
-		return fmt.Errorf("query returned more than one result, please try more specific search criteria")
+		return diag.Errorf("query returned more than one result, please try more specific search criteria")
 	}
-	return updateECXL2SellerProfileResource(filteredProfiles[0], d)
+	if err := updateECXL2SellerProfileResource(filteredProfiles[0], d); err != nil {
+		return diag.FromErr(err)
+	}
+	return diags
 }
 
 func updateECXL2SellerProfileResource(profile ecx.L2ServiceProfile, d *schema.ResourceData) error {

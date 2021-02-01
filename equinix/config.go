@@ -8,7 +8,7 @@ import (
 	"github.com/equinix/ecx-go"
 	"github.com/equinix/ne-go"
 	"github.com/equinix/oauth2-go"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/logging"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/logging"
 )
 
 //Config is the configuration structure used to instantiate the Equinix

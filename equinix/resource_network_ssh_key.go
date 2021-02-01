@@ -1,14 +1,16 @@
 package equinix
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"time"
 
 	"github.com/equinix/ne-go"
 	"github.com/equinix/rest-go"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 )
 
 var networkSSHKeySchemaNames = map[string]string{
@@ -19,10 +21,10 @@ var networkSSHKeySchemaNames = map[string]string{
 
 func resourceNetworkSSHKey() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceNetworkSSHKeyCreate,
-		Read:   resourceNetworkSSHKeyRead,
-		Delete: resourceNetworkSSHKeyDelete,
-		Schema: createNetworkSSHKeyResourceSchema(),
+		CreateContext: resourceNetworkSSHKeyCreate,
+		ReadContext:   resourceNetworkSSHKeyRead,
+		DeleteContext: resourceNetworkSSHKeyDelete,
+		Schema:        createNetworkSSHKeyResourceSchema(),
 		Timeouts: &schema.ResourceTimeout{
 			Create: schema.DefaultTimeout(5 * time.Minute),
 		},
@@ -49,20 +51,22 @@ func createNetworkSSHKeyResourceSchema() map[string]*schema.Schema {
 		},
 	}
 }
-
-func resourceNetworkSSHKeyCreate(d *schema.ResourceData, m interface{}) error {
+func resourceNetworkSSHKeyCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	conf := m.(*Config)
+	var diags diag.Diagnostics
 	key := createNetworkSSHKey(d)
 	uuid, err := conf.ne.CreateSSHPublicKey(key)
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 	d.SetId(ne.StringValue(uuid))
-	return resourceNetworkSSHKeyRead(d, m)
+	diags = append(diags, resourceNetworkSSHKeyRead(ctx, d, m)...)
+	return diags
 }
 
-func resourceNetworkSSHKeyRead(d *schema.ResourceData, m interface{}) error {
+func resourceNetworkSSHKeyRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	conf := m.(*Config)
+	var diags diag.Diagnostics
 	key, err := conf.ne.GetSSHPublicKey(d.Id())
 	if err != nil {
 		if restErr, ok := err.(rest.Error); ok {
@@ -71,16 +75,17 @@ func resourceNetworkSSHKeyRead(d *schema.ResourceData, m interface{}) error {
 				return nil
 			}
 		}
-		return err
+		return diag.FromErr(err)
 	}
 	if err := updateNetworkSSHKeyResource(key, d); err != nil {
-		return err
+		return diag.FromErr(err)
 	}
-	return nil
+	return diags
 }
 
-func resourceNetworkSSHKeyDelete(d *schema.ResourceData, m interface{}) error {
+func resourceNetworkSSHKeyDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	conf := m.(*Config)
+	var diags diag.Diagnostics
 	if err := conf.ne.DeleteSSHPublicKey(d.Id()); err != nil {
 		if restErr, ok := err.(rest.Error); ok {
 			for _, detailedErr := range restErr.ApplicationErrors {
@@ -89,9 +94,9 @@ func resourceNetworkSSHKeyDelete(d *schema.ResourceData, m interface{}) error {
 				}
 			}
 		}
-		return err
+		return diag.FromErr(err)
 	}
-	return nil
+	return diags
 }
 
 func createNetworkSSHKey(d *schema.ResourceData) ne.SSHPublicKey {

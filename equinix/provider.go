@@ -1,6 +1,7 @@
 package equinix
 
 import (
+	"context"
 	"fmt"
 	"reflect"
 	"regexp"
@@ -8,9 +9,9 @@ import (
 
 	"github.com/equinix/ecx-go"
 	"github.com/equinix/rest-go"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
-	"github.com/hashicorp/terraform-plugin-sdk/terraform"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 )
 
 const (
@@ -29,8 +30,8 @@ type resourceDataProvider interface {
 	GetChange(key string) (interface{}, interface{})
 }
 
-//Provider returns Equinix terraform ResourceProvider
-func Provider() terraform.ResourceProvider {
+//Provider returns Equinix terraform *schema.Provider
+func Provider() *schema.Provider {
 	provider := &schema.Provider{
 		Schema: map[string]*schema.Schema{
 			"endpoint": {
@@ -78,13 +79,13 @@ func Provider() terraform.ResourceProvider {
 		},
 	}
 
-	provider.ConfigureFunc = func(d *schema.ResourceData) (interface{}, error) {
-		return configureProvider(d, provider)
+	provider.ConfigureContextFunc = func(ctx context.Context, d *schema.ResourceData) (interface{}, diag.Diagnostics) {
+		return configureProvider(ctx, d, provider)
 	}
 	return provider
 }
 
-func configureProvider(d *schema.ResourceData, p *schema.Provider) (interface{}, error) {
+func configureProvider(ctx context.Context, d *schema.ResourceData, p *schema.Provider) (interface{}, diag.Diagnostics) {
 	config := Config{}
 	if v, ok := d.GetOk("endpoint"); ok {
 		config.BaseURL = v.(string)
@@ -98,8 +99,12 @@ func configureProvider(d *schema.ResourceData, p *schema.Provider) (interface{},
 	if v, ok := d.GetOk("request_timeout"); ok {
 		config.RequestTimeout = time.Duration(v.(int)) * time.Second
 	}
-	if err := config.Load(p.StopContext()); err != nil {
-		return nil, err
+	stopCtx, ok := schema.StopContext(ctx)
+	if !ok {
+		stopCtx = ctx
+	}
+	if err := config.Load(stopCtx); err != nil {
+		return nil, diag.FromErr(err)
 	}
 	return &config, nil
 }

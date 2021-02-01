@@ -1,14 +1,16 @@
 package equinix
 
 import (
+	"context"
 	"fmt"
 	"regexp"
 	"sort"
 	"time"
 
 	"github.com/equinix/ne-go"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 )
 
 var networkDeviceSoftwareSchemaNames = map[string]string{
@@ -28,7 +30,7 @@ const networkDeviceSoftwareDateLayout = "2006-01-02"
 
 func dataSourceNetworkDeviceSoftware() *schema.Resource {
 	return &schema.Resource{
-		Read: dataSourceNetworkDeviceSoftwareRead,
+		ReadContext: dataSourceNetworkDeviceSoftwareRead,
 		Schema: map[string]*schema.Schema{
 			networkDeviceSoftwareSchemaNames["DeviceTypeCode"]: {
 				Type:         schema.TypeString,
@@ -84,13 +86,14 @@ func dataSourceNetworkDeviceSoftware() *schema.Resource {
 	}
 }
 
-func dataSourceNetworkDeviceSoftwareRead(d *schema.ResourceData, m interface{}) error {
+func dataSourceNetworkDeviceSoftwareRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	conf := m.(*Config)
+	var diags diag.Diagnostics
 	typeCode := d.Get(networkDeviceSoftwareSchemaNames["DeviceTypeCode"]).(string)
 	pkgCodes := expandSetToStringList(d.Get(networkDeviceSoftwareSchemaNames["PackageCodes"]).(*schema.Set))
 	versions, err := conf.ne.GetDeviceSoftwareVersions(typeCode)
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 	var filtered []ne.DeviceSoftwareVersion
 	for _, version := range versions {
@@ -109,11 +112,11 @@ func dataSourceNetworkDeviceSoftwareRead(d *schema.ResourceData, m interface{}) 
 		filtered = append(filtered, version)
 	}
 	if len(filtered) < 1 {
-		return fmt.Errorf("network device software query returned no results, please change your search criteria")
+		return diag.Errorf("network device software query returned no results, please change your search criteria")
 	}
 	if len(filtered) > 1 {
 		if !d.Get(networkDeviceSoftwareSchemaNames["MostRecent"]).(bool) {
-			return fmt.Errorf("network device software query returned more than one result, please try more specific search criteria")
+			return diag.Errorf("network device software query returned more than one result, please try more specific search criteria")
 		}
 		sort.Slice(filtered, func(i, j int) bool {
 			iTime, _ := time.Parse(networkDeviceSoftwareDateLayout, ne.StringValue(filtered[i].Date))
@@ -124,7 +127,10 @@ func dataSourceNetworkDeviceSoftwareRead(d *schema.ResourceData, m interface{}) 
 			return iTime.Unix() > jTime.Unix()
 		})
 	}
-	return updateNetworkDeviceSoftwareResource(filtered[0], typeCode, d)
+	if err := updateNetworkDeviceSoftwareResource(filtered[0], typeCode, d); err != nil {
+		return diag.FromErr(err)
+	}
+	return diags
 }
 
 func updateNetworkDeviceSoftwareResource(version ne.DeviceSoftwareVersion, typeCode string, d *schema.ResourceData) error {

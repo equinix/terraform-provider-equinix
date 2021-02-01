@@ -1,12 +1,14 @@
 package equinix
 
 import (
+	"context"
 	"fmt"
-	"log"
 
 	"github.com/equinix/ne-go"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
+	"github.com/hashicorp/go-cty/cty"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 )
 
 var networkSSHUserSchemaNames = map[string]string{
@@ -18,11 +20,11 @@ var networkSSHUserSchemaNames = map[string]string{
 
 func resourceNetworkSSHUser() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceNetworkSSHUserCreate,
-		Read:   resourceNetworkSSHUserRead,
-		Update: resourceNetworkSSHUserUpdate,
-		Delete: resourceNetworkSSHUserDelete,
-		Schema: createNetworkSSHUserResourceSchema(),
+		CreateContext: resourceNetworkSSHUserCreate,
+		ReadContext:   resourceNetworkSSHUserRead,
+		UpdateContext: resourceNetworkSSHUserUpdate,
+		DeleteContext: resourceNetworkSSHUserDelete,
+		Schema:        createNetworkSSHUserResourceSchema(),
 	}
 }
 
@@ -56,39 +58,48 @@ func createNetworkSSHUserResourceSchema() map[string]*schema.Schema {
 	}
 }
 
-func resourceNetworkSSHUserCreate(d *schema.ResourceData, m interface{}) error {
+func resourceNetworkSSHUserCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	conf := m.(*Config)
+	var diags diag.Diagnostics
 	user := createNetworkSSHUser(d)
 	if len(user.DeviceUUIDs) < 0 {
-		return fmt.Errorf("create ssh-user failed: user needs to have at least one device defined")
+		return diag.Errorf("create ssh-user failed: user needs to have at least one device defined")
 	}
 	uuid, err := conf.ne.CreateSSHUser(ne.StringValue(user.Username), ne.StringValue(user.Password), user.DeviceUUIDs[0])
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 	d.SetId(ne.StringValue(uuid))
 	userUpdateReq := conf.ne.NewSSHUserUpdateRequest(ne.StringValue(uuid))
 	userUpdateReq.WithDeviceChange([]string{}, user.DeviceUUIDs[1:len(user.DeviceUUIDs)])
 	if err := userUpdateReq.Execute(); err != nil {
-		log.Printf("[WARN] failed to assign devices to newly created user")
+		diags = append(diags, diag.Diagnostic{
+			Severity:      diag.Warning,
+			Summary:       "Failed to assign all devices to newly created user",
+			Detail:        err.Error(),
+			AttributePath: cty.GetAttrPath(networkSSHUserSchemaNames["DeviceUUIDs"]),
+		})
 	}
-	return resourceNetworkSSHUserRead(d, m)
+	diags = append(diags, resourceNetworkSSHUserRead(ctx, d, m)...)
+	return diags
 }
 
-func resourceNetworkSSHUserRead(d *schema.ResourceData, m interface{}) error {
+func resourceNetworkSSHUserRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	conf := m.(*Config)
+	var diags diag.Diagnostics
 	user, err := conf.ne.GetSSHUser(d.Id())
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 	if err := updateNetworkSSHUserResource(user, d); err != nil {
-		return err
+		return diag.FromErr(err)
 	}
-	return nil
+	return diags
 }
 
-func resourceNetworkSSHUserUpdate(d *schema.ResourceData, m interface{}) error {
+func resourceNetworkSSHUserUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	conf := m.(*Config)
+	var diags diag.Diagnostics
 	updateReq := conf.ne.NewSSHUserUpdateRequest(d.Id())
 	if v, ok := d.GetOk(networkSSHUserSchemaNames["Password"]); ok && d.HasChange(networkSSHUserSchemaNames["Password"]) {
 		updateReq.WithNewPassword(v.(string))
@@ -100,17 +111,19 @@ func resourceNetworkSSHUserUpdate(d *schema.ResourceData, m interface{}) error {
 		updateReq.WithDeviceChange(aList, bList)
 	}
 	if err := updateReq.Execute(); err != nil {
-		return err
+		return diag.FromErr(err)
 	}
-	return resourceNetworkSSHUserRead(d, m)
+	diags = append(diags, resourceNetworkSSHUserRead(ctx, d, m)...)
+	return diags
 }
 
-func resourceNetworkSSHUserDelete(d *schema.ResourceData, m interface{}) error {
+func resourceNetworkSSHUserDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	conf := m.(*Config)
+	var diags diag.Diagnostics
 	if err := conf.ne.DeleteSSHUser(d.Id()); err != nil {
-		return err
+		return diag.FromErr(err)
 	}
-	return nil
+	return diags
 }
 
 func createNetworkSSHUser(d *schema.ResourceData) ne.SSHUser {

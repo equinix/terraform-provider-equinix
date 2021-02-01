@@ -2,14 +2,11 @@ package main
 
 import (
 	"github.com/equinix/terraform-provider-equinix/equinix"
-	"github.com/hashicorp/terraform-plugin-sdk/plugin"
-	"github.com/hashicorp/terraform-plugin-sdk/terraform"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/plugin"
 )
 
 func main() {
 	plugin.Serve(&plugin.ServeOpts{
-		ProviderFunc: func() terraform.ResourceProvider {
-			return equinix.Provider()
-		},
+		ProviderFunc: equinix.Provider,
 	})
 }

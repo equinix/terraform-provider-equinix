@@ -1,11 +1,13 @@
 package equinix
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/equinix/ne-go"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 )
 
 var networkDevicePlatformSchemaNames = map[string]string{
@@ -21,7 +23,7 @@ var networkDevicePlatformSchemaNames = map[string]string{
 
 func dataSourceNetworkDevicePlatform() *schema.Resource {
 	return &schema.Resource{
-		Read: dataSourceNetworkDevicePlatformRead,
+		ReadContext: dataSourceNetworkDevicePlatformRead,
 		Schema: map[string]*schema.Schema{
 			networkDevicePlatformSchemaNames["DeviceTypeCode"]: {
 				Type:         schema.TypeString,
@@ -81,12 +83,13 @@ func dataSourceNetworkDevicePlatform() *schema.Resource {
 	}
 }
 
-func dataSourceNetworkDevicePlatformRead(d *schema.ResourceData, m interface{}) error {
+func dataSourceNetworkDevicePlatformRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	conf := m.(*Config)
+	var diags diag.Diagnostics
 	typeCode := d.Get(networkDevicePlatformSchemaNames["DeviceTypeCode"]).(string)
 	platforms, err := conf.ne.GetDevicePlatforms(typeCode)
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 	var filtered []ne.DevicePlatform
 	for _, platform := range platforms {
@@ -117,12 +120,15 @@ func dataSourceNetworkDevicePlatformRead(d *schema.ResourceData, m interface{}) 
 		filtered = append(filtered, platform)
 	}
 	if len(filtered) < 1 {
-		return fmt.Errorf("network device platform query returned no results, please change your search criteria")
+		return diag.Errorf("network device platform query returned no results, please change your search criteria")
 	}
 	if len(filtered) > 1 {
-		return fmt.Errorf("network device platform query returned more than one result, please try more specific search criteria")
+		return diag.Errorf("network device platform query returned more than one result, please try more specific search criteria")
 	}
-	return updateNetworkDevicePlatformResource(filtered[0], typeCode, d)
+	if err := updateNetworkDevicePlatformResource(filtered[0], typeCode, d); err != nil {
+		return diag.FromErr(err)
+	}
+	return diags
 }
 
 func updateNetworkDevicePlatformResource(platform ne.DevicePlatform, typeCode string, d *schema.ResourceData) error {

@@ -1,15 +1,17 @@
 package equinix
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"time"
 
 	awsCredentials "github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/equinix/ecx-go"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 )
 
 var ecxL2ConnectionAccepterSchemaNames = map[string]string{
@@ -22,10 +24,10 @@ var ecxL2ConnectionAccepterSchemaNames = map[string]string{
 
 func resourceECXL2ConnectionAccepter() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceECXL2ConnectionAccepterCreate,
-		Read:   resourceECXL2ConnectionAccepterRead,
-		Delete: resourceECXL2ConnectionAccepterDelete,
-		Schema: createECXL2ConnectionAccepterResourceSchema(),
+		CreateContext: resourceECXL2ConnectionAccepterCreate,
+		ReadContext:   resourceECXL2ConnectionAccepterRead,
+		DeleteContext: resourceECXL2ConnectionAccepterDelete,
+		Schema:        createECXL2ConnectionAccepterResourceSchema(),
 		Timeouts: &schema.ResourceTimeout{
 			Create: schema.DefaultTimeout(10 * time.Minute),
 		},
@@ -69,19 +71,19 @@ func createECXL2ConnectionAccepterResourceSchema() map[string]*schema.Schema {
 	}
 }
 
-func resourceECXL2ConnectionAccepterCreate(d *schema.ResourceData, m interface{}) error {
+func resourceECXL2ConnectionAccepterCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	conf := m.(*Config)
+	var diags diag.Diagnostics
 	req := ecx.L2ConnectionToConfirm{}
 	creds, err := retrieveAWSCredentials(d)
 	if err != nil {
-		return fmt.Errorf("error retrieving AWS credentials: %s", err)
+		return diag.Errorf("error retrieving AWS credentials: %s", err)
 	}
-	log.Printf("[INFO] using AWS credentials provided by %s", creds.ProviderName)
 	req.AccessKey = ecx.String(creds.AccessKeyID)
 	req.SecretKey = ecx.String(creds.SecretAccessKey)
 	connID := d.Get(ecxL2ConnectionAccepterSchemaNames["ConnectionId"]).(string)
 	if _, err := conf.ecx.ConfirmL2Connection(connID, req); err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 	d.SetId(connID)
 
@@ -105,16 +107,18 @@ func resourceECXL2ConnectionAccepterCreate(d *schema.ResourceData, m interface{}
 		},
 	}
 	if _, err := createStateConf.WaitForState(); err != nil {
-		return fmt.Errorf("error waiting for connection %q to be provisioned on provider side: %s", connID, err)
+		return diag.Errorf("error waiting for connection %q to be provisioned on provider side: %s", connID, err)
 	}
-	return resourceECXL2ConnectionAccepterRead(d, m)
+	diags = append(diags, resourceECXL2ConnectionAccepterRead(ctx, d, m)...)
+	return diags
 }
 
-func resourceECXL2ConnectionAccepterRead(d *schema.ResourceData, m interface{}) error {
+func resourceECXL2ConnectionAccepterRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	conf := m.(*Config)
+	var diags diag.Diagnostics
 	conn, err := conf.ecx.GetL2Connection(d.Id())
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 	if conn == nil || isStringInSlice(ecx.StringValue(conn.Status), []string{
 		ecx.ConnectionStatusPendingDelete,
@@ -123,15 +127,15 @@ func resourceECXL2ConnectionAccepterRead(d *schema.ResourceData, m interface{}) 
 		ecx.ConnectionStatusDeleted,
 	}) {
 		d.SetId("")
-		return nil
+		return diags
 	}
 	if err := updateECXL2ConnectionAccepterResource(conn, d); err != nil {
-		return err
+		return diag.FromErr(err)
 	}
-	return nil
+	return diags
 }
 
-func resourceECXL2ConnectionAccepterDelete(d *schema.ResourceData, m interface{}) error {
+func resourceECXL2ConnectionAccepterDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	log.Printf("[WARN] [equinix_ecx_l2_connection_accepter] Will not delete ECX L2 connection (%s)"+
 		"Terraform will remove this resource from the state file, however resources may remain.", d.Id())
 	return nil

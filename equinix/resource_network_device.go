@@ -1,6 +1,7 @@
 package equinix
 
 import (
+	"context"
 	"fmt"
 	"io"
 	"log"
@@ -10,9 +11,11 @@ import (
 
 	"github.com/equinix/ne-go"
 	"github.com/equinix/rest-go"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
+	"github.com/hashicorp/go-cty/cty"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 )
 
 var networkDeviceSchemaNames = map[string]string{
@@ -71,11 +74,11 @@ var neDeviceUserKeySchemaNames = map[string]string{
 
 func resourceNetworkDevice() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceNetworkDeviceCreate,
-		Read:   resourceNetworkDeviceRead,
-		Update: resourceNetworkDeviceUpdate,
-		Delete: resourceNetworkDeviceDelete,
-		Schema: createNetworkDeviceSchema(),
+		CreateContext: resourceNetworkDeviceCreate,
+		ReadContext:   resourceNetworkDeviceRead,
+		UpdateContext: resourceNetworkDeviceUpdate,
+		DeleteContext: resourceNetworkDeviceDelete,
+		Schema:        createNetworkDeviceSchema(),
 		Timeouts: &schema.ResourceTimeout{
 			Create: schema.DefaultTimeout(60 * time.Minute),
 			Update: schema.DefaultTimeout(10 * time.Minute),
@@ -466,15 +469,16 @@ func createNetworkDeviceUserKeySchema() map[string]*schema.Schema {
 	}
 }
 
-func resourceNetworkDeviceCreate(d *schema.ResourceData, m interface{}) error {
+func resourceNetworkDeviceCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	conf := m.(*Config)
+	var diags diag.Diagnostics
 	primary, secondary := createNetworkDevices(d)
 	var err error
 	if err := uploadDeviceLicenseFile(os.Open, conf.ne.UploadLicenseFile, ne.StringValue(primary.TypeCode), primary); err != nil {
-		return fmt.Errorf("could not upload primary device license file due to %s", err)
+		return diag.Errorf("could not upload primary device license file due to %s", err)
 	}
 	if err := uploadDeviceLicenseFile(os.Open, conf.ne.UploadLicenseFile, ne.StringValue(primary.TypeCode), secondary); err != nil {
-		return fmt.Errorf("could not upload secondary device license file due to %s", err)
+		return diag.Errorf("could not upload secondary device license file due to %s", err)
 	}
 	if secondary != nil {
 		primary.UUID, secondary.UUID, err = conf.ne.CreateRedundantDevice(*primary, *secondary)
@@ -482,7 +486,7 @@ func resourceNetworkDeviceCreate(d *schema.ResourceData, m interface{}) error {
 		primary.UUID, err = conf.ne.CreateDevice(*primary)
 	}
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 	d.SetId(ne.StringValue(primary.UUID))
 	waitConfigs := []*resource.StateChangeConf{
@@ -510,79 +514,94 @@ func resourceNetworkDeviceCreate(d *schema.ResourceData, m interface{}) error {
 			continue
 		}
 		if _, err := config.WaitForState(); err != nil {
-			return fmt.Errorf("error waiting for network device (%s) to be created: %s", ne.StringValue(primary.UUID), err)
+			return diag.Errorf("error waiting for network device (%s) to be created: %s", ne.StringValue(primary.UUID), err)
 		}
 	}
-	return resourceNetworkDeviceRead(d, m)
+	diags = append(diags, resourceNetworkDeviceRead(ctx, d, m)...)
+	return diags
 }
 
-func resourceNetworkDeviceRead(d *schema.ResourceData, m interface{}) error {
+func resourceNetworkDeviceRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	conf := m.(*Config)
+	var diags diag.Diagnostics
 	var err error
 	var primary, secondary *ne.Device
 	primary, err = conf.ne.GetDevice(d.Id())
 	if err != nil {
-		return fmt.Errorf("cannot fetch primary network device due to %v", err)
+		return diag.Errorf("cannot fetch primary network device due to %v", err)
 	}
 	if isStringInSlice(ne.StringValue(primary.Status), []string{ne.DeviceStateDeprovisioning, ne.DeviceStateDeprovisioned}) {
 		d.SetId("")
-		return nil
+		return diags
 	}
 	if ne.StringValue(primary.RedundantUUID) != "" {
 		secondary, err = conf.ne.GetDevice(ne.StringValue(primary.RedundantUUID))
 		if err != nil {
-			return fmt.Errorf("cannot fetch secondary network device due to %v", err)
+			return diag.Errorf("cannot fetch secondary network device due to %v", err)
 		}
 	}
 	if err = updateNetworkDeviceResource(primary, secondary, d); err != nil {
-		return err
+		return diag.FromErr(err)
 	}
-	return nil
+	return diags
 }
 
-func resourceNetworkDeviceUpdate(d *schema.ResourceData, m interface{}) error {
+func resourceNetworkDeviceUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	conf := m.(*Config)
+	var diags diag.Diagnostics
 	supportedChanges := []string{networkDeviceSchemaNames["Name"], networkDeviceSchemaNames["TermLength"],
 		networkDeviceSchemaNames["Notifications"], networkDeviceSchemaNames["AdditionalBandwidth"],
 		networkDeviceSchemaNames["ACLTemplateUUID"]}
 	updateReq := conf.ne.NewDeviceUpdateRequest(d.Id())
 	primaryChanges := getResourceDataChangedKeys(supportedChanges, d)
 	if err := fillNetworkDeviceUpdateRequest(updateReq, primaryChanges).Execute(); err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 	var secondaryChanges map[string]interface{}
 	if v, ok := d.GetOk(networkDeviceSchemaNames["RedundantUUID"]); ok {
 		secondaryChanges = getResourceDataListElementChanges(supportedChanges, networkDeviceSchemaNames["Secondary"], 0, d)
 		secondaryUpdateReq := conf.ne.NewDeviceUpdateRequest(v.(string))
 		if err := fillNetworkDeviceUpdateRequest(secondaryUpdateReq, secondaryChanges).Execute(); err != nil {
-			return err
+			return diag.FromErr(err)
 		}
 	}
 	for _, stateChangeConf := range getNetworkDeviceStateChangeConfigs(conf.ne, d.Id(), d.Timeout(schema.TimeoutUpdate), primaryChanges) {
 		if _, err := stateChangeConf.WaitForState(); err != nil {
-			return fmt.Errorf("error waiting for network device %q to be updated: %s", d.Id(), err)
+			return diag.Errorf("error waiting for network device %q to be updated: %s", d.Id(), err)
 		}
 	}
 	for _, stateChangeConf := range getNetworkDeviceStateChangeConfigs(conf.ne, d.Get(networkDeviceSchemaNames["RedundantUUID"]).(string), d.Timeout(schema.TimeoutUpdate), secondaryChanges) {
 		if _, err := stateChangeConf.WaitForState(); err != nil {
-			return fmt.Errorf("error waiting for network device %q to be updated: %s", d.Get(networkDeviceSchemaNames["RedundantUUID"]), err)
+			return diag.Errorf("error waiting for network device %q to be updated: %s", d.Get(networkDeviceSchemaNames["RedundantUUID"]), err)
 		}
 	}
-	return resourceNetworkDeviceRead(d, m)
+	diags = append(diags, resourceNetworkDeviceRead(ctx, d, m)...)
+	return diags
 }
 
-func resourceNetworkDeviceDelete(d *schema.ResourceData, m interface{}) error {
+func resourceNetworkDeviceDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	conf := m.(*Config)
+	var diags diag.Diagnostics
 	if v, ok := d.GetOk(networkDeviceSchemaNames["ACLTemplateUUID"]); ok {
 		if err := conf.ne.NewDeviceUpdateRequest(d.Id()).WithACLTemplate("").Execute(); err != nil {
-			log.Printf("[WARN] could not unassign ACL template %q from device %q: %s", v, d.Id(), err)
+			diags = append(diags, diag.Diagnostic{
+				Severity:      diag.Warning,
+				Summary:       fmt.Sprintf("could not unassign ACL template %q from device %q", v, d.Id()),
+				Detail:        err.Error(),
+				AttributePath: cty.GetAttrPath(networkDeviceSchemaNames["ACLTemplateUUID"]),
+			})
 		}
 	}
 	if v, ok := d.GetOk(networkDeviceSchemaNames["Secondary"]); ok {
 		if secondary := expandNetworkDeviceSecondary(v.([]interface{})); secondary != nil {
 			if ne.StringValue(secondary.ACLTemplateUUID) != "" {
 				if err := conf.ne.NewDeviceUpdateRequest(ne.StringValue(secondary.UUID)).WithACLTemplate("").Execute(); err != nil {
-					log.Printf("[WARN] could not unassign ACL template %q from device %q: %s", v, ne.StringValue(secondary.UUID), err)
+					diags = append(diags, diag.Diagnostic{
+						Severity:      diag.Warning,
+						Summary:       fmt.Sprintf("could not unassign ACL template %q from device %q", v, ne.StringValue(secondary.UUID)),
+						Detail:        err.Error(),
+						AttributePath: cty.GetAttrPath(networkDeviceSchemaNames["ACLTemplateUUID"]),
+					})
 				}
 			}
 		}
@@ -591,16 +610,16 @@ func resourceNetworkDeviceDelete(d *schema.ResourceData, m interface{}) error {
 		if restErr, ok := err.(rest.Error); ok {
 			for _, detailedErr := range restErr.ApplicationErrors {
 				if detailedErr.Code == ne.ErrorCodeDeviceRemoved {
-					return nil
+					return diags
 				}
 			}
 		}
-		return err
+		return diag.FromErr(err)
 	}
 	if _, err := createNetworkDeviceStatusDeleteWaitConfiguration(conf.ne.GetDevice, d.Id(), 5*time.Second, d.Timeout(schema.TimeoutDelete)).WaitForState(); err != nil {
-		return fmt.Errorf("error waiting for device (%s) to be removed: %s", d.Id(), err)
+		return diag.Errorf("error waiting for device (%s) to be removed: %s", d.Id(), err)
 	}
-	return nil
+	return diags
 }
 
 func createNetworkDevices(d *schema.ResourceData) (*ne.Device, *ne.Device) {

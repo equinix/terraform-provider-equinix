@@ -1,15 +1,18 @@
 package equinix
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"time"
 
 	"github.com/equinix/ecx-go"
 	"github.com/equinix/rest-go"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
+	"github.com/hashicorp/go-cty/cty"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 )
 
 var ecxL2ConnectionSchemaNames = map[string]string{
@@ -47,11 +50,11 @@ var ecxL2ConnectionAdditionalInfoSchemaNames = map[string]string{
 
 func resourceECXL2Connection() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceECXL2ConnectionCreate,
-		Read:   resourceECXL2ConnectionRead,
-		Update: resourceECXL2ConnectionUpdate,
-		Delete: resourceECXL2ConnectionDelete,
-		Schema: createECXL2ConnectionResourceSchema(),
+		CreateContext: resourceECXL2ConnectionCreate,
+		ReadContext:   resourceECXL2ConnectionRead,
+		UpdateContext: resourceECXL2ConnectionUpdate,
+		DeleteContext: resourceECXL2ConnectionDelete,
+		Schema:        createECXL2ConnectionResourceSchema(),
 		Timeouts: &schema.ResourceTimeout{
 			Create: schema.DefaultTimeout(5 * time.Minute),
 			Delete: schema.DefaultTimeout(5 * time.Minute),
@@ -355,8 +358,9 @@ func createECXL2ConnectionResourceSchema() map[string]*schema.Schema {
 	}
 }
 
-func resourceECXL2ConnectionCreate(d *schema.ResourceData, m interface{}) error {
+func resourceECXL2ConnectionCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	conf := m.(*Config)
+	var diags diag.Diagnostics
 	primary, secondary := createECXL2Connections(d)
 	var primaryID *string
 	var err error
@@ -366,10 +370,9 @@ func resourceECXL2ConnectionCreate(d *schema.ResourceData, m interface{}) error 
 		primaryID, err = conf.ecx.CreateL2Connection(*primary)
 	}
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 	d.SetId(ecx.StringValue(primaryID))
-
 	createStateConf := &resource.StateChangeConf{
 		Pending: []string{
 			ecx.ConnectionStatusProvisioning,
@@ -393,20 +396,22 @@ func resourceECXL2ConnectionCreate(d *schema.ResourceData, m interface{}) error 
 		},
 	}
 	if _, err := createStateConf.WaitForState(); err != nil {
-		return fmt.Errorf("error waiting for connection (%s) to be created: %s", d.Id(), err)
+		return diag.Errorf("error waiting for connection (%s) to be created: %s", d.Id(), err)
 	}
-	return resourceECXL2ConnectionRead(d, m)
+	diags = append(diags, resourceECXL2ConnectionRead(ctx, d, m)...)
+	return diags
 }
 
-func resourceECXL2ConnectionRead(d *schema.ResourceData, m interface{}) error {
+func resourceECXL2ConnectionRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	conf := m.(*Config)
+	var diags diag.Diagnostics
 	var err error
 	var primary *ecx.L2Connection
 	var secondary *ecx.L2Connection
 
 	primary, err = conf.ecx.GetL2Connection(d.Id())
 	if err != nil {
-		return fmt.Errorf("cannot fetch primary connection due to %v", err)
+		return diag.Errorf("cannot fetch primary connection due to %v", err)
 	}
 	if isStringInSlice(ecx.StringValue(primary.Status), []string{
 		ecx.ConnectionStatusPendingDelete,
@@ -420,51 +425,59 @@ func resourceECXL2ConnectionRead(d *schema.ResourceData, m interface{}) error {
 	if ecx.StringValue(primary.RedundantUUID) != "" {
 		secondary, err = conf.ecx.GetL2Connection(ecx.StringValue(primary.RedundantUUID))
 		if err != nil {
-			return fmt.Errorf("cannot fetch secondary connection due to %v", err)
+			return diag.Errorf("cannot fetch secondary connection due to %v", err)
 		}
 	}
 	if err := updateECXL2ConnectionResource(primary, secondary, d); err != nil {
-		return err
+		return diag.FromErr(err)
 	}
-	return nil
+	return diags
 }
 
-func resourceECXL2ConnectionUpdate(d *schema.ResourceData, m interface{}) error {
+func resourceECXL2ConnectionUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	conf := m.(*Config)
+	var diags diag.Diagnostics
 	supportedChanges := []string{ecxL2ConnectionSchemaNames["Name"],
 		ecxL2ConnectionSchemaNames["Speed"],
 		ecxL2ConnectionSchemaNames["SpeedUnit"]}
 	primaryChanges := getResourceDataChangedKeys(supportedChanges, d)
 	primaryUpdateReq := conf.ecx.NewL2ConnectionUpdateRequest(d.Id())
 	if err := fillFabricL2ConnectionUpdateRequest(primaryUpdateReq, primaryChanges).Execute(); err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 	if v, ok := d.GetOk(ecxL2ConnectionSchemaNames["RedundantUUID"]); ok {
 		secondaryChanges := getResourceDataListElementChanges(supportedChanges, ecxL2ConnectionSchemaNames["SecondaryConnection"], 0, d)
 		secondaryUpdateReq := conf.ecx.NewL2ConnectionUpdateRequest(v.(string))
 		if err := fillFabricL2ConnectionUpdateRequest(secondaryUpdateReq, secondaryChanges).Execute(); err != nil {
-			return err
+			return diag.FromErr(err)
 		}
 	}
-	return resourceECXL2ConnectionRead(d, m)
+	diags = append(diags, resourceECXL2ConnectionRead(ctx, d, m)...)
+	return diags
 }
 
-func resourceECXL2ConnectionDelete(d *schema.ResourceData, m interface{}) error {
+func resourceECXL2ConnectionDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	conf := m.(*Config)
+	var diags diag.Diagnostics
 	if err := conf.ecx.DeleteL2Connection(d.Id()); err != nil {
 		restErr, ok := err.(rest.Error)
 		if ok {
 			//IC-LAYER2-4021 = Connection already deleted
 			if hasApplicationErrorCode(restErr.ApplicationErrors, "IC-LAYER2-4021") {
-				return nil
+				return diags
 			}
 		}
-		return err
+		return diag.FromErr(err)
 	}
 	//remove secondary connection, don't fail on error as there is no partial state on delete
 	if redID, ok := d.GetOk(ecxL2ConnectionSchemaNames["RedundantUUID"]); ok {
 		if err := conf.ecx.DeleteL2Connection(redID.(string)); err != nil {
-			log.Printf("[WARN] error removing secondary connection with UUID %s, due to %s", redID.(string), err)
+			diags = append(diags, diag.Diagnostic{
+				Severity:      diag.Warning,
+				Summary:       fmt.Sprintf("Failed to remove secondary connection with UUID %q", redID.(string)),
+				Detail:        err.Error(),
+				AttributePath: cty.GetAttrPath(ecxL2ConnectionSchemaNames["RedundantUUID"]),
+			})
 		}
 	}
 	deleteStateConf := &resource.StateChangeConf{
@@ -487,9 +500,9 @@ func resourceECXL2ConnectionDelete(d *schema.ResourceData, m interface{}) error 
 		},
 	}
 	if _, err := deleteStateConf.WaitForState(); err != nil {
-		return fmt.Errorf("error waiting for connection (%s) to be removed: %s", d.Id(), err)
+		return diag.Errorf("error waiting for connection (%s) to be removed: %s", d.Id(), err)
 	}
-	return nil
+	return diags
 }
 
 func createECXL2Connections(d *schema.ResourceData) (*ecx.L2Connection, *ecx.L2Connection) {
@@ -559,76 +572,76 @@ func createECXL2Connections(d *schema.ResourceData) (*ecx.L2Connection, *ecx.L2C
 }
 
 func updateECXL2ConnectionResource(primary *ecx.L2Connection, secondary *ecx.L2Connection, d *schema.ResourceData) error {
-	if err := setSchemaValueIfNotEmpty(ecxL2ConnectionSchemaNames["UUID"], primary.UUID, d); err != nil {
+	if err := d.Set(ecxL2ConnectionSchemaNames["UUID"], primary.UUID); err != nil {
 		return fmt.Errorf("error reading UUID: %s", err)
 	}
-	if err := setSchemaValueIfNotEmpty(ecxL2ConnectionSchemaNames["Name"], primary.Name, d); err != nil {
+	if err := d.Set(ecxL2ConnectionSchemaNames["Name"], primary.Name); err != nil {
 		return fmt.Errorf("error reading Name: %s", err)
 	}
-	if err := setSchemaValueIfNotEmpty(ecxL2ConnectionSchemaNames["ProfileUUID"], primary.ProfileUUID, d); err != nil {
+	if err := d.Set(ecxL2ConnectionSchemaNames["ProfileUUID"], primary.ProfileUUID); err != nil {
 		return fmt.Errorf("error reading ProfileUUID: %s", err)
 	}
-	if err := setSchemaValueIfNotEmpty(ecxL2ConnectionSchemaNames["Speed"], primary.Speed, d); err != nil {
+	if err := d.Set(ecxL2ConnectionSchemaNames["Speed"], primary.Speed); err != nil {
 		return fmt.Errorf("error reading Speed: %s", err)
 	}
-	if err := setSchemaValueIfNotEmpty(ecxL2ConnectionSchemaNames["SpeedUnit"], primary.SpeedUnit, d); err != nil {
+	if err := d.Set(ecxL2ConnectionSchemaNames["SpeedUnit"], primary.SpeedUnit); err != nil {
 		return fmt.Errorf("error reading SpeedUnit: %s", err)
 	}
-	if err := setSchemaValueIfNotEmpty(ecxL2ConnectionSchemaNames["Status"], primary.Status, d); err != nil {
+	if err := d.Set(ecxL2ConnectionSchemaNames["Status"], primary.Status); err != nil {
 		return fmt.Errorf("error reading Status: %s", err)
 	}
-	if err := setSchemaValueIfNotEmpty(ecxL2ConnectionSchemaNames["ProviderStatus"], primary.ProviderStatus, d); err != nil {
+	if err := d.Set(ecxL2ConnectionSchemaNames["ProviderStatus"], primary.ProviderStatus); err != nil {
 		return fmt.Errorf("error reading ProviderStatus: %s", err)
 	}
-	if err := setSchemaValueIfNotEmpty(ecxL2ConnectionSchemaNames["Notifications"], primary.Notifications, d); err != nil {
+	if err := d.Set(ecxL2ConnectionSchemaNames["Notifications"], primary.Notifications); err != nil {
 		return fmt.Errorf("error reading Notifications: %s", err)
 	}
-	if err := setSchemaValueIfNotEmpty(ecxL2ConnectionSchemaNames["PurchaseOrderNumber"], primary.PurchaseOrderNumber, d); err != nil {
+	if err := d.Set(ecxL2ConnectionSchemaNames["PurchaseOrderNumber"], primary.PurchaseOrderNumber); err != nil {
 		return fmt.Errorf("error reading PurchaseOrderNumber: %s", err)
 	}
-	if err := setSchemaValueIfNotEmpty(ecxL2ConnectionSchemaNames["PortUUID"], primary.PortUUID, d); err != nil {
+	if err := d.Set(ecxL2ConnectionSchemaNames["PortUUID"], primary.PortUUID); err != nil {
 		return fmt.Errorf("error reading PortUUID: %s", err)
 	}
-	if err := setSchemaValueIfNotEmpty(ecxL2ConnectionSchemaNames["DeviceUUID"], primary.DeviceUUID, d); err != nil {
+	if err := d.Set(ecxL2ConnectionSchemaNames["DeviceUUID"], primary.DeviceUUID); err != nil {
 		return fmt.Errorf("error reading DeviceUUID: %s", err)
 	}
-	if err := setSchemaValueIfNotEmpty(ecxL2ConnectionSchemaNames["DeviceInterfaceID"], primary.DeviceInterfaceID, d); err != nil {
+	if err := d.Set(ecxL2ConnectionSchemaNames["DeviceInterfaceID"], primary.DeviceInterfaceID); err != nil {
 		return fmt.Errorf("error reading DeviceInterfaceID: %s", err)
 	}
-	if err := setSchemaValueIfNotEmpty(ecxL2ConnectionSchemaNames["VlanSTag"], primary.VlanSTag, d); err != nil {
+	if err := d.Set(ecxL2ConnectionSchemaNames["VlanSTag"], primary.VlanSTag); err != nil {
 		return fmt.Errorf("error reading VlanSTag: %s", err)
 	}
-	if err := setSchemaValueIfNotEmpty(ecxL2ConnectionSchemaNames["VlanCTag"], primary.VlanCTag, d); err != nil {
+	if err := d.Set(ecxL2ConnectionSchemaNames["VlanCTag"], primary.VlanCTag); err != nil {
 		return fmt.Errorf("error reading VlanCTag: %s", err)
 	}
-	if err := setSchemaValueIfNotEmpty(ecxL2ConnectionSchemaNames["NamedTag"], primary.NamedTag, d); err != nil {
+	if err := d.Set(ecxL2ConnectionSchemaNames["NamedTag"], primary.NamedTag); err != nil {
 		return fmt.Errorf("error reading NamedTag: %s", err)
 	}
 	if err := d.Set(ecxL2ConnectionSchemaNames["AdditionalInfo"], flattenECXL2ConnectionAdditionalInfo(primary.AdditionalInfo)); err != nil {
 		return fmt.Errorf("error reading AdditionalInfo: %s", err)
 	}
-	if err := setSchemaValueIfNotEmpty(ecxL2ConnectionSchemaNames["ZSidePortUUID"], primary.ZSidePortUUID, d); err != nil {
+	if err := d.Set(ecxL2ConnectionSchemaNames["ZSidePortUUID"], primary.ZSidePortUUID); err != nil {
 		return fmt.Errorf("error reading ZSidePortUUID: %s", err)
 	}
-	if err := setSchemaValueIfNotEmpty(ecxL2ConnectionSchemaNames["ZSideVlanSTag"], primary.ZSideVlanSTag, d); err != nil {
+	if err := d.Set(ecxL2ConnectionSchemaNames["ZSideVlanSTag"], primary.ZSideVlanSTag); err != nil {
 		return fmt.Errorf("error reading ZSideVlanSTag: %s", err)
 	}
-	if err := setSchemaValueIfNotEmpty(ecxL2ConnectionSchemaNames["ZSideVlanCTag"], primary.ZSideVlanCTag, d); err != nil {
+	if err := d.Set(ecxL2ConnectionSchemaNames["ZSideVlanCTag"], primary.ZSideVlanCTag); err != nil {
 		return fmt.Errorf("error reading ZSideVlanCTag: %s", err)
 	}
-	if err := setSchemaValueIfNotEmpty(ecxL2ConnectionSchemaNames["SellerRegion"], primary.SellerRegion, d); err != nil {
+	if err := d.Set(ecxL2ConnectionSchemaNames["SellerRegion"], primary.SellerRegion); err != nil {
 		return fmt.Errorf("error reading SellerRegion: %s", err)
 	}
-	if err := setSchemaValueIfNotEmpty(ecxL2ConnectionSchemaNames["SellerMetroCode"], primary.SellerMetroCode, d); err != nil {
+	if err := d.Set(ecxL2ConnectionSchemaNames["SellerMetroCode"], primary.SellerMetroCode); err != nil {
 		return fmt.Errorf("error reading SellerMetroCode: %s", err)
 	}
-	if err := setSchemaValueIfNotEmpty(ecxL2ConnectionSchemaNames["AuthorizationKey"], primary.AuthorizationKey, d); err != nil {
+	if err := d.Set(ecxL2ConnectionSchemaNames["AuthorizationKey"], primary.AuthorizationKey); err != nil {
 		return fmt.Errorf("error reading AuthorizationKey: %s", err)
 	}
-	if err := setSchemaValueIfNotEmpty(ecxL2ConnectionSchemaNames["RedundantUUID"], primary.RedundantUUID, d); err != nil {
+	if err := d.Set(ecxL2ConnectionSchemaNames["RedundantUUID"], primary.RedundantUUID); err != nil {
 		return fmt.Errorf("error reading RedundantUUID: %s", err)
 	}
-	if err := setSchemaValueIfNotEmpty(ecxL2ConnectionSchemaNames["RedundancyType"], primary.RedundancyType, d); err != nil {
+	if err := d.Set(ecxL2ConnectionSchemaNames["RedundancyType"], primary.RedundancyType); err != nil {
 		return fmt.Errorf("error reading RedundancyType: %s", err)
 	}
 	if secondary != nil {

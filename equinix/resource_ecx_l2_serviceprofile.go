@@ -1,12 +1,14 @@
 package equinix
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/equinix/ecx-go"
 	"github.com/equinix/rest-go"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 )
 
 var ecxL2ServiceProfileSchemaNames = map[string]string{
@@ -56,11 +58,11 @@ var ecxL2ServiceProfileSpeedBandSchemaNames = map[string]string{
 
 func resourceECXL2ServiceProfile() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceECXL2ServiceProfileCreate,
-		Read:   resourceECXL2ServiceProfileRead,
-		Update: resourceECXL2ServiceProfileUpdate,
-		Delete: resourceECXL2ServiceProfileDelete,
-		Schema: createECXL2ServiceProfileResourceSchema(),
+		CreateContext: resourceECXL2ServiceProfileCreate,
+		ReadContext:   resourceECXL2ServiceProfileRead,
+		UpdateContext: resourceECXL2ServiceProfileUpdate,
+		DeleteContext: resourceECXL2ServiceProfileDelete,
+		Schema:        createECXL2ServiceProfileResourceSchema(),
 	}
 }
 
@@ -256,51 +258,57 @@ func createECXL2ServiceProfileResourceSchema() map[string]*schema.Schema {
 	}
 }
 
-func resourceECXL2ServiceProfileCreate(d *schema.ResourceData, m interface{}) error {
+func resourceECXL2ServiceProfileCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	conf := m.(*Config)
+	var diags diag.Diagnostics
 	profile := createECXL2ServiceProfile(d)
 	uuid, err := conf.ecx.CreateL2ServiceProfile(*profile)
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 	d.SetId(ecx.StringValue(uuid))
-	return resourceECXL2ServiceProfileRead(d, m)
+	diags = append(diags, resourceECXL2ServiceProfileRead(ctx, d, m)...)
+	return diags
 }
 
-func resourceECXL2ServiceProfileRead(d *schema.ResourceData, m interface{}) error {
+func resourceECXL2ServiceProfileRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	conf := m.(*Config)
+	var diags diag.Diagnostics
 	profile, err := conf.ecx.GetL2ServiceProfile(d.Id())
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 	if err := updateECXL2ServiceProfileResource(profile, d); err != nil {
-		return err
+		return diag.FromErr(err)
 	}
-	return nil
+	return diags
 }
 
-func resourceECXL2ServiceProfileUpdate(d *schema.ResourceData, m interface{}) error {
+func resourceECXL2ServiceProfileUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	conf := m.(*Config)
+	var diags diag.Diagnostics
 	profile := createECXL2ServiceProfile(d)
 	if err := conf.ecx.UpdateL2ServiceProfile(*profile); err != nil {
-		return err
+		return diag.FromErr(err)
 	}
-	return resourceECXL2ServiceProfileRead(d, m)
+	diags = append(diags, resourceECXL2ServiceProfileRead(ctx, d, m)...)
+	return diags
 }
 
-func resourceECXL2ServiceProfileDelete(d *schema.ResourceData, m interface{}) error {
+func resourceECXL2ServiceProfileDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	conf := m.(*Config)
+	var diags diag.Diagnostics
 	if err := conf.ecx.DeleteL2ServiceProfile(d.Id()); err != nil {
 		restErr, ok := err.(rest.Error)
 		if ok {
 			//IC-PROFILE-004 =  profile does not exist
 			if hasApplicationErrorCode(restErr.ApplicationErrors, "IC-PROFILE-004") {
-				return nil
+				return diags
 			}
 		}
-		return err
+		return diag.FromErr(err)
 	}
-	return nil
+	return diags
 }
 
 func createECXL2ServiceProfile(d *schema.ResourceData) *ecx.L2ServiceProfile {

@@ -1,15 +1,17 @@
 package equinix
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"time"
 
 	"github.com/equinix/ne-go"
 	"github.com/equinix/rest-go"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 )
 
 var networkBGPSchemaNames = map[string]string{
@@ -27,11 +29,11 @@ var networkBGPSchemaNames = map[string]string{
 
 func resourceNetworkBGP() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceNetworkBGPCreate,
-		Read:   resourceNetworkBGPRead,
-		Update: resourceNetworkBGPUpdate,
-		Delete: resourceNetworkBGPDelete,
-		Schema: createNetworkBGPResourceSchema(),
+		CreateContext: resourceNetworkBGPCreate,
+		ReadContext:   resourceNetworkBGPRead,
+		UpdateContext: resourceNetworkBGPUpdate,
+		DeleteContext: resourceNetworkBGPDelete,
+		Schema:        createNetworkBGPResourceSchema(),
 		Timeouts: &schema.ResourceTimeout{
 			Create: schema.DefaultTimeout(5 * time.Minute),
 		},
@@ -91,56 +93,60 @@ func createNetworkBGPResourceSchema() map[string]*schema.Schema {
 	}
 }
 
-func resourceNetworkBGPCreate(d *schema.ResourceData, m interface{}) error {
+func resourceNetworkBGPCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	conf := m.(*Config)
+	var diags diag.Diagnostics
 	bgp := createNetworkBGPConfiguration(d)
 	existingBGP, err := conf.ne.GetBGPConfigurationForConnection(ne.StringValue(bgp.ConnectionUUID))
-	//Reuse existing configuration, as there was no possibility to remove it due to API limitations
 	if err == nil {
 		bgp.UUID = existingBGP.UUID
 		if updateErr := createNetworkBGPUpdateRequest(conf.ne.NewBGPConfigurationUpdateRequest, &bgp); updateErr != nil {
-			return fmt.Errorf("failed to update BGP configuration '%s': %s", ne.StringValue(existingBGP.UUID), updateErr)
+			return diag.Errorf("failed to update BGP configuration '%s': %s", ne.StringValue(existingBGP.UUID), updateErr)
 		}
 		d.SetId(ne.StringValue(bgp.UUID))
 	} else {
 		restErr, ok := err.(rest.Error)
 		if !ok || restErr.HTTPCode != http.StatusNotFound {
-			return fmt.Errorf("failed to fetch BGP configuration for connection '%s': %s", ne.StringValue(bgp.ConnectionUUID), err)
+			return diag.Errorf("failed to fetch BGP configuration for connection '%s': %s", ne.StringValue(bgp.ConnectionUUID), err)
 		}
 		uuid, err := conf.ne.CreateBGPConfiguration(bgp)
 		if err != nil {
-			return err
+			return diag.FromErr(err)
 		}
 		d.SetId(ne.StringValue(uuid))
 	}
 	if _, err := createBGPConfigStatusProvisioningWaitConfiguration(conf.ne.GetBGPConfiguration, d.Id(), 2*time.Second, d.Timeout(schema.TimeoutCreate)).WaitForState(); err != nil {
-		return fmt.Errorf("error waiting for BGP configuration (%s) to be created: %s", d.Id(), err)
+		return diag.Errorf("error waiting for BGP configuration (%s) to be created: %s", d.Id(), err)
 	}
-	return resourceNetworkBGPRead(d, m)
+	diags = append(diags, resourceNetworkBGPRead(ctx, d, m)...)
+	return diags
 }
 
-func resourceNetworkBGPRead(d *schema.ResourceData, m interface{}) error {
+func resourceNetworkBGPRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	conf := m.(*Config)
+	var diags diag.Diagnostics
 	bgp, err := conf.ne.GetBGPConfiguration(d.Id())
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 	if err := updateNetworkBGPResource(bgp, d); err != nil {
-		return err
+		return diag.FromErr(err)
 	}
-	return nil
+	return diags
 }
 
-func resourceNetworkBGPUpdate(d *schema.ResourceData, m interface{}) error {
+func resourceNetworkBGPUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	conf := m.(*Config)
+	var diags diag.Diagnostics
 	bgpConfig := createNetworkBGPConfiguration(d)
 	if err := createNetworkBGPUpdateRequest(conf.ne.NewBGPConfigurationUpdateRequest, &bgpConfig).Execute(); err != nil {
-		return err
+		return diag.FromErr(err)
 	}
-	return resourceNetworkBGPRead(d, m)
+	diags = append(diags, resourceNetworkBGPRead(ctx, d, m)...)
+	return diags
 }
 
-func resourceNetworkBGPDelete(d *schema.ResourceData, m interface{}) error {
+func resourceNetworkBGPDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	//BGP configuration removal is not possible with NE public APIs
 	d.SetId("")
 	return nil
