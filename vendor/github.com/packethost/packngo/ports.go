@@ -1,10 +1,9 @@
 package packngo
 
 import (
-	"context"
 	"fmt"
+	"path"
 	"strings"
-	"time"
 )
 
 const portBasePath = "/ports"
@@ -85,20 +84,20 @@ func (i *DevicePortServiceOp) GetPortByName(deviceID, name string) (*Port, error
 }
 
 func (i *DevicePortServiceOp) Assign(par *PortAssignRequest) (*Port, *Response, error) {
-	path := fmt.Sprintf("%s/%s/assign", portBasePath, par.PortID)
-	return i.portAction(path, par)
+	apiPath := path.Join(portBasePath, par.PortID, "assign")
+	return i.portAction(apiPath, par)
 }
 
 func (i *DevicePortServiceOp) AssignNative(par *PortAssignRequest) (*Port, *Response, error) {
-	path := fmt.Sprintf("%s/%s/native-vlan", portBasePath, par.PortID)
-	return i.portAction(path, par)
+	apiPath := path.Join(portBasePath, par.PortID, "native-vlan")
+	return i.portAction(apiPath, par)
 }
 
 func (i *DevicePortServiceOp) UnassignNative(portID string) (*Port, *Response, error) {
-	path := fmt.Sprintf("%s/%s/native-vlan", portBasePath, portID)
+	apiPath := path.Join(portBasePath, portID, "native-vlan")
 	port := new(Port)
 
-	resp, err := i.client.DoRequest("DELETE", path, nil, port)
+	resp, err := i.client.DoRequest("DELETE", apiPath, nil, port)
 	if err != nil {
 		return nil, resp, err
 	}
@@ -107,8 +106,8 @@ func (i *DevicePortServiceOp) UnassignNative(portID string) (*Port, *Response, e
 }
 
 func (i *DevicePortServiceOp) Unassign(par *PortAssignRequest) (*Port, *Response, error) {
-	path := fmt.Sprintf("%s/%s/unassign", portBasePath, par.PortID)
-	return i.portAction(path, par)
+	apiPath := path.Join(portBasePath, par.PortID, "unassign")
+	return i.portAction(apiPath, par)
 }
 
 func (i *DevicePortServiceOp) Bond(p *Port, be bool) (*Port, *Response, error) {
@@ -116,8 +115,8 @@ func (i *DevicePortServiceOp) Bond(p *Port, be bool) (*Port, *Response, error) {
 		return p, nil, nil
 	}
 	br := &BondRequest{PortID: p.ID, BulkEnable: be}
-	path := fmt.Sprintf("%s/%s/bond", portBasePath, br.PortID)
-	return i.portAction(path, br)
+	apiPath := path.Join(portBasePath, br.PortID, "bond")
+	return i.portAction(apiPath, br)
 }
 
 func (i *DevicePortServiceOp) Disbond(p *Port, bd bool) (*Port, *Response, error) {
@@ -125,14 +124,14 @@ func (i *DevicePortServiceOp) Disbond(p *Port, bd bool) (*Port, *Response, error
 		return p, nil, nil
 	}
 	dr := &DisbondRequest{PortID: p.ID, BulkDisable: bd}
-	path := fmt.Sprintf("%s/%s/disbond", portBasePath, dr.PortID)
-	return i.portAction(path, dr)
+	apiPath := path.Join(portBasePath, dr.PortID, "disbond")
+	return i.portAction(apiPath, dr)
 }
 
-func (i *DevicePortServiceOp) portAction(path string, req interface{}) (*Port, *Response, error) {
+func (i *DevicePortServiceOp) portAction(apiPath string, req interface{}) (*Port, *Response, error) {
 	port := new(Port)
 
-	resp, err := i.client.DoRequest("POST", path, req, port)
+	resp, err := i.client.DoRequest("POST", apiPath, req, port)
 	if err != nil {
 		return nil, resp, err
 	}
@@ -141,17 +140,17 @@ func (i *DevicePortServiceOp) portAction(path string, req interface{}) (*Port, *
 }
 
 func (i *DevicePortServiceOp) PortToLayerTwo(deviceID, portName string) (*Port, *Response, error) {
-	p, err := i.client.DevicePorts.GetPortByName(deviceID, portName)
+	p, err := i.GetPortByName(deviceID, portName)
 	if err != nil {
 		return nil, nil, err
 	}
 	if strings.HasPrefix(p.NetworkType, "layer2") {
 		return p, nil, nil
 	}
-	path := fmt.Sprintf("%s/%s/convert/layer-2", portBasePath, p.ID)
+	apiPath := path.Join(portBasePath, p.ID, "convert", "layer-2")
 	port := new(Port)
 
-	resp, err := i.client.DoRequest("POST", path, nil, port)
+	resp, err := i.client.DoRequest("POST", apiPath, nil, port)
 	if err != nil {
 		return nil, resp, err
 	}
@@ -160,14 +159,14 @@ func (i *DevicePortServiceOp) PortToLayerTwo(deviceID, portName string) (*Port, 
 }
 
 func (i *DevicePortServiceOp) PortToLayerThree(deviceID, portName string) (*Port, *Response, error) {
-	p, err := i.client.DevicePorts.GetPortByName(deviceID, portName)
+	p, err := i.GetPortByName(deviceID, portName)
 	if err != nil {
 		return nil, nil, err
 	}
 	if (p.NetworkType == NetworkTypeL3) || (p.NetworkType == NetworkTypeHybrid) {
 		return p, nil, nil
 	}
-	path := fmt.Sprintf("%s/%s/convert/layer-3", portBasePath, p.ID)
+	apiPath := path.Join(portBasePath, p.ID, "convert", "layer-3")
 	port := new(Port)
 
 	req := BackToL3Request{
@@ -178,7 +177,7 @@ func (i *DevicePortServiceOp) PortToLayerThree(deviceID, portName string) (*Port
 		},
 	}
 
-	resp, err := i.client.DoRequest("POST", path, &req, port)
+	resp, err := i.client.DoRequest("POST", apiPath, &req, port)
 	if err != nil {
 		return nil, resp, err
 	}
@@ -229,21 +228,21 @@ func (i *DevicePortServiceOp) ConvertDevice(d *Device, targetType string) error 
 	if targetType == NetworkTypeL3 {
 		// TODO: remove vlans from all the ports
 		for _, p := range bondPorts {
-			_, _, err := i.client.DevicePorts.Bond(p, false)
+			_, _, err := i.Bond(p, false)
 			if err != nil {
 				return err
 			}
 		}
-		_, _, err := i.client.DevicePorts.PortToLayerThree(d.ID, "bond0")
+		_, _, err := i.PortToLayerThree(d.ID, "bond0")
 		if err != nil {
 			return err
 		}
-		allEthPorts, err := i.client.DevicePorts.GetAllEthPorts(d)
+		allEthPorts, err := i.GetAllEthPorts(d)
 		if err != nil {
 			return err
 		}
 		for _, p := range allEthPorts {
-			_, _, err := i.client.DevicePorts.Bond(p, false)
+			_, _, err := i.Bond(p, false)
 			if err != nil {
 				return err
 			}
@@ -251,37 +250,37 @@ func (i *DevicePortServiceOp) ConvertDevice(d *Device, targetType string) error 
 	}
 	if targetType == NetworkTypeHybrid {
 		for _, p := range bondPorts {
-			_, _, err := i.client.DevicePorts.Bond(p, false)
+			_, _, err := i.Bond(p, false)
 			if err != nil {
 				return err
 			}
 		}
 
-		_, _, err := i.client.DevicePorts.PortToLayerThree(d.ID, "bond0")
+		_, _, err := i.PortToLayerThree(d.ID, "bond0")
 		if err != nil {
 			return err
 		}
 
 		// ports need to be refreshed before bonding/disbonding
-		oddEthPorts, err := i.client.DevicePorts.GetOddEthPorts(d)
+		oddEthPorts, err := i.GetOddEthPorts(d)
 		if err != nil {
 			return err
 		}
 
 		for _, p := range oddEthPorts {
-			_, _, err := i.client.DevicePorts.Disbond(p, false)
+			_, _, err := i.Disbond(p, false)
 			if err != nil {
 				return err
 			}
 		}
 	}
 	if targetType == NetworkTypeL2Individual {
-		_, _, err := i.client.DevicePorts.PortToLayerTwo(d.ID, "bond0")
+		_, _, err := i.PortToLayerTwo(d.ID, "bond0")
 		if err != nil {
 			return err
 		}
 		for _, p := range bondPorts {
-			_, _, err = i.client.DevicePorts.Disbond(p, true)
+			_, _, err = i.Disbond(p, true)
 			if err != nil {
 				return err
 			}
@@ -290,17 +289,17 @@ func (i *DevicePortServiceOp) ConvertDevice(d *Device, targetType string) error 
 	if targetType == NetworkTypeL2Bonded {
 
 		for _, p := range bondPorts {
-			_, _, err := i.client.DevicePorts.PortToLayerTwo(d.ID, p.Name)
+			_, _, err := i.PortToLayerTwo(d.ID, p.Name)
 			if err != nil {
 				return err
 			}
 		}
-		allEthPorts, err := i.client.DevicePorts.GetAllEthPorts(d)
+		allEthPorts, err := i.GetAllEthPorts(d)
 		if err != nil {
 			return err
 		}
 		for _, p := range allEthPorts {
-			_, _, err := i.client.DevicePorts.Bond(p, false)
+			_, _, err := i.Bond(p, false)
 			if err != nil {
 				return err
 			}
@@ -309,35 +308,7 @@ func (i *DevicePortServiceOp) ConvertDevice(d *Device, targetType string) error 
 	return nil
 }
 
-// waitDeviceNetworkType waits for a device's computed network type (as
-// determined by GetNetworkType()) to reach the specified state. An error will
-// be returned if the device does not attain the desired network type state when
-// the timeout is reached without
-func waitDeviceNetworkType(id, networkType string, c *Client) (*Device, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(15)*time.Minute)
-	defer cancel()
-
-	ticker := time.NewTicker(5 * time.Second)
-	defer ticker.Stop()
-
-	for {
-		select {
-		case <-ticker.C:
-			d, _, err := c.Devices.Get(id, nil)
-			if err != nil {
-				return nil, err
-			}
-			if d.GetNetworkType() == networkType {
-				return d, nil
-			}
-		case <-ctx.Done():
-			return nil, fmt.Errorf("device %s is still not in state %s after timeout", id, networkType)
-		}
-	}
-}
-
 func (i *DevicePortServiceOp) DeviceToNetworkType(deviceID string, targetType string) (*Device, error) {
-
 	d, _, err := i.client.Devices.Get(deviceID, nil)
 	if err != nil {
 		return nil, err
@@ -348,13 +319,13 @@ func (i *DevicePortServiceOp) DeviceToNetworkType(deviceID string, targetType st
 	if curType == targetType {
 		return nil, fmt.Errorf("Device already is in state %s", targetType)
 	}
-	err = i.client.DevicePorts.ConvertDevice(d, targetType)
+	err = i.ConvertDevice(d, targetType)
 	if err != nil {
 		return nil, err
 	}
 
 	d, _, err = i.client.Devices.Get(deviceID, nil)
-	//d, err = waitDeviceNetworkType(deviceID, targetType, i.client)
+
 	if err != nil {
 		return nil, err
 	}
