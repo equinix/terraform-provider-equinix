@@ -4,7 +4,7 @@ go 1.14
 
 require (
 	github.com/aws/aws-sdk-go v1.37.0
-	github.com/equinix/ecx-go v1.2.1-0.20210128140127-93d21074d2a4
+	github.com/equinix/ecx-go/v2 v2.0.0
 	github.com/equinix/ne-go v0.0.0-20210128101708-42c0c2d08438
 	github.com/equinix/oauth2-go v1.0.0
 	github.com/equinix/rest-go v1.2.1

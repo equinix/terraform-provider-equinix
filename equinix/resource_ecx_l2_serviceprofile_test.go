@@ -3,7 +3,7 @@ package equinix
 import (
 	"testing"
 
-	"github.com/equinix/ecx-go"
+	"github.com/equinix/ecx-go/v2"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/stretchr/testify/assert"
 )

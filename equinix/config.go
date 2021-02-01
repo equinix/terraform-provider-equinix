@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/equinix/ecx-go"
+	"github.com/equinix/ecx-go/v2"
 	"github.com/equinix/ne-go"
 	"github.com/equinix/oauth2-go"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/logging"

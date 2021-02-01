@@ -6,7 +6,7 @@ import (
 	"log"
 	"time"
 
-	"github.com/equinix/ecx-go"
+	"github.com/equinix/ecx-go/v2"
 	"github.com/equinix/rest-go"
 	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
