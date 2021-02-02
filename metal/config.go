@@ -1,11 +1,8 @@
 package metal
 
 import (
-	"bytes"
 	"context"
 	"crypto/x509"
-	"io"
-	"io/ioutil"
 	"net/http"
 	"net/url"
 	"regexp"
@@ -22,41 +19,6 @@ const (
 
 type Config struct {
 	AuthToken string
-}
-
-func newRetryableTransport(defaultTransport http.RoundTripper) http.RoundTripper {
-	c := retryablehttp.NewClient()
-	c.HTTPClient = &http.Client{Transport: defaultTransport}
-
-	c.RetryMax = 10
-	c.RetryWaitMax = 30 * time.Second
-	c.RetryWaitMin = time.Second
-	c.CheckRetry = MetalRetryPolicy
-	return &retryableTransport{c}
-}
-
-type retryableTransport struct {
-	*retryablehttp.Client
-}
-
-// RoundTrip wraps calling an HTTP method with retries.
-func (c *retryableTransport) RoundTrip(r *http.Request) (*http.Response, error) {
-	var body io.ReadSeeker
-	if r.Body != nil {
-		bs, err := ioutil.ReadAll(r.Body)
-		if err != nil {
-			return nil, err
-		}
-		body = bytes.NewReader(bs)
-	}
-	req, err := retryablehttp.NewRequest(r.Method, r.URL.String(), body)
-	if err != nil {
-		return nil, err
-	}
-	for key, val := range r.Header {
-		req.Header.Set(key, val[0])
-	}
-	return c.Client.Do(req)
 }
 
 var redirectsErrorRe = regexp.MustCompile(`stopped after \d+ redirects\z`)
@@ -88,6 +50,13 @@ func MetalRetryPolicy(ctx context.Context, resp *http.Response, err error) (bool
 // Client returns a new client for accessing Equinix Metal's API.
 func (c *Config) Client() *packngo.Client {
 	transport := logging.NewTransport("Equinix Metal", http.DefaultTransport)
-	httpClient := &http.Client{Transport: newRetryableTransport(transport)}
+	retryClient := retryablehttp.NewClient()
+	retryClient.HTTPClient.Transport = transport
+	retryClient.RetryMax = 10
+	retryClient.RetryWaitMin = time.Second
+	retryClient.RetryWaitMax = 30 * time.Second
+	retryClient.RetryMax = 10
+	retryClient.CheckRetry = packngo.RetryPolicy
+	httpClient := retryClient.StandardClient()
 	return packngo.NewClientWithAuth(consumerToken, c.AuthToken, httpClient)
 }
