@@ -67,3 +67,5 @@ The following arguments are supported:
 
 * `auth_token` - (Required) This is your Equinix Metal API Auth token. This can also be specified
   with the `PACKET_AUTH_TOKEN` shell environment variable.
+* `max_retries` - Maximum number of retries in case of network failure.
+* `max_retry_wait_seconds` - Maximum time to wait in case of network failure.

@@ -18,7 +18,9 @@ const (
 )
 
 type Config struct {
-	AuthToken string
+	AuthToken    string
+	MaxRetries   int
+	MaxRetryWait time.Duration
 }
 
 var redirectsErrorRe = regexp.MustCompile(`stopped after \d+ redirects\z`)
@@ -52,10 +54,9 @@ func (c *Config) Client() *packngo.Client {
 	transport := logging.NewTransport("Equinix Metal", http.DefaultTransport)
 	retryClient := retryablehttp.NewClient()
 	retryClient.HTTPClient.Transport = transport
-	retryClient.RetryMax = 10
+	retryClient.RetryMax = c.MaxRetries
 	retryClient.RetryWaitMin = time.Second
-	retryClient.RetryWaitMax = 30 * time.Second
-	retryClient.RetryMax = 10
+	retryClient.RetryWaitMax = c.MaxRetryWait
 	retryClient.CheckRetry = packngo.RetryPolicy
 	httpClient := retryClient.StandardClient()
 	return packngo.NewClientWithAuth(consumerToken, c.AuthToken, httpClient)
