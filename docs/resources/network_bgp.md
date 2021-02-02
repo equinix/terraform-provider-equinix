@@ -3,13 +3,13 @@ layout: "equinix"
 page_title: "Equinix: equinix_network_bgp"
 subcategory: ""
 description: |-
- Provides Network Edge BGP peering resource.
+ Provides Equinix Network Edge BGP peering resource.
 ---
 
 # Resource: equinix_network_bgp
 
-Resource `equinix_network_bgp` allows creation and management of Network Edge
-BGP peering configurations.
+Resource `equinix_network_bgp` allows creation and management of Equinix Network
+Edge BGP peering configurations.
 
 ## Example Usage
 
@@ -30,7 +30,7 @@ resource "equinix_network_bgp" "test" {
 ## Argument Reference
 
 * `connection_id` - (Required) identifier of a connection established between
-network device and remote service provider
+network device and remote service provider that will be used for peering
 * `local_ip_address` - (Required) IP address in CIDR format of a local device
 * `local_asn` - (Required) Local ASN number
 * `remote_ip_address` - (Required) IP address of remote peer
@@ -39,9 +39,9 @@ network device and remote service provider
 
 ## Attributes Reference
 
-* `uuid` - BGP peering configuration universally unique identifier
-* `device_id` - universally unique identifier of a network device that
-forms a connection with a given BGP peering
+* `uuid` - BGP peering configuration unique identifier
+* `device_id` - unique identifier of a network device that
+is a local peer in a given BGP peering configuration
 * `state` - BGP peer state, one of:
   * Idle
   * Connect

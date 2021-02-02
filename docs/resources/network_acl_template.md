@@ -3,13 +3,13 @@ layout: "equinix"
 page_title: "Equinix: equinix_network_acl_template"
 subcategory: ""
 description: |-
- Provides Network Edge ACL template resource
+ Provides Equinix Network Edge ACL template resource
 ---
 
 # Resource: equinix_network_acl_template
 
 Resource `equinix_network_acl_template` allows creation and management of
-Network Edge device Access Control List templates.
+Equinix Network Edge device Access Control List templates.
 
 Device ACL templates give possibility to define set of rules will allowed inbound
 traffic. Templates can be assigned to the network devices.
@@ -51,7 +51,7 @@ resource "equinix_network_acl_template" "myacl" {
 * `inbound_rule` - (Required) One or more rules to specify allowed inbound traffic.
 Rules are ordered, matching traffic rule stops processing subsequent ones.
   * `inbound_rule.#.subnets` - (Required) Inbound traffic source IP subnets
-  un CIDR format
+  in CIDR format
   * `inbound_rule.#.protocol` - (Required) Inbound traffic protocol.
   One of: `IP`, `TCP`, `UDP`
   * `inbound_rule.#.src_port` - (Required) Inbound traffic source ports.
@@ -67,9 +67,9 @@ Rules are ordered, matching traffic rule stops processing subsequent ones.
 
 ## Attributes Reference
 
-* `uuid` - Unique universal identifier of ACL template resource
-* `device_id` - Identifier of a network device that template was applied on
+* `uuid` - Unique identifier of ACL template resource
+* `device_id` - Identifier of a network device where template was applied
 * `device_acl_status` - Status of ACL template provisioning process on a device,
-that template was applied on. One of:
+where template was applied. One of:
   * PROVISIONING
   * PROVISIONED

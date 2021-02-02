@@ -18,6 +18,13 @@ var networkSSHUserSchemaNames = map[string]string{
 	"DeviceUUIDs": "device_ids",
 }
 
+var networkSSHUserDescriptions = map[string]string{
+	"UUID":        "SSH user unique identifier",
+	"Username":    "SSH user login name",
+	"Password":    "SSH user password",
+	"DeviceUUIDs": "list of device identifiers to which user will have access",
+}
+
 func resourceNetworkSSHUser() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: resourceNetworkSSHUserCreate,
@@ -25,26 +32,30 @@ func resourceNetworkSSHUser() *schema.Resource {
 		UpdateContext: resourceNetworkSSHUserUpdate,
 		DeleteContext: resourceNetworkSSHUserDelete,
 		Schema:        createNetworkSSHUserResourceSchema(),
+		Description:   "Resource allows creation and management of Equinix Network Edge SSH users",
 	}
 }
 
 func createNetworkSSHUserResourceSchema() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
 		networkSSHUserSchemaNames["UUID"]: {
-			Type:     schema.TypeString,
-			Computed: true,
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: networkSSHUserDescriptions["UUID"],
 		},
 		networkSSHUserSchemaNames["Username"]: {
 			Type:         schema.TypeString,
 			Required:     true,
 			ForceNew:     true,
 			ValidateFunc: validation.StringLenBetween(3, 32),
+			Description:  networkSSHUserDescriptions["Username"],
 		},
 		networkSSHUserSchemaNames["Password"]: {
 			Type:         schema.TypeString,
 			Sensitive:    true,
 			Required:     true,
 			ValidateFunc: validation.StringLenBetween(8, 20),
+			Description:  networkSSHUserDescriptions["Password"],
 		},
 		networkSSHUserSchemaNames["DeviceUUIDs"]: {
 			Type:     schema.TypeSet,
@@ -54,6 +65,7 @@ func createNetworkSSHUserResourceSchema() map[string]*schema.Schema {
 				Type:         schema.TypeString,
 				ValidateFunc: validation.StringIsNotEmpty,
 			},
+			Description: networkSSHUserDescriptions["DeviceUUIDs"],
 		},
 	}
 }

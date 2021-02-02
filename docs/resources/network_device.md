@@ -3,13 +3,13 @@ layout: "equinix"
 page_title: "Equinix: equinix_network_device"
 subcategory: ""
 description: |-
- Provides Network Edge device resource
+ Provides Equinix Network Edge device resource
 ---
 
 # Resource: equinix_network_device
 
-Resource `equinix_network_device` allows creation and management of Network Edge
-virtual network devices.
+Resource `equinix_network_device` allows creation and management of Equinix Network
+Edge virtual network devices.
 
 Network Edge virtual network devices can be created in two modes:
 
@@ -67,21 +67,21 @@ resource "equinix_network_device" "csr1000v-ha" {
 
 * `name` - (Required) Device name
 * `type_code` - (Required) Device type code
-* `metro_code` - (Required) Metro location of a device
-* `hostname` - (Optional) Device hostname
-* `package_code` - (Required) Code of a software package used for a device
-* `version` - (Required) Software version for a device
-* `core_count` - (Required) Number of CPU cores for a device
-* `term_length` - (Required) Term length
-* `self_managed` - (Optional) Boolean value determining if device will be self-managed
-or Equinix managed (default)
-* `byol` - (Optional) Boolean value determining if device licensing mode will be
+* `metro_code` - (Required) Device location metro code
+* `hostname` - (Optional) Device hostname prefix
+* `package_code` - (Required) Device software package code
+* `version` - (Required) Device software software version
+* `core_count` - (Required) Number of CPU cores used by device,
+* `term_length` - (Required) Device term length
+* `self_managed` - (Optional) Boolean value that determines device management mode:
+*self-managed* or *Equinix managed* (default)
+* `byol` - (Optional) Boolean value that determines device licensing mode:
 *bring your own license* or *subscription* (default)
-* `license_token` - (Optional) License Token can be provided for some device types
+* `license_token` - (Optional) License Token applicable for some device types
 in BYOL licensing mode
 * `license_file` - (Optional) Path to the license file that will be uploaded and
 applied on a device. Applicable for some devices types in BYOL licensing mode
-* `throughput` - (Optional) License throughput for a device
+* `throughput` - (Optional) Device license throughput
 * `throughput_unit` - (Optional) License throughput unit (Mbps or Gbps)
 * `account_number` - (Required) Billing account number for a device
 * `notifications` - (Required) List of email addresses that will receive device
@@ -93,45 +93,47 @@ the invoice
 * `acl_template_id` - (Optional) Identifier of an ACL template that
 will be applied on the device
 * `additional_bandwidth` - (Optional) Additional Internet bandwidth, in Mbps,
-that will be added for the device in addition to 15Mbps included by default
+that will be allocated to the device (in addition to default 15Mbps)
 * `interface_count` - (Optional) Number of network interfaces on a device. If not
-specified then default number for a given device type will be used.
+specified, default number for a given device type will be used
 * `vendor_configuration` - (Optional) map of vendor specific configuration parameters
 for a device
-* `ssh-key` - (Optional) up to one definition of SSH key that will be provisioned
-on a device
-  * `ssh-key.#.username` - (Required) username associated with given key
-  * `ssh-key.#.name` - (Required) name of SSH key as defined in
-`equinix_network_ssh_key` resource
+* `ssh-key` - (Optional) definition of SSH key that will be provisioned
+on a device (max one key)
 * `secondary_device` - (Optional) Definition of secondary device for redundant
 device configurations
-  * `secondary_device.#.name` - (Required) Secondary device name
-  * `secondary_device.#.metro_code` - (Required) Metro location of a secondary device
-  * `secondary_device.#.hostname` - (Optional) Secondary device hostname
-  * `secondary_device.#.license_token` - (Optional) License Token can be provided
- for some device types o the device
-  * `secondary_device.#.license_file` - (Optional) Path to the license file that
-  will be uploaded and applied on a secondary device. Applicable for some devices
-  types in BYOL licensing mode
-  * `secondary_device.#.account_number` - (Required) Billing account number for
-  secondary device
-  * `secondary_device.#.notifications` - (Required) List of email addresses that
-  will receive notifications about secondary device
-  * `secondary_device.#.additional_bandwidth` - (Optional) Additional Internet
- bandwidth, in Mbps, for a secondary device
-  * `secondary_device.#.vendor_configuration` - (Optional) map of vendor specific
- configuration parameters for a secondary device
-  * `secondary_device.#.acl_template_id` - Identifier of an ACL template that will
-  be applied on a secondary device
-  * `ssh-key` - (Optional) up to one definition of SSH key that will be provisioned
+
+The `secondary_device` block supports the following arguments:
+
+* `name` - (Required) Secondary device name
+* `metro_code` - (Required) Metro location of a secondary device
+* `hostname` - (Optional) Secondary device hostname
+* `license_token` - (Optional) License Token can be provided
+for some device types o the device
+* `license_file` - (Optional) Path to the license file that
+will be uploaded and applied on a secondary device. Applicable for some devices
+types in BYOL licensing mode
+* `account_number` - (Required) Billing account number for
+secondary device
+* `notifications` - (Required) List of email addresses that
+will receive notifications about secondary device
+* `additional_bandwidth` - (Optional) Additional Internet
+bandwidth, in Mbps, for a secondary device
+* `vendor_configuration` - (Optional) map of vendor specific
+configuration parameters for a secondary device
+* `acl_template_id` - Identifier of an ACL template that will
+be applied on a secondary device
+* `ssh-key` - (Optional) up to one definition of SSH key that will be provisioned
 on a secondary device
-    * `ssh-key.#.username` - (Required) username associated with given key
-    * `ssh-key.#.name` - (Required) name of SSH key as defined in
-      `equinix_network_ssh_key` resource
+
+The `ssh_key` block supports the following arguments:
+
+* `username` - (Required) username associated with given key
+* `name` - (Required) reference by name to previously provisioned public SSH key
 
 ## Attributes Reference
 
-* `uuid` - Device universally unique identifier
+* `uuid` - Device unique identifier
 * `status` - Device provisioning status
   * INITIALIZING
   * PROVISIONING
@@ -146,19 +148,20 @@ on a secondary device
   * REGISTERED
   * APPLIED
   * REGISTRATION_FAILED
-* `ibx` - Name of Equinix exchange
-* `region` - Region in which device metro is located
-* `ssh_ip_address` - IP address to use for SSH connectivity with the device
-* `ssh_ip_fqdn` - FQDN to use for SSH connectivity with the device
-* `redundancy_type` - Indicates if device is primary or secondary
-(in HA configuration)
-* `redundant_id` - Universally unique identifier for a redundant device
-(in HA configuration)
+* `license_file_id` - Unique identifier of applied license file
+* `ibx` - Device location Equinix Business Exchange name
+* `region` - Device location region
+* `acl_template_id` - Unique identifier of applied ACL template
+* `ssh_ip_address` - IP address of SSH enabled interface on the device
+* `ssh_ip_fqdn` - FQDN of SSH enabled interface on the device
+* `redundancy_type` - Device redundancy type applicable for HA devices, either
+primary or secondary
+* `redundant_id` - Unique identifier for a redundant device applicable for HA devices
 * `interface` - List of device interfaces
   * `interface.#.id` - interface identifier
   * `interface.#.name` - interface name
   * `interface.#.status` -  interface status (AVAILABLE, RESERVED, ASSIGNED)
-  * `interface.#.operational_status` - interface operation status (up or down)
+  * `interface.#.operational_status` - interface operational status (up or down)
   * `interface.#.mac_address` - interface MAC address
   * `interface.#.ip_address` - interface IP address
   * `interface.#.assigned_type` - interface management type (Equinix Managed or empty)
@@ -171,3 +174,4 @@ options:
 
 * create - Default is 60 minutes
 * update - Default is 10 minutes
+* delete - Default is 10 minutes

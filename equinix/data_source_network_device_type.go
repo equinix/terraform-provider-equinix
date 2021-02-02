@@ -20,35 +20,50 @@ var networkDeviceTypeSchemaNames = map[string]string{
 	"MetroCodes":  "metro_codes",
 }
 
+var networkDeviceTypeDescriptions = map[string]string{
+	"Name":        "Device type name",
+	"Code":        "Device type short code, unique identifier of a network device type",
+	"Description": "Device type textual description",
+	"Vendor":      "Device type vendor i.e. Cisco, Juniper Networks, VERSA Networks",
+	"Category":    "Device type category, one of: Router, Firewall, SDWAN",
+	"MetroCodes":  "List of metro codes where device type has to be available",
+}
+
 func dataSourceNetworkDeviceType() *schema.Resource {
 	return &schema.Resource{
 		ReadContext: dataSourceNetworkDeviceTypeRead,
+		Description: "Use this data source to get Equinix Network Edge device type details",
 		Schema: map[string]*schema.Schema{
 			networkDeviceTypeSchemaNames["Name"]: {
 				Type:         schema.TypeString,
 				Optional:     true,
 				Computed:     true,
 				ValidateFunc: validation.StringIsNotEmpty,
+				Description:  networkDeviceTypeDescriptions["Name"],
 			},
 			networkDeviceTypeSchemaNames["Code"]: {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: networkDeviceTypeDescriptions["Code"],
 			},
 			networkDeviceTypeSchemaNames["Description"]: {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: networkDeviceTypeDescriptions["Description"],
 			},
 			networkDeviceTypeSchemaNames["Vendor"]: {
 				Type:         schema.TypeString,
 				Optional:     true,
 				Computed:     true,
 				ValidateFunc: validation.StringIsNotEmpty,
+				Description:  networkDeviceTypeDescriptions["Vendor"],
 			},
 			networkDeviceTypeSchemaNames["Category"]: {
 				Type:         schema.TypeString,
 				Optional:     true,
 				Computed:     true,
 				ValidateFunc: validation.StringInSlice([]string{"Router", "Firewall", "SDWAN"}, true),
+				Description:  networkDeviceTypeDescriptions["Category"],
 			},
 			networkDeviceTypeSchemaNames["MetroCodes"]: {
 				Type:     schema.TypeSet,
@@ -59,6 +74,7 @@ func dataSourceNetworkDeviceType() *schema.Resource {
 					Type:         schema.TypeString,
 					ValidateFunc: stringIsMetroCode(),
 				},
+				Description: networkDeviceTypeDescriptions["MetroCodes"],
 			},
 		},
 	}

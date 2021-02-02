@@ -21,33 +21,50 @@ var networkDevicePlatformSchemaNames = map[string]string{
 	"LicenseOptions":  "license_options",
 }
 
+var networkDevicePlatformDescriptions = map[string]string{
+	"DeviceTypeCode":  "Device type code",
+	"Flavor":          "Device platform flavor that determines number of CPU cores and memory. Supported values: small, medium, large, xlarge",
+	"CoreCount":       "Number of CPU cores used to limit platform search results",
+	"Memory":          "The amount of memory provided by device platform",
+	"MemoryUnit":      "Unit of memory provider by device platform",
+	"PackageCodes":    "List of software package codes to limit platform search results",
+	"ManagementTypes": "List of device management types to limit platform search results. Supported values: EQUINIX-CONFIGURED, SELF-CONFIGURED",
+	"LicenseOptions":  "List of device licensing options to limit platform search result. Supported values: BYOL (Bring Your Own License), Sub (license subscription)",
+}
+
 func dataSourceNetworkDevicePlatform() *schema.Resource {
 	return &schema.Resource{
 		ReadContext: dataSourceNetworkDevicePlatformRead,
+		Description: "Use this data source to get Equinix Network Edge device platform configuration details for a given device type",
 		Schema: map[string]*schema.Schema{
 			networkDevicePlatformSchemaNames["DeviceTypeCode"]: {
 				Type:         schema.TypeString,
 				Required:     true,
 				ValidateFunc: validation.StringIsNotEmpty,
+				Description:  networkDevicePlatformDescriptions["DeviceTypeCode"],
 			},
 			networkDevicePlatformSchemaNames["Flavor"]: {
 				Type:         schema.TypeString,
 				Optional:     true,
 				Computed:     true,
 				ValidateFunc: validation.StringInSlice([]string{"small", "medium", "large", "xlarge"}, false),
+				Description:  networkDevicePlatformDescriptions["Flavor"],
 			},
 			networkDevicePlatformSchemaNames["CoreCount"]: {
-				Type:     schema.TypeInt,
-				Optional: true,
-				Computed: true,
+				Type:        schema.TypeInt,
+				Optional:    true,
+				Computed:    true,
+				Description: networkDevicePlatformDescriptions["CoreCount"],
 			},
 			networkDevicePlatformSchemaNames["Memory"]: {
-				Type:     schema.TypeInt,
-				Computed: true,
+				Type:        schema.TypeInt,
+				Computed:    true,
+				Description: networkDevicePlatformDescriptions["Memory"],
 			},
 			networkDevicePlatformSchemaNames["MemoryUnit"]: {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: networkDevicePlatformDescriptions["MemoryUnit"],
 			},
 			networkDevicePlatformSchemaNames["PackageCodes"]: {
 				Type:     schema.TypeSet,
@@ -58,6 +75,7 @@ func dataSourceNetworkDevicePlatform() *schema.Resource {
 					Type:         schema.TypeString,
 					ValidateFunc: validation.StringIsNotEmpty,
 				},
+				Description: networkDevicePlatformDescriptions["PackageCodes"],
 			},
 			networkDevicePlatformSchemaNames["ManagementTypes"]: {
 				Type:     schema.TypeSet,
@@ -68,6 +86,7 @@ func dataSourceNetworkDevicePlatform() *schema.Resource {
 					Type:         schema.TypeString,
 					ValidateFunc: validation.StringInSlice([]string{"EQUINIX-CONFIGURED", "SELF-CONFIGURED"}, false),
 				},
+				Description: networkDevicePlatformDescriptions["ManagementTypes"],
 			},
 			networkDevicePlatformSchemaNames["LicenseOptions"]: {
 				Type:     schema.TypeSet,
@@ -78,6 +97,7 @@ func dataSourceNetworkDevicePlatform() *schema.Resource {
 					Type:         schema.TypeString,
 					ValidateFunc: validation.StringInSlice([]string{"BYOL", "Sub"}, false),
 				},
+				Description: networkDevicePlatformDescriptions["LicenseOptions"],
 			},
 		},
 	}

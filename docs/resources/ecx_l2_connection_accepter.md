@@ -8,8 +8,8 @@ description: |-
 
 # Resource: equinix_ecx_l2_connection_accepter
 
-Resource `equinix_ecx_l2_connection_accepter` is used to accept layer2 connection
-on provider side.
+Resource `equinix_ecx_l2_connection_accepter` is used to accept Equinix Fabric 
+layer 2 connection on provider side.
 
 Resource leverages Equinix Fabric integration with service providers.
 Currently supported providers are:
@@ -50,5 +50,5 @@ recommended to keep credentials in any Terraform configuration.
 
 ## Attribute Reference
 
-* `aws_connection_id` - the ID of a hosted Direct Connect connection on AWS side,
+* `aws_connection_id` - Identifier of a hosted Direct Connect connection on AWS side,
 applicable for accepter resource with connections to AWS only

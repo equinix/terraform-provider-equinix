@@ -26,46 +26,67 @@ var networkDeviceSoftwareSchemaNames = map[string]string{
 	"MostRecent":       "most_recent",
 }
 
+var networkDeviceSoftwareDescriptions = map[string]string{
+	"DeviceTypeCode":   "Code of a device type",
+	"Version":          "A regex string to apply on returned versions and filter search results",
+	"ImageName":        "Software image name",
+	"Date":             "Version release date",
+	"Status":           "Version status",
+	"IsStable":         "Boolean value to limit query results to stable versions only",
+	"ReleaseNotesLink": "Link to version release notes",
+	"PackageCodes":     "Limits returned versions to those that are supported by given software package codes",
+	"MostRecent":       "Boolean value to indicate that most recent version should be used, in case when more than one result is returned",
+}
+
 const networkDeviceSoftwareDateLayout = "2006-01-02"
 
 func dataSourceNetworkDeviceSoftware() *schema.Resource {
 	return &schema.Resource{
 		ReadContext: dataSourceNetworkDeviceSoftwareRead,
+		Description: "Use this data source to get Equinix Network Edge device software details for a given device type.",
 		Schema: map[string]*schema.Schema{
 			networkDeviceSoftwareSchemaNames["DeviceTypeCode"]: {
 				Type:         schema.TypeString,
 				Required:     true,
 				ValidateFunc: validation.StringIsNotEmpty,
+				Description:  networkDeviceSoftwareDescriptions["DeviceTypeCode"],
 			},
 			networkDeviceSoftwareSchemaNames["Version"]: {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: networkDeviceSoftwareDescriptions["Version"],
 			},
 			networkDeviceSoftwareSchemaNames["VersionRegex"]: {
 				Type:         schema.TypeString,
 				Optional:     true,
 				ValidateFunc: validation.StringIsValidRegExp,
+				Description:  networkDeviceSoftwareDescriptions["VersionRegex"],
 			},
 			networkDeviceSoftwareSchemaNames["ImageName"]: {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: networkDeviceSoftwareDescriptions["ImageName"],
 			},
 			networkDeviceSoftwareSchemaNames["Date"]: {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: networkDeviceSoftwareDescriptions["Date"],
 			},
 			networkDeviceSoftwareSchemaNames["Status"]: {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: networkDeviceSoftwareDescriptions["Status"],
 			},
 			networkDeviceSoftwareSchemaNames["IsStable"]: {
-				Type:     schema.TypeBool,
-				Computed: true,
-				Optional: true,
+				Type:        schema.TypeBool,
+				Computed:    true,
+				Optional:    true,
+				Description: networkDeviceSoftwareDescriptions["IsStable"],
 			},
 			networkDeviceSoftwareSchemaNames["ReleaseNotesLink"]: {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: networkDeviceSoftwareDescriptions["ReleaseNotesLink"],
 			},
 			networkDeviceSoftwareSchemaNames["PackageCodes"]: {
 				Type:     schema.TypeSet,
@@ -76,11 +97,13 @@ func dataSourceNetworkDeviceSoftware() *schema.Resource {
 					Type:         schema.TypeString,
 					ValidateFunc: validation.StringIsNotEmpty,
 				},
+				Description: networkDeviceSoftwareDescriptions["PackageCodes"],
 			},
 			networkDeviceSoftwareSchemaNames["MostRecent"]: {
-				Type:     schema.TypeBool,
-				Optional: true,
-				Default:  false,
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Default:     false,
+				Description: networkDeviceSoftwareDescriptions["MostRecent"],
 			},
 		},
 	}

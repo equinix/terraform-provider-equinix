@@ -43,9 +43,42 @@ var ecxL2ConnectionSchemaNames = map[string]string{
 	"SecondaryConnection": "secondary_connection",
 }
 
+var ecxL2ConnectionDescriptions = map[string]string{
+	"UUID":                "Unique identifier of the connection",
+	"Name":                "Connection name. An alpha-numeric 24 characters string which can include only hyphens and underscores",
+	"ProfileUUID":         "Unique identifier of the service provider's service profile",
+	"Speed":               "Speed/Bandwidth to be allocated to the connection",
+	"SpeedUnit":           "Unit of the speed/bandwidth to be allocated to the connection",
+	"Status":              "Connection provisioning status on Equinix Fabric side",
+	"ProviderStatus":      "Connection provisioning status on service provider's side",
+	"Notifications":       "A list of email addresses used for sending connection update notifications",
+	"PurchaseOrderNumber": "Connection's purchase order number to reflect on the invoice",
+	"PortUUID":            "Unique identifier of the buyer's port from which the connection would originate",
+	"DeviceUUID":          "Unique identifier of the Network Edge virtual device from which the connection would originate",
+	"DeviceInterfaceID":   "Identifier of network interface on a given device, used for a connection. If not specified then first available interface will be selected",
+	"VlanSTag":            "S-Tag/Outer-Tag of the connection, a numeric character ranging from 2 - 4094",
+	"VlanCTag":            "C-Tag/Inner-Tag of the connection, a numeric character ranging from 2 - 4094",
+	"NamedTag":            "The type of peering to set up in case when connecting to Azure Express Route. One of Public, Private, Microsoft, Manual",
+	"AdditionalInfo":      "One or more additional information key-value objects",
+	"ZSidePortUUID":       "Unique identifier of the port on the remote side (z-side)",
+	"ZSideVlanSTag":       "S-Tag/Outer-Tag of the connection on the remote side (z-side)",
+	"ZSideVlanCTag":       "C-Tag/Inner-Tag of the connection on the remote side (z-side)",
+	"SellerRegion":        "The region in which the seller port resides",
+	"SellerMetroCode":     "The metro code that denotes the connection’s remote side (z-side)",
+	"AuthorizationKey":    "Text field used to authorize connection on the provider side. Value depends on a provider service profile used for connection",
+	"RedundantUUID":       "Unique identifier of the redundant connection, applicable for HA connections",
+	"RedundancyType":      "Connection redundancy type, applicable for HA connections. Either primary or secondary",
+	"SecondaryConnection": "Definition of secondary connection for redundant, HA connectivity",
+}
+
 var ecxL2ConnectionAdditionalInfoSchemaNames = map[string]string{
 	"Name":  "name",
 	"Value": "value",
+}
+
+var ecxL2ConnectionAdditionalInfoDescriptions = map[string]string{
+	"Name":  "Additional information key",
+	"Value": "Additional information value",
 }
 
 func resourceECXL2Connection() *schema.Resource {
@@ -59,19 +92,22 @@ func resourceECXL2Connection() *schema.Resource {
 			Create: schema.DefaultTimeout(5 * time.Minute),
 			Delete: schema.DefaultTimeout(5 * time.Minute),
 		},
+		Description: "Resource allows creation and management of Equinix Fabric	layer 2 connections",
 	}
 }
 
 func createECXL2ConnectionResourceSchema() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
 		ecxL2ConnectionSchemaNames["UUID"]: {
-			Type:     schema.TypeString,
-			Computed: true,
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: ecxL2ConnectionDescriptions["UUID"],
 		},
 		ecxL2ConnectionSchemaNames["Name"]: {
 			Type:         schema.TypeString,
 			Required:     true,
 			ValidateFunc: validation.StringLenBetween(1, 24),
+			Description:  ecxL2ConnectionDescriptions["Name"],
 		},
 		ecxL2ConnectionSchemaNames["ProfileUUID"]: {
 			Type:         schema.TypeString,
@@ -80,24 +116,29 @@ func createECXL2ConnectionResourceSchema() map[string]*schema.Schema {
 			ForceNew:     true,
 			AtLeastOneOf: []string{ecxL2ConnectionSchemaNames["ProfileUUID"], ecxL2ConnectionSchemaNames["ZSidePortUUID"]},
 			ValidateFunc: validation.StringIsNotEmpty,
+			Description:  ecxL2ConnectionDescriptions["ProfileUUID"],
 		},
 		ecxL2ConnectionSchemaNames["Speed"]: {
 			Type:         schema.TypeInt,
 			Required:     true,
 			ValidateFunc: validation.IntAtLeast(1),
+			Description:  ecxL2ConnectionDescriptions["Speed"],
 		},
 		ecxL2ConnectionSchemaNames["SpeedUnit"]: {
 			Type:         schema.TypeString,
 			Required:     true,
 			ValidateFunc: validation.StringInSlice([]string{"MB", "GB"}, false),
+			Description:  ecxL2ConnectionDescriptions["SpeedUnit"],
 		},
 		ecxL2ConnectionSchemaNames["Status"]: {
-			Type:     schema.TypeString,
-			Computed: true,
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: ecxL2ConnectionDescriptions["Status"],
 		},
 		ecxL2ConnectionSchemaNames["ProviderStatus"]: {
-			Type:     schema.TypeString,
-			Computed: true,
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: ecxL2ConnectionDescriptions["ProviderStatus"],
 		},
 		ecxL2ConnectionSchemaNames["Notifications"]: {
 			Type:     schema.TypeSet,
@@ -108,12 +149,14 @@ func createECXL2ConnectionResourceSchema() map[string]*schema.Schema {
 				Type:         schema.TypeString,
 				ValidateFunc: stringIsEmailAddress(),
 			},
+			Description: ecxL2ConnectionDescriptions["Notifications"],
 		},
 		ecxL2ConnectionSchemaNames["PurchaseOrderNumber"]: {
 			Type:         schema.TypeString,
 			Optional:     true,
 			ForceNew:     true,
 			ValidateFunc: validation.StringLenBetween(1, 30),
+			Description:  ecxL2ConnectionDescriptions["PurchaseOrderNumber"],
 		},
 		ecxL2ConnectionSchemaNames["PortUUID"]: {
 			Type:          schema.TypeString,
@@ -122,6 +165,7 @@ func createECXL2ConnectionResourceSchema() map[string]*schema.Schema {
 			ValidateFunc:  validation.StringIsNotEmpty,
 			AtLeastOneOf:  []string{ecxL2ConnectionSchemaNames["PortUUID"], ecxL2ConnectionSchemaNames["DeviceUUID"]},
 			ConflictsWith: []string{ecxL2ConnectionSchemaNames["DeviceUUID"]},
+			Description:   ecxL2ConnectionDescriptions["PortUUID"],
 		},
 		ecxL2ConnectionSchemaNames["DeviceUUID"]: {
 			Type:          schema.TypeString,
@@ -129,12 +173,14 @@ func createECXL2ConnectionResourceSchema() map[string]*schema.Schema {
 			ForceNew:      true,
 			ValidateFunc:  validation.StringIsNotEmpty,
 			ConflictsWith: []string{ecxL2ConnectionSchemaNames["PortUUID"]},
+			Description:   ecxL2ConnectionDescriptions["DeviceUUID"],
 		},
 		ecxL2ConnectionSchemaNames["DeviceInterfaceID"]: {
 			Type:          schema.TypeInt,
 			Optional:      true,
 			ForceNew:      true,
 			ConflictsWith: []string{ecxL2ConnectionSchemaNames["PortUUID"]},
+			Description:   ecxL2ConnectionDescriptions["DeviceInterfaceID"],
 		},
 		ecxL2ConnectionSchemaNames["VlanSTag"]: {
 			Type:          schema.TypeInt,
@@ -144,6 +190,7 @@ func createECXL2ConnectionResourceSchema() map[string]*schema.Schema {
 			ValidateFunc:  validation.IntBetween(2, 4092),
 			RequiredWith:  []string{ecxL2ConnectionSchemaNames["PortUUID"]},
 			ConflictsWith: []string{ecxL2ConnectionSchemaNames["DeviceUUID"]},
+			Description:   ecxL2ConnectionDescriptions["VlanSTag"],
 		},
 		ecxL2ConnectionSchemaNames["VlanCTag"]: {
 			Type:          schema.TypeInt,
@@ -151,29 +198,34 @@ func createECXL2ConnectionResourceSchema() map[string]*schema.Schema {
 			ForceNew:      true,
 			ValidateFunc:  validation.IntBetween(2, 4092),
 			ConflictsWith: []string{ecxL2ConnectionSchemaNames["DeviceUUID"]},
+			Description:   ecxL2ConnectionDescriptions["VlanCTag"],
 		},
 		ecxL2ConnectionSchemaNames["NamedTag"]: {
 			Type:         schema.TypeString,
 			Optional:     true,
 			ForceNew:     true,
 			ValidateFunc: validation.StringInSlice([]string{"Private", "Public", "Microsoft", "Manual"}, false),
+			Description:  ecxL2ConnectionDescriptions["NamedTag"],
 		},
 		ecxL2ConnectionSchemaNames["AdditionalInfo"]: {
-			Type:     schema.TypeSet,
-			Optional: true,
-			ForceNew: true,
-			MinItems: 1,
+			Type:        schema.TypeSet,
+			Optional:    true,
+			ForceNew:    true,
+			MinItems:    1,
+			Description: ecxL2ConnectionDescriptions["AdditionalInfo"],
 			Elem: &schema.Resource{
 				Schema: map[string]*schema.Schema{
 					ecxL2ConnectionAdditionalInfoSchemaNames["Name"]: {
 						Type:         schema.TypeString,
 						Required:     true,
 						ValidateFunc: validation.StringIsNotEmpty,
+						Description:  ecxL2ConnectionAdditionalInfoDescriptions["Name"],
 					},
 					ecxL2ConnectionAdditionalInfoSchemaNames["Value"]: {
 						Type:         schema.TypeString,
 						Required:     true,
 						ValidateFunc: validation.StringIsNotEmpty,
+						Description:  ecxL2ConnectionAdditionalInfoDescriptions["Value"],
 					},
 				},
 			},
@@ -184,6 +236,7 @@ func createECXL2ConnectionResourceSchema() map[string]*schema.Schema {
 			ForceNew:     true,
 			Computed:     true,
 			ValidateFunc: validation.StringIsNotEmpty,
+			Description:  ecxL2ConnectionDescriptions["ZSidePortUUID"],
 		},
 		ecxL2ConnectionSchemaNames["ZSideVlanSTag"]: {
 			Type:         schema.TypeInt,
@@ -191,6 +244,7 @@ func createECXL2ConnectionResourceSchema() map[string]*schema.Schema {
 			ForceNew:     true,
 			Computed:     true,
 			ValidateFunc: validation.IntBetween(2, 4092),
+			Description:  ecxL2ConnectionDescriptions["ZSideVlanSTag"],
 		},
 		ecxL2ConnectionSchemaNames["ZSideVlanCTag"]: {
 			Type:         schema.TypeInt,
@@ -198,12 +252,14 @@ func createECXL2ConnectionResourceSchema() map[string]*schema.Schema {
 			ForceNew:     true,
 			Computed:     true,
 			ValidateFunc: validation.IntBetween(2, 4092),
+			Description:  ecxL2ConnectionDescriptions["ZSideVlanCTag"],
 		},
 		ecxL2ConnectionSchemaNames["SellerRegion"]: {
 			Type:         schema.TypeString,
 			Optional:     true,
 			ForceNew:     true,
 			ValidateFunc: validation.StringIsNotEmpty,
+			Description:  ecxL2ConnectionDescriptions["SellerRegion"],
 		},
 		ecxL2ConnectionSchemaNames["SellerMetroCode"]: {
 			Type:         schema.TypeString,
@@ -211,6 +267,7 @@ func createECXL2ConnectionResourceSchema() map[string]*schema.Schema {
 			Computed:     true,
 			ForceNew:     true,
 			ValidateFunc: stringIsMetroCode(),
+			Description:  ecxL2ConnectionDescriptions["SellerMetroCode"],
 		},
 		ecxL2ConnectionSchemaNames["AuthorizationKey"]: {
 			Type:         schema.TypeString,
@@ -218,30 +275,36 @@ func createECXL2ConnectionResourceSchema() map[string]*schema.Schema {
 			Computed:     true,
 			ForceNew:     true,
 			ValidateFunc: validation.StringIsNotEmpty,
+			Description:  ecxL2ConnectionDescriptions["AuthorizationKey"],
 		},
 		ecxL2ConnectionSchemaNames["RedundantUUID"]: {
-			Type:     schema.TypeString,
-			Computed: true,
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: ecxL2ConnectionDescriptions["RedundantUUID"],
 		},
 		ecxL2ConnectionSchemaNames["RedundancyType"]: {
-			Type:     schema.TypeString,
-			Computed: true,
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: ecxL2ConnectionDescriptions["RedundancyType"],
 		},
 		ecxL2ConnectionSchemaNames["SecondaryConnection"]: {
-			Type:     schema.TypeList,
-			Optional: true,
-			ForceNew: true,
-			MaxItems: 1,
+			Type:        schema.TypeList,
+			Optional:    true,
+			ForceNew:    true,
+			MaxItems:    1,
+			Description: ecxL2ConnectionDescriptions["SecondaryConnection"],
 			Elem: &schema.Resource{
 				Schema: map[string]*schema.Schema{
 					ecxL2ConnectionSchemaNames["UUID"]: {
-						Type:     schema.TypeString,
-						Computed: true,
+						Type:        schema.TypeString,
+						Computed:    true,
+						Description: ecxL2ConnectionDescriptions["UUID"],
 					},
 					ecxL2ConnectionSchemaNames["Name"]: {
 						Type:         schema.TypeString,
 						Required:     true,
 						ValidateFunc: validation.StringLenBetween(1, 24),
+						Description:  ecxL2ConnectionDescriptions["Name"],
 					},
 					ecxL2ConnectionSchemaNames["ProfileUUID"]: {
 						Type:         schema.TypeString,
@@ -249,6 +312,7 @@ func createECXL2ConnectionResourceSchema() map[string]*schema.Schema {
 						Computed:     true,
 						ForceNew:     true,
 						ValidateFunc: validation.StringIsNotEmpty,
+						Description:  ecxL2ConnectionDescriptions["ProfileUUID"],
 					},
 					ecxL2ConnectionSchemaNames["Speed"]: {
 						Type:         schema.TypeInt,
@@ -256,6 +320,7 @@ func createECXL2ConnectionResourceSchema() map[string]*schema.Schema {
 						Computed:     true,
 						ForceNew:     true,
 						ValidateFunc: validation.IntAtLeast(1),
+						Description:  ecxL2ConnectionDescriptions["Speed"],
 					},
 					ecxL2ConnectionSchemaNames["SpeedUnit"]: {
 						Type:         schema.TypeString,
@@ -263,14 +328,18 @@ func createECXL2ConnectionResourceSchema() map[string]*schema.Schema {
 						Computed:     true,
 						ForceNew:     true,
 						ValidateFunc: validation.StringInSlice([]string{"MB", "GB"}, false),
+						RequiredWith: []string{ecxL2ConnectionSchemaNames["SecondaryConnection"] + ".0." + ecxL2ConnectionSchemaNames["Speed"]},
+						Description:  ecxL2ConnectionDescriptions["SpeedUnit"],
 					},
 					ecxL2ConnectionSchemaNames["Status"]: {
-						Type:     schema.TypeString,
-						Computed: true,
+						Type:        schema.TypeString,
+						Computed:    true,
+						Description: ecxL2ConnectionDescriptions["Status"],
 					},
 					ecxL2ConnectionSchemaNames["ProviderStatus"]: {
-						Type:     schema.TypeString,
-						Computed: true,
+						Type:        schema.TypeString,
+						Computed:    true,
+						Description: ecxL2ConnectionDescriptions["ProviderStatus"],
 					},
 					ecxL2ConnectionSchemaNames["PortUUID"]: {
 						Type:         schema.TypeString,
@@ -280,6 +349,7 @@ func createECXL2ConnectionResourceSchema() map[string]*schema.Schema {
 						AtLeastOneOf: []string{ecxL2ConnectionSchemaNames["SecondaryConnection"] + ".0." + ecxL2ConnectionSchemaNames["PortUUID"],
 							ecxL2ConnectionSchemaNames["SecondaryConnection"] + ".0." + ecxL2ConnectionSchemaNames["DeviceUUID"]},
 						ConflictsWith: []string{ecxL2ConnectionSchemaNames["SecondaryConnection"] + ".0." + ecxL2ConnectionSchemaNames["DeviceUUID"]},
+						Description:   ecxL2ConnectionDescriptions["PortUUID"],
 					},
 					ecxL2ConnectionSchemaNames["DeviceUUID"]: {
 						Type:          schema.TypeString,
@@ -287,6 +357,7 @@ func createECXL2ConnectionResourceSchema() map[string]*schema.Schema {
 						Optional:      true,
 						ValidateFunc:  validation.StringIsNotEmpty,
 						ConflictsWith: []string{ecxL2ConnectionSchemaNames["SecondaryConnection"] + ".0." + ecxL2ConnectionSchemaNames["PortUUID"]},
+						Description:   ecxL2ConnectionDescriptions["DeviceUUID"],
 					},
 					ecxL2ConnectionSchemaNames["DeviceInterfaceID"]: {
 						Type:          schema.TypeInt,
@@ -294,6 +365,7 @@ func createECXL2ConnectionResourceSchema() map[string]*schema.Schema {
 						Computed:      true,
 						ForceNew:      true,
 						ConflictsWith: []string{ecxL2ConnectionSchemaNames["SecondaryConnection"] + ".0." + ecxL2ConnectionSchemaNames["PortUUID"]},
+						Description:   ecxL2ConnectionDescriptions["DeviceInterfaceID"],
 					},
 					ecxL2ConnectionSchemaNames["VlanSTag"]: {
 						Type:          schema.TypeInt,
@@ -303,6 +375,7 @@ func createECXL2ConnectionResourceSchema() map[string]*schema.Schema {
 						ValidateFunc:  validation.IntBetween(2, 4092),
 						RequiredWith:  []string{ecxL2ConnectionSchemaNames["SecondaryConnection"] + ".0." + ecxL2ConnectionSchemaNames["PortUUID"]},
 						ConflictsWith: []string{ecxL2ConnectionSchemaNames["SecondaryConnection"] + ".0." + ecxL2ConnectionSchemaNames["DeviceUUID"]},
+						Description:   ecxL2ConnectionDescriptions["VlanSTag"],
 					},
 					ecxL2ConnectionSchemaNames["VlanCTag"]: {
 						Type:          schema.TypeInt,
@@ -310,18 +383,22 @@ func createECXL2ConnectionResourceSchema() map[string]*schema.Schema {
 						Optional:      true,
 						ValidateFunc:  validation.IntBetween(2, 4092),
 						ConflictsWith: []string{ecxL2ConnectionSchemaNames["SecondaryConnection"] + ".0." + ecxL2ConnectionSchemaNames["DeviceUUID"]},
+						Description:   ecxL2ConnectionDescriptions["VlanCTag"],
 					},
 					ecxL2ConnectionSchemaNames["ZSidePortUUID"]: {
-						Type:     schema.TypeString,
-						Computed: true,
+						Type:        schema.TypeString,
+						Computed:    true,
+						Description: ecxL2ConnectionDescriptions["ZSidePortUUID"],
 					},
 					ecxL2ConnectionSchemaNames["ZSideVlanSTag"]: {
-						Type:     schema.TypeInt,
-						Computed: true,
+						Type:        schema.TypeInt,
+						Computed:    true,
+						Description: ecxL2ConnectionDescriptions["ZSideVlanSTag"],
 					},
 					ecxL2ConnectionSchemaNames["ZSideVlanCTag"]: {
-						Type:     schema.TypeInt,
-						Computed: true,
+						Type:        schema.TypeInt,
+						Computed:    true,
+						Description: ecxL2ConnectionDescriptions["ZSideVlanCTag"],
 					},
 					ecxL2ConnectionSchemaNames["SellerRegion"]: {
 						Type:         schema.TypeString,
@@ -329,6 +406,7 @@ func createECXL2ConnectionResourceSchema() map[string]*schema.Schema {
 						Computed:     true,
 						ForceNew:     true,
 						ValidateFunc: validation.StringIsNotEmpty,
+						Description:  ecxL2ConnectionDescriptions["SellerRegion"],
 					},
 					ecxL2ConnectionSchemaNames["SellerMetroCode"]: {
 						Type:         schema.TypeString,
@@ -336,6 +414,7 @@ func createECXL2ConnectionResourceSchema() map[string]*schema.Schema {
 						Computed:     true,
 						ForceNew:     true,
 						ValidateFunc: stringIsMetroCode(),
+						Description:  ecxL2ConnectionDescriptions["SellerMetroCode"],
 					},
 					ecxL2ConnectionSchemaNames["AuthorizationKey"]: {
 						Type:         schema.TypeString,
@@ -343,14 +422,17 @@ func createECXL2ConnectionResourceSchema() map[string]*schema.Schema {
 						Computed:     true,
 						ForceNew:     true,
 						ValidateFunc: validation.StringIsNotEmpty,
+						Description:  ecxL2ConnectionDescriptions["AuthorizationKey"],
 					},
 					ecxL2ConnectionSchemaNames["RedundantUUID"]: {
-						Type:     schema.TypeString,
-						Computed: true,
+						Type:        schema.TypeString,
+						Computed:    true,
+						Description: ecxL2ConnectionDescriptions["RedundantUUID"],
 					},
 					ecxL2ConnectionSchemaNames["RedundancyType"]: {
-						Type:     schema.TypeString,
-						Computed: true,
+						Type:        schema.TypeString,
+						Computed:    true,
+						Description: ecxL2ConnectionDescriptions["RedundancyType"],
 					},
 				},
 			},

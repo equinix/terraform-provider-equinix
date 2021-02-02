@@ -3,13 +3,13 @@ layout: "equinix"
 page_title: "Equinix: equinix_ecx_l2_connection"
 subcategory: ""
 description: |-
-  Provides ECX Fabric Layer 2 connection resource
+  Provides Equinix Fabric Layer 2 connection resource
 ---
 
 # Resource: equinix_ecx_l2_connection
 
-Resource `equinix_ecx_l2_connection` is used to manage layer 2 connections in
-Equinix Cloud Exchange (ECX) Fabric.
+Resource `equinix_ecx_l2_connection` allows creation and management of Equinix Fabric
+layer 2 connections.
 
 ## Example Usage
 
@@ -100,23 +100,23 @@ resource "equinix_ecx_l2_connection" "router-gcp" {
 
 The following arguments are supported:
 
-- `name` - (Required) Name of the primary connection - An alpha-numeric 24 characters
-string which can include only hyphens and underscores ('-' & '\_').
-- `profile_uuid` - (Required) Unique identifier of the provider's service profile.
+- `name` - (Required) Connection name. An alpha-numeric 24 characters
+string which can include only hyphens and underscores
+- `profile_uuid` - (Required) Unique identifier of the service provider's profile.
 - `speed` - (Required) Speed/Bandwidth to be allocated to the connection.
 - `speed_unit` - (Required) Unit of the speed/bandwidth to be allocated
 to the connection.
-- `notifications` - (Required) A list of email addresses that would be notified
-when there are any updates on this connection.
-- `purchase_order_number` - (Optional) Test field to link the purchase order
-numbers to the connection on Equinix which would be reflected on the invoice.
+- `notifications` - (Required) A list of email addresses used for sending connection
+update notifications.
+- `purchase_order_number` - (Optional) Connection's purchase order number to reflect
+on the invoice
 - `port_uuid` - (Required when device_uuid is not set) Unique identifier of
 the buyer's port from which the connection would originate.
 - `device_uuid` - (Required when port_uuid is not set) Unique identifier of
 the Network Edge virtual device from which the connection would originate.
 - `device_interface_id` - (Optional) Applicable with `device_uuid`, identifier of
- network interface on a given device. If not specified then first available interface
- will be selected,
+ network interface on a given device, used for a connection. If not specified then
+ first available interface will be selected.
 - `vlan_stag` - (Required when port_uuid is set) S-Tag/Outer-Tag of the connection
 \- a numeric character ranging from 2 - 4094.
 - `vlan_ctag` - (Optional) C-Tag/Inner-Tag of the connection - a numeric
@@ -126,16 +126,19 @@ to Azure Express Route. One of _"Public"_, _"Private"_, _"Microsoft"_, _"Manual"
 - `additional_info` - (Optional) one or more additional information key-value objects
   - `name` - (Required) additional information key
   - `value` - (Required) additional information value
-- `zside_port_uuid` - (Optional) Unique identifier of the port on the Z side.
-- `zside_vlan_stag` - (Optional) S-Tag/Outer-Tag of the connection on the Z side.
-- `zside_vlan_ctag` - (Optional) C-Tag/Inner-Tag of the connection on the Z side.
+- `zside_port_uuid` - (Optional) Unique identifier of the port on the remote side
+(z-side).
+- `zside_vlan_stag` - (Optional) S-Tag/Outer-Tag of the connection on the remote
+side (z side).
+- `zside_vlan_ctag` - (Optional) C-Tag/Inner-Tag of the connection on the remote
+side (z-side).
 - `seller_region` - (Optional) The region in which the seller port resides.
 - `seller_metro_code` - (Optional) The metro code that denotes the connection’s
-destination (Z side).
-- `authorization_key` - (Optional) Text field based on the service profile
-you want to connect to.
+remote side (z-side).
+- `authorization_key` - (Optional) Text field used to authorize connection on the
+provider side. Value depends on a provider service profile used for connection.
 - `secondary_connection` - (Optional) Definition of secondary connection for
- redundant connectivity.
+ redundant, HA connectivity.
 
 The `secondary_connection` block supports the following arguments:
 
@@ -164,11 +167,12 @@ In addition to the arguments listed above, the following computed attributes
 are exported:
 
 - `uuid` - Unique identifier of the connection
-- `status` - Status of the connection on ECXF side
-- `provider_status` - status of the connection at the service provider's end
-- `redundant_uuid` - Unique identifier of the redundant connection
-(i.e. secondary connection)
-- `redundancy_type` - type of connection, either primary or secondary
+- `status` - Connection provisioning status on Equinix Fabric side
+- `provider_status` - Connection provisioning status on service provider's side
+- `redundant_uuid` - Unique identifier of the redundant connection, applicable for
+HA connections
+- `redundancy_type` - Connection redundancy type, applicable for HA connections.
+Either primary or secondary.
 - `zside_port_uuid` - when not provided as an argument, it is identifier of the
 z-side port, assigned by the Fabric
 - `zside_vlan_stag` - when not provided as an argument, it is S-Tag/Outer-Tag of
@@ -191,3 +195,11 @@ during the day.
 
 - `name`
 - `speed` and `speed_unit`
+
+## Timeouts
+
+This resource provides the following [Timeouts configuration](https://www.terraform.io/docs/configuration/resources.html#operation-timeouts)
+options:
+
+- create - Default is 5 minutes
+- delete - Default is 5 minutes

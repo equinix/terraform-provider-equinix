@@ -3,13 +3,13 @@ layout: "equinix"
 page_title: "Equinix: equinix_network_ssh_user"
 subcategory: ""
 description: |-
- Provides Network Edge SSH user resource
+ Provides Equinix Network Edge SSH user resource
 ---
 
 # Resource: equinix_network_ssh_user
 
-Resource `equinix_network_ssh_user` allows creation and management of Network Edge
-SSH users.
+Resource `equinix_network_ssh_user` allows creation and management of Equinix Network
+Edge SSH users.
 
 ## Example Usage
 
@@ -35,4 +35,4 @@ resource "equinix_network_ssh_user" "john" {
 
 ## Attributes Reference
 
-* `uuid` - SSH user universally unique identifier
+* `uuid` - SSH user unique identifier

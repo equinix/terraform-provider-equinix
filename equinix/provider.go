@@ -39,24 +39,28 @@ func Provider() *schema.Provider {
 				Optional:     true,
 				DefaultFunc:  schema.EnvDefaultFunc(endpointEnvVar, "https://api.equinix.com"),
 				ValidateFunc: validation.IsURLWithHTTPorHTTPS,
+				Description:  "The Equinix API base URL to point out desired environment. Defaults to https://api.equinix.com",
 			},
 			"client_id": {
 				Type:         schema.TypeString,
 				Optional:     true,
 				DefaultFunc:  schema.EnvDefaultFunc(clientIDEnvVar, nil),
 				ValidateFunc: validation.StringIsNotEmpty,
+				Description:  "API Consumer Key available under My Apps section in developer portal",
 			},
 			"client_secret": {
 				Type:         schema.TypeString,
 				Optional:     true,
 				DefaultFunc:  schema.EnvDefaultFunc(clientSecretEnvVar, nil),
 				ValidateFunc: validation.StringIsNotEmpty,
+				Description:  "API Consumer secret available under My Apps section in developer portal",
 			},
 			"request_timeout": {
 				Type:         schema.TypeInt,
 				Optional:     true,
 				DefaultFunc:  schema.EnvDefaultFunc(clientTimeoutEnvVar, 30),
 				ValidateFunc: validation.IntAtLeast(1),
+				Description:  "The duration of time, in seconds, that the Equinix Platform API Client should wait before canceling an API request",
 			},
 		},
 		DataSourcesMap: map[string]*schema.Resource{

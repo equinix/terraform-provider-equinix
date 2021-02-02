@@ -23,6 +23,16 @@ var networkACLTemplateSchemaNames = map[string]string{
 	"InboundRules":    "inbound_rule",
 }
 
+var networkACLTemplateDescriptions = map[string]string{
+	"UUID":            "Unique identifier of ACL template resource",
+	"Name":            "ACL template name",
+	"Description":     "ACL template description",
+	"MetroCode":       "ACL template location metro code",
+	"DeviceUUID":      "Identifier of a network device where template was applied",
+	"DeviceACLStatus": "Status of ACL template provisioning process on a device, where template was applied",
+	"InboundRules":    "One or more rules to specify allowed inbound traffic. Rules are ordered, matching traffic rule stops processing subsequent ones.",
+}
+
 var networkACLTemplateInboundRuleSchemaNames = map[string]string{
 	"SeqNo":    "sequence_number",
 	"SrcType":  "source_type",
@@ -32,6 +42,15 @@ var networkACLTemplateInboundRuleSchemaNames = map[string]string{
 	"DstPort":  "dst_port",
 }
 
+var networkACLTemplateInboundRuleDescriptions = map[string]string{
+	"SeqNo":    "Inbound rule sequence number",
+	"SrcType":  "Type of traffic source used in a given innbound rule",
+	"Subnets":  "Inbound traffic source IP subnets in CIDR format",
+	"Protocol": "Inbound traffic protocol. One of: `IP`, `TCP`, `UDP`",
+	"SrcPort":  "Inbound traffic source ports. Either up to 10, comma separated ports or port range or any word",
+	"DstPort":  "Inbound traffic destination ports. Either up to 10, comma separated ports or port range or any word",
+}
+
 func resourceNetworkACLTemplate() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: resourceNetworkACLTemplateCreate,
@@ -39,38 +58,45 @@ func resourceNetworkACLTemplate() *schema.Resource {
 		UpdateContext: resourceNetworkACLTemplateUpdate,
 		DeleteContext: resourceNetworkACLTemplateDelete,
 		Schema:        createNetworkACLTemplateSchema(),
+		Description:   "Resource allows creation and management of Equinix Network Edge device Access Control List templates",
 	}
 }
 
 func createNetworkACLTemplateSchema() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
 		networkACLTemplateSchemaNames["UUID"]: {
-			Type:     schema.TypeString,
-			Computed: true,
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: networkACLTemplateDescriptions["UUID"],
 		},
 		networkACLTemplateSchemaNames["Name"]: {
 			Type:         schema.TypeString,
 			Required:     true,
 			ValidateFunc: validation.StringLenBetween(8, 100),
+			Description:  networkACLTemplateDescriptions["Name"],
 		},
 		networkACLTemplateSchemaNames["Description"]: {
 			Type:         schema.TypeString,
 			Optional:     true,
 			ValidateFunc: validation.StringLenBetween(1, 100),
+			Description:  networkACLTemplateDescriptions["Description"],
 		},
 		networkACLTemplateSchemaNames["MetroCode"]: {
 			Type:         schema.TypeString,
 			Required:     true,
 			ForceNew:     true,
 			ValidateFunc: stringIsMetroCode(),
+			Description:  networkACLTemplateDescriptions["MetroCode"],
 		},
 		networkACLTemplateSchemaNames["DeviceUUID"]: {
-			Type:     schema.TypeString,
-			Computed: true,
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: networkACLTemplateDescriptions["DeviceUUID"],
 		},
 		networkACLTemplateSchemaNames["DeviceACLStatus"]: {
-			Type:     schema.TypeString,
-			Computed: true,
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: networkACLTemplateDescriptions["DeviceACLStatus"],
 		},
 		networkACLTemplateSchemaNames["InboundRules"]: {
 			Type:     schema.TypeList,
@@ -79,6 +105,7 @@ func createNetworkACLTemplateSchema() map[string]*schema.Schema {
 			Elem: &schema.Resource{
 				Schema: createNetworkACLTemplateInboundRuleSchema(),
 			},
+			Description: networkACLTemplateDescriptions["InboundRules"],
 		},
 	}
 }
@@ -86,12 +113,14 @@ func createNetworkACLTemplateSchema() map[string]*schema.Schema {
 func createNetworkACLTemplateInboundRuleSchema() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
 		networkACLTemplateInboundRuleSchemaNames["SeqNo"]: {
-			Type:     schema.TypeInt,
-			Computed: true,
+			Type:        schema.TypeInt,
+			Computed:    true,
+			Description: networkACLTemplateInboundRuleDescriptions["SeqNo"],
 		},
 		networkACLTemplateInboundRuleSchemaNames["SrcType"]: {
-			Type:     schema.TypeString,
-			Computed: true,
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: networkACLTemplateInboundRuleDescriptions["SrcType"],
 		},
 		networkACLTemplateInboundRuleSchemaNames["Subnets"]: {
 			Type:     schema.TypeList,
@@ -101,21 +130,25 @@ func createNetworkACLTemplateInboundRuleSchema() map[string]*schema.Schema {
 				Type:         schema.TypeString,
 				ValidateFunc: validation.IsCIDR,
 			},
+			Description: networkACLTemplateInboundRuleDescriptions["Subnets"],
 		},
 		networkACLTemplateInboundRuleSchemaNames["Protocol"]: {
 			Type:         schema.TypeString,
 			Required:     true,
 			ValidateFunc: validation.StringInSlice([]string{"IP", "TCP", "UDP"}, false),
+			Description:  networkACLTemplateInboundRuleDescriptions["Protocol"],
 		},
 		networkACLTemplateInboundRuleSchemaNames["SrcPort"]: {
 			Type:         schema.TypeString,
 			Required:     true,
 			ValidateFunc: stringIsPortDefinition(),
+			Description:  networkACLTemplateInboundRuleDescriptions["SrcPort"],
 		},
 		networkACLTemplateInboundRuleSchemaNames["DstPort"]: {
 			Type:         schema.TypeString,
 			Required:     true,
 			ValidateFunc: stringIsPortDefinition(),
+			Description:  networkACLTemplateInboundRuleDescriptions["DstPort"],
 		},
 	}
 }

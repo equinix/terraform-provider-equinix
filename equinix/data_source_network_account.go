@@ -19,34 +19,48 @@ var networkAccountSchemaNames = map[string]string{
 	"MetroCode": "metro_code",
 }
 
+var networkAccountDescriptions = map[string]string{
+	"Name":      "Account name for filtering",
+	"Number":    "Account unique number",
+	"Status":    "Account status for filtering. Possible values are Active, Processing, Submitted, Staged",
+	"UCMID":     "Account unique identifier",
+	"MetroCode": "Account location metro cod",
+}
+
 func dataSourceNetworkAccount() *schema.Resource {
 	return &schema.Resource{
 		ReadContext: dataSourceNetworkAccountRead,
+		Description: "Use this data source to get number and identifier of Equinix Network Edge billing account in a given metro location",
 		Schema: map[string]*schema.Schema{
 			networkAccountSchemaNames["Name"]: {
 				Type:         schema.TypeString,
 				Optional:     true,
 				Computed:     true,
 				ValidateFunc: validation.StringIsNotEmpty,
+				Description:  networkAccountDescriptions["Name"],
 			},
 			networkAccountSchemaNames["Number"]: {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: networkAccountDescriptions["Number"],
 			},
 			networkAccountSchemaNames["Status"]: {
 				Type:         schema.TypeString,
 				Optional:     true,
 				Computed:     true,
 				ValidateFunc: validation.StringInSlice([]string{"Active", "Processing", "Submitted", "Staged"}, true),
+				Description:  networkAccountDescriptions["Status"],
 			},
 			networkAccountSchemaNames["UCMID"]: {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: networkAccountDescriptions["UCMID"],
 			},
 			networkAccountSchemaNames["MetroCode"]: {
 				Type:         schema.TypeString,
 				Required:     true,
 				ValidateFunc: stringIsMetroCode(),
+				Description:  networkAccountDescriptions["MetroCode"],
 			},
 		},
 	}

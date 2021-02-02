@@ -3,12 +3,12 @@ layout: "equinix"
 page_title: "Equinix: equinix_network_device_software"
 subcategory: ""
 description: |-
- Get information on Network Edge device software
+ Get information on Equinix Network Edge device software
 ---
 
 # Data Source: equinix_network_device_software
 
-Use this data source to get Network Edge device software details for a given
+Use this data source to get Equinix Network Edge device software details for a given
 device type.
 
 ## Example Usage
@@ -28,6 +28,7 @@ data "equinix_network_device_software" "csrLatest1609" {
 
 * `device_type` - (Required) Code of a device type
 * `version_regex` - (Optional) A regex string to apply on returned versions
+and filter search results
 * `stable` - (Optional) Boolean value to limit query results to stable versions only
 * `packages` - (Optional) Limits returned versions to those that are supported
 by given software package codes

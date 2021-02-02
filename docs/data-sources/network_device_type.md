@@ -3,12 +3,12 @@ layout: "equinix"
 page_title: "Equinix: equinix_network_device_type"
 subcategory: ""
 description: |-
- Get information on Network Edge device type
+ Get information on Equinix Network Edge device type
 ---
 
 # Data Source: equinix_network_device_type
 
-Use this data source to get Network Edge device type details.
+Use this data source to get Equinix Network Edge device type details.
 
 ## Example Usage
 

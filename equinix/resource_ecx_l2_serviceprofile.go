@@ -41,9 +41,44 @@ var ecxL2ServiceProfileSchemaNames = map[string]string{
 	"SpeedBand":                           "speed_band",
 }
 
+var ecxL2ServiceProfileDescriptions = map[string]string{
+	"UUID":                                "Unique identifier of the service profile",
+	"State":                               "Service profile provisioning status",
+	"AlertPercentage":                     "Specifies the port bandwidth threshold percentage. If the bandwidth limit is met or exceeded, an alert is sent to the seller",
+	"AllowCustomSpeed":                    "Boolean value that determines if customer is allowed to enter a custom connection speed",
+	"AllowOverSubscription":               "Boolean value that determines if, regardless of the utilization, Equinix Fabric will continue to add connections to your links until we reach the oversubscription limit",
+	"APIAvailable":                        "Boolean value that determines if API integration is enabled",
+	"AuthKeyLabel":                        "Name of the authentication key label to be used by the Authentication Key service",
+	"ConnectionNameLabel":                 "Custom name used for calling a connections i.e. circuit. Defaults to Connection",
+	"CTagLabel":                           "C-Tag/Inner-Tag label name for the connections",
+	"Description":                         "Description of the service profile",
+	"EnableAutoGenerateServiceKey":        "Boolean value that indicates whether multiple connections can be created with the same authorization key",
+	"EquinixManagedPortAndVlan":           "Boolean value that indicates whether the port and VLAN details are managed by Equinix",
+	"IntegrationID":                       "Specifies the API integration ID that was provided to the customer during onboarding",
+	"Name":                                "Name of the service profile. An alpha-numeric 50 characters string which can include only hyphens and underscores",
+	"OnBandwidthThresholdNotification":    "A list of email addresses that will receive notifications about bandwidth thresholds",
+	"OnProfileApprovalRejectNotification": "A list of email addresses that will receive notifications about profile status changes",
+	"OnVcApprovalRejectionNotification":   "A list of email addresses that will receive notifications about connections approvals and rejections",
+	"OverSubscription":                    "Oversubscription limit that will cause alerting. Default is 1x",
+	"Private":                             "Boolean value that indicates whether or not this is a private profile.",
+	"PrivateUserEmails":                   "A list of email addresses associated to users that will be allowed to access this service profile. Applicable for private profiles",
+	"RequiredRedundancy":                  "Boolean value that determines if yourconnections will require redundancy",
+	"SpeedFromAPI":                        "Boolean valuta that determines if connection speed will be derived from an API call",
+	"TagType":                             "Specifies additional tagging information required by the seller profile for Dot1Q to QinQ translation",
+	"VlanSameAsPrimary":                   "Indicates whether the VLAN ID of the secondary connection is the same as the primary connection",
+	"Features":                            "Block of profile features configuration",
+	"Port":                                "One or more definitions of ports associated with the profile",
+	"SpeedBand":                           "One or more definitions of supported speed/bandwidth configurations",
+}
+
 var ecxL2ServiceProfileFeaturesSchemaNames = map[string]string{
 	"CloudReach":  "allow_remote_connections",
 	"TestProfile": "test_profile",
+}
+
+var ecxL2ServiceProfileFeaturesDescriptions = map[string]string{
+	"CloudReach":  "Indicates whether or not connections to this profile can be created from remote metro locations",
+	"TestProfile": "Indicates whether or not this profile can be used for test connections",
 }
 
 var ecxL2ServiceProfilePortSchemaNames = map[string]string{
@@ -51,9 +86,19 @@ var ecxL2ServiceProfilePortSchemaNames = map[string]string{
 	"MetroCode": "metro_code",
 }
 
+var ecxL2ServiceProfilePortDescriptions = map[string]string{
+	"ID":        "Unique identifier of the port",
+	"MetroCode": "Port location metro code",
+}
+
 var ecxL2ServiceProfileSpeedBandSchemaNames = map[string]string{
 	"Speed":     "speed",
 	"SpeedUnit": "speed_unit",
+}
+
+var ecxL2ServiceProfileSpeedBandDescriptions = map[string]string{
+	"Speed":     "Speed/bandwidth supported by given service profile",
+	"SpeedUnit": "Unit of the speed/bandwidth supported by given service profile",
 }
 
 func resourceECXL2ServiceProfile() *schema.Resource {
@@ -69,92 +114,109 @@ func resourceECXL2ServiceProfile() *schema.Resource {
 func createECXL2ServiceProfileResourceSchema() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
 		ecxL2ServiceProfileSchemaNames["UUID"]: {
-			Type:     schema.TypeString,
-			Computed: true,
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: ecxL2ServiceProfileDescriptions["UUID"],
 		},
 		ecxL2ServiceProfileSchemaNames["State"]: {
-			Type:     schema.TypeString,
-			Computed: true,
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: ecxL2ServiceProfileDescriptions["State"],
 		},
 		ecxL2ServiceProfileSchemaNames["AlertPercentage"]: {
 			Type:         schema.TypeFloat,
 			Optional:     true,
 			ValidateFunc: validation.FloatBetween(1, 99),
+			Description:  ecxL2ServiceProfileDescriptions["AlertPercentage"],
 		},
 		ecxL2ServiceProfileSchemaNames["AllowCustomSpeed"]: {
-			Type:     schema.TypeBool,
-			Optional: true,
+			Type:        schema.TypeBool,
+			Optional:    true,
+			Description: ecxL2ServiceProfileDescriptions["AllowCustomSpeed"],
 		},
 		ecxL2ServiceProfileSchemaNames["AllowOverSubscription"]: {
-			Type:     schema.TypeBool,
-			Optional: true,
+			Type:        schema.TypeBool,
+			Optional:    true,
+			Description: ecxL2ServiceProfileDescriptions["AllowOverSubscription"],
 		},
 		ecxL2ServiceProfileSchemaNames["APIAvailable"]: {
 			Type:         schema.TypeBool,
 			Optional:     true,
 			RequiredWith: []string{ecxL2ServiceProfileSchemaNames["IntegrationID"]},
+			Description:  ecxL2ServiceProfileDescriptions["IntegrationID"],
 		},
 		ecxL2ServiceProfileSchemaNames["AuthKeyLabel"]: {
 			Type:         schema.TypeString,
 			Optional:     true,
 			ValidateFunc: validation.StringLenBetween(1, 50),
+			Description:  ecxL2ServiceProfileDescriptions["AuthKeyLabel"],
 		},
 		ecxL2ServiceProfileSchemaNames["ConnectionNameLabel"]: {
 			Type:         schema.TypeString,
 			Optional:     true,
 			Default:      "Connection",
 			ValidateFunc: validation.StringLenBetween(1, 50),
+			Description:  ecxL2ServiceProfileDescriptions["ConnectionNameLabel"],
 		},
 		ecxL2ServiceProfileSchemaNames["CTagLabel"]: {
 			Type:         schema.TypeString,
 			Optional:     true,
 			ValidateFunc: validation.StringLenBetween(1, 50),
+			Description:  ecxL2ServiceProfileDescriptions["CTagLabel"],
 		},
 		ecxL2ServiceProfileSchemaNames["Description"]: {
 			Type:         schema.TypeString,
 			Optional:     true,
 			ValidateFunc: validation.StringLenBetween(1, 250),
+			Description:  ecxL2ServiceProfileDescriptions["Description"],
 		},
 		ecxL2ServiceProfileSchemaNames["EnableAutoGenerateServiceKey"]: {
-			Type:     schema.TypeBool,
-			Optional: true,
+			Type:        schema.TypeBool,
+			Optional:    true,
+			Description: ecxL2ServiceProfileDescriptions["EnableAutoGenerateServiceKey"],
 		},
 		ecxL2ServiceProfileSchemaNames["EquinixManagedPortAndVlan"]: {
-			Type:     schema.TypeBool,
-			Optional: true,
+			Type:        schema.TypeBool,
+			Optional:    true,
+			Description: ecxL2ServiceProfileDescriptions["EquinixManagedPortAndVlan"],
 		},
 		ecxL2ServiceProfileSchemaNames["IntegrationID"]: {
 			Type:         schema.TypeString,
 			Optional:     true,
 			ValidateFunc: validation.StringLenBetween(1, 50),
+			Description:  ecxL2ServiceProfileDescriptions["IntegrationID"],
 		},
 		ecxL2ServiceProfileSchemaNames["Name"]: {
 			Type:         schema.TypeString,
 			Required:     true,
 			ValidateFunc: validation.StringLenBetween(1, 50),
+			Description:  ecxL2ServiceProfileDescriptions["Name"],
 		},
 		ecxL2ServiceProfileSchemaNames["OnBandwidthThresholdNotification"]: {
-			Type:     schema.TypeSet,
-			Required: true,
-			MinItems: 1,
+			Type:        schema.TypeSet,
+			Required:    true,
+			MinItems:    1,
+			Description: ecxL2ServiceProfileDescriptions["OnBandwidthThresholdNotification"],
 			Elem: &schema.Schema{
 				Type:         schema.TypeString,
 				ValidateFunc: stringIsEmailAddress(),
 			},
 		},
 		ecxL2ServiceProfileSchemaNames["OnProfileApprovalRejectNotification"]: {
-			Type:     schema.TypeSet,
-			Required: true,
-			MinItems: 1,
+			Type:        schema.TypeSet,
+			Required:    true,
+			MinItems:    1,
+			Description: ecxL2ServiceProfileDescriptions["OnProfileApprovalRejectNotification"],
 			Elem: &schema.Schema{
 				Type:         schema.TypeString,
 				ValidateFunc: stringIsEmailAddress(),
 			},
 		},
 		ecxL2ServiceProfileSchemaNames["OnVcApprovalRejectionNotification"]: {
-			Type:     schema.TypeSet,
-			Required: true,
-			MinItems: 1,
+			Type:        schema.TypeSet,
+			Required:    true,
+			MinItems:    1,
+			Description: ecxL2ServiceProfileDescriptions["OnVcApprovalRejectionNotification"],
 			Elem: &schema.Schema{
 				Type:         schema.TypeString,
 				ValidateFunc: stringIsEmailAddress(),
@@ -165,73 +227,86 @@ func createECXL2ServiceProfileResourceSchema() map[string]*schema.Schema {
 			Optional:     true,
 			Default:      "1x",
 			RequiredWith: []string{ecxL2ServiceProfileSchemaNames["AllowOverSubscription"]},
+			Description:  ecxL2ServiceProfileDescriptions["OverSubscription"],
 		},
 		ecxL2ServiceProfileSchemaNames["Private"]: {
 			Type:         schema.TypeBool,
 			Optional:     true,
 			RequiredWith: []string{ecxL2ServiceProfileSchemaNames["PrivateUserEmails"]},
+			Description:  ecxL2ServiceProfileDescriptions["Private"],
 		},
 		ecxL2ServiceProfileSchemaNames["PrivateUserEmails"]: {
-			Type:     schema.TypeSet,
-			Optional: true,
-			MinItems: 1,
+			Type:        schema.TypeSet,
+			Optional:    true,
+			MinItems:    1,
+			Description: ecxL2ServiceProfileDescriptions["PrivateUserEmails"],
 			Elem: &schema.Schema{
 				Type:         schema.TypeString,
 				ValidateFunc: stringIsEmailAddress(),
 			},
 		},
 		ecxL2ServiceProfileSchemaNames["RequiredRedundancy"]: {
-			Type:     schema.TypeBool,
-			Optional: true,
+			Type:        schema.TypeBool,
+			Optional:    true,
+			Description: ecxL2ServiceProfileDescriptions["RequiredRedundancy"],
 		},
 		ecxL2ServiceProfileSchemaNames["SpeedFromAPI"]: {
 			Type:         schema.TypeBool,
 			Optional:     true,
 			AtLeastOneOf: []string{ecxL2ServiceProfileSchemaNames["SpeedFromAPI"], ecxL2ServiceProfileSchemaNames["SpeedBand"]},
 			RequiredWith: []string{ecxL2ServiceProfileSchemaNames["APIAvailable"]},
+			Description:  ecxL2ServiceProfileDescriptions["SpeedFromAPI"],
 		},
 		ecxL2ServiceProfileSchemaNames["TagType"]: {
 			Type:         schema.TypeString,
 			Optional:     true,
 			Default:      "CTAGED",
 			ValidateFunc: validation.StringInSlice([]string{"CTAGED", "NAMED", "BOTH"}, false),
+			Description:  ecxL2ServiceProfileDescriptions["TagType"],
 		},
 		ecxL2ServiceProfileSchemaNames["VlanSameAsPrimary"]: {
-			Type:     schema.TypeBool,
-			Optional: true,
+			Type:        schema.TypeBool,
+			Optional:    true,
+			Description: ecxL2ServiceProfileDescriptions["VlanSameAsPrimary"],
 		},
 		ecxL2ServiceProfileSchemaNames["Features"]: {
-			Type:     schema.TypeSet,
-			Required: true,
-			MaxItems: 1,
+			Type:        schema.TypeSet,
+			Required:    true,
+			MaxItems:    1,
+			Description: ecxL2ServiceProfileDescriptions["Features"],
 			Elem: &schema.Resource{
 				Schema: map[string]*schema.Schema{
 					ecxL2ServiceProfileFeaturesSchemaNames["CloudReach"]: {
-						Type:     schema.TypeBool,
-						Required: true,
+						Type:        schema.TypeBool,
+						Required:    true,
+						Description: ecxL2ServiceProfileFeaturesDescriptions["CloudReach"],
 					},
 					ecxL2ServiceProfileFeaturesSchemaNames["TestProfile"]: {
-						Type:     schema.TypeBool,
-						Required: true,
+						Type:        schema.TypeBool,
+						Required:    true,
+						Description: ecxL2ServiceProfileFeaturesDescriptions["TestProfile"],
 					},
 				},
 			},
 		},
 		ecxL2ServiceProfileSchemaNames["Port"]: {
-			Type:     schema.TypeSet,
-			Required: true,
-			MinItems: 1,
+			Type:        schema.TypeSet,
+			Required:    true,
+			MinItems:    1,
+			Description: ecxL2ServiceProfileDescriptions["Port"],
 			Elem: &schema.Resource{
 				Schema: map[string]*schema.Schema{
 					ecxL2ServiceProfilePortSchemaNames["ID"]: {
 						Type:         schema.TypeString,
 						Required:     true,
 						ValidateFunc: validation.StringIsNotEmpty,
+						Description:  ecxL2ServiceProfilePortDescriptions["ID"],
 					},
 					ecxL2ServiceProfilePortSchemaNames["MetroCode"]: {
 						Type:         schema.TypeString,
 						Required:     true,
 						ValidateFunc: stringIsMetroCode(),
+						Description:  ecxL2ServiceProfilePortDescriptions["MetroCode"],
 					},
 				},
 			},
@@ -241,16 +316,19 @@ func createECXL2ServiceProfileResourceSchema() map[string]*schema.Schema {
 			MinItems:     1,
 			Optional:     true,
 			AtLeastOneOf: []string{ecxL2ServiceProfileSchemaNames["SpeedFromAPI"], ecxL2ServiceProfileSchemaNames["SpeedBand"]},
+			Description:  ecxL2ServiceProfileDescriptions["SpeedBand"],
 			Elem: &schema.Resource{
 				Schema: map[string]*schema.Schema{
 					ecxL2ServiceProfileSpeedBandSchemaNames["Speed"]: {
-						Type:     schema.TypeInt,
-						Required: true,
+						Type:        schema.TypeInt,
+						Required:    true,
+						Description: ecxL2ServiceProfileSpeedBandDescriptions["Speed"],
 					},
 					ecxL2ServiceProfileSpeedBandSchemaNames["SpeedUnit"]: {
 						Type:         schema.TypeString,
 						Required:     true,
 						ValidateFunc: validation.StringInSlice([]string{"MB", "GB"}, false),
+						Description:  ecxL2ServiceProfileSpeedBandDescriptions["SpeedUnit"],
 					},
 				},
 			},

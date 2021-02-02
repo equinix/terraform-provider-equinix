@@ -3,12 +3,12 @@ layout: "equinix"
 page_title: "Equinix: equinix_network_device_platform"
 subcategory: ""
 description: |-
- Get information on Network Edge device platform configuration
+ Get information on Equinix Network Edge device platform configuration
 ---
 
 # Data Source: equinix_network_device_platform
 
-Use this data source to get Network Edge device platform configuration details
+Use this data source to get Equinix Network Edge device platform configuration details
 for a given device type.
 
 ## Example Usage
@@ -32,20 +32,19 @@ and memory. Supported values:
   * medium
   * large
   * xlarge
-* `core_count` - (Optional) Limits platforms to those that provide given number
-of CPU cores
-* `packages` - (Optional) Limits platforms to those that support provided software
-package codes
-* `management_types` - (Optional) Limits platforms to those that support given
-device management types. Supported values:
+* `core_count` - (Optional) Number of CPU cores used to limit platform search results
+* `packages` - (Optional) List of software package codes to limit platform search
+results
+* `management_types` - (Optional) List of device management types to limit platform
+search results. Supported values:
   * EQUINIX-CONFIGURED
   * SELF-CONFIGURED
-* `license_options` - (Optional) Limits platforms to those that support given
-licensing options. Supported values:
+* `license_options` - (Optional) List of device licensing options to limit platform
+search result. Supported values:
   * BYOL (for Bring Your Own License)
   * Sub (for license subscription)
 
 ## Attributes Reference
 
-* `memory` - The amount of memory
-* `memory_unit` - The unit of memory
+* `memory` - The amount of memory provided by device platform
+* `memory_unit` - Unit of memory provider by device platform

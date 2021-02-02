@@ -3,12 +3,12 @@ layout: "equinix"
 page_title: "Equinix: equinix_ecx_port"
 subcategory: ""
 description: |-
- Get information on ECX Fabric port
+ Get information on Equinix Fabric port
 ---
 
 # Data Source: equinix_ecx_port
 
-Use this data source to get details of ECX Fabric port with a given name.
+Use this data source to get details of Equinix Fabric port with a given name.
 
 ## Example Usage
 
@@ -31,15 +31,15 @@ output "id" {
 The following attributes are exported:
 
 * `uuid` - Unique identifier of the port
-* `status` - Status of the connection
-* `region` - Region in which the port resides
-* `ibx` - Equinix IBX where the port resides.
-* `metro_code` - The metro code of the metro where the port resides
+* `status` - Status of the port
+* `region` - Port location region
+* `ibx` - Port location Equinix Business Exchange (IBX)
+* `metro_code` - Port location metro code
 * `priority` - The priority of the device (primary / secondary) where the port
   resides
 * `encapsulation` - The VLAN encapsulation of the port (Dot1q or QinQ)
-* `buyout` - Indicates whether the port supports unlimited connections. If
-  "false", the port is a standard port with limited connections. If "true", the
+* `buyout` - Boolean value that indicates whether the port supports unlimited connections.
+  If "false", the port is a standard port with limited connections. If "true", the
   port is an "unlimited connections" port that allows multiple connections at no
   additional charge.
 * `bandwidth` - Port Bandwidth in bytes.

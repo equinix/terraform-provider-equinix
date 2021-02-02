@@ -56,6 +56,44 @@ var networkDeviceSchemaNames = map[string]string{
 	"Secondary":           "secondary_device",
 }
 
+var networkDeviceDescriptions = map[string]string{
+	"UUID":                "Device unique identifier",
+	"Name":                "Device name",
+	"TypeCode":            "Device type code",
+	"Status":              "Device provisioning status",
+	"MetroCode":           "Device location metro code",
+	"IBX":                 "Device location Equinix Business Exchange name",
+	"Region":              "Device location region",
+	"Throughput":          "Device license throughput",
+	"ThroughputUnit":      "Device license throughput unit (Mbps or Gbps)",
+	"HostName":            "Device hostname prefix",
+	"PackageCode":         "Device software package code",
+	"Version":             "Device software software version",
+	"IsBYOL":              "Boolean value that determines device licensing mode: bring your own license or subscription (default)",
+	"LicenseToken":        "License Token applicable for some device types in BYOL licensing mode",
+	"LicenseFile":         "Path to the license file that will be uploaded and applied on a device, applicable for some device types in BYOL licensing mode",
+	"LicenseFileID":       "Unique identifier of applied license file",
+	"LicenseStatus":       "Device license registration status",
+	"ACLTemplateUUID":     "Unique identifier of applied ACL template",
+	"SSHIPAddress":        "IP address of SSH enabled interface on the device",
+	"SSHIPFqdn":           "FQDN of SSH enabled interface on the device",
+	"AccountNumber":       "Device billing account number",
+	"Notifications":       "List of email addresses that will receive device status notifications",
+	"PurchaseOrderNumber": "Purchase order number associated with a device order",
+	"RedundancyType":      "Device redundancy type applicable for HA devices, either primary or secondary",
+	"RedundantUUID":       "Unique identifier for a redundant device, applicable for HA device",
+	"TermLength":          "Device term length",
+	"AdditionalBandwidth": "Additional Internet bandwidth, in Mbps, that will be allocated to the device",
+	"OrderReference":      "Name/number used to identify device order on the invoice",
+	"InterfaceCount":      "Number of network interfaces on a device. If not specified, default number for a given device type will be used",
+	"CoreCount":           "Number of CPU cores used by device",
+	"IsSelfManaged":       "Boolean value that determines device management mode: self-managed or subscription (default)",
+	"Interfaces":          "List of device interfaces",
+	"VendorConfiguration": "Map of vendor specific configuration parameters for a device",
+	"UserPublicKey":       "Definition of SSH key that will be provisioned on a device",
+	"Secondary":           "Definition of secondary device applicable for HA setup",
+}
+
 var neDeviceInterfaceSchemaNames = map[string]string{
 	"ID":                "id",
 	"Name":              "name",
@@ -67,9 +105,25 @@ var neDeviceInterfaceSchemaNames = map[string]string{
 	"Type":              "type",
 }
 
+var neDeviceInterfaceDescriptions = map[string]string{
+	"ID":                "Interface identifier",
+	"Name":              "Interface name",
+	"Status":            "Interface status (AVAILABLE, RESERVED, ASSIGNED)",
+	"OperationalStatus": "Interface operational status (up or down)",
+	"MACAddress":        "Interface MAC addres",
+	"IPAddress":         "interface IP address",
+	"AssignedType":      "Interface management type (Equinix Managed or empty)",
+	"Type":              "Interface type",
+}
+
 var neDeviceUserKeySchemaNames = map[string]string{
 	"Username": "username",
 	"KeyName":  "key_name",
+}
+
+var neDeviceUserKeyDescriptions = map[string]string{
+	"Username": "Username associated with given key",
+	"KeyName":  "Reference by name to previously provisioned public SSH key",
 }
 
 func resourceNetworkDevice() *schema.Resource {
@@ -84,53 +138,63 @@ func resourceNetworkDevice() *schema.Resource {
 			Update: schema.DefaultTimeout(10 * time.Minute),
 			Delete: schema.DefaultTimeout(10 * time.Minute),
 		},
+		Description: "Resource allows creation and management of Equinix Network Edge virtual devices",
 	}
 }
 
 func createNetworkDeviceSchema() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
 		networkDeviceSchemaNames["UUID"]: {
-			Type:     schema.TypeString,
-			Computed: true,
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: networkDeviceDescriptions["UUID"],
 		},
 		networkDeviceSchemaNames["Name"]: {
 			Type:         schema.TypeString,
 			Required:     true,
 			ValidateFunc: validation.StringLenBetween(3, 50),
+			Description:  networkDeviceDescriptions["Name"],
 		},
 		networkDeviceSchemaNames["TypeCode"]: {
 			Type:         schema.TypeString,
 			Required:     true,
 			ForceNew:     true,
 			ValidateFunc: validation.StringIsNotEmpty,
+			Description:  networkDeviceDescriptions["TypeCode"],
 		},
 		networkDeviceSchemaNames["Status"]: {
-			Type:     schema.TypeString,
-			Computed: true,
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: networkDeviceDescriptions["Status"],
 		},
 		networkDeviceSchemaNames["LicenseStatus"]: {
-			Type:     schema.TypeString,
-			Computed: true,
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: networkDeviceDescriptions["LicenseStatus"],
 		},
 		networkDeviceSchemaNames["MetroCode"]: {
 			Type:         schema.TypeString,
 			Required:     true,
 			ForceNew:     true,
 			ValidateFunc: stringIsMetroCode(),
+			Description:  networkDeviceDescriptions["MetroCode"],
 		},
 		networkDeviceSchemaNames["IBX"]: {
-			Type:     schema.TypeString,
-			Computed: true,
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: networkDeviceDescriptions["IBX"],
 		},
 		networkDeviceSchemaNames["Region"]: {
-			Type:     schema.TypeString,
-			Computed: true,
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: networkDeviceDescriptions["Region"],
 		},
 		networkDeviceSchemaNames["Throughput"]: {
 			Type:         schema.TypeInt,
 			Optional:     true,
 			ForceNew:     true,
 			ValidateFunc: validation.IntAtLeast(1),
+			Description:  networkDeviceDescriptions["Throughput"],
 		},
 		networkDeviceSchemaNames["ThroughputUnit"]: {
 			Type:         schema.TypeString,
@@ -138,30 +202,35 @@ func createNetworkDeviceSchema() map[string]*schema.Schema {
 			ForceNew:     true,
 			ValidateFunc: validation.StringInSlice([]string{"Mbps", "Gbps"}, false),
 			RequiredWith: []string{networkDeviceSchemaNames["Throughput"]},
+			Description:  networkDeviceDescriptions["ThroughputUnit"],
 		},
 		networkDeviceSchemaNames["HostName"]: {
 			Type:         schema.TypeString,
 			Optional:     true,
 			ForceNew:     true,
 			ValidateFunc: validation.StringLenBetween(2, 10),
+			Description:  networkDeviceDescriptions["HostName"],
 		},
 		networkDeviceSchemaNames["PackageCode"]: {
 			Type:         schema.TypeString,
 			Required:     true,
 			ForceNew:     true,
 			ValidateFunc: validation.StringIsNotEmpty,
+			Description:  networkDeviceDescriptions["PackageCode"],
 		},
 		networkDeviceSchemaNames["Version"]: {
 			Type:         schema.TypeString,
 			Required:     true,
 			ForceNew:     true,
 			ValidateFunc: validation.StringIsNotEmpty,
+			Description:  networkDeviceDescriptions["Version"],
 		},
 		networkDeviceSchemaNames["IsBYOL"]: {
-			Type:     schema.TypeBool,
-			Optional: true,
-			Default:  false,
-			ForceNew: true,
+			Type:        schema.TypeBool,
+			Optional:    true,
+			Default:     false,
+			ForceNew:    true,
+			Description: networkDeviceDescriptions["IsBYOL"],
 		},
 		networkDeviceSchemaNames["LicenseToken"]: {
 			Type:          schema.TypeString,
@@ -169,35 +238,42 @@ func createNetworkDeviceSchema() map[string]*schema.Schema {
 			ForceNew:      true,
 			ValidateFunc:  validation.StringIsNotEmpty,
 			ConflictsWith: []string{networkDeviceSchemaNames["LicenseFile"]},
+			Description:   networkDeviceDescriptions["LicenseToken"],
 		},
 		networkDeviceSchemaNames["LicenseFile"]: {
 			Type:         schema.TypeString,
 			Optional:     true,
 			ForceNew:     true,
 			ValidateFunc: validation.StringIsNotEmpty,
+			Description:  networkDeviceDescriptions["LicenseFile"],
 		},
 		networkDeviceSchemaNames["LicenseFileID"]: {
-			Type:     schema.TypeString,
-			Computed: true,
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: networkDeviceDescriptions["LicenseFileID"],
 		},
 		networkDeviceSchemaNames["ACLTemplateUUID"]: {
 			Type:         schema.TypeString,
 			Optional:     true,
 			ValidateFunc: validation.StringIsNotEmpty,
+			Description:  networkDeviceDescriptions["ACLTemplateUUID"],
 		},
 		networkDeviceSchemaNames["SSHIPAddress"]: {
-			Type:     schema.TypeString,
-			Computed: true,
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: networkDeviceDescriptions["SSHIPAddress"],
 		},
 		networkDeviceSchemaNames["SSHIPFqdn"]: {
-			Type:     schema.TypeString,
-			Computed: true,
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: networkDeviceDescriptions["SSHIPFqdn"],
 		},
 		networkDeviceSchemaNames["AccountNumber"]: {
 			Type:         schema.TypeString,
 			Required:     true,
 			ForceNew:     true,
 			ValidateFunc: validation.StringIsNotEmpty,
+			Description:  networkDeviceDescriptions["AccountNumber"],
 		},
 		networkDeviceSchemaNames["Notifications"]: {
 			Type:     schema.TypeSet,
@@ -207,36 +283,43 @@ func createNetworkDeviceSchema() map[string]*schema.Schema {
 				Type:         schema.TypeString,
 				ValidateFunc: stringIsEmailAddress(),
 			},
+			Description: networkDeviceDescriptions["Notifications"],
 		},
 		networkDeviceSchemaNames["PurchaseOrderNumber"]: {
 			Type:         schema.TypeString,
 			Optional:     true,
 			ForceNew:     true,
 			ValidateFunc: validation.StringLenBetween(1, 30),
+			Description:  networkDeviceDescriptions["PurchaseOrderNumber"],
 		},
 		networkDeviceSchemaNames["RedundancyType"]: {
-			Type:     schema.TypeString,
-			Computed: true,
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: networkDeviceDescriptions["RedundancyType"],
 		},
 		networkDeviceSchemaNames["RedundantUUID"]: {
-			Type:     schema.TypeString,
-			Computed: true,
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: networkDeviceDescriptions["RedundantUUID"],
 		},
 		networkDeviceSchemaNames["TermLength"]: {
 			Type:         schema.TypeInt,
 			Required:     true,
 			ValidateFunc: validation.IntInSlice([]int{1, 12, 24, 36}),
+			Description:  networkDeviceDescriptions["TermLength"],
 		},
 		networkDeviceSchemaNames["AdditionalBandwidth"]: {
 			Type:         schema.TypeInt,
 			Optional:     true,
 			ValidateFunc: validation.IntAtLeast(1),
+			Description:  networkDeviceDescriptions["AdditionalBandwidth"],
 		},
 		networkDeviceSchemaNames["OrderReference"]: {
 			Type:         schema.TypeString,
 			Optional:     true,
 			ForceNew:     true,
 			ValidateFunc: validation.StringLenBetween(1, 100),
+			Description:  networkDeviceDescriptions["OrderReference"],
 		},
 		networkDeviceSchemaNames["InterfaceCount"]: {
 			Type:         schema.TypeInt,
@@ -244,18 +327,21 @@ func createNetworkDeviceSchema() map[string]*schema.Schema {
 			Computed:     true,
 			ForceNew:     true,
 			ValidateFunc: validation.IntAtLeast(1),
+			Description:  networkDeviceDescriptions["InterfaceCount"],
 		},
 		networkDeviceSchemaNames["CoreCount"]: {
 			Type:         schema.TypeInt,
 			Required:     true,
 			ForceNew:     true,
 			ValidateFunc: validation.IntAtLeast(1),
+			Description:  networkDeviceDescriptions["CoreCount"],
 		},
 		networkDeviceSchemaNames["IsSelfManaged"]: {
-			Type:     schema.TypeBool,
-			Optional: true,
-			Default:  false,
-			ForceNew: true,
+			Type:        schema.TypeBool,
+			Optional:    true,
+			Default:     false,
+			ForceNew:    true,
+			Description: networkDeviceDescriptions["IsSelfManaged"],
 		},
 		networkDeviceSchemaNames["Interfaces"]: {
 			Type:     schema.TypeList,
@@ -263,6 +349,7 @@ func createNetworkDeviceSchema() map[string]*schema.Schema {
 			Elem: &schema.Resource{
 				Schema: createNetworkDeviceInterfaceSchema(),
 			},
+			Description: networkDeviceDescriptions["Interfaces"],
 		},
 		networkDeviceSchemaNames["VendorConfiguration"]: {
 			Type:     schema.TypeMap,
@@ -272,6 +359,7 @@ func createNetworkDeviceSchema() map[string]*schema.Schema {
 				Type:         schema.TypeString,
 				ValidateFunc: validation.StringIsNotEmpty,
 			},
+			Description: networkDeviceDescriptions["VendorConfiguration"],
 		},
 		networkDeviceSchemaNames["UserPublicKey"]: {
 			Type:     schema.TypeSet,
@@ -282,50 +370,60 @@ func createNetworkDeviceSchema() map[string]*schema.Schema {
 			Elem: &schema.Resource{
 				Schema: createNetworkDeviceUserKeySchema(),
 			},
+			Description: networkDeviceDescriptions["UserPublicKey"],
 		},
 		networkDeviceSchemaNames["Secondary"]: {
-			Type:     schema.TypeList,
-			Optional: true,
-			ForceNew: true,
-			MaxItems: 1,
+			Type:        schema.TypeList,
+			Optional:    true,
+			ForceNew:    true,
+			MaxItems:    1,
+			Description: networkDeviceDescriptions["Secondary"],
 			Elem: &schema.Resource{
 				Schema: map[string]*schema.Schema{
 					networkDeviceSchemaNames["UUID"]: {
-						Type:     schema.TypeString,
-						Computed: true,
+						Type:        schema.TypeString,
+						Computed:    true,
+						Description: networkDeviceDescriptions["UUID"],
 					},
 					networkDeviceSchemaNames["Name"]: {
 						Type:         schema.TypeString,
 						Required:     true,
 						ValidateFunc: validation.StringLenBetween(3, 50),
+						Description:  networkDeviceDescriptions["Name"],
 					},
 					networkDeviceSchemaNames["Status"]: {
-						Type:     schema.TypeString,
-						Computed: true,
+						Type:        schema.TypeString,
+						Computed:    true,
+						Description: networkDeviceDescriptions["Status"],
 					},
 					networkDeviceSchemaNames["LicenseStatus"]: {
-						Type:     schema.TypeString,
-						Computed: true,
+						Type:        schema.TypeString,
+						Computed:    true,
+						Description: networkDeviceDescriptions["LicenseStatus"],
 					},
 					networkDeviceSchemaNames["MetroCode"]: {
 						Type:         schema.TypeString,
 						Required:     true,
 						ForceNew:     true,
 						ValidateFunc: stringIsMetroCode(),
+						Description:  networkDeviceDescriptions["MetroCode"],
 					},
 					networkDeviceSchemaNames["IBX"]: {
-						Type:     schema.TypeString,
-						Computed: true,
+						Type:        schema.TypeString,
+						Computed:    true,
+						Description: networkDeviceDescriptions["IBX"],
 					},
 					networkDeviceSchemaNames["Region"]: {
-						Type:     schema.TypeString,
-						Computed: true,
+						Type:        schema.TypeString,
+						Computed:    true,
+						Description: networkDeviceDescriptions["Region"],
 					},
 					networkDeviceSchemaNames["HostName"]: {
 						Type:         schema.TypeString,
 						Optional:     true,
 						ForceNew:     true,
 						ValidateFunc: validation.StringLenBetween(2, 15),
+						Description:  networkDeviceDescriptions["HostName"],
 					},
 					networkDeviceSchemaNames["LicenseToken"]: {
 						Type:          schema.TypeString,
@@ -333,35 +431,42 @@ func createNetworkDeviceSchema() map[string]*schema.Schema {
 						ForceNew:      true,
 						ValidateFunc:  validation.StringIsNotEmpty,
 						ConflictsWith: []string{networkDeviceSchemaNames["Secondary"] + ".0." + networkDeviceSchemaNames["LicenseFile"]},
+						Description:   networkDeviceDescriptions["LicenseToken"],
 					},
 					networkDeviceSchemaNames["LicenseFile"]: {
 						Type:         schema.TypeString,
 						Optional:     true,
 						ForceNew:     true,
 						ValidateFunc: validation.StringIsNotEmpty,
+						Description:  networkDeviceDescriptions["LicenseFile"],
 					},
 					networkDeviceSchemaNames["LicenseFileID"]: {
-						Type:     schema.TypeString,
-						Computed: true,
+						Type:        schema.TypeString,
+						Computed:    true,
+						Description: networkDeviceDescriptions["LicenseFileID"],
 					},
 					networkDeviceSchemaNames["ACLTemplateUUID"]: {
 						Type:         schema.TypeString,
 						Optional:     true,
 						ValidateFunc: validation.StringIsNotEmpty,
+						Description:  networkDeviceDescriptions["ACLTemplateUUID"],
 					},
 					networkDeviceSchemaNames["SSHIPAddress"]: {
-						Type:     schema.TypeString,
-						Computed: true,
+						Type:        schema.TypeString,
+						Computed:    true,
+						Description: networkDeviceDescriptions["SSHIPAddress"],
 					},
 					networkDeviceSchemaNames["SSHIPFqdn"]: {
-						Type:     schema.TypeString,
-						Computed: true,
+						Type:        schema.TypeString,
+						Computed:    true,
+						Description: networkDeviceDescriptions["SSHIPFqdn"],
 					},
 					networkDeviceSchemaNames["AccountNumber"]: {
 						Type:         schema.TypeString,
 						Required:     true,
 						ForceNew:     true,
 						ValidateFunc: validation.StringIsNotEmpty,
+						Description:  networkDeviceDescriptions["AccountNumber"],
 					},
 					networkDeviceSchemaNames["Notifications"]: {
 						Type:     schema.TypeSet,
@@ -371,19 +476,23 @@ func createNetworkDeviceSchema() map[string]*schema.Schema {
 							Type:         schema.TypeString,
 							ValidateFunc: stringIsEmailAddress(),
 						},
+						Description: networkDeviceDescriptions["Notifications"],
 					},
 					networkDeviceSchemaNames["RedundancyType"]: {
-						Type:     schema.TypeString,
-						Computed: true,
+						Type:        schema.TypeString,
+						Computed:    true,
+						Description: networkDeviceDescriptions["RedundancyType"],
 					},
 					networkDeviceSchemaNames["RedundantUUID"]: {
-						Type:     schema.TypeString,
-						Computed: true,
+						Type:        schema.TypeString,
+						Computed:    true,
+						Description: networkDeviceDescriptions["RedundantUUID"],
 					},
 					networkDeviceSchemaNames["AdditionalBandwidth"]: {
 						Type:         schema.TypeInt,
 						Optional:     true,
 						ValidateFunc: validation.IntAtLeast(1),
+						Description:  networkDeviceDescriptions["AdditionalBandwidth"],
 					},
 					networkDeviceSchemaNames["Interfaces"]: {
 						Type:     schema.TypeList,
@@ -391,6 +500,7 @@ func createNetworkDeviceSchema() map[string]*schema.Schema {
 						Elem: &schema.Resource{
 							Schema: createNetworkDeviceInterfaceSchema(),
 						},
+						Description: networkDeviceDescriptions["Interfaces"],
 					},
 					networkDeviceSchemaNames["VendorConfiguration"]: {
 						Type:     schema.TypeMap,
@@ -400,6 +510,7 @@ func createNetworkDeviceSchema() map[string]*schema.Schema {
 							Type:         schema.TypeString,
 							ValidateFunc: validation.StringIsNotEmpty,
 						},
+						Description: networkDeviceDescriptions["VendorConfiguration"],
 					},
 					networkDeviceSchemaNames["UserPublicKey"]: {
 						Type:     schema.TypeSet,
@@ -410,6 +521,7 @@ func createNetworkDeviceSchema() map[string]*schema.Schema {
 						Elem: &schema.Resource{
 							Schema: createNetworkDeviceUserKeySchema(),
 						},
+						Description: networkDeviceDescriptions["UserPublicKey"],
 					},
 				},
 			},
@@ -420,36 +532,44 @@ func createNetworkDeviceSchema() map[string]*schema.Schema {
 func createNetworkDeviceInterfaceSchema() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
 		neDeviceInterfaceSchemaNames["ID"]: {
-			Type:     schema.TypeInt,
-			Computed: true,
+			Type:        schema.TypeInt,
+			Computed:    true,
+			Description: neDeviceInterfaceDescriptions["ID"],
 		},
 		neDeviceInterfaceSchemaNames["Name"]: {
-			Type:     schema.TypeString,
-			Computed: true,
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: neDeviceInterfaceDescriptions["Name"],
 		},
 		neDeviceInterfaceSchemaNames["Status"]: {
-			Type:     schema.TypeString,
-			Computed: true,
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: neDeviceInterfaceDescriptions["Status"],
 		},
 		neDeviceInterfaceSchemaNames["OperationalStatus"]: {
-			Type:     schema.TypeString,
-			Computed: true,
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: neDeviceInterfaceDescriptions["OperationalStatus"],
 		},
 		neDeviceInterfaceSchemaNames["MACAddress"]: {
-			Type:     schema.TypeString,
-			Computed: true,
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: neDeviceInterfaceDescriptions["MACAddress"],
 		},
 		neDeviceInterfaceSchemaNames["IPAddress"]: {
-			Type:     schema.TypeString,
-			Computed: true,
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: neDeviceInterfaceDescriptions["IPAddress"],
 		},
 		neDeviceInterfaceSchemaNames["AssignedType"]: {
-			Type:     schema.TypeString,
-			Computed: true,
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: neDeviceInterfaceDescriptions["AssignedType"],
 		},
 		neDeviceInterfaceSchemaNames["Type"]: {
-			Type:     schema.TypeString,
-			Computed: true,
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: neDeviceInterfaceDescriptions["Type"],
 		},
 	}
 }
@@ -460,11 +580,13 @@ func createNetworkDeviceUserKeySchema() map[string]*schema.Schema {
 			Type:         schema.TypeString,
 			Required:     true,
 			ValidateFunc: validation.StringIsNotEmpty,
+			Description:  neDeviceUserKeyDescriptions["Username"],
 		},
 		neDeviceUserKeySchemaNames["KeyName"]: {
 			Type:         schema.TypeString,
 			Required:     true,
 			ValidateFunc: validation.StringIsNotEmpty,
+			Description:  neDeviceUserKeyDescriptions["KeyName"],
 		},
 	}
 }

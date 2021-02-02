@@ -23,50 +23,74 @@ var ecxPortSchemaNames = map[string]string{
 	"Status":        "status",
 }
 
+var ecxPortDescriptions = map[string]string{
+	"UUID":          "Unique identifier of the por",
+	"Name":          "Name of the port",
+	"Region":        "Port location region",
+	"IBX":           "Port location Equinix Business Exchange (IBX)",
+	"MetroCode":     "Port location metro code",
+	"Priority":      "The priority of the device (primary / secondary) where the port resides",
+	"Encapsulation": "The VLAN encapsulation of the port (Dot1q or QinQ)",
+	"Buyout":        "Boolean value that indicates whether the port supports unlimited connections.",
+	"Bandwidth":     "Port Bandwidth in bytes",
+	"Status":        "Port status that indicates whether a port has been assigned or is ready for connection",
+}
+
 func dataSourceECXPort() *schema.Resource {
 	return &schema.Resource{
 		ReadContext: dataSourceECXPortRead,
+		Description: "Use this data source to get details of Equinix Fabric port with a given name",
 		Schema: map[string]*schema.Schema{
 			ecxPortSchemaNames["UUID"]: {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: ecxPortDescriptions["UUID"],
 			},
 			ecxPortSchemaNames["Name"]: {
 				Type:         schema.TypeString,
 				Required:     true,
 				ValidateFunc: validation.StringIsNotEmpty,
+				Description:  ecxPortDescriptions["Name"],
 			},
 			ecxPortSchemaNames["Region"]: {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: ecxPortDescriptions["Region"],
 			},
 			ecxPortSchemaNames["IBX"]: {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: ecxPortDescriptions["IBX"],
 			},
 			ecxPortSchemaNames["MetroCode"]: {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: ecxPortDescriptions["MetroCode"],
 			},
 			ecxPortSchemaNames["Priority"]: {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: ecxPortDescriptions["Priority"],
 			},
 			ecxPortSchemaNames["Encapsulation"]: {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: ecxPortDescriptions["Encapsulation"],
 			},
 			ecxPortSchemaNames["Buyout"]: {
-				Type:     schema.TypeBool,
-				Computed: true,
+				Type:        schema.TypeBool,
+				Computed:    true,
+				Description: ecxPortDescriptions["Buyout"],
 			},
 			ecxPortSchemaNames["Bandwidth"]: {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: ecxPortDescriptions["Bandwidth"],
 			},
 			ecxPortSchemaNames["Status"]: {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: ecxPortDescriptions["Status"],
 			},
 		},
 	}

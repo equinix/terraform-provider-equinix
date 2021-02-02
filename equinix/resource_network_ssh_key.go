@@ -19,6 +19,12 @@ var networkSSHKeySchemaNames = map[string]string{
 	"Value": "public_key",
 }
 
+var networkSSHKeyDescriptions = map[string]string{
+	"UUID":  "The unique identifier of the key",
+	"Name":  "The name of SSH key used for identification",
+	"Value": "The SSH public key. If this is a file, it can be read using the file interpolation function",
+}
+
 func resourceNetworkSSHKey() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: resourceNetworkSSHKeyCreate,
@@ -28,26 +34,30 @@ func resourceNetworkSSHKey() *schema.Resource {
 		Timeouts: &schema.ResourceTimeout{
 			Create: schema.DefaultTimeout(5 * time.Minute),
 		},
+		Description: "Resource allows creation and management of Equinix Network Edge SSH keys",
 	}
 }
 
 func createNetworkSSHKeyResourceSchema() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
 		networkSSHKeySchemaNames["UUID"]: {
-			Type:     schema.TypeString,
-			Computed: true,
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: networkSSHKeyDescriptions["UUID"],
 		},
 		networkSSHKeySchemaNames["Name"]: {
 			Type:         schema.TypeString,
 			Required:     true,
 			ForceNew:     true,
 			ValidateFunc: validation.StringIsNotEmpty,
+			Description:  networkSSHKeyDescriptions["Name"],
 		},
 		networkSSHKeySchemaNames["Value"]: {
 			Type:         schema.TypeString,
 			Required:     true,
 			ForceNew:     true,
 			ValidateFunc: validation.StringIsNotEmpty,
+			Description:  networkSSHKeyDescriptions["Value"],
 		},
 	}
 }

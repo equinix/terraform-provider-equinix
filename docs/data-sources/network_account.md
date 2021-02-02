@@ -3,12 +3,12 @@ layout: "equinix"
 page_title: "Equinix: equinix_network_account"
 subcategory: ""
 description: |-
- Get information on Network Edge billing account
+ Get information on Equinix Network Edge billing account
 ---
 
 # Data Source: equinix_network_account
 
-Use this data source to get number and identifier of Network Edge
+Use this data source to get number and identifier of Equinix Network Edge
 billing account in a given metro location.
 
 Billing account reference is required to create Network Edge virtual device
@@ -30,12 +30,12 @@ output "number" {
 
 ## Argument Reference
 
-* `metro_code` - (Required) Account metro code
+* `metro_code` - (Required) Account location metro code
 * `name` - (Optional) Account name for filtering
 * `status` - (Optional) Account status for filtering. Possible values are "Active",
 "Processing", "Submitted", "Staged"
 
 ## Attributes Reference
 
-* `number` - Account number
+* `number` - Account unique number
 * `ucm_id` - Account unique identifier

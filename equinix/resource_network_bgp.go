@@ -27,6 +27,19 @@ var networkBGPSchemaNames = map[string]string{
 	"ProvisioningStatus": "provisioning_status",
 }
 
+var networkBGPDescriptions = map[string]string{
+	"UUID":               "BGP peering configuration unique identifier",
+	"ConnectionUUID":     "Identifier of a connection established between network device and remote service provider that will be used for peering",
+	"DeviceUUID":         "Unique identifier of a network device that is a local peer in a given BGP peering configuration",
+	"LocalIPAddress":     "IP address in CIDR format of a local device",
+	"LocalASN":           "Local ASN number",
+	"RemoteIPAddress":    "IP address of remote peer",
+	"RemoteASN":          "Remote ASN number",
+	"AuthenticationKey":  "Shared key used for BGP peer authentication",
+	"State":              "BGP peer state",
+	"ProvisioningStatus": "BGP peering configuration provisioning status",
+}
+
 func resourceNetworkBGP() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: resourceNetworkBGPCreate,
@@ -37,58 +50,69 @@ func resourceNetworkBGP() *schema.Resource {
 		Timeouts: &schema.ResourceTimeout{
 			Create: schema.DefaultTimeout(5 * time.Minute),
 		},
+		Description: "Resource allows creation and management of Equinix Network Edge BGP peering configurations",
 	}
 }
 
 func createNetworkBGPResourceSchema() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
 		networkBGPSchemaNames["UUID"]: {
-			Type:     schema.TypeString,
-			Computed: true,
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: networkBGPDescriptions["UUID"],
 		},
 		networkBGPSchemaNames["ConnectionUUID"]: {
 			Type:         schema.TypeString,
 			Required:     true,
 			ForceNew:     true,
 			ValidateFunc: validation.StringIsNotEmpty,
+			Description:  networkBGPDescriptions["ConnectionUUID"],
 		},
 		networkBGPSchemaNames["DeviceUUID"]: {
-			Type:     schema.TypeString,
-			Computed: true,
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: networkBGPDescriptions["DeviceUUID"],
 		},
 		networkBGPSchemaNames["LocalIPAddress"]: {
 			Type:         schema.TypeString,
 			Required:     true,
 			ValidateFunc: validation.IsCIDR,
+			Description:  networkBGPDescriptions["LocalIPAddress"],
 		},
 		networkBGPSchemaNames["LocalASN"]: {
 			Type:         schema.TypeInt,
 			Required:     true,
 			ValidateFunc: validation.IntAtLeast(1),
+			Description:  networkBGPDescriptions["LocalASN"],
 		},
 		networkBGPSchemaNames["RemoteIPAddress"]: {
 			Type:         schema.TypeString,
 			Required:     true,
 			ValidateFunc: validation.IsIPv4Address,
+			Description:  networkBGPDescriptions["RemoteIPAddress"],
 		},
 		networkBGPSchemaNames["RemoteASN"]: {
 			Type:         schema.TypeInt,
 			Required:     true,
 			ValidateFunc: validation.IntAtLeast(1),
+			Description:  networkBGPDescriptions["RemoteASN"],
 		},
 		networkBGPSchemaNames["AuthenticationKey"]: {
 			Type:         schema.TypeString,
 			Optional:     true,
 			Sensitive:    true,
 			ValidateFunc: validation.StringLenBetween(6, 60),
+			Description:  networkBGPDescriptions["AuthenticationKey"],
 		},
 		networkBGPSchemaNames["State"]: {
-			Type:     schema.TypeString,
-			Computed: true,
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: networkBGPDescriptions["State"],
 		},
 		networkBGPSchemaNames["ProvisioningStatus"]: {
-			Type:     schema.TypeString,
-			Computed: true,
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: networkBGPDescriptions["ProvisioningStatus"],
 		},
 	}
 }
