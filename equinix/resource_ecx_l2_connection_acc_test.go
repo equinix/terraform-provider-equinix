@@ -13,10 +13,12 @@ import (
 )
 
 const (
-	priPortEnvVar = "TF_ACC_FABRIC_PRI_PORT_NAME"
-	secPortEnvVar = "TF_ACC_FABRIC_SEC_PORT_NAME"
-	priSpEnvVar   = "TF_ACC_FABRIC_PRI_L2_SP_NAME"
-	secSpEnvVar   = "TF_ACC_FABRIC_PRI_L2_SP_NAME"
+	priPortEnvVar  = "TF_ACC_FABRIC_PRI_PORT_NAME"
+	secPortEnvVar  = "TF_ACC_FABRIC_SEC_PORT_NAME"
+	awsSpEnvVar    = "TF_ACC_FABRIC_AWS_L2_SP_NAME"
+	azureSpEnvVar  = "TF_ACC_FABRIC_AZURE_L2_SP_NAME"
+	gcpOneSpEnvVar = "TF_ACC_FABRIC_GCP1_L2_SP_NAME"
+	gcpTwoSpEnvVar = "TF_ACC_FABRIC_GCP2_L2_SP_NAME"
 )
 
 func init() {
@@ -65,10 +67,10 @@ func testSweepECXL2Connections(region string) error {
 	return nil
 }
 
-func TestAccFabricL2Connection_Port_Single(t *testing.T) {
+func TestAccFabricL2Connection_Port_Single_AWS(t *testing.T) {
 	t.Parallel()
 	portName, _ := schema.EnvDefaultFunc(priPortEnvVar, "sit-001-CX-SV1-NL-Dot1q-BO-10G-PRI-JUN-33")()
-	spName, _ := schema.EnvDefaultFunc(priSpEnvVar, "AWS Direct Connect")()
+	spName, _ := schema.EnvDefaultFunc(awsSpEnvVar, "AWS Direct Connect")()
 	context := map[string]interface{}{
 		"port-resourceName":                "test",
 		"port-name":                        portName.(string),
@@ -116,11 +118,11 @@ func TestAccFabricL2Connection_Port_Single(t *testing.T) {
 	})
 }
 
-func TestAccFabricL2Connection_Port_HA(t *testing.T) {
+func TestAccFabricL2Connection_Port_HA_Azure(t *testing.T) {
 	t.Parallel()
 	priPortName, _ := schema.EnvDefaultFunc(priPortEnvVar, "sit-001-CX-SV1-NL-Dot1q-BO-10G-PRI-JUN-33")()
 	secPortName, _ := schema.EnvDefaultFunc(secPortEnvVar, "sit-001-CX-SV5-NL-Dot1q-BO-10G-SEC-JUN-36")()
-	spName, _ := schema.EnvDefaultFunc(priSpEnvVar, "Azure Express Route")()
+	spName, _ := schema.EnvDefaultFunc(azureSpEnvVar, "Azure Express Route")()
 	context := map[string]interface{}{
 		"port-resourceName":                "test",
 		"port-name":                        priPortName.(string),
@@ -177,11 +179,11 @@ func TestAccFabricL2Connection_Port_HA(t *testing.T) {
 	})
 }
 
-func TestAccFabricL2Connection_Device_HA(t *testing.T) {
+func TestAccFabricL2Connection_Device_HA_GCP(t *testing.T) {
 	t.Parallel()
 	deviceMetro, _ := schema.EnvDefaultFunc(networkDeviceMetroEnvVar, "SV")()
-	priSPName, _ := schema.EnvDefaultFunc("TF_ACC_FABRIC_PRI_L2_SP_NAME", "Google Cloud Partner Interconnect Zone 1")()
-	secSPName, _ := schema.EnvDefaultFunc("TF_ACC_FABRIC_SEC_L2_SP_NAME", "Google Cloud Partner Interconnect Zone 2")()
+	priSPName, _ := schema.EnvDefaultFunc(gcpOneSpEnvVar, "Google Cloud Partner Interconnect Zone 1")()
+	secSPName, _ := schema.EnvDefaultFunc(gcpTwoSpEnvVar, "Google Cloud Partner Interconnect Zone 2")()
 	context := map[string]interface{}{
 		"device-resourceName":                      "test",
 		"device-self_managed":                      true,

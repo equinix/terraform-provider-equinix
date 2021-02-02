@@ -64,15 +64,21 @@ Acceptance tests can be parametrized by setting up various environmental variabl
 Rationale behind parametrization is to allow running acceptance tests against
 different Equinix test environments.
 
-* `TF_ACC_ECX_PRI_DOT1Q_PORT_NAME` alters default name of ECX Fabric port for primary,
-Dot1Q encapsulated connections. Reflected by ECX connection tests.
-* `TF_ACC_ECX_SEC_DOT1Q_PORT_NAME` alters default name of ECX Fabric port for secondary,
-Dot1Q encapsulated connections. Reflected by ECX connection tests.
-* `TF_ACC_ECX_L2_AWS_SP_NAME` alters default name of ECX Fabric AWS seller profile.
-Reflected by ECX connection tests.
-* `TF_ACC_ECX_L2_AZURE_SP_NAME` alters default name of ECX Fabric Azure seller profile.
-Reflected by ECX connection tests.
+* `TF_ACC_FABRIC_PRI_PORT_NAME` alters default name of Equinix Fabric port for
+primary, Dot1Q encapsulated connections. Reflected by Fabric connection tests.
+* `TF_ACC_FABRIC_SEC_PORT_NAME` alters default name of Equinix Fabric port for
+secondary,Dot1Q encapsulated connections. Reflected by Fabric connection tests
+* `TF_ACC_FABRIC_AWS_L2_SP_NAME` alters default name of Equinix Fabric AWS seller
+profile. Reflected by Fabric connection tests
+* `TF_ACC_FABRIC_L2_AZURE_SP_NAME` alters default name of Equinix Fabric Azure seller
+profile. Reflected by Fabric connection tests.
+* `TF_ACC_FABRIC_GCP1_L2_SP_NAME` alters default name of Equinix Fabric GCP
+Interconnection Zone 1 seller profile. Reflected by Fabric connection tests.
+* `TF_ACC_FABRIC_GCP2_L2_SP_NAME` alters default name of Equinix Fabric GCP
+Interconnection Zone 2 seller profile. Reflected by Fabric connection tests.
 * `TF_ACC_NETWORK_DEVICE_METRO` alters default metro code for Network Edge resources.
+Reflected by Network Edge tests.
+* `TF_ACC_NETWORK_DEVICE_LICENSE_FILE` alters default path to device license file.
 Reflected by Network Edge tests.
 
 ## Manual provider installation
@@ -83,7 +89,7 @@ built Equinix provider plugin.
 Manual installation process differs depending on Terraform version.
 Run `terraform version` command to determine version of your Terraform installation.
 
-## Terraform 0.13 and newer
+### Terraform 0.13 and newer
 
 1. Create `developer.equinix.com/terraform/equinix/9.0.0/darwin_amd64` directories
 under:
@@ -122,7 +128,7 @@ under:
    Local Equinix provider plugin will be used after `terraform init`
    command execution in Terraform template directory
 
-## Terraform 0.12 and older
+### Terraform 0.12 and older
 
 1. Copy provider binary to Terraform plugin directory
 

@@ -10,10 +10,10 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 )
 
-func TestAccFabricL2Connection_Port_Single_Accepter(t *testing.T) {
+func TestAccFabricL2Connection_Port_Single_Accepter_AWS(t *testing.T) {
 	t.Parallel()
 	portName, _ := schema.EnvDefaultFunc(priPortEnvVar, "sit-001-CX-SV1-NL-Dot1q-BO-10G-PRI-JUN-33")()
-	spName, _ := schema.EnvDefaultFunc(priSpEnvVar, "AWS Direct Connect")()
+	spName, _ := schema.EnvDefaultFunc(awsSpEnvVar, "AWS Direct Connect")()
 	context := map[string]interface{}{
 		"port-resourceName":            "test",
 		"port-name":                    portName.(string),

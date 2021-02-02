@@ -10,10 +10,10 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 )
 
-func TestAccNetworkBGP(t *testing.T) {
+func TestAccNetworkBGP_CSR1000V_Single_AWS(t *testing.T) {
 	t.Parallel()
 	metro, _ := schema.EnvDefaultFunc(networkDeviceMetroEnvVar, "SV")()
-	spName, _ := schema.EnvDefaultFunc(priSpEnvVar, "AWS Direct Connect")()
+	spName, _ := schema.EnvDefaultFunc(awsSpEnvVar, "AWS Direct Connect")()
 	context := map[string]interface{}{
 		"device-resourceName":          "test",
 		"device-self_managed":          true,
