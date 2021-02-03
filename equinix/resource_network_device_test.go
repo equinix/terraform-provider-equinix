@@ -29,7 +29,7 @@ func TestNetworkDevice_createFromResourceData(t *testing.T) {
 		HostName:            ne.String("test"),
 		PackageCode:         ne.String("SEC"),
 		Version:             ne.String("9.0.1"),
-		IsBYOL:              ne.Bool(true),
+		IsBYOL:              ne.Bool(false),
 		LicenseToken:        ne.String("sWf3df4gaAvbbexw45ga4f"),
 		LicenseFile:         ne.String("/tmp/licenseFile"),
 		ACLTemplateUUID:     ne.String("a624178c-6d59-4798-9a7f-2ddf2c7c5881"),
@@ -41,7 +41,7 @@ func TestNetworkDevice_createFromResourceData(t *testing.T) {
 		OrderReference:      ne.String("12312121sddsf1231"),
 		InterfaceCount:      ne.Int(10),
 		CoreCount:           ne.Int(2),
-		IsSelfManaged:       ne.Bool(true),
+		IsSelfManaged:       ne.Bool(false),
 		VendorConfiguration: expectedPrimaryVendorConfig,
 		UserPublicKey:       &expectedPrimaryUserKey,
 	}

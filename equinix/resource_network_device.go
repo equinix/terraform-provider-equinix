@@ -771,9 +771,7 @@ func createNetworkDevices(d *schema.ResourceData) (*ne.Device, *ne.Device) {
 	if v, ok := d.GetOk(networkDeviceSchemaNames["Version"]); ok {
 		primary.Version = ne.String(v.(string))
 	}
-	if v, ok := d.GetOk(networkDeviceSchemaNames["IsBYOL"]); ok {
-		primary.IsBYOL = ne.Bool(v.(bool))
-	}
+	primary.IsBYOL = ne.Bool(d.Get(networkDeviceSchemaNames["IsBYOL"]).(bool))
 	if v, ok := d.GetOk(networkDeviceSchemaNames["LicenseToken"]); ok {
 		primary.LicenseToken = ne.String(v.(string))
 	}
@@ -807,9 +805,7 @@ func createNetworkDevices(d *schema.ResourceData) (*ne.Device, *ne.Device) {
 	if v, ok := d.GetOk(networkDeviceSchemaNames["CoreCount"]); ok {
 		primary.CoreCount = ne.Int(v.(int))
 	}
-	if v, ok := d.GetOk(networkDeviceSchemaNames["IsSelfManaged"]); ok {
-		primary.IsSelfManaged = ne.Bool(v.(bool))
-	}
+	primary.IsSelfManaged = ne.Bool(d.Get(networkDeviceSchemaNames["IsSelfManaged"]).(bool))
 	if v, ok := d.GetOk(networkDeviceSchemaNames["VendorConfiguration"]); ok {
 		primary.VendorConfiguration = expandInterfaceMapToStringMap(v.(map[string]interface{}))
 	}

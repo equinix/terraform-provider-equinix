@@ -126,7 +126,7 @@ func dataSourceNetworkDeviceSoftwareRead(ctx context.Context, d *schema.Resource
 				continue
 			}
 		}
-		if v, ok := d.GetOk(networkDeviceSoftwareSchemaNames["IsStable"]); ok && ne.Bool(v.(bool)) != version.IsStable {
+		if v, ok := d.GetOk(networkDeviceSoftwareSchemaNames["IsStable"]); ok && v.(bool) != ne.BoolValue(version.IsStable) {
 			continue
 		}
 		if !stringsFound(pkgCodes, version.PackageCodes) {
