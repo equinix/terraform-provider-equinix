@@ -20,6 +20,16 @@ func Provider() terraform.ResourceProvider {
 				DefaultFunc: schema.EnvDefaultFunc("PACKET_AUTH_TOKEN", nil),
 				Description: "The API auth key for API operations.",
 			},
+			"max_retries": {
+				Type:     schema.TypeInt,
+				Optional: true,
+				Default:  10,
+			},
+			"max_retry_wait_seconds": {
+				Type:     schema.TypeInt,
+				Optional: true,
+				Default:  30,
+			},
 		},
 		DataSourcesMap: map[string]*schema.Resource{
 			"metal_ip_block_ranges":      dataSourceMetalIPBlockRanges(),
@@ -57,8 +67,11 @@ func Provider() terraform.ResourceProvider {
 }
 
 func providerConfigure(d *schema.ResourceData) (interface{}, error) {
+	mrws := d.Get("max_retry_wait_seconds").(int)
 	config := Config{
-		AuthToken: d.Get("auth_token").(string),
+		AuthToken:    d.Get("auth_token").(string),
+		MaxRetries:   d.Get("max_retries").(int),
+		MaxRetryWait: time.Duration(mrws) * time.Second,
 	}
 	return config.Client(), nil
 }

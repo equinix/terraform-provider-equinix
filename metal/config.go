@@ -18,7 +18,9 @@ const (
 )
 
 type Config struct {
-	AuthToken string
+	AuthToken    string
+	MaxRetries   int
+	MaxRetryWait time.Duration
 }
 
 var redirectsErrorRe = regexp.MustCompile(`stopped after \d+ redirects\z`)
@@ -49,14 +51,13 @@ func MetalRetryPolicy(ctx context.Context, resp *http.Response, err error) (bool
 
 // Client returns a new client for accessing Equinix Metal's API.
 func (c *Config) Client() *packngo.Client {
-	httpClient := retryablehttp.NewClient()
-	httpClient.RetryWaitMin = time.Second
-	httpClient.RetryWaitMax = 30 * time.Second
-	httpClient.RetryMax = 10
-	httpClient.CheckRetry = MetalRetryPolicy
-	httpClient.HTTPClient.Transport = logging.NewTransport(
-		"Equinix Metal",
-		httpClient.HTTPClient.Transport)
-
+	transport := logging.NewTransport("Equinix Metal", http.DefaultTransport)
+	retryClient := retryablehttp.NewClient()
+	retryClient.HTTPClient.Transport = transport
+	retryClient.RetryMax = c.MaxRetries
+	retryClient.RetryWaitMin = time.Second
+	retryClient.RetryWaitMax = c.MaxRetryWait
+	retryClient.CheckRetry = packngo.RetryPolicy
+	httpClient := retryClient.StandardClient()
 	return packngo.NewClientWithAuth(consumerToken, c.AuthToken, httpClient)
 }
