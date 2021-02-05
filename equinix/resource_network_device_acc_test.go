@@ -147,6 +147,151 @@ func TestAccNetworkDevice_CSR100V_HA_Managed_Sub(t *testing.T) {
 	})
 }
 
+func TestAccNetworkDevice_CSR100V_HA_Self_BYOL(t *testing.T) {
+	t.Parallel()
+	metro, _ := schema.EnvDefaultFunc(networkDeviceMetroEnvVar, "SV")()
+	context := map[string]interface{}{
+		"device-resourceName":            "test",
+		"device-self_managed":            true,
+		"device-byol":                    true,
+		"device-name":                    fmt.Sprintf("%s-%s", tstResourcePrefix, randString(6)),
+		"device-throughput":              500,
+		"device-throughput_unit":         "Mbps",
+		"device-metro_code":              metro.(string),
+		"device-type_code":               "CSR1000V",
+		"device-package_code":            "SEC",
+		"device-notifications":           []string{"marry@equinix.com", "john@equinix.com"},
+		"device-hostname":                fmt.Sprintf("tf-%s", randString(6)),
+		"device-term_length":             1,
+		"device-version":                 "16.09.05",
+		"device-core_count":              2,
+		"device-purchase_order_number":   randString(10),
+		"device-order_reference":         randString(10),
+		"device-secondary_name":          fmt.Sprintf("%s-%s", tstResourcePrefix, randString(6)),
+		"device-secondary_hostname":      fmt.Sprintf("tf-%s", randString(6)),
+		"device-secondary_notifications": []string{"secondary@equinix.com"},
+		"sshkey-resourceName":            "test",
+		"sshkey-name":                    fmt.Sprintf("%s-%s", tstResourcePrefix, randString(6)),
+		"sshkey-public_key":              "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQCXdzXBHaVpKpdO0udnB+4JOgUq7APO2rPXfrevvlZrps98AtlwXXVWZ5duRH5NFNfU4G9HCSiAPsebgjY0fG85tcShpXfHfACLt0tBW8XhfLQP2T6S50FQ1brBdURMDCMsD7duOXqvc0dlbs2/KcswHvuUmqVzob3bz7n1bQ48wIHsPg4ARqYhy5LN3OkllJH/6GEfqi8lKZx01/P/gmJMORcJujuOyXRB+F2iXBVYdhjML3Qg4+tEekBcVZOxUbERRZ0pvQ52Y6wUhn2VsjljixyqeOdmD0m6DayDQgSWms6bKPpBqN7zhXXk4qe8bXT4tQQba65b2CQ2A91jw2KgM/YZNmjyUJ+Rf1cQosJf9twqbAZDZ6rAEmj9zzvQ5vD/CGuzxdVMkePLlUK4VGjPu7cVzhXrnq4318WqZ5/lNiCST8NQ0fssChN8ANUzr/p/wwv3faFMVNmjxXTZMsbMFT/fbb2MVVuqNFN65drntlg6/xEao8gZROuRYiakBx8= user@host",
+	}
+	contextWithACLs := copyMap(context)
+	contextWithACLs["acl-resourceName"] = "acl-pri"
+	contextWithACLs["acl-name"] = fmt.Sprintf("%s-%s", tstResourcePrefix, randString(6))
+	contextWithACLs["acl-description"] = randString(50)
+	contextWithACLs["acl-metroCode"] = metro.(string)
+	contextWithACLs["acl-secondary_resourceName"] = "acl-sec"
+	contextWithACLs["acl-secondary_name"] = fmt.Sprintf("%s-%s", tstResourcePrefix, randString(6))
+	contextWithACLs["acl-secondary_description"] = randString(50)
+	contextWithACLs["acl-secondary_metroCode"] = metro.(string)
+	deviceResourceName := fmt.Sprintf("equinix_network_device.%s", context["device-resourceName"].(string))
+	priACLResourceName := fmt.Sprintf("equinix_network_acl_template.%s", contextWithACLs["acl-resourceName"].(string))
+	secACLResourceName := fmt.Sprintf("equinix_network_acl_template.%s", contextWithACLs["acl-secondary_resourceName"].(string))
+	var primary, secondary ne.Device
+	var primaryACL, secondaryACL ne.ACLTemplate
+	resource.Test(t, resource.TestCase{
+		PreCheck:  func() { testAccPreCheck(t) },
+		Providers: testAccProviders,
+		Steps: []resource.TestStep{
+			{
+				Config: newTestAccConfig(context).withDevice().withSSHKey().build(),
+				Check: resource.ComposeTestCheckFunc(
+					testAccNeDeviceExists(deviceResourceName, &primary),
+					testAccNeDeviceAttributes(&primary, context),
+					testAccNeDeviceStatusAttributes(&primary, ne.DeviceStateProvisioned, ne.DeviceLicenseStateApplied),
+					testAccNeDeviceSecondaryExists(&primary, &secondary),
+					testAccNeDeviceSecondaryAttributes(&secondary, context),
+					testAccNeDeviceStatusAttributes(&secondary, ne.DeviceStateProvisioned, ne.DeviceLicenseStateApplied),
+					testAccNeDeviceRedundancyAttributes(&primary, &secondary),
+					resource.TestCheckResourceAttrSet(deviceResourceName, "uuid"),
+					resource.TestCheckResourceAttrSet(deviceResourceName, "ibx"),
+					resource.TestCheckResourceAttrSet(deviceResourceName, "region"),
+					resource.TestCheckResourceAttrSet(deviceResourceName, "ssh_ip_address"),
+					resource.TestCheckResourceAttrSet(deviceResourceName, "ssh_ip_fqdn"),
+				),
+			},
+			{
+				Config: newTestAccConfig(contextWithACLs).withDevice().
+					withSSHKey().withACL().build(),
+				Check: resource.ComposeTestCheckFunc(
+					testAccNetworkACLTemplateExists(priACLResourceName, &primaryACL),
+					testAccNetworkACLTemplateExists(secACLResourceName, &secondaryACL),
+					testAccNeDeviceExists(deviceResourceName, &primary),
+					testAccNeDeviceSecondaryExists(&primary, &secondary),
+					testAccNeDeviceACLs(&primary, &secondary, &primaryACL, &secondaryACL),
+				),
+			},
+		},
+	})
+}
+
+func TestAccNetworkDevice_vSRX_HA_Managed_Sub(t *testing.T) {
+	t.Parallel()
+	metro, _ := schema.EnvDefaultFunc(networkDeviceMetroEnvVar, "SV")()
+	context := map[string]interface{}{
+		"device-resourceName":            "test",
+		"device-self_managed":            false,
+		"device-byol":                    false,
+		"device-name":                    fmt.Sprintf("%s-%s", tstResourcePrefix, randString(6)),
+		"device-metro_code":              metro.(string),
+		"device-type_code":               "VSRX",
+		"device-package_code":            "STD",
+		"device-notifications":           []string{"marry@equinix.com", "john@equinix.com"},
+		"device-hostname":                fmt.Sprintf("tf-%s", randString(6)),
+		"device-term_length":             1,
+		"device-version":                 "19.2R2.7",
+		"device-core_count":              2,
+		"device-purchase_order_number":   randString(10),
+		"device-order_reference":         randString(10),
+		"device-secondary_name":          fmt.Sprintf("%s-%s", tstResourcePrefix, randString(6)),
+		"device-secondary_hostname":      fmt.Sprintf("tf-%s", randString(6)),
+		"device-secondary_notifications": []string{"secondary@equinix.com"},
+	}
+	contextWithChanges := copyMap(context)
+	contextWithChanges["user-resourceName"] = "test"
+	contextWithChanges["user-username"] = fmt.Sprintf("%s-%s", tstResourcePrefix, randString(6))
+	contextWithChanges["user-password"] = randString(10)
+	deviceResourceName := fmt.Sprintf("equinix_network_device.%s", context["device-resourceName"].(string))
+	userResourceName := fmt.Sprintf("equinix_network_ssh_user.%s", contextWithChanges["user-resourceName"].(string))
+	var primary, secondary ne.Device
+	var user ne.SSHUser
+	resource.Test(t, resource.TestCase{
+		PreCheck:  func() { testAccPreCheck(t) },
+		Providers: testAccProviders,
+		Steps: []resource.TestStep{
+			{
+				Config: newTestAccConfig(context).withDevice().build(),
+				Check: resource.ComposeTestCheckFunc(
+					testAccNeDeviceExists(deviceResourceName, &primary),
+					testAccNeDeviceAttributes(&primary, context),
+					testAccNeDeviceStatusAttributes(&primary, ne.DeviceStateProvisioned, ne.DeviceLicenseStateRegistered),
+					testAccNeDeviceSecondaryExists(&primary, &secondary),
+					testAccNeDeviceSecondaryAttributes(&secondary, context),
+					testAccNeDeviceStatusAttributes(&secondary, ne.DeviceStateProvisioned, ne.DeviceLicenseStateRegistered),
+					testAccNeDeviceRedundancyAttributes(&primary, &secondary),
+					resource.TestCheckResourceAttrSet(deviceResourceName, "uuid"),
+					resource.TestCheckResourceAttrSet(deviceResourceName, "ibx"),
+					resource.TestCheckResourceAttrSet(deviceResourceName, "region"),
+					resource.TestCheckResourceAttrSet(deviceResourceName, "ssh_ip_address"),
+					resource.TestCheckResourceAttrSet(deviceResourceName, "ssh_ip_fqdn"),
+				),
+			},
+			{
+				Config: newTestAccConfig(contextWithChanges).withDevice().withSSHUser().build(),
+				Check: resource.ComposeTestCheckFunc(
+					testAccNeDeviceExists(deviceResourceName, &primary),
+					testAccNeDeviceAttributes(&primary, contextWithChanges),
+					testAccNeDeviceStatusAttributes(&primary, ne.DeviceStateProvisioned, ne.DeviceLicenseStateRegistered),
+					testAccNeDeviceSecondaryExists(&primary, &secondary),
+					testAccNeDeviceSecondaryAttributes(&secondary, contextWithChanges),
+					testAccNeDeviceStatusAttributes(&secondary, ne.DeviceStateProvisioned, ne.DeviceLicenseStateRegistered),
+					testAccNeSSHUserExists(userResourceName, &user),
+					testAccNeSSHUserAttributes(&user, []*ne.Device{&primary, &secondary}, contextWithChanges),
+				),
+			},
+		},
+	})
+}
+
 func TestAccNetworkDevice_vSRX_HA_Managed_BYOL(t *testing.T) {
 	t.Parallel()
 	metro, _ := schema.EnvDefaultFunc(networkDeviceMetroEnvVar, "SV")()
