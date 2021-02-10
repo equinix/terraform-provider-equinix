@@ -4,10 +4,8 @@ import (
 	"context"
 	"crypto/x509"
 	"fmt"
-	"log"
 	"net/http"
 	"net/url"
-	"os"
 	"regexp"
 	"strings"
 	"time"
@@ -15,13 +13,11 @@ import (
 	"github.com/equinix/terraform-provider-metal/version"
 	"github.com/hashicorp/go-retryablehttp"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/logging"
-	"github.com/hashicorp/terraform-plugin-sdk/meta"
+	"github.com/hashicorp/terraform-plugin-sdk/httpclient"
 	"github.com/packethost/packngo"
 )
 
 const (
-	uaEnvVar = "TF_APPEND_USER_AGENT"
-
 	consumerToken = "aZ9GmqHTPtxevvFq9SK3Pi2yr9YCbRzduCSXF2SNem5sjB91mDq7Th3ZwTtRqMWZ"
 )
 
@@ -69,26 +65,12 @@ func (c *Config) Client() *packngo.Client {
 	retryClient.CheckRetry = packngo.RetryPolicy
 	httpClient := retryClient.StandardClient()
 
-	tfUserAgent := terraformUserAgent(c.terraformVersion)
-	userAgent := strings.TrimSpace(fmt.Sprintf("%s terraform-provider-metal/%s",
-		tfUserAgent, version.ProviderVersion))
-
 	client := packngo.NewClientWithAuth(consumerToken, c.AuthToken, httpClient)
-	client.UserAgent = userAgent
+	tfUserAgent := httpclient.TerraformUserAgent(c.terraformVersion)
+	userAgent := fmt.Sprintf("%s terraform-provider-metal/%s %s",
+		tfUserAgent, version.ProviderVersion, client.UserAgent)
+
+	client.UserAgent = strings.TrimSpace(userAgent)
 
 	return client
-}
-
-func terraformUserAgent(version string) string {
-	ua := fmt.Sprintf("HashiCorp Terraform/%s (+https://www.terraform.io) Terraform Plugin SDK/%s", version, meta.SDKVersionString())
-
-	if add := os.Getenv(uaEnvVar); add != "" {
-		add = strings.TrimSpace(add)
-		if len(add) > 0 {
-			ua += " " + add
-			log.Printf("[DEBUG] Using modified User-Agent: %s", ua)
-		}
-	}
-
-	return ua
 }
