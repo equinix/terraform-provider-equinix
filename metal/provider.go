@@ -12,7 +12,7 @@ var metalMutexKV = mutexkv.NewMutexKV()
 
 func Provider() terraform.ResourceProvider {
 
-	return &schema.Provider{
+	provider := &schema.Provider{
 		Schema: map[string]*schema.Schema{
 			"auth_token": {
 				Type:        schema.TypeString,
@@ -61,19 +61,29 @@ func Provider() terraform.ResourceProvider {
 			"metal_bgp_session":          resourceMetalBGPSession(),
 			"metal_port_vlan_attachment": resourceMetalPortVlanAttachment(),
 		},
-
-		ConfigureFunc: providerConfigure,
 	}
+
+	provider.ConfigureFunc = providerConfigure(provider.TerraformVersion)
+
+	return provider
 }
 
-func providerConfigure(d *schema.ResourceData) (interface{}, error) {
-	mrws := d.Get("max_retry_wait_seconds").(int)
-	config := Config{
-		AuthToken:    d.Get("auth_token").(string),
-		MaxRetries:   d.Get("max_retries").(int),
-		MaxRetryWait: time.Duration(mrws) * time.Second,
+func providerConfigure(tfVersion string) func(d *schema.ResourceData) (interface{}, error) {
+	return func(d *schema.ResourceData) (interface{}, error) {
+		mrws := d.Get("max_retry_wait_seconds").(int)
+		config := Config{
+			AuthToken:    d.Get("auth_token").(string),
+			MaxRetries:   d.Get("max_retries").(int),
+			MaxRetryWait: time.Duration(mrws) * time.Second,
+		}
+		config.terraformVersion = tfVersion
+		if config.terraformVersion == "" {
+			// Terraform 0.12 introduced this field to the protocol
+			// We can therefore assume that if it's missing it's 0.10 or 0.11
+			config.terraformVersion = "0.11+compatible"
+		}
+		return config.Client(), nil
 	}
-	return config.Client(), nil
 }
 
 var resourceDefaultTimeouts = &schema.ResourceTimeout{
