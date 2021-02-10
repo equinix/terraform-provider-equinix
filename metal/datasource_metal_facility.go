@@ -29,19 +29,6 @@ func dataSourceMetalFacility() *schema.Resource {
 				Optional:    true,
 				Computed:    true,
 			},
-			"address": {
-				Type:        schema.TypeMap,
-				Description: "The address of this Facility.",
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"id": {
-							Type:     schema.TypeString,
-							Computed: true,
-						},
-					}},
-				Optional: true,
-				Computed: true,
-			},
 		},
 	}
 }
@@ -64,10 +51,8 @@ func dataSourceMetalFacilityRead(d *schema.ResourceData, meta interface{}) error
 			d.SetId(f.ID)
 			return setMap(d, map[string]interface{}{
 				"code":     f.Code,
+				"name":     f.Name,
 				"features": f.Features,
-				"address": map[string]interface{}{
-					"id": f.Address.ID,
-				},
 			})
 		}
 	}

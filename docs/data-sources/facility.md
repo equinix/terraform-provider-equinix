@@ -38,5 +38,3 @@ The following attributes are exported:
 * `id` - The ID of the facility
 * `name` - The name of the facilityg system running on the device
 * `features` - The features of the facility
-* `address` - The facility address
-  * `id` - ID of the address
