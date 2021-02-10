@@ -29,7 +29,13 @@ func TestProvider_impl(t *testing.T) {
 }
 
 func testAccPreCheck(t *testing.T) {
-	if v := os.Getenv("PACKET_AUTH_TOKEN"); v == "" {
-		t.Fatal("PACKET_AUTH_TOKEN must be set for acceptance tests")
+	v := os.Getenv("METAL_AUTH_TOKEN")
+
+	if v == "" {
+		v = os.Getenv("PACKET_AUTH_TOKEN")
+	}
+
+	if v == "" {
+		t.Fatal("METAL_AUTH_TOKEN must be set for acceptance tests")
 	}
 }

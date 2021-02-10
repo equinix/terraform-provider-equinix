@@ -15,9 +15,12 @@ func Provider() terraform.ResourceProvider {
 	return &schema.Provider{
 		Schema: map[string]*schema.Schema{
 			"auth_token": {
-				Type:        schema.TypeString,
-				Required:    true,
-				DefaultFunc: schema.EnvDefaultFunc("PACKET_AUTH_TOKEN", nil),
+				Type:     schema.TypeString,
+				Required: true,
+				DefaultFunc: schema.MultiEnvDefaultFunc([]string{
+					"METAL_AUTH_TOKEN",
+					"PACKET_AUTH_TOKEN",
+				}, nil),
 				Description: "The API auth key for API operations.",
 			},
 			"max_retries": {
