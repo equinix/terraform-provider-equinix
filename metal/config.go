@@ -57,7 +57,7 @@ func (c *Config) Client() *packngo.Client {
 	retryClient.RetryMax = c.MaxRetries
 	retryClient.RetryWaitMin = time.Second
 	retryClient.RetryWaitMax = c.MaxRetryWait
-	retryClient.CheckRetry = packngo.RetryPolicy
+	retryClient.CheckRetry = MetalRetryPolicy
 	httpClient := retryClient.StandardClient()
 	return packngo.NewClientWithAuth(consumerToken, c.AuthToken, httpClient)
 }
