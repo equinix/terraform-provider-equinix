@@ -18,6 +18,7 @@ type Config struct {
 	ClientID       string
 	ClientSecret   string
 	RequestTimeout time.Duration
+	PageSize       int
 
 	ecx ecx.Client
 	ne  ne.Client
@@ -42,8 +43,14 @@ func (c *Config) Load(ctx context.Context) error {
 	authClient := authConfig.New(ctx)
 	authClient.Timeout = c.requestTimeout()
 	authClient.Transport = logging.NewTransport("Equinix", authClient.Transport)
-	c.ecx = ecx.NewClient(ctx, c.BaseURL, authClient)
-	c.ne = ne.NewClient(ctx, c.BaseURL, authClient)
+	ecxClient := ecx.NewClient(ctx, c.BaseURL, authClient)
+	neClient := ne.NewClient(ctx, c.BaseURL, authClient)
+	if c.PageSize > 0 {
+		ecxClient.SetPageSize(c.PageSize)
+		neClient.SetPageSize(c.PageSize)
+	}
+	c.ecx = ecxClient
+	c.ne = neClient
 	return nil
 }
 

@@ -62,6 +62,12 @@ func Provider() *schema.Provider {
 				ValidateFunc: validation.IntAtLeast(1),
 				Description:  "The duration of time, in seconds, that the Equinix Platform API Client should wait before canceling an API request",
 			},
+			"response_max_page_size": {
+				Type:         schema.TypeInt,
+				Optional:     true,
+				ValidateFunc: validation.IntAtLeast(100),
+				Description:  "The maximum number of records in a single response for REST queries that produce paginated responses",
+			},
 		},
 		DataSourcesMap: map[string]*schema.Resource{
 			"equinix_ecx_port":                dataSourceECXPort(),
@@ -102,6 +108,9 @@ func configureProvider(ctx context.Context, d *schema.ResourceData, p *schema.Pr
 	}
 	if v, ok := d.GetOk("request_timeout"); ok {
 		config.RequestTimeout = time.Duration(v.(int)) * time.Second
+	}
+	if v, ok := d.GetOk("response_max_page_size"); ok {
+		config.PageSize = v.(int)
 	}
 	stopCtx, ok := schema.StopContext(ctx)
 	if !ok {

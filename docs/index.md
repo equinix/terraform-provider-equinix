@@ -56,6 +56,9 @@ The Equinix provider requires a few basic parameters:
   Equinix Platform API Client should wait before canceling an API request.
   Canceled requests may still result in provisioned resources. (Defaults to `30`)
 
+- `response_max_page_size` (Optional) The maximum number of records in a single response
+  for REST queries that produce paginated responses. (Default is client specific)
+
 These parameters can be provided in [Terraform variable
 files](https://www.terraform.io/docs/configuration/variables.html#variable-definitions-tfvars-files)
 or as environment variables. Nevertheless, please note that it is [not
