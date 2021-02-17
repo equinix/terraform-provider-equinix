@@ -714,6 +714,9 @@ func resourceNetworkDeviceDelete(ctx context.Context, d *schema.ResourceData, m 
 			})
 		}
 	}
+	waitConfigs := []*resource.StateChangeConf{
+		createNetworkDeviceStatusDeleteWaitConfiguration(conf.ne.GetDevice, d.Id(), 5*time.Second, d.Timeout(schema.TimeoutDelete)),
+	}
 	if v, ok := d.GetOk(networkDeviceSchemaNames["Secondary"]); ok {
 		if secondary := expandNetworkDeviceSecondary(v.([]interface{})); secondary != nil {
 			if ne.StringValue(secondary.ACLTemplateUUID) != "" {
@@ -726,6 +729,9 @@ func resourceNetworkDeviceDelete(ctx context.Context, d *schema.ResourceData, m 
 					})
 				}
 			}
+			waitConfigs = append(waitConfigs,
+				createNetworkDeviceStatusDeleteWaitConfiguration(conf.ne.GetDevice, ne.StringValue(secondary.UUID), 5*time.Second, d.Timeout(schema.TimeoutDelete)),
+			)
 		}
 	}
 	if err := conf.ne.DeleteDevice(d.Id()); err != nil {
@@ -738,8 +744,10 @@ func resourceNetworkDeviceDelete(ctx context.Context, d *schema.ResourceData, m 
 		}
 		return diag.FromErr(err)
 	}
-	if _, err := createNetworkDeviceStatusDeleteWaitConfiguration(conf.ne.GetDevice, d.Id(), 5*time.Second, d.Timeout(schema.TimeoutDelete)).WaitForState(); err != nil {
-		return diag.Errorf("error waiting for device (%s) to be removed: %s", d.Id(), err)
+	for _, config := range waitConfigs {
+		if _, err := config.WaitForState(); err != nil {
+			return diag.Errorf("error waiting for network device (%s) to be removed: %s", d.Id(), err)
+		}
 	}
 	return diags
 }
