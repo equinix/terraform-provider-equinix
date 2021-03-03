@@ -1,5 +1,11 @@
 ## 1.1.0 (Unreleased)
 
+BUG FIXES:
+
+- creation of Equinix Fabric layer2 redundant connection from a single device
+is now possible by specifying same `deviceUUID` argument for both primary and
+secondary connection. API logic of Fabric is reflected accordingly in client module
+
 FEATURES:
 
 - **New Resource**: `equinix_network_ssh_key` ([#25](https://github.com/equinix/terraform-provider-equinix/issues/25))
