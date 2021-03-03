@@ -4,7 +4,8 @@ provider "equinix" {
 }
 
 data "equinix_ecx_l2_sellerprofile" "alibaba" {
-  name = "Alibaba Cloud Express Connect"
+  name                     = "Alibaba Cloud Express Connect"
+  organization_global_name = "Alibaba"
 }
 
 data "equinix_ecx_port" "dot1q-pri" {

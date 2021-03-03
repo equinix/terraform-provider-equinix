@@ -13,7 +13,8 @@ data "equinix_ecx_port" "dot1q-pri" {
 }
 
 data "equinix_ecx_l2_sellerprofile" "gcpi-1" {
-  name = "Google Cloud Partner Interconnect Zone 1"
+  name                     = "Google Cloud Partner Interconnect Zone 1"
+  organization_global_name = "GOOGLE"
 }
 
 resource "google_compute_network" "test" {

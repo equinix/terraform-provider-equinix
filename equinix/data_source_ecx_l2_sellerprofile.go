@@ -4,8 +4,10 @@ import (
 	"bytes"
 	"context"
 	"fmt"
+	"strings"
 
 	"github.com/equinix/ecx-go/v2"
+	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
@@ -238,19 +240,29 @@ func dataSourceECXL2SellerProfileRead(ctx context.Context, d *schema.ResourceDat
 		if name != "" && ecx.StringValue(profile.Name) != name {
 			continue
 		}
-		if orgName != "" && ecx.StringValue(profile.OrganizationName) != orgName {
+		if orgName != "" && !strings.EqualFold(ecx.StringValue(profile.OrganizationName), orgName) {
 			continue
 		}
-		if orgGlobalName != "" && ecx.StringValue(profile.GlobalOrganization) != orgGlobalName {
+		if orgGlobalName != "" && !strings.EqualFold(ecx.StringValue(profile.GlobalOrganization), orgGlobalName) {
 			continue
 		}
 		filteredProfiles = append(filteredProfiles, profile)
 	}
 	if len(filteredProfiles) < 1 {
-		return diag.Errorf("profile query returned no results, please change your search criteria")
+		diags = append(diags, diag.Diagnostic{
+			Severity:      diag.Error,
+			Summary:       "profile query returned no results, please change your search criteria",
+			AttributePath: cty.Path{cty.GetAttrStep{}},
+		})
+		return diags
 	}
 	if len(filteredProfiles) > 1 {
-		return diag.Errorf("query returned more than one result, please try more specific search criteria")
+		diags = append(diags, diag.Diagnostic{
+			Severity:      diag.Error,
+			Summary:       "query returned more than one result, please try more specific search criteria",
+			AttributePath: cty.Path{cty.GetAttrStep{}},
+		})
+		return diags
 	}
 	if err := updateECXL2SellerProfileResource(filteredProfiles[0], d); err != nil {
 		return diag.FromErr(err)

@@ -8,7 +8,8 @@ provider "azurerm" {
 }
 
 data "equinix_ecx_l2_sellerprofile" "azure" {
-  name = "Azure Express Route"
+  name                     = "Azure ExpressRoute"
+  organization_global_name = "Microsoft"
 }
 
 data "equinix_ecx_port" "dot1q-1-pri" {

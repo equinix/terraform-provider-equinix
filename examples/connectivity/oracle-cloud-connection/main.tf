@@ -46,8 +46,9 @@ resource "oci_core_virtual_circuit" "oci_virtual_circuit" {
   region              = var.oci_region
 }
 
-data "equinix_ecx_l2_sellerprofile" "oci" {
-  name = "Oracle Cloud Infrastructure -OCI- FastConnect"
+data "equinix_ecx_l2_sellerprofile" "oracle" {
+  name                     = "Oracle Cloud Infrastructure -OCI- FastConnect"
+  organization_global_name = "ORACLE"
 }
 
 data "equinix_ecx_port" "dot1q-1-pri" {

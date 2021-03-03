@@ -10,7 +10,8 @@ provider "aws" {
 }
 
 data "equinix_ecx_l2_sellerprofile" "aws" {
-  name = "AWS Direct Connect"
+  name                     = "AWS Direct Connect"
+  organization_global_name = "AWS"
 }
 
 data "equinix_ecx_port" "dot1q-pri" {

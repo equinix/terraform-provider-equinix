@@ -8,7 +8,8 @@ data "equinix_ecx_port" "dot1q-pri" {
 }
 
 data "equinix_ecx_l2_sellerprofile" "ibm" {
-  name = "IBM Cloud Direct Link Exchange"
+  name                     = "IBM Cloud Direct Link Exchange"
+  organization_global_name = "IBM"
 }
 
 resource "equinix_ecx_l2_connection" "ibm-dot1q" {
