@@ -3,13 +3,17 @@ package metal
 import (
 	"context"
 	"crypto/x509"
+	"fmt"
 	"net/http"
 	"net/url"
 	"regexp"
+	"strings"
 	"time"
 
+	"github.com/equinix/terraform-provider-metal/version"
 	"github.com/hashicorp/go-retryablehttp"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/logging"
+	"github.com/hashicorp/terraform-plugin-sdk/httpclient"
 	"github.com/packethost/packngo"
 )
 
@@ -18,9 +22,10 @@ const (
 )
 
 type Config struct {
-	AuthToken    string
-	MaxRetries   int
-	MaxRetryWait time.Duration
+	terraformVersion string
+	AuthToken        string
+	MaxRetries       int
+	MaxRetryWait     time.Duration
 }
 
 var redirectsErrorRe = regexp.MustCompile(`stopped after \d+ redirects\z`)
@@ -59,5 +64,13 @@ func (c *Config) Client() *packngo.Client {
 	retryClient.RetryWaitMax = c.MaxRetryWait
 	retryClient.CheckRetry = packngo.RetryPolicy
 	httpClient := retryClient.StandardClient()
-	return packngo.NewClientWithAuth(consumerToken, c.AuthToken, httpClient)
+
+	client := packngo.NewClientWithAuth(consumerToken, c.AuthToken, httpClient)
+	tfUserAgent := httpclient.TerraformUserAgent(c.terraformVersion)
+	userAgent := fmt.Sprintf("%s terraform-provider-metal/%s %s",
+		tfUserAgent, version.ProviderVersion, client.UserAgent)
+
+	client.UserAgent = strings.TrimSpace(userAgent)
+
+	return client
 }
