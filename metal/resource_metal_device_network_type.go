@@ -27,7 +27,7 @@ func resourceMetalDeviceNetworkType() *schema.Resource {
 			"type": {
 				Type:         schema.TypeString,
 				Required:     true,
-				ValidateFunc: validation.StringInSlice([]string{"layer3", "layer2-bonded", "layer2-individual", "hybrid"}, false),
+				ValidateFunc: validation.StringInSlice([]string{"layer3", "layer2-bonded", "layer2-individual", "hybrid", "hybrid-bonded"}, false),
 			},
 		},
 	}
@@ -49,6 +49,11 @@ func getDevIDandNetworkType(d *schema.ResourceData, c *packngo.Client) (string, 
 }
 
 func getAndPossiblySetNetworkType(d *schema.ResourceData, c *packngo.Client, targetType string) error {
+	// "hybrid-bonded" is an alias for "layer3" with VLAN(s) connected. We use
+	// other resource for VLAN attachment, so we treat these two as equivalent
+	if targetType == "hybrid-bonded" {
+		targetType = "layer3"
+	}
 	devID, devType, err := getDevIDandNetworkType(d, c)
 	if err != nil {
 		return err
@@ -92,7 +97,15 @@ func resourceMetalDeviceNetworkTypeRead(d *schema.ResourceData, meta interface{}
 		return err
 	}
 
+	// if "hybrid-bonded" is set as desired state and current state is "layer3",
+	// keep the value in "hybrid-bonded"
+	currentType := d.Get("type").(string)
+	if currentType == "hybrid-bonded" && devNType == "layer3" {
+		devNType = "hybrid-bonded"
+	}
+
 	d.Set("type", devNType)
+
 	return nil
 }
 
