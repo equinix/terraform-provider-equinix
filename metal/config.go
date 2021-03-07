@@ -63,9 +63,9 @@ func (c *Config) Client() *packngo.Client {
 	retryClient.RetryWaitMin = time.Second
 	retryClient.RetryWaitMax = c.MaxRetryWait
 	retryClient.CheckRetry = MetalRetryPolicy
-	httpClient := retryClient.StandardClient()
+	standardClient := retryClient.StandardClient()
 
-	client := packngo.NewClientWithAuth(consumerToken, c.AuthToken, httpClient)
+	client := packngo.NewClientWithAuth(consumerToken, c.AuthToken, standardClient)
 	tfUserAgent := httpclient.TerraformUserAgent(c.terraformVersion)
 	userAgent := fmt.Sprintf("%s terraform-provider-metal/%s %s",
 		tfUserAgent, version.ProviderVersion, client.UserAgent)
