@@ -687,9 +687,6 @@ func updateECXL2ConnectionResource(primary *ecx.L2Connection, secondary *ecx.L2C
 	if err := d.Set(ecxL2ConnectionSchemaNames["DeviceUUID"], primary.DeviceUUID); err != nil {
 		return fmt.Errorf("error reading DeviceUUID: %s", err)
 	}
-	if err := d.Set(ecxL2ConnectionSchemaNames["DeviceInterfaceID"], primary.DeviceInterfaceID); err != nil {
-		return fmt.Errorf("error reading DeviceInterfaceID: %s", err)
-	}
 	if err := d.Set(ecxL2ConnectionSchemaNames["VlanSTag"], primary.VlanSTag); err != nil {
 		return fmt.Errorf("error reading VlanSTag: %s", err)
 	}
@@ -727,14 +724,18 @@ func updateECXL2ConnectionResource(primary *ecx.L2Connection, secondary *ecx.L2C
 		return fmt.Errorf("error reading RedundancyType: %s", err)
 	}
 	if secondary != nil {
-		if err := d.Set(ecxL2ConnectionSchemaNames["SecondaryConnection"], flattenECXL2ConnectionSecondary(secondary)); err != nil {
+		var prevSecondary *ecx.L2Connection
+		if v, ok := d.GetOk(ecxL2ConnectionSchemaNames["SecondaryConnection"]); ok {
+			prevSecondary = expandECXL2ConnectionSecondary(v.([]interface{}))
+		}
+		if err := d.Set(ecxL2ConnectionSchemaNames["SecondaryConnection"], flattenECXL2ConnectionSecondary(prevSecondary, secondary)); err != nil {
 			return fmt.Errorf("error reading SecondaryConnection: %s", err)
 		}
 	}
 	return nil
 }
 
-func flattenECXL2ConnectionSecondary(conn *ecx.L2Connection) interface{} {
+func flattenECXL2ConnectionSecondary(previous, conn *ecx.L2Connection) interface{} {
 	transformed := make(map[string]interface{})
 	transformed[ecxL2ConnectionSchemaNames["UUID"]] = conn.UUID
 	transformed[ecxL2ConnectionSchemaNames["Name"]] = conn.Name
@@ -746,6 +747,9 @@ func flattenECXL2ConnectionSecondary(conn *ecx.L2Connection) interface{} {
 	transformed[ecxL2ConnectionSchemaNames["PortUUID"]] = conn.PortUUID
 	transformed[ecxL2ConnectionSchemaNames["DeviceUUID"]] = conn.DeviceUUID
 	transformed[ecxL2ConnectionSchemaNames["DeviceInterfaceID"]] = conn.DeviceInterfaceID
+	if previous != nil && ecx.IntValue(previous.DeviceInterfaceID) != 0 {
+		transformed[ecxL2ConnectionSchemaNames["DeviceInterfaceID"]] = previous.DeviceInterfaceID
+	}
 	transformed[ecxL2ConnectionSchemaNames["VlanSTag"]] = conn.VlanSTag
 	transformed[ecxL2ConnectionSchemaNames["VlanCTag"]] = conn.VlanCTag
 	transformed[ecxL2ConnectionSchemaNames["ZSidePortUUID"]] = conn.ZSidePortUUID

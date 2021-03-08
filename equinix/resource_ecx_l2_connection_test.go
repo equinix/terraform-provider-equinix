@@ -76,7 +76,6 @@ func TestFabricL2Connection_updateResourceData(t *testing.T) {
 		PurchaseOrderNumber: ecx.String(randString(10)),
 		PortUUID:            ecx.String(randString(36)),
 		DeviceUUID:          ecx.String(randString(36)),
-		DeviceInterfaceID:   ecx.Int(randInt(10)),
 		VlanSTag:            ecx.Int(randInt(2000)),
 		VlanCTag:            ecx.Int(randInt(2000)),
 		NamedTag:            ecx.String(randString(100)),
@@ -124,26 +123,28 @@ func TestFabricL2Connection_updateResourceData(t *testing.T) {
 func TestFabricL2Connection_flattenSecondary(t *testing.T) {
 	//given
 	input := &ecx.L2Connection{
-		UUID:              ecx.String(randString(36)),
-		Name:              ecx.String(randString(36)),
-		ProfileUUID:       ecx.String(randString(36)),
-		Speed:             ecx.Int(50),
-		SpeedUnit:         ecx.String("MB"),
-		Status:            ecx.String(ecx.ConnectionStatusProvisioned),
-		ProviderStatus:    ecx.String(ecx.ConnectionStatusProvisioned),
-		PortUUID:          ecx.String(randString(36)),
-		DeviceUUID:        ecx.String(randString(36)),
+		UUID:             ecx.String(randString(36)),
+		Name:             ecx.String(randString(36)),
+		ProfileUUID:      ecx.String(randString(36)),
+		Speed:            ecx.Int(50),
+		SpeedUnit:        ecx.String("MB"),
+		Status:           ecx.String(ecx.ConnectionStatusProvisioned),
+		ProviderStatus:   ecx.String(ecx.ConnectionStatusProvisioned),
+		PortUUID:         ecx.String(randString(36)),
+		DeviceUUID:       ecx.String(randString(36)),
+		VlanSTag:         ecx.Int(randInt(2000)),
+		VlanCTag:         ecx.Int(randInt(2000)),
+		ZSidePortUUID:    ecx.String(randString(36)),
+		ZSideVlanCTag:    ecx.Int(randInt(2000)),
+		ZSideVlanSTag:    ecx.Int(randInt(2000)),
+		SellerRegion:     ecx.String(randString(10)),
+		SellerMetroCode:  ecx.String(randString(2)),
+		AuthorizationKey: ecx.String(randString(10)),
+		RedundantUUID:    ecx.String(randString(36)),
+		RedundancyType:   ecx.String(randString(10)),
+	}
+	previousInput := &ecx.L2Connection{
 		DeviceInterfaceID: ecx.Int(randInt(10)),
-		VlanSTag:          ecx.Int(randInt(2000)),
-		VlanCTag:          ecx.Int(randInt(2000)),
-		ZSidePortUUID:     ecx.String(randString(36)),
-		ZSideVlanCTag:     ecx.Int(randInt(2000)),
-		ZSideVlanSTag:     ecx.Int(randInt(2000)),
-		SellerRegion:      ecx.String(randString(10)),
-		SellerMetroCode:   ecx.String(randString(2)),
-		AuthorizationKey:  ecx.String(randString(10)),
-		RedundantUUID:     ecx.String(randString(36)),
-		RedundancyType:    ecx.String(randString(10)),
 	}
 	expected := []interface{}{
 		map[string]interface{}{
@@ -156,7 +157,7 @@ func TestFabricL2Connection_flattenSecondary(t *testing.T) {
 			ecxL2ConnectionSchemaNames["ProviderStatus"]:    input.ProviderStatus,
 			ecxL2ConnectionSchemaNames["PortUUID"]:          input.PortUUID,
 			ecxL2ConnectionSchemaNames["DeviceUUID"]:        input.DeviceUUID,
-			ecxL2ConnectionSchemaNames["DeviceInterfaceID"]: input.DeviceInterfaceID,
+			ecxL2ConnectionSchemaNames["DeviceInterfaceID"]: previousInput.DeviceInterfaceID,
 			ecxL2ConnectionSchemaNames["VlanSTag"]:          input.VlanSTag,
 			ecxL2ConnectionSchemaNames["VlanCTag"]:          input.VlanCTag,
 			ecxL2ConnectionSchemaNames["ZSidePortUUID"]:     input.ZSidePortUUID,
@@ -171,7 +172,7 @@ func TestFabricL2Connection_flattenSecondary(t *testing.T) {
 	}
 
 	//when
-	out := flattenECXL2ConnectionSecondary(input)
+	out := flattenECXL2ConnectionSecondary(previousInput, input)
 
 	//then
 	assert.NotNil(t, out, "Output is not nil")
