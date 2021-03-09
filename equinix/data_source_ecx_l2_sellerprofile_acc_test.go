@@ -12,7 +12,7 @@ const tstL2SellerProfileEnvVar = "TF_ACC_ECX_SELLER_PROFILE_NAME"
 
 func TestAccECXL2SellerProfile(t *testing.T) {
 	t.Parallel()
-	profileName, _ := schema.EnvDefaultFunc(tstL2SellerProfileEnvVar, "AWS Service Profile")()
+	profileName, _ := schema.EnvDefaultFunc(tstL2SellerProfileEnvVar, "AWS Direct Connect")()
 	context := map[string]interface{}{
 		"resourceName": "tf-aws",
 		"name":         profileName,

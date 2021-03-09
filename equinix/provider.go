@@ -72,6 +72,7 @@ func Provider() *schema.Provider {
 		DataSourcesMap: map[string]*schema.Resource{
 			"equinix_ecx_port":                dataSourceECXPort(),
 			"equinix_ecx_l2_sellerprofile":    dataSourceECXL2SellerProfile(),
+			"equinix_ecx_l2_sellerprofiles":   dataSourceECXL2SellerProfiles(),
 			"equinix_network_account":         dataSourceNetworkAccount(),
 			"equinix_network_device_type":     dataSourceNetworkDeviceType(),
 			"equinix_network_device_software": dataSourceNetworkDeviceSoftware(),
@@ -166,6 +167,10 @@ func stringIsPortDefinition() schema.SchemaValidateFunc {
 		"port definition has to be: up to 10 comma sepparated numbers (22,23), range (20-23) or word 'any'")
 }
 
+func stringIsSpeedBand() schema.SchemaValidateFunc {
+	return validation.StringMatch(regexp.MustCompile("^[0-9]+(MB|GB)$"), "SpeedBand should consist of digit followed by MB or GB")
+}
+
 func stringsFound(source []string, target []string) bool {
 	for i := range source {
 		if !isStringInSlice(source[i], target) {
@@ -173,6 +178,15 @@ func stringsFound(source []string, target []string) bool {
 		}
 	}
 	return true
+}
+
+func atLeastOneStringFound(source []string, target []string) bool {
+	for i := range source {
+		if isStringInSlice(source[i], target) {
+			return true
+		}
+	}
+	return false
 }
 
 func isStringInSlice(needle string, hay []string) bool {
@@ -235,23 +249,26 @@ func isEmpty(v interface{}) bool {
 	}
 }
 
-func isEmptyOld(v interface{}) bool {
-	if v == nil {
-		return true
+func slicesMatch(s1, s2 []string) bool {
+	if len(s1) != len(s2) {
+		return false
 	}
-	val := reflect.ValueOf(v)
-	if val.IsZero() {
-		return true
+	visited := make([]bool, len(s1))
+	for i := 0; i < len(s1); i++ {
+		found := false
+		for j := 0; j < len(s2); j++ {
+			if visited[j] {
+				continue
+			}
+			if s1[i] == s2[j] {
+				visited[j] = true
+				found = true
+				break
+			}
+		}
+		if !found {
+			return false
+		}
 	}
-	if val.Kind() == reflect.Ptr {
-		val = val.Elem()
-	}
-	return val.IsZero()
-}
-
-func setSchemaValueIfNotEmpty(key string, value interface{}, d *schema.ResourceData) error {
-	if !isEmpty(value) {
-		return d.Set(key, value)
-	}
-	return nil
+	return true
 }

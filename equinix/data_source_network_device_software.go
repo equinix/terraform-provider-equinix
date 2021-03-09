@@ -28,7 +28,8 @@ var networkDeviceSoftwareSchemaNames = map[string]string{
 
 var networkDeviceSoftwareDescriptions = map[string]string{
 	"DeviceTypeCode":   "Code of a device type",
-	"Version":          "A regex string to apply on returned versions and filter search results",
+	"Version":          "Software version",
+	"VersionRegex":     "A regex string to apply on returned versions and filter search results",
 	"ImageName":        "Software image name",
 	"Date":             "Version release date",
 	"Status":           "Version status",

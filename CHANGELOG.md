@@ -8,6 +8,7 @@ secondary connection. API logic of Fabric is reflected accordingly in client mod
 
 FEATURES:
 
+- **New Data source**: `equinix_ecx_l2_sellerprofiles`: ([#40](https://github.com/equinix/terraform-provider-equinix/issues/40))
 - **New Resource**: `equinix_network_ssh_key` ([#25](https://github.com/equinix/terraform-provider-equinix/issues/25))
 - **New Resource**: `equinix_network_acl_template` ([#19](https://github.com/equinix/terraform-provider-equinix/issues/19))
 - **New Resource**: `equinix_network_bgp` ([#16](https://github.com/equinix/terraform-provider-equinix/issues/16))
@@ -28,7 +29,7 @@ connection changes and allows using `Optional` + `Computed` schema options
 ([#39](https://github.com/equinix/terraform-provider-equinix/issues/39))
 - resource/equinix_ecx_l2_connection: added additional arguments for `secondary_connection`
 ([#18](https://github.com/equinix/terraform-provider-equinix/issues/18)):
-  - `speed` 
+  - `speed`
   - `speed_unit`
   - `profile_uuid`
   - `authorization_key`

@@ -78,146 +78,150 @@ func dataSourceECXL2SellerProfile() *schema.Resource {
 	return &schema.Resource{
 		ReadContext: dataSourceECXL2SellerProfileRead,
 		Description: "Use this data source to get details of Equinix Fabric layer 2	seller profile with a given name and / or organization",
-		Schema: map[string]*schema.Schema{
-			ecxL2SellerProfileSchemaNames["UUID"]: {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: ecxL2SellerProfileDescriptions["UUID"],
-			},
-			ecxL2SellerProfileSchemaNames["Name"]: {
-				Type:         schema.TypeString,
-				Optional:     true,
-				Computed:     true,
-				ValidateFunc: validation.StringIsNotEmpty,
-				Description:  ecxL2SellerProfileDescriptions["Name"],
-			},
-			ecxL2SellerProfileSchemaNames["Description"]: {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: ecxL2SellerProfileDescriptions["Description"],
-			},
-			ecxL2SellerProfileSchemaNames["SpeedFromAPI"]: {
-				Type:        schema.TypeBool,
-				Computed:    true,
-				Description: ecxL2SellerProfileDescriptions["SpeedFromAPI"],
-			},
-			ecxL2SellerProfileSchemaNames["AllowCustomSpeed"]: {
-				Type:        schema.TypeBool,
-				Computed:    true,
-				Description: ecxL2SellerProfileDescriptions["AllowCustomSpeed"],
-			},
-			ecxL2SellerProfileSchemaNames["RequiredRedundancy"]: {
-				Type:        schema.TypeBool,
-				Computed:    true,
-				Description: ecxL2SellerProfileDescriptions["RequiredRedundancy"],
-			},
-			ecxL2SellerProfileSchemaNames["Encapsulation"]: {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: ecxL2SellerProfileDescriptions["Encapsulation"],
-			},
-			ecxL2SellerProfileSchemaNames["GlobalOrganization"]: {
-				Type:         schema.TypeString,
-				Optional:     true,
-				Computed:     true,
-				ValidateFunc: validation.StringIsNotEmpty,
-				Description:  ecxL2SellerProfileDescriptions["GlobalOrganization"],
-			},
-			ecxL2SellerProfileSchemaNames["OrganizationName"]: {
-				Type:         schema.TypeString,
-				Optional:     true,
-				Computed:     true,
-				ValidateFunc: validation.StringIsNotEmpty,
-				Description:  ecxL2SellerProfileDescriptions["OrganizationName"],
-			},
-			ecxL2SellerProfileSchemaNames["SpeedBand"]: {
-				Type:        schema.TypeSet,
-				Computed:    true,
-				Set:         ecxL2ServiceProfileSpeedBandHash,
-				Description: ecxL2SellerProfileDescriptions["SpeedBand"],
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						ecxL2ServiceProfileSpeedBandSchemaNames["Speed"]: {
-							Type:        schema.TypeInt,
-							Computed:    true,
-							Description: ecxL2ServiceProfileSpeedBandDescriptions["Speed"],
-						},
-						ecxL2ServiceProfileSpeedBandSchemaNames["SpeedUnit"]: {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: ecxL2ServiceProfileSpeedBandDescriptions["SpeedUnit"],
-						},
+		Schema: createECXL2SellerProfileSchema(),
+	}
+}
+
+func createECXL2SellerProfileSchema() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		ecxL2SellerProfileSchemaNames["UUID"]: {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: ecxL2SellerProfileDescriptions["UUID"],
+		},
+		ecxL2SellerProfileSchemaNames["Name"]: {
+			Type:         schema.TypeString,
+			Optional:     true,
+			Computed:     true,
+			ValidateFunc: validation.StringIsNotEmpty,
+			Description:  ecxL2SellerProfileDescriptions["Name"],
+		},
+		ecxL2SellerProfileSchemaNames["Description"]: {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: ecxL2SellerProfileDescriptions["Description"],
+		},
+		ecxL2SellerProfileSchemaNames["SpeedFromAPI"]: {
+			Type:        schema.TypeBool,
+			Computed:    true,
+			Description: ecxL2SellerProfileDescriptions["SpeedFromAPI"],
+		},
+		ecxL2SellerProfileSchemaNames["AllowCustomSpeed"]: {
+			Type:        schema.TypeBool,
+			Computed:    true,
+			Description: ecxL2SellerProfileDescriptions["AllowCustomSpeed"],
+		},
+		ecxL2SellerProfileSchemaNames["RequiredRedundancy"]: {
+			Type:        schema.TypeBool,
+			Computed:    true,
+			Description: ecxL2SellerProfileDescriptions["RequiredRedundancy"],
+		},
+		ecxL2SellerProfileSchemaNames["Encapsulation"]: {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: ecxL2SellerProfileDescriptions["Encapsulation"],
+		},
+		ecxL2SellerProfileSchemaNames["GlobalOrganization"]: {
+			Type:         schema.TypeString,
+			Optional:     true,
+			Computed:     true,
+			ValidateFunc: validation.StringIsNotEmpty,
+			Description:  ecxL2SellerProfileDescriptions["GlobalOrganization"],
+		},
+		ecxL2SellerProfileSchemaNames["OrganizationName"]: {
+			Type:         schema.TypeString,
+			Optional:     true,
+			Computed:     true,
+			ValidateFunc: validation.StringIsNotEmpty,
+			Description:  ecxL2SellerProfileDescriptions["OrganizationName"],
+		},
+		ecxL2SellerProfileSchemaNames["SpeedBand"]: {
+			Type:        schema.TypeSet,
+			Computed:    true,
+			Set:         ecxL2ServiceProfileSpeedBandHash,
+			Description: ecxL2SellerProfileDescriptions["SpeedBand"],
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					ecxL2ServiceProfileSpeedBandSchemaNames["Speed"]: {
+						Type:        schema.TypeInt,
+						Computed:    true,
+						Description: ecxL2ServiceProfileSpeedBandDescriptions["Speed"],
+					},
+					ecxL2ServiceProfileSpeedBandSchemaNames["SpeedUnit"]: {
+						Type:        schema.TypeString,
+						Computed:    true,
+						Description: ecxL2ServiceProfileSpeedBandDescriptions["SpeedUnit"],
 					},
 				},
 			},
-			ecxL2SellerProfileSchemaNames["Metros"]: {
-				Type:        schema.TypeSet,
-				Computed:    true,
-				Set:         ecxL2SellerProfileMetroHash,
-				Description: ecxL2SellerProfileDescriptions["Metros"],
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						ecxL2SellerProfileMetrosSchemaNames["Code"]: {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: ecxL2SellerProfileMetrosDescriptions["Code"],
+		},
+		ecxL2SellerProfileSchemaNames["Metros"]: {
+			Type:        schema.TypeSet,
+			Computed:    true,
+			Set:         ecxL2SellerProfileMetroHash,
+			Description: ecxL2SellerProfileDescriptions["Metros"],
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					ecxL2SellerProfileMetrosSchemaNames["Code"]: {
+						Type:        schema.TypeString,
+						Computed:    true,
+						Description: ecxL2SellerProfileMetrosDescriptions["Code"],
+					},
+					ecxL2SellerProfileMetrosSchemaNames["Name"]: {
+						Type:        schema.TypeString,
+						Computed:    true,
+						Description: ecxL2SellerProfileMetrosDescriptions["Name"],
+					},
+					ecxL2SellerProfileMetrosSchemaNames["IBXes"]: {
+						Type:     schema.TypeSet,
+						Computed: true,
+						Elem: &schema.Schema{
+							Type: schema.TypeString,
 						},
-						ecxL2SellerProfileMetrosSchemaNames["Name"]: {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: ecxL2SellerProfileMetrosDescriptions["Name"],
+						Description: ecxL2SellerProfileMetrosDescriptions["IBXes"],
+					},
+					ecxL2SellerProfileMetrosSchemaNames["Regions"]: {
+						Type:     schema.TypeMap,
+						Computed: true,
+						Elem: &schema.Schema{
+							Type: schema.TypeString,
 						},
-						ecxL2SellerProfileMetrosSchemaNames["IBXes"]: {
-							Type:     schema.TypeSet,
-							Computed: true,
-							Elem: &schema.Schema{
-								Type: schema.TypeString,
-							},
-							Description: ecxL2SellerProfileMetrosDescriptions["IBXes"],
-						},
-						ecxL2SellerProfileMetrosSchemaNames["Regions"]: {
-							Type:     schema.TypeMap,
-							Computed: true,
-							Elem: &schema.Schema{
-								Type: schema.TypeString,
-							},
-							Description: ecxL2SellerProfileMetrosDescriptions["Regions"],
-						},
+						Description: ecxL2SellerProfileMetrosDescriptions["Regions"],
 					},
 				},
 			},
-			ecxL2SellerProfileSchemaNames["AdditionalInfos"]: {
-				Type:        schema.TypeSet,
-				Computed:    true,
-				Set:         ecxL2SellerProfileAdditionalInfoHash,
-				Description: ecxL2SellerProfileDescriptions["AdditionalInfos"],
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						ecxL2SellerProfileAdditionalInfosSchemaNames["Name"]: {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: ecxL2SellerProfileAdditionalInfosDescriptions["Name"],
-						},
-						ecxL2SellerProfileAdditionalInfosSchemaNames["Description"]: {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: ecxL2SellerProfileAdditionalInfosDescriptions["Description"],
-						},
-						ecxL2SellerProfileAdditionalInfosSchemaNames["DataType"]: {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: ecxL2SellerProfileAdditionalInfosDescriptions["DataType"],
-						},
-						ecxL2SellerProfileAdditionalInfosSchemaNames["IsMandatory"]: {
-							Type:        schema.TypeBool,
-							Computed:    true,
-							Description: ecxL2SellerProfileAdditionalInfosDescriptions["IsMandatory"],
-						},
-						ecxL2SellerProfileAdditionalInfosSchemaNames["IsCaptureInEmail"]: {
-							Type:        schema.TypeBool,
-							Computed:    true,
-							Description: ecxL2SellerProfileAdditionalInfosDescriptions["IsCaptureInEmail"],
-						},
+		},
+		ecxL2SellerProfileSchemaNames["AdditionalInfos"]: {
+			Type:        schema.TypeSet,
+			Computed:    true,
+			Set:         ecxL2SellerProfileAdditionalInfoHash,
+			Description: ecxL2SellerProfileDescriptions["AdditionalInfos"],
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					ecxL2SellerProfileAdditionalInfosSchemaNames["Name"]: {
+						Type:        schema.TypeString,
+						Computed:    true,
+						Description: ecxL2SellerProfileAdditionalInfosDescriptions["Name"],
+					},
+					ecxL2SellerProfileAdditionalInfosSchemaNames["Description"]: {
+						Type:        schema.TypeString,
+						Computed:    true,
+						Description: ecxL2SellerProfileAdditionalInfosDescriptions["Description"],
+					},
+					ecxL2SellerProfileAdditionalInfosSchemaNames["DataType"]: {
+						Type:        schema.TypeString,
+						Computed:    true,
+						Description: ecxL2SellerProfileAdditionalInfosDescriptions["DataType"],
+					},
+					ecxL2SellerProfileAdditionalInfosSchemaNames["IsMandatory"]: {
+						Type:        schema.TypeBool,
+						Computed:    true,
+						Description: ecxL2SellerProfileAdditionalInfosDescriptions["IsMandatory"],
+					},
+					ecxL2SellerProfileAdditionalInfosSchemaNames["IsCaptureInEmail"]: {
+						Type:        schema.TypeBool,
+						Computed:    true,
+						Description: ecxL2SellerProfileAdditionalInfosDescriptions["IsCaptureInEmail"],
 					},
 				},
 			},
