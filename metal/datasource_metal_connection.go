@@ -43,8 +43,9 @@ func dataSourceMetalConnection() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 			"connection_id": {
-				Type:     schema.TypeString,
-				Required: true,
+				Type:        schema.TypeString,
+				Required:    true,
+				Description: "ID of the Connection to lookup",
 			},
 			"name": {
 				Type:     schema.TypeString,
