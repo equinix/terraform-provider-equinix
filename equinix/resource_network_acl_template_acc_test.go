@@ -72,6 +72,11 @@ func TestAccNetworkACLTemplate(t *testing.T) {
 		"inbound_rule_3_src_port": "any",
 		"inbound_rule_3_dst_port": "any",
 	}
+	contextWithChanges := copyMap(context)
+	contextWithChanges["description"] = randString(50)
+	contextWithChanges["inbound_rule_3_subnets"] = []string{"4.4.4.4/32", "16.20.30.0/24"}
+	contextWithChanges["inbound_rule_3_protocol"] = "TCP"
+	contextWithChanges["inbound_rule_3_dst_port"] = "2048"
 	resourceName := "equinix_network_acl_template." + context["resourceName"].(string)
 	var template ne.ACLTemplate
 	resource.Test(t, resource.TestCase{
@@ -83,6 +88,14 @@ func TestAccNetworkACLTemplate(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccNetworkACLTemplateExists(resourceName, &template),
 					testAccNetworkACLTemplateAttributes(&template, context),
+					resource.TestCheckResourceAttrSet(resourceName, "uuid"),
+				),
+			},
+			{
+				Config: testAccNetworkACLTemplate(contextWithChanges),
+				Check: resource.ComposeTestCheckFunc(
+					testAccNetworkACLTemplateExists(resourceName, &template),
+					testAccNetworkACLTemplateAttributes(&template, contextWithChanges),
 					resource.TestCheckResourceAttrSet(resourceName, "uuid"),
 				),
 			},

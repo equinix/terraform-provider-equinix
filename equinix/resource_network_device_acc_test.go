@@ -512,6 +512,78 @@ func TestAccNetworkDevice_PaloAlto_HA_Self_BYOL(t *testing.T) {
 	})
 }
 
+func TestAccNetworkDevice_CSRSDWAN_HA_Self_BYOL(t *testing.T) {
+	t.Parallel()
+	metro, _ := schema.EnvDefaultFunc(networkDeviceMetroEnvVar, "SV")()
+	licFile, _ := schema.EnvDefaultFunc(networkDeviceLicenseFileEnvVar, "CSRSDWAN.cfg")()
+	context := map[string]interface{}{
+		"device-resourceName":                           "test",
+		"device-self_managed":                           true,
+		"device-byol":                                   true,
+		"device-name":                                   fmt.Sprintf("%s-%s", tstResourcePrefix, randString(6)),
+		"device-metro_code":                             metro.(string),
+		"device-license_file":                           licFile.(string),
+		"device-throughput":                             500,
+		"device-throughput_unit":                        "Mbps",
+		"device-type_code":                              "CSRSDWAN",
+		"device-package_code":                           "ESSENTIALS",
+		"device-notifications":                          []string{"marry@equinix.com", "john@equinix.com"},
+		"device-term_length":                            1,
+		"device-version":                                "16.12.3",
+		"device-core_count":                             2,
+		"device-purchase_order_number":                  randString(10),
+		"device-order_reference":                        randString(10),
+		"device-vendorConfig_enabled":                   true,
+		"device-vendorConfig_siteId":                    "10",
+		"device-vendorConfig_systemIpAddress":           "1.1.1.1",
+		"device-secondary_name":                         fmt.Sprintf("%s-%s", tstResourcePrefix, randString(6)),
+		"device-secondary_license_file":                 licFile.(string),
+		"device-secondary_notifications":                []string{"secondary@equinix.com"},
+		"device-secondary_vendorConfig_enabled":         true,
+		"device-secondary_vendorConfig_siteId":          "20",
+		"device-secondary_vendorConfig_systemIpAddress": "2.2.2.2",
+		"acl-resourceName":                              "acl-pri",
+		"acl-name":                                      fmt.Sprintf("%s-%s", tstResourcePrefix, randString(6)),
+		"acl-description":                               randString(50),
+		"acl-metroCode":                                 metro.(string),
+		"acl-secondary_resourceName":                    "acl-sec",
+		"acl-secondary_name":                            fmt.Sprintf("%s-%s", tstResourcePrefix, randString(6)),
+		"acl-secondary_description":                     randString(50),
+		"acl-secondary_metroCode":                       metro.(string),
+	}
+	deviceResourceName := fmt.Sprintf("equinix_network_device.%s", context["device-resourceName"].(string))
+	priACLResourceName := fmt.Sprintf("equinix_network_acl_template.%s", context["acl-resourceName"].(string))
+	secACLResourceName := fmt.Sprintf("equinix_network_acl_template.%s", context["acl-secondary_resourceName"].(string))
+	var primary, secondary ne.Device
+	var primaryACL, secondaryACL ne.ACLTemplate
+	resource.Test(t, resource.TestCase{
+		PreCheck:  func() { testAccPreCheck(t) },
+		Providers: testAccProviders,
+		Steps: []resource.TestStep{
+			{
+				Config: newTestAccConfig(context).withDevice().withACL().build(),
+				Check: resource.ComposeTestCheckFunc(
+					testAccNeDeviceExists(deviceResourceName, &primary),
+					testAccNeDeviceAttributes(&primary, context),
+					testAccNeDeviceStatusAttributes(&primary, ne.DeviceStateProvisioned, ne.DeviceLicenseStateApplied),
+					testAccNeDeviceSecondaryExists(&primary, &secondary),
+					testAccNeDeviceSecondaryAttributes(&secondary, context),
+					testAccNeDeviceStatusAttributes(&secondary, ne.DeviceStateProvisioned, ne.DeviceLicenseStateApplied),
+					testAccNeDeviceRedundancyAttributes(&primary, &secondary),
+					testAccNetworkACLTemplateExists(priACLResourceName, &primaryACL),
+					testAccNetworkACLTemplateExists(secACLResourceName, &secondaryACL),
+					testAccNeDeviceACLs(&primary, &secondary, &primaryACL, &secondaryACL),
+					resource.TestCheckResourceAttrSet(deviceResourceName, "uuid"),
+					resource.TestCheckResourceAttrSet(deviceResourceName, "ibx"),
+					resource.TestCheckResourceAttrSet(deviceResourceName, "region"),
+					resource.TestCheckResourceAttrSet(deviceResourceName, "ssh_ip_address"),
+					resource.TestCheckResourceAttrSet(deviceResourceName, "ssh_ip_fqdn"),
+				),
+			},
+		},
+	})
+}
+
 func testAccNeDeviceExists(resourceName string, device *ne.Device) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[resourceName]
@@ -596,6 +668,12 @@ func testAccNeDeviceAttributes(device *ne.Device, ctx map[string]interface{}) re
 		if v, ok := ctx["device-interface_count"]; ok && ne.IntValue(device.InterfaceCount) != v.(int) {
 			return fmt.Errorf("device-interface_count does not match %v - %v", ne.IntValue(device.InterfaceCount), v)
 		}
+		if v, ok := ctx["device-vendorConfig_siteId"]; ok && device.VendorConfiguration["siteId"] != v.(string) {
+			return fmt.Errorf("device-vendorConfig_siteId does not match %v - %v", device.VendorConfiguration["siteId"], v)
+		}
+		if v, ok := ctx["device-vendorConfig_systemIpAddress"]; ok && device.VendorConfiguration["systemIpAddress"] != v.(string) {
+			return fmt.Errorf("device-vendorConfig_systemIpAddress does not match %v - %v", device.VendorConfiguration["systemIpAddress"], v)
+		}
 		return nil
 	}
 }
@@ -605,9 +683,21 @@ func testAccNeDeviceSecondaryAttributes(device *ne.Device, ctx map[string]interf
 	for key, value := range ctx {
 		secCtx[key] = value
 	}
-	secCtx["device-name"] = ctx["device-secondary_name"]
-	secCtx["device-hostname"] = ctx["device-secondary_hostname"]
-	secCtx["device-notifications"] = ctx["device-secondary_notifications"]
+	if v, ok := ctx["device-secondary_name"]; ok {
+		secCtx["device-name"] = v
+	}
+	if v, ok := ctx["device-secondary_hostname"]; ok {
+		secCtx["device-hostname"] = v
+	}
+	if v, ok := ctx["device-secondary_notifications"]; ok {
+		secCtx["device-notifications"] = v
+	}
+	if v, ok := ctx["device-secondary_vendorConfig_siteId"]; ok {
+		secCtx["device-vendorConfig_siteId"] = v
+	}
+	if v, ok := ctx["device-secondary_vendorConfig_systemIpAddress"]; ok {
+		secCtx["device-vendorConfig_systemIpAddress"] = v
+	}
 	return testAccNeDeviceAttributes(device, secCtx)
 }
 
@@ -735,13 +825,27 @@ resource "equinix_network_device" "%{device-resourceName}" {
 		config += nprintf(`
   license_file          = "%{device-license_file}"`, ctx)
 	}
+	if _, ok := ctx["device-vendorConfig_enabled"]; ok {
+		config += nprintf(`
+  vendor_configuration  = {`, ctx)
+		if _, ok := ctx["device-vendorConfig_siteId"]; ok {
+			config += nprintf(`
+    siteId          = "%{device-vendorConfig_siteId}"`, ctx)
+		}
+		if _, ok := ctx["device-vendorConfig_systemIpAddress"]; ok {
+			config += nprintf(`
+    systemIpAddress = "%{device-vendorConfig_systemIpAddress}"`, ctx)
+		}
+		config += nprintf(`
+  }`, ctx)
+	}
 	if _, ok := ctx["device-secondary_name"]; ok {
 		config += nprintf(`
   secondary_device {
     name                 = "%{device-secondary_name}"
     metro_code           = "%{device-metro_code}"
     notifications        = %{device-secondary_notifications}
-	account_number       = data.equinix_network_account.test.number`, ctx)
+    account_number       = data.equinix_network_account.test.number`, ctx)
 		if _, ok := ctx["device-secondary_additional_bandwidth"]; ok {
 			config += nprintf(`
     additional_bandwidth = "%{device-secondary_additional_bandwidth}"`, ctx)
@@ -764,6 +868,20 @@ resource "equinix_network_device" "%{device-resourceName}" {
 		if _, ok := ctx["device-secondary_license_file"]; ok {
 			config += nprintf(`
     license_file         = "%{device-secondary_license_file}"`, ctx)
+		}
+		if _, ok := ctx["device-secondary_vendorConfig_enabled"]; ok {
+			config += nprintf(`
+    vendor_configuration  = {`, ctx)
+			if _, ok := ctx["device-secondary_vendorConfig_siteId"]; ok {
+				config += nprintf(`
+      siteId          = "%{device-secondary_vendorConfig_siteId}"`, ctx)
+			}
+			if _, ok := ctx["device-secondary_vendorConfig_systemIpAddress"]; ok {
+				config += nprintf(`
+      systemIpAddress = "%{device-secondary_vendorConfig_systemIpAddress}"`, ctx)
+			}
+			config += nprintf(`
+    }`, ctx)
 		}
 		config += `
   }`
