@@ -1,18 +1,40 @@
 package metal
 
 import (
-	"fmt"
-	"log"
-	"path/filepath"
-
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/packethost/packngo"
 )
 
-func connectionPortSchema() map[string]*schema.Schema {
-	return map[string]*schema.Schema{
-        "
-    }
+func connectionPortSchema() *schema.Resource {
+	return &schema.Resource{
+		Schema: map[string]*schema.Schema{
+			"name": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+			"role": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+			"speed": {
+				Type:     schema.TypeInt,
+				Computed: true,
+			},
+			"status": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+			"link_status": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+			"virtual_circuit_ids": {
+				Computed: true,
+				Type:     schema.TypeList,
+				Elem:     schema.TypeString,
+			},
+		},
+	}
 }
 
 func dataSourceMetalConnection() *schema.Resource {
@@ -20,17 +42,13 @@ func dataSourceMetalConnection() *schema.Resource {
 		Read: dataSourceMetalConnectionRead,
 
 		Schema: map[string]*schema.Schema{
-			"name": {
-				Type:          schema.TypeString,
-				Optional:      true,
-				Computed:      true,
-				ConflictsWith: []string{"connection_id"},
-			},
 			"connection_id": {
-				Type:          schema.TypeString,
-				Optional:      true,
-				Computed:      true,
-				ConflictsWith: []string{"name"},
+				Type:     schema.TypeString,
+				Required: true,
+			},
+			"name": {
+				Type:     schema.TypeString,
+				Computed: true,
 			},
 			"description": {
 				Type:     schema.TypeString,
@@ -56,80 +74,67 @@ func dataSourceMetalConnection() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
+			"type": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
 			"speed": {
 				Type:     schema.TypeInt,
 				Computed: true,
 			},
 			"ports": {
 				Type:     schema.TypeList,
-				Computed: true,
 				Elem:     connectionPortSchema(),
+				Computed: true,
 			},
 		},
 	}
 }
 
-func findConnectionByName(os []packngo.Connection, name string) (*packngo.Connection, error) {
-	results := make([]packngo.Connection, 0)
-	for _, o := range os {
-		if o.Name == name {
-			results = append(results, o)
+func getConnectionPorts(cps []packngo.ConnectionPort) []map[string]interface{} {
+	ret := make([]map[string]interface{}, 0, 1)
+
+	for _, p := range cps {
+		vcIDs := []string{}
+		for _, vc := range p.VirtualCircuits {
+			vcIDs = append(vcIDs, vc.ID)
 		}
+		connPort := map[string]interface{}{
+			"name":                p.Name,
+			"role":                string(p.Role),
+			"speed":               p.Speed,
+			"status":              p.Status,
+			"link_status":         p.LinkStatus,
+			"virtual_circuit_ids": vcIDs,
+		}
+		ret = append(ret, connPort)
 	}
-	if len(results) == 1 {
-		return &results[0], nil
-	}
-	if len(results) == 0 {
-		return nil, fmt.Errorf("no connection found with name %s", name)
-	}
-	return nil, fmt.Errorf("too many connections found with name %s (found %d, expected 1)", name, len(results))
+	return ret
 }
 
 func dataSourceMetalConnectionRead(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*packngo.Client)
-	nameRaw, nameOK := d.GetOk("name")
-	orgIdRaw, orgIdOK := d.GetOk("connection_id")
+	connId := d.Get("connection_id").(string)
 
-	if !orgIdOK && !nameOK {
-		return fmt.Errorf("You must supply connection_id or name")
-	}
-	var org *packngo.Connection
-
-	if nameOK {
-		name := nameRaw.(string)
-
-		os, _, err := client.Connections.List(nil)
-		if err != nil {
-			return err
-		}
-
-		org, err = findOrgByName(os, name)
-		if err != nil {
-			return err
-		}
-	} else {
-		orgId := orgIdRaw.(string)
-		log.Println(orgId)
-		var err error
-		org, _, err = client.Connections.Get(orgId, nil)
-		if err != nil {
-			return err
-		}
-	}
-	projectIds := []string{}
-
-	for _, p := range org.Projects {
-		projectIds = append(projectIds, filepath.Base(p.URL))
+	conn, _, err := client.Connections.Get(
+		connId,
+		&packngo.GetOptions{Includes: []string{"organization,facility"}})
+	if err != nil {
+		return err
 	}
 
-	d.Set("connection_id", org.ID)
-	d.Set("name", org.Name)
-	d.Set("description", org.Description)
-	d.Set("website", org.Website)
-	d.Set("twitter", org.Twitter)
-	d.Set("logo", org.Logo)
-	d.Set("project_ids", projectIds)
-	d.SetId(org.ID)
+	d.Set("connection_id", conn.ID)
+	d.Set("organization_id", conn.Organization.ID)
+	d.Set("name", conn.Name)
+	d.Set("description", conn.Description)
+	d.Set("status", conn.Status)
+	d.Set("redundancy", conn.Redundancy)
+	d.Set("facility", conn.Facility.Code)
+	d.Set("token", conn.Token)
+	d.Set("type", conn.Type)
+	d.Set("speed", conn.Speed)
+	d.Set("ports", getConnectionPorts(conn.Ports))
+	d.SetId(conn.ID)
 
 	return nil
 }
