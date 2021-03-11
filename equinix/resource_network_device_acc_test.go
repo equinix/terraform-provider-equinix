@@ -584,6 +584,73 @@ func TestAccNetworkDevice_CSRSDWAN_HA_Self_BYOL(t *testing.T) {
 	})
 }
 
+func TestAccNetworkDevice_CGENIX_HA_Self_BYOL(t *testing.T) {
+	t.Parallel()
+	metro, _ := schema.EnvDefaultFunc(networkDeviceMetroEnvVar, "SV")()
+	context := map[string]interface{}{
+		"device-resourceName":                         "test",
+		"device-self_managed":                         true,
+		"device-byol":                                 true,
+		"device-name":                                 fmt.Sprintf("%s-%s", tstResourcePrefix, randString(6)),
+		"device-metro_code":                           metro.(string),
+		"device-type_code":                            "CGENIXSDWAN",
+		"device-package_code":                         "3102V",
+		"device-notifications":                        []string{"marry@equinix.com", "john@equinix.com"},
+		"device-term_length":                          1,
+		"device-version":                              "5.2.1-b11",
+		"device-core_count":                           2,
+		"device-purchase_order_number":                randString(10),
+		"device-order_reference":                      randString(10),
+		"device-vendorConfig_enabled":                 true,
+		"device-vendorConfig_licenseKey":              randString(10),
+		"device-vendorConfig_licenseSecret":           randString(10),
+		"device-secondary_name":                       fmt.Sprintf("%s-%s", tstResourcePrefix, randString(6)),
+		"device-secondary_notifications":              []string{"secondary@equinix.com"},
+		"device-secondary_vendorConfig_enabled":       true,
+		"device-secondary_vendorConfig_licenseKey":    randString(10),
+		"device-secondary_vendorConfig_licenseSecret": randString(10),
+		"acl-resourceName":                            "acl-pri",
+		"acl-name":                                    fmt.Sprintf("%s-%s", tstResourcePrefix, randString(6)),
+		"acl-description":                             randString(50),
+		"acl-metroCode":                               metro.(string),
+		"acl-secondary_resourceName":                  "acl-sec",
+		"acl-secondary_name":                          fmt.Sprintf("%s-%s", tstResourcePrefix, randString(6)),
+		"acl-secondary_description":                   randString(50),
+		"acl-secondary_metroCode":                     metro.(string),
+	}
+	deviceResourceName := fmt.Sprintf("equinix_network_device.%s", context["device-resourceName"].(string))
+	priACLResourceName := fmt.Sprintf("equinix_network_acl_template.%s", context["acl-resourceName"].(string))
+	secACLResourceName := fmt.Sprintf("equinix_network_acl_template.%s", context["acl-secondary_resourceName"].(string))
+	var primary, secondary ne.Device
+	var primaryACL, secondaryACL ne.ACLTemplate
+	resource.Test(t, resource.TestCase{
+		PreCheck:  func() { testAccPreCheck(t) },
+		Providers: testAccProviders,
+		Steps: []resource.TestStep{
+			{
+				Config: newTestAccConfig(context).withDevice().withACL().build(),
+				Check: resource.ComposeTestCheckFunc(
+					testAccNeDeviceExists(deviceResourceName, &primary),
+					testAccNeDeviceAttributes(&primary, context),
+					testAccNeDeviceStatusAttributes(&primary, ne.DeviceStateProvisioned, ne.DeviceLicenseStateApplied),
+					testAccNeDeviceSecondaryExists(&primary, &secondary),
+					testAccNeDeviceSecondaryAttributes(&secondary, context),
+					testAccNeDeviceStatusAttributes(&secondary, ne.DeviceStateProvisioned, ne.DeviceLicenseStateApplied),
+					testAccNeDeviceRedundancyAttributes(&primary, &secondary),
+					testAccNetworkACLTemplateExists(priACLResourceName, &primaryACL),
+					testAccNetworkACLTemplateExists(secACLResourceName, &secondaryACL),
+					testAccNeDeviceACLs(&primary, &secondary, &primaryACL, &secondaryACL),
+					resource.TestCheckResourceAttrSet(deviceResourceName, "uuid"),
+					resource.TestCheckResourceAttrSet(deviceResourceName, "ibx"),
+					resource.TestCheckResourceAttrSet(deviceResourceName, "region"),
+					resource.TestCheckResourceAttrSet(deviceResourceName, "ssh_ip_address"),
+					resource.TestCheckResourceAttrSet(deviceResourceName, "ssh_ip_fqdn"),
+				),
+			},
+		},
+	})
+}
+
 func testAccNeDeviceExists(resourceName string, device *ne.Device) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[resourceName]
@@ -836,6 +903,14 @@ resource "equinix_network_device" "%{device-resourceName}" {
 			config += nprintf(`
     systemIpAddress = "%{device-vendorConfig_systemIpAddress}"`, ctx)
 		}
+		if _, ok := ctx["device-vendorConfig_licenseKey"]; ok {
+			config += nprintf(`
+    licenseKey = "%{device-vendorConfig_licenseKey}"`, ctx)
+		}
+		if _, ok := ctx["device-vendorConfig_licenseSecret"]; ok {
+			config += nprintf(`
+    licenseSecret = "%{device-vendorConfig_licenseSecret}"`, ctx)
+		}
 		config += nprintf(`
   }`, ctx)
 	}
@@ -879,6 +954,14 @@ resource "equinix_network_device" "%{device-resourceName}" {
 			if _, ok := ctx["device-secondary_vendorConfig_systemIpAddress"]; ok {
 				config += nprintf(`
       systemIpAddress = "%{device-secondary_vendorConfig_systemIpAddress}"`, ctx)
+			}
+			if _, ok := ctx["device-secondary_vendorConfig_licenseKey"]; ok {
+				config += nprintf(`
+      licenseKey = "%{device-secondary_vendorConfig_licenseKey}"`, ctx)
+			}
+			if _, ok := ctx["device-secondary_vendorConfig_licenseSecret"]; ok {
+				config += nprintf(`
+      licenseSecret = "%{device-secondary_vendorConfig_licenseSecret}"`, ctx)
 			}
 			config += nprintf(`
     }`, ctx)
