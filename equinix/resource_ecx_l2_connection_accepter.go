@@ -120,7 +120,7 @@ func resourceECXL2ConnectionAccepterCreate(ctx context.Context, d *schema.Resour
 			return resp, ecx.StringValue(resp.ProviderStatus), nil
 		},
 	}
-	if _, err := createStateConf.WaitForState(); err != nil {
+	if _, err := createStateConf.WaitForStateContext(ctx); err != nil {
 		return diag.Errorf("error waiting for connection %q to be provisioned on provider side: %s", connID, err)
 	}
 	diags = append(diags, resourceECXL2ConnectionAccepterRead(ctx, d, m)...)

@@ -635,7 +635,7 @@ func resourceNetworkDeviceCreate(ctx context.Context, d *schema.ResourceData, m 
 		if config == nil {
 			continue
 		}
-		if _, err := config.WaitForState(); err != nil {
+		if _, err := config.WaitForStateContext(ctx); err != nil {
 			return diag.Errorf("error waiting for network device (%s) to be created: %s", ne.StringValue(primary.UUID), err)
 		}
 	}
@@ -688,12 +688,12 @@ func resourceNetworkDeviceUpdate(ctx context.Context, d *schema.ResourceData, m 
 		}
 	}
 	for _, stateChangeConf := range getNetworkDeviceStateChangeConfigs(conf.ne, d.Id(), d.Timeout(schema.TimeoutUpdate), primaryChanges) {
-		if _, err := stateChangeConf.WaitForState(); err != nil {
+		if _, err := stateChangeConf.WaitForStateContext(ctx); err != nil {
 			return diag.Errorf("error waiting for network device %q to be updated: %s", d.Id(), err)
 		}
 	}
 	for _, stateChangeConf := range getNetworkDeviceStateChangeConfigs(conf.ne, d.Get(networkDeviceSchemaNames["RedundantUUID"]).(string), d.Timeout(schema.TimeoutUpdate), secondaryChanges) {
-		if _, err := stateChangeConf.WaitForState(); err != nil {
+		if _, err := stateChangeConf.WaitForStateContext(ctx); err != nil {
 			return diag.Errorf("error waiting for network device %q to be updated: %s", d.Get(networkDeviceSchemaNames["RedundantUUID"]), err)
 		}
 	}
@@ -745,7 +745,7 @@ func resourceNetworkDeviceDelete(ctx context.Context, d *schema.ResourceData, m 
 		return diag.FromErr(err)
 	}
 	for _, config := range waitConfigs {
-		if _, err := config.WaitForState(); err != nil {
+		if _, err := config.WaitForStateContext(ctx); err != nil {
 			return diag.Errorf("error waiting for network device (%s) to be removed: %s", d.Id(), err)
 		}
 	}

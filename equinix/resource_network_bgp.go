@@ -139,7 +139,7 @@ func resourceNetworkBGPCreate(ctx context.Context, d *schema.ResourceData, m int
 		}
 		d.SetId(ne.StringValue(uuid))
 	}
-	if _, err := createBGPConfigStatusProvisioningWaitConfiguration(conf.ne.GetBGPConfiguration, d.Id(), 2*time.Second, d.Timeout(schema.TimeoutCreate)).WaitForState(); err != nil {
+	if _, err := createBGPConfigStatusProvisioningWaitConfiguration(conf.ne.GetBGPConfiguration, d.Id(), 2*time.Second, d.Timeout(schema.TimeoutCreate)).WaitForStateContext(ctx); err != nil {
 		return diag.Errorf("error waiting for BGP configuration (%s) to be created: %s", d.Id(), err)
 	}
 	diags = append(diags, resourceNetworkBGPRead(ctx, d, m)...)

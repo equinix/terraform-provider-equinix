@@ -477,7 +477,7 @@ func resourceECXL2ConnectionCreate(ctx context.Context, d *schema.ResourceData, 
 			return resp, ecx.StringValue(resp.Status), nil
 		},
 	}
-	if _, err := createStateConf.WaitForState(); err != nil {
+	if _, err := createStateConf.WaitForStateContext(ctx); err != nil {
 		return diag.Errorf("error waiting for connection (%s) to be created: %s", d.Id(), err)
 	}
 	diags = append(diags, resourceECXL2ConnectionRead(ctx, d, m)...)
@@ -581,7 +581,7 @@ func resourceECXL2ConnectionDelete(ctx context.Context, d *schema.ResourceData, 
 			return resp, ecx.StringValue(resp.Status), nil
 		},
 	}
-	if _, err := deleteStateConf.WaitForState(); err != nil {
+	if _, err := deleteStateConf.WaitForStateContext(ctx); err != nil {
 		return diag.Errorf("error waiting for connection (%s) to be removed: %s", d.Id(), err)
 	}
 	return diags

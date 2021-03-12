@@ -233,15 +233,15 @@ func getMapChangedKeys(keys []string, old, new map[string]interface{}) map[strin
 }
 
 func isEmpty(v interface{}) bool {
-	switch v.(type) {
+	switch v := v.(type) {
 	case int:
-		return v.(int) == 0
+		return v == 0
 	case *int:
-		return ecx.IntValue(v.(*int)) == 0
+		return ecx.IntValue(v) == 0
 	case string:
-		return v.(string) == ""
+		return v == ""
 	case *string:
-		return ecx.StringValue(v.(*string)) == ""
+		return ecx.StringValue(v) == ""
 	case nil:
 		return true
 	default:

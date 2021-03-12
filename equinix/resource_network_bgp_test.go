@@ -1,6 +1,7 @@
 package equinix
 
 import (
+	"context"
 	"testing"
 	"time"
 
@@ -135,7 +136,7 @@ func TestNetworkBGP_statusProvisioningWaitConfiguration(t *testing.T) {
 	timeout := 10 * time.Minute
 	//when
 	waitConfig := createBGPConfigStatusProvisioningWaitConfiguration(fetchFunc, bgpID, delay, timeout)
-	_, err := waitConfig.WaitForState()
+	_, err := waitConfig.WaitForStateContext(context.Background())
 	//then
 	assert.Nil(t, err, "WaitForState does not return an error")
 	assert.Equal(t, bgpID, queriedID, "Queried device ID matches")

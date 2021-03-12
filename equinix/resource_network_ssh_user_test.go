@@ -8,8 +8,6 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-var sshUserFields = []string{"Username", "Password", "DeviceUUIDs"}
-
 func TestNetworkSSHUser_resourceFromResourceData(t *testing.T) {
 	//given
 	rawData := map[string]interface{}{

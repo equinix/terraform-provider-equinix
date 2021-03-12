@@ -1,6 +1,7 @@
 package equinix
 
 import (
+	"context"
 	"fmt"
 	"io"
 	"os"
@@ -335,7 +336,7 @@ func TestNetworkDevice_statusProvisioningWaitConfiguration(t *testing.T) {
 	timeout := 10 * time.Minute
 	//when
 	waitConfig := createNetworkDeviceStatusProvisioningWaitConfiguration(fetchFunc, deviceID, delay, timeout)
-	_, err := waitConfig.WaitForState()
+	_, err := waitConfig.WaitForStateContext(context.Background())
 	//then
 	assert.Nil(t, err, "WaitForState does not return an error")
 	assert.Equal(t, deviceID, queriedDeviceID, "Queried device ID matches")
@@ -355,7 +356,7 @@ func TestNetworkDevice_statusDeleteWaitConfiguration(t *testing.T) {
 	timeout := 10 * time.Minute
 	//when
 	waitConfig := createNetworkDeviceStatusDeleteWaitConfiguration(fetchFunc, deviceID, delay, timeout)
-	_, err := waitConfig.WaitForState()
+	_, err := waitConfig.WaitForStateContext(context.Background())
 	//then
 	assert.Nil(t, err, "WaitForState does not return an error")
 	assert.Equal(t, deviceID, queriedDeviceID, "Queried device ID matches")
@@ -375,7 +376,7 @@ func TestNetworkDevice_licenseStatusWaitConfiguration(t *testing.T) {
 	timeout := 10 * time.Minute
 	//when
 	waitConfig := createNetworkDeviceLicenseStatusWaitConfiguration(fetchFunc, deviceID, delay, timeout)
-	_, err := waitConfig.WaitForState()
+	_, err := waitConfig.WaitForStateContext(context.Background())
 	//then
 	assert.Nil(t, err, "WaitForState does not return an error")
 	assert.Equal(t, deviceID, queriedDeviceID, "Queried device ID matches")
@@ -395,7 +396,7 @@ func TestNetworkDevice_ACLStatusWaitConfiguration(t *testing.T) {
 	timeout := 10 * time.Minute
 	//when
 	waitConfig := createNetworkDeviceACLStatusWaitConfiguration(fetchFunc, aclID, delay, timeout)
-	_, err := waitConfig.WaitForState()
+	_, err := waitConfig.WaitForStateContext(context.Background())
 	//then
 	assert.Nil(t, err, "WaitForState does not return an error")
 	assert.Equal(t, aclID, receivedACLID, "Queried ACL id matches")
@@ -415,7 +416,7 @@ func TestNetworkDevice_AdditionalBandwidthStatusWaitConfiguration(t *testing.T) 
 	timeout := 10 * time.Minute
 	//when
 	waitConfig := createNetworkDeviceAdditionalBandwidthStatusWaitConfiguration(fetchFunc, deviceID, delay, timeout)
-	_, err := waitConfig.WaitForState()
+	_, err := waitConfig.WaitForStateContext(context.Background())
 	//then
 	assert.Nil(t, err, "WaitForState does not return an error")
 	assert.Equal(t, deviceID, receivedID, "Queried Additional Bandwidth device id matches")

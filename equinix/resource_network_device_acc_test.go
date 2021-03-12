@@ -13,8 +13,10 @@ import (
 )
 
 const (
-	networkDeviceMetroEnvVar       = "TF_ACC_NETWORK_DEVICE_METRO"
-	networkDeviceLicenseFileEnvVar = "TF_ACC_NETWORK_DEVICE_LICENSE_FILE"
+	networkDeviceMetroEnvVar               = "TF_ACC_NETWORK_DEVICE_METRO"
+	networkDeviceLicenseFileEnvVar         = "TF_ACC_NETWORK_DEVICE_LICENSE_FILE"
+	networkDeviceCGENIXLicenseKeyEnvVar    = "TF_ACC_NETWORK_DEVICE_CGENIX_LICENSE_KEY"
+	networkDeviceCGENIXLicenseSecretEnvVar = "TF_ACC_NETWORK_DEVICE_CGENIX_LICENSE_SECRET"
 )
 
 func init() {
@@ -422,7 +424,7 @@ func TestAccNetworkDevice_vSRX_HA_Self_BYOL(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccNeDeviceExists(deviceResourceName, &primary),
 					testAccNeDeviceAttributes(&primary, context),
-					testAccNeDeviceStatusAttributes(&primary, ne.DeviceStateProvisioned, ne.DeviceLicenseStateRegistered),
+					testAccNeDeviceStatusAttributes(&primary, ne.DeviceStateProvisioned, ne.DeviceLicenseStateApplied),
 					testAccNeDeviceSecondaryExists(&primary, &secondary),
 					testAccNeDeviceSecondaryAttributes(&secondary, context),
 					testAccNeDeviceStatusAttributes(&secondary, ne.DeviceStateProvisioned, ne.DeviceLicenseStateApplied),
@@ -587,6 +589,8 @@ func TestAccNetworkDevice_CSRSDWAN_HA_Self_BYOL(t *testing.T) {
 func TestAccNetworkDevice_CGENIX_HA_Self_BYOL(t *testing.T) {
 	t.Parallel()
 	metro, _ := schema.EnvDefaultFunc(networkDeviceMetroEnvVar, "SV")()
+	licenseKey, _ := schema.EnvDefaultFunc(networkDeviceCGENIXLicenseKeyEnvVar, randString(10))()
+	licenseSecret, _ := schema.EnvDefaultFunc(networkDeviceCGENIXLicenseSecretEnvVar, randString(10))()
 	context := map[string]interface{}{
 		"device-resourceName":                         "test",
 		"device-self_managed":                         true,
@@ -602,13 +606,13 @@ func TestAccNetworkDevice_CGENIX_HA_Self_BYOL(t *testing.T) {
 		"device-purchase_order_number":                randString(10),
 		"device-order_reference":                      randString(10),
 		"device-vendorConfig_enabled":                 true,
-		"device-vendorConfig_licenseKey":              randString(10),
-		"device-vendorConfig_licenseSecret":           randString(10),
+		"device-vendorConfig_licenseKey":              licenseKey.(string),
+		"device-vendorConfig_licenseSecret":           licenseSecret.(string),
 		"device-secondary_name":                       fmt.Sprintf("%s-%s", tstResourcePrefix, randString(6)),
 		"device-secondary_notifications":              []string{"secondary@equinix.com"},
 		"device-secondary_vendorConfig_enabled":       true,
-		"device-secondary_vendorConfig_licenseKey":    randString(10),
-		"device-secondary_vendorConfig_licenseSecret": randString(10),
+		"device-secondary_vendorConfig_licenseKey":    licenseKey.(string),
+		"device-secondary_vendorConfig_licenseSecret": licenseSecret.(string),
 		"acl-resourceName":                            "acl-pri",
 		"acl-name":                                    fmt.Sprintf("%s-%s", tstResourcePrefix, randString(6)),
 		"acl-description":                             randString(50),
@@ -741,6 +745,12 @@ func testAccNeDeviceAttributes(device *ne.Device, ctx map[string]interface{}) re
 		if v, ok := ctx["device-vendorConfig_systemIpAddress"]; ok && device.VendorConfiguration["systemIpAddress"] != v.(string) {
 			return fmt.Errorf("device-vendorConfig_systemIpAddress does not match %v - %v", device.VendorConfiguration["systemIpAddress"], v)
 		}
+		if v, ok := ctx["device-vendorConfig_licenseKey"]; ok && device.VendorConfiguration["licenseKey"] != v.(string) {
+			return fmt.Errorf("device-vendorConfig_licenseKey does not match %v - %v", device.VendorConfiguration["licenseKey"], v)
+		}
+		if v, ok := ctx["device-vendorConfig_licenseSecret"]; ok && device.VendorConfiguration["licenseSecret"] != v.(string) {
+			return fmt.Errorf("device-vendorConfig_licenseSecret does not match %v - %v", device.VendorConfiguration["licenseSecret"], v)
+		}
 		return nil
 	}
 }
@@ -764,6 +774,12 @@ func testAccNeDeviceSecondaryAttributes(device *ne.Device, ctx map[string]interf
 	}
 	if v, ok := ctx["device-secondary_vendorConfig_systemIpAddress"]; ok {
 		secCtx["device-vendorConfig_systemIpAddress"] = v
+	}
+	if v, ok := ctx["device-secondary_vendorConfig_licenseKey"]; ok {
+		secCtx["device-vendorConfig_licenseKey"] = v
+	}
+	if v, ok := ctx["device-secondary_vendorConfig_licenseSecret"]; ok {
+		secCtx["device-vendorConfig_licenseSecret"] = v
 	}
 	return testAccNeDeviceAttributes(device, secCtx)
 }

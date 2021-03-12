@@ -38,11 +38,3 @@ func TestAccFabricPort(t *testing.T) {
 		},
 	})
 }
-
-func testAccECXPortt(ctx map[string]interface{}) string {
-	return nprintf(`
-data "equinix_ecx_port" "%{resourceName}" {
-  name = "%{name}"
-}
-`, ctx)
-}

@@ -215,8 +215,7 @@ func TestProvider_setSchemaValueIfNotEmpty(t *testing.T) {
 			Type:     schema.TypeString,
 			Optional: true,
 		}}
-	var b *int
-	b = nil
+	var b *int = nil
 	d := schema.TestResourceDataRaw(t, s, make(map[string]interface{}))
 	//when
 	setSchemaValueIfNotEmpty(key, b, d)
