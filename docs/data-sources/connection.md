@@ -32,5 +32,11 @@ data "metal_connection" "example" {
 * `type` - Connection type, dedicated or shared
 * `redundancy` - Connection redundancy, reduntant or primary
 * `speed` - Connection speed in bits per second
-
+* `ports` - List of connection ports - primary (`ports[0]`) and secondary (`ports[1]`)
+  * `name` - Port name
+  * `role` - Port role - primary or secondary
+  * `speed` - Port speed in bits per second
+  * `status` - Port status 
+  * `link_status` - Port link status
+  * `virtual_circuit_ids` - List of IDs of virtual cicruits attached to this port
 
