@@ -92,9 +92,6 @@ func resourceMetalBGPSessionRead(d *schema.ResourceData, meta interface{}) error
 
 func resourceMetalBGPSessionDelete(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*packngo.Client)
-	_, err := client.BGPSessions.Delete(d.Id())
-	if err != nil {
-		return err
-	}
-	return nil
+	resp, err := client.BGPSessions.Delete(d.Id())
+	return ignoreResponseErrors(httpForbidden, httpNotFound)(resp, err)
 }

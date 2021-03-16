@@ -271,8 +271,8 @@ func resourceMetalProjectUpdate(d *schema.ResourceData, meta interface{}) error 
 func resourceMetalProjectDelete(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*packngo.Client)
 
-	_, err := client.Projects.Delete(d.Id())
-	if err != nil {
+	resp, err := client.Projects.Delete(d.Id())
+	if ignoreResponseErrors(httpForbidden, httpNotFound)(resp, err) != nil {
 		return friendlyError(err)
 	}
 

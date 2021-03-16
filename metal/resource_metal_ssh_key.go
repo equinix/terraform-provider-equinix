@@ -140,8 +140,8 @@ func resourceMetalSSHKeyUpdate(d *schema.ResourceData, meta interface{}) error {
 func resourceMetalSSHKeyDelete(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*packngo.Client)
 
-	_, err := client.SSHKeys.Delete(d.Id())
-	if err != nil {
+	resp, err := client.SSHKeys.Delete(d.Id())
+	if ignoreResponseErrors(httpForbidden, httpNotFound)(resp, err) != nil {
 		return friendlyError(err)
 	}
 

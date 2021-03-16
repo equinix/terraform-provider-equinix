@@ -328,15 +328,15 @@ func resourceMetalSpotMarketRequestDelete(d *schema.ResourceData, meta interface
 		}
 
 		for _, d := range smr.Devices {
-			_, err := client.Devices.Delete(d.ID, true)
-			if err != nil {
+			resp, err := client.Devices.Delete(d.ID, true)
+			if ignoreResponseErrors(httpForbidden, httpNotFound)(resp, err) != nil {
 				return err
 			}
 		}
 	}
-	_, err := client.SpotMarketRequests.Delete(d.Id(), true)
-	if err != nil {
-		return nil
+	resp, err := client.SpotMarketRequests.Delete(d.Id(), true)
+	if ignoreResponseErrors(httpForbidden, httpNotFound)(resp, err) != nil {
+		return err
 	}
 	return nil
 }

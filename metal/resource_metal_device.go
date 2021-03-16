@@ -585,7 +585,8 @@ func resourceMetalDeviceDelete(d *schema.ResourceData, meta interface{}) error {
 		fdv = true
 	}
 
-	if _, err := client.Devices.Delete(d.Id(), fdv); err != nil {
+	resp, err := client.Devices.Delete(d.Id(), fdv)
+	if ignoreResponseErrors(httpForbidden, httpNotFound)(resp, err) != nil {
 		return friendlyError(err)
 	}
 

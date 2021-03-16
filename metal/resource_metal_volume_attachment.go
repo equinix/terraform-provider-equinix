@@ -76,9 +76,6 @@ func resourceMetalVolumeAttachmentRead(d *schema.ResourceData, meta interface{})
 
 func resourceMetalVolumeAttachmentDelete(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*packngo.Client)
-	_, err := client.VolumeAttachments.Delete(d.Id())
-	if err != nil {
-		return err
-	}
-	return nil
+	resp, err := client.VolumeAttachments.Delete(d.Id())
+	return ignoreResponseErrors(httpForbidden, httpNotFound)(resp, err)
 }

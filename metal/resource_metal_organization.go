@@ -160,8 +160,8 @@ func resourceMetalOrganizationUpdate(d *schema.ResourceData, meta interface{}) e
 func resourceMetalOrganizationDelete(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*packngo.Client)
 
-	_, err := client.Organizations.Delete(d.Id())
-	if err != nil {
+	resp, err := client.Organizations.Delete(d.Id())
+	if ignoreResponseErrors(httpForbidden, httpNotFound)(resp, err) != nil {
 		return friendlyError(err)
 	}
 

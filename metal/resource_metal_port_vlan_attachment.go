@@ -219,8 +219,8 @@ func resourceMetalPortVlanAttachmentDelete(d *schema.ResourceData, meta interfac
 	vlanID := d.Get("vlan_id").(string)
 	native := d.Get("native").(bool)
 	if native {
-		_, _, err := client.DevicePorts.UnassignNative(pID)
-		if err != nil {
+		_, resp, err := client.DevicePorts.UnassignNative(pID)
+		if ignoreResponseErrors(httpForbidden, httpNotFound)(resp, err) != nil {
 			return err
 		}
 	}
@@ -228,8 +228,8 @@ func resourceMetalPortVlanAttachmentDelete(d *schema.ResourceData, meta interfac
 	lockId := "vlan-detachment-" + pID
 	metalMutexKV.Lock(lockId)
 	defer metalMutexKV.Unlock(lockId)
-	portPtr, _, err := client.DevicePorts.Unassign(par)
-	if err != nil {
+	portPtr, resp, err := client.DevicePorts.Unassign(par)
+	if ignoreResponseErrors(httpForbidden, httpNotFound, isNotAssigned)(resp, err) != nil {
 		return err
 	}
 	forceBond := d.Get("force_bond").(bool)
