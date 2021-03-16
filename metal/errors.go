@@ -90,3 +90,55 @@ func setMap(d *schema.ResourceData, m map[string]interface{}) error {
 }
 
 type setFn = func(d *schema.ResourceData, key string) error
+
+// isNotAssigned matches errors reported from unassigned virtual networks
+func isNotAssigned(resp *http.Response, err error) bool {
+	if resp.StatusCode != http.StatusUnprocessableEntity {
+		return false
+	}
+	if err, ok := err.(*packngo.ErrorResponse); ok {
+		for _, e := range append(err.Errors, err.SingleError) {
+			if strings.HasPrefix(e, "Virtual network") && strings.HasSuffix(e, "not assigned") {
+				return true
+			}
+		}
+	}
+	return false
+}
+
+func httpForbidden(resp *http.Response, err error) bool {
+	if resp.StatusCode != http.StatusForbidden {
+		return false
+	}
+
+	if err, ok := err.(*ErrorResponse); ok {
+		return err.IsAPIError
+	}
+
+	return false
+}
+
+func httpNotFound(resp *http.Response, err error) bool {
+	if resp.StatusCode != http.StatusNotFound {
+		return false
+	}
+
+	if err, ok := err.(*ErrorResponse); ok {
+		return err.IsAPIError
+	}
+
+	return false
+}
+
+// ignoreResponseErrors ignores http response errors when matched by one of the
+// provided checks
+func ignoreResponseErrors(ignore ...func(resp *http.Response, err error) bool) func(resp *packngo.Response, err error) error {
+	return func(resp *packngo.Response, err error) error {
+		for _, ignored := range ignore {
+			if !ignored(resp.Response, err) {
+				return err
+			}
+		}
+		return nil
+	}
+}
