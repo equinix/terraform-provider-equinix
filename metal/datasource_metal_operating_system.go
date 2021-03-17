@@ -2,7 +2,6 @@ package metal
 
 import (
 	"fmt"
-	"log"
 	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
@@ -48,10 +47,6 @@ func dataSourceMetalOperatingSystemRead(d *schema.ResourceData, meta interface{}
 	if !nameOK && !distroOK && !versionOK && !provisionableOnOK {
 		return fmt.Errorf("One of name, distro, version, or provisionable_on must be assigned")
 	}
-
-	log.Println("[DEBUG] ******")
-	log.Println("[DEBUG] params", name, distro, version, provisionableOn)
-	log.Println("[DEBUG] ******")
 
 	oss, _, err := client.OperatingSystems.List()
 	if err != nil {
@@ -99,7 +94,6 @@ func dataSourceMetalOperatingSystemRead(d *schema.ResourceData, meta interface{}
 		}
 		oss = temp
 	}
-	log.Println("[DEBUG] RESULTS:", oss)
 
 	if len(oss) == 0 {
 		return fmt.Errorf("There are no operating systems that match the search criteria")

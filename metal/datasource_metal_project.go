@@ -2,7 +2,6 @@ package metal
 
 import (
 	"fmt"
-	"log"
 	"path"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
@@ -114,7 +113,6 @@ func dataSourceMetalProjectRead(d *schema.ResourceData, meta interface{}) error 
 		}
 	} else {
 		projectId := projectIdRaw.(string)
-		log.Println(projectId)
 		var err error
 		project, _, err = client.Projects.Get(projectId, nil)
 		if err != nil {

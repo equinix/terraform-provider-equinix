@@ -2,7 +2,6 @@ package metal
 
 import (
 	"fmt"
-	"log"
 	"path/filepath"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
@@ -93,7 +92,6 @@ func dataSourceMetalOrganizationRead(d *schema.ResourceData, meta interface{}) e
 		}
 	} else {
 		orgId := orgIdRaw.(string)
-		log.Println(orgId)
 		var err error
 		org, _, err = client.Organizations.Get(orgId, nil)
 		if err != nil {
