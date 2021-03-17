@@ -92,8 +92,8 @@ func resourceMetalIPAttachmentRead(d *schema.ResourceData, meta interface{}) err
 func resourceMetalIPAttachmentDelete(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*packngo.Client)
 
-	_, err := client.DeviceIPs.Unassign(d.Id())
-	if err != nil {
+	resp, err := client.DeviceIPs.Unassign(d.Id())
+	if ignoreResponseErrors(httpForbidden, httpNotFound)(resp, err) != nil {
 		return friendlyError(err)
 	}
 

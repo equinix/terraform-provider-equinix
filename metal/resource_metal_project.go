@@ -49,7 +49,7 @@ func resourceMetalProject() *schema.Resource {
 				Optional: true,
 				Computed: true,
 				DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
-					return strings.ToLower(strings.Trim(old, `"`)) == strings.ToLower(strings.Trim(new, `"`))
+					return strings.EqualFold(strings.Trim(old, `"`), strings.Trim(new, `"`))
 				},
 				ValidateFunc: validation.StringMatch(uuidRE, "must be a valid UUID"),
 			},
@@ -60,7 +60,7 @@ func resourceMetalProject() *schema.Resource {
 				Computed: true,
 				ForceNew: true,
 				DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
-					return strings.ToLower(strings.Trim(old, `"`)) == strings.ToLower(strings.Trim(new, `"`))
+					return strings.EqualFold(strings.Trim(old, `"`), strings.Trim(new, `"`))
 				},
 				ValidateFunc: validation.StringMatch(uuidRE, "must be a valid UUID"),
 			},
@@ -271,8 +271,8 @@ func resourceMetalProjectUpdate(d *schema.ResourceData, meta interface{}) error 
 func resourceMetalProjectDelete(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*packngo.Client)
 
-	_, err := client.Projects.Delete(d.Id())
-	if err != nil {
+	resp, err := client.Projects.Delete(d.Id())
+	if ignoreResponseErrors(httpForbidden, httpNotFound)(resp, err) != nil {
 		return friendlyError(err)
 	}
 

@@ -247,9 +247,9 @@ func resourceMetalReservedIPBlockDelete(d *schema.ResourceData, meta interface{}
 
 	id := d.Id()
 
-	_, err := client.ProjectIPs.Remove(id)
+	resp, err := client.ProjectIPs.Remove(id)
 
-	if err != nil {
+	if ignoreResponseErrors(httpForbidden, httpNotFound)(resp, err) != nil {
 		return fmt.Errorf("Error deleting IP reservation block %s: %s", id, err)
 	}
 

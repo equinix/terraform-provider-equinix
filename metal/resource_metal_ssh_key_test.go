@@ -220,7 +220,6 @@ func testAccCheckMetalSSHKeyExists(n string, key *packngo.SSHKey) resource.TestC
 
 		*key = *foundKey
 
-		fmt.Printf("key: %v", key)
 		return nil
 	}
 }

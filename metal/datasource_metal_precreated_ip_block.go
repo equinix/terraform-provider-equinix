@@ -2,7 +2,6 @@ package metal
 
 import (
 	"fmt"
-	"log"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/packethost/packngo"
@@ -54,7 +53,6 @@ func dataSourceMetalPreCreatedIPBlock() *schema.Resource {
 func dataSourceMetalReservedIPBlockRead(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*packngo.Client)
 	projectID := d.Get("project_id").(string)
-	log.Println("[DEBUG] metal_precreated_ip_block - getting list of IPs in a project")
 	ips, _, err := client.ProjectIPs.List(projectID, nil)
 	if err != nil {
 		return err

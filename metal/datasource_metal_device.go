@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"path"
-	"path/filepath"
 	"sort"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
@@ -241,7 +240,7 @@ func dataSourceMetalDeviceRead(d *schema.ResourceData, meta interface{}) error {
 
 	keyIDs := []string{}
 	for _, k := range device.SSHKeys {
-		keyIDs = append(keyIDs, filepath.Base(k.URL))
+		keyIDs = append(keyIDs, path.Base(k.URL))
 	}
 	d.Set("ssh_key_ids", keyIDs)
 	networkInfo := getNetworkInfo(device.Network)

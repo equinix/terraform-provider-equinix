@@ -2,7 +2,7 @@ package metal
 
 import (
 	"log"
-	"path/filepath"
+	"path"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/packethost/packngo"
@@ -69,16 +69,13 @@ func resourceMetalVolumeAttachmentRead(d *schema.ResourceData, meta interface{})
 		}
 		return err
 	}
-	d.Set("device_id", filepath.Base(va.Device.Href))
-	d.Set("volume_id", filepath.Base(va.Volume.Href))
+	d.Set("device_id", path.Base(va.Device.Href))
+	d.Set("volume_id", path.Base(va.Volume.Href))
 	return nil
 }
 
 func resourceMetalVolumeAttachmentDelete(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*packngo.Client)
-	_, err := client.VolumeAttachments.Delete(d.Id())
-	if err != nil {
-		return err
-	}
-	return nil
+	resp, err := client.VolumeAttachments.Delete(d.Id())
+	return ignoreResponseErrors(httpForbidden, httpNotFound)(resp, err)
 }

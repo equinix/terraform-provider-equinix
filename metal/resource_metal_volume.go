@@ -288,7 +288,8 @@ func resourceMetalVolumeUpdate(d *schema.ResourceData, meta interface{}) error {
 func resourceMetalVolumeDelete(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*packngo.Client)
 
-	if _, err := client.Volumes.Delete(d.Id()); err != nil {
+	resp, err := client.Volumes.Delete(d.Id())
+	if ignoreResponseErrors(httpForbidden, httpNotFound)(resp, err) != nil {
 		return friendlyError(err)
 	}
 

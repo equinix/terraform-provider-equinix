@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"log"
 	"path"
-	"path/filepath"
 	"reflect"
 	"regexp"
 	"sort"
@@ -482,7 +481,7 @@ func resourceMetalDeviceRead(d *schema.ResourceData, meta interface{}) error {
 	d.Set("tags", device.Tags)
 	keyIDs := []string{}
 	for _, k := range device.SSHKeys {
-		keyIDs = append(keyIDs, filepath.Base(k.URL))
+		keyIDs = append(keyIDs, path.Base(k.URL))
 	}
 	d.Set("ssh_key_ids", keyIDs)
 	networkInfo := getNetworkInfo(device.Network)
@@ -585,7 +584,8 @@ func resourceMetalDeviceDelete(d *schema.ResourceData, meta interface{}) error {
 		fdv = true
 	}
 
-	if _, err := client.Devices.Delete(d.Id(), fdv); err != nil {
+	resp, err := client.Devices.Delete(d.Id(), fdv)
+	if ignoreResponseErrors(httpForbidden, httpNotFound)(resp, err) != nil {
 		return friendlyError(err)
 	}
 

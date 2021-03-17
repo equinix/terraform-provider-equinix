@@ -55,13 +55,13 @@ We have mostly acceptance tests in the provider. There's no point for you to run
 To run an acceptance test, find the relevant test function in `*_test.go` (for example TestAccMetalDevice_Basic), and run it as
 
 ```sh
-TF_ACC=1 go test -v -timeout=20m -run=TestAccMetalDevice_Basic
+TF_ACC=1 go test -v -timeout=20m ./... -run=TestAccMetalDevice_Basic
 ```
 
 If you want to see HTTP traffic, set `TF_LOG=DEBUG`, i.e.
 
 ```sh
-TF_LOG=DEBUG TF_ACC=1 go test -v -timeout=20m -run=TestAccMetalDevice_Basic
+TF_LOG=DEBUG TF_ACC=1 go test -v -timeout=20m ./... -run=TestAccMetalDevice_Basic
 ```
 
 ## Testing the provider with Terraform
