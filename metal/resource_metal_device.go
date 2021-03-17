@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"log"
 	"path"
-	"path/filepath"
 	"reflect"
 	"regexp"
 	"sort"
@@ -482,7 +481,7 @@ func resourceMetalDeviceRead(d *schema.ResourceData, meta interface{}) error {
 	d.Set("tags", device.Tags)
 	keyIDs := []string{}
 	for _, k := range device.SSHKeys {
-		keyIDs = append(keyIDs, filepath.Base(k.URL))
+		keyIDs = append(keyIDs, path.Base(k.URL))
 	}
 	d.Set("ssh_key_ids", keyIDs)
 	networkInfo := getNetworkInfo(device.Network)

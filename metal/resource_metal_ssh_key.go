@@ -3,6 +3,7 @@ package metal
 import (
 	"log"
 	"path"
+	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/packethost/packngo"
@@ -107,7 +108,7 @@ func resourceMetalSSHKeyRead(d *schema.ResourceData, meta interface{}) error {
 	d.Set("created", key.Created)
 	d.Set("updated", key.Updated)
 
-	if key.Owner.Href[:10] == "/projects/" {
+	if strings.Contains(key.Owner.Href, "/projects/") {
 		d.Set("project_id", ownerID)
 	}
 

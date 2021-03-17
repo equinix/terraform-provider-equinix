@@ -2,7 +2,7 @@ package metal
 
 import (
 	"fmt"
-	"path/filepath"
+	"path"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/packethost/packngo"
@@ -101,7 +101,7 @@ func dataSourceMetalOrganizationRead(d *schema.ResourceData, meta interface{}) e
 	projectIds := []string{}
 
 	for _, p := range org.Projects {
-		projectIds = append(projectIds, filepath.Base(p.URL))
+		projectIds = append(projectIds, path.Base(p.URL))
 	}
 
 	d.Set("organization_id", org.ID)
