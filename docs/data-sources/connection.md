@@ -19,7 +19,7 @@ data "metal_connection" "example" {
 
 ## Argument Reference
 
-* `connection_id` - (Required) Name of the facility.
+* `connection_id` - (Required) ID of the connection resource
 
 ## Attributes Reference
 

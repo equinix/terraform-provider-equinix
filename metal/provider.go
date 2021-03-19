@@ -48,6 +48,7 @@ func Provider() terraform.ResourceProvider {
 			"metal_project_ssh_key":      dataSourceMetalProjectSSHKey(),
 			"metal_spot_market_request":  dataSourceMetalSpotMarketRequest(),
 			"metal_volume":               dataSourceMetalVolume(),
+			"metal_virtual_circuit":      dataSourceMetalVirtualCircuit(),
 		},
 
 		ResourcesMap: map[string]*schema.Resource{
