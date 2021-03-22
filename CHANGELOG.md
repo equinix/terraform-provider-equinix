@@ -1,3 +1,33 @@
+## 1.1.0 (March 22, 2021)
+
+BREAKING CHANGES:
+
+- The environment variable `PACKET_AUTH_TOKEN` is deprecated. Use `METAL_AUTH_TOKEN`.
+- `CustomData` fields may be parsed differently with packngo v0.6.0+
+
+FIXES:
+
+- `metal_project_ssh_key` `project_id` is reported correctly
+- `metal_ssh_key` `project_id` is reported correctly
+- Delete operations now treat 404 and 403 HTTP errors as successful
+
+FEATURES:
+
+- **New Data Source** `metal_facility`
+- **New Provider Argument** `max_retries`
+- **New Provider Argument** `max_retry_wait_seconds`
+- Versioned User-Agent is reported by the HTTP Client
+- `metal_device_network_type` field `type` now accepts `hybrid-bonded`
+
+IMPROVEMENTS:
+
+- Depends on packngo [v0.7.0](https://github.com/packethost/packngo/releases/tag/v0.7.0)
+- Documentation corrections
+- E2E testing has less test jitter and greater overall success
+- Removed debug logs from metal\_operating\_system data source
+- Removed debug logs from metal\_organization data source
+- Removed debug logs from metal\_project data source
+
 ## 1.0.0 (December 08, 2020)
 
 BREAKING CHANGES:
