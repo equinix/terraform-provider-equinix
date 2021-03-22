@@ -3,7 +3,6 @@ package packngo
 import (
 	"bytes"
 	"context"
-	"crypto/x509"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -32,8 +31,6 @@ const (
 	headerRateReset              = "X-RateLimit-Reset"
 	expectedAPIContentTypePrefix = "application/json"
 )
-
-var redirectsErrorRe = regexp.MustCompile(`stopped after \d+ redirects\z`)
 
 // meta contains pagination information
 type meta struct {
@@ -106,7 +103,6 @@ type Client struct {
 	CapacityService        CapacityService
 	Connections            ConnectionService
 	DeviceIPs              DeviceIPService
-	DevicePorts            DevicePortService
 	Devices                DeviceService
 	Emails                 EmailService
 	Events                 EventService
@@ -116,6 +112,7 @@ type Client struct {
 	OperatingSystems       OSService
 	Organizations          OrganizationService
 	Plans                  PlanService
+	Ports                  PortService
 	ProjectIPs             ProjectIPService
 	ProjectVirtualNetworks ProjectVirtualNetworkService
 	Projects               ProjectService
@@ -124,10 +121,21 @@ type Client struct {
 	SpotMarketRequests     SpotMarketRequestService
 	TwoFactorAuth          TwoFactorAuthService
 	Users                  UserService
-	VPN                    VPNService
 	VirtualCircuits        VirtualCircuitService
 	VolumeAttachments      VolumeAttachmentService
 	Volumes                VolumeService
+
+	// DevicePorts
+	//
+	// Deprecated: Use Client.Ports or Device methods
+	DevicePorts DevicePortService
+
+	// VPN
+	//
+	// Deprecated: As of March 31, 2021, Doorman service is no longer
+	// available. See https://metal.equinix.com/developers/docs/accounts/doorman/
+	// for more details.
+	VPN VPNService
 }
 
 // requestDoer provides methods for making HTTP requests and receiving the
@@ -296,45 +304,6 @@ func NewClientWithAuth(consumerToken string, apiKey string, httpClient *http.Cli
 	return client
 }
 
-// RetryPolicy determines if the supplied http Response and error can be safely
-// retried (for use with github.com/hashicorp/go-retryablehttp clients)
-//
-//    retryClient := retryablehttp.NewClient()
-//    retryClient.CheckRetry = packngo.RetryPolicy
-func RetryPolicy(ctx context.Context, resp *http.Response, err error) (bool, error) {
-	// do not retry on context.Canceled or context.DeadlineExceeded
-	if ctx.Err() != nil {
-		return false, ctx.Err()
-	}
-
-	if err != nil {
-		if v, ok := err.(*url.Error); ok {
-			// Don't retry if the error was due to too many redirects.
-			if redirectsErrorRe.MatchString(v.Error()) {
-				return false, nil
-			}
-
-			// Don't retry if the error was due to TLS cert verification failure.
-			if _, ok := v.Err.(x509.UnknownAuthorityError); ok {
-				return false, nil
-			}
-		}
-
-		// The error is likely recoverable so retry.
-		return true, nil
-	}
-
-	// Check the response code. We retry on 500-range responses to allow
-	// the server time to recover, as 500's are typically not permanent
-	// errors and may relate to outages on the server side. This will catch
-	// invalid response codes as well, like 0 and 999.
-	//if resp.StatusCode == 0 || (resp.StatusCode >= 500 && resp.StatusCode != 501) {
-	//	return true, nil
-	//}
-
-	return false, nil
-}
-
 // NewClientWithBaseURL returns a Client pointing to nonstandard API URL, e.g.
 // for mocking the remote API
 func NewClientWithBaseURL(consumerToken string, apiKey string, httpClient *http.Client, apiBaseURL string) (*Client, error) {
@@ -365,6 +334,7 @@ func NewClientWithBaseURL(consumerToken string, apiKey string, httpClient *http.
 	c.OperatingSystems = &OSServiceOp{client: c}
 	c.Organizations = &OrganizationServiceOp{client: c}
 	c.Plans = &PlanServiceOp{client: c}
+	c.Ports = &PortServiceOp{client: c}
 	c.ProjectIPs = &ProjectIPServiceOp{client: c}
 	c.ProjectVirtualNetworks = &ProjectVirtualNetworkServiceOp{client: c}
 	c.Projects = &ProjectServiceOp{client: c}
