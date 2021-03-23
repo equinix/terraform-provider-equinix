@@ -7,7 +7,7 @@ description: |-
 
 # metal\_connection
 
-Use this data source to retrieve a connection resource from [Equnix Fabric - software-defined interconnections](https://metal.equinix.com/developers/docs/networking/fabric/)
+Use this data source to retrieve a connection resource from [Equinix Fabric - software-defined interconnections](https://metal.equinix.com/developers/docs/networking/fabric/)
 
 ## Example Usage
 
@@ -39,4 +39,3 @@ data "metal_connection" "example" {
   * `status` - Port status 
   * `link_status` - Port link status
   * `virtual_circuit_ids` - List of IDs of virtual cicruits attached to this port
-
