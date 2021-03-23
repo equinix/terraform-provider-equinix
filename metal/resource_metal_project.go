@@ -154,7 +154,7 @@ func resourceMetalProjectRead(d *schema.ResourceData, meta interface{}) error {
 	if err != nil {
 		err = friendlyError(err)
 
-		// If the project somehow already destroyed, mark as succesfully gone.
+		// If the project somehow already destroyed, mark as successfully gone.
 		if isNotFound(err) {
 			d.SetId("")
 
