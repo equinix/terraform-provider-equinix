@@ -1,6 +1,6 @@
 module github.com/equinix/terraform-provider-metal
 
-replace	github.com/packethost/packngo v0.7.0 => github.com/t0mk/packngo v0.0.0-20210325141130-a8cc6a016702
+replace	github.com/packethost/packngo v0.7.0 => github.com/t0mk/packngo v0.0.0-20210325155750-1e675f3e6b5f
 
 
 require (
