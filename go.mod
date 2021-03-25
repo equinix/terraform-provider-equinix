@@ -1,5 +1,8 @@
 module github.com/equinix/terraform-provider-metal
 
+replace	github.com/packethost/packngo v0.7.0 => github.com/t0mk/packngo v0.0.0-20210325141130-a8cc6a016702
+
+
 require (
 	github.com/apparentlymart/go-dump v0.0.0-20190214190832-042adf3cf4a0 // indirect
 	github.com/aws/aws-sdk-go v1.22.0 // indirect

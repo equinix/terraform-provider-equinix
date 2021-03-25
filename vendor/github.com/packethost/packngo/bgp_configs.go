@@ -4,10 +4,7 @@ import (
 	"path"
 )
 
-var (
-	bgpConfigPostBasePath = "/bgp-configs"
-	bgpConfigGetBasePath  = "/bgp-config"
-)
+var bgpConfigBasePath = "/bgp-config"
 
 // BGPConfigService interface defines available BGP config methods
 type BGPConfigService interface {
@@ -47,7 +44,7 @@ type BGPConfig struct {
 
 // Create function
 func (s *BGPConfigServiceOp) Create(projectID string, request CreateBGPConfigRequest) (*Response, error) {
-	apiPath := path.Join(projectBasePath, projectID, bgpConfigPostBasePath)
+	apiPath := path.Join(projectBasePath, projectID, bgpConfigBasePath)
 
 	resp, err := s.client.DoRequest("POST", apiPath, request, nil)
 	if err != nil {
@@ -59,7 +56,7 @@ func (s *BGPConfigServiceOp) Create(projectID string, request CreateBGPConfigReq
 
 // Get function
 func (s *BGPConfigServiceOp) Get(projectID string, opts *GetOptions) (bgpConfig *BGPConfig, resp *Response, err error) {
-	endpointPath := path.Join(projectBasePath, projectID, bgpConfigGetBasePath)
+	endpointPath := path.Join(projectBasePath, projectID, bgpConfigBasePath)
 	apiPathQuery := opts.WithQuery(endpointPath)
 
 	subset := new(BGPConfig)
