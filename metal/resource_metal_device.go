@@ -461,7 +461,9 @@ func resourceMetalDeviceRead(d *schema.ResourceData, meta interface{}) error {
 	d.Set("plan", device.Plan.Slug)
 	d.Set("deployed_facility", device.Facility.Code)
 	d.Set("facilities", []string{device.Facility.Code})
-	d.Set("metro", device.Metro.Code)
+	if device.Metro != nil {
+		d.Set("metro", device.Metro.Code)
+	}
 	d.Set("operating_system", device.OS.Slug)
 	d.Set("state", device.State)
 	d.Set("billing_cycle", device.BillingCycle)
