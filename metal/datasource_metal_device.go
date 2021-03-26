@@ -41,6 +41,10 @@ func dataSourceMetalDevice() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
+			"metro": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
 			"plan": {
 				Type:     schema.TypeString,
 				Computed: true,
@@ -210,6 +214,9 @@ func dataSourceMetalDeviceRead(d *schema.ResourceData, meta interface{}) error {
 	d.Set("device_id", device.ID)
 	d.Set("plan", device.Plan.Slug)
 	d.Set("facility", device.Facility.Code)
+	if device.Metro != nil {
+		d.Set("metro", device.Metro.Code)
+	}
 	d.Set("operating_system", device.OS.Slug)
 	d.Set("state", device.State)
 	d.Set("billing_cycle", device.BillingCycle)

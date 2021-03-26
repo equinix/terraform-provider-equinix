@@ -187,6 +187,7 @@ The following attributes are exported:
 * `hostname`- The hostname of the device
 * `id` - The ID of the device
 * `locked` - Whether the device is locked
+* `metro` - The metro area where the device is deployed
 * `network` - The device's private and public IP (v4 and v6) network details. When a device is run without any special network configuration, it will have 3 networks:
   * Public IPv4 at `metal_device.name.network.0`
   * IPv6 at `metal_device.name.network.1`
