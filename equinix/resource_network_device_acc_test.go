@@ -15,6 +15,11 @@ import (
 const (
 	networkDeviceMetroEnvVar               = "TF_ACC_NETWORK_DEVICE_METRO"
 	networkDeviceLicenseFileEnvVar         = "TF_ACC_NETWORK_DEVICE_LICENSE_FILE"
+	networkDeviceVersaController1EnvVar    = "TF_ACC_NETWORK_DEVICE_VERSA_CONTROLLER1"
+	networkDeviceVersaController2EnvVar    = "TF_ACC_NETWORK_DEVICE_VERSA_CONTROLLER2"
+	networkDeviceVersaLocalIDEnvVar        = "TF_ACC_NETWORK_DEVICE_VERSA_LOCALID"
+	networkDeviceVersaRemoteIDEnvVar       = "TF_ACC_NETWORK_DEVICE_VERSA_REMOTEID"
+	networkDeviceVersaSerialNumberEnvVar   = "TF_ACC_NETWORK_DEVICE_VERSA_SERIAL"
 	networkDeviceCGENIXLicenseKeyEnvVar    = "TF_ACC_NETWORK_DEVICE_CGENIX_LICENSE_KEY"
 	networkDeviceCGENIXLicenseSecretEnvVar = "TF_ACC_NETWORK_DEVICE_CGENIX_LICENSE_SECRET"
 )
@@ -421,6 +426,86 @@ func TestAccNetworkDevice_vSRX_HA_Self_BYOL(t *testing.T) {
 	})
 }
 
+func TestAccNetworkDevice_PaloAlto_HA_Managed_Sub(t *testing.T) {
+	t.Parallel()
+	metro, _ := schema.EnvDefaultFunc(networkDeviceMetroEnvVar, "SV")()
+	context := map[string]interface{}{
+		"device-resourceName":            "test",
+		"device-self_managed":            false,
+		"device-byol":                    false,
+		"device-name":                    fmt.Sprintf("%s-%s", tstResourcePrefix, randString(6)),
+		"device-metro_code":              metro.(string),
+		"device-type_code":               "PA-VM",
+		"device-package_code":            "VM100",
+		"device-notifications":           []string{"marry@equinix.com", "john@equinix.com"},
+		"device-hostname":                fmt.Sprintf("tf-%s", randString(6)),
+		"device-term_length":             1,
+		"device-version":                 "9.0.4",
+		"device-core_count":              2,
+		"device-purchase_order_number":   randString(10),
+		"device-order_reference":         randString(10),
+		"device-secondary_name":          fmt.Sprintf("%s-%s", tstResourcePrefix, randString(6)),
+		"device-secondary_hostname":      fmt.Sprintf("tf-%s", randString(6)),
+		"device-secondary_notifications": []string{"secondary@equinix.com"},
+		"acl-resourceName":               "acl-pri",
+		"acl-name":                       fmt.Sprintf("%s-%s", tstResourcePrefix, randString(6)),
+		"acl-description":                randString(50),
+		"acl-metroCode":                  metro.(string),
+		"acl-secondary_resourceName":     "acl-sec",
+		"acl-secondary_name":             fmt.Sprintf("%s-%s", tstResourcePrefix, randString(6)),
+		"acl-secondary_description":      randString(50),
+		"acl-secondary_metroCode":        metro.(string),
+	}
+	contextWithChanges := copyMap(context)
+	contextWithChanges["device-additional_bandwidth"] = 50
+	contextWithChanges["device-secondary_additional_bandwidth"] = 50
+	contextWithChanges["user-resourceName"] = "tst-user"
+	contextWithChanges["user-username"] = fmt.Sprintf("%s-%s", tstResourcePrefix, randString(6))
+	contextWithChanges["user-password"] = randString(10)
+	var primary, secondary ne.Device
+	var primaryACL, secondaryACL ne.ACLTemplate
+	var user ne.SSHUser
+	deviceResourceName := fmt.Sprintf("equinix_network_device.%s", context["device-resourceName"].(string))
+	priACLResourceName := fmt.Sprintf("equinix_network_acl_template.%s", context["acl-resourceName"].(string))
+	secACLResourceName := fmt.Sprintf("equinix_network_acl_template.%s", context["acl-secondary_resourceName"].(string))
+	userResourceName := fmt.Sprintf("equinix_network_ssh_user.%s", contextWithChanges["user-resourceName"].(string))
+	resource.Test(t, resource.TestCase{
+		PreCheck:  func() { testAccPreCheck(t) },
+		Providers: testAccProviders,
+		Steps: []resource.TestStep{
+			{
+				Config: newTestAccConfig(context).withDevice().withACL().build(),
+				Check: resource.ComposeTestCheckFunc(
+					testAccNeDeviceExists(deviceResourceName, &primary),
+					testAccNeDeviceAttributes(&primary, context),
+					testAccNeDeviceStatusAttributes(&primary, ne.DeviceStateProvisioned, ne.DeviceLicenseStateRegistered),
+					testAccNeDeviceSecondaryExists(&primary, &secondary),
+					testAccNeDeviceSecondaryAttributes(&secondary, context),
+					testAccNeDeviceStatusAttributes(&secondary, ne.DeviceStateProvisioned, ne.DeviceLicenseStateRegistered),
+					testAccNeDeviceRedundancyAttributes(&primary, &secondary),
+					testAccNeDeviceHAAttributes(deviceResourceName),
+					testAccNetworkACLTemplateExists(priACLResourceName, &primaryACL),
+					testAccNetworkACLTemplateExists(secACLResourceName, &secondaryACL),
+					testAccNeDeviceACLs(&primary, &secondary, &primaryACL, &secondaryACL),
+				),
+			},
+			{
+				Config: newTestAccConfig(contextWithChanges).withDevice().withACL().withSSHUser().build(),
+				Check: resource.ComposeTestCheckFunc(
+					testAccNeDeviceExists(deviceResourceName, &primary),
+					testAccNeDeviceAttributes(&primary, contextWithChanges),
+					testAccNeDeviceStatusAttributes(&primary, ne.DeviceStateProvisioned, ne.DeviceLicenseStateRegistered),
+					testAccNeDeviceSecondaryExists(&primary, &secondary),
+					testAccNeDeviceSecondaryAttributes(&secondary, contextWithChanges),
+					testAccNeDeviceStatusAttributes(&secondary, ne.DeviceStateProvisioned, ne.DeviceLicenseStateRegistered),
+					testAccNeSSHUserExists(userResourceName, &user),
+					testAccNeSSHUserAttributes(&user, []*ne.Device{&primary, &secondary}, contextWithChanges),
+				),
+			},
+		},
+	})
+}
+
 func TestAccNetworkDevice_PaloAlto_HA_Self_BYOL(t *testing.T) {
 	t.Parallel()
 	metro, _ := schema.EnvDefaultFunc(networkDeviceMetroEnvVar, "SV")()
@@ -555,6 +640,80 @@ func TestAccNetworkDevice_CSRSDWAN_HA_Self_BYOL(t *testing.T) {
 					testAccNeDeviceHAAttributes(deviceResourceName),
 					resource.TestCheckResourceAttrSet(deviceResourceName, "license_file_id"),
 					resource.TestCheckResourceAttrSet(deviceResourceName, "secondary_device.0.license_file_id"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccNetworkDevice_Versa_HA_Self_BYOL(t *testing.T) {
+	t.Parallel()
+	metro, _ := schema.EnvDefaultFunc(networkDeviceMetroEnvVar, "SV")()
+	controller1, _ := schema.EnvDefaultFunc(networkDeviceVersaController1EnvVar, "1.1.1.1")()
+	controller2, _ := schema.EnvDefaultFunc(networkDeviceVersaController2EnvVar, "2.2.2.2")()
+	localID, _ := schema.EnvDefaultFunc(networkDeviceVersaLocalIDEnvVar, "test@versa.com")()
+	remoteID, _ := schema.EnvDefaultFunc(networkDeviceVersaRemoteIDEnvVar, "test@versa.com")()
+	serialNumber, _ := schema.EnvDefaultFunc(networkDeviceVersaSerialNumberEnvVar, "Test")()
+	context := map[string]interface{}{
+		"device-resourceName":                        "test",
+		"device-self_managed":                        true,
+		"device-byol":                                true,
+		"device-name":                                fmt.Sprintf("%s-%s", tstResourcePrefix, randString(6)),
+		"device-metro_code":                          metro.(string),
+		"device-type_code":                           "VERSA_SDWAN",
+		"device-package_code":                        "FLEX_VNF_2",
+		"device-notifications":                       []string{"marry@equinix.com", "john@equinix.com"},
+		"device-term_length":                         1,
+		"device-version":                             "16.1R2S8",
+		"device-core_count":                          2,
+		"device-purchase_order_number":               randString(10),
+		"device-order_reference":                     randString(10),
+		"device-vendorConfig_enabled":                true,
+		"device-vendorConfig_controller1":            controller1.(string),
+		"device-vendorConfig_controller2":            controller2.(string),
+		"device-vendorConfig_localId":                localID.(string),
+		"device-vendorConfig_remoteId":               remoteID.(string),
+		"device-vendorConfig_serialNumber":           serialNumber.(string),
+		"device-secondary_name":                      fmt.Sprintf("%s-%s", tstResourcePrefix, randString(6)),
+		"device-secondary_notifications":             []string{"secondary@equinix.com"},
+		"device-secondary_vendorConfig_enabled":      true,
+		"device-secondary_vendorConfig_controller1":  controller1.(string),
+		"device-secondary_vendorConfig_controller2":  controller2.(string),
+		"device-secondary_vendorConfig_localId":      localID.(string),
+		"device-secondary_vendorConfig_remoteId":     remoteID.(string),
+		"device-secondary_vendorConfig_serialNumber": serialNumber.(string),
+		"acl-resourceName":                           "acl-pri",
+		"acl-name":                                   fmt.Sprintf("%s-%s", tstResourcePrefix, randString(6)),
+		"acl-description":                            randString(50),
+		"acl-metroCode":                              metro.(string),
+		"acl-secondary_resourceName":                 "acl-sec",
+		"acl-secondary_name":                         fmt.Sprintf("%s-%s", tstResourcePrefix, randString(6)),
+		"acl-secondary_description":                  randString(50),
+		"acl-secondary_metroCode":                    metro.(string),
+	}
+	deviceResourceName := fmt.Sprintf("equinix_network_device.%s", context["device-resourceName"].(string))
+	priACLResourceName := fmt.Sprintf("equinix_network_acl_template.%s", context["acl-resourceName"].(string))
+	secACLResourceName := fmt.Sprintf("equinix_network_acl_template.%s", context["acl-secondary_resourceName"].(string))
+	var primary, secondary ne.Device
+	var primaryACL, secondaryACL ne.ACLTemplate
+	resource.Test(t, resource.TestCase{
+		PreCheck:  func() { testAccPreCheck(t) },
+		Providers: testAccProviders,
+		Steps: []resource.TestStep{
+			{
+				Config: newTestAccConfig(context).withDevice().withACL().build(),
+				Check: resource.ComposeTestCheckFunc(
+					testAccNeDeviceExists(deviceResourceName, &primary),
+					testAccNeDeviceAttributes(&primary, context),
+					testAccNeDeviceStatusAttributes(&primary, ne.DeviceStateProvisioned, ne.DeviceLicenseStateApplied),
+					testAccNeDeviceSecondaryExists(&primary, &secondary),
+					testAccNeDeviceSecondaryAttributes(&secondary, context),
+					testAccNeDeviceStatusAttributes(&secondary, ne.DeviceStateProvisioned, ne.DeviceLicenseStateApplied),
+					testAccNeDeviceRedundancyAttributes(&primary, &secondary),
+					testAccNetworkACLTemplateExists(priACLResourceName, &primaryACL),
+					testAccNetworkACLTemplateExists(secACLResourceName, &secondaryACL),
+					testAccNeDeviceACLs(&primary, &secondary, &primaryACL, &secondaryACL),
+					testAccNeDeviceHAAttributes(deviceResourceName),
 				),
 			},
 		},
@@ -722,6 +881,21 @@ func testAccNeDeviceAttributes(device *ne.Device, ctx map[string]interface{}) re
 		if v, ok := ctx["device-vendorConfig_licenseSecret"]; ok && device.VendorConfiguration["licenseSecret"] != v.(string) {
 			return fmt.Errorf("device-vendorConfig_licenseSecret does not match %v - %v", device.VendorConfiguration["licenseSecret"], v)
 		}
+		if v, ok := ctx["device-vendorConfig_controller1"]; ok && device.VendorConfiguration["controller1"] != v.(string) {
+			return fmt.Errorf("device-vendorConfig_controller1 does not match %v - %v", device.VendorConfiguration["controller1"], v)
+		}
+		if v, ok := ctx["device-vendorConfig_controller2"]; ok && device.VendorConfiguration["controller2"] != v.(string) {
+			return fmt.Errorf("device-vendorConfig_controller2 does not match %v - %v", device.VendorConfiguration["controller2"], v)
+		}
+		if v, ok := ctx["device-vendorConfig_localId"]; ok && device.VendorConfiguration["localId"] != v.(string) {
+			return fmt.Errorf("device-vendorConfig_localId does not match %v - %v", device.VendorConfiguration["localId"], v)
+		}
+		if v, ok := ctx["device-vendorConfig_remoteId"]; ok && device.VendorConfiguration["remoteId"] != v.(string) {
+			return fmt.Errorf("device-vendorConfig_remoteId does not match %v - %v", device.VendorConfiguration["remoteId"], v)
+		}
+		if v, ok := ctx["device-vendorConfig_serialNumber"]; ok && device.VendorConfiguration["serialNumber"] != v.(string) {
+			return fmt.Errorf("device-vendorConfig_serialNumber does not match %v - %v", device.VendorConfiguration["serialNumber"], v)
+		}
 		return nil
 	}
 }
@@ -751,6 +925,21 @@ func testAccNeDeviceSecondaryAttributes(device *ne.Device, ctx map[string]interf
 	}
 	if v, ok := ctx["device-secondary_vendorConfig_licenseSecret"]; ok {
 		secCtx["device-vendorConfig_licenseSecret"] = v
+	}
+	if v, ok := ctx["device-secondary_vendorConfig_controller1"]; ok {
+		secCtx["device-vendorConfig_controller1"] = v
+	}
+	if v, ok := ctx["device-secondary_vendorConfig_controller2"]; ok {
+		secCtx["device-vendorConfig_controller2"] = v
+	}
+	if v, ok := ctx["device-secondary_vendorConfig_localId"]; ok {
+		secCtx["device-vendorConfig_localId"] = v
+	}
+	if v, ok := ctx["device-secondary_vendorConfig_remoteId"]; ok {
+		secCtx["device-vendorConfig_remoteId"] = v
+	}
+	if v, ok := ctx["device-secondary_vendorConfig_serialNumber"]; ok {
+		secCtx["device-vendorConfig_serialNumber"] = v
 	}
 	return testAccNeDeviceAttributes(device, secCtx)
 }
@@ -864,7 +1053,7 @@ resource "equinix_network_device" "%{device-resourceName}" {
 	}
 	if _, ok := ctx["device-additional_bandwidth"]; ok {
 		config += nprintf(`
-  additional_bandwidth  = "%{device-additional_bandwidth}"`, ctx)
+  additional_bandwidth  = %{device-additional_bandwidth}`, ctx)
 	}
 	if _, ok := ctx["device-throughput"]; ok {
 		config += nprintf(`
@@ -913,6 +1102,26 @@ resource "equinix_network_device" "%{device-resourceName}" {
 			config += nprintf(`
     licenseSecret = "%{device-vendorConfig_licenseSecret}"`, ctx)
 		}
+		if _, ok := ctx["device-vendorConfig_controller1"]; ok {
+			config += nprintf(`
+    controller1 = "%{device-vendorConfig_controller1}"`, ctx)
+		}
+		if _, ok := ctx["device-vendorConfig_controller2"]; ok {
+			config += nprintf(`
+    controller2 = "%{device-vendorConfig_controller2}"`, ctx)
+		}
+		if _, ok := ctx["device-vendorConfig_localId"]; ok {
+			config += nprintf(`
+    localId = "%{device-vendorConfig_localId}"`, ctx)
+		}
+		if _, ok := ctx["device-vendorConfig_remoteId"]; ok {
+			config += nprintf(`
+    remoteId = "%{device-vendorConfig_remoteId}"`, ctx)
+		}
+		if _, ok := ctx["device-vendorConfig_serialNumber"]; ok {
+			config += nprintf(`
+    serialNumber = "%{device-vendorConfig_serialNumber}"`, ctx)
+		}
 		config += nprintf(`
   }`, ctx)
 	}
@@ -925,7 +1134,7 @@ resource "equinix_network_device" "%{device-resourceName}" {
     account_number       = data.equinix_network_account.test.number`, ctx)
 		if _, ok := ctx["device-secondary_additional_bandwidth"]; ok {
 			config += nprintf(`
-    additional_bandwidth = "%{device-secondary_additional_bandwidth}"`, ctx)
+    additional_bandwidth = %{device-secondary_additional_bandwidth}`, ctx)
 		}
 		if _, ok := ctx["device-secondary_hostname"]; ok {
 			config += nprintf(`
@@ -964,6 +1173,26 @@ resource "equinix_network_device" "%{device-resourceName}" {
 			if _, ok := ctx["device-secondary_vendorConfig_licenseSecret"]; ok {
 				config += nprintf(`
       licenseSecret = "%{device-secondary_vendorConfig_licenseSecret}"`, ctx)
+			}
+			if _, ok := ctx["device-secondary_vendorConfig_controller1"]; ok {
+				config += nprintf(`
+      controller1 = "%{device-secondary_vendorConfig_controller1}"`, ctx)
+			}
+			if _, ok := ctx["device-secondary_vendorConfig_controller2"]; ok {
+				config += nprintf(`
+      controller2 = "%{device-secondary_vendorConfig_controller2}"`, ctx)
+			}
+			if _, ok := ctx["device-secondary_vendorConfig_localId"]; ok {
+				config += nprintf(`
+      localId = "%{device-secondary_vendorConfig_localId}"`, ctx)
+			}
+			if _, ok := ctx["device-secondary_vendorConfig_remoteId"]; ok {
+				config += nprintf(`
+      remoteId = "%{device-secondary_vendorConfig_remoteId}"`, ctx)
+			}
+			if _, ok := ctx["device-secondary_vendorConfig_serialNumber"]; ok {
+				config += nprintf(`
+      serialNumber = "%{device-secondary_vendorConfig_serialNumber}"`, ctx)
 			}
 			config += nprintf(`
     }`, ctx)
