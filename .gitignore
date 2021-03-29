@@ -4,6 +4,7 @@
 example.tf
 terraform.tfplan
 terraform.tfstate
+terraform-provider-metal
 bin/
 modules-dev/
 /pkg/
