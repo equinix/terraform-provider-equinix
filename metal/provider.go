@@ -36,6 +36,7 @@ func Provider() terraform.ResourceProvider {
 		},
 		DataSourcesMap: map[string]*schema.Resource{
 			"metal_facility":             dataSourceMetalFacility(),
+			"metal_connection":           dataSourceMetalConnection(),
 			"metal_ip_block_ranges":      dataSourceMetalIPBlockRanges(),
 			"metal_precreated_ip_block":  dataSourceMetalPreCreatedIPBlock(),
 			"metal_operating_system":     dataSourceOperatingSystem(),
@@ -47,6 +48,7 @@ func Provider() terraform.ResourceProvider {
 			"metal_project_ssh_key":      dataSourceMetalProjectSSHKey(),
 			"metal_spot_market_request":  dataSourceMetalSpotMarketRequest(),
 			"metal_volume":               dataSourceMetalVolume(),
+			"metal_virtual_circuit":      dataSourceMetalVirtualCircuit(),
 		},
 
 		ResourcesMap: map[string]*schema.Resource{
