@@ -66,7 +66,18 @@ func resourceMetalDevice() *schema.Resource {
 			"metro": {
 				Type:          schema.TypeString,
 				Optional:      true,
+				ForceNew:      true,
 				ConflictsWith: []string{"facilities"},
+				DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
+					if len(old) > 0 && new == "" {
+						// here it would be good to also test if the "old" metro
+						// contains the device facility. If yes, we'd suppress diff
+						// and if it's a different metro, we would re-create.
+						// Not sure if this is possible.
+						return true
+					}
+					return old == new
+				},
 			},
 
 			"facilities": {
