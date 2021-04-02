@@ -32,6 +32,7 @@ func resourceMetalVlan() *schema.Resource {
 				Optional:      true,
 				ForceNew:      true,
 				ConflictsWith: []string{"metro"},
+				Deprecated:    "Use metro instead",
 			},
 			"metro": {
 				Type:          schema.TypeString,
