@@ -454,7 +454,7 @@ func resourceMetalDeviceCreate(d *schema.ResourceData, meta interface{}) error {
 func resourceMetalDeviceRead(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*packngo.Client)
 
-	device, _, err := client.Devices.Get(d.Id(), &packngo.GetOptions{Includes: []string{"project", "metro"}})
+	device, _, err := client.Devices.Get(d.Id(), &packngo.GetOptions{Includes: []string{"project", "metro", "facility"}})
 	if err != nil {
 		err = friendlyError(err)
 
