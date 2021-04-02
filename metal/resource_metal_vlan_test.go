@@ -10,6 +10,28 @@ import (
 	"github.com/packethost/packngo"
 )
 
+func TestAccMetalVlan_Metro(t *testing.T) {
+	rs := acctest.RandString(10)
+	metro := "sv"
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckMetalVlanDestroyed,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckMetalVlanConfig_metro(rs, metro, "testvlan"),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(
+						"metal_vlan.foovlan", "metro", metro),
+					resource.TestCheckResourceAttr(
+						"metal_vlan.foovlan", "facility", ""),
+				),
+			},
+		},
+	})
+}
+
 func TestAccMetalVlan_Basic(t *testing.T) {
 	var vlan packngo.VirtualNetwork
 	rs := acctest.RandString(10)
@@ -73,6 +95,20 @@ func testAccCheckMetalVlanDestroyed(s *terraform.State) error {
 	}
 
 	return nil
+}
+
+func testAccCheckMetalVlanConfig_metro(projSuffix, metro, desc string) string {
+	return fmt.Sprintf(`
+resource "metal_project" "foobar" {
+    name = "tfacc-vlan-%s"
+}
+
+resource "metal_vlan" "foovlan" {
+    project_id = "${metal_project.foobar.id}"
+    metro = "%s"
+    description = "%s"
+}
+`, projSuffix, metro, desc)
 }
 
 func testAccCheckMetalVlanConfig_var(projSuffix, facility, desc string) string {
