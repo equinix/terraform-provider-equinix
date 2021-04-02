@@ -20,9 +20,7 @@ import (
 
 const (
 	authTokenEnvVar = "PACKET_AUTH_TOKEN"
-	libraryVersion  = "0.6.0"
 	baseURL         = "https://api.equinix.com/metal/v1/"
-	userAgent       = "packngo/" + libraryVersion
 	mediaType       = "application/json"
 	debugEnvVar     = "PACKNGO_DEBUG"
 
@@ -30,6 +28,9 @@ const (
 	headerRateRemaining          = "X-RateLimit-Remaining"
 	headerRateReset              = "X-RateLimit-Reset"
 	expectedAPIContentTypePrefix = "application/json"
+
+	// UserAgent is the default HTTP User-Agent Header value that will be used by NewClient
+	UserAgent = "packngo/" + Version
 )
 
 // meta contains pagination information
@@ -122,7 +123,6 @@ type Client struct {
 	SpotMarketRequests     SpotMarketRequestService
 	TwoFactorAuth          TwoFactorAuthService
 	Users                  UserService
-	VPN                    VPNService
 	VirtualCircuits        VirtualCircuitService
 	VolumeAttachments      VolumeAttachmentService
 	Volumes                VolumeService
@@ -131,6 +131,13 @@ type Client struct {
 	//
 	// Deprecated: Use Client.Ports or Device methods
 	DevicePorts DevicePortService
+
+	// VPN
+	//
+	// Deprecated: As of March 31, 2021, Doorman service is no longer
+	// available. See https://metal.equinix.com/developers/docs/accounts/doorman/
+	// for more details.
+	VPN VPNService
 }
 
 // requestDoer provides methods for making HTTP requests and receiving the
@@ -311,7 +318,7 @@ func NewClientWithBaseURL(consumerToken string, apiKey string, httpClient *http.
 		return nil, err
 	}
 
-	c := &Client{client: httpClient, BaseURL: u, UserAgent: userAgent, ConsumerToken: consumerToken, APIKey: apiKey}
+	c := &Client{client: httpClient, BaseURL: u, UserAgent: UserAgent, ConsumerToken: consumerToken, APIKey: apiKey}
 	c.APIKeys = &APIKeyServiceOp{client: c}
 	c.BGPConfig = &BGPConfigServiceOp{client: c}
 	c.BGPSessions = &BGPSessionServiceOp{client: c}
