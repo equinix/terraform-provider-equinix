@@ -166,6 +166,7 @@ primary or secondary
   * `interface.#.ip_address` - interface IP address
   * `interface.#.assigned_type` - interface management type (Equinix Managed or empty)
   * `interface.#.type` - interface type
+* `asn` - Autonomous system number
 
 ## Timeouts
 
