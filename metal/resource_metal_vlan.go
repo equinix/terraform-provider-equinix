@@ -23,7 +23,6 @@ func resourceMetalVlan() *schema.Resource {
 			},
 			"description": {
 				Type:     schema.TypeString,
-				Required: false,
 				Optional: true,
 				ForceNew: true,
 			},
@@ -32,13 +31,31 @@ func resourceMetalVlan() *schema.Resource {
 				Optional:      true,
 				ForceNew:      true,
 				ConflictsWith: []string{"metro"},
-				Deprecated:    "Use metro instead",
+				DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
+					// suppress diff when unsetting facility
+					if len(old) > 0 && new == "" {
+						return true
+					}
+					return old == new
+				},
 			},
 			"metro": {
 				Type:          schema.TypeString,
 				Optional:      true,
 				ForceNew:      true,
 				ConflictsWith: []string{"facility"},
+				DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
+					_, facOk := d.GetOk("facility")
+					// new - new val from template
+					// old - old val from state
+					//
+					// suppress diff if metro is manually set for first time, and
+					// facility is already set
+					if len(new) > 0 && old == "" && facOk {
+						return facOk
+					}
+					return old == new
+				},
 			},
 			"vxlan": {
 				Type:     schema.TypeInt,
@@ -55,7 +72,7 @@ func resourceMetalVlanCreate(d *schema.ResourceData, meta interface{}) error {
 	metroRaw, metroOk := d.GetOk("metro")
 
 	if !facOk && !metroOk {
-		return friendlyError(errors.New("one of facility and metro must be configured"))
+		return friendlyError(errors.New("one of facility or metro must be configured"))
 	}
 
 	createRequest := &packngo.VirtualNetworkCreateRequest{
