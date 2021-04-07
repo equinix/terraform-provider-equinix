@@ -59,6 +59,8 @@ func resourceMetalVlan() *schema.Resource {
 			},
 			"vxlan": {
 				Type:     schema.TypeInt,
+				ForceNew: true,
+				Optional: true,
 				Computed: true,
 			},
 		},
@@ -70,9 +72,13 @@ func resourceMetalVlanCreate(d *schema.ResourceData, meta interface{}) error {
 
 	facRaw, facOk := d.GetOk("facility")
 	metroRaw, metroOk := d.GetOk("metro")
+	vxlanRaw, vxlanOk := d.GetOk("vxlan")
 
 	if !facOk && !metroOk {
 		return friendlyError(errors.New("one of facility or metro must be configured"))
+	}
+	if facOk && vxlanOk {
+		return friendlyError(errors.New("you can set vxlan only for metro vlans"))
 	}
 
 	createRequest := &packngo.VirtualNetworkCreateRequest{
@@ -81,6 +87,7 @@ func resourceMetalVlanCreate(d *schema.ResourceData, meta interface{}) error {
 	}
 	if metroOk {
 		createRequest.Metro = metroRaw.(string)
+		createRequest.VXLAN = vxlanRaw.(int)
 	}
 	if facOk {
 		createRequest.Facility = facRaw.(string)

@@ -20,6 +20,7 @@ resource "metal_vlan" "foovlan" {
     project_id = metal_project.foobar.id
     metro = "%s"
     description = "%s"
+    vxlan = 5
 }
 `, projSuffix, metro, desc)
 }
