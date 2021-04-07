@@ -66,6 +66,7 @@ type VirtualNetworkCreateRequest struct {
 
 	// VXLAN is the VLAN ID. VXLAN may be specified when Metro is defined. It is remotely incremented otherwise. Must be unique per Metro.
 	VXLAN int `json:"vxlan,omitempty"`
+}
 
 func (i *ProjectVirtualNetworkServiceOp) Get(vlanID string, opts *GetOptions) (*VirtualNetwork, *Response, error) {
 	endpointPath := path.Join(virtualNetworkBasePath, vlanID)
