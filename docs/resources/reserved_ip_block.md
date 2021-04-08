@@ -25,12 +25,21 @@ Once IP block is allocated or imported, an address from it can be assigned to de
 Allocate reserved IP blocks:
 
 ```hcl
-# Allocate /31 block of max 2 public IPv4 addresses in Parsippany, NJ (ewr1) for myproject
+# Allocate /31 block of max 2 public IPv4 addresses in Silicon Valley (sv15) facility for myproject
 
 resource "metal_reserved_ip_block" "two_elastic_addresses" {
   project_id = local.project_id
-  facility   = "ewr1"
+  facility   = "sv15"
   quantity   = 2
+}
+
+# Allocate 1 floating IP in Sillicon Valley (sv) metro
+
+resource "metal_reserved_ip_block" "test" {
+  project_id = local.project_id
+  type       = "public_ipv4"
+  metro      = "sv"
+  quantity   = 1
 }
 
 # Allocate 1 global floating IP, which can be assigned to device in any facility
@@ -45,10 +54,10 @@ resource "metal_reserved_ip_block" "test" {
 Allocate a block and run a device with public IPv4 from the block
 
 ```hcl
-# Allocate /31 block of max 2 public IPv4 addresses in Parsippany, NJ (ewr1)
+# Allocate /31 block of max 2 public IPv4 addresses in Silicon Valley (sv15) facility
 resource "metal_reserved_ip_block" "example" {
   project_id = local.project_id
-  facility   = "ewr1"
+  facility   = "sv15"
   quantity   = 2
 }
 
@@ -56,7 +65,7 @@ resource "metal_reserved_ip_block" "example" {
 
 resource "metal_device" "nodes" {
   project_id       = local.project_id
-  facilities       = ["ewr1"]
+  facilities       = ["sv15"]
   plan             = "t1.small.x86"
   operating_system = "ubuntu_16_04"
   hostname         = "test"
@@ -81,7 +90,8 @@ The following arguments are supported:
 * `project_id` - (Required) The metal project ID where to allocate the address block
 * `quantity` - (Required) The number of allocated /32 addresses, a power of 2
 * `type` - (Optional) Either "global_ipv4" or "public_ipv4", defaults to "public_ipv4" for backward compatibility
-* `facility` - (Optional) Facility where to allocate the public IP address block, makes sense only for type==public_ipv4, must be empty for type==global_ipv4
+* `facility` - (Optional) Facility where to allocate the public IP address block, makes sense only for type==public_ipv4, must be empty for type==global_ipv4, conflicts with `metro`
+* `metro` - (Optional) Metro where to allocate the public IP address block, makes sense only for type==public_ipv4, must be empty for type==global_ipv4, conflicts with `facility`
 * `description` - (Optional) Arbitrary description
 
 ## Attributes Reference
@@ -89,6 +99,7 @@ The following arguments are supported:
 The following attributes are exported:
 
 * `facility` - The facility where the block was allocated, empty for global blocks
+* `metro` - The metro where the block was allocated, empty for global blocks
 * `project_id` - To which project the addresses beling
 * `quantity` - Number of "/32" addresses in the block
 * `id` - The unique ID of the block

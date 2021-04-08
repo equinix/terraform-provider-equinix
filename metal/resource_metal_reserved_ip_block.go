@@ -72,9 +72,16 @@ func resourceMetalReservedIPBlock() *schema.Resource {
 		ForceNew: true,
 	}
 	reservedBlockSchema["facility"] = &schema.Schema{
-		Type:     schema.TypeString,
-		Optional: true,
-		ForceNew: true,
+		Type:          schema.TypeString,
+		Optional:      true,
+		ForceNew:      true,
+		ConflictsWith: []string{"metro"},
+	}
+	reservedBlockSchema["metro"] = &schema.Schema{
+		Type:          schema.TypeString,
+		Optional:      true,
+		ForceNew:      true,
+		ConflictsWith: []string{"facility"},
 	}
 	reservedBlockSchema["description"] = &schema.Schema{
 		Type:     schema.TypeString,
@@ -119,14 +126,21 @@ func resourceMetalReservedIPBlockCreate(d *schema.ResourceData, meta interface{}
 		Type:     typ,
 		Quantity: quantity,
 	}
-	f, ok := d.GetOk("facility")
-
-	if ok && typ == "global_ipv4" {
-		return fmt.Errorf("Facility can not be set for type == global_ipv4")
+	facility, facOk := d.GetOk("facility")
+	metro, metOk := d.GetOk("metro")
+	if (facOk || metOk) && typ != "public_ipv4" {
+		return fmt.Errorf("facility and metro can only be set for type == public_ipv4")
 	}
-	fs := f.(string)
-	if typ == "public_ipv4" {
-		req.Facility = &fs
+	if facOk && metOk {
+		return fmt.Errorf("you can only set either facility or metro")
+	}
+	if facOk {
+		f := facility.(string)
+		req.Facility = &f
+	}
+	if metOk {
+		m := metro.(string)
+		req.Metro = &m
 	}
 	desc, ok := d.GetOk("description")
 	if ok {
@@ -198,6 +212,12 @@ func loadBlock(d *schema.ResourceData, reservedBlock *packngo.IPAddressReservati
 				return nil
 			}
 			return d.Set(k, reservedBlock.Facility.Code)
+		},
+		"metro": func(d *schema.ResourceData, k string) error {
+			if reservedBlock.Metro == nil {
+				return nil
+			}
+			return d.Set(k, reservedBlock.Metro.Code)
 		},
 		"gateway":        reservedBlock.Gateway,
 		"network":        reservedBlock.Network,

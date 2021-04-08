@@ -38,6 +38,20 @@ resource "metal_reserved_ip_block" "test" {
 }`, name)
 }
 
+func testAccCheckMetalReservedIPBlockConfig_Metro(name string) string {
+	return fmt.Sprintf(`
+resource "metal_project" "foobar" {
+    name = "tfacc-reserved_ip_block-%s"
+}
+
+resource "metal_reserved_ip_block" "test" {
+    project_id  = "${metal_project.foobar.id}"
+    metro       = "sv"
+    type        = "public_ipv4"
+	quantity    = 2
+}`, name)
+}
+
 func TestAccMetalReservedIPBlock_Global(t *testing.T) {
 
 	rs := acctest.RandString(10)
@@ -92,6 +106,26 @@ func TestAccMetalReservedIPBlock_Public(t *testing.T) {
 						"metal_reserved_ip_block.test", "public", "true"),
 					resource.TestCheckResourceAttr(
 						"metal_reserved_ip_block.test", "management", "false"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccMetalReservedIPBlock_Metro(t *testing.T) {
+
+	rs := acctest.RandString(10)
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckMetalReservedIPBlockDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckMetalReservedIPBlockConfig_Metro(rs),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(
+						"metal_reserved_ip_block.test", "metro", "sv"),
 				),
 			},
 		},
