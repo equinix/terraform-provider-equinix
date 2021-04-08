@@ -163,6 +163,8 @@ github.com/onsi/ginkgo v1.7.0/go.mod h1:lLunBs/Ym6LB5Z9jYTR76FiuTmxDTDusOGeTQH+W
 github.com/onsi/gomega v1.4.3/go.mod h1:ex+gbHU/CVuBBDIJjb2X0qEXbFg53c61hWP/1CpauHY=
 github.com/packethost/packngo v0.7.0 h1:3WeH3O8Pfgw1fNqYASeYMa/S4x9UYQJvw4Zrmwgr5Q8=
 github.com/packethost/packngo v0.7.0/go.mod h1:YrtUNN9IRjjqN6zK+cy2IYoi3EjHfoWTWxJkI1I1Vk0=
+github.com/packethost/packngo v0.10.0 h1:BpSu5eFtAaPqm1Xob05AmRDGempOySTEMc4Sjf8FA+A=
+github.com/packethost/packngo v0.10.0/go.mod h1:YrtUNN9IRjjqN6zK+cy2IYoi3EjHfoWTWxJkI1I1Vk0=
 github.com/pierrec/lz4 v2.0.5+incompatible/go.mod h1:pdkljMzZIN41W+lC3N2tnIh5sFi+IEE17M5jbnwPHcY=
 github.com/pmezard/go-difflib v1.0.0 h1:4DBwDE0NGyQoBHbLQYPwSUPoCMWR5BEzIk/f1lZbAQM=
 github.com/pmezard/go-difflib v1.0.0/go.mod h1:iKH77koFhYxTK1pcRnkKkqfTogsbg7gZNVY4sRDYZ/4=
