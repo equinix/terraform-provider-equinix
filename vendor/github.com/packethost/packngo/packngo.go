@@ -20,9 +20,7 @@ import (
 
 const (
 	authTokenEnvVar = "PACKET_AUTH_TOKEN"
-	libraryVersion  = "0.6.0"
 	baseURL         = "https://api.equinix.com/metal/v1/"
-	userAgent       = "packngo/" + libraryVersion
 	mediaType       = "application/json"
 	debugEnvVar     = "PACKNGO_DEBUG"
 
@@ -30,6 +28,9 @@ const (
 	headerRateRemaining          = "X-RateLimit-Remaining"
 	headerRateReset              = "X-RateLimit-Reset"
 	expectedAPIContentTypePrefix = "application/json"
+
+	// UserAgent is the default HTTP User-Agent Header value that will be used by NewClient
+	UserAgent = "packngo/" + Version
 )
 
 // meta contains pagination information
@@ -108,6 +109,7 @@ type Client struct {
 	Events                 EventService
 	Facilities             FacilityService
 	HardwareReservations   HardwareReservationService
+	Metros                 MetroService
 	Notifications          NotificationService
 	OperatingSystems       OSService
 	Organizations          OrganizationService
@@ -202,6 +204,7 @@ func (c *Client) Do(req *http.Request, v interface{}) (*Response, error) {
 	if c.debug {
 		dumpResponse(response.Response)
 	}
+	dumpDeprecation(response.Response)
 	c.RateLimit = response.Rate
 
 	err = checkResponse(resp)
@@ -226,6 +229,44 @@ func (c *Client) Do(req *http.Request, v interface{}) (*Response, error) {
 	}
 
 	return &response, err
+}
+
+// dumpDeprecation logs headers defined by
+// https://tools.ietf.org/html/rfc8594
+func dumpDeprecation(resp *http.Response) {
+	uri := ""
+	if resp.Request != nil {
+		uri = resp.Request.Method + " " + resp.Request.URL.Path
+	}
+
+	deprecation := resp.Header.Get("Deprecation")
+	if deprecation != "" {
+		if deprecation == "true" {
+			deprecation = ""
+		} else {
+			deprecation = " on " + deprecation
+		}
+		log.Printf("WARNING: %q reported deprecation%s", uri, deprecation)
+	}
+
+	sunset := resp.Header.Get("Sunset")
+	if sunset != "" {
+		log.Printf("WARNING: %q reported sunsetting on %s", uri, sunset)
+	}
+
+	links := resp.Header.Values("Link")
+
+	for _, s := range links {
+		for _, ss := range strings.Split(s, ",") {
+			if strings.Contains(ss, "rel=\"sunset\"") {
+				link := strings.Split(ss, ";")[0]
+				log.Printf("WARNING: See %s for sunset details", link)
+			} else if strings.Contains(ss, "rel=\"deprecation\"") {
+				link := strings.Split(ss, ";")[0]
+				log.Printf("WARNING: See %s for deprecation details", link)
+			}
+		}
+	}
 }
 
 func dumpResponse(resp *http.Response) {
@@ -316,7 +357,7 @@ func NewClientWithBaseURL(consumerToken string, apiKey string, httpClient *http.
 		return nil, err
 	}
 
-	c := &Client{client: httpClient, BaseURL: u, UserAgent: userAgent, ConsumerToken: consumerToken, APIKey: apiKey}
+	c := &Client{client: httpClient, BaseURL: u, UserAgent: UserAgent, ConsumerToken: consumerToken, APIKey: apiKey}
 	c.APIKeys = &APIKeyServiceOp{client: c}
 	c.BGPConfig = &BGPConfigServiceOp{client: c}
 	c.BGPSessions = &BGPSessionServiceOp{client: c}
@@ -330,6 +371,7 @@ func NewClientWithBaseURL(consumerToken string, apiKey string, httpClient *http.
 	c.Events = &EventServiceOp{client: c}
 	c.Facilities = &FacilityServiceOp{client: c}
 	c.HardwareReservations = &HardwareReservationServiceOp{client: c}
+	c.Metros = &MetroServiceOp{client: c}
 	c.Notifications = &NotificationServiceOp{client: c}
 	c.OperatingSystems = &OSServiceOp{client: c}
 	c.Organizations = &OrganizationServiceOp{client: c}
