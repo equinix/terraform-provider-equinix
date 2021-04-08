@@ -54,6 +54,7 @@ var networkDeviceSchemaNames = map[string]string{
 	"VendorConfiguration": "vendor_configuration",
 	"UserPublicKey":       "ssh_key",
 	"ASN":                 "asn",
+	"ZoneCode":            "zone_code",
 	"Secondary":           "secondary_device",
 }
 
@@ -93,6 +94,7 @@ var networkDeviceDescriptions = map[string]string{
 	"VendorConfiguration": "Map of vendor specific configuration parameters for a device",
 	"UserPublicKey":       "Definition of SSH key that will be provisioned on a device",
 	"ASN":                 "Autonomous system number",
+	"ZoneCode":            "Device location zone code",
 	"Secondary":           "Definition of secondary device applicable for HA setup",
 }
 
@@ -379,6 +381,11 @@ func createNetworkDeviceSchema() map[string]*schema.Schema {
 			Computed:    true,
 			Description: networkDeviceDescriptions["ASN"],
 		},
+		networkDeviceSchemaNames["ZoneCode"]: {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: networkDeviceDescriptions["ZoneCode"],
+		},
 		networkDeviceSchemaNames["Secondary"]: {
 			Type:        schema.TypeList,
 			Optional:    true,
@@ -534,6 +541,11 @@ func createNetworkDeviceSchema() map[string]*schema.Schema {
 						Type:        schema.TypeInt,
 						Computed:    true,
 						Description: networkDeviceDescriptions["ASN"],
+					},
+					networkDeviceSchemaNames["ZoneCode"]: {
+						Type:        schema.TypeString,
+						Computed:    true,
+						Description: networkDeviceDescriptions["ZoneCode"],
 					},
 				},
 			},
@@ -944,6 +956,9 @@ func updateNetworkDeviceResource(primary *ne.Device, secondary *ne.Device, d *sc
 	if err := d.Set(networkDeviceSchemaNames["ASN"], primary.ASN); err != nil {
 		return fmt.Errorf("error reading ASN: %s", err)
 	}
+	if err := d.Set(networkDeviceSchemaNames["ZoneCode"], primary.ZoneCode); err != nil {
+		return fmt.Errorf("error reading ZoneCode: %s", err)
+	}
 	if secondary != nil {
 		if v, ok := d.GetOk(networkDeviceSchemaNames["Secondary"]); ok {
 			secondaryFromSchema := expandNetworkDeviceSecondary(v.([]interface{}))
@@ -981,6 +996,7 @@ func flattenNetworkDeviceSecondary(device *ne.Device) interface{} {
 	transformed[networkDeviceSchemaNames["VendorConfiguration"]] = device.VendorConfiguration
 	transformed[networkDeviceSchemaNames["UserPublicKey"]] = flattenNetworkDeviceUserKeys([]*ne.DeviceUserPublicKey{device.UserPublicKey})
 	transformed[networkDeviceSchemaNames["ASN"]] = device.ASN
+	transformed[networkDeviceSchemaNames["ZoneCode"]] = device.ZoneCode
 	return []interface{}{transformed}
 }
 

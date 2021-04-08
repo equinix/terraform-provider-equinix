@@ -113,7 +113,8 @@ func TestNetworkDevice_updateResourceData(t *testing.T) {
 			Username: ne.String("user"),
 			KeyName:  ne.String("key"),
 		},
-		ASN: ne.Int(11222),
+		ASN:      ne.Int(11222),
+		ZoneCode: ne.String("Zone2"),
 	}
 	inputSecondary := &ne.Device{}
 	secondarySchemaLicenseFile := "/tmp/licenseFileSec"
@@ -149,6 +150,7 @@ func TestNetworkDevice_updateResourceData(t *testing.T) {
 	assert.Equal(t, inputPrimary.VendorConfiguration, expandInterfaceMapToStringMap(d.Get(networkDeviceSchemaNames["VendorConfiguration"]).(map[string]interface{})), "VendorConfiguration matches")
 	assert.Equal(t, inputPrimary.UserPublicKey, expandNetworkDeviceUserKeys(d.Get(networkDeviceSchemaNames["UserPublicKey"]).(*schema.Set))[0], "UserPublicKey matches")
 	assert.Equal(t, ne.IntValue(inputPrimary.ASN), d.Get(networkDeviceSchemaNames["ASN"]), "ASN matches")
+	assert.Equal(t, ne.StringValue(inputPrimary.ZoneCode), d.Get(networkDeviceSchemaNames["ZoneCode"]), "ZoneCode matches")
 	assert.Equal(t, secondarySchemaLicenseFile, ne.StringValue(expandNetworkDeviceSecondary(d.Get(networkDeviceSchemaNames["Secondary"]).([]interface{})).LicenseFile), "Secondary LicenseFile matches")
 }
 
@@ -193,7 +195,8 @@ func TestNetworkDevice_flattenSecondary(t *testing.T) {
 			Username: ne.String("user"),
 			KeyName:  ne.String("testKey"),
 		},
-		ASN: ne.Int(11222),
+		ASN:      ne.Int(11222),
+		ZoneCode: ne.String("Zone2"),
 	}
 	expected := []interface{}{
 		map[string]interface{}{
@@ -237,7 +240,8 @@ func TestNetworkDevice_flattenSecondary(t *testing.T) {
 					neDeviceUserKeySchemaNames["KeyName"]:  input.UserPublicKey.KeyName,
 				},
 			},
-			networkDeviceSchemaNames["ASN"]: input.ASN,
+			networkDeviceSchemaNames["ASN"]:      input.ASN,
+			networkDeviceSchemaNames["ZoneCode"]: input.ZoneCode,
 		},
 	}
 	//when

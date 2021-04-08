@@ -167,6 +167,7 @@ primary or secondary
   * `interface.#.assigned_type` - interface management type (Equinix Managed or empty)
   * `interface.#.type` - interface type
 * `asn` - Autonomous system number
+* `zone_code` - Device location zone code
 
 ## Timeouts
 
