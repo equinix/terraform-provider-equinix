@@ -35,6 +35,7 @@ func Provider() terraform.ResourceProvider {
 			},
 		},
 		DataSourcesMap: map[string]*schema.Resource{
+			"metal_metro":                dataSourceMetalMetro(),
 			"metal_facility":             dataSourceMetalFacility(),
 			"metal_connection":           dataSourceMetalConnection(),
 			"metal_ip_block_ranges":      dataSourceMetalIPBlockRanges(),
