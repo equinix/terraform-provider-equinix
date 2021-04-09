@@ -1,4 +1,10 @@
-## 1.1.0 (Unreleased)
+## 1.2.0 (unreleased)
+
+FEATURES:
+
+- **New Resource**: `equinix_network_device_link` ([#43](https://github.com/equinix/terraform-provider-equinix/issues/43))
+
+## 1.1.0 (April 09, 2021)
 
 BUG FIXES:
 
