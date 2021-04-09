@@ -17,24 +17,28 @@ func metalIPComputedFields() map[string]*schema.Schema {
 			Computed: true,
 		},
 		"address_family": {
-			Type:     schema.TypeInt,
-			Computed: true,
+			Type:        schema.TypeInt,
+			Computed:    true,
+			Description: "Address family as integer (4 or 6)",
 		},
 		"cidr": {
-			Type:     schema.TypeInt,
-			Computed: true,
+			Type:        schema.TypeInt,
+			Computed:    true,
+			Description: "Length of CIDR prefix of the block as integer",
 		},
 		"gateway": {
 			Type:     schema.TypeString,
 			Computed: true,
 		},
 		"netmask": {
-			Type:     schema.TypeString,
-			Computed: true,
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "Mask in decimal notation, e.g. 255.255.255.0",
 		},
 		"network": {
-			Type:     schema.TypeString,
-			Computed: true,
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "Network IP address portion of the block specification",
 		},
 		"manageable": {
 			Type:     schema.TypeBool,
@@ -50,16 +54,19 @@ func metalIPComputedFields() map[string]*schema.Schema {
 func metalIPResourceComputedFields() map[string]*schema.Schema {
 	s := metalIPComputedFields()
 	s["address_family"] = &schema.Schema{
-		Type:     schema.TypeInt,
-		Computed: true,
+		Type:        schema.TypeInt,
+		Computed:    true,
+		Description: "Address family as integer (4 or 6)",
 	}
 	s["public"] = &schema.Schema{
-		Type:     schema.TypeBool,
-		Computed: true,
+		Type:        schema.TypeBool,
+		Computed:    true,
+		Description: "Flag indicating whether IP block is addressable from the Internet",
 	}
 	s["global"] = &schema.Schema{
-		Type:     schema.TypeBool,
-		Computed: true,
+		Type:        schema.TypeBool,
+		Computed:    true,
+		Description: "Flag indicating whether IP block is global, i.e. assignable in any location",
 	}
 	return s
 }
@@ -67,30 +74,62 @@ func metalIPResourceComputedFields() map[string]*schema.Schema {
 func resourceMetalReservedIPBlock() *schema.Resource {
 	reservedBlockSchema := metalIPResourceComputedFields()
 	reservedBlockSchema["project_id"] = &schema.Schema{
-		Type:     schema.TypeString,
-		Required: true,
-		ForceNew: true,
+		Type:        schema.TypeString,
+		Required:    true,
+		ForceNew:    true,
+		Description: "The metal project ID where to allocate the address block",
 	}
 	reservedBlockSchema["facility"] = &schema.Schema{
-		Type:     schema.TypeString,
-		Optional: true,
-		ForceNew: true,
+		Type:          schema.TypeString,
+		Optional:      true,
+		ForceNew:      true,
+		ConflictsWith: []string{"metro"},
+		Description:   "Facility where to allocate the public IP address block, makes sense only for type==public_ipv4, must be empty for type==global_ipv4, conflicts with metro",
+		DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
+			// suppress diff when unsetting facility
+			if len(old) > 0 && new == "" {
+				return true
+			}
+			return old == new
+		},
+	}
+	reservedBlockSchema["metro"] = &schema.Schema{
+		Type:          schema.TypeString,
+		Optional:      true,
+		ForceNew:      true,
+		ConflictsWith: []string{"facility"},
+		Description:   "Metro where to allocate the public IP address block, makes sense only for type==public_ipv4, must be empty for type==global_ipv4, conflicts with facility",
+		DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
+			_, facOk := d.GetOk("facility")
+			// new - new val from template
+			// old - old val from state
+			//
+			// suppress diff if metro is manually set for first time, and
+			// facility is already set
+			if len(new) > 0 && old == "" && facOk {
+				return facOk
+			}
+			return old == new
+		},
 	}
 	reservedBlockSchema["description"] = &schema.Schema{
-		Type:     schema.TypeString,
-		Optional: true,
-		ForceNew: true,
+		Type:        schema.TypeString,
+		Optional:    true,
+		ForceNew:    true,
+		Description: "Arbitraty description",
 	}
 	reservedBlockSchema["quantity"] = &schema.Schema{
-		Type:     schema.TypeInt,
-		Required: true,
-		ForceNew: true,
+		Type:        schema.TypeInt,
+		Required:    true,
+		ForceNew:    true,
+		Description: "The number of allocated /32 addresses, a power of 2",
 	}
 	reservedBlockSchema["type"] = &schema.Schema{
 		Type:         schema.TypeString,
 		ForceNew:     true,
 		Default:      "public_ipv4",
 		Optional:     true,
+		Description:  "Either global_ipv4 or public_ipv4, defaults to public_ipv4 for backward compatibility",
 		ValidateFunc: validation.StringInSlice([]string{"public_ipv4", "global_ipv4"}, false),
 	}
 	reservedBlockSchema["cidr_notation"] = &schema.Schema{
@@ -119,14 +158,27 @@ func resourceMetalReservedIPBlockCreate(d *schema.ResourceData, meta interface{}
 		Type:     typ,
 		Quantity: quantity,
 	}
-	f, ok := d.GetOk("facility")
+	facility, facOk := d.GetOk("facility")
+	metro, metOk := d.GetOk("metro")
 
-	if ok && typ == "global_ipv4" {
-		return fmt.Errorf("Facility can not be set for type == global_ipv4")
+	// no need to guard facOk && metOk, they "ConflictsWith" each-other
+	if typ == "global_ipv4" {
+		if facOk || metOk {
+			return fmt.Errorf("facility and metro can't be set for global IP block reservation")
+		}
+	} else {
+		if !(facOk || metOk) {
+			return fmt.Errorf("You should set either metro or facility for non-global IP block reservation")
+		}
 	}
-	fs := f.(string)
-	if typ == "public_ipv4" {
-		req.Facility = &fs
+
+	if facOk {
+		f := facility.(string)
+		req.Facility = &f
+	}
+	if metOk {
+		m := metro.(string)
+		req.Metro = &m
 	}
 	desc, ok := d.GetOk("description")
 	if ok {
@@ -198,6 +250,12 @@ func loadBlock(d *schema.ResourceData, reservedBlock *packngo.IPAddressReservati
 				return nil
 			}
 			return d.Set(k, reservedBlock.Facility.Code)
+		},
+		"metro": func(d *schema.ResourceData, k string) error {
+			if reservedBlock.Metro == nil {
+				return nil
+			}
+			return d.Set(k, reservedBlock.Metro.Code)
 		},
 		"gateway":        reservedBlock.Gateway,
 		"network":        reservedBlock.Network,

@@ -13,12 +13,12 @@ import (
 func testAccCheckMetalReservedIPBlockConfig_Global(name string) string {
 	return fmt.Sprintf(`
 resource "metal_project" "foobar" {
-    name = "tfacc-reserved_ip_block-%s"
+	name = "tfacc-reserved_ip_block-%s"
 }
 
 resource "metal_reserved_ip_block" "test" {
-    project_id = "${metal_project.foobar.id}"
-    type     = "global_ipv4"
+	project_id = "${metal_project.foobar.id}"
+	type     = "global_ipv4"
 	description = "testdesc"
 	quantity = 1
 }`, name)
@@ -27,13 +27,27 @@ resource "metal_reserved_ip_block" "test" {
 func testAccCheckMetalReservedIPBlockConfig_Public(name string) string {
 	return fmt.Sprintf(`
 resource "metal_project" "foobar" {
-    name = "tfacc-reserved_ip_block-%s"
+	name = "tfacc-reserved_ip_block-%s"
 }
 
 resource "metal_reserved_ip_block" "test" {
-    project_id  = "${metal_project.foobar.id}"
-    facility    = "ewr1"
-    type        = "public_ipv4"
+	project_id  = "${metal_project.foobar.id}"
+	facility    = "ewr1"
+	type        = "public_ipv4"
+	quantity    = 2
+}`, name)
+}
+
+func testAccCheckMetalReservedIPBlockConfig_Metro(name string) string {
+	return fmt.Sprintf(`
+resource "metal_project" "foobar" {
+	name = "tfacc-reserved_ip_block-%s"
+}
+
+resource "metal_reserved_ip_block" "test" {
+	project_id  = "${metal_project.foobar.id}"
+	metro       = "sv"
+	type        = "public_ipv4"
 	quantity    = 2
 }`, name)
 }
@@ -98,6 +112,26 @@ func TestAccMetalReservedIPBlock_Public(t *testing.T) {
 	})
 }
 
+func TestAccMetalReservedIPBlock_Metro(t *testing.T) {
+
+	rs := acctest.RandString(10)
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckMetalReservedIPBlockDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckMetalReservedIPBlockConfig_Metro(rs),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(
+						"metal_reserved_ip_block.test", "metro", "sv"),
+				),
+			},
+		},
+	})
+}
+
 func TestAccMetalReservedIPBlock_importBasic(t *testing.T) {
 
 	rs := acctest.RandString(10)
@@ -137,13 +171,13 @@ func testAccCheckMetalReservedIPBlockDestroy(s *terraform.State) error {
 func testAccMetalReservedIP_Device(name string) string {
 	return fmt.Sprintf(`
 resource "metal_project" "foobar" {
-    name = "tfacc-reserved_ip_block-%s"
+	name = "tfacc-reserved_ip_block-%s"
 }
 
 resource "metal_reserved_ip_block" "test" {
-    project_id  = metal_project.foobar.id
-    facility    = "ewr1"
-    type        = "public_ipv4"
+	project_id  = metal_project.foobar.id
+	facility    = "ewr1"
+	type        = "public_ipv4"
 	quantity    = 2
 }
 
@@ -155,12 +189,12 @@ resource "metal_device" "test" {
   hostname         = "tfacc-reserved-ip-device"
   billing_cycle    = "hourly"
   ip_address {
-     type = "public_ipv4"
-     cidr = 31
-     reservation_ids = [metal_reserved_ip_block.test.id]
+	 type = "public_ipv4"
+	 cidr = 31
+	 reservation_ids = [metal_reserved_ip_block.test.id]
   }
   ip_address {
-     type = "private_ipv4"
+	 type = "private_ipv4"
   }
 }
 `, name)
