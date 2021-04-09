@@ -36,5 +36,6 @@ Facilities can be looked up by `code`.
 The following attributes are exported:
 
 * `id` - The ID of the facility
-* `name` - The name of the facilityg system running on the device
+* `name` - The name of the facility
 * `features` - The features of the facility
+* `metro` - The metro code the facility is part of
