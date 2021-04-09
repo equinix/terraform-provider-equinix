@@ -17,24 +17,28 @@ func metalIPComputedFields() map[string]*schema.Schema {
 			Computed: true,
 		},
 		"address_family": {
-			Type:     schema.TypeInt,
-			Computed: true,
+			Type:        schema.TypeInt,
+			Computed:    true,
+			Description: "Address family as integer (4 or 6)",
 		},
 		"cidr": {
-			Type:     schema.TypeInt,
-			Computed: true,
+			Type:        schema.TypeInt,
+			Computed:    true,
+			Description: "Length of CIDR prefix of the block as integer",
 		},
 		"gateway": {
 			Type:     schema.TypeString,
 			Computed: true,
 		},
 		"netmask": {
-			Type:     schema.TypeString,
-			Computed: true,
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "Mask in decimal notation, e.g. 255.255.255.0",
 		},
 		"network": {
-			Type:     schema.TypeString,
-			Computed: true,
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "Network IP address portion of the block specification",
 		},
 		"manageable": {
 			Type:     schema.TypeBool,
@@ -50,16 +54,19 @@ func metalIPComputedFields() map[string]*schema.Schema {
 func metalIPResourceComputedFields() map[string]*schema.Schema {
 	s := metalIPComputedFields()
 	s["address_family"] = &schema.Schema{
-		Type:     schema.TypeInt,
-		Computed: true,
+		Type:        schema.TypeInt,
+		Computed:    true,
+		Description: "Address family as integer (4 or 6)",
 	}
 	s["public"] = &schema.Schema{
-		Type:     schema.TypeBool,
-		Computed: true,
+		Type:        schema.TypeBool,
+		Computed:    true,
+		Description: "Flag indicating whether IP block is addressable from the Internet",
 	}
 	s["global"] = &schema.Schema{
-		Type:     schema.TypeBool,
-		Computed: true,
+		Type:        schema.TypeBool,
+		Computed:    true,
+		Description: "Flag indicating whether IP block is global, i.e. assignable in any location",
 	}
 	return s
 }
@@ -67,37 +74,43 @@ func metalIPResourceComputedFields() map[string]*schema.Schema {
 func resourceMetalReservedIPBlock() *schema.Resource {
 	reservedBlockSchema := metalIPResourceComputedFields()
 	reservedBlockSchema["project_id"] = &schema.Schema{
-		Type:     schema.TypeString,
-		Required: true,
-		ForceNew: true,
+		Type:        schema.TypeString,
+		Required:    true,
+		ForceNew:    true,
+		Description: "The metal project ID where to allocate the address block",
 	}
 	reservedBlockSchema["facility"] = &schema.Schema{
 		Type:          schema.TypeString,
 		Optional:      true,
 		ForceNew:      true,
 		ConflictsWith: []string{"metro"},
+		Description:   "Facility where to allocate the public IP address block, makes sense only for type==public_ipv4, must be empty for type==global_ipv4, conflicts with metro",
 	}
 	reservedBlockSchema["metro"] = &schema.Schema{
 		Type:          schema.TypeString,
 		Optional:      true,
 		ForceNew:      true,
 		ConflictsWith: []string{"facility"},
+		Description:   "Metro where to allocate the public IP address block, makes sense only for type==public_ipv4, must be empty for type==global_ipv4, conflicts with facility",
 	}
 	reservedBlockSchema["description"] = &schema.Schema{
-		Type:     schema.TypeString,
-		Optional: true,
-		ForceNew: true,
+		Type:        schema.TypeString,
+		Optional:    true,
+		ForceNew:    true,
+		Description: "Arbitraty description",
 	}
 	reservedBlockSchema["quantity"] = &schema.Schema{
-		Type:     schema.TypeInt,
-		Required: true,
-		ForceNew: true,
+		Type:        schema.TypeInt,
+		Required:    true,
+		ForceNew:    true,
+		Description: "The number of allocated /32 addresses, a power of 2",
 	}
 	reservedBlockSchema["type"] = &schema.Schema{
 		Type:         schema.TypeString,
 		ForceNew:     true,
 		Default:      "public_ipv4",
 		Optional:     true,
+		Description:  "Either global_ipv4 or public_ipv4, defaults to public_ipv4 for backward compatibility",
 		ValidateFunc: validation.StringInSlice([]string{"public_ipv4", "global_ipv4"}, false),
 	}
 	reservedBlockSchema["cidr_notation"] = &schema.Schema{
