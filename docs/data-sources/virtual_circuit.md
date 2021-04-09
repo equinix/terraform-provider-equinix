@@ -1,5 +1,5 @@
 ---
-page_title: "Equinix Metal: virtual_circuit"
+page_title: "Equinix Metal: metal_virtual_circuit"
 subcategory: ""
 description: |-
   Retrieve Equinix Fabric Virtual Circuit
@@ -7,7 +7,7 @@ description: |-
 
 # metal_virtual_circuit
 
-Use this data source to retrieve a virtual circuit resource from [Equnix Fabric - software-defined interconnections](https://metal.equinix.com/developers/docs/networking/fabric/)
+Use this data source to retrieve a virtual circuit resource from [Equinix Fabric - software-defined interconnections](https://metal.equinix.com/developers/docs/networking/fabric/)
 
 ## Example Usage
 
