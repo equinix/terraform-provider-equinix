@@ -161,10 +161,8 @@ github.com/oklog/run v1.0.0/go.mod h1:dlhp/R75TPv97u0XWUtDeV/lRKWPKSdTuV0TZvrmrQ
 github.com/onsi/ginkgo v1.6.0/go.mod h1:lLunBs/Ym6LB5Z9jYTR76FiuTmxDTDusOGeTQH+WWjE=
 github.com/onsi/ginkgo v1.7.0/go.mod h1:lLunBs/Ym6LB5Z9jYTR76FiuTmxDTDusOGeTQH+WWjE=
 github.com/onsi/gomega v1.4.3/go.mod h1:ex+gbHU/CVuBBDIJjb2X0qEXbFg53c61hWP/1CpauHY=
-github.com/packethost/packngo v0.7.0 h1:3WeH3O8Pfgw1fNqYASeYMa/S4x9UYQJvw4Zrmwgr5Q8=
-github.com/packethost/packngo v0.7.0/go.mod h1:YrtUNN9IRjjqN6zK+cy2IYoi3EjHfoWTWxJkI1I1Vk0=
-github.com/packethost/packngo v0.10.0 h1:BpSu5eFtAaPqm1Xob05AmRDGempOySTEMc4Sjf8FA+A=
-github.com/packethost/packngo v0.10.0/go.mod h1:YrtUNN9IRjjqN6zK+cy2IYoi3EjHfoWTWxJkI1I1Vk0=
+github.com/packethost/packngo v0.11.0 h1:qdSONCGZPsSpDCqhqQjCWhBJ8bGcUEiNusYI0hpijIY=
+github.com/packethost/packngo v0.11.0/go.mod h1:YrtUNN9IRjjqN6zK+cy2IYoi3EjHfoWTWxJkI1I1Vk0=
 github.com/pierrec/lz4 v2.0.5+incompatible/go.mod h1:pdkljMzZIN41W+lC3N2tnIh5sFi+IEE17M5jbnwPHcY=
 github.com/pmezard/go-difflib v1.0.0 h1:4DBwDE0NGyQoBHbLQYPwSUPoCMWR5BEzIk/f1lZbAQM=
 github.com/pmezard/go-difflib v1.0.0/go.mod h1:iKH77koFhYxTK1pcRnkKkqfTogsbg7gZNVY4sRDYZ/4=
@@ -182,12 +180,6 @@ github.com/stretchr/testify v1.2.2/go.mod h1:a8OnRcib4nhh0OaRAV+Yts87kKdq0PP7pXf
 github.com/stretchr/testify v1.3.0/go.mod h1:M5WIy9Dh21IEIfnGCwXGc5bZfKNJtfHm1UVUgZn+9EI=
 github.com/stretchr/testify v1.5.1 h1:nOGnQDM7FYENwehXlg/kFVnos3rEvtKTjRvOWSzb6H4=
 github.com/stretchr/testify v1.5.1/go.mod h1:5W2xD1RspED5o8YsWQXVCued0rvSQ+mT+I5cxcmMvtA=
-github.com/t0mk/packngo v0.0.0-20210324130003-026357e63e7a h1:hLQBk3zTpV6vSdbSNVvC5ClCOCPbApALApqDJwJQs2g=
-github.com/t0mk/packngo v0.0.0-20210324130003-026357e63e7a/go.mod h1:YrtUNN9IRjjqN6zK+cy2IYoi3EjHfoWTWxJkI1I1Vk0=
-github.com/t0mk/packngo v0.0.0-20210325141130-a8cc6a016702 h1:Ij5pn9LWTSzhBHW0BEUrBbr4sTOlgA9JYNkdR3EjeSU=
-github.com/t0mk/packngo v0.0.0-20210325141130-a8cc6a016702/go.mod h1:YrtUNN9IRjjqN6zK+cy2IYoi3EjHfoWTWxJkI1I1Vk0=
-github.com/t0mk/packngo v0.0.0-20210325155750-1e675f3e6b5f h1:ajmNuv8PIRg6O/n8dexPBKrwF8lPD4bhprmH+PgmBpA=
-github.com/t0mk/packngo v0.0.0-20210325155750-1e675f3e6b5f/go.mod h1:YrtUNN9IRjjqN6zK+cy2IYoi3EjHfoWTWxJkI1I1Vk0=
 github.com/ulikunitz/xz v0.5.5 h1:pFrO0lVpTBXLpYw+pnLj6TbvHuyjXMfjGeCwSqCVwok=
 github.com/ulikunitz/xz v0.5.5/go.mod h1:2bypXElzHzzJZwzH67Y6wb67pO62Rzfn7BSiF4ABRW8=
 github.com/vmihailenco/msgpack v3.3.3+incompatible/go.mod h1:fy3FlTQTDXWkZ7Bh6AcGMlsjHatGryHQYUTf1ShIgkk=
