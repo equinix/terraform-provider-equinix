@@ -3,6 +3,7 @@ package equinix
 import (
 	"context"
 	"fmt"
+	"net/http"
 	"reflect"
 	"regexp"
 	"time"
@@ -87,6 +88,7 @@ func Provider() *schema.Provider {
 			"equinix_network_bgp":                resourceNetworkBGP(),
 			"equinix_network_ssh_key":            resourceNetworkSSHKey(),
 			"equinix_network_acl_template":       resourceNetworkACLTemplate(),
+			"equinix_network_device_link":        resourceNetworkDeviceLink(),
 		},
 	}
 
@@ -271,4 +273,24 @@ func slicesMatch(s1, s2 []string) bool {
 		}
 	}
 	return true
+}
+
+func isRestNotFoundError(err error) bool {
+	if restErr, ok := err.(rest.Error); ok {
+		if restErr.HTTPCode == http.StatusNotFound {
+			return true
+		}
+	}
+	return false
+}
+
+func schemaSetToMap(set *schema.Set) map[int]interface{} {
+	transformed := make(map[int]interface{})
+	if set != nil {
+		list := set.List()
+		for i := range list {
+			transformed[set.F(list[i])] = list[i]
+		}
+	}
+	return transformed
 }

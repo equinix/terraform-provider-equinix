@@ -3,6 +3,7 @@ package equinix
 import (
 	"fmt"
 	"math/rand"
+	"net/http"
 	"os"
 	"reflect"
 	"regexp"
@@ -13,6 +14,7 @@ import (
 
 	"github.com/equinix/rest-go"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform/helper/hashcode"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -259,6 +261,52 @@ func TestProvider_slicesMatch(t *testing.T) {
 	for i := range expected {
 		assert.Equal(t, expected[i], results[i])
 	}
+}
+
+func TestProvider_isRestNotFoundError(t *testing.T) {
+	//given
+	input := []error{
+		rest.Error{HTTPCode: http.StatusNotFound, Message: "Not Found"},
+		rest.Error{HTTPCode: http.StatusInternalServerError, Message: "Internal Server Error"},
+		fmt.Errorf("some bogus error"),
+	}
+	expected := []bool{
+		true,
+		false,
+		false,
+	}
+	//when
+	result := make([]bool, len(input))
+	for i := range input {
+		result[i] = isRestNotFoundError(input[i])
+	}
+	//then
+	assert.Equal(t, expected, result, "Result matches expected output")
+}
+
+func TestProvider_schemaSetToMap(t *testing.T) {
+	//given
+	type item struct {
+		id       string
+		valueOne int
+		valueTwo int
+	}
+	setFunc := func(v interface{}) int {
+		i := v.(item)
+		return hashcode.String(i.id)
+	}
+	items := []interface{}{
+		item{"id1", 100, 200},
+		item{"id2", 666, 999},
+		item{"id3", 0, 100},
+	}
+	set := schema.NewSet(setFunc, items)
+	//when
+	list := schemaSetToMap(set)
+	//then
+	assert.Equal(t, items[0], list[setFunc(items[0])])
+	assert.Equal(t, items[1], list[setFunc(items[1])])
+	assert.Equal(t, items[2], list[setFunc(items[2])])
 }
 
 //‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾

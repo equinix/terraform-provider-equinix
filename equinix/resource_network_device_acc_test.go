@@ -14,6 +14,7 @@ import (
 
 const (
 	networkDeviceMetroEnvVar               = "TF_ACC_NETWORK_DEVICE_METRO"
+	networkDeviceSecondaryMetroEnvVar      = "TF_ACC_NETWORK_DEVICE_SECONDARY_METRO"
 	networkDeviceLicenseFileEnvVar         = "TF_ACC_NETWORK_DEVICE_LICENSE_FILE"
 	networkDeviceVersaController1EnvVar    = "TF_ACC_NETWORK_DEVICE_VERSA_CONTROLLER1"
 	networkDeviceVersaController2EnvVar    = "TF_ACC_NETWORK_DEVICE_VERSA_CONTROLLER2"
@@ -819,6 +820,30 @@ func testAccNeDeviceSecondaryExists(primary, secondary *ne.Device) resource.Test
 	}
 }
 
+func testAccNeDevicePairExists(resourceName string, primary, secondary *ne.Device) resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		rs, ok := s.RootModule().Resources[resourceName]
+		if !ok {
+			return fmt.Errorf("resource not found: %s", resourceName)
+		}
+		if rs.Primary.ID == "" {
+			return fmt.Errorf("resource has no ID attribute set")
+		}
+		client := testAccProvider.Meta().(*Config).ne
+		resp, err := client.GetDevice(rs.Primary.ID)
+		if err != nil {
+			return fmt.Errorf("error when fetching primary network device '%s': %s", rs.Primary.ID, err)
+		}
+		*primary = *resp
+		resp, err = client.GetDevice(ne.StringValue(resp.RedundantUUID))
+		if err != nil {
+			return fmt.Errorf("error when fetching secondary network device '%s': %s", rs.Primary.ID, err)
+		}
+		*secondary = *resp
+		return nil
+	}
+}
+
 func testAccNeDeviceAttributes(device *ne.Device, ctx map[string]interface{}) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		if v, ok := ctx["device-name"]; ok && ne.StringValue(device.Name) != v.(string) {
@@ -1029,7 +1054,13 @@ data "equinix_network_account" "test" {
   metro_code = "%{device-metro_code}"
   status     = "Active"
 }`, ctx)
-
+	if _, ok := ctx["device-secondary_metro_code"]; ok {
+		config += nprintf(`
+data "equinix_network_account" "test-secondary" {
+  metro_code = "%{device-secondary_metro_code}"
+  status     = "Active"
+}`, ctx)
+	}
 	config += nprintf(`
 resource "equinix_network_device" "%{device-resourceName}" {
   self_managed          = %{device-self_managed}
@@ -1128,10 +1159,18 @@ resource "equinix_network_device" "%{device-resourceName}" {
 	if _, ok := ctx["device-secondary_name"]; ok {
 		config += nprintf(`
   secondary_device {
-    name                 = "%{device-secondary_name}"
+    name                 = "%{device-secondary_name}"`, ctx)
+		if _, ok := ctx["device-secondary_metro_code"]; ok {
+			config += nprintf(`
+    metro_code           = "%{device-secondary_metro_code}"
+    account_number       = data.equinix_network_account.test-secondary.number`, ctx)
+		} else {
+			config += nprintf(`
     metro_code           = "%{device-metro_code}"
-    notifications        = %{device-secondary_notifications}
     account_number       = data.equinix_network_account.test.number`, ctx)
+		}
+		config += nprintf(`
+    notifications        = %{device-secondary_notifications}`, ctx)
 		if _, ok := ctx["device-secondary_additional_bandwidth"]; ok {
 			config += nprintf(`
     additional_bandwidth = %{device-secondary_additional_bandwidth}`, ctx)
