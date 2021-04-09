@@ -1,6 +1,8 @@
 package metal
 
 import (
+	"errors"
+
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/packethost/packngo"
 )
@@ -21,17 +23,44 @@ func resourceMetalVlan() *schema.Resource {
 			},
 			"description": {
 				Type:     schema.TypeString,
-				Required: false,
 				Optional: true,
 				ForceNew: true,
 			},
 			"facility": {
-				Type:     schema.TypeString,
-				Required: true,
-				ForceNew: true,
+				Type:          schema.TypeString,
+				Optional:      true,
+				ForceNew:      true,
+				ConflictsWith: []string{"metro"},
+				DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
+					// suppress diff when unsetting facility
+					if len(old) > 0 && new == "" {
+						return true
+					}
+					return old == new
+				},
+			},
+			"metro": {
+				Type:          schema.TypeString,
+				Optional:      true,
+				ForceNew:      true,
+				ConflictsWith: []string{"facility"},
+				DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
+					_, facOk := d.GetOk("facility")
+					// new - new val from template
+					// old - old val from state
+					//
+					// suppress diff if metro is manually set for first time, and
+					// facility is already set
+					if len(new) > 0 && old == "" && facOk {
+						return facOk
+					}
+					return old == new
+				},
 			},
 			"vxlan": {
 				Type:     schema.TypeInt,
+				ForceNew: true,
+				Optional: true,
 				Computed: true,
 			},
 		},
@@ -40,10 +69,28 @@ func resourceMetalVlan() *schema.Resource {
 
 func resourceMetalVlanCreate(d *schema.ResourceData, meta interface{}) error {
 	c := meta.(*packngo.Client)
+
+	facRaw, facOk := d.GetOk("facility")
+	metroRaw, metroOk := d.GetOk("metro")
+	vxlanRaw, vxlanOk := d.GetOk("vxlan")
+
+	if !facOk && !metroOk {
+		return friendlyError(errors.New("one of facility or metro must be configured"))
+	}
+	if facOk && vxlanOk {
+		return friendlyError(errors.New("you can set vxlan only for metro vlans"))
+	}
+
 	createRequest := &packngo.VirtualNetworkCreateRequest{
 		ProjectID:   d.Get("project_id").(string),
 		Description: d.Get("description").(string),
-		Facility:    d.Get("facility").(string),
+	}
+	if metroOk {
+		createRequest.Metro = metroRaw.(string)
+		createRequest.VXLAN = vxlanRaw.(int)
+	}
+	if facOk {
+		createRequest.Facility = facRaw.(string)
 	}
 	vlan, _, err := c.ProjectVirtualNetworks.Create(createRequest)
 	if err != nil {
@@ -71,6 +118,7 @@ func resourceMetalVlanRead(d *schema.ResourceData, meta interface{}) error {
 	d.Set("project_id", vlan.Project.ID)
 	d.Set("vxlan", vlan.VXLAN)
 	d.Set("facility", vlan.FacilityCode)
+	d.Set("metro", vlan.MetroCode)
 	return nil
 }
 
