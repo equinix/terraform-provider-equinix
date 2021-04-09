@@ -13,12 +13,12 @@ import (
 func testAccCheckMetalReservedIPBlockConfig_Global(name string) string {
 	return fmt.Sprintf(`
 resource "metal_project" "foobar" {
-    name = "tfacc-reserved_ip_block-%s"
+	name = "tfacc-reserved_ip_block-%s"
 }
 
 resource "metal_reserved_ip_block" "test" {
-    project_id = "${metal_project.foobar.id}"
-    type     = "global_ipv4"
+	project_id = "${metal_project.foobar.id}"
+	type     = "global_ipv4"
 	description = "testdesc"
 	quantity = 1
 }`, name)
@@ -27,13 +27,13 @@ resource "metal_reserved_ip_block" "test" {
 func testAccCheckMetalReservedIPBlockConfig_Public(name string) string {
 	return fmt.Sprintf(`
 resource "metal_project" "foobar" {
-    name = "tfacc-reserved_ip_block-%s"
+	name = "tfacc-reserved_ip_block-%s"
 }
 
 resource "metal_reserved_ip_block" "test" {
-    project_id  = "${metal_project.foobar.id}"
-    facility    = "ewr1"
-    type        = "public_ipv4"
+	project_id  = "${metal_project.foobar.id}"
+	facility    = "ewr1"
+	type        = "public_ipv4"
 	quantity    = 2
 }`, name)
 }
@@ -41,13 +41,13 @@ resource "metal_reserved_ip_block" "test" {
 func testAccCheckMetalReservedIPBlockConfig_Metro(name string) string {
 	return fmt.Sprintf(`
 resource "metal_project" "foobar" {
-    name = "tfacc-reserved_ip_block-%s"
+	name = "tfacc-reserved_ip_block-%s"
 }
 
 resource "metal_reserved_ip_block" "test" {
-    project_id  = "${metal_project.foobar.id}"
-    metro       = "sv"
-    type        = "public_ipv4"
+	project_id  = "${metal_project.foobar.id}"
+	metro       = "sv"
+	type        = "public_ipv4"
 	quantity    = 2
 }`, name)
 }
@@ -171,13 +171,13 @@ func testAccCheckMetalReservedIPBlockDestroy(s *terraform.State) error {
 func testAccMetalReservedIP_Device(name string) string {
 	return fmt.Sprintf(`
 resource "metal_project" "foobar" {
-    name = "tfacc-reserved_ip_block-%s"
+	name = "tfacc-reserved_ip_block-%s"
 }
 
 resource "metal_reserved_ip_block" "test" {
-    project_id  = metal_project.foobar.id
-    facility    = "ewr1"
-    type        = "public_ipv4"
+	project_id  = metal_project.foobar.id
+	facility    = "ewr1"
+	type        = "public_ipv4"
 	quantity    = 2
 }
 
@@ -189,12 +189,12 @@ resource "metal_device" "test" {
   hostname         = "tfacc-reserved-ip-device"
   billing_cycle    = "hourly"
   ip_address {
-     type = "public_ipv4"
-     cidr = 31
-     reservation_ids = [metal_reserved_ip_block.test.id]
+	 type = "public_ipv4"
+	 cidr = 31
+	 reservation_ids = [metal_reserved_ip_block.test.id]
   }
   ip_address {
-     type = "private_ipv4"
+	 type = "private_ipv4"
   }
 }
 `, name)

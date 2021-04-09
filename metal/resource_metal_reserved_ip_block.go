@@ -128,12 +128,18 @@ func resourceMetalReservedIPBlockCreate(d *schema.ResourceData, meta interface{}
 	}
 	facility, facOk := d.GetOk("facility")
 	metro, metOk := d.GetOk("metro")
-	if (facOk || metOk) && typ != "public_ipv4" {
-		return fmt.Errorf("facility and metro can only be set for type == public_ipv4")
+
+	// no need to guard facOk && metOk, they "ConflictsWith" each-other
+	if typ == "global_ipv4" {
+		if facOk || metOk {
+			return fmt.Errorf("facility and metro can't be set for global IP block reservation")
+		}
+	} else {
+		if !(facOk || metOk) {
+			return fmt.Errorf("You should set either metro or facility for non-global IP block reservation")
+		}
 	}
-	if facOk && metOk {
-		return fmt.Errorf("you can only set either facility or metro")
-	}
+
 	if facOk {
 		f := facility.(string)
 		req.Facility = &f
