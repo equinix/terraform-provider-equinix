@@ -63,9 +63,26 @@ func resourceMetalDevice() *schema.Resource {
 				Computed: true,
 			},
 
+			"metro": {
+				Type:          schema.TypeString,
+				Optional:      true,
+				ForceNew:      true,
+				ConflictsWith: []string{"facilities"},
+				DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
+					if len(old) > 0 && new == "" {
+						// here it would be good to also test if the "old" metro
+						// contains the device facility. If yes, we'd suppress diff
+						// and if it's a different metro, we would re-create.
+						// Not sure if this is possible.
+						return true
+					}
+					return old == new
+				},
+			},
+
 			"facilities": {
 				Type:     schema.TypeList,
-				Required: true,
+				Optional: true,
 				Elem:     &schema.Schema{Type: schema.TypeString},
 				ForceNew: true,
 				MinItems: 1,
@@ -81,6 +98,8 @@ func resourceMetalDevice() *schema.Resource {
 					}
 					return false
 				},
+				Deprecated:    "Use metro attribute instead",
+				ConflictsWith: []string{"metro"},
 			},
 			"ip_address": {
 				Type:        schema.TypeList,
@@ -294,8 +313,6 @@ func resourceMetalDevice() *schema.Resource {
 func resourceMetalDeviceCreate(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*packngo.Client)
 
-	facs := convertStringArr(d.Get("facilities").([]interface{}))
-
 	var addressTypesSlice []packngo.IPAddressCreateRequest
 	_, ok := d.GetOk("ip_address")
 	if ok {
@@ -306,12 +323,27 @@ func resourceMetalDeviceCreate(d *schema.ResourceData, meta interface{}) error {
 	createRequest := &packngo.DeviceCreateRequest{
 		Hostname:     d.Get("hostname").(string),
 		Plan:         d.Get("plan").(string),
-		Facility:     facs,
 		IPAddresses:  addressTypesSlice,
 		OS:           d.Get("operating_system").(string),
 		BillingCycle: d.Get("billing_cycle").(string),
 		ProjectID:    d.Get("project_id").(string),
 	}
+
+	facsRaw, facsOk := d.GetOk("facilities")
+	metroRaw, metroOk := d.GetOk("metro")
+
+	if !facsOk && !metroOk {
+		return friendlyError(errors.New("one of facilies and metro must be configured"))
+	}
+
+	if facsOk {
+		createRequest.Facility = convertStringArr(facsRaw.([]interface{}))
+	}
+
+	if metroOk {
+		createRequest.Metro = metroRaw.(string)
+	}
+
 	if attr, ok := d.GetOk("user_data"); ok {
 		createRequest.UserData = attr.(string)
 	}
@@ -422,7 +454,7 @@ func resourceMetalDeviceCreate(d *schema.ResourceData, meta interface{}) error {
 func resourceMetalDeviceRead(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*packngo.Client)
 
-	device, _, err := client.Devices.Get(d.Id(), &packngo.GetOptions{Includes: []string{"project"}})
+	device, _, err := client.Devices.Get(d.Id(), &packngo.GetOptions{Includes: []string{"project", "metro", "facility"}})
 	if err != nil {
 		err = friendlyError(err)
 
@@ -440,6 +472,9 @@ func resourceMetalDeviceRead(d *schema.ResourceData, meta interface{}) error {
 	d.Set("plan", device.Plan.Slug)
 	d.Set("deployed_facility", device.Facility.Code)
 	d.Set("facilities", []string{device.Facility.Code})
+	if device.Metro != nil {
+		d.Set("metro", device.Metro.Code)
+	}
 	d.Set("operating_system", device.OS.Slug)
 	d.Set("state", device.State)
 	d.Set("billing_cycle", device.BillingCycle)

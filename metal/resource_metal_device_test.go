@@ -139,6 +139,29 @@ func TestAccMetalDevice_Basic(t *testing.T) {
 	})
 }
 
+func TestAccMetalDevice_Metro(t *testing.T) {
+	var device packngo.Device
+	rs := acctest.RandString(10)
+	r := "metal_device.test"
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckMetalDeviceDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckMetalDeviceConfig_metro(rs),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckMetalDeviceExists(r, &device),
+					testAccCheckMetalDeviceNetwork(r),
+					testAccCheckMetalDeviceAttributes(&device),
+					resource.TestCheckResourceAttr(
+						r, "metro", "sv"),
+				),
+			},
+		},
+	})
+}
 func TestAccMetalDevice_Update(t *testing.T) {
 	var d1, d2, d3, d4 packngo.Device
 	rs := acctest.RandString(10)
@@ -486,6 +509,22 @@ resource "metal_device" "test" {
   ipxe_script_url  = "http://matchbox.foo.wtf:8080/boot.ipxe"
 }
 `, projSuffix, rInt, rInt, rInt)
+}
+
+func testAccCheckMetalDeviceConfig_metro(projSuffix string) string {
+	return fmt.Sprintf(`
+resource "metal_project" "test" {
+    name = "tfacc-device-%s"
+}
+
+resource "metal_device" "test" {
+  hostname         = "tfacc-test-device"
+  plan             = "c3.small.x86"
+  metro            = "sv"
+  operating_system = "ubuntu_16_04"
+  billing_cycle    = "hourly"
+  project_id       = "${metal_project.test.id}"
+}`, projSuffix)
 }
 
 func testAccCheckMetalDeviceConfig_basic(projSuffix string) string {

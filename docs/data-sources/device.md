@@ -59,6 +59,7 @@ The following attributes are exported:
 * `description` - Description string for the device
 * `hardware_reservation_id` - The id of hardware reservation which this device occupies
 * `id` - The ID of the device
+* `metro` - The metro where the device is deployed
 * `network` - The device's private and public IP (v4 and v6) network details. When a device is run without any special network configuration, it will have 3 networks:
   * Public IPv4 at `metal_device.name.network.0`
   * IPv6 at `metal_device.name.network.1`
