@@ -116,7 +116,7 @@ func resourceMetalReservedIPBlock() *schema.Resource {
 		Type:        schema.TypeString,
 		Optional:    true,
 		ForceNew:    true,
-		Description: "Arbitraty description",
+		Description: "Arbitrary description",
 	}
 	reservedBlockSchema["quantity"] = &schema.Schema{
 		Type:        schema.TypeInt,
