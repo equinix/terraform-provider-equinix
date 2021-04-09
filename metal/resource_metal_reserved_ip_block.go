@@ -85,6 +85,13 @@ func resourceMetalReservedIPBlock() *schema.Resource {
 		ForceNew:      true,
 		ConflictsWith: []string{"metro"},
 		Description:   "Facility where to allocate the public IP address block, makes sense only for type==public_ipv4, must be empty for type==global_ipv4, conflicts with metro",
+		DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
+			// suppress diff when unsetting facility
+			if len(old) > 0 && new == "" {
+				return true
+			}
+			return old == new
+		},
 	}
 	reservedBlockSchema["metro"] = &schema.Schema{
 		Type:          schema.TypeString,
@@ -92,6 +99,18 @@ func resourceMetalReservedIPBlock() *schema.Resource {
 		ForceNew:      true,
 		ConflictsWith: []string{"facility"},
 		Description:   "Metro where to allocate the public IP address block, makes sense only for type==public_ipv4, must be empty for type==global_ipv4, conflicts with facility",
+		DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
+			_, facOk := d.GetOk("facility")
+			// new - new val from template
+			// old - old val from state
+			//
+			// suppress diff if metro is manually set for first time, and
+			// facility is already set
+			if len(new) > 0 && old == "" && facOk {
+				return facOk
+			}
+			return old == new
+		},
 	}
 	reservedBlockSchema["description"] = &schema.Schema{
 		Type:        schema.TypeString,
