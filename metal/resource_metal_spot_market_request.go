@@ -356,10 +356,7 @@ func resourceMetalSpotMarketRequestDelete(d *schema.ResourceData, meta interface
 		}
 	}
 	resp, err := client.SpotMarketRequests.Delete(d.Id(), true)
-	if ignoreResponseErrors(httpForbidden, httpNotFound)(resp, err) != nil {
-		return err
-	}
-	return nil
+	return ignoreResponseErrors(httpForbidden, httpNotFound)(resp, err)
 }
 
 func resourceStateRefreshFunc(d *schema.ResourceData, meta interface{}) resource.StateRefreshFunc {

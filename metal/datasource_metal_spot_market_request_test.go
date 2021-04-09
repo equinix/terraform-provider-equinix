@@ -57,10 +57,10 @@ resource "metal_project" "test" {
 
 resource "metal_spot_market_request" "req" {
   project_id    = "${metal_project.test.id}"
-  max_bid_price = 0.2
+  max_bid_price = 0.01
   facilities    = ["sjc1"]
-  devices_min   = 2
-  devices_max   = 2
+  devices_min   = 1
+  devices_max   = 1
   wait_for_devices = false
 
   instance_parameters {
@@ -86,10 +86,10 @@ resource "metal_project" "test" {
 
 resource "metal_spot_market_request" "req" {
   project_id    = "${metal_project.test.id}"
-  max_bid_price = 0.2
+  max_bid_price = 0.01
   metro = "sv"
-  devices_min   = 2
-  devices_max   = 2
+  devices_min   = 1
+  devices_max   = 1
   wait_for_devices = false
 
   instance_parameters {
