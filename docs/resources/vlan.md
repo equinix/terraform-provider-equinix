@@ -17,11 +17,19 @@ To learn more about Layer 2 networking in Equinix Metal, refer to
 ## Example Usage
 
 ```hcl
-# Create a new VLAN in datacenter "ewr1"
+# Create a new VLAN in facility "sv15"
 resource "metal_vlan" "vlan1" {
   description = "VLAN in New Jersey"
-  facility    = "ewr1"
+  facility    = "sv15"
   project_id  = local.project_id
+}
+
+# Create a new VLAN in metro "esv"
+resource "metal_vlan" "vlan1" {
+  description = "VLAN in New Jersey"
+  metro       = "sv"
+  project_id  = local.project_id
+  vxlan       = 1040
 }
 ```
 
@@ -32,6 +40,7 @@ The following arguments are supported:
 * `project_id` - (Required) ID of parent project
 * `facility` - (Required) Facility where to create the VLAN
 * `description` - Description string
+* `vxlan` - VLAN ID, must be unique in metro
 
 ## Attributes Reference
 
