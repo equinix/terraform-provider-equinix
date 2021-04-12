@@ -1,3 +1,41 @@
+## 2.0.0 (April 12, 2021)
+
+This release includes support for Equinix Metal Metros. Read more about metros in the
+[Equinix Metal Changelog: New Metros Feature Live](https://feedback.equinixmetal.com/changelog/new-metros-feature-live)
+post.
+
+Learn more about these changes may enhance and impact your deployments in the [GitHub Discussion](https://github.com/equinix/terraform-provider-metal/discussions/55).
+
+BREAKING CHANGES:
+
+- `facilities` field in `metal_device` is now optional and conflicts with `metro` ([#46](https://github.com/equinix/terraform-provider-metal/pull/46))
+- `facilities` field in `metal_vlan` is now optional and conflicts with `metro` ([#53](https://github.com/equinix/terraform-provider-metal/pull/53))
+- `facilities` field in `metal_reserved_ip_block` is now optional and conflicts with `metro` ([#56](https://github.com/equinix/terraform-provider-metal/pull/56))
+- `facilities` field in `metal_spot_market_request` is now optional and conflicts with `metro` ([#63](https://github.com/equinix/terraform-provider-metal/pull/63))
+
+FEATURES:
+
+- **New Data Source:** `metal_metro` ([#58](https://github.com/equinix/terraform-provider-metal/pull/58))
+
+IMPROVEMENTS:
+
+- `metro` field added to `metal_device` resource ([#46](https://github.com/equinix/terraform-provider-metal/pull/46))
+- `metro` field added to `metal_vlan` resource ([#53](https://github.com/equinix/terraform-provider-metal/pull/53))
+- `metro` field added to `metal_reserved_ip_block` resource ([#56](https://github.com/equinix/terraform-provider-metal/pull/56))
+- `metro` field added to `metal_facility` data source ([#58](https://github.com/equinix/terraform-provider-metal/pull/58))
+- `metro` field added to `metal_device` data source ([#46](https://github.com/equinix/terraform-provider-metal/pull/46))
+- `metro` field added to `metal_precreate_ip_block` data source ([#58](https://github.com/equinix/terraform-provider-metal/pull/58))
+- `metro` field added to `metal_spot_market_request` resource ([#63](https://github.com/equinix/terraform-provider-metal/pull/63))
+- `facilities` field is computed in `metal_spot_market_request` resource when not specified ([#63](https://github.com/equinix/terraform-provider-metal/pull/63))
+- `vxlan` field added to `metal_vlan` resource ([#53](https://github.com/equinix/terraform-provider-metal/pull/53))
+- `metro` search parameter added to `metal_ip_block_ranges` data source ([#58](https://github.com/equinix/terraform-provider-metal/pull/58))
+- `packngo` update to `v0.13.0` ([#63](https://github.com/equinix/terraform-provider-metal/pull/63))
+
+BUG FIXES:
+
+- virtual_circuit: fixed documentation page title([#59](https://github.com/equinix/terraform-provider-metal/pull/59))
+- some deletion 404 and 403s were not treated as successful ([#47](https://github.com/equinix/terraform-provider-metal/pull/47))
+
 ## 1.1.0 (March 22, 2021)
 
 BREAKING CHANGES:
