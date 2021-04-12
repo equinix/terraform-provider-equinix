@@ -135,7 +135,7 @@ func dataSourceMetalConnectionRead(d *schema.ResourceData, meta interface{}) err
 
 	conn, _, err := client.Connections.Get(
 		connId,
-		&packngo.GetOptions{Includes: []string{"organization","facility"}})
+		&packngo.GetOptions{Includes: []string{"organization", "facility"}})
 	if err != nil {
 		return err
 	}
