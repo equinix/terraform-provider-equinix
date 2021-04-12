@@ -25,6 +25,8 @@ func TestAccMetalSpotMarketRequest_Basic(t *testing.T) {
 					testAccCheckMetalSpotMarketRequestExists("metal_spot_market_request.request", &key),
 					resource.TestCheckResourceAttr("metal_spot_market_request.request", "devices_max", "1"),
 					resource.TestCheckResourceAttr("metal_spot_market_request.request", "devices_min", "1"),
+					resource.TestCheckResourceAttr(
+						"data.metal_spot_market_request.dreq", "device_ids.#", "1"),
 				),
 			},
 		},
@@ -58,7 +60,7 @@ func testAccCheckMetalSpotMarketRequestExists(n string, key *packngo.SpotMarketR
 
 		client := testAccProvider.Meta().(*packngo.Client)
 
-		foundKey, _, err := client.SpotMarketRequests.Get(rs.Primary.ID, nil)
+		foundKey, _, err := client.SpotMarketRequests.Get(rs.Primary.ID, &packngo.GetOptions{Includes: []string{"project", "devices", "facilities", "metro"}})
 		if err != nil {
 			return err
 		}
@@ -83,6 +85,9 @@ data "metal_spot_market_price" "test" {
   plan     = "baremetal_0"
 }
 
+data "metal_spot_market_request" "dreq" {
+	request_id = metal_spot_market_request.request.id
+}
 
 resource "metal_spot_market_request" "request" {
   project_id       = "${metal_project.test.id}"

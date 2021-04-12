@@ -6,13 +6,16 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/terraform"
 	"github.com/packethost/packngo"
 )
 
 func TestAccDataSourceMetalSpotMarketRequest_Basic(t *testing.T) {
 	projectName := fmt.Sprintf("ds-device-%s", acctest.RandString(10))
-	var key packngo.SpotMarketRequest
-
+	var (
+		facKey packngo.SpotMarketRequest
+		metKey packngo.SpotMarketRequest
+	)
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
@@ -21,9 +24,24 @@ func TestAccDataSourceMetalSpotMarketRequest_Basic(t *testing.T) {
 			{
 				Config: testDataSourceMetalSpotMarketRequestConfig_Basic(projectName),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckMetalSpotMarketRequestExists("metal_spot_market_request.req", &key),
-					resource.TestCheckResourceAttr(
-						"data.metal_spot_market_request.dreq", "device_ids.#", "2"),
+					testAccCheckMetalSpotMarketRequestExists("metal_spot_market_request.req", &facKey),
+				),
+			},
+			{
+				Config:             testDataSourceMetalSpotMarketRequestConfig_Metro(projectName),
+				PlanOnly:           true,
+				ExpectNonEmptyPlan: true,
+			},
+			{
+				Config: testDataSourceMetalSpotMarketRequestConfig_Metro(projectName),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckMetalSpotMarketRequestExists("metal_spot_market_request.req", &metKey),
+					func(_ *terraform.State) error {
+						if metKey.ID == facKey.ID {
+							return fmt.Errorf("Expected a new spot_market_request")
+						}
+						return nil
+					},
 				),
 			},
 		},
@@ -39,11 +57,40 @@ resource "metal_project" "test" {
 
 resource "metal_spot_market_request" "req" {
   project_id    = "${metal_project.test.id}"
-  max_bid_price = 0.2
+  max_bid_price = 0.01
   facilities    = ["sjc1"]
-  devices_min   = 2
-  devices_max   = 2
-  wait_for_devices = true
+  devices_min   = 1
+  devices_max   = 1
+  wait_for_devices = false
+
+  instance_parameters {
+    hostname         = "tfacc-testspot"
+    billing_cycle    = "hourly"
+    operating_system = "ubuntu_16_04"
+    plan             = "t1.small.x86"
+  }
+}
+
+data "metal_spot_market_request" "dreq" {
+  request_id = metal_spot_market_request.req.id
+}
+`, projSuffix)
+}
+
+func testDataSourceMetalSpotMarketRequestConfig_Metro(projSuffix string) string {
+	return fmt.Sprintf(`
+
+resource "metal_project" "test" {
+  name = "tfacc-spot_market_request-%s"
+}
+
+resource "metal_spot_market_request" "req" {
+  project_id    = "${metal_project.test.id}"
+  max_bid_price = 0.01
+  metro = "sv"
+  devices_min   = 1
+  devices_max   = 1
+  wait_for_devices = false
 
   instance_parameters {
     hostname         = "tfacc-testspot"

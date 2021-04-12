@@ -41,6 +41,9 @@ func friendlyError(err error) error {
 }
 
 func isForbidden(err error) bool {
+	if r, ok := err.(*packngo.ErrorResponse); ok && r.Response != nil {
+		return r.Response.StatusCode == http.StatusForbidden
+	}
 	if r, ok := err.(*ErrorResponse); ok {
 		return r.StatusCode == http.StatusForbidden
 	}
@@ -48,6 +51,9 @@ func isForbidden(err error) bool {
 }
 
 func isNotFound(err error) bool {
+	if r, ok := err.(*packngo.ErrorResponse); ok && r.Response != nil {
+		return r.Response.StatusCode == http.StatusNotFound
+	}
 	if r, ok := err.(*ErrorResponse); ok {
 		return r.StatusCode == http.StatusNotFound && r.IsAPIError
 	}

@@ -29,7 +29,7 @@ func dataSourceMetalSpotMarketRequestRead(d *schema.ResourceData, meta interface
 	client := meta.(*packngo.Client)
 	id := d.Get("request_id").(string)
 
-	smr, _, err := client.SpotMarketRequests.Get(id, &packngo.GetOptions{Includes: []string{"project", "devices", "facilities"}})
+	smr, _, err := client.SpotMarketRequests.Get(id, &packngo.GetOptions{Includes: []string{"project", "devices", "facilities", "metro"}})
 	if err != nil {
 		err = friendlyError(err)
 		if isNotFound(err) {
