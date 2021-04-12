@@ -37,10 +37,11 @@ The following arguments are supported:
 * `devices_max` - (Required) Maximum number devices to be created
 * `devices_min` - (Required) Miniumum number devices to be created
 * `max_bid_price` - (Required) Maximum price user is willing to pay per hour per device
-* `facilities` - (Required) Facility IDs where devices should be created
 * `instance_parameters` - (Required) Device parameters. See device resource for details
 * `project_id` - (Required) Project ID
 * `wait_for_devices` - (Optional) On resource creation - wait until all desired devices are active, on resource destruction - wait until devices are removed
+* `facilities` - (Optional) Facility IDs where devices should be created
+* `metro` - (Optional) Metro where devices should be created.
 
 ### Timeouts
 
@@ -54,3 +55,4 @@ The `timeouts` block allows you to specify [timeouts](https://www.terraform.io/d
 The following attributes are exported:
 
 * `id` - The ID of the Spot Market Request
+* `facilities` - The facilities where the Spot Market Request is applied. This is computed when `metro` is set or no specific location was requested.

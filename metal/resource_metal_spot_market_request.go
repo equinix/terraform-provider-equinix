@@ -33,10 +33,19 @@ func resourceMetalSpotMarketRequest() *schema.Resource {
 				ForceNew: true,
 			},
 			"facilities": {
-				Type:     schema.TypeList,
-				Required: true,
-				Elem:     &schema.Schema{Type: schema.TypeString},
-				ForceNew: true,
+				Type:          schema.TypeList,
+				Optional:      true,
+				Elem:          &schema.Schema{Type: schema.TypeString},
+				Computed:      true,
+				ForceNew:      true,
+				ConflictsWith: []string{"metro"},
+			},
+			"metro": {
+				Type:          schema.TypeString,
+				Optional:      true,
+				Elem:          &schema.Schema{Type: schema.TypeString},
+				ForceNew:      true,
+				ConflictsWith: []string{"facilities"},
 			},
 			"instance_parameters": {
 				Type:     schema.TypeList,
@@ -134,6 +143,8 @@ func resourceMetalSpotMarketRequest() *schema.Resource {
 func resourceMetalSpotMarketRequestCreate(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*packngo.Client)
 	var waitForDevices bool
+
+	metro := d.Get("metro").(string)
 
 	facilitiesRaw := d.Get("facilities").([]interface{})
 	facilities := []string{}
@@ -239,6 +250,7 @@ func resourceMetalSpotMarketRequestCreate(d *schema.ResourceData, meta interface
 		DevicesMin:  d.Get("devices_min").(int),
 		MaxBidPrice: d.Get("max_bid_price").(float64),
 		FacilityIDs: facilities,
+		Metro:       metro,
 		Parameters:  params,
 	}
 
@@ -272,7 +284,7 @@ func resourceMetalSpotMarketRequestCreate(d *schema.ResourceData, meta interface
 func resourceMetalSpotMarketRequestRead(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*packngo.Client)
 
-	smr, _, err := client.SpotMarketRequests.Get(d.Id(), &packngo.GetOptions{Includes: []string{"project", "devices", "facilities"}})
+	smr, _, err := client.SpotMarketRequests.Get(d.Id(), &packngo.GetOptions{Includes: []string{"project", "devices", "facilities", "metro"}})
 	if err != nil {
 		err = friendlyError(err)
 		if isNotFound(err) {
@@ -288,11 +300,20 @@ func resourceMetalSpotMarketRequestRead(d *schema.ResourceData, meta interface{}
 		deviceIDs[i] = d.ID
 	}
 
+	metro := ""
+	if smr.Metro != nil {
+		metro = smr.Metro.Code
+	}
+	d.Set("metro", metro)
+
 	facilityIDs := make([]string, len(smr.Facilities))
+	facilityCodes := make([]string, len(smr.Facilities))
 	if len(smr.Facilities) > 0 {
 		for i, f := range smr.Facilities {
 			facilityIDs[i] = f.ID
+			facilityCodes[i] = f.Code
 		}
+		d.Set("facilities", facilityCodes)
 	}
 	d.Set("project_id", smr.Project.ID)
 
@@ -307,7 +328,7 @@ func resourceMetalSpotMarketRequestDelete(d *schema.ResourceData, meta interface
 		waitForDevices = val.(bool)
 	}
 	if waitForDevices {
-		smr, _, err := client.SpotMarketRequests.Get(d.Id(), &packngo.GetOptions{Includes: []string{"project", "devices", "facilities"}})
+		smr, _, err := client.SpotMarketRequests.Get(d.Id(), &packngo.GetOptions{Includes: []string{"project", "devices", "facilities", "metro"}})
 		if err != nil {
 			return nil
 		}
@@ -344,7 +365,7 @@ func resourceMetalSpotMarketRequestDelete(d *schema.ResourceData, meta interface
 func resourceStateRefreshFunc(d *schema.ResourceData, meta interface{}) resource.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 		client := meta.(*packngo.Client)
-		smr, _, err := client.SpotMarketRequests.Get(d.Id(), &packngo.GetOptions{Includes: []string{"project", "devices", "facilities"}})
+		smr, _, err := client.SpotMarketRequests.Get(d.Id(), &packngo.GetOptions{Includes: []string{"project", "devices", "facilities", "metro"}})
 
 		if err != nil {
 			return nil, "", fmt.Errorf("Failed to fetch Spot market request with following error: %s", err.Error())
