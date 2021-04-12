@@ -19,20 +19,17 @@ func dataSourceMetalFacility() *schema.Resource {
 			"name": {
 				Type:        schema.TypeString,
 				Description: "The name of this Facility.",
-				Optional:    true,
 				Computed:    true,
 			},
 			"metro": {
 				Type:        schema.TypeString,
 				Description: "This facility's metro code.",
-				Optional:    true,
 				Computed:    true,
 			},
 			"features": {
 				Type:        schema.TypeList,
 				Description: "The features of this Facility.",
 				Elem:        &schema.Schema{Type: schema.TypeString},
-				Optional:    true,
 				Computed:    true,
 			},
 		},

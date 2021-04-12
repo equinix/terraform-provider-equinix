@@ -14,7 +14,6 @@ func dataSourceMetalMetro() *schema.Resource {
 			"id": {
 				Type:        schema.TypeString,
 				Description: "The ID of this Metro.",
-				Optional:    true,
 				Computed:    true,
 			},
 			"code": {
@@ -25,13 +24,11 @@ func dataSourceMetalMetro() *schema.Resource {
 			"country": {
 				Type:        schema.TypeString,
 				Description: "The country of this Metro.",
-				Optional:    true,
 				Computed:    true,
 			},
 			"name": {
 				Type:        schema.TypeString,
 				Description: "The name of this Metro.",
-				Optional:    true,
 				Computed:    true,
 			},
 		},
