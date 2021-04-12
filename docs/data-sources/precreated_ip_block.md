@@ -24,7 +24,7 @@ locals {
 resource "metal_device" "web1" {
   hostname         = "web1"
   plan             = "t1.small.x86"
-  facilities       = ["ewr1"]
+  metro           = "sv"
   operating_system = "ubuntu_16_04"
   billing_cycle    = "hourly"
   project_id       = local.project_id
@@ -32,7 +32,7 @@ resource "metal_device" "web1" {
 }
 
 data "metal_precreated_ip_block" "test" {
-  facility       = "ewr1"
+  metro          = "sv"
   project_id     = local.project_id
   address_family = 6
   public         = true
@@ -53,7 +53,8 @@ resource "metal_ip_attachment" "from_ipv6_block" {
 * `address_family` - (Required) 4 or 6, depending on which block you are looking for.
 * `public` - (Required) Whether to look for public or private block.
 * `global` - (Optional) Whether to look for global block. Default is false for backward compatibility.
-* `facility` - (Optional) Facility of the searched block. (Optional) Only allowed for non-global blocks.
+* `facility` - (Optional) Facility of the searched block. (for non-global blocks).
+* `metro` - (Optional) Metro of the searched block (for non-global blocks).
 
 ## Attributes Reference
 

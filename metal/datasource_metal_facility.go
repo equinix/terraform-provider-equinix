@@ -19,14 +19,17 @@ func dataSourceMetalFacility() *schema.Resource {
 			"name": {
 				Type:        schema.TypeString,
 				Description: "The name of this Facility.",
-				Optional:    true,
+				Computed:    true,
+			},
+			"metro": {
+				Type:        schema.TypeString,
+				Description: "This facility's metro code.",
 				Computed:    true,
 			},
 			"features": {
 				Type:        schema.TypeList,
 				Description: "The features of this Facility.",
 				Elem:        &schema.Schema{Type: schema.TypeString},
-				Optional:    true,
 				Computed:    true,
 			},
 		},
@@ -53,6 +56,12 @@ func dataSourceMetalFacilityRead(d *schema.ResourceData, meta interface{}) error
 				"code":     f.Code,
 				"name":     f.Name,
 				"features": f.Features,
+				"metro": func(d *schema.ResourceData, k string) error {
+					if f.Metro != nil {
+						return d.Set(k, f.Metro.Code)
+					}
+					return nil
+				},
 			})
 		}
 	}

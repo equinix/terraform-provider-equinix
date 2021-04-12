@@ -20,6 +20,10 @@ func dataSourceMetalIPBlockRanges() *schema.Resource {
 				Type:     schema.TypeString,
 				Optional: true,
 			},
+			"metro": {
+				Type:     schema.TypeString,
+				Optional: true,
+			},
 			"public_ipv4": {
 				Type:     schema.TypeList,
 				Elem:     &schema.Schema{Type: schema.TypeString},
@@ -44,11 +48,21 @@ func dataSourceMetalIPBlockRanges() *schema.Resource {
 	}
 }
 
-func faclityMatch(ref, ipFacility string) bool {
+func facilityMatch(ref string, facility *packngo.Facility) bool {
 	if ref == "" {
 		return true
 	}
-	if ref == ipFacility {
+	if facility != nil && ref == facility.Code {
+		return true
+	}
+	return false
+}
+
+func metroMatch(ref string, metro *packngo.Metro) bool {
+	if ref == "" {
+		return true
+	}
+	if metro != nil && ref == metro.Code {
 		return true
 	}
 	return false
@@ -63,6 +77,7 @@ func dataSourceMetalIPBlockRangesRead(d *schema.ResourceData, meta interface{}) 
 	}
 
 	facility := d.Get("facility").(string)
+	metro := d.Get("metro").(string)
 
 	publicIPv4s := []string{}
 	globalIPv4s := []string{}
@@ -86,7 +101,7 @@ func dataSourceMetalIPBlockRangesRead(d *schema.ResourceData, meta interface{}) 
 		} else {
 			targetSlice = &theIPv6s
 		}
-		if targetSlice != nil && faclityMatch(facility, ip.Facility.Code) {
+		if targetSlice != nil && facilityMatch(facility, ip.Facility) && metroMatch(metro, ip.Metro) {
 			*targetSlice = append(*targetSlice, cnStr)
 		}
 	}
@@ -95,10 +110,19 @@ func dataSourceMetalIPBlockRangesRead(d *schema.ResourceData, meta interface{}) 
 	d.Set("global_ipv4", globalIPv4s)
 	d.Set("private_ipv4", privateIPv4s)
 	d.Set("ipv6", theIPv6s)
+
+	id := projectID
+
+	// use facility in the index for pre-metro compatibility
+	// facility is always returned now, metros is added for future-proofing.
+	// facility and metro codes to not clash.
 	if facility != "" {
-		facility = "-" + facility
+		id = id + "-" + facility
+	} else if metro != "" {
+		id = id + "-" + metro
 	}
-	d.SetId(projectID + facility + "-IPs")
+
+	d.SetId(id + "-IPs")
 	return nil
 
 }
