@@ -103,6 +103,9 @@ func dataSourceMetalReservedIPBlockRead(d *schema.ResourceData, meta interface{}
 		// lookup of not-global block
 		metro := mval.(string)
 		for _, ip := range ips {
+			if ip.Metro == nil {
+				continue
+			}
 			if ip.Public == public && ip.AddressFamily == ipv && metro == ip.Metro.Code {
 				if err := loadBlock(d, &ip); err != nil {
 					return err
