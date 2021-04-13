@@ -13,7 +13,11 @@ func dataSourceSpotMarketPrice() *schema.Resource {
 		Schema: map[string]*schema.Schema{
 			"facility": {
 				Type:     schema.TypeString,
-				Required: true,
+				Optional: true,
+			},
+			"metro": {
+				Type:     schema.TypeString,
+				Optional: true,
 			},
 			"plan": {
 				Type:     schema.TypeString,
@@ -29,26 +33,45 @@ func dataSourceSpotMarketPrice() *schema.Resource {
 
 func dataSourceMetalSpotMarketPriceRead(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*packngo.Client)
-
+	sms := client.SpotMarket.(*packngo.SpotMarketServiceOp)
 	facility := d.Get("facility").(string)
+	metro := d.Get("metro").(string)
 	plan := d.Get("plan").(string)
 
-	prices, _, err := client.SpotMarket.Prices()
+	if facility == "" && metro == "" {
+		return fmt.Errorf("Either facility or metro must be provided")
+	}
+
+	if facility != "" && metro != "" {
+		return fmt.Errorf("Parameters facility and metro cannot be used together")
+	}
+
+	filter := facility
+	fn := sms.PricesByFacility
+	filterType := "facility"
+
+	if metro != "" {
+		filter = metro
+		fn = sms.PricesByMetro
+		filterType = "metro"
+	}
+
+	prices, _, err := fn()
 	if err != nil {
 		return err
 	}
 
-	var price float64
-	if fac, ok := prices[facility]; ok {
-		if pri, ok := fac[plan]; ok {
-			price = pri
-		} else {
-			return fmt.Errorf("Facility %s does not have prices for plan %s", facility, plan)
-		}
-	} else {
-		return fmt.Errorf("There is no facility %s", facility)
+	match, ok := prices[filter]
+	if !ok {
+		return fmt.Errorf("Cannot find %s %s", filterType, filter)
 	}
+
+	price, ok := match[plan]
+	if !ok {
+		return fmt.Errorf("Cannot find price for plan %s in %s %s", plan, filterType, filter)
+	}
+
 	d.Set("price", price)
-	d.SetId(facility)
+	d.SetId(fmt.Sprintf("%s-%s-%s", filterType, filter, plan))
 	return nil
 }
