@@ -12,12 +12,14 @@ func dataSourceSpotMarketPrice() *schema.Resource {
 		Read: dataSourceMetalSpotMarketPriceRead,
 		Schema: map[string]*schema.Schema{
 			"facility": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:          schema.TypeString,
+				ConflictsWith: []string{"metro"},
+				Optional:      true,
 			},
 			"metro": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:          schema.TypeString,
+				ConflictsWith: []string{"facility"},
+				Optional:      true,
 			},
 			"plan": {
 				Type:     schema.TypeString,
@@ -37,10 +39,6 @@ func dataSourceMetalSpotMarketPriceRead(d *schema.ResourceData, meta interface{}
 	facility := d.Get("facility").(string)
 	metro := d.Get("metro").(string)
 	plan := d.Get("plan").(string)
-
-	if facility == "" && metro == "" {
-		return fmt.Errorf("Either facility or metro must be provided")
-	}
 
 	if facility != "" && metro != "" {
 		return fmt.Errorf("Parameters facility and metro cannot be used together")
