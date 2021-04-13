@@ -13,14 +13,13 @@ Use this data source to get Equinix Metal Operating System image.
 
 ```hcl
 data "metal_operating_system" "example" {
-  name             = "Container Linux"
-  distro           = "coreos"
-  version          = "alpha"
+  distro           = "ubuntu"
+  version          = "20.04"
   provisionable_on = "c1.small.x86"
 }
 
 resource "metal_device" "server" {
-  hostname         = "tf.coreos2"
+  hostname         = "tf.ubuntu"
   plan             = "c1.small.x86"
   facilities       = ["ny5"]
   operating_system = data.metal_operating_system.example.id

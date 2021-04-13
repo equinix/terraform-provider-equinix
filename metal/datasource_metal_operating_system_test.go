@@ -15,7 +15,7 @@ func TestAccMetalOperatingSystem_Basic(t *testing.T) {
 		Steps: []resource.TestStep{
 			{Config: testOperatingSystemConfig_Basic,
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr("data.metal_operating_system.example", "slug", "alpine_3"),
+					resource.TestCheckResourceAttr("data.metal_operating_system.example", "slug", "ubuntu_20_04"),
 				),
 			},
 		},
@@ -24,9 +24,8 @@ func TestAccMetalOperatingSystem_Basic(t *testing.T) {
 
 const testOperatingSystemConfig_Basic = `
 	data "metal_operating_system" "example" {
-		name    = "Alpine 3"
-		distro  = "alpine"
-		version = "3"
+		distro  = "ubuntu"
+		version = "20.04"
 	  }`
 
 var matchErrOSNotFound = regexp.MustCompile(".*There are no operating systems*")
@@ -46,7 +45,6 @@ func TestAccMetalOperatingSystem_NotFound(t *testing.T) {
 
 const testOperatingSystemConfig_NotFound = `
 	data "metal_operating_system" "example" {
-		name    = "Container"
 		distro  = "NOTEXISTS"
 		version = "alpha"
 	  }`

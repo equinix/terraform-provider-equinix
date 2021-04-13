@@ -24,7 +24,7 @@ resource "metal_spot_market_request" "req" {
   instance_parameters {
     hostname         = "testspot"
     billing_cycle    = "hourly"
-    operating_system = "coreos_stable"
+    operating_system = "ubuntu_20_04"
     plan             = "c3.small.x86"
   }
 }
