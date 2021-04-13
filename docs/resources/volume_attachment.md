@@ -20,9 +20,9 @@ The following example will create a device, a volume, and then it will attach th
 ```hcl
 resource "metal_device" "test_device_va" {
   hostname         = "terraform-test-device-va"
-  plan             = "t1.small.x86"
-  facilities       = ["ewr1"]
-  operating_system = "ubuntu_16_04"
+  plan             = "c3.small.x86"
+  facilities       = ["ny5"]
+  operating_system = "ubuntu_20_04"
   billing_cycle    = "hourly"
   project_id       = local.project_id
 }
@@ -32,7 +32,7 @@ resource "metal_volume" "test_volume_va" {
   billing_cycle = "hourly"
   size          = 100
   project_id    = local.project_id
-  facility      = "ewr1"
+  facility      = "ny5"
   snapshot_policies = {
     snapshot_frequency = "1day",
     snapshot_count     = 7

@@ -22,7 +22,7 @@ data "metal_operating_system" "example" {
 resource "metal_device" "server" {
   hostname         = "tf.coreos2"
   plan             = "c1.small.x86"
-  facilities       = ["ewr1"]
+  facilities       = ["ny5"]
   operating_system = data.metal_operating_system.example.id
   billing_cycle    = "hourly"
   project_id       = local.project_id

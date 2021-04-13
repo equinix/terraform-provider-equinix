@@ -13,7 +13,7 @@ Use this data source to get Equinix Metal Spot Market Price.
 
 ```hcl
 data "metal_spot_market_price" "example" {
-  facility = "ewr1"
+  facility = "ny5"
   plan     = "c1.small.x86"
 }
 ```

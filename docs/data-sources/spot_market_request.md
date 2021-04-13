@@ -17,7 +17,7 @@ Provides an Equinix Metal spot_market_request datasource. The datasource will co
 resource "metal_spot_market_request" "req" {
   project_id       = local.project_id
   max_bid_price    = 0.1
-  facilities       = ["ewr1"]
+  facilities       = ["ny5"]
   devices_min      = 2
   devices_max      = 2
   wait_for_devices = true
@@ -25,8 +25,8 @@ resource "metal_spot_market_request" "req" {
   instance_parameters {
     hostname         = "testspot"
     billing_cycle    = "hourly"
-    operating_system = "ubuntu_16_04"
-    plan             = "t1.small.x86"
+    operating_system = "ubuntu_20_04"
+    plan             = "c3.small.x86"
   }
 }
 

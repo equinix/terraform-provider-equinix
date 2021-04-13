@@ -17,7 +17,7 @@ manage spot market requests on your account. For more detail on Spot Market, see
 resource "metal_spot_market_request" "req" {
   project_id    = local.project_id
   max_bid_price = 0.03
-  facilities    = ["ewr1"]
+  facilities    = ["ny5"]
   devices_min   = 1
   devices_max   = 1
 
@@ -25,7 +25,7 @@ resource "metal_spot_market_request" "req" {
     hostname         = "testspot"
     billing_cycle    = "hourly"
     operating_system = "coreos_stable"
-    plan             = "t1.small.x86"
+    plan             = "c3.small.x86"
   }
 }
 ```

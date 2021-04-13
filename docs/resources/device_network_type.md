@@ -25,8 +25,8 @@ If you are attaching VLAN to a device (i.e. using metal_port_vlan_attachment), l
 resource "metal_device" "test" {
   hostname         = "tfacc-device-port-vlan-attachment-test"
   plan             = "s1.large.x86"
-  facilities       = ["nrt1"]
-  operating_system = "ubuntu_16_04"
+  facilities       = ["ny5"]
+  operating_system = "ubuntu_20_04"
   billing_cycle    = "hourly"
   project_id       = local.project_id
 }
@@ -46,7 +46,7 @@ locals {
 }
 
 resource "metal_vlan" "test" {
-  facility    = "nrt1"
+  facility    = "ny5"
   project_id  = local.project_id
 }
 
@@ -55,8 +55,8 @@ resource "metal_device" "test" {
   count            = local.device_count
   hostname         = "test${count.index}"
   plan             = "s1.large.x86"
-  facilities       = ["nrt1"]
-  operating_system = "ubuntu_16_04"
+  facilities       = ["ny5"]
+  operating_system = "ubuntu_20_04"
   billing_cycle    = "hourly"
   project_id       = local.project_id
 }
