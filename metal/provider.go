@@ -50,6 +50,7 @@ func Provider() terraform.ResourceProvider {
 			"metal_spot_market_request":  dataSourceMetalSpotMarketRequest(),
 			"metal_volume":               dataSourceMetalVolume(),
 			"metal_virtual_circuit":      dataSourceMetalVirtualCircuit(),
+			"metal_vlan":                 dataSourceMetalVlan(),
 		},
 
 		ResourcesMap: map[string]*schema.Resource{
