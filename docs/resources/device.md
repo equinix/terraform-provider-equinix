@@ -22,7 +22,7 @@ Create a device and add it to cool_project
 resource "metal_device" "web1" {
   hostname         = "tf.coreos2"
   plan             = "c3.small.x86"
-  facilities       = ["ny5"]
+  metro            = "sv"
   operating_system = "ubuntu_20_04"
   billing_cycle    = "hourly"
   project_id       = local.project_id
@@ -35,7 +35,7 @@ Same as above, but boot via iPXE initially, using the Ignition Provider for prov
 resource "metal_device" "pxe1" {
   hostname         = "tf.coreos2-pxe"
   plan             = "c3.small.x86"
-  facilities       = ["ny5"]
+  metro            = "sv"
   operating_system = "custom_ipxe"
   billing_cycle    = "hourly"
   project_id       = local.project_id
@@ -45,7 +45,7 @@ resource "metal_device" "pxe1" {
 }
 ```
 
-Create a device without a public IP address, with only a /30 private IPv4 subnet (4 IP addresses)
+Create a device without a public IP address in facility ny5, with only a /30 private IPv4 subnet (4 IP addresses)
 
 ```hcl
 resource "metal_device" "web1" {
@@ -68,7 +68,7 @@ Deploy device on next-available reserved hardware and do custom partitioning.
 resource "metal_device" "web1" {
   hostname                = "tftest"
   plan                    = "c3.small.x86"
-  facilities              = ["sjc1"]
+  facilities              = ["ny5"]
   operating_system        = "ubuntu_20_04"
   billing_cycle           = "hourly"
   project_id              = local.project_id
