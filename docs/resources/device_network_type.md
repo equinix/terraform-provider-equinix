@@ -19,12 +19,12 @@ If you are attaching VLAN to a device (i.e. using metal_port_vlan_attachment), l
 
 ## Example Usage
 
-### Create one s1.large device and put it to hybrid network mode
+### Create one c3.small device and put it to hybrid network mode
 
 ```hcl
 resource "metal_device" "test" {
   hostname         = "tfacc-device-port-vlan-attachment-test"
-  plan             = "s1.large.x86"
+  plan             = "c3.small.x86"
   facilities       = ["ny5"]
   operating_system = "ubuntu_20_04"
   billing_cycle    = "hourly"
@@ -54,7 +54,7 @@ resource "metal_vlan" "test" {
 resource "metal_device" "test" {
   count            = local.device_count
   hostname         = "test${count.index}"
-  plan             = "s1.large.x86"
+  plan             = "c3.small.x86"
   facilities       = ["ny5"]
   operating_system = "ubuntu_20_04"
   billing_cycle    = "hourly"

@@ -15,12 +15,12 @@ Use this data source to get Equinix Metal Operating System image.
 data "metal_operating_system" "example" {
   distro           = "ubuntu"
   version          = "20.04"
-  provisionable_on = "c1.small.x86"
+  provisionable_on = "c3.medium.x86"
 }
 
 resource "metal_device" "server" {
   hostname         = "tf.ubuntu"
-  plan             = "c1.small.x86"
+  plan             = "c3.medium.x86"
   facilities       = ["ny5"]
   operating_system = data.metal_operating_system.example.id
   billing_cycle    = "hourly"

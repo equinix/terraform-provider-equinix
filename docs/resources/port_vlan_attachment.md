@@ -31,7 +31,7 @@ resource "metal_vlan" "test" {
 
 resource "metal_device" "test" {
   hostname         = "test"
-  plan             = "m1.xlarge.x86"
+  plan             = "c3.small.x86"
   facilities       = ["ny5"]
   operating_system = "ubuntu_20_04"
   billing_cycle    = "hourly"
@@ -56,7 +56,7 @@ resource "metal_port_vlan_attachment" "test" {
 ```hcl
 resource "metal_device" "test" {
   hostname         = "test"
-  plan             = "m1.xlarge.x86"
+  plan             = "c3.small.x86"
   facilities       = ["ny5"]
   operating_system = "ubuntu_20_04"
   billing_cycle    = "hourly"

@@ -21,7 +21,7 @@ resource "metal_volume" "volume1" {
   description   = "terraform-volume-1"
   facility      = "ny5"
   project_id    = local.project_id
-  plan          = "storage_1"
+  plan          = "storage_2"
   size          = 100
   billing_cycle = "hourly"
 

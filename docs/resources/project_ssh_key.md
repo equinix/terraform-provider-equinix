@@ -25,7 +25,7 @@ resource "metal_project_ssh_key" "test" {
 
 resource "metal_device" "test" {
   hostname            = "test"
-  plan                = "baremetal_0"
+  plan                = "c3.medium.x86"
   facilities          = ["ny5"]
   operating_system    = "ubuntu_20_04"
   billing_cycle       = "hourly"

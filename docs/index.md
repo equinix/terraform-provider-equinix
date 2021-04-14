@@ -50,7 +50,7 @@ locals {
 # Create a device and add it to tf_project_1
 resource "metal_device" "web1" {
   hostname         = "web1"
-  plan             = "c1.small.x86"
+  plan             = "c3.medium.x86"
   facilities       = ["ny5"]
   operating_system = "ubuntu_20_04"
   billing_cycle    = "hourly"

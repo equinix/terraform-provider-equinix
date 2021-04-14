@@ -28,7 +28,7 @@ resource "metal_device" "test_device_va" {
 }
 
 resource "metal_volume" "test_volume_va" {
-  plan          = "storage_1"
+  plan          = "storage_2"
   billing_cycle = "hourly"
   size          = 100
   project_id    = local.project_id
