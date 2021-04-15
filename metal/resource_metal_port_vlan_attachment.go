@@ -98,13 +98,24 @@ func resourceMetalPortVlanAttachmentCreate(d *schema.ResourceData, meta interfac
 		par.VirtualNetworkID = vlanID
 	} else {
 		projectID := dev.Project.ID
+		deviceMetro := dev.Metro.Code
+		deviceFacility := dev.Facility.Code
 		vlans, _, err := client.ProjectVirtualNetworks.List(projectID, nil)
 		if err != nil {
 			return err
 		}
 		for _, n := range vlans.VirtualNetworks {
+			// looking up vlan with given vxlan, in the same location as
+			// the device - either in the same faclility or metro or both
+			vlanMetro := n.MetroCode
+			vlanFacility := n.FacilityCode
 			if n.VXLAN == vlanVNID {
-				vlanID = n.ID
+				facilitiesMatch := deviceFacility == vlanFacility
+				metrosMatch := deviceMetro == vlanMetro
+				if metrosMatch || facilitiesMatch {
+					vlanID = n.ID
+					break
+				}
 			}
 		}
 		if len(vlanID) == 0 {
