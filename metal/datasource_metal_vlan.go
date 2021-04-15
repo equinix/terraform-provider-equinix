@@ -19,36 +19,40 @@ func dataSourceMetalVlan() *schema.Resource {
 				Optional:      true,
 				Computed:      true,
 				ConflictsWith: []string{"vlan_id"},
-				Description:   "ID of parent project of the VLAN. Use together with vxland",
+				Description:   "ID of parent project of the VLAN. Use together with vxlan and metro or facility",
 			},
 			"vxlan": {
 				Type:          schema.TypeInt,
 				Optional:      true,
 				Computed:      true,
 				ConflictsWith: []string{"vlan_id"},
-				Description:   "VXLAN numner of the VLAN. Unique in a project. Use with project_id",
+				Description:   "VXLAN numner of the VLAN. Unique in a project and facility or metro. Use with project_id",
+			},
+			"facility": {
+				Type:          schema.TypeString,
+				Optional:      true,
+				Computed:      true,
+				ConflictsWith: []string{"vlan_id", "metro"},
+				Description:   "Facility where the VLAN is deployed",
+			},
+			"metro": {
+				Type:          schema.TypeString,
+				Optional:      true,
+				Computed:      true,
+				ConflictsWith: []string{"vlan_id", "facility"},
+				Description:   "Metro where the VLAN is deployed",
 			},
 			"vlan_id": {
 				Type:          schema.TypeString,
 				Optional:      true,
 				Computed:      true,
-				ConflictsWith: []string{"project_id", "vxlan"},
+				ConflictsWith: []string{"project_id", "vxlan", "metro", "facility"},
 				Description:   "Metal UUID of the VLAN resource",
 			},
 			"description": {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "VLAN description text",
-			},
-			"facility": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "Facility where the VLAN is deployed",
-			},
-			"metro": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "Metro where the VLAN is deployed",
 			},
 			"assigned_devices_ids": {
 				Type:        schema.TypeList,
@@ -66,9 +70,11 @@ func dataSourceMetalVlanRead(d *schema.ResourceData, meta interface{}) error {
 	projectRaw, projectOk := d.GetOk("project_id")
 	vxlanRaw, vxlanOk := d.GetOk("vxlan")
 	vlanIdRaw, vlanIdOk := d.GetOk("vlan_id")
+	metroRaw, metroOk := d.GetOk("metro")
+	facilityRaw, facilityOk := d.GetOk("facility")
 
-	if !(vlanIdOk || vxlanOk || projectOk) {
-		return friendlyError(fmt.Errorf("You must set either vlan_id or vxlan and project_id"))
+	if !(vlanIdOk || (vxlanOk && projectOk && (metroOk || facilityOk))) {
+		return friendlyError(fmt.Errorf("You must set either vlan_id or (vxlan and project_id and (metro or facility))"))
 	}
 
 	var vlan *packngo.VirtualNetwork
@@ -84,12 +90,10 @@ func dataSourceMetalVlanRead(d *schema.ResourceData, meta interface{}) error {
 		}
 
 	} else {
-		if !(vxlanOk || projectOk) {
-			return friendlyError(fmt.Errorf("If you set project_id, you also must set vxlan and vice versa"))
-		}
-
 		projectID := projectRaw.(string)
 		vxlan := vxlanRaw.(int)
+		metro := metroRaw.(string)
+		facility := facilityRaw.(string)
 		vlans, _, err := c.ProjectVirtualNetworks.List(
 			projectRaw.(string),
 			&packngo.GetOptions{Includes: []string{"assigned_to"}},
@@ -99,11 +103,21 @@ func dataSourceMetalVlanRead(d *schema.ResourceData, meta interface{}) error {
 		}
 		for _, v := range vlans.VirtualNetworks {
 			if v.VXLAN == vxlan {
-				vlan = &v
+				if (metroOk && (metro == v.MetroCode)) ||
+					(facilityOk && (facility == v.FacilityCode)) {
+					vlan = &v
+					break
+				}
 			}
 		}
 		if vlan == nil {
-			return friendlyError(fmt.Errorf("Project %s doesn't contain VLAN with vxlan %d", projectID, vxlan))
+			locName := "facility"
+			loc := facility
+			if metroOk {
+				locName = "metro"
+				loc = metro
+			}
+			return friendlyError(fmt.Errorf("Project %s doesn't contain VLAN with vxlan %d in %s %s", projectID, vxlan, locName, loc))
 		}
 
 	}
