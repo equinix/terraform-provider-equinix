@@ -108,7 +108,7 @@ func resourceMetalPortVlanAttachmentCreate(d *schema.ResourceData, meta interfac
 			}
 		}
 		if len(vlanID) == 0 {
-			return fmt.Errorf("VLAN with VNID %d doesn't exist in procet %s", vlanVNID, projectID)
+			return fmt.Errorf("VLAN with VNID %d doesn't exist in project %s", vlanVNID, projectID)
 		}
 
 		par.VirtualNetworkID = vlanID
