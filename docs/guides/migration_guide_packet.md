@@ -228,7 +228,7 @@ $ terraform state rm packet_device.example
 $ terraform import metal_device.example 8eb3bc10-0e1a-476a-aec2-6dc699df9c1c
 ```
 
-We can verify the migration by running `$ terraform plan`, it should show that infrastructure is up to date.
+We then need to install the equinix/metal provider by running `$ terraform init`. After that, our templates should be in check with the Terraform state and with the upstream resources in Equinix Metal. We can verify the migration by running `$ terraform plan`, it should show that infrastructure is up to date.
 
 ## Resolving migration issues
 
