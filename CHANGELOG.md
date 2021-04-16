@@ -1,3 +1,14 @@
+## 2.0.1 (April 15, 2021)
+
+BUG FIXES:
+
+- Fixes `metal_port_vlan_attachment` for Metro VLAN attachment and fixes a bug that caused Facility VLANs to fail attachment when a Metro VLAN was present in the project ([#69](https://github.com/equinix/terraform-provider-metal/pull/69))
+
+IMPROVEMENTS:
+
+- documentation examples have been updated to use current plans, facilities,
+  operating systems, and metros ([#36](https://github.com/equinix/terraform-provider-metal/pull/36))
+
 ## 2.0.0 (April 12, 2021)
 
 This release includes support for Equinix Metal Metros. Read more about metros in the
