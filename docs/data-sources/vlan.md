@@ -2,12 +2,13 @@
 page_title: "Equinix Metal: metal_vlan"
 subcategory: ""
 description: |-
-  Provides an Equinix Metal Virtual Network datasource. This can be used to read vlans.
+  Provides an Equinix Metal Virtual Network datasource. This can be used to read the attributes of existing VLANs.
 ---
 
 # metal_vlan
 
-Provides an Equinix Metal Virtual Network datasource. Users can look up VLANs based on either VLAN UUID, or project UUID and vxlan number.
+Provides an Equinix Metal Virtual Network datasource. VLANs data sources can be
+searched by VLAN UUID, or project UUID and vxlan number.
 
 ## Example Usage
 
@@ -46,15 +47,14 @@ data "metal_vlan" "dsvlan" {
 The following arguments are supported:
 
 * `vlan_id` - Metal UUID of the VLAN resource to look up
-* `project_id` - UUID of parent project of the VLAN. Use together with the vxlan number and metro or facility`
-* `vxlan` - vxlan number of the VLAN to look up. Use together with the project_id and metro or facility`
+* `project_id` - UUID of parent project of the VLAN. Use together with the vxlan number and metro or facility
+* `vxlan` - vxlan number of the VLAN to look up. Use together with the project_id and metro or facility
 * `facility` - Facility where the VLAN is deployed
 * `metro` - Metro where the VLAN is deployed
 
-
 ## Attributes Reference
 
-The following attributes are exported:
+The following attributes are exported, in addition to any unspecified arguments.
 
 * `description` - Description text of the VLAN resource
-* `assigned_devices_ids` - List of device ID to which this VLAN is assinged
+* `assigned_devices_ids` - List of device ID to which this VLAN is assigned

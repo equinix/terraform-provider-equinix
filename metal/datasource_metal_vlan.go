@@ -73,8 +73,8 @@ func dataSourceMetalVlanRead(d *schema.ResourceData, meta interface{}) error {
 	metroRaw, metroOk := d.GetOk("metro")
 	facilityRaw, facilityOk := d.GetOk("facility")
 
-	if !(vlanIdOk || (vxlanOk && projectOk && (metroOk || facilityOk))) {
-		return friendlyError(fmt.Errorf("You must set either vlan_id or (vxlan and project_id and (metro or facility))"))
+	if !(vlanIdOk || (vxlanOk || projectOk || metroOk || facilityOk)) {
+		return friendlyError(fmt.Errorf("You must set either vlan_id or a combination of vxlan, project_id, and, metro or facility"))
 	}
 
 	var vlan *packngo.VirtualNetwork
@@ -101,15 +101,29 @@ func dataSourceMetalVlanRead(d *schema.ResourceData, meta interface{}) error {
 		if err != nil {
 			return friendlyError(err)
 		}
+
+		matches := 0
 		for _, v := range vlans.VirtualNetworks {
-			if v.VXLAN == vxlan {
-				if (metroOk && (metro == v.MetroCode)) ||
-					(facilityOk && (facility == v.FacilityCode)) {
-					vlan = &v
-					break
-				}
+			if vxlan != 0 && v.VXLAN != vxlan {
+				continue
 			}
+			if facility != "" && v.FacilityCode != facility {
+				continue
+			}
+			if metro != "" && v.MetroCode != metro {
+				continue
+			}
+			matches++
+			if matches > 1 {
+				return friendlyError(fmt.Errorf("Project %s has more than one matching VLAN", projectID))
+			}
+			vlan = &v
 		}
+
+		if matches == 0 {
+			return friendlyError(fmt.Errorf("Project %s does not have matching VLANs", projectID))
+		}
+
 		if vlan == nil {
 			locName := "facility"
 			loc := facility
@@ -119,7 +133,6 @@ func dataSourceMetalVlanRead(d *schema.ResourceData, meta interface{}) error {
 			}
 			return friendlyError(fmt.Errorf("Project %s doesn't contain VLAN with vxlan %d in %s %s", projectID, vxlan, locName, loc))
 		}
-
 	}
 	assignedDevices := []string{}
 	for _, d := range vlan.Instances {
@@ -129,10 +142,11 @@ func dataSourceMetalVlanRead(d *schema.ResourceData, meta interface{}) error {
 	d.SetId(vlan.ID)
 
 	return setMap(d, map[string]interface{}{
-		"vlan_id":    vlan.ID,
-		"project_id": vlan.Project.ID,
-		"vxlan":      vlan.VXLAN,
-		"facility":   vlan.FacilityCode,
-		"metro":      vlan.MetroCode,
+		"vlan_id":     vlan.ID,
+		"project_id":  vlan.Project.ID,
+		"vxlan":       vlan.VXLAN,
+		"facility":    vlan.FacilityCode,
+		"metro":       vlan.MetroCode,
+		"description": vlan.Description,
 	})
 }

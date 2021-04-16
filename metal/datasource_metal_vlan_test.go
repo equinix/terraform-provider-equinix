@@ -162,3 +162,48 @@ func TestAccMetalDatasourceVlan_ByVlanId(t *testing.T) {
 		},
 	})
 }
+
+func testAccCheckMetalDatasourceVlanConfig_ByProjectId(projSuffix, metro, desc string) string {
+	return fmt.Sprintf(`
+resource "metal_project" "foobar" {
+    name = "tfacc-vlan-%s"
+}
+
+resource "metal_vlan" "foovlan" {
+    project_id = metal_project.foobar.id
+    metro = "%s"
+    description = "%s"
+    vxlan = 5
+}
+
+data "metal_vlan" "dsvlan" {
+    project_id = metal_vlan.foovlan.project_id
+}
+`, projSuffix, metro, desc)
+}
+
+func TestAccMetalDatasourceVlan_ByProjectId(t *testing.T) {
+	rs := acctest.RandString(10)
+	metro := "sv"
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckMetalDatasourceVlanDestroyed,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckMetalDatasourceVlanConfig_ByProjectId(rs, metro, "testvlan"),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttrPair(
+						"metal_vlan.foovlan", "vxlan",
+						"data.metal_vlan.dsvlan", "vxlan",
+					),
+					resource.TestCheckResourceAttrPair(
+						"metal_vlan.foovlan", "project_id",
+						"data.metal_vlan.dsvlan", "project_id",
+					),
+				),
+			},
+		},
+	})
+}
