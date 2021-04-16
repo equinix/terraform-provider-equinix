@@ -8,9 +8,97 @@ description: |-
 
 Packet is now Equinix Metal, and the name of the Terraform provider changed too. This (terraform-provider-metal, provider equinix/metal) is the current provider for Equinix Metal.
 
-If you've been using terraform-provider-packet, and you want to use a newer provider version to manage resources in Equinix Metal, you will need to change the references in you hcl files. You can just change the names of the resources, e.g. from `packet_device` to `metal_device`. That should work, but it will cause the `packet_device` to be destroyed and new `metal_device` to be created instead. Re-creation of the resources might be undesirable, and this guide shows how to migrate to metal_ resources without the re-creation. We can use terraform state and import to achieve transition without destroying users' resources in Equinix Metal.
+If you've been using terraform-provider-packet, and you want to use a newer provider version to manage resources in Equinix Metal, you will need to change the references in you hcl files. You can just change the names of the resources, e.g. from `packet_device` to `metal_device`. That should work, but it will cause the `packet_device` to be destroyed and new `metal_device` to be created instead. Re-creation of the resources might be undesirable, and this guide shows how to migrate to metal_ resources without the re-creation.
 
-## Existing template
+
+## Fast migration with replace-provider and sed
+
+Just like the Terraform HCL templates, the Terraform state is a file containing resource names and their attributes in structured text. We can attempt the migration as a text substition task, basically replacing `packet_` with `metal_` wherever possible, and fixing the provider source reference.
+
+It's a good idea to make a backup of the whole Terraform directory before doing this.
+
+Considering we have infrastructure created from following template:
+
+```hcl-terraform
+terraform {
+  required_providers {
+    packet = {
+      source = "packethost/packet"
+    }
+  }
+}
+
+resource "packet_project" "example" {
+  name = "example"
+}
+
+resource "packet_vlan" "example" {
+  project_id       = packet_project.example.id
+  facility         = "sv15"
+  description      = "example"
+}
+```
+
+We can first change the provider in Terraform state file (`terraform.tfstate`) with `terraform state` subcommand `replace-provider`:
+
+```
+$ terraform state replace-provider packethost/packet equinix/metal
+```
+
+Then we replace the provider reference in the HCL templates. Do this for every file where you have the reference:
+
+```
+$ sed -i 's|packethost/packet|equinix/metal|g' main.tf
+``` 
+
+Then we simply replace all strings `packet` with `metal` in the Terraform HCL files.
+
+```
+$ sed -i 's/packet/metal/g' main.tf
+```
+
+..this is a bit dangerous, so check your `git diff` after. It should replace all the `packet_` prefices and also the key from the `required_providers` block.
+
+Then replace `packet_` with `metal_` in the terraform state file:
+
+```
+$ sed -i 's/packet_/metal_/g' terraform.tfstate
+```
+
+The example template would now look as:
+
+```
+terraform {
+  required_providers {
+    metal = {
+      source = "equinix/metal"
+    }
+  }
+}
+
+
+resource "metal_project" "example" {
+  name = "example"
+}
+
+resource "metal_vlan" "example" {
+  project_id       = metal_project.example.id
+  facility         = "sv15"
+  description      = "example"
+}
+
+
+```
+
+We then need to install the equinix/metal provider by running `$ terraform init`. After that, our templates should in check with the Terraform state and with the upstream resources in Equinix Metal. You can verify the __ by running `$ terraform plan`.
+
+If the diff is not empty, it means that some resources can not be simply read fom upstream, or that attributes have changed between your version of the packethost/packet provider and the current version of the equinix/metal provider. 
+
+## Migrating one resource at a time
+
+We can use terraform state and import to achieve transition without destroyingexisting resources.
+
+### Existing infrastructure
 
 We assume to have infrastructure created with provider packethost/packet with a device and IP reservation. The HCL looks like:
 
@@ -51,7 +139,7 @@ resource "packet_device" "example" {
 }
 ```
 
-## Resource UUIDs
+### Resource UUIDs
 
 In order to transition to provider equinix/metal, we need to find out UUIDs of all the resources we want to migrate. In this case `packet_reserved_ip_block.example` and `packet_device.example`. We can use `terraform state` to find out the UUIDs.
 
@@ -79,7 +167,7 @@ resource "packet_device" "example" {
 
 ```
 
-## Migrated template
+### Migrated template
 
 Once we find out the UUIDs of resources to migrate, in the HCL template, we need to change:
  
@@ -126,7 +214,7 @@ resource "metal_device" "example" {
 }
 ```
 
-## Migrating Terraform state
+### Migrating Terraform state
 
 Once we changed the template accordingly, we can remove the old packet_ resources from Terraform state and import the new ones as metal_ resources by their UUIDs.
 
@@ -141,12 +229,12 @@ $ terraform state rm packet_device.example
 $ terraform import metal_device.example 8eb3bc10-0e1a-476a-aec2-6dc699df9c1c
 ```
 
-You can verify the migration by running `terraform plan`, it should show that infrastructure is up to date.
+You can verify the migration by running `$ terraform plan`, it should show that infrastructure is up to date.
 
 ## Resolving migration issues
 
-When we run `terraform plan` to verify that migration was successful, terraform might warn that some resource attributes from HCL are not aligned with imported state. It's because not all of the resource attribute can be computed, for example the `ip_address` blocks in packet_device are user-defined and will result to a diff against downloaded imported state.
+When we run `$ terraform plan` to verify that migration was successful, terraform might warn that some resource attributes from HCL are not aligned with imported state. It's because not all of the resource attribute can be computed, for example the `ip_address` blocks in packet_device are user-defined and will result to a diff against downloaded imported state.
 
-In case of the `ip_address`, consequent `terraform apply` will update the local state without changing the upstream resource, but if there's an attribute which will cause upstream update, you will need to resolve it manually, either chaning your HCL, or letting Terraform change the resource in Equinix Metal.
+In case of the `ip_address`, consequent `$ terraform apply` will update the local state without changing the upstream resource, but if there's an attribute which will cause upstream update, you will need to resolve it manually, either chaning your HCL, or letting Terraform change the resource in Equinix Metal.
 
 
