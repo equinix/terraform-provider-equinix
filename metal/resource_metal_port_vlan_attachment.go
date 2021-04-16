@@ -97,18 +97,29 @@ func resourceMetalPortVlanAttachmentCreate(d *schema.ResourceData, meta interfac
 		log.Printf("Port %s already has VLAN %d assigned", pName, vlanVNID)
 		par.VirtualNetworkID = vlanID
 	} else {
-		facility := dev.Facility.Code
-		vlans, _, err := client.ProjectVirtualNetworks.List(dev.Project.ID, nil)
+		projectID := dev.Project.ID
+		deviceMetro := dev.Metro.Code
+		deviceFacility := dev.Facility.Code
+		vlans, _, err := client.ProjectVirtualNetworks.List(projectID, nil)
 		if err != nil {
 			return err
 		}
 		for _, n := range vlans.VirtualNetworks {
-			if (n.VXLAN == vlanVNID) && (n.FacilityCode == facility) {
-				vlanID = n.ID
+			// looking up vlan with given vxlan, in the same location as
+			// the device - either in the same faclility or metro or both
+			vlanMetro := n.MetroCode
+			vlanFacility := n.FacilityCode
+			if n.VXLAN == vlanVNID {
+				facilitiesMatch := deviceFacility == vlanFacility
+				metrosMatch := deviceMetro == vlanMetro
+				if metrosMatch || facilitiesMatch {
+					vlanID = n.ID
+					break
+				}
 			}
 		}
 		if len(vlanID) == 0 {
-			return fmt.Errorf("VLAN with VNID %d doesn't exist in facilty %s", vlanVNID, facility)
+			return fmt.Errorf("VLAN with VNID %d doesn't exist in project %s", vlanVNID, projectID)
 		}
 
 		par.VirtualNetworkID = vlanID
