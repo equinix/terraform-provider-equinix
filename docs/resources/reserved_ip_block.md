@@ -66,8 +66,8 @@ resource "metal_reserved_ip_block" "example" {
 resource "metal_device" "nodes" {
   project_id       = local.project_id
   facilities       = ["sv15"]
-  plan             = "t1.small.x86"
-  operating_system = "ubuntu_16_04"
+  plan             = "c3.small.x86"
+  operating_system = "ubuntu_20_04"
   hostname         = "test"
   billing_cycle    = "hourly"
 

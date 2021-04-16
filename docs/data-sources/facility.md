@@ -14,12 +14,12 @@ Provides an Equinix Metal facility datasource.
 ```hcl
 # Fetch a facility by code and show its ID
 
-data "metal_facility" "ewr1" {
-    code = "ewr1"
+data "metal_facility" "ny5" {
+    code = "ny5"
 }
 
 output "id" {
-  value = data.metal_facility.ewr1.id
+  value = data.metal_facility.ny5.id
 }
 ```
 

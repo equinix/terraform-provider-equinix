@@ -25,15 +25,15 @@ To learn more about Layer 2 networking in Equinix Metal, refer to
 ```hcl
 resource "metal_vlan" "test" {
   description = "VLAN in New Jersey"
-  facility    = "ewr1"
+  facility    = "ny5"
   project_id  = local.project_id
 }
 
 resource "metal_device" "test" {
   hostname         = "test"
-  plan             = "m1.xlarge.x86"
-  facilities       = ["ewr1"]
-  operating_system = "ubuntu_16_04"
+  plan             = "c3.small.x86"
+  facilities       = ["ny5"]
+  operating_system = "ubuntu_20_04"
   billing_cycle    = "hourly"
   project_id       = local.project_id
 }
@@ -56,9 +56,9 @@ resource "metal_port_vlan_attachment" "test" {
 ```hcl
 resource "metal_device" "test" {
   hostname         = "test"
-  plan             = "m1.xlarge.x86"
-  facilities       = ["ewr1"]
-  operating_system = "ubuntu_16_04"
+  plan             = "c3.small.x86"
+  facilities       = ["ny5"]
+  operating_system = "ubuntu_20_04"
   billing_cycle    = "hourly"
   project_id       = local.project_id
 }
@@ -70,13 +70,13 @@ resource "metal_device_network_type" "test" {
 
 resource "metal_vlan" "test1" {
   description = "VLAN in New Jersey"
-  facility    = "ewr1"
+  facility    = "ny5"
   project_id  = local.project_id
 }
 
 resource "metal_vlan" "test2" {
   description = "VLAN in New Jersey"
-  facility    = "ewr1"
+  facility    = "ny5"
   project_id  = local.project_id
 }
 

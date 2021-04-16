@@ -41,15 +41,15 @@ locals {
 
 resource "metal_reserved_ip_block" "addr" {
   project_id = local.project_id
-  facility   = "ewr1"
+  facility   = "ny5"
   quantity   = 1
 }
 
 resource "metal_device" "test" {
   hostname         = "terraform-test-bgp-sesh"
-  plan             = "t1.small.x86"
-  facilities       = ["ewr1"]
-  operating_system = "ubuntu_16_04"
+  plan             = "c3.small.x86"
+  facilities       = ["ny5"]
+  operating_system = "ubuntu_20_04"
   billing_cycle    = "hourly"
   project_id       = local.project_id
 }

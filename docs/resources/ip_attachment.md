@@ -21,10 +21,10 @@ Device and reserved block must be in the same facility.
 ## Example Usage
 
 ```hcl
-# Reserve /30 block of max 2 public IPv4 addresses in Parsippany, NJ (ewr1) for myproject
+# Reserve /30 block of max 2 public IPv4 addresses in Parsippany, NJ (ny5) for myproject
 resource "metal_reserved_ip_block" "myblock" {
   project_id = local.project_id
-  facility   = "ewr1"
+  facility   = "ny5"
   quantity   = 2
 }
 
