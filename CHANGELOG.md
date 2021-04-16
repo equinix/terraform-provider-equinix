@@ -6,6 +6,8 @@ BUG FIXES:
 
 IMPROVEMENTS:
 
+- added `metro` to `spot_market_price` data source
+- `facility` is now optional in the `spot_market_price` data source
 - documentation examples have been updated to use current plans, facilities,
   operating systems, and metros ([#36](https://github.com/equinix/terraform-provider-metal/pull/36))
 
