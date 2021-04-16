@@ -1,5 +1,5 @@
 ---
-page_title: "Migration Guide from terraform-provider-packet"
+page_title: "Migrating from the Packet provider"
 description: |-
   Migrating your templates from packet_ resources to metal_ resources with minimal disruption.
 ---
@@ -9,6 +9,10 @@ description: |-
 Packet is now Equinix Metal, and the name of the Terraform provider changed too. This (terraform-provider-metal, provider equinix/metal) is the current provider for Equinix Metal.
 
 If you've been using terraform-provider-packet, and you want to use a newer provider version to manage resources in Equinix Metal, you will need to change the references in you HCL files. You can just change the names of the resources, e.g. from `packet_device` to `metal_device`. That should work, but it will cause the `packet_device` to be destroyed and new `metal_device` to be created instead. Re-creation of the resources might be undesirable, and this guide shows how to migrate to metal_ resources without the re-creation.
+
+Before starting to migrate your Terraform templates, please upgrade
+* packethost/packet provider to the latest version (3.2.1)
+* Terraform to version at least v0.13
 
 
 ## Fast migration with replace-provider and sed
@@ -230,6 +234,6 @@ We can verify the migration by running `$ terraform plan`, it should show that i
 
 When we run `$ terraform plan` to verify that migration was successful, terraform might warn that some resource attributes from templates are not aligned with imported state. It's because not all of the resource attribute can be computed, for example the `ip_address` blocks in packet_device are user-defined and will result to a non-empty diff against downloaded imported state.
 
-In case of the `ip_address`, a consequent `$ terraform apply` will update the local state without changing the upstream resource, but if there's an attribute which will cause upstream update, you will need to resolve it manually, either chaning your template, or letting Terraform change the resource upstream.
+In case of the `ip_address`, a consequent `$ terraform apply` will update the local state without changing the upstream resource, but if an attribute causes an upstream update, you will need to resolve it manually, either changing your template, or letting Terraform change the resource upstream.
 
 
