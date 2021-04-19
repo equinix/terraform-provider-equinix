@@ -94,3 +94,11 @@ The `bgp_config` block additionally exports:
 
 * `status` - status of BGP configuration in the project
 * `max_prefix` - The maximum number of route filters allowed per server
+
+## Import
+
+This resource can be imported using an existing project ID:
+
+```sh
+terraform import metal_project {existing_project_id}
+```

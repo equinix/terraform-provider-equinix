@@ -214,3 +214,11 @@ The following attributes are exported:
 * `state` - The status of the device
 * `tags` - Tags attached to the device
 * `updated` - The timestamp for the last time the device was updated
+
+## Import
+
+This resource can be imported using an existing device ID:
+
+```sh
+terraform import metal_device {existing_device_id}
+```

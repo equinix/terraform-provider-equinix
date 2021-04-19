@@ -39,3 +39,11 @@ The following attributes are exported:
 * `website` - Website link
 * `twitter` - Twitter handle
 * `logo` - Logo URL
+
+## Import
+
+This resource can be imported using an existing organization ID:
+
+```sh
+terraform import metal_organization {existing_organization_id}
+```

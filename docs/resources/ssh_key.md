@@ -52,3 +52,11 @@ The following attributes are exported:
 * `owner_id` - The UUID of the Equinix Metal API User who owns this key
 * `created` - The timestamp for when the SSH key was created
 * `updated` - The timestamp for the last time the SSH key was updated
+
+## Import
+
+This resource can be imported using an existing SSH Key ID:
+
+```sh
+terraform import metal_ssh_key {existing_sshkey_id}
+```
