@@ -15,7 +15,9 @@ func resourceMetalSpotMarketRequest() *schema.Resource {
 		Create: resourceMetalSpotMarketRequestCreate,
 		Read:   resourceMetalSpotMarketRequestRead,
 		Delete: resourceMetalSpotMarketRequestDelete,
-
+		Importer: &schema.ResourceImporter{
+			State: schema.ImportStatePassthrough,
+		},
 		Schema: map[string]*schema.Schema{
 			"devices_min": {
 				Type:     schema.TypeInt,

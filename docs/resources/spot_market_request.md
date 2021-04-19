@@ -71,3 +71,11 @@ The following attributes are exported:
 
 * `id` - The ID of the Spot Market Request
 * `facilities` - The facilities where the Spot Market Request is applied. This is computed when `metro` is set or no specific location was requested.
+
+## Import
+
+This resource can be imported using an existing spot market request ID:
+
+```sh
+terraform import metal_spot_market_request {existing_spot_market_request_id}
+```

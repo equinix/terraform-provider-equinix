@@ -29,6 +29,11 @@ func TestAccMetalSpotMarketRequest_Basic(t *testing.T) {
 						"data.metal_spot_market_request.dreq", "device_ids.#", "1"),
 				),
 			},
+			{
+				ResourceName:      "metal_spot_market_request.request",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
 		},
 	})
 }
