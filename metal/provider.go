@@ -54,6 +54,7 @@ func Provider() terraform.ResourceProvider {
 		},
 
 		ResourcesMap: map[string]*schema.Resource{
+			"metal_connection":           resourceMetalConnection(),
 			"metal_device":               resourceMetalDevice(),
 			"metal_device_network_type":  resourceMetalDeviceNetworkType(),
 			"metal_ssh_key":              resourceMetalSSHKey(),
