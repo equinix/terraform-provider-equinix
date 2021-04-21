@@ -47,6 +47,7 @@ func Provider() terraform.ResourceProvider {
 			"metal_device_bgp_neighbors": dataSourceMetalDeviceBGPNeighbors(),
 			"metal_project":              dataSourceMetalProject(),
 			"metal_project_ssh_key":      dataSourceMetalProjectSSHKey(),
+			"metal_reserved_ip_block":    dataSourceMetalReservedIPBlock(),
 			"metal_spot_market_request":  dataSourceMetalSpotMarketRequest(),
 			"metal_volume":               dataSourceMetalVolume(),
 			"metal_virtual_circuit":      dataSourceMetalVirtualCircuit(),

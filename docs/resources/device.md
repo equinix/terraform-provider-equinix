@@ -166,7 +166,7 @@ The `ip_address` block has 3 fields:
 
 * `type` - One of [`private_ipv4`, `public_ipv4`, `public_ipv6`]
 * `cidr` - CIDR suffix for IP address block to be assigned, i.e. amount of addresses.
-* `reservation_ids` - String of UUID of [IP block reservations](reserved_ip_block.md) from which the public IPv4 address should be taken.
+* `reservation_ids` - List of UUIDs of [IP block reservations](reserved_ip_block.md) from which the public IPv4 address should be taken.
 
 You can supply one `ip_address` block per IP address type. If you use the `ip_address` you must always pass a block for `private_ipv4`.
 
