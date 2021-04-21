@@ -26,6 +26,7 @@ data "metal_connection" "example" {
 * `description` - Description of the connection resource
 * `name` - Name of the connection resource
 * `facility` - Slug of a facility to which the connection belongs
+* `metro` - Slug of a metro to which the connection belongs
 * `organization_id` - ID of organization to which the connection belongs
 * `status` - Status of the connection
 * `token` - Fabric Token for the [Equinix Fabric Portal](https://ecxfabric.equinix.com/dashboard)
