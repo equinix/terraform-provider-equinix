@@ -297,11 +297,6 @@ func resourceMetalSpotMarketRequestRead(d *schema.ResourceData, meta interface{}
 		return err
 	}
 
-	deviceIDs := make([]string, len(smr.Devices))
-	for i, d := range smr.Devices {
-		deviceIDs[i] = d.ID
-	}
-
 	metro := ""
 	if smr.Metro != nil {
 		metro = smr.Metro.Code
@@ -318,7 +313,10 @@ func resourceMetalSpotMarketRequestRead(d *schema.ResourceData, meta interface{}
 		d.Set("facilities", facilityCodes)
 	}
 	d.Set("project_id", smr.Project.ID)
-
+	d.Set("devices_min", smr.DevicesMin)
+	d.Set("devices_max", smr.DevicesMax)
+	d.Set("max_bid_price", smr.MaxBidPrice)
+	d.Set("instance_parameters", getInstanceParams(smr.Devices))
 	return nil
 }
 
@@ -359,6 +357,33 @@ func resourceMetalSpotMarketRequestDelete(d *schema.ResourceData, meta interface
 	}
 	resp, err := client.SpotMarketRequests.Delete(d.Id(), true)
 	return ignoreResponseErrors(httpForbidden, httpNotFound)(resp, err)
+}
+
+type InstanceParams []map[string]interface{}
+
+func getInstanceParams(ds []packngo.Device) InstanceParams {
+	ret := InstanceParams{}
+	if len(ds) == 0 {
+		return ret
+	}
+	ips := map[string]interface{}{}
+	ips["billing_cycle"] = ds[0].BillingCycle
+	ips["plan"] = ds[0].Plan.Slug
+	ips["operating_system"] = ds[0].OS.Slug
+	ips["hostname"] = ds[0].Hostname
+	//ips["termintation_time"] = ds[0].TerminationTime.Time //
+	ips["always_pxe"] = ds[0].AlwaysPXE
+	ips["description"] = ds[0].Description
+	//ips["features"] = ds[0].Features
+	ips["locked"] = ds[0].Locked
+	//ips["project_ssh_keys"] = ds[0].BillingCycle
+	//ips["user_ssh_keys"] = ds[0].BillingCycle
+	ips["userdata"] = ds[0].UserData
+	//ips["customdata"] = ds[0].CustomData
+	ips["ipxe_script_url"] = ds[0].BillingCycle
+	ips["tags"] = ds[0].Tags
+	ret = append(ret, ips)
+	return ret
 }
 
 func resourceStateRefreshFunc(d *schema.ResourceData, meta interface{}) resource.StateRefreshFunc {
