@@ -1,7 +1,10 @@
 package metal
 
 import (
+	"fmt"
+
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/packethost/packngo"
 )
 
 func dataSourceMetalPreCreatedIPBlock() *schema.Resource {
@@ -55,7 +58,77 @@ func dataSourceMetalPreCreatedIPBlock() *schema.Resource {
 	}
 
 	return &schema.Resource{
-		Read:   dataSourceMetalReservedIPBlockRead,
+		Read:   dataSourceMetalPreCreatedIPBlockRead,
 		Schema: s,
 	}
+}
+
+func dataSourceMetalPreCreatedIPBlockRead(d *schema.ResourceData, meta interface{}) error {
+	client := meta.(*packngo.Client)
+	projectID := d.Get("project_id").(string)
+	ips, _, err := client.ProjectIPs.List(projectID, nil)
+	if err != nil {
+		return err
+	}
+	ipv := d.Get("address_family").(int)
+	public := d.Get("public").(bool)
+	global := d.Get("global").(bool)
+
+	if !public && global {
+		return fmt.Errorf("Private (non-public) global IP address blocks are not supported in Equinix Metal")
+	}
+
+	fval, fok := d.GetOk("facility")
+	mval, mok := d.GetOk("metro")
+	if (fok || mok) && global {
+		return fmt.Errorf("You can't specify facility for global IP block - addresses from global blocks can be assigned to devices across several locations")
+	}
+
+	if fok && mok {
+		return fmt.Errorf("You can't specify both facility and metro.")
+	}
+
+	if fok {
+		// lookup of not-global block
+		facility := fval.(string)
+		for _, ip := range ips {
+			if ip.Public == public && ip.AddressFamily == ipv && facility == ip.Facility.Code {
+				if err := loadBlock(d, &ip); err != nil {
+					return err
+				}
+				break
+			}
+		}
+	} else if mok {
+		// lookup of not-global block
+		metro := mval.(string)
+		for _, ip := range ips {
+			if ip.Metro == nil {
+				continue
+			}
+			if ip.Public == public && ip.AddressFamily == ipv && metro == ip.Metro.Code {
+				if err := loadBlock(d, &ip); err != nil {
+					return err
+				}
+				break
+			}
+		}
+	} else {
+		// lookup of global block
+		for _, ip := range ips {
+			blockGlobal := getGlobalBool(&ip)
+			if ip.Public == public && ip.AddressFamily == ipv && blockGlobal {
+				if err := loadBlock(d, &ip); err != nil {
+					return err
+				}
+				break
+			}
+		}
+
+	}
+	if d.Get("cidr_notation") == "" {
+		return fmt.Errorf("Could not find matching reserved block, all IPs were %v", ips)
+	}
+	return nil
+
 }
