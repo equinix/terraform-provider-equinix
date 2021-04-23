@@ -26,9 +26,9 @@ resource "metal_connection" "test" {
 
 * `name` - (Required) Name of the connection resource
 * `organization_id` - (Required) ID of the organization responsible for the connection
-* `project_id` - (Required) ID of the project where the connection is scoped to
 * `redundancy` - (Required) Connection redundancy - redundant or primary
 * `type` - (Required) Connection type - dedicated or shared
+* `project_id` - (Optional) ID of the project where the connection is scoped to, must be set for shared connection
 * `metro` - (Optional) Metro where the connection will be created
 * `facility` - (Optional) Facility where the connection will be created
 * `description` - (Optional) Description for the connection resource
