@@ -58,12 +58,12 @@ func dataSourceMetalPreCreatedIPBlock() *schema.Resource {
 	}
 
 	return &schema.Resource{
-		Read:   dataSourceMetalReservedIPBlockRead,
+		Read:   dataSourceMetalPreCreatedIPBlockRead,
 		Schema: s,
 	}
 }
 
-func dataSourceMetalReservedIPBlockRead(d *schema.ResourceData, meta interface{}) error {
+func dataSourceMetalPreCreatedIPBlockRead(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*packngo.Client)
 	projectID := d.Get("project_id").(string)
 	ips, _, err := client.ProjectIPs.List(projectID, nil)
