@@ -3,6 +3,7 @@ package metal
 import (
 	"fmt"
 	"log"
+	"strconv"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
@@ -33,6 +34,25 @@ func resourceMetalSpotMarketRequest() *schema.Resource {
 				Type:     schema.TypeFloat,
 				Required: true,
 				ForceNew: true,
+				DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
+					oldF, err := strconv.ParseFloat(old, 64)
+					if err != nil {
+						return false
+					}
+					newF, err := strconv.ParseFloat(new, 64)
+					if err != nil {
+						return false
+					}
+					// suppress diff if the difference between existing and new bid price
+					// is less than 2%
+					diffThreshold := .02
+					priceDiff := oldF / newF
+
+					if diffThreshold < priceDiff {
+						return true
+					}
+					return false
+				},
 			},
 			"facilities": {
 				Type:          schema.TypeList,
