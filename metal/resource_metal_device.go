@@ -98,7 +98,6 @@ func resourceMetalDevice() *schema.Resource {
 					}
 					return false
 				},
-				Deprecated:    "Use metro attribute instead",
 				ConflictsWith: []string{"metro"},
 			},
 			"ip_address": {
