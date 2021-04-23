@@ -13,7 +13,7 @@ func dataSourceMetalReservedIPBlock() *schema.Resource {
 	return &schema.Resource{
 		Read: dataSourceMetalReservedIPBlockRead,
 		Schema: map[string]*schema.Schema{
-			"block_id": {
+			"id": {
 				Type:          schema.TypeString,
 				Optional:      true,
 				Description:   "ID of the block to look up",
@@ -25,13 +25,13 @@ func dataSourceMetalReservedIPBlock() *schema.Resource {
 				Optional:      true,
 				Computed:      true,
 				Description:   "ID of the project where the searched block should be",
-				ConflictsWith: []string{"block_id"},
+				ConflictsWith: []string{"id"},
 			},
 			"ip_address": {
 				Type:          schema.TypeString,
 				Optional:      true,
 				Description:   "Find block containing this IP address in given project",
-				ConflictsWith: []string{"block_id"},
+				ConflictsWith: []string{"id"},
 			},
 
 			"global": {
@@ -113,12 +113,12 @@ func dataSourceMetalReservedIPBlock() *schema.Resource {
 func dataSourceMetalReservedIPBlockRead(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*packngo.Client)
 
-	blockId, blockIdOk := d.GetOk("block_id")
+	blockId, blockIdOk := d.GetOk("id")
 	projectId, projectIdOk := d.GetOk("project_id")
 	address, addressOk := d.GetOk("ip_address")
 
 	if !(blockIdOk || (projectIdOk && addressOk)) {
-		return fmt.Errorf("You must specify either block_id or project_id and ip_address")
+		return fmt.Errorf("You must specify either id or project_id and ip_address")
 	}
 	if blockIdOk {
 		block, _, err := client.ProjectIPs.Get(
@@ -151,7 +151,7 @@ func dataSourceMetalReservedIPBlockRead(d *schema.ResourceData, meta interface{}
 		}
 
 		if ipNet.Contains(lookupAddress) {
-			d.Set("block_id", b.ID)
+			d.Set("id", b.ID)
 			return loadBlock(d, &b)
 		}
 	}

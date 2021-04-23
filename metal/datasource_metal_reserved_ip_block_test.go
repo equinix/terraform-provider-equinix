@@ -27,7 +27,7 @@ data "metal_reserved_ip_block" "test" {
 }
 
 data "metal_reserved_ip_block" "test_id" {
-	block_id  = metal_reserved_ip_block.test.id
+	id  = metal_reserved_ip_block.test.id
 }
 
 `, name)
