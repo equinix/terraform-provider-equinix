@@ -83,6 +83,11 @@ func dataSourceMetalConnection() *schema.Resource {
 				Computed:    true,
 				Description: "Slug of a facility to which the connection belongs",
 			},
+			"metro": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Slug of a metro to which the connection belongs",
+			},
 			"token": {
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -102,7 +107,7 @@ func dataSourceMetalConnection() *schema.Resource {
 				Type:        schema.TypeList,
 				Elem:        connectionPortSchema(),
 				Computed:    true,
-				Description: " List of connection ports - primary (`ports[0]`) and secondary (`ports[1]`)",
+				Description: "List of connection ports - primary (`ports[0]`) and secondary (`ports[1]`)",
 			},
 		},
 	}
@@ -135,7 +140,7 @@ func dataSourceMetalConnectionRead(d *schema.ResourceData, meta interface{}) err
 
 	conn, _, err := client.Connections.Get(
 		connId,
-		&packngo.GetOptions{Includes: []string{"organization", "facility"}})
+		&packngo.GetOptions{Includes: []string{"organization", "facility", "metro"}})
 	if err != nil {
 		return err
 	}
@@ -146,7 +151,12 @@ func dataSourceMetalConnectionRead(d *schema.ResourceData, meta interface{}) err
 	d.Set("description", conn.Description)
 	d.Set("status", conn.Status)
 	d.Set("redundancy", conn.Redundancy)
-	d.Set("facility", conn.Facility.Code)
+	if conn.Facility != nil {
+		d.Set("facility", conn.Facility.Code)
+	}
+	if conn.Metro != nil {
+		d.Set("metro", conn.Metro.Code)
+	}
 	d.Set("token", conn.Token)
 	d.Set("type", conn.Type)
 	d.Set("speed", conn.Speed)
