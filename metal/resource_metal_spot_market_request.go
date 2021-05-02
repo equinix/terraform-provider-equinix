@@ -111,7 +111,7 @@ func resourceMetalSpotMarketRequest() *schema.Resource {
 							Elem:     &schema.Schema{Type: schema.TypeString},
 						},
 						"locked": {
-							Type:     schema.TypeString,
+							Type:     schema.TypeBool,
 							Optional: true,
 						},
 						"project_ssh_keys": {
@@ -336,8 +336,7 @@ func resourceMetalSpotMarketRequestRead(d *schema.ResourceData, meta interface{}
 	d.Set("devices_min", smr.DevicesMin)
 	d.Set("devices_max", smr.DevicesMax)
 	d.Set("max_bid_price", smr.MaxBidPrice)
-	d.Set("instance_parameters", getInstanceParams(smr.Devices))
-	return nil
+	return d.Set("instance_parameters", getInstanceParams(&smr.Parameters))
 }
 
 func resourceMetalSpotMarketRequestDelete(d *schema.ResourceData, meta interface{}) error {
@@ -381,29 +380,27 @@ func resourceMetalSpotMarketRequestDelete(d *schema.ResourceData, meta interface
 
 type InstanceParams []map[string]interface{}
 
-func getInstanceParams(ds []packngo.Device) InstanceParams {
-	ret := InstanceParams{}
-	if len(ds) == 0 {
-		return ret
+func getInstanceParams(params *packngo.SpotMarketRequestInstanceParameters) InstanceParams {
+	p := InstanceParams{{
+		"billing_cycle":    params.BillingCycle,
+		"plan":             params.Plan,
+		"operating_system": params.OperatingSystem,
+		"hostname":         params.Hostname,
+		"always_pxe":       params.AlwaysPXE,
+		"description":      params.Description,
+		"features":         params.Features,
+		"locked":           params.Locked,
+		"project_ssh_keys": params.BillingCycle,
+		"user_ssh_keys":    params.BillingCycle,
+		"userdata":         params.UserData,
+		"customdata":       params.CustomData,
+		"ipxe_script_url":  params.BillingCycle,
+		"tags":             params.Tags,
+	}}
+	if params.TerminationTime != nil {
+		p[0]["termintation_time"] = params.TerminationTime.Time
 	}
-	ips := map[string]interface{}{}
-	ips["billing_cycle"] = ds[0].BillingCycle
-	ips["plan"] = ds[0].Plan.Slug
-	ips["operating_system"] = ds[0].OS.Slug
-	ips["hostname"] = ds[0].Hostname
-	//ips["termintation_time"] = ds[0].TerminationTime.Time //
-	ips["always_pxe"] = ds[0].AlwaysPXE
-	ips["description"] = ds[0].Description
-	//ips["features"] = ds[0].Features
-	ips["locked"] = ds[0].Locked
-	//ips["project_ssh_keys"] = ds[0].BillingCycle
-	//ips["user_ssh_keys"] = ds[0].BillingCycle
-	ips["userdata"] = ds[0].UserData
-	//ips["customdata"] = ds[0].CustomData
-	ips["ipxe_script_url"] = ds[0].BillingCycle
-	ips["tags"] = ds[0].Tags
-	ret = append(ret, ips)
-	return ret
+	return p
 }
 
 func resourceStateRefreshFunc(d *schema.ResourceData, meta interface{}) resource.StateRefreshFunc {

@@ -41,6 +41,7 @@ The following arguments are supported:
 * `wait_for_devices` - (Optional) On resource creation - wait until all desired devices are active, on resource destruction - wait until devices are removed
 * `facilities` - (Optional) Facility IDs where devices should be created
 * `metro` - (Optional) Metro where devices should be created
+* `locked` - (Optional) Blocks deletion of the SpotMarketRequest device until the lock is disabled
 * `instance_parameters` - (Required) Parameters for devices provisioned from this request. You can find the parameter description from the [metal_device doc](device.md).
   * `billing_cycle`
   * `plan`
