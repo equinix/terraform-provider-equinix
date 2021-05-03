@@ -68,6 +68,7 @@ func Provider() terraform.ResourceProvider {
 			"metal_ip_attachment":        resourceMetalIPAttachment(),
 			"metal_spot_market_request":  resourceMetalSpotMarketRequest(),
 			"metal_vlan":                 resourceMetalVlan(),
+			"metal_virtual_circuit":      resourceMetalVirtualCircuit(),
 			"metal_bgp_session":          resourceMetalBGPSession(),
 			"metal_port_vlan_attachment": resourceMetalPortVlanAttachment(),
 		},
