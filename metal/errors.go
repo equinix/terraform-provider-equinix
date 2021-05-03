@@ -140,6 +140,9 @@ func httpNotFound(resp *http.Response, err error) bool {
 // provided checks
 func ignoreResponseErrors(ignore ...func(resp *http.Response, err error) bool) func(resp *packngo.Response, err error) error {
 	return func(resp *packngo.Response, err error) error {
+		if resp == nil || resp.Response == nil {
+			return err
+		}
 		for _, ignored := range ignore {
 			if !ignored(resp.Response, err) {
 				return err
