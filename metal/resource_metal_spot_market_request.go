@@ -390,11 +390,11 @@ func getInstanceParams(params *packngo.SpotMarketRequestInstanceParameters) Inst
 		"description":      params.Description,
 		"features":         params.Features,
 		"locked":           params.Locked,
-		"project_ssh_keys": params.BillingCycle,
-		"user_ssh_keys":    params.BillingCycle,
+		"project_ssh_keys": params.ProjectSSHKeys,
+		"user_ssh_keys":    params.UserSSHKeys,
 		"userdata":         params.UserData,
 		"customdata":       params.CustomData,
-		"ipxe_script_url":  params.BillingCycle,
+		"ipxe_script_url":  params.IPXEScriptURL,
 		"tags":             params.Tags,
 	}}
 	if params.TerminationTime != nil {
