@@ -1,6 +1,9 @@
 package metal
 
 import (
+	"time"
+
+	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/packethost/packngo"
 )
@@ -85,6 +88,21 @@ func resourceMetalVirtualCircuitCreate(d *schema.ResourceData, meta interface{})
 	if err != nil {
 		return err
 	}
+	/*
+		createWaiter := getVCStateWaiter(
+			client,
+			vc.ID,
+			d.Timeout(schema.TimeoutCreate),
+			// update after packngo updated
+			[]string{"pending"},
+			[]string{"active"},
+		)
+
+		_, err = createWaiter.WaitForState()
+		if err != nil {
+			return fmt.Errorf("Error waiting for virtual circuit %s to be created: %s", vc.ID, err.Error())
+		}
+	*/
 
 	d.SetId(vc.ID)
 
@@ -116,8 +134,56 @@ func resourceMetalVirtualCircuitRead(d *schema.ResourceData, meta interface{}) e
 	})
 }
 
+func getVCStateWaiter(client *packngo.Client, id string, timeout time.Duration, pending, target []string) *resource.StateChangeConf {
+	return &resource.StateChangeConf{
+		Pending: pending,
+		Target:  target,
+		Refresh: func() (interface{}, string, error) {
+			vc, _, err := client.VirtualCircuits.Get(
+				id,
+				&packngo.GetOptions{Includes: []string{"project", "port", "virtual_network"}},
+			)
+			if err != nil {
+				return 0, "", err
+			}
+			return vc, vc.Status, nil
+		},
+		Timeout:                   timeout,
+		Delay:                     10 * time.Second,
+		MinTimeout:                5 * time.Second,
+		ContinuousTargetOccurence: 5,
+	}
+
+}
+
 func resourceMetalVirtualCircuitDelete(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*packngo.Client)
+	// we first need to disconnect VLAN from the VC
+	_, _, err := client.VirtualCircuits.Update(
+		d.Id(),
+		&packngo.VCUpdateRequest{VirtualNetworkID: nil},
+		nil,
+	)
+	if err != nil {
+		return err
+	}
+	/*
+
+		detachWaiter := getVCStateWaiter(
+			client,
+			d.Id(),
+			d.Timeout(schema.TimeoutDelete),
+			// update after packngo updated
+			[]string{"deleting", "pending", "deactivating"},
+			[]string{"waiting_on_customer_vlan"},
+		)
+
+		_, err = detachWaiter.WaitForState()
+		if err != nil {
+			return fmt.Errorf("Error deleting virtual circuit %s: %s", d.Id(), err)
+		}
+	*/
+
 	resp, err := client.VirtualCircuits.Delete(d.Id())
 	if ignoreResponseErrors(httpForbidden, httpNotFound)(resp, err) != nil {
 		return friendlyError(err)
