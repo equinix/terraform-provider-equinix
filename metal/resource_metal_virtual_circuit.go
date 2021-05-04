@@ -73,7 +73,7 @@ func resourceMetalVirtualCircuit() *schema.Resource {
 func resourceMetalVirtualCircuitCreate(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*packngo.Client)
 	vncr := packngo.VCCreateRequest{
-		VirtualNetworkID: d.Get("vnid").(string),
+		VirtualNetworkID: d.Get("vlan_id").(string),
 		NniVLAN:          d.Get("nni_vlan").(int),
 		Name:             d.Get("name").(string),
 	}

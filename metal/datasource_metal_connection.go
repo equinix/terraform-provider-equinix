@@ -13,6 +13,11 @@ func connectionPortSchema() *schema.Resource {
 				Computed:    true,
 				Description: "Name of the connection port resource",
 			},
+			"id": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "ID of the connection port resource",
+			},
 			"role": {
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -123,6 +128,7 @@ func getConnectionPorts(cps []packngo.ConnectionPort) []map[string]interface{} {
 		}
 		connPort := map[string]interface{}{
 			"name":                p.Name,
+			"id":                  p.ID,
 			"role":                string(p.Role),
 			"speed":               p.Speed,
 			"status":              p.Status,
