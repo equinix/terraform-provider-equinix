@@ -116,8 +116,7 @@ func dataSourceMetalPreCreatedIPBlockRead(d *schema.ResourceData, meta interface
 	} else {
 		// lookup of global block
 		for _, ip := range ips {
-			blockGlobal := getGlobalBool(&ip)
-			if ip.Public == public && ip.AddressFamily == ipv && blockGlobal {
+			if ip.Public == public && ip.AddressFamily == ipv && ip.Global {
 				if err := loadBlock(d, &ip); err != nil {
 					return err
 				}

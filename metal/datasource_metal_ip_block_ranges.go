@@ -90,7 +90,7 @@ func dataSourceMetalIPBlockRangesRead(d *schema.ResourceData, meta interface{}) 
 		cnStr := fmt.Sprintf("%s/%d", ip.Network, ip.CIDR)
 		if ip.AddressFamily == 4 {
 			if ip.Public {
-				if getGlobalBool(&ip) {
+				if ip.Global {
 					globalIPv4s = append(globalIPv4s, cnStr)
 				} else {
 					targetSlice = &publicIPv4s

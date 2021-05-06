@@ -198,21 +198,13 @@ func resourceMetalReservedIPBlockCreate(d *schema.ResourceData, meta interface{}
 	return resourceMetalReservedIPBlockRead(d, meta)
 }
 
-func getGlobalBool(r *packngo.IPAddressReservation) bool {
-	if r.Global != nil {
-		return *(r.Global)
-	}
-	return false
-}
-
 func getType(r *packngo.IPAddressReservation) (string, error) {
-	globalBool := getGlobalBool(r)
 	switch {
 	case !r.Public:
 		return fmt.Sprintf("private_ipv%d", r.AddressFamily), nil
-	case r.Public && !globalBool:
+	case r.Public && !r.Global:
 		return fmt.Sprintf("public_ipv%d", r.AddressFamily), nil
-	case r.Public && globalBool:
+	case r.Public && r.Global:
 		return fmt.Sprintf("global_ipv%d", r.AddressFamily), nil
 	}
 	return "", fmt.Errorf("Unknown reservation type %+v", r)
@@ -295,7 +287,7 @@ func resourceMetalReservedIPBlockRead(d *schema.ResourceData, meta interface{}) 
 	if (reservedBlock.Description != nil) && (*(reservedBlock.Description) != "") {
 		d.Set("description", *(reservedBlock.Description))
 	}
-	d.Set("global", getGlobalBool(reservedBlock))
+	d.Set("global", reservedBlock.Global)
 
 	return nil
 }
