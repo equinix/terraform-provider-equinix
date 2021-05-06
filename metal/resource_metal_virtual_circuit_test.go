@@ -1,5 +1,15 @@
 package metal
 
+// I am not sure what to do with the test code. It's useful, but it won't run
+// either:
+// * unless the Connections are automatically approved.
+// * unless we specify an existing Connection and Project for testing.
+//
+// I can remove this file from the PR if it looks too bad here.
+
+/*
+
+
 import (
 	"fmt"
 	"testing"
@@ -14,7 +24,7 @@ func testAccCheckMetalVirtualCircuitDestroy(s *terraform.State) error {
 	client := testAccProvider.Meta().(*packngo.Client)
 
 	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "metal_connection" {
+		if rs.Type != "metal_virtual_circuit" {
 			continue
 		}
 		if _, _, err := client.VirtualCircuits.Get(rs.Primary.ID, nil); err == nil {
@@ -23,6 +33,35 @@ func testAccCheckMetalVirtualCircuitDestroy(s *terraform.State) error {
 	}
 
 	return nil
+}
+
+func tconf(randstr string, randint int) string {
+	return fmt.Sprintf(`
+        locals {
+                project_id = "52000fb2-ee46-4673-93a8-de2c2bdba33b"
+                conn_id = "73f12f29-3e19-43a0-8e90-ae81580db1e9"
+        }
+
+        data "metal_connection" test {
+            connection_id = local.conn_id
+        }
+
+        resource "metal_vlan" "test" {
+            project_id = local.project_id
+            metro      = data.metal_connection.test.metro
+        }
+
+        resource "metal_virtual_circuit" "test" {
+            connection_id = local.conn_id
+            project_id = local.project_id
+            port_id = data.metal_connection.test.ports[0].id
+            vlan_id = metal_vlan.test.id
+            nni_vlan = %d
+        }
+
+
+        `,
+		randint)
 }
 
 func testAccMetalVirtualCircuitConfig_Dedicated(randstr string, randint int) string {
@@ -52,7 +91,7 @@ func testAccMetalVirtualCircuitConfig_Dedicated(randstr string, randint int) str
             vlan_id = metal_vlan.test.id
             nni_vlan = %d
         }
-        
+
 
         `,
 		randstr, randstr, randint)
@@ -69,7 +108,8 @@ func TestAccMetalVirtualCircuit_Dedicated(t *testing.T) {
 		CheckDestroy: testAccCheckMetalVirtualCircuitDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccMetalVirtualCircuitConfig_Dedicated(rs, ri),
+				//Config: testAccMetalVirtualCircuitConfig_Dedicated(rs, ri),
+				Config: tconf(rs, ri),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrPair(
 						"metal_virtual_circuit.test", "vlan_id",
@@ -77,11 +117,12 @@ func TestAccMetalVirtualCircuit_Dedicated(t *testing.T) {
 					),
 				),
 			},
-			{
-				ResourceName:      "metal_virtual_circuit.test",
-				ImportState:       true,
-				ImportStateVerify: true,
-			},
+				{
+					ResourceName:      "metal_virtual_circuit.test",
+					ImportState:       true,
+					ImportStateVerify: true,
+				},
 		},
 	})
 }
+*/

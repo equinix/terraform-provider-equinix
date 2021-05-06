@@ -1,6 +1,7 @@
 package metal
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
@@ -51,7 +52,7 @@ func resourceMetalVirtualCircuit() *schema.Resource {
 			"vlan_id": {
 				Type:        schema.TypeString,
 				Required:    true,
-				Description: "UUID of the VLAN resource",
+				Description: "UUID of the VLAN to associate",
 				ForceNew:    true,
 			},
 			"vnid": {
@@ -84,25 +85,31 @@ func resourceMetalVirtualCircuitCreate(d *schema.ResourceData, meta interface{})
 	portId := d.Get("port_id").(string)
 	projectId := d.Get("project_id").(string)
 
+	conn, _, err := client.Connections.Get(connId, nil)
+	if err != nil {
+		return err
+	}
+	// TODO: export consts for Connection status from packngo
+	if conn.Status == packngo.VCStatusPending {
+		return fmt.Errorf("Connection request with name %s and ID %s wasn't approved yet", conn.Name, conn.ID)
+	}
+
 	vc, _, err := client.VirtualCircuits.Create(projectId, connId, portId, &vncr, nil)
 	if err != nil {
 		return err
 	}
-	/*
-		createWaiter := getVCStateWaiter(
-			client,
-			vc.ID,
-			d.Timeout(schema.TimeoutCreate),
-			// update after packngo updated
-			[]string{"pending"},
-			[]string{"active"},
-		)
+	createWaiter := getVCStateWaiter(
+		client,
+		vc.ID,
+		d.Timeout(schema.TimeoutCreate),
+		[]string{packngo.VCStatusActivating},
+		[]string{packngo.VCStatusActive},
+	)
 
-		_, err = createWaiter.WaitForState()
-		if err != nil {
-			return fmt.Errorf("Error waiting for virtual circuit %s to be created: %s", vc.ID, err.Error())
-		}
-	*/
+	_, err = createWaiter.WaitForState()
+	if err != nil {
+		return fmt.Errorf("Error waiting for virtual circuit %s to be created: %s", vc.ID, err.Error())
+	}
 
 	d.SetId(vc.ID)
 
@@ -124,13 +131,13 @@ func resourceMetalVirtualCircuitRead(d *schema.ResourceData, meta interface{}) e
 	return setMap(d, map[string]interface{}{
 		//"connection_id": vc.Connection.ID,
 		"project_id": vc.Project.ID,
-		//"port_id":       vc.Port.ID,
-		"vlan_id":  vc.VirtualNetwork.ID,
-		"status":   vc.Status,
-		"nni_vlan": vc.NniVLAN,
-		"vnid":     vc.VNID,
-		"nni_vnid": vc.NniVNID,
-		"name":     vc.Name,
+		"port_id":    vc.Port.ID,
+		"vlan_id":    vc.VirtualNetwork.ID,
+		"status":     vc.Status,
+		"nni_vlan":   vc.NniVLAN,
+		"vnid":       vc.VNID,
+		"nni_vnid":   vc.NniVNID,
+		"name":       vc.Name,
 	})
 }
 
@@ -167,22 +174,19 @@ func resourceMetalVirtualCircuitDelete(d *schema.ResourceData, meta interface{})
 	if err != nil {
 		return err
 	}
-	/*
 
-		detachWaiter := getVCStateWaiter(
-			client,
-			d.Id(),
-			d.Timeout(schema.TimeoutDelete),
-			// update after packngo updated
-			[]string{"deleting", "pending", "deactivating"},
-			[]string{"waiting_on_customer_vlan"},
-		)
+	detachWaiter := getVCStateWaiter(
+		client,
+		d.Id(),
+		d.Timeout(schema.TimeoutDelete),
+		[]string{packngo.VCStatusDeactivating},
+		[]string{packngo.VCStatusWaiting},
+	)
 
-		_, err = detachWaiter.WaitForState()
-		if err != nil {
-			return fmt.Errorf("Error deleting virtual circuit %s: %s", d.Id(), err)
-		}
-	*/
+	_, err = detachWaiter.WaitForState()
+	if err != nil {
+		return fmt.Errorf("Error deleting virtual circuit %s: %s", d.Id(), err)
+	}
 
 	resp, err := client.VirtualCircuits.Delete(d.Id())
 	if ignoreResponseErrors(httpForbidden, httpNotFound)(resp, err) != nil {
