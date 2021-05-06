@@ -76,11 +76,7 @@ func resourceMetalIPAttachmentRead(d *schema.ResourceData, meta interface{}) err
 	d.Set("management", assignment.Management)
 	d.Set("manageable", assignment.Manageable)
 
-	g := false
-	if assignment.Global != nil {
-		g = *(assignment.Global)
-	}
-	d.Set("global", g)
+	d.Set("global", assignment.Global)
 
 	d.Set("device_id", path.Base(assignment.AssignedTo.Href))
 	d.Set("cidr_notation",
