@@ -65,7 +65,6 @@ func resourceMetalSpotMarketRequest() *schema.Resource {
 			"metro": {
 				Type:          schema.TypeString,
 				Optional:      true,
-				Elem:          &schema.Schema{Type: schema.TypeString},
 				ForceNew:      true,
 				ConflictsWith: []string{"facilities"},
 			},
@@ -321,22 +320,25 @@ func resourceMetalSpotMarketRequestRead(d *schema.ResourceData, meta interface{}
 	if smr.Metro != nil {
 		metro = smr.Metro.Code
 	}
-	d.Set("metro", metro)
 
-	facilityIDs := make([]string, len(smr.Facilities))
-	facilityCodes := make([]string, len(smr.Facilities))
-	if len(smr.Facilities) > 0 {
-		for i, f := range smr.Facilities {
-			facilityIDs[i] = f.ID
-			facilityCodes[i] = f.Code
-		}
-		d.Set("facilities", facilityCodes)
-	}
-	d.Set("project_id", smr.Project.ID)
-	d.Set("devices_min", smr.DevicesMin)
-	d.Set("devices_max", smr.DevicesMax)
-	d.Set("max_bid_price", smr.MaxBidPrice)
-	return d.Set("instance_parameters", getInstanceParams(&smr.Parameters))
+	return setMap(d, map[string]interface{}{
+		"metro":         metro,
+		"project_id":    smr.Project.ID,
+		"devices_min":   smr.DevicesMin,
+		"devices_max":   smr.DevicesMax,
+		"max_bid_price": smr.MaxBidPrice,
+		"facilities": func(d *schema.ResourceData, k string) error {
+			facilityIDs := make([]string, len(smr.Facilities))
+			facilityCodes := make([]string, len(smr.Facilities))
+			if len(smr.Facilities) > 0 {
+				for i, f := range smr.Facilities {
+					facilityIDs[i] = f.ID
+					facilityCodes[i] = f.Code
+				}
+			}
+			return d.Set(k, facilityCodes)
+		},
+	})
 }
 
 func resourceMetalSpotMarketRequestDelete(d *schema.ResourceData, meta interface{}) error {

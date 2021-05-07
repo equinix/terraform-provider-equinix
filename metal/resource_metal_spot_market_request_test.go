@@ -145,9 +145,10 @@ func TestAccMetalSpotMarketRequest_Import(t *testing.T) {
 				Config: testAccCheckMetalSpotMarketRequestConfig_import(rs),
 			},
 			{
-				ResourceName:      "metal_spot_market_request.request",
-				ImportState:       true,
-				ImportStateVerify: true,
+				ResourceName:            "metal_spot_market_request.request",
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"instance_parameters", "wait_for_devices"},
 			},
 		},
 	})
