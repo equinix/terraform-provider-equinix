@@ -20,7 +20,7 @@ func TestAccMetalPort_ByName(t *testing.T) {
 				Config: testPortConfig_ByName(rs),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(
-						"data.metal_port.test", "bond_port", "false"),
+						"data.metal_port.test", "bond_name", "bond0"),
 				),
 			},
 		},
@@ -37,15 +37,15 @@ resource "metal_project" "test" {
 resource "metal_device" "test" {
   hostname         = "tfacc-test-device-port"
   plan             = "c3.medium.x86"
-  facilities       = ["sv15"]
+  metro            = "sv"
   operating_system = "ubuntu_20_04"
   billing_cycle    = "hourly"
   project_id       = metal_project.test.id
 }
 
 data "metal_port" "test" {
-    device_id        = metal_device.test.id
-    port_name        = "eth0"
+    device_id = metal_device.test.id
+    name      = "eth0"
 }
 
 `, name)
@@ -63,7 +63,7 @@ func TestAccMetalPort_ById(t *testing.T) {
 				Config: testPortConfig_ById(rs),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(
-						"data.metal_port.test", "port_name"),
+						"data.metal_port.test", "name"),
 				),
 			},
 		},
@@ -80,7 +80,7 @@ resource "metal_project" "test" {
 resource "metal_device" "test" {
   hostname         = "tfacc-test-device-port"
   plan             = "c3.medium.x86"
-  facilities       = ["sv15"]
+  metro            = "sv"
   operating_system = "ubuntu_20_04"
   billing_cycle    = "hourly"
   project_id       = metal_project.test.id

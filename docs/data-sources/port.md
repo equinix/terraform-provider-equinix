@@ -28,18 +28,26 @@ resource "metal_device" "test" {
 }
 
 data "metal_port" "test" {
-    device_id        = metal_device.test.id
-    port_name        = "eth0"
+    device_id = metal_device.test.id
+    name      = "eth0"
 }
 ```
 
 ## Argument Reference
 
 * `id` - (Required) ID of the port to read, conflicts with device_id.
-* `device_id` - (Required) 4 or 6, depending on which block you are looking for.
-* `port_name` - (Required) Whether to look for public or private block.
+* `device_id` - (Required) 
+* `name` - (Required) Whether to look for public or private block.
 
 ## Attributes Reference
 
-* `bond_port` - Whether port is a bond port or physical port
 * `network_type` - One of layer2-bonded, layer2-individual, layer3, hybrid, hybrid-bonded
+* `type` - Type is either "NetworkBondPort" for bond ports or "NetworkPort" for bondable ethernet ports
+* `mac` - MAC address of the port
+* `bond_id` - UUID of the bond port"
+* `bond_name` - Name of the bond port
+* `bonded` - Flag indicating whether the port is bonded
+* `disbond_supported` - Flag indicating whether the port can be removed from a bond
+* `native_vlan_id` - UUID of native VLAN of the port
+* `vlan_ids` - UUIDs of attached VLANs
+
