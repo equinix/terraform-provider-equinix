@@ -10,9 +10,10 @@ import (
 
 func resourceMetalVolumeAttachment() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceMetalVolumeAttachmentCreate,
-		Read:   resourceMetalVolumeAttachmentRead,
-		Delete: resourceMetalVolumeAttachmentDelete,
+		Create:             resourceMetalVolumeAttachmentCreate,
+		Read:               resourceMetalVolumeAttachmentRead,
+		DeprecationMessage: "Volumes are deprecated, see https://metal.equinix.com/developers/docs/resilience-recovery/elastic-block-storage/#elastic-block-storage",
+		Delete:             resourceMetalVolumeAttachmentDelete,
 		Importer: &schema.ResourceImporter{
 			State: schema.ImportStatePassthrough,
 		},
