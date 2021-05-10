@@ -10,9 +10,9 @@ import (
 
 func dataSourceMetalVolume() *schema.Resource {
 	return &schema.Resource{
-		Read: dataSourceMetalVolumeRead,
+		Read:               dataSourceMetalVolumeRead,
+		DeprecationMessage: "Volumes are deprecated, see https://metal.equinix.com/developers/docs/resilience-recovery/elastic-block-storage/#elastic-block-storage",
 		Schema: map[string]*schema.Schema{
-
 			"name": {
 				Type:          schema.TypeString,
 				Optional:      true,
