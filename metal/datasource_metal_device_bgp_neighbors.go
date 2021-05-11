@@ -25,8 +25,9 @@ func bgpNeighborSchema() *schema.Resource {
 				Computed: true,
 			},
 			"md5_password": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:      schema.TypeString,
+				Computed:  true,
+				Sensitive: true,
 			},
 			"multihop": {
 				Type:     schema.TypeBool,
