@@ -89,7 +89,6 @@ func resourceMetalVirtualCircuitCreate(d *schema.ResourceData, meta interface{})
 	if err != nil {
 		return err
 	}
-	// TODO: export consts for Connection status from packngo
 	if conn.Status == packngo.VCStatusPending {
 		return fmt.Errorf("Connection request with name %s and ID %s wasn't approved yet", conn.Name, conn.ID)
 	}
@@ -155,10 +154,9 @@ func getVCStateWaiter(client *packngo.Client, id string, timeout time.Duration, 
 			}
 			return vc, vc.Status, nil
 		},
-		Timeout:                   timeout,
-		Delay:                     10 * time.Second,
-		MinTimeout:                5 * time.Second,
-		ContinuousTargetOccurence: 5,
+		Timeout:    timeout,
+		Delay:      10 * time.Second,
+		MinTimeout: 5 * time.Second,
 	}
 
 }

@@ -51,4 +51,5 @@ resource "metal_virtual_circuit" "test" {
 ## Attributes Reference
 
 * `status` - Status of the virtal circuit
-* `vnid`, `nni_nvid` - VLAN parameters, see the [documentation for Equinix Fabric](https://metal.equinix.com/developers/docs/networking/fabric/)
+* `vnid`
+* `nni_nvid` - VLAN parameters, see the [documentation for Equinix Fabric](https://metal.equinix.com/developers/docs/networking/fabric/)
