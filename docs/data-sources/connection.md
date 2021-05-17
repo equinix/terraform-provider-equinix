@@ -35,6 +35,7 @@ data "metal_connection" "example" {
 * `speed` - Connection speed in bits per second
 * `ports` - List of connection ports - primary (`ports[0]`) and secondary (`ports[1]`)
   * `name` - Port name
+  * `id` - Port UUID
   * `role` - Port role - primary or secondary
   * `speed` - Port speed in bits per second
   * `status` - Port status 
