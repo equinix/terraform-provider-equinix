@@ -128,7 +128,7 @@ resource "metal_spot_market_request" "request" {
   instance_parameters {
     hostname         = "tfacc-testspot"
     billing_cycle    = "hourly"
-    operating_system = "ubuntu_18_04"
+    operating_system = "ubuntu_20_04"
     plan             = "c3.medium.x86"
   }
 }`, name)
