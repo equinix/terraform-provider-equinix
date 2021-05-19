@@ -165,6 +165,8 @@ github.com/packethost/packngo v0.13.0 h1:VIeDY/Uju53v8LAKxiqTrfR9jkpX5PhWdnQC0h3
 github.com/packethost/packngo v0.13.0/go.mod h1:YrtUNN9IRjjqN6zK+cy2IYoi3EjHfoWTWxJkI1I1Vk0=
 github.com/packethost/packngo v0.14.0 h1:TIEqCO8X9N3tHDzDc1K4DW32kqUsdhguBw+CM4+/yK4=
 github.com/packethost/packngo v0.14.0/go.mod h1:YrtUNN9IRjjqN6zK+cy2IYoi3EjHfoWTWxJkI1I1Vk0=
+github.com/packethost/packngo v0.14.1 h1:hufjiwnWrxuI1iolRt/ZQw8E8YQeTDGIjB8vjELYGlY=
+github.com/packethost/packngo v0.14.1/go.mod h1:YrtUNN9IRjjqN6zK+cy2IYoi3EjHfoWTWxJkI1I1Vk0=
 github.com/pierrec/lz4 v2.0.5+incompatible/go.mod h1:pdkljMzZIN41W+lC3N2tnIh5sFi+IEE17M5jbnwPHcY=
 github.com/pmezard/go-difflib v1.0.0 h1:4DBwDE0NGyQoBHbLQYPwSUPoCMWR5BEzIk/f1lZbAQM=
 github.com/pmezard/go-difflib v1.0.0/go.mod h1:iKH77koFhYxTK1pcRnkKkqfTogsbg7gZNVY4sRDYZ/4=

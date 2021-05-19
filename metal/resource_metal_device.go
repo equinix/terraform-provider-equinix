@@ -496,10 +496,10 @@ func resourceMetalDeviceRead(d *schema.ResourceData, meta interface{}) error {
 		}
 		d.Set("storage", storageString)
 	}
-
-	if len(device.HardwareReservation.Href) > 0 {
-		d.Set("deployed_hardware_reservation_id", path.Base(device.HardwareReservation.Href))
+	if device.HardwareReservation != nil {
+		d.Set("deployed_hardware_reservation_id", device.HardwareReservation.ID)
 	}
+
 	networkType := device.GetNetworkType()
 	d.Set("network_type", networkType)
 
