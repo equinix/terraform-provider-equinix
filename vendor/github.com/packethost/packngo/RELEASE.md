@@ -26,7 +26,7 @@ they can be run in the absence of that automation.
 
   ```sh
   vim version.go # change Version, "0.8.0" (no v)
-  git commit --signoff -m 'v0.8.0 version bump' packngo.go
+  git commit --signoff -m 'v0.8.0 version bump' version.go
   ```
 
 * Tag `master` with a semver tag that suits the level of changes
@@ -40,7 +40,7 @@ they can be run in the absence of that automation.
   ```sh
   git push --tags origin master v0.8.0
   ```
-* Create a release from the tag (include a keepthechangelog.com formatted description):
+* Create a release from the tag (include a keepachangelog.com formatted description):
 
   <https://github.com/packethost/packngo/releases/edit/v0.8.0> (use the correct
   version)

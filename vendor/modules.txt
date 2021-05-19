@@ -210,7 +210,7 @@ github.com/mitchellh/mapstructure
 github.com/mitchellh/reflectwalk
 # github.com/oklog/run v1.0.0
 github.com/oklog/run
-# github.com/packethost/packngo v0.14.0
+# github.com/packethost/packngo v0.14.1
 ## explicit
 github.com/packethost/packngo
 # github.com/posener/complete v1.2.1
