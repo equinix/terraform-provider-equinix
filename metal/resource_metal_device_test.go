@@ -16,9 +16,8 @@ import (
 
 func init() {
 	resource.AddTestSweepers("metal_device", &resource.Sweeper{
-		Name:         "metal_device",
-		F:            testSweepDevices,
-		Dependencies: []string{"metal_volume"},
+		Name: "metal_device",
+		F:    testSweepDevices,
 	})
 }
 
