@@ -105,10 +105,15 @@ func dataSourceMetalSpotMarketRequestRead(d *schema.ResourceData, meta interface
 			}
 			return nil
 		},
-		"devices_max":   smr.DevicesMax,
-		"devices_min":   smr.DevicesMin,
-		"facilities":    facCodes,
-		"metro":         smr.Metro,
+		"devices_max": smr.DevicesMax,
+		"devices_min": smr.DevicesMin,
+		"facilities":  facCodes,
+		"metro": func(d *schema.ResourceData, k string) error {
+			if smr.Metro != nil {
+				return d.Set(k, smr.Metro.Code)
+			}
+			return nil
+		},
 		"max_bid_price": smr.MaxBidPrice,
 		"plan":          smr.Plan.Slug,
 		"project_id":    smr.Project.ID,
