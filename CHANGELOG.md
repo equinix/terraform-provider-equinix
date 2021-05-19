@@ -1,3 +1,45 @@
+## 2.1.0 (May 20, 2021)
+
+BREAKING CHANGES:
+- `metal_spot_market_request` field `locked` is now boolean (not string) ([#78](https://github.com/equinix/terraform-provider-metal/pull/78))
+
+DEPRECATIONS:
+- **Deprecated Resource:** `metal_volume` ([#99](https://github.com/equinix/terraform-provider-metal/pull/99))
+- **Deprecated Resource:** `metal_volume_attachment` ([#99](https://github.com/equinix/terraform-provider-metal/pull/99))
+- **Deprecated Data Source:** `metal_volume` ([#99](https://github.com/equinix/terraform-provider-metal/pull/99))
+- removed unintended deprecation of `metal_device`.`facility` ([#82](https://github.com/equinix/terraform-provider-metal/pull/82))
+
+BUG FIXES:
+- removed deprecation of `metal_device`.`facility` ([#82](https://github.com/equinix/terraform-provider-metal/pull/82))
+- fixed plugin crash handling certain errors ([#89](https://github.com/equinix/terraform-provider-metal/issues/89))
+
+FEATURES:
+- **New Resource:** `metal_connection` ([#76](https://github.com/equinix/terraform-provider-metal/pull/76))
+- **New Resource:** `metal_virtual_circuit`([#92](https://github.com/equinix/terraform-provider-metal/pull/92))
+- **New Data Source:** `metal_vlan` ([#67](https://github.com/equinix/terraform-provider-metal/pull/67))
+- **New Data Source:** `metal_reserved_ip_blcok`([#80](https://github.com/equinix/terraform-provider-metal/pull/80))
+- **New Data Source:** `metal_port`([#96](https://github.com/equinix/terraform-provider-metal/pull/96))
+- **New Data Source:** `metal_hardware_reservation`([#100](https://github.com/equinix/terraform-provider-metal/pull/100))
+- **New Guide:** Migrating From the Packet Provider ([#72](https://github.com/equinix/terraform-provider-metal/pull/72))
+- **New Guide:** Upgrading Devices from Facilities to Metros ([#103](https://github.com/equinix/terraform-provider-metal/pull/103))
+
+IMPROVEMENTS:
+- added `metro` to `metal_connection` data source (`facility` now optional) ([#81](https://github.com/equinix/terraform-provider-metal/pull/81))
+- added `devices_min` attribute to `metal_spot_market_request` data source ([#78](https://github.com/equinix/terraform-provider-metal/pull/78))
+- added `devices_max` attribute to `metal_spot_market_request` data source ([#78](https://github.com/equinix/terraform-provider-metal/pull/78))
+- added `max_bid_price` attribute to `metal_spot_market_request` data source ([#78](https://github.com/equinix/terraform-provider-metal/pull/78))
+- added `facilities` attribute to `metal_spot_market_request` data source ([#78](https://github.com/equinix/terraform-provider-metal/pull/78))
+- added `metro` attribute to `metal_spot_market_request` data source ([#78](https://github.com/equinix/terraform-provider-metal/pull/78))
+- added `project_id` attribute to `metal_spot_market_request` data source ([#78](https://github.com/equinix/terraform-provider-metal/pull/78))
+- added `plan` attribute to `metal_spot_market_request` data source ([#78](https://github.com/equinix/terraform-provider-metal/pull/78))
+- added `end_dt` attribute to `metal_spot_market_request` data source ([#78](https://github.com/equinix/terraform-provider-metal/pull/78))
+- `metal_spot_market_request` resources can now be imported ([#78](https://github.com/equinix/terraform-provider-metal/pull/78))
+- `metal_project` `md5_pass` field is now flagged sensitive ([#93](https://github.com/equinix/terraform-provider-metal/issues/93))
+- `metal_spot_market_request` `instance_parameters` are documented ([#104](https://github.com/equinix/terraform-provider-metal/issues/104))
+- minor `metal_spot_market_request` `max_bid_price` fluctuations (<2%) are ignored to avoid jitter tainting ([#78](https://github.com/equinix/terraform-provider-metal/pull/78))
+- updated device, organization, project, reserved IP block, SSH Key, and VLAN documentation to include import instructions ([#78](https://github.com/equinix/terraform-provider-metal/pull/78))
+- packngo updated to v0.14.1 ([#106](https://github.com/equinix/terraform-provider-metal/pull/106))
+
 ## 2.0.1 (April 15, 2021)
 
 BUG FIXES:
@@ -6,8 +48,8 @@ BUG FIXES:
 
 IMPROVEMENTS:
 
-- added `metro` to `spot_market_price` data source
-- `facility` is now optional in the `spot_market_price` data source
+- added `metro` to `metal_spot_market_price` data source
+- `facility` is now optional in the `metal_spot_market_price` data source
 - documentation examples have been updated to use current plans, facilities,
   operating systems, and metros ([#36](https://github.com/equinix/terraform-provider-metal/pull/36))
 
@@ -29,6 +71,7 @@ BREAKING CHANGES:
 FEATURES:
 
 - **New Data Source:** `metal_metro` ([#58](https://github.com/equinix/terraform-provider-metal/pull/58))
+- **New Data Source:** `metal_connection` ([#41](https://github.com/equinix/terraform-provider-metal/pull/41))
 
 IMPROVEMENTS:
 
