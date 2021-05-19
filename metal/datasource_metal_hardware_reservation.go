@@ -1,6 +1,8 @@
 package metal
 
 import (
+	"fmt"
+
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/packethost/packngo"
 )
@@ -12,8 +14,15 @@ func dataSourceMetalHardwareReservation() *schema.Resource {
 		Schema: map[string]*schema.Schema{
 			"id": {
 				Type:        schema.TypeString,
-				Required:    true,
+				Optional:    true,
+				Computed:    true,
 				Description: "ID of the hardware reservation to look up",
+			},
+			"device_id": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Computed:    true,
+				Description: "UUID of device occupying the reservation",
 			},
 			"short_id": {
 				Type:        schema.TypeString,
@@ -24,11 +33,6 @@ func dataSourceMetalHardwareReservation() *schema.Resource {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "UUID of project this reservation is scoped to",
-			},
-			"device_id": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "UUID of device occupying the reservation",
 			},
 			"plan": {
 				Type:        schema.TypeString,
@@ -43,27 +47,17 @@ func dataSourceMetalHardwareReservation() *schema.Resource {
 			"provisionable": {
 				Type:        schema.TypeBool,
 				Computed:    true,
-				Description: "Flag indicating whether the reservation can be currently used to create a device",
+				Description: "Flag indicating whether the reserved server is provisionable or not. Spare devices can't be provisioned unless they are activated first",
 			},
 			"spare": {
 				Type:        schema.TypeBool,
 				Computed:    true,
-				Description: "Flag indicating whether the reservation is spare (@displague help),",
+				Description: "Flag indicating whether the Hardware Reservation is a spare. Spare Hardware Reservations are used when a Hardware Reservations requires service from Metal Equinix",
 			},
 			"switch_uuid": {
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "UUID of switch (@displague help)",
-			},
-			"intervals": {
-				Type:        schema.TypeInt,
-				Computed:    true,
-				Description: "(@displague help)",
-			},
-			"current_period": {
-				Type:        schema.TypeInt,
-				Computed:    true,
-				Description: "(@displague help)",
+				Description: "Switch short ID, can be used to determine if two devices are connected to the same switch",
 			},
 		},
 	}
@@ -71,30 +65,53 @@ func dataSourceMetalHardwareReservation() *schema.Resource {
 
 func dataSourceMetalHardwareReservationRead(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*packngo.Client)
-	hrId := d.Get("id").(string)
+	hrIdRaw, hrIdOk := d.GetOk("id")
+	dIdRaw, dIdOk := d.GetOk("device_id")
 
-	hr, _, err := client.HardwareReservations.Get(
-		hrId,
-		&packngo.GetOptions{Includes: []string{"project", "facility", "device"}})
-	if err != nil {
-		return err
+	if dIdOk == hrIdOk {
+		return fmt.Errorf("You must set one of id and device_id")
 	}
-	deviceId := ""
-	if hr.Device != nil {
-		deviceId = hr.Device.ID
+
+	var deviceId string
+	var hr *packngo.HardwareReservation
+
+	if dIdOk {
+		deviceId = dIdRaw.(string)
+		includes := []string{
+			"hardware_reservation.project",
+			"hardware_reservation.facility",
+		}
+		d, _, err := client.Devices.Get(deviceId, &packngo.GetOptions{Includes: includes})
+		if err != nil {
+			return err
+		}
+		if d.HardwareReservation == nil {
+			return fmt.Errorf("Device %s is not in a hardware reservation")
+		}
+		hr = d.HardwareReservation
+
+	} else {
+		var err error
+		hr, _, err = client.HardwareReservations.Get(
+			hrIdRaw.(string),
+			&packngo.GetOptions{Includes: []string{"project", "facility", "device"}})
+		if err != nil {
+			return err
+		}
+		if hr.Device != nil {
+			deviceId = hr.Device.ID
+		}
 	}
 
 	m := map[string]interface{}{
-		"short_id":       hr.ShortID,
-		"project_id":     hr.Project.ID,
-		"device_id":      deviceId,
-		"plan":           hr.Plan.Slug,
-		"facility":       hr.Facility.Code,
-		"provisionable":  hr.Provisionable,
-		"spare":          hr.Spare,
-		"switch_uuid":    hr.SwitchUUID,
-		"intervals":      hr.Intervals,
-		"current_period": hr.CurrentPeriod,
+		"short_id":      hr.ShortID,
+		"project_id":    hr.Project.ID,
+		"device_id":     deviceId,
+		"plan":          hr.Plan.Slug,
+		"facility":      hr.Facility.Code,
+		"provisionable": hr.Provisionable,
+		"spare":         hr.Spare,
+		"switch_uuid":   hr.SwitchUUID,
 	}
 
 	d.SetId(hr.ID)
