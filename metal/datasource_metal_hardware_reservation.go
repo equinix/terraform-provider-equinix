@@ -86,7 +86,7 @@ func dataSourceMetalHardwareReservationRead(d *schema.ResourceData, meta interfa
 			return err
 		}
 		if d.HardwareReservation == nil {
-			return fmt.Errorf("Device %s is not in a hardware reservation")
+			return fmt.Errorf("Device %s is not in a hardware reservation", deviceId)
 		}
 		hr = d.HardwareReservation
 
