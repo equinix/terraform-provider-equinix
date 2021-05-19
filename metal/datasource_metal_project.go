@@ -71,8 +71,9 @@ func dataSourceMetalProject() *schema.Resource {
 							Required: true,
 						},
 						"md5": {
-							Type:     schema.TypeString,
-							Optional: true,
+							Type:      schema.TypeString,
+							Optional:  true,
+							Sensitive: true,
 						},
 						"status": {
 							Type:     schema.TypeString,

@@ -80,8 +80,9 @@ func resourceMetalProject() *schema.Resource {
 							Required: true,
 						},
 						"md5": {
-							Type:     schema.TypeString,
-							Optional: true,
+							Type:      schema.TypeString,
+							Sensitive: true,
+							Optional:  true,
 						},
 						"status": {
 							Type:     schema.TypeString,
