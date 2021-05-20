@@ -3,6 +3,7 @@ package metal
 import (
 	"fmt"
 	"log"
+	"strconv"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
@@ -15,7 +16,9 @@ func resourceMetalSpotMarketRequest() *schema.Resource {
 		Create: resourceMetalSpotMarketRequestCreate,
 		Read:   resourceMetalSpotMarketRequestRead,
 		Delete: resourceMetalSpotMarketRequestDelete,
-
+		Importer: &schema.ResourceImporter{
+			State: schema.ImportStatePassthrough,
+		},
 		Schema: map[string]*schema.Schema{
 			"devices_min": {
 				Type:     schema.TypeInt,
@@ -31,6 +34,25 @@ func resourceMetalSpotMarketRequest() *schema.Resource {
 				Type:     schema.TypeFloat,
 				Required: true,
 				ForceNew: true,
+				DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
+					oldF, err := strconv.ParseFloat(old, 64)
+					if err != nil {
+						return false
+					}
+					newF, err := strconv.ParseFloat(new, 64)
+					if err != nil {
+						return false
+					}
+					// suppress diff if the difference between existing and new bid price
+					// is less than 2%
+					diffThreshold := .02
+					priceDiff := oldF / newF
+
+					if diffThreshold < priceDiff {
+						return true
+					}
+					return false
+				},
 			},
 			"facilities": {
 				Type:          schema.TypeList,
@@ -43,7 +65,6 @@ func resourceMetalSpotMarketRequest() *schema.Resource {
 			"metro": {
 				Type:          schema.TypeString,
 				Optional:      true,
-				Elem:          &schema.Schema{Type: schema.TypeString},
 				ForceNew:      true,
 				ConflictsWith: []string{"facilities"},
 			},
@@ -89,7 +110,7 @@ func resourceMetalSpotMarketRequest() *schema.Resource {
 							Elem:     &schema.Schema{Type: schema.TypeString},
 						},
 						"locked": {
-							Type:     schema.TypeString,
+							Type:     schema.TypeBool,
 							Optional: true,
 						},
 						"project_ssh_keys": {
@@ -295,29 +316,29 @@ func resourceMetalSpotMarketRequestRead(d *schema.ResourceData, meta interface{}
 		return err
 	}
 
-	deviceIDs := make([]string, len(smr.Devices))
-	for i, d := range smr.Devices {
-		deviceIDs[i] = d.ID
-	}
-
 	metro := ""
 	if smr.Metro != nil {
 		metro = smr.Metro.Code
 	}
-	d.Set("metro", metro)
 
-	facilityIDs := make([]string, len(smr.Facilities))
-	facilityCodes := make([]string, len(smr.Facilities))
-	if len(smr.Facilities) > 0 {
-		for i, f := range smr.Facilities {
-			facilityIDs[i] = f.ID
-			facilityCodes[i] = f.Code
-		}
-		d.Set("facilities", facilityCodes)
-	}
-	d.Set("project_id", smr.Project.ID)
-
-	return nil
+	return setMap(d, map[string]interface{}{
+		"metro":         metro,
+		"project_id":    smr.Project.ID,
+		"devices_min":   smr.DevicesMin,
+		"devices_max":   smr.DevicesMax,
+		"max_bid_price": smr.MaxBidPrice,
+		"facilities": func(d *schema.ResourceData, k string) error {
+			facilityIDs := make([]string, len(smr.Facilities))
+			facilityCodes := make([]string, len(smr.Facilities))
+			if len(smr.Facilities) > 0 {
+				for i, f := range smr.Facilities {
+					facilityIDs[i] = f.ID
+					facilityCodes[i] = f.Code
+				}
+			}
+			return d.Set(k, facilityCodes)
+		},
+	})
 }
 
 func resourceMetalSpotMarketRequestDelete(d *schema.ResourceData, meta interface{}) error {
@@ -357,6 +378,31 @@ func resourceMetalSpotMarketRequestDelete(d *schema.ResourceData, meta interface
 	}
 	resp, err := client.SpotMarketRequests.Delete(d.Id(), true)
 	return ignoreResponseErrors(httpForbidden, httpNotFound)(resp, err)
+}
+
+type InstanceParams []map[string]interface{}
+
+func getInstanceParams(params *packngo.SpotMarketRequestInstanceParameters) InstanceParams {
+	p := InstanceParams{{
+		"billing_cycle":    params.BillingCycle,
+		"plan":             params.Plan,
+		"operating_system": params.OperatingSystem,
+		"hostname":         params.Hostname,
+		"always_pxe":       params.AlwaysPXE,
+		"description":      params.Description,
+		"features":         params.Features,
+		"locked":           params.Locked,
+		"project_ssh_keys": params.ProjectSSHKeys,
+		"user_ssh_keys":    params.UserSSHKeys,
+		"userdata":         params.UserData,
+		"customdata":       params.CustomData,
+		"ipxe_script_url":  params.IPXEScriptURL,
+		"tags":             params.Tags,
+	}}
+	if params.TerminationTime != nil {
+		p[0]["termintation_time"] = params.TerminationTime.Time
+	}
+	return p
 }
 
 func resourceStateRefreshFunc(d *schema.ResourceData, meta interface{}) resource.StateRefreshFunc {

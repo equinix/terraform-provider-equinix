@@ -66,8 +66,8 @@ resource "metal_spot_market_request" "req" {
   instance_parameters {
     hostname         = "tfacc-testspot"
     billing_cycle    = "hourly"
-    operating_system = "ubuntu_16_04"
-    plan             = "t1.small.x86"
+    operating_system = "ubuntu_20_04"
+    plan             = "c3.small.x86"
   }
 }
 
@@ -95,8 +95,8 @@ resource "metal_spot_market_request" "req" {
   instance_parameters {
     hostname         = "tfacc-testspot"
     billing_cycle    = "hourly"
-    operating_system = "ubuntu_16_04"
-    plan             = "t1.small.x86"
+    operating_system = "ubuntu_20_04"
+    plan             = "c3.small.x86"
   }
 }
 

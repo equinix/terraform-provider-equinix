@@ -41,6 +41,7 @@ The following arguments are supported:
 * `wait_for_devices` - (Optional) On resource creation - wait until all desired devices are active, on resource destruction - wait until devices are removed
 * `facilities` - (Optional) Facility IDs where devices should be created
 * `metro` - (Optional) Metro where devices should be created
+* `locked` - (Optional) Blocks deletion of the SpotMarketRequest device until the lock is disabled
 * `instance_parameters` - (Required) Parameters for devices provisioned from this request. You can find the parameter description from the [metal_device doc](device.md).
   * `billing_cycle`
   * `plan`
@@ -71,3 +72,11 @@ The following attributes are exported:
 
 * `id` - The ID of the Spot Market Request
 * `facilities` - The facilities where the Spot Market Request is applied. This is computed when `metro` is set or no specific location was requested.
+
+## Import
+
+This resource can be imported using an existing spot market request ID:
+
+```sh
+terraform import metal_spot_market_request {existing_spot_market_request_id}
+```

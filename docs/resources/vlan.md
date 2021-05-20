@@ -47,3 +47,11 @@ The following arguments are supported:
 The following attributes are exported:
 
 * `vxlan` - VXLAN segment ID
+
+## Import
+
+This resource can be imported using an existing VLAN ID (UUID):
+
+```sh
+terraform import metal_vlan {existing_vlan_id}
+```

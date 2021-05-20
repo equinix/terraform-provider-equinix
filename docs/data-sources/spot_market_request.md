@@ -78,3 +78,11 @@ The following arguments are supported:
 The following attributes are exported:
 
 * `device_ids` - List of IDs of devices spawned by the referenced Spot Market Request
+* `devices_min` - Miniumum number devices to be created
+* `devices_max` - Maximum number devices to be created
+* `max_bid_price` - Maximum price user is willing to pay per hour per device
+* `facilities` - Facility IDs where devices should be created
+* `metro` - Metro where devices should be created.
+* `project_id` - Project ID
+* `plan` - The device plan slug.
+* `end_at` - Date and time When the spot market request will be ended.

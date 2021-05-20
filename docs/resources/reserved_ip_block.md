@@ -114,3 +114,11 @@ The following attributes are exported:
 Idempotent reference to a first "/32" address from a reserved block might look like this:
 
 `join("/", [cidrhost(metal_reserved_ip_block.myblock.cidr_notation,0), "32"])`
+
+## Import
+
+This resource can be imported using an existing IP reservation ID:
+
+```sh
+terraform import metal_reserved_ip_block {existing_ip_reservation_id}
+```
