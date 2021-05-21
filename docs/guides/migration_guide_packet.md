@@ -17,7 +17,7 @@ Before starting to migrate your Terraform templates, please upgrade
 
 ## Fast migration with replace-provider and sed
 
-Just like the Terraform HCL templates, the Terraform state is a file containing resource names and their attributes in structured text. We can attempt the migration as a text substition task, basically replacing `packet_` with `metal_` wherever possible, and fixing the provider source reference.
+Just like the Terraform HCL templates, the Terraform state is a file containing resource names and their attributes in structured text. We can attempt the migration as a text substitution task, basically replacing `packet_` with `metal_` wherever possible, and fixing the provider source reference.
 
 It's a good idea to make a backup of the whole Terraform directory before doing this.
 
@@ -71,7 +71,7 @@ $ sed -i 's/packet_/metal_/g' terraform.tfstate
 
 The example template would now look as:
 
-```
+```hcl-terraform
 terraform {
   required_providers {
     metal = {
@@ -97,11 +97,11 @@ If the plan is not empty, it means that some resources can not be simply read fo
 
 ## Migrating one resource at a time
 
-We can use terraform state and import to achieve transition without destroying existing resources.
+We can use `$ terraform state` and `$ terraform import` to achieve transition without destroying existing resources.
 
 ### Existing infrastructure
 
-We assume to have infrastructure created with provider packethost/packet with a device and IP reservation. The HCL looks like:
+We assume to have infrastructure created with provider packethost/packet with a device and an IP reservation. The HCL looks like:
 
 ```hcl-terraform
 terraform {
