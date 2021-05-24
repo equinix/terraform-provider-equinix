@@ -126,11 +126,9 @@ func resourceMetalPortVlanAttachmentCreate(d *schema.ResourceData, meta interfac
 
 		// Equinix Metal doesn't allow multiple VLANs to be assigned
 		// to the same port at the same time
-		/*
-			lockId := "vlan-attachment-" + port.ID
-			metalMutexKV.Lock(lockId)
-			defer metalMutexKV.Unlock(lockId)
-		*/
+		lockId := "vlan-attachment-" + port.ID
+		metalMutexKV.Lock(lockId)
+		defer metalMutexKV.Unlock(lockId)
 
 		_, _, err = client.DevicePorts.Assign(par)
 		if err != nil {
@@ -238,11 +236,9 @@ func resourceMetalPortVlanAttachmentDelete(d *schema.ResourceData, meta interfac
 		}
 	}
 	par := &packngo.PortAssignRequest{PortID: pID, VirtualNetworkID: vlanID}
-	/*
-		lockId := "vlan-detachment-" + pID
-		metalMutexKV.Lock(lockId)
-		defer metalMutexKV.Unlock(lockId)
-	*/
+	lockId := "vlan-detachment-" + pID
+	metalMutexKV.Lock(lockId)
+	defer metalMutexKV.Unlock(lockId)
 	portPtr, resp, err := client.DevicePorts.Unassign(par)
 	if ignoreResponseErrors(httpForbidden, httpNotFound, isNotAssigned)(resp, err) != nil {
 		return err
