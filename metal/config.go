@@ -13,7 +13,6 @@ import (
 	"github.com/equinix/terraform-provider-metal/version"
 	"github.com/hashicorp/go-retryablehttp"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/logging"
-	"github.com/hashicorp/terraform-plugin-sdk/httpclient"
 	"github.com/packethost/packngo"
 )
 
@@ -66,7 +65,8 @@ func (c *Config) Client() *packngo.Client {
 	standardClient := retryClient.StandardClient()
 
 	client := packngo.NewClientWithAuth(consumerToken, c.AuthToken, standardClient)
-	tfUserAgent := httpclient.TerraformUserAgent(c.terraformVersion)
+	//tfUserAgent := httpclient.TerraformUserAgent(c.terraformVersion)
+	tfUserAgent := c.terraformVersion
 	userAgent := fmt.Sprintf("%s terraform-provider-metal/%s %s",
 		tfUserAgent, version.ProviderVersion, client.UserAgent)
 

@@ -3,12 +3,11 @@ package metal
 import (
 	"time"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/mutexkv"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
 )
 
-var metalMutexKV = mutexkv.NewMutexKV()
+//var metalMutexKV = mutexkv.NewMutexKV()
 
 func Provider() terraform.ResourceProvider {
 
