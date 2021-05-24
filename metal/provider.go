@@ -6,7 +6,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
-var metalMutexKV = mutexkv.NewMutexKV()
+var metalMutexKV = NewMutexKV()
 
 func Provider() *schema.Provider {
 	provider := &schema.Provider{
