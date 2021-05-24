@@ -93,11 +93,7 @@ func dataSourceMetalDevice() *schema.Resource {
 				Computed: true,
 			},
 			"storage": {
-				Type: schema.TypeString,
-				StateFunc: func(v interface{}) string {
-					s, _ := structure.NormalizeJsonString(v)
-					return s
-				},
+				Type:     schema.TypeString,
 				Computed: true,
 			},
 			"root_password": {

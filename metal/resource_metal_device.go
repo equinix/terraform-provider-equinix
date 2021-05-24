@@ -280,7 +280,7 @@ func resourceMetalDevice() *schema.Resource {
 					s, _ := structure.NormalizeJsonString(v)
 					return s
 				},
-				ValidateFunc: validation.ValidateJsonString,
+				ValidateFunc: validation.StringIsJSON,
 			},
 			"project_ssh_key_ids": {
 				Type:     schema.TypeList,

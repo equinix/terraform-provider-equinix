@@ -4,13 +4,11 @@ import (
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 )
 
 //var metalMutexKV = mutexkv.NewMutexKV()
 
-func Provider() terraform.ResourceProvider {
-
+func Provider() *schema.Provider {
 	provider := &schema.Provider{
 		Schema: map[string]*schema.Schema{
 			"auth_token": {
