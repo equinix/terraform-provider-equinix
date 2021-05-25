@@ -97,7 +97,7 @@ If the plan is not empty, it means that some resources can not be simply read fo
 
 ## Migrating one resource at a time
 
-We can use `$ terraform state` and `$ terraform import` to achieve transition without destroying existing resources.
+We can use `terraform state` and `terraform import` to achieve transition without destroying existing resources.
 
 ### Existing infrastructure
 
@@ -235,5 +235,4 @@ We then need to install the equinix/metal provider by running `$ terraform init`
 When we run `$ terraform plan` to verify that migration was successful, terraform might warn that some resource attributes from templates are not aligned with imported state. It's because not all of the resource attribute can be computed, for example the `ip_address` blocks in packet_device are user-defined and will result to a non-empty diff against downloaded imported state.
 
 In case of the `ip_address`, a consequent `$ terraform apply` will update the local state without changing the upstream resource, but if an attribute causes an upstream update, you will need to resolve it manually, either changing your template, or letting Terraform change the resource upstream.
-
 
