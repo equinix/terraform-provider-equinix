@@ -50,7 +50,7 @@ resource "metal_device" "node" {
 
 To test that the change didn't taint the state, and that the device will not be re-created, you can check if `terraform plan` reports any differences. The terraform state should be up to date as long as the facility in which the device was deployed was contained within the metro.
 
-If the plan diff is not empty, you might have used a metro not containing the facility to which the device was deployed. This might happen if you've used more facilities in the `facilities` list, or you have used "any" facility.
+If the plan diff is not empty, you might have used a metro not containing the facility to which the device was deployed. This might happen if you've used more facilities in the `facilities` list, or you have used the special "any" facility.
 
 You can find out the deployed facility, and the containing metro by examining the terraform state of the `metal_device` resource:
 
