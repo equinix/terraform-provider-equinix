@@ -8,7 +8,7 @@ description: |-
 
 In April 2021, Equinix Metal rolled out a new location concept - [metros](https://feedback.equinixmetal.com/changelog/new-metros-feature-live). A metro is an Equinix-wide concept for data centers which are grouped together geographically. Data centers within a metro share capacity and networking features. You can read more about metros at https://metal.equinix.com/developers/docs/locations/metros/.
 
-Until the metros introduction, resource deployment location used to be controlled by "facilty" - single data center with location code like "sv15" or "ny5". Metros group the facilities, and e.g. metro "sv" contains facility "sv15". If you specify a metro when creating a resource, it will be deployed to one of the facilities in the metro group. You can then find the deployed facility from the a read-only attribute of the resource.
+Before the introduction of metros, resources were deployed to a single `facility` location.  When provisioning `metal_device` resources, the facility could be chosen by Equinix Metal with a user-supplied list of `facilities`, or a wildcard `any` facility.  The individual facility locations use a code like "sv15" or "ny5". Metros group facilities. For example, metro "sv" contains the "sv15" facility, among others. If you specify a metro when creating a resource, it will be deployed to one of the facilities in the metro group. You can then find the deployed facility using a read-only attribute of the resource (e.g. `deployed_facility` for `metal_device` resources).
 
 
 ## Changing your Terraform templates to use metros instead of facilities
@@ -48,9 +48,9 @@ resource "metal_device" "node" {
 }
 ```
 
-To test that the change didn't taint the state, and that the device will not be re-created, you can check if `terraform plan` reports no differences. The terraform state should be up to date as long as the facility in which the device was deployed was contained within the metro.
+To test that the change didn't taint the state, and that the device will not be re-created, you can check if `terraform plan` reports any differences. The terraform state should be up to date as long as the facility in which the device was deployed was contained within the metro.
 
-If the plan diff is not empty, you might have set a metro not containing the facility to which the device was deployed. This might happen if you've used more facilities in the `facilities` list, or you have used "any" facility.
+If the plan diff is not empty, you might have used a metro not containing the facility to which the device was deployed. This might happen if you've used more facilities in the `facilities` list, or you have used the special "any" facility.
 
 You can find out the deployed facility, and the containing metro by examining the terraform state of the `metal_device` resource:
 
@@ -65,4 +65,3 @@ $ terraform state show metal_device.node | grep metro
 ```
 
 You should then set the existing metro in your Terraform templates.
-
