@@ -9,7 +9,7 @@ func dataSourceMetalPort() *schema.Resource {
 		Read: resourceMetalPortRead,
 
 		Schema: map[string]*schema.Schema{
-			"id": {
+			"port_id": {
 				Type:          schema.TypeString,
 				Optional:      true,
 				Description:   "UUID of the port to lookup",
@@ -19,14 +19,14 @@ func dataSourceMetalPort() *schema.Resource {
 				Type:          schema.TypeString,
 				Optional:      true,
 				Description:   "Device UUID where to lookup the port",
-				ConflictsWith: []string{"id"},
+				ConflictsWith: []string{"port_id"},
 			},
 			"name": {
 				Type:          schema.TypeString,
 				Optional:      true,
 				Computed:      true,
 				Description:   "Name of the port to look up, e.g. bond0, eth1",
-				ConflictsWith: []string{"id"},
+				ConflictsWith: []string{"port_id"},
 			},
 			"network_type": {
 				Type:        schema.TypeString,
