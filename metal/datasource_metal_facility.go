@@ -25,6 +25,7 @@ func dataSourceMetalFacility() *schema.Resource {
 				Type:        schema.TypeString,
 				Description: "This facility's metro code.",
 				Computed:    true,
+				StateFunc:   toLower,
 			},
 			"features": {
 				Type:        schema.TypeList,

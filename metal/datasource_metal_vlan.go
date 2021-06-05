@@ -41,6 +41,7 @@ func dataSourceMetalVlan() *schema.Resource {
 				Computed:      true,
 				ConflictsWith: []string{"vlan_id", "facility"},
 				Description:   "Metro where the VLAN is deployed",
+				StateFunc:     toLower,
 			},
 			"vlan_id": {
 				Type:          schema.TypeString,

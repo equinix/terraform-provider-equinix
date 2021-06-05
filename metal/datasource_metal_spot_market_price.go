@@ -20,6 +20,7 @@ func dataSourceSpotMarketPrice() *schema.Resource {
 				Type:          schema.TypeString,
 				ConflictsWith: []string{"facility"},
 				Optional:      true,
+				StateFunc:     toLower,
 			},
 			"plan": {
 				Type:     schema.TypeString,

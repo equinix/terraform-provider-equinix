@@ -21,8 +21,9 @@ func dataSourceMetalIPBlockRanges() *schema.Resource {
 				Optional: true,
 			},
 			"metro": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:      schema.TypeString,
+				Optional:  true,
+				StateFunc: toLower,
 			},
 			"public_ipv4": {
 				Type:     schema.TypeList,

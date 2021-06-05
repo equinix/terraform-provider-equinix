@@ -56,6 +56,7 @@ func resourceMetalVlan() *schema.Resource {
 					}
 					return old == new
 				},
+				StateFunc: toLower,
 			},
 			"vxlan": {
 				Type:     schema.TypeInt,

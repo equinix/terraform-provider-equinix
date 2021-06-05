@@ -78,6 +78,7 @@ func resourceMetalDevice() *schema.Resource {
 					}
 					return old == new
 				},
+				StateFunc: toLower,
 			},
 
 			"facilities": {

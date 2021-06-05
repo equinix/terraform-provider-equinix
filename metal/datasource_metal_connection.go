@@ -92,6 +92,7 @@ func dataSourceMetalConnection() *schema.Resource {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "Slug of a metro to which the connection belongs",
+				StateFunc:   toLower,
 			},
 			"token": {
 				Type:        schema.TypeString,

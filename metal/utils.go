@@ -1,5 +1,7 @@
 package metal
 
+import "strings"
+
 func contains(s []string, e string) bool {
 	for _, a := range s {
 		if a == e {
@@ -18,4 +20,8 @@ func convertStringArr(ifaceArr []interface{}) []string {
 		arr = append(arr, v.(string))
 	}
 	return arr
+}
+
+func toLower(v interface{}) string {
+	return strings.ToLower(v.(string))
 }

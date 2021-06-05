@@ -48,6 +48,7 @@ func dataSourceMetalSpotMarketRequest() *schema.Resource {
 				Type:        schema.TypeString,
 				Description: "Metro where devices should be created.",
 				Computed:    true,
+				StateFunc:   toLower,
 			},
 			"project_id": {
 				Type:        schema.TypeString,
