@@ -42,8 +42,9 @@ func dataSourceMetalDevice() *schema.Resource {
 				Computed: true,
 			},
 			"metro": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:      schema.TypeString,
+				Computed:  true,
+				StateFunc: toLower,
 			},
 			"plan": {
 				Type:     schema.TypeString,

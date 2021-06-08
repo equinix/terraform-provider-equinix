@@ -38,6 +38,7 @@ func resourceMetalConnection() *schema.Resource {
 				Description:   "Metro where to the connection will be created",
 				ConflictsWith: []string{"facility"},
 				ForceNew:      true,
+				StateFunc:     toLower,
 			},
 			"redundancy": {
 				// TODO: remove ForceNew and do Update, https://github.com/packethost/packngo/issues/270

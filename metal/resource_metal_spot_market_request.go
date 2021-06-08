@@ -67,6 +67,7 @@ func resourceMetalSpotMarketRequest() *schema.Resource {
 				Optional:      true,
 				ForceNew:      true,
 				ConflictsWith: []string{"facilities"},
+				StateFunc:     toLower,
 			},
 			"instance_parameters": {
 				Type:     schema.TypeList,
