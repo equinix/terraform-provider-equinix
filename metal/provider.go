@@ -3,15 +3,12 @@ package metal
 import (
 	"time"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/mutexkv"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
-	"github.com/hashicorp/terraform-plugin-sdk/terraform"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
-var metalMutexKV = mutexkv.NewMutexKV()
+var metalMutexKV = NewMutexKV()
 
-func Provider() terraform.ResourceProvider {
-
+func Provider() *schema.Provider {
 	provider := &schema.Provider{
 		Schema: map[string]*schema.Schema{
 			"auth_token": {

@@ -6,8 +6,8 @@ import (
 	"path"
 	"sort"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/structure"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/structure"
 	"github.com/packethost/packngo"
 )
 
@@ -94,11 +94,7 @@ func dataSourceMetalDevice() *schema.Resource {
 				Computed: true,
 			},
 			"storage": {
-				Type: schema.TypeString,
-				StateFunc: func(v interface{}) string {
-					s, _ := structure.NormalizeJsonString(v)
-					return s
-				},
+				Type:     schema.TypeString,
 				Computed: true,
 			},
 			"root_password": {
