@@ -82,7 +82,7 @@ func specifiedVlanIds(d *schema.ResourceData) []string {
 	vlanIdsRaw, vlanIdsOk := d.GetOk("vlan_ids")
 	specified := []string{}
 	if vlanIdsOk {
-		specified = convertStringArr(vlanIdsRaw.([]interface{}))
+		specified = convertStringArr(vlanIdsRaw.(*schema.Set).List())
 	}
 	return specified
 }
@@ -144,7 +144,7 @@ func assignNativeVlan(cpr *ClientPortResource) error {
 	// assign Native VLAN
 	currentNative := getCurrentNative(cpr.Port)
 	specifiedNative := getSpecifiedNative(cpr.Resource)
-	if (currentNative != specifiedNative) && currentNative != "" {
+	if (currentNative != specifiedNative) && specifiedNative != "" {
 		par := packngo.PortAssignRequest{
 			PortID:           cpr.Port.ID,
 			VirtualNetworkID: specifiedNative,
@@ -159,21 +159,30 @@ func assignNativeVlan(cpr *ClientPortResource) error {
 }
 
 func processBondAction(cpr *ClientPortResource, actionIsBond bool) error {
-	wantsBondedRaw, bondedSpecified := cpr.Resource.GetOk("bonded")
+	wantsBondedRaw, wantsBondedOk := cpr.Resource.GetOkExists("bonded")
 	wantsBonded := wantsBondedRaw.(bool)
-
 	// only act if the necessary action is the one specified in doBond
-	if bondedSpecified && (wantsBonded == actionIsBond) {
+	if wantsBondedOk && (wantsBonded == actionIsBond) {
 		// act if the current Bond state of the port is different than the spcified
 		if wantsBonded != cpr.Port.Data.Bonded {
 			action := cpr.Client.DevicePorts.Disbond
 			if wantsBonded {
 				action = cpr.Client.DevicePorts.Bond
 			}
+
 			port, _, err := action(cpr.Port, false)
 			if err != nil {
 				return err
 			}
+			getOpts := &packngo.GetOptions{Includes: []string{
+				"native_virtual_network",
+				"virtual_networks",
+			}}
+			port, _, err = cpr.Client.Ports.Get(port.ID, getOpts)
+			if err != nil {
+				return err
+			}
+
 			*(cpr.Port) = *port
 		}
 	}
@@ -189,7 +198,7 @@ func makeDisbond(cpr *ClientPortResource) error {
 }
 
 func convertToL2(cpr *ClientPortResource) error {
-	l2, l2Ok := cpr.Resource.GetOk("layer2")
+	l2, l2Ok := cpr.Resource.GetOkExists("layer2")
 	isLayer2 := contains(l2Types, cpr.Port.NetworkType)
 
 	if l2Ok && l2.(bool) && !isLayer2 {
@@ -203,8 +212,9 @@ func convertToL2(cpr *ClientPortResource) error {
 }
 
 func convertToL3(cpr *ClientPortResource) error {
-	l2, l2Ok := cpr.Resource.GetOk("layer2")
+	l2, l2Ok := cpr.Resource.GetOkExists("layer2")
 	isLayer2 := contains(l2Types, cpr.Port.NetworkType)
+
 	if l2Ok && !l2.(bool) && isLayer2 {
 		ips := []packngo.AddressRequest{
 			{AddressFamily: 4, Public: true},
@@ -217,5 +227,47 @@ func convertToL3(cpr *ClientPortResource) error {
 		}
 		*(cpr.Port) = *port
 	}
+	return nil
+}
+
+func portSanityChecks(cpr *ClientPortResource) error {
+
+	isBondPort := cpr.Port.Type == "NetworkBondPort"
+
+	// Constraint: Only bond ports have layer2 mode
+	l2Raw, l2Ok := cpr.Resource.GetOkExists("layer2")
+	if !isBondPort && l2Ok {
+		return fmt.Errorf("layer2 flag can be set only for bond ports")
+	}
+
+	l2 := l2Raw.(bool)
+
+	bonded := cpr.Resource.Get("bonded").(bool)
+
+	// Constraint: L3 unbonded is not really allowed for Bond port
+	if isBondPort && !l2 && !bonded {
+		return fmt.Errorf("Bond port in Layer3 can't be unbonded")
+	}
+
+	// Constraint: native vlan ..
+	// - can be set only on non-bond ports
+	// - must be one of assigned vlans
+	// - there must be more than one vlan assigned to the port
+
+	nativeVlanRaw, nativeVlanOk := cpr.Resource.GetOk("native_vlan_id")
+	if nativeVlanOk {
+		if isBondPort {
+			return fmt.Errorf("Native VLAN can only be set on non-bond ports")
+		}
+		nativeVlan := nativeVlanRaw.(string)
+		vlans := specifiedVlanIds(cpr.Resource)
+		if !contains(vlans, nativeVlan) {
+			return fmt.Errorf("The native VLAN to be set is not (being) assigned to the port")
+		}
+		if len(vlans) < 2 {
+			return fmt.Errorf("Native VLAN can only be set if more than one VLAN are assigned to the port ")
+		}
+	}
+
 	return nil
 }
