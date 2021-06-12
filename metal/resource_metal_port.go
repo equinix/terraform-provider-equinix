@@ -15,7 +15,6 @@ Race conditions:
 
 var (
 	l2Types = []string{"layer2-individual", "layer2-bonded"}
-	// the empty string is for eth ports - they are considered layer3 for better management
 	l3Types = []string{"layer3", "hybrid", "hybrid-bonded"}
 )
 
@@ -42,11 +41,7 @@ func resourceMetalPort() *schema.Resource {
 				Type:        schema.TypeString,
 				Required:    true,
 				Description: "UUID of the port to lookup",
-			},
-			"name": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "Name of the port to look up, e.g. bond0, eth1",
+				ForceNew:    true,
 			},
 			"bonded": {
 				Type:        schema.TypeBool,
@@ -68,6 +63,16 @@ func resourceMetalPort() *schema.Resource {
 				Optional:    true,
 				Description: "UUIDs VLANs to attach",
 				Elem:        &schema.Schema{Type: schema.TypeString},
+			},
+			"reset_on_delete": {
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Description: "Reset port to default settings. For a bond port it means layer3 without vlans attached, eth ports will be bonded without native vlan and vlans attached",
+			},
+			"name": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Name of the port to look up, e.g. bond0, eth1",
 			},
 			"network_type": {
 				Type:        schema.TypeString,
@@ -104,23 +109,9 @@ func resourceMetalPort() *schema.Resource {
 }
 
 func resourceMetalPortUpdate(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*packngo.Client)
-
-	port_id := d.Get("port_id").(string)
-
-	getOpts := &packngo.GetOptions{Includes: []string{
-		"native_virtual_network",
-		"virtual_networks",
-	}}
-	port, _, err := client.Ports.Get(port_id, getOpts)
+	cpr, err := getClientPortResource(d, meta)
 	if err != nil {
 		return err
-	}
-
-	cpr := &ClientPortResource{
-		Client:   client,
-		Port:     port,
-		Resource: d,
 	}
 
 	err = portSanityChecks(cpr)
@@ -212,4 +203,33 @@ func resourceMetalPortRead(d *schema.ResourceData, meta interface{}) error {
 
 	d.SetId(port.ID)
 	return setMap(d, m)
+}
+
+func resourceMetalPortDelete(d *schema.ResourceData, meta interface{}) error {
+	resetRaw, resetOk := d.GetOk("reset_on_delete")
+	if resetOk && resetRaw.(bool) {
+		cpr, err := getClientPortResource(d, meta)
+		if err != nil {
+			return err
+		}
+		err = removeNativeVlan(cpr)
+		if err != nil {
+			return err
+		}
+
+		err = removeVlans(cpr)
+		if err != nil {
+			return err
+		}
+		err = makeBond(cpr)
+		if err != nil {
+			return err
+		}
+
+		err = convertToL3(cpr)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
 }

@@ -15,6 +15,28 @@ type ClientPortResource struct {
 	Resource *schema.ResourceData
 }
 
+func getClientPortResource(d *schema.ResourceData, meta interface{}) (*ClientPortResource, error) {
+	client := meta.(*packngo.Client)
+
+	port_id := d.Get("port_id").(string)
+
+	getOpts := &packngo.GetOptions{Includes: []string{
+		"native_virtual_network",
+		"virtual_networks",
+	}}
+	port, _, err := client.Ports.Get(port_id, getOpts)
+	if err != nil {
+		return nil, err
+	}
+
+	cpr := &ClientPortResource{
+		Client:   client,
+		Port:     port,
+		Resource: d,
+	}
+	return cpr, nil
+}
+
 func getPortByResourceData(d *schema.ResourceData, client *packngo.Client) (*packngo.Port, error) {
 	portId, portIdOk := d.GetOk("port_id")
 	deviceId, deviceIdOk := d.GetOk("device_id")
@@ -269,5 +291,21 @@ func portSanityChecks(cpr *ClientPortResource) error {
 		}
 	}
 
+	return nil
+}
+
+func portProperlyDestroyed(port *packngo.Port) error {
+	if !port.Data.Bonded {
+		return fmt.Errorf("Port %s wasn't bonded after metal_port destroy", port.ID)
+	}
+	if port.Type == "NetworkBondPort" && port.NetworkType != "layer3" {
+		return fmt.Errorf("Bond port should be in layer3 type after destroy")
+	}
+	if port.NativeVirtualNetwork != nil {
+		return fmt.Errorf("Port should not have native VLAN assigned after destroy")
+	}
+	if len(port.AttachedVirtualNetworks) != 0 {
+		return fmt.Errorf("Port should not have VLANs attached after destroy")
+	}
 	return nil
 }
