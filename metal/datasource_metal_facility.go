@@ -25,7 +25,6 @@ func dataSourceMetalFacility() *schema.Resource {
 				Type:        schema.TypeString,
 				Description: "This facility's metro code.",
 				Computed:    true,
-				StateFunc:   toLower,
 			},
 			"features": {
 				Type:        schema.TypeList,
@@ -59,7 +58,7 @@ func dataSourceMetalFacilityRead(d *schema.ResourceData, meta interface{}) error
 				"features": f.Features,
 				"metro": func(d *schema.ResourceData, k string) error {
 					if f.Metro != nil {
-						return d.Set(k, f.Metro.Code)
+						return d.Set(k, toLower(f.Metro.Code))
 					}
 					return nil
 				},

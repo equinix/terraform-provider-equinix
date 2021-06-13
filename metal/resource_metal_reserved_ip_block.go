@@ -111,6 +111,7 @@ func resourceMetalReservedIPBlock() *schema.Resource {
 			}
 			return old == new
 		},
+		StateFunc: toLower,
 	}
 	reservedBlockSchema["description"] = &schema.Schema{
 		Type:        schema.TypeString,
@@ -247,7 +248,7 @@ func loadBlock(d *schema.ResourceData, reservedBlock *packngo.IPAddressReservati
 			if reservedBlock.Metro == nil {
 				return nil
 			}
-			return d.Set(k, reservedBlock.Metro.Code)
+			return d.Set(k, toLower(reservedBlock.Metro.Code))
 		},
 		"gateway":        reservedBlock.Gateway,
 		"network":        reservedBlock.Network,

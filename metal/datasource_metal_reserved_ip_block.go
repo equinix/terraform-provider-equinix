@@ -53,7 +53,6 @@ func dataSourceMetalReservedIPBlock() *schema.Resource {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "Metro of the block (for non-global blocks)",
-				StateFunc:   toLower,
 			},
 			"address_family": {
 				Type:        schema.TypeInt,

@@ -92,7 +92,6 @@ func dataSourceMetalConnection() *schema.Resource {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "Slug of a metro to which the connection belongs",
-				StateFunc:   toLower,
 			},
 			"token": {
 				Type:        schema.TypeString,
@@ -162,7 +161,7 @@ func dataSourceMetalConnectionRead(d *schema.ResourceData, meta interface{}) err
 		d.Set("facility", conn.Facility.Code)
 	}
 	if conn.Metro != nil {
-		d.Set("metro", conn.Metro.Code)
+		d.Set("metro", toLower(conn.Metro.Code))
 	}
 	d.Set("token", conn.Token)
 	d.Set("type", conn.Type)

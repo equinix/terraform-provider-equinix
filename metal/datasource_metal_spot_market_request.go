@@ -48,7 +48,6 @@ func dataSourceMetalSpotMarketRequest() *schema.Resource {
 				Type:        schema.TypeString,
 				Description: "Metro where devices should be created.",
 				Computed:    true,
-				StateFunc:   toLower,
 			},
 			"project_id": {
 				Type:        schema.TypeString,
@@ -111,7 +110,7 @@ func dataSourceMetalSpotMarketRequestRead(d *schema.ResourceData, meta interface
 		"facilities":  facCodes,
 		"metro": func(d *schema.ResourceData, k string) error {
 			if smr.Metro != nil {
-				return d.Set(k, smr.Metro.Code)
+				return d.Set(k, toLower(smr.Metro.Code))
 			}
 			return nil
 		},
