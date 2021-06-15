@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"path"
+	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
@@ -248,7 +249,7 @@ func loadBlock(d *schema.ResourceData, reservedBlock *packngo.IPAddressReservati
 			if reservedBlock.Metro == nil {
 				return nil
 			}
-			return d.Set(k, toLower(reservedBlock.Metro.Code))
+			return d.Set(k, strings.ToLower(reservedBlock.Metro.Code))
 		},
 		"gateway":        reservedBlock.Gateway,
 		"network":        reservedBlock.Network,

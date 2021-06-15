@@ -1,6 +1,7 @@
 package metal
 
 import (
+	"strings"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -110,7 +111,7 @@ func dataSourceMetalSpotMarketRequestRead(d *schema.ResourceData, meta interface
 		"facilities":  facCodes,
 		"metro": func(d *schema.ResourceData, k string) error {
 			if smr.Metro != nil {
-				return d.Set(k, toLower(smr.Metro.Code))
+				return d.Set(k, strings.ToLower(smr.Metro.Code))
 			}
 			return nil
 		},

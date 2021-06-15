@@ -1,6 +1,8 @@
 package metal
 
 import (
+	"strings"
+
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/packethost/packngo"
 )
@@ -161,7 +163,7 @@ func dataSourceMetalConnectionRead(d *schema.ResourceData, meta interface{}) err
 		d.Set("facility", conn.Facility.Code)
 	}
 	if conn.Metro != nil {
-		d.Set("metro", toLower(conn.Metro.Code))
+		d.Set("metro", strings.ToLower(conn.Metro.Code))
 	}
 	d.Set("token", conn.Token)
 	d.Set("type", conn.Type)

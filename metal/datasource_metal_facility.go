@@ -2,6 +2,7 @@ package metal
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/packethost/packngo"
@@ -58,7 +59,7 @@ func dataSourceMetalFacilityRead(d *schema.ResourceData, meta interface{}) error
 				"features": f.Features,
 				"metro": func(d *schema.ResourceData, k string) error {
 					if f.Metro != nil {
-						return d.Set(k, toLower(f.Metro.Code))
+						return d.Set(k, strings.ToLower(f.Metro.Code))
 					}
 					return nil
 				},
