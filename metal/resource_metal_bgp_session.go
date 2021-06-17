@@ -41,7 +41,7 @@ func resourceMetalBGPSession() *schema.Resource {
 
 			"status": {
 				Type:        schema.TypeString,
-				Description: "tatus of the session - up or down",
+				Description: "Status of the session - up or down",
 				Computed:    true,
 			},
 		},
