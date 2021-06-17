@@ -71,7 +71,7 @@ func dataSourceMetalProject() *schema.Resource {
 					Schema: map[string]*schema.Schema{
 						"deployment_type": {
 							Type:         schema.TypeString,
-							Description:  "private or public, the private is likely to be usable immediately, the public will need to be review by Equinix Metal engineers",
+							Description:  "Private or public, the private is likely to be usable immediately, the public will need to be review by Equinix Metal engineers",
 							Required:     true,
 							ValidateFunc: validation.StringInSlice([]string{"local", "global"}, false),
 						},
@@ -88,7 +88,7 @@ func dataSourceMetalProject() *schema.Resource {
 						},
 						"status": {
 							Type:        schema.TypeString,
-							Description: "status of BGP configuration in the project",
+							Description: "Status of BGP configuration in the project",
 							Computed:    true,
 						},
 						"max_prefix": {
