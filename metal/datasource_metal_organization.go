@@ -15,38 +15,45 @@ func dataSourceMetalOrganization() *schema.Resource {
 		Schema: map[string]*schema.Schema{
 			"name": {
 				Type:          schema.TypeString,
+				Description:   "The organization name",
 				Optional:      true,
 				Computed:      true,
 				ConflictsWith: []string{"organization_id"},
 			},
 			"organization_id": {
 				Type:          schema.TypeString,
+				Description:   "The UUID of the organization resource",
 				Optional:      true,
 				Computed:      true,
 				ConflictsWith: []string{"name"},
 			},
 			"description": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Description: "Description string",
+				Computed:    true,
 			},
 
 			"website": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Description: "Website link",
+				Computed:    true,
 			},
 
 			"twitter": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Description: "Twitter handle",
+				Computed:    true,
 			},
 			"logo": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Description: "Logo URL",
+				Computed:    true,
 			},
 			"project_ids": {
-				Type:     schema.TypeList,
-				Computed: true,
-				Elem:     &schema.Schema{Type: schema.TypeString},
+				Type:        schema.TypeList,
+				Description: "UUIDs of project resources which belong to this organization",
+				Computed:    true,
+				Elem:        &schema.Schema{Type: schema.TypeString},
 			},
 		},
 	}

@@ -19,26 +19,30 @@ func resourceMetalBGPSession() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 			"device_id": {
-				Type:     schema.TypeString,
-				Required: true,
-				ForceNew: true,
+				Type:        schema.TypeString,
+				Description: "(Required) ID of device",
+				Required:    true,
+				ForceNew:    true,
 			},
 			"address_family": {
 				Type:         schema.TypeString,
+				Description:  "(Required) ipv4 or ipv6",
 				Required:     true,
 				ForceNew:     true,
 				ValidateFunc: validation.StringInSlice([]string{"ipv4", "ipv6"}, false),
 			},
 			"default_route": {
-				Type:     schema.TypeBool,
-				Optional: true,
-				Default:  false,
-				ForceNew: true,
+				Type:        schema.TypeBool,
+				Description: "(Optional) Boolean flag to set the default route policy. False by default",
+				Optional:    true,
+				Default:     false,
+				ForceNew:    true,
 			},
 
 			"status": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Description: "tatus of the session - up or down",
+				Computed:    true,
 			},
 		},
 	}

@@ -12,32 +12,38 @@ import (
 func metalSSHKeyCommonFields() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
 		"name": {
-			Type:     schema.TypeString,
-			Required: true,
+			Type:        schema.TypeString,
+			Description: "(Required) The name of the SSH key for identification",
+			Required:    true,
 		},
 
 		"public_key": {
-			Type:     schema.TypeString,
-			Required: true,
-			ForceNew: true,
+			Type:        schema.TypeString,
+			Description: "(Required) The public key. If this is a file, it",
+			Required:    true,
+			ForceNew:    true,
 		},
 		"fingerprint": {
-			Type:     schema.TypeString,
-			Computed: true,
+			Type:        schema.TypeString,
+			Description: "The fingerprint of the SSH key",
+			Computed:    true,
 		},
 
 		"created": {
-			Type:     schema.TypeString,
-			Computed: true,
+			Type:        schema.TypeString,
+			Description: "The timestamp for when the SSH key was created",
+			Computed:    true,
 		},
 
 		"updated": {
-			Type:     schema.TypeString,
-			Computed: true,
+			Type:        schema.TypeString,
+			Description: "The timestamp for the last time the SSH key was updated",
+			Computed:    true,
 		},
 		"owner_id": {
-			Type:     schema.TypeString,
-			Computed: true,
+			Type:        schema.TypeString,
+			Description: "The UUID of the Equinix Metal API User who owns this key",
+			Computed:    true,
 		},
 	}
 

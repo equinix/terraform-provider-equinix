@@ -13,24 +13,29 @@ func dataSourceOperatingSystem() *schema.Resource {
 		Read: dataSourceMetalOperatingSystemRead,
 		Schema: map[string]*schema.Schema{
 			"name": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:        schema.TypeString,
+				Description: "(Optional) Name or part of the name of the distribution. Case insensitive",
+				Optional:    true,
 			},
 			"distro": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:        schema.TypeString,
+				Description: "(Optional) Name of the OS distribution",
+				Optional:    true,
 			},
 			"version": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:        schema.TypeString,
+				Description: "(Optional) Version of the distribution",
+				Optional:    true,
 			},
 			"provisionable_on": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:        schema.TypeString,
+				Description: "(Optional) Plan name",
+				Optional:    true,
 			},
 			"slug": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Description: "Operating system slug (same as id)",
+				Computed:    true,
 			},
 		},
 	}

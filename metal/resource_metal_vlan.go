@@ -17,17 +17,20 @@ func resourceMetalVlan() *schema.Resource {
 		},
 		Schema: map[string]*schema.Schema{
 			"project_id": {
-				Type:     schema.TypeString,
-				Required: true,
-				ForceNew: true,
+				Type:        schema.TypeString,
+				Description: "(Required) ID of parent project",
+				Required:    true,
+				ForceNew:    true,
 			},
 			"description": {
-				Type:     schema.TypeString,
-				Optional: true,
-				ForceNew: true,
+				Type:        schema.TypeString,
+				Description: "Description string",
+				Optional:    true,
+				ForceNew:    true,
 			},
 			"facility": {
 				Type:          schema.TypeString,
+				Description:   "(Required) Facility where to create the VLAN",
 				Optional:      true,
 				ForceNew:      true,
 				ConflictsWith: []string{"metro"},
@@ -59,10 +62,11 @@ func resourceMetalVlan() *schema.Resource {
 				StateFunc: toLower,
 			},
 			"vxlan": {
-				Type:     schema.TypeInt,
-				ForceNew: true,
-				Optional: true,
-				Computed: true,
+				Type:        schema.TypeInt,
+				Description: "VLAN ID, must be unique in metro",
+				ForceNew:    true,
+				Optional:    true,
+				Computed:    true,
 			},
 		},
 	}

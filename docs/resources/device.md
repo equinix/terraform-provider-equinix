@@ -142,25 +142,25 @@ The following arguments are supported:
 * `metro` - Metro area for the new device. Conflicts with `facilities`.
 * `plan` - (Required) The device plan slug. To find the plan slug, visit [Device plans API docs](https://metal.equinix.com/developers/api/plans), set your auth token in the top of the page and see JSON from the API response.
 * `billing_cycle` - (Required) monthly or hourly
-* `user_data` (Optional) - A string of the desired User Data for the device.
-* `custom_data` (Optional) - A string of the desired Custom Data for the device.
-* `ipxe_script_url` (Optional) - URL pointing to a hosted iPXE script. More
+* `user_data` - (Optional) A string of the desired User Data for the device.
+* `custom_data` - (Optional) A string of the desired Custom Data for the device.
+* `ipxe_script_url` - (Optional) URL pointing to a hosted iPXE script. More
   information is in the
   [Custom iPXE](https://metal.equinix.com/developers/docs/servers/custom-ipxe/)
   doc.
-* `always_pxe` (Optional) - If true, a device with OS `custom_ipxe` will
+* `always_pxe` - (Optional) If true, a device with OS `custom_ipxe` will
   continue to boot via iPXE on reboots.
-* `hardware_reservation_id` (Optional) - The UUID of the hardware reservation where you want this device deployed, or `next-available` if you want to pick your next available reservation automatically.
+* `hardware_reservation_id` - (Optional) The UUID of the hardware reservation where you want this device deployed, or `next-available` if you want to pick your next available reservation automatically.
  Changing this from a reservation UUID to `next-available` will re-create the device in another reservation.
   Please be careful when using hardware reservation UUID and `next-available` together for the same pool of reservations. It might happen that the reservation which Equinix Metal API will pick as `next-available` is the reservation which you refer with UUID in another metal_device resource. If that happens, and the metal_device with the UUID is created later, resource creation will fail because the reservation is already in use (by the resource created with `next-available`). To workaround this, have the `next-available` resource  [explicitly depend_on](https://learn.hashicorp.com/terraform/getting-started/dependencies.html#implicit-and-explicit-dependencies) the resource with hardware reservation UUID, so that the latter is created first. For more details, see [issue #176](https://github.com/packethost/terraform-provider-packet/issues/176).
-* `storage` (Optional) - JSON for custom partitioning. Only usable on reserved hardware. More information in in the [Custom Partitioning and RAID](https://metal.equinix.com/developers/docs/servers/custom-partitioning-raid/) doc.
+* `storage` - (Optional) JSON for custom partitioning. Only usable on reserved hardware. More information in in the [Custom Partitioning and RAID](https://metal.equinix.com/developers/docs/servers/custom-partitioning-raid/) doc.
   * Please note that the disks.partitions.size attribute must be a string, not an integer. It can be a number string, or size notation string, e.g. "4G" or "8M" (for gigabytes and megabytes).
 * `tags` - Tags attached to the device
 * `description` - Description string for the device
 * `project_ssh_key_ids` - Array of IDs of the project SSH keys which should be added to the device. If you omit this, SSH keys of all the members of the parent project will be added to the device. If you specify this array, only the listed project SSH keys will be added. Project SSH keys can be created with the [metal_project_ssh_key](project_ssh_key.md) resource.
-* `ip_address` (Optional) - A list of IP address types for the device (structure is documented below).
-* `wait_for_reservation_deprovision` (Optional) - Only used for devices in reserved hardware. If set, the deletion of this device will block until the hardware reservation is marked provisionable (about 4 minutes in August 2019).
-* `force_detach_volumes` (Optional) - Delete device even if it has volumes attached. Only applies for destroy action.
+* `ip_address` - (Optional) A list of IP address types for the device (structure is documented below).
+* `wait_for_reservation_deprovision` - (Optional) Only used for devices in reserved hardware. If set, the deletion of this device will block until the hardware reservation is marked provisionable (about 4 minutes in August 2019).
+* `force_detach_volumes` - (Optional) Delete device even if it has volumes attached. Only applies for destroy action.
 
 The `ip_address` block has 3 fields:
 
@@ -184,7 +184,7 @@ The following attributes are exported:
 * `deployed_facility` - The facility where the device is deployed.
 * `deployed_hardware_reservation_id` - ID of hardware reservation where this device was deployed. It is useful when using the `next-available` hardware reservation.
 * `description` - Description string for the device
-* `hostname`- The hostname of the device
+* `hostname` - The hostname of the device
 * `id` - The ID of the device
 * `locked` - Whether the device is locked
 * `metro` - The metro area where the device is deployed
@@ -208,7 +208,7 @@ The following attributes are exported:
   * `type` - Type of the port (e.g. `NetworkPort` or `NetworkBondPort`)
   * `mac` - MAC address assigned to the port
   * `bonded` - Whether this port is part of a bond in bonded network setup
-* `project_id`- The ID of the project the device belongs to
+* `project_id` - The ID of the project the device belongs to
 * `root_password` - Root password to the server (disabled after 24 hours)
 * `ssh_key_ids` - List of IDs of SSH keys deployed in the device, can be both user and project SSH keys
 * `state` - The status of the device
