@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"path"
 	"sort"
+	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/structure"
@@ -42,9 +43,8 @@ func dataSourceMetalDevice() *schema.Resource {
 				Computed: true,
 			},
 			"metro": {
-				Type:      schema.TypeString,
-				Computed:  true,
-				StateFunc: toLower,
+				Type:     schema.TypeString,
+				Computed: true,
 			},
 			"plan": {
 				Type:     schema.TypeString,
@@ -212,7 +212,7 @@ func dataSourceMetalDeviceRead(d *schema.ResourceData, meta interface{}) error {
 	d.Set("plan", device.Plan.Slug)
 	d.Set("facility", device.Facility.Code)
 	if device.Metro != nil {
-		d.Set("metro", device.Metro.Code)
+		d.Set("metro", strings.ToLower(device.Metro.Code))
 	}
 	d.Set("operating_system", device.OS.Slug)
 	d.Set("state", device.State)
