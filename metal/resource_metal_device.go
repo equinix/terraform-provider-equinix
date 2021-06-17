@@ -112,7 +112,6 @@ func resourceMetalDevice() *schema.Resource {
 				Type:        schema.TypeList,
 				Description: "(Optional) A list of IP address types for the device (structure is documented below)",
 				Optional:    true,
-				Description: "Inbound rules for this security group",
 				Elem:        ipAddressSchema(),
 				MinItems:    1,
 			},
