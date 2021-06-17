@@ -94,7 +94,7 @@ func dataSourceMetalDeviceBGPNeighbors() *schema.Resource {
 			},
 			"bgp_neighbors": {
 				Type:        schema.TypeList,
-				Description: "array of BGP neighbor records with attributes:",
+				Description: "Array of BGP neighbor records",
 				Computed:    true,
 				Elem:        bgpNeighborSchema(),
 			},
