@@ -167,7 +167,7 @@ func resourceMetalDevice() *schema.Resource {
 			},
 			"network_type": {
 				Type:        schema.TypeString,
-				Description: "twork type of a device, used in [Layer 2 networking](https://metal.equinix.com/developers/docs/networking/layer2/). Will be one of layer3, hybrid, layer2-individual and layer2-bonded",
+				Description: "Network type of a device, used in [Layer 2 networking](https://metal.equinix.com/developers/docs/networking/layer2/). Will be one of layer3, hybrid, layer2-individual and layer2-bonded",
 				Computed:    true,
 				Deprecated:  "You should handle Network Type with the new metal_device_network_type resource.",
 			},
@@ -221,7 +221,7 @@ func resourceMetalDevice() *schema.Resource {
 
 						"gateway": {
 							Type:        schema.TypeString,
-							Description: "address of router",
+							Description: "Address of router",
 							Computed:    true,
 						},
 
@@ -239,7 +239,7 @@ func resourceMetalDevice() *schema.Resource {
 
 						"public": {
 							Type:        schema.TypeBool,
-							Description: "whether the address is routable from the Internet",
+							Description: "Whether the address is routable from the Internet",
 							Computed:    true,
 						},
 					},
