@@ -21,13 +21,13 @@ func resourceMetalDeviceNetworkType() *schema.Resource {
 		Schema: map[string]*schema.Schema{
 			"device_id": {
 				Type:        schema.TypeString,
-				Description: "(Required) The ID of the device on which the network type should be set",
+				Description: "The ID of the device on which the network type should be set",
 				Required:    true,
 				ForceNew:    true,
 			},
 			"type": {
 				Type:         schema.TypeString,
-				Description:  "(Required) Network type to set. Must be one of layer3, hybrid, layer2-individual and layer2-bonded",
+				Description:  "Network type to set. Must be one of layer3, hybrid, layer2-individual and layer2-bonded",
 				Required:     true,
 				ValidateFunc: validation.StringInSlice([]string{"layer3", "layer2-bonded", "layer2-individual", "hybrid", "hybrid-bonded"}, false),
 			},

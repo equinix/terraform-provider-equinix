@@ -13,20 +13,20 @@ func dataSourceSpotMarketPrice() *schema.Resource {
 		Schema: map[string]*schema.Schema{
 			"facility": {
 				Type:          schema.TypeString,
-				Description:   "(Optional) Name of the facility",
+				Description:   "Name of the facility",
 				ConflictsWith: []string{"metro"},
 				Optional:      true,
 			},
 			"metro": {
 				Type:          schema.TypeString,
-				Description:   "(Optional) Name of the metro",
+				Description:   "Name of the metro",
 				ConflictsWith: []string{"facility"},
 				Optional:      true,
 				StateFunc:     toLower,
 			},
 			"plan": {
 				Type:        schema.TypeString,
-				Description: "(Required) Name of the plan",
+				Description: "Name of the plan",
 				Required:    true,
 			},
 			"price": {

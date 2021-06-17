@@ -13,13 +13,13 @@ func metalSSHKeyCommonFields() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
 		"name": {
 			Type:        schema.TypeString,
-			Description: "(Required) The name of the SSH key for identification",
+			Description: "The name of the SSH key for identification",
 			Required:    true,
 		},
 
 		"public_key": {
 			Type:        schema.TypeString,
-			Description: "(Required) The public key. If this is a file, it",
+			Description: "The public key. If this is a file, it",
 			Required:    true,
 			ForceNew:    true,
 		},

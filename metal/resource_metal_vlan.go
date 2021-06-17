@@ -18,7 +18,7 @@ func resourceMetalVlan() *schema.Resource {
 		Schema: map[string]*schema.Schema{
 			"project_id": {
 				Type:        schema.TypeString,
-				Description: "(Required) ID of parent project",
+				Description: "ID of parent project",
 				Required:    true,
 				ForceNew:    true,
 			},
@@ -30,7 +30,7 @@ func resourceMetalVlan() *schema.Resource {
 			},
 			"facility": {
 				Type:          schema.TypeString,
-				Description:   "(Required) Facility where to create the VLAN",
+				Description:   "Facility where to create the VLAN",
 				Optional:      true,
 				ForceNew:      true,
 				ConflictsWith: []string{"metro"},

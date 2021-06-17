@@ -14,22 +14,22 @@ func dataSourceOperatingSystem() *schema.Resource {
 		Schema: map[string]*schema.Schema{
 			"name": {
 				Type:        schema.TypeString,
-				Description: "(Optional) Name or part of the name of the distribution. Case insensitive",
+				Description: "Name or part of the name of the distribution. Case insensitive",
 				Optional:    true,
 			},
 			"distro": {
 				Type:        schema.TypeString,
-				Description: "(Optional) Name of the OS distribution",
+				Description: "Name of the OS distribution",
 				Optional:    true,
 			},
 			"version": {
 				Type:        schema.TypeString,
-				Description: "(Optional) Version of the distribution",
+				Description: "Version of the distribution",
 				Optional:    true,
 			},
 			"provisionable_on": {
 				Type:        schema.TypeString,
-				Description: "(Optional) Plan name",
+				Description: "Plan name",
 				Optional:    true,
 			},
 			"slug": {

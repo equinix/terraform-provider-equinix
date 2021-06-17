@@ -18,7 +18,7 @@ func resourceMetalOrganization() *schema.Resource {
 		Schema: map[string]*schema.Schema{
 			"name": {
 				Type:        schema.TypeString,
-				Description: "(Required) The name of the Organization",
+				Description: "The name of the Organization",
 				Required:    true,
 			},
 

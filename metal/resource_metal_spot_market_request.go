@@ -22,19 +22,19 @@ func resourceMetalSpotMarketRequest() *schema.Resource {
 		Schema: map[string]*schema.Schema{
 			"devices_min": {
 				Type:        schema.TypeInt,
-				Description: "(Required) Miniumum number devices to be created",
+				Description: "Miniumum number devices to be created",
 				Required:    true,
 				ForceNew:    true,
 			},
 			"devices_max": {
 				Type:        schema.TypeInt,
-				Description: "(Required) Maximum number devices to be created",
+				Description: "Maximum number devices to be created",
 				Required:    true,
 				ForceNew:    true,
 			},
 			"max_bid_price": {
 				Type:        schema.TypeFloat,
-				Description: "(Required) Maximum price user is willing to pay per hour per device",
+				Description: "Maximum price user is willing to pay per hour per device",
 				Required:    true,
 				ForceNew:    true,
 				DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
@@ -59,7 +59,7 @@ func resourceMetalSpotMarketRequest() *schema.Resource {
 			},
 			"facilities": {
 				Type:          schema.TypeList,
-				Description:   "(Optional) Facility IDs where devices should be created",
+				Description:   "Facility IDs where devices should be created",
 				Optional:      true,
 				Elem:          &schema.Schema{Type: schema.TypeString},
 				Computed:      true,
@@ -68,7 +68,7 @@ func resourceMetalSpotMarketRequest() *schema.Resource {
 			},
 			"metro": {
 				Type:          schema.TypeString,
-				Description:   "(Optional) Metro where devices should be created",
+				Description:   "Metro where devices should be created",
 				Optional:      true,
 				ForceNew:      true,
 				ConflictsWith: []string{"facilities"},
@@ -76,7 +76,7 @@ func resourceMetalSpotMarketRequest() *schema.Resource {
 			},
 			"instance_parameters": {
 				Type:        schema.TypeList,
-				Description: "(Required) Parameters for devices provisioned from this request. You can find the parameter description from the [metal_device doc](device.md)",
+				Description: "Parameters for devices provisioned from this request. You can find the parameter description from the [metal_device doc](device.md)",
 				Required:    true,
 				MaxItems:    1,
 				ForceNew:    true,
@@ -152,13 +152,13 @@ func resourceMetalSpotMarketRequest() *schema.Resource {
 			},
 			"project_id": {
 				Type:        schema.TypeString,
-				Description: "(Required) Project ID",
+				Description: "Project ID",
 				Required:    true,
 				ForceNew:    true,
 			},
 			"wait_for_devices": {
 				Type:        schema.TypeBool,
-				Description: "(Optional) On resource creation - wait until all desired devices are active, on resource destruction - wait until devices are removed",
+				Description: "On resource creation - wait until all desired devices are active, on resource destruction - wait until devices are removed",
 				Optional:    true,
 				ForceNew:    true,
 			},

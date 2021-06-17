@@ -25,7 +25,7 @@ func resourceMetalProject() *schema.Resource {
 		Schema: map[string]*schema.Schema{
 			"name": {
 				Type:        schema.TypeString,
-				Description: "(Required) The name of the project",
+				Description: "The name of the project",
 				Required:    true,
 			},
 
@@ -90,7 +90,7 @@ func resourceMetalProject() *schema.Resource {
 						},
 						"md5": {
 							Type:        schema.TypeString,
-							Description: "(Optional) Password for BGP session in plaintext (not a checksum)",
+							Description: "Password for BGP session in plaintext (not a checksum)",
 							Sensitive:   true,
 							Optional:    true,
 						},

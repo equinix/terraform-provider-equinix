@@ -38,14 +38,14 @@ func resourceMetalDevice() *schema.Resource {
 		Schema: map[string]*schema.Schema{
 			"project_id": {
 				Type:        schema.TypeString,
-				Description: "(Required) The ID of the project in which to create the device",
+				Description: "The ID of the project in which to create the device",
 				Required:    true,
 				ForceNew:    true,
 			},
 
 			"hostname": {
 				Type:        schema.TypeString,
-				Description: "(Required) The device name",
+				Description: "The device name",
 				Required:    true,
 			},
 
@@ -57,7 +57,7 @@ func resourceMetalDevice() *schema.Resource {
 
 			"operating_system": {
 				Type:        schema.TypeString,
-				Description: "(Required) The operating system slug. To find the slug, or visit [Operating Systems API docs](https://metal.equinix.com/developers/api/operatingsystems), set your API auth token in the top of the page and see JSON from the API response",
+				Description: "The operating system slug. To find the slug, or visit [Operating Systems API docs](https://metal.equinix.com/developers/api/operatingsystems), set your API auth token in the top of the page and see JSON from the API response",
 				Required:    true,
 				ForceNew:    true,
 			},
@@ -110,7 +110,7 @@ func resourceMetalDevice() *schema.Resource {
 			},
 			"ip_address": {
 				Type:        schema.TypeList,
-				Description: "(Optional) A list of IP address types for the device (structure is documented below)",
+				Description: "A list of IP address types for the device (structure is documented below)",
 				Optional:    true,
 				Elem:        ipAddressSchema(),
 				MinItems:    1,
@@ -118,14 +118,14 @@ func resourceMetalDevice() *schema.Resource {
 
 			"plan": {
 				Type:        schema.TypeString,
-				Description: "(Required) The device plan slug. To find the plan slug, visit [Device plans API docs](https://metal.equinix.com/developers/api/plans), set your auth token in the top of the page and see JSON from the API response",
+				Description: "The device plan slug. To find the plan slug, visit [Device plans API docs](https://metal.equinix.com/developers/api/plans), set your auth token in the top of the page and see JSON from the API response",
 				Required:    true,
 				ForceNew:    true,
 			},
 
 			"billing_cycle": {
 				Type:        schema.TypeString,
-				Description: "(Required) monthly or hourly",
+				Description: "monthly or hourly",
 				Required:    true,
 				ForceNew:    true,
 			},
@@ -260,7 +260,7 @@ func resourceMetalDevice() *schema.Resource {
 
 			"user_data": {
 				Type:        schema.TypeString,
-				Description: "(Optional) A string of the desired User Data for the device",
+				Description: "A string of the desired User Data for the device",
 				Optional:    true,
 				Sensitive:   true,
 				ForceNew:    true,
@@ -268,7 +268,7 @@ func resourceMetalDevice() *schema.Resource {
 
 			"custom_data": {
 				Type:        schema.TypeString,
-				Description: "(Optional) A string of the desired Custom Data for the device",
+				Description: "A string of the desired Custom Data for the device",
 				Optional:    true,
 				Sensitive:   true,
 				ForceNew:    true,
@@ -276,13 +276,13 @@ func resourceMetalDevice() *schema.Resource {
 
 			"ipxe_script_url": {
 				Type:        schema.TypeString,
-				Description: "(Optional) URL pointing to a hosted iPXE script. More",
+				Description: "URL pointing to a hosted iPXE script. More",
 				Optional:    true,
 			},
 
 			"always_pxe": {
 				Type:        schema.TypeBool,
-				Description: "(Optional) If true, a device with OS custom_ipxe will",
+				Description: "If true, a device with OS custom_ipxe will",
 				Optional:    true,
 				Default:     false,
 			},
@@ -295,7 +295,7 @@ func resourceMetalDevice() *schema.Resource {
 
 			"hardware_reservation_id": {
 				Type:        schema.TypeString,
-				Description: "(Optional) The UUID of the hardware reservation where you want this device deployed, or next-available if you want to pick your next available reservation automatically",
+				Description: "The UUID of the hardware reservation where you want this device deployed, or next-available if you want to pick your next available reservation automatically",
 				Optional:    true,
 				ForceNew:    true,
 				DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
@@ -312,7 +312,7 @@ func resourceMetalDevice() *schema.Resource {
 			},
 			"storage": {
 				Type:        schema.TypeString,
-				Description: "(Optional) JSON for custom partitioning. Only usable on reserved hardware. More information in in the [Custom Partitioning and RAID](https://metal.equinix.com/developers/docs/servers/custom-partitioning-raid/) doc",
+				Description: "JSON for custom partitioning. Only usable on reserved hardware. More information in in the [Custom Partitioning and RAID](https://metal.equinix.com/developers/docs/servers/custom-partitioning-raid/) doc",
 				Optional:    true,
 				ForceNew:    true,
 				StateFunc: func(v interface{}) string {
@@ -336,14 +336,14 @@ func resourceMetalDevice() *schema.Resource {
 			},
 			"wait_for_reservation_deprovision": {
 				Type:        schema.TypeBool,
-				Description: "(Optional) Only used for devices in reserved hardware. If set, the deletion of this device will block until the hardware reservation is marked provisionable (about 4 minutes in August 2019)",
+				Description: "Only used for devices in reserved hardware. If set, the deletion of this device will block until the hardware reservation is marked provisionable (about 4 minutes in August 2019)",
 				Optional:    true,
 				Default:     false,
 				ForceNew:    false,
 			},
 			"force_detach_volumes": {
 				Type:        schema.TypeBool,
-				Description: "(Optional) Delete device even if it has volumes attached. Only applies for destroy action",
+				Description: "Delete device even if it has volumes attached. Only applies for destroy action",
 				Optional:    true,
 				Default:     false,
 				ForceNew:    false,
