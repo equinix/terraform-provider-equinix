@@ -1,12 +1,19 @@
 package metal
 
 import (
+	"strings"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
-var metalMutexKV = NewMutexKV()
+var (
+	metalMutexKV         = NewMutexKV()
+	DeviceNetworkTypes   = []string{"layer3", "hybrid", "layer2-individual", "layer2-bonded"}
+	DeviceNetworkTypesHB = []string{"layer3", "hybrid", "hybrid-bonded", "layer2-individual", "layer2-bonded"}
+	NetworkTypeList      = strings.Join(DeviceNetworkTypes, ", ")
+	NetworkTypeListHB    = strings.Join(DeviceNetworkTypesHB, ", ")
+)
 
 func Provider() *schema.Provider {
 	provider := &schema.Provider{

@@ -17,32 +17,37 @@ func resourceMetalOrganization() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 			"name": {
-				Type:     schema.TypeString,
-				Required: true,
+				Type:        schema.TypeString,
+				Description: "The name of the Organization",
+				Required:    true,
 			},
 
 			"description": {
-				Type:     schema.TypeString,
-				Optional: true,
-				Required: false,
+				Type:        schema.TypeString,
+				Description: "Description string",
+				Optional:    true,
+				Required:    false,
 			},
 
 			"website": {
-				Type:     schema.TypeString,
-				Optional: true,
-				Required: false,
+				Type:        schema.TypeString,
+				Description: "Website link",
+				Optional:    true,
+				Required:    false,
 			},
 
 			"twitter": {
-				Type:     schema.TypeString,
-				Optional: true,
-				Required: false,
+				Type:        schema.TypeString,
+				Description: "Twitter handle",
+				Optional:    true,
+				Required:    false,
 			},
 
 			"logo": {
-				Type:     schema.TypeString,
-				Optional: true,
-				Required: false,
+				Type:        schema.TypeString,
+				Description: "Logo URL",
+				Optional:    true,
+				Required:    false,
 			},
 
 			"created": {

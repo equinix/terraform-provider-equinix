@@ -21,19 +21,22 @@ func resourceMetalSpotMarketRequest() *schema.Resource {
 		},
 		Schema: map[string]*schema.Schema{
 			"devices_min": {
-				Type:     schema.TypeInt,
-				Required: true,
-				ForceNew: true,
+				Type:        schema.TypeInt,
+				Description: "Miniumum number devices to be created",
+				Required:    true,
+				ForceNew:    true,
 			},
 			"devices_max": {
-				Type:     schema.TypeInt,
-				Required: true,
-				ForceNew: true,
+				Type:        schema.TypeInt,
+				Description: "Maximum number devices to be created",
+				Required:    true,
+				ForceNew:    true,
 			},
 			"max_bid_price": {
-				Type:     schema.TypeFloat,
-				Required: true,
-				ForceNew: true,
+				Type:        schema.TypeFloat,
+				Description: "Maximum price user is willing to pay per hour per device",
+				Required:    true,
+				ForceNew:    true,
 				DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
 					oldF, err := strconv.ParseFloat(old, 64)
 					if err != nil {
@@ -56,6 +59,7 @@ func resourceMetalSpotMarketRequest() *schema.Resource {
 			},
 			"facilities": {
 				Type:          schema.TypeList,
+				Description:   "Facility IDs where devices should be created",
 				Optional:      true,
 				Elem:          &schema.Schema{Type: schema.TypeString},
 				Computed:      true,
@@ -64,16 +68,18 @@ func resourceMetalSpotMarketRequest() *schema.Resource {
 			},
 			"metro": {
 				Type:          schema.TypeString,
+				Description:   "Metro where devices should be created",
 				Optional:      true,
 				ForceNew:      true,
 				ConflictsWith: []string{"facilities"},
 				StateFunc:     toLower,
 			},
 			"instance_parameters": {
-				Type:     schema.TypeList,
-				Required: true,
-				MaxItems: 1,
-				ForceNew: true,
+				Type:        schema.TypeList,
+				Description: "Parameters for devices provisioned from this request. You can find the parameter description from the [metal_device doc](device.md)",
+				Required:    true,
+				MaxItems:    1,
+				ForceNew:    true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"billing_cycle": {
@@ -145,14 +151,16 @@ func resourceMetalSpotMarketRequest() *schema.Resource {
 				},
 			},
 			"project_id": {
-				Type:     schema.TypeString,
-				Required: true,
-				ForceNew: true,
+				Type:        schema.TypeString,
+				Description: "Project ID",
+				Required:    true,
+				ForceNew:    true,
 			},
 			"wait_for_devices": {
-				Type:     schema.TypeBool,
-				Optional: true,
-				ForceNew: true,
+				Type:        schema.TypeBool,
+				Description: "On resource creation - wait until all desired devices are active, on resource destruction - wait until devices are removed",
+				Optional:    true,
+				ForceNew:    true,
 			},
 		},
 		Timeouts: &schema.ResourceTimeout{

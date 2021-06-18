@@ -7,9 +7,10 @@ import (
 func resourceMetalProjectSSHKey() *schema.Resource {
 	pkeySchema := metalSSHKeyCommonFields()
 	pkeySchema["project_id"] = &schema.Schema{
-		Type:     schema.TypeString,
-		ForceNew: true,
-		Required: true,
+		Type:        schema.TypeString,
+		Description: "The ID of parent project",
+		ForceNew:    true,
+		Required:    true,
 	}
 	return &schema.Resource{
 		Create: resourceMetalSSHKeyCreate,

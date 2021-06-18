@@ -37,34 +37,40 @@ func resourceMetalDevice() *schema.Resource {
 		},
 		Schema: map[string]*schema.Schema{
 			"project_id": {
-				Type:     schema.TypeString,
-				Required: true,
-				ForceNew: true,
+				Type:        schema.TypeString,
+				Description: "The ID of the project in which to create the device",
+				Required:    true,
+				ForceNew:    true,
 			},
 
 			"hostname": {
-				Type:     schema.TypeString,
-				Required: true,
+				Type:        schema.TypeString,
+				Description: "The device name",
+				Required:    true,
 			},
 
 			"description": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:        schema.TypeString,
+				Description: "Description string for the device",
+				Optional:    true,
 			},
 
 			"operating_system": {
-				Type:     schema.TypeString,
-				Required: true,
-				ForceNew: true,
+				Type:        schema.TypeString,
+				Description: "The operating system slug. To find the slug, or visit [Operating Systems API docs](https://metal.equinix.com/developers/api/operatingsystems), set your API auth token in the top of the page and see JSON from the API response",
+				Required:    true,
+				ForceNew:    true,
 			},
 
 			"deployed_facility": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Description: "The facility where the device is deployed",
+				Computed:    true,
 			},
 
 			"metro": {
 				Type:          schema.TypeString,
+				Description:   "Metro area for the new device. Conflicts with facilities",
 				Optional:      true,
 				ForceNew:      true,
 				ConflictsWith: []string{"facilities"},
@@ -82,11 +88,12 @@ func resourceMetalDevice() *schema.Resource {
 			},
 
 			"facilities": {
-				Type:     schema.TypeList,
-				Optional: true,
-				Elem:     &schema.Schema{Type: schema.TypeString},
-				ForceNew: true,
-				MinItems: 1,
+				Type:        schema.TypeList,
+				Description: "List of facility codes with deployment preferences. Equinix Metal API will go through the list and will deploy your device to first facility with free capacity. List items must be facility codes or any (a wildcard). To find the facility code, visit [Facilities API docs](https://metal.equinix.com/developers/api/facilities/), set your API auth token in the top of the page and see JSON from the API response. Conflicts with metro",
+				Optional:    true,
+				Elem:        &schema.Schema{Type: schema.TypeString},
+				ForceNew:    true,
+				MinItems:    1,
 				DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
 					fsRaw := d.Get("facilities")
 					fs := convertStringArr(fsRaw.([]interface{}))
@@ -103,165 +110,194 @@ func resourceMetalDevice() *schema.Resource {
 			},
 			"ip_address": {
 				Type:        schema.TypeList,
+				Description: "A list of IP address types for the device (structure is documented below)",
 				Optional:    true,
-				Description: "Inbound rules for this security group",
 				Elem:        ipAddressSchema(),
 				MinItems:    1,
 			},
 
 			"plan": {
-				Type:     schema.TypeString,
-				Required: true,
-				ForceNew: true,
+				Type:        schema.TypeString,
+				Description: "The device plan slug. To find the plan slug, visit [Device plans API docs](https://metal.equinix.com/developers/api/plans), set your auth token in the top of the page and see JSON from the API response",
+				Required:    true,
+				ForceNew:    true,
 			},
 
 			"billing_cycle": {
-				Type:     schema.TypeString,
-				Required: true,
-				ForceNew: true,
+				Type:        schema.TypeString,
+				Description: "monthly or hourly",
+				Required:    true,
+				ForceNew:    true,
 			},
 			"state": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Description: "The status of the device",
+				Computed:    true,
 			},
 
 			"root_password": {
-				Type:      schema.TypeString,
-				Computed:  true,
-				Sensitive: true,
+				Type:        schema.TypeString,
+				Description: "Root password to the server (disabled after 24 hours)",
+				Computed:    true,
+				Sensitive:   true,
 			},
 
 			"locked": {
-				Type:     schema.TypeBool,
-				Computed: true,
+				Type:        schema.TypeBool,
+				Description: "Whether the device is locked",
+				Computed:    true,
 			},
 
 			"access_public_ipv6": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Description: "The ipv6 maintenance IP assigned to the device",
+				Computed:    true,
 			},
 
 			"access_public_ipv4": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Description: "The ipv4 maintenance IP assigned to the device",
+				Computed:    true,
 			},
 
 			"access_private_ipv4": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Description: "The ipv4 private IP assigned to the device",
+				Computed:    true,
 			},
 			"network_type": {
-				Type:       schema.TypeString,
-				Computed:   true,
-				Deprecated: "You should handle Network Type with the new metal_device_network_type resource.",
+				Type:        schema.TypeString,
+				Description: "Network type of a device, used in [Layer 2 networking](https://metal.equinix.com/developers/docs/networking/layer2/). Will be one of " + NetworkTypeListHB,
+				Computed:    true,
+				Deprecated:  "You should handle Network Type with the new metal_device_network_type resource.",
 			},
 
 			"ports": {
-				Type:     schema.TypeList,
-				Computed: true,
+				Type:        schema.TypeList,
+				Description: "Ports assigned to the device",
+				Computed:    true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"name": {
-							Type:     schema.TypeString,
-							Computed: true,
+							Type:        schema.TypeString,
+							Description: "Name of the port (e.g. eth0, or bond0)",
+							Computed:    true,
 						},
 						"id": {
-							Type:     schema.TypeString,
-							Computed: true,
+							Type:        schema.TypeString,
+							Description: "The ID of the device",
+							Computed:    true,
 						},
 						"type": {
-							Type:     schema.TypeString,
-							Computed: true,
+							Type:        schema.TypeString,
+							Description: "One of [private_ipv4, public_ipv4, public_ipv6]",
+							Computed:    true,
 						},
 						"mac": {
-							Type:     schema.TypeString,
-							Computed: true,
+							Type:        schema.TypeString,
+							Description: "MAC address assigned to the port",
+							Computed:    true,
 						},
 						"bonded": {
-							Type:     schema.TypeBool,
-							Computed: true,
+							Type:        schema.TypeBool,
+							Description: "Whether this port is part of a bond in bonded network setup",
+							Computed:    true,
 						},
 					},
 				},
 			},
 
 			"network": {
-				Type:     schema.TypeList,
-				Computed: true,
+				Type:        schema.TypeList,
+				Description: "The device's private and public IP (v4 and v6) network details. When a device is run without any special network configuration, it will have 3 addresses: public ipv4, private ipv4 and ipv6",
+				Computed:    true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"address": {
-							Type:     schema.TypeString,
-							Computed: true,
+							Type:        schema.TypeString,
+							Description: "IPv4 or IPv6 address string",
+							Computed:    true,
 						},
 
 						"gateway": {
-							Type:     schema.TypeString,
-							Computed: true,
+							Type:        schema.TypeString,
+							Description: "Address of router",
+							Computed:    true,
 						},
 
 						"family": {
-							Type:     schema.TypeInt,
-							Computed: true,
+							Type:        schema.TypeInt,
+							Description: "IP version - \"4\" or \"6\"",
+							Computed:    true,
 						},
 
 						"cidr": {
-							Type:     schema.TypeInt,
-							Computed: true,
+							Type:        schema.TypeInt,
+							Description: "CIDR suffix for IP address block to be assigned, i.e. amount of addresses",
+							Computed:    true,
 						},
 
 						"public": {
-							Type:     schema.TypeBool,
-							Computed: true,
+							Type:        schema.TypeBool,
+							Description: "Whether the address is routable from the Internet",
+							Computed:    true,
 						},
 					},
 				},
 			},
 
 			"created": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Description: "The timestamp for when the device was created",
+				Computed:    true,
 			},
 
 			"updated": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Description: "The timestamp for the last time the device was updated",
+				Computed:    true,
 			},
 
 			"user_data": {
-				Type:      schema.TypeString,
-				Optional:  true,
-				Sensitive: true,
-				ForceNew:  true,
+				Type:        schema.TypeString,
+				Description: "A string of the desired User Data for the device",
+				Optional:    true,
+				Sensitive:   true,
+				ForceNew:    true,
 			},
 
 			"custom_data": {
-				Type:      schema.TypeString,
-				Optional:  true,
-				Sensitive: true,
-				ForceNew:  true,
+				Type:        schema.TypeString,
+				Description: "A string of the desired Custom Data for the device",
+				Optional:    true,
+				Sensitive:   true,
+				ForceNew:    true,
 			},
 
 			"ipxe_script_url": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:        schema.TypeString,
+				Description: "URL pointing to a hosted iPXE script. More",
+				Optional:    true,
 			},
 
 			"always_pxe": {
-				Type:     schema.TypeBool,
-				Optional: true,
-				Default:  false,
+				Type:        schema.TypeBool,
+				Description: "If true, a device with OS custom_ipxe will",
+				Optional:    true,
+				Default:     false,
 			},
 
 			"deployed_hardware_reservation_id": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Description: "ID of hardware reservation where this device was deployed. It is useful when using the next-available hardware reservation",
+				Computed:    true,
 			},
 
 			"hardware_reservation_id": {
-				Type:     schema.TypeString,
-				Optional: true,
-				ForceNew: true,
+				Type:        schema.TypeString,
+				Description: "The UUID of the hardware reservation where you want this device deployed, or next-available if you want to pick your next available reservation automatically",
+				Optional:    true,
+				ForceNew:    true,
 				DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
 					dhwr, ok := d.GetOk("deployed_hardware_reservation_id")
 					return ok && dhwr == new
@@ -269,14 +305,16 @@ func resourceMetalDevice() *schema.Resource {
 			},
 
 			"tags": {
-				Type:     schema.TypeList,
-				Optional: true,
-				Elem:     &schema.Schema{Type: schema.TypeString},
+				Type:        schema.TypeList,
+				Description: "Tags attached to the device",
+				Optional:    true,
+				Elem:        &schema.Schema{Type: schema.TypeString},
 			},
 			"storage": {
-				Type:     schema.TypeString,
-				Optional: true,
-				ForceNew: true,
+				Type:        schema.TypeString,
+				Description: "JSON for custom partitioning. Only usable on reserved hardware. More information in in the [Custom Partitioning and RAID](https://metal.equinix.com/developers/docs/servers/custom-partitioning-raid/) doc",
+				Optional:    true,
+				ForceNew:    true,
 				StateFunc: func(v interface{}) string {
 					s, _ := structure.NormalizeJsonString(v)
 					return s
@@ -284,27 +322,31 @@ func resourceMetalDevice() *schema.Resource {
 				ValidateFunc: validation.StringIsJSON,
 			},
 			"project_ssh_key_ids": {
-				Type:     schema.TypeList,
-				Optional: true,
-				ForceNew: true,
-				Elem:     &schema.Schema{Type: schema.TypeString},
+				Type:        schema.TypeList,
+				Description: "Array of IDs of the project SSH keys which should be added to the device. If you omit this, SSH keys of all the members of the parent project will be added to the device. If you specify this array, only the listed project SSH keys will be added. Project SSH keys can be created with the [metal_project_ssh_key](project_ssh_key.md) resource",
+				Optional:    true,
+				ForceNew:    true,
+				Elem:        &schema.Schema{Type: schema.TypeString},
 			},
 			"ssh_key_ids": {
-				Type:     schema.TypeList,
-				Computed: true,
-				Elem:     &schema.Schema{Type: schema.TypeString},
+				Type:        schema.TypeList,
+				Description: "List of IDs of SSH keys deployed in the device, can be both user and project SSH keys",
+				Computed:    true,
+				Elem:        &schema.Schema{Type: schema.TypeString},
 			},
 			"wait_for_reservation_deprovision": {
-				Type:     schema.TypeBool,
-				Optional: true,
-				Default:  false,
-				ForceNew: false,
+				Type:        schema.TypeBool,
+				Description: "Only used for devices in reserved hardware. If set, the deletion of this device will block until the hardware reservation is marked provisionable (about 4 minutes in August 2019)",
+				Optional:    true,
+				Default:     false,
+				ForceNew:    false,
 			},
 			"force_detach_volumes": {
-				Type:     schema.TypeBool,
-				Optional: true,
-				Default:  false,
-				ForceNew: false,
+				Type:        schema.TypeBool,
+				Description: "Delete device even if it has volumes attached. Only applies for destroy action",
+				Optional:    true,
+				Default:     false,
+				ForceNew:    false,
 			},
 		},
 	}

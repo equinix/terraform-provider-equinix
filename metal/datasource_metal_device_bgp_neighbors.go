@@ -9,48 +9,58 @@ func bgpNeighborSchema() *schema.Resource {
 	return &schema.Resource{
 		Schema: map[string]*schema.Schema{
 			"address_family": {
-				Type:     schema.TypeInt,
-				Computed: true,
+				Type:        schema.TypeInt,
+				Description: "IP address version, 4 or 6",
+				Computed:    true,
 			},
 			"customer_as": {
-				Type:     schema.TypeInt,
-				Computed: true,
+				Type:        schema.TypeInt,
+				Description: "Local autonomous system number",
+				Computed:    true,
 			},
 			"customer_ip": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Description: "Local used peer IP address",
+				Computed:    true,
 			},
 			"md5_enabled": {
-				Type:     schema.TypeBool,
-				Computed: true,
+				Type:        schema.TypeBool,
+				Description: "Whether BGP session is password enabled",
+				Computed:    true,
 			},
 			"md5_password": {
-				Type:      schema.TypeString,
-				Computed:  true,
-				Sensitive: true,
+				Type:        schema.TypeString,
+				Description: "BGP session password in plaintext (not a checksum)",
+				Computed:    true,
+				Sensitive:   true,
 			},
 			"multihop": {
-				Type:     schema.TypeBool,
-				Computed: true,
+				Type:        schema.TypeBool,
+				Description: "Whether the neighbor is in EBGP multihop session",
+				Computed:    true,
 			},
 			"peer_as": {
-				Type:     schema.TypeInt,
-				Computed: true,
+				Type:        schema.TypeInt,
+				Description: "Peer AS number (different than customer_as for EBGP)",
+				Computed:    true,
 			},
 			"peer_ips": {
-				Type:     schema.TypeList,
-				Optional: true,
-				Elem:     &schema.Schema{Type: schema.TypeString},
+				Type:        schema.TypeList,
+				Description: "Array of IP addresses of this neighbor's peers",
+				Optional:    true,
+				Elem:        &schema.Schema{Type: schema.TypeString},
 			},
 			"routes_in": {
-				Type:     schema.TypeList,
-				Computed: true,
-				Elem:     bgpRouteSchema(),
+				Type:        schema.TypeList,
+				Description: "Array of incoming routes. Each route has attributes",
+				Computed:    true,
+				Elem:        bgpRouteSchema(),
 			},
 			"routes_out": {
-				Type:     schema.TypeList,
-				Computed: true,
-				Elem:     bgpRouteSchema(),
+				Type:        schema.TypeList,
+				Description: "Array of outgoing routes in the same format",
+				Computed:    true,
+				Elem:        bgpRouteSchema(),
 			},
 		},
 	}
@@ -60,12 +70,14 @@ func bgpRouteSchema() *schema.Resource {
 	return &schema.Resource{
 		Schema: map[string]*schema.Schema{
 			"route": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Description: "CIDR expression of route (IP/mask)",
+				Computed:    true,
 			},
 			"exact": {
-				Type:     schema.TypeBool,
-				Computed: true,
+				Type:        schema.TypeBool,
+				Description: "Whether the route is exact",
+				Computed:    true,
 			},
 		},
 	}
@@ -76,13 +88,15 @@ func dataSourceMetalDeviceBGPNeighbors() *schema.Resource {
 		Read: dataSourceMetalDeviceBGPNeighborsRead,
 		Schema: map[string]*schema.Schema{
 			"device_id": {
-				Type:     schema.TypeString,
-				Required: true,
+				Type:        schema.TypeString,
+				Description: "UUID of BGP-enabled device whose neighbors to list",
+				Required:    true,
 			},
 			"bgp_neighbors": {
-				Type:     schema.TypeList,
-				Computed: true,
-				Elem:     bgpNeighborSchema(),
+				Type:        schema.TypeList,
+				Description: "Array of BGP neighbor records",
+				Computed:    true,
+				Elem:        bgpNeighborSchema(),
 			},
 		},
 	}

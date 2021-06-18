@@ -24,30 +24,35 @@ func resourceMetalProject() *schema.Resource {
 		},
 		Schema: map[string]*schema.Schema{
 			"name": {
-				Type:     schema.TypeString,
-				Required: true,
+				Type:        schema.TypeString,
+				Description: "The name of the project",
+				Required:    true,
 			},
 
 			"created": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Description: "The timestamp for when the project was created",
+				Computed:    true,
 			},
 
 			"updated": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Description: "The timestamp for the last time the project was updated",
+				Computed:    true,
 			},
 
 			"backend_transfer": {
-				Type:     schema.TypeBool,
-				Optional: true,
-				Default:  false,
+				Type:        schema.TypeBool,
+				Description: "Enable or disable [Backend Transfer](https://metal.equinix.com/developers/docs/networking/backend-transfer/), default is false",
+				Optional:    true,
+				Default:     false,
 			},
 
 			"payment_method_id": {
-				Type:     schema.TypeString,
-				Optional: true,
-				Computed: true,
+				Type:        schema.TypeString,
+				Description: "The UUID of payment method for this project. The payment method and the project need to belong to the same organization (passed with organization_id, or default)",
+				Optional:    true,
+				Computed:    true,
 				DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
 					return strings.EqualFold(strings.Trim(old, `"`), strings.Trim(new, `"`))
 				},
@@ -55,42 +60,49 @@ func resourceMetalProject() *schema.Resource {
 			},
 
 			"organization_id": {
-				Type:     schema.TypeString,
-				Optional: true,
-				Computed: true,
-				ForceNew: true,
+				Type:        schema.TypeString,
+				Description: "The UUID of organization under which you want to create the project. If you leave it out, the project will be create under your the default organization of your account",
+				Optional:    true,
+				Computed:    true,
+				ForceNew:    true,
 				DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
 					return strings.EqualFold(strings.Trim(old, `"`), strings.Trim(new, `"`))
 				},
 				ValidateFunc: validation.StringMatch(uuidRE, "must be a valid UUID"),
 			},
 			"bgp_config": {
-				Type:     schema.TypeList,
-				MaxItems: 1,
-				Optional: true,
+				Type:        schema.TypeList,
+				Description: "Optional BGP settings. Refer to [Equinix Metal guide for BGP](https://metal.equinix.com/developers/docs/networking/local-global-bgp/)",
+				MaxItems:    1,
+				Optional:    true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"deployment_type": {
 							Type:         schema.TypeString,
+							Description:  "\"local\" or \"global\", the local is likely to be usable immediately, the global will need to be review by Equinix Metal engineers",
 							Required:     true,
 							ValidateFunc: validation.StringInSlice([]string{"local", "global"}, false),
 						},
 						"asn": {
-							Type:     schema.TypeInt,
-							Required: true,
+							Type:        schema.TypeInt,
+							Description: "Autonomous System Number for local BGP deployment",
+							Required:    true,
 						},
 						"md5": {
-							Type:      schema.TypeString,
-							Sensitive: true,
-							Optional:  true,
+							Type:        schema.TypeString,
+							Description: "Password for BGP session in plaintext (not a checksum)",
+							Sensitive:   true,
+							Optional:    true,
 						},
 						"status": {
-							Type:     schema.TypeString,
-							Computed: true,
+							Type:        schema.TypeString,
+							Description: "Status of BGP configuration in the project",
+							Computed:    true,
 						},
 						"max_prefix": {
-							Type:     schema.TypeInt,
-							Computed: true,
+							Type:        schema.TypeInt,
+							Description: "The maximum number of route filters allowed per server",
+							Computed:    true,
 						},
 					},
 				},

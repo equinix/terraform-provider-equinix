@@ -15,72 +15,86 @@ func dataSourceMetalProject() *schema.Resource {
 		Schema: map[string]*schema.Schema{
 			"name": {
 				Type:          schema.TypeString,
+				Description:   "The name which is used to look up the project",
 				Optional:      true,
 				Computed:      true,
 				ConflictsWith: []string{"project_id"},
 			},
 			"project_id": {
 				Type:          schema.TypeString,
+				Description:   "The UUID by which to look up the project",
 				Optional:      true,
 				Computed:      true,
 				ConflictsWith: []string{"name"},
 			},
 
 			"created": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Description: "The timestamp for when the project was created",
+				Computed:    true,
 			},
 
 			"updated": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Description: "The timestamp for the last time the project was updated",
+				Computed:    true,
 			},
 
 			"backend_transfer": {
-				Type:     schema.TypeBool,
-				Computed: true,
+				Type:        schema.TypeBool,
+				Description: "Whether Backend Transfer is enabled for this project",
+				Computed:    true,
 			},
 
 			"payment_method_id": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Description: "The UUID of payment method for this project",
+				Computed:    true,
 			},
 
 			"organization_id": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Description: "The UUID of this project's parent organization",
+				Computed:    true,
 			},
 			"user_ids": {
-				Type:     schema.TypeList,
-				Computed: true,
-				Elem:     &schema.Schema{Type: schema.TypeString},
+				Type:        schema.TypeList,
+				Description: "List of UUIDs of user accounts which belong to this project",
+				Computed:    true,
+				Elem:        &schema.Schema{Type: schema.TypeString},
 			},
 			"bgp_config": {
-				Type:     schema.TypeList,
-				Computed: true,
+				Type:        schema.TypeList,
+				Description: "Optional BGP settings. Refer to [Equinix Metal guide for BGP](https://metal.equinix.com/developers/docs/networking/local-global-bgp/)",
+				Computed:    true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"deployment_type": {
 							Type:         schema.TypeString,
+							Description:  "Private or public, the private is likely to be usable immediately, the public will need to be review by Equinix Metal engineers",
 							Required:     true,
 							ValidateFunc: validation.StringInSlice([]string{"local", "global"}, false),
 						},
 						"asn": {
-							Type:     schema.TypeInt,
-							Required: true,
+							Type:        schema.TypeInt,
+							Description: "Autonomous System Number for local BGP deployment",
+							Required:    true,
 						},
 						"md5": {
-							Type:      schema.TypeString,
-							Optional:  true,
-							Sensitive: true,
+							Type:        schema.TypeString,
+							Description: "Password for BGP session in plaintext (not a checksum)",
+							Optional:    true,
+							Sensitive:   true,
 						},
 						"status": {
-							Type:     schema.TypeString,
-							Computed: true,
+							Type:        schema.TypeString,
+							Description: "Status of BGP configuration in the project",
+							Computed:    true,
 						},
 						"max_prefix": {
-							Type:     schema.TypeInt,
-							Computed: true,
+							Type:        schema.TypeInt,
+							Description: "The maximum number of route filters allowed per server",
+							Computed:    true,
 						},
 					},
 				},
