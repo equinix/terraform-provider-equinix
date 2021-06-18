@@ -167,7 +167,7 @@ func resourceMetalDevice() *schema.Resource {
 			},
 			"network_type": {
 				Type:        schema.TypeString,
-				Description: "Network type of a device, used in [Layer 2 networking](https://metal.equinix.com/developers/docs/networking/layer2/). Will be one of layer3, hybrid, layer2-individual and layer2-bonded",
+				Description: "Network type of a device, used in [Layer 2 networking](https://metal.equinix.com/developers/docs/networking/layer2/). Will be one of " + NetworkTypeListHB,
 				Computed:    true,
 				Deprecated:  "You should handle Network Type with the new metal_device_network_type resource.",
 			},
@@ -209,7 +209,7 @@ func resourceMetalDevice() *schema.Resource {
 
 			"network": {
 				Type:        schema.TypeList,
-				Description: "The device's private and public IP (v4 and v6) network details. When a device is run without any special network configuration, it will have 3 networks:",
+				Description: "The device's private and public IP (v4 and v6) network details. When a device is run without any special network configuration, it will have 3 addresses: public ipv4, private ipv4 and ipv6",
 				Computed:    true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{

@@ -34,7 +34,7 @@ func dataSourceMetalPort() *schema.Resource {
 			"network_type": {
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "One of layer2-bonded, layer2-individual, layer3, hybrid, hybrid-bonded",
+				Description: "One of " + NetworkTypeListHB,
 			},
 			"type": {
 				Type:        schema.TypeString,

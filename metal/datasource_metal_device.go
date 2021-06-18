@@ -103,7 +103,7 @@ func dataSourceMetalDevice() *schema.Resource {
 			},
 			"network_type": {
 				Type:        schema.TypeString,
-				Description: "L2 network type of the device, one of \"layer3\", \"layer2-bonded\", \"layer2-individual\", \"hybrid\"",
+				Description: "L2 network type of the device, one of" + NetworkTypeList,
 				Computed:    true,
 			},
 			"hardware_reservation_id": {

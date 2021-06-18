@@ -27,9 +27,9 @@ func resourceMetalDeviceNetworkType() *schema.Resource {
 			},
 			"type": {
 				Type:         schema.TypeString,
-				Description:  "Network type to set. Must be one of layer3, hybrid, layer2-individual and layer2-bonded",
+				Description:  "Network type to set. Must be one of " + NetworkTypeListHB,
 				Required:     true,
-				ValidateFunc: validation.StringInSlice([]string{"layer3", "layer2-bonded", "layer2-individual", "hybrid", "hybrid-bonded"}, false),
+				ValidateFunc: validation.StringInSlice(DeviceNetworkTypesHB, false),
 			},
 		},
 	}

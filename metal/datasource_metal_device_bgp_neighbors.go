@@ -52,7 +52,7 @@ func bgpNeighborSchema() *schema.Resource {
 			},
 			"routes_in": {
 				Type:        schema.TypeList,
-				Description: "Array of incoming routes. Each route has attributes:",
+				Description: "Array of incoming routes. Each route has attributes",
 				Computed:    true,
 				Elem:        bgpRouteSchema(),
 			},
@@ -76,7 +76,7 @@ func bgpRouteSchema() *schema.Resource {
 			},
 			"exact": {
 				Type:        schema.TypeBool,
-				Description: "(bool) Whether the route is exact",
+				Description: "Whether the route is exact",
 				Computed:    true,
 			},
 		},
