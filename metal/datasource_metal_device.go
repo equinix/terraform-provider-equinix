@@ -51,7 +51,6 @@ func dataSourceMetalDevice() *schema.Resource {
 				Type:        schema.TypeString,
 				Description: "The metro where the device is deployed",
 				Computed:    true,
-				StateFunc:   toLower,
 			},
 			"plan": {
 				Type:        schema.TypeString,
