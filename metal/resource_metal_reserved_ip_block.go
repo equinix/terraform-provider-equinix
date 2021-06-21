@@ -139,6 +139,14 @@ func resourceMetalReservedIPBlock() *schema.Resource {
 		Computed: true,
 	}
 
+	reservedBlockSchema["tags"] = &schema.Schema{
+		Type:        schema.TypeSet,
+		ForceNew:    true,
+		Description: "Tags attached to the reserved block",
+		Optional:    true,
+		Elem:        &schema.Schema{Type: schema.TypeString},
+	}
+
 	return &schema.Resource{
 		Create: resourceMetalReservedIPBlockCreate,
 		Read:   resourceMetalReservedIPBlockRead,
@@ -185,6 +193,12 @@ func resourceMetalReservedIPBlockCreate(d *schema.ResourceData, meta interface{}
 	desc, ok := d.GetOk("description")
 	if ok {
 		req.Description = desc.(string)
+	}
+
+	if tagsRaw, tagsOk := d.GetOk("tags"); tagsOk {
+		for _, tag := range tagsRaw.(*schema.Set).List() {
+			req.Tags = append(req.Tags, tag.(string))
+		}
 	}
 
 	projectID := d.Get("project_id").(string)
@@ -237,7 +251,7 @@ func loadBlock(d *schema.ResourceData, reservedBlock *packngo.IPAddressReservati
 		quantity = 1 << uint(bits)
 	}
 
-	err = setMap(d, map[string]interface{}{
+	attributeMap := map[string]interface{}{
 		"address": reservedBlock.Address,
 		"facility": func(d *schema.ResourceData, k string) error {
 			if reservedBlock.Facility == nil {
@@ -257,13 +271,23 @@ func loadBlock(d *schema.ResourceData, reservedBlock *packngo.IPAddressReservati
 		"address_family": reservedBlock.AddressFamily,
 		"cidr":           reservedBlock.CIDR,
 		"type":           typ,
+		"tags":           reservedBlock.Tags,
 		"public":         reservedBlock.Public,
 		"management":     reservedBlock.Management,
 		"manageable":     reservedBlock.Manageable,
 		"quantity":       quantity,
 		"project_id":     path.Base(reservedBlock.Project.Href),
 		"cidr_notation":  fmt.Sprintf("%s/%d", reservedBlock.Network, reservedBlock.CIDR),
-	})
+	}
+
+	// filter out attributes which are not defined in target resource
+	for k := range attributeMap {
+		if d.Get(k) == nil {
+			delete(attributeMap, k)
+		}
+	}
+
+	err = setMap(d, attributeMap)
 	return err
 }
 
