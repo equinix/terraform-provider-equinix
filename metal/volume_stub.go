@@ -4,7 +4,7 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 const volumeRemovedMsgSuffix = "was removed in version 3.0.0, see https://metal.equinix.com/developers/docs/storage/elastic-block-storage/#elastic-block-storage"
