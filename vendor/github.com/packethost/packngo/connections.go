@@ -7,6 +7,7 @@ import (
 type ConnectionRedundancy string
 type ConnectionType string
 type ConnectionPortRole string
+type ConnectionMode string
 
 const (
 	connectionBasePath                           = "/connections"
@@ -16,11 +17,14 @@ const (
 	ConnectionPrimary       ConnectionRedundancy = "primary"
 	ConnectionPortPrimary   ConnectionPortRole   = "primary"
 	ConnectionPortSecondary ConnectionPortRole   = "secondary"
+	ConnectionModeStandard  ConnectionMode       = "standard"
+	ConnectionModeTunnel    ConnectionMode       = "tunnel"
 )
 
 type ConnectionService interface {
 	OrganizationCreate(string, *ConnectionCreateRequest) (*Connection, *Response, error)
 	ProjectCreate(string, *ConnectionCreateRequest) (*Connection, *Response, error)
+	Update(string, *ConnectionUpdateRequest, *GetOptions) (*Connection, *Response, error)
 	OrganizationList(string, *GetOptions) ([]Connection, *Response, error)
 	ProjectList(string, *GetOptions) ([]Connection, *Response, error)
 	Delete(string) (*Response, error)
@@ -65,6 +69,7 @@ type Connection struct {
 	Facility     *Facility            `json:"facility,omitempty"`
 	Metro        *Metro               `json:"metro,omitempty"`
 	Type         ConnectionType       `json:"type,omitempty"`
+	Mode         *ConnectionMode      `json:"mode,omitempty"`
 	Description  string               `json:"description,omitempty"`
 	Project      *Project             `json:"project,omitempty"`
 	Organization *Organization        `json:"organization,omitempty"`
@@ -80,9 +85,17 @@ type ConnectionCreateRequest struct {
 	Facility    string               `json:"facility,omitempty"`
 	Metro       string               `json:"metro,omitempty"`
 	Type        ConnectionType       `json:"type,omitempty"`
+	Mode        ConnectionMode       `json:"mode,omitempty"`
 	Description *string              `json:"description,omitempty"`
 	Project     string               `json:"project,omitempty"`
 	Speed       int                  `json:"speed,omitempty"`
+	Tags        []string             `json:"tags,omitempty"`
+}
+
+type ConnectionUpdateRequest struct {
+	Redundancy  ConnectionRedundancy `json:"redundancy,omitempty"`
+	Mode        *ConnectionMode      `json:"mode,omitempty"`
+	Description *string              `json:"description,omitempty"`
 	Tags        []string             `json:"tags,omitempty"`
 }
 
@@ -171,6 +184,18 @@ func (s *ConnectionServiceOp) Get(id string, opts *GetOptions) (*Connection, *Re
 	if err != nil {
 		return nil, resp, err
 	}
+	return connection, resp, err
+}
+
+func (s *ConnectionServiceOp) Update(id string, updateRequest *ConnectionUpdateRequest, opts *GetOptions) (*Connection, *Response, error) {
+	endpointPath := path.Join(connectionBasePath, id)
+	apiPathQuery := opts.WithQuery(endpointPath)
+	connection := new(Connection)
+	resp, err := s.client.DoRequest("PUT", apiPathQuery, updateRequest, connection)
+	if err != nil {
+		return nil, resp, err
+	}
+
 	return connection, resp, err
 }
 
