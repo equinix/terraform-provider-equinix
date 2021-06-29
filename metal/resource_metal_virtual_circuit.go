@@ -131,12 +131,17 @@ func resourceMetalVirtualCircuitRead(d *schema.ResourceData, meta interface{}) e
 		//"connection_id": vc.Connection.ID,
 		"project_id": vc.Project.ID,
 		"port_id":    vc.Port.ID,
-		"vlan_id":    vc.VirtualNetwork.ID,
-		"status":     vc.Status,
-		"nni_vlan":   vc.NniVLAN,
-		"vnid":       vc.VNID,
-		"nni_vnid":   vc.NniVNID,
-		"name":       vc.Name,
+		"vlan_id": func(d *schema.ResourceData, k string) error {
+			if vc.VirtualNetwork != nil {
+				return d.Set(k, vc.VirtualNetwork.ID)
+			}
+			return nil
+		},
+		"status":   vc.Status,
+		"nni_vlan": vc.NniVLAN,
+		"vnid":     vc.VNID,
+		"nni_vnid": vc.NniVNID,
+		"name":     vc.Name,
 	})
 }
 
