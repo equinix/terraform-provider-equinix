@@ -28,6 +28,7 @@ resource "metal_connection" "test" {
 * `organization_id` - (Required) ID of the organization responsible for the connection
 * `redundancy` - (Required) Connection redundancy - redundant or primary
 * `type` - (Required) Connection type - dedicated or shared
+* `mode` - Mode for connections in IBX facilities with the dedicated type - standard or tunnel
 * `project_id` - (Optional) ID of the project where the connection is scoped to, must be set for shared connection
 * `metro` - (Optional) Metro where the connection will be created
 * `facility` - (Optional) Facility where the connection will be created

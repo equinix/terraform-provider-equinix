@@ -31,6 +31,7 @@ data "metal_connection" "example" {
 * `status` - Status of the connection
 * `token` - Fabric Token for the [Equinix Fabric Portal](https://ecxfabric.equinix.com/dashboard)
 * `type` - Connection type, dedicated or shared
+* `mode` - Mode for connections in IBX facilities with the dedicated type - standard or tunnel
 * `redundancy` - Connection redundancy, reduntant or primary
 * `speed` - Connection speed in bits per second
 * `ports` - List of connection ports - primary (`ports[0]`) and secondary (`ports[1]`)

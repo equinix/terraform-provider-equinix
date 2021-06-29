@@ -105,6 +105,11 @@ func dataSourceMetalConnection() *schema.Resource {
 				Computed:    true,
 				Description: "Connection type - dedicated or shared",
 			},
+			"mode": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Mode for connections in IBX facilities with the dedicated type - standard or tunnel",
+			},
 			"speed": {
 				Type:        schema.TypeInt,
 				Computed:    true,
@@ -168,6 +173,8 @@ func dataSourceMetalConnectionRead(d *schema.ResourceData, meta interface{}) err
 	d.Set("token", conn.Token)
 	d.Set("type", conn.Type)
 	d.Set("speed", conn.Speed)
+	d.Set("mode", conn.Mode)
+
 	d.Set("ports", getConnectionPorts(conn.Ports))
 	d.SetId(conn.ID)
 

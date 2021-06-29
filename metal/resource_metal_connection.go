@@ -2,6 +2,7 @@ package metal
 
 import (
 	"fmt"
+	"reflect"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/packethost/packngo"
@@ -12,6 +13,7 @@ func resourceMetalConnection() *schema.Resource {
 		Read:   resourceMetalConnectionRead,
 		Create: resourceMetalConnectionCreate,
 		Delete: resourceMetalConnectionDelete,
+		Update: resourceMetalConnectionUpdate,
 		Importer: &schema.ResourceImporter{
 			State: schema.ImportStatePassthrough,
 		},
@@ -52,6 +54,10 @@ func resourceMetalConnection() *schema.Resource {
 				Required:    true,
 				Description: "Connection type - dedicated or shared",
 				ForceNew:    true,
+			},
+			"mode": {
+				Type:        schema.TypeString,
+				Description: "Mode for connections in IBX facilities with the dedicated type - standard or tunnel",
 			},
 			"organization_id": {
 				Type:        schema.TypeString,
@@ -109,6 +115,7 @@ func resourceMetalConnectionCreate(d *schema.ResourceData, meta interface{}) err
 
 	project, projectOk := d.GetOk("project_id")
 	connType := packngo.ConnectionType(d.Get("type").(string))
+	connMode := packngo.ConnectionMode(d.Get("mode").(string))
 
 	if connType == packngo.ConnectionShared && !projectOk {
 		return fmt.Errorf("When you create a \"shared\" connection, you must set project_id")
@@ -126,6 +133,8 @@ func resourceMetalConnectionCreate(d *schema.ResourceData, meta interface{}) err
 	if connType == packngo.ConnectionShared {
 		connReq.Project = project.(string)
 	}
+
+	connReq.Mode = connMode
 
 	if metOk {
 		connReq.Metro = metro.(string)
@@ -149,6 +158,61 @@ func resourceMetalConnectionCreate(d *schema.ResourceData, meta interface{}) err
 
 	d.SetId(conn.ID)
 
+	return resourceMetalConnectionRead(d, meta)
+}
+
+func resourceMetalConnectionUpdate(d *schema.ResourceData, meta interface{}) error {
+	client := meta.(*packngo.Client)
+
+	if d.HasChange("locked") {
+		var action func(string) (*packngo.Response, error)
+		if d.Get("locked").(bool) {
+			action = client.Devices.Lock
+		} else {
+			action = client.Devices.Unlock
+		}
+		if _, err := action(d.Id()); err != nil {
+			return friendlyError(err)
+		}
+	}
+	ur := packngo.ConnectionUpdateRequest{}
+
+	if d.HasChange("description") {
+		desc := d.Get("description").(string)
+		ur.Description = &desc
+	}
+
+	if d.HasChange("mode") {
+		mode := packngo.ConnectionMode(d.Get("mode").(string))
+		ur.Mode = &mode
+	}
+
+	if d.HasChange("redundancy") {
+		redundancy := packngo.ConnectionRedundancy(d.Get("redundancy").(string))
+		ur.Redundancy = redundancy
+	}
+
+	if d.HasChange("tags") {
+		ts := d.Get("tags")
+		sts := []string{}
+
+		switch ts.(type) {
+		case []interface{}:
+			for _, v := range ts.([]interface{}) {
+				sts = append(sts, v.(string))
+			}
+			ur.Tags = sts
+		default:
+			return friendlyError(fmt.Errorf("garbage in tags: %s", ts))
+		}
+	}
+
+	if !reflect.DeepEqual(ur, packngo.ConnectionUpdateRequest{}) {
+		if _, _, err := client.Connections.Update(d.Id(), &ur, nil); err != nil {
+			return friendlyError(err)
+		}
+
+	}
 	return resourceMetalConnectionRead(d, meta)
 }
 
@@ -183,6 +247,7 @@ func resourceMetalConnectionRead(d *schema.ResourceData, meta interface{}) error
 		"type":            conn.Type,
 		"speed":           conn.Speed,
 		"ports":           getConnectionPorts(conn.Ports),
+		"mode":            conn.Mode,
 	})
 }
 
