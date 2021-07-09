@@ -45,7 +45,7 @@ data "metal_project" "project" {
 resource "metal_device" "web1" {
   hostname         = "web1"
   plan             = "c3.medium.x86"
-  facilities       = ["ny5"]
+  metro            = "ny"
   operating_system = "ubuntu_20_04"
   billing_cycle    = "hourly"
   project_id       = data.metal_project.project.id
