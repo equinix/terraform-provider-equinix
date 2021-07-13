@@ -45,8 +45,8 @@ func resourceMetalVirtualCircuit() *schema.Resource {
 			},
 			"nni_vlan": {
 				Type:        schema.TypeInt,
-				Required:    true,
-				Description: "Equinix Metal network-to-network VLAN ID",
+				Description: "Equinix Metal network-to-network VLAN ID (optional when the connection has mode=tunnel)",
+				Optional:    true,
 				ForceNew:    true,
 			},
 			"vlan_id": {
@@ -78,12 +78,16 @@ func resourceMetalVirtualCircuitCreate(d *schema.ResourceData, meta interface{})
 	client := meta.(*packngo.Client)
 	vncr := packngo.VCCreateRequest{
 		VirtualNetworkID: d.Get("vlan_id").(string),
-		NniVLAN:          d.Get("nni_vlan").(int),
 		Name:             d.Get("name").(string),
 	}
+
 	connId := d.Get("connection_id").(string)
 	portId := d.Get("port_id").(string)
 	projectId := d.Get("project_id").(string)
+
+	if nniVlan, ok := d.GetOk("nni_vlan"); ok {
+		vncr.NniVLAN = nniVlan.(int)
+	}
 
 	conn, _, err := client.Connections.Get(connId, nil)
 	if err != nil {

@@ -58,6 +58,8 @@ func resourceMetalConnection() *schema.Resource {
 			"mode": {
 				Type:        schema.TypeString,
 				Description: "Mode for connections in IBX facilities with the dedicated type - standard or tunnel",
+				Optional:    true,
+				Default:     "standard",
 			},
 			"organization_id": {
 				Type:        schema.TypeString,
@@ -75,8 +77,6 @@ func resourceMetalConnection() *schema.Resource {
 				Type:        schema.TypeString,
 				Optional:    true,
 				Description: "Description of the connection resource",
-				// TODO: remove ForceNew and do Update, https://github.com/packethost/packngo/issues/270
-				ForceNew: true,
 			},
 			"status": {
 				Type:        schema.TypeString,
