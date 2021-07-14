@@ -80,8 +80,17 @@ func testAccMetalConnectionConfig_Dedicated(randstr string) string {
             metro           = "sv"
             redundancy      = "redundant"
             type            = "dedicated"
+			tags            = ["tfacc"]
+			mode            = "standard"
         }`,
 		randstr, randstr)
+}
+
+func testDataSourceMetalConnectionConfig_Dedicated() string {
+	return `
+		data "metal_connection" "test" {
+            connection_id = metal_connection.test.id
+        }`
 }
 
 func TestAccMetalConnection_Dedicated(t *testing.T) {
@@ -96,14 +105,29 @@ func TestAccMetalConnection_Dedicated(t *testing.T) {
 			{
 				Config: testAccMetalConnectionConfig_Dedicated(rs),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr(
-						"metal_connection.test", "metro", "sv"),
+					resource.TestCheckResourceAttr("metal_connection.test", "metro", "sv"),
+					resource.TestCheckResourceAttr("metal_connection.test", "tags.#", "2"),
+					resource.TestCheckResourceAttr("metal_connection.test", "mode", "standard"),
+					resource.TestCheckResourceAttr("metal_connection.test", "type", "dedicated"),
+					resource.TestCheckResourceAttr("metal_connection.test", "redundancy", "redundant"),
+					resource.TestCheckResourceAttr("metal_connection.test", "metro", "sv"),
 				),
 			},
 			{
 				ResourceName:      "metal_connection.test",
 				ImportState:       true,
 				ImportStateVerify: true,
+			},
+			{
+				Config: testAccMetalConnectionConfig_Dedicated(rs) + testDataSourceMetalConnectionConfig_Dedicated(),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("data.metal_connection.test", "metro", "sv"),
+					resource.TestCheckResourceAttr("data.etal_connection.test", "tags.#", "2"),
+					resource.TestCheckResourceAttr("data.metal_connection.test", "mode", "standard"),
+					resource.TestCheckResourceAttr("data.metal_connection.test", "type", "dedicated"),
+					resource.TestCheckResourceAttr("data.metal_connection.test", "redundancy", "redundant"),
+					resource.TestCheckResourceAttr("data.metal_connection.test", "metro", "sv"),
+				),
 			},
 		},
 	})

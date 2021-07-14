@@ -70,6 +70,12 @@ func dataSourceMetalConnection() *schema.Resource {
 				Computed:    true,
 				Description: "Description of the connection resource",
 			},
+			"tags": {
+				Type:        schema.TypeList,
+				Description: "Tags attached to the connection",
+				Computed:    true,
+				Elem:        &schema.Schema{Type: schema.TypeString},
+			},
 			"organization_id": {
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -162,6 +168,7 @@ func dataSourceMetalConnectionRead(d *schema.ResourceData, meta interface{}) err
 	d.Set("organization_id", conn.Organization.ID)
 	d.Set("name", conn.Name)
 	d.Set("description", conn.Description)
+	d.Set("tags", conn.Tags)
 	d.Set("status", conn.Status)
 	d.Set("redundancy", conn.Redundancy)
 	if conn.Facility != nil {

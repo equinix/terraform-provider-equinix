@@ -33,6 +33,7 @@ resource "metal_connection" "test" {
 * `metro` - (Optional) Metro where the connection will be created
 * `facility` - (Optional) Facility where the connection will be created
 * `description` - (Optional) Description for the connection resource
+* `tags` - (Optional) String list of tags
 
 ## Attributes Reference
 

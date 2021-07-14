@@ -43,11 +43,9 @@ func resourceMetalConnection() *schema.Resource {
 				StateFunc:     toLower,
 			},
 			"redundancy": {
-				// TODO: remove ForceNew and do Update, https://github.com/packethost/packngo/issues/270
 				Type:        schema.TypeString,
 				Required:    true,
 				Description: "Connection redundancy - redundant or primary",
-				ForceNew:    true,
 			},
 			"type": {
 				Type:        schema.TypeString,
@@ -98,6 +96,12 @@ func resourceMetalConnection() *schema.Resource {
 				Elem:        connectionPortSchema(),
 				Computed:    true,
 				Description: "List of connection ports - primary (`ports[0]`) and secondary (`ports[1]`)",
+			},
+			"tags": {
+				Type:        schema.TypeList,
+				Description: "Tags attached to the connection",
+				Optional:    true,
+				Elem:        &schema.Schema{Type: schema.TypeString},
 			},
 		},
 	}
