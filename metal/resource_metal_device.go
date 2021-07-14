@@ -1,6 +1,7 @@
 package metal
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -12,6 +13,7 @@ import (
 	"time"
 
 	"github.com/hashicorp/errwrap"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/structure"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
@@ -263,7 +265,7 @@ func resourceMetalDevice() *schema.Resource {
 				Description: "A string of the desired User Data for the device",
 				Optional:    true,
 				Sensitive:   true,
-				ForceNew:    true,
+				ForceNew:    false,
 			},
 
 			"custom_data": {
@@ -271,7 +273,7 @@ func resourceMetalDevice() *schema.Resource {
 				Description: "A string of the desired Custom Data for the device",
 				Optional:    true,
 				Sensitive:   true,
-				ForceNew:    true,
+				ForceNew:    false,
 			},
 
 			"ipxe_script_url": {
@@ -348,8 +350,66 @@ func resourceMetalDevice() *schema.Resource {
 				Default:     false,
 				ForceNew:    false,
 			},
+			"reinstall": {
+				Type:     schema.TypeList,
+				MaxItems: 1,
+				Optional: true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"enabled": {
+							Type:        schema.TypeBool,
+							Description: "Whether the device should be reinstalled instead of destroyed",
+							Optional:    true,
+							Default:     false,
+						},
+						"deprovision_fast": {
+							Type:        schema.TypeBool,
+							Description: "Whether the OS disk should be filled with `00h` bytes before reinstall",
+							Optional:    true,
+							Default:     false,
+						},
+						"preserve_data": {
+							Type:        schema.TypeBool,
+							Description: "Whether the non-OS disks should be kept or wiped during reinstall",
+							Optional:    true,
+							Default:     false,
+						},
+					},
+				},
+			},
 		},
+		CustomizeDiff: customdiff.Sequence(
+			customdiff.ForceNewIf("custom_data", shouldReinstall),
+			customdiff.ForceNewIf("operating_system", shouldReinstall),
+			customdiff.ForceNewIf("user_data", shouldReinstall),
+		),
 	}
+}
+
+func shouldReinstall(_ context.Context, d *schema.ResourceDiff, meta interface{}) bool {
+	reinstall, ok := d.GetOk("reinstall")
+
+	// Prior behaviour was to always destroy and create,
+	// so in the event we can't get the reinstall config; let's
+	// continue to do so.
+	if !ok {
+		return true
+	}
+
+	// We didn't get a reinstall configuration
+	reinstall_list, ok := reinstall.([]interface{})
+	if !ok {
+		return true
+	}
+
+	reinstall_config, ok := reinstall_list[0].(map[string]interface{})
+
+	// We didn't get a reinstall configuration
+	if !ok {
+		return true
+	}
+
+	return !reinstall_config["enabled"].(bool)
 }
 
 func resourceMetalDeviceCreate(d *schema.ResourceData, meta interface{}) error {
@@ -466,22 +526,10 @@ func resourceMetalDeviceCreate(d *schema.ResourceData, meta interface{}) error {
 
 	d.SetId(newDevice.ID)
 
-	// Wait for the device so we can get the networking attributes that show up after a while.
-	state, err := waitForDeviceAttribute(d, []string{"active", "failed"}, []string{"queued", "provisioning"}, "state", meta)
-	if err != nil {
-		d.SetId("")
-		fErr := friendlyError(err)
-		if isForbidden(fErr) {
-			// If the device doesn't get to the active state, we can't recover it from here.
+	if err = waitForActiveDevice(d, meta); err != nil {
+		return err
+	}
 
-			return errors.New("provisioning time limit exceeded; the Equinix Metal team will investigate")
-		}
-		return fErr
-	}
-	if state != "active" {
-		d.SetId("")
-		return fmt.Errorf("Device in non-active state \"%s\"", state)
-	}
 	/*
 			    Possibly wait for device network state
 		    	_, err := waitForDeviceAttribute(d, []string{"layer3"}, []string{"hybrid", "layer2-bonded", "layer2-individual"}, "network_type", meta)
@@ -649,7 +697,47 @@ func resourceMetalDeviceUpdate(d *schema.ResourceData, meta interface{}) error {
 		}
 
 	}
+
+	if d.HasChange("operating_system") || d.HasChange("user_data") || d.HasChange("custom_data") {
+		reinstallOptions, err := getReinstallOptions(d)
+
+		if err != nil {
+			return friendlyError(err)
+		}
+
+		if _, err := client.Devices.Reinstall(d.Id(), &reinstallOptions); err != nil {
+			return friendlyError(err)
+		}
+
+		if err = waitForActiveDevice(d, meta); err != nil {
+			return err
+		}
+	}
+
 	return resourceMetalDeviceRead(d, meta)
+}
+
+func getReinstallOptions(d *schema.ResourceData) (packngo.DeviceReinstallFields, error) {
+	reinstall_list, ok := d.Get("reinstall").([]interface{})
+
+	if !ok {
+		return packngo.DeviceReinstallFields{}, fmt.Errorf("expected reinstall configuration and none available")
+	}
+
+	if len(reinstall_list) == 0 {
+		return packngo.DeviceReinstallFields{}, fmt.Errorf("expected reinstall configuration and none available")
+	}
+
+	reinstall_config, ok := reinstall_list[0].(map[string]interface{})
+
+	if !ok {
+		return packngo.DeviceReinstallFields{}, fmt.Errorf("expected reinstall configuration and none available")
+	}
+
+	return packngo.DeviceReinstallFields{
+		PreserveData:    reinstall_config["preserve_data"].(bool),
+		DeprovisionFast: reinstall_config["deprovision_fast"].(bool),
+	}, nil
 }
 
 func resourceMetalDeviceDelete(d *schema.ResourceData, meta interface{}) error {
@@ -676,5 +764,27 @@ func resourceMetalDeviceDelete(d *schema.ResourceData, meta interface{}) error {
 			}
 		}
 	}
+	return nil
+}
+
+func waitForActiveDevice(d *schema.ResourceData, meta interface{}) error {
+	// Wait for the device so we can get the networking attributes that show up after a while.
+	state, err := waitForDeviceAttribute(d, []string{"active", "failed"}, []string{"queued", "provisioning", "reinstalling"}, "state", meta)
+	if err != nil {
+		d.SetId("")
+		fErr := friendlyError(err)
+		if isForbidden(fErr) {
+			// If the device doesn't get to the active state, we can't recover it from here.
+
+			return errors.New("provisioning time limit exceeded; the Equinix Metal team will investigate")
+		}
+		return fErr
+	}
+
+	if state != "active" {
+		d.SetId("")
+		return fmt.Errorf("Device in non-active state \"%s\"", state)
+	}
+
 	return nil
 }
