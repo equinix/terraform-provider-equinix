@@ -207,7 +207,7 @@ func TestAccMetalDevice_Update(t *testing.T) {
 				),
 			},
 			// {
-			// 	Config: testAccCheckMetalDeviceConfig_userdata(rInt+4, rs),
+			//
 			// 	Check: resource.ComposeTestCheckFunc(
 			// 		testAccCheckMetalDeviceExists(r, &d5),
 			// 	),
