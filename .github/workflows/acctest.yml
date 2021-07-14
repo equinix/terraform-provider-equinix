@@ -41,7 +41,7 @@ jobs:
           - stable
         terraform:
           - '0.12.29'
-          - '0.13.3'
+          - '0.13.6'
     steps:
 
     - name: Set up Go
