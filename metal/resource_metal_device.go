@@ -734,19 +734,9 @@ func getReinstallOptions(d *schema.ResourceData) (packngo.DeviceReinstallFields,
 		return packngo.DeviceReinstallFields{}, fmt.Errorf("expected reinstall configuration and none available")
 	}
 
-	preserveData, ok := reinstall_config["preserve_data"].(bool)
-	if !ok {
-		preserveData = false
-	}
-
-	deprovisionFast, ok := reinstall_config["deprovision_fast"].(bool)
-	if !ok {
-		deprovisionFast = false
-	}
-
 	return packngo.DeviceReinstallFields{
-		PreserveData:    preserveData,
-		DeprovisionFast: deprovisionFast,
+		PreserveData:    reinstall_config["preserve_data"].(bool),
+		DeprovisionFast: reinstall_config["deprovision_fast"].(bool),
 	}, nil
 }
 
