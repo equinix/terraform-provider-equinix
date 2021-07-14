@@ -162,7 +162,7 @@ func TestAccMetalDevice_Metro(t *testing.T) {
 	})
 }
 func TestAccMetalDevice_Update(t *testing.T) {
-	var d1, d2, d3, d4, d6 packngo.Device
+	var d1, d2, d3, d4, d5, d6 packngo.Device
 	rs := acctest.RandString(10)
 	rInt := acctest.RandInt()
 	r := "metal_device.test"
@@ -206,12 +206,12 @@ func TestAccMetalDevice_Update(t *testing.T) {
 					testAccCheckMetalSameDevice(t, &d3, &d4),
 				),
 			},
-			// {
-			//
-			// 	Check: resource.ComposeTestCheckFunc(
-			// 		testAccCheckMetalDeviceExists(r, &d5),
-			// 	),
-			// },
+			{
+
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckMetalDeviceExists(r, &d5),
+				),
+			},
 			{
 				Config: testAccCheckMetalDeviceConfig_reinstall(rInt+5, rs),
 				Check: resource.ComposeTestCheckFunc(
