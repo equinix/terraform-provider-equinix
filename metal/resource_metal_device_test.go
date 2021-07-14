@@ -162,7 +162,7 @@ func TestAccMetalDevice_Metro(t *testing.T) {
 	})
 }
 func TestAccMetalDevice_Update(t *testing.T) {
-	var d1, d2, d3, d4, d5, d6 packngo.Device
+	var d1, d2, d3, d4, d5 packngo.Device
 	rs := acctest.RandString(10)
 	rInt := acctest.RandInt()
 	r := "metal_device.test"
@@ -207,16 +207,10 @@ func TestAccMetalDevice_Update(t *testing.T) {
 				),
 			},
 			{
-
+				Config: testAccCheckMetalDeviceConfig_reinstall(rInt+4, rs),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckMetalDeviceExists(r, &d5),
-				),
-			},
-			{
-				Config: testAccCheckMetalDeviceConfig_reinstall(rInt+5, rs),
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckMetalDeviceExists(r, &d6),
-					testAccCheckMetalSameDevice(t, &d4, &d6),
+					testAccCheckMetalSameDevice(t, &d4, &d5),
 				),
 			},
 		},
@@ -483,25 +477,6 @@ resource "metal_device" "test" {
 `, projSuffix, rInt, rInt)
 }
 
-func testAccCheckMetalDeviceConfig_userdata(rInt int, projSuffix string) string {
-	return fmt.Sprintf(`
-resource "metal_project" "test" {
-    name = "tfacc-device-%s"
-}
-
-resource "metal_device" "test" {
-  hostname         = "tfacc-test-device-%d"
-  plan             = "t1.small.x86"
-  facilities       = ["sjc1"]
-  operating_system = "ubuntu_16_04"
-  billing_cycle    = "hourly"
-  project_id       = "${metal_project.test.id}"
-  tags             = ["%d"]
-  user_data = "#!/usr/bin/env sh\necho Hello\n"
-}
-`, projSuffix, rInt, rInt)
-}
-
 func testAccCheckMetalDeviceConfig_reinstall(rInt int, projSuffix string) string {
 	return fmt.Sprintf(`
 resource "metal_project" "test" {
@@ -516,7 +491,7 @@ resource "metal_device" "test" {
   billing_cycle    = "hourly"
   project_id       = "${metal_project.test.id}"
   tags             = ["%d"]
-  user_data = "#!/usr/bin/env sh\necho Changed\n"
+  user_data = "#!/usr/bin/env sh\necho Reinstall\n"
 
   reinstall {
 	  enabled = true
