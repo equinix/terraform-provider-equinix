@@ -161,6 +161,7 @@ The following arguments are supported:
 * `ip_address` - (Optional) A list of IP address types for the device (structure is documented below).
 * `wait_for_reservation_deprovision` - (Optional) Only used for devices in reserved hardware. If set, the deletion of this device will block until the hardware reservation is marked provisionable (about 4 minutes in August 2019).
 * `force_detach_volumes` - (Optional) Delete device even if it has volumes attached. Only applies for destroy action.
+* `reinstall` - (Optional) Whether the device should be reinstalled instead of destroyed when modifying user_data, custom_data, or operating system.
 
 The `ip_address` block has 3 fields:
 
@@ -172,6 +173,12 @@ You can supply one `ip_address` block per IP address type. If you use the `ip_ad
 
 To learn more about using the reserved IP addresses for new devices, see the examples in the [metal_reserved_ip_block](reserved_ip_block.md) documentation.
 
+The `reinstall` block has 3 fields:
+
+* `enabled` - Whether the provider should favour reinstall over destroy and create. Defaults to `false`.
+* `preserve_data` - (Optional) Whether the non-OS disks should be kept or wiped during reinstall. Defaults to `false`.
+* `deprovision_fast` - (Optional) Whether the OS disk should be filled with `00h` bytes before reinstall. Defaults to `false`.
+* 
 ## Attributes Reference
 
 The following attributes are exported:
