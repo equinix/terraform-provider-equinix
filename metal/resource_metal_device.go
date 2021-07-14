@@ -368,7 +368,7 @@ func resourceMetalDevice() *schema.Resource {
 							Optional:    true,
 							Default:     false,
 						},
-						"persist_data": {
+						"preserve_data": {
 							Type:        schema.TypeBool,
 							Description: "Whether the non-OS disks should be kept or wiped during reinstall",
 							Optional:    true,
