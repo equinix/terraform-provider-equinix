@@ -118,6 +118,7 @@ type Client struct {
 	SSHKeys                SSHKeyService
 	SpotMarket             SpotMarketService
 	SpotMarketRequests     SpotMarketRequestService
+	MetalGateways          MetalGatewayService
 	TwoFactorAuth          TwoFactorAuthService
 	Users                  UserService
 	VirtualCircuits        VirtualCircuitService
@@ -128,13 +129,6 @@ type Client struct {
 	//
 	// Deprecated: Use Client.Ports or Device methods
 	DevicePorts DevicePortService
-
-	// VPN
-	//
-	// Deprecated: As of March 31, 2021, Doorman service is no longer
-	// available. See https://metal.equinix.com/developers/docs/accounts/doorman/
-	// for more details.
-	VPN VPNService
 }
 
 // requestDoer provides methods for making HTTP requests and receiving the
@@ -266,9 +260,22 @@ func dumpDeprecation(resp *http.Response) {
 	}
 }
 
+// from terraform-plugin-sdk/v2/helper/logging/transport.go
+func prettyPrintJsonLines(b []byte) string {
+	parts := strings.Split(string(b), "\n")
+	for i, p := range parts {
+		if b := []byte(p); json.Valid(b) {
+			var out bytes.Buffer
+			_ = json.Indent(&out, b, "", " ")
+			parts[i] = out.String()
+		}
+	}
+	return strings.Join(parts, "\n")
+}
+
 func dumpResponse(resp *http.Response) {
 	o, _ := httputil.DumpResponse(resp, true)
-	strResp := string(o)
+	strResp := prettyPrintJsonLines(o)
 	reg, _ := regexp.Compile(`"token":(.+?),`)
 	reMatches := reg.FindStringSubmatch(strResp)
 	if len(reMatches) == 2 {
@@ -288,9 +295,9 @@ func dumpRequest(req *http.Request) {
 
 	o, _ := httputil.DumpRequestOut(r, false)
 	bbs, _ := ioutil.ReadAll(r.Body)
-
-	strReq := string(o)
-	log.Printf("\n=======[REQUEST]=============\n%s%s\n", string(strReq), string(bbs))
+	reqBodyStr := prettyPrintJsonLines(bbs)
+	strReq := prettyPrintJsonLines(o)
+	log.Printf("\n=======[REQUEST]=============\n%s%s\n", string(strReq), reqBodyStr)
 }
 
 // DoRequest is a convenience method, it calls NewRequest followed by Do
@@ -380,10 +387,10 @@ func NewClientWithBaseURL(consumerToken string, apiKey string, httpClient *http.
 	c.SSHKeys = &SSHKeyServiceOp{client: c}
 	c.SpotMarket = &SpotMarketServiceOp{client: c}
 	c.SpotMarketRequests = &SpotMarketRequestServiceOp{client: c}
+	c.MetalGateways = &MetalGatewayServiceOp{client: c}
 	c.TwoFactorAuth = &TwoFactorAuthServiceOp{client: c}
 	c.Users = &UserServiceOp{client: c}
 	c.VirtualCircuits = &VirtualCircuitServiceOp{client: c}
-	c.VPN = &VPNServiceOp{client: c}
 	c.VolumeAttachments = &VolumeAttachmentServiceOp{client: c}
 	c.Volumes = &VolumeServiceOp{client: c}
 	c.debug = os.Getenv(debugEnvVar) != ""
