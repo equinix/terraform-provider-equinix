@@ -364,7 +364,7 @@ func resourceMetalDevice() *schema.Resource {
 						},
 						"deprovision_fast": {
 							Type:        schema.TypeBool,
-							Description: "Whether the OS disk should written with 0 bytes",
+							Description: "Whether the OS disk should be filled with `00h` bytes before reinstall",
 							Optional:    true,
 							Default:     false,
 						},
@@ -739,7 +739,7 @@ func getReinstallOptions(d *schema.ResourceData) (packngo.DeviceReinstallFields,
 		preserveData = false
 	}
 
-	deprovisionFast, ok := reinstall_config["preserve_data"].(bool)
+	deprovisionFast, ok := reinstall_config["deprovision_fast"].(bool)
 	if !ok {
 		deprovisionFast = false
 	}
