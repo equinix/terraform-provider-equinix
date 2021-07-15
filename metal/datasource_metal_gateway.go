@@ -12,6 +12,11 @@ func dataSourceMetalGateway() *schema.Resource {
 		Read: dataSourceMetalGatewayRead,
 
 		Schema: map[string]*schema.Schema{
+			"gateway_id": {
+				Required:    true,
+				Type:        schema.TypeString,
+				Description: "UUID of the Metal Gateway to fetch",
+			},
 			"project_id": {
 				Computed:    true,
 				Type:        schema.TypeString,
