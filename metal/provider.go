@@ -77,6 +77,7 @@ func Provider() *schema.Provider {
 			"metal_virtual_circuit":      resourceMetalVirtualCircuit(),
 			"metal_bgp_session":          resourceMetalBGPSession(),
 			"metal_port_vlan_attachment": resourceMetalPortVlanAttachment(),
+			"metal_gateway":              resourceMetalGateway(),
 		},
 	}
 
