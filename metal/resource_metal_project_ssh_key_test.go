@@ -2,7 +2,6 @@ package metal
 
 import (
 	"fmt"
-	"log"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
@@ -44,7 +43,6 @@ func TestAccMetalProjectSSHKey_Basic(t *testing.T) {
 		t.Fatalf("Cannot generate test SSH key pair: %s", err)
 	}
 	cfg := metalProjectSSHKeyConfig_Basic(rs, publicKeyMaterial)
-	log.Printf(cfg)
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
