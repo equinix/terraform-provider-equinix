@@ -56,15 +56,17 @@ func resourceMetalGateway() *schema.Resource {
 			"ip_reservation_id": {
 				Type:          schema.TypeString,
 				Optional:      true,
-				Description:   "UUID of the IP Reservation to associate",
+				Description:   "UUID of the IP Reservation to associate, must be in the same metro as the VLAN",
 				ConflictsWith: []string{"private_ipv4_subnet_size"},
+				ForceNew:      true,
 			},
 			"private_ipv4_subnet_size": {
 				Type:          schema.TypeInt,
 				Optional:      true,
-				Description:   fmt.Sprintf("Size of private IPv4 subnet, one of %v", subnetSizes),
+				Description:   fmt.Sprintf("Size of the private IPv4 subnet to create for this gateway, one of %v", subnetSizes),
 				ConflictsWith: []string{"ip_reservation_id"},
 				ValidateFunc:  intInSlice(subnetSizes),
+				ForceNew:      true,
 			},
 			"state": {
 				Type:        schema.TypeString,
