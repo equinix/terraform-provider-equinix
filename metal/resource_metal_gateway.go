@@ -2,7 +2,6 @@ package metal
 
 import (
 	"fmt"
-	"math/bits"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
@@ -126,7 +125,8 @@ func resourceMetalGatewayRead(d *schema.ResourceData, meta interface{}) error {
 
 	privateIPv4SubnetSize := uint(0)
 	if !mg.IPReservation.Public {
-		privateIPv4SubnetSize = bits.RotateLeft(1, 32-mg.IPReservation.CIDR)
+		//privateIPv4SubnetSize = bits.RotateLeft(1, 32-mg.IPReservation.CIDR)
+		privateIPv4SubnetSize = 1 << (32 - mg.IPReservation.CIDR)
 	}
 
 	return setMap(d, map[string]interface{}{
