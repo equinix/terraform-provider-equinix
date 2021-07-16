@@ -5,9 +5,10 @@ import (
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
+	"github.com/packethost/packngo"
 )
 
-/*
 func testAccMetalProjectAPIKeyDestroy(s *terraform.State) error {
 	client := testAccProvider.Meta().(*packngo.Client)
 	for _, rs := range s.RootModule().Resources {
@@ -20,7 +21,6 @@ func testAccMetalProjectAPIKeyDestroy(s *terraform.State) error {
 	}
 	return nil
 }
-*/
 
 func testAccMetalProjectAPIKeyConfig_Basic() string {
 	return fmt.Sprintf(`
@@ -38,9 +38,9 @@ resource "metal_project_api_key" "test" {
 
 func TestAccMetalProjectAPIKey_Basic(t *testing.T) {
 	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { testAccPreCheck(t) },
-		Providers: testAccProviders,
-		//		CheckDestroy: testAccMetalProjectAPIKeyDestroy,
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccMetalProjectAPIKeyDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccMetalProjectAPIKeyConfig_Basic(),
