@@ -61,6 +61,8 @@ func Provider() *schema.Provider {
 		},
 
 		ResourcesMap: map[string]*schema.Resource{
+			"metal_user_api_key":         resourceMetalUserAPIKey(),
+			"metal_project_api_key":      resourceMetalProjectAPIKey(),
 			"metal_connection":           resourceMetalConnection(),
 			"metal_device":               resourceMetalDevice(),
 			"metal_device_network_type":  resourceMetalDeviceNetworkType(),

@@ -7,45 +7,53 @@ import (
 	"github.com/packethost/packngo"
 )
 
-func metalProjectAPIKey() map[string]*schema.Schema {
+func schemaMetalAPIKey() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
-		"project_id": {
-			Type:     schema.TypeString,
-			ForceNew: true,
-			Required: true,
-		},
 		"read_only": {
 			Type:     schema.TypeBool,
-			Default:  true,
 			ForceNew: true,
-			Optional: true,
+			Required: true,
 		},
 		"description": {
 			Type:     schema.TypeString,
 			Required: true,
+			ForceNew: true,
+		},
+		"token": {
+			Type:      schema.TypeString,
+			Sensitive: true,
+			Computed:  true,
 		},
 	}
 }
 
 func resourceMetalProjectAPIKey() *schema.Resource {
+	projectKeySchema := schemaMetalAPIKey()
+	projectKeySchema["project_id"] = &schema.Schema{
+		Type:     schema.TypeString,
+		Required: true,
+		ForceNew: true,
+	}
 	return &schema.Resource{
-		Create: resourceMetalProjectAPIKeyCreate,
-		Read:   resourceMetalProjectAPIKeyRead,
-		Update: resourceMetalProjectAPIKeyUpdate,
-		Delete: resourceMetalProjectAPIKeyDelete,
-		Importer: &schema.ResourceImporter{
-			State: schema.ImportStatePassthrough,
-		},
-
-		Schema: metalProjectAPIKey(),
+		Create: resourceMetalAPIKeyCreate,
+		Read:   resourceMetalAPIKeyRead,
+		Delete: resourceMetalAPIKeyDelete,
+		Schema: projectKeySchema,
 	}
 }
 
-func resourceMetalProjectAPIKeyCreate(d *schema.ResourceData, meta interface{}) error {
+func resourceMetalAPIKeyCreate(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*packngo.Client)
 
+	projectId := ""
+
+	projectIdRaw, projectIdOk := d.GetOk("project_id")
+	if projectIdOk {
+		projectId = projectIdRaw.(string)
+	}
+
 	createRequest := &packngo.APIKeyCreateRequest{
-		ProjectID:   d.Get("project_id").(string),
+		ProjectID:   projectId,
 		ReadOnly:    d.Get("read_only").(bool),
 		Description: d.Get("description").(string),
 	}
@@ -57,16 +65,37 @@ func resourceMetalProjectAPIKeyCreate(d *schema.ResourceData, meta interface{}) 
 
 	d.SetId(apiKey.ID)
 
-	return resourceMetalProjectAPIKeyRead(d, meta)
+	return resourceMetalAPIKeyRead(d, meta)
 }
 
-func resourceMetalProjectAPIKeyRead(d *schema.ResourceData, meta interface{}) error {
+func projectIdFromResourceData(d *schema.ResourceData) string {
+	projectIdRaw, projectIdOk := d.GetOk("project_id")
+	if projectIdOk {
+		return projectIdRaw.(string)
+	}
+	return ""
+}
+
+func resourceMetalAPIKeyRead(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*packngo.Client)
 
-	apiKey, err := client.APIKeys.ProjectGet(d.Id(), d.Get("project_id").(string), nil)
+	projectId := projectIdFromResourceData(d)
+
+	var apiKey *packngo.APIKey
+	var err error
+
+	// if project has been set in the resource, look up project API key
+	// (this is the reason project API key can't be imported)
+	if projectId != "" {
+		apiKey, err = client.APIKeys.ProjectGet(projectId, d.Id(),
+			&packngo.GetOptions{Includes: []string{"project"}})
+	} else {
+		apiKey, err = client.APIKeys.UserGet(d.Id(),
+			&packngo.GetOptions{Includes: []string{"user"}})
+	}
+
 	if err != nil {
 		err = friendlyError(err)
-
 		// If the key is somehow already destroyed, mark as
 		// succesfully gone
 		if isNotFound(err) {
@@ -74,25 +103,30 @@ func resourceMetalProjectAPIKeyRead(d *schema.ResourceData, meta interface{}) er
 			d.SetId("")
 			return nil
 		}
-
 		return err
 	}
 
 	d.SetId(apiKey.ID)
-	d.Set("project_id", apiKey.Project.ID)
-	d.Set("description", apiKey.Description)
-	d.Set("read_only", apiKey.ReadOnly)
-	d.Set("created", apiKey.Created)
-	d.Set("updated", apiKey.Updated)
+	attrMap := map[string]interface{}{
+		"description": apiKey.Description,
+		"read_only":   apiKey.ReadOnly,
+		"token":       apiKey.Token,
+	}
 
-	return nil
+	// this is kind of unnecessary as the project ID most likely already set,
+	// because project API key can't be imported. But let's refresh the
+	// project ID for future-proofing
+	if apiKey.Project != nil && apiKey.Project.ID != "" {
+		attrMap["project_id"] = apiKey.Project.ID
+	}
+	if apiKey.User != nil && apiKey.User.ID != "" {
+		attrMap["user_id"] = apiKey.User.ID
+	}
+
+	return setMap(d, attrMap)
 }
 
-func resourceMetalProjectAPIKeyUpdate(d *schema.ResourceData, meta interface{}) error {
-	return resourceMetalProjectAPIKeyRead(d, meta)
-}
-
-func resourceMetalProjectAPIKeyDelete(d *schema.ResourceData, meta interface{}) error {
+func resourceMetalAPIKeyDelete(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*packngo.Client)
 
 	resp, err := client.APIKeys.Delete(d.Id())
