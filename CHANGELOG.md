@@ -1,4 +1,17 @@
-## 1.2.0
+## 1.3.0 (UNRELEASED)
+
+IMPROVEMENTS:
+
+- `equinix_ecx_l2_connection` resources can now be imported
+- `equinix_ecx_l2_connection_accepter` resources can now be imported
+- `equinix_ecx_l2_serviceprofile` resources can now be imported
+- `equinix_network_acl_template` resources can now be imported
+- `equinix_network_bgp` resources can now be imported
+- `equinix_network_device_link` resources can now be imported
+- `equinix_network_ssh_key` resources can now be imported
+- `equinix_network_ssh_user` resources can now be imported
+
+## 1.2.0 (April 27, 2021)
 
 FEATURES:
 

@@ -35,8 +35,11 @@ func resourceECXL2ConnectionAccepter() *schema.Resource {
 		CreateContext: resourceECXL2ConnectionAccepterCreate,
 		ReadContext:   resourceECXL2ConnectionAccepterRead,
 		DeleteContext: resourceECXL2ConnectionAccepterDelete,
-		Schema:        createECXL2ConnectionAccepterResourceSchema(),
-		Description:   "Resource is used to accept Equinix Fabric layer 2 connection on provider side",
+		Importer: &schema.ResourceImporter{
+			State: schema.ImportStatePassthrough,
+		},
+		Schema:      createECXL2ConnectionAccepterResourceSchema(),
+		Description: "Resource is used to accept Equinix Fabric layer 2 connection on provider side",
 		Timeouts: &schema.ResourceTimeout{
 			Create: schema.DefaultTimeout(10 * time.Minute),
 		},

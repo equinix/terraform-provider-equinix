@@ -57,8 +57,11 @@ func resourceNetworkACLTemplate() *schema.Resource {
 		ReadContext:   resourceNetworkACLTemplateRead,
 		UpdateContext: resourceNetworkACLTemplateUpdate,
 		DeleteContext: resourceNetworkACLTemplateDelete,
-		Schema:        createNetworkACLTemplateSchema(),
-		Description:   "Resource allows creation and management of Equinix Network Edge device Access Control List templates",
+		Importer: &schema.ResourceImporter{
+			State: schema.ImportStatePassthrough,
+		},
+		Schema:      createNetworkACLTemplateSchema(),
+		Description: "Resource allows creation and management of Equinix Network Edge device Access Control List templates",
 	}
 }
 

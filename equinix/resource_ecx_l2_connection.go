@@ -87,7 +87,10 @@ func resourceECXL2Connection() *schema.Resource {
 		ReadContext:   resourceECXL2ConnectionRead,
 		UpdateContext: resourceECXL2ConnectionUpdate,
 		DeleteContext: resourceECXL2ConnectionDelete,
-		Schema:        createECXL2ConnectionResourceSchema(),
+		Importer: &schema.ResourceImporter{
+			State: schema.ImportStatePassthrough,
+		},
+		Schema: createECXL2ConnectionResourceSchema(),
 		Timeouts: &schema.ResourceTimeout{
 			Create: schema.DefaultTimeout(5 * time.Minute),
 			Delete: schema.DefaultTimeout(5 * time.Minute),

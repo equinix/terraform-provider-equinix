@@ -65,6 +65,11 @@ func TestAccNetworkBGP_CSR1000V_Single_AWS(t *testing.T) {
 				),
 			},
 			{
+				ResourceName:      resourceName,
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+			{
 				Config: newTestAccConfig(contextWithChanges).withDevice().withSSHKey().withConnection().withBGP().build(),
 				Check: resource.ComposeTestCheckFunc(
 					testAccNeBGPExists(resourceName, &bgpConfig),

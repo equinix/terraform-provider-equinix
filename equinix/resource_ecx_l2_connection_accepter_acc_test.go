@@ -48,6 +48,11 @@ func TestAccFabricL2Connection_Port_Single_Accepter_AWS(t *testing.T) {
 					testAccFabricL2ConnectionAccepterStatus(&testConn),
 				),
 			},
+			{
+				ResourceName:      accepterResourceName,
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
 		},
 	})
 }
