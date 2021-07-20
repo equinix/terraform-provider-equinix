@@ -10,19 +10,22 @@ import (
 func schemaMetalAPIKey() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
 		"read_only": {
-			Type:     schema.TypeBool,
-			ForceNew: true,
-			Required: true,
+			Type:        schema.TypeBool,
+			ForceNew:    true,
+			Required:    true,
+			Description: "Flag indicating whether the API key shoud be read-only",
 		},
 		"description": {
-			Type:     schema.TypeString,
-			Required: true,
-			ForceNew: true,
+			Type:        schema.TypeString,
+			Required:    true,
+			ForceNew:    true,
+			Description: "Description string for the API key",
 		},
 		"token": {
-			Type:      schema.TypeString,
-			Sensitive: true,
-			Computed:  true,
+			Type:        schema.TypeString,
+			Sensitive:   true,
+			Computed:    true,
+			Description: "API token for API clients",
 		},
 	}
 }
@@ -30,9 +33,10 @@ func schemaMetalAPIKey() map[string]*schema.Schema {
 func resourceMetalProjectAPIKey() *schema.Resource {
 	projectKeySchema := schemaMetalAPIKey()
 	projectKeySchema["project_id"] = &schema.Schema{
-		Type:     schema.TypeString,
-		Required: true,
-		ForceNew: true,
+		Type:        schema.TypeString,
+		Required:    true,
+		ForceNew:    true,
+		Description: "UUID of project which the new API key is scoped to",
 	}
 	return &schema.Resource{
 		Create: resourceMetalAPIKeyCreate,

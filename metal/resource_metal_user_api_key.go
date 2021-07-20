@@ -7,8 +7,9 @@ import (
 func resourceMetalUserAPIKey() *schema.Resource {
 	userKeySchema := schemaMetalAPIKey()
 	userKeySchema["user_id"] = &schema.Schema{
-		Type:     schema.TypeString,
-		Computed: true,
+		Type:        schema.TypeString,
+		Computed:    true,
+		Description: "UUID of user owning this key",
 	}
 	return &schema.Resource{
 		Create: resourceMetalAPIKeyCreate,
