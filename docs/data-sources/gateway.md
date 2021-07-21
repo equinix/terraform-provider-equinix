@@ -35,4 +35,4 @@ data "metal_gateway" "test" {
 * `vlan_id` - UUID of the VLAN where the gateway is scoped to
 * `ip_reservation_id` - UUID of IP reservation block bound to the gateway
 * `private_ipv4_subnet_size` - Size of the private IPv4 subnet bound to this metal gateway, one of (8, 16, 32, 64, 128)`
-* `status` - Status of the gateway resource, "active" when ready
+* `state` - Status of the gateway resource

@@ -58,4 +58,4 @@ resource "metal_gateway" "test" {
 
 ## Attributes Reference
 
-* `status` - Status of the gateway resource, "active" when ready
+* `state` - Status of the gateway resource

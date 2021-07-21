@@ -2,9 +2,7 @@ package metal
 
 import (
 	"fmt"
-	"time"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/packethost/packngo"
 )
@@ -59,6 +57,16 @@ func resourceMetalGateway() *schema.Resource {
 				Description:   "UUID of the IP Reservation to associate, must be in the same metro as the VLAN",
 				ConflictsWith: []string{"private_ipv4_subnet_size"},
 				ForceNew:      true,
+				DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
+					// Suppress diff of IP reservation ID if private_ipv4_subnet_size has been set.
+					// When the subnet size is set, the API will create a private subnet and return its ID
+					// in this field, which generates a diff (ip_reservation_id is unset in HCL,
+					// but the refreshed state shows there's an UUID of the new IPv4 block).
+					if d.Get("private_ipv4_subnet_size").(int) != 0 {
+						return true
+					}
+					return false
+				},
 			},
 			"private_ipv4_subnet_size": {
 				Type:          schema.TypeInt,
@@ -71,7 +79,7 @@ func resourceMetalGateway() *schema.Resource {
 			"state": {
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "Status of the virtual circuit resource",
+				Description: "Status of the gateway resource",
 			},
 		},
 	}
@@ -96,18 +104,6 @@ func resourceMetalGatewayCreate(d *schema.ResourceData, meta interface{}) error 
 	mg, _, err := client.MetalGateways.Create(projectId, &mgcr)
 	if err != nil {
 		return err
-	}
-	createWaiter := getMetalGatewayStateWaiter(
-		client,
-		mg.ID,
-		d.Timeout(schema.TimeoutCreate),
-		[]string{string(packngo.MetalGatewayActivating)},
-		[]string{string(packngo.MetalGatewayActive)},
-	)
-
-	_, err = createWaiter.WaitForState()
-	if err != nil {
-		return fmt.Errorf("Error waiting for metal gateway %s to be created: %s", mg.ID, err.Error())
 	}
 
 	d.SetId(mg.ID)
@@ -138,27 +134,6 @@ func resourceMetalGatewayRead(d *schema.ResourceData, meta interface{}) error {
 		"private_ipv4_subnet_size": int(privateIPv4SubnetSize),
 		"state":                    mg.State,
 	})
-}
-
-func getMetalGatewayStateWaiter(client *packngo.Client, id string, timeout time.Duration, pending, target []string) *resource.StateChangeConf {
-	return &resource.StateChangeConf{
-		Pending: pending,
-		Target:  target,
-		Refresh: func() (interface{}, string, error) {
-			mg, _, err := client.MetalGateways.Get(
-				id,
-				&packngo.GetOptions{Includes: []string{"project", "port", "virtual_network"}},
-			)
-			if err != nil {
-				return 0, "", err
-			}
-			return mg, string(mg.State), nil
-		},
-		Timeout:    timeout,
-		Delay:      10 * time.Second,
-		MinTimeout: 5 * time.Second,
-	}
-
 }
 
 func resourceMetalGatewayDelete(d *schema.ResourceData, meta interface{}) error {

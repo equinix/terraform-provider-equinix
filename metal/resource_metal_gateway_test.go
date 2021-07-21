@@ -64,7 +64,7 @@ resource "metal_vlan" "test" {
 resource "metal_reserved_ip_block" "test" {
     project_id = metal_project.test.id
     metro      = "sv"
-    quantity   = 2
+    quantity   = 8
 }
 
 resource "metal_gateway" "test" {
@@ -82,7 +82,7 @@ func TestAccMetalGateway_ExistingReservation(t *testing.T) {
 		CheckDestroy: testAccCheckMetalGatewayDestroyed,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccMetalGatewayConfig_PrivateIPv4(),
+				Config: testAccMetalGatewayConfig_ExistingReservation(),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrPair(
 						"metal_gateway.test", "project_id",
