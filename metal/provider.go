@@ -43,6 +43,7 @@ func Provider() *schema.Provider {
 			"metal_metro":                dataSourceMetalMetro(),
 			"metal_facility":             dataSourceMetalFacility(),
 			"metal_connection":           dataSourceMetalConnection(),
+			"metal_gateway":              dataSourceMetalGateway(),
 			"metal_ip_block_ranges":      dataSourceMetalIPBlockRanges(),
 			"metal_precreated_ip_block":  dataSourceMetalPreCreatedIPBlock(),
 			"metal_operating_system":     dataSourceOperatingSystem(),
@@ -79,6 +80,7 @@ func Provider() *schema.Provider {
 			"metal_virtual_circuit":      resourceMetalVirtualCircuit(),
 			"metal_bgp_session":          resourceMetalBGPSession(),
 			"metal_port_vlan_attachment": resourceMetalPortVlanAttachment(),
+			"metal_gateway":              resourceMetalGateway(),
 		},
 	}
 
