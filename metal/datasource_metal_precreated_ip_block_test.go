@@ -52,6 +52,7 @@ resource "metal_device" "test" {
 }
 
 data "metal_precreated_ip_block" "test" {
+    facility         = metal_device.test.deployed_facility
     project_id       = metal_device.test.project_id
     address_family   = 6
     public           = true
