@@ -27,15 +27,17 @@ func dataSourceMetalPreCreatedIPBlock() *schema.Resource {
 	}
 
 	s["facility"] = &schema.Schema{
-		Type:        schema.TypeString,
-		Optional:    true,
-		Description: "Facility of the searched block. (for non-global blocks).",
+		Type:          schema.TypeString,
+		Optional:      true,
+		Description:   "Facility of the searched block. (for non-global blocks).",
+		ConflictsWith: []string{"metro"},
 	}
 
 	s["metro"] = &schema.Schema{
-		Type:        schema.TypeString,
-		Optional:    true,
-		Description: "Metro of the searched block (for non-global blocks).",
+		Type:          schema.TypeString,
+		Optional:      true,
+		Description:   "Metro of the searched block (for non-global blocks).",
+		ConflictsWith: []string{"facility"},
 	}
 
 	s["address_family"] = &schema.Schema{
@@ -84,50 +86,37 @@ func dataSourceMetalPreCreatedIPBlockRead(d *schema.ResourceData, meta interface
 		return fmt.Errorf("You can't specify facility for global IP block - addresses from global blocks can be assigned to devices across several locations")
 	}
 
-	if fok && mok {
-		return fmt.Errorf("You can't specify both facility and metro.")
-	}
-
 	if fok {
-		// lookup of not-global block
+		// lookup of block specified with facility
 		facility := fval.(string)
 		for _, ip := range ips {
+			if ip.Facility == nil {
+				continue
+			}
 			if ip.Public == public && ip.AddressFamily == ipv && facility == ip.Facility.Code {
-				if err := loadBlock(d, &ip); err != nil {
-					return err
-				}
-				break
+				return loadBlock(d, &ip)
 			}
 		}
 	} else if mok {
-		// lookup of not-global block
+		// lookup of blcok specified with metro
 		metro := mval.(string)
 		for _, ip := range ips {
 			if ip.Metro == nil {
 				continue
 			}
 			if ip.Public == public && ip.AddressFamily == ipv && metro == ip.Metro.Code {
-				if err := loadBlock(d, &ip); err != nil {
-					return err
-				}
-				break
+				return loadBlock(d, &ip)
 			}
 		}
 	} else {
-		// lookup of global block
+		// lookup of blocks not specified with facility or metro
 		for _, ip := range ips {
-			if ip.Public == public && ip.AddressFamily == ipv && ip.Global {
-				if err := loadBlock(d, &ip); err != nil {
-					return err
-				}
-				break
+			if ip.Public == public && ip.AddressFamily == ipv && global == ip.Global {
+				return loadBlock(d, &ip)
 			}
 		}
 
 	}
-	if d.Get("cidr_notation") == "" {
-		return fmt.Errorf("Could not find matching reserved block, all IPs were %v", ips)
-	}
-	return nil
+	return fmt.Errorf("Could not find matching reserved block, all IPs were %v", ips)
 
 }
