@@ -92,6 +92,9 @@ func dataSourceMetalPreCreatedIPBlockRead(d *schema.ResourceData, meta interface
 		// lookup of not-global block
 		facility := fval.(string)
 		for _, ip := range ips {
+			if ip.Facility == nil {
+				continue
+			}
 			if ip.Public == public && ip.AddressFamily == ipv && facility == ip.Facility.Code {
 				if err := loadBlock(d, &ip); err != nil {
 					return err
