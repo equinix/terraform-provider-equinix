@@ -1,16 +1,12 @@
 package metal
 
 import (
-	"fmt"
-	"path"
-
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/packethost/packngo"
 )
 
 func dataSourceMetalVolume() *schema.Resource {
 	return &schema.Resource{
-		Read:               dataSourceMetalVolumeRead,
+		Read:               removedResourceOp(dataSourceVolumeRemovedMsg),
 		DeprecationMessage: "Volumes are deprecated, see https://metal.equinix.com/developers/docs/resilience-recovery/elastic-block-storage/#elastic-block-storage",
 		Schema: map[string]*schema.Schema{
 			"name": {
@@ -99,90 +95,4 @@ func dataSourceMetalVolume() *schema.Resource {
 			},
 		},
 	}
-}
-
-func dataSourceMetalVolumeRead(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*packngo.Client)
-
-	nameRaw, nameOK := d.GetOk("name")
-	projectIdRaw, projectIdOK := d.GetOk("project_id")
-	volumeIdRaw, volumeIdOK := d.GetOk("volume_id")
-
-	if !volumeIdOK && !nameOK {
-		return fmt.Errorf("You must supply volume_id or name")
-	}
-	var volume *packngo.Volume
-	if nameOK {
-		if !projectIdOK {
-			return fmt.Errorf("If you lookup via name, you must supply project_id")
-		}
-		name := nameRaw.(string)
-		projectId := projectIdRaw.(string)
-
-		vs, _, err := client.Volumes.List(projectId, &packngo.ListOptions{Includes: []string{"attachments.device"}})
-		if err != nil {
-			return err
-		}
-
-		volume, err = findVolumeByName(vs, name)
-		if err != nil {
-			return err
-		}
-	} else {
-		volumeId := volumeIdRaw.(string)
-		var err error
-		volume, _, err = client.Volumes.Get(volumeId, &packngo.GetOptions{Includes: []string{"attachments.device"}})
-		if err != nil {
-			return err
-		}
-	}
-
-	d.Set("name", volume.Name)
-	d.Set("description", volume.Description)
-	d.Set("size", volume.Size)
-	d.Set("plan", volume.Plan.Slug)
-	d.Set("facility", volume.Facility.Code)
-	d.Set("state", volume.State)
-	d.Set("billing_cycle", volume.BillingCycle)
-	d.Set("locked", volume.Locked)
-	d.Set("created", volume.Created)
-	d.Set("updated", volume.Updated)
-	d.Set("project_id", volume.Project.ID)
-
-	snapshot_policies := make([]map[string]interface{}, 0, len(volume.SnapshotPolicies))
-	for _, snapshot_policy := range volume.SnapshotPolicies {
-		policy := map[string]interface{}{
-			"snapshot_frequency": snapshot_policy.SnapshotFrequency,
-			"snapshot_count":     snapshot_policy.SnapshotCount,
-		}
-		snapshot_policies = append(snapshot_policies, policy)
-	}
-	d.Set("snapshot_policies", snapshot_policies)
-
-	deviceIds := []string{}
-
-	for _, a := range volume.Attachments {
-		deviceIds = append(deviceIds, path.Base(a.Device.Href))
-	}
-
-	d.Set("device_ids", deviceIds)
-	d.SetId(volume.ID)
-
-	return nil
-}
-
-func findVolumeByName(volumes []packngo.Volume, name string) (*packngo.Volume, error) {
-	results := make([]packngo.Volume, 0)
-	for _, v := range volumes {
-		if v.Name == name {
-			results = append(results, v)
-		}
-	}
-	if len(results) == 1 {
-		return &results[0], nil
-	}
-	if len(results) == 0 {
-		return nil, fmt.Errorf("no volume found with name %s", name)
-	}
-	return nil, fmt.Errorf("too many volumes found with hostname %s (found %d, expected 1)", name, len(results))
 }
