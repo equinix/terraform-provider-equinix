@@ -23,6 +23,9 @@ import (
 var matchIPXEScript = regexp.MustCompile(`(?i)^#![i]?pxe`)
 var ipAddressTypes = []string{"public_ipv4", "private_ipv4", "public_ipv6"}
 
+var deviceCommonIncludes = []string{"project", "metro", "facility", "hardware_reservation"}
+var deviceReadOptions = &packngo.GetOptions{Includes: deviceCommonIncludes}
+
 func resourceMetalDevice() *schema.Resource {
 	return &schema.Resource{
 		Timeouts: &schema.ResourceTimeout{
@@ -544,7 +547,7 @@ func resourceMetalDeviceCreate(d *schema.ResourceData, meta interface{}) error {
 func resourceMetalDeviceRead(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*packngo.Client)
 
-	device, _, err := client.Devices.Get(d.Id(), &packngo.GetOptions{Includes: []string{"project", "metro", "facility"}})
+	device, _, err := client.Devices.Get(d.Id(), deviceReadOptions)
 	if err != nil {
 		err = friendlyError(err)
 
