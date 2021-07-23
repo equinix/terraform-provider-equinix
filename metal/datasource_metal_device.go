@@ -218,7 +218,9 @@ func dataSourceMetalDeviceRead(d *schema.ResourceData, meta interface{}) error {
 		hostname := hostnameRaw.(string)
 		projectId := projectIdRaw.(string)
 
-		ds, _, err := client.Devices.List(projectId, &packngo.ListOptions{Search: hostname})
+		ds, _, err := client.Devices.List(
+			projectId,
+			&packngo.ListOptions{Search: hostname, Includes: deviceCommonIncludes})
 		if err != nil {
 			return err
 		}
@@ -230,7 +232,7 @@ func dataSourceMetalDeviceRead(d *schema.ResourceData, meta interface{}) error {
 	} else {
 		deviceId := deviceIdRaw.(string)
 		var err error
-		device, _, err = client.Devices.Get(deviceId, nil)
+		device, _, err = client.Devices.Get(deviceId, deviceReadOptions)
 		if err != nil {
 			return err
 		}
