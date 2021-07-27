@@ -17,10 +17,10 @@ resource "metal_project" "foobar" {
 }
 
 resource "metal_reserved_ip_block" "test" {
-	project_id = "${metal_project.foobar.id}"
-	type     = "global_ipv4"
+	project_id  = metal_project.foobar.id
+	type        = "global_ipv4"
 	description = "testdesc"
-	quantity = 1
+	quantity    = 1
 }`, name)
 }
 
@@ -31,7 +31,7 @@ resource "metal_project" "foobar" {
 }
 
 resource "metal_reserved_ip_block" "test" {
-	project_id  = "${metal_project.foobar.id}"
+	project_id  = metal_project.foobar.id
 	facility    = "ewr1"
 	type        = "public_ipv4"
 	quantity    = 2
@@ -46,7 +46,7 @@ resource "metal_project" "foobar" {
 }
 
 resource "metal_reserved_ip_block" "test" {
-	project_id  = "${metal_project.foobar.id}"
+	project_id  = metal_project.foobar.id
 	metro       = "sv"
 	type        = "public_ipv4"
 	quantity    = 2
@@ -135,7 +135,7 @@ func TestAccMetalReservedIPBlock_Metro(t *testing.T) {
 	})
 }
 
-func TestAccMetalReservedIPBlock_importBasic(t *testing.T) {
+func TestAccMetalReservedIPBlock_ImportBasic(t *testing.T) {
 
 	rs := acctest.RandString(10)
 
@@ -171,6 +171,49 @@ func testAccCheckMetalReservedIPBlockDestroy(s *terraform.State) error {
 	return nil
 }
 
+func testAccCheckMetalReservedIPBlockConfig_FacilityToMetro(line string) string {
+	return fmt.Sprintf(`
+resource "metal_project" "foobar" {
+	name = "tfacc-reserved_ip_block_fac_met_test"
+}
+
+resource "metal_reserved_ip_block" "test" {
+	project_id  = metal_project.foobar.id
+	%s
+	type        = "public_ipv4"
+	quantity    = 2
+	tags        = ["Tag1", "Tag2"]
+}`, line)
+}
+
+func TestAccMetalReservedIPBlock_FacilityToMetro(t *testing.T) {
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckMetalReservedIPBlockDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckMetalReservedIPBlockConfig_FacilityToMetro(`   facility = "ny5"`),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(
+						"metal_reserved_ip_block.test", "facility", "ny5"),
+					resource.TestCheckResourceAttr(
+						"metal_reserved_ip_block.test", "metro", "ny"),
+				),
+			},
+			{
+				Config: testAccCheckMetalReservedIPBlockConfig_FacilityToMetro(`   metro = "ny"`),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(
+						"metal_reserved_ip_block.test", "metro", "ny"),
+				),
+				PlanOnly: true,
+			},
+		},
+	})
+}
+
 func testAccMetalReservedIP_Device(name string) string {
 	return fmt.Sprintf(`
 resource "metal_project" "foobar" {
@@ -203,7 +246,7 @@ resource "metal_device" "test" {
 `, name)
 }
 
-func TestAccMetalReservedIPDevice(t *testing.T) {
+func TestAccMetalReservedIPBlock_Device(t *testing.T) {
 
 	rs := acctest.RandString(10)
 

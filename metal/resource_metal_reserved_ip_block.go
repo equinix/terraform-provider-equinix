@@ -100,17 +100,26 @@ func resourceMetalReservedIPBlock() *schema.Resource {
 		ForceNew:      true,
 		ConflictsWith: []string{"facility"},
 		Description:   "Metro where to allocate the public IP address block, makes sense only for type==public_ipv4, must be empty for type==global_ipv4, conflicts with facility",
-		DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
+		DiffSuppressFunc: func(k, fromState, fromHCL string, d *schema.ResourceData) bool {
 			_, facOk := d.GetOk("facility")
-			// new - new val from template
-			// old - old val from state
-			//
-			// suppress diff if metro is manually set for first time, and
-			// facility is already set
-			if len(new) > 0 && old == "" && facOk {
-				return facOk
+
+			// if facility is not in state, treat the diff normally, otherwise do following messy checks:
+			if facOk {
+				// If metro from HCL is specified, but not present in state, supress the diff.
+				// This is legacy, and I think it's here because of migration, so that old
+				// facility reservations are not recreated when metro is specified ???)
+				if fromHCL != "" && fromState == "" {
+					return true
+				}
+				// If metro is present in state but not present in HCL, supress the diff.
+				// This is for "facility-specified" reservation blocks created after ~July 2021.
+				// These blocks will have metro "computed" to the TF state, and we don't want to
+				// emit a diff if the metro field is empty in HCL.
+				if fromHCL == "" && fromState != "" {
+					return true
+				}
 			}
-			return old == new
+			return fromState == fromHCL
 		},
 		StateFunc: toLower,
 	}
