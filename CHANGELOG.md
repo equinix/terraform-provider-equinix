@@ -1,3 +1,36 @@
+## 3.0.0 (Jul 27, 2021)
+
+BREAKING CHANGES:
+- Upgraded the Terraform Plugin SDK to v2 (Terraform v0.12+ now required) #113
+- `metal_volume` resource has been removed #112
+- `metal_volume` datasource has been removed #112
+- `metal_volume_attachment` resource has been removed #112
+
+FEATURES:
+- New resource and datasource `metal_gateway` #157 
+- New resources for API keys: `metal_user_api_key` and `metal_project_api_key` #147 
+
+ENHANCEMENTS:
+- `metal_device` `reinstall` options have been added #152 
+
+BUG FIXES:
+
+- Metros will be treated as lower-case #126 / #119 
+- Hardware reservation ID properly read in `metal_device` #167
+- Crash of facility nil deref in datasource `metal_reserved_ip_block` #163 
+- Handling of metro attribute in resource `metal_reserved_ip_block` #169 
+
+IMPROVEMENTS:
+
+- added `reinstall` block to `metal_device` #152 
+- added `tags` to `metal_reserved_ip_block` #133
+- packngo updated to 0.17.0 #137 / #151
+- added `Description` attributes to resource structures #130
+- Corrections to guides #111
+- Provider example illustrates metro use #146
+- CI will run go tests on forked PRs #154
+
+
 ## 2.1.0 (May 20, 2021)
 
 BREAKING CHANGES:
