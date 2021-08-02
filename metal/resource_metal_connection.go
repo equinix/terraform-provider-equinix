@@ -5,6 +5,7 @@ import (
 	"reflect"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/packethost/packngo"
 )
 
@@ -46,18 +47,27 @@ func resourceMetalConnection() *schema.Resource {
 				Type:        schema.TypeString,
 				Required:    true,
 				Description: "Connection redundancy - redundant or primary",
+				ValidateFunc: validation.StringInSlice([]string{
+					string(packngo.ConnectionRedundant),
+					string(packngo.ConnectionPrimary)}, false),
 			},
 			"type": {
 				Type:        schema.TypeString,
 				Required:    true,
 				Description: "Connection type - dedicated or shared",
 				ForceNew:    true,
+				ValidateFunc: validation.StringInSlice([]string{
+					string(packngo.ConnectionDedicated),
+					string(packngo.ConnectionShared)}, false),
 			},
 			"mode": {
 				Type:        schema.TypeString,
 				Description: "Mode for connections in IBX facilities with the dedicated type - standard or tunnel",
 				Optional:    true,
 				Default:     "standard",
+				ValidateFunc: validation.StringInSlice([]string{
+					string(packngo.ConnectionModeStandard),
+					string(packngo.ConnectionModeTunnel)}, false),
 			},
 			"organization_id": {
 				Type:        schema.TypeString,
@@ -132,6 +142,12 @@ func resourceMetalConnectionCreate(d *schema.ResourceData, meta interface{}) err
 		Name:       d.Get("name").(string),
 		Redundancy: packngo.ConnectionRedundancy(d.Get("redundancy").(string)),
 		Type:       connType,
+	}
+
+	// this could be generalized, see $ grep "d.Get(\"tags" *
+	tags := d.Get("tags.#").(int)
+	if tags > 0 {
+		connReq.Tags = convertStringArr(d.Get("tags").([]interface{}))
 	}
 
 	if connType == packngo.ConnectionShared {
@@ -238,6 +254,11 @@ func resourceMetalConnectionRead(d *schema.ResourceData, meta interface{}) error
 		projectId = conn.Ports[0].VirtualCircuits[0].Project.ID
 	}
 
+	mode := "standard"
+	if conn.Mode != nil {
+		mode = string(*conn.Mode)
+	}
+
 	return setMap(d, map[string]interface{}{
 		"organization_id": conn.Organization.ID,
 		"project_id":      projectId,
@@ -251,7 +272,8 @@ func resourceMetalConnectionRead(d *schema.ResourceData, meta interface{}) error
 		"type":            conn.Type,
 		"speed":           conn.Speed,
 		"ports":           getConnectionPorts(conn.Ports),
-		"mode":            conn.Mode,
+		"mode":            mode,
+		"tags":            conn.Tags,
 	})
 }
 

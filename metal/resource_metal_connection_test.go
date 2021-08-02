@@ -106,7 +106,7 @@ func TestAccMetalConnection_Dedicated(t *testing.T) {
 				Config: testAccMetalConnectionConfig_Dedicated(rs),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("metal_connection.test", "metro", "sv"),
-					resource.TestCheckResourceAttr("metal_connection.test", "tags.#", "2"),
+					resource.TestCheckResourceAttr("metal_connection.test", "tags.#", "1"),
 					resource.TestCheckResourceAttr("metal_connection.test", "mode", "standard"),
 					resource.TestCheckResourceAttr("metal_connection.test", "type", "dedicated"),
 					resource.TestCheckResourceAttr("metal_connection.test", "redundancy", "redundant"),
@@ -122,12 +122,54 @@ func TestAccMetalConnection_Dedicated(t *testing.T) {
 				Config: testAccMetalConnectionConfig_Dedicated(rs) + testDataSourceMetalConnectionConfig_Dedicated(),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("data.metal_connection.test", "metro", "sv"),
-					resource.TestCheckResourceAttr("data.etal_connection.test", "tags.#", "2"),
+					resource.TestCheckResourceAttr("data.metal_connection.test", "tags.#", "1"),
 					resource.TestCheckResourceAttr("data.metal_connection.test", "mode", "standard"),
 					resource.TestCheckResourceAttr("data.metal_connection.test", "type", "dedicated"),
 					resource.TestCheckResourceAttr("data.metal_connection.test", "redundancy", "redundant"),
 					resource.TestCheckResourceAttr("data.metal_connection.test", "metro", "sv"),
 				),
+			},
+		},
+	})
+}
+
+func testAccMetalConnectionConfig_Tunnel(randstr string) string {
+	return fmt.Sprintf(`
+        resource "metal_project" "test" {
+            name = "tfacc-conn-pro-%s"
+        }
+
+        resource "metal_connection" "test" {
+            name            = "tfacc-conn-%s"
+            organization_id = metal_project.test.organization_id
+            metro           = "sv"
+            redundancy      = "redundant"
+            type            = "dedicated"
+            mode            = "tunnel"
+        }`,
+		randstr, randstr)
+}
+
+func TestAccMetalConnection_Tunnel(t *testing.T) {
+
+	rs := acctest.RandString(10)
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckMetalConnectionDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccMetalConnectionConfig_Tunnel(rs),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(
+						"metal_connection.test", "mode", "tunnel"),
+				),
+			},
+			{
+				ResourceName:      "metal_connection.test",
+				ImportState:       true,
+				ImportStateVerify: true,
 			},
 		},
 	})
