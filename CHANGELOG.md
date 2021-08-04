@@ -1,3 +1,20 @@
+## 3.1.0 (Aug 4, 2021)
+
+## Improvements
+
+* Added `mode` to `metal_connection` resource and datasource #129
+* Added `tags` to `metal_connection` resource and datasource #134
+* Added `project_id` to `metal_connection` datasource #145 
+* Added `tags` to `metal_virtual_circuit` resource and datasource #134
+* Added `description` to `metal_virtual_circuit` resource and datasource #134
+* Added `speed` to `metal_virtual_circuit` resource and datasource #134
+* `metal_virtual_circuit` field `nni_vlan` is now optional #129
+* Improved acceptance test success rates #170 
+
+## Bug Fixes
+
+* fixed crashing when VLAN is not attached to a virtual circuit #144
+
 ## 3.0.0 (Jul 27, 2021)
 
 BREAKING CHANGES:
