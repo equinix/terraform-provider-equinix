@@ -61,22 +61,22 @@ resource "metal_project" "test" {
 
 resource "metal_device" "test" {
   hostname         = "tfacc-device-ip-attachment-test"
-  plan             = "t1.small.x86"
+  plan             = "c3.small.x86"
   facilities       = ["sv15"]
   operating_system = "ubuntu_16_04"
   billing_cycle    = "hourly"
-  project_id       = "${metal_project.test.id}"
+  project_id       = metal_project.test.id
 }
 
 resource "metal_reserved_ip_block" "test" {
-    project_id = "${metal_project.test.id}"
+    project_id = metal_project.test.id
     facility = "sv15"
 	quantity = 2
 }
 
 
 resource "metal_ip_attachment" "test" {
-	device_id = "${metal_device.test.id}"
+	device_id = metal_device.test.id
 	cidr_notation = "${cidrhost(metal_reserved_ip_block.test.cidr_notation,0)}/32"
 }`, name)
 }
@@ -121,18 +121,18 @@ resource "metal_device" "test" {
   metro            = "sv"
   operating_system = "ubuntu_16_04"
   billing_cycle    = "hourly"
-  project_id       = "${metal_project.test.id}"
+  project_id       = metal_project.test.id
 }
 
 resource "metal_reserved_ip_block" "test" {
-    project_id = "${metal_project.test.id}"
+    project_id = metal_project.test.id
     metro      = "sv"
 	quantity = 2
 }
 
 
 resource "metal_ip_attachment" "test" {
-	device_id = "${metal_device.test.id}"
+	device_id = metal_device.test.id
 	cidr_notation = "${cidrhost(metal_reserved_ip_block.test.cidr_notation,0)}/32"
 }`, name)
 }

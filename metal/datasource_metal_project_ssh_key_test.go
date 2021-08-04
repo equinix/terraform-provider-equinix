@@ -76,7 +76,9 @@ func TestAccMetalProjectSSHKeyDataSource_ByID(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						datasourceName, "public_key", publicKeyMaterial),
 				),
-				ExpectNonEmptyPlan: true,
+				// Why was follwing flag set? The plan is applied and then it's empty.
+				// It's causing errors in acceptance tests. Was this because of some API bug?
+				//ExpectNonEmptyPlan: true,
 			},
 			{
 				Config:      testAccMetalProjectSSHKeyDataSourceConfig_noKey(keyName, publicKeyMaterial),
