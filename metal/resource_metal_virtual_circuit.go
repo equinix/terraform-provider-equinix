@@ -43,13 +43,17 @@ func resourceMetalVirtualCircuit() *schema.Resource {
 				Type:        schema.TypeString,
 				Optional:    true,
 				Description: "Name of the Virtual Circuit resource",
-				ForceNew:    true, // TODO: updateable with packngo changes
 			},
 			"description": {
 				Type:        schema.TypeString,
 				Optional:    true,
 				Description: "Description of the Virtual Circuit resource",
-				ForceNew:    true, // TODO: updateable with packngo changes
+			},
+			"speed": {
+				Type:        schema.TypeString,
+				Description: "Description of the Virtual Circuit speed. This is for information purposes and is computed when the connection type is shared.",
+				Optional:    true,
+				Computed:    true,
 			},
 			"tags": {
 				Type:        schema.TypeList,
@@ -93,7 +97,8 @@ func resourceMetalVirtualCircuitCreate(d *schema.ResourceData, meta interface{})
 	vncr := packngo.VCCreateRequest{
 		VirtualNetworkID: d.Get("vlan_id").(string),
 		Name:             d.Get("name").(string),
-		// Description:      d.Get("description").(string), // TODO: packngo changes
+		Description:      d.Get("description").(string),
+		Speed:            d.Get("speed").(string),
 	}
 
 	connId := d.Get("connection_id").(string)
@@ -161,13 +166,14 @@ func resourceMetalVirtualCircuitRead(d *schema.ResourceData, meta interface{}) e
 			}
 			return nil
 		},
-		"status":   vc.Status,
-		"nni_vlan": vc.NniVLAN,
-		"vnid":     vc.VNID,
-		"nni_vnid": vc.NniVNID,
-		"name":     vc.Name,
-		// "description": vc.Description, TODO: packngo changes
-		"tags": vc.Tags,
+		"status":      vc.Status,
+		"nni_vlan":    vc.NniVLAN,
+		"vnid":        vc.VNID,
+		"nni_vnid":    vc.NniVNID,
+		"name":        vc.Name,
+		"speed":       vc.Speed,
+		"description": vc.Description,
+		"tags":        vc.Tags,
 	})
 }
 
@@ -200,8 +206,7 @@ func resourceMetalVirtualCircuitUpdate(d *schema.ResourceData, meta interface{})
 		vnid := d.Get("vnid").(string)
 		ur.VirtualNetworkID = &vnid
 	}
-	/**
-	TODO: implement these in packngo
+
 	if d.HasChange("name") {
 		name := d.Get("name").(string)
 		ur.Name = &name
@@ -213,8 +218,8 @@ func resourceMetalVirtualCircuitUpdate(d *schema.ResourceData, meta interface{})
 	}
 
 	if d.HasChange("speed") {
-		speed := packngo.ConnectionMode(d.Get("speed").(string))
-		ur.Speed = &speed
+		speed := d.Get("speed").(string)
+		ur.Speed = speed
 	}
 
 	if d.HasChange("tags") {
@@ -226,12 +231,11 @@ func resourceMetalVirtualCircuitUpdate(d *schema.ResourceData, meta interface{})
 			for _, v := range ts.([]interface{}) {
 				sts = append(sts, v.(string))
 			}
-			ur.Tags = sts
+			ur.Tags = &sts
 		default:
 			return friendlyError(fmt.Errorf("garbage in tags: %s", ts))
 		}
 	}
-	*/
 
 	if !reflect.DeepEqual(ur, packngo.VCUpdateRequest{}) {
 		if _, _, err := client.VirtualCircuits.Update(d.Id(), &ur, nil); err != nil {

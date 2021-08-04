@@ -78,13 +78,11 @@ func dataSourceMetalVirtualCircuitRead(d *schema.ResourceData, meta interface{})
 	d.Set("nni_vnid", vc.NniVNID)
 	d.Set("nni_vlan", vc.NniVLAN)
 	d.Set("project_id", vc.Project.ID)
-	/** TODO: packngo changes
 	d.Set("description", vc.Description)
 	tags := d.Get("tags.#").(int)
 	if tags > 0 {
-		vncr.Tags = convertStringArr(d.Get("tags").([]interface{}))
+		vc.Tags = convertStringArr(d.Get("tags").([]interface{}))
 	}
-	**/
 	d.SetId(vc.ID)
 
 	return nil
