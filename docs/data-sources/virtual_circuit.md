@@ -25,11 +25,13 @@ data "metal_virtual_circuit" "example_vc" {
 ## Argument Reference
 
 * `virtual_circuit_id` - (Required) ID of the virtual circuit resource
-
 ## Attributes Reference
 
 * `name` - Name of the virtual circuit resource
 * `status` - Status of the virtal circuit
 * `project_id` - ID of project to which the VC belongs
 * `vnid`, `nni_vlan`, `nni_nvid` - VLAN parameters, see the [documentation for Equinix Fabric](https://metal.equinix.com/developers/docs/networking/fabric/)
+* `description` - Description for the Virtual Circuit resource
+* `tags` - Tags for the Virtual Circuit resource
+* `speed` - Speed of the Virtual Circuit resource
 

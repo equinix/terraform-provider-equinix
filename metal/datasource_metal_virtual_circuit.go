@@ -20,6 +20,17 @@ func dataSourceMetalVirtualCircuit() *schema.Resource {
 				Computed:    true,
 				Description: "Name of the virtual circuit",
 			},
+			"description": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Description of the virtual circuit",
+			},
+			"tags": {
+				Type:        schema.TypeList,
+				Description: "Tags attached to the virtual circuit",
+				Computed:    true,
+				Elem:        &schema.Schema{Type: schema.TypeString},
+			},
 			"status": {
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -67,6 +78,13 @@ func dataSourceMetalVirtualCircuitRead(d *schema.ResourceData, meta interface{})
 	d.Set("nni_vnid", vc.NniVNID)
 	d.Set("nni_vlan", vc.NniVLAN)
 	d.Set("project_id", vc.Project.ID)
+	/** TODO: packngo changes
+	d.Set("description", vc.Description)
+	tags := d.Get("tags.#").(int)
+	if tags > 0 {
+		vncr.Tags = convertStringArr(d.Get("tags").([]interface{}))
+	}
+	**/
 	d.SetId(vc.ID)
 
 	return nil

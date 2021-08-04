@@ -1,8 +1,6 @@
 package metal
 
 import (
-	"strings"
-
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/packethost/packngo"
 )
@@ -70,10 +68,21 @@ func dataSourceMetalConnection() *schema.Resource {
 				Computed:    true,
 				Description: "Description of the connection resource",
 			},
+			"tags": {
+				Type:        schema.TypeList,
+				Description: "Tags attached to the connection",
+				Computed:    true,
+				Elem:        &schema.Schema{Type: schema.TypeString},
+			},
 			"organization_id": {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "ID of organization to which the connection belongs",
+			},
+			"project_id": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "ID of project to which the connection belongs",
 			},
 			"status": {
 				Type:        schema.TypeString,
@@ -104,6 +113,11 @@ func dataSourceMetalConnection() *schema.Resource {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "Connection type - dedicated or shared",
+			},
+			"mode": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Mode for connections in IBX facilities with the dedicated type - standard or tunnel",
 			},
 			"speed": {
 				Type:        schema.TypeInt,
@@ -143,33 +157,7 @@ func getConnectionPorts(cps []packngo.ConnectionPort) []map[string]interface{} {
 }
 
 func dataSourceMetalConnectionRead(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*packngo.Client)
 	connId := d.Get("connection_id").(string)
-
-	conn, _, err := client.Connections.Get(
-		connId,
-		&packngo.GetOptions{Includes: []string{"organization", "facility", "metro"}})
-	if err != nil {
-		return err
-	}
-
-	d.Set("connection_id", conn.ID)
-	d.Set("organization_id", conn.Organization.ID)
-	d.Set("name", conn.Name)
-	d.Set("description", conn.Description)
-	d.Set("status", conn.Status)
-	d.Set("redundancy", conn.Redundancy)
-	if conn.Facility != nil {
-		d.Set("facility", conn.Facility.Code)
-	}
-	if conn.Metro != nil {
-		d.Set("metro", strings.ToLower(conn.Metro.Code))
-	}
-	d.Set("token", conn.Token)
-	d.Set("type", conn.Type)
-	d.Set("speed", conn.Speed)
-	d.Set("ports", getConnectionPorts(conn.Ports))
-	d.SetId(conn.ID)
-
-	return nil
+	d.SetId(connId)
+	return resourceMetalConnectionRead(d, meta)
 }

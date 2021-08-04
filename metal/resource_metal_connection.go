@@ -2,8 +2,10 @@ package metal
 
 import (
 	"fmt"
+	"reflect"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/packethost/packngo"
 )
 
@@ -12,6 +14,7 @@ func resourceMetalConnection() *schema.Resource {
 		Read:   resourceMetalConnectionRead,
 		Create: resourceMetalConnectionCreate,
 		Delete: resourceMetalConnectionDelete,
+		Update: resourceMetalConnectionUpdate,
 		Importer: &schema.ResourceImporter{
 			State: schema.ImportStatePassthrough,
 		},
@@ -41,17 +44,30 @@ func resourceMetalConnection() *schema.Resource {
 				StateFunc:     toLower,
 			},
 			"redundancy": {
-				// TODO: remove ForceNew and do Update, https://github.com/packethost/packngo/issues/270
 				Type:        schema.TypeString,
 				Required:    true,
 				Description: "Connection redundancy - redundant or primary",
-				ForceNew:    true,
+				ValidateFunc: validation.StringInSlice([]string{
+					string(packngo.ConnectionRedundant),
+					string(packngo.ConnectionPrimary)}, false),
 			},
 			"type": {
 				Type:        schema.TypeString,
 				Required:    true,
 				Description: "Connection type - dedicated or shared",
 				ForceNew:    true,
+				ValidateFunc: validation.StringInSlice([]string{
+					string(packngo.ConnectionDedicated),
+					string(packngo.ConnectionShared)}, false),
+			},
+			"mode": {
+				Type:        schema.TypeString,
+				Description: "Mode for connections in IBX facilities with the dedicated type - standard or tunnel",
+				Optional:    true,
+				Default:     "standard",
+				ValidateFunc: validation.StringInSlice([]string{
+					string(packngo.ConnectionModeStandard),
+					string(packngo.ConnectionModeTunnel)}, false),
 			},
 			"organization_id": {
 				Type:        schema.TypeString,
@@ -69,8 +85,6 @@ func resourceMetalConnection() *schema.Resource {
 				Type:        schema.TypeString,
 				Optional:    true,
 				Description: "Description of the connection resource",
-				// TODO: remove ForceNew and do Update, https://github.com/packethost/packngo/issues/270
-				ForceNew: true,
 			},
 			"status": {
 				Type:        schema.TypeString,
@@ -93,6 +107,12 @@ func resourceMetalConnection() *schema.Resource {
 				Computed:    true,
 				Description: "List of connection ports - primary (`ports[0]`) and secondary (`ports[1]`)",
 			},
+			"tags": {
+				Type:        schema.TypeList,
+				Description: "Tags attached to the connection",
+				Optional:    true,
+				Elem:        &schema.Schema{Type: schema.TypeString},
+			},
 		},
 	}
 }
@@ -109,6 +129,7 @@ func resourceMetalConnectionCreate(d *schema.ResourceData, meta interface{}) err
 
 	project, projectOk := d.GetOk("project_id")
 	connType := packngo.ConnectionType(d.Get("type").(string))
+	connMode := packngo.ConnectionMode(d.Get("mode").(string))
 
 	if connType == packngo.ConnectionShared && !projectOk {
 		return fmt.Errorf("When you create a \"shared\" connection, you must set project_id")
@@ -123,9 +144,17 @@ func resourceMetalConnectionCreate(d *schema.ResourceData, meta interface{}) err
 		Type:       connType,
 	}
 
+	// this could be generalized, see $ grep "d.Get(\"tags" *
+	tags := d.Get("tags.#").(int)
+	if tags > 0 {
+		connReq.Tags = convertStringArr(d.Get("tags").([]interface{}))
+	}
+
 	if connType == packngo.ConnectionShared {
 		connReq.Project = project.(string)
 	}
+
+	connReq.Mode = connMode
 
 	if metOk {
 		connReq.Metro = metro.(string)
@@ -152,6 +181,61 @@ func resourceMetalConnectionCreate(d *schema.ResourceData, meta interface{}) err
 	return resourceMetalConnectionRead(d, meta)
 }
 
+func resourceMetalConnectionUpdate(d *schema.ResourceData, meta interface{}) error {
+	client := meta.(*packngo.Client)
+
+	if d.HasChange("locked") {
+		var action func(string) (*packngo.Response, error)
+		if d.Get("locked").(bool) {
+			action = client.Devices.Lock
+		} else {
+			action = client.Devices.Unlock
+		}
+		if _, err := action(d.Id()); err != nil {
+			return friendlyError(err)
+		}
+	}
+	ur := packngo.ConnectionUpdateRequest{}
+
+	if d.HasChange("description") {
+		desc := d.Get("description").(string)
+		ur.Description = &desc
+	}
+
+	if d.HasChange("mode") {
+		mode := packngo.ConnectionMode(d.Get("mode").(string))
+		ur.Mode = &mode
+	}
+
+	if d.HasChange("redundancy") {
+		redundancy := packngo.ConnectionRedundancy(d.Get("redundancy").(string))
+		ur.Redundancy = redundancy
+	}
+
+	if d.HasChange("tags") {
+		ts := d.Get("tags")
+		sts := []string{}
+
+		switch ts.(type) {
+		case []interface{}:
+			for _, v := range ts.([]interface{}) {
+				sts = append(sts, v.(string))
+			}
+			ur.Tags = sts
+		default:
+			return friendlyError(fmt.Errorf("garbage in tags: %s", ts))
+		}
+	}
+
+	if !reflect.DeepEqual(ur, packngo.ConnectionUpdateRequest{}) {
+		if _, _, err := client.Connections.Update(d.Id(), &ur, nil); err != nil {
+			return friendlyError(err)
+		}
+
+	}
+	return resourceMetalConnectionRead(d, meta)
+}
+
 func resourceMetalConnectionRead(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*packngo.Client)
 	connId := d.Id()
@@ -170,6 +254,11 @@ func resourceMetalConnectionRead(d *schema.ResourceData, meta interface{}) error
 		projectId = conn.Ports[0].VirtualCircuits[0].Project.ID
 	}
 
+	mode := "standard"
+	if conn.Mode != nil {
+		mode = string(*conn.Mode)
+	}
+
 	return setMap(d, map[string]interface{}{
 		"organization_id": conn.Organization.ID,
 		"project_id":      projectId,
@@ -183,6 +272,8 @@ func resourceMetalConnectionRead(d *schema.ResourceData, meta interface{}) error
 		"type":            conn.Type,
 		"speed":           conn.Speed,
 		"ports":           getConnectionPorts(conn.Ports),
+		"mode":            mode,
+		"tags":            conn.Tags,
 	})
 }
 
