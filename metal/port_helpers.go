@@ -2,6 +2,8 @@ package metal
 
 import (
 	"fmt"
+	"strings"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/packethost/packngo"
@@ -15,7 +17,7 @@ type ClientPortResource struct {
 	Resource *schema.ResourceData
 }
 
-func getClientPortResource(d *schema.ResourceData, meta interface{}) (*ClientPortResource, error) {
+func getClientPortResource(d *schema.ResourceData, meta interface{}) (*ClientPortResource, *packngo.Response, error) {
 	client := meta.(*packngo.Client)
 
 	port_id := d.Get("port_id").(string)
@@ -24,9 +26,9 @@ func getClientPortResource(d *schema.ResourceData, meta interface{}) (*ClientPor
 		"native_virtual_network",
 		"virtual_networks",
 	}}
-	port, _, err := client.Ports.Get(port_id, getOpts)
+	port, resp, err := client.Ports.Get(port_id, getOpts)
 	if err != nil {
-		return nil, err
+		return nil, resp, err
 	}
 
 	cpr := &ClientPortResource{
@@ -34,7 +36,7 @@ func getClientPortResource(d *schema.ResourceData, meta interface{}) (*ClientPor
 		Port:     port,
 		Resource: d,
 	}
-	return cpr, nil
+	return cpr, resp, nil
 }
 
 func getPortByResourceData(d *schema.ResourceData, client *packngo.Client) (*packngo.Port, error) {
@@ -122,31 +124,68 @@ func processVlansOnPort(port *packngo.Port, vlanIds []string, f portVlanAction) 
 	return port, nil
 }
 
-func removeVlans(cpr *ClientPortResource) error {
-	vlansToRemove := difference(
-		attachedVlanIds(cpr.Port),
-		specifiedVlanIds(cpr.Resource),
-	)
-	port, err := processVlansOnPort(cpr.Port, vlansToRemove, cpr.Client.DevicePorts.Unassign)
-	if err != nil {
-		return err
+func batchVlans(removeOnly bool) func(*ClientPortResource) error {
+	return func(cpr *ClientPortResource) error {
+		var vlansToAssign []string
+		var currentNative string
+		vlansToRemove := difference(
+			attachedVlanIds(cpr.Port),
+			specifiedVlanIds(cpr.Resource),
+		)
+		if !removeOnly {
+			currentNative = getCurrentNative(cpr.Port)
+
+			vlansToAssign = difference(
+				specifiedVlanIds(cpr.Resource),
+				attachedVlanIds(cpr.Port),
+			)
+		}
+
+		vacr := &packngo.VLANAssignmentBatchCreateRequest{}
+		for _, v := range vlansToRemove {
+			vacr.VLANAssignments = append(vacr.VLANAssignments, packngo.VLANAssignmentCreateRequest{
+				VLAN:  v,
+				State: packngo.VLANAssignmentUnassigned,
+			})
+		}
+
+		for _, v := range vlansToAssign {
+			native := currentNative == v
+			vacr.VLANAssignments = append(vacr.VLANAssignments, packngo.VLANAssignmentCreateRequest{
+				VLAN:   v,
+				State:  packngo.VLANAssignmentAssigned,
+				Native: &native,
+			})
+		}
+		return createAndWaitForBatch(cpr.Client, cpr.Port.ID, vacr)
 	}
-	*(cpr.Port) = *port
-	return nil
 }
 
-func assignVlans(cpr *ClientPortResource) error {
-	// assign VLANs
-	vlansToAssign := difference(
-		specifiedVlanIds(cpr.Resource),
-		attachedVlanIds(cpr.Port),
-	)
-	port, err := processVlansOnPort(cpr.Port, vlansToAssign, cpr.Client.DevicePorts.Assign)
-	if err != nil {
-		return err
+func createAndWaitForBatch(c *packngo.Client, portID string, vacr *packngo.VLANAssignmentBatchCreateRequest) error {
+	if len(vacr.VLANAssignments) == 0 {
+		return nil
 	}
-	*(cpr.Port) = *port
-	return nil
+	b, _, err := c.VLANAssignments.CreateBatch(portID, vacr, nil)
+	if err != nil {
+		return fmt.Errorf("vlan assignment batch could not be created: %w", err)
+	}
+
+	// 15 minutes = 180 * 5sec-retry
+	for i := 0; i < 180; i++ {
+		<-time.After(5 * time.Second)
+		b, _, err := c.VLANAssignments.GetBatch(portID, b.ID, nil)
+		if err != nil {
+			return fmt.Errorf("vlan assignment batch %s could not be polled: %w", b.ID, err)
+		}
+		if b.State == packngo.VLANAssignmentBatchCompleted {
+			return nil
+		}
+		if b.State == packngo.VLANAssignmentBatchFailed {
+			return fmt.Errorf("vlan assignment batch %s provisioning failed: %s", b.ID, strings.Join(b.ErrorMessages, "; "))
+		}
+	}
+
+	return fmt.Errorf("vlan assignment batch %s is not complete after timeout", b.ID)
 }
 
 func removeNativeVlan(cpr *ClientPortResource) error {
@@ -154,24 +193,6 @@ func removeNativeVlan(cpr *ClientPortResource) error {
 	specifiedNative := getSpecifiedNative(cpr.Resource)
 	if (currentNative != specifiedNative) && currentNative != "" {
 		port, _, err := cpr.Client.DevicePorts.UnassignNative(cpr.Port.ID)
-		if err != nil {
-			return err
-		}
-		*(cpr.Port) = *port
-	}
-	return nil
-}
-
-func assignNativeVlan(cpr *ClientPortResource) error {
-	// assign Native VLAN
-	currentNative := getCurrentNative(cpr.Port)
-	specifiedNative := getSpecifiedNative(cpr.Resource)
-	if (currentNative != specifiedNative) && specifiedNative != "" {
-		par := packngo.PortAssignRequest{
-			PortID:           cpr.Port.ID,
-			VirtualNetworkID: specifiedNative,
-		}
-		port, _, err := cpr.Client.DevicePorts.AssignNative(&par)
 		if err != nil {
 			return err
 		}

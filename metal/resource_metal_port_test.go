@@ -74,6 +74,7 @@ resource "metal_port" "bond0" {
   port_id = local.bond0_id
   layer2 = true
   bonded = false
+  reset_on_delete = true
 }
 
 `, confAccMetalPort_base(name))
@@ -95,6 +96,7 @@ resource "metal_port" "bond0" {
 resource "metal_port" "eth1" {
   port_id = local.eth1_id
   bonded = false
+  reset_on_delete = true
 }
 
 `, confAccMetalPort_base(name))
@@ -109,19 +111,14 @@ resource "metal_port" "bond0" {
   layer2 = false
   bonded = true
   vlan_ids = [metal_vlan.test.id]
+  reset_on_delete = true
 }
 
 resource "metal_vlan" "test" {
   description = "test"
   metro = "sv"
-  project = metal_project.test.id
+  project_id = metal_project.test.id
 }
-
-resource "metal_port" "eth1" {
-  port_id = local.eth1_id
-  bonded = false
-}
-
 `, confAccMetalPort_base(name))
 }
 

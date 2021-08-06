@@ -109,62 +109,36 @@ func resourceMetalPort() *schema.Resource {
 }
 
 func resourceMetalPortUpdate(d *schema.ResourceData, meta interface{}) error {
-	cpr, err := getClientPortResource(d, meta)
+	cpr, _, err := getClientPortResource(d, meta)
 	if err != nil {
-		return err
+		return friendlyError(err)
 	}
 
-	err = portSanityChecks(cpr)
-	if err != nil {
-		return err
+	for _, f := range [](func(*ClientPortResource) error){
+		portSanityChecks,
+		batchVlans(true),
+		makeDisbond,
+		convertToL2,
+		makeBond,
+		convertToL3,
+		batchVlans(false),
+	} {
+		if err := f(cpr); err != nil {
+			return friendlyError(err)
+		}
 	}
 
-	err = removeNativeVlan(cpr)
-	if err != nil {
-		return err
-	}
-
-	err = removeVlans(cpr)
-	if err != nil {
-		return err
-	}
-
-	err = makeDisbond(cpr)
-	if err != nil {
-		return err
-	}
-
-	err = convertToL2(cpr)
-	if err != nil {
-		return err
-	}
-
-	err = makeBond(cpr)
-	if err != nil {
-		return err
-	}
-
-	err = convertToL3(cpr)
-	if err != nil {
-		return err
-	}
-
-	err = assignVlans(cpr)
-	if err != nil {
-		return err
-	}
-
-	err = assignNativeVlan(cpr)
-	if err != nil {
-		return err
-	}
 	return resourceMetalPortRead(d, meta)
 }
 
 func resourceMetalPortRead(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*packngo.Client)
 	port, err := getPortByResourceData(d, client)
+
 	if err != nil {
+		if isNotFound(err) {
+			d.SetId("")
+		}
 		return err
 	}
 	m := map[string]interface{}{
@@ -208,27 +182,20 @@ func resourceMetalPortRead(d *schema.ResourceData, meta interface{}) error {
 func resourceMetalPortDelete(d *schema.ResourceData, meta interface{}) error {
 	resetRaw, resetOk := d.GetOk("reset_on_delete")
 	if resetOk && resetRaw.(bool) {
-		cpr, err := getClientPortResource(d, meta)
-		if err != nil {
-			return err
-		}
-		err = removeNativeVlan(cpr)
-		if err != nil {
+		cpr, resp, err := getClientPortResource(d, meta)
+		if ignoreResponseErrors(httpForbidden, httpNotFound)(resp, err) != nil {
 			return err
 		}
 
-		err = removeVlans(cpr)
-		if err != nil {
-			return err
-		}
-		err = makeBond(cpr)
-		if err != nil {
-			return err
-		}
-
-		err = convertToL3(cpr)
-		if err != nil {
-			return err
+		for _, f := range [](func(*ClientPortResource) error){
+			removeNativeVlan,
+			batchVlans(true),
+			makeBond,
+			convertToL3,
+		} {
+			if err := f(cpr); err != nil {
+				return err
+			}
 		}
 	}
 	return nil
