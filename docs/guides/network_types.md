@@ -1,0 +1,204 @@
+---
+page_title: "Metal Device Network Types"
+description: |-
+  Use port bonding, address assignments, and VLAN attachments to change the device network type from Layer-3, to Layer-2, to Hybrid.
+---
+
+
+# Network types
+
+Server network types, such as Layer-2, Layer-3, and Hybrid may be familiar to users of the Equinix Metal Portal. In the Portal, you can toggle the network type with a click of the UI. To take advantage of these features in Terraform, which closely follows the Equinix Metal API, it is important to understand that the network type is a composite string value determined by one or more port bonding, addressing, and VLAN attachment configurations. To change the network type, you must change these underlying properties of the port(s).
+
+For more details, see the Equinix Metal documentation on [Network Configuration Types](https://metal.equinix.com/developers/docs/layer2-networking/overview/#network-configuration-types).
+
+This Terraform provider offers two ways to define the network type.
+
+* [`metal_port`](#Metal-Port)
+* [`metal_device_network_type`](#Metal-Device-Network-Type)
+
+## Metal Port
+
+The [`metal_port`](../resources/metal_port.md) resource exposes all of the features needed to affect the network type of a device or port pairing.
+
+Following are examples of how the `metal_port` resource can be used to configure various network types, assuming that `bond0_id` is the UUID of the bond interface containing `eth1`.
+
+### Layer 3 Port
+
+Layer-3 (Bonded) is the default port configuration on Equinix Metal devices. The following is provided to illustrate the usage of the `metal_port` resource. This HCL should not be needed in practice, however it may be useful in some configurations to assert the correct mode is set, port by port, on imported `metal_device` resources or data-sources.
+
+```hcl
+resource "metal_port" "bond0" {
+  port_id = local.bond0_id
+  bonded = true
+}
+
+resource "metal_port" "eth1" {
+  port_id = local.eth1_id
+  bonded = true
+}
+```
+
+### Layer 2 Unbonded Port
+
+```hcl
+resource "metal_port" "bond0" {
+  port_id = local.bond0_id
+  layer2 = true
+  bonded = false
+}
+```
+
+### Layer 2 Bonded Port
+
+```hcl
+resource "metal_port" "bond0" {
+  port_id = local.bond0_id
+  layer2 = true
+  bonded = true
+}
+```
+
+### Hybrid Unbonded Port
+
+```hcl
+resource "metal_port" "bond0" {
+  port_id = local.bond0_id
+  layer2 = false
+  bonded = true
+  depends_on = [metal_port.eth1]
+}
+
+resource "metal_port" "eth1" {
+  port_id = local.eth1_id
+  bonded = false
+}
+```
+
+### Hybrid Bonded Port
+
+```hcl
+resource "metal_port" "bond0" {
+  port_id = local.bond0_id
+  layer2 = false
+  bonded = true
+  vlan_ids = [metal_vlan.test.id]
+}
+
+resource "metal_vlan" "test" {
+  description = "test"
+  metro = "sv"
+  project = metal_project.test.id
+}
+```
+
+### Accessing Port IDs
+
+The port ID value can be obtained from a `metal_device` using a [`for` expression](https://www.terraform.io/docs/language/expressions/for.html).
+
+Assuming a `metal_device` exists with the resource name `test`:
+
+```hcl
+locals {
+  bond0_id = [for p in metal_device.test.ports: p.id if p.name == "bond0"][0]
+   eth1_id = [for p in metal_device.test.ports: p.id if p.name == "eth1"][0]
+}
+```
+
+## Metal Device Network Type
+
+The [`metal_device_network_type`](../resources/metal_device_network_type.md) takes a named network type with any mode required parameters and converts a device to the named network type.  This resource simulated the network type interface for Devices in the Equinix Metal Portal.  That interface changed when additional network types were introduced with more diverse port configurations. 
+
+When using this resource, keep in mind:
+
+* this resource is not guaranteed to work in devices with more than two ethernet ports
+* it may not be able to express all possible port configurations
+* subsequent changes to the network configuration may cause this device to detect changes that can not be reconciled without intervention
+* `metal_device_network_type` resources should not be used on devices with ports being controlled with `metal_port` resources
+
+### Hybrid (Unbonded) Device
+
+This example create one c3.small device and puts it into [hybrid (unbonded) network mode](https://metal.equinix.com/developers/docs/layer2-networking/hybrid-unbonded-mode/).
+
+```hcl
+resource "metal_device" "test" {
+  hostname         = "tfacc-device-port-vlan-attachment-test"
+  plan             = "c3.small.x86"
+  metro            = "ny"
+  operating_system = "ubuntu_20_04"
+  billing_cycle    = "hourly"
+  project_id       = local.project_id
+}
+
+resource "metal_device_network_type" "test" {
+  device_id = metal_device.test.id
+  type      = "hybrid"
+}
+```
+
+### Hybrid (Unbonded) Device with a VLAN
+
+This example create two devices in [hybrid (unbonded) mode](https://metal.equinix.com/developers/docs/layer2-networking/hybrid-unbonded-mode/) and adds a VLAN to their eth1 ports.
+
+```hcl
+locals {
+    project_id = "<uuid>"
+    device_count = 2
+}
+
+resource "metal_vlan" "test" {
+  metro       = "ny"
+  project_id  = local.project_id
+}
+
+
+resource "metal_device" "test" {
+  count            = local.device_count
+  hostname         = "test${count.index}"
+  plan             = "c3.small.x86"
+  metro            = "ny"
+  operating_system = "ubuntu_20_04"
+  billing_cycle    = "hourly"
+  project_id       = local.project_id
+}
+
+resource "metal_device_network_type" "test" {
+  count     = local.device_count
+  device_id = metal_device.test[count.index].id
+  type      = "hybrid"
+}
+
+
+resource "metal_port_vlan_attachment" "test" {
+  count     = local.device_count
+  device_id = metal_device_network_type.test[count.index].id
+  port_name = "eth1"
+  vlan_vnid = metal_vlan.test.vxlan
+}
+```
+
+### Hybrid (Bonded) Device
+
+This example create one c3.small device and puts it into [hybrid-bonded network mode](https://metal.equinix.com/developers/docs/layer2-networking/hybrid-bonded-mode/). Notice, the default network type of `layer3` can be used with VLAN attachments without reconfiguring the device ports.
+
+```hcl
+resource "metal_device" "test" {
+  hostname         = "tfacc-device-port-vlan-attachment-test"
+  plan             = "c3.small.x86"
+  metro            = "ny"
+  operating_system = "ubuntu_20_04"
+  billing_cycle    = "hourly"
+  project_id       = local.project_id
+}
+
+resource "metal_vlan" "test" {
+  metro       = "ny"
+  project_id  = local.project_id
+}
+
+resource "metal_port_vlan_attachment" "test" {
+  count     = local.device_count
+  device_id = metal_device.test.id
+  port_name = "bond0"
+  vlan_vnid = metal_vlan.test.vxlan
+}
+```

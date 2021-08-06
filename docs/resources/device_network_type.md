@@ -19,64 +19,7 @@ If you are attaching VLAN to a device (i.e. using metal_port_vlan_attachment), l
 
 ## Example Usage
 
-### Create one c3.small device and put it to hybrid network mode
-
-```hcl
-resource "metal_device" "test" {
-  hostname         = "tfacc-device-port-vlan-attachment-test"
-  plan             = "c3.small.x86"
-  facilities       = ["ny5"]
-  operating_system = "ubuntu_20_04"
-  billing_cycle    = "hourly"
-  project_id       = local.project_id
-}
-
-resource "metal_device_network_type" "test" {
-  device_id = metal_device.test.id
-  type      = "hybrid"
-}
-```
-
-### Create two devices in hybrid mode and add a VLAN to their eth1 ports
-
-```hcl
-locals {
-    project_id = "<uuid>"
-    device_count = 2
-}
-
-resource "metal_vlan" "test" {
-  facility    = "ny5"
-  project_id  = local.project_id
-}
-
-
-resource "metal_device" "test" {
-  count            = local.device_count
-  hostname         = "test${count.index}"
-  plan             = "c3.small.x86"
-  facilities       = ["ny5"]
-  operating_system = "ubuntu_20_04"
-  billing_cycle    = "hourly"
-  project_id       = local.project_id
-}
-
-resource "metal_device_network_type" "test" {
-  count     = local.device_count
-  device_id = metal_device.test[count.index].id
-  type      = "hybrid"
-}
-
-
-resource "metal_port_vlan_attachment" "test" {
-  count     = local.device_count
-  device_id = metal_device_network_type.test[count.index].id
-  port_name = "eth1"
-  vlan_vnid = metal_vlan.test.vxlan
-}
-
-```
-
+See the [Network Types Guide](../guides/network_types.md) for examples of this resource and to learn about the recommended `metal_port` alternative.
 
 ## Import
 

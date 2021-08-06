@@ -13,85 +13,9 @@ This Terraform resource doesn't create an API resource in Equinix Metal, but rat
 
 The port resource referred is created together with device and accessible either via the device resource or over `/port/<uuid>` API path.
 
-## Network types
+## Example Usage
 
-`metal_port` can be used to configure the [Network Configuration Types](https://metal.equinix.com/developers/docs/layer2-networking/overview/#network-configuration-types). Network types are bond port configurations.
-
-Following are examples of how the `metal_port` resource can be used to configure various network types, assuming that `bond0_id` is the UUID of the bond interface containing `eth1`.
-
-### Layer 3
-
-```hcl
-resource "metal_port" "bond0" {
-  port_id = local.bond0_id
-  bonded = true
-}
-
-resource "metal_port" "eth1" {
-  port_id = local.eth1_id
-  bonded = true
-}
-```
-
-### Layer 2 Unbonded
-
-```hcl
-resource "metal_port" "bond0" {
-  port_id = local.bond0_id
-  layer2 = true
-  bonded = false
-}
-```
-
-### Layer 2 Bonded
-
-```hcl
-resource "metal_port" "bond0" {
-  port_id = local.bond0_id
-  layer2 = true
-  bonded = true
-}
-```
-
-### Hybrid Unbonded
-
-```hcl
-
-resource "metal_port" "bond0" {
-  port_id = local.bond0_id
-  layer2 = false
-  bonded = true
-  depends_on = [metal_port.eth1]
-}
-
-resource "metal_port" "eth1" {
-  port_id = local.eth1_id
-  bonded = false
-}
-```
-
-### Hybrid Bonded
-
-```
-resource "metal_port" "bond0" {
-  port_id = local.bond0_id
-  layer2 = false
-  bonded = true
-  vlan_ids = [metal_vlan.test.id]
-}
-
-resource "metal_vlan" "test" {
-  description = "test"
-  metro = "sv"
-  project = metal_project.test.id
-}
-
-resource "metal_port" "eth1" {
-  port_id = local.eth1_id
-  bonded = false
-}
-```
-
+See the [Network Types Guide](../guides/network_types.md) for examples of this resource.
 
 ## Argument Reference
 
@@ -101,7 +25,6 @@ resource "metal_port" "eth1" {
 * `vlan_ids` - (Optional) List off VLAN UUIDs to attach to the port
 * `native_vlan_id` - (Optional) UUID of a VLAN to assign as a native VLAN. It must be one of attached VLANs (from `vlan_ids` parameter), valid only for physical (non-bond) ports
 * `reset_on_delete` - (Optional) Flag indicating whether to reset port to default settings. For a bond port it means layer3 without VLANs attached, physical ports will be bonded without native VLAN and VLANs attached
-
 
 ## Attributes Reference
 
@@ -113,4 +36,3 @@ resource "metal_port" "eth1" {
 * `bond_name` - Name of the bond port
 * `bonded` - Flag indicating whether the port is bonded
 * `disbond_supported` - Flag indicating whether the port can be removed from a bond
-
