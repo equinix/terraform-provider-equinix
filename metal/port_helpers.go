@@ -41,11 +41,20 @@ func getClientPortResource(d *schema.ResourceData, meta interface{}) (*ClientPor
 
 func getPortByResourceData(d *schema.ResourceData, client *packngo.Client) (*packngo.Port, error) {
 	portId, portIdOk := d.GetOk("port_id")
+	resourceId := d.Id()
+
+	// rely on d.Id in imported resources
+	if !portIdOk {
+		if resourceId != "" {
+			portId = resourceId
+			portIdOk = true
+		}
+	}
 	deviceId, deviceIdOk := d.GetOk("device_id")
 	portName, portNameOk := d.GetOk("name")
 
 	// check parameter sanity only for a new (not-yet-created) resource
-	if d.Id() == "" {
+	if resourceId == "" {
 		if portIdOk && (deviceIdOk || portNameOk) {
 			return nil, fmt.Errorf("You must specify either id or (device_id and name)")
 		}

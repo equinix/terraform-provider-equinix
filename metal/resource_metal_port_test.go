@@ -132,8 +132,19 @@ func metalPortTestTemplate(t *testing.T, conf func(string) string, expectedType 
 			{
 				Config: conf(rs),
 				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("metal_port.bond0", "name", "bond0"),
+					resource.TestCheckResourceAttr("metal_port.bond0", "type", "NetworkBondPort"),
+					resource.TestCheckResourceAttr("metal_port.bond0", "bonded", "true"),
+
+					resource.TestCheckResourceAttrSet("metal_port.bond0", "disbond_supported"),
+					resource.TestCheckResourceAttrSet("metal_port.bond0", "port_id"),
 					resource.TestCheckResourceAttr("metal_port.bond0", "network_type", expectedType),
 				),
+			},
+			{
+				ResourceName:      "metal_port.bond0",
+				ImportState:       true,
+				ImportStateVerify: true,
 			},
 			{
 				Config: confAccMetalPort_L3(rs),
