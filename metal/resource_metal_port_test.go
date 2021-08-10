@@ -28,6 +28,7 @@ resource "metal_device" "test" {
 locals {
   bond0_id = [for p in metal_device.test.ports: p.id if p.name == "bond0"][0]
   eth1_id = [for p in metal_device.test.ports: p.id if p.name == "eth1"][0]
+  eth0_id = [for p in metal_device.test.ports: p.id if p.name == "eth0"][0]
 }
 
 `, name)
@@ -134,20 +135,28 @@ func metalPortTestTemplate(t *testing.T, conf func(string) string, expectedType 
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("metal_port.bond0", "name", "bond0"),
 					resource.TestCheckResourceAttr("metal_port.bond0", "type", "NetworkBondPort"),
-					resource.TestCheckResourceAttr("metal_port.bond0", "bonded", "true"),
-
+					resource.TestCheckResourceAttrSet("metal_port.bond0", "bonded"),
 					resource.TestCheckResourceAttrSet("metal_port.bond0", "disbond_supported"),
 					resource.TestCheckResourceAttrSet("metal_port.bond0", "port_id"),
 					resource.TestCheckResourceAttr("metal_port.bond0", "network_type", expectedType),
 				),
 			},
 			{
-				ResourceName:      "metal_port.bond0",
-				ImportState:       true,
-				ImportStateVerify: true,
+				ResourceName:            "metal_port.bond0",
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"reset_on_delete"},
+			},
+			{
+				// Remove metal_port resources to trigger reset_on_delete
+				Config: confAccMetalPort_base(rs),
 			},
 			{
 				Config: confAccMetalPort_L3(rs),
+			},
+			{
+				ResourceName: "metal_port.bond0",
+				ImportState:  true,
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("metal_port.bond0", "network_type", "layer3"),
 				),

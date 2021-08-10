@@ -1,6 +1,7 @@
 package metal
 
 import (
+	"log"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -136,8 +137,11 @@ func resourceMetalPortRead(d *schema.ResourceData, meta interface{}) error {
 	port, err := getPortByResourceData(d, client)
 
 	if err != nil {
-		if isNotFound(err) {
+		if isNotFound(err) || isForbidden(err) {
+			log.Printf("[WARN] Port (%s) not accessible, removing from state", d.Id())
 			d.SetId("")
+
+			return nil
 		}
 		return err
 	}
