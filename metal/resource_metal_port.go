@@ -188,7 +188,12 @@ func resourceMetalPortDelete(d *schema.ResourceData, meta interface{}) error {
 		if ignoreResponseErrors(httpForbidden, httpNotFound)(resp, err) != nil {
 			return err
 		}
-
+		setMap(cpr.Resource, map[string]interface{}{
+			"layer2":         false,
+			"bonded":         true,
+			"native_vlan_id": nil,
+			"vlan_ids":       []string{},
+		})
 		for _, f := range [](func(*ClientPortResource) error){
 			removeNativeVlan,
 			batchVlans(true),
@@ -198,6 +203,10 @@ func resourceMetalPortDelete(d *schema.ResourceData, meta interface{}) error {
 			if err := f(cpr); err != nil {
 				return err
 			}
+		}
+		// TODO(displague) error or warn?
+		if warn := portProperlyDestroyed(cpr.Port); warn != nil {
+			log.Printf("[WARN] %s\n", warn)
 		}
 	}
 	return nil
