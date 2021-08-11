@@ -20,7 +20,7 @@ This Terraform provider offers two ways to define the network type.
 
 The [`metal_port`](../resources/metal_port.md) resource exposes all of the features needed to affect the network type of a device or port pairing.
 
-Following are examples of how the `metal_port` resource can be used to configure various network types, assuming that `bond0_id` is the UUID of the bond interface containing `eth1`.
+Following are examples of how the `metal_port` resource can be used to configure various network types, assuming that `local.bond0_id` is the UUID of the bond interface containing `eth1` and `local.eth1_id` is the UUID of the `eth1` interface.  These could represent the ports of `metal_device` resources or data sources.
 
 ### Layer 3 Port
 
@@ -61,13 +61,6 @@ resource "metal_port" "bond0" {
 ### Hybrid Unbonded Port
 
 ```hcl
-resource "metal_port" "bond0" {
-  port_id = local.bond0_id
-  layer2 = false
-  bonded = true
-  depends_on = [metal_port.eth1]
-}
-
 resource "metal_port" "eth1" {
   port_id = local.eth1_id
   bonded = false

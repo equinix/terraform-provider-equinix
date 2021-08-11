@@ -66,7 +66,7 @@ func resourceMetalPort() *schema.Resource {
 			"reset_on_delete": {
 				Type:        schema.TypeBool,
 				Optional:    true,
-				Description: "Reset port to default settings. For a bond port it means layer3 without vlans attached, eth ports will be bonded without native vlan and vlans attached",
+				Description: "Behavioral setting to reset the port to default settings. For a bond port it means layer3 without vlans attached, eth ports will be bonded without native vlan and vlans attached",
 			},
 			"name": {
 				Type:        schema.TypeString,
@@ -76,7 +76,7 @@ func resourceMetalPort() *schema.Resource {
 			"network_type": {
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "One of layer2-bonded, layer2-individual, layer3, hybrid and hybrid-bonded",
+				Description: "One of layer2-bonded, layer2-individual, layer3, hybrid and hybrid-bonded. This attribute is only set on bond ports.",
 			},
 			"disbond_supported": {
 				Type:        schema.TypeBool,

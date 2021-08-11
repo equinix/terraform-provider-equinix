@@ -24,15 +24,15 @@ See the [Network Types Guide](../guides/network_types.md) for examples of this r
 * `layer2` - (Optional) Whether to put the port to Layer 2 mode, valid only for bond ports
 * `vlan_ids` - (Optional) List off VLAN UUIDs to attach to the port
 * `native_vlan_id` - (Optional) UUID of a VLAN to assign as a native VLAN. It must be one of attached VLANs (from `vlan_ids` parameter), valid only for physical (non-bond) ports
-* `reset_on_delete` - (Optional) Flag indicating whether to reset port to default settings. For a bond port it means layer3 without VLANs attached, physical ports will be bonded without native VLAN and VLANs attached
+* `reset_on_delete` - (Optional) Behavioral setting to reset the port to default settings. For a bond port it means layer3 without vlans attached, eth ports will be bonded without native vlan and vlans attached
 
 ## Attributes Reference
 
 * `name` - Name of the port, e.g. `bond0` or `eth0`
-* `network_type` - One of layer2-bonded, layer2-individual, layer3, hybrid, hybrid-bonded
+* `network_type` - One of layer2-bonded, layer2-individual, layer3, hybrid and hybrid-bonded. This attribute is only set on bond ports.
 * `type` - Type is either "NetworkBondPort" for bond ports or "NetworkPort" for bondable ethernet ports
 * `mac` - MAC address of the port
-* `bond_id` - UUID of the bond port"
+* `bond_id` - UUID of the bond port
 * `bond_name` - Name of the bond port
 * `bonded` - Flag indicating whether the port is bonded
 * `disbond_supported` - Flag indicating whether the port can be removed from a bond
