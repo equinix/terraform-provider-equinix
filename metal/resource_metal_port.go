@@ -30,9 +30,7 @@ func resourceMetalPort() *schema.Resource {
 		// Create and Update are the same func
 		Create: resourceMetalPortUpdate,
 		Update: resourceMetalPortUpdate,
-		Delete: func(d *schema.ResourceData, meta interface{}) error {
-			return nil
-		},
+		Delete: resourceMetalPortDelete,
 		Importer: &schema.ResourceImporter{
 			State: schema.ImportStatePassthrough,
 		},
