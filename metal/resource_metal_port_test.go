@@ -62,6 +62,7 @@ resource "metal_port" "bond0" {
   port_id = local.bond0_id
   layer2 = true
   bonded = true
+  reset_on_delete = true
 }
 
 `, confAccMetalPort_base(name))

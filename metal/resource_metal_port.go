@@ -188,12 +188,21 @@ func resourceMetalPortDelete(d *schema.ResourceData, meta interface{}) error {
 		if ignoreResponseErrors(httpForbidden, httpNotFound)(resp, err) != nil {
 			return err
 		}
-		setMap(cpr.Resource, map[string]interface{}{
+
+		// to reset the port to defaults we iterate through helpers (used in
+		// create/update), some of which rely on resource state. reuse those helpers by
+		// setting ephemeral state.
+		port := resourceMetalPort()
+		copy := port.Data(d.State())
+		cpr.Resource = copy
+		if err = setMap(cpr.Resource, map[string]interface{}{
 			"layer2":         false,
 			"bonded":         true,
 			"native_vlan_id": nil,
 			"vlan_ids":       []string{},
-		})
+		}); err != nil {
+			return err
+		}
 		for _, f := range [](func(*ClientPortResource) error){
 			removeNativeVlan,
 			batchVlans(true),
