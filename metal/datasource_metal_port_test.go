@@ -87,7 +87,7 @@ resource "metal_device" "test" {
 }
 
 data "metal_port" "test" {
-  id        = metal_device.test.ports[0].id
+  port_id        = metal_device.test.ports[0].id
 }
 
 `, name)

@@ -2,6 +2,7 @@ package metal
 
 import (
 	"errors"
+	"path"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/packethost/packngo"
@@ -129,10 +130,35 @@ func resourceMetalVlanRead(d *schema.ResourceData, meta interface{}) error {
 
 func resourceMetalVlanDelete(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*packngo.Client)
-
-	resp, err := client.ProjectVirtualNetworks.Delete(d.Id())
+	id := d.Id()
+	vlan, resp, err := client.ProjectVirtualNetworks.Get(id, &packngo.GetOptions{Includes: []string{"instances", "instances.network_ports.virtual_networks", "internet_gateway"}})
 	if ignoreResponseErrors(httpForbidden, httpNotFound)(resp, err) != nil {
 		return friendlyError(err)
+	} else if err != nil {
+		// missing vlans are deleted
+		return nil
 	}
-	return nil
+
+	// all device ports must be unassigned before delete
+	for _, i := range vlan.Instances {
+		for _, p := range i.NetworkPorts {
+			for _, a := range p.AttachedVirtualNetworks {
+				// a.ID is not set despite including instaces.network_ports.virtual_networks
+				// TODO(displague) packngo should offer GetID() that uses ID or Href
+				aID := path.Base(a.Href)
+
+				if aID == id {
+					_, resp, err := client.Ports.Unassign(p.ID, id)
+
+					if ignoreResponseErrors(httpForbidden, httpNotFound)(resp, err) != nil {
+						return friendlyError(err)
+					}
+				}
+			}
+		}
+	}
+
+	// TODO(displague) do we need to unassign gateway connections before delete?
+
+	return friendlyError(ignoreResponseErrors(httpForbidden, httpNotFound)(client.ProjectVirtualNetworks.Delete(id)))
 }

@@ -68,6 +68,7 @@ func Provider() *schema.Provider {
 			"metal_device":               resourceMetalDevice(),
 			"metal_device_network_type":  resourceMetalDeviceNetworkType(),
 			"metal_ssh_key":              resourceMetalSSHKey(),
+			"metal_port":                 resourceMetalPort(),
 			"metal_project_ssh_key":      resourceMetalProjectSSHKey(),
 			"metal_project":              resourceMetalProject(),
 			"metal_organization":         resourceMetalOrganization(),

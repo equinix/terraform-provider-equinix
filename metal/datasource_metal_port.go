@@ -1,18 +1,15 @@
 package metal
 
 import (
-	"fmt"
-
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/packethost/packngo"
 )
 
 func dataSourceMetalPort() *schema.Resource {
 	return &schema.Resource{
-		Read: dataSourceMetalPortRead,
+		Read: resourceMetalPortRead,
 
 		Schema: map[string]*schema.Schema{
-			"id": {
+			"port_id": {
 				Type:          schema.TypeString,
 				Optional:      true,
 				Description:   "UUID of the port to lookup",
@@ -22,14 +19,14 @@ func dataSourceMetalPort() *schema.Resource {
 				Type:          schema.TypeString,
 				Optional:      true,
 				Description:   "Device UUID where to lookup the port",
-				ConflictsWith: []string{"id"},
+				ConflictsWith: []string{"port_id"},
 			},
 			"name": {
 				Type:          schema.TypeString,
 				Optional:      true,
 				Computed:      true,
 				Description:   "Name of the port to look up, e.g. bond0, eth1",
-				ConflictsWith: []string{"id"},
+				ConflictsWith: []string{"port_id"},
 			},
 			"network_type": {
 				Type:        schema.TypeString,
@@ -77,72 +74,11 @@ func dataSourceMetalPort() *schema.Resource {
 				Description: "UUIDs of attached VLANs",
 				Elem:        &schema.Schema{Type: schema.TypeString},
 			},
+			"layer2": {
+				Type:        schema.TypeBool,
+				Computed:    true,
+				Description: "Flag indicating whether the port is in layer2 (or layer3) mode",
+			},
 		},
 	}
-}
-
-func dataSourceMetalPortRead(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*packngo.Client)
-	portId, portIdOk := d.GetOk("id")
-	deviceId, deviceIdOk := d.GetOk("device_id")
-	portName, portNameOk := d.GetOk("name")
-
-	var port *packngo.Port
-
-	if portIdOk && (deviceIdOk || portNameOk) {
-		return fmt.Errorf("You must specify either id or (device_id and name)")
-	}
-	if portIdOk {
-		var err error
-		port, _, err = client.Ports.Get(
-			portId.(string),
-			&packngo.GetOptions{Includes: []string{
-				"native_virtual_network",
-				"virtual_networks",
-			}},
-		)
-		if err != nil {
-			return err
-		}
-	} else {
-		if !(deviceIdOk && portNameOk) {
-			return fmt.Errorf("If you don't use port_id, you must supply both device_id and name")
-		}
-		device, _, err := client.Devices.Get(deviceId.(string), nil)
-		if err != nil {
-			return err
-		}
-		port, err = device.GetPortByName(portName.(string))
-		if err != nil {
-			return err
-		}
-	}
-	m := map[string]interface{}{
-		"type":              port.Type,
-		"name":              port.Name,
-		"network_type":      port.NetworkType,
-		"mac":               port.Data.MAC,
-		"bonded":            port.Data.Bonded,
-		"disbond_supported": port.DisbondOperationSupported,
-	}
-
-	if port.NativeVirtualNetwork != nil {
-		m["native_vlan_id"] = port.NativeVirtualNetwork.ID
-	}
-
-	if len(port.AttachedVirtualNetworks) > 0 {
-		vlans := []string{}
-		for _, n := range port.AttachedVirtualNetworks {
-			vlans = append(vlans, n.ID)
-		}
-		m["vlan_ids"] = vlans
-	}
-
-	if port.Bond != nil {
-		m["bond_id"] = port.Bond.ID
-		m["bond_name"] = port.Bond.Name
-	}
-
-	d.SetId(port.ID)
-	return setMap(d, m)
 }
