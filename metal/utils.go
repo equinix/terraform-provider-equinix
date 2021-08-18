@@ -22,6 +22,17 @@ func convertStringArr(ifaceArr []interface{}) []string {
 	return arr
 }
 
+func convertIntArr(ifaceArr []interface{}) []string {
+	var arr []string
+	for _, v := range ifaceArr {
+		if v == nil {
+			continue
+		}
+		arr = append(arr, strconv.Itoa(v.(int)))
+	}
+	return arr
+}
+
 func toLower(v interface{}) string {
 	return strings.ToLower(v.(string))
 }

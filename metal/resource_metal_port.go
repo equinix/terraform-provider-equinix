@@ -57,11 +57,21 @@ func resourceMetalPort() *schema.Resource {
 				Optional:    true,
 				Description: "UUID of native VLAN of the port",
 			},
+			"vxlan_ids": {
+				Type:          schema.TypeSet,
+				Optional:      true,
+				Computed:      true,
+				Description:   "VLAN VXLAN ids to attach (example: [1000])",
+				Elem:          &schema.Schema{Type: schema.TypeInt},
+				ConflictsWith: []string{"vlan_ids"},
+			},
 			"vlan_ids": {
-				Type:        schema.TypeSet,
-				Optional:    true,
-				Description: "UUIDs VLANs to attach",
-				Elem:        &schema.Schema{Type: schema.TypeString},
+				Type:          schema.TypeSet,
+				Optional:      true,
+				Computed:      true,
+				Description:   "UUIDs VLANs to attach. To avoid jitter, use the UUID and not the VXLAN",
+				Elem:          &schema.Schema{Type: schema.TypeString},
+				ConflictsWith: []string{"vxlan_ids"},
 			},
 			"reset_on_delete": {
 				Type:        schema.TypeBool,
@@ -167,10 +177,13 @@ func resourceMetalPortRead(d *schema.ResourceData, meta interface{}) error {
 	}
 
 	vlans := []string{}
+	vxlans := []int{}
 	for _, n := range port.AttachedVirtualNetworks {
 		vlans = append(vlans, n.ID)
+		vxlans = append(vxlans, n.VXLAN)
 	}
 	m["vlan_ids"] = vlans
+	m["vxlan_ids"] = vxlans
 
 	if port.Bond != nil {
 		m["bond_id"] = port.Bond.ID
@@ -200,6 +213,7 @@ func resourceMetalPortDelete(d *schema.ResourceData, meta interface{}) error {
 			"bonded":         true,
 			"native_vlan_id": nil,
 			"vlan_ids":       []string{},
+			"vxlan_ids":      nil,
 		}); err != nil {
 			return err
 		}

@@ -112,10 +112,17 @@ func attachedVlanIds(p *packngo.Port) []string {
 }
 
 func specifiedVlanIds(d *schema.ResourceData) []string {
+	// either vlan_ids or vxlan_ids should be set, TF should ensure that
 	vlanIdsRaw, vlanIdsOk := d.GetOk("vlan_ids")
 	specified := []string{}
 	if vlanIdsOk {
 		specified = convertStringArr(vlanIdsRaw.(*schema.Set).List())
+	}
+
+	vxlanIdsRaw, vxlanIdsOk := d.GetOk("vxlan_ids")
+	specified := []string{}
+	if vxlanIdsOk {
+		specified = convertIntArr(vlanIdsRaw.(*schema.Set).List())
 	}
 	return specified
 }
