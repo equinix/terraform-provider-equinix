@@ -8,8 +8,14 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 )
 
+var (
+	matchErrMissingFeature = regexp.MustCompile(`.*doesn't have feature.*`)
+	matchErrNoCapacity     = regexp.MustCompile(`Not enough capacity.*`)
+)
+
 func TestAccDataSourceFacility_Basic(t *testing.T) {
 	testFac := "dc13"
+
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
@@ -38,6 +44,28 @@ func TestAccDataSourceFacility_Basic(t *testing.T) {
 			},
 		},
 	})
+}
+
+func TestAccDataSourceFacility_Features(t *testing.T) {
+	resource.Test(t, resource.TestCase{
+		PreCheck:  func() { testAccPreCheck(t) },
+		Providers: testAccProviders,
+		Steps: []resource.TestStep{
+			{
+				Config:      testAccDataSourceFacilityConfigFeatures(),
+				ExpectError: matchErrMissingFeature,
+			},
+		},
+	})
+}
+
+func testAccDataSourceFacilityConfigFeatures() string {
+	return `
+data "metal_facility" "test" {
+    code = "ewr1"
+    desired_features = ["ibx"]
+}
+`
 }
 
 func testAccDataSourceFacilityConfigBasic(facCode string) string {
@@ -91,5 +119,3 @@ data "metal_facility" "test" {
 }
 `, facCode)
 }
-
-var matchErrNoCapacity = regexp.MustCompile(`Not enough capacity.*`)
