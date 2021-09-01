@@ -51,7 +51,7 @@ func dataSourceMetalFacility() *schema.Resource {
 				Description: "The code of the Facility to match",
 				Required:    true,
 			},
-			"desired_features": {
+			"features_required": {
 				Type:        schema.TypeSet,
 				Description: "Features which the facility needs to have.",
 				Elem:        &schema.Schema{Type: schema.TypeString},
@@ -108,7 +108,7 @@ func dataSourceMetalFacilityRead(d *schema.ResourceData, meta interface{}) error
 		return fmt.Errorf("Error listing Facilities: %s", err)
 	}
 
-	dfRaw, dfOk := d.GetOk("desired_features")
+	dfRaw, dfOk := d.GetOk("features_required")
 
 	for _, f := range facilities {
 		if f.Code == code {

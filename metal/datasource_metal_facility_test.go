@@ -63,7 +63,7 @@ func testAccDataSourceFacilityConfigFeatures() string {
 	return `
 data "metal_facility" "test" {
     code = "ewr1"
-    desired_features = ["ibx"]
+    features_required = ["baremetal", "ibx"]
 }
 `
 }
