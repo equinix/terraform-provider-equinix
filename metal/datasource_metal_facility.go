@@ -36,7 +36,6 @@ func dataSourceMetalFacility() *schema.Resource {
 			"capacity": {
 				Type:        schema.TypeList,
 				Description: "Optional capacity specification",
-				MaxItems:    1,
 				Optional:    true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
@@ -57,29 +56,36 @@ func dataSourceMetalFacility() *schema.Resource {
 	}
 }
 
+func getCapacityInput(capacitySpecs []interface{}, baseServerInfo packngo.ServerInfo) *packngo.CapacityInput {
+	ci := packngo.CapacityInput{Servers: []packngo.ServerInfo{}}
+	for _, v := range capacitySpecs {
+		item := v.(map[string]interface{})
+		spec := baseServerInfo
+		spec.Plan = item["plan"].(string)
+		spec.Quantity = item["quantity"].(int)
+		ci.Servers = append(ci.Servers, spec)
+	}
+	return &ci
+}
+
 func dataSourceMetalFacilityRead(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*packngo.Client)
 	code := d.Get("code").(string)
 
 	_, capacityOk := d.GetOk("capacity")
 	if capacityOk {
-		plan := d.Get("capacity.0.plan").(string)
-		quantity := d.Get("capacity.0.quantity").(int)
-		ci := packngo.CapacityInput{
-			Servers: []packngo.ServerInfo{
-				{
-					Facility: code,
-					Plan:     plan,
-					Quantity: quantity,
-				},
-			},
-		}
-		res, _, err := client.CapacityService.Check(&ci)
+		ci := getCapacityInput(
+			d.Get("capacity").([]interface{}),
+			packngo.ServerInfo{Facility: code},
+		)
+		res, _, err := client.CapacityService.Check(ci)
 		if err != nil {
 			return err
 		}
-		if !res.Servers[0].Available {
-			return fmt.Errorf("Not enough capacity in facility %s for %d device(s) of plan %s", code, quantity, plan)
+		for _, s := range res.Servers {
+			if !s.Available {
+				return fmt.Errorf("Not enough capacity in facility %s for %d device(s) of plan %s", s.Facility, s.Quantity, s.Plan)
+			}
 		}
 	}
 
