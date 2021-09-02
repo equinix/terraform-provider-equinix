@@ -46,6 +46,7 @@ data "metal_facility" "test" {
 The following arguments are supported:
 
 * `code` - The facility code
+* `features_required` - Set of feature strings that the facility must have
 
 Facilities can be looked up by `code`.
 
