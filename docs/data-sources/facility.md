@@ -57,7 +57,7 @@ The following attributes are exported:
 * `name` - The name of the facility
 * `features` - The features of the facility
 * `metro` - The metro code the facility is part of
-* `capacity` - Ensure that queried facility has capacity for specified number of given plans
+* `capacity` - (Optional) Ensure that queried facility has capacity for specified number of given plans
   - `plan` - device plan to check
   - `quantity` - number of device to check
 

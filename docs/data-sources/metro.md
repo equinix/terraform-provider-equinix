@@ -15,13 +15,32 @@ Provides an Equinix Metal metro datasource.
 # Fetch a metro by code and show its ID
 
 data "metal_metro" "sv" {
-    code = "sv"
+  code = "sv"
 }
 
 output "id" {
   value = data.metal_metro.sv.id
 }
 ```
+
+
+```hcl
+# Verify that metro "sv" has capacity for provisioning 2 c3.small.x86 
+  devices and 1 c3.medium.x86 device
+
+data "metal_facility" "test" {
+  code = "dc13"
+  capacity {
+    plan = "c3.small.x86"
+    quantity = 2
+  }
+  capacity {
+    plan = "c3.medium.x86"
+    quantity = 1
+  }
+}
+
+  ```
 
 ## Argument Reference
 
@@ -39,3 +58,6 @@ The following attributes are exported:
 * `code` - The code of the metro
 * `country` - The country of the metro
 * `name` - The name of the metro
+* `capacity` - (Optional) Ensure that queried metro has capacity for specified number of given plans
+  - `plan` - device plan to check
+  - `quantity` - number of device to check

@@ -8,6 +8,40 @@ import (
 	"github.com/packethost/packngo"
 )
 
+func getCapacityInput(capacitySpecs []interface{}, baseServerInfo packngo.ServerInfo) *packngo.CapacityInput {
+	ci := packngo.CapacityInput{Servers: []packngo.ServerInfo{}}
+	for _, v := range capacitySpecs {
+		item := v.(map[string]interface{})
+		spec := baseServerInfo
+		spec.Plan = item["plan"].(string)
+		spec.Quantity = item["quantity"].(int)
+		ci.Servers = append(ci.Servers, spec)
+	}
+	return &ci
+}
+
+func capacitySchema() *schema.Schema {
+	return &schema.Schema{
+		Type:        schema.TypeList,
+		Description: "Optional capacity specification",
+		Optional:    true,
+		Elem: &schema.Resource{
+			Schema: map[string]*schema.Schema{
+				"plan": {
+					Type:        schema.TypeString,
+					Description: "Plan which has to be available in selected location",
+					Required:    true,
+				},
+				"quantity": {
+					Type:     schema.TypeInt,
+					Default:  1,
+					Optional: true,
+				},
+			},
+		},
+	}
+}
+
 func dataSourceMetalFacility() *schema.Resource {
 	return &schema.Resource{
 		Read: dataSourceMetalFacilityRead,
@@ -33,39 +67,9 @@ func dataSourceMetalFacility() *schema.Resource {
 				Elem:        &schema.Schema{Type: schema.TypeString},
 				Computed:    true,
 			},
-			"capacity": {
-				Type:        schema.TypeList,
-				Description: "Optional capacity specification",
-				Optional:    true,
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"plan": {
-							Type:        schema.TypeString,
-							Description: "Plan which has to be available in selected facility",
-							Required:    true,
-						},
-						"quantity": {
-							Type:     schema.TypeInt,
-							Default:  1,
-							Optional: true,
-						},
-					},
-				},
-			},
+			"capacity": capacitySchema(),
 		},
 	}
-}
-
-func getCapacityInput(capacitySpecs []interface{}, baseServerInfo packngo.ServerInfo) *packngo.CapacityInput {
-	ci := packngo.CapacityInput{Servers: []packngo.ServerInfo{}}
-	for _, v := range capacitySpecs {
-		item := v.(map[string]interface{})
-		spec := baseServerInfo
-		spec.Plan = item["plan"].(string)
-		spec.Quantity = item["quantity"].(int)
-		ci.Servers = append(ci.Servers, spec)
-	}
-	return &ci
 }
 
 func dataSourceMetalFacilityRead(d *schema.ResourceData, meta interface{}) error {
@@ -87,10 +91,9 @@ func dataSourceMetalFacilityRead(d *schema.ResourceData, meta interface{}) error
 				return fmt.Errorf("Not enough capacity in facility %s for %d device(s) of plan %s", s.Facility, s.Quantity, s.Plan)
 			}
 		}
-	}
-
-	if code == "" {
-		return fmt.Errorf("Error Facility code is required")
+		if err != nil {
+			return err
+		}
 	}
 
 	facilities, _, err := client.Facilities.List(nil)

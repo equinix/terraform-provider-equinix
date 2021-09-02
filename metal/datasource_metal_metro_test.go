@@ -1,31 +1,92 @@
 package metal
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 )
 
-func TestAccMetroDataSource_Basic(t *testing.T) {
+func TestAccDataSourceMetro_Basic(t *testing.T) {
+	testMetro := "da"
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckMetalMetroDataSourceConfigBasic(),
+				Config: testAccDataSourceMetroConfigBasic(testMetro),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(
-						"data.metal_metro.test", "code", "sv"),
+						"data.metal_metro.test", "code", testMetro),
 				),
+			},
+			{
+				Config: testAccDataSourceMetroConfigCapacityReasonable(testMetro),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(
+						"data.metal_metro.test", "code", testMetro),
+				),
+			},
+			{
+				Config:      testAccDataSourceMetroConfigCapacityUnreasonable(testMetro),
+				ExpectError: matchErrNoCapacity,
+			},
+			{
+				Config:      testAccDataSourceMetroConfigCapacityUnreasonableMultiple(testMetro),
+				ExpectError: matchErrNoCapacity,
 			},
 		},
 	})
 }
 
-func testAccCheckMetalMetroDataSourceConfigBasic() string {
-	return `
+func testAccDataSourceMetroConfigBasic(facCode string) string {
+	return fmt.Sprintf(`
 data "metal_metro" "test" {
-    code = "sv"
+    code = "%s"
 }
-`
+`, facCode)
+}
+
+func testAccDataSourceMetroConfigCapacityUnreasonable(facCode string) string {
+	return fmt.Sprintf(`
+data "metal_metro" "test" {
+    code = "%s"
+    capacity {
+        plan = "c3.small.x86"
+        quantity = 1000
+    }
+}
+`, facCode)
+}
+
+func testAccDataSourceMetroConfigCapacityReasonable(facCode string) string {
+	return fmt.Sprintf(`
+data "metal_metro" "test" {
+    code = "%s"
+    capacity {
+        plan = "c3.small.x86"
+        quantity = 1
+    }
+    capacity {
+        plan = "c3.medium.x86"
+        quantity = 1
+    }
+}
+`, facCode)
+}
+
+func testAccDataSourceMetroConfigCapacityUnreasonableMultiple(facCode string) string {
+	return fmt.Sprintf(`
+data "metal_metro" "test" {
+    code = "%s"
+    capacity {
+        plan = "c3.small.x86"
+        quantity = 1
+    }
+    capacity {
+        plan = "c3.medium.x86"
+        quantity = 1000
+    }
+}
+`, facCode)
 }
