@@ -8,6 +8,40 @@ import (
 	"github.com/packethost/packngo"
 )
 
+func getCapacityInput(capacitySpecs []interface{}, baseServerInfo packngo.ServerInfo) *packngo.CapacityInput {
+	ci := packngo.CapacityInput{Servers: []packngo.ServerInfo{}}
+	for _, v := range capacitySpecs {
+		item := v.(map[string]interface{})
+		spec := baseServerInfo
+		spec.Plan = item["plan"].(string)
+		spec.Quantity = item["quantity"].(int)
+		ci.Servers = append(ci.Servers, spec)
+	}
+	return &ci
+}
+
+func capacitySchema() *schema.Schema {
+	return &schema.Schema{
+		Type:        schema.TypeList,
+		Description: "Optional capacity specification",
+		Optional:    true,
+		Elem: &schema.Resource{
+			Schema: map[string]*schema.Schema{
+				"plan": {
+					Type:        schema.TypeString,
+					Description: "Plan which has to be available in selected location",
+					Required:    true,
+				},
+				"quantity": {
+					Type:     schema.TypeInt,
+					Default:  1,
+					Optional: true,
+				},
+			},
+		},
+	}
+}
+
 func dataSourceMetalFacility() *schema.Resource {
 	return &schema.Resource{
 		Read: dataSourceMetalFacilityRead,
@@ -33,6 +67,7 @@ func dataSourceMetalFacility() *schema.Resource {
 				Elem:        &schema.Schema{Type: schema.TypeString},
 				Computed:    true,
 			},
+			"capacity": capacitySchema(),
 		},
 	}
 }
@@ -41,8 +76,24 @@ func dataSourceMetalFacilityRead(d *schema.ResourceData, meta interface{}) error
 	client := meta.(*packngo.Client)
 	code := d.Get("code").(string)
 
-	if code == "" {
-		return fmt.Errorf("Error Facility code is required")
+	_, capacityOk := d.GetOk("capacity")
+	if capacityOk {
+		ci := getCapacityInput(
+			d.Get("capacity").([]interface{}),
+			packngo.ServerInfo{Facility: code},
+		)
+		res, _, err := client.CapacityService.Check(ci)
+		if err != nil {
+			return err
+		}
+		for _, s := range res.Servers {
+			if !s.Available {
+				return fmt.Errorf("Not enough capacity in facility %s for %d device(s) of plan %s", s.Facility, s.Quantity, s.Plan)
+			}
+		}
+		if err != nil {
+			return err
+		}
 	}
 
 	facilities, _, err := client.Facilities.List(nil)

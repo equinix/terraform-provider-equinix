@@ -31,6 +31,7 @@ func dataSourceMetalMetro() *schema.Resource {
 				Description: "The name of this Metro.",
 				Computed:    true,
 			},
+			"capacity": capacitySchema(),
 		},
 	}
 }
@@ -39,8 +40,24 @@ func dataSourceMetalMetroRead(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*packngo.Client)
 	code := d.Get("code").(string)
 
-	if code == "" {
-		return fmt.Errorf("Error Metro code is required")
+	_, capacityOk := d.GetOk("capacity")
+	if capacityOk {
+		ci := getCapacityInput(
+			d.Get("capacity").([]interface{}),
+			packngo.ServerInfo{Metro: code},
+		)
+		res, _, err := client.CapacityService.CheckMetros(ci)
+		if err != nil {
+			return err
+		}
+		for _, s := range res.Servers {
+			if !s.Available {
+				return fmt.Errorf("Not enough capacity in metro %s for %d device(s) of plan %s", s.Facility, s.Quantity, s.Plan)
+			}
+		}
+		if err != nil {
+			return err
+		}
 	}
 
 	metros, _, err := client.Metros.List(nil)
