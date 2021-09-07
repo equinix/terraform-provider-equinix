@@ -353,6 +353,20 @@ func resourceMetalDevice() *schema.Resource {
 				Default:     false,
 				ForceNew:    false,
 			},
+			"termination_time": {
+				Type:        schema.TypeString,
+				Description: "Timestamp for device termination. For example \"2021-09-03T16:32:00+03:00\". If you don't supply timezone info, timestamp is assumed to be in UTC.",
+				Optional:    true,
+				ForceNew:    false,
+				ValidateFunc: func(val interface{}, key string) (warns []string, errs []error) {
+					_, err := time.ParseInLocation(time.RFC3339, val.(string), time.UTC)
+					if err != nil {
+						errs = []error{err}
+					}
+					return
+				},
+			},
+
 			"reinstall": {
 				Type:     schema.TypeList,
 				MaxItems: 1,
@@ -459,6 +473,14 @@ func resourceMetalDeviceCreate(d *schema.ResourceData, meta interface{}) error {
 
 	if attr, ok := d.GetOk("ipxe_script_url"); ok {
 		createRequest.IPXEScriptURL = attr.(string)
+	}
+
+	if attr, ok := d.GetOk("termination_time"); ok {
+		tt, err := time.ParseInLocation(time.RFC3339, attr.(string), time.UTC)
+		if err != nil {
+			return err
+		}
+		createRequest.TerminationTime = &packngo.Timestamp{Time: tt}
 	}
 
 	if attr, ok := d.GetOk("hardware_reservation_id"); ok {
@@ -604,6 +626,11 @@ func resourceMetalDeviceRead(d *schema.ResourceData, meta interface{}) error {
 	fdv := "force_detach_volumes"
 	if _, ok := d.GetOk(fdv); !ok {
 		d.Set(fdv, nil)
+
+		tt := "termination_time"
+		if _, ok := d.GetOk(tt); !ok {
+			d.Set(tt, nil)
+		}
 	}
 
 	d.Set("tags", device.Tags)

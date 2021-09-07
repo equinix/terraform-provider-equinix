@@ -3,6 +3,7 @@ package metal
 import (
 	"os"
 	"testing"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
@@ -39,4 +40,8 @@ func testAccPreCheck(t *testing.T) {
 	if v == "" {
 		t.Fatal("METAL_AUTH_TOKEN must be set for acceptance tests")
 	}
+}
+
+func testDeviceTerminationTime() string {
+	return time.Now().UTC().Add(60 * time.Minute).Format(time.RFC3339)
 }
