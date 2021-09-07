@@ -355,10 +355,9 @@ func resourceMetalDevice() *schema.Resource {
 			},
 			"termination_time": {
 				Type:        schema.TypeString,
-				Description: "Timestamp for device termination, use with care. For example \"2021-09-03T16:32:00+03:00\". If you don't supply timezone info, timestamp is assumed to be in UTC.",
+				Description: "Timestamp for device termination. For example \"2021-09-03T16:32:00+03:00\". If you don't supply timezone info, timestamp is assumed to be in UTC.",
 				Optional:    true,
 				ForceNew:    false,
-				Deprecated:  "You probably don't want to use this attribute, we added it for sweeping test artifacts.",
 				ValidateFunc: func(val interface{}, key string) (warns []string, errs []error) {
 					_, err := time.ParseInLocation(time.RFC3339, val.(string), time.UTC)
 					if err != nil {
