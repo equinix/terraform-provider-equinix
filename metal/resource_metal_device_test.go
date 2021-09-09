@@ -117,11 +117,14 @@ func TestAccMetalDevice_Basic(t *testing.T) {
 		CheckDestroy: testAccCheckMetalDeviceDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckMetalDeviceConfig_basic(rs),
+				Config: testAccCheckMetalDeviceConfig_minimal(rs),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckMetalDeviceExists(r, &device),
 					testAccCheckMetalDeviceNetwork(r),
-					testAccCheckMetalDeviceAttributes(&device),
+					resource.TestCheckResourceAttrSet(
+						r, "hostname"),
+					resource.TestCheckResourceAttr(
+						r, "billing_cycle", "hourly"),
 					resource.TestCheckResourceAttr(
 						r, "network_type", "layer3"),
 					resource.TestCheckResourceAttr(
@@ -132,6 +135,14 @@ func TestAccMetalDevice_Basic(t *testing.T) {
 						r, "root_password"),
 					resource.TestCheckResourceAttrPair(
 						r, "deployed_facility", r, "facilities.0"),
+				),
+			},
+			{
+				Config: testAccCheckMetalDeviceConfig_basic(rs),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckMetalDeviceExists(r, &device),
+					testAccCheckMetalDeviceNetwork(r),
+					testAccCheckMetalDeviceAttributes(&device),
 				),
 			},
 		},
@@ -553,6 +564,20 @@ resource "metal_device" "test" {
   metro            = "sv"
   operating_system = "ubuntu_16_04"
   billing_cycle    = "hourly"
+  project_id       = "${metal_project.test.id}"
+}`, projSuffix)
+}
+
+func testAccCheckMetalDeviceConfig_minimal(projSuffix string) string {
+	return fmt.Sprintf(`
+resource "metal_project" "test" {
+    name = "tfacc-device-%s"
+}
+
+resource "metal_device" "test" {
+  plan             = "t1.small.x86"
+  facilities       = ["sjc1"]
+  operating_system = "ubuntu_16_04"
   project_id       = "${metal_project.test.id}"
 }`, projSuffix)
 }

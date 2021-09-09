@@ -50,8 +50,9 @@ func resourceMetalDevice() *schema.Resource {
 
 			"hostname": {
 				Type:        schema.TypeString,
-				Description: "The device name",
-				Required:    true,
+				Description: "The device hostname used in deployments taking advantage of Layer3 DHCP or metadata service configuration.",
+				Optional:    true,
+				Computed:    true,
 			},
 
 			"description": {
@@ -131,7 +132,8 @@ func resourceMetalDevice() *schema.Resource {
 			"billing_cycle": {
 				Type:        schema.TypeString,
 				Description: "monthly or hourly",
-				Required:    true,
+				Optional:    true,
+				Computed:    true,
 				ForceNew:    true,
 			},
 			"state": {
@@ -555,14 +557,6 @@ func resourceMetalDeviceCreate(d *schema.ResourceData, meta interface{}) error {
 		return err
 	}
 
-	/*
-			    Possibly wait for device network state
-		    	_, err := waitForDeviceAttribute(d, []string{"layer3"}, []string{"hybrid", "layer2-bonded", "layer2-individual"}, "network_type", meta)
-		        if err != nil {
-					return err
-				}
-	*/
-
 	return resourceMetalDeviceRead(d, meta)
 }
 
@@ -608,7 +602,7 @@ func resourceMetalDeviceRead(d *schema.ResourceData, meta interface{}) error {
 
 		storageString, err := structure.NormalizeJsonString(string(rawStorageBytes))
 		if err != nil {
-			return fmt.Errorf("[ERR] Errori normalizing storage JSON string for device (%s): %s", d.Id(), err)
+			return fmt.Errorf("[ERR] Error normalizing storage JSON string for device (%s): %s", d.Id(), err)
 		}
 		d.Set("storage", storageString)
 	}
