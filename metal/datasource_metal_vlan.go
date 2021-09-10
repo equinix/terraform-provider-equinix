@@ -103,38 +103,9 @@ func dataSourceMetalVlanRead(d *schema.ResourceData, meta interface{}) error {
 			return friendlyError(err)
 		}
 
-		matches := 0
-		for _, v := range vlans.VirtualNetworks {
-			if vxlan != 0 && v.VXLAN != vxlan {
-				continue
-			}
-			if facility != "" && v.FacilityCode != facility {
-				continue
-			}
-			if metro != "" && v.MetroCode != metro {
-				continue
-			}
-			matches++
-			if matches > 1 {
-				return friendlyError(fmt.Errorf("Project %s has more than one matching VLAN", projectID))
-			}
-			vlan = &v
-		}
-
-		if matches == 0 {
-			return friendlyError(fmt.Errorf("Project %s does not have matching VLANs", projectID))
-		}
-
-		if vlan == nil {
-			locName := "facility"
-			loc := facility
-			if metroOk {
-				locName = "metro"
-				loc = metro
-			}
-			return friendlyError(fmt.Errorf("Project %s doesn't contain VLAN with vxlan %d in %s %s", projectID, vxlan, locName, loc))
-		}
+		vlan, err = matchingVlan(vlans.VirtualNetworks, vxlan, projectID, facility, metro)
 	}
+
 	assignedDevices := []string{}
 	for _, d := range vlan.Instances {
 		assignedDevices = append(assignedDevices, d.ID)
@@ -150,4 +121,28 @@ func dataSourceMetalVlanRead(d *schema.ResourceData, meta interface{}) error {
 		"metro":       vlan.MetroCode,
 		"description": vlan.Description,
 	})
+}
+
+func matchingVlan(vlans []packngo.VirtualNetwork, vxlan int, projectID, facility, metro string) (*packngo.VirtualNetwork, error) {
+	matches := []packngo.VirtualNetwork{}
+	for _, v := range vlans {
+		if vxlan != 0 && v.VXLAN != vxlan {
+			continue
+		}
+		if facility != "" && v.FacilityCode != facility {
+			continue
+		}
+		if metro != "" && v.MetroCode != metro {
+			continue
+		}
+		matches = append(matches, v)
+	}
+	if len(matches) > 1 {
+		return nil, friendlyError(fmt.Errorf("Project %s has more than one matching VLAN", projectID))
+	}
+
+	if len(matches) == 0 {
+		return nil, friendlyError(fmt.Errorf("Project %s does not have matching VLANs", projectID))
+	}
+	return &matches[0], nil
 }

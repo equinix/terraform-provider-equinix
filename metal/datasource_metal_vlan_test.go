@@ -2,6 +2,7 @@ package metal
 
 import (
 	"fmt"
+	"reflect"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
@@ -74,6 +75,18 @@ data "metal_vlan" "dsvlan" {
     project_id = metal_vlan.foovlan.project_id
     vxlan = metal_vlan.foovlan.vxlan
 }
+
+resource "metal_vlan" "barvlan" {
+    project_id = metal_project.foobar.id
+    metro = metal_vlan.foovlan.metro
+    vxlan = 6
+}
+
+data "metal_vlan" "bardsvlan" {
+    metro = metal_vlan.barvlan.metro
+    project_id = metal_vlan.barvlan.project_id
+    vxlan = metal_vlan.barvlan.vxlan
+}
 `, projSuffix, metro, desc)
 }
 
@@ -96,6 +109,16 @@ func TestAccMetalDatasourceVlan_ByVxlanMetro(t *testing.T) {
 					resource.TestCheckResourceAttrPair(
 						"metal_vlan.foovlan", "id",
 						"data.metal_vlan.dsvlan", "id",
+					),
+					resource.TestCheckResourceAttr(
+						"metal_vlan.barvlan", "vxlan", "6",
+					),
+					resource.TestCheckResourceAttr(
+						"data.metal_vlan.bardsvlan", "vxlan", "6",
+					),
+					resource.TestCheckResourceAttrPair(
+						"metal_vlan.barvlan", "id",
+						"data.metal_vlan.bardsvlan", "id",
 					),
 				),
 			},
@@ -206,4 +229,101 @@ func TestAccMetalDatasourceVlan_ByProjectId(t *testing.T) {
 			},
 		},
 	})
+}
+
+func Test_matchingVlan(t *testing.T) {
+	type args struct {
+		vlans     []packngo.VirtualNetwork
+		vxlan     int
+		projectID string
+		facility  string
+		metro     string
+	}
+	tests := []struct {
+		name    string
+		args    args
+		want    *packngo.VirtualNetwork
+		wantErr bool
+	}{{
+		name: "MatchingVLAN",
+		args: args{
+			vlans:     []packngo.VirtualNetwork{{VXLAN: 123}},
+			vxlan:     123,
+			projectID: "",
+			facility:  "",
+			metro:     "",
+		},
+		want:    &packngo.VirtualNetwork{VXLAN: 123},
+		wantErr: false,
+	},
+		{
+			name: "MatchingFac",
+			args: args{
+				vlans:    []packngo.VirtualNetwork{{FacilityCode: "fac"}},
+				facility: "fac",
+			},
+			want:    &packngo.VirtualNetwork{FacilityCode: "fac"},
+			wantErr: false,
+		},
+		{
+			name: "MatchingMet",
+			args: args{
+				vlans: []packngo.VirtualNetwork{{MetroCode: "met"}},
+				metro: "met",
+			},
+			want:    &packngo.VirtualNetwork{MetroCode: "met"},
+			wantErr: false,
+		},
+		{
+			name: "SecondMatch",
+			args: args{
+				vlans: []packngo.VirtualNetwork{{FacilityCode: "fac"}, {MetroCode: "met"}},
+				metro: "met",
+			},
+			want:    &packngo.VirtualNetwork{MetroCode: "met"},
+			wantErr: false,
+		},
+		{
+			name: "TwoMatches",
+			args: args{
+				vlans: []packngo.VirtualNetwork{{MetroCode: "met"}, {MetroCode: "met"}},
+				metro: "met",
+			},
+			want:    nil,
+			wantErr: true,
+		},
+		{
+			name: "ComplexMatch",
+			args: args{
+				vlans: []packngo.VirtualNetwork{{VXLAN: 987, FacilityCode: "fac", MetroCode: "skip"}, {VXLAN: 123, FacilityCode: "fac", MetroCode: "met"}, {VXLAN: 456, FacilityCode: "fac", MetroCode: "nope"}},
+				metro: "met",
+			},
+			want:    &packngo.VirtualNetwork{VXLAN: 123, FacilityCode: "fac", MetroCode: "met"},
+			wantErr: false,
+		},
+		{
+			name: "NoMatch",
+			args: args{
+				vlans:     nil,
+				vxlan:     123,
+				projectID: "pid",
+				facility:  "fac",
+				metro:     "met",
+			},
+			want:    nil,
+			wantErr: true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := matchingVlan(tt.args.vlans, tt.args.vxlan, tt.args.projectID, tt.args.facility, tt.args.metro)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("matchingVlan() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("matchingVlan() = %v, want %v", got, tt.want)
+			}
+		})
+	}
 }
