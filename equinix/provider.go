@@ -20,6 +20,7 @@ const (
 	endpointEnvVar      = "EQUINIX_API_ENDPOINT"
 	clientIDEnvVar      = "EQUINIX_API_CLIENTID"
 	clientSecretEnvVar  = "EQUINIX_API_CLIENTSECRET"
+	clientTokenEnvVar   = "EQUINIX_API_TOKEN"
 	clientTimeoutEnvVar = "EQUINIX_API_TIMEOUT"
 )
 
@@ -44,18 +45,25 @@ func Provider() *schema.Provider {
 				Description:  "The Equinix API base URL to point out desired environment. Defaults to https://api.equinix.com",
 			},
 			"client_id": {
-				Type:         schema.TypeString,
-				Optional:     true,
-				DefaultFunc:  schema.EnvDefaultFunc(clientIDEnvVar, nil),
-				ValidateFunc: validation.StringIsNotEmpty,
-				Description:  "API Consumer Key available under My Apps section in developer portal",
+				Type:        schema.TypeString,
+				Optional:    true,
+				DefaultFunc: schema.EnvDefaultFunc(clientIDEnvVar, nil),
+				// ValidateFunc: validation.StringIsNotEmpty,
+				Description: "API Consumer Key available under My Apps section in developer portal",
 			},
 			"client_secret": {
-				Type:         schema.TypeString,
-				Optional:     true,
-				DefaultFunc:  schema.EnvDefaultFunc(clientSecretEnvVar, nil),
-				ValidateFunc: validation.StringIsNotEmpty,
-				Description:  "API Consumer secret available under My Apps section in developer portal",
+				Type:        schema.TypeString,
+				Optional:    true,
+				DefaultFunc: schema.EnvDefaultFunc(clientSecretEnvVar, nil),
+				// ValidateFunc: validation.StringIsNotEmpty,
+				Description: "API Consumer secret available under My Apps section in developer portal",
+			},
+			"token": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				DefaultFunc: schema.EnvDefaultFunc(clientTokenEnvVar, nil),
+				// ValidateFunc: validation.StringIsNotEmpty,
+				Description: "API token from the developer sandbox",
 			},
 			"request_timeout": {
 				Type:         schema.TypeInt,
@@ -109,6 +117,9 @@ func configureProvider(ctx context.Context, d *schema.ResourceData, p *schema.Pr
 	}
 	if v, ok := d.GetOk("client_secret"); ok {
 		config.ClientSecret = v.(string)
+	}
+	if v, ok := d.GetOk("token"); ok {
+		config.Token = v.(string)
 	}
 	if v, ok := d.GetOk("request_timeout"); ok {
 		config.RequestTimeout = time.Duration(v.(int)) * time.Second

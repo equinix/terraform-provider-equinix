@@ -316,6 +316,9 @@ func testAccPreCheck(t *testing.T) {
 	if _, err := getFromEnv(endpointEnvVar); err != nil {
 		t.Fatalf("%s", err)
 	}
+	if _, err := getFromEnv(clientTokenEnvVar); err == nil {
+		return
+	}
 	if _, err := getFromEnv(clientIDEnvVar); err != nil {
 		t.Fatalf("%s", err)
 	}
