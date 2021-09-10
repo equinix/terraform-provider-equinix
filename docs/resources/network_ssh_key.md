@@ -38,3 +38,11 @@ using the file interpolation function
 ## Attributes Reference
 
 * `uuid` - The unique identifier of the key
+
+## Import
+
+This resource can be imported using an existing ID:
+
+```sh
+terraform import equinix_network_ssh_key.example {existing_id}
+```

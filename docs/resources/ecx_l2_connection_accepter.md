@@ -52,3 +52,11 @@ recommended to keep credentials in any Terraform configuration.
 
 * `aws_connection_id` - Identifier of a hosted Direct Connect connection on AWS side,
 applicable for accepter resource with connections to AWS only
+
+## Import
+
+This resource can be imported using an existing ID:
+
+```sh
+terraform import equinix_ecx_l2_connection_accepter.example {existing_id}
+```
