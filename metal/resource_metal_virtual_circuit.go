@@ -249,9 +249,10 @@ func resourceMetalVirtualCircuitUpdate(d *schema.ResourceData, meta interface{})
 func resourceMetalVirtualCircuitDelete(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*packngo.Client)
 	// we first need to disconnect VLAN from the VC
+	empty := ""
 	_, _, err := client.VirtualCircuits.Update(
 		d.Id(),
-		&packngo.VCUpdateRequest{VirtualNetworkID: nil},
+		&packngo.VCUpdateRequest{VirtualNetworkID: &empty},
 		nil,
 	)
 	if err != nil {
