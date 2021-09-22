@@ -40,7 +40,7 @@ jobs:
         version:
           - stable
         terraform:
-          - '1.0.2'
+          - '1.0.7'
           - '0.13.6'
     steps:
 
@@ -68,24 +68,15 @@ jobs:
 
         METAL_AUTH_TOKEN: ${{ secrets.PACKET_AUTH_TOKEN }}
       run: |
-        go test -v -json -coverprofile coverage.txt -covermode=atomic -parallel 4 -timeout 180m ./metal > test.json
-    - name: Annotate tests
-      if: always()
-      uses: guyarb/golang-test-annotations@v0.4.0
-      with:
-        test-results: test.json
+        go test -v -coverprofile coverage.txt -covermode=atomic -parallel 8 -timeout 180m ./metal
     - name: Sweeper
       if: ${{ always() }}
       env:
         METAL_AUTH_TOKEN: ${{ secrets.PACKET_AUTH_TOKEN }}
       run: |
-        go test ./metal -v -json -sweep="tf_test"  > sweep.json
-    - name: Annotate sweep
-      if: always()
-      uses: guyarb/golang-test-annotations@v0.4.0
-      with:
-        test-results: sweep.json
+        go test ./metal -v -sweep="tf_test"
     - name: Upload coverage to Codecov
+      if: ${{ always() }}
       uses: codecov/codecov-action@v2
       with:
         token: ${{ secrets.CODECOV_TOKEN }}
