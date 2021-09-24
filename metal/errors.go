@@ -41,7 +41,8 @@ func friendlyError(err error) error {
 }
 
 func isForbidden(err error) bool {
-	if r, ok := err.(*packngo.ErrorResponse); ok && r.Response != nil {
+	r, ok := err.(*packngo.ErrorResponse)
+	if ok && r.Response != nil {
 		return r.Response.StatusCode == http.StatusForbidden
 	}
 	if r, ok := err.(*ErrorResponse); ok {
@@ -51,11 +52,11 @@ func isForbidden(err error) bool {
 }
 
 func isNotFound(err error) bool {
-	if r, ok := err.(*packngo.ErrorResponse); ok && r.Response != nil {
-		return r.Response.StatusCode == http.StatusNotFound
-	}
 	if r, ok := err.(*ErrorResponse); ok {
 		return r.StatusCode == http.StatusNotFound && r.IsAPIError
+	}
+	if r, ok := err.(*packngo.ErrorResponse); ok && r.Response != nil {
+		return r.Response.StatusCode == http.StatusNotFound
 	}
 	return false
 }
@@ -113,26 +114,27 @@ func isNotAssigned(resp *http.Response, err error) bool {
 }
 
 func httpForbidden(resp *http.Response, err error) bool {
-	if resp.StatusCode != http.StatusForbidden {
+	if resp != nil && (resp.StatusCode != http.StatusForbidden) {
 		return false
 	}
 
-	if err, ok := err.(*ErrorResponse); ok {
-		return err.IsAPIError
+	switch err := err.(type) {
+	case *ErrorResponse, *packngo.ErrorResponse:
+		return isForbidden(err)
 	}
 
 	return false
 }
 
 func httpNotFound(resp *http.Response, err error) bool {
-	if resp.StatusCode != http.StatusNotFound {
+	if resp != nil && (resp.StatusCode != http.StatusNotFound) {
 		return false
 	}
 
-	if err, ok := err.(*ErrorResponse); ok {
-		return err.IsAPIError
+	switch err := err.(type) {
+	case *ErrorResponse, *packngo.ErrorResponse:
+		return isNotFound(err)
 	}
-
 	return false
 }
 
@@ -140,14 +142,21 @@ func httpNotFound(resp *http.Response, err error) bool {
 // provided checks
 func ignoreResponseErrors(ignore ...func(resp *http.Response, err error) bool) func(resp *packngo.Response, err error) error {
 	return func(resp *packngo.Response, err error) error {
-		if resp == nil || resp.Response == nil {
-			return err
+		var r *http.Response
+		if resp != nil && resp.Response != nil {
+			r = resp.Response
 		}
+		mute := false
 		for _, ignored := range ignore {
-			if !ignored(resp.Response, err) {
-				return err
+			if ignored(r, err) {
+				mute = true
+				break
 			}
 		}
-		return nil
+
+		if mute {
+			return nil
+		}
+		return err
 	}
 }
