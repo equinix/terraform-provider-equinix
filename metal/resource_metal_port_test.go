@@ -124,6 +124,78 @@ resource "metal_vlan" "test" {
 `, confAccMetalPort_base(name))
 }
 
+func confAccMetalPort_HybridBondedVxlan(name string) string {
+	return fmt.Sprintf(`
+%s
+
+resource "metal_port" "bond0" {
+  port_id = local.bond0_id
+  layer2 = false
+  bonded = true
+  vxlan_ids = [metal_vlan.test1.vxlan, metal_vlan.test2.vxlan]
+  reset_on_delete = true
+}
+
+resource "metal_vlan" "test1" {
+  description = "test1"
+  metro = "sv"
+  project_id = metal_project.test.id
+}
+
+resource "metal_vlan" "test2" {
+  description = "test2"
+  metro = "sv"
+  project_id = metal_project.test.id
+}
+`, confAccMetalPort_base(name))
+}
+
+func TestAccMetalPort_HybridBondedVxlan(t *testing.T) {
+	rs := acctest.RandString(10)
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccMetalPortDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: confAccMetalPort_HybridBondedVxlan(rs),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("metal_port.bond0", "name", "bond0"),
+					resource.TestCheckResourceAttr("metal_port.bond0", "type", "NetworkBondPort"),
+					resource.TestCheckResourceAttrSet("metal_port.bond0", "bonded"),
+					resource.TestCheckResourceAttrSet("metal_port.bond0", "disbond_supported"),
+					resource.TestCheckResourceAttrSet("metal_port.bond0", "port_id"),
+					resource.TestCheckResourceAttr("metal_port.bond0", "network_type", "hybrid-bonded"),
+					resource.TestCheckResourceAttrPair("metal_port.bond0", "vxlan_ids.0",
+						"metal_vlan.test2", "vxlan"),
+					resource.TestCheckResourceAttrPair("metal_port.bond0", "vxlan_ids.1",
+						"metal_vlan.test1", "vxlan"),
+				),
+			},
+			{
+				ResourceName:            "metal_port.bond0",
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"reset_on_delete"},
+			},
+			{
+				// Remove metal_port resources to trigger reset_on_delete
+				Config: confAccMetalPort_base(rs),
+			},
+			{
+				Config: confAccMetalPort_L3(rs),
+			},
+			{
+				ResourceName: "metal_port.bond0",
+				ImportState:  true,
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("metal_port.bond0", "network_type", "layer3"),
+				),
+			},
+		},
+	})
+}
+
 func metalPortTestTemplate(t *testing.T, conf func(string) string, expectedType string) {
 	rs := acctest.RandString(10)
 	resource.Test(t, resource.TestCase{
