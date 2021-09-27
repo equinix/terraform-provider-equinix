@@ -1,6 +1,9 @@
 package metal
 
-import "strings"
+import (
+	"strconv"
+	"strings"
+)
 
 func contains(s []string, e string) bool {
 	for _, a := range s {
