@@ -74,6 +74,12 @@ func dataSourceMetalPort() *schema.Resource {
 				Description: "UUIDs of attached VLANs",
 				Elem:        &schema.Schema{Type: schema.TypeString},
 			},
+			"vxlan_ids": {
+				Type:        schema.TypeList,
+				Computed:    true,
+				Description: "UUIDs of attached VLANs",
+				Elem:        &schema.Schema{Type: schema.TypeInt},
+			},
 			"layer2": {
 				Type:        schema.TypeBool,
 				Computed:    true,
