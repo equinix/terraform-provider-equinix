@@ -2,6 +2,7 @@ package metal
 
 import (
 	"fmt"
+	"regexp"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
@@ -140,12 +141,14 @@ resource "metal_vlan" "test1" {
   description = "test1"
   metro = "sv"
   project_id = metal_project.test.id
+  vxlan = 1001
 }
 
 resource "metal_vlan" "test2" {
   description = "test2"
   metro = "sv"
   project_id = metal_project.test.id
+  vxlan = 1002
 }
 `, confAccMetalPort_base(name))
 }
@@ -160,23 +163,12 @@ func TestAccMetalPort_HybridBondedVxlan(t *testing.T) {
 			{
 				Config: confAccMetalPort_HybridBondedVxlan(rs),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr("metal_port.bond0", "name", "bond0"),
-					resource.TestCheckResourceAttr("metal_port.bond0", "type", "NetworkBondPort"),
-					resource.TestCheckResourceAttrSet("metal_port.bond0", "bonded"),
-					resource.TestCheckResourceAttrSet("metal_port.bond0", "disbond_supported"),
-					resource.TestCheckResourceAttrSet("metal_port.bond0", "port_id"),
-					resource.TestCheckResourceAttr("metal_port.bond0", "network_type", "hybrid-bonded"),
-					resource.TestCheckResourceAttrPair("metal_port.bond0", "vxlan_ids.0",
-						"metal_vlan.test2", "vxlan"),
-					resource.TestCheckResourceAttrPair("metal_port.bond0", "vxlan_ids.1",
-						"metal_vlan.test1", "vxlan"),
+					resource.TestCheckResourceAttr("metal_port.bond0", "vxlan_ids.#", "2"),
+					resource.TestMatchResourceAttr("metal_port.bond0", "vxlan_ids.0",
+						regexp.MustCompile("1001|1002")),
+					resource.TestMatchResourceAttr("metal_port.bond0", "vxlan_ids.1",
+						regexp.MustCompile("1001|1002")),
 				),
-			},
-			{
-				ResourceName:            "metal_port.bond0",
-				ImportState:             true,
-				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"reset_on_delete"},
 			},
 			{
 				// Remove metal_port resources to trigger reset_on_delete
@@ -184,13 +176,6 @@ func TestAccMetalPort_HybridBondedVxlan(t *testing.T) {
 			},
 			{
 				Config: confAccMetalPort_L3(rs),
-			},
-			{
-				ResourceName: "metal_port.bond0",
-				ImportState:  true,
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr("metal_port.bond0", "network_type", "layer3"),
-				),
 			},
 		},
 	})
