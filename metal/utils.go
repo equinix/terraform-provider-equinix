@@ -1,6 +1,9 @@
 package metal
 
-import "strings"
+import (
+	"strconv"
+	"strings"
+)
 
 func contains(s []string, e string) bool {
 	for _, a := range s {
@@ -18,6 +21,17 @@ func convertStringArr(ifaceArr []interface{}) []string {
 			continue
 		}
 		arr = append(arr, v.(string))
+	}
+	return arr
+}
+
+func convertIntArr(ifaceArr []interface{}) []string {
+	var arr []string
+	for _, v := range ifaceArr {
+		if v == nil {
+			continue
+		}
+		arr = append(arr, strconv.Itoa(v.(int)))
 	}
 	return arr
 }

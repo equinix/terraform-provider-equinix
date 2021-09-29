@@ -2,6 +2,7 @@ package metal
 
 import (
 	"fmt"
+	"regexp"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
@@ -122,6 +123,62 @@ resource "metal_vlan" "test" {
   project_id = metal_project.test.id
 }
 `, confAccMetalPort_base(name))
+}
+
+func confAccMetalPort_HybridBondedVxlan(name string) string {
+	return fmt.Sprintf(`
+%s
+
+resource "metal_port" "bond0" {
+  port_id = local.bond0_id
+  layer2 = false
+  bonded = true
+  vxlan_ids = [metal_vlan.test1.vxlan, metal_vlan.test2.vxlan]
+  reset_on_delete = true
+}
+
+resource "metal_vlan" "test1" {
+  description = "test1"
+  metro = "sv"
+  project_id = metal_project.test.id
+  vxlan = 1001
+}
+
+resource "metal_vlan" "test2" {
+  description = "test2"
+  metro = "sv"
+  project_id = metal_project.test.id
+  vxlan = 1002
+}
+`, confAccMetalPort_base(name))
+}
+
+func TestAccMetalPort_HybridBondedVxlan(t *testing.T) {
+	rs := acctest.RandString(10)
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccMetalPortDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: confAccMetalPort_HybridBondedVxlan(rs),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("metal_port.bond0", "vxlan_ids.#", "2"),
+					resource.TestMatchResourceAttr("metal_port.bond0", "vxlan_ids.0",
+						regexp.MustCompile("1001|1002")),
+					resource.TestMatchResourceAttr("metal_port.bond0", "vxlan_ids.1",
+						regexp.MustCompile("1001|1002")),
+				),
+			},
+			{
+				// Remove metal_port resources to trigger reset_on_delete
+				Config: confAccMetalPort_base(rs),
+			},
+			{
+				Config: confAccMetalPort_L3(rs),
+			},
+		},
+	})
 }
 
 func metalPortTestTemplate(t *testing.T, conf func(string) string, expectedType string) {

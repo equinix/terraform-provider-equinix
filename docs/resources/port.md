@@ -1,5 +1,5 @@
 ---
-page_title: "Equinix Metal: precreated_port"
+page_title: "Equinix Metal: metal_port"
 subcategory: ""
 description: |-
   Manipulate device ports
@@ -22,7 +22,8 @@ See the [Network Types Guide](../guides/network_types.md) for examples of this r
 * `port_id` - (Required) ID of the port to read
 * `bonded` - (Required) Whether the port should be bonded
 * `layer2` - (Optional) Whether to put the port to Layer 2 mode, valid only for bond ports
-* `vlan_ids` - (Optional) List off VLAN UUIDs to attach to the port
+* `vlan_ids` - (Optional) List of VLAN UUIDs to attach to the port, valid only for L2 and Hybrid ports
+* `vxlan_ids` - (Optional) List of VXLAN IDs to attach to the port, valid only for L2 and Hybrid ports
 * `native_vlan_id` - (Optional) UUID of a VLAN to assign as a native VLAN. It must be one of attached VLANs (from `vlan_ids` parameter), valid only for physical (non-bond) ports
 * `reset_on_delete` - (Optional) Behavioral setting to reset the port to default settings. For a bond port it means layer3 without vlans attached, eth ports will be bonded without native vlan and vlans attached
 
@@ -36,3 +37,6 @@ See the [Network Types Guide](../guides/network_types.md) for examples of this r
 * `bond_name` - Name of the bond port
 * `bonded` - Flag indicating whether the port is bonded
 * `disbond_supported` - Flag indicating whether the port can be removed from a bond
+* `vlan_ids` - List of VLAN UUIDs to attach to the port
+* `vxlan_ids` - List of VXLAN IDs to attach to the port
+

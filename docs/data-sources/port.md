@@ -50,4 +50,5 @@ data "metal_port" "test" {
 * `disbond_supported` - Flag indicating whether the port can be removed from a bond
 * `native_vlan_id` - UUID of native VLAN of the port
 * `vlan_ids` - UUIDs of attached VLANs
+* `vxlan_ids` - VXLAN ids of attached VLANs
 
