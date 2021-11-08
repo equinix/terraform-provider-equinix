@@ -54,3 +54,11 @@ is a local peer in a given BGP peering configuration
   * PENDING_UPDATE
   * PROVISIONED
   * FAILED
+
+## Import
+
+This resource can be imported using an existing ID:
+
+```sh
+terraform import equinix_network_bgp.example {existing_id}
+```

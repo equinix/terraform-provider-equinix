@@ -103,6 +103,11 @@ func TestAccNetworkDeviceLink(t *testing.T) {
 					testAccNeDeviceLinkDeviceConnections(&deviceLink, &primaryDevice, &secondaryDevice, context),
 				),
 			},
+			{
+				ResourceName:      linkResourceName,
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
 		},
 	})
 }

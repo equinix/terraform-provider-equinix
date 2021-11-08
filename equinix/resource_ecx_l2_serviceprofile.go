@@ -107,7 +107,10 @@ func resourceECXL2ServiceProfile() *schema.Resource {
 		ReadContext:   resourceECXL2ServiceProfileRead,
 		UpdateContext: resourceECXL2ServiceProfileUpdate,
 		DeleteContext: resourceECXL2ServiceProfileDelete,
-		Schema:        createECXL2ServiceProfileResourceSchema(),
+		Importer: &schema.ResourceImporter{
+			State: schema.ImportStatePassthrough,
+		},
+		Schema: createECXL2ServiceProfileResourceSchema(),
 	}
 }
 

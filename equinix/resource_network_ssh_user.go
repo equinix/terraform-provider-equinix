@@ -31,8 +31,11 @@ func resourceNetworkSSHUser() *schema.Resource {
 		ReadContext:   resourceNetworkSSHUserRead,
 		UpdateContext: resourceNetworkSSHUserUpdate,
 		DeleteContext: resourceNetworkSSHUserDelete,
-		Schema:        createNetworkSSHUserResourceSchema(),
-		Description:   "Resource allows creation and management of Equinix Network Edge SSH users",
+		Importer: &schema.ResourceImporter{
+			State: schema.ImportStatePassthrough,
+		},
+		Schema:      createNetworkSSHUserResourceSchema(),
+		Description: "Resource allows creation and management of Equinix Network Edge SSH users",
 	}
 }
 

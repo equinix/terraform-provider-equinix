@@ -203,3 +203,11 @@ options:
 
 - create - Default is 5 minutes
 - delete - Default is 5 minutes
+
+## Import
+
+This resource can be imported using an existing ID:
+
+```sh
+terraform import equinix_ecx_l2_connection.example {existing_id}
+```

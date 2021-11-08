@@ -47,6 +47,11 @@ func TestAccFabricL2ServiceProfile_Private(t *testing.T) {
 					resource.TestCheckResourceAttrSet(resourceName, "state"),
 				),
 			},
+			{
+				ResourceName:      resourceName,
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
 		},
 	})
 }

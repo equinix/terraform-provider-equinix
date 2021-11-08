@@ -36,3 +36,11 @@ resource "equinix_network_ssh_user" "john" {
 ## Attributes Reference
 
 * `uuid` - SSH user unique identifier
+
+## Import
+
+This resource can be imported using an existing ID:
+
+```sh
+terraform import equinix_network_ssh_user.example {existing_id}
+```

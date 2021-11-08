@@ -74,7 +74,10 @@ func resourceNetworkDeviceLink() *schema.Resource {
 		ReadContext:   resourceNetworkDeviceLinkRead,
 		UpdateContext: resourceNetworkDeviceLinkUpdate,
 		DeleteContext: resourceNetworkDeviceLinkDelete,
-		Schema:        createNetworkDeviceLinkResourceSchema(),
+		Importer: &schema.ResourceImporter{
+			State: schema.ImportStatePassthrough,
+		},
+		Schema: createNetworkDeviceLinkResourceSchema(),
 		Timeouts: &schema.ResourceTimeout{
 			Create: schema.DefaultTimeout(10 * time.Minute),
 			Delete: schema.DefaultTimeout(10 * time.Minute),

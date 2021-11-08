@@ -140,3 +140,11 @@ are exported:
 
 - `uuid` - Unique identifier of the service profile
 - `state` - Service profile provisioning status
+
+## Import
+
+This resource can be imported using an existing ID:
+
+```sh
+terraform import equinix_ecx_l2_serviceprofile.example {existing_id}
+```

@@ -92,6 +92,11 @@ func TestAccNetworkACLTemplate(t *testing.T) {
 				),
 			},
 			{
+				ResourceName:      resourceName,
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+			{
 				Config: testAccNetworkACLTemplate(contextWithChanges),
 				Check: resource.ComposeTestCheckFunc(
 					testAccNetworkACLTemplateExists(resourceName, &template),

@@ -73,3 +73,11 @@ Rules are ordered, matching traffic rule stops processing subsequent ones.
 where template was applied. One of:
   * PROVISIONING
   * PROVISIONED
+
+## Import
+
+This resource can be imported using an existing ID:
+
+```sh
+terraform import equinix_network_acl_template.example {existing_id}
+```

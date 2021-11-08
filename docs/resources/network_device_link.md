@@ -97,3 +97,11 @@ options:
 * create - Default is 10 minutes
 * update - Default is 10 minutes
 * delete - Default is 10 minutes
+
+## Import
+
+This resource can be imported using an existing ID:
+
+```sh
+terraform import equinix_network_device_link.example {existing_id}
+```

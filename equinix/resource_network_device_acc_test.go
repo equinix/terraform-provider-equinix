@@ -137,6 +137,11 @@ func TestAccNetworkDevice_CSR100V_HA_Managed_Sub(t *testing.T) {
 				),
 			},
 			{
+				ResourceName:      deviceResourceName,
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+			{
 				Config: newTestAccConfig(contextWithACLs).withDevice().
 					withSSHUser().withACL().build(),
 				Check: resource.ComposeTestCheckFunc(
