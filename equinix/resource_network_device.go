@@ -966,6 +966,9 @@ func updateNetworkDeviceResource(primary *ne.Device, secondary *ne.Device, d *sc
 	if err := d.Set(networkDeviceSchemaNames["IsSelfManaged"], primary.IsSelfManaged); err != nil {
 		return fmt.Errorf("error reading IsSelfManaged: %s", err)
 	}
+	if err := d.Set(networkDeviceSchemaNames["WanInterfaceId"], primary.WanInterfaceId); err != nil {
+		return fmt.Errorf("error reading WanInterfaceId: %s", err)
+	}
 	if err := d.Set(networkDeviceSchemaNames["Interfaces"], flattenNetworkDeviceInterfaces(primary.Interfaces)); err != nil {
 		return fmt.Errorf("error reading Interfaces: %s", err)
 	}
@@ -1014,6 +1017,7 @@ func flattenNetworkDeviceSecondary(device *ne.Device) interface{} {
 	transformed[networkDeviceSchemaNames["RedundancyType"]] = device.RedundancyType
 	transformed[networkDeviceSchemaNames["RedundantUUID"]] = device.RedundantUUID
 	transformed[networkDeviceSchemaNames["AdditionalBandwidth"]] = device.AdditionalBandwidth
+	transformed[networkDeviceSchemaNames["WanInterfaceId"]] = device.WanInterfaceId
 	transformed[networkDeviceSchemaNames["Interfaces"]] = flattenNetworkDeviceInterfaces(device.Interfaces)
 	transformed[networkDeviceSchemaNames["VendorConfiguration"]] = device.VendorConfiguration
 	transformed[networkDeviceSchemaNames["UserPublicKey"]] = flattenNetworkDeviceUserKeys([]*ne.DeviceUserPublicKey{device.UserPublicKey})
