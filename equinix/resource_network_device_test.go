@@ -212,7 +212,6 @@ func TestNetworkDevice_flattenSecondary(t *testing.T) {
 			networkDeviceSchemaNames["IBX"]:                 input.IBX,
 			networkDeviceSchemaNames["Region"]:              input.Region,
 			networkDeviceSchemaNames["HostName"]:            input.HostName,
-			networkDeviceSchemaNames["LicenseToken"]:        input.LicenseToken,
 			networkDeviceSchemaNames["LicenseFileID"]:       input.LicenseFileID,
 			networkDeviceSchemaNames["LicenseFile"]:         input.LicenseFile,
 			networkDeviceSchemaNames["ACLTemplateUUID"]:     input.ACLTemplateUUID,
