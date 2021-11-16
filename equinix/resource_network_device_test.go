@@ -41,6 +41,7 @@ func TestNetworkDevice_createFromResourceData(t *testing.T) {
 		AdditionalBandwidth: ne.Int(50),
 		OrderReference:      ne.String("12312121sddsf1231"),
 		InterfaceCount:      ne.Int(10),
+		WanInterfaceId:      ne.String("5"),
 		CoreCount:           ne.Int(2),
 		IsSelfManaged:       ne.Bool(false),
 		VendorConfiguration: expectedPrimaryVendorConfig,
@@ -66,6 +67,7 @@ func TestNetworkDevice_createFromResourceData(t *testing.T) {
 		networkDeviceSchemaNames["AdditionalBandwidth"]: ne.IntValue(expectedPrimary.AdditionalBandwidth),
 		networkDeviceSchemaNames["OrderReference"]:      ne.StringValue(expectedPrimary.OrderReference),
 		networkDeviceSchemaNames["InterfaceCount"]:      ne.IntValue(expectedPrimary.InterfaceCount),
+		networkDeviceSchemaNames["WanInterfaceId"]:      ne.StringValue(expectedPrimary.WanInterfaceId),
 		networkDeviceSchemaNames["CoreCount"]:           ne.IntValue(expectedPrimary.CoreCount),
 		networkDeviceSchemaNames["IsSelfManaged"]:       ne.BoolValue(expectedPrimary.IsSelfManaged),
 	}
@@ -104,6 +106,7 @@ func TestNetworkDevice_updateResourceData(t *testing.T) {
 		AdditionalBandwidth: ne.Int(50),
 		OrderReference:      ne.String("12312121sddsf1231"),
 		InterfaceCount:      ne.Int(10),
+		WanInterfaceId:      ne.String("6"),
 		CoreCount:           ne.Int(2),
 		IsSelfManaged:       ne.Bool(true),
 		VendorConfiguration: map[string]string{
@@ -145,6 +148,7 @@ func TestNetworkDevice_updateResourceData(t *testing.T) {
 	assert.Equal(t, ne.IntValue(inputPrimary.AdditionalBandwidth), d.Get(networkDeviceSchemaNames["AdditionalBandwidth"]), "AdditionalBandwidth matches")
 	assert.Equal(t, ne.StringValue(inputPrimary.OrderReference), d.Get(networkDeviceSchemaNames["OrderReference"]), "OrderReference matches")
 	assert.Equal(t, ne.IntValue(inputPrimary.InterfaceCount), d.Get(networkDeviceSchemaNames["InterfaceCount"]), "InterfaceCount matches")
+	assert.Equal(t, ne.StringValue(inputPrimary.WanInterfaceId), d.Get(networkDeviceSchemaNames["WanInterfaceId"]), "InterfaceCount matches")
 	assert.Equal(t, ne.IntValue(inputPrimary.CoreCount), d.Get(networkDeviceSchemaNames["CoreCount"]), "CoreCount matches")
 	assert.Equal(t, ne.BoolValue(inputPrimary.IsSelfManaged), d.Get(networkDeviceSchemaNames["IsSelfManaged"]), "IsSelfManaged matches")
 	assert.Equal(t, inputPrimary.VendorConfiguration, expandInterfaceMapToStringMap(d.Get(networkDeviceSchemaNames["VendorConfiguration"]).(map[string]interface{})), "VendorConfiguration matches")
