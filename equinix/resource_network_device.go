@@ -50,6 +50,7 @@ var networkDeviceSchemaNames = map[string]string{
 	"InterfaceCount":      "interface_count",
 	"CoreCount":           "core_count",
 	"IsSelfManaged":       "self_managed",
+	"WanInterfaceId":      "wan_interface_id",
 	"Interfaces":          "interface",
 	"VendorConfiguration": "vendor_configuration",
 	"UserPublicKey":       "ssh_key",
@@ -90,6 +91,7 @@ var networkDeviceDescriptions = map[string]string{
 	"InterfaceCount":      "Number of network interfaces on a device. If not specified, default number for a given device type will be used",
 	"CoreCount":           "Number of CPU cores used by device",
 	"IsSelfManaged":       "Boolean value that determines device management mode: self-managed or subscription (default)",
+	"WanInterfaceId":      "device interface id picked for WAN",
 	"Interfaces":          "List of device interfaces",
 	"VendorConfiguration": "Map of vendor specific configuration parameters for a device",
 	"UserPublicKey":       "Definition of SSH key that will be provisioned on a device",
@@ -350,6 +352,14 @@ func createNetworkDeviceSchema() map[string]*schema.Schema {
 			ForceNew:    true,
 			Description: networkDeviceDescriptions["IsSelfManaged"],
 		},
+		networkDeviceSchemaNames["WanInterfaceId"]: {
+			Type:         schema.TypeString,
+			Optional:     true,
+			ForceNew:     true,
+			ValidateFunc: validation.StringIsNotEmpty,
+			Description:  networkDeviceDescriptions["WanInterfaceId"],
+		},
+
 		networkDeviceSchemaNames["Interfaces"]: {
 			Type:     schema.TypeList,
 			Computed: true,
@@ -510,6 +520,13 @@ func createNetworkDeviceSchema() map[string]*schema.Schema {
 						Optional:     true,
 						ValidateFunc: validation.IntAtLeast(1),
 						Description:  networkDeviceDescriptions["AdditionalBandwidth"],
+					},
+					networkDeviceSchemaNames["WanInterfaceId"]: {
+						Type:         schema.TypeString,
+						Optional:     true,
+						ForceNew:     true,
+						ValidateFunc: validation.StringIsNotEmpty,
+						Description:  networkDeviceDescriptions["WanInterfaceId"],
 					},
 					networkDeviceSchemaNames["Interfaces"]: {
 						Type:     schema.TypeList,
@@ -844,6 +861,10 @@ func createNetworkDevices(d *schema.ResourceData) (*ne.Device, *ne.Device) {
 	if v, ok := d.GetOk(networkDeviceSchemaNames["VendorConfiguration"]); ok {
 		primary.VendorConfiguration = expandInterfaceMapToStringMap(v.(map[string]interface{}))
 	}
+	if v, ok := d.GetOk(networkDeviceSchemaNames["WanInterfaceId"]); ok {
+		primary.WanInterfaceId = ne.String(v.(string))
+	}
+
 	if v, ok := d.GetOk(networkDeviceSchemaNames["UserPublicKey"]); ok {
 		userKeys := expandNetworkDeviceUserKeys(v.(*schema.Set))
 		if len(userKeys) > 0 {
@@ -898,9 +919,6 @@ func updateNetworkDeviceResource(primary *ne.Device, secondary *ne.Device, d *sc
 	}
 	if err := d.Set(networkDeviceSchemaNames["IsBYOL"], primary.IsBYOL); err != nil {
 		return fmt.Errorf("error reading IsBYOL: %s", err)
-	}
-	if err := d.Set(networkDeviceSchemaNames["LicenseToken"], primary.LicenseToken); err != nil {
-		return fmt.Errorf("error reading LicenseToken: %s", err)
 	}
 	if err := d.Set(networkDeviceSchemaNames["LicenseFileID"], primary.LicenseFileID); err != nil {
 		return fmt.Errorf("error reading LicenseFileID: %s", err)
@@ -984,7 +1002,6 @@ func flattenNetworkDeviceSecondary(device *ne.Device) interface{} {
 	transformed[networkDeviceSchemaNames["IBX"]] = device.IBX
 	transformed[networkDeviceSchemaNames["Region"]] = device.Region
 	transformed[networkDeviceSchemaNames["HostName"]] = device.HostName
-	transformed[networkDeviceSchemaNames["LicenseToken"]] = device.LicenseToken
 	transformed[networkDeviceSchemaNames["LicenseFileID"]] = device.LicenseFileID
 	transformed[networkDeviceSchemaNames["LicenseFile"]] = device.LicenseFile
 	transformed[networkDeviceSchemaNames["ACLTemplateUUID"]] = device.ACLTemplateUUID
@@ -1039,6 +1056,9 @@ func expandNetworkDeviceSecondary(devices []interface{}) *ne.Device {
 	}
 	if v, ok := device[networkDeviceSchemaNames["AdditionalBandwidth"]]; ok && !isEmpty(v) {
 		transformed.AdditionalBandwidth = ne.Int(v.(int))
+	}
+	if v, ok := device[networkDeviceSchemaNames["WanInterfaceId"]]; ok && !isEmpty(v) {
+		transformed.WanInterfaceId = ne.String(v.(string))
 	}
 	if v, ok := device[networkDeviceSchemaNames["VendorConfiguration"]]; ok {
 		transformed.VendorConfiguration = expandInterfaceMapToStringMap(v.(map[string]interface{}))

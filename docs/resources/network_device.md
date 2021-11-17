@@ -96,6 +96,8 @@ will be applied on the device
 that will be allocated to the device (in addition to default 15Mbps)
 * `interface_count` - (Optional) Number of network interfaces on a device. If not
 specified, default number for a given device type will be used
+* `wan_interafce_id` - (Optional) Specify the WAN/SSH interface id. If not
+  specified, default WAN/SSH interface for a given device type will be used
 * `vendor_configuration` - (Optional) map of vendor specific configuration parameters
 for a device
 * `ssh-key` - (Optional) definition of SSH key that will be provisioned

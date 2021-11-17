@@ -41,6 +41,7 @@ func TestNetworkDevice_createFromResourceData(t *testing.T) {
 		AdditionalBandwidth: ne.Int(50),
 		OrderReference:      ne.String("12312121sddsf1231"),
 		InterfaceCount:      ne.Int(10),
+		WanInterfaceId:      ne.String("5"),
 		CoreCount:           ne.Int(2),
 		IsSelfManaged:       ne.Bool(false),
 		VendorConfiguration: expectedPrimaryVendorConfig,
@@ -66,6 +67,7 @@ func TestNetworkDevice_createFromResourceData(t *testing.T) {
 		networkDeviceSchemaNames["AdditionalBandwidth"]: ne.IntValue(expectedPrimary.AdditionalBandwidth),
 		networkDeviceSchemaNames["OrderReference"]:      ne.StringValue(expectedPrimary.OrderReference),
 		networkDeviceSchemaNames["InterfaceCount"]:      ne.IntValue(expectedPrimary.InterfaceCount),
+		networkDeviceSchemaNames["WanInterfaceId"]:      ne.StringValue(expectedPrimary.WanInterfaceId),
 		networkDeviceSchemaNames["CoreCount"]:           ne.IntValue(expectedPrimary.CoreCount),
 		networkDeviceSchemaNames["IsSelfManaged"]:       ne.BoolValue(expectedPrimary.IsSelfManaged),
 	}
@@ -104,6 +106,7 @@ func TestNetworkDevice_updateResourceData(t *testing.T) {
 		AdditionalBandwidth: ne.Int(50),
 		OrderReference:      ne.String("12312121sddsf1231"),
 		InterfaceCount:      ne.Int(10),
+		WanInterfaceId:      ne.String("6"),
 		CoreCount:           ne.Int(2),
 		IsSelfManaged:       ne.Bool(true),
 		VendorConfiguration: map[string]string{
@@ -136,7 +139,7 @@ func TestNetworkDevice_updateResourceData(t *testing.T) {
 	assert.Equal(t, ne.StringValue(inputPrimary.PackageCode), d.Get(networkDeviceSchemaNames["PackageCode"]), "PackageCode matches")
 	assert.Equal(t, ne.StringValue(inputPrimary.Version), d.Get(networkDeviceSchemaNames["Version"]), "Version matches")
 	assert.Equal(t, ne.BoolValue(inputPrimary.IsBYOL), d.Get(networkDeviceSchemaNames["IsBYOL"]), "IsBYOL matches")
-	assert.Equal(t, ne.StringValue(inputPrimary.LicenseToken), d.Get(networkDeviceSchemaNames["LicenseToken"]), "LicenseToken matches")
+	assert.Empty(t, d.Get(networkDeviceSchemaNames["LicenseToken"]), "LicenseToken is empty")
 	assert.Equal(t, ne.StringValue(inputPrimary.ACLTemplateUUID), d.Get(networkDeviceSchemaNames["ACLTemplateUUID"]), "ACLTemplateUUID matches")
 	assert.Equal(t, ne.StringValue(inputPrimary.AccountNumber), d.Get(networkDeviceSchemaNames["AccountNumber"]), "AccountNumber matches")
 	assert.Equal(t, inputPrimary.Notifications, expandSetToStringList(d.Get(networkDeviceSchemaNames["Notifications"]).(*schema.Set)), "Notifications matches")
@@ -145,6 +148,7 @@ func TestNetworkDevice_updateResourceData(t *testing.T) {
 	assert.Equal(t, ne.IntValue(inputPrimary.AdditionalBandwidth), d.Get(networkDeviceSchemaNames["AdditionalBandwidth"]), "AdditionalBandwidth matches")
 	assert.Equal(t, ne.StringValue(inputPrimary.OrderReference), d.Get(networkDeviceSchemaNames["OrderReference"]), "OrderReference matches")
 	assert.Equal(t, ne.IntValue(inputPrimary.InterfaceCount), d.Get(networkDeviceSchemaNames["InterfaceCount"]), "InterfaceCount matches")
+	assert.Empty(t, d.Get(networkDeviceSchemaNames["WanInterfaceId"]), "Wan Interface Id is empty")
 	assert.Equal(t, ne.IntValue(inputPrimary.CoreCount), d.Get(networkDeviceSchemaNames["CoreCount"]), "CoreCount matches")
 	assert.Equal(t, ne.BoolValue(inputPrimary.IsSelfManaged), d.Get(networkDeviceSchemaNames["IsSelfManaged"]), "IsSelfManaged matches")
 	assert.Equal(t, inputPrimary.VendorConfiguration, expandInterfaceMapToStringMap(d.Get(networkDeviceSchemaNames["VendorConfiguration"]).(map[string]interface{})), "VendorConfiguration matches")
@@ -208,7 +212,6 @@ func TestNetworkDevice_flattenSecondary(t *testing.T) {
 			networkDeviceSchemaNames["IBX"]:                 input.IBX,
 			networkDeviceSchemaNames["Region"]:              input.Region,
 			networkDeviceSchemaNames["HostName"]:            input.HostName,
-			networkDeviceSchemaNames["LicenseToken"]:        input.LicenseToken,
 			networkDeviceSchemaNames["LicenseFileID"]:       input.LicenseFileID,
 			networkDeviceSchemaNames["LicenseFile"]:         input.LicenseFile,
 			networkDeviceSchemaNames["ACLTemplateUUID"]:     input.ACLTemplateUUID,
