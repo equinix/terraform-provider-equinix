@@ -1,15 +1,24 @@
-## 1.3.0 (UNRELEASED)
+## 1.4.0 (UNRELEASED)
 
-IMPROVEMENTS:
+## 1.3.0 (November, 18, 2021)
 
-- `equinix_ecx_l2_connection` resources can now be imported
-- `equinix_ecx_l2_connection_accepter` resources can now be imported
-- `equinix_ecx_l2_serviceprofile` resources can now be imported
-- `equinix_network_acl_template` resources can now be imported
-- `equinix_network_bgp` resources can now be imported
-- `equinix_network_device_link` resources can now be imported
-- `equinix_network_ssh_key` resources can now be imported
-- `equinix_network_ssh_user` resources can now be imported
+BUG FIXES:
+
+- `equinix_network_device` no longer loses `license_token` values after updating the resource ([#59](https://github.com/equinix/terraform-provider-equinix/issues/59))
+
+ENHANCEMENTS:
+
+- `wan_interface_id` added to `equinix_network_device` ([#59](https://github.com/equinix/terraform-provider-equinix/issues/59))
+- `equinix_ecx_l2_connection` resources can now be imported ([#49](https://github.com/equinix/terraform-provider-equinix/issues/49))
+- `equinix_ecx_l2_connection_accepter` resources can now be imported ([#49](https://github.com/equinix/terraform-provider-equinix/issues/49))
+- `equinix_ecx_l2_serviceprofile` resources can now be imported ([#50](https://github.com/equinix/terraform-provider-equinix/issues/50))
+- `equinix_network_acl_template` resources can now be imported ([#50](https://github.com/equinix/terraform-provider-equinix/issues/50))
+- `equinix_network_bgp` resources can now be imported ([#50](https://github.com/equinix/terraform-provider-equinix/issues/50))
+- `equinix_network_device_link` resources can now be imported ([#50](https://github.com/equinix/terraform-provider-equinix/issues/50))
+- `equinix_network_ssh_key` resources can now be imported ([#50](https://github.com/equinix/terraform-provider-equinix/issues/50))
+- `equinix_network_ssh_user` resources can now be imported ([#50](https://github.com/equinix/terraform-provider-equinix/issues/50))
+- darwin/arm64 binaries are now published ([#51](https://github.com/equinix/terraform-provider-equinix/issues/51))
+- Go version used for builds was updated to 1.17 ([#52](https://github.com/equinix/terraform-provider-equinix/issues/52))
 
 ## 1.2.0 (April 27, 2021)
 
