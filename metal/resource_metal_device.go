@@ -778,7 +778,7 @@ func resourceMetalDeviceDelete(d *schema.ResourceData, meta interface{}) error {
 		return friendlyError(err)
 	}
 
-	resId, resIdOk := d.GetOk("hardware_reservation_id")
+	resId, resIdOk := d.GetOk("deployed_hardware_reservation_id")
 	if resIdOk {
 		wfrd, wfrdOK := d.GetOk("wait_for_reservation_deprovision")
 		if wfrdOK && wfrd.(bool) {
