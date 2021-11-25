@@ -88,6 +88,11 @@ func TestAccMetalProject_BGPBasic(t *testing.T) {
 						"2SFsdfsg43"),
 				),
 			},
+			{
+				ResourceName:      "metal_project.foobar",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
 		},
 	})
 }
@@ -116,6 +121,11 @@ func TestAccMetalProject_BackendTransferUpdate(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						"metal_project.foobar", "backend_transfer", "true"),
 				),
+			},
+			{
+				ResourceName:      "metal_project.foobar",
+				ImportState:       true,
+				ImportStateVerify: true,
 			},
 			{
 				Config: testAccCheckMetalProjectConfig_basic(rInt),
@@ -192,6 +202,11 @@ func TestAccMetalProject_BGPUpdate(t *testing.T) {
 					resource.TestCheckResourceAttr(res, "bgp_config.0.md5", "fdsfsdf432F"),
 					testAccCheckMetalSameProject(t, &p1, &p2),
 				),
+			},
+			{
+				ResourceName:      "metal_project.foobar",
+				ImportState:       true,
+				ImportStateVerify: true,
 			},
 			{
 				Config: testAccCheckMetalProjectConfig_BGP(rInt, "fdsfsdf432G"),
@@ -305,6 +320,11 @@ func TestAccMetalProjectOrg(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						"metal_project.foobar", "name", fmt.Sprintf("tfacc-project-%s", rn)),
 				),
+			},
+			{
+				ResourceName:      "metal_project.foobar",
+				ImportState:       true,
+				ImportStateVerify: true,
 			},
 		},
 	})
