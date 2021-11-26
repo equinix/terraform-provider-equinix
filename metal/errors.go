@@ -75,7 +75,7 @@ type ErrorResponse struct {
 	IsAPIError bool
 }
 
-func (er ErrorResponse) Error() string {
+func (er *ErrorResponse) Error() string {
 	ret := ""
 	if er.IsAPIError {
 		ret += "API Error "
