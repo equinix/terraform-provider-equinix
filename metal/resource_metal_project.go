@@ -56,7 +56,10 @@ func resourceMetalProject() *schema.Resource {
 				DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
 					return strings.EqualFold(strings.Trim(old, `"`), strings.Trim(new, `"`))
 				},
-				ValidateFunc: validation.StringMatch(uuidRE, "must be a valid UUID"),
+				ValidateFunc: validation.Any(
+					validation.StringMatch(uuidRE, "must be a valid UUID"),
+					validation.StringIsEmpty,
+				),
 			},
 
 			"organization_id": {
@@ -178,7 +181,9 @@ func resourceMetalProjectRead(d *schema.ResourceData, meta interface{}) error {
 	}
 
 	d.SetId(proj.ID)
-	d.Set("payment_method_id", path.Base(proj.PaymentMethod.URL))
+	if len(proj.PaymentMethod.URL) != 0 {
+		d.Set("payment_method_id", path.Base(proj.PaymentMethod.URL))
+	}
 	d.Set("name", proj.Name)
 	d.Set("organization_id", path.Base(proj.Organization.URL))
 	d.Set("created", proj.Created)
