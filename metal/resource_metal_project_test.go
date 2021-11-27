@@ -3,12 +3,14 @@ package metal
 import (
 	"fmt"
 	"log"
+	"net/http"
 	"regexp"
 	"strings"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"github.com/packethost/packngo"
 )
@@ -70,6 +72,107 @@ func TestAccMetalProject_Basic(t *testing.T) {
 	})
 }
 
+type mockProjectService struct {
+	CreateFn          func(project *packngo.ProjectCreateRequest) (*packngo.Project, *packngo.Response, error)
+	UpdateFn          func(projectID string, project *packngo.ProjectUpdateRequest) (*packngo.Project, *packngo.Response, error)
+	ListFn            func(project *packngo.ListOptions) ([]packngo.Project, *packngo.Response, error)
+	DeleteFn          func(projectID string) (*packngo.Response, error)
+	GetFn             func(projectID string, opts *packngo.GetOptions) (*packngo.Project, *packngo.Response, error)
+	ListBGPSessionsFn func(projectID string, opts *packngo.ListOptions) ([]packngo.BGPSession, *packngo.Response, error)
+	ListEventsFn      func(projectID string, opts *packngo.ListOptions) ([]packngo.Event, *packngo.Response, error)
+	ListSSHKeysFn     func(projectID string, opts *packngo.ListOptions) ([]packngo.SSHKey, *packngo.Response, error)
+}
+
+func (m *mockProjectService) Create(project *packngo.ProjectCreateRequest) (*packngo.Project, *packngo.Response, error) {
+	return m.CreateFn(project)
+}
+
+func (m *mockProjectService) List(project *packngo.ListOptions) ([]packngo.Project, *packngo.Response, error) {
+	return m.ListFn(project)
+}
+
+func (m *mockProjectService) Delete(projectID string) (*packngo.Response, error) {
+	return m.DeleteFn(projectID)
+}
+
+func (m *mockProjectService) Get(projectID string, opts *packngo.GetOptions) (*packngo.Project, *packngo.Response, error) {
+	return m.GetFn(projectID, opts)
+}
+
+func (m *mockProjectService) ListBGPSessions(projectID string, opts *packngo.ListOptions) ([]packngo.BGPSession, *packngo.Response, error) {
+	return m.ListBGPSessionsFn(projectID, opts)
+}
+func (m *mockProjectService) Update(projectID string, project *packngo.ProjectUpdateRequest) (*packngo.Project, *packngo.Response, error) {
+	return m.UpdateFn(projectID, project)
+}
+
+func (m *mockProjectService) ListSSHKeys(projectID string, opts *packngo.ListOptions) ([]packngo.SSHKey, *packngo.Response, error) {
+	return m.ListSSHKeysFn(projectID, opts)
+}
+
+func (m *mockProjectService) ListEvents(projectID string, opts *packngo.ListOptions) ([]packngo.Event, *packngo.Response, error) {
+	return m.ListEventsFn(projectID, opts)
+}
+
+var _ packngo.ProjectService = (*mockProjectService)(nil)
+
+// TODO(displague) How do we test this without TF_ACC set?
+func TestAccMetalProject_errorHandling(t *testing.T) {
+	rInt := acctest.RandInt()
+
+	mockProjectService := &mockProjectService{
+		CreateFn: func(project *packngo.ProjectCreateRequest) (*packngo.Project, *packngo.Response, error) {
+			httpResp := &http.Response{Status: "422 Unprocessable Entity", StatusCode: 422}
+			return nil, &packngo.Response{Response: httpResp}, &packngo.ErrorResponse{Response: httpResp}
+		},
+	}
+	mockMetal := Provider()
+	mockMetal.ConfigureFunc = func(d *schema.ResourceData) (interface{}, error) {
+		return &packngo.Client{Projects: mockProjectService}, nil
+	}
+
+	mockProviders := map[string]*schema.Provider{
+		"metal": mockMetal,
+	}
+	resource.Test(t, resource.TestCase{
+		Providers: mockProviders,
+		Steps: []resource.TestStep{
+			{
+				Config:      testAccCheckMetalProjectConfig_basic(rInt),
+				ExpectError: regexp.MustCompile(`Error: HTTP 422`),
+			},
+		},
+	})
+}
+
+// TODO(displague) How do we test this without TF_ACC set?
+func TestAccMetalProject_apiErrorHandling(t *testing.T) {
+	rInt := acctest.RandInt()
+
+	mockProjectService := &mockProjectService{
+		CreateFn: func(project *packngo.ProjectCreateRequest) (*packngo.Project, *packngo.Response, error) {
+			httpResp := &http.Response{Status: "422 Unprocessable Entity", StatusCode: 422, Header: http.Header{"Content-Type": []string{"application/json"}, "X-Request-Id": []string{"12345"}}}
+			return nil, &packngo.Response{Response: httpResp}, &packngo.ErrorResponse{Response: httpResp}
+		},
+	}
+	mockMetal := Provider()
+	mockMetal.ConfigureFunc = func(d *schema.ResourceData) (interface{}, error) {
+		return &packngo.Client{Projects: mockProjectService}, nil
+	}
+
+	mockProviders := map[string]*schema.Provider{
+		"metal": mockMetal,
+	}
+	resource.Test(t, resource.TestCase{
+		Providers: mockProviders,
+		Steps: []resource.TestStep{
+			{
+				Config:      testAccCheckMetalProjectConfig_basic(rInt),
+				ExpectError: regexp.MustCompile(`Error: API Error HTTP 422`),
+			},
+		},
+	})
+}
 func TestAccMetalProject_BGPBasic(t *testing.T) {
 	var project packngo.Project
 	rInt := acctest.RandInt()

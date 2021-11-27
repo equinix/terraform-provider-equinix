@@ -1,6 +1,7 @@
 package metal
 
 import (
+	"fmt"
 	"net/http"
 	"sort"
 	"strings"
@@ -14,6 +15,7 @@ import (
 // friendlyError improves error messages when the API error is blank or in an
 // alternate format (as is the case with invalid token or loadbalancer errors)
 func friendlyError(err error) error {
+
 	if e, ok := err.(*packngo.ErrorResponse); ok {
 		resp := e.Response
 		errors := Errors(e.Errors)
@@ -71,6 +73,18 @@ type ErrorResponse struct {
 	StatusCode int
 	Errors
 	IsAPIError bool
+}
+
+func (er *ErrorResponse) Error() string {
+	ret := ""
+	if er.IsAPIError {
+		ret += "API Error "
+	}
+	if er.StatusCode != 0 {
+		ret += fmt.Sprintf("HTTP %d ", er.StatusCode)
+	}
+	ret += er.Errors.Error()
+	return ret
 }
 
 // setMap sets the map of values to ResourceData, checking and returning the
