@@ -114,6 +114,11 @@ func TestAccFabricL2Connection_Port_Single_AWS(t *testing.T) {
 					resource.TestCheckResourceAttrSet(resourceName, "zside_port_uuid"),
 				),
 			},
+			{
+				ResourceName:      resourceName,
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
 		},
 	})
 }
@@ -174,6 +179,11 @@ func TestAccFabricL2Connection_Port_HA_Azure(t *testing.T) {
 					resource.TestCheckResourceAttrSet(resourceName, "provider_status"),
 					testAccFabricL2ConnectionRedundancyAttributes(&primary, &secondary),
 				),
+			},
+			{
+				ResourceName:      resourceName,
+				ImportState:       true,
+				ImportStateVerify: true,
 			},
 		},
 	})
@@ -240,6 +250,11 @@ func TestAccFabricL2Connection_Device_HA_GCP(t *testing.T) {
 					testAccFabricL2ConnectionSecondaryExists(&primary, &secondary),
 					testAccFabricL2ConnectionSecondaryAttributes(&secondary, context),
 				),
+			},
+			{
+				ResourceName:      connResourceName,
+				ImportState:       true,
+				ImportStateVerify: true,
 			},
 		},
 	})
