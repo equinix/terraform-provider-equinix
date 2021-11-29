@@ -31,14 +31,18 @@ resource "equinix_ecx_l2_connection" "example" {
   authorization_key = var.aws_account_id
 }
 
-resource "equinix_ecx_l2_connection_accepter" "example" {
-  connection_id = equinix_ecx_l2_connection.example.id
-  access_key    = var.aws_access_key
-  secret_key    = var.aws_secret_key
+resource "aws_dx_connection" "example" {
+  name      = "tf-aws-dot1q"
+  bandwidth = "50Mbps"
+  location  = var.aws_location_code
+}
+
+resource "aws_dx_connection_confirmation" "confirmation" {
+  connection_id = aws_dx_connection.example.id
 }
 
 resource "aws_dx_private_virtual_interface" "example" {
-  connection_id    = equinix_ecx_l2_connection_accepter.example.aws_connection_id
+  connection_id    = aws_dx_connection.example.id
   name             = "example"
   vlan             = equinix_ecx_l2_connection.example.zside_vlan_stag
   address_family   = "ipv4"
