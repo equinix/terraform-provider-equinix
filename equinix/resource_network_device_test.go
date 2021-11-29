@@ -397,20 +397,20 @@ func TestNetworkDevice_licenseStatusWaitConfiguration(t *testing.T) {
 
 func TestNetworkDevice_ACLStatusWaitConfiguration(t *testing.T) {
 	//given
-	aclID := "test"
-	var receivedACLID string
-	fetchFunc := func(uuid string) (*ne.ACLTemplate, error) {
-		receivedACLID = uuid
-		return &ne.ACLTemplate{DeviceACLStatus: ne.String(ne.ACLDeviceStatusProvisioned)}, nil
+	deviceUUID := "test"
+	var receivedDeviceUUID string
+	fetchFunc := func(uuid string) (*ne.DeviceACLDetails, error) {
+		deviceUUID = uuid
+		return &ne.DeviceACLDetails{Status: ne.String(ne.ACLDeviceStatusProvisioned)}, nil
 	}
 	delay := 100 * time.Millisecond
 	timeout := 10 * time.Minute
 	//when
-	waitConfig := createNetworkDeviceACLStatusWaitConfiguration(fetchFunc, aclID, delay, timeout)
+	waitConfig := createNetworkDeviceACLStatusWaitConfiguration(fetchFunc, deviceUUID, delay, timeout)
 	_, err := waitConfig.WaitForStateContext(context.Background())
 	//then
 	assert.Nil(t, err, "WaitForState does not return an error")
-	assert.Equal(t, aclID, receivedACLID, "Queried ACL id matches")
+	assert.Equal(t, deviceUUID, receivedDeviceUUID, "Queried Device id matches")
 	assert.Equal(t, timeout, waitConfig.Timeout, "Device status wait configuration timeout matches")
 	assert.Equal(t, delay, waitConfig.MinTimeout, "Device status wait configuration min timeout matches")
 }

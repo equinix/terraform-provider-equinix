@@ -21,6 +21,7 @@ var networkACLTemplateSchemaNames = map[string]string{
 	"DeviceUUID":      "device_id",
 	"DeviceACLStatus": "device_acl_status",
 	"InboundRules":    "inbound_rule",
+	"DeviceDetails":   "device_details",
 }
 
 var networkACLTemplateDescriptions = map[string]string{
@@ -31,12 +32,14 @@ var networkACLTemplateDescriptions = map[string]string{
 	"DeviceUUID":      "Identifier of a network device where template was applied",
 	"DeviceACLStatus": "Status of ACL template provisioning process on a device, where template was applied",
 	"InboundRules":    "One or more rules to specify allowed inbound traffic. Rules are ordered, matching traffic rule stops processing subsequent ones.",
+	"DeviceDetails":   "Device Details to which ACL template is assigned to. ",
 }
 
 var networkACLTemplateInboundRuleSchemaNames = map[string]string{
 	"SeqNo":    "sequence_number",
 	"SrcType":  "source_type",
 	"Subnets":  "subnets",
+	"Subnet":   "subnet",
 	"Protocol": "protocol",
 	"SrcPort":  "src_port",
 	"DstPort":  "dst_port",
@@ -46,9 +49,28 @@ var networkACLTemplateInboundRuleDescriptions = map[string]string{
 	"SeqNo":    "Inbound rule sequence number",
 	"SrcType":  "Type of traffic source used in a given innbound rule",
 	"Subnets":  "Inbound traffic source IP subnets in CIDR format",
+	"Subnet":   "Inbound traffic source IP subnet in CIDR format",
 	"Protocol": "Inbound traffic protocol. One of: `IP`, `TCP`, `UDP`",
 	"SrcPort":  "Inbound traffic source ports. Either up to 10, comma separated ports or port range or any word",
 	"DstPort":  "Inbound traffic destination ports. Either up to 10, comma separated ports or port range or any word",
+}
+
+var networkACLTemplateDeviceDetailSchemaNames = map[string]string{
+	"UUID":      "uuid",
+	"Name":      "name",
+	"ACLStatus": "acl_status",
+}
+
+var networkACLTemplateDeviceDetailDescription = map[string]string{
+	"UUID":      "Unique Identifier for the device",
+	"Name":      "Device Name",
+	"ACLStatus": "Device ACL Provisioning status",
+}
+
+var networkACLTemplateDeprecateDescriptions = map[string]string{
+	"DeviceUUID": "Refer to device details get device information",
+	"MetroCode":  "Metro Code is no longer required",
+	"Subnets":    "Use Subnet instead",
 }
 
 func resourceNetworkACLTemplate() *schema.Resource {
@@ -86,14 +108,15 @@ func createNetworkACLTemplateSchema() map[string]*schema.Schema {
 		},
 		networkACLTemplateSchemaNames["MetroCode"]: {
 			Type:         schema.TypeString,
-			Required:     true,
-			ForceNew:     true,
+			Optional:     true,
+			Deprecated:   networkACLTemplateDeprecateDescriptions["MetroCode"],
 			ValidateFunc: stringIsMetroCode(),
 			Description:  networkACLTemplateDescriptions["MetroCode"],
 		},
 		networkACLTemplateSchemaNames["DeviceUUID"]: {
 			Type:        schema.TypeString,
 			Computed:    true,
+			Deprecated:  networkACLTemplateDeprecateDescriptions["DeviceUUID"],
 			Description: networkACLTemplateDescriptions["DeviceUUID"],
 		},
 		networkACLTemplateSchemaNames["DeviceACLStatus"]: {
@@ -110,6 +133,14 @@ func createNetworkACLTemplateSchema() map[string]*schema.Schema {
 			},
 			Description: networkACLTemplateDescriptions["InboundRules"],
 		},
+		networkACLTemplateSchemaNames["DeviceDetails"]: {
+			Type:     schema.TypeList,
+			Computed: true,
+			Elem: &schema.Resource{
+				Schema: networkACLTemplateDeviceDetailsSchema(),
+			},
+			Description: networkACLTemplateDescriptions["DeviceDetails"],
+		},
 	}
 }
 
@@ -124,16 +155,23 @@ func createNetworkACLTemplateInboundRuleSchema() map[string]*schema.Schema {
 			Type:        schema.TypeString,
 			Computed:    true,
 			Description: networkACLTemplateInboundRuleDescriptions["SrcType"],
+			Deprecated:  "Source Type will not be returned",
 		},
 		networkACLTemplateInboundRuleSchemaNames["Subnets"]: {
 			Type:     schema.TypeList,
-			Required: true,
+			Optional: true,
 			MinItems: 1,
 			Elem: &schema.Schema{
 				Type:         schema.TypeString,
 				ValidateFunc: validation.IsCIDR,
 			},
 			Description: networkACLTemplateInboundRuleDescriptions["Subnets"],
+			Deprecated:  networkACLTemplateDeprecateDescriptions["Subnets"],
+		},
+		networkACLTemplateInboundRuleSchemaNames["Subnet"]: {
+			Type:        schema.TypeString,
+			Optional:    true,
+			Description: networkACLTemplateInboundRuleDescriptions["Subnet"],
 		},
 		networkACLTemplateInboundRuleSchemaNames["Protocol"]: {
 			Type:         schema.TypeString,
@@ -152,6 +190,26 @@ func createNetworkACLTemplateInboundRuleSchema() map[string]*schema.Schema {
 			Required:     true,
 			ValidateFunc: stringIsPortDefinition(),
 			Description:  networkACLTemplateInboundRuleDescriptions["DstPort"],
+		},
+	}
+}
+
+func networkACLTemplateDeviceDetailsSchema() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		networkACLTemplateDeviceDetailSchemaNames["UUID"]: {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: networkACLTemplateInboundRuleDescriptions["SeqNo"],
+		},
+		networkACLTemplateDeviceDetailSchemaNames["Name"]: {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: networkACLTemplateInboundRuleDescriptions["Name"],
+		},
+		networkACLTemplateDeviceDetailSchemaNames["ACLStatus"]: {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: networkACLTemplateInboundRuleDescriptions["ACLStatus"],
 		},
 	}
 }
@@ -240,18 +298,20 @@ func updateACLTemplateResource(template *ne.ACLTemplate, d *schema.ResourceData)
 	if err := d.Set(networkACLTemplateSchemaNames["Description"], template.Description); err != nil {
 		return fmt.Errorf("error reading %s: %s", networkACLTemplateSchemaNames["Description"], err)
 	}
-	if err := d.Set(networkACLTemplateSchemaNames["MetroCode"], template.MetroCode); err != nil {
-		return fmt.Errorf("error reading %s: %s", networkACLTemplateSchemaNames["MetroCode"], err)
-	}
-	if err := d.Set(networkACLTemplateSchemaNames["DeviceUUID"], template.DeviceUUID); err != nil {
-		return fmt.Errorf("error reading %s: %s", networkACLTemplateSchemaNames["DeviceUUID"], err)
-	}
 	if err := d.Set(networkACLTemplateSchemaNames["DeviceACLStatus"], template.DeviceACLStatus); err != nil {
 		return fmt.Errorf("error reading %s: %s", networkACLTemplateSchemaNames["DeviceACLStatus"], err)
 	}
-	if err := d.Set(networkACLTemplateSchemaNames["InboundRules"], flattenACLTemplateInboundRules(template.InboundRules)); err != nil {
+	var inboundRules []ne.ACLTemplateInboundRule
+	if v, ok := d.GetOk(networkACLTemplateSchemaNames["InboundRules"]); ok {
+		inboundRules = expandACLTemplateInboundRules(v.([]interface{}))
+	}
+	if err := d.Set(networkACLTemplateSchemaNames["InboundRules"], flattenACLTemplateInboundRules(inboundRules, template.InboundRules)); err != nil {
 		return fmt.Errorf("error reading %s: %s", networkACLTemplateSchemaNames["InboundRules"], err)
 	}
+	if err := d.Set(networkACLTemplateSchemaNames["DeviceDetails"], flattenACLTemplateDeviceDetails(template.DeviceDetails)); err != nil {
+		return fmt.Errorf("error reading %s: %s", networkACLTemplateSchemaNames["DeviceDetails"], err)
+	}
+
 	return nil
 }
 
@@ -261,9 +321,11 @@ func expandACLTemplateInboundRules(rules []interface{}) []ne.ACLTemplateInboundR
 		ruleMap := rules[i].(map[string]interface{})
 		rule := ne.ACLTemplateInboundRule{}
 		rule.SeqNo = ne.Int(i + 1)
-		rule.SrcType = ne.String("SUBNET")
 		if v, ok := ruleMap[networkACLTemplateInboundRuleSchemaNames["Subnets"]]; ok {
 			rule.Subnets = expandListToStringList(v.([]interface{}))
+		}
+		if v, ok := ruleMap[networkACLTemplateInboundRuleSchemaNames["Subnet"]]; ok {
+			rule.Subnet = ne.String(v.(string))
 		}
 		if v, ok := ruleMap[networkACLTemplateInboundRuleSchemaNames["Protocol"]]; ok {
 			rule.Protocol = ne.String(v.(string))
@@ -279,16 +341,45 @@ func expandACLTemplateInboundRules(rules []interface{}) []ne.ACLTemplateInboundR
 	return transformed
 }
 
-func flattenACLTemplateInboundRules(rules []ne.ACLTemplateInboundRule) interface{} {
+func flattenACLTemplateInboundRules(existingRules []ne.ACLTemplateInboundRule, rules []ne.ACLTemplateInboundRule) interface{} {
 	transformed := make([]interface{}, len(rules))
 	for i := range rules {
 		transformed[i] = map[string]interface{}{
 			networkACLTemplateInboundRuleSchemaNames["SeqNo"]:    rules[i].SeqNo,
 			networkACLTemplateInboundRuleSchemaNames["SrcType"]:  rules[i].SrcType,
-			networkACLTemplateInboundRuleSchemaNames["Subnets"]:  rules[i].Subnets,
+			networkACLTemplateInboundRuleSchemaNames["Subnets"]:  getSubnets(existingRules[i], rules[i]),
+			networkACLTemplateInboundRuleSchemaNames["Subnet"]:   getSubnet(existingRules[i], rules[i]),
 			networkACLTemplateInboundRuleSchemaNames["Protocol"]: rules[i].Protocol,
 			networkACLTemplateInboundRuleSchemaNames["SrcPort"]:  rules[i].SrcPort,
 			networkACLTemplateInboundRuleSchemaNames["DstPort"]:  rules[i].DstPort,
+		}
+	}
+	return transformed
+}
+
+func getSubnet(existingRule ne.ACLTemplateInboundRule, rule ne.ACLTemplateInboundRule) *string {
+	var subnet = existingRule.Subnet
+	if existingRule.Subnet != nil && len(ne.StringValue(existingRule.Subnet)) > 0 {
+		subnet = rule.Subnet
+	}
+	return subnet
+}
+
+func getSubnets(existingRule ne.ACLTemplateInboundRule, rule ne.ACLTemplateInboundRule) []string {
+	var subnets []string = existingRule.Subnets
+	if existingRule.Subnets != nil && len(existingRule.Subnets) > 0 {
+		subnets = rule.Subnets
+	}
+	return subnets
+}
+
+func flattenACLTemplateDeviceDetails(rules []ne.ACLTemplateDeviceDetails) interface{} {
+	transformed := make([]interface{}, len(rules))
+	for i := range rules {
+		transformed[i] = map[string]interface{}{
+			networkACLTemplateDeviceDetailSchemaNames["UUID"]:      rules[i].UUID,
+			networkACLTemplateDeviceDetailSchemaNames["Name"]:      rules[i].Name,
+			networkACLTemplateDeviceDetailSchemaNames["ACLStatus"]: rules[i].ACLStatus,
 		}
 	}
 	return transformed

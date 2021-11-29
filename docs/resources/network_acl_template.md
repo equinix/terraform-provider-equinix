@@ -21,24 +21,17 @@ traffic. Templates can be assigned to the network devices.
 resource "equinix_network_acl_template" "myacl" {
   name        = "test"
   description = "Test ACL template"
-  metro_code  = equinix_network_device.csr1000v.metro_code
   inbound_rule {
-    subnets  = ["1.1.1.1/32"]
+    subnet  = "1.1.1.1/32"
     protocol = "IP"
     src_port = "any"
     dst_port = "any"
   }
   inbound_rule {
-    subnets  = ["172.16.25.0/24"]
+    subnet  = "172.16.25.0/24"
     protocol = "UDP"
     src_port = "any"
     dst_port = "53,1045,2041"
-  }
-  inbound_rule {
-    subnets  = ["192.168.0.0/16", "10.0.0.0/8"]
-    protocol = "TCP"
-    src_port = "any"
-    dst_port = "22-23"
   }
 }
 ```
@@ -47,11 +40,13 @@ resource "equinix_network_acl_template" "myacl" {
 
 * `name` - (Required) ACL template name
 * `description` - (Optional) ACL template description
-* `metro_code` - (Required) ACL template location metro code
+* `metro_code` - (Deprecated) ACL template location metro code
 * `inbound_rule` - (Required) One or more rules to specify allowed inbound traffic.
 Rules are ordered, matching traffic rule stops processing subsequent ones.
-  * `inbound_rule.#.subnets` - (Required) Inbound traffic source IP subnets
+  * `inbound_rule.#.subnets` - (Deprecated) Inbound traffic source IP subnets
   in CIDR format
+  * `inbound_rule.#.subnet` - (Required) Inbound traffic source IP subnet
+    in CIDR format
   * `inbound_rule.#.protocol` - (Required) Inbound traffic protocol.
   One of: `IP`, `TCP`, `UDP`
   * `inbound_rule.#.src_port` - (Required) Inbound traffic source ports.
@@ -68,11 +63,19 @@ Rules are ordered, matching traffic rule stops processing subsequent ones.
 ## Attributes Reference
 
 * `uuid` - Unique identifier of ACL template resource
-* `device_id` - Identifier of a network device where template was applied
-* `device_acl_status` - Status of ACL template provisioning process on a device,
-where template was applied. One of:
+* `device_id` - (Deprecated) Identifier of a network device where template was applied
+* `device_acl_status` - Status of ACL template provisioning process on devices,
+  where template was applied. One of:
   * PROVISIONING
   * PROVISIONED
+* `device_details` - List of the devices where the ACL template is applied,
+  * `uuid` - Device uuid
+  * `name` - Device name
+  * `acl_status` - Device acl provisioning status
+    where template was applied. One of:
+    * PROVISIONING
+    * PROVISIONED
+
 
 ## Import
 
