@@ -8,6 +8,8 @@ description: |-
 
 # Resource: equinix_ecx_l2_connection_accepter
 
+**DEPRECATED** Use the `aws_dx_connection_confirmation` resource from the AWS provider.
+
 Resource `equinix_ecx_l2_connection_accepter` is used to accept Equinix Fabric 
 layer 2 connection on provider side.
 

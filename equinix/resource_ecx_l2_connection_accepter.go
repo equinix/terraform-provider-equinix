@@ -32,9 +32,10 @@ var ecxL2ConnectionAccepterDescriptions = map[string]string{
 
 func resourceECXL2ConnectionAccepter() *schema.Resource {
 	return &schema.Resource{
-		CreateContext: resourceECXL2ConnectionAccepterCreate,
-		ReadContext:   resourceECXL2ConnectionAccepterRead,
-		DeleteContext: resourceECXL2ConnectionAccepterDelete,
+		DeprecationMessage: "This resource is deprecated and will be removed in a future version of the provider. Please use the equivalent resource `aws_dx_connection_confirmation` in the 'AWS' provider instead.",
+		CreateContext:      resourceECXL2ConnectionAccepterCreate,
+		ReadContext:        resourceECXL2ConnectionAccepterRead,
+		DeleteContext:      resourceECXL2ConnectionAccepterDelete,
 		Importer: &schema.ResourceImporter{
 			State: schema.ImportStatePassthrough,
 		},
