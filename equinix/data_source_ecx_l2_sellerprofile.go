@@ -11,7 +11,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
-	"github.com/hashicorp/terraform/helper/hashcode"
 )
 
 var ecxL2SellerProfileSchemaNames = map[string]string{
@@ -347,19 +346,19 @@ func ecxL2ServiceProfileSpeedBandHash(v interface{}) int {
 	m := v.(map[string]interface{})
 	buf.WriteString(fmt.Sprintf("%d-", m[ecxL2ServiceProfileSpeedBandSchemaNames["Speed"]].(int)))
 	buf.WriteString(fmt.Sprintf("%s-", m[ecxL2ServiceProfileSpeedBandSchemaNames["SpeedUnit"]].(string)))
-	return hashcode.String(buf.String())
+	return hashcodeString(buf.String())
 }
 
 func ecxL2SellerProfileMetroHash(v interface{}) int {
 	var buf bytes.Buffer
 	m := v.(map[string]interface{})
 	buf.WriteString(fmt.Sprintf("%s-", m[ecxL2SellerProfileMetrosSchemaNames["Code"]].(string)))
-	return hashcode.String(buf.String())
+	return hashcodeString(buf.String())
 }
 
 func ecxL2SellerProfileAdditionalInfoHash(v interface{}) int {
 	var buf bytes.Buffer
 	m := v.(map[string]interface{})
 	buf.WriteString(fmt.Sprintf("%s-", m[ecxL2SellerProfileAdditionalInfosSchemaNames["Name"]].(string)))
-	return hashcode.String(buf.String())
+	return hashcodeString(buf.String())
 }

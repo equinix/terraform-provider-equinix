@@ -14,7 +14,6 @@ import (
 
 	"github.com/equinix/rest-go"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/hashicorp/terraform/helper/hashcode"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -293,7 +292,7 @@ func TestProvider_schemaSetToMap(t *testing.T) {
 	}
 	setFunc := func(v interface{}) int {
 		i := v.(item)
-		return hashcode.String(i.id)
+		return hashcodeString(i.id)
 	}
 	items := []interface{}{
 		item{"id1", 100, 200},
