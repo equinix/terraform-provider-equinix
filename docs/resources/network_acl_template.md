@@ -64,7 +64,7 @@ Rules are ordered, matching traffic rule stops processing subsequent ones.
 
 * `uuid` - Unique identifier of ACL template resource
 * `device_id` - (Deprecated) Identifier of a network device where template was applied
-* `device_acl_status` - Status of ACL template provisioning process on devices,
+* `device_acl_status` - Status of ACL template provisioning process,
   where template was applied. One of:
   * PROVISIONING
   * PROVISIONED
