@@ -661,7 +661,7 @@ func resourceNetworkDeviceCreate(ctx context.Context, d *schema.ResourceData, m 
 	}
 	if ne.StringValue(primary.ACLTemplateUUID) != "" {
 		waitConfigs = append(waitConfigs,
-			createNetworkDeviceACLStatusWaitConfiguration(conf.ne.GetACLTemplate, ne.StringValue(primary.ACLTemplateUUID), 1*time.Second, d.Timeout(schema.TimeoutUpdate)),
+			createNetworkDeviceACLStatusWaitConfiguration(conf.ne.GetDeviceACLDetails, ne.StringValue(primary.UUID), 1*time.Second, d.Timeout(schema.TimeoutUpdate)),
 		)
 	}
 	if secondary != nil {
@@ -671,7 +671,7 @@ func resourceNetworkDeviceCreate(ctx context.Context, d *schema.ResourceData, m 
 		)
 		if ne.StringValue(secondary.ACLTemplateUUID) != "" {
 			waitConfigs = append(waitConfigs,
-				createNetworkDeviceACLStatusWaitConfiguration(conf.ne.GetACLTemplate, ne.StringValue(secondary.ACLTemplateUUID), 1*time.Second, d.Timeout(schema.TimeoutUpdate)),
+				createNetworkDeviceACLStatusWaitConfiguration(conf.ne.GetDeviceACLDetails, ne.StringValue(secondary.UUID), 1*time.Second, d.Timeout(schema.TimeoutUpdate)),
 			)
 		}
 	}
@@ -1143,7 +1143,7 @@ func getNetworkDeviceStateChangeConfigs(c ne.Client, deviceID string, timeout ti
 				break
 			}
 			configs = append(configs,
-				createNetworkDeviceACLStatusWaitConfiguration(c.GetACLTemplate, aclTempID, 1*time.Second, timeout),
+				createNetworkDeviceACLStatusWaitConfiguration(c.GetDeviceACLDetails, deviceID, 1*time.Second, timeout),
 			)
 		case networkDeviceSchemaNames["AdditionalBandwidth"]:
 			configs = append(configs,
@@ -1180,7 +1180,7 @@ func uploadDeviceLicenseFile(openFunc openFile, uploadFunc uploadLicenseFile, ty
 }
 
 type getDevice func(uuid string) (*ne.Device, error)
-type getACL func(uuid string) (*ne.ACLTemplate, error)
+type getACL func(uuid string) (*ne.DeviceACLDetails, error)
 type getAdditionalBandwidthDetails func(uuid string) (*ne.DeviceAdditionalBandwidthDetails, error)
 
 func createNetworkDeviceStatusProvisioningWaitConfiguration(fetchFunc getDevice, id string, delay time.Duration, timeout time.Duration) *resource.StateChangeConf {
@@ -1263,7 +1263,7 @@ func createNetworkDeviceACLStatusWaitConfiguration(fetchFunc getACL, id string, 
 			if err != nil {
 				return nil, "", err
 			}
-			return resp, ne.StringValue(resp.DeviceACLStatus), nil
+			return resp, ne.StringValue(resp.Status), nil
 		},
 	}
 }
