@@ -169,9 +169,10 @@ func createNetworkACLTemplateInboundRuleSchema() map[string]*schema.Schema {
 			Deprecated:  networkACLTemplateDeprecateDescriptions["Subnets"],
 		},
 		networkACLTemplateInboundRuleSchemaNames["Subnet"]: {
-			Type:        schema.TypeString,
-			Optional:    true,
-			Description: networkACLTemplateInboundRuleDescriptions["Subnet"],
+			Type:         schema.TypeString,
+			Optional:     true,
+			Description:  networkACLTemplateInboundRuleDescriptions["Subnet"],
+			ValidateFunc: validation.IsCIDR,
 		},
 		networkACLTemplateInboundRuleSchemaNames["Protocol"]: {
 			Type:         schema.TypeString,
