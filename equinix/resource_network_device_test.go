@@ -400,7 +400,7 @@ func TestNetworkDevice_ACLStatusWaitConfiguration(t *testing.T) {
 	deviceUUID := "test"
 	var receivedDeviceUUID string
 	fetchFunc := func(uuid string) (*ne.DeviceACLDetails, error) {
-		deviceUUID = uuid
+		receivedDeviceUUID = uuid
 		return &ne.DeviceACLDetails{Status: ne.String(ne.ACLDeviceStatusProvisioned)}, nil
 	}
 	delay := 100 * time.Millisecond
