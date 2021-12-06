@@ -55,8 +55,11 @@ func TestAccNetworkDeviceLink(t *testing.T) {
 	t.Parallel()
 	metro, _ := schema.EnvDefaultFunc(networkDeviceMetroEnvVar, "SV")()
 	metroSecondary, _ := schema.EnvDefaultFunc(networkDeviceSecondaryMetroEnvVar, "SV")()
+	accountName, _ := schema.EnvDefaultFunc(networkDeviceAccountNameEnvVar, "")()
+	accountNameSecondary, _ := schema.EnvDefaultFunc(networkDeviceSecondaryAccountNameEnvVar, accountName)()
 	context := map[string]interface{}{
 		"device-resourceName":               "test",
+		"device-account_name":               accountName.(string),
 		"device-self_managed":               false,
 		"device-byol":                       false,
 		"device-name":                       fmt.Sprintf("%s-%s", tstResourcePrefix, randString(6)),
@@ -71,6 +74,7 @@ func TestAccNetworkDeviceLink(t *testing.T) {
 		"device-version":                    "16.09.05",
 		"device-core_count":                 2,
 		"device-secondary_name":             fmt.Sprintf("%s-%s", tstResourcePrefix, randString(6)),
+		"device-secondary_account_name":     accountNameSecondary.(string),
 		"device-secondary_metro_code":       metroSecondary.(string),
 		"device-secondary_hostname":         fmt.Sprintf("tf-%s", randString(6)),
 		"device-secondary_notifications":    []string{"test@equinix.com"},
