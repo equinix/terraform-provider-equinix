@@ -750,7 +750,7 @@ func flattenECXL2ConnectionSecondary(previous, conn *ecx.L2Connection) interface
 	transformed[ecxL2ConnectionSchemaNames["PortUUID"]] = conn.PortUUID
 	transformed[ecxL2ConnectionSchemaNames["DeviceUUID"]] = conn.DeviceUUID
 	transformed[ecxL2ConnectionSchemaNames["DeviceInterfaceID"]] = conn.DeviceInterfaceID
-	if previous != nil && ecx.IntValue(previous.DeviceInterfaceID) != 0 {
+	if previous != nil {
 		transformed[ecxL2ConnectionSchemaNames["DeviceInterfaceID"]] = previous.DeviceInterfaceID
 	}
 	transformed[ecxL2ConnectionSchemaNames["VlanSTag"]] = conn.VlanSTag
