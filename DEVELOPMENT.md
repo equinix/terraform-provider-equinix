@@ -76,6 +76,10 @@ profile. Reflected by Fabric connection tests.
 Interconnection Zone 1 seller profile. Reflected by Fabric connection tests.
 * `TF_ACC_FABRIC_GCP2_L2_SP_NAME` alters default name of Equinix Fabric GCP
 Interconnection Zone 2 seller profile. Reflected by Fabric connection tests.
+* `TF_ACC_NETWORK_DEVICE_BILLING_ACCOUNT_NAME` alters default billing account name for
+Network edge device primary. Reflected by Network Edge tests.
+* `TF_ACC_NETWORK_DEVICE_SECONDARY_BILLING_ACCOUNT_NAME` alters default billing account
+name for Network edge device secondary. Reflected by Network Edge tests.
 * `TF_ACC_NETWORK_DEVICE_METRO` alters default metro code for Network Edge resources.
 Reflected by Network Edge tests.
 * `TF_ACC_NETWORK_DEVICE_LICENSE_FILE` alters default path to device license file.
