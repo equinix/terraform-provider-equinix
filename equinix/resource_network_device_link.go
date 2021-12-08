@@ -11,7 +11,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
-	"github.com/hashicorp/terraform/helper/hashcode"
 )
 
 var networkDeviceLinkSchemaNames = map[string]string{
@@ -483,7 +482,7 @@ func networkDeviceLinkDeviceKey(v interface{}) string {
 }
 
 func networkDeviceLinkDeviceHash(v interface{}) int {
-	return hashcode.String(networkDeviceLinkDeviceKey(v))
+	return hashcodeString(networkDeviceLinkDeviceKey(v))
 }
 
 func networkDeviceLinkConnectionKey(v interface{}) string {
@@ -505,5 +504,5 @@ func networkDeviceLinkConnectionKey(v interface{}) string {
 }
 
 func networkDeviceLinkConnectionHash(v interface{}) int {
-	return hashcode.String(networkDeviceLinkConnectionKey(v))
+	return hashcodeString(networkDeviceLinkConnectionKey(v))
 }

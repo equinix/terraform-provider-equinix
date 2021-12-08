@@ -2,8 +2,8 @@
 
 ## Requirements
 
-* [Terraform](https://www.terraform.io/downloads.html) 0.12+ (to run tests)
-* [Go](https://golang.org/doc/install) 1.14 (to build the provider plugin)
+* [Terraform](https://www.terraform.io/downloads.html) 1.0.11+ (to run tests)
+* [Go](https://golang.org/doc/install) 1.17 (to build the provider plugin)
 * [GNU Make](https://www.gnu.org/software/make) (to build and test easier)
 
 ## Building the provider

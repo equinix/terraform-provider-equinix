@@ -30,7 +30,7 @@ resource "azurerm_express_route_circuit" "demo" {
   resource_group_name   = azurerm_resource_group.demo.name
   location              = azurerm_resource_group.demo.location
   service_provider_name = "Equinix"
-  peering_location      = "Silicon Valley"
+  peering_location      = var.azure_peering_location
   bandwidth_in_mbps     = 50
   sku {
     tier   = "Premium"
@@ -39,11 +39,6 @@ resource "azurerm_express_route_circuit" "demo" {
   allow_classic_operations = false
 }
 
-resource "azurerm_express_route_circuit_authorization" "demo" {
-  name                       = "TFDemoExpressRouteAuth"
-  express_route_circuit_name = azurerm_express_route_circuit.demo.name
-  resource_group_name        = azurerm_resource_group.demo.name
-}
 
 resource "equinix_ecx_l2_connection" "azure-dot1q-pub" {
   name              = "tf-azure-dot1q-pub-pri"
@@ -54,7 +49,7 @@ resource "equinix_ecx_l2_connection" "azure-dot1q-pub" {
   port_uuid         = data.equinix_ecx_port.dot1q-1-pri.uuid
   vlan_stag         = 1010
   seller_metro_code = var.azure_metro_code
-  authorization_key = azurerm_express_route_circuit_authorization.demo.authorization_key
+  authorization_key = azurerm_express_route_circuit.demo.service_key
   named_tag         = "Public"
   secondary_connection {
     name      = "tf-azure-dot1q-pub-sec"
