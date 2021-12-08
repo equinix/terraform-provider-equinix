@@ -1,6 +1,43 @@
+## 3.2.1 (Dec 8, 2021)
+
+### Bug Fixes
+
+* Fix deletion of `metal_devices` with `hardware_reservation_id` == `next-available` ([#199](https://github.com/equinix/terraform-provider-metal/pull/199))
+* Fix empty `payment_method_id` handling for `metal_project` ([#201](https://github.com/equinix/terraform-provider-metal/pull/201))
+* Fix error handling when API errors list is empty but HTTP status indicates an error  ([#195](https://github.com/equinix/terraform-provider-metal/pull/195))
+
+### Improvements
+
+* recommend x-auth-token be removed from bug reports by (#202)
+* updated TF Plugin SDK to v2.9.0
+
+## 3.2.0 (Sep 29, 2021)
+
+### Bug Fixes
+
+* Fix deletion of `metal_virtual_connection` resources #183 (v3.2.0-alpha.4)
+* Fix detection of 403 and 404 errors when multiple errors should be ignored (#192)  (v3.2.0-alpha.5)
+
+### Features
+
+* Adds `metal_port` resource (#12, #54, #95, #116) (v3.2.0-alpha.1, and #177 unreleased)
+   See https://registry.terraform.io/providers/equinix/metal/latest/docs/guides/network_types#metal-port for usage.
+* Adds `features_required` argument to `metal_facility` data sources (#88) (v3.2.0-alpha.2)
+* Adds `capacity` filter argument to `metal_facility` data sources (#88) (v3.2.0-alpha.2)
+* Adds `capacity` filter argument to `metal_metro` data sources (#88) (v3.2.0-alpha.2)
+
+### Improvements
+
+* Added `termination_time` to `metal_device` #182  (v3.2.0-alpha.3)
+* `metal_device` `hostname` field is now optional/computed #184  (v3.2.0-alpha.3)
+* `metal_device` `billing_cycle` field  is now optional/computed #185 (v3.2.0-alpha.3)
+* packngo updated to 0.19.1 #186  (v3.2.0-alpha.3)
+* Add `--debug` mode to the provider plugin (#173) (v3.2.0-alpha.5)
+* E2E Test Code coverage is now tracked (#173) (v3.2.0-alpha.5)
+
 ## 3.1.0 (Aug 4, 2021)
 
-## Improvements
+### Improvements
 
 * Added `mode` to `metal_connection` resource and datasource #129
 * Added `tags` to `metal_connection` resource and datasource #134
@@ -11,7 +48,7 @@
 * `metal_virtual_circuit` field `nni_vlan` is now optional #129
 * Improved acceptance test success rates #170 
 
-## Bug Fixes
+### Bug Fixes
 
 * fixed crashing when VLAN is not attached to a virtual circuit #144
 
