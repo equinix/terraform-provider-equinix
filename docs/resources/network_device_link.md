@@ -32,9 +32,7 @@ resource "equinix_network_device_link" "test" {
   link {
     account_number  = equinix_network_device.test.account_number
     src_metro_code  = equinix_network_device.test.metro_code
-    src_zone_code   = equinix_network_device.test.zone_code
     dst_metro_code  = equinix_network_device.test.secondary_device[0].metro_code
-    dst_zone_code   = equinix_network_device.test.secondary_device[0].zone_code
     throughput      = "50"
     throughput_unit = "Mbps"
   }
@@ -45,7 +43,8 @@ resource "equinix_network_device_link" "test" {
 ## Argument Reference
 
 * `name` - (Required) device link name
-* `subnet` - (Required) device link subnet in CIDR format
+* `subnet` - (Optional) device link subnet in CIDR format. Not required for link 
+between self configured devices
 * `device` - (Required) definition of one or more devices belonging to the
 device link
 * `link` - (Optional) definition of one or more, inter metro, connections belonging
@@ -54,7 +53,7 @@ to the device link
 The `device` block supports the following arguments:
 
 * `id` - (Required) Device identifier
-* `asn` - (Required) Device ASN number
+* `asn` - (Optional) Device ASN number. Not required for self configured devices
 * `interface_id` - (Optional) Device network interface identifier to use
 for device link connection
 
@@ -66,8 +65,8 @@ connection charges
 * `throughput_unit` - (Required) connection throughput unit (Mbps or Gbps)
 * `src_metro_code` - (Required) connection source metro code
 * `dst_metro_code` - (Required) connection destination metro code
-* `src_zone_code` - (Required) connection source zone code
-* `dst_zone_code` - (Required) connection destination zone code
+* `src_zone_code` - (Deprecated) connection source zone code is not required
+* `dst_zone_code` - (Deprecated) connection destination zone code is not required
 
 ## Attributes Reference
 
