@@ -10,6 +10,7 @@ import (
 
 func TestNetworkDeviceLink_createFromResourceData(t *testing.T) {
 	//given
+
 	expected := ne.DeviceLinkGroup{
 		Name:   ne.String("testGroup"),
 		Subnet: ne.String("10.10.1.0/24"),
@@ -17,12 +18,11 @@ func TestNetworkDeviceLink_createFromResourceData(t *testing.T) {
 			{
 				DeviceID:    ne.String("3eee8518-b19d-4de5-afd8-afd9b67e6e8c"),
 				ASN:         ne.Int(0),
-				InterfaceID: ne.Int(10),
-			},
-			{
+				InterfaceID: ne.Int(5),
+			}, {
 				DeviceID:    ne.String("7c737fe8-3a9e-4ab9-afcc-c06d01db326d"),
 				ASN:         ne.Int(0),
-				InterfaceID: ne.Int(5),
+				InterfaceID: ne.Int(10),
 			},
 		},
 		Links: []ne.DeviceLinkGroupLink{
@@ -32,11 +32,12 @@ func TestNetworkDeviceLink_createFromResourceData(t *testing.T) {
 				ThroughputUnit:       ne.String("Gbps"),
 				SourceMetroCode:      ne.String("LD"),
 				DestinationMetroCode: ne.String("AM"),
-				SourceZoneCode:       ne.String("Zone1"),
-				DestinationZoneCode:  ne.String("Zone1"),
+				SourceZoneCode:       ne.String(""),
+				DestinationZoneCode:  ne.String(""),
 			},
 		},
 	}
+
 	rawData := map[string]interface{}{
 		networkDeviceLinkSchemaNames["Name"]:   ne.StringValue(expected.Name),
 		networkDeviceLinkSchemaNames["Subnet"]: ne.StringValue(expected.Subnet),
@@ -48,6 +49,7 @@ func TestNetworkDeviceLink_createFromResourceData(t *testing.T) {
 	result := createNetworkDeviceLink(d)
 	//then
 	assert.Equal(t, expected, result, "Created device link matches expected result")
+
 }
 
 func TestNetworkDeviceLink_updateResourceData(t *testing.T) {
@@ -61,12 +63,12 @@ func TestNetworkDeviceLink_updateResourceData(t *testing.T) {
 			{
 				DeviceID:    ne.String("3eee8518-b19d-4de5-afd8-afd9b67e6e8c"),
 				ASN:         ne.Int(0),
-				InterfaceID: ne.Int(10),
+				InterfaceID: ne.Int(5),
 			},
 			{
 				DeviceID:    ne.String("7c737fe8-3a9e-4ab9-afcc-c06d01db326d"),
 				ASN:         ne.Int(0),
-				InterfaceID: ne.Int(5),
+				InterfaceID: ne.Int(10),
 			},
 		},
 		Links: []ne.DeviceLinkGroupLink{
@@ -76,8 +78,8 @@ func TestNetworkDeviceLink_updateResourceData(t *testing.T) {
 				ThroughputUnit:       ne.String("Gbps"),
 				SourceMetroCode:      ne.String("LD"),
 				DestinationMetroCode: ne.String("AM"),
-				SourceZoneCode:       ne.String("Zone1"),
-				DestinationZoneCode:  ne.String("Zone1"),
+				SourceZoneCode:       ne.String(""),
+				DestinationZoneCode:  ne.String(""),
 			},
 		},
 	}
