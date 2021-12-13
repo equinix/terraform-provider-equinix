@@ -84,7 +84,11 @@ Network edge device primary. Reflected by Network Edge tests.
 name for Network edge device secondary. Reflected by Network Edge tests.
 * `TF_ACC_NETWORK_DEVICE_METRO` alters default metro code for Network Edge resources.
 Reflected by Network Edge tests.
-* `TF_ACC_NETWORK_DEVICE_LICENSE_FILE` alters default path to device license file.
+* `TF_ACC_NETWORK_DEVICE_SECONDARY_METRO` alters default metro code for secondary Network Edge resources.
+Reflected by Network Edge tests.
+* `TF_ACC_NETWORK_DEVICE_CSRSDWAN_LICENSE_FILE` alters default path to CSR SD-WAN device license file.
+Reflected by Network Edge tests.
+* `TF_ACC_NETWORK_DEVICE_VSRX_LICENSE_FILE` alters default path to JUNIPER VSRX device license file.
 Reflected by Network Edge tests.
 
 ## Manual provider installation
