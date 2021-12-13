@@ -2,7 +2,7 @@ GOCMD=go
 TEST?=$$(go list ./... |grep -v 'vendor')
 INSTALL_DIR=~/.terraform.d/plugins
 BINARY=terraform-provider-equinix
-TESTARGS=-timeout 30m
+TESTARGS=-timeout 120m
 SWEEP_DIR?=./equinix
 SWEEPARGS=timeout 60m
 
