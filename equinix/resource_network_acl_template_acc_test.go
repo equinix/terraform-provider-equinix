@@ -8,7 +8,6 @@ import (
 
 	"github.com/equinix/ne-go"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 )
 
@@ -53,28 +52,26 @@ func testSweepNetworkACLTemplate(region string) error {
 
 func TestAccNetworkACLTemplate(t *testing.T) {
 	t.Parallel()
-	metro, _ := schema.EnvDefaultFunc(networkDeviceMetroEnvVar, "SV")()
 	context := map[string]interface{}{
 		"resourceName":            "test",
 		"name":                    fmt.Sprintf("%s-%s", tstResourcePrefix, randString(6)),
 		"description":             randString(50),
-		"metro_code":              metro.(string),
-		"inbound_rule_1_subnets":  []string{"10.0.0.0/16"},
+		"inbound_rule_1_subnet":  "10.0.0.0/16",
 		"inbound_rule_1_protocol": "TCP",
 		"inbound_rule_1_src_port": "any",
 		"inbound_rule_1_dst_port": "22-23",
-		"inbound_rule_2_subnets":  []string{"192.168.16.0/24"},
+		"inbound_rule_2_subnet":   "192.168.16.0/24",
 		"inbound_rule_2_protocol": "UDP",
 		"inbound_rule_2_src_port": "any",
 		"inbound_rule_2_dst_port": "53",
-		"inbound_rule_3_subnets":  []string{"2.2.2.2/32", "5.5.5.5/32"},
+		"inbound_rule_3_subnet":  "2.2.2.2/32",
 		"inbound_rule_3_protocol": "UDP",
 		"inbound_rule_3_src_port": "any",
 		"inbound_rule_3_dst_port": "any",
 	}
 	contextWithChanges := copyMap(context)
 	contextWithChanges["description"] = randString(50)
-	contextWithChanges["inbound_rule_3_subnets"] = []string{"4.4.4.4/32", "16.20.30.0/24"}
+	contextWithChanges["inbound_rule_3_subnet"] = "4.4.4.4/32"
 	contextWithChanges["inbound_rule_3_protocol"] = "TCP"
 	contextWithChanges["inbound_rule_3_dst_port"] = "2048"
 	resourceName := "equinix_network_acl_template." + context["resourceName"].(string)
@@ -113,24 +110,23 @@ func testAccNetworkACLTemplate(ctx map[string]interface{}) string {
 resource "equinix_network_acl_template" "%{resourceName}" {
   name          = "%{name}"
   description   = "%{description}"
-  metro_code    = "%{metro_code}"
 
   inbound_rule {
-    subnets  = %{inbound_rule_1_subnets}
+    subnet  = %{inbound_rule_1_subnet}
 	protocol = "%{inbound_rule_1_protocol}"
 	src_port = "%{inbound_rule_1_src_port}"
 	dst_port = "%{inbound_rule_1_dst_port}"
   }
 
   inbound_rule {
-	subnets  = %{inbound_rule_2_subnets}
+	subnet  = %{inbound_rule_2_subnet}
 	protocol = "%{inbound_rule_2_protocol}"
 	src_port = "%{inbound_rule_2_src_port}"
 	dst_port = "%{inbound_rule_2_dst_port}"
   }
 
   inbound_rule {
-	subnets  = %{inbound_rule_3_subnets}
+	subnet  = %{inbound_rule_3_subnet}
 	protocol = "%{inbound_rule_3_protocol}"
 	src_port = "%{inbound_rule_3_src_port}"
 	dst_port = "%{inbound_rule_3_dst_port}"
@@ -166,9 +162,6 @@ func testAccNetworkACLTemplateAttributes(template *ne.ACLTemplate, ctx map[strin
 		if v, ok := ctx["description"]; ok && ne.StringValue(template.Description) != v.(string) {
 			return fmt.Errorf("name does not match %v - %v", ne.StringValue(template.Description), v)
 		}
-		if v, ok := ctx["metro_code"]; ok && ne.StringValue(template.MetroCode) != v.(string) {
-			return fmt.Errorf("name does not match %v - %v", ne.StringValue(template.MetroCode), v)
-		}
 		if len(template.InboundRules) != 3 {
 			return fmt.Errorf("number of inbound rules does not match %v - %v", len(template.InboundRules), 3)
 		}
@@ -179,8 +172,8 @@ func testAccNetworkACLTemplateAttributes(template *ne.ACLTemplate, ctx map[strin
 			if ne.StringValue(template.InboundRules[i].SrcType) != "SUBNET" {
 				return fmt.Errorf("inbound_rule %d srcType does not match %v - %v", i+1, ne.StringValue(template.InboundRules[i].SrcType), "SUBNET")
 			}
-			if v, ok := ctx[fmt.Sprintf("inbound_rule_%d_subnets", i+1)]; ok && !slicesMatch(template.InboundRules[i].Subnets, v.([]string)) {
-				return fmt.Errorf("inbound_rule %d subnets does not match %v - %v", i+1, template.InboundRules[i].Subnets, v)
+			if v, ok := ctx[fmt.Sprintf("inbound_rule_%d_subnet", i+1)]; ok && ne.StringValue(template.InboundRules[i].Subnet) != v.(string) {
+				return fmt.Errorf("inbound_rule %d subnet does not match %v - %v", i+1, ne.StringValue(template.InboundRules[i].Subnet), v)
 			}
 			if v, ok := ctx[fmt.Sprintf("inbound_rule_%d_protocol", i+1)]; ok && ne.StringValue(template.InboundRules[i].Protocol) != v.(string) {
 				return fmt.Errorf("inbound_rule %d protocol does not match %v - %v", i+1, ne.StringValue(template.InboundRules[i].Protocol), v)
