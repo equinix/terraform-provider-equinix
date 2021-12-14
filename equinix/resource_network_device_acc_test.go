@@ -311,14 +311,17 @@ func TestAccNetworkDevice_vSRX_HA_Managed_BYOL(t *testing.T) {
 	t.Parallel()
 	metro, _ := schema.EnvDefaultFunc(networkDeviceMetroEnvVar, "SV")()
 	accountName, _ := schema.EnvDefaultFunc(networkDeviceAccountNameEnvVar, "")()
-	licFile, _ := schema.EnvDefaultFunc(networkDeviceVSRXLicenseFileEnvVar, "test-fixtures/juniperVSRX.lic")()
+	licenseFile, _ := schema.EnvDefaultFunc(networkDeviceVSRXLicenseFileEnvVar, "")()
+	if licenseFile.(string) == "" {
+		t.Skip("Skipping TestAccNetworkDevice_vSRX_HA_Managed_BYOL test since TF_ACC_NETWORK_DEVICE_VSRX_LICENSE_FILE env var is not defined with a valid license file")
+	}
 	context := map[string]interface{}{
 		"device-resourceName":            "test",
 		"device-account_name":            accountName.(string),
 		"device-self_managed":            false,
 		"device-byol":                    true,
 		"device-name":                    fmt.Sprintf("%s-%s", tstResourcePrefix, randString(6)),
-		"device-license_file":            licFile.(string),
+		"device-license_file":            licenseFile.(string),
 		"device-metro_code":              metro.(string),
 		"device-type_code":               "VSRX",
 		"device-package_code":            "STD",
@@ -330,7 +333,7 @@ func TestAccNetworkDevice_vSRX_HA_Managed_BYOL(t *testing.T) {
 		"device-purchase_order_number":   randString(10),
 		"device-order_reference":         randString(10),
 		"device-secondary_name":          fmt.Sprintf("%s-%s", tstResourcePrefix, randString(6)),
-		"device-secondary_license_file":  licFile.(string),
+		"device-secondary_license_file":  licenseFile.(string),
 		"device-secondary_hostname":      fmt.Sprintf("tf-%s", randString(6)),
 		"device-secondary_notifications": []string{"secondary@equinix.com"},
 		"acl-resourceName":               "acl-pri",
