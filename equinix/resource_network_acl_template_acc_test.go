@@ -64,7 +64,7 @@ func TestAccNetworkACLTemplate(t *testing.T) {
 		"inbound_rule_2_protocol": "UDP",
 		"inbound_rule_2_src_port": "any",
 		"inbound_rule_2_dst_port": "53",
-		"inbound_rule_3_subnet":  "2.2.2.2/32",
+		"inbound_rule_3_subnet":   "2.2.2.2/32",
 		"inbound_rule_3_protocol": "UDP",
 		"inbound_rule_3_src_port": "any",
 		"inbound_rule_3_dst_port": "any",
@@ -112,21 +112,21 @@ resource "equinix_network_acl_template" "%{resourceName}" {
   description   = "%{description}"
 
   inbound_rule {
-    subnet  = %{inbound_rule_1_subnet}
+    subnet   = "%{inbound_rule_1_subnet}"
 	protocol = "%{inbound_rule_1_protocol}"
 	src_port = "%{inbound_rule_1_src_port}"
 	dst_port = "%{inbound_rule_1_dst_port}"
   }
 
   inbound_rule {
-	subnet  = %{inbound_rule_2_subnet}
+	subnet   = "%{inbound_rule_2_subnet}"
 	protocol = "%{inbound_rule_2_protocol}"
 	src_port = "%{inbound_rule_2_src_port}"
 	dst_port = "%{inbound_rule_2_dst_port}"
   }
 
   inbound_rule {
-	subnet  = %{inbound_rule_3_subnet}
+	subnet   = "%{inbound_rule_3_subnet}"
 	protocol = "%{inbound_rule_3_protocol}"
 	src_port = "%{inbound_rule_3_src_port}"
 	dst_port = "%{inbound_rule_3_dst_port}"

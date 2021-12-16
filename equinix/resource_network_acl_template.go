@@ -343,35 +343,32 @@ func expandACLTemplateInboundRules(rules []interface{}) []ne.ACLTemplateInboundR
 }
 
 func flattenACLTemplateInboundRules(existingRules []ne.ACLTemplateInboundRule, rules []ne.ACLTemplateInboundRule) interface{} {
+
+	setSubnets := checkExistingSubnets(existingRules)
 	transformed := make([]interface{}, len(rules))
 	for i := range rules {
-		transformed[i] = map[string]interface{}{
-			networkACLTemplateInboundRuleSchemaNames["SeqNo"]:    rules[i].SeqNo,
-			networkACLTemplateInboundRuleSchemaNames["SrcType"]:  rules[i].SrcType,
-			networkACLTemplateInboundRuleSchemaNames["Subnets"]:  getSubnets(existingRules[i], rules[i]),
-			networkACLTemplateInboundRuleSchemaNames["Subnet"]:   getSubnet(existingRules[i], rules[i]),
-			networkACLTemplateInboundRuleSchemaNames["Protocol"]: rules[i].Protocol,
-			networkACLTemplateInboundRuleSchemaNames["SrcPort"]:  rules[i].SrcPort,
-			networkACLTemplateInboundRuleSchemaNames["DstPort"]:  rules[i].DstPort,
+		transformedTemplate := make(map[string]interface{})
+		transformedTemplate[networkACLTemplateInboundRuleSchemaNames["SeqNo"]] = rules[i].SeqNo
+		transformedTemplate[networkACLTemplateInboundRuleSchemaNames["SrcType"]] = rules[i].SrcType
+		transformedTemplate[networkACLTemplateInboundRuleSchemaNames["Protocol"]] = rules[i].Protocol
+		transformedTemplate[networkACLTemplateInboundRuleSchemaNames["SrcPort"]] = rules[i].SrcPort
+		transformedTemplate[networkACLTemplateInboundRuleSchemaNames["DstPort"]] = rules[i].DstPort
+		transformedTemplate[networkACLTemplateInboundRuleSchemaNames["Subnet"]] = rules[i].Subnet
+		if setSubnets {
+			transformedTemplate[networkACLTemplateInboundRuleSchemaNames["Subnets"]] = rules[i].Subnets
 		}
+		transformed[i] = transformedTemplate
 	}
 	return transformed
 }
 
-func getSubnet(existingRule ne.ACLTemplateInboundRule, rule ne.ACLTemplateInboundRule) *string {
-	var subnet = existingRule.Subnet
-	if existingRule.Subnet != nil && len(ne.StringValue(existingRule.Subnet)) > 0 {
-		subnet = rule.Subnet
+func checkExistingSubnets(existingRules []ne.ACLTemplateInboundRule) bool {
+	for i := range existingRules {
+		if existingRules[i].Subnets != nil && len(existingRules[i].Subnets) > 0 {
+			return true
+		}
 	}
-	return subnet
-}
-
-func getSubnets(existingRule ne.ACLTemplateInboundRule, rule ne.ACLTemplateInboundRule) []string {
-	var subnets []string = existingRule.Subnets
-	if existingRule.Subnets != nil && len(existingRule.Subnets) > 0 {
-		subnets = rule.Subnets
-	}
-	return subnets
+	return false
 }
 
 func flattenACLTemplateDeviceDetails(rules []ne.ACLTemplateDeviceDetails) interface{} {
