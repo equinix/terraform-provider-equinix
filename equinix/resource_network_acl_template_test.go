@@ -157,14 +157,12 @@ func TestNetworkACLTemplate_flattenInboundRules(t *testing.T) {
 		},
 	}
 	initial := input
-	var nilSubnet *string = nil
-	var nilSubnets []string = nil
 	expected := []interface{}{
 		map[string]interface{}{
 			networkACLTemplateInboundRuleSchemaNames["SeqNo"]:    input[0].SeqNo,
 			networkACLTemplateInboundRuleSchemaNames["SrcType"]:  input[0].SrcType,
 			networkACLTemplateInboundRuleSchemaNames["Subnets"]:  input[0].Subnets,
-			networkACLTemplateInboundRuleSchemaNames["Subnet"]:   nilSubnet,
+			networkACLTemplateInboundRuleSchemaNames["Subnet"]:   input[0].Subnet,
 			networkACLTemplateInboundRuleSchemaNames["Protocol"]: input[0].Protocol,
 			networkACLTemplateInboundRuleSchemaNames["SrcPort"]:  input[0].SrcPort,
 			networkACLTemplateInboundRuleSchemaNames["DstPort"]:  input[0].DstPort,
@@ -172,7 +170,7 @@ func TestNetworkACLTemplate_flattenInboundRules(t *testing.T) {
 		map[string]interface{}{
 			networkACLTemplateInboundRuleSchemaNames["SeqNo"]:    input[1].SeqNo,
 			networkACLTemplateInboundRuleSchemaNames["SrcType"]:  input[1].SrcType,
-			networkACLTemplateInboundRuleSchemaNames["Subnets"]:  nilSubnets,
+			networkACLTemplateInboundRuleSchemaNames["Subnets"]:  input[1].Subnets,
 			networkACLTemplateInboundRuleSchemaNames["Subnet"]:   input[1].Subnet,
 			networkACLTemplateInboundRuleSchemaNames["Protocol"]: input[1].Protocol,
 			networkACLTemplateInboundRuleSchemaNames["SrcPort"]:  input[1].SrcPort,
