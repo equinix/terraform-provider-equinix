@@ -51,7 +51,6 @@ func testSweepNetworkACLTemplate(region string) error {
 }
 
 func TestAccNetworkACLTemplate(t *testing.T) {
-	t.Parallel()
 	context := map[string]interface{}{
 		"resourceName":            "test",
 		"name":                    fmt.Sprintf("%s-%s", tstResourcePrefix, randString(6)),
@@ -76,7 +75,7 @@ func TestAccNetworkACLTemplate(t *testing.T) {
 	contextWithChanges["inbound_rule_3_dst_port"] = "2048"
 	resourceName := "equinix_network_acl_template." + context["resourceName"].(string)
 	var template ne.ACLTemplate
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{

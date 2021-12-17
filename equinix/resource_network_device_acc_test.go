@@ -76,7 +76,6 @@ func testSweepNetworkDevice(region string) error {
 }
 
 func TestAccNetworkDevice_CSR1000V_HA_Managed_Sub(t *testing.T) {
-	t.Parallel()
 	metro, _ := schema.EnvDefaultFunc(networkDeviceMetroEnvVar, "SV")()
 	accountName, _ := schema.EnvDefaultFunc(networkDeviceAccountNameEnvVar, "")()
 	context := map[string]interface{}{
@@ -120,7 +119,7 @@ func TestAccNetworkDevice_CSR1000V_HA_Managed_Sub(t *testing.T) {
 	var primary, secondary ne.Device
 	var user ne.SSHUser
 	var primaryACL, secondaryACL ne.ACLTemplate
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
@@ -164,7 +163,6 @@ func TestAccNetworkDevice_CSR1000V_HA_Managed_Sub(t *testing.T) {
 }
 
 func TestAccNetworkDevice_CSR1000V_HA_Self_BYOL(t *testing.T) {
-	t.Parallel()
 	metro, _ := schema.EnvDefaultFunc(networkDeviceMetroEnvVar, "SV")()
 	accountName, _ := schema.EnvDefaultFunc(networkDeviceAccountNameEnvVar, "")()
 	context := map[string]interface{}{
@@ -205,7 +203,7 @@ func TestAccNetworkDevice_CSR1000V_HA_Self_BYOL(t *testing.T) {
 	secACLResourceName := fmt.Sprintf("equinix_network_acl_template.%s", contextWithACLs["acl-secondary_resourceName"].(string))
 	var primary, secondary ne.Device
 	var primaryACL, secondaryACL ne.ACLTemplate
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
@@ -241,7 +239,6 @@ func TestAccNetworkDevice_CSR1000V_HA_Self_BYOL(t *testing.T) {
 }
 
 func TestAccNetworkDevice_vSRX_HA_Managed_Sub(t *testing.T) {
-	t.Parallel()
 	metro, _ := schema.EnvDefaultFunc(networkDeviceMetroEnvVar, "SV")()
 	accountName, _ := schema.EnvDefaultFunc(networkDeviceAccountNameEnvVar, "")()
 	context := map[string]interface{}{
@@ -273,7 +270,7 @@ func TestAccNetworkDevice_vSRX_HA_Managed_Sub(t *testing.T) {
 	userResourceName := fmt.Sprintf("equinix_network_ssh_user.%s", contextWithChanges["user-resourceName"].(string))
 	var primary, secondary ne.Device
 	var user ne.SSHUser
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
@@ -308,7 +305,6 @@ func TestAccNetworkDevice_vSRX_HA_Managed_Sub(t *testing.T) {
 }
 
 func TestAccNetworkDevice_vSRX_HA_Managed_BYOL(t *testing.T) {
-	t.Parallel()
 	metro, _ := schema.EnvDefaultFunc(networkDeviceMetroEnvVar, "SV")()
 	accountName, _ := schema.EnvDefaultFunc(networkDeviceAccountNameEnvVar, "")()
 	licenseFile, _ := schema.EnvDefaultFunc(networkDeviceVSRXLicenseFileEnvVar, "")()
@@ -358,7 +354,7 @@ func TestAccNetworkDevice_vSRX_HA_Managed_BYOL(t *testing.T) {
 	userResourceName := fmt.Sprintf("equinix_network_ssh_user.%s", contextWithChanges["user-resourceName"].(string))
 	var primary, secondary ne.Device
 	var user ne.SSHUser
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
@@ -395,7 +391,6 @@ func TestAccNetworkDevice_vSRX_HA_Managed_BYOL(t *testing.T) {
 }
 
 func TestAccNetworkDevice_vSRX_HA_Self_BYOL(t *testing.T) {
-	t.Parallel()
 	metro, _ := schema.EnvDefaultFunc(networkDeviceMetroEnvVar, "SV")()
 	accountName, _ := schema.EnvDefaultFunc(networkDeviceAccountNameEnvVar, "")()
 	context := map[string]interface{}{
@@ -430,7 +425,7 @@ func TestAccNetworkDevice_vSRX_HA_Self_BYOL(t *testing.T) {
 
 	deviceResourceName := fmt.Sprintf("equinix_network_device.%s", context["device-resourceName"].(string))
 	var primary, secondary ne.Device
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
@@ -452,7 +447,6 @@ func TestAccNetworkDevice_vSRX_HA_Self_BYOL(t *testing.T) {
 }
 
 func TestAccNetworkDevice_PaloAlto_HA_Managed_Sub(t *testing.T) {
-	t.Parallel()
 	metro, _ := schema.EnvDefaultFunc(networkDeviceMetroEnvVar, "SV")()
 	accountName, _ := schema.EnvDefaultFunc(networkDeviceAccountNameEnvVar, "")()
 	context := map[string]interface{}{
@@ -495,7 +489,7 @@ func TestAccNetworkDevice_PaloAlto_HA_Managed_Sub(t *testing.T) {
 	priACLResourceName := fmt.Sprintf("equinix_network_acl_template.%s", context["acl-resourceName"].(string))
 	secACLResourceName := fmt.Sprintf("equinix_network_acl_template.%s", context["acl-secondary_resourceName"].(string))
 	userResourceName := fmt.Sprintf("equinix_network_ssh_user.%s", contextWithChanges["user-resourceName"].(string))
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
@@ -536,7 +530,6 @@ func TestAccNetworkDevice_PaloAlto_HA_Managed_Sub(t *testing.T) {
 }
 
 func TestAccNetworkDevice_PaloAlto_HA_Self_BYOL(t *testing.T) {
-	t.Parallel()
 	metro, _ := schema.EnvDefaultFunc(networkDeviceMetroEnvVar, "SV")()
 	accountName, _ := schema.EnvDefaultFunc(networkDeviceAccountNameEnvVar, "")()
 	context := map[string]interface{}{
@@ -575,7 +568,7 @@ func TestAccNetworkDevice_PaloAlto_HA_Self_BYOL(t *testing.T) {
 	secACLResourceName := fmt.Sprintf("equinix_network_acl_template.%s", contextWithACLs["acl-secondary_resourceName"].(string))
 	var primary, secondary ne.Device
 	var primaryACL, secondaryACL ne.ACLTemplate
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
@@ -610,7 +603,6 @@ func TestAccNetworkDevice_PaloAlto_HA_Self_BYOL(t *testing.T) {
 }
 
 func TestAccNetworkDevice_CSRSDWAN_HA_Self_BYOL(t *testing.T) {
-	t.Parallel()
 	metro, _ := schema.EnvDefaultFunc(networkDeviceMetroEnvVar, "SV")()
 	accountName, _ := schema.EnvDefaultFunc(networkDeviceAccountNameEnvVar, "")()
 	licFile, _ := schema.EnvDefaultFunc(networkDeviceCSRSDWANLicenseFileEnvVar, "test-fixtures/CSRSDWAN.cfg")()
@@ -654,7 +646,7 @@ func TestAccNetworkDevice_CSRSDWAN_HA_Self_BYOL(t *testing.T) {
 	secACLResourceName := fmt.Sprintf("equinix_network_acl_template.%s", context["acl-secondary_resourceName"].(string))
 	var primary, secondary ne.Device
 	var primaryACL, secondaryACL ne.ACLTemplate
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
@@ -684,7 +676,6 @@ func TestAccNetworkDevice_CSRSDWAN_HA_Self_BYOL(t *testing.T) {
 }
 
 func TestAccNetworkDevice_Versa_HA_Self_BYOL(t *testing.T) {
-	t.Parallel()
 	metro, _ := schema.EnvDefaultFunc(networkDeviceMetroEnvVar, "SV")()
 	accountName, _ := schema.EnvDefaultFunc(networkDeviceAccountNameEnvVar, "")()
 	controller1, _ := schema.EnvDefaultFunc(networkDeviceVersaController1EnvVar, "1.1.1.1")()
@@ -734,7 +725,7 @@ func TestAccNetworkDevice_Versa_HA_Self_BYOL(t *testing.T) {
 	secACLResourceName := fmt.Sprintf("equinix_network_acl_template.%s", context["acl-secondary_resourceName"].(string))
 	var primary, secondary ne.Device
 	var primaryACL, secondaryACL ne.ACLTemplate
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
@@ -762,7 +753,6 @@ func TestAccNetworkDevice_Versa_HA_Self_BYOL(t *testing.T) {
 }
 
 func TestAccNetworkDevice_CGENIX_HA_Self_BYOL(t *testing.T) {
-	t.Parallel()
 	metro, _ := schema.EnvDefaultFunc(networkDeviceMetroEnvVar, "SV")()
 	accountName, _ := schema.EnvDefaultFunc(networkDeviceAccountNameEnvVar, "")()
 	licenseKey, _ := schema.EnvDefaultFunc(networkDeviceCGENIXLicenseKeyEnvVar, randString(10))()
@@ -803,7 +793,7 @@ func TestAccNetworkDevice_CGENIX_HA_Self_BYOL(t *testing.T) {
 	secACLResourceName := fmt.Sprintf("equinix_network_acl_template.%s", context["acl-secondary_resourceName"].(string))
 	var primary, secondary ne.Device
 	var primaryACL, secondaryACL ne.ACLTemplate
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{

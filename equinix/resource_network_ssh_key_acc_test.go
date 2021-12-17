@@ -51,7 +51,6 @@ func testSweepNetworkSSHKey(region string) error {
 }
 
 func TestAccNetworkSSHKey(t *testing.T) {
-	t.Parallel()
 	context := map[string]interface{}{
 		"resourceName": "test",
 		"name":         fmt.Sprintf("%s-%s", tstResourcePrefix, randString(6)),
@@ -59,7 +58,7 @@ func TestAccNetworkSSHKey(t *testing.T) {
 	}
 	resourceName := fmt.Sprintf("equinix_network_ssh_key.%s", context["resourceName"].(string))
 	var key ne.SSHPublicKey
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{

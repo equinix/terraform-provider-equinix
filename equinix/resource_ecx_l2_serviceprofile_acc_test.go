@@ -11,7 +11,6 @@ import (
 )
 
 func TestAccFabricL2ServiceProfile_Private(t *testing.T) {
-	t.Parallel()
 	priPortName, _ := schema.EnvDefaultFunc(priPortEnvVar, "sit-001-CX-SV1-NL-Dot1q-BO-10G-PRI-JUN-33")()
 	secPortName, _ := schema.EnvDefaultFunc(secPortEnvVar, "sit-001-CX-SV5-NL-Dot1q-BO-10G-SEC-JUN-36")()
 	context := map[string]interface{}{
@@ -34,7 +33,7 @@ func TestAccFabricL2ServiceProfile_Private(t *testing.T) {
 	}
 	resourceName := fmt.Sprintf("equinix_ecx_l2_serviceprofile.%s", context["resourceName"].(string))
 	var testProfile ecx.L2ServiceProfile
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{

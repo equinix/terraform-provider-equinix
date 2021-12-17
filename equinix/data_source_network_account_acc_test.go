@@ -9,7 +9,6 @@ import (
 )
 
 func TestAccNetworkAccountDataSource(t *testing.T) {
-	t.Parallel()
 	metro, _ := schema.EnvDefaultFunc(networkDeviceMetroEnvVar, "SV")()
 	context := map[string]interface{}{
 		"resourceName": "tf-account",
@@ -17,7 +16,7 @@ func TestAccNetworkAccountDataSource(t *testing.T) {
 		"status":       "active",
 	}
 	resourceName := fmt.Sprintf("data.equinix_network_account.%s", context["resourceName"].(string))
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{

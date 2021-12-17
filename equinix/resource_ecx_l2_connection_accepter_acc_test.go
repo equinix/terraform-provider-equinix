@@ -11,7 +11,6 @@ import (
 )
 
 func TestAccFabricL2Connection_Port_Single_Accepter_AWS(t *testing.T) {
-	t.Parallel()
 	portName, _ := schema.EnvDefaultFunc(priPortEnvVar, "sit-001-CX-SV1-NL-Dot1q-BO-10G-PRI-JUN-33")()
 	spName, _ := schema.EnvDefaultFunc(awsSpEnvVar, "AWS Direct Connect")()
 	context := map[string]interface{}{
@@ -34,7 +33,7 @@ func TestAccFabricL2Connection_Port_Single_Accepter_AWS(t *testing.T) {
 	connectionResourceName := fmt.Sprintf("equinix_ecx_l2_connection.%s", context["connection-resourceName"].(string))
 	accepterResourceName := fmt.Sprintf("equinix_ecx_l2_connection_accepter.%s", context["accepter-resourceName"].(string))
 	var testConn ecx.L2Connection
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
