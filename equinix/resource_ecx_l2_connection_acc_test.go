@@ -13,12 +13,13 @@ import (
 )
 
 const (
-	priPortEnvVar  = "TF_ACC_FABRIC_PRI_PORT_NAME"
-	secPortEnvVar  = "TF_ACC_FABRIC_SEC_PORT_NAME"
-	awsSpEnvVar    = "TF_ACC_FABRIC_AWS_L2_SP_NAME"
-	azureSpEnvVar  = "TF_ACC_FABRIC_AZURE_L2_SP_NAME"
-	gcpOneSpEnvVar = "TF_ACC_FABRIC_GCP1_L2_SP_NAME"
-	gcpTwoSpEnvVar = "TF_ACC_FABRIC_GCP2_L2_SP_NAME"
+	priPortEnvVar  			= "TF_ACC_FABRIC_PRI_PORT_NAME"
+	secPortEnvVar  			= "TF_ACC_FABRIC_SEC_PORT_NAME"
+	awsSpEnvVar    			= "TF_ACC_FABRIC_AWS_L2_SP_NAME"
+	azureSpEnvVar  			= "TF_ACC_FABRIC_AZURE_L2_SP_NAME"
+	azureXRServiceKeyEnvVar	= "TF_ACC_FABRIC_AZURE_XROUTE_SERVICE_KEY"
+	gcpOneSpEnvVar 			= "TF_ACC_FABRIC_GCP1_L2_SP_NAME"
+	gcpTwoSpEnvVar 			= "TF_ACC_FABRIC_GCP2_L2_SP_NAME"
 )
 
 func init() {
@@ -81,12 +82,10 @@ func TestAccFabricL2Connection_Port_Single_AWS(t *testing.T) {
 		"connection-notifications":         []string{"marry@equinix.com", "john@equinix.com"},
 		"connection-purchase_order_number": randString(10),
 		"connection-vlan_stag":             randInt(2000),
-		"connection-seller_region":         "us-west-2",
+		"connection-seller_region":         "us-west-1",
 		"connection-seller_metro_code":     "SV",
 		"connection-authorization_key":     "123456789012",
 	}
-	contextWithChanges := copyMap(context)
-	contextWithChanges["connection-name"] = fmt.Sprintf("%s-%s", tstResourcePrefix, randString(6))
 	resourceName := fmt.Sprintf("equinix_ecx_l2_connection.%s", context["connection-resourceName"].(string))
 	var testConn ecx.L2Connection
 	resource.ParallelTest(t, resource.TestCase{
@@ -103,16 +102,6 @@ func TestAccFabricL2Connection_Port_Single_AWS(t *testing.T) {
 					resource.TestCheckResourceAttrSet(resourceName, "zside_port_uuid"),
 				),
 			},
-			{
-				Config: newTestAccConfig(contextWithChanges).withPort().withConnection().build(),
-				Check: resource.ComposeTestCheckFunc(
-					testAccFabricL2ConnectionExists(resourceName, &testConn),
-					testAccFabricL2ConnectionAttributes(&testConn, contextWithChanges),
-					resource.TestCheckResourceAttr(resourceName, "status", ecx.ConnectionStatusProvisioned),
-					resource.TestCheckResourceAttrSet(resourceName, "provider_status"),
-					resource.TestCheckResourceAttrSet(resourceName, "zside_port_uuid"),
-				),
-			},
 		},
 	})
 }
@@ -120,7 +109,8 @@ func TestAccFabricL2Connection_Port_Single_AWS(t *testing.T) {
 func TestAccFabricL2Connection_Port_HA_Azure(t *testing.T) {
 	priPortName, _ := schema.EnvDefaultFunc(priPortEnvVar, "sit-001-CX-SV1-NL-Dot1q-BO-10G-PRI-JUN-33")()
 	secPortName, _ := schema.EnvDefaultFunc(secPortEnvVar, "sit-001-CX-SV5-NL-Dot1q-BO-10G-SEC-JUN-36")()
-	spName, _ := schema.EnvDefaultFunc(azureSpEnvVar, "Azure Express Route")()
+	spName, _ := schema.EnvDefaultFunc(azureSpEnvVar, "Azure ExpressRoute")()
+	serviceKey, _ := schema.EnvDefaultFunc(azureXRServiceKeyEnvVar, "ExpressRoute-ServiceKey")()
 	context := map[string]interface{}{
 		"port-resourceName":                "test",
 		"port-name":                        priPortName.(string),
@@ -135,7 +125,7 @@ func TestAccFabricL2Connection_Port_HA_Azure(t *testing.T) {
 		"connection-purchase_order_number": randString(10),
 		"connection-vlan_stag":             randInt(2000),
 		"connection-seller_metro_code":     "SV",
-		"connection-authorization_key":     randString(12),
+		"connection-authorization_key":     serviceKey,
 		"connection-named_tag":             "Public",
 		"connection-secondary_name":        fmt.Sprintf("%s-%s", tstResourcePrefix, randString(6)),
 		"connection-secondary_vlan_stag":   randInt(2000),
@@ -156,7 +146,7 @@ func TestAccFabricL2Connection_Port_HA_Azure(t *testing.T) {
 					testAccFabricL2ConnectionAttributes(&primary, context),
 					testAccFabricL2ConnectionSecondaryExists(&primary, &secondary),
 					testAccFabricL2ConnectionSecondaryAttributes(&secondary, context),
-					resource.TestCheckResourceAttr(resourceName, "status", ecx.ConnectionStatusProvisioned),
+					resource.TestCheckResourceAttr(resourceName, "status", ecx.ConnectionStatusPendingBGPPeering),
 					resource.TestCheckResourceAttrSet(resourceName, "provider_status"),
 					testAccFabricL2ConnectionRedundancyAttributes(&primary, &secondary),
 				),
@@ -168,7 +158,7 @@ func TestAccFabricL2Connection_Port_HA_Azure(t *testing.T) {
 					testAccFabricL2ConnectionAttributes(&primary, contextWithChanges),
 					testAccFabricL2ConnectionSecondaryExists(&primary, &secondary),
 					testAccFabricL2ConnectionSecondaryAttributes(&secondary, contextWithChanges),
-					resource.TestCheckResourceAttr(resourceName, "status", ecx.ConnectionStatusProvisioned),
+					resource.TestCheckResourceAttr(resourceName, "status", ecx.ConnectionStatusPendingBGPPeering),
 					resource.TestCheckResourceAttrSet(resourceName, "provider_status"),
 					testAccFabricL2ConnectionRedundancyAttributes(&primary, &secondary),
 				),
@@ -181,8 +171,10 @@ func TestAccFabricL2Connection_Device_HA_GCP(t *testing.T) {
 	deviceMetro, _ := schema.EnvDefaultFunc(networkDeviceMetroEnvVar, "SV")()
 	priSPName, _ := schema.EnvDefaultFunc(gcpOneSpEnvVar, "Google Cloud Partner Interconnect Zone 1")()
 	secSPName, _ := schema.EnvDefaultFunc(gcpTwoSpEnvVar, "Google Cloud Partner Interconnect Zone 2")()
+	accountName, _ := schema.EnvDefaultFunc(networkDeviceAccountNameEnvVar, "")()
 	context := map[string]interface{}{
 		"device-resourceName":                      "test",
+		"device-account_name":                      accountName.(string),
 		"device-self_managed":                      true,
 		"device-byol":                              true,
 		"device-name":                              fmt.Sprintf("%s-%s", tstResourcePrefix, randString(6)),

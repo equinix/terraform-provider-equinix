@@ -23,7 +23,7 @@ func TestAccFabricL2Connection_Port_Single_Accepter_AWS(t *testing.T) {
 		"connection-speed_unit":        "MB",
 		"connection-notifications":     []string{"marry@equinix.com", "john@equinix.com"},
 		"connection-vlan_stag":         randInt(2000),
-		"connection-seller_region":     "us-west-2",
+		"connection-seller_region":     "us-west-1",
 		"connection-seller_metro_code": "SV",
 		"connection-authorization_key": "123456789012",
 		"accepter-resourceName":        "test",
