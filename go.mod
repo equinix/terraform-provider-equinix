@@ -17,6 +17,7 @@ require (
 	cloud.google.com/go v0.79.0 // indirect
 	cloud.google.com/go/storage v1.10.0 // indirect
 	github.com/agext/levenshtein v1.2.2 // indirect
+	github.com/apparentlymart/go-cidr v1.0.1 // indirect
 	github.com/apparentlymart/go-textseg/v13 v13.0.0 // indirect
 	github.com/bgentry/go-netrc v0.0.0-20140422174119-9fd32a8b3d3d // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
