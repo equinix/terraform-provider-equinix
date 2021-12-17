@@ -11,14 +11,13 @@ import (
 const tstL2SellerProfileEnvVar = "TF_ACC_ECX_SELLER_PROFILE_NAME"
 
 func TestAccECXL2SellerProfile(t *testing.T) {
-	t.Parallel()
 	profileName, _ := schema.EnvDefaultFunc(tstL2SellerProfileEnvVar, "AWS Direct Connect")()
 	context := map[string]interface{}{
 		"resourceName": "tf-aws",
 		"name":         profileName,
 	}
 	resourceName := fmt.Sprintf("data.equinix_ecx_l2_sellerprofile.%s", context["resourceName"].(string))
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{

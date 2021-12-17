@@ -11,7 +11,6 @@ import (
 )
 
 func TestAccNetworkBGP_CSR1000V_Single_AWS(t *testing.T) {
-	t.Parallel()
 	metro, _ := schema.EnvDefaultFunc(networkDeviceMetroEnvVar, "SV")()
 	spName, _ := schema.EnvDefaultFunc(awsSpEnvVar, "AWS Direct Connect")()
 	context := map[string]interface{}{
@@ -51,7 +50,7 @@ func TestAccNetworkBGP_CSR1000V_Single_AWS(t *testing.T) {
 	contextWithChanges["bgp-authentication_key"] = randString(10)
 	resourceName := fmt.Sprintf("equinix_network_bgp.%s", context["bgp-resourceName"].(string))
 	var bgpConfig ne.BGPConfiguration
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{

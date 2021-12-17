@@ -69,7 +69,6 @@ func testSweepECXL2Connections(region string) error {
 }
 
 func TestAccFabricL2Connection_Port_Single_AWS(t *testing.T) {
-	t.Parallel()
 	portName, _ := schema.EnvDefaultFunc(priPortEnvVar, "sit-001-CX-SV1-NL-Dot1q-BO-10G-PRI-JUN-33")()
 	spName, _ := schema.EnvDefaultFunc(awsSpEnvVar, "AWS Direct Connect")()
 	authKey, _ := schema.EnvDefaultFunc(awsAuthKeyEnvVar, "123456789012")()
@@ -90,7 +89,7 @@ func TestAccFabricL2Connection_Port_Single_AWS(t *testing.T) {
 	}
 	resourceName := fmt.Sprintf("equinix_ecx_l2_connection.%s", context["connection-resourceName"].(string))
 	var testConn ecx.L2Connection
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
@@ -111,7 +110,6 @@ func TestAccFabricL2Connection_Port_Single_AWS(t *testing.T) {
 }
 
 func TestAccFabricL2Connection_Port_HA_Azure(t *testing.T) {
-	t.Parallel()
 	priPortName, _ := schema.EnvDefaultFunc(priPortEnvVar, "sit-001-CX-SV1-NL-Dot1q-BO-10G-PRI-JUN-33")()
 	secPortName, _ := schema.EnvDefaultFunc(secPortEnvVar, "sit-001-CX-SV5-NL-Dot1q-BO-10G-SEC-JUN-36")()
 	spName, _ := schema.EnvDefaultFunc(azureSpEnvVar, "Azure Express Route")()
@@ -139,7 +137,7 @@ func TestAccFabricL2Connection_Port_HA_Azure(t *testing.T) {
 	contextWithChanges["connection-secondary_name"] = fmt.Sprintf("%s-%s", tstResourcePrefix, randString(6))
 	resourceName := fmt.Sprintf("equinix_ecx_l2_connection.%s", context["connection-resourceName"].(string))
 	var primary, secondary ecx.L2Connection
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
@@ -172,7 +170,6 @@ func TestAccFabricL2Connection_Port_HA_Azure(t *testing.T) {
 }
 
 func TestAccFabricL2Connection_Device_HA_GCP(t *testing.T) {
-	t.Parallel()
 	deviceMetro, _ := schema.EnvDefaultFunc(networkDeviceMetroEnvVar, "SV")()
 	priSPName, _ := schema.EnvDefaultFunc(gcpOneSpEnvVar, "Google Cloud Partner Interconnect Zone 1")()
 	secSPName, _ := schema.EnvDefaultFunc(gcpTwoSpEnvVar, "Google Cloud Partner Interconnect Zone 2")()
@@ -219,7 +216,7 @@ func TestAccFabricL2Connection_Device_HA_GCP(t *testing.T) {
 	}
 	connResourceName := fmt.Sprintf("equinix_ecx_l2_connection.%s", context["connection-resourceName"].(string))
 	var primary, secondary ecx.L2Connection
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{

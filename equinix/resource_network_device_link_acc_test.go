@@ -52,7 +52,6 @@ func testSweepNetworkDeviceLink(region string) error {
 }
 
 func TestAccNetworkDeviceLink(t *testing.T) {
-	t.Parallel()
 	metro, _ := schema.EnvDefaultFunc(networkDeviceMetroEnvVar, "SV")()
 	metroSecondary, _ := schema.EnvDefaultFunc(networkDeviceSecondaryMetroEnvVar, metro)()
 	accountName, _ := schema.EnvDefaultFunc(networkDeviceAccountNameEnvVar, "")()
@@ -92,7 +91,7 @@ func TestAccNetworkDeviceLink(t *testing.T) {
 	linkResourceName := "equinix_network_device_link." + context["link-resourceName"].(string)
 	var deviceLink ne.DeviceLinkGroup
 	var primaryDevice, secondaryDevice ne.Device
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
