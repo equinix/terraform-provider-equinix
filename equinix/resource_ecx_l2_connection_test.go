@@ -168,6 +168,7 @@ func TestFabricL2Connection_flattenSecondary(t *testing.T) {
 			ecxL2ConnectionSchemaNames["AuthorizationKey"]:  input.AuthorizationKey,
 			ecxL2ConnectionSchemaNames["RedundantUUID"]:     input.RedundantUUID,
 			ecxL2ConnectionSchemaNames["RedundancyType"]:    input.RedundancyType,
+			ecxL2ConnectionSchemaNames["Actions"]:           []interface{}{},
 		},
 	}
 
