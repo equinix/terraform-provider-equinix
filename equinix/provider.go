@@ -22,8 +22,8 @@ const (
 	clientTimeoutEnvVar = "EQUINIX_API_TIMEOUT"
 )
 
-//resourceDataProvider provies interface to schema.ResourceData
-//for convenient mocking purposes
+// resourceDataProvider provies interface to schema.ResourceData
+// for convenient mocking purposes
 type resourceDataProvider interface {
 	Get(key string) interface{}
 	GetOk(key string) (interface{}, bool)
@@ -31,7 +31,7 @@ type resourceDataProvider interface {
 	GetChange(key string) (interface{}, interface{})
 }
 
-//Provider returns Equinix terraform *schema.Provider
+// Provider returns Equinix terraform *schema.Provider
 func Provider() *schema.Provider {
 	provider := &schema.Provider{
 		Schema: map[string]*schema.Schema{

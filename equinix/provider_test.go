@@ -17,8 +17,10 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-var testAccProviders map[string]*schema.Provider
-var testAccProvider *schema.Provider
+var (
+	testAccProviders map[string]*schema.Provider
+	testAccProvider  *schema.Provider
+)
 
 type mockedResourceDataProvider struct {
 	actual map[string]interface{}
@@ -61,7 +63,7 @@ func TestProvider(t *testing.T) {
 }
 
 func TestProvider_hasApplicationErrorCode(t *testing.T) {
-	//given
+	// given
 	code := "ERR-505"
 	errors := []rest.ApplicationError{
 		{
@@ -71,44 +73,44 @@ func TestProvider_hasApplicationErrorCode(t *testing.T) {
 			Code: randString(10),
 		},
 	}
-	//when
+	// when
 	result := hasApplicationErrorCode(errors, code)
-	//then
+	// then
 	assert.True(t, result, "Error list contains error with given code")
 }
 
 func TestProvider_stringsFound(t *testing.T) {
-	//given
+	// given
 	needles := []string{"key1", "key5"}
 	hay := []string{"key1", "key2", "Key3", "key4", "key5"}
-	//when
+	// when
 	result := stringsFound(needles, hay)
-	//then
+	// then
 	assert.True(t, result, "Given strings were found")
 }
 
 func TestProvider_atLeastOneStringFound(t *testing.T) {
-	//given
+	// given
 	needles := []string{"key4", "key2"}
 	hay := []string{"key1", "key2"}
-	//when
+	// when
 	result := atLeastOneStringFound(needles, hay)
-	//then
+	// then
 	assert.True(t, result, "Given strings were found")
 }
 
 func TestProvider_stringsFound_negative(t *testing.T) {
-	//given
+	// given
 	needles := []string{"key1", "key6"}
 	hay := []string{"key1", "key2", "Key3", "key4", "key5"}
-	//when
+	// when
 	result := stringsFound(needles, hay)
-	//then
+	// then
 	assert.False(t, result, "Given strings were found")
 }
 
 func TestProvider_resourceDataChangedKeys(t *testing.T) {
-	//given
+	// given
 	keys := []string{"key", "keyTwo", "keyThree"}
 	rd := mockedResourceDataProvider{
 		actual: map[string]interface{}{
@@ -123,14 +125,14 @@ func TestProvider_resourceDataChangedKeys(t *testing.T) {
 	expected := map[string]interface{}{
 		"keyTwo": "newValueTwo",
 	}
-	//when
+	// when
 	result := getResourceDataChangedKeys(keys, rd)
-	//then
+	// then
 	assert.Equal(t, expected, result, "Function returns valid key changes")
 }
 
 func TestProvider_resourceDataListElementChanges(t *testing.T) {
-	//given
+	// given
 	keys := []string{"key", "keyTwo", "keyThree"}
 	listKeyName := "myList"
 	rd := mockedResourceDataProvider{
@@ -157,14 +159,14 @@ func TestProvider_resourceDataListElementChanges(t *testing.T) {
 		"keyTwo":   "newValueTwo",
 		"keyThree": 100,
 	}
-	//when
+	// when
 	result := getResourceDataListElementChanges(keys, listKeyName, 0, rd)
-	//then
+	// then
 	assert.Equal(t, expected, result, "Function returns valid key changes")
 }
 
 func TestProvider_mapChanges(t *testing.T) {
-	//given
+	// given
 	keys := []string{"key", "keyTwo", "keyThree"}
 	old := map[string]interface{}{
 		"key":    "value",
@@ -177,14 +179,14 @@ func TestProvider_mapChanges(t *testing.T) {
 	expected := map[string]interface{}{
 		"key": "newValue",
 	}
-	//when
+	// when
 	result := getMapChangedKeys(keys, old, new)
-	//then
+	// then
 	assert.Equal(t, expected, result, "Function returns valid key changes")
 }
 
 func TestProvider_isEmpty(t *testing.T) {
-	//given
+	// given
 	input := []interface{}{
 		"test",
 		"",
@@ -202,32 +204,32 @@ func TestProvider_isEmpty(t *testing.T) {
 		false,
 		true,
 	}
-	//when then
+	// when then
 	for i := range input {
 		assert.Equal(t, expected[i], isEmpty(input[i]), "Input %v produces expected result %v", input[i], expected[i])
 	}
 }
 
 func TestProvider_setSchemaValueIfNotEmpty(t *testing.T) {
-	//given
+	// given
 	key := "test"
 	s := map[string]*schema.Schema{
 		key: {
 			Type:     schema.TypeString,
 			Optional: true,
-		}}
+		},
+	}
 	var b *int = nil
 	d := schema.TestResourceDataRaw(t, s, make(map[string]interface{}))
-	//when
+	// when
 	setSchemaValueIfNotEmpty(key, b, d)
-	//then
+	// then
 	_, ok := d.GetOk(key)
 	assert.False(t, ok, "Key was not set")
-
 }
 
 func TestProvider_slicesMatch(t *testing.T) {
-	//given
+	// given
 	input := [][][]string{
 		{
 			{"DC", "SV", "FR"},
@@ -251,19 +253,19 @@ func TestProvider_slicesMatch(t *testing.T) {
 		false,
 		true,
 	}
-	//when
+	// when
 	results := make([]bool, len(expected))
 	for i := range input {
 		results[i] = slicesMatch(input[i][0], input[i][1])
 	}
-	//then
+	// then
 	for i := range expected {
 		assert.Equal(t, expected[i], results[i])
 	}
 }
 
 func TestProvider_isRestNotFoundError(t *testing.T) {
-	//given
+	// given
 	input := []error{
 		rest.Error{HTTPCode: http.StatusNotFound, Message: "Not Found"},
 		rest.Error{HTTPCode: http.StatusInternalServerError, Message: "Internal Server Error"},
@@ -274,17 +276,17 @@ func TestProvider_isRestNotFoundError(t *testing.T) {
 		false,
 		false,
 	}
-	//when
+	// when
 	result := make([]bool, len(input))
 	for i := range input {
 		result[i] = isRestNotFoundError(input[i])
 	}
-	//then
+	// then
 	assert.Equal(t, expected, result, "Result matches expected output")
 }
 
 func TestProvider_schemaSetToMap(t *testing.T) {
-	//given
+	// given
 	type item struct {
 		id       string
 		valueOne int
@@ -300,9 +302,9 @@ func TestProvider_schemaSetToMap(t *testing.T) {
 		item{"id3", 0, 100},
 	}
 	set := schema.NewSet(setFunc, items)
-	//when
+	// when
 	list := schemaSetToMap(set)
-	//then
+	// then
 	assert.Equal(t, items[0], list[setFunc(items[0])])
 	assert.Equal(t, items[1], list[setFunc(items[1])])
 	assert.Equal(t, items[2], list[setFunc(items[2])])
