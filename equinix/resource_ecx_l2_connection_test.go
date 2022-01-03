@@ -168,6 +168,7 @@ func TestFabricL2Connection_flattenSecondary(t *testing.T) {
 			ecxL2ConnectionSchemaNames["AuthorizationKey"]:  input.AuthorizationKey,
 			ecxL2ConnectionSchemaNames["RedundantUUID"]:     input.RedundantUUID,
 			ecxL2ConnectionSchemaNames["RedundancyType"]:    input.RedundancyType,
+			ecxL2ConnectionSchemaNames["Actions"]:           []interface{}{},
 		},
 	}
 
@@ -262,6 +263,47 @@ func TestFabricL2Connection_expandAdditionalInfo(t *testing.T) {
 	}
 	//when
 	out := expandECXL2ConnectionAdditionalInfo(input)
+	//then
+	assert.NotNil(t, out, "Output is not empty")
+	assert.Equal(t, expected, out, "Output matches expected result")
+}
+
+func TestFabricL2Connection_flattenActions(t *testing.T) {
+	//given
+	input := []ecx.L2ConnectionAction{
+		{
+			Type:  ecx.String(randString(32)),
+			OperationID: ecx.String(randString(32)),
+			Message: ecx.String(randString(32)),
+			RequiredData:  []ecx.L2ConnectionActionData{
+				{
+					Key: ecx.String(randString(10)),
+					Label: ecx.String(randString(10)),
+					Value: ecx.String(randString(10)),
+					IsEditable: ecx.Bool(true),
+					ValidationPattern: ecx.String(randString(10)),
+				},
+			},
+		},
+	}
+	expected := []interface{}{
+		map[string]interface{}{
+			ecxL2ConnectionActionsSchemaNames["Type"]:  input[0].Type,
+			ecxL2ConnectionActionsSchemaNames["OperationID"]: input[0].OperationID,
+			ecxL2ConnectionActionsSchemaNames["Message"]: input[0].Message,
+			ecxL2ConnectionActionsSchemaNames["RequiredData"]: []interface{}{
+				map[string]interface{}{
+					ecxL2ConnectionActionDataSchemaNames["Key"]:  input[0].RequiredData[0].Key,
+					ecxL2ConnectionActionDataSchemaNames["Label"]: input[0].RequiredData[0].Label,
+					ecxL2ConnectionActionDataSchemaNames["Value"]: input[0].RequiredData[0].Value,
+					ecxL2ConnectionActionDataSchemaNames["IsEditable"]: input[0].RequiredData[0].IsEditable,
+					ecxL2ConnectionActionDataSchemaNames["ValidationPattern"]: input[0].RequiredData[0].ValidationPattern,
+				},
+			},
+		},
+	}
+	//when
+	out := flattenECXL2ConnectionActions(input)
 	//then
 	assert.NotNil(t, out, "Output is not empty")
 	assert.Equal(t, expected, out, "Output matches expected result")
