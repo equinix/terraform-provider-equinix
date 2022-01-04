@@ -41,6 +41,7 @@ var ecxL2ConnectionSchemaNames = map[string]string{
 	"RedundantUUID":       "redundant_uuid",
 	"RedundancyType":      "redundancy_type",
 	"SecondaryConnection": "secondary_connection",
+	"Actions":             "actions",
 }
 
 var ecxL2ConnectionDescriptions = map[string]string{
@@ -69,6 +70,7 @@ var ecxL2ConnectionDescriptions = map[string]string{
 	"RedundantUUID":       "Unique identifier of the redundant connection, applicable for HA connections",
 	"RedundancyType":      "Connection redundancy type, applicable for HA connections. Either primary or secondary",
 	"SecondaryConnection": "Definition of secondary connection for redundant, HA connectivity",
+	"Actions":             "One or more pending actions to complete connection provisioning",
 }
 
 var ecxL2ConnectionAdditionalInfoSchemaNames = map[string]string{
@@ -79,6 +81,36 @@ var ecxL2ConnectionAdditionalInfoSchemaNames = map[string]string{
 var ecxL2ConnectionAdditionalInfoDescriptions = map[string]string{
 	"Name":  "Additional information key",
 	"Value": "Additional information value",
+}
+
+var ecxL2ConnectionActionsSchemaNames = map[string]string{
+	"Type":         "type",
+	"OperationID":  "operation_id",
+	"Message":      "message",
+	"RequiredData": "required_data",
+}
+
+var ecxL2ConnectionActionsDescriptions = map[string]string{
+	"Type":         "Action type",
+	"OperationID":  "Action identifier",
+	"Message":      "Action information",
+	"RequiredData": "Action list of required data",
+}
+
+var ecxL2ConnectionActionDataSchemaNames = map[string]string{
+	"Key":               "key",
+	"Label":             "label",
+	"Value":             "value",
+	"IsEditable":        "editable",
+	"ValidationPattern": "validation_pattern",
+}
+
+var ecxL2ConnectionActionDataDescriptions = map[string]string{
+	"Key":               "Action data key",
+	"Label":             "Action data label",
+	"Value":             "Action data value",
+	"IsEditable":        "Action data is editable",
+	"ValidationPattern": "Action data pattern",
 }
 
 func resourceECXL2Connection() *schema.Resource {
@@ -290,6 +322,14 @@ func createECXL2ConnectionResourceSchema() map[string]*schema.Schema {
 			Computed:    true,
 			Description: ecxL2ConnectionDescriptions["RedundancyType"],
 		},
+		ecxL2ConnectionSchemaNames["Actions"]: {
+			Type:        schema.TypeSet,
+			Computed:    true,
+			Description: ecxL2ConnectionDescriptions["Actions"],
+			Elem: &schema.Resource{
+				Schema: createECXL2ConnectionActionsSchema(),
+			},
+		},
 		ecxL2ConnectionSchemaNames["SecondaryConnection"]: {
 			Type:        schema.TypeList,
 			Optional:    true,
@@ -437,8 +477,74 @@ func createECXL2ConnectionResourceSchema() map[string]*schema.Schema {
 						Computed:    true,
 						Description: ecxL2ConnectionDescriptions["RedundancyType"],
 					},
+					ecxL2ConnectionSchemaNames["Actions"]: {
+						Type:        schema.TypeSet,
+						Computed:    true,
+						Description: ecxL2ConnectionDescriptions["Actions"],
+						Elem: &schema.Resource{
+							Schema: createECXL2ConnectionActionsSchema(),
+						},
+					},
 				},
 			},
+		},
+	}
+}
+
+func createECXL2ConnectionActionsSchema() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		ecxL2ConnectionActionsSchemaNames["Type"]: {
+			Type:         schema.TypeString,
+			Computed:     true,
+			Description:  ecxL2ConnectionActionsDescriptions["Type"],
+		},
+		ecxL2ConnectionActionsSchemaNames["OperationID"]: {
+			Type:         schema.TypeString,
+			Computed:     true,
+			Description:  ecxL2ConnectionActionsDescriptions["OperationID"],
+		},
+		ecxL2ConnectionActionsSchemaNames["Message"]: {
+			Type:         schema.TypeString,
+			Computed:     true,
+			Description:  ecxL2ConnectionActionsDescriptions["Message"],
+		},
+		ecxL2ConnectionActionsSchemaNames["RequiredData"]: {
+			Type:         schema.TypeSet,
+			Computed:     true,
+			Description:  ecxL2ConnectionActionsDescriptions["RequiredData"],
+			Elem: &schema.Resource{
+				Schema: createECXL2ConnectionActionsRequiredDataSchema(),
+			},
+		},
+	}
+}
+
+func createECXL2ConnectionActionsRequiredDataSchema() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		ecxL2ConnectionActionDataSchemaNames["Key"]: {
+			Type:         schema.TypeString,
+			Computed:     true,
+			Description:  ecxL2ConnectionActionDataDescriptions["Key"],
+		},
+		ecxL2ConnectionActionDataSchemaNames["Label"]: {
+			Type:         schema.TypeString,
+			Computed:     true,
+			Description:  ecxL2ConnectionActionDataDescriptions["Label"],
+		},
+		ecxL2ConnectionActionDataSchemaNames["Value"]: {
+			Type:         schema.TypeString,
+			Computed:     true,
+			Description:  ecxL2ConnectionActionDataDescriptions["Value"],
+		},
+		ecxL2ConnectionActionDataSchemaNames["IsEditable"]: {
+			Type:         schema.TypeBool,
+			Computed:     true,
+			Description:  ecxL2ConnectionActionDataDescriptions["IsEditable"],
+		},
+		ecxL2ConnectionActionDataSchemaNames["ValidationPattern"]: {
+			Type:         schema.TypeString,
+			Computed:     true,
+			Description:  ecxL2ConnectionActionDataDescriptions["ValidationPattern"],
 		},
 	}
 }
@@ -726,6 +832,9 @@ func updateECXL2ConnectionResource(primary *ecx.L2Connection, secondary *ecx.L2C
 	if err := d.Set(ecxL2ConnectionSchemaNames["RedundancyType"], primary.RedundancyType); err != nil {
 		return fmt.Errorf("error reading RedundancyType: %s", err)
 	}
+	if err := d.Set(ecxL2ConnectionSchemaNames["Actions"], flattenECXL2ConnectionActions(primary.Actions)); err != nil {
+		return fmt.Errorf("error reading Actions: %s", err)
+	}
 	if secondary != nil {
 		var prevSecondary *ecx.L2Connection
 		if v, ok := d.GetOk(ecxL2ConnectionSchemaNames["SecondaryConnection"]); ok {
@@ -763,6 +872,7 @@ func flattenECXL2ConnectionSecondary(previous, conn *ecx.L2Connection) interface
 	transformed[ecxL2ConnectionSchemaNames["AuthorizationKey"]] = conn.AuthorizationKey
 	transformed[ecxL2ConnectionSchemaNames["RedundantUUID"]] = conn.RedundantUUID
 	transformed[ecxL2ConnectionSchemaNames["RedundancyType"]] = conn.RedundancyType
+	transformed[ecxL2ConnectionSchemaNames["Actions"]] = flattenECXL2ConnectionActions(conn.Actions)
 	return []interface{}{transformed}
 }
 
@@ -820,6 +930,37 @@ func flattenECXL2ConnectionAdditionalInfo(infos []ecx.L2ConnectionAdditionalInfo
 			ecxL2ConnectionAdditionalInfoSchemaNames["Value"]: info.Value,
 		})
 	}
+	return transformed
+}
+
+func flattenECXL2ConnectionActions(actions []ecx.L2ConnectionAction) []interface{} {
+	transformed := make([]interface{}, 0, len(actions))
+	for _, action := range actions {
+		transformedAction := make(map[string]interface{})
+		transformedAction[ecxL2ConnectionActionsSchemaNames["Type"]] = action.Type
+		transformedAction[ecxL2ConnectionActionsSchemaNames["OperationID"]] = action.OperationID
+		transformedAction[ecxL2ConnectionActionsSchemaNames["Message"]] = action.Message
+		if v := action.RequiredData; v != nil {
+			transformedAction[ecxL2ConnectionActionsSchemaNames["RequiredData"]] = flattenECXL2ConnectionActionData(v)
+		}
+		transformed = append(transformed, transformedAction)
+	}
+
+	return transformed
+}
+
+func flattenECXL2ConnectionActionData(actionData []ecx.L2ConnectionActionData) []interface{} {
+	transformed := make([]interface{}, 0, len(actionData))
+	for _, data := range actionData {
+		transformed = append(transformed, map[string]interface{}{
+			ecxL2ConnectionActionDataSchemaNames["Key"]:  data.Key,
+			ecxL2ConnectionActionDataSchemaNames["Label"]: data.Label,
+			ecxL2ConnectionActionDataSchemaNames["Value"]: data.Value,
+			ecxL2ConnectionActionDataSchemaNames["IsEditable"]: data.IsEditable,
+			ecxL2ConnectionActionDataSchemaNames["ValidationPattern"]: data.ValidationPattern,
+		})
+	}
+
 	return transformed
 }
 

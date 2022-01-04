@@ -116,6 +116,7 @@ func TestAccNetworkDevice_CSR100V_HA_Managed_Sub(t *testing.T) {
 	var primary, secondary ne.Device
 	var user ne.SSHUser
 	var primaryACL, secondaryACL ne.ACLTemplate
+	var primaryDeviceACL, secondaryDeviceACL ne.DeviceACLDetails
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
@@ -149,7 +150,7 @@ func TestAccNetworkDevice_CSR100V_HA_Managed_Sub(t *testing.T) {
 					testAccNetworkACLTemplateExists(secACLResourceName, &secondaryACL),
 					testAccNeDeviceExists(deviceResourceName, &primary),
 					testAccNeDeviceSecondaryExists(&primary, &secondary),
-					testAccNeDeviceACLs(&primary, &secondary, &primaryACL, &secondaryACL),
+					testAccNeDeviceACLs(&primary, &secondary, &primaryDeviceACL, &secondaryDeviceACL),
 				),
 			},
 		},
@@ -197,6 +198,7 @@ func TestAccNetworkDevice_CSR100V_HA_Self_BYOL(t *testing.T) {
 	secACLResourceName := fmt.Sprintf("equinix_network_acl_template.%s", contextWithACLs["acl-secondary_resourceName"].(string))
 	var primary, secondary ne.Device
 	var primaryACL, secondaryACL ne.ACLTemplate
+	var primaryDeviceACL, secondaryDeviceACL ne.DeviceACLDetails
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
@@ -222,7 +224,7 @@ func TestAccNetworkDevice_CSR100V_HA_Self_BYOL(t *testing.T) {
 					testAccNetworkACLTemplateExists(secACLResourceName, &secondaryACL),
 					testAccNeDeviceExists(deviceResourceName, &primary),
 					testAccNeDeviceSecondaryExists(&primary, &secondary),
-					testAccNeDeviceACLs(&primary, &secondary, &primaryACL, &secondaryACL),
+					testAccNeDeviceACLs(&primary, &secondary, &primaryDeviceACL, &secondaryDeviceACL),
 				),
 			},
 		},
@@ -470,6 +472,7 @@ func TestAccNetworkDevice_PaloAlto_HA_Managed_Sub(t *testing.T) {
 	contextWithChanges["user-password"] = randString(10)
 	var primary, secondary ne.Device
 	var primaryACL, secondaryACL ne.ACLTemplate
+	var primaryDeviceACL, secondaryDeviceACL ne.DeviceACLDetails
 	var user ne.SSHUser
 	deviceResourceName := fmt.Sprintf("equinix_network_device.%s", context["device-resourceName"].(string))
 	priACLResourceName := fmt.Sprintf("equinix_network_acl_template.%s", context["acl-resourceName"].(string))
@@ -492,7 +495,7 @@ func TestAccNetworkDevice_PaloAlto_HA_Managed_Sub(t *testing.T) {
 					testAccNeDeviceHAAttributes(deviceResourceName),
 					testAccNetworkACLTemplateExists(priACLResourceName, &primaryACL),
 					testAccNetworkACLTemplateExists(secACLResourceName, &secondaryACL),
-					testAccNeDeviceACLs(&primary, &secondary, &primaryACL, &secondaryACL),
+					testAccNeDeviceACLs(&primary, &secondary, &primaryDeviceACL, &secondaryDeviceACL),
 				),
 			},
 			{
@@ -551,6 +554,7 @@ func TestAccNetworkDevice_PaloAlto_HA_Self_BYOL(t *testing.T) {
 	secACLResourceName := fmt.Sprintf("equinix_network_acl_template.%s", contextWithACLs["acl-secondary_resourceName"].(string))
 	var primary, secondary ne.Device
 	var primaryACL, secondaryACL ne.ACLTemplate
+	var primaryDeviceACL, secondaryDeviceACL ne.DeviceACLDetails
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
@@ -575,7 +579,7 @@ func TestAccNetworkDevice_PaloAlto_HA_Self_BYOL(t *testing.T) {
 					testAccNetworkACLTemplateExists(secACLResourceName, &secondaryACL),
 					testAccNeDeviceExists(deviceResourceName, &primary),
 					testAccNeDeviceSecondaryExists(&primary, &secondary),
-					testAccNeDeviceACLs(&primary, &secondary, &primaryACL, &secondaryACL),
+					testAccNeDeviceACLs(&primary, &secondary, &primaryDeviceACL, &secondaryDeviceACL),
 				),
 			},
 		},
@@ -626,6 +630,7 @@ func TestAccNetworkDevice_CSRSDWAN_HA_Self_BYOL(t *testing.T) {
 	secACLResourceName := fmt.Sprintf("equinix_network_acl_template.%s", context["acl-secondary_resourceName"].(string))
 	var primary, secondary ne.Device
 	var primaryACL, secondaryACL ne.ACLTemplate
+	var primaryDeviceACL, secondaryDeviceACL ne.DeviceACLDetails
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
@@ -642,7 +647,7 @@ func TestAccNetworkDevice_CSRSDWAN_HA_Self_BYOL(t *testing.T) {
 					testAccNeDeviceRedundancyAttributes(&primary, &secondary),
 					testAccNetworkACLTemplateExists(priACLResourceName, &primaryACL),
 					testAccNetworkACLTemplateExists(secACLResourceName, &secondaryACL),
-					testAccNeDeviceACLs(&primary, &secondary, &primaryACL, &secondaryACL),
+					testAccNeDeviceACLs(&primary, &secondary, &primaryDeviceACL, &secondaryDeviceACL),
 					testAccNeDeviceHAAttributes(deviceResourceName),
 					resource.TestCheckResourceAttrSet(deviceResourceName, "license_file_id"),
 					resource.TestCheckResourceAttrSet(deviceResourceName, "secondary_device.0.license_file_id"),
@@ -702,6 +707,7 @@ func TestAccNetworkDevice_Versa_HA_Self_BYOL(t *testing.T) {
 	secACLResourceName := fmt.Sprintf("equinix_network_acl_template.%s", context["acl-secondary_resourceName"].(string))
 	var primary, secondary ne.Device
 	var primaryACL, secondaryACL ne.ACLTemplate
+	var primaryDeviceACL, secondaryDeviceACL ne.DeviceACLDetails
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
@@ -718,7 +724,7 @@ func TestAccNetworkDevice_Versa_HA_Self_BYOL(t *testing.T) {
 					testAccNeDeviceRedundancyAttributes(&primary, &secondary),
 					testAccNetworkACLTemplateExists(priACLResourceName, &primaryACL),
 					testAccNetworkACLTemplateExists(secACLResourceName, &secondaryACL),
-					testAccNeDeviceACLs(&primary, &secondary, &primaryACL, &secondaryACL),
+					testAccNeDeviceACLs(&primary, &secondary, &primaryDeviceACL, &secondaryDeviceACL),
 					testAccNeDeviceHAAttributes(deviceResourceName),
 				),
 			},
@@ -767,6 +773,7 @@ func TestAccNetworkDevice_CGENIX_HA_Self_BYOL(t *testing.T) {
 	secACLResourceName := fmt.Sprintf("equinix_network_acl_template.%s", context["acl-secondary_resourceName"].(string))
 	var primary, secondary ne.Device
 	var primaryACL, secondaryACL ne.ACLTemplate
+	var primaryDeviceACL, secondaryDeviceACL ne.DeviceACLDetails
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
@@ -783,7 +790,7 @@ func TestAccNetworkDevice_CGENIX_HA_Self_BYOL(t *testing.T) {
 					testAccNeDeviceRedundancyAttributes(&primary, &secondary),
 					testAccNetworkACLTemplateExists(priACLResourceName, &primaryACL),
 					testAccNetworkACLTemplateExists(secACLResourceName, &secondaryACL),
-					testAccNeDeviceACLs(&primary, &secondary, &primaryACL, &secondaryACL),
+					testAccNeDeviceACLs(&primary, &secondary, &primaryDeviceACL, &secondaryDeviceACL),
 					testAccNeDeviceHAAttributes(deviceResourceName),
 				),
 			},
@@ -1004,19 +1011,13 @@ func testAccNeDeviceStatusAttributes(device *ne.Device, provStatus, licStatus st
 	}
 }
 
-func testAccNeDeviceACLs(primary, secondary *ne.Device, primaryACL, secondaryACL *ne.ACLTemplate) resource.TestCheckFunc {
+func testAccNeDeviceACLs(primary, secondary *ne.Device, primaryACL, secondaryACL *ne.DeviceACLDetails) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
-		if ne.StringValue(primaryACL.DeviceUUID) != ne.StringValue(primary.UUID) {
-			return fmt.Errorf("Primary ACL %s device UUID does not match %v - %v", ne.StringValue(primaryACL.UUID), ne.StringValue(primaryACL.DeviceUUID), ne.StringValue(primary.UUID))
+		if ne.StringValue(primaryACL.Status) != ne.ACLDeviceStatusProvisioned {
+			return fmt.Errorf("Primary ACL device_acl_status does not match %v - %v", ne.StringValue(primaryACL.Status), ne.ACLDeviceStatusProvisioned)
 		}
-		if ne.StringValue(secondaryACL.DeviceUUID) != ne.StringValue(secondary.UUID) {
-			return fmt.Errorf("Secondary ACL %s device UUID does not match %v - %v", ne.StringValue(secondaryACL.UUID), ne.StringValue(secondaryACL.DeviceUUID), ne.StringValue(secondary.UUID))
-		}
-		if ne.StringValue(primaryACL.DeviceACLStatus) != ne.ACLDeviceStatusProvisioned {
-			return fmt.Errorf("Primary ACL %s device_acl_status does not match %v - %v", ne.StringValue(primaryACL.UUID), ne.StringValue(primaryACL.DeviceACLStatus), ne.ACLDeviceStatusProvisioned)
-		}
-		if ne.StringValue(secondaryACL.DeviceACLStatus) != ne.ACLDeviceStatusProvisioned {
-			return fmt.Errorf("Secondary ACL %s device_acl_status does not match %v - %v", ne.StringValue(secondaryACL.UUID), ne.StringValue(secondaryACL.DeviceACLStatus), ne.ACLDeviceStatusProvisioned)
+		if ne.StringValue(secondaryACL.Status) != ne.ACLDeviceStatusProvisioned {
+			return fmt.Errorf("Secondary ACL device_acl_status does not match %v - %v", ne.StringValue(secondaryACL.Status), ne.ACLDeviceStatusProvisioned)
 		}
 		return nil
 	}

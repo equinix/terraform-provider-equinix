@@ -13,12 +13,13 @@ import (
 )
 
 const (
-	priPortEnvVar  = "TF_ACC_FABRIC_PRI_PORT_NAME"
-	secPortEnvVar  = "TF_ACC_FABRIC_SEC_PORT_NAME"
-	awsSpEnvVar    = "TF_ACC_FABRIC_AWS_L2_SP_NAME"
-	azureSpEnvVar  = "TF_ACC_FABRIC_AZURE_L2_SP_NAME"
-	gcpOneSpEnvVar = "TF_ACC_FABRIC_GCP1_L2_SP_NAME"
-	gcpTwoSpEnvVar = "TF_ACC_FABRIC_GCP2_L2_SP_NAME"
+	priPortEnvVar    = "TF_ACC_FABRIC_PRI_PORT_NAME"
+	secPortEnvVar    = "TF_ACC_FABRIC_SEC_PORT_NAME"
+	awsSpEnvVar      = "TF_ACC_FABRIC_AWS_L2_SP_NAME"
+	awsAuthKeyEnvVar = "TF_ACC_FABRIC_AWS_AUTH_KEY"
+	azureSpEnvVar    = "TF_ACC_FABRIC_AZURE_L2_SP_NAME"
+	gcpOneSpEnvVar   = "TF_ACC_FABRIC_GCP1_L2_SP_NAME"
+	gcpTwoSpEnvVar   = "TF_ACC_FABRIC_GCP2_L2_SP_NAME"
 )
 
 func init() {
@@ -71,6 +72,7 @@ func TestAccFabricL2Connection_Port_Single_AWS(t *testing.T) {
 	t.Parallel()
 	portName, _ := schema.EnvDefaultFunc(priPortEnvVar, "sit-001-CX-SV1-NL-Dot1q-BO-10G-PRI-JUN-33")()
 	spName, _ := schema.EnvDefaultFunc(awsSpEnvVar, "AWS Direct Connect")()
+	authKey, _ := schema.EnvDefaultFunc(awsAuthKeyEnvVar, "123456789012")()
 	context := map[string]interface{}{
 		"port-resourceName":                "test",
 		"port-name":                        portName.(string),
@@ -82,12 +84,10 @@ func TestAccFabricL2Connection_Port_Single_AWS(t *testing.T) {
 		"connection-notifications":         []string{"marry@equinix.com", "john@equinix.com"},
 		"connection-purchase_order_number": randString(10),
 		"connection-vlan_stag":             randInt(2000),
-		"connection-seller_region":         "us-west-2",
+		"connection-seller_region":         "us-west-1",
 		"connection-seller_metro_code":     "SV",
-		"connection-authorization_key":     "123456789012",
+		"connection-authorization_key":     authKey.(string),
 	}
-	contextWithChanges := copyMap(context)
-	contextWithChanges["connection-name"] = fmt.Sprintf("%s-%s", tstResourcePrefix, randString(6))
 	resourceName := fmt.Sprintf("equinix_ecx_l2_connection.%s", context["connection-resourceName"].(string))
 	var testConn ecx.L2Connection
 	resource.Test(t, resource.TestCase{
@@ -102,16 +102,8 @@ func TestAccFabricL2Connection_Port_Single_AWS(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceName, "status", ecx.ConnectionStatusProvisioned),
 					resource.TestCheckResourceAttrSet(resourceName, "provider_status"),
 					resource.TestCheckResourceAttrSet(resourceName, "zside_port_uuid"),
-				),
-			},
-			{
-				Config: newTestAccConfig(contextWithChanges).withPort().withConnection().build(),
-				Check: resource.ComposeTestCheckFunc(
-					testAccFabricL2ConnectionExists(resourceName, &testConn),
-					testAccFabricL2ConnectionAttributes(&testConn, contextWithChanges),
-					resource.TestCheckResourceAttr(resourceName, "status", ecx.ConnectionStatusProvisioned),
-					resource.TestCheckResourceAttrSet(resourceName, "provider_status"),
-					resource.TestCheckResourceAttrSet(resourceName, "zside_port_uuid"),
+					resource.TestCheckResourceAttr(resourceName, "actions.0.required_data.#", "3"),
+					resource.TestCheckResourceAttr(resourceName, "actions.0.required_data.0.key", "awsConnectionId"),
 				),
 			},
 			{
