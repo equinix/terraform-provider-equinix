@@ -46,7 +46,8 @@ func testSweepNetworkDevice(region string) error {
 		ne.DeviceStateProvisioned,
 		ne.DeviceStateProvisioning,
 		ne.DeviceStateWaitingSecondary,
-		ne.DeviceStateFailed})
+		ne.DeviceStateFailed,
+	})
 	if err != nil {
 		log.Printf("[INFO][SWEEPER_LOG] error fetching NetworkDevice list: %s", err)
 		return err

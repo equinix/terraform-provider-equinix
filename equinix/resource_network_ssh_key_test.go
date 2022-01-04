@@ -9,7 +9,7 @@ import (
 )
 
 func TestNetworkSSHKey_createFromResourceData(t *testing.T) {
-	//given
+	// given
 	expected := ne.SSHPublicKey{
 		Name:  ne.String("testKey"),
 		Value: ne.String("testKeyValue"),
@@ -19,23 +19,23 @@ func TestNetworkSSHKey_createFromResourceData(t *testing.T) {
 		networkSSHKeySchemaNames["Value"]: ne.StringValue(expected.Value),
 	}
 	d := schema.TestResourceDataRaw(t, createNetworkSSHKeyResourceSchema(), rawData)
-	//when
+	// when
 	key := createNetworkSSHKey(d)
-	//then
+	// then
 	assert.Equal(t, expected, key, "Created key matches expected result")
 }
 
 func TestNetworkSSHKey_updateResourceData(t *testing.T) {
-	//given
+	// given
 	input := &ne.SSHPublicKey{
 		UUID:  ne.String("059c3020-aec5-44ca-816c-235435f16df9"),
 		Name:  ne.String("testKey"),
 		Value: ne.String("testKeyValue"),
 	}
 	d := schema.TestResourceDataRaw(t, createNetworkSSHKeyResourceSchema(), make(map[string]interface{}))
-	//when
+	// when
 	err := updateNetworkSSHKeyResource(input, d)
-	//then
+	// then
 	assert.Nil(t, err, "Update of resource data does not return error")
 	assert.Equal(t, ne.StringValue(input.UUID), d.Get(networkSSHKeySchemaNames["UUID"]), "UUID matches")
 	assert.Equal(t, ne.StringValue(input.Name), d.Get(networkSSHKeySchemaNames["Name"]), "Name matches")

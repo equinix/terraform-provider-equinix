@@ -382,7 +382,7 @@ func resourceECXL2ServiceProfileDelete(ctx context.Context, d *schema.ResourceDa
 	if err := conf.ecx.DeleteL2ServiceProfile(d.Id()); err != nil {
 		restErr, ok := err.(rest.Error)
 		if ok {
-			//IC-PROFILE-004 =  profile does not exist
+			// IC-PROFILE-004 =  profile does not exist
 			if hasApplicationErrorCode(restErr.ApplicationErrors, "IC-PROFILE-004") {
 				return diags
 			}

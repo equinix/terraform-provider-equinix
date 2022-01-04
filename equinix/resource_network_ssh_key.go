@@ -64,6 +64,7 @@ func createNetworkSSHKeyResourceSchema() map[string]*schema.Schema {
 		},
 	}
 }
+
 func resourceNetworkSSHKeyCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	conf := m.(*Config)
 	var diags diag.Diagnostics

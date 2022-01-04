@@ -76,17 +76,17 @@ func TestNetworkDevice_createFromResourceData(t *testing.T) {
 	d.Set(networkDeviceSchemaNames["UserPublicKey"], flattenNetworkDeviceUserKeys([]*ne.DeviceUserPublicKey{&expectedPrimaryUserKey}))
 	d.Set(networkDeviceSchemaNames["VendorConfiguration"], expectedPrimary.VendorConfiguration)
 
-	//when
+	// when
 	primary, secondary := createNetworkDevices(d)
 
-	//then
+	// then
 	assert.NotNil(t, primary, "Primary device is not nil")
 	assert.Nil(t, secondary, "Secondary device is nil")
 	assert.Equal(t, expectedPrimary, primary, "Primary device matches expected result")
 }
 
 func TestNetworkDevice_updateResourceData(t *testing.T) {
-	//given
+	// given
 	inputPrimary := &ne.Device{
 		Name:                ne.String("device"),
 		TypeCode:            ne.String("CSR1000V"),
@@ -125,10 +125,10 @@ func TestNetworkDevice_updateResourceData(t *testing.T) {
 	d.Set(networkDeviceSchemaNames["Secondary"], flattenNetworkDeviceSecondary(&ne.Device{
 		LicenseFile: ne.String(secondarySchemaLicenseFile),
 	}))
-	//when
+	// when
 	err := updateNetworkDeviceResource(inputPrimary, inputSecondary, d)
 
-	//then
+	// then
 	assert.Nil(t, err, "Update of resource data does not return error")
 	assert.Equal(t, ne.StringValue(inputPrimary.Name), d.Get(networkDeviceSchemaNames["Name"]), "Name matches")
 	assert.Equal(t, ne.StringValue(inputPrimary.TypeCode), d.Get(networkDeviceSchemaNames["TypeCode"]), "TypeCode matches")
@@ -159,7 +159,7 @@ func TestNetworkDevice_updateResourceData(t *testing.T) {
 }
 
 func TestNetworkDevice_flattenSecondary(t *testing.T) {
-	//given
+	// given
 	input := &ne.Device{
 		UUID:                ne.String("0452fa68-8246-48b1-a1b2-817fb4baddcb"),
 		Name:                ne.String("device"),
@@ -247,15 +247,15 @@ func TestNetworkDevice_flattenSecondary(t *testing.T) {
 			networkDeviceSchemaNames["ZoneCode"]: input.ZoneCode,
 		},
 	}
-	//when
+	// when
 	out := flattenNetworkDeviceSecondary(input)
-	//then
+	// then
 	assert.NotNil(t, out, "Output is not nil")
 	assert.Equal(t, expected, out, "Output matches expected result")
 }
 
 func TestNetworkDevice_expandSecondary(t *testing.T) {
-	//given
+	// given
 	f := func(i interface{}) int {
 		str := fmt.Sprintf("%v", i)
 		return schema.HashString(str)
@@ -299,15 +299,15 @@ func TestNetworkDevice_expandSecondary(t *testing.T) {
 		},
 		UserPublicKey: expandNetworkDeviceUserKeys(input[0].(map[string]interface{})[networkDeviceSchemaNames["UserPublicKey"]].(*schema.Set))[0],
 	}
-	//when
+	// when
 	out := expandNetworkDeviceSecondary(input)
-	//then
+	// then
 	assert.NotNil(t, out, "Output is not empty")
 	assert.Equal(t, expected, out, "Output matches expected result")
 }
 
 func TestNetworkDevice_uploadLicenseFile(t *testing.T) {
-	//given
+	// given
 	fileName := "test.lic"
 	licenseFileID := "someTestID"
 	device := &ne.Device{LicenseFile: ne.String("/path/to/" + fileName), MetroCode: ne.String("SV"), TypeCode: ne.String("VSRX")}
@@ -323,9 +323,9 @@ func TestNetworkDevice_uploadLicenseFile(t *testing.T) {
 	openFunc := func(name string) (*os.File, error) {
 		return &os.File{}, nil
 	}
-	//when
+	// when
 	err := uploadDeviceLicenseFile(openFunc, uploadFunc, ne.StringValue(device.TypeCode), device)
-	//then
+	// then
 	assert.Nil(t, err, "License upload function does not return any error")
 	assert.Equal(t, licenseFileID, ne.StringValue(device.LicenseFileID), "Device LicenseFileID matches")
 	assert.Equal(t, ne.StringValue(device.MetroCode), rxMetroCode, "Received metroCode matches")
@@ -336,7 +336,7 @@ func TestNetworkDevice_uploadLicenseFile(t *testing.T) {
 }
 
 func TestNetworkDevice_statusProvisioningWaitConfiguration(t *testing.T) {
-	//given
+	// given
 	deviceID := "test"
 	var queriedDeviceID string
 	fetchFunc := func(uuid string) (*ne.Device, error) {
@@ -345,10 +345,10 @@ func TestNetworkDevice_statusProvisioningWaitConfiguration(t *testing.T) {
 	}
 	delay := 100 * time.Millisecond
 	timeout := 10 * time.Minute
-	//when
+	// when
 	waitConfig := createNetworkDeviceStatusProvisioningWaitConfiguration(fetchFunc, deviceID, delay, timeout)
 	_, err := waitConfig.WaitForStateContext(context.Background())
-	//then
+	// then
 	assert.Nil(t, err, "WaitForState does not return an error")
 	assert.Equal(t, deviceID, queriedDeviceID, "Queried device ID matches")
 	assert.Equal(t, timeout, waitConfig.Timeout, "Device status wait configuration timeout matches")
@@ -356,7 +356,7 @@ func TestNetworkDevice_statusProvisioningWaitConfiguration(t *testing.T) {
 }
 
 func TestNetworkDevice_statusDeleteWaitConfiguration(t *testing.T) {
-	//given
+	// given
 	deviceID := "test"
 	var queriedDeviceID string
 	fetchFunc := func(uuid string) (*ne.Device, error) {
@@ -365,10 +365,10 @@ func TestNetworkDevice_statusDeleteWaitConfiguration(t *testing.T) {
 	}
 	delay := 100 * time.Millisecond
 	timeout := 10 * time.Minute
-	//when
+	// when
 	waitConfig := createNetworkDeviceStatusDeleteWaitConfiguration(fetchFunc, deviceID, delay, timeout)
 	_, err := waitConfig.WaitForStateContext(context.Background())
-	//then
+	// then
 	assert.Nil(t, err, "WaitForState does not return an error")
 	assert.Equal(t, deviceID, queriedDeviceID, "Queried device ID matches")
 	assert.Equal(t, timeout, waitConfig.Timeout, "Device status wait configuration timeout matches")
@@ -376,7 +376,7 @@ func TestNetworkDevice_statusDeleteWaitConfiguration(t *testing.T) {
 }
 
 func TestNetworkDevice_licenseStatusWaitConfiguration(t *testing.T) {
-	//given
+	// given
 	deviceID := "test"
 	var queriedDeviceID string
 	fetchFunc := func(uuid string) (*ne.Device, error) {
@@ -385,10 +385,10 @@ func TestNetworkDevice_licenseStatusWaitConfiguration(t *testing.T) {
 	}
 	delay := 100 * time.Millisecond
 	timeout := 10 * time.Minute
-	//when
+	// when
 	waitConfig := createNetworkDeviceLicenseStatusWaitConfiguration(fetchFunc, deviceID, delay, timeout)
 	_, err := waitConfig.WaitForStateContext(context.Background())
-	//then
+	// then
 	assert.Nil(t, err, "WaitForState does not return an error")
 	assert.Equal(t, deviceID, queriedDeviceID, "Queried device ID matches")
 	assert.Equal(t, timeout, waitConfig.Timeout, "Device status wait configuration timeout matches")
@@ -396,7 +396,7 @@ func TestNetworkDevice_licenseStatusWaitConfiguration(t *testing.T) {
 }
 
 func TestNetworkDevice_ACLStatusWaitConfiguration(t *testing.T) {
-	//given
+	// given
 	deviceUUID := "test"
 	var receivedDeviceUUID string
 	fetchFunc := func(uuid string) (*ne.DeviceACLDetails, error) {
@@ -405,10 +405,10 @@ func TestNetworkDevice_ACLStatusWaitConfiguration(t *testing.T) {
 	}
 	delay := 100 * time.Millisecond
 	timeout := 10 * time.Minute
-	//when
+	// when
 	waitConfig := createNetworkDeviceACLStatusWaitConfiguration(fetchFunc, deviceUUID, delay, timeout)
 	_, err := waitConfig.WaitForStateContext(context.Background())
-	//then
+	// then
 	assert.Nil(t, err, "WaitForState does not return an error")
 	assert.Equal(t, deviceUUID, receivedDeviceUUID, "Queried Device id matches")
 	assert.Equal(t, timeout, waitConfig.Timeout, "Device status wait configuration timeout matches")
@@ -416,7 +416,7 @@ func TestNetworkDevice_ACLStatusWaitConfiguration(t *testing.T) {
 }
 
 func TestNetworkDevice_AdditionalBandwidthStatusWaitConfiguration(t *testing.T) {
-	//given
+	// given
 	deviceID := "test"
 	var receivedID string
 	fetchFunc := func(uuid string) (*ne.DeviceAdditionalBandwidthDetails, error) {
@@ -425,10 +425,10 @@ func TestNetworkDevice_AdditionalBandwidthStatusWaitConfiguration(t *testing.T) 
 	}
 	delay := 100 * time.Millisecond
 	timeout := 10 * time.Minute
-	//when
+	// when
 	waitConfig := createNetworkDeviceAdditionalBandwidthStatusWaitConfiguration(fetchFunc, deviceID, delay, timeout)
 	_, err := waitConfig.WaitForStateContext(context.Background())
-	//then
+	// then
 	assert.Nil(t, err, "WaitForState does not return an error")
 	assert.Equal(t, deviceID, receivedID, "Queried Additional Bandwidth device id matches")
 	assert.Equal(t, timeout, waitConfig.Timeout, "Additional bandwidth status wait configuration timeout matches")

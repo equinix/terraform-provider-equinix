@@ -11,7 +11,7 @@ import (
 )
 
 func TestNetworkBGP_createFromResourceData(t *testing.T) {
-	//given
+	// given
 	expected := ne.BGPConfiguration{
 		ConnectionUUID:    ne.String("6ca8d0df-c71a-4475-a835-53c2df1e6667"),
 		LocalIPAddress:    ne.String("1.1.1.1/32"),
@@ -29,14 +29,14 @@ func TestNetworkBGP_createFromResourceData(t *testing.T) {
 		networkBGPSchemaNames["AuthenticationKey"]: ne.StringValue(expected.AuthenticationKey),
 	}
 	d := schema.TestResourceDataRaw(t, createNetworkBGPResourceSchema(), rawData)
-	//when
+	// when
 	result := createNetworkBGPConfiguration(d)
-	//then
+	// then
 	assert.Equal(t, expected, result, "Created BGP configuration matches expected result")
 }
 
 func TestNetworkBGP_updateResourceData(t *testing.T) {
-	//when
+	// when
 	input := ne.BGPConfiguration{
 		UUID:               ne.String("0cb9759d-58ab-44e6-9c10-6a3cfd18cefb"),
 		DeviceUUID:         ne.String("8895983f-00f9-42f1-a387-85248f2aab49"),
@@ -50,9 +50,9 @@ func TestNetworkBGP_updateResourceData(t *testing.T) {
 		ProvisioningStatus: ne.String(ne.BGPProvisioningStatusProvisioned),
 	}
 	d := schema.TestResourceDataRaw(t, createNetworkBGPResourceSchema(), make(map[string]interface{}))
-	//when
+	// when
 	err := updateNetworkBGPResource(&input, d)
-	//then
+	// then
 	assert.Nil(t, err, "Update of resource data does not return error")
 	assert.Equal(t, ne.StringValue(input.UUID), d.Get(networkBGPSchemaNames["UUID"]), "UUID matches")
 	assert.Equal(t, ne.StringValue(input.DeviceUUID), d.Get(networkBGPSchemaNames["DeviceUUID"]), "DeviceUUID matches")
@@ -101,7 +101,7 @@ func (r *mockedBGPUpdateRequest) Execute() error {
 }
 
 func TestNetworkBGP_createUpdateRequest(t *testing.T) {
-	//given
+	// given
 	req := &mockedBGPUpdateRequest{data: make(map[string]interface{})}
 	f := func(uuid string) ne.BGPUpdateRequest {
 		req.uuid = uuid
@@ -114,9 +114,9 @@ func TestNetworkBGP_createUpdateRequest(t *testing.T) {
 		RemoteASN:         ne.Int(60421),
 		AuthenticationKey: ne.String("secret"),
 	}
-	//when
+	// when
 	createNetworkBGPUpdateRequest(f, &bgp)
-	//then
+	// then
 	assert.Equal(t, ne.StringValue(bgp.RemoteIPAddress), req.data["remoteIPAddress"], "RemoteIPAddress matches")
 	assert.Equal(t, ne.IntValue(bgp.RemoteASN), req.data["remoteASN"], "RemoteASN matches")
 	assert.Equal(t, ne.StringValue(bgp.LocalIPAddress), req.data["localIPAddress"], "LocalIPAddress matches")
@@ -125,7 +125,7 @@ func TestNetworkBGP_createUpdateRequest(t *testing.T) {
 }
 
 func TestNetworkBGP_statusProvisioningWaitConfiguration(t *testing.T) {
-	//given
+	// given
 	bgpID := "test"
 	var queriedID string
 	fetchFunc := func(uuid string) (*ne.BGPConfiguration, error) {
@@ -134,10 +134,10 @@ func TestNetworkBGP_statusProvisioningWaitConfiguration(t *testing.T) {
 	}
 	delay := 100 * time.Millisecond
 	timeout := 10 * time.Minute
-	//when
+	// when
 	waitConfig := createBGPConfigStatusProvisioningWaitConfiguration(fetchFunc, bgpID, delay, timeout)
 	_, err := waitConfig.WaitForStateContext(context.Background())
-	//then
+	// then
 	assert.Nil(t, err, "WaitForState does not return an error")
 	assert.Equal(t, bgpID, queriedID, "Queried device ID matches")
 	assert.Equal(t, timeout, waitConfig.Timeout, "Device status wait configuration timeout matches")
