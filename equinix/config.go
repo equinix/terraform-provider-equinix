@@ -11,8 +11,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/logging"
 )
 
-//Config is the configuration structure used to instantiate the Equinix
-//provider.
+// Config is the configuration structure used to instantiate the Equinix
+// provider.
 type Config struct {
 	BaseURL        string
 	ClientID       string
@@ -24,8 +24,8 @@ type Config struct {
 	ne  ne.Client
 }
 
-//Load function validates configuration structure fields and configures
-//all required API clients.
+// Load function validates configuration structure fields and configures
+// all required API clients.
 func (c *Config) Load(ctx context.Context) error {
 	if c.BaseURL == "" {
 		return fmt.Errorf("baseURL cannot be empty")
@@ -39,7 +39,8 @@ func (c *Config) Load(ctx context.Context) error {
 	authConfig := oauth2.Config{
 		ClientID:     c.ClientID,
 		ClientSecret: c.ClientSecret,
-		BaseURL:      c.BaseURL}
+		BaseURL:      c.BaseURL,
+	}
 	authClient := authConfig.New(ctx)
 	authClient.Timeout = c.requestTimeout()
 	authClient.Transport = logging.NewTransport("Equinix", authClient.Transport)

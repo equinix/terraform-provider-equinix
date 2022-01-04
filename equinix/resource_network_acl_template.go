@@ -359,7 +359,7 @@ func flattenACLTemplateInboundRules(existingRules []ne.ACLTemplateInboundRule, r
 }
 
 func getSubnet(existingRule ne.ACLTemplateInboundRule, rule ne.ACLTemplateInboundRule) *string {
-	var subnet = existingRule.Subnet
+	subnet := existingRule.Subnet
 	if existingRule.Subnet != nil && len(ne.StringValue(existingRule.Subnet)) > 0 {
 		subnet = rule.Subnet
 	}

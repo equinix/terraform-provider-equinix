@@ -9,7 +9,7 @@ import (
 )
 
 func TestNetworkDeviceLink_createFromResourceData(t *testing.T) {
-	//given
+	// given
 
 	expected := ne.DeviceLinkGroup{
 		Name:   ne.String("testGroup"),
@@ -45,15 +45,14 @@ func TestNetworkDeviceLink_createFromResourceData(t *testing.T) {
 	d := schema.TestResourceDataRaw(t, createNetworkDeviceLinkResourceSchema(), rawData)
 	d.Set(networkDeviceLinkSchemaNames["Devices"], flattenNetworkDeviceLinkDevices(nil, expected.Devices))
 	d.Set(networkDeviceLinkSchemaNames["Links"], flattenNetworkDeviceLinkConnections(nil, expected.Links))
-	//when
+	// when
 	result := createNetworkDeviceLink(d)
-	//then
+	// then
 	assert.Equal(t, expected, result, "Created device link matches expected result")
-
 }
 
 func TestNetworkDeviceLink_updateResourceData(t *testing.T) {
-	//given
+	// given
 	input := ne.DeviceLinkGroup{
 		UUID:   ne.String("aae04283-10f9-4edb-9395-33681176592b"),
 		Name:   ne.String("testGroup"),
@@ -84,9 +83,9 @@ func TestNetworkDeviceLink_updateResourceData(t *testing.T) {
 		},
 	}
 	d := schema.TestResourceDataRaw(t, createNetworkDeviceLinkResourceSchema(), make(map[string]interface{}))
-	//when
+	// when
 	err := updateNetworkDeviceLinkResource(&input, d)
-	//then
+	// then
 	assert.Nil(t, err, "Update of resource data does not return error")
 	assert.Equal(t, ne.StringValue(input.UUID), d.Get(networkDeviceLinkSchemaNames["UUID"]), "UUID matches")
 	assert.Equal(t, ne.StringValue(input.Name), d.Get(networkDeviceLinkSchemaNames["Name"]), "Name matches")
