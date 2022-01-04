@@ -381,7 +381,7 @@ func flattenNetworkDeviceLinkDevices(currentDevices *schema.Set, devices []ne.De
 			networkDeviceLinkDeviceSchemaNames["InterfaceID"]: devices[i].InterfaceID,
 			networkDeviceLinkDeviceSchemaNames["Status"]:      devices[i].Status,
 			networkDeviceLinkDeviceSchemaNames["IPAddress"]:   devices[i].IPAddress,
-			networkDeviceLinkDeviceSchemaNames["ASN"]:   	   devices[i].ASN,
+			networkDeviceLinkDeviceSchemaNames["ASN"]:         devices[i].ASN,
 		}
 		transformed = append(transformed, transformedDevice)
 	}

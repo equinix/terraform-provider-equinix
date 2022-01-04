@@ -10,9 +10,9 @@ import (
 	"testing"
 
 	"github.com/equinix/rest-go"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/stretchr/testify/assert"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 )
 
 var (
