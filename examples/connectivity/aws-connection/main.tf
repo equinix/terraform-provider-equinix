@@ -31,14 +31,19 @@ resource "equinix_ecx_l2_connection" "example" {
   authorization_key = var.aws_account_id
 }
 
-resource "equinix_ecx_l2_connection_accepter" "example" {
-  connection_id = equinix_ecx_l2_connection.example.id
-  access_key    = var.aws_access_key
-  secret_key    = var.aws_secret_key
+locals  {
+   aws_connection_id = one([
+       for action_data in one(equinix_ecx_l2_connection.example.actions).required_data: action_data["value"]
+       if action_data["key"] == "awsConnectionId"
+   ])
+}
+
+resource "aws_dx_connection_confirmation" "confirmation" {
+  connection_id = local.aws_connection_id
 }
 
 resource "aws_dx_private_virtual_interface" "example" {
-  connection_id    = equinix_ecx_l2_connection_accepter.example.aws_connection_id
+  connection_id    = aws_dx_connection_confirmation.confirmation.id
   name             = "example"
   vlan             = equinix_ecx_l2_connection.example.zside_vlan_stag
   address_family   = "ipv4"

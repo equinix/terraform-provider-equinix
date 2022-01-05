@@ -3,7 +3,6 @@ module github.com/equinix/terraform-provider-equinix
 go 1.17
 
 require (
-	github.com/aws/aws-sdk-go v1.42.13
 	github.com/equinix/ecx-go/v2 v2.0.3
 	github.com/equinix/ne-go v1.3.0
 	github.com/equinix/oauth2-go v1.0.0
@@ -19,6 +18,7 @@ require (
 	github.com/agext/levenshtein v1.2.2 // indirect
 	github.com/apparentlymart/go-cidr v1.0.1 // indirect
 	github.com/apparentlymart/go-textseg/v13 v13.0.0 // indirect
+	github.com/aws/aws-sdk-go v1.42.13 // indirect
 	github.com/bgentry/go-netrc v0.0.0-20140422174119-9fd32a8b3d3d // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/fatih/color v1.7.0 // indirect
