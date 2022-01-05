@@ -343,7 +343,6 @@ func expandACLTemplateInboundRules(rules []interface{}) []ne.ACLTemplateInboundR
 }
 
 func flattenACLTemplateInboundRules(existingRules []ne.ACLTemplateInboundRule, rules []ne.ACLTemplateInboundRule) interface{} {
-
 	setSubnets := checkExistingSubnets(existingRules)
 	transformed := make([]interface{}, len(rules))
 	for i := range rules {

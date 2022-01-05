@@ -49,7 +49,8 @@ func testSweepNetworkDevice(region string) error {
 		ne.DeviceStateProvisioned,
 		ne.DeviceStateProvisioning,
 		ne.DeviceStateWaitingSecondary,
-		ne.DeviceStateFailed})
+		ne.DeviceStateFailed,
+	})
 	if err != nil {
 		log.Printf("[INFO][SWEEPER_LOG] error fetching NetworkDevice list: %s", err)
 		return err
@@ -1095,10 +1096,10 @@ func testAccNetworkDevice(ctx map[string]interface{}) string {
 data "equinix_network_account" "test" {
   metro_code = "%{device-metro_code}"
   status     = "Active"`, ctx)
-    if v, ok := ctx["device-account_name"]; ok && !isEmpty(v) {
-        config += nprintf(`
+	if v, ok := ctx["device-account_name"]; ok && !isEmpty(v) {
+		config += nprintf(`
   name = "%{device-account_name}"`, ctx)
-    }
+	}
 	config += nprintf(`
 }`, ctx)
 	if _, ok := ctx["device-secondary_metro_code"]; ok {
@@ -1106,11 +1107,11 @@ data "equinix_network_account" "test" {
 data "equinix_network_account" "test-secondary" {
   metro_code = "%{device-secondary_metro_code}"
   status     = "Active"`, ctx)
-    if v, ok := ctx["device-secondary_account_name"]; ok && !isEmpty(v) {
-        config += nprintf(`
+		if v, ok := ctx["device-secondary_account_name"]; ok && !isEmpty(v) {
+			config += nprintf(`
   name = "%{device-secondary_account_name}"`, ctx)
-    }
-      config += nprintf(` 
+		}
+		config += nprintf(` 
 }`, ctx)
     }
 	config += nprintf(`

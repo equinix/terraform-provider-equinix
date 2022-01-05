@@ -31,14 +31,13 @@ func TestNetworkACLTemplate_createFromResourceData(t *testing.T) {
 	}
 	d := schema.TestResourceDataRaw(t, createNetworkACLTemplateSchema(), rawData)
 	d.Set(networkACLTemplateSchemaNames["InboundRules"], flattenACLTemplateInboundRules(expected.InboundRules, expected.InboundRules))
-	//when
+	// when
 	result := createACLTemplate(d)
-	//then
+	// then
 	assert.Equal(t, expected, result, "Created ACL Template matches expected result")
 }
 
 func TestNetworkACLTemplate_updateResourceData(t *testing.T) {
-
 	initial := ne.ACLTemplate{
 		Name:        ne.String("test"),
 		Description: ne.String("testTemplate"),
@@ -84,9 +83,9 @@ func TestNetworkACLTemplate_updateResourceData(t *testing.T) {
 			},
 		},
 	}
-	//when
+	// when
 	err := updateACLTemplateResource(input, d)
-	//then
+	// then
 	assert.Nil(t, err, "Update of resource data does not return error")
 	assert.Equal(t, ne.StringValue(input.Name), d.Get(networkACLTemplateSchemaNames["Name"]), "Name matches")
 	assert.Equal(t, ne.StringValue(input.Description), d.Get(networkACLTemplateSchemaNames["Description"]), "Description matches")
@@ -95,7 +94,7 @@ func TestNetworkACLTemplate_updateResourceData(t *testing.T) {
 }
 
 func TestNetworkACLTemplate_expandInboundRules(t *testing.T) {
-	//given
+	// given
 	input := []interface{}{
 		map[string]interface{}{
 			networkACLTemplateInboundRuleSchemaNames["Subnets"]:  []interface{}{"10.0.0.0/24", "1.1.1.1/32"},
@@ -132,14 +131,13 @@ func TestNetworkACLTemplate_expandInboundRules(t *testing.T) {
 			DstPort:  ne.String(input[1].(map[string]interface{})[networkACLTemplateInboundRuleSchemaNames["DstPort"]].(string)),
 		},
 	}
-	//when
+	// when
 	result := expandACLTemplateInboundRules(input)
-	//then
+	// then
 	assert.Equal(t, expected, result, "Expanded ACL template inbound rules matches expected result")
 }
 
 func TestNetworkACLTemplate_flattenInboundRules(t *testing.T) {
-
 	input := []ne.ACLTemplateInboundRule{
 		{
 			SeqNo:    ne.Int(1),
@@ -179,9 +177,9 @@ func TestNetworkACLTemplate_flattenInboundRules(t *testing.T) {
 			networkACLTemplateInboundRuleSchemaNames["DstPort"]:  input[1].DstPort,
 		},
 	}
-	//when
+	// when
 	result := flattenACLTemplateInboundRules(initial, input)
-	//then
+	// then
 	assert.Equal(t, expected, result, "Flattened ACL template inbound rules match expected result")
 }
 
@@ -210,8 +208,8 @@ func TestNetworkACLTemplate_flattenDeviceDetails(t *testing.T) {
 			networkACLTemplateDeviceDetailSchemaNames["ACLStatus"]: input[1].ACLStatus,
 		},
 	}
-	//when
+	// when
 	result := flattenACLTemplateDeviceDetails(input)
-	//then
+	// then
 	assert.Equal(t, expected, result, "Flattened ACL template Device Details match expected result")
 }

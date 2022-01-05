@@ -715,9 +715,11 @@ func resourceNetworkDeviceRead(ctx context.Context, d *schema.ResourceData, m in
 func resourceNetworkDeviceUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	conf := m.(*Config)
 	var diags diag.Diagnostics
-	supportedChanges := []string{networkDeviceSchemaNames["Name"], networkDeviceSchemaNames["TermLength"],
+	supportedChanges := []string{
+		networkDeviceSchemaNames["Name"], networkDeviceSchemaNames["TermLength"],
 		networkDeviceSchemaNames["Notifications"], networkDeviceSchemaNames["AdditionalBandwidth"],
-		networkDeviceSchemaNames["ACLTemplateUUID"]}
+		networkDeviceSchemaNames["ACLTemplateUUID"],
+	}
 	updateReq := conf.ne.NewDeviceUpdateRequest(d.Id())
 	primaryChanges := getResourceDataChangedKeys(supportedChanges, d)
 	if err := fillNetworkDeviceUpdateRequest(updateReq, primaryChanges).Execute(); err != nil {
@@ -1154,8 +1156,10 @@ func getNetworkDeviceStateChangeConfigs(c ne.Client, deviceID string, timeout ti
 	return configs
 }
 
-type openFile func(name string) (*os.File, error)
-type uploadLicenseFile func(metroCode, deviceTypeCode, deviceManagementMode, licenseMode, fileName string, reader io.Reader) (*string, error)
+type (
+	openFile          func(name string) (*os.File, error)
+	uploadLicenseFile func(metroCode, deviceTypeCode, deviceManagementMode, licenseMode, fileName string, reader io.Reader) (*string, error)
+)
 
 func uploadDeviceLicenseFile(openFunc openFile, uploadFunc uploadLicenseFile, typeCode string, device *ne.Device) error {
 	if device == nil || ne.StringValue(device.LicenseFile) == "" {
@@ -1179,9 +1183,11 @@ func uploadDeviceLicenseFile(openFunc openFile, uploadFunc uploadLicenseFile, ty
 	return nil
 }
 
-type getDevice func(uuid string) (*ne.Device, error)
-type getACL func(uuid string) (*ne.DeviceACLDetails, error)
-type getAdditionalBandwidthDetails func(uuid string) (*ne.DeviceAdditionalBandwidthDetails, error)
+type (
+	getDevice                     func(uuid string) (*ne.Device, error)
+	getACL                        func(uuid string) (*ne.DeviceACLDetails, error)
+	getAdditionalBandwidthDetails func(uuid string) (*ne.DeviceAdditionalBandwidthDetails, error)
+)
 
 func createNetworkDeviceStatusProvisioningWaitConfiguration(fetchFunc getDevice, id string, delay time.Duration, timeout time.Duration) *resource.StateChangeConf {
 	pending := []string{

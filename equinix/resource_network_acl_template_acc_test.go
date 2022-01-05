@@ -55,7 +55,7 @@ func TestAccNetworkACLTemplate(t *testing.T) {
 		"resourceName":            "test",
 		"name":                    fmt.Sprintf("%s-%s", tstResourcePrefix, randString(6)),
 		"description":             randString(50),
-		"inbound_rule_1_subnet":  "10.0.0.0/16",
+		"inbound_rule_1_subnet":   "10.0.0.0/16",
 		"inbound_rule_1_protocol": "TCP",
 		"inbound_rule_1_src_port": "any",
 		"inbound_rule_1_dst_port": "22-23",

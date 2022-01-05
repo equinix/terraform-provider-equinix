@@ -89,15 +89,15 @@ func TestFabricL2ServiceProfile_createFromResourceData(t *testing.T) {
 		Ports:                               expandECXL2ServiceProfilePorts(d.Get(ecxL2ServiceProfileSchemaNames["Port"]).(*schema.Set)),
 		SpeedBands:                          expandECXL2ServiceProfileSpeedBands(d.Get(ecxL2ServiceProfileSchemaNames["SpeedBand"]).(*schema.Set)),
 	}
-	//when
+	// when
 	result := createECXL2ServiceProfile(d)
-	//then
+	// then
 	assert.NotNil(t, result, "Result is not nil")
 	assert.Equal(t, expected, *result, "Result matches expected value")
 }
 
 func TestFabricL2ServiceProfile_updateResourceData(t *testing.T) {
-	//given
+	// given
 	d := schema.TestResourceDataRaw(t, createECXL2ServiceProfileResourceSchema(), make(map[string]interface{}))
 	input := ecx.L2ServiceProfile{
 		UUID:                                ecx.String("5d113752-996b-4b59-8e21-8927e7b98058"),
@@ -149,9 +149,9 @@ func TestFabricL2ServiceProfile_updateResourceData(t *testing.T) {
 			},
 		},
 	}
-	//when
+	// when
 	err := updateECXL2ServiceProfileResource(&input, d)
-	//then
+	// then
 	assert.Nil(t, err, "Update of resource data does not return error")
 	assert.Equal(t, ecx.StringValue(input.UUID), d.Get(ecxL2ServiceProfileSchemaNames["UUID"]), "UUID matches")
 	assert.Equal(t, ecx.StringValue(input.State), d.Get(ecxL2ServiceProfileSchemaNames["State"]), "State matches")

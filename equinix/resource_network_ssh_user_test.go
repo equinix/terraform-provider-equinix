@@ -9,7 +9,7 @@ import (
 )
 
 func TestNetworkSSHUser_resourceFromResourceData(t *testing.T) {
-	//given
+	// given
 	rawData := map[string]interface{}{
 		networkSSHUserSchemaNames["Username"]: "user",
 		networkSSHUserSchemaNames["Password"]: "secret",
@@ -23,24 +23,24 @@ func TestNetworkSSHUser_resourceFromResourceData(t *testing.T) {
 		DeviceUUIDs: deviceUUIDs,
 	}
 
-	//when
+	// when
 	result := createNetworkSSHUser(d)
 
-	//then
+	// then
 	assert.Equal(t, expected, result, "Result matches expected result")
 }
 
 func TestNetworkSSHUser_updateResourceData(t *testing.T) {
-	//given
+	// given
 	d := schema.TestResourceDataRaw(t, createNetworkSSHUserResourceSchema(), make(map[string]interface{}))
 	input := ne.SSHUser{
 		Username:    ne.String("user"),
 		Password:    ne.String("secret"),
 		DeviceUUIDs: []string{"52c00d7f-c310-458e-9426-1d7549e1f600", "5f1483f4-c479-424d-98c5-43a266aae25c"},
 	}
-	//when
+	// when
 	err := updateNetworkSSHUserResource(&input, d)
-	//then
+	// then
 	assert.Nil(t, err, "Update of resource data does not return error")
 	assert.Equal(t, ne.StringValue(input.Username), d.Get(networkSSHUserSchemaNames["Username"]), "Username matches")
 	assert.Equal(t, ne.StringValue(input.Password), d.Get(networkSSHUserSchemaNames["Password"]), "Password matches")

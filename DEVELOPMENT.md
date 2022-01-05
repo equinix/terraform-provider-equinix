@@ -70,6 +70,8 @@ primary, Dot1Q encapsulated connections. Reflected by Fabric connection tests.
 secondary,Dot1Q encapsulated connections. Reflected by Fabric connection tests
 * `TF_ACC_FABRIC_AWS_L2_SP_NAME` alters default name of Equinix Fabric AWS seller
 profile. Reflected by Fabric connection tests
+* `TF_ACC_FABRIC_AWS_AUTH_KEY` alters default authentication key of Equinix Fabric
+AWS l2 connection. Reflected by Fabric connection tests
 * `TF_ACC_FABRIC_L2_AZURE_SP_NAME` alters default name of Equinix Fabric Azure seller
 profile. Reflected by Fabric connection tests.
 * `TF_ACC_FABRIC_GCP1_L2_SP_NAME` alters default name of Equinix Fabric GCP

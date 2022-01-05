@@ -174,7 +174,7 @@ func resourceNetworkBGPUpdate(ctx context.Context, d *schema.ResourceData, m int
 }
 
 func resourceNetworkBGPDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	//BGP configuration removal is not possible with NE public APIs
+	// BGP configuration removal is not possible with NE public APIs
 	d.SetId("")
 	return nil
 }

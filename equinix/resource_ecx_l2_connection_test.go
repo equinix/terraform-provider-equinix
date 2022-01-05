@@ -52,17 +52,17 @@ func TestFabricL2Connection_createFromResourceData(t *testing.T) {
 		AuthorizationKey:    ecx.String(rawData[ecxL2ConnectionSchemaNames["AuthorizationKey"]].(string)),
 	}
 
-	//when
+	// when
 	primary, secondary := createECXL2Connections(d)
 
-	//then
+	// then
 	assert.NotNil(t, primary, "Primary connection is not nil")
 	assert.Nil(t, secondary, "Secondary connection is nil")
 	assert.Equal(t, expectedPrimary, primary, "Primary connection matches expected result")
 }
 
 func TestFabricL2Connection_updateResourceData(t *testing.T) {
-	//given
+	// given
 	d := schema.TestResourceDataRaw(t, createECXL2ConnectionResourceSchema(), make(map[string]interface{}))
 	input := &ecx.L2Connection{
 		UUID:                ecx.String(randString(36)),
@@ -89,10 +89,10 @@ func TestFabricL2Connection_updateResourceData(t *testing.T) {
 		RedundantUUID:       ecx.String(randString(36)),
 		RedundancyType:      ecx.String(randString(10)),
 	}
-	//when
+	// when
 	err := updateECXL2ConnectionResource(input, nil, d)
 
-	//then
+	// then
 	assert.Nil(t, err, "Update of resource data does not return error")
 	assert.Equal(t, ecx.StringValue(input.UUID), d.Get(ecxL2ConnectionSchemaNames["UUID"]), "UUID matches")
 	assert.Equal(t, ecx.StringValue(input.Name), d.Get(ecxL2ConnectionSchemaNames["Name"]), "Name matches")
@@ -121,7 +121,7 @@ func TestFabricL2Connection_updateResourceData(t *testing.T) {
 }
 
 func TestFabricL2Connection_flattenSecondary(t *testing.T) {
-	//given
+	// given
 	input := &ecx.L2Connection{
 		UUID:             ecx.String(randString(36)),
 		Name:             ecx.String(randString(36)),
@@ -168,19 +168,20 @@ func TestFabricL2Connection_flattenSecondary(t *testing.T) {
 			ecxL2ConnectionSchemaNames["AuthorizationKey"]:  input.AuthorizationKey,
 			ecxL2ConnectionSchemaNames["RedundantUUID"]:     input.RedundantUUID,
 			ecxL2ConnectionSchemaNames["RedundancyType"]:    input.RedundancyType,
+			ecxL2ConnectionSchemaNames["Actions"]:           []interface{}{},
 		},
 	}
 
-	//when
+	// when
 	out := flattenECXL2ConnectionSecondary(previousInput, input)
 
-	//then
+	// then
 	assert.NotNil(t, out, "Output is not nil")
 	assert.Equal(t, expected, out, "Output matches expected result")
 }
 
 func TestFabricL2Connection_expandSecondary(t *testing.T) {
-	//given
+	// given
 	input := []interface{}{
 		map[string]interface{}{
 			ecxL2ConnectionSchemaNames["Name"]:              "testName",
@@ -212,16 +213,16 @@ func TestFabricL2Connection_expandSecondary(t *testing.T) {
 		AuthorizationKey:  ecx.String(input[0].(map[string]interface{})[ecxL2ConnectionSchemaNames["AuthorizationKey"]].(string)),
 	}
 
-	//when
+	// when
 	out := expandECXL2ConnectionSecondary(input)
 
-	//then
+	// then
 	assert.NotNil(t, out, "Output is not empty")
 	assert.Equal(t, expected, out, "Output matches expected result")
 }
 
 func TestFabricL2Connection_flattenAdditionalInfo(t *testing.T) {
-	//given
+	// given
 	input := []ecx.L2ConnectionAdditionalInfo{
 		{
 			Name:  ecx.String(randString(32)),
@@ -234,9 +235,9 @@ func TestFabricL2Connection_flattenAdditionalInfo(t *testing.T) {
 			ecxL2ConnectionAdditionalInfoSchemaNames["Value"]: input[0].Value,
 		},
 	}
-	//when
+	// when
 	out := flattenECXL2ConnectionAdditionalInfo(input)
-	//then
+	// then
 	assert.NotNil(t, out, "Output is not empty")
 	assert.Equal(t, expected, out, "Output matches expected result")
 }
@@ -246,7 +247,7 @@ func TestFabricL2Connection_expandAdditionalInfo(t *testing.T) {
 		str := fmt.Sprintf("%v", i)
 		return schema.HashString(str)
 	}
-	//given
+	// given
 	input := schema.NewSet(f, []interface{}{
 		map[string]interface{}{
 			ecxL2ConnectionAdditionalInfoSchemaNames["Name"]:  randString(36),
@@ -260,9 +261,50 @@ func TestFabricL2Connection_expandAdditionalInfo(t *testing.T) {
 			Value: ecx.String(inputList[0].(map[string]interface{})[ecxL2ConnectionAdditionalInfoSchemaNames["Value"]].(string)),
 		},
 	}
-	//when
+	// when
 	out := expandECXL2ConnectionAdditionalInfo(input)
-	//then
+	// then
+	assert.NotNil(t, out, "Output is not empty")
+	assert.Equal(t, expected, out, "Output matches expected result")
+}
+
+func TestFabricL2Connection_flattenActions(t *testing.T) {
+	// given
+	input := []ecx.L2ConnectionAction{
+		{
+			Type:        ecx.String(randString(32)),
+			OperationID: ecx.String(randString(32)),
+			Message:     ecx.String(randString(32)),
+			RequiredData: []ecx.L2ConnectionActionData{
+				{
+					Key:               ecx.String(randString(10)),
+					Label:             ecx.String(randString(10)),
+					Value:             ecx.String(randString(10)),
+					IsEditable:        ecx.Bool(true),
+					ValidationPattern: ecx.String(randString(10)),
+				},
+			},
+		},
+	}
+	expected := []interface{}{
+		map[string]interface{}{
+			ecxL2ConnectionActionsSchemaNames["Type"]:        input[0].Type,
+			ecxL2ConnectionActionsSchemaNames["OperationID"]: input[0].OperationID,
+			ecxL2ConnectionActionsSchemaNames["Message"]:     input[0].Message,
+			ecxL2ConnectionActionsSchemaNames["RequiredData"]: []interface{}{
+				map[string]interface{}{
+					ecxL2ConnectionActionDataSchemaNames["Key"]:               input[0].RequiredData[0].Key,
+					ecxL2ConnectionActionDataSchemaNames["Label"]:             input[0].RequiredData[0].Label,
+					ecxL2ConnectionActionDataSchemaNames["Value"]:             input[0].RequiredData[0].Value,
+					ecxL2ConnectionActionDataSchemaNames["IsEditable"]:        input[0].RequiredData[0].IsEditable,
+					ecxL2ConnectionActionDataSchemaNames["ValidationPattern"]: input[0].RequiredData[0].ValidationPattern,
+				},
+			},
+		},
+	}
+	// when
+	out := flattenECXL2ConnectionActions(input)
+	// then
 	assert.NotNil(t, out, "Output is not empty")
 	assert.Equal(t, expected, out, "Output matches expected result")
 }
@@ -299,16 +341,16 @@ func (m *mockedL2ConnectionUpdateRequest) Execute() error {
 }
 
 func TestFabricL2Connection_fillUpdateRequest(t *testing.T) {
-	//given
+	// given
 	updateReq := mockedL2ConnectionUpdateRequest{}
 	changes := map[string]interface{}{
 		ecxL2ConnectionSchemaNames["Name"]:      randString(32),
 		ecxL2ConnectionSchemaNames["Speed"]:     50,
 		ecxL2ConnectionSchemaNames["SpeedUnit"]: "MB",
 	}
-	//when
+	// when
 	fillFabricL2ConnectionUpdateRequest(&updateReq, changes)
-	//then
+	// then
 	assert.Equal(t, changes[ecxL2ConnectionSchemaNames["Name"]], updateReq.name, "Update request name matches")
 	assert.Equal(t, changes[ecxL2ConnectionSchemaNames["Speed"]], updateReq.speed, "Update request speed matches")
 	assert.Equal(t, changes[ecxL2ConnectionSchemaNames["SpeedUnit"]], updateReq.speedUnit, "Update speed unit matches")

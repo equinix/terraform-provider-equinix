@@ -8,7 +8,7 @@ import (
 )
 
 func TestRetrieveAWSCredentials_Basic(t *testing.T) {
-	//Given
+	// Given
 	key := "testKey"
 	secret := "testSecret"
 	profileName := "testProfile"
@@ -19,10 +19,10 @@ func TestRetrieveAWSCredentials_Basic(t *testing.T) {
 			ecxL2ConnectionAccepterSchemaNames["Profile"]:   profileName,
 		})
 
-	//when
+	// when
 	creds, err := retrieveAWSCredentials(d)
 
-	//then
+	// then
 	assert.Nil(t, err, "Error is not returned")
 	assert.NotNil(t, creds, "Credentials value is returned")
 	assert.Equal(t, key, creds.AccessKeyID, "AccessKeyID matches")
