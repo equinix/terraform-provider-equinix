@@ -555,10 +555,10 @@ func resourceECXL2ConnectionCreate(ctx context.Context, d *schema.ResourceData, 
 	conf := m.(*Config)
 	var diags diag.Diagnostics
 	primary, secondary := createECXL2Connections(d)
-	var primaryID *string
+	var primaryID, secondaryID *string
 	var err error
 	if secondary != nil {
-		primaryID, _, err = conf.ecx.CreateL2RedundantConnection(*primary, *secondary)
+		primaryID, secondaryID, err = conf.ecx.CreateL2RedundantConnection(*primary, *secondary)
 	} else {
 		primaryID, err = conf.ecx.CreateL2Connection(*primary)
 	}
@@ -590,6 +590,19 @@ func resourceECXL2ConnectionCreate(ctx context.Context, d *schema.ResourceData, 
 	}
 	if _, err := createStateConf.WaitForStateContext(ctx); err != nil {
 		return diag.Errorf("error waiting for connection (%s) to be created: %s", d.Id(), err)
+	}
+	if ecx.StringValue(secondaryID) != "" {
+		createStateConf.Refresh = func() (interface{}, string, error) {
+			resp, err := conf.ecx.GetL2Connection(ecx.StringValue(secondaryID))
+			if err != nil {
+				return nil, "", err
+			}
+			return resp, ecx.StringValue(resp.Status), nil
+		}
+
+		if _, err := createStateConf.WaitForStateContext(ctx); err != nil {
+			return diag.Errorf("error waiting for secondary connection (%s) to be created: %s", d.Id(), err)
+		}
 	}
 	diags = append(diags, resourceECXL2ConnectionRead(ctx, d, m)...)
 	return diags
