@@ -13,15 +13,15 @@ import (
 )
 
 const (
-	priPortEnvVar    = "TF_ACC_FABRIC_PRI_PORT_NAME"
-	secPortEnvVar    = "TF_ACC_FABRIC_SEC_PORT_NAME"
-	awsSpEnvVar      = "TF_ACC_FABRIC_AWS_L2_SP_NAME"
-	awsAuthKeyEnvVar = "TF_ACC_FABRIC_AWS_AUTH_KEY"
-	azureSpEnvVar    = "TF_ACC_FABRIC_AZURE_L2_SP_NAME"
-	gcpOneSpEnvVar   = "TF_ACC_FABRIC_GCP1_L2_SP_NAME"
-	gcpTwoSpEnvVar   = "TF_ACC_FABRIC_GCP2_L2_SP_NAME"
+	priPortEnvVar  			= "TF_ACC_FABRIC_PRI_PORT_NAME"
+	secPortEnvVar  			= "TF_ACC_FABRIC_SEC_PORT_NAME"
+	awsSpEnvVar    			= "TF_ACC_FABRIC_L2_AWS_SP_NAME"
+	awsAuthKeyEnvVar 		= "TF_ACC_FABRIC_L2_AWS_ACCOUNT_ID"
+	azureSpEnvVar  			= "TF_ACC_FABRIC_L2_AZURE_SP_NAME"
+	azureXRServiceKeyEnvVar	= "TF_ACC_FABRIC_L2_AZURE_XROUTE_SERVICE_KEY"
+	gcpOneSpEnvVar 			= "TF_ACC_FABRIC_L2_GCP1_SP_NAME"
+	gcpTwoSpEnvVar 			= "TF_ACC_FABRIC_L2_GCP2_SP_NAME"
 )
-
 func init() {
 	resource.AddTestSweepers("ECXL2Connection", &resource.Sweeper{
 		Name: "ECXL2Connection",
@@ -215,7 +215,7 @@ func TestAccFabricL2Connection_Device_HA_GCP(t *testing.T) {
 		"connection-notifications":                 []string{"marry@equinix.com", "john@equinix.com"},
 		"connection-purchase_order_number":         randString(10),
 		"connection-seller_metro_code":             "SV",
-		"connection-seller_region":                 "us-west1",
+		"connection-seller_region":                 "us-west-1",
 		"connection-authorization_key":             "131f5adc-021d-4fe1-fff3-4019be1d6ef7/us-west1/1",
 		"connection-device_interface_id":           5,
 		"connection-secondary_name":                fmt.Sprintf("%s-%s", tstResourcePrefix, randString(6)),
