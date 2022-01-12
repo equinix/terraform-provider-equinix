@@ -13,14 +13,16 @@ import (
 )
 
 const (
-	priPortEnvVar  			= "TF_ACC_FABRIC_PRI_PORT_NAME"
-	secPortEnvVar  			= "TF_ACC_FABRIC_SEC_PORT_NAME"
-	awsSpEnvVar    			= "TF_ACC_FABRIC_L2_AWS_SP_NAME"
-	awsAuthKeyEnvVar 		= "TF_ACC_FABRIC_L2_AWS_ACCOUNT_ID"
-	azureSpEnvVar  			= "TF_ACC_FABRIC_L2_AZURE_SP_NAME"
-	azureXRServiceKeyEnvVar	= "TF_ACC_FABRIC_L2_AZURE_XROUTE_SERVICE_KEY"
-	gcpOneSpEnvVar 			= "TF_ACC_FABRIC_L2_GCP1_SP_NAME"
-	gcpTwoSpEnvVar 			= "TF_ACC_FABRIC_L2_GCP2_SP_NAME"
+	priPortEnvVar              = "TF_ACC_FABRIC_PRI_PORT_NAME"
+	secPortEnvVar              = "TF_ACC_FABRIC_SEC_PORT_NAME"
+	awsSpEnvVar                = "TF_ACC_FABRIC_L2_AWS_SP_NAME"
+	awsAuthKeyEnvVar           = "TF_ACC_FABRIC_L2_AWS_ACCOUNT_ID"
+	azureSpEnvVar              = "TF_ACC_FABRIC_L2_AZURE_SP_NAME"
+	azureXRServiceKeyEnvVar    = "TF_ACC_FABRIC_L2_AZURE_XROUTE_SERVICE_KEY"
+	gcpOneSpEnvVar             = "TF_ACC_FABRIC_L2_GCP1_SP_NAME"
+	gcpOneConnServiceKeyEnvVar = "TF_ACC_FABRIC_L2_GCP1_INTERCONN_SERVICE_KEY"
+	gcpTwoSpEnvVar             = "TF_ACC_FABRIC_L2_GCP2_SP_NAME"
+	gcpTwoConnServiceKeyEnvVar = "TF_ACC_FABRIC_L2_GCP2_INTERCONN_SERVICE_KEY"
 )
 func init() {
 	resource.AddTestSweepers("ECXL2Connection", &resource.Sweeper{
@@ -184,6 +186,8 @@ func TestAccFabricL2Connection_Device_HA_GCP(t *testing.T) {
 	deviceMetro, _ := schema.EnvDefaultFunc(networkDeviceMetroEnvVar, "SV")()
 	priSPName, _ := schema.EnvDefaultFunc(gcpOneSpEnvVar, "Google Cloud Partner Interconnect Zone 1")()
 	secSPName, _ := schema.EnvDefaultFunc(gcpTwoSpEnvVar, "Google Cloud Partner Interconnect Zone 2")()
+	priServiceKey, _ := schema.EnvDefaultFunc(gcpOneConnServiceKeyEnvVar, "Interconnect-ServiceKey")()
+	secServiceKey, _ := schema.EnvDefaultFunc(gcpTwoConnServiceKeyEnvVar, "Interconnect-ServiceKey")()
 	accountName, _ := schema.EnvDefaultFunc(networkDeviceAccountNameEnvVar, "")()
 	context := map[string]interface{}{
 		"device-resourceName":                      "test",
@@ -215,16 +219,16 @@ func TestAccFabricL2Connection_Device_HA_GCP(t *testing.T) {
 		"connection-notifications":                 []string{"marry@equinix.com", "john@equinix.com"},
 		"connection-purchase_order_number":         randString(10),
 		"connection-seller_metro_code":             "SV",
-		"connection-seller_region":                 "us-west-1",
-		"connection-authorization_key":             "131f5adc-021d-4fe1-fff3-4019be1d6ef7/us-west1/1",
+		"connection-seller_region":                 "us-west2",
+		"connection-authorization_key":             priServiceKey.(string),
 		"connection-device_interface_id":           5,
 		"connection-secondary_name":                fmt.Sprintf("%s-%s", tstResourcePrefix, randString(6)),
 		"connection-secondary_profile_name":        secSPName.(string),
 		"connection-secondary_speed":               100,
 		"connection-secondary_speed_unit":          "MB",
 		"connection-secondary_seller_metro_code":   "SV",
-		"connection-secondary_seller_region":       "us-west1",
-		"connection-secondary_authorization_key":   "531ba3dc-121d-5ee1-acf3-402343ac3af7/us-west1/2",
+		"connection-secondary_seller_region":       "us-west2",
+		"connection-secondary_authorization_key":   secServiceKey.(string),
 		"connection-secondary_device_interface_id": 5,
 	}
 	connResourceName := fmt.Sprintf("equinix_ecx_l2_connection.%s", context["connection-resourceName"].(string))
@@ -247,6 +251,7 @@ func TestAccFabricL2Connection_Device_HA_GCP(t *testing.T) {
 				ResourceName:      connResourceName,
 				ImportState:       true,
 				ImportStateVerify: true,
+				ImportStateVerifyIgnore: []string{"device_interface_id", "secondary_connection.0.device_interface_id"},
 			},
 		},
 	})
@@ -307,9 +312,6 @@ func testAccFabricL2ConnectionAttributes(conn *ecx.L2Connection, ctx map[string]
 		if v, ok := ctx["connection-purchase_order_number"]; ok && ecx.StringValue(conn.PurchaseOrderNumber) != v.(string) {
 			return fmt.Errorf("purchaseOrderNumber does not match %v - %v", ecx.StringValue(conn.PurchaseOrderNumber), v)
 		}
-		if v, ok := ctx["connection-device_interface_id"]; ok && ecx.IntValue(conn.DeviceInterfaceID) != v.(int) {
-			return fmt.Errorf("deviceInterfaceID does not match %v - %v", ecx.IntValue(conn.DeviceInterfaceID), v)
-		}
 		if v, ok := ctx["connection-vlan_stag"]; ok && ecx.IntValue(conn.VlanSTag) != v.(int) {
 			return fmt.Errorf("vlanSTag does not match %v - %v", ecx.IntValue(conn.VlanSTag), v)
 		}
@@ -351,9 +353,6 @@ func testAccFabricL2ConnectionSecondaryAttributes(conn *ecx.L2Connection, ctx ma
 		}
 		if v, ok := ctx["connection-secondary_speed_unit"]; ok && ecx.StringValue(conn.SpeedUnit) != v.(string) {
 			return fmt.Errorf("connection secondary speed unit does not match %v - %v", ecx.StringValue(conn.SpeedUnit), v)
-		}
-		if v, ok := ctx["connection-secondary_device_interface_id"]; ok && ecx.IntValue(conn.DeviceInterfaceID) != v.(int) {
-			return fmt.Errorf("connection secondary device interface id does not match %v - %v", ecx.IntValue(conn.DeviceInterfaceID), v)
 		}
 		if v, ok := ctx["connection-secondary_vlan_stag"]; ok && ecx.IntValue(conn.VlanSTag) != v.(int) {
 			return fmt.Errorf("connection secondary vlanSTag does not match %v - %v", ecx.IntValue(conn.VlanSTag), v)
