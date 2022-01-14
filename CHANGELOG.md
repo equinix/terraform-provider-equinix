@@ -1,6 +1,33 @@
-## 1.4.0 (UNRELEASED)
+## 1.5.0 (UNRELEASED)
 
-## 1.3.0 (November, 18, 2021)
+## 1.4.0 (January 14, 2022)
+
+NOTES:
+
+* `equinix_acl_template` argument `metro_code` is now deprecated [#67](https://github.com/equinix/terraform-provider-equinix/pull/67)
+* `equinix_acl_template` argument `inbound_rule.#.subnets` is now deprecated [#67](https://github.com/equinix/terraform-provider-equinix/pull/67)
+* `equinix_acl_template` attribute `device_id` is now deprecated [#67](https://github.com/equinix/terraform-provider-equinix/pull/67)
+* `equinix_ecx_l2_connection_accepter` is now deprecated [#64](https://github.com/equinix/terraform-provider-equinix/pull/64)
+* `equinix_network_device_link` argument `device.interface_id` changes taint the resource [#77](https://github.com/equinix/terraform-provider-equinix/pull/77)
+* `equinix_network_device_link` attribute `link.src_zone_code` is now deprecated and optional [#77](https://github.com/equinix/terraform-provider-equinix/pull/77)
+* `equinix_network_device_link` attribute `link.dest_zone_code` is now deprecated and optional [#77](https://github.com/equinix/terraform-provider-equinix/pull/77)
+
+BUG FIXES:
+
+* `equinix_ecx_l2_connection` will wait for the secondary connection [#87](https://github.com/equinix/terraform-provider-equinix/pull/87)
+* `equinix_network_device_link` no longer jitters on zone code fields [#77](https://github.com/equinix/terraform-provider-equinix/pull/77)
+
+ENHANCEMENTS:
+
+* `equinix_acl_template` attribute `device_details` (`uuid`, `name`, `acl_status`) was added [#67](https://github.com/equinix/terraform-provider-equinix/pull/67)
+* `equinix_ecx_l2_connection` attribute `actions` was added [#86](https://github.com/equinix/terraform-provider-equinix/pull/86)
+* `equinix_network_device_link` argument `device.asn` is now optional [#77](https://github.com/equinix/terraform-provider-equinix/pull/77)
+* `equinix_network_device_link` argument `device.subnet` is now optional [#77](https://github.com/equinix/terraform-provider-equinix/pull/77)
+* Fix connectivity example to establish an Azure connection [#71](https://github.com/equinix/terraform-provider-equinix/pull/71)
+* replace Travis CI with GitHub Workflows [#65](https://github.com/equinix/terraform-provider-equinix/pull/65)
+* update go modules and update go to 1.17 [#63](https://github.com/equinix/terraform-provider-equinix/pull/63)
+
+## 1.3.0 (November 18, 2021)
 
 BUG FIXES:
 
