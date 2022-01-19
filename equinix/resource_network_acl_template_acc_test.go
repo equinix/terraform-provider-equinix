@@ -168,9 +168,6 @@ func testAccNetworkACLTemplateAttributes(template *ne.ACLTemplate, ctx map[strin
 			if ne.IntValue(template.InboundRules[i].SeqNo) != i+1 {
 				return fmt.Errorf("inbound_rule %d seqNo does not match %v - %v", i+1, ne.IntValue(template.InboundRules[i].SeqNo), i+1)
 			}
-			if ne.StringValue(template.InboundRules[i].SrcType) != "SUBNET" {
-				return fmt.Errorf("inbound_rule %d srcType does not match %v - %v", i+1, ne.StringValue(template.InboundRules[i].SrcType), "SUBNET")
-			}
 			if v, ok := ctx[fmt.Sprintf("inbound_rule_%d_subnet", i+1)]; ok && ne.StringValue(template.InboundRules[i].Subnet) != v.(string) {
 				return fmt.Errorf("inbound_rule %d subnet does not match %v - %v", i+1, ne.StringValue(template.InboundRules[i].Subnet), v)
 			}
