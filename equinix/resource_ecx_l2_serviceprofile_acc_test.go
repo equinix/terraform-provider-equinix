@@ -51,7 +51,7 @@ func TestAccFabricL2ServiceProfile_Private(t *testing.T) {
 				ResourceName:      resourceName,
 				ImportState:       true,
 				ImportStateVerify: true,
-				ImportStateVerifyIgnore: []string{"private_user_emails"},
+				ImportStateVerifyIgnore: []string{"private_user_emails", "features.0.test_profile"},
 			},
 		},
 	})
