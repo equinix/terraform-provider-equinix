@@ -38,7 +38,7 @@ func TestFabricL2ServiceProfile_createFromResourceData(t *testing.T) {
 	d.Set(ecxL2ServiceProfileSchemaNames["OnVcApprovalRejectionNotification"], testEmails)
 	d.Set(ecxL2ServiceProfileSchemaNames["PrivateUserEmails"], testEmails)
 	d.Set(ecxL2ServiceProfileSchemaNames["Features"], flattenECXL2ServiceProfileFeatures(
-		ecx.L2ServiceProfileFeatures{CloudReach: ecx.Bool(true), TestProfile: ecx.Bool(true)},
+		&ecx.L2ServiceProfileFeatures{CloudReach: ecx.Bool(true), TestProfile: ecx.Bool(true)},
 		ecx.L2ServiceProfileFeatures{CloudReach: ecx.Bool(true), TestProfile: ecx.Bool(false)},
 	))
 	d.Set(ecxL2ServiceProfileSchemaNames["Port"], flattenECXL2ServiceProfilePorts([]ecx.L2ServiceProfilePort{
@@ -127,7 +127,6 @@ func TestFabricL2ServiceProfile_updateResourceData(t *testing.T) {
 		Description:                         ecx.String("testDescription"),
 		Features: ecx.L2ServiceProfileFeatures{
 			CloudReach:  ecx.Bool(true),
-			TestProfile: ecx.Bool(true),
 		},
 		Ports: []ecx.L2ServiceProfilePort{
 			{

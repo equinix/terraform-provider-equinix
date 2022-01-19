@@ -563,9 +563,10 @@ func updateECXL2ServiceProfileResource(profile *ecx.L2ServiceProfile, d *schema.
 	if err := d.Set(ecxL2ServiceProfileSchemaNames["VlanSameAsPrimary"], profile.VlanSameAsPrimary); err != nil {
 		return fmt.Errorf("error reading VlanSameAsPrimary: %s", err)
 	}
-	var prevFeatures ecx.L2ServiceProfileFeatures
+	var prevFeatures *ecx.L2ServiceProfileFeatures
 	if v, ok := d.GetOk(ecxL2ServiceProfileSchemaNames["Features"]); ok {
-		prevFeatures = expandECXL2ServiceProfileFeatures(v.(*schema.Set).List())
+		expandedFeatures := expandECXL2ServiceProfileFeatures(v.(*schema.Set).List())
+		prevFeatures = &expandedFeatures
 	}
 	if err := d.Set(ecxL2ServiceProfileSchemaNames["Features"], flattenECXL2ServiceProfileFeatures(prevFeatures, profile.Features)); err != nil {
 		return fmt.Errorf("error reading Features: %s", err)
@@ -579,10 +580,12 @@ func updateECXL2ServiceProfileResource(profile *ecx.L2ServiceProfile, d *schema.
 	return nil
 }
 
-func flattenECXL2ServiceProfileFeatures(previous, features ecx.L2ServiceProfileFeatures) interface{} {
+func flattenECXL2ServiceProfileFeatures(previous *ecx.L2ServiceProfileFeatures, features ecx.L2ServiceProfileFeatures) interface{} {
 	transformed := make(map[string]interface{})
 	transformed[ecxL2ServiceProfileFeaturesSchemaNames["CloudReach"]] = features.CloudReach
-	transformed[ecxL2ServiceProfileFeaturesSchemaNames["TestProfile"]] = previous.TestProfile
+	if previous != nil {
+		transformed[ecxL2ServiceProfileFeaturesSchemaNames["TestProfile"]] = previous.TestProfile
+	}
 	return []map[string]interface{}{transformed}
 }
 
@@ -614,9 +617,6 @@ func expandECXL2ServiceProfileFeatures(features []interface{}) ecx.L2ServiceProf
 		feature := features[0].(map[string]interface{})
 		if v, ok := feature[ecxL2ServiceProfileFeaturesSchemaNames["CloudReach"]]; ok {
 			transformed.CloudReach = ecx.Bool(v.(bool))
-		}
-		if v, ok := feature[ecxL2ServiceProfileFeaturesSchemaNames["TestProfile"]]; ok {
-			transformed.TestProfile = ecx.Bool(v.(bool))
 		}
 	}
 	return transformed
