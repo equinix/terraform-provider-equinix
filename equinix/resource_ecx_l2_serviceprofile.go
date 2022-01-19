@@ -286,8 +286,9 @@ func createECXL2ServiceProfileResourceSchema() map[string]*schema.Schema {
 					},
 					ecxL2ServiceProfileFeaturesSchemaNames["TestProfile"]: {
 						Type:        schema.TypeBool,
-						Required:    true,
+						Optional:    true,
 						Description: ecxL2ServiceProfileFeaturesDescriptions["TestProfile"],
+						Deprecated:  "TestProfile is no longer required and will be removed in a future release",
 					},
 				},
 			},
@@ -469,7 +470,7 @@ func createECXL2ServiceProfile(d *schema.ResourceData) *ecx.L2ServiceProfile {
 	if v, ok := d.GetOk(ecxL2ServiceProfileSchemaNames["Features"]); ok {
 		featureSet := v.(*schema.Set)
 		if featureSet.Len() > 0 {
-			profile.Features = expandECXL2ServiceProfileFeatures(featureSet)[0]
+			profile.Features = expandECXL2ServiceProfileFeatures(featureSet.List())
 		}
 	}
 	if v, ok := d.GetOk(ecxL2ServiceProfileSchemaNames["Port"]); ok {
@@ -539,6 +540,14 @@ func updateECXL2ServiceProfileResource(profile *ecx.L2ServiceProfile, d *schema.
 	if err := d.Set(ecxL2ServiceProfileSchemaNames["Private"], profile.Private); err != nil {
 		return fmt.Errorf("error reading Private: %s", err)
 	}
+	// API accepts capitalizations of the private user emails and converts it to a lowercase string
+	// If API retuns same emails in lowercase we keep to suppress diff
+	if v, ok := d.GetOk(ecxL2ServiceProfileSchemaNames["PrivateUserEmails"]); ok {
+		prevPrivateUserEmails := expandSetToStringList(v.(*schema.Set))
+		if slicesMatchCaseInsensitive(prevPrivateUserEmails, profile.PrivateUserEmails) {
+			profile.PrivateUserEmails = prevPrivateUserEmails
+		}
+	}
 	if err := d.Set(ecxL2ServiceProfileSchemaNames["PrivateUserEmails"], profile.PrivateUserEmails); err != nil {
 		return fmt.Errorf("error reading PrivateUserEmails: %s", err)
 	}
@@ -554,7 +563,11 @@ func updateECXL2ServiceProfileResource(profile *ecx.L2ServiceProfile, d *schema.
 	if err := d.Set(ecxL2ServiceProfileSchemaNames["VlanSameAsPrimary"], profile.VlanSameAsPrimary); err != nil {
 		return fmt.Errorf("error reading VlanSameAsPrimary: %s", err)
 	}
-	if err := d.Set(ecxL2ServiceProfileSchemaNames["Features"], flattenECXL2ServiceProfileFeatures(profile.Features)); err != nil {
+	var prevFeatures ecx.L2ServiceProfileFeatures
+	if v, ok := d.GetOk(ecxL2ServiceProfileSchemaNames["Features"]); ok {
+		prevFeatures = expandECXL2ServiceProfileFeatures(v.(*schema.Set).List())
+	}
+	if err := d.Set(ecxL2ServiceProfileSchemaNames["Features"], flattenECXL2ServiceProfileFeatures(prevFeatures, profile.Features)); err != nil {
 		return fmt.Errorf("error reading Features: %s", err)
 	}
 	if err := d.Set(ecxL2ServiceProfileSchemaNames["Port"], flattenECXL2ServiceProfilePorts(profile.Ports)); err != nil {
@@ -566,10 +579,10 @@ func updateECXL2ServiceProfileResource(profile *ecx.L2ServiceProfile, d *schema.
 	return nil
 }
 
-func flattenECXL2ServiceProfileFeatures(features ecx.L2ServiceProfileFeatures) interface{} {
+func flattenECXL2ServiceProfileFeatures(previous, features ecx.L2ServiceProfileFeatures) interface{} {
 	transformed := make(map[string]interface{})
 	transformed[ecxL2ServiceProfileFeaturesSchemaNames["CloudReach"]] = features.CloudReach
-	transformed[ecxL2ServiceProfileFeaturesSchemaNames["TestProfile"]] = features.TestProfile
+	transformed[ecxL2ServiceProfileFeaturesSchemaNames["TestProfile"]] = previous.TestProfile
 	return []map[string]interface{}{transformed}
 }
 
@@ -595,14 +608,16 @@ func flattenECXL2ServiceProfileSpeedBands(bands []ecx.L2ServiceProfileSpeedBand)
 	return transformed
 }
 
-func expandECXL2ServiceProfileFeatures(features *schema.Set) []ecx.L2ServiceProfileFeatures {
-	transformed := make([]ecx.L2ServiceProfileFeatures, 0, features.Len())
-	for _, feature := range features.List() {
-		featureMap := feature.(map[string]interface{})
-		transformed = append(transformed, ecx.L2ServiceProfileFeatures{
-			CloudReach:  ecx.Bool(featureMap[ecxL2ServiceProfileFeaturesSchemaNames["CloudReach"]].(bool)),
-			TestProfile: ecx.Bool(featureMap[ecxL2ServiceProfileFeaturesSchemaNames["TestProfile"]].(bool)),
-		})
+func expandECXL2ServiceProfileFeatures(features []interface{}) ecx.L2ServiceProfileFeatures {
+	transformed := ecx.L2ServiceProfileFeatures{}
+	if len(features) > 0 {
+		feature := features[0].(map[string]interface{})
+		if v, ok := feature[ecxL2ServiceProfileFeaturesSchemaNames["CloudReach"]]; ok {
+			transformed.CloudReach = ecx.Bool(v.(bool))
+		}
+		if v, ok := feature[ecxL2ServiceProfileFeaturesSchemaNames["TestProfile"]]; ok {
+			transformed.TestProfile = ecx.Bool(v.(bool))
+		}
 	}
 	return transformed
 }

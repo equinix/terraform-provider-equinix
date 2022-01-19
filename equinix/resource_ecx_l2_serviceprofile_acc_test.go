@@ -51,6 +51,7 @@ func TestAccFabricL2ServiceProfile_Private(t *testing.T) {
 				ResourceName:      resourceName,
 				ImportState:       true,
 				ImportStateVerify: true,
+				ImportStateVerifyIgnore: []string{"private_user_emails"},
 			},
 		},
 	})
@@ -131,7 +132,7 @@ func testAccECXL2ServiceProfileAttributes(profile *ecx.L2ServiceProfile, ctx map
 		if v, ok := ctx["private"]; ok && ecx.BoolValue(profile.Private) != v.(bool) {
 			return fmt.Errorf("private does not match %v - %v", ecx.BoolValue(profile.Private), v)
 		}
-		if v, ok := ctx["private_user_emails"]; ok && !slicesMatch(profile.PrivateUserEmails, v.([]string)) {
+		if v, ok := ctx["private_user_emails"]; ok && !slicesMatchCaseInsensitive(profile.PrivateUserEmails, v.([]string)) {
 			return fmt.Errorf("private_user_emails does not match %v - %v", profile.PrivateUserEmails, v)
 		}
 		if v, ok := ctx["redundancy_required"]; ok && ecx.BoolValue(profile.RequiredRedundancy) != v.(bool) {
@@ -148,9 +149,6 @@ func testAccECXL2ServiceProfileAttributes(profile *ecx.L2ServiceProfile, ctx map
 		}
 		if v, ok := ctx["features_cloud_reach"]; ok && ecx.BoolValue(profile.Features.CloudReach) != v.(bool) {
 			return fmt.Errorf("features.cloud_reach does not match %v - %v", ecx.BoolValue(profile.Features.CloudReach), v)
-		}
-		if v, ok := ctx["features_test_profile"]; ok && ecx.BoolValue(profile.Features.TestProfile) != v.(bool) {
-			return fmt.Errorf("features.test_profile does not match %v - %v", ecx.BoolValue(profile.Features.TestProfile), v)
 		}
 		if len(profile.Ports) != 2 {
 			return fmt.Errorf("ports.# length does not match %v - %v", len(profile.Ports), 2)

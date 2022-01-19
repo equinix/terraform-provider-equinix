@@ -121,7 +121,7 @@ will receive notifications about connections approvals and rejections
 - `features` - (Required) Block of profile features configuration
   - `allow_remote_connections` - (Required) indicates whether or not connections
     to this profile can be created from remote metro locations
-  - `test_profile` - (Required) indicates whether or not this profile can be used
+  - `test_profile` - (Deprecated) indicates whether or not this profile can be used
     for test connections
 - `port` - (Required) One or more definitions of ports residing in locations,
   from which your customers will be able to access services using given profile
