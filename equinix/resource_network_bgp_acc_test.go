@@ -13,10 +13,13 @@ import (
 func TestAccNetworkBGP_CSR1000V_Single_AWS(t *testing.T) {
 	metro, _ := schema.EnvDefaultFunc(networkDeviceMetroEnvVar, "SV")()
 	spName, _ := schema.EnvDefaultFunc(awsSpEnvVar, "AWS Direct Connect")()
+	authKey, _ := schema.EnvDefaultFunc(awsAuthKeyEnvVar, "123456789012")()
+	accountName, _ := schema.EnvDefaultFunc(networkDeviceAccountNameEnvVar, "")()
 	context := map[string]interface{}{
 		"device-resourceName":          "test",
-		"device-self_managed":          true,
-		"device-byol":                  true,
+		"device-account_name":          accountName.(string),
+		"device-self_managed":          false,
+		"device-byol":                  false,
 		"device-name":                  fmt.Sprintf("%s-%s", tstResourcePrefix, randString(6)),
 		"device-throughput":            500,
 		"device-throughput_unit":       "Mbps",
@@ -28,9 +31,9 @@ func TestAccNetworkBGP_CSR1000V_Single_AWS(t *testing.T) {
 		"device-term_length":           1,
 		"device-version":               "16.09.05",
 		"device-core_count":            2,
-		"sshkey-resourceName":          "test",
-		"sshkey-name":                  fmt.Sprintf("%s-%s", tstResourcePrefix, randString(6)),
-		"sshkey-public_key":            "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQCXdzXBHaVpKpdO0udnB+4JOgUq7APO2rPXfrevvlZrps98AtlwXXVWZ5duRH5NFNfU4G9HCSiAPsebgjY0fG85tcShpXfHfACLt0tBW8XhfLQP2T6S50FQ1brBdURMDCMsD7duOXqvc0dlbs2/KcswHvuUmqVzob3bz7n1bQ48wIHsPg4ARqYhy5LN3OkllJH/6GEfqi8lKZx01/P/gmJMORcJujuOyXRB+F2iXBVYdhjML3Qg4+tEekBcVZOxUbERRZ0pvQ52Y6wUhn2VsjljixyqeOdmD0m6DayDQgSWms6bKPpBqN7zhXXk4qe8bXT4tQQba65b2CQ2A91jw2KgM/YZNmjyUJ+Rf1cQosJf9twqbAZDZ6rAEmj9zzvQ5vD/CGuzxdVMkePLlUK4VGjPu7cVzhXrnq4318WqZ5/lNiCST8NQ0fssChN8ANUzr/p/wwv3faFMVNmjxXTZMsbMFT/fbb2MVVuqNFN65drntlg6/xEao8gZROuRYiakBx8= user@host",
+		"user-resourceName":            "test",
+		"user-username":                fmt.Sprintf("%s-%s", tstResourcePrefix, randString(6)),
+		"user-password":                randString(10),
 		"connection-resourceName":      "test",
 		"connection-name":              fmt.Sprintf("%s-%s", tstResourcePrefix, randString(6)),
 		"connection-profile_name":      spName.(string),
@@ -39,7 +42,7 @@ func TestAccNetworkBGP_CSR1000V_Single_AWS(t *testing.T) {
 		"connection-notifications":     []string{"marry@equinix.com", "john@equinix.com"},
 		"connection-seller_metro_code": "SV",
 		"connection-seller_region":     "us-west-1",
-		"connection-authorization_key": "123456789012",
+		"connection-authorization_key": authKey.(string),
 		"bgp-resourceName":             "test",
 		"bgp-local_ip_address":         "1.1.1.1/30",
 		"bgp-local_asn":                12345,
@@ -55,7 +58,7 @@ func TestAccNetworkBGP_CSR1000V_Single_AWS(t *testing.T) {
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: newTestAccConfig(context).withDevice().withSSHKey().withConnection().withBGP().build(),
+				Config: newTestAccConfig(context).withDevice().withSSHUser().withConnection().withBGP().build(),
 				Check: resource.ComposeTestCheckFunc(
 					testAccNeBGPExists(resourceName, &bgpConfig),
 					testAccNeBGPAttributes(&bgpConfig, context),
@@ -69,7 +72,7 @@ func TestAccNetworkBGP_CSR1000V_Single_AWS(t *testing.T) {
 				ImportStateVerify: true,
 			},
 			{
-				Config: newTestAccConfig(contextWithChanges).withDevice().withSSHKey().withConnection().withBGP().build(),
+				Config: newTestAccConfig(contextWithChanges).withDevice().withSSHUser().withConnection().withBGP().build(),
 				Check: resource.ComposeTestCheckFunc(
 					testAccNeBGPExists(resourceName, &bgpConfig),
 					testAccNeBGPAttributes(&bgpConfig, contextWithChanges),
