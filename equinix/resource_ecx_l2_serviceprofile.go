@@ -583,6 +583,7 @@ func updateECXL2ServiceProfileResource(profile *ecx.L2ServiceProfile, d *schema.
 func flattenECXL2ServiceProfileFeatures(previous *ecx.L2ServiceProfileFeatures, features ecx.L2ServiceProfileFeatures) interface{} {
 	transformed := make(map[string]interface{})
 	transformed[ecxL2ServiceProfileFeaturesSchemaNames["CloudReach"]] = features.CloudReach
+	transformed[ecxL2ServiceProfileFeaturesSchemaNames["TestProfile"]] = features.TestProfile
 	if previous != nil {
 		transformed[ecxL2ServiceProfileFeaturesSchemaNames["TestProfile"]] = previous.TestProfile
 	}
@@ -617,6 +618,9 @@ func expandECXL2ServiceProfileFeatures(features []interface{}) ecx.L2ServiceProf
 		feature := features[0].(map[string]interface{})
 		if v, ok := feature[ecxL2ServiceProfileFeaturesSchemaNames["CloudReach"]]; ok {
 			transformed.CloudReach = ecx.Bool(v.(bool))
+		}
+		if v, ok := feature[ecxL2ServiceProfileFeaturesSchemaNames["TestProfile"]]; ok {
+			transformed.TestProfile = ecx.Bool(v.(bool))
 		}
 	}
 	return transformed
