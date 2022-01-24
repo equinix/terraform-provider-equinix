@@ -1103,7 +1103,7 @@ data "equinix_network_account" "test" {
 	config += nprintf(`
 }`, ctx)
 	if _, ok := ctx["device-secondary_metro_code"]; ok {
-	  config += nprintf(`
+		config += nprintf(`
 data "equinix_network_account" "test-secondary" {
   metro_code = "%{device-secondary_metro_code}"
   status     = "Active"`, ctx)
@@ -1113,7 +1113,7 @@ data "equinix_network_account" "test-secondary" {
 		}
 		config += nprintf(` 
 }`, ctx)
-    }
+	}
 	config += nprintf(`
 resource "equinix_network_device" "%{device-resourceName}" {
   self_managed          = %{device-self_managed}

@@ -6,8 +6,8 @@ import (
 	"net/http"
 	"reflect"
 	"regexp"
-	"time"
 	"strings"
+	"time"
 
 	"github.com/equinix/ecx-go/v2"
 	"github.com/equinix/rest-go"

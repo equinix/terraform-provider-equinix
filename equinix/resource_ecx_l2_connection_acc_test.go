@@ -24,6 +24,7 @@ const (
 	gcpTwoSpEnvVar             = "TF_ACC_FABRIC_L2_GCP2_SP_NAME"
 	gcpTwoConnServiceKeyEnvVar = "TF_ACC_FABRIC_L2_GCP2_INTERCONN_SERVICE_KEY"
 )
+
 func init() {
 	resource.AddTestSweepers("ECXL2Connection", &resource.Sweeper{
 		Name: "ECXL2Connection",
@@ -248,9 +249,9 @@ func TestAccFabricL2Connection_Device_HA_GCP(t *testing.T) {
 				),
 			},
 			{
-				ResourceName:      connResourceName,
-				ImportState:       true,
-				ImportStateVerify: true,
+				ResourceName:            connResourceName,
+				ImportState:             true,
+				ImportStateVerify:       true,
 				ImportStateVerifyIgnore: []string{"device_interface_id", "secondary_connection.0.device_interface_id"},
 			},
 		},
