@@ -7,6 +7,7 @@ import (
 	"reflect"
 	"regexp"
 	"time"
+	"strings"
 
 	"github.com/equinix/ecx-go/v2"
 	"github.com/equinix/rest-go"
@@ -263,6 +264,30 @@ func slicesMatch(s1, s2 []string) bool {
 				continue
 			}
 			if s1[i] == s2[j] {
+				visited[j] = true
+				found = true
+				break
+			}
+		}
+		if !found {
+			return false
+		}
+	}
+	return true
+}
+
+func slicesMatchCaseInsensitive(s1, s2 []string) bool {
+	if len(s1) != len(s2) {
+		return false
+	}
+	visited := make([]bool, len(s1))
+	for i := 0; i < len(s1); i++ {
+		found := false
+		for j := 0; j < len(s2); j++ {
+			if visited[j] {
+				continue
+			}
+			if strings.EqualFold(s1[i], s2[j]) {
 				visited[j] = true
 				found = true
 				break

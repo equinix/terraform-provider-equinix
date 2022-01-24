@@ -38,7 +38,8 @@ func TestFabricL2ServiceProfile_createFromResourceData(t *testing.T) {
 	d.Set(ecxL2ServiceProfileSchemaNames["OnVcApprovalRejectionNotification"], testEmails)
 	d.Set(ecxL2ServiceProfileSchemaNames["PrivateUserEmails"], testEmails)
 	d.Set(ecxL2ServiceProfileSchemaNames["Features"], flattenECXL2ServiceProfileFeatures(
-		ecx.L2ServiceProfileFeatures{CloudReach: ecx.Bool(true), TestProfile: ecx.Bool(true)},
+		&ecx.L2ServiceProfileFeatures{CloudReach: ecx.Bool(true), TestProfile: ecx.Bool(true)},
+		ecx.L2ServiceProfileFeatures{CloudReach: ecx.Bool(true), TestProfile: ecx.Bool(false)},
 	))
 	d.Set(ecxL2ServiceProfileSchemaNames["Port"], flattenECXL2ServiceProfilePorts([]ecx.L2ServiceProfilePort{
 		{
@@ -85,7 +86,7 @@ func TestFabricL2ServiceProfile_createFromResourceData(t *testing.T) {
 		OnProfileApprovalRejectNotification: testEmails,
 		OnVcApprovalRejectionNotification:   testEmails,
 		PrivateUserEmails:                   testEmails,
-		Features:                            expandECXL2ServiceProfileFeatures(d.Get(ecxL2ServiceProfileSchemaNames["Features"]).(*schema.Set))[0],
+		Features:                            expandECXL2ServiceProfileFeatures(d.Get(ecxL2ServiceProfileSchemaNames["Features"]).(*schema.Set).List()),
 		Ports:                               expandECXL2ServiceProfilePorts(d.Get(ecxL2ServiceProfileSchemaNames["Port"]).(*schema.Set)),
 		SpeedBands:                          expandECXL2ServiceProfileSpeedBands(d.Get(ecxL2ServiceProfileSchemaNames["SpeedBand"]).(*schema.Set)),
 	}
@@ -126,7 +127,6 @@ func TestFabricL2ServiceProfile_updateResourceData(t *testing.T) {
 		Description:                         ecx.String("testDescription"),
 		Features: ecx.L2ServiceProfileFeatures{
 			CloudReach:  ecx.Bool(true),
-			TestProfile: ecx.Bool(true),
 		},
 		Ports: []ecx.L2ServiceProfilePort{
 			{
@@ -177,7 +177,7 @@ func TestFabricL2ServiceProfile_updateResourceData(t *testing.T) {
 	assert.Equal(t, ecx.StringValue(input.TagType), d.Get(ecxL2ServiceProfileSchemaNames["TagType"]), "TagType matches")
 	assert.Equal(t, ecx.BoolValue(input.VlanSameAsPrimary), d.Get(ecxL2ServiceProfileSchemaNames["VlanSameAsPrimary"]), "VlanSameAsPrimary matches")
 	assert.Equal(t, ecx.StringValue(input.Description), d.Get(ecxL2ServiceProfileSchemaNames["Description"]), "Description matches")
-	assert.Equal(t, input.Features, expandECXL2ServiceProfileFeatures(d.Get(ecxL2ServiceProfileSchemaNames["Features"]).(*schema.Set))[0], "Features matches")
+	assert.Equal(t, input.Features, expandECXL2ServiceProfileFeatures(d.Get(ecxL2ServiceProfileSchemaNames["Features"]).(*schema.Set).List()), "Features matches")
 	assert.Equal(t, input.Ports, expandECXL2ServiceProfilePorts(d.Get(ecxL2ServiceProfileSchemaNames["Port"]).(*schema.Set)), "Ports matches")
 	assert.Equal(t, input.SpeedBands, expandECXL2ServiceProfileSpeedBands(d.Get(ecxL2ServiceProfileSchemaNames["SpeedBand"]).(*schema.Set)), "SpeedBand matches")
 }
