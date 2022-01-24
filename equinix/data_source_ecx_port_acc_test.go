@@ -10,14 +10,13 @@ import (
 )
 
 func TestAccFabricPort(t *testing.T) {
-	t.Parallel()
 	portName, _ := schema.EnvDefaultFunc(priPortEnvVar, "smandalika@equinix.com1-SV1-Dot1q-L-Primary-161350")()
 	context := map[string]interface{}{
 		"port-resourceName": "test",
 		"port-name":         portName,
 	}
 	resourceName := fmt.Sprintf("data.equinix_ecx_port.%s", context["port-resourceName"].(string))
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{

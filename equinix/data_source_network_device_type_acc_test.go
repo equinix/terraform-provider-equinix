@@ -9,7 +9,6 @@ import (
 )
 
 func TestAccNetworkDeviceTypeDataSource(t *testing.T) {
-	t.Parallel()
 	metro, _ := schema.EnvDefaultFunc(networkDeviceMetroEnvVar, "SV")()
 	context := map[string]interface{}{
 		"resourceName": "router",
@@ -18,7 +17,7 @@ func TestAccNetworkDeviceTypeDataSource(t *testing.T) {
 		"metro_codes":  []string{metro.(string)},
 	}
 	resourceName := fmt.Sprintf("data.equinix_network_device_type.%s", context["resourceName"].(string))
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{

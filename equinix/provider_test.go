@@ -2,17 +2,15 @@ package equinix
 
 import (
 	"fmt"
-	"math/rand"
 	"net/http"
 	"os"
 	"reflect"
 	"regexp"
 	"strings"
-	"sync"
 	"testing"
-	"time"
 
 	"github.com/equinix/rest-go"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/stretchr/testify/assert"
 )
@@ -70,7 +68,7 @@ func TestProvider_hasApplicationErrorCode(t *testing.T) {
 			Code: "ERR-505",
 		},
 		{
-			Code: randString(10),
+			Code: acctest.RandString(10),
 		},
 	}
 	// when
@@ -353,26 +351,11 @@ func nprintf(format string, params map[string]interface{}) string {
 }
 
 func randInt(n int) int {
-	src := rand.NewSource(time.Now().UnixNano())
-	var mu sync.Mutex
-	mu.Lock()
-	i := rand.New(src).Intn(n)
-	mu.Unlock()
-	return i
+	return acctest.RandIntRange(0, n)
 }
 
 func randString(length int) string {
-	src := rand.NewSource(time.Now().UnixNano())
-	result := make([]byte, length)
-	set := "abcdefghijklmnopqrstuvwxyz012346789"
-	var mu sync.Mutex
-	mu.Lock()
-	r := rand.New(src)
-	for i := 0; i < length; i++ {
-		result[i] = set[r.Intn(len(set))]
-	}
-	mu.Unlock()
-	return string(result)
+	return acctest.RandString(length)
 }
 
 func getFromEnv(varName string) (string, error) {

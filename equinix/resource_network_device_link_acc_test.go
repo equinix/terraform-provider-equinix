@@ -52,11 +52,13 @@ func testSweepNetworkDeviceLink(region string) error {
 }
 
 func TestAccNetworkDeviceLink(t *testing.T) {
-	t.Parallel()
 	metro, _ := schema.EnvDefaultFunc(networkDeviceMetroEnvVar, "SV")()
-	metroSecondary, _ := schema.EnvDefaultFunc(networkDeviceSecondaryMetroEnvVar, "SV")()
+	metroSecondary, _ := schema.EnvDefaultFunc(networkDeviceSecondaryMetroEnvVar, metro)()
+	accountName, _ := schema.EnvDefaultFunc(networkDeviceAccountNameEnvVar, "")()
+	accountNameSecondary, _ := schema.EnvDefaultFunc(networkDeviceSecondaryAccountNameEnvVar, accountName)()
 	context := map[string]interface{}{
 		"device-resourceName":               "test",
+		"device-account_name":               accountName.(string),
 		"device-self_managed":               false,
 		"device-byol":                       false,
 		"device-name":                       fmt.Sprintf("%s-%s", tstResourcePrefix, randString(6)),
@@ -71,6 +73,7 @@ func TestAccNetworkDeviceLink(t *testing.T) {
 		"device-version":                    "16.09.05",
 		"device-core_count":                 2,
 		"device-secondary_name":             fmt.Sprintf("%s-%s", tstResourcePrefix, randString(6)),
+		"device-secondary_account_name":     accountNameSecondary.(string),
 		"device-secondary_metro_code":       metroSecondary.(string),
 		"device-secondary_hostname":         fmt.Sprintf("tf-%s", randString(6)),
 		"device-secondary_notifications":    []string{"test@equinix.com"},
@@ -88,18 +91,18 @@ func TestAccNetworkDeviceLink(t *testing.T) {
 	linkResourceName := "equinix_network_device_link." + context["link-resourceName"].(string)
 	var deviceLink ne.DeviceLinkGroup
 	var primaryDevice, secondaryDevice ne.Device
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
 				Config: newTestAccConfig(context).withDevice().withDeviceLink().build(),
 				Check: resource.ComposeTestCheckFunc(
-					testAccNeDevicePairExists(deviceResourceName, &primaryDevice, &secondaryDevice),
 					testAccNeDeviceLinkExists(linkResourceName, &deviceLink),
 					testAccNeDeviceLinkAttributes(&deviceLink, context),
 					resource.TestCheckResourceAttrSet(linkResourceName, "uuid"),
 					resource.TestCheckResourceAttr(linkResourceName, "status", ne.DeviceLinkGroupStatusProvisioned),
+					testAccNeDevicePairExists(deviceResourceName, &primaryDevice, &secondaryDevice),
 					testAccNeDeviceLinkDeviceConnections(&deviceLink, &primaryDevice, &secondaryDevice, context),
 				),
 			},
@@ -133,14 +136,16 @@ resource "equinix_network_device_link" "%{link-resourceName}" {
     asn          = %{link-device_2_asn}
     interface_id = %{link-device_2_interface_id}
   }
-  link {
-    account_number  = equinix_network_device.%{device-resourceName}.account_number
-    throughput      = "%{link-connection_1_throughput}"
-    throughput_unit = "%{link-connection_1_throughput_unit}"
-    src_metro_code  = equinix_network_device.%{device-resourceName}.metro_code
-    dst_metro_code  = equinix_network_device.%{device-resourceName}.secondary_device[0].metro_code
-    src_zone_code   = equinix_network_device.%{device-resourceName}.zone_code
-    dst_zone_code   = equinix_network_device.%{device-resourceName}.secondary_device[0].zone_code
+  # link block not required if metro_code is the same for both devices
+  dynamic "link" {
+    for_each = equinix_network_device.%{device-resourceName}.metro_code == equinix_network_device.%{device-resourceName}.secondary_device[0].metro_code ? [] : [1]
+    content {
+	  account_number  = equinix_network_device.%{device-resourceName}.account_number
+	  throughput      = "%{link-connection_1_throughput}"
+	  throughput_unit = "%{link-connection_1_throughput_unit}"
+	  src_metro_code  = equinix_network_device.%{device-resourceName}.metro_code
+	  dst_metro_code  = equinix_network_device.%{device-resourceName}.secondary_device[0].metro_code
+    }
   }
 }`, ctx)
 	return config
@@ -200,26 +205,26 @@ func testAccNeDeviceLinkDeviceConnections(deviceLink *ne.DeviceLinkGroup, primar
 		} else {
 			return fmt.Errorf("link does not contain secondary device %v", ne.StringValue(secondaryDevice.UUID))
 		}
-		if len(deviceLink.Links) != 1 {
-			return fmt.Errorf("number of links does not match %v - %v", len(deviceLink.Links), 1)
-		}
-		if v, ok := ctx["link-connection_1_throughput"]; ok && ne.StringValue(deviceLink.Links[0].Throughput) != v.(string) {
-			return fmt.Errorf("link #1 throughput does not match %v - %v", ne.StringValue(deviceLink.Links[0].Throughput), v)
-		}
-		if v, ok := ctx["link-connection_1_throughput_unit"]; ok && ne.StringValue(deviceLink.Links[0].ThroughputUnit) != v.(string) {
-			return fmt.Errorf("link #1 throughput_unit does not match %v - %v", ne.StringValue(deviceLink.Links[0].ThroughputUnit), v)
-		}
-		if ne.StringValue(deviceLink.Links[0].SourceMetroCode) != ne.StringValue(primaryDevice.MetroCode) {
-			return fmt.Errorf("link #1 src_metro_code does not match %v - %v", ne.StringValue(deviceLink.Links[0].SourceMetroCode), ne.StringValue(primaryDevice.MetroCode))
-		}
-		if ne.StringValue(deviceLink.Links[0].SourceZoneCode) != ne.StringValue(primaryDevice.ZoneCode) {
-			return fmt.Errorf("link #1 src_zone_code does not match %v - %v", ne.StringValue(deviceLink.Links[0].SourceZoneCode), ne.StringValue(primaryDevice.ZoneCode))
-		}
-		if ne.StringValue(deviceLink.Links[0].DestinationMetroCode) != ne.StringValue(secondaryDevice.MetroCode) {
-			return fmt.Errorf("link #1 dst_metro_code does not match %v - %v", ne.StringValue(deviceLink.Links[0].DestinationMetroCode), ne.StringValue(secondaryDevice.MetroCode))
-		}
-		if ne.StringValue(deviceLink.Links[0].DestinationZoneCode) != ne.StringValue(secondaryDevice.ZoneCode) {
-			return fmt.Errorf("link #1 dst_zone_code does not match %v - %v", ne.StringValue(deviceLink.Links[0].DestinationZoneCode), ne.StringValue(secondaryDevice.ZoneCode))
+		if ne.StringValue(primaryDevice.MetroCode) == ne.StringValue(secondaryDevice.MetroCode) {
+			if len(deviceLink.Links) != 0 {
+				return fmt.Errorf("number of links for devices in same metro does not match %v - %v", len(deviceLink.Links), 0)
+			}
+		} else {
+			if len(deviceLink.Links) != 1 {
+				return fmt.Errorf("number of links does not match %v - %v", len(deviceLink.Links), 1)
+			}
+			if v, ok := ctx["link-connection_1_throughput"]; ok && ne.StringValue(deviceLink.Links[0].Throughput) != v.(string) {
+				return fmt.Errorf("link #1 throughput does not match %v - %v", ne.StringValue(deviceLink.Links[0].Throughput), v)
+			}
+			if v, ok := ctx["link-connection_1_throughput_unit"]; ok && ne.StringValue(deviceLink.Links[0].ThroughputUnit) != v.(string) {
+				return fmt.Errorf("link #1 throughput_unit does not match %v - %v", ne.StringValue(deviceLink.Links[0].ThroughputUnit), v)
+			}
+			if ne.StringValue(deviceLink.Links[0].SourceMetroCode) != ne.StringValue(primaryDevice.MetroCode) {
+				return fmt.Errorf("link #1 src_metro_code does not match %v - %v", ne.StringValue(deviceLink.Links[0].SourceMetroCode), ne.StringValue(primaryDevice.MetroCode))
+			}
+			if ne.StringValue(deviceLink.Links[0].DestinationMetroCode) != ne.StringValue(secondaryDevice.MetroCode) {
+				return fmt.Errorf("link #1 dst_metro_code does not match %v - %v", ne.StringValue(deviceLink.Links[0].DestinationMetroCode), ne.StringValue(secondaryDevice.MetroCode))
+			}
 		}
 		return nil
 	}

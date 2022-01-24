@@ -68,19 +68,33 @@ different Equinix test environments.
 primary, Dot1Q encapsulated connections. Reflected by Fabric connection tests.
 * `TF_ACC_FABRIC_SEC_PORT_NAME` alters default name of Equinix Fabric port for
 secondary,Dot1Q encapsulated connections. Reflected by Fabric connection tests
-* `TF_ACC_FABRIC_AWS_L2_SP_NAME` alters default name of Equinix Fabric AWS seller
+* `TF_ACC_FABRIC_L2_AWS_SP_NAME` alters default name of Equinix Fabric AWS seller
 profile. Reflected by Fabric connection tests
-* `TF_ACC_FABRIC_AWS_AUTH_KEY` alters default authentication key of Equinix Fabric
+* `TF_ACC_FABRIC_L2_AWS_ACCOUNT_ID` alters default authentication key of Equinix Fabric
 AWS l2 connection. Reflected by Fabric connection tests
 * `TF_ACC_FABRIC_L2_AZURE_SP_NAME` alters default name of Equinix Fabric Azure seller
 profile. Reflected by Fabric connection tests.
-* `TF_ACC_FABRIC_GCP1_L2_SP_NAME` alters default name of Equinix Fabric GCP
+* `TF_ACC_FABRIC_L2_AZURE_XROUTE_SERVICE_KEY` alters default authentication key of Equinix Fabric
+Azure l2 connection. Reflected by Fabric connection tests
+* `TF_ACC_FABRIC_L2_GCP1_SP_NAME` alters default name of Equinix Fabric GCP
 Interconnection Zone 1 seller profile. Reflected by Fabric connection tests.
-* `TF_ACC_FABRIC_GCP2_L2_SP_NAME` alters default name of Equinix Fabric GCP
+* `TF_ACC_FABRIC_L2_GCP2_SP_NAME` alters default name of Equinix Fabric GCP
 Interconnection Zone 2 seller profile. Reflected by Fabric connection tests.
+* `TF_ACC_FABRIC_L2_GCP1_INTERCONN_SERVICE_KEY` alters default authentication key of Equinix Fabric
+Google l2 connection primary. Reflected by Fabric connection tests
+* `TF_ACC_FABRIC_L2_GCP2_INTERCONN_SERVICE_KEY` alters default authentication key of Equinix Fabric
+Google l2 connection secondary. Reflected by Fabric connection tests
+* `TF_ACC_NETWORK_DEVICE_BILLING_ACCOUNT_NAME` alters default billing account name for
+Network edge device primary. Reflected by Network Edge tests.
+* `TF_ACC_NETWORK_DEVICE_SECONDARY_BILLING_ACCOUNT_NAME` alters default billing account
+name for Network edge device secondary. Reflected by Network Edge tests.
 * `TF_ACC_NETWORK_DEVICE_METRO` alters default metro code for Network Edge resources.
 Reflected by Network Edge tests.
-* `TF_ACC_NETWORK_DEVICE_LICENSE_FILE` alters default path to device license file.
+* `TF_ACC_NETWORK_DEVICE_SECONDARY_METRO` alters default metro code for secondary Network Edge resources.
+Reflected by Network Edge tests.
+* `TF_ACC_NETWORK_DEVICE_CSRSDWAN_LICENSE_FILE` alters default path to CSR SD-WAN device license file.
+Reflected by Network Edge tests.
+* `TF_ACC_NETWORK_DEVICE_VSRX_LICENSE_FILE` alters default path to JUNIPER VSRX device license file.
 Reflected by Network Edge tests.
 
 ## Manual provider installation

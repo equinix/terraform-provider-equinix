@@ -83,8 +83,8 @@ func resourceNetworkDeviceLink() *schema.Resource {
 		},
 		Schema: createNetworkDeviceLinkResourceSchema(),
 		Timeouts: &schema.ResourceTimeout{
-			Create: schema.DefaultTimeout(10 * time.Minute),
-			Delete: schema.DefaultTimeout(10 * time.Minute),
+			Create: schema.DefaultTimeout(60 * time.Minute),
+			Delete: schema.DefaultTimeout(30 * time.Minute),
 		},
 		Description: "Resource allows creation and management of Equinix Network Edge device links",
 	}
@@ -250,6 +250,13 @@ func resourceNetworkDeviceLinkRead(ctx context.Context, d *schema.ResourceData, 
 			return nil
 		}
 	}
+	for i, linkDevice := range link.Devices {
+		device, err := conf.ne.GetDevice(ne.StringValue(linkDevice.DeviceID))
+		if err != nil {
+			return diag.FromErr(err)
+		}
+		link.Devices[i].ASN = device.ASN
+	}
 	if err := updateNetworkDeviceLinkResource(link, d); err != nil {
 		return diag.FromErr(err)
 	}
@@ -368,17 +375,13 @@ func expandNetworkDeviceLinkDevices(devices *schema.Set) []ne.DeviceLinkGroupDev
 
 func flattenNetworkDeviceLinkDevices(currentDevices *schema.Set, devices []ne.DeviceLinkGroupDevice) interface{} {
 	transformed := make([]interface{}, 0, len(devices))
-	currentDevicesMap := schemaSetToMap(currentDevices)
 	for i := range devices {
 		transformedDevice := map[string]interface{}{
 			networkDeviceLinkDeviceSchemaNames["DeviceID"]:    devices[i].DeviceID,
 			networkDeviceLinkDeviceSchemaNames["InterfaceID"]: devices[i].InterfaceID,
 			networkDeviceLinkDeviceSchemaNames["Status"]:      devices[i].Status,
 			networkDeviceLinkDeviceSchemaNames["IPAddress"]:   devices[i].IPAddress,
-		}
-		if v, ok := currentDevicesMap[networkDeviceLinkDeviceHash(devices[i])]; ok {
-			currentDeviceMap := v.(map[string]interface{})
-			transformedDevice[networkDeviceLinkDeviceSchemaNames["ASN"]] = currentDeviceMap[networkDeviceLinkDeviceSchemaNames["ASN"]]
+			networkDeviceLinkDeviceSchemaNames["ASN"]:         devices[i].ASN,
 		}
 		transformed = append(transformed, transformedDevice)
 	}

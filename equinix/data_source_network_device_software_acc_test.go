@@ -8,7 +8,6 @@ import (
 )
 
 func TestAccNetworkDeviceSoftwareDataSource(t *testing.T) {
-	t.Parallel()
 	context := map[string]interface{}{
 		"resourceName":  "csrLatest",
 		"device_type":   "CSR1000V",
@@ -17,7 +16,7 @@ func TestAccNetworkDeviceSoftwareDataSource(t *testing.T) {
 		"most_recent":   true,
 	}
 	resourceName := fmt.Sprintf("data.equinix_network_device_software.%s", context["resourceName"].(string))
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{

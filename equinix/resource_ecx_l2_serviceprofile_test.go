@@ -127,6 +127,7 @@ func TestFabricL2ServiceProfile_updateResourceData(t *testing.T) {
 		Description:                         ecx.String("testDescription"),
 		Features: ecx.L2ServiceProfileFeatures{
 			CloudReach:  ecx.Bool(true),
+			TestProfile: ecx.Bool(true),
 		},
 		Ports: []ecx.L2ServiceProfilePort{
 			{

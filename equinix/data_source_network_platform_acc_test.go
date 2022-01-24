@@ -8,7 +8,6 @@ import (
 )
 
 func TestAccNetworkDevicePlatformDataSource(t *testing.T) {
-	t.Parallel()
 	context := map[string]interface{}{
 		"resourceName": "csrLarge",
 		"device_type":  "CSR1000V",
@@ -16,7 +15,7 @@ func TestAccNetworkDevicePlatformDataSource(t *testing.T) {
 		"packages":     []string{"IPBASE"},
 	}
 	resourceName := fmt.Sprintf("data.equinix_network_device_platform.%s", context["resourceName"].(string))
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{

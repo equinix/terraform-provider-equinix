@@ -10,7 +10,6 @@ import (
 )
 
 func TestAccECXL2SellerProfiles(t *testing.T) {
-	t.Parallel()
 	context := map[string]interface{}{
 		"resourceName":             "test",
 		"name_regex":               ".+Direct Connect.*",
@@ -19,7 +18,7 @@ func TestAccECXL2SellerProfiles(t *testing.T) {
 		"organization_global_name": "AWS",
 	}
 	resourceName := fmt.Sprintf("data.equinix_ecx_l2_sellerprofiles.%s", context["resourceName"].(string))
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
