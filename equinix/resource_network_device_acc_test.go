@@ -98,6 +98,7 @@ func TestAccNetworkDevice_CSR1000V_HA_Managed_Sub(t *testing.T) {
 		"device-purchase_order_number":   randString(10),
 		"device-order_reference":         randString(10),
 		"device-interface_count":         24,
+		"device-additional_bandwidth":    0,
 		"device-secondary_name":          fmt.Sprintf("%s-%s", tstResourcePrefix, randString(6)),
 		"device-secondary_hostname":      fmt.Sprintf("tf-%s", randString(6)),
 		"device-secondary_notifications": []string{"secondary@equinix.com"},
@@ -929,6 +930,9 @@ func testAccNeDeviceAttributes(device *ne.Device, ctx map[string]interface{}) re
 		if v, ok := ctx["device-interface_count"]; ok && ne.IntValue(device.InterfaceCount) != v.(int) {
 			return fmt.Errorf("device-interface_count does not match %v - %v", ne.IntValue(device.InterfaceCount), v)
 		}
+		if v, ok := ctx["device-additional_bandwidth"]; ok && ne.IntValue(device.AdditionalBandwidth) != v.(int) {
+			return fmt.Errorf("device-additional_bandwidth does not match %v - %v", ne.IntValue(device.AdditionalBandwidth), v)
+		}
 		if v, ok := ctx["device-vendorConfig_siteId"]; ok && device.VendorConfiguration["siteId"] != v.(string) {
 			return fmt.Errorf("device-vendorConfig_siteId does not match %v - %v", device.VendorConfiguration["siteId"], v)
 		}
@@ -973,6 +977,9 @@ func testAccNeDeviceSecondaryAttributes(device *ne.Device, ctx map[string]interf
 	}
 	if v, ok := ctx["device-secondary_notifications"]; ok {
 		secCtx["device-notifications"] = v
+	}
+	if v, ok := ctx["device-secondary_additional_bandwidth"]; ok {
+		secCtx["device-additional_bandwidth"] = v
 	}
 	if v, ok := ctx["device-secondary_vendorConfig_siteId"]; ok {
 		secCtx["device-vendorConfig_siteId"] = v
