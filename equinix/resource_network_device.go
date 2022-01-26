@@ -320,7 +320,7 @@ func createNetworkDeviceSchema() map[string]*schema.Schema {
 		networkDeviceSchemaNames["AdditionalBandwidth"]: {
 			Type:         schema.TypeInt,
 			Optional:     true,
-			ValidateFunc: validation.IntAtLeast(1),
+			Computed:     true,
 			Description:  networkDeviceDescriptions["AdditionalBandwidth"],
 		},
 		networkDeviceSchemaNames["OrderReference"]: {
@@ -518,7 +518,7 @@ func createNetworkDeviceSchema() map[string]*schema.Schema {
 					networkDeviceSchemaNames["AdditionalBandwidth"]: {
 						Type:         schema.TypeInt,
 						Optional:     true,
-						ValidateFunc: validation.IntAtLeast(1),
+						Computed:     true,
 						Description:  networkDeviceDescriptions["AdditionalBandwidth"],
 					},
 					networkDeviceSchemaNames["WanInterfaceId"]: {
