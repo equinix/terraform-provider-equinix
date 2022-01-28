@@ -13,9 +13,9 @@ import (
 )
 
 func init() {
-	resource.AddTestSweepers("metal_organization", &resource.Sweeper{
-		Name:         "metal_organization",
-		Dependencies: []string{"metal_project"},
+	resource.AddTestSweepers("equinix_metal_organization", &resource.Sweeper{
+		Name:         "equinix_metal_organization",
+		Dependencies: []string{"equinix_metal_project"},
 		F:            testSweepOrganizations,
 	})
 }
@@ -26,7 +26,7 @@ func testSweepOrganizations(region string) error {
 	if err != nil {
 		return fmt.Errorf("Error getting client for sweeping organizations: %s", err)
 	}
-	client := meta.(*packngo.Client)
+	client := meta.Client()
 
 	os, _, err := client.Organizations.List(nil)
 	if err != nil {
@@ -60,11 +60,11 @@ func TestAccOrgCreate(t *testing.T) {
 			{
 				Config: testAccCheckMetalOrgConfigBasic(rInt),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckMetalOrgExists("metal_organization.test", &org),
+					testAccCheckMetalOrgExists("equinix_metal_organization.test", &org),
 					resource.TestCheckResourceAttr(
-						"metal_organization.test", "name", fmt.Sprintf("tfacc-org-%d", rInt)),
+						"equinix_metal_organization.test", "name", fmt.Sprintf("tfacc-org-%d", rInt)),
 					resource.TestCheckResourceAttr(
-						"metal_organization.test", "description", "quux"),
+						"equinix_metal_organization.test", "description", "quux"),
 				),
 			},
 		},
@@ -82,7 +82,7 @@ func TestAccOrg_importBasic(t *testing.T) {
 				Config: testAccCheckMetalOrgConfigBasic(rInt),
 			},
 			{
-				ResourceName:      "metal_organization.test",
+				ResourceName:      "equinix_metal_organization.test",
 				ImportState:       true,
 				ImportStateVerify: true,
 			},
@@ -94,7 +94,7 @@ func testAccCheckMetalOrgDestroy(s *terraform.State) error {
 	client := testAccProvider.Meta().(*packngo.Client)
 
 	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "metal_organization" {
+		if rs.Type != "equinix_metal_organization" {
 			continue
 		}
 		if _, _, err := client.Organizations.Get(rs.Primary.ID, nil); err == nil {
@@ -133,7 +133,7 @@ func testAccCheckMetalOrgExists(n string, org *packngo.Organization) resource.Te
 
 func testAccCheckMetalOrgConfigBasic(r int) string {
 	return fmt.Sprintf(`
-resource "metal_organization" "test" {
+resource "equinix_metal_organization" "test" {
 		name = "tfacc-org-%d"
 		description = "quux"
 }`, r)

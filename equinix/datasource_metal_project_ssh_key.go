@@ -64,7 +64,7 @@ func dataSourceMetalProjectSSHKey() *schema.Resource {
 }
 
 func dataSourceMetalProjectSSHKeyRead(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*packngo.Client)
+	client := meta.(*Config).Client()
 
 	search := d.Get("search").(string)
 	id := d.Get("id").(string)

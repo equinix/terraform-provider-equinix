@@ -11,17 +11,17 @@ import (
 
 func testAccMetalGatewayConfig_PrivateIPv4() string {
 	return fmt.Sprintf(`
-resource "metal_project" "test" {
+resource "equinix_metal_project" "test" {
     name = "tfacc-gateway-test"
 }
 
-resource "metal_vlan" "test" {
+resource "equinix_metal_vlan" "test" {
     description = "test VLAN in SV"
     metro       = "sv"
     project_id  = metal_project.test.id
 }
 
-resource "metal_gateway" "test" {
+resource "equinix_metal_gateway" "test" {
     project_id               = metal_project.test.id
     vlan_id                  = metal_vlan.test.id
     private_ipv4_subnet_size = 8
@@ -39,10 +39,10 @@ func TestAccMetalGateway_PrivateIPv4(t *testing.T) {
 				Config: testAccMetalGatewayConfig_PrivateIPv4(),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrPair(
-						"metal_gateway.test", "project_id",
-						"metal_project.test", "id"),
+						"equinix_metal_gateway.test", "project_id",
+						"equinix_metal_project.test", "id"),
 					resource.TestCheckResourceAttr(
-						"metal_gateway.test", "private_ipv4_subnet_size", "8"),
+						"equinix_metal_gateway.test", "private_ipv4_subnet_size", "8"),
 				),
 			},
 		},
@@ -51,23 +51,23 @@ func TestAccMetalGateway_PrivateIPv4(t *testing.T) {
 
 func testAccMetalGatewayConfig_ExistingReservation() string {
 	return fmt.Sprintf(`
-resource "metal_project" "test" {
+resource "equinix_metal_project" "test" {
     name = "tfacc-gateway-test"
 }
 
-resource "metal_vlan" "test" {
+resource "equinix_metal_vlan" "test" {
     description = "test VLAN in SV"
     metro       = "sv"
     project_id  = metal_project.test.id
 }
 
-resource "metal_reserved_ip_block" "test" {
+resource "equinix_metal_reserved_ip_block" "test" {
     project_id = metal_project.test.id
     metro      = "sv"
     quantity   = 8
 }
 
-resource "metal_gateway" "test" {
+resource "equinix_metal_gateway" "test" {
     project_id        = metal_project.test.id
     vlan_id           = metal_vlan.test.id
     ip_reservation_id = metal_reserved_ip_block.test.id
@@ -85,11 +85,11 @@ func TestAccMetalGateway_ExistingReservation(t *testing.T) {
 				Config: testAccMetalGatewayConfig_ExistingReservation(),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrPair(
-						"metal_gateway.test", "project_id",
-						"metal_project.test", "id"),
+						"equinix_metal_gateway.test", "project_id",
+						"equinix_metal_project.test", "id"),
 					resource.TestCheckResourceAttrPair(
-						"metal_gateway.test", "ip_reservation_id",
-						"metal_reserved_ip_block.test", "id"),
+						"equinix_metal_gateway.test", "ip_reservation_id",
+						"equinix_metal_reserved_ip_block.test", "id"),
 				),
 			},
 		},
@@ -100,7 +100,7 @@ func testAccCheckMetalGatewayDestroyed(s *terraform.State) error {
 	client := testAccProvider.Meta().(*packngo.Client)
 
 	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "metal_gateway" {
+		if rs.Type != "equinix_metal_gateway" {
 			continue
 		}
 		if _, _, err := client.MetalGateways.Get(rs.Primary.ID, nil); err == nil {
@@ -121,7 +121,7 @@ func TestAccMetalGateway_importBasic(t *testing.T) {
 				Config: testAccMetalGatewayConfig_PrivateIPv4(),
 			},
 			{
-				ResourceName:      "metal_gateway.test",
+				ResourceName:      "equinix_metal_gateway.test",
 				ImportState:       true,
 				ImportStateVerify: true,
 			},

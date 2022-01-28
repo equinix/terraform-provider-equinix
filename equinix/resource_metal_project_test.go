@@ -16,9 +16,9 @@ import (
 )
 
 func init() {
-	resource.AddTestSweepers("metal_project", &resource.Sweeper{
-		Name:         "metal_project",
-		Dependencies: []string{"metal_device"},
+	resource.AddTestSweepers("equinix_metal_project", &resource.Sweeper{
+		Name:         "equinix_metal_project",
+		Dependencies: []string{"equinix_metal_device"},
 		F:            testSweepProjects,
 	})
 }
@@ -29,7 +29,7 @@ func testSweepProjects(region string) error {
 	if err != nil {
 		return fmt.Errorf("Error getting client for sweeping projects: %s", err)
 	}
-	client := meta.(*packngo.Client)
+	client := meta.Client()
 
 	ps, _, err := client.Projects.List(nil)
 	if err != nil {
@@ -63,9 +63,9 @@ func TestAccMetalProject_Basic(t *testing.T) {
 			{
 				Config: testAccCheckMetalProjectConfig_basic(rInt),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckMetalProjectExists("metal_project.foobar", &project),
+					testAccCheckMetalProjectExists("equinix_metal_project.foobar", &project),
 					resource.TestCheckResourceAttr(
-						"metal_project.foobar", "name", fmt.Sprintf("tfacc-project-%d", rInt)),
+						"equinix_metal_project.foobar", "name", fmt.Sprintf("tfacc-project-%d", rInt)),
 				),
 			},
 		},
@@ -185,14 +185,14 @@ func TestAccMetalProject_BGPBasic(t *testing.T) {
 			{
 				Config: testAccCheckMetalProjectConfig_BGP(rInt, "2SFsdfsg43"),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckMetalProjectExists("metal_project.foobar", &project),
+					testAccCheckMetalProjectExists("equinix_metal_project.foobar", &project),
 					resource.TestCheckResourceAttr(
-						"metal_project.foobar", "bgp_config.0.md5",
+						"equinix_metal_project.foobar", "bgp_config.0.md5",
 						"2SFsdfsg43"),
 				),
 			},
 			{
-				ResourceName:      "metal_project.foobar",
+				ResourceName:      "equinix_metal_project.foobar",
 				ImportState:       true,
 				ImportStateVerify: true,
 			},
@@ -212,30 +212,30 @@ func TestAccMetalProject_BackendTransferUpdate(t *testing.T) {
 			{
 				Config: testAccCheckMetalProjectConfig_basic(rInt),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckMetalProjectExists("metal_project.foobar", &project),
+					testAccCheckMetalProjectExists("equinix_metal_project.foobar", &project),
 					resource.TestCheckResourceAttr(
-						"metal_project.foobar", "backend_transfer", "false"),
+						"equinix_metal_project.foobar", "backend_transfer", "false"),
 				),
 			},
 			{
 				Config: testAccCheckMetalProjectConfig_BT(rInt),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckMetalProjectExists("metal_project.foobar", &project),
+					testAccCheckMetalProjectExists("equinix_metal_project.foobar", &project),
 					resource.TestCheckResourceAttr(
-						"metal_project.foobar", "backend_transfer", "true"),
+						"equinix_metal_project.foobar", "backend_transfer", "true"),
 				),
 			},
 			{
-				ResourceName:      "metal_project.foobar",
+				ResourceName:      "equinix_metal_project.foobar",
 				ImportState:       true,
 				ImportStateVerify: true,
 			},
 			{
 				Config: testAccCheckMetalProjectConfig_basic(rInt),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckMetalProjectExists("metal_project.foobar", &project),
+					testAccCheckMetalProjectExists("equinix_metal_project.foobar", &project),
 					resource.TestCheckResourceAttr(
-						"metal_project.foobar", "backend_transfer", "false"),
+						"equinix_metal_project.foobar", "backend_transfer", "false"),
 				),
 			},
 		},
@@ -254,17 +254,17 @@ func TestAccMetalProject_Update(t *testing.T) {
 			{
 				Config: testAccCheckMetalProjectConfig_basic(rInt),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckMetalProjectExists("metal_project.foobar", &project),
+					testAccCheckMetalProjectExists("equinix_metal_project.foobar", &project),
 					resource.TestCheckResourceAttr(
-						"metal_project.foobar", "name", fmt.Sprintf("tfacc-project-%d", rInt)),
+						"equinix_metal_project.foobar", "name", fmt.Sprintf("tfacc-project-%d", rInt)),
 				),
 			},
 			{
 				Config: testAccCheckMetalProjectConfig_basic(rInt + 1),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckMetalProjectExists("metal_project.foobar", &project),
+					testAccCheckMetalProjectExists("equinix_metal_project.foobar", &project),
 					resource.TestCheckResourceAttr(
-						"metal_project.foobar", "name", fmt.Sprintf("tfacc-project-%d", rInt+1)),
+						"equinix_metal_project.foobar", "name", fmt.Sprintf("tfacc-project-%d", rInt+1)),
 				),
 			},
 		},
@@ -283,7 +283,7 @@ func testAccCheckMetalSameProject(t *testing.T, before, after *packngo.Project) 
 func TestAccMetalProject_BGPUpdate(t *testing.T) {
 	var p1, p2, p3 packngo.Project
 	rInt := acctest.RandInt()
-	res := "metal_project.foobar"
+	res := "equinix_metal_project.foobar"
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -307,7 +307,7 @@ func TestAccMetalProject_BGPUpdate(t *testing.T) {
 				),
 			},
 			{
-				ResourceName:      "metal_project.foobar",
+				ResourceName:      "equinix_metal_project.foobar",
 				ImportState:       true,
 				ImportStateVerify: true,
 			},
@@ -331,7 +331,7 @@ func testAccCheckMetalProjectDestroy(s *terraform.State) error {
 	client := testAccProvider.Meta().(*packngo.Client)
 
 	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "metal_project" {
+		if rs.Type != "equinix_metal_project" {
 			continue
 		}
 		if _, _, err := client.Projects.Get(rs.Primary.ID, nil); err == nil {
@@ -370,7 +370,7 @@ func testAccCheckMetalProjectExists(n string, project *packngo.Project) resource
 
 func testAccCheckMetalProjectConfig_BT(r int) string {
 	return fmt.Sprintf(`
-resource "metal_project" "foobar" {
+resource "equinix_metal_project" "foobar" {
     name = "tfacc-project-%d"
 	backend_transfer = true
 }`, r)
@@ -378,14 +378,14 @@ resource "metal_project" "foobar" {
 
 func testAccCheckMetalProjectConfig_basic(r int) string {
 	return fmt.Sprintf(`
-resource "metal_project" "foobar" {
+resource "equinix_metal_project" "foobar" {
     name = "tfacc-project-%d"
 }`, r)
 }
 
 func testAccCheckMetalProjectConfig_BGP(r int, pass string) string {
 	return fmt.Sprintf(`
-resource "metal_project" "foobar" {
+resource "equinix_metal_project" "foobar" {
     name = "tfacc-project-%d"
 	bgp_config {
 		deployment_type = "local"
@@ -397,11 +397,11 @@ resource "metal_project" "foobar" {
 
 func testAccCheckMetalProjectOrgConfig(r string) string {
 	return fmt.Sprintf(`
-resource "metal_organization" "test" {
+resource "equinix_metal_organization" "test" {
 	name = "tfacc-project-%s"
 }
 
-resource "metal_project" "foobar" {
+resource "equinix_metal_project" "foobar" {
 		name = "tfacc-project-%s"
 		organization_id = "${metal_organization.test.id}"
 }`, r, r)
@@ -419,13 +419,13 @@ func TestAccMetalProjectOrg(t *testing.T) {
 			{
 				Config: testAccCheckMetalProjectOrgConfig(rn),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckMetalProjectExists("metal_project.foobar", &project),
+					testAccCheckMetalProjectExists("equinix_metal_project.foobar", &project),
 					resource.TestCheckResourceAttr(
-						"metal_project.foobar", "name", fmt.Sprintf("tfacc-project-%s", rn)),
+						"equinix_metal_project.foobar", "name", fmt.Sprintf("tfacc-project-%s", rn)),
 				),
 			},
 			{
-				ResourceName:      "metal_project.foobar",
+				ResourceName:      "equinix_metal_project.foobar",
 				ImportState:       true,
 				ImportStateVerify: true,
 			},
@@ -445,7 +445,7 @@ func TestAccMetalProject_importBasic(t *testing.T) {
 				Config: testAccCheckMetalProjectConfig_basic(rInt),
 			},
 			{
-				ResourceName:      "metal_project.foobar",
+				ResourceName:      "equinix_metal_project.foobar",
 				ImportState:       true,
 				ImportStateVerify: true,
 			},

@@ -42,7 +42,7 @@ func dataSourceOperatingSystem() *schema.Resource {
 }
 
 func dataSourceMetalOperatingSystemRead(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*packngo.Client)
+	client := meta.(*Config).Client()
 
 	name, nameOK := d.GetOk("name")
 	distro, distroOK := d.GetOk("distro")

@@ -71,7 +71,7 @@ func getAndPossiblySetNetworkType(d *schema.ResourceData, c *packngo.Client, tar
 }
 
 func resourceMetalDeviceNetworkTypeCreate(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*packngo.Client)
+	client := meta.(*Config).Client()
 	ntype := d.Get("type").(string)
 
 	err := getAndPossiblySetNetworkType(d, client, ntype)
@@ -83,7 +83,7 @@ func resourceMetalDeviceNetworkTypeCreate(d *schema.ResourceData, meta interface
 }
 
 func resourceMetalDeviceNetworkTypeRead(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*packngo.Client)
+	client := meta.(*Config).Client()
 
 	_, devNType, err := getDevIDandNetworkType(d, client)
 
@@ -112,7 +112,7 @@ func resourceMetalDeviceNetworkTypeRead(d *schema.ResourceData, meta interface{}
 }
 
 func resourceMetalDeviceNetworkTypeUpdate(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*packngo.Client)
+	client := meta.(*Config).Client()
 	ntype := d.Get("type").(string)
 	if d.HasChange("type") {
 		err := getAndPossiblySetNetworkType(d, client, ntype)

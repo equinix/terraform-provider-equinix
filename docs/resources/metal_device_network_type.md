@@ -19,7 +19,7 @@ If you are attaching VLAN to a device (i.e. using metal_port_vlan_attachment), l
 
 ## Example Usage
 
-See the [Network Types Guide](../guides/network_types.md) for examples of this resource and to learn about the recommended `metal_port` alternative.
+See the [Network Types Guide](../guides/network_types.md) for examples of this resource and to learn about the recommended `equinix_metal_port` alternative.
 
 ## Import
 

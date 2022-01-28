@@ -171,7 +171,7 @@ func resourceMetalSpotMarketRequest() *schema.Resource {
 }
 
 func resourceMetalSpotMarketRequestCreate(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*packngo.Client)
+	client := meta.(*Config).Client()
 	var waitForDevices bool
 
 	metro := d.Get("metro").(string)
@@ -312,7 +312,7 @@ func resourceMetalSpotMarketRequestCreate(d *schema.ResourceData, meta interface
 }
 
 func resourceMetalSpotMarketRequestRead(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*packngo.Client)
+	client := meta.(*Config).Client()
 
 	smr, _, err := client.SpotMarketRequests.Get(d.Id(), &packngo.GetOptions{Includes: []string{"project", "devices", "facilities", "metro"}})
 	if err != nil {
@@ -351,7 +351,7 @@ func resourceMetalSpotMarketRequestRead(d *schema.ResourceData, meta interface{}
 }
 
 func resourceMetalSpotMarketRequestDelete(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*packngo.Client)
+	client := meta.(*Config).Client()
 	var waitForDevices bool
 
 	if val, ok := d.GetOk("wait_for_devices"); ok {
@@ -416,7 +416,7 @@ func getInstanceParams(params *packngo.SpotMarketRequestInstanceParameters) Inst
 
 func resourceStateRefreshFunc(d *schema.ResourceData, meta interface{}) resource.StateRefreshFunc {
 	return func() (interface{}, string, error) {
-		client := meta.(*packngo.Client)
+		client := meta.(*Config).Client()
 		smr, _, err := client.SpotMarketRequests.Get(d.Id(), &packngo.GetOptions{Includes: []string{"project", "devices", "facilities", "metro"}})
 
 		if err != nil {

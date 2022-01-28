@@ -12,7 +12,7 @@ Use this data source to retrieve a connection resource from [Equinix Fabric - so
 ## Example Usage
 
 ```hcl
-data "metal_connection" "example" {
+data "equinix_metal_connection" "example" {
   connection_id     = "4347e805-eb46-4699-9eb9-5c116e6a017d"
 }
 ```

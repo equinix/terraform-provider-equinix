@@ -13,7 +13,7 @@ Use this datasource to retrieve attributes of a Project SSH Key API resource.
 
 ```hcl
 # Get Project SSH Key by name
-data "metal_project_ssh_key" "my_key" {
+data "equinix_metal_project_ssh_key" "my_key" {
   search     = "username@hostname"
   project_id = local.project_id
 }

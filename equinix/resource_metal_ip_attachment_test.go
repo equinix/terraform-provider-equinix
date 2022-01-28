@@ -23,14 +23,14 @@ func TestAccMetalIPAttachment_Basic(t *testing.T) {
 				Config: testAccCheckMetalIPAttachmentConfig_Basic(rs),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(
-						"metal_ip_attachment.test", "public", "true"),
+						"equinix_metal_ip_attachment.test", "public", "true"),
 					resource.TestCheckResourceAttrPair(
-						"metal_ip_attachment.test", "device_id",
-						"metal_device.test", "id"),
+						"equinix_metal_ip_attachment.test", "device_id",
+						"equinix_metal_device.test", "id"),
 				),
 			},
 			{
-				ResourceName:      "metal_ip_attachment.test",
+				ResourceName:      "equinix_metal_ip_attachment.test",
 				ImportState:       true,
 				ImportStateVerify: true,
 			},
@@ -42,7 +42,7 @@ func testAccCheckMetalIPAttachmentDestroy(s *terraform.State) error {
 	client := testAccProvider.Meta().(*packngo.Client)
 
 	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "metal_ip_attachment" {
+		if rs.Type != "equinix_metal_ip_attachment" {
 			continue
 		}
 		if _, _, err := client.ProjectIPs.Get(rs.Primary.ID, nil); err == nil {
@@ -55,11 +55,11 @@ func testAccCheckMetalIPAttachmentDestroy(s *terraform.State) error {
 
 func testAccCheckMetalIPAttachmentConfig_Basic(name string) string {
 	return fmt.Sprintf(`
-resource "metal_project" "test" {
+resource "equinix_metal_project" "test" {
     name = "tfacc-ip_attachment-%s"
 }
 
-resource "metal_device" "test" {
+resource "equinix_metal_device" "test" {
   hostname         = "tfacc-device-ip-attachment-test"
   plan             = "c3.small.x86"
   facilities       = ["sv15"]
@@ -68,14 +68,14 @@ resource "metal_device" "test" {
   project_id       = metal_project.test.id
 }
 
-resource "metal_reserved_ip_block" "test" {
+resource "equinix_metal_reserved_ip_block" "test" {
     project_id = metal_project.test.id
     facility = "sv15"
 	quantity = 2
 }
 
 
-resource "metal_ip_attachment" "test" {
+resource "equinix_metal_ip_attachment" "test" {
 	device_id = metal_device.test.id
 	cidr_notation = "${cidrhost(metal_reserved_ip_block.test.cidr_notation,0)}/32"
 }`, name)
@@ -94,14 +94,14 @@ func TestAccMetalIPAttachment_Metro(t *testing.T) {
 				Config: testAccCheckMetalIPAttachmentConfig_Metro(rs),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(
-						"metal_ip_attachment.test", "public", "true"),
+						"equinix_metal_ip_attachment.test", "public", "true"),
 					resource.TestCheckResourceAttrPair(
-						"metal_ip_attachment.test", "device_id",
-						"metal_device.test", "id"),
+						"equinix_metal_ip_attachment.test", "device_id",
+						"equinix_metal_device.test", "id"),
 				),
 			},
 			{
-				ResourceName:      "metal_ip_attachment.test",
+				ResourceName:      "equinix_metal_ip_attachment.test",
 				ImportState:       true,
 				ImportStateVerify: true,
 			},
@@ -111,11 +111,11 @@ func TestAccMetalIPAttachment_Metro(t *testing.T) {
 
 func testAccCheckMetalIPAttachmentConfig_Metro(name string) string {
 	return fmt.Sprintf(`
-resource "metal_project" "test" {
+resource "equinix_metal_project" "test" {
     name = "tfacc-ip_attachment-%s"
 }
 
-resource "metal_device" "test" {
+resource "equinix_metal_device" "test" {
   hostname         = "tfacc-device-ip-attachment-test"
   plan             = "c3.medium.x86"
   metro            = "sv"
@@ -124,14 +124,14 @@ resource "metal_device" "test" {
   project_id       = metal_project.test.id
 }
 
-resource "metal_reserved_ip_block" "test" {
+resource "equinix_metal_reserved_ip_block" "test" {
     project_id = metal_project.test.id
     metro      = "sv"
 	quantity = 2
 }
 
 
-resource "metal_ip_attachment" "test" {
+resource "equinix_metal_ip_attachment" "test" {
 	device_id = metal_device.test.id
 	cidr_notation = "${cidrhost(metal_reserved_ip_block.test.cidr_notation,0)}/32"
 }`, name)

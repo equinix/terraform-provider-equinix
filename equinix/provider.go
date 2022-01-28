@@ -29,7 +29,7 @@ const (
 	clientIDEnvVar       = "EQUINIX_API_CLIENTID"
 	clientSecretEnvVar   = "EQUINIX_API_CLIENTSECRET"
 	clientTimeoutEnvVar  = "EQUINIX_API_TIMEOUT"
-	metalAuthTokenEnvVar = "METAL_AUTH_TOKEN"
+	metalAuthTokenEnvVar = "equinix_metal_AUTH_TOKEN"
 )
 
 // resourceDataProvider provies interface to schema.ResourceData
@@ -83,7 +83,7 @@ func Provider() *schema.Provider {
 				Type:     schema.TypeString,
 				Optional: true,
 				DefaultFunc: schema.MultiEnvDefaultFunc([]string{
-					"METAL_AUTH_TOKEN",
+					"equinix_metal_AUTH_TOKEN",
 					"PACKET_AUTH_TOKEN",
 				}, nil),
 				Description: "The API auth key for API operations.",

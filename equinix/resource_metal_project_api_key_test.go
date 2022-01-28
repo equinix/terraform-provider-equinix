@@ -12,7 +12,7 @@ import (
 func testAccMetalProjectAPIKeyDestroy(s *terraform.State) error {
 	client := testAccProvider.Meta().(*packngo.Client)
 	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "metal_project_api_key" {
+		if rs.Type != "equinix_metal_project_api_key" {
 			continue
 		}
 		if _, err := client.APIKeys.ProjectGet(rs.Primary.ID, rs.Primary.Attributes["project_id"], nil); err == nil {
@@ -25,11 +25,11 @@ func testAccMetalProjectAPIKeyDestroy(s *terraform.State) error {
 func testAccMetalProjectAPIKeyConfig_Basic() string {
 	return fmt.Sprintf(`
 
-resource "metal_project" "test" {
+resource "equinix_metal_project" "test" {
     name = "tfacc-project-key-test"
 }
 
-resource "metal_project_api_key" "test" {
+resource "equinix_metal_project_api_key" "test" {
     project_id  = metal_project.test.id
     description = "tfacc-project-key"
     read_only   = true
@@ -46,10 +46,10 @@ func TestAccMetalProjectAPIKey_Basic(t *testing.T) {
 				Config: testAccMetalProjectAPIKeyConfig_Basic(),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(
-						"metal_project_api_key.test", "token"),
+						"equinix_metal_project_api_key.test", "token"),
 					resource.TestCheckResourceAttrPair(
-						"metal_project_api_key.test", "project_id",
-						"metal_project.test", "id"),
+						"equinix_metal_project_api_key.test", "project_id",
+						"equinix_metal_project.test", "id"),
 				),
 			},
 		},

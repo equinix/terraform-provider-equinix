@@ -22,26 +22,26 @@ func TestAccMetalBGPSetup_Basic(t *testing.T) {
 				Config: testAccCheckMetalBGPSetupConfig_basic(rs),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrPair(
-						"metal_device.test", "id",
-						"metal_bgp_session.test4", "device_id"),
+						"equinix_metal_device.test", "id",
+						"equinix_metal_bgp_session.test4", "device_id"),
 					resource.TestCheckResourceAttrPair(
-						"metal_device.test", "id",
-						"metal_bgp_session.test6", "device_id"),
+						"equinix_metal_device.test", "id",
+						"equinix_metal_bgp_session.test6", "device_id"),
 					resource.TestCheckResourceAttr(
-						"metal_bgp_session.test4", "default_route", "true"),
+						"equinix_metal_bgp_session.test4", "default_route", "true"),
 					resource.TestCheckResourceAttr(
-						"metal_bgp_session.test6", "default_route", "true"),
+						"equinix_metal_bgp_session.test6", "default_route", "true"),
 					resource.TestCheckResourceAttr(
-						"metal_bgp_session.test4", "address_family", "ipv4"),
+						"equinix_metal_bgp_session.test4", "address_family", "ipv4"),
 					resource.TestCheckResourceAttr(
-						"metal_bgp_session.test6", "address_family", "ipv6"),
+						"equinix_metal_bgp_session.test6", "address_family", "ipv6"),
 					// there will be 2 BGP neighbors, for IPv4 and IPv6
 					resource.TestCheckResourceAttr(
 						"data.metal_device_bgp_neighbors.test", "bgp_neighbors.#", "2"),
 				),
 			},
 			{
-				ResourceName:      "metal_bgp_session.test4",
+				ResourceName:      "equinix_metal_bgp_session.test4",
 				ImportState:       true,
 				ImportStateVerify: true,
 			},
@@ -53,7 +53,7 @@ func testAccCheckMetalBGPSetupDestroy(s *terraform.State) error {
 	client := testAccProvider.Meta().(*packngo.Client)
 
 	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "metal_bgp_session" {
+		if rs.Type != "equinix_metal_bgp_session" {
 			continue
 		}
 		if _, _, err := client.BGPSessions.Get(rs.Primary.ID, nil); err == nil {
@@ -66,7 +66,7 @@ func testAccCheckMetalBGPSetupDestroy(s *terraform.State) error {
 
 func testAccCheckMetalBGPSetupConfig_basic(name string) string {
 	return fmt.Sprintf(`
-resource "metal_project" "test" {
+resource "equinix_metal_project" "test" {
     name = "tfacc-bgp_session-%s"
 	bgp_config {
 		deployment_type = "local"
@@ -75,7 +75,7 @@ resource "metal_project" "test" {
 	}
 }
 
-resource "metal_device" "test" {
+resource "equinix_metal_device" "test" {
     hostname         = "tfacc-test-bgp-sesh"
     plan             = "t1.small.x86"
     facilities       = ["ewr1"]
@@ -84,19 +84,19 @@ resource "metal_device" "test" {
     project_id       = "${metal_project.test.id}"
 }
 
-resource "metal_bgp_session" "test4" {
+resource "equinix_metal_bgp_session" "test4" {
 	device_id = "${metal_device.test.id}"
 	address_family = "ipv4"
 	default_route = true
 }
 
-resource "metal_bgp_session" "test6" {
+resource "equinix_metal_bgp_session" "test6" {
 	device_id = "${metal_device.test.id}"
 	address_family = "ipv6"
 	default_route = true
 }
 
-data "metal_device_bgp_neighbors" "test" {
+data "equinix_metal_device_bgp_neighbors" "test" {
   device_id  = metal_bgp_session.test4.device_id
 }
 `, name)

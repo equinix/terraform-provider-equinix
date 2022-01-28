@@ -13,7 +13,7 @@ Use this datasource to retrieve attributes of the Project API resource.
 
 ```hcl
 # Get Project by name and print UUIDs of its users
-data "metal_project" "tf_project_1" {
+data "equinix_metal_project" "tf_project_1" {
   name = "Terraform Fun"
 }
 

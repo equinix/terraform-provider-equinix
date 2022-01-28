@@ -14,7 +14,7 @@ func testAccCheckMetalConnectionDestroy(s *terraform.State) error {
 	client := testAccProvider.Meta().(*packngo.Client)
 
 	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "metal_connection" {
+		if rs.Type != "equinix_metal_connection" {
 			continue
 		}
 		if _, _, err := client.Connections.Get(rs.Primary.ID, nil); err == nil {
@@ -27,11 +27,11 @@ func testAccCheckMetalConnectionDestroy(s *terraform.State) error {
 
 func testAccMetalConnectionConfig_Shared(randstr string) string {
 	return fmt.Sprintf(`
-        resource "metal_project" "test" {
+        resource "equinix_metal_project" "test" {
             name = "tfacc-conn-pro-%s"
         }
 
-        resource "metal_connection" "test" {
+        resource "equinix_metal_connection" "test" {
             name            = "tfacc-conn-%s"
             organization_id = metal_project.test.organization_id
             project_id      = metal_project.test.id
@@ -55,11 +55,11 @@ func TestAccMetalConnection_Shared(t *testing.T) {
 				Config: testAccMetalConnectionConfig_Shared(rs),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(
-						"metal_connection.test", "metro", "sv"),
+						"equinix_metal_connection.test", "metro", "sv"),
 				),
 			},
 			{
-				ResourceName:      "metal_connection.test",
+				ResourceName:      "equinix_metal_connection.test",
 				ImportState:       true,
 				ImportStateVerify: true,
 			},
@@ -69,12 +69,12 @@ func TestAccMetalConnection_Shared(t *testing.T) {
 
 func testAccMetalConnectionConfig_Dedicated(randstr string) string {
 	return fmt.Sprintf(`
-        resource "metal_project" "test" {
+        resource "equinix_metal_project" "test" {
             name = "tfacc-conn-pro-%s"
         }
         
         // No project ID. We only use the project resource to get org_id
-        resource "metal_connection" "test" {
+        resource "equinix_metal_connection" "test" {
             name            = "tfacc-conn-%s"
             organization_id = metal_project.test.organization_id
             metro           = "sv"
@@ -88,7 +88,7 @@ func testAccMetalConnectionConfig_Dedicated(randstr string) string {
 
 func testDataSourceMetalConnectionConfig_Dedicated() string {
 	return `
-		data "metal_connection" "test" {
+		data "equinix_metal_connection" "test" {
             connection_id = metal_connection.test.id
         }`
 }
@@ -105,16 +105,16 @@ func TestAccMetalConnection_Dedicated(t *testing.T) {
 			{
 				Config: testAccMetalConnectionConfig_Dedicated(rs),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr("metal_connection.test", "metro", "sv"),
-					resource.TestCheckResourceAttr("metal_connection.test", "tags.#", "1"),
-					resource.TestCheckResourceAttr("metal_connection.test", "mode", "standard"),
-					resource.TestCheckResourceAttr("metal_connection.test", "type", "dedicated"),
-					resource.TestCheckResourceAttr("metal_connection.test", "redundancy", "redundant"),
-					resource.TestCheckResourceAttr("metal_connection.test", "metro", "sv"),
+					resource.TestCheckResourceAttr("equinix_metal_connection.test", "metro", "sv"),
+					resource.TestCheckResourceAttr("equinix_metal_connection.test", "tags.#", "1"),
+					resource.TestCheckResourceAttr("equinix_metal_connection.test", "mode", "standard"),
+					resource.TestCheckResourceAttr("equinix_metal_connection.test", "type", "dedicated"),
+					resource.TestCheckResourceAttr("equinix_metal_connection.test", "redundancy", "redundant"),
+					resource.TestCheckResourceAttr("equinix_metal_connection.test", "metro", "sv"),
 				),
 			},
 			{
-				ResourceName:      "metal_connection.test",
+				ResourceName:      "equinix_metal_connection.test",
 				ImportState:       true,
 				ImportStateVerify: true,
 			},
@@ -135,11 +135,11 @@ func TestAccMetalConnection_Dedicated(t *testing.T) {
 
 func testAccMetalConnectionConfig_Tunnel(randstr string) string {
 	return fmt.Sprintf(`
-        resource "metal_project" "test" {
+        resource "equinix_metal_project" "test" {
             name = "tfacc-conn-pro-%s"
         }
 
-        resource "metal_connection" "test" {
+        resource "equinix_metal_connection" "test" {
             name            = "tfacc-conn-%s"
             organization_id = metal_project.test.organization_id
             metro           = "sv"
@@ -163,11 +163,11 @@ func TestAccMetalConnection_Tunnel(t *testing.T) {
 				Config: testAccMetalConnectionConfig_Tunnel(rs),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(
-						"metal_connection.test", "mode", "tunnel"),
+						"equinix_metal_connection.test", "mode", "tunnel"),
 				),
 			},
 			{
-				ResourceName:      "metal_connection.test",
+				ResourceName:      "equinix_metal_connection.test",
 				ImportState:       true,
 				ImportStateVerify: true,
 			},

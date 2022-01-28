@@ -64,7 +64,7 @@ func dataSourceMetalHardwareReservation() *schema.Resource {
 }
 
 func dataSourceMetalHardwareReservationRead(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*packngo.Client)
+	client := meta.(*Config).Client()
 	hrIdRaw, hrIdOk := d.GetOk("id")
 	dIdRaw, dIdOk := d.GetOk("device_id")
 

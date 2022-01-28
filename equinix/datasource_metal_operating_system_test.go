@@ -23,7 +23,7 @@ func TestAccMetalOperatingSystem_Basic(t *testing.T) {
 }
 
 const testOperatingSystemConfig_Basic = `
-	data "metal_operating_system" "example" {
+	data "equinix_metal_operating_system" "example" {
 		distro  = "ubuntu"
 		version = "20.04"
 	  }`
@@ -44,7 +44,7 @@ func TestAccMetalOperatingSystem_NotFound(t *testing.T) {
 }
 
 const testOperatingSystemConfig_NotFound = `
-	data "metal_operating_system" "example" {
+	data "equinix_metal_operating_system" "example" {
 		distro  = "NOTEXISTS"
 		version = "alpha"
 	  }`
@@ -65,6 +65,6 @@ func TestAccMetalOperatingSystem_Ambiguous(t *testing.T) {
 }
 
 const testOperatingSystemConfig_Ambiguous = `
-	data "metal_operating_system" "example" {
+	data "equinix_metal_operating_system" "example" {
 		distro  = "ubuntu"
 	  }`

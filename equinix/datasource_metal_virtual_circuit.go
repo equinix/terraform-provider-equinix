@@ -61,7 +61,7 @@ func dataSourceMetalVirtualCircuit() *schema.Resource {
 }
 
 func dataSourceMetalVirtualCircuitRead(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*packngo.Client)
+	client := meta.(*Config).Client()
 	vcId := d.Get("virtual_circuit_id").(string)
 
 	vc, _, err := client.VirtualCircuits.Get(

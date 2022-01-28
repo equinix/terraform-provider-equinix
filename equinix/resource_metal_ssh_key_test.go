@@ -14,8 +14,8 @@ import (
 )
 
 func init() {
-	resource.AddTestSweepers("metal_ssh_key", &resource.Sweeper{
-		Name: "metal_ssh_key",
+	resource.AddTestSweepers("equinix_metal_ssh_key", &resource.Sweeper{
+		Name: "equinix_metal_ssh_key",
 		F:    testSweepSSHKeys,
 	})
 }
@@ -26,7 +26,7 @@ func testSweepSSHKeys(region string) error {
 	if err != nil {
 		return fmt.Errorf("Error getting client for sweeping ssh keys: %s", err)
 	}
-	client := meta.(*packngo.Client)
+	client := meta.Client()
 
 	sshkeys, _, err := client.SSHKeys.List()
 	if err != nil {
@@ -64,13 +64,13 @@ func TestAccMetalSSHKey_Basic(t *testing.T) {
 			{
 				Config: testAccCheckMetalSSHKeyConfig_basic(rInt, publicKeyMaterial),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckMetalSSHKeyExists("metal_ssh_key.foobar", &key),
+					testAccCheckMetalSSHKeyExists("equinix_metal_ssh_key.foobar", &key),
 					resource.TestCheckResourceAttr(
-						"metal_ssh_key.foobar", "name", fmt.Sprintf("tfacc-user-key-%d", rInt)),
+						"equinix_metal_ssh_key.foobar", "name", fmt.Sprintf("tfacc-user-key-%d", rInt)),
 					resource.TestCheckResourceAttr(
-						"metal_ssh_key.foobar", "public_key", publicKeyMaterial),
+						"equinix_metal_ssh_key.foobar", "public_key", publicKeyMaterial),
 					resource.TestCheckResourceAttrSet(
-						"metal_ssh_key.foobar", "owner_id"),
+						"equinix_metal_ssh_key.foobar", "owner_id"),
 				),
 			},
 		},
@@ -93,8 +93,8 @@ func TestAccMetalSSHKey_ProjectBasic(t *testing.T) {
 				Config: testAccCheckMetalSSHKeyConfig_projectBasic(rInt, publicKeyMaterial),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrPair(
-						"metal_project.test", "id",
-						"metal_project_ssh_key.foobar", "project_id",
+						"equinix_metal_project.test", "id",
+						"equinix_metal_project_ssh_key.foobar", "project_id",
 					),
 				),
 			},
@@ -118,21 +118,21 @@ func TestAccMetalSSHKey_Update(t *testing.T) {
 			{
 				Config: testAccCheckMetalSSHKeyConfig_basic(rInt, publicKeyMaterial),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckMetalSSHKeyExists("metal_ssh_key.foobar", &key),
+					testAccCheckMetalSSHKeyExists("equinix_metal_ssh_key.foobar", &key),
 					resource.TestCheckResourceAttr(
-						"metal_ssh_key.foobar", "name", fmt.Sprintf("tfacc-user-key-%d", rInt)),
+						"equinix_metal_ssh_key.foobar", "name", fmt.Sprintf("tfacc-user-key-%d", rInt)),
 					resource.TestCheckResourceAttr(
-						"metal_ssh_key.foobar", "public_key", publicKeyMaterial),
+						"equinix_metal_ssh_key.foobar", "public_key", publicKeyMaterial),
 				),
 			},
 			{
 				Config: testAccCheckMetalSSHKeyConfig_basic(rInt+1, publicKeyMaterial),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckMetalSSHKeyExists("metal_ssh_key.foobar", &key),
+					testAccCheckMetalSSHKeyExists("equinix_metal_ssh_key.foobar", &key),
 					resource.TestCheckResourceAttr(
-						"metal_ssh_key.foobar", "name", fmt.Sprintf("tfacc-user-key-%d", rInt+1)),
+						"equinix_metal_ssh_key.foobar", "name", fmt.Sprintf("tfacc-user-key-%d", rInt+1)),
 					resource.TestCheckResourceAttr(
-						"metal_ssh_key.foobar", "public_key", publicKeyMaterial),
+						"equinix_metal_ssh_key.foobar", "public_key", publicKeyMaterial),
 				),
 			},
 		},
@@ -153,7 +153,7 @@ func TestAccMetalSSHKey_projectImportBasic(t *testing.T) {
 				Config: testAccCheckMetalSSHKeyConfig_projectBasic(acctest.RandInt(), sshKey),
 			},
 			{
-				ResourceName:      "metal_project_ssh_key.foobar",
+				ResourceName:      "equinix_metal_project_ssh_key.foobar",
 				ImportState:       true,
 				ImportStateVerify: true,
 			},
@@ -175,7 +175,7 @@ func TestAccMetalSSHKey_importBasic(t *testing.T) {
 				Config: testAccCheckMetalSSHKeyConfig_basic(acctest.RandInt(), sshKey),
 			},
 			{
-				ResourceName:      "metal_ssh_key.foobar",
+				ResourceName:      "equinix_metal_ssh_key.foobar",
 				ImportState:       true,
 				ImportStateVerify: true,
 			},
@@ -187,7 +187,7 @@ func testAccCheckMetalSSHKeyDestroy(s *terraform.State) error {
 	client := testAccProvider.Meta().(*packngo.Client)
 
 	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "metal_ssh_key" {
+		if rs.Type != "equinix_metal_ssh_key" {
 			continue
 		}
 		if _, _, err := client.SSHKeys.Get(rs.Primary.ID, nil); err == nil {
@@ -226,7 +226,7 @@ func testAccCheckMetalSSHKeyExists(n string, key *packngo.SSHKey) resource.TestC
 
 func testAccCheckMetalSSHKeyConfig_basic(rInt int, publicSshKey string) string {
 	return fmt.Sprintf(`
-resource "metal_ssh_key" "foobar" {
+resource "equinix_metal_ssh_key" "foobar" {
     name = "tfacc-user-key-%d"
     public_key = "%s"
 }`, rInt, publicSshKey)
@@ -235,11 +235,11 @@ resource "metal_ssh_key" "foobar" {
 func testAccCheckMetalSSHKeyConfig_projectBasic(rInt int, publicSshKey string) string {
 	return fmt.Sprintf(`
 
-resource "metal_project" "test" {
+resource "equinix_metal_project" "test" {
     name = "tfacc-project-key-test-%d"
 }
 
-resource "metal_project_ssh_key" "foobar" {
+resource "equinix_metal_project_ssh_key" "foobar" {
     name = "tfacc-project-key-%d"
     public_key = "%s"
 	project_id = metal_project.test.id

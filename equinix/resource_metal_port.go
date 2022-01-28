@@ -5,7 +5,6 @@ import (
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/packethost/packngo"
 )
 
 /*
@@ -141,7 +140,7 @@ func resourceMetalPortUpdate(d *schema.ResourceData, meta interface{}) error {
 }
 
 func resourceMetalPortRead(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*packngo.Client)
+	client := meta.(*Config).Client()
 	port, err := getPortByResourceData(d, client)
 
 	if err != nil {

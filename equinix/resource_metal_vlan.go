@@ -129,7 +129,7 @@ func resourceMetalVlanRead(d *schema.ResourceData, meta interface{}) error {
 }
 
 func resourceMetalVlanDelete(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*packngo.Client)
+	client := meta.(*Config).Client()
 	id := d.Id()
 	vlan, resp, err := client.ProjectVirtualNetworks.Get(id, &packngo.GetOptions{Includes: []string{"instances", "instances.network_ports.virtual_networks", "internet_gateway"}})
 	if ignoreResponseErrors(httpForbidden, httpNotFound)(resp, err) != nil {

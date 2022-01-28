@@ -14,7 +14,7 @@ Use this data source to get Equinix Metal Spot Market Price for a plan.
 Lookup by facility:
 
 ```hcl
-data "metal_spot_market_price" "example" {
+data "equinix_metal_spot_market_price" "example" {
   facility = "ny5"
   plan     = "c3.small.x86"
 }
@@ -23,7 +23,7 @@ data "metal_spot_market_price" "example" {
 Lookup by metro:
 
 ```hcl
-data "metal_spot_market_price" "example" {
+data "equinix_metal_spot_market_price" "example" {
   metro    = "sv"
   plan     = "c3.small.x86"
 }

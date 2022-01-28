@@ -10,23 +10,23 @@ import (
 
 func testAccDataSourceMetalReservedIPBlockConfig_Basic(name string) string {
 	return fmt.Sprintf(`
-resource "metal_project" "foobar" {
+resource "equinix_metal_project" "foobar" {
 	name = "tfacc-reserved_ip_block-%s"
 }
 
-resource "metal_reserved_ip_block" "test" {
+resource "equinix_metal_reserved_ip_block" "test" {
 	project_id  = metal_project.foobar.id
 	metro       = "sv"
 	type        = "public_ipv4"
 	quantity    = 2
 }
 
-data "metal_reserved_ip_block" "test" {
+data "equinix_metal_reserved_ip_block" "test" {
 	project_id  = metal_project.foobar.id
     ip_address  = cidrhost(metal_reserved_ip_block.test.cidr_notation,1)
 }
 
-data "metal_reserved_ip_block" "test_id" {
+data "equinix_metal_reserved_ip_block" "test_id" {
 	id  = metal_reserved_ip_block.test.id
 }
 
@@ -46,11 +46,11 @@ func TestAccDataSourceMetalReservedIPBlock_Basic(t *testing.T) {
 				Config: testAccDataSourceMetalReservedIPBlockConfig_Basic(rs),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrPair(
-						"metal_reserved_ip_block.test", "id",
+						"equinix_metal_reserved_ip_block.test", "id",
 						"data.metal_reserved_ip_block.test", "id",
 					),
 					resource.TestCheckResourceAttrPair(
-						"metal_reserved_ip_block.test", "cidr_notation",
+						"equinix_metal_reserved_ip_block.test", "cidr_notation",
 						"data.metal_reserved_ip_block.test_id", "cidr_notation",
 					),
 				),

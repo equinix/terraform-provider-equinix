@@ -13,7 +13,7 @@ Provides a resource to manage organization resource in Equinix Metal.
 
 ```hcl
 # Create a new Project
-resource "metal_organization" "tf_organization_1" {
+resource "equinix_metal_organization" "tf_organization_1" {
   name        = "foobar"
   description = "quux"
 }

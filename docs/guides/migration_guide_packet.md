@@ -8,7 +8,7 @@ description: |-
 
 Packet is now Equinix Metal, and the name of the Terraform provider changed too. This (terraform-provider-metal, provider equinix/metal) is the current provider for Equinix Metal.
 
-If you've been using terraform-provider-packet, and you want to use a newer provider version to manage resources in Equinix Metal, you will need to change the references in you HCL files. You can just change the names of the resources, e.g. from `packet_device` to `metal_device`. That should work, but it will cause the `packet_device` to be destroyed and new `metal_device` to be created instead. Re-creation of the resources might be undesirable, and this guide shows how to migrate to metal_ resources without the re-creation.
+If you've been using terraform-provider-packet, and you want to use a newer provider version to manage resources in Equinix Metal, you will need to change the references in you HCL files. You can just change the names of the resources, e.g. from `packet_device` to `equinix_metal_device`. That should work, but it will cause the `packet_device` to be destroyed and new `equinix_metal_device` to be created instead. Re-creation of the resources might be undesirable, and this guide shows how to migrate to metal_ resources without the re-creation.
 
 Before starting to migrate your Terraform templates, please upgrade
 * packethost/packet provider to the latest version (3.2.1)
@@ -17,7 +17,7 @@ Before starting to migrate your Terraform templates, please upgrade
 
 ## Fast migration with replace-provider and sed
 
-Just like the Terraform HCL templates, the Terraform state is a file containing resource names and their attributes in structured text. We can attempt the migration as a text substitution task, basically replacing `packet_` with `metal_` wherever possible, and fixing the provider source reference.
+Just like the Terraform HCL templates, the Terraform state is a file containing resource names and their attributes in structured text. We can attempt the migration as a text substitution task, basically replacing `packet_` with `equinix_metal_` wherever possible, and fixing the provider source reference.
 
 It's a good idea to make a backup of the whole Terraform directory before doing this.
 
@@ -63,7 +63,7 @@ $ sed -i 's/packet/metal/g' main.tf
 
 ..this is a bit dangerous, so check your `git diff` after. It should replace all the `packet_` prefices and also the key from the `required_providers` block.
 
-Then replace `packet_` with `metal_` in the terraform state file:
+Then replace `packet_` with `equinix_metal_` in the terraform state file:
 
 ```
 $ sed -i 's/packet_/metal_/g' terraform.tfstate
@@ -80,11 +80,11 @@ terraform {
   }
 }
 
-resource "metal_project" "example" {
+resource "equinix_metal_project" "example" {
   name = "example"
 }
 
-resource "metal_vlan" "example" {
+resource "equinix_metal_vlan" "example" {
   project_id       = metal_project.example.id
   facility         = "sv15"
   description      = "example"
@@ -187,13 +187,13 @@ terraform {
   }
 }
 
-resource "metal_reserved_ip_block" "example" {
+resource "equinix_metal_reserved_ip_block" "example" {
   project_id = local.project_id
   facility   = "sv15"
   quantity   = 2
 }
 
-resource "metal_device" "example" {
+resource "equinix_metal_device" "example" {
   project_id       = local.project_id
   facilities       = ["sv15"]
   plan             = "c3.medium.x86"

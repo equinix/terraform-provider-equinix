@@ -24,7 +24,7 @@ func TestAccDataSourceMetalSpotMarketRequest_Basic(t *testing.T) {
 			{
 				Config: testDataSourceMetalSpotMarketRequestConfig_Basic(projectName),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckMetalSpotMarketRequestExists("metal_spot_market_request.req", &facKey),
+					testAccCheckMetalSpotMarketRequestExists("equinix_metal_spot_market_request.req", &facKey),
 				),
 			},
 			{
@@ -35,7 +35,7 @@ func TestAccDataSourceMetalSpotMarketRequest_Basic(t *testing.T) {
 			{
 				Config: testDataSourceMetalSpotMarketRequestConfig_Metro(projectName),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckMetalSpotMarketRequestExists("metal_spot_market_request.req", &metKey),
+					testAccCheckMetalSpotMarketRequestExists("equinix_metal_spot_market_request.req", &metKey),
 					func(_ *terraform.State) error {
 						if metKey.ID == facKey.ID {
 							return fmt.Errorf("Expected a new spot_market_request")
@@ -51,11 +51,11 @@ func TestAccDataSourceMetalSpotMarketRequest_Basic(t *testing.T) {
 func testDataSourceMetalSpotMarketRequestConfig_Basic(projSuffix string) string {
 	return fmt.Sprintf(`
 
-resource "metal_project" "test" {
+resource "equinix_metal_project" "test" {
   name = "tfacc-spot_market_request-%s"
 }
 
-resource "metal_spot_market_request" "req" {
+resource "equinix_metal_spot_market_request" "req" {
   project_id    = "${metal_project.test.id}"
   max_bid_price = 0.01
   facilities    = ["sjc1"]
@@ -71,7 +71,7 @@ resource "metal_spot_market_request" "req" {
   }
 }
 
-data "metal_spot_market_request" "dreq" {
+data "equinix_metal_spot_market_request" "dreq" {
   request_id = metal_spot_market_request.req.id
 }
 `, projSuffix)
@@ -80,11 +80,11 @@ data "metal_spot_market_request" "dreq" {
 func testDataSourceMetalSpotMarketRequestConfig_Metro(projSuffix string) string {
 	return fmt.Sprintf(`
 
-resource "metal_project" "test" {
+resource "equinix_metal_project" "test" {
   name = "tfacc-spot_market_request-%s"
 }
 
-resource "metal_spot_market_request" "req" {
+resource "equinix_metal_spot_market_request" "req" {
   project_id    = "${metal_project.test.id}"
   max_bid_price = 0.01
   metro = "sv"
@@ -100,7 +100,7 @@ resource "metal_spot_market_request" "req" {
   }
 }
 
-data "metal_spot_market_request" "dreq" {
+data "equinix_metal_spot_market_request" "dreq" {
   request_id = metal_spot_market_request.req.id
 }
 `, projSuffix)

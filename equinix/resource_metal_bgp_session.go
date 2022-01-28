@@ -49,7 +49,7 @@ func resourceMetalBGPSession() *schema.Resource {
 }
 
 func resourceMetalBGPSessionCreate(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*packngo.Client)
+	client := meta.(*Config).Client()
 	dID := d.Get("device_id").(string)
 	addressFamily := d.Get("address_family").(string)
 	defaultRoute := d.Get("default_route").(bool)
@@ -67,7 +67,7 @@ func resourceMetalBGPSessionCreate(d *schema.ResourceData, meta interface{}) err
 }
 
 func resourceMetalBGPSessionRead(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*packngo.Client)
+	client := meta.(*Config).Client()
 	bgpSession, _, err := client.BGPSessions.Get(d.Id(),
 		&packngo.GetOptions{Includes: []string{"device"}})
 	if err != nil {
@@ -95,7 +95,7 @@ func resourceMetalBGPSessionRead(d *schema.ResourceData, meta interface{}) error
 }
 
 func resourceMetalBGPSessionDelete(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*packngo.Client)
+	client := meta.(*Config).Client()
 	resp, err := client.BGPSessions.Delete(d.Id())
 	return ignoreResponseErrors(httpForbidden, httpNotFound)(resp, err)
 }

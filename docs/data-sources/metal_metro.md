@@ -14,7 +14,7 @@ Provides an Equinix Metal metro datasource.
 ```hcl
 # Fetch a metro by code and show its ID
 
-data "metal_metro" "sv" {
+data "equinix_metal_metro" "sv" {
   code = "sv"
 }
 
@@ -28,7 +28,7 @@ output "id" {
 # Verify that metro "sv" has capacity for provisioning 2 c3.small.x86 
   devices and 1 c3.medium.x86 device
 
-data "metal_facility" "test" {
+data "equinix_metal_facility" "test" {
   code = "dc13"
   capacity {
     plan = "c3.small.x86"

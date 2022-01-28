@@ -22,12 +22,12 @@ func TestAccMetalIPBlockRanges_Basic(t *testing.T) {
 					resource.TestCheckResourceAttrSet(
 						"data.metal_ip_block_ranges.test", "ipv6.0"),
 					resource.TestCheckResourceAttrPair(
-						"metal_ip_attachment.test", "device_id",
-						"metal_device.test", "id"),
+						"equinix_metal_ip_attachment.test", "device_id",
+						"equinix_metal_device.test", "id"),
 				),
 			},
 			{
-				ResourceName:      "metal_ip_attachment.test",
+				ResourceName:      "equinix_metal_ip_attachment.test",
 				ImportState:       true,
 				ImportStateVerify: true,
 			},
@@ -38,11 +38,11 @@ func TestAccMetalIPBlockRanges_Basic(t *testing.T) {
 func testIPBlockRangesConfig_Basic(name string) string {
 	return fmt.Sprintf(`
 
-resource "metal_project" "test" {
+resource "equinix_metal_project" "test" {
     name = "tfacc-precreated_ip_block-%s"
 }
 
-resource "metal_device" "test" {
+resource "equinix_metal_device" "test" {
   hostname         = "tfacc-device-ip-test"
   plan             = "t1.small.x86"
   facilities       = ["ewr1"]
@@ -51,12 +51,12 @@ resource "metal_device" "test" {
   project_id       = metal_project.test.id
 }
 
-data "metal_ip_block_ranges" "test" {
+data "equinix_metal_ip_block_ranges" "test" {
     facility         = "ewr1"
     project_id       = metal_device.test.project_id
 }
 
-resource "metal_ip_attachment" "test" {
+resource "equinix_metal_ip_attachment" "test" {
     device_id = metal_device.test.id
     cidr_notation = cidrsubnet(data.metal_ip_block_ranges.test.ipv6.0, 8,2)
 }

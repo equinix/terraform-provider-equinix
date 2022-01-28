@@ -18,7 +18,7 @@ To learn more about using BGP in Equinix Metal, see the [metal_bgp_session](../r
 ```hcl
 # Get Project by name and print UUIDs of its users
 
-data "metal_device_bgp_neighbors" "test" {
+data "equinix_metal_device_bgp_neighbors" "test" {
   device_id = "4c641195-25e5-4c3c-b2b7-4cd7a42c7b40"
 }
 

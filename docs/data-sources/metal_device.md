@@ -18,7 +18,7 @@ Provides an Equinix Metal device datasource.
 ```hcl
 # Fetch a device data by hostname and show it's ID
 
-data "metal_device" "test" {
+data "equinix_metal_device" "test" {
   project_id = local.project_id
   hostname   = "mydevice"
 }
@@ -30,7 +30,7 @@ output "id" {
 
 ```hcl
 # Fetch a device data by ID and show its public IPv4
-data "metal_device" "test" {}
+data "equinix_metal_device" "test" {}
 
 output "ipv4" {
   value = data.metal_device.test.access_public_ipv4
@@ -61,9 +61,9 @@ The following attributes are exported:
 * `id` - The ID of the device
 * `metro` - The metro where the device is deployed
 * `network` - The device's private and public IP (v4 and v6) network details. When a device is run without any special network configuration, it will have 3 networks:
-  * Public IPv4 at `metal_device.name.network.0`
-  * IPv6 at `metal_device.name.network.1`
-  * Private IPv4 at `metal_device.name.network.2`
+  * Public IPv4 at `equinix_metal_device.name.network.0`
+  * IPv6 at `equinix_metal_device.name.network.1`
+  * Private IPv4 at `equinix_metal_device.name.network.2`
   Elastic addresses then stack by type - an assigned public IPv4 will go after the management public IPv4 (to index 1), and will then shift the indices of the IPv6 and private IPv4. Assigned private IPv4 will go after the management private IPv4 (to the end of the network list).
   The fields of the network attributes are:
   * `address` - IPv4 or IPv6 address string

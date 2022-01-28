@@ -111,7 +111,7 @@ func dataSourceMetalReservedIPBlock() *schema.Resource {
 }
 
 func dataSourceMetalReservedIPBlockRead(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*packngo.Client)
+	client := meta.(*Config).Client()
 
 	blockId, blockIdOk := d.GetOk("id")
 	projectId, projectIdOk := d.GetOk("project_id")

@@ -12,13 +12,13 @@ Use this data source to get Equinix Metal Operating System image.
 ## Example Usage
 
 ```hcl
-data "metal_operating_system" "example" {
+data "equinix_metal_operating_system" "example" {
   distro           = "ubuntu"
   version          = "20.04"
   provisionable_on = "c3.medium.x86"
 }
 
-resource "metal_device" "server" {
+resource "equinix_metal_device" "server" {
   hostname         = "tf.ubuntu"
   plan             = "c3.medium.x86"
   facilities       = ["ny5"]

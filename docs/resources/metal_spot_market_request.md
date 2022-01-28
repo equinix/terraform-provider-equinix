@@ -14,7 +14,7 @@ manage spot market requests on your account. For more detail on Spot Market, see
 
 ```hcl
 # Create a spot market request
-resource "metal_spot_market_request" "req" {
+resource "equinix_metal_spot_market_request" "req" {
   project_id    = local.project_id
   max_bid_price = 0.03
   facilities    = ["ny5"]

@@ -14,13 +14,13 @@ Use this resource to create Metal Gateway resources in Equinix Metal.
 ```hcl
 # Create Metal Gateway for a VLAN with a private IPv4 block with 8 IP addresses
 
-resource "metal_vlan" "test" {
+resource "equinix_metal_vlan" "test" {
   description = "test VLAN in SV"
   metro       = "sv"
   project_id  = local.project_id
 }
 
-resource "metal_gateway" "test" {
+resource "equinix_metal_gateway" "test" {
   project_id               = local.project_id
   vlan_id                  = metal_vlan.test.id
   private_ipv4_subnet_size = 8
@@ -30,19 +30,19 @@ resource "metal_gateway" "test" {
 ```hcl
 # Create Metal Gateway for a VLAN and reserved IP address block
 
-resource "metal_vlan" "test" {
+resource "equinix_metal_vlan" "test" {
   description = "test VLAN in SV"
   metro       = "sv"
   project_id  = local.project_id
 }
 
-resource "metal_reserved_ip_block" "test" {
+resource "equinix_metal_reserved_ip_block" "test" {
   project_id = local.project_id
   metro      = "sv"
   quantity   = 2
 }
 
-resource "metal_gateway" "test" {
+resource "equinix_metal_gateway" "test" {
   project_id        = local.project_id
   vlan_id           = metal_vlan.test.id
   ip_reservation_id = metal_reserved_ip_block.test.id

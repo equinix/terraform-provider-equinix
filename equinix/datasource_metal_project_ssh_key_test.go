@@ -96,17 +96,17 @@ func TestAccMetalProjectSSHKeyDataSource_ByID(t *testing.T) {
 
 func testAccMetalProjectSSHKeyDataSourceConfig_bySearch(keyName, publicSshKey string) string {
 	config := fmt.Sprintf(`
-resource "metal_project" "test" {
+resource "equinix_metal_project" "test" {
     name = "%s"
 }
 
-resource "metal_project_ssh_key" "foobar" {
+resource "equinix_metal_project_ssh_key" "foobar" {
 	name = "%s"
 	public_key = "%s"
 	project_id = metal_project.test.id
 }
 
-data "metal_project_ssh_key" "foobar" {
+data "equinix_metal_project_ssh_key" "foobar" {
 	search = metal_project_ssh_key.foobar.name
 	project_id = metal_project.test.id
 }
@@ -117,11 +117,11 @@ data "metal_project_ssh_key" "foobar" {
 
 func testAccMetalProjectSSHKeyDataSourceConfig_noKey(keyName, publicSshKey string) string {
 	config := fmt.Sprintf(`
-resource "metal_project" "test" {
+resource "equinix_metal_project" "test" {
     name = "%s"
 }
 
-data "metal_project_ssh_key" "foobar" {
+data "equinix_metal_project_ssh_key" "foobar" {
 	search = "%s"
 	project_id = metal_project.test.id
 }`, keyName, keyName)
@@ -130,17 +130,17 @@ data "metal_project_ssh_key" "foobar" {
 
 func testAccMetalProjectSSHKeyDataSourceConfig_byID(keyName, publicSshKey string) string {
 	config := fmt.Sprintf(`
-resource "metal_project" "test" {
+resource "equinix_metal_project" "test" {
     name = "%s"
 }
 
-data "metal_project_ssh_key" "foobar" {
+data "equinix_metal_project_ssh_key" "foobar" {
 	depends_on = [metal_project_ssh_key.foobar]
 	id = metal_project_ssh_key.foobar.id
 	project_id = metal_project.test.id
 }
 
-resource "metal_project_ssh_key" "foobar" {
+resource "equinix_metal_project_ssh_key" "foobar" {
 	name = "%s"
 	public_key = "%s"
 	project_id = metal_project.test.id

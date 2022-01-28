@@ -12,17 +12,17 @@ import (
 
 func metalProjectSSHKeyConfig_Basic(name, publicSshKey string) string {
 	return fmt.Sprintf(`
-resource "metal_project" "test" {
+resource "equinix_metal_project" "test" {
     name = "tfacc-project_ssh_key-%s"
 }
 
-resource "metal_project_ssh_key" "test" {
+resource "equinix_metal_project_ssh_key" "test" {
     name = "tfacc-project-key-test"
     public_key = "%s"
     project_id = "${metal_project.test.id}"
 }
 
-resource "metal_device" "test" {
+resource "equinix_metal_device" "test" {
     hostname            = "tfacc-device-key-test"
     plan                = "baremetal_0"
     facilities          = ["ewr1"]
@@ -52,16 +52,16 @@ func TestAccMetalProjectSSHKey_Basic(t *testing.T) {
 			{
 				Config: cfg,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckMetalSSHKeyExists("metal_project_ssh_key.test", &key),
+					testAccCheckMetalSSHKeyExists("equinix_metal_project_ssh_key.test", &key),
 					resource.TestCheckResourceAttr(
-						"metal_project_ssh_key.test", "public_key", publicKeyMaterial),
+						"equinix_metal_project_ssh_key.test", "public_key", publicKeyMaterial),
 					resource.TestCheckResourceAttrPair(
-						"metal_device.test", "ssh_key_ids.0",
-						"metal_project_ssh_key.test", "id",
+						"equinix_metal_device.test", "ssh_key_ids.0",
+						"equinix_metal_project_ssh_key.test", "id",
 					),
 					resource.TestCheckResourceAttrPair(
-						"metal_project.test", "id",
-						"metal_project_ssh_key.test", "project_id",
+						"equinix_metal_project.test", "id",
+						"equinix_metal_project_ssh_key.test", "project_id",
 					),
 				),
 			},
@@ -73,7 +73,7 @@ func testAccCheckMetalProjectSSHKeyDestroy(s *terraform.State) error {
 	client := testAccProvider.Meta().(*packngo.Client)
 
 	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "metal_project_ssh_key" {
+		if rs.Type != "equinix_metal_project_ssh_key" {
 			continue
 		}
 		if _, _, err := client.SSHKeys.Get(rs.Primary.ID, nil); err == nil {

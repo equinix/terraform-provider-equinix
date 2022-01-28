@@ -13,7 +13,7 @@ Provides an Equinix Metal organization datasource.
 
 ```hcl
 # Fetch a organization data and show projects which belong to it
-data "metal_organization" "test" {
+data "equinix_metal_organization" "test" {
   organization_id = local.org_id
 }
 

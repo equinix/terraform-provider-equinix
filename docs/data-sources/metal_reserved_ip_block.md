@@ -18,12 +18,12 @@ data "dns_a_record_set" "www" {
   host = "www.example.com"
 }
 
-data "metal_reserved_ip_block" "www" {
+data "equinix_metal_reserved_ip_block" "www" {
   project_id = local.my_project_id
   address = data.dns_a_record_set.www.addrs[0]
 }
 
-resource "metal_device" "www" {
+resource "equinix_metal_device" "www" {
   project_id = local.my_project_id
   [...]
   ip_address {

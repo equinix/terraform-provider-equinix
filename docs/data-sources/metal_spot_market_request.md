@@ -14,7 +14,7 @@ Provides an Equinix Metal spot_market_request datasource. The datasource will co
 ```hcl
 # Create a Spot Market Request, and print public IPv4 of the created devices, if any.
 
-resource "metal_spot_market_request" "req" {
+resource "equinix_metal_spot_market_request" "req" {
   project_id       = local.project_id
   max_bid_price    = 0.1
   facilities       = ["ny5"]
@@ -30,7 +30,7 @@ resource "metal_spot_market_request" "req" {
   }
 }
 
-data "metal_spot_market_request" "dreq" {
+data "equinix_metal_spot_market_request" "dreq" {
   request_id = metal_spot_market_request.req.id
 }
 
@@ -38,7 +38,7 @@ output "ids" {
   value = data.metal_spot_market_request.dreq.device_ids
 }
 
-data "metal_device" "devs" {
+data "equinix_metal_device" "devs" {
   count     = length(data.metal_spot_market_request.dreq.device_ids)
   device_id = data.metal_spot_market_request.dreq.device_ids[count.index]
 }

@@ -22,10 +22,10 @@ func TestAccDataSourceMetalDevice_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						"data.metal_device.test", "hostname", "tfacc-test-device"),
 					resource.TestCheckResourceAttrPair(
-						"metal_device.test", "id",
+						"equinix_metal_device.test", "id",
 						"data.metal_device.test", "id"),
 					resource.TestCheckResourceAttrPair(
-						"metal_device.test", "operating_system",
+						"equinix_metal_device.test", "operating_system",
 						"data.metal_device.test", "operating_system"),
 					resource.TestCheckResourceAttr(
 						"data.metal_device.test", "always_pxe", "false"),
@@ -39,11 +39,11 @@ func TestAccDataSourceMetalDevice_Basic(t *testing.T) {
 
 func testDataSourceMetalDeviceConfig_Basic(projSuffix string) string {
 	return fmt.Sprintf(`
-resource "metal_project" "test" {
+resource "equinix_metal_project" "test" {
     name = "tfacc-project-%s"
 }
 
-resource "metal_device" "test" {
+resource "equinix_metal_device" "test" {
   hostname         = "tfacc-test-device"
   plan             = "t1.small.x86"
   facilities       = ["sjc1"]
@@ -52,7 +52,7 @@ resource "metal_device" "test" {
   project_id       = "${metal_project.test.id}"
 }
 
-data "metal_device" "test" {
+data "equinix_metal_device" "test" {
   project_id       = metal_project.test.id
   hostname         = metal_device.test.hostname
 }`, projSuffix)
@@ -72,10 +72,10 @@ func TestAccDataSourceMetalDevice_ByID(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						"data.metal_device.test", "hostname", "tfacc-test-device"),
 					resource.TestCheckResourceAttrPair(
-						"metal_device.test", "id",
+						"equinix_metal_device.test", "id",
 						"data.metal_device.test", "id"),
 					resource.TestCheckResourceAttrPair(
-						"metal_device.test", "operating_system",
+						"equinix_metal_device.test", "operating_system",
 						"data.metal_device.test", "operating_system"),
 					resource.TestCheckResourceAttr(
 						"data.metal_device.test", "always_pxe", "false"),
@@ -89,11 +89,11 @@ func TestAccDataSourceMetalDevice_ByID(t *testing.T) {
 
 func testDataSourceMetalDeviceConfig_ByID(projSuffix string) string {
 	return fmt.Sprintf(`
-resource "metal_project" "test" {
+resource "equinix_metal_project" "test" {
     name = "tfacc-project-%s"
 }
 
-resource "metal_device" "test" {
+resource "equinix_metal_device" "test" {
   hostname         = "tfacc-test-device"
   plan             = "t1.small.x86"
   facilities       = ["sjc1"]
@@ -102,7 +102,7 @@ resource "metal_device" "test" {
   project_id       = "${metal_project.test.id}"
 }
 
-data "metal_device" "test" {
+data "equinix_metal_device" "test" {
   device_id       = metal_device.test.id
 }`, projSuffix)
 }

@@ -5,7 +5,7 @@ FEATURES:
 - **New Guide:** Migrating From the Packet Provider
 - **New Guide:** Upgrading Devices from Facilities to Metros
 
-- **New Provider Argument** `metal_auth_token`
+- **New Provider Argument** `auth_token`
 - **New Provider Argument** `max_retries`
 - **New Provider Argument** `max_retry_wait_seconds`
 - **New Resource:** `equinix_metal_port`

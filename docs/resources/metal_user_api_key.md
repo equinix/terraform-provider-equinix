@@ -17,7 +17,7 @@ Read-only keys only allow to list and view existing resources, read-write keys c
 
 # Create a new read-only API key
 
-resource "metal_user_api_key" "test" {
+resource "equinix_metal_user_api_key" "test" {
   description = "Read-only user key"
   read_only   = true
 }

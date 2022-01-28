@@ -64,7 +64,7 @@ func resourceMetalSSHKey() *schema.Resource {
 }
 
 func resourceMetalSSHKeyCreate(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*packngo.Client)
+	client := meta.(*Config).Client()
 
 	createRequest := &packngo.SSHKeyCreateRequest{
 		Label: d.Get("name").(string),
@@ -87,7 +87,7 @@ func resourceMetalSSHKeyCreate(d *schema.ResourceData, meta interface{}) error {
 }
 
 func resourceMetalSSHKeyRead(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*packngo.Client)
+	client := meta.(*Config).Client()
 
 	key, _, err := client.SSHKeys.Get(d.Id(), nil)
 	if err != nil {
@@ -122,7 +122,7 @@ func resourceMetalSSHKeyRead(d *schema.ResourceData, meta interface{}) error {
 }
 
 func resourceMetalSSHKeyUpdate(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*packngo.Client)
+	client := meta.(*Config).Client()
 
 	updateRequest := &packngo.SSHKeyUpdateRequest{}
 
@@ -145,7 +145,7 @@ func resourceMetalSSHKeyUpdate(d *schema.ResourceData, meta interface{}) error {
 }
 
 func resourceMetalSSHKeyDelete(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*packngo.Client)
+	client := meta.(*Config).Client()
 
 	resp, err := client.SSHKeys.Delete(d.Id())
 	if ignoreResponseErrors(httpForbidden, httpNotFound)(resp, err) != nil {

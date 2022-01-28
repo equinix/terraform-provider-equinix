@@ -12,8 +12,8 @@ import (
 )
 
 func init() {
-	resource.AddTestSweepers("metal_user_api_key", &resource.Sweeper{
-		Name: "metal_user_api_key",
+	resource.AddTestSweepers("equinix_metal_user_api_key", &resource.Sweeper{
+		Name: "equinix_metal_user_api_key",
 		F:    testSweepUserAPIKeys,
 	})
 }
@@ -25,7 +25,7 @@ func testSweepUserAPIKeys(region string) error {
 	if err != nil {
 		return fmt.Errorf("Error getting client for sweeping user_api keys: %s", err)
 	}
-	client := meta.(*packngo.Client)
+	client := meta.Client()
 
 	userApiKeys, _, err := client.APIKeys.UserList(nil)
 	if err != nil {
@@ -50,7 +50,7 @@ func testSweepUserAPIKeys(region string) error {
 func testAccMetalUserAPIKeyDestroy(s *terraform.State) error {
 	client := testAccProvider.Meta().(*packngo.Client)
 	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "metal_user_api_key" {
+		if rs.Type != "equinix_metal_user_api_key" {
 			continue
 		}
 		if _, err := client.APIKeys.UserGet(rs.Primary.ID, nil); err == nil {
@@ -62,7 +62,7 @@ func testAccMetalUserAPIKeyDestroy(s *terraform.State) error {
 
 func testAccMetalUserAPIKeyConfig_Basic() string {
 	return fmt.Sprintf(`
-resource "metal_user_api_key" "test" {
+resource "equinix_metal_user_api_key" "test" {
     description = "tfacc-user-key"
     read_only   = true
 }`)
@@ -82,9 +82,9 @@ func TestAccMetalUserAPIKey_Basic(t *testing.T) {
 				Config: testAccMetalUserAPIKeyConfig_Basic(),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(
-						"metal_user_api_key.test", "token"),
+						"equinix_metal_user_api_key.test", "token"),
 					resource.TestCheckResourceAttrSet(
-						"metal_user_api_key.test", "user_id"),
+						"equinix_metal_user_api_key.test", "user_id"),
 				),
 			},
 		},

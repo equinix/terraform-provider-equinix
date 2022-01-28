@@ -13,17 +13,17 @@ import (
 
 func testAccCheckMetalDatasourceVlanConfig_ByVxlanFacility(projSuffix, fac, desc string) string {
 	return fmt.Sprintf(`
-resource "metal_project" "foobar" {
+resource "equinix_metal_project" "foobar" {
     name = "tfacc-vlan-%s"
 }
 
-resource "metal_vlan" "foovlan" {
+resource "equinix_metal_vlan" "foovlan" {
     project_id = metal_project.foobar.id
     facility = "%s"
     description = "%s"
 }
 
-data "metal_vlan" "dsvlan" {
+data "equinix_metal_vlan" "dsvlan" {
     facility = metal_vlan.foovlan.facility
     project_id = metal_vlan.foovlan.project_id
     vxlan = metal_vlan.foovlan.vxlan
@@ -44,11 +44,11 @@ func TestAccMetalDatasourceVlan_ByVxlanFacility(t *testing.T) {
 				Config: testAccCheckMetalDatasourceVlanConfig_ByVxlanFacility(rs, fac, "testvlan"),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrPair(
-						"metal_vlan.foovlan", "vxlan",
+						"equinix_metal_vlan.foovlan", "vxlan",
 						"data.metal_vlan.dsvlan", "vxlan",
 					),
 					resource.TestCheckResourceAttrPair(
-						"metal_vlan.foovlan", "id",
+						"equinix_metal_vlan.foovlan", "id",
 						"data.metal_vlan.dsvlan", "id",
 					),
 				),
@@ -59,30 +59,30 @@ func TestAccMetalDatasourceVlan_ByVxlanFacility(t *testing.T) {
 
 func testAccCheckMetalDatasourceVlanConfig_ByVxlanMetro(projSuffix, metro, desc string) string {
 	return fmt.Sprintf(`
-resource "metal_project" "foobar" {
+resource "equinix_metal_project" "foobar" {
     name = "tfacc-vlan-%s"
 }
 
-resource "metal_vlan" "foovlan" {
+resource "equinix_metal_vlan" "foovlan" {
     project_id = metal_project.foobar.id
     metro = "%s"
     description = "%s"
     vxlan = 5
 }
 
-data "metal_vlan" "dsvlan" {
+data "equinix_metal_vlan" "dsvlan" {
     metro = metal_vlan.foovlan.metro
     project_id = metal_vlan.foovlan.project_id
     vxlan = metal_vlan.foovlan.vxlan
 }
 
-resource "metal_vlan" "barvlan" {
+resource "equinix_metal_vlan" "barvlan" {
     project_id = metal_project.foobar.id
     metro = metal_vlan.foovlan.metro
     vxlan = 6
 }
 
-data "metal_vlan" "bardsvlan" {
+data "equinix_metal_vlan" "bardsvlan" {
     metro = metal_vlan.barvlan.metro
     project_id = metal_vlan.barvlan.project_id
     vxlan = metal_vlan.barvlan.vxlan
@@ -103,21 +103,21 @@ func TestAccMetalDatasourceVlan_ByVxlanMetro(t *testing.T) {
 				Config: testAccCheckMetalDatasourceVlanConfig_ByVxlanMetro(rs, metro, "testvlan"),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrPair(
-						"metal_vlan.foovlan", "vxlan",
+						"equinix_metal_vlan.foovlan", "vxlan",
 						"data.metal_vlan.dsvlan", "vxlan",
 					),
 					resource.TestCheckResourceAttrPair(
-						"metal_vlan.foovlan", "id",
+						"equinix_metal_vlan.foovlan", "id",
 						"data.metal_vlan.dsvlan", "id",
 					),
 					resource.TestCheckResourceAttr(
-						"metal_vlan.barvlan", "vxlan", "6",
+						"equinix_metal_vlan.barvlan", "vxlan", "6",
 					),
 					resource.TestCheckResourceAttr(
 						"data.metal_vlan.bardsvlan", "vxlan", "6",
 					),
 					resource.TestCheckResourceAttrPair(
-						"metal_vlan.barvlan", "id",
+						"equinix_metal_vlan.barvlan", "id",
 						"data.metal_vlan.bardsvlan", "id",
 					),
 				),
@@ -130,7 +130,7 @@ func testAccCheckMetalDatasourceVlanDestroyed(s *terraform.State) error {
 	client := testAccProvider.Meta().(*packngo.Client)
 
 	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "metal_vlan" {
+		if rs.Type != "equinix_metal_vlan" {
 			continue
 		}
 		if _, _, err := client.ProjectVirtualNetworks.Get(rs.Primary.ID, nil); err == nil {
@@ -143,18 +143,18 @@ func testAccCheckMetalDatasourceVlanDestroyed(s *terraform.State) error {
 
 func testAccCheckMetalDatasourceVlanConfig_ByVlanId(projSuffix, metro, desc string) string {
 	return fmt.Sprintf(`
-resource "metal_project" "foobar" {
+resource "equinix_metal_project" "foobar" {
     name = "tfacc-vlan-%s"
 }
 
-resource "metal_vlan" "foovlan" {
+resource "equinix_metal_vlan" "foovlan" {
     project_id = metal_project.foobar.id
     metro = "%s"
     description = "%s"
     vxlan = 5
 }
 
-data "metal_vlan" "dsvlan" {
+data "equinix_metal_vlan" "dsvlan" {
     vlan_id = metal_vlan.foovlan.id
 }
 `, projSuffix, metro, desc)
@@ -173,11 +173,11 @@ func TestAccMetalDatasourceVlan_ByVlanId(t *testing.T) {
 				Config: testAccCheckMetalDatasourceVlanConfig_ByVlanId(rs, metro, "testvlan"),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrPair(
-						"metal_vlan.foovlan", "vxlan",
+						"equinix_metal_vlan.foovlan", "vxlan",
 						"data.metal_vlan.dsvlan", "vxlan",
 					),
 					resource.TestCheckResourceAttrPair(
-						"metal_vlan.foovlan", "project_id",
+						"equinix_metal_vlan.foovlan", "project_id",
 						"data.metal_vlan.dsvlan", "project_id",
 					),
 				),
@@ -188,18 +188,18 @@ func TestAccMetalDatasourceVlan_ByVlanId(t *testing.T) {
 
 func testAccCheckMetalDatasourceVlanConfig_ByProjectId(projSuffix, metro, desc string) string {
 	return fmt.Sprintf(`
-resource "metal_project" "foobar" {
+resource "equinix_metal_project" "foobar" {
     name = "tfacc-vlan-%s"
 }
 
-resource "metal_vlan" "foovlan" {
+resource "equinix_metal_vlan" "foovlan" {
     project_id = metal_project.foobar.id
     metro = "%s"
     description = "%s"
     vxlan = 5
 }
 
-data "metal_vlan" "dsvlan" {
+data "equinix_metal_vlan" "dsvlan" {
     project_id = metal_vlan.foovlan.project_id
 }
 `, projSuffix, metro, desc)
@@ -218,11 +218,11 @@ func TestAccMetalDatasourceVlan_ByProjectId(t *testing.T) {
 				Config: testAccCheckMetalDatasourceVlanConfig_ByProjectId(rs, metro, "testvlan"),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrPair(
-						"metal_vlan.foovlan", "vxlan",
+						"equinix_metal_vlan.foovlan", "vxlan",
 						"data.metal_vlan.dsvlan", "vxlan",
 					),
 					resource.TestCheckResourceAttrPair(
-						"metal_vlan.foovlan", "project_id",
+						"equinix_metal_vlan.foovlan", "project_id",
 						"data.metal_vlan.dsvlan", "project_id",
 					),
 				),

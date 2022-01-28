@@ -18,7 +18,7 @@ locals {
   project_id = "<UUID_of_your_project>"
 }
 
-resource "metal_device" "test" {
+resource "equinix_metal_device" "test" {
   hostname         = "tfacc-test-device-port"
   plan             = "c3.medium.x86"
   facilities       = ["sv15"]
@@ -27,7 +27,7 @@ resource "metal_device" "test" {
   project_id       = local.project_id
 }
 
-data "metal_port" "test" {
+data "equinix_metal_port" "test" {
     device_id = metal_device.test.id
     name      = "eth0"
 }

@@ -41,7 +41,7 @@ func TestAccDataSourceMetro_Basic(t *testing.T) {
 
 func testAccDataSourceMetroConfigBasic(facCode string) string {
 	return fmt.Sprintf(`
-data "metal_metro" "test" {
+data "equinix_metal_metro" "test" {
     code = "%s"
 }
 `, facCode)
@@ -49,7 +49,7 @@ data "metal_metro" "test" {
 
 func testAccDataSourceMetroConfigCapacityUnreasonable(facCode string) string {
 	return fmt.Sprintf(`
-data "metal_metro" "test" {
+data "equinix_metal_metro" "test" {
     code = "%s"
     capacity {
         plan = "c3.small.x86"
@@ -61,7 +61,7 @@ data "metal_metro" "test" {
 
 func testAccDataSourceMetroConfigCapacityReasonable(facCode string) string {
 	return fmt.Sprintf(`
-data "metal_metro" "test" {
+data "equinix_metal_metro" "test" {
     code = "%s"
     capacity {
         plan = "c3.small.x86"
@@ -77,7 +77,7 @@ data "metal_metro" "test" {
 
 func testAccDataSourceMetroConfigCapacityUnreasonableMultiple(facCode string) string {
 	return fmt.Sprintf(`
-data "metal_metro" "test" {
+data "equinix_metal_metro" "test" {
     code = "%s"
     capacity {
         plan = "c3.small.x86"

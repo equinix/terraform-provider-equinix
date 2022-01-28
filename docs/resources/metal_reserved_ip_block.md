@@ -18,7 +18,7 @@ Public blocks are allocated in a facility. Addresses from public blocks can only
 
 Addresses from global blocks can be assigned in any facility. Global blocks can have mask from /30 (4 addresses), to /32 (1 address). If you create global block with this resource, you must specify type = "global_ipv4" and you must omit the facility argument.
 
-Once IP block is allocated or imported, an address from it can be assigned to device with the `metal_ip_attachment` resource.
+Once IP block is allocated or imported, an address from it can be assigned to device with the `equinix_metal_ip_attachment` resource.
 
 ## Example Usage
 
@@ -27,7 +27,7 @@ Allocate reserved IP blocks:
 ```hcl
 # Allocate /31 block of max 2 public IPv4 addresses in Silicon Valley (sv15) facility for myproject
 
-resource "metal_reserved_ip_block" "two_elastic_addresses" {
+resource "equinix_metal_reserved_ip_block" "two_elastic_addresses" {
   project_id = local.project_id
   facility   = "sv15"
   quantity   = 2
@@ -35,7 +35,7 @@ resource "metal_reserved_ip_block" "two_elastic_addresses" {
 
 # Allocate 1 floating IP in Sillicon Valley (sv) metro
 
-resource "metal_reserved_ip_block" "test" {
+resource "equinix_metal_reserved_ip_block" "test" {
   project_id = local.project_id
   type       = "public_ipv4"
   metro      = "sv"
@@ -44,7 +44,7 @@ resource "metal_reserved_ip_block" "test" {
 
 # Allocate 1 global floating IP, which can be assigned to device in any facility
 
-resource "metal_reserved_ip_block" "test" {
+resource "equinix_metal_reserved_ip_block" "test" {
   project_id = local.project_id
   type       = "global_ipv4"
   quantity   = 1
@@ -55,7 +55,7 @@ Allocate a block and run a device with public IPv4 from the block
 
 ```hcl
 # Allocate /31 block of max 2 public IPv4 addresses in Silicon Valley (sv15) facility
-resource "metal_reserved_ip_block" "example" {
+resource "equinix_metal_reserved_ip_block" "example" {
   project_id = local.project_id
   facility   = "sv15"
   quantity   = 2
@@ -63,7 +63,7 @@ resource "metal_reserved_ip_block" "example" {
 
 # Run a device with both public IPv4 from the block assigned
 
-resource "metal_device" "nodes" {
+resource "equinix_metal_device" "nodes" {
   project_id       = local.project_id
   facilities       = ["sv15"]
   plan             = "c3.small.x86"

@@ -18,7 +18,7 @@ type ClientPortResource struct {
 }
 
 func getClientPortResource(d *schema.ResourceData, meta interface{}) (*ClientPortResource, *packngo.Response, error) {
-	client := meta.(*packngo.Client)
+	client := meta.(*Config).Client()
 
 	port_id := d.Get("port_id").(string)
 

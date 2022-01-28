@@ -12,11 +12,11 @@ import (
 
 func testAccCheckMetalReservedIPBlockConfig_Global(name string) string {
 	return fmt.Sprintf(`
-resource "metal_project" "foobar" {
+resource "equinix_metal_project" "foobar" {
 	name = "tfacc-reserved_ip_block-%s"
 }
 
-resource "metal_reserved_ip_block" "test" {
+resource "equinix_metal_reserved_ip_block" "test" {
 	project_id  = metal_project.foobar.id
 	type        = "global_ipv4"
 	description = "testdesc"
@@ -26,11 +26,11 @@ resource "metal_reserved_ip_block" "test" {
 
 func testAccCheckMetalReservedIPBlockConfig_Public(name string) string {
 	return fmt.Sprintf(`
-resource "metal_project" "foobar" {
+resource "equinix_metal_project" "foobar" {
 	name = "tfacc-reserved_ip_block-%s"
 }
 
-resource "metal_reserved_ip_block" "test" {
+resource "equinix_metal_reserved_ip_block" "test" {
 	project_id  = metal_project.foobar.id
 	facility    = "ewr1"
 	type        = "public_ipv4"
@@ -41,11 +41,11 @@ resource "metal_reserved_ip_block" "test" {
 
 func testAccCheckMetalReservedIPBlockConfig_Metro(name string) string {
 	return fmt.Sprintf(`
-resource "metal_project" "foobar" {
+resource "equinix_metal_project" "foobar" {
 	name = "tfacc-reserved_ip_block-%s"
 }
 
-resource "metal_reserved_ip_block" "test" {
+resource "equinix_metal_reserved_ip_block" "test" {
 	project_id  = metal_project.foobar.id
 	metro       = "sv"
 	type        = "public_ipv4"
@@ -66,17 +66,17 @@ func TestAccMetalReservedIPBlock_Global(t *testing.T) {
 				Config: testAccCheckMetalReservedIPBlockConfig_Global(rs),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(
-						"metal_reserved_ip_block.test", "quantity", "1"),
+						"equinix_metal_reserved_ip_block.test", "quantity", "1"),
 					resource.TestCheckResourceAttr(
-						"metal_reserved_ip_block.test", "description", "testdesc"),
+						"equinix_metal_reserved_ip_block.test", "description", "testdesc"),
 					resource.TestCheckResourceAttr(
-						"metal_reserved_ip_block.test", "type", "global_ipv4"),
+						"equinix_metal_reserved_ip_block.test", "type", "global_ipv4"),
 					resource.TestCheckResourceAttr(
-						"metal_reserved_ip_block.test", "netmask", "255.255.255.255"),
+						"equinix_metal_reserved_ip_block.test", "netmask", "255.255.255.255"),
 					resource.TestCheckResourceAttr(
-						"metal_reserved_ip_block.test", "public", "true"),
+						"equinix_metal_reserved_ip_block.test", "public", "true"),
 					resource.TestCheckResourceAttr(
-						"metal_reserved_ip_block.test", "management", "false"),
+						"equinix_metal_reserved_ip_block.test", "management", "false"),
 				),
 			},
 		},
@@ -96,19 +96,19 @@ func TestAccMetalReservedIPBlock_Public(t *testing.T) {
 				Config: testAccCheckMetalReservedIPBlockConfig_Public(rs),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(
-						"metal_reserved_ip_block.test", "facility", "ewr1"),
+						"equinix_metal_reserved_ip_block.test", "facility", "ewr1"),
 					resource.TestCheckResourceAttr(
-						"metal_reserved_ip_block.test", "type", "public_ipv4"),
+						"equinix_metal_reserved_ip_block.test", "type", "public_ipv4"),
 					resource.TestCheckResourceAttr(
-						"metal_reserved_ip_block.test", "quantity", "2"),
+						"equinix_metal_reserved_ip_block.test", "quantity", "2"),
 					resource.TestCheckResourceAttr(
-						"metal_reserved_ip_block.test", "netmask", "255.255.255.254"),
+						"equinix_metal_reserved_ip_block.test", "netmask", "255.255.255.254"),
 					resource.TestCheckResourceAttr(
-						"metal_reserved_ip_block.test", "public", "true"),
+						"equinix_metal_reserved_ip_block.test", "public", "true"),
 					resource.TestCheckResourceAttr(
-						"metal_reserved_ip_block.test", "management", "false"),
+						"equinix_metal_reserved_ip_block.test", "management", "false"),
 					resource.TestCheckResourceAttr(
-						"metal_reserved_ip_block.test", "tags.#", "2"),
+						"equinix_metal_reserved_ip_block.test", "tags.#", "2"),
 				),
 			},
 		},
@@ -128,7 +128,7 @@ func TestAccMetalReservedIPBlock_Metro(t *testing.T) {
 				Config: testAccCheckMetalReservedIPBlockConfig_Metro(rs),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(
-						"metal_reserved_ip_block.test", "metro", "sv"),
+						"equinix_metal_reserved_ip_block.test", "metro", "sv"),
 				),
 			},
 		},
@@ -148,7 +148,7 @@ func TestAccMetalReservedIPBlock_ImportBasic(t *testing.T) {
 				Config: testAccCheckMetalReservedIPBlockConfig_Public(rs),
 			},
 			{
-				ResourceName:      "metal_reserved_ip_block.test",
+				ResourceName:      "equinix_metal_reserved_ip_block.test",
 				ImportState:       true,
 				ImportStateVerify: true,
 			},
@@ -160,7 +160,7 @@ func testAccCheckMetalReservedIPBlockDestroy(s *terraform.State) error {
 	client := testAccProvider.Meta().(*packngo.Client)
 
 	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "metal_reserved_ip_block" {
+		if rs.Type != "equinix_metal_reserved_ip_block" {
 			continue
 		}
 		if _, _, err := client.ProjectIPs.Get(rs.Primary.ID, nil); err == nil {
@@ -173,11 +173,11 @@ func testAccCheckMetalReservedIPBlockDestroy(s *terraform.State) error {
 
 func testAccCheckMetalReservedIPBlockConfig_FacilityToMetro(line string) string {
 	return fmt.Sprintf(`
-resource "metal_project" "foobar" {
+resource "equinix_metal_project" "foobar" {
 	name = "tfacc-reserved_ip_block_fac_met_test"
 }
 
-resource "metal_reserved_ip_block" "test" {
+resource "equinix_metal_reserved_ip_block" "test" {
 	project_id  = metal_project.foobar.id
 	%s
 	type        = "public_ipv4"
@@ -197,16 +197,16 @@ func TestAccMetalReservedIPBlock_FacilityToMetro(t *testing.T) {
 				Config: testAccCheckMetalReservedIPBlockConfig_FacilityToMetro(`   facility = "ny5"`),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(
-						"metal_reserved_ip_block.test", "facility", "ny5"),
+						"equinix_metal_reserved_ip_block.test", "facility", "ny5"),
 					resource.TestCheckResourceAttr(
-						"metal_reserved_ip_block.test", "metro", "ny"),
+						"equinix_metal_reserved_ip_block.test", "metro", "ny"),
 				),
 			},
 			{
 				Config: testAccCheckMetalReservedIPBlockConfig_FacilityToMetro(`   metro = "ny"`),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(
-						"metal_reserved_ip_block.test", "metro", "ny"),
+						"equinix_metal_reserved_ip_block.test", "metro", "ny"),
 				),
 				PlanOnly: true,
 			},
@@ -216,18 +216,18 @@ func TestAccMetalReservedIPBlock_FacilityToMetro(t *testing.T) {
 
 func testAccMetalReservedIP_Device(name string) string {
 	return fmt.Sprintf(`
-resource "metal_project" "foobar" {
+resource "equinix_metal_project" "foobar" {
 	name = "tfacc-reserved_ip_block-%s"
 }
 
-resource "metal_reserved_ip_block" "test" {
+resource "equinix_metal_reserved_ip_block" "test" {
 	project_id  = metal_project.foobar.id
 	facility    = "ewr1"
 	type        = "public_ipv4"
 	quantity    = 2
 }
 
-resource "metal_device" "test" {
+resource "equinix_metal_device" "test" {
   project_id       = metal_project.foobar.id
   facilities       = ["ewr1"]
   plan             = "t1.small.x86"
@@ -259,8 +259,8 @@ func TestAccMetalReservedIPBlock_Device(t *testing.T) {
 				Config: testAccMetalReservedIP_Device(rs),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrPair(
-						"metal_reserved_ip_block.test", "gateway",
-						"metal_device.test", "network.0.gateway",
+						"equinix_metal_reserved_ip_block.test", "gateway",
+						"equinix_metal_device.test", "network.0.gateway",
 					),
 				),
 			},

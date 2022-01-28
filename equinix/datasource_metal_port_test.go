@@ -30,11 +30,11 @@ func TestAccMetalPort_ByName(t *testing.T) {
 func testPortConfig_ByName(name string) string {
 	return fmt.Sprintf(`
 
-resource "metal_project" "test" {
+resource "equinix_metal_project" "test" {
     name = "tfacc-port-%s"
 }
 
-resource "metal_device" "test" {
+resource "equinix_metal_device" "test" {
   hostname         = "tfacc-test-device-port"
   plan             = "c3.medium.x86"
   metro            = "sv"
@@ -43,7 +43,7 @@ resource "metal_device" "test" {
   project_id       = metal_project.test.id
 }
 
-data "metal_port" "test" {
+data "equinix_metal_port" "test" {
     device_id = metal_device.test.id
     name      = "eth0"
 }
@@ -73,11 +73,11 @@ func TestAccMetalPort_ById(t *testing.T) {
 func testPortConfig_ById(name string) string {
 	return fmt.Sprintf(`
 
-resource "metal_project" "test" {
+resource "equinix_metal_project" "test" {
     name = "tfacc-port-%s"
 }
 
-resource "metal_device" "test" {
+resource "equinix_metal_device" "test" {
   hostname         = "tfacc-test-device-port"
   plan             = "c3.medium.x86"
   metro            = "sv"
@@ -86,7 +86,7 @@ resource "metal_device" "test" {
   project_id       = metal_project.test.id
 }
 
-data "metal_port" "test" {
+data "equinix_metal_port" "test" {
   port_id        = metal_device.test.ports[0].id
 }
 

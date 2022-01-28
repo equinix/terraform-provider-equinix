@@ -11,7 +11,7 @@ import (
 
 func testAccCheckMetalDataSourceProject_Basic(r string) string {
 	return fmt.Sprintf(`
-resource "metal_project" "foobar" {
+resource "equinix_metal_project" "foobar" {
 	name = "tfacc-project-%s"
 	bgp_config {
 		deployment_type = "local"
@@ -39,14 +39,14 @@ func TestAccMetalDataSourceProject_Basic(t *testing.T) {
 			{
 				Config: testAccCheckMetalDataSourceProject_Basic(rn),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckMetalProjectExists("metal_project.foobar", &project),
+					testAccCheckMetalProjectExists("equinix_metal_project.foobar", &project),
 					resource.TestCheckResourceAttr(
-						"metal_project.foobar", "name", fmt.Sprintf("tfacc-project-%s", rn)),
+						"equinix_metal_project.foobar", "name", fmt.Sprintf("tfacc-project-%s", rn)),
 					resource.TestCheckResourceAttr(
-						"metal_project.foobar", "bgp_config.0.md5",
+						"equinix_metal_project.foobar", "bgp_config.0.md5",
 						"2SFsdfsg43"),
 					resource.TestCheckResourceAttrPair(
-						"metal_project.foobar", "id",
+						"equinix_metal_project.foobar", "id",
 						"data.metal_project.test", "id"),
 				),
 			},

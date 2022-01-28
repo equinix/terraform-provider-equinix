@@ -12,11 +12,11 @@ import (
 
 func testAccCheckMetalVlanConfig_metro(projSuffix, metro, desc string) string {
 	return fmt.Sprintf(`
-resource "metal_project" "foobar" {
+resource "equinix_metal_project" "foobar" {
     name = "tfacc-vlan-%s"
 }
 
-resource "metal_vlan" "foovlan" {
+resource "equinix_metal_vlan" "foovlan" {
     project_id = metal_project.foobar.id
     metro = "%s"
     description = "%s"
@@ -38,9 +38,9 @@ func TestAccMetalVlan_Metro(t *testing.T) {
 				Config: testAccCheckMetalVlanConfig_metro(rs, metro, "testvlan"),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(
-						"metal_vlan.foovlan", "metro", metro),
+						"equinix_metal_vlan.foovlan", "metro", metro),
 					resource.TestCheckResourceAttr(
-						"metal_vlan.foovlan", "facility", ""),
+						"equinix_metal_vlan.foovlan", "facility", ""),
 				),
 			},
 		},
@@ -60,11 +60,11 @@ func TestAccMetalVlan_Basic(t *testing.T) {
 			{
 				Config: testAccCheckMetalVlanConfig_var(rs, fac, "testvlan"),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckMetalVlanExists("metal_vlan.foovlan", &vlan),
+					testAccCheckMetalVlanExists("equinix_metal_vlan.foovlan", &vlan),
 					resource.TestCheckResourceAttr(
-						"metal_vlan.foovlan", "description", "testvlan"),
+						"equinix_metal_vlan.foovlan", "description", "testvlan"),
 					resource.TestCheckResourceAttr(
-						"metal_vlan.foovlan", "facility", fac),
+						"equinix_metal_vlan.foovlan", "facility", fac),
 				),
 			},
 		},
@@ -101,7 +101,7 @@ func testAccCheckMetalVlanDestroyed(s *terraform.State) error {
 	client := testAccProvider.Meta().(*packngo.Client)
 
 	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "metal_vlan" {
+		if rs.Type != "equinix_metal_vlan" {
 			continue
 		}
 		if _, _, err := client.ProjectVirtualNetworks.Get(rs.Primary.ID, nil); err == nil {
@@ -114,11 +114,11 @@ func testAccCheckMetalVlanDestroyed(s *terraform.State) error {
 
 func testAccCheckMetalVlanConfig_var(projSuffix, facility, desc string) string {
 	return fmt.Sprintf(`
-resource "metal_project" "foobar" {
+resource "equinix_metal_project" "foobar" {
     name = "tfacc-vlan-%s"
 }
 
-resource "metal_vlan" "foovlan" {
+resource "equinix_metal_vlan" "foovlan" {
     project_id = "${metal_project.foobar.id}"
     facility = "%s"
     description = "%s"
@@ -139,7 +139,7 @@ func TestAccMetalVlan_importBasic(t *testing.T) {
 				Config: testAccCheckMetalVlanConfig_var(rs, fac, "testvlan"),
 			},
 			{
-				ResourceName:      "metal_vlan.foovlan",
+				ResourceName:      "equinix_metal_vlan.foovlan",
 				ImportState:       true,
 				ImportStateVerify: true,
 			},

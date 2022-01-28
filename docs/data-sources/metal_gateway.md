@@ -14,13 +14,13 @@ Use this datasource to retrieve Metal Gateway resources in Equinix Metal.
 ```hcl
 # Create Metal Gateway for a VLAN with a private IPv4 block with 8 IP addresses
 
-resource "metal_vlan" "test" {
+resource "equinix_metal_vlan" "test" {
   description = "test VLAN in SV"
   metro       = "sv"
   project_id  = local.project_id
 }
 
-data "metal_gateway" "test" {
+data "equinix_metal_gateway" "test" {
   gateway_id               = local.gateway_id
 }
 ```

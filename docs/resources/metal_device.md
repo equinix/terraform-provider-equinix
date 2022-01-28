@@ -19,7 +19,7 @@ modify, and delete devices.
 Create a device and add it to cool_project
 
 ```hcl
-resource "metal_device" "web1" {
+resource "equinix_metal_device" "web1" {
   hostname         = "tf.coreos2"
   plan             = "c3.small.x86"
   metro            = "sv"
@@ -32,7 +32,7 @@ resource "metal_device" "web1" {
 Same as above, but boot via iPXE initially, using the Ignition Provider for provisioning
 
 ```hcl
-resource "metal_device" "pxe1" {
+resource "equinix_metal_device" "pxe1" {
   hostname         = "tf.coreos2-pxe"
   plan             = "c3.small.x86"
   metro            = "sv"
@@ -48,7 +48,7 @@ resource "metal_device" "pxe1" {
 Create a device without a public IP address in facility ny5, with only a /30 private IPv4 subnet (4 IP addresses)
 
 ```hcl
-resource "metal_device" "web1" {
+resource "equinix_metal_device" "web1" {
   hostname         = "tf.coreos2"
   plan             = "c3.small.x86"
   facilities       = ["ny5"]
@@ -65,7 +65,7 @@ resource "metal_device" "web1" {
 Deploy device on next-available reserved hardware and do custom partitioning.
 
 ```hcl
-resource "metal_device" "web1" {
+resource "equinix_metal_device" "web1" {
   hostname                = "tftest"
   plan                    = "c3.small.x86"
   facilities              = ["ny5"]
@@ -190,9 +190,9 @@ The following attributes are exported:
 * `locked` - Whether the device is locked
 * `metro` - The metro area where the device is deployed
 * `network` - The device's private and public IP (v4 and v6) network details. When a device is run without any special network configuration, it will have 3 networks:
-  * Public IPv4 at `metal_device.name.network.0`
-  * IPv6 at `metal_device.name.network.1`
-  * Private IPv4 at `metal_device.name.network.2`
+  * Public IPv4 at `equinix_metal_device.name.network.0`
+  * IPv6 at `equinix_metal_device.name.network.1`
+  * Private IPv4 at `equinix_metal_device.name.network.2`
   Elastic addresses then stack by type - an assigned public IPv4 will go after the management public IPv4 (to index 1), and will then shift the indices of the IPv6 and private IPv4. Assigned private IPv4 will go after the management private IPv4 (to the end of the network list).
   The fields of the network attributes are:
   * `address` - IPv4 or IPv6 address string

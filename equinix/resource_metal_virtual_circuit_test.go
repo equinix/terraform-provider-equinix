@@ -24,7 +24,7 @@ func testAccCheckMetalVirtualCircuitDestroy(s *terraform.State) error {
 	client := testAccProvider.Meta().(*packngo.Client)
 
 	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "metal_virtual_circuit" {
+		if rs.Type != "equinix_metal_virtual_circuit" {
 			continue
 		}
 		if _, _, err := client.VirtualCircuits.Get(rs.Primary.ID, nil); err == nil {
@@ -42,16 +42,16 @@ func tconf(randstr string, randint int) string {
                 conn_id = "73f12f29-3e19-43a0-8e90-ae81580db1e9"
         }
 
-        data "metal_connection" test {
+        data "equinix_metal_connection" test {
             connection_id = local.conn_id
         }
 
-        resource "metal_vlan" "test" {
+        resource "equinix_metal_vlan" "test" {
             project_id = local.project_id
             metro      = data.metal_connection.test.metro
         }
 
-        resource "metal_virtual_circuit" "test" {
+        resource "equinix_metal_virtual_circuit" "test" {
             connection_id = local.conn_id
             project_id = local.project_id
             port_id = data.metal_connection.test.ports[0].id
@@ -66,12 +66,12 @@ func tconf(randstr string, randint int) string {
 
 func testAccMetalVirtualCircuitConfig_Dedicated(randstr string, randint int) string {
 	return fmt.Sprintf(`
-        resource "metal_project" "test" {
+        resource "equinix_metal_project" "test" {
             name = "tfacc-conn-pro-%s"
         }
 
         // No project ID. We only use the project resource to get org_id
-        resource "metal_connection" "test" {
+        resource "equinix_metal_connection" "test" {
             name            = "tfacc-conn-%s"
             organization_id = metal_project.test.organization_id
             metro           = "sv"
@@ -79,12 +79,12 @@ func testAccMetalVirtualCircuitConfig_Dedicated(randstr string, randint int) str
             type            = "dedicated"
         }
 
-        resource "metal_vlan" "test" {
+        resource "equinix_metal_vlan" "test" {
             project_id = metal_project.test.id
             metro      = "sv"
         }
 
-        resource "metal_virtual_circuit" "test" {
+        resource "equinix_metal_virtual_circuit" "test" {
             connection_id = metal_connection.test.id
             project_id = metal_project.test.id
             port_id = metal_connection.test.ports[0].id
@@ -112,13 +112,13 @@ func TestAccMetalVirtualCircuit_Dedicated(t *testing.T) {
 				Config: tconf(rs, ri),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrPair(
-						"metal_virtual_circuit.test", "vlan_id",
-						"metal_vlan.test", "id",
+						"equinix_metal_virtual_circuit.test", "vlan_id",
+						"equinix_metal_vlan.test", "id",
 					),
 				),
 			},
 				{
-					ResourceName:      "metal_virtual_circuit.test",
+					ResourceName:      "equinix_metal_virtual_circuit.test",
 					ImportState:       true,
 					ImportStateVerify: true,
 				},

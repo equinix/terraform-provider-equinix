@@ -12,7 +12,7 @@ Use this resource to request of create an Interconnection from [Equinix Fabric -
 ## Example Usage
 
 ```hcl
-resource "metal_connection" "test" {
+resource "equinix_metal_connection" "test" {
     name            = "My Interconnection"
     organization_id = local.my_organization_id
     project_id      = local.my_project_id

@@ -201,7 +201,7 @@ func dataSourceMetalDevice() *schema.Resource {
 }
 
 func dataSourceMetalDeviceRead(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*packngo.Client)
+	client := meta.(*Config).Client()
 
 	hostnameRaw, hostnameOK := d.GetOk("hostname")
 	projectIdRaw, projectIdOK := d.GetOk("project_id")

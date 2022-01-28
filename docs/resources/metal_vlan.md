@@ -18,14 +18,14 @@ To learn more about Layer 2 networking in Equinix Metal, refer to
 
 ```hcl
 # Create a new VLAN in facility "sv15"
-resource "metal_vlan" "vlan1" {
+resource "equinix_metal_vlan" "vlan1" {
   description = "VLAN in New Jersey"
   facility    = "sv15"
   project_id  = local.project_id
 }
 
 # Create a new VLAN in metro "esv"
-resource "metal_vlan" "vlan1" {
+resource "equinix_metal_vlan" "vlan1" {
   description = "VLAN in New Jersey"
   metro       = "sv"
   project_id  = local.project_id

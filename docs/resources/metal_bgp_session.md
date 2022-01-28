@@ -30,7 +30,7 @@ locals {
 
 # you need to enable BGP config for the project. If you decide to create new
 # project, you can use the bgp_config section to enable BGP.
-# resource "metal_project" "test" {
+# resource "equinix_metal_project" "test" {
 #   name = "testpro"
 #   bgp_config {
 #      deployment_type = "local"
@@ -39,13 +39,13 @@ locals {
 #   }
 # }
 
-resource "metal_reserved_ip_block" "addr" {
+resource "equinix_metal_reserved_ip_block" "addr" {
   project_id = local.project_id
   facility   = "ny5"
   quantity   = 1
 }
 
-resource "metal_device" "test" {
+resource "equinix_metal_device" "test" {
   hostname         = "terraform-test-bgp-sesh"
   plan             = "c3.small.x86"
   facilities       = ["ny5"]
@@ -54,7 +54,7 @@ resource "metal_device" "test" {
   project_id       = local.project_id
 }
 
-resource "metal_bgp_session" "test" {
+resource "equinix_metal_bgp_session" "test" {
   device_id      = metal_device.test.id
   address_family = "ipv4"
 }

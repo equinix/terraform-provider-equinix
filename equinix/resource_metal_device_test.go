@@ -15,8 +15,8 @@ import (
 )
 
 func init() {
-	resource.AddTestSweepers("metal_device", &resource.Sweeper{
-		Name: "metal_device",
+	resource.AddTestSweepers("equinix_metal_device", &resource.Sweeper{
+		Name: "equinix_metal_device",
 		F:    testSweepDevices,
 	})
 }
@@ -27,7 +27,7 @@ func testSweepDevices(region string) error {
 	if err != nil {
 		return fmt.Errorf("Error getting client for sweeping devices: %s", err)
 	}
-	client := meta.(*packngo.Client)
+	client := meta.Client()
 
 	ps, _, err := client.Projects.List(nil)
 	if err != nil {
@@ -67,7 +67,7 @@ var matchErrShouldNotBeAnIPXE = regexp.MustCompile(`.*"user_data" should not be 
 func TestAccMetalDevice_FacilityList(t *testing.T) {
 	var device packngo.Device
 	rs := acctest.RandString(10)
-	r := "metal_device.test"
+	r := "equinix_metal_device.test"
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -87,7 +87,7 @@ func TestAccMetalDevice_FacilityList(t *testing.T) {
 func TestAccMetalDevice_NetworkPortsOrder(t *testing.T) {
 	var device packngo.Device
 	rs := acctest.RandString(10)
-	r := "metal_device.test"
+	r := "equinix_metal_device.test"
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -109,7 +109,7 @@ func TestAccMetalDevice_NetworkPortsOrder(t *testing.T) {
 func TestAccMetalDevice_Basic(t *testing.T) {
 	var device packngo.Device
 	rs := acctest.RandString(10)
-	r := "metal_device.test"
+	r := "equinix_metal_device.test"
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -152,7 +152,7 @@ func TestAccMetalDevice_Basic(t *testing.T) {
 func TestAccMetalDevice_Metro(t *testing.T) {
 	var device packngo.Device
 	rs := acctest.RandString(10)
-	r := "metal_device.test"
+	r := "equinix_metal_device.test"
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -176,7 +176,7 @@ func TestAccMetalDevice_Update(t *testing.T) {
 	var d1, d2, d3, d4, d5 packngo.Device
 	rs := acctest.RandString(10)
 	rInt := acctest.RandInt()
-	r := "metal_device.test"
+	r := "equinix_metal_device.test"
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -231,7 +231,7 @@ func TestAccMetalDevice_Update(t *testing.T) {
 func TestAccMetalDevice_IPXEScriptUrl(t *testing.T) {
 	var device, d2 packngo.Device
 	rs := acctest.RandString(10)
-	r := "metal_device.test_ipxe_script_url"
+	r := "equinix_metal_device.test_ipxe_script_url"
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -268,7 +268,7 @@ func TestAccMetalDevice_IPXEScriptUrl(t *testing.T) {
 func TestAccMetalDevice_IPXEConflictingFields(t *testing.T) {
 	var device packngo.Device
 	rs := acctest.RandString(10)
-	r := "metal_device.test_ipxe_conflict"
+	r := "equinix_metal_device.test_ipxe_conflict"
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -289,7 +289,7 @@ func TestAccMetalDevice_IPXEConflictingFields(t *testing.T) {
 func TestAccMetalDevice_IPXEConfigMissing(t *testing.T) {
 	var device packngo.Device
 	rs := acctest.RandString(10)
-	r := "metal_device.test_ipxe_config_missing"
+	r := "equinix_metal_device.test_ipxe_config_missing"
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -311,7 +311,7 @@ func testAccCheckMetalDeviceDestroy(s *terraform.State) error {
 	client := testAccProvider.Meta().(*packngo.Client)
 
 	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "metal_device" {
+		if rs.Type != "equinix_metal_device" {
 			continue
 		}
 		if _, _, err := client.Devices.Get(rs.Primary.ID, nil); err == nil {
@@ -462,7 +462,7 @@ func TestAccMetalDevice_importBasic(t *testing.T) {
 				Config: testAccCheckMetalDeviceConfig_basic(rs),
 			},
 			{
-				ResourceName:      "metal_device.test",
+				ResourceName:      "equinix_metal_device.test",
 				ImportState:       true,
 				ImportStateVerify: true,
 			},
@@ -472,11 +472,11 @@ func TestAccMetalDevice_importBasic(t *testing.T) {
 
 func testAccCheckMetalDeviceConfig_no_description(rInt int, projSuffix string) string {
 	return fmt.Sprintf(`
-resource "metal_project" "test" {
+resource "equinix_metal_project" "test" {
     name = "tfacc-device-%s"
 }
 
-resource "metal_device" "test" {
+resource "equinix_metal_device" "test" {
   hostname         = "tfacc-test-device-%d"
   plan             = "t1.small.x86"
   facilities       = ["sjc1"]
@@ -490,11 +490,11 @@ resource "metal_device" "test" {
 
 func testAccCheckMetalDeviceConfig_reinstall(rInt int, projSuffix string) string {
 	return fmt.Sprintf(`
-resource "metal_project" "test" {
+resource "equinix_metal_project" "test" {
     name = "tfacc-device-%s"
 }
 
-resource "metal_device" "test" {
+resource "equinix_metal_device" "test" {
   hostname         = "tfacc-test-device-%d"
   plan             = "t1.small.x86"
   facilities       = ["sjc1"]
@@ -514,11 +514,11 @@ resource "metal_device" "test" {
 
 func testAccCheckMetalDeviceConfig_varname(rInt int, projSuffix string) string {
 	return fmt.Sprintf(`
-resource "metal_project" "test" {
+resource "equinix_metal_project" "test" {
     name = "tfacc-device-%s"
 }
 
-resource "metal_device" "test" {
+resource "equinix_metal_device" "test" {
   hostname         = "tfacc-test-device-%d"
   description      = "test-desc-%d"
   plan             = "t1.small.x86"
@@ -533,11 +533,11 @@ resource "metal_device" "test" {
 
 func testAccCheckMetalDeviceConfig_varname_pxe(rInt int, projSuffix string) string {
 	return fmt.Sprintf(`
-resource "metal_project" "test" {
+resource "equinix_metal_project" "test" {
     name = "tfacc-device-%s"
 }
 
-resource "metal_device" "test" {
+resource "equinix_metal_device" "test" {
   hostname         = "tfacc-test-device-%d"
   description      = "test-desc-%d"
   plan             = "t1.small.x86"
@@ -554,11 +554,11 @@ resource "metal_device" "test" {
 
 func testAccCheckMetalDeviceConfig_metro(projSuffix string) string {
 	return fmt.Sprintf(`
-resource "metal_project" "test" {
+resource "equinix_metal_project" "test" {
     name = "tfacc-device-%s"
 }
 
-resource "metal_device" "test" {
+resource "equinix_metal_device" "test" {
   hostname         = "tfacc-test-device"
   plan             = "c3.small.x86"
   metro            = "sv"
@@ -570,11 +570,11 @@ resource "metal_device" "test" {
 
 func testAccCheckMetalDeviceConfig_minimal(projSuffix string) string {
 	return fmt.Sprintf(`
-resource "metal_project" "test" {
+resource "equinix_metal_project" "test" {
     name = "tfacc-device-%s"
 }
 
-resource "metal_device" "test" {
+resource "equinix_metal_device" "test" {
   plan             = "t1.small.x86"
   facilities       = ["sjc1"]
   operating_system = "ubuntu_16_04"
@@ -584,11 +584,11 @@ resource "metal_device" "test" {
 
 func testAccCheckMetalDeviceConfig_basic(projSuffix string) string {
 	return fmt.Sprintf(`
-resource "metal_project" "test" {
+resource "equinix_metal_project" "test" {
     name = "tfacc-device-%s"
 }
 
-resource "metal_device" "test" {
+resource "equinix_metal_device" "test" {
   hostname         = "tfacc-test-device"
   plan             = "t1.small.x86"
   facilities       = ["sjc1"]
@@ -600,11 +600,11 @@ resource "metal_device" "test" {
 
 func testAccCheckMetalDeviceConfig_facility_list(projSuffix string) string {
 	return fmt.Sprintf(`
-resource "metal_project" "test" {
+resource "equinix_metal_project" "test" {
   name = "tfacc-device-%s"
 }
 
-resource "metal_device" "test"  {
+resource "equinix_metal_device" "test"  {
 
   hostname         = "tfacc-device-test-ipxe-script-url"
   plan             = "t1.small.x86"
@@ -617,11 +617,11 @@ resource "metal_device" "test"  {
 
 func testAccCheckMetalDeviceConfig_ipxe_script_url(projSuffix, url, pxe string) string {
 	return fmt.Sprintf(`
-resource "metal_project" "test" {
+resource "equinix_metal_project" "test" {
   name = "tfacc-device-%s"
 }
 
-resource "metal_device" "test_ipxe_script_url"  {
+resource "equinix_metal_device" "test_ipxe_script_url"  {
 
   hostname         = "tfacc-device-test-ipxe-script-url"
   plan             = "t1.small.x86"
@@ -636,11 +636,11 @@ resource "metal_device" "test_ipxe_script_url"  {
 }
 
 var testAccCheckMetalDeviceConfig_ipxe_conflict = `
-resource "metal_project" "test" {
+resource "equinix_metal_project" "test" {
   name = "tfacc-device-%s"
 }
 
-resource "metal_device" "test_ipxe_conflict" {
+resource "equinix_metal_device" "test_ipxe_conflict" {
   hostname         = "tfacc-device-test-ipxe-conflict"
   plan             = "t1.small.x86"
   facilities       = ["sjc1"]
@@ -653,11 +653,11 @@ resource "metal_device" "test_ipxe_conflict" {
 }`
 
 var testAccCheckMetalDeviceConfig_ipxe_missing = `
-resource "metal_project" "test" {
+resource "equinix_metal_project" "test" {
   name = "tfacc-device-%s"
 }
 
-resource "metal_device" "test_ipxe_missing" {
+resource "equinix_metal_device" "test_ipxe_missing" {
   hostname         = "tfacc-device-test-ipxe-missing"
   plan             = "t1.small.x86"
   facilities       = ["sjc1"]

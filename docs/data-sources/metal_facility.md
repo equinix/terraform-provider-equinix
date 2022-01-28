@@ -14,7 +14,7 @@ Provides an Equinix Metal facility datasource.
 ```hcl
 # Fetch a facility by code and show its ID
 
-data "metal_facility" "ny5" {
+data "equinix_metal_facility" "ny5" {
   code = "ny5"
 }
 
@@ -27,7 +27,7 @@ output "id" {
 # Verify that facility "dc13" has capacity for provisioning 2 c3.small.x86 
   devices and 1 c3.medium.x86 device
 
-data "metal_facility" "test" {
+data "equinix_metal_facility" "test" {
   code = "dc13"
   capacity {
     plan = "c3.small.x86"

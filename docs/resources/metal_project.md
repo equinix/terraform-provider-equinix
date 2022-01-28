@@ -10,14 +10,14 @@ description: |-
 Provides an Equinix Metal project resource to allow you manage devices
 in your projects.
 
--> Keep in mind that Equinix Metal invoicing is per project, so creating many `metal_project` resources will affect the rendered invoice. If you want to keep your Equinix Metal bill simple and easy to review, please re-use your existing projects.
+-> Keep in mind that Equinix Metal invoicing is per project, so creating many `equinix_metal_project` resources will affect the rendered invoice. If you want to keep your Equinix Metal bill simple and easy to review, please re-use your existing projects.
 
 ## Example Usage
 
 ### Create a new project
 
 ```hcl
-resource "metal_project" "tf_project_1" {
+resource "equinix_metal_project" "tf_project_1" {
   name = "Terraform Fun"
 }
 ```
@@ -26,7 +26,7 @@ resource "metal_project" "tf_project_1" {
 
 ```hcl
 # Create a new Project
-resource "metal_project" "tf_project_1" {
+resource "equinix_metal_project" "tf_project_1" {
   name = "tftest"
   bgp_config {
     deployment_type = "local"
@@ -41,7 +41,7 @@ resource "metal_project" "tf_project_1" {
 If you want to enable BGP in an existing Equinix Metal project, you should first create a resource in your TF config for the existing projects. Set your BGP configuration.
 
 ```hcl
-resource "metal_project" "existing_project" {
+resource "equinix_metal_project" "existing_project" {
   name = "The name of the project (if different, will rewrite)"
   bgp_config {
     deployment_type = "local"

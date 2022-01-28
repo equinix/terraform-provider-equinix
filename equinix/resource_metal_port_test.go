@@ -13,11 +13,11 @@ import (
 
 func confAccMetalPort_base(name string) string {
 	return fmt.Sprintf(`
-resource "metal_project" "test" {
+resource "equinix_metal_project" "test" {
     name = "tfacc-port-test-%s"
 }
 
-resource "metal_device" "test" {
+resource "equinix_metal_device" "test" {
   hostname         = "tfacc-metal-port-test"
   plan             = "c3.small.x86"
   metro            = "sv"
@@ -39,7 +39,7 @@ func confAccMetalPort_L3(name string) string {
 	return fmt.Sprintf(`
 %s
 
-resource "metal_port" "bond0" {
+resource "equinix_metal_port" "bond0" {
   port_id = local.bond0_id
   bonded = true
   depends_on = [
@@ -47,7 +47,7 @@ resource "metal_port" "bond0" {
   ]
 }
 
-resource "metal_port" "eth1" {
+resource "equinix_metal_port" "eth1" {
   port_id = local.eth1_id
   bonded = true
 }
@@ -59,7 +59,7 @@ func confAccMetalPort_L2Bonded(name string) string {
 	return fmt.Sprintf(`
 %s
 
-resource "metal_port" "bond0" {
+resource "equinix_metal_port" "bond0" {
   port_id = local.bond0_id
   layer2 = true
   bonded = true
@@ -73,7 +73,7 @@ func confAccMetalPort_L2Individual(name string) string {
 	return fmt.Sprintf(`
 %s
 
-resource "metal_port" "bond0" {
+resource "equinix_metal_port" "bond0" {
   port_id = local.bond0_id
   layer2 = true
   bonded = false
@@ -87,7 +87,7 @@ func confAccMetalPort_HybridUnbonded(name string) string {
 	return fmt.Sprintf(`
 %s
 
-resource "metal_port" "bond0" {
+resource "equinix_metal_port" "bond0" {
   port_id = local.bond0_id
   layer2 = false
   bonded = true
@@ -96,7 +96,7 @@ resource "metal_port" "bond0" {
   ]
 }
 
-resource "metal_port" "eth1" {
+resource "equinix_metal_port" "eth1" {
   port_id = local.eth1_id
   bonded = false
   reset_on_delete = true
@@ -109,7 +109,7 @@ func confAccMetalPort_HybridBonded(name string) string {
 	return fmt.Sprintf(`
 %s
 
-resource "metal_port" "bond0" {
+resource "equinix_metal_port" "bond0" {
   port_id = local.bond0_id
   layer2 = false
   bonded = true
@@ -117,7 +117,7 @@ resource "metal_port" "bond0" {
   reset_on_delete = true
 }
 
-resource "metal_vlan" "test" {
+resource "equinix_metal_vlan" "test" {
   description = "test"
   metro = "sv"
   project_id = metal_project.test.id
@@ -129,7 +129,7 @@ func confAccMetalPort_HybridBondedVxlan(name string) string {
 	return fmt.Sprintf(`
 %s
 
-resource "metal_port" "bond0" {
+resource "equinix_metal_port" "bond0" {
   port_id = local.bond0_id
   layer2 = false
   bonded = true
@@ -137,14 +137,14 @@ resource "metal_port" "bond0" {
   reset_on_delete = true
 }
 
-resource "metal_vlan" "test1" {
+resource "equinix_metal_vlan" "test1" {
   description = "test1"
   metro = "sv"
   project_id = metal_project.test.id
   vxlan = 1001
 }
 
-resource "metal_vlan" "test2" {
+resource "equinix_metal_vlan" "test2" {
   description = "test2"
   metro = "sv"
   project_id = metal_project.test.id
@@ -163,10 +163,10 @@ func TestAccMetalPort_HybridBondedVxlan(t *testing.T) {
 			{
 				Config: confAccMetalPort_HybridBondedVxlan(rs),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr("metal_port.bond0", "vxlan_ids.#", "2"),
-					resource.TestMatchResourceAttr("metal_port.bond0", "vxlan_ids.0",
+					resource.TestCheckResourceAttr("equinix_metal_port.bond0", "vxlan_ids.#", "2"),
+					resource.TestMatchResourceAttr("equinix_metal_port.bond0", "vxlan_ids.0",
 						regexp.MustCompile("1001|1002")),
-					resource.TestMatchResourceAttr("metal_port.bond0", "vxlan_ids.1",
+					resource.TestMatchResourceAttr("equinix_metal_port.bond0", "vxlan_ids.1",
 						regexp.MustCompile("1001|1002")),
 				),
 			},
@@ -191,16 +191,16 @@ func metalPortTestTemplate(t *testing.T, conf func(string) string, expectedType 
 			{
 				Config: conf(rs),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr("metal_port.bond0", "name", "bond0"),
-					resource.TestCheckResourceAttr("metal_port.bond0", "type", "NetworkBondPort"),
-					resource.TestCheckResourceAttrSet("metal_port.bond0", "bonded"),
-					resource.TestCheckResourceAttrSet("metal_port.bond0", "disbond_supported"),
-					resource.TestCheckResourceAttrSet("metal_port.bond0", "port_id"),
-					resource.TestCheckResourceAttr("metal_port.bond0", "network_type", expectedType),
+					resource.TestCheckResourceAttr("equinix_metal_port.bond0", "name", "bond0"),
+					resource.TestCheckResourceAttr("equinix_metal_port.bond0", "type", "NetworkBondPort"),
+					resource.TestCheckResourceAttrSet("equinix_metal_port.bond0", "bonded"),
+					resource.TestCheckResourceAttrSet("equinix_metal_port.bond0", "disbond_supported"),
+					resource.TestCheckResourceAttrSet("equinix_metal_port.bond0", "port_id"),
+					resource.TestCheckResourceAttr("equinix_metal_port.bond0", "network_type", expectedType),
 				),
 			},
 			{
-				ResourceName:            "metal_port.bond0",
+				ResourceName:            "equinix_metal_port.bond0",
 				ImportState:             true,
 				ImportStateVerify:       true,
 				ImportStateVerifyIgnore: []string{"reset_on_delete"},
@@ -213,10 +213,10 @@ func metalPortTestTemplate(t *testing.T, conf func(string) string, expectedType 
 				Config: confAccMetalPort_L3(rs),
 			},
 			{
-				ResourceName: "metal_port.bond0",
+				ResourceName: "equinix_metal_port.bond0",
 				ImportState:  true,
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr("metal_port.bond0", "network_type", "layer3"),
+					resource.TestCheckResourceAttr("equinix_metal_port.bond0", "network_type", "layer3"),
 				),
 			},
 		},
@@ -245,7 +245,7 @@ func testAccMetalPortDestroy(s *terraform.State) error {
 	port_ids := []string{}
 
 	for _, rs := range s.RootModule().Resources {
-		if rs.Type == "metal_port" {
+		if rs.Type == "equinix_metal_port" {
 			shouldReset := rs.Primary.Attributes["reset_on_delete"]
 			if shouldReset == "true" {
 				port_ids = append(port_ids, rs.Primary.ID)

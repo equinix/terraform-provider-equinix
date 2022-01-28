@@ -61,7 +61,7 @@ func TestAccDataSourceFacility_Features(t *testing.T) {
 
 func testAccDataSourceFacilityConfigFeatures() string {
 	return `
-data "metal_facility" "test" {
+data "equinix_metal_facility" "test" {
     code = "ewr1"
     features_required = ["baremetal", "ibx"]
 }
@@ -70,7 +70,7 @@ data "metal_facility" "test" {
 
 func testAccDataSourceFacilityConfigBasic(facCode string) string {
 	return fmt.Sprintf(`
-data "metal_facility" "test" {
+data "equinix_metal_facility" "test" {
     code = "%s"
 }
 `, facCode)
@@ -78,7 +78,7 @@ data "metal_facility" "test" {
 
 func testAccDataSourceFacilityConfigCapacityUnreasonable(facCode string) string {
 	return fmt.Sprintf(`
-data "metal_facility" "test" {
+data "equinix_metal_facility" "test" {
     code = "%s"
     capacity {
         plan = "c3.small.x86"
@@ -90,7 +90,7 @@ data "metal_facility" "test" {
 
 func testAccDataSourceFacilityConfigCapacityReasonable(facCode string) string {
 	return fmt.Sprintf(`
-data "metal_facility" "test" {
+data "equinix_metal_facility" "test" {
     code = "%s"
     capacity {
         plan = "c3.small.x86"
@@ -106,7 +106,7 @@ data "metal_facility" "test" {
 
 func testAccDataSourceFacilityConfigCapacityUnreasonableMultiple(facCode string) string {
 	return fmt.Sprintf(`
-data "metal_facility" "test" {
+data "equinix_metal_facility" "test" {
     code = "%s"
     capacity {
         plan = "c3.small.x86"

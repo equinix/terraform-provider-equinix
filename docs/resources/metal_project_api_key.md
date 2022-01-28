@@ -19,7 +19,7 @@ Read-only keys only allow to list and view existing resources, read-write keys c
 
 # Create a new read-only API key in existing project
 
-resource "metal_project_api_key" "test" {
+resource "equinix_metal_project_api_key" "test" {
   project_id  = local.existing_project_id
   description = "Read-only key scoped to a projct"
   read_only   = true

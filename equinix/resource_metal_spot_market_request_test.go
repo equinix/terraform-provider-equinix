@@ -12,20 +12,20 @@ import (
 
 func testAccCheckMetalSpotMarketRequestConfig_basic(name string) string {
 	return fmt.Sprintf(`
-resource "metal_project" "test" {
+resource "equinix_metal_project" "test" {
   name = "tfacc-spot_market_request-%s"
 }
 
-data "metal_spot_market_price" "test" {
+data "equinix_metal_spot_market_price" "test" {
   facility = "ewr1"
   plan     = "baremetal_0"
 }
 
-data "metal_spot_market_request" "dreq" {
+data "equinix_metal_spot_market_request" "dreq" {
 	request_id = metal_spot_market_request.request.id
 }
 
-resource "metal_spot_market_request" "request" {
+resource "equinix_metal_spot_market_request" "request" {
   project_id       = metal_project.test.id
   max_bid_price    = data.metal_spot_market_price.test.price * 1.2
   facilities       = ["sv15"]
@@ -54,9 +54,9 @@ func TestAccMetalSpotMarketRequest_Basic(t *testing.T) {
 			{
 				Config: testAccCheckMetalSpotMarketRequestConfig_basic(rs),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckMetalSpotMarketRequestExists("metal_spot_market_request.request", &key),
-					resource.TestCheckResourceAttr("metal_spot_market_request.request", "devices_max", "1"),
-					resource.TestCheckResourceAttr("metal_spot_market_request.request", "devices_min", "1"),
+					testAccCheckMetalSpotMarketRequestExists("equinix_metal_spot_market_request.request", &key),
+					resource.TestCheckResourceAttr("equinix_metal_spot_market_request.request", "devices_max", "1"),
+					resource.TestCheckResourceAttr("equinix_metal_spot_market_request.request", "devices_min", "1"),
 					resource.TestCheckResourceAttr(
 						"data.metal_spot_market_request.dreq", "device_ids.#", "1"),
 				),
@@ -69,7 +69,7 @@ func testAccCheckMetalSpotMarketRequestDestroy(s *terraform.State) error {
 	client := testAccProvider.Meta().(*packngo.Client)
 
 	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "metal_spot_market_request" {
+		if rs.Type != "equinix_metal_spot_market_request" {
 			continue
 		}
 		if _, _, err := client.SpotMarketRequests.Get(rs.Primary.ID, nil); err == nil {
@@ -108,16 +108,16 @@ func testAccCheckMetalSpotMarketRequestExists(n string, key *packngo.SpotMarketR
 
 func testAccCheckMetalSpotMarketRequestConfig_import(name string) string {
 	return fmt.Sprintf(`
-resource "metal_project" "test" {
+resource "equinix_metal_project" "test" {
   name = "tfacc-spot_market_request-%s"
 }
 
-data "metal_spot_market_price" "test" {
+data "equinix_metal_spot_market_price" "test" {
   facility = "sv15"
   plan     = "c3.medium.x86"
 }
 
-resource "metal_spot_market_request" "request" {
+resource "equinix_metal_spot_market_request" "request" {
   project_id       = metal_project.test.id
   max_bid_price    = data.metal_spot_market_price.test.price * 1.2
   facilities       = ["sv15"]
@@ -145,7 +145,7 @@ func TestAccMetalSpotMarketRequest_Import(t *testing.T) {
 				Config: testAccCheckMetalSpotMarketRequestConfig_import(rs),
 			},
 			{
-				ResourceName:            "metal_spot_market_request.request",
+				ResourceName:            "equinix_metal_spot_market_request.request",
 				ImportState:             true,
 				ImportStateVerify:       true,
 				ImportStateVerifyIgnore: []string{"instance_parameters", "wait_for_devices"},

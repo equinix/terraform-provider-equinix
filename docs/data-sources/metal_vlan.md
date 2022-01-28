@@ -15,13 +15,13 @@ searched by VLAN UUID, or project UUID and vxlan number.
 Fetch a vlan by ID:
 
 ```hcl
-resource "metal_vlan" "foovlan" {
+resource "equinix_metal_vlan" "foovlan" {
         project_id = local.project_id
         metro = "sv"
         vxlan = 5
 }
 
-data "metal_vlan" "dsvlan" {
+data "equinix_metal_vlan" "dsvlan" {
         vlan_id = metal_vlan.foovlan.id
 }
 ```
@@ -29,13 +29,13 @@ data "metal_vlan" "dsvlan" {
 Fetch a vlan by project ID, vxlan and metro
 
 ```hcl
-resource "metal_vlan" "foovlan" {
+resource "equinix_metal_vlan" "foovlan" {
         project_id = local.project_id
         metro = "sv"
         vxlan = 5
 }
 
-data "metal_vlan" "dsvlan" {
+data "equinix_metal_vlan" "dsvlan" {
         project_id = local.project_id
         vxlan      = 5
         metro      = "sv"

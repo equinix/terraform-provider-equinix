@@ -47,7 +47,7 @@ func resourceMetalProjectAPIKey() *schema.Resource {
 }
 
 func resourceMetalAPIKeyCreate(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*packngo.Client)
+	client := meta.(*Config).Client()
 
 	projectId := ""
 
@@ -81,7 +81,7 @@ func projectIdFromResourceData(d *schema.ResourceData) string {
 }
 
 func resourceMetalAPIKeyRead(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*packngo.Client)
+	client := meta.(*Config).Client()
 
 	projectId := projectIdFromResourceData(d)
 
@@ -131,7 +131,7 @@ func resourceMetalAPIKeyRead(d *schema.ResourceData, meta interface{}) error {
 }
 
 func resourceMetalAPIKeyDelete(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*packngo.Client)
+	client := meta.(*Config).Client()
 
 	resp, err := client.APIKeys.Delete(d.Id())
 	if ignoreResponseErrors(httpForbidden, httpNotFound)(resp, err) != nil {

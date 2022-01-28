@@ -2,7 +2,6 @@ package equinix
 
 import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/packethost/packngo"
 )
 
 func resourceMetalVolumeAttachment() *schema.Resource {
@@ -32,7 +31,7 @@ func resourceMetalVolumeAttachment() *schema.Resource {
 }
 
 func resourceMetalVolumeAttachmentDelete(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*packngo.Client)
+	client := meta.(*Config).Client()
 	resp, err := client.VolumeAttachments.Delete(d.Id())
 	return ignoreResponseErrors(httpForbidden, httpNotFound)(resp, err)
 }

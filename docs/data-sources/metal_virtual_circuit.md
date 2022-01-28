@@ -12,11 +12,11 @@ Use this data source to retrieve a virtual circuit resource from [Equinix Fabric
 ## Example Usage
 
 ```hcl
-data "metal_connection" "example_connection" {
+data "equinix_metal_connection" "example_connection" {
   connection_id     = "4347e805-eb46-4699-9eb9-5c116e6a017d"
 }
 
-data "metal_virtual_circuit" "example_vc" {
+data "equinix_metal_virtual_circuit" "example_vc" {
   virtual_circuit_id = data.metal_connection.example_connection.ports[1].virtual_circuit_ids[0]
 }
 

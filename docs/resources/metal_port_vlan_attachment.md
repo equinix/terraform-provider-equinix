@@ -23,13 +23,13 @@ To learn more about Layer 2 networking in Equinix Metal, refer to
 ### Hybrid network type
 
 ```hcl
-resource "metal_vlan" "test" {
+resource "equinix_metal_vlan" "test" {
   description = "VLAN in New Jersey"
   facility    = "ny5"
   project_id  = local.project_id
 }
 
-resource "metal_device" "test" {
+resource "equinix_metal_device" "test" {
   hostname         = "test"
   plan             = "c3.small.x86"
   facilities       = ["ny5"]
@@ -38,12 +38,12 @@ resource "metal_device" "test" {
   project_id       = local.project_id
 }
 
-resource "metal_device_network_type" "test" {
+resource "equinix_metal_device_network_type" "test" {
   device_id = metal_device.test.id
   type      = "hybrid"
 }
 
-resource "metal_port_vlan_attachment" "test" {
+resource "equinix_metal_port_vlan_attachment" "test" {
   device_id = metal_device_network_type.test.id
   port_name = "eth1"
   vlan_vnid = metal_vlan.test.vxlan
@@ -54,7 +54,7 @@ resource "metal_port_vlan_attachment" "test" {
 ### Layer 2 network
 
 ```hcl
-resource "metal_device" "test" {
+resource "equinix_metal_device" "test" {
   hostname         = "test"
   plan             = "c3.small.x86"
   facilities       = ["ny5"]
@@ -63,35 +63,35 @@ resource "metal_device" "test" {
   project_id       = local.project_id
 }
 
-resource "metal_device_network_type" "test" {
+resource "equinix_metal_device_network_type" "test" {
   device_id = metal_device.test.id
   type      = "layer2-individual"
 }
 
-resource "metal_vlan" "test1" {
+resource "equinix_metal_vlan" "test1" {
   description = "VLAN in New Jersey"
   facility    = "ny5"
   project_id  = local.project_id
 }
 
-resource "metal_vlan" "test2" {
+resource "equinix_metal_vlan" "test2" {
   description = "VLAN in New Jersey"
   facility    = "ny5"
   project_id  = local.project_id
 }
 
-resource "metal_port_vlan_attachment" "test1" {
+resource "equinix_metal_port_vlan_attachment" "test1" {
   device_id = metal_device_network_type.test.id
   vlan_vnid = metal_vlan.test1.vxlan
   port_name = "eth1"
 }
 
-resource "metal_port_vlan_attachment" "test2" {
+resource "equinix_metal_port_vlan_attachment" "test2" {
   device_id  = metal_device_network_type.test.id
   vlan_vnid  = metal_vlan.test2.vxlan
   port_name  = "eth1"
   native     = true
-  depends_on = ["metal_port_vlan_attachment.test1"]
+  depends_on = ["equinix_metal_port_vlan_attachment.test1"]
 }
 ```
 
