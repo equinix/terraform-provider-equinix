@@ -135,7 +135,7 @@ resource "equinix_metal_project" "test" {
 }
 
 data "equinix_metal_project_ssh_key" "foobar" {
-	depends_on = [metal_project_ssh_key.foobar]
+	depends_on = [equinix_metal_project_ssh_key.foobar]
 	id = metal_project_ssh_key.foobar.id
 	project_id = metal_project.test.id
 }

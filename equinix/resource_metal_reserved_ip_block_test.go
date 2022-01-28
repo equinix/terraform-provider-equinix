@@ -237,7 +237,7 @@ resource "equinix_metal_device" "test" {
   ip_address {
 	 type = "public_ipv4"
 	 cidr = 31
-	 reservation_ids = [metal_reserved_ip_block.test.id]
+	 reservation_ids = [equinix_metal_reserved_ip_block.test.id]
   }
   ip_address {
 	 type = "private_ipv4"

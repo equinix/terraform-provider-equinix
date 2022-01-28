@@ -81,17 +81,17 @@ resource "equinix_metal_device" "test" {
     facilities       = ["ewr1"]
     operating_system = "ubuntu_16_04"
     billing_cycle    = "hourly"
-    project_id       = "${metal_project.test.id}"
+    project_id       = "${equinix_metal_project.test.id}"
 }
 
 resource "equinix_metal_bgp_session" "test4" {
-	device_id = "${metal_device.test.id}"
+	device_id = "${equinix_metal_device.test.id}"
 	address_family = "ipv4"
 	default_route = true
 }
 
 resource "equinix_metal_bgp_session" "test6" {
-	device_id = "${metal_device.test.id}"
+	device_id = "${equinix_metal_device.test.id}"
 	address_family = "ipv6"
 	default_route = true
 }

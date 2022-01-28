@@ -119,7 +119,7 @@ resource "equinix_metal_project" "foobar" {
 }
 
 resource "equinix_metal_vlan" "foovlan" {
-    project_id = "${metal_project.foobar.id}"
+    project_id = "${equinix_metal_project.foobar.id}"
     facility = "%s"
     description = "%s"
 }

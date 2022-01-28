@@ -482,7 +482,7 @@ resource "equinix_metal_device" "test" {
   facilities       = ["sjc1"]
   operating_system = "ubuntu_16_04"
   billing_cycle    = "hourly"
-  project_id       = "${metal_project.test.id}"
+  project_id       = "${equinix_metal_project.test.id}"
   tags             = ["%d"]
 }
 `, projSuffix, rInt, rInt)
@@ -500,7 +500,7 @@ resource "equinix_metal_device" "test" {
   facilities       = ["sjc1"]
   operating_system = "ubuntu_16_04"
   billing_cycle    = "hourly"
-  project_id       = "${metal_project.test.id}"
+  project_id       = "${equinix_metal_project.test.id}"
   tags             = ["%d"]
   user_data = "#!/usr/bin/env sh\necho Reinstall\n"
 
@@ -525,7 +525,7 @@ resource "equinix_metal_device" "test" {
   facilities       = ["sjc1"]
   operating_system = "ubuntu_16_04"
   billing_cycle    = "hourly"
-  project_id       = "${metal_project.test.id}"
+  project_id       = "${equinix_metal_project.test.id}"
   tags             = ["%d"]
 }
 `, projSuffix, rInt, rInt, rInt)
@@ -544,7 +544,7 @@ resource "equinix_metal_device" "test" {
   facilities       = ["sjc1"]
   operating_system = "ubuntu_16_04"
   billing_cycle    = "hourly"
-  project_id       = "${metal_project.test.id}"
+  project_id       = "${equinix_metal_project.test.id}"
   tags             = ["%d"]
   always_pxe       = true
   ipxe_script_url  = "http://matchbox.foo.wtf:8080/boot.ipxe"
@@ -564,7 +564,7 @@ resource "equinix_metal_device" "test" {
   metro            = "sv"
   operating_system = "ubuntu_16_04"
   billing_cycle    = "hourly"
-  project_id       = "${metal_project.test.id}"
+  project_id       = "${equinix_metal_project.test.id}"
 }`, projSuffix)
 }
 
@@ -578,7 +578,7 @@ resource "equinix_metal_device" "test" {
   plan             = "t1.small.x86"
   facilities       = ["sjc1"]
   operating_system = "ubuntu_16_04"
-  project_id       = "${metal_project.test.id}"
+  project_id       = "${equinix_metal_project.test.id}"
 }`, projSuffix)
 }
 
@@ -594,7 +594,7 @@ resource "equinix_metal_device" "test" {
   facilities       = ["sjc1"]
   operating_system = "ubuntu_16_04"
   billing_cycle    = "hourly"
-  project_id       = "${metal_project.test.id}"
+  project_id       = "${equinix_metal_project.test.id}"
 }`, projSuffix)
 }
 
@@ -611,7 +611,7 @@ resource "equinix_metal_device" "test"  {
   facilities       = ["sjc1", "any"]
   operating_system = "ubuntu_16_04"
   billing_cycle    = "hourly"
-  project_id       = "${metal_project.test.id}"
+  project_id       = "${equinix_metal_project.test.id}"
 }`, projSuffix)
 }
 
@@ -629,7 +629,7 @@ resource "equinix_metal_device" "test_ipxe_script_url"  {
   operating_system = "custom_ipxe"
   user_data        = "#!/bin/sh\ntouch /tmp/test"
   billing_cycle    = "hourly"
-  project_id       = "${metal_project.test.id}"
+  project_id       = "${equinix_metal_project.test.id}"
   ipxe_script_url  = "%s"
   always_pxe       = "%s"
 }`, projSuffix, url, pxe)
@@ -647,7 +647,7 @@ resource "equinix_metal_device" "test_ipxe_conflict" {
   operating_system = "custom_ipxe"
   user_data        = "#!ipxe\nset conflict ipxe_script_url"
   billing_cycle    = "hourly"
-  project_id       = "${metal_project.test.id}"
+  project_id       = "${equinix_metal_project.test.id}"
   ipxe_script_url  = "https://boot.netboot.xyz"
   always_pxe       = true
 }`
@@ -663,6 +663,6 @@ resource "equinix_metal_device" "test_ipxe_missing" {
   facilities       = ["sjc1"]
   operating_system = "custom_ipxe"
   billing_cycle    = "hourly"
-  project_id       = "${metal_project.test.id}"
+  project_id       = "${equinix_metal_project.test.id}"
   always_pxe       = true
 }`

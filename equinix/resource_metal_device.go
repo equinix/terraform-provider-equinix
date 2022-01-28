@@ -330,7 +330,7 @@ func resourceMetalDevice() *schema.Resource {
 			},
 			"project_ssh_key_ids": {
 				Type:        schema.TypeList,
-				Description: "Array of IDs of the project SSH keys which should be added to the device. If you omit this, SSH keys of all the members of the parent project will be added to the device. If you specify this array, only the listed project SSH keys will be added. Project SSH keys can be created with the [metal_project_ssh_key](project_ssh_key.md) resource",
+				Description: "Array of IDs of the project SSH keys which should be added to the device. If you omit this, SSH keys of all the members of the parent project will be added to the device. If you specify this array, only the listed project SSH keys will be added. Project SSH keys can be created with the [equinix_metal_project_ssh_key](project_ssh_key.md) resource",
 				Optional:    true,
 				ForceNew:    true,
 				Elem:        &schema.Schema{Type: schema.TypeString},

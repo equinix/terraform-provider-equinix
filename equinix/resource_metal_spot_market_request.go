@@ -76,7 +76,7 @@ func resourceMetalSpotMarketRequest() *schema.Resource {
 			},
 			"instance_parameters": {
 				Type:        schema.TypeList,
-				Description: "Parameters for devices provisioned from this request. You can find the parameter description from the [metal_device doc](device.md)",
+				Description: "Parameters for devices provisioned from this request. You can find the parameter description from the [equinix_metal_device doc](device.md)",
 				Required:    true,
 				MaxItems:    1,
 				ForceNew:    true,

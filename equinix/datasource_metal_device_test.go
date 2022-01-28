@@ -49,7 +49,7 @@ resource "equinix_metal_device" "test" {
   facilities       = ["sjc1"]
   operating_system = "ubuntu_16_04"
   billing_cycle    = "hourly"
-  project_id       = "${metal_project.test.id}"
+  project_id       = "${equinix_metal_project.test.id}"
 }
 
 data "equinix_metal_device" "test" {
@@ -99,7 +99,7 @@ resource "equinix_metal_device" "test" {
   facilities       = ["sjc1"]
   operating_system = "ubuntu_16_04"
   billing_cycle    = "hourly"
-  project_id       = "${metal_project.test.id}"
+  project_id       = "${equinix_metal_project.test.id}"
 }
 
 data "equinix_metal_device" "test" {

@@ -24,7 +24,7 @@ resource "equinix_metal_device" "test" {
   facilities       = ["nrt1"]
   operating_system = "ubuntu_16_04"
   billing_cycle    = "hourly"
-  project_id       = "${metal_project.test.id}"
+  project_id       = "${equinix_metal_project.test.id}"
 }
 `, name)
 }
@@ -36,13 +36,13 @@ func testAccCheckMetalPortVlanAttachmentConfig_L2Bonded_2(name string) string {
 resource "equinix_metal_vlan" "test1" {
   description = "test VLAN 1"
   facility    = "nrt1"
-  project_id  = "${metal_project.test.id}"
+  project_id  = "${equinix_metal_project.test.id}"
 }
 
 resource "equinix_metal_vlan" "test2" {
   description = "test VLAN 2"
   facility    = "nrt1"
-  project_id  = "${metal_project.test.id}"
+  project_id  = "${equinix_metal_project.test.id}"
 }
 
 resource "equinix_metal_device_network_type" "test" {
@@ -52,13 +52,13 @@ resource "equinix_metal_device_network_type" "test" {
 
 resource "equinix_metal_port_vlan_attachment" "test1" {
   device_id = metal_device_network_type.test.id
-  vlan_vnid = "${metal_vlan.test1.vxlan}"
+  vlan_vnid = "${equinix_metal_vlan.test1.vxlan}"
   port_name = "bond0"
 }
 
 resource "equinix_metal_port_vlan_attachment" "test2" {
   device_id = metal_device_network_type.test.id
-  vlan_vnid = "${metal_vlan.test2.vxlan}"
+  vlan_vnid = "${equinix_metal_vlan.test2.vxlan}"
   port_name = "bond0"
 }
 
@@ -109,7 +109,7 @@ resource "equinix_metal_device" "test" {
   facilities       = ["nrt1"]
   operating_system = "ubuntu_16_04"
   billing_cycle    = "hourly"
-  project_id       = "${metal_project.test.id}"
+  project_id       = "${equinix_metal_project.test.id}"
 }
 `, name)
 }
@@ -121,13 +121,13 @@ func testAccCheckMetalPortVlanAttachmentConfig_L2Individual_2(name string) strin
 resource "equinix_metal_vlan" "test1" {
   description = "test VLAN 1"
   facility    = "nrt1"
-  project_id  = "${metal_project.test.id}"
+  project_id  = "${equinix_metal_project.test.id}"
 }
 
 resource "equinix_metal_vlan" "test2" {
   description = "test VLAN 2"
   facility    = "nrt1"
-  project_id  = "${metal_project.test.id}"
+  project_id  = "${equinix_metal_project.test.id}"
 }
 
 resource "equinix_metal_device_network_type" "test" {
@@ -137,13 +137,13 @@ resource "equinix_metal_device_network_type" "test" {
 
 resource "equinix_metal_port_vlan_attachment" "test1" {
   device_id = metal_device_network_type.test.id
-  vlan_vnid = "${metal_vlan.test1.vxlan}"
+  vlan_vnid = "${equinix_metal_vlan.test1.vxlan}"
   port_name = "eth1"
 }
 
 resource "equinix_metal_port_vlan_attachment" "test2" {
   device_id = metal_device_network_type.test.id
-  vlan_vnid = "${metal_vlan.test2.vxlan}"
+  vlan_vnid = "${equinix_metal_vlan.test2.vxlan}"
   port_name = "eth1"
 }
 
@@ -196,7 +196,7 @@ resource "equinix_metal_device" "test" {
   facilities       = ["dfw2"]
   operating_system = "ubuntu_16_04"
   billing_cycle    = "hourly"
-  project_id       = "${metal_project.test.id}"
+  project_id       = "${equinix_metal_project.test.id}"
 }`, name)
 }
 
@@ -212,12 +212,12 @@ resource "equinix_metal_device_network_type" "test" {
 resource "equinix_metal_vlan" "test" {
   description = "test vlan"
   facility    = "dfw2"
-  project_id  = "${metal_project.test.id}"
+  project_id  = "${equinix_metal_project.test.id}"
 }
 
 resource "equinix_metal_port_vlan_attachment" "test" {
   device_id = metal_device_network_type.test.id
-  vlan_vnid = "${metal_vlan.test.vxlan}"
+  vlan_vnid = "${equinix_metal_vlan.test.vxlan}"
   port_name = "eth1"
   force_bond = false
 }`, testAccCheckMetalPortVlanAttachmentConfig_Hybrid_1(name))
@@ -380,7 +380,7 @@ resource "equinix_metal_device" "test" {
   facilities       = ["nrt1"]
   operating_system = "ubuntu_16_04"
   billing_cycle    = "hourly"
-  project_id       = "${metal_project.test.id}"
+  project_id       = "${equinix_metal_project.test.id}"
 }`, name)
 }
 
@@ -391,13 +391,13 @@ func testAccCheckMetalPortVlanAttachmentConfig_L2Native_2(name string) string {
 resource "equinix_metal_vlan" "test1" {
   description = "test VLAN 1"
   facility    = "nrt1"
-  project_id  = "${metal_project.test.id}"
+  project_id  = "${equinix_metal_project.test.id}"
 }
 
 resource "equinix_metal_vlan" "test2" {
   description = "test VLAN 2"
   facility    = "nrt1"
-  project_id  = "${metal_project.test.id}"
+  project_id  = "${equinix_metal_project.test.id}"
 }
 
 resource "equinix_metal_device_network_type" "test" {
@@ -407,13 +407,13 @@ resource "equinix_metal_device_network_type" "test" {
 
 resource "equinix_metal_port_vlan_attachment" "test1" {
   device_id = metal_device_network_type.test.id
-  vlan_vnid = "${metal_vlan.test1.vxlan}"
+  vlan_vnid = "${equinix_metal_vlan.test1.vxlan}"
   port_name = "eth1"
 }
 
 resource "equinix_metal_port_vlan_attachment" "test2" {
   device_id = metal_device_network_type.test.id
-  vlan_vnid = "${metal_vlan.test2.vxlan}"
+  vlan_vnid = "${equinix_metal_vlan.test2.vxlan}"
   native    = true
   port_name = "eth1"
   depends_on = ["equinix_metal_port_vlan_attachment.test1"]

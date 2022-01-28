@@ -23,7 +23,7 @@ resource "equinix_metal_device" "test" {
   metro            = "sv"
   operating_system = "ubuntu_16_04"
   billing_cycle    = "hourly"
-  project_id       = "${metal_project.test.id}"
+  project_id       = "${equinix_metal_project.test.id}"
 }
 
 locals {
@@ -113,7 +113,7 @@ resource "equinix_metal_port" "bond0" {
   port_id = local.bond0_id
   layer2 = false
   bonded = true
-  vlan_ids = [metal_vlan.test.id]
+  vlan_ids = [equinix_metal_vlan.test.id]
   reset_on_delete = true
 }
 
@@ -133,7 +133,7 @@ resource "equinix_metal_port" "bond0" {
   port_id = local.bond0_id
   layer2 = false
   bonded = true
-  vxlan_ids = [metal_vlan.test1.vxlan, metal_vlan.test2.vxlan]
+  vxlan_ids = [equinix_metal_vlan.test1.vxlan, equinix_metal_vlan.test2.vxlan]
   reset_on_delete = true
 }
 

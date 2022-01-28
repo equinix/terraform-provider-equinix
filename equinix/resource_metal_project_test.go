@@ -132,7 +132,7 @@ func TestAccMetalProject_errorHandling(t *testing.T) {
 	}
 
 	mockProviders := map[string]*schema.Provider{
-		"metal": mockMetal,
+		"equinix": mockMetal,
 	}
 	resource.Test(t, resource.TestCase{
 		Providers: mockProviders,
@@ -161,7 +161,7 @@ func TestAccMetalProject_apiErrorHandling(t *testing.T) {
 	}
 
 	mockProviders := map[string]*schema.Provider{
-		"metal": mockMetal,
+		"equinix": mockMetal,
 	}
 	resource.Test(t, resource.TestCase{
 		Providers: mockProviders,
@@ -403,7 +403,7 @@ resource "equinix_metal_organization" "test" {
 
 resource "equinix_metal_project" "foobar" {
 		name = "tfacc-project-%s"
-		organization_id = "${metal_organization.test.id}"
+		organization_id = "${equinix_metal_organization.test.id}"
 }`, r, r)
 }
 

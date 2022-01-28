@@ -19,7 +19,7 @@ resource "equinix_metal_project" "test" {
 resource "equinix_metal_project_ssh_key" "test" {
     name = "tfacc-project-key-test"
     public_key = "%s"
-    project_id = "${metal_project.test.id}"
+    project_id = "${equinix_metal_project.test.id}"
 }
 
 resource "equinix_metal_device" "test" {
@@ -28,8 +28,8 @@ resource "equinix_metal_device" "test" {
     facilities          = ["ewr1"]
     operating_system    = "ubuntu_16_04"
     billing_cycle       = "hourly"
-    project_ssh_key_ids = ["${metal_project_ssh_key.test.id}"]
-    project_id          = "${metal_project.test.id}"
+    project_ssh_key_ids = ["${equinix_metal_project_ssh_key.test.id}"]
+    project_id          = "${equinix_metal_project.test.id}"
 }
 
 `, name, publicSshKey)
