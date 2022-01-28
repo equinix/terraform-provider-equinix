@@ -23,7 +23,7 @@ Example [provider configuration](https://www.terraform.io/docs/configuration/pro
 in `main.tf` file:
 
 ```hcl
-provider equinix {
+provider "equinix" {
   client_id     = "someID"
   client_secret = "someSecret"
 }
@@ -36,20 +36,42 @@ export EQUINIX_API_CLIENTID=someID
 export EQUINIX_API_CLIENTSECRET=someSecret
 ```
 
+### Token Authentication
+
+Token's can be generated for the API Client using the OAuth2 Token features described in the
+[OAuth2 API](https://developer.equinix.com/catalog/accesstokenv1#operation/GetOAuth2AccessToken) documentation.
+
+API tokens can be provided using the `token` provider argument, or the `EQUINIX_API_TOKEN` evironment variable.
+The `client_id` and `client_secret` arguments will be ignored in the presence of a `token` argument.
+
+When testing against the [Equinix Sandbox API](https://developer.equinix.com/environment/sandbox), tokens must be used.
+
+```hcl
+provider "equinix" {
+  token         = "someToken"
+}
+```
+
 ## Argument Reference
 
-The Equinix provider requires a few basic parameters:
+The Equinix provider requires a few basic parameters. While the authentication arguments are
+individually optionally, either `token` or `client_id` and `client_secret` must be defined
+through arguments or environment settings.
 
-- `client_id` - (Required) API Consumer Key available under "My Apps" in
-  developer portal. Argument can be also specified by setting `EQUINIX_API_CLIENTID`
+- `client_id` - (Optional) API Consumer Key available under "My Apps" in
+  developer portal. This argument can also be specified with the `EQUINIX_API_CLIENTID`
   shell environment variable.
 
-- `client_secret` (Required) API Consumer secret available under "My Apps" in
-  developer portal. Argument can be also specified by setting `EQUINIX_API_CLIENTSECRET`
+- `client_secret` (Optional) API Consumer secret available under "My Apps" in
+  developer portal. This argument can also be specified with the `EQUINIX_API_CLIENTSECRET`
+  shell environment variable.
+
+- `token` (Optional) API tokens are generated from API Consumer clients using the [OAuth2 API](https://developer.equinix.com/docs/ecx-getting-started#requesting-access-and-refresh-tokens).
+  This argument can also be specified with the `EQUINIX_API_TOKEN`
   shell environment variable.
 
 - `endpoint` (Optional) The Equinix API base URL to point out desired environment.
-   Argument can be also specified by setting `EQUINIX_API_ENDPOINT`
+   This argument can also be specified with the `EQUINIX_API_ENDPOINT`
    shell environment variable. (Defaults to `https://api.equinix.com`)
 
 - `request_timeout` (Optional) The duration of time, in seconds, that the
