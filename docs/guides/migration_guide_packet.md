@@ -1,14 +1,14 @@
 ---
 page_title: "Migrating from the Packet provider"
 description: |-
-  Migrating your templates from packet_ resources to metal_ resources with minimal disruption.
+  Migrating your templates from packet_ resources to equinix_metal_ resources with minimal disruption.
 ---
 
 # Migrating from packethost/packet to equinix/metal
 
 Packet is now Equinix Metal, and the name of the Terraform provider changed too. This (terraform-provider-metal, provider equinix/metal) is the current provider for Equinix Metal.
 
-If you've been using terraform-provider-packet, and you want to use a newer provider version to manage resources in Equinix Metal, you will need to change the references in you HCL files. You can just change the names of the resources, e.g. from `packet_device` to `equinix_metal_device`. That should work, but it will cause the `packet_device` to be destroyed and new `equinix_metal_device` to be created instead. Re-creation of the resources might be undesirable, and this guide shows how to migrate to metal_ resources without the re-creation.
+If you've been using terraform-provider-packet, and you want to use a newer provider version to manage resources in Equinix Metal, you will need to change the references in you HCL files. You can just change the names of the resources, e.g. from `packet_device` to `equinix_metal_device`. That should work, but it will cause the `packet_device` to be destroyed and new `equinix_metal_device` to be created instead. Re-creation of the resources might be undesirable, and this guide shows how to migrate to equinix_metal_ resources without the re-creation.
 
 Before starting to migrate your Terraform templates, please upgrade
 * packethost/packet provider to the latest version (3.2.1)
@@ -85,7 +85,7 @@ resource "equinix_metal_project" "example" {
 }
 
 resource "equinix_metal_vlan" "example" {
-  project_id       = metal_project.example.id
+  project_id       = equinix_metal_project.example.id
   facility         = "sv15"
   description      = "example"
 }
@@ -173,7 +173,7 @@ Once we find out the UUIDs of resources to migrate, in the HCL template, we need
  
 * the required_providers block to require equinix/metal
 * the names of the resources to corresponding resoruces from provider equinix/metal (sed 's/packet_/metal_')
-* all the references from packet_ resources to metal_ resources
+* all the references from packet_ resources to equinix_metal_ resources
 
 The modified template will then look as:
 
@@ -215,7 +215,7 @@ resource "equinix_metal_device" "example" {
 
 ### Migrating Terraform state
 
-Once we changed the template accordingly, we can remove the old packet_ resources from Terraform state and import the new ones as metal_ resources by their UUIDs.
+Once we changed the template accordingly, we can remove the old packet_ resources from Terraform state and import the new ones as equinix_metal_ resources by their UUIDs.
 
 From checking the state before, we remember that UUID of the packet_device.example is 8eb3bc10-0e1a-476a-aec2-6dc699df9c1c, and UUID of the packet_reserved_ip_block.example is e689072f-aa6e-4d51-8e37-c2fbe18b4ff0.
 
@@ -223,9 +223,9 @@ From checking the state before, we remember that UUID of the packet_device.examp
 
 ```
 $ terraform state rm packet_reserved_ip_block.example
-$ terraform import metal_reserved_ip_block.example e689072f-aa6e-4d51-8e37-c2fbe18b4ff0
+$ terraform import equinix_metal_reserved_ip_block.example e689072f-aa6e-4d51-8e37-c2fbe18b4ff0
 $ terraform state rm packet_device.example
-$ terraform import metal_device.example 8eb3bc10-0e1a-476a-aec2-6dc699df9c1c
+$ terraform import equinix_metal_device.example 8eb3bc10-0e1a-476a-aec2-6dc699df9c1c
 ```
 
 We then need to install the equinix/metal provider by running `$ terraform init`. After that, our templates should be in check with the Terraform state and with the upstream resources in Equinix Metal. We can verify the migration by running `$ terraform plan`, it should show that infrastructure is up to date.

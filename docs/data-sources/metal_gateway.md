@@ -1,5 +1,5 @@
 ---
-page_title: "Equinix Metal: Metal Gateway"
+page_title: "Equinix: equinix_metal_gateway"
 subcategory: ""
 description: |-
   Retrieve Equinix Metal Gateways

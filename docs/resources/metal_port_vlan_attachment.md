@@ -1,11 +1,11 @@
 ---
-page_title: "Equinix Metal: metal_port_vlan_attachment"
+page_title: "Equinix: equinix_metal_port_vlan_attachment"
 subcategory: ""
 description: |-
   Provides a Resource for Attaching VLANs to Device Ports
 ---
 
-# metal_port_vlan_attachment
+# Resource: equinix_metal_port_vlan_attachment
 
 Provides a resource to attach device ports to VLANs.
 
@@ -39,14 +39,14 @@ resource "equinix_metal_device" "test" {
 }
 
 resource "equinix_metal_device_network_type" "test" {
-  device_id = metal_device.test.id
+  device_id = equinix_metal_device.test.id
   type      = "hybrid"
 }
 
 resource "equinix_metal_port_vlan_attachment" "test" {
-  device_id = metal_device_network_type.test.id
+  device_id = equinix_metal_device_network_type.test.id
   port_name = "eth1"
-  vlan_vnid = metal_vlan.test.vxlan
+  vlan_vnid = equinix_metal_vlan.test.vxlan
 }
 
 ```
@@ -64,7 +64,7 @@ resource "equinix_metal_device" "test" {
 }
 
 resource "equinix_metal_device_network_type" "test" {
-  device_id = metal_device.test.id
+  device_id = equinix_metal_device.test.id
   type      = "layer2-individual"
 }
 
@@ -81,14 +81,14 @@ resource "equinix_metal_vlan" "test2" {
 }
 
 resource "equinix_metal_port_vlan_attachment" "test1" {
-  device_id = metal_device_network_type.test.id
-  vlan_vnid = metal_vlan.test1.vxlan
+  device_id = equinix_metal_device_network_type.test.id
+  vlan_vnid = equinix_metal_vlan.test1.vxlan
   port_name = "eth1"
 }
 
 resource "equinix_metal_port_vlan_attachment" "test2" {
-  device_id  = metal_device_network_type.test.id
-  vlan_vnid  = metal_vlan.test2.vxlan
+  device_id  = equinix_metal_device_network_type.test.id
+  vlan_vnid  = equinix_metal_vlan.test2.vxlan
   port_name  = "eth1"
   native     = true
   depends_on = ["equinix_metal_port_vlan_attachment.test1"]
@@ -103,7 +103,7 @@ The following arguments are supported:
 * `port_name` - (Required) Name of network port to be assigned to the VLAN
 * `force_bond` - Add port back to the bond when this resource is removed. Default is false.
 * `vlan_vnid` - VXLAN Network Identifier, integer
-* `native` - (Optional) Mark this VLAN a native VLAN on the port. This can be used only if this assignment assigns second or further VLAN to the port. To ensure that this attachment is not first on a port, you can use `depends_on` pointing to another metal_port_vlan_attachment, just like in the layer2-individual example above.
+* `native` - (Optional) Mark this VLAN a native VLAN on the port. This can be used only if this assignment assigns second or further VLAN to the port. To ensure that this attachment is not first on a port, you can use `depends_on` pointing to another equinix_metal_port_vlan_attachment, just like in the layer2-individual example above.
 
 ## Attribute Referece
 

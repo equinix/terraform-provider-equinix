@@ -1,5 +1,5 @@
 ---
-page_title: "Equinix Metal: metal_spot_market_request"
+page_title: "Equinix: equinix_metal_spot_market_request"
 subcategory: ""
 description: |-
   Provides an Equinix Metal Spot Market Request Resource.
@@ -78,5 +78,5 @@ The following attributes are exported:
 This resource can be imported using an existing spot market request ID:
 
 ```sh
-terraform import metal_spot_market_request {existing_spot_market_request_id}
+terraform import equinix_metal_spot_market_request {existing_spot_market_request_id}
 ```

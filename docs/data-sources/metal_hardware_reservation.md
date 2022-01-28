@@ -1,11 +1,11 @@
 ---
-page_title: "Equinix Metal: metal_hardware_reservation"
+page_title: "Equinix: equinix_metal_hardware_reservation"
 subcategory: ""
 description: |-
   Retrieve Equinix Metal Hardware Reservation
 ---
 
-# metal_hardware_reservation
+# Data Source: equinix_metal_hardware_reservation
 
 Use this data source to retrieve a [hardware reservation resource from Equinix Metal](https://metal.equinix.com/developers/docs/deploy/reserved/).
 

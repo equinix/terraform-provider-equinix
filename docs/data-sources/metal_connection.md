@@ -1,5 +1,5 @@
 ---
-page_title: "Equinix Metal: connection"
+page_title: "Equinix: equinix_metal_connection"
 subcategory: ""
 description: |-
   Retrieve Equinix Fabric Connection

@@ -1,11 +1,11 @@
 ---
-page_title: "Equinix Metal: virtual_circuit"
+page_title: "Equinix: equinix_metal_virtual_circuit"
 subcategory: ""
 description: |-
   Create Equinix Fabric Virtual Circuit
 ---
 
-# metal_virtual_circuit
+# Resource: equinix_metal_virtual_circuit
 
 Use this resource to associate VLAN with a Dedicated Port from [Equinix Fabric - software-defined interconnections](https://metal.equinix.com/developers/docs/networking/fabric/#associating-a-vlan-with-a-dedicated-port).
 
@@ -32,7 +32,7 @@ resource "equinix_metal_virtual_circuit" "test" {
 	connection_id = local.conn_id
 	project_id = local.project_id
 	port_id = data.metal_connection.test.ports[0].id
-	vlan_id = metal_vlan.test.id
+	vlan_id = equinix_metal_vlan.test.id
 	nni_vlan = 1056
 }
 ```

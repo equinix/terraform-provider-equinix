@@ -55,12 +55,12 @@ If the plan diff is not empty, you might have used a metro not containing the fa
 You can find out the deployed facility, and the containing metro by examining the terraform state of the `equinix_metal_device` resource:
 
 ```
-$ terraform state show metal_device.node | grep deployed
+$ terraform state show equinix_metal_device.node | grep deployed
     deployed_facility                = "sv15"
 ```
 
 ```
-$ terraform state show metal_device.node | grep metro
+$ terraform state show equinix_metal_device.node | grep metro
     metro                            = "sv"
 ```
 

@@ -1,5 +1,5 @@
 ---
-page_title: "Equinix Metal: metal_organization"
+page_title: "Equinix: equinix_metal_organization"
 subcategory: ""
 description: |-
   Provides an Equinix Metal Organization resource.
@@ -45,5 +45,5 @@ The following attributes are exported:
 This resource can be imported using an existing organization ID:
 
 ```sh
-terraform import metal_organization {existing_organization_id}
+terraform import equinix_metal_organization {existing_organization_id}
 ```

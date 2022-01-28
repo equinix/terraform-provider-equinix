@@ -1,11 +1,11 @@
 ---
-page_title: "Equinix Metal: metal_spot_market_request"
+page_title: "Equinix: equinix_metal_spot_market_request"
 subcategory: ""
 description: |-
   Provides a datasource for existing Spot Market Requests in the Equinix Metal host.
 ---
 
-# metal_spot_market_request
+# Data Source: equinix_metal_spot_market_request
 
 Provides an Equinix Metal spot_market_request datasource. The datasource will contain list of device IDs created by referenced Spot Market Request.
 
@@ -31,7 +31,7 @@ resource "equinix_metal_spot_market_request" "req" {
 }
 
 data "equinix_metal_spot_market_request" "dreq" {
-  request_id = metal_spot_market_request.req.id
+  request_id = equinix_metal_spot_market_request.req.id
 }
 
 output "ids" {
@@ -51,7 +51,7 @@ output "ips" {
 With the code as `main.tf`, first create the spot market request:
 
 ```
-terraform apply -target metal_spot_market_request.req
+terraform apply -target equinix_metal_spot_market_request.req
 ```
 
 When the terraform run ends, run a full apply, and the IPv4 addresses will be printed:

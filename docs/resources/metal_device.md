@@ -1,11 +1,11 @@
 ---
-page_title: "Equinix Metal: metal_device resource"
+page_title: "Equinix: equinix_metal_device resource"
 subcategory: ""
 description: |-
   Provides an Equinix Metal device resource. This can be used to create, modify, and delete devices.
 ---
 
-# metal_device
+# Resource: equinix_metal_device
 
 Provides an Equinix Metal device resource. This can be used to create,
 modify, and delete devices.
@@ -141,7 +141,7 @@ The following arguments are supported:
 * `description` - (Optional) The device description.
 * `facilities` - List of facility codes with deployment preferences. Equinix Metal API will go through the list and will deploy your device to first facility with free capacity. List items must be facility codes or `any` (a wildcard). To find the facility code, visit [Facilities API docs](https://metal.equinix.com/developers/api/facilities/), set your API auth token in the top of the page and see JSON from the API response. Conflicts with `metro`.
 * `force_detach_volumes` - (Optional) Delete device even if it has volumes attached. Only applies for destroy action.
-* `hardware_reservation_id` - (Optional) The UUID of the hardware reservation where you want this device deployed, or `next-available` if you want to pick your next available reservation automatically. Changing this from a reservation UUID to `next-available` will re-create the device in another reservation. Please be careful when using hardware reservation UUID and `next-available` together for the same pool of reservations. It might happen that the reservation which Equinix Metal API will pick as `next-available` is the reservation which you refer with UUID in another metal_device resource. If that happens, and the metal_device with the UUID is created later, resource creation will fail because the reservation is already in use (by the resource created with `next-available`). To workaround this, have the `next-available` resource  [explicitly depend_on](https://learn.hashicorp.com/terraform/getting-started/dependencies.html#implicit-and-explicit-dependencies) the resource with hardware reservation UUID, so that the latter is created first. For more details, see [issue #176](https://github.com/packethost/terraform-provider-packet/issues/176).
+* `hardware_reservation_id` - (Optional) The UUID of the hardware reservation where you want this device deployed, or `next-available` if you want to pick your next available reservation automatically. Changing this from a reservation UUID to `next-available` will re-create the device in another reservation. Please be careful when using hardware reservation UUID and `next-available` together for the same pool of reservations. It might happen that the reservation which Equinix Metal API will pick as `next-available` is the reservation which you refer with UUID in another equinix_metal_device resource. If that happens, and the equinix_metal_device with the UUID is created later, resource creation will fail because the reservation is already in use (by the resource created with `next-available`). To workaround this, have the `next-available` resource  [explicitly depend_on](https://learn.hashicorp.com/terraform/getting-started/dependencies.html#implicit-and-explicit-dependencies) the resource with hardware reservation UUID, so that the latter is created first. For more details, see [issue #176](https://github.com/packethost/terraform-provider-packet/issues/176).
 * `hostname` - (Optional) The device hostname used in deployments taking advantage of Layer3 DHCP or metadata service configuration.
 * `ip_address` - (Optional) A list of IP address types for the device (structure is documented below).
 * `ipxe_script_url` - (Optional) URL pointing to a hosted iPXE script. More information is in the [Custom iPXE](https://metal.equinix.com/developers/docs/servers/custom-ipxe/) doc.
@@ -221,5 +221,5 @@ The following attributes are exported:
 This resource can be imported using an existing device ID:
 
 ```sh
-terraform import metal_device {existing_device_id}
+terraform import equinix_metal_device {existing_device_id}
 ```

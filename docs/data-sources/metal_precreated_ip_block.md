@@ -1,5 +1,5 @@
 ---
-page_title: "Equinix Metal: precreated_ip_block"
+page_title: "Equinix: equinix_metal_precreated_ip_block"
 subcategory: ""
 description: |-
   Load automatically created IP blocks from your Equinix Metal project
@@ -42,7 +42,7 @@ data "equinix_metal_precreated_ip_block" "test" {
 # The cirdsubnet interpolation will pick second /64 subnet from the precreated block.
 
 resource "equinix_metal_ip_attachment" "from_ipv6_block" {
-  device_id     = metal_device.web1.id
+  device_id     = equinix_metal_device.web1.id
   cidr_notation = cidrsubnet(data.metal_precreated_ip_block.test.cidr_notation, 8, 2)
 }
 ```

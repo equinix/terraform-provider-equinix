@@ -1,5 +1,5 @@
 ---
-page_title: "Equinix Metal: metal_project"
+page_title: "Equinix: equinix_metal_project"
 subcategory: ""
 description: |-
   Provides an Equinix Metal Project resource.
@@ -54,7 +54,7 @@ resource "equinix_metal_project" "existing_project" {
 Then, find out the UUID of the existing project, and import it to your TF state.
 
 ```
-$ terraform import metal_project.existing_project e188d7db-46a7-46cb-8969-e63ec22695d5
+$ terraform import equinix_metal_project.existing_project e188d7db-46a7-46cb-8969-e63ec22695d5
 ```
 
 Your existing project is now loaded in your local TF state, and linked to the resource with given name.
@@ -100,5 +100,5 @@ The `bgp_config` block additionally exports:
 This resource can be imported using an existing project ID:
 
 ```sh
-terraform import metal_project {existing_project_id}
+terraform import equinix_metal_project {existing_project_id}
 ```

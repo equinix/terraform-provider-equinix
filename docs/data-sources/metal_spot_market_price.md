@@ -1,5 +1,5 @@
 ---
-page_title: "Equinix Metal: spot_market_price"
+page_title: "Equinix: equinix_metal_spot_market_price"
 subcategory: ""
 description: |-
   Get an Equinix Metal Spot Market Price

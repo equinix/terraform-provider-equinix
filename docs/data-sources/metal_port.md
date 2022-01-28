@@ -1,11 +1,11 @@
 ---
-page_title: "Equinix Metal: precreated_port"
+page_title: "Equinix: equinix_metal_precreated_port"
 subcategory: ""
 description: |-
   Fetch device ports
 ---
 
-# metal_port
+# Data Source: equinix_metal_port
 
 Use this data source to read ports of existing devices. You can read port by either its UUID, or by a device UUID and port name.
 
@@ -28,7 +28,7 @@ resource "equinix_metal_device" "test" {
 }
 
 data "equinix_metal_port" "test" {
-    device_id = metal_device.test.id
+    device_id = equinix_metal_device.test.id
     name      = "eth0"
 }
 ```

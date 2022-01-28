@@ -1,5 +1,5 @@
 ---
-page_title: "Equinix Metal: metal_ssh_key"
+page_title: "Equinix: equinix_metal_ssh_key"
 subcategory: ""
 description: |-
   Provides an Equinix Metal SSH key resource.
@@ -58,5 +58,5 @@ The following attributes are exported:
 This resource can be imported using an existing SSH Key ID:
 
 ```sh
-terraform import metal_ssh_key {existing_sshkey_id}
+terraform import equinix_metal_ssh_key {existing_sshkey_id}
 ```

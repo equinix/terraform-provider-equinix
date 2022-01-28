@@ -331,7 +331,7 @@ func portSanityChecks(cpr *ClientPortResource) error {
 
 func portProperlyDestroyed(port *packngo.Port) error {
 	if !port.Data.Bonded {
-		return fmt.Errorf("Port %s wasn't bonded after metal_port destroy", port.ID)
+		return fmt.Errorf("Port %s wasn't bonded after equinix_metal_port destroy", port.ID)
 	}
 	if port.Type == "NetworkBondPort" && port.NetworkType != "layer3" {
 		return fmt.Errorf("Bond port should be in layer3 type after destroy")

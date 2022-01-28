@@ -1,11 +1,11 @@
 ---
-page_title: "Equinix Metal: Metal Project API Key"
+page_title: "Equinix: equinix_metal_project_api_key"
 subcategory: ""
 description: |-
   Create Equinix Metal Project API Keys
   ---
 
-# metal_project_api_key
+# Resource: equinix_metal_project_api_key
 
 Use this resource to create Metal Project API Key resources in Equinix Metal. Project API keys can be used to create and read resources in a single project. Each API key contains a token which can be used for authentication in Equinix Metal HTTP API (in HTTP request header `X-Auth-Token`).
 

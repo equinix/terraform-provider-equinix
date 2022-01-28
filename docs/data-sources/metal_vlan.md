@@ -1,11 +1,11 @@
 ---
-page_title: "Equinix Metal: metal_vlan"
+page_title: "Equinix: equinix_metal_vlan"
 subcategory: ""
 description: |-
   Provides an Equinix Metal Virtual Network datasource. This can be used to read the attributes of existing VLANs.
 ---
 
-# metal_vlan
+# Data Source: equinix_metal_vlan
 
 Provides an Equinix Metal Virtual Network datasource. VLANs data sources can be
 searched by VLAN UUID, or project UUID and vxlan number.
@@ -22,7 +22,7 @@ resource "equinix_metal_vlan" "foovlan" {
 }
 
 data "equinix_metal_vlan" "dsvlan" {
-        vlan_id = metal_vlan.foovlan.id
+        vlan_id = equinix_metal_vlan.foovlan.id
 }
 ```
 

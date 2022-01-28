@@ -1,5 +1,5 @@
 ---
-page_title: "Equinix Metal: reserved_ip_block"
+page_title: "Equinix: equinix_metal_reserved_ip_block"
 subcategory: ""
 description: |-
 Look up an IP address block

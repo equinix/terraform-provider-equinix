@@ -80,7 +80,7 @@ resource "equinix_metal_port" "bond0" {
 resource "equinix_metal_vlan" "test" {
   description = "test"
   metro = "sv"
-  project = metal_project.test.id
+  project = equinix_metal_project.test.id
 }
 ```
 
@@ -92,8 +92,8 @@ Assuming a `equinix_metal_device` exists with the resource name `test`:
 
 ```hcl
 locals {
-  bond0_id = [for p in metal_device.test.ports: p.id if p.name == "bond0"][0]
-   eth1_id = [for p in metal_device.test.ports: p.id if p.name == "eth1"][0]
+  bond0_id = [for p in equinix_metal_device.test.ports: p.id if p.name == "bond0"][0]
+   eth1_id = [for p in equinix_metal_device.test.ports: p.id if p.name == "eth1"][0]
 }
 ```
 
@@ -123,7 +123,7 @@ resource "equinix_metal_device" "test" {
 }
 
 resource "equinix_metal_device_network_type" "test" {
-  device_id = metal_device.test.id
+  device_id = equinix_metal_device.test.id
   type      = "hybrid"
 }
 ```
@@ -156,16 +156,16 @@ resource "equinix_metal_device" "test" {
 
 resource "equinix_metal_device_network_type" "test" {
   count     = local.device_count
-  device_id = metal_device.test[count.index].id
+  device_id = equinix_metal_device.test[count.index].id
   type      = "hybrid"
 }
 
 
 resource "equinix_metal_port_vlan_attachment" "test" {
   count     = local.device_count
-  device_id = metal_device_network_type.test[count.index].id
+  device_id = equinix_metal_device_network_type.test[count.index].id
   port_name = "eth1"
-  vlan_vnid = metal_vlan.test.vxlan
+  vlan_vnid = equinix_metal_vlan.test.vxlan
 }
 ```
 
@@ -190,8 +190,8 @@ resource "equinix_metal_vlan" "test" {
 
 resource "equinix_metal_port_vlan_attachment" "test" {
   count     = local.device_count
-  device_id = metal_device.test.id
+  device_id = equinix_metal_device.test.id
   port_name = "bond0"
-  vlan_vnid = metal_vlan.test.vxlan
+  vlan_vnid = equinix_metal_vlan.test.vxlan
 }
 ```

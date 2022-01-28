@@ -56,7 +56,7 @@ func resourceMetalPortVlanAttachment() *schema.Resource {
 			},
 			"native": {
 				Type:        schema.TypeBool,
-				Description: "Mark this VLAN a native VLAN on the port. This can be used only if this assignment assigns second or further VLAN to the port. To ensure that this attachment is not first on a port, you can use depends_on pointing to another metal_port_vlan_attachment, just like in the layer2-individual example above",
+				Description: "Mark this VLAN a native VLAN on the port. This can be used only if this assignment assigns second or further VLAN to the port. To ensure that this attachment is not first on a port, you can use depends_on pointing to another equinix_metal_port_vlan_attachment, just like in the layer2-individual example above",
 				Optional:    true,
 				Default:     false,
 			},

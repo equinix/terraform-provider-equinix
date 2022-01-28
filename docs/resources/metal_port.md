@@ -1,11 +1,11 @@
 ---
-page_title: "Equinix Metal: metal_port"
+page_title: "Equinix: equinix_metal_port"
 subcategory: ""
 description: |-
   Manipulate device ports
 ---
 
-# metal_port
+# Resource: equinix_metal_port
 
 Use this resource to set up network ports on an Equnix Metal device. This resource can control both physical and bond ports.
 

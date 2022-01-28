@@ -1,5 +1,5 @@
 ---
-page_title: "Equinix Metal: Metal Gateway"
+page_title: "Equinix: equinix_metal_gateway"
 subcategory: ""
 description: |-
   Create Equinix Metal Gateways
@@ -22,7 +22,7 @@ resource "equinix_metal_vlan" "test" {
 
 resource "equinix_metal_gateway" "test" {
   project_id               = local.project_id
-  vlan_id                  = metal_vlan.test.id
+  vlan_id                  = equinix_metal_vlan.test.id
   private_ipv4_subnet_size = 8
 }
 ```
@@ -44,8 +44,8 @@ resource "equinix_metal_reserved_ip_block" "test" {
 
 resource "equinix_metal_gateway" "test" {
   project_id        = local.project_id
-  vlan_id           = metal_vlan.test.id
-  ip_reservation_id = metal_reserved_ip_block.test.id
+  vlan_id           = equinix_metal_vlan.test.id
+  ip_reservation_id = equinix_metal_reserved_ip_block.test.id
 }
 ```
 

@@ -1,11 +1,11 @@
 ---
-page_title: "Equinix Metal: metal_device_bgp_neighbors"
+page_title: "Equinix: equinix_metal_device_bgp_neighbors"
 subcategory: ""
 description: |-
   Provides a datasource for listing BGP neighbors of an Equinix Metal device
 ---
 
-# metal_device_bgp_neighbors
+# Data Source: equinix_metal_device_bgp_neighbors
 
 Use this datasource to retrieve list of BGP neighbors of a device in the Equinix Metal host.
 

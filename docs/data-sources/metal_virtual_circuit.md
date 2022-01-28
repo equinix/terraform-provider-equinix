@@ -1,11 +1,11 @@
 ---
-page_title: "Equinix Metal: metal_virtual_circuit"
+page_title: "Equinix: equinix_metal_virtual_circuit"
 subcategory: ""
 description: |-
   Retrieve Equinix Fabric Virtual Circuit
 ---
 
-# metal_virtual_circuit
+# Data Source: equinix_metal_virtual_circuit
 
 Use this data source to retrieve a virtual circuit resource from [Equinix Fabric - software-defined interconnections](https://metal.equinix.com/developers/docs/networking/fabric/)
 

@@ -1,5 +1,5 @@
 ---
-page_title: "Equinix Metal: metal_volume_attachment"
+page_title: "Equinix: equinix_metal_volume_attachment"
 subcategory: ""
 description: |-
   (Removed) Provides attachment of volumes to devices in the Equinix Metal Host.

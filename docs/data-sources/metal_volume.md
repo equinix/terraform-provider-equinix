@@ -1,5 +1,5 @@
 ---
-page_title: "Equinix Metal: metal_volume"
+page_title: "Equinix: equinix_metal_volume"
 subcategory: ""
 description: |-
   (Removed) Provides an Equinix Metal Block Storage Volume Datasource.

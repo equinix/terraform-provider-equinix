@@ -176,7 +176,7 @@ func resourceMetalDevice() *schema.Resource {
 				Type:        schema.TypeString,
 				Description: "Network type of a device, used in [Layer 2 networking](https://metal.equinix.com/developers/docs/networking/layer2/). Will be one of " + NetworkTypeListHB,
 				Computed:    true,
-				Deprecated:  "You should handle Network Type with the new metal_device_network_type resource.",
+				Deprecated:  "You should handle Network Type with the new equinix_metal_device_network_type resource.",
 			},
 
 			"ports": {

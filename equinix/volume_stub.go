@@ -10,9 +10,9 @@ import (
 const volumeRemovedMsgSuffix = "was removed in version 3.0.0, see https://metal.equinix.com/developers/docs/storage/elastic-block-storage/#elastic-block-storage"
 
 var (
-	resourceVolumeRemovedMsg           = fmt.Sprintf("resource metal_volume %s", volumeRemovedMsgSuffix)
-	dataSourceVolumeRemovedMsg         = fmt.Sprintf("datasource metal_volume %s", volumeRemovedMsgSuffix)
-	resourceVolumeAttachmentRemovedMsg = fmt.Sprintf("resource metal_volume_attachment %s", volumeRemovedMsgSuffix)
+	resourceVolumeRemovedMsg           = fmt.Sprintf("resource equinix_metal_volume %s", volumeRemovedMsgSuffix)
+	dataSourceVolumeRemovedMsg         = fmt.Sprintf("datasource equinix_metal_volume %s", volumeRemovedMsgSuffix)
+	resourceVolumeAttachmentRemovedMsg = fmt.Sprintf("resource equinix_metal_volume_attachment %s", volumeRemovedMsgSuffix)
 )
 
 func removedResourceOp(message string) func(d *schema.ResourceData, meta interface{}) error {

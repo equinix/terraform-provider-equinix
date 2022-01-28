@@ -1,5 +1,5 @@
 ---
-page_title: "Equinix Metal: metal_reserved_ip_block"
+page_title: "Equinix: equinix_metal_reserved_ip_block"
 subcategory: ""
 description: |-
   Provides a Resource for reserving IP addresses in the Equinix Metal Host
@@ -122,5 +122,5 @@ Idempotent reference to a first "/32" address from a reserved block might look l
 This resource can be imported using an existing IP reservation ID:
 
 ```sh
-terraform import metal_reserved_ip_block {existing_ip_reservation_id}
+terraform import equinix_metal_reserved_ip_block {existing_ip_reservation_id}
 ```

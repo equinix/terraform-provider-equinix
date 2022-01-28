@@ -1,11 +1,11 @@
 ---
-page_title: "Equinix Metal: Metal User API Key"
+page_title: "Equinix: equinix_metal_user_api_key"
 subcategory: ""
 description: |-
   Create Equinix Metal User API Keys
   ---
 
-# metal_user_api_key
+# Resource: equinix_metal_user_api_key
 
 Use this resource to create Metal User API Key resources in Equinix Metal. Each API key contains a token which can be used for authentication in Equinix Metal HTTP API (in HTTP request header `X-Auth-Token`).
 

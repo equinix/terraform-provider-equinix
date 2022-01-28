@@ -1,11 +1,11 @@
 ---
-page_title: "Equinix Metal: metal_vlan"
+page_title: "Equinix: equinix_metal_vlan"
 subcategory: ""
 description: |-
   Provides a resource for Equinix Metal Virtual Network.
 ---
 
-# metal_vlan
+# Resource: equinix_metal_vlan
 
 Provides a resource to allow users to manage Virtual Networks in their projects.
 
@@ -53,5 +53,5 @@ The following attributes are exported:
 This resource can be imported using an existing VLAN ID (UUID):
 
 ```sh
-terraform import metal_vlan {existing_vlan_id}
+terraform import equinix_metal_vlan {existing_vlan_id}
 ```
