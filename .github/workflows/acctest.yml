@@ -1,0 +1,83 @@
+name: Acceptance Tests
+on:
+  push:
+    paths-ignore:
+      - 'LICENSE'
+      - '**.md'
+      - 'website/**'
+      - 'docs/**'
+jobs:
+
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+
+    - name: Set up Go
+      uses: actions/setup-go@v2.1.3
+      with:
+        go-version: '1.16'
+      id: go
+
+    - name: Check out code into the Go module directory
+      uses: actions/checkout@v2.3.4
+
+    - name: Get dependencies
+      run: |
+        go mod download
+    - name: Build
+      run: |
+        go build -v .
+  test:
+    name: Matrix Test
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 240
+    strategy:
+      fail-fast: false
+      matrix:
+        version:
+          - stable
+        terraform:
+          - '1.0.7'
+          - '0.13.6'
+    steps:
+
+    - name: Set up Go
+      uses: actions/setup-go@v2.1.3
+      with:
+        go-version: '1.16'
+      id: go
+
+    - name: Check out code into the Go module directory
+      uses: actions/checkout@v2.3.4
+
+    - name: Get dependencies
+      run: |
+        go mod download
+
+    - name: TF acceptance tests
+      timeout-minutes: 180
+      env:
+        TF_ACC: "1"
+        TF_ACC_TERRAFORM_VERSION: ${{ matrix.terraform }}
+        # TF_SCHEMA_PANIC_ON_ERROR: "1"
+        # TF_LOG: "DEBUG"
+        #
+
+        METAL_AUTH_TOKEN: ${{ secrets.PACKET_AUTH_TOKEN }}
+      run: |
+        go test -v -coverprofile coverage.txt -covermode=atomic -parallel 8 -timeout 180m ./metal
+    - name: Sweeper
+      if: ${{ always() }}
+      env:
+        METAL_AUTH_TOKEN: ${{ secrets.PACKET_AUTH_TOKEN }}
+      run: |
+        go test ./metal -v -sweep="tf_test"
+    - name: Upload coverage to Codecov
+      if: ${{ always() }}
+      uses: codecov/codecov-action@v2
+      with:
+        token: ${{ secrets.CODECOV_TOKEN }}
+        files: ./coverage.txt

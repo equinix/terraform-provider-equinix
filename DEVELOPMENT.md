@@ -97,6 +97,30 @@ Reflected by Network Edge tests.
 * `TF_ACC_NETWORK_DEVICE_VSRX_LICENSE_FILE` alters default path to JUNIPER VSRX device license file.
 Reflected by Network Edge tests.
 
+## Testing provider code
+
+We have mostly acceptance tests in the provider. There's no point for you to run them all, but you should run the one covering the functionality which you change. The acceptance test run will cost you some money, so feel free to abstain. The acceptance test suite will be run for your PR during the review process.
+
+To run an acceptance test, find the relevant test function in `*_test.go` (for example TestAccEquinixMetalDevice_Basic), and run it as
+
+```sh
+TF_ACC=1 go test -v -timeout=20m ./... -run=TestAccEquinixMetalDevice_Basic
+```
+
+If you want to see HTTP traffic, set `TF_LOG=DEBUG`, i.e.
+
+```sh
+TF_LOG=DEBUG TF_ACC=1 go test -v -timeout=20m ./... -run=TestAccEquinixMetalDevice_Basic
+```
+
+### Testing the provider with Terraform
+
+Once you've built the plugin binary (see [Developing the provider](#developing-the-provider) above), it can be incorporated within your Terraform environment using the `-plugin-dir` option. Subsequent runs of Terraform will then use the plugin from your development environment.
+
+```sh
+terraform init -plugin-dir $GOPATH/bin
+```
+
 ## Manual provider installation
 
 *Note:* manual provider installation is needed only for manual testing of custom
