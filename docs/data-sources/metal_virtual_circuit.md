@@ -17,7 +17,7 @@ data "equinix_metal_connection" "example_connection" {
 }
 
 data "equinix_metal_virtual_circuit" "example_vc" {
-  virtual_circuit_id = data.metal_connection.example_connection.ports[1].virtual_circuit_ids[0]
+  virtual_circuit_id = data.equinix_metal_connection.example_connection.ports[1].virtual_circuit_ids[0]
 }
 
 ```

@@ -121,12 +121,12 @@ func TestAccMetalConnection_Dedicated(t *testing.T) {
 			{
 				Config: testAccMetalConnectionConfig_Dedicated(rs) + testDataSourceMetalConnectionConfig_Dedicated(),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr("data.metal_connection.test", "metro", "sv"),
-					resource.TestCheckResourceAttr("data.metal_connection.test", "tags.#", "1"),
-					resource.TestCheckResourceAttr("data.metal_connection.test", "mode", "standard"),
-					resource.TestCheckResourceAttr("data.metal_connection.test", "type", "dedicated"),
-					resource.TestCheckResourceAttr("data.metal_connection.test", "redundancy", "redundant"),
-					resource.TestCheckResourceAttr("data.metal_connection.test", "metro", "sv"),
+					resource.TestCheckResourceAttr("data.equinix_metal_connection.test", "metro", "sv"),
+					resource.TestCheckResourceAttr("data.equinix_metal_connection.test", "tags.#", "1"),
+					resource.TestCheckResourceAttr("data.equinix_metal_connection.test", "mode", "standard"),
+					resource.TestCheckResourceAttr("data.equinix_metal_connection.test", "type", "dedicated"),
+					resource.TestCheckResourceAttr("data.equinix_metal_connection.test", "redundancy", "redundant"),
+					resource.TestCheckResourceAttr("data.equinix_metal_connection.test", "metro", "sv"),
 				),
 			},
 		},

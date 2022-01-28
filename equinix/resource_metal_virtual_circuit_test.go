@@ -48,13 +48,13 @@ func tconf(randstr string, randint int) string {
 
         resource "equinix_metal_vlan" "test" {
             project_id = local.project_id
-            metro      = data.metal_connection.test.metro
+            metro      = data.equinix_metal_connection.test.metro
         }
 
         resource "equinix_metal_virtual_circuit" "test" {
             connection_id = local.conn_id
             project_id = local.project_id
-            port_id = data.metal_connection.test.ports[0].id
+            port_id = data.equinix_metal_connection.test.ports[0].id
             vlan_id = metal_vlan.test.id
             nni_vlan = %d
         }

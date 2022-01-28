@@ -19,7 +19,7 @@ data "equinix_metal_metro" "sv" {
 }
 
 output "id" {
-  value = data.metal_metro.sv.id
+  value = data.equinix_metal_metro.sv.id
 }
 ```
 

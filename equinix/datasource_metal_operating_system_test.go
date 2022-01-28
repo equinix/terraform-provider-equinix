@@ -15,7 +15,7 @@ func TestAccMetalOperatingSystem_Basic(t *testing.T) {
 		Steps: []resource.TestStep{
 			{Config: testOperatingSystemConfig_Basic,
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr("data.metal_operating_system.example", "slug", "ubuntu_20_04"),
+					resource.TestCheckResourceAttr("data.equinix_metal_operating_system.example", "slug", "ubuntu_20_04"),
 				),
 			},
 		},

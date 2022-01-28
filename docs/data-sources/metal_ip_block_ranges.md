@@ -28,7 +28,7 @@ data "equinix_metal_ip_block_ranges" "test" {
 }
 
 output "out" {
-  value = data.metal_ip_block_ranges.test
+  value = data.equinix_metal_ip_block_ranges.test
 }
 ```
 

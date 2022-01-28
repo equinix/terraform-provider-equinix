@@ -24,14 +24,14 @@ func TestAccDataSourceFacility_Basic(t *testing.T) {
 				Config: testAccDataSourceFacilityConfigBasic(testFac),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(
-						"data.metal_facility.test", "code", testFac),
+						"data.equinix_metal_facility.test", "code", testFac),
 				),
 			},
 			{
 				Config: testAccDataSourceFacilityConfigCapacityReasonable(testFac),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(
-						"data.metal_facility.test", "code", testFac),
+						"data.equinix_metal_facility.test", "code", testFac),
 				),
 			},
 			{

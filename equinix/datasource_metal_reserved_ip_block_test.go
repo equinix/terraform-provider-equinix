@@ -47,11 +47,11 @@ func TestAccDataSourceMetalReservedIPBlock_Basic(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrPair(
 						"equinix_metal_reserved_ip_block.test", "id",
-						"data.metal_reserved_ip_block.test", "id",
+						"data.equinix_metal_reserved_ip_block.test", "id",
 					),
 					resource.TestCheckResourceAttrPair(
 						"equinix_metal_reserved_ip_block.test", "cidr_notation",
-						"data.metal_reserved_ip_block.test_id", "cidr_notation",
+						"data.equinix_metal_reserved_ip_block.test_id", "cidr_notation",
 					),
 				),
 			},

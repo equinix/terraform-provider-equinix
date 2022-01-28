@@ -19,7 +19,7 @@ data "equinix_metal_facility" "ny5" {
 }
 
 output "id" {
-  value = data.metal_facility.ny5.id
+  value = data.equinix_metal_facility.ny5.id
 }
 ```
 

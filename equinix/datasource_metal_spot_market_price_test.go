@@ -17,9 +17,9 @@ func TestAccDataSourceMetalSpotPrice_Basic(t *testing.T) {
 				Config: testDataSourceMetalSpotMarketPrice(),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(
-						"data.metal_spot_market_price.metro", "price"),
+						"data.equinix_metal_spot_market_price.metro", "price"),
 					resource.TestCheckResourceAttrSet(
-						"data.metal_spot_market_price.facility", "price"),
+						"data.equinix_metal_spot_market_price.facility", "price"),
 				),
 			},
 		},

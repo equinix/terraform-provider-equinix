@@ -28,7 +28,7 @@ func TestAccOrgDataSource_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						"equinix_metal_organization.test", "description", "quux"),
 					resource.TestCheckResourceAttr(
-						"data.metal_organization.test", "name",
+						"data.equinix_metal_organization.test", "name",
 						fmt.Sprintf("tfacc-datasource-org-%d", rInt)),
 				),
 			},

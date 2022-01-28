@@ -12,7 +12,7 @@ import (
 func TestAccMetalProjectSSHKeyDataSource_BySearch(t *testing.T) {
 	t.Parallel()
 
-	datasourceName := "data.metal_project_ssh_key.foobar"
+	datasourceName := "data.equinix_metal_project_ssh_key.foobar"
 	keyName := acctest.RandomWithPrefix("tfacc-project-key")
 
 	publicKeyMaterial, _, err := acctest.RandSSHKeyPair("")
@@ -53,7 +53,7 @@ func TestAccMetalProjectSSHKeyDataSource_BySearch(t *testing.T) {
 func TestAccMetalProjectSSHKeyDataSource_ByID(t *testing.T) {
 	t.Parallel()
 
-	datasourceName := "data.metal_project_ssh_key.foobar"
+	datasourceName := "data.equinix_metal_project_ssh_key.foobar"
 
 	publicKeyMaterial, _, err := acctest.RandSSHKeyPair("")
 	keyName := acctest.RandomWithPrefix("tfacc-project-key")

@@ -37,7 +37,7 @@ func TestAccMetalBGPSetup_Basic(t *testing.T) {
 						"equinix_metal_bgp_session.test6", "address_family", "ipv6"),
 					// there will be 2 BGP neighbors, for IPv4 and IPv6
 					resource.TestCheckResourceAttr(
-						"data.metal_device_bgp_neighbors.test", "bgp_neighbors.#", "2"),
+						"data.equinix_metal_device_bgp_neighbors.test", "bgp_neighbors.#", "2"),
 				),
 			},
 			{

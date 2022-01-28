@@ -24,7 +24,7 @@ data "equinix_metal_device" "test" {
 }
 
 output "id" {
-  value = data.metal_device.test.id
+  value = data.equinix_metal_device.test.id
 }
 ```
 
@@ -33,7 +33,7 @@ output "id" {
 data "equinix_metal_device" "test" {}
 
 output "ipv4" {
-  value = data.metal_device.test.access_public_ipv4
+  value = data.equinix_metal_device.test.access_public_ipv4
 }
 ```
 

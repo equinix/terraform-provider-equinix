@@ -20,7 +20,7 @@ func TestAccMetalDatasourcePreCreatedIPBlock_Basic(t *testing.T) {
 				Config: testDatasourcePreCreatedIPBlockConfig_Basic(rs),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(
-						"data.metal_precreated_ip_block.test", "cidr_notation"),
+						"data.equinix_metal_precreated_ip_block.test", "cidr_notation"),
 					resource.TestCheckResourceAttrPair(
 						"equinix_metal_ip_attachment.test", "device_id",
 						"equinix_metal_device.test", "id"),
@@ -60,7 +60,7 @@ data "equinix_metal_precreated_ip_block" "test" {
 
 resource "equinix_metal_ip_attachment" "test" {
     device_id = metal_device.test.id
-    cidr_notation = cidrsubnet(data.metal_precreated_ip_block.test.cidr_notation,8,2)
+    cidr_notation = cidrsubnet(data.equinix_metal_precreated_ip_block.test.cidr_notation,8,2)
 }
 `, name)
 }

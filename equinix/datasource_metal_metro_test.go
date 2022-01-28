@@ -17,14 +17,14 @@ func TestAccDataSourceMetro_Basic(t *testing.T) {
 				Config: testAccDataSourceMetroConfigBasic(testMetro),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(
-						"data.metal_metro.test", "code", testMetro),
+						"data.equinix_metal_metro.test", "code", testMetro),
 				),
 			},
 			{
 				Config: testAccDataSourceMetroConfigCapacityReasonable(testMetro),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(
-						"data.metal_metro.test", "code", testMetro),
+						"data.equinix_metal_metro.test", "code", testMetro),
 				),
 			},
 			{

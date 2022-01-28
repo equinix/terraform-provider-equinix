@@ -20,17 +20,17 @@ func TestAccDataSourceMetalDevice_Basic(t *testing.T) {
 				Config: testDataSourceMetalDeviceConfig_Basic(projectName),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(
-						"data.metal_device.test", "hostname", "tfacc-test-device"),
+						"data.equinix_metal_device.test", "hostname", "tfacc-test-device"),
 					resource.TestCheckResourceAttrPair(
 						"equinix_metal_device.test", "id",
-						"data.metal_device.test", "id"),
+						"data.equinix_metal_device.test", "id"),
 					resource.TestCheckResourceAttrPair(
 						"equinix_metal_device.test", "operating_system",
-						"data.metal_device.test", "operating_system"),
+						"data.equinix_metal_device.test", "operating_system"),
 					resource.TestCheckResourceAttr(
-						"data.metal_device.test", "always_pxe", "false"),
+						"data.equinix_metal_device.test", "always_pxe", "false"),
 					resource.TestCheckResourceAttrSet(
-						"data.metal_device.test", "access_public_ipv4"),
+						"data.equinix_metal_device.test", "access_public_ipv4"),
 				),
 			},
 		},
@@ -70,17 +70,17 @@ func TestAccDataSourceMetalDevice_ByID(t *testing.T) {
 				Config: testDataSourceMetalDeviceConfig_ByID(projectName),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(
-						"data.metal_device.test", "hostname", "tfacc-test-device"),
+						"data.equinix_metal_device.test", "hostname", "tfacc-test-device"),
 					resource.TestCheckResourceAttrPair(
 						"equinix_metal_device.test", "id",
-						"data.metal_device.test", "id"),
+						"data.equinix_metal_device.test", "id"),
 					resource.TestCheckResourceAttrPair(
 						"equinix_metal_device.test", "operating_system",
-						"data.metal_device.test", "operating_system"),
+						"data.equinix_metal_device.test", "operating_system"),
 					resource.TestCheckResourceAttr(
-						"data.metal_device.test", "always_pxe", "false"),
+						"data.equinix_metal_device.test", "always_pxe", "false"),
 					resource.TestCheckResourceAttrSet(
-						"data.metal_device.test", "access_public_ipv4"),
+						"data.equinix_metal_device.test", "access_public_ipv4"),
 				),
 			},
 		},

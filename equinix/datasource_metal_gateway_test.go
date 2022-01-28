@@ -41,10 +41,10 @@ func TestAccDataSourceMetalGateway_PrivateIPv4(t *testing.T) {
 				Config: testAccDataSourceMetalGatewayConfig_PrivateIPv4(),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrPair(
-						"data.metal_gateway.test", "project_id",
+						"data.equinix_metal_gateway.test", "project_id",
 						"equinix_metal_project.test", "id"),
 					resource.TestCheckResourceAttr(
-						"data.metal_gateway.test", "private_ipv4_subnet_size", "8"),
+						"data.equinix_metal_gateway.test", "private_ipv4_subnet_size", "8"),
 				),
 			},
 		},

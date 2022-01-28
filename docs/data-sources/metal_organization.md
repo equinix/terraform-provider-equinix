@@ -18,7 +18,7 @@ data "equinix_metal_organization" "test" {
 }
 
 output "projects_in_the_org" {
-  value = data.metal_organization.test.project_ids
+  value = data.equinix_metal_organization.test.project_ids
 }
 ```
 

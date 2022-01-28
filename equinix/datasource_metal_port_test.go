@@ -20,7 +20,7 @@ func TestAccMetalPort_ByName(t *testing.T) {
 				Config: testPortConfig_ByName(rs),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(
-						"data.metal_port.test", "bond_name", "bond0"),
+						"data.equinix_metal_port.test", "bond_name", "bond0"),
 				),
 			},
 		},
@@ -63,7 +63,7 @@ func TestAccMetalPort_ById(t *testing.T) {
 				Config: testPortConfig_ById(rs),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(
-						"data.metal_port.test", "name"),
+						"data.equinix_metal_port.test", "name"),
 				),
 			},
 		},

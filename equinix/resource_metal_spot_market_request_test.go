@@ -27,7 +27,7 @@ data "equinix_metal_spot_market_request" "dreq" {
 
 resource "equinix_metal_spot_market_request" "request" {
   project_id       = metal_project.test.id
-  max_bid_price    = data.metal_spot_market_price.test.price * 1.2
+  max_bid_price    = data.equinix_metal_spot_market_price.test.price * 1.2
   facilities       = ["sv15"]
   devices_min      = 1
   devices_max      = 1
@@ -58,7 +58,7 @@ func TestAccMetalSpotMarketRequest_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr("equinix_metal_spot_market_request.request", "devices_max", "1"),
 					resource.TestCheckResourceAttr("equinix_metal_spot_market_request.request", "devices_min", "1"),
 					resource.TestCheckResourceAttr(
-						"data.metal_spot_market_request.dreq", "device_ids.#", "1"),
+						"data.equinix_metal_spot_market_request.dreq", "device_ids.#", "1"),
 				),
 			},
 		},
@@ -119,7 +119,7 @@ data "equinix_metal_spot_market_price" "test" {
 
 resource "equinix_metal_spot_market_request" "request" {
   project_id       = metal_project.test.id
-  max_bid_price    = data.metal_spot_market_price.test.price * 1.2
+  max_bid_price    = data.equinix_metal_spot_market_price.test.price * 1.2
   facilities       = ["sv15"]
   devices_min      = 1
   devices_max      = 1

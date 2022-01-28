@@ -45,11 +45,11 @@ func TestAccMetalDatasourceVlan_ByVxlanFacility(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrPair(
 						"equinix_metal_vlan.foovlan", "vxlan",
-						"data.metal_vlan.dsvlan", "vxlan",
+						"data.equinix_metal_vlan.dsvlan", "vxlan",
 					),
 					resource.TestCheckResourceAttrPair(
 						"equinix_metal_vlan.foovlan", "id",
-						"data.metal_vlan.dsvlan", "id",
+						"data.equinix_metal_vlan.dsvlan", "id",
 					),
 				),
 			},
@@ -104,21 +104,21 @@ func TestAccMetalDatasourceVlan_ByVxlanMetro(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrPair(
 						"equinix_metal_vlan.foovlan", "vxlan",
-						"data.metal_vlan.dsvlan", "vxlan",
+						"data.equinix_metal_vlan.dsvlan", "vxlan",
 					),
 					resource.TestCheckResourceAttrPair(
 						"equinix_metal_vlan.foovlan", "id",
-						"data.metal_vlan.dsvlan", "id",
+						"data.equinix_metal_vlan.dsvlan", "id",
 					),
 					resource.TestCheckResourceAttr(
 						"equinix_metal_vlan.barvlan", "vxlan", "6",
 					),
 					resource.TestCheckResourceAttr(
-						"data.metal_vlan.bardsvlan", "vxlan", "6",
+						"data.equinix_metal_vlan.bardsvlan", "vxlan", "6",
 					),
 					resource.TestCheckResourceAttrPair(
 						"equinix_metal_vlan.barvlan", "id",
-						"data.metal_vlan.bardsvlan", "id",
+						"data.equinix_metal_vlan.bardsvlan", "id",
 					),
 				),
 			},
@@ -174,11 +174,11 @@ func TestAccMetalDatasourceVlan_ByVlanId(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrPair(
 						"equinix_metal_vlan.foovlan", "vxlan",
-						"data.metal_vlan.dsvlan", "vxlan",
+						"data.equinix_metal_vlan.dsvlan", "vxlan",
 					),
 					resource.TestCheckResourceAttrPair(
 						"equinix_metal_vlan.foovlan", "project_id",
-						"data.metal_vlan.dsvlan", "project_id",
+						"data.equinix_metal_vlan.dsvlan", "project_id",
 					),
 				),
 			},
@@ -219,11 +219,11 @@ func TestAccMetalDatasourceVlan_ByProjectId(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrPair(
 						"equinix_metal_vlan.foovlan", "vxlan",
-						"data.metal_vlan.dsvlan", "vxlan",
+						"data.equinix_metal_vlan.dsvlan", "vxlan",
 					),
 					resource.TestCheckResourceAttrPair(
 						"equinix_metal_vlan.foovlan", "project_id",
-						"data.metal_vlan.dsvlan", "project_id",
+						"data.equinix_metal_vlan.dsvlan", "project_id",
 					),
 				),
 			},

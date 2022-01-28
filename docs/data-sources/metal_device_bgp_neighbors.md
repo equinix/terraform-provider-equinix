@@ -23,7 +23,7 @@ data "equinix_metal_device_bgp_neighbors" "test" {
 }
 
 output "bgp_neighbors_listing" {
-  value = data.metal_device_bgp_neighbors.test.bgp_neighbors
+  value = data.equinix_metal_device_bgp_neighbors.test.bgp_neighbors
 }
 ```
 

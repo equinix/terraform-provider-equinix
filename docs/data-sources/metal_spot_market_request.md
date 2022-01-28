@@ -35,16 +35,16 @@ data "equinix_metal_spot_market_request" "dreq" {
 }
 
 output "ids" {
-  value = data.metal_spot_market_request.dreq.device_ids
+  value = data.equinix_metal_spot_market_request.dreq.device_ids
 }
 
 data "equinix_metal_device" "devs" {
-  count     = length(data.metal_spot_market_request.dreq.device_ids)
-  device_id = data.metal_spot_market_request.dreq.device_ids[count.index]
+  count     = length(data.equinix_metal_spot_market_request.dreq.device_ids)
+  device_id = data.equinix_metal_spot_market_request.dreq.device_ids[count.index]
 }
 
 output "ips" {
-  value = [for d in data.metal_device.devs : d.access_public_ipv4]
+  value = [for d in data.equinix_metal_device.devs : d.access_public_ipv4]
 }
 ```
 

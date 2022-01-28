@@ -47,7 +47,7 @@ func TestAccMetalDataSourceProject_Basic(t *testing.T) {
 						"2SFsdfsg43"),
 					resource.TestCheckResourceAttrPair(
 						"equinix_metal_project.foobar", "id",
-						"data.metal_project.test", "id"),
+						"data.equinix_metal_project.test", "id"),
 				),
 			},
 		},

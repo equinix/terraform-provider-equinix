@@ -18,7 +18,7 @@ data "equinix_metal_project" "tf_project_1" {
 }
 
 output "users_of_Terraform_Fun" {
-  value = data.metal_project.tf_project_1.user_ids
+  value = data.equinix_metal_project.tf_project_1.user_ids
 }
 ```
 

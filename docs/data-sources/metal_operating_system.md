@@ -22,7 +22,7 @@ resource "equinix_metal_device" "server" {
   hostname         = "tf.ubuntu"
   plan             = "c3.medium.x86"
   facilities       = ["ny5"]
-  operating_system = data.metal_operating_system.example.id
+  operating_system = data.equinix_metal_operating_system.example.id
   billing_cycle    = "hourly"
   project_id       = local.project_id
 }

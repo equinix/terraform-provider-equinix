@@ -28,7 +28,7 @@ resource "equinix_metal_device" "www" {
   [...]
   ip_address {
     type = "public_ipv4"
-    reservation_ids = [data.metal_reserved_ip_block.www.id]
+    reservation_ids = [data.equinix_metal_reserved_ip_block.www.id]
   }
 }
 ```
