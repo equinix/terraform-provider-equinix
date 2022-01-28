@@ -1,4 +1,5 @@
 ---
+layout: "equinix"
 page_title: "Equinix: equinix_metal_port_vlan_attachment"
 subcategory: ""
 description: |-

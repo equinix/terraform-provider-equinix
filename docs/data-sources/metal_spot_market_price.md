@@ -5,7 +5,7 @@ description: |-
   Get an Equinix Metal Spot Market Price
 ---
 
-# metal\_operating\_system
+# Data Source: equinix\_metal\_operating\_system
 
 Use this data source to get Equinix Metal Spot Market Price for a plan.
 

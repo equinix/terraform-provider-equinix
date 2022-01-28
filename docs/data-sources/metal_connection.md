@@ -5,7 +5,7 @@ description: |-
   Retrieve Equinix Fabric Connection
 ---
 
-# metal\_connection
+# Data Source: equinix\_metal\_connection
 
 Use this data source to retrieve a connection resource from [Equinix Fabric - software-defined interconnections](https://metal.equinix.com/developers/docs/networking/fabric/)
 

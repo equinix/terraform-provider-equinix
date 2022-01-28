@@ -5,7 +5,7 @@ description: |-
   Provides an Equinix Metal Project datasource.
 ---
 
-# metal\_project
+# Data Source: equinix\_metal\_project
 
 Use this datasource to retrieve attributes of the Project API resource.
 

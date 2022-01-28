@@ -5,7 +5,7 @@ description: |-
   Provides an Equinix Metal Project SSH Key datasource.
 ---
 
-# metal\_project\_ssh\_key
+# Data Source: equinix\_metal\_project\_ssh\_key
 
 Use this datasource to retrieve attributes of a Project SSH Key API resource.
 

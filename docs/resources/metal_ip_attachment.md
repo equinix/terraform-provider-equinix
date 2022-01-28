@@ -1,11 +1,12 @@
 ---
+layout: "equinix"
 page_title: "Equinix: equinix_metal_ip_attachment"
 subcategory: ""
 description: |-
   Provides a Resource for Attaching IP Subnets from a Reserved Block to a Device
 ---
 
-# metal\_ip\_attachment
+# Resource: equinix\_metal\_ip\_attachment
 
 Provides a resource to attach elastic IP subnets to devices.
 

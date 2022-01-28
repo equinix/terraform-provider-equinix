@@ -1,11 +1,12 @@
 ---
+layout: "equinix"
 page_title: "Equinix: equinix_metal_spot_market_request"
 subcategory: ""
 description: |-
   Provides an Equinix Metal Spot Market Request Resource.
 ---
 
-# metal\_spot\_market\_request
+# Resource: equinix\_metal\_spot\_market\_request
 
 Provides an Equinix Metal Spot Market Request resource to allow you to
 manage spot market requests on your account. For more detail on Spot Market, see [this article in Equinix Metal documentation](https://metal.equinix.com/developers/docs/deploy/spot-market/).
@@ -42,7 +43,7 @@ The following arguments are supported:
 * `facilities` - (Optional) Facility IDs where devices should be created
 * `metro` - (Optional) Metro where devices should be created
 * `locked` - (Optional) Blocks deletion of the SpotMarketRequest device until the lock is disabled
-* `instance_parameters` - (Required) Parameters for devices provisioned from this request. You can find the parameter description from the [metal_device doc](device.md).
+* `instance_parameters` - (Required) Parameters for devices provisioned from this request. You can find the parameter description from the [equinix_metal_device doc](metal_device.md).
   * `billing_cycle`
   * `plan`
   * `operating_system`

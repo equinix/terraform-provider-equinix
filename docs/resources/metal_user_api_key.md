@@ -1,4 +1,5 @@
 ---
+layout: "equinix"
 page_title: "Equinix: equinix_metal_user_api_key"
 subcategory: ""
 description: |-

@@ -1,11 +1,12 @@
 ---
+layout: "equinix"
 page_title: "Equinix: equinix_metal_gateway"
 subcategory: ""
 description: |-
   Create Equinix Metal Gateways
 ---
 
-# metal\_gateway
+# Resource: equinix\_metal\_gateway
 
 Use this resource to create Metal Gateway resources in Equinix Metal.
 

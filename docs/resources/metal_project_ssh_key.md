@@ -1,4 +1,5 @@
 ---
+layout: "equinix"
 page_title: "Equinix: equinix_metal_project_ssh_key"
 subcategory: ""
 description: |-
@@ -29,7 +30,7 @@ resource "equinix_metal_device" "test" {
   facilities          = ["ny5"]
   operating_system    = "ubuntu_20_04"
   billing_cycle       = "hourly"
-  project_ssh_key_ids = [metal_project_ssh_key.test.id]
+  project_ssh_key_ids = [equinix_metal_project_ssh_key.test.id]
   project_id          = local.project_id
 }
 ```

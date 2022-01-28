@@ -5,7 +5,7 @@ description: |-
   Get an Equinix Metal operating system image
 ---
 
-# metal\_operating\_system
+# Data Source: equinix\_metal\_operating\_system
 
 Use this data source to get Equinix Metal Operating System image.
 

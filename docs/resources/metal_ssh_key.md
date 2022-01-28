@@ -1,11 +1,12 @@
 ---
+layout: "equinix"
 page_title: "Equinix: equinix_metal_ssh_key"
 subcategory: ""
 description: |-
   Provides an Equinix Metal SSH key resource.
 ---
 
-# metal\_ssh_key
+# Resource: equinix\_metal\_ssh_key
 
 Provides a resource to manage User SSH keys on your Equinix Metal user account. If you create a new device in a project, all the keys of the project's collaborators will be injected to the device.
 

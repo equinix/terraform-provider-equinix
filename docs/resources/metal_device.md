@@ -1,4 +1,5 @@
 ---
+layout: "equinix"
 page_title: "Equinix: equinix_metal_device resource"
 subcategory: ""
 description: |-
@@ -149,7 +150,7 @@ The following arguments are supported:
 * `operating_system` - (Required) The operating system slug. To find the slug, or visit [Operating Systems API docs](https://metal.equinix.com/developers/api/operatingsystems), set your API auth token in the top of the page and see JSON from the API response.
 * `plan` - (Required) The device plan slug. To find the plan slug, visit [Device plans API docs](https://metal.equinix.com/developers/api/plans), set your auth token in the top of the page and see JSON from the API response.
 * `project_id` - (Required) The ID of the project in which to create the device
-* `project_ssh_key_ids` - Array of IDs of the project SSH keys which should be added to the device. If you omit this, SSH keys of all the members of the parent project will be added to the device. If you specify this array, only the listed project SSH keys will be added. Project SSH keys can be created with the [metal_project_ssh_key](project_ssh_key.md) resource.
+* `project_ssh_key_ids` - Array of IDs of the project SSH keys which should be added to the device. If you omit this, SSH keys of all the members of the parent project will be added to the device. If you specify this array, only the listed project SSH keys will be added. Project SSH keys can be created with the [equinix_metal_project_ssh_key](metal_project_ssh_key.md) resource.
 * `reinstall` - (Optional) Whether the device should be reinstalled instead of destroyed when modifying user_data, custom_data, or operating system.
 * `storage` - (Optional) JSON for custom partitioning. Only usable on reserved hardware. More information in in the [Custom Partitioning and RAID](https://metal.equinix.com/developers/docs/servers/custom-partitioning-raid/) doc. Please note that the disks.partitions.size attribute must be a string, not an integer. It can be a number string, or size notation string, e.g. "4G" or "8M" (for gigabytes and megabytes).
 * `tags` - Tags attached to the device
@@ -161,11 +162,11 @@ The `ip_address` block has 3 fields:
 
 * `type` - One of [`private_ipv4`, `public_ipv4`, `public_ipv6`]
 * `cidr` - CIDR suffix for IP address block to be assigned, i.e. amount of addresses.
-* `reservation_ids` - List of UUIDs of [IP block reservations](reserved_ip_block.md) from which the public IPv4 address should be taken.
+* `reservation_ids` - List of UUIDs of [IP block reservations](metal_reserved_ip_block.md) from which the public IPv4 address should be taken.
 
 You can supply one `ip_address` block per IP address type. If you use the `ip_address` you must always pass a block for `private_ipv4`.
 
-To learn more about using the reserved IP addresses for new devices, see the examples in the [metal_reserved_ip_block](reserved_ip_block.md) documentation.
+To learn more about using the reserved IP addresses for new devices, see the examples in the [equinix_metal_reserved_ip_block](metal_reserved_ip_block.md) documentation.
 
 The `reinstall` block has 3 fields:
 

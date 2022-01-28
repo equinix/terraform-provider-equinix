@@ -5,7 +5,7 @@ description: |-
   List IP address ranges allocated to a project
 ---
 
-# metal\_ip\_block\_ranges
+# Data Source: equinix\_metal\_ip\_block\_ranges
 
 Use this datasource to get CIDR expressions for allocated IP blocks of all the types in a project, optionally filtered by facility or metro.
 

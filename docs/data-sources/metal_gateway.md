@@ -5,7 +5,7 @@ description: |-
   Retrieve Equinix Metal Gateways
 ---
 
-# metal\_gateway
+# Data Source: equinix\_metal\_gateway
 
 Use this datasource to retrieve Metal Gateway resources in Equinix Metal.
 

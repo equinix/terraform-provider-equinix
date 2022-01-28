@@ -74,7 +74,7 @@ resource "equinix_metal_port" "bond0" {
   port_id = local.bond0_id
   layer2 = false
   bonded = true
-  vlan_ids = [metal_vlan.test.id]
+  vlan_ids = [equinix_metal_vlan.test.id]
 }
 
 resource "equinix_metal_vlan" "test" {

@@ -1,11 +1,12 @@
 ---
+layout: "equinix"
 page_title: "Equinix: equinix_metal_project"
 subcategory: ""
 description: |-
   Provides an Equinix Metal Project resource.
 ---
 
-# metal\_project
+# Resource: equinix\_metal\_project
 
 Provides an Equinix Metal project resource to allow you manage devices
 in your projects.

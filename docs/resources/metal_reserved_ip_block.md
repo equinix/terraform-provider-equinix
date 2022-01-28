@@ -1,11 +1,12 @@
 ---
+layout: "equinix"
 page_title: "Equinix: equinix_metal_reserved_ip_block"
 subcategory: ""
 description: |-
   Provides a Resource for reserving IP addresses in the Equinix Metal Host
 ---
 
-# metal\_reserved\_ip\_block
+# Resource: equinix\_metal\_reserved\_ip\_block
 
 Provides a resource to create and manage blocks of reserved IP addresses in a project.
 
@@ -74,7 +75,7 @@ resource "equinix_metal_device" "nodes" {
   ip_address {
     type            = "public_ipv4"
     cidr            = 31
-    reservation_ids = [metal_reserved_ip_block.example.id]
+    reservation_ids = [equinix_metal_reserved_ip_block.example.id]
   }
 
   ip_address {

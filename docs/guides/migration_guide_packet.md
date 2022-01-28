@@ -4,7 +4,7 @@ description: |-
   Migrating your templates from packet_ resources to equinix_metal_ resources with minimal disruption.
 ---
 
-# Migrating from packethost/packet to equinix/metal
+# Migrating from packethost/packet to equinix/equinix
 
 Packet is now Equinix Metal, and the name of the Terraform provider changed too. This (terraform-provider-metal, provider equinix/metal) is the current provider for Equinix Metal.
 
@@ -46,19 +46,19 @@ resource "packet_vlan" "example" {
 We can first change the provider in Terraform state file (`terraform.tfstate`) with `terraform state` subcommand `replace-provider`:
 
 ```
-$ terraform state replace-provider packethost/packet equinix/metal
+$ terraform state replace-provider packethost/packet equinix/equinix
 ```
 
 Then we replace the provider reference in the HCL templates. Do this for every file where you have the reference:
 
 ```
-$ sed -i 's|packethost/packet|equinix/metal|g' main.tf
+$ sed -i 's|packethost/packet|equinix/equinix|g' main.tf
 ``` 
 
-Then we simply replace all strings `packet` with `metal` in the Terraform HCL files.
+Then we simply replace all strings `packet` with `equinix` in the Terraform HCL files.
 
 ```
-$ sed -i 's/packet/metal/g' main.tf
+$ sed -i 's/packet/equinix_metal/g' main.tf
 ```
 
 ..this is a bit dangerous, so check your `git diff` after. It should replace all the `packet_` prefices and also the key from the `required_providers` block.
@@ -66,7 +66,7 @@ $ sed -i 's/packet/metal/g' main.tf
 Then replace `packet_` with `equinix_metal_` in the terraform state file:
 
 ```
-$ sed -i 's/packet_/metal_/g' terraform.tfstate
+$ sed -i 's/packet_/equinix_metal_/g' terraform.tfstate
 ```
 
 The example template would now look as:
@@ -74,8 +74,8 @@ The example template would now look as:
 ```hcl-terraform
 terraform {
   required_providers {
-    metal = {
-      source = "equinix/metal"
+    equinix = {
+      source = "equinix/equinix"
     }
   }
 }
@@ -141,7 +141,7 @@ resource "packet_device" "example" {
 
 ### Resource UUIDs
 
-In order to transition to provider equinix/metal, we need to find out UUIDs of all the resources we want to migrate. In this case `packet_reserved_ip_block.example` and `packet_device.example`. We can use `terraform state` to find out the UUIDs.
+In order to transition to provider equinix/equinix, we need to find out UUIDs of all the resources we want to migrate. In this case `packet_reserved_ip_block.example` and `packet_device.example`. We can use `terraform state` to find out the UUIDs.
 
 For the reserved IP block:
 
@@ -171,8 +171,8 @@ resource "packet_device" "example" {
 
 Once we find out the UUIDs of resources to migrate, in the HCL template, we need to change:
  
-* the required_providers block to require equinix/metal
-* the names of the resources to corresponding resoruces from provider equinix/metal (sed 's/packet_/metal_')
+* the required_providers block to require equinix/equinix
+* the names of the resources to corresponding resources from provider equinix/metal (sed 's/packet_/equinix_metal_')
 * all the references from packet_ resources to equinix_metal_ resources
 
 The modified template will then look as:
@@ -180,9 +180,8 @@ The modified template will then look as:
 ```hcl-terraform
 terraform {
   required_providers {
-    metal = {
-      source = "equinix/metal"
-      version = "2.0.1"
+    equinix = {
+      source = "equinix/equinix"
     }
   }
 }
@@ -204,7 +203,7 @@ resource "equinix_metal_device" "example" {
   ip_address {
     type            = "public_ipv4"
     cidr            = 31
-    reservation_ids = [metal_reserved_ip_block.example.id]
+    reservation_ids = [equinix_metal_reserved_ip_block.example.id]
   }
 
   ip_address {

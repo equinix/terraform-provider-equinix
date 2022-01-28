@@ -11,7 +11,7 @@ Use this datasource to retrieve list of BGP neighbors of a device in the Equinix
 
 To have any BGP neighbors listed, the device must be in [BGP-enabled project](../r/project.html) and have a [BGP session](../r/bgp_session.html) assigned.
 
-To learn more about using BGP in Equinix Metal, see the [metal_bgp_session](../r/bgp_session.html) resource documentation.
+To learn more about using BGP in Equinix Metal, see the [equinix_metal_bgp_session](../r/bgp_session.html) resource documentation.
 
 ## Example Usage
 
