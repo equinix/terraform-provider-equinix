@@ -136,7 +136,7 @@ func (c *Config) Client() *packngo.Client {
 
 	client := packngo.NewClientWithAuth(consumerToken, c.AuthToken, standardClient)
 	tfUserAgent := terraformUserAgent(c.terraformVersion)
-	userAgent := fmt.Sprintf("%s terraform-provider-metal/%s %s",
+	userAgent := fmt.Sprintf("%s terraform-provider-equinix/%s %s",
 		tfUserAgent, version.ProviderVersion, client.UserAgent)
 
 	client.UserAgent = strings.TrimSpace(userAgent)

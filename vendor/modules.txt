@@ -91,9 +91,6 @@ github.com/equinix/oauth2-go
 ## explicit; go 1.14
 github.com/equinix/rest-go
 github.com/equinix/rest-go/internal/api
-# github.com/equinix/terraform-provider-metal v1.1.0
-## explicit; go 1.13
-github.com/equinix/terraform-provider-metal/version
 # github.com/fatih/color v1.7.0
 ## explicit
 github.com/fatih/color
