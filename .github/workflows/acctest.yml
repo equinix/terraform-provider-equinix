@@ -66,15 +66,15 @@ jobs:
         # TF_LOG: "DEBUG"
         #
 
-        METAL_AUTH_TOKEN: ${{ secrets.PACKET_AUTH_TOKEN }}
+        METAL_AUTH_TOKEN: ${{ secrets.METAL_AUTH_TOKEN }}
       run: |
-        go test -v -coverprofile coverage.txt -covermode=atomic -parallel 8 -timeout 180m ./metal
+        go test -v -coverprofile coverage.txt -covermode=atomic -parallel 8 -timeout 180m ./...
     - name: Sweeper
       if: ${{ always() }}
       env:
-        METAL_AUTH_TOKEN: ${{ secrets.PACKET_AUTH_TOKEN }}
+        METAL_AUTH_TOKEN: ${{ secrets.METAL_AUTH_TOKEN }}
       run: |
-        go test ./metal -v -sweep="tf_test"
+        go test ./... -v -sweep="tf_test"
     - name: Upload coverage to Codecov
       if: ${{ always() }}
       uses: codecov/codecov-action@v2
