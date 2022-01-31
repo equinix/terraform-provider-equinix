@@ -134,7 +134,7 @@ func testAccCheckMetalDatasourceVlanDestroyed(s *terraform.State) error {
 			continue
 		}
 		if _, _, err := client.ProjectVirtualNetworks.Get(rs.Primary.ID, nil); err == nil {
-			return fmt.Errorf("DatasourceVlan still exists")
+			return fmt.Errorf("Metal Vlan still exists")
 		}
 	}
 

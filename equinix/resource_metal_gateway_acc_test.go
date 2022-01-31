@@ -103,7 +103,7 @@ func testAccCheckMetalGatewayDestroyed(s *terraform.State) error {
 			continue
 		}
 		if _, _, err := client.MetalGateways.Get(rs.Primary.ID, nil); err == nil {
-			return fmt.Errorf("Gateway still exists")
+			return fmt.Errorf("Metal Gateway still exists")
 		}
 	}
 

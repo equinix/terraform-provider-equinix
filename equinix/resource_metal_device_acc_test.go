@@ -315,7 +315,7 @@ func testAccCheckMetalDeviceDestroy(s *terraform.State) error {
 			continue
 		}
 		if _, _, err := client.Devices.Get(rs.Primary.ID, nil); err == nil {
-			return fmt.Errorf("Device still exists")
+			return fmt.Errorf("Metal Device still exists")
 		}
 	}
 	return nil

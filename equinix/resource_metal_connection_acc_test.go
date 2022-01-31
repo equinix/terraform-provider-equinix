@@ -17,7 +17,7 @@ func testAccCheckMetalConnectionDestroy(s *terraform.State) error {
 			continue
 		}
 		if _, _, err := client.Connections.Get(rs.Primary.ID, nil); err == nil {
-			return fmt.Errorf("Connection still exists")
+			return fmt.Errorf("Metal Connection still exists")
 		}
 	}
 

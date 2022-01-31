@@ -77,7 +77,7 @@ func testAccCheckMetalProjectSSHKeyDestroy(s *terraform.State) error {
 			continue
 		}
 		if _, _, err := client.SSHKeys.Get(rs.Primary.ID, nil); err == nil {
-			return fmt.Errorf("SSH key still exists")
+			return fmt.Errorf("Metal SSH key still exists")
 		}
 	}
 

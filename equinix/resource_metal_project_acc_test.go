@@ -335,7 +335,7 @@ func testAccCheckMetalProjectDestroy(s *terraform.State) error {
 			continue
 		}
 		if _, _, err := client.Projects.Get(rs.Primary.ID, nil); err == nil {
-			return fmt.Errorf("Project still exists")
+			return fmt.Errorf("Metal Project still exists")
 		}
 	}
 

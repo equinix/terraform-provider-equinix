@@ -73,7 +73,7 @@ func testAccCheckMetalSpotMarketRequestDestroy(s *terraform.State) error {
 			continue
 		}
 		if _, _, err := client.SpotMarketRequests.Get(rs.Primary.ID, nil); err == nil {
-			return fmt.Errorf("Spot market request key still exists")
+			return fmt.Errorf("Metal Spot market request key still exists")
 		}
 	}
 

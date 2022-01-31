@@ -163,7 +163,7 @@ func testAccCheckMetalReservedIPBlockDestroy(s *terraform.State) error {
 			continue
 		}
 		if _, _, err := client.ProjectIPs.Get(rs.Primary.ID, nil); err == nil {
-			return fmt.Errorf("Reserved IP block still exists")
+			return fmt.Errorf("Metal Reserved IP block still exists")
 		}
 	}
 

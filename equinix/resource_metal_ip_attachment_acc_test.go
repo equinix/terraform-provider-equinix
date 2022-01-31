@@ -45,7 +45,7 @@ func testAccCheckMetalIPAttachmentDestroy(s *terraform.State) error {
 			continue
 		}
 		if _, _, err := client.ProjectIPs.Get(rs.Primary.ID, nil); err == nil {
-			return fmt.Errorf("IP attachment still exists")
+			return fmt.Errorf("Metal IP attachment still exists")
 		}
 	}
 

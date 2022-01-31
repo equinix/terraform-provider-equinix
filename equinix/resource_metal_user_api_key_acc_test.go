@@ -53,7 +53,7 @@ func testAccMetalUserAPIKeyDestroy(s *terraform.State) error {
 			continue
 		}
 		if _, err := client.APIKeys.UserGet(rs.Primary.ID, nil); err == nil {
-			return fmt.Errorf("UserAPI key still exists")
+			return fmt.Errorf("Metal UserAPI key still exists")
 		}
 	}
 	return nil

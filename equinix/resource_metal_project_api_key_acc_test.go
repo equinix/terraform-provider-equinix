@@ -15,7 +15,7 @@ func testAccMetalProjectAPIKeyDestroy(s *terraform.State) error {
 			continue
 		}
 		if _, err := client.APIKeys.ProjectGet(rs.Primary.ID, rs.Primary.Attributes["project_id"], nil); err == nil {
-			return fmt.Errorf("ProjectAPI key still exists")
+			return fmt.Errorf("Metal ProjectAPI key still exists")
 		}
 	}
 	return nil
