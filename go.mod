@@ -10,6 +10,7 @@ require (
 	github.com/hashicorp/go-cty v1.4.1-0.20200414143053-d3edf31b6320
 	github.com/hashicorp/terraform-plugin-sdk/v2 v2.9.0
 	github.com/stretchr/testify v1.7.0
+	golang.org/x/oauth2 v0.0.0-20210313182246-cd4f82c27b84
 )
 
 require (
@@ -64,7 +65,6 @@ require (
 	golang.org/x/lint v0.0.0-20201208152925-83fdc39ff7b5 // indirect
 	golang.org/x/mod v0.4.2 // indirect
 	golang.org/x/net v0.0.0-20210614182718-04defd469f4e // indirect
-	golang.org/x/oauth2 v0.0.0-20210313182246-cd4f82c27b84 // indirect
 	golang.org/x/sys v0.0.0-20210502180810-71e4cd670f79 // indirect
 	golang.org/x/text v0.3.6 // indirect
 	golang.org/x/tools v0.1.0 // indirect
