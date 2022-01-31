@@ -217,7 +217,7 @@ func createNetworkDeviceSchema() map[string]*schema.Schema {
 			Type:         schema.TypeString,
 			Optional:     true,
 			ForceNew:     true,
-			ValidateFunc: validation.StringLenBetween(2, 10),
+			ValidateFunc: validation.StringLenBetween(2, 44),
 			Description:  networkDeviceDescriptions["HostName"],
 		},
 		networkDeviceSchemaNames["PackageCode"]: {
@@ -449,7 +449,7 @@ func createNetworkDeviceSchema() map[string]*schema.Schema {
 						Type:         schema.TypeString,
 						Optional:     true,
 						ForceNew:     true,
-						ValidateFunc: validation.StringLenBetween(2, 15),
+						ValidateFunc: validation.StringLenBetween(2, 44),
 						Description:  networkDeviceDescriptions["HostName"],
 					},
 					networkDeviceSchemaNames["LicenseToken"]: {

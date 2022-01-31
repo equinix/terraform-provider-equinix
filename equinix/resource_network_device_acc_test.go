@@ -91,7 +91,7 @@ func TestAccNetworkDevice_CSR1000V_HA_Managed_Sub(t *testing.T) {
 		"device-type_code":               "CSR1000V",
 		"device-package_code":            "SEC",
 		"device-notifications":           []string{"marry@equinix.com", "john@equinix.com"},
-		"device-hostname":                fmt.Sprintf("tf-%s", randString(6)),
+		"device-hostname":                fmt.Sprintf("tf-%s", randString(41)),
 		"device-term_length":             1,
 		"device-version":                 "16.09.05",
 		"device-core_count":              2,
