@@ -31,7 +31,7 @@ func TestAccMetalDataSourceProject_Basic(t *testing.T) {
 	var project packngo.Project
 	rn := acctest.RandStringFromCharSet(12, "abcdef0123456789")
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckMetalProjectDestroy,

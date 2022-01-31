@@ -69,7 +69,7 @@ func TestAccMetalPortVlanAttachment_L2Bonded(t *testing.T) {
 
 	rs := acctest.RandString(10)
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckMetalPortVlanAttachmentDestroy,
@@ -154,7 +154,7 @@ func TestAccMetalPortVlanAttachment_L2Individual(t *testing.T) {
 
 	rs := acctest.RandString(10)
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckMetalPortVlanAttachmentDestroy,
@@ -226,7 +226,7 @@ resource "equinix_metal_port_vlan_attachment" "test" {
 func TestAccMetalPortVlanAttachment_HybridBasic(t *testing.T) {
 	rs := acctest.RandString(10)
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckMetalPortVlanAttachmentDestroy,
@@ -297,7 +297,7 @@ resource "equinix_metal_port_vlan_attachment" "test" {
 func TestAccMetalPortVlanAttachment_HybridMultipleVlans(t *testing.T) {
 	rs := acctest.RandString(10)
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckMetalPortVlanAttachmentDestroy,
@@ -426,7 +426,7 @@ func TestAccMetalPortVlanAttachment_L2Native(t *testing.T) {
 
 	rs := acctest.RandString(10)
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckMetalPortVlanAttachmentDestroy,

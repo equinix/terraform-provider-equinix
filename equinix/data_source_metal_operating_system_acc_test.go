@@ -9,7 +9,7 @@ import (
 
 func TestAccMetalOperatingSystem_Basic(t *testing.T) {
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
@@ -32,7 +32,7 @@ var matchErrOSNotFound = regexp.MustCompile(".*There are no operating systems*")
 
 func TestAccMetalOperatingSystem_NotFound(t *testing.T) {
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
@@ -53,7 +53,7 @@ var matchErrOSAmbiguous = regexp.MustCompile(".*There is more than one operating
 
 func TestAccMetalOperatingSystem_Ambiguous(t *testing.T) {
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{

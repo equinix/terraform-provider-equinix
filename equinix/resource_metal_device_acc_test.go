@@ -69,7 +69,7 @@ func TestAccMetalDevice_FacilityList(t *testing.T) {
 	rs := acctest.RandString(10)
 	r := "equinix_metal_device.test"
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckMetalDeviceDestroy,
@@ -89,7 +89,7 @@ func TestAccMetalDevice_NetworkPortsOrder(t *testing.T) {
 	rs := acctest.RandString(10)
 	r := "equinix_metal_device.test"
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckMetalDeviceDestroy,
@@ -111,7 +111,7 @@ func TestAccMetalDevice_Basic(t *testing.T) {
 	rs := acctest.RandString(10)
 	r := "equinix_metal_device.test"
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckMetalDeviceDestroy,
@@ -154,7 +154,7 @@ func TestAccMetalDevice_Metro(t *testing.T) {
 	rs := acctest.RandString(10)
 	r := "equinix_metal_device.test"
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckMetalDeviceDestroy,
@@ -178,7 +178,7 @@ func TestAccMetalDevice_Update(t *testing.T) {
 	rInt := acctest.RandInt()
 	r := "equinix_metal_device.test"
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckMetalDeviceDestroy,
@@ -233,7 +233,7 @@ func TestAccMetalDevice_IPXEScriptUrl(t *testing.T) {
 	rs := acctest.RandString(10)
 	r := "equinix_metal_device.test_ipxe_script_url"
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckMetalDeviceDestroy,
@@ -270,7 +270,7 @@ func TestAccMetalDevice_IPXEConflictingFields(t *testing.T) {
 	rs := acctest.RandString(10)
 	r := "equinix_metal_device.test_ipxe_conflict"
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckMetalDeviceDestroy,
@@ -291,7 +291,7 @@ func TestAccMetalDevice_IPXEConfigMissing(t *testing.T) {
 	rs := acctest.RandString(10)
 	r := "equinix_metal_device.test_ipxe_config_missing"
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckMetalDeviceDestroy,
@@ -453,7 +453,7 @@ func testAccCheckMetalDeviceNetwork(n string) resource.TestCheckFunc {
 func TestAccMetalDevice_importBasic(t *testing.T) {
 	rs := acctest.RandString(10)
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckMetalDeviceDestroy,

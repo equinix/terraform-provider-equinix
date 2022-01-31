@@ -44,7 +44,7 @@ func TestAccMetalProjectSSHKey_Basic(t *testing.T) {
 	}
 	cfg := metalProjectSSHKeyConfig_Basic(rs, publicKeyMaterial)
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckMetalProjectSSHKeyDestroy,

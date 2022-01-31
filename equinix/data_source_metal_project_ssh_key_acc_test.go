@@ -10,8 +10,6 @@ import (
 )
 
 func TestAccMetalProjectSSHKeyDataSource_BySearch(t *testing.T) {
-	t.Parallel()
-
 	datasourceName := "data.equinix_metal_project_ssh_key.foobar"
 	keyName := acctest.RandomWithPrefix("tfacc-project-key")
 
@@ -21,7 +19,7 @@ func TestAccMetalProjectSSHKeyDataSource_BySearch(t *testing.T) {
 		t.Fatalf("Cannot generate test SSH key pair: %s", err)
 	}
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                  func() { testAccPreCheck(t) },
 		Providers:                 testAccProviders,
 		PreventPostDestroyRefresh: true,
@@ -51,8 +49,6 @@ func TestAccMetalProjectSSHKeyDataSource_BySearch(t *testing.T) {
 }
 
 func TestAccMetalProjectSSHKeyDataSource_ByID(t *testing.T) {
-	t.Parallel()
-
 	datasourceName := "data.equinix_metal_project_ssh_key.foobar"
 
 	publicKeyMaterial, _, err := acctest.RandSSHKeyPair("")
@@ -62,7 +58,7 @@ func TestAccMetalProjectSSHKeyDataSource_ByID(t *testing.T) {
 		t.Fatalf("Cannot generate test SSH key pair: %s", err)
 	}
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                  func() { testAccPreCheck(t) },
 		Providers:                 testAccProviders,
 		PreventPostDestroyRefresh: true,

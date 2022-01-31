@@ -11,7 +11,7 @@ import (
 func TestAccDataSourceMetalDevice_Basic(t *testing.T) {
 	projectName := fmt.Sprintf("ds-device-%s", acctest.RandString(10))
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckMetalDeviceDestroy,
@@ -61,7 +61,7 @@ data "equinix_metal_device" "test" {
 func TestAccDataSourceMetalDevice_ByID(t *testing.T) {
 	projectName := fmt.Sprintf("ds-device-by-id-%s", acctest.RandString(10))
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckMetalDeviceDestroy,

@@ -102,7 +102,7 @@ func TestAccMetalVirtualCircuit_Dedicated(t *testing.T) {
 	rs := acctest.RandString(10)
 	ri := acctest.RandIntRange(1024, 1093)
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckMetalVirtualCircuitDestroy,

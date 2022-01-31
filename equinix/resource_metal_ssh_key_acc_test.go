@@ -56,7 +56,7 @@ func TestAccMetalSSHKey_Basic(t *testing.T) {
 		t.Fatalf("Cannot generate test SSH key pair: %s", err)
 	}
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckMetalSSHKeyDestroy,
@@ -84,7 +84,7 @@ func TestAccMetalSSHKey_ProjectBasic(t *testing.T) {
 		t.Fatalf("Cannot generate test SSH key pair: %s", err)
 	}
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckMetalSSHKeyDestroy,
@@ -110,7 +110,7 @@ func TestAccMetalSSHKey_Update(t *testing.T) {
 		t.Fatalf("Cannot generate test SSH key pair: %s", err)
 	}
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckMetalSSHKeyDestroy,
@@ -144,7 +144,7 @@ func TestAccMetalSSHKey_projectImportBasic(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Cannot generate test SSH key pair: %s", err)
 	}
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckMetalSSHKeyDestroy,
@@ -166,7 +166,7 @@ func TestAccMetalSSHKey_importBasic(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Cannot generate test SSH key pair: %s", err)
 	}
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckMetalSSHKeyDestroy,

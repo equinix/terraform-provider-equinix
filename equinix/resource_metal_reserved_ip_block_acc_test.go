@@ -57,7 +57,7 @@ func TestAccMetalReservedIPBlock_Global(t *testing.T) {
 
 	rs := acctest.RandString(10)
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckMetalReservedIPBlockDestroy,
@@ -87,7 +87,7 @@ func TestAccMetalReservedIPBlock_Public(t *testing.T) {
 
 	rs := acctest.RandString(10)
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckMetalReservedIPBlockDestroy,
@@ -119,7 +119,7 @@ func TestAccMetalReservedIPBlock_Metro(t *testing.T) {
 
 	rs := acctest.RandString(10)
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckMetalReservedIPBlockDestroy,
@@ -139,7 +139,7 @@ func TestAccMetalReservedIPBlock_ImportBasic(t *testing.T) {
 
 	rs := acctest.RandString(10)
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckMetalReservedIPBlockDestroy,
@@ -188,7 +188,7 @@ resource "equinix_metal_reserved_ip_block" "test" {
 
 func TestAccMetalReservedIPBlock_FacilityToMetro(t *testing.T) {
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckMetalReservedIPBlockDestroy,
@@ -250,7 +250,7 @@ func TestAccMetalReservedIPBlock_Device(t *testing.T) {
 
 	rs := acctest.RandString(10)
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckMetalReservedIPBlockDestroy,

@@ -52,7 +52,7 @@ func TestAccOrgCreate(t *testing.T) {
 	var org packngo.Organization
 	rInt := acctest.RandInt()
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckMetalOrgDestroy,
@@ -73,7 +73,7 @@ func TestAccOrgCreate(t *testing.T) {
 
 func TestAccOrg_importBasic(t *testing.T) {
 	rInt := acctest.RandInt()
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckMetalOrgDestroy,

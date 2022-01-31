@@ -46,7 +46,7 @@ func TestAccMetalConnection_Shared(t *testing.T) {
 
 	rs := acctest.RandString(10)
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckMetalConnectionDestroy,
@@ -97,7 +97,7 @@ func TestAccMetalConnection_Dedicated(t *testing.T) {
 
 	rs := acctest.RandString(10)
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckMetalConnectionDestroy,
@@ -154,7 +154,7 @@ func TestAccMetalConnection_Tunnel(t *testing.T) {
 
 	rs := acctest.RandString(10)
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckMetalConnectionDestroy,

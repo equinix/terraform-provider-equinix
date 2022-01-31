@@ -46,7 +46,7 @@ func TestAccMetalSpotMarketRequest_Basic(t *testing.T) {
 	var key packngo.SpotMarketRequest
 	rs := acctest.RandString(10)
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckMetalSSHKeyDestroy,
@@ -136,7 +136,7 @@ resource "equinix_metal_spot_market_request" "request" {
 
 func TestAccMetalSpotMarketRequest_Import(t *testing.T) {
 	rs := acctest.RandString(10)
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckMetalSSHKeyDestroy,

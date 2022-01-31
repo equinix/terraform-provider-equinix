@@ -35,7 +35,7 @@ func TestAccMetalDatasourceVlan_ByVxlanFacility(t *testing.T) {
 	rs := acctest.RandString(10)
 	fac := "sv15"
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckMetalDatasourceVlanDestroyed,
@@ -94,7 +94,7 @@ func TestAccMetalDatasourceVlan_ByVxlanMetro(t *testing.T) {
 	rs := acctest.RandString(10)
 	metro := "sv"
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckMetalDatasourceVlanDestroyed,
@@ -164,7 +164,7 @@ func TestAccMetalDatasourceVlan_ByVlanId(t *testing.T) {
 	rs := acctest.RandString(10)
 	metro := "sv"
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckMetalDatasourceVlanDestroyed,
@@ -209,7 +209,7 @@ func TestAccMetalDatasourceVlan_ByProjectId(t *testing.T) {
 	rs := acctest.RandString(10)
 	metro := "sv"
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckMetalDatasourceVlanDestroyed,

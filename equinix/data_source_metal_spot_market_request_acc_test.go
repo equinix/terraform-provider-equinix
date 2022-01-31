@@ -16,7 +16,7 @@ func TestAccDataSourceMetalSpotMarketRequest_Basic(t *testing.T) {
 		facKey packngo.SpotMarketRequest
 		metKey packngo.SpotMarketRequest
 	)
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckMetalSpotMarketRequestDestroy,

@@ -55,7 +55,7 @@ func TestAccMetalProject_Basic(t *testing.T) {
 	var project packngo.Project
 	rInt := acctest.RandInt()
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckMetalProjectDestroy,
@@ -134,7 +134,7 @@ func TestAccMetalProject_errorHandling(t *testing.T) {
 	mockProviders := map[string]*schema.Provider{
 		"equinix": mockMetal,
 	}
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		Providers: mockProviders,
 		Steps: []resource.TestStep{
 			{
@@ -163,7 +163,7 @@ func TestAccMetalProject_apiErrorHandling(t *testing.T) {
 	mockProviders := map[string]*schema.Provider{
 		"equinix": mockMetal,
 	}
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		Providers: mockProviders,
 		Steps: []resource.TestStep{
 			{
@@ -177,7 +177,7 @@ func TestAccMetalProject_BGPBasic(t *testing.T) {
 	var project packngo.Project
 	rInt := acctest.RandInt()
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckMetalProjectDestroy,
@@ -204,7 +204,7 @@ func TestAccMetalProject_BackendTransferUpdate(t *testing.T) {
 	var project packngo.Project
 	rInt := acctest.RandInt()
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckMetalProjectDestroy,
@@ -246,7 +246,7 @@ func TestAccMetalProject_Update(t *testing.T) {
 	var project packngo.Project
 	rInt := acctest.RandInt()
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckMetalProjectDestroy,
@@ -285,7 +285,7 @@ func TestAccMetalProject_BGPUpdate(t *testing.T) {
 	rInt := acctest.RandInt()
 	res := "equinix_metal_project.foobar"
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckMetalProjectDestroy,
@@ -411,7 +411,7 @@ func TestAccMetalProjectOrg(t *testing.T) {
 	var project packngo.Project
 	rn := acctest.RandStringFromCharSet(12, "abcdef0123456789")
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckMetalProjectDestroy,
@@ -436,7 +436,7 @@ func TestAccMetalProjectOrg(t *testing.T) {
 func TestAccMetalProject_importBasic(t *testing.T) {
 	rInt := acctest.RandInt()
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckMetalProjectDestroy,

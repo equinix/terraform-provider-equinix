@@ -73,7 +73,7 @@ resource "equinix_metal_user_api_key" "test" {
 /*
 
 func TestAccMetalUserAPIKey_Basic(t *testing.T) {
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccMetalUserAPIKeyDestroy,

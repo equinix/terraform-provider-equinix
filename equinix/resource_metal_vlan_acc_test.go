@@ -29,7 +29,7 @@ func TestAccMetalVlan_Metro(t *testing.T) {
 	rs := acctest.RandString(10)
 	metro := "sv"
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckMetalVlanDestroyed,
@@ -52,7 +52,7 @@ func TestAccMetalVlan_Basic(t *testing.T) {
 	rs := acctest.RandString(10)
 	fac := "ewr1"
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckMetalVlanDestroyed,
@@ -130,7 +130,7 @@ func TestAccMetalVlan_importBasic(t *testing.T) {
 	rs := acctest.RandString(10)
 	fac := "ewr1"
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckMetalVlanDestroyed,

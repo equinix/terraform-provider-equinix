@@ -16,7 +16,7 @@ var (
 func TestAccDataSourceFacility_Basic(t *testing.T) {
 	testFac := "dc13"
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
@@ -47,7 +47,7 @@ func TestAccDataSourceFacility_Basic(t *testing.T) {
 }
 
 func TestAccDataSourceFacility_Features(t *testing.T) {
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{

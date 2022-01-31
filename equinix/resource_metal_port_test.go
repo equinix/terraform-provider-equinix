@@ -155,7 +155,7 @@ resource "equinix_metal_vlan" "test2" {
 
 func TestAccMetalPort_HybridBondedVxlan(t *testing.T) {
 	rs := acctest.RandString(10)
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccMetalPortDestroy,
@@ -183,7 +183,7 @@ func TestAccMetalPort_HybridBondedVxlan(t *testing.T) {
 
 func metalPortTestTemplate(t *testing.T, conf func(string) string, expectedType string) {
 	rs := acctest.RandString(10)
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccMetalPortDestroy,

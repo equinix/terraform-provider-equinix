@@ -14,7 +14,7 @@ func TestAccMetalIPAttachment_Basic(t *testing.T) {
 
 	rs := acctest.RandString(10)
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckMetalIPAttachmentDestroy,
@@ -85,7 +85,7 @@ func TestAccMetalIPAttachment_Metro(t *testing.T) {
 
 	rs := acctest.RandString(10)
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckMetalIPAttachmentDestroy,
