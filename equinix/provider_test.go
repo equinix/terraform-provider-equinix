@@ -8,6 +8,7 @@ import (
 	"regexp"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/equinix/rest-go"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
@@ -314,16 +315,19 @@ func TestProvider_schemaSetToMap(t *testing.T) {
 
 func testAccPreCheck(t *testing.T) {
 	if _, err := getFromEnv(endpointEnvVar); err != nil {
-		t.Fatalf("%s", err)
+		t.Fatalf("%s must be set for acceptance tests", err)
 	}
 	if _, err := getFromEnv(clientTokenEnvVar); err == nil {
 		return
 	}
 	if _, err := getFromEnv(clientIDEnvVar); err != nil {
-		t.Fatalf("%s", err)
+		t.Fatalf("%s must be set for acceptance tests", err)
 	}
 	if _, err := getFromEnv(clientSecretEnvVar); err != nil {
-		t.Fatalf("%s", err)
+		t.Fatalf("%s must be set for acceptance tests", err)
+	}
+	if _, err := getFromEnv(metalAuthTokenEnvVar); err != nil {
+		t.Fatalf("%s must be set for acceptance tests", err)
 	}
 }
 
@@ -381,4 +385,8 @@ func setSchemaValueIfNotEmpty(key string, value interface{}, d *schema.ResourceD
 		return d.Set(key, value)
 	}
 	return nil
+}
+
+func testDeviceTerminationTime() string {
+	return time.Now().UTC().Add(60 * time.Minute).Format(time.RFC3339)
 }

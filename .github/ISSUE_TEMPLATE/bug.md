@@ -47,6 +47,8 @@ assignees: ''
 <!---
 Please provide a link to a GitHub Gist containing the complete debug output. Please do NOT paste the debug output in the issue; just paste a link to the Gist.
 
+Note: the debug log may contain your API key, please search the log for `X-Auth-Token` and `Authorization` (HTTP request header holding the API token) and remove it.
+
 To obtain the debug output, run `terraform apply` with the environment variable `TF_LOG=DEBUG`. See the [Terraform documentation on debugging](https://www.terraform.io/docs/internals/debugging.html) for more information.
 --->
 

@@ -12,7 +12,12 @@ management of Equinix Platform resources.
 [![GoDoc](https://godoc.org/github.com/go-resty/resty?status.svg)](https://godoc.org/github.com/equinix/terraform-provider-equinix)
 ![GitHub](https://img.shields.io/github/license/equinix/terraform-provider-equinix)
 
+[![Equinix Metal Slack](https://slack.equinixmetal.com/badge.svg)](https://slack.equinixmetal.com)
+[![Equinix Metal Twitter](https://img.shields.io/twitter/follow/equinixmetal.svg?style=social&label=Follow)](https://twitter.com/intent/follow?screen_name=equinixmetal)
+
 ---
+
+This repository is [Maintained](https://github.com/equinix-labs/equinix-labs/blob/main/maintained-statement.md) meaning that this software is supported by Equinix Metal and its community - available to use in production environments.
 
 ## Requirements
 

@@ -1,5 +1,53 @@
 ## 1.5.0 (UNRELEASED)
 
+FEATURES:
+
+- **New Guide:** Migrating From the Packet Provider
+- **New Guide:** Upgrading Devices from Facilities to Metros
+
+- **New Provider Argument** `auth_token`
+- **New Provider Argument** `max_retries`
+- **New Provider Argument** `max_retry_wait_seconds`
+- **New Resource:** `equinix_metal_port`
+- **New Resource:** `equinix_metal_user_api_key`
+- **New Resource:** `equinix_metal_project_api_key`
+- **New Resource:** `equinix_metal_gateway`
+- **New Resource:** `equinix_metal_connection`
+- **New Resource:** `equinix_metal_virtual_circuit`
+- **New Resource** `equinix_metal_bgp_session`
+- **New Resource** `equinix_metal_device`
+- **New Resource** `equinix_metal_device_network_type`
+- **New Resource** `equinix_metal_ip_attachment`
+- **New Resource** `equinix_metal_organization`
+- **New Resource** `equinix_metal_port_vlan_attachment`
+- **New Resource** `equinix_metal_project`
+- **New Resource** `equinix_metal_project`
+- **New Resource** `equinix_metal_project_ssh_key`
+- **New Resource** `equinix_metal_reserved_ip_block`
+- **New Resource** `equinix_metal_spot_market_request`
+- **New Resource** `equinix_metal_ssh_key`
+- **New Resource** `equinix_metal_volume`
+- **New Resource** `equinix_metal_vlan`
+- **New Resource** `equinix_metal_volume_attachment`
+- **New Data Resource:** `equinix_metal_vlan`
+- **New Data Resource:** `equinix_metal_reserved_ip_block`
+- **New Data Resource:** `equinix_metal_port`
+- **New Data Resource:** `equinix_metal_hardware_reservation`
+- **New Data Resource:** `equinix_metal_metro`
+- **New Data Resource:** `equinix_metal_connection`
+- **New Data Resource** `equinix_metal_facility`
+- **New Data Resource** `equinix_metal_device`
+- **New Data Resource** `equinix_metal_device_bgp_neighbors`
+- **New Data Resource** `equinix_metal_ip_block_ranges`
+- **New Data Resource** `equinix_metal_operating_system`
+- **New Data Resource** `equinix_metal_organization`
+- **New Data Resource** `equinix_metal_precreated_ip_block`
+- **New Data Resource** `equinix_metal_project`
+- **New Data Resource** `equinix_metal_project_ssh_key`
+- **New Data Resource** `equinix_metal_spot_market_price`
+- **New Data Resource** `equinix_metal_spot_market_request`
+- **New Data Resource** `equinix_metal_volume`
+
 ## 1.4.0 (January 14, 2022)
 
 NOTES:

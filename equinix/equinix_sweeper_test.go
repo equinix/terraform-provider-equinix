@@ -37,7 +37,12 @@ func sharedConfigForRegion(region string) (*Config, error) {
 	if err != nil {
 		return nil, fmt.Errorf("cannot convert value of %sa env variable to int", clientTimeoutEnvVar)
 	}
+	metalAuthToken, err := getFromEnv(metalAuthTokenEnvVar)
+	if err != nil {
+		return nil, err
+	}
 	return &Config{
+		AuthToken:      metalAuthToken,
 		BaseURL:        endpoint,
 		ClientID:       clientID,
 		ClientSecret:   clientSecret,
