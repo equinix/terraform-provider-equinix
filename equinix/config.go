@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+	"path"
 	"regexp"
 	"strings"
 	"time"
@@ -85,6 +86,12 @@ func (c *Config) Load(ctx context.Context) error {
 		ecxClient.SetPageSize(c.PageSize)
 		neClient.SetPageSize(c.PageSize)
 	}
+	ecxClient.SetHeaders(map[string]string{
+		"User-agent": c.fullUserAgent("equinix/ecx-go"),
+	})
+	neClient.SetHeaders(map[string]string{
+		"User-agent": c.fullUserAgent("equinix/ne-go"),
+	})
 	c.ecx = ecxClient
 	c.ne = neClient
 	return nil
@@ -138,6 +145,12 @@ func terraformUserAgent(version string) string {
 	return ua
 }
 
+func (c *Config) fullUserAgent(suffix string) string {
+	tfUserAgent := terraformUserAgent(c.terraformVersion)
+	userAgent := fmt.Sprintf("%s terraform-provider-equinix/%s %s", tfUserAgent, version.ProviderVersion, suffix)
+	return strings.TrimSpace(userAgent)
+}
+
 // Client returns a new client for accessing Equinix Metal's API.
 func (c *Config) Client() *packngo.Client {
 	transport := logging.NewTransport("Equinix Metal", http.DefaultTransport)
@@ -148,13 +161,8 @@ func (c *Config) Client() *packngo.Client {
 	retryClient.RetryWaitMax = c.MaxRetryWait
 	retryClient.CheckRetry = MetalRetryPolicy
 	standardClient := retryClient.StandardClient()
-
-	client := packngo.NewClientWithAuth(consumerToken, c.AuthToken, standardClient)
-	tfUserAgent := terraformUserAgent(c.terraformVersion)
-	userAgent := fmt.Sprintf("%s terraform-provider-equinix/%s %s",
-		tfUserAgent, version.ProviderVersion, client.UserAgent)
-
-	client.UserAgent = strings.TrimSpace(userAgent)
+	client, _ := packngo.NewClientWithBaseURL(consumerToken, c.AuthToken, standardClient, path.Join(c.BaseURL, "/metal/v1"))
+	client.UserAgent = c.fullUserAgent(client.UserAgent)
 
 	return client
 }
