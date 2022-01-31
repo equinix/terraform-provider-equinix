@@ -66,7 +66,7 @@ func TestAccMetalSpotMarketRequest_Basic(t *testing.T) {
 }
 
 func testAccCheckMetalSpotMarketRequestDestroy(s *terraform.State) error {
-	client := testAccProvider.Meta().(*packngo.Client)
+	client := testAccProvider.Meta().(*Config).Client()
 
 	for _, rs := range s.RootModule().Resources {
 		if rs.Type != "equinix_metal_spot_market_request" {
@@ -90,7 +90,7 @@ func testAccCheckMetalSpotMarketRequestExists(n string, key *packngo.SpotMarketR
 			return fmt.Errorf("No Record ID is set")
 		}
 
-		client := testAccProvider.Meta().(*packngo.Client)
+		client := testAccProvider.Meta().(*Config).Client()
 
 		foundKey, _, err := client.SpotMarketRequests.Get(rs.Primary.ID, &packngo.GetOptions{Includes: []string{"project", "devices", "facilities", "metro"}})
 		if err != nil {

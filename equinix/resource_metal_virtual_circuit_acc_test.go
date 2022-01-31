@@ -21,7 +21,7 @@ import (
 )
 
 func testAccCheckMetalVirtualCircuitDestroy(s *terraform.State) error {
-	client := testAccProvider.Meta().(*packngo.Client)
+	client := testAccProvider.Meta().(*Config).Client()
 
 	for _, rs := range s.RootModule().Resources {
 		if rs.Type != "equinix_metal_virtual_circuit" {

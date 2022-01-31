@@ -91,7 +91,7 @@ func TestAccOrg_importBasic(t *testing.T) {
 }
 
 func testAccCheckMetalOrgDestroy(s *terraform.State) error {
-	client := testAccProvider.Meta().(*packngo.Client)
+	client := testAccProvider.Meta().(*Config).Client()
 
 	for _, rs := range s.RootModule().Resources {
 		if rs.Type != "equinix_metal_organization" {
@@ -115,7 +115,7 @@ func testAccCheckMetalOrgExists(n string, org *packngo.Organization) resource.Te
 			return fmt.Errorf("No Record ID is set")
 		}
 
-		client := testAccProvider.Meta().(*packngo.Client)
+		client := testAccProvider.Meta().(*Config).Client()
 
 		foundOrg, _, err := client.Organizations.Get(rs.Primary.ID, nil)
 		if err != nil {

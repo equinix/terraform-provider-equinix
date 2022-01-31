@@ -70,7 +70,7 @@ func TestAccMetalProjectSSHKey_Basic(t *testing.T) {
 }
 
 func testAccCheckMetalProjectSSHKeyDestroy(s *terraform.State) error {
-	client := testAccProvider.Meta().(*packngo.Client)
+	client := testAccProvider.Meta().(*Config).Client()
 
 	for _, rs := range s.RootModule().Resources {
 		if rs.Type != "equinix_metal_project_ssh_key" {

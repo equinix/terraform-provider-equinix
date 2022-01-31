@@ -184,7 +184,7 @@ func TestAccMetalSSHKey_importBasic(t *testing.T) {
 }
 
 func testAccCheckMetalSSHKeyDestroy(s *terraform.State) error {
-	client := testAccProvider.Meta().(*packngo.Client)
+	client := testAccProvider.Meta().(*Config).Client()
 
 	for _, rs := range s.RootModule().Resources {
 		if rs.Type != "equinix_metal_ssh_key" {
@@ -208,7 +208,7 @@ func testAccCheckMetalSSHKeyExists(n string, key *packngo.SSHKey) resource.TestC
 			return fmt.Errorf("No Record ID is set")
 		}
 
-		client := testAccProvider.Meta().(*packngo.Client)
+		client := testAccProvider.Meta().(*Config).Client()
 
 		foundKey, _, err := client.SSHKeys.Get(rs.Primary.ID, nil)
 		if err != nil {

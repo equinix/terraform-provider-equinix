@@ -26,6 +26,7 @@ import (
 
 const (
 	consumerToken = "aZ9GmqHTPtxevvFq9SK3Pi2yr9YCbRzduCSXF2SNem5sjB91mDq7Th3ZwTtRqMWZ"
+	metalBasePath = "/metal/v1/"
 	uaEnvVar      = "TF_APPEND_USER_AGENT"
 )
 
@@ -161,7 +162,9 @@ func (c *Config) Client() *packngo.Client {
 	retryClient.RetryWaitMax = c.MaxRetryWait
 	retryClient.CheckRetry = MetalRetryPolicy
 	standardClient := retryClient.StandardClient()
-	client, _ := packngo.NewClientWithBaseURL(consumerToken, c.AuthToken, standardClient, path.Join(c.BaseURL, "/metal/v1"))
+	baseURL, _ := url.Parse(c.BaseURL)
+	baseURL.Path = path.Join(baseURL.Path, metalBasePath) + "/"
+	client, _ := packngo.NewClientWithBaseURL(consumerToken, c.AuthToken, standardClient, baseURL.String())
 	client.UserAgent = c.fullUserAgent(client.UserAgent)
 
 	return client

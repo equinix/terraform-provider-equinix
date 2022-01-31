@@ -308,7 +308,7 @@ func TestAccMetalDevice_IPXEConfigMissing(t *testing.T) {
 }
 
 func testAccCheckMetalDeviceDestroy(s *terraform.State) error {
-	client := testAccProvider.Meta().(*packngo.Client)
+	client := testAccProvider.Meta().(*Config).Client()
 
 	for _, rs := range s.RootModule().Resources {
 		if rs.Type != "equinix_metal_device" {
@@ -344,7 +344,7 @@ func testAccCheckMetalDeviceExists(n string, device *packngo.Device) resource.Te
 			return fmt.Errorf("No Record ID is set")
 		}
 
-		client := testAccProvider.Meta().(*packngo.Client)
+		client := testAccProvider.Meta().(*Config).Client()
 
 		foundDevice, _, err := client.Devices.Get(rs.Primary.ID, nil)
 		if err != nil {

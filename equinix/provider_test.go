@@ -314,7 +314,7 @@ func TestProvider_schemaSetToMap(t *testing.T) {
 //_______________________________________________________________________
 
 func testAccPreCheck(t *testing.T) {
-	if _, err := getFromEnv(endpointEnvVar); err != nil {
+	if _, err := getFromEnv(metalAuthTokenEnvVar); err != nil {
 		t.Fatalf("%s must be set for acceptance tests", err)
 	}
 	if _, err := getFromEnv(clientTokenEnvVar); err == nil {
@@ -324,9 +324,6 @@ func testAccPreCheck(t *testing.T) {
 		t.Fatalf("%s must be set for acceptance tests", err)
 	}
 	if _, err := getFromEnv(clientSecretEnvVar); err != nil {
-		t.Fatalf("%s must be set for acceptance tests", err)
-	}
-	if _, err := getFromEnv(metalAuthTokenEnvVar); err != nil {
 		t.Fatalf("%s must be set for acceptance tests", err)
 	}
 }

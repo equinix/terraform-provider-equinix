@@ -101,16 +101,16 @@ Reflected by Network Edge tests.
 
 We have mostly acceptance tests in the provider. There's no point for you to run them all, but you should run the one covering the functionality which you change. The acceptance test run will cost you some money, so feel free to abstain. The acceptance test suite will be run for your PR during the review process.
 
-To run an acceptance test, find the relevant test function in `*_test.go` (for example TestAccEquinixMetalDevice_Basic), and run it as
+To run an acceptance test, find the relevant test function in `*_test.go` (for example TestAccMetalDevice_Basic), and run it as
 
 ```sh
-TF_ACC=1 go test -v -timeout=20m ./... -run=TestAccEquinixMetalDevice_Basic
+TF_ACC=1 go test -v -timeout=20m ./... -run=TestAccMetalDevice_Basic
 ```
 
 If you want to see HTTP traffic, set `TF_LOG=DEBUG`, i.e.
 
 ```sh
-TF_LOG=DEBUG TF_ACC=1 go test -v -timeout=20m ./... -run=TestAccEquinixMetalDevice_Basic
+TF_LOG=DEBUG TF_ACC=1 go test -v -timeout=20m ./... -run=TestAccMetalDevice_Basic
 ```
 
 ### Testing the provider with Terraform

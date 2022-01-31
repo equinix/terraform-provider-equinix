@@ -8,7 +8,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
-	"github.com/packethost/packngo"
 )
 
 func confAccMetalPort_base(name string) string {
@@ -240,7 +239,7 @@ func TestAccMetalPort_HybridBonded(t *testing.T) {
 }
 
 func testAccMetalPortDestroy(s *terraform.State) error {
-	client := testAccProvider.Meta().(*packngo.Client)
+	client := testAccProvider.Meta().(*Config).Client()
 
 	port_ids := []string{}
 

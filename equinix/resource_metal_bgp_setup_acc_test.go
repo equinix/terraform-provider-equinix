@@ -7,7 +7,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
-	"github.com/packethost/packngo"
 )
 
 func TestAccMetalBGPSetup_Basic(t *testing.T) {
@@ -50,7 +49,7 @@ func TestAccMetalBGPSetup_Basic(t *testing.T) {
 }
 
 func testAccCheckMetalBGPSetupDestroy(s *terraform.State) error {
-	client := testAccProvider.Meta().(*packngo.Client)
+	client := testAccProvider.Meta().(*Config).Client()
 
 	for _, rs := range s.RootModule().Resources {
 		if rs.Type != "equinix_metal_bgp_session" {
