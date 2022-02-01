@@ -8,7 +8,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 )
 
-func TestAccMetalPort_ByName(t *testing.T) {
+func TestAccDataSourceMetalPort_byName(t *testing.T) {
 
 	rs := acctest.RandString(10)
 
@@ -17,7 +17,7 @@ func TestAccMetalPort_ByName(t *testing.T) {
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testPortConfig_ByName(rs),
+				Config: testAccDataSourceMetalPortConfig_byName(rs),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(
 						"data.equinix_metal_port.test", "bond_name", "bond0"),
@@ -27,7 +27,7 @@ func TestAccMetalPort_ByName(t *testing.T) {
 	})
 }
 
-func testPortConfig_ByName(name string) string {
+func testAccDataSourceMetalPortConfig_byName(name string) string {
 	return fmt.Sprintf(`
 
 resource "equinix_metal_project" "test" {
@@ -51,7 +51,7 @@ data "equinix_metal_port" "test" {
 `, name)
 }
 
-func TestAccMetalPort_ById(t *testing.T) {
+func testAccDataSourceMetalPort_byId(t *testing.T) {
 
 	rs := acctest.RandString(10)
 
@@ -60,7 +60,7 @@ func TestAccMetalPort_ById(t *testing.T) {
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testPortConfig_ById(rs),
+				Config: testAccDataSourceMetalPortConfig_byId(rs),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(
 						"data.equinix_metal_port.test", "name"),
@@ -70,7 +70,7 @@ func TestAccMetalPort_ById(t *testing.T) {
 	})
 }
 
-func testPortConfig_ById(name string) string {
+func testAccDataSourceMetalPortConfig_byId(name string) string {
 	return fmt.Sprintf(`
 
 resource "equinix_metal_project" "test" {

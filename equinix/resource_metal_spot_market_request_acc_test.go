@@ -10,49 +10,17 @@ import (
 	"github.com/packethost/packngo"
 )
 
-func testAccCheckMetalSpotMarketRequestConfig_basic(name string) string {
-	return fmt.Sprintf(`
-resource "equinix_metal_project" "test" {
-  name = "tfacc-spot_market_request-%s"
-}
-
-data "equinix_metal_spot_market_price" "test" {
-  facility = "ewr1"
-  plan     = "baremetal_0"
-}
-
-data "equinix_metal_spot_market_request" "dreq" {
-	request_id = metal_spot_market_request.request.id
-}
-
-resource "equinix_metal_spot_market_request" "request" {
-  project_id       = metal_project.test.id
-  max_bid_price    = data.equinix_metal_spot_market_price.test.price * 1.2
-  facilities       = ["sv15"]
-  devices_min      = 1
-  devices_max      = 1
-  wait_for_devices = true
-
-  instance_parameters {
-    hostname         = "tfacc-testspot"
-    billing_cycle    = "hourly"
-    operating_system = "ubuntu_18_04"
-    plan             = "c3.small.x86"
-  }
-}`, name)
-}
-
-func TestAccMetalSpotMarketRequest_Basic(t *testing.T) {
+func TestAccMetalSpotMarketRequest_basic(t *testing.T) {
 	var key packngo.SpotMarketRequest
 	rs := acctest.RandString(10)
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckMetalSSHKeyDestroy,
+		CheckDestroy: testAccMetalSpotMarketRequestCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckMetalSpotMarketRequestConfig_basic(rs),
+				Config: testAccMetalSpotMarketRequestConfig_basic(rs),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckMetalSpotMarketRequestExists("equinix_metal_spot_market_request.request", &key),
 					resource.TestCheckResourceAttr("equinix_metal_spot_market_request.request", "devices_max", "1"),
@@ -65,7 +33,7 @@ func TestAccMetalSpotMarketRequest_Basic(t *testing.T) {
 	})
 }
 
-func testAccCheckMetalSpotMarketRequestDestroy(s *terraform.State) error {
+func testAccMetalSpotMarketRequestCheckDestroyed(s *terraform.State) error {
 	client := testAccProvider.Meta().(*Config).Client()
 
 	for _, rs := range s.RootModule().Resources {
@@ -106,6 +74,38 @@ func testAccCheckMetalSpotMarketRequestExists(n string, key *packngo.SpotMarketR
 	}
 }
 
+func testAccMetalSpotMarketRequestConfig_basic(name string) string {
+	return fmt.Sprintf(`
+resource "equinix_metal_project" "test" {
+  name = "tfacc-spot_market_request-%s"
+}
+
+data "equinix_metal_spot_market_price" "test" {
+  facility = "ewr1"
+  plan     = "baremetal_0"
+}
+
+data "equinix_metal_spot_market_request" "dreq" {
+	request_id = metal_spot_market_request.request.id
+}
+
+resource "equinix_metal_spot_market_request" "request" {
+  project_id       = metal_project.test.id
+  max_bid_price    = data.equinix_metal_spot_market_price.test.price * 1.2
+  facilities       = ["sv15"]
+  devices_min      = 1
+  devices_max      = 1
+  wait_for_devices = true
+
+  instance_parameters {
+    hostname         = "tfacc-testspot"
+    billing_cycle    = "hourly"
+    operating_system = "ubuntu_18_04"
+    plan             = "c3.small.x86"
+  }
+}`, name)
+}
+
 func testAccCheckMetalSpotMarketRequestConfig_import(name string) string {
 	return fmt.Sprintf(`
 resource "equinix_metal_project" "test" {
@@ -139,7 +139,7 @@ func TestAccMetalSpotMarketRequest_Import(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckMetalSSHKeyDestroy,
+		CheckDestroy: testAccMetalSSHKeyCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccCheckMetalSpotMarketRequestConfig_import(rs),

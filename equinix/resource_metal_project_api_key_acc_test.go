@@ -8,7 +8,27 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 )
 
-func testAccMetalProjectAPIKeyDestroy(s *terraform.State) error {
+func TestAccMetalProjectAPIKey_basic(t *testing.T) {
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccMetalProjectAPIKeyCheckDestroyed,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccMetalProjectAPIKeyConfig_basic(),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttrSet(
+						"equinix_metal_project_api_key.test", "token"),
+					resource.TestCheckResourceAttrPair(
+						"equinix_metal_project_api_key.test", "project_id",
+						"equinix_metal_project.test", "id"),
+				),
+			},
+		},
+	})
+}
+
+func testAccMetalProjectAPIKeyCheckDestroyed(s *terraform.State) error {
 	client := testAccProvider.Meta().(*Config).Client()
 	for _, rs := range s.RootModule().Resources {
 		if rs.Type != "equinix_metal_project_api_key" {
@@ -21,7 +41,7 @@ func testAccMetalProjectAPIKeyDestroy(s *terraform.State) error {
 	return nil
 }
 
-func testAccMetalProjectAPIKeyConfig_Basic() string {
+func testAccMetalProjectAPIKeyConfig_basic() string {
 	return fmt.Sprintf(`
 
 resource "equinix_metal_project" "test" {
@@ -33,24 +53,4 @@ resource "equinix_metal_project_api_key" "test" {
     description = "tfacc-project-key"
     read_only   = true
 }`)
-}
-
-func TestAccMetalProjectAPIKey_Basic(t *testing.T) {
-	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccMetalProjectAPIKeyDestroy,
-		Steps: []resource.TestStep{
-			{
-				Config: testAccMetalProjectAPIKeyConfig_Basic(),
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrSet(
-						"equinix_metal_project_api_key.test", "token"),
-					resource.TestCheckResourceAttrPair(
-						"equinix_metal_project_api_key.test", "project_id",
-						"equinix_metal_project.test", "id"),
-				),
-			},
-		},
-	})
 }

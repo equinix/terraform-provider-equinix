@@ -7,11 +7,36 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"github.com/packethost/packngo"
 )
 
-func testAccCheckMetalDatasourceVlanConfig_ByVxlanFacility(projSuffix, fac, desc string) string {
+func TestAccDataSourceMetalVlan_byVxlanFacility(t *testing.T) {
+	rs := acctest.RandString(10)
+	fac := "sv15"
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccMetalVlanCheckDestroyed,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccDataSourceMetalVlanConfig_byVxlanFacility(rs, fac, "testvlan"),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttrPair(
+						"equinix_metal_vlan.foovlan", "vxlan",
+						"data.equinix_metal_vlan.dsvlan", "vxlan",
+					),
+					resource.TestCheckResourceAttrPair(
+						"equinix_metal_vlan.foovlan", "id",
+						"data.equinix_metal_vlan.dsvlan", "id",
+					),
+				),
+			},
+		},
+	})
+}
+
+func testAccDataSourceMetalVlanConfig_byVxlanFacility(projSuffix, fac, desc string) string {
 	return fmt.Sprintf(`
 resource "equinix_metal_project" "foobar" {
     name = "tfacc-vlan-%s"
@@ -31,17 +56,17 @@ data "equinix_metal_vlan" "dsvlan" {
 `, projSuffix, fac, desc)
 }
 
-func TestAccMetalDatasourceVlan_ByVxlanFacility(t *testing.T) {
+func TestAccDataSourceMetalVlan_byVxlanMetro(t *testing.T) {
 	rs := acctest.RandString(10)
-	fac := "sv15"
+	metro := "sv"
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckMetalDatasourceVlanDestroyed,
+		CheckDestroy: testAccMetalVlanCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckMetalDatasourceVlanConfig_ByVxlanFacility(rs, fac, "testvlan"),
+				Config: testAccDataSourceMetalVlanConfig_byVxlanMetro(rs, metro, "testvlan"),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrPair(
 						"equinix_metal_vlan.foovlan", "vxlan",
@@ -51,13 +76,23 @@ func TestAccMetalDatasourceVlan_ByVxlanFacility(t *testing.T) {
 						"equinix_metal_vlan.foovlan", "id",
 						"data.equinix_metal_vlan.dsvlan", "id",
 					),
+					resource.TestCheckResourceAttr(
+						"equinix_metal_vlan.barvlan", "vxlan", "6",
+					),
+					resource.TestCheckResourceAttr(
+						"data.equinix_metal_vlan.bardsvlan", "vxlan", "6",
+					),
+					resource.TestCheckResourceAttrPair(
+						"equinix_metal_vlan.barvlan", "id",
+						"data.equinix_metal_vlan.bardsvlan", "id",
+					),
 				),
 			},
 		},
 	})
 }
 
-func testAccCheckMetalDatasourceVlanConfig_ByVxlanMetro(projSuffix, metro, desc string) string {
+func testAccDataSourceMetalVlanConfig_byVxlanMetro(projSuffix, metro, desc string) string {
 	return fmt.Sprintf(`
 resource "equinix_metal_project" "foobar" {
     name = "tfacc-vlan-%s"
@@ -90,35 +125,25 @@ data "equinix_metal_vlan" "bardsvlan" {
 `, projSuffix, metro, desc)
 }
 
-func TestAccMetalDatasourceVlan_ByVxlanMetro(t *testing.T) {
+func TestAccDataSourceMetalVlan_byVlanId(t *testing.T) {
 	rs := acctest.RandString(10)
 	metro := "sv"
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckMetalDatasourceVlanDestroyed,
+		CheckDestroy: testAccMetalVlanCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckMetalDatasourceVlanConfig_ByVxlanMetro(rs, metro, "testvlan"),
+				Config: testAccDataSourceMetalVlanConfig_byVlanId(rs, metro, "testvlan"),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrPair(
 						"equinix_metal_vlan.foovlan", "vxlan",
 						"data.equinix_metal_vlan.dsvlan", "vxlan",
 					),
 					resource.TestCheckResourceAttrPair(
-						"equinix_metal_vlan.foovlan", "id",
-						"data.equinix_metal_vlan.dsvlan", "id",
-					),
-					resource.TestCheckResourceAttr(
-						"equinix_metal_vlan.barvlan", "vxlan", "6",
-					),
-					resource.TestCheckResourceAttr(
-						"data.equinix_metal_vlan.bardsvlan", "vxlan", "6",
-					),
-					resource.TestCheckResourceAttrPair(
-						"equinix_metal_vlan.barvlan", "id",
-						"data.equinix_metal_vlan.bardsvlan", "id",
+						"equinix_metal_vlan.foovlan", "project_id",
+						"data.equinix_metal_vlan.dsvlan", "project_id",
 					),
 				),
 			},
@@ -126,22 +151,7 @@ func TestAccMetalDatasourceVlan_ByVxlanMetro(t *testing.T) {
 	})
 }
 
-func testAccCheckMetalDatasourceVlanDestroyed(s *terraform.State) error {
-	client := testAccProvider.Meta().(*Config).Client()
-
-	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "equinix_metal_vlan" {
-			continue
-		}
-		if _, _, err := client.ProjectVirtualNetworks.Get(rs.Primary.ID, nil); err == nil {
-			return fmt.Errorf("Metal Vlan still exists")
-		}
-	}
-
-	return nil
-}
-
-func testAccCheckMetalDatasourceVlanConfig_ByVlanId(projSuffix, metro, desc string) string {
+func testAccDataSourceMetalVlanConfig_byVlanId(projSuffix, metro, desc string) string {
 	return fmt.Sprintf(`
 resource "equinix_metal_project" "foobar" {
     name = "tfacc-vlan-%s"
@@ -160,17 +170,17 @@ data "equinix_metal_vlan" "dsvlan" {
 `, projSuffix, metro, desc)
 }
 
-func TestAccMetalDatasourceVlan_ByVlanId(t *testing.T) {
+func TestAccDataSourceMetalVlan_byProjectId(t *testing.T) {
 	rs := acctest.RandString(10)
 	metro := "sv"
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckMetalDatasourceVlanDestroyed,
+		CheckDestroy: testAccMetalVlanCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckMetalDatasourceVlanConfig_ByVlanId(rs, metro, "testvlan"),
+				Config: testAccDataSourceMetalVlanConfig_byProjectId(rs, metro, "testvlan"),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrPair(
 						"equinix_metal_vlan.foovlan", "vxlan",
@@ -186,7 +196,7 @@ func TestAccMetalDatasourceVlan_ByVlanId(t *testing.T) {
 	})
 }
 
-func testAccCheckMetalDatasourceVlanConfig_ByProjectId(projSuffix, metro, desc string) string {
+func testAccDataSourceMetalVlanConfig_byProjectId(projSuffix, metro, desc string) string {
 	return fmt.Sprintf(`
 resource "equinix_metal_project" "foobar" {
     name = "tfacc-vlan-%s"
@@ -205,33 +215,7 @@ data "equinix_metal_vlan" "dsvlan" {
 `, projSuffix, metro, desc)
 }
 
-func TestAccMetalDatasourceVlan_ByProjectId(t *testing.T) {
-	rs := acctest.RandString(10)
-	metro := "sv"
-
-	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckMetalDatasourceVlanDestroyed,
-		Steps: []resource.TestStep{
-			{
-				Config: testAccCheckMetalDatasourceVlanConfig_ByProjectId(rs, metro, "testvlan"),
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrPair(
-						"equinix_metal_vlan.foovlan", "vxlan",
-						"data.equinix_metal_vlan.dsvlan", "vxlan",
-					),
-					resource.TestCheckResourceAttrPair(
-						"equinix_metal_vlan.foovlan", "project_id",
-						"data.equinix_metal_vlan.dsvlan", "project_id",
-					),
-				),
-			},
-		},
-	})
-}
-
-func Test_matchingVlan(t *testing.T) {
+func TestMetalVlan_matchingVlan(t *testing.T) {
 	type args struct {
 		vlans     []packngo.VirtualNetwork
 		vxlan     int

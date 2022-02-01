@@ -9,7 +9,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 )
 
-func TestAccMetalProjectSSHKeyDataSource_BySearch(t *testing.T) {
+func TestAccDataSourceMetalProjectSSHKey_bySearch(t *testing.T) {
 	datasourceName := "data.equinix_metal_project_ssh_key.foobar"
 	keyName := acctest.RandomWithPrefix("tfacc-project-key")
 
@@ -23,10 +23,10 @@ func TestAccMetalProjectSSHKeyDataSource_BySearch(t *testing.T) {
 		PreCheck:                  func() { testAccPreCheck(t) },
 		Providers:                 testAccProviders,
 		PreventPostDestroyRefresh: true,
-		CheckDestroy:              testAccCheckMetalSSHKeyDestroy,
+		CheckDestroy:              testAccMetalSSHKeyCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccMetalProjectSSHKeyDataSourceConfig_bySearch(keyName, publicKeyMaterial),
+				Config: testAccDataSourceMetalProjectSSHKeyConfig_bySearch(keyName, publicKeyMaterial),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(
 						datasourceName, "name", keyName),
@@ -35,7 +35,7 @@ func TestAccMetalProjectSSHKeyDataSource_BySearch(t *testing.T) {
 				),
 			},
 			{
-				Config:      testAccMetalProjectSSHKeyDataSourceConfig_noKey(keyName, publicKeyMaterial),
+				Config:      testAccDataSourceMetalProjectSSHKeyConfig_noKey(keyName, publicKeyMaterial),
 				ExpectError: regexp.MustCompile("was not found"),
 			},
 			{
@@ -48,7 +48,7 @@ func TestAccMetalProjectSSHKeyDataSource_BySearch(t *testing.T) {
 	})
 }
 
-func TestAccMetalProjectSSHKeyDataSource_ByID(t *testing.T) {
+func TestAccDataSourceMetalProjectSSHKeyDataSource_yID(t *testing.T) {
 	datasourceName := "data.equinix_metal_project_ssh_key.foobar"
 
 	publicKeyMaterial, _, err := acctest.RandSSHKeyPair("")
@@ -62,10 +62,10 @@ func TestAccMetalProjectSSHKeyDataSource_ByID(t *testing.T) {
 		PreCheck:                  func() { testAccPreCheck(t) },
 		Providers:                 testAccProviders,
 		PreventPostDestroyRefresh: true,
-		CheckDestroy:              testAccCheckMetalSSHKeyDestroy,
+		CheckDestroy:              testAccMetalSSHKeyCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccMetalProjectSSHKeyDataSourceConfig_byID(keyName, publicKeyMaterial),
+				Config: testAccDataSourceMetalProjectSSHKeyDataSourceConfig_byID(keyName, publicKeyMaterial),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(
 						datasourceName, "name", keyName),
@@ -77,7 +77,7 @@ func TestAccMetalProjectSSHKeyDataSource_ByID(t *testing.T) {
 				//ExpectNonEmptyPlan: true,
 			},
 			{
-				Config:      testAccMetalProjectSSHKeyDataSourceConfig_noKey(keyName, publicKeyMaterial),
+				Config:      testAccDataSourceMetalProjectSSHKeyConfig_noKey(keyName, publicKeyMaterial),
 				ExpectError: regexp.MustCompile("was not found"),
 			},
 			{
@@ -90,7 +90,7 @@ func TestAccMetalProjectSSHKeyDataSource_ByID(t *testing.T) {
 	})
 }
 
-func testAccMetalProjectSSHKeyDataSourceConfig_bySearch(keyName, publicSshKey string) string {
+func testAccDataSourceMetalProjectSSHKeyConfig_bySearch(keyName, publicSshKey string) string {
 	config := fmt.Sprintf(`
 resource "equinix_metal_project" "test" {
     name = "%s"
@@ -111,7 +111,7 @@ data "equinix_metal_project_ssh_key" "foobar" {
 	return config
 }
 
-func testAccMetalProjectSSHKeyDataSourceConfig_noKey(keyName, publicSshKey string) string {
+func testAccDataSourceMetalProjectSSHKeyConfig_noKey(keyName, publicSshKey string) string {
 	config := fmt.Sprintf(`
 resource "equinix_metal_project" "test" {
     name = "%s"
@@ -124,7 +124,7 @@ data "equinix_metal_project_ssh_key" "foobar" {
 	return config
 }
 
-func testAccMetalProjectSSHKeyDataSourceConfig_byID(keyName, publicSshKey string) string {
+func testAccDataSourceMetalProjectSSHKeyDataSourceConfig_byID(keyName, publicSshKey string) string {
 	config := fmt.Sprintf(`
 resource "equinix_metal_project" "test" {
     name = "%s"

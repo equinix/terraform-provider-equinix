@@ -8,7 +8,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
-func TestAccNetworkDeviceTypeDataSource(t *testing.T) {
+func TestAccDataSourceNetworkDeviceType_basic(t *testing.T) {
 	metro, _ := schema.EnvDefaultFunc(networkDeviceMetroEnvVar, "SV")()
 	context := map[string]interface{}{
 		"resourceName": "router",
@@ -22,7 +22,7 @@ func TestAccNetworkDeviceTypeDataSource(t *testing.T) {
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccNetworkDeviceTypeDataSource(context),
+				Config: testAccDataSourceNetworkDeviceTypeConfig_basic(context),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(resourceName, "code"),
 					resource.TestCheckResourceAttrSet(resourceName, "name"),
@@ -33,7 +33,7 @@ func TestAccNetworkDeviceTypeDataSource(t *testing.T) {
 	})
 }
 
-func testAccNetworkDeviceTypeDataSource(ctx map[string]interface{}) string {
+func testAccDataSourceNetworkDeviceTypeConfig_basic(ctx map[string]interface{}) string {
 	return nprintf(`
 data "equinix_network_device_type" "%{resourceName}" {
   category    = "%{category}"

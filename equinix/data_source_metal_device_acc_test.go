@@ -8,16 +8,16 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 )
 
-func TestAccDataSourceMetalDevice_Basic(t *testing.T) {
+func TestAccDataSourceMetalDevice_basic(t *testing.T) {
 	projectName := fmt.Sprintf("ds-device-%s", acctest.RandString(10))
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckMetalDeviceDestroy,
+		CheckDestroy: testAccMetalDeviceCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
-				Config: testDataSourceMetalDeviceConfig_Basic(projectName),
+				Config: testDataSourceMetalDeviceConfig_basic(projectName),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(
 						"data.equinix_metal_device.test", "hostname", "tfacc-test-device"),
@@ -37,7 +37,7 @@ func TestAccDataSourceMetalDevice_Basic(t *testing.T) {
 	})
 }
 
-func testDataSourceMetalDeviceConfig_Basic(projSuffix string) string {
+func testDataSourceMetalDeviceConfig_basic(projSuffix string) string {
 	return fmt.Sprintf(`
 resource "equinix_metal_project" "test" {
     name = "tfacc-project-%s"
@@ -58,16 +58,16 @@ data "equinix_metal_device" "test" {
 }`, projSuffix)
 }
 
-func TestAccDataSourceMetalDevice_ByID(t *testing.T) {
+func TestAccDataSourceMetalDevice_byID(t *testing.T) {
 	projectName := fmt.Sprintf("ds-device-by-id-%s", acctest.RandString(10))
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckMetalDeviceDestroy,
+		CheckDestroy: testAccMetalDeviceCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
-				Config: testDataSourceMetalDeviceConfig_ByID(projectName),
+				Config: testDataSourceMetalDeviceConfig_byID(projectName),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(
 						"data.equinix_metal_device.test", "hostname", "tfacc-test-device"),
@@ -87,7 +87,7 @@ func TestAccDataSourceMetalDevice_ByID(t *testing.T) {
 	})
 }
 
-func testDataSourceMetalDeviceConfig_ByID(projSuffix string) string {
+func testDataSourceMetalDeviceConfig_byID(projSuffix string) string {
 	return fmt.Sprintf(`
 resource "equinix_metal_project" "test" {
     name = "tfacc-project-%s"

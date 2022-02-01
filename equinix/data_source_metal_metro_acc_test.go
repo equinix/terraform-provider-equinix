@@ -7,39 +7,39 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 )
 
-func TestAccDataSourceMetro_Basic(t *testing.T) {
+func TestAccDataSourceMetalMetro_Basic(t *testing.T) {
 	testMetro := "da"
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccDataSourceMetroConfigBasic(testMetro),
+				Config: testAccDataSourceMetalMetroConfig_basic(testMetro),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(
 						"data.equinix_metal_metro.test", "code", testMetro),
 				),
 			},
 			{
-				Config: testAccDataSourceMetroConfigCapacityReasonable(testMetro),
+				Config: testAccDataSourceMetalMetroConfig_capacityReasonable(testMetro),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(
 						"data.equinix_metal_metro.test", "code", testMetro),
 				),
 			},
 			{
-				Config:      testAccDataSourceMetroConfigCapacityUnreasonable(testMetro),
+				Config:      testAccDataSourceMetalMetroConfig_capacityUnreasonable(testMetro),
 				ExpectError: matchErrNoCapacity,
 			},
 			{
-				Config:      testAccDataSourceMetroConfigCapacityUnreasonableMultiple(testMetro),
+				Config:      testAccDataSourceMetalMetroConfig_capacityUnreasonableMultiple(testMetro),
 				ExpectError: matchErrNoCapacity,
 			},
 		},
 	})
 }
 
-func testAccDataSourceMetroConfigBasic(facCode string) string {
+func testAccDataSourceMetalMetroConfig_basic(facCode string) string {
 	return fmt.Sprintf(`
 data "equinix_metal_metro" "test" {
     code = "%s"
@@ -47,7 +47,7 @@ data "equinix_metal_metro" "test" {
 `, facCode)
 }
 
-func testAccDataSourceMetroConfigCapacityUnreasonable(facCode string) string {
+func testAccDataSourceMetalMetroConfig_capacityUnreasonable(facCode string) string {
 	return fmt.Sprintf(`
 data "equinix_metal_metro" "test" {
     code = "%s"
@@ -59,7 +59,7 @@ data "equinix_metal_metro" "test" {
 `, facCode)
 }
 
-func testAccDataSourceMetroConfigCapacityReasonable(facCode string) string {
+func testAccDataSourceMetalMetroConfig_capacityReasonable(facCode string) string {
 	return fmt.Sprintf(`
 data "equinix_metal_metro" "test" {
     code = "%s"
@@ -75,7 +75,7 @@ data "equinix_metal_metro" "test" {
 `, facCode)
 }
 
-func testAccDataSourceMetroConfigCapacityUnreasonableMultiple(facCode string) string {
+func testAccDataSourceMetalMetroConfig_capacityUnreasonableMultiple(facCode string) string {
 	return fmt.Sprintf(`
 data "equinix_metal_metro" "test" {
     code = "%s"

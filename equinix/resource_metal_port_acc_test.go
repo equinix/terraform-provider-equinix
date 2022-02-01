@@ -157,7 +157,7 @@ func TestAccMetalPort_HybridBondedVxlan(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
-		CheckDestroy: testAccMetalPortDestroy,
+		CheckDestroy: testAccMetalPortDestroyed,
 		Steps: []resource.TestStep{
 			{
 				Config: confAccMetalPort_HybridBondedVxlan(rs),
@@ -180,12 +180,12 @@ func TestAccMetalPort_HybridBondedVxlan(t *testing.T) {
 	})
 }
 
-func metalPortTestTemplate(t *testing.T, conf func(string) string, expectedType string) {
+func testAccMetalPortTemplate(t *testing.T, conf func(string) string, expectedType string) {
 	rs := acctest.RandString(10)
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
-		CheckDestroy: testAccMetalPortDestroy,
+		CheckDestroy: testAccMetalPortDestroyed,
 		Steps: []resource.TestStep{
 			{
 				Config: conf(rs),
@@ -223,22 +223,22 @@ func metalPortTestTemplate(t *testing.T, conf func(string) string, expectedType 
 }
 
 func TestAccMetalPort_L2Bonded(t *testing.T) {
-	metalPortTestTemplate(t, confAccMetalPort_L2Bonded, "layer2-bonded")
+	testAccMetalPortTemplate(t, confAccMetalPort_L2Bonded, "layer2-bonded")
 }
 
 func TestAccMetalPort_L2Individual(t *testing.T) {
-	metalPortTestTemplate(t, confAccMetalPort_L2Individual, "layer2-individual")
+	testAccMetalPortTemplate(t, confAccMetalPort_L2Individual, "layer2-individual")
 }
 
 func TestAccMetalPort_HybridUnbonded(t *testing.T) {
-	metalPortTestTemplate(t, confAccMetalPort_HybridUnbonded, "hybrid")
+	testAccMetalPortTemplate(t, confAccMetalPort_HybridUnbonded, "hybrid")
 }
 
 func TestAccMetalPort_HybridBonded(t *testing.T) {
-	metalPortTestTemplate(t, confAccMetalPort_HybridBonded, "hybrid-bonded")
+	testAccMetalPortTemplate(t, confAccMetalPort_HybridBonded, "hybrid-bonded")
 }
 
-func testAccMetalPortDestroy(s *terraform.State) error {
+func testAccMetalPortDestroyed(s *terraform.State) error {
 	client := testAccProvider.Meta().(*Config).Client()
 
 	port_ids := []string{}

@@ -64,7 +64,7 @@ func testSweepDevices(region string) error {
 var matchErrMustBeProvided = regexp.MustCompile(".* must be provided when .*")
 var matchErrShouldNotBeAnIPXE = regexp.MustCompile(`.*"user_data" should not be an iPXE.*`)
 
-func TestAccMetalDevice_FacilityList(t *testing.T) {
+func TestAccMetalDevice_facilityList(t *testing.T) {
 	var device packngo.Device
 	rs := acctest.RandString(10)
 	r := "equinix_metal_device.test"
@@ -72,12 +72,12 @@ func TestAccMetalDevice_FacilityList(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckMetalDeviceDestroy,
+		CheckDestroy: testAccMetalDeviceCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckMetalDeviceConfig_facility_list(rs),
+				Config: testAccMetalDeviceConfig_facility_list(rs),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckMetalDeviceExists(r, &device),
+					testAccMetalDeviceExists(r, &device),
 				),
 			},
 		},
@@ -92,21 +92,21 @@ func TestAccMetalDevice_NetworkPortsOrder(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckMetalDeviceDestroy,
+		CheckDestroy: testAccMetalDeviceCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckMetalDeviceConfig_basic(rs),
+				Config: testAccMetalDeviceConfig_basic(rs),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckMetalDeviceExists(r, &device),
-					testAccCheckMetalDeviceNetworkOrder(r),
-					testAccCheckMetalDevicePortsOrder(r),
+					testAccMetalDeviceExists(r, &device),
+					testAccMetalDeviceNetworkOrder(r),
+					testAccMetalDevicePortsOrder(r),
 				),
 			},
 		},
 	})
 }
 
-func TestAccMetalDevice_Basic(t *testing.T) {
+func TestAccMetalDevice_basic(t *testing.T) {
 	var device packngo.Device
 	rs := acctest.RandString(10)
 	r := "equinix_metal_device.test"
@@ -114,13 +114,13 @@ func TestAccMetalDevice_Basic(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckMetalDeviceDestroy,
+		CheckDestroy: testAccMetalDeviceCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckMetalDeviceConfig_minimal(rs),
+				Config: testAccMetalDeviceConfig_minimal(rs),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckMetalDeviceExists(r, &device),
-					testAccCheckMetalDeviceNetwork(r),
+					testAccMetalDeviceExists(r, &device),
+					testAccMetalDeviceNetwork(r),
 					resource.TestCheckResourceAttrSet(
 						r, "hostname"),
 					resource.TestCheckResourceAttr(
@@ -138,18 +138,18 @@ func TestAccMetalDevice_Basic(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccCheckMetalDeviceConfig_basic(rs),
+				Config: testAccMetalDeviceConfig_basic(rs),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckMetalDeviceExists(r, &device),
-					testAccCheckMetalDeviceNetwork(r),
-					testAccCheckMetalDeviceAttributes(&device),
+					testAccMetalDeviceExists(r, &device),
+					testAccMetalDeviceNetwork(r),
+					testAccMetalDeviceAttributes(&device),
 				),
 			},
 		},
 	})
 }
 
-func TestAccMetalDevice_Metro(t *testing.T) {
+func TestAccMetalDevice_metro(t *testing.T) {
 	var device packngo.Device
 	rs := acctest.RandString(10)
 	r := "equinix_metal_device.test"
@@ -157,14 +157,14 @@ func TestAccMetalDevice_Metro(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckMetalDeviceDestroy,
+		CheckDestroy: testAccMetalDeviceCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckMetalDeviceConfig_metro(rs),
+				Config: testAccMetalDeviceConfig_metro(rs),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckMetalDeviceExists(r, &device),
-					testAccCheckMetalDeviceNetwork(r),
-					testAccCheckMetalDeviceAttributes(&device),
+					testAccMetalDeviceExists(r, &device),
+					testAccMetalDeviceNetwork(r),
+					testAccMetalDeviceAttributes(&device),
 					resource.TestCheckResourceAttr(
 						r, "metro", "sv"),
 				),
@@ -172,7 +172,7 @@ func TestAccMetalDevice_Metro(t *testing.T) {
 		},
 	})
 }
-func TestAccMetalDevice_Update(t *testing.T) {
+func TestAccMetalDevice_update(t *testing.T) {
 	var d1, d2, d3, d4, d5 packngo.Device
 	rs := acctest.RandString(10)
 	rInt := acctest.RandInt()
@@ -181,47 +181,47 @@ func TestAccMetalDevice_Update(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckMetalDeviceDestroy,
+		CheckDestroy: testAccMetalDeviceCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckMetalDeviceConfig_varname(rInt, rs),
+				Config: testAccMetalDeviceConfig_varname(rInt, rs),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckMetalDeviceExists(r, &d1),
+					testAccMetalDeviceExists(r, &d1),
 					resource.TestCheckResourceAttr(r, "hostname", fmt.Sprintf("tfacc-test-device-%d", rInt)),
 				),
 			},
 			{
-				Config: testAccCheckMetalDeviceConfig_varname(rInt+1, rs),
+				Config: testAccMetalDeviceConfig_varname(rInt+1, rs),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckMetalDeviceExists(r, &d2),
+					testAccMetalDeviceExists(r, &d2),
 					resource.TestCheckResourceAttr(r, "hostname", fmt.Sprintf("tfacc-test-device-%d", rInt+1)),
-					testAccCheckMetalSameDevice(t, &d1, &d2),
+					testAccMetalSameDevice(t, &d1, &d2),
 				),
 			},
 			{
-				Config: testAccCheckMetalDeviceConfig_varname(rInt+2, rs),
+				Config: testAccMetalDeviceConfig_varname(rInt+2, rs),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckMetalDeviceExists(r, &d3),
+					testAccMetalDeviceExists(r, &d3),
 					resource.TestCheckResourceAttr(r, "hostname", fmt.Sprintf("tfacc-test-device-%d", rInt+2)),
 					resource.TestCheckResourceAttr(r, "description", fmt.Sprintf("test-desc-%d", rInt+2)),
 					resource.TestCheckResourceAttr(r, "tags.0", fmt.Sprintf("%d", rInt+2)),
-					testAccCheckMetalSameDevice(t, &d2, &d3),
+					testAccMetalSameDevice(t, &d2, &d3),
 				),
 			},
 			{
-				Config: testAccCheckMetalDeviceConfig_no_description(rInt+3, rs),
+				Config: testAccMetalDeviceConfig_no_description(rInt+3, rs),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckMetalDeviceExists(r, &d4),
+					testAccMetalDeviceExists(r, &d4),
 					resource.TestCheckResourceAttr(r, "hostname", fmt.Sprintf("tfacc-test-device-%d", rInt+3)),
 					resource.TestCheckResourceAttr(r, "tags.0", fmt.Sprintf("%d", rInt+3)),
-					testAccCheckMetalSameDevice(t, &d3, &d4),
+					testAccMetalSameDevice(t, &d3, &d4),
 				),
 			},
 			{
-				Config: testAccCheckMetalDeviceConfig_reinstall(rInt+4, rs),
+				Config: testAccMetalDeviceConfig_reinstall(rInt+4, rs),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckMetalDeviceExists(r, &d5),
-					testAccCheckMetalSameDevice(t, &d4, &d5),
+					testAccMetalDeviceExists(r, &d5),
+					testAccMetalSameDevice(t, &d4, &d5),
 				),
 			},
 		},
@@ -236,13 +236,13 @@ func TestAccMetalDevice_IPXEScriptUrl(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckMetalDeviceDestroy,
+		CheckDestroy: testAccMetalDeviceCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckMetalDeviceConfig_ipxe_script_url(rs, "https://boot.netboot.xyz", "true"),
+				Config: testAccMetalDeviceConfig_ipxe_script_url(rs, "https://boot.netboot.xyz", "true"),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckMetalDeviceExists(r, &device),
-					testAccCheckMetalDeviceNetwork(r),
+					testAccMetalDeviceExists(r, &device),
+					testAccMetalDeviceNetwork(r),
 					resource.TestCheckResourceAttr(
 						r, "ipxe_script_url", "https://boot.netboot.xyz"),
 					resource.TestCheckResourceAttr(
@@ -250,15 +250,15 @@ func TestAccMetalDevice_IPXEScriptUrl(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccCheckMetalDeviceConfig_ipxe_script_url(rs, "https://new.netboot.xyz", "false"),
+				Config: testAccMetalDeviceConfig_ipxe_script_url(rs, "https://new.netboot.xyz", "false"),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckMetalDeviceExists(r, &d2),
-					testAccCheckMetalDeviceNetwork(r),
+					testAccMetalDeviceExists(r, &d2),
+					testAccMetalDeviceNetwork(r),
 					resource.TestCheckResourceAttr(
 						r, "ipxe_script_url", "https://new.netboot.xyz"),
 					resource.TestCheckResourceAttr(
 						r, "always_pxe", "false"),
-					testAccCheckMetalSameDevice(t, &device, &d2),
+					testAccMetalSameDevice(t, &device, &d2),
 				),
 			},
 		},
@@ -273,12 +273,12 @@ func TestAccMetalDevice_IPXEConflictingFields(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckMetalDeviceDestroy,
+		CheckDestroy: testAccMetalDeviceCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
-				Config: fmt.Sprintf(testAccCheckMetalDeviceConfig_ipxe_conflict, rs),
+				Config: fmt.Sprintf(testAccMetalDeviceConfig_ipxe_conflict, rs),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckMetalDeviceExists(r, &device),
+					testAccMetalDeviceExists(r, &device),
 				),
 				ExpectError: matchErrShouldNotBeAnIPXE,
 			},
@@ -294,12 +294,12 @@ func TestAccMetalDevice_IPXEConfigMissing(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckMetalDeviceDestroy,
+		CheckDestroy: testAccMetalDeviceCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
-				Config: fmt.Sprintf(testAccCheckMetalDeviceConfig_ipxe_missing, rs),
+				Config: fmt.Sprintf(testAccMetalDeviceConfig_ipxe_missing, rs),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckMetalDeviceExists(r, &device),
+					testAccMetalDeviceExists(r, &device),
 				),
 				ExpectError: matchErrMustBeProvided,
 			},
@@ -307,7 +307,7 @@ func TestAccMetalDevice_IPXEConfigMissing(t *testing.T) {
 	})
 }
 
-func testAccCheckMetalDeviceDestroy(s *terraform.State) error {
+func testAccMetalDeviceCheckDestroyed(s *terraform.State) error {
 	client := testAccProvider.Meta().(*Config).Client()
 
 	for _, rs := range s.RootModule().Resources {
@@ -321,7 +321,7 @@ func testAccCheckMetalDeviceDestroy(s *terraform.State) error {
 	return nil
 }
 
-func testAccCheckMetalDeviceAttributes(device *packngo.Device) resource.TestCheckFunc {
+func testAccMetalDeviceAttributes(device *packngo.Device) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		if device.Hostname != "tfacc-test-device" {
 			return fmt.Errorf("Bad name: %s", device.Hostname)
@@ -334,7 +334,7 @@ func testAccCheckMetalDeviceAttributes(device *packngo.Device) resource.TestChec
 	}
 }
 
-func testAccCheckMetalDeviceExists(n string, device *packngo.Device) resource.TestCheckFunc {
+func testAccMetalDeviceExists(n string, device *packngo.Device) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
@@ -360,7 +360,7 @@ func testAccCheckMetalDeviceExists(n string, device *packngo.Device) resource.Te
 	}
 }
 
-func testAccCheckMetalSameDevice(t *testing.T, before, after *packngo.Device) resource.TestCheckFunc {
+func testAccMetalSameDevice(t *testing.T, before, after *packngo.Device) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		if before.ID != after.ID {
 			t.Fatalf("Expected device to be the same, but it was recreated: %s -> %s", before.ID, after.ID)
@@ -369,7 +369,7 @@ func testAccCheckMetalSameDevice(t *testing.T, before, after *packngo.Device) re
 	}
 }
 
-func testAccCheckMetalDevicePortsOrder(n string) resource.TestCheckFunc {
+func testAccMetalDevicePortsOrder(n string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
@@ -388,7 +388,7 @@ func testAccCheckMetalDevicePortsOrder(n string) resource.TestCheckFunc {
 	}
 }
 
-func testAccCheckMetalDeviceNetworkOrder(n string) resource.TestCheckFunc {
+func testAccMetalDeviceNetworkOrder(n string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
@@ -413,7 +413,7 @@ func testAccCheckMetalDeviceNetworkOrder(n string) resource.TestCheckFunc {
 	}
 }
 
-func testAccCheckMetalDeviceNetwork(n string) resource.TestCheckFunc {
+func testAccMetalDeviceNetwork(n string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		var ip net.IP
 		var k, v string
@@ -456,10 +456,10 @@ func TestAccMetalDevice_importBasic(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckMetalDeviceDestroy,
+		CheckDestroy: testAccMetalDeviceCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckMetalDeviceConfig_basic(rs),
+				Config: testAccMetalDeviceConfig_basic(rs),
 			},
 			{
 				ResourceName:      "equinix_metal_device.test",
@@ -470,7 +470,7 @@ func TestAccMetalDevice_importBasic(t *testing.T) {
 	})
 }
 
-func testAccCheckMetalDeviceConfig_no_description(rInt int, projSuffix string) string {
+func testAccMetalDeviceConfig_no_description(rInt int, projSuffix string) string {
 	return fmt.Sprintf(`
 resource "equinix_metal_project" "test" {
     name = "tfacc-device-%s"
@@ -488,7 +488,7 @@ resource "equinix_metal_device" "test" {
 `, projSuffix, rInt, rInt)
 }
 
-func testAccCheckMetalDeviceConfig_reinstall(rInt int, projSuffix string) string {
+func testAccMetalDeviceConfig_reinstall(rInt int, projSuffix string) string {
 	return fmt.Sprintf(`
 resource "equinix_metal_project" "test" {
     name = "tfacc-device-%s"
@@ -512,7 +512,7 @@ resource "equinix_metal_device" "test" {
 `, projSuffix, rInt, rInt)
 }
 
-func testAccCheckMetalDeviceConfig_varname(rInt int, projSuffix string) string {
+func testAccMetalDeviceConfig_varname(rInt int, projSuffix string) string {
 	return fmt.Sprintf(`
 resource "equinix_metal_project" "test" {
     name = "tfacc-device-%s"
@@ -531,7 +531,7 @@ resource "equinix_metal_device" "test" {
 `, projSuffix, rInt, rInt, rInt)
 }
 
-func testAccCheckMetalDeviceConfig_varname_pxe(rInt int, projSuffix string) string {
+func testAccMetalDeviceConfig_varname_pxe(rInt int, projSuffix string) string {
 	return fmt.Sprintf(`
 resource "equinix_metal_project" "test" {
     name = "tfacc-device-%s"
@@ -552,7 +552,7 @@ resource "equinix_metal_device" "test" {
 `, projSuffix, rInt, rInt, rInt)
 }
 
-func testAccCheckMetalDeviceConfig_metro(projSuffix string) string {
+func testAccMetalDeviceConfig_metro(projSuffix string) string {
 	return fmt.Sprintf(`
 resource "equinix_metal_project" "test" {
     name = "tfacc-device-%s"
@@ -568,7 +568,7 @@ resource "equinix_metal_device" "test" {
 }`, projSuffix)
 }
 
-func testAccCheckMetalDeviceConfig_minimal(projSuffix string) string {
+func testAccMetalDeviceConfig_minimal(projSuffix string) string {
 	return fmt.Sprintf(`
 resource "equinix_metal_project" "test" {
     name = "tfacc-device-%s"
@@ -582,7 +582,7 @@ resource "equinix_metal_device" "test" {
 }`, projSuffix)
 }
 
-func testAccCheckMetalDeviceConfig_basic(projSuffix string) string {
+func testAccMetalDeviceConfig_basic(projSuffix string) string {
 	return fmt.Sprintf(`
 resource "equinix_metal_project" "test" {
     name = "tfacc-device-%s"
@@ -598,7 +598,7 @@ resource "equinix_metal_device" "test" {
 }`, projSuffix)
 }
 
-func testAccCheckMetalDeviceConfig_facility_list(projSuffix string) string {
+func testAccMetalDeviceConfig_facility_list(projSuffix string) string {
 	return fmt.Sprintf(`
 resource "equinix_metal_project" "test" {
   name = "tfacc-device-%s"
@@ -615,7 +615,7 @@ resource "equinix_metal_device" "test"  {
 }`, projSuffix)
 }
 
-func testAccCheckMetalDeviceConfig_ipxe_script_url(projSuffix, url, pxe string) string {
+func testAccMetalDeviceConfig_ipxe_script_url(projSuffix, url, pxe string) string {
 	return fmt.Sprintf(`
 resource "equinix_metal_project" "test" {
   name = "tfacc-device-%s"
@@ -635,7 +635,7 @@ resource "equinix_metal_device" "test_ipxe_script_url"  {
 }`, projSuffix, url, pxe)
 }
 
-var testAccCheckMetalDeviceConfig_ipxe_conflict = `
+var testAccMetalDeviceConfig_ipxe_conflict = `
 resource "equinix_metal_project" "test" {
   name = "tfacc-device-%s"
 }
@@ -652,7 +652,7 @@ resource "equinix_metal_device" "test_ipxe_conflict" {
   always_pxe       = true
 }`
 
-var testAccCheckMetalDeviceConfig_ipxe_missing = `
+var testAccMetalDeviceConfig_ipxe_missing = `
 resource "equinix_metal_project" "test" {
   name = "tfacc-device-%s"
 }

@@ -8,7 +8,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 )
 
-func TestAccMetalIPBlockRanges_Basic(t *testing.T) {
+func TestAccDataSourceMetalIPBlockRanges_basic(t *testing.T) {
 
 	rs := acctest.RandString(10)
 
@@ -17,7 +17,7 @@ func TestAccMetalIPBlockRanges_Basic(t *testing.T) {
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testIPBlockRangesConfig_Basic(rs),
+				Config: testAccDataSourceMetalIPBlockRangesConfig_basic(rs),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(
 						"data.equinix_metal_ip_block_ranges.test", "ipv6.0"),
@@ -35,7 +35,7 @@ func TestAccMetalIPBlockRanges_Basic(t *testing.T) {
 	})
 }
 
-func testIPBlockRangesConfig_Basic(name string) string {
+func testAccDataSourceMetalIPBlockRangesConfig_basic(name string) string {
 	return fmt.Sprintf(`
 
 resource "equinix_metal_project" "test" {

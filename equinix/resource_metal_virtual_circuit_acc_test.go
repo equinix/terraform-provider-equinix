@@ -20,7 +20,7 @@ import (
 	"github.com/packethost/packngo"
 )
 
-func testAccCheckMetalVirtualCircuitDestroy(s *terraform.State) error {
+func testAccMetalVirtualCircuitCheckDestroyed(s *terraform.State) error {
 	client := testAccProvider.Meta().(*Config).Client()
 
 	for _, rs := range s.RootModule().Resources {
@@ -64,7 +64,7 @@ func tconf(randstr string, randint int) string {
 		randint)
 }
 
-func testAccMetalVirtualCircuitConfig_Dedicated(randstr string, randint int) string {
+func testAccMetalVirtualCircuitConfig_dedicated(randstr string, randint int) string {
 	return fmt.Sprintf(`
         resource "equinix_metal_project" "test" {
             name = "tfacc-conn-pro-%s"
@@ -97,7 +97,7 @@ func testAccMetalVirtualCircuitConfig_Dedicated(randstr string, randint int) str
 		randstr, randstr, randint)
 }
 
-func TestAccMetalVirtualCircuit_Dedicated(t *testing.T) {
+func TestAccMetalVirtualCircuit_dedicated(t *testing.T) {
 
 	rs := acctest.RandString(10)
 	ri := acctest.RandIntRange(1024, 1093)
@@ -105,10 +105,10 @@ func TestAccMetalVirtualCircuit_Dedicated(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckMetalVirtualCircuitDestroy,
+		CheckDestroy: testAccMetalVirtualCircuitCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
-				//Config: testAccMetalVirtualCircuitConfig_Dedicated(rs, ri),
+				//Config: testAccMetalVirtualCircuitConfig_dedicated(rs, ri),
 				Config: tconf(rs, ri),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrPair(

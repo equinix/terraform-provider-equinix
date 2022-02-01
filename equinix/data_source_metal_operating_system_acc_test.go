@@ -7,13 +7,13 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 )
 
-func TestAccMetalOperatingSystem_Basic(t *testing.T) {
+func TestAccDataSourceMetalOperatingSystem_basic(t *testing.T) {
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
-			{Config: testOperatingSystemConfig_Basic,
+			{Config: testAccDataSourceMetalOperatingSystemConfig_basic,
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("data.equinix_metal_operating_system.example", "slug", "ubuntu_20_04"),
 				),
@@ -22,7 +22,7 @@ func TestAccMetalOperatingSystem_Basic(t *testing.T) {
 	})
 }
 
-const testOperatingSystemConfig_Basic = `
+const testAccDataSourceMetalOperatingSystemConfig_basic = `
 	data "equinix_metal_operating_system" "example" {
 		distro  = "ubuntu"
 		version = "20.04"
@@ -30,20 +30,20 @@ const testOperatingSystemConfig_Basic = `
 
 var matchErrOSNotFound = regexp.MustCompile(".*There are no operating systems*")
 
-func TestAccMetalOperatingSystem_NotFound(t *testing.T) {
+func TestAccDataSourceMetalOperatingSystem_notFound(t *testing.T) {
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
-			{Config: testOperatingSystemConfig_NotFound,
+			{Config: testAccDataSourceMetalOperatingSystemConfig_notFound,
 				ExpectError: matchErrOSNotFound,
 			},
 		},
 	})
 }
 
-const testOperatingSystemConfig_NotFound = `
+const testAccDataSourceMetalOperatingSystemConfig_notFound = `
 	data "equinix_metal_operating_system" "example" {
 		distro  = "NOTEXISTS"
 		version = "alpha"
@@ -51,20 +51,20 @@ const testOperatingSystemConfig_NotFound = `
 
 var matchErrOSAmbiguous = regexp.MustCompile(".*There is more than one operating system.*")
 
-func TestAccMetalOperatingSystem_Ambiguous(t *testing.T) {
+func TestAccDataSourceMetalOperatingSystem_ambiguous(t *testing.T) {
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
-			{Config: testOperatingSystemConfig_Ambiguous,
+			{Config: testAccDataSourceMetalOperatingSystemConfig_ambiguous,
 				ExpectError: matchErrOSAmbiguous,
 			},
 		},
 	})
 }
 
-const testOperatingSystemConfig_Ambiguous = `
+const testAccDataSourceMetalOperatingSystemConfig_ambiguous = `
 	data "equinix_metal_operating_system" "example" {
 		distro  = "ubuntu"
 	  }`

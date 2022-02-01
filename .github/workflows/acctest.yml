@@ -68,7 +68,7 @@ jobs:
 
         METAL_AUTH_TOKEN: ${{ secrets.METAL_AUTH_TOKEN }}
       run: |
-        go test -v -coverprofile coverage.txt -covermode=atomic -parallel 8 -timeout 180m ./...
+        go test -v -coverprofile coverage.txt -covermode=atomic -parallel 8 -timeout 180m -run='TestAccMetal|testAccDataSourceMetal' ./...
     - name: Sweeper
       if: ${{ always() }}
       env:

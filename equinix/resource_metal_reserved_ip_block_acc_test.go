@@ -59,7 +59,7 @@ func TestAccMetalReservedIPBlock_Global(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckMetalReservedIPBlockDestroy,
+		CheckDestroy: testAccMetalReservedIPBlockCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccCheckMetalReservedIPBlockConfig_Global(rs),
@@ -89,7 +89,7 @@ func TestAccMetalReservedIPBlock_Public(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckMetalReservedIPBlockDestroy,
+		CheckDestroy: testAccMetalReservedIPBlockCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccCheckMetalReservedIPBlockConfig_Public(rs),
@@ -121,7 +121,7 @@ func TestAccMetalReservedIPBlock_Metro(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckMetalReservedIPBlockDestroy,
+		CheckDestroy: testAccMetalReservedIPBlockCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccCheckMetalReservedIPBlockConfig_Metro(rs),
@@ -141,7 +141,7 @@ func TestAccMetalReservedIPBlock_ImportBasic(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckMetalReservedIPBlockDestroy,
+		CheckDestroy: testAccMetalReservedIPBlockCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccCheckMetalReservedIPBlockConfig_Public(rs),
@@ -155,7 +155,7 @@ func TestAccMetalReservedIPBlock_ImportBasic(t *testing.T) {
 	})
 }
 
-func testAccCheckMetalReservedIPBlockDestroy(s *terraform.State) error {
+func testAccMetalReservedIPBlockCheckDestroyed(s *terraform.State) error {
 	client := testAccProvider.Meta().(*Config).Client()
 
 	for _, rs := range s.RootModule().Resources {
@@ -190,7 +190,7 @@ func TestAccMetalReservedIPBlock_FacilityToMetro(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckMetalReservedIPBlockDestroy,
+		CheckDestroy: testAccMetalReservedIPBlockCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccCheckMetalReservedIPBlockConfig_FacilityToMetro(`   facility = "ny5"`),
@@ -252,7 +252,7 @@ func TestAccMetalReservedIPBlock_Device(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckMetalReservedIPBlockDestroy,
+		CheckDestroy: testAccMetalReservedIPBlockCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccMetalReservedIP_Device(rs),

@@ -9,17 +9,17 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 )
 
-func TestAccMetalIPAttachment_Basic(t *testing.T) {
+func TestAccMetalIPAttachment_basic(t *testing.T) {
 
 	rs := acctest.RandString(10)
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckMetalIPAttachmentDestroy,
+		CheckDestroy: testAccMetalIPAttachmentCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckMetalIPAttachmentConfig_Basic(rs),
+				Config: testAccMetalIPAttachmentConfig_basic(rs),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(
 						"equinix_metal_ip_attachment.test", "public", "true"),
@@ -37,22 +37,7 @@ func TestAccMetalIPAttachment_Basic(t *testing.T) {
 	})
 }
 
-func testAccCheckMetalIPAttachmentDestroy(s *terraform.State) error {
-	client := testAccProvider.Meta().(*Config).Client()
-
-	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "equinix_metal_ip_attachment" {
-			continue
-		}
-		if _, _, err := client.ProjectIPs.Get(rs.Primary.ID, nil); err == nil {
-			return fmt.Errorf("Metal IP attachment still exists")
-		}
-	}
-
-	return nil
-}
-
-func testAccCheckMetalIPAttachmentConfig_Basic(name string) string {
+func testAccMetalIPAttachmentConfig_basic(name string) string {
 	return fmt.Sprintf(`
 resource "equinix_metal_project" "test" {
     name = "tfacc-ip_attachment-%s"
@@ -80,17 +65,17 @@ resource "equinix_metal_ip_attachment" "test" {
 }`, name)
 }
 
-func TestAccMetalIPAttachment_Metro(t *testing.T) {
+func TestAccMetalIPAttachment_metro(t *testing.T) {
 
 	rs := acctest.RandString(10)
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckMetalIPAttachmentDestroy,
+		CheckDestroy: testAccMetalIPAttachmentCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckMetalIPAttachmentConfig_Metro(rs),
+				Config: testAccMetalIPAttachmentConfig_metro(rs),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(
 						"equinix_metal_ip_attachment.test", "public", "true"),
@@ -108,7 +93,7 @@ func TestAccMetalIPAttachment_Metro(t *testing.T) {
 	})
 }
 
-func testAccCheckMetalIPAttachmentConfig_Metro(name string) string {
+func testAccMetalIPAttachmentConfig_metro(name string) string {
 	return fmt.Sprintf(`
 resource "equinix_metal_project" "test" {
     name = "tfacc-ip_attachment-%s"
@@ -134,4 +119,19 @@ resource "equinix_metal_ip_attachment" "test" {
 	device_id = metal_device.test.id
 	cidr_notation = "${cidrhost(metal_reserved_ip_block.test.cidr_notation,0)}/32"
 }`, name)
+}
+
+func testAccMetalIPAttachmentCheckDestroyed(s *terraform.State) error {
+	client := testAccProvider.Meta().(*Config).Client()
+
+	for _, rs := range s.RootModule().Resources {
+		if rs.Type != "equinix_metal_ip_attachment" {
+			continue
+		}
+		if _, _, err := client.ProjectIPs.Get(rs.Primary.ID, nil); err == nil {
+			return fmt.Errorf("Metal IP attachment still exists")
+		}
+	}
+
+	return nil
 }

@@ -48,19 +48,19 @@ func testSweepOrganizations(region string) error {
 	return nil
 }
 
-func TestAccOrgCreate(t *testing.T) {
+func TestAccMetalOrganizationCreate(t *testing.T) {
 	var org packngo.Organization
 	rInt := acctest.RandInt()
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckMetalOrgDestroy,
+		CheckDestroy: testAccMetalOrganizationCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckMetalOrgConfigBasic(rInt),
+				Config: testAccMetalOrganizationConfig_basic(rInt),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckMetalOrgExists("equinix_metal_organization.test", &org),
+					testAccMetalOrganizationExists("equinix_metal_organization.test", &org),
 					resource.TestCheckResourceAttr(
 						"equinix_metal_organization.test", "name", fmt.Sprintf("tfacc-org-%d", rInt)),
 					resource.TestCheckResourceAttr(
@@ -71,15 +71,15 @@ func TestAccOrgCreate(t *testing.T) {
 	})
 }
 
-func TestAccOrg_importBasic(t *testing.T) {
+func TestAccMetalAccOrganization_importBasic(t *testing.T) {
 	rInt := acctest.RandInt()
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckMetalOrgDestroy,
+		CheckDestroy: testAccMetalOrganizationCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckMetalOrgConfigBasic(rInt),
+				Config: testAccMetalOrganizationConfig_basic(rInt),
 			},
 			{
 				ResourceName:      "equinix_metal_organization.test",
@@ -90,7 +90,7 @@ func TestAccOrg_importBasic(t *testing.T) {
 	})
 }
 
-func testAccCheckMetalOrgDestroy(s *terraform.State) error {
+func testAccMetalOrganizationCheckDestroyed(s *terraform.State) error {
 	client := testAccProvider.Meta().(*Config).Client()
 
 	for _, rs := range s.RootModule().Resources {
@@ -105,7 +105,7 @@ func testAccCheckMetalOrgDestroy(s *terraform.State) error {
 	return nil
 }
 
-func testAccCheckMetalOrgExists(n string, org *packngo.Organization) resource.TestCheckFunc {
+func testAccMetalOrganizationExists(n string, org *packngo.Organization) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
@@ -131,7 +131,7 @@ func testAccCheckMetalOrgExists(n string, org *packngo.Organization) resource.Te
 	}
 }
 
-func testAccCheckMetalOrgConfigBasic(r int) string {
+func testAccMetalOrganizationConfig_basic(r int) string {
 	return fmt.Sprintf(`
 resource "equinix_metal_organization" "test" {
 		name = "tfacc-org-%d"

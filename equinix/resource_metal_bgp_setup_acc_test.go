@@ -9,16 +9,16 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 )
 
-func TestAccMetalBGPSetup_Basic(t *testing.T) {
+func TestAccMetalBGPSetup_basic(t *testing.T) {
 	rs := acctest.RandString(10)
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckMetalBGPSetupDestroy,
+		CheckDestroy: testAccMetalBGPSetupCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckMetalBGPSetupConfig_basic(rs),
+				Config: testAccMetalBGPSetupConfig_basic(rs),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrPair(
 						"equinix_metal_device.test", "id",
@@ -48,7 +48,7 @@ func TestAccMetalBGPSetup_Basic(t *testing.T) {
 	})
 }
 
-func testAccCheckMetalBGPSetupDestroy(s *terraform.State) error {
+func testAccMetalBGPSetupCheckDestroyed(s *terraform.State) error {
 	client := testAccProvider.Meta().(*Config).Client()
 
 	for _, rs := range s.RootModule().Resources {
@@ -63,7 +63,7 @@ func testAccCheckMetalBGPSetupDestroy(s *terraform.State) error {
 	return nil
 }
 
-func testAccCheckMetalBGPSetupConfig_basic(name string) string {
+func testAccMetalBGPSetupConfig_basic(name string) string {
 	return fmt.Sprintf(`
 resource "equinix_metal_project" "test" {
     name = "tfacc-bgp_session-%s"

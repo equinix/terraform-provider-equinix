@@ -34,12 +34,12 @@ func TestAccMetalDataSourceProject_Basic(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckMetalProjectDestroy,
+		CheckDestroy: testAccMetalProjectCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccCheckMetalDataSourceProject_Basic(rn),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckMetalProjectExists("equinix_metal_project.foobar", &project),
+					testAccMetalProjectExists("equinix_metal_project.foobar", &project),
 					resource.TestCheckResourceAttr(
 						"equinix_metal_project.foobar", "name", fmt.Sprintf("tfacc-project-%s", rn)),
 					resource.TestCheckResourceAttr(

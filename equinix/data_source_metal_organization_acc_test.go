@@ -9,19 +9,19 @@ import (
 	"github.com/packethost/packngo"
 )
 
-func TestAccOrgDataSource_Basic(t *testing.T) {
+func TestAccDataSourceMetalOrganization_Basic(t *testing.T) {
 	var org packngo.Organization
 	rInt := acctest.RandInt()
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckMetalOrgDestroy,
+		CheckDestroy: testAccMetalOrganizationCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckMetalOrgDataSourceConfigBasic(rInt),
+				Config: testAccDataSourceMetalOrganizationConfig_basic(rInt),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckMetalOrgExists("equinix_metal_organization.test", &org),
+					testAccMetalOrganizationExists("equinix_metal_organization.test", &org),
 					resource.TestCheckResourceAttr(
 						"equinix_metal_organization.test", "name",
 						fmt.Sprintf("tfacc-datasource-org-%d", rInt)),
@@ -36,7 +36,7 @@ func TestAccOrgDataSource_Basic(t *testing.T) {
 	})
 }
 
-func testAccCheckMetalOrgDataSourceConfigBasic(r int) string {
+func testAccDataSourceMetalOrganizationConfig_basic(r int) string {
 	return fmt.Sprintf(`
 resource "equinix_metal_organization" "test" {
   name = "tfacc-datasource-org-%d"

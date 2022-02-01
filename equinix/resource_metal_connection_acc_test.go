@@ -9,22 +9,32 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 )
 
-func testAccCheckMetalConnectionDestroy(s *terraform.State) error {
-	client := testAccProvider.Meta().(*Config).Client()
+func TestAccMetalConnection_shared(t *testing.T) {
 
-	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "equinix_metal_connection" {
-			continue
-		}
-		if _, _, err := client.Connections.Get(rs.Primary.ID, nil); err == nil {
-			return fmt.Errorf("Metal Connection still exists")
-		}
-	}
+	rs := acctest.RandString(10)
 
-	return nil
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccMetalConnectionCheckDestroyed,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccMetalConnectionConfig_shared(rs),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(
+						"equinix_metal_connection.test", "metro", "sv"),
+				),
+			},
+			{
+				ResourceName:      "equinix_metal_connection.test",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+		},
+	})
 }
 
-func testAccMetalConnectionConfig_Shared(randstr string) string {
+func testAccMetalConnectionConfig_shared(randstr string) string {
 	return fmt.Sprintf(`
         resource "equinix_metal_project" "test" {
             name = "tfacc-conn-pro-%s"
@@ -41,20 +51,39 @@ func testAccMetalConnectionConfig_Shared(randstr string) string {
 		randstr, randstr)
 }
 
-func TestAccMetalConnection_Shared(t *testing.T) {
+func testAccMetalConnectionCheckDestroyed(s *terraform.State) error {
+	client := testAccProvider.Meta().(*Config).Client()
+
+	for _, rs := range s.RootModule().Resources {
+		if rs.Type != "equinix_metal_connection" {
+			continue
+		}
+		if _, _, err := client.Connections.Get(rs.Primary.ID, nil); err == nil {
+			return fmt.Errorf("Metal Connection still exists")
+		}
+	}
+
+	return nil
+}
+
+func TestAccMetalConnection_dedicated(t *testing.T) {
 
 	rs := acctest.RandString(10)
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckMetalConnectionDestroy,
+		CheckDestroy: testAccMetalConnectionCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccMetalConnectionConfig_Shared(rs),
+				Config: testAccMetalConnectionConfig_dedicated(rs),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr(
-						"equinix_metal_connection.test", "metro", "sv"),
+					resource.TestCheckResourceAttr("equinix_metal_connection.test", "metro", "sv"),
+					resource.TestCheckResourceAttr("equinix_metal_connection.test", "tags.#", "1"),
+					resource.TestCheckResourceAttr("equinix_metal_connection.test", "mode", "standard"),
+					resource.TestCheckResourceAttr("equinix_metal_connection.test", "type", "dedicated"),
+					resource.TestCheckResourceAttr("equinix_metal_connection.test", "redundancy", "redundant"),
+					resource.TestCheckResourceAttr("equinix_metal_connection.test", "metro", "sv"),
 				),
 			},
 			{
@@ -62,11 +91,22 @@ func TestAccMetalConnection_Shared(t *testing.T) {
 				ImportState:       true,
 				ImportStateVerify: true,
 			},
+			{
+				Config: testAccMetalConnectionConfig_dedicated(rs) + testDataSourceMetalConnectionConfig_dedicated(),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("data.equinix_metal_connection.test", "metro", "sv"),
+					resource.TestCheckResourceAttr("data.equinix_metal_connection.test", "tags.#", "1"),
+					resource.TestCheckResourceAttr("data.equinix_metal_connection.test", "mode", "standard"),
+					resource.TestCheckResourceAttr("data.equinix_metal_connection.test", "type", "dedicated"),
+					resource.TestCheckResourceAttr("data.equinix_metal_connection.test", "redundancy", "redundant"),
+					resource.TestCheckResourceAttr("data.equinix_metal_connection.test", "metro", "sv"),
+				),
+			},
 		},
 	})
 }
 
-func testAccMetalConnectionConfig_Dedicated(randstr string) string {
+func testAccMetalConnectionConfig_dedicated(randstr string) string {
 	return fmt.Sprintf(`
         resource "equinix_metal_project" "test" {
             name = "tfacc-conn-pro-%s"
@@ -85,31 +125,27 @@ func testAccMetalConnectionConfig_Dedicated(randstr string) string {
 		randstr, randstr)
 }
 
-func testDataSourceMetalConnectionConfig_Dedicated() string {
+func testDataSourceMetalConnectionConfig_dedicated() string {
 	return `
 		data "equinix_metal_connection" "test" {
             connection_id = metal_connection.test.id
         }`
 }
 
-func TestAccMetalConnection_Dedicated(t *testing.T) {
+func TestAccMetalConnection_Tunnel(t *testing.T) {
 
 	rs := acctest.RandString(10)
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckMetalConnectionDestroy,
+		CheckDestroy: testAccMetalConnectionCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccMetalConnectionConfig_Dedicated(rs),
+				Config: testAccMetalConnectionConfig_tunnel(rs),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr("equinix_metal_connection.test", "metro", "sv"),
-					resource.TestCheckResourceAttr("equinix_metal_connection.test", "tags.#", "1"),
-					resource.TestCheckResourceAttr("equinix_metal_connection.test", "mode", "standard"),
-					resource.TestCheckResourceAttr("equinix_metal_connection.test", "type", "dedicated"),
-					resource.TestCheckResourceAttr("equinix_metal_connection.test", "redundancy", "redundant"),
-					resource.TestCheckResourceAttr("equinix_metal_connection.test", "metro", "sv"),
+					resource.TestCheckResourceAttr(
+						"equinix_metal_connection.test", "mode", "tunnel"),
 				),
 			},
 			{
@@ -117,22 +153,11 @@ func TestAccMetalConnection_Dedicated(t *testing.T) {
 				ImportState:       true,
 				ImportStateVerify: true,
 			},
-			{
-				Config: testAccMetalConnectionConfig_Dedicated(rs) + testDataSourceMetalConnectionConfig_Dedicated(),
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr("data.equinix_metal_connection.test", "metro", "sv"),
-					resource.TestCheckResourceAttr("data.equinix_metal_connection.test", "tags.#", "1"),
-					resource.TestCheckResourceAttr("data.equinix_metal_connection.test", "mode", "standard"),
-					resource.TestCheckResourceAttr("data.equinix_metal_connection.test", "type", "dedicated"),
-					resource.TestCheckResourceAttr("data.equinix_metal_connection.test", "redundancy", "redundant"),
-					resource.TestCheckResourceAttr("data.equinix_metal_connection.test", "metro", "sv"),
-				),
-			},
 		},
 	})
 }
 
-func testAccMetalConnectionConfig_Tunnel(randstr string) string {
+func testAccMetalConnectionConfig_tunnel(randstr string) string {
 	return fmt.Sprintf(`
         resource "equinix_metal_project" "test" {
             name = "tfacc-conn-pro-%s"
@@ -147,29 +172,4 @@ func testAccMetalConnectionConfig_Tunnel(randstr string) string {
             mode            = "tunnel"
         }`,
 		randstr, randstr)
-}
-
-func TestAccMetalConnection_Tunnel(t *testing.T) {
-
-	rs := acctest.RandString(10)
-
-	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckMetalConnectionDestroy,
-		Steps: []resource.TestStep{
-			{
-				Config: testAccMetalConnectionConfig_Tunnel(rs),
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr(
-						"equinix_metal_connection.test", "mode", "tunnel"),
-				),
-			},
-			{
-				ResourceName:      "equinix_metal_connection.test",
-				ImportState:       true,
-				ImportStateVerify: true,
-			},
-		},
-	})
 }

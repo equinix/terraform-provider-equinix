@@ -8,7 +8,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 )
 
-func TestAccMetalDatasourcePreCreatedIPBlock_Basic(t *testing.T) {
+func TestAccDataSourceMetalPreCreatedIPBlock_basic(t *testing.T) {
 
 	rs := acctest.RandString(10)
 
@@ -17,7 +17,7 @@ func TestAccMetalDatasourcePreCreatedIPBlock_Basic(t *testing.T) {
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testDatasourcePreCreatedIPBlockConfig_Basic(rs),
+				Config: testAccDataSourceMetalPreCreatedIPBlockConfig_basic(rs),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(
 						"data.equinix_metal_precreated_ip_block.test", "cidr_notation"),
@@ -35,7 +35,7 @@ func TestAccMetalDatasourcePreCreatedIPBlock_Basic(t *testing.T) {
 	})
 }
 
-func testDatasourcePreCreatedIPBlockConfig_Basic(name string) string {
+func testAccDataSourceMetalPreCreatedIPBlockConfig_basic(name string) string {
 	return fmt.Sprintf(`
 
 resource "equinix_metal_project" "test" {

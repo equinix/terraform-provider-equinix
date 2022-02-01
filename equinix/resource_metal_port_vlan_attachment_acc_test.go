@@ -11,7 +11,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 )
 
-func testAccCheckMetalPortVlanAttachmentConfig_L2Bonded_1(name string) string {
+func testAccMetalPortVlanAttachmentConfig_L2Bonded_1(name string) string {
 	return fmt.Sprintf(`
 resource "equinix_metal_project" "test" {
     name = "tfacc-port_vlan_attachment-%s"
@@ -28,7 +28,7 @@ resource "equinix_metal_device" "test" {
 `, name)
 }
 
-func testAccCheckMetalPortVlanAttachmentConfig_L2Bonded_2(name string) string {
+func testAccMetalPortVlanAttachmentConfig_L2Bonded_2(name string) string {
 	return fmt.Sprintf(`
 %s
 
@@ -61,7 +61,7 @@ resource "equinix_metal_port_vlan_attachment" "test2" {
   port_name = "bond0"
 }
 
-`, testAccCheckMetalPortVlanAttachmentConfig_L2Bonded_1(name))
+`, testAccMetalPortVlanAttachmentConfig_L2Bonded_1(name))
 }
 
 func TestAccMetalPortVlanAttachment_L2Bonded(t *testing.T) {
@@ -71,16 +71,16 @@ func TestAccMetalPortVlanAttachment_L2Bonded(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckMetalPortVlanAttachmentDestroy,
+		CheckDestroy: testAccMetalPortVlanAttachmentCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckMetalPortVlanAttachmentConfig_L2Bonded_1(rs),
+				Config: testAccMetalPortVlanAttachmentConfig_L2Bonded_1(rs),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("equinix_metal_device.test", "network_type", "layer3"),
 				),
 			},
 			{
-				Config: testAccCheckMetalPortVlanAttachmentConfig_L2Bonded_2(rs),
+				Config: testAccMetalPortVlanAttachmentConfig_L2Bonded_2(rs),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(
 						"equinix_metal_port_vlan_attachment.test1", "port_name", "bond0"),
@@ -96,7 +96,7 @@ func TestAccMetalPortVlanAttachment_L2Bonded(t *testing.T) {
 	})
 }
 
-func testAccCheckMetalPortVlanAttachmentConfig_L2Individual_1(name string) string {
+func testAccMetalPortVlanAttachmentConfig_L2Individual_1(name string) string {
 	return fmt.Sprintf(`
 resource "equinix_metal_project" "test" {
     name = "tfacc-port_vlan_attachment-%s"
@@ -113,7 +113,7 @@ resource "equinix_metal_device" "test" {
 `, name)
 }
 
-func testAccCheckMetalPortVlanAttachmentConfig_L2Individual_2(name string) string {
+func testAccMetalPortVlanAttachmentConfig_L2Individual_2(name string) string {
 	return fmt.Sprintf(`
 %s
 
@@ -146,7 +146,7 @@ resource "equinix_metal_port_vlan_attachment" "test2" {
   port_name = "eth1"
 }
 
-`, testAccCheckMetalPortVlanAttachmentConfig_L2Individual_1(name))
+`, testAccMetalPortVlanAttachmentConfig_L2Individual_1(name))
 }
 
 func TestAccMetalPortVlanAttachment_L2Individual(t *testing.T) {
@@ -156,17 +156,17 @@ func TestAccMetalPortVlanAttachment_L2Individual(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckMetalPortVlanAttachmentDestroy,
+		CheckDestroy: testAccMetalPortVlanAttachmentCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckMetalPortVlanAttachmentConfig_L2Individual_1(rs),
+				Config: testAccMetalPortVlanAttachmentConfig_L2Individual_1(rs),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(
 						"equinix_metal_device.test", "network_type", "layer3"),
 				),
 			},
 			{
-				Config: testAccCheckMetalPortVlanAttachmentConfig_L2Individual_2(rs),
+				Config: testAccMetalPortVlanAttachmentConfig_L2Individual_2(rs),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(
 						"equinix_metal_port_vlan_attachment.test1", "port_name", "eth1"),
@@ -183,7 +183,7 @@ func TestAccMetalPortVlanAttachment_L2Individual(t *testing.T) {
 	})
 }
 
-func testAccCheckMetalPortVlanAttachmentConfig_Hybrid_1(name string) string {
+func testAccMetalPortVlanAttachmentConfig_Hybrid_1(name string) string {
 	return fmt.Sprintf(`
 resource "equinix_metal_project" "test" {
     name = "tfacc-port_vlan_attachment-%s"
@@ -199,7 +199,7 @@ resource "equinix_metal_device" "test" {
 }`, name)
 }
 
-func testAccCheckMetalPortVlanAttachmentConfig_Hybrid_2(name string) string {
+func testAccMetalPortVlanAttachmentConfig_Hybrid_2(name string) string {
 	return fmt.Sprintf(`
 %s 
 
@@ -219,7 +219,7 @@ resource "equinix_metal_port_vlan_attachment" "test" {
   vlan_vnid = "${equinix_metal_vlan.test.vxlan}"
   port_name = "eth1"
   force_bond = false
-}`, testAccCheckMetalPortVlanAttachmentConfig_Hybrid_1(name))
+}`, testAccMetalPortVlanAttachmentConfig_Hybrid_1(name))
 }
 
 func TestAccMetalPortVlanAttachment_HybridBasic(t *testing.T) {
@@ -228,17 +228,17 @@ func TestAccMetalPortVlanAttachment_HybridBasic(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckMetalPortVlanAttachmentDestroy,
+		CheckDestroy: testAccMetalPortVlanAttachmentCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckMetalPortVlanAttachmentConfig_Hybrid_1(rs),
+				Config: testAccMetalPortVlanAttachmentConfig_Hybrid_1(rs),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(
 						"equinix_metal_device.test", "network_type", "layer3"),
 				),
 			},
 			{
-				Config: testAccCheckMetalPortVlanAttachmentConfig_Hybrid_2(rs),
+				Config: testAccMetalPortVlanAttachmentConfig_Hybrid_2(rs),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(
 						"equinix_metal_port_vlan_attachment.test", "port_name", "eth1"),
@@ -253,7 +253,7 @@ func TestAccMetalPortVlanAttachment_HybridBasic(t *testing.T) {
 	})
 }
 
-func testAccCheckMetalPortVlanAttachmentConfig_HybridMultipleVlans_1(name string) string {
+func testAccMetalPortVlanAttachmentConfig_HybridMultipleVlans_1(name string) string {
 	return fmt.Sprintf(`
 resource "equinix_metal_project" "test" {
   name = "tfacc-port_vlan_attachment-%s"
@@ -269,7 +269,7 @@ resource "equinix_metal_device" "test" {
 }`, name)
 }
 
-func testAccCheckMetalPortVlanAttachmentConfig_HybridMultipleVlans_2(name string) string {
+func testAccMetalPortVlanAttachmentConfig_HybridMultipleVlans_2(name string) string {
 	return fmt.Sprintf(`
 %s
 
@@ -290,7 +290,7 @@ resource "equinix_metal_port_vlan_attachment" "test" {
   device_id = metal_device_network_type.test.id
   vlan_vnid = metal_vlan.test[count.index].vxlan
   port_name = "eth1"
-}`, testAccCheckMetalPortVlanAttachmentConfig_HybridMultipleVlans_1(name))
+}`, testAccMetalPortVlanAttachmentConfig_HybridMultipleVlans_1(name))
 }
 
 func TestAccMetalPortVlanAttachment_HybridMultipleVlans(t *testing.T) {
@@ -299,17 +299,17 @@ func TestAccMetalPortVlanAttachment_HybridMultipleVlans(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckMetalPortVlanAttachmentDestroy,
+		CheckDestroy: testAccMetalPortVlanAttachmentCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckMetalPortVlanAttachmentConfig_HybridMultipleVlans_1(rs),
+				Config: testAccMetalPortVlanAttachmentConfig_HybridMultipleVlans_1(rs),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(
 						"equinix_metal_device.test", "network_type", "layer3"),
 				),
 			},
 			{
-				Config: testAccCheckMetalPortVlanAttachmentConfig_HybridMultipleVlans_2(rs),
+				Config: testAccMetalPortVlanAttachmentConfig_HybridMultipleVlans_2(rs),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(
 						"equinix_metal_port_vlan_attachment.test.0", "port_name", "eth1"),
@@ -331,7 +331,7 @@ func TestAccMetalPortVlanAttachment_HybridMultipleVlans(t *testing.T) {
 	})
 }
 
-func testAccCheckMetalPortVlanAttachmentDestroy(s *terraform.State) error {
+func testAccMetalPortVlanAttachmentCheckDestroyed(s *terraform.State) error {
 	client := testAccProvider.Meta().(*Config).Client()
 
 	device_id := ""
@@ -367,7 +367,7 @@ func testAccCheckMetalPortVlanAttachmentDestroy(s *terraform.State) error {
 	return nil
 }
 
-func testAccCheckMetalPortVlanAttachmentConfig_L2Native_1(name string) string {
+func testAccMetalPortVlanAttachmentConfig_L2Native_1(name string) string {
 	return fmt.Sprintf(`
 resource "equinix_metal_project" "test" {
     name = "tfacc-port_vlan_attachment-%s"
@@ -383,7 +383,7 @@ resource "equinix_metal_device" "test" {
 }`, name)
 }
 
-func testAccCheckMetalPortVlanAttachmentConfig_L2Native_2(name string) string {
+func testAccMetalPortVlanAttachmentConfig_L2Native_2(name string) string {
 	return fmt.Sprintf(`
 %s
 
@@ -418,7 +418,7 @@ resource "equinix_metal_port_vlan_attachment" "test2" {
   depends_on = ["equinix_metal_port_vlan_attachment.test1"]
 }
 
-`, testAccCheckMetalPortVlanAttachmentConfig_L2Native_1(name))
+`, testAccMetalPortVlanAttachmentConfig_L2Native_1(name))
 }
 
 func TestAccMetalPortVlanAttachment_L2Native(t *testing.T) {
@@ -428,17 +428,17 @@ func TestAccMetalPortVlanAttachment_L2Native(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckMetalPortVlanAttachmentDestroy,
+		CheckDestroy: testAccMetalPortVlanAttachmentCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckMetalPortVlanAttachmentConfig_L2Native_1(rs),
+				Config: testAccMetalPortVlanAttachmentConfig_L2Native_1(rs),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(
 						"equinix_metal_device.test", "network_type", "layer3"),
 				),
 			},
 			{
-				Config: testAccCheckMetalPortVlanAttachmentConfig_L2Native_2(rs),
+				Config: testAccMetalPortVlanAttachmentConfig_L2Native_2(rs),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(
 						"equinix_metal_port_vlan_attachment.test1", "port_name", "eth1"),

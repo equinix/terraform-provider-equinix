@@ -8,7 +8,33 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 )
 
-func testAccDataSourceMetalReservedIPBlockConfig_Basic(name string) string {
+func TestAccDataSourceMetalReservedIPBlock_basic(t *testing.T) {
+
+	rs := acctest.RandString(10)
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccMetalReservedIPBlockCheckDestroyed,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccDataSourceMetalReservedIPBlockConfig_basic(rs),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttrPair(
+						"equinix_metal_reserved_ip_block.test", "id",
+						"data.equinix_metal_reserved_ip_block.test", "id",
+					),
+					resource.TestCheckResourceAttrPair(
+						"equinix_metal_reserved_ip_block.test", "cidr_notation",
+						"data.equinix_metal_reserved_ip_block.test_id", "cidr_notation",
+					),
+				),
+			},
+		},
+	})
+}
+
+func testAccDataSourceMetalReservedIPBlockConfig_basic(name string) string {
 	return fmt.Sprintf(`
 resource "equinix_metal_project" "foobar" {
 	name = "tfacc-reserved_ip_block-%s"
@@ -31,30 +57,4 @@ data "equinix_metal_reserved_ip_block" "test_id" {
 }
 
 `, name)
-}
-
-func TestAccDataSourceMetalReservedIPBlock_Basic(t *testing.T) {
-
-	rs := acctest.RandString(10)
-
-	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckMetalReservedIPBlockDestroy,
-		Steps: []resource.TestStep{
-			{
-				Config: testAccDataSourceMetalReservedIPBlockConfig_Basic(rs),
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrPair(
-						"equinix_metal_reserved_ip_block.test", "id",
-						"data.equinix_metal_reserved_ip_block.test", "id",
-					),
-					resource.TestCheckResourceAttrPair(
-						"equinix_metal_reserved_ip_block.test", "cidr_notation",
-						"data.equinix_metal_reserved_ip_block.test_id", "cidr_notation",
-					),
-				),
-			},
-		},
-	})
 }

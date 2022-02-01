@@ -10,7 +10,7 @@ import (
 	"github.com/packethost/packngo"
 )
 
-func metalProjectSSHKeyConfig_Basic(name, publicSshKey string) string {
+func testAccMetalProjectSSHKeyConfig_basic(name, publicSshKey string) string {
 	return fmt.Sprintf(`
 resource "equinix_metal_project" "test" {
     name = "tfacc-project_ssh_key-%s"
@@ -35,19 +35,19 @@ resource "equinix_metal_device" "test" {
 `, name, publicSshKey)
 }
 
-func TestAccMetalProjectSSHKey_Basic(t *testing.T) {
+func TestAccMetalProjectSSHKey_basic(t *testing.T) {
 	rs := acctest.RandString(10)
 	var key packngo.SSHKey
 	publicKeyMaterial, _, err := acctest.RandSSHKeyPair("")
 	if err != nil {
 		t.Fatalf("Cannot generate test SSH key pair: %s", err)
 	}
-	cfg := metalProjectSSHKeyConfig_Basic(rs, publicKeyMaterial)
+	cfg := testAccMetalProjectSSHKeyConfig_basic(rs, publicKeyMaterial)
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckMetalProjectSSHKeyDestroy,
+		CheckDestroy: testAccMetalProjectSSHKeyCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
 				Config: cfg,
@@ -69,7 +69,7 @@ func TestAccMetalProjectSSHKey_Basic(t *testing.T) {
 	})
 }
 
-func testAccCheckMetalProjectSSHKeyDestroy(s *terraform.State) error {
+func testAccMetalProjectSSHKeyCheckDestroyed(s *terraform.State) error {
 	client := testAccProvider.Meta().(*Config).Client()
 
 	for _, rs := range s.RootModule().Resources {

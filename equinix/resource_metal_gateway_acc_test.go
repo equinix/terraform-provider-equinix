@@ -8,7 +8,27 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 )
 
-func testAccMetalGatewayConfig_PrivateIPv4() string {
+func TestAccMetalGateway_privateIPv4(t *testing.T) {
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccMetalGatewayCheckDestroyed,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccMetalGatewayConfig_privateIPv4(),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttrPair(
+						"equinix_metal_gateway.test", "project_id",
+						"equinix_metal_project.test", "id"),
+					resource.TestCheckResourceAttr(
+						"equinix_metal_gateway.test", "private_ipv4_subnet_size", "8"),
+				),
+			},
+		},
+	})
+}
+
+func testAccMetalGatewayConfig_privateIPv4() string {
 	return fmt.Sprintf(`
 resource "equinix_metal_project" "test" {
     name = "tfacc-gateway-test"
@@ -28,27 +48,28 @@ resource "equinix_metal_gateway" "test" {
 `)
 }
 
-func TestAccMetalGateway_PrivateIPv4(t *testing.T) {
+func TestAccMetalGateway_existingReservation(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckMetalGatewayDestroyed,
+		CheckDestroy: testAccMetalGatewayCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccMetalGatewayConfig_PrivateIPv4(),
+				Config: testAccMetalGatewayConfig_existingReservation(),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrPair(
 						"equinix_metal_gateway.test", "project_id",
 						"equinix_metal_project.test", "id"),
-					resource.TestCheckResourceAttr(
-						"equinix_metal_gateway.test", "private_ipv4_subnet_size", "8"),
+					resource.TestCheckResourceAttrPair(
+						"equinix_metal_gateway.test", "ip_reservation_id",
+						"equinix_metal_reserved_ip_block.test", "id"),
 				),
 			},
 		},
 	})
 }
 
-func testAccMetalGatewayConfig_ExistingReservation() string {
+func testAccMetalGatewayConfig_existingReservation() string {
 	return fmt.Sprintf(`
 resource "equinix_metal_project" "test" {
     name = "tfacc-gateway-test"
@@ -74,28 +95,7 @@ resource "equinix_metal_gateway" "test" {
 `)
 }
 
-func TestAccMetalGateway_ExistingReservation(t *testing.T) {
-	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckMetalGatewayDestroyed,
-		Steps: []resource.TestStep{
-			{
-				Config: testAccMetalGatewayConfig_ExistingReservation(),
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrPair(
-						"equinix_metal_gateway.test", "project_id",
-						"equinix_metal_project.test", "id"),
-					resource.TestCheckResourceAttrPair(
-						"equinix_metal_gateway.test", "ip_reservation_id",
-						"equinix_metal_reserved_ip_block.test", "id"),
-				),
-			},
-		},
-	})
-}
-
-func testAccCheckMetalGatewayDestroyed(s *terraform.State) error {
+func testAccMetalGatewayCheckDestroyed(s *terraform.State) error {
 	client := testAccProvider.Meta().(*Config).Client()
 
 	for _, rs := range s.RootModule().Resources {
@@ -114,10 +114,10 @@ func TestAccMetalGateway_importBasic(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckMetalGatewayDestroyed,
+		CheckDestroy: testAccMetalGatewayCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccMetalGatewayConfig_PrivateIPv4(),
+				Config: testAccMetalGatewayConfig_privateIPv4(),
 			},
 			{
 				ResourceName:      "equinix_metal_gateway.test",

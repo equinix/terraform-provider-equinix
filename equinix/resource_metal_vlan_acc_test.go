@@ -25,14 +25,14 @@ resource "equinix_metal_vlan" "foovlan" {
 `, projSuffix, metro, desc)
 }
 
-func TestAccMetalVlan_Metro(t *testing.T) {
+func TestAccMetalVlan_metro(t *testing.T) {
 	rs := acctest.RandString(10)
 	metro := "sv"
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckMetalVlanDestroyed,
+		CheckDestroy: testAccMetalVlanCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccCheckMetalVlanConfig_metro(rs, metro, "testvlan"),
@@ -47,7 +47,7 @@ func TestAccMetalVlan_Metro(t *testing.T) {
 	})
 }
 
-func TestAccMetalVlan_Basic(t *testing.T) {
+func TestAccMetalVlan_basic(t *testing.T) {
 	var vlan packngo.VirtualNetwork
 	rs := acctest.RandString(10)
 	fac := "ewr1"
@@ -55,10 +55,10 @@ func TestAccMetalVlan_Basic(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckMetalVlanDestroyed,
+		CheckDestroy: testAccMetalVlanCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckMetalVlanConfig_var(rs, fac, "testvlan"),
+				Config: testAccMetalVlanConfig_var(rs, fac, "testvlan"),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckMetalVlanExists("equinix_metal_vlan.foovlan", &vlan),
 					resource.TestCheckResourceAttr(
@@ -97,7 +97,7 @@ func testAccCheckMetalVlanExists(n string, vlan *packngo.VirtualNetwork) resourc
 	}
 }
 
-func testAccCheckMetalVlanDestroyed(s *terraform.State) error {
+func testAccMetalVlanCheckDestroyed(s *terraform.State) error {
 	client := testAccProvider.Meta().(*Config).Client()
 
 	for _, rs := range s.RootModule().Resources {
@@ -112,7 +112,7 @@ func testAccCheckMetalVlanDestroyed(s *terraform.State) error {
 	return nil
 }
 
-func testAccCheckMetalVlanConfig_var(projSuffix, facility, desc string) string {
+func testAccMetalVlanConfig_var(projSuffix, facility, desc string) string {
 	return fmt.Sprintf(`
 resource "equinix_metal_project" "foobar" {
     name = "tfacc-vlan-%s"
@@ -133,10 +133,10 @@ func TestAccMetalVlan_importBasic(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckMetalVlanDestroyed,
+		CheckDestroy: testAccMetalVlanCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckMetalVlanConfig_var(rs, fac, "testvlan"),
+				Config: testAccMetalVlanConfig_var(rs, fac, "testvlan"),
 			},
 			{
 				ResourceName:      "equinix_metal_vlan.foovlan",

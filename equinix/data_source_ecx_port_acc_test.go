@@ -9,7 +9,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
-func TestAccFabricPort(t *testing.T) {
+func TestAccDataSourceFabricPort_basic(t *testing.T) {
 	portName, _ := schema.EnvDefaultFunc(priPortEnvVar, "smandalika@equinix.com1-SV1-Dot1q-L-Primary-161350")()
 	context := map[string]interface{}{
 		"port-resourceName": "test",

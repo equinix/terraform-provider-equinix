@@ -7,14 +7,14 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 )
 
-func TestAccDataSourceMetalSpotPrice_Basic(t *testing.T) {
+func TestAccDataSourceMetalSpotMarketPrice_basic(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckMetalSpotMarketRequestDestroy,
+		CheckDestroy: testAccMetalSpotMarketRequestCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
-				Config: testDataSourceMetalSpotMarketPrice(),
+				Config: testAccDataSourceMetalSpotMarketPriceConfig_basic(),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(
 						"data.equinix_metal_spot_market_price.metro", "price"),
@@ -26,7 +26,7 @@ func TestAccDataSourceMetalSpotPrice_Basic(t *testing.T) {
 	})
 }
 
-func testDataSourceMetalSpotMarketPrice() string {
+func testAccDataSourceMetalSpotMarketPriceConfig_basic() string {
 	return fmt.Sprintf(`
 data "equinix_metal_spot_market_price" "metro" {
 	metro = "sv"

@@ -7,7 +7,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 )
 
-func TestAccNetworkDeviceSoftwareDataSource(t *testing.T) {
+func TestAccDataSourceNetworkDeviceSoftware_versionRegex(t *testing.T) {
 	context := map[string]interface{}{
 		"resourceName":  "csrLatest",
 		"device_type":   "CSR1000V",
@@ -21,7 +21,7 @@ func TestAccNetworkDeviceSoftwareDataSource(t *testing.T) {
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccNetworkDeviceSoftwareDataSource(context),
+				Config: testAccDataSourceNetworkDeviceSoftwareConfig_versionRegex(context),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(resourceName, "version"),
 					resource.TestCheckResourceAttrSet(resourceName, "image_name"),
@@ -35,7 +35,7 @@ func TestAccNetworkDeviceSoftwareDataSource(t *testing.T) {
 	})
 }
 
-func testAccNetworkDeviceSoftwareDataSource(ctx map[string]interface{}) string {
+func testAccDataSourceNetworkDeviceSoftwareConfig_versionRegex(ctx map[string]interface{}) string {
 	return nprintf(`
 data "equinix_network_device_software" "%{resourceName}" {
   device_type   = "%{device_type}"

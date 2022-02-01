@@ -10,7 +10,7 @@ import (
 	"github.com/packethost/packngo"
 )
 
-func TestAccDataSourceMetalSpotMarketRequest_Basic(t *testing.T) {
+func TestAccDataSourceMetalSpotMarketRequest_basic(t *testing.T) {
 	projectName := fmt.Sprintf("ds-device-%s", acctest.RandString(10))
 	var (
 		facKey packngo.SpotMarketRequest
@@ -19,21 +19,21 @@ func TestAccDataSourceMetalSpotMarketRequest_Basic(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckMetalSpotMarketRequestDestroy,
+		CheckDestroy: testAccMetalSpotMarketRequestCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
-				Config: testDataSourceMetalSpotMarketRequestConfig_Basic(projectName),
+				Config: testAccDataSourceMetalSpotMarketRequestConfig_basic(projectName),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckMetalSpotMarketRequestExists("equinix_metal_spot_market_request.req", &facKey),
 				),
 			},
 			{
-				Config:             testDataSourceMetalSpotMarketRequestConfig_Metro(projectName),
+				Config:             testAccDataSourceMetalSpotMarketRequestConfig_metro(projectName),
 				PlanOnly:           true,
 				ExpectNonEmptyPlan: true,
 			},
 			{
-				Config: testDataSourceMetalSpotMarketRequestConfig_Metro(projectName),
+				Config: testAccDataSourceMetalSpotMarketRequestConfig_metro(projectName),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckMetalSpotMarketRequestExists("equinix_metal_spot_market_request.req", &metKey),
 					func(_ *terraform.State) error {
@@ -48,7 +48,7 @@ func TestAccDataSourceMetalSpotMarketRequest_Basic(t *testing.T) {
 	})
 }
 
-func testDataSourceMetalSpotMarketRequestConfig_Basic(projSuffix string) string {
+func testAccDataSourceMetalSpotMarketRequestConfig_basic(projSuffix string) string {
 	return fmt.Sprintf(`
 
 resource "equinix_metal_project" "test" {
@@ -77,7 +77,7 @@ data "equinix_metal_spot_market_request" "dreq" {
 `, projSuffix)
 }
 
-func testDataSourceMetalSpotMarketRequestConfig_Metro(projSuffix string) string {
+func testAccDataSourceMetalSpotMarketRequestConfig_metro(projSuffix string) string {
 	return fmt.Sprintf(`
 
 resource "equinix_metal_project" "test" {

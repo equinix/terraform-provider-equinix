@@ -13,7 +13,7 @@ var (
 	matchErrNoCapacity     = regexp.MustCompile(`Not enough capacity.*`)
 )
 
-func TestAccDataSourceFacility_Basic(t *testing.T) {
+func TestAccDataSourceMetalFacility_basic(t *testing.T) {
 	testFac := "dc13"
 
 	resource.ParallelTest(t, resource.TestCase{
@@ -21,45 +21,45 @@ func TestAccDataSourceFacility_Basic(t *testing.T) {
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccDataSourceFacilityConfigBasic(testFac),
+				Config: testAccDataSourceMetalFacilityConfig_basic(testFac),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(
 						"data.equinix_metal_facility.test", "code", testFac),
 				),
 			},
 			{
-				Config: testAccDataSourceFacilityConfigCapacityReasonable(testFac),
+				Config: testAccDataSourceMetalFacilityConfig_capacityReasonable(testFac),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(
 						"data.equinix_metal_facility.test", "code", testFac),
 				),
 			},
 			{
-				Config:      testAccDataSourceFacilityConfigCapacityUnreasonable(testFac),
+				Config:      testAccDataSourceMetalFacilityConfig_capacityUnreasonable(testFac),
 				ExpectError: matchErrNoCapacity,
 			},
 			{
-				Config:      testAccDataSourceFacilityConfigCapacityUnreasonableMultiple(testFac),
+				Config:      testAccDataSourceMetalFacilityConfig_capacityUnreasonableMultiple(testFac),
 				ExpectError: matchErrNoCapacity,
 			},
 		},
 	})
 }
 
-func TestAccDataSourceFacility_Features(t *testing.T) {
+func TestAccDataSourceMetalFacility_features(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config:      testAccDataSourceFacilityConfigFeatures(),
+				Config:      testAccDataSourceMetalFacilityConfig_features(),
 				ExpectError: matchErrMissingFeature,
 			},
 		},
 	})
 }
 
-func testAccDataSourceFacilityConfigFeatures() string {
+func testAccDataSourceMetalFacilityConfig_features() string {
 	return `
 data "equinix_metal_facility" "test" {
     code = "ewr1"
@@ -68,7 +68,7 @@ data "equinix_metal_facility" "test" {
 `
 }
 
-func testAccDataSourceFacilityConfigBasic(facCode string) string {
+func testAccDataSourceMetalFacilityConfig_basic(facCode string) string {
 	return fmt.Sprintf(`
 data "equinix_metal_facility" "test" {
     code = "%s"
@@ -76,7 +76,7 @@ data "equinix_metal_facility" "test" {
 `, facCode)
 }
 
-func testAccDataSourceFacilityConfigCapacityUnreasonable(facCode string) string {
+func testAccDataSourceMetalFacilityConfig_capacityUnreasonable(facCode string) string {
 	return fmt.Sprintf(`
 data "equinix_metal_facility" "test" {
     code = "%s"
@@ -88,7 +88,7 @@ data "equinix_metal_facility" "test" {
 `, facCode)
 }
 
-func testAccDataSourceFacilityConfigCapacityReasonable(facCode string) string {
+func testAccDataSourceMetalFacilityConfig_capacityReasonable(facCode string) string {
 	return fmt.Sprintf(`
 data "equinix_metal_facility" "test" {
     code = "%s"
@@ -104,7 +104,7 @@ data "equinix_metal_facility" "test" {
 `, facCode)
 }
 
-func testAccDataSourceFacilityConfigCapacityUnreasonableMultiple(facCode string) string {
+func testAccDataSourceMetalFacilityConfig_capacityUnreasonableMultiple(facCode string) string {
 	return fmt.Sprintf(`
 data "equinix_metal_facility" "test" {
     code = "%s"

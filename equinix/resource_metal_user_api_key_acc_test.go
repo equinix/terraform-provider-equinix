@@ -46,7 +46,7 @@ func testSweepUserAPIKeys(region string) error {
 	return nil
 }
 
-func testAccMetalUserAPIKeyDestroy(s *terraform.State) error {
+func testAccMetalUserAPIKeyCheckDestroyed(s *terraform.State) error {
 	client := testAccProvider.Meta().(*Config).Client()
 	for _, rs := range s.RootModule().Resources {
 		if rs.Type != "equinix_metal_user_api_key" {
@@ -59,7 +59,7 @@ func testAccMetalUserAPIKeyDestroy(s *terraform.State) error {
 	return nil
 }
 
-func testAccMetalUserAPIKeyConfig_Basic() string {
+func testAccMetalUserAPIKeyConfig_basic() string {
 	return fmt.Sprintf(`
 resource "equinix_metal_user_api_key" "test" {
     description = "tfacc-user-key"
@@ -75,10 +75,10 @@ func TestAccMetalUserAPIKey_Basic(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
-		CheckDestroy: testAccMetalUserAPIKeyDestroy,
+		CheckDestroy: testAccMetalUserAPIKeyCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccMetalUserAPIKeyConfig_Basic(),
+				Config: testAccMetalUserAPIKeyConfig_basic(),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(
 						"equinix_metal_user_api_key.test", "token"),
