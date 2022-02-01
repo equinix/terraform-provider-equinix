@@ -222,7 +222,7 @@ resource "equinix_metal_port_vlan_attachment" "test" {
 }`, testAccMetalPortVlanAttachmentConfig_Hybrid_1(name))
 }
 
-func TestAccMetalPortVlanAttachment_HybridBasic(t *testing.T) {
+func TestAccMetalPortVlanAttachment_hybridBasic(t *testing.T) {
 	rs := acctest.RandString(10)
 
 	resource.ParallelTest(t, resource.TestCase{
@@ -293,7 +293,7 @@ resource "equinix_metal_port_vlan_attachment" "test" {
 }`, testAccMetalPortVlanAttachmentConfig_HybridMultipleVlans_1(name))
 }
 
-func TestAccMetalPortVlanAttachment_HybridMultipleVlans(t *testing.T) {
+func TestAccMetalPortVlanAttachment_hybridMultipleVlans(t *testing.T) {
 	rs := acctest.RandString(10)
 
 	resource.ParallelTest(t, resource.TestCase{

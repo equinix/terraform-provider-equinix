@@ -48,7 +48,7 @@ func testSweepOrganizations(region string) error {
 	return nil
 }
 
-func TestAccMetalOrganizationCreate(t *testing.T) {
+func TestAccMetalOrganization_create(t *testing.T) {
 	var org packngo.Organization
 	rInt := acctest.RandInt()
 

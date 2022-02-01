@@ -9,7 +9,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 )
 
-func testAccCheckMetalReservedIPBlockConfig_Global(name string) string {
+func testAccMetalReservedIPBlockConfig_global(name string) string {
 	return fmt.Sprintf(`
 resource "equinix_metal_project" "foobar" {
 	name = "tfacc-reserved_ip_block-%s"
@@ -23,7 +23,7 @@ resource "equinix_metal_reserved_ip_block" "test" {
 }`, name)
 }
 
-func testAccCheckMetalReservedIPBlockConfig_Public(name string) string {
+func testAccMetalReservedIPBlockConfig_public(name string) string {
 	return fmt.Sprintf(`
 resource "equinix_metal_project" "foobar" {
 	name = "tfacc-reserved_ip_block-%s"
@@ -38,7 +38,7 @@ resource "equinix_metal_reserved_ip_block" "test" {
 }`, name)
 }
 
-func testAccCheckMetalReservedIPBlockConfig_Metro(name string) string {
+func testAccMetalReservedIPBlockConfig_metro(name string) string {
 	return fmt.Sprintf(`
 resource "equinix_metal_project" "foobar" {
 	name = "tfacc-reserved_ip_block-%s"
@@ -52,7 +52,7 @@ resource "equinix_metal_reserved_ip_block" "test" {
 }`, name)
 }
 
-func TestAccMetalReservedIPBlock_Global(t *testing.T) {
+func TestAccMetalReservedIPBlock_global(t *testing.T) {
 
 	rs := acctest.RandString(10)
 
@@ -62,7 +62,7 @@ func TestAccMetalReservedIPBlock_Global(t *testing.T) {
 		CheckDestroy: testAccMetalReservedIPBlockCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckMetalReservedIPBlockConfig_Global(rs),
+				Config: testAccMetalReservedIPBlockConfig_global(rs),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(
 						"equinix_metal_reserved_ip_block.test", "quantity", "1"),
@@ -82,7 +82,7 @@ func TestAccMetalReservedIPBlock_Global(t *testing.T) {
 	})
 }
 
-func TestAccMetalReservedIPBlock_Public(t *testing.T) {
+func TestAccMetalReservedIPBlock_public(t *testing.T) {
 
 	rs := acctest.RandString(10)
 
@@ -92,7 +92,7 @@ func TestAccMetalReservedIPBlock_Public(t *testing.T) {
 		CheckDestroy: testAccMetalReservedIPBlockCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckMetalReservedIPBlockConfig_Public(rs),
+				Config: testAccMetalReservedIPBlockConfig_public(rs),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(
 						"equinix_metal_reserved_ip_block.test", "facility", "ewr1"),
@@ -114,7 +114,7 @@ func TestAccMetalReservedIPBlock_Public(t *testing.T) {
 	})
 }
 
-func TestAccMetalReservedIPBlock_Metro(t *testing.T) {
+func TestAccMetalReservedIPBlock_metro(t *testing.T) {
 
 	rs := acctest.RandString(10)
 
@@ -124,7 +124,7 @@ func TestAccMetalReservedIPBlock_Metro(t *testing.T) {
 		CheckDestroy: testAccMetalReservedIPBlockCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckMetalReservedIPBlockConfig_Metro(rs),
+				Config: testAccMetalReservedIPBlockConfig_metro(rs),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(
 						"equinix_metal_reserved_ip_block.test", "metro", "sv"),
@@ -134,7 +134,7 @@ func TestAccMetalReservedIPBlock_Metro(t *testing.T) {
 	})
 }
 
-func TestAccMetalReservedIPBlock_ImportBasic(t *testing.T) {
+func TestAccMetalReservedIPBlock_importBasic(t *testing.T) {
 
 	rs := acctest.RandString(10)
 
@@ -144,7 +144,7 @@ func TestAccMetalReservedIPBlock_ImportBasic(t *testing.T) {
 		CheckDestroy: testAccMetalReservedIPBlockCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckMetalReservedIPBlockConfig_Public(rs),
+				Config: testAccMetalReservedIPBlockConfig_public(rs),
 			},
 			{
 				ResourceName:      "equinix_metal_reserved_ip_block.test",
@@ -170,7 +170,7 @@ func testAccMetalReservedIPBlockCheckDestroyed(s *terraform.State) error {
 	return nil
 }
 
-func testAccCheckMetalReservedIPBlockConfig_FacilityToMetro(line string) string {
+func testAccMetalReservedIPBlockConfig_facilityToMetro(line string) string {
 	return fmt.Sprintf(`
 resource "equinix_metal_project" "foobar" {
 	name = "tfacc-reserved_ip_block_fac_met_test"
@@ -185,7 +185,7 @@ resource "equinix_metal_reserved_ip_block" "test" {
 }`, line)
 }
 
-func TestAccMetalReservedIPBlock_FacilityToMetro(t *testing.T) {
+func TestAccMetalReservedIPBlock_facilityToMetro(t *testing.T) {
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -193,7 +193,7 @@ func TestAccMetalReservedIPBlock_FacilityToMetro(t *testing.T) {
 		CheckDestroy: testAccMetalReservedIPBlockCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckMetalReservedIPBlockConfig_FacilityToMetro(`   facility = "ny5"`),
+				Config: testAccMetalReservedIPBlockConfig_facilityToMetro(`   facility = "ny5"`),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(
 						"equinix_metal_reserved_ip_block.test", "facility", "ny5"),
@@ -202,7 +202,7 @@ func TestAccMetalReservedIPBlock_FacilityToMetro(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccCheckMetalReservedIPBlockConfig_FacilityToMetro(`   metro = "ny"`),
+				Config: testAccMetalReservedIPBlockConfig_facilityToMetro(`   metro = "ny"`),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(
 						"equinix_metal_reserved_ip_block.test", "metro", "ny"),
@@ -213,7 +213,7 @@ func TestAccMetalReservedIPBlock_FacilityToMetro(t *testing.T) {
 	})
 }
 
-func testAccMetalReservedIP_Device(name string) string {
+func testAccMetalReservedIP_device(name string) string {
 	return fmt.Sprintf(`
 resource "equinix_metal_project" "foobar" {
 	name = "tfacc-reserved_ip_block-%s"
@@ -245,7 +245,7 @@ resource "equinix_metal_device" "test" {
 `, name)
 }
 
-func TestAccMetalReservedIPBlock_Device(t *testing.T) {
+func TestAccMetalReservedIPBlock_device(t *testing.T) {
 
 	rs := acctest.RandString(10)
 
@@ -255,7 +255,7 @@ func TestAccMetalReservedIPBlock_Device(t *testing.T) {
 		CheckDestroy: testAccMetalReservedIPBlockCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccMetalReservedIP_Device(rs),
+				Config: testAccMetalReservedIP_device(rs),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrPair(
 						"equinix_metal_reserved_ip_block.test", "gateway",

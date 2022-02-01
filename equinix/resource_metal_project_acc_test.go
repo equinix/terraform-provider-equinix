@@ -395,7 +395,7 @@ resource "equinix_metal_project" "foobar" {
 }`, r, pass)
 }
 
-func testAccMetalProjectOrganizationConfig(r string) string {
+func testAccMetalProjectConfig_organization(r string) string {
 	return fmt.Sprintf(`
 resource "equinix_metal_organization" "test" {
 	name = "tfacc-project-%s"
@@ -407,7 +407,7 @@ resource "equinix_metal_project" "foobar" {
 }`, r, r)
 }
 
-func TestAccMetalProjectOrg(t *testing.T) {
+func TestAccMetalProject_organization(t *testing.T) {
 	var project packngo.Project
 	rn := acctest.RandStringFromCharSet(12, "abcdef0123456789")
 
@@ -417,7 +417,7 @@ func TestAccMetalProjectOrg(t *testing.T) {
 		CheckDestroy: testAccMetalProjectCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccMetalProjectOrganizationConfig(rn),
+				Config: testAccMetalProjectConfig_organization(rn),
 				Check: resource.ComposeTestCheckFunc(
 					testAccMetalProjectExists("equinix_metal_project.foobar", &project),
 					resource.TestCheckResourceAttr(

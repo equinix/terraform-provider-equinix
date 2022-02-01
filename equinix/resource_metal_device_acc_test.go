@@ -84,7 +84,7 @@ func TestAccMetalDevice_facilityList(t *testing.T) {
 	})
 }
 
-func TestAccMetalDevice_NetworkPortsOrder(t *testing.T) {
+func TestAccMetalDevice_networkPortsOrder(t *testing.T) {
 	var device packngo.Device
 	rs := acctest.RandString(10)
 	r := "equinix_metal_device.test"

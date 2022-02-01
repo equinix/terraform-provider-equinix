@@ -230,11 +230,11 @@ func TestAccMetalPort_L2Individual(t *testing.T) {
 	testAccMetalPortTemplate(t, confAccMetalPort_L2Individual, "layer2-individual")
 }
 
-func TestAccMetalPort_HybridUnbonded(t *testing.T) {
+func TestAccMetalPort_hybridUnbonded(t *testing.T) {
 	testAccMetalPortTemplate(t, confAccMetalPort_HybridUnbonded, "hybrid")
 }
 
-func TestAccMetalPort_HybridBonded(t *testing.T) {
+func TestAccMetalPort_hybridBonded(t *testing.T) {
 	testAccMetalPortTemplate(t, confAccMetalPort_HybridBonded, "hybrid-bonded")
 }
 

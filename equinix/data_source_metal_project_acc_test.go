@@ -9,7 +9,7 @@ import (
 	"github.com/packethost/packngo"
 )
 
-func testAccCheckMetalDataSourceProject_Basic(r string) string {
+func testAccDataSourceMetalProject_basic(r string) string {
 	return fmt.Sprintf(`
 resource "equinix_metal_project" "foobar" {
 	name = "tfacc-project-%s"
@@ -27,7 +27,7 @@ data metal_project "test" {
 `, r)
 }
 
-func TestAccMetalDataSourceProject_Basic(t *testing.T) {
+func TestAccDataSourceMetalProject_basic(t *testing.T) {
 	var project packngo.Project
 	rn := acctest.RandStringFromCharSet(12, "abcdef0123456789")
 
@@ -37,7 +37,7 @@ func TestAccMetalDataSourceProject_Basic(t *testing.T) {
 		CheckDestroy: testAccMetalProjectCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckMetalDataSourceProject_Basic(rn),
+				Config: testAccDataSourceMetalProject_basic(rn),
 				Check: resource.ComposeTestCheckFunc(
 					testAccMetalProjectExists("equinix_metal_project.foobar", &project),
 					resource.TestCheckResourceAttr(

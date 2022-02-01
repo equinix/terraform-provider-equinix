@@ -132,7 +132,7 @@ func testDataSourceMetalConnectionConfig_dedicated() string {
         }`
 }
 
-func TestAccMetalConnection_Tunnel(t *testing.T) {
+func TestAccMetalConnection_tunnel(t *testing.T) {
 
 	rs := acctest.RandString(10)
 
