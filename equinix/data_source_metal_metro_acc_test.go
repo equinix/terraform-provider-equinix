@@ -7,7 +7,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 )
 
-func TestAccDataSourceMetalMetro_Basic(t *testing.T) {
+func TestAccDataSourceMetalMetro_basic(t *testing.T) {
 	testMetro := "da"
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },

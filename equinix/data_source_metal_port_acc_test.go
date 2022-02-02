@@ -51,7 +51,7 @@ data "equinix_metal_port" "test" {
 `, name)
 }
 
-func testAccDataSourceMetalPort_byId(t *testing.T) {
+func TestAccDataSourceMetalPort_byId(t *testing.T) {
 
 	rs := acctest.RandString(10)
 
@@ -89,6 +89,5 @@ resource "equinix_metal_device" "test" {
 data "equinix_metal_port" "test" {
   port_id        = metal_device.test.ports[0].id
 }
-
 `, name)
 }

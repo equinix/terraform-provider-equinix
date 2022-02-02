@@ -152,7 +152,7 @@ resource "equinix_metal_vlan" "test2" {
 `, confAccMetalPort_base(name))
 }
 
-func TestAccMetalPort_HybridBondedVxlan(t *testing.T) {
+func TestAccMetalPort_hybridBondedVxlan(t *testing.T) {
 	rs := acctest.RandString(10)
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },

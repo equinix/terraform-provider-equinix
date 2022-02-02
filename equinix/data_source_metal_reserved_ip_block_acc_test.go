@@ -55,6 +55,5 @@ data "equinix_metal_reserved_ip_block" "test" {
 data "equinix_metal_reserved_ip_block" "test_id" {
 	id  = metal_reserved_ip_block.test.id
 }
-
 `, name)
 }

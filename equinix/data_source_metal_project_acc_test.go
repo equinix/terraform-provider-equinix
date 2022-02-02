@@ -9,24 +9,6 @@ import (
 	"github.com/packethost/packngo"
 )
 
-func testAccDataSourceMetalProject_basic(r string) string {
-	return fmt.Sprintf(`
-resource "equinix_metal_project" "foobar" {
-	name = "tfacc-project-%s"
-	bgp_config {
-		deployment_type = "local"
-		md5 = "2SFsdfsg43"
-		asn = 65000
-	}
-}
-
-data metal_project "test" {
-	project_id = metal_project.foobar.id
-}
-
-`, r)
-}
-
 func TestAccDataSourceMetalProject_basic(t *testing.T) {
 	var project packngo.Project
 	rn := acctest.RandStringFromCharSet(12, "abcdef0123456789")
@@ -52,4 +34,21 @@ func TestAccDataSourceMetalProject_basic(t *testing.T) {
 			},
 		},
 	})
+}
+
+func testAccDataSourceMetalProject_basic(r string) string {
+	return fmt.Sprintf(`
+resource "equinix_metal_project" "foobar" {
+	name = "tfacc-project-%s"
+	bgp_config {
+		deployment_type = "local"
+		md5 = "2SFsdfsg43"
+		asn = 65000
+	}
+}
+
+data metal_project "test" {
+	project_id = metal_project.foobar.id
+}
+`, r)
 }

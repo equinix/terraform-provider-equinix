@@ -9,7 +9,7 @@ import (
 	"github.com/packethost/packngo"
 )
 
-func TestAccDataSourceMetalOrganization_Basic(t *testing.T) {
+func TestAccDataSourceMetalOrganization_basic(t *testing.T) {
 	var org packngo.Organization
 	rInt := acctest.RandInt()
 
@@ -46,7 +46,5 @@ resource "equinix_metal_organization" "test" {
 data "equinix_metal_organization" "test" {
   organization_id = metal_organization.test.id
 }
-
-
 `, r)
 }

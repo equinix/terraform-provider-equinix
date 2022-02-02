@@ -242,7 +242,7 @@ func TestAccMetalProject_backendTransferUpdate(t *testing.T) {
 	})
 }
 
-func TestAccMetalProject_Update(t *testing.T) {
+func TestAccMetalProject_update(t *testing.T) {
 	var project packngo.Project
 	rInt := acctest.RandInt()
 
