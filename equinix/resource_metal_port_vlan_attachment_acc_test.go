@@ -45,18 +45,18 @@ resource "equinix_metal_vlan" "test2" {
 }
 
 resource "equinix_metal_device_network_type" "test" {
-  device_id = metal_device.test.id
+  device_id = equinix_metal_device.test.id
   type = "layer2-bonded"
 }
 
 resource "equinix_metal_port_vlan_attachment" "test1" {
-  device_id = metal_device_network_type.test.id
+  device_id = equinix_metal_device_network_type.test.id
   vlan_vnid = "${equinix_metal_vlan.test1.vxlan}"
   port_name = "bond0"
 }
 
 resource "equinix_metal_port_vlan_attachment" "test2" {
-  device_id = metal_device_network_type.test.id
+  device_id = equinix_metal_device_network_type.test.id
   vlan_vnid = "${equinix_metal_vlan.test2.vxlan}"
   port_name = "bond0"
 }
@@ -130,18 +130,18 @@ resource "equinix_metal_vlan" "test2" {
 }
 
 resource "equinix_metal_device_network_type" "test" {
-  device_id = metal_device.test.id
+  device_id = equinix_metal_device.test.id
   type = "layer2-individual"
 }
 
 resource "equinix_metal_port_vlan_attachment" "test1" {
-  device_id = metal_device_network_type.test.id
+  device_id = equinix_metal_device_network_type.test.id
   vlan_vnid = "${equinix_metal_vlan.test1.vxlan}"
   port_name = "eth1"
 }
 
 resource "equinix_metal_port_vlan_attachment" "test2" {
-  device_id = metal_device_network_type.test.id
+  device_id = equinix_metal_device_network_type.test.id
   vlan_vnid = "${equinix_metal_vlan.test2.vxlan}"
   port_name = "eth1"
 }
@@ -204,7 +204,7 @@ func testAccMetalPortVlanAttachmentConfig_Hybrid_2(name string) string {
 %s 
 
 resource "equinix_metal_device_network_type" "test" {
-  device_id = metal_device.test.id
+  device_id = equinix_metal_device.test.id
   type = "hybrid"
 }
 
@@ -215,7 +215,7 @@ resource "equinix_metal_vlan" "test" {
 }
 
 resource "equinix_metal_port_vlan_attachment" "test" {
-  device_id = metal_device_network_type.test.id
+  device_id = equinix_metal_device_network_type.test.id
   vlan_vnid = "${equinix_metal_vlan.test.vxlan}"
   port_name = "eth1"
   force_bond = false
@@ -265,7 +265,7 @@ resource "equinix_metal_device" "test" {
   facilities       = ["nrt1"]
   operating_system = "ubuntu_16_04"
   billing_cycle    = "hourly"
-  project_id       = metal_project.test.id
+  project_id       = equinix_metal_project.test.id
 }`, name)
 }
 
@@ -277,18 +277,18 @@ resource "equinix_metal_vlan" "test" {
   count       = 3
   description = "test VLAN"
   facility    = "nrt1"
-  project_id  = metal_project.test.id
+  project_id  = equinix_metal_project.test.id
 }
 
 resource "equinix_metal_device_network_type" "test" {
-  device_id = metal_device.test.id
+  device_id = equinix_metal_device.test.id
   type = "hybrid"
 }
 
 resource "equinix_metal_port_vlan_attachment" "test" {
   count     = length(metal_vlan.test)
-  device_id = metal_device_network_type.test.id
-  vlan_vnid = metal_vlan.test[count.index].vxlan
+  device_id = equinix_metal_device_network_type.test.id
+  vlan_vnid = equinix_metal_vlan.test[count.index].vxlan
   port_name = "eth1"
 }`, testAccMetalPortVlanAttachmentConfig_HybridMultipleVlans_1(name))
 }
@@ -400,18 +400,18 @@ resource "equinix_metal_vlan" "test2" {
 }
 
 resource "equinix_metal_device_network_type" "test" {
-  device_id = metal_device.test.id
+  device_id = equinix_metal_device.test.id
   type = "layer2-individual"
 }
 
 resource "equinix_metal_port_vlan_attachment" "test1" {
-  device_id = metal_device_network_type.test.id
+  device_id = equinix_metal_device_network_type.test.id
   vlan_vnid = "${equinix_metal_vlan.test1.vxlan}"
   port_name = "eth1"
 }
 
 resource "equinix_metal_port_vlan_attachment" "test2" {
-  device_id = metal_device_network_type.test.id
+  device_id = equinix_metal_device_network_type.test.id
   vlan_vnid = "${equinix_metal_vlan.test2.vxlan}"
   native    = true
   port_name = "eth1"

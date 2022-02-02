@@ -44,7 +44,7 @@ resource "equinix_metal_organization" "test" {
 }
 
 data "equinix_metal_organization" "test" {
-  organization_id = metal_organization.test.id
+  organization_id = equinix_metal_organization.test.id
 }
 `, r)
 }

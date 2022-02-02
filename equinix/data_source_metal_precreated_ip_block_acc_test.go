@@ -48,18 +48,18 @@ resource "equinix_metal_device" "test" {
   metro            = "ny"
   operating_system = "ubuntu_16_04"
   billing_cycle    = "hourly"
-  project_id       = metal_project.test.id
+  project_id       = equinix_metal_project.test.id
 }
 
 data "equinix_metal_precreated_ip_block" "test" {
-    facility         = metal_device.test.deployed_facility
-    project_id       = metal_device.test.project_id
+    facility         = equinix_metal_device.test.deployed_facility
+    project_id       = equinix_metal_device.test.project_id
     address_family   = 6
     public           = true
 }
 
 resource "equinix_metal_ip_attachment" "test" {
-    device_id = metal_device.test.id
+    device_id = equinix_metal_device.test.id
     cidr_notation = cidrsubnet(data.equinix_metal_precreated_ip_block.test.cidr_notation,8,2)
 }
 `, name)

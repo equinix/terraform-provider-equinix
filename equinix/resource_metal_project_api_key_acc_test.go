@@ -49,7 +49,7 @@ resource "equinix_metal_project" "test" {
 }
 
 resource "equinix_metal_project_api_key" "test" {
-    project_id  = metal_project.test.id
+    project_id  = equinix_metal_project.test.id
     description = "tfacc-project-key"
     read_only   = true
 }`)

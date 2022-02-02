@@ -55,7 +55,7 @@ func tconf(randstr string, randint int) string {
             connection_id = local.conn_id
             project_id = local.project_id
             port_id = data.equinix_metal_connection.test.ports[0].id
-            vlan_id = metal_vlan.test.id
+            vlan_id = equinix_metal_vlan.test.id
             nni_vlan = %d
         }
 
@@ -73,22 +73,22 @@ func testAccMetalVirtualCircuitConfig_dedicated(randstr string, randint int) str
         // No project ID. We only use the project resource to get org_id
         resource "equinix_metal_connection" "test" {
             name            = "tfacc-conn-%s"
-            organization_id = metal_project.test.organization_id
+            organization_id = equinix_metal_project.test.organization_id
             metro           = "sv"
             redundancy      = "redundant"
             type            = "dedicated"
         }
 
         resource "equinix_metal_vlan" "test" {
-            project_id = metal_project.test.id
+            project_id = equinix_metal_project.test.id
             metro      = "sv"
         }
 
         resource "equinix_metal_virtual_circuit" "test" {
-            connection_id = metal_connection.test.id
-            project_id = metal_project.test.id
-            port_id = metal_connection.test.ports[0].id
-            vlan_id = metal_vlan.test.id
+            connection_id = equinix_metal_connection.test.id
+            project_id = equinix_metal_project.test.id
+            port_id = equinix_metal_connection.test.ports[0].id
+            vlan_id = equinix_metal_vlan.test.id
             nni_vlan = %d
         }
 

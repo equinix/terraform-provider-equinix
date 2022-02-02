@@ -48,16 +48,16 @@ resource "equinix_metal_device" "test" {
   facilities       = ["ewr1"]
   operating_system = "ubuntu_16_04"
   billing_cycle    = "hourly"
-  project_id       = metal_project.test.id
+  project_id       = equinix_metal_project.test.id
 }
 
 data "equinix_metal_ip_block_ranges" "test" {
     facility         = "ewr1"
-    project_id       = metal_device.test.project_id
+    project_id       = equinix_metal_device.test.project_id
 }
 
 resource "equinix_metal_ip_attachment" "test" {
-    device_id = metal_device.test.id
+    device_id = equinix_metal_device.test.id
     cidr_notation = cidrsubnet(data.equinix_metal_ip_block_ranges.test.ipv6.0, 8,2)
 }
 `, name)

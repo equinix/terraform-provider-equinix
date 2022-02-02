@@ -99,12 +99,12 @@ resource "equinix_metal_project" "test" {
 resource "equinix_metal_project_ssh_key" "foobar" {
 	name = "%s"
 	public_key = "%s"
-	project_id = metal_project.test.id
+	project_id = equinix_metal_project.test.id
 }
 
 data "equinix_metal_project_ssh_key" "foobar" {
-	search = metal_project_ssh_key.foobar.name
-	project_id = metal_project.test.id
+	search = equinix_metal_project_ssh_key.foobar.name
+	project_id = equinix_metal_project.test.id
 }
 `, keyName, keyName, publicSshKey)
 
@@ -119,7 +119,7 @@ resource "equinix_metal_project" "test" {
 
 data "equinix_metal_project_ssh_key" "foobar" {
 	search = "%s"
-	project_id = metal_project.test.id
+	project_id = equinix_metal_project.test.id
 }`, keyName, keyName)
 	return config
 }
@@ -132,14 +132,14 @@ resource "equinix_metal_project" "test" {
 
 data "equinix_metal_project_ssh_key" "foobar" {
 	depends_on = [equinix_metal_project_ssh_key.foobar]
-	id = metal_project_ssh_key.foobar.id
-	project_id = metal_project.test.id
+	id = equinix_metal_project_ssh_key.foobar.id
+	project_id = equinix_metal_project.test.id
 }
 
 resource "equinix_metal_project_ssh_key" "foobar" {
 	name = "%s"
 	public_key = "%s"
-	project_id = metal_project.test.id
+	project_id = equinix_metal_project.test.id
 }`, keyName, keyName, publicSshKey)
 
 	return config

@@ -41,19 +41,19 @@ resource "equinix_metal_project" "foobar" {
 }
 
 resource "equinix_metal_reserved_ip_block" "test" {
-	project_id  = metal_project.foobar.id
+	project_id  = equinix_metal_project.foobar.id
 	metro       = "sv"
 	type        = "public_ipv4"
 	quantity    = 2
 }
 
 data "equinix_metal_reserved_ip_block" "test" {
-	project_id  = metal_project.foobar.id
+	project_id  = equinix_metal_project.foobar.id
     ip_address  = cidrhost(metal_reserved_ip_block.test.cidr_notation,1)
 }
 
 data "equinix_metal_reserved_ip_block" "test_id" {
-	id  = metal_reserved_ip_block.test.id
+	id  = equinix_metal_reserved_ip_block.test.id
 }
 `, name)
 }

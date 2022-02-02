@@ -43,15 +43,15 @@ resource "equinix_metal_project" "foobar" {
 }
 
 resource "equinix_metal_vlan" "foovlan" {
-    project_id = metal_project.foobar.id
+    project_id = equinix_metal_project.foobar.id
     facility = "%s"
     description = "%s"
 }
 
 data "equinix_metal_vlan" "dsvlan" {
-    facility = metal_vlan.foovlan.facility
-    project_id = metal_vlan.foovlan.project_id
-    vxlan = metal_vlan.foovlan.vxlan
+    facility = equinix_metal_vlan.foovlan.facility
+    project_id = equinix_metal_vlan.foovlan.project_id
+    vxlan = equinix_metal_vlan.foovlan.vxlan
 }
 `, projSuffix, fac, desc)
 }
@@ -99,28 +99,28 @@ resource "equinix_metal_project" "foobar" {
 }
 
 resource "equinix_metal_vlan" "foovlan" {
-    project_id = metal_project.foobar.id
+    project_id = equinix_metal_project.foobar.id
     metro = "%s"
     description = "%s"
     vxlan = 5
 }
 
 data "equinix_metal_vlan" "dsvlan" {
-    metro = metal_vlan.foovlan.metro
-    project_id = metal_vlan.foovlan.project_id
-    vxlan = metal_vlan.foovlan.vxlan
+    metro = equinix_metal_vlan.foovlan.metro
+    project_id = equinix_metal_vlan.foovlan.project_id
+    vxlan = equinix_metal_vlan.foovlan.vxlan
 }
 
 resource "equinix_metal_vlan" "barvlan" {
-    project_id = metal_project.foobar.id
-    metro = metal_vlan.foovlan.metro
+    project_id = equinix_metal_project.foobar.id
+    metro = equinix_metal_vlan.foovlan.metro
     vxlan = 6
 }
 
 data "equinix_metal_vlan" "bardsvlan" {
-    metro = metal_vlan.barvlan.metro
-    project_id = metal_vlan.barvlan.project_id
-    vxlan = metal_vlan.barvlan.vxlan
+    metro = equinix_metal_vlan.barvlan.metro
+    project_id = equinix_metal_vlan.barvlan.project_id
+    vxlan = equinix_metal_vlan.barvlan.vxlan
 }
 `, projSuffix, metro, desc)
 }
@@ -158,14 +158,14 @@ resource "equinix_metal_project" "foobar" {
 }
 
 resource "equinix_metal_vlan" "foovlan" {
-    project_id = metal_project.foobar.id
+    project_id = equinix_metal_project.foobar.id
     metro = "%s"
     description = "%s"
     vxlan = 5
 }
 
 data "equinix_metal_vlan" "dsvlan" {
-    vlan_id = metal_vlan.foovlan.id
+    vlan_id = equinix_metal_vlan.foovlan.id
 }
 `, projSuffix, metro, desc)
 }
@@ -203,14 +203,14 @@ resource "equinix_metal_project" "foobar" {
 }
 
 resource "equinix_metal_vlan" "foovlan" {
-    project_id = metal_project.foobar.id
+    project_id = equinix_metal_project.foobar.id
     metro = "%s"
     description = "%s"
     vxlan = 5
 }
 
 data "equinix_metal_vlan" "dsvlan" {
-    project_id = metal_vlan.foovlan.project_id
+    project_id = equinix_metal_vlan.foovlan.project_id
 }
 `, projSuffix, metro, desc)
 }

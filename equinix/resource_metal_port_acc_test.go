@@ -42,7 +42,7 @@ resource "equinix_metal_port" "bond0" {
   port_id = local.bond0_id
   bonded = true
   depends_on = [
-    metal_port.eth1,
+	equinix_metal_port.eth1,
   ]
 }
 
@@ -91,7 +91,7 @@ resource "equinix_metal_port" "bond0" {
   layer2 = false
   bonded = true
   depends_on = [
-    metal_port.eth1,
+	equinix_metal_port.eth1,
   ]
 }
 
@@ -119,7 +119,7 @@ resource "equinix_metal_port" "bond0" {
 resource "equinix_metal_vlan" "test" {
   description = "test"
   metro = "sv"
-  project_id = metal_project.test.id
+  project_id = equinix_metal_project.test.id
 }
 `, confAccMetalPort_base(name))
 }
@@ -139,14 +139,14 @@ resource "equinix_metal_port" "bond0" {
 resource "equinix_metal_vlan" "test1" {
   description = "test1"
   metro = "sv"
-  project_id = metal_project.test.id
+  project_id = equinix_metal_project.test.id
   vxlan = 1001
 }
 
 resource "equinix_metal_vlan" "test2" {
   description = "test2"
   metro = "sv"
-  project_id = metal_project.test.id
+  project_id = equinix_metal_project.test.id
   vxlan = 1002
 }
 `, confAccMetalPort_base(name))
@@ -170,7 +170,7 @@ func TestAccMetalPort_hybridBondedVxlan(t *testing.T) {
 				),
 			},
 			{
-				// Remove metal_port resources to trigger reset_on_delete
+				// Remove equinix_metal_port resources to trigger reset_on_delete
 				Config: confAccMetalPort_base(rs),
 			},
 			{
@@ -205,7 +205,7 @@ func testAccMetalPortTemplate(t *testing.T, conf func(string) string, expectedTy
 				ImportStateVerifyIgnore: []string{"reset_on_delete"},
 			},
 			{
-				// Remove metal_port resources to trigger reset_on_delete
+				// Remove equinix_metal_port resources to trigger reset_on_delete
 				Config: confAccMetalPort_base(rs),
 			},
 			{

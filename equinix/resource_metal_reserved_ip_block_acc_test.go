@@ -16,7 +16,7 @@ resource "equinix_metal_project" "foobar" {
 }
 
 resource "equinix_metal_reserved_ip_block" "test" {
-	project_id  = metal_project.foobar.id
+	project_id  = equinix_metal_project.foobar.id
 	type        = "global_ipv4"
 	description = "testdesc"
 	quantity    = 1
@@ -30,7 +30,7 @@ resource "equinix_metal_project" "foobar" {
 }
 
 resource "equinix_metal_reserved_ip_block" "test" {
-	project_id  = metal_project.foobar.id
+	project_id  = equinix_metal_project.foobar.id
 	facility    = "ewr1"
 	type        = "public_ipv4"
 	quantity    = 2
@@ -45,7 +45,7 @@ resource "equinix_metal_project" "foobar" {
 }
 
 resource "equinix_metal_reserved_ip_block" "test" {
-	project_id  = metal_project.foobar.id
+	project_id  = equinix_metal_project.foobar.id
 	metro       = "sv"
 	type        = "public_ipv4"
 	quantity    = 2
@@ -177,7 +177,7 @@ resource "equinix_metal_project" "foobar" {
 }
 
 resource "equinix_metal_reserved_ip_block" "test" {
-	project_id  = metal_project.foobar.id
+	project_id  = equinix_metal_project.foobar.id
 	%s
 	type        = "public_ipv4"
 	quantity    = 2
@@ -220,14 +220,14 @@ resource "equinix_metal_project" "foobar" {
 }
 
 resource "equinix_metal_reserved_ip_block" "test" {
-	project_id  = metal_project.foobar.id
+	project_id  = equinix_metal_project.foobar.id
 	facility    = "ewr1"
 	type        = "public_ipv4"
 	quantity    = 2
 }
 
 resource "equinix_metal_device" "test" {
-  project_id       = metal_project.foobar.id
+  project_id       = equinix_metal_project.foobar.id
   facilities       = ["ewr1"]
   plan             = "t1.small.x86"
   operating_system = "ubuntu_16_04"

@@ -42,8 +42,8 @@ func testAccMetalConnectionConfig_shared(randstr string) string {
 
         resource "equinix_metal_connection" "test" {
             name            = "tfacc-conn-%s"
-            organization_id = metal_project.test.organization_id
-            project_id      = metal_project.test.id
+            organization_id = equinix_metal_project.test.organization_id
+            project_id      = equinix_metal_project.test.id
             metro           = "sv"
             redundancy      = "redundant"
             type            = "shared"
@@ -115,7 +115,7 @@ func testAccMetalConnectionConfig_dedicated(randstr string) string {
         // No project ID. We only use the project resource to get org_id
         resource "equinix_metal_connection" "test" {
             name            = "tfacc-conn-%s"
-            organization_id = metal_project.test.organization_id
+            organization_id = equinix_metal_project.test.organization_id
             metro           = "sv"
             redundancy      = "redundant"
             type            = "dedicated"
@@ -128,7 +128,7 @@ func testAccMetalConnectionConfig_dedicated(randstr string) string {
 func testDataSourceMetalConnectionConfig_dedicated() string {
 	return `
 		data "equinix_metal_connection" "test" {
-            connection_id = metal_connection.test.id
+            connection_id = equinix_metal_connection.test.id
         }`
 }
 
@@ -165,7 +165,7 @@ func testAccMetalConnectionConfig_tunnel(randstr string) string {
 
         resource "equinix_metal_connection" "test" {
             name            = "tfacc-conn-%s"
-            organization_id = metal_project.test.organization_id
+            organization_id = equinix_metal_project.test.organization_id
             metro           = "sv"
             redundancy      = "redundant"
             type            = "dedicated"

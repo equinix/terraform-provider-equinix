@@ -53,8 +53,8 @@ resource "equinix_metal_device" "test" {
 }
 
 data "equinix_metal_device" "test" {
-  project_id       = metal_project.test.id
-  hostname         = metal_device.test.hostname
+  project_id       = equinix_metal_project.test.id
+  hostname         = equinix_metal_device.test.hostname
 }`, projSuffix)
 }
 
@@ -103,6 +103,6 @@ resource "equinix_metal_device" "test" {
 }
 
 data "equinix_metal_device" "test" {
-  device_id       = metal_device.test.id
+  device_id       = equinix_metal_device.test.id
 }`, projSuffix)
 }

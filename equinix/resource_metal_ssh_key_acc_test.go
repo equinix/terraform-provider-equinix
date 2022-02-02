@@ -242,6 +242,6 @@ resource "equinix_metal_project" "test" {
 resource "equinix_metal_project_ssh_key" "foobar" {
     name = "tfacc-project-key-%d"
     public_key = "%s"
-	project_id = metal_project.test.id
+	project_id = equinix_metal_project.test.id
 }`, rInt, rInt, publicSshKey)
 }

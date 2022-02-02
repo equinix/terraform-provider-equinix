@@ -40,11 +40,11 @@ resource "equinix_metal_device" "test" {
   metro            = "sv"
   operating_system = "ubuntu_20_04"
   billing_cycle    = "hourly"
-  project_id       = metal_project.test.id
+  project_id       = equinix_metal_project.test.id
 }
 
 data "equinix_metal_port" "test" {
-    device_id = metal_device.test.id
+    device_id = equinix_metal_device.test.id
     name      = "eth0"
 }
 
@@ -83,11 +83,11 @@ resource "equinix_metal_device" "test" {
   metro            = "sv"
   operating_system = "ubuntu_20_04"
   billing_cycle    = "hourly"
-  project_id       = metal_project.test.id
+  project_id       = equinix_metal_project.test.id
 }
 
 data "equinix_metal_port" "test" {
-  port_id        = metal_device.test.ports[0].id
+  port_id        = equinix_metal_device.test.ports[0].id
 }
 `, name)
 }

@@ -36,17 +36,17 @@ resource "equinix_metal_project" "test" {
 resource "equinix_metal_vlan" "test" {
     description = "test VLAN in SV"
     metro       = "sv"
-    project_id  = metal_project.test.id
+    project_id  = equinix_metal_project.test.id
 }
 
 resource "equinix_metal_gateway" "test" {
-    project_id               = metal_project.test.id
-    vlan_id                  = metal_vlan.test.id
+    project_id               = equinix_metal_project.test.id
+    vlan_id                  = equinix_metal_vlan.test.id
     private_ipv4_subnet_size = 8
 }
 
 data "equinix_metal_gateway" "test" {
-    gateway_id = metal_gateway.test.id
+    gateway_id = equinix_metal_gateway.test.id
 }
 `)
 }

@@ -72,7 +72,7 @@ resource "equinix_metal_spot_market_request" "req" {
 }
 
 data "equinix_metal_spot_market_request" "dreq" {
-  request_id = metal_spot_market_request.req.id
+  request_id = equinix_metal_spot_market_request.req.id
 }
 `, projSuffix)
 }
@@ -101,7 +101,7 @@ resource "equinix_metal_spot_market_request" "req" {
 }
 
 data "equinix_metal_spot_market_request" "dreq" {
-  request_id = metal_spot_market_request.req.id
+  request_id = equinix_metal_spot_market_request.req.id
 }
 `, projSuffix)
 }

@@ -86,11 +86,11 @@ data "equinix_metal_spot_market_price" "test" {
 }
 
 data "equinix_metal_spot_market_request" "dreq" {
-	request_id = metal_spot_market_request.request.id
+	request_id = equinix_metal_spot_market_request.request.id
 }
 
 resource "equinix_metal_spot_market_request" "request" {
-  project_id       = metal_project.test.id
+  project_id       = equinix_metal_project.test.id
   max_bid_price    = data.equinix_metal_spot_market_price.test.price * 1.2
   facilities       = ["sv15"]
   devices_min      = 1
@@ -118,7 +118,7 @@ data "equinix_metal_spot_market_price" "test" {
 }
 
 resource "equinix_metal_spot_market_request" "request" {
-  project_id       = metal_project.test.id
+  project_id       = equinix_metal_project.test.id
   max_bid_price    = data.equinix_metal_spot_market_price.test.price * 1.2
   facilities       = ["sv15"]
   devices_min      = 1
