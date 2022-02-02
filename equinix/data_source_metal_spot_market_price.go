@@ -39,7 +39,7 @@ func dataSourceSpotMarketPrice() *schema.Resource {
 }
 
 func dataSourceMetalSpotMarketPriceRead(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*Config).Client()
+	client := meta.(*Config).metal
 	sms := client.SpotMarket.(*packngo.SpotMarketServiceOp)
 	facility := d.Get("facility").(string)
 	metro := d.Get("metro").(string)

@@ -25,15 +25,15 @@ func init() {
 
 func testSweepProjects(region string) error {
 	log.Printf("[DEBUG] Sweeping projects")
-	meta, err := sharedConfigForRegion(region)
+	config, err := sharedConfigForRegion(region)
 	if err != nil {
-		return fmt.Errorf("Error getting client for sweeping projects: %s", err)
+		return fmt.Errorf("[INFO][SWEEPER_LOG] Error getting client for sweeping projects: %s", err)
 	}
-	client := meta.Client()
+	client := config.NewMetalClient()
 
 	ps, _, err := client.Projects.List(nil)
 	if err != nil {
-		return fmt.Errorf("Error getting project list for sweeping projects: %s", err)
+		return fmt.Errorf("[INFO][SWEEPER_LOG] Error getting project list for sweeping projects: %s", err)
 	}
 	pids := []string{}
 	for _, p := range ps {
@@ -328,7 +328,7 @@ func TestAccMetalProject_BGPUpdate(t *testing.T) {
 }
 
 func testAccMetalProjectCheckDestroyed(s *terraform.State) error {
-	client := testAccProvider.Meta().(*Config).Client()
+	client := testAccProvider.Meta().(*Config).metal
 
 	for _, rs := range s.RootModule().Resources {
 		if rs.Type != "equinix_metal_project" {
@@ -352,7 +352,7 @@ func testAccMetalProjectExists(n string, project *packngo.Project) resource.Test
 			return fmt.Errorf("No Record ID is set")
 		}
 
-		client := testAccProvider.Meta().(*Config).Client()
+		client := testAccProvider.Meta().(*Config).metal
 
 		foundProject, _, err := client.Projects.Get(rs.Primary.ID, nil)
 		if err != nil {

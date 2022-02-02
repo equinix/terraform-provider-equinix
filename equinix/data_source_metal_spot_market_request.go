@@ -70,7 +70,7 @@ func dataSourceMetalSpotMarketRequest() *schema.Resource {
 	}
 }
 func dataSourceMetalSpotMarketRequestRead(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*Config).Client()
+	client := meta.(*Config).metal
 	id := d.Get("request_id").(string)
 
 	smr, _, err := client.SpotMarketRequests.Get(id, &packngo.GetOptions{Includes: []string{"project", "devices", "facilities", "metro"}})

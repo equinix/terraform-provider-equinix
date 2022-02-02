@@ -122,7 +122,7 @@ resource "equinix_metal_ip_attachment" "test" {
 }
 
 func testAccMetalIPAttachmentCheckDestroyed(s *terraform.State) error {
-	client := testAccProvider.Meta().(*Config).Client()
+	client := testAccProvider.Meta().(*Config).metal
 
 	for _, rs := range s.RootModule().Resources {
 		if rs.Type != "equinix_metal_ip_attachment" {

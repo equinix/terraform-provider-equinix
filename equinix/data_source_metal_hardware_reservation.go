@@ -64,7 +64,7 @@ func dataSourceMetalHardwareReservation() *schema.Resource {
 }
 
 func dataSourceMetalHardwareReservationRead(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*Config).Client()
+	client := meta.(*Config).metal
 	hrIdRaw, hrIdOk := d.GetOk("id")
 	dIdRaw, dIdOk := d.GetOk("device_id")
 

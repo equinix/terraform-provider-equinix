@@ -111,7 +111,7 @@ func resourceMetalVolume() *schema.Resource {
 }
 
 func resourceMetalVolumeDelete(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*Config).Client()
+	client := meta.(*Config).metal
 
 	resp, err := client.Volumes.Delete(d.Id())
 	if ignoreResponseErrors(httpForbidden, httpNotFound)(resp, err) != nil {

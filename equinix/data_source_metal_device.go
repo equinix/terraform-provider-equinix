@@ -201,7 +201,7 @@ func dataSourceMetalDevice() *schema.Resource {
 }
 
 func dataSourceMetalDeviceRead(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*Config).Client()
+	client := meta.(*Config).metal
 
 	hostnameRaw, hostnameOK := d.GetOk("hostname")
 	projectIdRaw, projectIdOK := d.GetOk("project_id")

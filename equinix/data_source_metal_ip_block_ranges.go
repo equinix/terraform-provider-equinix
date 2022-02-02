@@ -77,7 +77,7 @@ func metroMatch(ref string, metro *packngo.Metro) bool {
 }
 
 func dataSourceMetalIPBlockRangesRead(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*Config).Client()
+	client := meta.(*Config).metal
 	projectID := d.Get("project_id").(string)
 	ips, _, err := client.ProjectIPs.List(projectID, nil)
 	if err != nil {

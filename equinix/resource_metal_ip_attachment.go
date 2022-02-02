@@ -34,7 +34,7 @@ func resourceMetalIPAttachment() *schema.Resource {
 }
 
 func resourceMetalIPAttachmentCreate(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*Config).Client()
+	client := meta.(*Config).metal
 	deviceID := d.Get("device_id").(string)
 	ipa := d.Get("cidr_notation").(string)
 
@@ -51,7 +51,7 @@ func resourceMetalIPAttachmentCreate(d *schema.ResourceData, meta interface{}) e
 }
 
 func resourceMetalIPAttachmentRead(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*Config).Client()
+	client := meta.(*Config).metal
 	assignment, _, err := client.DeviceIPs.Get(d.Id(), nil)
 	if err != nil {
 		err = friendlyError(err)
@@ -86,7 +86,7 @@ func resourceMetalIPAttachmentRead(d *schema.ResourceData, meta interface{}) err
 }
 
 func resourceMetalIPAttachmentDelete(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*Config).Client()
+	client := meta.(*Config).metal
 
 	resp, err := client.DeviceIPs.Unassign(d.Id())
 	if ignoreResponseErrors(httpForbidden, httpNotFound)(resp, err) != nil {

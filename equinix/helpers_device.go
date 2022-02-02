@@ -115,7 +115,7 @@ func waitUntilReservationProvisionable(id string, meta interface{}) error {
 		Pending: []string{"false"},
 		Target:  []string{"true"},
 		Refresh: func() (interface{}, string, error) {
-			client := meta.(*Config).Client()
+			client := meta.(*Config).metal
 			r, _, err := client.HardwareReservations.Get(id, nil)
 			if err != nil {
 				return 42, "error", friendlyError(err)
@@ -168,7 +168,7 @@ func waitForDeviceAttribute(d *schema.ResourceData, targets []string, pending []
 		Pending: pending,
 		Target:  targets,
 		Refresh: func() (interface{}, string, error) {
-			client := meta.(*Config).Client()
+			client := meta.(*Config).metal
 			device, _, err := client.Devices.Get(d.Id(), &packngo.GetOptions{Includes: []string{"project"}})
 			if err == nil {
 				retAttrVal := device.State
@@ -196,7 +196,7 @@ func waitForDeviceAttribute(d *schema.ResourceData, targets []string, pending []
 
 // powerOnAndWait Powers on the device and waits for it to be active.
 func powerOnAndWait(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*Config).Client()
+	client := meta.(*Config).metal
 	_, err := client.Devices.PowerOn(d.Id())
 	if err != nil {
 		return friendlyError(err)

@@ -76,7 +76,7 @@ func findOrgByName(os []packngo.Organization, name string) (*packngo.Organizatio
 }
 
 func dataSourceMetalOrganizationRead(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*Config).Client()
+	client := meta.(*Config).metal
 	nameRaw, nameOK := d.GetOk("name")
 	orgIdRaw, orgIdOK := d.GetOk("organization_id")
 

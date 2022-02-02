@@ -129,7 +129,7 @@ func expandBGPConfig(d *schema.ResourceData) packngo.CreateBGPConfigRequest {
 }
 
 func resourceMetalProjectCreate(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*Config).Client()
+	client := meta.(*Config).metal
 
 	createRequest := &packngo.ProjectCreateRequest{
 		Name:           d.Get("name").(string),
@@ -164,7 +164,7 @@ func resourceMetalProjectCreate(d *schema.ResourceData, meta interface{}) error 
 }
 
 func resourceMetalProjectRead(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*Config).Client()
+	client := meta.(*Config).metal
 
 	proj, _, err := client.Projects.Get(d.Id(), nil)
 	if err != nil {
@@ -236,7 +236,7 @@ func flattenBGPConfig(l *packngo.BGPConfig) []map[string]interface{} {
 }
 
 func resourceMetalProjectUpdate(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*Config).Client()
+	client := meta.(*Config).metal
 	updateRequest := &packngo.ProjectUpdateRequest{}
 	if d.HasChange("name") {
 		pName := d.Get("name").(string)
@@ -287,7 +287,7 @@ func resourceMetalProjectUpdate(d *schema.ResourceData, meta interface{}) error 
 }
 
 func resourceMetalProjectDelete(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*Config).Client()
+	client := meta.(*Config).metal
 
 	resp, err := client.Projects.Delete(d.Id())
 	if ignoreResponseErrors(httpForbidden, httpNotFound)(resp, err) != nil {

@@ -239,7 +239,7 @@ func TestAccMetalPort_hybridBonded(t *testing.T) {
 }
 
 func testAccMetalPortDestroyed(s *terraform.State) error {
-	client := testAccProvider.Meta().(*Config).Client()
+	client := testAccProvider.Meta().(*Config).metal
 
 	port_ids := []string{}
 

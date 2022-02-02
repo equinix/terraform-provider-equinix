@@ -332,7 +332,7 @@ func TestAccMetalPortVlanAttachment_hybridMultipleVlans(t *testing.T) {
 }
 
 func testAccMetalPortVlanAttachmentCheckDestroyed(s *terraform.State) error {
-	client := testAccProvider.Meta().(*Config).Client()
+	client := testAccProvider.Meta().(*Config).metal
 
 	device_id := ""
 	vlan_id := ""

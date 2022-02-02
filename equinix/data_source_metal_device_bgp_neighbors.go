@@ -103,7 +103,7 @@ func dataSourceMetalDeviceBGPNeighbors() *schema.Resource {
 }
 
 func dataSourceMetalDeviceBGPNeighborsRead(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*Config).Client()
+	client := meta.(*Config).metal
 	deviceID := d.Get("device_id").(string)
 
 	bgpNeighborsRaw, _, err := client.Devices.ListBGPNeighbors(deviceID, nil)

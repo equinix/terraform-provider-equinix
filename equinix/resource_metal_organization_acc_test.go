@@ -22,15 +22,15 @@ func init() {
 
 func testSweepOrganizations(region string) error {
 	log.Printf("[DEBUG] Sweeping organizations")
-	meta, err := sharedConfigForRegion(region)
+	config, err := sharedConfigForRegion(region)
 	if err != nil {
-		return fmt.Errorf("Error getting client for sweeping organizations: %s", err)
+		return fmt.Errorf("[INFO][SWEEPER_LOG] Error getting client for sweeping organizations: %s", err)
 	}
-	client := meta.Client()
+	client := config.NewMetalClient()
 
 	os, _, err := client.Organizations.List(nil)
 	if err != nil {
-		return fmt.Errorf("Error getting org list for sweeping organizations: %s", err)
+		return fmt.Errorf("[INFO][SWEEPER_LOG] Error getting org list for sweeping organizations: %s", err)
 	}
 	oids := []string{}
 	for _, o := range os {
@@ -91,7 +91,7 @@ func TestAccMetalAccOrganization_importBasic(t *testing.T) {
 }
 
 func testAccMetalOrganizationCheckDestroyed(s *terraform.State) error {
-	client := testAccProvider.Meta().(*Config).Client()
+	client := testAccProvider.Meta().(*Config).metal
 
 	for _, rs := range s.RootModule().Resources {
 		if rs.Type != "equinix_metal_organization" {
@@ -115,7 +115,7 @@ func testAccMetalOrganizationExists(n string, org *packngo.Organization) resourc
 			return fmt.Errorf("No Record ID is set")
 		}
 
-		client := testAccProvider.Meta().(*Config).Client()
+		client := testAccProvider.Meta().(*Config).metal
 
 		foundOrg, _, err := client.Organizations.Get(rs.Primary.ID, nil)
 		if err != nil {

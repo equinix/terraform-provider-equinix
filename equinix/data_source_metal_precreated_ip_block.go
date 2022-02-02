@@ -65,7 +65,7 @@ func dataSourceMetalPreCreatedIPBlock() *schema.Resource {
 }
 
 func dataSourceMetalPreCreatedIPBlockRead(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*Config).Client()
+	client := meta.(*Config).metal
 	projectID := d.Get("project_id").(string)
 	ips, _, err := client.ProjectIPs.List(projectID, nil)
 	if err != nil {

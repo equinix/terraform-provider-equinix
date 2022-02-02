@@ -64,7 +64,7 @@ func resourceMetalOrganization() *schema.Resource {
 }
 
 func resourceMetalOrganizationCreate(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*Config).Client()
+	client := meta.(*Config).metal
 
 	createRequest := &packngo.OrganizationCreateRequest{
 		Name: d.Get("name").(string),
@@ -97,7 +97,7 @@ func resourceMetalOrganizationCreate(d *schema.ResourceData, meta interface{}) e
 }
 
 func resourceMetalOrganizationRead(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*Config).Client()
+	client := meta.(*Config).metal
 
 	key, _, err := client.Organizations.Get(d.Id(), nil)
 	if err != nil {
@@ -126,7 +126,7 @@ func resourceMetalOrganizationRead(d *schema.ResourceData, meta interface{}) err
 }
 
 func resourceMetalOrganizationUpdate(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*Config).Client()
+	client := meta.(*Config).metal
 
 	updateRequest := &packngo.OrganizationUpdateRequest{}
 
@@ -163,7 +163,7 @@ func resourceMetalOrganizationUpdate(d *schema.ResourceData, meta interface{}) e
 }
 
 func resourceMetalOrganizationDelete(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*Config).Client()
+	client := meta.(*Config).metal
 
 	resp, err := client.Organizations.Delete(d.Id())
 	if ignoreResponseErrors(httpForbidden, httpNotFound)(resp, err) != nil {

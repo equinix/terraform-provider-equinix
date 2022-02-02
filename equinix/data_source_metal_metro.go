@@ -37,7 +37,7 @@ func dataSourceMetalMetro() *schema.Resource {
 }
 
 func dataSourceMetalMetroRead(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*Config).Client()
+	client := meta.(*Config).metal
 	code := d.Get("code").(string)
 
 	_, capacityOk := d.GetOk("capacity")

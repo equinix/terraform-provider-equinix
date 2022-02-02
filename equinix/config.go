@@ -33,18 +33,20 @@ const (
 // Config is the configuration structure used to instantiate the Equinix
 // provider.
 type Config struct {
-	BaseURL        string
-	AuthToken      string
-	ClientID       string
-	ClientSecret   string
-	MaxRetries     int
-	MaxRetryWait   time.Duration
-	RequestTimeout time.Duration
-	PageSize       int
-	Token          string
+	BaseURL        	string
+	AuthToken      	string
+	ClientID       	string
+	ClientSecret   	string
+	MaxRetries     	int
+	MaxRetryWait   	time.Duration
+	RequestTimeout	time.Duration
+	PageSize       	int
+	Token          	string
 
-	ecx              ecx.Client
-	ne               ne.Client
+	ecx		ecx.Client
+	ne		ne.Client
+	metal	*packngo.Client
+
 	terraformVersion string
 }
 
@@ -93,8 +95,11 @@ func (c *Config) Load(ctx context.Context) error {
 	neClient.SetHeaders(map[string]string{
 		"User-agent": c.fullUserAgent("equinix/ne-go"),
 	})
+
 	c.ecx = ecxClient
 	c.ne = neClient
+	c.metal = c.NewMetalClient()
+
 	return nil
 }
 
@@ -152,8 +157,8 @@ func (c *Config) fullUserAgent(suffix string) string {
 	return strings.TrimSpace(userAgent)
 }
 
-// Client returns a new client for accessing Equinix Metal's API.
-func (c *Config) Client() *packngo.Client {
+// NewMetalClient returns a new client for accessing Equinix Metal's API.
+func (c *Config) NewMetalClient() *packngo.Client {
 	transport := logging.NewTransport("Equinix Metal", http.DefaultTransport)
 	retryClient := retryablehttp.NewClient()
 	retryClient.HTTPClient.Transport = transport
@@ -166,6 +171,6 @@ func (c *Config) Client() *packngo.Client {
 	baseURL.Path = path.Join(baseURL.Path, metalBasePath) + "/"
 	client, _ := packngo.NewClientWithBaseURL(consumerToken, c.AuthToken, standardClient, baseURL.String())
 	client.UserAgent = c.fullUserAgent(client.UserAgent)
-
+	
 	return client
 }

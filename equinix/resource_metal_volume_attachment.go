@@ -31,7 +31,7 @@ func resourceMetalVolumeAttachment() *schema.Resource {
 }
 
 func resourceMetalVolumeAttachmentDelete(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*Config).Client()
+	client := meta.(*Config).metal
 	resp, err := client.VolumeAttachments.Delete(d.Id())
 	return ignoreResponseErrors(httpForbidden, httpNotFound)(resp, err)
 }

@@ -140,7 +140,7 @@ func resourceMetalPortUpdate(d *schema.ResourceData, meta interface{}) error {
 }
 
 func resourceMetalPortRead(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*Config).Client()
+	client := meta.(*Config).metal
 	port, err := getPortByResourceData(d, client)
 
 	if err != nil {

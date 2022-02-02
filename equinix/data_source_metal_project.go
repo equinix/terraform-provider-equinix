@@ -104,7 +104,7 @@ func dataSourceMetalProject() *schema.Resource {
 }
 
 func dataSourceMetalProjectRead(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*Config).Client()
+	client := meta.(*Config).metal
 	nameRaw, nameOK := d.GetOk("name")
 	projectIdRaw, projectIdOK := d.GetOk("project_id")
 

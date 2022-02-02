@@ -20,15 +20,15 @@ func init() {
 // Will remove all User API keys with Description starting with "tfacc-"
 func testSweepUserAPIKeys(region string) error {
 	log.Printf("[DEBUG] Sweeping user_api keys")
-	meta, err := sharedConfigForRegion(region)
+	config, err := sharedConfigForRegion(region)
 	if err != nil {
-		return fmt.Errorf("Error getting client for sweeping user_api keys: %s", err)
+		return fmt.Errorf("[INFO][SWEEPER_LOG] Error getting client for sweeping user_api keys: %s", err)
 	}
-	client := meta.Client()
+	client := config.NewMetalClient()
 
 	userApiKeys, _, err := client.APIKeys.UserList(nil)
 	if err != nil {
-		return fmt.Errorf("Error getting list for sweeping user_api keys: %s", err)
+		return fmt.Errorf("[INFO][SWEEPER_LOG] Error getting list for sweeping user_api keys: %s", err)
 	}
 	ids := []string{}
 	for _, k := range userApiKeys {
@@ -47,7 +47,7 @@ func testSweepUserAPIKeys(region string) error {
 }
 
 func testAccMetalUserAPIKeyCheckDestroyed(s *terraform.State) error {
-	client := testAccProvider.Meta().(*Config).Client()
+	client := testAccProvider.Meta().(*Config).metal
 	for _, rs := range s.RootModule().Resources {
 		if rs.Type != "equinix_metal_user_api_key" {
 			continue

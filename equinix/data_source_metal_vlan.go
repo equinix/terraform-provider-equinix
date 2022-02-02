@@ -66,7 +66,7 @@ func dataSourceMetalVlan() *schema.Resource {
 }
 
 func dataSourceMetalVlanRead(d *schema.ResourceData, meta interface{}) error {
-	c := meta.(*packngo.Client)
+	client := meta.(*Config).metal
 
 	projectRaw, projectOk := d.GetOk("project_id")
 	vxlanRaw, vxlanOk := d.GetOk("vxlan")
@@ -82,7 +82,7 @@ func dataSourceMetalVlanRead(d *schema.ResourceData, meta interface{}) error {
 
 	if vlanIdOk {
 		var err error
-		vlan, _, err = c.ProjectVirtualNetworks.Get(
+		vlan, _, err = client.ProjectVirtualNetworks.Get(
 			vlanIdRaw.(string),
 			&packngo.GetOptions{Includes: []string{"assigned_to"}},
 		)
@@ -95,7 +95,7 @@ func dataSourceMetalVlanRead(d *schema.ResourceData, meta interface{}) error {
 		vxlan := vxlanRaw.(int)
 		metro := metroRaw.(string)
 		facility := facilityRaw.(string)
-		vlans, _, err := c.ProjectVirtualNetworks.List(
+		vlans, _, err := client.ProjectVirtualNetworks.List(
 			projectRaw.(string),
 			&packngo.GetOptions{Includes: []string{"assigned_to"}},
 		)

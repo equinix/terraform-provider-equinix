@@ -74,7 +74,7 @@ func resourceMetalVlan() *schema.Resource {
 }
 
 func resourceMetalVlanCreate(d *schema.ResourceData, meta interface{}) error {
-	c := meta.(*packngo.Client)
+	client := meta.(*Config).metal
 
 	facRaw, facOk := d.GetOk("facility")
 	metroRaw, metroOk := d.GetOk("metro")
@@ -98,7 +98,7 @@ func resourceMetalVlanCreate(d *schema.ResourceData, meta interface{}) error {
 	if facOk {
 		createRequest.Facility = facRaw.(string)
 	}
-	vlan, _, err := c.ProjectVirtualNetworks.Create(createRequest)
+	vlan, _, err := client.ProjectVirtualNetworks.Create(createRequest)
 	if err != nil {
 		return friendlyError(err)
 	}
@@ -107,9 +107,9 @@ func resourceMetalVlanCreate(d *schema.ResourceData, meta interface{}) error {
 }
 
 func resourceMetalVlanRead(d *schema.ResourceData, meta interface{}) error {
-	c := meta.(*packngo.Client)
+	client := meta.(*Config).metal
 
-	vlan, _, err := c.ProjectVirtualNetworks.Get(d.Id(),
+	vlan, _, err := client.ProjectVirtualNetworks.Get(d.Id(),
 		&packngo.GetOptions{Includes: []string{"assigned_to"}})
 	if err != nil {
 		err = friendlyError(err)
@@ -129,7 +129,7 @@ func resourceMetalVlanRead(d *schema.ResourceData, meta interface{}) error {
 }
 
 func resourceMetalVlanDelete(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*Config).Client()
+	client := meta.(*Config).metal
 	id := d.Id()
 	vlan, resp, err := client.ProjectVirtualNetworks.Get(id, &packngo.GetOptions{Includes: []string{"instances", "instances.network_ports.virtual_networks", "internet_gateway"}})
 	if ignoreResponseErrors(httpForbidden, httpNotFound)(resp, err) != nil {
