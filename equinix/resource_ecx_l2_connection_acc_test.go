@@ -35,7 +35,7 @@ func init() {
 func testSweepECXL2Connections(region string) error {
 	config, err := sharedConfigForRegion(region)
 	if err != nil {
-		return err
+		return fmt.Errorf("[INFO][SWEEPER_LOG] Error getting configuration for sweeping l2 connections: %s", err)
 	}
 	if err := config.Load(context.Background()); err != nil {
 		log.Printf("[INFO][SWEEPER_LOG] error loading configuration: %s", err)

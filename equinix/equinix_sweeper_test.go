@@ -17,17 +17,19 @@ func TestMain(m *testing.M) {
 }
 
 func sharedConfigForRegion(region string) (*Config, error) {
-	endpoint, err := getFromEnv(endpointEnvVar)
+	endpoint := getFromEnvDefault(endpointEnvVar, DefaultBaseURL)
+	clientID := ""
+	clientSecret := ""
+	clientToken, err := getFromEnv(clientTokenEnvVar)
 	if err != nil {
-		return nil, err
-	}
-	clientID, err := getFromEnv(clientIDEnvVar)
-	if err != nil {
-		return nil, err
-	}
-	clientSecret, err := getFromEnv(clientSecretEnvVar)
-	if err != nil {
-		return nil, err
+		clientID, err = getFromEnv(clientIDEnvVar)
+		if err != nil {
+			return nil, fmt.Errorf("one of '%s' or pair '%s' - '%s' must be set for acceptance tests", clientTokenEnvVar, clientIDEnvVar, clientSecretEnvVar)
+		}
+		clientSecret, err = getFromEnv(clientSecretEnvVar)
+		if err != nil {
+			return nil, fmt.Errorf("one of '%s' or pair '%s' - '%s' must be set for acceptance tests", clientTokenEnvVar, clientIDEnvVar, clientSecretEnvVar)
+		}
 	}
 	clientTimeout, err := getFromEnv(clientTimeoutEnvVar)
 	if err != nil {
@@ -44,6 +46,7 @@ func sharedConfigForRegion(region string) (*Config, error) {
 	return &Config{
 		AuthToken:      metalAuthToken,
 		BaseURL:        endpoint,
+		Token:			clientToken,
 		ClientID:       clientID,
 		ClientSecret:   clientSecret,
 		RequestTimeout: time.Duration(clientTimeoutInt) * time.Second,

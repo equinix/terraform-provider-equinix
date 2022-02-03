@@ -1,6 +1,7 @@
 package equinix
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"net"
@@ -25,11 +26,13 @@ func testSweepDevices(region string) error {
 	log.Printf("[DEBUG] Sweeping devices")
 	config, err := sharedConfigForRegion(region)
 	if err != nil {
-		return fmt.Errorf("[INFO][SWEEPER_LOG] Error getting client for sweeping devices: %s", err)
+		return fmt.Errorf("[INFO][SWEEPER_LOG] Error getting configuration for sweeping devices: %s", err)
 	}
-	client := config.NewMetalClient()
-
-	ps, _, err := client.Projects.List(nil)
+	if err := config.Load(context.Background()); err != nil {
+		log.Printf("[INFO][SWEEPER_LOG] error loading configuration: %s", err)
+		return err
+	}
+	ps, _, err := config.metal.Projects.List(nil)
 	if err != nil {
 		return fmt.Errorf("[INFO][SWEEPER_LOG] Error getting project list for sweepeing devices: %s", err)
 	}
@@ -41,7 +44,7 @@ func testSweepDevices(region string) error {
 	}
 	dids := []string{}
 	for _, pid := range pids {
-		ds, _, err := client.Devices.List(pid, nil)
+		ds, _, err := config.metal.Devices.List(pid, nil)
 		if err != nil {
 			return fmt.Errorf("Error listing devices to sweep: %s", err)
 		}
@@ -52,7 +55,7 @@ func testSweepDevices(region string) error {
 
 	for _, did := range dids {
 		log.Printf("Removing device %s", did)
-		_, err := client.Devices.Delete(did, true)
+		_, err := config.metal.Devices.Delete(did, true)
 		if err != nil {
 			return fmt.Errorf("Error deleting device %s", err)
 		}

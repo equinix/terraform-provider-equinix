@@ -50,9 +50,9 @@ func Provider() *schema.Provider {
 			"endpoint": {
 				Type:         schema.TypeString,
 				Optional:     true,
-				DefaultFunc:  schema.EnvDefaultFunc(endpointEnvVar, "https://api.equinix.com"),
+				DefaultFunc:  schema.EnvDefaultFunc(endpointEnvVar, DefaultBaseURL),
 				ValidateFunc: validation.IsURLWithHTTPorHTTPS,
-				Description:  "The Equinix API base URL to point out desired environment. Defaults to https://api.equinix.com",
+				Description:  fmt.Sprintf("The Equinix API base URL to point out desired environment. Defaults to %s", DefaultBaseURL),
 			},
 			"client_id": {
 				Type:        schema.TypeString,

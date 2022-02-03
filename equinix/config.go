@@ -50,6 +50,8 @@ type Config struct {
 	terraformVersion string
 }
 
+var DefaultBaseURL = "https://api.equinix.com"
+
 // Load function validates configuration structure fields and configures
 // all required API clients.
 func (c *Config) Load(ctx context.Context) error {
@@ -68,11 +70,8 @@ func (c *Config) Load(ctx context.Context) error {
 			Transport: oauthTransport,
 		}
 	} else {
-		if c.ClientID == "" {
-			return fmt.Errorf("clientId cannot be empty")
-		}
-		if c.ClientSecret == "" {
-			return fmt.Errorf("clientSecret cannot be empty")
+		if c.ClientID == "" || c.ClientSecret == "" {
+			return fmt.Errorf("one of 'token' or pair 'client_id' - 'client_secret' must be set")
 		}
 		authConfig := oauth2.Config{
 			ClientID:     c.ClientID,

@@ -1,6 +1,7 @@
 package equinix
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"net/http"
@@ -24,11 +25,13 @@ func testSweepSSHKeys(region string) error {
 	log.Printf("[DEBUG] Sweeping ssh keys")
 	config, err := sharedConfigForRegion(region)
 	if err != nil {
-		return fmt.Errorf("[INFO][SWEEPER_LOG] Error getting client for sweeping ssh keys: %s", err)
+		return fmt.Errorf("[INFO][SWEEPER_LOG] Error getting configuration for sweeping ssh keys: %s", err)
 	}
-	client := config.NewMetalClient()
-
-	sshkeys, _, err := client.SSHKeys.List()
+	if err := config.Load(context.Background()); err != nil {
+		log.Printf("[INFO][SWEEPER_LOG] error loading configuration: %s", err)
+		return err
+	}
+	sshkeys, _, err := config.metal.SSHKeys.List()
 	if err != nil {
 		return fmt.Errorf("[INFO][SWEEPER_LOG] Error getting list for sweeping ssh keys: %s", err)
 	}
@@ -40,7 +43,7 @@ func testSweepSSHKeys(region string) error {
 	}
 	for _, id := range ids {
 		log.Printf("Removing ssh key %s", id)
-		resp, err := client.SSHKeys.Delete(id)
+		resp, err := config.metal.SSHKeys.Delete(id)
 		if err != nil && resp.StatusCode != http.StatusNotFound {
 			return fmt.Errorf("Error deleting ssh key %s", err)
 		}

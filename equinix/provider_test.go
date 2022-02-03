@@ -369,6 +369,13 @@ func getFromEnv(varName string) (string, error) {
 	return "", fmt.Errorf("environmental variable '%s' is not set", varName)
 }
 
+func getFromEnvDefault(varName string, defaultValue string) string {
+	if v := os.Getenv(varName); v != "" {
+		return v
+	}
+	return defaultValue
+}
+
 func copyMap(source map[string]interface{}) map[string]interface{} {
 	target := make(map[string]interface{})
 	for k, v := range source {

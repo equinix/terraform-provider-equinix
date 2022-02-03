@@ -21,7 +21,7 @@ func init() {
 func testSweepNetworkACLTemplate(region string) error {
 	config, err := sharedConfigForRegion(region)
 	if err != nil {
-		return err
+		return fmt.Errorf("[INFO][SWEEPER_LOG] Error getting configuration for sweeping Network ACL Templates: %s", err)
 	}
 	if err := config.Load(context.Background()); err != nil {
 		log.Printf("[INFO][SWEEPER_LOG] error loading configuration: %s", err)
@@ -29,7 +29,7 @@ func testSweepNetworkACLTemplate(region string) error {
 	}
 	templates, err := config.ne.GetACLTemplates()
 	if err != nil {
-		log.Printf("[INFO][SWEEPER_LOG] error fetching ACL Templates list: %s", err)
+		log.Printf("[INFO][SWEEPER_LOG] error fetching Network ACL Templates list: %s", err)
 		return err
 	}
 	nonSweepableCount := 0
