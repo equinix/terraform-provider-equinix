@@ -286,7 +286,7 @@ resource "equinix_metal_device_network_type" "test" {
 }
 
 resource "equinix_metal_port_vlan_attachment" "test" {
-  count     = length(metal_vlan.test)
+  count     = length(equinix_metal_vlan.test)
   device_id = equinix_metal_device_network_type.test.id
   vlan_vnid = equinix_metal_vlan.test[count.index].vxlan
   port_name = "eth1"

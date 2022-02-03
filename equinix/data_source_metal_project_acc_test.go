@@ -47,7 +47,7 @@ resource "equinix_metal_project" "foobar" {
 	}
 }
 
-data metal_project "test" {
+data equinix_metal_project "test" {
 	project_id = equinix_metal_project.foobar.id
 }
 `, r)

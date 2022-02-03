@@ -49,7 +49,7 @@ resource "equinix_metal_reserved_ip_block" "test" {
 
 data "equinix_metal_reserved_ip_block" "test" {
 	project_id  = equinix_metal_project.foobar.id
-    ip_address  = cidrhost(metal_reserved_ip_block.test.cidr_notation,1)
+    ip_address  = cidrhost(equinix_metal_reserved_ip_block.test.cidr_notation,1)
 }
 
 data "equinix_metal_reserved_ip_block" "test_id" {

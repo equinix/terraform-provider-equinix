@@ -26,9 +26,9 @@ resource "equinix_metal_device" "test" {
 }
 
 locals {
-  bond0_id = [for p in metal_device.test.ports: p.id if p.name == "bond0"][0]
-  eth1_id = [for p in metal_device.test.ports: p.id if p.name == "eth1"][0]
-  eth0_id = [for p in metal_device.test.ports: p.id if p.name == "eth0"][0]
+  bond0_id = [for p in equinix_metal_device.test.ports: p.id if p.name == "bond0"][0]
+  eth1_id = [for p in equinix_metal_device.test.ports: p.id if p.name == "eth1"][0]
+  eth0_id = [for p in equinix_metal_device.test.ports: p.id if p.name == "eth0"][0]
 }
 
 `, name)

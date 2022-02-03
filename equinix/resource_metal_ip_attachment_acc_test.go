@@ -61,7 +61,7 @@ resource "equinix_metal_reserved_ip_block" "test" {
 
 resource "equinix_metal_ip_attachment" "test" {
 	device_id = equinix_metal_device.test.id
-	cidr_notation = "${cidrhost(metal_reserved_ip_block.test.cidr_notation,0)}/32"
+	cidr_notation = "${cidrhost(equinix_metal_reserved_ip_block.test.cidr_notation,0)}/32"
 }`, name)
 }
 
@@ -117,7 +117,7 @@ resource "equinix_metal_reserved_ip_block" "test" {
 
 resource "equinix_metal_ip_attachment" "test" {
 	device_id = equinix_metal_device.test.id
-	cidr_notation = "${cidrhost(metal_reserved_ip_block.test.cidr_notation,0)}/32"
+	cidr_notation = "${cidrhost(equinix_metal_reserved_ip_block.test.cidr_notation,0)}/32"
 }`, name)
 }
 
