@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"strings"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
@@ -37,7 +36,7 @@ func testSweepSSHKeys(region string) error {
 	}
 	ids := []string{}
 	for _, k := range sshkeys {
-		if strings.HasPrefix(k.Label, "tfacc-") {
+		if isSweepableTestResource(k.Label) {
 			ids = append(ids, k.ID)
 		}
 	}

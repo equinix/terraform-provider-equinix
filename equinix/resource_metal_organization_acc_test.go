@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"log"
-	"strings"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
@@ -37,7 +36,7 @@ func testSweepOrganizations(region string) error {
 	}
 	oids := []string{}
 	for _, o := range os {
-		if strings.HasPrefix(o.Name, "tfacc-") {
+		if isSweepableTestResource(o.Name) {
 			oids = append(oids, o.ID)
 		}
 	}

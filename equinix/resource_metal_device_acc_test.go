@@ -6,7 +6,6 @@ import (
 	"log"
 	"net"
 	"regexp"
-	"strings"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
@@ -38,7 +37,7 @@ func testSweepDevices(region string) error {
 	}
 	pids := []string{}
 	for _, p := range ps {
-		if strings.HasPrefix(p.Name, "tfacc-") {
+		if isSweepableTestResource(p.Name) {
 			pids = append(pids, p.ID)
 		}
 	}

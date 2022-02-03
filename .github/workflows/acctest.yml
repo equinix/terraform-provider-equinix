@@ -76,7 +76,7 @@ jobs:
         EQUINIX_API_TOKEN: ${{ secrets.EQUINIX_API_TOKEN }}
         METAL_AUTH_TOKEN: ${{ secrets.METAL_AUTH_TOKEN }}
       run: |
-        go test ./... -v -sweep="tf_test"
+        go test ./... -v -sweep=all -timeout 180m
     - name: Upload coverage to Codecov
       if: ${{ always() }}
       uses: codecov/codecov-action@v2

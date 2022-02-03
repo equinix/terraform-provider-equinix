@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
@@ -35,7 +34,7 @@ func testSweepUserAPIKeys(region string) error {
 	}
 	ids := []string{}
 	for _, k := range userApiKeys {
-		if strings.HasPrefix(k.Description, "tfacc-") {
+		if isSweepableTestResource(k.Description) {
 			ids = append(ids, k.ID)
 		}
 	}

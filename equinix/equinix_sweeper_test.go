@@ -10,7 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 )
 
-const tstResourcePrefix = "tf-tst"
+const tstResourcePrefix = "tfacc"
 
 func TestMain(m *testing.M) {
 	resource.TestMain(m)
@@ -53,6 +53,6 @@ func sharedConfigForRegion(region string) (*Config, error) {
 	}, nil
 }
 
-func isSweepableTestResource(name string) bool {
-	return strings.HasPrefix(name, tstResourcePrefix)
+func isSweepableTestResource(namePrefix string) bool {
+	return strings.HasPrefix(namePrefix, tstResourcePrefix)
 }
