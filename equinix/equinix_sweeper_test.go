@@ -31,13 +31,10 @@ func sharedConfigForRegion(region string) (*Config, error) {
 			return nil, fmt.Errorf("one of '%s' or pair '%s' - '%s' must be set for acceptance tests", clientTokenEnvVar, clientIDEnvVar, clientSecretEnvVar)
 		}
 	}
-	clientTimeout, err := getFromEnv(clientTimeoutEnvVar)
-	if err != nil {
-		return nil, err
-	}
+	clientTimeout := getFromEnvDefault(clientTimeoutEnvVar, strconv.Itoa(DefaultTimeout))
 	clientTimeoutInt, err := strconv.Atoi(clientTimeout)
 	if err != nil {
-		return nil, fmt.Errorf("cannot convert value of %sa env variable to int", clientTimeoutEnvVar)
+		return nil, fmt.Errorf("cannot convert value of '%s' env variable to int", clientTimeoutEnvVar)
 	}
 	metalAuthToken, err := getFromEnv(metalAuthTokenEnvVar)
 	if err != nil {

@@ -78,9 +78,9 @@ func Provider() *schema.Provider {
 			"request_timeout": {
 				Type:         schema.TypeInt,
 				Optional:     true,
-				DefaultFunc:  schema.EnvDefaultFunc(clientTimeoutEnvVar, 30),
+				DefaultFunc:  schema.EnvDefaultFunc(clientTimeoutEnvVar, DefaultTimeout),
 				ValidateFunc: validation.IntAtLeast(1),
-				Description:  "The duration of time, in seconds, that the Equinix Platform API Client should wait before canceling an API request",
+				Description:  fmt.Sprintf("The duration of time, in seconds, that the Equinix Platform API Client should wait before canceling an API request.  Defaults to %d", DefaultTimeout),
 			},
 			"response_max_page_size": {
 				Type:         schema.TypeInt,

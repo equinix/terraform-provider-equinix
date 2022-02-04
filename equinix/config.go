@@ -30,6 +30,9 @@ const (
 	uaEnvVar      = "TF_APPEND_USER_AGENT"
 )
 
+var DefaultBaseURL = "https://api.equinix.com"
+var DefaultTimeout = 30
+
 // Config is the configuration structure used to instantiate the Equinix
 // provider.
 type Config struct {
@@ -49,8 +52,6 @@ type Config struct {
 
 	terraformVersion string
 }
-
-var DefaultBaseURL = "https://api.equinix.com"
 
 // Load function validates configuration structure fields and configures
 // all required API clients.
