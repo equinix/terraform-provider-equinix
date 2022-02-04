@@ -2,7 +2,7 @@
 subcategory: "Metal"
 ---
 
-# Data Source: equinix\_metal\_project
+# equinix_metal_project (Data Source)
 
 Use this datasource to retrieve attributes of the Project API resource.
 

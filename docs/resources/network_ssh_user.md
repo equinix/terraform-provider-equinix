@@ -2,7 +2,7 @@
 subcategory: "Network Edge"
 ---
 
-# Resource: equinix_network_ssh_user
+# equinix_network_ssh_user (Resource)
 
 Resource `equinix_network_ssh_user` allows creation and management of Equinix Network
 Edge SSH users.

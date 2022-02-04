@@ -2,7 +2,7 @@
 subcategory: "Metal"
 ---
 
-# Data Source: equinix\_metal\_precreated\_ip\_block
+# equinix_metal_precreated_ip_block (Data Source)
 
 Use this data source to get CIDR expression for precreated IPv6 and IPv4 blocks in Equinix Metal.
 You can then use the cidrsubnet TF builtin function to derive subnets.

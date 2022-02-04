@@ -1,7 +1,8 @@
 ---
 subcategory: "Network Edge"
 ---
-# Resource: equinix_network_device_link
+
+# equinix_network_device_link (Resource)
 
 Resource `equinix_network_device_link` allows creation and management of Equinix
 Network Edge virtual network device links.

@@ -2,7 +2,7 @@
 subcategory: "Metal"
 ---
 
-# Data Source: equinix\_metal\_operating\_system
+# equinix_metal_operating_system (Data Source)
 
 Use this data source to get Equinix Metal Spot Market Price for a plan.
 

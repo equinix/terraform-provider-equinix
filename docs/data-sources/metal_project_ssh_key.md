@@ -2,7 +2,7 @@
 subcategory: "Metal"
 ---
 
-# Data Source: equinix\_metal\_project\_ssh\_key
+# equinix_metal_project_ssh_key (Data Source)
 
 Use this datasource to retrieve attributes of a Project SSH Key API resource.
 

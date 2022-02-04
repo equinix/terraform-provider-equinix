@@ -2,7 +2,7 @@
 subcategory: "Metal"
 ---
 
-# Data Source: equinix\_metal\_gateway
+# equinix_metal_gateway (Data Source)
 
 Use this datasource to retrieve Metal Gateway resources in Equinix Metal.
 

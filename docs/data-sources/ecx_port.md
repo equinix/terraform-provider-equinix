@@ -2,7 +2,7 @@
 subcategory: "Fabric"
 ---
 
-# Data Source: equinix_ecx_port
+# equinix_ecx_port (Data Source)
 
 Use this data source to get details of Equinix Fabric port with a given name.
 

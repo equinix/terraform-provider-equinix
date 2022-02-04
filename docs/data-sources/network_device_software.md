@@ -2,7 +2,7 @@
 subcategory: "Network Edge"
 ---
 
-# Data Source: equinix_network_device_software
+# equinix_network_device_software (Data Source)
 
 Use this data source to get Equinix Network Edge device software details for a given
 device type.

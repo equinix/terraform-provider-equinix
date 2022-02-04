@@ -2,7 +2,7 @@
 subcategory: "Metal"
 ---
 
-# Resource: equinix\_metal\_ssh_key
+# equinix_metal_ssh_key (Resource)
 
 Provides a resource to manage User SSH keys on your Equinix Metal user account. If you create a new device in a project, all the keys of the project's collaborators will be injected to the device.
 

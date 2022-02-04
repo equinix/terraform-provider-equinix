@@ -2,7 +2,7 @@
 subcategory: "Metal"
 ---
 
-# Data Source: equinix_metal_device_bgp_neighbors
+# equinix_metal_device_bgp_neighbors (Data Source)
 
 Use this datasource to retrieve list of BGP neighbors of a device in the Equinix Metal host.
 

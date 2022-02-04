@@ -2,7 +2,7 @@
 subcategory: "Network Edge"
 ---
 
-# Data Source: equinix_network_device_platform
+# equinix_network_device_platform (Data Source)
 
 Use this data source to get Equinix Network Edge device platform configuration details
 for a given device type.

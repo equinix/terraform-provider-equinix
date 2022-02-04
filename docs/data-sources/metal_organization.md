@@ -2,7 +2,7 @@
 subcategory: "Metal"
 ---
 
-# Data Source: equinix_metal_organization
+# equinix_metal_organization (Data Source)
 
 Provides an Equinix Metal organization datasource.
 

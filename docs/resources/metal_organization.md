@@ -2,7 +2,7 @@
 subcategory: "Metal"
 ---
 
-# Resource: equinix\_metal\_organization
+# equinix_metal_organization (Resource)
 
 Provides a resource to manage organization resource in Equinix Metal.
 

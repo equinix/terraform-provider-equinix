@@ -1,7 +1,7 @@
 ---
 subcategory: "Metal"
 ---
-# Data Source: equinix\_metal\_reserved\_ip\_block
+# equinix_metal_reserved_ip_block (Data Source)
 
 Use this data source to find IP address blocks in Equinix Metal. You can use IP address or a block ID for lookup.
 

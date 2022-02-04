@@ -2,7 +2,7 @@
 subcategory: "Metal"
 ---
 
-# Resource: equinix_metal_port_vlan_attachment
+# equinix_metal_port_vlan_attachment (Resource)
 
 Provides a resource to attach device ports to VLANs.
 

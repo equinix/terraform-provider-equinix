@@ -2,7 +2,7 @@
 subcategory: "Metal"
 ---
 
-# Resource: equinix\_metal\_ip\_attachment
+# equinix_metal_ip_attachment (Resource)
 
 Provides a resource to attach elastic IP subnets to devices.
 

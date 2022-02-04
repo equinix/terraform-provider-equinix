@@ -2,7 +2,7 @@
 subcategory: "Fabric"
 ---
 
-# Resource: equinix_ecx_l2_connection
+# equinix_ecx_l2_connection (Resource)
 
 Resource `equinix_ecx_l2_connection` allows creation and management of Equinix Fabric
 layer 2 connections.

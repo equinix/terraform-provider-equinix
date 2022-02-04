@@ -2,7 +2,7 @@
 subcategory: "Metal"
 ---
 
-# Data Source: equinix_metal_vlan
+# equinix_metal_vlan (Data Source)
 
 Provides an Equinix Metal Virtual Network datasource. VLANs data sources can be
 searched by VLAN UUID, or project UUID and vxlan number.
@@ -13,13 +13,13 @@ Fetch a vlan by ID:
 
 ```hcl
 resource "equinix_metal_vlan" "foovlan" {
-        project_id = local.project_id
-        metro = "sv"
-        vxlan = 5
+  project_id = local.project_id
+  metro = "sv"
+  vxlan = 5
 }
 
 data "equinix_metal_vlan" "dsvlan" {
-        vlan_id = equinix_metal_vlan.foovlan.id
+  vlan_id = equinix_metal_vlan.foovlan.id
 }
 ```
 
@@ -27,15 +27,15 @@ Fetch a vlan by project ID, vxlan and metro
 
 ```hcl
 resource "equinix_metal_vlan" "foovlan" {
-        project_id = local.project_id
-        metro = "sv"
-        vxlan = 5
+  project_id = local.project_id
+  metro = "sv"
+  vxlan = 5
 }
 
 data "equinix_metal_vlan" "dsvlan" {
-        project_id = local.project_id
-        vxlan      = 5
-        metro      = "sv"
+  project_id = local.project_id
+  vxlan      = 5
+  metro      = "sv"
 }
 ```
 

@@ -2,7 +2,7 @@
 subcategory: "Metal"
 ---
 
-# Resource: equinix_metal_project_ssh_key
+# equinix_metal_project_ssh_key (Resource)
 
 Provides an Equinix Metal project SSH key resource to manage project-specific SSH keys.
 Project SSH keys will only be populated onto servers that belong to that project, in contrast to User SSH Keys.

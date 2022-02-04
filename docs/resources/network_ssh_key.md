@@ -2,7 +2,7 @@
 subcategory: "Network Edge"
 ---
 
-# Resource: equinix_network_ssh_key
+# equinix_network_ssh_key (Resource)
 
 Resource `equinix_network_ssh_key` allows creation and management of Equinix Network
 Edge SSH keys.

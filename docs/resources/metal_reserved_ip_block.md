@@ -2,7 +2,7 @@
 subcategory: "Metal"
 ---
 
-# Resource: equinix\_metal\_reserved\_ip\_block
+# equinix_metal_reserved_ip_block (Resource)
 
 Provides a resource to create and manage blocks of reserved IP addresses in a project.
 

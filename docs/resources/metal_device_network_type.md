@@ -2,7 +2,7 @@
 subcategory: "Metal"
 ---
 
-# Resource: equinix_metal_device_network_type
+# equinix_metal_device_network_type (Resource)
 
 This resource controls network type of Equinix Metal devices.
 

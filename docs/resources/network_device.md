@@ -2,7 +2,7 @@
 subcategory: "Network Edge"
 ---
 
-# Resource: equinix_network_device
+# equinix_network_device (Resource)
 
 Resource `equinix_network_device` allows creation and management of Equinix Network
 Edge virtual network devices.

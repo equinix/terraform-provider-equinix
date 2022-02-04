@@ -2,7 +2,7 @@
 subcategory: "Fabric"
 ---
 
-# Resource: equinix_ecx_l2_serviceprofile
+# equinix_ecx_l2_serviceprofile (Resource)
 
 Resource `equinix_ecx_l2_serviceprofile` is used to manage layer 2 service profiles
 in Equinix Fabric.

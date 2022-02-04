@@ -2,7 +2,7 @@
 subcategory: "Metal"
 ---
 
-# Data Source: equinix_metal_device
+# equinix_metal_device (Data Source)
 
 Provides an Equinix Metal device datasource.
 

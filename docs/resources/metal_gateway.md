@@ -2,7 +2,7 @@
 subcategory: "Metal"
 ---
 
-# Resource: equinix\_metal\_gateway
+# equinix_metal_gateway (Resource)
 
 Use this resource to create Metal Gateway resources in Equinix Metal.
 

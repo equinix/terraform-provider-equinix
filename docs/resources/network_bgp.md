@@ -2,7 +2,7 @@
 subcategory: "Network Edge"
 ---
 
-# Resource: equinix_network_bgp
+# equinix_network_bgp (Resource)
 
 Resource `equinix_network_bgp` allows creation and management of Equinix Network
 Edge BGP peering configurations.

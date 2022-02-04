@@ -2,7 +2,7 @@
 subcategory: "Metal"
 ---
 
-# Resource: equinix_metal_vlan
+# equinix_metal_vlan (Resource)
 
 Provides a resource to allow users to manage Virtual Networks in their projects.
 

@@ -2,7 +2,7 @@
 subcategory: "Metal"
 ---
 
-# Data Source: equinix_metal_metro
+# equinix_metal_metro (Data Source)
 
 Provides an Equinix Metal metro datasource.
 

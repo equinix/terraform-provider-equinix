@@ -2,11 +2,11 @@
 subcategory: "Metal"
 ---
 
-# Resource: equinix_metal_port
+# equinix_metal_port (Resource)
 
 Use this resource to set up network ports on an Equnix Metal device. This resource can control both physical and bond ports.
 
-This Terraform resource doesn't create an API resource in Equinix Metal, but rather provides finer control for (Layer 2 networking)[https://metal.equinix.com/developers/docs/layer2-networking/].
+This Terraform resource doesn't create an API resource in Equinix Metal, but rather provides finer control for [Layer 2 networking](https://metal.equinix.com/developers/docs/layer2-networking/).
 
 The port resource referred is created together with device and accessible either via the device resource or over `/port/<uuid>` API path.
 

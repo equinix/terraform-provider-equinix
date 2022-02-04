@@ -2,7 +2,7 @@
 subcategory: "Network Edge"
 ---
 
-# Data Source: equinix_network_device_type
+# equinix_network_device_type (Data Source)
 
 Use this data source to get Equinix Network Edge device type details.
 

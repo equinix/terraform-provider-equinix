@@ -2,7 +2,7 @@
 subcategory: "Metal"
 ---
 
-# Resource: equinix_metal_device
+# equinix_metal_device (Resource)
 
 Provides an Equinix Metal device resource. This can be used to create,
 modify, and delete devices.

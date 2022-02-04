@@ -2,7 +2,7 @@
 subcategory: "Metal"
 ---
 
-# Resource: equinix_network_acl_template
+# equinix_network_acl_template (Resource)
 
 Resource `equinix_network_acl_template` allows creation and management of
 Equinix Network Edge device Access Control List templates.

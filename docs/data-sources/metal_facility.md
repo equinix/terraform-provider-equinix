@@ -2,7 +2,7 @@
 subcategory: "Metal"
 ---
 
-# Data Source: equinix_metal_facility
+# equinix_metal_facility (Data Source)
 
 Provides an Equinix Metal facility datasource.
 

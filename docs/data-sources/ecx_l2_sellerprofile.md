@@ -2,7 +2,7 @@
 subcategory: "Fabric"
 ---
 
-# Data Source: equinix_ecx_l2_sellerprofile
+# equinix_ecx_l2_sellerprofile (Data Source)
 
 Use this data source to get details of Equinix Fabric layer 2
 seller profile with a given name and / or organization.

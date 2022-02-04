@@ -2,7 +2,7 @@
 subcategory: "Metal"
 ---
 
-# Resource: equinix\_metal\_project
+# equinix_metal_project (Resource)
 
 Provides an Equinix Metal project resource to allow you manage devices
 in your projects.
