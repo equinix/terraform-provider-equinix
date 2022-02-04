@@ -12,8 +12,8 @@ import (
 )
 
 func init() {
-	resource.AddTestSweepers("NetworkACLTemplate", &resource.Sweeper{
-		Name: "NetworkACLTemplate",
+	resource.AddTestSweepers("equinix_network_acl_template", &resource.Sweeper{
+		Name: "equinix_network_acl_template",
 		F:    testSweepNetworkACLTemplate,
 	})
 }

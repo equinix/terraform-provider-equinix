@@ -26,8 +26,8 @@ const (
 )
 
 func init() {
-	resource.AddTestSweepers("ECXL2Connection", &resource.Sweeper{
-		Name: "ECXL2Connection",
+	resource.AddTestSweepers("equinix_ecx_l2_connection", &resource.Sweeper{
+		Name: "equinix_ecx_l2_connection",
 		F:    testSweepECXL2Connections,
 	})
 }

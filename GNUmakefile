@@ -4,7 +4,7 @@ INSTALL_DIR			=~/.terraform.d/plugins
 BINARY				=terraform-provider-equinix
 SWEEP				?=all #Flag required to define the regions that the sweeper is to be ran in
 SWEEP_DIR			?=./equinix
-SWEEPARGS			=-timeout 60m
+SWEEP_ARGS			=-timeout 60m
 ACCTEST_TIMEOUT		?= 180m
 ACCTEST_PARALLELISM ?= 8
 ACCTEST_COUNT       ?= 1
@@ -28,7 +28,7 @@ testacc:
 
 sweep:
 	@echo "WARNING: This will destroy infrastructure. Use only in development accounts."
-	go test $(SWEEP_DIR) -v -sweep=$(SWEEP) $(SWEEPARGS)
+	go test $(SWEEP_DIR) -v -sweep=$(SWEEP) $(SWEEP_ARGS)
 
 build:
 	${GOCMD} build -o ${BINARY}

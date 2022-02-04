@@ -1,7 +1,6 @@
 package equinix
 
 import (
-	"context"
 	"fmt"
 	"log"
 	"testing"
@@ -26,11 +25,8 @@ func testSweepOrganizations(region string) error {
 	if err != nil {
 		return fmt.Errorf("[INFO][SWEEPER_LOG] Error getting configuration for sweeping organizations: %s", err)
 	}
-	if err := config.Load(context.Background()); err != nil {
-		log.Printf("[INFO][SWEEPER_LOG] error loading configuration: %s", err)
-		return err
-	}
-	os, _, err := config.metal.Organizations.List(nil)
+	metal := config.NewMetalClient()
+	os, _, err := metal.Organizations.List(nil)
 	if err != nil {
 		return fmt.Errorf("[INFO][SWEEPER_LOG] Error getting org list for sweeping organizations: %s", err)
 	}
@@ -42,7 +38,7 @@ func testSweepOrganizations(region string) error {
 	}
 	for _, oid := range oids {
 		log.Printf("Removing organization %s", oid)
-		_, err := config.metal.Organizations.Delete(oid)
+		_, err := metal.Organizations.Delete(oid)
 		if err != nil {
 			return fmt.Errorf("Error deleting organization %s", err)
 		}

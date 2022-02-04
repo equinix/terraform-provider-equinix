@@ -1,7 +1,6 @@
 package equinix
 
 import (
-	"context"
 	"fmt"
 	"log"
 	"net/http"
@@ -29,11 +28,8 @@ func testSweepProjects(region string) error {
 	if err != nil {
 		return fmt.Errorf("[INFO][SWEEPER_LOG] Error getting configuration for sweeping projects: %s", err)
 	}
-	if err := config.Load(context.Background()); err != nil {
-		log.Printf("[INFO][SWEEPER_LOG] error loading configuration: %s", err)
-		return err
-	}
-	ps, _, err := config.metal.Projects.List(nil)
+	metal := config.NewMetalClient()
+	ps, _, err := metal.Projects.List(nil)
 	if err != nil {
 		return fmt.Errorf("[INFO][SWEEPER_LOG] Error getting project list for sweeping projects: %s", err)
 	}
@@ -45,7 +41,7 @@ func testSweepProjects(region string) error {
 	}
 	for _, pid := range pids {
 		log.Printf("Removing project %s", pid)
-		_, err := config.metal.Projects.Delete(pid)
+		_, err := metal.Projects.Delete(pid)
 		if err != nil {
 			return fmt.Errorf("Error deleting project %s", err)
 		}

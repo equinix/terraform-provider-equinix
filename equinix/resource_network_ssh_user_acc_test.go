@@ -14,8 +14,8 @@ import (
 // reason: SSH User requires device to be provisioned and that is time consuming operation
 
 func init() {
-	resource.AddTestSweepers("NetworkSSHUser", &resource.Sweeper{
-		Name: "NetworkSSHUser",
+	resource.AddTestSweepers("equinix_network_ssh_user", &resource.Sweeper{
+		Name: "equinix_network_ssh_user",
 		F:    testSweepNetworkSSHUser,
 	})
 }

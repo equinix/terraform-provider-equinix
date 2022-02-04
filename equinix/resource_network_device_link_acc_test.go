@@ -13,8 +13,8 @@ import (
 )
 
 func init() {
-	resource.AddTestSweepers("NetworkDeviceLink", &resource.Sweeper{
-		Name: "NetworkDeviceLink",
+	resource.AddTestSweepers("equinix_network_device_link", &resource.Sweeper{
+		Name: "equinix_network_device_link",
 		F:    testSweepNetworkDeviceLink,
 	})
 }

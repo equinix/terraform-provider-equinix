@@ -12,8 +12,8 @@ import (
 )
 
 func init() {
-	resource.AddTestSweepers("NetworkSSHKey", &resource.Sweeper{
-		Name: "NetworkSSHKey",
+	resource.AddTestSweepers("equinix_network_ssh_key", &resource.Sweeper{
+		Name: "equinix_network_ssh_key",
 		F:    testSweepNetworkSSHKey,
 	})
 }
