@@ -1,9 +1,5 @@
 ---
-layout: "equinix"
-page_title: "Equinix: equinix_metal_device resource"
-subcategory: ""
-description: |-
-  Provides an Equinix Metal device resource. This can be used to create, modify, and delete devices.
+subcategory: "Metal"
 ---
 
 # Resource: equinix_metal_device

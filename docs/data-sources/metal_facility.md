@@ -1,8 +1,5 @@
 ---
-page_title: "Equinix: equinix_metal_facility"
-subcategory: ""
-description: |-
-  Provides an Equinix Metal facility datasource. This can be used to read facilities.
+subcategory: "Metal"
 ---
 
 # Data Source: equinix_metal_facility

@@ -1,9 +1,5 @@
 ---
-layout: "equinix"
-page_title: "Equinix: equinix_ecx_l2_connection"
-subcategory: ""
-description: |-
-  Provides Equinix Fabric Layer 2 connection resource
+subcategory: "Fabric"
 ---
 
 # Resource: equinix_ecx_l2_connection

@@ -1,9 +1,5 @@
 ---
-layout: "equinix"
-page_title: "Equinix: equinix_metal_port_vlan_attachment"
-subcategory: ""
-description: |-
-  Provides a Resource for Attaching VLANs to Device Ports
+subcategory: "Metal"
 ---
 
 # Resource: equinix_metal_port_vlan_attachment

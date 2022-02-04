@@ -1,8 +1,5 @@
 ---
-page_title: "Equinix: equinix_metal_precreated_ip_block"
-subcategory: ""
-description: |-
-  Load automatically created IP blocks from your Equinix Metal project
+subcategory: "Metal"
 ---
 
 # Data Source: equinix\_metal\_precreated\_ip\_block

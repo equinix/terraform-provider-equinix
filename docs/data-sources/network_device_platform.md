@@ -1,9 +1,5 @@
 ---
-layout: "equinix"
-page_title: "Equinix: equinix_network_device_platform"
-subcategory: ""
-description: |-
- Get information on Equinix Network Edge device platform configuration
+subcategory: "Network Edge"
 ---
 
 # Data Source: equinix_network_device_platform

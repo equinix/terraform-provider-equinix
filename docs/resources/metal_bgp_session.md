@@ -1,9 +1,5 @@
 ---
-layout: "equinix"
-page_title: "Equinix: equinix_metal_bgp_session"
-subcategory: ""
-description: |-
-  BGP session in Equinix Metal Host
+subcategory: "Metal"
 ---
 
 # Resource: equinix_metal_bgp_session

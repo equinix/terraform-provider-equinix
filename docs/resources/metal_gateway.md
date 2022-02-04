@@ -1,9 +1,5 @@
 ---
-layout: "equinix"
-page_title: "Equinix: equinix_metal_gateway"
-subcategory: ""
-description: |-
-  Create Equinix Metal Gateways
+subcategory: "Metal"
 ---
 
 # Resource: equinix\_metal\_gateway

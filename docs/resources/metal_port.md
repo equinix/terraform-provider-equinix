@@ -1,9 +1,5 @@
 ---
-layout: "equinix"
-page_title: "Equinix: equinix_metal_port"
-subcategory: ""
-description: |-
-  Manipulate device ports
+subcategory: "Metal"
 ---
 
 # Resource: equinix_metal_port

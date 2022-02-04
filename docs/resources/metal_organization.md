@@ -1,9 +1,5 @@
 ---
-layout: "equinix"
-page_title: "Equinix: equinix_metal_organization"
-subcategory: ""
-description: |-
-  Provides an Equinix Metal Organization resource.
+subcategory: "Metal"
 ---
 
 # Resource: equinix\_metal\_organization

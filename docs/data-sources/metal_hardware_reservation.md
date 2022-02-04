@@ -1,8 +1,5 @@
 ---
-page_title: "Equinix: equinix_metal_hardware_reservation"
-subcategory: ""
-description: |-
-  Retrieve Equinix Metal Hardware Reservation
+subcategory: "Metal"
 ---
 
 # Data Source: equinix_metal_hardware_reservation

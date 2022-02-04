@@ -1,9 +1,5 @@
 ---
-layout: "equinix"
-page_title: "Equinix: equinix_metal_project"
-subcategory: ""
-description: |-
-  Provides an Equinix Metal Project resource.
+subcategory: "Metal"
 ---
 
 # Resource: equinix\_metal\_project

@@ -1,9 +1,5 @@
 ---
-layout: "equinix"
-page_title: "Equinix: equinix_ecx_l2_serviceprofile"
-subcategory: ""
-description: |-
-  Provides Equinix Fabric Layer 2 service profile resource
+subcategory: "Fabric"
 ---
 
 # Resource: equinix_ecx_l2_serviceprofile

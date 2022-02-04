@@ -1,9 +1,5 @@
 ---
-layout: "equinix"
-page_title: "Equinix: equinix_network_bgp"
-subcategory: ""
-description: |-
- Provides Equinix Network Edge BGP peering resource.
+subcategory: "Network Edge"
 ---
 
 # Resource: equinix_network_bgp

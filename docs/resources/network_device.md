@@ -1,9 +1,5 @@
 ---
-layout: "equinix"
-page_title: "Equinix: equinix_network_device"
-subcategory: ""
-description: |-
- Provides Equinix Network Edge device resource
+subcategory: "Network Edge"
 ---
 
 # Resource: equinix_network_device

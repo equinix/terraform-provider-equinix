@@ -1,9 +1,5 @@
 ---
-layout: "equinix"
-page_title: "Equinix: equinix_network_acl_template"
-subcategory: ""
-description: |-
- Provides Equinix Network Edge ACL template resource
+subcategory: "Metal"
 ---
 
 # Resource: equinix_network_acl_template

@@ -1,9 +1,5 @@
 ---
-layout: "equinix"
-page_title: "Equinix: equinix_metal_device_network_type"
-sidebar_current: "docs-metal-resource-device-network-type"
-description: |-
-  Provides a resource to manage network type of Equinix Metal devices.
+subcategory: "Metal"
 ---
 
 # Resource: equinix_metal_device_network_type

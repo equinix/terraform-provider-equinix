@@ -1,8 +1,5 @@
 ---
-page_title: "Equinix: equinix_metal_connection"
-subcategory: ""
-description: |-
-  Retrieve Equinix Fabric Connection
+subcategory: "Metal"
 ---
 
 # Data Source: equinix\_metal\_connection

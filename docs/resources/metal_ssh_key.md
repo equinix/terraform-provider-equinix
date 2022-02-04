@@ -1,9 +1,5 @@
 ---
-layout: "equinix"
-page_title: "Equinix: equinix_metal_ssh_key"
-subcategory: ""
-description: |-
-  Provides an Equinix Metal SSH key resource.
+subcategory: "Metal"
 ---
 
 # Resource: equinix\_metal\_ssh_key

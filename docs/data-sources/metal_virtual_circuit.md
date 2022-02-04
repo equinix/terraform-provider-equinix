@@ -1,8 +1,5 @@
 ---
-page_title: "Equinix: equinix_metal_virtual_circuit"
-subcategory: ""
-description: |-
-  Retrieve Equinix Fabric Virtual Circuit
+subcategory: "Metal"
 ---
 
 # Data Source: equinix_metal_virtual_circuit

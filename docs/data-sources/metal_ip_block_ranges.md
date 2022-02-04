@@ -1,8 +1,5 @@
 ---
-page_title: "Equinix: equinix_metal_ip_block_ranges"
-subcategory: ""
-description: |-
-  List IP address ranges allocated to a project
+subcategory: "Metal"
 ---
 
 # Data Source: equinix\_metal\_ip\_block\_ranges

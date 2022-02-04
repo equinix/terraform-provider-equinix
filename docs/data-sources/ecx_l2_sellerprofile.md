@@ -1,9 +1,5 @@
 ---
-layout: "equinix"
-page_title: "Equinix: equinix_ecx_l2_sellerprofile"
-subcategory: ""
-description: |-
-  Provides Equinix Fabric Layer2 Seller Profile resource
+subcategory: "Fabric"
 ---
 
 # Data Source: equinix_ecx_l2_sellerprofile

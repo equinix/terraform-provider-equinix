@@ -1,9 +1,5 @@
 ---
-layout: "equinix"
-page_title: "Equinix: equinix_network_ssh_key"
-subcategory: ""
-description: |-
- Provides Equinix Network Edge SSH key resource
+subcategory: "Network Edge"
 ---
 
 # Resource: equinix_network_ssh_key

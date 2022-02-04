@@ -1,8 +1,5 @@
 ---
-page_title: "Equinix: equinix_metal_spot_market_request"
-subcategory: ""
-description: |-
-  Provides a datasource for existing Spot Market Requests in the Equinix Metal host.
+subcategory: "Metal"
 ---
 
 # Data Source: equinix_metal_spot_market_request

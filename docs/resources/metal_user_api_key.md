@@ -1,10 +1,6 @@
 ---
-layout: "equinix"
-page_title: "Equinix: equinix_metal_user_api_key"
-subcategory: ""
-description: |-
-  Create Equinix Metal User API Keys
-  ---
+subcategory: "Metal"
+---
 
 # Resource: equinix_metal_user_api_key
 

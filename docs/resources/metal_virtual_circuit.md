@@ -1,9 +1,5 @@
 ---
-layout: "equinix"
-page_title: "Equinix: equinix_metal_virtual_circuit"
-subcategory: ""
-description: |-
-  Create Equinix Fabric Virtual Circuit
+subcategory: "Metal"
 ---
 
 # Resource: equinix_metal_virtual_circuit

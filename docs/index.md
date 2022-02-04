@@ -1,8 +1,5 @@
 ---
-layout: "equinix"
 page_title: "Provider: Equinix"
-description: |-
-  The Terraform Equinix provider allows for lifecycle management of Equinix Platform resources.
 ---
 
 # Equinix Provider

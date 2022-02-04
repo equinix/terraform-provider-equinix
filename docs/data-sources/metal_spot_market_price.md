@@ -1,8 +1,5 @@
 ---
-page_title: "Equinix: equinix_metal_spot_market_price"
-subcategory: ""
-description: |-
-  Get an Equinix Metal Spot Market Price
+subcategory: "Metal"
 ---
 
 # Data Source: equinix\_metal\_operating\_system

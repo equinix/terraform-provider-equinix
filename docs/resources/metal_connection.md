@@ -1,9 +1,5 @@
 ---
-layout: "equinix"
-page_title: "Equinix: equinix_metal_connection"
-subcategory: ""
-description: |-
-  Request/Create Equinix Fabric Connection
+subcategory: "Metal"
 ---
 
 # Resource: equinix\_metal\_connection

@@ -1,9 +1,5 @@
 ---
-layout: "equinix"
-page_title: "Equinix: equinix_network_ssh_user"
-subcategory: ""
-description: |-
- Provides Equinix Network Edge SSH user resource
+subcategory: "Network Edge"
 ---
 
 # Resource: equinix_network_ssh_user

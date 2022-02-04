@@ -1,8 +1,5 @@
 ---
-page_title: "Equinix: equinix_metal_project_ssh_key"
-subcategory: ""
-description: |-
-  Provides an Equinix Metal Project SSH Key datasource.
+subcategory: "Metal"
 ---
 
 # Data Source: equinix\_metal\_project\_ssh\_key

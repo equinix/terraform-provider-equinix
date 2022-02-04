@@ -1,9 +1,5 @@
 ---
-layout: "equinix"
-page_title: "Equinix: equinix_network_account"
-subcategory: ""
-description: |-
- Get information on Equinix Network Edge billing account
+subcategory: "Network Edge"
 ---
 
 # Data Source: equinix_network_account

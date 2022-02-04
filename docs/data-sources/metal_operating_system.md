@@ -1,8 +1,5 @@
 ---
-page_title: "Equinix: equinix_metal_operating_system"
-subcategory: ""
-description: |-
-  Get an Equinix Metal operating system image
+subcategory: "Metal"
 ---
 
 # Data Source: equinix\_metal\_operating\_system

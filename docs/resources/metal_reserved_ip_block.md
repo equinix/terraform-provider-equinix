@@ -1,9 +1,5 @@
 ---
-layout: "equinix"
-page_title: "Equinix: equinix_metal_reserved_ip_block"
-subcategory: ""
-description: |-
-  Provides a Resource for reserving IP addresses in the Equinix Metal Host
+subcategory: "Metal"
 ---
 
 # Resource: equinix\_metal\_reserved\_ip\_block

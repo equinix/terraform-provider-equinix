@@ -1,10 +1,6 @@
 ---
-layout: "equinix"
-page_title: "Equinix: equinix_metal_project_api_key"
-subcategory: ""
-description: |-
-  Create Equinix Metal Project API Keys
-  ---
+subcategory: "Metal"
+---
 
 # Resource: equinix_metal_project_api_key
 

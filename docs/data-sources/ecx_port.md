@@ -1,9 +1,5 @@
 ---
-layout: "equinix"
-page_title: "Equinix: equinix_ecx_port"
-subcategory: ""
-description: |-
- Get information on Equinix Fabric port
+subcategory: "Fabric"
 ---
 
 # Data Source: equinix_ecx_port

@@ -1,8 +1,5 @@
 ---
-page_title: "Equinix: equinix_metal_device"
-subcategory: ""
-description: |-
-  Provides an Equinix Metal device datasource. This can be used to read existing devices.
+subcategory: "Metal"
 ---
 
 # Data Source: equinix_metal_device

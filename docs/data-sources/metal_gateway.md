@@ -1,8 +1,5 @@
 ---
-page_title: "Equinix: equinix_metal_gateway"
-subcategory: ""
-description: |-
-  Retrieve Equinix Metal Gateways
+subcategory: "Metal"
 ---
 
 # Data Source: equinix\_metal\_gateway

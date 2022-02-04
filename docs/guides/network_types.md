@@ -1,7 +1,5 @@
 ---
 page_title: "Metal Device Network Types"
-description: |-
-  Use port bonding, address assignments, and VLAN attachments to change the device network type from Layer-3, to Layer-2, to Hybrid.
 ---
 
 

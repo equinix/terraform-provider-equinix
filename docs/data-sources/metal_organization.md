@@ -1,8 +1,5 @@
 ---
-page_title: "Equinix: equinix_metal_organization"
-subcategory: ""
-description: |-
-  Provides an Equinix Metal Organization datasource. This can be used to read existing Organizations.
+subcategory: "Metal"
 ---
 
 # Data Source: equinix_metal_organization

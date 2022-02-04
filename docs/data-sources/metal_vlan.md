@@ -1,8 +1,5 @@
 ---
-page_title: "Equinix: equinix_metal_vlan"
-subcategory: ""
-description: |-
-  Provides an Equinix Metal Virtual Network datasource. This can be used to read the attributes of existing VLANs.
+subcategory: "Metal"
 ---
 
 # Data Source: equinix_metal_vlan

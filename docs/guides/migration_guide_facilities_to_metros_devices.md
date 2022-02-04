@@ -1,7 +1,5 @@
 ---
 page_title: "Migrating devices from facilities to metros"
-description: |-
-  Migrating your device resources from facilities to metros
 ---
 
 # Metros vs. Facilities

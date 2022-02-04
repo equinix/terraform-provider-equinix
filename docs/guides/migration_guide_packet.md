@@ -1,7 +1,5 @@
 ---
 page_title: "Migrating from the Packet provider"
-description: |-
-  Migrating your templates from packet_ resources to equinix_metal_ resources with minimal disruption.
 ---
 
 # Migrating from packethost/packet to equinix/equinix

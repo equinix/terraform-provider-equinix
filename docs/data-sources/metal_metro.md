@@ -1,8 +1,5 @@
 ---
-page_title: "Equinix: equinix_metal_metro"
-subcategory: ""
-description: |-
-  Provides an Equinix Metal metro datasource. This can be used to read metros.
+subcategory: "Metal"
 ---
 
 # Data Source: equinix_metal_metro

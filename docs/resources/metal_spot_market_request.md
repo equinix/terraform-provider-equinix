@@ -1,9 +1,5 @@
 ---
-layout: "equinix"
-page_title: "Equinix: equinix_metal_spot_market_request"
-subcategory: ""
-description: |-
-  Provides an Equinix Metal Spot Market Request Resource.
+subcategory: "Metal"
 ---
 
 # Resource: equinix\_metal\_spot\_market\_request

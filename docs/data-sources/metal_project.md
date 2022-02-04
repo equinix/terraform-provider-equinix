@@ -1,8 +1,5 @@
 ---
-page_title: "Equinix: equinix_metal_project"
-subcategory: ""
-description: |-
-  Provides an Equinix Metal Project datasource.
+subcategory: "Metal"
 ---
 
 # Data Source: equinix\_metal\_project

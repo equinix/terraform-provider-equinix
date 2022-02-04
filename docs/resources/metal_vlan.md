@@ -1,9 +1,5 @@
 ---
-layout: "equinix"
-page_title: "Equinix: equinix_metal_vlan"
-subcategory: ""
-description: |-
-  Provides a resource for Equinix Metal Virtual Network.
+subcategory: "Metal"
 ---
 
 # Resource: equinix_metal_vlan

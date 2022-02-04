@@ -1,11 +1,6 @@
 ---
-layout: "equinix"
-page_title: "Equinix: equinix_network_device_link"
-subcategory: ""
-description: |-
- Provides Equinix Network Edge device link resource
+subcategory: "Network Edge"
 ---
-
 # Resource: equinix_network_device_link
 
 Resource `equinix_network_device_link` allows creation and management of Equinix
