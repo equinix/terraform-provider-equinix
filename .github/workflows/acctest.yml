@@ -40,7 +40,7 @@ jobs:
         version:
           - stable
         terraform:
-          - '1.1.4'
+          - '1.1.5'
     steps:
 
     - name: Set up Go
@@ -78,7 +78,7 @@ jobs:
         SWEEP_ALLOW_FAILURES: "true" #Enable to allow Sweeper Tests to continue after failures
       run: |
         # Added sweep-run to filter Metal test
-        go test ./... -v -timeout 180m -sweep=${SWEEP} sweep-allow-failures=${SWEEP_ALLOW_FAILURES} -sweep-run=$(grep -o 'AddTestSweepers("[^"]*"' equinix/resource_metal_* |cut -d '"' -f2 | paste -s -d, -)
+        go test ./... -v -timeout 180m -sweep=${SWEEP} -sweep-allow-failures=${SWEEP_ALLOW_FAILURES} -sweep-run=$(grep -o 'AddTestSweepers("[^"]*"' equinix/resource_metal_* |cut -d '"' -f2 | paste -s -d, -)
     - name: Upload coverage to Codecov
       if: ${{ always() }}
       uses: codecov/codecov-action@v2
