@@ -44,7 +44,9 @@ func testSweepDevices(region string) error {
 			return fmt.Errorf("Error listing devices to sweep: %s", err)
 		}
 		for _, d := range ds {
-			dids = append(dids, d.ID)
+			if isSweepableTestResource(d.Hostname) {
+				dids = append(dids, d.ID)
+			}
 		}
 	}
 
