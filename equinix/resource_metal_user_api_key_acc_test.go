@@ -6,7 +6,7 @@ import (
 	"net/http"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
+	// "github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 )
 
 func init() {
@@ -44,27 +44,6 @@ func testSweepUserAPIKeys(region string) error {
 	return nil
 }
 
-func testAccMetalUserAPIKeyCheckDestroyed(s *terraform.State) error {
-	client := testAccProvider.Meta().(*Config).metal
-	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "equinix_metal_user_api_key" {
-			continue
-		}
-		if _, err := client.APIKeys.UserGet(rs.Primary.ID, nil); err == nil {
-			return fmt.Errorf("Metal UserAPI key still exists")
-		}
-	}
-	return nil
-}
-
-func testAccMetalUserAPIKeyConfig_basic() string {
-	return fmt.Sprintf(`
-resource "equinix_metal_user_api_key" "test" {
-    description = "tfacc-user-key"
-    read_only   = true
-}`)
-}
-
 // Commented out because it lists existing user API keys in debug log
 
 /*
@@ -88,4 +67,24 @@ func TestAccMetalUserAPIKey_basic(t *testing.T) {
 	})
 }
 
+func testAccMetalUserAPIKeyCheckDestroyed(s *terraform.State) error {
+	client := testAccProvider.Meta().(*Config).metal
+	for _, rs := range s.RootModule().Resources {
+		if rs.Type != "equinix_metal_user_api_key" {
+			continue
+		}
+		if _, err := client.APIKeys.UserGet(rs.Primary.ID, nil); err == nil {
+			return fmt.Errorf("Metal UserAPI key still exists")
+		}
+	}
+	return nil
+}
+
+func testAccMetalUserAPIKeyConfig_basic() string {
+	return fmt.Sprintf(`
+resource "equinix_metal_user_api_key" "test" {
+    description = "tfacc-user-key"
+    read_only   = true
+}`)
+}
 */
