@@ -41,7 +41,8 @@ func testSweepDevices(region string) error {
 	for _, pid := range pids {
 		ds, _, err := metal.Devices.List(pid, nil)
 		if err != nil {
-			return fmt.Errorf("Error listing devices to sweep: %s", err)
+			log.Printf("Error listing devices to sweep: %s", err)
+			continue
 		}
 		for _, d := range ds {
 			if isSweepableTestResource(d.Hostname) {
