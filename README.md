@@ -1,5 +1,5 @@
 <a href="https://terraform.io">
-    <img src="https://cdn.rawgit.com/hashicorp/terraform-website/master/content/source/assets/images/logo-hashicorp.svg" alt="Terraform logo" title="Terraform" align="right" height="50" />
+    <img src="https://cdn.rawgit.com/hashicorp/terraform-website/master/public/img/logo-hashicorp.svg" alt="Terraform logo" title="Terraform" align="right" height="50" />
 </a>
 
 # Terraform Provider for Equinix Platform
@@ -7,7 +7,8 @@
 The Terraform Equinix provider is a plugin for Terraform that allows for lifecycle
 management of Equinix Platform resources.
 
-[![Build Status](https://travis-ci.com/equinix/terraform-provider-equinix.svg?branch=master)](https://travis-ci.com/github/equinix/terraform-provider-equinix)
+[![Go Tests](https://github.com/equinix/terraform-provider-equinix/actions/workflows/test.yml/badge.svg)](https://github.com/equinix/terraform-provider-equinix/actions/workflows/test.yml)
+[![Acceptance Tests](https://github.com/equinix/terraform-provider-equinix/actions/workflows/acctest.yml/badge.svg)](https://github.com/equinix/terraform-provider-equinix/actions/workflows/acctest.yml)
 [![Go Report Card](https://goreportcard.com/badge/github.com/equinix/terraform-provider-equinix)](https://goreportcard.com/report/github.com/equinix/terraform-provider-equinix)
 [![GoDoc](https://godoc.org/github.com/go-resty/resty?status.svg)](https://godoc.org/github.com/equinix/terraform-provider-equinix)
 ![GitHub](https://img.shields.io/github/license/equinix/terraform-provider-equinix)
