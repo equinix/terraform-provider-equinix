@@ -31,7 +31,6 @@ const (
 	clientTokenEnvVar     = "EQUINIX_API_TOKEN"
 	clientTimeoutEnvVar   = "EQUINIX_API_TIMEOUT"
 	metalAuthTokenEnvVar  = "METAL_AUTH_TOKEN"
-	packetAuthTokenEnvVar = "PACKET_AUTH_TOKEN"
 )
 
 // resourceDataProvider provies interface to schema.ResourceData
@@ -91,11 +90,8 @@ func Provider() *schema.Provider {
 			"auth_token": {
 				Type:     schema.TypeString,
 				Optional: true,
-				DefaultFunc: schema.MultiEnvDefaultFunc([]string{
-					metalAuthTokenEnvVar,
-					packetAuthTokenEnvVar,
-				}, nil),
-				Description: "The Equinix Metal API auth key for API operations.",
+				DefaultFunc: schema.EnvDefaultFunc(metalAuthTokenEnvVar, nil),
+				Description: "The Equinix Metal API auth key for API operations",
 			},
 			"max_retries": {
 				Type:     schema.TypeInt,
@@ -133,7 +129,6 @@ func Provider() *schema.Provider {
 			"equinix_metal_project_ssh_key":      dataSourceMetalProjectSSHKey(),
 			"equinix_metal_reserved_ip_block":    dataSourceMetalReservedIPBlock(),
 			"equinix_metal_spot_market_request":  dataSourceMetalSpotMarketRequest(),
-			"equinix_metal_volume":               dataSourceMetalVolume(),
 			"equinix_metal_virtual_circuit":      dataSourceMetalVirtualCircuit(),
 			"equinix_metal_vlan":                 dataSourceMetalVlan(),
 		},
@@ -157,8 +152,6 @@ func Provider() *schema.Provider {
 			"equinix_metal_project_ssh_key":      resourceMetalProjectSSHKey(),
 			"equinix_metal_project":              resourceMetalProject(),
 			"equinix_metal_organization":         resourceMetalOrganization(),
-			"equinix_metal_volume":               resourceMetalVolume(),
-			"equinix_metal_volume_attachment":    resourceMetalVolumeAttachment(),
 			"equinix_metal_reserved_ip_block":    resourceMetalReservedIPBlock(),
 			"equinix_metal_ip_attachment":        resourceMetalIPAttachment(),
 			"equinix_metal_spot_market_request":  resourceMetalSpotMarketRequest(),

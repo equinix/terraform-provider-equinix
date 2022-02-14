@@ -8,9 +8,11 @@ The Equinix provider is used to interact with the resources provided by Equinix 
 The provider needs to be configured with the proper credentials before
 it can be used.
 
-For information about obtaining API key and secret refer to
+For information about obtaining API key and secret required for Equinix Fabric and Network Edge refer to
 [Generating Client ID and Client Secret key](https://developer.equinix.com/docs/ecx-getting-started#generating-client-id-and-client-secret-key)
 from [Equinix Developer Platform portal](https://developer.equinix.com).
+
+Interacting with Equinix Metal requires an API auth token that can be generated at [Project-level](https://metal.equinix.com/developers/docs/accounts/projects/#api-keys) or [User-level](https://metal.equinix.com/developers/docs/accounts/users/#api-keys)
 
 Use the navigation to the left to read about the available resources.
 
@@ -72,8 +74,6 @@ through arguments or environment settings.
 
 - `auth_token` - (Optional) This is your Equinix Metal API Auth token. This can
   also be specified with the `METAL_AUTH_TOKEN` environment variable.
-
-  Use of the legacy `PACKET_AUTH_TOKEN` environment variable is deprecated.
 
 - `endpoint` (Optional) The Equinix API base URL to point out desired environment.
    This argument can also be specified with the `EQUINIX_API_ENDPOINT`

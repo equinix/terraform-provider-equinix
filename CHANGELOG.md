@@ -26,9 +26,7 @@ FEATURES:
 - **New Resource** `equinix_metal_reserved_ip_block`
 - **New Resource** `equinix_metal_spot_market_request`
 - **New Resource** `equinix_metal_ssh_key`
-- **New Resource** `equinix_metal_volume`
 - **New Resource** `equinix_metal_vlan`
-- **New Resource** `equinix_metal_volume_attachment`
 - **New Data Resource:** `equinix_metal_vlan`
 - **New Data Resource:** `equinix_metal_reserved_ip_block`
 - **New Data Resource:** `equinix_metal_port`
@@ -46,7 +44,6 @@ FEATURES:
 - **New Data Resource** `equinix_metal_project_ssh_key`
 - **New Data Resource** `equinix_metal_spot_market_price`
 - **New Data Resource** `equinix_metal_spot_market_request`
-- **New Data Resource** `equinix_metal_volume`
 
 ## 1.4.0 (January 14, 2022)
 
