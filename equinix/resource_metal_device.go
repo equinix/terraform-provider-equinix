@@ -29,9 +29,9 @@ var deviceReadOptions = &packngo.GetOptions{Includes: deviceCommonIncludes}
 func resourceMetalDevice() *schema.Resource {
 	return &schema.Resource{
 		Timeouts: &schema.ResourceTimeout{
-			Create: schema.DefaultTimeout(20 * time.Minute),
-			Update: schema.DefaultTimeout(20 * time.Minute),
-			Delete: schema.DefaultTimeout(20 * time.Minute),
+			Create: schema.DefaultTimeout(30 * time.Minute),
+			Update: schema.DefaultTimeout(30 * time.Minute),
+			Delete: schema.DefaultTimeout(30 * time.Minute),
 		},
 		Create: resourceMetalDeviceCreate,
 		Read:   resourceMetalDeviceRead,

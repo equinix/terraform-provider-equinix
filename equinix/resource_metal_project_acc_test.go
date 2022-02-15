@@ -133,6 +133,7 @@ func TestAccMetalProject_errorHandling(t *testing.T) {
 		"equinix": mockMetal,
 	}
 	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
 		Providers: mockProviders,
 		Steps: []resource.TestStep{
 			{
@@ -162,6 +163,7 @@ func TestAccMetalProject_apiErrorHandling(t *testing.T) {
 		"equinix": mockMetal,
 	}
 	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
 		Providers: mockProviders,
 		Steps: []resource.TestStep{
 			{

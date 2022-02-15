@@ -25,8 +25,7 @@ func TestAccMetalSpotMarketRequest_basic(t *testing.T) {
 					testAccCheckMetalSpotMarketRequestExists("equinix_metal_spot_market_request.request", &key),
 					resource.TestCheckResourceAttr("equinix_metal_spot_market_request.request", "devices_max", "1"),
 					resource.TestCheckResourceAttr("equinix_metal_spot_market_request.request", "devices_min", "1"),
-					resource.TestCheckResourceAttr(
-						"data.equinix_metal_spot_market_request.dreq", "device_ids.#", "1"),
+					resource.TestCheckResourceAttr("data.equinix_metal_spot_market_request.dreq", "device_ids.#", "1"),
 				),
 			},
 		},

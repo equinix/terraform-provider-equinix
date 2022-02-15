@@ -176,6 +176,7 @@ func TestAccMetalSSHKey_importBasic(t *testing.T) {
 				ResourceName:      "equinix_metal_ssh_key.foobar",
 				ImportState:       true,
 				ImportStateVerify: true,
+				ImportStateVerifyIgnore: []string{"updated"},
 			},
 		},
 	})

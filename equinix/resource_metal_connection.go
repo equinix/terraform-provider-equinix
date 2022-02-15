@@ -279,7 +279,7 @@ func resourceMetalConnectionRead(d *schema.ResourceData, meta interface{}) error
 
 func resourceMetalConnectionDelete(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*Config).metal
-	resp, err := client.Connections.Delete(d.Id())
+	resp, err := client.Connections.Delete(d.Id(), true)
 	if ignoreResponseErrors(httpForbidden, httpNotFound)(resp, err) != nil {
 		return friendlyError(err)
 	}
