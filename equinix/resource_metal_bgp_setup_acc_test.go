@@ -43,6 +43,8 @@ func TestAccMetalBGPSetup_basic(t *testing.T) {
 				ResourceName:      "equinix_metal_bgp_session.test4",
 				ImportState:       true,
 				ImportStateVerify: true,
+				//TODO(ocobleseqx) status returns "unknown" first and "down" after refresh. Should we add WaitForStateContext for "down"/"up"?
+				ImportStateVerifyIgnore: []string{"status"},
 			},
 		},
 	})

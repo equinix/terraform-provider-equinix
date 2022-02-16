@@ -1,12 +1,14 @@
 package equinix
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"net/http"
 	"regexp"
 	"testing"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -118,22 +120,24 @@ var _ packngo.ProjectService = (*mockProjectService)(nil)
 func TestAccMetalProject_errorHandling(t *testing.T) {
 	rInt := acctest.RandInt()
 
-	mockProjectService := &mockProjectService{
+	mockMetalProjectService := &mockProjectService{
 		CreateFn: func(project *packngo.ProjectCreateRequest) (*packngo.Project, *packngo.Response, error) {
 			httpResp := &http.Response{Status: "422 Unprocessable Entity", StatusCode: 422}
 			return nil, &packngo.Response{Response: httpResp}, &packngo.ErrorResponse{Response: httpResp}
 		},
 	}
-	mockMetal := Provider()
-	mockMetal.ConfigureFunc = func(d *schema.ResourceData) (interface{}, error) {
-		return &packngo.Client{Projects: mockProjectService}, nil
+	mockEquinix := Provider()
+	mockEquinix.ConfigureContextFunc = func(ctx context.Context, d *schema.ResourceData) (interface{}, diag.Diagnostics) {
+		config := Config{
+			metal: &packngo.Client{Projects: mockMetalProjectService},
+		}
+		return &config, nil
 	}
 
 	mockProviders := map[string]*schema.Provider{
-		"equinix": mockMetal,
+		"equinix": mockEquinix,
 	}
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
 		Providers: mockProviders,
 		Steps: []resource.TestStep{
 			{
@@ -148,22 +152,24 @@ func TestAccMetalProject_errorHandling(t *testing.T) {
 func TestAccMetalProject_apiErrorHandling(t *testing.T) {
 	rInt := acctest.RandInt()
 
-	mockProjectService := &mockProjectService{
+	mockMetalProjectService := &mockProjectService{
 		CreateFn: func(project *packngo.ProjectCreateRequest) (*packngo.Project, *packngo.Response, error) {
 			httpResp := &http.Response{Status: "422 Unprocessable Entity", StatusCode: 422, Header: http.Header{"Content-Type": []string{"application/json"}, "X-Request-Id": []string{"12345"}}}
 			return nil, &packngo.Response{Response: httpResp}, &packngo.ErrorResponse{Response: httpResp}
 		},
 	}
-	mockMetal := Provider()
-	mockMetal.ConfigureFunc = func(d *schema.ResourceData) (interface{}, error) {
-		return &packngo.Client{Projects: mockProjectService}, nil
+	mockEquinix := Provider()
+	mockEquinix.ConfigureContextFunc = func(ctx context.Context, d *schema.ResourceData) (interface{}, diag.Diagnostics) {
+		config := Config{
+			metal: &packngo.Client{Projects: mockMetalProjectService},
+		}
+		return &config, nil
 	}
 
 	mockProviders := map[string]*schema.Provider{
-		"equinix": mockMetal,
+		"equinix": mockEquinix,
 	}
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
 		Providers: mockProviders,
 		Steps: []resource.TestStep{
 			{
