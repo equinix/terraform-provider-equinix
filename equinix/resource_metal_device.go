@@ -172,6 +172,11 @@ func resourceMetalDevice() *schema.Resource {
 				Description: "The ipv4 private IP assigned to the device",
 				Computed:    true,
 			},
+			"network_type": {
+				Type:        schema.TypeString,
+				Description: "Network type of a device, used in [Layer 2 networking](https://metal.equinix.com/developers/docs/networking/layer2/). Will be one of " + NetworkTypeListHB,
+				Computed:    true,
+			},
 			"ports": {
 				Type:        schema.TypeList,
 				Description: "Ports assigned to the device",
@@ -602,6 +607,9 @@ func resourceMetalDeviceRead(d *schema.ResourceData, meta interface{}) error {
 	if device.HardwareReservation != nil {
 		d.Set("deployed_hardware_reservation_id", device.HardwareReservation.ID)
 	}
+
+	networkType := device.GetNetworkType()
+	d.Set("network_type", networkType)
 
 	wfrd := "wait_for_reservation_deprovision"
 	if _, ok := d.GetOk(wfrd); !ok {
