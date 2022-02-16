@@ -12,15 +12,18 @@ import (
 
 func TestAccMetalSpotMarketRequest_basic(t *testing.T) {
 	var key packngo.SpotMarketRequest
-	rs := acctest.RandString(10)
-
+	context := map[string]interface{}{
+		"name_suffix": acctest.RandString(10),
+		"facility": "sv15",
+		"plan": "c3.small.x86",
+	}
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccMetalSpotMarketRequestCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccMetalSpotMarketRequestConfig_basic(rs),
+				Config: testAccMetalSpotMarketRequestConfig_basic(context),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckMetalSpotMarketRequestExists("equinix_metal_spot_market_request.request", &key),
 					resource.TestCheckResourceAttr("equinix_metal_spot_market_request.request", "devices_max", "1"),
@@ -73,15 +76,15 @@ func testAccCheckMetalSpotMarketRequestExists(n string, key *packngo.SpotMarketR
 	}
 }
 
-func testAccMetalSpotMarketRequestConfig_basic(name string) string {
-	return fmt.Sprintf(`
+func testAccMetalSpotMarketRequestConfig_basic(ctx map[string]interface{}) string {
+	return nprintf(`
 resource "equinix_metal_project" "test" {
-  name = "tfacc-spot_market_request-%s"
+  name = "tfacc-spot_market_request-%{name_suffix}"
 }
 
 data "equinix_metal_spot_market_price" "test" {
-  facility = "ewr1"
-  plan     = "baremetal_0"
+  facility = "%{facility}"
+  plan     = "%{plan}"
 }
 
 data "equinix_metal_spot_market_request" "dreq" {
@@ -91,7 +94,7 @@ data "equinix_metal_spot_market_request" "dreq" {
 resource "equinix_metal_spot_market_request" "request" {
   project_id       = equinix_metal_project.test.id
   max_bid_price    = data.equinix_metal_spot_market_price.test.price * 1.2
-  facilities       = ["sv15"]
+  facilities       = ["%{plan}"]
   devices_min      = 1
   devices_max      = 1
   wait_for_devices = true
@@ -100,26 +103,26 @@ resource "equinix_metal_spot_market_request" "request" {
     hostname         = "tfacc-testspot"
     billing_cycle    = "hourly"
     operating_system = "ubuntu_18_04"
-    plan             = "c3.small.x86"
+    plan             = "%{plan}"
   }
-}`, name)
+}`, ctx)
 }
 
-func testAccCheckMetalSpotMarketRequestConfig_import(name string) string {
-	return fmt.Sprintf(`
+func testAccCheckMetalSpotMarketRequestConfig_import(ctx map[string]interface{}) string {
+	return nprintf(`
 resource "equinix_metal_project" "test" {
-  name = "tfacc-spot_market_request-%s"
+  name = "tfacc-spot_market_request-%{name_suffix}"
 }
 
 data "equinix_metal_spot_market_price" "test" {
-  facility = "sv15"
-  plan     = "c3.medium.x86"
+  facility = "%{facility}"
+  plan     = "%{plan}"
 }
 
 resource "equinix_metal_spot_market_request" "request" {
   project_id       = equinix_metal_project.test.id
   max_bid_price    = data.equinix_metal_spot_market_price.test.price * 1.2
-  facilities       = ["sv15"]
+  facilities       = ["%{facility}"]
   devices_min      = 1
   devices_max      = 1
   wait_for_devices = true
@@ -128,20 +131,24 @@ resource "equinix_metal_spot_market_request" "request" {
     hostname         = "tfacc-testspot"
     billing_cycle    = "hourly"
     operating_system = "ubuntu_20_04"
-    plan             = "c3.small.x86"
+    plan             = "%{plan}"
   }
-}`, name)
+}`, ctx)
 }
 
 func TestAccMetalSpotMarketRequest_Import(t *testing.T) {
-	rs := acctest.RandString(10)
+	context := map[string]interface{}{
+		"name_suffix": acctest.RandString(10),
+		"facility": "sv15",
+		"plan": "c3.small.x86",
+	}
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccMetalSSHKeyCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckMetalSpotMarketRequestConfig_import(rs),
+				Config: testAccCheckMetalSpotMarketRequestConfig_import(context),
 			},
 			{
 				ResourceName:            "equinix_metal_spot_market_request.request",
