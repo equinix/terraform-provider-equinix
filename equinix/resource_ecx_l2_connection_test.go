@@ -28,6 +28,7 @@ func TestFabricL2Connection_createFromResourceData(t *testing.T) {
 		ecxL2ConnectionSchemaNames["SellerRegion"]:        "werwerewr",
 		ecxL2ConnectionSchemaNames["SellerMetroCode"]:     "SV",
 		ecxL2ConnectionSchemaNames["AuthorizationKey"]:    "123456789012",
+		ecxL2ConnectionSchemaNames["ServiceToken"]:        "1c356a7b-d632-18a5-c357-a33146cab65d",
 	}
 	d := schema.TestResourceDataRaw(t, createECXL2ConnectionResourceSchema(), rawData)
 	d.Set(ecxL2ConnectionSchemaNames["Notifications"], []string{"test@test.com"})
@@ -50,6 +51,7 @@ func TestFabricL2Connection_createFromResourceData(t *testing.T) {
 		SellerRegion:        ecx.String(rawData[ecxL2ConnectionSchemaNames["SellerRegion"]].(string)),
 		SellerMetroCode:     ecx.String(rawData[ecxL2ConnectionSchemaNames["SellerMetroCode"]].(string)),
 		AuthorizationKey:    ecx.String(rawData[ecxL2ConnectionSchemaNames["AuthorizationKey"]].(string)),
+		ServiceToken:        ecx.String(rawData[ecxL2ConnectionSchemaNames["ServiceToken"]].(string)),
 	}
 
 	// when
@@ -76,6 +78,7 @@ func TestFabricL2Connection_updateResourceData(t *testing.T) {
 		PurchaseOrderNumber: ecx.String(randString(10)),
 		PortUUID:            ecx.String(randString(36)),
 		DeviceUUID:          ecx.String(randString(36)),
+		ServiceToken:        ecx.String(randString(36)),
 		VlanSTag:            ecx.Int(randInt(2000)),
 		VlanCTag:            ecx.Int(randInt(2000)),
 		NamedTag:            ecx.String(randString(100)),
@@ -106,6 +109,7 @@ func TestFabricL2Connection_updateResourceData(t *testing.T) {
 	assert.Equal(t, ecx.StringValue(input.PortUUID), d.Get(ecxL2ConnectionSchemaNames["PortUUID"]), "PortUUID matches")
 	assert.Equal(t, ecx.StringValue(input.DeviceUUID), d.Get(ecxL2ConnectionSchemaNames["DeviceUUID"]), "DeviceUUID matches")
 	assert.Equal(t, ecx.IntValue(input.DeviceInterfaceID), d.Get(ecxL2ConnectionSchemaNames["DeviceInterfaceID"]), "DeviceInterfaceID matches")
+	assert.Equal(t, ecx.StringValue(input.ServiceToken), d.Get(ecxL2ConnectionSchemaNames["ServiceToken"]), "ServiceToken matches")
 	assert.Equal(t, ecx.IntValue(input.VlanSTag), d.Get(ecxL2ConnectionSchemaNames["VlanSTag"]), "VlanSTag matches")
 	assert.Equal(t, ecx.IntValue(input.VlanCTag), d.Get(ecxL2ConnectionSchemaNames["VlanCTag"]), "VlanCTag matches")
 	assert.Equal(t, ecx.StringValue(input.NamedTag), d.Get(ecxL2ConnectionSchemaNames["NamedTag"]), "NamedTag matches")
