@@ -14,7 +14,7 @@ func TestAccMetalSpotMarketRequest_basic(t *testing.T) {
 	var key packngo.SpotMarketRequest
 	context := map[string]interface{}{
 		"name_suffix": acctest.RandString(10),
-		"facility": "sv15",
+		"facility": "dc13",
 		"plan": "c3.small.x86",
 	}
 	resource.ParallelTest(t, resource.TestCase{
@@ -94,7 +94,7 @@ data "equinix_metal_spot_market_request" "dreq" {
 resource "equinix_metal_spot_market_request" "request" {
   project_id       = equinix_metal_project.test.id
   max_bid_price    = data.equinix_metal_spot_market_price.test.price * 1.2
-  facilities       = ["%{plan}"]
+  facilities       = ["%{facility}"]
   devices_min      = 1
   devices_max      = 1
   wait_for_devices = true
@@ -139,7 +139,7 @@ resource "equinix_metal_spot_market_request" "request" {
 func TestAccMetalSpotMarketRequest_Import(t *testing.T) {
 	context := map[string]interface{}{
 		"name_suffix": acctest.RandString(10),
-		"facility": "sv15",
+		"facility": "dc13",
 		"plan": "c3.small.x86",
 	}
 	resource.ParallelTest(t, resource.TestCase{
