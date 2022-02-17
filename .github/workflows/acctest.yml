@@ -66,9 +66,9 @@ jobs:
         #
         EQUINIX_API_TOKEN: ${{ secrets.EQUINIX_API_TOKEN }}
         METAL_AUTH_TOKEN: ${{ secrets.METAL_AUTH_TOKEN }}
-        TEST_ARGS: "-run='Test.*Metal'" #regexp to run just metal tests
+        TEST_ARGS: "-run='TestMetal|TestAccDataSourceMetal|TestAccMetal'" #regexp to run just metal tests
       run: |
-        go test -v -coverprofile coverage.txt -covermode=atomic -parallel 8 -timeout 180m ${TEST_ARGS} ./...
+        go test ./... -v -coverprofile coverage.txt -covermode=atomic -count 1 -parallel 8 ${TEST_ARGS} -timeout 180m
     - name: Sweeper
       if: ${{ always() }}
       env:
