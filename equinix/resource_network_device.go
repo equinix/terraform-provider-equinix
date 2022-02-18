@@ -318,10 +318,10 @@ func createNetworkDeviceSchema() map[string]*schema.Schema {
 			Description:  networkDeviceDescriptions["TermLength"],
 		},
 		networkDeviceSchemaNames["AdditionalBandwidth"]: {
-			Type:         schema.TypeInt,
-			Optional:     true,
-			Computed:     true,
-			Description:  networkDeviceDescriptions["AdditionalBandwidth"],
+			Type:        schema.TypeInt,
+			Optional:    true,
+			Computed:    true,
+			Description: networkDeviceDescriptions["AdditionalBandwidth"],
 		},
 		networkDeviceSchemaNames["OrderReference"]: {
 			Type:         schema.TypeString,
@@ -516,10 +516,10 @@ func createNetworkDeviceSchema() map[string]*schema.Schema {
 						Description: networkDeviceDescriptions["RedundantUUID"],
 					},
 					networkDeviceSchemaNames["AdditionalBandwidth"]: {
-						Type:         schema.TypeInt,
-						Optional:     true,
-						Computed:     true,
-						Description:  networkDeviceDescriptions["AdditionalBandwidth"],
+						Type:        schema.TypeInt,
+						Optional:    true,
+						Computed:    true,
+						Description: networkDeviceDescriptions["AdditionalBandwidth"],
 					},
 					networkDeviceSchemaNames["WanInterfaceId"]: {
 						Type:         schema.TypeString,

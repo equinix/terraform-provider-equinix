@@ -69,6 +69,7 @@ func dataSourceMetalSpotMarketRequest() *schema.Resource {
 		Timeouts: resourceDefaultTimeouts,
 	}
 }
+
 func dataSourceMetalSpotMarketRequestRead(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*Config).metal
 	id := d.Get("request_id").(string)
@@ -86,7 +87,6 @@ func dataSourceMetalSpotMarketRequestRead(d *schema.ResourceData, meta interface
 	deviceIDs := make([]string, len(smr.Devices))
 	for i, d := range smr.Devices {
 		deviceIDs[i] = d.ID
-
 	}
 
 	facs := smr.Facilities

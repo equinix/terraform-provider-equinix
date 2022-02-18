@@ -114,8 +114,6 @@ func dataSourceMetalPreCreatedIPBlockRead(d *schema.ResourceData, meta interface
 				return loadBlock(d, &ip)
 			}
 		}
-
 	}
 	return fmt.Errorf("Could not find matching reserved block, all IPs were %v", ips)
-
 }

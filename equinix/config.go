@@ -30,25 +30,27 @@ const (
 	uaEnvVar      = "TF_APPEND_USER_AGENT"
 )
 
-var DefaultBaseURL = "https://api.equinix.com"
-var DefaultTimeout = 30
+var (
+	DefaultBaseURL = "https://api.equinix.com"
+	DefaultTimeout = 30
+)
 
 // Config is the configuration structure used to instantiate the Equinix
 // provider.
 type Config struct {
-	BaseURL        	string
-	AuthToken      	string
-	ClientID       	string
-	ClientSecret   	string
-	MaxRetries     	int
-	MaxRetryWait   	time.Duration
-	RequestTimeout	time.Duration
-	PageSize       	int
-	Token          	string
+	BaseURL        string
+	AuthToken      string
+	ClientID       string
+	ClientSecret   string
+	MaxRetries     int
+	MaxRetryWait   time.Duration
+	RequestTimeout time.Duration
+	PageSize       int
+	Token          string
 
-	ecx		ecx.Client
-	ne		ne.Client
-	metal	*packngo.Client
+	ecx   ecx.Client
+	ne    ne.Client
+	metal *packngo.Client
 
 	terraformVersion string
 }
@@ -171,6 +173,6 @@ func (c *Config) NewMetalClient() *packngo.Client {
 	baseURL.Path = path.Join(baseURL.Path, metalBasePath) + "/"
 	client, _ := packngo.NewClientWithBaseURL(consumerToken, c.AuthToken, standardClient, baseURL.String())
 	client.UserAgent = c.fullUserAgent(client.UserAgent)
-	
+
 	return client
 }

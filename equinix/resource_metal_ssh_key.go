@@ -46,7 +46,6 @@ func metalSSHKeyCommonFields() map[string]*schema.Schema {
 			Computed:    true,
 		},
 	}
-
 }
 
 func resourceMetalSSHKey() *schema.Resource {

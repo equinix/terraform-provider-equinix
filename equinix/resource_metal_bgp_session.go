@@ -57,7 +57,8 @@ func resourceMetalBGPSessionCreate(d *schema.ResourceData, meta interface{}) err
 	bgpSession, _, err := client.BGPSessions.Create(
 		dID, packngo.CreateBGPSessionRequest{
 			AddressFamily: addressFamily,
-			DefaultRoute:  &defaultRoute})
+			DefaultRoute:  &defaultRoute,
+		})
 	if err != nil {
 		return friendlyError(err)
 	}

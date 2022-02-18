@@ -9,7 +9,6 @@ import (
 )
 
 func TestAccDataSourceMetalPreCreatedIPBlock_basic(t *testing.T) {
-
 	rs := acctest.RandString(10)
 
 	resource.ParallelTest(t, resource.TestCase{

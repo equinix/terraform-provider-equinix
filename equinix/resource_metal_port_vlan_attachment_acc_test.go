@@ -65,7 +65,6 @@ resource "equinix_metal_port_vlan_attachment" "test2" {
 }
 
 func TestAccMetalPortVlanAttachment_L2Bonded(t *testing.T) {
-
 	rs := acctest.RandString(10)
 
 	resource.ParallelTest(t, resource.TestCase{
@@ -150,7 +149,6 @@ resource "equinix_metal_port_vlan_attachment" "test2" {
 }
 
 func TestAccMetalPortVlanAttachment_L2Individual(t *testing.T) {
-
 	rs := acctest.RandString(10)
 
 	resource.ParallelTest(t, resource.TestCase{
@@ -422,7 +420,6 @@ resource "equinix_metal_port_vlan_attachment" "test2" {
 }
 
 func TestAccMetalPortVlanAttachment_L2Native(t *testing.T) {
-
 	rs := acctest.RandString(10)
 
 	resource.ParallelTest(t, resource.TestCase{

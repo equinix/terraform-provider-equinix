@@ -29,7 +29,6 @@ func intInSlice(valid []int) schema.SchemaValidateFunc {
 }
 
 func resourceMetalGateway() *schema.Resource {
-
 	return &schema.Resource{
 		Read:   resourceMetalGatewayRead,
 		Create: resourceMetalGatewayCreate,
@@ -123,7 +122,7 @@ func resourceMetalGatewayRead(d *schema.ResourceData, meta interface{}) error {
 
 	privateIPv4SubnetSize := uint(0)
 	if !mg.IPReservation.Public {
-		//privateIPv4SubnetSize = bits.RotateLeft(1, 32-mg.IPReservation.CIDR)
+		// privateIPv4SubnetSize = bits.RotateLeft(1, 32-mg.IPReservation.CIDR)
 		privateIPv4SubnetSize = 1 << (32 - mg.IPReservation.CIDR)
 	}
 

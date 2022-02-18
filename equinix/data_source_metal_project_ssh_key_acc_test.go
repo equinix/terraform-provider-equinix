@@ -14,7 +14,6 @@ func TestAccDataSourceMetalProjectSSHKey_bySearch(t *testing.T) {
 	keyName := acctest.RandomWithPrefix("tfacc-project-key")
 
 	publicKeyMaterial, _, err := acctest.RandSSHKeyPair("")
-
 	if err != nil {
 		t.Fatalf("Cannot generate test SSH key pair: %s", err)
 	}
@@ -74,7 +73,7 @@ func TestAccDataSourceMetalProjectSSHKeyDataSource_yID(t *testing.T) {
 				),
 				// Why was follwing flag set? The plan is applied and then it's empty.
 				// It's causing errors in acceptance tests. Was this because of some API bug?
-				//ExpectNonEmptyPlan: true,
+				// ExpectNonEmptyPlan: true,
 			},
 			{
 				Config:      testAccDataSourceMetalProjectSSHKeyConfig_noKey(keyName, publicKeyMaterial),

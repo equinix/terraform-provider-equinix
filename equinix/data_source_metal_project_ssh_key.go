@@ -83,7 +83,6 @@ func dataSourceMetalProjectSSHKeyRead(d *schema.ResourceData, meta interface{}) 
 		searchOpts = &packngo.SearchOptions{Search: search}
 	}
 	keys, _, err := client.Projects.ListSSHKeys(projectID, searchOpts)
-
 	if err != nil {
 		err = fmt.Errorf("Error listing project ssh keys: %s", friendlyError(err))
 		return err

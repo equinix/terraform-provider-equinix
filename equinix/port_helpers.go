@@ -288,7 +288,6 @@ func convertToL3(cpr *ClientPortResource) error {
 }
 
 func portSanityChecks(cpr *ClientPortResource) error {
-
 	isBondPort := cpr.Port.Type == "NetworkBondPort"
 
 	// Constraint: Only bond ports have layer2 mode

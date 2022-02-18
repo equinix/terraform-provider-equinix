@@ -30,9 +30,9 @@ const (
 
 func init() {
 	resource.AddTestSweepers("equinix_network_device", &resource.Sweeper{
-		Name: "equinix_network_device",
+		Name:         "equinix_network_device",
 		Dependencies: []string{"equinix_network_device_link"},
-		F:    testSweepNetworkDevice,
+		F:            testSweepNetworkDevice,
 	})
 }
 

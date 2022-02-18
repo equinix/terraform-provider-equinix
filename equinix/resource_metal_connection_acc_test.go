@@ -10,7 +10,6 @@ import (
 )
 
 func TestAccMetalConnection_shared(t *testing.T) {
-
 	rs := acctest.RandString(10)
 
 	resource.ParallelTest(t, resource.TestCase{
@@ -67,7 +66,6 @@ func testAccMetalConnectionCheckDestroyed(s *terraform.State) error {
 }
 
 func TestAccMetalConnection_dedicated(t *testing.T) {
-
 	rs := acctest.RandString(10)
 
 	resource.ParallelTest(t, resource.TestCase{
@@ -133,7 +131,6 @@ func testDataSourceMetalConnectionConfig_dedicated() string {
 }
 
 func TestAccMetalConnection_tunnel(t *testing.T) {
-
 	rs := acctest.RandString(10)
 
 	resource.ParallelTest(t, resource.TestCase{

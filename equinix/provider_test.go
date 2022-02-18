@@ -390,7 +390,3 @@ func setSchemaValueIfNotEmpty(key string, value interface{}, d *schema.ResourceD
 	}
 	return nil
 }
-
-func testDeviceTerminationTime() string {
-	return time.Now().UTC().Add(60 * time.Minute).Format(time.RFC3339)
-}

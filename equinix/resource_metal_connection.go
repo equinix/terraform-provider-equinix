@@ -49,7 +49,8 @@ func resourceMetalConnection() *schema.Resource {
 				Description: "Connection redundancy - redundant or primary",
 				ValidateFunc: validation.StringInSlice([]string{
 					string(packngo.ConnectionRedundant),
-					string(packngo.ConnectionPrimary)}, false),
+					string(packngo.ConnectionPrimary),
+				}, false),
 			},
 			"type": {
 				Type:        schema.TypeString,
@@ -58,7 +59,8 @@ func resourceMetalConnection() *schema.Resource {
 				ForceNew:    true,
 				ValidateFunc: validation.StringInSlice([]string{
 					string(packngo.ConnectionDedicated),
-					string(packngo.ConnectionShared)}, false),
+					string(packngo.ConnectionShared),
+				}, false),
 			},
 			"mode": {
 				Type:        schema.TypeString,
@@ -67,7 +69,8 @@ func resourceMetalConnection() *schema.Resource {
 				Default:     "standard",
 				ValidateFunc: validation.StringInSlice([]string{
 					string(packngo.ConnectionModeStandard),
-					string(packngo.ConnectionModeTunnel)}, false),
+					string(packngo.ConnectionModeTunnel),
+				}, false),
 			},
 			"organization_id": {
 				Type:        schema.TypeString,
@@ -231,7 +234,6 @@ func resourceMetalConnectionUpdate(d *schema.ResourceData, meta interface{}) err
 		if _, _, err := client.Connections.Update(d.Id(), &ur, nil); err != nil {
 			return friendlyError(err)
 		}
-
 	}
 	return resourceMetalConnectionRead(d, meta)
 }

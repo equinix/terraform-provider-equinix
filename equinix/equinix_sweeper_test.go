@@ -43,7 +43,7 @@ func sharedConfigForRegion(region string) (*Config, error) {
 	return &Config{
 		AuthToken:      metalAuthToken,
 		BaseURL:        endpoint,
-		Token:			clientToken,
+		Token:          clientToken,
 		ClientID:       clientID,
 		ClientSecret:   clientSecret,
 		RequestTimeout: time.Duration(clientTimeoutInt) * time.Second,

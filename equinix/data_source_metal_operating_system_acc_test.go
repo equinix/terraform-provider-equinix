@@ -8,12 +8,12 @@ import (
 )
 
 func TestAccDataSourceMetalOperatingSystem_basic(t *testing.T) {
-
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
-			{Config: testAccDataSourceMetalOperatingSystemConfig_basic,
+			{
+				Config: testAccDataSourceMetalOperatingSystemConfig_basic,
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("data.equinix_metal_operating_system.example", "slug", "ubuntu_20_04"),
 				),
@@ -31,12 +31,12 @@ const testAccDataSourceMetalOperatingSystemConfig_basic = `
 var matchErrOSNotFound = regexp.MustCompile(".*There are no operating systems*")
 
 func TestAccDataSourceMetalOperatingSystem_notFound(t *testing.T) {
-
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
-			{Config: testAccDataSourceMetalOperatingSystemConfig_notFound,
+			{
+				Config:      testAccDataSourceMetalOperatingSystemConfig_notFound,
 				ExpectError: matchErrOSNotFound,
 			},
 		},
@@ -52,12 +52,12 @@ const testAccDataSourceMetalOperatingSystemConfig_notFound = `
 var matchErrOSAmbiguous = regexp.MustCompile(".*There is more than one operating system.*")
 
 func TestAccDataSourceMetalOperatingSystem_ambiguous(t *testing.T) {
-
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
-			{Config: testAccDataSourceMetalOperatingSystemConfig_ambiguous,
+			{
+				Config:      testAccDataSourceMetalOperatingSystemConfig_ambiguous,
 				ExpectError: matchErrOSAmbiguous,
 			},
 		},

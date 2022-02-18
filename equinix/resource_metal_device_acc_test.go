@@ -173,6 +173,7 @@ func TestAccMetalDevice_metro(t *testing.T) {
 		},
 	})
 }
+
 func TestAccMetalDevice_update(t *testing.T) {
 	var d1, d2, d3, d4, d5 packngo.Device
 	rs := acctest.RandString(10)

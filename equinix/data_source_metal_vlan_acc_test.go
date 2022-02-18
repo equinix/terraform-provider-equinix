@@ -228,18 +228,19 @@ func TestMetalVlan_matchingVlan(t *testing.T) {
 		args    args
 		want    *packngo.VirtualNetwork
 		wantErr bool
-	}{{
-		name: "MatchingVLAN",
-		args: args{
-			vlans:     []packngo.VirtualNetwork{{VXLAN: 123}},
-			vxlan:     123,
-			projectID: "",
-			facility:  "",
-			metro:     "",
+	}{
+		{
+			name: "MatchingVLAN",
+			args: args{
+				vlans:     []packngo.VirtualNetwork{{VXLAN: 123}},
+				vxlan:     123,
+				projectID: "",
+				facility:  "",
+				metro:     "",
+			},
+			want:    &packngo.VirtualNetwork{VXLAN: 123},
+			wantErr: false,
 		},
-		want:    &packngo.VirtualNetwork{VXLAN: 123},
-		wantErr: false,
-	},
 		{
 			name: "MatchingFac",
 			args: args{

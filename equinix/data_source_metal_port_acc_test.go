@@ -9,7 +9,6 @@ import (
 )
 
 func TestAccDataSourceMetalPort_byName(t *testing.T) {
-
 	rs := acctest.RandString(10)
 
 	resource.ParallelTest(t, resource.TestCase{
@@ -52,7 +51,6 @@ data "equinix_metal_port" "test" {
 }
 
 func TestAccDataSourceMetalPort_byId(t *testing.T) {
-
 	rs := acctest.RandString(10)
 
 	resource.ParallelTest(t, resource.TestCase{

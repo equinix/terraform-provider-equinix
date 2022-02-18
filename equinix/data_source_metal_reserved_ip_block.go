@@ -156,7 +156,6 @@ func dataSourceMetalReservedIPBlockRead(d *schema.ResourceData, meta interface{}
 		}
 	}
 	return fmt.Errorf("Could not find matching reserved block, all blocks were \n%s", listOfCidrs(blocks))
-
 }
 
 func listOfCidrs(blocks []packngo.IPAddressReservation) string {
@@ -165,5 +164,4 @@ func listOfCidrs(blocks []packngo.IPAddressReservation) string {
 		cidrs = append(cidrs, fmt.Sprintf("%s/%d", b.Network, b.CIDR))
 	}
 	return strings.Join(cidrs, "\n")
-
 }

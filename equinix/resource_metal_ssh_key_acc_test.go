@@ -173,9 +173,9 @@ func TestAccMetalSSHKey_importBasic(t *testing.T) {
 				Config: testAccMetalSSHKeyConfig_basic(acctest.RandInt(), sshKey),
 			},
 			{
-				ResourceName:      "equinix_metal_ssh_key.foobar",
-				ImportState:       true,
-				ImportStateVerify: true,
+				ResourceName:            "equinix_metal_ssh_key.foobar",
+				ImportState:             true,
+				ImportStateVerify:       true,
 				ImportStateVerifyIgnore: []string{"updated"},
 			},
 		},

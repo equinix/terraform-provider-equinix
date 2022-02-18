@@ -125,7 +125,6 @@ func expandBGPConfig(d *schema.ResourceData) packngo.CreateBGPConfigRequest {
 	}
 
 	return bgpCreateRequest
-
 }
 
 func resourceMetalProjectCreate(d *schema.ResourceData, meta interface{}) error {

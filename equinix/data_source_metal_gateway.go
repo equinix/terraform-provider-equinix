@@ -7,7 +7,6 @@ import (
 )
 
 func dataSourceMetalGateway() *schema.Resource {
-
 	return &schema.Resource{
 		Read: dataSourceMetalGatewayRead,
 

@@ -195,7 +195,6 @@ func getVCStateWaiter(client *packngo.Client, id string, timeout time.Duration, 
 		Delay:      10 * time.Second,
 		MinTimeout: 5 * time.Second,
 	}
-
 }
 
 func resourceMetalVirtualCircuitUpdate(d *schema.ResourceData, meta interface{}) error {
@@ -241,7 +240,6 @@ func resourceMetalVirtualCircuitUpdate(d *schema.ResourceData, meta interface{})
 		if _, _, err := client.VirtualCircuits.Update(d.Id(), &ur, nil); err != nil {
 			return friendlyError(err)
 		}
-
 	}
 	return resourceMetalVirtualCircuitRead(d, meta)
 }

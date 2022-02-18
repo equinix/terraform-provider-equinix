@@ -15,7 +15,6 @@ import (
 // friendlyError improves error messages when the API error is blank or in an
 // alternate format (as is the case with invalid token or loadbalancer errors)
 func friendlyError(err error) error {
-
 	if e, ok := err.(*packngo.ErrorResponse); ok {
 		resp := e.Response
 		errors := Errors(e.Errors)

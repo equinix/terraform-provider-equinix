@@ -132,5 +132,4 @@ func dataSourceMetalIPBlockRangesRead(d *schema.ResourceData, meta interface{}) 
 
 	d.SetId(id + "-IPs")
 	return nil
-
 }

@@ -102,6 +102,7 @@ func (m *mockProjectService) Get(projectID string, opts *packngo.GetOptions) (*p
 func (m *mockProjectService) ListBGPSessions(projectID string, opts *packngo.ListOptions) ([]packngo.BGPSession, *packngo.Response, error) {
 	return m.ListBGPSessionsFn(projectID, opts)
 }
+
 func (m *mockProjectService) Update(projectID string, project *packngo.ProjectUpdateRequest) (*packngo.Project, *packngo.Response, error) {
 	return m.UpdateFn(projectID, project)
 }
@@ -179,6 +180,7 @@ func TestAccMetalProject_apiErrorHandling(t *testing.T) {
 		},
 	})
 }
+
 func TestAccMetalProject_BGPBasic(t *testing.T) {
 	var project packngo.Project
 	rInt := acctest.RandInt()

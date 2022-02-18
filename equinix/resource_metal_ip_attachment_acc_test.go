@@ -10,7 +10,6 @@ import (
 )
 
 func TestAccMetalIPAttachment_basic(t *testing.T) {
-
 	rs := acctest.RandString(10)
 
 	resource.ParallelTest(t, resource.TestCase{
@@ -66,7 +65,6 @@ resource "equinix_metal_ip_attachment" "test" {
 }
 
 func TestAccMetalIPAttachment_metro(t *testing.T) {
-
 	rs := acctest.RandString(10)
 
 	resource.ParallelTest(t, resource.TestCase{

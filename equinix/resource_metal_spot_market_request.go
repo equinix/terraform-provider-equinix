@@ -299,7 +299,7 @@ func resourceMetalSpotMarketRequestCreate(d *schema.ResourceData, meta interface
 			Timeout:        d.Timeout(schema.TimeoutCreate),
 			MinTimeout:     5 * time.Second,
 			Delay:          3 * time.Second, // Wait 10 secs before starting
-			NotFoundChecks: 600,             //Setting high number, to support long timeouts
+			NotFoundChecks: 600,             // Setting high number, to support long timeouts
 		}
 
 		_, err = stateConf.WaitForState()
@@ -370,7 +370,7 @@ func resourceMetalSpotMarketRequestDelete(d *schema.ResourceData, meta interface
 			Timeout:        d.Timeout(schema.TimeoutDelete),
 			MinTimeout:     5 * time.Second,
 			Delay:          3 * time.Second, // Wait 10 secs before starting
-			NotFoundChecks: 600,             //Setting high number, to support long timeouts
+			NotFoundChecks: 600,             // Setting high number, to support long timeouts
 		}
 
 		_, err = stateConf.WaitForState()
@@ -418,7 +418,6 @@ func resourceStateRefreshFunc(d *schema.ResourceData, meta interface{}) resource
 	return func() (interface{}, string, error) {
 		client := meta.(*Config).metal
 		smr, _, err := client.SpotMarketRequests.Get(d.Id(), &packngo.GetOptions{Includes: []string{"project", "devices", "facilities", "metro"}})
-
 		if err != nil {
 			return nil, "", fmt.Errorf("Failed to fetch Spot market request with following error: %s", err.Error())
 		}

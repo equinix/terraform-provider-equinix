@@ -12,8 +12,10 @@ import (
 	"github.com/packethost/packngo"
 )
 
-var wgMap = map[string]*sync.WaitGroup{}
-var wgMutex = sync.Mutex{}
+var (
+	wgMap   = map[string]*sync.WaitGroup{}
+	wgMutex = sync.Mutex{}
+)
 
 func ifToIPCreateRequest(m interface{}) packngo.IPAddressCreateRequest {
 	iacr := packngo.IPAddressCreateRequest{}
@@ -146,7 +148,6 @@ func getWaitForDeviceLock(deviceID string) *sync.WaitGroup {
 }
 
 func waitForDeviceAttribute(d *schema.ResourceData, targets []string, pending []string, attribute string, meta interface{}) (string, error) {
-
 	wg := getWaitForDeviceLock(d.Id())
 	wg.Wait()
 

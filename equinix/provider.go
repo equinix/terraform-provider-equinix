@@ -25,12 +25,12 @@ var (
 )
 
 const (
-	endpointEnvVar        = "EQUINIX_API_ENDPOINT"
-	clientIDEnvVar        = "EQUINIX_API_CLIENTID"
-	clientSecretEnvVar    = "EQUINIX_API_CLIENTSECRET"
-	clientTokenEnvVar     = "EQUINIX_API_TOKEN"
-	clientTimeoutEnvVar   = "EQUINIX_API_TIMEOUT"
-	metalAuthTokenEnvVar  = "METAL_AUTH_TOKEN"
+	endpointEnvVar       = "EQUINIX_API_ENDPOINT"
+	clientIDEnvVar       = "EQUINIX_API_CLIENTID"
+	clientSecretEnvVar   = "EQUINIX_API_CLIENTSECRET"
+	clientTokenEnvVar    = "EQUINIX_API_TOKEN"
+	clientTimeoutEnvVar  = "EQUINIX_API_TIMEOUT"
+	metalAuthTokenEnvVar = "METAL_AUTH_TOKEN"
 )
 
 // resourceDataProvider provies interface to schema.ResourceData
@@ -88,8 +88,8 @@ func Provider() *schema.Provider {
 				Description:  "The maximum number of records in a single response for REST queries that produce paginated responses",
 			},
 			"auth_token": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:        schema.TypeString,
+				Optional:    true,
 				DefaultFunc: schema.EnvDefaultFunc(metalAuthTokenEnvVar, nil),
 				Description: "The Equinix Metal API auth key for API operations",
 			},

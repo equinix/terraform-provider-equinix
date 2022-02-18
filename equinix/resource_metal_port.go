@@ -142,7 +142,6 @@ func resourceMetalPortUpdate(d *schema.ResourceData, meta interface{}) error {
 func resourceMetalPortRead(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*Config).metal
 	port, err := getPortByResourceData(d, client)
-
 	if err != nil {
 		if isNotFound(err) || isForbidden(err) {
 			log.Printf("[WARN] Port (%s) not accessible, removing from state", d.Id())
