@@ -197,7 +197,7 @@ The following attributes are exported:
   * `gateway` - address of router
   * `public` - whether the address is routable from the Internet
   * `family` - IP version - "4" or "6"
-* `network_type` Network type of a device, used in [Layer 2 networking](https://metal.equinix.com/developers/docs/networking/layer2/). Will be one of `layer3`, `hybrid`, `layer2-individual` and `layer2-bonded`.
+* `network_type` - (Deprecated) Network type of a device, used in [Layer 2 networking](https://metal.equinix.com/developers/docs/networking/layer2/). Since this attribute is deprecated you should handle Network Type with one of [equinix_metal_port](equinix_metal_port.md),  [equinix_metal_device_network_type](equinix_metal_device_network_type.md) resources or [equinix_metal_port](../data-sources/equinix_metal_port.md) datasource. See [network_types guide](../guides/network_types.md) for more info.
 * `operating_system` - The operating system running on the device
 * `plan` - The hardware config of the device
 * `ports` - Ports assigned to the device

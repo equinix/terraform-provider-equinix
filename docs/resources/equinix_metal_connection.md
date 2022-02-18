@@ -37,6 +37,6 @@ resource "equinix_metal_connection" "test" {
 * `status` - Status of the connection resource
 * `token` - Fabric Token from the [Equinix Fabric Portal](https://ecxfabric.equinix.com/dashboard)
 * `speed` - Port speed in bits per second
-* `ports` - List of connection ports - primary (`ports[0]`) and secondary (`ports[1]`). Schema of port is described in documentation of the [equinix_metal_connection datasource](../data-sources/metal_connection.md).
+* `ports` - List of connection ports - primary (`ports[0]`) and secondary (`ports[1]`). Schema of port is described in documentation of the [equinix_metal_connection datasource](../data-sources/equinix_metal_connection.md).
 
 

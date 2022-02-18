@@ -41,6 +41,7 @@ provider "equinix" {
   auth_token = var.auth_token
 }
 ```
+
 __NOTE__
 
 If your code already includes both `equinix` provider and `metal` | `packet`, the resulting code will have two `equinix` provider blocks and they will also be duplicated in the required_providers definition. If this is your case, after migrate you must manually combine them in a single one with all the parameters required:

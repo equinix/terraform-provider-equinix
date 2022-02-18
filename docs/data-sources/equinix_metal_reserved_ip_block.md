@@ -39,5 +39,4 @@ You should pass either `id`, or both `project_id` and `ip_address`.
 
 ## Attributes Reference
 
-This datasource exposes the same attributes as the [equinix_metal_reserved_ip_block resource](../resources/metal_reserved_ip_block.md).
-
+This datasource exposes the same attributes as the [equinix_metal_reserved_ip_block resource](../resources/equinix_metal_reserved_ip_block.md).
