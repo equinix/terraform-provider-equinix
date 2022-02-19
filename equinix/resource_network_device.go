@@ -179,7 +179,7 @@ func resourceNetworkDevice() *schema.Resource {
 		},
 		Schema: createNetworkDeviceSchema(),
 		Timeouts: &schema.ResourceTimeout{
-			Create: schema.DefaultTimeout(60 * time.Minute),
+			Create: schema.DefaultTimeout(90 * time.Minute),
 			Update: schema.DefaultTimeout(30 * time.Minute),
 			Delete: schema.DefaultTimeout(30 * time.Minute),
 		},
@@ -1418,6 +1418,8 @@ func createNetworkDeviceStatusProvisioningWaitConfiguration(fetchFunc getDevice,
 		ne.DeviceStateInitializing,
 		ne.DeviceStateProvisioning,
 		ne.DeviceStateWaitingSecondary,
+		ne.DeviceStateWaitingClusterNodes,
+		ne.DeviceStateClusterSetUpInProgress,
 	}
 	target := []string{
 		ne.DeviceStateProvisioned,
@@ -1455,6 +1457,7 @@ func createNetworkDeviceStatusWaitConfiguration(fetchFunc getDevice, id string, 
 func createNetworkDeviceLicenseStatusWaitConfiguration(fetchFunc getDevice, id string, delay time.Duration, timeout time.Duration) *resource.StateChangeConf {
 	pending := []string{
 		ne.DeviceLicenseStateApplying,
+		ne.DeviceLicenseStateWaitingClusterSetUp,
 		"",
 	}
 	target := []string{
