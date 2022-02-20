@@ -9,7 +9,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestReplaceTemplateTokens_basic(t *testing.T) {
+func TestMigrationReplaceTemplateTokens_basic(t *testing.T) {
 	const original = `
 resource "metal_port" "bond0" {
 	port_id = local.bond0_id
@@ -51,7 +51,7 @@ resource "equinix_metal_vlan" "test" {
 	assert.Equal(t, expected, actual.String(), "Result matches expected result")
 }
 
-func TestReplaceTemplateTokens_multiMatchPerLine(t *testing.T) {
+func TestMigrationReplaceTemplateTokens_multiMatchPerLine(t *testing.T) {
 	const original = `
 terraform {
 	required_providers {
@@ -167,7 +167,7 @@ locals {
 	assert.Equal(t, expected, actual.String(), "Result matches expected result")
 }
 
-func TestBraceIndexing_basic(t *testing.T) {
+func TestMigrationBraceIndexing_basic(t *testing.T) {
 	const str = `{{}}`
 	expectStart := 0
 	expectEnd := 3
@@ -182,7 +182,7 @@ func TestBraceIndexing_basic(t *testing.T) {
 	}
 }
 
-func TestBraceIndexingWith_strings(t *testing.T) {
+func TestMigrationBraceIndexingWith_strings(t *testing.T) {
 	const str = ` " " { { } } `
 	expectStart := 5
 	expectEnd := 11
@@ -197,7 +197,7 @@ func TestBraceIndexingWith_strings(t *testing.T) {
 	}
 }
 
-func TestBraceIndexing_Provider(t *testing.T) {
+func TestMigrationBraceIndexing_Provider(t *testing.T) {
 	const str = `provider "metal" {
   auth_token = "${var.auth_token}"
 }`
@@ -215,7 +215,7 @@ func TestBraceIndexing_Provider(t *testing.T) {
 	}
 }
 
-func TestFindOpeningBrace(t *testing.T) {
+func TestMigrationFindOpeningBrace(t *testing.T) {
 	const str = `}{}`
 	expect := 1
 	start, _ := indexOpenCloseTokens('{', '}', str)
@@ -225,7 +225,7 @@ func TestFindOpeningBrace(t *testing.T) {
 	}
 }
 
-func TestFindClosingBrace(t *testing.T) {
+func TestMigrationFindClosingBrace(t *testing.T) {
 	const str = `{}}`
 	expect := 1
 	_, end := indexOpenCloseTokens('{', '}', str)
@@ -234,7 +234,7 @@ func TestFindClosingBrace(t *testing.T) {
 	}
 }
 
-func TestMissingOpeningBrace(t *testing.T) {
+func TestMigrationMissingOpeningBrace(t *testing.T) {
 	const str = `}}`
 	expect := -1
 	start, _ := indexOpenCloseTokens('{', '}', str)
@@ -244,7 +244,7 @@ func TestMissingOpeningBrace(t *testing.T) {
 	}
 }
 
-func TestMissingClosingBrace(t *testing.T) {
+func TestMigrationMissingClosingBrace(t *testing.T) {
 	const str = `{{}`
 	expect := -1
 	_, end := indexOpenCloseTokens('{', '}', str)
@@ -254,7 +254,7 @@ func TestMissingClosingBrace(t *testing.T) {
 	}
 }
 
-func TestReplaceProvider(t *testing.T) {
+func TestMigrationReplaceProvider(t *testing.T) {
 	// given
 	context := `
 provider "metal" {
@@ -271,7 +271,7 @@ provider "equinix" {
 	assert.Equal(t, expected, result, "Result matches expected result")
 }
 
-func TestReplaceRequiredProvider(t *testing.T) {
+func TestMigrationReplaceRequiredProvider(t *testing.T) {
 	// given
 	context := `
 terraform {
