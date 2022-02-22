@@ -44,19 +44,18 @@ func (r mockedResourceDataProvider) GetChange(key string) (interface{}, interfac
 }
 
 type mockECXClient struct {
-
 	GetUserPortsFn func() ([]ecx.Port, error)
 
-	GetL2OutgoingConnectionsFn func(statuses []string) ([]ecx.L2Connection, error)
-	GetL2ConnectionFn func(uuid string) (*ecx.L2Connection, error)
-	CreateL2ConnectionFn func(conn ecx.L2Connection) (*string, error)
-	CreateL2RedundantConnectionFn func(priConn, secConn ecx.L2Connection) (*string, *string, error)
+	GetL2OutgoingConnectionsFn     func(statuses []string) ([]ecx.L2Connection, error)
+	GetL2ConnectionFn              func(uuid string) (*ecx.L2Connection, error)
+	CreateL2ConnectionFn           func(conn ecx.L2Connection) (*string, error)
+	CreateL2RedundantConnectionFn  func(priConn, secConn ecx.L2Connection) (*string, *string, error)
 	NewL2ConnectionUpdateRequestFn func(uuid string) ecx.L2ConnectionUpdateRequest
-	DeleteL2ConnectionFn func(uuid string) error
-	ConfirmL2ConnectionFn func(uuid string, confirmConn ecx.L2ConnectionToConfirm) (*ecx.L2ConnectionConfirmation, error)
+	DeleteL2ConnectionFn           func(uuid string) error
+	ConfirmL2ConnectionFn          func(uuid string, confirmConn ecx.L2ConnectionToConfirm) (*ecx.L2ConnectionConfirmation, error)
 
-	GetL2SellerProfilesFn func() ([]ecx.L2ServiceProfile, error)
-	GetL2ServiceProfileFn func(uuid string) (*ecx.L2ServiceProfile, error)
+	GetL2SellerProfilesFn    func() ([]ecx.L2ServiceProfile, error)
+	GetL2ServiceProfileFn    func(uuid string) (*ecx.L2ServiceProfile, error)
 	CreateL2ServiceProfileFn func(sp ecx.L2ServiceProfile) (*string, error)
 	UpdateL2ServiceProfileFn func(sp ecx.L2ServiceProfile) error
 	DeleteL2ServiceProfileFn func(uuid string) error

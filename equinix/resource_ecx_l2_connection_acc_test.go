@@ -4,8 +4,8 @@ import (
 	"context"
 	"fmt"
 	"log"
-	"testing"
 	"regexp"
+	"testing"
 
 	"github.com/equinix/ecx-go/v2"
 	"github.com/equinix/rest-go"
@@ -299,24 +299,24 @@ func TestAccFabricL2Connection_ServiceToken_Single_SP(t *testing.T) {
 		GetL2ConnectionFn: func(uuid string) (*ecx.L2Connection, error) {
 			status := ecx.ConnectionStatusProvisioned
 			connection := ecx.L2Connection{
-				UUID: &connID,
-				Name: &connName,
-				Speed: &speed,
-				SpeedUnit: &speedUnit,
-				Notifications: notifications,
-				ServiceToken: &serviceToken,
-				ProfileUUID: &sellerProfileUUID,
-				PortUUID: &portUUID,
-				Status: &status,
+				UUID:             &connID,
+				Name:             &connName,
+				Speed:            &speed,
+				SpeedUnit:        &speedUnit,
+				Notifications:    notifications,
+				ServiceToken:     &serviceToken,
+				ProfileUUID:      &sellerProfileUUID,
+				PortUUID:         &portUUID,
+				Status:           &status,
 				AuthorizationKey: &authKey,
-				SellerMetroCode: &sellerMetro,
+				SellerMetroCode:  &sellerMetro,
 			}
 			return &connection, nil
 		},
 		DeleteL2ConnectionFn: func(uuid string) error {
 			err := rest.Error{}
 			err.ApplicationErrors = []rest.ApplicationError{
-				rest.ApplicationError {
+				rest.ApplicationError{
 					Code: "IC-LAYER2-4021",
 				},
 			}
@@ -336,12 +336,12 @@ func TestAccFabricL2Connection_ServiceToken_Single_SP(t *testing.T) {
 
 	resourceName := fmt.Sprintf("equinix_ecx_l2_connection.%s", ctx["connection-resourceName"].(string))
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:  func() { testAccPreCheck(t) },
-		Providers: mockProviders,
+		PreCheck:                  func() { testAccPreCheck(t) },
+		Providers:                 mockProviders,
 		PreventPostDestroyRefresh: true,
 		Steps: []resource.TestStep{
 			{
-				Config: newTestAccConfig(ctx).withConnection().build(),
+				Config:      newTestAccConfig(ctx).withConnection().build(),
 				ExpectError: regexp.MustCompile(`conflicts with service_token`),
 			},
 			{
@@ -566,7 +566,7 @@ resource "equinix_ecx_l2_connection" "%{connection-resourceName}" {
 	if _, ok := ctx["port-uuid"]; ok {
 		config += nprintf(`
   port_uuid             = "%{port-uuid}"`, ctx)
-	} else if  _, ok := ctx["port-resourceName"]; ok {
+	} else if _, ok := ctx["port-resourceName"]; ok {
 		config += nprintf(`
   port_uuid             = data.equinix_ecx_port.%{port-resourceName}.id`, ctx)
 	}
