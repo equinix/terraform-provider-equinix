@@ -9,7 +9,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 )
 
-func TestAccECXL2SellerProfiles(t *testing.T) {
+func TestAccDataSourceECXL2SellerProfiles_nameRegex(t *testing.T) {
 	context := map[string]interface{}{
 		"resourceName":             "test",
 		"name_regex":               ".+Direct Connect.*",
@@ -23,16 +23,16 @@ func TestAccECXL2SellerProfiles(t *testing.T) {
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccECXL2SellerProfiles(context),
+				Config: testAccDataSourceECXL2SellerProfilesConfig_nameRegex(context),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckECXL2SellerProfiles(resourceName),
+					testAccDataSourceECXL2SellerProfilesCheck_nameRegex(resourceName),
 				),
 			},
 		},
 	})
 }
 
-func testAccECXL2SellerProfiles(ctx map[string]interface{}) string {
+func testAccDataSourceECXL2SellerProfilesConfig_nameRegex(ctx map[string]interface{}) string {
 	return nprintf(`
 data "equinix_ecx_l2_sellerprofiles" "%{resourceName}" {
   name_regex               = "%{name_regex}"
@@ -43,7 +43,7 @@ data "equinix_ecx_l2_sellerprofiles" "%{resourceName}" {
 `, ctx)
 }
 
-func testAccCheckECXL2SellerProfiles(resourceName string) resource.TestCheckFunc {
+func testAccDataSourceECXL2SellerProfilesCheck_nameRegex(resourceName string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[resourceName]
 		if !ok {

@@ -14,8 +14,8 @@ import (
 // reason: SSH User requires device to be provisioned and that is time consuming operation
 
 func init() {
-	resource.AddTestSweepers("NetworkSSHUser", &resource.Sweeper{
-		Name: "NetworkSSHUser",
+	resource.AddTestSweepers("equinix_network_ssh_user", &resource.Sweeper{
+		Name: "equinix_network_ssh_user",
 		F:    testSweepNetworkSSHUser,
 	})
 }
@@ -23,7 +23,7 @@ func init() {
 func testSweepNetworkSSHUser(region string) error {
 	config, err := sharedConfigForRegion(region)
 	if err != nil {
-		return err
+		return fmt.Errorf("[INFO][SWEEPER_LOG] Error getting configuration for sweeping Network SSH users: %s", err)
 	}
 	if err := config.Load(context.Background()); err != nil {
 		log.Printf("[INFO][SWEEPER_LOG] error loading configuration: %s", err)

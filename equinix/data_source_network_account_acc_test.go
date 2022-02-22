@@ -8,7 +8,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
-func TestAccNetworkAccountDataSource(t *testing.T) {
+func TestAccDataSourceNetworkAccount_basic(t *testing.T) {
 	metro, _ := schema.EnvDefaultFunc(networkDeviceMetroEnvVar, "SV")()
 	context := map[string]interface{}{
 		"resourceName": "tf-account",
@@ -21,7 +21,7 @@ func TestAccNetworkAccountDataSource(t *testing.T) {
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccNetworkAccountDataSource(context),
+				Config: testAccDataSourceNetworkAccountConfig_basic(context),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(resourceName, "name"),
 					resource.TestCheckResourceAttrSet(resourceName, "number"),
@@ -33,7 +33,7 @@ func TestAccNetworkAccountDataSource(t *testing.T) {
 	})
 }
 
-func testAccNetworkAccountDataSource(ctx map[string]interface{}) string {
+func testAccDataSourceNetworkAccountConfig_basic(ctx map[string]interface{}) string {
 	return nprintf(`
 data "equinix_network_account" "%{resourceName}" {
   metro_code = "%{metro_code}"

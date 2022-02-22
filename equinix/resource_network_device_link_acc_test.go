@@ -13,8 +13,8 @@ import (
 )
 
 func init() {
-	resource.AddTestSweepers("NetworkDeviceLink", &resource.Sweeper{
-		Name: "NetworkDeviceLink",
+	resource.AddTestSweepers("equinix_network_device_link", &resource.Sweeper{
+		Name: "equinix_network_device_link",
 		F:    testSweepNetworkDeviceLink,
 	})
 }
@@ -22,7 +22,7 @@ func init() {
 func testSweepNetworkDeviceLink(region string) error {
 	config, err := sharedConfigForRegion(region)
 	if err != nil {
-		return err
+		return fmt.Errorf("[INFO][SWEEPER_LOG] Error getting configuration for sweeping Network devices link: %s", err)
 	}
 	if err := config.Load(context.Background()); err != nil {
 		log.Printf("[INFO][SWEEPER_LOG] error loading configuration: %s", err)

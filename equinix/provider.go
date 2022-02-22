@@ -16,12 +16,21 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 )
 
+var (
+	metalMutexKV         = NewMutexKV()
+	DeviceNetworkTypes   = []string{"layer3", "hybrid", "layer2-individual", "layer2-bonded"}
+	DeviceNetworkTypesHB = []string{"layer3", "hybrid", "hybrid-bonded", "layer2-individual", "layer2-bonded"}
+	NetworkTypeList      = strings.Join(DeviceNetworkTypes, ", ")
+	NetworkTypeListHB    = strings.Join(DeviceNetworkTypesHB, ", ")
+)
+
 const (
-	endpointEnvVar      = "EQUINIX_API_ENDPOINT"
-	clientIDEnvVar      = "EQUINIX_API_CLIENTID"
-	clientSecretEnvVar  = "EQUINIX_API_CLIENTSECRET"
-	clientTokenEnvVar   = "EQUINIX_API_TOKEN"
-	clientTimeoutEnvVar = "EQUINIX_API_TIMEOUT"
+	endpointEnvVar       = "EQUINIX_API_ENDPOINT"
+	clientIDEnvVar       = "EQUINIX_API_CLIENTID"
+	clientSecretEnvVar   = "EQUINIX_API_CLIENTSECRET"
+	clientTokenEnvVar    = "EQUINIX_API_TOKEN"
+	clientTimeoutEnvVar  = "EQUINIX_API_TIMEOUT"
+	metalAuthTokenEnvVar = "METAL_AUTH_TOKEN"
 )
 
 // resourceDataProvider provies interface to schema.ResourceData
@@ -40,9 +49,9 @@ func Provider() *schema.Provider {
 			"endpoint": {
 				Type:         schema.TypeString,
 				Optional:     true,
-				DefaultFunc:  schema.EnvDefaultFunc(endpointEnvVar, "https://api.equinix.com"),
+				DefaultFunc:  schema.EnvDefaultFunc(endpointEnvVar, DefaultBaseURL),
 				ValidateFunc: validation.IsURLWithHTTPorHTTPS,
-				Description:  "The Equinix API base URL to point out desired environment. Defaults to https://api.equinix.com",
+				Description:  fmt.Sprintf("The Equinix API base URL to point out desired environment. Defaults to %s", DefaultBaseURL),
 			},
 			"client_id": {
 				Type:        schema.TypeString,
@@ -68,9 +77,9 @@ func Provider() *schema.Provider {
 			"request_timeout": {
 				Type:         schema.TypeInt,
 				Optional:     true,
-				DefaultFunc:  schema.EnvDefaultFunc(clientTimeoutEnvVar, 30),
+				DefaultFunc:  schema.EnvDefaultFunc(clientTimeoutEnvVar, DefaultTimeout),
 				ValidateFunc: validation.IntAtLeast(1),
-				Description:  "The duration of time, in seconds, that the Equinix Platform API Client should wait before canceling an API request",
+				Description:  fmt.Sprintf("The duration of time, in seconds, that the Equinix Platform API Client should wait before canceling an API request.  Defaults to %d", DefaultTimeout),
 			},
 			"response_max_page_size": {
 				Type:         schema.TypeInt,
@@ -78,15 +87,50 @@ func Provider() *schema.Provider {
 				ValidateFunc: validation.IntAtLeast(100),
 				Description:  "The maximum number of records in a single response for REST queries that produce paginated responses",
 			},
+			"auth_token": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				DefaultFunc: schema.EnvDefaultFunc(metalAuthTokenEnvVar, nil),
+				Description: "The Equinix Metal API auth key for API operations",
+			},
+			"max_retries": {
+				Type:     schema.TypeInt,
+				Optional: true,
+				Default:  10,
+			},
+			"max_retry_wait_seconds": {
+				Type:     schema.TypeInt,
+				Optional: true,
+				Default:  30,
+			},
 		},
 		DataSourcesMap: map[string]*schema.Resource{
-			"equinix_ecx_port":                dataSourceECXPort(),
-			"equinix_ecx_l2_sellerprofile":    dataSourceECXL2SellerProfile(),
-			"equinix_ecx_l2_sellerprofiles":   dataSourceECXL2SellerProfiles(),
-			"equinix_network_account":         dataSourceNetworkAccount(),
-			"equinix_network_device_type":     dataSourceNetworkDeviceType(),
-			"equinix_network_device_software": dataSourceNetworkDeviceSoftware(),
-			"equinix_network_device_platform": dataSourceNetworkDevicePlatform(),
+			"equinix_ecx_port":                   dataSourceECXPort(),
+			"equinix_ecx_l2_sellerprofile":       dataSourceECXL2SellerProfile(),
+			"equinix_ecx_l2_sellerprofiles":      dataSourceECXL2SellerProfiles(),
+			"equinix_network_account":            dataSourceNetworkAccount(),
+			"equinix_network_device_type":        dataSourceNetworkDeviceType(),
+			"equinix_network_device_software":    dataSourceNetworkDeviceSoftware(),
+			"equinix_network_device_platform":    dataSourceNetworkDevicePlatform(),
+			"equinix_metal_hardware_reservation": dataSourceMetalHardwareReservation(),
+			"equinix_metal_metro":                dataSourceMetalMetro(),
+			"equinix_metal_facility":             dataSourceMetalFacility(),
+			"equinix_metal_connection":           dataSourceMetalConnection(),
+			"equinix_metal_gateway":              dataSourceMetalGateway(),
+			"equinix_metal_ip_block_ranges":      dataSourceMetalIPBlockRanges(),
+			"equinix_metal_precreated_ip_block":  dataSourceMetalPreCreatedIPBlock(),
+			"equinix_metal_operating_system":     dataSourceOperatingSystem(),
+			"equinix_metal_organization":         dataSourceMetalOrganization(),
+			"equinix_metal_spot_market_price":    dataSourceSpotMarketPrice(),
+			"equinix_metal_device":               dataSourceMetalDevice(),
+			"equinix_metal_device_bgp_neighbors": dataSourceMetalDeviceBGPNeighbors(),
+			"equinix_metal_port":                 dataSourceMetalPort(),
+			"equinix_metal_project":              dataSourceMetalProject(),
+			"equinix_metal_project_ssh_key":      dataSourceMetalProjectSSHKey(),
+			"equinix_metal_reserved_ip_block":    dataSourceMetalReservedIPBlock(),
+			"equinix_metal_spot_market_request":  dataSourceMetalSpotMarketRequest(),
+			"equinix_metal_virtual_circuit":      dataSourceMetalVirtualCircuit(),
+			"equinix_metal_vlan":                 dataSourceMetalVlan(),
 		},
 		ResourcesMap: map[string]*schema.Resource{
 			"equinix_ecx_l2_connection":          resourceECXL2Connection(),
@@ -98,6 +142,24 @@ func Provider() *schema.Provider {
 			"equinix_network_ssh_key":            resourceNetworkSSHKey(),
 			"equinix_network_acl_template":       resourceNetworkACLTemplate(),
 			"equinix_network_device_link":        resourceNetworkDeviceLink(),
+			"equinix_metal_user_api_key":         resourceMetalUserAPIKey(),
+			"equinix_metal_project_api_key":      resourceMetalProjectAPIKey(),
+			"equinix_metal_connection":           resourceMetalConnection(),
+			"equinix_metal_device":               resourceMetalDevice(),
+			"equinix_metal_device_network_type":  resourceMetalDeviceNetworkType(),
+			"equinix_metal_ssh_key":              resourceMetalSSHKey(),
+			"equinix_metal_port":                 resourceMetalPort(),
+			"equinix_metal_project_ssh_key":      resourceMetalProjectSSHKey(),
+			"equinix_metal_project":              resourceMetalProject(),
+			"equinix_metal_organization":         resourceMetalOrganization(),
+			"equinix_metal_reserved_ip_block":    resourceMetalReservedIPBlock(),
+			"equinix_metal_ip_attachment":        resourceMetalIPAttachment(),
+			"equinix_metal_spot_market_request":  resourceMetalSpotMarketRequest(),
+			"equinix_metal_vlan":                 resourceMetalVlan(),
+			"equinix_metal_virtual_circuit":      resourceMetalVirtualCircuit(),
+			"equinix_metal_bgp_session":          resourceMetalBGPSession(),
+			"equinix_metal_port_vlan_attachment": resourceMetalPortVlanAttachment(),
+			"equinix_metal_gateway":              resourceMetalGateway(),
 		},
 	}
 
@@ -108,7 +170,13 @@ func Provider() *schema.Provider {
 }
 
 func configureProvider(ctx context.Context, d *schema.ResourceData, p *schema.Provider) (interface{}, diag.Diagnostics) {
-	config := Config{}
+	mrws := d.Get("max_retry_wait_seconds").(int)
+
+	config := Config{
+		AuthToken:    d.Get("auth_token").(string),
+		MaxRetries:   d.Get("max_retries").(int),
+		MaxRetryWait: time.Duration(mrws) * time.Second,
+	}
 	if v, ok := d.GetOk("endpoint"); ok {
 		config.BaseURL = v.(string)
 	}
@@ -127,6 +195,14 @@ func configureProvider(ctx context.Context, d *schema.ResourceData, p *schema.Pr
 	if v, ok := d.GetOk("response_max_page_size"); ok {
 		config.PageSize = v.(int)
 	}
+
+	config.terraformVersion = p.TerraformVersion
+	if config.terraformVersion == "" {
+		// Terraform 0.12 introduced this field to the protocol
+		// We can therefore assume that if it's missing it's 0.10 or 0.11
+		config.terraformVersion = "0.11+compatible"
+	}
+
 	stopCtx, ok := schema.StopContext(ctx)
 	if !ok {
 		stopCtx = ctx
@@ -135,6 +211,13 @@ func configureProvider(ctx context.Context, d *schema.ResourceData, p *schema.Pr
 		return nil, diag.FromErr(err)
 	}
 	return &config, nil
+}
+
+var resourceDefaultTimeouts = &schema.ResourceTimeout{
+	Create:  schema.DefaultTimeout(60 * time.Minute),
+	Update:  schema.DefaultTimeout(60 * time.Minute),
+	Delete:  schema.DefaultTimeout(60 * time.Minute),
+	Default: schema.DefaultTimeout(60 * time.Minute),
 }
 
 func expandListToStringList(list []interface{}) []string {

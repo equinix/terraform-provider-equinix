@@ -29,16 +29,17 @@ const (
 )
 
 func init() {
-	resource.AddTestSweepers("NetworkDevice", &resource.Sweeper{
-		Name: "NetworkDevice",
-		F:    testSweepNetworkDevice,
+	resource.AddTestSweepers("equinix_network_device", &resource.Sweeper{
+		Name:         "equinix_network_device",
+		Dependencies: []string{"equinix_network_device_link"},
+		F:            testSweepNetworkDevice,
 	})
 }
 
 func testSweepNetworkDevice(region string) error {
 	config, err := sharedConfigForRegion(region)
 	if err != nil {
-		return err
+		return fmt.Errorf("[INFO][SWEEPER_LOG] Error getting configuration for sweeping Network devices: %s", err)
 	}
 	if err := config.Load(context.Background()); err != nil {
 		log.Printf("[INFO][SWEEPER_LOG] error loading configuration: %s", err)

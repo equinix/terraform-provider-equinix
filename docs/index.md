@@ -1,8 +1,5 @@
 ---
-layout: "equinix"
 page_title: "Provider: Equinix"
-description: |-
-  The Terraform Equinix provider allows for lifecycle management of Equinix Platform resources.
 ---
 
 # Equinix Provider
@@ -11,9 +8,11 @@ The Equinix provider is used to interact with the resources provided by Equinix 
 The provider needs to be configured with the proper credentials before
 it can be used.
 
-For information about obtaining API key and secret refer to
+For information about obtaining API key and secret required for Equinix Fabric and Network Edge refer to
 [Generating Client ID and Client Secret key](https://developer.equinix.com/docs/ecx-getting-started#generating-client-id-and-client-secret-key)
 from [Equinix Developer Platform portal](https://developer.equinix.com).
+
+Interacting with Equinix Metal requires an API auth token that can be generated at [Project-level](https://metal.equinix.com/developers/docs/accounts/projects/#api-keys) or [User-level](https://metal.equinix.com/developers/docs/accounts/users/#api-keys)
 
 Use the navigation to the left to read about the available resources.
 
@@ -26,6 +25,7 @@ in `main.tf` file:
 provider "equinix" {
   client_id     = "someID"
   client_secret = "someSecret"
+  auth_token    = "someEquinixMetalToken"
 }
 ```
 
@@ -59,16 +59,21 @@ individually optionally, either `token` or `client_id` and `client_secret` must 
 through arguments or environment settings.
 
 - `client_id` - (Optional) API Consumer Key available under "My Apps" in
-  developer portal. This argument can also be specified with the `EQUINIX_API_CLIENTID`
-  shell environment variable.
+  developer portal. This argument can also be specified with the
+  `EQUINIX_API_CLIENTID` shell environment variable.
 
 - `client_secret` (Optional) API Consumer secret available under "My Apps" in
-  developer portal. This argument can also be specified with the `EQUINIX_API_CLIENTSECRET`
-  shell environment variable.
+  developer portal. This argument can also be specified with the
+  `EQUINIX_API_CLIENTSECRET` shell environment variable.
 
-- `token` (Optional) API tokens are generated from API Consumer clients using the [OAuth2 API](https://developer.equinix.com/docs/ecx-getting-started#requesting-access-and-refresh-tokens).
-  This argument can also be specified with the `EQUINIX_API_TOKEN`
-  shell environment variable.
+- `token` (Optional) API tokens are generated from API Consumer clients using
+  the [OAuth2
+  API](https://developer.equinix.com/docs/ecx-getting-started#requesting-access-and-refresh-tokens).
+  This argument can also be specified with the `EQUINIX_API_TOKEN` shell
+  environment variable.
+
+- `auth_token` - (Optional) This is your Equinix Metal API Auth token. This can
+  also be specified with the `METAL_AUTH_TOKEN` environment variable.
 
 - `endpoint` (Optional) The Equinix API base URL to point out desired environment.
    This argument can also be specified with the `EQUINIX_API_ENDPOINT`
@@ -80,6 +85,10 @@ through arguments or environment settings.
 
 - `response_max_page_size` (Optional) The maximum number of records in a single response
   for REST queries that produce paginated responses. (Default is client specific)
+
+- `max_retries` (Optional) Maximum number of retries in case of network failure.
+
+- `max_retry_wait_seconds` (Optional) Maximum time to wait in case of network failure.
 
 These parameters can be provided in [Terraform variable
 files](https://www.terraform.io/docs/configuration/variables.html#variable-definitions-tfvars-files)

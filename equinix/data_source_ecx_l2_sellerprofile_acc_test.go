@@ -10,7 +10,7 @@ import (
 
 const tstL2SellerProfileEnvVar = "TF_ACC_ECX_SELLER_PROFILE_NAME"
 
-func TestAccECXL2SellerProfile(t *testing.T) {
+func TestAccDataSourceECXL2SellerProfile_basic(t *testing.T) {
 	profileName, _ := schema.EnvDefaultFunc(tstL2SellerProfileEnvVar, "AWS Direct Connect")()
 	context := map[string]interface{}{
 		"resourceName": "tf-aws",
@@ -22,7 +22,7 @@ func TestAccECXL2SellerProfile(t *testing.T) {
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccECXL2SellerProfile(context),
+				Config: testAccDataSourceECXL2SellerProfileConfig_basic(context),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(resourceName, "uuid"),
 					resource.TestCheckResourceAttrSet(resourceName, "description"),
@@ -37,7 +37,7 @@ func TestAccECXL2SellerProfile(t *testing.T) {
 	})
 }
 
-func testAccECXL2SellerProfile(ctx map[string]interface{}) string {
+func testAccDataSourceECXL2SellerProfileConfig_basic(ctx map[string]interface{}) string {
 	return nprintf(`
 data "equinix_ecx_l2_sellerprofile" "%{resourceName}" {
   name = "%{name}"

@@ -2,29 +2,57 @@ package equinix
 
 import (
 	"context"
+	"crypto/x509"
 	"fmt"
+	"log"
 	"net/http"
+	"net/url"
+	"os"
+	"path"
+	"regexp"
+	"strings"
 	"time"
 
 	"github.com/equinix/ecx-go/v2"
 	"github.com/equinix/ne-go"
 	"github.com/equinix/oauth2-go"
+	"github.com/equinix/terraform-provider-equinix/version"
+	"github.com/hashicorp/go-retryablehttp"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/logging"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/meta"
+	"github.com/packethost/packngo"
 	xoauth2 "golang.org/x/oauth2"
+)
+
+const (
+	consumerToken = "aZ9GmqHTPtxevvFq9SK3Pi2yr9YCbRzduCSXF2SNem5sjB91mDq7Th3ZwTtRqMWZ"
+	metalBasePath = "/metal/v1/"
+	uaEnvVar      = "TF_APPEND_USER_AGENT"
+)
+
+var (
+	DefaultBaseURL = "https://api.equinix.com"
+	DefaultTimeout = 30
 )
 
 // Config is the configuration structure used to instantiate the Equinix
 // provider.
 type Config struct {
 	BaseURL        string
+	AuthToken      string
 	ClientID       string
 	ClientSecret   string
-	Token          string
+	MaxRetries     int
+	MaxRetryWait   time.Duration
 	RequestTimeout time.Duration
 	PageSize       int
+	Token          string
 
-	ecx ecx.Client
-	ne  ne.Client
+	ecx   ecx.Client
+	ne    ne.Client
+	metal *packngo.Client
+
+	terraformVersion string
 }
 
 // Load function validates configuration structure fields and configures
@@ -45,11 +73,8 @@ func (c *Config) Load(ctx context.Context) error {
 			Transport: oauthTransport,
 		}
 	} else {
-		if c.ClientID == "" {
-			return fmt.Errorf("clientId cannot be empty")
-		}
-		if c.ClientSecret == "" {
-			return fmt.Errorf("clientSecret cannot be empty")
+		if c.ClientID == "" || c.ClientSecret == "" {
+			return fmt.Errorf("one of 'token' or pair 'client_id' - 'client_secret' must be set")
 		}
 		authConfig := oauth2.Config{
 			ClientID:     c.ClientID,
@@ -66,8 +91,17 @@ func (c *Config) Load(ctx context.Context) error {
 		ecxClient.SetPageSize(c.PageSize)
 		neClient.SetPageSize(c.PageSize)
 	}
+	ecxClient.SetHeaders(map[string]string{
+		"User-agent": c.fullUserAgent("equinix/ecx-go"),
+	})
+	neClient.SetHeaders(map[string]string{
+		"User-agent": c.fullUserAgent("equinix/ne-go"),
+	})
+
 	c.ecx = ecxClient
 	c.ne = neClient
+	c.metal = c.NewMetalClient()
+
 	return nil
 }
 
@@ -76,4 +110,69 @@ func (c *Config) requestTimeout() time.Duration {
 		return 5 * time.Second
 	}
 	return c.RequestTimeout
+}
+
+var redirectsErrorRe = regexp.MustCompile(`stopped after \d+ redirects\z`)
+
+func MetalRetryPolicy(ctx context.Context, resp *http.Response, err error) (bool, error) {
+	if ctx.Err() != nil {
+		return false, ctx.Err()
+	}
+
+	if err != nil {
+		if v, ok := err.(*url.Error); ok {
+			// Don't retry if the error was due to too many redirects.
+			if redirectsErrorRe.MatchString(v.Error()) {
+				return false, nil
+			}
+
+			// Don't retry if the error was due to TLS cert verification failure.
+			if _, ok := v.Err.(x509.UnknownAuthorityError); ok {
+				return false, nil
+			}
+		}
+
+		// The error is likely recoverable so retry.
+		return true, nil
+	}
+	return false, nil
+}
+
+func terraformUserAgent(version string) string {
+	ua := fmt.Sprintf("HashiCorp Terraform/%s (+https://www.terraform.io) Terraform Plugin SDK/%s",
+		version, meta.SDKVersionString())
+
+	if add := os.Getenv(uaEnvVar); add != "" {
+		add = strings.TrimSpace(add)
+		if len(add) > 0 {
+			ua += " " + add
+			log.Printf("[DEBUG] Using modified User-Agent: %s", ua)
+		}
+	}
+
+	return ua
+}
+
+func (c *Config) fullUserAgent(suffix string) string {
+	tfUserAgent := terraformUserAgent(c.terraformVersion)
+	userAgent := fmt.Sprintf("%s terraform-provider-equinix/%s %s", tfUserAgent, version.ProviderVersion, suffix)
+	return strings.TrimSpace(userAgent)
+}
+
+// NewMetalClient returns a new client for accessing Equinix Metal's API.
+func (c *Config) NewMetalClient() *packngo.Client {
+	transport := logging.NewTransport("Equinix Metal", http.DefaultTransport)
+	retryClient := retryablehttp.NewClient()
+	retryClient.HTTPClient.Transport = transport
+	retryClient.RetryMax = c.MaxRetries
+	retryClient.RetryWaitMin = time.Second
+	retryClient.RetryWaitMax = c.MaxRetryWait
+	retryClient.CheckRetry = MetalRetryPolicy
+	standardClient := retryClient.StandardClient()
+	baseURL, _ := url.Parse(c.BaseURL)
+	baseURL.Path = path.Join(baseURL.Path, metalBasePath) + "/"
+	client, _ := packngo.NewClientWithBaseURL(consumerToken, c.AuthToken, standardClient, baseURL.String())
+	client.UserAgent = c.fullUserAgent(client.UserAgent)
+
+	return client
 }

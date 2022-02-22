@@ -7,7 +7,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 )
 
-func TestAccNetworkDevicePlatformDataSource(t *testing.T) {
+func TestAccDataSourceNetworkDevicePlatform_basic(t *testing.T) {
 	context := map[string]interface{}{
 		"resourceName": "csrLarge",
 		"device_type":  "CSR1000V",
@@ -20,7 +20,7 @@ func TestAccNetworkDevicePlatformDataSource(t *testing.T) {
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccNetworkDevicePlatformDataSource(context),
+				Config: testAccDataSourceNetworkDevicePlatformConfig_basic(context),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(resourceName, "flavor"),
 					resource.TestCheckResourceAttrSet(resourceName, "core_count"),
@@ -32,7 +32,7 @@ func TestAccNetworkDevicePlatformDataSource(t *testing.T) {
 	})
 }
 
-func testAccNetworkDevicePlatformDataSource(ctx map[string]interface{}) string {
+func testAccDataSourceNetworkDevicePlatformConfig_basic(ctx map[string]interface{}) string {
 	return nprintf(`
 data "equinix_network_device_platform" "%{resourceName}" {
   device_type = "%{device_type}"

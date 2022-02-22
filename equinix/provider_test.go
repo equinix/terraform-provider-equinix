@@ -313,17 +313,17 @@ func TestProvider_schemaSetToMap(t *testing.T) {
 //_______________________________________________________________________
 
 func testAccPreCheck(t *testing.T) {
-	if _, err := getFromEnv(endpointEnvVar); err != nil {
-		t.Fatalf("%s", err)
+	if _, err := getFromEnv(metalAuthTokenEnvVar); err != nil {
+		t.Fatalf("%s must be set for acceptance tests", err)
 	}
 	if _, err := getFromEnv(clientTokenEnvVar); err == nil {
 		return
 	}
 	if _, err := getFromEnv(clientIDEnvVar); err != nil {
-		t.Fatalf("%s", err)
+		t.Fatalf("%s must be set for acceptance tests", err)
 	}
 	if _, err := getFromEnv(clientSecretEnvVar); err != nil {
-		t.Fatalf("%s", err)
+		t.Fatalf("%s must be set for acceptance tests", err)
 	}
 }
 
@@ -366,6 +366,13 @@ func getFromEnv(varName string) (string, error) {
 		return v, nil
 	}
 	return "", fmt.Errorf("environmental variable '%s' is not set", varName)
+}
+
+func getFromEnvDefault(varName string, defaultValue string) string {
+	if v := os.Getenv(varName); v != "" {
+		return v
+	}
+	return defaultValue
 }
 
 func copyMap(source map[string]interface{}) map[string]interface{} {

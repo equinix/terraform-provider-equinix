@@ -26,8 +26,8 @@ const (
 )
 
 func init() {
-	resource.AddTestSweepers("ECXL2Connection", &resource.Sweeper{
-		Name: "ECXL2Connection",
+	resource.AddTestSweepers("equinix_ecx_l2_connection", &resource.Sweeper{
+		Name: "equinix_ecx_l2_connection",
 		F:    testSweepECXL2Connections,
 	})
 }
@@ -35,7 +35,7 @@ func init() {
 func testSweepECXL2Connections(region string) error {
 	config, err := sharedConfigForRegion(region)
 	if err != nil {
-		return err
+		return fmt.Errorf("[INFO][SWEEPER_LOG] Error getting configuration for sweeping l2 connections: %s", err)
 	}
 	if err := config.Load(context.Background()); err != nil {
 		log.Printf("[INFO][SWEEPER_LOG] error loading configuration: %s", err)
