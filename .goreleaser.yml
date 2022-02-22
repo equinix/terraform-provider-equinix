@@ -5,7 +5,8 @@ before:
     # this is just an example and not a requirement for provider building/publishing
     - go mod tidy
 builds:
-  - env:
+  - id: provider
+    env:
       # goreleaser does not work with CGO, it could also complicate
       # usage by users in CI/CD systems like Terraform Cloud where
       # they are unable to install libraries.
@@ -39,6 +40,8 @@ builds:
     mod_timestamp: "{{ .CommitTimestamp }}"
     flags:
       - -trimpath
+    ldflags:
+      - "-s -w -X main.Version={{.Version}}"
     goos:
       - freebsd
       - windows
@@ -52,15 +55,20 @@ builds:
     ignore:
       - goos: darwin
         goarch: "386"
-    binary: equinix-migration-tool
+    binary: equinix-migration-tool/equinix-migration-tool
 archives:
   - format: zip
     name_template: "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
-  - id: migration-tool
     builds:
-    - migration-tool
-    format: zip
-    name_template: "equinix-migration-tool_{{ .Os }}_{{ .Arch }}"
+      - provider
+      - migration-tool
+    files:
+      - LICENSE*
+      - README*
+      - CHANGELOG*
+      - src: 'cmd/migration-tool/*.md'
+        dst: equinix-migration-tool
+        strip_parent: true
 checksum:
   name_template: "{{ .ProjectName }}_{{ .Version }}_SHA256SUMS"
   algorithm: sha256

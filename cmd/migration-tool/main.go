@@ -8,9 +8,15 @@ import (
 )
 
 func main() {
+
 	if len(os.Args) < 2 {
-		fmt.Println("Missing required command. One of [migrate, backup]")
+		fmt.Println("Missing required command. One of [migrate, backup, version]")
 		os.Exit(1)
+	}
+
+	if os.Args[1] == "-v" || os.Args[1] == "-version" || os.Args[1] == "--version" || os.Args[1] == "version"  {
+		fmt.Println(Version)
+		os.Exit(0)
 	}
 
 	if os.Args[1] == "backup" {

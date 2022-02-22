@@ -1,5 +1,5 @@
 
-BINARY =equinix-terraform-tool
+BINARY =equinix-migration-tool
 GOCMD  =go
 TEST   ?=$$(go list ./... |grep -v 'vendor')
 
