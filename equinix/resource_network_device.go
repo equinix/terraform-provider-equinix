@@ -141,7 +141,8 @@ var neDeviceClusterSchemaNames = map[string]string{
 	"ClusterName":         "cluster_name",
 	"NumOfNodes":          "num_of_nodes",
 	"ClusterNodeDetails":  "cluster_node_details",
-	"NodeName":            "node_name",
+	"Node0":               "node0",
+	"Node1":               "node1",
 	"LicenseFileId":       "license_file_id",
 	"LicenseToken":        "license_token",
 	"Nodes":               "nodes",
@@ -157,7 +158,8 @@ var neDeviceClusterDescriptions = map[string]string{
 	"ClusterName":         "The name of the cluster device",
 	"NumOfNodes":          "The number of nodes in the cluster",
 	"ClusterNodeDetails":  "An object that has the cluster node details",
-	"NodeName":            "The name of the node in the device creation request",
+	"Node0":               "An object that has node0 details",
+	"Node1":               "An object that has node1 details",
 	"LicenseFileId":       "License file id. This is necessary for Fortinet and Juniper clusters",
 	"LicenseToken":        "License token. This is necessary for Palo Alto clusters",
 	"Nodes":               "An array of multiple node objects",
@@ -634,40 +636,33 @@ func createNetworkDeviceSchema() map[string]*schema.Schema {
 					neDeviceClusterSchemaNames["NumOfNodes"]: {
 						Type:        schema.TypeInt,
 						Optional:    true,
+						Computed:    true,
 						Description: neDeviceClusterDescriptions["NumOfNodes"],
 					},
 					neDeviceClusterSchemaNames["ClusterNodeDetails"]: {
 						Type:        schema.TypeList,
 						Required:    true,
+						MaxItems:    1,
 						Description: neDeviceClusterDescriptions["ClusterNodeDetails"],
 						Elem: &schema.Resource{
 							Schema: map[string]*schema.Schema{
-								neDeviceClusterSchemaNames["NodeName"]: {
-									Type:        schema.TypeString,
-									Required:    true,
-									Description: neDeviceClusterDescriptions["NodeName"],
-								},
-								neDeviceClusterSchemaNames["LicenseFileId"]: {
-									Type:        schema.TypeString,
-									Optional:    true,
-									ForceNew:    true,
-									Description: neDeviceClusterDescriptions["LicenseFileId"],
-								},
-								neDeviceClusterSchemaNames["LicenseToken"]: {
-									Type:        schema.TypeString,
-									Optional:    true,
-									ForceNew:    true,
-									Description: neDeviceClusterDescriptions["LicenseToken"],
-								},
-								neDeviceClusterSchemaNames["VendorConfiguration"]: {
-									Type:     schema.TypeMap,
-									Optional: true,
-									ForceNew: true,
-									Elem: &schema.Schema{
-										Type:         schema.TypeString,
-										ValidateFunc: validation.StringIsNotEmpty,
+								neDeviceClusterSchemaNames["Node0"]: {
+									Type:     schema.TypeList,
+									Required: true,
+									MaxItems: 1,
+									Elem: &schema.Resource{
+										Schema: createClusterNodeDetailRequestSchema(),
 									},
-									Description: neDeviceClusterDescriptions["VendorConfiguration"],
+									Description: neDeviceClusterDescriptions["Node0"],
+								},
+								neDeviceClusterSchemaNames["Node1"]: {
+									Type:     schema.TypeList,
+									Required: true,
+									MaxItems: 1,
+									Elem: &schema.Resource{
+										Schema: createClusterNodeDetailRequestSchema(),
+									},
+									Description: neDeviceClusterDescriptions["Node1"],
 								},
 							},
 						},
@@ -744,6 +739,33 @@ func createNetworkDeviceUserKeySchema() map[string]*schema.Schema {
 			Required:     true,
 			ValidateFunc: validation.StringIsNotEmpty,
 			Description:  neDeviceUserKeyDescriptions["KeyName"],
+		},
+	}
+}
+
+func createClusterNodeDetailRequestSchema() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		neDeviceClusterSchemaNames["LicenseFileId"]: {
+			Type:        schema.TypeString,
+			Optional:    true,
+			ForceNew:    true,
+			Description: neDeviceClusterDescriptions["LicenseFileId"],
+		},
+		neDeviceClusterSchemaNames["LicenseToken"]: {
+			Type:        schema.TypeString,
+			Optional:    true,
+			ForceNew:    true,
+			Description: neDeviceClusterDescriptions["LicenseToken"],
+		},
+		neDeviceClusterSchemaNames["VendorConfiguration"]: {
+			Type:     schema.TypeMap,
+			Optional: true,
+			ForceNew: true,
+			Elem: &schema.Schema{
+				Type:         schema.TypeString,
+				ValidateFunc: validation.StringIsNotEmpty,
+			},
+			Description: neDeviceClusterDescriptions["VendorConfiguration"],
 		},
 	}
 }
@@ -1317,26 +1339,37 @@ func expandNetworkDeviceClusterDetails(clusterDetails []interface{}) *ne.Cluster
 	return transformed
 }
 
-func expandNetworkDeviceClusterNodeDetails(clusterNodeDetails []interface{}) []ne.ClusterNodeDetail {
+func expandNetworkDeviceClusterNodeDetails(clusterNodeDetails []interface{}) map[string]*ne.ClusterNodeDetail {
 	if len(clusterNodeDetails) < 1 {
 		log.Printf("[WARN] resource_network_device expanding empty cluster node details")
 		return nil
 	}
-	transformed := make([]ne.ClusterNodeDetail, len(clusterNodeDetails))
-	for i := range clusterNodeDetails {
-		clusterNodeDetail := clusterNodeDetails[i].(map[string]interface{})
-		if v, ok := clusterNodeDetail[neDeviceClusterSchemaNames["NodeName"]]; ok && !isEmpty(v) {
-			transformed[i].NodeName = ne.String(v.(string))
-		}
-		if v, ok := clusterNodeDetail[neDeviceClusterSchemaNames["VendorConfiguration"]]; ok {
-			transformed[i].VendorConfiguration = expandInterfaceMapToStringMap(v.(map[string]interface{}))
-		}
-		if v, ok := clusterNodeDetail[neDeviceClusterSchemaNames["LicenseToken"]]; ok && !isEmpty(v) {
-			transformed[i].LicenseToken = ne.String(v.(string))
-		}
-		if v, ok := clusterNodeDetail[neDeviceClusterSchemaNames["LicenseFileID"]]; ok && !isEmpty(v) {
-			transformed[i].LicenseFileId = ne.String(v.(string))
-		}
+	clusterNodeDetail := clusterNodeDetails[0].(map[string]interface{})
+	transformed := make(map[string]*ne.ClusterNodeDetail)
+	if v, ok := clusterNodeDetail[neDeviceClusterSchemaNames["Node0"]]; ok {
+		transformed[neDeviceClusterSchemaNames["Node0"]] = expandClusterNodeDetailRequest(v.([]interface{}))
+	}
+	if v, ok := clusterNodeDetail[neDeviceClusterSchemaNames["Node1"]]; ok {
+		transformed[neDeviceClusterSchemaNames["Node1"]] = expandClusterNodeDetailRequest(v.([]interface{}))
+	}
+	return transformed
+}
+
+func expandClusterNodeDetailRequest(clusterNodeDetailRequests []interface{}) *ne.ClusterNodeDetail {
+	if len(clusterNodeDetailRequests) < 1 {
+		log.Printf("[WARN] resource_network_device expanding empty cluster node detail request")
+		return nil
+	}
+	clusterNodeDetailRequest := clusterNodeDetailRequests[0].(map[string]interface{})
+	transformed := &ne.ClusterNodeDetail{}
+	if v, ok := clusterNodeDetailRequest[neDeviceClusterSchemaNames["VendorConfiguration"]]; ok {
+		transformed.VendorConfiguration = expandInterfaceMapToStringMap(v.(map[string]interface{}))
+	}
+	if v, ok := clusterNodeDetailRequest[neDeviceClusterSchemaNames["LicenseToken"]]; ok && !isEmpty(v) {
+		transformed.LicenseToken = ne.String(v.(string))
+	}
+	if v, ok := clusterNodeDetailRequest[neDeviceClusterSchemaNames["LicenseFileID"]]; ok && !isEmpty(v) {
+		transformed.LicenseFileId = ne.String(v.(string))
 	}
 	return transformed
 }
