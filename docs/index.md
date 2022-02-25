@@ -18,13 +18,21 @@ Use the navigation to the left to read about the available resources.
 
 ## Example Usage
 
-Example [provider configuration](https://www.terraform.io/docs/configuration/providers.html)
-in `main.tf` file:
+Example HCL with [provider configuration](https://www.terraform.io/docs/configuration/providers.html)
+and a [required providers definition](https://www.terraform.io/language/settings#specifying-a-required-terraform-version):
 
 ```hcl
+terraform {
+  required_providers {
+    equinix = {
+      source = "equinix/equinix"
+    }
+  }
+}
+
 provider "equinix" {
-  client_id     = "someID"
-  client_secret = "someSecret"
+  client_id     = "someEquinixAPIClientID"
+  client_secret = "someEquinixAPIClientSecret"
   auth_token    = "someEquinixMetalToken"
 }
 ```
@@ -32,8 +40,9 @@ provider "equinix" {
 Example provider configuration using `environment variables`:
 
 ```sh
-export EQUINIX_API_CLIENTID=someID
-export EQUINIX_API_CLIENTSECRET=someSecret
+export EQUINIX_API_CLIENTID=someEquinixAPIClientID
+export EQUINIX_API_CLIENTSECRET=someEquinixAPIClientSecret
+export METAL_AUTH_TOKEN=someEquinixMetalToken
 ```
 
 ### Token Authentication

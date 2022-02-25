@@ -169,7 +169,7 @@ primary or secondary
 
 ## Timeouts
 
-This resource provides the following [Timeouts configuration](https://www.terraform.io/docs/configuration/resources.html#operation-timeouts)
+This resource provides the following [Timeouts configuration](https://www.terraform.io/language/resources/syntax#operation-timeouts)
 options:
 
 * create - Default is 60 minutes
