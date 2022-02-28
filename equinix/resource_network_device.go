@@ -1388,7 +1388,7 @@ func expandClusterNodeDetailRequest(clusterNodeDetailRequests []interface{}) *ne
 	if v, ok := clusterNodeDetailRequest[neDeviceClusterSchemaNames["LicenseToken"]]; ok && !isEmpty(v) {
 		transformed.LicenseToken = ne.String(v.(string))
 	}
-	if v, ok := clusterNodeDetailRequest[neDeviceClusterSchemaNames["LicenseFileID"]]; ok && !isEmpty(v) {
+	if v, ok := clusterNodeDetailRequest[neDeviceClusterSchemaNames["LicenseFileId"]]; ok && !isEmpty(v) {
 		transformed.LicenseFileId = ne.String(v.(string))
 	}
 	return transformed
