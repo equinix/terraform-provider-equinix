@@ -5,10 +5,10 @@ import (
 	"fmt"
 	"log"
 	"time"
+	"strings"
 
 	"github.com/equinix/ecx-go/v2"
 	"github.com/equinix/rest-go"
-	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -40,6 +40,7 @@ var ecxL2ConnectionSchemaNames = map[string]string{
 	"AuthorizationKey":    "authorization_key",
 	"RedundantUUID":       "redundant_uuid",
 	"RedundancyType":      "redundancy_type",
+	"RedundancyGroup":     "redundancy_group",
 	"SecondaryConnection": "secondary_connection",
 	"Actions":             "actions",
 	"ServiceToken":        "service_token",
@@ -70,6 +71,7 @@ var ecxL2ConnectionDescriptions = map[string]string{
 	"AuthorizationKey":    "Text field used to authorize connection on the provider side. Value depends on a provider service profile used for connection",
 	"RedundantUUID":       "Unique identifier of the redundant connection, applicable for HA connections",
 	"RedundancyType":      "Connection redundancy type, applicable for HA connections. Either primary or secondary",
+	"RedundancyGroup":     "Unique identifier of group containing a primary and secondary connection",
 	"SecondaryConnection": "Definition of secondary connection for redundant, HA connectivity",
 	"Actions":             "One or more pending actions to complete connection provisioning",
 	"ServiceToken":        "Unique Equinix Fabric key given by a provider that grants you authorization to enable connectivity from a shared multi-tenant port (a-side)",
@@ -115,6 +117,10 @@ var ecxL2ConnectionActionDataDescriptions = map[string]string{
 	"ValidationPattern": "Action data pattern",
 }
 
+type (
+	getL2Connection func(uuid string) (*ecx.L2Connection, error)
+)
+
 func resourceECXL2Connection() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: resourceECXL2ConnectionCreate,
@@ -122,7 +128,16 @@ func resourceECXL2Connection() *schema.Resource {
 		UpdateContext: resourceECXL2ConnectionUpdate,
 		DeleteContext: resourceECXL2ConnectionDelete,
 		Importer: &schema.ResourceImporter{
-			State: schema.ImportStatePassthrough,
+			StateContext:  func(ctx context.Context, d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
+				// The expected ID to import redundant connections is '(primaryID):(secondaryID)', e.g.,
+				//   terraform import equinix_ecx_l2_connection.example 1111-11-11-1111:2222-22-22-2222
+				ids := strings.Split(d.Id(), ":")
+				d.SetId(ids[0])
+				if len(ids) > 1 {
+					d.Set(ecxL2ConnectionSchemaNames["RedundantUUID"], ids[1])
+				}
+				return []*schema.ResourceData{d}, nil
+			},
 		},
 		Schema: createECXL2ConnectionResourceSchema(),
 		Timeouts: &schema.ResourceTimeout{
@@ -242,8 +257,11 @@ func createECXL2ConnectionResourceSchema() map[string]*schema.Schema {
 			Type:         schema.TypeString,
 			Optional:     true,
 			ForceNew:     true,
-			ValidateFunc: validation.StringInSlice([]string{"Private", "Public", "Microsoft", "Manual"}, false),
+			ValidateFunc: validation.StringInSlice([]string{"PRIVATE", "MICROSOFT", "MANUAL", "Private", "Public", "Microsoft", "Manual"}, false),
 			Description:  ecxL2ConnectionDescriptions["NamedTag"],
+			DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
+				return strings.EqualFold(old, new)
+			},
 		},
 		ecxL2ConnectionSchemaNames["AdditionalInfo"]: {
 			Type:        schema.TypeSet,
@@ -311,6 +329,11 @@ func createECXL2ConnectionResourceSchema() map[string]*schema.Schema {
 			Type:        schema.TypeString,
 			Computed:    true,
 			Description: ecxL2ConnectionDescriptions["RedundancyType"],
+		},
+		ecxL2ConnectionSchemaNames["RedundancyGroup"]: {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: ecxL2ConnectionDescriptions["RedundancyGroup"],
 		},
 		ecxL2ConnectionSchemaNames["Actions"]: {
 			Type:        schema.TypeSet,
@@ -523,11 +546,17 @@ func createECXL2ConnectionSecondaryResourceSchema() map[string]*schema.Schema {
 			Type:        schema.TypeString,
 			Computed:    true,
 			Description: ecxL2ConnectionDescriptions["RedundantUUID"],
+			Deprecated:  "SecondaryConnection.0.RedundantUUID will not be returned. Use UUID instead",
 		},
 		ecxL2ConnectionSchemaNames["RedundancyType"]: {
 			Type:        schema.TypeString,
 			Computed:    true,
 			Description: ecxL2ConnectionDescriptions["RedundancyType"],
+		},
+		ecxL2ConnectionSchemaNames["RedundancyGroup"]: {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: ecxL2ConnectionDescriptions["RedundancyGroup"],
 		},
 		ecxL2ConnectionSchemaNames["Actions"]: {
 			Type:        schema.TypeSet,
@@ -585,42 +614,21 @@ func resourceECXL2ConnectionCreate(ctx context.Context, d *schema.ResourceData, 
 		return diag.FromErr(err)
 	}
 	d.SetId(ecx.StringValue(primaryID))
-	createStateConf := &resource.StateChangeConf{
-		Pending: []string{
-			ecx.ConnectionStatusProvisioning,
-			ecx.ConnectionStatusPendingAutoApproval,
-		},
-		Target: []string{
-			ecx.ConnectionStatusProvisioned,
-			ecx.ConnectionStatusPendingApproval,
-			ecx.ConnectionStatusPendingBGPPeering,
-			ecx.ConnectionStatusPendingProviderVlan,
-		},
-		Timeout:    d.Timeout(schema.TimeoutCreate),
-		Delay:      2 * time.Second,
-		MinTimeout: 2 * time.Second,
-		Refresh: func() (interface{}, string, error) {
-			resp, err := conf.ecx.GetL2Connection(d.Id())
-			if err != nil {
-				return nil, "", err
-			}
-			return resp, ecx.StringValue(resp.Status), nil
-		},
-	}
-	if _, err := createStateConf.WaitForStateContext(ctx); err != nil {
-		return diag.Errorf("error waiting for connection (%s) to be created: %s", d.Id(), err)
+	waitConfigs := []*resource.StateChangeConf{
+		createConnectionStatusProvisioningWaitConfiguration(conf.ecx.GetL2Connection, d.Id(), 5*time.Second, d.Timeout(schema.TimeoutCreate)),
 	}
 	if ecx.StringValue(secondaryID) != "" {
-		createStateConf.Refresh = func() (interface{}, string, error) {
-			resp, err := conf.ecx.GetL2Connection(ecx.StringValue(secondaryID))
-			if err != nil {
-				return nil, "", err
-			}
-			return resp, ecx.StringValue(resp.Status), nil
+		d.Set(ecxL2ConnectionSchemaNames["RedundantUUID"], secondaryID)
+		waitConfigs = append(waitConfigs,
+			createConnectionStatusProvisioningWaitConfiguration(conf.ecx.GetL2Connection, ecx.StringValue(secondaryID), 2*time.Second, d.Timeout(schema.TimeoutCreate)),
+		)
+	}
+	for _, config := range waitConfigs {
+		if config == nil {
+			continue
 		}
-
-		if _, err := createStateConf.WaitForStateContext(ctx); err != nil {
-			return diag.Errorf("error waiting for secondary connection (%s) to be created: %s", d.Id(), err)
+		if _, err := config.WaitForStateContext(ctx); err != nil {
+			return diag.Errorf("error waiting for connection (%s) to be created: %s", d.Id(), err)
 		}
 	}
 	diags = append(diags, resourceECXL2ConnectionRead(ctx, d, m)...)
@@ -645,14 +653,26 @@ func resourceECXL2ConnectionRead(ctx context.Context, d *schema.ResourceData, m 
 		ecx.ConnectionStatusDeleted,
 	}) {
 		d.SetId("")
-		return nil
+		return diags
 	}
-	if ecx.StringValue(primary.RedundantUUID) != "" {
-		secondary, err = conf.ecx.GetL2Connection(ecx.StringValue(primary.RedundantUUID))
+
+	// RedundantUUID value is set in CreateContext/Importer functions
+	// Implementing a l2_connection datasource will require search for secondary connection before using
+	// resourceECXL2ConnectionRead or explicitly request the names or identifiers of each connection
+	if redID, ok := d.GetOk(ecxL2ConnectionSchemaNames["RedundantUUID"]); ok {
+		secondary, err = conf.ecx.GetL2Connection(redID.(string))
 		if err != nil {
 			return diag.Errorf("cannot fetch secondary connection due to %v", err)
 		}
+		if ecx.StringValue(primary.RedundancyGroup) != ecx.StringValue(secondary.RedundancyGroup) || !strings.EqualFold(ecx.StringValue(secondary.RedundancyType), "secondary") {
+			return diag.Errorf("connection '%s' (%s) was found but is not the redundant connection for '%s' (%s)",
+				ecx.StringValue(secondary.Name),
+				ecx.StringValue(secondary.UUID),
+				ecx.StringValue(primary.Name),
+				ecx.StringValue(primary.UUID))
+		}
 	}
+
 	if err := updateECXL2ConnectionResource(primary, secondary, d); err != nil {
 		return diag.FromErr(err)
 	}
@@ -672,9 +692,9 @@ func resourceECXL2ConnectionUpdate(ctx context.Context, d *schema.ResourceData, 
 	if err := fillFabricL2ConnectionUpdateRequest(primaryUpdateReq, primaryChanges).Execute(); err != nil {
 		return diag.FromErr(err)
 	}
-	if v, ok := d.GetOk(ecxL2ConnectionSchemaNames["RedundantUUID"]); ok {
+	if redID, ok := d.GetOk(ecxL2ConnectionSchemaNames["RedundantUUID"]); ok {
 		secondaryChanges := getResourceDataListElementChanges(supportedChanges, ecxL2ConnectionSchemaNames["SecondaryConnection"], 0, d)
-		secondaryUpdateReq := conf.ecx.NewL2ConnectionUpdateRequest(v.(string))
+		secondaryUpdateReq := conf.ecx.NewL2ConnectionUpdateRequest(redID.(string))
 		if err := fillFabricL2ConnectionUpdateRequest(secondaryUpdateReq, secondaryChanges).Execute(); err != nil {
 			return diag.FromErr(err)
 		}
@@ -696,38 +716,28 @@ func resourceECXL2ConnectionDelete(ctx context.Context, d *schema.ResourceData, 
 		}
 		return diag.FromErr(err)
 	}
-	// remove secondary connection, don't fail on error as there is no partial state on delete
+	waitConfigs := []*resource.StateChangeConf{
+		createConnectionStatusDeleteWaitConfiguration(conf.ecx.GetL2Connection, d.Id(), 5*time.Second, d.Timeout(schema.TimeoutDelete)),
+	}
 	if redID, ok := d.GetOk(ecxL2ConnectionSchemaNames["RedundantUUID"]); ok {
 		if err := conf.ecx.DeleteL2Connection(redID.(string)); err != nil {
-			diags = append(diags, diag.Diagnostic{
-				Severity:      diag.Warning,
-				Summary:       fmt.Sprintf("Failed to remove secondary connection with UUID %q", redID.(string)),
-				Detail:        err.Error(),
-				AttributePath: cty.GetAttrPath(ecxL2ConnectionSchemaNames["RedundantUUID"]),
-			})
-		}
-	}
-	deleteStateConf := &resource.StateChangeConf{
-		Pending: []string{
-			ecx.ConnectionStatusDeprovisioning,
-		},
-		Target: []string{
-			ecx.ConnectionStatusPendingDelete,
-			ecx.ConnectionStatusDeprovisioned,
-		},
-		Timeout:    d.Timeout(schema.TimeoutDelete),
-		Delay:      2 * time.Second,
-		MinTimeout: 2 * time.Second,
-		Refresh: func() (interface{}, string, error) {
-			resp, err := conf.ecx.GetL2Connection(d.Id())
-			if err != nil {
-				return nil, "", err
+			restErr, ok := err.(rest.Error)
+			if ok {
+				// IC-LAYER2-4021 = Connection already deleted
+				if hasApplicationErrorCode(restErr.ApplicationErrors, "IC-LAYER2-4021") {
+					return diags
+				}
 			}
-			return resp, ecx.StringValue(resp.Status), nil
-		},
+			return diag.FromErr(err)
+		}
+		waitConfigs = append(waitConfigs,
+			createConnectionStatusDeleteWaitConfiguration(conf.ecx.GetL2Connection, redID.(string), 2*time.Second, d.Timeout(schema.TimeoutDelete)),
+		)
 	}
-	if _, err := deleteStateConf.WaitForStateContext(ctx); err != nil {
-		return diag.Errorf("error waiting for connection (%s) to be removed: %s", d.Id(), err)
+	for _, config := range waitConfigs {
+		if _, err := config.WaitForStateContext(ctx); err != nil {
+			return diag.Errorf("error waiting for connection (%s) to be removed: %s", d.Id(), err)
+		}
 	}
 	return diags
 }
@@ -865,11 +875,11 @@ func updateECXL2ConnectionResource(primary *ecx.L2Connection, secondary *ecx.L2C
 	if err := d.Set(ecxL2ConnectionSchemaNames["AuthorizationKey"], primary.AuthorizationKey); err != nil {
 		return fmt.Errorf("error reading AuthorizationKey: %s", err)
 	}
-	if err := d.Set(ecxL2ConnectionSchemaNames["RedundantUUID"], primary.RedundantUUID); err != nil {
-		return fmt.Errorf("error reading RedundantUUID: %s", err)
-	}
 	if err := d.Set(ecxL2ConnectionSchemaNames["RedundancyType"], primary.RedundancyType); err != nil {
 		return fmt.Errorf("error reading RedundancyType: %s", err)
+	}
+	if err := d.Set(ecxL2ConnectionSchemaNames["RedundancyGroup"], primary.RedundancyGroup); err != nil {
+		return fmt.Errorf("error reading RedundancyGroup: %s", err)
 	}
 	if err := d.Set(ecxL2ConnectionSchemaNames["ServiceToken"], primary.ServiceToken); err != nil {
 		return fmt.Errorf("error reading ServiceToken: %s", err)
@@ -912,8 +922,8 @@ func flattenECXL2ConnectionSecondary(previous, conn *ecx.L2Connection) interface
 	transformed[ecxL2ConnectionSchemaNames["SellerRegion"]] = conn.SellerRegion
 	transformed[ecxL2ConnectionSchemaNames["SellerMetroCode"]] = conn.SellerMetroCode
 	transformed[ecxL2ConnectionSchemaNames["AuthorizationKey"]] = conn.AuthorizationKey
-	transformed[ecxL2ConnectionSchemaNames["RedundantUUID"]] = conn.RedundantUUID
 	transformed[ecxL2ConnectionSchemaNames["RedundancyType"]] = conn.RedundancyType
+	transformed[ecxL2ConnectionSchemaNames["RedundancyGroup"]] = conn.RedundancyGroup
 	transformed[ecxL2ConnectionSchemaNames["Actions"]] = flattenECXL2ConnectionActions(conn.Actions)
 	return []interface{}{transformed}
 }
@@ -1030,4 +1040,48 @@ func fillFabricL2ConnectionUpdateRequest(updateReq ecx.L2ConnectionUpdateRequest
 		}
 	}
 	return updateReq
+}
+
+func createConnectionStatusProvisioningWaitConfiguration(fetchFunc getL2Connection, id string, delay time.Duration, timeout time.Duration) *resource.StateChangeConf {
+	pending := []string{
+		ecx.ConnectionStatusProvisioning,
+		ecx.ConnectionStatusPendingAutoApproval,
+	}
+	target := []string{
+		ecx.ConnectionStatusProvisioned,
+		ecx.ConnectionStatusPendingApproval,
+		ecx.ConnectionStatusPendingBGPPeering,
+		ecx.ConnectionStatusPendingProviderVlan,
+	}
+	return createConnectionStatusWaitConfiguration(fetchFunc, id, delay, timeout, target, pending)
+}
+
+
+func createConnectionStatusDeleteWaitConfiguration(fetchFunc getL2Connection, id string, delay time.Duration, timeout time.Duration) *resource.StateChangeConf {
+	pending := []string{
+		ecx.ConnectionStatusDeprovisioning,
+	}
+	target := []string{
+		ecx.ConnectionStatusPendingDelete,
+		ecx.ConnectionStatusDeprovisioned,
+		ecx.ConnectionStatusDeleted,
+	}
+	return createConnectionStatusWaitConfiguration(fetchFunc, id, delay, timeout, target, pending)
+}
+
+func createConnectionStatusWaitConfiguration(fetchFunc getL2Connection, id string, delay time.Duration, timeout time.Duration, target []string, pending []string) *resource.StateChangeConf {
+	return &resource.StateChangeConf{
+		Pending:    pending,
+		Target:     target,
+		Timeout:    timeout,
+		Delay:      delay,
+		MinTimeout: delay,
+		Refresh: func() (interface{}, string, error) {
+			resp, err := fetchFunc(id)
+			if err != nil {
+				return nil, "", err
+			}
+			return resp, ecx.StringValue(resp.Status), nil
+		},
+	}
 }

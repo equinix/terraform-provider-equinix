@@ -139,9 +139,9 @@ func TestAccFabricL2Connection_Port_HA_Azure(t *testing.T) {
 		"connection-notifications":         []string{"marry@equinix.com", "john@equinix.com"},
 		"connection-purchase_order_number": randString(10),
 		"connection-vlan_stag":             randInt(2000),
-		"connection-seller_metro_code":     "SV",
+		"connection-seller_metro_code":     "LD",
 		"connection-authorization_key":     serviceKey,
-		"connection-named_tag":             "Public",
+		"connection-named_tag":             "PRIVATE",
 		"connection-secondary_name":        fmt.Sprintf("%s-%s", tstResourcePrefix, randString(6)),
 		"connection-secondary_vlan_stag":   randInt(2000),
 	}
@@ -159,7 +159,7 @@ func TestAccFabricL2Connection_Port_HA_Azure(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccFabricL2ConnectionExists(resourceName, &primary),
 					testAccFabricL2ConnectionAttributes(&primary, context),
-					testAccFabricL2ConnectionSecondaryExists(&primary, &secondary),
+					testAccFabricL2ConnectionSecondaryExists(resourceName, &secondary),
 					testAccFabricL2ConnectionSecondaryAttributes(&secondary, context),
 					resource.TestCheckResourceAttr(resourceName, "status", ecx.ConnectionStatusPendingBGPPeering),
 					resource.TestCheckResourceAttrSet(resourceName, "provider_status"),
@@ -167,21 +167,27 @@ func TestAccFabricL2Connection_Port_HA_Azure(t *testing.T) {
 				),
 			},
 			{
-				Config: newTestAccConfig(contextWithChanges).withPort().withConnection().build(),
-				Check: resource.ComposeTestCheckFunc(
-					testAccFabricL2ConnectionExists(resourceName, &primary),
-					testAccFabricL2ConnectionAttributes(&primary, contextWithChanges),
-					testAccFabricL2ConnectionSecondaryExists(&primary, &secondary),
-					testAccFabricL2ConnectionSecondaryAttributes(&secondary, contextWithChanges),
-					resource.TestCheckResourceAttr(resourceName, "status", ecx.ConnectionStatusPendingBGPPeering),
-					resource.TestCheckResourceAttrSet(resourceName, "provider_status"),
-					testAccFabricL2ConnectionRedundancyAttributes(&primary, &secondary),
-				),
-			},
-			{
-				ResourceName:      resourceName,
+				ResourceName: resourceName,
+				ImportStateIdFunc: func(s *terraform.State) (string, error) {
+					rs, ok := s.RootModule().Resources[resourceName]
+					if !ok {
+						return "", fmt.Errorf("resource not found in state: %s", resourceName)
+					}
+					if rs.Primary.ID == "" {
+						return "", fmt.Errorf("resource has no ID attribute set")
+					}
+					secondaryID, ok := rs.Primary.Attributes["secondary_connection.0.uuid"]
+					if !ok {
+						return "", fmt.Errorf("resource has no secondary_connection.0.uuid attribute: %s", resourceName)
+					}
+					return fmt.Sprintf("%s:%s", rs.Primary.ID, secondaryID), nil
+				},
 				ImportState:       true,
 				ImportStateVerify: true,
+			},
+			{
+				Config: newTestAccConfig(contextWithChanges).withPort().withConnection().build(),
+				ExpectError: regexp.MustCompile(`Update request can be done only on Provisioned Connection`),
 			},
 		},
 	})
@@ -248,12 +254,26 @@ func TestAccFabricL2Connection_Device_HA_GCP(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccFabricL2ConnectionExists(connResourceName, &primary),
 					testAccFabricL2ConnectionAttributes(&primary, context),
-					testAccFabricL2ConnectionSecondaryExists(&primary, &secondary),
+					testAccFabricL2ConnectionSecondaryExists(connResourceName, &secondary),
 					testAccFabricL2ConnectionSecondaryAttributes(&secondary, context),
 				),
 			},
 			{
-				ResourceName:            connResourceName,
+				ResourceName: connResourceName,
+				ImportStateIdFunc: func(s *terraform.State) (string, error) {
+					rs, ok := s.RootModule().Resources[connResourceName]
+					if !ok {
+						return "", fmt.Errorf("resource not found in state: %s", connResourceName)
+					}
+					if rs.Primary.ID == "" {
+						return "", fmt.Errorf("resource has no ID attribute set")
+					}
+					secondaryID, ok := rs.Primary.Attributes["secondary_connection.0.uuid"]
+					if !ok {
+						return "", fmt.Errorf("resource has no secondary_connection.0.uuid attribute: %s", connResourceName)
+					}
+					return fmt.Sprintf("%s:%s", rs.Primary.ID, secondaryID), nil
+				},
 				ImportState:             true,
 				ImportStateVerify:       true,
 				ImportStateVerifyIgnore: []string{"device_interface_id", "secondary_connection.0.device_interface_id"},
@@ -384,17 +404,27 @@ func testAccFabricL2ConnectionExists(resourceName string, conn *ecx.L2Connection
 	}
 }
 
-func testAccFabricL2ConnectionSecondaryExists(primary *ecx.L2Connection, secondary *ecx.L2Connection) resource.TestCheckFunc {
+func testAccFabricL2ConnectionSecondaryExists(resourceName string, conn *ecx.L2Connection) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
+		rs, ok := s.RootModule().Resources[resourceName]
+		if !ok {
+			return fmt.Errorf("resource not found: %s", resourceName)
+		}
 		client := testAccProvider.Meta().(*Config).ecx
-		if ecx.StringValue(primary.RedundantUUID) == "" {
-			return fmt.Errorf("primary connection has no RedundantUUID set")
+
+		if connID, ok := rs.Primary.Attributes["secondary_connection.0.uuid"]; ok {
+			resp, err := client.GetL2Connection(connID)
+			if err != nil {
+				return fmt.Errorf("error when fetching secondary L2 connection %v", err)
+			}
+			if ecx.StringValue(resp.UUID) != connID {
+				return fmt.Errorf("resource ID does not match %v - %v", connID, resp.UUID)
+			}
+			*conn = *resp
+		} else {
+			return fmt.Errorf("resource has no secondary.0.uuid attribute")
 		}
-		resp, err := client.GetL2Connection(ecx.StringValue(primary.RedundantUUID))
-		if err != nil {
-			return fmt.Errorf("error when fetching L2 connection %v", err)
-		}
-		*secondary = *resp
+
 		return nil
 	}
 }
@@ -432,7 +462,7 @@ func testAccFabricL2ConnectionAttributes(conn *ecx.L2Connection, ctx map[string]
 			return fmt.Errorf("zSideVlanCTag does not match %v - %v", ecx.IntValue(conn.ZSideVlanCTag), v)
 		}
 		if v, ok := ctx["connection-named_tag"]; ok && ecx.StringValue(conn.NamedTag) != v.(string) {
-			return fmt.Errorf("named_tag does not match %v - %v", ecx.StringValue(conn.NamedTag), v)
+			return fmt.Errorf("named_tag does not match %v - %v", ecx.StringValue(conn.NamedTag), v.(string))
 		}
 		if v, ok := ctx["connection-seller_region"]; ok && ecx.StringValue(conn.SellerRegion) != v.(string) {
 			return fmt.Errorf("sellerRegion does not match %v - %v", ecx.StringValue(conn.SellerRegion), v)
@@ -479,17 +509,14 @@ func testAccFabricL2ConnectionSecondaryAttributes(conn *ecx.L2Connection, ctx ma
 
 func testAccFabricL2ConnectionRedundancyAttributes(primary, secondary *ecx.L2Connection) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
-		if ecx.StringValue(primary.RedundancyType) != "primary" {
-			return fmt.Errorf("primary connection redundancy type does not match  %v - %v", ecx.StringValue(primary.RedundancyType), "primary")
+		if ecx.StringValue(primary.RedundancyType) != "PRIMARY" {
+			return fmt.Errorf("primary connection redundancy type does not match  %v - %v", ecx.StringValue(primary.RedundancyType), "PRIMARY")
 		}
-		if ecx.StringValue(primary.RedundantUUID) != ecx.StringValue(secondary.UUID) {
-			return fmt.Errorf("primary connection redundant UUID does not match  %v - %v", ecx.StringValue(primary.RedundantUUID), ecx.StringValue(secondary.UUID))
+		if ecx.StringValue(primary.RedundancyGroup) != ecx.StringValue(secondary.RedundancyGroup) {
+			return fmt.Errorf("primary and secondary connection redundancy groups do not match  %v - %v", ecx.StringValue(primary.RedundancyGroup), ecx.StringValue(secondary.RedundancyGroup))
 		}
-		if ecx.StringValue(secondary.RedundancyType) != "secondary" {
-			return fmt.Errorf("secondary connection redundancy type does not match  %v - %v", ecx.StringValue(secondary.RedundancyType), "secondary")
-		}
-		if ecx.StringValue(secondary.RedundantUUID) != ecx.StringValue(primary.UUID) {
-			return fmt.Errorf("secondary connection redundant UUID does not match  %v - %v", ecx.StringValue(secondary.RedundantUUID), ecx.StringValue(primary.UUID))
+		if ecx.StringValue(secondary.RedundancyType) != "SECONDARY" {
+			return fmt.Errorf("secondary connection redundancy type does not match  %v - %v", ecx.StringValue(secondary.RedundancyType), "SECONDARY")
 		}
 		return nil
 	}

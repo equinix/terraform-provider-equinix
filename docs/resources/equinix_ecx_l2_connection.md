@@ -60,7 +60,7 @@ resource "equinix_ecx_l2_connection" "azure" {
   vlan_stag         = 1482
   vlan_ctag         = 2512
   seller_metro_code = "SV"
-  named_tag         = "Public"
+  named_tag         = "PRIVATE"
   authorization_key = "c4dff8e8-b52f-4b34-b0d4-c4588f7338f3
   secondary_connection {
     name      = "tf-azure-sec"
@@ -118,7 +118,7 @@ the Network Edge virtual device from which the connection would originate.
 - `vlan_ctag` - (Optional) C-Tag/Inner-Tag of the connection - a numeric
 character ranging from 2 - 4094.
 - `named_tag` - (Optional) The type of peering to set up in case when connecting
-to Azure Express Route. One of _"Public"_, _"Private"_, _"Microsoft"_, _"Manual"_
+to Azure Express Route. One of _"PRIVATE"_, _"MICROSOFT"_, _"MANUAL"_
 - `additional_info` - (Optional) one or more additional information key-value objects
   - `name` - (Required) additional information key
   - `value` - (Required) additional information value
@@ -167,8 +167,8 @@ are exported:
 - `provider_status` - Connection provisioning status on service provider's side
 - `redundant_uuid` - Unique identifier of the redundant connection, applicable for
 HA connections
-- `redundancy_type` - Connection redundancy type, applicable for HA connections.
-Either primary or secondary.
+- `redundancy_type` - Connection redundancy type, applicable for HA connections. Either PRIMARY or SECONDARY
+- `redundancy_group` - Unique identifier of group containing a primary and secondary connection.
 - `zside_port_uuid` - when not provided as an argument, it is identifier of the
 z-side port, assigned by the Fabric
 - `zside_vlan_stag` - when not provided as an argument, it is S-Tag/Outer-Tag of
@@ -179,6 +179,8 @@ z-side port, assigned by the Fabric
   - `zside_port_uuid`
   - `zside_vlan_stag`
   - `zside_vlan_ctag`
+  - `redundancy_type`
+  - `redundancy_group`
 
 ## Update operation behavior
 
@@ -202,8 +204,17 @@ options:
 
 ## Import
 
-This resource can be imported using an existing ID:
+Equinix L2 connections can be imported using an existing `id`:
 
 ```sh
-terraform import equinix_ecx_l2_connection.example {existing_id}
+existing_connection_id='00000000-0000-0000-0000-1111111111'
+terraform import equinix_ecx_l2_connection.example ${existing_connection_id}
+```
+
+To import a redundant connection it is required a single string with both connection `id` separated by `:`, e.g.,
+
+```sh
+existing_primary_connection_id='00000000-0000-0000-0000-1111111111'
+existing_secondary_connection_id='00000000-0000-0000-0000-2222222222'
+terraform import equinix_ecx_l2_connection.example ${existing_primary_connection_id}:${existing_secondary_connection_id}
 ```
