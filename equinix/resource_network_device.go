@@ -749,12 +749,14 @@ func createClusterNodeDetailRequestSchema() map[string]*schema.Schema {
 			Type:        schema.TypeString,
 			Optional:    true,
 			ForceNew:    true,
+			Sensitive:   true,
 			Description: neDeviceClusterDescriptions["LicenseFileId"],
 		},
 		neDeviceClusterSchemaNames["LicenseToken"]: {
 			Type:        schema.TypeString,
 			Optional:    true,
 			ForceNew:    true,
+			Sensitive:   true,
 			Description: neDeviceClusterDescriptions["LicenseToken"],
 		},
 		neDeviceClusterSchemaNames["VendorConfiguration"]: {
@@ -790,6 +792,7 @@ func createNetworkDeviceClusterNodeSchema() map[string]*schema.Schema {
 		neDeviceClusterSchemaNames["AdminPassword"]: {
 			Type:        schema.TypeString,
 			Computed:    true,
+			Sensitive:   true,
 			Description: neDeviceClusterDescriptions["AdminPassword"],
 		},
 		neDeviceClusterSchemaNames["VendorConfiguration"]: {
@@ -1103,9 +1106,6 @@ func updateNetworkDeviceResource(primary *ne.Device, secondary *ne.Device, d *sc
 	if err := d.Set(networkDeviceSchemaNames["ACLTemplateUUID"], primary.ACLTemplateUUID); err != nil {
 		return fmt.Errorf("error reading ACLTemplateUUID: %s", err)
 	}
-	if err := d.Set(networkDeviceSchemaNames["MgmtAclTemplateUuid"], primary.MgmtAclTemplateUuid); err != nil {
-		return fmt.Errorf("error reading MgmtAclTemplateUuid: %s", err)
-	}
 	if err := d.Set(networkDeviceSchemaNames["SSHIPAddress"], primary.SSHIPAddress); err != nil {
 		return fmt.Errorf("error reading SSHIPAddress: %s", err)
 	}
@@ -1170,6 +1170,10 @@ func updateNetworkDeviceResource(primary *ne.Device, secondary *ne.Device, d *sc
 		}
 	}
 	if primary.ClusterDetails != nil {
+		if v, ok := d.GetOk(networkDeviceSchemaNames["ClusterDetails"]); ok {
+			clusterDetailsFromSchema := expandNetworkDeviceClusterDetails(v.([]interface{}))
+			primary.ClusterDetails.ClusterNodeDetails = clusterDetailsFromSchema.ClusterNodeDetails
+		}
 		if err := d.Set(networkDeviceSchemaNames["ClusterDetails"], flattenNetworkDeviceClusterDetails(primary.ClusterDetails)); err != nil {
 			return fmt.Errorf("error reading ClusterDetails: %s", err)
 		}
@@ -1317,6 +1321,22 @@ func flattenNetworkDeviceClusterDetails(clusterDetails *ne.ClusterDetails) inter
 		}
 	}
 	transformed[neDeviceClusterSchemaNames["Nodes"]] = nodeArr
+	transformed[neDeviceClusterSchemaNames["ClusterNodeDetails"]] = flattenNetworkDeviceClusterNodeDetails(clusterDetails.ClusterNodeDetails)
+	return []interface{}{transformed}
+}
+
+func flattenNetworkDeviceClusterNodeDetails(clusterNodeDetails map[string]*ne.ClusterNodeDetail) interface{} {
+	transformed := make(map[string]interface{})
+	transformed[neDeviceClusterSchemaNames["Node0"]] = flattenClusterNodeDetailRequest(clusterNodeDetails[neDeviceClusterSchemaNames["Node0"]])
+	transformed[neDeviceClusterSchemaNames["Node1"]] = flattenClusterNodeDetailRequest(clusterNodeDetails[neDeviceClusterSchemaNames["Node1"]])
+	return []interface{}{transformed}
+}
+
+func flattenClusterNodeDetailRequest(clusterNodeDetailRequest *ne.ClusterNodeDetail) interface{} {
+	transformed := make(map[string]interface{})
+	transformed[neDeviceClusterSchemaNames["VendorConfiguration"]] = clusterNodeDetailRequest.VendorConfiguration
+	transformed[neDeviceClusterSchemaNames["LicenseToken"]] = clusterNodeDetailRequest.LicenseToken
+	transformed[neDeviceClusterSchemaNames["LicenseFileId"]] = clusterNodeDetailRequest.LicenseFileId
 	return []interface{}{transformed}
 }
 
