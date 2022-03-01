@@ -58,7 +58,7 @@ The following arguments are supported:
 
 ### Timeouts
 
-The `timeouts` block allows you to specify [timeouts](https://www.terraform.io/docs/configuration/resources.html#operation-timeouts) for certain actions:
+The `timeouts` block allows you to specify [timeouts](https://www.terraform.io/language/resources/syntax#operation-timeouts) for certain actions:
 
 * `create` - (Defaults to 60 mins) Used when creating the Spot Market Request and `wait_for_devices == true`)
 * `delete` - (Defaults to 60 mins) Used when destroying the Spot Market Request and `wait for devices == true`
