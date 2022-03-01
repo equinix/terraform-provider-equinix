@@ -186,7 +186,7 @@ func TestAccFabricL2Connection_Port_HA_Azure(t *testing.T) {
 				ImportStateVerify: true,
 			},
 			{
-				Config: newTestAccConfig(contextWithChanges).withPort().withConnection().build(),
+				Config:      newTestAccConfig(contextWithChanges).withPort().withConnection().build(),
 				ExpectError: regexp.MustCompile(`Update request can be done only on Provisioned Connection`),
 			},
 		},
@@ -336,7 +336,7 @@ func TestAccFabricL2Connection_ServiceToken_Single_SP(t *testing.T) {
 		DeleteL2ConnectionFn: func(uuid string) error {
 			err := rest.Error{}
 			err.ApplicationErrors = []rest.ApplicationError{
-				rest.ApplicationError{
+				{
 					Code: "IC-LAYER2-4021",
 				},
 			}

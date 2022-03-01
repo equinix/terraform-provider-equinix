@@ -4,8 +4,8 @@ import (
 	"context"
 	"fmt"
 	"log"
-	"time"
 	"strings"
+	"time"
 
 	"github.com/equinix/ecx-go/v2"
 	"github.com/equinix/rest-go"
@@ -128,7 +128,7 @@ func resourceECXL2Connection() *schema.Resource {
 		UpdateContext: resourceECXL2ConnectionUpdate,
 		DeleteContext: resourceECXL2ConnectionDelete,
 		Importer: &schema.ResourceImporter{
-			StateContext:  func(ctx context.Context, d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
+			StateContext: func(ctx context.Context, d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
 				// The expected ID to import redundant connections is '(primaryID):(secondaryID)', e.g.,
 				//   terraform import equinix_ecx_l2_connection.example 1111-11-11-1111:2222-22-22-2222
 				ids := strings.Split(d.Id(), ":")
@@ -1055,7 +1055,6 @@ func createConnectionStatusProvisioningWaitConfiguration(fetchFunc getL2Connecti
 	}
 	return createConnectionStatusWaitConfiguration(fetchFunc, id, delay, timeout, target, pending)
 }
-
 
 func createConnectionStatusDeleteWaitConfiguration(fetchFunc getL2Connection, id string, delay time.Duration, timeout time.Duration) *resource.StateChangeConf {
 	pending := []string{
