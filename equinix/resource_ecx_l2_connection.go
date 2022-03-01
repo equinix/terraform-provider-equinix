@@ -61,11 +61,11 @@ var ecxL2ConnectionDescriptions = map[string]string{
 	"DeviceInterfaceID":   "Identifier of network interface on a given device, used for a connection. If not specified then first available interface will be selected",
 	"VlanSTag":            "S-Tag/Outer-Tag of the connection, a numeric character ranging from 2 - 4094",
 	"VlanCTag":            "C-Tag/Inner-Tag of the connection, a numeric character ranging from 2 - 4094",
-	"NamedTag":            "The type of peering to set up in case when connecting to Azure Express Route. One of Public, Private, Microsoft, Manual",
+	"NamedTag":            "The type of peering to set up in case when connecting to Azure Express Route. One of PRIVATE, MICROSOFT, MANUAL, PUBLIC (PUBLIC is deprecated, use MICROSOFT instead)",
 	"AdditionalInfo":      "One or more additional information key-value objects",
 	"ZSidePortUUID":       "Unique identifier of the port on the remote side (z-side)",
 	"ZSideVlanSTag":       "S-Tag/Outer-Tag of the connection on the remote side (z-side)",
-	"ZSideVlanCTag":       "C-Tag/Inner-Tag of the connection on the remote side (z-side)",
+	"ZSideVlanCTag":       "C-Tag/Inner-Tag of the connection on the remote side (z-side). This is only applicable for 'MANUAL' peering. (i.e. namedTag  = 'MANUAL')",
 	"SellerRegion":        "The region in which the seller port resides",
 	"SellerMetroCode":     "The metro code that denotes the connection's remote side (z-side)",
 	"AuthorizationKey":    "Text field used to authorize connection on the provider side. Value depends on a provider service profile used for connection",
@@ -257,7 +257,7 @@ func createECXL2ConnectionResourceSchema() map[string]*schema.Schema {
 			Type:         schema.TypeString,
 			Optional:     true,
 			ForceNew:     true,
-			ValidateFunc: validation.StringInSlice([]string{"PRIVATE", "MICROSOFT", "MANUAL", "Private", "Public", "Microsoft", "Manual"}, false),
+			ValidateFunc: validation.StringInSlice([]string{"PRIVATE", "MICROSOFT", "MANUAL", "PUBLIC"}, true),
 			Description:  ecxL2ConnectionDescriptions["NamedTag"],
 			DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
 				return strings.EqualFold(old, new)

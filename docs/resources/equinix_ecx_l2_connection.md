@@ -117,8 +117,9 @@ the Network Edge virtual device from which the connection would originate.
 \- a numeric character ranging from 2 - 4094.
 - `vlan_ctag` - (Optional) C-Tag/Inner-Tag of the connection - a numeric
 character ranging from 2 - 4094.
-- `named_tag` - (Optional) The type of peering to set up in case when connecting
-to Azure Express Route. One of _"PRIVATE"_, _"MICROSOFT"_, _"MANUAL"_
+- `named_tag` - (Optional) The type of peering to set up when connecting
+to Azure Express Route. One of _"PRIVATE"_, _"MICROSOFT"_, _"MANUAL"_, _"PUBLIC"_
+~> **NOTE:** _"PUBLIC"_ peering is deprecated. Use _"MICROSOFT"_ instead. More information is in [Microsoft public peering](https://docs.microsoft.com/en-us/azure/expressroute/about-public-peering) docs.
 - `additional_info` - (Optional) one or more additional information key-value objects
   - `name` - (Required) additional information key
   - `value` - (Required) additional information value
