@@ -8,7 +8,6 @@ import (
 )
 
 func main() {
-
 	if len(os.Args) < 2 {
 		fmt.Println("Missing required command. One of [migrate, backup, version]")
 		os.Exit(1)
