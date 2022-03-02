@@ -89,7 +89,7 @@ func TestFabricL2Connection_updateResourceData(t *testing.T) {
 		SellerRegion:        ecx.String(randString(10)),
 		SellerMetroCode:     ecx.String(randString(2)),
 		AuthorizationKey:    ecx.String(randString(10)),
-		RedundantUUID:       ecx.String(randString(36)),
+		RedundancyGroup:     ecx.String(randString(36)),
 		RedundancyType:      ecx.String(randString(10)),
 	}
 	// when
@@ -120,7 +120,7 @@ func TestFabricL2Connection_updateResourceData(t *testing.T) {
 	assert.Equal(t, ecx.StringValue(input.SellerRegion), d.Get(ecxL2ConnectionSchemaNames["SellerRegion"]), "SellerRegion matches")
 	assert.Equal(t, ecx.StringValue(input.SellerMetroCode), d.Get(ecxL2ConnectionSchemaNames["SellerMetroCode"]), "SellerMetroCode matches")
 	assert.Equal(t, ecx.StringValue(input.AuthorizationKey), d.Get(ecxL2ConnectionSchemaNames["AuthorizationKey"]), "AuthorizationKey matches")
-	assert.Equal(t, ecx.StringValue(input.RedundantUUID), d.Get(ecxL2ConnectionSchemaNames["RedundantUUID"]), "RedundantUUID matches")
+	assert.Equal(t, ecx.StringValue(input.RedundancyGroup), d.Get(ecxL2ConnectionSchemaNames["RedundancyGroup"]), "RedundancyGroup matches")
 	assert.Equal(t, ecx.StringValue(input.RedundancyType), d.Get(ecxL2ConnectionSchemaNames["RedundancyType"]), "RedundancyType matches")
 }
 
@@ -144,7 +144,7 @@ func TestFabricL2Connection_flattenSecondary(t *testing.T) {
 		SellerRegion:     ecx.String(randString(10)),
 		SellerMetroCode:  ecx.String(randString(2)),
 		AuthorizationKey: ecx.String(randString(10)),
-		RedundantUUID:    ecx.String(randString(36)),
+		RedundancyGroup:  ecx.String(randString(10)),
 		RedundancyType:   ecx.String(randString(10)),
 	}
 	previousInput := &ecx.L2Connection{
@@ -170,7 +170,7 @@ func TestFabricL2Connection_flattenSecondary(t *testing.T) {
 			ecxL2ConnectionSchemaNames["SellerRegion"]:      input.SellerRegion,
 			ecxL2ConnectionSchemaNames["SellerMetroCode"]:   input.SellerMetroCode,
 			ecxL2ConnectionSchemaNames["AuthorizationKey"]:  input.AuthorizationKey,
-			ecxL2ConnectionSchemaNames["RedundantUUID"]:     input.RedundantUUID,
+			ecxL2ConnectionSchemaNames["RedundancyGroup"]:   input.RedundancyGroup,
 			ecxL2ConnectionSchemaNames["RedundancyType"]:    input.RedundancyType,
 			ecxL2ConnectionSchemaNames["Actions"]:           []interface{}{},
 		},
