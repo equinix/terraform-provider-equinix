@@ -20,7 +20,7 @@ data "equinix_ecx_port" "sv-qinq-pri" {
   name = "CX-SV5-NL-Dot1q-BO-10G-PRI"
 }
 
-resource "equinix_ecx_l2_connection" "aws" {
+resource "equinix_ecx_l2_connection" "port-2-aws" {
   name              = "tf-aws"
   profile_uuid      = data.equinix_ecx_l2_sellerprofile.aws.id
   speed             = 200
@@ -50,7 +50,7 @@ data "equinix_ecx_port" "sv-qinq-sec" {
   name = "CX-SV1-NL-Dot1q-BO-10G-SEC"
 }
 
-resource "equinix_ecx_l2_connection" "azure" {
+resource "equinix_ecx_l2_connection" "ports-2-azure" {
   name              = "tf-azure-pri"
   profile_uuid      = data.equinix_ecx_l2_sellerprofile.azure.id
   speed             = 50
@@ -78,7 +78,7 @@ data "equinix_ecx_l2_sellerprofile" "gcp-1" {
   name = "Google Cloud Partner Interconnect Zone 1"
 }
 
-resource "equinix_ecx_l2_connection" "router-gcp" {
+resource "equinix_ecx_l2_connection" "router-to-gcp" {
   name                = "tf-gcp-pri"
   profile_uuid        = data.equinix_ecx_l2_sellerprofile.gcp-1.id
   device_uuid         = equinix_network_device.myrouter.id
@@ -95,12 +95,12 @@ resource "equinix_ecx_l2_connection" "router-gcp" {
 ### Non-redundant Connection from an Equinix customer port using A-Side Service token
 
 ```hcl
-data "equinix_ecx_l2_sellerprofile" "customer-to-aws" {
+data "equinix_ecx_l2_sellerprofile" "gcp" {
   name = "Google Cloud Partner Interconnect Zone 1"
 }
 
-resource "equinix_ecx_l2_connection" "router-gcp" {
-  name                = "tf-azure-pri"
+resource "equinix_ecx_l2_connection" "token-to-gcp" {
+  name                = "tf-gcp-pri"
   profile_uuid        = data.equinix_ecx_l2_sellerprofile.gcp-1.id
   service_token       = "e9c22453-d3a7-4d5d-9112-d50173531392"
   speed               = 100
