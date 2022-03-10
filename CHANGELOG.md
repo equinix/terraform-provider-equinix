@@ -55,6 +55,7 @@ BUG FIXES:
 ENHANCEMENTS:
 
 - `service_token` added to `equinix_ecx_l2_connection` [#96](https://github.com/equinix/terraform-provider-equinix/issues/96)
+- update documentation links for timeout parameters  [#101](https://github.com/equinix/terraform-provider-equinix/pull/101)
 
 ## 1.4.0 (January 14, 2022)
 
@@ -79,7 +80,7 @@ ENHANCEMENTS:
 * `equinix_ecx_l2_connection` attribute `actions` was added [#86](https://github.com/equinix/terraform-provider-equinix/pull/86)
 * `equinix_network_device_link` argument `device.asn` is now optional [#77](https://github.com/equinix/terraform-provider-equinix/pull/77)
 * `equinix_network_device_link` argument `device.subnet` is now optional [#77](https://github.com/equinix/terraform-provider-equinix/pull/77)
-* Fix connectivity example to establish an Azure connection [#71](https://github.com/equinix/terraform-provider-equinix/pull/71)
+* fix connectivity example to establish an Azure connection [#71](https://github.com/equinix/terraform-provider-equinix/pull/71)
 * replace Travis CI with GitHub Workflows [#65](https://github.com/equinix/terraform-provider-equinix/pull/65)
 * update go modules and update go to 1.17 [#63](https://github.com/equinix/terraform-provider-equinix/pull/63)
 
