@@ -45,6 +45,17 @@ FEATURES:
 - **New Data Resource** `equinix_metal_spot_market_price`
 - **New Data Resource** `equinix_metal_spot_market_request`
 
+BUG FIXES:
+
+* `equinix_ecx_l2_serviceprofile` detecting diff after refresh [#90](https://github.com/equinix/terraform-provider-equinix/pull/90)
+* `equinix_network_device` allow value 0 for additional bandwidth [#91](https://github.com/equinix/terraform-provider-equinix/pull/91)
+* `equinix_ecx_l2_connection` will wait for the secondary connection destroy [#103](https://github.com/equinix/terraform-provider-equinix/pull/103)
+* `equinix_ecx_l2_connection` named_tag now is idempotent [#97](https://github.com/equinix/terraform-provider-equinix/issues/97)
+
+ENHANCEMENTS:
+
+- `service_token` added to `equinix_ecx_l2_connection` [#96](https://github.com/equinix/terraform-provider-equinix/issues/96)
+
 ## 1.4.0 (January 14, 2022)
 
 NOTES:

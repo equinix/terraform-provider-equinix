@@ -9,7 +9,7 @@ layer 2 connections.
 
 ## Example Usage
 
-### Non-redundant Connection
+### Non-redundant Connection from own Equinix Port
 
 ```hcl
 data "equinix_ecx_l2_sellerprofile" "aws" {
@@ -35,7 +35,7 @@ resource "equinix_ecx_l2_connection" "aws" {
 }
 ```
 
-### Redundant Connection
+### Redundant Connection from own Equinix Ports
 
 ```hcl
 data "equinix_ecx_l2_sellerprofile" "azure" {
@@ -71,7 +71,7 @@ resource "equinix_ecx_l2_connection" "azure" {
 }
 ```
 
-### Connection from Network Edge device
+### Non-redundant Connection from Network Edge device
 
 ```hcl
 data "equinix_ecx_l2_sellerprofile" "gcp-1" {
@@ -79,10 +79,30 @@ data "equinix_ecx_l2_sellerprofile" "gcp-1" {
 }
 
 resource "equinix_ecx_l2_connection" "router-gcp" {
-  name                = "tf-azure-pri"
+  name                = "tf-gcp-pri"
   profile_uuid        = data.equinix_ecx_l2_sellerprofile.gcp-1.id
   device_uuid         = equinix_network_device.myrouter.id
   device_interface_id = 5
+  speed               = 100
+  speed_unit          = "MB"
+  notifications       = ["john@equinix.com", "marry@equinix.com"]
+  seller_metro_code   = "SV"
+  seller_region       = "us-west1"
+  authorization_key   = "4d335adc-00fd-4a41-c9f3-782ca31ab3f7/us-west1/1"
+}
+```
+
+### Non-redundant Connection from an Equinix customer port using A-Side Service token
+
+```hcl
+data "equinix_ecx_l2_sellerprofile" "customer-to-aws" {
+  name = "Google Cloud Partner Interconnect Zone 1"
+}
+
+resource "equinix_ecx_l2_connection" "router-gcp" {
+  name                = "tf-azure-pri"
+  profile_uuid        = data.equinix_ecx_l2_sellerprofile.gcp-1.id
+  service_token       = "e9c22453-d3a7-4d5d-9112-d50173531392"
   speed               = 100
   speed_unit          = "MB"
   notifications       = ["john@equinix.com", "marry@equinix.com"]
@@ -107,28 +127,33 @@ update notifications.
 - `purchase_order_number` - (Optional) Connection's purchase order number to reflect
 on the invoice
 - `port_uuid` - (Required when device_uuid is not set) Unique identifier of
-the buyer's port from which the connection would originate.
+the Equinix port from which the connection would originate.
 - `device_uuid` - (Required when port_uuid is not set) Unique identifier of
 the Network Edge virtual device from which the connection would originate.
 - `device_interface_id` - (Optional) Applicable with `device_uuid`, identifier of
  network interface on a given device, used for a connection. If not specified then
  first available interface will be selected.
+- `service_token`- (Optional) - Unique Equinix Fabric key given by a provider that
+grants you authorization to enable connectivity from a shared multi-tenant Equinix port (a-side).
+More details in [Fabric Service Tokens](https://docs.equinix.com/en-us/Content/Interconnection/Fabric/service%20tokens/Fabric-Service-Tokens.htm).
 - `vlan_stag` - (Required when port_uuid is set) S-Tag/Outer-Tag of the connection
 \- a numeric character ranging from 2 - 4094.
 - `vlan_ctag` - (Optional) C-Tag/Inner-Tag of the connection - a numeric
 character ranging from 2 - 4094.
 - `named_tag` - (Optional) The type of peering to set up when connecting
 to Azure Express Route. One of _"PRIVATE"_, _"MICROSOFT"_, _"MANUAL"_, _"PUBLIC"_
-~> **NOTE:** _"PUBLIC"_ peering is deprecated. Use _"MICROSOFT"_ instead. More information is in [Microsoft public peering](https://docs.microsoft.com/en-us/azure/expressroute/about-public-peering) docs.
+~> **NOTE:** _"PUBLIC"_ peering is deprecated. Use _"MICROSOFT"_ instead. More
+details in [Microsoft public peering](https://docs.microsoft.com/en-us/azure/expressroute/about-public-peering) docs.
 - `additional_info` - (Optional) one or more additional information key-value objects
   - `name` - (Required) additional information key
   - `value` - (Required) additional information value
 - `zside_port_uuid` - (Optional) Unique identifier of the port on the remote side
 (z-side).
 - `zside_vlan_stag` - (Optional) S-Tag/Outer-Tag of the connection on the remote
-side (z side).
-- `zside_vlan_ctag` - (Optional) C-Tag/Inner-Tag of the connection on the remote
-side (z-side).
+side (z side) - a numeric character ranging from 2 - 4094.
+- `zside_vlan_ctag` - (Optional) C-Tag/Inner-Tag of the connectionon the remote
+side (z side). This is only applicable for named_tag 'MANUAL' - a numeric
+character ranging from 2 - 4094.
 - `seller_region` - (Optional) The region in which the seller port resides.
 - `seller_metro_code` - (Optional) The metro code that denotes the connection’s
 remote side (z-side).
@@ -144,12 +169,15 @@ The `secondary_connection` block supports the following arguments:
 - `speed_unit` - (Optional) Unit of the speed/bandwidth to be allocated
 to the connection.
 - `port_uuid` - (Required when `device_uuid` is not set) Identifier of
-the buyer's port from which the connection would originate.
+the Equinix port from which the connection would originate.
 - `device_uuid` - (Required when `port_uuid` is not set) Identifier of
 the Network Edge virtual device from which the connection would originate.
 - `device_interface_id` - (Optional) Applicable with `device_uuid`, identifier of
  network interface on a given device. If not specified then first available interface
  will be selected.
+- `service_token`- (Optional) - Unique Equinix Fabric key given by a provider that
+grants you authorization to enable connectivity from a shared multi-tenant Equinix port (a-side).
+More details in [Fabric Service Tokens](https://docs.equinix.com/en-us/Content/Interconnection/Fabric/service%20tokens/Fabric-Service-Tokens.htm).
 - `vlan_stag` - (Required when `port_uuid` is set)
 - `vlan_ctag` - (Optional, can be set with `port_uuid`)
 - `seller_metro_code` - (Optional) The metro code that denotes the connection’s
@@ -174,8 +202,6 @@ HA connections
 z-side port, assigned by the Fabric
 - `zside_vlan_stag` - when not provided as an argument, it is S-Tag/Outer-Tag of
  the connection on the Z side, assigned by the Fabric
-- `zside_vlan_ctag` - when not provided as an argument, it is C-Tag/Inner-Tag of
- the connection on the Z side, assigned by the Fabric
 - `secondary_connection`:
   - `zside_port_uuid`
   - `zside_vlan_stag`
@@ -188,7 +214,7 @@ z-side port, assigned by the Fabric
 Update of most arguments will force replacement of a connection (including related
 redundant connection in HA setup).
 
-Following arguments can be updated. **NOTE** that ECXF may still forbid updates depending
+Following arguments can be updated. **NOTE** that Equinix Fabric may still forbid updates depending
 on current connection state, used service provider or number of updates requested
 during the day.
 
@@ -208,14 +234,14 @@ options:
 Equinix L2 connections can be imported using an existing `id`:
 
 ```sh
-existing_connection_id='00000000-0000-0000-0000-1111111111'
+existing_connection_id='example-uuid-1'
 terraform import equinix_ecx_l2_connection.example ${existing_connection_id}
 ```
 
 To import a redundant connection it is required a single string with both connection `id` separated by `:`, e.g.,
 
 ```sh
-existing_primary_connection_id='00000000-0000-0000-0000-1111111111'
-existing_secondary_connection_id='00000000-0000-0000-0000-2222222222'
+existing_primary_connection_id='example-uuid-1'
+existing_secondary_connection_id='example-uuid-2'
 terraform import equinix_ecx_l2_connection.example ${existing_primary_connection_id}:${existing_secondary_connection_id}
 ```
