@@ -99,8 +99,8 @@ github.com/envoyproxy/go-control-plane v0.9.9-0.20201210154907-fd9021fe5dad/go.m
 github.com/envoyproxy/protoc-gen-validate v0.1.0/go.mod h1:iSmxcyjqTsJpI2R4NaDN7+kN2VEUnK/pcBlmesArF7c=
 github.com/equinix/ecx-go/v2 v2.1.1 h1:+P6U4pd5ca8gcO8HwhgmtLLK8GvE9/zNoURq70AjvC0=
 github.com/equinix/ecx-go/v2 v2.1.1/go.mod h1:FvCdZ3jXU8Z4CPKig2DT+4J2HdwgRK17pIcznM7RXyk=
-github.com/equinix/ne-go v1.4.0 h1:XQjl8UNy94sELbpgDAujhbGELyUvkk3p4JyuvtF5wDU=
-github.com/equinix/ne-go v1.4.0/go.mod h1:eHkkxM4nbTB7DZ9X9zGnwfYnxIJWIsU3aHA+FAoZ1EI=
+github.com/equinix/ne-go v1.5.0 h1:0ycDJ0ToSIxMCC018VAl77qOVBbuFcUXeMplkzc3+Vg=
+github.com/equinix/ne-go v1.5.0/go.mod h1:eHkkxM4nbTB7DZ9X9zGnwfYnxIJWIsU3aHA+FAoZ1EI=
 github.com/equinix/oauth2-go v1.0.0 h1:fHtAPGq82PdgtK5vEThs8Vwz6f7D/8SX4tE3NJu+KcU=
 github.com/equinix/oauth2-go v1.0.0/go.mod h1:4pulXvUNMktJlewLPnUeJyMW52iCoF1aM+A/Z5xY1ws=
 github.com/equinix/rest-go v1.3.0 h1:m38scYTOfV6N+gcrwchgVDutDffYd+QoYCMm9Jn6jyk=

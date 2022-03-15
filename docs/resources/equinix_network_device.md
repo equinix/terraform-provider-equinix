@@ -76,6 +76,7 @@ resource "equinix_network_device" "panw-cluster" {
   term_length     = 6
   account_number  = data.equinix_network_account.sv.number
   version         = "10.1.3"
+  interface_count = 10
   core_count      = 2
   ssh_key {
     username = "test"

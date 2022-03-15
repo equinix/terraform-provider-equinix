@@ -26,6 +26,7 @@ const (
 	networkDeviceVersaSerialNumberEnvVar    = "TF_ACC_NETWORK_DEVICE_VERSA_SERIAL"
 	networkDeviceCGENIXLicenseKeyEnvVar     = "TF_ACC_NETWORK_DEVICE_CGENIX_LICENSE_KEY"
 	networkDeviceCGENIXLicenseSecretEnvVar  = "TF_ACC_NETWORK_DEVICE_CGENIX_LICENSE_SECRET"
+	networkDevicePANWLicenseTokenEnvVar     = "TF_ACC_NETWORK_DEVICE_PANW_LICENSE_TOKEN"
 )
 
 func init() {
@@ -50,6 +51,8 @@ func testSweepNetworkDevice(region string) error {
 		ne.DeviceStateProvisioned,
 		ne.DeviceStateProvisioning,
 		ne.DeviceStateWaitingSecondary,
+		ne.DeviceStateWaitingClusterNodes,
+		ne.DeviceStateClusterSetUpInProgress,
 		ne.DeviceStateFailed,
 	})
 	if err != nil {
@@ -823,6 +826,64 @@ func TestAccNetworkDevice_CGENIX_HA_Self_BYOL(t *testing.T) {
 	})
 }
 
+func TestAccNetworkDevice_PaloAlto_Cluster_Self_BYOL(t *testing.T) {
+	metro, _ := schema.EnvDefaultFunc(networkDeviceMetroEnvVar, "SV")()
+	accountName, _ := schema.EnvDefaultFunc(networkDeviceAccountNameEnvVar, "")()
+	licenseToken, _ := schema.EnvDefaultFunc(networkDevicePANWLicenseTokenEnvVar, "I3372903")()
+	context := map[string]interface{}{
+		"device-resourceName":                "test",
+		"device-account_name":                accountName.(string),
+		"device-self_managed":                true,
+		"device-byol":                        true,
+		"device-name":                        fmt.Sprintf("%s-%s", tstResourcePrefix, randString(6)),
+		"device-metro_code":                  metro.(string),
+		"device-type_code":                   "PA-VM",
+		"device-package_code":                "VM100",
+		"device-notifications":               []string{"marry@equinix.com", "john@equinix.com"},
+		"device-term_length":                 1,
+		"device-version":                     "10.1.3",
+		"device-interface_count":             10,
+		"device-core_count":                  2,
+		"device-cluster_name":                fmt.Sprintf("%s-%s", tstResourcePrefix, randString(6)),
+		"device-node0_vendorConfig_enabled":  true,
+		"device-node0_vendorConfig_hostname": fmt.Sprintf("tf-%s", randString(6)),
+		"device-node0_license_token":         licenseToken.(string),
+		"device-node1_vendorConfig_enabled":  true,
+		"device-node1_vendorConfig_hostname": fmt.Sprintf("tf-%s", randString(6)),
+		"device-node1_license_token":         licenseToken.(string),
+		"sshkey-resourceName":                "test",
+		"sshkey-name":                        fmt.Sprintf("%s-%s", tstResourcePrefix, randString(6)),
+		"sshkey-public_key":                  "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQCXdzXBHaVpKpdO0udnB+4JOgUq7APO2rPXfrevvlZrps98AtlwXXVWZ5duRH5NFNfU4G9HCSiAPsebgjY0fG85tcShpXfHfACLt0tBW8XhfLQP2T6S50FQ1brBdURMDCMsD7duOXqvc0dlbs2/KcswHvuUmqVzob3bz7n1bQ48wIHsPg4ARqYhy5LN3OkllJH/6GEfqi8lKZx01/P/gmJMORcJujuOyXRB+F2iXBVYdhjML3Qg4+tEekBcVZOxUbERRZ0pvQ52Y6wUhn2VsjljixyqeOdmD0m6DayDQgSWms6bKPpBqN7zhXXk4qe8bXT4tQQba65b2CQ2A91jw2KgM/YZNmjyUJ+Rf1cQosJf9twqbAZDZ6rAEmj9zzvQ5vD/CGuzxdVMkePLlUK4VGjPu7cVzhXrnq4318WqZ5/lNiCST8NQ0fssChN8ANUzr/p/wwv3faFMVNmjxXTZMsbMFT/fbb2MVVuqNFN65drntlg6/xEao8gZROuRYiakBx8= user@host",
+		"acl-resourceName":                   "acl-cluster",
+		"acl-name":                           fmt.Sprintf("%s-%s", tstResourcePrefix, randString(6)),
+		"acl-description":                    randString(50),
+	}
+
+	deviceResourceName := fmt.Sprintf("equinix_network_device.%s", context["device-resourceName"].(string))
+	clusterAclResourceName := fmt.Sprintf("equinix_network_acl_template.%s", context["acl-resourceName"].(string))
+	var primary ne.Device
+	var primaryAcl ne.ACLTemplate
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:  func() { testAccPreCheck(t) },
+		Providers: testAccProviders,
+		Steps: []resource.TestStep{
+			{
+				Config: newTestAccConfig(context).withDevice().withSSHKey().withACL().build(),
+				Check: resource.ComposeTestCheckFunc(
+					testAccNeDeviceExists(deviceResourceName, &primary),
+					testAccNeDeviceAttributes(&primary, context),
+					testAccNeDeviceStatusAttributes(&primary, ne.DeviceStateProvisioned, ne.DeviceLicenseStateApplied),
+					testAccNeDeviceClusterAttributes(deviceResourceName),
+					testAccNeDeviceClusterNodeAttributes(primary.ClusterDetails, context),
+					testAccNetworkACLTemplateExists(clusterAclResourceName, &primaryAcl),
+					resource.TestCheckResourceAttrSet(deviceResourceName, "acl_template_id"),
+					testAccNeDeviceACL(clusterAclResourceName, &primary),
+				),
+			},
+		},
+	})
+}
+
 func testAccNeDeviceExists(resourceName string, device *ne.Device) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[resourceName]
@@ -1083,6 +1144,63 @@ func testAccNeDeviceHAAttributes(deviceResourceName string) resource.TestCheckFu
 	)
 }
 
+func testAccNeDeviceClusterAttributes(deviceResourceName string) resource.TestCheckFunc {
+	return resource.ComposeTestCheckFunc(
+		resource.TestCheckResourceAttrSet(deviceResourceName, "uuid"),
+		resource.TestCheckResourceAttrSet(deviceResourceName, "cluster_id"),
+		resource.TestCheckResourceAttrSet(deviceResourceName, "num_of_nodes"),
+		resource.TestCheckResourceAttrSet(deviceResourceName, "cluster_details.0.node0.0.uuid"),
+		resource.TestCheckResourceAttrSet(deviceResourceName, "cluster_details.0.node0.0.name"),
+		resource.TestCheckResourceAttrSet(deviceResourceName, "cluster_details.0.node1.0.uuid"),
+		resource.TestCheckResourceAttrSet(deviceResourceName, "cluster_details.0.node1.0.name"),
+	)
+}
+
+func testAccNeDeviceClusterNodeAttributes(cluster *ne.ClusterDetails, ctx map[string]interface{}) resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		if v, ok := ctx["device-cluster_name"]; ok && ne.StringValue(cluster.ClusterName) != v.(string) {
+			return fmt.Errorf("cluster_name does not match %v - %v", ne.StringValue(cluster.ClusterName), v)
+		}
+		if v, ok := ctx["device-node0_vendorConfig_hostname"]; ok && cluster.Node0.VendorConfiguration["hostname"] != v.(string) {
+			return fmt.Errorf("device-node0_vendorConfig_hostname does not match %v - %v", cluster.Node0.VendorConfiguration["hostname"], v)
+		}
+		if v, ok := ctx["device-node0_vendorConfig_adminPassword"]; ok && cluster.Node0.VendorConfiguration["adminPassword"] != v.(string) {
+			return fmt.Errorf("device-node0_vendorConfig_adminPassword does not match %v - %v", cluster.Node0.VendorConfiguration["adminPassword"], v)
+		}
+		if v, ok := ctx["device-node0_vendorConfig_controller1"]; ok && cluster.Node0.VendorConfiguration["controller1"] != v.(string) {
+			return fmt.Errorf("device-node0_vendorConfig_controller1 does not match %v - %v", cluster.Node0.VendorConfiguration["controller1"], v)
+		}
+		if v, ok := ctx["device-node0_vendorConfig_activationKey"]; ok && cluster.Node0.VendorConfiguration["activationKey"] != v.(string) {
+			return fmt.Errorf("device-node0_vendorConfig_activationKey does not match %v - %v", cluster.Node0.VendorConfiguration["activationKey"], v)
+		}
+		if v, ok := ctx["device-node0_vendorConfig_controllerFqdn"]; ok && cluster.Node0.VendorConfiguration["controllerFqdn"] != v.(string) {
+			return fmt.Errorf("device-node0_vendorConfig_controllerFqdn does not match %v - %v", cluster.Node0.VendorConfiguration["controllerFqdn"], v)
+		}
+		if v, ok := ctx["device-node0_vendorConfig_rootPassword"]; ok && cluster.Node0.VendorConfiguration["rootPassword"] != v.(string) {
+			return fmt.Errorf("device-node0_vendorConfig_rootPassword does not match %v - %v", cluster.Node0.VendorConfiguration["rootPassword"], v)
+		}
+		if v, ok := ctx["device-node1_vendorConfig_hostname"]; ok && cluster.Node1.VendorConfiguration["hostname"] != v.(string) {
+			return fmt.Errorf("device-node1_vendorConfig_hostname does not match %v - %v", cluster.Node1.VendorConfiguration["hostname"], v)
+		}
+		if v, ok := ctx["device-node1_vendorConfig_adminPassword"]; ok && cluster.Node1.VendorConfiguration["adminPassword"] != v.(string) {
+			return fmt.Errorf("device-node1_vendorConfig_adminPassword does not match %v - %v", cluster.Node1.VendorConfiguration["adminPassword"], v)
+		}
+		if v, ok := ctx["device-node1_vendorConfig_controller1"]; ok && cluster.Node1.VendorConfiguration["controller1"] != v.(string) {
+			return fmt.Errorf("device-node1_vendorConfig_controller1 does not match %v - %v", cluster.Node1.VendorConfiguration["controller1"], v)
+		}
+		if v, ok := ctx["device-node1_vendorConfig_activationKey"]; ok && cluster.Node1.VendorConfiguration["activationKey"] != v.(string) {
+			return fmt.Errorf("device-node1_vendorConfig_activationKey does not match %v - %v", cluster.Node1.VendorConfiguration["activationKey"], v)
+		}
+		if v, ok := ctx["device-node1_vendorConfig_controllerFqdn"]; ok && cluster.Node1.VendorConfiguration["controllerFqdn"] != v.(string) {
+			return fmt.Errorf("device-node1_vendorConfig_controllerFqdn does not match %v - %v", cluster.Node1.VendorConfiguration["controllerFqdn"], v)
+		}
+		if v, ok := ctx["device-node1_vendorConfig_rootPassword"]; ok && cluster.Node1.VendorConfiguration["rootPassword"] != v.(string) {
+			return fmt.Errorf("device-node1_vendorConfig_rootPassword does not match %v - %v", cluster.Node1.VendorConfiguration["rootPassword"], v)
+		}
+		return nil
+	}
+}
+
 func (t *testAccConfig) withDevice() *testAccConfig {
 	t.config += testAccNetworkDevice(t.ctx)
 	return t
@@ -1162,7 +1280,7 @@ resource "equinix_network_device" "%{device-resourceName}" {
 	}
 	if _, ok := ctx["acl-resourceName"]; ok {
 		config += nprintf(`
-  acl_template_id       = equinix_network_acl_template.%{acl-resourceName}.id`, ctx)
+  acl_template_id       = equinix_network_acl_template.%{acl-resourceName}.uuid`, ctx)
 	}
 	if _, ok := ctx["sshkey-resourceName"]; ok {
 		config += nprintf(`
@@ -1297,6 +1415,97 @@ resource "equinix_network_device" "%{device-resourceName}" {
 			config += nprintf(`
     }`, ctx)
 		}
+		config += `
+  }`
+	}
+	if _, ok := ctx["device-cluster_name"]; ok {
+		config += nprintf(`
+  cluster_details {
+    cluster_name                 = "%{device-cluster_name}"`, ctx)
+		config += `
+	node0 {`
+		if _, ok := ctx["device-node0_license_file_id"]; ok {
+			config += nprintf(`
+	  license_file_id   = "%{device-node0_license_file_id}"`, ctx)
+		}
+		if _, ok := ctx["device-node0_license_token"]; ok {
+			config += nprintf(`
+      license_token     = "%{device-node0_license_token}"`, ctx)
+		}
+		if _, ok := ctx["device-node0_vendorConfig_enabled"]; ok {
+			config += nprintf(`
+      vendor_configuration {`, ctx)
+			if _, ok := ctx["device-node0_vendorConfig_hostname"]; ok {
+				config += nprintf(`
+    	hostname        = "%{device-node0_vendorConfig_hostname}"`, ctx)
+			}
+			if _, ok := ctx["device-node0_vendorConfig_adminPassword"]; ok {
+				config += nprintf(`
+    	admin_password  = "%{device-node0_vendorConfig_adminPassword}"`, ctx)
+			}
+			if _, ok := ctx["device-node0_vendorConfig_controller1"]; ok {
+				config += nprintf(`
+    	controller1     = "%{device-node0_vendorConfig_controller1}"`, ctx)
+			}
+			if _, ok := ctx["device-node0_vendorConfig_activationKey"]; ok {
+				config += nprintf(`
+    	activation_key  = "%{device-node0_vendorConfig_activationKey}"`, ctx)
+			}
+			if _, ok := ctx["device-node0_vendorConfig_controllerFqdn"]; ok {
+				config += nprintf(`
+    	controller_fqdn = "%{device-node0_vendorConfig_controllerFqdn}"`, ctx)
+			}
+			if _, ok := ctx["device-node0_vendorConfig_rootPassword"]; ok {
+				config += nprintf(`
+    	root_password   = "%{device-node0_vendorConfig_rootPassword}"`, ctx)
+			}
+			config += nprintf(`
+	  }`, ctx)
+		}
+		config += `
+ 	}`
+		config += `
+	node1 {`
+		if _, ok := ctx["device-node1_license_file_id"]; ok {
+			config += nprintf(`
+	  license_file_id   = "%{device-node1_license_file_id}"`, ctx)
+		}
+		if _, ok := ctx["device-node1_license_token"]; ok {
+			config += nprintf(`
+      license_token     = "%{device-node1_license_token}"`, ctx)
+		}
+		if _, ok := ctx["device-node1_vendorConfig_enabled"]; ok {
+			config += nprintf(`
+      vendor_configuration {`, ctx)
+			if _, ok := ctx["device-node1_vendorConfig_hostname"]; ok {
+				config += nprintf(`
+    	hostname        = "%{device-node1_vendorConfig_hostname}"`, ctx)
+			}
+			if _, ok := ctx["device-node1_vendorConfig_adminPassword"]; ok {
+				config += nprintf(`
+    	admin_password  = "%{device-node1_vendorConfig_adminPassword}"`, ctx)
+			}
+			if _, ok := ctx["device-node1_vendorConfig_controller1"]; ok {
+				config += nprintf(`
+    	controller1     = "%{device-node1_vendorConfig_controller1}"`, ctx)
+			}
+			if _, ok := ctx["device-node1_vendorConfig_activationKey"]; ok {
+				config += nprintf(`
+    	activation_key  = "%{device-node1_vendorConfig_activationKey}"`, ctx)
+			}
+			if _, ok := ctx["device-node1_vendorConfig_controllerFqdn"]; ok {
+				config += nprintf(`
+    	controller_fqdn = "%{device-node1_vendorConfig_controllerFqdn}"`, ctx)
+			}
+			if _, ok := ctx["device-node1_vendorConfig_rootPassword"]; ok {
+				config += nprintf(`
+    	root_password   = "%{device-node1_vendorConfig_rootPassword}"`, ctx)
+			}
+			config += nprintf(`
+	  }`, ctx)
+		}
+		config += `
+ 	}`
 		config += `
   }`
 	}
