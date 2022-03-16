@@ -96,7 +96,7 @@ var networkDeviceDescriptions = map[string]string{
 	"IsSelfManaged":       "Boolean value that determines device management mode: self-managed or subscription (default)",
 	"WanInterfaceId":      "device interface id picked for WAN",
 	"Interfaces":          "List of device interfaces",
-	"VendorConfiguration": "Map of vendor specific configuration parameters for a device",
+	"VendorConfiguration": "Map of vendor specific configuration parameters for a device (controller1, activationKey, managementType, siteId, systemIpAddress)",
 	"UserPublicKey":       "Definition of SSH key that will be provisioned on a device",
 	"ASN":                 "Autonomous system number",
 	"ZoneCode":            "Device location zone code",
