@@ -829,7 +829,7 @@ func TestAccNetworkDevice_CGENIX_HA_Self_BYOL(t *testing.T) {
 func TestAccNetworkDevice_PaloAlto_Cluster_Self_BYOL(t *testing.T) {
 	metro, _ := schema.EnvDefaultFunc(networkDeviceMetroEnvVar, "SV")()
 	accountName, _ := schema.EnvDefaultFunc(networkDeviceAccountNameEnvVar, "")()
-	licenseToken, _ := schema.EnvDefaultFunc(networkDevicePANWLicenseTokenEnvVar, "I3372903")()
+	licenseToken, _ := schema.EnvDefaultFunc(networkDevicePANWLicenseTokenEnvVar, "")()
 	context := map[string]interface{}{
 		"device-resourceName":                "test",
 		"device-account_name":                accountName.(string),
@@ -879,6 +879,11 @@ func TestAccNetworkDevice_PaloAlto_Cluster_Self_BYOL(t *testing.T) {
 					resource.TestCheckResourceAttrSet(deviceResourceName, "acl_template_id"),
 					testAccNeDeviceACL(clusterAclResourceName, &primary),
 				),
+			},
+			{
+				ResourceName:      deviceResourceName,
+				ImportState:       true,
+				ImportStateVerify: true,
 			},
 		},
 	})
@@ -1280,7 +1285,7 @@ resource "equinix_network_device" "%{device-resourceName}" {
 	}
 	if _, ok := ctx["acl-resourceName"]; ok {
 		config += nprintf(`
-  acl_template_id       = equinix_network_acl_template.%{acl-resourceName}.uuid`, ctx)
+  acl_template_id       = equinix_network_acl_template.%{acl-resourceName}.id`, ctx)
 	}
 	if _, ok := ctx["sshkey-resourceName"]; ok {
 		config += nprintf(`
@@ -1421,12 +1426,12 @@ resource "equinix_network_device" "%{device-resourceName}" {
 	if _, ok := ctx["device-cluster_name"]; ok {
 		config += nprintf(`
   cluster_details {
-    cluster_name                 = "%{device-cluster_name}"`, ctx)
+    cluster_name        = "%{device-cluster_name}"`, ctx)
 		config += `
-	node0 {`
+    node0 {`
 		if _, ok := ctx["device-node0_license_file_id"]; ok {
 			config += nprintf(`
-	  license_file_id   = "%{device-node0_license_file_id}"`, ctx)
+      license_file_id   = "%{device-node0_license_file_id}"`, ctx)
 		}
 		if _, ok := ctx["device-node0_license_token"]; ok {
 			config += nprintf(`
@@ -1437,38 +1442,38 @@ resource "equinix_network_device" "%{device-resourceName}" {
       vendor_configuration {`, ctx)
 			if _, ok := ctx["device-node0_vendorConfig_hostname"]; ok {
 				config += nprintf(`
-    	hostname        = "%{device-node0_vendorConfig_hostname}"`, ctx)
+        hostname        = "%{device-node0_vendorConfig_hostname}"`, ctx)
 			}
 			if _, ok := ctx["device-node0_vendorConfig_adminPassword"]; ok {
 				config += nprintf(`
-    	admin_password  = "%{device-node0_vendorConfig_adminPassword}"`, ctx)
+        admin_password  = "%{device-node0_vendorConfig_adminPassword}"`, ctx)
 			}
 			if _, ok := ctx["device-node0_vendorConfig_controller1"]; ok {
 				config += nprintf(`
-    	controller1     = "%{device-node0_vendorConfig_controller1}"`, ctx)
+        controller1     = "%{device-node0_vendorConfig_controller1}"`, ctx)
 			}
 			if _, ok := ctx["device-node0_vendorConfig_activationKey"]; ok {
 				config += nprintf(`
-    	activation_key  = "%{device-node0_vendorConfig_activationKey}"`, ctx)
+        activation_key  = "%{device-node0_vendorConfig_activationKey}"`, ctx)
 			}
 			if _, ok := ctx["device-node0_vendorConfig_controllerFqdn"]; ok {
 				config += nprintf(`
-    	controller_fqdn = "%{device-node0_vendorConfig_controllerFqdn}"`, ctx)
+        controller_fqdn = "%{device-node0_vendorConfig_controllerFqdn}"`, ctx)
 			}
 			if _, ok := ctx["device-node0_vendorConfig_rootPassword"]; ok {
 				config += nprintf(`
-    	root_password   = "%{device-node0_vendorConfig_rootPassword}"`, ctx)
+        root_password   = "%{device-node0_vendorConfig_rootPassword}"`, ctx)
 			}
 			config += nprintf(`
-	  }`, ctx)
+      }`, ctx)
 		}
 		config += `
- 	}`
+    }`
 		config += `
-	node1 {`
+    node1 {`
 		if _, ok := ctx["device-node1_license_file_id"]; ok {
 			config += nprintf(`
-	  license_file_id   = "%{device-node1_license_file_id}"`, ctx)
+      license_file_id   = "%{device-node1_license_file_id}"`, ctx)
 		}
 		if _, ok := ctx["device-node1_license_token"]; ok {
 			config += nprintf(`
@@ -1479,33 +1484,33 @@ resource "equinix_network_device" "%{device-resourceName}" {
       vendor_configuration {`, ctx)
 			if _, ok := ctx["device-node1_vendorConfig_hostname"]; ok {
 				config += nprintf(`
-    	hostname        = "%{device-node1_vendorConfig_hostname}"`, ctx)
+        hostname        = "%{device-node1_vendorConfig_hostname}"`, ctx)
 			}
 			if _, ok := ctx["device-node1_vendorConfig_adminPassword"]; ok {
 				config += nprintf(`
-    	admin_password  = "%{device-node1_vendorConfig_adminPassword}"`, ctx)
+        admin_password  = "%{device-node1_vendorConfig_adminPassword}"`, ctx)
 			}
 			if _, ok := ctx["device-node1_vendorConfig_controller1"]; ok {
 				config += nprintf(`
-    	controller1     = "%{device-node1_vendorConfig_controller1}"`, ctx)
+        controller1     = "%{device-node1_vendorConfig_controller1}"`, ctx)
 			}
 			if _, ok := ctx["device-node1_vendorConfig_activationKey"]; ok {
 				config += nprintf(`
-    	activation_key  = "%{device-node1_vendorConfig_activationKey}"`, ctx)
+        activation_key  = "%{device-node1_vendorConfig_activationKey}"`, ctx)
 			}
 			if _, ok := ctx["device-node1_vendorConfig_controllerFqdn"]; ok {
 				config += nprintf(`
-    	controller_fqdn = "%{device-node1_vendorConfig_controllerFqdn}"`, ctx)
+        controller_fqdn = "%{device-node1_vendorConfig_controllerFqdn}"`, ctx)
 			}
 			if _, ok := ctx["device-node1_vendorConfig_rootPassword"]; ok {
 				config += nprintf(`
-    	root_password   = "%{device-node1_vendorConfig_rootPassword}"`, ctx)
+        root_password   = "%{device-node1_vendorConfig_rootPassword}"`, ctx)
 			}
 			config += nprintf(`
-	  }`, ctx)
+      }`, ctx)
 		}
 		config += `
- 	}`
+    }`
 		config += `
   }`
 	}
