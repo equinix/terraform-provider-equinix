@@ -213,8 +213,14 @@ func createNetworkDeviceSchema() map[string]*schema.Schema {
 			Description: networkDeviceDescriptions["UUID"],
 		},
 		networkDeviceSchemaNames["Name"]: {
-			Type:         schema.TypeString,
-			Required:     true,
+			Type:     schema.TypeString,
+			Required: true,
+			DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
+				if old == new+"-Node0" {
+					return true
+				}
+				return false
+			},
 			ValidateFunc: validation.StringLenBetween(3, 50),
 			Description:  networkDeviceDescriptions["Name"],
 		},
@@ -791,7 +797,7 @@ func createVendorConfigurationSchema() map[string]*schema.Schema {
 			Optional:     true,
 			ForceNew:     true,
 			ValidateFunc: validation.StringLenBetween(2, 50),
-			Description:  neDeviceVendorConfigSchemaNames["Hostname"],
+			Description:  neDeviceVendorConfigDescriptions["Hostname"],
 		},
 		neDeviceVendorConfigSchemaNames["AdminPassword"]: {
 			Type:        schema.TypeString,
@@ -799,33 +805,33 @@ func createVendorConfigurationSchema() map[string]*schema.Schema {
 			Computed:    true,
 			ForceNew:    true,
 			Sensitive:   true,
-			Description: neDeviceVendorConfigSchemaNames["AdminPassword"],
+			Description: neDeviceVendorConfigDescriptions["AdminPassword"],
 		},
 		neDeviceVendorConfigSchemaNames["Controller1"]: {
 			Type:        schema.TypeString,
 			Optional:    true,
 			ForceNew:    true,
-			Description: neDeviceVendorConfigSchemaNames["Controller1"],
+			Description: neDeviceVendorConfigDescriptions["Controller1"],
 		},
 		neDeviceVendorConfigSchemaNames["ActivationKey"]: {
 			Type:        schema.TypeString,
 			Optional:    true,
 			ForceNew:    true,
 			Sensitive:   true,
-			Description: neDeviceVendorConfigSchemaNames["ActivationKey"],
+			Description: neDeviceVendorConfigDescriptions["ActivationKey"],
 		},
 		neDeviceVendorConfigSchemaNames["ControllerFqdn"]: {
 			Type:        schema.TypeString,
 			Optional:    true,
 			ForceNew:    true,
-			Description: neDeviceVendorConfigSchemaNames["ControllerFqdn"],
+			Description: neDeviceVendorConfigDescriptions["ControllerFqdn"],
 		},
 		neDeviceVendorConfigSchemaNames["RootPassword"]: {
 			Type:        schema.TypeString,
 			Optional:    true,
 			ForceNew:    true,
 			Sensitive:   true,
-			Description: neDeviceVendorConfigSchemaNames["RootPassword"],
+			Description: neDeviceVendorConfigDescriptions["RootPassword"],
 		},
 	}
 }
