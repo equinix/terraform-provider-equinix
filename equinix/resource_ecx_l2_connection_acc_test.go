@@ -282,54 +282,72 @@ func TestAccFabricL2Connection_Device_HA_GCP(t *testing.T) {
 	})
 }
 
-func TestAccFabricL2Connection_ServiceToken_Single_SP(t *testing.T) {
-	serviceToken := "1c356a7b-d632-18a5-c357-a33146cab65d"
-	connID := "1c356a7b-d632-18a5-c357-a33146cab65d"
-	connName := fmt.Sprintf("%s-%s", tstResourcePrefix, "mock")
+func TestAccFabricL2Connection_ServiceToken_HA_SP(t *testing.T) {
+	priServiceToken := "624447a3-4cb2-470e-93c5-f155d81c3bb0"
+	priConnID := "4b95a8df-8d26-4c4b-a64d-18ac43a43248"
+	priPortUUID := "52c00d7f-c310-458e-9426-1d7549e1f600"
+	priConnName := fmt.Sprintf("%s-%s", tstResourcePrefix, "st-ha-pri")
+	secServiceToken := "1c356a7b-d632-18a5-c357-a33146cab65d"
+	secConnID := "2e48c97f-1bbd-4ddb-a9ac-ebe1fc8ee962"
+	secPortUUID := "1090a644-e106-4644-b328-16050f29dd07"
+	secConnName := fmt.Sprintf("%s-%s", tstResourcePrefix, "st-ha-sec")
 	authKey := "123456789012"
 	speed := 50
 	speedUnit := "MB"
 	notifications := []string{"marry@equinix.com", "john@equinix.com"}
 	sellerMetro := "SV"
 	sellerProfileUUID := "5d113752-996b-4b59-8e21-8927e7b98058"
-	portUUID := "52c00d7f-c310-458e-9426-1d7549e1f600"
+	redundancyGroupUUID := "db760d63-38ec-49c2-bebf-b3ac3c33df77"
+	redundancyType := "SECONDARY"
 
 	ctx := map[string]interface{}{
-		"connection-resourceName":      "test",
-		"connection-profile_uuid":      sellerProfileUUID,
-		"connection-uuid":              connID,
-		"connection-name":              connName,
-		"connection-speed":             speed,
-		"connection-speed_unit":        speedUnit,
-		"connection-notifications":     notifications,
-		"connection-seller_metro_code": sellerMetro,
-		"connection-authorization_key": authKey,
-		"connection-service_token":     serviceToken,
-		"port-uuid":                    portUUID,
+		"connection-resourceName":            "test",
+		"connection-profile_uuid":            sellerProfileUUID,
+		"connection-name":                    priConnName,
+		"connection-speed":                   speed,
+		"connection-speed_unit":              speedUnit,
+		"connection-notifications":           notifications,
+		"connection-seller_metro_code":       sellerMetro,
+		"connection-authorization_key":       authKey,
+		"service_token":                      priServiceToken,
+		"port-uuid":                          priPortUUID,
+		"connection-secondary_name":          secConnName,
+		"secondary-service_token":            secServiceToken,
+		"secondary-port_uuid":                secPortUUID,
 	}
 
 	ctxWithoutConflicts := copyMap(ctx)
 	delete(ctxWithoutConflicts, "port-uuid")
+	delete(ctxWithoutConflicts, "secondary-port_uuid")
 
 	// mock ECX Client functions
 	mockECXClient := &mockECXClient{
-		CreateL2ConnectionFn: func(conn ecx.L2Connection) (*string, error) {
-			return &connID, nil
+		CreateL2RedundantConnectionFn: func(primConn ecx.L2Connection, secConn ecx.L2Connection) (*string, *string, error) {
+			return &priConnID, &secConnID, nil
 		},
 		GetL2ConnectionFn: func(uuid string) (*ecx.L2Connection, error) {
 			status := ecx.ConnectionStatusProvisioned
 			connection := ecx.L2Connection{
-				UUID:             &connID,
-				Name:             &connName,
 				Speed:            &speed,
 				SpeedUnit:        &speedUnit,
 				Notifications:    notifications,
-				ServiceToken:     &serviceToken,
 				ProfileUUID:      &sellerProfileUUID,
-				PortUUID:         &portUUID,
 				Status:           &status,
 				AuthorizationKey: &authKey,
 				SellerMetroCode:  &sellerMetro,
+				RedundancyGroup:  &redundancyGroupUUID,
+				RedundancyType:   &redundancyType,
+			}
+			if uuid == priConnID {
+				connection.UUID = &priConnID
+				connection.Name = &priConnName
+				connection.ServiceToken = &priServiceToken
+				connection.PortUUID = &priPortUUID
+			} else{
+				connection.UUID = &secConnID
+				connection.Name = &secConnName
+				connection.ServiceToken = &secServiceToken
+				connection.PortUUID = &secPortUUID
 			}
 			return &connection, nil
 		},
@@ -362,7 +380,7 @@ func TestAccFabricL2Connection_ServiceToken_Single_SP(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config:      newTestAccConfig(ctx).withConnection().build(),
-				ExpectError: regexp.MustCompile(`conflicts with service_token`),
+				ExpectError: regexp.MustCompile(`Error: Conflicting configuration arguments`),
 			},
 			{
 				Config: newTestAccConfig(ctxWithoutConflicts).withConnection().build(),
@@ -370,10 +388,27 @@ func TestAccFabricL2Connection_ServiceToken_Single_SP(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceName, "status", ecx.ConnectionStatusProvisioned),
 					resource.TestCheckResourceAttrSet(resourceName, "service_token"),
 					resource.TestCheckResourceAttrSet(resourceName, "port_uuid"),
+					resource.TestCheckResourceAttr(resourceName, "secondary_connection.0.status", ecx.ConnectionStatusProvisioned),
+					resource.TestCheckResourceAttrSet(resourceName, "secondary_connection.0.port_uuid"),
+					resource.TestCheckResourceAttrSet(resourceName, "secondary_connection.0.service_token"),
 				),
 			},
 			{
-				ResourceName:      resourceName,
+				ResourceName: resourceName,
+				ImportStateIdFunc: func(s *terraform.State) (string, error) {
+					rs, ok := s.RootModule().Resources[resourceName]
+					if !ok {
+						return "", fmt.Errorf("resource not found in state: %s", resourceName)
+					}
+					if rs.Primary.ID == "" {
+						return "", fmt.Errorf("resource has no ID attribute set")
+					}
+					secondaryID, ok := rs.Primary.Attributes["secondary_connection.0.uuid"]
+					if !ok {
+						return "", fmt.Errorf("resource has no secondary_connection.0.uuid attribute: %s", resourceName)
+					}
+					return fmt.Sprintf("%s:%s", rs.Primary.ID, secondaryID), nil
+				},
 				ImportState:       true,
 				ImportStateVerify: true,
 			},
@@ -578,9 +613,9 @@ resource "equinix_ecx_l2_connection" "%{connection-resourceName}" {
 		config += nprintf(`
   profile_uuid          = data.equinix_ecx_l2_sellerprofile.pri.id`, ctx)
 	}
-	if _, ok := ctx["connection-service_token"]; ok {
+	if _, ok := ctx["service_token"]; ok {
 		config += nprintf(`
-  service_token         = "%{connection-service_token}"`, ctx)
+  service_token         = "%{service_token}"`, ctx)
 	}
 	if _, ok := ctx["connection-purchase_order_number"]; ok {
 		config += nprintf(`
@@ -625,7 +660,10 @@ resource "equinix_ecx_l2_connection" "%{connection-resourceName}" {
 			config += nprintf(`
     profile_uuid        = data.equinix_ecx_l2_sellerprofile.sec.id`, ctx)
 		}
-		if _, ok := ctx["port-secondary_resourceName"]; ok {
+		if _, ok := ctx["secondary-port_uuid"]; ok {
+			config += nprintf(`
+	port_uuid             = "%{secondary-port_uuid}"`, ctx)
+		} else if _, ok := ctx["port-secondary_resourceName"]; ok {
 			config += nprintf(`
     port_uuid           = data.equinix_ecx_port.%{port-secondary_resourceName}.id`, ctx)
 		}
@@ -664,6 +702,10 @@ resource "equinix_ecx_l2_connection" "%{connection-resourceName}" {
 		if _, ok := ctx["connection-secondary_authorization_key"]; ok {
 			config += nprintf(`
     authorization_key   = "%{connection-secondary_authorization_key}"`, ctx)
+		}
+		if _, ok := ctx["secondary-service_token"]; ok {
+			config += nprintf(`
+	  service_token     = "%{secondary-service_token}"`, ctx)
 		}
 		config += `
   }`
