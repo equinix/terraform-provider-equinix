@@ -37,6 +37,7 @@ var networkDeviceSchemaNames = map[string]string{
 	"LicenseFileID":       "license_file_id",
 	"LicenseStatus":       "license_status",
 	"ACLTemplateUUID":     "acl_template_id",
+	"MgmtAclTemplateUuid": "mgmt_acl_template_uuid",
 	"SSHIPAddress":        "ssh_ip_address",
 	"SSHIPFqdn":           "ssh_ip_fqdn",
 	"AccountNumber":       "account_number",
@@ -57,6 +58,7 @@ var networkDeviceSchemaNames = map[string]string{
 	"ASN":                 "asn",
 	"ZoneCode":            "zone_code",
 	"Secondary":           "secondary_device",
+	"ClusterDetails":      "cluster_details",
 }
 
 var networkDeviceDescriptions = map[string]string{
@@ -78,6 +80,7 @@ var networkDeviceDescriptions = map[string]string{
 	"LicenseFileID":       "Unique identifier of applied license file",
 	"LicenseStatus":       "Device license registration status",
 	"ACLTemplateUUID":     "Unique identifier of applied ACL template",
+	"MgmtAclTemplateUuid": "Unique identifier of applied MGMT ACL template",
 	"SSHIPAddress":        "IP address of SSH enabled interface on the device",
 	"SSHIPFqdn":           "FQDN of SSH enabled interface on the device",
 	"AccountNumber":       "Device billing account number",
@@ -93,11 +96,12 @@ var networkDeviceDescriptions = map[string]string{
 	"IsSelfManaged":       "Boolean value that determines device management mode: self-managed or subscription (default)",
 	"WanInterfaceId":      "device interface id picked for WAN",
 	"Interfaces":          "List of device interfaces",
-	"VendorConfiguration": "Map of vendor specific configuration parameters for a device",
+	"VendorConfiguration": "Map of vendor specific configuration parameters for a device (controller1, activationKey, managementType, siteId, systemIpAddress)",
 	"UserPublicKey":       "Definition of SSH key that will be provisioned on a device",
 	"ASN":                 "Autonomous system number",
 	"ZoneCode":            "Device location zone code",
 	"Secondary":           "Definition of secondary device applicable for HA setup",
+	"ClusterDetails":      "An object that has the cluster details",
 }
 
 var neDeviceInterfaceSchemaNames = map[string]string{
@@ -132,6 +136,56 @@ var neDeviceUserKeyDescriptions = map[string]string{
 	"KeyName":  "Reference by name to previously provisioned public SSH key",
 }
 
+var neDeviceClusterSchemaNames = map[string]string{
+	"ClusterId":   "cluster_id",
+	"ClusterName": "cluster_name",
+	"NumOfNodes":  "num_of_nodes",
+	"Node0":       "node0",
+	"Node1":       "node1",
+}
+
+var neDeviceClusterDescriptions = map[string]string{
+	"ClusterId":   "The id of the cluster",
+	"ClusterName": "The name of the cluster device",
+	"NumOfNodes":  "The number of nodes in the cluster",
+	"Node0":       "An object that has node0 details",
+	"Node1":       "An object that has node1 details",
+}
+
+var neDeviceClusterNodeSchemaNames = map[string]string{
+	"VendorConfiguration": "vendor_configuration",
+	"LicenseFileId":       "license_file_id",
+	"LicenseToken":        "license_token",
+	"UUID":                "uuid",
+	"Name":                "name",
+}
+
+var neDeviceClusterNodeDescriptions = map[string]string{
+	"VendorConfiguration": "An object that has fields relevant to the vendor of the cluster device",
+	"LicenseFileId":       "License file id. This is necessary for Fortinet and Juniper clusters",
+	"LicenseToken":        "License token. This is necessary for Palo Alto clusters",
+	"UUID":                "The unique id of the node",
+	"Name":                "The name of the node",
+}
+
+var neDeviceVendorConfigSchemaNames = map[string]string{
+	"Hostname":       "hostname",
+	"AdminPassword":  "admin_password",
+	"Controller1":    "controller1",
+	"ActivationKey":  "activation_key",
+	"ControllerFqdn": "controller_fqdn",
+	"RootPassword":   "root_password",
+}
+
+var neDeviceVendorConfigDescriptions = map[string]string{
+	"Hostname":       "Hostname. This is necessary for Palo Alto, Juniper, and Fortinet clusters",
+	"AdminPassword":  "The administrative password of the device. You can use it to log in to the console. This field is not available for all device types",
+	"Controller1":    "System IP Address. Mandatory for the Fortinet SDWAN cluster device",
+	"ActivationKey":  "Activation key. This is required for Velocloud clusters",
+	"ControllerFqdn": "Controller fqdn. This is required for Velocloud clusters",
+	"RootPassword":   "The CLI password of the device. This field is relevant only for the Velocloud SDWAN cluster",
+}
+
 func resourceNetworkDevice() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: resourceNetworkDeviceCreate,
@@ -143,7 +197,7 @@ func resourceNetworkDevice() *schema.Resource {
 		},
 		Schema: createNetworkDeviceSchema(),
 		Timeouts: &schema.ResourceTimeout{
-			Create: schema.DefaultTimeout(60 * time.Minute),
+			Create: schema.DefaultTimeout(90 * time.Minute),
 			Update: schema.DefaultTimeout(30 * time.Minute),
 			Delete: schema.DefaultTimeout(30 * time.Minute),
 		},
@@ -159,8 +213,14 @@ func createNetworkDeviceSchema() map[string]*schema.Schema {
 			Description: networkDeviceDescriptions["UUID"],
 		},
 		networkDeviceSchemaNames["Name"]: {
-			Type:         schema.TypeString,
-			Required:     true,
+			Type:     schema.TypeString,
+			Required: true,
+			DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
+				if old == new+"-Node0" {
+					return true
+				}
+				return false
+			},
 			ValidateFunc: validation.StringLenBetween(3, 50),
 			Description:  networkDeviceDescriptions["Name"],
 		},
@@ -216,6 +276,7 @@ func createNetworkDeviceSchema() map[string]*schema.Schema {
 		networkDeviceSchemaNames["HostName"]: {
 			Type:         schema.TypeString,
 			Optional:     true,
+			Computed:     true,
 			ForceNew:     true,
 			ValidateFunc: validation.StringLenBetween(2, 44),
 			Description:  networkDeviceDescriptions["HostName"],
@@ -266,6 +327,12 @@ func createNetworkDeviceSchema() map[string]*schema.Schema {
 			Optional:     true,
 			ValidateFunc: validation.StringIsNotEmpty,
 			Description:  networkDeviceDescriptions["ACLTemplateUUID"],
+		},
+		networkDeviceSchemaNames["MgmtAclTemplateUuid"]: {
+			Type:         schema.TypeString,
+			Optional:     true,
+			ValidateFunc: validation.StringIsNotEmpty,
+			Description:  networkDeviceDescriptions["MgmtAclTemplateUuid"],
 		},
 		networkDeviceSchemaNames["SSHIPAddress"]: {
 			Type:        schema.TypeString,
@@ -359,7 +426,6 @@ func createNetworkDeviceSchema() map[string]*schema.Schema {
 			ValidateFunc: validation.StringIsNotEmpty,
 			Description:  networkDeviceDescriptions["WanInterfaceId"],
 		},
-
 		networkDeviceSchemaNames["Interfaces"]: {
 			Type:     schema.TypeList,
 			Computed: true,
@@ -371,6 +437,7 @@ func createNetworkDeviceSchema() map[string]*schema.Schema {
 		networkDeviceSchemaNames["VendorConfiguration"]: {
 			Type:     schema.TypeMap,
 			Optional: true,
+			Computed: true,
 			ForceNew: true,
 			Elem: &schema.Schema{
 				Type:         schema.TypeString,
@@ -539,6 +606,7 @@ func createNetworkDeviceSchema() map[string]*schema.Schema {
 					networkDeviceSchemaNames["VendorConfiguration"]: {
 						Type:     schema.TypeMap,
 						Optional: true,
+						Computed: true,
 						ForceNew: true,
 						Elem: &schema.Schema{
 							Type:         schema.TypeString,
@@ -566,6 +634,51 @@ func createNetworkDeviceSchema() map[string]*schema.Schema {
 						Type:        schema.TypeString,
 						Computed:    true,
 						Description: networkDeviceDescriptions["ZoneCode"],
+					},
+				},
+			},
+		},
+		networkDeviceSchemaNames["ClusterDetails"]: {
+			Type:        schema.TypeList,
+			Optional:    true,
+			ForceNew:    true,
+			MaxItems:    1,
+			Description: networkDeviceDescriptions["ClusterDetails"],
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					neDeviceClusterSchemaNames["ClusterId"]: {
+						Type:        schema.TypeString,
+						Computed:    true,
+						Description: neDeviceClusterDescriptions["ClusterId"],
+					},
+					neDeviceClusterSchemaNames["ClusterName"]: {
+						Type:         schema.TypeString,
+						Required:     true,
+						ValidateFunc: validation.StringLenBetween(3, 50),
+						Description:  neDeviceClusterDescriptions["ClusterName"],
+					},
+					neDeviceClusterSchemaNames["NumOfNodes"]: {
+						Type:        schema.TypeInt,
+						Computed:    true,
+						Description: neDeviceClusterDescriptions["NumOfNodes"],
+					},
+					neDeviceClusterSchemaNames["Node0"]: {
+						Type:     schema.TypeList,
+						Required: true,
+						MaxItems: 1,
+						Elem: &schema.Resource{
+							Schema: createClusterNodeDetailSchema(),
+						},
+						Description: neDeviceClusterDescriptions["Node0"],
+					},
+					neDeviceClusterSchemaNames["Node1"]: {
+						Type:     schema.TypeList,
+						Required: true,
+						MaxItems: 1,
+						Elem: &schema.Resource{
+							Schema: createClusterNodeDetailSchema(),
+						},
+						Description: neDeviceClusterDescriptions["Node1"],
 					},
 				},
 			},
@@ -631,6 +744,94 @@ func createNetworkDeviceUserKeySchema() map[string]*schema.Schema {
 			Required:     true,
 			ValidateFunc: validation.StringIsNotEmpty,
 			Description:  neDeviceUserKeyDescriptions["KeyName"],
+		},
+	}
+}
+
+func createClusterNodeDetailSchema() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		neDeviceClusterNodeSchemaNames["LicenseFileId"]: {
+			Type:          schema.TypeString,
+			Optional:      true,
+			ForceNew:      true,
+			Sensitive:     true,
+			ConflictsWith: []string{networkDeviceSchemaNames["LicenseFileID"]},
+			Description:   neDeviceClusterNodeDescriptions["LicenseFileId"],
+		},
+		neDeviceClusterNodeSchemaNames["LicenseToken"]: {
+			Type:          schema.TypeString,
+			Optional:      true,
+			ForceNew:      true,
+			Sensitive:     true,
+			ConflictsWith: []string{networkDeviceSchemaNames["LicenseToken"]},
+			Description:   neDeviceClusterNodeDescriptions["LicenseToken"],
+		},
+		neDeviceClusterNodeSchemaNames["VendorConfiguration"]: {
+			Type:     schema.TypeList,
+			Optional: true,
+			ForceNew: true,
+			MaxItems: 1,
+			Elem: &schema.Resource{
+				Schema: createVendorConfigurationSchema(),
+			},
+			ConflictsWith: []string{networkDeviceSchemaNames["VendorConfiguration"]},
+			Description:   neDeviceClusterNodeDescriptions["VendorConfiguration"],
+		},
+		neDeviceClusterNodeSchemaNames["UUID"]: {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: neDeviceClusterNodeDescriptions["UUID"],
+		},
+		neDeviceClusterNodeSchemaNames["Name"]: {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: neDeviceClusterNodeDescriptions["Name"],
+		},
+	}
+}
+
+func createVendorConfigurationSchema() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		neDeviceVendorConfigSchemaNames["Hostname"]: {
+			Type:         schema.TypeString,
+			Optional:     true,
+			ForceNew:     true,
+			ValidateFunc: validation.StringLenBetween(2, 50),
+			Description:  neDeviceVendorConfigDescriptions["Hostname"],
+		},
+		neDeviceVendorConfigSchemaNames["AdminPassword"]: {
+			Type:        schema.TypeString,
+			Optional:    true,
+			Computed:    true,
+			ForceNew:    true,
+			Sensitive:   true,
+			Description: neDeviceVendorConfigDescriptions["AdminPassword"],
+		},
+		neDeviceVendorConfigSchemaNames["Controller1"]: {
+			Type:        schema.TypeString,
+			Optional:    true,
+			ForceNew:    true,
+			Description: neDeviceVendorConfigDescriptions["Controller1"],
+		},
+		neDeviceVendorConfigSchemaNames["ActivationKey"]: {
+			Type:        schema.TypeString,
+			Optional:    true,
+			ForceNew:    true,
+			Sensitive:   true,
+			Description: neDeviceVendorConfigDescriptions["ActivationKey"],
+		},
+		neDeviceVendorConfigSchemaNames["ControllerFqdn"]: {
+			Type:        schema.TypeString,
+			Optional:    true,
+			ForceNew:    true,
+			Description: neDeviceVendorConfigDescriptions["ControllerFqdn"],
+		},
+		neDeviceVendorConfigSchemaNames["RootPassword"]: {
+			Type:        schema.TypeString,
+			Optional:    true,
+			ForceNew:    true,
+			Sensitive:   true,
+			Description: neDeviceVendorConfigDescriptions["RootPassword"],
 		},
 	}
 }
@@ -835,6 +1036,9 @@ func createNetworkDevices(d *schema.ResourceData) (*ne.Device, *ne.Device) {
 	if v, ok := d.GetOk(networkDeviceSchemaNames["ACLTemplateUUID"]); ok {
 		primary.ACLTemplateUUID = ne.String(v.(string))
 	}
+	if v, ok := d.GetOk(networkDeviceSchemaNames["MgmtAclTemplateUuid"]); ok {
+		primary.MgmtAclTemplateUuid = ne.String(v.(string))
+	}
 	if v, ok := d.GetOk(networkDeviceSchemaNames["AccountNumber"]); ok {
 		primary.AccountNumber = ne.String(v.(string))
 	}
@@ -875,6 +1079,9 @@ func createNetworkDevices(d *schema.ResourceData) (*ne.Device, *ne.Device) {
 	}
 	if v, ok := d.GetOk(networkDeviceSchemaNames["Secondary"]); ok {
 		secondary = expandNetworkDeviceSecondary(v.([]interface{}))
+	}
+	if v, ok := d.GetOk(networkDeviceSchemaNames["ClusterDetails"]); ok {
+		primary.ClusterDetails = expandNetworkDeviceClusterDetails(v.([]interface{}))
 	}
 	return primary, secondary
 }
@@ -989,6 +1196,18 @@ func updateNetworkDeviceResource(primary *ne.Device, secondary *ne.Device, d *sc
 		}
 		if err := d.Set(networkDeviceSchemaNames["Secondary"], flattenNetworkDeviceSecondary(secondary)); err != nil {
 			return fmt.Errorf("error reading Secondary: %s", err)
+		}
+	}
+	if primary.ClusterDetails != nil {
+		if v, ok := d.GetOk(networkDeviceSchemaNames["ClusterDetails"]); ok {
+			clusterDetailsFromSchema := expandNetworkDeviceClusterDetails(v.([]interface{}))
+			primary.ClusterDetails.Node0.LicenseFileId = clusterDetailsFromSchema.Node0.LicenseFileId
+			primary.ClusterDetails.Node0.LicenseToken = clusterDetailsFromSchema.Node0.LicenseToken
+			primary.ClusterDetails.Node1.LicenseFileId = clusterDetailsFromSchema.Node1.LicenseFileId
+			primary.ClusterDetails.Node1.LicenseToken = clusterDetailsFromSchema.Node1.LicenseToken
+		}
+		if err := d.Set(networkDeviceSchemaNames["ClusterDetails"], flattenNetworkDeviceClusterDetails(primary.ClusterDetails)); err != nil {
+			return fmt.Errorf("error reading ClusterDetails: %s", err)
 		}
 	}
 	return nil
@@ -1117,6 +1336,115 @@ func expandNetworkDeviceUserKeys(userKeys *schema.Set) []*ne.DeviceUserPublicKey
 	return transformed
 }
 
+func flattenNetworkDeviceClusterDetails(clusterDetails *ne.ClusterDetails) interface{} {
+	transformed := make(map[string]interface{})
+	transformed[neDeviceClusterSchemaNames["ClusterId"]] = clusterDetails.ClusterId
+	transformed[neDeviceClusterSchemaNames["ClusterName"]] = clusterDetails.ClusterName
+	transformed[neDeviceClusterSchemaNames["NumOfNodes"]] = clusterDetails.NumOfNodes
+	transformed[neDeviceClusterSchemaNames["Node0"]] = flattenNetworkDeviceClusterNodeDetail(clusterDetails.Node0)
+	transformed[neDeviceClusterSchemaNames["Node1"]] = flattenNetworkDeviceClusterNodeDetail(clusterDetails.Node1)
+	return []interface{}{transformed}
+}
+
+func flattenNetworkDeviceClusterNodeDetail(clusterNodeDetail *ne.ClusterNodeDetail) interface{} {
+	transformed := make(map[string]interface{})
+	transformed[neDeviceClusterNodeSchemaNames["UUID"]] = clusterNodeDetail.UUID
+	transformed[neDeviceClusterNodeSchemaNames["Name"]] = clusterNodeDetail.Name
+	transformed[neDeviceClusterNodeSchemaNames["VendorConfiguration"]] = flattenVendorConfiguration(clusterNodeDetail.VendorConfiguration)
+	transformed[neDeviceClusterNodeSchemaNames["LicenseFileId"]] = clusterNodeDetail.LicenseFileId
+	transformed[neDeviceClusterNodeSchemaNames["LicenseToken"]] = clusterNodeDetail.LicenseToken
+	return []interface{}{transformed}
+}
+
+func flattenVendorConfiguration(vendorConfig map[string]string) interface{} {
+	transformed := make(map[string]interface{})
+	if v, ok := vendorConfig["hostname"]; ok {
+		transformed[neDeviceVendorConfigSchemaNames["Hostname"]] = v
+	}
+	if v, ok := vendorConfig["adminPassword"]; ok {
+		transformed[neDeviceVendorConfigSchemaNames["AdminPassword"]] = v
+	}
+	if v, ok := vendorConfig["controller1"]; ok {
+		transformed[neDeviceVendorConfigSchemaNames["Controller1"]] = v
+	}
+	if v, ok := vendorConfig["activationKey"]; ok {
+		transformed[neDeviceVendorConfigSchemaNames["ActivationKey"]] = v
+	}
+	if v, ok := vendorConfig["controllerFqdn"]; ok {
+		transformed[neDeviceVendorConfigSchemaNames["ControllerFqdn"]] = v
+	}
+	if v, ok := vendorConfig["rootPassword"]; ok {
+		transformed[neDeviceVendorConfigSchemaNames["RootPassword"]] = v
+	}
+	return []interface{}{transformed}
+}
+
+func expandNetworkDeviceClusterDetails(clusterDetails []interface{}) *ne.ClusterDetails {
+	if len(clusterDetails) < 1 {
+		log.Printf("[WARN] resource_network_device expanding empty cluster details")
+		return nil
+	}
+	clusterDetail := clusterDetails[0].(map[string]interface{})
+	transformed := &ne.ClusterDetails{}
+	if v, ok := clusterDetail[neDeviceClusterSchemaNames["ClusterName"]]; ok && !isEmpty(v) {
+		transformed.ClusterName = ne.String(v.(string))
+	}
+	if v, ok := clusterDetail[neDeviceClusterSchemaNames["Node0"]]; ok {
+		transformed.Node0 = expandNetworkDeviceClusterNodeDetail(v.([]interface{}))
+	}
+	if v, ok := clusterDetail[neDeviceClusterSchemaNames["Node1"]]; ok {
+		transformed.Node1 = expandNetworkDeviceClusterNodeDetail(v.([]interface{}))
+	}
+	return transformed
+}
+
+func expandNetworkDeviceClusterNodeDetail(clusterNodeDetails []interface{}) *ne.ClusterNodeDetail {
+	if len(clusterNodeDetails) < 1 {
+		log.Printf("[WARN] resource_network_device expanding empty cluster node details")
+		return nil
+	}
+	clusterNodeDetail := clusterNodeDetails[0].(map[string]interface{})
+	transformed := &ne.ClusterNodeDetail{}
+	if v, ok := clusterNodeDetail[neDeviceClusterNodeSchemaNames["VendorConfiguration"]]; ok {
+		transformed.VendorConfiguration = expandVendorConfiguration(v.([]interface{}))
+	}
+	if v, ok := clusterNodeDetail[neDeviceClusterNodeSchemaNames["LicenseFileId"]]; ok && !isEmpty(v) {
+		transformed.LicenseFileId = ne.String(v.(string))
+	}
+	if v, ok := clusterNodeDetail[neDeviceClusterNodeSchemaNames["LicenseToken"]]; ok && !isEmpty(v) {
+		transformed.LicenseToken = ne.String(v.(string))
+	}
+	return transformed
+}
+
+func expandVendorConfiguration(vendorConfigs []interface{}) map[string]string {
+	if len(vendorConfigs) < 1 {
+		log.Printf("[WARN] resource_network_device expanding empty vendor configurations")
+		return nil
+	}
+	vendorConfig := vendorConfigs[0].(map[string]interface{})
+	transformed := make(map[string]string)
+	if v, ok := vendorConfig[neDeviceVendorConfigSchemaNames["Hostname"]]; ok && !isEmpty(v) {
+		transformed["hostname"] = v.(string)
+	}
+	if v, ok := vendorConfig[neDeviceVendorConfigSchemaNames["AdminPassword"]]; ok && !isEmpty(v) {
+		transformed["adminPassword"] = v.(string)
+	}
+	if v, ok := vendorConfig[neDeviceVendorConfigSchemaNames["Controller1"]]; ok && !isEmpty(v) {
+		transformed["controller1"] = v.(string)
+	}
+	if v, ok := vendorConfig[neDeviceVendorConfigSchemaNames["ActivationKey"]]; ok && !isEmpty(v) {
+		transformed["activationKey"] = v.(string)
+	}
+	if v, ok := vendorConfig[neDeviceVendorConfigSchemaNames["ControllerFqdn"]]; ok && !isEmpty(v) {
+		transformed["controllerFqdn"] = v.(string)
+	}
+	if v, ok := vendorConfig[neDeviceVendorConfigSchemaNames["RootPassword"]]; ok && !isEmpty(v) {
+		transformed["rootPassword"] = v.(string)
+	}
+	return transformed
+}
+
 func fillNetworkDeviceUpdateRequest(updateReq ne.DeviceUpdateRequest, changes map[string]interface{}) ne.DeviceUpdateRequest {
 	for change, changeValue := range changes {
 		switch change {
@@ -1194,6 +1522,8 @@ func createNetworkDeviceStatusProvisioningWaitConfiguration(fetchFunc getDevice,
 		ne.DeviceStateInitializing,
 		ne.DeviceStateProvisioning,
 		ne.DeviceStateWaitingSecondary,
+		ne.DeviceStateWaitingClusterNodes,
+		ne.DeviceStateClusterSetUpInProgress,
 	}
 	target := []string{
 		ne.DeviceStateProvisioned,
@@ -1231,6 +1561,7 @@ func createNetworkDeviceStatusWaitConfiguration(fetchFunc getDevice, id string, 
 func createNetworkDeviceLicenseStatusWaitConfiguration(fetchFunc getDevice, id string, delay time.Duration, timeout time.Duration) *resource.StateChangeConf {
 	pending := []string{
 		ne.DeviceLicenseStateApplying,
+		ne.DeviceLicenseStateWaitingClusterSetUp,
 		"",
 	}
 	target := []string{

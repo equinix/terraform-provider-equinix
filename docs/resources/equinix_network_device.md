@@ -58,6 +58,48 @@ resource "equinix_network_device" "csr1000v-ha" {
   }
 }
 ```
+```hcl
+# Create self configured PANW cluster with BYOL license
+
+data "equinix_network_account" "sv" {
+  metro_code = "SV"
+}
+
+resource "equinix_network_device" "panw-cluster" {
+  name            = "tf-panw"
+  metro_code      = data.equinix_network_account.sv.metro_code
+  type_code       = "PA-VM"
+  self_managed    = true
+  byol            = true
+  package_code    = "VM100"
+  notifications   = ["john@equinix.com", "marry@equinix.com", "fred@equinix.com"]
+  term_length     = 6
+  account_number  = data.equinix_network_account.sv.number
+  version         = "10.1.3"
+  interface_count = 10
+  core_count      = 2
+  ssh_key {
+    username = "test"
+    key_name = "test-key"
+  }
+  acl_template_id = "0bff6e05-f0e7-44cd-804a-25b92b835f8b"
+  cluster_details {
+    cluster_name    = "tf-panw-cluster"
+    node0 {
+      vendor_configuration {
+        hostname = "panw-node0"
+      }
+      license_token = "licenseToken"
+    }
+    node1 {
+      vendor_configuration {
+        hostname = "panw-node1"
+      }
+      license_token = "licenseToken"
+    }
+  }
+}
+```
 
 ## Argument Reference
 
@@ -94,12 +136,13 @@ that will be allocated to the device (in addition to default 15Mbps)
 specified, default number for a given device type will be used
 * `wan_interafce_id` - (Optional) Specify the WAN/SSH interface id. If not
   specified, default WAN/SSH interface for a given device type will be used
-* `vendor_configuration` - (Optional) map of vendor specific configuration parameters
-for a device
-* `ssh-key` - (Optional) definition of SSH key that will be provisioned
+* `vendor_configuration` - (Optional) Map of vendor specific configuration parameters
+for a device (controller1, activationKey, managementType, siteId, systemIpAddress)
+* `ssh-key` - (Optional) Definition of SSH key that will be provisioned
 on a device (max one key)
 * `secondary_device` - (Optional) Definition of secondary device for redundant
 device configurations
+* `cluster_details` - (Optional) An object that has the cluster details
 
 The `secondary_device` block supports the following arguments:
 
@@ -117,8 +160,8 @@ secondary device
 will receive notifications about secondary device
 * `additional_bandwidth` - (Optional) Additional Internet
 bandwidth, in Mbps, for a secondary device
-* `vendor_configuration` - (Optional) map of vendor specific
-configuration parameters for a secondary device
+* `vendor_configuration` - (Optional) Map of vendor specific
+configuration parameters for a secondary device (controller1, activationKey, managementType, siteId, systemIpAddress)
 * `acl_template_id` - Identifier of an ACL template that will
 be applied on a secondary device
 * `ssh-key` - (Optional) up to one definition of SSH key that will be provisioned
@@ -129,6 +172,33 @@ The `ssh_key` block supports the following arguments:
 * `username` - (Required) username associated with given key
 * `name` - (Required) reference by name to previously provisioned public SSH key
 
+The `cluster_details` block supports the following arguments:
+
+* `cluster_name` - (Required) The name of the cluster device
+* `node0` - (Required) An object that has node0 details
+* `node1` - (Required) An object that has node1 details
+
+The `node0` block supports the following arguments:
+
+* `vendor_configuration` - (Optional) An object that has fields relevant to the vendor of the cluster device
+* `license_file_id` - (Optional) License file id. This is necessary for Fortinet and Juniper clusters
+* `license_token` - (Optional) License token. This is necessary for Palo Alto clusters
+
+The `node1` block supports the following arguments:
+
+* `vendor_configuration` - (Optional) An object that has fields relevant to the vendor of the cluster device
+* `license_file_id` - (Optional) License file id. This is necessary for Fortinet and Juniper clusters
+* `license_token` - (Optional) License token. This is necessary for Palo Alto clusters
+
+The `vendor_configuration` block supports the following arguments:
+
+* `hostname` - (Optional) Hostname. This is necessary for Palo Alto, Juniper, and Fortinet clusters
+* `admin_password` - (Optional) The administrative password of the device. You can use it to log in to the console. This field is not available for all device types
+* `controller1` - (Optional) System IP Address. Mandatory for the Fortinet SDWAN cluster device
+* `activation_key` - (Optional) Activation key. This is required for Velocloud clusters
+* `controller_fqdn` - (Optional) Controller fqdn. This is required for Velocloud clusters
+* `root_password` - (Optional) The CLI password of the device. This field is relevant only for the Velocloud SDWAN cluster
+
 ## Attributes Reference
 
 * `uuid` - Device unique identifier
@@ -137,6 +207,8 @@ The `ssh_key` block supports the following arguments:
   * PROVISIONING
   * WAITING_FOR_PRIMARY
   * WAITING_FOR_SECONDARY
+  * WAITING_FOR_REPLICA_CLUSTER_NODES 
+  * CLUSTER_SETUP_IN_PROGRESS 
   * FAILED
   * PROVISIONED
   * DEPROVISIONING
@@ -145,6 +217,7 @@ The `ssh_key` block supports the following arguments:
   * APPLYING_LICENSE
   * REGISTERED
   * APPLIED
+  * WAITING_FOR_CLUSTER_SETUP
   * REGISTRATION_FAILED
 * `license_file_id` - Unique identifier of applied license file
 * `ibx` - Device location Equinix Business Exchange name
@@ -166,15 +239,17 @@ primary or secondary
   * `interface.#.type` - interface type
 * `asn` - Autonomous system number
 * `zone_code` - Device location zone code
+* `cluster_id` - The id of the cluster
+* `num_of_nodes` - The number of nodes in the cluster
 
 ## Timeouts
 
 This resource provides the following [Timeouts configuration](https://www.terraform.io/language/resources/syntax#operation-timeouts)
 options:
 
-* create - Default is 60 minutes
-* update - Default is 10 minutes
-* delete - Default is 10 minutes
+* create - Default is 90 minutes
+* update - Default is 30 minutes
+* delete - Default is 30 minutes
 
 ## Import
 
