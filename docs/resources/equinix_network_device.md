@@ -137,7 +137,7 @@ specified, default number for a given device type will be used
 * `wan_interafce_id` - (Optional) Specify the WAN/SSH interface id. If not
   specified, default WAN/SSH interface for a given device type will be used
 * `vendor_configuration` - (Optional) Map of vendor specific configuration parameters
-for a device
+for a device (controller1, activationKey, managementType, siteId, systemIpAddress)
 * `ssh-key` - (Optional) Definition of SSH key that will be provisioned
 on a device (max one key)
 * `secondary_device` - (Optional) Definition of secondary device for redundant
@@ -160,8 +160,8 @@ secondary device
 will receive notifications about secondary device
 * `additional_bandwidth` - (Optional) Additional Internet
 bandwidth, in Mbps, for a secondary device
-* `vendor_configuration` - (Optional) map of vendor specific
-configuration parameters for a secondary device
+* `vendor_configuration` - (Optional) Map of vendor specific
+configuration parameters for a secondary device (controller1, activationKey, managementType, siteId, systemIpAddress)
 * `acl_template_id` - Identifier of an ACL template that will
 be applied on a secondary device
 * `ssh-key` - (Optional) up to one definition of SSH key that will be provisioned
