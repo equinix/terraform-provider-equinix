@@ -881,9 +881,10 @@ func TestAccNetworkDevice_PaloAlto_Cluster_Self_BYOL(t *testing.T) {
 				),
 			},
 			{
-				ResourceName:      deviceResourceName,
-				ImportState:       true,
-				ImportStateVerify: true,
+				ResourceName:            deviceResourceName,
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"cluster_details.0.node0.0.license_token", "cluster_details.0.node1.0.license_token"},
 			},
 		},
 	})
