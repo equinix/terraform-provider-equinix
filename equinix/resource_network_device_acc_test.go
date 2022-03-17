@@ -874,7 +874,7 @@ func TestAccNetworkDevice_PaloAlto_Cluster_Self_BYOL(t *testing.T) {
 					testAccNeDeviceAttributes(&primary, context),
 					testAccNeDeviceStatusAttributes(&primary, ne.DeviceStateProvisioned, ne.DeviceLicenseStateApplied),
 					testAccNeDeviceClusterAttributes(deviceResourceName),
-					testAccNeDeviceClusterNodeAttributes(primary.ClusterDetails, context),
+					testAccNeDeviceClusterNodeAttributes(&primary, context),
 					testAccNetworkACLTemplateExists(clusterAclResourceName, &primaryAcl),
 					resource.TestCheckResourceAttrSet(deviceResourceName, "acl_template_id"),
 					testAccNeDeviceACL(clusterAclResourceName, &primary),
@@ -949,7 +949,7 @@ func testAccNeDevicePairExists(resourceName string, primary, secondary *ne.Devic
 
 func testAccNeDeviceAttributes(device *ne.Device, ctx map[string]interface{}) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
-		if v, ok := ctx["device-name"]; ok && ne.StringValue(device.Name) != v.(string) {
+		if v, ok := ctx["device-name"]; ok && !(ne.StringValue(device.Name) == v.(string) || ne.StringValue(device.Name) == v.(string)+"-Node0") {
 			return fmt.Errorf("name does not match %v - %v", ne.StringValue(device.Name), v)
 		}
 		if v, ok := ctx["device-self_managed"]; ok && ne.BoolValue(device.IsSelfManaged) != v.(bool) {
@@ -1152,8 +1152,8 @@ func testAccNeDeviceHAAttributes(deviceResourceName string) resource.TestCheckFu
 func testAccNeDeviceClusterAttributes(deviceResourceName string) resource.TestCheckFunc {
 	return resource.ComposeTestCheckFunc(
 		resource.TestCheckResourceAttrSet(deviceResourceName, "uuid"),
-		resource.TestCheckResourceAttrSet(deviceResourceName, "cluster_id"),
-		resource.TestCheckResourceAttrSet(deviceResourceName, "num_of_nodes"),
+		resource.TestCheckResourceAttrSet(deviceResourceName, "cluster_details.0.cluster_id"),
+		resource.TestCheckResourceAttrSet(deviceResourceName, "cluster_details.0.num_of_nodes"),
 		resource.TestCheckResourceAttrSet(deviceResourceName, "cluster_details.0.node0.0.uuid"),
 		resource.TestCheckResourceAttrSet(deviceResourceName, "cluster_details.0.node0.0.name"),
 		resource.TestCheckResourceAttrSet(deviceResourceName, "cluster_details.0.node1.0.uuid"),
@@ -1161,8 +1161,9 @@ func testAccNeDeviceClusterAttributes(deviceResourceName string) resource.TestCh
 	)
 }
 
-func testAccNeDeviceClusterNodeAttributes(cluster *ne.ClusterDetails, ctx map[string]interface{}) resource.TestCheckFunc {
+func testAccNeDeviceClusterNodeAttributes(device *ne.Device, ctx map[string]interface{}) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
+		cluster := device.ClusterDetails
 		if v, ok := ctx["device-cluster_name"]; ok && ne.StringValue(cluster.ClusterName) != v.(string) {
 			return fmt.Errorf("cluster_name does not match %v - %v", ne.StringValue(cluster.ClusterName), v)
 		}
