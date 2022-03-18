@@ -158,7 +158,9 @@ connection.
 - `authorization_key` - (Optional) Text field used to authorize connection on the provider side.
 Value depends on a provider service profile used for connection.
 - `secondary_connection` - (Optional) Definition of secondary connection for redundant, HA
-connectivity.
+connectivity. See [Secondary Connection](#secondary-connection) below for more details.
+
+### Secondary Connection
 
 The `secondary_connection` block supports the following arguments:
 
@@ -177,10 +179,12 @@ on a given device. If not specified then first available interface will be selec
 - `service_token`- (Optional) Applicable with primary `service_token`. Unique Equinix Fabric key
 given by a provider that grants you authorization to enable connectivity from a shared multi-tenant
 Equinix port (a-side). More details in [Fabric Service Tokens](https://docs.equinix.com/en-us/Content/Interconnection/Fabric/service%20tokens/Fabric-Service-Tokens.htm). If not specified primary `service_token` will be used.
-- `vlan_stag` - (Required when `port_uuid` is set)
-- `vlan_ctag` - (Optional) Applicable with `port_uuid`.
-- `seller_metro_code` - (Optional) The metro code that denotes the connection’s destination
-(Z side). If not specified primary `seller_metro_code` will be used.
+- `vlan_stag` - (Required when `port_uuid` is set) S-Tag/Outer-Tag of the secondary connection, a
+numeric character ranging from 2 - 4094.
+- `vlan_ctag` - (Optional) Applicable with `port_uuid`. C-Tag/Inner-Tag of the secondary
+connection, a numeric character ranging from 2 - 4094.
+- `seller_metro_code` - (Optional) The metro code that denotes the secondary connection’s
+destination (Z side). If not specified primary `seller_metro_code` will be used.
 - `seller_region` - (Optional) The region in which the seller port resides. If not specified
 primary `seller_region` will be used.
 - `authorization_key` - (Optional) Text field based on the service profile you want to connect to.
@@ -191,17 +195,18 @@ If not specified primary `authorization_key` will be used.
 In addition to the arguments listed above, the following computed attributes
 are exported:
 
-- `uuid` - Unique identifier of the connection
-- `status` - Connection provisioning status on Equinix Fabric side
-- `provider_status` - Connection provisioning status on service provider's side
-- `redundant_uuid` - Unique identifier of the redundant connection, applicable for HA connections
+- `uuid` - Unique identifier of the connection.
+- `status` - Connection provisioning status on Equinix Fabric side.
+- `provider_status` - Connection provisioning status on service provider's side.
+- `redundant_uuid` - Unique identifier of the redundant connection, applicable for HA connections.
 - `redundancy_type` - Connection redundancy type, applicable for HA connections. Valid values: `PRIMARY`,
 `SECONDARY`.
 - `redundancy_group` - Unique identifier of group containing a primary and secondary connection.
-- `zside_port_uuid` - when not provided as an argument, it is identifier of the z-side port,
-assigned by the Fabric
-- `zside_vlan_stag` - when not provided as an argument, it is S-Tag/Outer-Tag of the connection on
-the Z side, assigned by the Fabric
+- `zside_port_uuid` - When not provided as an argument, it is identifier of the z-side port,
+assigned by the Fabric.
+- `zside_vlan_stag` - When not provided as an argument, it is S-Tag/Outer-Tag of the connection on
+the Z side, assigned by the Fabric.
+- `actions` - One or more pending actions to complete connection provisioning.
 - `secondary_connection`:
   - `zside_port_uuid`
   - `zside_vlan_stag`
