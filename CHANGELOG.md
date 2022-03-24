@@ -1,4 +1,4 @@
-## 1.5.0 (UNRELEASED)
+## 1.5.0 (March 24, 2022)
 
 FEATURES:
 
@@ -49,13 +49,17 @@ BUG FIXES:
 
 * `equinix_ecx_l2_serviceprofile` detecting diff after refresh [#90](https://github.com/equinix/terraform-provider-equinix/pull/90)
 * `equinix_network_device` allow value 0 for additional bandwidth [#91](https://github.com/equinix/terraform-provider-equinix/pull/91)
+* `equinix_network_device` hostname max length now match portal limits [#92](https://github.com/equinix/terraform-provider-equinix/pull/92)
 * `equinix_ecx_l2_connection` will wait for the secondary connection destroy [#103](https://github.com/equinix/terraform-provider-equinix/pull/103)
 * `equinix_ecx_l2_connection` named_tag now is idempotent [#97](https://github.com/equinix/terraform-provider-equinix/issues/97)
+* `equinix_ecx_l2_connection` was not storing secondary connection fields [#103](https://github.com/equinix/terraform-provider-equinix/pull/103)
 
 ENHANCEMENTS:
 
 - `service_token` added to `equinix_ecx_l2_connection` [#96](https://github.com/equinix/terraform-provider-equinix/issues/96)
+- `service_token` for secondary_connection added to `equinix_ecx_l2_connection` [#111](https://github.com/equinix/terraform-provider-equinix/pull/111)
 - update documentation links for timeout parameters  [#101](https://github.com/equinix/terraform-provider-equinix/pull/101)
+- `cluster_details` added to `equinix_network_device` [#105](https://github.com/equinix/terraform-provider-equinix/pull/105)
 
 ## 1.4.0 (January 14, 2022)
 
