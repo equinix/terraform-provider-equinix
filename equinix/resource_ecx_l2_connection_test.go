@@ -146,6 +146,7 @@ func TestFabricL2Connection_flattenSecondary(t *testing.T) {
 		AuthorizationKey: ecx.String(randString(10)),
 		RedundancyGroup:  ecx.String(randString(10)),
 		RedundancyType:   ecx.String(randString(10)),
+		ServiceToken:     ecx.String(randString(36)),
 	}
 	previousInput := &ecx.L2Connection{
 		DeviceInterfaceID: ecx.Int(randInt(10)),
@@ -173,6 +174,7 @@ func TestFabricL2Connection_flattenSecondary(t *testing.T) {
 			ecxL2ConnectionSchemaNames["RedundancyGroup"]:   input.RedundancyGroup,
 			ecxL2ConnectionSchemaNames["RedundancyType"]:    input.RedundancyType,
 			ecxL2ConnectionSchemaNames["Actions"]:           []interface{}{},
+			ecxL2ConnectionSchemaNames["ServiceToken"]:      input.ServiceToken,
 		},
 	}
 
@@ -200,6 +202,7 @@ func TestFabricL2Connection_expandSecondary(t *testing.T) {
 			ecxL2ConnectionSchemaNames["SellerRegion"]:      "",
 			ecxL2ConnectionSchemaNames["SellerMetroCode"]:   "SV",
 			ecxL2ConnectionSchemaNames["AuthorizationKey"]:  "123456789012",
+			ecxL2ConnectionSchemaNames["ServiceToken"]:      "5cc17b61-ac44-4ed4-b035-71a8d46e449f",
 		},
 	}
 	expected := &ecx.L2Connection{
@@ -215,6 +218,7 @@ func TestFabricL2Connection_expandSecondary(t *testing.T) {
 		SellerRegion:      nil,
 		SellerMetroCode:   ecx.String(input[0].(map[string]interface{})[ecxL2ConnectionSchemaNames["SellerMetroCode"]].(string)),
 		AuthorizationKey:  ecx.String(input[0].(map[string]interface{})[ecxL2ConnectionSchemaNames["AuthorizationKey"]].(string)),
+		ServiceToken:      ecx.String(input[0].(map[string]interface{})[ecxL2ConnectionSchemaNames["ServiceToken"]].(string)),
 	}
 
 	// when
