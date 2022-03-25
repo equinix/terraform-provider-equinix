@@ -857,12 +857,16 @@ func TestAccNetworkDevice_PaloAlto_Cluster_Self_BYOL(t *testing.T) {
 		"acl-resourceName":                   "acl-cluster",
 		"acl-name":                           fmt.Sprintf("%s-%s", tstResourcePrefix, randString(6)),
 		"acl-description":                    randString(50),
+		"mgmtAcl-resourceName":               "mgmtAcl-cluster",
+		"mgmtAcl-name":                       fmt.Sprintf("%s-%s", tstResourcePrefix, randString(6)),
+		"mgmtAcl-description":                randString(50),
 	}
 
 	deviceResourceName := fmt.Sprintf("equinix_network_device.%s", context["device-resourceName"].(string))
 	clusterAclResourceName := fmt.Sprintf("equinix_network_acl_template.%s", context["acl-resourceName"].(string))
+	clusterMgmtAclResourceName := fmt.Sprintf("equinix_network_acl_template.%s", context["mgmtAcl-resourceName"].(string))
 	var primary ne.Device
-	var primaryAcl ne.ACLTemplate
+	var wanAcl, mgmtAcl ne.ACLTemplate
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
@@ -875,8 +879,10 @@ func TestAccNetworkDevice_PaloAlto_Cluster_Self_BYOL(t *testing.T) {
 					testAccNeDeviceStatusAttributes(&primary, ne.DeviceStateProvisioned, ne.DeviceLicenseStateApplied),
 					testAccNeDeviceClusterAttributes(deviceResourceName),
 					testAccNeDeviceClusterNodeAttributes(&primary, context),
-					testAccNetworkACLTemplateExists(clusterAclResourceName, &primaryAcl),
+					testAccNetworkACLTemplateExists(clusterAclResourceName, &wanAcl),
+					testAccNetworkACLTemplateExists(clusterMgmtAclResourceName, &mgmtAcl),
 					resource.TestCheckResourceAttrSet(deviceResourceName, "acl_template_id"),
+					resource.TestCheckResourceAttrSet(deviceResourceName, "mgmt_acl_template_uuid"),
 					testAccNeDeviceACL(clusterAclResourceName, &primary),
 				),
 			},
@@ -884,7 +890,7 @@ func TestAccNetworkDevice_PaloAlto_Cluster_Self_BYOL(t *testing.T) {
 				ResourceName:            deviceResourceName,
 				ImportState:             true,
 				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"cluster_details.0.node0.0.license_token", "cluster_details.0.node1.0.license_token"},
+				ImportStateVerifyIgnore: []string{"cluster_details.0.node0.0.license_token", "cluster_details.0.node1.0.license_token", "mgmt_acl_template_uuid"},
 			},
 		},
 	})
@@ -1289,6 +1295,10 @@ resource "equinix_network_device" "%{device-resourceName}" {
 		config += nprintf(`
   acl_template_id       = equinix_network_acl_template.%{acl-resourceName}.id`, ctx)
 	}
+	if _, ok := ctx["mgmtAcl-resourceName"]; ok {
+		config += nprintf(`
+  mgmt_acl_template_uuid = equinix_network_acl_template.%{mgmtAcl-resourceName}.id`, ctx)
+	}
 	if _, ok := ctx["sshkey-resourceName"]; ok {
 		config += nprintf(`
   ssh_key {
@@ -1368,6 +1378,10 @@ resource "equinix_network_device" "%{device-resourceName}" {
 		if _, ok := ctx["acl-secondary_resourceName"]; ok {
 			config += nprintf(`
     acl_template_id      = equinix_network_acl_template.%{acl-secondary_resourceName}.id`, ctx)
+		}
+		if _, ok := ctx["mgmtAcl-secondary_resourceName"]; ok {
+			config += nprintf(`
+    mgmt_acl_template_uuid = equinix_network_acl_template.%{mgmtAcl-secondary_resourceName}.id`, ctx)
 		}
 		if _, ok := ctx["sshkey-resourceName"]; ok {
 			config += nprintf(`
@@ -1522,27 +1536,56 @@ resource "equinix_network_device" "%{device-resourceName}" {
 }
 
 func testAccNetworkDeviceACL(ctx map[string]interface{}) string {
-	config := nprintf(`
+	var config string
+	if _, ok := ctx["acl-name"]; ok {
+		config += nprintf(`
 resource "equinix_network_acl_template" "%{acl-resourceName}" {
   name          = "%{acl-name}"
   description   = "%{acl-description}"
   inbound_rule {
-    subnet  = "10.0.0.0/24"
+    subnet   = "10.0.0.0/24"
     protocol = "IP"
     src_port = "any"
     dst_port = "any"
   }
 }`, ctx)
+	}
+	if _, ok := ctx["mgmtAcl-name"]; ok {
+		config += nprintf(`
+resource "equinix_network_acl_template" "%{mgmtAcl-resourceName}" {
+  name          = "%{mgmtAcl-name}"
+  description   = "%{mgmtAcl-description}"
+  inbound_rule {
+    subnet   = "11.0.0.0/24"
+    protocol = "IP"
+    src_port = "any"
+    dst_port = "any"
+  }
+}`, ctx)
+	}
 	if _, ok := ctx["acl-secondary_name"]; ok {
 		config += nprintf(`
 resource "equinix_network_acl_template" "%{acl-secondary_resourceName}" {
   name          = "%{acl-secondary_name}"
   description   = "%{acl-secondary_description}"
   inbound_rule {
-     subnet  = "192.0.0.0/24"
-     protocol = "IP"
-     src_port = "any"
-     dst_port = "any"
+    subnet   = "192.0.0.0/24"
+    protocol = "IP"
+    src_port = "any"
+    dst_port = "any"
+  }
+}`, ctx)
+	}
+	if _, ok := ctx["mgmtAcl-secondary_name"]; ok {
+		config += nprintf(`
+resource "equinix_network_acl_template" "%{mgmtAcl-secondary_resourceName}" {
+  name          = "%{mgmtAcl-secondary_name}"
+  description   = "%{mgmtAcl-secondary_description}"
+  inbound_rule {
+    subnet   = "193.0.0.0/24"
+    protocol = "IP"
+    src_port = "any"
+    dst_port = "any"
   }
 }`, ctx)
 	}
