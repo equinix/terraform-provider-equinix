@@ -262,3 +262,5 @@ This resource can be imported using an existing ID:
 ```sh
 terraform import equinix_network_device.example {existing_id}
 ```
+
+The `license_token` and `mgtm_acl_template_uuid` fields can not be imported.
