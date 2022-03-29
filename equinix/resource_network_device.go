@@ -1476,21 +1476,25 @@ func fillNetworkDeviceUpdateRequest(updateReq ne.DeviceUpdateRequest, changes ma
 
 func getNetworkDeviceStateChangeConfigs(c ne.Client, deviceID string, timeout time.Duration, changes map[string]interface{}) []*resource.StateChangeConf {
 	configs := make([]*resource.StateChangeConf, 0, len(changes))
-	for change, changeValue := range changes {
-		switch change {
-		case networkDeviceSchemaNames["ACLTemplateUUID"], networkDeviceSchemaNames["MgmtAclTemplateUuid"]:
-			aclTempID, ok := changeValue.(string)
-			if !ok || aclTempID == "" {
-				break
-			}
+	if changeValue, found := changes[networkDeviceSchemaNames["ACLTemplateUUID"]]; found {
+		aclTemplateUuid, ok := changeValue.(string)
+		if ok && aclTemplateUuid != "" {
 			configs = append(configs,
 				createNetworkDeviceACLStatusWaitConfiguration(c.GetDeviceACLDetails, deviceID, 1*time.Second, timeout),
 			)
-		case networkDeviceSchemaNames["AdditionalBandwidth"]:
+		}
+	} else if changeValue, found := changes[networkDeviceSchemaNames["MgmtAclTemplateUuid"]]; found {
+		mgmtAclTemplateUuid, ok := changeValue.(string)
+		if ok && mgmtAclTemplateUuid != "" {
 			configs = append(configs,
-				createNetworkDeviceAdditionalBandwidthStatusWaitConfiguration(c.GetDeviceAdditionalBandwidthDetails, deviceID, 1*time.Second, timeout),
+				createNetworkDeviceACLStatusWaitConfiguration(c.GetDeviceACLDetails, deviceID, 1*time.Second, timeout),
 			)
 		}
+	}
+	if _, found := changes[networkDeviceSchemaNames["AdditionalBandwidth"]]; found {
+		configs = append(configs,
+			createNetworkDeviceAdditionalBandwidthStatusWaitConfiguration(c.GetDeviceAdditionalBandwidthDetails, deviceID, 1*time.Second, timeout),
+		)
 	}
 	return configs
 }
