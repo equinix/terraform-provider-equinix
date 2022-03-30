@@ -545,6 +545,12 @@ func createNetworkDeviceSchema() map[string]*schema.Schema {
 						ValidateFunc: validation.StringIsNotEmpty,
 						Description:  networkDeviceDescriptions["ACLTemplateUUID"],
 					},
+					networkDeviceSchemaNames["MgmtAclTemplateUuid"]: {
+						Type:         schema.TypeString,
+						Optional:     true,
+						ValidateFunc: validation.StringIsNotEmpty,
+						Description:  networkDeviceDescriptions["MgmtAclTemplateUuid"],
+					},
 					networkDeviceSchemaNames["SSHIPAddress"]: {
 						Type:        schema.TypeString,
 						Computed:    true,
@@ -860,7 +866,7 @@ func resourceNetworkDeviceCreate(ctx context.Context, d *schema.ResourceData, m 
 		createNetworkDeviceStatusProvisioningWaitConfiguration(conf.ne.GetDevice, ne.StringValue(primary.UUID), 5*time.Second, d.Timeout(schema.TimeoutCreate)),
 		createNetworkDeviceLicenseStatusWaitConfiguration(conf.ne.GetDevice, ne.StringValue(primary.UUID), 5*time.Second, d.Timeout(schema.TimeoutCreate)),
 	}
-	if ne.StringValue(primary.ACLTemplateUUID) != "" {
+	if ne.StringValue(primary.ACLTemplateUUID) != "" || ne.StringValue(primary.MgmtAclTemplateUuid) != "" {
 		waitConfigs = append(waitConfigs,
 			createNetworkDeviceACLStatusWaitConfiguration(conf.ne.GetDeviceACLDetails, ne.StringValue(primary.UUID), 1*time.Second, d.Timeout(schema.TimeoutUpdate)),
 		)
@@ -870,7 +876,7 @@ func resourceNetworkDeviceCreate(ctx context.Context, d *schema.ResourceData, m 
 			createNetworkDeviceStatusProvisioningWaitConfiguration(conf.ne.GetDevice, ne.StringValue(secondary.UUID), 5*time.Second, d.Timeout(schema.TimeoutCreate)),
 			createNetworkDeviceLicenseStatusWaitConfiguration(conf.ne.GetDevice, ne.StringValue(secondary.UUID), 5*time.Second, d.Timeout(schema.TimeoutCreate)),
 		)
-		if ne.StringValue(secondary.ACLTemplateUUID) != "" {
+		if ne.StringValue(secondary.ACLTemplateUUID) != "" || ne.StringValue(secondary.MgmtAclTemplateUuid) != "" {
 			waitConfigs = append(waitConfigs,
 				createNetworkDeviceACLStatusWaitConfiguration(conf.ne.GetDeviceACLDetails, ne.StringValue(secondary.UUID), 1*time.Second, d.Timeout(schema.TimeoutUpdate)),
 			)
@@ -919,7 +925,7 @@ func resourceNetworkDeviceUpdate(ctx context.Context, d *schema.ResourceData, m 
 	supportedChanges := []string{
 		networkDeviceSchemaNames["Name"], networkDeviceSchemaNames["TermLength"],
 		networkDeviceSchemaNames["Notifications"], networkDeviceSchemaNames["AdditionalBandwidth"],
-		networkDeviceSchemaNames["ACLTemplateUUID"],
+		networkDeviceSchemaNames["ACLTemplateUUID"], networkDeviceSchemaNames["MgmtAclTemplateUuid"],
 	}
 	updateReq := conf.ne.NewDeviceUpdateRequest(d.Id())
 	primaryChanges := getResourceDataChangedKeys(supportedChanges, d)
@@ -1269,6 +1275,9 @@ func expandNetworkDeviceSecondary(devices []interface{}) *ne.Device {
 	if v, ok := device[networkDeviceSchemaNames["ACLTemplateUUID"]]; ok && !isEmpty(v) {
 		transformed.ACLTemplateUUID = ne.String(v.(string))
 	}
+	if v, ok := device[networkDeviceSchemaNames["MgmtAclTemplateUuid"]]; ok && !isEmpty(v) {
+		transformed.MgmtAclTemplateUuid = ne.String(v.(string))
+	}
 	if v, ok := device[networkDeviceSchemaNames["AccountNumber"]]; ok && !isEmpty(v) {
 		transformed.AccountNumber = ne.String(v.(string))
 	}
@@ -1453,11 +1462,13 @@ func fillNetworkDeviceUpdateRequest(updateReq ne.DeviceUpdateRequest, changes ma
 		case networkDeviceSchemaNames["TermLength"]:
 			updateReq.WithTermLength(changeValue.(int))
 		case networkDeviceSchemaNames["Notifications"]:
-			updateReq.WithNotifications((expandSetToStringList(changeValue.(*schema.Set))))
+			updateReq.WithNotifications(expandSetToStringList(changeValue.(*schema.Set)))
 		case networkDeviceSchemaNames["AdditionalBandwidth"]:
 			updateReq.WithAdditionalBandwidth(changeValue.(int))
 		case networkDeviceSchemaNames["ACLTemplateUUID"]:
 			updateReq.WithACLTemplate(changeValue.(string))
+		case networkDeviceSchemaNames["MgmtAclTemplateUuid"]:
+			updateReq.WithMgmtAclTemplate(changeValue.(string))
 		}
 	}
 	return updateReq
@@ -1465,21 +1476,25 @@ func fillNetworkDeviceUpdateRequest(updateReq ne.DeviceUpdateRequest, changes ma
 
 func getNetworkDeviceStateChangeConfigs(c ne.Client, deviceID string, timeout time.Duration, changes map[string]interface{}) []*resource.StateChangeConf {
 	configs := make([]*resource.StateChangeConf, 0, len(changes))
-	for change, changeValue := range changes {
-		switch change {
-		case networkDeviceSchemaNames["ACLTemplateUUID"]:
-			aclTempID, ok := changeValue.(string)
-			if !ok || aclTempID == "" {
-				break
-			}
+	if changeValue, found := changes[networkDeviceSchemaNames["ACLTemplateUUID"]]; found {
+		aclTemplateUuid, ok := changeValue.(string)
+		if ok && aclTemplateUuid != "" {
 			configs = append(configs,
 				createNetworkDeviceACLStatusWaitConfiguration(c.GetDeviceACLDetails, deviceID, 1*time.Second, timeout),
 			)
-		case networkDeviceSchemaNames["AdditionalBandwidth"]:
+		}
+	} else if changeValue, found := changes[networkDeviceSchemaNames["MgmtAclTemplateUuid"]]; found {
+		mgmtAclTemplateUuid, ok := changeValue.(string)
+		if ok && mgmtAclTemplateUuid != "" {
 			configs = append(configs,
-				createNetworkDeviceAdditionalBandwidthStatusWaitConfiguration(c.GetDeviceAdditionalBandwidthDetails, deviceID, 1*time.Second, timeout),
+				createNetworkDeviceACLStatusWaitConfiguration(c.GetDeviceACLDetails, deviceID, 1*time.Second, timeout),
 			)
 		}
+	}
+	if _, found := changes[networkDeviceSchemaNames["AdditionalBandwidth"]]; found {
+		configs = append(configs,
+			createNetworkDeviceAdditionalBandwidthStatusWaitConfiguration(c.GetDeviceAdditionalBandwidthDetails, deviceID, 1*time.Second, timeout),
+		)
 	}
 	return configs
 }

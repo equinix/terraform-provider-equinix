@@ -128,8 +128,10 @@ status notifications
 with a device order
 * `order_reference` - (Optional) Name/number used to identify device order on
 the invoice
-* `acl_template_id` - (Optional) Identifier of an ACL template that
+* `acl_template_id` - (Optional) Identifier of a WAN interface ACL template that
 will be applied on the device
+* `mgmt_acl_template_uuid` - (Optional) Identifier of an MGMT interface ACL template that 
+  will be applied on the device
 * `additional_bandwidth` - (Optional) Additional Internet bandwidth, in Mbps,
 that will be allocated to the device (in addition to default 15Mbps)
 * `interface_count` - (Optional) Number of network interfaces on a device. If not
@@ -162,8 +164,10 @@ will receive notifications about secondary device
 bandwidth, in Mbps, for a secondary device
 * `vendor_configuration` - (Optional) Map of vendor specific
 configuration parameters for a secondary device (controller1, activationKey, managementType, siteId, systemIpAddress)
-* `acl_template_id` - Identifier of an ACL template that will
+* `acl_template_id` - (Optional) Identifier of a WAN interface ACL template that will
 be applied on a secondary device
+* `mgmt_acl_template_uuid` - (Optional) Identifier of an MGMT interface ACL template that
+  will be applied on the device  
 * `ssh-key` - (Optional) up to one definition of SSH key that will be provisioned
 on a secondary device
 
@@ -258,3 +262,5 @@ This resource can be imported using an existing ID:
 ```sh
 terraform import equinix_network_device.example {existing_id}
 ```
+
+The `license_token` and `mgtm_acl_template_uuid` fields can not be imported.
