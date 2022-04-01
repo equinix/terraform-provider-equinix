@@ -109,6 +109,7 @@ func Provider() *schema.Provider {
 			"equinix_ecx_l2_sellerprofile":       dataSourceECXL2SellerProfile(),
 			"equinix_ecx_l2_sellerprofiles":      dataSourceECXL2SellerProfiles(),
 			"equinix_network_account":            dataSourceNetworkAccount(),
+			"equinix_network_device":             dataSourceNetworkDevice(),
 			"equinix_network_device_type":        dataSourceNetworkDeviceType(),
 			"equinix_network_device_software":    dataSourceNetworkDeviceSoftware(),
 			"equinix_network_device_platform":    dataSourceNetworkDevicePlatform(),
