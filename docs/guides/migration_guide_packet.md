@@ -4,7 +4,7 @@ page_title: "Migrating from the Packet provider"
 
 # Migrating from packethost/packet to equinix/equinix
 
-[Equinix Metal](https://metal.equinix.com/) (formerly Packet), has been fully integrated into Platform Equinix and therefore the teraform provider changes too. This (terraform-provider-equinix, provider equinix/equinix) is the current provider of the various services available on Platform Equinix that can be managed using Terraform.
+[Equinix Metal](https://metal.equinix.com/) (formerly Packet), has been fully integrated into Platform Equinix and therefore the terraform provider changes too. This (terraform-provider-equinix, provider equinix/equinix) is the current provider of the various services available on Platform Equinix that can be managed using Terraform.
 
 If you've been using terraform-provider-packet, and you want to use a newer provider version to manage resources in Equinix Metal, you will need to change the references in you HCL files. You can just change the names of the resources, e.g. from `packet_device` to `equinix_metal_device`. That should work, but it will cause the `packet_device` to be destroyed and new `equinix_metal_device` to be created instead. Re-creation of the resources might be undesirable, and this guide shows how to migrate to `equinix_metal_` resources without the re-creation.
 
