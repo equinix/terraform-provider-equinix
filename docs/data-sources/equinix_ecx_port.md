@@ -20,24 +20,25 @@ output "id" {
 
 ## Argument Reference
 
-* `name` - (Required) Name of the port
+The following arguments are supported:
+
+* `name` - (Required) Name of the port.
 
 ## Attributes Reference
 
-The following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
-* `uuid` - Unique identifier of the port
-* `status` - Status of the port
-* `region` - Port location region
-* `ibx` - Port location Equinix Business Exchange (IBX)
-* `metro_code` - Port location metro code
+* `uuid` - Unique identifier of the port.
+* `status` - Status of the port.
+* `region` - Port location region.
+* `ibx` - Port location Equinix Business Exchange (IBX).
+* `metro_code` - Port location metro code.
 * `priority` - The priority of the device (primary / secondary) where the port
-  resides
-* `encapsulation` - The VLAN encapsulation of the port (Dot1q or QinQ)
-* `buyout` - Boolean value that indicates whether the port supports unlimited connections.
-  If "false", the port is a standard port with limited connections. If "true", the
-  port is an "unlimited connections" port that allows multiple connections at no
-  additional charge.
+  resides.
+* `encapsulation` - The VLAN encapsulation of the port (Dot1q or QinQ).
+* `buyout` - Boolean value that indicates whether the port supports unlimited connections. If
+`false`, the port is a standard port with limited connections. If `true`, the port is an
+`unlimited connections` port that allows multiple connections at no additional charge.
 * `bandwidth` - Port Bandwidth in bytes.
-* `status` - Port status that indicates whether a port has been assigned or is
-  ready for connection.
+* `status` - Port status that indicates whether a port has been assigned or is ready for
+connection.

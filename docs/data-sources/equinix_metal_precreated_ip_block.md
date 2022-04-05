@@ -21,7 +21,7 @@ locals {
 resource "equinix_metal_device" "web1" {
   hostname         = "web1"
   plan             = "c3.small.x86"
-  metro           = "sv"
+  metro            = "sv"
   operating_system = "ubuntu_20_04"
   billing_cycle    = "hourly"
   project_id       = local.project_id
@@ -46,6 +46,8 @@ resource "equinix_metal_ip_attachment" "from_ipv6_block" {
 
 ## Argument Reference
 
+The following arguments are supported:
+
 * `project_id` - (Required) ID of the project where the searched block should be.
 * `address_family` - (Required) 4 or 6, depending on which block you are looking for.
 * `public` - (Required) Whether to look for public or private block.
@@ -54,5 +56,7 @@ resource "equinix_metal_ip_attachment" "from_ipv6_block" {
 * `metro` - (Optional) Metro of the searched block (for non-global blocks).
 
 ## Attributes Reference
+
+In addition to all arguments above, the following attributes are exported:
 
 * `cidr_notation` - CIDR notation of the looked up block.

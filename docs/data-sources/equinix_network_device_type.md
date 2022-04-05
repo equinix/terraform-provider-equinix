@@ -4,7 +4,8 @@ subcategory: "Network Edge"
 
 # equinix_network_device_type (Data Source)
 
-Use this data source to get Equinix Network Edge device type details.
+Use this data source to get Equinix Network Edge device type details. For further details, check supported
+[Network Edge Vendors and Devices](https://docs.equinix.com/en-us/Content/Interconnection/NE/user-guide/NE-vendors-devices.htm).
 
 ## Example Usage
 
@@ -20,16 +21,16 @@ data "equinix_network_device_type" "ciscoRouter" {
 
 ## Argument Reference
 
-* `name` - (Optional) Device type name
-* `vendor` - (Optional) Device type vendor i.e. *"Cisco"*, *"Juniper Networks"*,
-*"VERSA Networks"*
-* `category` - (Optional) Device type category, one of:
-  * Router
-  * Firewall
-  * SDWAN
+The following arguments are supported:
+
+* `name` - (Optional) Device type name.
+* `vendor` - (Optional) Device type vendor i.e. `Cisco`, `Juniper Networks`, `VERSA Networks`.
+* `category` - (Optional) Device type category. One of: `Router`, `Firewall`, `SDWAN`.
 * `metro_codes` - (Optional) List of metro codes where device type has to be available
 
 ## Attributes Reference
+
+In addition to all arguments above, the following attributes are exported:
 
 * `code` - Device type short code, unique identifier of a network device type
 * `description` - Device type textual description

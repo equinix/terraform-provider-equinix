@@ -26,12 +26,6 @@ data "equinix_metal_vlan" "dsvlan" {
 Fetch a vlan by project ID, vxlan and metro
 
 ```hcl
-resource "equinix_metal_vlan" "foovlan" {
-  project_id = local.project_id
-  metro = "sv"
-  vxlan = 5
-}
-
 data "equinix_metal_vlan" "dsvlan" {
   project_id = local.project_id
   vxlan      = 5
@@ -43,15 +37,17 @@ data "equinix_metal_vlan" "dsvlan" {
 
 The following arguments are supported:
 
-* `vlan_id` - Metal UUID of the VLAN resource to look up
-* `project_id` - UUID of parent project of the VLAN. Use together with the vxlan number and metro or facility
-* `vxlan` - vxlan number of the VLAN to look up. Use together with the project_id and metro or facility
-* `facility` - Facility where the VLAN is deployed
-* `metro` - Metro where the VLAN is deployed
+* `vlan_id` - (Optional) Metal UUID of the VLAN resource to look up.
+* `project_id` - (Optional) UUID of parent project of the VLAN. Use together with the vxlan number and metro or facility.
+* `vxlan` - (Optional) vxlan number of the VLAN to look up. Use together with the project_id and metro or facility.
+* `facility` - (Optional) Facility where the VLAN is deployed.
+* `metro` - (Optional) Metro where the VLAN is deployed.
+
+-> **NOTE:** You must set either `vlan_id` or a combination of `vxlan`, `project_id`, and, `metro` or `facility`.
 
 ## Attributes Reference
 
-The following attributes are exported, in addition to any unspecified arguments.
+In addition to all arguments above, the following attributes are exported:
 
-* `description` - Description text of the VLAN resource
-* `assigned_devices_ids` - List of device ID to which this VLAN is assigned
+* `description` - Description text of the VLAN resource.
+* `assigned_devices_ids` - List of device ID to which this VLAN is assigned.
