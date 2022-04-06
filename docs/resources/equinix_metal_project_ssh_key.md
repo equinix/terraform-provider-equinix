@@ -5,7 +5,8 @@ subcategory: "Metal"
 # equinix_metal_project_ssh_key (Resource)
 
 Provides an Equinix Metal project SSH key resource to manage project-specific SSH keys.
-Project SSH keys will only be populated onto servers that belong to that project, in contrast to User SSH Keys.
+Project SSH keys will only be populated onto servers that belong to that project, in contrast to
+User SSH Keys.
 
 ## Example Usage
 
@@ -35,19 +36,17 @@ resource "equinix_metal_device" "test" {
 
 The following arguments are supported:
 
-* `name` - (Required) The name of the SSH key for identification
-* `public_key` - (Required) The public key. If this is a file, it can be read using the file interpolation function
-* `project_id` - (Required) The ID of parent project
+* `name` - (Required) The name of the SSH key for identification.
+* `public_key` - (Required) The public key. If this is a file, it can be read using the file interpolation function.
+* `project_id` - (Required) The ID of parent project.
 
 ## Attributes Reference
 
-The following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
-* `id` - The unique ID of the key
-* `name` - The name of the SSH key
-* `public_key` - The text of the public key
-* `project_id` - The ID of parent project
-* `owner_id` - The ID of parent project (same as project_id)
-* `fingerprint` - The fingerprint of the SSH key
-* `created` - The timestamp for when the SSH key was created
-* `updated` - The timestamp for the last time the SSH key was updated
+* `id` - The unique ID of the key.
+* `name` - The name of the SSH key.
+* `owner_id` - The ID of parent project (same as project_id).
+* `fingerprint` - The fingerprint of the SSH key.
+* `created` - The timestamp for when the SSH key was created.
+* `updated` - The timestamp for the last time the SSH key was updated.

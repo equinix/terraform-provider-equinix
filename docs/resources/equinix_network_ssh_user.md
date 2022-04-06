@@ -25,13 +25,17 @@ resource "equinix_network_ssh_user" "john" {
 
 ## Argument Reference
 
-* `username` - (Required) SSH user login name
-* `password` - (Required) SSH user password
-* `device_ids` - (Required) list of device identifiers to which user will have access
+The following arguments are supported:
+
+* `username` - (Required) SSH user login name.
+* `password` - (Required) SSH user password.
+* `device_ids` - (Required) list of device identifiers to which user will have access.
 
 ## Attributes Reference
 
-* `uuid` - SSH user unique identifier
+In addition to all arguments above, the following attributes are exported:
+
+* `uuid` - SSH user unique identifier.
 
 ## Import
 

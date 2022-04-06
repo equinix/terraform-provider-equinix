@@ -57,7 +57,7 @@ When testing against the [Equinix Sandbox API](https://developer.equinix.com/env
 
 ```hcl
 provider "equinix" {
-  token         = "someToken"
+  token = "someToken"
 }
 ```
 
@@ -67,37 +67,37 @@ The Equinix provider requires a few basic parameters. While the authentication a
 individually optionally, either `token` or `client_id` and `client_secret` must be defined
 through arguments or environment settings.
 
-- `client_id` - (Optional) API Consumer Key available under "My Apps" in
+* `client_id` - (Optional) API Consumer Key available under "My Apps" in
   developer portal. This argument can also be specified with the
   `EQUINIX_API_CLIENTID` shell environment variable.
 
-- `client_secret` (Optional) API Consumer secret available under "My Apps" in
+* `client_secret` (Optional) API Consumer secret available under "My Apps" in
   developer portal. This argument can also be specified with the
   `EQUINIX_API_CLIENTSECRET` shell environment variable.
 
-- `token` (Optional) API tokens are generated from API Consumer clients using
+* `token` (Optional) API tokens are generated from API Consumer clients using
   the [OAuth2
   API](https://developer.equinix.com/docs/ecx-getting-started#requesting-access-and-refresh-tokens).
   This argument can also be specified with the `EQUINIX_API_TOKEN` shell
   environment variable.
 
-- `auth_token` - (Optional) This is your Equinix Metal API Auth token. This can
+* `auth_token` - (Optional) This is your Equinix Metal API Auth token. This can
   also be specified with the `METAL_AUTH_TOKEN` environment variable.
 
-- `endpoint` (Optional) The Equinix API base URL to point out desired environment.
+* `endpoint` (Optional) The Equinix API base URL to point out desired environment.
    This argument can also be specified with the `EQUINIX_API_ENDPOINT`
    shell environment variable. (Defaults to `https://api.equinix.com`)
 
-- `request_timeout` (Optional) The duration of time, in seconds, that the
+* `request_timeout` (Optional) The duration of time, in seconds, that the
   Equinix Platform API Client should wait before canceling an API request.
   Canceled requests may still result in provisioned resources. (Defaults to `30`)
 
-- `response_max_page_size` (Optional) The maximum number of records in a single response
+* `response_max_page_size` (Optional) The maximum number of records in a single response
   for REST queries that produce paginated responses. (Default is client specific)
 
-- `max_retries` (Optional) Maximum number of retries in case of network failure.
+* `max_retries` (Optional) Maximum number of retries in case of network failure.
 
-- `max_retry_wait_seconds` (Optional) Maximum time to wait in case of network failure.
+* `max_retry_wait_seconds` (Optional) Maximum time to wait in case of network failure.
 
 These parameters can be provided in [Terraform variable
 files](https://www.terraform.io/docs/configuration/variables.html#variable-definitions-tfvars-files)

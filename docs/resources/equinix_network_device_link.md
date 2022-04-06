@@ -38,51 +38,51 @@ resource "equinix_network_device_link" "test" {
 
 ## Argument Reference
 
-* `name` - (Required) device link name
-* `subnet` - (Optional) device link subnet in CIDR format. Not required for link 
-between self configured devices
+The following arguments are supported:
+
+* `name` - (Required) device link name.
+* `subnet` - (Optional) device link subnet in CIDR format. Not required for link
+between self configured devices.
 * `device` - (Required) definition of one or more devices belonging to the
-device link
+device link. See [Device](#device) section below for more details.
 * `link` - (Optional) definition of one or more, inter metro, connections belonging
-to the device link
+to the device link. See [Link](#link) section below for more details.
+
+### Device
 
 The `device` block supports the following arguments:
 
-* `id` - (Required) Device identifier
-* `asn` - (Optional) Device ASN number. Not required for self configured devices
-* `interface_id` - (Optional) Device network interface identifier to use
-for device link connection
+* `id` - (Required) Device identifier.
+* `asn` - (Optional) Device ASN number. Not required for self configured devices.
+* `interface_id` - (Optional) Device network interface identifier to use for device link
+connection.
+
+### Link
 
 The `link` block supports the following arguments:
 
 * `account_number` - (Required) billing account number to be used for
 connection charges
-* `throughput` - (Required) connection throughput
-* `throughput_unit` - (Required) connection throughput unit (Mbps or Gbps)
-* `src_metro_code` - (Required) connection source metro code
-* `dst_metro_code` - (Required) connection destination metro code
-* `src_zone_code` - (Deprecated) connection source zone code is not required
-* `dst_zone_code` - (Deprecated) connection destination zone code is not required
+* `throughput` - (Required) connection throughput.
+* `throughput_unit` - (Required) connection throughput unit (Mbps or Gbps).
+* `src_metro_code` - (Required) connection source metro code.
+* `dst_metro_code` - (Required) connection destination metro code.
+* `src_zone_code` - (Deprecated) connection source zone code is not required.
+* `dst_zone_code` - (Deprecated) connection destination zone code is not required.
 
 ## Attributes Reference
 
-* `uuid` - Device link unique identifier
-* `status` - Device link provisioning status
-  * PROVISIONING
-  * PROVISIONED
-  * DEPROVISIONING
-  * DEPROVISIONED
-  * FAILED
+In addition to all arguments above, the following attributes are exported:
+
+* `uuid` - Device link unique identifier.
+* `status` - Device link provisioning status. One of `PROVISIONING`, `PROVISIONED`,
+`DEPROVISIONING`, `DEPROVISIONED`, `FAILED`.
 
 The `device` block attributes:
 
 * `ip_address` - IP address from device link subnet that was assigned to the device
-* `status` - device link provisioning status on a given device
-  * PROVISIONING
-  * PROVISIONED
-  * DEPROVISIONING
-  * DEPROVISIONED
-  * FAILED
+* `status` - device link provisioning status on a given device. One of `PROVISIONING`,
+`PROVISIONED`, `DEPROVISIONING`, `DEPROVISIONED`, `FAILED`.
 
 ## Timeouts
 

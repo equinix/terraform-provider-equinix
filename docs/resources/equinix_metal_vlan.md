@@ -34,16 +34,16 @@ resource "equinix_metal_vlan" "vlan1" {
 
 The following arguments are supported:
 
-* `project_id` - (Required) ID of parent project
-* `facility` - (Required) Facility where to create the VLAN
-* `description` - Description string
-* `vxlan` - VLAN ID, must be unique in metro
+* `project_id` - (Required) ID of parent project.
+* `facility` - (Required) Facility where to create the VLAN.
+* `description` - (Optional) Description string.
+* `vxlan` - (Optional) VLAN ID, must be unique in metro.
 
 ## Attributes Reference
 
-The following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
-* `vxlan` - VXLAN segment ID
+* `id` - ID of the virtual network.
 
 ## Import
 

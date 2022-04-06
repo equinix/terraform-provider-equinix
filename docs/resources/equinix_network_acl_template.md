@@ -34,44 +34,40 @@ resource "equinix_network_acl_template" "myacl" {
 
 ## Argument Reference
 
-* `name` - (Required) ACL template name
-* `description` - (Optional) ACL template description
-* `metro_code` - (Deprecated) ACL template location metro code
+The following arguments are supported:
+
+* `name` - (Required) ACL template name.
+* `description` - (Optional) ACL template description.
+* `metro_code` - (Deprecated) ACL template location metro code.
 * `inbound_rule` - (Required) One or more rules to specify allowed inbound traffic.
 Rules are ordered, matching traffic rule stops processing subsequent ones.
-  * `inbound_rule.#.subnets` - (Deprecated) Inbound traffic source IP subnets
-  in CIDR format
-  * `inbound_rule.#.subnet` - (Required) Inbound traffic source IP subnet
-    in CIDR format
-  * `inbound_rule.#.protocol` - (Required) Inbound traffic protocol.
-  One of: `IP`, `TCP`, `UDP`
-  * `inbound_rule.#.src_port` - (Required) Inbound traffic source ports.
-  Allowed values are:
-    * up to 10, comma separated ports (i.e. `20,22,23`)
-    * port range (i.e. `1023-1040`
-    * word `any`
-  * `inbound_rule.#.dst_port` - (Required) Inbound traffic destination ports.
-  Allowed values are:
-    * up to 10, comma separated ports (i.e. `20,22,23`)
-    * port range (i.e. `1023-1040`)
-    * word `any`
+
+The `inbound_rule` block has below fields:
+
+* `subnets` - (Deprecated) Inbound traffic source IP subnets in CIDR format.
+* `subnet` - (Required) Inbound traffic source IP subnet in CIDR format.
+* `protocol` - (Required) Inbound traffic protocol. One of `IP`, `TCP`, `UDP`.
+* `src_port` - (Required) Inbound traffic source ports. Allowed values are a comma separated list
+of ports, e.g., `20,22,23`, port range, e.g., `1023-1040` or word `any`.
+* `dst_port` - (Required) Inbound traffic destination ports. Allowed values are a comma separated
+list of ports, e.g., `20,22,23`, port range, e.g., `1023-1040` or word `any`.
 
 ## Attributes Reference
 
-* `uuid` - Unique identifier of ACL template resource
-* `device_id` - (Deprecated) Identifier of a network device where template was applied
-* `device_acl_status` - Status of ACL template provisioning process,
-  where template was applied. One of:
-  * PROVISIONING
-  * PROVISIONED
-* `device_details` - List of the devices where the ACL template is applied,
-  * `uuid` - Device uuid
-  * `name` - Device name
-  * `acl_status` - Device acl provisioning status
-    where template was applied. One of:
-    * PROVISIONING
-    * PROVISIONED
+In addition to all arguments above, the following attributes are exported:
 
+* `uuid` - Unique identifier of ACL template resource.
+* `device_id` - (Deprecated) Identifier of a network device where template was applied.
+* `device_acl_status` - Status of ACL template provisioning process, where template was applied.
+One of `PROVISIONING`, `PROVISIONED`.
+* `device_details` - List of the devices where the ACL template is applied.
+
+The `device_details` block has below fields:
+
+* `uuid` - Device uuid.
+* `name` - Device name.
+* `acl_status` - Device ACL provisioning status where template was applied. One of `PROVISIONING`,
+`PROVISIONED`.
 
 ## Import
 

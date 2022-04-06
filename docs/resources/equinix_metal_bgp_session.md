@@ -153,12 +153,12 @@ resource "null_resource" "configure_bird" {
 
 The following arguments are supported:
 
-* `device_id` - (Required) ID of device
-* `address_family` - (Required) `ipv4` or `ipv6`
+* `device_id` - (Required) ID of device.
+* `address_family` - (Required) `ipv4` or `ipv6`.
 * `default_route` - (Optional) Boolean flag to set the default route policy. False by default.
 
 ## Attributes Reference
 
-The following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 * `status`: Status of the session - `up` or `down`

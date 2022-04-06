@@ -25,31 +25,27 @@ resource "equinix_network_bgp" "test" {
 
 ## Argument Reference
 
-* `connection_id` - (Required) identifier of a connection established between
-network device and remote service provider that will be used for peering
-* `local_ip_address` - (Required) IP address in CIDR format of a local device
-* `local_asn` - (Required) Local ASN number
-* `remote_ip_address` - (Required) IP address of remote peer
-* `remote_asn` - (Required) Remote ASN number
-* `authentication_key` - (Optional) shared key used for BGP peer authentication
+The following arguments are supported:
+
+* `connection_id` - (Required) identifier of a connection established between.
+network device and remote service provider that will be used for peering.
+* `local_ip_address` - (Required) IP address in CIDR format of a local device.
+* `local_asn` - (Required) Local ASN number.
+* `remote_ip_address` - (Required) IP address of remote peer.
+* `remote_asn` - (Required) Remote ASN number.
+* `authentication_key` - (Optional) shared key used for BGP peer authentication.
 
 ## Attributes Reference
 
-* `uuid` - BGP peering configuration unique identifier
-* `device_id` - unique identifier of a network device that
-is a local peer in a given BGP peering configuration
-* `state` - BGP peer state, one of:
-  * Idle
-  * Connect
-  * Active
-  * OpenSent
-  * OpenConfirm
-  * Established
-* `provisioning_status` - BGP peering configuration provisioning status, one of:
-  * PROVISIONING
-  * PENDING_UPDATE
-  * PROVISIONED
-  * FAILED
+In addition to all arguments above, the following attributes are exported:
+
+* `uuid` - BGP peering configuration unique identifier.
+* `device_id` - unique identifier of a network device that is a local peer in a given BGP peering
+configuration.
+* `state` - BGP peer state, one of `Idle`, `Connect`, `Active`, `OpenSent`, `OpenConfirm`,
+`Established`.
+* `provisioning_status` - BGP peering configuration provisioning status, one of `PROVISIONING`,
+`PENDING_UPDATE`, `PROVISIONED`, `FAILED`.
 
 ## Import
 
