@@ -149,6 +149,13 @@ device configurations. See [Secondary Device](#secondary-device) below for more 
 
 ### Secondary Device
 
+-> **NOTE:** Network Edge provides diferent High Availability (HA) options. By defining a
+`secondary_device` block, terraform will deploy
+[Redundant Devices](https://docs.equinix.com/en-us/Content/Interconnection/NE/deploy-guide/Reference%20Architecture/NE-High-Availability-Options.htm#:~:text=Redundant%20Devices%20(Active/Active)),
+useful for customers that require two actively forwarding data planes (Active/Active) on separate
+hardware stacks. See [Architecting for Resiliency](https://docs.equinix.com/en-us/Content/Interconnection/NE/deploy-guide/NE-architecting-resiliency.htm)
+documentation to know more about the fault-tolerant solutions that you can achieve.
+
 The `secondary_device` block supports the following arguments:
 
 * `name` - (Required) Secondary device name.
@@ -180,6 +187,14 @@ The `ssh_key` block supports the following arguments:
 * `name` - (Required) reference by name to previously provisioned public SSH key.
 
 ### Cluster Details
+
+-> **NOTE:** Network Edge provides diferent High Availability (HA) options. By defining a
+`cluster_details` block, terraform will deploy a `Device Clustering`. This option, based on
+vendor-specific features, allows customers to deploy more advanced resilient configurations than
+`secondary_device`. See [Network Edge HA Options](https://docs.equinix.com/en-us/Content/Interconnection/NE/deploy-guide/Reference%20Architecture/NE-High-Availability-Options.htm)
+documentation to know which vendors support clustered devices.
+See [Architecting for Resiliency](https://docs.equinix.com/en-us/Content/Interconnection/NE/deploy-guide/NE-architecting-resiliency.htm)
+documentation to know more about the fault-tolerant solutions that you can achieve.
 
 The `cluster_details` block supports the following arguments:
 

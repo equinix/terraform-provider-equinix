@@ -33,30 +33,5 @@ profiles.
 
 In addition to all arguments above, the following attributes are exported:
 
-* `profiles` - List of resulting profiles
-
-The `profiles` block supports the following arguments:
-
-* `uuid` - Unique identifier of the seller profile.
-* `description` - Seller Profile text description.
-* `speed_from_api` - Boolean that indicates if seller is deriving connection speed from an API call.
-* `speed_customization_allowed` - Boolean that indicates if seller allows customer to enter a
-custom connection speed.
-* `redundancy_required` - Boolean that indicate if seller requires connections to be redundant.
-* `encapsulation` - Seller profile's encapsulation (either Dot1q or QinQ).
-* `speed_band` - One or more specifications of speed/bandwidth supported by given seller profile.
-  * `speed` - Speed/bandwidth supported by given service profile.
-  * `speed_unit` - Unit of the speed/bandwidth supported by given service profile.
-* `metro` - One or more specifications of metro locations supported by seller profile.
-  * `code` - Location metro code.
-  * `name` - Location metro name.
-  * `ibxes` - List of IBXes supported within given metro.
-  * `mregions` - List of regions supported within given metro.
-* `additional_info` - One or more specifications of additional buyer information attributes that
-can be provided in connection definition that uses given seller profile.
-  * `name` - Name of additional information attribute.
-  * `description` - Textual description of additional information attribute.
-  * `data_type` - Data type of additional information attribute. Either
-  *BOOLEAN*, *INTEGER* or *STRING*.
-  * `mandatory` - Specifies if additional information is mandatory to create
-  connection.
+* `profiles` - List of resulting profiles. Each element in the `profiles` list exports all
+[Service Profile Attributes](./equinix_ecx_l2_sellerprofile.md#attributes-reference).

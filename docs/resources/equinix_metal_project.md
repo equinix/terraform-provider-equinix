@@ -7,7 +7,7 @@ subcategory: "Metal"
 Provides an Equinix Metal project resource to allow you manage devices
 in your projects.
 
--> **Note:** Keep in mind that Equinix Metal invoicing is per project, so creating many
+-> **NOTE:** Keep in mind that Equinix Metal invoicing is per project, so creating many
 `equinix_metal_project` resources will affect the rendered invoice. If you want to keep your
 Equinix Metal bill simple and easy to review, please re-use your existing projects.
 

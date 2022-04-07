@@ -65,12 +65,8 @@ In addition to all arguments above, the following attributes are exported:
 `layer2-individual`, `hybrid`.
 * `operating_system` - The operating system running on the device.
 * `plan` - The hardware config of the device.
-* `ports` - List of ports assigned to the device.
-  * `name` - Name of the port (e.g. `eth0`, or `bond0`).
-  * `id` - ID of the port.
-  * `type` - Type of the port (e.g. `NetworkPort` or `NetworkBondPort`).
-  * `mac` - MAC address assigned to the port.
-  * `bonded` - Whether this port is part of a bond in bonded network setup.
+* `ports` - List of ports assigned to the device. See [Ports Attribute](#ports-attribute) below for
+more details.
 * `root_password` - Root password to the server (if still available).
 * `ssh_key_ids` - List of IDs of SSH keys deployed in the device, can be both user or project SSH keys.
 * `state` - The state of the device.
@@ -88,10 +84,20 @@ When a device is run without any special network, it will have 3 networks:
 public IPv4 (to index 1), and will then shift the indices of the IPv6 and private IPv4. Assigned
 private IPv4 will go after the management private IPv4 (to the end of the network list).
 
-The fields of the `network` attributes are:
+Each element in the `network` list exports:
 
 * `address` - IPv4 or IPv6 address string.
 * `cidr` - Bit length of the network mask of the address.
 * `gateway` - Address of router.
 * `public` - Whether the address is routable from the Internet.
-* `family` - IP version - "4" or "6".
+* `family` - IP version. One of `4`, `6`.
+
+### Ports Attribute
+
+Each element in the `ports` list exports:
+
+* `name` - Name of the port (e.g. `eth0`, or `bond0`).
+* `id` - ID of the port.
+* `type` - Type of the port (e.g. `NetworkPort` or `NetworkBondPort`).
+* `mac` - MAC address assigned to the port.
+* `bonded` - Whether this port is part of a bond in bonded network setup.
