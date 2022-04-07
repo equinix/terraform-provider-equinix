@@ -65,7 +65,8 @@ provider "equinix" {
 
 The Equinix provider requires a few basic parameters. While the authentication arguments are
 individually optionally, either `token` or `client_id` and `client_secret` must be defined
-through arguments or environment settings.
+through arguments or environment settings to interact with Equinix Fabric and Network Edge
+services, and `auth_token` to interact with Equinix Metal.
 
 - `client_id` - (Optional) API Consumer Key available under "My Apps" in
   developer portal. This argument can also be specified with the
