@@ -18,28 +18,22 @@ func TestMain(m *testing.M) {
 
 func sharedConfigForRegion(region string) (*Config, error) {
 	endpoint := getFromEnvDefault(endpointEnvVar, DefaultBaseURL)
-	clientID := ""
-	clientSecret := ""
-	clientToken, err := getFromEnv(clientTokenEnvVar)
-	if err != nil {
-		clientID, err = getFromEnv(clientIDEnvVar)
-		if err != nil {
-			return nil, fmt.Errorf("one of '%s' or pair '%s' - '%s' must be set for acceptance tests", clientTokenEnvVar, clientIDEnvVar, clientSecretEnvVar)
-		}
-		clientSecret, err = getFromEnv(clientSecretEnvVar)
-		if err != nil {
-			return nil, fmt.Errorf("one of '%s' or pair '%s' - '%s' must be set for acceptance tests", clientTokenEnvVar, clientIDEnvVar, clientSecretEnvVar)
-		}
-	}
+	clientToken := getFromEnvDefault(clientTokenEnvVar, "")
+	clientID := getFromEnvDefault(clientIDEnvVar, "")
+	clientSecret := getFromEnvDefault(clientSecretEnvVar, "")
 	clientTimeout := getFromEnvDefault(clientTimeoutEnvVar, strconv.Itoa(DefaultTimeout))
 	clientTimeoutInt, err := strconv.Atoi(clientTimeout)
 	if err != nil {
 		return nil, fmt.Errorf("cannot convert value of '%s' env variable to int", clientTimeoutEnvVar)
 	}
-	metalAuthToken, err := getFromEnv(metalAuthTokenEnvVar)
-	if err != nil {
-		return nil, err
+	metalAuthToken := getFromEnvDefault(metalAuthTokenEnvVar, "")
+
+	if clientToken == "" && (clientID == "" || clientSecret == "") && metalAuthToken == "" {
+		return nil, fmt.Errorf(`To run acceptance tests sweeper, one of '%s' or pair '%s' - '%s' must be
+		set for Equinix Fabric and Network Edge, and '%s' for Equinix Metal`,
+		clientTokenEnvVar, clientIDEnvVar, clientSecretEnvVar, metalAuthTokenEnvVar)
 	}
+
 	return &Config{
 		AuthToken:      metalAuthToken,
 		BaseURL:        endpoint,

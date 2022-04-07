@@ -386,17 +386,22 @@ func TestProvider_schemaSetToMap(t *testing.T) {
 //_______________________________________________________________________
 
 func testAccPreCheck(t *testing.T) {
-	if _, err := getFromEnv(metalAuthTokenEnvVar); err != nil {
-		t.Fatalf("%s must be set for acceptance tests", err)
+	var err error
+
+	if _, err = getFromEnv(clientTokenEnvVar); err != nil {
+		_, err = getFromEnv(clientIDEnvVar)
+		if err == nil {
+			_, err = getFromEnv(clientSecretEnvVar)
+		}
 	}
-	if _, err := getFromEnv(clientTokenEnvVar); err == nil {
-		return
+
+	if err == nil {
+		_, err = getFromEnv(metalAuthTokenEnvVar)
 	}
-	if _, err := getFromEnv(clientIDEnvVar); err != nil {
-		t.Fatalf("%s must be set for acceptance tests", err)
-	}
-	if _, err := getFromEnv(clientSecretEnvVar); err != nil {
-		t.Fatalf("%s must be set for acceptance tests", err)
+
+	if err != nil {
+		t.Fatalf("To run acceptance tests, one of '%s' or pair '%s' - '%s' must be set for Equinix Fabric and Network Edge, and '%s' for Equinix Metal",
+		clientTokenEnvVar, clientIDEnvVar, clientSecretEnvVar, metalAuthTokenEnvVar)
 	}
 }
 
