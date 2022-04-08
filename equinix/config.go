@@ -33,11 +33,11 @@ can be used.
 
 One of pair "client_id" - "client_secret" or "token" must be set in the provider
 configuration to interact with Equinix Fabric and Network Edge services, and
-"auth_token" to interact with Equinix Metal. All them can also be configured using
+"auth_token" to interact with Equinix Metal. These can also be configured using
 environment variables.
 
 Please note that while the authentication arguments are individually optional to allow
-you interact with the different services independently, trying to provision the resources
+interaction with the different services independently, trying to provision the resources
 of a service without the required credentials will return an API error referring to
 'Invalid authentication token' or 'error when acquiring token'.
 
