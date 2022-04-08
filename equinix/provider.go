@@ -168,7 +168,7 @@ func Provider() *schema.Provider {
 
 func configureProvider(ctx context.Context, d *schema.ResourceData, p *schema.Provider) (interface{}, diag.Diagnostics) {
 	mrws := d.Get("max_retry_wait_seconds").(int)
-    rt := d.Get("request_timeout").(int)
+	rt := d.Get("request_timeout").(int)
 
 	config := Config{
 		AuthToken:      d.Get("auth_token").(string),
@@ -181,7 +181,7 @@ func configureProvider(ctx context.Context, d *schema.ResourceData, p *schema.Pr
 		MaxRetries:     d.Get("max_retries").(int),
 		MaxRetryWait:   time.Duration(mrws) * time.Second,
 	}
-	
+
 	config.terraformVersion = p.TerraformVersion
 	if config.terraformVersion == "" {
 		// Terraform 0.12 introduced this field to the protocol

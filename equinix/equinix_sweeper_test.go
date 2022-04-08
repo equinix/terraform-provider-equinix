@@ -29,9 +29,8 @@ func sharedConfigForRegion(region string) (*Config, error) {
 	metalAuthToken := getFromEnvDefault(metalAuthTokenEnvVar, "")
 
 	if clientToken == "" && (clientID == "" || clientSecret == "") && metalAuthToken == "" {
-		return nil, fmt.Errorf(`To run acceptance tests sweeper, one of '%s' or pair '%s' - '%s' must be
-		set for Equinix Fabric and Network Edge, and '%s' for Equinix Metal`,
-		clientTokenEnvVar, clientIDEnvVar, clientSecretEnvVar, metalAuthTokenEnvVar)
+		return nil, fmt.Errorf("To run acceptance tests sweeper, one of '%s' or pair '%s' - '%s' must be set for Equinix Fabric and Network Edge, and '%s' for Equinix Metal",
+			clientTokenEnvVar, clientIDEnvVar, clientSecretEnvVar, metalAuthTokenEnvVar)
 	}
 
 	return &Config{

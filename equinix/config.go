@@ -25,10 +25,10 @@ import (
 )
 
 const (
-	consumerToken = "aZ9GmqHTPtxevvFq9SK3Pi2yr9YCbRzduCSXF2SNem5sjB91mDq7Th3ZwTtRqMWZ"
-	metalBasePath = "/metal/v1/"
-	uaEnvVar      = "TF_APPEND_USER_AGENT"
-	resourceProviderRegistrationError = `the provider needs to be configured with the proper credentials before it
+	consumerToken         = "aZ9GmqHTPtxevvFq9SK3Pi2yr9YCbRzduCSXF2SNem5sjB91mDq7Th3ZwTtRqMWZ"
+	metalBasePath         = "/metal/v1/"
+	uaEnvVar              = "TF_APPEND_USER_AGENT"
+	emptyCredentialsError = `the provider needs to be configured with the proper credentials before it
 can be used.
 
 One of pair "client_id" - "client_secret" or "token" must be set in the provider
@@ -80,7 +80,7 @@ func (c *Config) Load(ctx context.Context) error {
 	}
 
 	if c.Token == "" && (c.ClientID == "" || c.ClientSecret == "") && c.AuthToken == "" {
-		return fmt.Errorf(resourceProviderRegistrationError)
+		return fmt.Errorf(emptyCredentialsError)
 	}
 
 	var authClient *http.Client
