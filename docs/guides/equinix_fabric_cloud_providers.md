@@ -14,7 +14,7 @@ interconnection to a cloud service provider and how to take advantage of the
 [Equinix Fabric connection terraform modules](https://registry.terraform.io/search/modules?namespace=equinix-labs&q=fabric-connection),
 for further details and other options you can check on [References](#references) section below.
 
-## Getting started - Enabling an interconnectinon
+## Getting started - Enabling an interconnection
 
 Whether you are setting up a Multi-Cloud or Hybrid Cloud architecture, the main resource you will
 need to define is an [equinix_ecx_l2_connection](../resources/equinix_ecx_l2_connection.md) which
@@ -24,9 +24,9 @@ provider to have the interconnection up and running. Below we describe these gen
 Azure ExpressRoute as an example.
 
 **1.** Enabling interconnection in the cloud provider - Usally this implies creating a cloud router
-and an interconnection asset (e.g., Google Cloud Router and VLAN attachment, Oracle  FastcConnect,
+and an interconnection asset (e.g. Google Cloud Router and VLAN attachment, Oracle FastConnect,
 etc.). For this example it is required an [azurerm_express_route_circuit](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/express_route_circuit)
-resource in which the service provider (i.e., `Equinix`) must be specified in order to generate a
+resource in which the service provider (i.e. `Equinix`) must be specified in order to generate a
 valid pairing key.
 
 ```hcl-terraform
@@ -55,10 +55,10 @@ resource "azurerm_express_route_circuit" "example" {
 [Equinix Service Token](https://docs.equinix.com/en-us/Content/Interconnection/Fabric/service%20tokens/Fabric-Service-Tokens.htm)
 to the cloud virtual interconnection asset.
 
-In this example, we will establish a redudnant connection from a Network Edge device (See [Edge networking examples](https://github.com/equinix/terraform-provider-equinix/tree/master/examples/edge-networking) for usage details of
+In this example, we will establish a redundant connection from a Network Edge device (See [Edge networking examples](https://github.com/equinix/terraform-provider-equinix/tree/master/examples/edge-networking) for usage details of
 [equinix_network_device](https://registry.terraform.io/providers/equinix/equinix/latest/docs/resources/equinix_network_device)
 resource). Note that the value of `authorization_key` must be the `azurerm_express_route_circuit.example.service_key`
-(i.e., the pairing key mentioned above).
+(i.e. the pairing key mentioned above).
 
 ```hcl-terraform
 provider "equinix" {}
@@ -196,5 +196,5 @@ with your request.
 for providers for which there is no module available yet.
 - See the [API how to guides](https://developer.equinix.com/docs/how-guide-v3-apis) for further
 details on each cloud service provider requirements.
-- Check the [Provider availables](https://www.equinix.com/interconnection-services/equinix-fabric/provider-availability)
-on Platform Equinix® to find you required service provider.
+- Check the [availables providers](https://www.equinix.com/interconnection-services/equinix-fabric/provider-availability)
+on Platform Equinix® to find your required service provider.
