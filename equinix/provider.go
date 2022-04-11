@@ -56,23 +56,26 @@ func Provider() *schema.Provider {
 			"client_id": {
 				Type:        schema.TypeString,
 				Optional:    true,
-				DefaultFunc: schema.EnvDefaultFunc(clientIDEnvVar, nil),
-				// ValidateFunc: validation.StringIsNotEmpty,
+				DefaultFunc: schema.EnvDefaultFunc(clientIDEnvVar, ""),
 				Description: "API Consumer Key available under My Apps section in developer portal",
 			},
 			"client_secret": {
 				Type:        schema.TypeString,
 				Optional:    true,
-				DefaultFunc: schema.EnvDefaultFunc(clientSecretEnvVar, nil),
-				// ValidateFunc: validation.StringIsNotEmpty,
+				DefaultFunc: schema.EnvDefaultFunc(clientSecretEnvVar, ""),
 				Description: "API Consumer secret available under My Apps section in developer portal",
 			},
 			"token": {
 				Type:        schema.TypeString,
 				Optional:    true,
-				DefaultFunc: schema.EnvDefaultFunc(clientTokenEnvVar, nil),
-				// ValidateFunc: validation.StringIsNotEmpty,
+				DefaultFunc: schema.EnvDefaultFunc(clientTokenEnvVar, ""),
 				Description: "API token from the developer sandbox",
+			},
+			"auth_token": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				DefaultFunc: schema.EnvDefaultFunc(metalAuthTokenEnvVar, ""),
+				Description: "The Equinix Metal API auth key for API operations",
 			},
 			"request_timeout": {
 				Type:         schema.TypeInt,
@@ -86,12 +89,6 @@ func Provider() *schema.Provider {
 				Optional:     true,
 				ValidateFunc: validation.IntAtLeast(100),
 				Description:  "The maximum number of records in a single response for REST queries that produce paginated responses",
-			},
-			"auth_token": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				DefaultFunc: schema.EnvDefaultFunc(metalAuthTokenEnvVar, nil),
-				Description: "The Equinix Metal API auth key for API operations",
 			},
 			"max_retries": {
 				Type:     schema.TypeInt,
@@ -171,29 +168,18 @@ func Provider() *schema.Provider {
 
 func configureProvider(ctx context.Context, d *schema.ResourceData, p *schema.Provider) (interface{}, diag.Diagnostics) {
 	mrws := d.Get("max_retry_wait_seconds").(int)
+	rt := d.Get("request_timeout").(int)
 
 	config := Config{
-		AuthToken:    d.Get("auth_token").(string),
-		MaxRetries:   d.Get("max_retries").(int),
-		MaxRetryWait: time.Duration(mrws) * time.Second,
-	}
-	if v, ok := d.GetOk("endpoint"); ok {
-		config.BaseURL = v.(string)
-	}
-	if v, ok := d.GetOk("client_id"); ok {
-		config.ClientID = v.(string)
-	}
-	if v, ok := d.GetOk("client_secret"); ok {
-		config.ClientSecret = v.(string)
-	}
-	if v, ok := d.GetOk("token"); ok {
-		config.Token = v.(string)
-	}
-	if v, ok := d.GetOk("request_timeout"); ok {
-		config.RequestTimeout = time.Duration(v.(int)) * time.Second
-	}
-	if v, ok := d.GetOk("response_max_page_size"); ok {
-		config.PageSize = v.(int)
+		AuthToken:      d.Get("auth_token").(string),
+		BaseURL:        d.Get("endpoint").(string),
+		ClientID:       d.Get("client_id").(string),
+		ClientSecret:   d.Get("client_secret").(string),
+		Token:          d.Get("token").(string),
+		RequestTimeout: time.Duration(rt) * time.Second,
+		PageSize:       d.Get("response_max_page_size").(int),
+		MaxRetries:     d.Get("max_retries").(int),
+		MaxRetryWait:   time.Duration(mrws) * time.Second,
 	}
 
 	config.terraformVersion = p.TerraformVersion

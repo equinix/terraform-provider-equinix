@@ -25,9 +25,26 @@ import (
 )
 
 const (
-	consumerToken = "aZ9GmqHTPtxevvFq9SK3Pi2yr9YCbRzduCSXF2SNem5sjB91mDq7Th3ZwTtRqMWZ"
-	metalBasePath = "/metal/v1/"
-	uaEnvVar      = "TF_APPEND_USER_AGENT"
+	consumerToken         = "aZ9GmqHTPtxevvFq9SK3Pi2yr9YCbRzduCSXF2SNem5sjB91mDq7Th3ZwTtRqMWZ"
+	metalBasePath         = "/metal/v1/"
+	uaEnvVar              = "TF_APPEND_USER_AGENT"
+	emptyCredentialsError = `the provider needs to be configured with the proper credentials before it
+can be used.
+
+One of pair "client_id" - "client_secret" or "token" must be set in the provider
+configuration to interact with Equinix Fabric and Network Edge services, and
+"auth_token" to interact with Equinix Metal. These can also be configured using
+environment variables.
+
+Please note that while the authentication arguments are individually optional to allow
+interaction with the different services independently, trying to provision the resources
+of a service without the required credentials will return an API error referring to
+'Invalid authentication token' or 'error when acquiring token'.
+
+More information on the provider configuration can be found here:
+https://registry.terraform.io/providers/equinix/equinix/latest/docs
+
+Original Error:`
 )
 
 var (
@@ -59,11 +76,14 @@ type Config struct {
 // all required API clients.
 func (c *Config) Load(ctx context.Context) error {
 	if c.BaseURL == "" {
-		return fmt.Errorf("baseURL cannot be empty")
+		return fmt.Errorf("'baseURL' cannot be empty")
+	}
+
+	if c.Token == "" && (c.ClientID == "" || c.ClientSecret == "") && c.AuthToken == "" {
+		return fmt.Errorf(emptyCredentialsError)
 	}
 
 	var authClient *http.Client
-
 	if c.Token != "" {
 		tokenSource := xoauth2.StaticTokenSource(&xoauth2.Token{AccessToken: c.Token})
 		oauthTransport := &xoauth2.Transport{
@@ -73,9 +93,6 @@ func (c *Config) Load(ctx context.Context) error {
 			Transport: oauthTransport,
 		}
 	} else {
-		if c.ClientID == "" || c.ClientSecret == "" {
-			return fmt.Errorf("one of 'token' or pair 'client_id' - 'client_secret' must be set")
-		}
 		authConfig := oauth2.Config{
 			ClientID:     c.ClientID,
 			ClientSecret: c.ClientSecret,

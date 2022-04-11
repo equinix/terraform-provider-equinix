@@ -301,19 +301,19 @@ func TestAccFabricL2Connection_ServiceToken_HA_SP(t *testing.T) {
 	redundancyType := "SECONDARY"
 
 	ctx := map[string]interface{}{
-		"connection-resourceName":            "test",
-		"connection-profile_uuid":            sellerProfileUUID,
-		"connection-name":                    priConnName,
-		"connection-speed":                   speed,
-		"connection-speed_unit":              speedUnit,
-		"connection-notifications":           notifications,
-		"connection-seller_metro_code":       sellerMetro,
-		"connection-authorization_key":       authKey,
-		"service_token":                      priServiceToken,
-		"port-uuid":                          priPortUUID,
-		"connection-secondary_name":          secConnName,
-		"secondary-service_token":            secServiceToken,
-		"secondary-port_uuid":                secPortUUID,
+		"connection-resourceName":      "test",
+		"connection-profile_uuid":      sellerProfileUUID,
+		"connection-name":              priConnName,
+		"connection-speed":             speed,
+		"connection-speed_unit":        speedUnit,
+		"connection-notifications":     notifications,
+		"connection-seller_metro_code": sellerMetro,
+		"connection-authorization_key": authKey,
+		"service_token":                priServiceToken,
+		"port-uuid":                    priPortUUID,
+		"connection-secondary_name":    secConnName,
+		"secondary-service_token":      secServiceToken,
+		"secondary-port_uuid":          secPortUUID,
 	}
 
 	ctxWithoutConflicts := copyMap(ctx)
@@ -343,7 +343,7 @@ func TestAccFabricL2Connection_ServiceToken_HA_SP(t *testing.T) {
 				connection.Name = &priConnName
 				connection.ServiceToken = &priServiceToken
 				connection.PortUUID = &priPortUUID
-			} else{
+			} else {
 				connection.UUID = &secConnID
 				connection.Name = &secConnName
 				connection.ServiceToken = &secServiceToken
