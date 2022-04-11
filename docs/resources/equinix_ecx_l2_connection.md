@@ -112,6 +112,9 @@ resource "equinix_ecx_l2_connection" "token-to-gcp" {
 }
 ```
 
+-> **NOTE:** See [Equinix Fabric connecting to the cloud](../guides/equinix_fabric_cloud_providers.md)
+guide for more details on how to connect to a CSP.
+
 ## Argument Reference
 
 The following arguments are supported:
