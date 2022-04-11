@@ -196,5 +196,5 @@ with your request.
 for providers for which there is no module available yet.
 - See the [API how to guides](https://developer.equinix.com/docs/how-guide-v3-apis) for further
 details on each cloud service provider requirements.
-- Check the [availables providers](https://www.equinix.com/interconnection-services/equinix-fabric/provider-availability)
+- Check the [available providers](https://www.equinix.com/interconnection-services/equinix-fabric/provider-availability)
 on Platform Equinix® to find your required service provider.
