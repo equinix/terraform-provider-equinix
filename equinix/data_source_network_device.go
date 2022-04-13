@@ -195,12 +195,14 @@ func createDataSourceNetworkDeviceSchema() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
 		networkDeviceSchemaNames["UUID"]: {
 			Type:        schema.TypeString,
+			Optional:    true,
 			Computed:    true,
 			Description: networkDeviceDescriptions["UUID"],
 		},
 		networkDeviceSchemaNames["Name"]: {
 			Type:     schema.TypeString,
-			Required: true,
+			Optional: true,
+			Computed: true,
 			DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
 				return old == new+"-Node0"
 			},
@@ -754,11 +756,30 @@ func dataSourceNetworkDeviceRead(ctx context.Context, d *schema.ResourceData, m 
 	var diags diag.Diagnostics
 	var err error
 	var primary, secondary *ne.Device
-	primary, err = getDeviceByName(d.Get("name").(string), conf)
+
+	nameIf, nameExists := d.GetOk("name")
+	name := nameIf.(string)
+	uuidIf, uuidExists := d.GetOk("uuid")
+	uuid := uuidIf.(string)
+
+	if nameExists && uuidExists {
+		return diag.Errorf("name and uuid arguments can't be used together")
+	}
+
+	if !nameExists && !uuidExists {
+		return diag.Errorf("either name or uuid must be set")
+	}
+
+	if nameExists {
+		primary, err = getDeviceByName(name, conf)
+	} else {
+		primary, err = conf.ne.GetDevice(uuid)
+	}
+
 	if err != nil {
 		return diag.Errorf("cannot fetch primary network device due to '%v'", err)
 	}
-	// return diag.Errorf("ASDF! IDK WTRssF! %v", d.Id())
+
 	if isStringInSlice(ne.StringValue(primary.Status), []string{ne.DeviceStateDeprovisioning, ne.DeviceStateDeprovisioned}) {
 		d.SetId("")
 		return diags
@@ -784,7 +805,7 @@ func updateDataSourceNetworkDeviceResource(primary *ne.Device, secondary *ne.Dev
 	if err := d.Set(networkDeviceSchemaNames["Name"], primary.Name); err != nil {
 		return fmt.Errorf("error reading Name: %s", err)
 	}
-	// return fmt.Errorf("LOG FROM updateNetworkDeviceResource! %v  *%v  &%v", ne.StringValue(primary.TypeCode), *primary.Name, &primary.Name)
+
 	if err := d.Set(networkDeviceSchemaNames["TypeCode"], primary.TypeCode); err != nil {
 		return fmt.Errorf("error reading TypeCode: %s", err)
 	}
