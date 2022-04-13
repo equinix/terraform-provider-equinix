@@ -273,12 +273,11 @@ func createNetworkDeviceSchema() map[string]*schema.Schema {
 			Description:  networkDeviceDescriptions["ThroughputUnit"],
 		},
 		networkDeviceSchemaNames["HostName"]: {
-			Type:         schema.TypeString,
-			Optional:     true,
-			Computed:     true,
-			ForceNew:     true,
-			ValidateFunc: validation.StringLenBetween(2, 44),
-			Description:  networkDeviceDescriptions["HostName"],
+			Type:        schema.TypeString,
+			Optional:    true,
+			Computed:    true,
+			ForceNew:    true,
+			Description: networkDeviceDescriptions["HostName"],
 		},
 		networkDeviceSchemaNames["PackageCode"]: {
 			Type:         schema.TypeString,
@@ -512,11 +511,10 @@ func createNetworkDeviceSchema() map[string]*schema.Schema {
 						Description: networkDeviceDescriptions["Region"],
 					},
 					networkDeviceSchemaNames["HostName"]: {
-						Type:         schema.TypeString,
-						Optional:     true,
-						ForceNew:     true,
-						ValidateFunc: validation.StringLenBetween(2, 44),
-						Description:  networkDeviceDescriptions["HostName"],
+						Type:        schema.TypeString,
+						Optional:    true,
+						ForceNew:    true,
+						Description: networkDeviceDescriptions["HostName"],
 					},
 					networkDeviceSchemaNames["LicenseToken"]: {
 						Type:          schema.TypeString,
@@ -798,11 +796,10 @@ func createClusterNodeDetailSchema() map[string]*schema.Schema {
 func createVendorConfigurationSchema() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
 		neDeviceVendorConfigSchemaNames["Hostname"]: {
-			Type:         schema.TypeString,
-			Optional:     true,
-			ForceNew:     true,
-			ValidateFunc: validation.StringLenBetween(2, 50),
-			Description:  neDeviceVendorConfigDescriptions["Hostname"],
+			Type:        schema.TypeString,
+			Optional:    true,
+			ForceNew:    true,
+			Description: neDeviceVendorConfigDescriptions["Hostname"],
 		},
 		neDeviceVendorConfigSchemaNames["AdminPassword"]: {
 			Type:        schema.TypeString,
