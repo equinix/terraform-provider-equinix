@@ -11,7 +11,6 @@ import (
 
 	"github.com/equinix/ne-go"
 	"github.com/equinix/rest-go"
-	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -274,12 +273,11 @@ func createNetworkDeviceSchema() map[string]*schema.Schema {
 			Description:  networkDeviceDescriptions["ThroughputUnit"],
 		},
 		networkDeviceSchemaNames["HostName"]: {
-			Type:         schema.TypeString,
-			Optional:     true,
-			Computed:     true,
-			ForceNew:     true,
-			ValidateFunc: validation.StringLenBetween(2, 44),
-			Description:  networkDeviceDescriptions["HostName"],
+			Type:        schema.TypeString,
+			Optional:    true,
+			Computed:    true,
+			ForceNew:    true,
+			Description: networkDeviceDescriptions["HostName"],
 		},
 		networkDeviceSchemaNames["PackageCode"]: {
 			Type:         schema.TypeString,
@@ -513,11 +511,10 @@ func createNetworkDeviceSchema() map[string]*schema.Schema {
 						Description: networkDeviceDescriptions["Region"],
 					},
 					networkDeviceSchemaNames["HostName"]: {
-						Type:         schema.TypeString,
-						Optional:     true,
-						ForceNew:     true,
-						ValidateFunc: validation.StringLenBetween(2, 44),
-						Description:  networkDeviceDescriptions["HostName"],
+						Type:        schema.TypeString,
+						Optional:    true,
+						ForceNew:    true,
+						Description: networkDeviceDescriptions["HostName"],
 					},
 					networkDeviceSchemaNames["LicenseToken"]: {
 						Type:          schema.TypeString,
@@ -799,11 +796,10 @@ func createClusterNodeDetailSchema() map[string]*schema.Schema {
 func createVendorConfigurationSchema() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
 		neDeviceVendorConfigSchemaNames["Hostname"]: {
-			Type:         schema.TypeString,
-			Optional:     true,
-			ForceNew:     true,
-			ValidateFunc: validation.StringLenBetween(2, 50),
-			Description:  neDeviceVendorConfigDescriptions["Hostname"],
+			Type:        schema.TypeString,
+			Optional:    true,
+			ForceNew:    true,
+			Description: neDeviceVendorConfigDescriptions["Hostname"],
 		},
 		neDeviceVendorConfigSchemaNames["AdminPassword"]: {
 			Type:        schema.TypeString,
@@ -957,31 +953,11 @@ func resourceNetworkDeviceUpdate(ctx context.Context, d *schema.ResourceData, m 
 func resourceNetworkDeviceDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	conf := m.(*Config)
 	var diags diag.Diagnostics
-	if v, ok := d.GetOk(networkDeviceSchemaNames["ACLTemplateUUID"]); ok {
-		if err := conf.ne.NewDeviceUpdateRequest(d.Id()).WithACLTemplate("").Execute(); err != nil {
-			diags = append(diags, diag.Diagnostic{
-				Severity:      diag.Warning,
-				Summary:       fmt.Sprintf("could not unassign ACL template %q from device %q", v, d.Id()),
-				Detail:        err.Error(),
-				AttributePath: cty.GetAttrPath(networkDeviceSchemaNames["ACLTemplateUUID"]),
-			})
-		}
-	}
 	waitConfigs := []*resource.StateChangeConf{
 		createNetworkDeviceStatusDeleteWaitConfiguration(conf.ne.GetDevice, d.Id(), 5*time.Second, d.Timeout(schema.TimeoutDelete)),
 	}
 	if v, ok := d.GetOk(networkDeviceSchemaNames["Secondary"]); ok {
 		if secondary := expandNetworkDeviceSecondary(v.([]interface{})); secondary != nil {
-			if ne.StringValue(secondary.ACLTemplateUUID) != "" {
-				if err := conf.ne.NewDeviceUpdateRequest(ne.StringValue(secondary.UUID)).WithACLTemplate("").Execute(); err != nil {
-					diags = append(diags, diag.Diagnostic{
-						Severity:      diag.Warning,
-						Summary:       fmt.Sprintf("could not unassign ACL template %q from device %q", v, ne.StringValue(secondary.UUID)),
-						Detail:        err.Error(),
-						AttributePath: cty.GetAttrPath(networkDeviceSchemaNames["ACLTemplateUUID"]),
-					})
-				}
-			}
 			waitConfigs = append(waitConfigs,
 				createNetworkDeviceStatusDeleteWaitConfiguration(conf.ne.GetDevice, ne.StringValue(secondary.UUID), 5*time.Second, d.Timeout(schema.TimeoutDelete)),
 			)
