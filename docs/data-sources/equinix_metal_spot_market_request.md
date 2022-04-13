@@ -4,7 +4,8 @@ subcategory: "Metal"
 
 # equinix_metal_spot_market_request (Data Source)
 
-Provides an Equinix Metal spot_market_request datasource. The datasource will contain list of device IDs created by referenced Spot Market Request.
+Provides an Equinix Metal spot_market_request datasource. The datasource will contain list of
+device IDs created by referenced Spot Market Request.
 
 ## Example Usage
 
@@ -47,13 +48,13 @@ output "ips" {
 
 With the code as `main.tf`, first create the spot market request:
 
-```
+```shell
 terraform apply -target equinix_metal_spot_market_request.req
 ```
 
 When the terraform run ends, run a full apply, and the IPv4 addresses will be printed:
 
-```
+```shell
 $ terraform apply
 
 [...]
@@ -68,18 +69,18 @@ ips = [
 
 The following arguments are supported:
 
-* `request_id` - (Required) The id of the Spot Market Request
+* `request_id` - (Required) The id of the Spot Market Request.
 
 ## Attributes Reference
 
-The following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
-* `device_ids` - List of IDs of devices spawned by the referenced Spot Market Request
-* `devices_min` - Miniumum number devices to be created
-* `devices_max` - Maximum number devices to be created
-* `max_bid_price` - Maximum price user is willing to pay per hour per device
-* `facilities` - Facility IDs where devices should be created
+* `device_ids` - List of IDs of devices spawned by the referenced Spot Market Request.
+* `devices_min` - Miniumum number devices to be created.
+* `devices_max` - Maximum number devices to be created.
+* `max_bid_price` - Maximum price user is willing to pay per hour per device.
+* `facilities` - Facility IDs where devices should be created.
 * `metro` - Metro where devices should be created.
-* `project_id` - Project ID
+* `project_id` - Project ID.
 * `plan` - The device plan slug.
 * `end_at` - Date and time When the spot market request will be ended.

@@ -4,8 +4,8 @@ subcategory: "Fabric"
 
 # equinix_ecx_l2_sellerprofile (Data Source)
 
-Use this data source to get details of Equinix Fabric layer 2
-seller profile with a given name and / or organization.
+Use this data source to get details of Equinix Fabric layer 2 seller profile with a given name
+and / or organization.
 
 ## Example usage
 
@@ -21,37 +21,55 @@ output "id" {
 
 ## Argument Reference
 
-- `name` - (Optional) Name of the seller profile
-- `organization_name` - (Optional) Name of seller's organization
-- `organization_global_name` - (Optional) Name of seller's global organization
+The following arguments are supported:
+
+* `name` - (Optional) Name of the seller profile.
+* `organization_name` - (Optional) Name of seller's organization.
+* `organization_global_name` - (Optional) Name of seller's global organization.
 
 ## Attributes Reference
 
-- `uuid` - Unique identifier of the seller profile
-- `description` - Seller Profile text description
-- `speed_from_api` - Boolean that indicates if seller is deriving connection speed
-from an API call
-- `speed_customization_allowed` - Boolean that indicates if seller allows customer
-to enter a custom connection speed
-- `redundancy_required` - Boolean that indicate if seller requires connections
-to be redundant
-- `encapsulation` - Seller profile's encapsulation (either Dot1q or QinQ)
-- `speed_band` - One or more specifications of speed/bandwidth supported by given
-seller profile
-  - `speed_band.#.speed` - Speed/bandwidth supported by given service profile
-  - `speed_band.#.speed_unit` - Unit of the speed/bandwidth supported by given
-  service profile
-- `metro` - One or more specifications of metro locations supported by seller profile
-  - `metro.#.code` - Location metro code
-  - `metro.#.name` - Location metro name
-  - `metro.#.ibxes` - List of IBXes supported within given metro
-  - `metro.#.regions` - List of regions supported within given metro
-- `additional_info` - One or more specifications of additional buyer information
-attributes that can be provided in connection definition that uses given seller profile
-  - `additional_info.#.name` - Name of additional information attribute
-  - `additional_info.#.description` - Textual description of additional information
- attribute
-  - `additional_info.#.data_type` - Data type of additional information attribute.
-  Either *BOOLEAN*, *INTEGER* or *STRING*
-  - `additional_info.#.mandatory` - Specifies if additional information
-  is mandatory to create connection
+In addition to all arguments above, the following attributes are exported:
+
+* `uuid` - Unique identifier of the seller profile.
+* `description` - Seller Profile text description.
+* `speed_from_api` - Boolean that indicates if seller is deriving connection speed from an API call.
+* `speed_customization_allowed` - Boolean that indicates if seller allows customer to enter a
+custom connection speed.
+* `redundancy_required` - Boolean that indicate if seller requires connections to be redundant
+* `encapsulation` - Seller profile's encapsulation (either Dot1q or QinQ).
+* `speed_band` - One or more specifications of speed/bandwidth supported by given seller profile.
+See [Speed Band Attribute](#speed-band-attribute) below for more details.
+* `metro` - One or more specifications of metro locations supported by seller profile.
+See [Metro Attribute](#metro-attribute) below for more details.
+
+* `additional_info` - One or more specifications of additional buyer information attributes that
+can be provided in connection definition that uses given seller profile.
+See [Additional Info Attribute](#additional-info-attribute) below for more details.
+
+### Speed Band Attribute
+
+Each element in the `speed_band` set exports:
+
+* `speed` - Speed/bandwidth supported by given service profile.
+* `speed_unit` - Unit of the speed/bandwidth supported by given service profile.
+
+### Metro Attribute
+
+Each element in the `metro` set exports:
+
+* `code` - Location metro code.
+* `name` - Location metro name.
+* `ibxes` - List of IBXes supported within given metro.
+* `regions` - List of regions supported within given.
+
+### Additional Info Attribute
+
+Each element in the `additional_info` set exports:
+
+* `name` - Name of additional information attribute.
+* `description` - Textual description of additional information attribute.
+* `data_type` - Data type of additional information attribute. One of `BOOLEAN`, `INTEGER` or
+`STRING`.
+* `mandatory` - Specifies if additional information is mandatory to create
+connection.

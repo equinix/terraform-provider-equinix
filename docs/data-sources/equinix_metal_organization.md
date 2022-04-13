@@ -23,17 +23,17 @@ output "projects_in_the_org" {
 
 The following arguments are supported:
 
-* `name` - The organization name
-* `organization_id` - The UUID of the organization resource
+* `name` - (Optional) The organization name.
+* `organization_id` - (Optional) The UUID of the organization resource.
 
 Exactly one of `name` or `organization_id` must be given.
 
 ## Attributes Reference
 
-The following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
-* `project_ids` - UUIDs of project resources which belong to this organization
-* `description` - Description string
-* `website` - Website link
-* `twitter` - Twitter handle
-* `logo` - Logo URL
+* `project_ids` - UUIDs of project resources which belong to this organization.
+* `description` - Description string.
+* `website` - Website link.
+* `twitter` - Twitter handle.
+* `logo` - Logo URL.

@@ -27,12 +27,16 @@ resource "equinix_metal_device" "server" {
 
 ## Argument Reference
 
+The following arguments are supported:
+
 * `distro` - (Optional) Name of the OS distribution.
 * `name` - (Optional) Name or part of the name of the distribution. Case insensitive.
 * `provisionable_on` - (Optional) Plan name.
-* `version` - (Optional) Version of the distribution
+* `version` - (Optional) Version of the distribution.
 
 ## Attributes Reference
 
-* `id` - Operating system slug
-* `slug` - Operating system slug (same as `id`)
+In addition to all arguments above, the following attributes are exported:
+
+* `id` - Operating system slug.
+* `slug` - Operating system slug (same as `id`).

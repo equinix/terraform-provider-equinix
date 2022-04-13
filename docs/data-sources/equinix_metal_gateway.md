@@ -18,18 +18,23 @@ resource "equinix_metal_vlan" "test" {
 }
 
 data "equinix_metal_gateway" "test" {
-  gateway_id               = local.gateway_id
+  gateway_id = local.gateway_id
 }
 ```
 
 ## Argument Reference
 
-* `gateway_id` - (Required) UUID of the metal gateway resource to retrieve
+The following arguments are supported:
+
+* `gateway_id` - (Required) UUID of the metal gateway resource to retrieve.
 
 ## Attributes Reference
 
-* `project_id` - UUID of the project where the gateway is scoped to
-* `vlan_id` - UUID of the VLAN where the gateway is scoped to
-* `ip_reservation_id` - UUID of IP reservation block bound to the gateway
-* `private_ipv4_subnet_size` - Size of the private IPv4 subnet bound to this metal gateway, one of (8, 16, 32, 64, 128)`
-* `state` - Status of the gateway resource
+In addition to all arguments above, the following attributes are exported:
+
+* `project_id` - UUID of the project where the gateway is scoped to.
+* `vlan_id` - UUID of the VLAN where the gateway is scoped to.
+* `ip_reservation_id` - UUID of IP reservation block bound to the gateway.
+* `private_ipv4_subnet_size` - Size of the private IPv4 subnet bound to this metal gateway. One of
+`8`, `16`, `32`, `64`, `128`.
+* `state` - Status of the gateway resource.

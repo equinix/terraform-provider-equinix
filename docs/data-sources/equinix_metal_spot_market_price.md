@@ -28,10 +28,14 @@ data "equinix_metal_spot_market_price" "example" {
 
 ## Argument Reference
 
+The following arguments are supported:
+
 * `plan` - (Required) Name of the plan.
 * `facility` - (Optional) Name of the facility.
 * `metro` - (Optional) Name of the metro.
 
 ## Attributes Reference
+
+In addition to all arguments above, the following attributes are exported:
 
 * `price` - Current spot market price for given plan in given facility.

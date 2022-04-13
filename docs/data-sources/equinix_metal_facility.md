@@ -22,40 +22,42 @@ output "id" {
 
 ```hcl
 # Verify that facility "dc13" has capacity for provisioning 2 c3.small.x86 
-  devices and 1 c3.medium.x86 device
+  devices and 1 c3.medium.x86 device and has specified features
 
 data "equinix_metal_facility" "test" {
   code = "dc13"
+
+  features_required = ["backend_transfer", "global_ipv4"]
+
   capacity {
     plan = "c3.small.x86"
     quantity = 2
   }
+
   capacity {
     plan = "c3.medium.x86"
     quantity = 1
   }
 }
-
 ```
 
 ## Argument Reference
 
 The following arguments are supported:
 
-* `code` - The facility code
-* `features_required` - Set of feature strings that the facility must have
-
-Facilities can be looked up by `code`.
+* `code` - (Required) The facility code to search for facilities.
+* `features_required` - (Optional) Set of feature strings that the facility must have. Some
+possible values are `baremetal`, `ibx`, `storage`, `global_ipv4`, `backend_transfer`, `layer_2`.
+* `capacity` - (Optional) One or more device plans for which the facility must have capacity.
+  * `plan` - (Required) Device plan that must be available in selected location.
+  * `quantity` - (Optional) Minimun number of devices that must be available in selected location.
+  Default is `1`.
 
 ## Attributes Reference
 
-The following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
-* `id` - The ID of the facility
-* `name` - The name of the facility
-* `features` - The features of the facility
-* `metro` - The metro code the facility is part of
-* `capacity` - (Optional) Ensure that queried facility has capacity for specified number of given plans
-  - `plan` - device plan to check
-  - `quantity` - number of device to check
-
+* `id` - The ID of the facility.
+* `name` - The name of the facility.
+* `features` - The features of the facility.
+* `metro` - The metro code the facility is part of.

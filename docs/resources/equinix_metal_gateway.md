@@ -48,11 +48,17 @@ resource "equinix_metal_gateway" "test" {
 
 ## Argument Reference
 
-* `project_id` - UUID of the project where the gateway is scoped to
-* `vlan_id` - UUID of the VLAN where the gateway is scoped to
-* `ip_reservation_id` - (Optional) UUID of IP reservation block to bind to the gateway, the reservation must be in the same metro as the VLAN, conflicts with `private_ipv4_subnet_size`
-* `private_ipv4_subnet_size` - (Optional) Size of the private IPv4 subnet to create for this metal gateway, must be one of (8, 16, 32, 64, 128), conflicts with `ip_reservation_id`
+The following arguments are supported:
+
+* `project_id` - (Required) UUID of the project where the gateway is scoped to.
+* `vlan_id` - (Required) UUID of the VLAN where the gateway is scoped to.
+* `ip_reservation_id` - (Optional) UUID of IP reservation block to bind to the gateway, the
+reservation must be in the same metro as the VLAN, conflicts with `private_ipv4_subnet_size`.
+* `private_ipv4_subnet_size` - (Optional) Size of the private IPv4 subnet to create for this metal
+gateway, must be one of `8`, `16`, `32`, `64`, `128`. Conflicts with `ip_reservation_id`.
 
 ## Attributes Reference
 
-* `state` - Status of the gateway resource
+In addition to all arguments above, the following attributes are exported:
+
+* `state` - Status of the gateway resource.

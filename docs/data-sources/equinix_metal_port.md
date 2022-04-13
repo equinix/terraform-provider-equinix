@@ -4,7 +4,8 @@ subcategory: "Metal"
 
 # equinix_metal_port (Data Source)
 
-Use this data source to read ports of existing devices. You can read port by either its UUID, or by a device UUID and port name.
+Use this data source to read ports of existing devices. You can read port by either its UUID,
+or by a device UUID and port name.
 
 ## Example Usage
 
@@ -25,27 +26,30 @@ resource "equinix_metal_device" "test" {
 }
 
 data "equinix_metal_port" "test" {
-    device_id = equinix_metal_device.test.id
-    name      = "eth0"
+  device_id = equinix_metal_device.test.id
+  name      = "eth0"
 }
 ```
 
 ## Argument Reference
 
-* `id` - (Required) ID of the port to read, conflicts with device_id.
-* `device_id` - (Required) 
-* `name` - (Required) Whether to look for public or private block.
+The following arguments are supported:
+
+* `port_id` - (Optional) ID of the port to read, conflicts with `device_id`.
+* `device_id` - (Optional) Device UUID where to lookup the port.
+* `name` - (Optional) Name of the port to look up, i.e. `bond0`, `eth1`.
 
 ## Attributes Reference
 
-* `network_type` - One of layer2-bonded, layer2-individual, layer3, hybrid, hybrid-bonded
-* `type` - Type is either "NetworkBondPort" for bond ports or "NetworkPort" for bondable ethernet ports
-* `mac` - MAC address of the port
-* `bond_id` - UUID of the bond port"
-* `bond_name` - Name of the bond port
-* `bonded` - Flag indicating whether the port is bonded
-* `disbond_supported` - Flag indicating whether the port can be removed from a bond
-* `native_vlan_id` - UUID of native VLAN of the port
-* `vlan_ids` - UUIDs of attached VLANs
-* `vxlan_ids` - VXLAN ids of attached VLANs
+In addition to all arguments above, the following attributes are exported:
 
+* `network_type` - One of `layer2-bonded`, `layer2-individual`, `layer3`, `hybrid`, `hybrid-bonded`.
+* `type` - Type is either `NetworkBondPort` for bond ports or `NetworkPort` for bondable ethernet ports.
+* `mac` - MAC address of the port.
+* `bond_id` - UUID of the bond port.
+* `bond_name` - Name of the bond port.
+* `bonded` - Flag indicating whether the port is bonded.
+* `disbond_supported` - Flag indicating whether the port can be removed from a bond.
+* `native_vlan_id` - UUID of native VLAN of the port.
+* `vlan_ids` - UUIDs of attached VLANs.
+* `vxlan_ids` - VXLAN ids of attached VLANs.

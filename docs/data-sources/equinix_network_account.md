@@ -26,12 +26,16 @@ output "number" {
 
 ## Argument Reference
 
-* `metro_code` - (Required) Account location metro code
-* `name` - (Optional) Account name for filtering
-* `status` - (Optional) Account status for filtering. Possible values are "Active",
-"Processing", "Submitted", "Staged"
+The following arguments are supported:
+
+* `metro_code` - (Required) Account location metro code.
+* `name` - (Optional) Account name for filtering.
+* `status` - (Optional) Account status for filtering. Possible values are: `Active`, `Processing`,
+`Submitted`, `Staged`.
 
 ## Attributes Reference
 
-* `number` - Account unique number
-* `ucm_id` - Account unique identifier
+In addition to all arguments above, the following attributes are exported:
+
+* `number` - Account unique number.
+* `ucm_id` - Account unique identifier.

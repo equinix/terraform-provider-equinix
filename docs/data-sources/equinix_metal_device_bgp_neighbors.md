@@ -6,9 +6,11 @@ subcategory: "Metal"
 
 Use this datasource to retrieve list of BGP neighbors of a device in the Equinix Metal host.
 
-To have any BGP neighbors listed, the device must be in [BGP-enabled project](../r/project.html) and have a [BGP session](../r/bgp_session.html) assigned.
+To have any BGP neighbors listed, the device must be in [BGP-enabled project](../r/project.html)
+and have a [BGP session](../r/bgp_session.html) assigned.
 
-To learn more about using BGP in Equinix Metal, see the [equinix_metal_bgp_session](../r/bgp_session.html) resource documentation.
+To learn more about using BGP in Equinix Metal, see the
+[equinix_metal_bgp_session](../r/bgp_session.html) resource documentation.
 
 ## Example Usage
 
@@ -28,23 +30,23 @@ output "bgp_neighbors_listing" {
 
 The following arguments are supported:
 
-* `device_id` - UUID of BGP-enabled device whose neighbors to list
+* `device_id` - (Required) UUID of BGP-enabled device whose neighbors to list.
 
 ## Attributes Reference
 
-The following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 * `bgp_neighbors` - array of BGP neighbor records with attributes:
-  * `address_family` - IP address version, 4 or 6
-  * `customer_as` - Local autonomous system number
-  * `customer_ip` - Local used peer IP address
-  * `md5_enabled` - Whether BGP session is password enabled
-  * `md5_password` - BGP session password in plaintext (not a checksum)
-  * `multihop` - Whether the neighbor is in EBGP multihop session
-  * `peer_as` - Peer AS number (different than customer_as for EBGP)
-  * `peer_ips` - Array of IP addresses of this neighbor's peers
-  * `routes_in` - Array of incoming routes. Each route has attributes:
-    * `route` - CIDR expression of route (IP/mask)
-    * `exact` - (bool) Whether the route is exact
-  * `routes_out` - Array of outgoing routes in the same format
+  * `address_family` - IP address version, 4 or 6.
+  * `customer_as` - Local autonomous system number.
+  * `customer_ip` - Local used peer IP address.
+  * `md5_enabled` - Whether BGP session is password enabled.
+  * `md5_password` - BGP session password in plaintext (not a checksum).
+  * `multihop` - Whether the neighbor is in EBGP multihop session.
+  * `peer_as` - Peer AS number (different than customer_as for EBGP).
+  * `peer_ips` - Array of IP addresses of this neighbor's peers.
+  * `routes_in` - Array of incoming routes.
+    * `route` - CIDR expression of route (IP/mask).
+    * `exact` - (bool) Whether the route is exact.
+  * `routes_out` - Array of outgoing routes in the same format.
   

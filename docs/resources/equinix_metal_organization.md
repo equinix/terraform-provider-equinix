@@ -9,7 +9,7 @@ Provides a resource to manage organization resource in Equinix Metal.
 ## Example Usage
 
 ```hcl
-# Create a new Project
+# Create a new Organization
 resource "equinix_metal_organization" "tf_organization_1" {
   name        = "foobar"
   description = "quux"
@@ -20,22 +20,19 @@ resource "equinix_metal_organization" "tf_organization_1" {
 
 The following arguments are supported:
 
-* `name` - (Required) The name of the Organization
-* `description` - Description string
-* `website` - Website link
-* `twitter` - Twitter handle
-* `logo` - Logo URL
+* `name` - (Required) The name of the Organization.
+* `description` - (Optional) Description string.
+* `website` - (Optional) Website link.
+* `twitter` - (Optional) Twitter handle.
+* `logo` - (Optional) Logo URL.
 
 ## Attributes Reference
 
-The following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
-* `id` - The unique ID of the organization
-* `name` - The name of the Organization
-* `description` - Description string
-* `website` - Website link
-* `twitter` - Twitter handle
-* `logo` - Logo URL
+* `id` - The unique ID of the organization.
+* `created` - The timestamp for when the organization was created.
+* `updated` - The timestamp for the last time the organization was updated.
 
 ## Import
 

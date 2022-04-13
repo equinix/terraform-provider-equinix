@@ -4,8 +4,7 @@ subcategory: "Network Edge"
 
 # equinix_network_ssh_key (Resource)
 
-Resource `equinix_network_ssh_key` allows creation and management of Equinix Network
-Edge SSH keys.
+Resource `equinix_network_ssh_key` allows creation and management of Equinix Network Edge SSH keys.
 
 ## Example Usage
 
@@ -27,11 +26,15 @@ resource "equinix_network_ssh_key" "john" {
 
 ## Argument Reference
 
-* `name` - (Required) The name of SSH key used for identification
-* `public_key` - (Required) The SSH public key. If this is a file, it can be read
-using the file interpolation function
+The following arguments are supported:
+
+* `name` - (Required) The name of SSH key used for identification.
+* `public_key` - (Required) The SSH public key. If this is a file, it can be read using the file
+interpolation function.
 
 ## Attributes Reference
+
+In addition to all arguments above, the following attributes are exported:
 
 * `uuid` - The unique identifier of the key
 
