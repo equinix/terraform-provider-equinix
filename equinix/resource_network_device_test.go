@@ -48,33 +48,33 @@ func TestNetworkDevice_createFromResourceData(t *testing.T) {
 		UserPublicKey:       &expectedPrimaryUserKey,
 	}
 	rawData := map[string]interface{}{
-		networkDeviceSchemaNames["Name"]:                ne.StringValue(expectedPrimary.Name),
-		networkDeviceSchemaNames["TypeCode"]:            ne.StringValue(expectedPrimary.TypeCode),
-		networkDeviceSchemaNames["MetroCode"]:           ne.StringValue(expectedPrimary.MetroCode),
-		networkDeviceSchemaNames["Throughput"]:          ne.IntValue(expectedPrimary.Throughput),
-		networkDeviceSchemaNames["Throughput"]:          ne.IntValue(expectedPrimary.Throughput),
-		networkDeviceSchemaNames["ThroughputUnit"]:      ne.StringValue(expectedPrimary.ThroughputUnit),
-		networkDeviceSchemaNames["HostName"]:            ne.StringValue(expectedPrimary.HostName),
-		networkDeviceSchemaNames["PackageCode"]:         ne.StringValue(expectedPrimary.PackageCode),
-		networkDeviceSchemaNames["Version"]:             ne.StringValue(expectedPrimary.Version),
-		networkDeviceSchemaNames["IsBYOL"]:              ne.BoolValue(expectedPrimary.IsBYOL),
-		networkDeviceSchemaNames["LicenseToken"]:        ne.StringValue(expectedPrimary.LicenseToken),
-		networkDeviceSchemaNames["LicenseFile"]:         ne.StringValue(expectedPrimary.LicenseFile),
-		networkDeviceSchemaNames["ACLTemplateUUID"]:     ne.StringValue(expectedPrimary.ACLTemplateUUID),
-		networkDeviceSchemaNames["AccountNumber"]:       ne.StringValue(expectedPrimary.AccountNumber),
-		networkDeviceSchemaNames["PurchaseOrderNumber"]: ne.StringValue(expectedPrimary.PurchaseOrderNumber),
-		networkDeviceSchemaNames["TermLength"]:          ne.IntValue(expectedPrimary.TermLength),
-		networkDeviceSchemaNames["AdditionalBandwidth"]: ne.IntValue(expectedPrimary.AdditionalBandwidth),
-		networkDeviceSchemaNames["OrderReference"]:      ne.StringValue(expectedPrimary.OrderReference),
-		networkDeviceSchemaNames["InterfaceCount"]:      ne.IntValue(expectedPrimary.InterfaceCount),
-		networkDeviceSchemaNames["WanInterfaceId"]:      ne.StringValue(expectedPrimary.WanInterfaceId),
-		networkDeviceSchemaNames["CoreCount"]:           ne.IntValue(expectedPrimary.CoreCount),
-		networkDeviceSchemaNames["IsSelfManaged"]:       ne.BoolValue(expectedPrimary.IsSelfManaged),
+		neDeviceSchemaNames["Name"]:                ne.StringValue(expectedPrimary.Name),
+		neDeviceSchemaNames["TypeCode"]:            ne.StringValue(expectedPrimary.TypeCode),
+		neDeviceSchemaNames["MetroCode"]:           ne.StringValue(expectedPrimary.MetroCode),
+		neDeviceSchemaNames["Throughput"]:          ne.IntValue(expectedPrimary.Throughput),
+		neDeviceSchemaNames["Throughput"]:          ne.IntValue(expectedPrimary.Throughput),
+		neDeviceSchemaNames["ThroughputUnit"]:      ne.StringValue(expectedPrimary.ThroughputUnit),
+		neDeviceSchemaNames["HostName"]:            ne.StringValue(expectedPrimary.HostName),
+		neDeviceSchemaNames["PackageCode"]:         ne.StringValue(expectedPrimary.PackageCode),
+		neDeviceSchemaNames["Version"]:             ne.StringValue(expectedPrimary.Version),
+		neDeviceSchemaNames["IsBYOL"]:              ne.BoolValue(expectedPrimary.IsBYOL),
+		neDeviceSchemaNames["LicenseToken"]:        ne.StringValue(expectedPrimary.LicenseToken),
+		neDeviceSchemaNames["LicenseFile"]:         ne.StringValue(expectedPrimary.LicenseFile),
+		neDeviceSchemaNames["ACLTemplateUUID"]:     ne.StringValue(expectedPrimary.ACLTemplateUUID),
+		neDeviceSchemaNames["AccountNumber"]:       ne.StringValue(expectedPrimary.AccountNumber),
+		neDeviceSchemaNames["PurchaseOrderNumber"]: ne.StringValue(expectedPrimary.PurchaseOrderNumber),
+		neDeviceSchemaNames["TermLength"]:          ne.IntValue(expectedPrimary.TermLength),
+		neDeviceSchemaNames["AdditionalBandwidth"]: ne.IntValue(expectedPrimary.AdditionalBandwidth),
+		neDeviceSchemaNames["OrderReference"]:      ne.StringValue(expectedPrimary.OrderReference),
+		neDeviceSchemaNames["InterfaceCount"]:      ne.IntValue(expectedPrimary.InterfaceCount),
+		neDeviceSchemaNames["WanInterfaceId"]:      ne.StringValue(expectedPrimary.WanInterfaceId),
+		neDeviceSchemaNames["CoreCount"]:           ne.IntValue(expectedPrimary.CoreCount),
+		neDeviceSchemaNames["IsSelfManaged"]:       ne.BoolValue(expectedPrimary.IsSelfManaged),
 	}
 	d := schema.TestResourceDataRaw(t, createNetworkDeviceSchema(), rawData)
-	d.Set(networkDeviceSchemaNames["Notifications"], expectedPrimary.Notifications)
-	d.Set(networkDeviceSchemaNames["UserPublicKey"], flattenNetworkDeviceUserKeys([]*ne.DeviceUserPublicKey{&expectedPrimaryUserKey}))
-	d.Set(networkDeviceSchemaNames["VendorConfiguration"], expectedPrimary.VendorConfiguration)
+	d.Set(neDeviceSchemaNames["Notifications"], expectedPrimary.Notifications)
+	d.Set(neDeviceSchemaNames["UserPublicKey"], flattenNetworkDeviceUserKeys([]*ne.DeviceUserPublicKey{&expectedPrimaryUserKey}))
+	d.Set(neDeviceSchemaNames["VendorConfiguration"], expectedPrimary.VendorConfiguration)
 
 	// when
 	primary, secondary := createNetworkDevices(d)
@@ -122,7 +122,7 @@ func TestNetworkDevice_updateResourceData(t *testing.T) {
 	inputSecondary := &ne.Device{}
 	secondarySchemaLicenseFile := "/tmp/licenseFileSec"
 	d := schema.TestResourceDataRaw(t, createNetworkDeviceSchema(), make(map[string]interface{}))
-	d.Set(networkDeviceSchemaNames["Secondary"], flattenNetworkDeviceSecondary(&ne.Device{
+	d.Set(neDeviceSchemaNames["Secondary"], flattenNetworkDeviceSecondary(&ne.Device{
 		LicenseFile: ne.String(secondarySchemaLicenseFile),
 	}))
 	// when
@@ -130,32 +130,32 @@ func TestNetworkDevice_updateResourceData(t *testing.T) {
 
 	// then
 	assert.Nil(t, err, "Update of resource data does not return error")
-	assert.Equal(t, ne.StringValue(inputPrimary.Name), d.Get(networkDeviceSchemaNames["Name"]), "Name matches")
-	assert.Equal(t, ne.StringValue(inputPrimary.TypeCode), d.Get(networkDeviceSchemaNames["TypeCode"]), "TypeCode matches")
-	assert.Equal(t, ne.StringValue(inputPrimary.MetroCode), d.Get(networkDeviceSchemaNames["MetroCode"]), "MetroCode matches")
-	assert.Equal(t, ne.IntValue(inputPrimary.Throughput), d.Get(networkDeviceSchemaNames["Throughput"]), "Throughput matches")
-	assert.Equal(t, ne.StringValue(inputPrimary.ThroughputUnit), d.Get(networkDeviceSchemaNames["ThroughputUnit"]), "ThroughputUnit matches")
-	assert.Equal(t, ne.StringValue(inputPrimary.HostName), d.Get(networkDeviceSchemaNames["HostName"]), "HostName matches")
-	assert.Equal(t, ne.StringValue(inputPrimary.PackageCode), d.Get(networkDeviceSchemaNames["PackageCode"]), "PackageCode matches")
-	assert.Equal(t, ne.StringValue(inputPrimary.Version), d.Get(networkDeviceSchemaNames["Version"]), "Version matches")
-	assert.Equal(t, ne.BoolValue(inputPrimary.IsBYOL), d.Get(networkDeviceSchemaNames["IsBYOL"]), "IsBYOL matches")
-	assert.Empty(t, d.Get(networkDeviceSchemaNames["LicenseToken"]), "LicenseToken is empty")
-	assert.Equal(t, ne.StringValue(inputPrimary.ACLTemplateUUID), d.Get(networkDeviceSchemaNames["ACLTemplateUUID"]), "ACLTemplateUUID matches")
-	assert.Equal(t, ne.StringValue(inputPrimary.AccountNumber), d.Get(networkDeviceSchemaNames["AccountNumber"]), "AccountNumber matches")
-	assert.Equal(t, inputPrimary.Notifications, expandSetToStringList(d.Get(networkDeviceSchemaNames["Notifications"]).(*schema.Set)), "Notifications matches")
-	assert.Equal(t, ne.StringValue(inputPrimary.PurchaseOrderNumber), d.Get(networkDeviceSchemaNames["PurchaseOrderNumber"]), "PurchaseOrderNumber matches")
-	assert.Equal(t, ne.IntValue(inputPrimary.TermLength), d.Get(networkDeviceSchemaNames["TermLength"]), "TermLength matches")
-	assert.Equal(t, ne.IntValue(inputPrimary.AdditionalBandwidth), d.Get(networkDeviceSchemaNames["AdditionalBandwidth"]), "AdditionalBandwidth matches")
-	assert.Equal(t, ne.StringValue(inputPrimary.OrderReference), d.Get(networkDeviceSchemaNames["OrderReference"]), "OrderReference matches")
-	assert.Equal(t, ne.IntValue(inputPrimary.InterfaceCount), d.Get(networkDeviceSchemaNames["InterfaceCount"]), "InterfaceCount matches")
-	assert.Empty(t, d.Get(networkDeviceSchemaNames["WanInterfaceId"]), "Wan Interface Id is empty")
-	assert.Equal(t, ne.IntValue(inputPrimary.CoreCount), d.Get(networkDeviceSchemaNames["CoreCount"]), "CoreCount matches")
-	assert.Equal(t, ne.BoolValue(inputPrimary.IsSelfManaged), d.Get(networkDeviceSchemaNames["IsSelfManaged"]), "IsSelfManaged matches")
-	assert.Equal(t, inputPrimary.VendorConfiguration, expandInterfaceMapToStringMap(d.Get(networkDeviceSchemaNames["VendorConfiguration"]).(map[string]interface{})), "VendorConfiguration matches")
-	assert.Equal(t, inputPrimary.UserPublicKey, expandNetworkDeviceUserKeys(d.Get(networkDeviceSchemaNames["UserPublicKey"]).(*schema.Set))[0], "UserPublicKey matches")
-	assert.Equal(t, ne.IntValue(inputPrimary.ASN), d.Get(networkDeviceSchemaNames["ASN"]), "ASN matches")
-	assert.Equal(t, ne.StringValue(inputPrimary.ZoneCode), d.Get(networkDeviceSchemaNames["ZoneCode"]), "ZoneCode matches")
-	assert.Equal(t, secondarySchemaLicenseFile, ne.StringValue(expandNetworkDeviceSecondary(d.Get(networkDeviceSchemaNames["Secondary"]).([]interface{})).LicenseFile), "Secondary LicenseFile matches")
+	assert.Equal(t, ne.StringValue(inputPrimary.Name), d.Get(neDeviceSchemaNames["Name"]), "Name matches")
+	assert.Equal(t, ne.StringValue(inputPrimary.TypeCode), d.Get(neDeviceSchemaNames["TypeCode"]), "TypeCode matches")
+	assert.Equal(t, ne.StringValue(inputPrimary.MetroCode), d.Get(neDeviceSchemaNames["MetroCode"]), "MetroCode matches")
+	assert.Equal(t, ne.IntValue(inputPrimary.Throughput), d.Get(neDeviceSchemaNames["Throughput"]), "Throughput matches")
+	assert.Equal(t, ne.StringValue(inputPrimary.ThroughputUnit), d.Get(neDeviceSchemaNames["ThroughputUnit"]), "ThroughputUnit matches")
+	assert.Equal(t, ne.StringValue(inputPrimary.HostName), d.Get(neDeviceSchemaNames["HostName"]), "HostName matches")
+	assert.Equal(t, ne.StringValue(inputPrimary.PackageCode), d.Get(neDeviceSchemaNames["PackageCode"]), "PackageCode matches")
+	assert.Equal(t, ne.StringValue(inputPrimary.Version), d.Get(neDeviceSchemaNames["Version"]), "Version matches")
+	assert.Equal(t, ne.BoolValue(inputPrimary.IsBYOL), d.Get(neDeviceSchemaNames["IsBYOL"]), "IsBYOL matches")
+	assert.Empty(t, d.Get(neDeviceSchemaNames["LicenseToken"]), "LicenseToken is empty")
+	assert.Equal(t, ne.StringValue(inputPrimary.ACLTemplateUUID), d.Get(neDeviceSchemaNames["ACLTemplateUUID"]), "ACLTemplateUUID matches")
+	assert.Equal(t, ne.StringValue(inputPrimary.AccountNumber), d.Get(neDeviceSchemaNames["AccountNumber"]), "AccountNumber matches")
+	assert.Equal(t, inputPrimary.Notifications, expandSetToStringList(d.Get(neDeviceSchemaNames["Notifications"]).(*schema.Set)), "Notifications matches")
+	assert.Equal(t, ne.StringValue(inputPrimary.PurchaseOrderNumber), d.Get(neDeviceSchemaNames["PurchaseOrderNumber"]), "PurchaseOrderNumber matches")
+	assert.Equal(t, ne.IntValue(inputPrimary.TermLength), d.Get(neDeviceSchemaNames["TermLength"]), "TermLength matches")
+	assert.Equal(t, ne.IntValue(inputPrimary.AdditionalBandwidth), d.Get(neDeviceSchemaNames["AdditionalBandwidth"]), "AdditionalBandwidth matches")
+	assert.Equal(t, ne.StringValue(inputPrimary.OrderReference), d.Get(neDeviceSchemaNames["OrderReference"]), "OrderReference matches")
+	assert.Equal(t, ne.IntValue(inputPrimary.InterfaceCount), d.Get(neDeviceSchemaNames["InterfaceCount"]), "InterfaceCount matches")
+	assert.Empty(t, d.Get(neDeviceSchemaNames["WanInterfaceId"]), "Wan Interface Id is empty")
+	assert.Equal(t, ne.IntValue(inputPrimary.CoreCount), d.Get(neDeviceSchemaNames["CoreCount"]), "CoreCount matches")
+	assert.Equal(t, ne.BoolValue(inputPrimary.IsSelfManaged), d.Get(neDeviceSchemaNames["IsSelfManaged"]), "IsSelfManaged matches")
+	assert.Equal(t, inputPrimary.VendorConfiguration, expandInterfaceMapToStringMap(d.Get(neDeviceSchemaNames["VendorConfiguration"]).(map[string]interface{})), "VendorConfiguration matches")
+	assert.Equal(t, inputPrimary.UserPublicKey, expandNetworkDeviceUserKeys(d.Get(neDeviceSchemaNames["UserPublicKey"]).(*schema.Set))[0], "UserPublicKey matches")
+	assert.Equal(t, ne.IntValue(inputPrimary.ASN), d.Get(neDeviceSchemaNames["ASN"]), "ASN matches")
+	assert.Equal(t, ne.StringValue(inputPrimary.ZoneCode), d.Get(neDeviceSchemaNames["ZoneCode"]), "ZoneCode matches")
+	assert.Equal(t, secondarySchemaLicenseFile, ne.StringValue(expandNetworkDeviceSecondary(d.Get(neDeviceSchemaNames["Secondary"]).([]interface{})).LicenseFile), "Secondary LicenseFile matches")
 }
 
 func TestNetworkDevice_flattenSecondary(t *testing.T) {
@@ -204,25 +204,25 @@ func TestNetworkDevice_flattenSecondary(t *testing.T) {
 	}
 	expected := []interface{}{
 		map[string]interface{}{
-			networkDeviceSchemaNames["UUID"]:                input.UUID,
-			networkDeviceSchemaNames["Name"]:                input.Name,
-			networkDeviceSchemaNames["Status"]:              input.Status,
-			networkDeviceSchemaNames["LicenseStatus"]:       input.LicenseStatus,
-			networkDeviceSchemaNames["MetroCode"]:           input.MetroCode,
-			networkDeviceSchemaNames["IBX"]:                 input.IBX,
-			networkDeviceSchemaNames["Region"]:              input.Region,
-			networkDeviceSchemaNames["HostName"]:            input.HostName,
-			networkDeviceSchemaNames["LicenseFileID"]:       input.LicenseFileID,
-			networkDeviceSchemaNames["LicenseFile"]:         input.LicenseFile,
-			networkDeviceSchemaNames["ACLTemplateUUID"]:     input.ACLTemplateUUID,
-			networkDeviceSchemaNames["SSHIPAddress"]:        input.SSHIPAddress,
-			networkDeviceSchemaNames["SSHIPFqdn"]:           input.SSHIPFqdn,
-			networkDeviceSchemaNames["AccountNumber"]:       input.AccountNumber,
-			networkDeviceSchemaNames["Notifications"]:       input.Notifications,
-			networkDeviceSchemaNames["RedundancyType"]:      input.RedundancyType,
-			networkDeviceSchemaNames["RedundantUUID"]:       input.RedundantUUID,
-			networkDeviceSchemaNames["AdditionalBandwidth"]: input.AdditionalBandwidth,
-			networkDeviceSchemaNames["Interfaces"]: []interface{}{
+			neDeviceSchemaNames["UUID"]:                input.UUID,
+			neDeviceSchemaNames["Name"]:                input.Name,
+			neDeviceSchemaNames["Status"]:              input.Status,
+			neDeviceSchemaNames["LicenseStatus"]:       input.LicenseStatus,
+			neDeviceSchemaNames["MetroCode"]:           input.MetroCode,
+			neDeviceSchemaNames["IBX"]:                 input.IBX,
+			neDeviceSchemaNames["Region"]:              input.Region,
+			neDeviceSchemaNames["HostName"]:            input.HostName,
+			neDeviceSchemaNames["LicenseFileID"]:       input.LicenseFileID,
+			neDeviceSchemaNames["LicenseFile"]:         input.LicenseFile,
+			neDeviceSchemaNames["ACLTemplateUUID"]:     input.ACLTemplateUUID,
+			neDeviceSchemaNames["SSHIPAddress"]:        input.SSHIPAddress,
+			neDeviceSchemaNames["SSHIPFqdn"]:           input.SSHIPFqdn,
+			neDeviceSchemaNames["AccountNumber"]:       input.AccountNumber,
+			neDeviceSchemaNames["Notifications"]:       input.Notifications,
+			neDeviceSchemaNames["RedundancyType"]:      input.RedundancyType,
+			neDeviceSchemaNames["RedundantUUID"]:       input.RedundantUUID,
+			neDeviceSchemaNames["AdditionalBandwidth"]: input.AdditionalBandwidth,
+			neDeviceSchemaNames["Interfaces"]: []interface{}{
 				map[string]interface{}{
 					neDeviceInterfaceSchemaNames["ID"]:                input.Interfaces[0].ID,
 					neDeviceInterfaceSchemaNames["Name"]:              input.Interfaces[0].Name,
@@ -234,17 +234,17 @@ func TestNetworkDevice_flattenSecondary(t *testing.T) {
 					neDeviceInterfaceSchemaNames["Type"]:              input.Interfaces[0].Type,
 				},
 			},
-			networkDeviceSchemaNames["VendorConfiguration"]: map[string]string{
+			neDeviceSchemaNames["VendorConfiguration"]: map[string]string{
 				"key": "value",
 			},
-			networkDeviceSchemaNames["UserPublicKey"]: []interface{}{
+			neDeviceSchemaNames["UserPublicKey"]: []interface{}{
 				map[string]interface{}{
 					neDeviceUserKeySchemaNames["Username"]: input.UserPublicKey.Username,
 					neDeviceUserKeySchemaNames["KeyName"]:  input.UserPublicKey.KeyName,
 				},
 			},
-			networkDeviceSchemaNames["ASN"]:      input.ASN,
-			networkDeviceSchemaNames["ZoneCode"]: input.ZoneCode,
+			neDeviceSchemaNames["ASN"]:      input.ASN,
+			neDeviceSchemaNames["ZoneCode"]: input.ZoneCode,
 		},
 	}
 	// when
@@ -262,20 +262,20 @@ func TestNetworkDevice_expandSecondary(t *testing.T) {
 	}
 	input := []interface{}{
 		map[string]interface{}{
-			networkDeviceSchemaNames["UUID"]:                "0452fa68-8246-48b1-a1b2-817fb4baddcb",
-			networkDeviceSchemaNames["Name"]:                "device",
-			networkDeviceSchemaNames["MetroCode"]:           "SV",
-			networkDeviceSchemaNames["HostName"]:            "SV5",
-			networkDeviceSchemaNames["LicenseToken"]:        "sWf3df4gaAvbbexw45ga4f",
-			networkDeviceSchemaNames["LicenseFile"]:         "/tmp/licenseFile",
-			networkDeviceSchemaNames["ACLTemplateUUID"]:     "a624178c-6d59-4798-9a7f-2ddf2c7c5881",
-			networkDeviceSchemaNames["AccountNumber"]:       "123456",
-			networkDeviceSchemaNames["Notifications"]:       schema.NewSet(schema.HashString, []interface{}{"bla@bla.com"}),
-			networkDeviceSchemaNames["AdditionalBandwidth"]: 50,
-			networkDeviceSchemaNames["VendorConfiguration"]: map[string]interface{}{
+			neDeviceSchemaNames["UUID"]:                "0452fa68-8246-48b1-a1b2-817fb4baddcb",
+			neDeviceSchemaNames["Name"]:                "device",
+			neDeviceSchemaNames["MetroCode"]:           "SV",
+			neDeviceSchemaNames["HostName"]:            "SV5",
+			neDeviceSchemaNames["LicenseToken"]:        "sWf3df4gaAvbbexw45ga4f",
+			neDeviceSchemaNames["LicenseFile"]:         "/tmp/licenseFile",
+			neDeviceSchemaNames["ACLTemplateUUID"]:     "a624178c-6d59-4798-9a7f-2ddf2c7c5881",
+			neDeviceSchemaNames["AccountNumber"]:       "123456",
+			neDeviceSchemaNames["Notifications"]:       schema.NewSet(schema.HashString, []interface{}{"bla@bla.com"}),
+			neDeviceSchemaNames["AdditionalBandwidth"]: 50,
+			neDeviceSchemaNames["VendorConfiguration"]: map[string]interface{}{
 				"key": "value",
 			},
-			networkDeviceSchemaNames["UserPublicKey"]: schema.NewSet(f, []interface{}{
+			neDeviceSchemaNames["UserPublicKey"]: schema.NewSet(f, []interface{}{
 				map[string]interface{}{
 					neDeviceUserKeySchemaNames["Username"]: "user",
 					neDeviceUserKeySchemaNames["KeyName"]:  "testKey",
@@ -284,20 +284,20 @@ func TestNetworkDevice_expandSecondary(t *testing.T) {
 		},
 	}
 	expected := &ne.Device{
-		UUID:                ne.String(input[0].(map[string]interface{})[networkDeviceSchemaNames["UUID"]].(string)),
-		Name:                ne.String(input[0].(map[string]interface{})[networkDeviceSchemaNames["Name"]].(string)),
-		MetroCode:           ne.String(input[0].(map[string]interface{})[networkDeviceSchemaNames["MetroCode"]].(string)),
-		HostName:            ne.String(input[0].(map[string]interface{})[networkDeviceSchemaNames["HostName"]].(string)),
-		LicenseToken:        ne.String(input[0].(map[string]interface{})[networkDeviceSchemaNames["LicenseToken"]].(string)),
-		LicenseFile:         ne.String(input[0].(map[string]interface{})[networkDeviceSchemaNames["LicenseFile"]].(string)),
-		ACLTemplateUUID:     ne.String(input[0].(map[string]interface{})[networkDeviceSchemaNames["ACLTemplateUUID"]].(string)),
-		AccountNumber:       ne.String(input[0].(map[string]interface{})[networkDeviceSchemaNames["AccountNumber"]].(string)),
-		Notifications:       expandSetToStringList(input[0].(map[string]interface{})[networkDeviceSchemaNames["Notifications"]].(*schema.Set)),
-		AdditionalBandwidth: ne.Int(input[0].(map[string]interface{})[networkDeviceSchemaNames["AdditionalBandwidth"]].(int)),
+		UUID:                ne.String(input[0].(map[string]interface{})[neDeviceSchemaNames["UUID"]].(string)),
+		Name:                ne.String(input[0].(map[string]interface{})[neDeviceSchemaNames["Name"]].(string)),
+		MetroCode:           ne.String(input[0].(map[string]interface{})[neDeviceSchemaNames["MetroCode"]].(string)),
+		HostName:            ne.String(input[0].(map[string]interface{})[neDeviceSchemaNames["HostName"]].(string)),
+		LicenseToken:        ne.String(input[0].(map[string]interface{})[neDeviceSchemaNames["LicenseToken"]].(string)),
+		LicenseFile:         ne.String(input[0].(map[string]interface{})[neDeviceSchemaNames["LicenseFile"]].(string)),
+		ACLTemplateUUID:     ne.String(input[0].(map[string]interface{})[neDeviceSchemaNames["ACLTemplateUUID"]].(string)),
+		AccountNumber:       ne.String(input[0].(map[string]interface{})[neDeviceSchemaNames["AccountNumber"]].(string)),
+		Notifications:       expandSetToStringList(input[0].(map[string]interface{})[neDeviceSchemaNames["Notifications"]].(*schema.Set)),
+		AdditionalBandwidth: ne.Int(input[0].(map[string]interface{})[neDeviceSchemaNames["AdditionalBandwidth"]].(int)),
 		VendorConfiguration: map[string]string{
 			"key": "value",
 		},
-		UserPublicKey: expandNetworkDeviceUserKeys(input[0].(map[string]interface{})[networkDeviceSchemaNames["UserPublicKey"]].(*schema.Set))[0],
+		UserPublicKey: expandNetworkDeviceUserKeys(input[0].(map[string]interface{})[neDeviceSchemaNames["UserPublicKey"]].(*schema.Set))[0],
 	}
 	// when
 	out := expandNetworkDeviceSecondary(input)
