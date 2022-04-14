@@ -10,7 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 )
 
-var deviceStates = []string{ // Not sure if other states should be included
+var neDeviceStates = []string{ // Not sure if other states should be included
 	// ne.DeviceStateClusterSetUpInProgress,
 	// ne.DeviceStateDeprovisioned,
 	// ne.DeviceStateDeprovisioning,
@@ -21,174 +21,6 @@ var deviceStates = []string{ // Not sure if other states should be included
 	// ne.DeviceStateWaitingClusterNodes,
 	// ne.DeviceStateWaitingPrimary,
 	// ne.DeviceStateWaitingSecondary,
-}
-
-var ecxNetworkDeviceSchemaNames = map[string]string{
-	"UUID":                "uuid",
-	"Name":                "name",
-	"TypeCode":            "type_code",
-	"Status":              "status",
-	"MetroCode":           "metro_code",
-	"IBX":                 "ibx",
-	"Region":              "region",
-	"Throughput":          "throughput",
-	"ThroughputUnit":      "throughput_unit",
-	"HostName":            "hostname",
-	"PackageCode":         "package_code",
-	"Version":             "version",
-	"IsBYOL":              "byol",
-	"LicenseToken":        "license_token",
-	"LicenseFile":         "license_file",
-	"LicenseFileID":       "license_file_id",
-	"LicenseStatus":       "license_status",
-	"ACLTemplateUUID":     "acl_template_id",
-	"MgmtAclTemplateUuid": "mgmt_acl_template_uuid",
-	"SSHIPAddress":        "ssh_ip_address",
-	"SSHIPFqdn":           "ssh_ip_fqdn",
-	"AccountNumber":       "account_number",
-	"Notifications":       "notifications",
-	"PurchaseOrderNumber": "purchase_order_number",
-	"RedundancyType":      "redundancy_type",
-	"RedundantUUID":       "redundant_id",
-	"TermLength":          "term_length",
-	"AdditionalBandwidth": "additional_bandwidth",
-	"OrderReference":      "order_reference",
-	"InterfaceCount":      "interface_count",
-	"CoreCount":           "core_count",
-	"IsSelfManaged":       "self_managed",
-	"WanInterfaceId":      "wan_interface_id",
-	"Interfaces":          "interface",
-	"VendorConfiguration": "vendor_configuration",
-	"UserPublicKey":       "ssh_key",
-	"ASN":                 "asn",
-	"ZoneCode":            "zone_code",
-	"Secondary":           "secondary_device",
-	"ClusterDetails":      "cluster_details",
-}
-
-var ecxNetworkDeviceDescriptions = map[string]string{
-	"UUID":                "Device unique identifier",
-	"Name":                "Device name",
-	"TypeCode":            "Device type code",
-	"Status":              "Device provisioning status",
-	"MetroCode":           "Device location metro code",
-	"IBX":                 "Device location Equinix Business Exchange name",
-	"Region":              "Device location region",
-	"Throughput":          "Device license throughput",
-	"ThroughputUnit":      "Device license throughput unit (Mbps or Gbps)",
-	"HostName":            "Device hostname prefix",
-	"PackageCode":         "Device software package code",
-	"Version":             "Device software software version",
-	"IsBYOL":              "Boolean value that determines device licensing mode: bring your own license or subscription (default)",
-	"LicenseToken":        "License Token applicable for some device types in BYOL licensing mode",
-	"LicenseFile":         "Path to the license file that will be uploaded and applied on a device, applicable for some device types in BYOL licensing mode",
-	"LicenseFileID":       "Unique identifier of applied license file",
-	"LicenseStatus":       "Device license registration status",
-	"ACLTemplateUUID":     "Unique identifier of applied ACL template",
-	"MgmtAclTemplateUuid": "Unique identifier of applied MGMT ACL template",
-	"SSHIPAddress":        "IP address of SSH enabled interface on the device",
-	"SSHIPFqdn":           "FQDN of SSH enabled interface on the device",
-	"AccountNumber":       "Device billing account number",
-	"Notifications":       "List of email addresses that will receive device status notifications",
-	"PurchaseOrderNumber": "Purchase order number associated with a device order",
-	"RedundancyType":      "Device redundancy type applicable for HA devices, either primary or secondary",
-	"RedundantUUID":       "Unique identifier for a redundant device, applicable for HA device",
-	"TermLength":          "Device term length",
-	"AdditionalBandwidth": "Additional Internet bandwidth, in Mbps, that will be allocated to the device",
-	"OrderReference":      "Name/number used to identify device order on the invoice",
-	"InterfaceCount":      "Number of network interfaces on a device. If not specified, default number for a given device type will be used",
-	"CoreCount":           "Number of CPU cores used by device",
-	"IsSelfManaged":       "Boolean value that determines device management mode: self-managed or subscription (default)",
-	"WanInterfaceId":      "device interface id picked for WAN",
-	"Interfaces":          "List of device interfaces",
-	"VendorConfiguration": "Map of vendor specific configuration parameters for a device (controller1, activationKey, managementType, siteId, systemIpAddress)",
-	"UserPublicKey":       "Definition of SSH key that will be provisioned on a device",
-	"ASN":                 "Autonomous system number",
-	"ZoneCode":            "Device location zone code",
-	"Secondary":           "Definition of secondary device applicable for HA setup",
-	"ClusterDetails":      "An object that has the cluster details",
-}
-
-var ecxDeviceInterfaceSchemaNames = map[string]string{
-	"ID":                "id",
-	"Name":              "name",
-	"Status":            "status",
-	"OperationalStatus": "operational_status",
-	"MACAddress":        "mac_address",
-	"IPAddress":         "ip_address",
-	"AssignedType":      "assigned_type",
-	"Type":              "type",
-}
-
-var ecxDeviceInterfaceDescriptions = map[string]string{
-	"ID":                "Interface identifier",
-	"Name":              "Interface name",
-	"Status":            "Interface status (AVAILABLE, RESERVED, ASSIGNED)",
-	"OperationalStatus": "Interface operational status (up or down)",
-	"MACAddress":        "Interface MAC addres",
-	"IPAddress":         "interface IP address",
-	"AssignedType":      "Interface management type (Equinix Managed or empty)",
-	"Type":              "Interface type",
-}
-
-var ecxDeviceUserKeySchemaNames = map[string]string{
-	"Username": "username",
-	"KeyName":  "key_name",
-}
-
-var ecxDeviceUserKeyDescriptions = map[string]string{
-	"Username": "Username associated with given key",
-	"KeyName":  "Reference by name to previously provisioned public SSH key",
-}
-
-var ecxDeviceClusterSchemaNames = map[string]string{
-	"ClusterId":   "cluster_id",
-	"ClusterName": "cluster_name",
-	"NumOfNodes":  "num_of_nodes",
-	"Node0":       "node0",
-	"Node1":       "node1",
-}
-
-var ecxDeviceClusterDescriptions = map[string]string{
-	"ClusterId":   "The id of the cluster",
-	"ClusterName": "The name of the cluster device",
-	"NumOfNodes":  "The number of nodes in the cluster",
-	"Node0":       "An object that has node0 details",
-	"Node1":       "An object that has node1 details",
-}
-
-var ecxDeviceClusterNodeSchemaNames = map[string]string{
-	"VendorConfiguration": "vendor_configuration",
-	"LicenseFileId":       "license_file_id",
-	"LicenseToken":        "license_token",
-	"UUID":                "uuid",
-	"Name":                "name",
-}
-
-var ecxDeviceClusterNodeDescriptions = map[string]string{
-	"VendorConfiguration": "An object that has fields relevant to the vendor of the cluster device",
-	"LicenseFileId":       "License file id. This is necessary for Fortinet and Juniper clusters",
-	"LicenseToken":        "License token. This is necessary for Palo Alto clusters",
-	"UUID":                "The unique id of the node",
-	"Name":                "The name of the node",
-}
-
-var ecxDeviceVendorConfigSchemaNames = map[string]string{
-	"Hostname":       "hostname",
-	"AdminPassword":  "admin_password",
-	"Controller1":    "controller1",
-	"ActivationKey":  "activation_key",
-	"ControllerFqdn": "controller_fqdn",
-	"RootPassword":   "root_password",
-}
-
-var ecxDeviceVendorConfigDescriptions = map[string]string{
-	"Hostname":       "Hostname. This is necessary for Palo Alto, Juniper, and Fortinet clusters",
-	"AdminPassword":  "The administrative password of the device. You can use it to log in to the console. This field is not available for all device types",
-	"Controller1":    "System IP Address. Mandatory for the Fortinet SDWAN cluster device",
-	"ActivationKey":  "Activation key. This is required for Velocloud clusters",
-	"ControllerFqdn": "Controller fqdn. This is required for Velocloud clusters",
-	"RootPassword":   "The CLI password of the device. This field is relevant only for the Velocloud SDWAN cluster",
 }
 
 func createDataSourceNetworkDeviceSchema() map[string]*schema.Schema {
@@ -559,36 +391,36 @@ func createDataSourceNetworkDeviceSchema() map[string]*schema.Schema {
 			Description: networkDeviceDescriptions["ClusterDetails"],
 			Elem: &schema.Resource{
 				Schema: map[string]*schema.Schema{
-					ecxDeviceClusterSchemaNames["ClusterId"]: {
+					neDeviceClusterSchemaNames["ClusterId"]: {
 						Type:        schema.TypeString,
 						Computed:    true,
-						Description: ecxDeviceClusterDescriptions["ClusterId"],
+						Description: neDeviceClusterDescriptions["ClusterId"],
 					},
-					ecxDeviceClusterSchemaNames["ClusterName"]: {
+					neDeviceClusterSchemaNames["ClusterName"]: {
 						Type:        schema.TypeString,
 						Computed:    true,
-						Description: ecxDeviceClusterDescriptions["ClusterName"],
+						Description: neDeviceClusterDescriptions["ClusterName"],
 					},
-					ecxDeviceClusterSchemaNames["NumOfNodes"]: {
+					neDeviceClusterSchemaNames["NumOfNodes"]: {
 						Type:        schema.TypeInt,
 						Computed:    true,
-						Description: ecxDeviceClusterDescriptions["NumOfNodes"],
+						Description: neDeviceClusterDescriptions["NumOfNodes"],
 					},
-					ecxDeviceClusterSchemaNames["Node0"]: {
+					neDeviceClusterSchemaNames["Node0"]: {
 						Type:     schema.TypeList,
 						Computed: true,
 						Elem: &schema.Resource{
 							Schema: createDataSourceClusterNodeDetailSchema(),
 						},
-						Description: ecxDeviceClusterDescriptions["Node0"],
+						Description: neDeviceClusterDescriptions["Node0"],
 					},
-					ecxDeviceClusterSchemaNames["Node1"]: {
+					neDeviceClusterSchemaNames["Node1"]: {
 						Type:     schema.TypeList,
 						Computed: true,
 						Elem: &schema.Resource{
 							Schema: createDataSourceClusterNodeDetailSchema(),
 						},
-						Description: ecxDeviceClusterDescriptions["Node1"],
+						Description: neDeviceClusterDescriptions["Node1"],
 					},
 				},
 			},
@@ -598,132 +430,132 @@ func createDataSourceNetworkDeviceSchema() map[string]*schema.Schema {
 
 func createDataSourceNetworkDeviceInterfaceSchema() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
-		ecxDeviceInterfaceSchemaNames["ID"]: {
+		neDeviceInterfaceSchemaNames["ID"]: {
 			Type:        schema.TypeInt,
 			Computed:    true,
-			Description: ecxDeviceInterfaceDescriptions["ID"],
+			Description: neDeviceInterfaceDescriptions["ID"],
 		},
-		ecxDeviceInterfaceSchemaNames["Name"]: {
+		neDeviceInterfaceSchemaNames["Name"]: {
 			Type:        schema.TypeString,
 			Computed:    true,
-			Description: ecxDeviceInterfaceDescriptions["Name"],
+			Description: neDeviceInterfaceDescriptions["Name"],
 		},
-		ecxDeviceInterfaceSchemaNames["Status"]: {
+		neDeviceInterfaceSchemaNames["Status"]: {
 			Type:        schema.TypeString,
 			Computed:    true,
-			Description: ecxDeviceInterfaceDescriptions["Status"],
+			Description: neDeviceInterfaceDescriptions["Status"],
 		},
-		ecxDeviceInterfaceSchemaNames["OperationalStatus"]: {
+		neDeviceInterfaceSchemaNames["OperationalStatus"]: {
 			Type:        schema.TypeString,
 			Computed:    true,
-			Description: ecxDeviceInterfaceDescriptions["OperationalStatus"],
+			Description: neDeviceInterfaceDescriptions["OperationalStatus"],
 		},
-		ecxDeviceInterfaceSchemaNames["MACAddress"]: {
+		neDeviceInterfaceSchemaNames["MACAddress"]: {
 			Type:        schema.TypeString,
 			Computed:    true,
-			Description: ecxDeviceInterfaceDescriptions["MACAddress"],
+			Description: neDeviceInterfaceDescriptions["MACAddress"],
 		},
-		ecxDeviceInterfaceSchemaNames["IPAddress"]: {
+		neDeviceInterfaceSchemaNames["IPAddress"]: {
 			Type:        schema.TypeString,
 			Computed:    true,
-			Description: ecxDeviceInterfaceDescriptions["IPAddress"],
+			Description: neDeviceInterfaceDescriptions["IPAddress"],
 		},
-		ecxDeviceInterfaceSchemaNames["AssignedType"]: {
+		neDeviceInterfaceSchemaNames["AssignedType"]: {
 			Type:        schema.TypeString,
 			Computed:    true,
-			Description: ecxDeviceInterfaceDescriptions["AssignedType"],
+			Description: neDeviceInterfaceDescriptions["AssignedType"],
 		},
-		ecxDeviceInterfaceSchemaNames["Type"]: {
+		neDeviceInterfaceSchemaNames["Type"]: {
 			Type:        schema.TypeString,
 			Computed:    true,
-			Description: ecxDeviceInterfaceDescriptions["Type"],
+			Description: neDeviceInterfaceDescriptions["Type"],
 		},
 	}
 }
 
 func createDataSourceNetworkDeviceUserKeySchema() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
-		ecxDeviceUserKeySchemaNames["Username"]: {
+		neDeviceUserKeySchemaNames["Username"]: {
 			Type:        schema.TypeString,
 			Computed:    true,
-			Description: ecxDeviceUserKeyDescriptions["Username"],
+			Description: neDeviceUserKeyDescriptions["Username"],
 		},
-		ecxDeviceUserKeySchemaNames["KeyName"]: {
+		neDeviceUserKeySchemaNames["KeyName"]: {
 			Type:        schema.TypeString,
 			Computed:    true,
-			Description: ecxDeviceUserKeyDescriptions["KeyName"],
+			Description: neDeviceUserKeyDescriptions["KeyName"],
 		},
 	}
 }
 
 func createDataSourceClusterNodeDetailSchema() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
-		ecxDeviceClusterNodeSchemaNames["LicenseFileId"]: {
+		neDeviceClusterNodeSchemaNames["LicenseFileId"]: {
 			Type:        schema.TypeString,
 			Computed:    true,
 			Sensitive:   true,
-			Description: ecxDeviceClusterNodeDescriptions["LicenseFileId"],
+			Description: neDeviceClusterNodeDescriptions["LicenseFileId"],
 		},
-		ecxDeviceClusterNodeSchemaNames["LicenseToken"]: {
+		neDeviceClusterNodeSchemaNames["LicenseToken"]: {
 			Type:        schema.TypeString,
 			Computed:    true,
-			Description: ecxDeviceClusterNodeDescriptions["LicenseToken"],
+			Description: neDeviceClusterNodeDescriptions["LicenseToken"],
 		},
-		ecxDeviceClusterNodeSchemaNames["VendorConfiguration"]: {
+		neDeviceClusterNodeSchemaNames["VendorConfiguration"]: {
 			Type:     schema.TypeList,
 			Computed: true,
 			Elem: &schema.Resource{
 				Schema: createDataSourceVendorConfigurationSchema(),
 			},
-			Description: ecxDeviceClusterNodeDescriptions["VendorConfiguration"],
+			Description: neDeviceClusterNodeDescriptions["VendorConfiguration"],
 		},
-		ecxDeviceClusterNodeSchemaNames["UUID"]: {
+		neDeviceClusterNodeSchemaNames["UUID"]: {
 			Type:        schema.TypeString,
 			Computed:    true,
-			Description: ecxDeviceClusterNodeDescriptions["UUID"],
+			Description: neDeviceClusterNodeDescriptions["UUID"],
 		},
-		ecxDeviceClusterNodeSchemaNames["Name"]: {
+		neDeviceClusterNodeSchemaNames["Name"]: {
 			Type:        schema.TypeString,
 			Computed:    true,
-			Description: ecxDeviceClusterNodeDescriptions["Name"],
+			Description: neDeviceClusterNodeDescriptions["Name"],
 		},
 	}
 }
 
 func createDataSourceVendorConfigurationSchema() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
-		ecxDeviceVendorConfigSchemaNames["Hostname"]: {
+		neDeviceVendorConfigSchemaNames["Hostname"]: {
 			Type:        schema.TypeString,
 			Computed:    true,
-			Description: ecxDeviceVendorConfigDescriptions["Hostname"],
+			Description: neDeviceVendorConfigDescriptions["Hostname"],
 		},
-		ecxDeviceVendorConfigSchemaNames["AdminPassword"]: {
+		neDeviceVendorConfigSchemaNames["AdminPassword"]: {
 			Type:        schema.TypeString,
 			Computed:    true,
 			Sensitive:   true,
-			Description: ecxDeviceVendorConfigDescriptions["AdminPassword"],
+			Description: neDeviceVendorConfigDescriptions["AdminPassword"],
 		},
-		ecxDeviceVendorConfigSchemaNames["Controller1"]: {
+		neDeviceVendorConfigSchemaNames["Controller1"]: {
 			Type:        schema.TypeString,
 			Computed:    true,
-			Description: ecxDeviceVendorConfigDescriptions["Controller1"],
+			Description: neDeviceVendorConfigDescriptions["Controller1"],
 		},
-		ecxDeviceVendorConfigSchemaNames["ActivationKey"]: {
-			Type:        schema.TypeString,
-			Computed:    true,
-			Sensitive:   true,
-			Description: ecxDeviceVendorConfigDescriptions["ActivationKey"],
-		},
-		ecxDeviceVendorConfigSchemaNames["ControllerFqdn"]: {
-			Type:        schema.TypeString,
-			Computed:    true,
-			Description: ecxDeviceVendorConfigDescriptions["ControllerFqdn"],
-		},
-		ecxDeviceVendorConfigSchemaNames["RootPassword"]: {
+		neDeviceVendorConfigSchemaNames["ActivationKey"]: {
 			Type:        schema.TypeString,
 			Computed:    true,
 			Sensitive:   true,
-			Description: ecxDeviceVendorConfigDescriptions["RootPassword"],
+			Description: neDeviceVendorConfigDescriptions["ActivationKey"],
+		},
+		neDeviceVendorConfigSchemaNames["ControllerFqdn"]: {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: neDeviceVendorConfigDescriptions["ControllerFqdn"],
+		},
+		neDeviceVendorConfigSchemaNames["RootPassword"]: {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Sensitive:   true,
+			Description: neDeviceVendorConfigDescriptions["RootPassword"],
 		},
 	}
 }
@@ -738,7 +570,7 @@ func dataSourceNetworkDevice() *schema.Resource {
 func getDeviceByName(deviceName string, conf *Config) (*ne.Device, error) {
 	var devices []ne.Device
 	err := error(nil)
-	devices, err = conf.ne.GetDevices(deviceStates)
+	devices, err = conf.ne.GetDevices(neDeviceStates)
 	if err != nil {
 		return nil, fmt.Errorf("'devices: %v'", devices)
 	}
