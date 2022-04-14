@@ -32,13 +32,13 @@ NOTE: Exactly one of either `uuid` or `name` must be specified.
 * `uuid` - Device unique identifier
 * `status` - Device provisioning status
   * INITIALIZING
-  * PROVISIONING  (**NOTE: Currenly data source will only return devices in this state**)
+  * PROVISIONING
+  * PROVISIONED  (**NOTE: Currenly data source will only return devices in this state**)
   * WAITING_FOR_PRIMARY
   * WAITING_FOR_SECONDARY
   * WAITING_FOR_REPLICA_CLUSTER_NODES 
   * CLUSTER_SETUP_IN_PROGRESS 
   * FAILED
-  * PROVISIONED
   * DEPROVISIONING
   * DEPROVISIONED
 * `license_status` - Device license registration status
