@@ -3,6 +3,7 @@ module github.com/equinix/terraform-provider-equinix
 go 1.18
 
 require (
+	github.com/equinix-labs/fabric-go v0.1.0
 	github.com/equinix/ecx-go/v2 v2.3.0
 	github.com/equinix/ne-go v1.7.0
 	github.com/equinix/oauth2-go v1.0.0
@@ -14,13 +15,14 @@ require (
 	github.com/hashicorp/terraform-plugin-sdk/v2 v2.9.0
 	github.com/packethost/packngo v0.28.0
 	github.com/stretchr/testify v1.7.0
-	golang.org/x/oauth2 v0.0.0-20210313182246-cd4f82c27b84
+	golang.org/x/oauth2 v0.0.0-20220608161450-d0670ef3b1eb
 )
 
 require (
 	cloud.google.com/go v0.79.0 // indirect
 	cloud.google.com/go/storage v1.10.0 // indirect
 	github.com/agext/levenshtein v1.2.2 // indirect
+	github.com/antihax/optional v1.0.0 // indirect
 	github.com/apparentlymart/go-cidr v1.0.1 // indirect
 	github.com/apparentlymart/go-textseg/v13 v13.0.0 // indirect
 	github.com/aws/aws-sdk-go v1.42.13 // indirect
@@ -66,9 +68,9 @@ require (
 	golang.org/x/crypto v0.0.0-20210421170649-83a5a9bb288b // indirect
 	golang.org/x/lint v0.0.0-20201208152925-83fdc39ff7b5 // indirect
 	golang.org/x/mod v0.4.2 // indirect
-	golang.org/x/net v0.0.0-20210614182718-04defd469f4e // indirect
+	golang.org/x/net v0.0.0-20220127200216-cd36cc0744dd // indirect
 	golang.org/x/sys v0.0.0-20220517195934-5e4e11fc645e // indirect
-	golang.org/x/text v0.3.6 // indirect
+	golang.org/x/text v0.3.7 // indirect
 	golang.org/x/tools v0.1.0 // indirect
 	golang.org/x/xerrors v0.0.0-20200804184101-5ec99f83aff1 // indirect
 	google.golang.org/api v0.44.0-impersonate-preview // indirect
