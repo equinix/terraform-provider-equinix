@@ -24,9 +24,13 @@ website/node_modules
 *.iml
 *.test
 *.iml
+.env
 
 website/vendor
 vendor
+
+equinix-fabricv4.fetched.json
+equinix-fabricv4.patched.json
 
 # Test exclusions
 !command/test-fixtures/**/*.tfstate
