@@ -14,6 +14,7 @@ import (
 	"strings"
 	"time"
 
+	v4 "github.com/equinix-labs/fabric-go/fabric/v4"
 	"github.com/equinix/ecx-go/v2"
 	"github.com/equinix/ne-go"
 	"github.com/equinix/oauth2-go"
@@ -84,6 +85,8 @@ type Config struct {
 	metal *packngo.Client
 
 	terraformVersion string
+	fabricClient     *v4.APIClient
+	FabricAuthToken  string
 }
 
 // Load function validates configuration structure fields and configures
@@ -118,6 +121,7 @@ func (c *Config) Load(ctx context.Context) error {
 	authClient.Transport = logging.NewTransport("Equinix", authClient.Transport)
 	ecxClient := ecx.NewClient(ctx, c.BaseURL, authClient)
 	neClient := ne.NewClient(ctx, c.BaseURL, authClient)
+
 	if c.PageSize > 0 {
 		ecxClient.SetPageSize(c.PageSize)
 		neClient.SetPageSize(c.PageSize)
@@ -128,11 +132,30 @@ func (c *Config) Load(ctx context.Context) error {
 	neClient.SetHeaders(map[string]string{
 		"User-agent": c.fullUserAgent("equinix/ne-go"),
 	})
+	authConfig := oauth2.Config{}
+	if c.Token == "" {
+		authConfig = oauth2.Config{
+			ClientID:     c.ClientID,
+			ClientSecret: c.ClientSecret,
+			BaseURL:      c.BaseURL,
+		}
+		tke, err := authConfig.TokenSource(ctx, authClient).Token()
+		if err != nil {
+			if err != nil {
+				return err
+			}
+		}
+		if tke != nil {
+			c.FabricAuthToken = tke.AccessToken
+		}
+	} else if c.FabricAuthToken == "" {
+		c.FabricAuthToken = c.Token
+	}
 
 	c.ecx = ecxClient
 	c.ne = neClient
 	c.metal = c.NewMetalClient()
-
+	c.fabricClient = c.FabricClient()
 	return nil
 }
 
@@ -207,5 +230,29 @@ func (c *Config) NewMetalClient() *packngo.Client {
 	client, _ := packngo.NewClientWithBaseURL(consumerToken, c.AuthToken, standardClient, baseURL.String())
 	client.UserAgent = c.fullUserAgent(client.UserAgent)
 
+	return client
+}
+
+func (c *Config) FabricClient() *v4.APIClient {
+	transport := logging.NewTransport("Equinix Fabric", http.DefaultTransport)
+	var authClient *http.Client
+	authClient = &http.Client{
+		//Transport: &http.Transport{},
+		Transport: transport}
+	authClient.Timeout = c.requestTimeout()
+	fabricHeaderMap := map[string]string{
+		"X-SOURCE": "API",
+		//TODO need to make this dynamic
+		"X-CORRELATION-ID": "12302130122193",
+	}
+	v4Configuration := v4.Configuration{
+		BasePath:      c.BaseURL,
+		Host:          "",
+		Scheme:        "",
+		DefaultHeader: fabricHeaderMap,
+		UserAgent:     "equinix/fabric-go",
+		HTTPClient:    authClient,
+	}
+	client := v4.NewAPIClient(&v4Configuration)
 	return client
 }
