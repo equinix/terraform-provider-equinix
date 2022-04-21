@@ -49,6 +49,10 @@ func metalIPComputedFields() map[string]*schema.Schema {
 			Type:     schema.TypeBool,
 			Computed: true,
 		},
+		"vrf_id": {
+			Type:     schema.TypeString,
+			Computed: true,
+		},
 	}
 }
 
@@ -130,18 +134,20 @@ func resourceMetalReservedIPBlock() *schema.Resource {
 		Description: "Arbitrary description",
 	}
 	reservedBlockSchema["quantity"] = &schema.Schema{
-		Type:        schema.TypeInt,
-		Required:    true,
-		ForceNew:    true,
-		Description: "The number of allocated /32 addresses, a power of 2",
+		Type:         schema.TypeInt,
+		Optional:     true,
+		ForceNew:     true,
+		Computed:     true,
+		ExactlyOneOf: []string{"vrf_id", "quantity"},
+		Description:  "The number of allocated /32 addresses, a power of 2",
 	}
 	reservedBlockSchema["type"] = &schema.Schema{
 		Type:         schema.TypeString,
 		ForceNew:     true,
 		Default:      "public_ipv4",
 		Optional:     true,
-		Description:  "Either global_ipv4 or public_ipv4, defaults to public_ipv4 for backward compatibility",
-		ValidateFunc: validation.StringInSlice([]string{"public_ipv4", "global_ipv4"}, false),
+		Description:  "Either global_ipv4, public_ipv4, or vrf. Defaults to public_ipv4.",
+		ValidateFunc: validation.StringInSlice([]string{"public_ipv4", "global_ipv4", "vrf"}, false),
 	}
 	reservedBlockSchema["cidr_notation"] = &schema.Schema{
 		Type:     schema.TypeString,
@@ -155,6 +161,28 @@ func resourceMetalReservedIPBlock() *schema.Resource {
 		Optional:    true,
 		Elem:        &schema.Schema{Type: schema.TypeString},
 	}
+
+	reservedBlockSchema["vrf_id"] = &schema.Schema{
+		Type:        schema.TypeString,
+		Optional:    true,
+		ForceNew:    true,
+		Description: "VRF ID",
+	}
+	reservedBlockSchema["network"] = &schema.Schema{
+		Type:         schema.TypeString,
+		Optional:     true,
+		RequiredWith: []string{"vrf_id"},
+		ForceNew:     true,
+		Description:  "an unreserved network address from an existing vrf ip_range. `network` can only be specified with vrf_id",
+	}
+	reservedBlockSchema["cidr"] = &schema.Schema{
+		Type:         schema.TypeInt,
+		Optional:     true,
+		RequiredWith: []string{"vrf_id"},
+		ForceNew:     true,
+		Description:  "the size of the network to reserve from an existing vrf ip_range. `cidr` can only be specified with `vrf_id`. Minimum range is 22-29, with 30-31 supported and necessary for virtual-circuits",
+	}
+	// TODO: add comments field, used for reservations that are not automatically approved
 
 	return &schema.Resource{
 		Create: resourceMetalReservedIPBlockCreate,
@@ -181,11 +209,12 @@ func resourceMetalReservedIPBlockCreate(d *schema.ResourceData, meta interface{}
 	metro, metOk := d.GetOk("metro")
 
 	// no need to guard facOk && metOk, they "ConflictsWith" each-other
-	if typ == "global_ipv4" {
+	switch typ {
+	case "global_ipv4":
 		if facOk || metOk {
 			return fmt.Errorf("facility and metro can't be set for global IP block reservation")
 		}
-	} else {
+	case "public_ipv4":
 		if !(facOk || metOk) {
 			return fmt.Errorf("You should set either metro or facility for non-global IP block reservation")
 		}
@@ -212,6 +241,10 @@ func resourceMetalReservedIPBlockCreate(d *schema.ResourceData, meta interface{}
 
 	projectID := d.Get("project_id").(string)
 
+	req.VRFID = d.Get("vrf_id").(string)
+	req.Network = d.Get("network").(string)
+	req.CIDR = d.Get("cidr").(int)
+
 	blockAddr, _, err := client.ProjectIPs.Create(projectID, &req)
 	if err != nil {
 		return fmt.Errorf("Error reserving IP address block: %s", err)
@@ -223,30 +256,12 @@ func resourceMetalReservedIPBlockCreate(d *schema.ResourceData, meta interface{}
 	return resourceMetalReservedIPBlockRead(d, meta)
 }
 
-func getType(r *packngo.IPAddressReservation) (string, error) {
-	switch {
-	case !r.Public:
-		return fmt.Sprintf("private_ipv%d", r.AddressFamily), nil
-	case r.Public && !r.Global:
-		return fmt.Sprintf("public_ipv%d", r.AddressFamily), nil
-	case r.Public && r.Global:
-		return fmt.Sprintf("global_ipv%d", r.AddressFamily), nil
-	}
-	return "", fmt.Errorf("Unknown reservation type %+v", r)
-}
-
 func loadBlock(d *schema.ResourceData, reservedBlock *packngo.IPAddressReservation) error {
-	ipv4CIDRToQuantity := map[int]int{32: 1, 31: 2, 30: 4, 29: 8, 28: 16, 27: 32, 26: 64, 25: 128, 24: 256}
-
 	d.SetId(reservedBlock.ID)
 
-	typ, err := getType(reservedBlock)
-	if err != nil {
-		return err
-	}
 	quantity := 0
 	if reservedBlock.AddressFamily == 4 {
-		quantity = ipv4CIDRToQuantity[reservedBlock.CIDR]
+		quantity = 1 << (32 - reservedBlock.CIDR)
 	} else {
 		// In Equinix Metal, a reserved IPv6 block is allocated when a device is
 		// run in a project. It's always /56, and it can't be created with
@@ -279,7 +294,7 @@ func loadBlock(d *schema.ResourceData, reservedBlock *packngo.IPAddressReservati
 		"netmask":        reservedBlock.Netmask,
 		"address_family": reservedBlock.AddressFamily,
 		"cidr":           reservedBlock.CIDR,
-		"type":           typ,
+		"type":           reservedBlock.Type,
 		"tags":           reservedBlock.Tags,
 		"public":         reservedBlock.Public,
 		"management":     reservedBlock.Management,
@@ -287,6 +302,7 @@ func loadBlock(d *schema.ResourceData, reservedBlock *packngo.IPAddressReservati
 		"quantity":       quantity,
 		"project_id":     path.Base(reservedBlock.Project.Href),
 		"cidr_notation":  fmt.Sprintf("%s/%d", reservedBlock.Network, reservedBlock.CIDR),
+		"vrf_id":         reservedBlock.VRF.ID,
 	}
 
 	// filter out attributes which are not defined in target resource
@@ -296,15 +312,17 @@ func loadBlock(d *schema.ResourceData, reservedBlock *packngo.IPAddressReservati
 		}
 	}
 
-	err = setMap(d, attributeMap)
-	return err
+	return setMap(d, attributeMap)
 }
 
 func resourceMetalReservedIPBlockRead(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*Config).metal
 	id := d.Id()
 
-	reservedBlock, _, err := client.ProjectIPs.Get(id, nil)
+	getOpts := &packngo.GetOptions{Includes: []string{"facility", "metro", "project", "vrf"}}
+	getOpts.Filter("types", "public_ipv4,global_ipv4,private_ipv4,public_ipv6,vrf")
+
+	reservedBlock, _, err := client.ProjectIPs.Get(id, getOpts)
 	if err != nil {
 		err = friendlyError(err)
 		if isNotFound(err) {
