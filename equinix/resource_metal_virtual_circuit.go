@@ -73,6 +73,47 @@ func resourceMetalVirtualCircuit() *schema.Resource {
 				Description: "UUID of the VLAN to associate",
 				ForceNew:    true,
 			},
+			"vrf_id": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "UUID of the VLAN to associate",
+				ForceNew:    true,
+			},
+			"peer_as": {
+				Type:         schema.TypeInt,
+				Optional:     true,
+				RequiredWith: []string{"vrf_id"},
+				Description: `A subnet from one of the IP blocks associated with the VRF that we will help create an IP reservation for. Can only be either a /30 or /31.
+				 * For a /31 block, it will only have two IP addresses, which will be used for the metal_ip and customer_ip.
+				 * For a /30 block, it will have four IP addresses, but the first and last IP addresses are not usable. We will default to the first usable IP address for the metal_ip`,
+				ForceNew: true,
+			},
+			"subnet": {
+				Type:         schema.TypeString,
+				Optional:     true,
+				RequiredWith: []string{"vrf_id"},
+				Description: `A subnet from one of the IP blocks associated with the VRF that we will help create an IP reservation for. Can only be either a /30 or /31.
+				 * For a /31 block, it will only have two IP addresses, which will be used for the metal_ip and customer_ip.
+				 * For a /30 block, it will have four IP addresses, but the first and last IP addresses are not usable. We will default to the first usable IP address for the metal_ip.`,
+			},
+			"metal_ip": {
+				Type:         schema.TypeString,
+				Optional:     true,
+				RequiredWith: []string{"vrf_id"},
+				Description:  "The IP address that’s set as “our” IP that is configured on the rack_local_vlan SVI. Will default to the first usable IP in the subnet.",
+			},
+			"customer_ip": {
+				Type:         schema.TypeString,
+				Optional:     true,
+				RequiredWith: []string{"vrf_id"},
+				Description:  "The IP address set as the customer IP which the CSR switch will peer with. Will default to the other usable IP in the subnet.",
+			},
+			"md5": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "The password that can be set for the VRF BGP peer",
+			},
+
 			"vnid": {
 				Type:        schema.TypeInt,
 				Computed:    true,
@@ -99,6 +140,12 @@ func resourceMetalVirtualCircuitCreate(d *schema.ResourceData, meta interface{})
 		Name:             d.Get("name").(string),
 		Description:      d.Get("description").(string),
 		Speed:            d.Get("speed").(string),
+		VRFID:            d.Get("vrf_id").(string),
+		PeerAs:           d.Get("peer_as").(int),
+		Subnet:           d.Get("subnet").(string),
+		MetalIP:          d.Get("metal_ip").(string),
+		CustomerIP:       d.Get("customer_ip").(string),
+		MD5:              d.Get("md5").(string),
 	}
 
 	connId := d.Get("connection_id").(string)
@@ -150,7 +197,7 @@ func resourceMetalVirtualCircuitRead(d *schema.ResourceData, meta interface{}) e
 
 	vc, _, err := client.VirtualCircuits.Get(
 		vcId,
-		&packngo.GetOptions{Includes: []string{"project", "port", "virtual_network"}},
+		&packngo.GetOptions{Includes: []string{"project", "port", "virtual_network", "vrf"}},
 	)
 	if err != nil {
 		return err
@@ -166,6 +213,12 @@ func resourceMetalVirtualCircuitRead(d *schema.ResourceData, meta interface{}) e
 			}
 			return nil
 		},
+		"vrf_id": func(d *schema.ResourceData, k string) error {
+			if vc.VRF != nil {
+				return d.Set(k, vc.VRF.ID)
+			}
+			return nil
+		},
 		"status":      vc.Status,
 		"nni_vlan":    vc.NniVLAN,
 		"vnid":        vc.VNID,
@@ -174,6 +227,11 @@ func resourceMetalVirtualCircuitRead(d *schema.ResourceData, meta interface{}) e
 		"speed":       vc.Speed,
 		"description": vc.Description,
 		"tags":        vc.Tags,
+		"peer_as":     vc.PeerAs,
+		"subnet":      vc.Subnet,
+		"metal_ip":    vc.MetalIP,
+		"customer_ip": vc.CustomerIP,
+		"md5":         vc.MD5,
 	})
 }
 
@@ -184,7 +242,10 @@ func getVCStateWaiter(client *packngo.Client, id string, timeout time.Duration, 
 		Refresh: func() (interface{}, string, error) {
 			vc, _, err := client.VirtualCircuits.Get(
 				id,
-				&packngo.GetOptions{Includes: []string{"project", "port", "virtual_network"}},
+				&packngo.GetOptions{Includes: []string{
+					"project", "port", "virtual_network",
+					"vrf",
+				}}, // TODO: we are not using the returned VC. Remove the includes?
 			)
 			if err != nil {
 				return 0, "", err
