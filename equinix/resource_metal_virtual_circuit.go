@@ -118,7 +118,7 @@ func resourceMetalVirtualCircuitCreate(d *schema.ResourceData, meta interface{})
 	if err != nil {
 		return err
 	}
-	if conn.Status == packngo.VCStatusPending {
+	if conn.Status == string(packngo.VCStatusPending) {
 		return fmt.Errorf("Connection request with name %s and ID %s wasn't approved yet", conn.Name, conn.ID)
 	}
 
@@ -130,8 +130,8 @@ func resourceMetalVirtualCircuitCreate(d *schema.ResourceData, meta interface{})
 		client,
 		vc.ID,
 		d.Timeout(schema.TimeoutCreate),
-		[]string{packngo.VCStatusActivating},
-		[]string{packngo.VCStatusActive},
+		[]string{string(packngo.VCStatusActivating)},
+		[]string{string(packngo.VCStatusActive)},
 	)
 
 	_, err = createWaiter.WaitForState()
@@ -189,7 +189,7 @@ func getVCStateWaiter(client *packngo.Client, id string, timeout time.Duration, 
 			if err != nil {
 				return 0, "", err
 			}
-			return vc, vc.Status, nil
+			return vc, string(vc.Status), nil
 		},
 		Timeout:    timeout,
 		Delay:      10 * time.Second,
@@ -261,8 +261,8 @@ func resourceMetalVirtualCircuitDelete(d *schema.ResourceData, meta interface{})
 		client,
 		d.Id(),
 		d.Timeout(schema.TimeoutDelete),
-		[]string{packngo.VCStatusDeactivating},
-		[]string{packngo.VCStatusWaiting},
+		[]string{string(packngo.VCStatusDeactivating)},
+		[]string{string(packngo.VCStatusWaiting)},
 	)
 
 	_, err = detachWaiter.WaitForState()

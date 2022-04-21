@@ -174,7 +174,7 @@ func resourceMetalReservedIPBlockCreate(d *schema.ResourceData, meta interface{}
 	typ := d.Get("type").(string)
 
 	req := packngo.IPReservationRequest{
-		Type:     typ,
+		Type:     packngo.IPReservationType(typ),
 		Quantity: quantity,
 	}
 	facility, facOk := d.GetOk("facility")
@@ -212,7 +212,7 @@ func resourceMetalReservedIPBlockCreate(d *schema.ResourceData, meta interface{}
 
 	projectID := d.Get("project_id").(string)
 
-	blockAddr, _, err := client.ProjectIPs.Request(projectID, &req)
+	blockAddr, _, err := client.ProjectIPs.Create(projectID, &req)
 	if err != nil {
 		return fmt.Errorf("Error reserving IP address block: %s", err)
 	}
