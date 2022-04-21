@@ -26,6 +26,11 @@ func dataSourceMetalGateway() *schema.Resource {
 				Type:        schema.TypeString,
 				Description: "UUID of the VLAN to associate",
 			},
+			"vrf_id": {
+				Computed:    true,
+				Type:        schema.TypeString,
+				Description: "UUID of the VRF associated with the IP Reservation",
+			},
 			"ip_reservation_id": {
 				Computed:    true,
 				Type:        schema.TypeString,
