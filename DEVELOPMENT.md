@@ -57,6 +57,8 @@ use `sweep` target
   make sweep
   ```
 
+  Specific sweep targets can be swept as follows: `make sweep SWEEPARGS="-sweep-run=equinix_metal_vrf" SWEEP="all"`.
+
 ## Test parametrization
 
 Acceptance tests can be parametrized by setting up various environmental variables.
