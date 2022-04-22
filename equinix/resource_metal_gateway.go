@@ -122,6 +122,7 @@ func resourceMetalGatewayRead(d *schema.ResourceData, meta interface{}) error {
 	mgId := d.Id()
 
 	includes := &packngo.GetOptions{Includes: []string{"project", "ip_reservation", "virtual_network", "vrf"}}
+
 	mg, _, err := client.MetalGateways.Get(mgId, includes)
 	if err != nil {
 		return err

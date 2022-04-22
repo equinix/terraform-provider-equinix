@@ -106,6 +106,8 @@ func TestAccMetalReservedIPBlock_public(t *testing.T) {
 						"equinix_metal_reserved_ip_block.test", "management", "false"),
 					resource.TestCheckResourceAttr(
 						"equinix_metal_reserved_ip_block.test", "tags.#", "2"),
+					resource.TestCheckResourceAttrSet("equinix_metal_reserved_ip_block.test", "network"),
+					resource.TestCheckResourceAttrSet("equinix_metal_reserved_ip_block.test", "cidr"),
 				),
 			},
 		},

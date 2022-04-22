@@ -163,16 +163,18 @@ func resourceMetalReservedIPBlock() *schema.Resource {
 	}
 
 	reservedBlockSchema["vrf_id"] = &schema.Schema{
-		Type:        schema.TypeString,
-		Optional:    true,
-		ForceNew:    true,
-		Description: "VRF ID",
+		Type:         schema.TypeString,
+		Optional:     true,
+		ForceNew:     true,
+		ExactlyOneOf: []string{"vrf_id", "quantity"},
+		Description:  "VRF ID",
 	}
 	reservedBlockSchema["network"] = &schema.Schema{
 		Type:         schema.TypeString,
 		Optional:     true,
 		RequiredWith: []string{"vrf_id"},
 		ForceNew:     true,
+		Computed:     true,
 		Description:  "an unreserved network address from an existing vrf ip_range. `network` can only be specified with vrf_id",
 	}
 	reservedBlockSchema["cidr"] = &schema.Schema{
@@ -180,6 +182,7 @@ func resourceMetalReservedIPBlock() *schema.Resource {
 		Optional:     true,
 		RequiredWith: []string{"vrf_id"},
 		ForceNew:     true,
+		Computed:     true,
 		Description:  "the size of the network to reserve from an existing vrf ip_range. `cidr` can only be specified with `vrf_id`. Minimum range is 22-29, with 30-31 supported and necessary for virtual-circuits",
 	}
 	// TODO: add comments field, used for reservations that are not automatically approved
@@ -302,7 +305,12 @@ func loadBlock(d *schema.ResourceData, reservedBlock *packngo.IPAddressReservati
 		"quantity":       quantity,
 		"project_id":     path.Base(reservedBlock.Project.Href),
 		"cidr_notation":  fmt.Sprintf("%s/%d", reservedBlock.Network, reservedBlock.CIDR),
-		"vrf_id":         reservedBlock.VRF.ID,
+		"vrf_id": func(d *schema.ResourceData, k string) error {
+			if reservedBlock.VRF == nil {
+				return nil
+			}
+			return d.Set(k, reservedBlock.VRF.ID)
+		},
 	}
 
 	// filter out attributes which are not defined in target resource
