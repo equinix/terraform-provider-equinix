@@ -323,3 +323,17 @@ resource "equinix_metal_gateway" "foobar" {
 }
 `, testMetro)
 }
+
+func testAccMetalVRFConfig_withConnection(r int) string {
+	testMetro := "da"
+	return testAccMetalVRFConfig_basic(r) + fmt.Sprintf(`
+
+	resource "equinix_metal_connection" "test" {
+		name            = "tfacc-conn-%d"
+		organization_id = equinix_metal_project.foobar.organization_id
+		project_id      = equinix_metal_project.foobar.id
+		metro           = "%s"
+		redundancy      = "redundant"
+		type            = "shared"
+	}`, r, testMetro)
+}
