@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/packethost/packngo"
 )
 
 func dataSourceMetalPreCreatedIPBlock() *schema.Resource {
@@ -67,7 +68,10 @@ func dataSourceMetalPreCreatedIPBlock() *schema.Resource {
 func dataSourceMetalPreCreatedIPBlockRead(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*Config).metal
 	projectID := d.Get("project_id").(string)
-	ips, _, err := client.ProjectIPs.List(projectID, nil)
+	getOpts := packngo.GetOptions{Includes: []string{"facility", "metro", "project", "vrf"}}
+	getOpts.Filter("types", "public_ipv4,global_ipv4,private_ipv4,public_ipv6,vrf")
+
+	ips, _, err := client.ProjectIPs.List(projectID, &getOpts)
 	if err != nil {
 		return err
 	}

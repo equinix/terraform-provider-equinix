@@ -17,7 +17,7 @@ func dataSourceMetalReservedIPBlock() *schema.Resource {
 				Type:          schema.TypeString,
 				Optional:      true,
 				Description:   "ID of the block to look up",
-				ConflictsWith: []string{"project_id", "address"},
+				ConflictsWith: []string{"project_id", "ip_address"},
 				Computed:      true,
 			},
 			"project_id": {
@@ -101,10 +101,15 @@ func dataSourceMetalReservedIPBlock() *schema.Resource {
 				Type:     schema.TypeInt,
 				Computed: true,
 			},
+			"vrf_id": {
+				Type:        schema.TypeInt,
+				Computed:    true,
+				Description: "VRF ID of the block when type=vrf",
+			},
 			"type": {
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "Address type, one of public_ipv4, public_ipv6 and private_ipv4",
+				Description: "Address type, one of public_ipv4, public_ipv6, private_ipv4, global_ipv4, and vrf",
 			},
 		},
 	}
@@ -116,15 +121,15 @@ func dataSourceMetalReservedIPBlockRead(d *schema.ResourceData, meta interface{}
 	blockId, blockIdOk := d.GetOk("id")
 	projectId, projectIdOk := d.GetOk("project_id")
 	address, addressOk := d.GetOk("ip_address")
+	getOpts := packngo.GetOptions{Includes: []string{"facility", "metro", "project", "vrf"}}
+	getOpts.Filter("types", "public_ipv4,global_ipv4,private_ipv4,public_ipv6,vrf")
 
 	if !(blockIdOk || (projectIdOk && addressOk)) {
 		return fmt.Errorf("You must specify either id or project_id and ip_address")
 	}
 	if blockIdOk {
 		block, _, err := client.ProjectIPs.Get(
-			blockId.(string),
-			&packngo.GetOptions{Includes: []string{"facility", "project", "metro"}},
-		)
+			blockId.(string), &getOpts)
 		if err != nil {
 			return err
 		}
@@ -137,9 +142,7 @@ func dataSourceMetalReservedIPBlockRead(d *schema.ResourceData, meta interface{}
 		return fmt.Errorf("%s is not a valid ip_address", addressStr)
 	}
 
-	blocks, _, err := client.ProjectIPs.List(projectId.(string),
-		&packngo.GetOptions{Includes: []string{"facility", "project", "metro"}},
-	)
+	blocks, _, err := client.ProjectIPs.List(projectId.(string), &getOpts)
 	if err != nil {
 		return err
 	}
