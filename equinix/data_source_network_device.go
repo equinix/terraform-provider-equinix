@@ -26,10 +26,11 @@ var neDeviceStates = []string{ // Not sure if other states should be included
 func createDataSourceNetworkDeviceSchema() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
 		neDeviceSchemaNames["UUID"]: {
-			Type:        schema.TypeString,
-			Optional:    true,
-			Computed:    true,
-			Description: neDeviceDescriptions["UUID"],
+			Type:         schema.TypeString,
+			Optional:     true,
+			Computed:     true,
+			Description:  neDeviceDescriptions["UUID"],
+			ExactlyOneOf: []string{neDeviceSchemaNames["UUID"], neDeviceSchemaNames["Name"]},
 		},
 		neDeviceSchemaNames["Name"]: {
 			Type:     schema.TypeString,
@@ -40,6 +41,7 @@ func createDataSourceNetworkDeviceSchema() map[string]*schema.Schema {
 			},
 			ValidateFunc: validation.StringLenBetween(3, 50),
 			Description:  neDeviceDescriptions["Name"],
+			ExactlyOneOf: []string{neDeviceSchemaNames["UUID"], neDeviceSchemaNames["Name"]},
 		},
 		neDeviceSchemaNames["TypeCode"]: {
 			Type:        schema.TypeString,
@@ -589,9 +591,10 @@ func dataSourceNetworkDeviceRead(ctx context.Context, d *schema.ResourceData, m 
 	var err error
 	var primary, secondary *ne.Device
 
-	nameIf, nameExists := d.GetOk("name")
+	// exactly one of uuid & name is guaranteed to be present by schema
+	nameIf, nameExists := d.GetOk(neDeviceSchemaNames["Name"])
 	name := nameIf.(string)
-	uuidIf, uuidExists := d.GetOk("uuid")
+	uuidIf := d.Get(neDeviceSchemaNames["UUID"])
 	uuid := uuidIf.(string)
 
 	if nameExists && uuidExists {
