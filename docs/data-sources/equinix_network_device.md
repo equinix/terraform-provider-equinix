@@ -24,6 +24,7 @@ data "equinix_network_device" "by_name" {
 
 * `uuid` - (Optional) UUID of an existing Equinix Network Edge device
 * `name` - (Optional) Name of an existing Equinix Network Edge device
+* `valid_status_list` - (Optional) Device states to be considered valid when searching for a device by name
 
 NOTE: Exactly one of either `uuid` or `name` must be specified.
 
@@ -33,7 +34,7 @@ NOTE: Exactly one of either `uuid` or `name` must be specified.
 * `status` - Device provisioning status
   * INITIALIZING
   * PROVISIONING
-  * PROVISIONED  (**NOTE: Currenly data source will only return devices in this state**)
+  * PROVISIONED  (**NOTE: By default data source will only return devices in this state.  To include other states see `valid_state_list`**)
   * WAITING_FOR_PRIMARY
   * WAITING_FOR_SECONDARY
   * WAITING_FOR_REPLICA_CLUSTER_NODES 
@@ -41,6 +42,7 @@ NOTE: Exactly one of either `uuid` or `name` must be specified.
   * FAILED
   * DEPROVISIONING
   * DEPROVISIONED
+* `valid_status_list` - Comma separated list of device states (from see `status` for full list) to be considered valid. Default is 'PROVISIONED'.  Case insensitive. 
 * `license_status` - Device license registration status
   * APPLYING_LICENSE
   * REGISTERED

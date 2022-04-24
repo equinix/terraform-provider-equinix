@@ -3,6 +3,7 @@ package equinix
 import (
 	"context"
 	"fmt"
+	"strings"
 
 	"github.com/equinix/ne-go"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -10,17 +11,47 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 )
 
-var neDeviceStates = []string{ // Not sure if other states should be included
-	// ne.DeviceStateClusterSetUpInProgress,
-	// ne.DeviceStateDeprovisioned,
-	// ne.DeviceStateDeprovisioning,
-	// ne.DeviceStateFailed,
-	// ne.DeviceStateInitializing,
-	ne.DeviceStateProvisioned,
-	// ne.DeviceStateProvisioning,
-	// ne.DeviceStateWaitingClusterNodes,
-	// ne.DeviceStateWaitingPrimary,
-	// ne.DeviceStateWaitingSecondary,
+var neDeviceStateMap = map[string]string{
+	"deprovisioned":                     ne.DeviceStateDeprovisioned,
+	"failed":                            ne.DeviceStateFailed,
+	"initializing":                      ne.DeviceStateInitializing,
+	"provisioned":                       ne.DeviceStateProvisioned,
+	"provisioning":                      ne.DeviceStateProvisioning,
+	"cluster_setup_in_progress":         ne.DeviceStateClusterSetUpInProgress,
+	"waiting_for_replica_cluster_nodes": ne.DeviceStateWaitingClusterNodes,
+	"waiting_for_primary":               ne.DeviceStateWaitingPrimary,
+	"waiting_for_secondary":             ne.DeviceStateWaitingSecondary,
+}
+
+func getNeDeviceStatusList(deviceStateText string) (*[]string, error) {
+	if deviceStateText == "" {
+		return &[]string{}, nil
+	}
+	deviceStateTextSlice := strings.Split(strings.ToLower(deviceStateText), ",")
+	invalidItems := []string{}
+	validItems := []string{}
+	for _, textItem := range deviceStateTextSlice {
+		textItem = strings.TrimSpace(textItem)
+		val, ok := neDeviceStateMap[textItem]
+		if !ok {
+			invalidItems = append(invalidItems, textItem)
+		}
+		validItems = append(validItems, val)
+	}
+	if len(invalidItems) > 0 {
+		return nil, fmt.Errorf("Invalid Items: %v", invalidItems)
+	}
+	return &validItems, nil
+}
+func stringIsValidDeviceStateList(i interface{}, k string) ([]string, []error) {
+	v, ok := i.(string)
+	if !ok {
+		return nil, []error{fmt.Errorf("expected type of %s to be string", k)}
+	}
+	if _, err := getNeDeviceStatusList(v); err != nil {
+		return nil, []error{fmt.Errorf("value of %v is not a valid list of device states, got error: %v", k, err)}
+	}
+	return nil, nil
 }
 
 func createDataSourceNetworkDeviceSchema() map[string]*schema.Schema {
@@ -43,15 +74,23 @@ func createDataSourceNetworkDeviceSchema() map[string]*schema.Schema {
 			Description:  neDeviceDescriptions["Name"],
 			ExactlyOneOf: []string{neDeviceSchemaNames["UUID"], neDeviceSchemaNames["Name"]},
 		},
-		neDeviceSchemaNames["TypeCode"]: {
-			Type:        schema.TypeString,
-			Computed:    true,
-			Description: neDeviceDescriptions["TypeCode"],
+		neDeviceSchemaNames["ValidStatusList"]: {
+			Type:          schema.TypeString,
+			Optional:      true,
+			Default:       "Provisioned",
+			Description:   neDeviceDescriptions["ValidStatusList"],
+			ValidateFunc:  stringIsValidDeviceStateList,
+			ConflictsWith: []string{neDeviceSchemaNames["UUID"]},
 		},
 		neDeviceSchemaNames["Status"]: {
 			Type:        schema.TypeString,
 			Computed:    true,
 			Description: neDeviceDescriptions["Status"],
+		},
+		neDeviceSchemaNames["TypeCode"]: {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: neDeviceDescriptions["TypeCode"],
 		},
 		neDeviceSchemaNames["LicenseStatus"]: {
 			Type:        schema.TypeString,
@@ -561,6 +600,7 @@ func createDataSourceVendorConfigurationSchema() map[string]*schema.Schema {
 		},
 	}
 }
+
 func dataSourceNetworkDevice() *schema.Resource {
 	return &schema.Resource{
 		ReadContext: dataSourceNetworkDeviceRead,
@@ -569,15 +609,14 @@ func dataSourceNetworkDevice() *schema.Resource {
 	}
 }
 
-func getDeviceByName(deviceName string, conf *Config) (*ne.Device, error) {
+func getDeviceByName(deviceName string, conf *Config, validDeviceStateList *[]string) (*ne.Device, error) {
 	var devices []ne.Device
 	err := error(nil)
-	devices, err = conf.ne.GetDevices(neDeviceStates)
+	devices, err = conf.ne.GetDevices(*validDeviceStateList)
 	if err != nil {
 		return nil, fmt.Errorf("'devices: %v'", devices)
 	}
 	for _, device := range devices {
-		// return nil, fmt.Errorf("device name is %s", *device.Name)
 		if ne.StringValue(device.Name) == deviceName {
 			return &device, nil
 		}
@@ -597,16 +636,10 @@ func dataSourceNetworkDeviceRead(ctx context.Context, d *schema.ResourceData, m 
 	uuidIf := d.Get(neDeviceSchemaNames["UUID"])
 	uuid := uuidIf.(string)
 
-	if nameExists && uuidExists {
-		return diag.Errorf("name and uuid arguments can't be used together")
-	}
-
-	if !nameExists && !uuidExists {
-		return diag.Errorf("either name or uuid must be set")
-	}
+	validDeviceStatusList, err := getNeDeviceStatusList(d.Get(neDeviceSchemaNames["ValidStatusList"]).(string))
 
 	if nameExists {
-		primary, err = getDeviceByName(name, conf)
+		primary, err = getDeviceByName(name, conf, validDeviceStatusList)
 	} else {
 		primary, err = conf.ne.GetDevice(uuid)
 	}
