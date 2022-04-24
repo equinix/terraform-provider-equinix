@@ -58,6 +58,7 @@ var neDeviceSchemaNames = map[string]string{
 	"ZoneCode":            "zone_code",
 	"Secondary":           "secondary_device",
 	"ClusterDetails":      "cluster_details",
+	"ValidStatusList":     "valid_status_list",
 }
 
 var neDeviceDescriptions = map[string]string{
@@ -101,6 +102,7 @@ var neDeviceDescriptions = map[string]string{
 	"ZoneCode":            "Device location zone code",
 	"Secondary":           "Definition of secondary device applicable for HA setup",
 	"ClusterDetails":      "An object that has the cluster details",
+	"ValidStatusList":     "Comma Separated List of states to be considered valid when searching by name",
 }
 
 var neDeviceInterfaceSchemaNames = map[string]string{
