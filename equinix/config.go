@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"net/http/httputil"
 	"net/url"
 	"os"
 	"path"
@@ -23,6 +24,19 @@ import (
 	"github.com/packethost/packngo"
 	xoauth2 "golang.org/x/oauth2"
 )
+
+type DumpTransport struct {
+	r http.RoundTripper
+}
+
+func (d *DumpTransport) RoundTrip(h *http.Request) (*http.Response, error) {
+	dump, _ := httputil.DumpRequestOut(h, true)
+	fmt.Printf("****REQUEST****\n%q\n", dump)
+	resp, err := d.r.RoundTrip(h)
+	dump, _ = httputil.DumpResponse(resp, true)
+	fmt.Printf("****RESPONSE****\n%q\n****************\n\n", dump)
+	return resp, err
+}
 
 const (
 	consumerToken         = "aZ9GmqHTPtxevvFq9SK3Pi2yr9YCbRzduCSXF2SNem5sjB91mDq7Th3ZwTtRqMWZ"
@@ -178,7 +192,9 @@ func (c *Config) fullUserAgent(suffix string) string {
 
 // NewMetalClient returns a new client for accessing Equinix Metal's API.
 func (c *Config) NewMetalClient() *packngo.Client {
-	transport := logging.NewTransport("Equinix Metal", http.DefaultTransport)
+	transport := http.DefaultTransport
+	// transport = &DumpTransport{http.DefaultTransport} // Debug only
+	transport = logging.NewTransport("Equinix Metal", transport)
 	retryClient := retryablehttp.NewClient()
 	retryClient.HTTPClient.Transport = transport
 	retryClient.RetryMax = c.MaxRetries
