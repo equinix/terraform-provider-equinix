@@ -23,7 +23,7 @@ However, there are other required resources that must be configured on both Equi
 provider to have the interconnection up and running. Below we describe these general steps using
 Azure ExpressRoute as an example.
 
-**1.** Enabling interconnection in the cloud provider - Usally this implies creating a cloud router
+**1.** Enabling interconnection in the cloud provider - Usually this implies creating a cloud router
 and an interconnection asset (e.g. Google Cloud Router and VLAN attachment, Oracle FastConnect,
 etc.). For this example it is required an [azurerm_express_route_circuit](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/express_route_circuit)
 resource in which the service provider (i.e. `Equinix`) must be specified in order to generate a

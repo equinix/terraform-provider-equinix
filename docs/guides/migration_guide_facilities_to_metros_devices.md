@@ -11,7 +11,7 @@ Before the introduction of metros, resources were deployed to a single `facility
 
 ## Changing your Terraform templates to use metros instead of facilities
 
-To take advantage of some of the features of the metro, you might want to change the configuration of your Terraform templates so that the devices have `metro` specified instead of `facilities`. As both of the `metro` and `facilities` are ForceNew paramters (a change will trigger re-creation of the resource), you should be cautious if you don't want to have the device destroyed. 
+To take advantage of some of the features of the metro, you might want to change the configuration of your Terraform templates so that the devices have `metro` specified instead of `facilities`. As both of the `metro` and `facilities` are ForceNew parameters (a change will trigger re-creation of the resource), you should be cautious if you don't want to have the device destroyed. 
 
 We updated the `equinix_metal_device` resource so that the change should be seamless, but please proceed with care. The `metro` parameter is also a computed attribute, and if you use newer provider version than 3.2.1, the `metro` attribute is actually present in your resource. You then only need to add it explicitly to your configuration.
 
