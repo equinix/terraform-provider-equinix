@@ -20,7 +20,7 @@ func TestAccDataSourceMetalVlan_byVxlanFacility(t *testing.T) {
 		CheckDestroy: testAccMetalVlanCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccDataSourceMetalVlanConfig_byVxlanFacility(rs, fac, "testvlan"),
+				Config: testAccDataSourceMetalVlanConfig_byVxlanFacility(rs, fac, "tfacc-vlan"),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrPair(
 						"equinix_metal_vlan.foovlan", "vxlan",
@@ -66,7 +66,7 @@ func TestAccDataSourceMetalVlan_byVxlanMetro(t *testing.T) {
 		CheckDestroy: testAccMetalVlanCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccDataSourceMetalVlanConfig_byVxlanMetro(rs, metro, "testvlan"),
+				Config: testAccDataSourceMetalVlanConfig_byVxlanMetro(rs, metro, "tfacc-vlan"),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrPair(
 						"equinix_metal_vlan.foovlan", "vxlan",
@@ -135,7 +135,7 @@ func TestAccDataSourceMetalVlan_byVlanId(t *testing.T) {
 		CheckDestroy: testAccMetalVlanCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccDataSourceMetalVlanConfig_byVlanId(rs, metro, "testvlan"),
+				Config: testAccDataSourceMetalVlanConfig_byVlanId(rs, metro, "tfacc-vlan"),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrPair(
 						"equinix_metal_vlan.foovlan", "vxlan",
@@ -180,7 +180,7 @@ func TestAccDataSourceMetalVlan_byProjectId(t *testing.T) {
 		CheckDestroy: testAccMetalVlanCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccDataSourceMetalVlanConfig_byProjectId(rs, metro, "testvlan"),
+				Config: testAccDataSourceMetalVlanConfig_byProjectId(rs, metro, "tfacc-vlan"),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrPair(
 						"equinix_metal_vlan.foovlan", "vxlan",

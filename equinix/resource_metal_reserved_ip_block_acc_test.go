@@ -31,7 +31,7 @@ resource "equinix_metal_project" "foobar" {
 
 resource "equinix_metal_reserved_ip_block" "test" {
 	project_id  = equinix_metal_project.foobar.id
-	facility    = "ewr1"
+	facility    = "ny5"
 	type        = "public_ipv4"
 	quantity    = 2
 	tags        = ["Tag1", "Tag2"]
@@ -93,7 +93,7 @@ func TestAccMetalReservedIPBlock_public(t *testing.T) {
 				Config: testAccMetalReservedIPBlockConfig_public(rs),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(
-						"equinix_metal_reserved_ip_block.test", "facility", "ewr1"),
+						"equinix_metal_reserved_ip_block.test", "facility", "ny5"),
 					resource.TestCheckResourceAttr(
 						"equinix_metal_reserved_ip_block.test", "type", "public_ipv4"),
 					resource.TestCheckResourceAttr(
@@ -218,14 +218,14 @@ resource "equinix_metal_project" "foobar" {
 
 resource "equinix_metal_reserved_ip_block" "test" {
 	project_id  = equinix_metal_project.foobar.id
-	facility    = "ewr1"
+	facility    = "ny5"
 	type        = "public_ipv4"
 	quantity    = 2
 }
 
 resource "equinix_metal_device" "test" {
   project_id       = equinix_metal_project.foobar.id
-  facilities       = ["ewr1"]
+  facilities       = ["ny5"]
   plan             = "t1.small.x86"
   operating_system = "ubuntu_16_04"
   hostname         = "tfacc-reserved-ip-device"
