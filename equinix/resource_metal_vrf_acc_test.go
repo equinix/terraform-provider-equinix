@@ -3,6 +3,7 @@ package equinix
 import (
 	"fmt"
 	"log"
+	"os"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
@@ -76,15 +77,15 @@ func TestAccMetalVRF_basic(t *testing.T) {
 			{
 				Config: testAccMetalVRFConfig_basic(rInt),
 				Check: resource.ComposeTestCheckFunc(
-					testAccMetalVRFExists("equinix_metal_vrf.foobar", &vrf),
+					testAccMetalVRFExists("equinix_metal_vrf.test", &vrf),
 					resource.TestCheckResourceAttr(
-						"equinix_metal_vrf.foobar", "name", fmt.Sprintf("tfacc-vrf-%d", rInt)),
+						"equinix_metal_vrf.test", "name", fmt.Sprintf("tfacc-vrf-%d", rInt)),
 					resource.TestCheckResourceAttrSet(
-						"equinix_metal_vrf.foobar", "local_asn"),
+						"equinix_metal_vrf.test", "local_asn"),
 				),
 			},
 			{
-				ResourceName:      "equinix_metal_vrf.foobar",
+				ResourceName:      "equinix_metal_vrf.test",
 				ImportState:       true,
 				ImportStateVerify: true,
 			},
@@ -104,30 +105,30 @@ func TestAccMetalVRF_withIPRanges(t *testing.T) {
 			{
 				Config: testAccMetalVRFConfig_basic(rInt),
 				Check: resource.ComposeTestCheckFunc(
-					testAccMetalVRFExists("equinix_metal_vrf.foobar", &vrf),
+					testAccMetalVRFExists("equinix_metal_vrf.test", &vrf),
 					resource.TestCheckResourceAttr(
-						"equinix_metal_vrf.foobar", "name", fmt.Sprintf("tfacc-vrf-%d", rInt)),
+						"equinix_metal_vrf.test", "name", fmt.Sprintf("tfacc-vrf-%d", rInt)),
 				),
 			},
 			{
 				Config: testAccMetalVRFConfig_withIPRanges(rInt),
 				Check: resource.ComposeTestCheckFunc(
-					testAccMetalVRFExists("equinix_metal_vrf.foobar", &vrf),
+					testAccMetalVRFExists("equinix_metal_vrf.test", &vrf),
 					resource.TestCheckResourceAttr(
-						"equinix_metal_vrf.foobar", "name", fmt.Sprintf("tfacc-vrf-%d", rInt)),
+						"equinix_metal_vrf.test", "name", fmt.Sprintf("tfacc-vrf-%d", rInt)),
 				),
 			},
 			{
-				ResourceName:      "equinix_metal_vrf.foobar",
+				ResourceName:      "equinix_metal_vrf.test",
 				ImportState:       true,
 				ImportStateVerify: true,
 			},
 			{
 				Config: testAccMetalVRFConfig_basic(rInt),
 				Check: resource.ComposeTestCheckFunc(
-					testAccMetalVRFExists("equinix_metal_vrf.foobar", &vrf),
+					testAccMetalVRFExists("equinix_metal_vrf.test", &vrf),
 					resource.TestCheckResourceAttr(
-						"equinix_metal_vrf.foobar", "name", fmt.Sprintf("tfacc-vrf-%d", rInt)),
+						"equinix_metal_vrf.test", "name", fmt.Sprintf("tfacc-vrf-%d", rInt)),
 				),
 			},
 		},
@@ -146,27 +147,27 @@ func TestAccMetalVRF_withIPReservations(t *testing.T) {
 			{
 				Config: testAccMetalVRFConfig_withIPRanges(rInt),
 				Check: resource.ComposeTestCheckFunc(
-					testAccMetalVRFExists("equinix_metal_vrf.foobar", &vrf),
+					testAccMetalVRFExists("equinix_metal_vrf.test", &vrf),
 					resource.TestCheckResourceAttr(
-						"equinix_metal_vrf.foobar", "name", fmt.Sprintf("tfacc-vrf-%d", rInt)),
+						"equinix_metal_vrf.test", "name", fmt.Sprintf("tfacc-vrf-%d", rInt)),
 				),
 			},
 			{
 				Config: testAccMetalVRFConfig_withIPReservations(rInt),
 				Check: resource.ComposeTestCheckFunc(
-					testAccMetalVRFExists("equinix_metal_vrf.foobar", &vrf),
+					testAccMetalVRFExists("equinix_metal_vrf.test", &vrf),
 					resource.TestCheckResourceAttr(
-						"equinix_metal_vrf.foobar", "name", fmt.Sprintf("tfacc-vrf-%d", rInt)),
-					resource.TestCheckResourceAttrPair("equinix_metal_vrf.foobar", "id", "equinix_metal_reserved_ip_block.foobar", "vrf_id"),
+						"equinix_metal_vrf.test", "name", fmt.Sprintf("tfacc-vrf-%d", rInt)),
+					resource.TestCheckResourceAttrPair("equinix_metal_vrf.test", "id", "equinix_metal_reserved_ip_block.test", "vrf_id"),
 				),
 			},
 			{
-				ResourceName:      "equinix_metal_vrf.foobar",
+				ResourceName:      "equinix_metal_vrf.test",
 				ImportState:       true,
 				ImportStateVerify: true,
 			},
 			{
-				ResourceName:      "equinix_metal_reserved_ip_block.foobar",
+				ResourceName:      "equinix_metal_reserved_ip_block.test",
 				ImportState:       true,
 				ImportStateVerify: true,
 			},
@@ -186,27 +187,80 @@ func TestAccMetalVRF_withGateway(t *testing.T) {
 			{
 				Config: testAccMetalVRFConfig_withIPReservations(rInt),
 				Check: resource.ComposeTestCheckFunc(
-					testAccMetalVRFExists("equinix_metal_vrf.foobar", &vrf),
+					testAccMetalVRFExists("equinix_metal_vrf.test", &vrf),
 					resource.TestCheckResourceAttr(
-						"equinix_metal_vrf.foobar", "name", fmt.Sprintf("tfacc-vrf-%d", rInt)),
+						"equinix_metal_vrf.test", "name", fmt.Sprintf("tfacc-vrf-%d", rInt)),
 				),
 			},
 			{
 				Config: testAccMetalVRFConfig_withGateway(rInt),
 				Check: resource.ComposeTestCheckFunc(
-					testAccMetalVRFExists("equinix_metal_vrf.foobar", &vrf),
+					testAccMetalVRFExists("equinix_metal_vrf.test", &vrf),
 					resource.TestCheckResourceAttr(
-						"equinix_metal_vrf.foobar", "name", fmt.Sprintf("tfacc-vrf-%d", rInt)),
-					resource.TestCheckResourceAttrPair("equinix_metal_vrf.foobar", "id", "equinix_metal_gateway.foobar", "vrf_id"),
+						"equinix_metal_vrf.test", "name", fmt.Sprintf("tfacc-vrf-%d", rInt)),
+					resource.TestCheckResourceAttrPair("equinix_metal_vrf.test", "id", "equinix_metal_gateway.test", "vrf_id"),
 				),
 			},
 			{
-				ResourceName:      "equinix_metal_vrf.foobar",
+				ResourceName:      "equinix_metal_vrf.test",
 				ImportState:       true,
 				ImportStateVerify: true,
 			},
 			{
-				ResourceName:      "equinix_metal_gateway.foobar",
+				ResourceName:      "equinix_metal_gateway.test",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+		},
+	})
+}
+
+func TestAccMetalVRFConfig_withConnection(t *testing.T) {
+	var vrf packngo.VRF
+	rInt := acctest.RandInt()
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccMetalVRFCheckDestroyed,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccMetalVRFConfig_withConnection(rInt),
+				Check: resource.ComposeTestCheckFunc(
+					testAccMetalVRFExists("equinix_metal_vrf.test", &vrf),
+					resource.TestCheckResourceAttr(
+						"equinix_metal_virtual_circuit.test", "name", fmt.Sprintf("tfacc-vc-%d", rInt)),
+					resource.TestCheckResourceAttr(
+						"equinix_metal_virtual_circuit.test",
+						"nni_vlan", "1000"),
+					resource.TestCheckResourceAttrPair(
+						"equinix_metal_virtual_circuit.test",
+						"vrf_id", "equinix_metal_vrf.test", "id"),
+					resource.TestCheckResourceAttrPair(
+						"equinix_metal_virtual_circuit.test",
+						"vlan_id", "equinix_metal_vlan.test", "id"),
+					resource.TestCheckResourceAttr(
+						"equinix_metal_virtual_circuit.test",
+
+						"peer_as", "65530"),
+					resource.TestCheckResourceAttr(
+						"equinix_metal_virtual_circuit.test",
+						"subnet", "192.168.100.16/31"),
+					resource.TestCheckResourceAttr(
+						"equinix_metal_virtual_circuit.test",
+						"metal_ip", "192.168.100.16"),
+					resource.TestCheckResourceAttr(
+						"equinix_metal_virtual_circuit.test",
+						"customer_ip", "192.168.100.17"),
+				),
+			},
+			{
+				ResourceName:      "equinix_metal_virtual_circuit.test",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+			{
+				ResourceName:      "equinix_metal_vlan.test",
 				ImportState:       true,
 				ImportStateVerify: true,
 			},
@@ -259,14 +313,14 @@ func testAccMetalVRFConfig_basic(r int) string {
 	testMetro := "da"
 
 	return fmt.Sprintf(`
-resource "equinix_metal_project" "foobar" {
+resource "equinix_metal_project" "test" {
     name = "tfacc-vrfs-%d"
 }
 
-resource "equinix_metal_vrf" "foobar" {
+resource "equinix_metal_vrf" "test" {
 	name = "tfacc-vrf-%d"
 	metro = "%s"
-	project_id = "${equinix_metal_project.foobar.id}"
+	project_id = "${equinix_metal_project.test.id}"
 }`, r, r, testMetro)
 }
 
@@ -274,17 +328,17 @@ func testAccMetalVRFConfig_withIPRanges(r int) string {
 	testMetro := "da"
 
 	return fmt.Sprintf(`
-resource "equinix_metal_project" "foobar" {
+resource "equinix_metal_project" "test" {
     name = "tfacc-vrfs-%d"
 }
 
-resource "equinix_metal_vrf" "foobar" {
+resource "equinix_metal_vrf" "test" {
 	name = "tfacc-vrf-%d"
 	metro = "%s"
 	description = "tfacc-vrf-%d"
 	local_asn = "65000"
 	ip_ranges = ["192.168.100.0/25"]
-	project_id = "${equinix_metal_project.foobar.id}"
+	project_id = "${equinix_metal_project.test.id}"
 }`, r, r, testMetro, r)
 }
 
@@ -293,14 +347,14 @@ func testAccMetalVRFConfig_withIPReservations(r int) string {
 
 	return testAccMetalVRFConfig_withIPRanges(r) + fmt.Sprintf(`
 
-resource "equinix_metal_reserved_ip_block" "foobar" {
-	vrf_id = "${equinix_metal_vrf.foobar.id}"
+resource "equinix_metal_reserved_ip_block" "test" {
+	vrf_id = "${equinix_metal_vrf.test.id}"
 	cidr = 29
 	description = "tfacc-reserved-ip-block-%d"
 	network = "192.168.100.0"
 	type = "vrf"
 	metro = "%s"
-	project_id = "${equinix_metal_project.foobar.id}"
+	project_id = "${equinix_metal_project.test.id}"
 }
 `, r, testMetro)
 }
@@ -310,30 +364,48 @@ func testAccMetalVRFConfig_withGateway(r int) string {
 
 	return testAccMetalVRFConfig_withIPReservations(r) + fmt.Sprintf(`
 
-resource "equinix_metal_vlan" "foobar" {
+resource "equinix_metal_vlan" "test" {
 	description = "test VLAN for VRF"
 	metro       = "%s"
-	project_id  = equinix_metal_project.foobar.id
+	project_id  = equinix_metal_project.test.id
 }
 
-resource "equinix_metal_gateway" "foobar" {
-    project_id        = equinix_metal_project.foobar.id
-    vlan_id           = equinix_metal_vlan.foobar.id
-    ip_reservation_id = equinix_metal_reserved_ip_block.foobar.id
+resource "equinix_metal_gateway" "test" {
+    project_id        = equinix_metal_project.test.id
+    vlan_id           = equinix_metal_vlan.test.id
+    ip_reservation_id = equinix_metal_reserved_ip_block.test.id
 }
 `, testMetro)
 }
 
 func testAccMetalVRFConfig_withConnection(r int) string {
-	testMetro := "da"
+	// Dedicated connection in DA metro
+	testConnection := os.Getenv(metalDedicatedConnIDEnvVar)
 	return testAccMetalVRFConfig_basic(r) + fmt.Sprintf(`
 
-	resource "equinix_metal_connection" "test" {
-		name            = "tfacc-conn-%d"
-		organization_id = equinix_metal_project.foobar.organization_id
-		project_id      = equinix_metal_project.foobar.id
-		metro           = "%s"
-		redundancy      = "redundant"
-		type            = "shared"
-	}`, r, testMetro)
+	data "equinix_metal_connection" "test" {
+		connection_id = "%s"
+	}
+	
+	resource "equinix_metal_vlan" "test" {
+		description = "test VLAN for VRF"
+		metro       = data.equinix_metal_connection.test.metro
+		project_id  = equinix_metal_project.test.id
+	}
+
+	resource "equinix_metal_virtual_circuit" "test" {
+		name = "tfacc-vc-%d"
+		description = "tfacc-vc-%d"
+		connection_id = data.equinix_metal_connection.test.id
+		project_id = equinix_metal_project.test.id
+		port_id = data.equinix_metal_connection.test.ports[0].id
+		vlan_id = equinix_metal_vlan.test.id
+		nni_vlan = 1000
+		vrf_id = equinix_metal_vrf.test.id
+		peer_as = 65530
+		subnet = "192.168.100.16/31"
+		metal_ip = "192.168.100.16"
+		customer_ip = "192.168.100.17"
+	}
+	`, testConnection, r, r)
 }

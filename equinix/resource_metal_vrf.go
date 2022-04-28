@@ -43,7 +43,7 @@ func resourceMetalVRF() *schema.Resource {
 				Type:        schema.TypeInt,
 				Optional:    true,
 				Computed:    true,
-				Description: "",
+				Description: "The 4-byte ASN set on the VRF.",
 			},
 			"ip_ranges": {
 				Type:        schema.TypeSet,

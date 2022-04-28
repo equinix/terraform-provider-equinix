@@ -2,6 +2,7 @@ package equinix
 
 import (
 	"fmt"
+	"log"
 	"reflect"
 	"time"
 
@@ -74,10 +75,11 @@ func resourceMetalVirtualCircuit() *schema.Resource {
 				ForceNew:    true,
 			},
 			"vrf_id": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Description: "UUID of the VLAN to associate",
-				ForceNew:    true,
+				Type:          schema.TypeString,
+				Optional:      true,
+				Description:   "UUID of the VLAN to associate",
+				ConflictsWith: []string{"vnid"},
+				ForceNew:      true,
 			},
 			"peer_as": {
 				Type:         schema.TypeInt,
@@ -160,7 +162,6 @@ func resourceMetalVirtualCircuitCreate(d *schema.ResourceData, meta interface{})
 	if nniVlan, ok := d.GetOk("nni_vlan"); ok {
 		vncr.NniVLAN = nniVlan.(int)
 	}
-
 	conn, _, err := client.Connections.Get(connId, nil)
 	if err != nil {
 		return err
@@ -171,8 +172,10 @@ func resourceMetalVirtualCircuitCreate(d *schema.ResourceData, meta interface{})
 
 	vc, _, err := client.VirtualCircuits.Create(projectId, connId, portId, &vncr, nil)
 	if err != nil {
+		log.Printf("[DEBUG] Error creating virtual circuit: %s", err)
 		return err
 	}
+	// TODO: offer to wait while VCStatusPending
 	createWaiter := getVCStateWaiter(
 		client,
 		vc.ID,

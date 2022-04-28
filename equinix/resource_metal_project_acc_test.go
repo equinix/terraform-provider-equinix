@@ -19,7 +19,7 @@ import (
 func init() {
 	resource.AddTestSweepers("equinix_metal_project", &resource.Sweeper{
 		Name:         "equinix_metal_project",
-		Dependencies: []string{"equinix_metal_device"},
+		Dependencies: []string{"equinix_metal_vlan"},
 		F:            testSweepProjects,
 	})
 }

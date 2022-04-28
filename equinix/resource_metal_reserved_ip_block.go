@@ -167,7 +167,7 @@ func resourceMetalReservedIPBlock() *schema.Resource {
 		Optional:     true,
 		ForceNew:     true,
 		ExactlyOneOf: []string{"vrf_id", "quantity"},
-		Description:  "VRF ID",
+		Description:  "VRF ID for type=vrf reservations",
 	}
 	reservedBlockSchema["network"] = &schema.Schema{
 		Type:         schema.TypeString,
