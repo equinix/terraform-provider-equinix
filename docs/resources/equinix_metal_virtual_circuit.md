@@ -58,3 +58,11 @@ In addition to all arguments above, the following attributes are exported:
 * `status` - Status of the virtal circuit.
 * `vnid` - VNID VLAN parameter, see the [documentation for Equinix Fabric](https://metal.equinix.com/developers/docs/networking/fabric/).
 * `nni_vnid` - NNI VLAN parameters, see the [documentation for Equinix Fabric](https://metal.equinix.com/developers/docs/networking/fabric/).
+
+## Import
+
+This resource can be imported using an existing Virtual Circuit ID:
+
+```sh
+terraform import equinix_metal_virtual_circuit {existing_id}
+```
