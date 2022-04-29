@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"strconv"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
@@ -17,6 +18,7 @@ func init() {
 		Name: "equinix_metal_vrf",
 		Dependencies: []string{
 			"equinix_metal_device",
+			"equinix_metal_virtual_circuit",
 			// TODO: add sweeper when offered
 			// "equinix_metal_reserved_ip_block",
 		},
@@ -218,6 +220,7 @@ func TestAccMetalVRF_withGateway(t *testing.T) {
 func TestAccMetalVRFConfig_withConnection(t *testing.T) {
 	var vrf packngo.VRF
 	rInt := acctest.RandInt()
+	nniVlan := acctest.RandIntRange(1024, 1093)
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -225,24 +228,23 @@ func TestAccMetalVRFConfig_withConnection(t *testing.T) {
 		CheckDestroy: testAccMetalVRFCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccMetalVRFConfig_withConnection(rInt),
+				Config: testAccMetalVRFConfig_withVC(rInt, nniVlan),
 				Check: resource.ComposeTestCheckFunc(
 					testAccMetalVRFExists("equinix_metal_vrf.test", &vrf),
 					resource.TestCheckResourceAttr(
 						"equinix_metal_virtual_circuit.test", "name", fmt.Sprintf("tfacc-vc-%d", rInt)),
 					resource.TestCheckResourceAttr(
 						"equinix_metal_virtual_circuit.test",
-						"nni_vlan", "1000"),
+						"nni_vlan", strconv.Itoa(nniVlan)),
 					resource.TestCheckResourceAttrPair(
 						"equinix_metal_virtual_circuit.test",
 						"vrf_id", "equinix_metal_vrf.test", "id"),
-					resource.TestCheckResourceAttrPair(
+					resource.TestCheckNoResourceAttr(
 						"equinix_metal_virtual_circuit.test",
-						"vlan_id", "equinix_metal_vlan.test", "id"),
+						"vlan_id"),
 					resource.TestCheckResourceAttr(
 						"equinix_metal_virtual_circuit.test",
-
-						"peer_as", "65530"),
+						"peer_asn", "65530"),
 					resource.TestCheckResourceAttr(
 						"equinix_metal_virtual_circuit.test",
 						"subnet", "192.168.100.16/31"),
@@ -260,7 +262,25 @@ func TestAccMetalVRFConfig_withConnection(t *testing.T) {
 				ImportStateVerify: true,
 			},
 			{
+				Config: testAccMetalVRFConfig_withVCGateway(rInt, nniVlan),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckNoResourceAttr(
+						"equinix_metal_virtual_circuit.test",
+						"vlan_id"),
+				),
+			},
+			{
+				ResourceName:      "equinix_metal_reserved_ip_block.test",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+			{
 				ResourceName:      "equinix_metal_vlan.test",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+			{
+				ResourceName:      "equinix_metal_gateway.test",
 				ImportState:       true,
 				ImportStateVerify: true,
 			},
@@ -338,7 +358,7 @@ resource "equinix_metal_vrf" "test" {
 	description = "tfacc-vrf-%d"
 	local_asn = "65000"
 	ip_ranges = ["192.168.100.0/25"]
-	project_id = "${equinix_metal_project.test.id}"
+	project_id = equinix_metal_project.test.id
 }`, r, r, testMetro, r)
 }
 
@@ -348,13 +368,13 @@ func testAccMetalVRFConfig_withIPReservations(r int) string {
 	return testAccMetalVRFConfig_withIPRanges(r) + fmt.Sprintf(`
 
 resource "equinix_metal_reserved_ip_block" "test" {
-	vrf_id = "${equinix_metal_vrf.test.id}"
+	vrf_id = equinix_metal_vrf.test.id
 	cidr = 29
 	description = "tfacc-reserved-ip-block-%d"
 	network = "192.168.100.0"
 	type = "vrf"
 	metro = "%s"
-	project_id = "${equinix_metal_project.test.id}"
+	project_id = equinix_metal_project.test.id
 }
 `, r, testMetro)
 }
@@ -365,7 +385,7 @@ func testAccMetalVRFConfig_withGateway(r int) string {
 	return testAccMetalVRFConfig_withIPReservations(r) + fmt.Sprintf(`
 
 resource "equinix_metal_vlan" "test" {
-	description = "test VLAN for VRF"
+	description = "tfacc-vlan-vrf"
 	metro       = "%s"
 	project_id  = equinix_metal_project.test.id
 }
@@ -378,19 +398,13 @@ resource "equinix_metal_gateway" "test" {
 `, testMetro)
 }
 
-func testAccMetalVRFConfig_withConnection(r int) string {
+func testAccMetalVRFConfig_withVC(r, nniVlan int) string {
 	// Dedicated connection in DA metro
 	testConnection := os.Getenv(metalDedicatedConnIDEnvVar)
-	return testAccMetalVRFConfig_basic(r) + fmt.Sprintf(`
+	return testAccMetalVRFConfig_withIPRanges(r) + fmt.Sprintf(`
 
 	data "equinix_metal_connection" "test" {
 		connection_id = "%s"
-	}
-	
-	resource "equinix_metal_vlan" "test" {
-		description = "test VLAN for VRF"
-		metro       = data.equinix_metal_connection.test.metro
-		project_id  = equinix_metal_project.test.id
 	}
 
 	resource "equinix_metal_virtual_circuit" "test" {
@@ -399,13 +413,35 @@ func testAccMetalVRFConfig_withConnection(r int) string {
 		connection_id = data.equinix_metal_connection.test.id
 		project_id = equinix_metal_project.test.id
 		port_id = data.equinix_metal_connection.test.ports[0].id
-		vlan_id = equinix_metal_vlan.test.id
-		nni_vlan = 1000
+		nni_vlan = %d
 		vrf_id = equinix_metal_vrf.test.id
-		peer_as = 65530
+		peer_asn = 65530
 		subnet = "192.168.100.16/31"
 		metal_ip = "192.168.100.16"
 		customer_ip = "192.168.100.17"
 	}
-	`, testConnection, r, r)
+	`, testConnection, r, r, nniVlan)
+}
+
+func testAccMetalVRFConfig_withVCGateway(r, nniVlan int) string {
+	// Dedicated connection in DA metro
+	testConnection := os.Getenv(metalDedicatedConnIDEnvVar)
+	return testAccMetalVRFConfig_withGateway(r) + fmt.Sprintf(`
+	data "equinix_metal_connection" "test" {
+		connection_id = "%s"
+	}
+
+	resource "equinix_metal_virtual_circuit" "test" {
+		name = "tfacc-vc-%d"
+		description = "tfacc-vc-%d"
+		connection_id = data.equinix_metal_connection.test.id
+		project_id = equinix_metal_project.test.id
+		port_id = data.equinix_metal_connection.test.ports[0].id
+		nni_vlan = %d
+		vrf_id = equinix_metal_vrf.test.id
+		peer_asn = 65530
+		subnet = "192.168.100.16/31"
+		metal_ip = "192.168.100.16"
+		customer_ip = "192.168.100.17"
+	}`, testConnection, r, r, nniVlan)
 }
