@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"reflect"
+	"regexp"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
@@ -69,19 +70,20 @@ func resourceMetalVirtualCircuit() *schema.Resource {
 				ForceNew:    true,
 			},
 			"vlan_id": {
-				Type:        schema.TypeString,
-				Required:    true,
-				Description: "UUID of the VLAN to associate",
-				ForceNew:    true,
+				Type:         schema.TypeString,
+				Optional:     true,
+				Description:  "UUID of the VLAN to associate",
+				ExactlyOneOf: []string{"vlan_id", "vrf_id"},
+				ForceNew:     true,
 			},
 			"vrf_id": {
-				Type:          schema.TypeString,
-				Optional:      true,
-				Description:   "UUID of the VLAN to associate",
-				ConflictsWith: []string{"vnid"},
-				ForceNew:      true,
+				Type:         schema.TypeString,
+				Optional:     true,
+				Description:  "UUID of the VLAN to associate",
+				ExactlyOneOf: []string{"vlan_id", "vrf_id"},
+				ForceNew:     true,
 			},
-			"peer_as": {
+			"peer_asn": {
 				Type:         schema.TypeInt,
 				Optional:     true,
 				RequiredWith: []string{"vrf_id"},
@@ -143,7 +145,7 @@ func resourceMetalVirtualCircuitCreate(d *schema.ResourceData, meta interface{})
 		Description:      d.Get("description").(string),
 		Speed:            d.Get("speed").(string),
 		VRFID:            d.Get("vrf_id").(string),
-		PeerAs:           d.Get("peer_as").(int),
+		PeerASN:          d.Get("peer_asn").(int),
 		Subnet:           d.Get("subnet").(string),
 		MetalIP:          d.Get("metal_ip").(string),
 		CustomerIP:       d.Get("customer_ip").(string),
@@ -200,16 +202,29 @@ func resourceMetalVirtualCircuitRead(d *schema.ResourceData, meta interface{}) e
 
 	vc, _, err := client.VirtualCircuits.Get(
 		vcId,
-		&packngo.GetOptions{Includes: []string{"project", "port", "virtual_network", "vrf"}},
+		&packngo.GetOptions{Includes: []string{"project", "virtual_network", "vrf"}},
 	)
 	if err != nil {
 		return err
 	}
 
+	// TODO: use API field from VC responses when available The regexp is
+	// optimistic, not guaranteed. This affects resource imports. "port" is not
+	// in the Includes above to assure the Href needed below.
+	connectionID := "" // vc.Connection.ID is not available yet
+	portID := ""       // vc.Port.ID would be available with ?include=port
+	connectionRe := regexp.MustCompile("/connections/([0-9a-z-]+)/ports/([0-9a-z-]+)")
+	matches := connectionRe.FindStringSubmatch(vc.Port.Href.Href)
+	if len(matches) == 3 {
+		connectionID = matches[1]
+		portID = matches[2]
+	} else {
+		log.Printf("[DEBUG] Could not parse connection and port ID from port href %s", vc.Port.Href.Href)
+	}
+
 	return setMap(d, map[string]interface{}{
-		//"connection_id": vc.Connection.ID,
 		"project_id": vc.Project.ID,
-		"port_id":    vc.Port.ID,
+		"port_id":    portID,
 		"vlan_id": func(d *schema.ResourceData, k string) error {
 			if vc.VirtualNetwork != nil {
 				return d.Set(k, vc.VirtualNetwork.ID)
@@ -230,11 +245,17 @@ func resourceMetalVirtualCircuitRead(d *schema.ResourceData, meta interface{}) e
 		"speed":       vc.Speed,
 		"description": vc.Description,
 		"tags":        vc.Tags,
-		"peer_as":     vc.PeerAs,
+		"peer_asn":    vc.PeerASN,
 		"subnet":      vc.Subnet,
 		"metal_ip":    vc.MetalIP,
 		"customer_ip": vc.CustomerIP,
 		"md5":         vc.MD5,
+		"connection_id": func(d *schema.ResourceData, k string) error {
+			if connectionID != "" {
+				return d.Set(k, connectionID)
+			}
+			return nil
+		},
 	})
 }
 
@@ -310,7 +331,7 @@ func resourceMetalVirtualCircuitUpdate(d *schema.ResourceData, meta interface{})
 
 func resourceMetalVirtualCircuitDelete(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*Config).metal
-	// we first need to disconnect VLAN from the VC
+	// we first disconnect VLAN from the VC
 	empty := ""
 	_, _, err := client.VirtualCircuits.Update(
 		d.Id(),
@@ -321,12 +342,13 @@ func resourceMetalVirtualCircuitDelete(d *schema.ResourceData, meta interface{})
 		return err
 	}
 
+	// then we delete the VC. VRF VCs will be in the "active" state.
 	detachWaiter := getVCStateWaiter(
 		client,
 		d.Id(),
 		d.Timeout(schema.TimeoutDelete),
 		[]string{string(packngo.VCStatusDeactivating)},
-		[]string{string(packngo.VCStatusWaiting)},
+		[]string{string(packngo.VCStatusWaiting), string(packngo.VCStatusActive)},
 	)
 
 	_, err = detachWaiter.WaitForState()
@@ -338,5 +360,19 @@ func resourceMetalVirtualCircuitDelete(d *schema.ResourceData, meta interface{})
 	if ignoreResponseErrors(httpForbidden, httpNotFound)(resp, err) != nil {
 		return friendlyError(err)
 	}
-	return nil
+
+	deleteWaiter := getVCStateWaiter(
+		client,
+		d.Id(),
+		d.Timeout(schema.TimeoutDelete),
+		[]string{string(packngo.VCStatusDeleting)},
+		[]string{},
+	)
+
+	_, err = deleteWaiter.WaitForState()
+	if ignoreResponseErrors(httpForbidden, httpNotFound)(resp, err) != nil {
+		return nil
+	}
+
+	return fmt.Errorf("Error deleting virtual circuit %s: %s", d.Id(), err)
 }
