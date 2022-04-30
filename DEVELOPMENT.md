@@ -86,6 +86,7 @@ Interconnection Zone 2 seller profile. Reflected by Fabric connection tests.
 Google l2 connection primary. Reflected by Fabric connection tests
 * `TF_ACC_FABRIC_L2_GCP2_INTERCONN_SERVICE_KEY` alters default authentication key of Equinix Fabric
 Google l2 connection secondary. Reflected by Fabric connection tests
+* `TF_ACC_METAL_DEDICATED_CONNECTION_ID` defines the UUID of a Metal Dedicated Connection, necessary for Virtual Circuit testing.
 * `TF_ACC_NETWORK_DEVICE_BILLING_ACCOUNT_NAME` alters default billing account name for
 Network edge device primary. Reflected by Network Edge tests.
 * `TF_ACC_NETWORK_DEVICE_SECONDARY_BILLING_ACCOUNT_NAME` alters default billing account
