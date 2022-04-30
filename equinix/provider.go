@@ -128,6 +128,7 @@ func Provider() *schema.Provider {
 			"equinix_metal_spot_market_request":  dataSourceMetalSpotMarketRequest(),
 			"equinix_metal_virtual_circuit":      dataSourceMetalVirtualCircuit(),
 			"equinix_metal_vlan":                 dataSourceMetalVlan(),
+			"equinix_metal_vrf":                  dataSourceMetalVRF(),
 		},
 		ResourcesMap: map[string]*schema.Resource{
 			"equinix_ecx_l2_connection":          resourceECXL2Connection(),
