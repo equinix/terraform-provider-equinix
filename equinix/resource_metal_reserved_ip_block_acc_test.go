@@ -226,7 +226,7 @@ resource "equinix_metal_reserved_ip_block" "test" {
 resource "equinix_metal_device" "test" {
   project_id       = equinix_metal_project.foobar.id
   facilities       = ["ny5"]
-  plan             = "t1.small.x86"
+  plan             = "c3.small.x86"
   operating_system = "ubuntu_16_04"
   hostname         = "tfacc-reserved-ip-device"
   billing_cycle    = "hourly"
