@@ -4,15 +4,16 @@ page_title: "Provider: Equinix"
 
 # Equinix Provider
 
-The Equinix provider is used to interact with the resources provided by Equinix Platform.
-The provider needs to be configured with the proper credentials before
+The Equinix provider is used to interact with the resources provided by Equinix Platform. The provider needs to be configured with the proper credentials before
 it can be used.
 
 For information about obtaining API key and secret required for Equinix Fabric and Network Edge refer to
 [Generating Client ID and Client Secret key](https://developer.equinix.com/docs/ecx-getting-started#generating-client-id-and-client-secret-key)
 from [Equinix Developer Platform portal](https://developer.equinix.com).
 
-Interacting with Equinix Metal requires an API auth token that can be generated at [Project-level](https://metal.equinix.com/developers/docs/accounts/projects/#api-keys) or [User-level](https://metal.equinix.com/developers/docs/accounts/users/#api-keys)
+Interacting with Equinix Metal requires an API auth token that can be generated at [Project-level](https://metal.equinix.com/developers/docs/accounts/projects/#api-keys) or [User-level](https://metal.equinix.com/developers/docs/accounts/users/#api-keys) tokens can be used.
+
+If you are only using Equinix Metal resources, you may omit the Client ID and Client Secret provider configuration parameters needed to access other Equinix resource types (Network Edge, Fabric, etc).
 
 Use the navigation to the left to read about the available resources.
 
@@ -30,9 +31,20 @@ terraform {
   }
 }
 
+# Credentials for all Equinix resources
 provider "equinix" {
   client_id     = "someEquinixAPIClientID"
   client_secret = "someEquinixAPIClientSecret"
+  auth_token    = "someEquinixMetalToken"
+}
+```
+
+Client ID and Client Secret can be omitted when the only Equinix resources
+consumed are Equinix Metal resources.
+
+```hcl
+# Credentials for only Equinix Metal resources
+provider "equinix" {
   auth_token    = "someEquinixMetalToken"
 }
 ```
