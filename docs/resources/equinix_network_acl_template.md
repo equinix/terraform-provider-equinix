@@ -1,5 +1,5 @@
 ---
-subcategory: "Metal"
+subcategory: "Network Edge"
 ---
 
 # equinix_network_acl_template (Resource)
