@@ -5,6 +5,7 @@ import (
 	"log"
 	"reflect"
 	"regexp"
+	"strconv"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
@@ -56,6 +57,7 @@ func resourceMetalVirtualCircuit() *schema.Resource {
 				Description: "Description of the Virtual Circuit speed. This is for information purposes and is computed when the connection type is shared.",
 				Optional:    true,
 				Computed:    true,
+				// TODO: implement SuppressDiffFunc for input with units to bps without units
 			},
 			"tags": {
 				Type:        schema.TypeList,
@@ -240,7 +242,7 @@ func resourceMetalVirtualCircuitRead(d *schema.ResourceData, meta interface{}) e
 		"vnid":        vc.VNID,
 		"nni_vnid":    vc.NniVNID,
 		"name":        vc.Name,
-		"speed":       vc.Speed,
+		"speed":       strconv.Itoa(vc.Speed),
 		"description": vc.Description,
 		"tags":        vc.Tags,
 		"peer_asn":    vc.PeerASN,
