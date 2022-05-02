@@ -9,6 +9,10 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 )
 
+const (
+	metalDedicatedConnIDEnvVar = "TF_ACC_METAL_DEDICATED_CONNECTION_ID"
+)
+
 func TestAccMetalConnection_shared(t *testing.T) {
 	rs := acctest.RandString(10)
 

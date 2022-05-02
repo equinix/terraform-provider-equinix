@@ -104,6 +104,9 @@ func dataSourceMetalVlanRead(d *schema.ResourceData, meta interface{}) error {
 		}
 
 		vlan, err = matchingVlan(vlans.VirtualNetworks, vxlan, projectID, facility, metro)
+		if err != nil {
+			return friendlyError(err)
+		}
 	}
 
 	assignedDevices := []string{}

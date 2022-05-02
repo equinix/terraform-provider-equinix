@@ -62,7 +62,7 @@ func TestAccDataSourceMetalFacility_features(t *testing.T) {
 func testAccDataSourceMetalFacilityConfig_features() string {
 	return `
 data "equinix_metal_facility" "test" {
-    code = "ewr1"
+    code = "ny5"
     features_required = ["baremetal", "ibx"]
 }
 `
