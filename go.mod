@@ -12,8 +12,7 @@ require (
 	github.com/hashicorp/go-multierror v1.1.1
 	github.com/hashicorp/go-retryablehttp v0.6.6
 	github.com/hashicorp/terraform-plugin-sdk/v2 v2.9.0
-	// todo: remove this pinned version when vrf  pull request is merged
-	github.com/packethost/packngo v0.22.1-0.20220429165727-be1997382546
+	github.com/packethost/packngo v0.23.0
 	github.com/stretchr/testify v1.7.0
 	golang.org/x/oauth2 v0.0.0-20210313182246-cd4f82c27b84
 )
