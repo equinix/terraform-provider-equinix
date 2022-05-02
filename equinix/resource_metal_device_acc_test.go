@@ -480,8 +480,8 @@ resource "equinix_metal_project" "test" {
 
 resource "equinix_metal_device" "test" {
   hostname         = "tfacc-test-device-%d"
-  plan             = "t1.small.x86"
-  facilities       = ["sjc1"]
+  plan             = "c3.small.x86"
+  metro            = "sv"
   operating_system = "ubuntu_16_04"
   billing_cycle    = "hourly"
   project_id       = "${equinix_metal_project.test.id}"
@@ -498,8 +498,8 @@ resource "equinix_metal_project" "test" {
 
 resource "equinix_metal_device" "test" {
   hostname         = "tfacc-test-device-%d"
-  plan             = "t1.small.x86"
-  facilities       = ["sjc1"]
+  plan             = "c3.small.x86"
+  metro            = "sv"
   operating_system = "ubuntu_16_04"
   billing_cycle    = "hourly"
   project_id       = "${equinix_metal_project.test.id}"
@@ -523,8 +523,8 @@ resource "equinix_metal_project" "test" {
 resource "equinix_metal_device" "test" {
   hostname         = "tfacc-test-device-%d"
   description      = "test-desc-%d"
-  plan             = "t1.small.x86"
-  facilities       = ["sjc1"]
+  plan             = "c3.small.x86"
+  metro            = "sv"
   operating_system = "ubuntu_16_04"
   billing_cycle    = "hourly"
   project_id       = "${equinix_metal_project.test.id}"
@@ -542,8 +542,8 @@ resource "equinix_metal_project" "test" {
 resource "equinix_metal_device" "test" {
   hostname         = "tfacc-test-device-%d"
   description      = "test-desc-%d"
-  plan             = "t1.small.x86"
-  facilities       = ["sjc1"]
+  plan             = "c3.small.x86"
+  metro            = "sv"
   operating_system = "ubuntu_16_04"
   billing_cycle    = "hourly"
   project_id       = "${equinix_metal_project.test.id}"
@@ -577,8 +577,8 @@ resource "equinix_metal_project" "test" {
 }
 
 resource "equinix_metal_device" "test" {
-  plan             = "t1.small.x86"
-  facilities       = ["sjc1"]
+  plan             = "c3.small.x86"
+  metro            = "sv"
   operating_system = "ubuntu_16_04"
   project_id       = "${equinix_metal_project.test.id}"
 }`, projSuffix)
@@ -592,8 +592,8 @@ resource "equinix_metal_project" "test" {
 
 resource "equinix_metal_device" "test" {
   hostname         = "tfacc-test-device"
-  plan             = "t1.small.x86"
-  facilities       = ["sjc1"]
+  plan             = "c3.small.x86"
+  metro            = "sv"
   operating_system = "ubuntu_16_04"
   billing_cycle    = "hourly"
   project_id       = "${equinix_metal_project.test.id}"
@@ -609,8 +609,8 @@ resource "equinix_metal_project" "test" {
 resource "equinix_metal_device" "test"  {
 
   hostname         = "tfacc-device-test-ipxe-script-url"
-  plan             = "t1.small.x86"
-  facilities       = ["sjc1", "any"]
+  plan             = "c3.small.x86"
+  facilities       = ["sv15", "da11", "any"]
   operating_system = "ubuntu_16_04"
   billing_cycle    = "hourly"
   project_id       = "${equinix_metal_project.test.id}"
@@ -626,8 +626,8 @@ resource "equinix_metal_project" "test" {
 resource "equinix_metal_device" "test_ipxe_script_url"  {
 
   hostname         = "tfacc-device-test-ipxe-script-url"
-  plan             = "t1.small.x86"
-  facilities       = ["sjc1"]
+  plan             = "c3.small.x86"
+  metro            = "sv"
   operating_system = "custom_ipxe"
   user_data        = "#!/bin/sh\ntouch /tmp/test"
   billing_cycle    = "hourly"
@@ -644,8 +644,8 @@ resource "equinix_metal_project" "test" {
 
 resource "equinix_metal_device" "test_ipxe_conflict" {
   hostname         = "tfacc-device-test-ipxe-conflict"
-  plan             = "t1.small.x86"
-  facilities       = ["sjc1"]
+  plan             = "c3.small.x86"
+  metro            = "sv"
   operating_system = "custom_ipxe"
   user_data        = "#!ipxe\nset conflict ipxe_script_url"
   billing_cycle    = "hourly"
@@ -661,8 +661,8 @@ resource "equinix_metal_project" "test" {
 
 resource "equinix_metal_device" "test_ipxe_missing" {
   hostname         = "tfacc-device-test-ipxe-missing"
-  plan             = "t1.small.x86"
-  facilities       = ["sjc1"]
+  plan             = "c3.small.x86"
+  metro            = "sv"
   operating_system = "custom_ipxe"
   billing_cycle    = "hourly"
   project_id       = "${equinix_metal_project.test.id}"
