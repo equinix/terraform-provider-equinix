@@ -36,6 +36,17 @@ func convertIntArr(ifaceArr []interface{}) []string {
 	return arr
 }
 
+func convertIntArr2(ifaceArr []interface{}) []int {
+	var arr []int
+	for _, v := range ifaceArr {
+		if v == nil {
+			continue
+		}
+		arr = append(arr, v.(int))
+	}
+	return arr
+}
+
 func toLower(v interface{}) string {
 	return strings.ToLower(v.(string))
 }
