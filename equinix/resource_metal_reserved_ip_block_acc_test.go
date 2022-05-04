@@ -20,6 +20,9 @@ resource "equinix_metal_reserved_ip_block" "test" {
 	type        = "global_ipv4"
 	description = "testdesc"
 	quantity    = 1
+	custom_data = jsonencode({
+		"foo": "bar"
+	})
 }`, name)
 }
 
@@ -75,6 +78,8 @@ func TestAccMetalReservedIPBlock_global(t *testing.T) {
 						"equinix_metal_reserved_ip_block.test", "public", "true"),
 					resource.TestCheckResourceAttr(
 						"equinix_metal_reserved_ip_block.test", "management", "false"),
+					resource.TestCheckResourceAttr(
+						"equinix_metal_reserved_ip_block.test", "custom_data", `{"foo":"bar"}`),
 				),
 			},
 		},

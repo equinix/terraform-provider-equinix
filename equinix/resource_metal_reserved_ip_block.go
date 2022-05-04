@@ -1,14 +1,22 @@
 package equinix
 
 import (
+	"encoding/json"
 	"fmt"
 	"log"
 	"path"
 	"strings"
+	"time"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/structure"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/packethost/packngo"
+)
+
+const (
+	ReservedIPCreateTimeout = 10 * time.Minute
 )
 
 func metalIPComputedFields() map[string]*schema.Schema {
@@ -58,11 +66,6 @@ func metalIPComputedFields() map[string]*schema.Schema {
 
 func metalIPResourceComputedFields() map[string]*schema.Schema {
 	s := metalIPComputedFields()
-	s["address_family"] = &schema.Schema{
-		Type:        schema.TypeInt,
-		Computed:    true,
-		Description: "Address family as integer (4 or 6)",
-	}
 	s["public"] = &schema.Schema{
 		Type:        schema.TypeBool,
 		Computed:    true,
@@ -130,7 +133,7 @@ func resourceMetalReservedIPBlock() *schema.Resource {
 	reservedBlockSchema["description"] = &schema.Schema{
 		Type:        schema.TypeString,
 		Optional:    true,
-		ForceNew:    true,
+		ForceNew:    false,
 		Description: "Arbitrary description",
 	}
 	reservedBlockSchema["quantity"] = &schema.Schema{
@@ -156,10 +159,35 @@ func resourceMetalReservedIPBlock() *schema.Resource {
 
 	reservedBlockSchema["tags"] = &schema.Schema{
 		Type:        schema.TypeSet,
-		ForceNew:    true,
+		ForceNew:    false,
 		Description: "Tags attached to the reserved block",
 		Optional:    true,
 		Elem:        &schema.Schema{Type: schema.TypeString},
+	}
+
+	reservedBlockSchema["custom_data"] = &schema.Schema{
+		Type:             schema.TypeString,
+		Default:          "{}",
+		ForceNew:         false,
+		Description:      "Custom Data is an arbitrary object (submitted in Terraform as serialized JSON) to assign to the IP Reservation. This may be helpful for self-managed IPAM. The object must be valid JSON.",
+		Optional:         true,
+		ValidateFunc:     validation.StringIsJSON,
+		DiffSuppressFunc: structure.SuppressJsonDiff,
+		Elem:             &schema.Schema{Type: schema.TypeString},
+	}
+
+	reservedBlockSchema["wait_for_state"] = &schema.Schema{
+		Type:        schema.TypeString,
+		Description: "Wait for the IP reservation block to reach a desired state on resource creation. One of: `pending`, `created`. The `created` state is default and recommended if the addresses are needed within the configuration. An error will be returned if a timeout or the `denied` state is encountered.",
+		Default:     packngo.IPReservationStateCreated,
+		Optional:    true,
+		ForceNew:    false,
+		ValidateDiagFunc: validation.ToDiagFunc(
+			validation.StringInSlice([]string{
+				string(packngo.IPReservationStateCreated),
+				string(packngo.IPReservationStatePending),
+			}, false),
+		),
 	}
 
 	reservedBlockSchema["vrf_id"] = &schema.Schema{
@@ -186,16 +214,19 @@ func resourceMetalReservedIPBlock() *schema.Resource {
 		Description:  "the size of the network to reserve from an existing vrf ip_range. `cidr` can only be specified with `vrf_id`. Minimum range is 22-29, with 30-31 supported and necessary for virtual-circuits",
 	}
 	// TODO: add comments field, used for reservations that are not automatically approved
-
 	return &schema.Resource{
 		Create: resourceMetalReservedIPBlockCreate,
 		Read:   resourceMetalReservedIPBlockRead,
+		Update: resourceMetalReservedIPBlockUpdate,
 		Delete: resourceMetalReservedIPBlockDelete,
 		Importer: &schema.ResourceImporter{
 			State: schema.ImportStatePassthrough,
 		},
 
 		Schema: reservedBlockSchema,
+		Timeouts: &schema.ResourceTimeout{
+			Create: schema.DefaultTimeout(ReservedIPCreateTimeout),
+		},
 	}
 }
 
@@ -219,7 +250,7 @@ func resourceMetalReservedIPBlockCreate(d *schema.ResourceData, meta interface{}
 		}
 	case "public_ipv4":
 		if !(facOk || metOk) {
-			return fmt.Errorf("You should set either metro or facility for non-global IP block reservation")
+			return fmt.Errorf("you should set either metro or facility for non-global IP block reservation")
 		}
 	}
 
@@ -244,19 +275,96 @@ func resourceMetalReservedIPBlockCreate(d *schema.ResourceData, meta interface{}
 
 	projectID := d.Get("project_id").(string)
 
+	if d.HasChange("custom_data") {
+		req.CustomData = d.Get("custom_data")
+	}
+
 	req.VRFID = d.Get("vrf_id").(string)
 	req.Network = d.Get("network").(string)
 	req.CIDR = d.Get("cidr").(int)
 
 	blockAddr, _, err := client.ProjectIPs.Create(projectID, &req)
 	if err != nil {
-		return fmt.Errorf("Error reserving IP address block: %s", err)
+		return fmt.Errorf("urror reserving IP address block: %s", err)
 	}
-
 	d.Set("project_id", projectID)
 	d.SetId(blockAddr.ID)
 
+	wfs := d.Get("wait_for_state").(string)
+	log.Printf("[DEBUG] Waiting for IP Reservation (%s) to become %s", d.Id(), wfs)
+	target := []string{string(packngo.IPReservationStateCreated)}
+	if wfs != string(packngo.IPReservationStateCreated) {
+		target = append(target, wfs)
+	}
+	stateConf := &resource.StateChangeConf{
+		Pending:    []string{string(packngo.IPReservationStatePending)},
+		Target:     target,
+		Refresh:    reservedIPStateRefreshFunc(client, d.Id()),
+		Timeout:    d.Timeout(schema.TimeoutCreate),
+		MinTimeout: 15 * time.Second,
+	}
+	if _, err := stateConf.WaitForState(); err != nil {
+		return fmt.Errorf("error waiting for IP Reservation (%s) to become %s: %s", d.Id(), wfs, err)
+	}
+
 	return resourceMetalReservedIPBlockRead(d, meta)
+}
+
+func resourceMetalReservedIPBlockUpdate(d *schema.ResourceData, meta interface{}) error {
+	client := meta.(*packngo.Client)
+	id := d.Id()
+	req := &packngo.IPAddressUpdateRequest{}
+	if d.HasChange("tags") {
+		tags := []string{}
+		if tagsRaw, tagsOk := d.GetOk("tags"); tagsOk {
+			for _, tag := range tagsRaw.(*schema.Set).List() {
+				tags = append(tags, tag.(string))
+			}
+		}
+		req.Tags = &tags
+	}
+
+	if d.HasChange("description") {
+		desc := d.Get("description").(string)
+		req.Description = &desc
+	}
+
+	if d.HasChange("custom_data") {
+		var v interface{}
+		if err := json.Unmarshal([]byte(d.Get("custom_data").(string)), v); err != nil {
+			return fmt.Errorf("error unmarshalling custom_data: %w", err)
+		}
+		req.CustomData = v
+	}
+
+	if _, _, err := client.ProjectIPs.Update(id, req, nil); err != nil {
+		return fmt.Errorf("error updating IP reservation: %w", err)
+	}
+
+	return resourceMetalReservedIPBlockRead(d, meta)
+}
+
+func reservedIPStateRefreshFunc(client *packngo.Client, reservedIPId string) resource.StateRefreshFunc {
+	return func() (interface{}, string, error) {
+		reservedIP, _, err := client.ProjectIPs.Get(reservedIPId, nil)
+		if err != nil {
+			return nil, "", fmt.Errorf("error retrieving reserved IP block %s: %s", reservedIPId, err)
+		}
+
+		return reservedIP, string(reservedIP.State), nil
+	}
+}
+
+func getType(r *packngo.IPAddressReservation) (string, error) {
+	switch {
+	case !r.Public:
+		return fmt.Sprintf("private_ipv%d", r.AddressFamily), nil
+	case r.Public && !r.Global:
+		return fmt.Sprintf("public_ipv%d", r.AddressFamily), nil
+	case r.Public && r.Global:
+		return fmt.Sprintf("global_ipv%d", r.AddressFamily), nil
+	}
+	return "", fmt.Errorf("unknown reservation type %+v", r)
 }
 
 func loadBlock(d *schema.ResourceData, reservedBlock *packngo.IPAddressReservation) error {
@@ -273,7 +381,7 @@ func loadBlock(d *schema.ResourceData, reservedBlock *packngo.IPAddressReservati
 		// long as /64 is the smallest assignable subnet size.
 		bits := 64 - reservedBlock.CIDR
 		if bits > 30 {
-			return fmt.Errorf("Strange (too small) CIDR prefix: %d", reservedBlock.CIDR)
+			return fmt.Errorf("strange (too small) CIDR prefix: %d", reservedBlock.CIDR)
 		}
 		quantity = 1 << uint(bits)
 	}
@@ -305,6 +413,23 @@ func loadBlock(d *schema.ResourceData, reservedBlock *packngo.IPAddressReservati
 		"quantity":       quantity,
 		"project_id":     path.Base(reservedBlock.Project.Href),
 		"cidr_notation":  fmt.Sprintf("%s/%d", reservedBlock.Network, reservedBlock.CIDR),
+		"custom_data": func(d *schema.ResourceData, k string) error {
+			if reservedBlock.CustomData == nil {
+				return nil
+			}
+			b, err := json.Marshal(reservedBlock.CustomData)
+			if err != nil {
+				return err
+			}
+			return d.Set(k, string(b))
+		},
+		"description": func(d *schema.ResourceData, k string) error {
+			if (reservedBlock.Description == nil) || (*(reservedBlock.Description) != "") {
+				return nil
+			}
+			return d.Set(k, *(reservedBlock.Description))
+		},
+		"global": reservedBlock.Global,
 		"vrf_id": func(d *schema.ResourceData, k string) error {
 			if reservedBlock.VRF == nil {
 				return nil
@@ -338,7 +463,7 @@ func resourceMetalReservedIPBlockRead(d *schema.ResourceData, meta interface{}) 
 			d.SetId("")
 			return nil
 		}
-		return fmt.Errorf("Error reading IP address block with ID %s: %s", id, err)
+		return fmt.Errorf("error reading IP address block with ID %s: %s", id, err)
 	}
 	err = loadBlock(d, reservedBlock)
 	if err != nil {
@@ -361,7 +486,7 @@ func resourceMetalReservedIPBlockDelete(d *schema.ResourceData, meta interface{}
 	resp, err := client.ProjectIPs.Remove(id)
 
 	if ignoreResponseErrors(httpForbidden, httpNotFound)(resp, err) != nil {
-		return fmt.Errorf("Error deleting IP reservation block %s: %s", id, err)
+		return fmt.Errorf("error deleting IP reservation block %s: %s", id, err)
 	}
 
 	d.SetId("")

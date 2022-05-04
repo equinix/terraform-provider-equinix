@@ -125,7 +125,7 @@ func dataSourceMetalReservedIPBlockRead(d *schema.ResourceData, meta interface{}
 	getOpts.Filter("types", "public_ipv4,global_ipv4,private_ipv4,public_ipv6,vrf")
 
 	if !(blockIdOk || (projectIdOk && addressOk)) {
-		return fmt.Errorf("You must specify either id or project_id and ip_address")
+		return fmt.Errorf("you must specify either id or project_id and ip_address")
 	}
 	if blockIdOk {
 		block, _, err := client.ProjectIPs.Get(
@@ -158,7 +158,7 @@ func dataSourceMetalReservedIPBlockRead(d *schema.ResourceData, meta interface{}
 			return loadBlock(d, &b)
 		}
 	}
-	return fmt.Errorf("Could not find matching reserved block, all blocks were \n%s", listOfCidrs(blocks))
+	return fmt.Errorf("could not find matching reserved block, all blocks were \n%s", listOfCidrs(blocks))
 }
 
 func listOfCidrs(blocks []packngo.IPAddressReservation) string {
