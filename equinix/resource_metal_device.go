@@ -774,6 +774,8 @@ func resourceMetalDeviceDelete(d *schema.ResourceData, meta interface{}) error {
 		fdv = true
 	}
 
+	start := time.Now()
+
 	resp, err := client.Devices.Delete(d.Id(), fdv)
 	if ignoreResponseErrors(httpForbidden, httpNotFound)(resp, err) != nil {
 		return friendlyError(err)
@@ -783,7 +785,10 @@ func resourceMetalDeviceDelete(d *schema.ResourceData, meta interface{}) error {
 	if resIdOk {
 		wfrd, wfrdOK := d.GetOk("wait_for_reservation_deprovision")
 		if wfrdOK && wfrd.(bool) {
-			err := waitUntilReservationProvisionable(resId.(string), meta)
+			// avoid "context: deadline exceeded"
+			timeout := d.Timeout(schema.TimeoutDelete) - time.Minute - time.Since(start)
+
+			err := waitUntilReservationProvisionable(client, resId.(string), d.Id(), 10*time.Second, timeout, 3*time.Second)
 			if err != nil {
 				return err
 			}
