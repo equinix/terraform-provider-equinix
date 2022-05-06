@@ -86,6 +86,7 @@ func resourceMetalDeviceNetworkTypeRead(d *schema.ResourceData, meta interface{}
 	client := meta.(*Config).metal
 
 	_, devNType, err := getDevIDandNetworkType(d, client)
+
 	if err != nil {
 		err = friendlyError(err)
 
