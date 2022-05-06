@@ -37,7 +37,7 @@ func TestAccFabricConnection_basic(t *testing.T) {
 
 func testAccFabricConnectionConfig_basic(r int) string {
 
-	return fmt.Sprintln(`
+	return fmt.Sprintf(`
 resource "equinix_fabric_connection" "test" {
     name = "tfacc-terra-cond-%d"
 }
