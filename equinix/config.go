@@ -4,6 +4,10 @@ import (
 	"context"
 	"crypto/x509"
 	"fmt"
+	"github.com/equinix/ecx-go/v2"
+	"github.com/equinix/ne-go"
+	"github.com/equinix/oauth2-go"
+	"github.com/hashicorp/go-retryablehttp"
 	"log"
 	"net/http"
 	"net/http/httputil"
@@ -14,11 +18,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/equinix/ecx-go/v2"
-	"github.com/equinix/ne-go"
-	"github.com/equinix/oauth2-go"
+	v4 "github.com/equinix/terraform-provider-equinix/internal/apis/fabric/v4"
 	"github.com/equinix/terraform-provider-equinix/version"
-	"github.com/hashicorp/go-retryablehttp"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/logging"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/meta"
 	"github.com/packethost/packngo"
@@ -79,9 +80,10 @@ type Config struct {
 	PageSize       int
 	Token          string
 
-	ecx   ecx.Client
-	ne    ne.Client
-	metal *packngo.Client
+	ecx    ecx.Client
+	ne     ne.Client
+	metal  *packngo.Client
+	fabric v4.APIClient
 
 	terraformVersion string
 }
