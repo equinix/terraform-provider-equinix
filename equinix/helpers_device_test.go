@@ -1,4 +1,4 @@
-package metal
+package equinix
 
 import (
 	"fmt"
