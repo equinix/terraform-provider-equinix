@@ -338,7 +338,7 @@ func resourceMetalConnectionRead(d *schema.ResourceData, meta interface{}) error
 
 	d.SetId(conn.ID)
 
-	projectId := ""
+	projectId := d.Get("project_id").(string)
 	// fix the project id get when it's added straight to the Connection API resource
 	// https://github.com/packethost/packngo/issues/317
 	if conn.Type == packngo.ConnectionShared {
