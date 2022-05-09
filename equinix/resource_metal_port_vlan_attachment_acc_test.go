@@ -19,7 +19,7 @@ resource "equinix_metal_project" "test" {
 
 resource "equinix_metal_device" "test" {
   hostname         = "tfacc-device-port-vlan-attachment-test"
-  plan             = "s1.large.x86"
+  plan             = "m2.xlarge.x86"
   facilities       = ["nrt1"]
   operating_system = "ubuntu_16_04"
   billing_cycle    = "hourly"
@@ -103,7 +103,7 @@ resource "equinix_metal_project" "test" {
 
 resource "equinix_metal_device" "test" {
   hostname         = "tfacc-vlan-l2i-test"
-  plan             = "s1.large.x86"
+  plan             = "m2.xlarge.x86"
   facilities       = ["nrt1"]
   operating_system = "ubuntu_16_04"
   billing_cycle    = "hourly"
@@ -190,7 +190,7 @@ resource "equinix_metal_project" "test" {
 resource "equinix_metal_device" "test" {
   hostname         = "tfacc-device-hybrid-test"
   plan             = "n2.xlarge.x86"
-  facilities       = ["dfw2"]
+  facilities       = ["ewr1"]
   operating_system = "ubuntu_16_04"
   billing_cycle    = "hourly"
   project_id       = "${equinix_metal_project.test.id}"
@@ -208,7 +208,7 @@ resource "equinix_metal_device_network_type" "test" {
 
 resource "equinix_metal_vlan" "test" {
   description = "test vlan"
-  facility    = "dfw2"
+  facility    = "ewr1"
   project_id  = "${equinix_metal_project.test.id}"
 }
 
@@ -259,7 +259,7 @@ resource "equinix_metal_project" "test" {
 
 resource "equinix_metal_device" "test" {
   hostname         = "tfacc-device-hmv-test"
-  plan             = "s1.large.x86"
+  plan             = "m2.xlarge.x86"
   facilities       = ["nrt1"]
   operating_system = "ubuntu_16_04"
   billing_cycle    = "hourly"
@@ -344,7 +344,6 @@ func testAccMetalPortVlanAttachmentCheckDestroyed(s *terraform.State) error {
 			port_vlan := strings.Split(rs.Primary.ID, ":")
 			vlan_id = port_vlan[0]
 			port_id = port_vlan[1]
-
 		}
 	}
 	d, _, err := client.Devices.Get(device_id, nil)
@@ -373,7 +372,7 @@ resource "equinix_metal_project" "test" {
 
 resource "equinix_metal_device" "test" {
   hostname         = "tfacc-device-l2n-test"
-  plan             = "s1.large.x86"
+  plan             = "m2.xlarge.x86"
   facilities       = ["nrt1"]
   operating_system = "ubuntu_16_04"
   billing_cycle    = "hourly"

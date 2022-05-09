@@ -24,8 +24,8 @@ resource "equinix_metal_project_ssh_key" "test" {
 
 resource "equinix_metal_device" "test" {
     hostname            = "tfacc-device-key-test"
-    plan                = "baremetal_0"
-    facilities          = ["ny5"]
+    plan                = "c2.medium.x86"
+    facilities          = ["ny5", "ewr1", "any"]
     operating_system    = "ubuntu_16_04"
     billing_cycle       = "hourly"
     project_ssh_key_ids = ["${equinix_metal_project_ssh_key.test.id}"]
