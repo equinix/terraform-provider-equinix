@@ -4,7 +4,7 @@ subcategory: "Metal"
 
 # equinix_metal_connection (Data Source)
 
-Use this data source to retrieve a connection resource from [Equinix Fabric - software-defined interconnections](https://metal.equinix.com/developers/docs/networking/fabric/)
+Use this data source to retrieve a [connection resource](https://metal.equinix.com/developers/docs/networking/fabric/)
 
 ## Example Usage
 
@@ -24,19 +24,26 @@ The following arguments are supported:
 
 In addition to all arguments above, the following attributes are exported:
 
-* `description` - Description of the connection resource.
 * `name` - Name of the connection resource.
-* `tags` - String list of tags.
-* `facility` - Slug of a facility to which the connection belongs.
 * `metro` - Slug of a metro to which the connection belongs.
-* `organization_id` - ID of organization to which the connection belongs.
-* `project_id` - ID of project to which the connection belongs.
-* `status` - Status of the connection.
-* `token` - Fabric Token for the [Equinix Fabric Portal](https://fabric.equinix.com/dashboard).
-* `type` - Connection type, dedicated or shared.
-* `mode` - Mode for connections in IBX facilities with the dedicated type - standard or tunnel.
+* `facility` - Slug of a facility to which the connection belongs.
 * `redundancy` - Connection redundancy, reduntant or primary.
-* `speed` - Connection speed in bits per second.
+* `type` - Connection type, dedicated or shared.
+* `project_id` - ID of project to which the connection belongs.
+* `speed` - Connection speed, one of 50Mbps, 200Mbps, 500Mbps, 1Gbps, 2Gbps, 5Gbps, 10Gbps.
+* `description` - Description of the connection resource.
+* `mode` - Mode for connections in IBX facilities with the dedicated type - standard or tunnel.
+* `tags` - String list of tags.
+* `vlans` - Attached VLANs. Only available in shared connection. One vlan for Primary/Single connection and two vlans for Redundant connection.
+* `service_token_type` - Type of service token, a_side or z_side. One available in shared connection.
+* `organization_id` - ID of the organization where the connection is scoped to.
+* `status` - Status of the connection resource.
+* `service_tokens` - List of connection service tokens with attributes
+  * `id` - UUID of the service token required to configure the connection in the [Equinix Fabric Portal](https://ecxfabric.equinix.com/dashboard).
+  * `expires_at` - Expiration date of the service token.
+  * `max_allowed_speed` - Maximum allowed speed for the service token, string like in the `speed` attribute.
+  * `type` - Token type, `a_side` or `z_side`.
+  * `role` - Token role, `primary` or `secondary`.
 * `ports` - List of connection ports - primary (`ports[0]`) and secondary (`ports[1]`)
   * `name` - Port name.
   * `id` - Port UUID.
@@ -45,3 +52,4 @@ In addition to all arguments above, the following attributes are exported:
   * `status` - Port status.
   * `link_status` - Port link status.
   * `virtual_circuit_ids` - List of IDs of virtual cicruits attached to this port.
+* `token` - (Deprecated) Token to configure the connection in the [Equinix Fabric Portal](https://ecxfabric.equinix.com/dashboard).

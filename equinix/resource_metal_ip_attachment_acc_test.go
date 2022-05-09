@@ -53,8 +53,8 @@ resource "equinix_metal_device" "test" {
 
 resource "equinix_metal_reserved_ip_block" "test" {
     project_id = equinix_metal_project.test.id
-    facility = "sv15"
-	quantity = 2
+    facility   = "sv15"
+	quantity   = 2
 }
 
 
@@ -109,7 +109,7 @@ resource "equinix_metal_device" "test" {
 resource "equinix_metal_reserved_ip_block" "test" {
     project_id = equinix_metal_project.test.id
     metro      = "sv"
-	quantity = 2
+	quantity   = 2
 }
 
 

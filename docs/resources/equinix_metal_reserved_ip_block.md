@@ -97,6 +97,8 @@ if type is `public_ipv4` and must be empty if type is `global_ipv4`. Conflicts w
 * `description` - (Optional) Arbitrary description.
 * `tags` - (Optional) String list of tags.
 * `vrf_id` - (Optional) Only valid and required when `type` is `vrf`. VRF ID for type=vrf reservations.
+* `wait_for_state` - (Optional) Wait for the IP reservation block to reach a desired state on resource creation. One of: `pending`, `created`. The `created` state is default and recommended if the addresses are needed within the configuration. An error will be returned if a timeout or the `denied` state is encountered.
+* `custom_data` - (Optional) Custom Data is an arbitrary object (submitted in Terraform as serialized JSON) to assign to the IP Reservation. This may be helpful for self-managed IPAM. The object must be valid JSON.
 * `network` - (Optional) Only valid as an argument and required when `type` is `vrf`. An unreserved network address from an existing `ip_range` in the specified VRF.
 * `cidr` - (Optional) Only valid as an argument and required when `type` is `vrf`. The size of the network to reserve from an existing VRF ip_range. `cidr` can only be specified with `vrf_id`. Range is 22-31. Virtual Circuits require 30-31. Other VRF resources must use a CIDR in the 22-29 range.
 

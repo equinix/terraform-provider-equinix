@@ -28,19 +28,6 @@ func TestAccMetalProjectAPIKey_basic(t *testing.T) {
 	})
 }
 
-func testAccMetalProjectAPIKeyCheckDestroyed(s *terraform.State) error {
-	client := testAccProvider.Meta().(*Config).metal
-	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "equinix_metal_project_api_key" {
-			continue
-		}
-		if _, err := client.APIKeys.ProjectGet(rs.Primary.ID, rs.Primary.Attributes["project_id"], nil); err == nil {
-			return fmt.Errorf("Metal ProjectAPI key still exists")
-		}
-	}
-	return nil
-}
-
 func testAccMetalProjectAPIKeyConfig_basic() string {
 	return fmt.Sprintf(`
 
@@ -53,4 +40,17 @@ resource "equinix_metal_project_api_key" "test" {
     description = "tfacc-project-key"
     read_only   = true
 }`)
+}
+
+func testAccMetalProjectAPIKeyCheckDestroyed(s *terraform.State) error {
+	client := testAccProvider.Meta().(*Config).metal
+	for _, rs := range s.RootModule().Resources {
+		if rs.Type != "equinix_metal_project_api_key" {
+			continue
+		}
+		if _, err := client.APIKeys.ProjectGet(rs.Primary.ID, rs.Primary.Attributes["project_id"], nil); err == nil {
+			return fmt.Errorf("Metal ProjectAPI key still exists")
+		}
+	}
+	return nil
 }

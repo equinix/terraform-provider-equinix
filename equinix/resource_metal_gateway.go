@@ -81,7 +81,6 @@ func resourceMetalGateway() *schema.Resource {
 				Computed:      true,
 				ForceNew:      true,
 			},
-
 			"state": {
 				Type:        schema.TypeString,
 				Computed:    true,

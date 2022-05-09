@@ -14,7 +14,7 @@ func TestAccMetalSpotMarketRequest_basic(t *testing.T) {
 	var key packngo.SpotMarketRequest
 	context := map[string]interface{}{
 		"name_suffix": acctest.RandString(10),
-		"facility":    "dc13",
+		"facility":    "sv15",
 		"plan":        "c3.small.x86",
 	}
 	resource.ParallelTest(t, resource.TestCase{
@@ -139,7 +139,7 @@ resource "equinix_metal_spot_market_request" "request" {
 func TestAccMetalSpotMarketRequest_Import(t *testing.T) {
 	context := map[string]interface{}{
 		"name_suffix": acctest.RandString(10),
-		"facility":    "dc13",
+		"facility":    "sv15",
 		"plan":        "c3.small.x86",
 	}
 	resource.ParallelTest(t, resource.TestCase{

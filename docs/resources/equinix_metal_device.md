@@ -216,6 +216,14 @@ Defaults to `false`.
 * `deprovision_fast` - (Optional) Whether the OS disk should be filled with `00h` bytes before reinstall.
 Defaults to `false`.
 
+### Timeouts
+
+The `timeouts` block allows you to specify [timeouts](https://www.terraform.io/configuration/resources#operation-timeouts) for certain actions:
+
+* `create` - (Defaults to 20 mins) Used when creating the Device. This includes the time to provision the OS.
+* `update` - (Defaults to 20 mins) Used when updating the Device. This includes the time needed to reprovision instances when `reinstall` arguments are used.
+* `delete` - (Defaults to 20 mins) Used when deleting the Device. This includes the time to deprovision a hardware reservation when `wait_for_reservation_deprovision` is enabled.
+
 ## Attributes Reference
 
 In addition to all arguments above, the following attributes are exported:

@@ -2,6 +2,7 @@ package equinix
 
 import (
 	"fmt"
+	"log"
 	"strings"
 	"sync"
 	"time"
@@ -10,6 +11,13 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/packethost/packngo"
+)
+
+const (
+	deprovisioning = "deprovisioning"
+	provisionable  = "provisionable"
+	reprovisioned  = "reprovisioned"
+	errstate       = "error"
 )
 
 var (
@@ -112,25 +120,35 @@ func getPorts(ps []packngo.Port) []map[string]interface{} {
 	return ret
 }
 
-func waitUntilReservationProvisionable(id string, meta interface{}) error {
+func hwReservationStateRefreshFunc(client *packngo.Client, reservationId, instanceId string) resource.StateRefreshFunc {
+	return func() (interface{}, string, error) {
+		r, _, err := client.HardwareReservations.Get(reservationId, &packngo.GetOptions{Includes: []string{"device"}})
+		state := deprovisioning
+		switch {
+		case err != nil:
+			err = friendlyError(err)
+			state = errstate
+		case r != nil && r.Provisionable:
+			state = provisionable
+		case r != nil && r.Device != nil && (r.Device.ID != "" && r.Device.ID != instanceId):
+			log.Printf("[WARN] Equinix Metal device instance %s (reservation %s) was reprovisioned to a another instance (%s)", instanceId, reservationId, r.Device.ID)
+			state = reprovisioned
+		default:
+			log.Printf("[DEBUG] Equinix Metal device instance %s (reservation %s) is still deprovisioning", instanceId, reservationId)
+		}
+
+		return r, state, err
+	}
+}
+
+func waitUntilReservationProvisionable(client *packngo.Client, reservationId, instanceId string, delay, timeout, minTimeout time.Duration) error {
 	stateConf := &resource.StateChangeConf{
-		Pending: []string{"false"},
-		Target:  []string{"true"},
-		Refresh: func() (interface{}, string, error) {
-			client := meta.(*Config).metal
-			r, _, err := client.HardwareReservations.Get(id, nil)
-			if err != nil {
-				return 42, "error", friendlyError(err)
-			}
-			provisionableString := "false"
-			if r.Provisionable {
-				provisionableString = "true"
-			}
-			return 42, provisionableString, nil
-		},
-		Timeout:    60 * time.Minute,
-		Delay:      10 * time.Second,
-		MinTimeout: 3 * time.Second,
+		Pending:    []string{deprovisioning},
+		Target:     []string{provisionable, reprovisioned},
+		Refresh:    hwReservationStateRefreshFunc(client, reservationId, instanceId),
+		Timeout:    timeout,
+		Delay:      delay,
+		MinTimeout: minTimeout,
 	}
 	_, err := stateConf.WaitForState()
 	return err
@@ -209,14 +227,14 @@ func powerOnAndWait(d *schema.ResourceData, meta interface{}) error {
 	}
 	state := d.Get("state").(string)
 	if state != "active" {
-		return friendlyError(fmt.Errorf("Device in non-active state \"%s\"", state))
+		return friendlyError(fmt.Errorf("device in non-active state \"%s\"", state))
 	}
 	return nil
 }
 
 func validateFacilityForDevice(v interface{}, k string) (ws []string, errors []error) {
 	if v.(string) == "any" {
-		errors = append(errors, fmt.Errorf(`Cannot use facility: "any"`))
+		errors = append(errors, fmt.Errorf(`cannot use facility: "any"`))
 	}
 	return
 }

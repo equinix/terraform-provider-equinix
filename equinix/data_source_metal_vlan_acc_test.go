@@ -7,6 +7,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"github.com/packethost/packngo"
 )
 
@@ -17,7 +18,7 @@ func TestAccDataSourceMetalVlan_byVxlanFacility(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
-		CheckDestroy: testAccMetalVlanCheckDestroyed,
+		CheckDestroy: testAccMetalDatasourceVlanCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccDataSourceMetalVlanConfig_byVxlanFacility(rs, fac, "tfacc-vlan"),
@@ -63,7 +64,7 @@ func TestAccDataSourceMetalVlan_byVxlanMetro(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
-		CheckDestroy: testAccMetalVlanCheckDestroyed,
+		CheckDestroy: testAccMetalDatasourceVlanCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccDataSourceMetalVlanConfig_byVxlanMetro(rs, metro, "tfacc-vlan"),
@@ -132,7 +133,7 @@ func TestAccDataSourceMetalVlan_byVlanId(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
-		CheckDestroy: testAccMetalVlanCheckDestroyed,
+		CheckDestroy: testAccMetalDatasourceVlanCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccDataSourceMetalVlanConfig_byVlanId(rs, metro, "tfacc-vlan"),
@@ -177,7 +178,7 @@ func TestAccDataSourceMetalVlan_byProjectId(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
-		CheckDestroy: testAccMetalVlanCheckDestroyed,
+		CheckDestroy: testAccMetalDatasourceVlanCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccDataSourceMetalVlanConfig_byProjectId(rs, metro, "tfacc-vlan"),
@@ -311,4 +312,19 @@ func TestMetalVlan_matchingVlan(t *testing.T) {
 			}
 		})
 	}
+}
+
+func testAccMetalDatasourceVlanCheckDestroyed(s *terraform.State) error {
+	client := testAccProvider.Meta().(*Config).metal
+
+	for _, rs := range s.RootModule().Resources {
+		if rs.Type != "equinix_metal_vlan" {
+			continue
+		}
+		if _, _, err := client.ProjectVirtualNetworks.Get(rs.Primary.ID, nil); err == nil {
+			return fmt.Errorf("Data source VLAN still exists")
+		}
+	}
+
+	return nil
 }
