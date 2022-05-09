@@ -315,7 +315,7 @@ func TestMetalVlan_matchingVlan(t *testing.T) {
 }
 
 func testAccMetalDatasourceVlanCheckDestroyed(s *terraform.State) error {
-	client := testAccProvider.Meta().(*packngo.Client)
+	client := testAccProvider.Meta().(*Config).metal
 
 	for _, rs := range s.RootModule().Resources {
 		if rs.Type != "equinix_metal_vlan" {
