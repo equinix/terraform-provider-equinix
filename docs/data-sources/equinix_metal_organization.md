@@ -37,3 +37,9 @@ In addition to all arguments above, the following attributes are exported:
 * `website` - Website link.
 * `twitter` - Twitter handle.
 * `logo` - Logo URL.
+* `address` - Address information
+  * `address` - Postal address.
+  * `city` - City name.
+  * `country` - Two letter country code (ISO 3166-1 alpha-2), e.g. US.
+  * `zip_code` - Zip Code.
+  * `state` - State name.

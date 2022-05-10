@@ -30,6 +30,22 @@ func TestAccDataSourceMetalOrganization_basic(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						"data.equinix_metal_organization.test", "name",
 						fmt.Sprintf("tfacc-datasource-org-%d", rInt)),
+					resource.TestCheckResourceAttrPair(
+						"equinix_metal_organization.test", "address.0.address",
+						"data.equinix_metal_organization.test", "address.0.address",
+					),
+					resource.TestCheckResourceAttrPair(
+						"equinix_metal_organization.test", "address.0.city",
+						"data.equinix_metal_organization.test", "address.0.city",
+					),
+					resource.TestCheckResourceAttrPair(
+						"equinix_metal_organization.test", "address.0.country",
+						"data.equinix_metal_organization.test", "address.0.country",
+					),
+					resource.TestCheckResourceAttrPair(
+						"equinix_metal_organization.test", "address.0.zip_code",
+						"data.equinix_metal_organization.test", "address.0.zip_code",
+					),
 				),
 			},
 		},
@@ -39,8 +55,14 @@ func TestAccDataSourceMetalOrganization_basic(t *testing.T) {
 func testAccDataSourceMetalOrganizationConfig_basic(r int) string {
 	return fmt.Sprintf(`
 resource "equinix_metal_organization" "test" {
-  name = "tfacc-datasource-org-%d"
-  description = "quux"
+	name = "tfacc-datasource-org-%d"
+	description = "quux"
+	address {
+		address = "tfacc org street"
+		city = "london"
+		zip_code = "12345"
+		country = "GB"
+	}
 }
 
 data "equinix_metal_organization" "test" {
