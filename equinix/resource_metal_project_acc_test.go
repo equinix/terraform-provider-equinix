@@ -412,11 +412,17 @@ func testAccMetalProjectConfig_organization(r string) string {
 	return fmt.Sprintf(`
 resource "equinix_metal_organization" "test" {
 	name = "tfacc-project-%s"
+	address {
+		address = "tfacc org street"
+		city = "london"
+		zip_code = "12345"
+		country = "GB"
+	}
 }
 
 resource "equinix_metal_project" "foobar" {
-		name = "tfacc-project-%s"
-		organization_id = "${equinix_metal_organization.test.id}"
+	name = "tfacc-project-%s"
+	organization_id = "${equinix_metal_organization.test.id}"
 }`, r, r)
 }
 

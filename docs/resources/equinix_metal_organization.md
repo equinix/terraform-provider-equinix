@@ -21,10 +21,22 @@ resource "equinix_metal_organization" "tf_organization_1" {
 The following arguments are supported:
 
 * `name` - (Required) The name of the Organization.
+* `address` - (Required) An object that has the address information. See [Address](#address)
+below for more details.
 * `description` - (Optional) Description string.
 * `website` - (Optional) Website link.
 * `twitter` - (Optional) Twitter handle.
 * `logo` - (Optional) Logo URL.
+
+### Address
+
+The `address` block contains:
+
+* `address` - (Required) Postal address.
+* `city` - (Required) City name.
+* `country` - (Required) Two letter country code (ISO 3166-1 alpha-2), e.g. US.
+* `zip_code` - (Required) Zip Code.
+* `state` - (Optional) State name.
 
 ## Attributes Reference
 
