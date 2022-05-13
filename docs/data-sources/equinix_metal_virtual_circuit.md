@@ -34,6 +34,7 @@ In addition to all arguments above, the following attributes are exported:
 
 * `name` - Name of the virtual circuit resource.
 * `status` - Status of the virtal circuit.
+* `port_id` - UUID of the Connection Port where the VC is scoped to.
 * `project_id` - ID of project to which the VC belongs.
 * `vnid`, `nni_vlan`, `nni_nvid` - VLAN parameters, see the
 [documentation for Equinix Fabric](https://metal.equinix.com/developers/docs/networking/fabric/).
