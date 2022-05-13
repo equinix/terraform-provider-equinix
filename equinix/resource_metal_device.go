@@ -333,7 +333,15 @@ func resourceMetalDevice() *schema.Resource {
 			},
 			"project_ssh_key_ids": {
 				Type:        schema.TypeList,
-				Description: "Array of IDs of the project SSH keys which should be added to the device. If you omit this, SSH keys of all the members of the parent project will be added to the device. If you specify this array, only the listed project SSH keys will be added. Project SSH keys can be created with the [equinix_metal_project_ssh_key](project_ssh_key.md) resource",
+				Description: "Array of IDs of the project SSH keys which should be added to the device. If you omit this, SSH keys of all the members of the parent project will be added to the device. If you specify this array, only the listed project SSH keys (and any user_ssh_key_ids) will be added. Project SSH keys can be created with the [equinix_metal_project_ssh_key](equinix_metal_project_ssh_key.md) resource",
+				Optional:    true,
+				ForceNew:    true,
+				Elem:        &schema.Schema{Type: schema.TypeString},
+			},
+
+			"user_ssh_key_ids": {
+				Type:        schema.TypeList,
+				Description: "Array of IDs of the user SSH keys which should be added to the device. If you omit this, SSH keys of all the members of the parent project will be added to the device. If you specify this array, only the listed user SSH keys (and any project_ssh_key_ids) will be added. User SSH keys can be created with the [equinix_metal_ssh_key](equinix_metal_ssh_key.md) resource",
 				Optional:    true,
 				ForceNew:    true,
 				Elem:        &schema.Schema{Type: schema.TypeString},
@@ -525,6 +533,11 @@ func resourceMetalDeviceCreate(d *schema.ResourceData, meta interface{}) error {
 	projectKeys := d.Get("project_ssh_key_ids.#").(int)
 	if projectKeys > 0 {
 		createRequest.ProjectSSHKeys = convertStringArr(d.Get("project_ssh_key_ids").([]interface{}))
+	}
+
+	userKeys := d.Get("user_ssh_key_ids.#").(int)
+	if userKeys > 0 {
+		createRequest.UserSSHKeys = convertStringArr(d.Get("user_ssh_key_ids").([]interface{}))
 	}
 
 	tags := d.Get("tags.#").(int)
