@@ -47,7 +47,7 @@ func testSweepOrganizations(region string) error {
 }
 
 func TestAccMetalOrganization_create(t *testing.T) {
-	var org packngo.Organization
+	var org, org2 packngo.Organization
 	rInt := acctest.RandInt()
 
 	resource.ParallelTest(t, resource.TestCase{
@@ -63,13 +63,45 @@ func TestAccMetalOrganization_create(t *testing.T) {
 						"equinix_metal_organization.test", "name", fmt.Sprintf("tfacc-org-%d", rInt)),
 					resource.TestCheckResourceAttr(
 						"equinix_metal_organization.test", "description", "quux"),
+					resource.TestCheckResourceAttr(
+						"equinix_metal_organization.test", "address.0.city", "London"),
+					resource.TestCheckResourceAttr(
+						"equinix_metal_organization.test", "address.0.state", ""),
+					resource.TestCheckResourceAttr(
+						"equinix_metal_organization.test", "address.0.zip_code", "12345"),
+				),
+			},
+			{
+				Config: testAccMetalOrganizationConfig_basicUpdate(rInt),
+				Check: resource.ComposeTestCheckFunc(
+					testAccMetalOrganizationExists("equinix_metal_organization.test", &org2),
+					resource.TestCheckResourceAttr(
+						"equinix_metal_organization.test", "name", fmt.Sprintf("tfacc-org-%d", rInt)),
+					resource.TestCheckResourceAttr(
+						"equinix_metal_organization.test", "description", "baz"),
+					resource.TestCheckResourceAttr(
+						"equinix_metal_organization.test", "address.0.city", "Madrid"),
+					resource.TestCheckResourceAttr(
+						"equinix_metal_organization.test", "address.0.state", "Madrid"),
+					resource.TestCheckResourceAttr(
+						"equinix_metal_organization.test", "twitter", "@Equinix"),
+					testAccMetalSameOrganization(t, &org, &org2),
 				),
 			},
 		},
 	})
 }
 
-func TestAccMetalAccOrganization_importBasic(t *testing.T) {
+func testAccMetalSameOrganization(t *testing.T, before, after *packngo.Organization) resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		if before.ID != after.ID {
+			t.Fatalf("Expected organization to be the same, but it was recreated: %s -> %s", before.ID, after.ID)
+		}
+		return nil
+	}
+}
+
+func TestAccMetalOrganization_importBasic(t *testing.T) {
 	rInt := acctest.RandInt()
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -115,7 +147,7 @@ func testAccMetalOrganizationExists(n string, org *packngo.Organization) resourc
 
 		client := testAccProvider.Meta().(*Config).metal
 
-		foundOrg, _, err := client.Organizations.Get(rs.Primary.ID, nil)
+		foundOrg, _, err := client.Organizations.Get(rs.Primary.ID, &packngo.GetOptions{Includes: []string{"address"}})
 		if err != nil {
 			return err
 		}
@@ -132,7 +164,29 @@ func testAccMetalOrganizationExists(n string, org *packngo.Organization) resourc
 func testAccMetalOrganizationConfig_basic(r int) string {
 	return fmt.Sprintf(`
 resource "equinix_metal_organization" "test" {
-		name = "tfacc-org-%d"
-		description = "quux"
+	name = "tfacc-org-%d"
+	description = "quux"
+	address {
+		address = "tfacc org street"
+		city = "London"
+		zip_code = "12345"
+		country = "GB"
+	}
+}`, r)
+}
+
+func testAccMetalOrganizationConfig_basicUpdate(r int) string {
+	return fmt.Sprintf(`
+resource "equinix_metal_organization" "test" {
+	name = "tfacc-org-%d"
+	description = "baz"
+	address {
+		address = "tfacc org street"
+		city = "Madrid"
+		zip_code = "28108"
+		country = "ES"
+		state   = "Madrid"
+	}
+	twitter = "@Equinix"
 }`, r)
 }

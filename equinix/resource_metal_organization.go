@@ -2,7 +2,9 @@ package equinix
 
 import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/packethost/packngo"
+	"regexp"
 )
 
 func resourceMetalOrganization() *schema.Resource {
@@ -21,44 +23,77 @@ func resourceMetalOrganization() *schema.Resource {
 				Description: "The name of the Organization",
 				Required:    true,
 			},
-
 			"description": {
 				Type:        schema.TypeString,
 				Description: "Description string",
 				Optional:    true,
-				Required:    false,
 			},
-
 			"website": {
 				Type:        schema.TypeString,
 				Description: "Website link",
 				Optional:    true,
-				Required:    false,
 			},
-
 			"twitter": {
 				Type:        schema.TypeString,
 				Description: "Twitter handle",
 				Optional:    true,
-				Required:    false,
 			},
-
 			"logo": {
 				Type:        schema.TypeString,
 				Description: "Logo URL",
 				Optional:    true,
-				Required:    false,
 			},
-
 			"created": {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-
 			"updated": {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
+			"address": {
+				Type:        schema.TypeList,
+				Description: "Address information block",
+				Required:    true,
+				MaxItems:    1,
+				Elem: &schema.Resource{
+					Schema: createMetalOrganizationAddressResourceSchema(),
+				},
+			},
+		},
+	}
+}
+
+func createMetalOrganizationAddressResourceSchema() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"address": {
+			Type:         schema.TypeString,
+			Description:  "Postal address",
+			Required:     true,
+			ValidateFunc: validation.StringIsNotEmpty,
+		},
+		"city": {
+			Type:         schema.TypeString,
+			Description:  "City name",
+			Required:     true,
+			ValidateFunc: validation.StringIsNotEmpty,
+		},
+		"zip_code": {
+			Type:         schema.TypeString,
+			Description:  "Zip Code",
+			Required:     true,
+			ValidateFunc: validation.StringIsNotEmpty,
+		},
+		"country": {
+			Type:         schema.TypeString,
+			Description:  "Two letter country code (ISO 3166-1 alpha-2), e.g. US",
+			Required:     true,
+			ValidateFunc: validation.StringMatch(regexp.MustCompile("(?i)^[a-z]{2}$"), "Address country must be a two letter code (ISO 3166-1 alpha-2)"),
+		},
+		"state": {
+			Type:         schema.TypeString,
+			Description:  "State name",
+			Optional:     true,
 		},
 	}
 }
@@ -68,6 +103,7 @@ func resourceMetalOrganizationCreate(d *schema.ResourceData, meta interface{}) e
 
 	createRequest := &packngo.OrganizationCreateRequest{
 		Name: d.Get("name").(string),
+		Address: expandMetalOrganizationAddress(d.Get("address").([]interface{})),
 	}
 
 	if attr, ok := d.GetOk("website"); ok {
@@ -99,7 +135,7 @@ func resourceMetalOrganizationCreate(d *schema.ResourceData, meta interface{}) e
 func resourceMetalOrganizationRead(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*Config).metal
 
-	key, _, err := client.Organizations.Get(d.Id(), nil)
+	key, _, err := client.Organizations.Get(d.Id(), &packngo.GetOptions{Includes: []string{"address"}})
 	if err != nil {
 		err = friendlyError(err)
 
@@ -114,46 +150,46 @@ func resourceMetalOrganizationRead(d *schema.ResourceData, meta interface{}) err
 	}
 
 	d.SetId(key.ID)
-	d.Set("name", key.Name)
-	d.Set("description", key.Description)
-	d.Set("website", key.Website)
-	d.Set("twitter", key.Twitter)
-	d.Set("logo", key.Logo)
-	d.Set("created", key.Created)
-	d.Set("updated", key.Updated)
-
-	return nil
+	return setMap(d, map[string]interface{}{
+		"name":        key.Name,
+		"description": key.Description,
+		"website":     key.Website,
+		"twitter":     key.Twitter,
+		"logo":        key.Logo,
+		"created":     key.Created,
+		"updated":     key.Updated,
+		"address":     flattenMetalOrganizationAddress(key.Address),
+	})
 }
 
 func resourceMetalOrganizationUpdate(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*Config).metal
 
+	changes := getResourceDataChangedKeys([]string{"name", "description", "website", "twitter", "logo", "address"}, d)
 	updateRequest := &packngo.OrganizationUpdateRequest{}
-
-	if d.HasChange("name") {
-		oName := d.Get("name").(string)
-		updateRequest.Name = &oName
+	for change, changeValue := range changes {
+		switch change {
+		case "name":
+			cv := changeValue.(string)
+			updateRequest.Name = &cv
+		case "description":
+			cv := changeValue.(string)
+			updateRequest.Description = &cv
+		case "website":
+			cv := changeValue.(string)
+			updateRequest.Website = &cv
+		case "twitter":
+			cv := changeValue.(string)
+			updateRequest.Twitter = &cv
+		case "logo":
+			cv := changeValue.(string)
+			updateRequest.Logo = &cv
+		case "address":
+			cv := expandMetalOrganizationAddress(changeValue.([]interface{}))
+			updateRequest.Address = &cv
+		}
 	}
 
-	if d.HasChange("description") {
-		oDescription := d.Get("description").(string)
-		updateRequest.Description = &oDescription
-	}
-
-	if d.HasChange("website") {
-		oWebsite := d.Get("website").(string)
-		updateRequest.Website = &oWebsite
-	}
-
-	if d.HasChange("twitter") {
-		oTwitter := d.Get("twitter").(string)
-		updateRequest.Twitter = &oTwitter
-	}
-
-	if d.HasChange("logo") {
-		oLogo := d.Get("logo").(string)
-		updateRequest.Logo = &oLogo
-	}
 	_, _, err := client.Organizations.Update(d.Id(), updateRequest)
 	if err != nil {
 		return friendlyError(err)
@@ -172,4 +208,51 @@ func resourceMetalOrganizationDelete(d *schema.ResourceData, meta interface{}) e
 
 	d.SetId("")
 	return nil
+}
+
+func flattenMetalOrganizationAddress(addr packngo.Address) interface{} {
+	result := make(map[string]interface{})
+	if addr.Address != "" {
+		result["address"] = addr.Address
+	}
+	if addr.City != nil && *addr.City != "" {
+		result["city"] = addr.City
+	}
+	if addr.Country != "" {
+		result["country"] = addr.Country
+	}
+	if addr.State != nil && *addr.State != "" {
+		result["state"] = addr.State
+	}
+	if addr.ZipCode != "" {
+		result["zip_code"] = addr.ZipCode
+	}
+
+	return []interface{}{result}
+}
+
+func expandMetalOrganizationAddress(address []interface{}) packngo.Address {
+
+	transformed := packngo.Address{}
+	addr := address[0].(map[string]interface{})
+
+	if v, ok := addr["address"]; ok {
+		transformed.Address = v.(string)
+	}
+	if v, ok := addr["city"]; ok {
+		city := v.(string)
+		transformed.City = &city
+	}
+	if v, ok := addr["zip_code"]; ok {
+		transformed.ZipCode = v.(string)
+	}
+	if v, ok := addr["country"]; ok {
+		transformed.Country = v.(string)
+	}
+	if v, ok := addr["state"]; ok {
+		state := v.(string)
+		transformed.State = &state
+	}
+
+	return transformed
 }

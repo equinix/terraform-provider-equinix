@@ -32,13 +32,11 @@ func dataSourceMetalOrganization() *schema.Resource {
 				Description: "Description string",
 				Computed:    true,
 			},
-
 			"website": {
 				Type:        schema.TypeString,
 				Description: "Website link",
 				Computed:    true,
 			},
-
 			"twitter": {
 				Type:        schema.TypeString,
 				Description: "Twitter handle",
@@ -55,6 +53,46 @@ func dataSourceMetalOrganization() *schema.Resource {
 				Computed:    true,
 				Elem:        &schema.Schema{Type: schema.TypeString},
 			},
+			"address": {
+				Type:        schema.TypeList,
+				Description: "Business' address",
+				Computed:    true,
+				Optional:    true,
+				Elem: &schema.Resource{
+					Schema: createOrganizationAddressDataSourceSchema(),
+				},
+			},
+		},
+	}
+}
+
+func createOrganizationAddressDataSourceSchema() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"address": {
+			Type:     schema.TypeString,
+			Computed: true,
+			Optional: true,
+		},
+		"city": {
+			Type:     schema.TypeString,
+			Computed: true,
+			Optional: true,
+		},
+		"zip_code": {
+			Type:     schema.TypeString,
+			Computed: true,
+			Optional: true,
+		},
+		"country": {
+			Type:        schema.TypeString,
+			Description: "Two letter country code (ISO 3166-1 alpha-2), e.g. US",
+			Computed:    true,
+			Optional:    true,
+		},
+		"state": {
+			Type:     schema.TypeString,
+			Computed: true,
+			Optional: true,
 		},
 	}
 }
@@ -81,14 +119,14 @@ func dataSourceMetalOrganizationRead(d *schema.ResourceData, meta interface{}) e
 	orgIdRaw, orgIdOK := d.GetOk("organization_id")
 
 	if !orgIdOK && !nameOK {
-		return fmt.Errorf("You must supply organization_id or name")
+		return fmt.Errorf("you must supply organization_id or name")
 	}
 	var org *packngo.Organization
 
 	if nameOK {
 		name := nameRaw.(string)
 
-		os, _, err := client.Organizations.List(nil)
+		os, _, err := client.Organizations.List(&packngo.GetOptions{Includes: []string{"address"}})
 		if err != nil {
 			return err
 		}
@@ -100,7 +138,8 @@ func dataSourceMetalOrganizationRead(d *schema.ResourceData, meta interface{}) e
 	} else {
 		orgId := orgIdRaw.(string)
 		var err error
-		org, _, err = client.Organizations.Get(orgId, nil)
+
+		org, _, err = client.Organizations.Get(orgId, &packngo.GetOptions{Includes: []string{"address"}})
 		if err != nil {
 			return err
 		}
@@ -111,14 +150,15 @@ func dataSourceMetalOrganizationRead(d *schema.ResourceData, meta interface{}) e
 		projectIds = append(projectIds, path.Base(p.URL))
 	}
 
-	d.Set("organization_id", org.ID)
-	d.Set("name", org.Name)
-	d.Set("description", org.Description)
-	d.Set("website", org.Website)
-	d.Set("twitter", org.Twitter)
-	d.Set("logo", org.Logo)
-	d.Set("project_ids", projectIds)
 	d.SetId(org.ID)
-
-	return nil
+	return setMap(d, map[string]interface{}{
+		"organization_id": org.ID,
+		"name":        	   org.Name,
+		"description": 	   org.Description,
+		"website":     	   org.Website,
+		"twitter":     	   org.Twitter,
+		"logo":        	   org.Logo,
+		"project_ids":     projectIds,
+		"address":     	   flattenMetalOrganizationAddress(org.Address),
+	})
 }
