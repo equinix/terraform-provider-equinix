@@ -551,7 +551,7 @@ resource "equinix_metal_device" "test" {
   hostname         = "tfacc-test-device-%d"
   plan             = local.plan
   metro            = local.metro
-  operating_system = "ubuntu_16_04"
+  operating_system = "ubuntu_22_04"
   billing_cycle    = "hourly"
   project_id       = "${equinix_metal_project.test.id}"
   tags             = ["%d"]
@@ -579,7 +579,7 @@ resource "equinix_metal_device" "test" {
   hostname         = "tfacc-test-device-%d"
   plan             = local.plan
   metro            = local.metro
-  operating_system = "ubuntu_16_04"
+  operating_system = "ubuntu_22_04"
   billing_cycle    = "hourly"
   project_id       = "${equinix_metal_project.test.id}"
   tags             = ["%d"]
@@ -614,7 +614,7 @@ resource "equinix_metal_device" "test" {
   description      = "test-desc-%d"
   plan             = local.plan
   metro            = local.metro
-  operating_system = "ubuntu_16_04"
+  operating_system = "ubuntu_22_04"
   billing_cycle    = "hourly"
   project_id       = "${equinix_metal_project.test.id}"
   tags             = ["%d"]
@@ -643,7 +643,7 @@ resource "equinix_metal_device" "test" {
   description      = "test-desc-%d"
   plan             = local.plan
   metro            = local.metro
-  operating_system = "ubuntu_16_04"
+  operating_system = "ubuntu_22_04"
   billing_cycle    = "hourly"
   project_id       = "${equinix_metal_project.test.id}"
   tags             = ["%d"]
@@ -673,7 +673,7 @@ resource "equinix_metal_device" "test" {
   hostname         = "tfacc-test-device"
   plan             = local.plan
   metro            = local.metro
-  operating_system = "ubuntu_16_04"
+  operating_system = "ubuntu_22_04"
   billing_cycle    = "hourly"
   project_id       = "${equinix_metal_project.test.id}"
   termination_time = "%s"
@@ -699,7 +699,7 @@ resource "equinix_metal_project" "test" {
 resource "equinix_metal_device" "test" {
   plan             = local.plan
   metro            = local.metro
-  operating_system = "ubuntu_16_04"
+  operating_system = "ubuntu_22_04"
   project_id       = "${equinix_metal_project.test.id}"
 
   lifecycle {
@@ -724,7 +724,7 @@ resource "equinix_metal_device" "test" {
   hostname         = "tfacc-test-device"
   plan             = local.plan
   metro            = local.metro
-  operating_system = "ubuntu_16_04"
+  operating_system = "ubuntu_22_04"
   billing_cycle    = "hourly"
   project_id       = "${equinix_metal_project.test.id}"
   termination_time = "%s"
@@ -759,7 +759,7 @@ resource "equinix_metal_device" "test" {
 	hostname         = "tfacc-test-device"
 	plan             = "c3.small.x86"
 	metro            = "sv"
-	operating_system = "ubuntu_16_04"
+	operating_system = "ubuntu_22_04"
 	billing_cycle    = "hourly"
 	project_id       = equinix_metal_project.test.id
 	user_ssh_key_ids = [equinix_metal_ssh_key.test.id]
@@ -781,7 +781,7 @@ resource "equinix_metal_device" "test"  {
   hostname         = "tfacc-device-test-ipxe-script-url"
   plan             = local.plan
   facilities       = local.facilities
-  operating_system = "ubuntu_16_04"
+  operating_system = "ubuntu_22_04"
   billing_cycle    = "hourly"
   project_id       = "${equinix_metal_project.test.id}"
   termination_time = "%s"
