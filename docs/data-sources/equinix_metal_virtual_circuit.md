@@ -47,6 +47,6 @@ In addition to all arguments above, the following attributes are exported:
   * For a /31 block, it will only have two IP addresses, which will be used for
   the metal_ip and customer_ip.
   * For a /30 block, it will have four IP addresses, but the first and last IP addresses are not usable. We will default to the first usable IP address for the metal_ip.
-* `metal_ip` - The IP address that’s set as “our” IP that is configured on the rack_local_vlan SVI. Will default to the first usable IP in the subnet.
-* `customer_ip` - The IP address set as the customer IP which the CSR switch will peer with. Will default to the other usable IP in the subnet.
+* `metal_ip` - The Metal IP address for the SVI (Switch Virtual Interface) of the VirtualCircuit. Will default to the first usable IP in the subnet.
+* `customer_ip` - The Customer IP address which the CSR switch will peer with. Will default to the other usable IP in the subnet.
 * `md5` - The password that can be set for the VRF BGP peer

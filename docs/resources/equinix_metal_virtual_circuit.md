@@ -52,15 +52,15 @@ The following arguments are supported:
 * `description` - (Optional) Description for the Virtual Circuit resource.
 * `tags` - (Optional) Tags for the Virtual Circuit resource.
 * `speed` - (Optional) Speed of the Virtual Circuit resource.
-* `vrf_id` - (Optional) UUID of the VLAN to associate.
+* `vrf_id` - (Optional) UUID of the VRF to associate.
 * `peer_asn` - (Optional, required with `vrf_id`) The BGP ASN of the peer. The same ASN may be the used across several VCs, but it cannot be the same as the local_asn of the VRF.
 * `subnet` - (Optional, required with `vrf_id`) A subnet from one of the IP
   blocks associated with the VRF that we will help create an IP reservation for. Can only be either a /30 or /31.
   * For a /31 block, it will only have two IP addresses, which will be used for
   the metal_ip and customer_ip.
   * For a /30 block, it will have four IP addresses, but the first and last IP addresses are not usable. We will default to the first usable IP address for the metal_ip.
-* `metal_ip` - (Optional, required with `vrf_id`) The IP address that’s set as “our” IP that is configured on the rack_local_vlan SVI. Will default to the first usable IP in the subnet.
-* `customer_ip` - (Optional, required with `vrf_id`) The IP address set as the customer IP which the CSR switch will peer with. Will default to the other usable IP in the subnet.
+* `metal_ip` - (Optional, required with `vrf_id`) The Metal IP address for the SVI (Switch Virtual Interface) of the VirtualCircuit. Will default to the first usable IP in the subnet.
+* `customer_ip` - (Optional, required with `vrf_id`) The Customer IP address which the CSR switch will peer with. Will default to the other usable IP in the subnet.
 * `md5` - (Optional, only valid with `vrf_id`) The password that can be set for the VRF BGP peer
 
 ## Attributes Reference
