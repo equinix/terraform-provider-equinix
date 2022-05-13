@@ -371,8 +371,8 @@ func resourceMetalVirtualCircuitDelete(d *schema.ResourceData, meta interface{})
 
 	_, err = deleteWaiter.WaitForState()
 	if ignoreResponseErrors(httpForbidden, httpNotFound)(resp, err) != nil {
-		return nil
+		return fmt.Errorf("Error deleting virtual circuit %s: %s", d.Id(), err)
 	}
-
-	return fmt.Errorf("Error deleting virtual circuit %s: %s", d.Id(), err)
+	d.SetId("")
+	return nil
 }

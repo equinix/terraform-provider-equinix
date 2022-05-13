@@ -2,7 +2,9 @@ package equinix
 
 import (
 	"fmt"
+	"time"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/packethost/packngo"
 )
@@ -154,5 +156,39 @@ func resourceMetalGatewayDelete(d *schema.ResourceData, meta interface{}) error 
 	if ignoreResponseErrors(httpForbidden, httpNotFound)(resp, err) != nil {
 		return friendlyError(err)
 	}
+
+	deleteWaiter := getGatewayStateWaiter(
+		client,
+		d.Id(),
+		d.Timeout(schema.TimeoutDelete),
+		[]string{string(packngo.MetalGatewayDeleting)},
+		[]string{},
+	)
+
+	_, err = deleteWaiter.WaitForState()
+	if ignoreResponseErrors(httpForbidden, httpNotFound)(resp, err) != nil {
+		return fmt.Errorf("Error deleting Metal Gateway %s: %s", d.Id(), err)
+	}
+
+	d.SetId("")
 	return nil
+}
+
+func getGatewayStateWaiter(client *packngo.Client, id string, timeout time.Duration, pending, target []string) *resource.StateChangeConf {
+	return &resource.StateChangeConf{
+		Pending: pending,
+		Target:  target,
+		Refresh: func() (interface{}, string, error) {
+			getOpts := &packngo.GetOptions{Includes: []string{"project", "ip_reservation", "virtual_network", "vrf"}}
+
+			gw, _, err := client.MetalGateways.Get(id, getOpts) // TODO: we are not using the returned VRF. Remove the includes?
+			if err != nil {
+				return 0, "", err
+			}
+			return gw, string(gw.State), nil
+		},
+		Timeout:    timeout,
+		Delay:      10 * time.Second,
+		MinTimeout: 5 * time.Second,
+	}
 }
