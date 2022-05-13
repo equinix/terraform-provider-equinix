@@ -115,6 +115,7 @@ func resourceMetalVirtualCircuit() *schema.Resource {
 			"md5": {
 				Type:        schema.TypeString,
 				Optional:    true,
+				Sensitive:   true,
 				Description: "The password that can be set for the VRF BGP peer",
 			},
 
