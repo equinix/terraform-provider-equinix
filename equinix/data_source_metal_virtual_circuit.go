@@ -2,7 +2,6 @@ package equinix
 
 import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/packethost/packngo"
 )
 
 func dataSourceMetalVirtualCircuit() *schema.Resource {
@@ -109,29 +108,7 @@ func dataSourceMetalVirtualCircuit() *schema.Resource {
 }
 
 func dataSourceMetalVirtualCircuitRead(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*Config).metal
 	vcId := d.Get("virtual_circuit_id").(string)
-
-	vc, _, err := client.VirtualCircuits.Get(
-		vcId,
-		&packngo.GetOptions{Includes: []string{"project"}})
-	if err != nil {
-		return err
-	}
-
-	d.Set("virtual_circuit_id", vc.ID)
-	d.Set("name", vc.Name)
-	d.Set("status", vc.Status)
-	d.Set("vnid", vc.VNID)
-	d.Set("nni_vnid", vc.NniVNID)
-	d.Set("nni_vlan", vc.NniVLAN)
-	d.Set("project_id", vc.Project.ID)
-	d.Set("description", vc.Description)
-	tags := d.Get("tags.#").(int)
-	if tags > 0 {
-		vc.Tags = convertStringArr(d.Get("tags").([]interface{}))
-	}
-	d.SetId(vc.ID)
-
-	return nil
+	d.SetId(vcId)
+	return resourceMetalVirtualCircuitRead(d, meta)
 }
