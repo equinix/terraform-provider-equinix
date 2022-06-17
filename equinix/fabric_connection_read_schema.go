@@ -40,7 +40,6 @@ func readInvitationSch() map[string]*schema.Schema {
 }
 
 func readAccessPointSelectorSimplifiedMetadataEntitySch() map[string]*schema.Schema {
-
 	return map[string]*schema.Schema{
 		"href": {
 			Type:        schema.TypeString,
@@ -797,27 +796,6 @@ func readFabricConnectionSideOrganizationSch() map[string]*schema.Schema {
 	}
 }
 
-func readConnectionSideCompanyProfileSch() map[string]*schema.Schema {
-	return map[string]*schema.Schema{
-		"id": {
-			Type:        schema.TypeInt,
-			Computed:    true,
-			Description: "Common company profile id",
-		},
-		"name": {
-			Type:        schema.TypeString,
-			Computed:    true,
-			Description: "Common company profile name",
-		},
-		"organization": {
-			Type:        schema.TypeSet,
-			Computed:    true,
-			Description: "Organization details",
-			Elem:        &schema.Resource{Schema: readFabricConnectionSideOrganizationSch()},
-		},
-	}
-}
-
 func readPortSch() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
 		"uuid": {
@@ -993,22 +971,6 @@ func readFabricConnectionSideSch() map[string]*schema.Schema {
 				Schema: readConnectionSideAccessPointSch(),
 			},
 		},
-		"company_profile": {
-			Type:        schema.TypeSet,
-			Computed:    true,
-			Description: "Company Profile",
-			Elem: &schema.Resource{
-				Schema: readConnectionSideCompanyProfileSch(),
-			},
-		},
-		"nat": {
-			Type:        schema.TypeSet,
-			Computed:    true,
-			Description: "Network Address Translation type",
-			Elem: &schema.Resource{
-				Schema: readNatSch(),
-			},
-		},
 		"additional_info": {
 			Type:        schema.TypeList,
 			Computed:    true,
@@ -1016,17 +978,6 @@ func readFabricConnectionSideSch() map[string]*schema.Schema {
 			Elem: &schema.Resource{
 				Schema: readAdditionalInfoSch(),
 			},
-		},
-	}
-}
-
-func readNatSch() map[string]*schema.Schema {
-
-	return map[string]*schema.Schema{
-		"type": {
-			Type:        schema.TypeString,
-			Computed:    true,
-			Description: "Type",
 		},
 	}
 }
@@ -1385,7 +1336,7 @@ func readIpv4Sch() map[string]*schema.Schema {
 	}
 }
 
-func readRoutingProtocolSch() map[string]*schema.Schema {
+/*func readRoutingProtocolSch() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
 		"type": {
 			Type:        schema.TypeString,
@@ -1427,7 +1378,7 @@ func readRoutingProtocolSch() map[string]*schema.Schema {
 			},
 		},
 	}
-}
+}*/
 
 func readFabricConnectionResourceSchema() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
@@ -1441,15 +1392,9 @@ func readFabricConnectionResourceSchema() map[string]*schema.Schema {
 			Computed:    true,
 			Description: "Connection URI information",
 		},
-		"platform_uuid": {
-			Type:        schema.TypeString,
-			Computed:    true,
-			Description: "Unique identifier of the connection, internal",
-		},
 		"name": {
 			Type:        schema.TypeString,
 			Computed:    true,
-			ForceNew:    true,
 			Description: "Connection name. An alpha-numeric 24 characters string which can include only hyphens and underscores",
 		},
 		"description": {
@@ -1460,12 +1405,11 @@ func readFabricConnectionResourceSchema() map[string]*schema.Schema {
 		"type": {
 			Type:        schema.TypeString,
 			Computed:    true,
-			Description: "Defines the connection type like VG_VC, EVPL_VC, EPL_VC, EC_VC, GW_VC, ACCESS_EPL_VC, NONGENERIC",
+			Description: "Defines the connection type like VG_VC, EVPL_VC, EPL_VC, EC_VC, GW_VC, ACCESS_EPL_VC",
 		},
 		"bandwidth": {
 			Type:        schema.TypeInt,
 			Computed:    true,
-			ForceNew:    true,
 			Description: "Connection bandwidth in Mbps",
 		},
 		"is_remote": {
@@ -1476,7 +1420,6 @@ func readFabricConnectionResourceSchema() map[string]*schema.Schema {
 		"state": {
 			Type:        schema.TypeString,
 			Computed:    true,
-			ForceNew:    true,
 			Description: "Connection overall state",
 		},
 		"change": {
@@ -1566,22 +1509,6 @@ func readFabricConnectionResourceSchema() map[string]*schema.Schema {
 			Description: "Destination or Provider side connection configuration object of the multi-segment connection",
 			Elem: &schema.Resource{
 				Schema: readFabricConnectionSideSch(),
-			},
-		},
-		"tags": {
-			Type:        schema.TypeList,
-			Computed:    true,
-			Description: "User provided tags for the connection",
-			Elem: &schema.Schema{
-				Type: schema.TypeString,
-			},
-		},
-		"routing_protocols": {
-			Type:        schema.TypeSet,
-			Computed:    true,
-			Description: "Configured Routing protocol for the connection",
-			Elem: &schema.Resource{
-				Schema: readRoutingProtocolSch(),
 			},
 		},
 	}

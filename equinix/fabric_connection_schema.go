@@ -264,11 +264,6 @@ var createLocationRes = &schema.Resource{
 
 func createLocationSch() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
-		"href": {
-			Type:        schema.TypeString,
-			Computed:    true,
-			Description: "Unique Resource Identifier",
-		},
 		"region": {
 			Type:        schema.TypeString,
 			Optional:    true,
@@ -908,31 +903,6 @@ func createFabricConnectionSideOrganizationSch() map[string]*schema.Schema {
 	}
 }
 
-var createConnectionSideCompanyProfileRes = &schema.Resource{
-	Schema: createConnectionSideCompanyProfileSch(),
-}
-
-func createConnectionSideCompanyProfileSch() map[string]*schema.Schema {
-	return map[string]*schema.Schema{
-		"id": {
-			Type:        schema.TypeInt,
-			Computed:    true,
-			Description: "Common company profile id",
-		},
-		"name": {
-			Type:        schema.TypeString,
-			Computed:    true,
-			Description: "Common company profile name",
-		},
-		"organization": {
-			Type:        schema.TypeSet,
-			Computed:    true,
-			Description: "Organization details",
-			Elem:        &schema.Resource{Schema: createFabricConnectionSideOrganizationSch()},
-		},
-	}
-}
-
 var createPortRes = &schema.Resource{
 	Schema: createPortSch(),
 }
@@ -1106,22 +1076,7 @@ func createFabricConnectionSideSch() map[string]*schema.Schema {
 				Schema: createConnectionSideAccessPointSch(),
 			},
 		},
-		"company_profile": {
-			Type:        schema.TypeSet,
-			Optional:    true,
-			Description: "Company Profile",
-			Elem: &schema.Resource{
-				Schema: createConnectionSideCompanyProfileSch(),
-			},
-		},
-		"nat": {
-			Type:        schema.TypeSet,
-			Optional:    true,
-			Description: "Network Address Translation type",
-			Elem: &schema.Resource{
-				Schema: createNatSch(),
-			},
-		},
+
 		"additional_info": {
 			Type:        schema.TypeList,
 			Optional:    true,
@@ -1129,21 +1084,6 @@ func createFabricConnectionSideSch() map[string]*schema.Schema {
 			Elem: &schema.Resource{
 				Schema: createAdditionalInfoSch(),
 			},
-		},
-	}
-}
-
-var createNatRes = &schema.Resource{
-	Schema: createNatSch(),
-}
-
-func createNatSch() map[string]*schema.Schema {
-
-	return map[string]*schema.Schema{
-		"type": {
-			Type:        schema.TypeString,
-			Computed:    true,
-			Description: "Type",
 		},
 	}
 }
@@ -1573,11 +1513,11 @@ func createIpv4Sch() map[string]*schema.Schema {
 	}
 }
 
-var createRoutingProtocolRes = &schema.Resource{
+/*var createRoutingProtocolRes = &schema.Resource{
 	Schema: createRoutingProtocolSch(),
-}
+}*/
 
-func createRoutingProtocolSch() map[string]*schema.Schema {
+/*func createRoutingProtocolSch() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
 		"type": {
 			Type:        schema.TypeString,
@@ -1619,7 +1559,7 @@ func createRoutingProtocolSch() map[string]*schema.Schema {
 			},
 		},
 	}
-}
+}*/
 
 func createFabricConnectionResourceSchema() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
@@ -1632,11 +1572,6 @@ func createFabricConnectionResourceSchema() map[string]*schema.Schema {
 			Type:        schema.TypeString,
 			Computed:    true,
 			Description: "Connection URI information",
-		},
-		"platform_uuid": {
-			Type:        schema.TypeString,
-			Computed:    true,
-			Description: "Unique identifier of the connection, internal",
 		},
 		"name": {
 			Type:        schema.TypeString,
@@ -1651,8 +1586,8 @@ func createFabricConnectionResourceSchema() map[string]*schema.Schema {
 		"type": {
 			Type:         schema.TypeString,
 			Required:     true,
-			ValidateFunc: validation.StringInSlice([]string{"VG_VC", "EVPL_VC", "EPL_VC", "EC_VC", "GW_VC", "ACCESS_EPL_VC", "NONGENERIC"}, true),
-			Description:  "Defines the connection type like VG_VC, EVPL_VC, EPL_VC, EC_VC, GW_VC, ACCESS_EPL_VC, NONGENERIC",
+			ValidateFunc: validation.StringInSlice([]string{"VG_VC", "EVPL_VC", "EPL_VC", "EC_VC", "GW_VC", "ACCESS_EPL_VC"}, true),
+			Description:  "Defines the connection type like VG_VC, EVPL_VC, EPL_VC, EC_VC, GW_VC, ACCESS_EPL_VC",
 		},
 		"bandwidth": {
 			Type:        schema.TypeInt,
@@ -1752,22 +1687,6 @@ func createFabricConnectionResourceSchema() map[string]*schema.Schema {
 			Description: "Destination or Provider side connection configuration object of the multi-segment connection",
 			Elem: &schema.Resource{
 				Schema: createFabricConnectionSideSch(),
-			},
-		},
-		"tags": {
-			Type:        schema.TypeList,
-			Optional:    true,
-			Description: "User provided tags for the connection",
-			Elem: &schema.Schema{
-				Type: schema.TypeString,
-			},
-		},
-		"routing_protocols": {
-			Type:        schema.TypeSet,
-			Computed:    true,
-			Description: "Configured Routing protocol for the connection",
-			Elem: &schema.Resource{
-				Schema: createRoutingProtocolSch(),
 			},
 		},
 	}

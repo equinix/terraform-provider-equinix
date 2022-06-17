@@ -52,8 +52,6 @@ func resourceFabricConnectionCreate(ctx context.Context, d *schema.ResourceData,
 		accessPoint := asideMap["access_point"].(interface{}).(*schema.Set).List()
 		invitationRequest := asideMap["invitation"].(interface{}).(*schema.Set).List()
 		serviceTokenRequest := asideMap["service_token"].(interface{}).(*schema.Set).List()
-		companyProfileRequest := asideMap["company_profile"].(interface{}).(*schema.Set).List()
-		natRequest := asideMap["nat"].(interface{}).(*schema.Set).List()
 		additionalInfoRequest := asideMap["additional_info"].([]interface{})
 
 		if len(accessPoint) != 0 {
@@ -70,16 +68,6 @@ func resourceFabricConnectionCreate(ctx context.Context, d *schema.ResourceData,
 			connectionASide = v4.ConnectionSide{ServiceToken: &mappedServiceToken}
 		}
 
-		if len(companyProfileRequest) != 0 {
-			mappedCompanyProfile := companyProfileToFabric(companyProfileRequest)
-			connectionASide = v4.ConnectionSide{CompanyProfile: &mappedCompanyProfile}
-		}
-
-		if len(natRequest) != 0 {
-			mappedNat := natToFabric(natRequest)
-			connectionASide = v4.ConnectionSide{Nat: &mappedNat}
-		}
-
 		if len(additionalInfoRequest) != 0 {
 			mappedAdditionalInfo := additionalInfoToFabric(additionalInfoRequest)
 			connectionASide = v4.ConnectionSide{AdditionalInfo: mappedAdditionalInfo}
@@ -93,8 +81,6 @@ func resourceFabricConnectionCreate(ctx context.Context, d *schema.ResourceData,
 		accessPoint := zsideMap["access_point"].(interface{}).(*schema.Set).List()
 		invitationRequest := zsideMap["invitation"].(interface{}).(*schema.Set).List()
 		serviceTokenRequest := zsideMap["service_token"].(interface{}).(*schema.Set).List()
-		companyProfileRequest := zsideMap["company_profile"].(interface{}).(*schema.Set).List()
-		natRequest := zsideMap["nat"].(interface{}).(*schema.Set).List()
 		additionalInfoRequest := zsideMap["additional_info"].([]interface{})
 
 		if len(accessPoint) != 0 {
@@ -109,16 +95,6 @@ func resourceFabricConnectionCreate(ctx context.Context, d *schema.ResourceData,
 		if len(serviceTokenRequest) != 0 {
 			mappedServiceToken := serviceTokenToFabric(serviceTokenRequest)
 			connectionZSide = v4.ConnectionSide{ServiceToken: &mappedServiceToken}
-		}
-
-		if len(companyProfileRequest) != 0 {
-			mappedCompanyProfile := companyProfileToFabric(companyProfileRequest)
-			connectionZSide = v4.ConnectionSide{CompanyProfile: &mappedCompanyProfile}
-		}
-
-		if len(natRequest) != 0 {
-			mappedNat := natToFabric(natRequest)
-			connectionZSide = v4.ConnectionSide{Nat: &mappedNat}
 		}
 
 		if len(additionalInfoRequest) != 0 {
@@ -137,7 +113,7 @@ func resourceFabricConnectionCreate(ctx context.Context, d *schema.ResourceData,
 		ASide:         &connectionASide,
 		ZSide:         &connectionZSide,
 	}
-	conn, _, err := client.ConnectionsApi.CreateConnection(ctx, createRequest, nil)
+	conn, _, err := client.ConnectionsApi.CreateConnection(ctx, createRequest)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -150,6 +126,7 @@ func resourceFabricConnectionRead(ctx context.Context, d *schema.ResourceData, m
 	client := meta.(*Config).fabricClient
 	ctx = context.WithValue(ctx, v4.ContextAccessToken, meta.(*Config).FabricAuthToken)
 	conn, _, err := client.ConnectionsApi.GetConnectionByUuid(ctx, d.Id(), nil)
+	//TODO check for 404 or 403 from the API and see if we need specific handling
 	if err != nil {
 		log.Printf("[WARN] Connection %s not found ", d.Id())
 		d.SetId("")
@@ -169,45 +146,41 @@ func setFabricMap(d *schema.ResourceData, conn v4.Connection) diag.Diagnostics {
 
 	err = d.Set("bandwidth", conn.Bandwidth)
 
-	err = d.Set("href", conn.Href)
+	//err = d.Set("href", conn.Href)
 
-	err = d.Set("platform_uuid", conn.PlatformUuid)
+	//err = d.Set("description", conn.Description)
 
-	err = d.Set("description", conn.Description)
+	//err = d.Set("bandwidth", conn.Bandwidth)
 
-	err = d.Set("bandwidth", conn.Bandwidth)
+	//	err = d.Set("is_remote", conn.IsRemote)
 
-	err = d.Set("is_remote", conn.IsRemote)
+	//err = d.Set("type", conn.Type_)
 
-	err = d.Set("type", conn.Type_)
+	//err = d.Set("state", conn.State)
 
-	err = d.Set("state", conn.State)
-
-	err = d.Set("direction", conn.Direction)
+	//err = d.Set("direction", conn.Direction)
 
 	//TODO need to see if we need implementation
 	//err = d.Set("change", TBD)
-	err = d.Set("operation", operationToTerra(conn.Operation))
+	//err = d.Set("operation", operationToTerra(conn.Operation))
 
 	if conn.Order != nil {
-		err = d.Set("order", orderMappingToTerra(conn.Order))
+		//	err = d.Set("order", orderMappingToTerra(conn.Order))
 	}
 
-	err = d.Set("change_log", changeLogToTerra(conn.ChangeLog))
+	//err = d.Set("change_log", changeLogToTerra(conn.ChangeLog))
 
-	err = d.Set("redundancy", redundancyToTerra(conn.Redundancy))
+	//err = d.Set("redundancy", redundancyToTerra(conn.Redundancy))
 
-	err = d.Set("notifications", notificationToTerra(conn.Notifications))
+	//err = d.Set("notifications", notificationToTerra(conn.Notifications))
 
 	if conn.Account != nil {
-		err = d.Set("account", accountToTerra(conn.Account))
+		//	err = d.Set("account", accountToTerra(conn.Account))
 	}
 
-	err = d.Set("tags", conn.Tags)
+	//err = d.Set("a_side", connectionSideToTerra(conn.ASide))
 
-	err = d.Set("a_side", connectionSideToTerra(conn.ASide))
-
-	err = d.Set("z_side", connectionSideToTerra(conn.ZSide))
+	//err = d.Set("z_side", connectionSideToTerra(conn.ZSide))
 	if err != nil {
 		//err = fmt.Errorf("connection z_side  %v", err)
 		errs = multierror.Append(errs, err)
@@ -231,7 +204,8 @@ func resourceFabricConnectionUpdate(ctx context.Context, d *schema.ResourceData,
 
 	dbConn := v4.Connection{}
 	var err error
-	cunter := 0
+	counter := 0
+	//TODO Terraform retry helpers to use
 	for dbConn.State == nil || "ACTIVE" != *dbConn.State {
 		time.Sleep(30 * time.Second)
 		dbConn, _, err = client.ConnectionsApi.GetConnectionByUuid(ctx, uuid, nil)
@@ -239,10 +213,10 @@ func resourceFabricConnectionUpdate(ctx context.Context, d *schema.ResourceData,
 			//TODO handle error and add to the diag rather returning it directly
 			return diag.Errorf(" Error while fetching connection for uuid %s and error %v", uuid, err)
 		}
-		if cunter >= 4 {
+		if counter >= 4 {
 			break
 		}
-		cunter++
+		counter++
 	}
 
 	update, err := getUpdateRequest(dbConn, d)
@@ -250,7 +224,7 @@ func resourceFabricConnectionUpdate(ctx context.Context, d *schema.ResourceData,
 		return diag.FromErr(err)
 	}
 	updates := []v4.ConnectionChangeOperation{update}
-	_, res, err := client.ConnectionsApi.UpdateConnectionByUuid(ctx, updates, uuid, nil)
+	_, res, err := client.ConnectionsApi.UpdateConnectionByUuid(ctx, updates, uuid)
 	if err != nil {
 		//TODO handle response
 		fmt.Errorf(" Error response for the connection update, response %v, error %v", res, err)
@@ -279,8 +253,8 @@ func resourceFabricConnectionDelete(ctx context.Context, d *schema.ResourceData,
 		//TODO added an error and return
 		return diag.Errorf("No uuid found %v ", uuid)
 	}
-	conn, resp, err := client.ConnectionsApi.DeleteConnectionByUuid(ctx, uuid, nil)
-
+	conn, resp, err := client.ConnectionsApi.DeleteConnectionByUuid(ctx, uuid)
+	//TODO check if delete is returing 404 in case if API did not find an active connction for the ID
 	if err != nil {
 		fmt.Errorf(" Error response for the connection delete error %v and response %v", err, resp)
 		return diag.FromErr(err)

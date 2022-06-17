@@ -136,7 +136,7 @@ func (c *Config) Load(ctx context.Context) error {
 		"X-CORRELATION-ID": "234421213412323",
 	}
 	v4Configuration := v4.Configuration{
-		BasePath:      v4.NewConfiguration().BasePath,
+		BasePath:      c.BaseURL, //v4.NewConfiguration().BasePath,
 		Host:          "",
 		Scheme:        "",
 		DefaultHeader: defaultMap,
@@ -217,7 +217,6 @@ func MetalRetryPolicy(ctx context.Context, resp *http.Response, err error) (bool
 				return false, nil
 			}
 		}
-
 		// The error is likely recoverable so retry.
 		return true, nil
 	}
@@ -235,7 +234,6 @@ func terraformUserAgent(version string) string {
 			log.Printf("[DEBUG] Using modified User-Agent: %s", ua)
 		}
 	}
-
 	return ua
 }
 

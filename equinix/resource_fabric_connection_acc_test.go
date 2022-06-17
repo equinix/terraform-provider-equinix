@@ -18,7 +18,7 @@ func TestAccFabricCreateAzureConnection(t *testing.T) {
 		CheckDestroy: checkConnectionDelete,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccFabricCreateEPLConnectionConfig(50), //fmt.Sprintf(epl_request, 50)
+				Config: testAccFabricCreateEPLConnectionConfig(50),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(
 						"equinix_fabric_connection.test", "name", fmt.Sprint("fabric_tf_acc_test_CCEPL")),
@@ -27,7 +27,7 @@ func TestAccFabricCreateAzureConnection(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccFabricCreateEPLConnectionConfig(100), //fmt.Sprintf(epl_request, 100), ////fmt.Sprintf(epl_request, 100),
+				Config: testAccFabricCreateEPLConnectionConfig(100),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(
 						"equinix_fabric_connection.test", "name", fmt.Sprint("fabric_tf_acc_test_CCEPL")),
@@ -51,6 +51,7 @@ func checkConnectionDelete(s *terraform.State) error {
 			continue
 		}
 
+		//TODO Use retry terraform helpers - Move to delete Func
 		for conn.State == nil || "DEPROVISIONED" != *conn.State {
 			time.Sleep(30 * time.Second)
 			conn, _, err = client.ConnectionsApi.GetConnectionByUuid(ctx, rs.Primary.ID, nil)
@@ -63,7 +64,6 @@ func checkConnectionDelete(s *terraform.State) error {
 			counter++
 		}
 	}
-
 	return nil
 }
 

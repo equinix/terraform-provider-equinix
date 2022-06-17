@@ -4,7 +4,6 @@ import (
 	"fmt"
 	v4 "github.com/equinix/terraform-provider-equinix/internal/apis/fabric/v4"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"strconv"
 	"time"
 )
 
@@ -17,7 +16,7 @@ func serviceTokenToFabric(serviceTokenRequest []interface{}) v4.ServiceToken {
 		description := stMap["description"].(interface{}).(string)
 		expirationDateTime := stMap["expiration_date_time"].(interface{}).(string)
 		notifications := stMap["notifications"].(interface{}).(*schema.Set).List()
-		mappedNotifications := []v4.SimplifiedNotification{}
+		var mappedNotifications []v4.SimplifiedNotification
 		if len(notifications) != 0 {
 			mappedNotifications = notificationToFabric(notifications)
 		}
@@ -27,45 +26,6 @@ func serviceTokenToFabric(serviceTokenRequest []interface{}) v4.ServiceToken {
 			Notifications: mappedNotifications}
 	}
 	return mappedST
-}
-
-func companyProfileToFabric(companyProfileRequest []interface{}) v4.CompanyProfile {
-	mappedCP := v4.CompanyProfile{}
-	for _, cpr := range companyProfileRequest {
-		cprMap := cpr.(map[string]interface{})
-		id := cprMap["id"].(interface{}).(string)
-		name := cprMap["name"].(interface{}).(string)
-		organizationRequest := cprMap["organization"].(interface{}).(*schema.Set).List()
-		mappedOrganization := v4.CompanyProfileOrganization{}
-		if len(organizationRequest) != 0 {
-			mappedOrganization = companyProfileOrganizationToFabric(organizationRequest)
-		}
-		intVal := stringToInt64(id, "id")
-		mappedCP = v4.CompanyProfile{Name: name, Id: int32(intVal), Organization: &mappedOrganization}
-	}
-	return mappedCP
-}
-
-func companyProfileOrganizationToFabric(organizationRequest []interface{}) v4.CompanyProfileOrganization {
-	mappedCPO := v4.CompanyProfileOrganization{}
-	for _, cpor := range organizationRequest {
-		cporMap := cpor.(map[string]interface{})
-		id := cporMap["id"].(interface{}).(string)
-		cpoType := cporMap["type"].(interface{}).(string)
-		name := cporMap["name"].(interface{}).(string)
-		mappedCPO = v4.CompanyProfileOrganization{Id: id, Type_: cpoType, Name: name}
-	}
-	return mappedCPO
-}
-
-func natToFabric(natRequest []interface{}) v4.ConnectionNat {
-	mappedNat := v4.ConnectionNat{}
-	for _, nr := range natRequest {
-		nMap := nr.(map[string]interface{})
-		nType := nMap["type"].(interface{}).(string)
-		mappedNat = v4.ConnectionNat{Type_: nType}
-	}
-	return mappedNat
 }
 
 func additionalInfoToFabric(additionalInfoRequest []interface{}) []v4.ConnectionSideAdditionalInfo {
@@ -271,10 +231,11 @@ func locationNoIbxToFabric(locationList []interface{}) v4.SimplifiedLocationWith
 	sl := v4.SimplifiedLocationWithoutIbx{}
 	for _, ll := range locationList {
 		llMap := ll.(map[string]interface{})
+		href := llMap["href"].(interface{}).(string)
 		metroName := llMap["metro_name"].(interface{}).(string)
 		region := llMap["region"].(interface{}).(string)
 		mc := llMap["metro_code"].(interface{}).(string)
-		sl = v4.SimplifiedLocationWithoutIbx{MetroCode: mc, Region: region, MetroName: metroName}
+		sl = v4.SimplifiedLocationWithoutIbx{Href: href, MetroCode: mc, Region: region, MetroName: metroName}
 	}
 	return sl
 }
@@ -419,7 +380,6 @@ func locationToTerra(location *v4.SimplifiedLocation) *schema.Set {
 	mappedLocations := make([]interface{}, 0)
 	for _, location := range locations {
 		mappedLocation := make(map[string]interface{})
-		mappedLocation["href"] = location.Href
 		mappedLocation["region"] = location.Region
 		mappedLocation["metro_name"] = location.MetroName
 		mappedLocation["metro_code"] = location.MetroCode
@@ -441,7 +401,6 @@ func connectionSideToTerra(connectionSide *v4.ConnectionSide) *schema.Set {
 		mappedConnectionSide := make(map[string]interface{})
 		//mappedConnectionSide["serviceToken"] = connectionSide.ServiceToken
 		mappedConnectionSide["access_point"] = accessPointToTerra(connectionSide.AccessPoint)
-		//mappedConnectionSide["companyProfile"] = connectionSide.CompanyProfile
 		//mappedConnectionSide["additionalInfo"] = connectionSide.AdditionalInfo
 		mappedConnectionSides = append(mappedConnectionSides, mappedConnectionSide)
 	}
@@ -581,14 +540,6 @@ func stringToTime(attribute string, format string, date string) time.Time {
 		fmt.Printf(" Error while parsing date %s for the format %s , for the attribute %s", format, date, attribute)
 	}
 	return t
-}
-
-func stringToInt64(number string, attribute string) int64 {
-	intVar, err := strconv.ParseInt(number, 10, 32)
-	if err != nil {
-		fmt.Printf(" Error while parsing number %s, got error %s for the attribute %s", number, err, attribute)
-	}
-	return intVar
 }
 
 func getUpdateRequest(conn v4.Connection, d *schema.ResourceData) (v4.ConnectionChangeOperation, error) {
