@@ -4,8 +4,13 @@ import (
 	"context"
 	"crypto/x509"
 	"fmt"
+	"github.com/equinix/ecx-go/v2"
+	"github.com/equinix/ne-go"
+	"github.com/equinix/oauth2-go"
+	"github.com/hashicorp/go-retryablehttp"
 	"log"
 	"net/http"
+	"net/http/httputil"
 	"net/url"
 	"os"
 	"path"
@@ -13,16 +18,25 @@ import (
 	"strings"
 	"time"
 
-	"github.com/equinix/ecx-go/v2"
-	"github.com/equinix/ne-go"
-	"github.com/equinix/oauth2-go"
+	v4 "github.com/equinix/terraform-provider-equinix/internal/apis/fabric/v4"
 	"github.com/equinix/terraform-provider-equinix/version"
-	"github.com/hashicorp/go-retryablehttp"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/logging"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/meta"
 	"github.com/packethost/packngo"
-	xoauth2 "golang.org/x/oauth2"
 )
+
+type DumpTransport struct {
+	r http.RoundTripper
+}
+
+func (d *DumpTransport) RoundTrip(h *http.Request) (*http.Response, error) {
+	dump, _ := httputil.DumpRequestOut(h, true)
+	fmt.Printf("****REQUEST****\n%q\n", dump)
+	resp, err := d.r.RoundTrip(h)
+	dump, _ = httputil.DumpResponse(resp, true)
+	fmt.Printf("****RESPONSE****\n%q\n****************\n\n", dump)
+	return resp, err
+}
 
 const (
 	consumerToken         = "aZ9GmqHTPtxevvFq9SK3Pi2yr9YCbRzduCSXF2SNem5sjB91mDq7Th3ZwTtRqMWZ"
@@ -55,21 +69,22 @@ var (
 // Config is the configuration structure used to instantiate the Equinix
 // provider.
 type Config struct {
-	BaseURL        string
-	AuthToken      string
-	ClientID       string
-	ClientSecret   string
-	MaxRetries     int
-	MaxRetryWait   time.Duration
-	RequestTimeout time.Duration
-	PageSize       int
-	Token          string
-
-	ecx   ecx.Client
-	ne    ne.Client
-	metal *packngo.Client
-
+	BaseURL          string
+	AuthToken        string
+	ClientID         string
+	ClientSecret     string
+	MaxRetries       int
+	MaxRetryWait     time.Duration
+	RequestTimeout   time.Duration
+	PageSize         int
+	Token            string
+	ecx              ecx.Client
+	ne               ne.Client
+	metal            *packngo.Client
+	fabricClient     *v4.APIClient
+	HTTPClient       *http.Client
 	terraformVersion string
+	FabricAuthToken  string
 }
 
 // Load function validates configuration structure fields and configures
@@ -84,29 +99,57 @@ func (c *Config) Load(ctx context.Context) error {
 	}
 
 	var authClient *http.Client
+
 	if c.Token != "" {
-		tokenSource := xoauth2.StaticTokenSource(&xoauth2.Token{AccessToken: c.Token})
+		/*tokenSource := xoauth2.StaticTokenSource(&xoauth2.Token{AccessToken: c.Token})
 		oauthTransport := &xoauth2.Transport{
 			Source: tokenSource,
-		}
+		}*/
+
 		authClient = &http.Client{
-			Transport: oauthTransport,
+			//Transport: oauthTransport,
+			//Transport: &DumpTransport{oauthTransport},
+			Transport: &http.Transport{},
 		}
 	} else {
+		fmt.Println(" Setting Token source and new auth client first time ")
 		authConfig := oauth2.Config{
 			ClientID:     c.ClientID,
 			ClientSecret: c.ClientSecret,
 			BaseURL:      c.BaseURL,
 		}
 		authClient = authConfig.New(ctx)
+		authClient = &http.Client{
+			//Transport: &DumpTransport{oauthTransport},
+			Transport: &http.Transport{},
+		}
 	}
+
 	authClient.Timeout = c.requestTimeout()
 	authClient.Transport = logging.NewTransport("Equinix", authClient.Transport)
 	ecxClient := ecx.NewClient(ctx, c.BaseURL, authClient)
 	neClient := ne.NewClient(ctx, c.BaseURL, authClient)
+
+	defaultMap := map[string]string{
+		"X-SOURCE": "API",
+		//TODO need to see if we can auto generate this value
+		"X-CORRELATION-ID": "234421213412323",
+	}
+	v4Configuration := v4.Configuration{
+		BasePath:      v4.NewConfiguration().BasePath,
+		Host:          "",
+		Scheme:        "",
+		DefaultHeader: defaultMap,
+		UserAgent:     "equinix/fabric-go",
+		HTTPClient:    authClient,
+	}
+
+	client := v4.NewAPIClient(&v4Configuration)
+
 	if c.PageSize > 0 {
 		ecxClient.SetPageSize(c.PageSize)
 		neClient.SetPageSize(c.PageSize)
+
 	}
 	ecxClient.SetHeaders(map[string]string{
 		"User-agent": c.fullUserAgent("equinix/ecx-go"),
@@ -114,11 +157,37 @@ func (c *Config) Load(ctx context.Context) error {
 	neClient.SetHeaders(map[string]string{
 		"User-agent": c.fullUserAgent("equinix/ne-go"),
 	})
+	authConfig := oauth2.Config{}
+	if c.Token == "" {
+		authConfig = oauth2.Config{
+			ClientID:     c.ClientID,
+			ClientSecret: c.ClientSecret,
+			BaseURL:      c.BaseURL,
+		}
 
+		tke, err := authConfig.TokenSource(ctx, authClient).Token()
+		if err != nil {
+			fmt.Println(" Not valid client configuration ")
+			fmt.Println(" err ", err)
+			if err != nil {
+				return err
+			}
+		}
+		if tke == nil {
+			fmt.Println(" Token is null 1 ", tke)
+		} else {
+			fmt.Println(" Access token is setting to the context ")
+			c.FabricAuthToken = tke.AccessToken
+			c.Token = tke.AccessToken
+		}
+	} else if c.FabricAuthToken == "" {
+		c.FabricAuthToken = c.Token
+	}
 	c.ecx = ecxClient
 	c.ne = neClient
 	c.metal = c.NewMetalClient()
-
+	c.fabricClient = client
+	c.HTTPClient = authClient
 	return nil
 }
 
@@ -178,7 +247,9 @@ func (c *Config) fullUserAgent(suffix string) string {
 
 // NewMetalClient returns a new client for accessing Equinix Metal's API.
 func (c *Config) NewMetalClient() *packngo.Client {
-	transport := logging.NewTransport("Equinix Metal", http.DefaultTransport)
+	transport := http.DefaultTransport
+	//transport = &DumpTransport{http.DefaultTransport} // Debug only
+	transport = logging.NewTransport("Equinix Metal", transport)
 	retryClient := retryablehttp.NewClient()
 	retryClient.HTTPClient.Transport = transport
 	retryClient.RetryMax = c.MaxRetries
