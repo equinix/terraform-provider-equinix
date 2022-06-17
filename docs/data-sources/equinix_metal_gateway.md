@@ -6,6 +6,8 @@ subcategory: "Metal"
 
 Use this datasource to retrieve Metal Gateway resources in Equinix Metal.
 
+~> VRF features are not generally available. The interfaces related to VRF resources may change ahead of general availability.
+
 ## Example Usage
 
 ```hcl
@@ -34,6 +36,7 @@ In addition to all arguments above, the following attributes are exported:
 
 * `project_id` - UUID of the project where the gateway is scoped to.
 * `vlan_id` - UUID of the VLAN where the gateway is scoped to.
+* `vrf_id` - UUID of the VRF associated with the IP Reservation.
 * `ip_reservation_id` - UUID of IP reservation block bound to the gateway.
 * `private_ipv4_subnet_size` - Size of the private IPv4 subnet bound to this metal gateway. One of
 `8`, `16`, `32`, `64`, `128`.

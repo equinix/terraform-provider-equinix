@@ -6,6 +6,8 @@ subcategory: "Metal"
 
 Use this resource to create Metal Gateway resources in Equinix Metal.
 
+~> VRF features are not generally available. The interfaces related to VRF resources may change ahead of general availability.
+
 ## Example Usage
 
 ```hcl
@@ -52,7 +54,7 @@ The following arguments are supported:
 
 * `project_id` - (Required) UUID of the project where the gateway is scoped to.
 * `vlan_id` - (Required) UUID of the VLAN where the gateway is scoped to.
-* `ip_reservation_id` - (Optional) UUID of IP reservation block to bind to the gateway, the
+* `ip_reservation_id` - (Optional) UUID of Public or VRF IP Reservation to associate with the gateway, the
 reservation must be in the same metro as the VLAN, conflicts with `private_ipv4_subnet_size`.
 * `private_ipv4_subnet_size` - (Optional) Size of the private IPv4 subnet to create for this metal
 gateway, must be one of `8`, `16`, `32`, `64`, `128`. Conflicts with `ip_reservation_id`.
@@ -62,3 +64,4 @@ gateway, must be one of `8`, `16`, `32`, `64`, `128`. Conflicts with `ip_reserva
 In addition to all arguments above, the following attributes are exported:
 
 * `state` - Status of the gateway resource.
+* `vrf_id` - UUID of the VRF associated with the IP Reservation

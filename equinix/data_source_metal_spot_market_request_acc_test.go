@@ -58,7 +58,7 @@ resource "equinix_metal_project" "test" {
 resource "equinix_metal_spot_market_request" "req" {
   project_id    = "${equinix_metal_project.test.id}"
   max_bid_price = 0.01
-  facilities    = ["sjc1"]
+  metro         = "sv"
   devices_min   = 1
   devices_max   = 1
   wait_for_devices = false

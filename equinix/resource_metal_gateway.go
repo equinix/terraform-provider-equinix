@@ -50,10 +50,15 @@ func resourceMetalGateway() *schema.Resource {
 				Description: "UUID of the VLAN to associate",
 				ForceNew:    true,
 			},
+			"vrf_id": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "UUID of the VRF associated with the IP Reservation",
+			},
 			"ip_reservation_id": {
 				Type:          schema.TypeString,
 				Optional:      true,
-				Description:   "UUID of the IP Reservation to associate, must be in the same metro as the VLAN",
+				Description:   "UUID of the Public or VRF IP Reservation to associate, must be in the same metro as the VLAN",
 				ConflictsWith: []string{"private_ipv4_subnet_size"},
 				ForceNew:      true,
 				DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
@@ -71,10 +76,12 @@ func resourceMetalGateway() *schema.Resource {
 				Type:          schema.TypeInt,
 				Optional:      true,
 				Description:   fmt.Sprintf("Size of the private IPv4 subnet to create for this gateway, one of %v", subnetSizes),
-				ConflictsWith: []string{"ip_reservation_id"},
+				ConflictsWith: []string{"ip_reservation_id", "vrf_id"},
 				ValidateFunc:  intInSlice(subnetSizes),
+				Computed:      true,
 				ForceNew:      true,
 			},
+
 			"state": {
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -114,7 +121,8 @@ func resourceMetalGatewayRead(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*Config).metal
 	mgId := d.Id()
 
-	includes := &packngo.GetOptions{Includes: []string{"project", "ip_reservation", "virtual_network"}}
+	includes := &packngo.GetOptions{Includes: []string{"project", "ip_reservation", "virtual_network", "vrf"}}
+
 	mg, _, err := client.MetalGateways.Get(mgId, includes)
 	if err != nil {
 		return err
@@ -132,6 +140,12 @@ func resourceMetalGatewayRead(d *schema.ResourceData, meta interface{}) error {
 		"ip_reservation_id":        mg.IPReservation.ID,
 		"private_ipv4_subnet_size": int(privateIPv4SubnetSize),
 		"state":                    mg.State,
+		"vrf_id": func(d *schema.ResourceData, k string) error {
+			if mg.VRF == nil {
+				return nil
+			}
+			return d.Set(k, mg.VRF.ID)
+		},
 	})
 }
 

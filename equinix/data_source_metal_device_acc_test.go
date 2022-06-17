@@ -45,8 +45,8 @@ resource "equinix_metal_project" "test" {
 
 resource "equinix_metal_device" "test" {
   hostname         = "tfacc-test-device"
-  plan             = "t1.small.x86"
-  facilities       = ["sjc1"]
+  plan             = "c3.small.x86"
+  metro            = "sv"
   operating_system = "ubuntu_16_04"
   billing_cycle    = "hourly"
   project_id       = "${equinix_metal_project.test.id}"
@@ -95,8 +95,8 @@ resource "equinix_metal_project" "test" {
 
 resource "equinix_metal_device" "test" {
   hostname         = "tfacc-test-device"
-  plan             = "t1.small.x86"
-  facilities       = ["sjc1"]
+  plan             = "c3.small.x86"
+  metro            = "sv"
   operating_system = "ubuntu_16_04"
   billing_cycle    = "hourly"
   project_id       = "${equinix_metal_project.test.id}"

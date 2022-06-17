@@ -2,7 +2,10 @@ package equinix
 
 import (
 	"fmt"
+	"log"
 	"reflect"
+	"regexp"
+	"strconv"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
@@ -54,6 +57,7 @@ func resourceMetalVirtualCircuit() *schema.Resource {
 				Description: "Description of the Virtual Circuit speed. This is for information purposes and is computed when the connection type is shared.",
 				Optional:    true,
 				Computed:    true,
+				// TODO: implement SuppressDiffFunc for input with units to bps without units
 			},
 			"tags": {
 				Type:        schema.TypeList,
@@ -68,11 +72,52 @@ func resourceMetalVirtualCircuit() *schema.Resource {
 				ForceNew:    true,
 			},
 			"vlan_id": {
-				Type:        schema.TypeString,
-				Required:    true,
-				Description: "UUID of the VLAN to associate",
-				ForceNew:    true,
+				Type:         schema.TypeString,
+				Optional:     true,
+				Description:  "UUID of the VLAN to associate",
+				ExactlyOneOf: []string{"vlan_id", "vrf_id"},
+				ForceNew:     true,
 			},
+			"vrf_id": {
+				Type:         schema.TypeString,
+				Optional:     true,
+				Description:  "UUID of the VLAN to associate",
+				ExactlyOneOf: []string{"vlan_id", "vrf_id"},
+				ForceNew:     true,
+			},
+			"peer_asn": {
+				Type:         schema.TypeInt,
+				Optional:     true,
+				RequiredWith: []string{"vrf_id"},
+				Description:  "The BGP ASN of the peer. The same ASN may be the used across several VCs, but it cannot be the same as the local_asn of the VRF.",
+				ForceNew:     true,
+			},
+			"subnet": {
+				Type:         schema.TypeString,
+				Optional:     true,
+				RequiredWith: []string{"vrf_id"},
+				Description: `A subnet from one of the IP blocks associated with the VRF that we will help create an IP reservation for. Can only be either a /30 or /31.
+				 * For a /31 block, it will only have two IP addresses, which will be used for the metal_ip and customer_ip.
+				 * For a /30 block, it will have four IP addresses, but the first and last IP addresses are not usable. We will default to the first usable IP address for the metal_ip.`,
+			},
+			"metal_ip": {
+				Type:         schema.TypeString,
+				Optional:     true,
+				RequiredWith: []string{"vrf_id"},
+				Description:  "The IP address that’s set as “our” IP that is configured on the rack_local_vlan SVI. Will default to the first usable IP in the subnet.",
+			},
+			"customer_ip": {
+				Type:         schema.TypeString,
+				Optional:     true,
+				RequiredWith: []string{"vrf_id"},
+				Description:  "The IP address set as the customer IP which the CSR switch will peer with. Will default to the other usable IP in the subnet.",
+			},
+			"md5": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "The password that can be set for the VRF BGP peer",
+			},
+
 			"vnid": {
 				Type:        schema.TypeInt,
 				Computed:    true,
@@ -99,6 +144,12 @@ func resourceMetalVirtualCircuitCreate(d *schema.ResourceData, meta interface{})
 		Name:             d.Get("name").(string),
 		Description:      d.Get("description").(string),
 		Speed:            d.Get("speed").(string),
+		VRFID:            d.Get("vrf_id").(string),
+		PeerASN:          d.Get("peer_asn").(int),
+		Subnet:           d.Get("subnet").(string),
+		MetalIP:          d.Get("metal_ip").(string),
+		CustomerIP:       d.Get("customer_ip").(string),
+		MD5:              d.Get("md5").(string),
 	}
 
 	connId := d.Get("connection_id").(string)
@@ -113,25 +164,26 @@ func resourceMetalVirtualCircuitCreate(d *schema.ResourceData, meta interface{})
 	if nniVlan, ok := d.GetOk("nni_vlan"); ok {
 		vncr.NniVLAN = nniVlan.(int)
 	}
-
 	conn, _, err := client.Connections.Get(connId, nil)
 	if err != nil {
 		return err
 	}
-	if conn.Status == packngo.VCStatusPending {
+	if conn.Status == string(packngo.VCStatusPending) {
 		return fmt.Errorf("Connection request with name %s and ID %s wasn't approved yet", conn.Name, conn.ID)
 	}
 
 	vc, _, err := client.VirtualCircuits.Create(projectId, connId, portId, &vncr, nil)
 	if err != nil {
+		log.Printf("[DEBUG] Error creating virtual circuit: %s", err)
 		return err
 	}
+	// TODO: offer to wait while VCStatusPending
 	createWaiter := getVCStateWaiter(
 		client,
 		vc.ID,
 		d.Timeout(schema.TimeoutCreate),
-		[]string{packngo.VCStatusActivating},
-		[]string{packngo.VCStatusActive},
+		[]string{string(packngo.VCStatusActivating)},
+		[]string{string(packngo.VCStatusActive)},
 	)
 
 	_, err = createWaiter.WaitForState()
@@ -150,19 +202,38 @@ func resourceMetalVirtualCircuitRead(d *schema.ResourceData, meta interface{}) e
 
 	vc, _, err := client.VirtualCircuits.Get(
 		vcId,
-		&packngo.GetOptions{Includes: []string{"project", "port", "virtual_network"}},
+		&packngo.GetOptions{Includes: []string{"project", "virtual_network", "vrf"}},
 	)
 	if err != nil {
 		return err
 	}
 
+	// TODO: use API field from VC responses when available The regexp is
+	// optimistic, not guaranteed. This affects resource imports. "port" is not
+	// in the Includes above to assure the Href needed below.
+	connectionID := "" // vc.Connection.ID is not available yet
+	portID := ""       // vc.Port.ID would be available with ?include=port
+	connectionRe := regexp.MustCompile("/connections/([0-9a-z-]+)/ports/([0-9a-z-]+)")
+	matches := connectionRe.FindStringSubmatch(vc.Port.Href.Href)
+	if len(matches) == 3 {
+		connectionID = matches[1]
+		portID = matches[2]
+	} else {
+		log.Printf("[DEBUG] Could not parse connection and port ID from port href %s", vc.Port.Href.Href)
+	}
+
 	return setMap(d, map[string]interface{}{
-		//"connection_id": vc.Connection.ID,
 		"project_id": vc.Project.ID,
-		"port_id":    vc.Port.ID,
+		"port_id":    portID,
 		"vlan_id": func(d *schema.ResourceData, k string) error {
 			if vc.VirtualNetwork != nil {
 				return d.Set(k, vc.VirtualNetwork.ID)
+			}
+			return nil
+		},
+		"vrf_id": func(d *schema.ResourceData, k string) error {
+			if vc.VRF != nil {
+				return d.Set(k, vc.VRF.ID)
 			}
 			return nil
 		},
@@ -171,9 +242,20 @@ func resourceMetalVirtualCircuitRead(d *schema.ResourceData, meta interface{}) e
 		"vnid":        vc.VNID,
 		"nni_vnid":    vc.NniVNID,
 		"name":        vc.Name,
-		"speed":       vc.Speed,
+		"speed":       strconv.Itoa(vc.Speed),
 		"description": vc.Description,
 		"tags":        vc.Tags,
+		"peer_asn":    vc.PeerASN,
+		"subnet":      vc.Subnet,
+		"metal_ip":    vc.MetalIP,
+		"customer_ip": vc.CustomerIP,
+		"md5":         vc.MD5,
+		"connection_id": func(d *schema.ResourceData, k string) error {
+			if connectionID != "" {
+				return d.Set(k, connectionID)
+			}
+			return nil
+		},
 	})
 }
 
@@ -184,12 +266,15 @@ func getVCStateWaiter(client *packngo.Client, id string, timeout time.Duration, 
 		Refresh: func() (interface{}, string, error) {
 			vc, _, err := client.VirtualCircuits.Get(
 				id,
-				&packngo.GetOptions{Includes: []string{"project", "port", "virtual_network"}},
+				&packngo.GetOptions{Includes: []string{
+					"project", "port", "virtual_network",
+					"vrf",
+				}}, // TODO: we are not using the returned VC. Remove the includes?
 			)
 			if err != nil {
 				return 0, "", err
 			}
-			return vc, vc.Status, nil
+			return vc, string(vc.Status), nil
 		},
 		Timeout:    timeout,
 		Delay:      10 * time.Second,
@@ -246,7 +331,7 @@ func resourceMetalVirtualCircuitUpdate(d *schema.ResourceData, meta interface{})
 
 func resourceMetalVirtualCircuitDelete(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*Config).metal
-	// we first need to disconnect VLAN from the VC
+	// we first disconnect VLAN from the VC
 	empty := ""
 	_, _, err := client.VirtualCircuits.Update(
 		d.Id(),
@@ -257,12 +342,13 @@ func resourceMetalVirtualCircuitDelete(d *schema.ResourceData, meta interface{})
 		return err
 	}
 
+	// then we delete the VC. VRF VCs will be in the "active" state.
 	detachWaiter := getVCStateWaiter(
 		client,
 		d.Id(),
 		d.Timeout(schema.TimeoutDelete),
-		[]string{packngo.VCStatusDeactivating},
-		[]string{packngo.VCStatusWaiting},
+		[]string{string(packngo.VCStatusDeactivating)},
+		[]string{string(packngo.VCStatusWaiting), string(packngo.VCStatusActive)},
 	)
 
 	_, err = detachWaiter.WaitForState()
@@ -274,5 +360,19 @@ func resourceMetalVirtualCircuitDelete(d *schema.ResourceData, meta interface{})
 	if ignoreResponseErrors(httpForbidden, httpNotFound)(resp, err) != nil {
 		return friendlyError(err)
 	}
-	return nil
+
+	deleteWaiter := getVCStateWaiter(
+		client,
+		d.Id(),
+		d.Timeout(schema.TimeoutDelete),
+		[]string{string(packngo.VCStatusDeleting)},
+		[]string{},
+	)
+
+	_, err = deleteWaiter.WaitForState()
+	if ignoreResponseErrors(httpForbidden, httpNotFound)(resp, err) != nil {
+		return nil
+	}
+
+	return fmt.Errorf("Error deleting virtual circuit %s: %s", d.Id(), err)
 }
