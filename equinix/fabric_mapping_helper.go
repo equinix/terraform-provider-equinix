@@ -4,6 +4,7 @@ import (
 	"fmt"
 	v4 "github.com/equinix/terraform-provider-equinix/internal/apis/fabric/v4"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"log"
 	"time"
 )
 
@@ -241,6 +242,9 @@ func locationNoIbxToFabric(locationList []interface{}) v4.SimplifiedLocationWith
 }
 
 func accountToTerra(account *v4.SimplifiedAccount) *schema.Set {
+	if account == nil {
+		return nil
+	}
 	accounts := []*v4.SimplifiedAccount{account}
 	mappedAccounts := make([]interface{}, 0)
 	for _, account := range accounts {
@@ -266,6 +270,9 @@ func accountToTerra(account *v4.SimplifiedAccount) *schema.Set {
 }
 
 func operationToTerra(operation *v4.ConnectionOperation) *schema.Set {
+	if operation == nil {
+		return nil
+	}
 	operations := []*v4.ConnectionOperation{operation}
 	mappedOperations := make([]interface{}, 0)
 	for _, operation := range operations {
@@ -286,6 +293,9 @@ func operationToTerra(operation *v4.ConnectionOperation) *schema.Set {
 
 //Set
 func orderMappingToTerra(order *v4.Order) *schema.Set {
+	if order == nil {
+		return nil
+	}
 	orders := []*v4.Order{order}
 	mappedOrders := make([]interface{}, 0)
 	for _, order := range orders {
@@ -305,6 +315,9 @@ func orderMappingToTerra(order *v4.Order) *schema.Set {
 
 //Set
 func changeLogToTerra(changeLog *v4.Changelog) *schema.Set {
+	if changeLog == nil {
+		return nil
+	}
 	changeLogs := []*v4.Changelog{changeLog}
 	mappedChangeLogs := make([]interface{}, 0)
 	for _, changeLog := range changeLogs {
@@ -346,6 +359,9 @@ func portRedundancyToTerra(redundancy *v4.PortRedundancy) *schema.Set {
 }
 
 func redundancyToTerra(redundancy *v4.ConnectionRedundancy) *schema.Set {
+	if redundancy == nil {
+		return nil
+	}
 	redundancies := []*v4.ConnectionRedundancy{redundancy}
 	mappedRedundancys := make([]interface{}, 0)
 	for _, redundancy := range redundancies {
@@ -362,7 +378,9 @@ func redundancyToTerra(redundancy *v4.ConnectionRedundancy) *schema.Set {
 }
 
 func notificationToTerra(notifications []v4.SimplifiedNotification) []map[string]interface{} {
-
+	if notifications == nil {
+		return nil
+	}
 	mappedNotifications := make([]map[string]interface{}, len(notifications))
 	for index, notification := range notifications {
 		mappedNotifications[index] = map[string]interface{}{
@@ -537,7 +555,7 @@ func stringToTime(attribute string, format string, date string) time.Time {
 	}
 	t, err := time.Parse(defaultFormat, date)
 	if err != nil {
-		fmt.Printf(" Error while parsing date %s for the format %s , for the attribute %s", format, date, attribute)
+		fmt.Errorf(" Error while parsing date %s for the format %s , for the attribute %s", format, date, attribute)
 	}
 	return t
 }
@@ -549,7 +567,7 @@ func getUpdateRequest(conn v4.Connection, d *schema.ResourceData) (v4.Connection
 	updateNameVal := d.Get("name").(string)
 	updateBandwidthVal := d.Get("bandwidth").(int)
 
-	fmt.Printf("Update Name Request %s, Update Bandwidth Request %d ", updateNameVal, updateBandwidthVal)
+	log.Printf("Update Name Request %s, Update Bandwidth Request %d ", updateNameVal, updateBandwidthVal)
 	if existingName != updateNameVal {
 		changeOps = v4.ConnectionChangeOperation{Op: "replace", Path: "/name", Value: updateNameVal}
 	} else if existingBandwidth != updateBandwidthVal {

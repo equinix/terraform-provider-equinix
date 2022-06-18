@@ -6,12 +6,13 @@ import (
 	v4 "github.com/equinix/terraform-provider-equinix/internal/apis/fabric/v4"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
+	"log"
 	"testing"
 	"time"
 )
 
 func TestAccFabricCreateAzureConnection(t *testing.T) {
-	fmt.Println(" inside fabric create connection test ")
+	log.Printf(" inside fabric create connection test ")
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
@@ -25,6 +26,7 @@ func TestAccFabricCreateAzureConnection(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						"equinix_fabric_connection.test", "bandwidth", fmt.Sprint("50")),
 				),
+				ExpectNonEmptyPlan: true,
 			},
 			{
 				Config: testAccFabricCreateEPLConnectionConfig(100),
@@ -34,6 +36,7 @@ func TestAccFabricCreateAzureConnection(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						"equinix_fabric_connection.test", "bandwidth", fmt.Sprint("100")),
 				),
+				ExpectNonEmptyPlan: true,
 			},
 		},
 	})
@@ -111,7 +114,7 @@ func testAccFabricCreateEPLConnectionConfig(bandwidth int32) string {
 }
 
 func testAccFabricCreateAzureConnectionConfig(bandwidth int32) string {
-	fmt.Println(" inside create connection test config ")
+	log.Printf(" inside create connection test config ")
 	return fmt.Sprintf(`resource "equinix_fabric_connection" "test" {
 	name = "fabric_tf_acc_CSAZURE"
 	description = "Test Connection"
@@ -155,7 +158,7 @@ func testAccFabricCreateAzureConnectionConfig(bandwidth int32) string {
 }
 
 func testAccFabricUpdateConnectionConfig(bandwidth int32) string {
-	fmt.Println(" inside create connection test config ")
+	log.Printf(" inside create connection test config ")
 	return fmt.Sprintf(`resource "equinix_fabric_connection" "test" {
 	uuid = equinix_fabric_connection.test.uuid
 	name = "fabric_tf_acc_CSAZURE"
@@ -933,7 +936,7 @@ func testAccFabricUpdateConnectionConfig(bandwidth int32) string {
 }*/
 
 func TestAccFabricReadConnection(t *testing.T) {
-	fmt.Println(" inside fabric read connection test ")
+	log.Printf(" inside fabric read connection test ")
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,

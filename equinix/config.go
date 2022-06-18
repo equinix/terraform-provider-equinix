@@ -129,11 +129,10 @@ func (c *Config) Load(ctx context.Context) error {
 	authClient.Transport = logging.NewTransport("Equinix", authClient.Transport)
 	ecxClient := ecx.NewClient(ctx, c.BaseURL, authClient)
 	neClient := ne.NewClient(ctx, c.BaseURL, authClient)
-
 	defaultMap := map[string]string{
 		"X-SOURCE": "API",
-		//TODO need to see if we can auto generate this value
-		"X-CORRELATION-ID": "234421213412323",
+		//TODO need to make this dynamic
+		"X-CORRELATION-ID": "12302130122193",
 	}
 	v4Configuration := v4.Configuration{
 		BasePath:      c.BaseURL, //v4.NewConfiguration().BasePath,
