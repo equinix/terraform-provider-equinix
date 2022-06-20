@@ -624,10 +624,10 @@ func resourceMetalDeviceRead(d *schema.ResourceData, meta interface{}) error {
 	if _, ok := d.GetOk(fdv); !ok {
 		d.Set(fdv, nil)
 
-		tt := "termination_time"
-		if _, ok := d.GetOk(tt); !ok {
-			d.Set(tt, nil)
-		}
+	}
+	tt := "termination_time"
+	if _, ok := d.GetOk(tt); !ok {
+		d.Set(tt, nil)
 	}
 
 	d.Set("tags", device.Tags)

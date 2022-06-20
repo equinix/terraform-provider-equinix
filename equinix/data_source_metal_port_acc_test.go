@@ -40,6 +40,7 @@ resource "equinix_metal_device" "test" {
   operating_system = "ubuntu_20_04"
   billing_cycle    = "hourly"
   project_id       = equinix_metal_project.test.id
+  termination_time = "%s"
 }
 
 data "equinix_metal_port" "test" {
@@ -47,7 +48,7 @@ data "equinix_metal_port" "test" {
     name      = "eth0"
 }
 
-`, name)
+`, name, testDeviceTerminationTime())
 }
 
 func TestAccDataSourceMetalPort_byId(t *testing.T) {
@@ -82,10 +83,11 @@ resource "equinix_metal_device" "test" {
   operating_system = "ubuntu_20_04"
   billing_cycle    = "hourly"
   project_id       = equinix_metal_project.test.id
+  termination_time = "%s"
 }
 
 data "equinix_metal_port" "test" {
   port_id        = equinix_metal_device.test.ports[0].id
 }
-`, name)
+`, name, testDeviceTerminationTime())
 }

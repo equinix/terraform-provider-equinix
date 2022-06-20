@@ -48,6 +48,7 @@ resource "equinix_metal_device" "test" {
   operating_system = "ubuntu_16_04"
   billing_cycle    = "hourly"
   project_id       = equinix_metal_project.test.id
+  termination_time = "%s"
 }
 
 data "equinix_metal_precreated_ip_block" "test" {
@@ -61,5 +62,5 @@ resource "equinix_metal_ip_attachment" "test" {
     device_id = equinix_metal_device.test.id
     cidr_notation = cidrsubnet(data.equinix_metal_precreated_ip_block.test.cidr_notation,8,2)
 }
-`, name)
+`, name, testDeviceTerminationTime())
 }

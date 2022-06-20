@@ -50,12 +50,13 @@ resource "equinix_metal_device" "test" {
   operating_system = "ubuntu_16_04"
   billing_cycle    = "hourly"
   project_id       = "${equinix_metal_project.test.id}"
+  termination_time = "%s"
 }
 
 data "equinix_metal_device" "test" {
   project_id       = equinix_metal_project.test.id
   hostname         = equinix_metal_device.test.hostname
-}`, projSuffix)
+}`, projSuffix, testDeviceTerminationTime())
 }
 
 func TestAccDataSourceMetalDevice_byID(t *testing.T) {
@@ -100,9 +101,10 @@ resource "equinix_metal_device" "test" {
   operating_system = "ubuntu_16_04"
   billing_cycle    = "hourly"
   project_id       = "${equinix_metal_project.test.id}"
+  termination_time = "%s"
 }
 
 data "equinix_metal_device" "test" {
   device_id       = equinix_metal_device.test.id
-}`, projSuffix)
+}`, projSuffix, testDeviceTerminationTime())
 }
