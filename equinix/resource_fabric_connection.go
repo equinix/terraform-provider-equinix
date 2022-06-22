@@ -3,7 +3,7 @@ package equinix
 import (
 	"context"
 	"fmt"
-	v4 "github.com/equinix/terraform-provider-equinix/internal/apis/fabric/v4"
+	v4 "github.com/equinix-labs/fabric-go/fabric/v4"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"log"
@@ -35,6 +35,7 @@ func resourceFabricConnection() *schema.Resource {
 func resourceFabricConnectionCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	log.Printf(" inside fabric connection create resource ")
 	client := meta.(*Config).fabricClient
+
 	ctx = context.WithValue(ctx, v4.ContextAccessToken, meta.(*Config).FabricAuthToken)
 	conType := v4.ConnectionType(d.Get("type").(string))
 	schemaNotifications := d.Get("notifications").([]interface{})
@@ -111,6 +112,7 @@ func resourceFabricConnectionCreate(ctx context.Context, d *schema.ResourceData,
 		ASide:         &connectionASide,
 		ZSide:         &connectionZSide,
 	}
+
 	conn, _, err := client.ConnectionsApi.CreateConnection(ctx, createRequest)
 	if err != nil {
 		return diag.FromErr(err)

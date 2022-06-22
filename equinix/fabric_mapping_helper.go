@@ -2,7 +2,7 @@ package equinix
 
 import (
 	"fmt"
-	v4 "github.com/equinix/terraform-provider-equinix/internal/apis/fabric/v4"
+	v4 "github.com/equinix-labs/fabric-go/fabric/v4"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"log"
 	"time"
