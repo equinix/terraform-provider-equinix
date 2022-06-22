@@ -34,7 +34,7 @@ data "equinix_metal_spot_market_price" "metro" {
 }
 
 data "equinix_metal_spot_market_price" "facility" {
-	metro    = "sv"
+	facility = "sv15"
 	plan     = "c3.medium.x86"
 }
 `)

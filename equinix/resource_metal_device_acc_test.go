@@ -621,7 +621,7 @@ resource "equinix_metal_device" "test"  {
 
   hostname         = "tfacc-device-test-ipxe-script-url"
   plan             = "c3.small.x86"
-  facilities       = ["sv15", "da11", "any"]
+  facilities       = ["sv15", "any"]
   operating_system = "ubuntu_16_04"
   billing_cycle    = "hourly"
   project_id       = "${equinix_metal_project.test.id}"

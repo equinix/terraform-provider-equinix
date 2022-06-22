@@ -19,8 +19,8 @@ resource "equinix_metal_project" "test" {
 
 resource "equinix_metal_device" "test" {
   hostname         = "tfacc-device-port-vlan-attachment-test"
-  plan             = "m2.xlarge.x86"
-  facilities       = ["nrt1"]
+  plan             = "m3.xlarge.x86"
+  facilities       = ["ny5"]
   operating_system = "ubuntu_16_04"
   billing_cycle    = "hourly"
   project_id       = "${equinix_metal_project.test.id}"
@@ -34,14 +34,14 @@ func testAccMetalPortVlanAttachmentConfig_L2Bonded_2(name string) string {
 %s
 
 resource "equinix_metal_vlan" "test1" {
-  description = "test VLAN 1"
-  facility    = "nrt1"
+  description = "tfacc-vlan test VLAN 1"
+  facility    = "ny5"
   project_id  = "${equinix_metal_project.test.id}"
 }
 
 resource "equinix_metal_vlan" "test2" {
-  description = "test VLAN 2"
-  facility    = "nrt1"
+  description = "tfacc-vlan test VLAN 2"
+  facility    = "ny5"
   project_id  = "${equinix_metal_project.test.id}"
 }
 
@@ -104,8 +104,8 @@ resource "equinix_metal_project" "test" {
 
 resource "equinix_metal_device" "test" {
   hostname         = "tfacc-vlan-l2i-test"
-  plan             = "m2.xlarge.x86"
-  facilities       = ["nrt1"]
+  plan             = "m3.xlarge.x86"
+  facilities       = ["ny5"]
   operating_system = "ubuntu_16_04"
   billing_cycle    = "hourly"
   project_id       = "${equinix_metal_project.test.id}"
@@ -119,14 +119,14 @@ func testAccMetalPortVlanAttachmentConfig_L2Individual_2(name string) string {
 %s
 
 resource "equinix_metal_vlan" "test1" {
-  description = "test VLAN 1"
-  facility    = "nrt1"
+  description = "tfacc-vlan test VLAN 1"
+  facility    = "ny5"
   project_id  = "${equinix_metal_project.test.id}"
 }
 
 resource "equinix_metal_vlan" "test2" {
-  description = "test VLAN 2"
-  facility    = "nrt1"
+  description = "tfacc-vlan test VLAN 2"
+  facility    = "ny5"
   project_id  = "${equinix_metal_project.test.id}"
 }
 
@@ -192,7 +192,7 @@ resource "equinix_metal_project" "test" {
 resource "equinix_metal_device" "test" {
   hostname         = "tfacc-device-hybrid-test"
   plan             = "n2.xlarge.x86"
-  facilities       = ["ewr1"]
+  facilities       = ["ny5"]
   operating_system = "ubuntu_16_04"
   billing_cycle    = "hourly"
   project_id       = "${equinix_metal_project.test.id}"
@@ -210,8 +210,8 @@ resource "equinix_metal_device_network_type" "test" {
 }
 
 resource "equinix_metal_vlan" "test" {
-  description = "test vlan"
-  facility    = "ewr1"
+  description = "tfacc-vlan test vlan"
+  facility    = "ny5"
   project_id  = "${equinix_metal_project.test.id}"
 }
 
@@ -262,8 +262,8 @@ resource "equinix_metal_project" "test" {
 
 resource "equinix_metal_device" "test" {
   hostname         = "tfacc-device-hmv-test"
-  plan             = "m2.xlarge.x86"
-  facilities       = ["nrt1"]
+  plan             = "m3.xlarge.x86"
+  facilities       = ["ny5"]
   operating_system = "ubuntu_16_04"
   billing_cycle    = "hourly"
   project_id       = equinix_metal_project.test.id
@@ -277,8 +277,8 @@ func testAccMetalPortVlanAttachmentConfig_HybridMultipleVlans_2(name string) str
 
 resource "equinix_metal_vlan" "test" {
   count       = 3
-  description = "test VLAN"
-  facility    = "nrt1"
+  description = "tfacc-vlan test VLAN"
+  facility    = "ny5"
   project_id  = equinix_metal_project.test.id
 }
 
@@ -376,8 +376,8 @@ resource "equinix_metal_project" "test" {
 
 resource "equinix_metal_device" "test" {
   hostname         = "tfacc-device-l2n-test"
-  plan             = "m2.xlarge.x86"
-  facilities       = ["nrt1"]
+  plan             = "m3.xlarge.x86"
+  facilities       = ["ny5"]
   operating_system = "ubuntu_16_04"
   billing_cycle    = "hourly"
   project_id       = "${equinix_metal_project.test.id}"
@@ -390,14 +390,14 @@ func testAccMetalPortVlanAttachmentConfig_L2Native_2(name string) string {
 %s
 
 resource "equinix_metal_vlan" "test1" {
-  description = "test VLAN 1"
-  facility    = "nrt1"
+  description = "tfacc-vlan test VLAN 1"
+  facility    = "ny5"
   project_id  = "${equinix_metal_project.test.id}"
 }
 
 resource "equinix_metal_vlan" "test2" {
-  description = "test VLAN 2"
-  facility    = "nrt1"
+  description = "tfacc-vlan test VLAN 2"
+  facility    = "ny5"
   project_id  = "${equinix_metal_project.test.id}"
 }
 

@@ -34,7 +34,7 @@ resource "equinix_metal_project" "foobar" {
 
 resource "equinix_metal_reserved_ip_block" "test" {
 	project_id  = equinix_metal_project.foobar.id
-	facility    = "ewr1"
+	facility    = "ny5"
 	type        = "public_ipv4"
 	quantity    = 2
 	tags        = ["Tag1", "Tag2"]
@@ -150,9 +150,9 @@ func TestAccMetalReservedIPBlock_importBasic(t *testing.T) {
 				Config: testAccMetalReservedIPBlockConfig_public(rs),
 			},
 			{
-				ResourceName:      "equinix_metal_reserved_ip_block.test",
-				ImportState:       true,
-				ImportStateVerify: true,
+				ResourceName:            "equinix_metal_reserved_ip_block.test",
+				ImportState:             true,
+				ImportStateVerify:       true,
 				ImportStateVerifyIgnore: []string{"wait_for_state"},
 			},
 		},

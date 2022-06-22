@@ -10,20 +10,22 @@ import (
 	"github.com/packethost/packngo"
 )
 
-var mega uint64 = 1000 * 1000
-var giga uint64 = 1000 * mega
-var allowedSpeeds = []struct {
-	Int uint64
-	Str string
-}{
-	{50 * mega, "50Mbps"},
-	{200 * mega, "200Mbps"},
-	{500 * mega, "500Mbps"},
-	{1 * giga, "1Gbps"},
-	{2 * giga, "2Gbps"},
-	{5 * giga, "5Gbps"},
-	{10 * giga, "10Gbps"},
-}
+var (
+	mega          uint64 = 1000 * 1000
+	giga          uint64 = 1000 * mega
+	allowedSpeeds        = []struct {
+		Int uint64
+		Str string
+	}{
+		{50 * mega, "50Mbps"},
+		{200 * mega, "200Mbps"},
+		{500 * mega, "500Mbps"},
+		{1 * giga, "1Gbps"},
+		{2 * giga, "2Gbps"},
+		{5 * giga, "5Gbps"},
+		{10 * giga, "10Gbps"},
+	}
+)
 
 func speedStrToUint(speed string) (uint64, error) {
 	allowedStrings := []string{}
@@ -91,7 +93,8 @@ func resourceMetalConnection() *schema.Resource {
 				Description: "Connection redundancy - redundant or primary",
 				ValidateFunc: validation.StringInSlice([]string{
 					string(packngo.ConnectionRedundant),
-					string(packngo.ConnectionPrimary)}, false),
+					string(packngo.ConnectionPrimary),
+				}, false),
 			},
 			"type": {
 				Type:        schema.TypeString,
@@ -100,7 +103,8 @@ func resourceMetalConnection() *schema.Resource {
 				ForceNew:    true,
 				ValidateFunc: validation.StringInSlice([]string{
 					string(packngo.ConnectionDedicated),
-					string(packngo.ConnectionShared)}, false),
+					string(packngo.ConnectionShared),
+				}, false),
 			},
 			"project_id": {
 				Type:        schema.TypeString,
@@ -125,7 +129,8 @@ func resourceMetalConnection() *schema.Resource {
 				Default:     "standard",
 				ValidateFunc: validation.StringInSlice([]string{
 					string(packngo.ConnectionModeStandard),
-					string(packngo.ConnectionModeTunnel)}, false),
+					string(packngo.ConnectionModeTunnel),
+				}, false),
 			},
 			"tags": {
 				Type:        schema.TypeList,
@@ -135,7 +140,7 @@ func resourceMetalConnection() *schema.Resource {
 			},
 			"vlans": {
 				Type:        schema.TypeList,
-				Description: "Only used with shared connection. Vlans to attach. Pass one vlan for Primary/Single connection and two vlans for Redundant connection",
+				Description: "Only used with shared connection. VLANs to attach. Pass one vlan for Primary/Single connection and two vlans for Redundant connection",
 				Optional:    true,
 				Elem:        &schema.Schema{Type: schema.TypeInt},
 				MaxItems:    2,
@@ -335,7 +340,6 @@ func resourceMetalConnectionUpdate(d *schema.ResourceData, meta interface{}) err
 		if _, _, err := client.Connections.Update(d.Id(), &ur, nil); err != nil {
 			return friendlyError(err)
 		}
-
 	}
 	return resourceMetalConnectionRead(d, meta)
 }

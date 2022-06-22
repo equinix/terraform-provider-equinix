@@ -196,7 +196,11 @@ func dataSourceMetalConnection() *schema.Resource {
 }
 
 func getConnectionPorts(cps []packngo.ConnectionPort) []map[string]interface{} {
-	ret := make([]map[string]interface{}, 0, 1)
+	ret := make([]map[string]interface{}, len(cps))
+	order := map[packngo.ConnectionPortRole]int{
+		packngo.ConnectionPortPrimary:   0,
+		packngo.ConnectionPortSecondary: 1,
+	}
 
 	for _, p := range cps {
 		vcIDs := []string{}
@@ -213,6 +217,8 @@ func getConnectionPorts(cps []packngo.ConnectionPort) []map[string]interface{} {
 			"virtual_circuit_ids": vcIDs,
 		}
 		ret = append(ret, connPort)
+		// sort the ports by role, asserting the API always returns primary for len of 1 responses
+		ret[order[p.Role]] = connPort
 	}
 	return ret
 }

@@ -43,6 +43,7 @@ func getNeDeviceStatusList(deviceStateText string) (*[]string, error) {
 	}
 	return &validItems, nil
 }
+
 func stringIsValidDeviceStateList(i interface{}, k string) ([]string, []error) {
 	v, ok := i.(string)
 	if !ok {

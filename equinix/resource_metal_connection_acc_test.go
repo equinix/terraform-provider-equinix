@@ -17,7 +17,6 @@ func TestSpeedConversion(t *testing.T) {
 	speedUint, err := speedStrToUint("50Mbps")
 	if err != nil {
 		t.Errorf("Error converting speed string to uint64: %s", err)
-
 	}
 	if speedUint != 50*mega {
 		t.Errorf("Speed string conversion failed. Expected: %d, got: %d", 50*mega, speedUint)

@@ -17,9 +17,11 @@ type mockHWService struct {
 func (m *mockHWService) Get(id string, opt *packngo.GetOptions) (*packngo.HardwareReservation, *packngo.Response, error) {
 	return m.GetFn(id, opt)
 }
+
 func (m *mockHWService) List(project string, opt *packngo.ListOptions) ([]packngo.HardwareReservation, *packngo.Response, error) {
 	return m.ListFn(project, opt)
 }
+
 func (m *mockHWService) Move(id string, dest string) (*packngo.HardwareReservation, *packngo.Response, error) {
 	return m.MoveFn(id, dest)
 }
