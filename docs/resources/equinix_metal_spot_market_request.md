@@ -39,11 +39,11 @@ The following arguments are supported:
 * `wait_for_devices` - (Optional) On resource creation wait until all desired devices are active.
 On resource destruction wait until devices are removed.
 * `facilities` - (Optional) Facility IDs where devices should be created.
+* `end_at` - (Optional) Deadline for the request. For example \"2021-09-03T16:32:00+03:00\". If you don't supply timezone info, timestamp is assumed to be in UTC."
 * `metro` - (Optional) Metro where devices should be created.
 * `locked` - (Optional) Blocks deletion of the SpotMarketRequest device until the lock is disabled.
 * `instance_parameters` - (Required) Key/Value pairs of parameters for devices provisioned from
-this request. Valid keys are: `billing_cycle`, `plan`, `operating_system`, `hostname`,
-`termintation_time`, `always_pxe`, `description`, `features`, `locked`, `project_ssh_keys`,
+this request. Valid keys are: `billing_cycle`, `plan`, `operating_system`, `hostname`, `always_pxe` (Defaults to false), `description`, `features`, `locked`, `project_ssh_keys`,
 `user_ssh_keys`, `userdata`, `customdata`, `ipxe_script_url`, `tags`. You can find each parameter
 description in [equinix_metal_device](equinix_metal_device.md) docs.
 
@@ -52,6 +52,10 @@ description in [equinix_metal_device](equinix_metal_device.md) docs.
 In addition to all arguments above, the following attributes are exported:
 
 * `id` - The ID of the Spot Market Request.
+
+The `instance_parameters` block additionally exports:
+
+* `termination_time` - Timestamp for device termination shown once the device has been outbid.
 
 ### Timeouts
 

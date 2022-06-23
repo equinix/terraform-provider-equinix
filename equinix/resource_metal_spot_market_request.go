@@ -74,6 +74,25 @@ func resourceMetalSpotMarketRequest() *schema.Resource {
 				ConflictsWith: []string{"facilities"},
 				StateFunc:     toLower,
 			},
+			"end_at": {
+				Type:        schema.TypeString,
+				Description: "Deadline for the request. For example \"2021-09-03T16:32:00+03:00\". If you don't supply timezone info, timestamp is assumed to be in UTC.",
+				Optional:    true,
+				ForceNew:    true,
+
+				StateFunc: func(v interface{}) string {
+					t, _ := time.Parse(time.RFC3339, v.(string))
+					// remove fraction of second
+					return t.Truncate(time.Second * 1).Format(time.RFC3339)
+				},
+				ValidateFunc: func(val interface{}, key string) (warns []string, errs []error) {
+					_, err := time.ParseInLocation(time.RFC3339, val.(string), time.UTC)
+					if err != nil {
+						errs = []error{err}
+					}
+					return
+				},
+			},
 			"instance_parameters": {
 				Type:        schema.TypeList,
 				Description: "Parameters for devices provisioned from this request. You can find the parameter description from the [equinix_metal_device doc](device.md)",
@@ -98,7 +117,7 @@ func resourceMetalSpotMarketRequest() *schema.Resource {
 							Type:     schema.TypeString,
 							Required: true,
 						},
-						"termintation_time": {
+						"termination_time": {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
@@ -284,6 +303,14 @@ func resourceMetalSpotMarketRequestCreate(d *schema.ResourceData, meta interface
 		Parameters:  params,
 	}
 
+	if attr, ok := d.GetOk("end_at"); ok {
+		eaTime, err := time.ParseInLocation(time.RFC3339, attr.(string), time.UTC)
+		if err != nil {
+			return err
+		}
+		smrc.EndAt = &packngo.Timestamp{Time: eaTime}
+	}
+
 	smr, _, err := client.SpotMarketRequests.Create(smrc, d.Get("project_id").(string))
 	if err != nil {
 		return err
@@ -330,7 +357,7 @@ func resourceMetalSpotMarketRequestRead(d *schema.ResourceData, meta interface{}
 		metro = smr.Metro.Code
 	}
 
-	return setMap(d, map[string]interface{}{
+	attrMap := map[string]interface{}{
 		"metro":         metro,
 		"project_id":    smr.Project.ID,
 		"devices_min":   smr.DevicesMin,
@@ -347,7 +374,13 @@ func resourceMetalSpotMarketRequestRead(d *schema.ResourceData, meta interface{}
 			}
 			return d.Set(k, facilityCodes)
 		},
-	})
+	}
+
+	if smr.EndAt != nil {
+		attrMap["endAt"] = smr.EndAt.Format(time.RFC3339)
+	}
+
+	return setMap(d, attrMap)
 }
 
 func resourceMetalSpotMarketRequestDelete(d *schema.ResourceData, meta interface{}) error {
@@ -409,7 +442,7 @@ func getInstanceParams(params *packngo.SpotMarketRequestInstanceParameters) Inst
 		"tags":             params.Tags,
 	}}
 	if params.TerminationTime != nil {
-		p[0]["termintation_time"] = params.TerminationTime.Time
+		p[0]["termination_time"] = params.TerminationTime.Time
 	}
 	return p
 }

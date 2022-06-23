@@ -3,6 +3,7 @@ package equinix
 import (
 	"fmt"
 	"testing"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
@@ -10,12 +11,17 @@ import (
 	"github.com/packethost/packngo"
 )
 
+func testSpotMarketRequestTerminationTime() string {
+	return time.Now().UTC().Add(60 * time.Minute).Format(time.RFC3339)
+}
+
 func TestAccMetalSpotMarketRequest_basic(t *testing.T) {
 	var key packngo.SpotMarketRequest
 	context := map[string]interface{}{
 		"name_suffix": acctest.RandString(10),
 		"facility":    "sv15",
 		"plan":        "c3.small.x86",
+		"end_at":      testSpotMarketRequestTerminationTime(),
 	}
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -98,6 +104,7 @@ resource "equinix_metal_spot_market_request" "request" {
   devices_min      = 1
   devices_max      = 1
   wait_for_devices = true
+  end_at           = "%{end_at}"
 
   instance_parameters {
     hostname         = "tfacc-testspot"
@@ -126,6 +133,7 @@ resource "equinix_metal_spot_market_request" "request" {
   devices_min      = 1
   devices_max      = 1
   wait_for_devices = true
+  end_at           = "%{end_at}"
 
   instance_parameters {
     hostname         = "tfacc-testspot"
@@ -141,6 +149,7 @@ func TestAccMetalSpotMarketRequest_Import(t *testing.T) {
 		"name_suffix": acctest.RandString(10),
 		"facility":    "sv15",
 		"plan":        "c3.small.x86",
+		"end_at":      testSpotMarketRequestTerminationTime(),
 	}
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
