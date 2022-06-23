@@ -49,6 +49,7 @@ resource "equinix_metal_device" "test" {
   operating_system = "ubuntu_16_04"
   billing_cycle    = "hourly"
   project_id       = equinix_metal_project.test.id
+  termination_time = "%s"
 }
 
 resource "equinix_metal_reserved_ip_block" "test" {
@@ -61,7 +62,7 @@ resource "equinix_metal_reserved_ip_block" "test" {
 resource "equinix_metal_ip_attachment" "test" {
 	device_id = equinix_metal_device.test.id
 	cidr_notation = "${cidrhost(equinix_metal_reserved_ip_block.test.cidr_notation,0)}/32"
-}`, name)
+}`, name, testDeviceTerminationTime())
 }
 
 func TestAccMetalIPAttachment_metro(t *testing.T) {
@@ -104,6 +105,7 @@ resource "equinix_metal_device" "test" {
   operating_system = "ubuntu_16_04"
   billing_cycle    = "hourly"
   project_id       = equinix_metal_project.test.id
+  termination_time = "%s"
 }
 
 resource "equinix_metal_reserved_ip_block" "test" {
@@ -116,7 +118,7 @@ resource "equinix_metal_reserved_ip_block" "test" {
 resource "equinix_metal_ip_attachment" "test" {
 	device_id = equinix_metal_device.test.id
 	cidr_notation = "${cidrhost(equinix_metal_reserved_ip_block.test.cidr_notation,0)}/32"
-}`, name)
+}`, name, testDeviceTerminationTime())
 }
 
 func testAccMetalIPAttachmentCheckDestroyed(s *terraform.State) error {

@@ -6,6 +6,7 @@ import (
 	"net"
 	"regexp"
 	"testing"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
@@ -64,6 +65,10 @@ func testSweepDevices(region string) error {
 // Regexp vars for use with resource.ExpectError
 var matchErrMustBeProvided = regexp.MustCompile(".* must be provided when .*")
 var matchErrShouldNotBeAnIPXE = regexp.MustCompile(`.*"user_data" should not be an iPXE.*`)
+
+func testDeviceTerminationTime() string {
+	return time.Now().UTC().Add(60 * time.Minute).Format(time.RFC3339)
+}
 
 func TestAccMetalDevice_facilityList(t *testing.T) {
 	var device packngo.Device
@@ -486,8 +491,9 @@ resource "equinix_metal_device" "test" {
   billing_cycle    = "hourly"
   project_id       = "${equinix_metal_project.test.id}"
   tags             = ["%d"]
+  termination_time = "%s"
 }
-`, projSuffix, rInt, rInt)
+`, projSuffix, rInt, rInt, testDeviceTerminationTime())
 }
 
 func testAccMetalDeviceConfig_reinstall(rInt int, projSuffix string) string {
@@ -505,13 +511,14 @@ resource "equinix_metal_device" "test" {
   project_id       = "${equinix_metal_project.test.id}"
   tags             = ["%d"]
   user_data = "#!/usr/bin/env sh\necho Reinstall\n"
+  termination_time = "%s"
 
   reinstall {
 	  enabled = true
 	  deprovision_fast = true
   }
 }
-`, projSuffix, rInt, rInt)
+`, projSuffix, rInt, rInt, testDeviceTerminationTime())
 }
 
 func testAccMetalDeviceConfig_varname(rInt int, projSuffix string) string {
@@ -529,8 +536,9 @@ resource "equinix_metal_device" "test" {
   billing_cycle    = "hourly"
   project_id       = "${equinix_metal_project.test.id}"
   tags             = ["%d"]
+  termination_time = "%s"
 }
-`, projSuffix, rInt, rInt, rInt)
+`, projSuffix, rInt, rInt, rInt, testDeviceTerminationTime())
 }
 
 func testAccMetalDeviceConfig_varname_pxe(rInt int, projSuffix string) string {
@@ -550,8 +558,9 @@ resource "equinix_metal_device" "test" {
   tags             = ["%d"]
   always_pxe       = true
   ipxe_script_url  = "http://matchbox.foo.wtf:8080/boot.ipxe"
+  termination_time = "%s"
 }
-`, projSuffix, rInt, rInt, rInt)
+`, projSuffix, rInt, rInt, rInt, testDeviceTerminationTime())
 }
 
 func testAccMetalDeviceConfig_metro(projSuffix string) string {
@@ -567,7 +576,8 @@ resource "equinix_metal_device" "test" {
   operating_system = "ubuntu_16_04"
   billing_cycle    = "hourly"
   project_id       = "${equinix_metal_project.test.id}"
-}`, projSuffix)
+  termination_time = "%s"
+}`, projSuffix, testDeviceTerminationTime())
 }
 
 func testAccMetalDeviceConfig_minimal(projSuffix string) string {
@@ -597,7 +607,8 @@ resource "equinix_metal_device" "test" {
   operating_system = "ubuntu_16_04"
   billing_cycle    = "hourly"
   project_id       = "${equinix_metal_project.test.id}"
-}`, projSuffix)
+  termination_time = "%s"
+}`, projSuffix, testDeviceTerminationTime())
 }
 
 func testAccMetalDeviceConfig_facility_list(projSuffix string) string {
@@ -614,7 +625,8 @@ resource "equinix_metal_device" "test"  {
   operating_system = "ubuntu_16_04"
   billing_cycle    = "hourly"
   project_id       = "${equinix_metal_project.test.id}"
-}`, projSuffix)
+  termination_time = "%s"
+}`, projSuffix, testDeviceTerminationTime())
 }
 
 func testAccMetalDeviceConfig_ipxe_script_url(projSuffix, url, pxe string) string {
@@ -634,7 +646,8 @@ resource "equinix_metal_device" "test_ipxe_script_url"  {
   project_id       = "${equinix_metal_project.test.id}"
   ipxe_script_url  = "%s"
   always_pxe       = "%s"
-}`, projSuffix, url, pxe)
+  termination_time = "%s"
+}`, projSuffix, url, pxe, testDeviceTerminationTime())
 }
 
 var testAccMetalDeviceConfig_ipxe_conflict = `
