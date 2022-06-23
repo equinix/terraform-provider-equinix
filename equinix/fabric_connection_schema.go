@@ -5,181 +5,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 )
 
-var createInvitationRes = &schema.Resource{
-	Schema: createInvitationSch(),
-}
-
-func createInvitationSch() map[string]*schema.Schema {
-	return map[string]*schema.Schema{
-		"type": {
-			Type:        schema.TypeString,
-			Computed:    true,
-			Description: "Invitation type",
-		},
-		"uuid": {
-			Type:        schema.TypeString,
-			Optional:    true,
-			Description: "Equinix-assigned invitation identifier",
-		},
-		"state": {
-			Type:        schema.TypeString,
-			Computed:    true,
-			Description: "Invitation status as it is today",
-		},
-		"message": {
-			Type:        schema.TypeString,
-			Computed:    true,
-			Description: "Invitation message",
-		},
-		"email": {
-			Type:        schema.TypeString,
-			Computed:    true,
-			Description: "Invitation recipient",
-		},
-		"expiry": {
-			Type:        schema.TypeString,
-			Computed:    true,
-			Description: "Invitation expiry time",
-		},
-	}
-}
-
-var createAccessPointSelectorSimplifiedMetadataEntityRes = &schema.Resource{
-	Schema: createAccessPointSelectorSimplifiedMetadataEntitySch(),
-}
-
-func createAccessPointSelectorSimplifiedMetadataEntitySch() map[string]*schema.Schema {
-
-	return map[string]*schema.Schema{
-		"href": {
-			Type:        schema.TypeString,
-			Computed:    true,
-			Description: "Url to entity",
-		},
-		"uuid": {
-			Type:        schema.TypeString,
-			Optional:    true,
-			Description: "Equinix assigned Identifier",
-		},
-		"type": {
-			Type:        schema.TypeString,
-			Computed:    true,
-			Description: "Type of Port",
-		},
-	}
-}
-
-var createServiceTokenLinkProtocolRes = &schema.Resource{
-	Schema: createServiceTokenLinkProtocolSch(),
-}
-
-func createServiceTokenLinkProtocolSch() map[string]*schema.Schema {
-	return map[string]*schema.Schema{
-		"type": {
-			Type:         schema.TypeString,
-			Optional:     true,
-			ValidateFunc: validation.StringInSlice([]string{"UNTAGGED", "DOT1Q", "QINQ", "EVPN_VXLAN"}, true),
-			Description:  "Type",
-		},
-	}
-}
-
-var createFabricConnectionServiceTokenAccessPointSelectorRes = &schema.Resource{
-	Schema: createFabricConnectionServiceTokenAccessPointSelectorSch(),
-}
-
-func createFabricConnectionServiceTokenAccessPointSelectorSch() map[string]*schema.Schema {
-	return map[string]*schema.Schema{
-		"type": {
-			Type:        schema.TypeString,
-			Computed:    true,
-			Description: "Selector Type",
-		},
-		"port": {
-			Type:        schema.TypeSet,
-			Computed:    true,
-			Description: "port",
-			Elem: &schema.Resource{
-				Schema: createAccessPointSelectorSimplifiedMetadataEntitySch(),
-			},
-		},
-		"link_protocol": {
-			Type:        schema.TypeSet,
-			Computed:    true,
-			Description: "Link Protocol",
-			Elem: &schema.Resource{
-				Schema: createServiceTokenLinkProtocolSch(),
-			},
-		},
-	}
-}
-
-var createServiceTokenSideRes = &schema.Resource{
-	Schema: createServiceTokenSideSch(),
-}
-
-func createServiceTokenSideSch() map[string]*schema.Schema {
-	return map[string]*schema.Schema{
-		"access_point_selectors": {
-			Type:        schema.TypeSet,
-			Computed:    true,
-			Description: "Access Point Selectors",
-			Elem: &schema.Resource{
-				Schema: createFabricConnectionServiceTokenAccessPointSelectorSch(),
-			},
-		},
-	}
-}
-
-var createServiceTokenConnectionSideRes = &schema.Resource{
-	Schema: createServiceTokenConnectionSideSch(),
-}
-
-func createServiceTokenConnectionSideSch() map[string]*schema.Schema {
-
-	return map[string]*schema.Schema{
-		"type": {
-			Type:        schema.TypeString,
-			Computed:    true,
-			Description: "Type of Connection",
-		},
-		"allow_remote_connection": {
-			Type:        schema.TypeBool,
-			Computed:    true,
-			Description: "Authorization to connect remotely",
-		},
-		"bandwidth_limit": {
-			Type:        schema.TypeInt,
-			Computed:    true,
-			Description: "Connection bandwidth limit in Mbps",
-		},
-		"supported_bandwidths": {
-			Type:        schema.TypeList,
-			Computed:    true,
-			Description: "List of permitted bandwidths",
-			Elem: &schema.Schema{
-				Type: schema.TypeString,
-			},
-		},
-		"a_side": {
-			Type:        schema.TypeSet,
-			Computed:    true,
-			Description: "ASide",
-			Elem: &schema.Resource{
-				Schema: createServiceTokenSideSch(),
-			},
-		},
-		"z_side": {
-			Type:        schema.TypeSet,
-			Computed:    true,
-			Description: "ZSide",
-			Elem: &schema.Resource{
-				Schema: createServiceTokenSideSch(),
-			},
-		},
-	}
-}
-
 var createServiceTokenRes = &schema.Resource{
 	Schema: createServiceTokenSch(),
 }
@@ -206,54 +31,6 @@ func createServiceTokenSch() map[string]*schema.Schema {
 			Type:        schema.TypeString,
 			Computed:    true,
 			Description: "Service token description",
-		},
-		"expiry": {
-			Type:        schema.TypeString,
-			Computed:    true,
-			Description: "Lifespan (in days) of the service token",
-		},
-		"expiration_date_time": {
-			Type:        schema.TypeString,
-			Computed:    true,
-			Description: "Expiration date and time of the service token",
-		},
-		"connection": {
-			Type:        schema.TypeSet,
-			Computed:    true,
-			Description: "Connection",
-			Elem: &schema.Resource{
-				Schema: createServiceTokenConnectionSideSch(),
-			},
-		},
-		"state": {
-			Type:         schema.TypeString,
-			Optional:     true,
-			ValidateFunc: validation.StringInSlice([]string{"ACTIVE", "INACTIVE", "EXPIRED", "DELETED"}, true),
-			Description:  "State",
-		},
-		"notifications": {
-			Type:        schema.TypeList,
-			Computed:    true,
-			Description: "Service token related notifications",
-			Elem: &schema.Resource{
-				Schema: createNotificationSch(),
-			},
-		},
-		"account": {
-			Type:        schema.TypeSet,
-			Optional:    true,
-			Description: "account",
-			Elem: &schema.Resource{
-				Schema: createAccountSch(),
-			},
-		},
-		"change_log": {
-			Type:        schema.TypeSet,
-			Computed:    true,
-			Description: "Change Log",
-			Elem: &schema.Resource{
-				Schema: createChangeLogSch(),
-			},
 		},
 	}
 }
@@ -287,260 +64,29 @@ func createLocationSch() map[string]*schema.Schema {
 	}
 }
 
-var createLocationNoIbxRes = &schema.Resource{
-	Schema: createLocationNoIbxSch(),
-}
-
-func createLocationNoIbxSch() map[string]*schema.Schema {
+//TODO missing uuid in swager generated spec.
+func createVirtualGatewaySch() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
+		"uuid": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "Gateway Type",
+		},
 		"href": {
 			Type:        schema.TypeString,
 			Computed:    true,
 			Description: "Unique Resource Identifier",
 		},
-		"region": {
-			Type:        schema.TypeString,
-			Computed:    true,
-			Description: "Access point region",
-		},
-		"metro_name": {
-			Type:        schema.TypeString,
-			Computed:    true,
-			Description: "Access point metro name",
-		},
-		"metro_code": {
-			Type:        schema.TypeString,
-			Computed:    true,
-			Description: "Access point metro code",
-		},
-	}
-}
-
-var createServiceProfileAccessPointTypeRes = &schema.Resource{
-	Schema: createServiceProfileAccessPointType(),
-}
-
-func createServiceProfileAccessPointType() map[string]*schema.Schema {
-	return map[string]*schema.Schema{
-
 		"type": {
-			Type:         schema.TypeString,
-			Optional:     true,
-			ValidateFunc: validation.StringInSlice([]string{"VD", "COLO"}, true),
-			Description:  "Type",
-		},
-		"uuid": {
-			Type:        schema.TypeString,
-			Optional:    true,
-			Description: "Uuid",
-		},
-	}
-}
-
-var createCustomFieldsRes = &schema.Resource{
-	Schema: createCustomFields(),
-}
-
-func createCustomFields() map[string]*schema.Schema {
-	return map[string]*schema.Schema{
-		"label": {
 			Type:        schema.TypeString,
 			Computed:    true,
-			Description: "Label",
+			Description: "Virtual Device type",
 		},
-		"description": {
-			Type:        schema.TypeString,
-			Computed:    true,
-			Description: "Description",
-		},
-		"required": {
-			Type:        schema.TypeBool,
-			Computed:    true,
-			Description: "Required",
-		},
-		"data_type": {
-			Type:        schema.TypeString,
-			Computed:    true,
-			Description: "Data Type",
-		},
-		"options": {
-			Type:        schema.TypeList,
-			Computed:    true,
-			Description: "Options",
-			Elem: &schema.Schema{
-				Type: schema.TypeString,
-			},
-		},
-		"capture_in_email": {
-			Type:        schema.TypeBool,
-			Computed:    true,
-			Description: "Capture this field as a part of email notification",
-		},
-	}
-}
-
-var createServiceProfileMarketingProcessStepsRes = &schema.Resource{
-	Schema: createServiceProfileMarketingProcessSteps(),
-}
-
-func createServiceProfileMarketingProcessSteps() map[string]*schema.Schema {
-	return map[string]*schema.Schema{
-		"title": {
-			Type:        schema.TypeString,
-			Computed:    true,
-			Description: "Service profile custom step title",
-		},
-		"sub_title": {
-			Type:        schema.TypeString,
-			Computed:    true,
-			Description: "Service profile custom step sub title",
-		},
-		"description": {
-			Type:        schema.TypeString,
-			Computed:    true,
-			Description: "Service profile custom step description",
-		},
-	}
-}
-
-var createServiceProfileMarketingInfoRes = &schema.Resource{
-	Schema: createServiceProfileMarketingInfo(),
-}
-
-func createServiceProfileMarketingInfo() map[string]*schema.Schema {
-
-	return map[string]*schema.Schema{
-		"logo": {
-			Type:        schema.TypeString,
-			Computed:    true,
-			Description: "Logo file name",
-		},
-		"promotion": {
-			Type:        schema.TypeBool,
-			Computed:    true,
-			Description: "Profile promotion on marketplace",
-		},
-		"process_steps": {
+		"project": {
 			Type:        schema.TypeSet,
 			Computed:    true,
-			Description: "Process Steps",
-			Elem: &schema.Resource{
-				Schema: createServiceProfileMarketingProcessSteps(),
-			},
-		},
-	}
-}
-
-var createServiceProfileAccessPointColoRes = &schema.Resource{
-	Schema: createServiceProfileAccessPointColo(),
-}
-
-func createServiceProfileAccessPointColo() map[string]*schema.Schema {
-	return map[string]*schema.Schema{
-		"seller_region": {
-			Type:        schema.TypeString,
-			Computed:    true,
-			Description: "Seller Region",
-		},
-		"seller_region_description": {
-			Type:        schema.TypeString,
-			Computed:    true,
-			Description: "Seller Region Description",
-		},
-		"cross_connect_id": {
-			Type:        schema.TypeString,
-			Computed:    true,
-			Description: "Cross Connect Id",
-		},
-		"type": {
-			Type:         schema.TypeString,
-			Optional:     true,
-			Description:  "Type",
-			ValidateFunc: validation.StringInSlice([]string{"VD", "COLO"}, true),
-		},
-		"uuid": {
-			Type:        schema.TypeString,
-			Optional:    true,
-			Description: "uuid",
-		},
-		"location": {
-			Type:        schema.TypeSet,
-			Optional:    true,
-			Description: "Location",
-			Elem:        &schema.Resource{Schema: createLocationSch()},
-		},
-	}
-}
-
-var createServiceProfileAccessPointVdRes = &schema.Resource{
-	Schema: createServiceProfileAccessPointVd(),
-}
-
-func createServiceProfileAccessPointVd() map[string]*schema.Schema {
-	return map[string]*schema.Schema{
-		"type": {
-			Type:         schema.TypeString,
-			Optional:     true,
-			ValidateFunc: validation.StringInSlice([]string{"VD", "COLO"}, true),
-			Description:  "type",
-		},
-		"uuid": {
-			Type:        schema.TypeString,
-			Optional:    true,
-			Description: "Uuid",
-		},
-		"location": {
-			Type:        schema.TypeSet,
-			Optional:    true,
-			Description: "Location",
-			Elem:        &schema.Resource{Schema: createLocationSch()},
-		},
-		"interface_uuid": {
-			Type:        schema.TypeString,
-			Computed:    true,
-			Description: "InterfaceUuid",
-		},
-	}
-}
-
-var createServiceProfileMetroSchRes = &schema.Resource{
-	Schema: createServiceProfileMetroSch(),
-}
-
-func createServiceProfileMetroSch() map[string]*schema.Schema {
-	return map[string]*schema.Schema{
-		"code": {
-			Type:        schema.TypeString,
-			Computed:    true,
-			Description: "Metro code",
-		},
-		"name": {
-			Type:        schema.TypeString,
-			Computed:    true,
-			Description: "Metro name",
-		},
-		"ibxs": {
-			Type:        schema.TypeList,
-			Computed:    true,
-			Description: "Allowed ibxes in the metro",
-			Elem: &schema.Schema{
-				Type: schema.TypeString,
-			},
-		},
-		"in_trail": {
-			Type:        schema.TypeBool,
-			Computed:    true,
-			Description: "InTrail",
-		},
-		"display_name": {
-			Type:        schema.TypeString,
-			Computed:    true,
-			Description: "Service metro display name",
-		},
-		"seller_regions": {
-			Type:        schema.TypeMap,
-			Computed:    true,
-			Description: "Seller Regions",
+			Description: "Project this gateway created in",
+			Elem:        &schema.Resource{Schema: createGatewayProjectSch()},
 		},
 	}
 }
@@ -562,84 +108,6 @@ func createGatewayProjectSch() map[string]*schema.Schema {
 			Description: "Unique Resource URL",
 		},
 	}
-}
-
-var createGatewayPackageSchRes = &schema.Resource{
-	Schema: createGatewayPackageSch(),
-}
-
-func createGatewayPackageSch() map[string]*schema.Schema {
-	return map[string]*schema.Schema{
-		"href": {
-			Type:        schema.TypeString,
-			Computed:    true,
-			Description: "Unique Resource Identifier",
-		},
-		"code": {
-			Type:        schema.TypeString,
-			Computed:    true,
-			Description: "Gateway package code",
-		},
-	}
-}
-
-var createVirtualGatewaySchRes = &schema.Resource{
-	Schema: createVirtualGatewaySch(),
-}
-
-func createVirtualGatewaySch() map[string]*schema.Schema {
-	return map[string]*schema.Schema{
-		"type": {
-			Type:        schema.TypeString,
-			Computed:    true,
-			Description: "Gateway Type",
-		},
-		"name": {
-			Type:        schema.TypeString,
-			Computed:    true,
-			Description: "Gateway Name",
-		},
-		"location": {
-			Type:        schema.TypeSet,
-			Computed:    true,
-			Description: "Gateway Location",
-			Elem:        &schema.Resource{Schema: createLocationNoIbxSch()},
-		},
-		"package": {
-			Type:        schema.TypeSet,
-			Computed:    true,
-			Description: "Package information",
-			Elem:        &schema.Resource{Schema: createGatewayPackageSch()},
-		},
-		"order": {
-			Type:        schema.TypeSet,
-			Computed:    true,
-			Description: "Order Information",
-			Elem:        &schema.Resource{Schema: createOrderSch()},
-		},
-		"project": {
-			Type:        schema.TypeSet,
-			Computed:    true,
-			Description: "Project this gateway created in",
-			Elem:        &schema.Resource{Schema: createGatewayProjectSch()},
-		},
-		"account": {
-			Type:        schema.TypeSet,
-			Optional:    true,
-			Description: "Account info",
-			Elem:        &schema.Resource{Schema: createAccountSch()},
-		},
-		"notifications": {
-			Type:        schema.TypeList,
-			Computed:    true,
-			Description: "Notifications",
-			Elem:        &schema.Resource{Schema: createNotificationSch()},
-		},
-	}
-}
-
-var createServiceProfileSchRes = &schema.Resource{
-	Schema: createServiceProfileSch(),
 }
 
 func createServiceProfileSch() map[string]*schema.Schema {
@@ -669,89 +137,6 @@ func createServiceProfileSch() map[string]*schema.Schema {
 			Type:        schema.TypeString,
 			Optional:    true,
 			Description: "User-provided service description",
-		},
-		"notifications": {
-			Type:        schema.TypeList,
-			Optional:    true,
-			Description: "Recipients of notifications on service profile change",
-			Elem: &schema.Resource{
-				Schema: createNotificationSch(),
-			},
-		},
-		"tags": {
-			Type:        schema.TypeList,
-			Optional:    true,
-			Description: "Tags",
-			Elem: &schema.Schema{
-				Type: schema.TypeString,
-			},
-		},
-		"visibility": {
-			Type:         schema.TypeString,
-			Optional:     true,
-			ValidateFunc: validation.StringInSlice([]string{"PRIVATE", "PUBLIC"}, true),
-			Description:  "Visibility of the service profile",
-		},
-		"allowed_emails": {
-			Type:        schema.TypeList,
-			Optional:    true,
-			Description: "User Emails that are allowed to access this service profile",
-			Elem: &schema.Schema{
-				Type: schema.TypeString,
-			},
-		},
-		"access_point_type_configs": {
-			Type:        schema.TypeList,
-			Optional:    true,
-			Description: "Access Point Type Configs",
-			Elem: &schema.Resource{
-				Schema: createServiceProfileAccessPointType(),
-			},
-		},
-		"custom_fields": {
-			Type:        schema.TypeList,
-			Optional:    true,
-			Description: "Custom Fields",
-			Elem: &schema.Resource{
-				Schema: createCustomFields(),
-			},
-		},
-		"marketing_info": {
-			Type:        schema.TypeSet,
-			Optional:    true,
-			Description: "Marketing Info",
-			Elem: &schema.Resource{
-				Schema: createServiceProfileMarketingInfo(),
-			},
-		},
-		"ports": {
-			Type:        schema.TypeSet,
-			Optional:    true,
-			Description: "Ports",
-			Elem: &schema.Resource{
-				Schema: createServiceProfileAccessPointColo(),
-			},
-		},
-		"virtual_devices": {
-			Type:        schema.TypeSet,
-			Optional:    true,
-			Description: "Virtual Devices",
-			Elem: &schema.Resource{
-				Schema: createServiceProfileAccessPointVd(),
-			},
-		},
-		"metros": {
-			Type:        schema.TypeSet,
-			Optional:    true,
-			Description: "Derived response attribute",
-			Elem: &schema.Resource{
-				Schema: createServiceProfileMetroSch(),
-			},
-		},
-		"self_profile": {
-			Type:        schema.TypeBool,
-			Optional:    true,
-			Description: "Response attribute indicates whether the profile belongs to the same organization as the api-invoker",
 		},
 	}
 }
@@ -789,7 +174,7 @@ func createAccessPointLinkProtocolSch() map[string]*schema.Schema {
 			Description: "Unit",
 		},
 		"vni": {
-			Type:        schema.TypeString,
+			Type:        schema.TypeInt,
 			Optional:    true,
 			Description: "vni",
 		},
@@ -801,7 +186,7 @@ func createAccessPointLinkProtocolSch() map[string]*schema.Schema {
 	}
 }
 
-var createAccessPointVirtualDeviceSchRes = &schema.Resource{
+var createAccessPointVirtualDeviceRes = &schema.Resource{
 	Schema: createAccessPointVirtualDeviceSch(),
 }
 
@@ -818,21 +203,12 @@ func createAccessPointVirtualDeviceSch() map[string]*schema.Schema {
 			Optional:    true,
 			Description: "Equinix-assigned Virtual Device identifier",
 		},
-		"name": {
-			Type:        schema.TypeString,
-			Computed:    true,
-			Description: "Customer-assigned Virtual Device name",
-		},
 		"type": {
 			Type:        schema.TypeString,
 			Computed:    true,
 			Description: "Virtual Device type",
 		},
 	}
-}
-
-var createAccessPointInterfaceRes = &schema.Resource{
-	Schema: createAccessPointInterface(),
 }
 
 func createAccessPointInterface() map[string]*schema.Schema {
@@ -855,10 +231,6 @@ func createAccessPointInterface() map[string]*schema.Schema {
 	}
 }
 
-var createFabricConnectionRoutingProtocolRes = &schema.Resource{
-	Schema: createFabricConnectionRoutingProtocol(),
-}
-
 func createFabricConnectionRoutingProtocol() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
 		"type": {
@@ -875,30 +247,6 @@ func createFabricConnectionRoutingProtocol() map[string]*schema.Schema {
 			Type:        schema.TypeString,
 			Optional:    true,
 			Description: "Routing protocol instance state",
-		},
-	}
-}
-
-var createFabricConnectionSideOrganizationRes = &schema.Resource{
-	Schema: createFabricConnectionSideOrganizationSch(),
-}
-
-func createFabricConnectionSideOrganizationSch() map[string]*schema.Schema {
-	return map[string]*schema.Schema{
-		"id": {
-			Type:        schema.TypeString,
-			Computed:    true,
-			Description: "Organization id -customer organization id",
-		},
-		"type": {
-			Type:        schema.TypeString,
-			Computed:    true,
-			Description: "Organization id -customer organization id",
-		},
-		"name": {
-			Type:        schema.TypeString,
-			Computed:    true,
-			Description: "Organization name -customer organization name",
 		},
 	}
 }
@@ -944,7 +292,7 @@ func createConnectionSideAccessPointSch() map[string]*schema.Schema {
 		"type": {
 			Type:         schema.TypeString,
 			Optional:     true,
-			ValidateFunc: validation.StringInSlice([]string{"COLO", "VD", "VG", "SP", "IGW", "IGW", "SUBNET", "GW"}, true),
+			ValidateFunc: validation.StringInSlice([]string{"COLO", "VD", "VG", "SP", "IGW", "SUBNET", "GW"}, true),
 			Description:  "Access point type",
 		},
 		"authentication_key": {
@@ -1052,14 +400,6 @@ var createFabricConnectionSideRes = &schema.Resource{
 
 func createFabricConnectionSideSch() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
-		"invitation": {
-			Type:        schema.TypeSet,
-			Optional:    true,
-			Description: "Invitation based on connection request",
-			Elem: &schema.Resource{
-				Schema: createInvitationSch(),
-			},
-		},
 		"service_token": {
 			Type:        schema.TypeSet,
 			Optional:    true,
@@ -1076,7 +416,6 @@ func createFabricConnectionSideSch() map[string]*schema.Schema {
 				Schema: createConnectionSideAccessPointSch(),
 			},
 		},
-
 		"additional_info": {
 			Type:        schema.TypeList,
 			Optional:    true,
@@ -1114,11 +453,6 @@ var createPortRedundancyRes = &schema.Resource{
 
 func createPortRedundancySch() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
-		"group": {
-			Type:        schema.TypeInt,
-			Computed:    true,
-			Description: "Redundancy group identifier",
-		},
 		"priority": {
 			Type:         schema.TypeString,
 			Optional:     true,
@@ -1262,21 +596,12 @@ func createAccountSch() map[string]*schema.Schema {
 			Optional:    true,
 			Description: "Global organization name",
 		},
-		"ucm_id": {
-			Type:        schema.TypeString,
-			Optional:    true,
-			Description: "System unique identifier",
-		},
 		"global_cust_id": {
 			Type:        schema.TypeString,
 			Optional:    true,
 			Description: "Global Customer organization identifier",
 		},
 	}
-}
-
-var createNotificationRes = &schema.Resource{
-	Schema: createNotificationSch(),
 }
 
 func createNotificationSch() map[string]*schema.Schema {
@@ -1302,10 +627,6 @@ func createNotificationSch() map[string]*schema.Schema {
 	}
 }
 
-var createErrorAdditionalInfoRes = &schema.Resource{
-	Schema: createErrorAdditionalInfoSch(),
-}
-
 func createErrorAdditionalInfoSch() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
 		"property": {
@@ -1319,10 +640,6 @@ func createErrorAdditionalInfoSch() map[string]*schema.Schema {
 			Description: "Reason for the error",
 		},
 	}
-}
-
-var createOperationalErrorRes = &schema.Resource{
-	Schema: createOperationalErrorSch(),
 }
 
 func createOperationalErrorSch() map[string]*schema.Schema {
@@ -1368,7 +685,6 @@ var createOperationRes = &schema.Resource{
 }
 
 func createOperationSch() map[string]*schema.Schema {
-
 	return map[string]*schema.Schema{
 		"provider_status": {
 			Type:         schema.TypeString,
@@ -1403,82 +719,6 @@ func createOperationSch() map[string]*schema.Schema {
 	}
 }
 
-var createChangeRes = &schema.Resource{
-	Schema: createChangeSch(),
-}
-
-func createChangeSch() map[string]*schema.Schema {
-	return map[string]*schema.Schema{
-		"uuid": {
-			Type:        schema.TypeString,
-			Optional:    true,
-			Description: "Unique identifier of the change",
-		},
-		"type": {
-			Type:        schema.TypeString,
-			Optional:    true,
-			Description: "Type of change",
-		},
-		"status": {
-			Type:        schema.TypeString,
-			Optional:    true,
-			Description: "Current outcome of the change flow",
-		},
-		"creation_date_time": {
-			Type:        schema.TypeString,
-			Optional:    true,
-			Description: "Time change request received",
-		},
-		"updated_date_time": {
-			Type:        schema.TypeString,
-			Optional:    true,
-			Description: "Record last updated",
-		},
-		"information": {
-			Type:        schema.TypeString,
-			Optional:    true,
-			Description: "Additional information",
-		},
-		"data": {
-			Type:        schema.TypeSet,
-			Computed:    true,
-			Description: "Change operation data",
-			Elem: &schema.Resource{
-				Schema: createFabricConnectionChangeDataSch(),
-			},
-		},
-	}
-}
-
-var createFabricConnectionChangeDataRes = &schema.Resource{
-	Schema: createFabricConnectionChangeDataSch(),
-}
-
-func createFabricConnectionChangeDataSch() map[string]*schema.Schema {
-
-	return map[string]*schema.Schema{
-		"op": {
-			Type:        schema.TypeString,
-			Optional:    true,
-			Description: "Operation name",
-		},
-		"path": {
-			Type:        schema.TypeString,
-			Optional:    true,
-			Description: "Path inside document leading to updated parameter",
-		},
-		"value": {
-			Type:        schema.TypeString,
-			Optional:    true,
-			Description: "New value for updated parameter",
-		},
-	}
-}
-
-var createAdditionalInfoRes = &schema.Resource{
-	Schema: createAdditionalInfoSch(),
-}
-
 func createAdditionalInfoSch() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
 		"key": {
@@ -1493,73 +733,6 @@ func createAdditionalInfoSch() map[string]*schema.Schema {
 		},
 	}
 }
-
-var createIpv4Res = &schema.Resource{
-	Schema: createIpv4Sch(),
-}
-
-func createIpv4Sch() map[string]*schema.Schema {
-	return map[string]*schema.Schema{
-		"customer_peer_ip": {
-			Type:        schema.TypeString,
-			Optional:    true,
-			Description: "Customer peering ip",
-		},
-		"provider_peer_ip": {
-			Type:        schema.TypeString,
-			Optional:    true,
-			Description: "Provider peering ip",
-		},
-	}
-}
-
-/*var createRoutingProtocolRes = &schema.Resource{
-	Schema: createRoutingProtocolSch(),
-}*/
-
-/*func createRoutingProtocolSch() map[string]*schema.Schema {
-	return map[string]*schema.Schema{
-		"type": {
-			Type:        schema.TypeString,
-			Optional:    true,
-			Description: "Routing Protocol Type",
-		},
-		"uuid": {
-			Type:        schema.TypeString,
-			Optional:    true,
-			Description: "Routing protocol identifier",
-		},
-		"customer_asn": {
-			Type:        schema.TypeInt,
-			Optional:    true,
-			Description: "Customer asn",
-		},
-		"peer_asn": {
-			Type:        schema.TypeInt,
-			Optional:    true,
-			Description: "Peer asn",
-		},
-		"bgp_auth_key": {
-			Type:        schema.TypeString,
-			Optional:    true,
-			Description: "BGP authorization key",
-		},
-		"ipv4": {
-			Type:        schema.TypeSet,
-			Optional:    true,
-			Description: "ip information",
-			Elem:        &schema.Resource{Schema: createIpv4Sch()},
-		},
-		"route_filters": {
-			Type:        schema.TypeList,
-			Optional:    true,
-			Description: "Route filters values",
-			Elem: &schema.Schema{
-				Type: schema.TypeString,
-			},
-		},
-	}
-}*/
 
 func createFabricConnectionResourceSchema() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
@@ -1603,14 +776,6 @@ func createFabricConnectionResourceSchema() map[string]*schema.Schema {
 			Type:        schema.TypeString,
 			Computed:    true,
 			Description: "Connection overall state",
-		},
-		"change": {
-			Type:        schema.TypeSet,
-			Computed:    true,
-			Description: "Represents latest change request and its state information",
-			Elem: &schema.Resource{
-				Schema: createChangeSch(),
-			},
 		},
 		"operation": {
 			Type:        schema.TypeSet,

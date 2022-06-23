@@ -4,160 +4,11 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
-func readInvitationSch() map[string]*schema.Schema {
-	return map[string]*schema.Schema{
-		"type": {
-			Type:        schema.TypeString,
-			Computed:    true,
-			Description: "Invitation type",
-		},
-		"uuid": {
-			Type:        schema.TypeString,
-			Computed:    true,
-			Description: "Equinix-assigned invitation identifier",
-		},
-		"state": {
-			Type:        schema.TypeString,
-			Computed:    true,
-			Description: "Invitation status as it is today",
-		},
-		"message": {
-			Type:        schema.TypeString,
-			Computed:    true,
-			Description: "Invitation message",
-		},
-		"email": {
-			Type:        schema.TypeString,
-			Computed:    true,
-			Description: "Invitation recipient",
-		},
-		"expiry": {
-			Type:        schema.TypeString,
-			Computed:    true,
-			Description: "Invitation expiry time",
-		},
-	}
-}
-
-func readAccessPointSelectorSimplifiedMetadataEntitySch() map[string]*schema.Schema {
-	return map[string]*schema.Schema{
-		"href": {
-			Type:        schema.TypeString,
-			Computed:    true,
-			Description: "Url to entity",
-		},
-		"uuid": {
-			Type:        schema.TypeString,
-			Computed:    true,
-			Description: "Equinix assigned Identifier",
-		},
-		"type": {
-			Type:        schema.TypeString,
-			Computed:    true,
-			Description: "Type of Port",
-		},
-	}
-}
-
-func readServiceTokenLinkProtocolSch() map[string]*schema.Schema {
-	return map[string]*schema.Schema{
-		"type": {
-			Type:        schema.TypeString,
-			Computed:    true,
-			Description: "Type",
-		},
-	}
-}
-
-func readFabricConnectionServiceTokenAccessPointSelectorSch() map[string]*schema.Schema {
-	return map[string]*schema.Schema{
-		"type": {
-			Type:        schema.TypeString,
-			Computed:    true,
-			Description: "Selector Type",
-		},
-		"port": {
-			Type:        schema.TypeSet,
-			Computed:    true,
-			Description: "port",
-			Elem: &schema.Resource{
-				Schema: readAccessPointSelectorSimplifiedMetadataEntitySch(),
-			},
-		},
-		"link_protocol": {
-			Type:        schema.TypeSet,
-			Computed:    true,
-			Description: "Link Protocol",
-			Elem: &schema.Resource{
-				Schema: readServiceTokenLinkProtocolSch(),
-			},
-		},
-	}
-}
-
-func readServiceTokenSideSch() map[string]*schema.Schema {
-	return map[string]*schema.Schema{
-		"access_point_selectors": {
-			Type:        schema.TypeSet,
-			Computed:    true,
-			Description: "Access Point Selectors",
-			Elem: &schema.Resource{
-				Schema: readFabricConnectionServiceTokenAccessPointSelectorSch(),
-			},
-		},
-	}
-}
-
-func readServiceTokenConnectionSideSch() map[string]*schema.Schema {
-
-	return map[string]*schema.Schema{
-		"type": {
-			Type:        schema.TypeString,
-			Computed:    true,
-			Description: "Type of Connection",
-		},
-		"allow_remote_connection": {
-			Type:        schema.TypeBool,
-			Computed:    true,
-			Description: "Authorization to connect remotely",
-		},
-		"bandwidth_limit": {
-			Type:        schema.TypeInt,
-			Computed:    true,
-			Description: "Connection bandwidth limit in Mbps",
-		},
-		"supported_bandwidths": {
-			Type:        schema.TypeList,
-			Computed:    true,
-			Description: "List of permitted bandwidths",
-			Elem: &schema.Schema{
-				Type: schema.TypeString,
-			},
-		},
-		"a_side": {
-			Type:        schema.TypeSet,
-			Computed:    true,
-			Description: "ASide",
-			Elem: &schema.Resource{
-				Schema: readServiceTokenSideSch(),
-			},
-		},
-		"z_side": {
-			Type:        schema.TypeSet,
-			Computed:    true,
-			Description: "ZSide",
-			Elem: &schema.Resource{
-				Schema: readServiceTokenSideSch(),
-			},
-		},
-	}
-}
-
 func readServiceTokenSch() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
 		"type": {
 			Type:        schema.TypeString,
-			Computed:    true,
+			Optional:    true,
 			Description: "Token type",
 		},
 		"href": {
@@ -175,63 +26,11 @@ func readServiceTokenSch() map[string]*schema.Schema {
 			Computed:    true,
 			Description: "Service token description",
 		},
-		"expiry": {
-			Type:        schema.TypeString,
-			Computed:    true,
-			Description: "Lifespan (in days) of the service token",
-		},
-		"expiration_date_time": {
-			Type:        schema.TypeString,
-			Computed:    true,
-			Description: "Expiration date and time of the service token",
-		},
-		"connection": {
-			Type:        schema.TypeSet,
-			Computed:    true,
-			Description: "Connection",
-			Elem: &schema.Resource{
-				Schema: readServiceTokenConnectionSideSch(),
-			},
-		},
-		"state": {
-			Type:        schema.TypeString,
-			Computed:    true,
-			Description: "State",
-		},
-		"notifications": {
-			Type:        schema.TypeList,
-			Computed:    true,
-			Description: "Service token related notifications",
-			Elem: &schema.Resource{
-				Schema: readNotificationSch(),
-			},
-		},
-		"account": {
-			Type:        schema.TypeSet,
-			Computed:    true,
-			Description: "account",
-			Elem: &schema.Resource{
-				Schema: readAccountSch(),
-			},
-		},
-		"change_log": {
-			Type:        schema.TypeSet,
-			Computed:    true,
-			Description: "Change Log",
-			Elem: &schema.Resource{
-				Schema: readChangeLogSch(),
-			},
-		},
 	}
 }
 
 func readLocationSch() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
-		"href": {
-			Type:        schema.TypeString,
-			Computed:    true,
-			Description: "Unique Resource Identifier",
-		},
 		"region": {
 			Type:        schema.TypeString,
 			Computed:    true,
@@ -255,309 +54,27 @@ func readLocationSch() map[string]*schema.Schema {
 	}
 }
 
-func readLocationNoIbxSch() map[string]*schema.Schema {
-	return map[string]*schema.Schema{
-		"href": {
-			Type:        schema.TypeString,
-			Computed:    true,
-			Description: "Unique Resource Identifier",
-		},
-		"region": {
-			Type:        schema.TypeString,
-			Computed:    true,
-			Description: "Access point region",
-		},
-		"metro_name": {
-			Type:        schema.TypeString,
-			Computed:    true,
-			Description: "Access point metro name",
-		},
-		"metro_code": {
-			Type:        schema.TypeString,
-			Computed:    true,
-			Description: "Access point metro code",
-		},
-	}
-}
-
-func readServiceProfileAccessPointType() map[string]*schema.Schema {
-	return map[string]*schema.Schema{
-
-		"type": {
-			Type:        schema.TypeString,
-			Computed:    true,
-			Description: "Type",
-		},
-		"uuid": {
-			Type:        schema.TypeString,
-			Computed:    true,
-			Description: "Uuid",
-		},
-	}
-}
-
-func readCustomFields() map[string]*schema.Schema {
-	return map[string]*schema.Schema{
-		"label": {
-			Type:        schema.TypeString,
-			Computed:    true,
-			Description: "Label",
-		},
-		"description": {
-			Type:        schema.TypeString,
-			Computed:    true,
-			Description: "Description",
-		},
-		"required": {
-			Type:        schema.TypeBool,
-			Computed:    true,
-			Description: "Required",
-		},
-		"data_type": {
-			Type:        schema.TypeString,
-			Computed:    true,
-			Description: "Data Type",
-		},
-		"options": {
-			Type:        schema.TypeList,
-			Computed:    true,
-			Description: "Options",
-			Elem: &schema.Schema{
-				Type: schema.TypeString,
-			},
-		},
-		"capture_in_email": {
-			Type:        schema.TypeBool,
-			Computed:    true,
-			Description: "Capture this field as a part of email notification",
-		},
-	}
-}
-
-func readServiceProfileMarketingProcessSteps() map[string]*schema.Schema {
-	return map[string]*schema.Schema{
-		"title": {
-			Type:        schema.TypeString,
-			Computed:    true,
-			Description: "Service profile custom step title",
-		},
-		"sub_title": {
-			Type:        schema.TypeString,
-			Computed:    true,
-			Description: "Service profile custom step sub title",
-		},
-		"description": {
-			Type:        schema.TypeString,
-			Computed:    true,
-			Description: "Service profile custom step description",
-		},
-	}
-}
-
-func readServiceProfileMarketingInfo() map[string]*schema.Schema {
-
-	return map[string]*schema.Schema{
-		"logo": {
-			Type:        schema.TypeString,
-			Computed:    true,
-			Description: "Logo file name",
-		},
-		"promotion": {
-			Type:        schema.TypeBool,
-			Computed:    true,
-			Description: "Profile promotion on marketplace",
-		},
-		"process_steps": {
-			Type:        schema.TypeSet,
-			Computed:    true,
-			Description: "Process Steps",
-			Elem: &schema.Resource{
-				Schema: readServiceProfileMarketingProcessSteps(),
-			},
-		},
-	}
-}
-
-func readServiceProfileAccessPointColo() map[string]*schema.Schema {
-	return map[string]*schema.Schema{
-		"seller_region": {
-			Type:        schema.TypeString,
-			Computed:    true,
-			Description: "Seller Region",
-		},
-		"seller_region_description": {
-			Type:        schema.TypeString,
-			Computed:    true,
-			Description: "Seller Region Description",
-		},
-		"cross_connect_id": {
-			Type:        schema.TypeString,
-			Computed:    true,
-			Description: "Cross Connect Id",
-		},
-		"type": {
-			Type:        schema.TypeString,
-			Computed:    true,
-			Description: "Type",
-		},
-		"uuid": {
-			Type:        schema.TypeString,
-			Computed:    true,
-			Description: "uuid",
-		},
-		"location": {
-			Type:        schema.TypeSet,
-			Computed:    true,
-			Description: "Location",
-			Elem:        &schema.Resource{Schema: createLocationSch()},
-		},
-	}
-}
-
-func readServiceProfileAccessPointVd() map[string]*schema.Schema {
-	return map[string]*schema.Schema{
-		"type": {
-			Type:        schema.TypeString,
-			Computed:    true,
-			Description: "type",
-		},
-		"uuid": {
-			Type:        schema.TypeString,
-			Computed:    true,
-			Description: "Uuid",
-		},
-		"location": {
-			Type:        schema.TypeSet,
-			Computed:    true,
-			Description: "Location",
-			Elem:        &schema.Resource{Schema: createLocationSch()},
-		},
-		"interface_uuid": {
-			Type:        schema.TypeString,
-			Computed:    true,
-			Description: "InterfaceUuid",
-		},
-	}
-}
-
-func readServiceProfileMetroSch() map[string]*schema.Schema {
-	return map[string]*schema.Schema{
-		"code": {
-			Type:        schema.TypeString,
-			Computed:    true,
-			Description: "Metro code",
-		},
-		"name": {
-			Type:        schema.TypeString,
-			Computed:    true,
-			Description: "Metro name",
-		},
-		"ibxs": {
-			Type:        schema.TypeList,
-			Computed:    true,
-			Description: "Allowed ibxes in the metro",
-			Elem: &schema.Schema{
-				Type: schema.TypeString,
-			},
-		},
-		"in_trail": {
-			Type:        schema.TypeBool,
-			Computed:    true,
-			Description: "InTrail",
-		},
-		"display_name": {
-			Type:        schema.TypeString,
-			Computed:    true,
-			Description: "Service metro display name",
-		},
-		"seller_regions": {
-			Type:        schema.TypeMap,
-			Computed:    true,
-			Description: "Seller Regions",
-		},
-	}
-}
-
-func readGatewayProjectSch() map[string]*schema.Schema {
-	return map[string]*schema.Schema{
-		"project_id": {
-			Type:        schema.TypeString,
-			Computed:    true,
-			Description: "Project Id",
-		},
-		"href": {
-			Type:        schema.TypeString,
-			Computed:    true,
-			Description: "Unique Resource URL",
-		},
-	}
-}
-
-func readGatewayPackageSch() map[string]*schema.Schema {
-	return map[string]*schema.Schema{
-		"href": {
-			Type:        schema.TypeString,
-			Computed:    true,
-			Description: "Unique Resource Identifier",
-		},
-		"code": {
-			Type:        schema.TypeString,
-			Computed:    true,
-			Description: "Gateway package code",
-		},
-	}
-}
-
+//TODO missing uuid in swager generated spec.
 func readVirtualGatewaySch() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
-		"type": {
+		"uuid": {
 			Type:        schema.TypeString,
 			Computed:    true,
 			Description: "Gateway Type",
 		},
-		"name": {
+		"href": {
 			Type:        schema.TypeString,
 			Computed:    true,
-			Description: "Gateway Name",
+			Description: "Unique Resource Identifier",
 		},
-		"location": {
-			Type:        schema.TypeSet,
+		"type": {
+			Type:        schema.TypeString,
 			Computed:    true,
-			Description: "Gateway Location",
-			Elem:        &schema.Resource{Schema: readLocationNoIbxSch()},
-		},
-		"package": {
-			Type:        schema.TypeSet,
-			Computed:    true,
-			Description: "Package information",
-			Elem:        &schema.Resource{Schema: readGatewayPackageSch()},
-		},
-		"order": {
-			Type:        schema.TypeSet,
-			Computed:    true,
-			Description: "Order Information",
-			Elem:        &schema.Resource{Schema: readOrderSch()},
-		},
-		"project": {
-			Type:        schema.TypeSet,
-			Computed:    true,
-			Description: "Project this gateway created in",
-			Elem:        &schema.Resource{Schema: readGatewayProjectSch()},
-		},
-		"account": {
-			Type:        schema.TypeSet,
-			Computed:    true,
-			Description: "Account info",
-			Elem:        &schema.Resource{Schema: readAccountSch()},
-		},
-		"notifications": {
-			Type:        schema.TypeList,
-			Computed:    true,
-			Description: "Notifications",
-			Elem:        &schema.Resource{Schema: readNotificationSch()},
+			Description: "Virtual Device type",
 		},
 	}
 }
+
 func readServiceProfileSch() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
 		"href": {
@@ -567,7 +84,7 @@ func readServiceProfileSch() map[string]*schema.Schema {
 		},
 		"type": {
 			Type:        schema.TypeString,
-			Computed:    true,
+			Optional:    true,
 			Description: "Service profile type",
 		},
 		"name": {
@@ -585,88 +102,6 @@ func readServiceProfileSch() map[string]*schema.Schema {
 			Computed:    true,
 			Description: "User-provided service description",
 		},
-		"notifications": {
-			Type:        schema.TypeList,
-			Computed:    true,
-			Description: "Recipients of notifications on service profile change",
-			Elem: &schema.Resource{
-				Schema: readNotificationSch(),
-			},
-		},
-		"tags": {
-			Type:        schema.TypeList,
-			Computed:    true,
-			Description: "Tags",
-			Elem: &schema.Schema{
-				Type: schema.TypeString,
-			},
-		},
-		"visibility": {
-			Type:        schema.TypeString,
-			Computed:    true,
-			Description: "Visibility of the service profile",
-		},
-		"allowed_emails": {
-			Type:        schema.TypeList,
-			Computed:    true,
-			Description: "User Emails that are allowed to access this service profile",
-			Elem: &schema.Schema{
-				Type: schema.TypeString,
-			},
-		},
-		"access_point_type_configs": {
-			Type:        schema.TypeList,
-			Computed:    true,
-			Description: "Access Point Type Configs",
-			Elem: &schema.Resource{
-				Schema: readServiceProfileAccessPointType(),
-			},
-		},
-		"custom_fields": {
-			Type:        schema.TypeList,
-			Computed:    true,
-			Description: "Custom Fields",
-			Elem: &schema.Resource{
-				Schema: readCustomFields(),
-			},
-		},
-		"marketing_info": {
-			Type:        schema.TypeSet,
-			Computed:    true,
-			Description: "Marketing Info",
-			Elem: &schema.Resource{
-				Schema: readServiceProfileMarketingInfo(),
-			},
-		},
-		"ports": {
-			Type:        schema.TypeSet,
-			Computed:    true,
-			Description: "Ports",
-			Elem: &schema.Resource{
-				Schema: readServiceProfileAccessPointColo(),
-			},
-		},
-		"virtual_devices": {
-			Type:        schema.TypeSet,
-			Computed:    true,
-			Description: "Virtual Devices",
-			Elem: &schema.Resource{
-				Schema: readServiceProfileAccessPointVd(),
-			},
-		},
-		"metros": {
-			Type:        schema.TypeSet,
-			Computed:    true,
-			Description: "Derived response attribute",
-			Elem: &schema.Resource{
-				Schema: readServiceProfileMetroSch(),
-			},
-		},
-		"self_profile": {
-			Type:        schema.TypeBool,
-			Computed:    true,
-			Description: "Response attribute indicates whether the profile belongs to the same organization as the api-invoker",
-		},
 	}
 }
 
@@ -674,7 +109,7 @@ func readAccessPointLinkProtocolSch() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
 		"type": {
 			Type:        schema.TypeString,
-			Computed:    true,
+			Optional:    true,
 			Description: "Type of the link protocol",
 		},
 		"vlan_tag": {
@@ -723,11 +158,6 @@ func readAccessPointVirtualDeviceSch() map[string]*schema.Schema {
 			Computed:    true,
 			Description: "Equinix-assigned Virtual Device identifier",
 		},
-		"name": {
-			Type:        schema.TypeString,
-			Computed:    true,
-			Description: "Customer-assigned Virtual Device name",
-		},
 		"type": {
 			Type:        schema.TypeString,
 			Computed:    true,
@@ -752,46 +182,6 @@ func readAccessPointInterface() map[string]*schema.Schema {
 			Type:        schema.TypeString,
 			Computed:    true,
 			Description: "Interface type",
-		},
-	}
-}
-
-func readFabricConnectionRoutingProtocol() map[string]*schema.Schema {
-	return map[string]*schema.Schema{
-		"type": {
-			Type:        schema.TypeString,
-			Computed:    true,
-			Description: "Routing Protocol type",
-		},
-		"uuid": {
-			Type:        schema.TypeString,
-			Computed:    true,
-			Description: "Routing protocol instance identifier",
-		},
-		"state": {
-			Type:        schema.TypeString,
-			Computed:    true,
-			Description: "Routing protocol instance state",
-		},
-	}
-}
-
-func readFabricConnectionSideOrganizationSch() map[string]*schema.Schema {
-	return map[string]*schema.Schema{
-		"id": {
-			Type:        schema.TypeString,
-			Computed:    true,
-			Description: "Organization id -customer organization id",
-		},
-		"type": {
-			Type:        schema.TypeString,
-			Computed:    true,
-			Description: "Organization id -customer organization id",
-		},
-		"name": {
-			Type:        schema.TypeString,
-			Computed:    true,
-			Description: "Organization name -customer organization name",
 		},
 	}
 }
@@ -824,26 +214,11 @@ func readPortSch() map[string]*schema.Schema {
 	}
 }
 
-func readPortRedundancySch() map[string]*schema.Schema {
-	return map[string]*schema.Schema{
-		"group": {
-			Type:        schema.TypeInt,
-			Computed:    true,
-			Description: "Redundancy group identifier",
-		},
-		"priority": {
-			Type:        schema.TypeString,
-			Computed:    true,
-			Description: "Priority type",
-		},
-	}
-}
-
 func readConnectionSideAccessPointSch() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
 		"type": {
 			Type:        schema.TypeString,
-			Computed:    true,
+			Optional:    true,
 			Description: "Access point type",
 		},
 		"authentication_key": {
@@ -920,16 +295,8 @@ func readConnectionSideAccessPointSch() map[string]*schema.Schema {
 		},
 		"peering_type": {
 			Type:        schema.TypeString,
-			Computed:    true,
+			Optional:    true,
 			Description: "Peering Type",
-		},
-		"routing_protocols": {
-			Type:        schema.TypeList,
-			Computed:    true,
-			Description: "Access point routing protocols configuration",
-			Elem: &schema.Resource{
-				Schema: readFabricConnectionRoutingProtocol(),
-			},
 		},
 		"additional_info": {
 			Type:        schema.TypeString,
@@ -946,15 +313,6 @@ func readConnectionSideAccessPointSch() map[string]*schema.Schema {
 
 func readFabricConnectionSideSch() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
-
-		"invitation": {
-			Type:        schema.TypeSet,
-			Computed:    true,
-			Description: "Invitation based on connection request",
-			Elem: &schema.Resource{
-				Schema: readInvitationSch(),
-			},
-		},
 		"service_token": {
 			Type:        schema.TypeSet,
 			Computed:    true,
@@ -989,6 +347,16 @@ func readRedundancySch() map[string]*schema.Schema {
 			Computed:    true,
 			Description: "Redundancy group identifier",
 		},
+		"priority": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "Priority type",
+		},
+	}
+}
+
+func readPortRedundancySch() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
 		"priority": {
 			Type:        schema.TypeString,
 			Computed:    true,
@@ -1119,11 +487,6 @@ func readAccountSch() map[string]*schema.Schema {
 			Computed:    true,
 			Description: "Global organization name",
 		},
-		"ucm_id": {
-			Type:        schema.TypeString,
-			Computed:    true,
-			Description: "System unique identifier",
-		},
 		"global_cust_id": {
 			Type:        schema.TypeString,
 			Computed:    true,
@@ -1209,7 +572,6 @@ func readOperationalErrorSch() map[string]*schema.Schema {
 }
 
 func readOperationSch() map[string]*schema.Schema {
-
 	return map[string]*schema.Schema{
 		"provider_status": {
 			Type:        schema.TypeString,
@@ -1242,70 +604,6 @@ func readOperationSch() map[string]*schema.Schema {
 	}
 }
 
-func readChangeSch() map[string]*schema.Schema {
-	return map[string]*schema.Schema{
-		"uuid": {
-			Type:        schema.TypeString,
-			Computed:    true,
-			Description: "Unique identifier of the change",
-		},
-		"type": {
-			Type:        schema.TypeString,
-			Computed:    true,
-			Description: "Type of change",
-		},
-		"status": {
-			Type:        schema.TypeString,
-			Computed:    true,
-			Description: "Current outcome of the change flow",
-		},
-		"creation_date_time": {
-			Type:        schema.TypeString,
-			Computed:    true,
-			Description: "Time change request received",
-		},
-		"updated_date_time": {
-			Type:        schema.TypeString,
-			Computed:    true,
-			Description: "Record last updated",
-		},
-		"information": {
-			Type:        schema.TypeString,
-			Computed:    true,
-			Description: "Additional information",
-		},
-		"data": {
-			Type:        schema.TypeSet,
-			Computed:    true,
-			Description: "Change operation data",
-			Elem: &schema.Resource{
-				Schema: readFabricConnectionChangeDataSch(),
-			},
-		},
-	}
-}
-
-func readFabricConnectionChangeDataSch() map[string]*schema.Schema {
-
-	return map[string]*schema.Schema{
-		"op": {
-			Type:        schema.TypeString,
-			Computed:    true,
-			Description: "Operation name",
-		},
-		"path": {
-			Type:        schema.TypeString,
-			Computed:    true,
-			Description: "Path inside document leading to updated parameter",
-		},
-		"value": {
-			Type:        schema.TypeString,
-			Computed:    true,
-			Description: "New value for updated parameter",
-		},
-	}
-}
-
 func readAdditionalInfoSch() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
 		"key": {
@@ -1321,65 +619,6 @@ func readAdditionalInfoSch() map[string]*schema.Schema {
 	}
 }
 
-func readIpv4Sch() map[string]*schema.Schema {
-	return map[string]*schema.Schema{
-		"customer_peer_ip": {
-			Type:        schema.TypeString,
-			Computed:    true,
-			Description: "Customer peering ip",
-		},
-		"provider_peer_ip": {
-			Type:        schema.TypeString,
-			Computed:    true,
-			Description: "Provider peering ip",
-		},
-	}
-}
-
-/*func readRoutingProtocolSch() map[string]*schema.Schema {
-	return map[string]*schema.Schema{
-		"type": {
-			Type:        schema.TypeString,
-			Computed:    true,
-			Description: "Routing Protocol Type",
-		},
-		"uuid": {
-			Type:        schema.TypeString,
-			Computed:    true,
-			Description: "Routing protocol identifier",
-		},
-		"customer_asn": {
-			Type:        schema.TypeInt,
-			Computed:    true,
-			Description: "Customer asn",
-		},
-		"peer_asn": {
-			Type:        schema.TypeInt,
-			Computed:    true,
-			Description: "Peer asn",
-		},
-		"bgp_auth_key": {
-			Type:        schema.TypeString,
-			Computed:    true,
-			Description: "BGP authorization key",
-		},
-		"ipv4": {
-			Type:        schema.TypeSet,
-			Computed:    true,
-			Description: "ip information",
-			Elem:        &schema.Resource{Schema: readIpv4Sch()},
-		},
-		"route_filters": {
-			Type:        schema.TypeList,
-			Computed:    true,
-			Description: "Route filters values",
-			Elem: &schema.Schema{
-				Type: schema.TypeString,
-			},
-		},
-	}
-}*/
-
 func readFabricConnectionResourceSchema() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
 		"uuid": {
@@ -1394,7 +633,7 @@ func readFabricConnectionResourceSchema() map[string]*schema.Schema {
 		},
 		"name": {
 			Type:        schema.TypeString,
-			Computed:    true,
+			Required:    true,
 			Description: "Connection name. An alpha-numeric 24 characters string which can include only hyphens and underscores",
 		},
 		"description": {
@@ -1404,12 +643,12 @@ func readFabricConnectionResourceSchema() map[string]*schema.Schema {
 		},
 		"type": {
 			Type:        schema.TypeString,
-			Computed:    true,
+			Required:    true,
 			Description: "Defines the connection type like VG_VC, EVPL_VC, EPL_VC, EC_VC, GW_VC, ACCESS_EPL_VC",
 		},
 		"bandwidth": {
 			Type:        schema.TypeInt,
-			Computed:    true,
+			Required:    true,
 			Description: "Connection bandwidth in Mbps",
 		},
 		"is_remote": {
@@ -1422,14 +661,6 @@ func readFabricConnectionResourceSchema() map[string]*schema.Schema {
 			Computed:    true,
 			Description: "Connection overall state",
 		},
-		"change": {
-			Type:        schema.TypeSet,
-			Computed:    true,
-			Description: "Represents latest change request and its state information",
-			Elem: &schema.Resource{
-				Schema: readChangeSch(),
-			},
-		},
 		"operation": {
 			Type:        schema.TypeSet,
 			Computed:    true,
@@ -1440,7 +671,7 @@ func readFabricConnectionResourceSchema() map[string]*schema.Schema {
 		},
 		"notifications": {
 			Type:        schema.TypeList,
-			Computed:    true,
+			Required:    true,
 			Description: "Preferences for notifications on connection configuration or status changes",
 			Elem: &schema.Resource{
 				Schema: readNotificationSch(),
@@ -1457,7 +688,6 @@ func readFabricConnectionResourceSchema() map[string]*schema.Schema {
 		"order": {
 			Type:        schema.TypeSet,
 			Computed:    true,
-			ForceNew:    true,
 			Description: "Order related to this connection information",
 			Elem: &schema.Resource{
 				Schema: readOrderSch(),
@@ -1466,7 +696,6 @@ func readFabricConnectionResourceSchema() map[string]*schema.Schema {
 		"account": {
 			Type:        schema.TypeSet,
 			Computed:    true,
-			ForceNew:    true,
 			Description: "Customer account information that is associated with this connection",
 			Elem: &schema.Resource{
 				Schema: readAccountSch(),
@@ -1495,8 +724,7 @@ func readFabricConnectionResourceSchema() map[string]*schema.Schema {
 		},
 		"a_side": {
 			Type:        schema.TypeSet,
-			Computed:    true,
-			ForceNew:    true,
+			Required:    true,
 			Description: "Requester or Customer side connection configuration object of the multi-segment connection",
 			Elem: &schema.Resource{
 				Schema: readFabricConnectionSideSch(),
@@ -1504,8 +732,7 @@ func readFabricConnectionResourceSchema() map[string]*schema.Schema {
 		},
 		"z_side": {
 			Type:        schema.TypeSet,
-			Computed:    true,
-			ForceNew:    true,
+			Required:    true,
 			Description: "Destination or Provider side connection configuration object of the multi-segment connection",
 			Elem: &schema.Resource{
 				Schema: readFabricConnectionSideSch(),

@@ -49,7 +49,6 @@ func resourceFabricConnectionCreate(ctx context.Context, d *schema.ResourceData,
 	for _, as := range aside {
 		asideMap := as.(map[string]interface{})
 		accessPoint := asideMap["access_point"].(interface{}).(*schema.Set).List()
-		invitationRequest := asideMap["invitation"].(interface{}).(*schema.Set).List()
 		serviceTokenRequest := asideMap["service_token"].(interface{}).(*schema.Set).List()
 		additionalInfoRequest := asideMap["additional_info"].([]interface{})
 
@@ -57,11 +56,6 @@ func resourceFabricConnectionCreate(ctx context.Context, d *schema.ResourceData,
 			ap := accessPointToFabric(accessPoint)
 			connectionASide = v4.ConnectionSide{AccessPoint: &ap}
 		}
-		if len(invitationRequest) != 0 {
-			mappedInvitation := invitationToFabric(invitationRequest)
-			connectionASide = v4.ConnectionSide{Invitation: &mappedInvitation}
-		}
-
 		if len(serviceTokenRequest) != 0 {
 			mappedServiceToken := serviceTokenToFabric(serviceTokenRequest)
 			connectionASide = v4.ConnectionSide{ServiceToken: &mappedServiceToken}
@@ -78,17 +72,12 @@ func resourceFabricConnectionCreate(ctx context.Context, d *schema.ResourceData,
 	for _, as := range zside {
 		zsideMap := as.(map[string]interface{})
 		accessPoint := zsideMap["access_point"].(interface{}).(*schema.Set).List()
-		invitationRequest := zsideMap["invitation"].(interface{}).(*schema.Set).List()
 		serviceTokenRequest := zsideMap["service_token"].(interface{}).(*schema.Set).List()
 		additionalInfoRequest := zsideMap["additional_info"].([]interface{})
 
 		if len(accessPoint) != 0 {
 			ap := accessPointToFabric(accessPoint)
 			connectionZSide = v4.ConnectionSide{AccessPoint: &ap}
-		}
-		if len(invitationRequest) != 0 {
-			mappedInvitation := invitationToFabric(invitationRequest)
-			connectionZSide = v4.ConnectionSide{Invitation: &mappedInvitation}
 		}
 
 		if len(serviceTokenRequest) != 0 {

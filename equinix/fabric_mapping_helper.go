@@ -14,17 +14,8 @@ func serviceTokenToFabric(serviceTokenRequest []interface{}) v4.ServiceToken {
 		stMap := str.(map[string]interface{})
 		stType := stMap["type"].(interface{}).(string)
 		uuid := stMap["uuid"].(interface{}).(string)
-		description := stMap["description"].(interface{}).(string)
-		expirationDateTime := stMap["expiration_date_time"].(interface{}).(string)
-		notifications := stMap["notifications"].(interface{}).(*schema.Set).List()
-		var mappedNotifications []v4.SimplifiedNotification
-		if len(notifications) != 0 {
-			mappedNotifications = notificationToFabric(notifications)
-		}
 		stTypeObj := v4.ServiceTokenType(stType)
-
-		mappedST = v4.ServiceToken{Type_: &stTypeObj, Uuid: uuid, Description: description, ExpirationDateTime: stringToTime("expiration_date_time", "", expirationDateTime),
-			Notifications: mappedNotifications}
+		mappedST = v4.ServiceToken{Type_: &stTypeObj, Uuid: uuid}
 	}
 	return mappedST
 }
@@ -42,21 +33,6 @@ func additionalInfoToFabric(additionalInfoRequest []interface{}) []v4.Connection
 		i++
 	}
 	return mappedaiArray
-}
-
-func invitationToFabric(invitationRequest []interface{}) v4.Invitation {
-
-	mappedI := v4.Invitation{}
-	for _, i := range invitationRequest {
-		iMap := i.(map[string]interface{})
-		iType := iMap["type"].(interface{}).(string)
-		uuid := iMap["uuid"].(interface{}).(string)
-		state := iMap["state"].(interface{}).(string)
-		email := iMap["email"].(interface{}).(string)
-		expiry := iMap["expiry"].(interface{}).(string)
-		mappedI = v4.Invitation{Type_: iType, Uuid: uuid, State: state, Email: email, Expiry: expiry}
-	}
-	return mappedI
 }
 
 func accessPointToFabric(accessPointRequest []interface{}) v4.AccessPoint {
@@ -120,9 +96,10 @@ func gatewayToFabric(gatewayRequest []interface{}) v4.VirtualGateway {
 		gwrMap := gwr.(map[string]interface{})
 		gwtype := gwrMap["type"].(interface{}).(string)
 		gwName := gwrMap["name"].(interface{}).(string)
-		gwsl := locationNoIbxToFabric(gwrMap["location"].(interface{}).(*schema.Set).List())
+		// TODO
+		//gwuuid := gwrMap["uuid"].(interface{}).(string)
 		pr := projectToFabric(gwrMap["project"].(interface{}).(*schema.Set).List())
-		gatewayMapped = v4.VirtualGateway{Type_: gwtype, Name: gwName, Location: &gwsl, Project: &pr}
+		gatewayMapped = v4.VirtualGateway{Type_: gwtype, Name: gwName, Project: &pr}
 	}
 	return gatewayMapped
 }
@@ -155,6 +132,7 @@ func notificationToFabric(schemaNotifications []interface{}) []v4.SimplifiedNoti
 }
 
 func redundancyToFabric(schemaRedundancy []interface{}) v4.ConnectionRedundancy {
+
 	red := v4.ConnectionRedundancy{}
 	for _, r := range schemaRedundancy {
 		redundancyMap := r.(map[string]interface{})
@@ -172,7 +150,10 @@ func orderToFabric(schemaOrder []interface{}) v4.Order {
 	for _, o := range schemaOrder {
 		orderMap := o.(map[string]interface{})
 		purchaseOrderNumber := orderMap["purchase_order_number"]
-		order = v4.Order{PurchaseOrderNumber: purchaseOrderNumber.(string)}
+		billingTier := orderMap["billing_tier"]
+		orderId := orderMap["order_id"]
+		orderNumber := orderMap["order_number"]
+		order = v4.Order{PurchaseOrderNumber: purchaseOrderNumber.(string), BillingTier: billingTier.(string), OrderId: orderId.(string), OrderNumber: orderNumber.(string)}
 	}
 	return order
 }
@@ -183,8 +164,11 @@ func linkProtocolToFabric(linkProtocolList []interface{}) v4.SimplifiedLinkProto
 		lpMap := lp.(map[string]interface{})
 		lpType := lpMap["type"].(interface{}).(string)
 		lpVlanSTag := lpMap["vlan_s_tag"].(interface{}).(int)
+		lpVlanTag := lpMap["vlan_tag"].(interface{}).(int)
+		lpVlanCTag := lpMap["vlan_c_tag"].(interface{}).(int)
+		lpVni := lpMap["vni"].(interface{}).(int)
 		lpt := v4.LinkProtocolType(lpType)
-		slp = v4.SimplifiedLinkProtocol{Type_: &lpt, VlanSTag: int32(lpVlanSTag)}
+		slp = v4.SimplifiedLinkProtocol{Type_: &lpt, VlanSTag: int32(lpVlanSTag), VlanTag: int32(lpVlanTag), VlanCTag: int32(lpVlanCTag), Vni: int32(lpVni)}
 	}
 	return slp
 }
@@ -228,19 +212,6 @@ func locationToFabric(locationList []interface{}) v4.SimplifiedLocation {
 	return sl
 }
 
-func locationNoIbxToFabric(locationList []interface{}) v4.SimplifiedLocationWithoutIbx {
-	sl := v4.SimplifiedLocationWithoutIbx{}
-	for _, ll := range locationList {
-		llMap := ll.(map[string]interface{})
-		href := llMap["href"].(interface{}).(string)
-		metroName := llMap["metro_name"].(interface{}).(string)
-		region := llMap["region"].(interface{}).(string)
-		mc := llMap["metro_code"].(interface{}).(string)
-		sl = v4.SimplifiedLocationWithoutIbx{Href: href, MetroCode: mc, Region: region, MetroName: metroName}
-	}
-	return sl
-}
-
 func accountToTerra(account *v4.SimplifiedAccount) *schema.Set {
 	if account == nil {
 		return nil
@@ -255,7 +226,6 @@ func accountToTerra(account *v4.SimplifiedAccount) *schema.Set {
 		mappedAccount["organization_name"] = account.OrganizationName
 		mappedAccount["global_org_id"] = account.GlobalOrgId
 		mappedAccount["global_organization_name"] = account.GlobalOrganizationName
-		mappedAccount["ucm_id"] = account.UcmId
 		mappedAccount["global_cust_id"] = account.GlobalCustId
 		mappedAccounts = append(mappedAccounts, mappedAccount)
 	}
@@ -269,6 +239,39 @@ func accountToTerra(account *v4.SimplifiedAccount) *schema.Set {
 	return accountSet
 }
 
+func errorToTerra(errors []v4.ModelError) []map[string]interface{} {
+	if errors == nil {
+		return nil
+	}
+	mappedErrors := make([]map[string]interface{}, len(errors))
+	for index, mError := range errors {
+		mappedErrors[index] = map[string]interface{}{
+			"error_code":      mError.ErrorCode,
+			"error_message":   mError.ErrorMessage,
+			"correlation_id":  mError.CorrelationId,
+			"details":         mError.Details,
+			"help":            mError.Help,
+			"additional_info": errorAdditionalInfoToTerra(mError.AdditionalInfo),
+		}
+	}
+	return mappedErrors
+}
+
+func errorAdditionalInfoToTerra(additionalInfol []v4.PriceErrorAdditionalInfo) []map[string]interface{} {
+
+	if additionalInfol == nil {
+		return nil
+	}
+	mappedAdditionalInfol := make([]map[string]interface{}, len(additionalInfol))
+	for index, additionalInfo := range additionalInfol {
+		mappedAdditionalInfol[index] = map[string]interface{}{
+			"property": additionalInfo.Property,
+			"reason":   additionalInfo.Reason,
+		}
+	}
+	return mappedAdditionalInfol
+}
+
 func operationToTerra(operation *v4.ConnectionOperation) *schema.Set {
 	if operation == nil {
 		return nil
@@ -280,7 +283,7 @@ func operationToTerra(operation *v4.ConnectionOperation) *schema.Set {
 		mappedOperation["provider_status"] = string(*operation.ProviderStatus)
 		mappedOperation["equinix_status"] = string(*operation.EquinixStatus)
 		mappedOperation["operational_status"] = operation.OperationalStatus
-		// TODO mappedOperation["errors"] = operation.Errors
+		mappedOperation["errors"] = errorToTerra(operation.Errors)
 		mappedOperation["op_status_changed_at"] = operation.OpStatusChangedAt.String()
 		mappedOperations = append(mappedOperations, mappedOperation)
 	}
@@ -291,7 +294,6 @@ func operationToTerra(operation *v4.ConnectionOperation) *schema.Set {
 	return operationSet
 }
 
-//Set
 func orderMappingToTerra(order *v4.Order) *schema.Set {
 	if order == nil {
 		return nil
@@ -313,7 +315,6 @@ func orderMappingToTerra(order *v4.Order) *schema.Set {
 	return orderSet
 }
 
-//Set
 func changeLogToTerra(changeLog *v4.Changelog) *schema.Set {
 	if changeLog == nil {
 		return nil
@@ -347,7 +348,6 @@ func portRedundancyToTerra(redundancy *v4.PortRedundancy) *schema.Set {
 	mappedRedundancys := make([]interface{}, 0)
 	for _, redundancy := range redundancies {
 		mappedRedundancy := make(map[string]interface{})
-		mappedRedundancy["group"] = int(redundancy.Group)
 		mappedRedundancy["priority"] = string(*redundancy.Priority)
 		mappedRedundancys = append(mappedRedundancys, mappedRedundancy)
 	}
@@ -392,7 +392,6 @@ func notificationToTerra(notifications []v4.SimplifiedNotification) []map[string
 	return mappedNotifications
 }
 
-//Set
 func locationToTerra(location *v4.SimplifiedLocation) *schema.Set {
 	locations := []*v4.SimplifiedLocation{location}
 	mappedLocations := make([]interface{}, 0)
@@ -411,15 +410,41 @@ func locationToTerra(location *v4.SimplifiedLocation) *schema.Set {
 	return locationSet
 }
 
-//Set TODO not fully implemented
+func serviceTokenToTerra(serviceToken *v4.ServiceToken) *schema.Set {
+
+	if serviceToken == nil {
+		return nil
+	}
+	serviceTokens := []*v4.ServiceToken{serviceToken}
+	mappedServiceTokens := make([]interface{}, 0)
+	for _, serviceToken := range serviceTokens {
+		mappedServiceToken := make(map[string]interface{})
+		if serviceToken.Type_ != nil {
+			mappedServiceToken["type"] = string(*serviceToken.Type_)
+		}
+		mappedServiceToken["href"] = serviceToken.Href
+		mappedServiceToken["uuid"] = serviceToken.Uuid
+		mappedServiceToken["description"] = serviceToken.Description
+		mappedServiceTokens = append(mappedServiceTokens, mappedServiceToken)
+	}
+	serviceTokenSet := schema.NewSet(
+		schema.HashResource(createServiceTokenRes),
+		mappedServiceTokens,
+	)
+	return serviceTokenSet
+}
+
 func connectionSideToTerra(connectionSide *v4.ConnectionSide) *schema.Set {
 	connectionSides := []*v4.ConnectionSide{connectionSide}
 	mappedConnectionSides := make([]interface{}, 0)
 	for _, connectionSide := range connectionSides {
 		mappedConnectionSide := make(map[string]interface{})
-		//mappedConnectionSide["serviceToken"] = connectionSide.ServiceToken
+		serviceTokenSet := serviceTokenToTerra(connectionSide.ServiceToken)
+		if serviceTokenSet != nil {
+			mappedConnectionSide["service_token"] = serviceTokenSet
+		}
 		mappedConnectionSide["access_point"] = accessPointToTerra(connectionSide.AccessPoint)
-		//mappedConnectionSide["additionalInfo"] = connectionSide.AdditionalInfo
+		//mappedConnectionSide["additional_info"] = additionalInfoToTerra(connectionSide.AdditionalInfo)
 		mappedConnectionSides = append(mappedConnectionSides, mappedConnectionSide)
 	}
 	connectionSideSet := schema.NewSet(
@@ -429,7 +454,97 @@ func connectionSideToTerra(connectionSide *v4.ConnectionSide) *schema.Set {
 	return connectionSideSet
 }
 
-//Set
+func additionalInfoToTerra(additionalInfol []v4.ConnectionSideAdditionalInfo) []map[string]interface{} {
+	if additionalInfol == nil {
+		return nil
+	}
+	mappedadditionalInfol := make([]map[string]interface{}, len(additionalInfol))
+	for index, additionalInfo := range additionalInfol {
+		mappedadditionalInfol[index] = map[string]interface{}{
+			"key":   additionalInfo.Key,
+			"value": additionalInfo.Value,
+		}
+	}
+	return mappedadditionalInfol
+}
+
+func fabricGatewayToTerra(virtualGateway *v4.VirtualGateway) *schema.Set {
+	if virtualGateway == nil {
+		return nil
+	}
+	virtualGateways := []*v4.VirtualGateway{virtualGateway}
+	mappedvirtualGateways := make([]interface{}, 0)
+	for _, virtualGateway := range virtualGateways {
+		mappedvirtualGateway := make(map[string]interface{})
+		//mappedvirtualGateway["uuid"] = virtualGateway.uuid
+		//mappedvirtualGateway["href"] = virtualGateway.href
+		mappedvirtualGateway["type"] = virtualGateway.Type_
+		mappedvirtualGateway["project"] = projectToTerra(virtualGateway.Project)
+		mappedvirtualGateways = append(mappedvirtualGateways, mappedvirtualGateway)
+	}
+	linkedProtocolSet := schema.NewSet(
+		schema.HashResource(createGatewayProjectSchRes),
+		mappedvirtualGateways)
+	return linkedProtocolSet
+}
+
+func projectToTerra(project *v4.Project) *schema.Set {
+	if project == nil {
+		return nil
+	}
+	projects := []*v4.Project{project}
+	mappedProjects := make([]interface{}, 0)
+	for _, project := range projects {
+		mappedProject := make(map[string]interface{})
+		mappedProject["project_id"] = project.ProjectId
+		mappedProject["href"] = project.Href
+		mappedProjects = append(mappedProjects, mappedProject)
+	}
+	projectSet := schema.NewSet(
+		schema.HashResource(createGatewayProjectSchRes),
+		mappedProjects)
+	return projectSet
+}
+
+func virtualDeviceToTerra(virtualDevice *v4.VirtualDevice) *schema.Set {
+	if virtualDevice == nil {
+		return nil
+	}
+	virtualDevices := []*v4.VirtualDevice{virtualDevice}
+	mappedVirtualDevices := make([]interface{}, 0)
+	for _, virtualDevice := range virtualDevices {
+		mappedVirtualDevice := make(map[string]interface{})
+		mappedVirtualDevice["name"] = virtualDevice.Name
+		mappedVirtualDevice["href"] = virtualDevice.Href
+		mappedVirtualDevice["type"] = virtualDevice.Type_
+		mappedVirtualDevice["uuid"] = virtualDevice.Uuid
+		mappedVirtualDevices = append(mappedVirtualDevices, mappedVirtualDevice)
+	}
+	virtualDeviceSet := schema.NewSet(
+		schema.HashResource(createAccessPointVirtualDeviceRes),
+		mappedVirtualDevices)
+	return virtualDeviceSet
+}
+
+func interfaceToTerra(mInterface *v4.ModelInterface) *schema.Set {
+	if mInterface == nil {
+		return nil
+	}
+	mInterfaces := []*v4.ModelInterface{mInterface}
+	mappedMInterfaces := make([]interface{}, 0)
+	for _, mInterface := range mInterfaces {
+		mappedMInterface := make(map[string]interface{})
+		mappedMInterface["id"] = mInterface.Id
+		mappedMInterface["type"] = mInterface.Type_
+		mappedMInterface["uuid"] = mInterface.Uuid
+		mappedMInterfaces = append(mappedMInterfaces, mappedMInterface)
+	}
+	mInterfaceSet := schema.NewSet(
+		schema.HashResource(createAccessPointVirtualDeviceRes),
+		mappedMInterfaces)
+	return mInterfaceSet
+}
+
 func accessPointToTerra(accessPoint *v4.AccessPoint) *schema.Set {
 	accessPoints := []*v4.AccessPoint{accessPoint}
 	mappedAccessPoints := make([]interface{}, 0)
@@ -452,19 +567,27 @@ func accessPointToTerra(accessPoint *v4.AccessPoint) *schema.Set {
 			mappedAccessPoint["profile"] = simplifiedServiceProfileToTerra(accessPoint.Profile)
 		}
 
-		//mappedAccessPoint["gateway"] = accessPoint.Gateway
+		if accessPoint.Gateway != nil {
+			mappedAccessPoint["gateway"] = fabricGatewayToTerra(accessPoint.Gateway)
+		}
+
 		if accessPoint.LinkProtocol != nil {
 			mappedAccessPoint["link_protocol"] = linkedProtocolToTerra(accessPoint.LinkProtocol)
 		}
 
-		//mappedAccessPoint["virtualDevice"] = accessPoint.VirtualDevice
-		//mappedAccessPoint["interface"] = accessPoint.Interface_
-		//mappedAccessPoint["sellerRegion"] = accessPoint.SellerRegion
-		//mappedAccessPoint["peeringType"] = accessPoint.PeeringType
+		if accessPoint.VirtualDevice != nil {
+			mappedAccessPoint["virtual_device"] = virtualDeviceToTerra(accessPoint.VirtualDevice)
+		}
+		if accessPoint.Interface_ != nil {
+			mappedAccessPoint["interface"] = interfaceToTerra(accessPoint.Interface_)
+		}
+		mappedAccessPoint["seller_region"] = accessPoint.SellerRegion
+		if accessPoint.PeeringType != nil {
+			mappedAccessPoint["peering_type"] = string(*accessPoint.PeeringType)
+		}
 		mappedAccessPoint["authentication_key"] = accessPoint.AuthenticationKey
-		//mappedAccessPoint["routingProtocols"] = accessPoint.RoutingProtocols
-		//mappedAccessPoint["additionalInfo"] = accessPoint.AdditionalInfo
-		//mappedAccessPoint["providerConnectionId"] = accessPoint.ProviderConnectionId
+		// TODO this is an empty struct mappedAccessPoint["additionalInfo"] = accessPoint.AdditionalInfo
+		mappedAccessPoint["provider_connection_id"] = accessPoint.ProviderConnectionId
 		mappedAccessPoints = append(mappedAccessPoints, mappedAccessPoint)
 	}
 	accessPointSet := schema.NewSet(
@@ -485,7 +608,7 @@ func linkedProtocolToTerra(linkedProtocol *v4.SimplifiedLinkProtocol) *schema.Se
 		mappedLinkedProtocol["vlan_s_tag"] = int(linkedProtocol.VlanSTag)
 		mappedLinkedProtocol["vlan_c_tag"] = int(linkedProtocol.VlanCTag)
 		mappedLinkedProtocol["unit"] = string(linkedProtocol.Unit)
-		mappedLinkedProtocol["vni"] = string(linkedProtocol.Vni)
+		mappedLinkedProtocol["vni"] = int(linkedProtocol.Vni)
 		mappedLinkedProtocol["int_unit"] = string(linkedProtocol.IntUnit)
 		mappedLinkedProtocols = append(mappedLinkedProtocols, mappedLinkedProtocol)
 	}
@@ -555,7 +678,7 @@ func stringToTime(attribute string, format string, date string) time.Time {
 	}
 	t, err := time.Parse(defaultFormat, date)
 	if err != nil {
-		fmt.Errorf(" Error while parsing date %s for the format %s , for the attribute %s", format, date, attribute)
+		err = fmt.Errorf(" Error while parsing date %s for the format %s , for the attribute %s", format, date, attribute)
 	}
 	return t
 }
