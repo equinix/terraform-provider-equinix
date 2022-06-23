@@ -46,24 +46,24 @@ func TestAccDataSourceMetalFacility_basic(t *testing.T) {
 	})
 }
 
-func TestAccDataSourceMetalFacility_features(t *testing.T) {
+func TestAccDataSourceMetalFacility_Features(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config:      testAccDataSourceMetalFacilityConfig_features(),
+				Config:      testAccDataSourceMetalFacilityConfig_missingFeatures(),
 				ExpectError: matchErrMissingFeature,
 			},
 		},
 	})
 }
 
-func testAccDataSourceMetalFacilityConfig_features() string {
+func testAccDataSourceMetalFacilityConfig_missingFeatures() string {
 	return `
 data "equinix_metal_facility" "test" {
-    code = "ny5"
-    features_required = ["baremetal", "ibx"]
+    code = "da11"
+    features_required = ["baremetal", "ibx", "foofeature"]
 }
 `
 }
