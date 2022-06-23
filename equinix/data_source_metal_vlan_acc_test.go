@@ -115,7 +115,7 @@ data "equinix_metal_vlan" "dsvlan" {
 resource "equinix_metal_vlan" "barvlan" {
     project_id = equinix_metal_project.foobar.id
     metro = equinix_metal_vlan.foovlan.metro
-	description = "%s"
+    description = "%s"
     vxlan = 6
 }
 
