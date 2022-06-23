@@ -19,7 +19,7 @@ resource "equinix_metal_project" "test" {
 
 resource "equinix_metal_device" "test" {
   hostname         = "tfacc-device-port-vlan-attachment-test"
-  plan             = "m3.xlarge.x86"
+  plan             = "m3.large.x86"
   facilities       = ["ny5"]
   operating_system = "ubuntu_16_04"
   billing_cycle    = "hourly"
@@ -104,7 +104,7 @@ resource "equinix_metal_project" "test" {
 
 resource "equinix_metal_device" "test" {
   hostname         = "tfacc-vlan-l2i-test"
-  plan             = "m3.xlarge.x86"
+  plan             = "m3.large.x86"
   facilities       = ["ny5"]
   operating_system = "ubuntu_16_04"
   billing_cycle    = "hourly"
@@ -262,7 +262,7 @@ resource "equinix_metal_project" "test" {
 
 resource "equinix_metal_device" "test" {
   hostname         = "tfacc-device-hmv-test"
-  plan             = "m3.xlarge.x86"
+  plan             = "m3.large.x86"
   facilities       = ["ny5"]
   operating_system = "ubuntu_16_04"
   billing_cycle    = "hourly"
@@ -376,7 +376,7 @@ resource "equinix_metal_project" "test" {
 
 resource "equinix_metal_device" "test" {
   hostname         = "tfacc-device-l2n-test"
-  plan             = "m3.xlarge.x86"
+  plan             = "m3.large.x86"
   facilities       = ["ny5"]
   operating_system = "ubuntu_16_04"
   billing_cycle    = "hourly"
