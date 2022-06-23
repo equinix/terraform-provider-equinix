@@ -216,7 +216,6 @@ func getConnectionPorts(cps []packngo.ConnectionPort) []map[string]interface{} {
 			"link_status":         p.LinkStatus,
 			"virtual_circuit_ids": vcIDs,
 		}
-		ret = append(ret, connPort)
 		// sort the ports by role, asserting the API always returns primary for len of 1 responses
 		ret[order[p.Role]] = connPort
 	}
