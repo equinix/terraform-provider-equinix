@@ -1,3 +1,30 @@
+## 1.6.0 (Jul 1, 2022)
+
+FEATURES:
+
+- New data source `equinix_metal_plans` for querying plans using filters [#215](https://github.com/equinix/terraform-provider-equinix/pull/215)
+- New resource and data source `equinix_metal_vrf` [#129](https://github.com/equinix/terraform-provider-equinix/pull/129)
+- Adds `address` as a datasource attribute and required resource argument to `equinix_metal_organization` [#137](https://github.com/equinix/terraform-provider-equinix/pull/137)
+- Adds `vrf` as a datasource attribute to `equinix_metal_gateway` [#129](https://github.com/equinix/terraform-provider-equinix/pull/129)
+- Adds `vrf_id` as a datasource attribute to `equinix_metal_gateway` [#129](https://github.com/equinix/terraform-provider-equinix/pull/129)
+- Adds `vrf_id`, `peer_asn`, `subnet`, `metal_ip`, `customer_ip`, `md5` as resource arguments and datasource attributes to `equinix_metal_virtual_circuit` [#129](https://github.com/equinix/terraform-provider-equinix/pull/129))
+- Adds `vrf_id`, `network`, `cidr` as resource arguments to `equinix_metal_reserved_ip_block` [#129](https://github.com/equinix/terraform-provider-equinix/pull/129)
+
+BUG FIXES:
+
+- Change `equinix_network_acl_template` docs subcategory to network edge [#128](https://github.com/equinix/terraform-provider-equinix/pull/128)
+- `equinix_network_device` removed hostname validation and fix acl issues in device deletion flow [#126](https://github.com/equinix/terraform-provider-equinix/pull/126)
+- Fix provider required credentials [#125](https://github.com/equinix/terraform-provider-equinix/pull/125)
+- migration-tool: remove duplicate readme.md [#153](https://github.com/equinix/terraform-provider-equinix/pull/153)
+
+ENHANCEMENTS:
+
+- `mgmt_acl_template_uuid` argument added to `equinix_network_device [#115](https://github.com/equinix/terraform-provider-equinix/pull/115)
+- Improved documentation [#123](https://github.com/equinix/terraform-provider-equinix/pull/123)
+- Packngo version bumped to 0.25.0
+- update go-getter to 1.5.11 for CWE-532 [#139](https://github.com/equinix/terraform-provider-equinix/pull/139)
+- `equinix_metal_gateway` will wait for the Metal Gateway devices to pass through the "deleting" status [#138](https://github.com/equinix/terraform-provider-equinix/pull/138)
+
 ## 1.5.0 (March 24, 2022)
 
 FEATURES:
@@ -5,54 +32,54 @@ FEATURES:
 - **New Guide:** Migrating From the Packet Provider
 - **New Guide:** Upgrading Devices from Facilities to Metros
 
-- **New Provider Argument** `auth_token`
-- **New Provider Argument** `max_retries`
-- **New Provider Argument** `max_retry_wait_seconds`
-- **New Resource:** `equinix_metal_port`
-- **New Resource:** `equinix_metal_user_api_key`
-- **New Resource:** `equinix_metal_project_api_key`
-- **New Resource:** `equinix_metal_gateway`
-- **New Resource:** `equinix_metal_connection`
-- **New Resource:** `equinix_metal_virtual_circuit`
-- **New Resource** `equinix_metal_bgp_session`
-- **New Resource** `equinix_metal_device`
-- **New Resource** `equinix_metal_device_network_type`
-- **New Resource** `equinix_metal_ip_attachment`
-- **New Resource** `equinix_metal_organization`
-- **New Resource** `equinix_metal_port_vlan_attachment`
-- **New Resource** `equinix_metal_project`
-- **New Resource** `equinix_metal_project`
-- **New Resource** `equinix_metal_project_ssh_key`
-- **New Resource** `equinix_metal_reserved_ip_block`
-- **New Resource** `equinix_metal_spot_market_request`
-- **New Resource** `equinix_metal_ssh_key`
-- **New Resource** `equinix_metal_vlan`
-- **New Data Resource:** `equinix_metal_vlan`
-- **New Data Resource:** `equinix_metal_reserved_ip_block`
-- **New Data Resource:** `equinix_metal_port`
-- **New Data Resource:** `equinix_metal_hardware_reservation`
-- **New Data Resource:** `equinix_metal_metro`
-- **New Data Resource:** `equinix_metal_connection`
-- **New Data Resource** `equinix_metal_facility`
-- **New Data Resource** `equinix_metal_device`
-- **New Data Resource** `equinix_metal_device_bgp_neighbors`
-- **New Data Resource** `equinix_metal_ip_block_ranges`
-- **New Data Resource** `equinix_metal_operating_system`
-- **New Data Resource** `equinix_metal_organization`
-- **New Data Resource** `equinix_metal_precreated_ip_block`
-- **New Data Resource** `equinix_metal_project`
-- **New Data Resource** `equinix_metal_project_ssh_key`
-- **New Data Resource** `equinix_metal_spot_market_price`
-- **New Data Resource** `equinix_metal_spot_market_request`
+- **New Provider Argument*- `auth_token`
+- **New Provider Argument*- `max_retries`
+- **New Provider Argument*- `max_retry_wait_seconds`
+- **New Resource:*- `equinix_metal_port`
+- **New Resource:*- `equinix_metal_user_api_key`
+- **New Resource:*- `equinix_metal_project_api_key`
+- **New Resource:*- `equinix_metal_gateway`
+- **New Resource:*- `equinix_metal_connection`
+- **New Resource:*- `equinix_metal_virtual_circuit`
+- **New Resource*- `equinix_metal_bgp_session`
+- **New Resource*- `equinix_metal_device`
+- **New Resource*- `equinix_metal_device_network_type`
+- **New Resource*- `equinix_metal_ip_attachment`
+- **New Resource*- `equinix_metal_organization`
+- **New Resource*- `equinix_metal_port_vlan_attachment`
+- **New Resource*- `equinix_metal_project`
+- **New Resource*- `equinix_metal_project`
+- **New Resource*- `equinix_metal_project_ssh_key`
+- **New Resource*- `equinix_metal_reserved_ip_block`
+- **New Resource*- `equinix_metal_spot_market_request`
+- **New Resource*- `equinix_metal_ssh_key`
+- **New Resource*- `equinix_metal_vlan`
+- **New Data Resource:*- `equinix_metal_vlan`
+- **New Data Resource:*- `equinix_metal_reserved_ip_block`
+- **New Data Resource:*- `equinix_metal_port`
+- **New Data Resource:*- `equinix_metal_hardware_reservation`
+- **New Data Resource:*- `equinix_metal_metro`
+- **New Data Resource:*- `equinix_metal_connection`
+- **New Data Resource*- `equinix_metal_facility`
+- **New Data Resource*- `equinix_metal_device`
+- **New Data Resource*- `equinix_metal_device_bgp_neighbors`
+- **New Data Resource*- `equinix_metal_ip_block_ranges`
+- **New Data Resource*- `equinix_metal_operating_system`
+- **New Data Resource*- `equinix_metal_organization`
+- **New Data Resource*- `equinix_metal_precreated_ip_block`
+- **New Data Resource*- `equinix_metal_project`
+- **New Data Resource*- `equinix_metal_project_ssh_key`
+- **New Data Resource*- `equinix_metal_spot_market_price`
+- **New Data Resource*- `equinix_metal_spot_market_request`
 
 BUG FIXES:
 
-* `equinix_ecx_l2_serviceprofile` detecting diff after refresh [#90](https://github.com/equinix/terraform-provider-equinix/pull/90)
-* `equinix_network_device` allow value 0 for additional bandwidth [#91](https://github.com/equinix/terraform-provider-equinix/pull/91)
-* `equinix_network_device` hostname max length now match portal limits [#92](https://github.com/equinix/terraform-provider-equinix/pull/92)
-* `equinix_ecx_l2_connection` will wait for the secondary connection destroy [#103](https://github.com/equinix/terraform-provider-equinix/pull/103)
-* `equinix_ecx_l2_connection` named_tag now is idempotent [#97](https://github.com/equinix/terraform-provider-equinix/issues/97)
-* `equinix_ecx_l2_connection` was not storing secondary connection fields [#103](https://github.com/equinix/terraform-provider-equinix/pull/103)
+- `equinix_ecx_l2_serviceprofile` detecting diff after refresh [#90](https://github.com/equinix/terraform-provider-equinix/pull/90)
+- `equinix_network_device` allow value 0 for additional bandwidth [#91](https://github.com/equinix/terraform-provider-equinix/pull/91)
+- `equinix_network_device` hostname max length now match portal limits [#92](https://github.com/equinix/terraform-provider-equinix/pull/92)
+- `equinix_ecx_l2_connection` will wait for the secondary connection destroy [#103](https://github.com/equinix/terraform-provider-equinix/pull/103)
+- `equinix_ecx_l2_connection` named_tag now is idempotent [#97](https://github.com/equinix/terraform-provider-equinix/issues/97)
+- `equinix_ecx_l2_connection` was not storing secondary connection fields [#103](https://github.com/equinix/terraform-provider-equinix/pull/103)
 
 ENHANCEMENTS:
 
@@ -65,28 +92,28 @@ ENHANCEMENTS:
 
 NOTES:
 
-* `equinix_acl_template` argument `metro_code` is now deprecated [#67](https://github.com/equinix/terraform-provider-equinix/pull/67)
-* `equinix_acl_template` argument `inbound_rule.#.subnets` is now deprecated [#67](https://github.com/equinix/terraform-provider-equinix/pull/67)
-* `equinix_acl_template` attribute `device_id` is now deprecated [#67](https://github.com/equinix/terraform-provider-equinix/pull/67)
-* `equinix_ecx_l2_connection_accepter` is now deprecated [#64](https://github.com/equinix/terraform-provider-equinix/pull/64)
-* `equinix_network_device_link` argument `device.interface_id` changes taint the resource [#77](https://github.com/equinix/terraform-provider-equinix/pull/77)
-* `equinix_network_device_link` attribute `link.src_zone_code` is now deprecated and optional [#77](https://github.com/equinix/terraform-provider-equinix/pull/77)
-* `equinix_network_device_link` attribute `link.dest_zone_code` is now deprecated and optional [#77](https://github.com/equinix/terraform-provider-equinix/pull/77)
+- `equinix_acl_template` argument `metro_code` is now deprecated [#67](https://github.com/equinix/terraform-provider-equinix/pull/67)
+- `equinix_acl_template` argument `inbound_rule.#.subnets` is now deprecated [#67](https://github.com/equinix/terraform-provider-equinix/pull/67)
+- `equinix_acl_template` attribute `device_id` is now deprecated [#67](https://github.com/equinix/terraform-provider-equinix/pull/67)
+- `equinix_ecx_l2_connection_accepter` is now deprecated [#64](https://github.com/equinix/terraform-provider-equinix/pull/64)
+- `equinix_network_device_link` argument `device.interface_id` changes taint the resource [#77](https://github.com/equinix/terraform-provider-equinix/pull/77)
+- `equinix_network_device_link` attribute `link.src_zone_code` is now deprecated and optional [#77](https://github.com/equinix/terraform-provider-equinix/pull/77)
+- `equinix_network_device_link` attribute `link.dest_zone_code` is now deprecated and optional [#77](https://github.com/equinix/terraform-provider-equinix/pull/77)
 
 BUG FIXES:
 
-* `equinix_ecx_l2_connection` will wait for the secondary connection [#87](https://github.com/equinix/terraform-provider-equinix/pull/87)
-* `equinix_network_device_link` no longer jitters on zone code fields [#77](https://github.com/equinix/terraform-provider-equinix/pull/77)
+- `equinix_ecx_l2_connection` will wait for the secondary connection [#87](https://github.com/equinix/terraform-provider-equinix/pull/87)
+- `equinix_network_device_link` no longer jitters on zone code fields [#77](https://github.com/equinix/terraform-provider-equinix/pull/77)
 
 ENHANCEMENTS:
 
-* `equinix_acl_template` attribute `device_details` (`uuid`, `name`, `acl_status`) was added [#67](https://github.com/equinix/terraform-provider-equinix/pull/67)
-* `equinix_ecx_l2_connection` attribute `actions` was added [#86](https://github.com/equinix/terraform-provider-equinix/pull/86)
-* `equinix_network_device_link` argument `device.asn` is now optional [#77](https://github.com/equinix/terraform-provider-equinix/pull/77)
-* `equinix_network_device_link` argument `device.subnet` is now optional [#77](https://github.com/equinix/terraform-provider-equinix/pull/77)
-* fix connectivity example to establish an Azure connection [#71](https://github.com/equinix/terraform-provider-equinix/pull/71)
-* replace Travis CI with GitHub Workflows [#65](https://github.com/equinix/terraform-provider-equinix/pull/65)
-* update go modules and update go to 1.17 [#63](https://github.com/equinix/terraform-provider-equinix/pull/63)
+- `equinix_acl_template` attribute `device_details` (`uuid`, `name`, `acl_status`) was added [#67](https://github.com/equinix/terraform-provider-equinix/pull/67)
+- `equinix_ecx_l2_connection` attribute `actions` was added [#86](https://github.com/equinix/terraform-provider-equinix/pull/86)
+- `equinix_network_device_link` argument `device.asn` is now optional [#77](https://github.com/equinix/terraform-provider-equinix/pull/77)
+- `equinix_network_device_link` argument `device.subnet` is now optional [#77](https://github.com/equinix/terraform-provider-equinix/pull/77)
+- fix connectivity example to establish an Azure connection [#71](https://github.com/equinix/terraform-provider-equinix/pull/71)
+- replace Travis CI with GitHub Workflows [#65](https://github.com/equinix/terraform-provider-equinix/pull/65)
+- update go modules and update go to 1.17 [#63](https://github.com/equinix/terraform-provider-equinix/pull/63)
 
 ## 1.3.0 (November 18, 2021)
 
