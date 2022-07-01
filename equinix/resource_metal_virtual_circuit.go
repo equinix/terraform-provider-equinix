@@ -81,7 +81,7 @@ func resourceMetalVirtualCircuit() *schema.Resource {
 			"vrf_id": {
 				Type:         schema.TypeString,
 				Optional:     true,
-				Description:  "UUID of the VLAN to associate",
+				Description:  "UUID of the VRF to associate",
 				ExactlyOneOf: []string{"vlan_id", "vrf_id"},
 				ForceNew:     true,
 			},
@@ -104,17 +104,18 @@ func resourceMetalVirtualCircuit() *schema.Resource {
 				Type:         schema.TypeString,
 				Optional:     true,
 				RequiredWith: []string{"vrf_id"},
-				Description:  "The IP address that’s set as “our” IP that is configured on the rack_local_vlan SVI. Will default to the first usable IP in the subnet.",
+				Description:  "The Metal IP address for the SVI (Switch Virtual Interface) of the VirtualCircuit. Will default to the first usable IP in the subnet.",
 			},
 			"customer_ip": {
 				Type:         schema.TypeString,
 				Optional:     true,
 				RequiredWith: []string{"vrf_id"},
-				Description:  "The IP address set as the customer IP which the CSR switch will peer with. Will default to the other usable IP in the subnet.",
+				Description:  "The Customer IP address which the CSR switch will peer with. Will default to the other usable IP in the subnet.",
 			},
 			"md5": {
 				Type:        schema.TypeString,
 				Optional:    true,
+				Sensitive:   true,
 				Description: "The password that can be set for the VRF BGP peer",
 			},
 
@@ -371,8 +372,8 @@ func resourceMetalVirtualCircuitDelete(d *schema.ResourceData, meta interface{})
 
 	_, err = deleteWaiter.WaitForState()
 	if ignoreResponseErrors(httpForbidden, httpNotFound)(resp, err) != nil {
-		return nil
+		return fmt.Errorf("Error deleting virtual circuit %s: %s", d.Id(), err)
 	}
-
-	return fmt.Errorf("Error deleting virtual circuit %s: %s", d.Id(), err)
+	d.SetId("")
+	return nil
 }

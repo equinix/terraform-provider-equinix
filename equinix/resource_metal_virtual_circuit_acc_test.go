@@ -104,6 +104,14 @@ func testAccMetalConnectionConfig_vc(randint int) string {
 		connId, randint, randint)
 }
 
+func testAccMetalConnectionConfig_vcds(randint int) string {
+	return testAccMetalConnectionConfig_vc(randint) + `
+	datasource "equinix_metal_virtual_circuit" "test" {
+		virtual_circuit_id = equinix_metal_virtual_circuit.test.id
+	}
+	`
+}
+
 // disabled because equinix_metal_connection dedicated resources have long
 // provisioning windows due to authorization and processing
 func testAccMetalVirtualCircuitConfig_dedicated(randstr string, randint int) string {
@@ -162,6 +170,32 @@ func TestAccMetalVirtualCircuit_dedicated(t *testing.T) {
 				ResourceName:      "equinix_metal_virtual_circuit.test",
 				ImportState:       true,
 				ImportStateVerify: true,
+			},
+			{
+				Config: testAccMetalConnectionConfig_vcds(ri),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttrPair(
+						"equinix_metal_virtual_circuit.test", "id",
+						"data.equinix_metal_virtual_circuit.test", "virtual_circuit_id",
+					),
+					resource.TestCheckResourceAttrPair(
+						"equinix_metal_virtual_circuit.test", "speed",
+						"data.equinix_metal_virtual_circuit.test", "speed",
+					),
+
+					resource.TestCheckResourceAttrPair(
+						"equinix_metal_virtual_circuit.test", "port_id",
+						"data.equinix_metal_virtual_circuit.test", "port_id",
+					),
+					resource.TestCheckResourceAttrPair(
+						"equinix_metal_virtual_circuit.test", "vlan_id",
+						"data.equinix_metal_virtual_circuit.test", "vlan_id",
+					),
+					resource.TestCheckResourceAttrPair(
+						"equinix_metal_virtual_circuit.test", "nni_vlan",
+						"data.equinix_metal_virtual_circuit.test", "nni_vlan",
+					),
+				),
 			},
 		},
 	})
