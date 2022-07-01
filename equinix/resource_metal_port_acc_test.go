@@ -23,6 +23,7 @@ resource "equinix_metal_device" "test" {
   operating_system = "ubuntu_16_04"
   billing_cycle    = "hourly"
   project_id       = "${equinix_metal_project.test.id}"
+  termination_time = "%s"
 }
 
 locals {
@@ -31,7 +32,7 @@ locals {
   eth0_id = [for p in equinix_metal_device.test.ports: p.id if p.name == "eth0"][0]
 }
 
-`, name)
+`, name, testDeviceTerminationTime())
 }
 
 func confAccMetalPort_L3(name string) string {

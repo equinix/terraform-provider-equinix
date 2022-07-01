@@ -30,9 +30,10 @@ resource "equinix_metal_device" "test" {
     billing_cycle       = "hourly"
     project_ssh_key_ids = ["${equinix_metal_project_ssh_key.test.id}"]
     project_id          = "${equinix_metal_project.test.id}"
+    termination_time    = "%s"
 }
 
-`, name, publicSshKey)
+`, name, publicSshKey, testDeviceTerminationTime())
 }
 
 func TestAccMetalProjectSSHKey_basic(t *testing.T) {

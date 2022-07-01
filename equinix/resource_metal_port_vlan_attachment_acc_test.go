@@ -24,8 +24,9 @@ resource "equinix_metal_device" "test" {
   operating_system = "ubuntu_16_04"
   billing_cycle    = "hourly"
   project_id       = equinix_metal_project.test.id
+  termination_time = "%s"
 }
-`, name)
+`, name, testDeviceTerminationTime())
 }
 
 func testAccMetalPortVlanAttachmentConfig_L2Bonded_2(name string) string {
@@ -108,8 +109,9 @@ resource "equinix_metal_device" "test" {
   operating_system = "ubuntu_16_04"
   billing_cycle    = "hourly"
   project_id       = equinix_metal_project.test.id
+  termination_time = "%s"
 }
-`, name)
+`, name, testDeviceTerminationTime())
 }
 
 func testAccMetalPortVlanAttachmentConfig_L2Individual_2(name string) string {
@@ -194,7 +196,8 @@ resource "equinix_metal_device" "test" {
   operating_system = "ubuntu_16_04"
   billing_cycle    = "hourly"
   project_id       = equinix_metal_project.test.id
-}`, name)
+  termination_time = "%s"
+}`, name, testDeviceTerminationTime())
 }
 
 func testAccMetalPortVlanAttachmentConfig_Hybrid_2(name string) string {
@@ -264,7 +267,8 @@ resource "equinix_metal_device" "test" {
   operating_system = "ubuntu_16_04"
   billing_cycle    = "hourly"
   project_id       = equinix_metal_project.test.id
-}`, name)
+  termination_time = "%s"
+}`, name, testDeviceTerminationTime())
 }
 
 func testAccMetalPortVlanAttachmentConfig_HybridMultipleVlans_2(name string) string {
@@ -377,7 +381,8 @@ resource "equinix_metal_device" "test" {
   operating_system = "ubuntu_16_04"
   billing_cycle    = "hourly"
   project_id       = equinix_metal_project.test.id
-}`, name)
+  termination_time = "%s"
+}`, name, testDeviceTerminationTime())
 }
 
 func testAccMetalPortVlanAttachmentConfig_L2Native_2(name string) string {

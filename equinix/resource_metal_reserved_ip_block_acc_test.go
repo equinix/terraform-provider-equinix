@@ -244,8 +244,9 @@ resource "equinix_metal_device" "test" {
   ip_address {
 	 type = "private_ipv4"
   }
+  termination_time = "%s"
 }
-`, name)
+`, name, testDeviceTerminationTime())
 }
 
 func TestAccMetalReservedIPBlock_device(t *testing.T) {
