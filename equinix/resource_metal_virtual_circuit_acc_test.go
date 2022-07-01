@@ -73,40 +73,52 @@ func testAccMetalVirtualCircuitCheckDestroyed(s *terraform.State) error {
 	return nil
 }
 
-func testAccMetalVirtualCircuitConfig_dedicated(randstr string, randint int) string {
+
+func testAccMetalConnectionConfig_vc(randint int) string {
 	// Dedicated connection in DA metro
 	testConnection := os.Getenv(metalDedicatedConnIDEnvVar)
 
 	return fmt.Sprintf(`
-		data "equinix_metal_connection" test {
-			connection_id = "%[1]s"
-		}
-
-        resource "equinix_metal_project" "test" {
-            name = "tfacc-conn-pro-%[2]s"
+        locals {
+                conn_id = "%s"
         }
 
-		resource "equinix_metal_vlan" "test" {
+        data "equinix_metal_connection" test {
+            connection_id = local.conn_id
+        }
+
+        resource "equinix_metal_project" "test" {
+            name = "tfacc-conn-pro-%[2]d"
+        }
+
+        resource "equinix_metal_vlan" "test" {
             project_id = equinix_metal_project.test.id
-            metro      = "da"
+            metro      = data.equinix_metal_connection.test.metro
 			description = "tfacc-vlan test"
         }
 
         resource "equinix_metal_virtual_circuit" "test" {
-			name = "tfacc-vc-%[2]s"
-			description = "tfacc-vc-%[2]s"
-            connection_id = data.equinix_metal_connection.test.id
+            name = "tfacc-vc-%[2]d"
+            description = "tfacc-vc-%[2]d"
+            connection_id = data.equinix_metal_connection.test.connection_id
             project_id = equinix_metal_project.test.id
             port_id = data.equinix_metal_connection.test.ports[0].id
             vlan_id = equinix_metal_vlan.test.id
-            nni_vlan = %[3]d
+            nni_vlan = %[2]d
         }
         `,
-		testConnection, randstr, randint)
+		testConnection, randint)
+}
+
+func testAccMetalConnectionConfig_vcds(randint int) string {
+	return testAccMetalConnectionConfig_vc(randint) + `
+	datasource "equinix_metal_virtual_circuit" "test" {
+		virtual_circuit_id = equinix_metal_virtual_circuit.test.id
+	}
+	`
 }
 
 func TestAccMetalVirtualCircuit_dedicated(t *testing.T) {
-	rs := acctest.RandString(10)
 	ri := acctest.RandIntRange(1024, 1093)
 
 	resource.ParallelTest(t, resource.TestCase{
@@ -115,7 +127,7 @@ func TestAccMetalVirtualCircuit_dedicated(t *testing.T) {
 		CheckDestroy: testAccMetalVirtualCircuitCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccMetalVirtualCircuitConfig_dedicated(rs, ri),
+				Config: testAccMetalConnectionConfig_vc(ri),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrPair(
 						"equinix_metal_virtual_circuit.test", "vlan_id",
