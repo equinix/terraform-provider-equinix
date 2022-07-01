@@ -34,7 +34,7 @@ resource "equinix_metal_project" "foobar" {
 
 resource "equinix_metal_reserved_ip_block" "test" {
 	project_id  = equinix_metal_project.foobar.id
-	facility    = "ny5"
+	facility    = "ewr1"
 	type        = "public_ipv4"
 	quantity    = 2
 	tags        = ["Tag1", "Tag2"]
