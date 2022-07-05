@@ -57,6 +57,78 @@ output "plans" {
 }
 ```
 
+### Ignoring Changes to Plans/Facilities/Metro
+
+Preserve deployed device plan, facility and metro when creating a new execution plan.
+
+As described in the [`data-resource-behavior`](https://www.terraform.io/language/data-sources#data-resource-behavior), terraform reads data resources during the planning phase in both the terraform plan and terraform apply commands. If the output from the data source is different to the prior state, it will propose changes to resources where there is a reference to their attributes.
+
+For `equinix_metal_plans`, it may happen that a device plan is no longer available in a facility/metro because there is no stock at that time or you were using a legacy server plan, and thus the returned list of plans matching your search criteria will be different from last `plan`/`apply`. Therefore, if a resource such as a `equinix_metal_device` uses the output of this data source to select a device plan or facility/metro, the Terraform plan will report that the `equinix_metal_device` needs to be recreated.
+
+To prevent that you can take advantage of the Terraform [`lifecycle ignore_changes`](https://www.terraform.io/language/meta-arguments/lifecycle#ignore_changes) feature as shown in the example below.
+
+```hcl
+# Following example will use equinix_metal_plans to select the cheapest plan available in metro 'sv' (Sillicon Valley)
+data "equinix_metal_plans" "example" {
+    sort {
+        attribute = "pricing_hour"
+        direction = "asc"
+    }
+    filter {
+        attribute = "name"
+        values    = ["c3.small.x86", "c3.medium.x86", "m3.large.x86"]
+    }
+    filter {
+        attribute = "available_in_metros"
+        values    = ["sv"]
+    }
+}
+
+# This equinix_metal_device will use the first returned plan and the list of facilities
+# It will ignore future changes on plan and facilities
+resource "equinix_metal_device" "example" {
+  hostname         = "example"
+  plan             = data.equinix_metal_plans.example.plans[0].name
+  facilities       = data.equinix_metal_plans.example.plans[0].available_in
+  operating_system = "ubuntu_20_04"
+  billing_cycle    = "hourly"
+  project_id       = var.project_id
+
+  lifecycle {
+    ignore_changes = [
+        plan,
+        facilities,
+    ]
+  }
+}
+```
+
+If your use case requires dynamic changes of a device plan or metro/facility you can define the lifecycle with a condition.
+
+```hcl
+# Following example uses a boolean variable that may eventually be set to you false when you update your equinix_metal_plans filter criteria because you need a device plan with a new feature.
+variable "ignore_plans_facilities_changes" {
+  type = bool
+  description = "If set to true, it will ignore plans or facilities changes"
+  default = false
+}
+
+data "equinix_metal_plans" "example" {
+  // new search criteria
+}
+
+resource "equinix_metal_device" "example" {
+  // required device arguments
+
+  lifecycle {
+    ignore_changes = var.ignore_plans_facilities_changes ? [
+        plan,
+        facilities,
+    ] : []
+  }
+}
+```
+
 ## Argument Reference
 
 The following arguments are supported:
