@@ -153,12 +153,12 @@ func dataSourceMetalOrganizationRead(d *schema.ResourceData, meta interface{}) e
 	d.SetId(org.ID)
 	return setMap(d, map[string]interface{}{
 		"organization_id": org.ID,
-		"name":        	   org.Name,
-		"description": 	   org.Description,
-		"website":     	   org.Website,
-		"twitter":     	   org.Twitter,
-		"logo":        	   org.Logo,
+		"name":            org.Name,
+		"description":     org.Description,
+		"website":         org.Website,
+		"twitter":         org.Twitter,
+		"logo":            org.Logo,
 		"project_ids":     projectIds,
-		"address":     	   flattenMetalOrganizationAddress(org.Address),
+		"address":         flattenMetalOrganizationAddress(org.Address),
 	})
 }

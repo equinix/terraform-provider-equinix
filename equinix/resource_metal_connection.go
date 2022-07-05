@@ -10,20 +10,22 @@ import (
 	"github.com/packethost/packngo"
 )
 
-var mega uint64 = 1000 * 1000
-var giga uint64 = 1000 * mega
-var allowedSpeeds = []struct {
-	Int uint64
-	Str string
-}{
-	{50 * mega, "50Mbps"},
-	{200 * mega, "200Mbps"},
-	{500 * mega, "500Mbps"},
-	{1 * giga, "1Gbps"},
-	{2 * giga, "2Gbps"},
-	{5 * giga, "5Gbps"},
-	{10 * giga, "10Gbps"},
-}
+var (
+	mega          uint64 = 1000 * 1000
+	giga          uint64 = 1000 * mega
+	allowedSpeeds        = []struct {
+		Int uint64
+		Str string
+	}{
+		{50 * mega, "50Mbps"},
+		{200 * mega, "200Mbps"},
+		{500 * mega, "500Mbps"},
+		{1 * giga, "1Gbps"},
+		{2 * giga, "2Gbps"},
+		{5 * giga, "5Gbps"},
+		{10 * giga, "10Gbps"},
+	}
+)
 
 func speedStrToUint(speed string) (uint64, error) {
 	allowedStrings := []string{}
@@ -91,7 +93,8 @@ func resourceMetalConnection() *schema.Resource {
 				Description: "Connection redundancy - redundant or primary",
 				ValidateFunc: validation.StringInSlice([]string{
 					string(packngo.ConnectionRedundant),
-					string(packngo.ConnectionPrimary)}, false),
+					string(packngo.ConnectionPrimary),
+				}, false),
 			},
 			"type": {
 				Type:        schema.TypeString,
@@ -100,12 +103,13 @@ func resourceMetalConnection() *schema.Resource {
 				ForceNew:    true,
 				ValidateFunc: validation.StringInSlice([]string{
 					string(packngo.ConnectionDedicated),
-					string(packngo.ConnectionShared)}, false),
+					string(packngo.ConnectionShared),
+				}, false),
 			},
 			"project_id": {
 				Type:        schema.TypeString,
-				Required:    true,
-				Description: "ID of the project where the connection is scoped to, only used for type == \"shared\"",
+				Optional:    true,
+				Description: "ID of the project where the connection is scoped to. Required with type \"shared\"",
 				ForceNew:    true,
 			},
 			"speed": {
@@ -125,7 +129,8 @@ func resourceMetalConnection() *schema.Resource {
 				Default:     "standard",
 				ValidateFunc: validation.StringInSlice([]string{
 					string(packngo.ConnectionModeStandard),
-					string(packngo.ConnectionModeTunnel)}, false),
+					string(packngo.ConnectionModeTunnel),
+				}, false),
 			},
 			"tags": {
 				Type:        schema.TypeList,
@@ -135,7 +140,7 @@ func resourceMetalConnection() *schema.Resource {
 			},
 			"vlans": {
 				Type:        schema.TypeList,
-				Description: "Only used with shared connection. VLANs to attach. Pass one vlan for Primary/Single connection and two vlans for Redundant connection.",
+				Description: "Only used with shared connection. VLANs to attach. Pass one vlan for Primary/Single connection and two vlans for Redundant connection",
 				Optional:    true,
 				Elem:        &schema.Schema{Type: schema.TypeInt},
 				MaxItems:    2,
@@ -143,14 +148,15 @@ func resourceMetalConnection() *schema.Resource {
 			"service_token_type": {
 				Type:        schema.TypeString,
 				Optional:    true,
-				Description: "Only used with shared connection. Type of service token to use for the connection, a_side or z_side.",
+				Description: "Only used with shared connection. Type of service token to use for the connection, a_side or z_side",
 			},
 			"organization_id": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "ID of the organization responsible for the connection",
-				ForceNew:    true,
-				Deprecated:  "Use the project_id field instead",
+				Type:         schema.TypeString,
+				Optional:     true,
+				Computed:     true,
+				Description:  "ID of the organization responsible for the connection. Applicable with type \"dedicated\"",
+				ForceNew:     true,
+				AtLeastOneOf: []string{"organization_id", "project_id"},
 			},
 			"status": {
 				Type:        schema.TypeString,
@@ -215,33 +221,6 @@ func resourceMetalConnectionCreate(d *schema.ResourceData, meta interface{}) err
 		Speed:      speed,
 	}
 
-	projectId := d.Get("project_id").(string)
-	if connType == packngo.ConnectionShared {
-		if connMode == string(packngo.ConnectionModeTunnel) {
-			return fmt.Errorf("tunnel  mode is not supported for shared connections")
-		}
-		if !tokenTypeOk {
-			return fmt.Errorf("you must set service_token_type for shared connection")
-		}
-		if connRedundancy == packngo.ConnectionPrimary && vlansNum == 2 {
-			return fmt.Errorf("when you create a \"shared\" connection without redundancy, you must only set max 1 vlan")
-		}
-		connReq.VLANs = vlans
-		connReq.ServiceTokenType = tokenType
-		connReq.Project = projectId
-	}
-
-	if connType == packngo.ConnectionDedicated {
-
-		if tokenTypeOk {
-			return fmt.Errorf("when you create a \"dedicated\" connection, you must not set service_token_type")
-		}
-		if vlansNum > 0 {
-			return fmt.Errorf("when you create a \"dedicated\" connection, you mustn't set vlans")
-		}
-		connReq.Mode = packngo.ConnectionMode(connMode)
-	}
-
 	// this could be generalized, see $ grep "d.Get(\"tags" *
 	tags := d.Get("tags.#").(int)
 	if tags > 0 {
@@ -261,12 +240,52 @@ func resourceMetalConnectionCreate(d *schema.ResourceData, meta interface{}) err
 		connReq.Description = &description
 	}
 
-	conn, _, err := client.Connections.ProjectCreate(projectId, &connReq)
-	if err != nil {
-		return err
+	projectId, projectIdOk := d.GetOk("project_id")
+	if connType == packngo.ConnectionShared {
+		if !projectIdOk {
+			return fmt.Errorf("you must set project_id for \"shared\" connection")
+		}
+		if connMode == string(packngo.ConnectionModeTunnel) {
+			return fmt.Errorf("tunnel mode is not supported for \"shared\" connections")
+		}
+		if !tokenTypeOk {
+			return fmt.Errorf("you must set service_token_type for \"shared\" connection")
+		}
+		if connRedundancy == packngo.ConnectionPrimary && vlansNum == 2 {
+			return fmt.Errorf("when you create a \"shared\" connection without redundancy, you must only set max 1 vlan")
+		}
+		connReq.VLANs = vlans
+		connReq.ServiceTokenType = tokenType
+		conn, _, err := client.Connections.ProjectCreate(projectId.(string), &connReq)
+		if err != nil {
+			return err
+		}
+		d.SetId(conn.ID)
+	} else {
+		organizationId, organizationIdOk := d.GetOk("organization_id")
+		if !organizationIdOk {
+			if !projectIdOk {
+				return fmt.Errorf("you must set one of organization_id or project_id for \"dedicated\" connection")
+			}
+			proj, _, err := client.Projects.Get(projectId.(string), &packngo.GetOptions{Includes: []string{"organization"}})
+			if err != nil {
+				return friendlyError(err)
+			}
+			organizationId = proj.Organization.ID
+		}
+		if tokenTypeOk {
+			return fmt.Errorf("when you create a \"dedicated\" connection, you must not set service_token_type")
+		}
+		if vlansNum > 0 {
+			return fmt.Errorf("when you create a \"dedicated\" connection, you must not set vlans")
+		}
+		connReq.Mode = packngo.ConnectionMode(connMode)
+		conn, _, err := client.Connections.OrganizationCreate(organizationId.(string), &connReq)
+		if err != nil {
+			return err
+		}
+		d.SetId(conn.ID)
 	}
-
-	d.SetId(conn.ID)
 
 	return resourceMetalConnectionRead(d, meta)
 }
@@ -344,7 +363,6 @@ func resourceMetalConnectionRead(d *schema.ResourceData, meta interface{}) error
 	if conn.Type == packngo.ConnectionShared {
 		projectId = conn.Ports[0].VirtualCircuits[0].Project.ID
 	}
-
 	mode := "standard"
 	if conn.Mode != nil {
 		mode = string(*conn.Mode)
@@ -353,11 +371,6 @@ func resourceMetalConnectionRead(d *schema.ResourceData, meta interface{}) error
 	if len(conn.Tokens) > 0 {
 		side = string(conn.Tokens[0].ServiceTokenType)
 	}
-	// speed, err := speedUintToStr(conn.Speed)
-	// if err != nil {
-	// 	return err
-	// }
-
 	speed := "0"
 	if conn.Speed > 0 {
 		speed, err = speedUintToStr(conn.Speed)
@@ -365,7 +378,6 @@ func resourceMetalConnectionRead(d *schema.ResourceData, meta interface{}) error
 			return err
 		}
 	}
-
 	serviceTokens, err := getServiceTokens(conn.Tokens)
 	if err != nil {
 		return err

@@ -115,6 +115,7 @@ data "equinix_metal_vlan" "dsvlan" {
 resource "equinix_metal_vlan" "barvlan" {
     project_id = equinix_metal_project.foobar.id
     metro = equinix_metal_vlan.foovlan.metro
+    description = "%s"
     vxlan = 6
 }
 
@@ -123,7 +124,7 @@ data "equinix_metal_vlan" "bardsvlan" {
     project_id = equinix_metal_vlan.barvlan.project_id
     vxlan = equinix_metal_vlan.barvlan.vxlan
 }
-`, projSuffix, metro, desc)
+`, projSuffix, metro, desc, desc)
 }
 
 func TestAccDataSourceMetalVlan_byVlanId(t *testing.T) {

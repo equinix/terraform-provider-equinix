@@ -201,6 +201,7 @@ func getConnectionPorts(cps []packngo.ConnectionPort) []map[string]interface{} {
 		packngo.ConnectionPortPrimary:   0,
 		packngo.ConnectionPortSecondary: 1,
 	}
+
 	for _, p := range cps {
 		vcIDs := []string{}
 		for _, vc := range p.VirtualCircuits {

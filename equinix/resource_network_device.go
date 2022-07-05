@@ -275,11 +275,11 @@ func createNetworkDeviceSchema() map[string]*schema.Schema {
 			Description:  neDeviceDescriptions["ThroughputUnit"],
 		},
 		neDeviceSchemaNames["HostName"]: {
-			Type:         schema.TypeString,
-			Optional:     true,
-			Computed:     true,
-			ForceNew:     true,
-			Description:  neDeviceDescriptions["HostName"],
+			Type:        schema.TypeString,
+			Optional:    true,
+			Computed:    true,
+			ForceNew:    true,
+			Description: neDeviceDescriptions["HostName"],
 		},
 		neDeviceSchemaNames["PackageCode"]: {
 			Type:         schema.TypeString,
@@ -513,10 +513,10 @@ func createNetworkDeviceSchema() map[string]*schema.Schema {
 						Description: neDeviceDescriptions["Region"],
 					},
 					neDeviceSchemaNames["HostName"]: {
-						Type:         schema.TypeString,
-						Optional:     true,
-						ForceNew:     true,
-						Description:  neDeviceDescriptions["HostName"],
+						Type:        schema.TypeString,
+						Optional:    true,
+						ForceNew:    true,
+						Description: neDeviceDescriptions["HostName"],
 					},
 					neDeviceSchemaNames["LicenseToken"]: {
 						Type:          schema.TypeString,

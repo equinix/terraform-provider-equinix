@@ -1,10 +1,11 @@
 package equinix
 
 import (
+	"regexp"
+
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/packethost/packngo"
-	"regexp"
 )
 
 func resourceMetalOrganization() *schema.Resource {
@@ -91,9 +92,9 @@ func createMetalOrganizationAddressResourceSchema() map[string]*schema.Schema {
 			ValidateFunc: validation.StringMatch(regexp.MustCompile("(?i)^[a-z]{2}$"), "Address country must be a two letter code (ISO 3166-1 alpha-2)"),
 		},
 		"state": {
-			Type:         schema.TypeString,
-			Description:  "State name",
-			Optional:     true,
+			Type:        schema.TypeString,
+			Description: "State name",
+			Optional:    true,
 		},
 	}
 }
@@ -102,7 +103,7 @@ func resourceMetalOrganizationCreate(d *schema.ResourceData, meta interface{}) e
 	client := meta.(*Config).metal
 
 	createRequest := &packngo.OrganizationCreateRequest{
-		Name: d.Get("name").(string),
+		Name:    d.Get("name").(string),
 		Address: expandMetalOrganizationAddress(d.Get("address").([]interface{})),
 	}
 
@@ -232,7 +233,6 @@ func flattenMetalOrganizationAddress(addr packngo.Address) interface{} {
 }
 
 func expandMetalOrganizationAddress(address []interface{}) packngo.Address {
-
 	transformed := packngo.Address{}
 	addr := address[0].(map[string]interface{})
 

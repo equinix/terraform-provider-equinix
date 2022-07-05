@@ -169,9 +169,9 @@ func TestAccMetalVRF_withIPReservations(t *testing.T) {
 				ImportStateVerify: true,
 			},
 			{
-				ResourceName:      "equinix_metal_reserved_ip_block.test",
-				ImportState:       true,
-				ImportStateVerify: true,
+				ResourceName:            "equinix_metal_reserved_ip_block.test",
+				ImportState:             true,
+				ImportStateVerify:       true,
 				ImportStateVerifyIgnore: []string{"wait_for_state"},
 			},
 		},
@@ -274,6 +274,7 @@ func TestAccMetalVRFConfig_withConnection(t *testing.T) {
 				ResourceName:      "equinix_metal_reserved_ip_block.test",
 				ImportState:       true,
 				ImportStateVerify: true,
+				ImportStateVerifyIgnore: []string{"wait_for_state"},
 			},
 			{
 				ResourceName:      "equinix_metal_vlan.test",

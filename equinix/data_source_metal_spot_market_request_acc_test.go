@@ -58,7 +58,7 @@ resource "equinix_metal_project" "test" {
 resource "equinix_metal_spot_market_request" "req" {
   project_id    = "${equinix_metal_project.test.id}"
   max_bid_price = 0.01
-  metro         = "sv"
+  facilities    = ["da11"]
   devices_min   = 1
   devices_max   = 1
   wait_for_devices = false
@@ -67,7 +67,7 @@ resource "equinix_metal_spot_market_request" "req" {
     hostname         = "tfacc-testspot"
     billing_cycle    = "hourly"
     operating_system = "ubuntu_20_04"
-    plan             = "c3.small.x86"
+    plan             = "c3.medium.x86"
   }
 }
 
@@ -87,7 +87,7 @@ resource "equinix_metal_project" "test" {
 resource "equinix_metal_spot_market_request" "req" {
   project_id    = "${equinix_metal_project.test.id}"
   max_bid_price = 0.01
-  metro = "sv"
+  metro = "da"
   devices_min   = 1
   devices_max   = 1
   wait_for_devices = false
@@ -96,7 +96,7 @@ resource "equinix_metal_spot_market_request" "req" {
     hostname         = "tfacc-testspot"
     billing_cycle    = "hourly"
     operating_system = "ubuntu_20_04"
-    plan             = "c3.small.x86"
+    plan             = "c3.medium.x86"
   }
 }
 

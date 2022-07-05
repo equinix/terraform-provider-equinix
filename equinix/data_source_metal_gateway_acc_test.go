@@ -34,7 +34,7 @@ resource "equinix_metal_project" "test" {
 }
 
 resource "equinix_metal_vlan" "test" {
-    description = "test VLAN in SV"
+    description = "tfacc-vlan test VLAN in SV"
     metro       = "sv"
     project_id  = equinix_metal_project.test.id
 }

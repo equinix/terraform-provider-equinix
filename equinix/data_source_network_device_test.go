@@ -1,13 +1,14 @@
 package equinix
 
 import (
-	"github.com/equinix/ne-go"
 	"reflect"
 	"testing"
+
+	"github.com/equinix/ne-go"
 )
 
 func TestGetDeviceStatusList(t *testing.T) {
-	var input = ""
+	input := ""
 	result, err := getNeDeviceStatusList(input)
 	if err != nil {
 		t.Errorf("got error %v for input: %v", err, input)
@@ -38,7 +39,7 @@ func TestGetDeviceStatusList(t *testing.T) {
 	}
 
 	input = "provisioned" // single item
-	var expected = &[]string{ne.DeviceStateProvisioned}
+	expected := &[]string{ne.DeviceStateProvisioned}
 	test(input, expected, false)
 
 	input = "provisioning,provisioned" // 2 items

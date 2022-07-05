@@ -118,7 +118,7 @@ resource "equinix_metal_port" "bond0" {
 }
 
 resource "equinix_metal_vlan" "test" {
-  description = "test"
+  description = "tfacc-vlan test"
   metro = "sv"
   project_id = equinix_metal_project.test.id
 }
@@ -138,14 +138,14 @@ resource "equinix_metal_port" "bond0" {
 }
 
 resource "equinix_metal_vlan" "test1" {
-  description = "test1"
+  description = "tfacc-vlan test1"
   metro = "sv"
   project_id = equinix_metal_project.test.id
   vxlan = 1001
 }
 
 resource "equinix_metal_vlan" "test2" {
-  description = "test2"
+  description = "tfacc-vlan test2"
   metro = "sv"
   project_id = equinix_metal_project.test.id
   vxlan = 1002

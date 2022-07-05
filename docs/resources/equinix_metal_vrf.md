@@ -18,12 +18,12 @@ resource "equinix_metal_project" "example" {
 }
 
 resource "equinix_metal_vrf" "example" {
-	description = "VRF with ASN 65000 and a pool of address space that includes 192.168.100.0/25"
-	name = "example-vrf"
-	metro = "da"
-	local_asn = "65000"
-	ip_ranges = ["192.168.100.0/25", "192.168.200.0/25"]
-	project_id = equinix_metal_project.example.id
+    description = "VRF with ASN 65000 and a pool of address space that includes 192.168.100.0/25"
+    name = "example-vrf"
+    metro = "da"
+    local_asn = "65000"
+    ip_ranges = ["192.168.100.0/25", "192.168.200.0/25"]
+    project_id = equinix_metal_project.example.id
 }
 ```
 
@@ -31,19 +31,19 @@ Create IP reservations and assign them to a Metal Gateway resources. The Gateway
 
 ```hcl
 resource "equinix_metal_reserved_ip_block" "example" {
-	description = "Reserved IP block (192.168.100.0/29) taken from on of the ranges in the VRF's pool of address space."
+    description = "Reserved IP block (192.168.100.0/29) taken from on of the ranges in the VRF's pool of address space."
     project_id = equinix_metal_project.example.id
-	metro = equinix_metal_vrf.example.metro
-	type = "vrf"
-	vrf_id = equinix_metal_vrf.example.id
-	cidr = 29
+    metro = equinix_metal_vrf.example.metro
+    type = "vrf"
+    vrf_id = equinix_metal_vrf.example.id
+    cidr = 29
     network = "192.168.100.0"
 }
 
 resource "equinix_metal_vlan" "example" {
-	description = "A VLAN for Layer2 and Hybrid Metal devices"
-	metro       = equinix_metal_vrf.example.metro
-	project_id  = equinix_metal_project.example.id
+    description = "A VLAN for Layer2 and Hybrid Metal devices"
+    metro       = equinix_metal_vrf.example.metro
+    project_id  = equinix_metal_project.example.id
 }
 
 resource "equinix_metal_gateway" "example" {

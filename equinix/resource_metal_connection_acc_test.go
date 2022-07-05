@@ -17,7 +17,6 @@ func TestSpeedConversion(t *testing.T) {
 	speedUint, err := speedStrToUint("50Mbps")
 	if err != nil {
 		t.Errorf("Error converting speed string to uint64: %s", err)
-
 	}
 	if speedUint != 50*mega {
 		t.Errorf("Speed string conversion failed. Expected: %d, got: %d", 50*mega, speedUint)
@@ -126,10 +125,11 @@ func testAccMetalConnectionConfig_dedicated(randstr string) string {
             name = "tfacc-conn-pro-%s"
         }
 
+		// We use the project resource to get organization_id
         resource "equinix_metal_connection" "test" {
             name            = "tfacc-conn-%s"
             metro           = "sv"
-			project_id      = equinix_metal_project.test.id
+			organization_id = equinix_metal_project.test.organization_id
             type            = "dedicated"
             redundancy      = "redundant"
 			tags            = ["tfacc"]
@@ -189,13 +189,14 @@ func testAccMetalConnectionConfig_tunnel(randstr string) string {
             name = "tfacc-conn-pro-%s"
         }
 
-        resource "equinix_metal_connection" "test" {
-            name            = "tfacc-conn-%s"
+		// We use the project resource to get organization_id internally
+		resource "equinix_metal_connection" "test" {
+			name            = "tfacc-conn-%s"
 			project_id      = equinix_metal_project.test.id
-            metro           = "sv"
-            redundancy      = "redundant"
-            type            = "dedicated"
-            mode            = "tunnel"
+			metro           = "sv"
+			redundancy      = "redundant"
+			type            = "dedicated"
+			mode            = "tunnel"
 			speed           = "50Mbps"
         }`,
 		randstr, randstr)
@@ -217,9 +218,10 @@ func TestAccMetalConnection_tunnel(t *testing.T) {
 				),
 			},
 			{
-				ResourceName:      "equinix_metal_connection.test",
-				ImportState:       true,
-				ImportStateVerify: true,
+				ResourceName:            "equinix_metal_connection.test",
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"project_id"},
 			},
 		},
 	})

@@ -150,9 +150,9 @@ func TestAccMetalReservedIPBlock_importBasic(t *testing.T) {
 				Config: testAccMetalReservedIPBlockConfig_public(rs),
 			},
 			{
-				ResourceName:      "equinix_metal_reserved_ip_block.test",
-				ImportState:       true,
-				ImportStateVerify: true,
+				ResourceName:            "equinix_metal_reserved_ip_block.test",
+				ImportState:             true,
+				ImportStateVerify:       true,
 				ImportStateVerifyIgnore: []string{"wait_for_state"},
 			},
 		},

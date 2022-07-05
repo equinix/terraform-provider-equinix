@@ -145,7 +145,7 @@ func TestAccMetalSpotMarketRequest_Import(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
-		CheckDestroy: testAccMetalSSHKeyCheckDestroyed,
+		CheckDestroy: testAccMetalSpotMarketRequestCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccCheckMetalSpotMarketRequestConfig_import(context),
