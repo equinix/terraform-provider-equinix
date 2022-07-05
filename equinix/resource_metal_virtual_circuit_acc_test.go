@@ -112,7 +112,7 @@ func testAccMetalConnectionConfig_vc(randint int) string {
 
 func testAccMetalConnectionConfig_vcds(randint int) string {
 	return testAccMetalConnectionConfig_vc(randint) + `
-	datasource "equinix_metal_virtual_circuit" "test" {
+	data "equinix_metal_virtual_circuit" "test" {
 		virtual_circuit_id = equinix_metal_virtual_circuit.test.id
 	}
 	`

@@ -166,7 +166,7 @@ func resourceMetalGatewayDelete(d *schema.ResourceData, meta interface{}) error 
 	)
 
 	_, err = deleteWaiter.WaitForState()
-	if ignoreResponseErrors(httpForbidden, httpNotFound)(resp, err) != nil {
+	if ignoreResponseErrors(httpForbidden, httpNotFound)(nil, err) != nil {
 		return fmt.Errorf("Error deleting Metal Gateway %s: %s", d.Id(), err)
 	}
 
