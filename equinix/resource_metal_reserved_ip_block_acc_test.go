@@ -1,8 +1,10 @@
 package equinix
 
 import (
+	"bytes"
 	"fmt"
 	"testing"
+	"text/template"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
@@ -18,12 +20,12 @@ resource "equinix_metal_project" "foobar" {
 resource "equinix_metal_reserved_ip_block" "test" {
 	project_id  = equinix_metal_project.foobar.id
 	type        = "global_ipv4"
-	description = "testdesc"
+	description = "tfacc-reserved_ip_block-%s"
 	quantity    = 1
 	custom_data = jsonencode({
 		"foo": "bar"
 	})
-}`, name)
+}`, name, name)
 }
 
 func testAccMetalReservedIPBlockConfig_public(name string) string {
@@ -36,23 +38,34 @@ resource "equinix_metal_reserved_ip_block" "test" {
 	project_id  = equinix_metal_project.foobar.id
 	facility    = "ny5"
 	type        = "public_ipv4"
+	description = "tfacc-reserved_ip_block-%s"
 	quantity    = 2
 	tags        = ["Tag1", "Tag2"]
-}`, name)
+}`, name, name)
 }
 
-func testAccMetalReservedIPBlockConfig_metro(name string) string {
-	return fmt.Sprintf(`
-resource "equinix_metal_project" "foobar" {
-	name = "tfacc-reserved_ip_block-%s"
-}
+// testAccMetalReservedIPBlockConfig_metro generates a config for a metro IP
+// block with optional tag
+func testAccMetalReservedIPBlockConfig_metro(name, tag string) string {
+	var b bytes.Buffer
+	t, _ := template.New("").Parse(`
+	resource "equinix_metal_project" "foobar" {
+		name = "tfacc-reserved_ip_block-{{.name}}"
+	}
 
-resource "equinix_metal_reserved_ip_block" "test" {
-	project_id  = equinix_metal_project.foobar.id
-	metro       = "sv"
-	type        = "public_ipv4"
-	quantity    = 2
-}`, name)
+	resource "equinix_metal_reserved_ip_block" "test" {
+		project_id  = equinix_metal_project.foobar.id
+		metro       = "sv"
+		type        = "public_ipv4"
+		description = "tfacc-reserved_ip_block-{{.tag}}"
+		quantity    = 2
+		{{if .tag}}
+		tags        = [{{.tag | printf "%q"}}]
+		{{end}}
+	}`)
+	t.Execute(&b, map[string]string{"name": name, "tag": tag})
+
+	return b.String()
 }
 
 func TestAccMetalReservedIPBlock_global(t *testing.T) {
@@ -69,7 +82,7 @@ func TestAccMetalReservedIPBlock_global(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						"equinix_metal_reserved_ip_block.test", "quantity", "1"),
 					resource.TestCheckResourceAttr(
-						"equinix_metal_reserved_ip_block.test", "description", "testdesc"),
+						"equinix_metal_reserved_ip_block.test", "description", "tfacc-reserved_ip_block-"+rs),
 					resource.TestCheckResourceAttr(
 						"equinix_metal_reserved_ip_block.test", "type", "global_ipv4"),
 					resource.TestCheckResourceAttr(
@@ -121,6 +134,7 @@ func TestAccMetalReservedIPBlock_public(t *testing.T) {
 
 func TestAccMetalReservedIPBlock_metro(t *testing.T) {
 	rs := acctest.RandString(10)
+	tag := "tag"
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -128,10 +142,29 @@ func TestAccMetalReservedIPBlock_metro(t *testing.T) {
 		CheckDestroy: testAccMetalReservedIPBlockCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccMetalReservedIPBlockConfig_metro(rs),
+				Config: testAccMetalReservedIPBlockConfig_metro(rs, tag),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(
 						"equinix_metal_reserved_ip_block.test", "metro", "sv"),
+					resource.TestCheckResourceAttr("equinix_metal_reserved_ip_block.test", "tags.0", tag),
+					resource.TestCheckResourceAttr(
+						"equinix_metal_reserved_ip_block.test", "description", "tfacc-reserved_ip_block-"+tag),
+				),
+			},
+			{
+				ResourceName:            "equinix_metal_reserved_ip_block.test",
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"wait_for_state"},
+			},
+			{
+				Config: testAccMetalReservedIPBlockConfig_metro(rs, ""),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(
+						"equinix_metal_reserved_ip_block.test", "metro", "sv"),
+					resource.TestCheckResourceAttr("equinix_metal_reserved_ip_block.test", "tags.#", "0"),
+					resource.TestCheckResourceAttr(
+						"equinix_metal_reserved_ip_block.test", "description", "tfacc-reserved_ip_block-"),
 				),
 			},
 		},
