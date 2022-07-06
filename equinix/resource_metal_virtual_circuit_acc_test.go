@@ -73,14 +73,13 @@ func testAccMetalVirtualCircuitCheckDestroyed(s *terraform.State) error {
 	return nil
 }
 
-
 func testAccMetalConnectionConfig_vc(randint int) string {
 	// Dedicated connection in DA metro
 	testConnection := os.Getenv(metalDedicatedConnIDEnvVar)
 
 	return fmt.Sprintf(`
         locals {
-                conn_id = "%s"
+            conn_id = "%s"
         }
 
         data "equinix_metal_connection" test {

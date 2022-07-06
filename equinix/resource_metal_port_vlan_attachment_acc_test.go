@@ -13,20 +13,29 @@ import (
 
 func testAccMetalPortVlanAttachmentConfig_L2Bonded_1(name string) string {
 	return fmt.Sprintf(`
+%s
+
 resource "equinix_metal_project" "test" {
     name = "tfacc-port_vlan_attachment-%s"
 }
 
 resource "equinix_metal_device" "test" {
   hostname         = "tfacc-device-port-vlan-attachment-test"
-  plan             = "m3.large.x86"
-  metro            = "ny"
+  plan             = local.plan
+  metro            = local.metro
   operating_system = "ubuntu_16_04"
   billing_cycle    = "hourly"
   project_id       = equinix_metal_project.test.id
   termination_time = "%s"
+
+  lifecycle {
+	ignore_changes = [
+	  plan,
+	  metro,
+	]
+  }
 }
-`, name, testDeviceTerminationTime())
+`, confAccMetalDevice_base(preferable_plans, preferable_metros), name, testDeviceTerminationTime())
 }
 
 func testAccMetalPortVlanAttachmentConfig_L2Bonded_2(name string) string {
@@ -98,20 +107,29 @@ func TestAccMetalPortVlanAttachment_L2Bonded(t *testing.T) {
 
 func testAccMetalPortVlanAttachmentConfig_L2Individual_1(name string) string {
 	return fmt.Sprintf(`
+%s
+
 resource "equinix_metal_project" "test" {
     name = "tfacc-port_vlan_attachment-%s"
 }
 
 resource "equinix_metal_device" "test" {
   hostname         = "tfacc-vlan-l2i-test"
-  plan             = "m3.large.x86"
-  metro            = "ny"
+  plan             = local.plan
+  metro            = local.metro
   operating_system = "ubuntu_16_04"
   billing_cycle    = "hourly"
   project_id       = equinix_metal_project.test.id
   termination_time = "%s"
+
+  lifecycle {
+	ignore_changes = [
+	  plan,
+	  metro,
+	]
+  }
 }
-`, name, testDeviceTerminationTime())
+`, confAccMetalDevice_base(preferable_plans, preferable_metros), name, testDeviceTerminationTime())
 }
 
 func testAccMetalPortVlanAttachmentConfig_L2Individual_2(name string) string {
@@ -185,19 +203,28 @@ func TestAccMetalPortVlanAttachment_L2Individual(t *testing.T) {
 
 func testAccMetalPortVlanAttachmentConfig_Hybrid_1(name string) string {
 	return fmt.Sprintf(`
+%s
+
 resource "equinix_metal_project" "test" {
     name = "tfacc-port_vlan_attachment-%s"
 }
 
 resource "equinix_metal_device" "test" {
   hostname         = "tfacc-device-hybrid-test"
-  plan             = "m3.large.x86"
-  metro            = "ny"
+  plan             = local.plan
+  metro            = local.metro
   operating_system = "ubuntu_16_04"
   billing_cycle    = "hourly"
   project_id       = equinix_metal_project.test.id
   termination_time = "%s"
-}`, name, testDeviceTerminationTime())
+
+  lifecycle {
+    ignore_changes = [
+      plan,
+      metro,
+    ]
+  }
+}`, confAccMetalDevice_base(preferable_plans, preferable_metros), name, testDeviceTerminationTime())
 }
 
 func testAccMetalPortVlanAttachmentConfig_Hybrid_2(name string) string {
@@ -211,7 +238,7 @@ resource "equinix_metal_device_network_type" "test" {
 
 resource "equinix_metal_vlan" "test" {
   description = "tfacc-vlan test vlan"
-  metro       = "ny"
+  metro       = equinix_metal_device.test.metro
   project_id  = equinix_metal_project.test.id
 }
 
@@ -256,19 +283,28 @@ func TestAccMetalPortVlanAttachment_hybridBasic(t *testing.T) {
 
 func testAccMetalPortVlanAttachmentConfig_HybridMultipleVlans_1(name string) string {
 	return fmt.Sprintf(`
+%s
+
 resource "equinix_metal_project" "test" {
   name = "tfacc-port_vlan_attachment-%s"
 }
 
 resource "equinix_metal_device" "test" {
   hostname         = "tfacc-device-hmv-test"
-  plan             = "m3.large.x86"
-  metro            = "ny"
+  plan             = local.plan
+  metro            = local.metro
   operating_system = "ubuntu_16_04"
   billing_cycle    = "hourly"
   project_id       = equinix_metal_project.test.id
   termination_time = "%s"
-}`, name, testDeviceTerminationTime())
+
+  lifecycle {
+    ignore_changes = [
+      plan,
+	  metro,
+    ]
+  }
+}`, confAccMetalDevice_base(preferable_plans, preferable_metros), name, testDeviceTerminationTime())
 }
 
 func testAccMetalPortVlanAttachmentConfig_HybridMultipleVlans_2(name string) string {
@@ -284,7 +320,7 @@ resource "equinix_metal_vlan" "test" {
 
 resource "equinix_metal_device_network_type" "test" {
   device_id = equinix_metal_device.test.id
-  type = "hybrid"
+  type      = "hybrid"
 }
 
 resource "equinix_metal_port_vlan_attachment" "test" {
@@ -370,19 +406,28 @@ func testAccMetalPortVlanAttachmentCheckDestroyed(s *terraform.State) error {
 
 func testAccMetalPortVlanAttachmentConfig_L2Native_1(name string) string {
 	return fmt.Sprintf(`
+%s
+
 resource "equinix_metal_project" "test" {
     name = "tfacc-port_vlan_attachment-%s"
 }
 
 resource "equinix_metal_device" "test" {
   hostname         = "tfacc-device-l2n-test"
-  plan             = "m3.large.x86"
-  metro            = "ny"
+  plan             = local.plan
+  metro            = local.metro
   operating_system = "ubuntu_16_04"
   billing_cycle    = "hourly"
   project_id       = equinix_metal_project.test.id
   termination_time = "%s"
-}`, name, testDeviceTerminationTime())
+
+  lifecycle {
+    ignore_changes = [
+      plan,
+	  metro,
+    ]
+  }
+}`, confAccMetalDevice_base(preferable_plans, preferable_metros), name, testDeviceTerminationTime())
 }
 
 func testAccMetalPortVlanAttachmentConfig_L2Native_2(name string) string {

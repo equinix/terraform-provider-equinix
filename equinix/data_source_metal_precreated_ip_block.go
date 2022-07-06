@@ -80,13 +80,13 @@ func dataSourceMetalPreCreatedIPBlockRead(d *schema.ResourceData, meta interface
 	global := d.Get("global").(bool)
 
 	if !public && global {
-		return fmt.Errorf("Private (non-public) global IP address blocks are not supported in Equinix Metal")
+		return fmt.Errorf("private (non-public) global IP address blocks are not supported in Equinix Metal")
 	}
 
 	fval, fok := d.GetOk("facility")
 	mval, mok := d.GetOk("metro")
 	if (fok || mok) && global {
-		return fmt.Errorf("You can't specify facility for global IP block - addresses from global blocks can be assigned to devices across several locations")
+		return fmt.Errorf("you can't specify facility for global IP block - addresses from global blocks can be assigned to devices across several locations")
 	}
 
 	if fok {
@@ -119,5 +119,5 @@ func dataSourceMetalPreCreatedIPBlockRead(d *schema.ResourceData, meta interface
 			}
 		}
 	}
-	return fmt.Errorf("Could not find matching reserved block, all IPs were %v", ips)
+	return fmt.Errorf("could not find matching reserved block, all IPs were %v", ips)
 }

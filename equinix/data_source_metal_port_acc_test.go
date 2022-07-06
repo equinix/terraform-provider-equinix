@@ -28,6 +28,7 @@ func TestAccDataSourceMetalPort_byName(t *testing.T) {
 
 func testAccDataSourceMetalPortConfig_byName(name string) string {
 	return fmt.Sprintf(`
+%s
 
 resource "equinix_metal_project" "test" {
     name = "tfacc-port-%s"
@@ -35,12 +36,19 @@ resource "equinix_metal_project" "test" {
 
 resource "equinix_metal_device" "test" {
   hostname         = "tfacc-test-device-port"
-  plan             = "c3.medium.x86"
-  metro            = "sv"
+  plan             = local.plan
+  metro            = local.metro
   operating_system = "ubuntu_20_04"
   billing_cycle    = "hourly"
   project_id       = equinix_metal_project.test.id
   termination_time = "%s"
+
+  lifecycle {
+    ignore_changes = [
+      plan,
+      metro,
+    ]
+  }
 }
 
 data "equinix_metal_port" "test" {
@@ -48,7 +56,7 @@ data "equinix_metal_port" "test" {
     name      = "eth0"
 }
 
-`, name, testDeviceTerminationTime())
+`, confAccMetalDevice_base(preferable_plans, preferable_metros), name, testDeviceTerminationTime())
 }
 
 func TestAccDataSourceMetalPort_byId(t *testing.T) {
@@ -71,6 +79,7 @@ func TestAccDataSourceMetalPort_byId(t *testing.T) {
 
 func testAccDataSourceMetalPortConfig_byId(name string) string {
 	return fmt.Sprintf(`
+%s
 
 resource "equinix_metal_project" "test" {
     name = "tfacc-port-%s"
@@ -78,16 +87,23 @@ resource "equinix_metal_project" "test" {
 
 resource "equinix_metal_device" "test" {
   hostname         = "tfacc-test-device-port"
-  plan             = "c3.medium.x86"
-  metro            = "sv"
+  plan             = local.plan
+  metro            = local.metro
   operating_system = "ubuntu_20_04"
   billing_cycle    = "hourly"
   project_id       = equinix_metal_project.test.id
   termination_time = "%s"
+
+  lifecycle {
+    ignore_changes = [
+      plan,
+      metro,
+    ]
+  }
 }
 
 data "equinix_metal_port" "test" {
   port_id        = equinix_metal_device.test.ports[0].id
 }
-`, name, testDeviceTerminationTime())
+`, confAccMetalDevice_base(preferable_plans, preferable_metros), name, testDeviceTerminationTime())
 }

@@ -38,31 +38,39 @@ func TestAccMetalIPAttachment_basic(t *testing.T) {
 
 func testAccMetalIPAttachmentConfig_basic(name string) string {
 	return fmt.Sprintf(`
+%s
+
 resource "equinix_metal_project" "test" {
     name = "tfacc-ip_attachment-%s"
 }
 
 resource "equinix_metal_device" "test" {
   hostname         = "tfacc-device-ip-attachment-test"
-  plan             = "c3.small.x86"
-  facilities       = ["sv15"]
+  plan             = local.plan
+  facilities       = local.facilities
   operating_system = "ubuntu_16_04"
   billing_cycle    = "hourly"
   project_id       = equinix_metal_project.test.id
   termination_time = "%s"
+
+  lifecycle {
+    ignore_changes = [
+      plan,
+      facilities,
+    ]
+  }
 }
 
 resource "equinix_metal_reserved_ip_block" "test" {
     project_id = equinix_metal_project.test.id
-    facility   = "sv15"
-	quantity   = 2
+    facility   = equinix_metal_device.test.deployed_facility
+    quantity   = 2
 }
-
 
 resource "equinix_metal_ip_attachment" "test" {
 	device_id = equinix_metal_device.test.id
 	cidr_notation = "${cidrhost(equinix_metal_reserved_ip_block.test.cidr_notation,0)}/32"
-}`, name, testDeviceTerminationTime())
+}`, confAccMetalDevice_base(preferable_plans, preferable_metros), name, testDeviceTerminationTime())
 }
 
 func TestAccMetalIPAttachment_metro(t *testing.T) {
@@ -94,31 +102,40 @@ func TestAccMetalIPAttachment_metro(t *testing.T) {
 
 func testAccMetalIPAttachmentConfig_metro(name string) string {
 	return fmt.Sprintf(`
+%s
+
 resource "equinix_metal_project" "test" {
     name = "tfacc-ip_attachment-%s"
 }
 
 resource "equinix_metal_device" "test" {
   hostname         = "tfacc-device-ip-attachment-test"
-  plan             = "c3.medium.x86"
-  metro            = "sv"
+  plan             = local.plan
+  metro            = local.metro
   operating_system = "ubuntu_16_04"
   billing_cycle    = "hourly"
   project_id       = equinix_metal_project.test.id
   termination_time = "%s"
+
+  lifecycle {
+    ignore_changes = [
+      plan,
+      metro,
+    ]
+  }
 }
 
 resource "equinix_metal_reserved_ip_block" "test" {
     project_id = equinix_metal_project.test.id
-    metro      = "sv"
-	quantity   = 2
+    metro      = equinix_metal_device.test.metro
+    quantity   = 2
 }
 
 
 resource "equinix_metal_ip_attachment" "test" {
 	device_id = equinix_metal_device.test.id
 	cidr_notation = "${cidrhost(equinix_metal_reserved_ip_block.test.cidr_notation,0)}/32"
-}`, name, testDeviceTerminationTime())
+}`, confAccMetalDevice_base(preferable_plans, preferable_metros), name, testDeviceTerminationTime())
 }
 
 func testAccMetalIPAttachmentCheckDestroyed(s *terraform.State) error {

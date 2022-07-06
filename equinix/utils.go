@@ -14,6 +14,14 @@ func contains(s []string, e string) bool {
 	return false
 }
 
+func stringArrToIfArr(sli []string) []interface{} {
+	var arr []interface{}
+	for _, v := range sli {
+		arr = append(arr, v)
+	}
+	return arr
+}
+
 func convertStringArr(ifaceArr []interface{}) []string {
 	var arr []string
 	for _, v := range ifaceArr {

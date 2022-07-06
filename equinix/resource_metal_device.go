@@ -623,7 +623,6 @@ func resourceMetalDeviceRead(d *schema.ResourceData, meta interface{}) error {
 	fdv := "force_detach_volumes"
 	if _, ok := d.GetOk(fdv); !ok {
 		d.Set(fdv, nil)
-
 	}
 	tt := "termination_time"
 	if _, ok := d.GetOk(tt); !ok {
