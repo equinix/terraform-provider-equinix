@@ -619,7 +619,7 @@ resource "equinix_metal_ssh_key" "test" {
 	public_key = "%s"
 }
 
-resource "equinix_metal_ssh_project_key" "test" {
+resource "equinix_metal_project_ssh_key" "test" {
 	project_id = equinix_metal_project.test.id
 	name = "tfacc-project-key-%s"
 	public_key = "%s"
