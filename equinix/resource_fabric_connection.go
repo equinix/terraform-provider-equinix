@@ -45,6 +45,8 @@ func resourceFabricConnectionCreate(ctx context.Context, d *schema.ResourceData,
 	schemaOrder := d.Get("order").(interface{}).(*schema.Set).List()
 	order := orderToFabric(schemaOrder)
 	aside := d.Get("a_side").(interface{}).(*schema.Set).List()
+	projectReq := d.Get("project").(interface{}).(*schema.Set).List()
+	project := projectToFabric(projectReq)
 	connectionASide := v4.ConnectionSide{}
 	for _, as := range aside {
 		asideMap := as.(map[string]interface{})
@@ -96,6 +98,7 @@ func resourceFabricConnectionCreate(ctx context.Context, d *schema.ResourceData,
 		Redundancy:    &red,
 		ASide:         &connectionASide,
 		ZSide:         &connectionZSide,
+		Project:       &project,
 	}
 
 	conn, _, err := client.ConnectionsApi.CreateConnection(ctx, createRequest)
@@ -141,6 +144,7 @@ func setFabricMap(d *schema.ResourceData, conn v4.Connection) diag.Diagnostics {
 		"a_side":          connectionSideToTerra(conn.ASide),
 		"z_side":          connectionSideToTerra(conn.ZSide),
 		"additional_info": additionalInfoToTerra(conn.AdditionalInfo),
+		"project":         projectToTerra(conn.Project),
 	})
 	if err != nil {
 		return diag.FromErr(err)
@@ -190,7 +194,6 @@ func waitForConnectionUpdateCompletion(uuid string, meta interface{}, ctx contex
 			client := meta.(*Config).fabricClient
 			dbConn, _, err := client.ConnectionsApi.GetConnectionByUuid(ctx, uuid, nil)
 			if err != nil {
-				//TODO handle error and add to the diag rather returning it directly
 				return "", "", err
 			}
 			updatableState := ""

@@ -54,7 +54,6 @@ func readLocationSch() map[string]*schema.Schema {
 	}
 }
 
-//TODO missing uuid in swager generated spec.
 func readVirtualGatewaySch() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
 		"uuid": {
@@ -67,10 +66,10 @@ func readVirtualGatewaySch() map[string]*schema.Schema {
 			Computed:    true,
 			Description: "Unique Resource Identifier",
 		},
-		"type": {
+		"state": {
 			Type:        schema.TypeString,
 			Computed:    true,
-			Description: "Virtual Device type",
+			Description: "Virtual Gateway State",
 		},
 	}
 }
