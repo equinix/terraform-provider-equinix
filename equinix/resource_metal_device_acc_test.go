@@ -145,22 +145,27 @@ func TestAccMetalDevice_facilityList(t *testing.T) {
 	})
 }
 
-func TestAccMetalDevice_networkPortsOrder(t *testing.T) {
-	var device packngo.Device
+func TestAccMetalDevice_sshConfig(t *testing.T) {
 	rs := acctest.RandString(10)
 	r := "equinix_metal_device.test"
-
+	userSSHKey, _, err := acctest.RandSSHKeyPair("")
+	if err != nil {
+		t.Fatalf("Cannot generate test SSH key pair: %s", err)
+	}
+	projSSHKey, _, err := acctest.RandSSHKeyPair("")
+	if err != nil {
+		t.Fatalf("Cannot generate test SSH key pair: %s", err)
+	}
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccMetalDeviceCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccMetalDeviceConfig_basic(rs),
+				Config: testAccMetalDeviceConfig_ssh_key(rs, userSSHKey, projSSHKey),
 				Check: resource.ComposeTestCheckFunc(
-					testAccMetalDeviceExists(r, &device),
-					testAccMetalDeviceNetworkOrder(r),
-					testAccMetalDevicePortsOrder(r),
+					resource.TestCheckResourceAttr(
+						r, "ssh_key_ids.#", "2"),
 				),
 			},
 		},
@@ -204,6 +209,8 @@ func TestAccMetalDevice_basic(t *testing.T) {
 					testAccMetalDeviceExists(r, &device),
 					testAccMetalDeviceNetwork(r),
 					testAccMetalDeviceAttributes(&device),
+					testAccMetalDeviceNetworkOrder(r),
+					testAccMetalDevicePortsOrder(r),
 				),
 			},
 		},
@@ -712,6 +719,7 @@ resource "equinix_metal_project" "test" {
     name = "tfacc-device-%s"
 }
 
+
 resource "equinix_metal_device" "test" {
   hostname         = "tfacc-test-device"
   plan             = local.plan
@@ -728,6 +736,36 @@ resource "equinix_metal_device" "test" {
     ]
   }
 }`, confAccMetalDevice_base(preferable_plans, preferable_metros), projSuffix, testDeviceTerminationTime())
+}
+
+func testAccMetalDeviceConfig_ssh_key(projSuffix, userSSSHKey, projSSHKey string) string {
+	return fmt.Sprintf(`
+resource "equinix_metal_project" "test" {
+    name = "tfacc-device-%s"
+}
+
+resource "equinix_metal_ssh_key" "test" {
+	name = "tfacc-ssh-key-%s"
+	public_key = "%s"
+}
+
+resource "equinix_metal_project_ssh_key" "test" {
+	project_id = equinix_metal_project.test.id
+	name = "tfacc-project-key-%s"
+	public_key = "%s"
+}
+
+resource "equinix_metal_device" "test" {
+	hostname         = "tfacc-test-device"
+	plan             = "c3.small.x86"
+	metro            = "sv"
+	operating_system = "ubuntu_16_04"
+	billing_cycle    = "hourly"
+	project_id       = equinix_metal_project.test.id
+	user_ssh_key_ids = [equinix_metal_ssh_key.test.id]
+	project_ssh_key_ids = [equinix_metal_project_ssh_key.test.id]
+  }
+`, projSSHKey, projSSHKey, userSSSHKey, projSSHKey, projSSHKey)
 }
 
 func testAccMetalDeviceConfig_facility_list(projSuffix string) string {

@@ -173,7 +173,8 @@ top of the page and see JSON from the API response.
 * `project_ssh_key_ids` - (Optional) Array of IDs of the project SSH keys which should be added to the device.
 If you omit this, SSH keys of all the members of the parent project will be added to the device. If
 you specify this array, only the listed project SSH keys will be added. Project SSH keys can be
-created with the [equinix_metal_project_ssh_key](metal_project_ssh_key.md) resource.
+created with the [equinix_metal_project_ssh_key](equinix_metal_project_ssh_key.md) resource.
+* `user_ssh_key_ids` - (Optional) Array of IDs of the user SSH keys which should be added to the device. If you omit this, SSH keys of all the members of the parent project will be added to the device. If you specify this array, only the listed user SSH keys (and any project_ssh_key_ids) will be added. User SSH keys can be created with the [equinix_metal_ssh_key](equinix_metal_ssh_key.md) resource
 * `reinstall` - (Optional) Whether the device should be reinstalled instead of destroyed when
 modifying user_data, custom_data, or operating system. See [Reinstall](#reinstall) below for more
 details.
