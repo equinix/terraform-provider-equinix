@@ -5,6 +5,7 @@ import (
 	v4 "github.com/equinix-labs/fabric-go/fabric/v4"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"log"
+	"math/rand"
 	"time"
 )
 
@@ -49,9 +50,6 @@ func accessPointToFabric(accessPointRequest []interface{}) v4.AccessPoint {
 		peeringTypeRaw := accessPointMap["peering_type"].(interface{}).(string)
 		gatewayRequest := accessPointMap["gateway"].(interface{}).(*schema.Set).List()
 
-		//TODO need to figure out, if we need to map it
-		//additionalInfoRaw := accessPointMap["additional_info"].(interface{}).(string)
-
 		//TODO I do not see uuid in the contract need to verify as gateway based connection request only need uuid
 		mappedGWr := v4.VirtualGateway{}
 		if len(gatewayRequest) != 0 {
@@ -95,8 +93,8 @@ func gatewayToFabric(gatewayRequest []interface{}) v4.VirtualGateway {
 	for _, gwr := range gatewayRequest {
 		gwrMap := gwr.(map[string]interface{})
 		gwtype := gwrMap["type"].(interface{}).(string)
-		gwName := gwrMap["name"].(interface{}).(string)
-		// TODO
+		gwName := gwrMap["href"].(interface{}).(string)
+		// TODO uuid is currently missing
 		//gwuuid := gwrMap["uuid"].(interface{}).(string)
 		pr := projectToFabric(gwrMap["project"].(interface{}).(*schema.Set).List())
 		gatewayMapped = v4.VirtualGateway{Type_: gwtype, Name: gwName, Project: &pr}
@@ -116,6 +114,9 @@ func projectToFabric(projectRequest []interface{}) v4.Project {
 }
 
 func notificationToFabric(schemaNotifications []interface{}) []v4.SimplifiedNotification {
+	if schemaNotifications == nil {
+		return []v4.SimplifiedNotification{}
+	}
 	var notifications []v4.SimplifiedNotification
 	for _, n := range schemaNotifications {
 		ntype := n.(map[string]interface{})["type"].(string)
@@ -132,7 +133,9 @@ func notificationToFabric(schemaNotifications []interface{}) []v4.SimplifiedNoti
 }
 
 func redundancyToFabric(schemaRedundancy []interface{}) v4.ConnectionRedundancy {
-
+	if schemaRedundancy == nil {
+		return v4.ConnectionRedundancy{}
+	}
 	red := v4.ConnectionRedundancy{}
 	for _, r := range schemaRedundancy {
 		redundancyMap := r.(map[string]interface{})
@@ -146,6 +149,9 @@ func redundancyToFabric(schemaRedundancy []interface{}) v4.ConnectionRedundancy 
 }
 
 func orderToFabric(schemaOrder []interface{}) v4.Order {
+	if schemaOrder == nil {
+		return v4.Order{}
+	}
 	order := v4.Order{}
 	for _, o := range schemaOrder {
 		orderMap := o.(map[string]interface{})
@@ -282,9 +288,7 @@ func operationToTerra(operation *v4.ConnectionOperation) *schema.Set {
 		mappedOperation := make(map[string]interface{})
 		mappedOperation["provider_status"] = string(*operation.ProviderStatus)
 		mappedOperation["equinix_status"] = string(*operation.EquinixStatus)
-		mappedOperation["operational_status"] = operation.OperationalStatus
 		mappedOperation["errors"] = errorToTerra(operation.Errors)
-		mappedOperation["op_status_changed_at"] = operation.OpStatusChangedAt.String()
 		mappedOperations = append(mappedOperations, mappedOperation)
 	}
 	operationSet := schema.NewSet(
@@ -444,7 +448,6 @@ func connectionSideToTerra(connectionSide *v4.ConnectionSide) *schema.Set {
 			mappedConnectionSide["service_token"] = serviceTokenSet
 		}
 		mappedConnectionSide["access_point"] = accessPointToTerra(connectionSide.AccessPoint)
-		//mappedConnectionSide["additional_info"] = additionalInfoToTerra(connectionSide.AdditionalInfo)
 		mappedConnectionSides = append(mappedConnectionSides, mappedConnectionSide)
 	}
 	connectionSideSet := schema.NewSet(
@@ -586,7 +589,6 @@ func accessPointToTerra(accessPoint *v4.AccessPoint) *schema.Set {
 			mappedAccessPoint["peering_type"] = string(*accessPoint.PeeringType)
 		}
 		mappedAccessPoint["authentication_key"] = accessPoint.AuthenticationKey
-		// TODO this is an empty struct mappedAccessPoint["additionalInfo"] = accessPoint.AdditionalInfo
 		mappedAccessPoint["provider_connection_id"] = accessPoint.ProviderConnectionId
 		mappedAccessPoints = append(mappedAccessPoints, mappedAccessPoint)
 	}
@@ -607,9 +609,7 @@ func linkedProtocolToTerra(linkedProtocol *v4.SimplifiedLinkProtocol) *schema.Se
 		mappedLinkedProtocol["vlan_tag"] = int(linkedProtocol.VlanTag)
 		mappedLinkedProtocol["vlan_s_tag"] = int(linkedProtocol.VlanSTag)
 		mappedLinkedProtocol["vlan_c_tag"] = int(linkedProtocol.VlanCTag)
-		mappedLinkedProtocol["unit"] = string(linkedProtocol.Unit)
 		mappedLinkedProtocol["vni"] = int(linkedProtocol.Vni)
-		mappedLinkedProtocol["int_unit"] = string(linkedProtocol.IntUnit)
 		mappedLinkedProtocols = append(mappedLinkedProtocols, mappedLinkedProtocol)
 	}
 	linkedProtocolSet := schema.NewSet(
@@ -649,7 +649,6 @@ func accessPointTypeToTerra(spAccessPointTypes []v4.ServiceProfileAccessPointTyp
 	return mappedSpAccessPointTypes
 }
 
-//TODO this needs full schema implementation
 func portToTerra(port *v4.Port) *schema.Set {
 	ports := []*v4.Port{port}
 	mappedPorts := make([]interface{}, 0)
@@ -661,7 +660,6 @@ func portToTerra(port *v4.Port) *schema.Set {
 		if port.Redundancy != nil {
 			mappedPort["redundancy"] = portRedundancyToTerra(port.Redundancy)
 		}
-
 		mappedPorts = append(mappedPorts, mappedPort)
 	}
 	portSet := schema.NewSet(
@@ -671,18 +669,6 @@ func portToTerra(port *v4.Port) *schema.Set {
 	return portSet
 }
 
-func stringToTime(attribute string, format string, date string) time.Time {
-	defaultFormat := "2006-01-02T10:30:00Z"
-	if format != "" {
-		defaultFormat = format
-	}
-	t, err := time.Parse(defaultFormat, date)
-	if err != nil {
-		err = fmt.Errorf(" Error while parsing date %s for the format %s , for the attribute %s", format, date, attribute)
-	}
-	return t
-}
-
 func getUpdateRequest(conn v4.Connection, d *schema.ResourceData) (v4.ConnectionChangeOperation, error) {
 	changeOps := v4.ConnectionChangeOperation{}
 	existingName := conn.Name
@@ -690,7 +676,9 @@ func getUpdateRequest(conn v4.Connection, d *schema.ResourceData) (v4.Connection
 	updateNameVal := d.Get("name").(string)
 	updateBandwidthVal := d.Get("bandwidth").(int)
 
-	log.Printf("Update Name Request %s, Update Bandwidth Request %d ", updateNameVal, updateBandwidthVal)
+	log.Printf("existing name %s, existing bandwidth %d, Update Name Request %s, Update Bandwidth Request %d ",
+		existingName, existingBandwidth, updateNameVal, updateBandwidthVal)
+
 	if existingName != updateNameVal {
 		changeOps = v4.ConnectionChangeOperation{Op: "replace", Path: "/name", Value: updateNameVal}
 	} else if existingBandwidth != updateBandwidthVal {
@@ -699,4 +687,22 @@ func getUpdateRequest(conn v4.Connection, d *schema.ResourceData) (v4.Connection
 		return changeOps, fmt.Errorf(" Nothing to update for the connection %s ", existingName)
 	}
 	return changeOps, nil
+}
+
+const allowed_charset = "abcdefghijklmnopqrstuvwxyz" +
+	"ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789#$&@"
+
+var seededRand = rand.New(
+	rand.NewSource(time.Now().UnixNano()))
+
+func CorrelationIdWithCharset(length int, charset string) string {
+	b := make([]byte, length)
+	for i := range b {
+		b[i] = charset[seededRand.Intn(len(charset))]
+	}
+	return string(b)
+}
+
+func CorrelationId(length int) string {
+	return CorrelationIdWithCharset(length, allowed_charset)
 }
