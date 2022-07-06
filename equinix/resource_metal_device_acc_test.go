@@ -16,7 +16,7 @@ import (
 )
 
 // list of plans and metros used as filter criteria to find available hardware to run tests
-var preferable_plans = []string{"x1.small.x86", "t1.small.x86", "c2.small.x86", "c2.medium.x86", "c3.small.x86", "c3.medium.x86", "m3.small.x86", "m3.large.x86"}
+var preferable_plans = []string{"x1.small.x86", "t1.small.x86", "c2.medium.x86", "c3.small.x86", "c3.medium.x86", "m3.small.x86"}
 var preferable_metros = []string{"ch", "ny", "sv", "ty", "am"}
 
 func init() {
@@ -85,10 +85,6 @@ var matchErrShouldNotBeAnIPXE = regexp.MustCompile(`.*"user_data" should not be 
 func confAccMetalDevice_base(plans, metros []string) string {
 	return fmt.Sprintf(`
 data "equinix_metal_plans" "test" {
-    sort {
-        attribute = "pricing_hour"
-        direction = "asc"
-    }
     filter {
         attribute = "name"
         values    = [%s]
@@ -100,18 +96,27 @@ data "equinix_metal_plans" "test" {
 }
 
 locals {
-    plan       = data.equinix_metal_plans.test.plans[0].slug
-    facilities = tolist(setsubtract(data.equinix_metal_plans.test.plans[0].available_in, ["sjc1", "ld7", "sy4"]))
+    //Operations to select a plan randomly and avoid race conditions with metros without capacity.
+    //With these operations we use current time seconds as the seed, and avoid using a third party provider in the Equinix provider tests
+    plans             = data.equinix_metal_plans.test.plans
+    plans_random_num  = formatdate("s", timestamp())
+    plans_length      = length(local.plans)
+    plans_range_limit = ceil(59 / local.plans_length) == 1 ? local.plans_length : 59
+    plan_idxs         = [for idx, value in range(0, local.plans_range_limit, ceil(59 / local.plans_length)) : idx if local.plans_random_num <= value]
+    plan_idx          = length(local.plan_idxs) > 0 ? local.plan_idxs[0] : 0
+    plan              = local.plans[local.plan_idx].slug
+
+    facilities = tolist(setsubtract(local.plans[local.plan_idx].available_in, ["sjc1", "ld7", "sy4"]))
 
     //Operations to select a metro randomly and avoid race conditions with metros without capacity.
     //With these operations we use current time seconds as the seed, and avoid using a third party provider in the Equinix provider tests
-    metros        = tolist(data.equinix_metal_plans.test.plans[0].available_in_metros)
-    random_num    = formatdate("ss", timestamp())
-    metros_length = length(local.metros)
-    range_limit   = ceil(59 / local.metros_length) == 1 ? local.metros_length : 59
-    idxs          = [for idx, value in range(0, local.range_limit, ceil(59 / local.metros_length)) : idx if local.random_num <= value]
-    idx           = length(local.idxs) > 0 ? local.idxs[0] : 0
-    metro         = local.metros[local.idx]
+    metros             = tolist(local.plans[local.plan_idx].available_in_metros)
+    metros_random_num  = formatdate("s", timestamp())
+    metros_length      = length(local.metros)
+    metros_range_limit = ceil(59 / local.metros_length) == 1 ? local.metros_length : 59
+    metro_idxs         = [for idx, value in range(0, local.metros_range_limit, ceil(59 / local.metros_length)) : idx if local.metros_random_num <= value]
+    metro_idx          = length(local.metro_idxs) > 0 ? local.metro_idxs[0] : 0
+    metro              = local.metros[local.metro_idx]
 }
 `, fmt.Sprintf("\"%s\"", strings.Join(plans[:], `","`)), fmt.Sprintf("\"%s\"", strings.Join(metros[:], `","`)))
 }
