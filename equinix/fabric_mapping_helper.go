@@ -50,7 +50,6 @@ func accessPointToFabric(accessPointRequest []interface{}) v4.AccessPoint {
 		peeringTypeRaw := accessPointMap["peering_type"].(interface{}).(string)
 		gatewayRequest := accessPointMap["gateway"].(interface{}).(*schema.Set).List()
 
-		//TODO I do not see uuid in the contract need to verify as gateway based connection request only need uuid
 		mappedGWr := v4.VirtualGateway{}
 		if len(gatewayRequest) != 0 {
 			mappedGWr = gatewayToFabric(gatewayRequest)
@@ -92,22 +91,23 @@ func gatewayToFabric(gatewayRequest []interface{}) v4.VirtualGateway {
 	gatewayMapped := v4.VirtualGateway{}
 	for _, gwr := range gatewayRequest {
 		gwrMap := gwr.(map[string]interface{})
-		gwtype := gwrMap["type"].(interface{}).(string)
-		gwName := gwrMap["href"].(interface{}).(string)
-		// TODO uuid is currently missing
-		//gwuuid := gwrMap["uuid"].(interface{}).(string)
-		pr := projectToFabric(gwrMap["project"].(interface{}).(*schema.Set).List())
-		gatewayMapped = v4.VirtualGateway{Type_: gwtype, Name: gwName, Project: &pr}
+		gwHref := gwrMap["href"].(interface{}).(string)
+		gwuuid := gwrMap["uuid"].(interface{}).(string)
+		gatewayMapped = v4.VirtualGateway{Uuid: gwuuid, Href: gwHref}
 	}
 	return gatewayMapped
 }
 
 func projectToFabric(projectRequest []interface{}) v4.Project {
+	if projectRequest == nil || len(projectRequest) == 0 {
+		return v4.Project{}
+	}
 	mappedPr := v4.Project{}
 	for _, pr := range projectRequest {
 		prMap := pr.(map[string]interface{})
 		projectId := prMap["project_id"].(interface{}).(string)
-		mappedPr = v4.Project{ProjectId: projectId}
+		href := prMap["href"].(interface{}).(string)
+		mappedPr = v4.Project{ProjectId: projectId, Href: href}
 	}
 	return mappedPr
 
@@ -479,10 +479,8 @@ func fabricGatewayToTerra(virtualGateway *v4.VirtualGateway) *schema.Set {
 	mappedvirtualGateways := make([]interface{}, 0)
 	for _, virtualGateway := range virtualGateways {
 		mappedvirtualGateway := make(map[string]interface{})
-		//mappedvirtualGateway["uuid"] = virtualGateway.uuid
-		//mappedvirtualGateway["href"] = virtualGateway.href
-		mappedvirtualGateway["type"] = virtualGateway.Type_
-		mappedvirtualGateway["project"] = projectToTerra(virtualGateway.Project)
+		mappedvirtualGateway["uuid"] = virtualGateway.Uuid
+		mappedvirtualGateway["href"] = virtualGateway.Href
 		mappedvirtualGateways = append(mappedvirtualGateways, mappedvirtualGateway)
 	}
 	linkedProtocolSet := schema.NewSet(
