@@ -1,4 +1,4 @@
-## 1.6.0 (Jul 1, 2022)
+## 1.6.0 (Jul 6, 2022)
 
 FEATURES:
 
@@ -9,6 +9,7 @@ FEATURES:
 - Adds `vrf_id` as a datasource attribute to `equinix_metal_gateway` [#129](https://github.com/equinix/terraform-provider-equinix/pull/129)
 - Adds `vrf_id`, `peer_asn`, `subnet`, `metal_ip`, `customer_ip`, `md5` as resource arguments and datasource attributes to `equinix_metal_virtual_circuit` [#129](https://github.com/equinix/terraform-provider-equinix/pull/129))
 - Adds `vrf_id`, `network`, `cidr` as resource arguments to `equinix_metal_reserved_ip_block` [#129](https://github.com/equinix/terraform-provider-equinix/pull/129)
+- Adds `user_ssh_key_ids` as resource argument to `metal_device` [#141](https://github.com/equinix/terraform-provider-equinix/pull/141)
 
 BUG FIXES:
 
@@ -19,11 +20,12 @@ BUG FIXES:
 
 ENHANCEMENTS:
 
-- `mgmt_acl_template_uuid` argument added to `equinix_network_device [#115](https://github.com/equinix/terraform-provider-equinix/pull/115)
+- `mgmt_acl_template_uuid` argument added to `equinix_network_device` [#115](https://github.com/equinix/terraform-provider-equinix/pull/115)
 - Improved documentation [#123](https://github.com/equinix/terraform-provider-equinix/pull/123)
 - Packngo version bumped to 0.25.0
 - update go-getter to 1.5.11 for CWE-532 [#139](https://github.com/equinix/terraform-provider-equinix/pull/139)
 - `equinix_metal_gateway` will wait for the Metal Gateway devices to pass through the "deleting" status [#138](https://github.com/equinix/terraform-provider-equinix/pull/138)
+- E2E tests use data source `equinix_metal_plans` in all tests with a metal_device to check for available hardware [#215](https://github.com/equinix/terraform-provider-equinix/pull/215)
 
 ## 1.5.0 (March 24, 2022)
 
