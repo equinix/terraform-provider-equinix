@@ -33,6 +33,7 @@ The following arguments are supported:
 In addition to all arguments above, the following attributes are exported:
 
 * `name` - Name of the virtual circuit resource.
+* `connection_id` - UUID of Connection where the VC is scoped to.
 * `status` - Status of the virtal circuit.
 * `port_id` - UUID of the Connection Port where the VC is scoped to.
 * `project_id` - ID of project to which the VC belongs.
