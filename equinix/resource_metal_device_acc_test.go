@@ -98,10 +98,20 @@ data "equinix_metal_plans" "test" {
         values    = [%s]
     }
 }
+
 locals {
     plan       = data.equinix_metal_plans.test.plans[0].slug
-    metro      = tolist(data.equinix_metal_plans.test.plans[0].available_in_metros)[1]
     facilities = tolist(setsubtract(data.equinix_metal_plans.test.plans[0].available_in, ["sjc1", "ld7", "sy4"]))
+
+    //Operations to select a metro randomly and avoid race conditions with metros without capacity.
+    //With these operations we use current time seconds as the seed, and avoid using a third party provider in the Equinix provider tests
+    metros        = tolist(data.equinix_metal_plans.test.plans[0].available_in_metros)
+    random_num    = formatdate("ss", timestamp())
+    metros_length = length(local.metros)
+    range_limit   = ceil(59 / local.metros_length) == 1 ? local.metros_length : 59
+    idxs          = [for idx, value in range(0, local.range_limit, ceil(59 / local.metros_length)) : idx if local.random_num <= value]
+    idx           = length(local.idxs) > 0 ? local.idxs[0] : 0
+    metro         = local.metros[local.idx]
 }
 `, fmt.Sprintf("\"%s\"", strings.Join(plans[:], `","`)), fmt.Sprintf("\"%s\"", strings.Join(metros[:], `","`)))
 }
