@@ -127,20 +127,10 @@ func readAccessPointLinkProtocolSch() map[string]*schema.Schema {
 			Computed:    true,
 			Description: "Vlan Customer Tag information, vlanCTag value specified for QINQ connections",
 		},
-		"unit": {
-			Type:        schema.TypeString,
-			Computed:    true,
-			Description: "Unit",
-		},
 		"vni": {
 			Type:        schema.TypeString,
 			Computed:    true,
 			Description: "vni",
-		},
-		"int_unit": {
-			Type:        schema.TypeString,
-			Computed:    true,
-			Description: "int unit",
 		},
 	}
 }
@@ -298,11 +288,6 @@ func readConnectionSideAccessPointSch() map[string]*schema.Schema {
 			Optional:    true,
 			Description: "Peering Type",
 		},
-		"additional_info": {
-			Type:        schema.TypeString,
-			Computed:    true,
-			Description: "Access point additional Information",
-		},
 		"provider_connection_id": {
 			Type:        schema.TypeString,
 			Computed:    true,
@@ -327,14 +312,6 @@ func readFabricConnectionSideSch() map[string]*schema.Schema {
 			Description: "Point of access details",
 			Elem: &schema.Resource{
 				Schema: readConnectionSideAccessPointSch(),
-			},
-		},
-		"additional_info": {
-			Type:        schema.TypeList,
-			Computed:    true,
-			Description: "Connection Side additional details",
-			Elem: &schema.Resource{
-				Schema: readAdditionalInfoSch(),
 			},
 		},
 	}
@@ -583,11 +560,6 @@ func readOperationSch() map[string]*schema.Schema {
 			Computed:    true,
 			Description: "Connection status",
 		},
-		"operational_status": {
-			Type:        schema.TypeString,
-			Computed:    true,
-			Description: "Connection operational status",
-		},
 		"errors": {
 			Type:        schema.TypeList,
 			Computed:    true,
@@ -595,11 +567,6 @@ func readOperationSch() map[string]*schema.Schema {
 			Elem: &schema.Resource{
 				Schema: readOperationalErrorSch(),
 			},
-		},
-		"op_status_changed_at": {
-			Type:        schema.TypeString,
-			Computed:    true,
-			Description: "When connection transitioned into current operational status",
 		},
 	}
 }
