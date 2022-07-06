@@ -1,6 +1,6 @@
 module github.com/equinix/terraform-provider-equinix
 
-go 1.17
+go 1.18
 
 require (
 	github.com/equinix/ecx-go/v2 v2.2.0
