@@ -14,6 +14,11 @@ func dataSourceMetalVirtualCircuit() *schema.Resource {
 				Required:    true,
 				Description: "ID of the virtual circuit to lookup",
 			},
+			"connection_id": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "UUID of Connection where the VC is scoped to",
+			},
 			"name": {
 				Type:        schema.TypeString,
 				Computed:    true,
