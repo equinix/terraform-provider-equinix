@@ -12,27 +12,36 @@ import (
 
 func confAccMetalPort_base(name string) string {
 	return fmt.Sprintf(`
+%s
+
 resource "equinix_metal_project" "test" {
     name = "tfacc-port-test-%s"
 }
 
 resource "equinix_metal_device" "test" {
   hostname         = "tfacc-metal-port-test"
-  plan             = "c3.small.x86"
-  metro            = "sv"
+  plan             = local.plan
+  metro            = local.metro
   operating_system = "ubuntu_16_04"
   billing_cycle    = "hourly"
   project_id       = "${equinix_metal_project.test.id}"
   termination_time = "%s"
+
+  lifecycle {
+	ignore_changes = [
+	  plan,
+	  metro
+	]
+  }
 }
 
 locals {
   bond0_id = [for p in equinix_metal_device.test.ports: p.id if p.name == "bond0"][0]
-  eth1_id = [for p in equinix_metal_device.test.ports: p.id if p.name == "eth1"][0]
-  eth0_id = [for p in equinix_metal_device.test.ports: p.id if p.name == "eth0"][0]
+  eth1_id  = [for p in equinix_metal_device.test.ports: p.id if p.name == "eth1"][0]
+  eth0_id  = [for p in equinix_metal_device.test.ports: p.id if p.name == "eth0"][0]
 }
 
-`, name, testDeviceTerminationTime())
+`, confAccMetalDevice_base(preferable_plans, preferable_metros), name, testDeviceTerminationTime())
 }
 
 func confAccMetalPort_L3(name string) string {
@@ -40,8 +49,8 @@ func confAccMetalPort_L3(name string) string {
 %s
 
 resource "equinix_metal_port" "bond0" {
-  port_id = local.bond0_id
-  bonded = true
+  port_id    = local.bond0_id
+  bonded     = true
   depends_on = [
 	equinix_metal_port.eth1,
   ]
@@ -49,7 +58,7 @@ resource "equinix_metal_port" "bond0" {
 
 resource "equinix_metal_port" "eth1" {
   port_id = local.eth1_id
-  bonded = true
+  bonded  = true
 }
 
 `, confAccMetalPort_base(name))
@@ -61,8 +70,8 @@ func confAccMetalPort_L2Bonded(name string) string {
 
 resource "equinix_metal_port" "bond0" {
   port_id = local.bond0_id
-  layer2 = true
-  bonded = true
+  layer2  = true
+  bonded  = true
   reset_on_delete = true
 }
 
@@ -75,8 +84,8 @@ func confAccMetalPort_L2Individual(name string) string {
 
 resource "equinix_metal_port" "bond0" {
   port_id = local.bond0_id
-  layer2 = true
-  bonded = false
+  layer2  = true
+  bonded  = false
   reset_on_delete = true
 }
 
@@ -89,8 +98,8 @@ func confAccMetalPort_HybridUnbonded(name string) string {
 
 resource "equinix_metal_port" "bond0" {
   port_id = local.bond0_id
-  layer2 = false
-  bonded = true
+  layer2  = false
+  bonded  = true
   depends_on = [
 	equinix_metal_port.eth1,
   ]
@@ -98,7 +107,7 @@ resource "equinix_metal_port" "bond0" {
 
 resource "equinix_metal_port" "eth1" {
   port_id = local.eth1_id
-  bonded = false
+  bonded  = false
   reset_on_delete = true
 }
 
@@ -110,17 +119,17 @@ func confAccMetalPort_HybridBonded(name string) string {
 %s
 
 resource "equinix_metal_port" "bond0" {
-  port_id = local.bond0_id
-  layer2 = false
-  bonded = true
+  port_id  = local.bond0_id
+  layer2   = false
+  bonded   = true
   vlan_ids = [equinix_metal_vlan.test.id]
   reset_on_delete = true
 }
 
 resource "equinix_metal_vlan" "test" {
   description = "tfacc-vlan test"
-  metro = "sv"
-  project_id = equinix_metal_project.test.id
+  metro       = equinix_metal_device.test.metro
+  project_id  = equinix_metal_project.test.id
 }
 `, confAccMetalPort_base(name))
 }
@@ -130,25 +139,25 @@ func confAccMetalPort_HybridBondedVxlan(name string) string {
 %s
 
 resource "equinix_metal_port" "bond0" {
-  port_id = local.bond0_id
-  layer2 = false
-  bonded = true
+  port_id   = local.bond0_id
+  layer2    = false
+  bonded    = true
   vxlan_ids = [equinix_metal_vlan.test1.vxlan, equinix_metal_vlan.test2.vxlan]
   reset_on_delete = true
 }
 
 resource "equinix_metal_vlan" "test1" {
   description = "tfacc-vlan test1"
-  metro = "sv"
-  project_id = equinix_metal_project.test.id
-  vxlan = 1001
+  metro       = equinix_metal_device.test.metro
+  project_id  = equinix_metal_project.test.id
+  vxlan       = 1001
 }
 
 resource "equinix_metal_vlan" "test2" {
   description = "tfacc-vlan test2"
-  metro = "sv"
-  project_id = equinix_metal_project.test.id
-  vxlan = 1002
+  metro       = equinix_metal_device.test.metro
+  project_id  = equinix_metal_project.test.id
+  vxlan       = 1002
 }
 `, confAccMetalPort_base(name))
 }

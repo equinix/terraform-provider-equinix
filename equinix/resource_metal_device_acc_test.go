@@ -5,6 +5,7 @@ import (
 	"log"
 	"net"
 	"regexp"
+	"strings"
 	"testing"
 	"time"
 
@@ -13,6 +14,10 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"github.com/packethost/packngo"
 )
+
+// list of plans and metros used as filter criteria to find available hardware to run tests
+var preferable_plans = []string{"x1.small.x86", "t1.small.x86", "c2.small.x86", "c2.medium.x86", "c3.small.x86", "c3.medium.x86", "m3.small.x86", "m3.large.x86"}
+var preferable_metros = []string{"ch", "ny", "sv", "ty", "am"}
 
 func init() {
 	resource.AddTestSweepers("equinix_metal_device", &resource.Sweeper{
@@ -65,6 +70,41 @@ func testSweepDevices(region string) error {
 // Regexp vars for use with resource.ExpectError
 var matchErrMustBeProvided = regexp.MustCompile(".* must be provided when .*")
 var matchErrShouldNotBeAnIPXE = regexp.MustCompile(`.*"user_data" should not be an iPXE.*`)
+
+// This function should be used to find available plans in all test where a metal_device resource is needed.
+// To prevent unexpected plan/facilities changes (i.e. run out of a plan in a metro after first apply)
+// during tests that have several config updates, resource metal_device should include a lifecycle
+// like the one defined below.
+//
+// lifecycle {
+//     ignore_changes = [
+//       plan,
+//       facilities,
+//     ]
+//   }
+func confAccMetalDevice_base(plans, metros []string) string {
+	return fmt.Sprintf(`
+data "equinix_metal_plans" "test" {
+    sort {
+        attribute = "pricing_hour"
+        direction = "asc"
+    }
+    filter {
+        attribute = "name"
+        values    = [%s]
+    }
+    filter {
+        attribute = "available_in_metros"
+        values    = [%s]
+    }
+}
+locals {
+    plan       = data.equinix_metal_plans.test.plans[0].slug
+    metro      = tolist(data.equinix_metal_plans.test.plans[0].available_in_metros)[1]
+    facilities = tolist(setsubtract(data.equinix_metal_plans.test.plans[0].available_in, ["sjc1", "ld7", "sy4"]))
+}
+`, fmt.Sprintf("\"%s\"", strings.Join(plans[:], `","`)), fmt.Sprintf("\"%s\"", strings.Join(metros[:], `","`)))
+}
 
 func testDeviceTerminationTime() string {
 	return time.Now().UTC().Add(60 * time.Minute).Format(time.RFC3339)
@@ -283,7 +323,7 @@ func TestAccMetalDevice_IPXEConflictingFields(t *testing.T) {
 		CheckDestroy: testAccMetalDeviceCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
-				Config: fmt.Sprintf(testAccMetalDeviceConfig_ipxe_conflict, rs),
+				Config: fmt.Sprintf(testAccMetalDeviceConfig_ipxe_conflict, confAccMetalDevice_base(preferable_plans, preferable_metros), rs),
 				Check: resource.ComposeTestCheckFunc(
 					testAccMetalDeviceExists(r, &device),
 				),
@@ -304,7 +344,7 @@ func TestAccMetalDevice_IPXEConfigMissing(t *testing.T) {
 		CheckDestroy: testAccMetalDeviceCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
-				Config: fmt.Sprintf(testAccMetalDeviceConfig_ipxe_missing, rs),
+				Config: fmt.Sprintf(testAccMetalDeviceConfig_ipxe_missing, confAccMetalDevice_base(preferable_plans, preferable_metros), rs),
 				Check: resource.ComposeTestCheckFunc(
 					testAccMetalDeviceExists(r, &device),
 				),
@@ -479,33 +519,44 @@ func TestAccMetalDevice_importBasic(t *testing.T) {
 
 func testAccMetalDeviceConfig_no_description(rInt int, projSuffix string) string {
 	return fmt.Sprintf(`
+%s
+
 resource "equinix_metal_project" "test" {
     name = "tfacc-device-%s"
 }
 
 resource "equinix_metal_device" "test" {
   hostname         = "tfacc-test-device-%d"
-  plan             = "c3.small.x86"
-  metro            = "sv"
+  plan             = local.plan
+  metro            = local.metro
   operating_system = "ubuntu_16_04"
   billing_cycle    = "hourly"
   project_id       = "${equinix_metal_project.test.id}"
   tags             = ["%d"]
   termination_time = "%s"
+
+  lifecycle {
+    ignore_changes = [
+      plan,
+      metro,
+    ]
+  }
 }
-`, projSuffix, rInt, rInt, testDeviceTerminationTime())
+`, confAccMetalDevice_base(preferable_plans, preferable_metros), projSuffix, rInt, rInt, testDeviceTerminationTime())
 }
 
 func testAccMetalDeviceConfig_reinstall(rInt int, projSuffix string) string {
 	return fmt.Sprintf(`
+%s
+
 resource "equinix_metal_project" "test" {
     name = "tfacc-device-%s"
 }
 
 resource "equinix_metal_device" "test" {
   hostname         = "tfacc-test-device-%d"
-  plan             = "c3.small.x86"
-  metro            = "sv"
+  plan             = local.plan
+  metro            = local.metro
   operating_system = "ubuntu_16_04"
   billing_cycle    = "hourly"
   project_id       = "${equinix_metal_project.test.id}"
@@ -517,12 +568,21 @@ resource "equinix_metal_device" "test" {
 	  enabled = true
 	  deprovision_fast = true
   }
+
+  lifecycle {
+    ignore_changes = [
+      plan,
+      metro,
+    ]
+  }
 }
-`, projSuffix, rInt, rInt, testDeviceTerminationTime())
+`, confAccMetalDevice_base(preferable_plans, preferable_metros), projSuffix, rInt, rInt, testDeviceTerminationTime())
 }
 
 func testAccMetalDeviceConfig_varname(rInt int, projSuffix string) string {
 	return fmt.Sprintf(`
+%s
+
 resource "equinix_metal_project" "test" {
     name = "tfacc-device-%s"
 }
@@ -530,19 +590,28 @@ resource "equinix_metal_project" "test" {
 resource "equinix_metal_device" "test" {
   hostname         = "tfacc-test-device-%d"
   description      = "test-desc-%d"
-  plan             = "c3.small.x86"
-  metro            = "sv"
+  plan             = local.plan
+  metro            = local.metro
   operating_system = "ubuntu_16_04"
   billing_cycle    = "hourly"
   project_id       = "${equinix_metal_project.test.id}"
   tags             = ["%d"]
   termination_time = "%s"
+
+  lifecycle {
+    ignore_changes = [
+      plan,
+      metro,
+    ]
+  }
 }
-`, projSuffix, rInt, rInt, rInt, testDeviceTerminationTime())
+`, confAccMetalDevice_base(preferable_plans, preferable_metros), projSuffix, rInt, rInt, rInt, testDeviceTerminationTime())
 }
 
 func testAccMetalDeviceConfig_varname_pxe(rInt int, projSuffix string) string {
 	return fmt.Sprintf(`
+%s
+
 resource "equinix_metal_project" "test" {
     name = "tfacc-device-%s"
 }
@@ -550,8 +619,8 @@ resource "equinix_metal_project" "test" {
 resource "equinix_metal_device" "test" {
   hostname         = "tfacc-test-device-%d"
   description      = "test-desc-%d"
-  plan             = "c3.small.x86"
-  metro            = "sv"
+  plan             = local.plan
+  metro            = local.metro
   operating_system = "ubuntu_16_04"
   billing_cycle    = "hourly"
   project_id       = "${equinix_metal_project.test.id}"
@@ -559,60 +628,97 @@ resource "equinix_metal_device" "test" {
   always_pxe       = true
   ipxe_script_url  = "http://matchbox.foo.wtf:8080/boot.ipxe"
   termination_time = "%s"
+
+  lifecycle {
+    ignore_changes = [
+      plan,
+      metro,
+    ]
+  }
 }
-`, projSuffix, rInt, rInt, rInt, testDeviceTerminationTime())
+`, confAccMetalDevice_base(preferable_plans, preferable_metros), projSuffix, rInt, rInt, rInt, testDeviceTerminationTime())
 }
 
 func testAccMetalDeviceConfig_metro(projSuffix string) string {
 	return fmt.Sprintf(`
+%s
+
 resource "equinix_metal_project" "test" {
     name = "tfacc-device-%s"
 }
 
 resource "equinix_metal_device" "test" {
   hostname         = "tfacc-test-device"
-  plan             = "c3.small.x86"
-  metro            = "sv"
+  plan             = local.plan
+  metro            = local.metro
   operating_system = "ubuntu_16_04"
   billing_cycle    = "hourly"
   project_id       = "${equinix_metal_project.test.id}"
   termination_time = "%s"
-}`, projSuffix, testDeviceTerminationTime())
+
+  lifecycle {
+    ignore_changes = [
+      plan,
+      metro,
+    ]
+  }
+}
+`, confAccMetalDevice_base(preferable_plans, preferable_metros), projSuffix, testDeviceTerminationTime())
 }
 
 func testAccMetalDeviceConfig_minimal(projSuffix string) string {
 	return fmt.Sprintf(`
+%s
+
 resource "equinix_metal_project" "test" {
     name = "tfacc-device-%s"
 }
 
 resource "equinix_metal_device" "test" {
-  plan             = "c3.small.x86"
-  metro            = "sv"
+  plan             = local.plan
+  metro            = local.metro
   operating_system = "ubuntu_16_04"
   project_id       = "${equinix_metal_project.test.id}"
-}`, projSuffix)
+
+  lifecycle {
+    ignore_changes = [
+      plan,
+      metro,
+    ]
+  }
+}`, confAccMetalDevice_base(preferable_plans, preferable_metros), projSuffix)
 }
 
 func testAccMetalDeviceConfig_basic(projSuffix string) string {
 	return fmt.Sprintf(`
+%s
+
 resource "equinix_metal_project" "test" {
     name = "tfacc-device-%s"
 }
 
 resource "equinix_metal_device" "test" {
   hostname         = "tfacc-test-device"
-  plan             = "c3.small.x86"
-  metro            = "sv"
+  plan             = local.plan
+  metro            = local.metro
   operating_system = "ubuntu_16_04"
   billing_cycle    = "hourly"
   project_id       = "${equinix_metal_project.test.id}"
   termination_time = "%s"
-}`, projSuffix, testDeviceTerminationTime())
+
+  lifecycle {
+    ignore_changes = [
+      plan,
+      metro,
+    ]
+  }
+}`, confAccMetalDevice_base(preferable_plans, preferable_metros), projSuffix, testDeviceTerminationTime())
 }
 
 func testAccMetalDeviceConfig_facility_list(projSuffix string) string {
 	return fmt.Sprintf(`
+%s
+
 resource "equinix_metal_project" "test" {
   name = "tfacc-device-%s"
 }
@@ -620,17 +726,26 @@ resource "equinix_metal_project" "test" {
 resource "equinix_metal_device" "test"  {
 
   hostname         = "tfacc-device-test-ipxe-script-url"
-  plan             = "c3.small.x86"
-  facilities       = ["sv15", "any"]
+  plan             = local.plan
+  facilities       = local.facilities
   operating_system = "ubuntu_16_04"
   billing_cycle    = "hourly"
   project_id       = "${equinix_metal_project.test.id}"
   termination_time = "%s"
-}`, projSuffix, testDeviceTerminationTime())
+
+  lifecycle {
+    ignore_changes = [
+      plan,
+      facilities,
+    ]
+  }
+}`, confAccMetalDevice_base(preferable_plans, preferable_metros), projSuffix, testDeviceTerminationTime())
 }
 
 func testAccMetalDeviceConfig_ipxe_script_url(projSuffix, url, pxe string) string {
 	return fmt.Sprintf(`
+%s
+
 resource "equinix_metal_project" "test" {
   name = "tfacc-device-%s"
 }
@@ -638,8 +753,8 @@ resource "equinix_metal_project" "test" {
 resource "equinix_metal_device" "test_ipxe_script_url"  {
 
   hostname         = "tfacc-device-test-ipxe-script-url"
-  plan             = "c3.small.x86"
-  metro            = "sv"
+  plan             = local.plan
+  metro            = local.metro
   operating_system = "custom_ipxe"
   user_data        = "#!/bin/sh\ntouch /tmp/test"
   billing_cycle    = "hourly"
@@ -647,37 +762,62 @@ resource "equinix_metal_device" "test_ipxe_script_url"  {
   ipxe_script_url  = "%s"
   always_pxe       = "%s"
   termination_time = "%s"
-}`, projSuffix, url, pxe, testDeviceTerminationTime())
+
+  lifecycle {
+    ignore_changes = [
+      plan,
+      metro,
+    ]
+  }
+}`, confAccMetalDevice_base(preferable_plans, preferable_metros), projSuffix, url, pxe, testDeviceTerminationTime())
 }
 
 var testAccMetalDeviceConfig_ipxe_conflict = `
+%s
+
 resource "equinix_metal_project" "test" {
   name = "tfacc-device-%s"
 }
 
 resource "equinix_metal_device" "test_ipxe_conflict" {
   hostname         = "tfacc-device-test-ipxe-conflict"
-  plan             = "c3.small.x86"
-  metro            = "sv"
+  plan             = local.plan
+  metro            = local.metro
   operating_system = "custom_ipxe"
   user_data        = "#!ipxe\nset conflict ipxe_script_url"
   billing_cycle    = "hourly"
   project_id       = "${equinix_metal_project.test.id}"
   ipxe_script_url  = "https://boot.netboot.xyz"
   always_pxe       = true
+
+  lifecycle {
+    ignore_changes = [
+      plan,
+      metro,
+    ]
+  }
 }`
 
 var testAccMetalDeviceConfig_ipxe_missing = `
+%s
+
 resource "equinix_metal_project" "test" {
   name = "tfacc-device-%s"
 }
 
 resource "equinix_metal_device" "test_ipxe_missing" {
   hostname         = "tfacc-device-test-ipxe-missing"
-  plan             = "c3.small.x86"
-  metro            = "sv"
+  plan             = local.plan
+  metro            = local.metro
   operating_system = "custom_ipxe"
   billing_cycle    = "hourly"
   project_id       = "${equinix_metal_project.test.id}"
   always_pxe       = true
+
+  lifecycle {
+    ignore_changes = [
+      plan,
+      metro,
+    ]
+  }
 }`

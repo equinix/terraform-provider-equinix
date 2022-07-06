@@ -80,7 +80,7 @@ func testAccMetalConnectionConfig_vc(randint int) string {
 
 	return fmt.Sprintf(`
         locals {
-                conn_id = "%s"
+            conn_id = "%s"
         }
 
         data "equinix_metal_connection" test {

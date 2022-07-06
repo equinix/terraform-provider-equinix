@@ -36,6 +36,7 @@ func TestAccDataSourceMetalPreCreatedIPBlock_basic(t *testing.T) {
 
 func testAccDataSourceMetalPreCreatedIPBlockConfig_basic(name string) string {
 	return fmt.Sprintf(`
+%s
 
 resource "equinix_metal_project" "test" {
     name = "tfacc-precreated_ip_block-%s"
@@ -43,12 +44,19 @@ resource "equinix_metal_project" "test" {
 
 resource "equinix_metal_device" "test" {
   hostname         = "tfacc-test-device-ip-blockt"
-  plan             = "c3.small.x86"
-  metro            = "ny"
+  plan             = local.plan
+  metro            = local.metro
   operating_system = "ubuntu_16_04"
   billing_cycle    = "hourly"
   project_id       = equinix_metal_project.test.id
   termination_time = "%s"
+
+  lifecycle {
+    ignore_changes = [
+      plan,
+      metro,
+    ]
+  }
 }
 
 data "equinix_metal_precreated_ip_block" "test" {
@@ -62,5 +70,5 @@ resource "equinix_metal_ip_attachment" "test" {
     device_id = equinix_metal_device.test.id
     cidr_notation = cidrsubnet(data.equinix_metal_precreated_ip_block.test.cidr_notation,8,2)
 }
-`, name, testDeviceTerminationTime())
+`, confAccMetalDevice_base(preferable_plans, preferable_metros), name, testDeviceTerminationTime())
 }
