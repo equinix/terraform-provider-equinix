@@ -64,7 +64,6 @@ func createLocationSch() map[string]*schema.Schema {
 	}
 }
 
-//TODO missing uuid in swager generated spec.
 func createVirtualGatewaySch() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
 		"uuid": {
@@ -77,10 +76,10 @@ func createVirtualGatewaySch() map[string]*schema.Schema {
 			Computed:    true,
 			Description: "Unique Resource Identifier",
 		},
-		"type": {
+		"state": {
 			Type:        schema.TypeString,
 			Computed:    true,
-			Description: "Virtual Device type",
+			Description: "Virtual Gateway state",
 		},
 		"project": {
 			Type:        schema.TypeSet,
@@ -782,6 +781,14 @@ func createFabricConnectionResourceSchema() map[string]*schema.Schema {
 			Description: "Order related to this connection information",
 			Elem: &schema.Resource{
 				Schema: createOrderSch(),
+			},
+		},
+		"project": {
+			Type:        schema.TypeSet,
+			Optional:    true,
+			Description: "Project information",
+			Elem: &schema.Resource{
+				Schema: createGatewayProjectSch(),
 			},
 		},
 		"account": {
