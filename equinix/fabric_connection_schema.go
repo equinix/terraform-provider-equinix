@@ -168,20 +168,10 @@ func createAccessPointLinkProtocolSch() map[string]*schema.Schema {
 			Optional:    true,
 			Description: "Vlan Customer Tag information, vlanCTag value specified for QINQ connections",
 		},
-		"unit": {
-			Type:        schema.TypeString,
-			Optional:    true,
-			Description: "Unit",
-		},
 		"vni": {
 			Type:        schema.TypeInt,
 			Optional:    true,
 			Description: "vni",
-		},
-		"int_unit": {
-			Type:        schema.TypeString,
-			Optional:    true,
-			Description: "int unit",
 		},
 	}
 }
@@ -381,11 +371,6 @@ func createConnectionSideAccessPointSch() map[string]*schema.Schema {
 				Schema: createFabricConnectionRoutingProtocol(),
 			},
 		},
-		"additional_info": {
-			Type:        schema.TypeString,
-			Computed:    true,
-			Description: "Access point additional Information",
-		},
 		"provider_connection_id": {
 			Type:        schema.TypeString,
 			Computed:    true,
@@ -419,7 +404,7 @@ func createFabricConnectionSideSch() map[string]*schema.Schema {
 		"additional_info": {
 			Type:        schema.TypeList,
 			Optional:    true,
-			Description: "Connection Side additional details",
+			Description: "Connection side additional information",
 			Elem: &schema.Resource{
 				Schema: createAdditionalInfoSch(),
 			},
@@ -698,11 +683,6 @@ func createOperationSch() map[string]*schema.Schema {
 			Description:  "Connection status",
 			ValidateFunc: validation.StringInSlice([]string{"REJECTED_ACK", "REJECTED", "PENDING_DELETE", "PROVISIONED", "BEING_REPROVISIONED", "BEING_DEPROVISIONED", "BEING_PROVISIONED", "CREATED", "ERRORED", "PENDING_DEPROVISIONING", "APPROVED", "ORDERING", "PENDING_APPROVAL", "NOT_PROVISIONED", "DEPROVISIONING", "NOT_DEPROVISIONED", "PENDING_AUTO_APPROVAL", "PROVISIONING", "PENDING_BGP_PEERING", "PENDING_PROVIDER_VLAN", "DEPROVISIONED", "DELETED", "PENDING_BANDWIDTH_APPROVAL", "AUTO_APPROVAL_FAILED", "UPDATE_PENDING", "DELETED_API", "MODIFIED", "PENDING_PROVIDER_VLAN_ERROR", "DRAFT", "CANCELLED", "PENDING_INTERFACE_CONFIGURATION"}, true),
 		},
-		"operational_status": {
-			Type:        schema.TypeString,
-			Computed:    true,
-			Description: "Connection operational status",
-		},
 		"errors": {
 			Type:        schema.TypeList,
 			Computed:    true,
@@ -710,11 +690,6 @@ func createOperationSch() map[string]*schema.Schema {
 			Elem: &schema.Resource{
 				Schema: createOperationalErrorSch(),
 			},
-		},
-		"op_status_changed_at": {
-			Type:        schema.TypeString,
-			Computed:    true,
-			Description: "When connection transitioned into current operational status",
 		},
 	}
 }

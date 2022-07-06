@@ -91,7 +91,7 @@ func testAccFabricCreateEPLConnectionConfig(bandwidth int32) string {
 				}
 				link_protocol {
 					type= "QINQ"
-					vlan_s_tag= 1236
+					vlan_s_tag= 1231
 				}
 			}
 		}
@@ -103,7 +103,7 @@ func testAccFabricCreateEPLConnectionConfig(bandwidth int32) string {
 				}
 				link_protocol {
 					type= "QINQ"
-					vlan_s_tag= 459
+					vlan_s_tag= 457
 				}
 			location {
         		metro_code= "SV"
