@@ -237,13 +237,11 @@ func (c *Config) FabricClient() *v4.APIClient {
 	transport := logging.NewTransport("Equinix Fabric", http.DefaultTransport)
 	var authClient *http.Client
 	authClient = &http.Client{
-		//Transport: &http.Transport{},
 		Transport: transport}
 	authClient.Timeout = c.requestTimeout()
 	fabricHeaderMap := map[string]string{
-		"X-SOURCE": "API",
-		//TODO need to make this dynamic
-		"X-CORRELATION-ID": "12302130122193",
+		"X-SOURCE":         "API",
+		"X-CORRELATION-ID": CorrelationId(25),
 	}
 	v4Configuration := v4.Configuration{
 		BasePath:      c.BaseURL,
