@@ -273,7 +273,7 @@ resource "equinix_metal_device" "test" {
   project_id       = equinix_metal_project.foobar.id
   plan             = local.plan
   facilities       = [local.selected_facility]
-  operating_system = "ubuntu_16_04"
+  operating_system = "ubuntu_22_04"
   hostname         = "tfacc-reserved-ip-device"
   billing_cycle    = "hourly"
   ip_address {
