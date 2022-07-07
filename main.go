@@ -3,12 +3,12 @@ package main
 import (
 	"context"
 	"flag"
-	"log"
-
 	"github.com/equinix/terraform-provider-equinix/equinix"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/plugin"
+	"log"
 )
 
+//go:generate go run github.com/hashicorp/terraform-plugin-docs/cmd/tfplugindocs
 func main() {
 	var debugMode bool
 
@@ -25,4 +25,5 @@ func main() {
 	}
 
 	plugin.Serve(opts)
+
 }
