@@ -48,7 +48,7 @@ resource "equinix_metal_device" "test" {
   hostname         = "tfacc-device-ip-attachment-test"
   plan             = local.plan
   facilities       = local.facilities
-  operating_system = "ubuntu_16_04"
+  operating_system = "ubuntu_22_04"
   billing_cycle    = "hourly"
   project_id       = equinix_metal_project.test.id
   termination_time = "%s"
@@ -112,7 +112,7 @@ resource "equinix_metal_device" "test" {
   hostname         = "tfacc-device-ip-attachment-test"
   plan             = local.plan
   metro            = local.metro
-  operating_system = "ubuntu_16_04"
+  operating_system = "ubuntu_22_04"
   billing_cycle    = "hourly"
   project_id       = equinix_metal_project.test.id
   termination_time = "%s"
