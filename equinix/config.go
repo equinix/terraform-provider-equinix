@@ -155,7 +155,7 @@ func (c *Config) Load(ctx context.Context) error {
 	c.ecx = ecxClient
 	c.ne = neClient
 	c.metal = c.NewMetalClient()
-	c.fabricClient = c.FabricClient()
+	c.fabricClient = c.NewFabricClient()
 	return nil
 }
 
@@ -233,7 +233,7 @@ func (c *Config) NewMetalClient() *packngo.Client {
 	return client
 }
 
-func (c *Config) FabricClient() *v4.APIClient {
+func (c *Config) NewFabricClient() *v4.APIClient {
 	transport := logging.NewTransport("Equinix Fabric", http.DefaultTransport)
 	var authClient *http.Client
 	authClient = &http.Client{
@@ -245,8 +245,6 @@ func (c *Config) FabricClient() *v4.APIClient {
 	}
 	v4Configuration := v4.Configuration{
 		BasePath:      c.BaseURL,
-		Host:          "",
-		Scheme:        "",
 		DefaultHeader: fabricHeaderMap,
 		UserAgent:     "equinix/fabric-go",
 		HTTPClient:    authClient,
