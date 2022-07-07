@@ -1,3 +1,9 @@
+## 1.6.1 (Jul 7, 2022)
+
+BUG FIXES:
+
+- Fix client type assertion in equinix_metal_reserved_ip_block [#220](https://github.com/equinix/terraform-provider-equinix/pull/220)
+
 ## 1.6.0 (Jul 6, 2022)
 
 FEATURES:
