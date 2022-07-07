@@ -46,7 +46,7 @@ resource "equinix_metal_device" "test" {
   hostname         = "tfacc-device-ip-test"
   plan             = local.plan
   facilities       = local.facilities
-  operating_system = "ubuntu_16_04"
+  operating_system = local.os
   billing_cycle    = "hourly"
   project_id       = equinix_metal_project.test.id
   termination_time = "%s"
@@ -54,7 +54,7 @@ resource "equinix_metal_device" "test" {
   lifecycle {
     ignore_changes = [
       plan,
-      metro,
+      facilities,
     ]
   }
 }
@@ -68,5 +68,5 @@ resource "equinix_metal_ip_attachment" "test" {
     device_id = equinix_metal_device.test.id
     cidr_notation = cidrsubnet(data.equinix_metal_ip_block_ranges.test.ipv6.0, 8, 2)
 }
-`, confAccMetalDevice_base(preferable_plans, preferable_metros), name, testDeviceTerminationTime())
+`, confAccMetalDevice_base(preferable_plans, preferable_metros, preferable_os), name, testDeviceTerminationTime())
 }

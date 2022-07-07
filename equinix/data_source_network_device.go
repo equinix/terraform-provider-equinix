@@ -638,6 +638,9 @@ func dataSourceNetworkDeviceRead(ctx context.Context, d *schema.ResourceData, m 
 	uuid := uuidIf.(string)
 
 	validDeviceStatusList, err := getNeDeviceStatusList(d.Get(neDeviceSchemaNames["ValidStatusList"]).(string))
+	if err != nil {
+		return diag.Errorf("cannot get network device status list due to '%v'", err)
+	}
 
 	if nameExists {
 		primary, err = getDeviceByName(name, conf, validDeviceStatusList)

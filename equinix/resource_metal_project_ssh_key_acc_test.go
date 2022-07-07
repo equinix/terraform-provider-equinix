@@ -28,7 +28,7 @@ resource "equinix_metal_device" "test" {
     hostname            = "tfacc-device-key-test"
     plan                = local.plan
     facilities          = local.facilities
-    operating_system    = "ubuntu_16_04"
+    operating_system    = local.os
     billing_cycle       = "hourly"
     project_ssh_key_ids = ["${equinix_metal_project_ssh_key.test.id}"]
     project_id          = "${equinix_metal_project.test.id}"
@@ -42,7 +42,7 @@ resource "equinix_metal_device" "test" {
     }
 }
 
-`, confAccMetalDevice_base(preferable_plans, preferable_metros), name, publicSshKey, testDeviceTerminationTime())
+`, confAccMetalDevice_base(preferable_plans, preferable_metros, preferable_os), name, publicSshKey, testDeviceTerminationTime())
 }
 
 func TestAccMetalProjectSSHKey_basic(t *testing.T) {

@@ -49,7 +49,7 @@ resource "equinix_metal_device" "test" {
   hostname         = "tfacc-test-device"
   plan             = local.plan
   metro            = local.metro
-  operating_system = "ubuntu_16_04"
+  operating_system = local.os
   billing_cycle    = "hourly"
   project_id       = "${equinix_metal_project.test.id}"
   termination_time = "%s"
@@ -65,7 +65,7 @@ resource "equinix_metal_device" "test" {
 data "equinix_metal_device" "test" {
   project_id       = equinix_metal_project.test.id
   hostname         = equinix_metal_device.test.hostname
-}`, confAccMetalDevice_base(preferable_plans, preferable_metros), projSuffix, testDeviceTerminationTime())
+}`, confAccMetalDevice_base(preferable_plans, preferable_metros, preferable_os), projSuffix, testDeviceTerminationTime())
 }
 
 func TestAccDataSourceMetalDevice_byID(t *testing.T) {
@@ -109,7 +109,7 @@ resource "equinix_metal_device" "test" {
   hostname         = "tfacc-test-device"
   plan             = local.plan
   metro            = local.metro
-  operating_system = "ubuntu_16_04"
+  operating_system = local.os
   billing_cycle    = "hourly"
   project_id       = "${equinix_metal_project.test.id}"
   termination_time = "%s"
@@ -124,5 +124,5 @@ resource "equinix_metal_device" "test" {
 
 data "equinix_metal_device" "test" {
   device_id       = equinix_metal_device.test.id
-}`, confAccMetalDevice_base(preferable_plans, preferable_metros), projSuffix, testDeviceTerminationTime())
+}`, confAccMetalDevice_base(preferable_plans, preferable_metros, preferable_os), projSuffix, testDeviceTerminationTime())
 }

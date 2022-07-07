@@ -112,13 +112,13 @@ func resourceMetalReservedIPBlock() *schema.Resource {
 
 			// if facility is not in state, treat the diff normally, otherwise do following messy checks:
 			if facOk {
-				// If metro from HCL is specified, but not present in state, supress the diff.
+				// If metro from HCL is specified, but not present in state, suppress the diff.
 				// This is legacy, and I think it's here because of migration, so that old
 				// facility reservations are not recreated when metro is specified ???)
 				if fromHCL != "" && fromState == "" {
 					return true
 				}
-				// If metro is present in state but not present in HCL, supress the diff.
+				// If metro is present in state but not present in HCL, suppress the diff.
 				// This is for "facility-specified" reservation blocks created after ~July 2021.
 				// These blocks will have metro "computed" to the TF state, and we don't want to
 				// emit a diff if the metro field is empty in HCL.
@@ -285,7 +285,7 @@ func resourceMetalReservedIPBlockCreate(d *schema.ResourceData, meta interface{}
 
 	blockAddr, _, err := client.ProjectIPs.Create(projectID, &req)
 	if err != nil {
-		return fmt.Errorf("urror reserving IP address block: %s", err)
+		return fmt.Errorf("error reserving IP address block: %s", err)
 	}
 	d.Set("project_id", projectID)
 	d.SetId(blockAddr.ID)
@@ -311,7 +311,7 @@ func resourceMetalReservedIPBlockCreate(d *schema.ResourceData, meta interface{}
 }
 
 func resourceMetalReservedIPBlockUpdate(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*packngo.Client)
+	client := meta.(*Config).metal
 	id := d.Id()
 	req := &packngo.IPAddressUpdateRequest{}
 	if d.HasChange("tags") {

@@ -50,6 +50,7 @@ func TestAccDataSourceMetalSpotMarketRequest_basic(t *testing.T) {
 
 func testAccDataSourceMetalSpotMarketRequestConfig_basic(projSuffix string) string {
 	return fmt.Sprintf(`
+%s
 
 resource "equinix_metal_project" "test" {
   name = "tfacc-spot_market_request-%s"
@@ -58,7 +59,7 @@ resource "equinix_metal_project" "test" {
 resource "equinix_metal_spot_market_request" "req" {
   project_id    = "${equinix_metal_project.test.id}"
   max_bid_price = 0.01
-  facilities    = ["da11"]
+  facilities    = local.facilities
   devices_min   = 1
   devices_max   = 1
   wait_for_devices = false
@@ -66,28 +67,36 @@ resource "equinix_metal_spot_market_request" "req" {
   instance_parameters {
     hostname         = "tfacc-testspot"
     billing_cycle    = "hourly"
-    operating_system = "ubuntu_20_04"
-    plan             = "c3.medium.x86"
+    operating_system = local.os
+    plan             = local.plan
+  }
+  
+  lifecycle {
+    ignore_changes = [
+      instance_parameters,
+      facilities,
+    ]
   }
 }
 
 data "equinix_metal_spot_market_request" "dreq" {
   request_id = equinix_metal_spot_market_request.req.id
 }
-`, projSuffix)
+`, confAccMetalDevice_base(preferable_plans, preferable_metros, preferable_os), projSuffix)
 }
 
 func testAccDataSourceMetalSpotMarketRequestConfig_metro(projSuffix string) string {
 	return fmt.Sprintf(`
+%s
 
 resource "equinix_metal_project" "test" {
   name = "tfacc-spot_market_request-%s"
 }
 
 resource "equinix_metal_spot_market_request" "req" {
-  project_id    = "${equinix_metal_project.test.id}"
+  project_id    = equinix_metal_project.test.id
   max_bid_price = 0.01
-  metro = "da"
+  metro         = local.metro
   devices_min   = 1
   devices_max   = 1
   wait_for_devices = false
@@ -95,13 +104,20 @@ resource "equinix_metal_spot_market_request" "req" {
   instance_parameters {
     hostname         = "tfacc-testspot"
     billing_cycle    = "hourly"
-    operating_system = "ubuntu_20_04"
-    plan             = "c3.medium.x86"
+    operating_system = local.os
+    plan             = local.plan
+  }
+
+  lifecycle {
+    ignore_changes = [
+      instance_parameters,
+      metro,
+    ]
   }
 }
 
 data "equinix_metal_spot_market_request" "dreq" {
   request_id = equinix_metal_spot_market_request.req.id
 }
-`, projSuffix)
+`, confAccMetalDevice_base(preferable_plans, preferable_metros, preferable_os), projSuffix)
 }

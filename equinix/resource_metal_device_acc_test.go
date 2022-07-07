@@ -15,9 +15,12 @@ import (
 	"github.com/packethost/packngo"
 )
 
-// list of plans and metros used as filter criteria to find available hardware to run tests
-var preferable_plans = []string{"x1.small.x86", "t1.small.x86", "c2.medium.x86", "c3.small.x86", "c3.medium.x86", "m3.small.x86"}
-var preferable_metros = []string{"ch", "ny", "sv", "ty", "am"}
+// list of plans and metros and os used as filter criteria to find available hardware to run tests
+var (
+	preferable_plans  = []string{"x1.small.x86", "t1.small.x86", "c2.medium.x86", "c3.small.x86", "c3.medium.x86", "m3.small.x86"}
+	preferable_metros = []string{"ch", "ny", "sv", "ty", "am"}
+	preferable_os     = []string{"ubuntu_20_04"}
+)
 
 func init() {
 	resource.AddTestSweepers("equinix_metal_device", &resource.Sweeper{
@@ -82,7 +85,11 @@ var matchErrShouldNotBeAnIPXE = regexp.MustCompile(`.*"user_data" should not be 
 //       facilities,
 //     ]
 //   }
-func confAccMetalDevice_base(plans, metros []string) string {
+//
+// TODO consider adding a datasource for equinix_metal_operating_system and making the local.os conditional
+//  https://github.com/equinix/terraform-provider-equinix/pull/220#discussion_r915418418equinix_metal_operating_system
+//  https://github.com/equinix/terraform-provider-equinix/discussions/221
+func confAccMetalDevice_base(plans, metros, os []string) string {
 	return fmt.Sprintf(`
 data "equinix_metal_plans" "test" {
     filter {
@@ -92,6 +99,10 @@ data "equinix_metal_plans" "test" {
     filter {
         attribute = "available_in_metros"
         values    = [%s]
+    }
+    filter {
+        attribute = "deployment_types"
+        values    = ["on_demand", "spot_market"]
     }
 }
 
@@ -106,7 +117,15 @@ locals {
     plan_idx          = length(local.plan_idxs) > 0 ? local.plan_idxs[0] : 0
     plan              = local.plans[local.plan_idx].slug
 
-    facilities = tolist(setsubtract(local.plans[local.plan_idx].available_in, ["sjc1", "ld7", "sy4"]))
+	//Operations to select a facility randomly and avoid race conditions with facilities without capacity.
+    //With these operations we use current time seconds as the seed, and avoid using a third party provider in the Equinix provider tests
+    facilities             = tolist(setsubtract(local.plans[local.plan_idx].available_in, ["sjc1", "ld7", "sy4", "ny6"]))
+    facilities_random_num  = formatdate("s", timestamp())
+    facilities_length      = length(local.facilities)
+    facilities_range_limit = ceil(59 / local.facilities_length) == 1 ? local.facilities_length : 59
+    facility_idxs          = [for idx, value in range(0, local.facilities_range_limit, ceil(59 / local.facilities_length)) : idx if local.facilities_random_num <= value]
+    facility_idx           = length(local.facility_idxs) > 0 ? local.facility_idxs[0] : 0
+    facility               = local.facilities[local.facility_idx]
 
     //Operations to select a metro randomly and avoid race conditions with metros without capacity.
     //With these operations we use current time seconds as the seed, and avoid using a third party provider in the Equinix provider tests
@@ -117,8 +136,10 @@ locals {
     metro_idxs         = [for idx, value in range(0, local.metros_range_limit, ceil(59 / local.metros_length)) : idx if local.metros_random_num <= value]
     metro_idx          = length(local.metro_idxs) > 0 ? local.metro_idxs[0] : 0
     metro              = local.metros[local.metro_idx]
+
+    os = [%s][0]
 }
-`, fmt.Sprintf("\"%s\"", strings.Join(plans[:], `","`)), fmt.Sprintf("\"%s\"", strings.Join(metros[:], `","`)))
+`, fmt.Sprintf("\"%s\"", strings.Join(plans[:], `","`)), fmt.Sprintf("\"%s\"", strings.Join(metros[:], `","`)), fmt.Sprintf("\"%s\"", strings.Join(os[:], `","`)))
 }
 
 func testDeviceTerminationTime() string {
@@ -233,8 +254,6 @@ func TestAccMetalDevice_metro(t *testing.T) {
 					testAccMetalDeviceExists(r, &device),
 					testAccMetalDeviceNetwork(r),
 					testAccMetalDeviceAttributes(&device),
-					resource.TestCheckResourceAttr(
-						r, "metro", "sv"),
 				),
 			},
 		},
@@ -345,7 +364,7 @@ func TestAccMetalDevice_IPXEConflictingFields(t *testing.T) {
 		CheckDestroy: testAccMetalDeviceCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
-				Config: fmt.Sprintf(testAccMetalDeviceConfig_ipxe_conflict, confAccMetalDevice_base(preferable_plans, preferable_metros), rs),
+				Config: fmt.Sprintf(testAccMetalDeviceConfig_ipxe_conflict, confAccMetalDevice_base(preferable_plans, preferable_metros, preferable_os), rs),
 				Check: resource.ComposeTestCheckFunc(
 					testAccMetalDeviceExists(r, &device),
 				),
@@ -366,7 +385,7 @@ func TestAccMetalDevice_IPXEConfigMissing(t *testing.T) {
 		CheckDestroy: testAccMetalDeviceCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
-				Config: fmt.Sprintf(testAccMetalDeviceConfig_ipxe_missing, confAccMetalDevice_base(preferable_plans, preferable_metros), rs),
+				Config: fmt.Sprintf(testAccMetalDeviceConfig_ipxe_missing, confAccMetalDevice_base(preferable_plans, preferable_metros, preferable_os), rs),
 				Check: resource.ComposeTestCheckFunc(
 					testAccMetalDeviceExists(r, &device),
 				),
@@ -551,7 +570,7 @@ resource "equinix_metal_device" "test" {
   hostname         = "tfacc-test-device-%d"
   plan             = local.plan
   metro            = local.metro
-  operating_system = "ubuntu_16_04"
+  operating_system = local.os
   billing_cycle    = "hourly"
   project_id       = "${equinix_metal_project.test.id}"
   tags             = ["%d"]
@@ -564,7 +583,7 @@ resource "equinix_metal_device" "test" {
     ]
   }
 }
-`, confAccMetalDevice_base(preferable_plans, preferable_metros), projSuffix, rInt, rInt, testDeviceTerminationTime())
+`, confAccMetalDevice_base(preferable_plans, preferable_metros, preferable_os), projSuffix, rInt, rInt, testDeviceTerminationTime())
 }
 
 func testAccMetalDeviceConfig_reinstall(rInt int, projSuffix string) string {
@@ -579,7 +598,7 @@ resource "equinix_metal_device" "test" {
   hostname         = "tfacc-test-device-%d"
   plan             = local.plan
   metro            = local.metro
-  operating_system = "ubuntu_16_04"
+  operating_system = local.os
   billing_cycle    = "hourly"
   project_id       = "${equinix_metal_project.test.id}"
   tags             = ["%d"]
@@ -598,7 +617,7 @@ resource "equinix_metal_device" "test" {
     ]
   }
 }
-`, confAccMetalDevice_base(preferable_plans, preferable_metros), projSuffix, rInt, rInt, testDeviceTerminationTime())
+`, confAccMetalDevice_base(preferable_plans, preferable_metros, preferable_os), projSuffix, rInt, rInt, testDeviceTerminationTime())
 }
 
 func testAccMetalDeviceConfig_varname(rInt int, projSuffix string) string {
@@ -614,7 +633,7 @@ resource "equinix_metal_device" "test" {
   description      = "test-desc-%d"
   plan             = local.plan
   metro            = local.metro
-  operating_system = "ubuntu_16_04"
+  operating_system = local.os
   billing_cycle    = "hourly"
   project_id       = "${equinix_metal_project.test.id}"
   tags             = ["%d"]
@@ -627,7 +646,7 @@ resource "equinix_metal_device" "test" {
     ]
   }
 }
-`, confAccMetalDevice_base(preferable_plans, preferable_metros), projSuffix, rInt, rInt, rInt, testDeviceTerminationTime())
+`, confAccMetalDevice_base(preferable_plans, preferable_metros, preferable_os), projSuffix, rInt, rInt, rInt, testDeviceTerminationTime())
 }
 
 func testAccMetalDeviceConfig_varname_pxe(rInt int, projSuffix string) string {
@@ -643,7 +662,7 @@ resource "equinix_metal_device" "test" {
   description      = "test-desc-%d"
   plan             = local.plan
   metro            = local.metro
-  operating_system = "ubuntu_16_04"
+  operating_system = local.os
   billing_cycle    = "hourly"
   project_id       = "${equinix_metal_project.test.id}"
   tags             = ["%d"]
@@ -658,7 +677,7 @@ resource "equinix_metal_device" "test" {
     ]
   }
 }
-`, confAccMetalDevice_base(preferable_plans, preferable_metros), projSuffix, rInt, rInt, rInt, testDeviceTerminationTime())
+`, confAccMetalDevice_base(preferable_plans, preferable_metros, preferable_os), projSuffix, rInt, rInt, rInt, testDeviceTerminationTime())
 }
 
 func testAccMetalDeviceConfig_metro(projSuffix string) string {
@@ -673,7 +692,7 @@ resource "equinix_metal_device" "test" {
   hostname         = "tfacc-test-device"
   plan             = local.plan
   metro            = local.metro
-  operating_system = "ubuntu_16_04"
+  operating_system = local.os
   billing_cycle    = "hourly"
   project_id       = "${equinix_metal_project.test.id}"
   termination_time = "%s"
@@ -685,7 +704,7 @@ resource "equinix_metal_device" "test" {
     ]
   }
 }
-`, confAccMetalDevice_base(preferable_plans, preferable_metros), projSuffix, testDeviceTerminationTime())
+`, confAccMetalDevice_base(preferable_plans, preferable_metros, preferable_os), projSuffix, testDeviceTerminationTime())
 }
 
 func testAccMetalDeviceConfig_minimal(projSuffix string) string {
@@ -699,7 +718,7 @@ resource "equinix_metal_project" "test" {
 resource "equinix_metal_device" "test" {
   plan             = local.plan
   metro            = local.metro
-  operating_system = "ubuntu_16_04"
+  operating_system = local.os
   project_id       = "${equinix_metal_project.test.id}"
 
   lifecycle {
@@ -708,7 +727,7 @@ resource "equinix_metal_device" "test" {
       metro,
     ]
   }
-}`, confAccMetalDevice_base(preferable_plans, preferable_metros), projSuffix)
+}`, confAccMetalDevice_base(preferable_plans, preferable_metros, preferable_os), projSuffix)
 }
 
 func testAccMetalDeviceConfig_basic(projSuffix string) string {
@@ -724,7 +743,7 @@ resource "equinix_metal_device" "test" {
   hostname         = "tfacc-test-device"
   plan             = local.plan
   metro            = local.metro
-  operating_system = "ubuntu_16_04"
+  operating_system = local.os
   billing_cycle    = "hourly"
   project_id       = "${equinix_metal_project.test.id}"
   termination_time = "%s"
@@ -735,11 +754,13 @@ resource "equinix_metal_device" "test" {
       metro,
     ]
   }
-}`, confAccMetalDevice_base(preferable_plans, preferable_metros), projSuffix, testDeviceTerminationTime())
+}`, confAccMetalDevice_base(preferable_plans, preferable_metros, preferable_os), projSuffix, testDeviceTerminationTime())
 }
 
 func testAccMetalDeviceConfig_ssh_key(projSuffix, userSSSHKey, projSSHKey string) string {
 	return fmt.Sprintf(`
+%s
+
 resource "equinix_metal_project" "test" {
     name = "tfacc-device-%s"
 }
@@ -757,15 +778,22 @@ resource "equinix_metal_project_ssh_key" "test" {
 
 resource "equinix_metal_device" "test" {
 	hostname         = "tfacc-test-device"
-	plan             = "c3.small.x86"
-	metro            = "sv"
-	operating_system = "ubuntu_16_04"
+	plan             = local.plan
+	metro            = local.metro
+	operating_system = local.os
 	billing_cycle    = "hourly"
 	project_id       = equinix_metal_project.test.id
 	user_ssh_key_ids = [equinix_metal_ssh_key.test.id]
 	project_ssh_key_ids = [equinix_metal_project_ssh_key.test.id]
+
+	lifecycle {
+		ignore_changes = [
+			plan,
+			metro,
+		]
+	}
   }
-`, projSSHKey, projSSHKey, userSSSHKey, projSSHKey, projSSHKey)
+`, confAccMetalDevice_base(preferable_plans, preferable_metros, preferable_os), projSSHKey, projSSHKey, userSSSHKey, projSSHKey, projSSHKey)
 }
 
 func testAccMetalDeviceConfig_facility_list(projSuffix string) string {
@@ -781,7 +809,7 @@ resource "equinix_metal_device" "test"  {
   hostname         = "tfacc-device-test-ipxe-script-url"
   plan             = local.plan
   facilities       = local.facilities
-  operating_system = "ubuntu_16_04"
+  operating_system = local.os
   billing_cycle    = "hourly"
   project_id       = "${equinix_metal_project.test.id}"
   termination_time = "%s"
@@ -792,7 +820,7 @@ resource "equinix_metal_device" "test"  {
       facilities,
     ]
   }
-}`, confAccMetalDevice_base(preferable_plans, preferable_metros), projSuffix, testDeviceTerminationTime())
+}`, confAccMetalDevice_base(preferable_plans, preferable_metros, preferable_os), projSuffix, testDeviceTerminationTime())
 }
 
 func testAccMetalDeviceConfig_ipxe_script_url(projSuffix, url, pxe string) string {
@@ -822,7 +850,7 @@ resource "equinix_metal_device" "test_ipxe_script_url"  {
       metro,
     ]
   }
-}`, confAccMetalDevice_base(preferable_plans, preferable_metros), projSuffix, url, pxe, testDeviceTerminationTime())
+}`, confAccMetalDevice_base(preferable_plans, preferable_metros, preferable_os), projSuffix, url, pxe, testDeviceTerminationTime())
 }
 
 var testAccMetalDeviceConfig_ipxe_conflict = `
