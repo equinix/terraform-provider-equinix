@@ -253,27 +253,28 @@ func testAccMetalReservedIP_device(name string) string {
 	return fmt.Sprintf(`
 %s
 
-locals {
-	facility_list     = tolist(local.facilities)
-	selected_facility = local.facility_list[length(local.facility_list) - 1]
-}
-
 resource "equinix_metal_project" "foobar" {
 	name = "tfacc-reserved_ip_block-%s"
 }
 
 resource "equinix_metal_reserved_ip_block" "test" {
 	project_id  = equinix_metal_project.foobar.id
-	facility    = local.selected_facility
+	facility    = local.facility
 	type        = "public_ipv4"
 	quantity    = 2
+
+	lifecycle {
+		ignore_changes = [
+			facility,
+		]
+	}
 }
 
 resource "equinix_metal_device" "test" {
   project_id       = equinix_metal_project.foobar.id
   plan             = local.plan
-  facilities       = [local.selected_facility]
-  operating_system = "ubuntu_22_04"
+  facilities       = [local.facility]
+  operating_system = local.os
   hostname         = "tfacc-reserved-ip-device"
   billing_cycle    = "hourly"
   ip_address {
@@ -293,7 +294,7 @@ resource "equinix_metal_device" "test" {
     ]
   }
 }
-`, confAccMetalDevice_base(preferable_plans, preferable_metros), name, testDeviceTerminationTime())
+`, confAccMetalDevice_base(preferable_plans, preferable_metros, preferable_os), name, testDeviceTerminationTime())
 }
 
 func TestAccMetalReservedIPBlock_device(t *testing.T) {

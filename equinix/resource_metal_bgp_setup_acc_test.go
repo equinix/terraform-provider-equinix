@@ -82,7 +82,7 @@ resource "equinix_metal_device" "test" {
     hostname         = "tfacc-test-bgp-sesh"
     plan             = local.plan
     facilities       = local.facilities
-    operating_system = "ubuntu_22_04"
+    operating_system = local.os
     billing_cycle    = "hourly"
     project_id       = "${equinix_metal_project.test.id}"
     termination_time = "%s"
@@ -110,5 +110,5 @@ resource "equinix_metal_bgp_session" "test6" {
 data "equinix_metal_device_bgp_neighbors" "test" {
 	device_id  = equinix_metal_bgp_session.test4.device_id
 }
-`, confAccMetalDevice_base(preferable_plans, preferable_metros), name, testDeviceTerminationTime())
+`, confAccMetalDevice_base(preferable_plans, preferable_metros, preferable_os), name, testDeviceTerminationTime())
 }

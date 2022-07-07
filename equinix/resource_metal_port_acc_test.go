@@ -22,7 +22,7 @@ resource "equinix_metal_device" "test" {
   hostname         = "tfacc-metal-port-test"
   plan             = local.plan
   metro            = local.metro
-  operating_system = "ubuntu_22_04"
+  operating_system = local.os
   billing_cycle    = "hourly"
   project_id       = "${equinix_metal_project.test.id}"
   termination_time = "%s"
@@ -41,7 +41,7 @@ locals {
   eth0_id  = [for p in equinix_metal_device.test.ports: p.id if p.name == "eth0"][0]
 }
 
-`, confAccMetalDevice_base(preferable_plans, preferable_metros), name, testDeviceTerminationTime())
+`, confAccMetalDevice_base(preferable_plans, preferable_metros, preferable_os), name, testDeviceTerminationTime())
 }
 
 func confAccMetalPort_L3(name string) string {

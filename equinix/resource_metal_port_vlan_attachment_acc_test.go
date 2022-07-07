@@ -23,7 +23,7 @@ resource "equinix_metal_device" "test" {
   hostname         = "tfacc-device-port-vlan-attachment-test"
   plan             = local.plan
   metro            = local.metro
-  operating_system = "ubuntu_22_04"
+  operating_system = local.os
   billing_cycle    = "hourly"
   project_id       = equinix_metal_project.test.id
   termination_time = "%s"
@@ -35,7 +35,7 @@ resource "equinix_metal_device" "test" {
 	]
   }
 }
-`, confAccMetalDevice_base(preferable_plans, preferable_metros), name, testDeviceTerminationTime())
+`, confAccMetalDevice_base(preferable_plans, preferable_metros, preferable_os), name, testDeviceTerminationTime())
 }
 
 func testAccMetalPortVlanAttachmentConfig_L2Bonded_2(name string) string {
@@ -117,7 +117,7 @@ resource "equinix_metal_device" "test" {
   hostname         = "tfacc-vlan-l2i-test"
   plan             = local.plan
   metro            = local.metro
-  operating_system = "ubuntu_22_04"
+  operating_system = local.os
   billing_cycle    = "hourly"
   project_id       = equinix_metal_project.test.id
   termination_time = "%s"
@@ -129,7 +129,7 @@ resource "equinix_metal_device" "test" {
 	]
   }
 }
-`, confAccMetalDevice_base(preferable_plans, preferable_metros), name, testDeviceTerminationTime())
+`, confAccMetalDevice_base(preferable_plans, preferable_metros, preferable_os), name, testDeviceTerminationTime())
 }
 
 func testAccMetalPortVlanAttachmentConfig_L2Individual_2(name string) string {
@@ -213,7 +213,7 @@ resource "equinix_metal_device" "test" {
   hostname         = "tfacc-device-hybrid-test"
   plan             = local.plan
   metro            = local.metro
-  operating_system = "ubuntu_22_04"
+  operating_system = local.os
   billing_cycle    = "hourly"
   project_id       = equinix_metal_project.test.id
   termination_time = "%s"
@@ -224,7 +224,7 @@ resource "equinix_metal_device" "test" {
       metro,
     ]
   }
-}`, confAccMetalDevice_base(preferable_plans, preferable_metros), name, testDeviceTerminationTime())
+}`, confAccMetalDevice_base(preferable_plans, preferable_metros, preferable_os), name, testDeviceTerminationTime())
 }
 
 func testAccMetalPortVlanAttachmentConfig_Hybrid_2(name string) string {
@@ -293,7 +293,7 @@ resource "equinix_metal_device" "test" {
   hostname         = "tfacc-device-hmv-test"
   plan             = local.plan
   metro            = local.metro
-  operating_system = "ubuntu_22_04"
+  operating_system = local.os
   billing_cycle    = "hourly"
   project_id       = equinix_metal_project.test.id
   termination_time = "%s"
@@ -304,7 +304,7 @@ resource "equinix_metal_device" "test" {
 	  metro,
     ]
   }
-}`, confAccMetalDevice_base(preferable_plans, preferable_metros), name, testDeviceTerminationTime())
+}`, confAccMetalDevice_base(preferable_plans, preferable_metros, preferable_os), name, testDeviceTerminationTime())
 }
 
 func testAccMetalPortVlanAttachmentConfig_HybridMultipleVlans_2(name string) string {
@@ -416,7 +416,7 @@ resource "equinix_metal_device" "test" {
   hostname         = "tfacc-device-l2n-test"
   plan             = local.plan
   metro            = local.metro
-  operating_system = "ubuntu_22_04"
+  operating_system = local.os
   billing_cycle    = "hourly"
   project_id       = equinix_metal_project.test.id
   termination_time = "%s"
@@ -427,7 +427,7 @@ resource "equinix_metal_device" "test" {
 	  metro,
     ]
   }
-}`, confAccMetalDevice_base(preferable_plans, preferable_metros), name, testDeviceTerminationTime())
+}`, confAccMetalDevice_base(preferable_plans, preferable_metros, preferable_os), name, testDeviceTerminationTime())
 }
 
 func testAccMetalPortVlanAttachmentConfig_L2Native_2(name string) string {
