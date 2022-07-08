@@ -15,7 +15,7 @@ func createServiceTokenSch() map[string]*schema.Schema {
 			Type:         schema.TypeString,
 			Optional:     true,
 			ValidateFunc: validation.StringInSlice([]string{"VC_TOKEN"}, true),
-			Description:  "Token type",
+			Description:  "Token type - VC_TOKEN",
 		},
 		"href": {
 			Type:        schema.TypeString,
@@ -59,7 +59,7 @@ func createLocationSch() map[string]*schema.Schema {
 		"ibx": {
 			Type:        schema.TypeString,
 			Optional:    true,
-			Description: "IBX",
+			Description: "IBX Code",
 		},
 	}
 }
@@ -69,7 +69,7 @@ func createVirtualGatewaySch() map[string]*schema.Schema {
 		"uuid": {
 			Type:        schema.TypeString,
 			Computed:    true,
-			Description: "Gateway Type",
+			Description: "Equinix-assigned virtual gateway identifier",
 		},
 		"href": {
 			Type:        schema.TypeString,
@@ -120,7 +120,7 @@ func createServiceProfileSch() map[string]*schema.Schema {
 			Type:         schema.TypeString,
 			Optional:     true,
 			ValidateFunc: validation.StringInSlice([]string{"L2_PROFILE", "L3_PROFILE", "ECIA_PROFILE", "ECMC_PROFILE"}, true),
-			Description:  "Service profile type",
+			Description:  "Service profile type - L2_PROFILE, L3_PROFILE, ECIA_PROFILE, ECMC_PROFILE",
 		},
 		"name": {
 			Type:        schema.TypeString,
@@ -149,7 +149,7 @@ func createAccessPointLinkProtocolSch() map[string]*schema.Schema {
 		"type": {
 			Type:         schema.TypeString,
 			Optional:     true,
-			Description:  "Type of the link protocol",
+			Description:  "Type of the link protocol - UNTAGGED, DOT1Q, QINQ, EVPN_VXLAN",
 			ValidateFunc: validation.StringInSlice([]string{"UNTAGGED", "DOT1Q", "QINQ", "EVPN_VXLAN"}, true),
 		},
 		"vlan_tag": {
@@ -229,7 +229,7 @@ func createFabricConnectionRoutingProtocol() map[string]*schema.Schema {
 		"uuid": {
 			Type:        schema.TypeString,
 			Optional:    true,
-			Description: "Routing protocol instance identifier",
+			Description: "Equinix-assigned Routing protocol identifier",
 		},
 		"state": {
 			Type:        schema.TypeString,
@@ -248,7 +248,7 @@ func createPortSch() map[string]*schema.Schema {
 		"uuid": {
 			Type:        schema.TypeString,
 			Optional:    true,
-			Description: "Port information",
+			Description: "Equinix-assigned Port identifier",
 		},
 		"href": {
 			Type:        schema.TypeString,
@@ -281,12 +281,12 @@ func createConnectionSideAccessPointSch() map[string]*schema.Schema {
 			Type:         schema.TypeString,
 			Optional:     true,
 			ValidateFunc: validation.StringInSlice([]string{"COLO", "VD", "VG", "SP", "IGW", "SUBNET", "GW"}, true),
-			Description:  "Access point type",
+			Description:  "Access point type - COLO, VD, VG, SP, IGW, SUBNET, GW",
 		},
 		"authentication_key": {
 			Type:        schema.TypeString,
 			Optional:    true,
-			Description: "Access point type",
+			Description: "Authentication key for provider based connections",
 		},
 		"account": {
 			Type:        schema.TypeSet,
@@ -359,7 +359,7 @@ func createConnectionSideAccessPointSch() map[string]*schema.Schema {
 			Type:         schema.TypeString,
 			Optional:     true,
 			ValidateFunc: validation.StringInSlice([]string{"PRIVATE", "MICROSOFT", "PUBLIC", "MANUAL"}, true),
-			Description:  "Peering Type",
+			Description:  "Peering Type- PRIVATE,MICROSOFT,PUBLIC, MANUAL",
 		},
 		"routing_protocols": {
 			Type:        schema.TypeList,
@@ -425,7 +425,7 @@ func createRedundancySch() map[string]*schema.Schema {
 			Type:         schema.TypeString,
 			Optional:     true,
 			ValidateFunc: validation.StringInSlice([]string{"PRIMARY", "SECONDARY"}, true),
-			Description:  "Priority type",
+			Description:  "Priority type- PRIMARY, SECONDARY",
 		},
 	}
 }
@@ -440,7 +440,7 @@ func createPortRedundancySch() map[string]*schema.Schema {
 			Type:         schema.TypeString,
 			Optional:     true,
 			ValidateFunc: validation.StringInSlice([]string{"PRIMARY", "SECONDARY"}, true),
-			Description:  "Priority type",
+			Description:  "Priority type- PRIMARY, SECONDARY",
 		},
 	}
 }
@@ -592,7 +592,7 @@ func createNotificationSch() map[string]*schema.Schema {
 		"type": {
 			Type:        schema.TypeString,
 			Optional:    true,
-			Description: "Notification Type",
+			Description: "Notification Type - ALL,CONNECTION_APPROVAL,SALES_REP_NOTIFICATIONS, NOTIFICATIONS",
 		},
 		"send_interval": {
 			Type:        schema.TypeString,
@@ -709,11 +709,6 @@ func createAdditionalInfoSch() map[string]*schema.Schema {
 
 func createFabricConnectionResourceSchema() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
-		"uuid": {
-			Type:        schema.TypeString,
-			Optional:    true,
-			Description: "TBD",
-		},
 		"href": {
 			Type:        schema.TypeString,
 			Computed:    true,
