@@ -135,7 +135,6 @@ func readAccessPointLinkProtocolSch() map[string]*schema.Schema {
 }
 
 func readAccessPointVirtualDeviceSch() map[string]*schema.Schema {
-
 	return map[string]*schema.Schema{
 		"href": {
 			Type:        schema.TypeString,

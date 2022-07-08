@@ -2,11 +2,12 @@ package equinix
 
 import (
 	"fmt"
-	v4 "github.com/equinix-labs/fabric-go/fabric/v4"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"log"
 	"math/rand"
 	"time"
+
+	v4 "github.com/equinix-labs/fabric-go/fabric/v4"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 func serviceTokenToFabric(serviceTokenRequest []interface{}) v4.ServiceToken {
@@ -22,7 +23,6 @@ func serviceTokenToFabric(serviceTokenRequest []interface{}) v4.ServiceToken {
 }
 
 func additionalInfoToFabric(additionalInfoRequest []interface{}) []v4.ConnectionSideAdditionalInfo {
-
 	var mappedaiArray []v4.ConnectionSideAdditionalInfo
 	for _, ai := range additionalInfoRequest {
 		i := 0
@@ -77,11 +77,15 @@ func accessPointToFabric(accessPointRequest []interface{}) v4.AccessPoint {
 
 		if peeringTypeRaw != "" {
 			peeringType := v4.PeeringType(peeringTypeRaw)
-			accessPoint = v4.AccessPoint{Type_: &apt, Port: &p, LinkProtocol: &slp, AuthenticationKey: authenticationKey,
-				Profile: &ssp, Location: &sl, ProviderConnectionId: providerConnectionId, SellerRegion: sellerRegion, PeeringType: &peeringType}
+			accessPoint = v4.AccessPoint{
+				Type_: &apt, Port: &p, LinkProtocol: &slp, AuthenticationKey: authenticationKey,
+				Profile: &ssp, Location: &sl, ProviderConnectionId: providerConnectionId, SellerRegion: sellerRegion, PeeringType: &peeringType,
+			}
 		} else {
-			accessPoint = v4.AccessPoint{Type_: &apt, Port: &p, LinkProtocol: &slp, AuthenticationKey: authenticationKey,
-				Profile: &ssp, Gateway: &mappedGWr, Location: &sl, ProviderConnectionId: providerConnectionId, SellerRegion: sellerRegion}
+			accessPoint = v4.AccessPoint{
+				Type_: &apt, Port: &p, LinkProtocol: &slp, AuthenticationKey: authenticationKey,
+				Profile: &ssp, Gateway: &mappedGWr, Location: &sl, ProviderConnectionId: providerConnectionId, SellerRegion: sellerRegion,
+			}
 		}
 	}
 	return accessPoint
@@ -110,7 +114,6 @@ func projectToFabric(projectRequest []interface{}) v4.Project {
 		mappedPr = v4.Project{ProjectId: projectId, Href: href}
 	}
 	return mappedPr
-
 }
 
 func notificationToFabric(schemaNotifications []interface{}) []v4.SimplifiedNotification {
@@ -264,7 +267,6 @@ func errorToTerra(errors []v4.ModelError) []map[string]interface{} {
 }
 
 func errorAdditionalInfoToTerra(additionalInfol []v4.PriceErrorAdditionalInfo) []map[string]interface{} {
-
 	if additionalInfol == nil {
 		return nil
 	}
@@ -415,7 +417,6 @@ func locationToTerra(location *v4.SimplifiedLocation) *schema.Set {
 }
 
 func serviceTokenToTerra(serviceToken *v4.ServiceToken) *schema.Set {
-
 	if serviceToken == nil {
 		return nil
 	}
@@ -598,7 +599,6 @@ func accessPointToTerra(accessPoint *v4.AccessPoint) *schema.Set {
 }
 
 func linkedProtocolToTerra(linkedProtocol *v4.SimplifiedLinkProtocol) *schema.Set {
-
 	linkedProtocols := []*v4.SimplifiedLinkProtocol{linkedProtocol}
 	mappedLinkedProtocols := make([]interface{}, 0)
 	for _, linkedProtocol := range linkedProtocols {
@@ -616,7 +616,7 @@ func linkedProtocolToTerra(linkedProtocol *v4.SimplifiedLinkProtocol) *schema.Se
 	return linkedProtocolSet
 }
 
-//Set - No full implementation
+// Set - No full implementation
 func simplifiedServiceProfileToTerra(profile *v4.SimplifiedServiceProfile) *schema.Set {
 	profiles := []*v4.SimplifiedServiceProfile{profile}
 	mappedProfiles := make([]interface{}, 0)

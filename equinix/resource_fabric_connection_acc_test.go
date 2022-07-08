@@ -3,12 +3,13 @@ package equinix
 import (
 	"context"
 	"fmt"
-	v4 "github.com/equinix-labs/fabric-go/fabric/v4"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"log"
 	"testing"
 	"time"
+
+	v4 "github.com/equinix-labs/fabric-go/fabric/v4"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 )
 
 func TestAccFabricCreateAzureConnection(t *testing.T) {
@@ -63,7 +64,6 @@ func waitUntilConnectionDeprovisioned(uuid string, client *v4.APIClient, ctx con
 		Target: []string{"DEPROVISIONED"},
 		Refresh: func() (interface{}, string, error) {
 			dbConn, _, err := client.ConnectionsApi.GetConnectionByUuid(ctx, uuid, nil)
-
 			if err != nil {
 				return "", "", err
 			}
