@@ -169,7 +169,7 @@ func readAccessPointInterface() map[string]*schema.Schema {
 		"type": {
 			Type:        schema.TypeString,
 			Computed:    true,
-			Description: "Interface type",
+			Description: "Interface type- CSP",
 		},
 	}
 }
@@ -360,7 +360,7 @@ func readChangeLogSch() map[string]*schema.Schema {
 		"created_date_time": {
 			Type:        schema.TypeString,
 			Computed:    true,
-			Description: "Created by Date and Time",
+			Description: "Created on Date and Time",
 		},
 		"updated_by": {
 			Type:        schema.TypeString,
@@ -380,7 +380,7 @@ func readChangeLogSch() map[string]*schema.Schema {
 		"updated_date_time": {
 			Type:        schema.TypeString,
 			Computed:    true,
-			Description: "Updated by Date and Time",
+			Description: "Updated on Date and Time",
 		},
 		"deleted_by": {
 			Type:        schema.TypeString,
@@ -400,7 +400,7 @@ func readChangeLogSch() map[string]*schema.Schema {
 		"deleted_date_time": {
 			Type:        schema.TypeString,
 			Computed:    true,
-			Description: "Deleted by Date and Time",
+			Description: "Deleted on Date and Time",
 		},
 	}
 }

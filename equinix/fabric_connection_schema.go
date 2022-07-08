@@ -68,7 +68,7 @@ func createVirtualGatewaySch() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
 		"uuid": {
 			Type:        schema.TypeString,
-			Computed:    true,
+			Optional:    true,
 			Description: "Equinix-assigned virtual gateway identifier",
 		},
 		"href": {
@@ -83,7 +83,7 @@ func createVirtualGatewaySch() map[string]*schema.Schema {
 		},
 		"project": {
 			Type:        schema.TypeSet,
-			Computed:    true,
+			Optional:    true,
 			Description: "Project this gateway created in",
 			Elem:        &schema.Resource{Schema: createGatewayProjectSch()},
 		},
@@ -98,7 +98,7 @@ func createGatewayProjectSch() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
 		"project_id": {
 			Type:        schema.TypeString,
-			Computed:    true,
+			Optional:    true,
 			Description: "Project Id",
 		},
 		"href": {
@@ -193,7 +193,7 @@ func createAccessPointVirtualDeviceSch() map[string]*schema.Schema {
 		},
 		"type": {
 			Type:        schema.TypeString,
-			Computed:    true,
+			Optional:    true,
 			Description: "Virtual Device type",
 		},
 	}
@@ -213,7 +213,7 @@ func createAccessPointInterface() map[string]*schema.Schema {
 		},
 		"type": {
 			Type:        schema.TypeString,
-			Computed:    true,
+			Optional:    true,
 			Description: "Interface type",
 		},
 	}
@@ -371,7 +371,7 @@ func createConnectionSideAccessPointSch() map[string]*schema.Schema {
 		},
 		"provider_connection_id": {
 			Type:        schema.TypeString,
-			Computed:    true,
+			Optional:    true,
 			Description: "Provider assigned Connection Id",
 		},
 	}
@@ -418,7 +418,7 @@ func createRedundancySch() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
 		"group": {
 			Type:        schema.TypeString,
-			Computed:    true,
+			Optional:    true,
 			Description: "Redundancy group identifier",
 		},
 		"priority": {
@@ -527,7 +527,7 @@ func createOrderSch() map[string]*schema.Schema {
 		},
 		"billing_tier": {
 			Type:        schema.TypeString,
-			Computed:    true,
+			Optional:    true,
 			Description: "Billing tier for connection bandwidth",
 		},
 		"order_id": {
