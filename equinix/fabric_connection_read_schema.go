@@ -9,7 +9,7 @@ func readServiceTokenSch() map[string]*schema.Schema {
 		"type": {
 			Type:        schema.TypeString,
 			Optional:    true,
-			Description: "Token type",
+			Description: "Token type - VC_TOKEN",
 		},
 		"href": {
 			Type:        schema.TypeString,
@@ -49,7 +49,7 @@ func readLocationSch() map[string]*schema.Schema {
 		"ibx": {
 			Type:        schema.TypeString,
 			Computed:    true,
-			Description: "IBX",
+			Description: "IBX Code",
 		},
 	}
 }
@@ -59,7 +59,7 @@ func readVirtualGatewaySch() map[string]*schema.Schema {
 		"uuid": {
 			Type:        schema.TypeString,
 			Computed:    true,
-			Description: "Gateway Type",
+			Description: "Gateway unique identifier",
 		},
 		"href": {
 			Type:        schema.TypeString,
@@ -84,7 +84,7 @@ func readServiceProfileSch() map[string]*schema.Schema {
 		"type": {
 			Type:        schema.TypeString,
 			Optional:    true,
-			Description: "Service profile type",
+			Description: "Service profile type- LAYER_2_PROFILE, LAYER_3_PROFILE",
 		},
 		"name": {
 			Type:        schema.TypeString,
@@ -99,7 +99,7 @@ func readServiceProfileSch() map[string]*schema.Schema {
 		"description": {
 			Type:        schema.TypeString,
 			Computed:    true,
-			Description: "User-provided service description",
+			Description: "User-provided service profile description",
 		},
 	}
 }
@@ -109,7 +109,7 @@ func readAccessPointLinkProtocolSch() map[string]*schema.Schema {
 		"type": {
 			Type:        schema.TypeString,
 			Optional:    true,
-			Description: "Type of the link protocol",
+			Description: "Type of the link protocol - DOT1Q, QINQ, UNTAGGED",
 		},
 		"vlan_tag": {
 			Type:        schema.TypeInt,
@@ -164,7 +164,7 @@ func readAccessPointInterface() map[string]*schema.Schema {
 		"id": {
 			Type:        schema.TypeString,
 			Computed:    true,
-			Description: "id",
+			Description: "Access Point Interface id",
 		},
 		"type": {
 			Type:        schema.TypeString,
@@ -179,7 +179,7 @@ func readPortSch() map[string]*schema.Schema {
 		"uuid": {
 			Type:        schema.TypeString,
 			Computed:    true,
-			Description: "Port information",
+			Description: "Equinix-assigned port identifier",
 		},
 		"href": {
 			Type:        schema.TypeString,
@@ -207,12 +207,12 @@ func readConnectionSideAccessPointSch() map[string]*schema.Schema {
 		"type": {
 			Type:        schema.TypeString,
 			Optional:    true,
-			Description: "Access point type",
+			Description: "Access point type - VD, COLO",
 		},
 		"authentication_key": {
 			Type:        schema.TypeString,
 			Computed:    true,
-			Description: "Access point type",
+			Description: "Authentication key for provider based connections",
 		},
 		"account": {
 			Type:        schema.TypeSet,
@@ -284,7 +284,7 @@ func readConnectionSideAccessPointSch() map[string]*schema.Schema {
 		"peering_type": {
 			Type:        schema.TypeString,
 			Optional:    true,
-			Description: "Peering Type",
+			Description: "Peering Type - for Azure - Private or Public",
 		},
 		"provider_connection_id": {
 			Type:        schema.TypeString,
@@ -325,7 +325,7 @@ func readRedundancySch() map[string]*schema.Schema {
 		"priority": {
 			Type:        schema.TypeString,
 			Computed:    true,
-			Description: "Priority type",
+			Description: "Priority type - Primary or Secondary",
 		},
 	}
 }
@@ -335,7 +335,7 @@ func readPortRedundancySch() map[string]*schema.Schema {
 		"priority": {
 			Type:        schema.TypeString,
 			Computed:    true,
-			Description: "Priority type",
+			Description: "Priority type-Primary or Secondary",
 		},
 	}
 }
@@ -475,7 +475,7 @@ func readNotificationSch() map[string]*schema.Schema {
 		"type": {
 			Type:        schema.TypeString,
 			Computed:    true,
-			Description: "Notification Type",
+			Description: "Notification Type- ALL,CONNECTION_APPROVAL,SALES_REP_NOTIFICATIONS, NOTIFICATIONS",
 		},
 		"send_interval": {
 			Type:        schema.TypeString,
@@ -513,7 +513,7 @@ func readOperationalErrorSch() map[string]*schema.Schema {
 		"error_code": {
 			Type:        schema.TypeString,
 			Computed:    true,
-			Description: "Error  code",
+			Description: "Error code",
 		},
 		"error_message": {
 			Type:        schema.TypeString,
@@ -551,12 +551,12 @@ func readOperationSch() map[string]*schema.Schema {
 		"provider_status": {
 			Type:        schema.TypeString,
 			Computed:    true,
-			Description: "Connection provider readiness status",
+			Description: "Connection provider readiness status - AVAILABLE, DEPROVISIONED, DEPROVISIONING ...",
 		},
 		"equinix_status": {
 			Type:        schema.TypeString,
 			Computed:    true,
-			Description: "Connection status",
+			Description: "Connection status - REJECTED_ACK, REJECTED, PENDING_DELETE, PROVISIONED ...",
 		},
 		"errors": {
 			Type:        schema.TypeList,
@@ -588,8 +588,8 @@ func readFabricConnectionResourceSchema() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
 		"uuid": {
 			Type:        schema.TypeString,
-			Required:    true,
-			Description: "TBD",
+			Optional:    true,
+			Description: "Equinix-assigned port identifier",
 		},
 		"href": {
 			Type:        schema.TypeString,
@@ -629,7 +629,7 @@ func readFabricConnectionResourceSchema() map[string]*schema.Schema {
 		"operation": {
 			Type:        schema.TypeSet,
 			Computed:    true,
-			Description: "Connection type-specific operational data",
+			Description: "Connection specific operational data",
 			Elem: &schema.Resource{
 				Schema: readOperationSch(),
 			},
