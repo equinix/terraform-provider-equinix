@@ -152,7 +152,6 @@ func setFabricMap(d *schema.ResourceData, conn v4.Connection) diag.Diagnostics {
 }
 
 func resourceFabricConnectionUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	log.Printf(" inside fabric connection update resource ")
 	client := meta.(*Config).fabricClient
 	ctx = context.WithValue(ctx, v4.ContextAccessToken, meta.(*Config).FabricAuthToken)
 	uuid := d.Id()
@@ -172,13 +171,13 @@ func resourceFabricConnectionUpdate(ctx context.Context, d *schema.ResourceData,
 	updates := []v4.ConnectionChangeOperation{update}
 	_, res, err := client.ConnectionsApi.UpdateConnectionByUuid(ctx, updates, uuid)
 	if err != nil {
-		return diag.FromErr(fmt.Errorf(" Error response for the connection update, response %v, error %v", res, err))
+		return diag.FromErr(fmt.Errorf("Error response for the connection update, response %v, error %v", res, err))
 	}
 	updatedConn := v4.Connection{}
 	updatedConn, err = waitForConnectionUpdateCompletion(uuid, meta, ctx)
 
 	if err != nil {
-		return diag.FromErr(fmt.Errorf(" Errored while waiting for successful connection update, response %v, error %v", res, err))
+		return diag.FromErr(fmt.Errorf("Errored while waiting for successful connection update, response %v, error %v", res, err))
 	}
 
 	d.SetId(updatedConn.Uuid)
@@ -186,7 +185,7 @@ func resourceFabricConnectionUpdate(ctx context.Context, d *schema.ResourceData,
 }
 
 func waitForConnectionUpdateCompletion(uuid string, meta interface{}, ctx context.Context) (v4.Connection, error) {
-	log.Println("Waiting for connection update to complete")
+	log.Printf("Waiting for connection update to complete, uuid %s", uuid)
 	stateConf := &resource.StateChangeConf{
 		Target: []string{"COMPLETED"},
 		Refresh: func() (interface{}, string, error) {
@@ -216,7 +215,7 @@ func waitForConnectionUpdateCompletion(uuid string, meta interface{}, ctx contex
 }
 
 func waitUntilConnectionIsActive(uuid string, meta interface{}, ctx context.Context) (v4.Connection, error) {
-	log.Println("Waiting for connection to be in active state ")
+	log.Printf("Waiting for connection to be in active state, uuid %s", uuid)
 	stateConf := &resource.StateChangeConf{
 		Target: []string{"ACTIVE"},
 		Refresh: func() (interface{}, string, error) {
@@ -256,7 +255,7 @@ func resourceFabricConnectionDelete(ctx context.Context, d *schema.ResourceData,
 	}
 	_, resp, err := client.ConnectionsApi.DeleteConnectionByUuid(ctx, uuid)
 	if err != nil {
-		fmt.Errorf(" Error response for the connection delete error %v and response %v", err, resp)
+		fmt.Errorf("Error response for the connection delete error %v and response %v", err, resp)
 		return diag.FromErr(err)
 	}
 	return diags
