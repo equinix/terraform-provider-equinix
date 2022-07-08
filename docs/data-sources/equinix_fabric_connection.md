@@ -110,8 +110,6 @@ Read-Only:
 - `vlan_c_tag` (Number)
 - `vlan_s_tag` (Number)
 - `vlan_tag` (Number)
-- `vni` (String)
-
 
 <a id="nestedobjatt--a_side--access_point--location"></a>
 ### Nested Schema for `a_side.access_point.location`
@@ -258,8 +256,6 @@ Read-Only:
 - `vlan_c_tag` (Number)
 - `vlan_s_tag` (Number)
 - `vlan_tag` (Number)
-- `vni` (String)
-
 
 <a id="nestedobjatt--z_side--access_point--location"></a>
 ### Nested Schema for `z_side.access_point.location`

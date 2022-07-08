@@ -113,8 +113,6 @@ Optional:
 - `vlan_c_tag` (Number) Vlan Customer Tag information, vlanCTag value specified for QINQ connections
 - `vlan_s_tag` (Number) Vlan Provider Tag information, vlanSTag value specified for QINQ connections
 - `vlan_tag` (Number) Vlan Tag information, vlanTag value specified for DOT1Q connections
-- `vni` (Number) vni
-
 
 <a id="nestedblock--a_side--access_point--location"></a>
 ### Nested Schema for `a_side.access_point.location`
@@ -310,8 +308,6 @@ Optional:
 - `vlan_c_tag` (Number) Vlan Customer Tag information, vlanCTag value specified for QINQ connections
 - `vlan_s_tag` (Number) Vlan Provider Tag information, vlanSTag value specified for QINQ connections
 - `vlan_tag` (Number) Vlan Tag information, vlanTag value specified for DOT1Q connections
-- `vni` (Number) vni
-
 
 <a id="nestedblock--z_side--access_point--location"></a>
 ### Nested Schema for `z_side.access_point.location`
