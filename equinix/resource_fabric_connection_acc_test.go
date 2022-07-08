@@ -13,7 +13,6 @@ import (
 )
 
 func TestAccFabricCreateAzureConnection(t *testing.T) {
-	log.Printf(" inside fabric create connection test ")
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
@@ -60,6 +59,7 @@ func checkConnectionDelete(s *terraform.State) error {
 }
 
 func waitUntilConnectionDeprovisioned(uuid string, client *v4.APIClient, ctx context.Context) (v4.Connection, error) {
+	log.Printf("Waiting for connection to be in deprovisioned, uuid %s", uuid)
 	stateConf := &resource.StateChangeConf{
 		Target: []string{"DEPROVISIONED"},
 		Refresh: func() (interface{}, string, error) {
