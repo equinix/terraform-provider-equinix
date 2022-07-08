@@ -3,16 +3,16 @@ package equinix
 import (
 	"context"
 	"fmt"
+	"log"
+	"time"
+
 	v4 "github.com/equinix-labs/fabric-go/fabric/v4"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"log"
-	"time"
 )
 
 func resourceFabricConnection() *schema.Resource {
-
 	return &schema.Resource{
 		Timeouts: &schema.ResourceTimeout{
 			Create: schema.DefaultTimeout(6 * time.Minute),
@@ -114,7 +114,6 @@ func resourceFabricConnectionRead(ctx context.Context, d *schema.ResourceData, m
 	client := meta.(*Config).fabricClient
 	ctx = context.WithValue(ctx, v4.ContextAccessToken, meta.(*Config).FabricAuthToken)
 	conn, _, err := client.ConnectionsApi.GetConnectionByUuid(ctx, d.Id(), nil)
-
 	if err != nil {
 		log.Printf("[WARN] Connection %s not found ", d.Id())
 		d.SetId("")
@@ -223,7 +222,6 @@ func waitUntilConnectionIsActive(uuid string, meta interface{}, ctx context.Cont
 		Refresh: func() (interface{}, string, error) {
 			client := meta.(*Config).fabricClient
 			dbConn, _, err := client.ConnectionsApi.GetConnectionByUuid(ctx, uuid, nil)
-
 			if err != nil {
 				return "", "", err
 			}
