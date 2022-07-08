@@ -8,7 +8,7 @@ func readServiceTokenSch() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
 		"type": {
 			Type:        schema.TypeString,
-			Optional:    true,
+			Computed:    true,
 			Description: "Token type - VC_TOKEN",
 		},
 		"href": {
@@ -83,7 +83,7 @@ func readServiceProfileSch() map[string]*schema.Schema {
 		},
 		"type": {
 			Type:        schema.TypeString,
-			Optional:    true,
+			Computed:    true,
 			Description: "Service profile type- LAYER_2_PROFILE, LAYER_3_PROFILE",
 		},
 		"name": {
@@ -101,6 +101,29 @@ func readServiceProfileSch() map[string]*schema.Schema {
 			Computed:    true,
 			Description: "User-provided service profile description",
 		},
+		"access_point_type_configs": {
+			Type:        schema.TypeList,
+			Computed:    true,
+			Description: "Access point config information",
+			Elem: &schema.Resource{
+				Schema: readAccessPointTypeConfigSch(),
+			},
+		},
+	}
+}
+
+func readAccessPointTypeConfigSch() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"type": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "Type of access point type config - VD, COLO",
+		},
+		"uuid": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "Equinix-assigned access point type config identifier",
+		},
 	}
 }
 
@@ -108,7 +131,7 @@ func readAccessPointLinkProtocolSch() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
 		"type": {
 			Type:        schema.TypeString,
-			Optional:    true,
+			Computed:    true,
 			Description: "Type of the link protocol - DOT1Q, QINQ, UNTAGGED",
 		},
 		"vlan_tag": {
@@ -125,11 +148,6 @@ func readAccessPointLinkProtocolSch() map[string]*schema.Schema {
 			Type:        schema.TypeInt,
 			Computed:    true,
 			Description: "Vlan Customer Tag information, vlanCTag value specified for QINQ connections",
-		},
-		"vni": {
-			Type:        schema.TypeString,
-			Computed:    true,
-			Description: "vni",
 		},
 	}
 }
@@ -206,7 +224,7 @@ func readConnectionSideAccessPointSch() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
 		"type": {
 			Type:        schema.TypeString,
-			Optional:    true,
+			Computed:    true,
 			Description: "Access point type - VD, COLO",
 		},
 		"authentication_key": {
@@ -283,7 +301,7 @@ func readConnectionSideAccessPointSch() map[string]*schema.Schema {
 		},
 		"peering_type": {
 			Type:        schema.TypeString,
-			Optional:    true,
+			Computed:    true,
 			Description: "Peering Type - for Azure - Private or Public",
 		},
 		"provider_connection_id": {
@@ -589,7 +607,7 @@ func readFabricConnectionResourceSchema() map[string]*schema.Schema {
 		"uuid": {
 			Type:        schema.TypeString,
 			Optional:    true,
-			Description: "Equinix-assigned port identifier",
+			Description: "Equinix-assigned connection identifier",
 		},
 		"href": {
 			Type:        schema.TypeString,
@@ -598,7 +616,7 @@ func readFabricConnectionResourceSchema() map[string]*schema.Schema {
 		},
 		"name": {
 			Type:        schema.TypeString,
-			Required:    true,
+			Computed:    true,
 			Description: "Connection name. An alpha-numeric 24 characters string which can include only hyphens and underscores",
 		},
 		"description": {
@@ -608,12 +626,12 @@ func readFabricConnectionResourceSchema() map[string]*schema.Schema {
 		},
 		"type": {
 			Type:        schema.TypeString,
-			Required:    true,
+			Computed:    true,
 			Description: "Defines the connection type like VG_VC, EVPL_VC, EPL_VC, EC_VC, GW_VC, ACCESS_EPL_VC",
 		},
 		"bandwidth": {
 			Type:        schema.TypeInt,
-			Required:    true,
+			Computed:    true,
 			Description: "Connection bandwidth in Mbps",
 		},
 		"is_remote": {
@@ -636,7 +654,7 @@ func readFabricConnectionResourceSchema() map[string]*schema.Schema {
 		},
 		"notifications": {
 			Type:        schema.TypeList,
-			Required:    true,
+			Computed:    true,
 			Description: "Preferences for notifications on connection configuration or status changes",
 			Elem: &schema.Resource{
 				Schema: readNotificationSch(),
@@ -689,7 +707,7 @@ func readFabricConnectionResourceSchema() map[string]*schema.Schema {
 		},
 		"a_side": {
 			Type:        schema.TypeSet,
-			Required:    true,
+			Computed:    true,
 			Description: "Requester or Customer side connection configuration object of the multi-segment connection",
 			Elem: &schema.Resource{
 				Schema: readFabricConnectionSideSch(),
@@ -697,10 +715,18 @@ func readFabricConnectionResourceSchema() map[string]*schema.Schema {
 		},
 		"z_side": {
 			Type:        schema.TypeSet,
-			Required:    true,
+			Computed:    true,
 			Description: "Destination or Provider side connection configuration object of the multi-segment connection",
 			Elem: &schema.Resource{
 				Schema: readFabricConnectionSideSch(),
+			},
+		},
+		"project": {
+			Type:        schema.TypeSet,
+			Optional:    true,
+			Description: "Project information",
+			Elem: &schema.Resource{
+				Schema: createGatewayProjectSch(),
 			},
 		},
 	}
