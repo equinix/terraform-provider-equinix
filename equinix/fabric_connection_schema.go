@@ -137,6 +137,29 @@ func createServiceProfileSch() map[string]*schema.Schema {
 			Optional:    true,
 			Description: "User-provided service description",
 		},
+		"access_point_type_configs": {
+			Type:        schema.TypeList,
+			Computed:    true,
+			Description: "Access point config information",
+			Elem: &schema.Resource{
+				Schema: createAccessPointTypeConfigSch(),
+			},
+		},
+	}
+}
+
+func createAccessPointTypeConfigSch() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"type": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "Type of access point type config - VD, COLO",
+		},
+		"uuid": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "Equinix-assigned access point type config identifier",
+		},
 	}
 }
 
@@ -166,11 +189,6 @@ func createAccessPointLinkProtocolSch() map[string]*schema.Schema {
 			Type:        schema.TypeInt,
 			Optional:    true,
 			Description: "Vlan Customer Tag information, vlanCTag value specified for QINQ connections",
-		},
-		"vni": {
-			Type:        schema.TypeInt,
-			Optional:    true,
-			Description: "vni",
 		},
 	}
 }
