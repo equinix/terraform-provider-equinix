@@ -237,7 +237,8 @@ func (c *Config) NewFabricClient() *v4.APIClient {
 	transport := logging.NewTransport("Equinix Fabric", http.DefaultTransport)
 	var authClient *http.Client
 	authClient = &http.Client{
-		Transport: transport}
+		Transport: transport,
+	}
 	authClient.Timeout = c.requestTimeout()
 	fabricHeaderMap := map[string]string{
 		"X-SOURCE":         "API",

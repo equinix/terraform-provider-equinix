@@ -180,7 +180,6 @@ var createAccessPointVirtualDeviceRes = &schema.Resource{
 }
 
 func createAccessPointVirtualDeviceSch() map[string]*schema.Schema {
-
 	return map[string]*schema.Schema{
 		"href": {
 			Type:        schema.TypeString,
