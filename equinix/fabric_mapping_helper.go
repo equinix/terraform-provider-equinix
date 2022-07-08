@@ -24,14 +24,12 @@ func serviceTokenToFabric(serviceTokenRequest []interface{}) v4.ServiceToken {
 
 func additionalInfoToFabric(additionalInfoRequest []interface{}) []v4.ConnectionSideAdditionalInfo {
 	var mappedaiArray []v4.ConnectionSideAdditionalInfo
-	for _, ai := range additionalInfoRequest {
-		i := 0
+	for i, ai := range additionalInfoRequest {
 		aiMap := ai.(map[string]interface{})
 		key := aiMap["key"].(interface{}).(string)
 		value := aiMap["value"].(interface{}).(string)
 		mappedai := v4.ConnectionSideAdditionalInfo{Key: key, Value: value}
 		mappedaiArray[i] = mappedai
-		i++
 	}
 	return mappedaiArray
 }
@@ -682,7 +680,7 @@ func getUpdateRequest(conn v4.Connection, d *schema.ResourceData) (v4.Connection
 	} else if existingBandwidth != updateBandwidthVal {
 		changeOps = v4.ConnectionChangeOperation{Op: "replace", Path: "/bandwidth", Value: updateBandwidthVal}
 	} else {
-		return changeOps, fmt.Errorf(" Nothing to update for the connection %s ", existingName)
+		return changeOps, fmt.Errorf("Nothing to update for the connection %s", existingName)
 	}
 	return changeOps, nil
 }
