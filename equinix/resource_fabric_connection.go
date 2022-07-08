@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"strings"
 	"time"
 
 	v4 "github.com/equinix-labs/fabric-go/fabric/v4"
@@ -34,7 +35,6 @@ func resourceFabricConnection() *schema.Resource {
 }
 
 func resourceFabricConnectionCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	log.Printf(" inside fabric connection create resource ")
 	client := meta.(*Config).fabricClient
 	ctx = context.WithValue(ctx, v4.ContextAccessToken, meta.(*Config).FabricAuthToken)
 	conType := v4.ConnectionType(d.Get("type").(string))
@@ -110,13 +110,16 @@ func resourceFabricConnectionCreate(ctx context.Context, d *schema.ResourceData,
 }
 
 func resourceFabricConnectionRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	log.Printf(" inside fabric connection read resource ")
 	client := meta.(*Config).fabricClient
 	ctx = context.WithValue(ctx, v4.ContextAccessToken, meta.(*Config).FabricAuthToken)
 	conn, _, err := client.ConnectionsApi.GetConnectionByUuid(ctx, d.Id(), nil)
 	if err != nil {
-		log.Printf("[WARN] Connection %s not found ", d.Id())
-		d.SetId("")
+		log.Printf("[WARN] Connection %s not found , error %s", d.Id(), err)
+		//TODO needs to see if I can trigger actual error and use exact error message
+		if !strings.Contains(err.Error(), "500") {
+			d.SetId("")
+		}
+
 		return diag.FromErr(err)
 	}
 	d.SetId(conn.Uuid)
@@ -245,7 +248,6 @@ func waitUntilConnectionIsActive(uuid string, meta interface{}, ctx context.Cont
 }
 
 func resourceFabricConnectionDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	log.Printf(" inside fabric connection delete resource ")
 	diags := diag.Diagnostics{}
 	client := meta.(*Config).fabricClient
 	ctx = context.WithValue(ctx, v4.ContextAccessToken, meta.(*Config).FabricAuthToken)
