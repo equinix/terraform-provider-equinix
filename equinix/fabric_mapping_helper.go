@@ -173,9 +173,8 @@ func linkProtocolToFabric(linkProtocolList []interface{}) v4.SimplifiedLinkProto
 		lpVlanSTag := lpMap["vlan_s_tag"].(interface{}).(int)
 		lpVlanTag := lpMap["vlan_tag"].(interface{}).(int)
 		lpVlanCTag := lpMap["vlan_c_tag"].(interface{}).(int)
-		lpVni := lpMap["vni"].(interface{}).(int)
 		lpt := v4.LinkProtocolType(lpType)
-		slp = v4.SimplifiedLinkProtocol{Type_: &lpt, VlanSTag: int32(lpVlanSTag), VlanTag: int32(lpVlanTag), VlanCTag: int32(lpVlanCTag), Vni: int32(lpVni)}
+		slp = v4.SimplifiedLinkProtocol{Type_: &lpt, VlanSTag: int32(lpVlanSTag), VlanTag: int32(lpVlanTag), VlanCTag: int32(lpVlanCTag)}
 	}
 	return slp
 }
@@ -605,7 +604,6 @@ func linkedProtocolToTerra(linkedProtocol *v4.SimplifiedLinkProtocol) *schema.Se
 		mappedLinkedProtocol["vlan_tag"] = int(linkedProtocol.VlanTag)
 		mappedLinkedProtocol["vlan_s_tag"] = int(linkedProtocol.VlanSTag)
 		mappedLinkedProtocol["vlan_c_tag"] = int(linkedProtocol.VlanCTag)
-		mappedLinkedProtocol["vni"] = int(linkedProtocol.Vni)
 		mappedLinkedProtocols = append(mappedLinkedProtocols, mappedLinkedProtocol)
 	}
 	linkedProtocolSet := schema.NewSet(
@@ -614,7 +612,6 @@ func linkedProtocolToTerra(linkedProtocol *v4.SimplifiedLinkProtocol) *schema.Se
 	return linkedProtocolSet
 }
 
-// Set - No full implementation
 func simplifiedServiceProfileToTerra(profile *v4.SimplifiedServiceProfile) *schema.Set {
 	profiles := []*v4.SimplifiedServiceProfile{profile}
 	mappedProfiles := make([]interface{}, 0)
@@ -624,7 +621,7 @@ func simplifiedServiceProfileToTerra(profile *v4.SimplifiedServiceProfile) *sche
 		mappedProfile["type"] = string(*profile.Type_)
 		mappedProfile["name"] = profile.Name
 		mappedProfile["uuid"] = profile.Uuid
-		mappedProfile["access_point_type_configs"] = accessPointTypeToTerra(profile.AccessPointTypeConfigs)
+		mappedProfile["access_point_type_configs"] = accessPointTypeConfigToTerra(profile.AccessPointTypeConfigs)
 		mappedProfiles = append(mappedProfiles, mappedProfile)
 	}
 	profileSet := schema.NewSet(
@@ -634,7 +631,7 @@ func simplifiedServiceProfileToTerra(profile *v4.SimplifiedServiceProfile) *sche
 	return profileSet
 }
 
-func accessPointTypeToTerra(spAccessPointTypes []v4.ServiceProfileAccessPointType) []interface{} {
+func accessPointTypeConfigToTerra(spAccessPointTypes []v4.ServiceProfileAccessPointType) []interface{} {
 	mappedSpAccessPointTypes := make([]interface{}, len(spAccessPointTypes))
 	for index, spAccessPointType := range spAccessPointTypes {
 		mappedSpAccessPointTypes[index] = map[string]interface{}{
