@@ -112,6 +112,25 @@ resource "equinix_ecx_l2_connection" "token-to-gcp" {
 }
 ```
 
+### Non-redundant Connection from own Equinix Port to an Equinix customer port using Z-Side Service token
+
+```hcl
+data "equinix_ecx_port" "sv-qinq-pri" {
+  name = "CX-SV5-NL-Dot1q-BO-10G-PRI"
+}
+
+resource "equinix_ecx_l2_connection" "port-to-token" {
+  name                = "tf-port-token"
+  zside_service_token = "e9c22453-d3a7-4d5d-9112-d50173531392"
+  speed               = 200
+  speed_unit          = "MB"
+  notifications       = ["john@equinix.com", "marry@equinix.com"]
+  seller_metro_code   = "FR"
+  port_uuid           = data.equinix_ecx_port.sv-qinq-pri.id
+  vlan_stag           = 1000
+}
+```
+
 -> **NOTE:** See [Equinix Fabric connecting to the cloud](../guides/equinix_fabric_cloud_providers.md)
 guide for more details on how to connect to a CSP.
 
@@ -134,10 +153,14 @@ the Network Edge virtual device from which the connection would originate.
 * `device_interface_id` - (Optional) Applicable with `device_uuid`, identifier of network interface
 on a given device, used for a connection. If not specified then first available interface will be
 selected.
-* `service_token`- (Required when `port_uuid` or `device_uuid` are not set) - Unique Equinix Fabric
-key given by a provider that grants you authorization to the Equinix Port or virtual device from
-which the connection would originate.
-More details in [A-Side Fabric Service Tokens](https://docs.equinix.com/en-us/Content/Interconnection/Fabric/service%20tokens/Fabric-Service-Tokens.htm).
+* `service_token`- (Required when `port_uuid` or `device_uuid` are not set) - A-side
+service tokens authorize you to create a connection from a customer port, which created the token
+for you, to a service profile or your own port.
+More details in [A-Side Fabric Service Tokens](https://docs.equinix.com/en-us/Content/Interconnection/Fabric/service%20tokens/Fabric-Service-Tokens.htm#:~:text=the%20service%20token.-,A%2DSide%20Service%20Tokens,-If%20you%20want).
+* `zside_service_token`- (Required when `profile_uuid` or `zside_port_uuid` are not set) - Z-side
+service tokens authorize you to create a connection from your port or virtual device to a customer
+port which created the token for you.
+More details in [Z-Side Fabric Service Tokens](https://docs.equinix.com/en-us/Content/Interconnection/Fabric/service%20tokens/Fabric-Service-Tokens.htm#:~:text=requirements%20per%20provider.-,Z%2DSide%20Service%20Tokens,-If%20you%20want).
 
 -> **NOTE:** Service tokens can't be reused. To recreate a resource or to create a new one for
 another connection even from same interconnection asset, you will need to request another token

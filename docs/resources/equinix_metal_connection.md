@@ -10,15 +10,67 @@ Use this resource to request the creation an Interconnection asset to connect wi
 
 ## Example Usage
 
+### Shared Connection with a_side token - Redundant Connection from Equinix Metal to a Cloud Service Provider
+
 ```hcl
-resource "equinix_metal_connection" "test" {
-    name               = "My Interconnection"
-    project_id         = equinix_metal_project.test.id
+resource "equinix_metal_connection" "example" {
+    name               = "tf-metal-to-azure"
+    project_id         = local.project_id
     type               = "shared"
     redundancy         = "redundant"
     metro              = "sv"
-    speed              = "50Mbps"
+    speed              = "1000Mbps"
     service_token_type = "a_side"
+}
+
+data "equinix_ecx_l2_sellerprofile" "example" {
+  name                     = "Azure ExpressRoute"
+  organization_global_name = "Microsoft"
+}
+
+resource "equinix_ecx_l2_connection" "example" {
+  name              = "tf-metal-to-azure"
+  profile_uuid      = data.equinix_ecx_l2_sellerprofile.example.uuid
+  speed             = azurerm_express_route_circuit.example.bandwidth_in_mbps
+  speed_unit        = "MB"
+  notifications     = ["example@equinix.com"]
+  service_token     = equinix_metal_connection.example.service_tokens.0.id
+  seller_metro_code = "AM"
+  authorization_key = azurerm_express_route_circuit.example.service_key
+  named_tag         = "PRIVATE"
+  secondary_connection {
+    name          = "tf-metal-to-azure"-sec"
+    service_token = equinix_metal_connection.example.service_tokens.1.id
+  }
+}
+```
+
+### Shared Connection with z_side token - Non-redundant Connection from your Equinix Fabric Port to Equinix Metal
+
+```hcl
+resource "equinix_metal_connection" "example" {
+    name               = "tf-port-to-metal"
+    project_id         = local.project_id
+    type               = "shared"
+    redundancy         = "primary"
+    metro              = "FR"
+    speed              = "200Mbps"
+    service_token_type = "z_side"
+}
+
+data "equinix_ecx_port" "example" {
+  name = "CX-FR5-NL-Dot1q-BO-1G-PRI"
+}
+
+resource "equinix_ecx_l2_connection" "example" {
+  name                = "tf-port-to-metal"
+  zside_service_token = equinix_metal_connection.example.service_tokens.0.id
+  speed               = "200"
+  speed_unit          = "MB"
+  notifications       = ["example@equinix.com"]
+  seller_metro_code   = "FR"
+  port_uuid           = data.equinix_ecx_port.example.id
+  vlan_stag           = 1020
 }
 ```
 
