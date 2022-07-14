@@ -9,7 +9,7 @@ layer 2 connections.
 
 ## Example Usage
 
-### Non-redundant Connection from own Equinix Port
+### Non-redundant Connection from own Equinix Fabric Port
 
 ```hcl
 data "equinix_ecx_l2_sellerprofile" "aws" {
@@ -35,7 +35,7 @@ resource "equinix_ecx_l2_connection" "port-2-aws" {
 }
 ```
 
-### Redundant Connection from own Equinix Ports
+### Redundant Connection from own Equinix Fabric Ports
 
 ```hcl
 data "equinix_ecx_l2_sellerprofile" "azure" {
@@ -112,7 +112,7 @@ resource "equinix_ecx_l2_connection" "token-to-gcp" {
 }
 ```
 
-### Non-redundant Connection from own Equinix Port to an Equinix customer port using Z-Side Service token
+### Non-redundant Connection from own Equinix Fabric Port to an Equinix customer port using Z-Side Service token
 
 ```hcl
 data "equinix_ecx_port" "sv-qinq-pri" {
@@ -147,7 +147,7 @@ hyphens and underscores
 notifications.
 * `purchase_order_number` - (Optional) Connection's purchase order number to reflect on the invoice
 * `port_uuid` - (Required when `device_uuid` or `service_token` are not set) Unique identifier of
-the Equinix port from which the connection would originate.
+the Equinix Fabric Port from which the connection would originate.
 * `device_uuid` - (Required when `port_uuid` or `service_token` are not set) Unique identifier of
 the Network Edge virtual device from which the connection would originate.
 * `device_interface_id` - (Optional) Applicable with `device_uuid`, identifier of network interface
@@ -159,7 +159,7 @@ for you, to a service profile or your own port.
 More details in [A-Side Fabric Service Tokens](https://docs.equinix.com/en-us/Content/Interconnection/Fabric/service%20tokens/Fabric-Service-Tokens.htm#:~:text=the%20service%20token.-,A%2DSide%20Service%20Tokens,-If%20you%20want).
 * `zside_service_token`- (Required when `profile_uuid` or `zside_port_uuid` are not set) - Z-side
 service tokens authorize you to create a connection from your port or virtual device to a customer
-port which created the token for you.
+port which created the token for you. `zside_service_token` cannot be used with `secondary_connection`.
 More details in [Z-Side Fabric Service Tokens](https://docs.equinix.com/en-us/Content/Interconnection/Fabric/service%20tokens/Fabric-Service-Tokens.htm#:~:text=requirements%20per%20provider.-,Z%2DSide%20Service%20Tokens,-If%20you%20want).
 
 -> **NOTE:** Service tokens can't be reused. To recreate a resource or to create a new one for
@@ -210,7 +210,7 @@ connectivity. See [Secondary Connection](#secondary-connection) below for more d
 
 -> **NOTE:** Some service provider do not directly support redundant connections in their service
 profiles. However, some of them offer active/active (BGP multipath) or active/passive (failover)
-configurations in their platforms and you can still achieve that highly resilient network
+configurations in their platforms and you still achieve that highly resilient network
 connections by creating an `equinix_ecx_l2_connection` resource for each connection instead of
 defining a `secondary_connection` block.
 
@@ -221,7 +221,7 @@ The `secondary_connection` block supports the following arguments:
 specified primary `speed` will be used.
 * `speed_unit` - (Optional) Unit of the speed/bandwidth to be allocated to the secondary
 connection. If not specified primary `speed_unit` will be used.
-* `port_uuid` - (Optional) Applicable with primary `port_uuid`. Identifier of the Equinix port from
+* `port_uuid` - (Optional) Applicable with primary `port_uuid`. Identifier of the Equinix Fabric Port from
 which the secondary connection would originate. If not specified primary `port_uuid` will be used.
 * `device_uuid` - (Optional) Applicable with primary `device_uuid`. Identifier of the Network Edge
 virtual device from which the secondary connection would originate. If not specified primary
@@ -229,7 +229,7 @@ virtual device from which the secondary connection would originate. If not speci
 * `device_interface_id` - (Optional) Applicable with `device_uuid`, identifier of network interface
 on a given device. If not specified then first available interface will be selected.
 * `service_token`- (Optional) Required with primary `service_token`. Unique Equinix Fabric key
-given by a provider that grants you authorization to enable connectivity from an Equinix Port or
+given by a provider that grants you authorization to enable connectivity from an Equinix Fabric Port or
 virtual device. Each connection (primary and secondary) requires a separate token.
 More details in [Fabric Service Tokens](https://docs.equinix.com/en-us/Content/Interconnection/Fabric/service%20tokens/Fabric-Service-Tokens.htm).
 * `vlan_stag` - (Required when `port_uuid` is set) S-Tag/Outer-Tag of the secondary connection, a

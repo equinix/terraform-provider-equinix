@@ -45,7 +45,7 @@ resource "equinix_ecx_l2_connection" "example" {
 }
 ```
 
-### Shared Connection with z_side token - Non-redundant Connection from your Equinix Fabric Port to Equinix Metal
+### Shared Connection with z_side token - Non-redundant Connection from your own Equinix Fabric Port to Equinix Metal
 
 ```hcl
 resource "equinix_metal_connection" "example" {
