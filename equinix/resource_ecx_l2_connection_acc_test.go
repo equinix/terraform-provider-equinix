@@ -416,6 +416,122 @@ func TestAccFabricL2Connection_ServiceToken_HA_SP(t *testing.T) {
 	})
 }
 
+func TestAccFabricL2Connection_ZSideServiceToken_Single(t *testing.T) {
+	priZSideServiceToken := "d63247a3-0a64-6cab-c310-e1f5d8ac43a4"
+	priZSidePortUUID := "8e2147a3-38ec-470e-48c9-e1f5d81c3bb0"
+	priServiceToken := "624447a3-4cb2-470e-93c5-f155d81c3bb0"
+	priConnID := "4b95a8df-8d26-4c4b-a64d-18ac43a43248"
+	priPortUUID := "52c00d7f-c310-458e-9426-1d7549e1f600"
+	priConnName := fmt.Sprintf("%s-%s", tstResourcePrefix, "st-pri")
+	secServiceToken := "1c356a7b-d632-18a5-c357-a33146cab65d"
+	secConnName := fmt.Sprintf("%s-%s", tstResourcePrefix, "st-sec")
+	authKey := "123456789012"
+	speed := 50
+	speedUnit := "MB"
+	notifications := []string{"marry@equinix.com", "john@equinix.com"}
+	sellerMetro := "SV"
+	sellerProfileUUID := "5d113752-996b-4b59-8e21-8927e7b98058"
+	redundancyGroupUUID := "db760d63-38ec-49c2-bebf-b3ac3c33df77"
+	redundancyType := "SECONDARY"
+
+	ctx := map[string]interface{}{
+		"connection-resourceName":      "test",
+		"connection-profile_uuid":      sellerProfileUUID,
+		"connection-name":              priConnName,
+		"connection-speed":             speed,
+		"connection-speed_unit":        speedUnit,
+		"connection-notifications":     notifications,
+		"connection-seller_metro_code": sellerMetro,
+		"connection-authorization_key": authKey,
+		"zside-service_token":          priZSideServiceToken,
+		"zside-port_uuid":              priZSidePortUUID,
+		"service_token":                priServiceToken,
+		"port-uuid":                    priPortUUID,
+		"connection-secondary_name":    secConnName,
+		"secondary-service_token":      secServiceToken,
+	}
+
+	ctxWithoutConflicts := copyMap(ctx)
+	delete(ctxWithoutConflicts, "service_token")
+	delete(ctxWithoutConflicts, "zside-port_uuid")
+	delete(ctxWithoutConflicts, "connection-profile_uuid")
+	delete(ctxWithoutConflicts, "connection-authorization_key")
+	delete(ctxWithoutConflicts, "connection-secondary_name")
+	delete(ctxWithoutConflicts, "secondary-service_token")
+
+	// mock ECX Client functions
+	mockECXClient := &mockECXClient{
+		CreateL2ConnectionFn: func(primConn ecx.L2Connection) (*string, error) {
+			return &priConnID, nil
+		},
+		GetL2ConnectionFn: func(uuid string) (*ecx.L2Connection, error) {
+			status := ecx.ConnectionStatusProvisioned
+			connection := ecx.L2Connection{
+				Speed:             &speed,
+				SpeedUnit:         &speedUnit,
+				Notifications:     notifications,
+				ProfileUUID:       &sellerProfileUUID,
+				Status:            &status,
+				AuthorizationKey:  &authKey,
+				SellerMetroCode:   &sellerMetro,
+				RedundancyGroup:   &redundancyGroupUUID,
+				RedundancyType:    &redundancyType,
+				UUID:              &priConnID,
+				Name:              &priConnName,
+				ZSideServiceToken: &priZSideServiceToken,
+				PortUUID:          &priPortUUID,
+				ZSidePortUUID:     &priZSidePortUUID,
+			}
+			return &connection, nil
+		},
+		DeleteL2ConnectionFn: func(uuid string) error {
+			err := rest.Error{}
+			err.ApplicationErrors = []rest.ApplicationError{
+				{
+					Code: "IC-LAYER2-4021",
+				},
+			}
+			return err
+		},
+	}
+	mockEquinix := Provider()
+	mockEquinix.ConfigureContextFunc = func(c context.Context, d *schema.ResourceData) (interface{}, diag.Diagnostics) {
+		config := Config{
+			ecx: mockECXClient,
+		}
+		return &config, nil
+	}
+	mockProviders := map[string]*schema.Provider{
+		"equinix": mockEquinix,
+	}
+
+	resourceName := fmt.Sprintf("equinix_ecx_l2_connection.%s", ctx["connection-resourceName"].(string))
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:                  func() { testAccPreCheck(t) },
+		Providers:                 mockProviders,
+		PreventPostDestroyRefresh: true,
+		Steps: []resource.TestStep{
+			{
+				Config:      newTestAccConfig(ctx).withConnection().build(),
+				ExpectError: regexp.MustCompile(`Error: Conflicting configuration arguments`),
+			},
+			{
+				Config: newTestAccConfig(ctxWithoutConflicts).withConnection().build(),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(resourceName, "status", ecx.ConnectionStatusProvisioned),
+					resource.TestCheckResourceAttrSet(resourceName, "zside_service_token"),
+					resource.TestCheckResourceAttrSet(resourceName, "port_uuid"),
+				),
+			},
+			{
+				ResourceName: resourceName,
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+		},
+	})
+}
+
 func testAccFabricL2ConnectionExists(resourceName string, conn *ecx.L2Connection) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[resourceName]
@@ -585,11 +701,13 @@ data "equinix_ecx_port" "%{port-secondary_resourceName}" {
 
 func testAccFabricL2Connection(ctx map[string]interface{}) string {
 	var config string
-	if _, ok := ctx["connection-profile_uuid"]; !ok {
-		config += nprintf(`
+	if _, ok := ctx["zside-service_token"]; !ok {
+		if _, ok := ctx["connection-profile_uuid"]; !ok {
+			config += nprintf(`
 data "equinix_ecx_l2_sellerprofile" "pri" {
   name = "%{connection-profile_name}"
 }`, ctx)
+		}
 	}
 	if _, ok := ctx["connection-secondary_profile_name"]; ok {
 		config += nprintf(`
@@ -604,112 +722,125 @@ resource "equinix_ecx_l2_connection" "%{connection-resourceName}" {
   speed                 = %{connection-speed}
   speed_unit            = "%{connection-speed_unit}"
   notifications         = %{connection-notifications}
-  seller_metro_code     = "%{connection-seller_metro_code}"
+  seller_metro_code     = "%{connection-seller_metro_code}"`, ctx)
+	if _, ok := ctx["connection-authorization_key"]; ok {
+		config += nprintf(`
   authorization_key     = "%{connection-authorization_key}"`, ctx)
-	if _, ok := ctx["connection-profile_uuid"]; ok {
-		config += nprintf(`
+ 	}
+	if _, ok := ctx["zside-service_token"]; !ok {
+		if _, ok := ctx["connection-profile_uuid"]; ok {
+			config += nprintf(`
   profile_uuid          = "%{connection-profile_uuid}"`, ctx)
-	} else {
-		config += nprintf(`
+		} else {
+			config += nprintf(`
   profile_uuid          = data.equinix_ecx_l2_sellerprofile.pri.id`, ctx)
+		}
 	}
 	if _, ok := ctx["service_token"]; ok {
 		config += nprintf(`
   service_token         = "%{service_token}"`, ctx)
-	}
+ 	}
+	if _, ok := ctx["zside-service_token"]; ok {
+		config += nprintf(`
+  zside_service_token   = "%{zside-service_token}"`, ctx)
+ 	}
+	if _, ok := ctx["zside-port_uuid"]; ok {
+		config += nprintf(`
+  zside_port_uuid       = "%{zside-port_uuid}"`, ctx)
+ 	}
 	if _, ok := ctx["connection-purchase_order_number"]; ok {
 		config += nprintf(`
   purchase_order_number = "%{connection-purchase_order_number}"`, ctx)
-	}
+ 	}
 	if _, ok := ctx["connection-seller_region"]; ok {
 		config += nprintf(`
   seller_region         = "%{connection-seller_region}"`, ctx)
-	}
+ 	}
 	if _, ok := ctx["port-uuid"]; ok {
 		config += nprintf(`
   port_uuid             = "%{port-uuid}"`, ctx)
-	} else if _, ok := ctx["port-resourceName"]; ok {
+ 	} else if _, ok := ctx["port-resourceName"]; ok {
 		config += nprintf(`
   port_uuid             = data.equinix_ecx_port.%{port-resourceName}.id`, ctx)
-	}
+ 	}
 	if _, ok := ctx["device-resourceName"]; ok {
 		config += nprintf(`
   device_uuid           = equinix_network_device.%{device-resourceName}.id`, ctx)
-	}
+ 	}
 	if _, ok := ctx["connection-vlan_stag"]; ok {
 		config += nprintf(`
   vlan_stag             = %{connection-vlan_stag}`, ctx)
-	}
+ 	}
 	if _, ok := ctx["connection-vlan_ctag"]; ok {
 		config += nprintf(`
   vlan_ctag             = %{connection-vlan_ctag}`, ctx)
-	}
+ 	}
 	if _, ok := ctx["connection-named_tag"]; ok {
 		config += nprintf(`
   named_tag             = "%{connection-named_tag}"`, ctx)
-	}
+ 	}
 	if _, ok := ctx["connection-device_interface_id"]; ok {
 		config += nprintf(`
   device_interface_id   = %{connection-device_interface_id}`, ctx)
-	}
+ 	}
 	if _, ok := ctx["connection-secondary_name"]; ok {
 		config += nprintf(`
   secondary_connection {
     name                = "%{connection-secondary_name}"`, ctx)
-		if _, ok := ctx["connection-secondary_profile_name"]; ok {
-			config += nprintf(`
+	if _, ok := ctx["connection-secondary_profile_name"]; ok {
+		config += nprintf(`
     profile_uuid        = data.equinix_ecx_l2_sellerprofile.sec.id`, ctx)
-		}
-		if _, ok := ctx["secondary-port_uuid"]; ok {
-			config += nprintf(`
-	port_uuid             = "%{secondary-port_uuid}"`, ctx)
-		} else if _, ok := ctx["port-secondary_resourceName"]; ok {
-			config += nprintf(`
-    port_uuid           = data.equinix_ecx_port.%{port-secondary_resourceName}.id`, ctx)
-		}
-		if _, ok := ctx["device-secondary_name"]; ok {
-			config += nprintf(`
-    device_uuid         = equinix_network_device.%{device-resourceName}.redundant_id`, ctx)
-		}
-		if _, ok := ctx["connection-secondary_vlan_stag"]; ok {
-			config += nprintf(`
-    vlan_stag           = %{connection-secondary_vlan_stag}`, ctx)
-		}
-		if _, ok := ctx["connection-secondary_vlan_ctag"]; ok {
-			config += nprintf(`
-    vlan_ctag           = %{connection-secondary_vlan_ctag}`, ctx)
-		}
-		if _, ok := ctx["connection-secondary_device_interface_id"]; ok {
-			config += nprintf(`
-    device_interface_id = %{connection-secondary_device_interface_id}`, ctx)
-		}
-		if _, ok := ctx["connection-secondary_speed"]; ok {
-			config += nprintf(`
-    speed               = %{connection-secondary_speed}`, ctx)
-		}
-		if _, ok := ctx["connection-secondary_speed_unit"]; ok {
-			config += nprintf(`
-    speed_unit          = "%{connection-secondary_speed_unit}"`, ctx)
-		}
-		if _, ok := ctx["connection-secondary_seller_metro_code"]; ok {
-			config += nprintf(`
-    seller_metro_code   = "%{connection-secondary_seller_metro_code}"`, ctx)
-		}
-		if _, ok := ctx["connection-secondary_seller_region"]; ok {
-			config += nprintf(`
-    seller_region       = "%{connection-secondary_seller_region}"`, ctx)
-		}
-		if _, ok := ctx["connection-secondary_authorization_key"]; ok {
-			config += nprintf(`
-    authorization_key   = "%{connection-secondary_authorization_key}"`, ctx)
-		}
-		if _, ok := ctx["secondary-service_token"]; ok {
-			config += nprintf(`
-	  service_token     = "%{secondary-service_token}"`, ctx)
-		}
-		config += `
-  }`
 	}
+	if _, ok := ctx["secondary-port_uuid"]; ok {
+		config += nprintf(`
+	port_uuid             = "%{secondary-port_uuid}"`, ctx)
+	} else if _, ok := ctx["port-secondary_resourceName"]; ok {
+		config += nprintf(`
+    port_uuid           = data.equinix_ecx_port.%{port-secondary_resourceName}.id`, ctx)
+	}
+	if _, ok := ctx["device-secondary_name"]; ok {
+		config += nprintf(`
+    device_uuid         = equinix_network_device.%{device-resourceName}.redundant_id`, ctx)
+	}
+	if _, ok := ctx["connection-secondary_vlan_stag"]; ok {
+		config += nprintf(`
+    vlan_stag           = %{connection-secondary_vlan_stag}`, ctx)
+	}
+	if _, ok := ctx["connection-secondary_vlan_ctag"]; ok {
+		config += nprintf(`
+    vlan_ctag           = %{connection-secondary_vlan_ctag}`, ctx)
+	}
+	if _, ok := ctx["connection-secondary_device_interface_id"]; ok {
+		config += nprintf(`
+    device_interface_id = %{connection-secondary_device_interface_id}`, ctx)
+	}
+	if _, ok := ctx["connection-secondary_speed"]; ok {
+		config += nprintf(`
+    speed               = %{connection-secondary_speed}`, ctx)
+	}
+	if _, ok := ctx["connection-secondary_speed_unit"]; ok {
+		config += nprintf(`
+    speed_unit          = "%{connection-secondary_speed_unit}"`, ctx)
+	}
+	if _, ok := ctx["connection-secondary_seller_metro_code"]; ok {
+		config += nprintf(`
+    seller_metro_code   = "%{connection-secondary_seller_metro_code}"`, ctx)
+	}
+	if _, ok := ctx["connection-secondary_seller_region"]; ok {
+		config += nprintf(`
+    seller_region       = "%{connection-secondary_seller_region}"`, ctx)
+	}
+	if _, ok := ctx["connection-secondary_authorization_key"]; ok {
+		config += nprintf(`
+    authorization_key   = "%{connection-secondary_authorization_key}"`, ctx)
+	}
+	if _, ok := ctx["secondary-service_token"]; ok {
+		config += nprintf(`
+	  service_token     = "%{secondary-service_token}"`, ctx)
+	}
+	config += `
+ 	}`
+ 	}
 	config += `
 }`
 	return config

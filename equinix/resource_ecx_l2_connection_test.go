@@ -79,6 +79,7 @@ func TestFabricL2Connection_updateResourceData(t *testing.T) {
 		PortUUID:            ecx.String(randString(36)),
 		DeviceUUID:          ecx.String(randString(36)),
 		ServiceToken:        ecx.String(randString(36)),
+		ZSideServiceToken:   ecx.String(randString(36)),
 		VlanSTag:            ecx.Int(randInt(2000)),
 		VlanCTag:            ecx.Int(randInt(2000)),
 		NamedTag:            ecx.String(randString(100)),
@@ -110,6 +111,7 @@ func TestFabricL2Connection_updateResourceData(t *testing.T) {
 	assert.Equal(t, ecx.StringValue(input.DeviceUUID), d.Get(ecxL2ConnectionSchemaNames["DeviceUUID"]), "DeviceUUID matches")
 	assert.Equal(t, ecx.IntValue(input.DeviceInterfaceID), d.Get(ecxL2ConnectionSchemaNames["DeviceInterfaceID"]), "DeviceInterfaceID matches")
 	assert.Equal(t, ecx.StringValue(input.ServiceToken), d.Get(ecxL2ConnectionSchemaNames["ServiceToken"]), "ServiceToken matches")
+	assert.Equal(t, ecx.StringValue(input.ZSideServiceToken), d.Get(ecxL2ConnectionSchemaNames["ZSideServiceToken"]), "ZSideServiceToken matches")
 	assert.Equal(t, ecx.IntValue(input.VlanSTag), d.Get(ecxL2ConnectionSchemaNames["VlanSTag"]), "VlanSTag matches")
 	assert.Equal(t, ecx.IntValue(input.VlanCTag), d.Get(ecxL2ConnectionSchemaNames["VlanCTag"]), "VlanCTag matches")
 	assert.Equal(t, ecx.StringValue(input.NamedTag), d.Get(ecxL2ConnectionSchemaNames["NamedTag"]), "NamedTag matches")
