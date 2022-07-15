@@ -1,3 +1,10 @@
+## 1.7.0 (Jul 15, 2022)
+
+ENHANCEMENTS:
+
+- `zside_service_token` argument added to `equinix_ecx_l2_connection` to create connections with z-side token [#224](https://github.com/equinix/terraform-provider-equinix/pull/224)
+- `vendor_token` attribute added to `equinix_ecx_l2_connection` to populate used a-side/z-side token [#224](https://github.com/equinix/terraform-provider-equinix/pull/224)
+
 ## 1.6.1 (Jul 7, 2022)
 
 BUG FIXES:
