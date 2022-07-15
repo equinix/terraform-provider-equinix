@@ -45,6 +45,7 @@ var ecxL2ConnectionSchemaNames = map[string]string{
 	"SecondaryConnection": "secondary_connection",
 	"Actions":             "actions",
 	"ServiceToken":        "service_token",
+	"VendorToken":         "vendor_token",
 }
 
 var ecxL2ConnectionDescriptions = map[string]string{
@@ -77,6 +78,7 @@ var ecxL2ConnectionDescriptions = map[string]string{
 	"SecondaryConnection": "Definition of secondary connection for redundant, HA connectivity",
 	"Actions":             "One or more pending actions to complete connection provisioning",
 	"ServiceToken":        "Unique Equinix Fabric key given by a provider that grants you authorization to enable connectivity from a shared multi-tenant port (a-side)",
+	"VendorToken":         "The Equinix Fabric Token the connection was created with. Applicable if the connection was created with a ServiceToken (a-side) or ZSideServiceToken (z-side)",
 }
 
 var ecxL2ConnectionAdditionalInfoSchemaNames = map[string]string{
@@ -385,6 +387,11 @@ func createECXL2ConnectionResourceSchema() map[string]*schema.Schema {
 			},
 			Description:   ecxL2ConnectionDescriptions["ZSideServiceToken"],
 		},
+		ecxL2ConnectionSchemaNames["VendorToken"]: {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: ecxL2ConnectionDescriptions["VendorToken"],
+		},
 	}
 }
 
@@ -611,6 +618,11 @@ func createECXL2ConnectionSecondaryResourceSchema() map[string]*schema.Schema {
 				ecxL2ConnectionSchemaNames["SecondaryConnection"] + ".0." + ecxL2ConnectionSchemaNames["DeviceUUID"],
 			},
 			Description: ecxL2ConnectionDescriptions["ServiceToken"],
+		},
+		ecxL2ConnectionSchemaNames["VendorToken"]: {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: ecxL2ConnectionDescriptions["VendorToken"],
 		},
 	}
 }
@@ -930,11 +942,22 @@ func updateECXL2ConnectionResource(primary *ecx.L2Connection, secondary *ecx.L2C
 	if err := d.Set(ecxL2ConnectionSchemaNames["RedundancyGroup"], primary.RedundancyGroup); err != nil {
 		return fmt.Errorf("error reading RedundancyGroup: %s", err)
 	}
-	if err := d.Set(ecxL2ConnectionSchemaNames["ServiceToken"], primary.ServiceToken); err != nil {
-		return fmt.Errorf("error reading ServiceToken: %s", err)
+	if err := d.Set(ecxL2ConnectionSchemaNames["VendorToken"], primary.VendorToken); err != nil {
+		return fmt.Errorf("error reading VendorToken: %s", err)
 	}
-	if err := d.Set(ecxL2ConnectionSchemaNames["ZSideServiceToken"], primary.ZSideServiceToken); err != nil {
-		return fmt.Errorf("error reading ZSideServiceToken: %s", err)
+	if v, ok := d.GetOk(ecxL2ConnectionSchemaNames["ServiceToken"]); ok {
+		if ecx.StringValue(primary.VendorToken) != v.(string){
+			if err := d.Set(ecxL2ConnectionSchemaNames["ServiceToken"], primary.VendorToken); err != nil {
+				return fmt.Errorf("error reading ServiceToken: %s", err)
+			}
+		}
+	}
+	if v, ok := d.GetOk(ecxL2ConnectionSchemaNames["ZSideServiceToken"]); ok {
+		if ecx.StringValue(primary.VendorToken) != v.(string){
+			if err := d.Set(ecxL2ConnectionSchemaNames["ZSideServiceToken"], primary.VendorToken); err != nil {
+				return fmt.Errorf("error reading ZSideServiceToken: %s", err)
+			}
+		}
 	}
 	if err := d.Set(ecxL2ConnectionSchemaNames["Actions"], flattenECXL2ConnectionActions(primary.Actions)); err != nil {
 		return fmt.Errorf("error reading Actions: %s", err)
@@ -963,9 +986,6 @@ func flattenECXL2ConnectionSecondary(previous, conn *ecx.L2Connection) interface
 	transformed[ecxL2ConnectionSchemaNames["PortUUID"]] = conn.PortUUID
 	transformed[ecxL2ConnectionSchemaNames["DeviceUUID"]] = conn.DeviceUUID
 	transformed[ecxL2ConnectionSchemaNames["DeviceInterfaceID"]] = conn.DeviceInterfaceID
-	if previous != nil {
-		transformed[ecxL2ConnectionSchemaNames["DeviceInterfaceID"]] = previous.DeviceInterfaceID
-	}
 	transformed[ecxL2ConnectionSchemaNames["VlanSTag"]] = conn.VlanSTag
 	transformed[ecxL2ConnectionSchemaNames["VlanCTag"]] = conn.VlanCTag
 	transformed[ecxL2ConnectionSchemaNames["ZSidePortUUID"]] = conn.ZSidePortUUID
@@ -977,7 +997,15 @@ func flattenECXL2ConnectionSecondary(previous, conn *ecx.L2Connection) interface
 	transformed[ecxL2ConnectionSchemaNames["RedundancyType"]] = conn.RedundancyType
 	transformed[ecxL2ConnectionSchemaNames["RedundancyGroup"]] = conn.RedundancyGroup
 	transformed[ecxL2ConnectionSchemaNames["Actions"]] = flattenECXL2ConnectionActions(conn.Actions)
-	transformed[ecxL2ConnectionSchemaNames["ServiceToken"]] = conn.ServiceToken
+	transformed[ecxL2ConnectionSchemaNames["VendorToken"]] = conn.VendorToken
+	if previous != nil {
+		transformed[ecxL2ConnectionSchemaNames["DeviceInterfaceID"]] = previous.DeviceInterfaceID
+		transformed[ecxL2ConnectionSchemaNames["ServiceToken"]] = previous.ServiceToken
+		prevSToken := ecx.StringValue(previous.ServiceToken)
+		if prevSToken != "" && ecx.StringValue(conn.VendorToken) != prevSToken {
+			transformed[ecxL2ConnectionSchemaNames["ServiceToken"]] = conn.VendorToken
+		}
+	}
 	return []interface{}{transformed}
 }
 

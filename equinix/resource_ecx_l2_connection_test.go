@@ -29,6 +29,7 @@ func TestFabricL2Connection_createFromResourceData(t *testing.T) {
 		ecxL2ConnectionSchemaNames["SellerMetroCode"]:     "SV",
 		ecxL2ConnectionSchemaNames["AuthorizationKey"]:    "123456789012",
 		ecxL2ConnectionSchemaNames["ServiceToken"]:        "1c356a7b-d632-18a5-c357-a33146cab65d",
+		ecxL2ConnectionSchemaNames["ZSideServiceToken"]:   "febc9d80-11e0-4dc8-8eb8-c41b6b378df2",
 	}
 	d := schema.TestResourceDataRaw(t, createECXL2ConnectionResourceSchema(), rawData)
 	d.Set(ecxL2ConnectionSchemaNames["Notifications"], []string{"test@test.com"})
@@ -52,6 +53,7 @@ func TestFabricL2Connection_createFromResourceData(t *testing.T) {
 		SellerMetroCode:     ecx.String(rawData[ecxL2ConnectionSchemaNames["SellerMetroCode"]].(string)),
 		AuthorizationKey:    ecx.String(rawData[ecxL2ConnectionSchemaNames["AuthorizationKey"]].(string)),
 		ServiceToken:        ecx.String(rawData[ecxL2ConnectionSchemaNames["ServiceToken"]].(string)),
+		ZSideServiceToken:   ecx.String(rawData[ecxL2ConnectionSchemaNames["ZSideServiceToken"]].(string)),
 	}
 
 	// when
@@ -78,8 +80,7 @@ func TestFabricL2Connection_updateResourceData(t *testing.T) {
 		PurchaseOrderNumber: ecx.String(randString(10)),
 		PortUUID:            ecx.String(randString(36)),
 		DeviceUUID:          ecx.String(randString(36)),
-		ServiceToken:        ecx.String(randString(36)),
-		ZSideServiceToken:   ecx.String(randString(36)),
+		VendorToken:         ecx.String(randString(36)),
 		VlanSTag:            ecx.Int(randInt(2000)),
 		VlanCTag:            ecx.Int(randInt(2000)),
 		NamedTag:            ecx.String(randString(100)),
@@ -93,6 +94,11 @@ func TestFabricL2Connection_updateResourceData(t *testing.T) {
 		RedundancyGroup:     ecx.String(randString(36)),
 		RedundancyType:      ecx.String(randString(10)),
 	}
+	prevServiceToken := ecx.String(randString(20))
+	d.Set(ecxL2ConnectionSchemaNames["ServiceToken"], prevServiceToken)
+	prevZsideServiceToken := ecx.String(randString(20))
+	d.Set(ecxL2ConnectionSchemaNames["ZSideServiceToken"], prevZsideServiceToken)
+
 	// when
 	err := updateECXL2ConnectionResource(input, nil, d)
 
@@ -110,8 +116,11 @@ func TestFabricL2Connection_updateResourceData(t *testing.T) {
 	assert.Equal(t, ecx.StringValue(input.PortUUID), d.Get(ecxL2ConnectionSchemaNames["PortUUID"]), "PortUUID matches")
 	assert.Equal(t, ecx.StringValue(input.DeviceUUID), d.Get(ecxL2ConnectionSchemaNames["DeviceUUID"]), "DeviceUUID matches")
 	assert.Equal(t, ecx.IntValue(input.DeviceInterfaceID), d.Get(ecxL2ConnectionSchemaNames["DeviceInterfaceID"]), "DeviceInterfaceID matches")
-	assert.Equal(t, ecx.StringValue(input.ServiceToken), d.Get(ecxL2ConnectionSchemaNames["ServiceToken"]), "ServiceToken matches")
-	assert.Equal(t, ecx.StringValue(input.ZSideServiceToken), d.Get(ecxL2ConnectionSchemaNames["ZSideServiceToken"]), "ZSideServiceToken matches")
+	assert.Equal(t, ecx.StringValue(input.VendorToken), d.Get(ecxL2ConnectionSchemaNames["VendorToken"]), "VendorToken matches")
+	assert.Equal(t, ecx.StringValue(input.VendorToken), d.Get(ecxL2ConnectionSchemaNames["ServiceToken"]), "ServiceToken and VendorToken match")
+	assert.NotEqual(t, ecx.StringValue(prevServiceToken), d.Get(ecxL2ConnectionSchemaNames["ServiceToken"]), "ServiceToken updated")
+	assert.Equal(t, ecx.StringValue(input.VendorToken), d.Get(ecxL2ConnectionSchemaNames["ZSideServiceToken"]), "ZSideServiceToken and VendorToken match")
+	assert.NotEqual(t, ecx.StringValue(prevZsideServiceToken), d.Get(ecxL2ConnectionSchemaNames["ZSideServiceToken"]), "ZSideServiceToken updated")
 	assert.Equal(t, ecx.IntValue(input.VlanSTag), d.Get(ecxL2ConnectionSchemaNames["VlanSTag"]), "VlanSTag matches")
 	assert.Equal(t, ecx.IntValue(input.VlanCTag), d.Get(ecxL2ConnectionSchemaNames["VlanCTag"]), "VlanCTag matches")
 	assert.Equal(t, ecx.StringValue(input.NamedTag), d.Get(ecxL2ConnectionSchemaNames["NamedTag"]), "NamedTag matches")
@@ -148,10 +157,11 @@ func TestFabricL2Connection_flattenSecondary(t *testing.T) {
 		AuthorizationKey: ecx.String(randString(10)),
 		RedundancyGroup:  ecx.String(randString(10)),
 		RedundancyType:   ecx.String(randString(10)),
-		ServiceToken:     ecx.String(randString(36)),
+		VendorToken:      ecx.String(randString(36)),
 	}
 	previousInput := &ecx.L2Connection{
 		DeviceInterfaceID: ecx.Int(randInt(10)),
+		ServiceToken:      ecx.String(randString(36)),
 	}
 	expected := []interface{}{
 		map[string]interface{}{
@@ -176,7 +186,8 @@ func TestFabricL2Connection_flattenSecondary(t *testing.T) {
 			ecxL2ConnectionSchemaNames["RedundancyGroup"]:   input.RedundancyGroup,
 			ecxL2ConnectionSchemaNames["RedundancyType"]:    input.RedundancyType,
 			ecxL2ConnectionSchemaNames["Actions"]:           []interface{}{},
-			ecxL2ConnectionSchemaNames["ServiceToken"]:      input.ServiceToken,
+			ecxL2ConnectionSchemaNames["ServiceToken"]:      input.VendorToken,
+			ecxL2ConnectionSchemaNames["VendorToken"]:       input.VendorToken,
 		},
 	}
 

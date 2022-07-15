@@ -341,12 +341,12 @@ func TestAccFabricL2Connection_ServiceToken_HA_SP(t *testing.T) {
 			if uuid == priConnID {
 				connection.UUID = &priConnID
 				connection.Name = &priConnName
-				connection.ServiceToken = &priServiceToken
+				connection.VendorToken = &priServiceToken
 				connection.PortUUID = &priPortUUID
 			} else {
 				connection.UUID = &secConnID
 				connection.Name = &secConnName
-				connection.ServiceToken = &secServiceToken
+				connection.VendorToken = &secServiceToken
 				connection.PortUUID = &secPortUUID
 			}
 			return &connection, nil
@@ -387,10 +387,12 @@ func TestAccFabricL2Connection_ServiceToken_HA_SP(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceName, "status", ecx.ConnectionStatusProvisioned),
 					resource.TestCheckResourceAttrSet(resourceName, "service_token"),
+					resource.TestCheckResourceAttrPair(resourceName, "vendor_token", resourceName, "service_token"),
 					resource.TestCheckResourceAttrSet(resourceName, "port_uuid"),
 					resource.TestCheckResourceAttr(resourceName, "secondary_connection.0.status", ecx.ConnectionStatusProvisioned),
 					resource.TestCheckResourceAttrSet(resourceName, "secondary_connection.0.port_uuid"),
-					resource.TestCheckResourceAttrSet(resourceName, "secondary_connection.0.service_token"),
+					resource.TestCheckResourceAttrSet(resourceName, "secondary_connection.0.vendor_token"),
+					resource.TestCheckResourceAttrPair(resourceName, "secondary_connection.0.vendor_token", resourceName, "secondary_connection.0.service_token"),
 				),
 			},
 			{
@@ -411,6 +413,7 @@ func TestAccFabricL2Connection_ServiceToken_HA_SP(t *testing.T) {
 				},
 				ImportState:       true,
 				ImportStateVerify: true,
+				ImportStateVerifyIgnore: []string{"service_token", "secondary_connection.0.service_token"},
 			},
 		},
 	})
@@ -470,17 +473,14 @@ func TestAccFabricL2Connection_ZSideServiceToken_Single(t *testing.T) {
 				Speed:             &speed,
 				SpeedUnit:         &speedUnit,
 				Notifications:     notifications,
-				ProfileUUID:       &sellerProfileUUID,
 				Status:            &status,
-				AuthorizationKey:  &authKey,
 				SellerMetroCode:   &sellerMetro,
 				RedundancyGroup:   &redundancyGroupUUID,
 				RedundancyType:    &redundancyType,
 				UUID:              &priConnID,
 				Name:              &priConnName,
-				ZSideServiceToken: &priZSideServiceToken,
 				PortUUID:          &priPortUUID,
-				ZSidePortUUID:     &priZSidePortUUID,
+				VendorToken:       &priZSideServiceToken,
 			}
 			return &connection, nil
 		},
@@ -520,6 +520,7 @@ func TestAccFabricL2Connection_ZSideServiceToken_Single(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceName, "status", ecx.ConnectionStatusProvisioned),
 					resource.TestCheckResourceAttrSet(resourceName, "zside_service_token"),
+					resource.TestCheckResourceAttrPair(resourceName, "vendor_token", resourceName, "zside_service_token"),
 					resource.TestCheckResourceAttrSet(resourceName, "port_uuid"),
 				),
 			},
@@ -527,6 +528,7 @@ func TestAccFabricL2Connection_ZSideServiceToken_Single(t *testing.T) {
 				ResourceName: resourceName,
 				ImportState:       true,
 				ImportStateVerify: true,
+				ImportStateVerifyIgnore: []string{"zside_service_token"},
 			},
 		},
 	})
@@ -836,7 +838,7 @@ resource "equinix_ecx_l2_connection" "%{connection-resourceName}" {
 	}
 	if _, ok := ctx["secondary-service_token"]; ok {
 		config += nprintf(`
-	  service_token     = "%{secondary-service_token}"`, ctx)
+    service_token       = "%{secondary-service_token}"`, ctx)
 	}
 	config += `
  	}`

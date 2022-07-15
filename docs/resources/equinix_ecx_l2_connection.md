@@ -261,12 +261,15 @@ assigned by the Fabric.
 * `zside_vlan_stag` - When not provided as an argument, it is S-Tag/Outer-Tag of the connection on
 the Z side, assigned by the Fabric.
 * `actions` - One or more pending actions to complete connection provisioning.
+* `vendor_token` - The Equinix Fabric Token the connection was created with. Applicable if the
+connection was created with a `service_token` (a-side) or `zside_service_token` (z-side).
 * `secondary_connection`:
   * `zside_port_uuid`
   * `zside_vlan_stag`
   * `zside_vlan_ctag`
   * `redundancy_type`
   * `redundancy_group`
+  * `vendor_token`
 
 ## Update operation behavior
 
@@ -289,6 +292,9 @@ options:
 
 ## Import
 
+-> **NOTE:** Connections created with a Service Token (both a-side/z-side), will populate the token
+into `vendor_token` but `service_token` and `zside_service_token` will remain empty.
+
 Equinix L2 connections can be imported using an existing `id`:
 
 ```sh
@@ -296,8 +302,10 @@ existing_connection_id='example-uuid-1'
 terraform import equinix_ecx_l2_connection.example ${existing_connection_id}
 ```
 
-**Please Note** that to import a redundant connection you must concatenate `id` of both connections
-(primary and secondary) into a single string separated by `:`, e.g.,
+-> **NOTE:** To import a redundant connection you must concatenate `id` of both connections
+(primary and secondary) into a single string separated by `:`.
+
+To import a redundant Equinix L2 connection:
 
 ```sh
 existing_primary_connection_id='example-uuid-1'
