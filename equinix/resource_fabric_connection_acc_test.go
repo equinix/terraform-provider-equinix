@@ -107,7 +107,7 @@ func testAccFabricCreateEPLConnectionConfig(bandwidth int32) string {
 				}
 				link_protocol {
 					type= "QINQ"
-					vlan_s_tag= 1231
+					vlan_s_tag= 1232
 				}
 			}
 		}
@@ -119,7 +119,7 @@ func testAccFabricCreateEPLConnectionConfig(bandwidth int32) string {
 				}
 				link_protocol {
 					type= "QINQ"
-					vlan_s_tag= 457
+					vlan_s_tag= 458
 				}
 			location {
         		metro_code= "SV"
@@ -225,13 +225,8 @@ func TestAccFabricReadConnection(t *testing.T) {
 				Config: testAccFabricReadConnectionConfig(),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(
-						"equinix_fabric_connection.test", "name", fmt.Sprint("fabric_tf_acc_test")),
+						"data.equinix_fabric_connection.test", "name", fmt.Sprint("fabric_tf_acc_test")),
 				),
-			},
-			{
-				ResourceName:      "equinix_fabric_connection.test",
-				ImportState:       true,
-				ImportStateVerify: true,
 			},
 		},
 	})

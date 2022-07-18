@@ -116,6 +116,18 @@ func (c *Config) Load(ctx context.Context) error {
 			BaseURL:      c.BaseURL,
 		}
 		authClient = authConfig.New(ctx)
+		tke, err := authConfig.TokenSource(ctx, authClient).Token()
+		if err != nil {
+			if err != nil {
+				return err
+			}
+		}
+		if tke != nil {
+			c.FabricAuthToken = tke.AccessToken
+		}
+		if c.FabricAuthToken == "" {
+			c.FabricAuthToken = c.Token
+		}
 	}
 	authClient.Timeout = c.requestTimeout()
 	authClient.Transport = logging.NewTransport("Equinix", authClient.Transport)
@@ -132,25 +144,6 @@ func (c *Config) Load(ctx context.Context) error {
 	neClient.SetHeaders(map[string]string{
 		"User-agent": c.fullUserAgent("equinix/ne-go"),
 	})
-	authConfig := oauth2.Config{}
-	if c.Token == "" {
-		authConfig = oauth2.Config{
-			ClientID:     c.ClientID,
-			ClientSecret: c.ClientSecret,
-			BaseURL:      c.BaseURL,
-		}
-		tke, err := authConfig.TokenSource(ctx, authClient).Token()
-		if err != nil {
-			if err != nil {
-				return err
-			}
-		}
-		if tke != nil {
-			c.FabricAuthToken = tke.AccessToken
-		}
-	} else if c.FabricAuthToken == "" {
-		c.FabricAuthToken = c.Token
-	}
 
 	c.ecx = ecxClient
 	c.ne = neClient
