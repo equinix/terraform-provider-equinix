@@ -15,8 +15,8 @@ import (
 )
 
 func TestAccFabricL2ServiceProfile_Private(t *testing.T) {
-	priPortName, _ := schema.EnvDefaultFunc(provider.PriPortEnvVar, "sit-001-CX-SV1-NL-Dot1q-BO-10G-PRI-JUN-33")()
-	secPortName, _ := schema.EnvDefaultFunc(provider.SecPortEnvVar, "sit-001-CX-SV5-NL-Dot1q-BO-10G-SEC-JUN-36")()
+	priPortName, _ := schema.EnvDefaultFunc(tfacc.PriPortEnvVar, "sit-001-CX-SV1-NL-Dot1q-BO-10G-PRI-JUN-33")()
+	secPortName, _ := schema.EnvDefaultFunc(tfacc.SecPortEnvVar, "sit-001-CX-SV5-NL-Dot1q-BO-10G-SEC-JUN-36")()
 	context := map[string]interface{}{
 		"resourceName":                       "test",
 		"name":                               fmt.Sprintf("%s-%s", tfacc.TestResourcePrefix, acctest.RandString(6)),
@@ -66,7 +66,7 @@ func testAccECXL2ServiceProfileExists(resourceName string, profile *ecx.L2Servic
 		if !ok {
 			return fmt.Errorf("resource not found: %s", resourceName)
 		}
-		client := tfacc.AccProvider.Meta().(*config.Config).ecx
+		client := tfacc.AccProvider.Meta().(*config.Config).ECXClient
 		if rs.Primary.ID == "" {
 			return fmt.Errorf("resource has no ID attribute set")
 		}

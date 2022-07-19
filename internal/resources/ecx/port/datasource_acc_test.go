@@ -11,7 +11,7 @@ import (
 )
 
 func TestAccDataSourceFabricPort_basic(t *testing.T) {
-	portName, _ := schema.EnvDefaultFunc(provider.PriPortEnvVar, "smandalika@equinix.com1-SV1-Dot1q-L-Primary-161350")()
+	portName, _ := schema.EnvDefaultFunc(tfacc.PriPortEnvVar, "smandalika@equinix.com1-SV1-Dot1q-L-Primary-161350")()
 	context := map[string]interface{}{
 		"port-resourceName": "test",
 		"port-name":         portName,
@@ -22,7 +22,7 @@ func TestAccDataSourceFabricPort_basic(t *testing.T) {
 		Providers: tfacc.AccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: tfacc.NewTestAccConfig(context).withPort().build(),
+				Config: tfacc.NewTestAccConfig(context, withPort).Build(),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(resourceName, "uuid"),
 					resource.TestCheckResourceAttrSet(resourceName, "region"),

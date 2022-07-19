@@ -12,7 +12,6 @@ import (
 	"github.com/equinix/terraform-provider-equinix/internal/comparisons"
 	"github.com/equinix/terraform-provider-equinix/internal/config"
 	"github.com/equinix/terraform-provider-equinix/internal/maps"
-	"github.com/equinix/terraform-provider-equinix/internal/provider"
 	"github.com/equinix/terraform-provider-equinix/internal/tfacc"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
@@ -68,9 +67,9 @@ func testSweepECXL2Connections(region string) error {
 }
 
 func TestAccFabricL2Connection_Port_Single_AWS(t *testing.T) {
-	portName, _ := schema.EnvDefaultFunc(provider.PriPortEnvVar, "sit-001-CX-SV1-NL-Dot1q-BO-10G-PRI-JUN-33")()
-	spName, _ := schema.EnvDefaultFunc(provider.AwsSpEnvVar, "AWS Direct Connect")()
-	authKey, _ := schema.EnvDefaultFunc(provider.AwsAuthKeyEnvVar, "123456789012")()
+	portName, _ := schema.EnvDefaultFunc(tfacc.PriPortEnvVar, "sit-001-CX-SV1-NL-Dot1q-BO-10G-PRI-JUN-33")()
+	spName, _ := schema.EnvDefaultFunc(tfacc.AwsSpEnvVar, "AWS Direct Connect")()
+	authKey, _ := schema.EnvDefaultFunc(tfacc.AwsAuthKeyEnvVar, "123456789012")()
 	context := map[string]interface{}{
 		"port-resourceName":                "test",
 		"port-name":                        portName.(string),
@@ -94,7 +93,7 @@ func TestAccFabricL2Connection_Port_Single_AWS(t *testing.T) {
 		Providers: tfacc.AccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: tfacc.NewTestAccConfig(context).withPort().withConnection().build(),
+				Config: tfacc.NewTestAccConfig(context, withPort, withConnection).Build(),
 				Check: resource.ComposeTestCheckFunc(
 					testAccFabricL2ConnectionExists(resourceName, &testConn),
 					testAccFabricL2ConnectionAttributes(&testConn, context),
@@ -115,10 +114,10 @@ func TestAccFabricL2Connection_Port_Single_AWS(t *testing.T) {
 }
 
 func TestAccFabricL2Connection_Port_HA_Azure(t *testing.T) {
-	priPortName, _ := schema.EnvDefaultFunc(provider.PriPortEnvVar, "sit-001-CX-SV1-NL-Dot1q-BO-10G-PRI-JUN-33")()
-	secPortName, _ := schema.EnvDefaultFunc(provider.SecPortEnvVar, "sit-001-CX-SV5-NL-Dot1q-BO-10G-SEC-JUN-36")()
-	spName, _ := schema.EnvDefaultFunc(provider.AzureSpEnvVar, "Azure ExpressRoute")()
-	serviceKey, _ := schema.EnvDefaultFunc(provider.AzureXRServiceKeyEnvVar, "ExpressRoute-ServiceKey")()
+	priPortName, _ := schema.EnvDefaultFunc(tfacc.PriPortEnvVar, "sit-001-CX-SV1-NL-Dot1q-BO-10G-PRI-JUN-33")()
+	secPortName, _ := schema.EnvDefaultFunc(tfacc.SecPortEnvVar, "sit-001-CX-SV5-NL-Dot1q-BO-10G-SEC-JUN-36")()
+	spName, _ := schema.EnvDefaultFunc(tfacc.AzureSpEnvVar, "Azure ExpressRoute")()
+	serviceKey, _ := schema.EnvDefaultFunc(tfacc.AzureXRServiceKeyEnvVar, "ExpressRoute-ServiceKey")()
 	context := map[string]interface{}{
 		"port-resourceName":                "test",
 		"port-name":                        priPortName.(string),
@@ -148,7 +147,7 @@ func TestAccFabricL2Connection_Port_HA_Azure(t *testing.T) {
 		Providers: tfacc.AccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: tfacc.NewTestAccConfig(context).withPort().withConnection().build(),
+				Config: tfacc.NewTestAccConfig(context, withPort, withConnection).Build(),
 				Check: resource.ComposeTestCheckFunc(
 					testAccFabricL2ConnectionExists(resourceName, &primary),
 					testAccFabricL2ConnectionAttributes(&primary, context),
@@ -179,7 +178,7 @@ func TestAccFabricL2Connection_Port_HA_Azure(t *testing.T) {
 				ImportStateVerify: true,
 			},
 			{
-				Config:      tfacc.NewTestAccConfig(contextWithChanges).withPort().withConnection().build(),
+				Config:      tfacc.NewTestAccConfig(contextWithChanges, withPort, withConnection).Build(),
 				ExpectError: regexp.MustCompile(`Update request can be done only on Provisioned Connection`),
 			},
 		},
@@ -188,10 +187,10 @@ func TestAccFabricL2Connection_Port_HA_Azure(t *testing.T) {
 
 func TestAccFabricL2Connection_Device_HA_GCP(t *testing.T) {
 	deviceMetro, _ := schema.EnvDefaultFunc(tfacc.NEDeviceMetroEnvVar, "SV")()
-	priSPName, _ := schema.EnvDefaultFunc(provider.GcpOneSpEnvVar, "Google Cloud Partner Interconnect Zone 1")()
-	secSPName, _ := schema.EnvDefaultFunc(provider.GcpTwoSpEnvVar, "Google Cloud Partner Interconnect Zone 2")()
-	priServiceKey, _ := schema.EnvDefaultFunc(provider.GcpOneConnServiceKeyEnvVar, "Interconnect-ServiceKey")()
-	secServiceKey, _ := schema.EnvDefaultFunc(provider.GcpTwoConnServiceKeyEnvVar, "Interconnect-ServiceKey")()
+	priSPName, _ := schema.EnvDefaultFunc(tfacc.GcpOneSpEnvVar, "Google Cloud Partner Interconnect Zone 1")()
+	secSPName, _ := schema.EnvDefaultFunc(tfacc.GcpTwoSpEnvVar, "Google Cloud Partner Interconnect Zone 2")()
+	priServiceKey, _ := schema.EnvDefaultFunc(tfacc.GcpOneConnServiceKeyEnvVar, "Interconnect-ServiceKey")()
+	secServiceKey, _ := schema.EnvDefaultFunc(tfacc.GcpTwoConnServiceKeyEnvVar, "Interconnect-ServiceKey")()
 	accountName, _ := schema.EnvDefaultFunc(tfacc.NEDeviceAccountNameEnvVar, "")()
 	context := map[string]interface{}{
 		"device-resourceName":                      "test",
@@ -356,8 +355,8 @@ func TestAccFabricL2Connection_ServiceToken_HA_SP(t *testing.T) {
 	}
 	mockEquinix := Provider()
 	mockEquinix.ConfigureContextFunc = func(c context.Context, d *schema.ResourceData) (interface{}, diag.Diagnostics) {
-		config := Config{
-			ecx: mockECXClient,
+		config := config.Config{
+			ECXClient: mockECXClient,
 		}
 		return &config, nil
 	}
@@ -418,9 +417,9 @@ func TestAccFabricL2Connection_ZSideServiceToken_Single(t *testing.T) {
 	priServiceToken := "624447a3-4cb2-470e-93c5-f155d81c3bb0"
 	priConnID := "4b95a8df-8d26-4c4b-a64d-18ac43a43248"
 	priPortUUID := "52c00d7f-c310-458e-9426-1d7549e1f600"
-	priConnName := fmt.Sprintf("%s-%s", tstResourcePrefix, "st-pri")
+	priConnName := fmt.Sprintf("%s-%s", tfacc.TestResourcePrefix, "st-pri")
 	secServiceToken := "1c356a7b-d632-18a5-c357-a33146cab65d"
-	secConnName := fmt.Sprintf("%s-%s", tstResourcePrefix, "st-sec")
+	secConnName := fmt.Sprintf("%s-%s", tfacc.TestResourcePrefix, "st-sec")
 	authKey := "123456789012"
 	speed := 50
 	speedUnit := "MB"
@@ -447,7 +446,7 @@ func TestAccFabricL2Connection_ZSideServiceToken_Single(t *testing.T) {
 		"secondary-service_token":      secServiceToken,
 	}
 
-	ctxWithoutConflicts := copyMap(ctx)
+	ctxWithoutConflicts := maps.CopyMap(ctx)
 	delete(ctxWithoutConflicts, "service_token")
 	delete(ctxWithoutConflicts, "zside-port_uuid")
 	delete(ctxWithoutConflicts, "connection-profile_uuid")
@@ -500,16 +499,16 @@ func TestAccFabricL2Connection_ZSideServiceToken_Single(t *testing.T) {
 
 	resourceName := fmt.Sprintf("equinix_ecx_l2_connection.%s", ctx["connection-resourceName"].(string))
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                  func() { testAccPreCheck(t) },
+		PreCheck:                  func() { tfacc.PreCheck(t) },
 		Providers:                 mockProviders,
 		PreventPostDestroyRefresh: true,
 		Steps: []resource.TestStep{
 			{
-				Config:      newTestAccConfig(ctx).withConnection().build(),
+				Config:      tfacc.NewTestAccConfig(ctx, withConnection).Build(),
 				ExpectError: regexp.MustCompile(`Error: Conflicting configuration arguments`),
 			},
 			{
-				Config: newTestAccConfig(ctxWithoutConflicts).withConnection().build(),
+				Config: tfacc.NewTestAccConfig(ctxWithoutConflicts, withConnection).Build(),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceName, "status", ecx.ConnectionStatusProvisioned),
 					resource.TestCheckResourceAttrSet(resourceName, "zside_service_token"),
@@ -533,7 +532,7 @@ func testAccFabricL2ConnectionExists(resourceName string, conn *ecx.L2Connection
 		if !ok {
 			return fmt.Errorf("resource not found: %s", resourceName)
 		}
-		client := tfacc.AccProvider.Meta().(*config.Config).ecx
+		client := tfacc.AccProvider.Meta().(*config.Config).ECXClient
 		if rs.Primary.ID == "" {
 			return fmt.Errorf("resource has no ID attribute set")
 		}
@@ -556,7 +555,7 @@ func testAccFabricL2ConnectionSecondaryExists(resourceName string, conn *ecx.L2C
 		if !ok {
 			return fmt.Errorf("resource not found: %s", resourceName)
 		}
-		client := tfacc.AccProvider.Meta().(*config.Config).ecx
+		client := tfacc.AccProvider.Meta().(*config.Config).ECXClient
 
 		if connID, ok := rs.Primary.Attributes["secondary_connection.0.uuid"]; ok {
 			resp, err := client.GetL2Connection(connID)

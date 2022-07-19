@@ -16,8 +16,8 @@ import (
 
 func TestAccNetworkBGP_CSR1000V_Single_AWS(t *testing.T) {
 	metro, _ := schema.EnvDefaultFunc(tfacc.NEDeviceMetroEnvVar, "SV")()
-	spName, _ := schema.EnvDefaultFunc(provider.AwsSpEnvVar, "AWS Direct Connect")()
-	authKey, _ := schema.EnvDefaultFunc(provider.AwsAuthKeyEnvVar, "123456789012")()
+	spName, _ := schema.EnvDefaultFunc(tfacc.AwsSpEnvVar, "AWS Direct Connect")()
+	authKey, _ := schema.EnvDefaultFunc(tfacc.AwsAuthKeyEnvVar, "123456789012")()
 	accountName, _ := schema.EnvDefaultFunc(tfacc.NEDeviceAccountNameEnvVar, "")()
 	context := map[string]interface{}{
 		"device-resourceName":          "test",
