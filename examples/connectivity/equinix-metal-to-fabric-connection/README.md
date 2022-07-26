@@ -1,5 +1,9 @@
 # ECX Fabric Layer2 Connection from Equinix Metal to Service Provider
 
+**NOTE:** Equinix Metal connection with Service Token A-side (service_token_type `a_side`) is not generally available and may not be enabled yet for your organization.
+
+**NOTE:** There is an [Equinix Fabric L2 Connection To Equinix Metal Terraform module](https://registry.terraform.io/modules/equinix-labs/fabric-connection-metal/equinix/latest) with available full-fledged examples of connections from Fabric Ports, Network Edge Devices or Service Tokens.
+
 This example shows how to create a layer 2 connection between Equinix Metal and a service provider, using an Equinix Metal a-side service token
 
 ## Adjust variables

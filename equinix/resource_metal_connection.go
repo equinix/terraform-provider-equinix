@@ -166,8 +166,8 @@ func resourceMetalConnection() *schema.Resource {
 			"token": {
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "Fabric Token from the [Equinix Fabric Portal](https://ecxfabric.equinix.com/dashboard)",
-				Deprecated:  "token is deprecated. Use service_tokens instead",
+				Description: "Only used with shared connection. Fabric Token required to continue the setup process with [equinix_ecx_l2_connection](https://registry.terraform.io/providers/equinix/equinix/latest/docs/resources/equinix_ecx_l2_connection) or from the [Equinix Fabric Portal](https://ecxfabric.equinix.com/dashboard)",
+				Deprecated:  "If your organization already has connection service tokens enabled, use `service_tokens` instead",
 			},
 			"ports": {
 				Type:        schema.TypeList,
@@ -177,7 +177,7 @@ func resourceMetalConnection() *schema.Resource {
 			},
 			"service_tokens": {
 				Type:        schema.TypeList,
-				Description: "Only used with shared connection. List of service tokens to use for the connection.",
+				Description: "Only used with shared connection. List of service tokens required to continue the setup process with [equinix_ecx_l2_connection](https://registry.terraform.io/providers/equinix/equinix/latest/docs/resources/equinix_ecx_l2_connection) or from the [Equinix Fabric Portal](https://ecxfabric.equinix.com/dashboard)",
 				Computed:    true,
 				Elem:        serviceTokenSchema(),
 			},

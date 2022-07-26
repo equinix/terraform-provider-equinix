@@ -6,7 +6,7 @@ subcategory: "Metal"
 
 Use this resource to request the creation an Interconnection asset to connect with other parties using [Equinix Fabric - software-defined interconnections](https://metal.equinix.com/developers/docs/networking/fabric/).
 
-~> Equinix Metal connection with service_token_type `a_side` is not generally available and may not be enabled yet for your organization.
+~> Equinix Metal connection with with Service Token A-side / Z-side (service_token_type) is not generally available and may not be enabled yet for your organization.
 
 ## Example Usage
 
@@ -45,6 +45,14 @@ resource "equinix_ecx_l2_connection" "example" {
 }
 ```
 
+-> NOTE: There are multiple [Equinix Fabric L2 Connection Terraform modules](https://registry.terraform.io/search/modules?namespace=equinix-labs&q=fabric-connection) available with full-fledged examples of connections from Fabric Ports, Network Edge Devices or Service Token to most popular Cloud Service Providers. Check out the examples for Equinix Metal shared connection with A-side Service Token included in each of them:
+[AWS](https://registry.terraform.io/modules/equinix-labs/fabric-connection-aws/equinix/latest/examples/service-token-metal-to-aws-connection),
+[Azure](https://registry.terraform.io/modules/equinix-labs/fabric-connection-azure/equinix/latest/examples/service-token-metal-to-azure-connection),
+[Google Cloud](https://registry.terraform.io/modules/equinix-labs/fabric-connection-gcp/equinix/latest/examples/service-token-metal-to-gcp-connection),
+[IBM Cloud](https://registry.terraform.io/modules/equinix-labs/fabric-connection-ibm/equinix/latest/examples/service-token-metal-to-ibm-connection),
+[Oracle Cloud](https://registry.terraform.io/modules/equinix-labs/fabric-connection-oci/equinix/latest/examples/service-token-metal-to-oci-connection),
+[Alibaba Cloud](https://registry.terraform.io/modules/equinix-labs/fabric-connection-alibaba/equinix/latest/examples/service-token-metal-to-alibaba-connection).
+
 ### Shared Connection with z_side token - Non-redundant Connection from your own Equinix Fabric Port to Equinix Metal
 
 ```hcl
@@ -68,9 +76,36 @@ resource "equinix_ecx_l2_connection" "example" {
   speed               = "200"
   speed_unit          = "MB"
   notifications       = ["example@equinix.com"]
-  seller_metro_code   = "FR"
   port_uuid           = data.equinix_ecx_port.example.id
   vlan_stag           = 1020
+}
+```
+
+-> NOTE: There is an [Equinix Fabric L2 Connection To Equinix Metal Terraform module](https://registry.terraform.io/modules/equinix-labs/fabric-connection-metal/equinix/latest) available with full-fledged examples of connections from Fabric Ports, Network Edge Devices or Service Tokens. Check out the [example for shared connection with Z-side Service Token](https://registry.terraform.io/modules/equinix-labs/fabric-connection-metal/equinix/0.2.0/examples/fabric-port-connection-with-zside-token).
+
+### Shared Connection for organizations without Connection Services Token feature enabled
+
+```hcl
+resource "equinix_metal_connection" "example" {
+    name            = "tf-port-to-metal-legacy"
+    project_id      = local.my_project_id
+    metro           = "SV"
+    redundancy      = "redundant"
+    type            = "shared"
+}
+
+data "equinix_ecx_port" "example" {
+  name = "CX-FR5-NL-Dot1q-BO-1G-PRI"
+}
+
+resource "equinix_ecx_l2_connection" "example" {
+  name                = "tf-port-to-metal-legacy"
+  speed               = "200"
+  speed_unit          = "MB"
+  notifications       = ["example@equinix.com"]
+  port_uuid           = data.equinix_ecx_port.example.id
+  vlan_stag           = 1020
+  authorization_key   = equinix_metal_connection.example.token
 }
 ```
 
@@ -100,4 +135,5 @@ In addition to all arguments above, the following attributes are exported:
 * `ports` - List of connection ports - primary (`ports[0]`) and secondary (`ports[1]`). Schema of
 port is described in documentation of the
 [equinix_metal_connection datasource](../data-sources/equinix_metal_connection.md).
-* `service_tokens` - List of connection service tokens with attributes. Scehma of service_token is described in documentation of the [equinix_metal_connection datasource](../data-sources/equinix_metal_connection.md).
+* `service_tokens` - List of connection service tokens with attributes required to configure the connection in Equinix Fabric with the [equinix_ecx_l2_connection](./equinix_ecx_l2_connection.md) resource or from the [Equinix Fabric Portal](https://ecxfabric.equinix.com/dashboard). Scehma of service_token is described in documentation of the [equinix_metal_connection datasource](../data-sources/equinix_metal_connection.md).
+* `token` - (Deprecated) Fabric Token required to configure the connection in Equinix Fabric with the [equinix_ecx_l2_connection](./equinix_ecx_l2_connection.md) resource or from the [Equinix Fabric Portal](https://ecxfabric.equinix.com/dashboard). If your organization already has connection service tokens enabled, use `service_tokens` instead.

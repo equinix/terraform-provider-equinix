@@ -1,5 +1,10 @@
 # ECX Fabric Layer2 Connection to AWS
 
+**NOTE:** There is an
+[Equinix Fabric L2 Connection To AWS Direct Connect Terraform module](https://registry.terraform.io/modules/equinix-labs/fabric-connection-aws/equinix/latest)
+available with full-fledged examples of connections from Fabric Ports, Network Edge Devices
+or Service Tokens.
+
 This example shows how create layer 2 connection between ECX Fabric port
 and AWS Direct Connect, including creation of Direct Connect private
 virtual interface.

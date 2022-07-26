@@ -1,7 +1,13 @@
 # ECX Fabric Layer2 Connection to Microsoft Azure
 
+**NOTE:** There is an
+[Equinix Fabric L2 Connection To Microsoft Azure ExpressRoute Terraform module](https://registry.terraform.io/modules/equinix-labs/fabric-connection-azure/equinix/latest)
+available with full-fledged examples of connections from Fabric Ports, Network Edge Devices
+or Service Tokens.
+
 This example shows how create redundant layer 2 connection between ECX Fabric port
 and Microsoft Azure ExpressRoute.
+
 Example covers **provisioning of both sides** of the connection.
 
 ## Adjust variables
