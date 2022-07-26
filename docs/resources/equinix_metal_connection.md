@@ -6,7 +6,7 @@ subcategory: "Metal"
 
 Use this resource to request the creation an Interconnection asset to connect with other parties using [Equinix Fabric - software-defined interconnections](https://metal.equinix.com/developers/docs/networking/fabric/).
 
-~> Equinix Metal connection with service_token_type `a_side` is not generally available and may not be enabled yet for your organization.
+~> Equinix Metal connection with service_token_type `a_side`/`z_side` is not generally available and may not be enabled yet for your organization.
 
 ## Example Usage
 
@@ -68,7 +68,6 @@ resource "equinix_ecx_l2_connection" "example" {
   speed               = "200"
   speed_unit          = "MB"
   notifications       = ["example@equinix.com"]
-  seller_metro_code   = "FR"
   port_uuid           = data.equinix_ecx_port.example.id
   vlan_stag           = 1020
 }
@@ -100,4 +99,5 @@ In addition to all arguments above, the following attributes are exported:
 * `ports` - List of connection ports - primary (`ports[0]`) and secondary (`ports[1]`). Schema of
 port is described in documentation of the
 [equinix_metal_connection datasource](../data-sources/equinix_metal_connection.md).
-* `service_tokens` - List of connection service tokens with attributes. Scehma of service_token is described in documentation of the [equinix_metal_connection datasource](../data-sources/equinix_metal_connection.md).
+* `service_tokens` - List of connection service tokens with attributes required to configure the connection in Equinix Fabric with the [equinix_ecx_l2_connection](./equinix_ecx_l2_connection.md) resource or from the [Equinix Fabric Portal](https://ecxfabric.equinix.com/dashboard). Scehma of service_token is described in documentation of the [equinix_metal_connection datasource](../data-sources/equinix_metal_connection.md).
+* `token` - (Deprecated) Fabric Token required to configure the connection in Equinix Fabric with the [equinix_ecx_l2_connection](./equinix_ecx_l2_connection.md) resource or from the [Equinix Fabric Portal](https://ecxfabric.equinix.com/dashboard). If your organization already has connection service tokens enabled, use `service_tokens` instead.
