@@ -6,7 +6,7 @@ subcategory: "Metal"
 
 Use this data source to retrieve a [connection resource](https://metal.equinix.com/developers/docs/networking/fabric/)
 
-~> Equinix Metal connection with service_token_type `a_side`/`z_side` is not generally available and may not be enabled yet for your organization.
+~> Equinix Metal connection with with Service Token A-side / Z-side (service_token_type) is not generally available and may not be enabled yet for your organization.
 
 ## Example Usage
 

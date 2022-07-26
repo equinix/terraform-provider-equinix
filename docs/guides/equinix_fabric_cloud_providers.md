@@ -142,10 +142,10 @@ resource "equinix_network_bgp" "secondary" {
 Although the configuration will look similar on the Equinix side, all the resources required to
 complete the configuration will depend on each cloud provider. This requires you to have prior
 knowledge on how to configure the interconnection on each platform. Alternatively, you can take
-advantage of the [Equinix Fabric connection terraform modules](https://registry.terraform.io/search/modules?namespace=equinix-labs&q=fabric-connection).
+advantage of the [Equinix Fabric Terraform Modules](https://registry.terraform.io/search/modules?namespace=equinix-labs&q=fabric-connection).
 
 The terraform modules containerize multiple resources that are used together in a configuration.
-With the [Equinix Fabric modules](https://registry.terraform.io/search/modules?namespace=equinix-labs&q=fabric-connection)
+With the [Equinix Fabric Terraform Modules](https://registry.terraform.io/search/modules?namespace=equinix-labs&q=fabric-connection)
 you can configure all described above just defining a single resource. In addition, in the
 terraform registry you will get information about the specific parameters required for your cloud
 provider's configuration, as well as some examples with the most frequent use cases.
@@ -181,10 +181,16 @@ module "equinix-fabric-connection-azure" {
 }
 ```
 
-There are (April 2022) modules available to interconnect with
-[AWS Direct Connect](https://registry.terraform.io/modules/equinix-labs/fabric-connection-aws/equinix/latest),
-[Azure ExpressRoute](https://registry.terraform.io/modules/equinix-labs/fabric-connection-azure/equinix/latest) and
-[Google Cloud Interconnect](https://registry.terraform.io/modules/equinix-labs/fabric-connection-gcp/equinix/latest).
+List of available (July 2022) Equinix Fabric Terraform Modules:
+
+- [Alibaba Cloud Express Connect](https://registry.terraform.io/modules/equinix-labs/fabric-connection-alibaba/equinix/latest)
+- [AWS Direct Connect](https://registry.terraform.io/modules/equinix-labs/fabric-connection-aws/equinix/latest)
+- [Azure ExpressRoute](https://registry.terraform.io/modules/equinix-labs/fabric-connection-azure/equinix/latest)
+- [Equinix Metal Connection](https://registry.terraform.io/modules/equinix-labs/fabric-connection-metal/equinix/latest)
+- [Google Cloud Interconnect](https://registry.terraform.io/modules/equinix-labs/fabric-connection-gcp/equinix/latest)
+- [IBM Cloud Direct Link 2](https://registry.terraform.io/modules/equinix-labs/fabric-connection-ibm/equinix/latest)
+- [Oracle Cloud Infrastructure -OCI- FastConnect](https://registry.terraform.io/modules/equinix-labs/fabric-connection-oci/equinix/latest)
+
 Some others will be available soon. If you don't find one for your cloud provider you can still
 take advantage of the [Equinix Fabric connection base module](https://registry.terraform.io/modules/equinix-labs/fabric-connection/equinix/latest)
 or open a ticket in the [github repository](https://github.com/equinix/terraform-provider-equinix)
