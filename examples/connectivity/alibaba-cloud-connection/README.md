@@ -1,5 +1,10 @@
 # ECX Fabric Layer2 Connection to Alibaba Cloud
 
+**NOTE:** There is an
+[Equinix Fabric L2 Connection To Alibaba Express Connect Terraform module](https://registry.terraform.io/modules/equinix-labs/fabric-connection-alibaba/equinix/latest)
+available with full-fledged examples of connections from Fabric Ports, Network Edge Devices
+or Service Tokens.
+
 This example shows how create layer 2 connection between ECX Fabric port
 and Alibaba Express Connect.
 
