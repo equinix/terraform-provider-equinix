@@ -584,8 +584,9 @@ func resourceMetalDeviceRead(d *schema.ResourceData, meta interface{}) error {
 		err = friendlyError(err)
 
 		// If the device somehow already destroyed, mark as successfully gone.
-		if isNotFound(err) {
-			log.Printf("[WARN] Device (%s) not found, removing from state", d.Id())
+		// Checking for IsNewResource prevents resource import from failing silently
+		if !d.IsNewResource() && (isNotFound(err) || isForbidden(err)) {
+			log.Printf("[WARN] Device (%s) not found or in failed status, removing from state", d.Id())
 			d.SetId("")
 			return nil
 		}
