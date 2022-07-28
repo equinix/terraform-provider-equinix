@@ -27,7 +27,7 @@ var networkACLTemplateSchemaNames = map[string]string{
 var networkACLTemplateDescriptions = map[string]string{
 	"UUID":            "Unique identifier of ACL template resource",
 	"Name":            "ACL template name",
-	"Description":     "ACL template description",
+	"Description":     "ACL template description, up to 200 characters",
 	"MetroCode":       "ACL template location metro code",
 	"DeviceUUID":      "Identifier of a network device where template was applied",
 	"DeviceACLStatus": "Status of ACL template provisioning process on a device, where template was applied",
@@ -36,23 +36,25 @@ var networkACLTemplateDescriptions = map[string]string{
 }
 
 var networkACLTemplateInboundRuleSchemaNames = map[string]string{
-	"SeqNo":    "sequence_number",
-	"SrcType":  "source_type",
-	"Subnets":  "subnets",
-	"Subnet":   "subnet",
-	"Protocol": "protocol",
-	"SrcPort":  "src_port",
-	"DstPort":  "dst_port",
+	"SeqNo":       "sequence_number",
+	"SrcType":     "source_type",
+	"Subnets":     "subnets",
+	"Subnet":      "subnet",
+	"Protocol":    "protocol",
+	"SrcPort":     "src_port",
+	"DstPort":     "dst_port",
+	"Description": "description",
 }
 
 var networkACLTemplateInboundRuleDescriptions = map[string]string{
-	"SeqNo":    "Inbound rule sequence number",
-	"SrcType":  "Type of traffic source used in a given innbound rule",
-	"Subnets":  "Inbound traffic source IP subnets in CIDR format",
-	"Subnet":   "Inbound traffic source IP subnet in CIDR format",
-	"Protocol": "Inbound traffic protocol. One of: `IP`, `TCP`, `UDP`",
-	"SrcPort":  "Inbound traffic source ports. Either up to 10, comma separated ports or port range or any word",
-	"DstPort":  "Inbound traffic destination ports. Either up to 10, comma separated ports or port range or any word",
+	"SeqNo":       "Inbound rule sequence number",
+	"SrcType":     "Type of traffic source used in a given inbound rule",
+	"Subnets":     "Inbound traffic source IP subnets in CIDR format",
+	"Subnet":      "Inbound traffic source IP subnet in CIDR format",
+	"Protocol":    "Inbound traffic protocol. One of: `IP`, `TCP`, `UDP`",
+	"SrcPort":     "Inbound traffic source ports. Either up to 10, comma separated ports or port range or any word",
+	"DstPort":     "Inbound traffic destination ports. Either up to 10, comma separated ports or port range or any word",
+	"Description": "Inbound rule description, up to 200 characters",
 }
 
 var networkACLTemplateDeviceDetailSchemaNames = map[string]string{
@@ -103,7 +105,7 @@ func createNetworkACLTemplateSchema() map[string]*schema.Schema {
 		networkACLTemplateSchemaNames["Description"]: {
 			Type:         schema.TypeString,
 			Optional:     true,
-			ValidateFunc: validation.StringLenBetween(1, 100),
+			ValidateFunc: validation.StringLenBetween(1, 200),
 			Description:  networkACLTemplateDescriptions["Description"],
 		},
 		networkACLTemplateSchemaNames["MetroCode"]: {
@@ -191,6 +193,12 @@ func createNetworkACLTemplateInboundRuleSchema() map[string]*schema.Schema {
 			Required:     true,
 			ValidateFunc: stringIsPortDefinition(),
 			Description:  networkACLTemplateInboundRuleDescriptions["DstPort"],
+		},
+		networkACLTemplateInboundRuleSchemaNames["Description"]: {
+			Type:         schema.TypeString,
+			Optional:     true,
+			ValidateFunc: validation.StringLenBetween(1, 200),
+			Description:  networkACLTemplateInboundRuleDescriptions["Description"],
 		},
 	}
 }
@@ -337,6 +345,9 @@ func expandACLTemplateInboundRules(rules []interface{}) []ne.ACLTemplateInboundR
 		if v, ok := ruleMap[networkACLTemplateInboundRuleSchemaNames["DstPort"]]; ok {
 			rule.DstPort = ne.String(v.(string))
 		}
+		if v, ok := ruleMap[networkACLTemplateInboundRuleSchemaNames["Description"]]; ok {
+			rule.Description = ne.String(v.(string))
+		}
 		transformed[i] = rule
 	}
 	return transformed
@@ -353,6 +364,7 @@ func flattenACLTemplateInboundRules(existingRules []ne.ACLTemplateInboundRule, r
 		transformedTemplate[networkACLTemplateInboundRuleSchemaNames["SrcPort"]] = rules[i].SrcPort
 		transformedTemplate[networkACLTemplateInboundRuleSchemaNames["DstPort"]] = rules[i].DstPort
 		transformedTemplate[networkACLTemplateInboundRuleSchemaNames["Subnet"]] = rules[i].Subnet
+		transformedTemplate[networkACLTemplateInboundRuleSchemaNames["Description"]] = rules[i].Description
 		if setSubnets {
 			transformedTemplate[networkACLTemplateInboundRuleSchemaNames["Subnets"]] = rules[i].Subnets
 		}
