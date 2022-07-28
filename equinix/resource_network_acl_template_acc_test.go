@@ -52,24 +52,26 @@ func testSweepNetworkACLTemplate(region string) error {
 
 func TestAccNetworkACLTemplate(t *testing.T) {
 	context := map[string]interface{}{
-		"resourceName":            "test",
-		"name":                    fmt.Sprintf("%s-%s", tstResourcePrefix, randString(6)),
-		"description":             randString(50),
-		"inbound_rule_1_subnet":   "10.0.0.0/16",
-		"inbound_rule_1_protocol": "TCP",
-		"inbound_rule_1_src_port": "any",
-		"inbound_rule_1_dst_port": "22-23",
-		"inbound_rule_2_subnet":   "192.168.16.0/24",
-		"inbound_rule_2_protocol": "UDP",
-		"inbound_rule_2_src_port": "any",
-		"inbound_rule_2_dst_port": "53",
-		"inbound_rule_3_subnet":   "2.2.2.2/32",
-		"inbound_rule_3_protocol": "UDP",
-		"inbound_rule_3_src_port": "any",
-		"inbound_rule_3_dst_port": "any",
+		"resourceName":               "test",
+		"name":                       fmt.Sprintf("%s-%s", tstResourcePrefix, randString(6)),
+		"description":                randString(50),
+		"inbound_rule_1_subnet":      "10.0.0.0/16",
+		"inbound_rule_1_protocol":    "TCP",
+		"inbound_rule_1_src_port":    "any",
+		"inbound_rule_1_dst_port":    "22-23",
+		"inbound_rule_1_description": randString(50),
+		"inbound_rule_2_subnet":      "192.168.16.0/24",
+		"inbound_rule_2_protocol":    "UDP",
+		"inbound_rule_2_src_port":    "any",
+		"inbound_rule_2_dst_port":    "53",
+		"inbound_rule_3_subnet":      "2.2.2.2/32",
+		"inbound_rule_3_protocol":    "UDP",
+		"inbound_rule_3_src_port":    "any",
+		"inbound_rule_3_dst_port":    "any",
 	}
 	contextWithChanges := copyMap(context)
 	contextWithChanges["description"] = randString(50)
+	contextWithChanges["inbound_rule_1_description"] = randString(50)
 	contextWithChanges["inbound_rule_3_subnet"] = "4.4.4.4/32"
 	contextWithChanges["inbound_rule_3_protocol"] = "TCP"
 	contextWithChanges["inbound_rule_3_dst_port"] = "2048"
@@ -115,6 +117,7 @@ resource "equinix_network_acl_template" "%{resourceName}" {
 	protocol = "%{inbound_rule_1_protocol}"
 	src_port = "%{inbound_rule_1_src_port}"
 	dst_port = "%{inbound_rule_1_dst_port}"
+	description = "%{inbound_rule_1_description}"
   }
 
   inbound_rule {
@@ -159,7 +162,7 @@ func testAccNetworkACLTemplateAttributes(template *ne.ACLTemplate, ctx map[strin
 			return fmt.Errorf("name does not match %v - %v", ne.StringValue(template.Name), v)
 		}
 		if v, ok := ctx["description"]; ok && ne.StringValue(template.Description) != v.(string) {
-			return fmt.Errorf("name does not match %v - %v", ne.StringValue(template.Description), v)
+			return fmt.Errorf("description does not match %v - %v", ne.StringValue(template.Description), v)
 		}
 		if len(template.InboundRules) != 3 {
 			return fmt.Errorf("number of inbound rules does not match %v - %v", len(template.InboundRules), 3)
@@ -179,6 +182,9 @@ func testAccNetworkACLTemplateAttributes(template *ne.ACLTemplate, ctx map[strin
 			}
 			if v, ok := ctx[fmt.Sprintf("inbound_rule_%d_dst_port", i+1)]; ok && ne.StringValue(template.InboundRules[i].DstPort) != v.(string) {
 				return fmt.Errorf("inbound_rule %d dst_port does not match %v - %v", i+1, ne.StringValue(template.InboundRules[i].DstPort), v)
+			}
+			if v, ok := ctx[fmt.Sprintf("inbound_rule_%d_description", i+1)]; ok && ne.StringValue(template.InboundRules[i].Description) != v.(string) {
+				return fmt.Errorf("inbound_rule %d description does not match %v - %v", i+1, ne.StringValue(template.InboundRules[i].Description), v)
 			}
 		}
 		return nil
