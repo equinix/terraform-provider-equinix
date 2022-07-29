@@ -907,8 +907,6 @@ resource "equinix_metal_device" "test_ipxe_missing" {
 
 type mockDeviceService struct {
 	GetFn func(deviceID string, opts *packngo.GetOptions) (*packngo.Device, *packngo.Response, error)
-	CreateFn func(device *packngo.DeviceCreateRequest) (*packngo.Device, *packngo.Response, error)
-	DeleteFn func(deviceID string, fdv bool) (*packngo.Response, error)
 }
 
 func (m *mockDeviceService) Get(deviceID string, opts *packngo.GetOptions) (*packngo.Device, *packngo.Response, error) {
