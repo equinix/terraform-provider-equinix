@@ -1042,7 +1042,7 @@ func TestAccMetalDevice_readErrorHandling(t *testing.T) {
 			wantErr: true,
 		},
 		{
-			name: "notFoundImport",
+			name: "notFoundProvision",
 			args: args{
 				newResource:    true,
 				meta: &Config{
@@ -1056,7 +1056,7 @@ func TestAccMetalDevice_readErrorHandling(t *testing.T) {
 					},
 				},
 			},
-			wantErr: true,
+			wantErr: false,
 		},
 		{
 			name: "errorProvision",
