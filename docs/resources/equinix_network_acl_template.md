@@ -22,6 +22,7 @@ resource "equinix_network_acl_template" "myacl" {
     protocol = "IP"
     src_port = "any"
     dst_port = "any"
+    description = "inbound rule description"
   }
   inbound_rule {
     subnet  = "172.16.25.0/24"
@@ -37,7 +38,7 @@ resource "equinix_network_acl_template" "myacl" {
 The following arguments are supported:
 
 * `name` - (Required) ACL template name.
-* `description` - (Optional) ACL template description.
+* `description` - (Optional) ACL template description, up to 200 characters.
 * `metro_code` - (Deprecated) ACL template location metro code.
 * `inbound_rule` - (Required) One or more rules to specify allowed inbound traffic.
 Rules are ordered, matching traffic rule stops processing subsequent ones.
@@ -51,6 +52,7 @@ The `inbound_rule` block has below fields:
 of ports, e.g., `20,22,23`, port range, e.g., `1023-1040` or word `any`.
 * `dst_port` - (Required) Inbound traffic destination ports. Allowed values are a comma separated
 list of ports, e.g., `20,22,23`, port range, e.g., `1023-1040` or word `any`.
+* `description` - (Optional) Inbound rule description, up to 200 characters.
 
 ## Attributes Reference
 
