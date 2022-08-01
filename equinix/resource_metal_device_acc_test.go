@@ -1056,7 +1056,7 @@ func TestAccMetalDevice_readErrorHandling(t *testing.T) {
 					},
 				},
 			},
-			wantErr: false,
+			wantErr: true,
 		},
 		{
 			name: "errorProvision",
