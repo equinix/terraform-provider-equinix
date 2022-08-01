@@ -1,3 +1,13 @@
+## 1.8.0 (Aug 1, 2022)
+
+ENHANCEMENTS:
+
+- `equinix_network_acl_template` added description field for the acl template inbound rule [#236](https://github.com/equinix/terraform-provider-equinix/pull/236)
+- Update go version to 1.18.3 in main module and github actions workflows [#219](https://github.com/equinix/terraform-provider-equinix/pull/219)
+- Fix missing equinix_metal_ name prefix in `equinix_metal_hardware_reservation` datasource documentation example [#231](https://github.com/equinix/terraform-provider-equinix/pull/231)
+- Adds check for forbidden API error in `equinix_metal_device` read function [#235](https://github.com/equinix/terraform-provider-equinix/pull/235)
+- Improve service toknes docs and update connectivty examples to link to Fabric terraform modules [#228](https://github.com/equinix/terraform-provider-equinix/pull/228)
+
 ## 1.7.0 (Jul 15, 2022)
 
 ENHANCEMENTS:
