@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"net"
+	"net/http"
 	"regexp"
 	"strings"
 	"testing"
@@ -11,6 +12,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"github.com/packethost/packngo"
 )
@@ -902,3 +904,189 @@ resource "equinix_metal_device" "test_ipxe_missing" {
     ]
   }
 }`
+
+type mockDeviceService struct {
+	GetFn func(deviceID string, opts *packngo.GetOptions) (*packngo.Device, *packngo.Response, error)
+}
+
+func (m *mockDeviceService) Get(deviceID string, opts *packngo.GetOptions) (*packngo.Device, *packngo.Response, error) {
+	return m.GetFn(deviceID, opts)
+}
+
+func (m *mockDeviceService) Create(device *packngo.DeviceCreateRequest) (*packngo.Device, *packngo.Response, error){
+	return nil, nil, mockFuncNotImplemented("Create")
+}
+
+func (m *mockDeviceService) Delete(string, bool) (*packngo.Response, error) {
+	return nil, mockFuncNotImplemented("Delete")
+}
+
+func (m *mockDeviceService) List(string, *packngo.ListOptions) ([]packngo.Device, *packngo.Response, error) {
+	return nil, nil, mockFuncNotImplemented("List")
+}
+
+func (m *mockDeviceService) Update(string, *packngo.DeviceUpdateRequest) (*packngo.Device, *packngo.Response, error) {
+	return nil, nil, mockFuncNotImplemented("Update")
+}
+
+func (m *mockDeviceService) Reboot(string) (*packngo.Response, error) {
+	return nil, mockFuncNotImplemented("Reboot")
+}
+
+func (m *mockDeviceService) Reinstall(string, *packngo.DeviceReinstallFields) (*packngo.Response, error) {
+	return nil, mockFuncNotImplemented("Reinstall")
+}
+
+func (m *mockDeviceService) PowerOff(string) (*packngo.Response, error) {
+	return nil, mockFuncNotImplemented("PowerOff")
+}
+
+func (m *mockDeviceService) PowerOn(string) (*packngo.Response, error) {
+	return nil, mockFuncNotImplemented("PowerOn")
+}
+
+func (m *mockDeviceService) Lock(string) (*packngo.Response, error) {
+	return nil, mockFuncNotImplemented("Lock")
+}
+
+func (m *mockDeviceService) Unlock(string) (*packngo.Response, error) {
+	return nil, mockFuncNotImplemented("Unlock")
+}
+
+func (m *mockDeviceService) ListBGPSessions(string, *packngo.ListOptions) ([]packngo.BGPSession, *packngo.Response, error) {
+	return nil, nil, mockFuncNotImplemented("ListBGPSessions")
+}
+
+func (m *mockDeviceService) ListBGPNeighbors(string, *packngo.ListOptions) ([]packngo.BGPNeighbor, *packngo.Response, error) {
+	return nil, nil, mockFuncNotImplemented("ListBGPNeighbors")
+}
+
+func (m *mockDeviceService) ListEvents(string, *packngo.ListOptions) ([]packngo.Event, *packngo.Response, error) {
+	return nil, nil, mockFuncNotImplemented("ListEvents")
+}
+
+func (m *mockDeviceService) GetBandwidth(string, *packngo.BandwidthOpts) (*packngo.BandwidthIO, *packngo.Response, error) {
+	return nil, nil, mockFuncNotImplemented("GetBandwidth")
+}
+
+func mockFuncNotImplemented(f string) error {
+	return fmt.Errorf("mockDeviceService %s function not yet implemented", f)
+}
+
+var _ packngo.DeviceService = (*mockDeviceService)(nil)
+
+func TestAccMetalDevice_readErrorHandling(t *testing.T) {
+	type args struct {
+		newResource bool
+		meta        *Config
+	}
+
+	tests := []struct {
+		name    string
+		args    args
+		wantErr bool
+	}{
+		{
+			name: "forbiddenAfterProvision",
+			args: args{
+				newResource: false,
+				meta: &Config{
+					metal: &packngo.Client{
+						Devices: &mockDeviceService{
+							GetFn: func(deviceID string, opts *packngo.GetOptions) (*packngo.Device, *packngo.Response, error) {
+								httpResp := &http.Response{Status: "403 Forbidden", StatusCode: 403}
+								return nil, &packngo.Response{Response: httpResp}, &packngo.ErrorResponse{Response: httpResp}
+							},
+						},
+					},
+				},
+			},
+			wantErr: false,
+		},
+		{
+			name: "notFoundAfterProvision",
+			args: args{
+				newResource: false,
+				meta: &Config{
+					metal: &packngo.Client{
+						Devices: &mockDeviceService{
+							GetFn: func(deviceID string, opts *packngo.GetOptions) (*packngo.Device, *packngo.Response, error) {
+								httpResp := &http.Response{
+									Status: "404 NotFound",
+									StatusCode: 404,
+									Header: http.Header{"Content-Type": []string{"application/json"}, "X-Request-Id": []string{"12345"}},
+								}
+								return nil, &packngo.Response{Response: httpResp}, &packngo.ErrorResponse{Response: httpResp}
+							},
+						},
+					},
+				},
+			},
+			wantErr: false,
+		},
+		{
+			name: "forbiddenWaitForActiveDeviceProvision",
+			args: args{
+				newResource:    true,
+				meta: &Config{
+					metal: &packngo.Client{
+						Devices: &mockDeviceService{
+							GetFn: func(deviceID string, opts *packngo.GetOptions) (*packngo.Device, *packngo.Response, error) {
+								httpResp := &http.Response{Status: "403 Forbidden", StatusCode: 403}
+								return nil, &packngo.Response{Response: httpResp}, &packngo.ErrorResponse{Response: httpResp}
+							},
+						},
+					},
+				},
+			},
+			wantErr: true,
+		},
+		{
+			name: "notFoundProvision",
+			args: args{
+				newResource:    true,
+				meta: &Config{
+					metal: &packngo.Client{
+						Devices: &mockDeviceService{
+							GetFn: func(deviceID string, opts *packngo.GetOptions) (*packngo.Device, *packngo.Response, error) {
+								httpResp := &http.Response{Status: "404 NotFound", StatusCode: 404}
+								return nil, &packngo.Response{Response: httpResp}, &packngo.ErrorResponse{Response: httpResp}
+							},
+						},
+					},
+				},
+			},
+			wantErr: true,
+		},
+		{
+			name: "errorProvision",
+			args: args{
+				newResource:    true,
+				meta: &Config{
+					metal: &packngo.Client{
+						Devices: &mockDeviceService{
+							GetFn: func(deviceID string, opts *packngo.GetOptions) (*packngo.Device, *packngo.Response, error) {
+								httpResp := &http.Response{Status: "400 BadRequest", StatusCode: 400}
+								return nil, &packngo.Response{Response: httpResp}, &packngo.ErrorResponse{Response: httpResp}
+							},
+						},
+					},
+				},
+			},
+			wantErr: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			var d *schema.ResourceData
+			d = new(schema.ResourceData)
+			if tt.args.newResource {
+				d.MarkNewResource()
+			}
+			if err := resourceMetalDeviceRead(d, tt.args.meta); (err != nil) != tt.wantErr {
+				t.Errorf("resourceMetalDeviceRead() error = %v, wantErr %v", err, tt.wantErr)
+			}
+		})
+	}
+}
