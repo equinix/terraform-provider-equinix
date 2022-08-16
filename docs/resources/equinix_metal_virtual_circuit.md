@@ -11,7 +11,7 @@ Use this resource to associate VLAN with a Dedicated Port from
 
 ## Example Usage
 
-Pick an existing Project and Connection, create a VLAN and use `equinix_metal_virtual_circuit`
+Pick an existing Project and dedicated Connection, create a VLAN and use `equinix_metal_virtual_circuit`
 to associate it with a Primary Port of the Connection.
 
 ```hcl
