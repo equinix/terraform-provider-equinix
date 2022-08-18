@@ -69,7 +69,7 @@ func resourceMetalDevice() *schema.Resource {
 				Type:        schema.TypeString,
 				Description: "The operating system slug. To find the slug, or visit [Operating Systems API docs](https://metal.equinix.com/developers/api/operatingsystems), set your API auth token in the top of the page and see JSON from the API response",
 				Required:    true,
-				ForceNew:    true,
+				ForceNew:    false,
 			},
 
 			"deployed_facility": {
