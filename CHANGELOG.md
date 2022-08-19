@@ -1,3 +1,10 @@
+## 1.8.1 (Aug 19, 2022)
+
+BUG FIXES:
+
+- `equinix_metal_device` `operating_system` should only be ForceNew when `reinstall` is not enabled [#244](https://github.com/equinix/terraform-provider-equinix/pull/244)
+- clarified use of dedicated connection examples in `equinix_metal_virtual_circuit` docs [#242](https://github.com/equinix/terraform-provider-equinix/pull/242)
+
 ## 1.8.0 (Aug 1, 2022)
 
 ENHANCEMENTS:
