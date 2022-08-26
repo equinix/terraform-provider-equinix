@@ -2,6 +2,7 @@ package equinix
 
 import (
 	"fmt"
+	"log"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/packethost/packngo"
@@ -68,25 +69,27 @@ func dataSourceMetalPreCreatedIPBlock() *schema.Resource {
 func dataSourceMetalPreCreatedIPBlockRead(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*Config).metal
 	projectID := d.Get("project_id").(string)
-	getOpts := packngo.GetOptions{Includes: []string{"facility", "metro", "project", "vrf"}}
-	getOpts.Filter("types", "public_ipv4,global_ipv4,private_ipv4,public_ipv6,vrf")
+	types := "public_ipv4,global_ipv4,private_ipv4,public_ipv6,vrf"
 
-	ips, _, err := client.ProjectIPs.List(projectID, &getOpts)
-	if err != nil {
-		return err
-	}
 	ipv := d.Get("address_family").(int)
 	public := d.Get("public").(bool)
 	global := d.Get("global").(bool)
+	fval, fok := d.GetOk("facility")
+	mval, mok := d.GetOk("metro")
 
 	if !public && global {
 		return fmt.Errorf("private (non-public) global IP address blocks are not supported in Equinix Metal")
 	}
 
-	fval, fok := d.GetOk("facility")
-	mval, mok := d.GetOk("metro")
 	if (fok || mok) && global {
 		return fmt.Errorf("you can't specify facility for global IP block - addresses from global blocks can be assigned to devices across several locations")
+	}
+
+	getOpts := packngo.GetOptions{Includes: []string{"facility", "metro", "project", "vrf"}}
+	getOpts.Filter("types", types)
+	ips, _, err := client.ProjectIPs.List(projectID, &getOpts)
+	if err != nil {
+		return err
 	}
 
 	if fok {
@@ -119,5 +122,7 @@ func dataSourceMetalPreCreatedIPBlockRead(d *schema.ResourceData, meta interface
 			}
 		}
 	}
-	return fmt.Errorf("could not find matching reserved block, all IPs were %v", ips)
+	err = fmt.Errorf("could not find matching reserved block")
+	log.Printf("[DEBUG] %q, all IPs were %v", err, ips)
+	return err
 }
