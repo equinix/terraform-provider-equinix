@@ -774,6 +774,7 @@ func getReinstallOptions(d *schema.ResourceData) (packngo.DeviceReinstallFields,
 	}
 
 	return packngo.DeviceReinstallFields{
+		OperatingSystem: d.Get("operating_system").(string),
 		PreserveData:    reinstall_config["preserve_data"].(bool),
 		DeprovisionFast: reinstall_config["deprovision_fast"].(bool),
 	}, nil
