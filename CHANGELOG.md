@@ -1,3 +1,13 @@
+## 1.9.0 (Sep 4, 2022)
+
+BUG FIXES:
+
+- `equinix_metal_device` `reinstall` action was not taken new value for `operating_system` [#247](https://github.com/equinix/terraform-provider-equinix/pull/247)
+
+ENHANCEMENTS:
+
+- Packngo version bumped to 0.26.0
+
 ## 1.8.1 (Aug 19, 2022)
 
 BUG FIXES:
