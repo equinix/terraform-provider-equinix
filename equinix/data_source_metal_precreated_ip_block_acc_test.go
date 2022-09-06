@@ -71,19 +71,18 @@ data "equinix_metal_precreated_ip_block" "test_fac_pubv6" {
 }
 
 data "equinix_metal_precreated_ip_block" "test_metro_pubv4" {
-    facility         = equinix_metal_device.test.metro
+    metro            = equinix_metal_device.test.metro
     project_id       = equinix_metal_device.test.project_id
     address_family   = 4
     public           = true
 }
 
 data "equinix_metal_precreated_ip_block" "test_metro_priv4" {
-    facility         = equinix_metal_device.test.metro
+    metro            = equinix_metal_device.test.metro
     project_id       = equinix_metal_device.test.project_id
     address_family   = 4
     public           = false
 }
-
 
 resource "equinix_metal_ip_attachment" "test" {
     device_id = equinix_metal_device.test.id
