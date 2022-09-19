@@ -48,7 +48,6 @@ The following arguments are supported:
 * `nni_vlan` - (Required) Equinix Metal network-to-network VLAN ID.
 * `vlan_id` - (Required) UUID of the VLAN to associate.
 * `name` - (Optional) Name of the Virtual Circuit resource.
-* `facility` - (Optional) Facility where the connection will be created.
 * `description` - (Optional) Description for the Virtual Circuit resource.
 * `tags` - (Optional) Tags for the Virtual Circuit resource.
 * `speed` - (Optional) Speed of the Virtual Circuit resource.
