@@ -19,11 +19,11 @@ resource "equinix_metal_project" "example" {
 
 resource "equinix_metal_vrf" "example" {
     description = "VRF with ASN 65000 and a pool of address space that includes 192.168.100.0/25"
-    name = "example-vrf"
-    metro = "da"
-    local_asn = "65000"
-    ip_ranges = ["192.168.100.0/25", "192.168.200.0/25"]
-    project_id = equinix_metal_project.example.id
+    name        = "example-vrf"
+    metro       = "da"
+    local_asn   = "65000"
+    ip_ranges   = ["192.168.100.0/25", "192.168.200.0/25"]
+    project_id  = equinix_metal_project.example.id
 }
 ```
 
@@ -32,12 +32,12 @@ Create IP reservations and assign them to a Metal Gateway resources. The Gateway
 ```hcl
 resource "equinix_metal_reserved_ip_block" "example" {
     description = "Reserved IP block (192.168.100.0/29) taken from on of the ranges in the VRF's pool of address space."
-    project_id = equinix_metal_project.example.id
-    metro = equinix_metal_vrf.example.metro
-    type = "vrf"
-    vrf_id = equinix_metal_vrf.example.id
-    cidr = 29
-    network = "192.168.100.0"
+    project_id  = equinix_metal_project.example.id
+    metro       = equinix_metal_vrf.example.metro
+    type        = "vrf"
+    vrf_id      = equinix_metal_vrf.example.id
+    cidr        = 29
+    network     = "192.168.100.0"
 }
 
 resource "equinix_metal_vlan" "example" {
@@ -47,7 +47,6 @@ resource "equinix_metal_vlan" "example" {
 }
 
 resource "equinix_metal_gateway" "example" {
-    description       = "A Gateway on the VRF192.168.100.0/29
     project_id        = equinix_metal_project.example.id
     vlan_id           = equinix_metal_vlan.example.id
     ip_reservation_id = equinix_metal_reserved_ip_block.example.id
@@ -62,17 +61,17 @@ data "equinix_metal_connection" "example" {
 }
 
 resource "equinix_metal_virtual_circuit" "example" {
-    name = "example-vc"
-    description = "Virtual Circuit"
+    name          = "example-vc"
+    description   = "Virtual Circuit"
     connection_id = data.equinix_metal_connection.example.id
-    project_id = equinix_metal_project.example.id
-    port_id = data.equinix_metal_connection.example.ports[0].id
-    nni_vlan = 1024
-    vrf_id = equinix_metal_vrf.example.id
-    peer_asn = 65530
-    subnet = "192.168.100.16/31"
-    metal_ip = "192.168.100.16"
-    customer_ip = "192.168.100.17"
+    project_id    = equinix_metal_project.example.id
+    port_id       = data.equinix_metal_connection.example.ports[0].id
+    nni_vlan      = 1024
+    vrf_id        = equinix_metal_vrf.example.id
+    peer_asn      = 65530
+    subnet        = "192.168.100.16/31"
+    metal_ip      = "192.168.100.16"
+    customer_ip   = "192.168.100.17"
 }
 ```
 
