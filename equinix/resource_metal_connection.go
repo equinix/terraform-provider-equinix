@@ -248,9 +248,6 @@ func resourceMetalConnectionCreate(d *schema.ResourceData, meta interface{}) err
 		if connMode == string(packngo.ConnectionModeTunnel) {
 			return fmt.Errorf("tunnel mode is not supported for \"shared\" connections")
 		}
-		if !tokenTypeOk {
-			return fmt.Errorf("you must set service_token_type for \"shared\" connection")
-		}
 		if connRedundancy == packngo.ConnectionPrimary && vlansNum == 2 {
 			return fmt.Errorf("when you create a \"shared\" connection without redundancy, you must only set max 1 vlan")
 		}

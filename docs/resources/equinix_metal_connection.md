@@ -124,7 +124,7 @@ The following arguments are supported:
 * `mode` - (Optional) Mode for connections in IBX facilities with the dedicated type - standard or tunnel. Default is standard.
 * `tags` - (Optional) String list of tags.
 * `vlans` - (Optional) Only used with shared connection. Vlans to attach. Pass one vlan for Primary/Single connection and two vlans for Redundant connection.
-* `service_token_type` - (Optional) Only used with shared connection. Type of service token to use for the connection, a_side or z_side.
+* `service_token_type` - (Optional) Only used with shared connection. Type of service token to use for the connection, a_side or z_side. (**NOTE: To support the legacy non-automated way to create connections, terraform will not check if `service_token_type` is specified. If your organization already has `service_token_type` enabled, be sure to specify it or the connection will return a legacy connection token instead of a service token**)
 
 ## Attributes Reference
 
