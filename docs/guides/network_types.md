@@ -97,7 +97,7 @@ locals {
 
 ## Metal Device Network Type
 
-The [`equinix_metal_device_network_type`](../resources/metal_device_network_type.md) takes a named network type with any mode required parameters and converts a device to the named network type.  This resource simulated the network type interface for Devices in the Equinix Metal Portal.  That interface changed when additional network types were introduced with more diverse port configurations.
+The [`equinix_metal_device_network_type`](../resources/metal_device_network_type.md) takes a named network type with any mode required parameters and converts a device to the named network type.  This resource simulated the network type interface for Devices in the Equinix Metal Portal. That interface changed when additional network types were introduced with more diverse port configurations.
 
 When using this resource, keep in mind:
 
