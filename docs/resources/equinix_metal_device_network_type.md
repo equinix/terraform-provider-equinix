@@ -15,8 +15,7 @@ If you are attaching VLAN to a device (i.e. using equinix_metal_port_vlan_attach
 
 ## Example Usage
 
-See the [Network Types Guide](../guides/network_types.md) for examples of this resource and to
-learn about the recommended `equinix_metal_port` alternative.
+-> **NOTE:** This resource takes a named network type with any mode required parameters and converts a device to the named network type. This resource simulated the network type interface for Devices in the Equinix Metal Portal. That interface changed when additional network types were introduced with more diverse port configurations and it is not guaranteed to work in devices with more than two ethernet ports. See the [Network Types Guide](../guides/network_types.md) for examples of this resource and to learn about the recommended `equinix_metal_port` alternative.
 
 ## Import
 
@@ -31,7 +30,7 @@ terraform import equinix_metal_device_network_type {existing device_id}
 The following arguments are supported:
 
 * `device_id` - (Required) The ID of the device on which the network type should be set.
-* `type` - (Required) Network type to set. Must be one of `layer3`, `hybrid`, `layer2-individual`
+* `type` - (Required) Network type to set. Must be one of `layer3`, `hybrid`, `hybrid-bonded`, `layer2-individual`
 and `layer2-bonded`.
 
 ## Attributes Reference
