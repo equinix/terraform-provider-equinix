@@ -453,7 +453,7 @@ func resourceMetalReservedIPBlockRead(d *schema.ResourceData, meta interface{}) 
 	id := d.Id()
 
 	getOpts := &packngo.GetOptions{Includes: []string{"facility", "metro", "project", "vrf"}}
-	getOpts.Filter("types", "public_ipv4,global_ipv4,private_ipv4,public_ipv6,vrf")
+	getOpts = getOpts.Filter("types", "public_ipv4,global_ipv4,private_ipv4,public_ipv6,vrf")
 
 	reservedBlock, _, err := client.ProjectIPs.Get(id, getOpts)
 	if err != nil {

@@ -121,15 +121,15 @@ func dataSourceMetalReservedIPBlockRead(d *schema.ResourceData, meta interface{}
 	blockId, blockIdOk := d.GetOk("id")
 	projectId, projectIdOk := d.GetOk("project_id")
 	address, addressOk := d.GetOk("ip_address")
-	getOpts := packngo.GetOptions{Includes: []string{"facility", "metro", "project", "vrf"}}
-	getOpts.Filter("types", "public_ipv4,global_ipv4,private_ipv4,public_ipv6,vrf")
+	getOpts := &packngo.GetOptions{Includes: []string{"facility", "metro", "project", "vrf"}}
+	getOpts = getOpts.Filter("types", "public_ipv4,global_ipv4,private_ipv4,public_ipv6,vrf")
 
 	if !(blockIdOk || (projectIdOk && addressOk)) {
 		return fmt.Errorf("you must specify either id or project_id and ip_address")
 	}
 	if blockIdOk {
 		block, _, err := client.ProjectIPs.Get(
-			blockId.(string), &getOpts)
+			blockId.(string), getOpts)
 		if err != nil {
 			return err
 		}
@@ -142,7 +142,7 @@ func dataSourceMetalReservedIPBlockRead(d *schema.ResourceData, meta interface{}
 		return fmt.Errorf("%s is not a valid ip_address", addressStr)
 	}
 
-	blocks, _, err := client.ProjectIPs.List(projectId.(string), &getOpts)
+	blocks, _, err := client.ProjectIPs.List(projectId.(string), getOpts)
 	if err != nil {
 		return err
 	}

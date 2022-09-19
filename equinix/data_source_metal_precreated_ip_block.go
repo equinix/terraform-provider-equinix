@@ -2,6 +2,7 @@ package equinix
 
 import (
 	"fmt"
+	"log"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/packethost/packngo"
@@ -66,28 +67,50 @@ func dataSourceMetalPreCreatedIPBlock() *schema.Resource {
 }
 
 func dataSourceMetalPreCreatedIPBlockRead(d *schema.ResourceData, meta interface{}) error {
+	var types string
 	client := meta.(*Config).metal
 	projectID := d.Get("project_id").(string)
-	getOpts := packngo.GetOptions{Includes: []string{"facility", "metro", "project", "vrf"}}
-	getOpts.Filter("types", "public_ipv4,global_ipv4,private_ipv4,public_ipv6,vrf")
 
-	ips, _, err := client.ProjectIPs.List(projectID, &getOpts)
-	if err != nil {
-		return err
-	}
 	ipv := d.Get("address_family").(int)
 	public := d.Get("public").(bool)
 	global := d.Get("global").(bool)
+	fval, fok := d.GetOk("facility")
+	mval, mok := d.GetOk("metro")
 
 	if !public && global {
 		return fmt.Errorf("private (non-public) global IP address blocks are not supported in Equinix Metal")
 	}
 
-	fval, fok := d.GetOk("facility")
-	mval, mok := d.GetOk("metro")
 	if (fok || mok) && global {
 		return fmt.Errorf("you can't specify facility for global IP block - addresses from global blocks can be assigned to devices across several locations")
 	}
+
+	// Public and Address Family are required, prefilter types list based on
+	// these values. Global is non-default and exclusive, so we can also filter
+	// types on that.
+	switch {
+	case global:
+		types = "global_ipv4"
+	case !public:
+		types = "private_ipv4,vrf"
+	case public:
+		switch ipv {
+		case 4:
+			types = "public_ipv4,global_ipv4"
+		case 6:
+			types = "public_ipv6"
+		}
+	}
+
+	getOpts := &packngo.GetOptions{Includes: []string{"facility", "metro", "project", "vrf"}}
+	getOpts = getOpts.Filter("types", types)
+
+	ips, _, err := client.ProjectIPs.List(projectID, getOpts)
+	if err != nil {
+		return err
+	}
+
+	log.Printf("[DEBUG] filtering ips by (project: %s, facility: %s, metro: %s, family: %d, global: %t)", projectID, fval.(string), mval.(string), ipv, global)
 
 	if fok {
 		// lookup of block specified with facility
@@ -101,7 +124,7 @@ func dataSourceMetalPreCreatedIPBlockRead(d *schema.ResourceData, meta interface
 			}
 		}
 	} else if mok {
-		// lookup of blcok specified with metro
+		// lookup of block specified with metro
 		metro := mval.(string)
 		for _, ip := range ips {
 			if ip.Metro == nil {
@@ -119,5 +142,6 @@ func dataSourceMetalPreCreatedIPBlockRead(d *schema.ResourceData, meta interface
 			}
 		}
 	}
-	return fmt.Errorf("could not find matching reserved block, all IPs were %v", ips)
+	log.Printf("[DEBUG] filter not matched in response ips: %v", ips)
+	return fmt.Errorf("could not find matching reserved block")
 }
