@@ -78,6 +78,7 @@ type Config struct {
 	RequestTimeout time.Duration
 	PageSize       int
 	Token          string
+	UAPrefix       string
 
 	ecx   ecx.Client
 	ne    ne.Client
@@ -123,10 +124,10 @@ func (c *Config) Load(ctx context.Context) error {
 		neClient.SetPageSize(c.PageSize)
 	}
 	ecxClient.SetHeaders(map[string]string{
-		"User-agent": c.fullUserAgent("equinix/ecx-go"),
+		"User-agent": c.fullUserAgent(c.UAPrefix, "equinix/ecx-go"),
 	})
 	neClient.SetHeaders(map[string]string{
-		"User-agent": c.fullUserAgent("equinix/ne-go"),
+		"User-agent": c.fullUserAgent(c.UAPrefix, "equinix/ne-go"),
 	})
 
 	c.ecx = ecxClient
@@ -184,9 +185,9 @@ func terraformUserAgent(version string) string {
 	return ua
 }
 
-func (c *Config) fullUserAgent(suffix string) string {
+func (c *Config) fullUserAgent(prefix, suffix string) string {
 	tfUserAgent := terraformUserAgent(c.terraformVersion)
-	userAgent := fmt.Sprintf("%s terraform-provider-equinix/%s %s", tfUserAgent, version.ProviderVersion, suffix)
+	userAgent := fmt.Sprintf("%s %s terraform-provider-equinix/%s %s", prefix, tfUserAgent, version.ProviderVersion, suffix)
 	return strings.TrimSpace(userAgent)
 }
 
@@ -205,7 +206,7 @@ func (c *Config) NewMetalClient() *packngo.Client {
 	baseURL, _ := url.Parse(c.BaseURL)
 	baseURL.Path = path.Join(baseURL.Path, metalBasePath) + "/"
 	client, _ := packngo.NewClientWithBaseURL(consumerToken, c.AuthToken, standardClient, baseURL.String())
-	client.UserAgent = c.fullUserAgent(client.UserAgent)
+	client.UserAgent = c.fullUserAgent(c.UAPrefix, client.UserAgent)
 
 	return client
 }
