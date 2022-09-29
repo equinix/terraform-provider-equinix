@@ -158,9 +158,6 @@ func resourceMetalOrganizationMemberRead(d *schema.ResourceData, meta interface{
 	invitee := parts[0]
 	orgID := parts[1]
 
-	// orgID := d.Get("organization_id").(string)
-	// invitee := d.Get("invitee").(string)
-
 	listOpts := &packngo.ListOptions{Includes: []string{"user"}}
 	invitations, _, err := client.Invitations.List(orgID, listOpts)
 	if err != nil {
@@ -185,7 +182,7 @@ func resourceMetalOrganizationMemberRead(d *schema.ResourceData, meta interface{
 	}
 	member, err := findMember(invitee, members, invitations)
 	if !d.IsNewResource() && err != nil {
-		return friendlyError(fmt.Errorf("Could not find member %s in organization %s", invitee, d.Get("organization_id").(string)))
+		return friendlyError(fmt.Errorf("Could not find member %s in organization %s", invitee, orgID))
 	}
 
 	if member.isMember() {
@@ -197,7 +194,7 @@ func resourceMetalOrganizationMemberRead(d *schema.ResourceData, meta interface{
 			"state":           "active",
 			"roles":           stringArrToIfArr(member.Member.Roles),
 			"projects_ids":    stringArrToIfArr(projectIDs),
-			"organization_id": member.Member.Organization.ID,
+			"organization_id": path.Base(member.Member.Organization.URL),
 		})
 	} else if member.isInvitation() {
 		projectIDs := []string{}
