@@ -22,9 +22,9 @@ resource "equinix_metal_organization_member" "member" {
 Add a member to an organization as an organization administrator:
 
 ```hcl
-resource "equinix_metal_organization_member" "admin" {
+resource "equinix_metal_organization_member" "owner" {
     invitee = "admin@example.com"
-    roles = ["admin"]
+    roles = ["owner"]
     projects_ids = []
     organization_id = var.organization_id
 }
