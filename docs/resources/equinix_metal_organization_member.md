@@ -51,8 +51,8 @@ In addition to all arguments above, the following attributes are exported:
 
 ## Import
 
-This resource can be imported using the `invitee` defined in the resource:
+This resource can be imported using the `invitee` and `organization_id` as colon separated arguments:
 
 ```sh
-terraform import equinix_metal_organization_member.resource_name
+terraform import equinix_metal_organization_member.resource_name {invitee}:{organization_id}
 ```
