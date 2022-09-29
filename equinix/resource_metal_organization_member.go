@@ -173,7 +173,7 @@ func resourceMetalOrganizationMemberRead(d *schema.ResourceData, meta interface{
 		return err
 	}
 
-	org, _, err := client.Organizations.Get(orgID, &packngo.GetOptions{Includes: []string{"members", "members.user"}})
+	members, _, err := client.Members.List(orgID, &packngo.GetOptions{Includes: []string{"user"}})
 	if err != nil {
 		err = friendlyError(err)
 		// If the org was destroyed, mark as gone.
@@ -183,7 +183,7 @@ func resourceMetalOrganizationMemberRead(d *schema.ResourceData, meta interface{
 		}
 		return err
 	}
-	member, err := findMember(invitee, org.Members, invitations)
+	member, err := findMember(invitee, members, invitations)
 	if !d.IsNewResource() && err != nil {
 		return friendlyError(fmt.Errorf("Could not find member %s in organization %s", invitee, d.Get("organization_id").(string)))
 	}
