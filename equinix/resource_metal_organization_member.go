@@ -2,6 +2,7 @@ package equinix
 
 import (
 	"fmt"
+	"log"
 	"path"
 	"strings"
 
@@ -182,7 +183,9 @@ func resourceMetalOrganizationMemberRead(d *schema.ResourceData, meta interface{
 	}
 	member, err := findMember(invitee, members, invitations)
 	if !d.IsNewResource() && err != nil {
-		return friendlyError(fmt.Errorf("Could not find member %s in organization %s", invitee, orgID))
+		log.Printf("[WARN] Could not find member %s in organization, removing from state", d.Id())
+		d.SetId("")
+		return nil
 	}
 
 	if member.isMember() {
