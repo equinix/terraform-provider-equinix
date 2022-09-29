@@ -56,7 +56,7 @@ func resourceMetalOrganizationMember() *schema.Resource {
 			},
 			"invited_by": {
 				Type:        schema.TypeString,
-				Description: "The email address of the user invited by",
+				Description: "The user id of the user that sent the invitation (only known in the invitation stage)",
 				Computed:    true,
 			},
 			"organization_id": {
@@ -212,6 +212,7 @@ func resourceMetalOrganizationMemberRead(d *schema.ResourceData, meta interface{
 			"created":         member.Invitation.CreatedAt.String(),
 			"updated":         member.Invitation.UpdatedAt.String(),
 			"nonce":           member.Invitation.Nonce,
+			"invited_by":      path.Base(member.Invitation.InvitedBy.Href),
 		})
 	}
 	return fmt.Errorf("got an invalid member object")

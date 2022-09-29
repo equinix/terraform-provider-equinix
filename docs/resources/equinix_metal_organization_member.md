@@ -46,6 +46,7 @@ In addition to all arguments above, the following attributes are exported:
 
 * `id` - The unique ID of the membership.
 * `nonce` - The nonce for the invitation (only known in the invitation stage)
+* `invited_by` - The user_id of the user that sent the invitation (only known in the invitation stage)
 * `created` - When the invitation was created (only known in the invitation stage)
 * `updated` - When the invitation was updated (only known in the invitation stage)
 * `state` - The state of the membership ('invited' when an invitation is open, 'active' when the user is an organization member)
