@@ -1,3 +1,15 @@
+## 1.10.0 (Sep 29, 2022)
+
+BUG FIXES:
+
+- Allow to not define service_token_type for shared connections in organizations where service token is not enabled [#251](https://github.com/equinix/terraform-provider-equinix/pull/251)
+- Fix some documentation typos with wrong information [#250](https://github.com/equinix/terraform-provider-equinix/pull/250)
+- `equinix_metal_precreated_ip_block` was not filtering by project_id [#249](https://github.com/equinix/terraform-provider-equinix/pull/249)
+
+ENHANCEMENTS:
+
+- New resource `equinix_metal_organization_member` [#256](https://github.com/equinix/terraform-provider-equinix/pull/256)
+
 ## 1.9.0 (Sep 4, 2022)
 
 BUG FIXES:
