@@ -3,8 +3,10 @@ package equinix
 import (
 	"fmt"
 	"path"
+	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/packethost/packngo"
 )
 
@@ -28,17 +30,29 @@ func resourceMetalOrganizationMember() *schema.Resource {
 		Delete: resourceMetalOrganizationMemberDelete,
 		Importer: &schema.ResourceImporter{
 			State: func(d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
-				d.SetId(d.Get("invitee").(string))
+				parts := strings.Split(d.Id(), ":")
+				invitee := parts[0]
+				orgID := parts[1]
+				d.SetId(d.Id())
+				d.Set("invitee", invitee)
+				d.Set("organization_id", orgID)
+				if err := resourceMetalOrganizationMemberRead(d, meta); err != nil {
+					return nil, err
+				}
+				if d.Id() == "" {
+					return nil, fmt.Errorf("Member %s does not exist in organization %s.", invitee, orgID)
+				}
 				return []*schema.ResourceData{d}, nil
 			},
 		},
 
 		Schema: map[string]*schema.Schema{
 			"invitee": {
-				Type:        schema.TypeString,
-				Description: "The email address of the user to invite",
-				Required:    true,
-				ForceNew:    true,
+				Type:         schema.TypeString,
+				Description:  "The email address of the user to invite",
+				Required:     true,
+				ForceNew:     true,
+				ValidateFunc: validation.StringIsNotEmpty,
 			},
 			"invited_by": {
 				Type:        schema.TypeString,
@@ -46,16 +60,20 @@ func resourceMetalOrganizationMember() *schema.Resource {
 				Computed:    true,
 			},
 			"organization_id": {
-				Type:        schema.TypeString,
-				Description: "The organization to invite the user to",
-				Required:    true,
-				ForceNew:    true,
+				Type:         schema.TypeString,
+				Description:  "The organization to invite the user to",
+				Required:     true,
+				ForceNew:     true,
+				ValidateFunc: validation.StringIsNotEmpty,
 			},
 			"projects_ids": {
 				Type:        schema.TypeSet,
 				Description: "Project IDs the member has access to within the organization. If the member is an 'admin', the projects list should be empty.",
 				Required:    true,
-				Elem:        &schema.Schema{Type: schema.TypeString},
+				Elem: &schema.Schema{
+					Type:         schema.TypeString,
+					ValidateFunc: validation.StringIsNotEmpty,
+				},
 				// TODO: Update should be supported. packngo.InvitationService does not offer an Update	method.
 				ForceNew: true,
 			},
@@ -107,7 +125,7 @@ func resourceMetalOrganizationMemberCreate(d *schema.ResourceData, meta interfac
 		return friendlyError(err)
 	}
 
-	d.SetId(email)
+	d.SetId(fmt.Sprintf("%s:%s", email, orgID))
 
 	return resourceMetalOrganizationMemberRead(d, meta)
 }
@@ -129,9 +147,15 @@ func findMember(invitee string, members []packngo.Member, invitations []packngo.
 
 func resourceMetalOrganizationMemberRead(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*Config).metal
+	parts := strings.Split(d.Id(), ":")
+	invitee := parts[0]
+	orgID := parts[1]
+
+	// orgID := d.Get("organization_id").(string)
+	// invitee := d.Get("invitee").(string)
 
 	listOpts := &packngo.ListOptions{Includes: []string{"user"}}
-	invitations, _, err := client.Invitations.List(d.Get("organization_id").(string), listOpts)
+	invitations, _, err := client.Invitations.List(orgID, listOpts)
 	if err != nil {
 		err = friendlyError(err)
 		// If the org was destroyed, mark as gone.
@@ -142,7 +166,6 @@ func resourceMetalOrganizationMemberRead(d *schema.ResourceData, meta interface{
 		return err
 	}
 
-	orgID := d.Get("organization_id").(string)
 	org, _, err := client.Organizations.Get(orgID, &packngo.GetOptions{Includes: []string{"members", "members.user"}})
 	if err != nil {
 		err = friendlyError(err)
@@ -153,9 +176,9 @@ func resourceMetalOrganizationMemberRead(d *schema.ResourceData, meta interface{
 		}
 		return err
 	}
-	member, err := findMember(d.Get("invitee").(string), org.Members, invitations)
-	if err != nil {
-		return friendlyError(fmt.Errorf("Could not find member %s in organization %s", d.Get("invitee").(string), d.Get("organization_id").(string)))
+	member, err := findMember(invitee, org.Members, invitations)
+	if !d.IsNewResource() && err != nil {
+		return friendlyError(fmt.Errorf("Could not find member %s in organization %s", invitee, d.Get("organization_id").(string)))
 	}
 
 	if member.isMember() {

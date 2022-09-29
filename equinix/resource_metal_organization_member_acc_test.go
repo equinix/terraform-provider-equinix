@@ -6,11 +6,13 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
+	"github.com/packethost/packngo"
 )
 
-func TestAccResourceMetalOrganizationMember_basic(t *testing.T) {
+func TestAccResourceMetalOrganizationMember_owner(t *testing.T) {
 	rInt := acctest.RandInt()
-
+	org := &packngo.Organization{}
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
@@ -18,15 +20,55 @@ func TestAccResourceMetalOrganizationMember_basic(t *testing.T) {
 		CheckDestroy: nil,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccResourceMetalOrganizationMember_basic(rInt) + testAccResourceMetalOrganizationMember_member(),
+				Config: testAccResourceMetalOrganizationMember_basic(rInt),
+				Check: resource.ComposeTestCheckFunc(
+					testAccMetalOrganizationExists("equinix_metal_organization.test", org),
+				),
+			},
+			{
+				ResourceName: "equinix_metal_organization_member.owner",
+				Config:       testAccResourceMetalOrganizationMember_basic(rInt) + testAccResourceMetalOrganizationMember_owner(),
+				ImportStateIdFunc: resource.ImportStateIdFunc(func(s *terraform.State) (string, error) {
+					return fmt.Sprintf("%s:%s", org.PrimaryOwner.Email, org.ID), nil
+				}),
+				ImportState: true,
+			},
+			/*
+				{
+					ResourceName: "equinix_metal_organization_member.owner",
+					Config:       testAccResourceMetalOrganizationMember_basic(rInt) + testAccResourceMetalOrganizationMember_owner(),
+					ExpectError:  regexp.MustCompile("User is already a member of the Organization"),
+				},
+			*/
+			{
+				Config: testAccResourceMetalOrganizationMember_basic(rInt),
+			},
+		},
+	})
+}
+
+func TestAccResourceMetalOrganizationMember_basic(t *testing.T) {
+	rInt := acctest.RandInt()
+	org := &packngo.Organization{}
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:  func() { testAccPreCheck(t) },
+		Providers: testAccProviders,
+		// TODO: CheckDestroy: testAccMetalOrganizationMemberCheckDestroyed,
+		CheckDestroy: nil,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccResourceMetalOrganizationMember_basic(rInt),
+				Check: resource.ComposeTestCheckFunc(
+					testAccMetalOrganizationExists("equinix_metal_organization.test", org),
+				),
+			},
+			{
+				ResourceName: "equinix_metal_organization_member.member",
+				Config:       testAccResourceMetalOrganizationMember_basic(rInt) + testAccResourceMetalOrganizationMember_member(),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(
 						"equinix_metal_organization_member.member", "state",
 						"invited"),
-					resource.TestCheckResourceAttrPair(
-						"equinix_metal_organization_member.member", "id",
-						"equinix_metal_organization_member.member", "invitee",
-					),
 				),
 				ImportStateVerify: true,
 			},
@@ -41,8 +83,8 @@ func TestAccResourceMetalOrganizationMember_basic(t *testing.T) {
 func testAccResourceMetalOrganizationMember_basic(r int) string {
 	return fmt.Sprintf(`
 resource "equinix_metal_organization" "test" {
-	name = "tfacc-datasource-org-%d"
-	description = "tfacc-datasource-org-desc"
+	name = "tfacc-resource-org-member-%d"
+	description = "tfacc-resource-org-member-desc"
 	address {
 		address = "tfacc org street"
 		city = "london"
@@ -53,9 +95,20 @@ resource "equinix_metal_organization" "test" {
 
 resource "equinix_metal_project" "test" {
 	organization_id = equinix_metal_organization.test.id
-	name = "tfacc-datasource-project-%d"
+	name = "tfacc-resource-project-%d"
 }
 `, r, r)
+}
+
+func testAccResourceMetalOrganizationMember_owner() string {
+	return fmt.Sprintf(`
+	resource "equinix_metal_organization_member" "owner" {
+		invitee = "/* TODO: Add org owner email or token owner email here */"
+		roles = ["admin"]
+		projects_ids = []
+		organization_id = equinix_metal_organization.test.id
+	}
+	`)
 }
 
 func testAccResourceMetalOrganizationMember_member() string {

@@ -147,7 +147,7 @@ func testAccMetalOrganizationExists(n string, org *packngo.Organization) resourc
 
 		client := testAccProvider.Meta().(*Config).metal
 
-		foundOrg, _, err := client.Organizations.Get(rs.Primary.ID, &packngo.GetOptions{Includes: []string{"address"}})
+		foundOrg, _, err := client.Organizations.Get(rs.Primary.ID, &packngo.GetOptions{Includes: []string{"address", "primary_owner"}})
 		if err != nil {
 			return err
 		}
