@@ -130,6 +130,12 @@ func expandBGPConfig(d *schema.ResourceData) packngo.CreateBGPConfigRequest {
 func resourceMetalProjectCreate(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*Config).metal
 
+	userAgent, err := generateUserAgentString(d, client.UserAgent)
+	if err != nil {
+		return err
+	}
+	client.UserAgent = userAgent
+
 	createRequest := &packngo.ProjectCreateRequest{
 		Name:           d.Get("name").(string),
 		OrganizationID: d.Get("organization_id").(string),
@@ -164,6 +170,12 @@ func resourceMetalProjectCreate(d *schema.ResourceData, meta interface{}) error 
 
 func resourceMetalProjectRead(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*Config).metal
+
+	userAgent, err := generateUserAgentString(d, client.UserAgent)
+	if err != nil {
+		return err
+	}
+	client.UserAgent = userAgent
 
 	proj, _, err := client.Projects.Get(d.Id(), nil)
 	if err != nil {
@@ -236,6 +248,12 @@ func flattenBGPConfig(l *packngo.BGPConfig) []map[string]interface{} {
 
 func resourceMetalProjectUpdate(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*Config).metal
+
+	userAgent, err := generateUserAgentString(d, client.UserAgent)
+	if err != nil {
+		return err
+	}
+	client.UserAgent = userAgent
 	updateRequest := &packngo.ProjectUpdateRequest{}
 	if d.HasChange("name") {
 		pName := d.Get("name").(string)
@@ -287,6 +305,12 @@ func resourceMetalProjectUpdate(d *schema.ResourceData, meta interface{}) error 
 
 func resourceMetalProjectDelete(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*Config).metal
+
+	userAgent, err := generateUserAgentString(d, client.UserAgent)
+	if err != nil {
+		return err
+	}
+	client.UserAgent = userAgent
 
 	resp, err := client.Projects.Delete(d.Id())
 	if ignoreResponseErrors(httpForbidden, httpNotFound)(resp, err) != nil {

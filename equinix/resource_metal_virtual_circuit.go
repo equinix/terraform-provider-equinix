@@ -140,6 +140,12 @@ func resourceMetalVirtualCircuit() *schema.Resource {
 
 func resourceMetalVirtualCircuitCreate(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*Config).metal
+
+	userAgent, err := generateUserAgentString(d, client.UserAgent)
+	if err != nil {
+		return err
+	}
+	client.UserAgent = userAgent
 	vncr := packngo.VCCreateRequest{
 		VirtualNetworkID: d.Get("vlan_id").(string),
 		Name:             d.Get("name").(string),
@@ -199,6 +205,12 @@ func resourceMetalVirtualCircuitCreate(d *schema.ResourceData, meta interface{})
 
 func resourceMetalVirtualCircuitRead(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*Config).metal
+
+	userAgent, err := generateUserAgentString(d, client.UserAgent)
+	if err != nil {
+		return err
+	}
+	client.UserAgent = userAgent
 	vcId := d.Id()
 
 	vc, _, err := client.VirtualCircuits.Get(
@@ -286,6 +298,12 @@ func getVCStateWaiter(client *packngo.Client, id string, timeout time.Duration, 
 func resourceMetalVirtualCircuitUpdate(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*Config).metal
 
+	userAgent, err := generateUserAgentString(d, client.UserAgent)
+	if err != nil {
+		return err
+	}
+	client.UserAgent = userAgent
+
 	ur := packngo.VCUpdateRequest{}
 	if d.HasChange("vnid") {
 		vnid := d.Get("vnid").(string)
@@ -332,9 +350,15 @@ func resourceMetalVirtualCircuitUpdate(d *schema.ResourceData, meta interface{})
 
 func resourceMetalVirtualCircuitDelete(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*Config).metal
+
+	userAgent, err := generateUserAgentString(d, client.UserAgent)
+	if err != nil {
+		return err
+	}
+	client.UserAgent = userAgent
 	// we first disconnect VLAN from the VC
 	empty := ""
-	_, _, err := client.VirtualCircuits.Update(
+	_, _, err = client.VirtualCircuits.Update(
 		d.Id(),
 		&packngo.VCUpdateRequest{VirtualNetworkID: &empty},
 		nil,

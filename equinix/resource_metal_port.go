@@ -141,6 +141,12 @@ func resourceMetalPortUpdate(d *schema.ResourceData, meta interface{}) error {
 
 func resourceMetalPortRead(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*Config).metal
+
+	userAgent, err := generateUserAgentString(d, client.UserAgent)
+	if err != nil {
+		return err
+	}
+	client.UserAgent = userAgent
 	port, err := getPortByResourceData(d, client)
 	if err != nil {
 		if isNotFound(err) || isForbidden(err) {

@@ -200,7 +200,6 @@ func configureProvider(ctx context.Context, d *schema.ResourceData, p *schema.Pr
 	if err := d.GetProviderMeta(&meta); err != nil {
 		return nil, diag.FromErr(err)
 	}
-	config.UAPrefix = meta.ModuleName
 	config.terraformVersion = p.TerraformVersion
 	if config.terraformVersion == "" {
 		// Terraform 0.12 introduced this field to the protocol
@@ -417,4 +416,19 @@ func schemaSetToMap(set *schema.Set) map[int]interface{} {
 		}
 	}
 	return transformed
+}
+
+func generateUserAgentString(d *schema.ResourceData, currentUserAgent string) (string, error) {
+	var m providerMeta
+
+	err := d.GetProviderMeta(&m)
+	if err != nil {
+		return currentUserAgent, err
+	}
+
+	if m.ModuleName != "" {
+		return strings.Join([]string{m.ModuleName, currentUserAgent}, " "), nil
+	}
+
+	return currentUserAgent, nil
 }

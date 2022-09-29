@@ -95,6 +95,12 @@ func resourceMetalGateway() *schema.Resource {
 func resourceMetalGatewayCreate(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*Config).metal
 
+	userAgent, err := generateUserAgentString(d, client.UserAgent)
+	if err != nil {
+		return err
+	}
+	client.UserAgent = userAgent
+
 	_, hasIPReservation := d.GetOk("ip_reservation_id")
 	_, hasSubnetSize := d.GetOk("private_ipv4_subnet_size")
 	if !(hasIPReservation || hasSubnetSize) {
@@ -120,6 +126,12 @@ func resourceMetalGatewayCreate(d *schema.ResourceData, meta interface{}) error 
 
 func resourceMetalGatewayRead(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*Config).metal
+
+	userAgent, err := generateUserAgentString(d, client.UserAgent)
+	if err != nil {
+		return err
+	}
+	client.UserAgent = userAgent
 	mgId := d.Id()
 
 	includes := &packngo.GetOptions{Includes: []string{"project", "ip_reservation", "virtual_network", "vrf"}}
@@ -152,6 +164,12 @@ func resourceMetalGatewayRead(d *schema.ResourceData, meta interface{}) error {
 
 func resourceMetalGatewayDelete(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*Config).metal
+
+	userAgent, err := generateUserAgentString(d, client.UserAgent)
+	if err != nil {
+		return err
+	}
+	client.UserAgent = userAgent
 	resp, err := client.MetalGateways.Delete(d.Id())
 	if ignoreResponseErrors(httpForbidden, httpNotFound)(resp, err) != nil {
 		return friendlyError(err)

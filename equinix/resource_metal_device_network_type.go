@@ -72,9 +72,15 @@ func getAndPossiblySetNetworkType(d *schema.ResourceData, c *packngo.Client, tar
 
 func resourceMetalDeviceNetworkTypeCreate(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*Config).metal
+
+	userAgent, err := generateUserAgentString(d, client.UserAgent)
+	if err != nil {
+		return err
+	}
+	client.UserAgent = userAgent
 	ntype := d.Get("type").(string)
 
-	err := getAndPossiblySetNetworkType(d, client, ntype)
+	err = getAndPossiblySetNetworkType(d, client, ntype)
 	if err != nil {
 		return err
 	}
@@ -84,6 +90,12 @@ func resourceMetalDeviceNetworkTypeCreate(d *schema.ResourceData, meta interface
 
 func resourceMetalDeviceNetworkTypeRead(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*Config).metal
+
+	userAgent, err := generateUserAgentString(d, client.UserAgent)
+	if err != nil {
+		return err
+	}
+	client.UserAgent = userAgent
 
 	_, devNType, err := getDevIDandNetworkType(d, client)
 	if err != nil {
@@ -112,6 +124,12 @@ func resourceMetalDeviceNetworkTypeRead(d *schema.ResourceData, meta interface{}
 
 func resourceMetalDeviceNetworkTypeUpdate(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*Config).metal
+
+	userAgent, err := generateUserAgentString(d, client.UserAgent)
+	if err != nil {
+		return err
+	}
+	client.UserAgent = userAgent
 	ntype := d.Get("type").(string)
 	if d.HasChange("type") {
 		err := getAndPossiblySetNetworkType(d, client, ntype)

@@ -65,6 +65,12 @@ func resourceMetalSSHKey() *schema.Resource {
 func resourceMetalSSHKeyCreate(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*Config).metal
 
+	userAgent, err := generateUserAgentString(d, client.UserAgent)
+	if err != nil {
+		return err
+	}
+	client.UserAgent = userAgent
+
 	createRequest := &packngo.SSHKeyCreateRequest{
 		Label: d.Get("name").(string),
 		Key:   d.Get("public_key").(string),
@@ -87,6 +93,12 @@ func resourceMetalSSHKeyCreate(d *schema.ResourceData, meta interface{}) error {
 
 func resourceMetalSSHKeyRead(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*Config).metal
+
+	userAgent, err := generateUserAgentString(d, client.UserAgent)
+	if err != nil {
+		return err
+	}
+	client.UserAgent = userAgent
 
 	key, _, err := client.SSHKeys.Get(d.Id(), nil)
 	if err != nil {
@@ -123,6 +135,12 @@ func resourceMetalSSHKeyRead(d *schema.ResourceData, meta interface{}) error {
 func resourceMetalSSHKeyUpdate(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*Config).metal
 
+	userAgent, err := generateUserAgentString(d, client.UserAgent)
+	if err != nil {
+		return err
+	}
+	client.UserAgent = userAgent
+
 	updateRequest := &packngo.SSHKeyUpdateRequest{}
 
 	if d.HasChange("name") {
@@ -135,7 +153,7 @@ func resourceMetalSSHKeyUpdate(d *schema.ResourceData, meta interface{}) error {
 		updateRequest.Key = &kKey
 	}
 
-	_, _, err := client.SSHKeys.Update(d.Id(), updateRequest)
+	_, _, err = client.SSHKeys.Update(d.Id(), updateRequest)
 	if err != nil {
 		return friendlyError(err)
 	}
@@ -145,6 +163,12 @@ func resourceMetalSSHKeyUpdate(d *schema.ResourceData, meta interface{}) error {
 
 func resourceMetalSSHKeyDelete(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*Config).metal
+
+	userAgent, err := generateUserAgentString(d, client.UserAgent)
+	if err != nil {
+		return err
+	}
+	client.UserAgent = userAgent
 
 	resp, err := client.SSHKeys.Delete(d.Id())
 	if ignoreResponseErrors(httpForbidden, httpNotFound)(resp, err) != nil {

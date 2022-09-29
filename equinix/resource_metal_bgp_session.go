@@ -50,6 +50,13 @@ func resourceMetalBGPSession() *schema.Resource {
 
 func resourceMetalBGPSessionCreate(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*Config).metal
+
+	userAgent, err := generateUserAgentString(d, client.UserAgent)
+	if err != nil {
+		return err
+	}
+	client.UserAgent = userAgent
+
 	dID := d.Get("device_id").(string)
 	addressFamily := d.Get("address_family").(string)
 	defaultRoute := d.Get("default_route").(bool)
@@ -69,6 +76,12 @@ func resourceMetalBGPSessionCreate(d *schema.ResourceData, meta interface{}) err
 
 func resourceMetalBGPSessionRead(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*Config).metal
+
+	userAgent, err := generateUserAgentString(d, client.UserAgent)
+	if err != nil {
+		return err
+	}
+	client.UserAgent = userAgent
 	bgpSession, _, err := client.BGPSessions.Get(d.Id(),
 		&packngo.GetOptions{Includes: []string{"device"}})
 	if err != nil {
@@ -97,6 +110,12 @@ func resourceMetalBGPSessionRead(d *schema.ResourceData, meta interface{}) error
 
 func resourceMetalBGPSessionDelete(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*Config).metal
+
+	userAgent, err := generateUserAgentString(d, client.UserAgent)
+	if err != nil {
+		return err
+	}
+	client.UserAgent = userAgent
 	resp, err := client.BGPSessions.Delete(d.Id())
 	return ignoreResponseErrors(httpForbidden, httpNotFound)(resp, err)
 }

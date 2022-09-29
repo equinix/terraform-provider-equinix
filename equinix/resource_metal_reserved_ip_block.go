@@ -232,6 +232,12 @@ func resourceMetalReservedIPBlock() *schema.Resource {
 
 func resourceMetalReservedIPBlockCreate(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*Config).metal
+
+	userAgent, err := generateUserAgentString(d, client.UserAgent)
+	if err != nil {
+		return err
+	}
+	client.UserAgent = userAgent
 	quantity := d.Get("quantity").(int)
 	typ := d.Get("type").(string)
 
@@ -312,6 +318,12 @@ func resourceMetalReservedIPBlockCreate(d *schema.ResourceData, meta interface{}
 
 func resourceMetalReservedIPBlockUpdate(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*Config).metal
+
+	userAgent, err := generateUserAgentString(d, client.UserAgent)
+	if err != nil {
+		return err
+	}
+	client.UserAgent = userAgent
 	id := d.Id()
 	req := &packngo.IPAddressUpdateRequest{}
 	if d.HasChange("tags") {
@@ -450,6 +462,12 @@ func loadBlock(d *schema.ResourceData, reservedBlock *packngo.IPAddressReservati
 
 func resourceMetalReservedIPBlockRead(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*Config).metal
+
+	userAgent, err := generateUserAgentString(d, client.UserAgent)
+	if err != nil {
+		return err
+	}
+	client.UserAgent = userAgent
 	id := d.Id()
 
 	getOpts := &packngo.GetOptions{Includes: []string{"facility", "metro", "project", "vrf"}}
@@ -480,6 +498,12 @@ func resourceMetalReservedIPBlockRead(d *schema.ResourceData, meta interface{}) 
 
 func resourceMetalReservedIPBlockDelete(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*Config).metal
+
+	userAgent, err := generateUserAgentString(d, client.UserAgent)
+	if err != nil {
+		return err
+	}
+	client.UserAgent = userAgent
 
 	id := d.Id()
 

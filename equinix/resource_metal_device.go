@@ -445,6 +445,12 @@ func shouldReinstall(_ context.Context, d *schema.ResourceDiff, meta interface{}
 func resourceMetalDeviceCreate(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*Config).metal
 
+	userAgent, err := generateUserAgentString(d, client.UserAgent)
+	if err != nil {
+		return err
+	}
+	client.UserAgent = userAgent
+
 	var addressTypesSlice []packngo.IPAddressCreateRequest
 	_, ok := d.GetOk("ip_address")
 	if ok {
@@ -579,6 +585,12 @@ func resourceMetalDeviceCreate(d *schema.ResourceData, meta interface{}) error {
 func resourceMetalDeviceRead(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*Config).metal
 
+	userAgent, err := generateUserAgentString(d, client.UserAgent)
+	if err != nil {
+		return err
+	}
+	client.UserAgent = userAgent
+
 	device, _, err := client.Devices.Get(d.Id(), deviceReadOptions)
 	if err != nil {
 		err = friendlyError(err)
@@ -681,6 +693,12 @@ func resourceMetalDeviceRead(d *schema.ResourceData, meta interface{}) error {
 func resourceMetalDeviceUpdate(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*Config).metal
 
+	userAgent, err := generateUserAgentString(d, client.UserAgent)
+	if err != nil {
+		return err
+	}
+	client.UserAgent = userAgent
+
 	if d.HasChange("locked") {
 		var action func(string) (*packngo.Response, error)
 		if d.Get("locked").(bool) {
@@ -782,6 +800,12 @@ func getReinstallOptions(d *schema.ResourceData) (packngo.DeviceReinstallFields,
 
 func resourceMetalDeviceDelete(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*Config).metal
+
+	userAgent, err := generateUserAgentString(d, client.UserAgent)
+	if err != nil {
+		return err
+	}
+	client.UserAgent = userAgent
 
 	fdvIf, fdvOk := d.GetOk("force_detach_volumes")
 	fdv := false
