@@ -69,7 +69,7 @@ func resourceMetalOrganizationMember() *schema.Resource {
 			},
 			"projects_ids": {
 				Type:        schema.TypeSet,
-				Description: "Project IDs the member has access to within the organization. If the member is an 'admin', the projects list should be empty.",
+				Description: "Project IDs the member has access to within the organization. If the member is an 'owner', the projects list should be empty.",
 				Required:    true,
 				Elem: &schema.Schema{
 					Type:         schema.TypeString,
@@ -101,7 +101,7 @@ func resourceMetalOrganizationMember() *schema.Resource {
 			},
 			"roles": {
 				Type:        schema.TypeSet,
-				Description: "Organization roles",
+				Description: "Organization roles (owner, collaborator, limited_collaborator, billing)",
 				Required:    true,
 				Elem:        &schema.Schema{Type: schema.TypeString},
 				// TODO: Update should be supported. packngo.InvitationService does not offer an Update	method.

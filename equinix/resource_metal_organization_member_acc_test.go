@@ -104,7 +104,7 @@ func testAccResourceMetalOrganizationMember_owner() string {
 	return fmt.Sprintf(`
 	resource "equinix_metal_organization_member" "owner" {
 		invitee = "/* TODO: Add org owner email or token owner email here */"
-		roles = ["admin"]
+		roles = ["owner"]
 		projects_ids = []
 		organization_id = equinix_metal_organization.test.id
 	}
