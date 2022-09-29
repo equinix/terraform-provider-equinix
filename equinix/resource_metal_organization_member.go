@@ -82,6 +82,12 @@ func resourceMetalOrganizationMember() *schema.Resource {
 				Description: "The nonce for the invitation (only known in the invitation stage)",
 				Computed:    true,
 			},
+			"message": {
+				Type:        schema.TypeString,
+				Description: "A message to the invitee (only used during the invitation stage)",
+				Optional:    true,
+				ForceNew:    true,
+			},
 			"created": {
 				Type:        schema.TypeString,
 				Description: "When the invitation was created (only known in the invitation stage)",
@@ -117,6 +123,7 @@ func resourceMetalOrganizationMemberCreate(d *schema.ResourceData, meta interfac
 		Invitee:     email,
 		Roles:       convertStringArr(d.Get("roles").(*schema.Set).List()),
 		ProjectsIDs: convertStringArr(d.Get("projects_ids").(*schema.Set).List()),
+		Message:     strings.TrimSpace(d.Get("message").(string)),
 	}
 
 	orgID := d.Get("organization_id").(string)

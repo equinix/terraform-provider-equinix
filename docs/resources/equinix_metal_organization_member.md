@@ -38,6 +38,7 @@ The following arguments are supported:
 * `organization_id` - (Required) The organization to invite the user to
 * `projects_ids` - (Required) Project IDs the member has access to within the organization. If the member is an 'admin', the projects list should be empty.
 * `roles` - (Required) Organization roles (admin, collaborator, limited_collaborator, billing)
+* `message` - A message to include in the emailed invitation.
 
 ## Attribute Reference
 

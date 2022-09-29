@@ -118,6 +118,7 @@ resource "equinix_metal_organization_member" "member" {
     roles = ["limited_collaborator"]
     projects_ids = [equinix_metal_project.test.id]
     organization_id = equinix_metal_organization.test.id
+	message = "This invitation was sent by the github.com/equinix/terraform-provider-equinix acceptance tests to test equinix_metal_organization_member resources."
 }
 `
 }
