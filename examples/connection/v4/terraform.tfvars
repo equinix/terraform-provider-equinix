@@ -1,0 +1,20 @@
+equinix_client_id      = "opYOL7xfD0HLshl2SyKAO4ebLn5uWbhQ"
+equinix_client_secret  = "MdK7Qq8IfaSN9yBS"
+connection_name = "fabric_tf_acc_CSAZURE"
+description = "Test Connection"
+connection_type = "EVPL_VC"
+notifications_type = "ALL"
+notifications_emails = ["example@equinix.com"]
+bandwidth = 50
+redundancy_pri = "PRIMARY"
+purchase_order_number = "1-323292"
+aside_ap_type = "COLO"
+aside_port_uuid = "c4d9350e-783c-83cd-1ce0-306a5c00a600"
+aside_link_protocol_type = "QINQ"
+aside_link_protocol_stag = "2019"
+zside_ap_type = "SP"
+zside_ap_authentication_key = "a38565b9-5d32-45ba-bb01-0649e2735753"
+zside_ap_profile_type = "L2_PROFILE"
+zside_ap_profile_uuid = "bfb74121-7e2c-4f74-99b3-69cdafb03b41"
+zside_location = "SV"
+
