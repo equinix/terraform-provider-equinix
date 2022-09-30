@@ -12,12 +12,9 @@ require (
 	github.com/hashicorp/go-cty v1.4.1-0.20200414143053-d3edf31b6320
 	github.com/hashicorp/go-multierror v1.1.1
 	github.com/hashicorp/go-retryablehttp v0.6.6
-	github.com/hashicorp/terraform-plugin-sdk/v2 v2.9.0
-	github.com/packethost/packngo v0.28.0
-	github.com/stretchr/testify v1.7.0
 	github.com/hashicorp/terraform-plugin-docs v0.12.0
 	github.com/hashicorp/terraform-plugin-sdk/v2 v2.18.0
-	github.com/packethost/packngo v0.25.0
+	github.com/packethost/packngo v0.28.0
 	github.com/stretchr/testify v1.7.2
 	golang.org/x/oauth2 v0.0.0-20220630143837-2104d58473e0
 )
