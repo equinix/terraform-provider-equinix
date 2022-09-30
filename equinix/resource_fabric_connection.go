@@ -7,7 +7,7 @@ import (
 	"strings"
 	"time"
 
-	v4 "github.com/equinix-labs/fabric-go/fabric/v4"
+	v4 "github.com/equinix-labs/fabric-go/fabric/v4" //TODO: Update to ..equinix-lab/fabric-go project before Production merge
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -115,11 +115,9 @@ func resourceFabricConnectionRead(ctx context.Context, d *schema.ResourceData, m
 	conn, _, err := client.ConnectionsApi.GetConnectionByUuid(ctx, d.Id(), nil)
 	if err != nil {
 		log.Printf("[WARN] Connection %s not found , error %s", d.Id(), err)
-		//TODO needs to see if I can trigger actual error and use exact error message
 		if !strings.Contains(err.Error(), "500") {
 			d.SetId("")
 		}
-
 		return diag.FromErr(err)
 	}
 	d.SetId(conn.Uuid)
@@ -165,6 +163,9 @@ func resourceFabricConnectionUpdate(ctx context.Context, d *schema.ResourceData,
 	var err error
 	dbConn, err = waitUntilConnectionIsActive(uuid, meta, ctx)
 	if err != nil {
+		if !strings.Contains(err.Error(), "500") {
+			d.SetId("")
+		}
 		return diag.Errorf(" Either timed out or errored out while fetching connection for uuid %s and error %v", uuid, err)
 	}
 	update, err := getUpdateRequest(dbConn, d)
@@ -180,6 +181,9 @@ func resourceFabricConnectionUpdate(ctx context.Context, d *schema.ResourceData,
 	updatedConn, err = waitForConnectionUpdateCompletion(uuid, meta, ctx)
 
 	if err != nil {
+		if !strings.Contains(err.Error(), "500") {
+			d.SetId("")
+		}
 		return diag.FromErr(fmt.Errorf("Errored while waiting for successful connection update, response %v, error %v", res, err))
 	}
 

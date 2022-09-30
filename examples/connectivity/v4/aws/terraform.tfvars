@@ -1,0 +1,22 @@
+equinix_client_id      = "opYOL7xfD0HLshl2SyKAO4ebLn5uWbhQ"
+equinix_client_secret  = "MdK7Qq8IfaSN9yBS"
+
+connection_name = "terra_e2e_aws"
+description = "Test Connection"
+connection_type = "EVPL_VC"
+notifications_type = "ALL"
+notifications_emails = ["example@equinix.com"]
+bandwidth = 50
+redundancy = "PRIMARY"
+purchase_order_number = "1-323292"
+aside_ap_type = "COLO"
+aside_link_protocol_type = "QINQ"
+aside_link_protocol_stag = "2019"
+aside_link_protocol_ctag = "2112"
+zside_ap_type = "SP"
+zside_ap_authentication_key = "357848976964"
+zside_ap_profile_type = "L2_PROFILE"
+zside_location = "SV"
+seller_region = "us-west-1"
+fabric_sp_name = "AWS Direct Connect"
+equinix_port_name = "ops-user100-CX-SV5-NL-Qinq-BO-10G-SEC-JP-199"

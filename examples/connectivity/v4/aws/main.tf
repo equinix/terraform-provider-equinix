@@ -3,11 +3,21 @@ provider "equinix" {
   client_secret = var.equinix_client_secret
 }
 
-provider "azurerm" {
-  features {}
+data "equinix_fabric_service_profiles" "aws" {
+  filter {
+    property = "/name"
+    operator = "="
+    values = [var.fabric_sp_name]
+  }
 }
 
-resource "equinix_ecx_l2_connection" "azure-dot1q-pub" {
+data "equinix_fabric_ports" "qinq-pri" {
+  local_var_optionals {
+    name = var.equinix_port_name
+  }
+}
+
+resource "equinix_fabric_connection" "aws-qinq" {
   name = var.connection_name
   description = var.description
   type = var.connection_type
@@ -16,7 +26,7 @@ resource "equinix_ecx_l2_connection" "azure-dot1q-pub" {
     emails=var.notifications_emails
   }
   bandwidth = var.bandwidth
-  redundancy {priority= var.redundancy_pri}
+  redundancy {priority= var.redundancy}
   order {
     purchase_order_number= var.purchase_order_number
   }
@@ -24,11 +34,12 @@ resource "equinix_ecx_l2_connection" "azure-dot1q-pub" {
     access_point {
       type= var.aside_ap_type
       port {
-        uuid= var.aside_port_uuid
+        uuid= data.equinix_fabric_ports.qinq-pri.data.0.uuid
       }
       link_protocol {
         type= var.aside_link_protocol_type
         vlan_s_tag= var.aside_link_protocol_stag
+        vlan_c_tag = var.aside_link_protocol_ctag
       }
     }
   }
@@ -36,13 +47,23 @@ resource "equinix_ecx_l2_connection" "azure-dot1q-pub" {
     access_point {
       type= var.zside_ap_type
       authentication_key= var.zside_ap_authentication_key
+      seller_region = var.seller_region
       profile {
         type= var.zside_ap_profile_type
-        uuid= var.zside_ap_profile_uuid
+        uuid= data.equinix_fabric_service_profiles.aws.data.0.uuid
       }
       location {
         metro_code= var.zside_location
       }
     }
   }
+}
+
+output "connection_result" {
+  value = "equinix_fabric_connection.aws-qinq.id"
+}
+
+resource "time_sleep" "wait_for_ingress_alb" {
+  destroy_duration = "60s"
+  depends_on = [equinix_fabric_connection.aws-qinq]
 }
