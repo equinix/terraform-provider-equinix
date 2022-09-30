@@ -106,6 +106,10 @@ func Provider() *schema.Provider {
 			"equinix_ecx_l2_sellerprofile":       dataSourceECXL2SellerProfile(),
 			"equinix_ecx_l2_sellerprofiles":      dataSourceECXL2SellerProfiles(),
 			"equinix_fabric_connection":          dataSourceFabricConnection(),
+			"equinix_fabric_port":                dataSourceFabricPort(),
+			"equinix_fabric_ports":               dataSourceFabricGetPortsByName(),
+			"equinix_fabric_service_profile":     dataSourceFabricServiceProfileReadByUuid(),
+			"equinix_fabric_service_profiles":    dataSourceFabricSearchServiceProfilesByName(),
 			"equinix_network_account":            dataSourceNetworkAccount(),
 			"equinix_network_device":             dataSourceNetworkDevice(),
 			"equinix_network_device_type":        dataSourceNetworkDeviceType(),
@@ -138,6 +142,7 @@ func Provider() *schema.Provider {
 			"equinix_ecx_l2_connection_accepter": resourceECXL2ConnectionAccepter(),
 			"equinix_ecx_l2_serviceprofile":      resourceECXL2ServiceProfile(),
 			"equinix_fabric_connection":          resourceFabricConnection(),
+			"equinix_fabric_service_profile":     resourceFabricServiceProfile(),
 			"equinix_network_device":             resourceNetworkDevice(),
 			"equinix_network_ssh_user":           resourceNetworkSSHUser(),
 			"equinix_network_bgp":                resourceNetworkBGP(),
@@ -217,6 +222,14 @@ func expandListToStringList(list []interface{}) []string {
 	result := make([]string, len(list))
 	for i, v := range list {
 		result[i] = fmt.Sprint(v)
+	}
+	return result
+}
+
+func expandListToInt32List(list []interface{}) []int32 {
+	result := make([]int32, len(list))
+	for i, v := range list {
+		result[i] = int32(v.(int))
 	}
 	return result
 }

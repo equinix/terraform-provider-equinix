@@ -609,7 +609,7 @@ func createNotificationSch() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
 		"type": {
 			Type:        schema.TypeString,
-			Optional:    true,
+			Required:    true,
 			Description: "Notification Type - ALL,CONNECTION_APPROVAL,SALES_REP_NOTIFICATIONS, NOTIFICATIONS",
 		},
 		"send_interval": {
@@ -619,7 +619,7 @@ func createNotificationSch() map[string]*schema.Schema {
 		},
 		"emails": {
 			Type:        schema.TypeList,
-			Optional:    true,
+			Required:    true,
 			Description: "Array of contact emails",
 			Elem: &schema.Schema{
 				Type: schema.TypeString,
@@ -688,16 +688,14 @@ var createOperationRes = &schema.Resource{
 func createOperationSch() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
 		"provider_status": {
-			Type:         schema.TypeString,
-			Optional:     true,
-			Description:  "Connection provider readiness status",
-			ValidateFunc: validation.StringInSlice([]string{"AVAILABLE", "DEPROVISIONED", "DEPROVISIONING", "FAILED", "NOT_AVAILABLE", "PENDING_APPROVAL", "PROVISIONED", "PROVISIONING", "REJECTED", "PENDING_BGP", "OUT_OF_BANDWIDTH", "DELETED", "ERROR", "ERRORED", "NOTPROVISIONED", "NOT_PROVISIONED", "ORDERING", "DELETING", "PENDING DELETE", "N/A"}, true),
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "Connection provider readiness status",
 		},
 		"equinix_status": {
-			Type:         schema.TypeString,
-			Optional:     true,
-			Description:  "Connection status",
-			ValidateFunc: validation.StringInSlice([]string{"REJECTED_ACK", "REJECTED", "PENDING_DELETE", "PROVISIONED", "BEING_REPROVISIONED", "BEING_DEPROVISIONED", "BEING_PROVISIONED", "CREATED", "ERRORED", "PENDING_DEPROVISIONING", "APPROVED", "ORDERING", "PENDING_APPROVAL", "NOT_PROVISIONED", "DEPROVISIONING", "NOT_DEPROVISIONED", "PENDING_AUTO_APPROVAL", "PROVISIONING", "PENDING_BGP_PEERING", "PENDING_PROVIDER_VLAN", "DEPROVISIONED", "DELETED", "PENDING_BANDWIDTH_APPROVAL", "AUTO_APPROVAL_FAILED", "UPDATE_PENDING", "DELETED_API", "MODIFIED", "PENDING_PROVIDER_VLAN_ERROR", "DRAFT", "CANCELLED", "PENDING_INTERFACE_CONFIGURATION"}, true),
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "Connection status",
 		},
 		"errors": {
 			Type:        schema.TypeList,

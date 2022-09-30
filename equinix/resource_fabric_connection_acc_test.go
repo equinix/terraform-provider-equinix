@@ -7,32 +7,32 @@ import (
 	"testing"
 	"time"
 
-	v4 "github.com/equinix-labs/fabric-go/fabric/v4"
+	v4 "github.com/equinix-labs/fabric-go/fabric/v4" //TODO: Update to ..equinix-lab/fabric-go project before Production merge
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 )
 
-func TestAccFabricCreateAzureConnection(t *testing.T) {
+func TestAccFabricCreateConnection(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: checkConnectionDelete,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccFabricCreateEPLConnectionConfig(50),
+				Config: testAccFabricCreateAzureConnectionConfig(50),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(
-						"equinix_fabric_connection.test", "name", fmt.Sprint("fabric_tf_acc_test_CCEPL")),
+						"equinix_fabric_connection.test", "name", fmt.Sprint("fabric_tf_acc_Generic")),
 					resource.TestCheckResourceAttr(
 						"equinix_fabric_connection.test", "bandwidth", fmt.Sprint("50")),
 				),
 				ExpectNonEmptyPlan: true,
 			},
 			{
-				Config: testAccFabricCreateEPLConnectionConfig(100),
+				Config: testAccFabricCreateAzureConnectionConfig(100),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(
-						"equinix_fabric_connection.test", "name", fmt.Sprint("fabric_tf_acc_test_CCEPL")),
+						"equinix_fabric_connection.test", "name", fmt.Sprint("fabric_tf_acc_Generic")),
 					resource.TestCheckResourceAttr(
 						"equinix_fabric_connection.test", "bandwidth", fmt.Sprint("100")),
 				),
@@ -107,7 +107,7 @@ func testAccFabricCreateEPLConnectionConfig(bandwidth int32) string {
 				}
 				link_protocol {
 					type= "QINQ"
-					vlan_s_tag= 1232
+					vlan_s_tag= 1976
 				}
 			}
 		}
@@ -119,7 +119,7 @@ func testAccFabricCreateEPLConnectionConfig(bandwidth int32) string {
 				}
 				link_protocol {
 					type= "QINQ"
-					vlan_s_tag= 458
+					vlan_s_tag= 3711
 				}
 			location {
         		metro_code= "SV"
@@ -151,6 +151,49 @@ func testAccFabricCreateAzureConnectionConfig(bandwidth int32) string {
       		}
       	link_protocol {
         	type= "QINQ"
+        	vlan_s_tag= "2231"
+      	}
+    }
+  }
+  	z_side {
+    	access_point {
+      		type= "SP"
+			authentication_key= "7244f849-8665-493e-8877-a4a0abb2a07e"
+      		profile {
+        		type= "L2_PROFILE"
+        		uuid= "bfb74121-7e2c-4f74-99b3-69cdafb03b41"
+      		}
+      		location {
+        		metro_code= "SV"
+      		}
+    	}
+  	}
+}
+`, bandwidth)
+}
+
+func testAccFabricCreateGenericConfig(bandwidth int32) string {
+	return fmt.Sprintf(`resource "equinix_fabric_connection" "test" {
+	name = "fabric_tf_acc_Generic"
+	description = "Test Connection"
+	type = "EVPL_VC"
+	notifications{
+		type="ALL" 
+		emails=["example@equinix.com"]
+	} 
+	bandwidth = %d
+	redundancy {priority= "PRIMARY"}
+	order {
+    	purchase_order_number= "1-323292"
+  	}
+  	a_side {
+    	access_point {
+      		type= "COLO"
+      		port {
+        		uuid= "c4d9350e-783c-83cd-1ce0-306a5c00a600"
+      		}
+      	link_protocol {
+        	type= "QINQ"
         	vlan_s_tag= "2019"
       	}
     }
@@ -158,10 +201,9 @@ func testAccFabricCreateAzureConnectionConfig(bandwidth int32) string {
   	z_side {
     	access_point {
       		type= "SP"
-			authentication_key= "a38565b9-5d32-45ba-bb01-0649e2735753"
       		profile {
         		type= "L2_PROFILE"
-        		uuid= "bfb74121-7e2c-4f74-99b3-69cdafb03b41"
+        		uuid= "7a278326-cfd3-46a6-92d0-e10ed0d7af50"
       		}
       		location {
         		metro_code= "SV"

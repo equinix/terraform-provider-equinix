@@ -4,20 +4,114 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
-func readPortDeviseSch() map[string]*schema.Schema {
+var readPortDeviceRes = &schema.Resource{
+	Schema: readPortDeviceSch(),
+}
+
+func readPortDeviceSch() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
 		"name": {
 			Type:        schema.TypeString,
-			Optional:    true,
-			Description: "Port Name",
+			Computed:    true,
+			Description: "Port name",
 		},
 		"redundancy": {
-			Type:        schema.TypeString,
-			Optional:    true,
-			Description: "Port Device Redundancy",
+			Type:        schema.TypeSet,
+			Computed:    true,
+			Description: "Port device redundancy",
 			Elem: &schema.Resource{
 				Schema: readRedundancySch(),
 			},
+		},
+	}
+}
+
+var readPortDeviceRedundancyRes = &schema.Resource{
+	Schema: readRedundancySch(),
+}
+
+var readPortInterfaceRes = &schema.Resource{
+	Schema: readPortInterfaceSch(),
+}
+
+func readPortInterfaceSch() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"type": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "Port interface type",
+		},
+		"if_index": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "Port interface index",
+		},
+		"name": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "Port interface name",
+		},
+	}
+}
+
+var readPortEncapsulationRes = &schema.Resource{
+	Schema: readFabricPortEncapsulation(),
+}
+
+func readFabricPortEncapsulation() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"type": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "Port encapsulation protocol type",
+		},
+		"tag_protocol_id": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "Port encapsulation Tag Protocol Identifier",
+		},
+	}
+}
+
+var readPortLagRes = &schema.Resource{
+	Schema: readFabricPortLag(),
+}
+
+func readFabricPortLag() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"enabled": {
+			Type:        schema.TypeBool,
+			Computed:    true,
+			Description: "If LAG enabled",
+		},
+		"id": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "Link aggregation group identifier",
+		},
+		"name": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "Link aggregation group name",
+		},
+		"member_status": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "LAG port status",
+		},
+	}
+}
+
+var readPortSettingsRes = &schema.Resource{
+	Schema: readFabricPortSettings(),
+}
+
+func readFabricPortSettings() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"port_type": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "Port type",
 		},
 	}
 }
@@ -26,52 +120,80 @@ func readPortOperationSch() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
 		"operational_status": {
 			Type:        schema.TypeString,
-			Optional:    true,
-			Description: "Port Type",
+			Computed:    true,
+			Description: "Port operation status",
 		},
 		"connection_count": {
-			Type:        schema.TypeString,
-			Optional:    true,
+			Type:        schema.TypeInt,
+			Computed:    true,
 			Description: "Total number of current connections",
 		},
 		"op_status_changed_at": {
 			Type:        schema.TypeString,
-			Optional:    true,
+			Computed:    true,
 			Description: "Date and time at which port availability changed",
 		},
 	}
 }
 
+var readPortsRedundancyRes = &schema.Resource{
+	Schema: readPortsRedundancySch(),
+}
+
+func readPortsRedundancySch() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"enabled": {
+			Type:        schema.TypeBool,
+			Computed:    true,
+			Description: "Access point redundancy",
+		},
+		"group": {
+			Type:        schema.TypeInt,
+			Computed:    true,
+			Description: "Port redundancy group",
+		},
+		"priority": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "Priority type-Primary or Secondary",
+		},
+	}
+}
+
+var readPortTetherRes = &schema.Resource{
+	Schema: readFabricPortTether(),
+}
+
 func readFabricPortTether() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
-		"cross_onnect_id": {
+		"cross_connect_id": {
 			Type:        schema.TypeString,
-			Optional:    true,
+			Computed:    true,
 			Description: "Port cross connect identifier",
 		},
 		"cabinet_number": {
 			Type:        schema.TypeString,
-			Optional:    true,
+			Computed:    true,
 			Description: "Port cabinet number",
 		},
 		"system_name": {
 			Type:        schema.TypeString,
-			Optional:    true,
+			Computed:    true,
 			Description: "Port system name",
 		},
 		"patch_panel": {
 			Type:        schema.TypeString,
-			Optional:    true,
+			Computed:    true,
 			Description: "Port patch panel",
 		},
 		"patch_panel_port_a": {
 			Type:        schema.TypeString,
-			Optional:    true,
+			Computed:    true,
 			Description: "Port patch panel port A",
 		},
 		"patch_panel_port_b": {
 			Type:        schema.TypeString,
-			Optional:    true,
+			Computed:    true,
 			Description: "Port patch panel port B",
 		},
 	}
@@ -81,38 +203,28 @@ func readFabricPortResourceSchema() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
 		"type": {
 			Type:        schema.TypeString,
-			Optional:    true,
-			Description: "Port Type",
+			Computed:    true,
+			Description: "Port type",
 		},
 		"href": {
 			Type:        schema.TypeString,
 			Computed:    true,
 			Description: "Port URI information",
 		},
-		"id": {
-			Type:        schema.TypeInt,
-			Computed:    true,
-			Description: "Port ID",
-		},
 		"uuid": {
 			Type:        schema.TypeString,
-			Computed:    true,
+			Optional:    true,
 			Description: "Equinix-assigned port identifier",
 		},
 		"name": {
 			Type:        schema.TypeString,
 			Computed:    true,
-			Description: "Port Name",
+			Description: "Port name",
 		},
 		"description": {
 			Type:        schema.TypeString,
 			Computed:    true,
 			Description: "Port description",
-		},
-		"cvpid": {
-			Type:        schema.TypeString,
-			Computed:    true,
-			Description: "Unique ID for a virtual port",
 		},
 		"state": {
 			Type:        schema.TypeString,
@@ -147,14 +259,6 @@ func readFabricPortResourceSchema() map[string]*schema.Schema {
 			Computed:    true,
 			Description: "Port service type",
 		},
-		"order": {
-			Type:        schema.TypeSet,
-			Computed:    true,
-			Description: "Order related to this Port",
-			Elem: &schema.Resource{
-				Schema: readOrderSch(),
-			},
-		},
 		"account": {
 			Type:        schema.TypeSet,
 			Computed:    true,
@@ -184,67 +288,62 @@ func readFabricPortResourceSchema() map[string]*schema.Schema {
 			Computed:    true,
 			Description: "Port device",
 			Elem: &schema.Resource{
-				Schema: readPortDeviseSch(),
-			},
-		},
-		"interface": {
-			Type:        schema.TypeSet,
-			Computed:    true,
-			Description: "", //TODO
-			Elem: &schema.Resource{
-				//TODO PortInterface
+				Schema: readPortDeviceSch(),
 			},
 		},
 		"redundancy": {
 			Type:        schema.TypeSet,
 			Computed:    true,
-			Description: "Port Redundancy Information",
+			Description: "Port redundancy information",
 			Elem: &schema.Resource{
-				Schema: readPortRedundancySch(),
-			},
-		},
-		"tether": {
-			Type:        schema.TypeSet,
-			Computed:    true,
-			Description: "",
-			Elem: &schema.Resource{
-				Schema: readFabricPortTether(),
+				Schema: readPortsRedundancySch(),
 			},
 		},
 		"encapsulation": {
 			Type:        schema.TypeSet,
 			Computed:    true,
-			Description: "",
-			Elem:        &schema.Resource{}, //TODO  PortEncapsulation
+			Description: "Port encapsulation protocol",
+			Elem: &schema.Resource{
+				Schema: readFabricPortEncapsulation(),
+			},
 		},
 		"lag": {
 			Type:        schema.TypeSet,
 			Computed:    true,
-			Description: "",
-			Elem:        &schema.Resource{}, //TODO  PortLag
+			Description: "Port Lag",
+			Elem: &schema.Resource{
+				Schema: readFabricPortLag(),
+			},
 		},
-		"asn": {
-			Type:        schema.TypeInt,
-			Computed:    true,
-			Description: "Port ASN",
+	}
+}
+
+func readGetPortsByNameQueryParamSch() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"name": {
+			Type:        schema.TypeString,
+			Optional:    true,
+			Description: "Query Parameter to Get Ports By Name",
 		},
-		"settings": {
-			Type:        schema.TypeSet,
-			Computed:    true,
-			Description: "",
-			Elem:        &schema.Resource{}, //TODO  PortSettings
-		},
-		"physical_port_quantity": {
-			Type:        schema.TypeInt,
-			Computed:    true,
-			Description: "Number of physical ports",
-		},
-		"physical_ports": {
+	}
+}
+
+func readFabricPortsResponseSchema() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"data": {
 			Type:        schema.TypeList,
 			Computed:    true,
-			Description: "Physical ports that implement this port",
+			Description: "List of  Ports",
 			Elem: &schema.Resource{
 				Schema: readFabricPortResourceSchema(),
+			},
+		},
+		"local_var_optionals": {
+			Type:        schema.TypeSet,
+			Optional:    true,
+			Description: "name",
+			Elem: &schema.Resource{
+				Schema: readGetPortsByNameQueryParamSch(),
 			},
 		},
 	}

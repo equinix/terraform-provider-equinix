@@ -6,7 +6,7 @@ import (
 	"math/rand"
 	"time"
 
-	v4 "github.com/equinix-labs/fabric-go/fabric/v4"
+	v4 "github.com/equinix-labs/fabric-go/fabric/v4" //TODO: Update to ..equinix-lab/fabric-go project before Production merge
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
@@ -43,53 +43,68 @@ func accessPointToFabric(accessPointRequest []interface{}) v4.AccessPoint {
 		locationList := accessPointMap["location"].(interface{}).(*schema.Set).List()
 		typeVal := accessPointMap["type"].(interface{}).(string)
 		authenticationKey := accessPointMap["authentication_key"].(interface{}).(string)
+		if authenticationKey != "" {
+			accessPoint.AuthenticationKey = authenticationKey
+
+		}
 		providerConnectionId := accessPointMap["provider_connection_id"].(interface{}).(string)
+		if providerConnectionId != "" {
+			accessPoint.ProviderConnectionId = providerConnectionId
+		}
 		sellerRegion := accessPointMap["seller_region"].(interface{}).(string)
+		if sellerRegion != "" {
+			accessPoint.SellerRegion = sellerRegion
+		}
 		peeringTypeRaw := accessPointMap["peering_type"].(interface{}).(string)
-		gatewayRequest := accessPointMap["gateway"].(interface{}).(*schema.Set).List()
-
-		mappedGWr := v4.VirtualGateway{}
-		if len(gatewayRequest) != 0 {
-			mappedGWr = gatewayToFabric(gatewayRequest)
-		}
-
-		apt := v4.AccessPointType(typeVal)
-		p := v4.Port{}
-		if len(portList) != 0 {
-			p = portToFabric(portList)
-		}
-		linkProtocolList := accessPointMap["link_protocol"].(interface{}).(*schema.Set).List()
-		slp := v4.SimplifiedLinkProtocol{}
-		if len(linkProtocolList) != 0 {
-			slp = linkProtocolToFabric(linkProtocolList)
-		}
-		ssp := v4.SimplifiedServiceProfile{}
-		if len(profileList) != 0 {
-			ssp = simplifiedServiceProfileToFabric(profileList)
-		}
-
-		sl := v4.SimplifiedLocation{}
-		if len(locationList) != 0 {
-			sl = locationToFabric(locationList)
-		}
-
 		if peeringTypeRaw != "" {
 			peeringType := v4.PeeringType(peeringTypeRaw)
-			accessPoint = v4.AccessPoint{
-				Type_: &apt, Port: &p, LinkProtocol: &slp, AuthenticationKey: authenticationKey,
-				Profile: &ssp, Location: &sl, ProviderConnectionId: providerConnectionId, SellerRegion: sellerRegion, PeeringType: &peeringType,
-			}
-		} else {
-			accessPoint = v4.AccessPoint{
-				Type_: &apt, Port: &p, LinkProtocol: &slp, AuthenticationKey: authenticationKey,
-				Profile: &ssp, Gateway: &mappedGWr, Location: &sl, ProviderConnectionId: providerConnectionId, SellerRegion: sellerRegion,
+			accessPoint.PeeringType = &peeringType
+		}
+		gatewayRequest := accessPointMap["gateway"].(interface{}).(*schema.Set).List()
+
+		if len(gatewayRequest) != 0 {
+			mappedGWr := gatewayToFabric(gatewayRequest)
+			if mappedGWr.Uuid != "" {
+				accessPoint.Gateway = &mappedGWr
 			}
 		}
+		apt := v4.AccessPointType(typeVal)
+		accessPoint.Type_ = &apt
+		if len(portList) != 0 {
+			port := portToFabric(portList)
+			if port.Uuid != "" {
+				accessPoint.Port = &port
+			}
+		}
+		linkProtocolList := accessPointMap["link_protocol"].(interface{}).(*schema.Set).List()
+
+		if len(linkProtocolList) != 0 {
+			slp := linkProtocolToFabric(linkProtocolList)
+			if slp.Type_ != nil {
+				accessPoint.LinkProtocol = &slp
+			}
+		}
+
+		if len(profileList) != 0 {
+			ssp := simplifiedServiceProfileToFabric(profileList)
+			if ssp.Uuid != "" {
+				accessPoint.Profile = &ssp
+			}
+		}
+
+		if len(locationList) != 0 {
+			sl := locationToFabric(locationList)
+			accessPoint.Location = &sl
+		}
+
 	}
 	return accessPoint
 }
 
 func gatewayToFabric(gatewayRequest []interface{}) v4.VirtualGateway {
+	if gatewayRequest == nil {
+		return v4.VirtualGateway{}
+	}
 	gatewayMapped := v4.VirtualGateway{}
 	for _, gwr := range gatewayRequest {
 		gwrMap := gwr.(map[string]interface{})
@@ -179,12 +194,12 @@ func linkProtocolToFabric(linkProtocolList []interface{}) v4.SimplifiedLinkProto
 	return slp
 }
 
-func portToFabric(portList []interface{}) v4.Port {
-	p := v4.Port{}
+func portToFabric(portList []interface{}) v4.SimplifiedPort {
+	p := v4.SimplifiedPort{}
 	for _, pl := range portList {
 		plMap := pl.(map[string]interface{})
 		uuid := plMap["uuid"].(interface{}).(string)
-		p = v4.Port{Uuid: uuid}
+		p = v4.SimplifiedPort{Uuid: uuid}
 	}
 	return p
 }
@@ -235,9 +250,6 @@ func accountToTerra(account *v4.SimplifiedAccount) *schema.Set {
 		mappedAccount["global_cust_id"] = account.GlobalCustId
 		mappedAccounts = append(mappedAccounts, mappedAccount)
 	}
-
-	// Setting a Set in a List does not work correctly
-	// see https://github.com/hashicorp/terraform/issues/16331 for details
 	accountSet := schema.NewSet(
 		schema.HashResource(createAccountRes),
 		mappedAccounts,
@@ -287,9 +299,12 @@ func operationToTerra(operation *v4.ConnectionOperation) *schema.Set {
 		mappedOperation := make(map[string]interface{})
 		mappedOperation["provider_status"] = string(*operation.ProviderStatus)
 		mappedOperation["equinix_status"] = string(*operation.EquinixStatus)
-		mappedOperation["errors"] = errorToTerra(operation.Errors)
+		if operation.Errors != nil {
+			mappedOperation["errors"] = errorToTerra(operation.Errors)
+		}
 		mappedOperations = append(mappedOperations, mappedOperation)
 	}
+
 	operationSet := schema.NewSet(
 		schema.HashResource(createOperationRes),
 		mappedOperations,
@@ -500,7 +515,7 @@ func projectToTerra(project *v4.Project) *schema.Set {
 		mappedProjects = append(mappedProjects, mappedProject)
 	}
 	projectSet := schema.NewSet(
-		schema.HashResource(createGatewayProjectSchRes),
+		schema.HashResource(readGatewayProjectSchRes),
 		mappedProjects)
 	return projectSet
 }
@@ -635,15 +650,69 @@ func accessPointTypeConfigToTerra(spAccessPointTypes []v4.ServiceProfileAccessPo
 	mappedSpAccessPointTypes := make([]interface{}, len(spAccessPointTypes))
 	for index, spAccessPointType := range spAccessPointTypes {
 		mappedSpAccessPointTypes[index] = map[string]interface{}{
-			"type": string(*spAccessPointType.Type_),
-			"uuid": spAccessPointType.Uuid,
+			"type":                             string(*spAccessPointType.Type_),
+			"uuid":                             spAccessPointType.Uuid,
+			"allow_remote_connections":         spAccessPointType.AllowRemoteConnections,
+			"allow_custom_bandwidth":           spAccessPointType.AllowCustomBandwidth,
+			"allow_bandwidth_auto_approval":    spAccessPointType.AllowBandwidthAutoApproval,
+			"enable_auto_generate_service_key": spAccessPointType.EnableAutoGenerateServiceKey,
+			"connection_redundancy_required":   spAccessPointType.ConnectionRedundancyRequired,
+			"connection_label":                 spAccessPointType.ConnectionLabel,
+			"api_config":                       apiConfigToTerra(spAccessPointType.ApiConfig),
+			"authentication_key":               authenticationKeyToTerra(spAccessPointType.AuthenticationKey),
+			"supported_bandwidths":             supportedBandwidthsToTerra(spAccessPointType.SupportedBandwidths),
 		}
 	}
 	return mappedSpAccessPointTypes
 }
 
-func portToTerra(port *v4.Port) *schema.Set {
-	ports := []*v4.Port{port}
+func apiConfigToTerra(apiConfig *v4.ApiConfig) *schema.Set {
+	apiConfigs := []*v4.ApiConfig{apiConfig}
+	mappedApiConfigs := make([]interface{}, 0)
+	for _, apiConfig := range apiConfigs {
+		mappedApiConfig := make(map[string]interface{})
+		mappedApiConfig["api_available"] = apiConfig.ApiAvailable
+		mappedApiConfig["equinix_managed_vlan"] = apiConfig.EquinixManagedVlan
+		mappedApiConfig["bandwidth_from_api"] = apiConfig.BandwidthFromApi
+		mappedApiConfig["integration_id"] = apiConfig.IntegrationId
+		mappedApiConfig["equinix_managed_port"] = apiConfig.EquinixManagedPort
+		mappedApiConfigs = append(mappedApiConfigs, mappedApiConfig)
+	}
+	apiConfigSet := schema.NewSet(
+		schema.HashResource(createApiConfigSchRes),
+		mappedApiConfigs)
+	return apiConfigSet
+}
+
+func authenticationKeyToTerra(authenticationKey *v4.AuthenticationKey) *schema.Set {
+	authenticationKeys := []*v4.AuthenticationKey{authenticationKey}
+	mappedAuthenticationKeys := make([]interface{}, 0)
+	for _, authenticationKey := range authenticationKeys {
+		mappedAuthenticationKey := make(map[string]interface{})
+		mappedAuthenticationKey["required"] = authenticationKey.Required
+		mappedAuthenticationKey["label"] = authenticationKey.Label
+		mappedAuthenticationKey["description"] = authenticationKey.Description
+		mappedAuthenticationKeys = append(mappedAuthenticationKeys, mappedAuthenticationKey)
+	}
+	apiConfigSet := schema.NewSet(
+		schema.HashResource(createAuthenticationKeySchRes),
+		mappedAuthenticationKeys)
+	return apiConfigSet
+}
+
+func supportedBandwidthsToTerra(supportedBandwidths *[]int32) []interface{} {
+	if supportedBandwidths == nil {
+		return nil
+	}
+	mappedSupportedBandwidths := make([]interface{}, 0)
+	for _, bandwidth := range *supportedBandwidths {
+		mappedSupportedBandwidths = append(mappedSupportedBandwidths, int(bandwidth))
+	}
+	return mappedSupportedBandwidths
+}
+
+func portToTerra(port *v4.SimplifiedPort) *schema.Set {
+	ports := []*v4.SimplifiedPort{port}
 	mappedPorts := make([]interface{}, 0)
 	for _, port := range ports {
 		mappedPort := make(map[string]interface{})
