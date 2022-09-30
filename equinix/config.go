@@ -14,7 +14,7 @@ import (
 	"strings"
 	"time"
 
-	v4 "github.com/equinix-labs/fabric-go/fabric/v4" ////TODO: Update to ..equinix-lab/fabric-go project before Production merge
+	v4 "github.com/equinix-labs/fabric-go/fabric/v4"
 	"github.com/equinix/ecx-go/v2"
 	"github.com/equinix/ne-go"
 	"github.com/equinix/oauth2-go"

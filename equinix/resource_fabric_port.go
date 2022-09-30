@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/antihax/optional"
-	v4 "github.com/equinix-labs/fabric-go/fabric/v4" //TODO: Update to ..equinix-lab/fabric-go project before Production merge
+	v4 "github.com/equinix-labs/fabric-go/fabric/v4"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"log"

@@ -9,7 +9,7 @@ import (
 	"testing"
 	"time"
 
-	v4 "github.com/equinix-labs/fabric-go/fabric/v4" //TODO: Update to ..equinix-lab/fabric-go project before Production merge
+	v4 "github.com/equinix-labs/fabric-go/fabric/v4"
 )
 
 func testAccFabricReadServiceProfileConfig(uuid string) string {
