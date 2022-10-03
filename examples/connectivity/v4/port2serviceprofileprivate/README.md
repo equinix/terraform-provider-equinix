@@ -1,33 +1,30 @@
-# ECX Fabric Layer2 Connection to Microsoft Azure
+# ECX Fabric Layer2 private seller profile
 
-This example shows how create redundant layer 2 connection between ECX Fabric port
-and Microsoft Azure ExpressRoute.
-Example covers **provisioning of both sides** of the connection.
+This example shows how to create layer2 public seller profile.
 
 ## Adjust variables
-
-At minimum, you must set below variables in `terraform.tfvars` file:
-
 * `equinix_client_id` - Equinix client ID (consumer key), obtained after
-registering app in the developer platform
+  registering app in the developer platform
 * `equinix_client_secret` - Equinix client secret ID (consumer secret),
-obtained same way as above
-* `equinix_pri_port_name` - name of ECX Fabric primary port that you want
-to connect to Azure i.e. *EQUINIX_SVC-FR4-CX-PRI-01*
-* `equinix_sec_port_name` - name of ECX Fabric secondary port that you want to
-connect to Azure i.e. *EQUINIX_SVC-FR4-CX-SEC-01*
-* `azure_location` - The name of the Azure resource group location
-* `azure_peering_location` - The name of the ExpressRoute peering location
-* `azure_metro_code` - Equinix metro location with Azure presence for connection's
-destination. Given metro location has to correspond with given Azure peering location
+  obtained same way as above
 
-## Azure login
+`fabric_sp_name` - Service profile name like i.e. **Equinix Direct Connect - Private**
+`aside_port_name` -  Name of ECX Fabric port that should be connected used for the connection, i.e. ops-user100-CX-SV5-NL-Qinq-BO-10G-SEC-JP-000
 
-Log in to Azure using CLI and use account that has permission to create
-necessary resources.
-
-Refer to [this guide](https://www.terraform.io/docs/providers/azurerm/guides/azure_cli.html)
-from Azure provider documentation for help.
+`connection_name` - the name of the connection
+`connection_type` - connection type, please refer schema
+`notifications_type` - notification type
+`notifications_emails` - List of emails
+`bandwidth` - bandwidth in MBs
+`redundancy` - Port redundancy
+`aside_ap_type` - Access point type
+`aside_port_uuid` - Port uuid, fetched based on port call using Port resource
+`aside_link_protocol_type` - link protocol type
+`aside_link_protocol_tag` - tag number
+`zside_ap_type` - Z side access point type
+`zside_ap_profile_type` - Service profile type
+`zside_ap_profile_uuid` - Service profile uuid, fetched based on Service Profile get call using Service Profile search schema
+`zside_location` - Seller location
 
 ## Initialize
 

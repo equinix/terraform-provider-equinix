@@ -1,24 +1,30 @@
 # ECX Fabric Layer2 public seller profile
 
-This example shows how create layer2 public seller profile.
-
-Example seller profile will have set of available connection speeds defined and
-two ports assigned for those connections. Refer to [ECXF layer 2 service
-profile resource documentation](../../../docs/resources/ecx_l2_serviceprofile.md)
-for more details about possible service profile options.
+This example shows how to create layer2 public seller profile.
 
 ## Adjust variables
-
-At minimum, you must set below variables in `terraform.tfvars` file:
-
 * `equinix_client_id` - Equinix client ID (consumer key), obtained after
-registering app in the developer platform
-* `equinix_client_secret` - Equinix client secret ID (consumer secret), obtained
-same way as above
-* `equinix_pri_port_name` - name of ECX Fabric primary port that you want to use
-for connections that will use your profile
-* `equinix_sec_port_name` - name of ECX Fabric secondary port that you want to use
-for connections that will use your profile
+  registering app in the developer platform
+* `equinix_client_secret` - Equinix client secret ID (consumer secret),
+  obtained same way as above
+
+`fabric_sp_name` - Service profile name like i.e. **Cross Cust SP**
+`aside_port_name` -  Name of ECX Fabric port that should be connected used for the connection, i.e. ops-user100-CX-SV5-NL-Qinq-BO-10G-SEC-JP-000
+
+`connection_name` - the name of the connection
+`connection_type` - connection type, please refer schema
+`notifications_type` - notification type
+`notifications_emails` - List of emails
+`bandwidth` - bandwidth in MBs
+`redundancy` - Port redundancy
+`aside_ap_type` - Access point type
+`aside_port_uuid` - Port uuid, fetched based on port call using Port resource
+`aside_link_protocol_type` - link protocol type
+`aside_link_protocol_tag` - tag number
+`zside_ap_type` - Z side access point type
+`zside_ap_profile_type` - Service profile type
+`zside_ap_profile_uuid` - Service profile uuid, fetched based on Service Profile get call using Service Profile search schema
+`zside_location` - Seller location
 
 ## Initialize
 

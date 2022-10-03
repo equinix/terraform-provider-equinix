@@ -1,5 +1,5 @@
-equinix_client_id      = "opYOL7xfD0HLshl2SyKAO4ebLn5uWbhQ"
-equinix_client_secret  = "MdK7Qq8IfaSN9yBS"
+equinix_client_id      = "MyEquinixClientId"
+equinix_client_secret  = "MyEquinixSecret"
 
 connection_name = "terra_e2e_alibaba"
 description = "Test Connection"
