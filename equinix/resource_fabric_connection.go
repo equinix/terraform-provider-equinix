@@ -40,18 +40,18 @@ func resourceFabricConnectionCreate(ctx context.Context, d *schema.ResourceData,
 	conType := v4.ConnectionType(d.Get("type").(string))
 	schemaNotifications := d.Get("notifications").([]interface{})
 	notifications := notificationToFabric(schemaNotifications)
-	schemaRedundancy := d.Get("redundancy").(interface{}).(*schema.Set).List()
+	schemaRedundancy := d.Get("redundancy").(*schema.Set).List()
 	red := redundancyToFabric(schemaRedundancy)
-	schemaOrder := d.Get("order").(interface{}).(*schema.Set).List()
+	schemaOrder := d.Get("order").(*schema.Set).List()
 	order := orderToFabric(schemaOrder)
-	aside := d.Get("a_side").(interface{}).(*schema.Set).List()
-	projectReq := d.Get("project").(interface{}).(*schema.Set).List()
+	aside := d.Get("a_side").(*schema.Set).List()
+	projectReq := d.Get("project").(*schema.Set).List()
 	project := projectToFabric(projectReq)
 	connectionASide := v4.ConnectionSide{}
 	for _, as := range aside {
 		asideMap := as.(map[string]interface{})
-		accessPoint := asideMap["access_point"].(interface{}).(*schema.Set).List()
-		serviceTokenRequest := asideMap["service_token"].(interface{}).(*schema.Set).List()
+		accessPoint := asideMap["access_point"].(*schema.Set).List()
+		serviceTokenRequest := asideMap["service_token"].(*schema.Set).List()
 		additionalInfoRequest := asideMap["additional_info"].([]interface{})
 
 		if len(accessPoint) != 0 {
@@ -68,12 +68,12 @@ func resourceFabricConnectionCreate(ctx context.Context, d *schema.ResourceData,
 		}
 	}
 
-	zside := d.Get("z_side").(interface{}).(*schema.Set).List()
+	zside := d.Get("z_side").(*schema.Set).List()
 	connectionZSide := v4.ConnectionSide{}
 	for _, as := range zside {
 		zsideMap := as.(map[string]interface{})
-		accessPoint := zsideMap["access_point"].(interface{}).(*schema.Set).List()
-		serviceTokenRequest := zsideMap["service_token"].(interface{}).(*schema.Set).List()
+		accessPoint := zsideMap["access_point"].(*schema.Set).List()
+		serviceTokenRequest := zsideMap["service_token"].(*schema.Set).List()
 		additionalInfoRequest := zsideMap["additional_info"].([]interface{})
 		if len(accessPoint) != 0 {
 			ap := accessPointToFabric(accessPoint)
@@ -159,9 +159,7 @@ func resourceFabricConnectionUpdate(ctx context.Context, d *schema.ResourceData,
 	if uuid == "" {
 		return diag.Errorf("No connection found for the value uuid %v ", uuid)
 	}
-	dbConn := v4.Connection{}
-	var err error
-	dbConn, err = waitUntilConnectionIsActive(uuid, meta, ctx)
+	dbConn, err := waitUntilConnectionIsActive(uuid, meta, ctx)
 	if err != nil {
 		if !strings.Contains(err.Error(), "500") {
 			d.SetId("")
@@ -184,7 +182,7 @@ func resourceFabricConnectionUpdate(ctx context.Context, d *schema.ResourceData,
 		if !strings.Contains(err.Error(), "500") {
 			d.SetId("")
 		}
-		return diag.FromErr(fmt.Errorf("Errored while waiting for successful connection update, response %v, error %v", res, err))
+		return diag.FromErr(fmt.Errorf("errored while waiting for successful connection update, response %v, error %v", res, err))
 	}
 
 	d.SetId(updatedConn.Uuid)
@@ -202,7 +200,7 @@ func waitForConnectionUpdateCompletion(uuid string, meta interface{}, ctx contex
 				return "", "", err
 			}
 			updatableState := ""
-			if "COMPLETED" == dbConn.Change.Status {
+			if dbConn.Change.Status == "COMPLETED" {
 				updatableState = dbConn.Change.Status
 			}
 			return dbConn, updatableState, nil
@@ -232,7 +230,7 @@ func waitUntilConnectionIsActive(uuid string, meta interface{}, ctx context.Cont
 				return "", "", err
 			}
 			updatableState := ""
-			if "ACTIVE" == *dbConn.State {
+			if *dbConn.State == "ACTIVE" {
 				updatableState = string(*dbConn.State)
 			}
 			return dbConn, updatableState, nil
@@ -261,8 +259,7 @@ func resourceFabricConnectionDelete(ctx context.Context, d *schema.ResourceData,
 	}
 	_, resp, err := client.ConnectionsApi.DeleteConnectionByUuid(ctx, uuid)
 	if err != nil {
-		fmt.Errorf("Error response for the connection delete error %v and response %v", err, resp)
-		return diag.FromErr(err)
+		return diag.FromErr(fmt.Errorf("error response for the connection delete error %v and response %v", err, resp))
 	}
 	return diags
 }

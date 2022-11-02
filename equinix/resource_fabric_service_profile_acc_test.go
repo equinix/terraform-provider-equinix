@@ -59,9 +59,9 @@ func TestAccFabricSearchServiceProfilesByName(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						"data.equinix_fabric_service_profiles.test", "data.#", fmt.Sprint(1)), //Check  total number of ServiceProfile list returned in the Response payloads
 					resource.TestCheckResourceAttr(
-						"data.equinix_fabric_service_profiles.test", "data.0.name", fmt.Sprint("Azure ExpressRoute")),
+						"data.equinix_fabric_service_profiles.test", "data.0.name", "Azure ExpressRoute"),
 					resource.TestCheckResourceAttr(
-						"data.equinix_fabric_service_profiles.test", "data.0.uuid", fmt.Sprint("bfb74121-7e2c-4f74-99b3-69cdafb03b41")),
+						"data.equinix_fabric_service_profiles.test", "data.0.uuid", "bfb74121-7e2c-4f74-99b3-69cdafb03b41"),
 					resource.TestCheckNoResourceAttr(
 						"data.equinix_fabric_service_profiles.test", "pagination"),
 				),
@@ -80,7 +80,7 @@ func TestAccFabricCreateServiceProfile(t *testing.T) {
 				Config: testAccFabricCreateServiceProfileConfig("fabric_tf_acc_test_CCEPL_01"),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(
-						"equinix_fabric_service_profile.test", "name", fmt.Sprint("fabric_tf_acc_test_CCEPL_01")),
+						"equinix_fabric_service_profile.test", "name", "fabric_tf_acc_test_CCEPL_01"),
 				),
 				ExpectNonEmptyPlan: true,
 			},
@@ -88,7 +88,7 @@ func TestAccFabricCreateServiceProfile(t *testing.T) {
 				Config: testAccFabricCreateServiceProfileConfig("fabric_tf_acc_test_CCEPL_02"),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(
-						"equinix_fabric_service_profile.test", "name", fmt.Sprint("fabric_tf_acc_test_CCEPL_02")),
+						"equinix_fabric_service_profile.test", "name", "fabric_tf_acc_test_CCEPL_02"),
 				),
 				ExpectNonEmptyPlan: true,
 			},
@@ -173,7 +173,7 @@ func waitAndCheckServiceProfileDeleted(uuid string, client *v4.APIClient, ctx co
 				return "", "", err
 			}
 			updatableState := ""
-			if "DELETED" == *dbConn.State {
+			if *dbConn.State == "DELETED" {
 				updatableState = string(*dbConn.State)
 			}
 			return dbConn, updatableState, nil
