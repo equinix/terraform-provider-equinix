@@ -17,7 +17,7 @@ func resourceFabricPortRead(ctx context.Context, d *schema.ResourceData, meta in
 	port, _, err := client.PortsApi.GetPortByUuid(ctx, d.Id())
 
 	if err != nil {
-		log.Printf("[WARN] Port %s not found, error %s", d.Id(), err)
+		log.Printf("[WARN] Port %s not found , error %s", d.Id(), err)
 		if !strings.Contains(err.Error(), "500") {
 			d.SetId("")
 		}
@@ -68,7 +68,7 @@ func setPortsListMap(d *schema.ResourceData, spl v4.AllPortsResponse) diag.Diagn
 func resourceFabricPortGetByPortName(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*Config).fabricClient
 	ctx = context.WithValue(ctx, v4.ContextAccessToken, meta.(*Config).FabricAuthToken)
-	portNameParam := d.Get("local_var_optionals").(*schema.Set).List()
+	portNameParam := d.Get("local_var_optionals").(interface{}).(*schema.Set).List()
 	portName := portNameQueryParamToFabric(portNameParam)
 	ports, _, err := client.PortsApi.GetPorts(ctx, &portName)
 	if err != nil {
@@ -89,13 +89,13 @@ func resourceFabricPortGetByPortName(ctx context.Context, d *schema.ResourceData
 }
 
 func portNameQueryParamToFabric(portNameParam []interface{}) v4.PortsApiGetPortsOpts {
-	if len(portNameParam) == 0 {
+	if portNameParam == nil || len(portNameParam) == 0 {
 		return v4.PortsApiGetPortsOpts{}
 	}
 	mappedPn := v4.PortsApiGetPortsOpts{}
 	for _, pn := range portNameParam {
 		pnMap := pn.(map[string]interface{})
-		portName := pnMap["name"].(string)
+		portName := pnMap["name"].(interface{}).(string)
 		pName := optional.NewString(portName)
 		mappedPn = v4.PortsApiGetPortsOpts{Name: pName}
 	}

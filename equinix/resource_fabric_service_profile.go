@@ -89,7 +89,7 @@ func getServiceProfileRequestPayload(d *schema.ResourceData) v4.ServiceProfileRe
 	schemaCustomFields := d.Get("custom_fields").([]interface{})
 	spCustomFields := customFieldsToFabric(schemaCustomFields)
 
-	schemaMarketingInfo := d.Get("marketing_info").(*schema.Set).List()
+	schemaMarketingInfo := d.Get("marketing_info").(interface{}).(*schema.Set).List()
 	spMarketingInfo := marketingInfoToFabric(schemaMarketingInfo)
 
 	schemaPorts := d.Get("ports").([]interface{})
@@ -133,7 +133,7 @@ func resourceFabricServiceProfileUpdate(ctx context.Context, d *schema.ResourceD
 
 	var err error
 	var eTag int64 = 0
-	_, eTag, err = waitForActiveServiceProfileAndPopulateETag(uuid, meta, ctx)
+	_, err, eTag = waitForActiveServiceProfileAndPopulateETag(uuid, meta, ctx)
 	if err != nil {
 		if !strings.Contains(err.Error(), "500") {
 			d.SetId("")
@@ -151,7 +151,7 @@ func resourceFabricServiceProfileUpdate(ctx context.Context, d *schema.ResourceD
 		if !strings.Contains(err.Error(), "500") {
 			d.SetId("")
 		}
-		return diag.FromErr(fmt.Errorf("errored while waiting for successful service profile update, response %v, error %v", res, err))
+		return diag.FromErr(fmt.Errorf("Errored while waiting for successful service profile update, response %v, error %v", res, err))
 	}
 	d.SetId(updatedServiceProfile.Uuid)
 	return setFabricServiceProfileMap(d, updatedServiceProfile)
@@ -184,7 +184,7 @@ func waitForServiceProfileUpdateCompletion(uuid string, meta interface{}, ctx co
 	return dbSp, err
 }
 
-func waitForActiveServiceProfileAndPopulateETag(uuid string, meta interface{}, ctx context.Context) (v4.ServiceProfile, int64, error) {
+func waitForActiveServiceProfileAndPopulateETag(uuid string, meta interface{}, ctx context.Context) (v4.ServiceProfile, error, int64) {
 	log.Printf("Waiting for service profile to be in active state, uuid %s", uuid)
 	var eTag int64 = 0
 	stateConf := &resource.StateChangeConf{
@@ -198,12 +198,9 @@ func waitForActiveServiceProfileAndPopulateETag(uuid string, meta interface{}, c
 
 			eTagStr := res.Header.Get("ETag")
 			eTag, err = strconv.ParseInt(strings.Trim(eTagStr, "\""), 10, 64)
-			if err != nil {
-				return nil, "", err
-			}
 
 			updatableState := ""
-			if *dbServiceProfile.State == "ACTIVE" {
+			if "ACTIVE" == *dbServiceProfile.State {
 				updatableState = string(*dbServiceProfile.State)
 			}
 			return dbServiceProfile, updatableState, nil
@@ -217,7 +214,7 @@ func waitForActiveServiceProfileAndPopulateETag(uuid string, meta interface{}, c
 	if err == nil {
 		dbServiceProfile = inter.(v4.ServiceProfile)
 	}
-	return dbServiceProfile, eTag, err
+	return dbServiceProfile, err, eTag
 }
 
 func resourceFabricServiceProfileDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
@@ -230,7 +227,8 @@ func resourceFabricServiceProfileDelete(ctx context.Context, d *schema.ResourceD
 	}
 	_, resp, err := client.ServiceProfilesApi.DeleteServiceProfileByUuid(ctx, uuid)
 	if err != nil {
-		return diag.FromErr(fmt.Errorf("Error response for the Service Profile delete error %v and response %v", err, resp))
+		fmt.Errorf("Error response for the Service Profile delete error %v and response %v", err, resp)
+		return diag.FromErr(err)
 	}
 	return diags
 }
@@ -281,9 +279,8 @@ func resourceServiceProfilesSearchRequest(ctx context.Context, d *schema.Resourc
 
 	client := meta.(*Config).fabricClient
 	ctx = context.WithValue(ctx, v4.ContextAccessToken, meta.(*Config).FabricAuthToken)
-	schemaFilter := d.Get("filter").(*schema.Set).List()
+	schemaFilter := d.Get("filter").(interface{}).(*schema.Set).List()
 	filter := serviceProfilesSearchFilterRequestToFabric(schemaFilter)
-
 	var serviceProfileFlt v4.ServiceProfileFilter //Cast ServiceProfile search expression struct type to interface
 	serviceProfileFlt = filter
 	schemaSort := d.Get("sort").([]interface{})

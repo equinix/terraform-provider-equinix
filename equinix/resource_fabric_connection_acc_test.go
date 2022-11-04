@@ -22,9 +22,9 @@ func TestAccFabricCreateConnection(t *testing.T) {
 				Config: testAccFabricCreateAzureConnectionConfig(50),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(
-						"equinix_fabric_connection.test", "name", "fabric_tf_acc_Generic"),
+						"equinix_fabric_connection.test", "name", fmt.Sprint("fabric_tf_acc_Generic")),
 					resource.TestCheckResourceAttr(
-						"equinix_fabric_connection.test", "bandwidth", "50"),
+						"equinix_fabric_connection.test", "bandwidth", fmt.Sprint("50")),
 				),
 				ExpectNonEmptyPlan: true,
 			},
@@ -32,9 +32,9 @@ func TestAccFabricCreateConnection(t *testing.T) {
 				Config: testAccFabricCreateAzureConnectionConfig(100),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(
-						"equinix_fabric_connection.test", "name", "fabric_tf_acc_Generic"),
+						"equinix_fabric_connection.test", "name", fmt.Sprint("fabric_tf_acc_Generic")),
 					resource.TestCheckResourceAttr(
-						"equinix_fabric_connection.test", "bandwidth", "100"),
+						"equinix_fabric_connection.test", "bandwidth", fmt.Sprint("100")),
 				),
 				ExpectNonEmptyPlan: true,
 			},
@@ -68,7 +68,7 @@ func waitUntilConnectionDeprovisioned(uuid string, client *v4.APIClient, ctx con
 				return "", "", err
 			}
 			updatableState := ""
-			if *dbConn.State == "DEPROVISIONED"{
+			if "DEPROVISIONED" == *dbConn.State {
 				updatableState = string(*dbConn.State)
 			}
 			return dbConn, updatableState, nil
@@ -267,7 +267,7 @@ func TestAccFabricReadConnection(t *testing.T) {
 				Config: testAccFabricReadConnectionConfig(),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(
-						"data.equinix_fabric_connection.test", "name", "fabric_tf_acc_test"),
+						"data.equinix_fabric_connection.test", "name", fmt.Sprint("fabric_tf_acc_test")),
 				),
 			},
 		},
@@ -275,7 +275,7 @@ func TestAccFabricReadConnection(t *testing.T) {
 }
 
 func testAccFabricReadConnectionConfig() string {
-	return `data "equinix_fabric_connection" "test" {
+	return fmt.Sprint(`data "equinix_fabric_connection" "test" {
 	uuid = "3e91216d-526a-45d2-9029-0c8c8ba48b60"
-	}`
+	}`)
 }
