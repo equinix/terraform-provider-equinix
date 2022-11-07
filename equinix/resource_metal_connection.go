@@ -144,6 +144,7 @@ func resourceMetalConnection() *schema.Resource {
 				Optional:    true,
 				Elem:        &schema.Schema{Type: schema.TypeInt},
 				MaxItems:    2,
+				ForceNew:    true,
 			},
 			"service_token_type": {
 				Type:        schema.TypeString,
