@@ -12,7 +12,7 @@ data "equinix_fabric_service_profiles" "gcp" {
 }
 
 data "equinix_fabric_ports" "gcp-pri" {
-  local_var_optionals {
+  filters {
     name = var.primary_port_name
   }
 }

@@ -12,7 +12,7 @@ data "equinix_fabric_service_profiles" "public_sp" {
 }
 
 data "equinix_fabric_ports" "aside" {
-  local_var_optionals {
+  filters {
     name = var.aside_port_name
   }
 }

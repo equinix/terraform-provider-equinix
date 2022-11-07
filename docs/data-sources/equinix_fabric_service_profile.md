@@ -18,6 +18,8 @@ description: |-
 ### Optional
 
 - `state` (String) Service profile state - ACTIVE, PENDING_APPROVAL, DELETED, REJECTED
+
+### Required
 - `uuid` (String) Equinix assigned service profile identifier
 
 ### Read-Only

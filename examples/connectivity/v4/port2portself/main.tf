@@ -4,13 +4,13 @@ provider "equinix" {
 }
 
 data "equinix_fabric_ports" "aside" {
-  local_var_optionals {
+  filters {
     name = var.aside_port_name
   }
 }
 
 data "equinix_fabric_ports" "zside" {
-  local_var_optionals {
+  filters {
     name = var.zside_port_name
   }
 }

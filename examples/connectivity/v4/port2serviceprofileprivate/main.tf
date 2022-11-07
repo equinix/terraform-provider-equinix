@@ -12,13 +12,13 @@ data "equinix_fabric_service_profiles" "spprivate" {
 }
 
 data "equinix_fabric_ports" "aside" {
-  local_var_optionals {
+  filters {
     name = var.equinix_aside_port_name
   }
 }
 
 data "equinix_fabric_ports" "zside" {
-  local_var_optionals {
+  filters {
     name = var.equinix_zside_port_name
   }
 }

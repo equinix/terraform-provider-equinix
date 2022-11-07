@@ -12,7 +12,7 @@ data "equinix_fabric_service_profiles" "alibaba" {
 }
 
 data "equinix_fabric_ports" "qinq-pri" {
-  local_var_optionals {
+  filters {
     name = var.equinix_port_name
   }
 }

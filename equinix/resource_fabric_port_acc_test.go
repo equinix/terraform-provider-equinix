@@ -31,7 +31,7 @@ func testAccFabricReadPortConfig() string {
 //Get Ports By Name
 func testAccFabricReadGetPortsByNameConfig(name string) string {
 	return fmt.Sprintf(`data "equinix_fabric_ports" "test" {
-	local_var_optionals {
+	filters {
 		name = "%s"
 		}
 	}

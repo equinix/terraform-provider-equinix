@@ -17,15 +17,15 @@ description: |-
 
 ### Optional
 
-- `local_var_optionals` (Block Set) name (see [below for nested schema](#nestedblock--local_var_optionals))
+- `filters` (Block Set) name (see [below for nested schema](#nestedblock--filters))
 
 ### Read-Only
 
 - `data` (List of Object) List of  Ports (see [below for nested schema](#nestedatt--data))
 - `id` (String) The ID of this resource.
 
-<a id="nestedblock--local_var_optionals"></a>
-### Nested Schema for `local_var_optionals`
+<a id="nestedblock--filters"></a>
+### Nested Schema for `filters`
 
 Optional:
 

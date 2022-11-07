@@ -11,6 +11,7 @@ func dataSourceFabricConnection() *schema.Resource {
 	return &schema.Resource{
 		ReadContext: dataSourceFabricConnectionRead,
 		Schema:      readFabricConnectionResourceSchema(),
+		Description: "Fabric V4 API compatible data resource that allow user to fetch connection for a given UUID",
 	}
 }
 

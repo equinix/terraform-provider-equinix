@@ -68,7 +68,7 @@ func setPortsListMap(d *schema.ResourceData, spl v4.AllPortsResponse) diag.Diagn
 func resourceFabricPortGetByPortName(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*Config).fabricClient
 	ctx = context.WithValue(ctx, v4.ContextAccessToken, meta.(*Config).FabricAuthToken)
-	portNameParam := d.Get("local_var_optionals").(interface{}).(*schema.Set).List()
+	portNameParam := d.Get("filters").(interface{}).(*schema.Set).List()
 	portName := portNameQueryParamToFabric(portNameParam)
 	ports, _, err := client.PortsApi.GetPorts(ctx, &portName)
 	if err != nil {

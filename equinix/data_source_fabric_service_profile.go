@@ -10,6 +10,7 @@ func dataSourceFabricServiceProfileReadByUuid() *schema.Resource {
 	return &schema.Resource{
 		ReadContext: dataSourceFabricServiceProfileRead,
 		Schema:      readFabricServiceProfileSchema(),
+		Description: "Fabric V4 API compatible data resource that allow user to fetch Service Profile by UUID filter criteria",
 	}
 }
 
@@ -23,6 +24,7 @@ func dataSourceFabricSearchServiceProfilesByName() *schema.Resource {
 	return &schema.Resource{
 		ReadContext: dataSourceFabricSearchServiceProfilesRead,
 		Schema:      readFabricServiceProfilesSearchSchema(),
+		Description: "Fabric V4 API compatible data resource that allow user to fetch Service Profile by name filter criteria",
 	}
 }
 
