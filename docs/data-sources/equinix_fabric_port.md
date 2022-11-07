@@ -3,12 +3,12 @@
 page_title: "equinix_fabric_port Data Source - terraform-provider-equinix"
 subcategory: ""
 description: |-
-  Fabric V4 API compatible data resource that allow user to fetch port by name
+  Fabric V4 API compatible data resource that allow user to fetch port by uuid
 ---
 
 # equinix_fabric_port (Data Source)
 
-Fabric V4 API compatible data resource that allow user to fetch port by name
+Fabric V4 API compatible data resource that allow user to fetch port by uuid
 
 
 

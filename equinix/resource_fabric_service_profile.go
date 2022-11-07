@@ -28,8 +28,8 @@ func resourceFabricServiceProfile() *schema.Resource {
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
-		Schema: createFabricServiceProfileSchema(),
-		Description: "Resource allows creation and management of Equinix Fabric	Service Profiles",
+		Schema:      createFabricServiceProfileSchema(),
+		Description: "Fabric V4 API compatible resource allows creation and management of Equinix Fabric Service Profile",
 	}
 }
 

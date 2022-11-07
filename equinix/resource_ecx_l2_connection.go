@@ -166,10 +166,10 @@ func createECXL2ConnectionResourceSchema() map[string]*schema.Schema {
 			Description:  ecxL2ConnectionDescriptions["Name"],
 		},
 		ecxL2ConnectionSchemaNames["ProfileUUID"]: {
-			Type:         schema.TypeString,
-			Optional:     true,
-			Computed:     true,
-			ForceNew:     true,
+			Type:     schema.TypeString,
+			Optional: true,
+			Computed: true,
+			ForceNew: true,
 			AtLeastOneOf: []string{
 				ecxL2ConnectionSchemaNames["ProfileUUID"],
 				ecxL2ConnectionSchemaNames["ZSidePortUUID"],
@@ -374,10 +374,10 @@ func createECXL2ConnectionResourceSchema() map[string]*schema.Schema {
 			Description:   ecxL2ConnectionDescriptions["ServiceToken"],
 		},
 		ecxL2ConnectionSchemaNames["ZSideServiceToken"]: {
-			Type:          schema.TypeString,
-			Optional:      true,
-			ForceNew:      true,
-			ValidateFunc:  validation.StringIsNotEmpty,
+			Type:         schema.TypeString,
+			Optional:     true,
+			ForceNew:     true,
+			ValidateFunc: validation.StringIsNotEmpty,
 			ConflictsWith: []string{
 				ecxL2ConnectionSchemaNames["ServiceToken"],
 				ecxL2ConnectionSchemaNames["ProfileUUID"],
@@ -385,7 +385,7 @@ func createECXL2ConnectionResourceSchema() map[string]*schema.Schema {
 				ecxL2ConnectionSchemaNames["AuthorizationKey"],
 				ecxL2ConnectionSchemaNames["SecondaryConnection"],
 			},
-			Description:   ecxL2ConnectionDescriptions["ZSideServiceToken"],
+			Description: ecxL2ConnectionDescriptions["ZSideServiceToken"],
 		},
 		ecxL2ConnectionSchemaNames["VendorToken"]: {
 			Type:        schema.TypeString,
@@ -946,14 +946,14 @@ func updateECXL2ConnectionResource(primary *ecx.L2Connection, secondary *ecx.L2C
 		return fmt.Errorf("error reading VendorToken: %s", err)
 	}
 	if v, ok := d.GetOk(ecxL2ConnectionSchemaNames["ServiceToken"]); ok {
-		if ecx.StringValue(primary.VendorToken) != v.(string){
+		if ecx.StringValue(primary.VendorToken) != v.(string) {
 			if err := d.Set(ecxL2ConnectionSchemaNames["ServiceToken"], primary.VendorToken); err != nil {
 				return fmt.Errorf("error reading ServiceToken: %s", err)
 			}
 		}
 	}
 	if v, ok := d.GetOk(ecxL2ConnectionSchemaNames["ZSideServiceToken"]); ok {
-		if ecx.StringValue(primary.VendorToken) != v.(string){
+		if ecx.StringValue(primary.VendorToken) != v.(string) {
 			if err := d.Set(ecxL2ConnectionSchemaNames["ZSideServiceToken"], primary.VendorToken); err != nil {
 				return fmt.Errorf("error reading ZSideServiceToken: %s", err)
 			}
