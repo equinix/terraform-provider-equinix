@@ -28,7 +28,7 @@ func readFabricServiceProfileSchema() map[string]*schema.Schema {
 		},
 		"uuid": {
 			Type:        schema.TypeString,
-			Optional:    true,
+			Required:    true,
 			Description: "Equinix assigned service profile identifier",
 		},
 		"description": {
@@ -429,6 +429,13 @@ func readGatewayProjectSch() map[string]*schema.Schema {
 	}
 }
 
+func readFabricServiceProfileSchemaUpdated() map[string]*schema.Schema {
+	sch := readFabricServiceProfileSchema()
+	sch["uuid"].Optional = true
+	sch["uuid"].Required = false
+	return sch
+}
+
 func readFabricServiceProfilesSearchSchema() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
 		"data": {
@@ -436,7 +443,7 @@ func readFabricServiceProfilesSearchSchema() map[string]*schema.Schema {
 			Computed:    true,
 			Description: "List of  Service Profiles",
 			Elem: &schema.Resource{
-				Schema: readFabricServiceProfileSchema(),
+				Schema: readFabricServiceProfileSchemaUpdated(),
 			},
 		},
 		"filter": {

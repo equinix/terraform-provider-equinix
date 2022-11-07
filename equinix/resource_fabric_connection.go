@@ -30,7 +30,7 @@ func resourceFabricConnection() *schema.Resource {
 		},
 		Schema: createFabricConnectionResourceSchema(),
 
-		Description: "Resource allows creation and management of Equinix Fabric	layer 2 connections",
+		Description: "Fabric V4 API compatible resource allows creation and management of Equinix Fabric connection",
 	}
 }
 

@@ -12,7 +12,7 @@ data "equinix_fabric_service_profiles" "azure" {
 }
 
 data "equinix_fabric_ports" "qinq-pri" {
-  local_var_optionals {
+  filters {
     name = var.equinix_port_name
   }
 }

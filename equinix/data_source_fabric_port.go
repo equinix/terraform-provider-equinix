@@ -11,6 +11,7 @@ func dataSourceFabricPort() *schema.Resource {
 	return &schema.Resource{
 		ReadContext: dataSourceFabricPortRead,
 		Schema:      readFabricPortResourceSchema(),
+		Description: "Fabric V4 API compatible data resource that allow user to fetch port by uuid",
 	}
 }
 
@@ -24,6 +25,7 @@ func dataSourceFabricGetPortsByName() *schema.Resource {
 	return &schema.Resource{
 		ReadContext: dataSourceFabricGetPortsByNameResponseRead,
 		Schema:      readFabricPortsResponseSchema(),
+		Description: "Fabric V4 API compatible data resource that allow user to fetch port by name",
 	}
 }
 

@@ -213,7 +213,7 @@ func readFabricPortResourceSchema() map[string]*schema.Schema {
 		},
 		"uuid": {
 			Type:        schema.TypeString,
-			Optional:    true,
+			Required:    true,
 			Description: "Equinix-assigned port identifier",
 		},
 		"name": {
@@ -328,6 +328,13 @@ func readGetPortsByNameQueryParamSch() map[string]*schema.Schema {
 	}
 }
 
+func readFabricPortResourceSchemaUpdated() map[string]*schema.Schema {
+	sch := readFabricPortResourceSchema()
+	sch["uuid"].Optional = true
+	sch["uuid"].Required = false
+	return sch
+}
+
 func readFabricPortsResponseSchema() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
 		"data": {
@@ -335,10 +342,10 @@ func readFabricPortsResponseSchema() map[string]*schema.Schema {
 			Computed:    true,
 			Description: "List of  Ports",
 			Elem: &schema.Resource{
-				Schema: readFabricPortResourceSchema(),
+				Schema: readFabricPortResourceSchemaUpdated(),
 			},
 		},
-		"local_var_optionals": {
+		"filters": {
 			Type:        schema.TypeSet,
 			Optional:    true,
 			Description: "name",
