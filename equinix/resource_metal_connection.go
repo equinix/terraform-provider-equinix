@@ -3,6 +3,7 @@ package equinix
 import (
 	"fmt"
 	"reflect"
+	"strconv"
 	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -340,6 +341,35 @@ func resourceMetalConnectionUpdate(d *schema.ResourceData, meta interface{}) err
 			return friendlyError(err)
 		}
 	}
+
+	// Don't update VLANs until _after_ the main ConnectionUpdateRequest has succeeded
+	if d.HasChange("vlans") {
+		connType := packngo.ConnectionType(d.Get("type").(string))
+
+		if connType == packngo.ConnectionShared {
+			vlansNum := d.Get("vlans.#").(int)
+			if vlansNum > 0 {
+				vlans := convertIntArr2(d.Get("vlans").([]interface{}))
+				ports := d.Get("ports").([]interface{})
+				for i, v := range vlans {
+					port := ports[i].(map[string]interface{})
+					vcids := (port["virtual_circuit_ids"]).([]interface{})
+					vcid := vcids[0].(string)
+					vnid := strconv.Itoa(v)
+					ucr := packngo.VCUpdateRequest{}
+					ucr.VirtualNetworkID = &vnid
+					if _, _, err := client.VirtualCircuits.Update(vcid, &ucr, nil); err != nil {
+						return friendlyError(err)
+					}
+				}
+			} else {
+				return fmt.Errorf("you cannot remove vlans from an existing \"shared\" connection")
+			}
+		} else {
+			return fmt.Errorf("when you update a \"dedicated\" connection, you cannot set vlans")
+		}
+	}
+
 	return resourceMetalConnectionRead(d, meta)
 }
 
