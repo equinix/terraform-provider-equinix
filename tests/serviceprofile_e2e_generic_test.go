@@ -1,10 +1,11 @@
 package tests
 
 import (
+	"testing"
+
 	"github.com/gruntwork-io/terratest/modules/logger"
 	"github.com/gruntwork-io/terratest/modules/terraform"
 	"github.com/stretchr/testify/assert"
-	"testing"
 )
 
 func TestCreateServiceProfileGeneric(t *testing.T) {
@@ -21,5 +22,4 @@ func TestCreateServiceProfileGeneric(t *testing.T) {
 	output := terraform.OutputAll(t, terraformOptions)
 	assert.NotNil(t, output)
 	assert.NotEmpty(t, output)
-
 }

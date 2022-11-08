@@ -45,7 +45,6 @@ func accessPointToFabric(accessPointRequest []interface{}) v4.AccessPoint {
 		authenticationKey := accessPointMap["authentication_key"].(interface{}).(string)
 		if authenticationKey != "" {
 			accessPoint.AuthenticationKey = authenticationKey
-
 		}
 		providerConnectionId := accessPointMap["provider_connection_id"].(interface{}).(string)
 		if providerConnectionId != "" {

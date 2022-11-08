@@ -3,19 +3,19 @@ package equinix
 import (
 	"context"
 	"fmt"
+	"log"
+	"strings"
+
 	"github.com/antihax/optional"
 	v4 "github.com/equinix-labs/fabric-go/fabric/v4"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"log"
-	"strings"
 )
 
 func resourceFabricPortRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*Config).fabricClient
 	ctx = context.WithValue(ctx, v4.ContextAccessToken, meta.(*Config).FabricAuthToken)
 	port, _, err := client.PortsApi.GetPortByUuid(ctx, d.Id())
-
 	if err != nil {
 		log.Printf("[WARN] Port %s not found , error %s", d.Id(), err)
 		if !strings.Contains(err.Error(), "500") {

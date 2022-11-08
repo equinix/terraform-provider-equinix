@@ -3,14 +3,15 @@ package equinix
 import (
 	"context"
 	"fmt"
-	v4 "github.com/equinix-labs/fabric-go/fabric/v4"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"log"
 	"strconv"
 	"strings"
 	"time"
+
+	v4 "github.com/equinix-labs/fabric-go/fabric/v4"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 func resourceFabricServiceProfile() *schema.Resource {
@@ -37,7 +38,6 @@ func resourceFabricServiceProfileRead(ctx context.Context, d *schema.ResourceDat
 	client := meta.(*Config).fabricClient
 	ctx = context.WithValue(ctx, v4.ContextAccessToken, meta.(*Config).FabricAuthToken)
 	serviceProfile, _, err := client.ServiceProfilesApi.GetServiceProfileByUuid(ctx, d.Id(), nil)
-
 	if err != nil {
 		if !strings.Contains(err.Error(), "500") {
 			error := v4.ModelError{}
@@ -124,7 +124,7 @@ func resourceFabricServiceProfileUpdate(ctx context.Context, d *schema.ResourceD
 	client := meta.(*Config).fabricClient
 	ctx = context.WithValue(ctx, v4.ContextAccessToken, meta.(*Config).FabricAuthToken)
 	uuid := d.Id()
-	//TODO Why we need the below check?
+	// TODO Why we need the below check?
 	if uuid == "" {
 		return diag.Errorf("No service profile found for the value uuid %v ", uuid)
 	}
@@ -268,20 +268,17 @@ func setFabricServiceProfilesListMap(d *schema.ResourceData, spl v4.ServiceProfi
 		"data": fabricServiceProfilesListToTerra(spl),
 	})
 	if err != nil {
-
 		return diag.FromErr(err)
-
 	}
 	return diags
 }
 
 func resourceServiceProfilesSearchRequest(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-
 	client := meta.(*Config).fabricClient
 	ctx = context.WithValue(ctx, v4.ContextAccessToken, meta.(*Config).FabricAuthToken)
 	schemaFilter := d.Get("filter").(interface{}).(*schema.Set).List()
 	filter := serviceProfilesSearchFilterRequestToFabric(schemaFilter)
-	var serviceProfileFlt v4.ServiceProfileFilter //Cast ServiceProfile search expression struct type to interface
+	var serviceProfileFlt v4.ServiceProfileFilter // Cast ServiceProfile search expression struct type to interface
 	serviceProfileFlt = filter
 	schemaSort := d.Get("sort").([]interface{})
 	sort := serviceProfilesSearchSortRequestToFabric(schemaSort)
@@ -290,7 +287,6 @@ func resourceServiceProfilesSearchRequest(ctx context.Context, d *schema.Resourc
 		Sort:   sort,
 	}
 	serviceProfiles, _, err := client.ServiceProfilesApi.SearchServiceProfiles(ctx, createServiceProfilesSearchRequest)
-
 	if err != nil {
 		if !strings.Contains(err.Error(), "500") {
 			error := v4.ModelError{}

@@ -1,9 +1,10 @@
 package tests
 
 import (
+	"testing"
+
 	"github.com/gruntwork-io/terratest/modules/terraform"
 	"github.com/stretchr/testify/assert"
-	"testing"
 )
 
 func TestPort2ProfilePublicCreateConnection(t *testing.T) {
@@ -18,5 +19,4 @@ func TestPort2ProfilePublicCreateConnection(t *testing.T) {
 	output := terraform.Output(t, terraformOptions, "connection_result")
 	terraform.OutputAll(t, terraformOptions)
 	assert.NotNil(t, output)
-
 }

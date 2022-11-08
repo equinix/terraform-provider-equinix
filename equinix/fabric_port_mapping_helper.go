@@ -126,7 +126,7 @@ func lagToTerra(portLag *v4.PortLag) *schema.Set {
 }
 
 func fabricPortsListToTerra(ports v4.AllPortsResponse) []map[string]interface{} {
-	var portsl = ports.Data
+	portsl := ports.Data
 	if portsl == nil {
 		return nil
 	}

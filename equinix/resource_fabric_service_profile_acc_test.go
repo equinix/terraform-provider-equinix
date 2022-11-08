@@ -3,11 +3,12 @@ package equinix
 import (
 	"context"
 	"fmt"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"log"
 	"testing"
 	"time"
+
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 
 	v4 "github.com/equinix-labs/fabric-go/fabric/v4"
 )
@@ -57,7 +58,7 @@ func TestAccFabricSearchServiceProfilesByName(t *testing.T) {
 				Config: testAccFabricReadServiceProfilesListConfig("Azure ExpressRoute"),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(
-						"data.equinix_fabric_service_profiles.test", "data.#", fmt.Sprint(1)), //Check  total number of ServiceProfile list returned in the Response payloads
+						"data.equinix_fabric_service_profiles.test", "data.#", fmt.Sprint(1)), // Check  total number of ServiceProfile list returned in the Response payloads
 					resource.TestCheckResourceAttr(
 						"data.equinix_fabric_service_profiles.test", "data.0.name", fmt.Sprint("Azure ExpressRoute")),
 					resource.TestCheckResourceAttr(
