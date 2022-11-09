@@ -132,10 +132,12 @@ func resourceFabricConnectionRead(ctx context.Context, d *schema.ResourceData, m
 func setFabricMap(d *schema.ResourceData, conn v4.Connection) diag.Diagnostics {
 	diags := diag.Diagnostics{}
 	err := setMap(d, map[string]interface{}{
-		"name":            conn.Name,
-		"bandwidth":       conn.Bandwidth,
-		"href":            conn.Href,
-		"description":     conn.Description,
+		"name":      conn.Name,
+		"bandwidth": conn.Bandwidth,
+		"href":      conn.Href,
+		// TODO v4.ConnectionPostRequest doesn't have a "description" field,
+		// so it always returns empty because it was never in the API, that produces an inconsistency
+		// "description":     conn.Description,
 		"is_remote":       conn.IsRemote,
 		"type":            conn.Type_,
 		"state":           conn.State,

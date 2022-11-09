@@ -68,7 +68,7 @@ func setPortsListMap(d *schema.ResourceData, spl v4.AllPortsResponse) diag.Diagn
 func resourceFabricPortGetByPortName(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*Config).fabricClient
 	ctx = context.WithValue(ctx, v4.ContextAccessToken, meta.(*Config).FabricAuthToken)
-	portNameParam := d.Get("filters").(interface{}).(*schema.Set).List()
+	portNameParam := d.Get("filters").(*schema.Set).List()
 	portName := portNameQueryParamToFabric(portNameParam)
 	ports, _, err := client.PortsApi.GetPorts(ctx, &portName)
 	if err != nil {
@@ -89,13 +89,13 @@ func resourceFabricPortGetByPortName(ctx context.Context, d *schema.ResourceData
 }
 
 func portNameQueryParamToFabric(portNameParam []interface{}) v4.PortsApiGetPortsOpts {
-	if portNameParam == nil || len(portNameParam) == 0 {
+	if len(portNameParam) == 0 {
 		return v4.PortsApiGetPortsOpts{}
 	}
 	mappedPn := v4.PortsApiGetPortsOpts{}
 	for _, pn := range portNameParam {
 		pnMap := pn.(map[string]interface{})
-		portName := pnMap["name"].(interface{}).(string)
+		portName := pnMap["name"].(string)
 		pName := optional.NewString(portName)
 		mappedPn = v4.PortsApiGetPortsOpts{Name: pName}
 	}
