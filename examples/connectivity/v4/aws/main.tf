@@ -60,10 +60,5 @@ resource "equinix_fabric_connection" "aws-qinq" {
 }
 
 output "connection_result" {
-  value = "equinix_fabric_connection.aws-qinq.id"
-}
-
-resource "time_sleep" "wait_for_ingress_alb" {
-  destroy_duration = "60s"
-  depends_on = [equinix_fabric_connection.aws-qinq]
+  value = equinix_fabric_connection.aws-qinq.id
 }

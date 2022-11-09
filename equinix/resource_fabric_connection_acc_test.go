@@ -3,9 +3,7 @@ package equinix
 import (
 	"context"
 	"fmt"
-	"log"
 	"testing"
-	"time"
 
 	v4 "github.com/equinix-labs/fabric-go/fabric/v4"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
@@ -43,48 +41,18 @@ func TestAccFabricCreateConnection(t *testing.T) {
 }
 
 func checkConnectionDelete(s *terraform.State) error {
-	client := testAccProvider.Meta().(*Config).fabricClient
 	ctx := context.Background()
 	ctx = context.WithValue(ctx, v4.ContextAccessToken, testAccProvider.Meta().(*Config).FabricAuthToken)
 	for _, rs := range s.RootModule().Resources {
 		if rs.Type != "equinix_fabric_connection" {
 			continue
 		}
-		_, err := waitUntilConnectionDeprovisioned(rs.Primary.ID, client, ctx)
+		err := waitUntilConnectionDeprovisioned(rs.Primary.ID, testAccProvider.Meta(), ctx)
 		if err != nil {
 			return fmt.Errorf("API call failed while waiting for resource deletion")
 		}
 	}
 	return nil
-}
-
-func waitUntilConnectionDeprovisioned(uuid string, client *v4.APIClient, ctx context.Context) (v4.Connection, error) {
-	log.Printf("Waiting for connection to be in deprovisioned, uuid %s", uuid)
-	stateConf := &resource.StateChangeConf{
-		Target: []string{"DEPROVISIONED"},
-		Refresh: func() (interface{}, string, error) {
-			dbConn, _, err := client.ConnectionsApi.GetConnectionByUuid(ctx, uuid, nil)
-			if err != nil {
-				return "", "", err
-			}
-			updatableState := ""
-			if "DEPROVISIONED" == *dbConn.State {
-				updatableState = string(*dbConn.State)
-			}
-			return dbConn, updatableState, nil
-		},
-		Timeout:    3 * time.Minute,
-		Delay:      30 * time.Second,
-		MinTimeout: 30 * time.Second,
-	}
-
-	inter, err := stateConf.WaitForStateContext(ctx)
-	dbConn := v4.Connection{}
-
-	if err == nil {
-		dbConn = inter.(v4.Connection)
-	}
-	return dbConn, err
 }
 
 func testAccFabricCreateEPLConnectionConfig(bandwidth int32) string {

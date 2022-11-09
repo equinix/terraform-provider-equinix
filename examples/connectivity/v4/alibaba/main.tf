@@ -62,9 +62,3 @@ resource "equinix_fabric_connection" "alibaba-qinq" {
 output "connection_result" {
   value = equinix_fabric_connection.alibaba-qinq.id
 }
-
-resource "time_sleep" "wait_for_ingress_alb" {
-  destroy_duration = "180s"
-
-  depends_on = [equinix_fabric_connection.alibaba-qinq]
-}
