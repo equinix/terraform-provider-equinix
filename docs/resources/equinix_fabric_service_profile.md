@@ -31,7 +31,6 @@ Fabric V4 API compatible resource allows creation and management of Equinix Fabr
 - `metros` (Block List) Access point config information (see [below for nested schema](#nestedblock--metros))
 - `notifications` (Block List) Preferences for notifications on connection configuration or status changes (see [below for nested schema](#nestedblock--notifications))
 - `ports` (Block List) Ports (see [below for nested schema](#nestedblock--ports))
-- `project` (Block Set) Project information (see [below for nested schema](#nestedblock--project))
 - `self_profile` (Boolean) Self Profile
 - `state` (String) Service profile state - ACTIVE, PENDING_APPROVAL, DELETED, REJECTED
 - `tags` (List of String) Tags attached to the connection
@@ -41,9 +40,10 @@ Fabric V4 API compatible resource allows creation and management of Equinix Fabr
 
 ### Read-Only
 
-- `change_log` (Block Set) Captures connection lifecycle change information (see [below for nested schema](#nestedblock--change_log))
+- `change_log` (Set of Object) Captures connection lifecycle change information (see [below for nested schema](#nestedatt--change_log))
 - `href` (String) Service Profile URI response attribute
 - `id` (String) The ID of this resource.
+- `project` (Set of Object) Project information (see [below for nested schema](#nestedatt--project))
 - `uuid` (String) Equinix assigned service profile identifier
 
 <a id="nestedblock--access_point_type_configs"></a>
@@ -211,18 +211,6 @@ Optional:
 
 
 
-<a id="nestedblock--project"></a>
-### Nested Schema for `project`
-
-Optional:
-
-- `project_id` (String) Project Id
-
-Read-Only:
-
-- `href` (String) Unique Resource URL
-
-
 <a id="nestedblock--timeouts"></a>
 ### Nested Schema for `timeouts`
 
@@ -259,22 +247,29 @@ Optional:
 
 
 
-<a id="nestedblock--change_log"></a>
+<a id="nestedatt--change_log"></a>
 ### Nested Schema for `change_log`
 
 Read-Only:
 
-- `created_by` (String) Created by User Key
-- `created_by_email` (String) Created by User Email Address
-- `created_by_full_name` (String) Created by User Full Name
-- `created_date_time` (String) Created by Date and Time
-- `deleted_by` (String) Deleted by User Key
-- `deleted_by_email` (String) Deleted by User Email Address
-- `deleted_by_full_name` (String) Deleted by User Full Name
-- `deleted_date_time` (String) Deleted by Date and Time
-- `updated_by` (String) Updated by User Key
-- `updated_by_email` (String) Updated by User Email Address
-- `updated_by_full_name` (String) Updated by User Full Name
-- `updated_date_time` (String) Updated by Date and Time
+- `created_by` (String)
+- `created_by_email` (String)
+- `created_by_full_name` (String)
+- `created_date_time` (String)
+- `deleted_by` (String)
+- `deleted_by_email` (String)
+- `deleted_by_full_name` (String)
+- `deleted_date_time` (String)
+- `updated_by` (String)
+- `updated_by_email` (String)
+- `updated_by_full_name` (String)
+- `updated_date_time` (String)
 
 
+<a id="nestedatt--project"></a>
+### Nested Schema for `project`
+
+Read-Only:
+
+- `href` (String)
+- `project_id` (String)
