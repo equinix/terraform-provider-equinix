@@ -77,20 +77,8 @@ func createVirtualGatewaySch() map[string]*schema.Schema {
 		},
 		"href": {
 			Type:        schema.TypeString,
-			Optional:    true,
 			Computed:    true,
 			Description: "Unique Resource Identifier",
-		},
-		"state": {
-			Type:        schema.TypeString,
-			Computed:    true,
-			Description: "Virtual Gateway state",
-		},
-		"project": {
-			Type:        schema.TypeSet,
-			Computed:    true,
-			Description: "Project in which this gateway is created",
-			Elem:        &schema.Resource{Schema: createGatewayProjectSch()},
 		},
 	}
 }

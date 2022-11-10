@@ -107,9 +107,8 @@ func gatewayToFabric(gatewayRequest []interface{}) v4.VirtualGateway {
 	gatewayMapped := v4.VirtualGateway{}
 	for _, gwr := range gatewayRequest {
 		gwrMap := gwr.(map[string]interface{})
-		gwHref := gwrMap["href"].(string)
 		gwuuid := gwrMap["uuid"].(string)
-		gatewayMapped = v4.VirtualGateway{Uuid: gwuuid, Href: gwHref}
+		gatewayMapped = v4.VirtualGateway{Uuid: gwuuid}
 	}
 	return gatewayMapped
 }
