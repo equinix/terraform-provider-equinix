@@ -126,7 +126,7 @@ func createFabricServiceProfileSchema() map[string]*schema.Schema {
 		},
 		"project": {
 			Type:        schema.TypeSet,
-			Computed:    true,
+			Optional:    true,
 			Description: "Project information",
 			Elem: &schema.Resource{
 				Schema: createGatewayProjectSch(),

@@ -124,11 +124,6 @@ func resourceFabricServiceProfileUpdate(ctx context.Context, d *schema.ResourceD
 	client := meta.(*Config).fabricClient
 	ctx = context.WithValue(ctx, v4.ContextAccessToken, meta.(*Config).FabricAuthToken)
 	uuid := d.Id()
-	// TODO Why we need the below check?
-	if uuid == "" {
-		return diag.Errorf("No service profile found for the value uuid %v ", uuid)
-	}
-
 	updateRequest := getServiceProfileRequestPayload(d)
 
 	var err error

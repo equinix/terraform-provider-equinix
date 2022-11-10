@@ -307,7 +307,7 @@ func resourceFabricConnectionDelete(ctx context.Context, d *schema.ResourceData,
 }
 
 func waitUntilConnectionDeprovisioned(uuid string, meta interface{}, ctx context.Context) error {
-	log.Printf("Waiting for connection to be provisioned, uuid %s", uuid)
+	log.Printf("Waiting for connection to be deprovisioned, uuid %s", uuid)
 	stateConf := &resource.StateChangeConf{
 		Pending: []string{
 			string(v4.DEPROVISIONING_ConnectionState),
