@@ -80,22 +80,11 @@ Read-Only:
 
 Optional:
 
-- `href` (String) Unique Resource Identifier
 - `uuid` (String) Equinix-assigned virtual gateway identifier
 
 Read-Only:
 
-- `project` (Set of Object) Project in which this gateway is created (see [below for nested schema](#nestedatt--a_side--access_point--gateway--project))
-- `state` (String) Virtual Gateway state
-
-<a id="nestedatt--a_side--access_point--gateway--project"></a>
-### Nested Schema for `a_side.access_point.gateway.project`
-
-Read-Only:
-
-- `href` (String)
-- `project_id` (String)
-
+- `href` (String) Unique Resource Identifier
 
 
 <a id="nestedblock--a_side--access_point--interface"></a>
@@ -292,22 +281,11 @@ Read-Only:
 
 Optional:
 
-- `href` (String) Unique Resource Identifier
 - `uuid` (String) Equinix-assigned virtual gateway identifier
 
 Read-Only:
 
-- `project` (Set of Object) Project in which this gateway is created (see [below for nested schema](#nestedatt--z_side--access_point--gateway--project))
-- `state` (String) Virtual Gateway state
-
-<a id="nestedatt--z_side--access_point--gateway--project"></a>
-### Nested Schema for `z_side.access_point.gateway.project`
-
-Read-Only:
-
-- `href` (String)
-- `project_id` (String)
-
+- `href` (String) Unique Resource Identifier
 
 
 <a id="nestedblock--z_side--access_point--interface"></a>
@@ -572,3 +550,5 @@ Read-Only:
 
 - `href` (String) Unique Resource URL
 - `project_id` (String) Project Id
+
+

@@ -17,20 +17,20 @@ func TestAccFabricCreateConnection(t *testing.T) {
 		CheckDestroy: checkConnectionDelete,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccFabricCreateAzureConnectionConfig(50),
+				Config: testAccFabricCreateEPLConnectionConfig(50),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(
-						"equinix_fabric_connection.test", "name", fmt.Sprint("fabric_tf_acc_Generic")),
+						"equinix_fabric_connection.test", "name", fmt.Sprint("fabric_tf_acc_test_CCEPL")),
 					resource.TestCheckResourceAttr(
 						"equinix_fabric_connection.test", "bandwidth", fmt.Sprint("50")),
 				),
 				ExpectNonEmptyPlan: true,
 			},
 			{
-				Config: testAccFabricCreateAzureConnectionConfig(100),
+				Config: testAccFabricCreateEPLConnectionConfig(100),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(
-						"equinix_fabric_connection.test", "name", fmt.Sprint("fabric_tf_acc_Generic")),
+						"equinix_fabric_connection.test", "name", fmt.Sprint("fabric_tf_acc_test_CCEPL")),
 					resource.TestCheckResourceAttr(
 						"equinix_fabric_connection.test", "bandwidth", fmt.Sprint("100")),
 				),
@@ -100,7 +100,6 @@ func testAccFabricCreateEPLConnectionConfig(bandwidth int32) string {
 func testAccFabricCreateAzureConnectionConfig(bandwidth int32) string {
 	return fmt.Sprintf(`resource "equinix_fabric_connection" "test" {
 	name = "fabric_tf_acc_CSAZURE"
-	description = "Test Connection"
 	type = "EVPL_VC"
 	notifications{
 		type="ALL" 
@@ -143,7 +142,6 @@ func testAccFabricCreateAzureConnectionConfig(bandwidth int32) string {
 func testAccFabricCreateGenericConfig(bandwidth int32) string {
 	return fmt.Sprintf(`resource "equinix_fabric_connection" "test" {
 	name = "fabric_tf_acc_Generic"
-	description = "Test Connection"
 	type = "EVPL_VC"
 	notifications{
 		type="ALL" 
@@ -186,7 +184,6 @@ func testAccFabricUpdateConnectionConfig(bandwidth int32) string {
 	return fmt.Sprintf(`resource "equinix_fabric_connection" "test" {
 	uuid = equinix_fabric_connection.test.uuid
 	name = "fabric_tf_acc_CSAZURE"
-	description = "Test Connection"
 	type = "EVPL_VC"
 	notifications{
 		type="ALL" 

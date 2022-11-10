@@ -2,7 +2,6 @@ equinix_client_id      = "MyEquinixClientId"
 equinix_client_secret  = "MyEquinixSecret"
 
 connection_name = "terra_e2e_spprivate"
-description = "Test Connection"
 connection_type = "EVPL_VC"
 notifications_type = "ALL"
 redundancy = "PRIMARY"
