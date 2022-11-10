@@ -20,7 +20,7 @@ func TestAccFabricCreateConnection(t *testing.T) {
 				Config: testAccFabricCreateEPLConnectionConfig(50),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(
-						"equinix_fabric_connection.test", "name", fmt.Sprint("fabric_tf_acc_EPL")),
+						"equinix_fabric_connection.test", "name", fmt.Sprint("fabric_tf_acc_test_CCEPL")),
 					resource.TestCheckResourceAttr(
 						"equinix_fabric_connection.test", "bandwidth", fmt.Sprint("50")),
 				),
@@ -30,7 +30,7 @@ func TestAccFabricCreateConnection(t *testing.T) {
 				Config: testAccFabricCreateEPLConnectionConfig(100),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(
-						"equinix_fabric_connection.test", "name", fmt.Sprint("fabric_tf_acc_EPL")),
+						"equinix_fabric_connection.test", "name", fmt.Sprint("fabric_tf_acc_test_CCEPL")),
 					resource.TestCheckResourceAttr(
 						"equinix_fabric_connection.test", "bandwidth", fmt.Sprint("100")),
 				),
