@@ -57,7 +57,6 @@ func dataSourceMetalOrganization() *schema.Resource {
 				Type:        schema.TypeList,
 				Description: "Business' address",
 				Computed:    true,
-				Optional:    true,
 				Elem: &schema.Resource{
 					Schema: createOrganizationAddressDataSourceSchema(),
 				},
@@ -71,28 +70,23 @@ func createOrganizationAddressDataSourceSchema() map[string]*schema.Schema {
 		"address": {
 			Type:     schema.TypeString,
 			Computed: true,
-			Optional: true,
 		},
 		"city": {
 			Type:     schema.TypeString,
 			Computed: true,
-			Optional: true,
 		},
 		"zip_code": {
 			Type:     schema.TypeString,
 			Computed: true,
-			Optional: true,
 		},
 		"country": {
 			Type:        schema.TypeString,
 			Description: "Two letter country code (ISO 3166-1 alpha-2), e.g. US",
 			Computed:    true,
-			Optional:    true,
 		},
 		"state": {
 			Type:     schema.TypeString,
 			Computed: true,
-			Optional: true,
 		},
 	}
 }
