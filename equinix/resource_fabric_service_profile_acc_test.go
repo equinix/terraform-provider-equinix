@@ -3,11 +3,12 @@ package equinix
 import (
 	"context"
 	"fmt"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"log"
 	"testing"
 	"time"
+
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 
 	v4 "github.com/equinix-labs/fabric-go/fabric/v4"
 )
@@ -57,7 +58,7 @@ func TestAccFabricSearchServiceProfilesByName(t *testing.T) {
 				Config: testAccFabricReadServiceProfilesListConfig("Azure ExpressRoute"),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(
-						"data.equinix_fabric_service_profiles.test", "data.#", fmt.Sprint(1)), //Check  total number of ServiceProfile list returned in the Response payloads
+						"data.equinix_fabric_service_profiles.test", "data.#", fmt.Sprint(1)), // Check  total number of ServiceProfile list returned in the Response payloads
 					resource.TestCheckResourceAttr(
 						"data.equinix_fabric_service_profiles.test", "data.0.name", fmt.Sprint("Azure ExpressRoute")),
 					resource.TestCheckResourceAttr(
@@ -166,14 +167,14 @@ func checkServiceProfileDelete(s *terraform.State) error {
 func waitAndCheckServiceProfileDeleted(uuid string, client *v4.APIClient, ctx context.Context) (v4.ServiceProfile, error) {
 	log.Printf("Waiting for service profile to be in deleted, uuid %s", uuid)
 	stateConf := &resource.StateChangeConf{
-		Target: []string{"DELETED"},
+		Target: []string{string(v4.DELETED_ServiceProfileStateEnum)},
 		Refresh: func() (interface{}, string, error) {
 			dbConn, _, err := client.ServiceProfilesApi.GetServiceProfileByUuid(ctx, uuid, nil)
 			if err != nil {
 				return "", "", err
 			}
 			updatableState := ""
-			if "DELETED" == *dbConn.State {
+			if *dbConn.State == v4.DELETED_ServiceProfileStateEnum {
 				updatableState = string(*dbConn.State)
 			}
 			return dbConn, updatableState, nil

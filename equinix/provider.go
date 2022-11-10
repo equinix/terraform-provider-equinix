@@ -9,6 +9,7 @@ import (
 	"strings"
 	"time"
 
+	v4 "github.com/equinix-labs/fabric-go/fabric/v4"
 	"github.com/equinix/ecx-go/v2"
 	"github.com/equinix/rest-go"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -250,6 +251,15 @@ func expandInterfaceMapToStringMap(mapIn map[string]interface{}) map[string]stri
 func hasApplicationErrorCode(errors []rest.ApplicationError, code string) bool {
 	for _, err := range errors {
 		if err.Code == code {
+			return true
+		}
+	}
+	return false
+}
+
+func hasModelErrorCode(errors []v4.ModelError, code string) bool {
+	for _, err := range errors {
+		if err.ErrorCode == code {
 			return true
 		}
 	}

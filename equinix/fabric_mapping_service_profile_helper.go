@@ -404,7 +404,7 @@ func metrosToFabric(schemaMetros []interface{}) []v4.ServiceMetro {
 }
 
 func fabricServiceProfilesListToTerra(serviceProfiles v4.ServiceProfiles) []map[string]interface{} {
-	var serviceProfile = serviceProfiles.Data
+	serviceProfile := serviceProfiles.Data
 	if serviceProfile == nil {
 		return nil
 	}

@@ -3,14 +3,15 @@ package equinix
 import (
 	"context"
 	"fmt"
-	v4 "github.com/equinix-labs/fabric-go/fabric/v4"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"log"
 	"strconv"
 	"strings"
 	"time"
+
+	v4 "github.com/equinix-labs/fabric-go/fabric/v4"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 func resourceFabricServiceProfile() *schema.Resource {
@@ -37,7 +38,6 @@ func resourceFabricServiceProfileRead(ctx context.Context, d *schema.ResourceDat
 	client := meta.(*Config).fabricClient
 	ctx = context.WithValue(ctx, v4.ContextAccessToken, meta.(*Config).FabricAuthToken)
 	serviceProfile, _, err := client.ServiceProfilesApi.GetServiceProfileByUuid(ctx, d.Id(), nil)
-
 	if err != nil {
 		if !strings.Contains(err.Error(), "500") {
 			error := v4.ModelError{}
@@ -89,7 +89,7 @@ func getServiceProfileRequestPayload(d *schema.ResourceData) v4.ServiceProfileRe
 	schemaCustomFields := d.Get("custom_fields").([]interface{})
 	spCustomFields := customFieldsToFabric(schemaCustomFields)
 
-	schemaMarketingInfo := d.Get("marketing_info").(interface{}).(*schema.Set).List()
+	schemaMarketingInfo := d.Get("marketing_info").(*schema.Set).List()
 	spMarketingInfo := marketingInfoToFabric(schemaMarketingInfo)
 
 	schemaPorts := d.Get("ports").([]interface{})
@@ -124,11 +124,6 @@ func resourceFabricServiceProfileUpdate(ctx context.Context, d *schema.ResourceD
 	client := meta.(*Config).fabricClient
 	ctx = context.WithValue(ctx, v4.ContextAccessToken, meta.(*Config).FabricAuthToken)
 	uuid := d.Id()
-	//TODO Why we need the below check?
-	if uuid == "" {
-		return diag.Errorf("No service profile found for the value uuid %v ", uuid)
-	}
-
 	updateRequest := getServiceProfileRequestPayload(d)
 
 	var err error
@@ -143,7 +138,7 @@ func resourceFabricServiceProfileUpdate(ctx context.Context, d *schema.ResourceD
 
 	_, res, err := client.ServiceProfilesApi.PutServiceProfileByUuid(ctx, updateRequest, strconv.FormatInt(eTag, 10), uuid)
 	if err != nil {
-		return diag.FromErr(fmt.Errorf("Error response for the service profile update, response %v, error %v", res, err))
+		return diag.FromErr(fmt.Errorf("error response for the service profile update, response %v, error %v", res, err))
 	}
 	updatedServiceProfile := v4.ServiceProfile{}
 	updatedServiceProfile, err = waitForServiceProfileUpdateCompletion(uuid, meta, ctx)
@@ -151,7 +146,7 @@ func resourceFabricServiceProfileUpdate(ctx context.Context, d *schema.ResourceD
 		if !strings.Contains(err.Error(), "500") {
 			d.SetId("")
 		}
-		return diag.FromErr(fmt.Errorf("Errored while waiting for successful service profile update, response %v, error %v", res, err))
+		return diag.FromErr(fmt.Errorf("errored while waiting for successful service profile update, response %v, error %v", res, err))
 	}
 	d.SetId(updatedServiceProfile.Uuid)
 	return setFabricServiceProfileMap(d, updatedServiceProfile)
@@ -188,7 +183,7 @@ func waitForActiveServiceProfileAndPopulateETag(uuid string, meta interface{}, c
 	log.Printf("Waiting for service profile to be in active state, uuid %s", uuid)
 	var eTag int64 = 0
 	stateConf := &resource.StateChangeConf{
-		Target: []string{"ACTIVE"},
+		Target: []string{string(v4.ACTIVE_ServiceProfileStateEnum)},
 		Refresh: func() (interface{}, string, error) {
 			client := meta.(*Config).fabricClient
 			dbServiceProfile, res, err := client.ServiceProfilesApi.GetServiceProfileByUuid(ctx, uuid, nil)
@@ -198,9 +193,12 @@ func waitForActiveServiceProfileAndPopulateETag(uuid string, meta interface{}, c
 
 			eTagStr := res.Header.Get("ETag")
 			eTag, err = strconv.ParseInt(strings.Trim(eTagStr, "\""), 10, 64)
+			if err != nil {
+				return nil, "", err
+			}
 
 			updatableState := ""
-			if "ACTIVE" == *dbServiceProfile.State {
+			if *dbServiceProfile.State == v4.ACTIVE_ServiceProfileStateEnum {
 				updatableState = string(*dbServiceProfile.State)
 			}
 			return dbServiceProfile, updatableState, nil
@@ -227,8 +225,7 @@ func resourceFabricServiceProfileDelete(ctx context.Context, d *schema.ResourceD
 	}
 	_, resp, err := client.ServiceProfilesApi.DeleteServiceProfileByUuid(ctx, uuid)
 	if err != nil {
-		fmt.Errorf("Error response for the Service Profile delete error %v and response %v", err, resp)
-		return diag.FromErr(err)
+		return diag.FromErr(fmt.Errorf("error response for the Service Profile delete error %v and response %v", err, resp))
 	}
 	return diags
 }
@@ -268,20 +265,17 @@ func setFabricServiceProfilesListMap(d *schema.ResourceData, spl v4.ServiceProfi
 		"data": fabricServiceProfilesListToTerra(spl),
 	})
 	if err != nil {
-
 		return diag.FromErr(err)
-
 	}
 	return diags
 }
 
 func resourceServiceProfilesSearchRequest(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-
 	client := meta.(*Config).fabricClient
 	ctx = context.WithValue(ctx, v4.ContextAccessToken, meta.(*Config).FabricAuthToken)
-	schemaFilter := d.Get("filter").(interface{}).(*schema.Set).List()
+	schemaFilter := d.Get("filter").(*schema.Set).List()
 	filter := serviceProfilesSearchFilterRequestToFabric(schemaFilter)
-	var serviceProfileFlt v4.ServiceProfileFilter //Cast ServiceProfile search expression struct type to interface
+	var serviceProfileFlt v4.ServiceProfileFilter // Cast ServiceProfile search expression struct type to interface
 	serviceProfileFlt = filter
 	schemaSort := d.Get("sort").([]interface{})
 	sort := serviceProfilesSearchSortRequestToFabric(schemaSort)
@@ -290,7 +284,6 @@ func resourceServiceProfilesSearchRequest(ctx context.Context, d *schema.Resourc
 		Sort:   sort,
 	}
 	serviceProfiles, _, err := client.ServiceProfilesApi.SearchServiceProfiles(ctx, createServiceProfilesSearchRequest)
-
 	if err != nil {
 		if !strings.Contains(err.Error(), "500") {
 			error := v4.ModelError{}

@@ -26,22 +26,21 @@ Fabric V4 API compatible resource allows creation and management of Equinix Fabr
 
 ### Optional
 
-- `account` (Block Set) Customer account information that is associated with this connection (see [below for nested schema](#nestedblock--account))
 - `additional_info` (Block List) Connection additional information (see [below for nested schema](#nestedblock--additional_info))
-- `description` (String) Customer-provided connection description
 - `order` (Block Set) Order related to this connection information (see [below for nested schema](#nestedblock--order))
-- `project` (Block Set) Project information (see [below for nested schema](#nestedblock--project))
 - `redundancy` (Block Set) Redundancy Information (see [below for nested schema](#nestedblock--redundancy))
 - `timeouts` (Block, Optional) (see [below for nested schema](#nestedblock--timeouts))
 
 ### Read-Only
 
+- `account` (Set of Object) Customer account information that is associated with this connection (see [below for nested schema](#nestedatt--account))
 - `change_log` (Set of Object) Captures connection lifecycle change information (see [below for nested schema](#nestedatt--change_log))
 - `direction` (String) Connection directionality from the requester point of view
 - `href` (String) Connection URI information
 - `id` (String) The ID of this resource.
 - `is_remote` (Boolean) Connection property derived from access point locations
 - `operation` (Set of Object) Connection type-specific operational data (see [below for nested schema](#nestedatt--operation))
+- `project` (Block Set) Project information (see [below for nested schema](#nestedblock--project))
 - `state` (String) Connection overall state
 
 <a id="nestedblock--a_side"></a>
@@ -58,7 +57,6 @@ Optional:
 
 Optional:
 
-- `account` (Block Set) Account (see [below for nested schema](#nestedblock--a_side--access_point--account))
 - `authentication_key` (String) Authentication key for provider based connections
 - `gateway` (Block Set) Gateway access point information (see [below for nested schema](#nestedblock--a_side--access_point--gateway))
 - `interface` (Block Set) Virtual device interface (see [below for nested schema](#nestedblock--a_side--access_point--interface))
@@ -73,43 +71,30 @@ Optional:
 - `type` (String) Access point type - COLO, VD, VG, SP, IGW, SUBNET, GW
 - `virtual_device` (Block Set) Virtual device (see [below for nested schema](#nestedblock--a_side--access_point--virtual_device))
 
-<a id="nestedblock--a_side--access_point--account"></a>
-### Nested Schema for `a_side.access_point.account`
+Read-Only:
 
-Optional:
-
-- `account_name` (String) Account Name
-- `account_number` (Number) Account Number
-- `global_cust_id` (String) Global Customer organization identifier
-- `global_org_id` (String) Global organization identifier
-- `global_organization_name` (String) Global organization name
-- `org_id` (Number) Customer organization identifier
-- `organization_name` (String) Customer organization name
-
+- `account` (Set of Object) Account (see [below for nested schema](#nestedatt--a_side--access_point--account))
 
 <a id="nestedblock--a_side--access_point--gateway"></a>
 ### Nested Schema for `a_side.access_point.gateway`
 
 Optional:
 
-- `project` (Block Set) Project this gateway created in (see [below for nested schema](#nestedblock--a_side--access_point--gateway--project))
+- `href` (String) Unique Resource Identifier
 - `uuid` (String) Equinix-assigned virtual gateway identifier
 
 Read-Only:
 
-- `href` (String) Unique Resource Identifier
+- `project` (Set of Object) Project in which this gateway is created (see [below for nested schema](#nestedatt--a_side--access_point--gateway--project))
 - `state` (String) Virtual Gateway state
 
-<a id="nestedblock--a_side--access_point--gateway--project"></a>
+<a id="nestedatt--a_side--access_point--gateway--project"></a>
 ### Nested Schema for `a_side.access_point.gateway.project`
-
-Optional:
-
-- `project_id` (String) Project Id
 
 Read-Only:
 
-- `href` (String) Unique Resource URL
+- `href` (String)
+- `project_id` (String)
 
 
 
@@ -153,37 +138,37 @@ Optional:
 
 Optional:
 
-- `name` (String) Port name
-- `redundancy` (Block Set) Redundancy Information (see [below for nested schema](#nestedblock--a_side--access_point--port--redundancy))
 - `uuid` (String) Equinix-assigned Port identifier
 
 Read-Only:
 
 - `href` (String) Unique Resource Identifier
+- `name` (String) Port name
+- `redundancy` (Set of Object) Redundancy Information (see [below for nested schema](#nestedatt--a_side--access_point--port--redundancy))
 
-<a id="nestedblock--a_side--access_point--port--redundancy"></a>
+<a id="nestedatt--a_side--access_point--port--redundancy"></a>
 ### Nested Schema for `a_side.access_point.port.redundancy`
 
-Optional:
+Read-Only:
 
-- `priority` (String) Priority type- PRIMARY, SECONDARY
+- `priority` (String)
 
 
 
 <a id="nestedblock--a_side--access_point--profile"></a>
 ### Nested Schema for `a_side.access_point.profile`
 
-Optional:
+Required:
 
-- `description` (String) User-provided service description
-- `name` (String) Customer-assigned service profile name
 - `type` (String) Service profile type - L2_PROFILE, L3_PROFILE, ECIA_PROFILE, ECMC_PROFILE
 - `uuid` (String) Equinix assigned service profile identifier
 
 Read-Only:
 
 - `access_point_type_configs` (List of Object) Access point config information (see [below for nested schema](#nestedatt--a_side--access_point--profile--access_point_type_configs))
+- `description` (String) User-provided service description
 - `href` (String) Service Profile URI response attribute
+- `name` (String) Customer-assigned service profile name
 
 <a id="nestedatt--a_side--access_point--profile--access_point_type_configs"></a>
 ### Nested Schema for `a_side.access_point.profile.access_point_type_configs`
@@ -216,6 +201,20 @@ Optional:
 Read-Only:
 
 - `href` (String) Unique Resource Identifier
+
+
+<a id="nestedatt--a_side--access_point--account"></a>
+### Nested Schema for `a_side.access_point.account`
+
+Read-Only:
+
+- `account_name` (String)
+- `account_number` (Number)
+- `global_cust_id` (String)
+- `global_org_id` (String)
+- `global_organization_name` (String)
+- `org_id` (Number)
+- `organization_name` (String)
 
 
 
@@ -270,7 +269,6 @@ Optional:
 
 Optional:
 
-- `account` (Block Set) Account (see [below for nested schema](#nestedblock--z_side--access_point--account))
 - `authentication_key` (String) Authentication key for provider based connections
 - `gateway` (Block Set) Gateway access point information (see [below for nested schema](#nestedblock--z_side--access_point--gateway))
 - `interface` (Block Set) Virtual device interface (see [below for nested schema](#nestedblock--z_side--access_point--interface))
@@ -285,43 +283,30 @@ Optional:
 - `type` (String) Access point type - COLO, VD, VG, SP, IGW, SUBNET, GW
 - `virtual_device` (Block Set) Virtual device (see [below for nested schema](#nestedblock--z_side--access_point--virtual_device))
 
-<a id="nestedblock--z_side--access_point--account"></a>
-### Nested Schema for `z_side.access_point.account`
+Read-Only:
 
-Optional:
-
-- `account_name` (String) Account Name
-- `account_number` (Number) Account Number
-- `global_cust_id` (String) Global Customer organization identifier
-- `global_org_id` (String) Global organization identifier
-- `global_organization_name` (String) Global organization name
-- `org_id` (Number) Customer organization identifier
-- `organization_name` (String) Customer organization name
-
+- `account` (Set of Object) Account (see [below for nested schema](#nestedatt--z_side--access_point--account))
 
 <a id="nestedblock--z_side--access_point--gateway"></a>
 ### Nested Schema for `z_side.access_point.gateway`
 
 Optional:
 
-- `project` (Block Set) Project this gateway created in (see [below for nested schema](#nestedblock--z_side--access_point--gateway--project))
+- `href` (String) Unique Resource Identifier
 - `uuid` (String) Equinix-assigned virtual gateway identifier
 
 Read-Only:
 
-- `href` (String) Unique Resource Identifier
+- `project` (Set of Object) Project in which this gateway is created (see [below for nested schema](#nestedatt--z_side--access_point--gateway--project))
 - `state` (String) Virtual Gateway state
 
-<a id="nestedblock--z_side--access_point--gateway--project"></a>
+<a id="nestedatt--z_side--access_point--gateway--project"></a>
 ### Nested Schema for `z_side.access_point.gateway.project`
-
-Optional:
-
-- `project_id` (String) Project Id
 
 Read-Only:
 
-- `href` (String) Unique Resource URL
+- `href` (String)
+- `project_id` (String)
 
 
 
@@ -365,37 +350,37 @@ Optional:
 
 Optional:
 
-- `name` (String) Port name
-- `redundancy` (Block Set) Redundancy Information (see [below for nested schema](#nestedblock--z_side--access_point--port--redundancy))
 - `uuid` (String) Equinix-assigned Port identifier
 
 Read-Only:
 
 - `href` (String) Unique Resource Identifier
+- `name` (String) Port name
+- `redundancy` (Set of Object) Redundancy Information (see [below for nested schema](#nestedatt--z_side--access_point--port--redundancy))
 
-<a id="nestedblock--z_side--access_point--port--redundancy"></a>
+<a id="nestedatt--z_side--access_point--port--redundancy"></a>
 ### Nested Schema for `z_side.access_point.port.redundancy`
 
-Optional:
+Read-Only:
 
-- `priority` (String) Priority type- PRIMARY, SECONDARY
+- `priority` (String)
 
 
 
 <a id="nestedblock--z_side--access_point--profile"></a>
 ### Nested Schema for `z_side.access_point.profile`
 
-Optional:
+Required:
 
-- `description` (String) User-provided service description
-- `name` (String) Customer-assigned service profile name
 - `type` (String) Service profile type - L2_PROFILE, L3_PROFILE, ECIA_PROFILE, ECMC_PROFILE
 - `uuid` (String) Equinix assigned service profile identifier
 
 Read-Only:
 
 - `access_point_type_configs` (List of Object) Access point config information (see [below for nested schema](#nestedatt--z_side--access_point--profile--access_point_type_configs))
+- `description` (String) User-provided service description
 - `href` (String) Service Profile URI response attribute
+- `name` (String) Customer-assigned service profile name
 
 <a id="nestedatt--z_side--access_point--profile--access_point_type_configs"></a>
 ### Nested Schema for `z_side.access_point.profile.access_point_type_configs`
@@ -430,6 +415,20 @@ Read-Only:
 - `href` (String) Unique Resource Identifier
 
 
+<a id="nestedatt--z_side--access_point--account"></a>
+### Nested Schema for `z_side.access_point.account`
+
+Read-Only:
+
+- `account_name` (String)
+- `account_number` (Number)
+- `global_cust_id` (String)
+- `global_org_id` (String)
+- `global_organization_name` (String)
+- `org_id` (Number)
+- `organization_name` (String)
+
+
 
 <a id="nestedblock--z_side--additional_info"></a>
 ### Nested Schema for `z_side.additional_info`
@@ -455,20 +454,6 @@ Read-Only:
 
 
 
-<a id="nestedblock--account"></a>
-### Nested Schema for `account`
-
-Optional:
-
-- `account_name` (String) Account Name
-- `account_number` (Number) Account Number
-- `global_cust_id` (String) Global Customer organization identifier
-- `global_org_id` (String) Global organization identifier
-- `global_organization_name` (String) Global organization name
-- `org_id` (Number) Customer organization identifier
-- `organization_name` (String) Customer organization name
-
-
 <a id="nestedblock--additional_info"></a>
 ### Nested Schema for `additional_info`
 
@@ -492,25 +477,16 @@ Read-Only:
 - `order_number` (String) Order Reference Number
 
 
-<a id="nestedblock--project"></a>
-### Nested Schema for `project`
-
-Optional:
-
-- `project_id` (String) Project Id
-
-Read-Only:
-
-- `href` (String) Unique Resource URL
-
-
 <a id="nestedblock--redundancy"></a>
 ### Nested Schema for `redundancy`
 
 Optional:
 
-- `group` (String) Redundancy group identifier
 - `priority` (String) Priority type- PRIMARY, SECONDARY
+
+Read-Only:
+
+- `group` (String) Redundancy group identifier
 
 
 <a id="nestedblock--timeouts"></a>
@@ -522,6 +498,20 @@ Optional:
 - `delete` (String)
 - `read` (String)
 - `update` (String)
+
+
+<a id="nestedatt--account"></a>
+### Nested Schema for `account`
+
+Read-Only:
+
+- `account_name` (String)
+- `account_number` (Number)
+- `global_cust_id` (String)
+- `global_org_id` (String)
+- `global_organization_name` (String)
+- `org_id` (Number)
+- `organization_name` (String)
 
 
 <a id="nestedatt--change_log"></a>
@@ -573,3 +563,12 @@ Read-Only:
 - `reason` (String)
 
 
+
+
+<a id="nestedblock--project"></a>
+### Nested Schema for `project`
+
+Read-Only:
+
+- `href` (String) Unique Resource URL
+- `project_id` (String) Project Id

@@ -68,10 +68,5 @@ resource "equinix_fabric_connection" "sp-private-qinq" {
 }
 
 output "connection_result" {
-  value = "equinix_fabric_connection.sp-private-qinq.id"
-}
-
-resource "time_sleep" "wait_for_ingress_alb" {
-  destroy_duration = "60s"
-  depends_on = [equinix_fabric_connection.sp-private-qinq]
+  value = equinix_fabric_connection.sp-private-qinq.id
 }

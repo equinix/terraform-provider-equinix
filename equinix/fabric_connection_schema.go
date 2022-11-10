@@ -44,21 +44,25 @@ func createLocationSch() map[string]*schema.Schema {
 		"region": {
 			Type:        schema.TypeString,
 			Optional:    true,
+			Computed:    true,
 			Description: "Access point region",
 		},
 		"metro_name": {
 			Type:        schema.TypeString,
 			Optional:    true,
+			Computed:    true,
 			Description: "Access point metro name",
 		},
 		"metro_code": {
 			Type:        schema.TypeString,
 			Optional:    true,
+			Computed:    true,
 			Description: "Access point metro code",
 		},
 		"ibx": {
 			Type:        schema.TypeString,
 			Optional:    true,
+			Computed:    true,
 			Description: "IBX Code",
 		},
 	}
@@ -73,6 +77,7 @@ func createVirtualGatewaySch() map[string]*schema.Schema {
 		},
 		"href": {
 			Type:        schema.TypeString,
+			Optional:    true,
 			Computed:    true,
 			Description: "Unique Resource Identifier",
 		},
@@ -83,8 +88,8 @@ func createVirtualGatewaySch() map[string]*schema.Schema {
 		},
 		"project": {
 			Type:        schema.TypeSet,
-			Optional:    true,
-			Description: "Project this gateway created in",
+			Computed:    true,
+			Description: "Project in which this gateway is created",
 			Elem:        &schema.Resource{Schema: createGatewayProjectSch()},
 		},
 	}
@@ -98,7 +103,7 @@ func createGatewayProjectSch() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
 		"project_id": {
 			Type:        schema.TypeString,
-			Optional:    true,
+			Computed:    true,
 			Description: "Project Id",
 		},
 		"href": {
@@ -107,6 +112,10 @@ func createGatewayProjectSch() map[string]*schema.Schema {
 			Description: "Unique Resource URL",
 		},
 	}
+}
+
+var createServiceProfileSchRes = &schema.Resource{
+	Schema: createServiceProfileSch(),
 }
 
 func createServiceProfileSch() map[string]*schema.Schema {
@@ -118,23 +127,23 @@ func createServiceProfileSch() map[string]*schema.Schema {
 		},
 		"type": {
 			Type:         schema.TypeString,
-			Optional:     true,
+			Required:     true,
 			ValidateFunc: validation.StringInSlice([]string{"L2_PROFILE", "L3_PROFILE", "ECIA_PROFILE", "ECMC_PROFILE"}, true),
 			Description:  "Service profile type - L2_PROFILE, L3_PROFILE, ECIA_PROFILE, ECMC_PROFILE",
 		},
 		"name": {
 			Type:        schema.TypeString,
-			Optional:    true,
+			Computed:    true,
 			Description: "Customer-assigned service profile name",
 		},
 		"uuid": {
 			Type:        schema.TypeString,
-			Optional:    true,
+			Required:    true,
 			Description: "Equinix assigned service profile identifier",
 		},
 		"description": {
 			Type:        schema.TypeString,
-			Optional:    true,
+			Computed:    true,
 			Description: "User-provided service description",
 		},
 		"access_point_type_configs": {
@@ -178,16 +187,19 @@ func createAccessPointLinkProtocolSch() map[string]*schema.Schema {
 		"vlan_tag": {
 			Type:        schema.TypeInt,
 			Optional:    true,
+			Computed:    true,
 			Description: "Vlan Tag information, vlanTag value specified for DOT1Q connections",
 		},
 		"vlan_s_tag": {
 			Type:        schema.TypeInt,
 			Optional:    true,
+			Computed:    true,
 			Description: "Vlan Provider Tag information, vlanSTag value specified for QINQ connections",
 		},
 		"vlan_c_tag": {
 			Type:        schema.TypeInt,
 			Optional:    true,
+			Computed:    true,
 			Description: "Vlan Customer Tag information, vlanCTag value specified for QINQ connections",
 		},
 	}
@@ -266,6 +278,7 @@ func createPortSch() map[string]*schema.Schema {
 		"uuid": {
 			Type:        schema.TypeString,
 			Optional:    true,
+			Computed:    true,
 			Description: "Equinix-assigned Port identifier",
 		},
 		"href": {
@@ -275,12 +288,12 @@ func createPortSch() map[string]*schema.Schema {
 		},
 		"name": {
 			Type:        schema.TypeString,
-			Optional:    true,
+			Computed:    true,
 			Description: "Port name",
 		},
 		"redundancy": {
 			Type:        schema.TypeSet,
-			Optional:    true,
+			Computed:    true,
 			Description: "Redundancy Information",
 			Elem: &schema.Resource{
 				Schema: createPortRedundancySch(),
@@ -289,140 +302,135 @@ func createPortSch() map[string]*schema.Schema {
 	}
 }
 
-var createConnectionSideAccessPointRes = &schema.Resource{
-	Schema: createConnectionSideAccessPointSch(),
-}
-
-func createConnectionSideAccessPointSch() map[string]*schema.Schema {
-	return map[string]*schema.Schema{
-		"type": {
-			Type:         schema.TypeString,
-			Optional:     true,
-			ValidateFunc: validation.StringInSlice([]string{"COLO", "VD", "VG", "SP", "IGW", "SUBNET", "GW"}, true),
-			Description:  "Access point type - COLO, VD, VG, SP, IGW, SUBNET, GW",
-		},
-		"authentication_key": {
-			Type:        schema.TypeString,
-			Optional:    true,
-			Description: "Authentication key for provider based connections",
-		},
-		"account": {
-			Type:        schema.TypeSet,
-			Optional:    true,
-			Description: "Account",
-			Elem: &schema.Resource{
-				Schema: createAccountSch(),
+func createConnectionSideAccessPointRes() *schema.Resource {
+	return &schema.Resource{
+		Schema: map[string]*schema.Schema{
+			"type": {
+				Type:         schema.TypeString,
+				Optional:     true,
+				ValidateFunc: validation.StringInSlice([]string{"COLO", "VD", "VG", "SP", "IGW", "SUBNET", "GW"}, true),
+				Description:  "Access point type - COLO, VD, VG, SP, IGW, SUBNET, GW",
 			},
-		},
-		"location": {
-			Type:        schema.TypeSet,
-			Optional:    true,
-			Description: "Access point location",
-			Elem: &schema.Resource{
-				Schema: createLocationSch(),
+			"authentication_key": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "Authentication key for provider based connections",
 			},
-		},
-		"port": {
-			Type:        schema.TypeSet,
-			Optional:    true,
-			Description: "Port access point information",
-			Elem: &schema.Resource{
-				Schema: createPortSch(),
+			"account": {
+				Type:        schema.TypeSet,
+				Computed:    true,
+				Description: "Account",
+				Elem: &schema.Resource{
+					Schema: createAccountSch(),
+				},
 			},
-		},
-		"profile": {
-			Type:        schema.TypeSet,
-			Optional:    true,
-			Description: "Service Profile",
-			Elem: &schema.Resource{
-				Schema: createServiceProfileSch(),
+			"location": {
+				Type:        schema.TypeSet,
+				Optional:    true,
+				Computed:    true,
+				Description: "Access point location",
+				Elem: &schema.Resource{
+					Schema: createLocationSch(),
+				},
 			},
-		},
-		"gateway": {
-			Type:        schema.TypeSet,
-			Optional:    true,
-			Description: "Gateway access point information",
-			Elem: &schema.Resource{
-				Schema: createVirtualGatewaySch(),
+			"port": {
+				Type:        schema.TypeSet,
+				Optional:    true,
+				Description: "Port access point information",
+				Elem: &schema.Resource{
+					Schema: createPortSch(),
+				},
 			},
-		},
-		"link_protocol": {
-			Type:        schema.TypeSet,
-			Optional:    true,
-			Description: "Connection link protocol",
-			Elem: &schema.Resource{
-				Schema: createAccessPointLinkProtocolSch(),
+			"profile": {
+				Type:        schema.TypeSet,
+				Optional:    true,
+				Description: "Service Profile",
+				Elem: &schema.Resource{
+					Schema: createServiceProfileSch(),
+				},
 			},
-		},
-		"virtual_device": {
-			Type:        schema.TypeSet,
-			Optional:    true,
-			Description: "Virtual device",
-			Elem:        &schema.Resource{Schema: createAccessPointVirtualDeviceSch()},
-		},
-		"interface": {
-			Type:        schema.TypeSet,
-			Optional:    true,
-			Description: "Virtual device interface",
-			Elem: &schema.Resource{
-				Schema: createAccessPointInterface(),
+			"gateway": {
+				Type:        schema.TypeSet,
+				Optional:    true,
+				Description: "Gateway access point information",
+				Elem: &schema.Resource{
+					Schema: createVirtualGatewaySch(),
+				},
 			},
-		},
-		"seller_region": {
-			Type:        schema.TypeString,
-			Optional:    true,
-			Description: "Access point seller region",
-		},
-		"peering_type": {
-			Type:         schema.TypeString,
-			Optional:     true,
-			ValidateFunc: validation.StringInSlice([]string{"PRIVATE", "MICROSOFT", "PUBLIC", "MANUAL"}, true),
-			Description:  "Peering Type- PRIVATE,MICROSOFT,PUBLIC, MANUAL",
-		},
-		"routing_protocols": {
-			Type:        schema.TypeList,
-			Optional:    true,
-			Description: "Access point routing protocols configuration",
-			Elem: &schema.Resource{
-				Schema: createFabricConnectionRoutingProtocol(),
+			"link_protocol": {
+				Type:        schema.TypeSet,
+				Optional:    true,
+				Description: "Connection link protocol",
+				Elem: &schema.Resource{
+					Schema: createAccessPointLinkProtocolSch(),
+				},
 			},
-		},
-		"provider_connection_id": {
-			Type:        schema.TypeString,
-			Optional:    true,
-			Description: "Provider assigned Connection Id",
+			"virtual_device": {
+				Type:        schema.TypeSet,
+				Optional:    true,
+				Description: "Virtual device",
+				Elem:        &schema.Resource{Schema: createAccessPointVirtualDeviceSch()},
+			},
+			"interface": {
+				Type:        schema.TypeSet,
+				Optional:    true,
+				Description: "Virtual device interface",
+				Elem: &schema.Resource{
+					Schema: createAccessPointInterface(),
+				},
+			},
+			"seller_region": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "Access point seller region",
+			},
+			"peering_type": {
+				Type:         schema.TypeString,
+				Optional:     true,
+				ValidateFunc: validation.StringInSlice([]string{"PRIVATE", "MICROSOFT", "PUBLIC", "MANUAL"}, true),
+				Description:  "Peering Type- PRIVATE,MICROSOFT,PUBLIC, MANUAL",
+			},
+			"routing_protocols": {
+				Type:        schema.TypeList,
+				Optional:    true,
+				Description: "Access point routing protocols configuration",
+				Elem: &schema.Resource{
+					Schema: createFabricConnectionRoutingProtocol(),
+				},
+			},
+			"provider_connection_id": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "Provider assigned Connection Id",
+			},
 		},
 	}
 }
 
-var createFabricConnectionSideRes = &schema.Resource{
-	Schema: createFabricConnectionSideSch(),
-}
-
-func createFabricConnectionSideSch() map[string]*schema.Schema {
-	return map[string]*schema.Schema{
-		"service_token": {
-			Type:        schema.TypeSet,
-			Optional:    true,
-			Description: "For service token based connections, Service tokens authorize users to access protected resources and services. Resource owners can distribute the tokens to trusted partners and vendors, allowing selected third parties to work directly with Equinix network assets",
-			Elem: &schema.Resource{
-				Schema: createServiceTokenSch(),
+func createFabricConnectionSideRes() *schema.Resource {
+	return &schema.Resource{
+		Schema: map[string]*schema.Schema{
+			"service_token": {
+				Type:        schema.TypeSet,
+				Optional:    true,
+				Description: "For service token based connections, Service tokens authorize users to access protected resources and services. Resource owners can distribute the tokens to trusted partners and vendors, allowing selected third parties to work directly with Equinix network assets",
+				Elem: &schema.Resource{
+					Schema: createServiceTokenSch(),
+				},
 			},
-		},
-		"access_point": {
-			Type:        schema.TypeSet,
-			Optional:    true,
-			Description: "Point of access details",
-			Elem: &schema.Resource{
-				Schema: createConnectionSideAccessPointSch(),
+			"access_point": {
+				Type:        schema.TypeSet,
+				Optional:    true,
+				Description: "Point of access details",
+				Elem:        createConnectionSideAccessPointRes(),
 			},
-		},
-		"additional_info": {
-			Type:        schema.TypeList,
-			Optional:    true,
-			Description: "Connection side additional information",
-			Elem: &schema.Resource{
-				Schema: createAdditionalInfoSch(),
+			"additional_info": {
+				Type:        schema.TypeList,
+				Optional:    true,
+				Description: "Connection side additional information",
+				Elem: &schema.Resource{
+					Schema: createAdditionalInfoSch(),
+				},
 			},
 		},
 	}
@@ -436,7 +444,7 @@ func createRedundancySch() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
 		"group": {
 			Type:        schema.TypeString,
-			Optional:    true,
+			Computed:    true,
 			Description: "Redundancy group identifier",
 		},
 		"priority": {
@@ -455,10 +463,9 @@ var createPortRedundancyRes = &schema.Resource{
 func createPortRedundancySch() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
 		"priority": {
-			Type:         schema.TypeString,
-			Optional:     true,
-			ValidateFunc: validation.StringInSlice([]string{"PRIMARY", "SECONDARY"}, true),
-			Description:  "Priority type- PRIMARY, SECONDARY",
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "Priority type- PRIMARY, SECONDARY",
 		},
 	}
 }
@@ -569,37 +576,37 @@ func createAccountSch() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
 		"account_number": {
 			Type:        schema.TypeInt,
-			Optional:    true,
+			Computed:    true,
 			Description: "Account Number",
 		},
 		"account_name": {
 			Type:        schema.TypeString,
-			Optional:    true,
+			Computed:    true,
 			Description: "Account Name",
 		},
 		"org_id": {
 			Type:        schema.TypeInt,
-			Optional:    true,
+			Computed:    true,
 			Description: "Customer organization identifier",
 		},
 		"organization_name": {
 			Type:        schema.TypeString,
-			Optional:    true,
+			Computed:    true,
 			Description: "Customer organization name",
 		},
 		"global_org_id": {
 			Type:        schema.TypeString,
-			Optional:    true,
+			Computed:    true,
 			Description: "Global organization identifier",
 		},
 		"global_organization_name": {
 			Type:        schema.TypeString,
-			Optional:    true,
+			Computed:    true,
 			Description: "Global organization name",
 		},
 		"global_cust_id": {
 			Type:        schema.TypeString,
-			Optional:    true,
+			Computed:    true,
 			Description: "Global Customer organization identifier",
 		},
 	}
@@ -735,11 +742,12 @@ func createFabricConnectionResourceSchema() map[string]*schema.Schema {
 			Required:    true,
 			Description: "Connection name. An alpha-numeric 24 characters string which can include only hyphens and underscores",
 		},
-		"description": {
-			Type:        schema.TypeString,
-			Optional:    true,
-			Description: "Customer-provided connection description",
-		},
+		// TODO v4.ConnectionPostRequest doesn't have a description field
+		// "description": {
+		// 	Type:        schema.TypeString,
+		// 	Optional:    true,
+		// 	Description: "Customer-provided connection description",
+		// },
 		"type": {
 			Type:         schema.TypeString,
 			Required:     true,
@@ -803,7 +811,7 @@ func createFabricConnectionResourceSchema() map[string]*schema.Schema {
 		},
 		"account": {
 			Type:        schema.TypeSet,
-			Optional:    true,
+			Computed:    true,
 			Description: "Customer account information that is associated with this connection",
 			Elem: &schema.Resource{
 				Schema: createAccountSch(),
@@ -834,17 +842,15 @@ func createFabricConnectionResourceSchema() map[string]*schema.Schema {
 			Type:        schema.TypeSet,
 			Required:    true,
 			Description: "Requester or Customer side connection configuration object of the multi-segment connection",
-			Elem: &schema.Resource{
-				Schema: createFabricConnectionSideSch(),
-			},
+			Elem:        createFabricConnectionSideRes(),
+			Set:         schema.HashResource(createConnectionSideAccessPointRes()),
 		},
 		"z_side": {
 			Type:        schema.TypeSet,
 			Required:    true,
 			Description: "Destination or Provider side connection configuration object of the multi-segment connection",
-			Elem: &schema.Resource{
-				Schema: createFabricConnectionSideSch(),
-			},
+			Elem:        createFabricConnectionSideRes(),
+			Set:         schema.HashResource(createConnectionSideAccessPointRes()),
 		},
 	}
 }

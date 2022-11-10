@@ -34,11 +34,13 @@ func createServiceProfilesSearchSortCriteriaSch() map[string]*schema.Schema {
 			Type:         schema.TypeString,
 			Optional:     true,
 			ValidateFunc: validation.StringInSlice([]string{"DESC", "ASC"}, true),
-			Description:  "Priority type- DESC, ASC"},
+			Description:  "Priority type- DESC, ASC",
+		},
 		"property": {
 			Type:         schema.TypeString,
 			Optional:     true,
 			ValidateFunc: validation.StringInSlice([]string{"/name", "/state", "/changeLog/createdDateTime", "/changeLog/updatedDateTime"}, true),
-			Description:  "Search operation sort criteria /name /state /changeLog/createdDateTime /changeLog/updatedDateTime"},
+			Description:  "Search operation sort criteria /name /state /changeLog/createdDateTime /changeLog/updatedDateTime",
+		},
 	}
 }

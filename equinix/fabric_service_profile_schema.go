@@ -134,7 +134,7 @@ func createFabricServiceProfileSchema() map[string]*schema.Schema {
 		},
 		"change_log": {
 			Type:        schema.TypeSet,
-			Optional:    true,
+			Computed:    true,
 			Description: "Captures connection lifecycle change information",
 			Elem: &schema.Resource{
 				Schema: createChangeLogSch(),

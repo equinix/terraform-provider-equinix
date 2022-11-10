@@ -2,8 +2,9 @@ package equinix
 
 import (
 	"fmt"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"testing"
+
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 )
 
 func TestAccFabricReadPort(t *testing.T) {
@@ -28,7 +29,7 @@ func testAccFabricReadPortConfig() string {
 	}`)
 }
 
-//Get Ports By Name
+// Get Ports By Name
 func testAccFabricReadGetPortsByNameConfig(name string) string {
 	return fmt.Sprintf(`data "equinix_fabric_ports" "test" {
 	filters {
