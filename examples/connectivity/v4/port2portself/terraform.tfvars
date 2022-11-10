@@ -2,7 +2,6 @@ equinix_client_id      = "MyEquinixClientId"
 equinix_client_secret  = "MyEquinixSecret"
 
 connection_name = "terra_e2e_p2p"
-description = "Test Connection"
 connection_type = "EVPL_VC"
 notifications_type = "ALL"
 notifications_emails = ["example@equinix.com","test1@equinix.com"]

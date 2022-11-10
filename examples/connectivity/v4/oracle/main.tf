@@ -19,7 +19,6 @@ data "equinix_fabric_ports" "qinq-pri" {
 
 resource "equinix_fabric_connection" "oracle-qinq" {
   name = var.connection_name
-  description = var.description
   type = var.connection_type
   notifications{
     type=var.notifications_type

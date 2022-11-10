@@ -19,7 +19,6 @@ data "equinix_fabric_ports" "gcp-pri" {
 
 resource "equinix_fabric_connection" "gcp-qinq" {
   name = var.connection_name
-  description = var.description
   type = var.connection_type
   notifications{
     type=var.notifications_type

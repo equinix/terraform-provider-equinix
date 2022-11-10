@@ -19,7 +19,6 @@ data "equinix_fabric_ports" "aside" {
 
 resource "equinix_fabric_connection" "port2profile" {
   name = var.connection_name
-  description = var.description
   type = var.connection_type
   notifications{
     type=var.notifications_type

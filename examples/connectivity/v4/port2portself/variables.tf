@@ -2,7 +2,6 @@ variable "equinix_client_id" {}
 variable "equinix_client_secret" {}
 
 variable "connection_name" {}
-variable "description" {}
 variable "connection_type" {}
 variable "notifications_type" {}
 variable "notifications_emails" {}
