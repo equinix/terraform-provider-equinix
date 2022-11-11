@@ -1,3 +1,17 @@
+## 1.11.0 (Unreleased)
+
+FEATURES:
+
+- **New Resource:** `equinix_fabric_connection`
+- **New Resource:** `equinix_fabric_service_profile`
+- **New Data Source:** `equinix_fabric_connection`
+- **New Data Source:** `equinix_fabric_port`
+- **New Data Source:** `equinix_fabric_ports`
+- **New Data Source:** `equinix_fabric_service_profile`
+- **New Data Source:** `equinix_fabric_service_profiles`
+
+**Full Changelog**: https://github.com/equinix/terraform-provider-equinix/compare/v1.10.0...v1.11.0-alpha.1
+
 ## 1.10.0 (Sep 29, 2022)
 
 BUG FIXES:
