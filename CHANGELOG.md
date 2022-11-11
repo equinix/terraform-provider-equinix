@@ -2,6 +2,8 @@
 
 FEATURES:
 
+New Equinix Fabric v4 resources in [#261](https://github.com/equinix/terraform-provider-equinix/pull/261) [#263](https://github.com/equinix/terraform-provider-equinix/pull/263) [#264](https://github.com/equinix/terraform-provider-equinix/pull/264)
+
 - **New Resource:** `equinix_fabric_connection`
 - **New Resource:** `equinix_fabric_service_profile`
 - **New Data Source:** `equinix_fabric_connection`
@@ -10,7 +12,9 @@ FEATURES:
 - **New Data Source:** `equinix_fabric_service_profile`
 - **New Data Source:** `equinix_fabric_service_profiles`
 
-**Full Changelog**: https://github.com/equinix/terraform-provider-equinix/compare/v1.10.0...v1.11.0-alpha.1
+BUG FIXES:
+
+* Remove optional flag for address fields in organization data source in [#261](https://github.com/equinix/terraform-provider-equinix/pull/261)
 
 ## 1.10.0 (Sep 29, 2022)
 
