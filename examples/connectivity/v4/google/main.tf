@@ -38,7 +38,6 @@ resource "equinix_fabric_connection" "gcp-qinq" {
       link_protocol {
         type = var.aside_link_protocol_type
         vlan_tag = var.aside_link_protocol_stag
-
       }
     }
   }

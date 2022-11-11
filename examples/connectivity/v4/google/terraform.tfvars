@@ -12,7 +12,6 @@ aside_ap_type = "COLO"
 aside_port_uuid = "c4d9350e-783c-83cd-1ce0-306a5c00a600"
 aside_link_protocol_type = "DOT1Q"
 aside_link_protocol_stag = "2019"
-aside_link_protocol_vlantag = 3018
 zside_ap_type = "SP"
 zside_ap_authentication_key = "9da09fe8-a33b-4457-ab7d-d91f83152276/us-west1/1"
 zside_ap_profile_type = "L2_PROFILE"
