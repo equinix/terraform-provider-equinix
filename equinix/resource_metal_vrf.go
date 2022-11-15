@@ -62,13 +62,8 @@ func resourceMetalVRF() *schema.Resource {
 }
 
 func resourceMetalVRFCreate(d *schema.ResourceData, meta interface{}) error {
+	meta.(*Config).addModuleToMetalUserAgent(d)
 	client := meta.(*Config).metal
-
-	userAgent, err := generateUserAgentString(d, client.UserAgent)
-	if err != nil {
-		return err
-	}
-	client.UserAgent = userAgent
 
 	createRequest := &packngo.VRFCreateRequest{
 		Name:        d.Get("name").(string),
@@ -90,13 +85,8 @@ func resourceMetalVRFCreate(d *schema.ResourceData, meta interface{}) error {
 }
 
 func resourceMetalVRFUpdate(d *schema.ResourceData, meta interface{}) error {
+	meta.(*Config).addModuleToMetalUserAgent(d)
 	client := meta.(*Config).metal
-
-	userAgent, err := generateUserAgentString(d, client.UserAgent)
-	if err != nil {
-		return err
-	}
-	client.UserAgent = userAgent
 
 	sPtr := func(s string) *string { return &s }
 	iPtr := func(i int) *int { return &i }
@@ -116,7 +106,7 @@ func resourceMetalVRFUpdate(d *schema.ResourceData, meta interface{}) error {
 		updateRequest.IPRanges = &ipRanges
 	}
 
-	_, _, err = client.VRFs.Update(d.Id(), updateRequest)
+	_, _, err := client.VRFs.Update(d.Id(), updateRequest)
 	if err != nil {
 		return friendlyError(err)
 	}
@@ -125,13 +115,8 @@ func resourceMetalVRFUpdate(d *schema.ResourceData, meta interface{}) error {
 }
 
 func resourceMetalVRFRead(d *schema.ResourceData, meta interface{}) error {
+	meta.(*Config).addModuleToMetalUserAgent(d)
 	client := meta.(*Config).metal
-
-	userAgent, err := generateUserAgentString(d, client.UserAgent)
-	if err != nil {
-		return err
-	}
-	client.UserAgent = userAgent
 
 	getOpts := &packngo.GetOptions{Includes: []string{"project", "metro"}}
 
@@ -158,13 +143,8 @@ func resourceMetalVRFRead(d *schema.ResourceData, meta interface{}) error {
 }
 
 func resourceMetalVRFDelete(d *schema.ResourceData, meta interface{}) error {
+	meta.(*Config).addModuleToMetalUserAgent(d)
 	client := meta.(*Config).metal
-
-	userAgent, err := generateUserAgentString(d, client.UserAgent)
-	if err != nil {
-		return err
-	}
-	client.UserAgent = userAgent
 
 	resp, err := client.VRFs.Delete(d.Id())
 	if ignoreResponseErrors(httpForbidden, httpNotFound)(resp, err) == nil {

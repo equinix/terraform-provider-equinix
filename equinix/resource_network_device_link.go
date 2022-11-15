@@ -220,15 +220,16 @@ func createNetworkDeviceLinkConnectionResourceSchema() map[string]*schema.Schema
 }
 
 func resourceNetworkDeviceLinkCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	conf := m.(*Config)
+	client := m.(*Config).ne
+	m.(*Config).addModuleToNEUserAgent(&client, d)
 	var diags diag.Diagnostics
 	link := createNetworkDeviceLink(d)
-	uuid, err := conf.ne.CreateDeviceLinkGroup(link)
+	uuid, err := client.CreateDeviceLinkGroup(link)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 	d.SetId(ne.StringValue(uuid))
-	if _, err := createDeviceLinkStatusProvisioningWaitConfiguration(conf.ne.GetDeviceLinkGroup, d.Id(), 2*time.Second, d.Timeout(schema.TimeoutCreate)).WaitForStateContext(ctx); err != nil {
+	if _, err := createDeviceLinkStatusProvisioningWaitConfiguration(client.GetDeviceLinkGroup, d.Id(), 2*time.Second, d.Timeout(schema.TimeoutCreate)).WaitForStateContext(ctx); err != nil {
 		diags = append(diags, diag.Diagnostic{
 			Severity:      diag.Error,
 			Summary:       "Failed to wait for device link to become provisioned",
@@ -241,9 +242,10 @@ func resourceNetworkDeviceLinkCreate(ctx context.Context, d *schema.ResourceData
 }
 
 func resourceNetworkDeviceLinkRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	conf := m.(*Config)
+	client := m.(*Config).ne
+	m.(*Config).addModuleToNEUserAgent(&client, d)
 	var diags diag.Diagnostics
-	link, err := conf.ne.GetDeviceLinkGroup(d.Id())
+	link, err := client.GetDeviceLinkGroup(d.Id())
 	if err != nil {
 		if isRestNotFoundError(err) {
 			d.SetId("")
@@ -251,7 +253,7 @@ func resourceNetworkDeviceLinkRead(ctx context.Context, d *schema.ResourceData, 
 		}
 	}
 	for i, linkDevice := range link.Devices {
-		device, err := conf.ne.GetDevice(ne.StringValue(linkDevice.DeviceID))
+		device, err := client.GetDevice(ne.StringValue(linkDevice.DeviceID))
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -264,13 +266,14 @@ func resourceNetworkDeviceLinkRead(ctx context.Context, d *schema.ResourceData, 
 }
 
 func resourceNetworkDeviceLinkUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	conf := m.(*Config)
+	client := m.(*Config).ne
+	m.(*Config).addModuleToNEUserAgent(&client, d)
 	var diags diag.Diagnostics
 	changes := getResourceDataChangedKeys([]string{
 		networkDeviceLinkSchemaNames["Name"], networkDeviceLinkSchemaNames["Subnet"],
 		networkDeviceLinkSchemaNames["Devices"], networkDeviceLinkSchemaNames["Links"],
 	}, d)
-	updateReq := conf.ne.NewDeviceLinkGroupUpdateRequest(d.Id())
+	updateReq := client.NewDeviceLinkGroupUpdateRequest(d.Id())
 	for change, changeValue := range changes {
 		switch change {
 		case networkDeviceLinkSchemaNames["Name"]:
@@ -288,7 +291,7 @@ func resourceNetworkDeviceLinkUpdate(ctx context.Context, d *schema.ResourceData
 	if err := updateReq.Execute(); err != nil {
 		return diag.FromErr(err)
 	}
-	if _, err := createDeviceLinkStatusProvisioningWaitConfiguration(conf.ne.GetDeviceLinkGroup, d.Id(), 2*time.Second, d.Timeout(schema.TimeoutCreate)).WaitForStateContext(ctx); err != nil {
+	if _, err := createDeviceLinkStatusProvisioningWaitConfiguration(client.GetDeviceLinkGroup, d.Id(), 2*time.Second, d.Timeout(schema.TimeoutCreate)).WaitForStateContext(ctx); err != nil {
 		diags = append(diags, diag.Diagnostic{
 			Severity:      diag.Error,
 			Summary:       "Failed to wait for device link to become provisioned",
@@ -301,15 +304,16 @@ func resourceNetworkDeviceLinkUpdate(ctx context.Context, d *schema.ResourceData
 }
 
 func resourceNetworkDeviceLinkDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	conf := m.(*Config)
+	client := m.(*Config).ne
+	m.(*Config).addModuleToNEUserAgent(&client, d)
 	var diags diag.Diagnostics
-	if err := conf.ne.DeleteDeviceLinkGroup(d.Id()); err != nil {
+	if err := client.DeleteDeviceLinkGroup(d.Id()); err != nil {
 		if isRestNotFoundError(err) {
 			return nil
 		}
 		return diag.FromErr(err)
 	}
-	if _, err := createDeviceLinkStatusDeleteWaitConfiguration(conf.ne.GetDeviceLinkGroup, d.Id(), 2*time.Second, d.Timeout(schema.TimeoutDelete)).WaitForStateContext(ctx); err != nil {
+	if _, err := createDeviceLinkStatusDeleteWaitConfiguration(client.GetDeviceLinkGroup, d.Id(), 2*time.Second, d.Timeout(schema.TimeoutDelete)).WaitForStateContext(ctx); err != nil {
 		diags = append(diags, diag.Diagnostic{
 			Severity:      diag.Error,
 			Summary:       "Failed to wait for device link to become deprovisioned",

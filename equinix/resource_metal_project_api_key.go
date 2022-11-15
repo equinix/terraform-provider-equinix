@@ -47,13 +47,8 @@ func resourceMetalProjectAPIKey() *schema.Resource {
 }
 
 func resourceMetalAPIKeyCreate(d *schema.ResourceData, meta interface{}) error {
+	meta.(*Config).addModuleToMetalUserAgent(d)
 	client := meta.(*Config).metal
-
-	userAgent, err := generateUserAgentString(d, client.UserAgent)
-	if err != nil {
-		return err
-	}
-	client.UserAgent = userAgent
 
 	projectId := ""
 
@@ -87,17 +82,13 @@ func projectIdFromResourceData(d *schema.ResourceData) string {
 }
 
 func resourceMetalAPIKeyRead(d *schema.ResourceData, meta interface{}) error {
+	meta.(*Config).addModuleToMetalUserAgent(d)
 	client := meta.(*Config).metal
-
-	userAgent, err := generateUserAgentString(d, client.UserAgent)
-	if err != nil {
-		return err
-	}
-	client.UserAgent = userAgent
 
 	projectId := projectIdFromResourceData(d)
 
 	var apiKey *packngo.APIKey
+	var err error
 
 	// if project has been set in the resource, look up project API key
 	// (this is the reason project API key can't be imported)
@@ -142,13 +133,8 @@ func resourceMetalAPIKeyRead(d *schema.ResourceData, meta interface{}) error {
 }
 
 func resourceMetalAPIKeyDelete(d *schema.ResourceData, meta interface{}) error {
+	meta.(*Config).addModuleToMetalUserAgent(d)
 	client := meta.(*Config).metal
-
-	userAgent, err := generateUserAgentString(d, client.UserAgent)
-	if err != nil {
-		return err
-	}
-	client.UserAgent = userAgent
 
 	resp, err := client.APIKeys.Delete(d.Id())
 	if ignoreResponseErrors(httpForbidden, httpNotFound)(resp, err) != nil {

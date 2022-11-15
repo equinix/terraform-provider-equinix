@@ -100,13 +100,8 @@ func createMetalOrganizationAddressResourceSchema() map[string]*schema.Schema {
 }
 
 func resourceMetalOrganizationCreate(d *schema.ResourceData, meta interface{}) error {
+	meta.(*Config).addModuleToMetalUserAgent(d)
 	client := meta.(*Config).metal
-
-	userAgent, err := generateUserAgentString(d, client.UserAgent)
-	if err != nil {
-		return err
-	}
-	client.UserAgent = userAgent
 
 	createRequest := &packngo.OrganizationCreateRequest{
 		Name:    d.Get("name").(string),
@@ -140,13 +135,8 @@ func resourceMetalOrganizationCreate(d *schema.ResourceData, meta interface{}) e
 }
 
 func resourceMetalOrganizationRead(d *schema.ResourceData, meta interface{}) error {
+	meta.(*Config).addModuleToMetalUserAgent(d)
 	client := meta.(*Config).metal
-
-	userAgent, err := generateUserAgentString(d, client.UserAgent)
-	if err != nil {
-		return err
-	}
-	client.UserAgent = userAgent
 
 	key, _, err := client.Organizations.Get(d.Id(), &packngo.GetOptions{Includes: []string{"address"}})
 	if err != nil {
@@ -176,13 +166,8 @@ func resourceMetalOrganizationRead(d *schema.ResourceData, meta interface{}) err
 }
 
 func resourceMetalOrganizationUpdate(d *schema.ResourceData, meta interface{}) error {
+	meta.(*Config).addModuleToMetalUserAgent(d)
 	client := meta.(*Config).metal
-
-	userAgent, err := generateUserAgentString(d, client.UserAgent)
-	if err != nil {
-		return err
-	}
-	client.UserAgent = userAgent
 
 	changes := getResourceDataChangedKeys([]string{"name", "description", "website", "twitter", "logo", "address"}, d)
 	updateRequest := &packngo.OrganizationUpdateRequest{}
@@ -209,7 +194,7 @@ func resourceMetalOrganizationUpdate(d *schema.ResourceData, meta interface{}) e
 		}
 	}
 
-	_, _, err = client.Organizations.Update(d.Id(), updateRequest)
+	_, _, err := client.Organizations.Update(d.Id(), updateRequest)
 	if err != nil {
 		return friendlyError(err)
 	}
@@ -218,13 +203,8 @@ func resourceMetalOrganizationUpdate(d *schema.ResourceData, meta interface{}) e
 }
 
 func resourceMetalOrganizationDelete(d *schema.ResourceData, meta interface{}) error {
+	meta.(*Config).addModuleToMetalUserAgent(d)
 	client := meta.(*Config).metal
-
-	userAgent, err := generateUserAgentString(d, client.UserAgent)
-	if err != nil {
-		return err
-	}
-	client.UserAgent = userAgent
 
 	resp, err := client.Organizations.Delete(d.Id())
 	if ignoreResponseErrors(httpForbidden, httpNotFound)(resp, err) != nil {

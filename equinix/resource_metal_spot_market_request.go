@@ -171,13 +171,8 @@ func resourceMetalSpotMarketRequest() *schema.Resource {
 }
 
 func resourceMetalSpotMarketRequestCreate(d *schema.ResourceData, meta interface{}) error {
+	meta.(*Config).addModuleToMetalUserAgent(d)
 	client := meta.(*Config).metal
-
-	userAgent, err := generateUserAgentString(d, client.UserAgent)
-	if err != nil {
-		return err
-	}
-	client.UserAgent = userAgent
 	var waitForDevices bool
 
 	metro := d.Get("metro").(string)
@@ -318,13 +313,8 @@ func resourceMetalSpotMarketRequestCreate(d *schema.ResourceData, meta interface
 }
 
 func resourceMetalSpotMarketRequestRead(d *schema.ResourceData, meta interface{}) error {
+	meta.(*Config).addModuleToMetalUserAgent(d)
 	client := meta.(*Config).metal
-
-	userAgent, err := generateUserAgentString(d, client.UserAgent)
-	if err != nil {
-		return err
-	}
-	client.UserAgent = userAgent
 
 	smr, _, err := client.SpotMarketRequests.Get(d.Id(), &packngo.GetOptions{Includes: []string{"project", "devices", "facilities", "metro"}})
 	if err != nil {
@@ -363,13 +353,8 @@ func resourceMetalSpotMarketRequestRead(d *schema.ResourceData, meta interface{}
 }
 
 func resourceMetalSpotMarketRequestDelete(d *schema.ResourceData, meta interface{}) error {
+	meta.(*Config).addModuleToMetalUserAgent(d)
 	client := meta.(*Config).metal
-
-	userAgent, err := generateUserAgentString(d, client.UserAgent)
-	if err != nil {
-		return err
-	}
-	client.UserAgent = userAgent
 	var waitForDevices bool
 
 	if val, ok := d.GetOk("wait_for_devices"); ok {
@@ -435,12 +420,8 @@ func getInstanceParams(params *packngo.SpotMarketRequestInstanceParameters) Inst
 func resourceStateRefreshFunc(d *schema.ResourceData, meta interface{}) resource.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 		client := meta.(*Config).metal
+		client.UserAgent = generateModuleUserAgentString(d, client.UserAgent)
 
-		userAgent, err := generateUserAgentString(d, client.UserAgent)
-		if err != nil {
-			return nil, "", err
-		}
-		client.UserAgent = userAgent
 		smr, _, err := client.SpotMarketRequests.Get(d.Id(), &packngo.GetOptions{Includes: []string{"project", "devices", "facilities", "metro"}})
 		if err != nil {
 			return nil, "", fmt.Errorf("Failed to fetch Spot market request with following error: %s", err.Error())

@@ -186,13 +186,8 @@ func resourceMetalConnection() *schema.Resource {
 }
 
 func resourceMetalConnectionCreate(d *schema.ResourceData, meta interface{}) error {
+	meta.(*Config).addModuleToMetalUserAgent(d)
 	client := meta.(*Config).metal
-
-	userAgent, err := generateUserAgentString(d, client.UserAgent)
-	if err != nil {
-		return err
-	}
-	client.UserAgent = userAgent
 
 	facility, facOk := d.GetOk("facility")
 	metro, metOk := d.GetOk("metro")
@@ -294,13 +289,8 @@ func resourceMetalConnectionCreate(d *schema.ResourceData, meta interface{}) err
 }
 
 func resourceMetalConnectionUpdate(d *schema.ResourceData, meta interface{}) error {
+	meta.(*Config).addModuleToMetalUserAgent(d)
 	client := meta.(*Config).metal
-
-	userAgent, err := generateUserAgentString(d, client.UserAgent)
-	if err != nil {
-		return err
-	}
-	client.UserAgent = userAgent
 
 	if d.HasChange("locked") {
 		var action func(string) (*packngo.Response, error)
@@ -354,15 +344,10 @@ func resourceMetalConnectionUpdate(d *schema.ResourceData, meta interface{}) err
 }
 
 func resourceMetalConnectionRead(d *schema.ResourceData, meta interface{}) error {
+	meta.(*Config).addModuleToMetalUserAgent(d)
 	client := meta.(*Config).metal
 
-	userAgent, err := generateUserAgentString(d, client.UserAgent)
-	if err != nil {
-		return err
-	}
-	client.UserAgent = userAgent
 	connId := d.Id()
-
 	conn, _, err := client.Connections.Get(
 		connId,
 		&packngo.GetOptions{Includes: []string{"service_tokens", "organization", "facility", "metro", "project"}})
@@ -419,13 +404,8 @@ func resourceMetalConnectionRead(d *schema.ResourceData, meta interface{}) error
 }
 
 func resourceMetalConnectionDelete(d *schema.ResourceData, meta interface{}) error {
+	meta.(*Config).addModuleToMetalUserAgent(d)
 	client := meta.(*Config).metal
-
-	userAgent, err := generateUserAgentString(d, client.UserAgent)
-	if err != nil {
-		return err
-	}
-	client.UserAgent = userAgent
 	resp, err := client.Connections.Delete(d.Id(), true)
 	if ignoreResponseErrors(httpForbidden, httpNotFound)(resp, err) != nil {
 		return friendlyError(err)

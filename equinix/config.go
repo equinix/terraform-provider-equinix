@@ -20,6 +20,7 @@ import (
 	"github.com/equinix/terraform-provider-equinix/version"
 	"github.com/hashicorp/go-retryablehttp"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/logging"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/meta"
 	"github.com/packethost/packngo"
 	xoauth2 "golang.org/x/oauth2"
@@ -62,8 +63,9 @@ Original Error:`
 )
 
 var (
-	DefaultBaseURL = "https://api.equinix.com"
-	DefaultTimeout = 30
+	DefaultBaseURL   = "https://api.equinix.com"
+	DefaultTimeout   = 30
+	redirectsErrorRe = regexp.MustCompile(`stopped after \d+ redirects\z`)
 )
 
 // Config is the configuration structure used to instantiate the Equinix
@@ -82,6 +84,10 @@ type Config struct {
 	ecx   ecx.Client
 	ne    ne.Client
 	metal *packngo.Client
+
+	ecxUserAgent   string
+	neUserAgent    string
+	metalUserAgent string
 
 	terraformVersion string
 }
@@ -122,11 +128,13 @@ func (c *Config) Load(ctx context.Context) error {
 		ecxClient.SetPageSize(c.PageSize)
 		neClient.SetPageSize(c.PageSize)
 	}
+	c.ecxUserAgent = c.fullUserAgent("equinix/ecx-go")
 	ecxClient.SetHeaders(map[string]string{
-		"User-agent": c.fullUserAgent("equinix/ecx-go"),
+		"User-agent": c.ecxUserAgent,
 	})
+	c.neUserAgent = c.fullUserAgent("equinix/ecx-go")
 	neClient.SetHeaders(map[string]string{
-		"User-agent": c.fullUserAgent("equinix/ne-go"),
+		"User-agent": c.neUserAgent,
 	})
 
 	c.ecx = ecxClient
@@ -136,14 +144,32 @@ func (c *Config) Load(ctx context.Context) error {
 	return nil
 }
 
+// NewMetalClient returns a new client for accessing Equinix Metal's API.
+func (c *Config) NewMetalClient() *packngo.Client {
+	transport := http.DefaultTransport
+	// transport = &DumpTransport{http.DefaultTransport} // Debug only
+	transport = logging.NewTransport("Equinix Metal", transport)
+	retryClient := retryablehttp.NewClient()
+	retryClient.HTTPClient.Transport = transport
+	retryClient.RetryMax = c.MaxRetries
+	retryClient.RetryWaitMin = time.Second
+	retryClient.RetryWaitMax = c.MaxRetryWait
+	retryClient.CheckRetry = MetalRetryPolicy
+	standardClient := retryClient.StandardClient()
+	baseURL, _ := url.Parse(c.BaseURL)
+	baseURL.Path = path.Join(baseURL.Path, metalBasePath) + "/"
+	client, _ := packngo.NewClientWithBaseURL(consumerToken, c.AuthToken, standardClient, baseURL.String())
+	client.UserAgent = c.fullUserAgent(client.UserAgent)
+	c.metalUserAgent = client.UserAgent
+	return client
+}
+
 func (c *Config) requestTimeout() time.Duration {
 	if c.RequestTimeout == 0 {
 		return 5 * time.Second
 	}
 	return c.RequestTimeout
 }
-
-var redirectsErrorRe = regexp.MustCompile(`stopped after \d+ redirects\z`)
 
 func MetalRetryPolicy(ctx context.Context, resp *http.Response, err error) (bool, error) {
 	if ctx.Err() != nil {
@@ -162,7 +188,6 @@ func MetalRetryPolicy(ctx context.Context, resp *http.Response, err error) (bool
 				return false, nil
 			}
 		}
-
 		// The error is likely recoverable so retry.
 		return true, nil
 	}
@@ -184,28 +209,45 @@ func terraformUserAgent(version string) string {
 	return ua
 }
 
+func (c *Config) addModuleToECXUserAgent(client *ecx.Client, d *schema.ResourceData) {
+	cli := *client
+	rc := cli.(*ecx.RestClient)
+	rc.SetHeader("User-agent", generateModuleUserAgentString(d, c.ecxUserAgent))
+	*client = rc
+}
+
+func (c *Config) addModuleToNEUserAgent(client *ne.Client, d *schema.ResourceData) {
+	cli := *client
+	rc := cli.(*ne.RestClient)
+	rc.SetHeader("User-agent", generateModuleUserAgentString(d, c.neUserAgent))
+	*client = rc
+}
+
+// TODO (ocobleseqx) - known issue, Metal services are initialized using the metal client pointer
+// if two or more modules in same project interact with metal resources they will override
+// the UserAgent resulting in swapped UserAgent.
+// This can be fixed by letting the headers be overwritten on the initialized Packngo ServiceOp
+// clients on a query-by-query basis.
+func (c *Config) addModuleToMetalUserAgent(d *schema.ResourceData) {
+	c.metal.UserAgent = generateModuleUserAgentString(d, c.metalUserAgent)
+}
+
+func generateModuleUserAgentString(d *schema.ResourceData, baseUserAgent string) string {
+	var m providerMeta
+	err := d.GetProviderMeta(&m)
+	if err != nil {
+		log.Printf("[WARN] error retrieving provider_meta")
+		return baseUserAgent
+	}
+
+	if m.ModuleName != "" {
+		return strings.Join([]string{m.ModuleName, baseUserAgent}, " ")
+	}
+	return baseUserAgent
+}
+
 func (c *Config) fullUserAgent(suffix string) string {
 	tfUserAgent := terraformUserAgent(c.terraformVersion)
 	userAgent := fmt.Sprintf("%s terraform-provider-equinix/%s %s", tfUserAgent, version.ProviderVersion, suffix)
 	return strings.TrimSpace(userAgent)
-}
-
-// NewMetalClient returns a new client for accessing Equinix Metal's API.
-func (c *Config) NewMetalClient() *packngo.Client {
-	transport := http.DefaultTransport
-	// transport = &DumpTransport{http.DefaultTransport} // Debug only
-	transport = logging.NewTransport("Equinix Metal", transport)
-	retryClient := retryablehttp.NewClient()
-	retryClient.HTTPClient.Transport = transport
-	retryClient.RetryMax = c.MaxRetries
-	retryClient.RetryWaitMin = time.Second
-	retryClient.RetryWaitMax = c.MaxRetryWait
-	retryClient.CheckRetry = MetalRetryPolicy
-	standardClient := retryClient.StandardClient()
-	baseURL, _ := url.Parse(c.BaseURL)
-	baseURL.Path = path.Join(baseURL.Path, metalBasePath) + "/"
-	client, _ := packngo.NewClientWithBaseURL(consumerToken, c.AuthToken, standardClient, baseURL.String())
-	client.UserAgent = c.fullUserAgent(client.UserAgent)
-
-	return client
 }

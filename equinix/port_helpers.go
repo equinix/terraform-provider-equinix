@@ -18,13 +18,8 @@ type ClientPortResource struct {
 }
 
 func getClientPortResource(d *schema.ResourceData, meta interface{}) (*ClientPortResource, *packngo.Response, error) {
+	meta.(*Config).addModuleToMetalUserAgent(d)
 	client := meta.(*Config).metal
-
-	userAgent, err := generateUserAgentString(d, client.UserAgent)
-	if err != nil {
-		return nil, nil, err
-	}
-	client.UserAgent = userAgent
 
 	port_id := d.Get("port_id").(string)
 

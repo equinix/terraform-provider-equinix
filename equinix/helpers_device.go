@@ -188,12 +188,8 @@ func waitForDeviceAttribute(d *schema.ResourceData, targets []string, pending []
 		Target:  targets,
 		Refresh: func() (interface{}, string, error) {
 			client := meta.(*Config).metal
+			client.UserAgent = generateModuleUserAgentString(d, client.UserAgent)
 
-			userAgent, err := generateUserAgentString(d, client.UserAgent)
-			if err != nil {
-				return "error", "error", err
-			}
-			client.UserAgent = userAgent
 			device, _, err := client.Devices.Get(d.Id(), &packngo.GetOptions{Includes: []string{"project"}})
 			if err == nil {
 				retAttrVal := device.State
@@ -221,14 +217,10 @@ func waitForDeviceAttribute(d *schema.ResourceData, targets []string, pending []
 
 // powerOnAndWait Powers on the device and waits for it to be active.
 func powerOnAndWait(d *schema.ResourceData, meta interface{}) error {
+	meta.(*Config).addModuleToMetalUserAgent(d)
 	client := meta.(*Config).metal
 
-	userAgent, err := generateUserAgentString(d, client.UserAgent)
-	if err != nil {
-		return err
-	}
-	client.UserAgent = userAgent
-	_, err = client.Devices.PowerOn(d.Id())
+	_, err := client.Devices.PowerOn(d.Id())
 	if err != nil {
 		return friendlyError(err)
 	}

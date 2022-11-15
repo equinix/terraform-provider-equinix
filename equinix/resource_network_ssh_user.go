@@ -74,18 +74,20 @@ func createNetworkSSHUserResourceSchema() map[string]*schema.Schema {
 }
 
 func resourceNetworkSSHUserCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	conf := m.(*Config)
+	client := m.(*Config).ne
+	m.(*Config).addModuleToNEUserAgent(&client, d)
+	
 	var diags diag.Diagnostics
 	user := createNetworkSSHUser(d)
 	if len(user.DeviceUUIDs) < 0 {
 		return diag.Errorf("create ssh-user failed: user needs to have at least one device defined")
 	}
-	uuid, err := conf.ne.CreateSSHUser(ne.StringValue(user.Username), ne.StringValue(user.Password), user.DeviceUUIDs[0])
+	uuid, err := client.CreateSSHUser(ne.StringValue(user.Username), ne.StringValue(user.Password), user.DeviceUUIDs[0])
 	if err != nil {
 		return diag.FromErr(err)
 	}
 	d.SetId(ne.StringValue(uuid))
-	userUpdateReq := conf.ne.NewSSHUserUpdateRequest(ne.StringValue(uuid))
+	userUpdateReq := client.NewSSHUserUpdateRequest(ne.StringValue(uuid))
 	userUpdateReq.WithDeviceChange([]string{}, user.DeviceUUIDs[1:len(user.DeviceUUIDs)])
 	if err := userUpdateReq.Execute(); err != nil {
 		diags = append(diags, diag.Diagnostic{
@@ -100,9 +102,10 @@ func resourceNetworkSSHUserCreate(ctx context.Context, d *schema.ResourceData, m
 }
 
 func resourceNetworkSSHUserRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	conf := m.(*Config)
+	client := m.(*Config).ne
+	m.(*Config).addModuleToNEUserAgent(&client, d)
 	var diags diag.Diagnostics
-	user, err := conf.ne.GetSSHUser(d.Id())
+	user, err := client.GetSSHUser(d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -113,9 +116,10 @@ func resourceNetworkSSHUserRead(ctx context.Context, d *schema.ResourceData, m i
 }
 
 func resourceNetworkSSHUserUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	conf := m.(*Config)
+	client := m.(*Config).ne
+	m.(*Config).addModuleToNEUserAgent(&client, d)
 	var diags diag.Diagnostics
-	updateReq := conf.ne.NewSSHUserUpdateRequest(d.Id())
+	updateReq := client.NewSSHUserUpdateRequest(d.Id())
 	if v, ok := d.GetOk(networkSSHUserSchemaNames["Password"]); ok && d.HasChange(networkSSHUserSchemaNames["Password"]) {
 		updateReq.WithNewPassword(v.(string))
 	}
@@ -133,9 +137,10 @@ func resourceNetworkSSHUserUpdate(ctx context.Context, d *schema.ResourceData, m
 }
 
 func resourceNetworkSSHUserDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	conf := m.(*Config)
+	client := m.(*Config).ne
+	m.(*Config).addModuleToNEUserAgent(&client, d)
 	var diags diag.Diagnostics
-	if err := conf.ne.DeleteSSHUser(d.Id()); err != nil {
+	if err := client.DeleteSSHUser(d.Id()); err != nil {
 		return diag.FromErr(err)
 	}
 	return diags

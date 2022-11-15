@@ -417,18 +417,3 @@ func schemaSetToMap(set *schema.Set) map[int]interface{} {
 	}
 	return transformed
 }
-
-func generateUserAgentString(d *schema.ResourceData, currentUserAgent string) (string, error) {
-	var m providerMeta
-
-	err := d.GetProviderMeta(&m)
-	if err != nil {
-		return currentUserAgent, err
-	}
-
-	if m.ModuleName != "" {
-		return strings.Join([]string{m.ModuleName, currentUserAgent}, " "), nil
-	}
-
-	return currentUserAgent, nil
-}
