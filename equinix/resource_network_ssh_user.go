@@ -76,7 +76,7 @@ func createNetworkSSHUserResourceSchema() map[string]*schema.Schema {
 func resourceNetworkSSHUserCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	client := m.(*Config).ne
 	m.(*Config).addModuleToNEUserAgent(&client, d)
-	
+
 	var diags diag.Diagnostics
 	user := createNetworkSSHUser(d)
 	if len(user.DeviceUUIDs) < 0 {

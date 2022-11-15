@@ -77,7 +77,7 @@ func dataSourceECXL2SellerProfile() *schema.Resource {
 	return &schema.Resource{
 		ReadContext: dataSourceECXL2SellerProfileRead,
 		Description: "Use this data source to get details of Equinix Fabric layer 2	seller profile with a given name and / or organization",
-		Schema: createECXL2SellerProfileSchema(),
+		Schema:      createECXL2SellerProfileSchema(),
 	}
 }
 
