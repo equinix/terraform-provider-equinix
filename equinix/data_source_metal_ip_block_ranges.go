@@ -119,7 +119,12 @@ func dataSourceMetalIPBlockRangesRead(d *schema.ResourceData, meta interface{}) 
 		} else {
 			targetSlice = &theIPv6s
 		}
-		if targetSlice != nil && facilityMatch(facility, ip.Facility) && metroMatch(metro, ip.Metro) && metroOffacilityMatch(metro, ip.Facility) {
+		if targetSlice != nil {
+			if !(facilityMatch(facility, ip.Facility) && metroMatch(metro, ip.Metro)) {
+				if !metroOffacilityMatch(metro, ip.Facility) {
+					continue
+				}
+			}
 			*targetSlice = append(*targetSlice, cnStr)
 		}
 	}
