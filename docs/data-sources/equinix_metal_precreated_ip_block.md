@@ -4,8 +4,12 @@ subcategory: "Metal"
 
 # equinix_metal_precreated_ip_block (Data Source)
 
-Use this data source to get CIDR expression for precreated IPv6 and IPv4 blocks in Equinix Metal.
+Use this data source to get CIDR expression for both precreated(management)/elastic IPv6 and IPv4 blocks in Equinix Metal.
 You can then use the cidrsubnet TF builtin function to derive subnets.
+
+-> **NOTE:** Precreated IP blocks for a metro will not be available until first device is created in that metro.
+
+-> **NOTE:** Public IPv4 blocks auto-assigned to a device cannot be retrieved. If you need that information, consider using the [equinix_metal_device](equinix_metal_device.md) data source instead.
 
 ## Example Usage
 
