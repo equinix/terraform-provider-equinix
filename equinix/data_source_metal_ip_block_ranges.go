@@ -19,12 +19,12 @@ func dataSourceMetalIPBlockRanges() *schema.Resource {
 			},
 			"facility": {
 				Type:        schema.TypeString,
-				Description: "Facility code filtering the IP blocks. Global IPv4 blcoks will be listed anyway. If you omit this and metro, all the block from the project will be listed",
+				Description: "Facility code filtering the IP blocks. Global IPv4 blocks will be listed anyway. If you omit this and metro, all the block from the project will be listed",
 				Optional:    true,
 			},
 			"metro": {
 				Type:        schema.TypeString,
-				Description: "Metro code filtering the IP blocks. Global IPv4 blcoks will be listed anyway. If you omit this and facility, all the block from the project will be listed",
+				Description: "Metro code filtering the IP blocks. Global IPv4 blocks will be listed anyway. If you omit this and facility, all the block from the project will be listed",
 				Optional:    true,
 				StateFunc:   toLower,
 			},
