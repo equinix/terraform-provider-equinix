@@ -396,7 +396,7 @@ func loadBlock(d *schema.ResourceData, reservedBlock *packngo.IPAddressReservati
 		},
 		"metro": func(d *schema.ResourceData, k string) error {
 			if reservedBlock.Metro == nil {
-				if reservedBlock.Facility != nil {
+				if reservedBlock.Facility != nil && reservedBlock.Facility.Metro != nil {
 					return d.Set(k, strings.ToLower(reservedBlock.Facility.Metro.Code))
 				}
 				return nil
