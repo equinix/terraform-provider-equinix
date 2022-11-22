@@ -24,7 +24,7 @@ resource "equinix_metal_device" "test" {
   metro            = local.metro
   operating_system = local.os
   billing_cycle    = "hourly"
-  project_id       = "${equinix_metal_project.test.id}"
+  project_id       = equinix_metal_project.test.id
   termination_time = "%s"
 
   lifecycle {
@@ -87,6 +87,45 @@ resource "equinix_metal_port" "bond0" {
   layer2  = true
   bonded  = false
   reset_on_delete = true
+}
+
+`, confAccMetalPort_base(name))
+}
+
+func confAccMetalPort_L2IndividualNativeVlan(name string) string {
+	return fmt.Sprintf(`
+%s
+
+resource "equinix_metal_port" "bond0" {
+  port_id = local.bond0_id
+  layer2  = true
+  bonded  = false
+  reset_on_delete = true
+}
+
+resource "equinix_metal_port" "eth1" {
+  port_id = local.eth1_id
+  bonded  = false
+  reset_on_delete = true
+  vlan_ids = [equinix_metal_vlan.test1.id, equinix_metal_vlan.test2.id]
+  native_vlan_id = equinix_metal_vlan.test1.id
+  depends_on = [
+	equinix_metal_port.bond0,
+  ]
+}
+
+resource "equinix_metal_vlan" "test1" {
+  description = "tfacc-vlan test1"
+  metro       = equinix_metal_device.test.metro
+  project_id  = equinix_metal_project.test.id
+  vxlan       = 1001
+}
+
+resource "equinix_metal_vlan" "test2" {
+  description = "tfacc-vlan test2"
+  metro       = equinix_metal_device.test.metro
+  project_id  = equinix_metal_project.test.id
+  vxlan       = 1002
 }
 
 `, confAccMetalPort_base(name))
@@ -177,6 +216,38 @@ func TestAccMetalPort_hybridBondedVxlan(t *testing.T) {
 						regexp.MustCompile("1001|1002")),
 					resource.TestMatchResourceAttr("equinix_metal_port.bond0", "vxlan_ids.1",
 						regexp.MustCompile("1001|1002")),
+				),
+			},
+			{
+				// Remove equinix_metal_port resources to trigger reset_on_delete
+				Config: confAccMetalPort_base(rs),
+			},
+			{
+				Config: confAccMetalPort_L3(rs),
+			},
+		},
+	})
+}
+
+func TestAccMetalPort_L2IndividualNativeVlan(t *testing.T) {
+	rs := acctest.RandString(10)
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccMetalPortDestroyed,
+		Steps: []resource.TestStep{
+			{
+				Config: confAccMetalPort_L2IndividualNativeVlan(rs),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("equinix_metal_port.eth1", "vxlan_ids.#", "2"),
+					resource.TestMatchResourceAttr("equinix_metal_port.eth1", "vxlan_ids.0",
+						regexp.MustCompile("1001|1002")),
+					resource.TestMatchResourceAttr("equinix_metal_port.eth1", "vxlan_ids.1",
+						regexp.MustCompile("1001|1002")),
+					resource.TestCheckResourceAttr("equinix_metal_port.eth1", "bonded", "false"),
+					resource.TestCheckResourceAttrPair(
+						"equinix_metal_port.eth1", "native_vlan_id",
+						"equinix_metal_vlan.test1", "id"),
 				),
 			},
 			{

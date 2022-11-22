@@ -38,11 +38,37 @@ resource "equinix_metal_port" "eth1" {
 
 ### Layer 2 Unbonded Port
 
+This example configures an Equinix Metal server with a [pure layer 2 unbound](https://deploy.equinix.com/developers/docs/metal/layer2-networking/layer2-mode/#:~:text=Layer%202%20Unbonded%20Mode) network configuration and adds two VLANs to its `eth1` port, one of them as the [native VLAN](https://deploy.equinix.com/developers/docs/metal/layer2-networking/native-vlan/). Notice the `depends_on` meta-argument in the `equinix_metal_port.eth1` resource and the `reset_on_delete` attribute in both ports configuration. The `reset_on_delete` will set the port to the default settings (layer3 bonded without VLANs attached) before delete/destroy the terraform resource. It is recommended to use the `depends_on` to ensure that the port resources with attached VLANs are reset first, since all VLANs must be detached before re-bonding the ports.
+
 ```hcl
 resource "equinix_metal_port" "bond0" {
   port_id = local.bond0_id
   layer2 = true
   bonded = false
+  reset_on_delete = true
+}
+
+resource "equinix_metal_port" "eth1" {
+  port_id = local.eth1_id
+  bonded  = false
+  reset_on_delete = true
+  vlan_ids = [equinix_metal_vlan.test1.id, equinix_metal_vlan.test2.id]
+  native_vlan_id = equinix_metal_vlan.test1.id
+  depends_on = [
+	  equinix_metal_port.bond0,
+  ]
+}
+
+resource "equinix_metal_vlan" "test1" {
+  description = "test"
+  metro = "sv"
+  project = equinix_metal_project.test.id
+}
+
+resource "equinix_metal_vlan" "test2" {
+  description = "test"
+  metro = "sv"
+  project = equinix_metal_project.test.id
 }
 ```
 
