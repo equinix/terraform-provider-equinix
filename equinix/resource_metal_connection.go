@@ -1,10 +1,12 @@
 package equinix
 
 import (
+	"context"
 	"fmt"
 	"reflect"
 	"strings"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/packethost/packngo"
@@ -144,7 +146,6 @@ func resourceMetalConnection() *schema.Resource {
 				Optional:    true,
 				Elem:        &schema.Schema{Type: schema.TypeInt},
 				MaxItems:    2,
-				ForceNew:    true,
 			},
 			"service_token_type": {
 				Type:        schema.TypeString,
@@ -183,6 +184,13 @@ func resourceMetalConnection() *schema.Resource {
 				Elem:        serviceTokenSchema(),
 			},
 		},
+		CustomizeDiff: customdiff.All(
+			customdiff.ForceNewIf("vlans", func(ctx context.Context, d *schema.ResourceDiff, meta any) bool {
+				// a change to "vlans" forces recreation for shared connections
+				connType := packngo.ConnectionType(d.Get("type").(string))
+				return connType == packngo.ConnectionShared
+			}),
+		),
 	}
 }
 
@@ -336,11 +344,18 @@ func resourceMetalConnectionUpdate(d *schema.ResourceData, meta interface{}) err
 		}
 	}
 
+	connType := packngo.ConnectionType(d.Get("type").(string))
+
+	if d.HasChange("vlans") && connType != packngo.ConnectionShared {
+		return friendlyError(fmt.Errorf("when you update a \"dedicated\" connection, you cannot set vlans"))
+	}
+
 	if !reflect.DeepEqual(ur, packngo.ConnectionUpdateRequest{}) {
 		if _, _, err := client.Connections.Update(d.Id(), &ur, nil); err != nil {
 			return friendlyError(err)
 		}
 	}
+
 	return resourceMetalConnectionRead(d, meta)
 }
 
