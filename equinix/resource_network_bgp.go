@@ -121,13 +121,14 @@ func createNetworkBGPResourceSchema() map[string]*schema.Schema {
 }
 
 func resourceNetworkBGPCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	conf := m.(*Config)
+	client := m.(*Config).ne
+	m.(*Config).addModuleToNEUserAgent(&client, d)
 	var diags diag.Diagnostics
 	bgp := createNetworkBGPConfiguration(d)
-	existingBGP, err := conf.ne.GetBGPConfigurationForConnection(ne.StringValue(bgp.ConnectionUUID))
+	existingBGP, err := client.GetBGPConfigurationForConnection(ne.StringValue(bgp.ConnectionUUID))
 	if err == nil {
 		bgp.UUID = existingBGP.UUID
-		if updateErr := createNetworkBGPUpdateRequest(conf.ne.NewBGPConfigurationUpdateRequest, &bgp); updateErr != nil {
+		if updateErr := createNetworkBGPUpdateRequest(client.NewBGPConfigurationUpdateRequest, &bgp); updateErr != nil {
 			return diag.Errorf("failed to update BGP configuration '%s': %s", ne.StringValue(existingBGP.UUID), updateErr)
 		}
 		d.SetId(ne.StringValue(bgp.UUID))
@@ -136,13 +137,13 @@ func resourceNetworkBGPCreate(ctx context.Context, d *schema.ResourceData, m int
 		if !ok || restErr.HTTPCode != http.StatusNotFound {
 			return diag.Errorf("failed to fetch BGP configuration for connection '%s': %s", ne.StringValue(bgp.ConnectionUUID), err)
 		}
-		uuid, err := conf.ne.CreateBGPConfiguration(bgp)
+		uuid, err := client.CreateBGPConfiguration(bgp)
 		if err != nil {
 			return diag.FromErr(err)
 		}
 		d.SetId(ne.StringValue(uuid))
 	}
-	if _, err := createBGPConfigStatusProvisioningWaitConfiguration(conf.ne.GetBGPConfiguration, d.Id(), 2*time.Second, d.Timeout(schema.TimeoutCreate)).WaitForStateContext(ctx); err != nil {
+	if _, err := createBGPConfigStatusProvisioningWaitConfiguration(client.GetBGPConfiguration, d.Id(), 2*time.Second, d.Timeout(schema.TimeoutCreate)).WaitForStateContext(ctx); err != nil {
 		return diag.Errorf("error waiting for BGP configuration (%s) to be created: %s", d.Id(), err)
 	}
 	diags = append(diags, resourceNetworkBGPRead(ctx, d, m)...)
@@ -150,9 +151,10 @@ func resourceNetworkBGPCreate(ctx context.Context, d *schema.ResourceData, m int
 }
 
 func resourceNetworkBGPRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	conf := m.(*Config)
+	client := m.(*Config).ne
+	m.(*Config).addModuleToNEUserAgent(&client, d)
 	var diags diag.Diagnostics
-	bgp, err := conf.ne.GetBGPConfiguration(d.Id())
+	bgp, err := client.GetBGPConfiguration(d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -163,10 +165,11 @@ func resourceNetworkBGPRead(ctx context.Context, d *schema.ResourceData, m inter
 }
 
 func resourceNetworkBGPUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	conf := m.(*Config)
+	client := m.(*Config).ne
+	m.(*Config).addModuleToNEUserAgent(&client, d)
 	var diags diag.Diagnostics
 	bgpConfig := createNetworkBGPConfiguration(d)
-	if err := createNetworkBGPUpdateRequest(conf.ne.NewBGPConfigurationUpdateRequest, &bgpConfig).Execute(); err != nil {
+	if err := createNetworkBGPUpdateRequest(client.NewBGPConfigurationUpdateRequest, &bgpConfig).Execute(); err != nil {
 		return diag.FromErr(err)
 	}
 	diags = append(diags, resourceNetworkBGPRead(ctx, d, m)...)

@@ -341,10 +341,11 @@ func createECXL2ServiceProfileResourceSchema() map[string]*schema.Schema {
 }
 
 func resourceECXL2ServiceProfileCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	conf := m.(*Config)
+	client := m.(*Config).ecx
+	m.(*Config).addModuleToECXUserAgent(&client, d)
 	var diags diag.Diagnostics
 	profile := createECXL2ServiceProfile(d)
-	uuid, err := conf.ecx.CreateL2ServiceProfile(*profile)
+	uuid, err := client.CreateL2ServiceProfile(*profile)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -354,9 +355,10 @@ func resourceECXL2ServiceProfileCreate(ctx context.Context, d *schema.ResourceDa
 }
 
 func resourceECXL2ServiceProfileRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	conf := m.(*Config)
+	client := m.(*Config).ecx
+	m.(*Config).addModuleToECXUserAgent(&client, d)
 	var diags diag.Diagnostics
-	profile, err := conf.ecx.GetL2ServiceProfile(d.Id())
+	profile, err := client.GetL2ServiceProfile(d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -367,10 +369,11 @@ func resourceECXL2ServiceProfileRead(ctx context.Context, d *schema.ResourceData
 }
 
 func resourceECXL2ServiceProfileUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	conf := m.(*Config)
+	client := m.(*Config).ecx
+	m.(*Config).addModuleToECXUserAgent(&client, d)
 	var diags diag.Diagnostics
 	profile := createECXL2ServiceProfile(d)
-	if err := conf.ecx.UpdateL2ServiceProfile(*profile); err != nil {
+	if err := client.UpdateL2ServiceProfile(*profile); err != nil {
 		return diag.FromErr(err)
 	}
 	diags = append(diags, resourceECXL2ServiceProfileRead(ctx, d, m)...)
@@ -378,9 +381,10 @@ func resourceECXL2ServiceProfileUpdate(ctx context.Context, d *schema.ResourceDa
 }
 
 func resourceECXL2ServiceProfileDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	conf := m.(*Config)
+	client := m.(*Config).ecx
+	m.(*Config).addModuleToECXUserAgent(&client, d)
 	var diags diag.Diagnostics
-	if err := conf.ecx.DeleteL2ServiceProfile(d.Id()); err != nil {
+	if err := client.DeleteL2ServiceProfile(d.Id()); err != nil {
 		restErr, ok := err.(rest.Error)
 		if ok {
 			// IC-PROFILE-004 =  profile does not exist

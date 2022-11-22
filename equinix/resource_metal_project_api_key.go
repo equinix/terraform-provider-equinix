@@ -47,6 +47,7 @@ func resourceMetalProjectAPIKey() *schema.Resource {
 }
 
 func resourceMetalAPIKeyCreate(d *schema.ResourceData, meta interface{}) error {
+	meta.(*Config).addModuleToMetalUserAgent(d)
 	client := meta.(*Config).metal
 
 	projectId := ""
@@ -81,6 +82,7 @@ func projectIdFromResourceData(d *schema.ResourceData) string {
 }
 
 func resourceMetalAPIKeyRead(d *schema.ResourceData, meta interface{}) error {
+	meta.(*Config).addModuleToMetalUserAgent(d)
 	client := meta.(*Config).metal
 
 	projectId := projectIdFromResourceData(d)
@@ -131,6 +133,7 @@ func resourceMetalAPIKeyRead(d *schema.ResourceData, meta interface{}) error {
 }
 
 func resourceMetalAPIKeyDelete(d *schema.ResourceData, meta interface{}) error {
+	meta.(*Config).addModuleToMetalUserAgent(d)
 	client := meta.(*Config).metal
 
 	resp, err := client.APIKeys.Delete(d.Id())

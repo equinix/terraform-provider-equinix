@@ -62,6 +62,7 @@ func resourceMetalVRF() *schema.Resource {
 }
 
 func resourceMetalVRFCreate(d *schema.ResourceData, meta interface{}) error {
+	meta.(*Config).addModuleToMetalUserAgent(d)
 	client := meta.(*Config).metal
 
 	createRequest := &packngo.VRFCreateRequest{
@@ -84,6 +85,7 @@ func resourceMetalVRFCreate(d *schema.ResourceData, meta interface{}) error {
 }
 
 func resourceMetalVRFUpdate(d *schema.ResourceData, meta interface{}) error {
+	meta.(*Config).addModuleToMetalUserAgent(d)
 	client := meta.(*Config).metal
 
 	sPtr := func(s string) *string { return &s }
@@ -113,6 +115,7 @@ func resourceMetalVRFUpdate(d *schema.ResourceData, meta interface{}) error {
 }
 
 func resourceMetalVRFRead(d *schema.ResourceData, meta interface{}) error {
+	meta.(*Config).addModuleToMetalUserAgent(d)
 	client := meta.(*Config).metal
 
 	getOpts := &packngo.GetOptions{Includes: []string{"project", "metro"}}
@@ -140,6 +143,7 @@ func resourceMetalVRFRead(d *schema.ResourceData, meta interface{}) error {
 }
 
 func resourceMetalVRFDelete(d *schema.ResourceData, meta interface{}) error {
+	meta.(*Config).addModuleToMetalUserAgent(d)
 	client := meta.(*Config).metal
 
 	resp, err := client.VRFs.Delete(d.Id())

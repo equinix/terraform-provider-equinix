@@ -93,6 +93,7 @@ func resourceMetalGateway() *schema.Resource {
 }
 
 func resourceMetalGatewayCreate(d *schema.ResourceData, meta interface{}) error {
+	meta.(*Config).addModuleToMetalUserAgent(d)
 	client := meta.(*Config).metal
 
 	_, hasIPReservation := d.GetOk("ip_reservation_id")
@@ -119,11 +120,11 @@ func resourceMetalGatewayCreate(d *schema.ResourceData, meta interface{}) error 
 }
 
 func resourceMetalGatewayRead(d *schema.ResourceData, meta interface{}) error {
+	meta.(*Config).addModuleToMetalUserAgent(d)
 	client := meta.(*Config).metal
+
 	mgId := d.Id()
-
 	includes := &packngo.GetOptions{Includes: []string{"project", "ip_reservation", "virtual_network", "vrf"}}
-
 	mg, _, err := client.MetalGateways.Get(mgId, includes)
 	if err != nil {
 		return err
@@ -151,6 +152,7 @@ func resourceMetalGatewayRead(d *schema.ResourceData, meta interface{}) error {
 }
 
 func resourceMetalGatewayDelete(d *schema.ResourceData, meta interface{}) error {
+	meta.(*Config).addModuleToMetalUserAgent(d)
 	client := meta.(*Config).metal
 	resp, err := client.MetalGateways.Delete(d.Id())
 	if ignoreResponseErrors(httpForbidden, httpNotFound)(resp, err) != nil {

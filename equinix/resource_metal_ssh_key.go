@@ -63,6 +63,7 @@ func resourceMetalSSHKey() *schema.Resource {
 }
 
 func resourceMetalSSHKeyCreate(d *schema.ResourceData, meta interface{}) error {
+	meta.(*Config).addModuleToMetalUserAgent(d)
 	client := meta.(*Config).metal
 
 	createRequest := &packngo.SSHKeyCreateRequest{
@@ -86,6 +87,7 @@ func resourceMetalSSHKeyCreate(d *schema.ResourceData, meta interface{}) error {
 }
 
 func resourceMetalSSHKeyRead(d *schema.ResourceData, meta interface{}) error {
+	meta.(*Config).addModuleToMetalUserAgent(d)
 	client := meta.(*Config).metal
 
 	key, _, err := client.SSHKeys.Get(d.Id(), nil)
@@ -121,6 +123,7 @@ func resourceMetalSSHKeyRead(d *schema.ResourceData, meta interface{}) error {
 }
 
 func resourceMetalSSHKeyUpdate(d *schema.ResourceData, meta interface{}) error {
+	meta.(*Config).addModuleToMetalUserAgent(d)
 	client := meta.(*Config).metal
 
 	updateRequest := &packngo.SSHKeyUpdateRequest{}
@@ -144,6 +147,7 @@ func resourceMetalSSHKeyUpdate(d *schema.ResourceData, meta interface{}) error {
 }
 
 func resourceMetalSSHKeyDelete(d *schema.ResourceData, meta interface{}) error {
+	meta.(*Config).addModuleToMetalUserAgent(d)
 	client := meta.(*Config).metal
 
 	resp, err := client.SSHKeys.Delete(d.Id())

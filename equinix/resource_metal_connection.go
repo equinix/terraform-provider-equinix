@@ -186,6 +186,7 @@ func resourceMetalConnection() *schema.Resource {
 }
 
 func resourceMetalConnectionCreate(d *schema.ResourceData, meta interface{}) error {
+	meta.(*Config).addModuleToMetalUserAgent(d)
 	client := meta.(*Config).metal
 
 	facility, facOk := d.GetOk("facility")
@@ -288,6 +289,7 @@ func resourceMetalConnectionCreate(d *schema.ResourceData, meta interface{}) err
 }
 
 func resourceMetalConnectionUpdate(d *schema.ResourceData, meta interface{}) error {
+	meta.(*Config).addModuleToMetalUserAgent(d)
 	client := meta.(*Config).metal
 
 	if d.HasChange("locked") {
@@ -342,9 +344,10 @@ func resourceMetalConnectionUpdate(d *schema.ResourceData, meta interface{}) err
 }
 
 func resourceMetalConnectionRead(d *schema.ResourceData, meta interface{}) error {
+	meta.(*Config).addModuleToMetalUserAgent(d)
 	client := meta.(*Config).metal
-	connId := d.Id()
 
+	connId := d.Id()
 	conn, _, err := client.Connections.Get(
 		connId,
 		&packngo.GetOptions{Includes: []string{"service_tokens", "organization", "facility", "metro", "project"}})
@@ -401,6 +404,7 @@ func resourceMetalConnectionRead(d *schema.ResourceData, meta interface{}) error
 }
 
 func resourceMetalConnectionDelete(d *schema.ResourceData, meta interface{}) error {
+	meta.(*Config).addModuleToMetalUserAgent(d)
 	client := meta.(*Config).metal
 	resp, err := client.Connections.Delete(d.Id(), true)
 	if ignoreResponseErrors(httpForbidden, httpNotFound)(resp, err) != nil {

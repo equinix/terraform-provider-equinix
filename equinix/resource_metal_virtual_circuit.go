@@ -139,6 +139,7 @@ func resourceMetalVirtualCircuit() *schema.Resource {
 }
 
 func resourceMetalVirtualCircuitCreate(d *schema.ResourceData, meta interface{}) error {
+	meta.(*Config).addModuleToMetalUserAgent(d)
 	client := meta.(*Config).metal
 	vncr := packngo.VCCreateRequest{
 		VirtualNetworkID: d.Get("vlan_id").(string),
@@ -198,6 +199,7 @@ func resourceMetalVirtualCircuitCreate(d *schema.ResourceData, meta interface{})
 }
 
 func resourceMetalVirtualCircuitRead(d *schema.ResourceData, meta interface{}) error {
+	meta.(*Config).addModuleToMetalUserAgent(d)
 	client := meta.(*Config).metal
 	vcId := d.Id()
 
@@ -284,6 +286,7 @@ func getVCStateWaiter(client *packngo.Client, id string, timeout time.Duration, 
 }
 
 func resourceMetalVirtualCircuitUpdate(d *schema.ResourceData, meta interface{}) error {
+	meta.(*Config).addModuleToMetalUserAgent(d)
 	client := meta.(*Config).metal
 
 	ur := packngo.VCUpdateRequest{}
@@ -331,6 +334,7 @@ func resourceMetalVirtualCircuitUpdate(d *schema.ResourceData, meta interface{})
 }
 
 func resourceMetalVirtualCircuitDelete(d *schema.ResourceData, meta interface{}) error {
+	meta.(*Config).addModuleToMetalUserAgent(d)
 	client := meta.(*Config).metal
 	// we first disconnect VLAN from the VC
 	empty := ""

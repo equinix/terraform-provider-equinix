@@ -163,12 +163,22 @@ func Provider() *schema.Provider {
 			"equinix_metal_port_vlan_attachment": resourceMetalPortVlanAttachment(),
 			"equinix_metal_gateway":              resourceMetalGateway(),
 		},
+		ProviderMetaSchema: map[string]*schema.Schema{
+			"module_name": {
+				Type:     schema.TypeString,
+				Optional: true,
+			},
+		},
 	}
 
 	provider.ConfigureContextFunc = func(ctx context.Context, d *schema.ResourceData) (interface{}, diag.Diagnostics) {
 		return configureProvider(ctx, d, provider)
 	}
 	return provider
+}
+
+type providerMeta struct {
+	ModuleName string `cty:"module_name"`
 }
 
 func configureProvider(ctx context.Context, d *schema.ResourceData, p *schema.Provider) (interface{}, diag.Diagnostics) {
@@ -186,7 +196,11 @@ func configureProvider(ctx context.Context, d *schema.ResourceData, p *schema.Pr
 		MaxRetries:     d.Get("max_retries").(int),
 		MaxRetryWait:   time.Duration(mrws) * time.Second,
 	}
+	meta := providerMeta{}
 
+	if err := d.GetProviderMeta(&meta); err != nil {
+		return nil, diag.FromErr(err)
+	}
 	config.terraformVersion = p.TerraformVersion
 	if config.terraformVersion == "" {
 		// Terraform 0.12 introduced this field to the protocol

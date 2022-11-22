@@ -34,12 +34,12 @@ func resourceMetalIPAttachment() *schema.Resource {
 }
 
 func resourceMetalIPAttachmentCreate(d *schema.ResourceData, meta interface{}) error {
+	meta.(*Config).addModuleToMetalUserAgent(d)
 	client := meta.(*Config).metal
+
 	deviceID := d.Get("device_id").(string)
 	ipa := d.Get("cidr_notation").(string)
-
 	req := packngo.AddressStruct{Address: ipa}
-
 	assignment, _, err := client.DeviceIPs.Assign(deviceID, &req)
 	if err != nil {
 		return fmt.Errorf("error assigning address %s to device %s: %s", ipa, deviceID, err)
@@ -51,6 +51,7 @@ func resourceMetalIPAttachmentCreate(d *schema.ResourceData, meta interface{}) e
 }
 
 func resourceMetalIPAttachmentRead(d *schema.ResourceData, meta interface{}) error {
+	meta.(*Config).addModuleToMetalUserAgent(d)
 	client := meta.(*Config).metal
 	assignment, _, err := client.DeviceIPs.Get(d.Id(), nil)
 	if err != nil {
@@ -86,6 +87,7 @@ func resourceMetalIPAttachmentRead(d *schema.ResourceData, meta interface{}) err
 }
 
 func resourceMetalIPAttachmentDelete(d *schema.ResourceData, meta interface{}) error {
+	meta.(*Config).addModuleToMetalUserAgent(d)
 	client := meta.(*Config).metal
 
 	resp, err := client.DeviceIPs.Unassign(d.Id())

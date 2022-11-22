@@ -66,10 +66,11 @@ func createNetworkSSHKeyResourceSchema() map[string]*schema.Schema {
 }
 
 func resourceNetworkSSHKeyCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	conf := m.(*Config)
+	client := m.(*Config).ne
+	m.(*Config).addModuleToNEUserAgent(&client, d)
 	var diags diag.Diagnostics
 	key := createNetworkSSHKey(d)
-	uuid, err := conf.ne.CreateSSHPublicKey(key)
+	uuid, err := client.CreateSSHPublicKey(key)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -79,9 +80,10 @@ func resourceNetworkSSHKeyCreate(ctx context.Context, d *schema.ResourceData, m 
 }
 
 func resourceNetworkSSHKeyRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	conf := m.(*Config)
+	client := m.(*Config).ne
+	m.(*Config).addModuleToNEUserAgent(&client, d)
 	var diags diag.Diagnostics
-	key, err := conf.ne.GetSSHPublicKey(d.Id())
+	key, err := client.GetSSHPublicKey(d.Id())
 	if err != nil {
 		if restErr, ok := err.(rest.Error); ok {
 			if restErr.HTTPCode == http.StatusNotFound {
@@ -98,9 +100,10 @@ func resourceNetworkSSHKeyRead(ctx context.Context, d *schema.ResourceData, m in
 }
 
 func resourceNetworkSSHKeyDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	conf := m.(*Config)
+	client := m.(*Config).ne
+	m.(*Config).addModuleToNEUserAgent(&client, d)
 	var diags diag.Diagnostics
-	if err := conf.ne.DeleteSSHPublicKey(d.Id()); err != nil {
+	if err := client.DeleteSSHPublicKey(d.Id()); err != nil {
 		if restErr, ok := err.(rest.Error); ok {
 			for _, detailedErr := range restErr.ApplicationErrors {
 				if detailedErr.Code == ne.ErrorCodeSSHPublicKeyInvalid {

@@ -166,10 +166,10 @@ func createECXL2ConnectionResourceSchema() map[string]*schema.Schema {
 			Description:  ecxL2ConnectionDescriptions["Name"],
 		},
 		ecxL2ConnectionSchemaNames["ProfileUUID"]: {
-			Type:         schema.TypeString,
-			Optional:     true,
-			Computed:     true,
-			ForceNew:     true,
+			Type:     schema.TypeString,
+			Optional: true,
+			Computed: true,
+			ForceNew: true,
 			AtLeastOneOf: []string{
 				ecxL2ConnectionSchemaNames["ProfileUUID"],
 				ecxL2ConnectionSchemaNames["ZSidePortUUID"],
@@ -374,10 +374,10 @@ func createECXL2ConnectionResourceSchema() map[string]*schema.Schema {
 			Description:   ecxL2ConnectionDescriptions["ServiceToken"],
 		},
 		ecxL2ConnectionSchemaNames["ZSideServiceToken"]: {
-			Type:          schema.TypeString,
-			Optional:      true,
-			ForceNew:      true,
-			ValidateFunc:  validation.StringIsNotEmpty,
+			Type:         schema.TypeString,
+			Optional:     true,
+			ForceNew:     true,
+			ValidateFunc: validation.StringIsNotEmpty,
 			ConflictsWith: []string{
 				ecxL2ConnectionSchemaNames["ServiceToken"],
 				ecxL2ConnectionSchemaNames["ProfileUUID"],
@@ -385,7 +385,7 @@ func createECXL2ConnectionResourceSchema() map[string]*schema.Schema {
 				ecxL2ConnectionSchemaNames["AuthorizationKey"],
 				ecxL2ConnectionSchemaNames["SecondaryConnection"],
 			},
-			Description:   ecxL2ConnectionDescriptions["ZSideServiceToken"],
+			Description: ecxL2ConnectionDescriptions["ZSideServiceToken"],
 		},
 		ecxL2ConnectionSchemaNames["VendorToken"]: {
 			Type:        schema.TypeString,
@@ -658,27 +658,29 @@ func createECXL2ConnectionActionsRequiredDataSchema() map[string]*schema.Schema 
 }
 
 func resourceECXL2ConnectionCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	conf := m.(*Config)
+	client := m.(*Config).ecx
+	m.(*Config).addModuleToECXUserAgent(&client, d)
+
 	var diags diag.Diagnostics
 	primary, secondary := createECXL2Connections(d)
 	var primaryID, secondaryID *string
 	var err error
 	if secondary != nil {
-		primaryID, secondaryID, err = conf.ecx.CreateL2RedundantConnection(*primary, *secondary)
+		primaryID, secondaryID, err = client.CreateL2RedundantConnection(*primary, *secondary)
 	} else {
-		primaryID, err = conf.ecx.CreateL2Connection(*primary)
+		primaryID, err = client.CreateL2Connection(*primary)
 	}
 	if err != nil {
 		return diag.FromErr(err)
 	}
 	d.SetId(ecx.StringValue(primaryID))
 	waitConfigs := []*resource.StateChangeConf{
-		createConnectionStatusProvisioningWaitConfiguration(conf.ecx.GetL2Connection, d.Id(), 5*time.Second, d.Timeout(schema.TimeoutCreate)),
+		createConnectionStatusProvisioningWaitConfiguration(client.GetL2Connection, d.Id(), 5*time.Second, d.Timeout(schema.TimeoutCreate)),
 	}
 	if ecx.StringValue(secondaryID) != "" {
 		d.Set(ecxL2ConnectionSchemaNames["RedundantUUID"], secondaryID)
 		waitConfigs = append(waitConfigs,
-			createConnectionStatusProvisioningWaitConfiguration(conf.ecx.GetL2Connection, ecx.StringValue(secondaryID), 2*time.Second, d.Timeout(schema.TimeoutCreate)),
+			createConnectionStatusProvisioningWaitConfiguration(client.GetL2Connection, ecx.StringValue(secondaryID), 2*time.Second, d.Timeout(schema.TimeoutCreate)),
 		)
 	}
 	for _, config := range waitConfigs {
@@ -694,13 +696,14 @@ func resourceECXL2ConnectionCreate(ctx context.Context, d *schema.ResourceData, 
 }
 
 func resourceECXL2ConnectionRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	conf := m.(*Config)
+	client := m.(*Config).ecx
+	m.(*Config).addModuleToECXUserAgent(&client, d)
 	var diags diag.Diagnostics
 	var err error
 	var primary *ecx.L2Connection
 	var secondary *ecx.L2Connection
 
-	primary, err = conf.ecx.GetL2Connection(d.Id())
+	primary, err = client.GetL2Connection(d.Id())
 	if err != nil {
 		return diag.Errorf("cannot fetch primary connection due to %v", err)
 	}
@@ -718,7 +721,7 @@ func resourceECXL2ConnectionRead(ctx context.Context, d *schema.ResourceData, m 
 	// Implementing a l2_connection datasource will require search for secondary connection before using
 	// resourceECXL2ConnectionRead or explicitly request the names or identifiers of each connection
 	if redID, ok := d.GetOk(ecxL2ConnectionSchemaNames["RedundantUUID"]); ok {
-		secondary, err = conf.ecx.GetL2Connection(redID.(string))
+		secondary, err = client.GetL2Connection(redID.(string))
 		if err != nil {
 			return diag.Errorf("cannot fetch secondary connection due to %v", err)
 		}
@@ -738,7 +741,8 @@ func resourceECXL2ConnectionRead(ctx context.Context, d *schema.ResourceData, m 
 }
 
 func resourceECXL2ConnectionUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	conf := m.(*Config)
+	client := m.(*Config).ecx
+	m.(*Config).addModuleToECXUserAgent(&client, d)
 	var diags diag.Diagnostics
 	supportedChanges := []string{
 		ecxL2ConnectionSchemaNames["Name"],
@@ -746,13 +750,13 @@ func resourceECXL2ConnectionUpdate(ctx context.Context, d *schema.ResourceData, 
 		ecxL2ConnectionSchemaNames["SpeedUnit"],
 	}
 	primaryChanges := getResourceDataChangedKeys(supportedChanges, d)
-	primaryUpdateReq := conf.ecx.NewL2ConnectionUpdateRequest(d.Id())
+	primaryUpdateReq := client.NewL2ConnectionUpdateRequest(d.Id())
 	if err := fillFabricL2ConnectionUpdateRequest(primaryUpdateReq, primaryChanges).Execute(); err != nil {
 		return diag.FromErr(err)
 	}
 	if redID, ok := d.GetOk(ecxL2ConnectionSchemaNames["RedundantUUID"]); ok {
 		secondaryChanges := getResourceDataListElementChanges(supportedChanges, ecxL2ConnectionSchemaNames["SecondaryConnection"], 0, d)
-		secondaryUpdateReq := conf.ecx.NewL2ConnectionUpdateRequest(redID.(string))
+		secondaryUpdateReq := client.NewL2ConnectionUpdateRequest(redID.(string))
 		if err := fillFabricL2ConnectionUpdateRequest(secondaryUpdateReq, secondaryChanges).Execute(); err != nil {
 			return diag.FromErr(err)
 		}
@@ -762,9 +766,11 @@ func resourceECXL2ConnectionUpdate(ctx context.Context, d *schema.ResourceData, 
 }
 
 func resourceECXL2ConnectionDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	conf := m.(*Config)
+	client := m.(*Config).ecx
+	m.(*Config).addModuleToECXUserAgent(&client, d)
+
 	var diags diag.Diagnostics
-	if err := conf.ecx.DeleteL2Connection(d.Id()); err != nil {
+	if err := client.DeleteL2Connection(d.Id()); err != nil {
 		restErr, ok := err.(rest.Error)
 		if ok {
 			// IC-LAYER2-4021 = Connection already deleted
@@ -775,10 +781,10 @@ func resourceECXL2ConnectionDelete(ctx context.Context, d *schema.ResourceData, 
 		return diag.FromErr(err)
 	}
 	waitConfigs := []*resource.StateChangeConf{
-		createConnectionStatusDeleteWaitConfiguration(conf.ecx.GetL2Connection, d.Id(), 5*time.Second, d.Timeout(schema.TimeoutDelete)),
+		createConnectionStatusDeleteWaitConfiguration(client.GetL2Connection, d.Id(), 5*time.Second, d.Timeout(schema.TimeoutDelete)),
 	}
 	if redID, ok := d.GetOk(ecxL2ConnectionSchemaNames["RedundantUUID"]); ok {
-		if err := conf.ecx.DeleteL2Connection(redID.(string)); err != nil {
+		if err := client.DeleteL2Connection(redID.(string)); err != nil {
 			restErr, ok := err.(rest.Error)
 			if ok {
 				// IC-LAYER2-4021 = Connection already deleted
@@ -789,7 +795,7 @@ func resourceECXL2ConnectionDelete(ctx context.Context, d *schema.ResourceData, 
 			return diag.FromErr(err)
 		}
 		waitConfigs = append(waitConfigs,
-			createConnectionStatusDeleteWaitConfiguration(conf.ecx.GetL2Connection, redID.(string), 2*time.Second, d.Timeout(schema.TimeoutDelete)),
+			createConnectionStatusDeleteWaitConfiguration(client.GetL2Connection, redID.(string), 2*time.Second, d.Timeout(schema.TimeoutDelete)),
 		)
 	}
 	for _, config := range waitConfigs {
@@ -946,14 +952,14 @@ func updateECXL2ConnectionResource(primary *ecx.L2Connection, secondary *ecx.L2C
 		return fmt.Errorf("error reading VendorToken: %s", err)
 	}
 	if v, ok := d.GetOk(ecxL2ConnectionSchemaNames["ServiceToken"]); ok {
-		if ecx.StringValue(primary.VendorToken) != v.(string){
+		if ecx.StringValue(primary.VendorToken) != v.(string) {
 			if err := d.Set(ecxL2ConnectionSchemaNames["ServiceToken"], primary.VendorToken); err != nil {
 				return fmt.Errorf("error reading ServiceToken: %s", err)
 			}
 		}
 	}
 	if v, ok := d.GetOk(ecxL2ConnectionSchemaNames["ZSideServiceToken"]); ok {
-		if ecx.StringValue(primary.VendorToken) != v.(string){
+		if ecx.StringValue(primary.VendorToken) != v.(string) {
 			if err := d.Set(ecxL2ConnectionSchemaNames["ZSideServiceToken"], primary.VendorToken); err != nil {
 				return fmt.Errorf("error reading ZSideServiceToken: %s", err)
 			}

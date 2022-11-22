@@ -73,24 +73,27 @@ func testSweepDevices(region string) error {
 }
 
 // Regexp vars for use with resource.ExpectError
-var matchErrMustBeProvided = regexp.MustCompile(".* must be provided when .*")
-var matchErrShouldNotBeAnIPXE = regexp.MustCompile(`.*"user_data" should not be an iPXE.*`)
+var (
+	matchErrMustBeProvided    = regexp.MustCompile(".* must be provided when .*")
+	matchErrShouldNotBeAnIPXE = regexp.MustCompile(`.*"user_data" should not be an iPXE.*`)
+)
 
 // This function should be used to find available plans in all test where a metal_device resource is needed.
 // To prevent unexpected plan/facilities changes (i.e. run out of a plan in a metro after first apply)
 // during tests that have several config updates, resource metal_device should include a lifecycle
 // like the one defined below.
 //
-// lifecycle {
-//     ignore_changes = [
-//       plan,
-//       facilities,
-//     ]
-//   }
+//	lifecycle {
+//	    ignore_changes = [
+//	      plan,
+//	      facilities,
+//	    ]
+//	  }
 //
 // TODO consider adding a datasource for equinix_metal_operating_system and making the local.os conditional
-//  https://github.com/equinix/terraform-provider-equinix/pull/220#discussion_r915418418equinix_metal_operating_system
-//  https://github.com/equinix/terraform-provider-equinix/discussions/221
+//
+//	https://github.com/equinix/terraform-provider-equinix/pull/220#discussion_r915418418equinix_metal_operating_system
+//	https://github.com/equinix/terraform-provider-equinix/discussions/221
 func confAccMetalDevice_base(plans, metros, os []string) string {
 	return fmt.Sprintf(`
 data "equinix_metal_plans" "test" {
@@ -913,7 +916,7 @@ func (m *mockDeviceService) Get(deviceID string, opts *packngo.GetOptions) (*pac
 	return m.GetFn(deviceID, opts)
 }
 
-func (m *mockDeviceService) Create(device *packngo.DeviceCreateRequest) (*packngo.Device, *packngo.Response, error){
+func (m *mockDeviceService) Create(device *packngo.DeviceCreateRequest) (*packngo.Device, *packngo.Response, error) {
 	return nil, nil, mockFuncNotImplemented("Create")
 }
 
@@ -1012,9 +1015,9 @@ func TestAccMetalDevice_readErrorHandling(t *testing.T) {
 						Devices: &mockDeviceService{
 							GetFn: func(deviceID string, opts *packngo.GetOptions) (*packngo.Device, *packngo.Response, error) {
 								httpResp := &http.Response{
-									Status: "404 NotFound",
+									Status:     "404 NotFound",
 									StatusCode: 404,
-									Header: http.Header{"Content-Type": []string{"application/json"}, "X-Request-Id": []string{"12345"}},
+									Header:     http.Header{"Content-Type": []string{"application/json"}, "X-Request-Id": []string{"12345"}},
 								}
 								return nil, &packngo.Response{Response: httpResp}, &packngo.ErrorResponse{Response: httpResp}
 							},
@@ -1027,7 +1030,7 @@ func TestAccMetalDevice_readErrorHandling(t *testing.T) {
 		{
 			name: "forbiddenWaitForActiveDeviceProvision",
 			args: args{
-				newResource:    true,
+				newResource: true,
 				meta: &Config{
 					metal: &packngo.Client{
 						Devices: &mockDeviceService{
@@ -1044,7 +1047,7 @@ func TestAccMetalDevice_readErrorHandling(t *testing.T) {
 		{
 			name: "notFoundProvision",
 			args: args{
-				newResource:    true,
+				newResource: true,
 				meta: &Config{
 					metal: &packngo.Client{
 						Devices: &mockDeviceService{
@@ -1061,7 +1064,7 @@ func TestAccMetalDevice_readErrorHandling(t *testing.T) {
 		{
 			name: "errorProvision",
 			args: args{
-				newResource:    true,
+				newResource: true,
 				meta: &Config{
 					metal: &packngo.Client{
 						Devices: &mockDeviceService{

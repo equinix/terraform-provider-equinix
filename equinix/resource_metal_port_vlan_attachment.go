@@ -65,6 +65,7 @@ func resourceMetalPortVlanAttachment() *schema.Resource {
 }
 
 func resourceMetalPortVlanAttachmentCreate(d *schema.ResourceData, meta interface{}) error {
+	meta.(*Config).addModuleToMetalUserAgent(d)
 	client := meta.(*Config).metal
 	deviceID := d.Get("device_id").(string)
 	pName := d.Get("port_name").(string)
@@ -157,6 +158,7 @@ func resourceMetalPortVlanAttachmentCreate(d *schema.ResourceData, meta interfac
 }
 
 func resourceMetalPortVlanAttachmentRead(d *schema.ResourceData, meta interface{}) error {
+	meta.(*Config).addModuleToMetalUserAgent(d)
 	client := meta.(*Config).metal
 	deviceID := d.Get("device_id").(string)
 	pName := d.Get("port_name").(string)
@@ -210,6 +212,7 @@ func resourceMetalPortVlanAttachmentRead(d *schema.ResourceData, meta interface{
 }
 
 func resourceMetalPortVlanAttachmentUpdate(d *schema.ResourceData, meta interface{}) error {
+	meta.(*Config).addModuleToMetalUserAgent(d)
 	client := meta.(*Config).metal
 	if d.HasChange("native") {
 		native := d.Get("native").(bool)
@@ -232,6 +235,7 @@ func resourceMetalPortVlanAttachmentUpdate(d *schema.ResourceData, meta interfac
 }
 
 func resourceMetalPortVlanAttachmentDelete(d *schema.ResourceData, meta interface{}) error {
+	meta.(*Config).addModuleToMetalUserAgent(d)
 	client := meta.(*Config).metal
 	pID := d.Get("port_id").(string)
 	vlanID := d.Get("vlan_id").(string)
