@@ -223,6 +223,30 @@ func getConnectionPorts(cps []packngo.ConnectionPort) []map[string]interface{} {
 	return ret
 }
 
+func getConnectionVlans(conn *packngo.Connection) []int {
+	var ret []int
+
+	if conn.Type == packngo.ConnectionShared {
+		order := map[packngo.ConnectionPortRole]int{
+			packngo.ConnectionPortPrimary:   0,
+			packngo.ConnectionPortSecondary: 1,
+		}
+
+		rawVlans := make([]int, len(conn.Ports))
+		for _, p := range conn.Ports {
+			rawVlans[order[p.Role]] = p.VirtualCircuits[0].VNID
+		}
+
+		for _, v := range rawVlans {
+			if v > 0 {
+				ret = append(ret, v)
+			}
+		}
+	}
+
+	return ret
+}
+
 func dataSourceMetalConnectionRead(d *schema.ResourceData, meta interface{}) error {
 	connId := d.Get("connection_id").(string)
 	d.SetId(connId)
