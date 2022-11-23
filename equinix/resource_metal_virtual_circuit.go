@@ -76,7 +76,6 @@ func resourceMetalVirtualCircuit() *schema.Resource {
 				Optional:     true,
 				Description:  "UUID of the VLAN to associate",
 				ExactlyOneOf: []string{"vlan_id", "vrf_id"},
-				ForceNew:     true,
 			},
 			"vrf_id": {
 				Type:         schema.TypeString,
@@ -290,8 +289,8 @@ func resourceMetalVirtualCircuitUpdate(d *schema.ResourceData, meta interface{})
 	client := meta.(*Config).metal
 
 	ur := packngo.VCUpdateRequest{}
-	if d.HasChange("vnid") {
-		vnid := d.Get("vnid").(string)
+	if d.HasChange("vlan_id") {
+		vnid := d.Get("vlan_id").(string)
 		ur.VirtualNetworkID = &vnid
 	}
 

@@ -39,7 +39,7 @@ resource "equinix_ecx_l2_connection" "example" {
   authorization_key = azurerm_express_route_circuit.example.service_key
   named_tag         = "PRIVATE"
   secondary_connection {
-    name          = "tf-metal-to-azure"-sec"
+    name          = "tf-metal-to-azure-sec"
     service_token = equinix_metal_connection.example.service_tokens.1.id
   }
 }
