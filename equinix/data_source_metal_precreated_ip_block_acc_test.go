@@ -21,8 +21,6 @@ func TestAccDataSourceMetalPreCreatedIPBlock_basic(t *testing.T) {
 					resource.TestCheckResourceAttrSet(
 						"data.equinix_metal_precreated_ip_block.test_fac_pubv6", "cidr_notation"),
 					resource.TestCheckResourceAttrSet(
-						"data.equinix_metal_precreated_ip_block.test_metro_pubv4", "cidr_notation"),
-					resource.TestCheckResourceAttrSet(
 						"data.equinix_metal_precreated_ip_block.test_metro_priv4", "cidr_notation"),
 					resource.TestCheckResourceAttrPair(
 						"equinix_metal_ip_attachment.test", "device_id",
@@ -67,13 +65,6 @@ data "equinix_metal_precreated_ip_block" "test_fac_pubv6" {
     facility         = equinix_metal_device.test.deployed_facility
     project_id       = equinix_metal_device.test.project_id
     address_family   = 6
-    public           = true
-}
-
-data "equinix_metal_precreated_ip_block" "test_metro_pubv4" {
-    metro            = equinix_metal_device.test.metro
-    project_id       = equinix_metal_device.test.project_id
-    address_family   = 4
     public           = true
 }
 

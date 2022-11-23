@@ -34,9 +34,9 @@ output "out" {
 The following arguments are supported:
 
 * `project_id` - (Required) ID of the project from which to list the blocks.
-* `facility` - (Optional) Facility code filtering the IP blocks. Global IPv4 blcoks will be listed
+* `facility` - (Optional) Facility code filtering the IP blocks. Global IPv4 blocks will be listed
 anyway. If you omit this and metro, all the block from the project will be listed.
-* `metro` - (Optional) Metro code filtering the IP blocks. Global IPv4 blcoks will be listed
+* `metro` - (Optional) Metro code filtering the IP blocks. Global IPv4 blocks will be listed
 anyway. If you omit this and facility, all the block from the project will be listed.
 
 ## Attributes Reference

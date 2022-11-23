@@ -19,12 +19,12 @@ func dataSourceMetalIPBlockRanges() *schema.Resource {
 			},
 			"facility": {
 				Type:        schema.TypeString,
-				Description: "Facility code filtering the IP blocks. Global IPv4 blcoks will be listed anyway. If you omit this and metro, all the block from the project will be listed",
+				Description: "Facility code filtering the IP blocks. Global IPv4 blocks will be listed anyway. If you omit this and metro, all the block from the project will be listed",
 				Optional:    true,
 			},
 			"metro": {
 				Type:        schema.TypeString,
-				Description: "Metro code filtering the IP blocks. Global IPv4 blcoks will be listed anyway. If you omit this and facility, all the block from the project will be listed",
+				Description: "Metro code filtering the IP blocks. Global IPv4 blocks will be listed anyway. If you omit this and facility, all the block from the project will be listed",
 				Optional:    true,
 				StateFunc:   toLower,
 			},
@@ -76,6 +76,16 @@ func metroMatch(ref string, metro *packngo.Metro) bool {
 	return false
 }
 
+func metroOffacilityMatch(ref string, facility *packngo.Facility) bool {
+	if ref == "" {
+		return true
+	}
+	if facility != nil && facility.Metro != nil && ref == facility.Metro.Code {
+		return true
+	}
+	return false
+}
+
 func dataSourceMetalIPBlockRangesRead(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*Config).metal
 	projectID := d.Get("project_id").(string)
@@ -109,7 +119,12 @@ func dataSourceMetalIPBlockRangesRead(d *schema.ResourceData, meta interface{}) 
 		} else {
 			targetSlice = &theIPv6s
 		}
-		if targetSlice != nil && facilityMatch(facility, ip.Facility) && metroMatch(metro, ip.Metro) {
+		if targetSlice != nil {
+			if !(facilityMatch(facility, ip.Facility) && metroMatch(metro, ip.Metro)) {
+				if !metroOffacilityMatch(metro, ip.Facility) {
+					continue
+				}
+			}
 			*targetSlice = append(*targetSlice, cnStr)
 		}
 	}

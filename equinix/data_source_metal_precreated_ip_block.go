@@ -5,6 +5,7 @@ import (
 	"log"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/packethost/packngo"
 )
 
@@ -26,25 +27,23 @@ func dataSourceMetalPreCreatedIPBlock() *schema.Resource {
 		Required:    true,
 		Description: "Whether to look for public or private block.",
 	}
-
 	s["facility"] = &schema.Schema{
 		Type:          schema.TypeString,
 		Optional:      true,
 		Description:   "Facility of the searched block. (for non-global blocks).",
 		ConflictsWith: []string{"metro"},
 	}
-
 	s["metro"] = &schema.Schema{
 		Type:          schema.TypeString,
 		Optional:      true,
 		Description:   "Metro of the searched block (for non-global blocks).",
 		ConflictsWith: []string{"facility"},
 	}
-
 	s["address_family"] = &schema.Schema{
-		Type:        schema.TypeInt,
-		Required:    true,
-		Description: "4 or 6, depending on which block you are looking for.",
+		Type:         schema.TypeInt,
+		Required:     true,
+		Description:  "4 or 6, depending on which block you are looking for.",
+		ValidateFunc: validation.IntInSlice([]int{4, 6}),
 	}
 	s["cidr_notation"] = &schema.Schema{
 		Type:        schema.TypeString,
@@ -127,10 +126,14 @@ func dataSourceMetalPreCreatedIPBlockRead(d *schema.ResourceData, meta interface
 		// lookup of block specified with metro
 		metro := mval.(string)
 		for _, ip := range ips {
+			ipMetro := ip.Metro
 			if ip.Metro == nil {
-				continue
+				if ip.Facility.Metro == nil {
+					continue
+				}
+				ipMetro = ip.Facility.Metro
 			}
-			if ip.Public == public && ip.AddressFamily == ipv && metro == ip.Metro.Code {
+			if ip.Public == public && ip.AddressFamily == ipv && metro == ipMetro.Code {
 				return loadBlock(d, &ip)
 			}
 		}
