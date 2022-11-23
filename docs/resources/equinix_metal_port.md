@@ -4,7 +4,7 @@ subcategory: "Metal"
 
 # equinix_metal_port (Resource)
 
-Use this resource to set up network ports on an Equnix Metal device. This resource can control both
+Use this resource to configure network ports on an Equnix Metal device. This resource can control both
 physical and bond ports.
 
 This Terraform resource doesn't create an API resource in Equinix Metal, but rather provides finer
@@ -13,9 +13,7 @@ control for [Layer 2 networking](https://metal.equinix.com/developers/docs/layer
 The port resource referred is created together with device and accessible either via the device
 resource or over `/port/<uuid>` API path.
 
-## Example Usage
-
-See the [Network Types Guide](../guides/network_types.md) for examples of this resource.
+-> To achieve the network configurations available in the portal it may require the creation and combination of various `equinix_metal_port` resources. See the [Network Types Guide](../guides/network_types.md) for examples of this resource.
 
 ## Argument Reference
 
@@ -29,10 +27,8 @@ ports.
 * `vxlan_ids` - (Optional) List of VXLAN IDs to attach to the port, valid only for L2 and Hybrid
 ports.
 * `native_vlan_id` - (Optional) UUID of a VLAN to assign as a native VLAN. It must be one of
-attached VLANs (from `vlan_ids` parameter), valid only for physical (non-bond) ports.
-* `reset_on_delete` - (Optional) Behavioral setting to reset the port to default settings. For a
-bond port it means layer3 without vlans attached, eth ports will be bonded without native vlan and
-vlans attached.
+attached VLANs (from `vlan_ids` parameter).
+* `reset_on_delete` - (Optional) Behavioral setting to reset the port to default settings (layer3 bonded mode without any vlan attached) before delete/destroy.
 
 ## Attributes Reference
 

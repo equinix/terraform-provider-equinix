@@ -57,7 +57,7 @@ func getPortByResourceData(d *schema.ResourceData, client *packngo.Client) (*pac
 	// check parameter sanity only for a new (not-yet-created) resource
 	if resourceId == "" {
 		if portIdOk && (deviceIdOk || portNameOk) {
-			return nil, fmt.Errorf("You must specify either id or (device_id and name)")
+			return nil, fmt.Errorf("you must specify either id or (device_id and name)")
 		}
 	}
 
@@ -155,7 +155,6 @@ func batchVlans(removeOnly bool) func(*ClientPortResource) error {
 				attachedVlanIds(cpr.Port),
 			)
 		}
-
 		vacr := &packngo.VLANAssignmentBatchCreateRequest{}
 		for _, v := range vlansToRemove {
 			vacr.VLANAssignments = append(vacr.VLANAssignments, packngo.VLANAssignmentCreateRequest{
@@ -203,11 +202,18 @@ func createAndWaitForBatch(c *packngo.Client, portID string, vacr *packngo.VLANA
 	return fmt.Errorf("vlan assignment batch %s is not complete after timeout", b.ID)
 }
 
-func removeNativeVlan(cpr *ClientPortResource) error {
+func updateNativeVlan(cpr *ClientPortResource) error {
 	currentNative := getCurrentNative(cpr.Port)
 	specifiedNative := getSpecifiedNative(cpr.Resource)
-	if (currentNative != specifiedNative) && currentNative != "" {
-		port, _, err := cpr.Client.DevicePorts.UnassignNative(cpr.Port.ID)
+
+	if (currentNative != specifiedNative) {
+		var port *packngo.Port
+		var err error
+		if specifiedNative == "" && currentNative != "" {
+			port, _, err = cpr.Client.Ports.UnassignNative(cpr.Port.ID)
+		} else {
+			port, _, err = cpr.Client.Ports.AssignNative(cpr.Port.ID, specifiedNative)
+		}
 		if err != nil {
 			return err
 		}
@@ -303,26 +309,21 @@ func portSanityChecks(cpr *ClientPortResource) error {
 
 	// Constraint: L3 unbonded is not really allowed for Bond port
 	if isBondPort && !l2 && !bonded {
-		return fmt.Errorf("Bond port in Layer3 can't be unbonded")
+		return fmt.Errorf("bond port in Layer3 can't be unbonded")
 	}
 
 	// Constraint: native vlan ..
-	// - can be set only on non-bond ports
 	// - must be one of assigned vlans
 	// - there must be more than one vlan assigned to the port
-
 	nativeVlanRaw, nativeVlanOk := cpr.Resource.GetOk("native_vlan_id")
 	if nativeVlanOk {
-		if isBondPort {
-			return fmt.Errorf("Native VLAN can only be set on non-bond ports")
-		}
 		nativeVlan := nativeVlanRaw.(string)
 		vlans := specifiedVlanIds(cpr.Resource)
 		if !contains(vlans, nativeVlan) {
-			return fmt.Errorf("The native VLAN to be set is not (being) assigned to the port")
+			return fmt.Errorf("the native VLAN to be set is not (being) assigned to the port")
 		}
 		if len(vlans) < 2 {
-			return fmt.Errorf("Native VLAN can only be set if more than one VLAN are assigned to the port ")
+			return fmt.Errorf("native VLAN can only be set if more than one VLAN are assigned to the port ")
 		}
 	}
 
@@ -330,17 +331,22 @@ func portSanityChecks(cpr *ClientPortResource) error {
 }
 
 func portProperlyDestroyed(port *packngo.Port) error {
+	var errs []string
 	if !port.Data.Bonded {
-		return fmt.Errorf("Port %s wasn't bonded after equinix_metal_port destroy", port.ID)
+		errs = append(errs, fmt.Sprintf("port %s wasn't bonded after equinix_metal_port destroy;", port.ID))
 	}
 	if port.Type == "NetworkBondPort" && port.NetworkType != "layer3" {
-		return fmt.Errorf("Bond port should be in layer3 type after destroy")
+		errs = append(errs, "bond port should be in layer3 type after destroy;")
 	}
 	if port.NativeVirtualNetwork != nil {
-		return fmt.Errorf("Port should not have native VLAN assigned after destroy")
+		errs = append(errs, "port should not have native VLAN assigned after destroy;")
 	}
 	if len(port.AttachedVirtualNetworks) != 0 {
-		return fmt.Errorf("Port should not have VLANs attached after destroy")
+		errs = append(errs, "port should not have VLANs attached after destroy")
 	}
+	if len(errs) > 0 {
+		return fmt.Errorf("%s", errs)
+	}
+
 	return nil
 }
