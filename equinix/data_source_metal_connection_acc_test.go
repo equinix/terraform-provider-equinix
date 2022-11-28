@@ -9,14 +9,14 @@ import (
 )
 
 func TestAccDataSourceMetalConnection_withoutVlans(t *testing.T) {
-	projectName := fmt.Sprintf("ds-device-%s", acctest.RandString(10))
+	rInt := acctest.RandInt()
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testDataSourceMetalConnectionConfig_withoutVlans(projectName),
+				Config: testDataSourceMetalConnectionConfig_withoutVlans(rInt),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrPair(
 						"equinix_metal_connection.test", "id",
@@ -32,37 +32,37 @@ func TestAccDataSourceMetalConnection_withoutVlans(t *testing.T) {
 	})
 }
 
-func testDataSourceMetalConnectionConfig_withoutVlans(randstr string) string {
+func testDataSourceMetalConnectionConfig_withoutVlans(r int) string {
 	return fmt.Sprintf(`
-        resource "equinix_metal_project" "test" {
-            name = "tfacc-conn-pro-%s"
-        }
+		resource "equinix_metal_project" "test" {
+			name = "tfacc-conn-project-%d"
+		}
 
-        resource "equinix_metal_connection" "test" {
-            name               = "tfacc-conn-%s"
-            project_id         = equinix_metal_project.test.id
-            type               = "shared"
-            redundancy         = "redundant"
-            metro              = "sv"
+		resource "equinix_metal_connection" "test" {
+			name               = "tfacc-conn-%d"
+			project_id         = equinix_metal_project.test.id
+			type               = "shared"
+			redundancy         = "redundant"
+			metro              = "sv"
 			speed              = "50Mbps"
 			service_token_type = "a_side"
-        }
-		
+		}
+
 		data "equinix_metal_connection" "test" {
-    		connection_id = equinix_metal_connection.test.id
+			connection_id = equinix_metal_connection.test.id
 		}`,
-		randstr, randstr)
+		r, r)
 }
 
 func TestAccDataSourceMetalConnection_withVlans(t *testing.T) {
-	projectName := fmt.Sprintf("ds-device-by-id-%s", acctest.RandString(10))
+	rInt := acctest.RandInt()
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testDataSourceMetalConnectionConfig_withVlans(projectName),
+				Config: testDataSourceMetalConnectionConfig_withVlans(rInt),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrPair(
 						"equinix_metal_connection.test", "id",
@@ -78,40 +78,40 @@ func TestAccDataSourceMetalConnection_withVlans(t *testing.T) {
 	})
 }
 
-func testDataSourceMetalConnectionConfig_withVlans(randstr string) string {
+func testDataSourceMetalConnectionConfig_withVlans(r int) string {
 	return fmt.Sprintf(`
-        resource "equinix_metal_project" "test" {
-            name = "tfacc-conn-pro-%s"
-        }
+		resource "equinix_metal_project" "test" {
+			name = "tfacc-conn-pro-%d"
+		}
 
 		resource "equinix_metal_vlan" "test1" {
-			description = "tfacc-conn-vlan-1-%s"
-			metro       = "sv"
-			project_id  = equinix_metal_project.test.id
-		}
-		
-		resource "equinix_metal_vlan" "test2" {
-			description = "tfacc-conn-vlan-2-%s"
+			description = "tfacc-conn-vlan1-%d"
 			metro       = "sv"
 			project_id  = equinix_metal_project.test.id
 		}
 
-        resource "equinix_metal_connection" "test" {
-            name               = "tfacc-conn-%s"
-            project_id         = equinix_metal_project.test.id
-            type               = "shared"
-            redundancy         = "redundant"
-            metro              = "sv"
+		resource "equinix_metal_vlan" "test2" {
+			description = "tfacc-conn-vlan2-%d"
+			metro       = "sv"
+			project_id  = equinix_metal_project.test.id
+		}
+
+		resource "equinix_metal_connection" "test" {
+			name               = "tfacc-conn-%d"
+			project_id         = equinix_metal_project.test.id
+			type               = "shared"
+			redundancy         = "redundant"
+			metro              = "sv"
 			speed              = "50Mbps"
 			service_token_type = "a_side"
 			vlans = [
 				equinix_metal_vlan.test1.vxlan,
 				equinix_metal_vlan.test2.vxlan
 			]
-        }
-		
+		}
+
 		data "equinix_metal_connection" "test" {
     		connection_id = equinix_metal_connection.test.id
 		}`,
-		randstr, randstr, randstr, randstr)
+		r, r, r, r)
 }
