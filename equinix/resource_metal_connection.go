@@ -357,41 +357,24 @@ func resourceMetalConnectionUpdate(d *schema.ResourceData, meta interface{}) err
 			ports := d.Get("ports").([]interface{})
 
 			for i := 0; i < maxVlans; i++ {
-				if i+1 > len(newVlans) {
-					// Unassign oldVlans[i]
-					port := ports[i].(map[string]interface{})
-					vcids := (port["virtual_circuit_ids"]).([]interface{})
-					vcid := vcids[0].(string)
-					vnid := ""
-					ucr := packngo.VCUpdateRequest{}
-					ucr.VirtualNetworkID = &vnid
-					if _, _, err := client.VirtualCircuits.Update(vcid, &ucr, nil); err != nil {
-						return friendlyError(err)
-					}
-				} else {
-					if i+1 <= len(oldVlans) {
-						j := slices.Index(oldVlans[i+1:len(oldVlans)], newVlans[i])
-						if j >= 0 {
-							// Unassign oldVlans[i]
-							port := ports[j].(map[string]interface{})
-							vcids := (port["virtual_circuit_ids"]).([]interface{})
-							vcid := vcids[0].(string)
-							vnid := ""
-							ucr := packngo.VCUpdateRequest{}
-							ucr.VirtualNetworkID = &vnid
-							if _, _, err := client.VirtualCircuits.Update(vcid, &ucr, nil); err != nil {
+				if d.HasChange(fmt.Sprintf("vlans.%d", i)) {
+					if i+1 > len(newVlans) {
+						// Unassign oldVlans[i]
+						// Unassign oldVlans[j]
+						if _, _, err := updateHiddenVirtualCircuitVNID(client, ports[i].(map[string]interface{}), ""); err != nil {
+							return friendlyError(err)
+						}
+					} else {
+						j := slices.Index(oldVlans, newVlans[i])
+						if j > i {
+							// Unassign oldVlans[j]
+							if _, _, err := updateHiddenVirtualCircuitVNID(client, ports[j].(map[string]interface{}), ""); err != nil {
 								return friendlyError(err)
 							}
 						}
-					}
-					port := ports[i].(map[string]interface{})
-					vcids := (port["virtual_circuit_ids"]).([]interface{})
-					vcid := vcids[0].(string)
-					vnid := strconv.Itoa(newVlans[i])
-					ucr := packngo.VCUpdateRequest{}
-					ucr.VirtualNetworkID = &vnid
-					if _, _, err := client.VirtualCircuits.Update(vcid, &ucr, nil); err != nil {
-						return friendlyError(err)
+						if _, _, err := updateHiddenVirtualCircuitVNID(client, ports[i].(map[string]interface{}), strconv.Itoa(newVlans[i])); err != nil {
+							return friendlyError(err)
+						}
 					}
 				}
 			}
@@ -401,6 +384,16 @@ func resourceMetalConnectionUpdate(d *schema.ResourceData, meta interface{}) err
 	}
 
 	return resourceMetalConnectionRead(d, meta)
+}
+
+func updateHiddenVirtualCircuitVNID(client *packngo.Client, port map[string]interface{}, newVNID string) (*packngo.VirtualCircuit, *packngo.Response, error) {
+	// This function is used to update the implicit virtual circuits attached to a shared `metal_connection` resource
+	// Do not use this function for a non-shared `metal_connection`
+	vcids := (port["virtual_circuit_ids"]).([]interface{})
+	vcid := vcids[0].(string)
+	ucr := packngo.VCUpdateRequest{}
+	ucr.VirtualNetworkID = &newVNID
+	return client.VirtualCircuits.Update(vcid, &ucr, nil)
 }
 
 func resourceMetalConnectionRead(d *schema.ResourceData, meta interface{}) error {
