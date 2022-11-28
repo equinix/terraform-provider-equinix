@@ -2,6 +2,7 @@ package equinix
 
 import (
 	"fmt"
+	"math"
 	"reflect"
 	"strconv"
 	"strings"
@@ -9,6 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/packethost/packngo"
+	"golang.org/x/exp/slices"
 )
 
 var (
@@ -347,23 +349,51 @@ func resourceMetalConnectionUpdate(d *schema.ResourceData, meta interface{}) err
 		connType := packngo.ConnectionType(d.Get("type").(string))
 
 		if connType == packngo.ConnectionShared {
-			vlansNum := d.Get("vlans.#").(int)
-			if vlansNum > 0 {
-				vlans := convertIntArr2(d.Get("vlans").([]interface{}))
-				ports := d.Get("ports").([]interface{})
-				for i, v := range vlans {
+			old, new := d.GetChange("vlans")
+			oldVlans := convertIntArr2(old.([]interface{}))
+			newVlans := convertIntArr2(new.([]interface{}))
+			maxVlans := int(math.Max(float64(len(oldVlans)), float64(len(newVlans))))
+
+			ports := d.Get("ports").([]interface{})
+
+			for i := 0; i < maxVlans; i++ {
+				if i+1 > len(newVlans) {
+					// Unassign oldVlans[i]
 					port := ports[i].(map[string]interface{})
 					vcids := (port["virtual_circuit_ids"]).([]interface{})
 					vcid := vcids[0].(string)
-					vnid := strconv.Itoa(v)
+					vnid := ""
+					ucr := packngo.VCUpdateRequest{}
+					ucr.VirtualNetworkID = &vnid
+					if _, _, err := client.VirtualCircuits.Update(vcid, &ucr, nil); err != nil {
+						return friendlyError(err)
+					}
+				} else {
+					if i+1 <= len(oldVlans) {
+						j := slices.Index(oldVlans[i+1:len(oldVlans)], newVlans[i])
+						if j >= 0 {
+							// Unassign oldVlans[i]
+							port := ports[j].(map[string]interface{})
+							vcids := (port["virtual_circuit_ids"]).([]interface{})
+							vcid := vcids[0].(string)
+							vnid := ""
+							ucr := packngo.VCUpdateRequest{}
+							ucr.VirtualNetworkID = &vnid
+							if _, _, err := client.VirtualCircuits.Update(vcid, &ucr, nil); err != nil {
+								return friendlyError(err)
+							}
+						}
+					}
+					port := ports[i].(map[string]interface{})
+					vcids := (port["virtual_circuit_ids"]).([]interface{})
+					vcid := vcids[0].(string)
+					vnid := strconv.Itoa(newVlans[i])
 					ucr := packngo.VCUpdateRequest{}
 					ucr.VirtualNetworkID = &vnid
 					if _, _, err := client.VirtualCircuits.Update(vcid, &ucr, nil); err != nil {
 						return friendlyError(err)
 					}
 				}
-			} else {
-				return fmt.Errorf("you cannot remove vlans from an existing \"shared\" connection")
 			}
 		} else {
 			return fmt.Errorf("when you update a \"dedicated\" connection, you cannot set vlans")
