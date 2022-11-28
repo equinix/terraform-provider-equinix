@@ -76,7 +76,6 @@ func resourceMetalVirtualCircuit() *schema.Resource {
 				Optional:     true,
 				Description:  "UUID of the VLAN to associate",
 				ExactlyOneOf: []string{"vlan_id", "vrf_id"},
-				ForceNew:     true,
 			},
 			"vrf_id": {
 				Type:         schema.TypeString,
@@ -139,6 +138,7 @@ func resourceMetalVirtualCircuit() *schema.Resource {
 }
 
 func resourceMetalVirtualCircuitCreate(d *schema.ResourceData, meta interface{}) error {
+	meta.(*Config).addModuleToMetalUserAgent(d)
 	client := meta.(*Config).metal
 	vncr := packngo.VCCreateRequest{
 		VirtualNetworkID: d.Get("vlan_id").(string),
@@ -198,6 +198,7 @@ func resourceMetalVirtualCircuitCreate(d *schema.ResourceData, meta interface{})
 }
 
 func resourceMetalVirtualCircuitRead(d *schema.ResourceData, meta interface{}) error {
+	meta.(*Config).addModuleToMetalUserAgent(d)
 	client := meta.(*Config).metal
 	vcId := d.Id()
 
@@ -284,11 +285,12 @@ func getVCStateWaiter(client *packngo.Client, id string, timeout time.Duration, 
 }
 
 func resourceMetalVirtualCircuitUpdate(d *schema.ResourceData, meta interface{}) error {
+	meta.(*Config).addModuleToMetalUserAgent(d)
 	client := meta.(*Config).metal
 
 	ur := packngo.VCUpdateRequest{}
-	if d.HasChange("vnid") {
-		vnid := d.Get("vnid").(string)
+	if d.HasChange("vlan_id") {
+		vnid := d.Get("vlan_id").(string)
 		ur.VirtualNetworkID = &vnid
 	}
 
@@ -331,6 +333,7 @@ func resourceMetalVirtualCircuitUpdate(d *schema.ResourceData, meta interface{})
 }
 
 func resourceMetalVirtualCircuitDelete(d *schema.ResourceData, meta interface{}) error {
+	meta.(*Config).addModuleToMetalUserAgent(d)
 	client := meta.(*Config).metal
 	// we first disconnect VLAN from the VC
 	empty := ""

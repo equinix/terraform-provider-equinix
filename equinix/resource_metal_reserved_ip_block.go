@@ -231,7 +231,9 @@ func resourceMetalReservedIPBlock() *schema.Resource {
 }
 
 func resourceMetalReservedIPBlockCreate(d *schema.ResourceData, meta interface{}) error {
+	meta.(*Config).addModuleToMetalUserAgent(d)
 	client := meta.(*Config).metal
+
 	quantity := d.Get("quantity").(int)
 	typ := d.Get("type").(string)
 
@@ -311,6 +313,7 @@ func resourceMetalReservedIPBlockCreate(d *schema.ResourceData, meta interface{}
 }
 
 func resourceMetalReservedIPBlockUpdate(d *schema.ResourceData, meta interface{}) error {
+	meta.(*Config).addModuleToMetalUserAgent(d)
 	client := meta.(*Config).metal
 	id := d.Id()
 	req := &packngo.IPAddressUpdateRequest{}
@@ -396,6 +399,9 @@ func loadBlock(d *schema.ResourceData, reservedBlock *packngo.IPAddressReservati
 		},
 		"metro": func(d *schema.ResourceData, k string) error {
 			if reservedBlock.Metro == nil {
+				if reservedBlock.Facility != nil && reservedBlock.Facility.Metro != nil {
+					return d.Set(k, strings.ToLower(reservedBlock.Facility.Metro.Code))
+				}
 				return nil
 			}
 			return d.Set(k, strings.ToLower(reservedBlock.Metro.Code))
@@ -449,9 +455,10 @@ func loadBlock(d *schema.ResourceData, reservedBlock *packngo.IPAddressReservati
 }
 
 func resourceMetalReservedIPBlockRead(d *schema.ResourceData, meta interface{}) error {
+	meta.(*Config).addModuleToMetalUserAgent(d)
 	client := meta.(*Config).metal
-	id := d.Id()
 
+	id := d.Id()
 	getOpts := &packngo.GetOptions{Includes: []string{"facility", "metro", "project", "vrf"}}
 	getOpts = getOpts.Filter("types", "public_ipv4,global_ipv4,private_ipv4,public_ipv6,vrf")
 
@@ -479,6 +486,7 @@ func resourceMetalReservedIPBlockRead(d *schema.ResourceData, meta interface{}) 
 }
 
 func resourceMetalReservedIPBlockDelete(d *schema.ResourceData, meta interface{}) error {
+	meta.(*Config).addModuleToMetalUserAgent(d)
 	client := meta.(*Config).metal
 
 	id := d.Id()

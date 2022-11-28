@@ -841,42 +841,43 @@ func createVendorConfigurationSchema() map[string]*schema.Schema {
 }
 
 func resourceNetworkDeviceCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	conf := m.(*Config)
+	client := m.(*Config).ne
+	m.(*Config).addModuleToNEUserAgent(&client, d)
 	var diags diag.Diagnostics
 	primary, secondary := createNetworkDevices(d)
 	var err error
-	if err := uploadDeviceLicenseFile(os.Open, conf.ne.UploadLicenseFile, ne.StringValue(primary.TypeCode), primary); err != nil {
+	if err := uploadDeviceLicenseFile(os.Open, client.UploadLicenseFile, ne.StringValue(primary.TypeCode), primary); err != nil {
 		return diag.Errorf("could not upload primary device license file due to %s", err)
 	}
-	if err := uploadDeviceLicenseFile(os.Open, conf.ne.UploadLicenseFile, ne.StringValue(primary.TypeCode), secondary); err != nil {
+	if err := uploadDeviceLicenseFile(os.Open, client.UploadLicenseFile, ne.StringValue(primary.TypeCode), secondary); err != nil {
 		return diag.Errorf("could not upload secondary device license file due to %s", err)
 	}
 	if secondary != nil {
-		primary.UUID, secondary.UUID, err = conf.ne.CreateRedundantDevice(*primary, *secondary)
+		primary.UUID, secondary.UUID, err = client.CreateRedundantDevice(*primary, *secondary)
 	} else {
-		primary.UUID, err = conf.ne.CreateDevice(*primary)
+		primary.UUID, err = client.CreateDevice(*primary)
 	}
 	if err != nil {
 		return diag.FromErr(err)
 	}
 	d.SetId(ne.StringValue(primary.UUID))
 	waitConfigs := []*resource.StateChangeConf{
-		createNetworkDeviceStatusProvisioningWaitConfiguration(conf.ne.GetDevice, ne.StringValue(primary.UUID), 5*time.Second, d.Timeout(schema.TimeoutCreate)),
-		createNetworkDeviceLicenseStatusWaitConfiguration(conf.ne.GetDevice, ne.StringValue(primary.UUID), 5*time.Second, d.Timeout(schema.TimeoutCreate)),
+		createNetworkDeviceStatusProvisioningWaitConfiguration(client.GetDevice, ne.StringValue(primary.UUID), 5*time.Second, d.Timeout(schema.TimeoutCreate)),
+		createNetworkDeviceLicenseStatusWaitConfiguration(client.GetDevice, ne.StringValue(primary.UUID), 5*time.Second, d.Timeout(schema.TimeoutCreate)),
 	}
 	if ne.StringValue(primary.ACLTemplateUUID) != "" || ne.StringValue(primary.MgmtAclTemplateUuid) != "" {
 		waitConfigs = append(waitConfigs,
-			createNetworkDeviceACLStatusWaitConfiguration(conf.ne.GetDeviceACLDetails, ne.StringValue(primary.UUID), 1*time.Second, d.Timeout(schema.TimeoutUpdate)),
+			createNetworkDeviceACLStatusWaitConfiguration(client.GetDeviceACLDetails, ne.StringValue(primary.UUID), 1*time.Second, d.Timeout(schema.TimeoutUpdate)),
 		)
 	}
 	if secondary != nil {
 		waitConfigs = append(waitConfigs,
-			createNetworkDeviceStatusProvisioningWaitConfiguration(conf.ne.GetDevice, ne.StringValue(secondary.UUID), 5*time.Second, d.Timeout(schema.TimeoutCreate)),
-			createNetworkDeviceLicenseStatusWaitConfiguration(conf.ne.GetDevice, ne.StringValue(secondary.UUID), 5*time.Second, d.Timeout(schema.TimeoutCreate)),
+			createNetworkDeviceStatusProvisioningWaitConfiguration(client.GetDevice, ne.StringValue(secondary.UUID), 5*time.Second, d.Timeout(schema.TimeoutCreate)),
+			createNetworkDeviceLicenseStatusWaitConfiguration(client.GetDevice, ne.StringValue(secondary.UUID), 5*time.Second, d.Timeout(schema.TimeoutCreate)),
 		)
 		if ne.StringValue(secondary.ACLTemplateUUID) != "" || ne.StringValue(secondary.MgmtAclTemplateUuid) != "" {
 			waitConfigs = append(waitConfigs,
-				createNetworkDeviceACLStatusWaitConfiguration(conf.ne.GetDeviceACLDetails, ne.StringValue(secondary.UUID), 1*time.Second, d.Timeout(schema.TimeoutUpdate)),
+				createNetworkDeviceACLStatusWaitConfiguration(client.GetDeviceACLDetails, ne.StringValue(secondary.UUID), 1*time.Second, d.Timeout(schema.TimeoutUpdate)),
 			)
 		}
 	}
@@ -893,11 +894,12 @@ func resourceNetworkDeviceCreate(ctx context.Context, d *schema.ResourceData, m 
 }
 
 func resourceNetworkDeviceRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	conf := m.(*Config)
+	client := m.(*Config).ne
+	m.(*Config).addModuleToNEUserAgent(&client, d)
 	var diags diag.Diagnostics
 	var err error
 	var primary, secondary *ne.Device
-	primary, err = conf.ne.GetDevice(d.Id())
+	primary, err = client.GetDevice(d.Id())
 	if err != nil {
 		return diag.Errorf("cannot fetch primary network device due to %v", err)
 	}
@@ -906,7 +908,7 @@ func resourceNetworkDeviceRead(ctx context.Context, d *schema.ResourceData, m in
 		return diags
 	}
 	if ne.StringValue(primary.RedundantUUID) != "" {
-		secondary, err = conf.ne.GetDevice(ne.StringValue(primary.RedundantUUID))
+		secondary, err = client.GetDevice(ne.StringValue(primary.RedundantUUID))
 		if err != nil {
 			return diag.Errorf("cannot fetch secondary network device due to %v", err)
 		}
@@ -918,14 +920,15 @@ func resourceNetworkDeviceRead(ctx context.Context, d *schema.ResourceData, m in
 }
 
 func resourceNetworkDeviceUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	conf := m.(*Config)
+	client := m.(*Config).ne
+	m.(*Config).addModuleToNEUserAgent(&client, d)
 	var diags diag.Diagnostics
 	supportedChanges := []string{
 		neDeviceSchemaNames["Name"], neDeviceSchemaNames["TermLength"],
 		neDeviceSchemaNames["Notifications"], neDeviceSchemaNames["AdditionalBandwidth"],
 		neDeviceSchemaNames["ACLTemplateUUID"], neDeviceSchemaNames["MgmtAclTemplateUuid"],
 	}
-	updateReq := conf.ne.NewDeviceUpdateRequest(d.Id())
+	updateReq := client.NewDeviceUpdateRequest(d.Id())
 	primaryChanges := getResourceDataChangedKeys(supportedChanges, d)
 	if err := fillNetworkDeviceUpdateRequest(updateReq, primaryChanges).Execute(); err != nil {
 		return diag.FromErr(err)
@@ -933,17 +936,17 @@ func resourceNetworkDeviceUpdate(ctx context.Context, d *schema.ResourceData, m 
 	var secondaryChanges map[string]interface{}
 	if v, ok := d.GetOk(neDeviceSchemaNames["RedundantUUID"]); ok {
 		secondaryChanges = getResourceDataListElementChanges(supportedChanges, neDeviceSchemaNames["Secondary"], 0, d)
-		secondaryUpdateReq := conf.ne.NewDeviceUpdateRequest(v.(string))
+		secondaryUpdateReq := client.NewDeviceUpdateRequest(v.(string))
 		if err := fillNetworkDeviceUpdateRequest(secondaryUpdateReq, secondaryChanges).Execute(); err != nil {
 			return diag.FromErr(err)
 		}
 	}
-	for _, stateChangeConf := range getNetworkDeviceStateChangeConfigs(conf.ne, d.Id(), d.Timeout(schema.TimeoutUpdate), primaryChanges) {
+	for _, stateChangeConf := range getNetworkDeviceStateChangeConfigs(client, d.Id(), d.Timeout(schema.TimeoutUpdate), primaryChanges) {
 		if _, err := stateChangeConf.WaitForStateContext(ctx); err != nil {
 			return diag.Errorf("error waiting for network device %q to be updated: %s", d.Id(), err)
 		}
 	}
-	for _, stateChangeConf := range getNetworkDeviceStateChangeConfigs(conf.ne, d.Get(neDeviceSchemaNames["RedundantUUID"]).(string), d.Timeout(schema.TimeoutUpdate), secondaryChanges) {
+	for _, stateChangeConf := range getNetworkDeviceStateChangeConfigs(client, d.Get(neDeviceSchemaNames["RedundantUUID"]).(string), d.Timeout(schema.TimeoutUpdate), secondaryChanges) {
 		if _, err := stateChangeConf.WaitForStateContext(ctx); err != nil {
 			return diag.Errorf("error waiting for network device %q to be updated: %s", d.Get(neDeviceSchemaNames["RedundantUUID"]), err)
 		}
@@ -953,19 +956,20 @@ func resourceNetworkDeviceUpdate(ctx context.Context, d *schema.ResourceData, m 
 }
 
 func resourceNetworkDeviceDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	conf := m.(*Config)
+	client := m.(*Config).ne
+	m.(*Config).addModuleToNEUserAgent(&client, d)
 	var diags diag.Diagnostics
 	waitConfigs := []*resource.StateChangeConf{
-		createNetworkDeviceStatusDeleteWaitConfiguration(conf.ne.GetDevice, d.Id(), 5*time.Second, d.Timeout(schema.TimeoutDelete)),
+		createNetworkDeviceStatusDeleteWaitConfiguration(client.GetDevice, d.Id(), 5*time.Second, d.Timeout(schema.TimeoutDelete)),
 	}
 	if v, ok := d.GetOk(neDeviceSchemaNames["Secondary"]); ok {
 		if secondary := expandNetworkDeviceSecondary(v.([]interface{})); secondary != nil {
 			waitConfigs = append(waitConfigs,
-				createNetworkDeviceStatusDeleteWaitConfiguration(conf.ne.GetDevice, ne.StringValue(secondary.UUID), 5*time.Second, d.Timeout(schema.TimeoutDelete)),
+				createNetworkDeviceStatusDeleteWaitConfiguration(client.GetDevice, ne.StringValue(secondary.UUID), 5*time.Second, d.Timeout(schema.TimeoutDelete)),
 			)
 		}
 	}
-	if err := conf.ne.DeleteDevice(d.Id()); err != nil {
+	if err := client.DeleteDevice(d.Id()); err != nil {
 		if restErr, ok := err.(rest.Error); ok {
 			for _, detailedErr := range restErr.ApplicationErrors {
 				if detailedErr.Code == ne.ErrorCodeDeviceRemoved {

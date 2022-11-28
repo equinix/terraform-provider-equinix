@@ -49,7 +49,7 @@ func resourceMetalPort() *schema.Resource {
 			"layer2": {
 				Type:        schema.TypeBool,
 				Optional:    true,
-				Description: "Flag indicating whether the port is in layer2 (or layer3) mode",
+				Description: "Flag indicating whether the port is in layer2 (or layer3) mode. The `layer2` flag can be set only for bond ports.",
 			},
 			"native_vlan_id": {
 				Type:        schema.TypeString,
@@ -75,7 +75,7 @@ func resourceMetalPort() *schema.Resource {
 			"reset_on_delete": {
 				Type:        schema.TypeBool,
 				Optional:    true,
-				Description: "Behavioral setting to reset the port to default settings. For a bond port it means layer3 without vlans attached, eth ports will be bonded without native vlan and vlans attached",
+				Description: "Behavioral setting to reset the port to default settings (layer3 bonded mode without any vlan attached) before delete/destroy",
 			},
 			"name": {
 				Type:        schema.TypeString,
@@ -130,6 +130,7 @@ func resourceMetalPortUpdate(d *schema.ResourceData, meta interface{}) error {
 		makeBond,
 		convertToL3,
 		batchVlans(false),
+		updateNativeVlan,
 	} {
 		if err := f(cpr); err != nil {
 			return friendlyError(err)
@@ -140,7 +141,9 @@ func resourceMetalPortUpdate(d *schema.ResourceData, meta interface{}) error {
 }
 
 func resourceMetalPortRead(d *schema.ResourceData, meta interface{}) error {
+	meta.(*Config).addModuleToMetalUserAgent(d)
 	client := meta.(*Config).metal
+
 	port, err := getPortByResourceData(d, client)
 	if err != nil {
 		if isNotFound(err) || isForbidden(err) {
@@ -216,7 +219,6 @@ func resourceMetalPortDelete(d *schema.ResourceData, meta interface{}) error {
 			return err
 		}
 		for _, f := range [](func(*ClientPortResource) error){
-			removeNativeVlan,
 			batchVlans(true),
 			makeBond,
 			convertToL3,

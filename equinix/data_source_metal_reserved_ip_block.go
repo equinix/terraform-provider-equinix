@@ -26,12 +26,14 @@ func dataSourceMetalReservedIPBlock() *schema.Resource {
 				Computed:      true,
 				Description:   "ID of the project where the searched block should be",
 				ConflictsWith: []string{"id"},
+				RequiredWith:  []string{"ip_address"},
 			},
 			"ip_address": {
 				Type:          schema.TypeString,
 				Optional:      true,
 				Description:   "Find block containing this IP address in given project",
 				ConflictsWith: []string{"id"},
+				RequiredWith:  []string{"project_id"},
 			},
 
 			"global": {

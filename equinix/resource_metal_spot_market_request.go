@@ -171,6 +171,7 @@ func resourceMetalSpotMarketRequest() *schema.Resource {
 }
 
 func resourceMetalSpotMarketRequestCreate(d *schema.ResourceData, meta interface{}) error {
+	meta.(*Config).addModuleToMetalUserAgent(d)
 	client := meta.(*Config).metal
 	var waitForDevices bool
 
@@ -312,6 +313,7 @@ func resourceMetalSpotMarketRequestCreate(d *schema.ResourceData, meta interface
 }
 
 func resourceMetalSpotMarketRequestRead(d *schema.ResourceData, meta interface{}) error {
+	meta.(*Config).addModuleToMetalUserAgent(d)
 	client := meta.(*Config).metal
 
 	smr, _, err := client.SpotMarketRequests.Get(d.Id(), &packngo.GetOptions{Includes: []string{"project", "devices", "facilities", "metro"}})
@@ -351,6 +353,7 @@ func resourceMetalSpotMarketRequestRead(d *schema.ResourceData, meta interface{}
 }
 
 func resourceMetalSpotMarketRequestDelete(d *schema.ResourceData, meta interface{}) error {
+	meta.(*Config).addModuleToMetalUserAgent(d)
 	client := meta.(*Config).metal
 	var waitForDevices bool
 
@@ -417,6 +420,8 @@ func getInstanceParams(params *packngo.SpotMarketRequestInstanceParameters) Inst
 func resourceStateRefreshFunc(d *schema.ResourceData, meta interface{}) resource.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 		client := meta.(*Config).metal
+		client.UserAgent = generateModuleUserAgentString(d, client.UserAgent)
+
 		smr, _, err := client.SpotMarketRequests.Get(d.Id(), &packngo.GetOptions{Includes: []string{"project", "devices", "facilities", "metro"}})
 		if err != nil {
 			return nil, "", fmt.Errorf("Failed to fetch Spot market request with following error: %s", err.Error())

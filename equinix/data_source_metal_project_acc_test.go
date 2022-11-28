@@ -38,6 +38,12 @@ func TestAccDataSourceMetalProject_basic(t *testing.T) {
 
 func testAccDataSourceMetalProject_basic(r string) string {
 	return fmt.Sprintf(`
+terraform {
+	provider_meta "equinix" {
+		module_name = "test"
+	}
+}
+
 resource "equinix_metal_project" "foobar" {
 	name = "tfacc-project-%s"
 	bgp_config {

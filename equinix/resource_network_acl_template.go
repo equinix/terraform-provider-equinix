@@ -224,10 +224,11 @@ func networkACLTemplateDeviceDetailsSchema() map[string]*schema.Schema {
 }
 
 func resourceNetworkACLTemplateCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	conf := m.(*Config)
+	client := m.(*Config).ne
+	m.(*Config).addModuleToNEUserAgent(&client, d)
 	var diags diag.Diagnostics
 	template := createACLTemplate(d)
-	uuid, err := conf.ne.CreateACLTemplate(template)
+	uuid, err := client.CreateACLTemplate(template)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -237,9 +238,10 @@ func resourceNetworkACLTemplateCreate(ctx context.Context, d *schema.ResourceDat
 }
 
 func resourceNetworkACLTemplateRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	conf := m.(*Config)
+	client := m.(*Config).ne
+	m.(*Config).addModuleToNEUserAgent(&client, d)
 	var diags diag.Diagnostics
-	template, err := conf.ne.GetACLTemplate(d.Id())
+	template, err := client.GetACLTemplate(d.Id())
 	if err != nil {
 		if restErr, ok := err.(rest.Error); ok {
 			if restErr.HTTPCode == http.StatusNotFound {
@@ -256,10 +258,11 @@ func resourceNetworkACLTemplateRead(ctx context.Context, d *schema.ResourceData,
 }
 
 func resourceNetworkACLTemplateUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	conf := m.(*Config)
+	client := m.(*Config).ne
+	m.(*Config).addModuleToNEUserAgent(&client, d)
 	var diags diag.Diagnostics
 	template := createACLTemplate(d)
-	if err := conf.ne.ReplaceACLTemplate(d.Id(), template); err != nil {
+	if err := client.ReplaceACLTemplate(d.Id(), template); err != nil {
 		return diag.FromErr(err)
 	}
 	diags = append(diags, resourceNetworkACLTemplateRead(ctx, d, m)...)
@@ -267,14 +270,15 @@ func resourceNetworkACLTemplateUpdate(ctx context.Context, d *schema.ResourceDat
 }
 
 func resourceNetworkACLTemplateDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	conf := m.(*Config)
+	client := m.(*Config).ne
+	m.(*Config).addModuleToNEUserAgent(&client, d)
 	var diags diag.Diagnostics
 	if devID, ok := d.GetOk(networkACLTemplateSchemaNames["DeviceUUID"]); ok {
-		if err := conf.ne.NewDeviceUpdateRequest(devID.(string)).WithACLTemplate("").Execute(); err != nil {
+		if err := client.NewDeviceUpdateRequest(devID.(string)).WithACLTemplate("").Execute(); err != nil {
 			log.Printf("[WARN] could not unassign ACL template %q from device %q: %s", d.Id(), devID, err)
 		}
 	}
-	if err := conf.ne.DeleteACLTemplate(d.Id()); err != nil {
+	if err := client.DeleteACLTemplate(d.Id()); err != nil {
 		return diag.FromErr(err)
 	}
 	return diags

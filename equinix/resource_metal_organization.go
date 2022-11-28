@@ -100,6 +100,7 @@ func createMetalOrganizationAddressResourceSchema() map[string]*schema.Schema {
 }
 
 func resourceMetalOrganizationCreate(d *schema.ResourceData, meta interface{}) error {
+	meta.(*Config).addModuleToMetalUserAgent(d)
 	client := meta.(*Config).metal
 
 	createRequest := &packngo.OrganizationCreateRequest{
@@ -134,6 +135,7 @@ func resourceMetalOrganizationCreate(d *schema.ResourceData, meta interface{}) e
 }
 
 func resourceMetalOrganizationRead(d *schema.ResourceData, meta interface{}) error {
+	meta.(*Config).addModuleToMetalUserAgent(d)
 	client := meta.(*Config).metal
 
 	key, _, err := client.Organizations.Get(d.Id(), &packngo.GetOptions{Includes: []string{"address"}})
@@ -164,6 +166,7 @@ func resourceMetalOrganizationRead(d *schema.ResourceData, meta interface{}) err
 }
 
 func resourceMetalOrganizationUpdate(d *schema.ResourceData, meta interface{}) error {
+	meta.(*Config).addModuleToMetalUserAgent(d)
 	client := meta.(*Config).metal
 
 	changes := getResourceDataChangedKeys([]string{"name", "description", "website", "twitter", "logo", "address"}, d)
@@ -200,6 +203,7 @@ func resourceMetalOrganizationUpdate(d *schema.ResourceData, meta interface{}) e
 }
 
 func resourceMetalOrganizationDelete(d *schema.ResourceData, meta interface{}) error {
+	meta.(*Config).addModuleToMetalUserAgent(d)
 	client := meta.(*Config).metal
 
 	resp, err := client.Organizations.Delete(d.Id())
