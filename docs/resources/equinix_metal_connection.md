@@ -92,10 +92,23 @@ resource "equinix_metal_connection" "example" {
     metro           = "SV"
     redundancy      = "redundant"
     type            = "shared"
+    vlans           = [equinix_metal_vlan.vlan-pri.id, equinix_metal_vlan.vlan-sec.id]
+}
+
+resource "equinix_metal_vlan" "vlan-pri" {
+  description = "VLAN in Silicon Valley 1"
+  metro       = "SV"
+  project_id  = local.my_project_id
+}
+
+resource "equinix_metal_vlan" "vlan-sec" {
+  description = "VLAN in Silicon Valley 2"
+  metro       = "SV"
+  project_id  = local.my_project_id
 }
 
 data "equinix_ecx_port" "example" {
-  name = "CX-FR5-NL-Dot1q-BO-1G-PRI"
+  name = "CX-DA6-Dot1q-1G-PRI"
 }
 
 resource "equinix_ecx_l2_connection" "example" {
@@ -123,7 +136,7 @@ The following arguments are supported:
 * `description` - (Optional) Description for the connection resource.
 * `mode` - (Optional) Mode for connections in IBX facilities with the dedicated type - standard or tunnel. Default is standard.
 * `tags` - (Optional) String list of tags.
-* `vlans` - (Optional) Only used with shared connection. Vlans to attach. Pass one vlan for Primary/Single connection and two vlans for Redundant connection.
+* `vlans` - (Optional) Vlan IDs to assign. Only used with shared connection. Pass one vlan for Primary/Single connection and two for Redundant connection. You can update assigned Vlans or unassign all of them, but you cannot change the number of Vlans for an existing shared connection.
 * `service_token_type` - (Optional) Only used with shared connection. Type of service token to use for the connection, a_side or z_side. (**NOTE: To support the legacy non-automated way to create connections, terraform will not check if `service_token_type` is specified. If your organization already has `service_token_type` enabled, be sure to specify it or the connection will return a legacy connection token instead of a service token**)
 
 ## Attributes Reference
