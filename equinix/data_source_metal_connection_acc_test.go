@@ -20,12 +20,12 @@ func TestAccDataSourceMetalConnection_withoutVlans(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrPair(
 						"equinix_metal_connection.test", "id",
-						"data.equinix_metal_connection.test", "connection_id"),
+						"data.equinix_metal_connection.test", "id"),
 					resource.TestCheckResourceAttrPair(
-						"equinix_metal_connection.test", "vlans",
-						"data.equinix_metal_connection.test", "vlans"),
-					resource.TestCheckNoResourceAttr(
-						"data.equinix_metal_connection.test", "vlans"),
+						"equinix_metal_connection.test", "vlans.#",
+						"data.equinix_metal_connection.test", "vlans.#"),
+					resource.TestCheckResourceAttr(
+						"data.equinix_metal_connection.test", "vlans.#", "0"),
 				),
 			},
 		},
@@ -66,12 +66,15 @@ func TestAccDataSourceMetalConnection_withVlans(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrPair(
 						"equinix_metal_connection.test", "id",
-						"data.equinix_metal_connection.test", "connection_id"),
+						"data.equinix_metal_connection.test", "id"),
+					resource.TestCheckResourceAttr(
+						"data.equinix_metal_connection.test", "vlans.#", "2"),
 					resource.TestCheckResourceAttrPair(
-						"equinix_metal_connection.test", "vlans",
-						"data.equinix_metal_connection.test", "vlans"),
-					resource.TestCheckResourceAttrSet(
-						"data.equinix_metal_connection.test", "vlans"),
+						"equinix_metal_vlan.test1", "vxlan",
+						"data.equinix_metal_connection.test", "vlans.0"),
+					resource.TestCheckResourceAttrPair(
+						"equinix_metal_vlan.test2", "vxlan",
+						"data.equinix_metal_connection.test", "vlans.1"),
 				),
 			},
 		},
