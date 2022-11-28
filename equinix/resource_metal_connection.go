@@ -345,17 +345,32 @@ func resourceMetalConnectionUpdate(d *schema.ResourceData, meta interface{}) err
 	// Don't update VLANs until _after_ the main ConnectionUpdateRequest has succeeded
 	if d.HasChange("vlans") {
 		connType := packngo.ConnectionType(d.Get("type").(string))
-
 		if connType == packngo.ConnectionShared {
-			vlansNum := d.Get("vlans.#").(int)
-			if vlansNum > 0 {
-				vlans := convertIntArr2(d.Get("vlans").([]interface{}))
-				ports := d.Get("ports").([]interface{})
-				for i, v := range vlans {
+			old, new := d.GetChange("vlans")
+			vlansOld := convertIntArr2(old.([]interface{}))
+			vlansNew := convertIntArr2(new.([]interface{}))
+
+			ports := d.Get("ports").([]interface{})
+			if len(vlansOld) == len(vlansNew) || len(vlansOld) == 0 {  // assign new or update existing
+				for i, vn := range vlansNew {
+					if len(vlansOld) == 0 || vn != vlansOld[i] {
+						port := ports[i].(map[string]interface{})
+						vcids := (port["virtual_circuit_ids"]).([]interface{})
+						vcid := vcids[0].(string)
+						vnid := strconv.Itoa(vn)
+						ucr := packngo.VCUpdateRequest{}
+						ucr.VirtualNetworkID = &vnid
+						if _, _, err := client.VirtualCircuits.Update(vcid, &ucr, nil); err != nil {
+							return friendlyError(err)
+						}
+					}
+				}
+			} else if len(vlansNew) == 0 { //unassign all existing
+				for i := range vlansOld {
 					port := ports[i].(map[string]interface{})
 					vcids := (port["virtual_circuit_ids"]).([]interface{})
 					vcid := vcids[0].(string)
-					vnid := strconv.Itoa(v)
+					vnid := ""
 					ucr := packngo.VCUpdateRequest{}
 					ucr.VirtualNetworkID = &vnid
 					if _, _, err := client.VirtualCircuits.Update(vcid, &ucr, nil); err != nil {
@@ -363,7 +378,7 @@ func resourceMetalConnectionUpdate(d *schema.ResourceData, meta interface{}) err
 					}
 				}
 			} else {
-				return fmt.Errorf("you cannot remove vlans from an existing \"shared\" connection")
+				return fmt.Errorf("you cannot change number of vlans from an existing \"shared\" connection. You can either update them or remove all")
 			}
 		} else {
 			return fmt.Errorf("when you update a \"dedicated\" connection, you cannot set vlans")
