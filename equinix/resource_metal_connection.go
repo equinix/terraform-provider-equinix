@@ -359,19 +359,19 @@ func resourceMetalConnectionUpdate(d *schema.ResourceData, meta interface{}) err
 			for i := 0; i < maxVlans; i++ {
 				if d.HasChange(fmt.Sprintf("vlans.%d", i)) {
 					if i+1 > len(newVlans) {
-						// Unassign oldVlans[i]
-						// Unassign oldVlans[j]
+						// The VNID was removed; unassign the old VNID
 						if _, _, err := updateHiddenVirtualCircuitVNID(client, ports[i].(map[string]interface{}), ""); err != nil {
 							return friendlyError(err)
 						}
 					} else {
 						j := slices.Index(oldVlans, newVlans[i])
 						if j > i {
-							// Unassign oldVlans[j]
+							// The VNID was moved to a different list index; unassign the VNID for the old index so that it is available for reassignment
 							if _, _, err := updateHiddenVirtualCircuitVNID(client, ports[j].(map[string]interface{}), ""); err != nil {
 								return friendlyError(err)
 							}
 						}
+						// Assign the VNID (whether it is new or moved) to the correct port
 						if _, _, err := updateHiddenVirtualCircuitVNID(client, ports[i].(map[string]interface{}), strconv.Itoa(newVlans[i])); err != nil {
 							return friendlyError(err)
 						}
