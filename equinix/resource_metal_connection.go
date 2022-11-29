@@ -383,6 +383,11 @@ func resourceMetalConnectionRead(d *schema.ResourceData, meta interface{}) error
 		return err
 	}
 
+	vlans := getConnectionVlans(conn)
+	if vlans != nil {
+		d.Set("vlans", vlans)
+	}
+
 	return setMap(d, map[string]interface{}{
 		"organization_id":    conn.Organization.ID,
 		"project_id":         projectId,
