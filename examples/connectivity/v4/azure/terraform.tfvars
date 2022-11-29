@@ -1,0 +1,22 @@
+equinix_client_id      = "MyEquinixClientId"
+equinix_client_secret  = "MyEquinixSecret"
+
+connection_name = "terra_e2e_azure"
+connection_type = "EVPL_VC"
+notifications_type = "ALL"
+notifications_emails = ["example@equinix.com"]
+bandwidth = 50
+redundancy = "PRIMARY"
+purchase_order_number = "1-323292"
+aside_ap_type = "COLO"
+peering_type="MICROSOFT"
+aside_port_uuid = "c4d9350e-783c-83cd-1ce0-306a5c00a600"
+aside_link_protocol_type = "QINQ"
+aside_link_protocol_stag = "2019"
+zside_ap_type = "SP"
+zside_ap_authentication_key = "c620477c-3f30-41e8-a0b9-cfdb4a31034b"
+zside_ap_profile_type = "L2_PROFILE"
+zside_ap_profile_uuid = "bfb74121-7e2c-4f74-99b3-69cdafb03b41"
+zside_location = "SV"
+fabric_sp_name = "Azure ExpressRoute"
+equinix_port_name = "ops-user100-CX-SV1-NL-Qinq-STD-1G-PRI-NK-349"

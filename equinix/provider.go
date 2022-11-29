@@ -9,6 +9,7 @@ import (
 	"strings"
 	"time"
 
+	v4 "github.com/equinix-labs/fabric-go/fabric/v4"
 	"github.com/equinix/ecx-go/v2"
 	"github.com/equinix/rest-go"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -105,6 +106,11 @@ func Provider() *schema.Provider {
 			"equinix_ecx_port":                   dataSourceECXPort(),
 			"equinix_ecx_l2_sellerprofile":       dataSourceECXL2SellerProfile(),
 			"equinix_ecx_l2_sellerprofiles":      dataSourceECXL2SellerProfiles(),
+			"equinix_fabric_connection":          dataSourceFabricConnection(),
+			"equinix_fabric_port":                dataSourceFabricPort(),
+			"equinix_fabric_ports":               dataSourceFabricGetPortsByName(),
+			"equinix_fabric_service_profile":     dataSourceFabricServiceProfileReadByUuid(),
+			"equinix_fabric_service_profiles":    dataSourceFabricSearchServiceProfilesByName(),
 			"equinix_network_account":            dataSourceNetworkAccount(),
 			"equinix_network_device":             dataSourceNetworkDevice(),
 			"equinix_network_device_type":        dataSourceNetworkDeviceType(),
@@ -136,6 +142,8 @@ func Provider() *schema.Provider {
 			"equinix_ecx_l2_connection":          resourceECXL2Connection(),
 			"equinix_ecx_l2_connection_accepter": resourceECXL2ConnectionAccepter(),
 			"equinix_ecx_l2_serviceprofile":      resourceECXL2ServiceProfile(),
+			"equinix_fabric_connection":          resourceFabricConnection(),
+			"equinix_fabric_service_profile":     resourceFabricServiceProfile(),
 			"equinix_network_device":             resourceNetworkDevice(),
 			"equinix_network_ssh_user":           resourceNetworkSSHUser(),
 			"equinix_network_bgp":                resourceNetworkBGP(),
@@ -233,6 +241,14 @@ func expandListToStringList(list []interface{}) []string {
 	return result
 }
 
+func expandListToInt32List(list []interface{}) []int32 {
+	result := make([]int32, len(list))
+	for i, v := range list {
+		result[i] = int32(v.(int))
+	}
+	return result
+}
+
 func expandSetToStringList(set *schema.Set) []string {
 	list := set.List()
 	return expandListToStringList(list)
@@ -249,6 +265,15 @@ func expandInterfaceMapToStringMap(mapIn map[string]interface{}) map[string]stri
 func hasApplicationErrorCode(errors []rest.ApplicationError, code string) bool {
 	for _, err := range errors {
 		if err.Code == code {
+			return true
+		}
+	}
+	return false
+}
+
+func hasModelErrorCode(errors []v4.ModelError, code string) bool {
+	for _, err := range errors {
+		if err.ErrorCode == code {
 			return true
 		}
 	}

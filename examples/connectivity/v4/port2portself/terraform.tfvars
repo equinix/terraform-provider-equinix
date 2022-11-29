@@ -1,0 +1,19 @@
+equinix_client_id      = "MyEquinixClientId"
+equinix_client_secret  = "MyEquinixSecret"
+
+connection_name = "terra_e2e_p2p"
+connection_type = "EVPL_VC"
+notifications_type = "ALL"
+notifications_emails = ["example@equinix.com","test1@equinix.com"]
+bandwidth = 50
+redundancy = "PRIMARY"
+purchase_order_number = "1-323292"
+aside_ap_type = "COLO"
+aside_link_protocol_type = "QINQ"
+aside_link_protocol_stag = "1976"
+zside_ap_type = "COLO"
+zside_link_protocol_type = "QINQ"
+zside_link_protocol_stag = "3711"
+zside_location = "SV"
+aside_port_name = "ops-user100-CX-SV5-NL-Qinq-STD-1G-SEC-JP-190"
+zside_port_name = "ops-user100-CX-SV1-NL-Qinq-STD-1G-PRI-NK-349"

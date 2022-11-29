@@ -14,6 +14,7 @@ import (
 	"strings"
 	"time"
 
+	v4 "github.com/equinix-labs/fabric-go/fabric/v4"
 	"github.com/equinix/ecx-go/v2"
 	"github.com/equinix/ne-go"
 	"github.com/equinix/oauth2-go"
@@ -90,6 +91,8 @@ type Config struct {
 	metalUserAgent string
 
 	terraformVersion string
+	fabricClient     *v4.APIClient
+	FabricAuthToken  string
 }
 
 // Load function validates configuration structure fields and configures
@@ -119,11 +122,24 @@ func (c *Config) Load(ctx context.Context) error {
 			BaseURL:      c.BaseURL,
 		}
 		authClient = authConfig.New(ctx)
+		tke, err := authConfig.TokenSource(ctx, authClient).Token()
+		if err != nil {
+			if err != nil {
+				return err
+			}
+		}
+		if tke != nil {
+			c.FabricAuthToken = tke.AccessToken
+		}
+		if c.FabricAuthToken == "" {
+			c.FabricAuthToken = c.Token
+		}
 	}
 	authClient.Timeout = c.requestTimeout()
 	authClient.Transport = logging.NewTransport("Equinix", authClient.Transport)
 	ecxClient := ecx.NewClient(ctx, c.BaseURL, authClient)
 	neClient := ne.NewClient(ctx, c.BaseURL, authClient)
+
 	if c.PageSize > 0 {
 		ecxClient.SetPageSize(c.PageSize)
 		neClient.SetPageSize(c.PageSize)
@@ -140,8 +156,30 @@ func (c *Config) Load(ctx context.Context) error {
 	c.ecx = ecxClient
 	c.ne = neClient
 	c.metal = c.NewMetalClient()
-
+	c.fabricClient = c.NewFabricClient()
 	return nil
+}
+
+// NewFabricClient returns a new client for accessing Equinix Fabric's v4 API.
+func (c *Config) NewFabricClient() *v4.APIClient {
+	transport := logging.NewTransport("Equinix Fabric", http.DefaultTransport)
+	var authClient *http.Client
+	authClient = &http.Client{
+		Transport: transport,
+	}
+	authClient.Timeout = c.requestTimeout()
+	fabricHeaderMap := map[string]string{
+		"X-SOURCE":         "API",
+		"X-CORRELATION-ID": CorrelationId(25),
+	}
+	v4Configuration := v4.Configuration{
+		BasePath:      c.BaseURL,
+		DefaultHeader: fabricHeaderMap,
+		UserAgent:     "equinix/fabric-go",
+		HTTPClient:    authClient,
+	}
+	client := v4.NewAPIClient(&v4Configuration)
+	return client
 }
 
 // NewMetalClient returns a new client for accessing Equinix Metal's API.
