@@ -76,9 +76,10 @@ jobs:
         METAL_AUTH_TOKEN: ${{ secrets.METAL_AUTH_TOKEN }}
         SWEEP: "all" #Flag required to define the regions that the sweeper is to be ran in
         SWEEP_ALLOW_FAILURES: "true" #Enable to allow Sweeper Tests to continue after failures
+        SWEEP_DIR: "./equinix"
       run: |
         # Added sweep-run to filter Metal test
-        go test `go list ./... | grep -v cmd` -v -timeout 180m -sweep=${SWEEP} -sweep-allow-failures=${SWEEP_ALLOW_FAILURES} -sweep-run=$(grep -o 'AddTestSweepers("[^"]*"' equinix/resource_metal_* |cut -d '"' -f2 | paste -s -d, -)
+        go test ${SWEEP_DIR} -v -timeout 180m -sweep=${SWEEP} -sweep-allow-failures=${SWEEP_ALLOW_FAILURES} -sweep-run=$(grep -o 'AddTestSweepers("[^"]*"' equinix/resource_metal_* |cut -d '"' -f2 | paste -s -d, -)
     - name: Upload coverage to Codecov
       if: ${{ always() }}
       uses: codecov/codecov-action@v2
