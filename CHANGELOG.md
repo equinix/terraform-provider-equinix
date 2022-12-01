@@ -1,4 +1,4 @@
-## 1.11.0 (Unreleased)
+## 1.11.0 (1 Dec, 2022)
 
 FEATURES:
 
@@ -14,7 +14,16 @@ New Equinix Fabric v4 resources in [#261](https://github.com/equinix/terraform-p
 
 BUG FIXES:
 
-* Remove optional flag for address fields in organization data source in [#261](https://github.com/equinix/terraform-provider-equinix/pull/261)
+- `metal_connection.vlans` wasn't in sync with API [#271](https://github.com/equinix/terraform-provider-equinix/pull/271)
+- Allow update of `equinix_metal_virtual_circuit.vlan_id` [#269](https://github.com/equinix/terraform-provider-equinix/pull/269)
+- Allow set and update native vlan in `equinix_metal_port`, also for bond ports [#267](https://github.com/equinix/terraform-provider-equinix/pull/267)
+- `equinix_metal_precreated_ip_block` and `equinix_metal_ip_block_ranges` will retrieve metro from facility if metro is null [#265](https://github.com/equinix/terraform-provider-equinix/pull/265)
+- Remove optional flag for address fields in organization data source in [#261](https://github.com/equinix/terraform-provider-equinix/pull/261)
+
+ENHANCEMENTS:
+
+- `vlans` can be updated and removed for shared `equinix_metal_connection` [#273](https://github.com/equinix/terraform-provider-equinix/pull/273)
+- Equinix terraform modules can now add prefix to the User-Agent by adding `module_name` field to the provider metadata [#255](https://github.com/equinix/terraform-provider-equinix/pull/255)
 
 ## 1.10.0 (Sep 29, 2022)
 
