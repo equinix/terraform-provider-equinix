@@ -58,9 +58,7 @@ of a service without the required credentials will return an API error referring
 'Invalid authentication token' or 'error when acquiring token'.
 
 More information on the provider configuration can be found here:
-https://registry.terraform.io/providers/equinix/equinix/latest/docs
-
-Original Error:`
+https://registry.terraform.io/providers/equinix/equinix/latest/docs`
 )
 
 var (
@@ -122,18 +120,22 @@ func (c *Config) Load(ctx context.Context) error {
 			BaseURL:      c.BaseURL,
 		}
 		authClient = authConfig.New(ctx)
-		tke, err := authConfig.TokenSource(ctx, authClient).Token()
-		if err != nil {
+
+		if c.ClientID != "" && c.ClientSecret != "" {
+			tke, err := authConfig.TokenSource(ctx, authClient).Token()
 			if err != nil {
-				return err
+				if err != nil {
+					return err
+				}
+			}
+			if tke != nil {
+				c.FabricAuthToken = tke.AccessToken
 			}
 		}
-		if tke != nil {
-			c.FabricAuthToken = tke.AccessToken
-		}
-		if c.FabricAuthToken == "" {
-			c.FabricAuthToken = c.Token
-		}
+	}
+
+	if c.FabricAuthToken == "" {
+		c.FabricAuthToken = c.Token
 	}
 	authClient.Timeout = c.requestTimeout()
 	authClient.Transport = logging.NewTransport("Equinix", authClient.Transport)
@@ -163,8 +165,7 @@ func (c *Config) Load(ctx context.Context) error {
 // NewFabricClient returns a new client for accessing Equinix Fabric's v4 API.
 func (c *Config) NewFabricClient() *v4.APIClient {
 	transport := logging.NewTransport("Equinix Fabric", http.DefaultTransport)
-	var authClient *http.Client
-	authClient = &http.Client{
+	authClient := &http.Client{
 		Transport: transport,
 	}
 	authClient.Timeout = c.requestTimeout()
