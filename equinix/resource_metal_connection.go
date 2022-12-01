@@ -2,12 +2,15 @@ package equinix
 
 import (
 	"fmt"
+	"math"
 	"reflect"
+	"strconv"
 	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/packethost/packngo"
+	"golang.org/x/exp/slices"
 )
 
 var (
@@ -340,7 +343,57 @@ func resourceMetalConnectionUpdate(d *schema.ResourceData, meta interface{}) err
 			return friendlyError(err)
 		}
 	}
+
+	// Don't update VLANs until _after_ the main ConnectionUpdateRequest has succeeded
+	if d.HasChange("vlans") {
+		connType := packngo.ConnectionType(d.Get("type").(string))
+
+		if connType == packngo.ConnectionShared {
+			old, new := d.GetChange("vlans")
+			oldVlans := convertIntArr2(old.([]interface{}))
+			newVlans := convertIntArr2(new.([]interface{}))
+			maxVlans := int(math.Max(float64(len(oldVlans)), float64(len(newVlans))))
+
+			ports := d.Get("ports").([]interface{})
+
+			for i := 0; i < maxVlans; i++ {
+				if d.HasChange(fmt.Sprintf("vlans.%d", i)) {
+					if i+1 > len(newVlans) {
+						// The VNID was removed; unassign the old VNID
+						if _, _, err := updateHiddenVirtualCircuitVNID(client, ports[i].(map[string]interface{}), ""); err != nil {
+							return friendlyError(err)
+						}
+					} else {
+						j := slices.Index(oldVlans, newVlans[i])
+						if j > i {
+							// The VNID was moved to a different list index; unassign the VNID for the old index so that it is available for reassignment
+							if _, _, err := updateHiddenVirtualCircuitVNID(client, ports[j].(map[string]interface{}), ""); err != nil {
+								return friendlyError(err)
+							}
+						}
+						// Assign the VNID (whether it is new or moved) to the correct port
+						if _, _, err := updateHiddenVirtualCircuitVNID(client, ports[i].(map[string]interface{}), strconv.Itoa(newVlans[i])); err != nil {
+							return friendlyError(err)
+						}
+					}
+				}
+			}
+		} else {
+			return fmt.Errorf("when you update a \"dedicated\" connection, you cannot set vlans")
+		}
+	}
+
 	return resourceMetalConnectionRead(d, meta)
+}
+
+func updateHiddenVirtualCircuitVNID(client *packngo.Client, port map[string]interface{}, newVNID string) (*packngo.VirtualCircuit, *packngo.Response, error) {
+	// This function is used to update the implicit virtual circuits attached to a shared `metal_connection` resource
+	// Do not use this function for a non-shared `metal_connection`
+	vcids := (port["virtual_circuit_ids"]).([]interface{})
+	vcid := vcids[0].(string)
+	ucr := packngo.VCUpdateRequest{}
+	ucr.VirtualNetworkID = &newVNID
+	return client.VirtualCircuits.Update(vcid, &ucr, nil)
 }
 
 func resourceMetalConnectionRead(d *schema.ResourceData, meta interface{}) error {
