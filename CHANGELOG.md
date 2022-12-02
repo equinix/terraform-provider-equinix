@@ -1,3 +1,9 @@
+## 1.11.1 (2 Dec, 2022)
+
+BUG FIXES:
+
+- An error loading provider configuration, introduced in v1.11.0, was preventing using the provider without Fabric credentials [#283](https://github.com/equinix/terraform-provider-equinix/pull/283)
+
 ## 1.11.0 (1 Dec, 2022)
 
 FEATURES:
