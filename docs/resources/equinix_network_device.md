@@ -9,9 +9,9 @@ network devices.
 
 Network Edge virtual network devices can be created in two modes:
 
-* **managed** - (default) Where Equinix manages connectivity and services in the device and
+* **managed** - Where Equinix manages connectivity and services in the device and
 customer gets limited access to the device.
-* **self-configured** - Where customer provisions and manages own services in the device with less
+* **self-configured** - (default) Where customer provisions and manages own services in the device with less
 restricted access. Some device types are offered only in this mode.
 
 In addition to management modes, there are two software license modes available:
@@ -42,6 +42,8 @@ resource "equinix_network_device" "csr1000v-ha" {
   throughput_unit = "Mbps"
   metro_code      = data.equinix_network_account.dc.metro_code
   type_code       = "CSR1000V"
+  self_managed    = false
+  byol            = false
   package_code    = "SEC"
   notifications   = ["john@equinix.com", "marry@equinix.com", "fred@equinix.com"]
   hostname        = "csr1000v-p"
@@ -102,6 +104,61 @@ resource "equinix_network_device" "panw-cluster" {
 }
 ```
 
+```hcl
+# Create self configured single Aviatrix device with cloud init file
+
+data "equinix_network_account" "sv" {
+  metro_code = "SV"
+}
+
+resource "equinix_network_device" "aviatrix-single" {
+  name            = "tf-aviatrix"
+  metro_code      = data.equinix_network_account.sv.metro_code
+  type_code       = "AVIATRIX_EDGE"
+  self_managed    = true
+  byol            = true
+  package_code    = "STD"
+  notifications   = ["john@equinix.com"]
+  term_length     = 6
+  account_number  = data.equinix_network_account.sv.number
+  version         = "6.9"
+  core_count      = 2
+  cloud_init_file = "cloudInitFileFolder/AVX-cloud-init-file.txt"
+  acl_template_id = "c06150ea-b604-4ad1-832a-d63936e9b938"
+}
+```
+
+```hcl
+# Create self configured single Catalyst 8000V (Autonomous Mode) router with license token
+
+data "equinix_network_account" "sv" {
+  name = "account-name"
+  metro_code = "SV"
+}
+
+resource "equinix_network_device" "c8kv-single" {
+  name            = "tf-c8kv"
+  metro_code      = data.equinix_network_account.sv.metro_code
+  type_code       = "C8000V"
+  self_managed    = true
+  byol            = true
+  package_code    = "network-essentials"
+  notifications   = ["test@equinix.com"]
+  hostname        = "C8KV"
+  account_number  = data.equinix_network_account.sv.number
+  version         = "17.06.01a"
+  core_count      = 2
+  term_length     = 6
+  license_token = "valid-license-token"
+  additional_bandwidth = 5
+  ssh_key {
+    username = "test-username"
+    key_name = "valid-key-name"
+  }
+  acl_template_id = "3e548c02-9164-4197-aa23-05b1f644883c"
+}
+```
+
 ## Argument Reference
 
 The following arguments are supported:
@@ -115,13 +172,15 @@ The following arguments are supported:
 * `core_count` - (Required) Number of CPU cores used by device.
 * `term_length` - (Required) Device term length.
 * `self_managed` - (Optional) Boolean value that determines device management mode, i.e.,
-`self-managed` or `Equinix managed` (default).
+`self-managed` (default) or `Equinix managed`.
 * `byol` - (Optional) Boolean value that determines device licensing mode, i.e.,
-`bring your own license` or `subscription` (default).
+`bring your own license` (default) or `subscription`.
 * `license_token` - (Optional) License Token applicable for some device types in BYOL licensing
 mode.
 * `license_file` - (Optional) Path to the license file that will be uploaded and applied on a
-device. Applicable for some devices types in BYOL licensing mode.
+device. Applicable for some device types in BYOL licensing mode.
+* `cloud_init_file` - (Optional) Path to the cloud init file that will be uploaded and applied on a 
+device. Applicable for some device types in BYOL licensing mode.
 * `throughput` - (Optional) Device license throughput.
 * `throughput_unit` - (Optional) License throughput unit. One of `Mbps` or `Gbps`.
 * `account_number` - (Required) Billing account number for a device.
@@ -163,7 +222,9 @@ The `secondary_device` block supports the following arguments:
 * `hostname` - (Optional) Secondary device hostname.
 * `license_token` - (Optional) License Token can be provided for some device types o the device.
 * `license_file` - (Optional) Path to the license file that will be uploaded and applied on a
-secondary device. Applicable for some devices types in BYOL licensing mode.
+secondary device. Applicable for some device types in BYOL licensing mode.
+* `cloud_init_file` - (Optional) Path to the cloud init file that will be uploaded and applied on a 
+secondary device. Applicable for some device types in BYOL licensing mode.
 * `account_number` - (Required) Billing account number for secondary device.
 * `notifications` - (Required) List of email addresses that will receive notifications about
 secondary device.
