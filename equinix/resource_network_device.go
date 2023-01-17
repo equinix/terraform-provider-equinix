@@ -33,7 +33,9 @@ var neDeviceSchemaNames = map[string]string{
 	"IsBYOL":              "byol",
 	"LicenseToken":        "license_token",
 	"LicenseFile":         "license_file",
+	"CloudInitFile":       "cloud_init_file",
 	"LicenseFileID":       "license_file_id",
+	"CloudInitFileID":     "cloud_init_file_id",
 	"LicenseStatus":       "license_status",
 	"ACLTemplateUUID":     "acl_template_id",
 	"MgmtAclTemplateUuid": "mgmt_acl_template_uuid",
@@ -77,7 +79,9 @@ var neDeviceDescriptions = map[string]string{
 	"IsBYOL":              "Boolean value that determines device licensing mode: bring your own license or subscription (default)",
 	"LicenseToken":        "License Token applicable for some device types in BYOL licensing mode",
 	"LicenseFile":         "Path to the license file that will be uploaded and applied on a device, applicable for some device types in BYOL licensing mode",
+	"CloudInitFile":       "Path to the cloud init file that will be uploaded and applied on a device, applicable for some device types in BYOL licensing mode",
 	"LicenseFileID":       "Unique identifier of applied license file",
+	"CloudInitFileID":     "Unique identifier of applied cloud init file",
 	"LicenseStatus":       "Device license registration status",
 	"ACLTemplateUUID":     "Unique identifier of applied ACL template",
 	"MgmtAclTemplateUuid": "Unique identifier of applied MGMT ACL template",
@@ -298,7 +302,7 @@ func createNetworkDeviceSchema() map[string]*schema.Schema {
 		neDeviceSchemaNames["IsBYOL"]: {
 			Type:        schema.TypeBool,
 			Optional:    true,
-			Default:     false,
+			Default:     true,
 			ForceNew:    true,
 			Description: neDeviceDescriptions["IsBYOL"],
 		},
@@ -317,10 +321,22 @@ func createNetworkDeviceSchema() map[string]*schema.Schema {
 			ValidateFunc: validation.StringIsNotEmpty,
 			Description:  neDeviceDescriptions["LicenseFile"],
 		},
+		neDeviceSchemaNames["CloudInitFile"]: {
+			Type:         schema.TypeString,
+			Optional:     true,
+			ForceNew:     true,
+			ValidateFunc: validation.StringIsNotEmpty,
+			Description:  neDeviceDescriptions["CloudInitFile"],
+		},
 		neDeviceSchemaNames["LicenseFileID"]: {
 			Type:        schema.TypeString,
 			Computed:    true,
 			Description: neDeviceDescriptions["LicenseFileID"],
+		},
+		neDeviceSchemaNames["CloudInitFileID"]: {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: neDeviceDescriptions["CloudInitFileID"],
 		},
 		neDeviceSchemaNames["ACLTemplateUUID"]: {
 			Type:         schema.TypeString,
@@ -415,7 +431,7 @@ func createNetworkDeviceSchema() map[string]*schema.Schema {
 		neDeviceSchemaNames["IsSelfManaged"]: {
 			Type:        schema.TypeBool,
 			Optional:    true,
-			Default:     false,
+			Default:     true,
 			ForceNew:    true,
 			Description: neDeviceDescriptions["IsSelfManaged"],
 		},
@@ -533,10 +549,22 @@ func createNetworkDeviceSchema() map[string]*schema.Schema {
 						ValidateFunc: validation.StringIsNotEmpty,
 						Description:  neDeviceDescriptions["LicenseFile"],
 					},
+					neDeviceSchemaNames["CloudInitFile"]: {
+						Type:         schema.TypeString,
+						Optional:     true,
+						ForceNew:     true,
+						ValidateFunc: validation.StringIsNotEmpty,
+						Description:  neDeviceDescriptions["CloudInitFile"],
+					},
 					neDeviceSchemaNames["LicenseFileID"]: {
 						Type:        schema.TypeString,
 						Computed:    true,
 						Description: neDeviceDescriptions["LicenseFileID"],
+					},
+					neDeviceSchemaNames["CloudInitFileID"]: {
+						Type:        schema.TypeString,
+						Computed:    true,
+						Description: neDeviceDescriptions["CloudInitFileID"],
 					},
 					neDeviceSchemaNames["ACLTemplateUUID"]: {
 						Type:         schema.TypeString,
@@ -849,8 +877,14 @@ func resourceNetworkDeviceCreate(ctx context.Context, d *schema.ResourceData, m 
 	if err := uploadDeviceLicenseFile(os.Open, client.UploadLicenseFile, ne.StringValue(primary.TypeCode), primary); err != nil {
 		return diag.Errorf("could not upload primary device license file due to %s", err)
 	}
+	if err := uploadDeviceCloudInitFile(os.Open, client.UploadFile, ne.StringValue(primary.TypeCode), primary); err != nil {
+		return diag.Errorf("could not upload primary device cloud init file due to %s", err)
+	}
 	if err := uploadDeviceLicenseFile(os.Open, client.UploadLicenseFile, ne.StringValue(primary.TypeCode), secondary); err != nil {
 		return diag.Errorf("could not upload secondary device license file due to %s", err)
+	}
+	if err := uploadDeviceCloudInitFile(os.Open, client.UploadFile, ne.StringValue(primary.TypeCode), secondary); err != nil {
+		return diag.Errorf("could not upload secondary device cloud init file due to %s", err)
 	}
 	if secondary != nil {
 		primary.UUID, secondary.UUID, err = client.CreateRedundantDevice(*primary, *secondary)
@@ -1021,6 +1055,9 @@ func createNetworkDevices(d *schema.ResourceData) (*ne.Device, *ne.Device) {
 	if v, ok := d.GetOk(neDeviceSchemaNames["LicenseFile"]); ok {
 		primary.LicenseFile = ne.String(v.(string))
 	}
+	if v, ok := d.GetOk(neDeviceSchemaNames["CloudInitFile"]); ok {
+		primary.CloudInitFile = ne.String(v.(string))
+	}
 	if v, ok := d.GetOk(neDeviceSchemaNames["ACLTemplateUUID"]); ok {
 		primary.ACLTemplateUUID = ne.String(v.(string))
 	}
@@ -1181,6 +1218,8 @@ func updateNetworkDeviceResource(primary *ne.Device, secondary *ne.Device, d *sc
 		if v, ok := d.GetOk(neDeviceSchemaNames["Secondary"]); ok {
 			secondaryFromSchema := expandNetworkDeviceSecondary(v.([]interface{}))
 			secondary.LicenseFile = secondaryFromSchema.LicenseFile
+			secondary.CloudInitFile = secondaryFromSchema.CloudInitFile
+			secondary.LicenseToken = secondaryFromSchema.LicenseToken
 		}
 		if err := d.Set(neDeviceSchemaNames["Secondary"], flattenNetworkDeviceSecondary(secondary)); err != nil {
 			return fmt.Errorf("error reading Secondary: %s", err)
@@ -1212,7 +1251,9 @@ func flattenNetworkDeviceSecondary(device *ne.Device) interface{} {
 	transformed[neDeviceSchemaNames["Region"]] = device.Region
 	transformed[neDeviceSchemaNames["HostName"]] = device.HostName
 	transformed[neDeviceSchemaNames["LicenseFileID"]] = device.LicenseFileID
+	transformed[neDeviceSchemaNames["LicenseToken"]] = device.LicenseToken
 	transformed[neDeviceSchemaNames["LicenseFile"]] = device.LicenseFile
+	transformed[neDeviceSchemaNames["CloudInitFile"]] = device.CloudInitFile
 	transformed[neDeviceSchemaNames["ACLTemplateUUID"]] = device.ACLTemplateUUID
 	transformed[neDeviceSchemaNames["SSHIPAddress"]] = device.SSHIPAddress
 	transformed[neDeviceSchemaNames["SSHIPFqdn"]] = device.SSHIPFqdn
@@ -1253,6 +1294,9 @@ func expandNetworkDeviceSecondary(devices []interface{}) *ne.Device {
 	}
 	if v, ok := device[neDeviceSchemaNames["LicenseFile"]]; ok && !isEmpty(v) {
 		transformed.LicenseFile = ne.String(v.(string))
+	}
+	if v, ok := device[neDeviceSchemaNames["CloudInitFile"]]; ok && !isEmpty(v) {
+		transformed.CloudInitFile = ne.String(v.(string))
 	}
 	if v, ok := device[neDeviceSchemaNames["ACLTemplateUUID"]]; ok && !isEmpty(v) {
 		transformed.ACLTemplateUUID = ne.String(v.(string))
@@ -1484,6 +1528,7 @@ func getNetworkDeviceStateChangeConfigs(c ne.Client, deviceID string, timeout ti
 type (
 	openFile          func(name string) (*os.File, error)
 	uploadLicenseFile func(metroCode, deviceTypeCode, deviceManagementMode, licenseMode, fileName string, reader io.Reader) (*string, error)
+	uploadFile        func(metroCode, deviceTypeCode, processType, deviceManagementMode, licenseMode, fileName string, reader io.Reader) (*string, error)
 )
 
 func uploadDeviceLicenseFile(openFunc openFile, uploadFunc uploadLicenseFile, typeCode string, device *ne.Device) error {
@@ -1505,6 +1550,28 @@ func uploadDeviceLicenseFile(openFunc openFile, uploadFunc uploadLicenseFile, ty
 		return err
 	}
 	device.LicenseFileID = fileID
+	return nil
+}
+
+func uploadDeviceCloudInitFile(openFunc openFile, uploadFunc uploadFile, typeCode string, device *ne.Device) error {
+	if device == nil || ne.StringValue(device.CloudInitFile) == "" {
+		return nil
+	}
+	fileName := filepath.Base(ne.StringValue(device.CloudInitFile))
+	file, err := openFunc(ne.StringValue(device.CloudInitFile))
+	if err != nil {
+		return err
+	}
+	defer func() {
+		if err := file.Close(); err != nil {
+			log.Printf("[WARN] could not close file %q due to an error: %s", ne.StringValue(device.CloudInitFile), err)
+		}
+	}()
+	fileID, err := uploadFunc(ne.StringValue(device.MetroCode), typeCode, ne.ProcessTypeCloudInit, ne.DeviceManagementTypeSelf, ne.DeviceLicenseModeBYOL, fileName, file)
+	if err != nil {
+		return err
+	}
+	device.CloudInitFileID = fileID
 	return nil
 }
 
