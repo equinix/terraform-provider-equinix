@@ -15,6 +15,7 @@ import (
 	"time"
 
 	v4 "github.com/equinix-labs/fabric-go/fabric/v4"
+	metalv1 "github.com/equinix-labs/metal-go/metal/v1"
 	"github.com/equinix/ecx-go/v2"
 	"github.com/equinix/ne-go"
 	"github.com/equinix/oauth2-go"
@@ -80,9 +81,10 @@ type Config struct {
 	PageSize       int
 	Token          string
 
-	ecx   ecx.Client
-	ne    ne.Client
-	metal *packngo.Client
+	ecx     ecx.Client
+	ne      ne.Client
+	metal   *packngo.Client
+	metalgo *metalv1.APIClient
 
 	ecxUserAgent   string
 	neUserAgent    string
@@ -158,6 +160,7 @@ func (c *Config) Load(ctx context.Context) error {
 	c.ecx = ecxClient
 	c.ne = neClient
 	c.metal = c.NewMetalClient()
+	c.metalgo = c.NewMetalGoClient()
 	c.fabricClient = c.NewFabricClient()
 	return nil
 }
@@ -183,7 +186,7 @@ func (c *Config) NewFabricClient() *v4.APIClient {
 	return client
 }
 
-// NewMetalClient returns a new client for accessing Equinix Metal's API.
+// NewMetalClient returns a new packngo client for accessing Equinix Metal's API.
 func (c *Config) NewMetalClient() *packngo.Client {
 	transport := http.DefaultTransport
 	// transport = &DumpTransport{http.DefaultTransport} // Debug only
@@ -200,6 +203,18 @@ func (c *Config) NewMetalClient() *packngo.Client {
 	client, _ := packngo.NewClientWithBaseURL(consumerToken, c.AuthToken, standardClient, baseURL.String())
 	client.UserAgent = c.fullUserAgent(client.UserAgent)
 	c.metalUserAgent = client.UserAgent
+	return client
+}
+
+// NewMetalGoClient returns a new metal-go client for accessing Equinix Metal's API.
+func (c *Config) NewMetalGoClient() *metalv1.APIClient {
+	// TODO: User agent
+	configuration := metalv1.NewConfiguration()
+	configuration.Debug = true
+	// TODO: push auth down into metal-go?
+	// TODO: support config file for auth in addition to environment variable
+	configuration.AddDefaultHeader("X-Auth-Token", os.Getenv("METAL_AUTH_TOKEN"))
+	client := metalv1.NewAPIClient(configuration)
 	return client
 }
 

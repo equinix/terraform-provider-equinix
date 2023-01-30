@@ -1,8 +1,8 @@
 package equinix
 
 import (
+	metalv1 "github.com/equinix-labs/metal-go/metal/v1"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/packethost/packngo"
 )
 
 func bgpNeighborSchema() *schema.Resource {
@@ -103,10 +103,10 @@ func dataSourceMetalDeviceBGPNeighbors() *schema.Resource {
 }
 
 func dataSourceMetalDeviceBGPNeighborsRead(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*Config).metal
+	client := meta.(*Config).metalgo
 	deviceID := d.Get("device_id").(string)
 
-	bgpNeighborsRaw, _, err := client.Devices.ListBGPNeighbors(deviceID, nil)
+	bgpNeighborsRaw, _, err := client.DevicesApi.GetBgpNeighborData(nil, deviceID).Execute()
 	if err != nil {
 		return err
 	}
@@ -116,7 +116,7 @@ func dataSourceMetalDeviceBGPNeighborsRead(d *schema.ResourceData, meta interfac
 	return nil
 }
 
-func getRoutesSlice(routes []packngo.BGPRoute) []map[string]interface{} {
+func getRoutesSlice(routes []metalv1.BgpRoute) []map[string]interface{} {
 	ret := []map[string]interface{}{}
 	for _, r := range routes {
 		ret = append(ret, map[string]interface{}{
@@ -126,13 +126,13 @@ func getRoutesSlice(routes []packngo.BGPRoute) []map[string]interface{} {
 	return ret
 }
 
-func getBgpNeighbors(ns []packngo.BGPNeighbor) []map[string]interface{} {
+func getBgpNeighbors(ns *metalv1.BgpSessionNeighbors) []map[string]interface{} {
 	ret := make([]map[string]interface{}, 0, 1)
-	for _, n := range ns {
+	for _, n := range ns.BgpNeighbors {
 		neighbor := map[string]interface{}{
 			"address_family": n.AddressFamily,
 			"customer_as":    n.CustomerAs,
-			"customer_ip":    n.CustomerIP,
+			"customer_ip":    n.CustomerIp,
 			"md5_enabled":    n.Md5Enabled,
 			"md5_password":   n.Md5Password,
 			"multihop":       n.Multihop,
