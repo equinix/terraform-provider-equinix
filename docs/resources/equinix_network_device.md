@@ -42,6 +42,8 @@ resource "equinix_network_device" "csr1000v-ha" {
   throughput_unit = "Mbps"
   metro_code      = data.equinix_network_account.dc.metro_code
   type_code       = "CSR1000V"
+  self_managed    = false
+  byol            = false
   package_code    = "SEC"
   notifications   = ["john@equinix.com", "marry@equinix.com", "fred@equinix.com"]
   hostname        = "csr1000v-p"
@@ -102,6 +104,73 @@ resource "equinix_network_device" "panw-cluster" {
 }
 ```
 
+```hcl
+# Create self configured single Aviatrix device with cloud init file
+
+data "equinix_network_account" "sv" {
+  metro_code = "SV"
+}
+
+variable "filepath" { default = "cloudInitFileFolder/TF-AVX-cloud-init-file.txt" }
+
+resource "equinix_network_file" "aviatrix-cloudinit-file" {
+  file_name = "TF-AVX-cloud-init-file.txt"
+  content = file("${path.module}/${var.filepath}")
+  metro_code = data.equinix_network_account.sv.metro_code
+  device_type_code = "AVIATRIX_EDGE"
+  process_type = "CLOUD_INIT"
+  self_managed = true
+  byol = true
+}
+
+resource "equinix_network_device" "aviatrix-single" {
+  name            = "tf-aviatrix"
+  metro_code      = data.equinix_network_account.sv.metro_code
+  type_code       = "AVIATRIX_EDGE"
+  self_managed    = true
+  byol            = true
+  package_code    = "STD"
+  notifications   = ["john@equinix.com"]
+  term_length     = 6
+  account_number  = data.equinix_network_account.sv.number
+  version         = "6.9"
+  core_count      = 2
+  cloud_init_file_id = equinix_network_file.aviatrix-cloudinit-file.uuid
+  acl_template_id = "c06150ea-b604-4ad1-832a-d63936e9b938"
+}
+```
+
+```hcl
+# Create self configured single Catalyst 8000V (Autonomous Mode) router with license token
+
+data "equinix_network_account" "sv" {
+  name = "account-name"
+  metro_code = "SV"
+}
+
+resource "equinix_network_device" "c8kv-single" {
+  name            = "tf-c8kv"
+  metro_code      = data.equinix_network_account.sv.metro_code
+  type_code       = "C8000V"
+  self_managed    = true
+  byol            = true
+  package_code    = "network-essentials"
+  notifications   = ["test@equinix.com"]
+  hostname        = "C8KV"
+  account_number  = data.equinix_network_account.sv.number
+  version         = "17.06.01a"
+  core_count      = 2
+  term_length     = 6
+  license_token = "valid-license-token"
+  additional_bandwidth = 5
+  ssh_key {
+    username = "test-username"
+    key_name = "valid-key-name"
+  }
+  acl_template_id = "3e548c02-9164-4197-aa23-05b1f644883c"
+}
+```
+
 ## Argument Reference
 
 The following arguments are supported:
@@ -115,13 +184,15 @@ The following arguments are supported:
 * `core_count` - (Required) Number of CPU cores used by device.
 * `term_length` - (Required) Device term length.
 * `self_managed` - (Optional) Boolean value that determines device management mode, i.e.,
-`self-managed` or `Equinix managed` (default).
+`self-managed` or `Equinix-managed` (default).
 * `byol` - (Optional) Boolean value that determines device licensing mode, i.e.,
 `bring your own license` or `subscription` (default).
-* `license_token` - (Optional) License Token applicable for some device types in BYOL licensing
+* `license_token` - (Optional, conflicts with `license_file`) License Token applicable for some device types in BYOL licensing
 mode.
 * `license_file` - (Optional) Path to the license file that will be uploaded and applied on a
-device. Applicable for some devices types in BYOL licensing mode.
+device. Applicable for some device types in BYOL licensing mode.
+* `license_file_id` - (Optional, conflicts with `license_file`) Identifier of a license file that will be applied on the device.
+* `cloud_init_file_id` - (Optional) Identifier of a cloud init file that will be applied on the device.
 * `throughput` - (Optional) Device license throughput.
 * `throughput_unit` - (Optional) License throughput unit. One of `Mbps` or `Gbps`.
 * `account_number` - (Required) Billing account number for a device.
@@ -129,7 +200,7 @@ device. Applicable for some devices types in BYOL licensing mode.
 notifications.
 * `purchase_order_number` - (Optional) Purchase order number associated with a device order.
 * `order_reference` - (Optional) Name/number used to identify device order on the invoice.
-* `acl_template_id` - (Optional) Identifier of an ACL template that will be applied on the device.
+* `acl_template_id` - (Optional) Identifier of a WAN interface ACL template that will be applied on the device.
 * `mgmt_acl_template_uuid` - (Optional) Identifier of an MGMT interface ACL template that will be
 applied on the device.
 * `additional_bandwidth` - (Optional) Additional Internet bandwidth, in Mbps, that will be
@@ -161,9 +232,11 @@ The `secondary_device` block supports the following arguments:
 * `name` - (Required) Secondary device name.
 * `metro_code` - (Required) Metro location of a secondary device.
 * `hostname` - (Optional) Secondary device hostname.
-* `license_token` - (Optional) License Token can be provided for some device types o the device.
+* `license_token` - (Optional, conflicts with `license_file`) License Token can be provided for some device types o the device.
 * `license_file` - (Optional) Path to the license file that will be uploaded and applied on a
-secondary device. Applicable for some devices types in BYOL licensing mode.
+secondary device. Applicable for some device types in BYOL licensing mode.
+* `license_file_id` - (Optional, conflicts with `license_file`) Identifier of a license file that will be applied on a secondary device.
+* `cloud_init_file_id` - (Optional) Identifier of a cloud init file that will be applied on a secondary device.
 * `account_number` - (Required) Billing account number for secondary device.
 * `notifications` - (Required) List of email addresses that will receive notifications about
 secondary device.
@@ -175,7 +248,7 @@ for a secondary device. Key values are `controller1`, `activationKey`, `manageme
 * `acl_template_id` - (Optional) Identifier of a WAN interface ACL template that will be applied
 on a secondary device.
 * `mgmt_acl_template_uuid` - (Optional) Identifier of an MGMT interface ACL template that will be
-applied on the device.
+applied on a secondary device.
 * `ssh-key` - (Optional) Up to one definition of SSH key that will be provisioned on a secondary
 device.
 
@@ -284,4 +357,4 @@ This resource can be imported using an existing ID:
 terraform import equinix_network_device.example {existing_id}
 ```
 
-The `license_token` and `mgtm_acl_template_uuid` fields can not be imported.
+The `license_token`, `mgmt_acl_template_uuid` and `cloud_init_file_id` fields can not be imported.

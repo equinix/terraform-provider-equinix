@@ -150,6 +150,7 @@ func Provider() *schema.Provider {
 			"equinix_network_ssh_key":            resourceNetworkSSHKey(),
 			"equinix_network_acl_template":       resourceNetworkACLTemplate(),
 			"equinix_network_device_link":        resourceNetworkDeviceLink(),
+			"equinix_network_file":               resourceNetworkFile(),
 			"equinix_metal_user_api_key":         resourceMetalUserAPIKey(),
 			"equinix_metal_project_api_key":      resourceMetalProjectAPIKey(),
 			"equinix_metal_connection":           resourceMetalConnection(),

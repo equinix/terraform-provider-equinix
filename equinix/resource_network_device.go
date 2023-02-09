@@ -34,6 +34,7 @@ var neDeviceSchemaNames = map[string]string{
 	"LicenseToken":        "license_token",
 	"LicenseFile":         "license_file",
 	"LicenseFileID":       "license_file_id",
+	"CloudInitFileID":     "cloud_init_file_id",
 	"LicenseStatus":       "license_status",
 	"ACLTemplateUUID":     "acl_template_id",
 	"MgmtAclTemplateUuid": "mgmt_acl_template_uuid",
@@ -78,6 +79,7 @@ var neDeviceDescriptions = map[string]string{
 	"LicenseToken":        "License Token applicable for some device types in BYOL licensing mode",
 	"LicenseFile":         "Path to the license file that will be uploaded and applied on a device, applicable for some device types in BYOL licensing mode",
 	"LicenseFileID":       "Unique identifier of applied license file",
+	"CloudInitFileID":     "Unique identifier of applied cloud init file",
 	"LicenseStatus":       "Device license registration status",
 	"ACLTemplateUUID":     "Unique identifier of applied ACL template",
 	"MgmtAclTemplateUuid": "Unique identifier of applied MGMT ACL template",
@@ -318,9 +320,20 @@ func createNetworkDeviceSchema() map[string]*schema.Schema {
 			Description:  neDeviceDescriptions["LicenseFile"],
 		},
 		neDeviceSchemaNames["LicenseFileID"]: {
-			Type:        schema.TypeString,
-			Computed:    true,
-			Description: neDeviceDescriptions["LicenseFileID"],
+			Type:          schema.TypeString,
+			Optional:      true,
+			Computed:      true,
+			ForceNew:      true,
+			ValidateFunc:  validation.StringIsNotEmpty,
+			ConflictsWith: []string{neDeviceSchemaNames["LicenseFile"]},
+			Description:   neDeviceDescriptions["LicenseFileID"],
+		},
+		neDeviceSchemaNames["CloudInitFileID"]: {
+			Type:         schema.TypeString,
+			Optional:     true,
+			ForceNew:     true,
+			ValidateFunc: validation.StringIsNotEmpty,
+			Description:  neDeviceDescriptions["CloudInitFileID"],
 		},
 		neDeviceSchemaNames["ACLTemplateUUID"]: {
 			Type:         schema.TypeString,
@@ -534,9 +547,20 @@ func createNetworkDeviceSchema() map[string]*schema.Schema {
 						Description:  neDeviceDescriptions["LicenseFile"],
 					},
 					neDeviceSchemaNames["LicenseFileID"]: {
-						Type:        schema.TypeString,
-						Computed:    true,
-						Description: neDeviceDescriptions["LicenseFileID"],
+						Type:          schema.TypeString,
+						Optional:      true,
+						Computed:      true,
+						ForceNew:      true,
+						ValidateFunc:  validation.StringIsNotEmpty,
+						ConflictsWith: []string{neDeviceSchemaNames["Secondary"] + ".0." + neDeviceSchemaNames["LicenseFile"]},
+						Description:   neDeviceDescriptions["LicenseFileID"],
+					},
+					neDeviceSchemaNames["CloudInitFileID"]: {
+						Type:         schema.TypeString,
+						Optional:     true,
+						ForceNew:     true,
+						ValidateFunc: validation.StringIsNotEmpty,
+						Description:  neDeviceDescriptions["CloudInitFileID"],
 					},
 					neDeviceSchemaNames["ACLTemplateUUID"]: {
 						Type:         schema.TypeString,
@@ -759,7 +783,6 @@ func createClusterNodeDetailSchema() map[string]*schema.Schema {
 			Type:          schema.TypeString,
 			Optional:      true,
 			ForceNew:      true,
-			Sensitive:     true,
 			ConflictsWith: []string{neDeviceSchemaNames["LicenseFileID"]},
 			Description:   neDeviceClusterNodeDescriptions["LicenseFileId"],
 		},
@@ -1021,6 +1044,12 @@ func createNetworkDevices(d *schema.ResourceData) (*ne.Device, *ne.Device) {
 	if v, ok := d.GetOk(neDeviceSchemaNames["LicenseFile"]); ok {
 		primary.LicenseFile = ne.String(v.(string))
 	}
+	if v, ok := d.GetOk(neDeviceSchemaNames["LicenseFileID"]); ok {
+		primary.LicenseFileID = ne.String(v.(string))
+	}
+	if v, ok := d.GetOk(neDeviceSchemaNames["CloudInitFileID"]); ok {
+		primary.CloudInitFileID = ne.String(v.(string))
+	}
 	if v, ok := d.GetOk(neDeviceSchemaNames["ACLTemplateUUID"]); ok {
 		primary.ACLTemplateUUID = ne.String(v.(string))
 	}
@@ -1181,6 +1210,8 @@ func updateNetworkDeviceResource(primary *ne.Device, secondary *ne.Device, d *sc
 		if v, ok := d.GetOk(neDeviceSchemaNames["Secondary"]); ok {
 			secondaryFromSchema := expandNetworkDeviceSecondary(v.([]interface{}))
 			secondary.LicenseFile = secondaryFromSchema.LicenseFile
+			secondary.LicenseToken = secondaryFromSchema.LicenseToken
+			secondary.CloudInitFileID = secondaryFromSchema.CloudInitFileID
 		}
 		if err := d.Set(neDeviceSchemaNames["Secondary"], flattenNetworkDeviceSecondary(secondary)); err != nil {
 			return fmt.Errorf("error reading Secondary: %s", err)
@@ -1213,6 +1244,8 @@ func flattenNetworkDeviceSecondary(device *ne.Device) interface{} {
 	transformed[neDeviceSchemaNames["HostName"]] = device.HostName
 	transformed[neDeviceSchemaNames["LicenseFileID"]] = device.LicenseFileID
 	transformed[neDeviceSchemaNames["LicenseFile"]] = device.LicenseFile
+	transformed[neDeviceSchemaNames["LicenseToken"]] = device.LicenseToken
+	transformed[neDeviceSchemaNames["CloudInitFileID"]] = device.CloudInitFileID
 	transformed[neDeviceSchemaNames["ACLTemplateUUID"]] = device.ACLTemplateUUID
 	transformed[neDeviceSchemaNames["SSHIPAddress"]] = device.SSHIPAddress
 	transformed[neDeviceSchemaNames["SSHIPFqdn"]] = device.SSHIPFqdn
@@ -1253,6 +1286,12 @@ func expandNetworkDeviceSecondary(devices []interface{}) *ne.Device {
 	}
 	if v, ok := device[neDeviceSchemaNames["LicenseFile"]]; ok && !isEmpty(v) {
 		transformed.LicenseFile = ne.String(v.(string))
+	}
+	if v, ok := device[neDeviceSchemaNames["LicenseFileID"]]; ok && !isEmpty(v) {
+		transformed.LicenseFileID = ne.String(v.(string))
+	}
+	if v, ok := device[neDeviceSchemaNames["CloudInitFileID"]]; ok && !isEmpty(v) {
+		transformed.CloudInitFileID = ne.String(v.(string))
 	}
 	if v, ok := device[neDeviceSchemaNames["ACLTemplateUUID"]]; ok && !isEmpty(v) {
 		transformed.ACLTemplateUUID = ne.String(v.(string))
