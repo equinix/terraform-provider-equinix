@@ -184,14 +184,14 @@ The following arguments are supported:
 * `core_count` - (Required) Number of CPU cores used by device.
 * `term_length` - (Required) Device term length.
 * `self_managed` - (Optional) Boolean value that determines device management mode, i.e.,
-`self-managed` or `Equinix managed` (default).
+`self-managed` or `Equinix-managed` (default).
 * `byol` - (Optional) Boolean value that determines device licensing mode, i.e.,
 `bring your own license` or `subscription` (default).
-* `license_token` - (Optional) License Token applicable for some device types in BYOL licensing
+* `license_token` - (Optional, conflicts with `license_file`) License Token applicable for some device types in BYOL licensing
 mode.
 * `license_file` - (Optional) Path to the license file that will be uploaded and applied on a
 device. Applicable for some device types in BYOL licensing mode.
-* `license_file_id` - (Optional) Identifier of a license file that will be applied on the device.
+* `license_file_id` - (Optional, conflicts with `license_file`) Identifier of a license file that will be applied on the device.
 * `cloud_init_file_id` - (Optional) Identifier of a cloud init file that will be applied on the device.
 * `throughput` - (Optional) Device license throughput.
 * `throughput_unit` - (Optional) License throughput unit. One of `Mbps` or `Gbps`.
@@ -232,10 +232,10 @@ The `secondary_device` block supports the following arguments:
 * `name` - (Required) Secondary device name.
 * `metro_code` - (Required) Metro location of a secondary device.
 * `hostname` - (Optional) Secondary device hostname.
-* `license_token` - (Optional) License Token can be provided for some device types o the device.
+* `license_token` - (Optional, conflicts with `license_file`) License Token can be provided for some device types o the device.
 * `license_file` - (Optional) Path to the license file that will be uploaded and applied on a
 secondary device. Applicable for some device types in BYOL licensing mode.
-* `license_file_id` - (Optional) Identifier of a license file that will be applied on a secondary device.
+* `license_file_id` - (Optional, conflicts with `license_file`) Identifier of a license file that will be applied on a secondary device.
 * `cloud_init_file_id` - (Optional) Identifier of a cloud init file that will be applied on a secondary device.
 * `account_number` - (Required) Billing account number for secondary device.
 * `notifications` - (Required) List of email addresses that will receive notifications about

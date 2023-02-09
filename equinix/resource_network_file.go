@@ -31,8 +31,8 @@ var networkFileDescriptions = map[string]string{
 	"MetroCode":      "File upload location metro code",
 	"DeviceTypeCode": "Device type code",
 	"ProcessType":    "File process type (LICENSE or CLOUD_INIT)",
-	"IsSelfManaged":  "Boolean value that determines device management mode: self-managed (default) or equinix-managed",
-	"IsBYOL":         "Boolean value that determines device licensing mode: bring your own license (default) or subscription",
+	"IsSelfManaged":  "Boolean value that determines device management mode: self-managed or equinix-managed",
+	"IsBYOL":         "Boolean value that determines device licensing mode: bring your own license or subscription",
 	"Status":         "File upload status",
 }
 
@@ -92,15 +92,13 @@ func createNetworkFileSchema() map[string]*schema.Schema {
 		},
 		networkFileSchemaNames["IsSelfManaged"]: {
 			Type:        schema.TypeBool,
-			Optional:    true,
-			Default:     true,
+			Required:    true,
 			ForceNew:    true,
 			Description: networkFileDescriptions["IsSelfManaged"],
 		},
 		networkFileSchemaNames["IsBYOL"]: {
 			Type:        schema.TypeBool,
-			Optional:    true,
-			Default:     true,
+			Required:    true,
 			ForceNew:    true,
 			Description: networkFileDescriptions["IsBYOL"],
 		},

@@ -31,10 +31,10 @@ The following arguments are supported:
 * `metro_code` - (Required) File upload location metro code. It should match the device location metro code.
 * `type_code` - (Required) Device type code.
 * `process_type` - (Required) File process type (LICENSE or CLOUD_INIT).
-* `self_managed` - (Optional) Boolean value that determines device management mode, i.e.,
-  `self-managed` (default) or `Equinix managed`.
-* `byol` - (Optional) Boolean value that determines device licensing mode, i.e.,
-  `bring your own license` (default) or `subscription`.
+* `self_managed` - (Required) Boolean value that determines device management mode, i.e.,
+  `self-managed` or `Equinix-managed`.
+* `byol` - (Required) Boolean value that determines device licensing mode, i.e.,
+  `bring your own license` or `subscription`.
 
 ## Attributes Reference
 
