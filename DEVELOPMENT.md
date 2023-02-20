@@ -99,6 +99,8 @@ Reflected by Network Edge tests.
 Reflected by Network Edge tests.
 * `TF_ACC_NETWORK_DEVICE_VSRX_LICENSE_FILE` alters default path to JUNIPER VSRX device license file.
 Reflected by Network Edge tests.
+* `TF_ACC_NETWORK_SSH_PROJECT_ID` alters default project identifier for Network Edge resources.
+Reflected by Network Edge tests.
 
 ## Testing provider code
 

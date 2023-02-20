@@ -17,12 +17,14 @@ var networkSSHKeySchemaNames = map[string]string{
 	"UUID":  "uuid",
 	"Name":  "name",
 	"Value": "public_key",
+	"ProjectId": "project_id",
 }
 
 var networkSSHKeyDescriptions = map[string]string{
 	"UUID":  "The unique identifier of the key",
 	"Name":  "The name of SSH key used for identification",
 	"Value": "The SSH public key. If this is a file, it can be read using the file interpolation function",
+	"ProjectId":  "The unique identifier of the project",
 }
 
 func resourceNetworkSSHKey() *schema.Resource {
@@ -61,6 +63,13 @@ func createNetworkSSHKeyResourceSchema() map[string]*schema.Schema {
 			ForceNew:     true,
 			ValidateFunc: validation.StringIsNotEmpty,
 			Description:  networkSSHKeyDescriptions["Value"],
+		},
+		networkSSHKeySchemaNames["ProjectId"]: {
+			Type:         schema.TypeString,
+			Required:     true,
+			ForceNew:     true,
+			ValidateFunc: validation.StringIsNotEmpty,
+			Description:  networkSSHKeyDescriptions["ProjectId"],
 		},
 	}
 }
@@ -124,6 +133,9 @@ func createNetworkSSHKey(d *schema.ResourceData) ne.SSHPublicKey {
 	if v, ok := d.GetOk(networkSSHKeySchemaNames["Value"]); ok {
 		key.Value = ne.String(v.(string))
 	}
+	if v, ok := d.GetOk(networkSSHKeySchemaNames["ProjectId"]); ok {
+		key.ProjectId = ne.String(v.(string))
+	}
 	return key
 }
 
@@ -139,3 +151,4 @@ func updateNetworkSSHKeyResource(key *ne.SSHPublicKey, d *schema.ResourceData) e
 	}
 	return nil
 }
+

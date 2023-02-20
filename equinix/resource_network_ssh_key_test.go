@@ -13,10 +13,12 @@ func TestNetworkSSHKey_createFromResourceData(t *testing.T) {
 	expected := ne.SSHPublicKey{
 		Name:  ne.String("testKey"),
 		Value: ne.String("testKeyValue"),
+		ProjectId: ne.String("testProjectId"),
 	}
 	rawData := map[string]interface{}{
 		networkSSHKeySchemaNames["Name"]:  ne.StringValue(expected.Name),
 		networkSSHKeySchemaNames["Value"]: ne.StringValue(expected.Value),
+		networkSSHKeySchemaNames["ProjectId"]: ne.StringValue(expected.ProjectId),
 	}
 	d := schema.TestResourceDataRaw(t, createNetworkSSHKeyResourceSchema(), rawData)
 	// when

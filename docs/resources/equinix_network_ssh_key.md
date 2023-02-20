@@ -9,6 +9,10 @@ Resource `equinix_network_ssh_key` allows creation and management of Equinix Net
 ## Example Usage
 
 ```hcl
+locals {
+  project_id = "<UUID_of_your_project>"
+}
+
 resource "equinix_network_ssh_key" "john" {
   name       = "johnKent"
   public_key = "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQDpXGdxljAyPp9vH97436U171cX
@@ -21,6 +25,7 @@ resource "equinix_network_ssh_key" "john" {
   SPkAc8OqLrmIwf5jGoHGh6eUJy7AtMcwE3iUpbrLw8EEoZDoDXkzh+RbOtSNKXWV4EAXsIhjQusCOW
   WQnuAHCy9N4Td0Sntzu/xhCZ8xN0oO67Cqlsk98xSRLXeg21PuuhOYJw0DLF6L68zU2OO0RzqoNq/F
   jIsltSUJPAIfYKL0yEefeNWOXSrasI1ezw== John.Kent@company.com"
+  project_id = local.project_id
 }
 ```
 
@@ -31,6 +36,7 @@ The following arguments are supported:
 * `name` - (Required) The name of SSH key used for identification.
 * `public_key` - (Required) The SSH public key. If this is a file, it can be read using the file
 interpolation function.
+* `project_id` - (Required) The ID of parent project.
 
 ## Attributes Reference
 
