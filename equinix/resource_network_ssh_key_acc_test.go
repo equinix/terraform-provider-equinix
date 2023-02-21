@@ -13,7 +13,7 @@ import (
 
 const (
 	networkSshProjectIdVar              = "TF_ACC_NETWORK_SSH_PROJECT_ID"
-}
+)
 
 func init() {
 	resource.AddTestSweepers("equinix_network_ssh_key", &resource.Sweeper{
