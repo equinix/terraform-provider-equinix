@@ -1,3 +1,9 @@
+## 1.13.0 (22 Feb, 2023)
+
+BUG FIXES:
+
+- `project_id` attribute added to `resource_network_ssh_key` due to an API schema update [#299](https://github.com/equinix/terraform-provider-equinix/pull/299)
+
 ## 1.11.1 (2 Dec, 2022)
 
 BUG FIXES:
