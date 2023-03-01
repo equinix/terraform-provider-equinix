@@ -270,7 +270,7 @@ func resourceMetalDevice() *schema.Resource {
 
 			"user_data": {
 				Type:        schema.TypeString,
-				Description: "A string of the desired User Data for the device.  By default, changing this attribute will cause terraform to destroy and recreate your device.  If `reinstall` is specified or `behavior.allow_changes` includes `\"user_data\"`, the device will be updated in-place instead of recreated.",
+				Description: "A string of the desired User Data for the device.  By default, changing this attribute will cause the provider to destroy and recreate your device.  If `reinstall` is specified or `behavior.allow_changes` includes `\"user_data\"`, the device will be updated in-place instead of recreated.",
 				Optional:    true,
 				Sensitive:   true,
 				ForceNew:    false, // Computed; see CustomizeDiff below
@@ -278,7 +278,7 @@ func resourceMetalDevice() *schema.Resource {
 
 			"custom_data": {
 				Type:        schema.TypeString,
-				Description: "A string of the desired Custom Data for the device.  By default, changing this attribute will cause terraform to destroy and recreate your device.  If `reinstall` is specified or `behavior.allow_changes` includes `\"custom_data\"`, the device will be updated in-place instead of recreated.",
+				Description: "A string of the desired Custom Data for the device.  By default, changing this attribute will cause the provider to destroy and recreate your device.  If `reinstall` is specified or `behavior.allow_changes` includes `\"custom_data\"`, the device will be updated in-place instead of recreated.",
 				Optional:    true,
 				Sensitive:   true,
 				ForceNew:    false, // Computed; see CustomizeDiff below
