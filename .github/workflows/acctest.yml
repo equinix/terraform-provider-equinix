@@ -56,7 +56,18 @@ jobs:
       run: |
         go mod download
 
+    - name: terratest acceptance tests
+      timeout-minutes: 180
+      env:
+        # TF_SCHEMA_PANIC_ON_ERROR: "1"
+        # TF_LOG: "DEBUG"
+        #
+        EQUINIX_API_TOKEN: ${{ secrets.EQUINIX_API_TOKEN }}
+      run: |
+        go test ./tests -v -coverprofile coverage.txt -covermode=atomic -count 1 -parallel 8 -timeout 180m
+
     - name: TF acceptance tests
+      if: ${{ always() }}
       timeout-minutes: 180
       env:
         TF_ACC: "1"
