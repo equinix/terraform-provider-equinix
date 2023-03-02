@@ -128,14 +128,39 @@ EOS
 }
 ```
 
+Create a device and allow the `user_data` and `custom_data` attributes to change in-place (i.e., without destroying and recreating the device):
+
+```hcl
+resource "equinix_metal_device" "pxe1" {
+  hostname         = "tf.coreos2-pxe"
+  plan             = "c3.small.x86"
+  metro            = "sv"
+  operating_system = "custom_ipxe"
+  billing_cycle    = "hourly"
+  project_id       = local.project_id
+  ipxe_script_url  = "https://rawgit.com/cloudnativelabs/pxe/master/metal/coreos-stable-metal.ipxe"
+  always_pxe       = "false"
+  user_data        = local.user_data
+  custom_data      = local.custom_data
+
+  behavior {
+    allow_changes = [
+      "custom_data",
+      "user_data"
+    ]
+  }
+}
+```
+
 ## Argument Reference
 
 The following arguments are supported:
 
 * `always_pxe` - (Optional) If true, a device with OS `custom_ipxe` will continue to boot via iPXE
 on reboots.
+* `behavior` - (Optional) Behavioral overrides that change how the resource handles certain attribute updates. See [Behavior](#behavior) below for more details.
 * `billing_cycle` - (Optional) monthly or hourly
-* `custom_data` - (Optional) A string of the desired Custom Data for the device.
+* `custom_data` - (Optional) A string of the desired Custom Data for the device.  By default, changing this attribute will cause the provider to destroy and recreate your device.  If `reinstall` is specified or `behavior.allow_changes` includes `"custom_data"`, the device will be updated in-place instead of recreated.
 * `description` - (Optional) The device description.
 * `facilities` - (Optional) List of facility codes with deployment preferences. Equinix Metal API will go
 through the list and will deploy your device to first facility with free capacity. List items must
@@ -186,10 +211,16 @@ be a number string, or size notation string, e.g. "4G" or "8M" (for gigabytes an
 * `tags` - (Optional) Tags attached to the device.
 * `termination_time` - (Optional) Timestamp for device termination. For example `2021-09-03T16:32:00+03:00`.
 If you don't supply timezone info, timestamp is assumed to be in UTC.
-* `user_data` - (Optional) A string of the desired User Data for the device.
+* `user_data` - (Optional) A string of the desired User Data for the device.  By default, changing this attribute will cause the provider to destroy and recreate your device.  If `reinstall` is specified or `behavior.allow_changes` includes `"user_data"`, the device will be updated in-place instead of recreated.
 * `wait_for_reservation_deprovision` - (Optional) Only used for devices in reserved hardware. If
 set, the deletion of this device will block until the hardware reservation is marked provisionable
 (about 4 minutes in August 2019).
+
+### Behavior
+
+The `behavior` block has below fields:
+
+* `allow_changes` - (Optional) List of attributes that are allowed to change without recreating the instance. Supported attributes: `custom_data`, `user_data`"
 
 ### IP address
 
