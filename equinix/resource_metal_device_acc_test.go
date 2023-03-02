@@ -724,6 +724,7 @@ resource "equinix_metal_device" "test" {
   tags             = ["%d"]
   user_data        = %q
   custom_data      = %q
+  termination_time = "%s"
 
   behavior {
     allow_changes = [
@@ -738,7 +739,7 @@ resource "equinix_metal_device" "test" {
     ]
   }
 }
-`, confAccMetalDevice_base(preferable_plans, preferable_metros, preferable_os), projSuffix, rInt, rInt, userdata, customdata, attributeName)
+`, confAccMetalDevice_base(preferable_plans, preferable_metros, preferable_os), projSuffix, rInt, rInt, userdata, customdata, testDeviceTerminationTime(), attributeName)
 }
 
 func testAccMetalDeviceConfig_varname(rInt int, projSuffix string) string {

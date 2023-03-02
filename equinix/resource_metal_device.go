@@ -427,7 +427,7 @@ func resourceMetalDevice() *schema.Resource {
 									return
 								},
 							},
-							Description: "List of attributes that are allowed to change without recreating the instance",
+							Description: "List of attributes that are allowed to change without recreating the instance. Supported attributes: `custom_data`, `user_data`",
 							Optional:    true,
 						},
 					},
@@ -452,13 +452,10 @@ func reinstallDisabled(_ context.Context, d *schema.ResourceDiff, meta interface
 		return true
 	}
 
+	// To reach this point, the device config had to include a `reinstall` block,
+	// so we can assume all necessary parts of that block are filled in
 	reinstall_list := reinstall.([]interface{})
-	reinstall_config, ok := reinstall_list[0].(map[string]interface{})
-	if !ok {
-		// This should be unreachable (to get here, reinstall attribute had to be specified,
-		// but with an invalid specification...maybe panic?)
-		return true
-	}
+	reinstall_config := reinstall_list[0].(map[string]interface{})
 
 	return !reinstall_config["enabled"].(bool)
 }
@@ -476,14 +473,10 @@ func reinstallDisabledAndNoChangesAllowed(attribute string) customdiff.ResourceC
 				return true
 			}
 
+			// To reach this point, the device config had to include a `behavior`
+			// block, so we can assume all necessary parts of that block are filled in
 			behavior_list := behavior.([]interface{})
-			behavior_config, ok := behavior_list[0].(map[string]interface{})
-
-			if !ok {
-				// This should be unreachable (to get here, behavior attribute had to be specified,
-				// but with an invalid specification...maybe panic?  Or just don't capture & check `ok`?)
-				return true
-			}
+			behavior_config := behavior_list[0].(map[string]interface{})
 
 			allow_changes := convertStringArr(behavior_config["allow_changes"].([]interface{}))
 
@@ -809,22 +802,16 @@ func doReinstall(client *packngo.Client, d *schema.ResourceData, meta interface{
 		reinstall, ok := d.GetOk("reinstall")
 
 		if !ok {
-			// Assume we're here because behavior.allow_changes was set
+			// Assume we're here because behavior.allow_changes was set (not an error)
 			return nil
 		}
 
 		reinstall_list := reinstall.([]interface{})
-		reinstall_config, ok := reinstall_list[0].(map[string]interface{})
-
-		if !ok {
-			// This means a reinstall block was provided but it's invalid, so user's intent
-			// is unclear and we should error (this should maybe be a panic?)
-			return fmt.Errorf("expected reinstall configuration and none available")
-		}
+		reinstall_config := reinstall_list[0].(map[string]interface{})
 
 		if !reinstall_config["enabled"].(bool) {
 			// This means a reinstall block was provided, but reinstall was explicitly
-			// enabled.  Assume we're here because behavior.allow_changes was set
+			// disabled.  Assume we're here because behavior.allow_changes was set (not an error)
 			return nil
 		}
 
