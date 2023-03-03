@@ -1,3 +1,24 @@
+## 1.13.0 (3 Mar, 2023)
+
+FEATURES:
+
+- Adds `behavior.allow_changes` for `equinix_metal_device` resources to enable updates to `user_data` and `custom_data` without creating a new resource [#301](https://github.com/equinix/terraform-provider-equinix/pull/301)
+
+BUG FIXES:
+
+- Fixes typo in documentation for `equinix_network_ssh_user`
+- Fixes incorrect provider configuration in the `port2serviceprofilepublic` example for Fabric resources [#300](https://github.com/equinix/terraform-provider-equinix/pull/300)
+
+## 1.12.0 (10 Feb, 2023)
+
+FEATURES:
+
+New Equinix Network Edge file resource in #294
+
+- **New Resource:** `equinix_network_file`
+- `cloud_init_file_id` can be specified for `equinix_network_device` [#294](https://github.com/equinix/terraform-provider-equinix/pull/294)
+- `license_file_id` can be specified for `equinix_network_device` instead of the `license_file` attribute [#294](https://github.com/equinix/terraform-provider-equinix/pull/294)
+
 ## 1.11.1 (2 Dec, 2022)
 
 BUG FIXES:
