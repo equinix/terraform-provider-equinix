@@ -67,9 +67,9 @@ func resourceMetalDevice() *schema.Resource {
 
 			"operating_system": {
 				Type:        schema.TypeString,
-				Description: "The operating system slug. To find the slug, or visit [Operating Systems API docs](https://metal.equinix.com/developers/api/operatingsystems), set your API auth token in the top of the page and see JSON from the API response",
+				Description: "The operating system slug. To find the slug, or visit [Operating Systems API docs](https://metal.equinix.com/developers/api/operatingsystems), set your API auth token in the top of the page and see JSON from the API response.  By default, changing this attribute will cause your device to be deleted and recreated.  If `reinstall` is enabled, the device will be updated in-place instead of recreated.",
 				Required:    true,
-				ForceNew:    false,
+				ForceNew:    false, // Computed; see CustomizeDiff below
 			},
 
 			"deployed_facility": {
@@ -270,18 +270,18 @@ func resourceMetalDevice() *schema.Resource {
 
 			"user_data": {
 				Type:        schema.TypeString,
-				Description: "A string of the desired User Data for the device",
+				Description: "A string of the desired User Data for the device.  By default, changing this attribute will cause the provider to destroy and recreate your device.  If `reinstall` is specified or `behavior.allow_changes` includes `\"user_data\"`, the device will be updated in-place instead of recreated.",
 				Optional:    true,
 				Sensitive:   true,
-				ForceNew:    false,
+				ForceNew:    false, // Computed; see CustomizeDiff below
 			},
 
 			"custom_data": {
 				Type:        schema.TypeString,
-				Description: "A string of the desired Custom Data for the device",
+				Description: "A string of the desired Custom Data for the device.  By default, changing this attribute will cause the provider to destroy and recreate your device.  If `reinstall` is specified or `behavior.allow_changes` includes `\"custom_data\"`, the device will be updated in-place instead of recreated.",
 				Optional:    true,
 				Sensitive:   true,
-				ForceNew:    false,
+				ForceNew:    false, // Computed; see CustomizeDiff below
 			},
 
 			"ipxe_script_url": {
@@ -407,39 +407,88 @@ func resourceMetalDevice() *schema.Resource {
 					},
 				},
 			},
+
+			"behavior": {
+				Type:     schema.TypeList,
+				MaxItems: 1,
+				Optional: true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"allow_changes": {
+							Type: schema.TypeList,
+							Elem: &schema.Schema{
+								Type: schema.TypeString,
+								ValidateFunc: func(val interface{}, key string) (warns []string, errs []error) {
+									attribute := val.(string)
+									supportedAttributes := []string{"custom_data", "user_data"}
+									if !contains(supportedAttributes, attribute) {
+										errs = []error{fmt.Errorf("behavior.allow_changes was given %s, but only supports %v", attribute, supportedAttributes)}
+									}
+									return
+								},
+							},
+							Description: "List of attributes that are allowed to change without recreating the instance. Supported attributes: `custom_data`, `user_data`",
+							Optional:    true,
+						},
+					},
+				},
+			},
 		},
 		CustomizeDiff: customdiff.Sequence(
-			customdiff.ForceNewIf("custom_data", shouldReinstall),
-			customdiff.ForceNewIf("operating_system", shouldReinstall),
-			customdiff.ForceNewIf("user_data", shouldReinstall),
+			customdiff.ForceNewIf("custom_data", reinstallDisabledAndNoChangesAllowed("custom_data")),
+			customdiff.ForceNewIf("operating_system", reinstallDisabled),
+			customdiff.ForceNewIf("user_data", reinstallDisabledAndNoChangesAllowed("user_data")),
 		),
 	}
 }
 
-func shouldReinstall(_ context.Context, d *schema.ResourceDiff, meta interface{}) bool {
+// This method returns true if reinstall is disabled, and false if it is enabled.
+// This is used to set ForceNew to true when reinstall is disabled
+func reinstallDisabled(_ context.Context, d *schema.ResourceDiff, meta interface{}) bool {
 	reinstall, ok := d.GetOk("reinstall")
 
-	// Prior behaviour was to always destroy and create,
-	// so in the event we can't get the reinstall config; let's
-	// continue to do so.
 	if !ok {
+		// There is no reinstall attribute, so ForceNew should be true
 		return true
 	}
 
-	// We didn't get a reinstall configuration
-	reinstall_list, ok := reinstall.([]interface{})
-	if !ok {
-		return true
-	}
-
-	reinstall_config, ok := reinstall_list[0].(map[string]interface{})
-
-	// We didn't get a reinstall configuration
-	if !ok {
-		return true
-	}
+	// To reach this point, the device config had to include a `reinstall` block,
+	// so we can assume all necessary parts of that block are filled in
+	reinstall_list := reinstall.([]interface{})
+	reinstall_config := reinstall_list[0].(map[string]interface{})
 
 	return !reinstall_config["enabled"].(bool)
+}
+
+func reinstallDisabledAndNoChangesAllowed(attribute string) customdiff.ResourceConditionFunc {
+	return func(ctx context.Context, d *schema.ResourceDiff, meta interface{}) bool {
+		if reinstallDisabled(ctx, d, meta) {
+			// If reinstall is disabled, we need to see if ForceNew
+			// should be disabled due to behavior settings
+			behavior, ok := d.GetOk("behavior")
+
+			if !ok {
+				// This means reinstall is disabled and there is no behavior
+				// attribute, so ForceNew should be true
+				return true
+			}
+
+			// To reach this point, the device config had to include a `behavior`
+			// block, so we can assume all necessary parts of that block are filled in
+			behavior_list := behavior.([]interface{})
+			behavior_config := behavior_list[0].(map[string]interface{})
+
+			allow_changes := convertStringArr(behavior_config["allow_changes"].([]interface{}))
+
+			// This means we got a valid behavior specification, so we set ForceNew
+			// to true if behavior.allow_changes includes the attribute that is changing
+			return !contains(allow_changes, attribute)
+		}
+
+		// This means reinstall is enabled, so it doesn't matter what the behavior
+		// says; ForceNew should not be set to true in this case
+		return false
+	}
 }
 
 func resourceMetalDeviceCreate(d *schema.ResourceData, meta interface{}) error {
@@ -741,46 +790,47 @@ func resourceMetalDeviceUpdate(d *schema.ResourceData, meta interface{}) error {
 		}
 	}
 
+	if err := doReinstall(client, d, meta); err != nil {
+		return err
+	}
+
+	return resourceMetalDeviceRead(d, meta)
+}
+
+func doReinstall(client *packngo.Client, d *schema.ResourceData, meta interface{}) error {
 	if d.HasChange("operating_system") || d.HasChange("user_data") || d.HasChange("custom_data") {
-		reinstallOptions, err := getReinstallOptions(d)
-		if err != nil {
-			return friendlyError(err)
+		reinstall, ok := d.GetOk("reinstall")
+
+		if !ok {
+			// Assume we're here because behavior.allow_changes was set (not an error)
+			return nil
+		}
+
+		reinstall_list := reinstall.([]interface{})
+		reinstall_config := reinstall_list[0].(map[string]interface{})
+
+		if !reinstall_config["enabled"].(bool) {
+			// This means a reinstall block was provided, but reinstall was explicitly
+			// disabled.  Assume we're here because behavior.allow_changes was set (not an error)
+			return nil
+		}
+
+		reinstallOptions := packngo.DeviceReinstallFields{
+			OperatingSystem: d.Get("operating_system").(string),
+			PreserveData:    reinstall_config["preserve_data"].(bool),
+			DeprovisionFast: reinstall_config["deprovision_fast"].(bool),
 		}
 
 		if _, err := client.Devices.Reinstall(d.Id(), &reinstallOptions); err != nil {
 			return friendlyError(err)
 		}
 
-		if err = waitForActiveDevice(d, meta); err != nil {
+		if err := waitForActiveDevice(d, meta); err != nil {
 			return err
 		}
 	}
 
-	return resourceMetalDeviceRead(d, meta)
-}
-
-func getReinstallOptions(d *schema.ResourceData) (packngo.DeviceReinstallFields, error) {
-	reinstall_list, ok := d.Get("reinstall").([]interface{})
-
-	if !ok {
-		return packngo.DeviceReinstallFields{}, fmt.Errorf("expected reinstall configuration and none available")
-	}
-
-	if len(reinstall_list) == 0 {
-		return packngo.DeviceReinstallFields{}, fmt.Errorf("expected reinstall configuration and none available")
-	}
-
-	reinstall_config, ok := reinstall_list[0].(map[string]interface{})
-
-	if !ok {
-		return packngo.DeviceReinstallFields{}, fmt.Errorf("expected reinstall configuration and none available")
-	}
-
-	return packngo.DeviceReinstallFields{
-		OperatingSystem: d.Get("operating_system").(string),
-		PreserveData:    reinstall_config["preserve_data"].(bool),
-		DeprovisionFast: reinstall_config["deprovision_fast"].(bool),
-	}, nil
+	return nil
 }
 
 func resourceMetalDeviceDelete(d *schema.ResourceData, meta interface{}) error {

@@ -400,6 +400,87 @@ func TestAccMetalDevice_IPXEConfigMissing(t *testing.T) {
 	})
 }
 
+func TestAccMetalDevice_allowUserdataChanges(t *testing.T) {
+	var d1, d2 packngo.Device
+	rs := acctest.RandString(10)
+	rInt := acctest.RandInt()
+	r := "equinix_metal_device.test"
+
+	userdata1 := fmt.Sprintf("#!/usr/bin/env sh\necho 'Allow userdata changes %d'\n", rInt)
+	userdata2 := fmt.Sprintf("#!/usr/bin/env sh\necho 'Allow userdata changes %d'\n", rInt+1)
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccMetalDeviceCheckDestroyed,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccMetalDeviceConfig_allowAttributeChanges(rInt, rs, userdata1, "", "user_data"),
+				Check: resource.ComposeTestCheckFunc(
+					testAccMetalDeviceExists(r, &d1),
+					resource.TestCheckResourceAttr(r, "user_data", userdata1),
+				),
+			},
+			{
+				Config: testAccMetalDeviceConfig_allowAttributeChanges(rInt, rs, userdata2, "", "user_data"),
+				Check: resource.ComposeTestCheckFunc(
+					testAccMetalDeviceExists(r, &d2),
+					resource.TestCheckResourceAttr(r, "user_data", userdata2),
+					testAccMetalSameDevice(t, &d1, &d2),
+				),
+			},
+		},
+	})
+}
+
+func TestAccMetalDevice_allowCustomdataChanges(t *testing.T) {
+	var d1, d2 packngo.Device
+	rs := acctest.RandString(10)
+	rInt := acctest.RandInt()
+	r := "equinix_metal_device.test"
+
+	customdata1 := fmt.Sprintf(`{"message": "Allow customdata changes %d"}`, rInt)
+	customdata2 := fmt.Sprintf(`{"message": "Allow customdata changes %d"}`, rInt+1)
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccMetalDeviceCheckDestroyed,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccMetalDeviceConfig_allowAttributeChanges(rInt, rs, "", customdata1, "custom_data"),
+				Check: resource.ComposeTestCheckFunc(
+					testAccMetalDeviceExists(r, &d1),
+					resource.TestCheckResourceAttr(r, "custom_data", customdata1),
+				),
+			},
+			{
+				Config: testAccMetalDeviceConfig_allowAttributeChanges(rInt, rs, "", customdata2, "custom_data"),
+				Check: resource.ComposeTestCheckFunc(
+					testAccMetalDeviceExists(r, &d2),
+					resource.TestCheckResourceAttr(r, "custom_data", customdata2),
+					testAccMetalSameDevice(t, &d1, &d2),
+				),
+			},
+		},
+	})
+}
+
+func TestAccMetalDevice_allowChangesErrorOnUnsupportedAttribute(t *testing.T) {
+	rs := acctest.RandString(10)
+	rInt := acctest.RandInt()
+
+	resource.Test(t, resource.TestCase{
+		Providers: testAccProviders,
+		Steps: []resource.TestStep{
+			{
+				Config:      testAccMetalDeviceConfig_allowAttributeChanges(rInt, rs, "", "", "project_id"),
+				ExpectError: regexp.MustCompile(`Error: behavior.allow_changes was given project_id, but only supports \[.+\]`),
+			},
+		},
+	})
+}
+
 func testAccMetalDeviceCheckDestroyed(s *terraform.State) error {
 	client := testAccProvider.Meta().(*Config).metal
 
@@ -623,6 +704,42 @@ resource "equinix_metal_device" "test" {
   }
 }
 `, confAccMetalDevice_base(preferable_plans, preferable_metros, preferable_os), projSuffix, rInt, rInt, testDeviceTerminationTime())
+}
+
+func testAccMetalDeviceConfig_allowAttributeChanges(rInt int, projSuffix string, userdata string, customdata string, attributeName string) string {
+	return fmt.Sprintf(`
+%s
+
+resource "equinix_metal_project" "test" {
+    name = "tfacc-device-%s"
+}
+
+resource "equinix_metal_device" "test" {
+  hostname         = "tfacc-test-device-%d"
+  plan             = local.plan
+  metro            = local.metro
+  operating_system = local.os
+  billing_cycle    = "hourly"
+  project_id       = "${equinix_metal_project.test.id}"
+  tags             = ["%d"]
+  user_data        = %q
+  custom_data      = %q
+  termination_time = "%s"
+
+  behavior {
+    allow_changes = [
+      "%s"
+    ]
+  }
+
+  lifecycle {
+    ignore_changes = [
+      plan,
+      metro,
+    ]
+  }
+}
+`, confAccMetalDevice_base(preferable_plans, preferable_metros, preferable_os), projSuffix, rInt, rInt, userdata, customdata, testDeviceTerminationTime(), attributeName)
 }
 
 func testAccMetalDeviceConfig_varname(rInt int, projSuffix string) string {
