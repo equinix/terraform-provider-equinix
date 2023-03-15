@@ -23,7 +23,7 @@ func getCapacityInput(capacitySpecs []interface{}, baseServerInfo packngo.Server
 func capacitySchema() *schema.Schema {
 	return &schema.Schema{
 		Type:        schema.TypeList,
-		Description: "Optional capacity specification",
+		Description: "Optional list of capacity specifications by plan",
 		Optional:    true,
 		Elem: &schema.Resource{
 			Schema: map[string]*schema.Schema{
@@ -53,24 +53,24 @@ func dataSourceMetalFacility() *schema.Resource {
 			},
 			"features_required": {
 				Type:        schema.TypeSet,
-				Description: "Features which the facility needs to have.",
+				Description: "Features which the facility needs to have",
 				Elem:        &schema.Schema{Type: schema.TypeString},
 				Optional:    true,
 				MinItems:    1,
 			},
 			"name": {
 				Type:        schema.TypeString,
-				Description: "The name of this Facility.",
+				Description: "The name of this Facility",
 				Computed:    true,
 			},
 			"metro": {
 				Type:        schema.TypeString,
-				Description: "This facility's metro code.",
+				Description: "This facility's metro code",
 				Computed:    true,
 			},
 			"features": {
 				Type:        schema.TypeList,
-				Description: "The features of this Facility.",
+				Description: "The features of this Facility",
 				Elem:        &schema.Schema{Type: schema.TypeString},
 				Computed:    true,
 			},
@@ -95,7 +95,7 @@ func dataSourceMetalFacilityRead(d *schema.ResourceData, meta interface{}) error
 		}
 		for _, s := range res.Servers {
 			if !s.Available {
-				return fmt.Errorf("Not enough capacity in facility %s for %d device(s) of plan %s", s.Facility, s.Quantity, s.Plan)
+				return fmt.Errorf("not enough capacity in facility %s for %d device(s) of plan %s", s.Facility, s.Quantity, s.Plan)
 			}
 		}
 		if err != nil {

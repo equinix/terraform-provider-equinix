@@ -13,7 +13,7 @@ func dataSourceMetalMetro() *schema.Resource {
 		Schema: map[string]*schema.Schema{
 			"id": {
 				Type:        schema.TypeString,
-				Description: "The ID of this Metro.",
+				Description: "The ID of this Metro",
 				Computed:    true,
 			},
 			"code": {
@@ -23,12 +23,12 @@ func dataSourceMetalMetro() *schema.Resource {
 			},
 			"country": {
 				Type:        schema.TypeString,
-				Description: "The country of this Metro.",
+				Description: "The country of this Metro",
 				Computed:    true,
 			},
 			"name": {
 				Type:        schema.TypeString,
-				Description: "The name of this Metro.",
+				Description: "The name of this Metro",
 				Computed:    true,
 			},
 			"capacity": capacitySchema(),
@@ -52,7 +52,7 @@ func dataSourceMetalMetroRead(d *schema.ResourceData, meta interface{}) error {
 		}
 		for _, s := range res.Servers {
 			if !s.Available {
-				return fmt.Errorf("Not enough capacity in metro %s for %d device(s) of plan %s", s.Facility, s.Quantity, s.Plan)
+				return fmt.Errorf("not enough capacity in metro %s for %d device(s) of plan %s", s.Facility, s.Quantity, s.Plan)
 			}
 		}
 		if err != nil {

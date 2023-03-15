@@ -19,6 +19,7 @@ func readPortDeviceSch() map[string]*schema.Schema {
 			Type:        schema.TypeSet,
 			Computed:    true,
 			Description: "Port device redundancy",
+			MaxItems:    1,
 			Elem: &schema.Resource{
 				Schema: readRedundancySch(),
 			},
@@ -235,6 +236,7 @@ func readFabricPortResourceSchema() map[string]*schema.Schema {
 			Type:        schema.TypeSet,
 			Computed:    true,
 			Description: "Port specific operational data",
+			MaxItems:    1,
 			Elem: &schema.Resource{
 				Schema: readPortOperationSch(),
 			},
@@ -263,6 +265,7 @@ func readFabricPortResourceSchema() map[string]*schema.Schema {
 			Type:        schema.TypeSet,
 			Computed:    true,
 			Description: "Customer account information that is associated with this port",
+			MaxItems:    1,
 			Elem: &schema.Resource{
 				Schema: readAccountSch(),
 			},
@@ -271,6 +274,7 @@ func readFabricPortResourceSchema() map[string]*schema.Schema {
 			Type:        schema.TypeSet,
 			Computed:    true,
 			Description: "Captures port lifecycle change information",
+			MaxItems:    1,
 			Elem: &schema.Resource{
 				Schema: readChangeLogSch(),
 			},
@@ -279,6 +283,7 @@ func readFabricPortResourceSchema() map[string]*schema.Schema {
 			Type:        schema.TypeSet,
 			Computed:    true,
 			Description: "Port location information",
+			MaxItems:    1,
 			Elem: &schema.Resource{
 				Schema: readLocationSch(),
 			},
@@ -287,6 +292,7 @@ func readFabricPortResourceSchema() map[string]*schema.Schema {
 			Type:        schema.TypeSet,
 			Computed:    true,
 			Description: "Port device",
+			MaxItems:    1,
 			Elem: &schema.Resource{
 				Schema: readPortDeviceSch(),
 			},
@@ -295,6 +301,7 @@ func readFabricPortResourceSchema() map[string]*schema.Schema {
 			Type:        schema.TypeSet,
 			Computed:    true,
 			Description: "Port redundancy information",
+			MaxItems:    1,
 			Elem: &schema.Resource{
 				Schema: readPortsRedundancySch(),
 			},
@@ -303,6 +310,7 @@ func readFabricPortResourceSchema() map[string]*schema.Schema {
 			Type:        schema.TypeSet,
 			Computed:    true,
 			Description: "Port encapsulation protocol",
+			MaxItems:    1,
 			Elem: &schema.Resource{
 				Schema: readFabricPortEncapsulation(),
 			},
@@ -311,6 +319,7 @@ func readFabricPortResourceSchema() map[string]*schema.Schema {
 			Type:        schema.TypeSet,
 			Computed:    true,
 			Description: "Port Lag",
+			MaxItems:    1,
 			Elem: &schema.Resource{
 				Schema: readFabricPortLag(),
 			},
@@ -340,7 +349,7 @@ func readFabricPortsResponseSchema() map[string]*schema.Schema {
 		"data": {
 			Type:        schema.TypeList,
 			Computed:    true,
-			Description: "List of  Ports",
+			Description: "List of Ports",
 			Elem: &schema.Resource{
 				Schema: readFabricPortResourceSchemaUpdated(),
 			},

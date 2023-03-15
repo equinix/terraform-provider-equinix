@@ -65,6 +65,7 @@ func readFabricServiceProfileSchema() map[string]*schema.Schema {
 			Type:        schema.TypeSet,
 			Computed:    true,
 			Description: "Marketing Info",
+			MaxItems:    1,
 			Elem: &schema.Resource{
 				Schema: readMarketingInfoSch(),
 			},
@@ -113,6 +114,7 @@ func readFabricServiceProfileSchema() map[string]*schema.Schema {
 			Type:        schema.TypeSet,
 			Computed:    true,
 			Description: "Account",
+			MaxItems:    1,
 			Elem: &schema.Resource{
 				Schema: readSPAccountSch(),
 			},
@@ -121,6 +123,7 @@ func readFabricServiceProfileSchema() map[string]*schema.Schema {
 			Type:        schema.TypeSet,
 			Computed:    true,
 			Description: "Project information",
+			MaxItems:    1,
 			Elem: &schema.Resource{
 				Schema: readGatewayProjectSch(),
 			},
@@ -129,6 +132,7 @@ func readFabricServiceProfileSchema() map[string]*schema.Schema {
 			Type:        schema.TypeSet,
 			Computed:    true,
 			Description: "Captures connection lifecycle change information",
+			MaxItems:    1,
 			Elem: &schema.Resource{
 				Schema: readChangeLogSch(),
 			},
@@ -238,7 +242,7 @@ func readMarketingInfoSch() map[string]*schema.Schema {
 		"process_step": {
 			Type:        schema.TypeList,
 			Computed:    true,
-			Description: "Process Step",
+			Description: "List of process steps",
 			Elem: &schema.Resource{
 				Schema: readProcessStepSch(),
 			},
@@ -282,6 +286,7 @@ func readServiceProfileAccessPointColo() map[string]*schema.Schema {
 			Type:        schema.TypeSet,
 			Computed:    true,
 			Description: "Colo/Port Location",
+			MaxItems:    1,
 			Elem: &schema.Resource{
 				Schema: createLocationSch(),
 			},
@@ -441,7 +446,7 @@ func readFabricServiceProfilesSearchSchema() map[string]*schema.Schema {
 		"data": {
 			Type:        schema.TypeList,
 			Computed:    true,
-			Description: "List of  Service Profiles",
+			Description: "List of Service Profiles",
 			Elem: &schema.Resource{
 				Schema: readFabricServiceProfileSchemaUpdated(),
 			},

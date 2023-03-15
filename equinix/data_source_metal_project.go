@@ -66,6 +66,7 @@ func dataSourceMetalProject() *schema.Resource {
 			"bgp_config": {
 				Type:        schema.TypeList,
 				Description: "Optional BGP settings. Refer to [Equinix Metal guide for BGP](https://metal.equinix.com/developers/docs/networking/local-global-bgp/)",
+				MaxItems:    1,
 				Computed:    true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
@@ -109,7 +110,7 @@ func dataSourceMetalProjectRead(d *schema.ResourceData, meta interface{}) error 
 	projectIdRaw, projectIdOK := d.GetOk("project_id")
 
 	if !projectIdOK && !nameOK {
-		return fmt.Errorf("You must supply project_id or name")
+		return fmt.Errorf("you must supply project_id or name")
 	}
 	var project *packngo.Project
 

@@ -28,26 +28,22 @@ func resourceMetalProject() *schema.Resource {
 				Description: "The name of the project",
 				Required:    true,
 			},
-
 			"created": {
 				Type:        schema.TypeString,
 				Description: "The timestamp for when the project was created",
 				Computed:    true,
 			},
-
 			"updated": {
 				Type:        schema.TypeString,
 				Description: "The timestamp for the last time the project was updated",
 				Computed:    true,
 			},
-
 			"backend_transfer": {
 				Type:        schema.TypeBool,
 				Description: "Enable or disable [Backend Transfer](https://metal.equinix.com/developers/docs/networking/backend-transfer/), default is false",
 				Optional:    true,
 				Default:     false,
 			},
-
 			"payment_method_id": {
 				Type:        schema.TypeString,
 				Description: "The UUID of payment method for this project. The payment method and the project need to belong to the same organization (passed with organization_id, or default)",
@@ -61,7 +57,6 @@ func resourceMetalProject() *schema.Resource {
 					validation.StringIsEmpty,
 				),
 			},
-
 			"organization_id": {
 				Type:        schema.TypeString,
 				Description: "The UUID of organization under which you want to create the project. If you leave it out, the project will be create under your the default organization of your account",

@@ -51,33 +51,28 @@ func resourceMetalDevice() *schema.Resource {
 				Required:    true,
 				ForceNew:    true,
 			},
-
 			"hostname": {
 				Type:        schema.TypeString,
 				Description: "The device hostname used in deployments taking advantage of Layer3 DHCP or metadata service configuration.",
 				Optional:    true,
 				Computed:    true,
 			},
-
 			"description": {
 				Type:        schema.TypeString,
 				Description: "Description string for the device",
 				Optional:    true,
 			},
-
 			"operating_system": {
 				Type:        schema.TypeString,
-				Description: "The operating system slug. To find the slug, or visit [Operating Systems API docs](https://metal.equinix.com/developers/api/operatingsystems), set your API auth token in the top of the page and see JSON from the API response.  By default, changing this attribute will cause your device to be deleted and recreated.  If `reinstall` is enabled, the device will be updated in-place instead of recreated.",
+				Description: "The operating system slug. To find the slug, or visit [Operating Systems API docs](https://metal.equinix.com/developers/api/operatingsystems), set your API auth token in the top of the page and see JSON from the API response",
 				Required:    true,
-				ForceNew:    false, // Computed; see CustomizeDiff below
+				ForceNew:    false,
 			},
-
 			"deployed_facility": {
 				Type:        schema.TypeString,
 				Description: "The facility where the device is deployed",
 				Computed:    true,
 			},
-
 			"metro": {
 				Type:          schema.TypeString,
 				Description:   "Metro area for the new device. Conflicts with facilities",
@@ -96,7 +91,6 @@ func resourceMetalDevice() *schema.Resource {
 				},
 				StateFunc: toLower,
 			},
-
 			"facilities": {
 				Type:        schema.TypeList,
 				Description: "List of facility codes with deployment preferences. Equinix Metal API will go through the list and will deploy your device to first facility with free capacity. List items must be facility codes or any (a wildcard). To find the facility code, visit [Facilities API docs](https://metal.equinix.com/developers/api/facilities/), set your API auth token in the top of the page and see JSON from the API response. Conflicts with metro",
@@ -125,14 +119,12 @@ func resourceMetalDevice() *schema.Resource {
 				Elem:        ipAddressSchema(),
 				MinItems:    1,
 			},
-
 			"plan": {
 				Type:        schema.TypeString,
 				Description: "The device plan slug. To find the plan slug, visit [Device plans API docs](https://metal.equinix.com/developers/api/plans), set your auth token in the top of the page and see JSON from the API response",
 				Required:    true,
 				ForceNew:    true,
 			},
-
 			"billing_cycle": {
 				Type:        schema.TypeString,
 				Description: "monthly or hourly",
@@ -145,32 +137,27 @@ func resourceMetalDevice() *schema.Resource {
 				Description: "The status of the device",
 				Computed:    true,
 			},
-
 			"root_password": {
 				Type:        schema.TypeString,
 				Description: "Root password to the server (disabled after 24 hours)",
 				Computed:    true,
 				Sensitive:   true,
 			},
-
 			"locked": {
 				Type:        schema.TypeBool,
 				Description: "Whether the device is locked",
 				Computed:    true,
 			},
-
 			"access_public_ipv6": {
 				Type:        schema.TypeString,
 				Description: "The ipv6 maintenance IP assigned to the device",
 				Computed:    true,
 			},
-
 			"access_public_ipv4": {
 				Type:        schema.TypeString,
 				Description: "The ipv4 maintenance IP assigned to the device",
 				Computed:    true,
 			},
-
 			"access_private_ipv4": {
 				Type:        schema.TypeString,
 				Description: "The ipv4 private IP assigned to the device",
@@ -216,7 +203,6 @@ func resourceMetalDevice() *schema.Resource {
 					},
 				},
 			},
-
 			"network": {
 				Type:        schema.TypeList,
 				Description: "The device's private and public IP (v4 and v6) network details. When a device is run without any special network configuration, it will have 3 addresses: public ipv4, private ipv4 and ipv6",
@@ -228,25 +214,21 @@ func resourceMetalDevice() *schema.Resource {
 							Description: "IPv4 or IPv6 address string",
 							Computed:    true,
 						},
-
 						"gateway": {
 							Type:        schema.TypeString,
 							Description: "Address of router",
 							Computed:    true,
 						},
-
 						"family": {
 							Type:        schema.TypeInt,
 							Description: "IP version - \"4\" or \"6\"",
 							Computed:    true,
 						},
-
 						"cidr": {
 							Type:        schema.TypeInt,
 							Description: "CIDR suffix for IP address block to be assigned, i.e. amount of addresses",
 							Computed:    true,
 						},
-
 						"public": {
 							Type:        schema.TypeBool,
 							Description: "Whether the address is routable from the Internet",
@@ -255,54 +237,46 @@ func resourceMetalDevice() *schema.Resource {
 					},
 				},
 			},
-
 			"created": {
 				Type:        schema.TypeString,
 				Description: "The timestamp for when the device was created",
 				Computed:    true,
 			},
-
 			"updated": {
 				Type:        schema.TypeString,
 				Description: "The timestamp for the last time the device was updated",
 				Computed:    true,
 			},
-
 			"user_data": {
 				Type:        schema.TypeString,
-				Description: "A string of the desired User Data for the device.  By default, changing this attribute will cause the provider to destroy and recreate your device.  If `reinstall` is specified or `behavior.allow_changes` includes `\"user_data\"`, the device will be updated in-place instead of recreated.",
+				Description: "A string of the desired User Data for the device",
 				Optional:    true,
 				Sensitive:   true,
-				ForceNew:    false, // Computed; see CustomizeDiff below
+				ForceNew:    false,
 			},
-
 			"custom_data": {
 				Type:        schema.TypeString,
-				Description: "A string of the desired Custom Data for the device.  By default, changing this attribute will cause the provider to destroy and recreate your device.  If `reinstall` is specified or `behavior.allow_changes` includes `\"custom_data\"`, the device will be updated in-place instead of recreated.",
+				Description: "A string of the desired Custom Data for the device",
 				Optional:    true,
 				Sensitive:   true,
-				ForceNew:    false, // Computed; see CustomizeDiff below
+				ForceNew:    false,
 			},
-
 			"ipxe_script_url": {
 				Type:        schema.TypeString,
 				Description: "URL pointing to a hosted iPXE script. More",
 				Optional:    true,
 			},
-
 			"always_pxe": {
 				Type:        schema.TypeBool,
 				Description: "If true, a device with OS custom_ipxe will",
 				Optional:    true,
 				Default:     false,
 			},
-
 			"deployed_hardware_reservation_id": {
 				Type:        schema.TypeString,
 				Description: "ID of hardware reservation where this device was deployed. It is useful when using the next-available hardware reservation",
 				Computed:    true,
 			},
-
 			"hardware_reservation_id": {
 				Type:        schema.TypeString,
 				Description: "The UUID of the hardware reservation where you want this device deployed, or next-available if you want to pick your next available reservation automatically",
@@ -313,7 +287,6 @@ func resourceMetalDevice() *schema.Resource {
 					return ok && dhwr == new
 				},
 			},
-
 			"tags": {
 				Type:        schema.TypeList,
 				Description: "Tags attached to the device",
@@ -338,7 +311,6 @@ func resourceMetalDevice() *schema.Resource {
 				ForceNew:    true,
 				Elem:        &schema.Schema{Type: schema.TypeString},
 			},
-
 			"user_ssh_key_ids": {
 				Type:        schema.TypeList,
 				Description: "Array of IDs of the user SSH keys which should be added to the device. If you omit this, SSH keys of all the members of the parent project will be added to the device. If you specify this array, only the listed user SSH keys (and any project_ssh_key_ids) will be added. User SSH keys can be created with the [equinix_metal_ssh_key](equinix_metal_ssh_key.md) resource",
@@ -379,7 +351,6 @@ func resourceMetalDevice() *schema.Resource {
 					return
 				},
 			},
-
 			"reinstall": {
 				Type:     schema.TypeList,
 				MaxItems: 1,
@@ -407,88 +378,91 @@ func resourceMetalDevice() *schema.Resource {
 					},
 				},
 			},
-
-			"behavior": {
-				Type:     schema.TypeList,
-				MaxItems: 1,
-				Optional: true,
+			"behaviors": {
+				Type:        schema.TypeList,
+				MaxItems:    1,
+				Optional:    true,
+				Description: "Behaviors are configurable provider resource behaviors that do not map directly to API features. Behaviors affect how the provider applies property changes when the desired affect is not obvious. Some use-cases may benefit from API mutable fields being treated as mutable in the provider, while others prefer the fields to be treated as immutable.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"allow_changes": {
-							Type: schema.TypeList,
-							Elem: &schema.Schema{
-								Type: schema.TypeString,
-								ValidateFunc: func(val interface{}, key string) (warns []string, errs []error) {
-									attribute := val.(string)
-									supportedAttributes := []string{"custom_data", "user_data"}
-									if !contains(supportedAttributes, attribute) {
-										errs = []error{fmt.Errorf("behavior.allow_changes was given %s, but only supports %v", attribute, supportedAttributes)}
-									}
-									return
-								},
-							},
-							Description: "List of attributes that are allowed to change without recreating the instance. Supported attributes: `custom_data`, `user_data`",
+						"immutable_user_data": {
+							Type:        schema.TypeBool,
+							Description: "Whether changes to the user_data field should result in a new device. The default, false, allows mutations (changes) to the user_data without destroying the device instance.",
 							Optional:    true,
+							Default:     false,
+						},
+						"immutable_ipxe_script_url": {
+							Type:        schema.TypeBool,
+							Description: "Whether changes to the ipxe_script_url field should result in a new device. The default, false, allows mutations (changes) to the ipxe_script_url without destroying the device instance.",
+							Optional:    true,
+							Default:     false,
+						},
+						"immutable_custom_data": {
+							Type:        schema.TypeBool,
+							Description: "Whether changes to the custom_data field should result in a new device. The default, false, allows mutations (changes) to the custom_data without destroying the device instance.",
+							Optional:    true,
+							Default:     false,
 						},
 					},
 				},
 			},
 		},
 		CustomizeDiff: customdiff.Sequence(
-			customdiff.ForceNewIf("custom_data", reinstallDisabledAndNoChangesAllowed("custom_data")),
-			customdiff.ForceNewIf("operating_system", reinstallDisabled),
-			customdiff.ForceNewIf("user_data", reinstallDisabledAndNoChangesAllowed("user_data")),
+			customdiff.ForceNewIf("operating_system", shouldReinstall),
+			customdiff.ForceNewIf("custom_data", requiresForceNew("immutable_custom_data")),
+			customdiff.ForceNewIf("user_data", requiresForceNew("immutable_user_data")),
+			customdiff.ForceNewIf("ipxe_script_url", requiresForceNew("immutable_ipxe_script_url")),
 		),
 	}
 }
 
-// This method returns true if reinstall is disabled, and false if it is enabled.
-// This is used to set ForceNew to true when reinstall is disabled
-func reinstallDisabled(_ context.Context, d *schema.ResourceDiff, meta interface{}) bool {
+func requiresForceNew(field string) customdiff.ResourceConditionFunc {
+	return func(ctx context.Context, d *schema.ResourceDiff, meta interface{}) bool {
+		return shouldReinstall(ctx, d, meta) && behaviorImmutable(d.Get("behaviors"), field)
+	}
+}
+
+func shouldReinstall(_ context.Context, d *schema.ResourceDiff, meta interface{}) bool {
 	reinstall, ok := d.GetOk("reinstall")
 
+	// Prior behaviour was to always destroy and create,
+	// so in the event we can't get the reinstall config; let's
+	// continue to do so.
 	if !ok {
-		// There is no reinstall attribute, so ForceNew should be true
 		return true
 	}
 
-	// To reach this point, the device config had to include a `reinstall` block,
-	// so we can assume all necessary parts of that block are filled in
-	reinstall_list := reinstall.([]interface{})
-	reinstall_config := reinstall_list[0].(map[string]interface{})
+	// We didn't get a reinstall configuration
+	reinstall_list, ok := reinstall.([]interface{})
+	if !ok {
+		return true
+	}
+
+	reinstall_config, ok := reinstall_list[0].(map[string]interface{})
+
+	// We didn't get a reinstall configuration
+	if !ok {
+		return true
+	}
 
 	return !reinstall_config["enabled"].(bool)
 }
 
-func reinstallDisabledAndNoChangesAllowed(attribute string) customdiff.ResourceConditionFunc {
-	return func(ctx context.Context, d *schema.ResourceDiff, meta interface{}) bool {
-		if reinstallDisabled(ctx, d, meta) {
-			// If reinstall is disabled, we need to see if ForceNew
-			// should be disabled due to behavior settings
-			behavior, ok := d.GetOk("behavior")
-
-			if !ok {
-				// This means reinstall is disabled and there is no behavior
-				// attribute, so ForceNew should be true
-				return true
-			}
-
-			// To reach this point, the device config had to include a `behavior`
-			// block, so we can assume all necessary parts of that block are filled in
-			behavior_list := behavior.([]interface{})
-			behavior_config := behavior_list[0].(map[string]interface{})
-
-			allow_changes := convertStringArr(behavior_config["allow_changes"].([]interface{}))
-
-			// This means we got a valid behavior specification, so we set ForceNew
-			// to true if behavior.allow_changes includes the attribute that is changing
-			return !contains(allow_changes, attribute)
-		}
-
-		// This means reinstall is enabled, so it doesn't matter what the behavior
-		// says; ForceNew should not be set to true in this case
+func behaviorImmutable(behaviors interface{}, field string) bool{
+	// We didn't get a behaviors configuration
+	behaviors_list, ok := behaviors.([]interface{})
+	if !ok {
 		return false
 	}
+
+	behaviors_config, ok := behaviors_list[0].(map[string]interface{})
+
+	// We didn't get a behaviors configuration
+	if !ok {
+		return false
+	}
+
+	return behaviors_config[field].(bool)
 }
 
 func resourceMetalDeviceCreate(d *schema.ResourceData, meta interface{}) error {
@@ -790,47 +764,48 @@ func resourceMetalDeviceUpdate(d *schema.ResourceData, meta interface{}) error {
 		}
 	}
 
-	if err := doReinstall(client, d, meta); err != nil {
-		return err
-	}
-
-	return resourceMetalDeviceRead(d, meta)
-}
-
-func doReinstall(client *packngo.Client, d *schema.ResourceData, meta interface{}) error {
-	if d.HasChange("operating_system") || d.HasChange("user_data") || d.HasChange("custom_data") {
-		reinstall, ok := d.GetOk("reinstall")
-
-		if !ok {
-			// Assume we're here because behavior.allow_changes was set (not an error)
-			return nil
-		}
-
-		reinstall_list := reinstall.([]interface{})
-		reinstall_config := reinstall_list[0].(map[string]interface{})
-
-		if !reinstall_config["enabled"].(bool) {
-			// This means a reinstall block was provided, but reinstall was explicitly
-			// disabled.  Assume we're here because behavior.allow_changes was set (not an error)
-			return nil
-		}
-
-		reinstallOptions := packngo.DeviceReinstallFields{
-			OperatingSystem: d.Get("operating_system").(string),
-			PreserveData:    reinstall_config["preserve_data"].(bool),
-			DeprovisionFast: reinstall_config["deprovision_fast"].(bool),
+	if d.HasChange("operating_system") || 
+	(d.HasChange("user_data") && behaviorImmutable(d.Get("behaviors"), "immutable_user_data")) || 
+	(d.HasChange("custom_data") && behaviorImmutable(d.Get("behaviors"), "immutable_custom_data")) {
+		reinstallOptions, err := getReinstallOptions(d)
+		if err != nil {
+			return friendlyError(err)
 		}
 
 		if _, err := client.Devices.Reinstall(d.Id(), &reinstallOptions); err != nil {
 			return friendlyError(err)
 		}
 
-		if err := waitForActiveDevice(d, meta); err != nil {
+		if err = waitForActiveDevice(d, meta); err != nil {
 			return err
 		}
 	}
 
-	return nil
+	return resourceMetalDeviceRead(d, meta)
+}
+
+func getReinstallOptions(d *schema.ResourceData) (packngo.DeviceReinstallFields, error) {
+	reinstall_list, ok := d.Get("reinstall").([]interface{})
+
+	if !ok {
+		return packngo.DeviceReinstallFields{}, fmt.Errorf("expected reinstall configuration and none available")
+	}
+
+	if len(reinstall_list) == 0 {
+		return packngo.DeviceReinstallFields{}, fmt.Errorf("expected reinstall configuration and none available")
+	}
+
+	reinstall_config, ok := reinstall_list[0].(map[string]interface{})
+
+	if !ok {
+		return packngo.DeviceReinstallFields{}, fmt.Errorf("expected reinstall configuration and none available")
+	}
+
+	return packngo.DeviceReinstallFields{
+		OperatingSystem: d.Get("operating_system").(string),
+		PreserveData:    reinstall_config["preserve_data"].(bool),
+		DeprovisionFast: reinstall_config["deprovision_fast"].(bool),
+	}, nil
 }
 
 func resourceMetalDeviceDelete(d *schema.ResourceData, meta interface{}) error {

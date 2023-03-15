@@ -64,6 +64,7 @@ func createFabricServiceProfileSchema() map[string]*schema.Schema {
 			Type:        schema.TypeSet,
 			Optional:    true,
 			Description: "Marketing Info",
+			MaxItems:    1,
 			Elem: &schema.Resource{
 				Schema: createMarketingInfoSch(),
 			},
@@ -120,6 +121,7 @@ func createFabricServiceProfileSchema() map[string]*schema.Schema {
 			Type:        schema.TypeSet,
 			Optional:    true,
 			Description: "Account",
+			MaxItems:    1,
 			Elem: &schema.Resource{
 				Schema: createSPAccountSch(),
 			},
@@ -128,6 +130,7 @@ func createFabricServiceProfileSchema() map[string]*schema.Schema {
 			Type:        schema.TypeSet,
 			Optional:    true,
 			Description: "Project information",
+			MaxItems:    1,
 			Elem: &schema.Resource{
 				Schema: createGatewayProjectSch(),
 			},
@@ -136,6 +139,7 @@ func createFabricServiceProfileSchema() map[string]*schema.Schema {
 			Type:        schema.TypeSet,
 			Computed:    true,
 			Description: "Captures connection lifecycle change information",
+			MaxItems:    1,
 			Elem: &schema.Resource{
 				Schema: createChangeLogSch(),
 			},
@@ -240,6 +244,7 @@ func createServiceProfileAccessPointColo() map[string]*schema.Schema {
 			Type:        schema.TypeSet,
 			Optional:    true,
 			Description: "Colo/Port Location",
+			MaxItems:    1,
 			Elem: &schema.Resource{
 				Schema: createLocationSch(),
 			},
@@ -277,7 +282,8 @@ func createServiceProfileAccessPointVd() map[string]*schema.Schema {
 		"location": {
 			Type:        schema.TypeSet,
 			Optional:    true,
-			Description: " Device Location",
+			Description: "Device Location",
+			MaxItems:    1,
 			Elem: &schema.Resource{
 				Schema: createLocationSch(),
 			},
@@ -387,6 +393,7 @@ func createSPAccessPointTypeConfigSch() map[string]*schema.Schema {
 			Type:        schema.TypeSet,
 			Optional:    true,
 			Description: "Api configuration details",
+			MaxItems:    1,
 			Elem: &schema.Resource{
 				Schema: createApiConfigSch(),
 			},
@@ -395,6 +402,7 @@ func createSPAccessPointTypeConfigSch() map[string]*schema.Schema {
 			Type:        schema.TypeSet,
 			Optional:    true,
 			Description: "Authentication key details",
+			MaxItems:    1,
 			Elem: &schema.Resource{
 				Schema: createAuthenticationKeySch(),
 			},
@@ -403,6 +411,7 @@ func createSPAccessPointTypeConfigSch() map[string]*schema.Schema {
 			Type:        schema.TypeSet,
 			Optional:    true,
 			Description: "Link protocol configuration details",
+			MaxItems:    1,
 			Elem: &schema.Resource{
 				Schema: createLinkProtocolConfigSch(),
 			},
