@@ -139,7 +139,6 @@ func createFabricServiceProfileSchema() map[string]*schema.Schema {
 			Type:        schema.TypeSet,
 			Computed:    true,
 			Description: "Captures connection lifecycle change information",
-			MaxItems:    1,
 			Elem: &schema.Resource{
 				Schema: createChangeLogSch(),
 			},

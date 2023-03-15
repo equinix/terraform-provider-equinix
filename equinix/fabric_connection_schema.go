@@ -283,7 +283,6 @@ func createPortSch() map[string]*schema.Schema {
 			Type:        schema.TypeSet,
 			Computed:    true,
 			Description: "Redundancy Information",
-			MaxItems:    1,
 			Elem: &schema.Resource{
 				Schema: createPortRedundancySch(),
 			},
@@ -309,7 +308,6 @@ func createConnectionSideAccessPointRes() *schema.Resource {
 				Type:        schema.TypeSet,
 				Computed:    true,
 				Description: "Account",
-				MaxItems:    1,
 				Elem: &schema.Resource{
 					Schema: createAccountSch(),
 				},
@@ -814,7 +812,6 @@ func createFabricConnectionResourceSchema() map[string]*schema.Schema {
 			Type:        schema.TypeSet,
 			Computed:    true,
 			Description: "Customer account information that is associated with this connection",
-			MaxItems:    1,
 			Elem: &schema.Resource{
 				Schema: createAccountSch(),
 			},
@@ -823,7 +820,6 @@ func createFabricConnectionResourceSchema() map[string]*schema.Schema {
 			Type:        schema.TypeSet,
 			Computed:    true,
 			Description: "Captures connection lifecycle change information",
-			MaxItems:    1,
 			Elem: &schema.Resource{
 				Schema: createChangeLogSch(),
 			},
