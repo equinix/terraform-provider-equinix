@@ -260,7 +260,6 @@ func createDataSourceNetworkDeviceSchema() map[string]*schema.Schema {
 		neDeviceSchemaNames["UserPublicKey"]: {
 			Type:     schema.TypeSet,
 			Computed: true,
-			MaxItems: 1,
 			Elem: &schema.Resource{
 				Schema: createDataSourceNetworkDeviceUserKeySchema(),
 			},
@@ -280,7 +279,6 @@ func createDataSourceNetworkDeviceSchema() map[string]*schema.Schema {
 			Type:        schema.TypeList,
 			Computed:    true,
 			Description: neDeviceDescriptions["Secondary"],
-			MaxItems:    1,
 			Elem: &schema.Resource{
 				Schema: map[string]*schema.Schema{
 					neDeviceSchemaNames["UUID"]: {
@@ -411,7 +409,6 @@ func createDataSourceNetworkDeviceSchema() map[string]*schema.Schema {
 					neDeviceSchemaNames["UserPublicKey"]: {
 						Type:     schema.TypeSet,
 						Computed: true,
-						MaxItems: 1,
 						Elem: &schema.Resource{
 							Schema: createDataSourceNetworkDeviceUserKeySchema(),
 						},
@@ -454,7 +451,6 @@ func createDataSourceNetworkDeviceSchema() map[string]*schema.Schema {
 					neDeviceClusterSchemaNames["Node0"]: {
 						Type:     schema.TypeList,
 						Computed: true,
-						MaxItems: 1,
 						Elem: &schema.Resource{
 							Schema: createDataSourceClusterNodeDetailSchema(),
 						},
@@ -463,7 +459,6 @@ func createDataSourceNetworkDeviceSchema() map[string]*schema.Schema {
 					neDeviceClusterSchemaNames["Node1"]: {
 						Type:     schema.TypeList,
 						Computed: true,
-						MaxItems: 1,
 						Elem: &schema.Resource{
 							Schema: createDataSourceClusterNodeDetailSchema(),
 						},
@@ -551,7 +546,6 @@ func createDataSourceClusterNodeDetailSchema() map[string]*schema.Schema {
 		neDeviceClusterNodeSchemaNames["VendorConfiguration"]: {
 			Type:     schema.TypeList,
 			Computed: true,
-			MaxItems: 1,
 			Elem: &schema.Resource{
 				Schema: createDataSourceVendorConfigurationSchema(),
 			},

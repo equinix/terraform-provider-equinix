@@ -173,7 +173,6 @@ func readAccessPointTypeConfigSch() map[string]*schema.Schema {
 			Type:        schema.TypeSet,
 			Computed:    true,
 			Description: "Api configuration details",
-			MaxItems:    1,
 			Elem: &schema.Resource{
 				Schema: readApiConfigSch(),
 			},
@@ -182,7 +181,6 @@ func readAccessPointTypeConfigSch() map[string]*schema.Schema {
 			Type:        schema.TypeSet,
 			Computed:    true,
 			Description: "Authentication key details",
-			MaxItems:    1,
 			Elem: &schema.Resource{
 				Schema: readAuthenticationKeySch(),
 			},
@@ -191,7 +189,6 @@ func readAccessPointTypeConfigSch() map[string]*schema.Schema {
 			Type:        schema.TypeSet,
 			Computed:    true,
 			Description: "Link protocol configuration details",
-			MaxItems:    1,
 			Elem: &schema.Resource{
 				Schema: readLinkProtocolConfigSch(),
 			},
@@ -371,7 +368,6 @@ func readPortSch() map[string]*schema.Schema {
 			Type:        schema.TypeSet,
 			Computed:    true,
 			Description: "Redundancy Information",
-			MaxItems:    1,
 			Elem: &schema.Resource{
 				Schema: readPortRedundancySch(),
 			},
@@ -395,7 +391,6 @@ func readConnectionSideAccessPointSch() map[string]*schema.Schema {
 			Type:        schema.TypeSet,
 			Computed:    true,
 			Description: "Account",
-			MaxItems:    1,
 			Elem: &schema.Resource{
 				Schema: readAccountSch(),
 			},
@@ -404,7 +399,6 @@ func readConnectionSideAccessPointSch() map[string]*schema.Schema {
 			Type:        schema.TypeSet,
 			Computed:    true,
 			Description: "Access point location",
-			MaxItems:    1,
 			Elem: &schema.Resource{
 				Schema: readLocationSch(),
 			},
@@ -413,7 +407,6 @@ func readConnectionSideAccessPointSch() map[string]*schema.Schema {
 			Type:        schema.TypeSet,
 			Computed:    true,
 			Description: "Port access point information",
-			MaxItems:    1,
 			Elem: &schema.Resource{
 				Schema: readPortSch(),
 			},
@@ -422,7 +415,6 @@ func readConnectionSideAccessPointSch() map[string]*schema.Schema {
 			Type:        schema.TypeSet,
 			Computed:    true,
 			Description: "Service Profile",
-			MaxItems:    1,
 			Elem: &schema.Resource{
 				Schema: readServiceProfileSch(),
 			},
@@ -431,7 +423,6 @@ func readConnectionSideAccessPointSch() map[string]*schema.Schema {
 			Type:        schema.TypeSet,
 			Computed:    true,
 			Description: "Gateway access point information",
-			MaxItems:    1,
 			Elem: &schema.Resource{
 				Schema: readVirtualGatewaySch(),
 			},
@@ -440,7 +431,6 @@ func readConnectionSideAccessPointSch() map[string]*schema.Schema {
 			Type:        schema.TypeSet,
 			Computed:    true,
 			Description: "Connection link protocol",
-			MaxItems:    1,
 			Elem: &schema.Resource{
 				Schema: readAccessPointLinkProtocolSch(),
 			},
@@ -449,14 +439,12 @@ func readConnectionSideAccessPointSch() map[string]*schema.Schema {
 			Type:        schema.TypeSet,
 			Computed:    true,
 			Description: "Virtual device",
-			MaxItems:    1,
 			Elem:        &schema.Resource{Schema: readAccessPointVirtualDeviceSch()},
 		},
 		"interface": {
 			Type:        schema.TypeSet,
 			Computed:    true,
 			Description: "Virtual device interface",
-			MaxItems:    1,
 			Elem: &schema.Resource{
 				Schema: readAccessPointInterface(),
 			},
@@ -485,7 +473,6 @@ func readFabricConnectionSideSch() map[string]*schema.Schema {
 			Type:        schema.TypeSet,
 			Computed:    true,
 			Description: "For service token based connections, Service tokens authorize users to access protected resources and services. Resource owners can distribute the tokens to trusted partners and vendors, allowing selected third parties to work directly with Equinix network assets",
-			MaxItems:    1,
 			Elem: &schema.Resource{
 				Schema: readServiceTokenSch(),
 			},
@@ -494,7 +481,6 @@ func readFabricConnectionSideSch() map[string]*schema.Schema {
 			Type:        schema.TypeSet,
 			Computed:    true,
 			Description: "Point of access details",
-			MaxItems:    1,
 			Elem: &schema.Resource{
 				Schema: readConnectionSideAccessPointSch(),
 			},
@@ -817,7 +803,6 @@ func readFabricConnectionResourceSchema() map[string]*schema.Schema {
 			Type:        schema.TypeSet,
 			Computed:    true,
 			Description: "Connection specific operational data",
-			MaxItems:    1,
 			Elem: &schema.Resource{
 				Schema: readOperationSch(),
 			},
@@ -842,7 +827,6 @@ func readFabricConnectionResourceSchema() map[string]*schema.Schema {
 			Type:        schema.TypeSet,
 			Computed:    true,
 			Description: "Order related to this connection information",
-			MaxItems:    1,
 			Elem: &schema.Resource{
 				Schema: readOrderSch(),
 			},
@@ -851,7 +835,6 @@ func readFabricConnectionResourceSchema() map[string]*schema.Schema {
 			Type:        schema.TypeSet,
 			Computed:    true,
 			Description: "Customer account information that is associated with this connection",
-			MaxItems:    1,
 			Elem: &schema.Resource{
 				Schema: readAccountSch(),
 			},
@@ -860,7 +843,6 @@ func readFabricConnectionResourceSchema() map[string]*schema.Schema {
 			Type:        schema.TypeSet,
 			Computed:    true,
 			Description: "Captures connection lifecycle change information",
-			MaxItems:    1,
 			Elem: &schema.Resource{
 				Schema: readChangeLogSch(),
 			},
@@ -869,7 +851,6 @@ func readFabricConnectionResourceSchema() map[string]*schema.Schema {
 			Type:        schema.TypeSet,
 			Computed:    true,
 			Description: "Redundancy Information",
-			MaxItems:    1,
 			Elem: &schema.Resource{
 				Schema: readRedundancySch(),
 			},
@@ -883,7 +864,6 @@ func readFabricConnectionResourceSchema() map[string]*schema.Schema {
 			Type:        schema.TypeSet,
 			Computed:    true,
 			Description: "Requester or Customer side connection configuration object of the multi-segment connection",
-			MaxItems:    1,
 			Elem: &schema.Resource{
 				Schema: readFabricConnectionSideSch(),
 			},
@@ -892,7 +872,6 @@ func readFabricConnectionResourceSchema() map[string]*schema.Schema {
 			Type:        schema.TypeSet,
 			Computed:    true,
 			Description: "Destination or Provider side connection configuration object of the multi-segment connection",
-			MaxItems:    1,
 			Elem: &schema.Resource{
 				Schema: readFabricConnectionSideSch(),
 			},
@@ -901,7 +880,6 @@ func readFabricConnectionResourceSchema() map[string]*schema.Schema {
 			Type:        schema.TypeSet,
 			Optional:    true,
 			Description: "Project information",
-			MaxItems:    1,
 			Elem: &schema.Resource{
 				Schema: createGatewayProjectSch(),
 			},

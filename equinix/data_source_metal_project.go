@@ -66,7 +66,6 @@ func dataSourceMetalProject() *schema.Resource {
 			"bgp_config": {
 				Type:        schema.TypeList,
 				Description: "Optional BGP settings. Refer to [Equinix Metal guide for BGP](https://metal.equinix.com/developers/docs/networking/local-global-bgp/)",
-				MaxItems:    1,
 				Computed:    true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{

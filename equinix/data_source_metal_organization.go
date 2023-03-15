@@ -57,7 +57,6 @@ func dataSourceMetalOrganization() *schema.Resource {
 				Type:        schema.TypeList,
 				Description: "Business' address",
 				Computed:    true,
-				MaxItems:    1,
 				Elem: &schema.Resource{
 					Schema: createOrganizationAddressDataSourceSchema(),
 				},
