@@ -81,8 +81,8 @@ the Equinix Metal API). It can be updated.
 The `bgp_config` block supports:
 
 * `asn` - (Required) Autonomous System Number for local BGP deployment.
-* `deployment_type` - (Required) `private` or `public`, the `private` is likely to be usable immediately, the
-`public` will need to be reviewed by Equinix Metal engineers.
+* `deployment_type` - (Required) `local` or `global`, the `local` is likely to be usable immediately, the
+`global` will need to be reviewed by Equinix Metal engineers.
 * `md5` - (Optional) Password for BGP session in plaintext (not a checksum).
 
 ## Attributes Reference
