@@ -124,7 +124,7 @@ locals {
 
 	//Operations to select a facility randomly and avoid race conditions with facilities without capacity.
     //With these operations we use current time seconds as the seed, and avoid using a third party provider in the Equinix provider tests
-    facilities             = tolist(setsubtract(local.plans[local.plan_idx].available_in, ["sjc1", "ld7", "sy4", "ny6"]))
+    facilities             = tolist(setsubtract(local.plans[local.plan_idx].available_in, ["nrt1", "dfw2", "ewr1", "ams1", "sjc1", "ld7", "sy4", "ny6"]))
     facilities_random_num  = formatdate("s", timestamp())
     facilities_length      = length(local.facilities)
     facilities_range_limit = ceil(59 / local.facilities_length) == 1 ? local.facilities_length : 59
