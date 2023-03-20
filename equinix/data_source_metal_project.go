@@ -109,7 +109,7 @@ func dataSourceMetalProjectRead(d *schema.ResourceData, meta interface{}) error 
 	projectIdRaw, projectIdOK := d.GetOk("project_id")
 
 	if !projectIdOK && !nameOK {
-		return fmt.Errorf("You must supply project_id or name")
+		return fmt.Errorf("you must supply project_id or name")
 	}
 	var project *packngo.Project
 

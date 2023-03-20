@@ -317,6 +317,7 @@ func createConnectionSideAccessPointRes() *schema.Resource {
 				Optional:    true,
 				Computed:    true,
 				Description: "Access point location",
+				MaxItems:    1,
 				Elem: &schema.Resource{
 					Schema: createLocationSch(),
 				},
@@ -325,6 +326,7 @@ func createConnectionSideAccessPointRes() *schema.Resource {
 				Type:        schema.TypeSet,
 				Optional:    true,
 				Description: "Port access point information",
+				MaxItems:    1,
 				Elem: &schema.Resource{
 					Schema: createPortSch(),
 				},
@@ -333,6 +335,7 @@ func createConnectionSideAccessPointRes() *schema.Resource {
 				Type:        schema.TypeSet,
 				Optional:    true,
 				Description: "Service Profile",
+				MaxItems:    1,
 				Elem: &schema.Resource{
 					Schema: createServiceProfileSch(),
 				},
@@ -341,6 +344,7 @@ func createConnectionSideAccessPointRes() *schema.Resource {
 				Type:        schema.TypeSet,
 				Optional:    true,
 				Description: "Gateway access point information",
+				MaxItems:    1,
 				Elem: &schema.Resource{
 					Schema: createVirtualGatewaySch(),
 				},
@@ -349,6 +353,7 @@ func createConnectionSideAccessPointRes() *schema.Resource {
 				Type:        schema.TypeSet,
 				Optional:    true,
 				Description: "Connection link protocol",
+				MaxItems:    1,
 				Elem: &schema.Resource{
 					Schema: createAccessPointLinkProtocolSch(),
 				},
@@ -357,12 +362,14 @@ func createConnectionSideAccessPointRes() *schema.Resource {
 				Type:        schema.TypeSet,
 				Optional:    true,
 				Description: "Virtual device",
+				MaxItems:    1,
 				Elem:        &schema.Resource{Schema: createAccessPointVirtualDeviceSch()},
 			},
 			"interface": {
 				Type:        schema.TypeSet,
 				Optional:    true,
 				Description: "Virtual device interface",
+				MaxItems:    1,
 				Elem: &schema.Resource{
 					Schema: createAccessPointInterface(),
 				},
@@ -402,6 +409,7 @@ func createFabricConnectionSideRes() *schema.Resource {
 				Type:        schema.TypeSet,
 				Optional:    true,
 				Description: "For service token based connections, Service tokens authorize users to access protected resources and services. Resource owners can distribute the tokens to trusted partners and vendors, allowing selected third parties to work directly with Equinix network assets",
+				MaxItems:    1,
 				Elem: &schema.Resource{
 					Schema: createServiceTokenSch(),
 				},
@@ -410,6 +418,7 @@ func createFabricConnectionSideRes() *schema.Resource {
 				Type:        schema.TypeSet,
 				Optional:    true,
 				Description: "Point of access details",
+				MaxItems:    1,
 				Elem:        createConnectionSideAccessPointRes(),
 			},
 			"additional_info": {
@@ -785,6 +794,7 @@ func createFabricConnectionResourceSchema() map[string]*schema.Schema {
 			Type:        schema.TypeSet,
 			Optional:    true,
 			Description: "Order related to this connection information",
+			MaxItems:    1,
 			Elem: &schema.Resource{
 				Schema: createOrderSch(),
 			},
@@ -793,6 +803,7 @@ func createFabricConnectionResourceSchema() map[string]*schema.Schema {
 			Type:        schema.TypeSet,
 			Optional:    true,
 			Description: "Project information",
+			MaxItems:    1,
 			Elem: &schema.Resource{
 				Schema: createGatewayProjectSch(),
 			},
@@ -817,6 +828,7 @@ func createFabricConnectionResourceSchema() map[string]*schema.Schema {
 			Type:        schema.TypeSet,
 			Optional:    true,
 			Description: "Redundancy Information",
+			MaxItems:    1,
 			Elem: &schema.Resource{
 				Schema: createRedundancySch(),
 			},
@@ -830,6 +842,7 @@ func createFabricConnectionResourceSchema() map[string]*schema.Schema {
 			Type:        schema.TypeSet,
 			Required:    true,
 			Description: "Requester or Customer side connection configuration object of the multi-segment connection",
+			MaxItems:    1,
 			Elem:        createFabricConnectionSideRes(),
 			Set:         schema.HashResource(createConnectionSideAccessPointRes()),
 		},
@@ -837,6 +850,7 @@ func createFabricConnectionResourceSchema() map[string]*schema.Schema {
 			Type:        schema.TypeSet,
 			Required:    true,
 			Description: "Destination or Provider side connection configuration object of the multi-segment connection",
+			MaxItems:    1,
 			Elem:        createFabricConnectionSideRes(),
 			Set:         schema.HashResource(createConnectionSideAccessPointRes()),
 		},

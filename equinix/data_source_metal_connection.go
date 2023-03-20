@@ -155,14 +155,14 @@ func dataSourceMetalConnection() *schema.Resource {
 			},
 			"vlans": {
 				Type:        schema.TypeList,
-				Description: "Attached vlans, only in shared connection.",
+				Description: "Attached vlans, only in shared connection",
 				Computed:    true,
 				Elem:        &schema.Schema{Type: schema.TypeInt},
 			},
 			"service_token_type": {
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "Only used with shared connection. Type of service token to use for the connection, a_side or z_side.",
+				Description: "Only used with shared connection. Type of service token to use for the connection, a_side or z_side",
 			},
 			"organization_id": {
 				Type:        schema.TypeString,

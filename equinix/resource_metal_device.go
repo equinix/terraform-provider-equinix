@@ -96,7 +96,6 @@ func resourceMetalDevice() *schema.Resource {
 				},
 				StateFunc: toLower,
 			},
-
 			"facilities": {
 				Type:        schema.TypeList,
 				Description: "List of facility codes with deployment preferences. Equinix Metal API will go through the list and will deploy your device to first facility with free capacity. List items must be facility codes or any (a wildcard). To find the facility code, visit [Facilities API docs](https://metal.equinix.com/developers/api/facilities/), set your API auth token in the top of the page and see JSON from the API response. Conflicts with metro",
@@ -125,14 +124,12 @@ func resourceMetalDevice() *schema.Resource {
 				Elem:        ipAddressSchema(),
 				MinItems:    1,
 			},
-
 			"plan": {
 				Type:        schema.TypeString,
 				Description: "The device plan slug. To find the plan slug, visit [Device plans API docs](https://metal.equinix.com/developers/api/plans), set your auth token in the top of the page and see JSON from the API response",
 				Required:    true,
 				ForceNew:    true,
 			},
-
 			"billing_cycle": {
 				Type:        schema.TypeString,
 				Description: "monthly or hourly",
@@ -145,32 +142,27 @@ func resourceMetalDevice() *schema.Resource {
 				Description: "The status of the device",
 				Computed:    true,
 			},
-
 			"root_password": {
 				Type:        schema.TypeString,
 				Description: "Root password to the server (disabled after 24 hours)",
 				Computed:    true,
 				Sensitive:   true,
 			},
-
 			"locked": {
 				Type:        schema.TypeBool,
 				Description: "Whether the device is locked",
 				Computed:    true,
 			},
-
 			"access_public_ipv6": {
 				Type:        schema.TypeString,
 				Description: "The ipv6 maintenance IP assigned to the device",
 				Computed:    true,
 			},
-
 			"access_public_ipv4": {
 				Type:        schema.TypeString,
 				Description: "The ipv4 maintenance IP assigned to the device",
 				Computed:    true,
 			},
-
 			"access_private_ipv4": {
 				Type:        schema.TypeString,
 				Description: "The ipv4 private IP assigned to the device",
@@ -216,7 +208,6 @@ func resourceMetalDevice() *schema.Resource {
 					},
 				},
 			},
-
 			"network": {
 				Type:        schema.TypeList,
 				Description: "The device's private and public IP (v4 and v6) network details. When a device is run without any special network configuration, it will have 3 addresses: public ipv4, private ipv4 and ipv6",
@@ -228,25 +219,21 @@ func resourceMetalDevice() *schema.Resource {
 							Description: "IPv4 or IPv6 address string",
 							Computed:    true,
 						},
-
 						"gateway": {
 							Type:        schema.TypeString,
 							Description: "Address of router",
 							Computed:    true,
 						},
-
 						"family": {
 							Type:        schema.TypeInt,
 							Description: "IP version - \"4\" or \"6\"",
 							Computed:    true,
 						},
-
 						"cidr": {
 							Type:        schema.TypeInt,
 							Description: "CIDR suffix for IP address block to be assigned, i.e. amount of addresses",
 							Computed:    true,
 						},
-
 						"public": {
 							Type:        schema.TypeBool,
 							Description: "Whether the address is routable from the Internet",
@@ -255,19 +242,16 @@ func resourceMetalDevice() *schema.Resource {
 					},
 				},
 			},
-
 			"created": {
 				Type:        schema.TypeString,
 				Description: "The timestamp for when the device was created",
 				Computed:    true,
 			},
-
 			"updated": {
 				Type:        schema.TypeString,
 				Description: "The timestamp for the last time the device was updated",
 				Computed:    true,
 			},
-
 			"user_data": {
 				Type:        schema.TypeString,
 				Description: "A string of the desired User Data for the device.  By default, changing this attribute will cause the provider to destroy and recreate your device.  If `reinstall` is specified or `behavior.allow_changes` includes `\"user_data\"`, the device will be updated in-place instead of recreated.",
@@ -275,7 +259,6 @@ func resourceMetalDevice() *schema.Resource {
 				Sensitive:   true,
 				ForceNew:    false, // Computed; see CustomizeDiff below
 			},
-
 			"custom_data": {
 				Type:        schema.TypeString,
 				Description: "A string of the desired Custom Data for the device.  By default, changing this attribute will cause the provider to destroy and recreate your device.  If `reinstall` is specified or `behavior.allow_changes` includes `\"custom_data\"`, the device will be updated in-place instead of recreated.",
@@ -283,26 +266,22 @@ func resourceMetalDevice() *schema.Resource {
 				Sensitive:   true,
 				ForceNew:    false, // Computed; see CustomizeDiff below
 			},
-
 			"ipxe_script_url": {
 				Type:        schema.TypeString,
 				Description: "URL pointing to a hosted iPXE script. More",
 				Optional:    true,
 			},
-
 			"always_pxe": {
 				Type:        schema.TypeBool,
 				Description: "If true, a device with OS custom_ipxe will",
 				Optional:    true,
 				Default:     false,
 			},
-
 			"deployed_hardware_reservation_id": {
 				Type:        schema.TypeString,
 				Description: "ID of hardware reservation where this device was deployed. It is useful when using the next-available hardware reservation",
 				Computed:    true,
 			},
-
 			"hardware_reservation_id": {
 				Type:        schema.TypeString,
 				Description: "The UUID of the hardware reservation where you want this device deployed, or next-available if you want to pick your next available reservation automatically",
@@ -313,7 +292,6 @@ func resourceMetalDevice() *schema.Resource {
 					return ok && dhwr == new
 				},
 			},
-
 			"tags": {
 				Type:        schema.TypeList,
 				Description: "Tags attached to the device",
@@ -338,7 +316,6 @@ func resourceMetalDevice() *schema.Resource {
 				ForceNew:    true,
 				Elem:        &schema.Schema{Type: schema.TypeString},
 			},
-
 			"user_ssh_key_ids": {
 				Type:        schema.TypeList,
 				Description: "Array of IDs of the user SSH keys which should be added to the device. If you omit this, SSH keys of all the members of the parent project will be added to the device. If you specify this array, only the listed user SSH keys (and any project_ssh_key_ids) will be added. User SSH keys can be created with the [equinix_metal_ssh_key](equinix_metal_ssh_key.md) resource",
@@ -379,7 +356,6 @@ func resourceMetalDevice() *schema.Resource {
 					return
 				},
 			},
-
 			"reinstall": {
 				Type:     schema.TypeList,
 				MaxItems: 1,
@@ -407,7 +383,6 @@ func resourceMetalDevice() *schema.Resource {
 					},
 				},
 			},
-
 			"behavior": {
 				Type:     schema.TypeList,
 				MaxItems: 1,

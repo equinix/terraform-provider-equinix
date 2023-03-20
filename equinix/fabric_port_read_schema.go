@@ -340,7 +340,7 @@ func readFabricPortsResponseSchema() map[string]*schema.Schema {
 		"data": {
 			Type:        schema.TypeList,
 			Computed:    true,
-			Description: "List of  Ports",
+			Description: "List of Ports",
 			Elem: &schema.Resource{
 				Schema: readFabricPortResourceSchemaUpdated(),
 			},

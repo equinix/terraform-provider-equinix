@@ -238,7 +238,7 @@ func readMarketingInfoSch() map[string]*schema.Schema {
 		"process_step": {
 			Type:        schema.TypeList,
 			Computed:    true,
-			Description: "Process Step",
+			Description: "List of process steps",
 			Elem: &schema.Resource{
 				Schema: readProcessStepSch(),
 			},
@@ -441,7 +441,7 @@ func readFabricServiceProfilesSearchSchema() map[string]*schema.Schema {
 		"data": {
 			Type:        schema.TypeList,
 			Computed:    true,
-			Description: "List of  Service Profiles",
+			Description: "List of Service Profiles",
 			Elem: &schema.Resource{
 				Schema: readFabricServiceProfileSchemaUpdated(),
 			},
