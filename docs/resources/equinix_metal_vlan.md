@@ -14,13 +14,6 @@ To learn more about Layer 2 networking in Equinix Metal, refer to
 ## Example Usage
 
 ```hcl
-# Create a new VLAN in facility "sv15"
-resource "equinix_metal_vlan" "vlan1" {
-  description = "VLAN in New Jersey"
-  facility    = "sv15"
-  project_id  = local.project_id
-}
-
 # Create a new VLAN in metro "esv"
 resource "equinix_metal_vlan" "vlan1" {
   description = "VLAN in New Jersey"
@@ -35,7 +28,8 @@ resource "equinix_metal_vlan" "vlan1" {
 The following arguments are supported:
 
 * `project_id` - (Required) ID of parent project.
-* `facility` - (Required) Facility where to create the VLAN.
+* `metro` - (Optional) Metro in which to create the VLAN
+* `facility` - (**Deprecated**) Facility where to create the VLAN. Use metro instead; read the [facility to metro migration guide](https://registry.terraform.io/providers/equinix/equinix/latest/docs/guides/migration_guide_facilities_to_metros_devices)
 * `description` - (Optional) Description string.
 * `vxlan` - (Optional) VLAN ID, must be unique in metro.
 

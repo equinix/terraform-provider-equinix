@@ -7,22 +7,22 @@ subcategory: "Metal"
 Provides a resource to attach elastic IP subnets to devices.
 
 To attach an IP subnet from a reserved block to a provisioned device, you must derive a subnet CIDR
-belonging to one of your reserved blocks in the same project and facility as the target device.
+belonging to one of your reserved blocks in the same project and metro as the target device.
 
 For example, you have reserved IPv4 address block `147.229.10.152/30`, you can choose to assign
 either the whole block as one subnet to a device; or 2 subnets with CIDRs `147.229.10.152/31` and
 `147.229.10.154/31`; or 4 subnets with mask prefix length `32`. More about the elastic IP subnets
 is [here](https://metal.equinix.com/developers/docs/networking/elastic-ips/).
 
-Device and reserved block must be in the same facility.
+Device and reserved block must be in the same metro.
 
 ## Example Usage
 
 ```hcl
-# Reserve /30 block of max 2 public IPv4 addresses in Parsippany, NJ (ny5) for myproject
+# Reserve /30 block of max 2 public IPv4 addresses in metro ny for myproject
 resource "equinix_metal_reserved_ip_block" "myblock" {
   project_id = local.project_id
-  facility   = "ny5"
+  metro      = "ny"
   quantity   = 2
 }
 
@@ -40,7 +40,7 @@ The following arguments are supported:
 
 * `device_id` - (Required) ID of device to which to assign the subnet.
 * `cidr_notation` - (Required) CIDR notation of subnet from block reserved in the same project
-and facility as the device.
+and metro as the device.
 
 ## Attributes Reference
 

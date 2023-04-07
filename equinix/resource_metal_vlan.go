@@ -32,6 +32,7 @@ func resourceMetalVlan() *schema.Resource {
 			"facility": {
 				Type:          schema.TypeString,
 				Description:   "Facility where to create the VLAN",
+				Deprecated:    "Use metro instead of facility.  For more information, read the migration guide: https://registry.terraform.io/providers/equinix/equinix/latest/docs/guides/migration_guide_facilities_to_metros_devices",
 				Optional:      true,
 				ForceNew:      true,
 				ConflictsWith: []string{"metro"},
@@ -45,6 +46,7 @@ func resourceMetalVlan() *schema.Resource {
 			},
 			"metro": {
 				Type:          schema.TypeString,
+				Description:   "Metro in which to create the VLAN",
 				Optional:      true,
 				ForceNew:      true,
 				ConflictsWith: []string{"facility"},

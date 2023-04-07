@@ -76,6 +76,7 @@ func dataSourceMetalFacility() *schema.Resource {
 			},
 			"capacity": capacitySchema(),
 		},
+		DeprecationMessage: "Use data_source_metal_metro instead.  For more information, read the migration guide: https://registry.terraform.io/providers/equinix/equinix/latest/docs/guides/migration_guide_facilities_to_metros_devices",
 	}
 }
 

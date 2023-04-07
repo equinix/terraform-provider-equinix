@@ -42,13 +42,13 @@ resource "equinix_metal_device" "pxe1" {
 }
 ```
 
-Create a device without a public IP address in facility ny5, with only a /30 private IPv4 subnet (4 IP addresses)
+Create a device without a public IP address in metro ny, with only a /30 private IPv4 subnet (4 IP addresses)
 
 ```hcl
 resource "equinix_metal_device" "web1" {
   hostname         = "tf.coreos2"
   plan             = "c3.small.x86"
-  facilities       = ["ny5"]
+  metro            = "ny"
   operating_system = "ubuntu_20_04"
   billing_cycle    = "hourly"
   project_id       = local.project_id
@@ -65,7 +65,7 @@ Deploy device on next-available reserved hardware and do custom partitioning.
 resource "equinix_metal_device" "web1" {
   hostname                = "tftest"
   plan                    = "c3.small.x86"
-  facilities              = ["ny5"]
+  metro                   = "ny"
   operating_system        = "ubuntu_20_04"
   billing_cycle           = "hourly"
   project_id              = local.project_id
@@ -162,11 +162,11 @@ on reboots.
 * `billing_cycle` - (Optional) monthly or hourly
 * `custom_data` - (Optional) A string of the desired Custom Data for the device.  By default, changing this attribute will cause the provider to destroy and recreate your device.  If `reinstall` is specified or `behavior.allow_changes` includes `"custom_data"`, the device will be updated in-place instead of recreated.
 * `description` - (Optional) The device description.
-* `facilities` - (Optional) List of facility codes with deployment preferences. Equinix Metal API will go
+* `facilities` - (**Deprecated**) List of facility codes with deployment preferences. Equinix Metal API will go
 through the list and will deploy your device to first facility with free capacity. List items must
 be facility codes or `any` (a wildcard). To find the facility code, visit
 [Facilities API docs](https://metal.equinix.com/developers/api/facilities/), set your API auth
-token in the top of the page and see JSON from the API response. Conflicts with `metro`.
+token in the top of the page and see JSON from the API response. Conflicts with `metro`.  Use metro instead; read the [facility to metro migration guide](https://registry.terraform.io/providers/equinix/equinix/latest/docs/guides/migration_guide_facilities_to_metros_devices)
 * `force_detach_volumes` - (Optional) Delete device even if it has volumes attached. Only applies
 for destroy action.
 * `hardware_reservation_id` - (Optional) The UUID of the hardware reservation where you want this
@@ -265,7 +265,7 @@ In addition to all arguments above, the following attributes are exported:
 * `access_public_ipv6` - The ipv6 maintenance IP assigned to the device.
 * `billing_cycle` - The billing cycle of the device (monthly or hourly).
 * `created` - The timestamp for when the device was created.
-* `deployed_facility` - The facility where the device is deployed.
+* `deployed_facility` - (**Deprecated**) The facility where the device is deployed. Use metro instead; read the [facility to metro migration guide](https://registry.terraform.io/providers/equinix/equinix/latest/docs/guides/migration_guide_facilities_to_metros_devices)
 * `deployed_hardware_reservation_id` - ID of hardware reservation where this device was deployed.
 It is useful when using the `next-available` hardware reservation.
 * `description` - Description string for the device.

@@ -34,6 +34,7 @@ func dataSourceMetalVlan() *schema.Resource {
 				Computed:      true,
 				ConflictsWith: []string{"vlan_id", "metro"},
 				Description:   "Facility where the VLAN is deployed",
+				Deprecated:    "Use metro instead of facility.  For more information, read the migration guide: https://registry.terraform.io/providers/equinix/equinix/latest/docs/guides/migration_guide_facilities_to_metros_devices",
 			},
 			"metro": {
 				Type:          schema.TypeString,

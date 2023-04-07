@@ -58,7 +58,7 @@ The following arguments are supported:
 * `address_family` - (Required) 4 or 6, depending on which block you are looking for.
 * `public` - (Required) Whether to look for public or private block.
 * `global` - (Optional) Whether to look for global block. Default is false for backward compatibility.
-* `facility` - (Optional) Facility of the searched block. (for non-global blocks).
+* `facility` - (**Deprecated**) Facility of the searched block. (for non-global blocks). Use metro instead; read the [facility to metro migration guide](https://registry.terraform.io/providers/equinix/equinix/latest/docs/guides/migration_guide_facilities_to_metros_devices)
 * `metro` - (Optional) Metro of the searched block (for non-global blocks).
 
 ## Attributes Reference

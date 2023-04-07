@@ -75,6 +75,7 @@ func resourceMetalDevice() *schema.Resource {
 			"deployed_facility": {
 				Type:        schema.TypeString,
 				Description: "The facility where the device is deployed",
+				Deprecated:  "Use metro instead of facility.  For more information, read the migration guide: https://registry.terraform.io/providers/equinix/equinix/latest/docs/guides/migration_guide_facilities_to_metros_devices",
 				Computed:    true,
 			},
 
@@ -99,6 +100,7 @@ func resourceMetalDevice() *schema.Resource {
 			"facilities": {
 				Type:        schema.TypeList,
 				Description: "List of facility codes with deployment preferences. Equinix Metal API will go through the list and will deploy your device to first facility with free capacity. List items must be facility codes or any (a wildcard). To find the facility code, visit [Facilities API docs](https://metal.equinix.com/developers/api/facilities/), set your API auth token in the top of the page and see JSON from the API response. Conflicts with metro",
+				Deprecated:  "Use metro instead of facilities.  For more information, read the migration guide: https://registry.terraform.io/providers/equinix/equinix/latest/docs/guides/migration_guide_facilities_to_metros_devices",
 				Optional:    true,
 				Elem:        &schema.Schema{Type: schema.TypeString},
 				ForceNew:    true,

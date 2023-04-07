@@ -57,13 +57,13 @@ output "plans" {
 }
 ```
 
-### Ignoring Changes to Plans/Facilities/Metro
+### Ignoring Changes to Plans/Metro
 
 Preserve deployed device plan, facility and metro when creating a new execution plan.
 
 As described in the [`data-resource-behavior`](https://www.terraform.io/language/data-sources#data-resource-behavior), terraform reads data resources during the planning phase in both the terraform plan and terraform apply commands. If the output from the data source is different to the prior state, it will propose changes to resources where there is a reference to their attributes.
 
-For `equinix_metal_plans`, it may happen that a device plan is no longer available in a facility/metro because there is no stock at that time or you were using a legacy server plan, and thus the returned list of plans matching your search criteria will be different from last `plan`/`apply`. Therefore, if a resource such as a `equinix_metal_device` uses the output of this data source to select a device plan or facility/metro, the Terraform plan will report that the `equinix_metal_device` needs to be recreated.
+For `equinix_metal_plans`, it may happen that a device plan is no longer available in a metro because there is no stock at that time or you were using a legacy server plan, and thus the returned list of plans matching your search criteria will be different from last `plan`/`apply`. Therefore, if a resource such as a `equinix_metal_device` uses the output of this data source to select a device plan or metro, the Terraform plan will report that the `equinix_metal_device` needs to be recreated.
 
 To prevent that you can take advantage of the Terraform [`lifecycle ignore_changes`](https://www.terraform.io/language/meta-arguments/lifecycle#ignore_changes) feature as shown in the example below.
 
@@ -84,12 +84,12 @@ data "equinix_metal_plans" "example" {
     }
 }
 
-# This equinix_metal_device will use the first returned plan and the list of facilities
-# It will ignore future changes on plan and facilities
+# This equinix_metal_device will use the first returned plan and the first metro in which that plan is available
+# It will ignore future changes on plan and metro
 resource "equinix_metal_device" "example" {
   hostname         = "example"
   plan             = data.equinix_metal_plans.example.plans[0].name
-  facilities       = data.equinix_metal_plans.example.plans[0].available_in
+  metro            = data.equinix_metal_plans.example.plans[0].available_in_metros[0]
   operating_system = "ubuntu_20_04"
   billing_cycle    = "hourly"
   project_id       = var.project_id
@@ -97,19 +97,19 @@ resource "equinix_metal_device" "example" {
   lifecycle {
     ignore_changes = [
         plan,
-        facilities,
+        metro,
     ]
   }
 }
 ```
 
-If your use case requires dynamic changes of a device plan or metro/facility you can define the lifecycle with a condition.
+If your use case requires dynamic changes of a device plan or metro you can define the lifecycle with a condition.
 
 ```hcl
 # Following example uses a boolean variable that may eventually be set to you false when you update your equinix_metal_plans filter criteria because you need a device plan with a new feature.
-variable "ignore_plans_facilities_changes" {
+variable "ignore_plans_metros_changes" {
   type = bool
-  description = "If set to true, it will ignore plans or facilities changes"
+  description = "If set to true, it will ignore plans or metros changes"
   default = false
 }
 
@@ -121,9 +121,9 @@ resource "equinix_metal_device" "example" {
   // required device arguments
 
   lifecycle {
-    ignore_changes = var.ignore_plans_facilities_changes ? [
+    ignore_changes = var.ignore_plans_metros_changes ? [
         plan,
-        facilities,
+        metro,
     ] : []
   }
 }
@@ -149,7 +149,7 @@ All fields in the `plans` block defined below can be used as attribute for both 
 
 In addition to all arguments above, the following attributes are exported:
 
-* `plans` - The ID of the facility
+* `plans`
   - `id` - id of the plan
   - `name` - name of the plan
   - `slug`- plan slug
@@ -160,5 +160,5 @@ In addition to all arguments above, the following attributes are exported:
   - `pricing_hour`- plan hourly price
   - `pricing_month`- plan monthly price
   - `deployment_types`- list of deployment types, e.g. on_demand, spot_market
-  - `available_in`- list of facilities where the plan is available
-  - `available_in_metros`- list of facilities where the plan is available
+  - `available_in`- (**Deprecated**) list of facilities where the plan is available
+  - `available_in_metros`- list of metros where the plan is available

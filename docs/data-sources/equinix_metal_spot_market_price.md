@@ -8,15 +8,6 @@ Use this data source to get Equinix Metal Spot Market Price for a plan.
 
 ## Example Usage
 
-Lookup by facility:
-
-```hcl
-data "equinix_metal_spot_market_price" "example" {
-  facility = "ny5"
-  plan     = "c3.small.x86"
-}
-```
-
 Lookup by metro:
 
 ```hcl
@@ -31,7 +22,7 @@ data "equinix_metal_spot_market_price" "example" {
 The following arguments are supported:
 
 * `plan` - (Required) Name of the plan.
-* `facility` - (Optional) Name of the facility.
+* `facility` - (**Deprecated**) Name of the facility. Use metro instead; read the [facility to metro migration guide](https://registry.terraform.io/providers/equinix/equinix/latest/docs/guides/migration_guide_facilities_to_metros_devices)
 * `metro` - (Optional) Name of the metro.
 
 ## Attributes Reference

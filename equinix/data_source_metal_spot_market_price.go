@@ -14,6 +14,7 @@ func dataSourceSpotMarketPrice() *schema.Resource {
 			"facility": {
 				Type:          schema.TypeString,
 				Description:   "Name of the facility",
+				Deprecated:    "Use metro instead of facility.  For more information, read the migration guide: https://registry.terraform.io/providers/equinix/equinix/latest/docs/guides/migration_guide_facilities_to_metros_devices",
 				ConflictsWith: []string{"metro"},
 				Optional:      true,
 			},

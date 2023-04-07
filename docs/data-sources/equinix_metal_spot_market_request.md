@@ -15,7 +15,7 @@ device IDs created by referenced Spot Market Request.
 resource "equinix_metal_spot_market_request" "req" {
   project_id       = local.project_id
   max_bid_price    = 0.1
-  facilities       = ["ny5"]
+  metro            = "ny"
   devices_min      = 2
   devices_max      = 2
   wait_for_devices = true
@@ -79,7 +79,7 @@ In addition to all arguments above, the following attributes are exported:
 * `devices_min` - Miniumum number devices to be created.
 * `devices_max` - Maximum number devices to be created.
 * `max_bid_price` - Maximum price user is willing to pay per hour per device.
-* `facilities` - Facility IDs where devices should be created.
+* `facilities` - (**Deprecated**) Facility IDs where devices should be created. Use metro instead; read the [facility to metro migration guide](https://registry.terraform.io/providers/equinix/equinix/latest/docs/guides/migration_guide_facilities_to_metros_devices)
 * `metro` - Metro where devices should be created.
 * `project_id` - Project ID.
 * `plan` - The device plan slug.

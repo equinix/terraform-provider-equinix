@@ -19,7 +19,7 @@ locals {
 resource "equinix_metal_device" "test" {
   hostname         = "tfacc-test-device-port"
   plan             = "c3.medium.x86"
-  facilities       = ["sv15"]
+  metro            = "sv"
   operating_system = "ubuntu_20_04"
   billing_cycle    = "hourly"
   project_id       = local.project_id

@@ -40,7 +40,7 @@ The following arguments are supported:
 * `vlan_id` - (Optional) Metal UUID of the VLAN resource to look up.
 * `project_id` - (Optional) UUID of parent project of the VLAN. Use together with the vxlan number and metro or facility.
 * `vxlan` - (Optional) vxlan number of the VLAN to look up. Use together with the project_id and metro or facility.
-* `facility` - (Optional) Facility where the VLAN is deployed.
+* `facility` - (Optional) Facility where the VLAN is deployed. Deprecated, see https://feedback.equinixmetal.com/changelog/bye-facilities-hello-again-metros
 * `metro` - (Optional) Metro where the VLAN is deployed.
 
 -> **NOTE:** You must set either `vlan_id` or a combination of `vxlan`, `project_id`, and, `metro` or `facility`.

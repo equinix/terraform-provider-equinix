@@ -6,14 +6,14 @@ subcategory: "Metal"
 
 Provides a resource to create and manage blocks of reserved IP addresses in a project.
 
-When a user provisions first device in a facility, Equinix Metal API automatically allocates IPv6/56 and private IPv4/25 blocks.
+When a user provisions first device in a metro, Equinix Metal API automatically allocates IPv6/56 and private IPv4/25 blocks.
 The new device then gets IPv6 and private IPv4 addresses from those block. It also gets a public IPv4/31 address.
-Every new device in the project and facility will automatically get IPv6 and private IPv4 addresses from these pre-allocated blocks.
+Every new device in the project and metro will automatically get IPv6 and private IPv4 addresses from these pre-allocated blocks.
 The IPv6 and private IPv4 blocks can't be created, only imported. With this resource, it's possible to create either public IPv4 blocks or global IPv4 blocks.
 
-Public blocks are allocated in a facility. Addresses from public blocks can only be assigned to devices in the facility. Public blocks can have mask from /24 (256 addresses) to /32 (1 address). If you create public block with this resource, you must fill the facility argument.
+Public blocks are allocated in a metro. Addresses from public blocks can only be assigned to devices in the metro. Public blocks can have mask from /24 (256 addresses) to /32 (1 address). If you create public block with this resource, you must fill the metro argument.
 
-Addresses from global blocks can be assigned in any facility. Global blocks can have mask from /30 (4 addresses), to /32 (1 address). If you create global block with this resource, you must specify type = "global_ipv4" and you must omit the facility argument.
+Addresses from global blocks can be assigned in any metro. Global blocks can have mask from /30 (4 addresses), to /32 (1 address). If you create global block with this resource, you must specify type = "global_ipv4" and you must omit the metro argument.
 
 Once IP block is allocated or imported, an address from it can be assigned to device with the `equinix_metal_ip_attachment` resource.
 
@@ -24,15 +24,15 @@ Once IP block is allocated or imported, an address from it can be assigned to de
 Allocate reserved IP blocks:
 
 ```hcl
-# Allocate /31 block of max 2 public IPv4 addresses in Silicon Valley (sv15) facility for myproject
+# Allocate /31 block of max 2 public IPv4 addresses in Silicon Valley (sv) metro for myproject
 
 resource "equinix_metal_reserved_ip_block" "two_elastic_addresses" {
   project_id = local.project_id
-  facility   = "sv15"
+  metro      = "sv"
   quantity   = 2
 }
 
-# Allocate 1 floating IP in Sillicon Valley (sv) metro
+# Allocate 1 floating IP in Silicon Valley (sv) metro
 
 resource "equinix_metal_reserved_ip_block" "test" {
   project_id = local.project_id
@@ -41,7 +41,7 @@ resource "equinix_metal_reserved_ip_block" "test" {
   quantity   = 1
 }
 
-# Allocate 1 global floating IP, which can be assigned to device in any facility
+# Allocate 1 global floating IP, which can be assigned to device in any metro
 
 resource "equinix_metal_reserved_ip_block" "test" {
   project_id = local.project_id
@@ -53,10 +53,10 @@ resource "equinix_metal_reserved_ip_block" "test" {
 Allocate a block and run a device with public IPv4 from the block
 
 ```hcl
-# Allocate /31 block of max 2 public IPv4 addresses in Silicon Valley (sv15) facility
+# Allocate /31 block of max 2 public IPv4 addresses in Silicon Valley (sv) metro
 resource "equinix_metal_reserved_ip_block" "example" {
   project_id = local.project_id
-  facility   = "sv15"
+  metro      = "sv"
   quantity   = 2
 }
 
@@ -64,7 +64,7 @@ resource "equinix_metal_reserved_ip_block" "example" {
 
 resource "equinix_metal_device" "nodes" {
   project_id       = local.project_id
-  facilities       = ["sv15"]
+  metro            = "sv"
   plan             = "c3.small.x86"
   operating_system = "ubuntu_20_04"
   hostname         = "test"
@@ -90,8 +90,8 @@ The following arguments are supported:
 * `quantity` - (Optional) The number of allocated `/32` addresses, a power of 2. Required when `type` is not `vrf`.
 * `type` - (Optional) One of `global_ipv4`, `public_ipv4`, or `vrf`. Defaults to `public_ipv4` for backward
 compatibility.
-* `facility` - (Optional) Facility where to allocate the public IP address block, makes sense only
-if type is `public_ipv4` and must be empty if type is `global_ipv4`. Conflicts with `metro`.
+* `facility` - (**Deprecated**) Facility where to allocate the public IP address block, makes sense only
+if type is `public_ipv4` and must be empty if type is `global_ipv4`. Conflicts with `metro`. Use metro instead; read the [facility to metro migration guide](https://registry.terraform.io/providers/equinix/equinix/latest/docs/guides/migration_guide_facilities_to_metros_devices)
 * `metro` - (Optional) Metro where to allocate the public IP address block, makes sense only
 if type is `public_ipv4` and must be empty if type is `global_ipv4`. Conflicts with `facility`.
 * `description` - (Optional) Arbitrary description.
@@ -114,7 +114,7 @@ In addition to all arguments above, the following attributes are exported:
 * `address_family` - Address family as integer. One of `4` or `6`.
 * `public` - Boolean flag whether addresses from a block are public.
 * `global` - Boolean flag whether addresses from a block are global (i.e. can be assigned in any
-facility).
+metro).
 * `vrf_id` - VRF ID of the block when type=vrf
 
 -> **NOTE:** Idempotent reference to a first `/32` address from a reserved block might look

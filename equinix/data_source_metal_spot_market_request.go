@@ -43,6 +43,7 @@ func dataSourceMetalSpotMarketRequest() *schema.Resource {
 				Type:        schema.TypeList,
 				Elem:        &schema.Schema{Type: schema.TypeString},
 				Description: "Facility IDs where devices should be created",
+				Deprecated:  "Use metro instead of facility.  For more information, read the migration guide: https://registry.terraform.io/providers/equinix/equinix/latest/docs/guides/migration_guide_facilities_to_metros_devices",
 				Computed:    true,
 			},
 			"metro": {
