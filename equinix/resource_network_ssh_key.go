@@ -17,12 +17,14 @@ var networkSSHKeySchemaNames = map[string]string{
 	"UUID":  "uuid",
 	"Name":  "name",
 	"Value": "public_key",
+	"Type":  "type",
 }
 
 var networkSSHKeyDescriptions = map[string]string{
 	"UUID":  "The unique identifier of the key",
 	"Name":  "The name of SSH key used for identification",
 	"Value": "The SSH public key. If this is a file, it can be read using the file interpolation function",
+	"Type":  "The type of SSH key: RSA (default) or DSA",
 }
 
 func resourceNetworkSSHKey() *schema.Resource {
@@ -61,6 +63,14 @@ func createNetworkSSHKeyResourceSchema() map[string]*schema.Schema {
 			ForceNew:     true,
 			ValidateFunc: validation.StringIsNotEmpty,
 			Description:  networkSSHKeyDescriptions["Value"],
+		},
+		networkSSHKeySchemaNames["Type"]: {
+			Type:         schema.TypeString,
+			Optional:     true,
+			ForceNew:     true,
+			Default:      "RSA",
+			ValidateFunc: validation.StringInSlice([]string{"RSA", "DSA"}, false),
+			Description:  networkSSHKeyDescriptions["Type"],
 		},
 	}
 }
@@ -124,6 +134,9 @@ func createNetworkSSHKey(d *schema.ResourceData) ne.SSHPublicKey {
 	if v, ok := d.GetOk(networkSSHKeySchemaNames["Value"]); ok {
 		key.Value = ne.String(v.(string))
 	}
+	if v, ok := d.GetOk(networkSSHKeySchemaNames["Type"]); ok {
+		key.Type = ne.String(v.(string))
+	}
 	return key
 }
 
@@ -136,6 +149,9 @@ func updateNetworkSSHKeyResource(key *ne.SSHPublicKey, d *schema.ResourceData) e
 	}
 	if err := d.Set(networkSSHKeySchemaNames["Value"], key.Value); err != nil {
 		return fmt.Errorf("error reading Value: %s", err)
+	}
+	if err := d.Set(networkSSHKeySchemaNames["Type"], key.Type); err != nil {
+		return fmt.Errorf("error reading Type: %s", err)
 	}
 	return nil
 }

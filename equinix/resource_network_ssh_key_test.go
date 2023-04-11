@@ -13,10 +13,12 @@ func TestNetworkSSHKey_createFromResourceData(t *testing.T) {
 	expected := ne.SSHPublicKey{
 		Name:  ne.String("testKey"),
 		Value: ne.String("testKeyValue"),
+		Type:  ne.String("RSA"),
 	}
 	rawData := map[string]interface{}{
 		networkSSHKeySchemaNames["Name"]:  ne.StringValue(expected.Name),
 		networkSSHKeySchemaNames["Value"]: ne.StringValue(expected.Value),
+		networkSSHKeySchemaNames["Type"]:  ne.StringValue(expected.Type),
 	}
 	d := schema.TestResourceDataRaw(t, createNetworkSSHKeyResourceSchema(), rawData)
 	// when
@@ -31,6 +33,7 @@ func TestNetworkSSHKey_updateResourceData(t *testing.T) {
 		UUID:  ne.String("059c3020-aec5-44ca-816c-235435f16df9"),
 		Name:  ne.String("testKey"),
 		Value: ne.String("testKeyValue"),
+		Type:  ne.String("testKeyType"),
 	}
 	d := schema.TestResourceDataRaw(t, createNetworkSSHKeyResourceSchema(), make(map[string]interface{}))
 	// when
@@ -40,4 +43,5 @@ func TestNetworkSSHKey_updateResourceData(t *testing.T) {
 	assert.Equal(t, ne.StringValue(input.UUID), d.Get(networkSSHKeySchemaNames["UUID"]), "UUID matches")
 	assert.Equal(t, ne.StringValue(input.Name), d.Get(networkSSHKeySchemaNames["Name"]), "Name matches")
 	assert.Equal(t, ne.StringValue(input.Value), d.Get(networkSSHKeySchemaNames["Value"]), "Value matches")
+	assert.Equal(t, ne.StringValue(input.Type), d.Get(networkSSHKeySchemaNames["Type"]), "Type matches")
 }
