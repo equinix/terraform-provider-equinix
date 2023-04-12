@@ -47,7 +47,7 @@ resource "equinix_network_device" "csr1000v-ha" {
   package_code    = "SEC"
   notifications   = ["john@equinix.com", "marry@equinix.com", "fred@equinix.com"]
   hostname        = "csr1000v-p"
-  term_length     = 6
+  term_length     = 12
   account_number  = data.equinix_network_account.dc.number
   version         = "16.09.05"
   core_count      = 2
@@ -76,7 +76,7 @@ resource "equinix_network_device" "panw-cluster" {
   byol            = true
   package_code    = "VM100"
   notifications   = ["john@equinix.com", "marry@equinix.com", "fred@equinix.com"]
-  term_length     = 6
+  term_length     = 12
   account_number  = data.equinix_network_account.sv.number
   version         = "10.1.3"
   interface_count = 10
@@ -131,7 +131,7 @@ resource "equinix_network_device" "aviatrix-single" {
   byol            = true
   package_code    = "STD"
   notifications   = ["john@equinix.com"]
-  term_length     = 6
+  term_length     = 12
   account_number  = data.equinix_network_account.sv.number
   version         = "6.9"
   core_count      = 2
@@ -160,7 +160,7 @@ resource "equinix_network_device" "c8kv-single" {
   account_number  = data.equinix_network_account.sv.number
   version         = "17.06.01a"
   core_count      = 2
-  term_length     = 6
+  term_length     = 12
   license_token = "valid-license-token"
   additional_bandwidth = 5
   ssh_key {
@@ -168,6 +168,50 @@ resource "equinix_network_device" "c8kv-single" {
     key_name = "valid-key-name"
   }
   acl_template_id = "3e548c02-9164-4197-aa23-05b1f644883c"
+}
+```
+
+```hcl
+# Create self configured redundant Arista router with DSA key
+
+data "equinix_network_account" "sv" {
+  name = "account-name"
+  metro_code = "SV"
+}
+
+resource "equinix_network_ssh_key" "test-public-key" {
+  name = "key-name"
+  public_key = "ssh-dss key-value"
+  type = "DSA"
+}
+
+resource "equinix_network_device" "arista-ha" {
+  name            = "tf-arista-p"
+  metro_code      = data.equinix_network_account.sv.metro_code
+  type_code       = "ARISTA-ROUTER"
+  self_managed    = true
+  byol            = true
+  package_code    = "CloudEOS"
+  notifications   = ["test@equinix.com"]
+  hostname        = "arista-p"
+  account_number  = data.equinix_network_account.sv.number
+  version         = "4.29.0"
+  core_count      = 4
+  term_length     = 12
+  additional_bandwidth = 5
+  ssh_key {
+    username = "test-username"
+    key_name = equinix_network_ssh_key.test-public-key.name
+  }
+  acl_template_id = "c637a17b-7a6a-4486-924b-30e6c36904b0"
+  secondary_device {
+    name            = "tf-arista-s"
+    metro_code      = data.equinix_network_account.sv.metro_code
+    hostname        = "arista-s"
+    notifications   = ["test@eq.com"]
+    account_number  = data.equinix_network_account.sv.number
+    acl_template_id = "fee5e2c0-6198-4ce6-9cbd-bbe6c1dbe138"
+  }
 }
 ```
 
