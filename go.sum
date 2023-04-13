@@ -115,8 +115,8 @@ github.com/equinix-labs/fabric-go v0.4.0 h1:YM6jkdPlYJrgUEfCqt1WpXe2gACM5EavRL26
 github.com/equinix-labs/fabric-go v0.4.0/go.mod h1:/0uePNYbhu/1qWrxhD011AjU6yjf7r0sZgTCn8TyitI=
 github.com/equinix/ecx-go/v2 v2.3.0 h1:SOABrI2TP073Mx3gVoWa4qGlot1Z2hECAOY8W4nYDPU=
 github.com/equinix/ecx-go/v2 v2.3.0/go.mod h1:FvCdZ3jXU8Z4CPKig2DT+4J2HdwgRK17pIcznM7RXyk=
-github.com/equinix/ne-go v1.9.0 h1:fJhHTa276pwEdLtm4Lysz3Wby7ICKrAAVTW2UxCnx5Q=
-github.com/equinix/ne-go v1.9.0/go.mod h1:eHkkxM4nbTB7DZ9X9zGnwfYnxIJWIsU3aHA+FAoZ1EI=
+github.com/equinix/ne-go v1.10.0 h1:hy1umXQFPi1b3z/maZ8kqLRFlD1PXD4qp0cV8rnyL8k=
+github.com/equinix/ne-go v1.10.0/go.mod h1:eHkkxM4nbTB7DZ9X9zGnwfYnxIJWIsU3aHA+FAoZ1EI=
 github.com/equinix/oauth2-go v1.0.0 h1:fHtAPGq82PdgtK5vEThs8Vwz6f7D/8SX4tE3NJu+KcU=
 github.com/equinix/oauth2-go v1.0.0/go.mod h1:4pulXvUNMktJlewLPnUeJyMW52iCoF1aM+A/Z5xY1ws=
 github.com/equinix/rest-go v1.3.0 h1:m38scYTOfV6N+gcrwchgVDutDffYd+QoYCMm9Jn6jyk=
