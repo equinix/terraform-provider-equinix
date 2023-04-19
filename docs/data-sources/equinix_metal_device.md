@@ -54,7 +54,7 @@ In addition to all arguments above, the following attributes are exported:
 * `access_public_ipv4` - The ipv4 management IP assigned to the device.
 * `access_public_ipv6` - The ipv6 management IP assigned to the device.
 * `billing_cycle` - The billing cycle of the device (monthly or hourly).
-* `facility` - The facility where the device is deployed.
+* `facility` - (**Deprecated**) The facility where the device is deployed. Use metro instead; read the [facility to metro migration guide](https://registry.terraform.io/providers/equinix/equinix/latest/docs/guides/migration_guide_facilities_to_metros_devices)
 * `description` - Description string for the device.
 * `hardware_reservation_id` - The id of hardware reservation which this device occupies.
 * `id` - The ID of the device.

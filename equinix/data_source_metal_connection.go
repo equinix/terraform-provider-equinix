@@ -111,6 +111,7 @@ func dataSourceMetalConnection() *schema.Resource {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "Facility which the connection is scoped to",
+				Deprecated:  "Use metro instead of facility.  For more information, read the migration guide: https://registry.terraform.io/providers/equinix/equinix/latest/docs/guides/migration_guide_facilities_to_metros_devices",
 			},
 			"metro": {
 				Type:        schema.TypeString,

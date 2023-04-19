@@ -6,7 +6,7 @@ subcategory: "Metal"
 
 Provides a resource to attach device ports to VLANs.
 
-Device and VLAN must be in the same facility.
+Device and VLAN must be in the same metro.
 
 If you need this resource to add the port back to bond on removal, set `force_bond = true`.
 
@@ -21,15 +21,15 @@ To learn more about Layer 2 networking in Equinix Metal, refer to
 
 ```hcl
 resource "equinix_metal_vlan" "test" {
-  description = "VLAN in New Jersey"
-  facility    = "ny5"
+  description = "VLAN in New York"
+  metro       = "ny"
   project_id  = local.project_id
 }
 
 resource "equinix_metal_device" "test" {
   hostname         = "test"
   plan             = "c3.small.x86"
-  facilities       = ["ny5"]
+  metro            = "ny"
   operating_system = "ubuntu_20_04"
   billing_cycle    = "hourly"
   project_id       = local.project_id
@@ -54,7 +54,7 @@ resource "equinix_metal_port_vlan_attachment" "test" {
 resource "equinix_metal_device" "test" {
   hostname         = "test"
   plan             = "c3.small.x86"
-  facilities       = ["ny5"]
+  metro            = "ny"
   operating_system = "ubuntu_20_04"
   billing_cycle    = "hourly"
   project_id       = local.project_id
@@ -66,14 +66,14 @@ resource "equinix_metal_device_network_type" "test" {
 }
 
 resource "equinix_metal_vlan" "test1" {
-  description = "VLAN in New Jersey"
-  facility    = "ny5"
+  description = "VLAN in New York"
+  metro       = "ny"
   project_id  = local.project_id
 }
 
 resource "equinix_metal_vlan" "test2" {
   description = "VLAN in New Jersey"
-  facility    = "ny5"
+  metro       = "ny"
   project_id  = local.project_id
 }
 

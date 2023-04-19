@@ -38,7 +38,7 @@ In addition to all arguments above, the following attributes are exported:
 * `project_id` - UUID of project this reservation is scoped to.
 * `device_id` - UUID of device occupying the reservation.
 * `plan` - Plan type for the reservation.
-* `facility` - Plan type for the reservation.
+* `facility` - (**Deprecated**) Facility for the reservation. Use metro instead; read the [facility to metro migration guide](https://registry.terraform.io/providers/equinix/equinix/latest/docs/guides/migration_guide_facilities_to_metros_devices)
 * `provisionable` - Flag indicating whether the reserved server is provisionable or not. Spare
 devices can't be provisioned unless they are activated first.
 * `spare` - Flag indicating whether the Hardware Reservation is a spare. Spare Hardware

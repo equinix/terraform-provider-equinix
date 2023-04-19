@@ -42,7 +42,8 @@ func dataSourceMetalHardwareReservation() *schema.Resource {
 			"facility": {
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "Plan type for the reservation",
+				Description: "Facility for the reservation",
+				Deprecated:  "Use metro instead of facility.  For more information, read the migration guide: https://registry.terraform.io/providers/equinix/equinix/latest/docs/guides/migration_guide_facilities_to_metros_devices",
 			},
 			"provisionable": {
 				Type:        schema.TypeBool,

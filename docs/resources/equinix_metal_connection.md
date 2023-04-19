@@ -115,7 +115,7 @@ The following arguments are supported:
 
 * `name` - (Required) Name of the connection resource
 * `metro` - (Optional) Metro where the connection will be created.
-* `facility` - (Optional) Facility where the connection will be created.
+* `facility` - (**Deprecated**) Facility where the connection will be created.   Use metro instead; read the [facility to metro migration guide](https://registry.terraform.io/providers/equinix/equinix/latest/docs/guides/migration_guide_facilities_to_metros_devices)
 * `redundancy` - (Required) Connection redundancy - redundant or primary.
 * `type` - (Required) Connection type - dedicated or shared.
 * `project_id` - (Optional) ID of the project where the connection is scoped to, must be set for.

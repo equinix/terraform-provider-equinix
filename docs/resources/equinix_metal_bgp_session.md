@@ -38,14 +38,14 @@ locals {
 
 resource "equinix_metal_reserved_ip_block" "addr" {
   project_id = local.project_id
-  facility   = "ny5"
+  metro      = "ny"
   quantity   = 1
 }
 
 resource "equinix_metal_device" "test" {
   hostname         = "terraform-test-bgp-sesh"
   plan             = "c3.small.x86"
-  facilities       = ["ny5"]
+  metro            = ["ny"]
   operating_system = "ubuntu_20_04"
   billing_cycle    = "hourly"
   project_id       = local.project_id

@@ -79,6 +79,7 @@ func planSchema() map[string]*schema.Schema {
 		"available_in": {
 			Type:        schema.TypeSet,
 			Description: "list of facilities where the plan is available",
+			Deprecated:  "Use available_in_metros instead.  For more information, read the migration guide: https://registry.terraform.io/providers/equinix/equinix/latest/docs/guides/migration_guide_facilities_to_metros_devices",
 			Elem:        &schema.Schema{Type: schema.TypeString},
 		},
 		"available_in_metros": {

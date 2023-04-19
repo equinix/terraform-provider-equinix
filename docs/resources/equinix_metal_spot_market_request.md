@@ -15,7 +15,7 @@ see [this article in Equinix Metal documentation](https://metal.equinix.com/deve
 resource "equinix_metal_spot_market_request" "req" {
   project_id    = local.project_id
   max_bid_price = 0.03
-  facilities    = ["ny5"]
+  metro         = "ny"
   devices_min   = 1
   devices_max   = 1
 
@@ -38,7 +38,7 @@ The following arguments are supported:
 * `project_id` - (Required) Project ID.
 * `wait_for_devices` - (Optional) On resource creation wait until all desired devices are active.
 On resource destruction wait until devices are removed.
-* `facilities` - (Optional) Facility IDs where devices should be created.
+* `facilities` - (**Deprecated**) Facility IDs where devices should be created. Use metro instead; read the [facility to metro migration guide](https://registry.terraform.io/providers/equinix/equinix/latest/docs/guides/migration_guide_facilities_to_metros_devices)
 * `metro` - (Optional) Metro where devices should be created.
 * `locked` - (Optional) Blocks deletion of the SpotMarketRequest device until the lock is disabled.
 * `instance_parameters` - (Required) Key/Value pairs of parameters for devices provisioned from

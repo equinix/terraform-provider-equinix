@@ -34,8 +34,8 @@ output "out" {
 The following arguments are supported:
 
 * `project_id` - (Required) ID of the project from which to list the blocks.
-* `facility` - (Optional) Facility code filtering the IP blocks. Global IPv4 blocks will be listed
-anyway. If you omit this and metro, all the block from the project will be listed.
+* `facility` - (**Deprecated**) Facility code filtering the IP blocks. Global IPv4 blocks will be listed
+anyway. If you omit this and metro, all the block from the project will be listed.   Use metro instead; read the [facility to metro migration guide](https://registry.terraform.io/providers/equinix/equinix/latest/docs/guides/migration_guide_facilities_to_metros_devices)
 * `metro` - (Optional) Metro code filtering the IP blocks. Global IPv4 blocks will be listed
 anyway. If you omit this and facility, all the block from the project will be listed.
 

@@ -25,7 +25,7 @@ output "id" {
   devices and 1 c3.medium.x86 device
 
 data "equinix_metal_metro" "test" {
-  code = "dc13"
+  code = "sv"
 
   capacity {
     plan = "c3.small.x86"
@@ -43,10 +43,10 @@ data "equinix_metal_metro" "test" {
 
 The following arguments are supported:
 
-* `code` - (Required) The facility code to search for facilities.
-* `capacity` - (Optional) One or more device plans for which the facility must have capacity.
+* `code` - (Required) The metro code to search for.
+* `capacity` - (Optional) One or more device plans for which the metro must have capacity.
   * `plan` - (Required) Device plan that must be available in selected location.
-  * `quantity` - (Optional) Minimun number of devices that must be available in selected location.
+  * `quantity` - (Optional) Minimum number of devices that must be available in selected location.
   Default is `1`.
 
 ## Attributes Reference

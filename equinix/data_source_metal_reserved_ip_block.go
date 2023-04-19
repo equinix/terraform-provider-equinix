@@ -50,6 +50,7 @@ func dataSourceMetalReservedIPBlock() *schema.Resource {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "Facility of the block. (for non-global blocks)",
+				Deprecated:  "Use metro instead of facility.  For more information, read the migration guide: https://registry.terraform.io/providers/equinix/equinix/latest/docs/guides/migration_guide_facilities_to_metros_devices",
 			},
 			"metro": {
 				Type:        schema.TypeString,
