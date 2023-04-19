@@ -1,3 +1,20 @@
+## 1.14.0 (19 Apr, 2023)
+
+FEATURES:
+
+- Adds support for `DSA` keys in `equinix_network_ssh_key`, which makes it possible to provision Arista routers in Network Edge [#315](https://github.com/equinix/terraform-provider-equinix/pull/315)
+- Deprecates `facility` and related properties in favor of `metro` [#314](https://github.com/equinix/terraform-provider-equinix/pull/314)
+
+BUG FIXES:
+
+- Adds missing `MaxItems: 1` to properties that did not support more than one item [#307](https://github.com/equinix/terraform-provider-equinix/pull/307)
+- Fixes typo in docs for `deployment_type` in `equinix_metal_project` [#306](https://github.com/equinix/terraform-provider-equinix/pull/306)
+
+
+ENHANCEMENTS:
+
+- Updates facility-to-metro migration guide to draw attention to the deprecation of facilities in the Equinix Metal platform [#313](https://github.com/equinix/terraform-provider-equinix/pull/314)
+
 ## 1.13.0 (3 Mar, 2023)
 
 FEATURES:
