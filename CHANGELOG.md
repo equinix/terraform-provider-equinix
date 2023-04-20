@@ -1,3 +1,9 @@
+## 1.14.1 (20 Apr, 2023)
+
+BUG FIXES:
+
+- Fixes injection of `ProviderVersion` at build time so that we can track usage of different `terraform-provider-equinix` releases [#317](https://github.com/equinix/terraform-provider-equinix/pull/317)
+
 ## 1.14.0 (19 Apr, 2023)
 
 FEATURES:
