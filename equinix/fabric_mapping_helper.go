@@ -100,15 +100,15 @@ func accessPointToFabric(accessPointRequest []interface{}) v4.AccessPoint {
 	return accessPoint
 }
 
-func gatewayToFabric(gatewayRequest []interface{}) v4.VirtualGateway {
+func gatewayToFabric(gatewayRequest []interface{}) v4.FabricGateway {
 	if gatewayRequest == nil {
-		return v4.VirtualGateway{}
+		return v4.FabricGateway{}
 	}
-	gatewayMapped := v4.VirtualGateway{}
+	gatewayMapped := v4.FabricGateway{}
 	for _, gwr := range gatewayRequest {
 		gwrMap := gwr.(map[string]interface{})
 		gwuuid := gwrMap["uuid"].(string)
-		gatewayMapped = v4.VirtualGateway{Uuid: gwuuid}
+		gatewayMapped = v4.FabricGateway{Uuid: gwuuid}
 	}
 	return gatewayMapped
 }
@@ -121,8 +121,8 @@ func projectToFabric(projectRequest []interface{}) v4.Project {
 	for _, pr := range projectRequest {
 		prMap := pr.(map[string]interface{})
 		projectId := prMap["project_id"].(string)
-		href := prMap["href"].(string)
-		mappedPr = v4.Project{ProjectId: projectId, Href: href}
+		//href := prMap["href"].(string)
+		mappedPr = v4.Project{ProjectId: projectId}
 	}
 	return mappedPr
 }
@@ -481,11 +481,11 @@ func additionalInfoToTerra(additionalInfol []v4.ConnectionSideAdditionalInfo) []
 	return mappedadditionalInfol
 }
 
-func fabricGatewayToTerra(virtualGateway *v4.VirtualGateway) *schema.Set {
+func fabricGatewayToTerra(virtualGateway *v4.FabricGateway) *schema.Set {
 	if virtualGateway == nil {
 		return nil
 	}
-	virtualGateways := []*v4.VirtualGateway{virtualGateway}
+	virtualGateways := []*v4.FabricGateway{virtualGateway}
 	mappedvirtualGateways := make([]interface{}, len(virtualGateways))
 	for _, virtualGateway := range virtualGateways {
 		mappedvirtualGateway := make(map[string]interface{})
@@ -508,7 +508,7 @@ func projectToTerra(project *v4.Project) *schema.Set {
 	for _, project := range projects {
 		mappedProject := make(map[string]interface{})
 		mappedProject["project_id"] = project.ProjectId
-		mappedProject["href"] = project.Href
+		//mappedProject["href"] = project.Href
 		mappedProjects = append(mappedProjects, mappedProject)
 	}
 	projectSet := schema.NewSet(

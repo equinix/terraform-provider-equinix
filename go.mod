@@ -4,7 +4,7 @@ go 1.20
 
 require (
 	github.com/antihax/optional v1.0.0
-	github.com/equinix-labs/fabric-go v0.4.0
+	github.com/equinix-labs/fabric-go v0.5.0
 	github.com/equinix/ecx-go/v2 v2.3.1
 	github.com/equinix/ne-go v1.10.0
 	github.com/equinix/oauth2-go v1.0.0
@@ -19,7 +19,7 @@ require (
 	github.com/packethost/packngo v0.30.0
 	github.com/stretchr/testify v1.8.4
 	golang.org/x/exp v0.0.0-20230522175609-2e198f4a06a1
-	golang.org/x/oauth2 v0.8.0
+	golang.org/x/oauth2 v0.9.0
 )
 
 require (
@@ -92,11 +92,11 @@ require (
 	github.com/vmihailenco/tagparser v0.1.1 // indirect
 	github.com/zclconf/go-cty v1.13.1 // indirect
 	go.opencensus.io v0.24.0 // indirect
-	golang.org/x/crypto v0.7.0 // indirect
+	golang.org/x/crypto v0.10.0 // indirect
 	golang.org/x/mod v0.8.0 // indirect
-	golang.org/x/net v0.10.0 // indirect
-	golang.org/x/sys v0.8.0 // indirect
-	golang.org/x/text v0.9.0 // indirect
+	golang.org/x/net v0.11.0 // indirect
+	golang.org/x/sys v0.9.0 // indirect
+	golang.org/x/text v0.10.0 // indirect
 	golang.org/x/xerrors v0.0.0-20220907171357-04be3eba64a2 // indirect
 	google.golang.org/api v0.103.0 // indirect
 	google.golang.org/appengine v1.6.7 // indirect

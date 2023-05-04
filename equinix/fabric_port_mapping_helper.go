@@ -104,26 +104,26 @@ func encapsulationToTerra(portEncapsulation *v4.PortEncapsulation) *schema.Set {
 	return portEncapsulationSet
 }
 
-func lagToTerra(portLag *v4.PortLag) *schema.Set {
-	if portLag == nil {
-		return nil
-	}
-	portLags := []*v4.PortLag{portLag}
-	mappedPortLags := make([]interface{}, 0)
-	for _, portLag := range portLags {
-		mappedPortLag := make(map[string]interface{})
-		mappedPortLag["enabled"] = portLag.Enabled
-		mappedPortLag["id"] = portLag.Id
-		mappedPortLag["name"] = portLag.Name
-		mappedPortLag["member_status"] = portLag.MemberStatus
-		mappedPortLags = append(mappedPortLags, mappedPortLag)
-	}
-	portLagSet := schema.NewSet(
-		schema.HashResource(readPortLagRes),
-		mappedPortLags,
-	)
-	return portLagSet
-}
+//func lagToTerra(portLag *v4.PortLag) *schema.Set {
+//	if portLag == nil {
+//		return nil
+//	}
+//	portLags := []*v4.PortLag{portLag}
+//	mappedPortLags := make([]interface{}, 0)
+//	for _, portLag := range portLags {
+//		mappedPortLag := make(map[string]interface{})
+//		mappedPortLag["enabled"] = portLag.Enabled
+//		mappedPortLag["id"] = portLag.Id
+//		mappedPortLag["name"] = portLag.Name
+//		mappedPortLag["member_status"] = portLag.MemberStatus
+//		mappedPortLags = append(mappedPortLags, mappedPortLag)
+//	}
+//	portLagSet := schema.NewSet(
+//		schema.HashResource(readPortLagRes),
+//		mappedPortLags,
+//	)
+//	return portLagSet
+//}
 
 func fabricPortsListToTerra(ports v4.AllPortsResponse) []map[string]interface{} {
 	portsl := ports.Data
@@ -150,7 +150,7 @@ func fabricPortsListToTerra(ports v4.AllPortsResponse) []map[string]interface{} 
 			"location":            locationToTerra(port.Location),
 			"device":              deviceToTerra(port.Device),
 			"encapsulation":       encapsulationToTerra(port.Encapsulation),
-			"lag":                 lagToTerra(port.Lag),
+			"lag":                 port.LagEnabled,
 		}
 	}
 	return mappedPortsl
