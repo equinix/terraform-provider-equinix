@@ -308,12 +308,9 @@ func readFabricPortResourceSchema() map[string]*schema.Schema {
 			},
 		},
 		"lag": {
-			Type:        schema.TypeSet,
+			Type:        schema.TypeBool,
 			Computed:    true,
 			Description: "Port Lag",
-			Elem: &schema.Resource{
-				Schema: readFabricPortLag(),
-			},
 		},
 	}
 }

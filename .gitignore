@@ -1,5 +1,6 @@
 *.dll
 *.exe
+*.terraform.lock.hcl
 .DS_Store
 example.tf
 terraform.tfplan

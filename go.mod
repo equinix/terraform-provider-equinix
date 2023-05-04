@@ -105,3 +105,5 @@ require (
 	google.golang.org/protobuf v1.28.1 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
+
+replace github.com/equinix-labs/fabric-go v0.4.0 => github.com/manu-equinix/fabric-go v0.4.1-alpha.0.20230501231222-1857e108d65a
