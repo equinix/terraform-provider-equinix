@@ -306,6 +306,7 @@ func createConnectionSideAccessPointRes() *schema.Resource {
 			},
 			"account": {
 				Type:        schema.TypeSet,
+				Optional:    true,
 				Computed:    true,
 				Description: "Account",
 				Elem: &schema.Resource{
@@ -748,8 +749,8 @@ func createFabricConnectionResourceSchema() map[string]*schema.Schema {
 		"type": {
 			Type:         schema.TypeString,
 			Required:     true,
-			ValidateFunc: validation.StringInSlice([]string{"VG_VC", "EVPL_VC", "EPL_VC", "EC_VC", "GW_VC", "ACCESS_EPL_VC"}, true),
-			Description:  "Defines the connection type like VG_VC, EVPL_VC, EPL_VC, EC_VC, GW_VC, ACCESS_EPL_VC",
+			ValidateFunc: validation.StringInSlice([]string{"VG_VC", "EVPL_VC", "EPL_VC", "EC_VC", "IP_VC", "ACCESS_EPL_VC"}, true),
+			Description:  "Defines the connection type like VG_VC, EVPL_VC, EPL_VC, EC_VC, IP_VC, ACCESS_EPL_VC",
 		},
 		"bandwidth": {
 			Type:        schema.TypeInt,
