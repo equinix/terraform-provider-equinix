@@ -41,7 +41,7 @@ Fabric V4 API compatible data resource that allow user to fetch connection for a
 - `project` (Block Set) Project information (see [below for nested schema](#nestedblock--project))
 - `redundancy` (Set of Object) Redundancy Information (see [below for nested schema](#nestedatt--redundancy))
 - `state` (String) Connection overall state
-- `type` (String) Defines the connection type like VG_VC, EVPL_VC, EPL_VC, EC_VC, GW_VC, ACCESS_EPL_VC
+- `type` (String) Defines the connection type like VG_VC, EVPL_VC, EPL_VC, EC_VC, IP_VC, ACCESS_EPL_VC
 - `z_side` (Set of Object) Destination or Provider side connection configuration object of the multi-segment connection (see [below for nested schema](#nestedatt--z_side))
 
 <a id="nestedatt--a_side"></a>

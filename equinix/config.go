@@ -62,7 +62,7 @@ https://registry.terraform.io/providers/equinix/equinix/latest/docs`
 )
 
 var (
-	DefaultBaseURL   = "https://api.equinix.com"
+	DefaultBaseURL   = "https://uatapi.equinix.com"
 	DefaultTimeout   = 30
 	redirectsErrorRe = regexp.MustCompile(`stopped after \d+ redirects\z`)
 )

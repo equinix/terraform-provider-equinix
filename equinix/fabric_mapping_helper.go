@@ -121,12 +121,10 @@ func projectToFabric(projectRequest []interface{}) v4.Project {
 	for _, pr := range projectRequest {
 		prMap := pr.(map[string]interface{})
 		projectId := prMap["project_id"].(string)
-		//href := prMap["href"].(string)
 		mappedPr = v4.Project{ProjectId: projectId}
 	}
 	return mappedPr
 }
-
 func notificationToFabric(schemaNotifications []interface{}) []v4.SimplifiedNotification {
 	if schemaNotifications == nil {
 		return []v4.SimplifiedNotification{}
@@ -230,6 +228,49 @@ func locationToFabric(locationList []interface{}) v4.SimplifiedLocation {
 	return sl
 }
 
+func accountToFabricGateway(accountList []interface{}) v4.SimplifiedAccount {
+	sa := v4.SimplifiedAccount{}
+	for _, ll := range accountList {
+		llMap := ll.(map[string]interface{})
+		ac := llMap["account_number"].(int)
+		sa = v4.SimplifiedAccount{AccountNumber: int64(ac)}
+	}
+	return sa
+}
+
+func locationToFabricGateway(locationList []interface{}) v4.SimplifiedLocationWithoutIbx {
+	sl := v4.SimplifiedLocationWithoutIbx{}
+	for _, ll := range locationList {
+		llMap := ll.(map[string]interface{})
+		mc := llMap["metro_code"].(string)
+		sl = v4.SimplifiedLocationWithoutIbx{MetroCode: mc}
+	}
+	return sl
+}
+
+func packageToFabricGateway(packageList []interface{}) v4.FabricGatewayPackageType {
+	p := v4.FabricGatewayPackageType{}
+	for _, pl := range packageList {
+		plMap := pl.(map[string]interface{})
+		code := plMap["code"].(string)
+		p = v4.FabricGatewayPackageType{Code: code}
+	}
+	return p
+}
+
+func projectToFabricGateway(projectRequest []interface{}) v4.Project {
+	if projectRequest == nil {
+		return v4.Project{}
+	}
+	mappedPr := v4.Project{}
+	for _, pr := range projectRequest {
+		prMap := pr.(map[string]interface{})
+		projectId := prMap["project_id"].(string)
+		mappedPr = v4.Project{ProjectId: projectId}
+	}
+	return mappedPr
+}
+
 func accountToTerra(account *v4.SimplifiedAccount) *schema.Set {
 	if account == nil {
 		return nil
@@ -249,6 +290,25 @@ func accountToTerra(account *v4.SimplifiedAccount) *schema.Set {
 	}
 	accountSet := schema.NewSet(
 		schema.HashResource(createAccountRes),
+		mappedAccounts,
+	)
+
+	return accountSet
+}
+
+func accountFgToTerra(account *v4.SimplifiedAccount) *schema.Set {
+	if account == nil {
+		return nil
+	}
+	accounts := []*v4.SimplifiedAccount{account}
+	mappedAccounts := make([]interface{}, len(accounts))
+	for i, account := range accounts {
+		mappedAccounts[i] = map[string]interface{}{
+			"account_number": int(account.AccountNumber),
+		}
+	}
+	accountSet := schema.NewSet(
+		schema.HashResource(createFgAccountRes),
 		mappedAccounts,
 	)
 
@@ -426,6 +486,23 @@ func locationToTerra(location *v4.SimplifiedLocation) *schema.Set {
 	return locationSet
 }
 
+func locationFGToTerra(location *v4.SimplifiedLocationWithoutIbx) *schema.Set {
+	locations := []*v4.SimplifiedLocationWithoutIbx{location}
+	mappedLocations := make([]interface{}, len(locations))
+	for i, location := range locations {
+		mappedLocations[i] = map[string]interface{}{
+			"region":     location.Region,
+			"metro_name": location.MetroName,
+			"metro_code": location.MetroCode,
+		}
+	}
+	locationSet := schema.NewSet(
+		schema.HashResource(createLocationRes),
+		mappedLocations,
+	)
+	return locationSet
+}
+
 func serviceTokenToTerra(serviceToken *v4.ServiceToken) *schema.Set {
 	if serviceToken == nil {
 		return nil
@@ -499,6 +576,21 @@ func fabricGatewayToTerra(virtualGateway *v4.FabricGateway) *schema.Set {
 	return linkedProtocolSet
 }
 
+func fabricGatewayPackageToTerra(packageType *v4.FabricGatewayPackageType) *schema.Set {
+	packageTypes := []*v4.FabricGatewayPackageType{packageType}
+	mappedPackages := make([]interface{}, len(packageTypes))
+	for i, packageType := range packageTypes {
+		mappedPackages[i] = map[string]interface{}{
+			"code": packageType.Code,
+		}
+	}
+	packageSet := schema.NewSet(
+		schema.HashResource(createPackageRes),
+		mappedPackages,
+	)
+	return packageSet
+}
+
 func projectToTerra(project *v4.Project) *schema.Set {
 	if project == nil {
 		return nil
@@ -508,7 +600,6 @@ func projectToTerra(project *v4.Project) *schema.Set {
 	for _, project := range projects {
 		mappedProject := make(map[string]interface{})
 		mappedProject["project_id"] = project.ProjectId
-		//mappedProject["href"] = project.Href
 		mappedProjects = append(mappedProjects, mappedProject)
 	}
 	projectSet := schema.NewSet(
@@ -740,6 +831,26 @@ func getUpdateRequest(conn v4.Connection, d *schema.ResourceData) (v4.Connection
 		changeOps = v4.ConnectionChangeOperation{Op: "replace", Path: "/name", Value: updateNameVal}
 	} else if existingBandwidth != updateBandwidthVal {
 		changeOps = v4.ConnectionChangeOperation{Op: "replace", Path: "/bandwidth", Value: updateBandwidthVal}
+	} else {
+		return changeOps, fmt.Errorf("nothing to update for the connection %s", existingName)
+	}
+	return changeOps, nil
+}
+
+func getFabricGatewayUpdateRequest(conn v4.FabricGateway, d *schema.ResourceData) (v4.FabricGatewayChangeOperation, error) {
+	changeOps := v4.FabricGatewayChangeOperation{}
+	existingName := conn.Name
+	existingPackage := conn.Package_.Code
+	updateNameVal := d.Get("name")
+	updatePackageVal := d.Get("conn.Package_.Code")
+
+	log.Printf("existing name %s, existing Package %s, Update Name Request %s, Update Package Request %s ",
+		existingName, existingPackage, updateNameVal, updatePackageVal)
+
+	if existingName != updateNameVal {
+		changeOps = v4.FabricGatewayChangeOperation{Op: "replace", Path: "/name", Value: &updateNameVal}
+	} else if existingPackage != updatePackageVal {
+		changeOps = v4.FabricGatewayChangeOperation{Op: "replace", Path: "/package", Value: &updatePackageVal}
 	} else {
 		return changeOps, fmt.Errorf("nothing to update for the connection %s", existingName)
 	}
