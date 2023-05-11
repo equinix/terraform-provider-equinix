@@ -187,8 +187,8 @@ func waitForDeviceAttribute(d *schema.ResourceData, targets []string, pending []
 		Pending: pending,
 		Target:  targets,
 		Refresh: func() (interface{}, string, error) {
+			meta.(*Config).addModuleToMetalUserAgent(d)
 			client := meta.(*Config).metal
-			client.UserAgent = generateModuleUserAgentString(d, client.UserAgent)
 
 			device, _, err := client.Devices.Get(d.Id(), &packngo.GetOptions{Includes: []string{"project"}})
 			if err == nil {

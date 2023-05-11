@@ -420,8 +420,8 @@ func getInstanceParams(params *packngo.SpotMarketRequestInstanceParameters) Inst
 
 func resourceStateRefreshFunc(d *schema.ResourceData, meta interface{}) resource.StateRefreshFunc {
 	return func() (interface{}, string, error) {
+		meta.(*Config).addModuleToMetalUserAgent(d)
 		client := meta.(*Config).metal
-		client.UserAgent = generateModuleUserAgentString(d, client.UserAgent)
 
 		smr, _, err := client.SpotMarketRequests.Get(d.Id(), &packngo.GetOptions{Includes: []string{"project", "devices", "facilities", "metro"}})
 		if err != nil {
