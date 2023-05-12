@@ -79,16 +79,6 @@ var (
 )
 
 // This function should be used to find available plans in all test where a metal_device resource is needed.
-// To prevent unexpected plan/facilities changes (i.e. run out of a plan in a metro after first apply)
-// during tests that have several config updates, resource metal_device should include a lifecycle
-// like the one defined below.
-//
-//	lifecycle {
-//	    ignore_changes = [
-//	      plan,
-//	      facilities,
-//	    ]
-//	  }
 //
 // TODO consider adding a datasource for equinix_metal_operating_system and making the local.os conditional
 //
@@ -97,6 +87,11 @@ var (
 func confAccMetalDevice_base(plans, metros, os []string) string {
 	return fmt.Sprintf(`
 data "equinix_metal_plans" "test" {
+    sort {
+        attribute = "id"
+        direction = "asc"
+    }
+
     filter {
         attribute = "name"
         values    = [%s]
@@ -111,36 +106,42 @@ data "equinix_metal_plans" "test" {
     }
 }
 
+// Select a metal plan randomly and lock it in
+// so that we don't pick a different one for
+// every subsequent terraform plan
+resource "random_integer" "plan_idx" {
+  min = 0
+  max = length(data.equinix_metal_plans.test.plans) - 1
+}
+
+// Select a metal facility randomly and lock it in
+// so that we don't pick a different one for
+// every subsequent terraform plan
+resource "random_integer" "facility_idx" {
+  min = 0
+  max = length(local.facilities) - 1
+}
+
+// Select a metal metro randomly and lock it in
+// so that we don't pick a different one for
+// every subsequent terraform plan
+resource "random_integer" "metro_idx" {
+  min = 0
+  max = length(local.metros) - 1
+}
+
 locals {
-    //Operations to select a plan randomly and avoid race conditions with metros without capacity.
-    //With these operations we use current time seconds as the seed, and avoid using a third party provider in the Equinix provider tests
-    plans             = data.equinix_metal_plans.test.plans
-    plans_random_num  = formatdate("s", timestamp())
-    plans_length      = length(local.plans)
-    plans_range_limit = ceil(59 / local.plans_length) == 1 ? local.plans_length : 59
-    plan_idxs         = [for idx, value in range(0, local.plans_range_limit, ceil(59 / local.plans_length)) : idx if local.plans_random_num <= value]
-    plan_idx          = length(local.plan_idxs) > 0 ? local.plan_idxs[0] : 0
-    plan              = local.plans[local.plan_idx].slug
+    // Select a random plan
+    selected_plan     = data.equinix_metal_plans.test.plans[random_integer.plan_idx.result]
+    plan              = local.selected_plan.slug
 
-	//Operations to select a facility randomly and avoid race conditions with facilities without capacity.
-    //With these operations we use current time seconds as the seed, and avoid using a third party provider in the Equinix provider tests
-    facilities             = tolist(setsubtract(local.plans[local.plan_idx].available_in, ["nrt1", "dfw2", "ewr1", "ams1", "sjc1", "ld7", "sy4", "ny6"]))
-    facilities_random_num  = formatdate("s", timestamp())
-    facilities_length      = length(local.facilities)
-    facilities_range_limit = ceil(59 / local.facilities_length) == 1 ? local.facilities_length : 59
-    facility_idxs          = [for idx, value in range(0, local.facilities_range_limit, ceil(59 / local.facilities_length)) : idx if local.facilities_random_num <= value]
-    facility_idx           = length(local.facility_idxs) > 0 ? local.facility_idxs[0] : 0
-    facility               = local.facilities[local.facility_idx]
+    // Select a random facility from the facilities in which the selected plan is available, excluding decommed facilities
+    facilities             = sort(tolist(setsubtract(local.selected_plan.available_in, ["nrt1", "dfw2", "ewr1", "ams1", "sjc1", "ld7", "sy4", "ny6"])))
+    facility               = local.facilities[random_integer.facility_idx.result]
 
-    //Operations to select a metro randomly and avoid race conditions with metros without capacity.
-    //With these operations we use current time seconds as the seed, and avoid using a third party provider in the Equinix provider tests
-    metros             = tolist(local.plans[local.plan_idx].available_in_metros)
-    metros_random_num  = formatdate("s", timestamp())
-    metros_length      = length(local.metros)
-    metros_range_limit = ceil(59 / local.metros_length) == 1 ? local.metros_length : 59
-    metro_idxs         = [for idx, value in range(0, local.metros_range_limit, ceil(59 / local.metros_length)) : idx if local.metros_random_num <= value]
-    metro_idx          = length(local.metro_idxs) > 0 ? local.metro_idxs[0] : 0
-    metro              = local.metros[local.metro_idx]
+    // Select a random metro from the metros in which the selected plan is available
+    metros             = sort(tolist(local.selected_plan.available_in_metros))
+    metro              = local.metros[random_integer.metro_idx.result]
 
     os = [%s][0]
 }
@@ -157,9 +158,10 @@ func TestAccMetalDevice_facilityList(t *testing.T) {
 	r := "equinix_metal_device.test"
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccMetalDeviceCheckDestroyed,
+		PreCheck:          func() { testAccPreCheck(t) },
+		ExternalProviders: testExternalProviders,
+		Providers:         testAccProviders,
+		CheckDestroy:      testAccMetalDeviceCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccMetalDeviceConfig_facility_list(rs),
@@ -183,9 +185,10 @@ func TestAccMetalDevice_sshConfig(t *testing.T) {
 		t.Fatalf("Cannot generate test SSH key pair: %s", err)
 	}
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccMetalDeviceCheckDestroyed,
+		PreCheck:          func() { testAccPreCheck(t) },
+		ExternalProviders: testExternalProviders,
+		Providers:         testAccProviders,
+		CheckDestroy:      testAccMetalDeviceCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccMetalDeviceConfig_ssh_key(rs, userSSHKey, projSSHKey),
@@ -214,9 +217,10 @@ func TestAccMetalDevice_basic(t *testing.T) {
 	r := "equinix_metal_device.test"
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccMetalDeviceCheckDestroyed,
+		PreCheck:          func() { testAccPreCheck(t) },
+		ExternalProviders: testExternalProviders,
+		Providers:         testAccProviders,
+		CheckDestroy:      testAccMetalDeviceCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccMetalDeviceConfig_minimal(rs),
@@ -258,9 +262,10 @@ func TestAccMetalDevice_metro(t *testing.T) {
 	r := "equinix_metal_device.test"
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccMetalDeviceCheckDestroyed,
+		PreCheck:          func() { testAccPreCheck(t) },
+		ExternalProviders: testExternalProviders,
+		Providers:         testAccProviders,
+		CheckDestroy:      testAccMetalDeviceCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccMetalDeviceConfig_metro(rs),
@@ -281,9 +286,10 @@ func TestAccMetalDevice_update(t *testing.T) {
 	r := "equinix_metal_device.test"
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccMetalDeviceCheckDestroyed,
+		PreCheck:          func() { testAccPreCheck(t) },
+		ExternalProviders: testExternalProviders,
+		Providers:         testAccProviders,
+		CheckDestroy:      testAccMetalDeviceCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccMetalDeviceConfig_varname(rInt, rs),
@@ -336,9 +342,10 @@ func TestAccMetalDevice_IPXEScriptUrl(t *testing.T) {
 	r := "equinix_metal_device.test_ipxe_script_url"
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccMetalDeviceCheckDestroyed,
+		PreCheck:          func() { testAccPreCheck(t) },
+		ExternalProviders: testExternalProviders,
+		Providers:         testAccProviders,
+		CheckDestroy:      testAccMetalDeviceCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccMetalDeviceConfig_ipxe_script_url(rs, "https://boot.netboot.xyz", "true"),
@@ -373,9 +380,10 @@ func TestAccMetalDevice_IPXEConflictingFields(t *testing.T) {
 	r := "equinix_metal_device.test_ipxe_conflict"
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccMetalDeviceCheckDestroyed,
+		PreCheck:          func() { testAccPreCheck(t) },
+		ExternalProviders: testExternalProviders,
+		Providers:         testAccProviders,
+		CheckDestroy:      testAccMetalDeviceCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(testAccMetalDeviceConfig_ipxe_conflict, confAccMetalDevice_base(preferable_plans, preferable_metros, preferable_os), rs),
@@ -394,9 +402,10 @@ func TestAccMetalDevice_IPXEConfigMissing(t *testing.T) {
 	r := "equinix_metal_device.test_ipxe_config_missing"
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccMetalDeviceCheckDestroyed,
+		PreCheck:          func() { testAccPreCheck(t) },
+		ExternalProviders: testExternalProviders,
+		Providers:         testAccProviders,
+		CheckDestroy:      testAccMetalDeviceCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(testAccMetalDeviceConfig_ipxe_missing, confAccMetalDevice_base(preferable_plans, preferable_metros, preferable_os), rs),
@@ -419,9 +428,10 @@ func TestAccMetalDevice_allowUserdataChanges(t *testing.T) {
 	userdata2 := fmt.Sprintf("#!/usr/bin/env sh\necho 'Allow userdata changes %d'\n", rInt+1)
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccMetalDeviceCheckDestroyed,
+		PreCheck:          func() { testAccPreCheck(t) },
+		ExternalProviders: testExternalProviders,
+		Providers:         testAccProviders,
+		CheckDestroy:      testAccMetalDeviceCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccMetalDeviceConfig_allowAttributeChanges(rInt, rs, userdata1, "", "user_data"),
@@ -452,9 +462,10 @@ func TestAccMetalDevice_allowCustomdataChanges(t *testing.T) {
 	customdata2 := fmt.Sprintf(`{"message": "Allow customdata changes %d"}`, rInt+1)
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccMetalDeviceCheckDestroyed,
+		PreCheck:          func() { testAccPreCheck(t) },
+		ExternalProviders: testExternalProviders,
+		Providers:         testAccProviders,
+		CheckDestroy:      testAccMetalDeviceCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccMetalDeviceConfig_allowAttributeChanges(rInt, rs, "", customdata1, "custom_data"),
@@ -480,7 +491,8 @@ func TestAccMetalDevice_allowChangesErrorOnUnsupportedAttribute(t *testing.T) {
 	rInt := acctest.RandInt()
 
 	resource.Test(t, resource.TestCase{
-		Providers: testAccProviders,
+		ExternalProviders: testExternalProviders,
+		Providers:         testAccProviders,
 		Steps: []resource.TestStep{
 			{
 				Config:      testAccMetalDeviceConfig_allowAttributeChanges(rInt, rs, "", "", "project_id"),
@@ -618,9 +630,10 @@ func TestAccMetalDevice_importBasic(t *testing.T) {
 	rs := acctest.RandString(10)
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccMetalDeviceCheckDestroyed,
+		PreCheck:          func() { testAccPreCheck(t) },
+		ExternalProviders: testExternalProviders,
+		Providers:         testAccProviders,
+		CheckDestroy:      testAccMetalDeviceCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccMetalDeviceConfig_basic(rs),
@@ -652,13 +665,6 @@ resource "equinix_metal_device" "test" {
   project_id       = "${equinix_metal_project.test.id}"
   tags             = ["%d"]
   termination_time = "%s"
-
-  lifecycle {
-    ignore_changes = [
-      plan,
-      metro,
-    ]
-  }
 }
 `, confAccMetalDevice_base(preferable_plans, preferable_metros, preferable_os), projSuffix, rInt, rInt, testDeviceTerminationTime())
 }
@@ -685,13 +691,6 @@ resource "equinix_metal_device" "test" {
   reinstall {
 	  enabled = true
 	  deprovision_fast = true
-  }
-
-  lifecycle {
-    ignore_changes = [
-      plan,
-      metro,
-    ]
   }
 }
 `, confAccMetalDevice_base(preferable_plans, preferable_metros, preferable_os), projSuffix, rInt, rInt, testDeviceTerminationTime())
@@ -722,13 +721,6 @@ resource "equinix_metal_device" "test" {
       "%s"
     ]
   }
-
-  lifecycle {
-    ignore_changes = [
-      plan,
-      metro,
-    ]
-  }
 }
 `, confAccMetalDevice_base(preferable_plans, preferable_metros, preferable_os), projSuffix, rInt, rInt, userdata, customdata, testDeviceTerminationTime(), attributeName)
 }
@@ -751,13 +743,6 @@ resource "equinix_metal_device" "test" {
   project_id       = "${equinix_metal_project.test.id}"
   tags             = ["%d"]
   termination_time = "%s"
-
-  lifecycle {
-    ignore_changes = [
-      plan,
-      metro,
-    ]
-  }
 }
 `, confAccMetalDevice_base(preferable_plans, preferable_metros, preferable_os), projSuffix, rInt, rInt, rInt, testDeviceTerminationTime())
 }
@@ -782,13 +767,6 @@ resource "equinix_metal_device" "test" {
   always_pxe       = true
   ipxe_script_url  = "http://matchbox.foo.wtf:8080/boot.ipxe"
   termination_time = "%s"
-
-  lifecycle {
-    ignore_changes = [
-      plan,
-      metro,
-    ]
-  }
 }
 `, confAccMetalDevice_base(preferable_plans, preferable_metros, preferable_os), projSuffix, rInt, rInt, rInt, testDeviceTerminationTime())
 }
@@ -809,13 +787,6 @@ resource "equinix_metal_device" "test" {
   billing_cycle    = "hourly"
   project_id       = "${equinix_metal_project.test.id}"
   termination_time = "%s"
-
-  lifecycle {
-    ignore_changes = [
-      plan,
-      metro,
-    ]
-  }
 }
 `, confAccMetalDevice_base(preferable_plans, preferable_metros, preferable_os), projSuffix, testDeviceTerminationTime())
 }
@@ -833,13 +804,6 @@ resource "equinix_metal_device" "test" {
   metro            = local.metro
   operating_system = local.os
   project_id       = "${equinix_metal_project.test.id}"
-
-  lifecycle {
-    ignore_changes = [
-      plan,
-      metro,
-    ]
-  }
 }`, confAccMetalDevice_base(preferable_plans, preferable_metros, preferable_os), projSuffix)
 }
 
@@ -860,13 +824,6 @@ resource "equinix_metal_device" "test" {
   billing_cycle    = "hourly"
   project_id       = "${equinix_metal_project.test.id}"
   termination_time = "%s"
-
-  lifecycle {
-    ignore_changes = [
-      plan,
-      metro,
-    ]
-  }
 }`, confAccMetalDevice_base(preferable_plans, preferable_metros, preferable_os), projSuffix, testDeviceTerminationTime())
 }
 
@@ -898,13 +855,6 @@ resource "equinix_metal_device" "test" {
 	project_id       = equinix_metal_project.test.id
 	user_ssh_key_ids = [equinix_metal_ssh_key.test.owner_id]
 	project_ssh_key_ids = [equinix_metal_project_ssh_key.test.id]
-
-	lifecycle {
-		ignore_changes = [
-			plan,
-			metro,
-		]
-	}
   }
 `, confAccMetalDevice_base(preferable_plans, preferable_metros, preferable_os), projSSHKey, projSSHKey, userSSSHKey, projSSHKey, projSSHKey)
 }
@@ -926,13 +876,6 @@ resource "equinix_metal_device" "test"  {
   billing_cycle    = "hourly"
   project_id       = "${equinix_metal_project.test.id}"
   termination_time = "%s"
-
-  lifecycle {
-    ignore_changes = [
-      plan,
-      facilities,
-    ]
-  }
 }`, confAccMetalDevice_base(preferable_plans, preferable_metros, preferable_os), projSuffix, testDeviceTerminationTime())
 }
 
@@ -956,13 +899,6 @@ resource "equinix_metal_device" "test_ipxe_script_url"  {
   ipxe_script_url  = "%s"
   always_pxe       = "%s"
   termination_time = "%s"
-
-  lifecycle {
-    ignore_changes = [
-      plan,
-      metro,
-    ]
-  }
 }`, confAccMetalDevice_base(preferable_plans, preferable_metros, preferable_os), projSuffix, url, pxe, testDeviceTerminationTime())
 }
 
@@ -983,13 +919,6 @@ resource "equinix_metal_device" "test_ipxe_conflict" {
   project_id       = "${equinix_metal_project.test.id}"
   ipxe_script_url  = "https://boot.netboot.xyz"
   always_pxe       = true
-
-  lifecycle {
-    ignore_changes = [
-      plan,
-      metro,
-    ]
-  }
 }`
 
 var testAccMetalDeviceConfig_ipxe_missing = `
@@ -1007,13 +936,6 @@ resource "equinix_metal_device" "test_ipxe_missing" {
   billing_cycle    = "hourly"
   project_id       = "${equinix_metal_project.test.id}"
   always_pxe       = true
-
-  lifecycle {
-    ignore_changes = [
-      plan,
-      metro,
-    ]
-  }
 }`
 
 type mockDeviceService struct {

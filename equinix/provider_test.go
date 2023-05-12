@@ -12,13 +12,15 @@ import (
 	"github.com/equinix/ecx-go/v2"
 	"github.com/equinix/rest-go"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/stretchr/testify/assert"
 )
 
 var (
-	testAccProviders map[string]*schema.Provider
-	testAccProvider  *schema.Provider
+	testAccProviders      map[string]*schema.Provider
+	testAccProvider       *schema.Provider
+	testExternalProviders map[string]resource.ExternalProvider
 )
 
 type mockedResourceDataProvider struct {
@@ -124,6 +126,11 @@ func init() {
 	testAccProvider = Provider()
 	testAccProviders = map[string]*schema.Provider{
 		"equinix": testAccProvider,
+	}
+	testExternalProviders = map[string]resource.ExternalProvider{
+		"random": {
+			Source: "hashicorp/random",
+		},
 	}
 }
 

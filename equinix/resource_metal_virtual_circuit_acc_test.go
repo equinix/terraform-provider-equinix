@@ -120,10 +120,11 @@ func testAccMetalConnectionConfig_vcds(randint int) string {
 func TestAccMetalVirtualCircuit_dedicated(t *testing.T) {
 	ri := acctest.RandIntRange(1024, 1093)
 
-	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccMetalVirtualCircuitCheckDestroyed,
+	resource.ParallelTest(t, resource.TestCase{ // Error: Error waiting for virtual circuit 863d4df5-b3ea-46ee-8497-858cb0cbfcb9 to be created: GET https://api.equinix.com/metal/v1/virtual-circuits/863d4df5-b3ea-46ee-8497-858cb0cbfcb9?include=project%2Cport%2Cvirtual_network%2Cvrf: 500 Oh snap, something went wrong! We've logged the error and will take a look - please reach out to us if you continue having trouble.
+		PreCheck:          func() { testAccPreCheck(t) },
+		ExternalProviders: testExternalProviders,
+		Providers:         testAccProviders,
+		CheckDestroy:      testAccMetalVirtualCircuitCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccMetalConnectionConfig_vc(ri),

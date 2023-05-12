@@ -35,3 +35,4 @@ vendor
 
 # Ignore provider's binary
 terraform-provider-equinix
+.terraform.lock.hcl

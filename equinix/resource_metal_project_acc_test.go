@@ -56,9 +56,10 @@ func TestAccMetalProject_basic(t *testing.T) {
 	rInt := acctest.RandInt()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccMetalProjectCheckDestroyed,
+		PreCheck:          func() { testAccPreCheck(t) },
+		ExternalProviders: testExternalProviders,
+		Providers:         testAccProviders,
+		CheckDestroy:      testAccMetalProjectCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccMetalProjectConfig_basic(rInt),
@@ -191,9 +192,10 @@ func TestAccMetalProject_BGPBasic(t *testing.T) {
 	rInt := acctest.RandInt()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccMetalProjectCheckDestroyed,
+		PreCheck:          func() { testAccPreCheck(t) },
+		ExternalProviders: testExternalProviders,
+		Providers:         testAccProviders,
+		CheckDestroy:      testAccMetalProjectCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccMetalProjectConfig_BGP(rInt, "2SFsdfsg43"),
@@ -218,9 +220,10 @@ func TestAccMetalProject_backendTransferUpdate(t *testing.T) {
 	rInt := acctest.RandInt()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccMetalProjectCheckDestroyed,
+		PreCheck:          func() { testAccPreCheck(t) },
+		ExternalProviders: testExternalProviders,
+		Providers:         testAccProviders,
+		CheckDestroy:      testAccMetalProjectCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccMetalProjectConfig_basic(rInt),
@@ -260,9 +263,10 @@ func TestAccMetalProject_update(t *testing.T) {
 	rInt := acctest.RandInt()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccMetalProjectCheckDestroyed,
+		PreCheck:          func() { testAccPreCheck(t) },
+		ExternalProviders: testExternalProviders,
+		Providers:         testAccProviders,
+		CheckDestroy:      testAccMetalProjectCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccMetalProjectConfig_basic(rInt),
@@ -299,9 +303,10 @@ func TestAccMetalProject_BGPUpdate(t *testing.T) {
 	res := "equinix_metal_project.foobar"
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccMetalProjectCheckDestroyed,
+		PreCheck:          func() { testAccPreCheck(t) },
+		ExternalProviders: testExternalProviders,
+		Providers:         testAccProviders,
+		CheckDestroy:      testAccMetalProjectCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccMetalProjectConfig_basic(rInt),
@@ -431,9 +436,10 @@ func TestAccMetalProject_organization(t *testing.T) {
 	rn := acctest.RandStringFromCharSet(12, "abcdef0123456789")
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccMetalProjectCheckDestroyed,
+		PreCheck:          func() { testAccPreCheck(t) },
+		ExternalProviders: testExternalProviders,
+		Providers:         testAccProviders,
+		CheckDestroy:      testAccMetalProjectCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccMetalProjectConfig_organization(rn),
@@ -456,9 +462,10 @@ func TestAccMetalProject_importBasic(t *testing.T) {
 	rInt := acctest.RandInt()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccMetalProjectCheckDestroyed,
+		PreCheck:          func() { testAccPreCheck(t) },
+		ExternalProviders: testExternalProviders,
+		Providers:         testAccProviders,
+		CheckDestroy:      testAccMetalProjectCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccMetalProjectConfig_basic(rInt),

@@ -51,9 +51,10 @@ func TestAccMetalOrganization_create(t *testing.T) {
 	rInt := acctest.RandInt()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccMetalOrganizationCheckDestroyed,
+		PreCheck:          func() { testAccPreCheck(t) },
+		ExternalProviders: testExternalProviders,
+		Providers:         testAccProviders,
+		CheckDestroy:      testAccMetalOrganizationCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccMetalOrganizationConfig_basic(rInt),
@@ -104,9 +105,10 @@ func testAccMetalSameOrganization(t *testing.T, before, after *packngo.Organizat
 func TestAccMetalOrganization_importBasic(t *testing.T) {
 	rInt := acctest.RandInt()
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccMetalOrganizationCheckDestroyed,
+		PreCheck:          func() { testAccPreCheck(t) },
+		ExternalProviders: testExternalProviders,
+		Providers:         testAccProviders,
+		CheckDestroy:      testAccMetalOrganizationCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccMetalOrganizationConfig_basic(rInt),

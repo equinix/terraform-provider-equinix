@@ -16,9 +16,10 @@ func TestAccDataSourceMetalVlan_byVxlanFacility(t *testing.T) {
 	fac := "sv15"
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccMetalDatasourceVlanCheckDestroyed,
+		PreCheck:          func() { testAccPreCheck(t) },
+		ExternalProviders: testExternalProviders,
+		Providers:         testAccProviders,
+		CheckDestroy:      testAccMetalDatasourceVlanCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccDataSourceMetalVlanConfig_byVxlanFacility(rs, fac, "tfacc-vlan"),
@@ -62,9 +63,10 @@ func TestAccDataSourceMetalVlan_byVxlanMetro(t *testing.T) {
 	metro := "sv"
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccMetalDatasourceVlanCheckDestroyed,
+		PreCheck:          func() { testAccPreCheck(t) },
+		ExternalProviders: testExternalProviders,
+		Providers:         testAccProviders,
+		CheckDestroy:      testAccMetalDatasourceVlanCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccDataSourceMetalVlanConfig_byVxlanMetro(rs, metro, "tfacc-vlan"),
@@ -132,9 +134,10 @@ func TestAccDataSourceMetalVlan_byVlanId(t *testing.T) {
 	metro := "sv"
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccMetalDatasourceVlanCheckDestroyed,
+		PreCheck:          func() { testAccPreCheck(t) },
+		ExternalProviders: testExternalProviders,
+		Providers:         testAccProviders,
+		CheckDestroy:      testAccMetalDatasourceVlanCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccDataSourceMetalVlanConfig_byVlanId(rs, metro, "tfacc-vlan"),
@@ -177,9 +180,10 @@ func TestAccDataSourceMetalVlan_byProjectId(t *testing.T) {
 	metro := "sv"
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccMetalDatasourceVlanCheckDestroyed,
+		PreCheck:          func() { testAccPreCheck(t) },
+		ExternalProviders: testExternalProviders,
+		Providers:         testAccProviders,
+		CheckDestroy:      testAccMetalDatasourceVlanCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccDataSourceMetalVlanConfig_byProjectId(rs, metro, "tfacc-vlan"),

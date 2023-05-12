@@ -13,9 +13,10 @@ func TestAccMetalIPAttachment_basic(t *testing.T) {
 	rs := acctest.RandString(10)
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccMetalIPAttachmentCheckDestroyed,
+		PreCheck:          func() { testAccPreCheck(t) },
+		ExternalProviders: testExternalProviders,
+		Providers:         testAccProviders,
+		CheckDestroy:      testAccMetalIPAttachmentCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccMetalIPAttachmentConfig_basic(rs),
@@ -52,13 +53,6 @@ resource "equinix_metal_device" "test" {
   billing_cycle    = "hourly"
   project_id       = equinix_metal_project.test.id
   termination_time = "%s"
-
-  lifecycle {
-    ignore_changes = [
-      plan,
-      facilities,
-    ]
-  }
 }
 
 resource "equinix_metal_reserved_ip_block" "test" {
@@ -77,9 +71,10 @@ func TestAccMetalIPAttachment_metro(t *testing.T) {
 	rs := acctest.RandString(10)
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccMetalIPAttachmentCheckDestroyed,
+		PreCheck:          func() { testAccPreCheck(t) },
+		ExternalProviders: testExternalProviders,
+		Providers:         testAccProviders,
+		CheckDestroy:      testAccMetalIPAttachmentCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccMetalIPAttachmentConfig_metro(rs),
@@ -116,13 +111,6 @@ resource "equinix_metal_device" "test" {
   billing_cycle    = "hourly"
   project_id       = equinix_metal_project.test.id
   termination_time = "%s"
-
-  lifecycle {
-    ignore_changes = [
-      plan,
-      metro,
-    ]
-  }
 }
 
 resource "equinix_metal_reserved_ip_block" "test" {

@@ -9,9 +9,10 @@ import (
 
 func TestAccDataSourceMetalGateway_privateIPv4(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccMetalGatewayCheckDestroyed,
+		PreCheck:          func() { testAccPreCheck(t) },
+		ExternalProviders: testExternalProviders,
+		Providers:         testAccProviders,
+		CheckDestroy:      testAccMetalGatewayCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccDataSourceMetalGatewayConfig_privateIPv4(),

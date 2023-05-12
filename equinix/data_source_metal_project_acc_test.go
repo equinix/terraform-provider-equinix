@@ -14,9 +14,10 @@ func TestAccDataSourceMetalProject_basic(t *testing.T) {
 	rn := acctest.RandStringFromCharSet(12, "abcdef0123456789")
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccMetalProjectCheckDestroyed,
+		PreCheck:          func() { testAccPreCheck(t) },
+		ExternalProviders: testExternalProviders,
+		Providers:         testAccProviders,
+		CheckDestroy:      testAccMetalProjectCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccDataSourceMetalProject_basic(rn),

@@ -12,8 +12,9 @@ func TestAccDataSourceMetalIPBlockRanges_basic(t *testing.T) {
 	rs := acctest.RandString(10)
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:  func() { testAccPreCheck(t) },
-		Providers: testAccProviders,
+		PreCheck:          func() { testAccPreCheck(t) },
+		ExternalProviders: testExternalProviders,
+		Providers:         testAccProviders,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccDataSourceMetalIPBlockRangesConfig_basic(rs),
@@ -50,13 +51,6 @@ resource "equinix_metal_device" "test" {
   billing_cycle    = "hourly"
   project_id       = equinix_metal_project.test.id
   termination_time = "%s"
-
-  lifecycle {
-    ignore_changes = [
-      plan,
-      facilities,
-    ]
-  }
 }
 
 data "equinix_metal_ip_block_ranges" "test" {

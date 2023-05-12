@@ -27,13 +27,6 @@ resource "equinix_metal_device" "test" {
   billing_cycle    = "hourly"
   project_id       = equinix_metal_project.test.id
   termination_time = "%s"
-
-  lifecycle {
-	ignore_changes = [
-	  plan,
-	  metro,
-	]
-  }
 }
 `, confAccMetalDevice_base(preferable_plans, preferable_metros, preferable_os), name, testDeviceTerminationTime())
 }
@@ -78,9 +71,10 @@ func TestAccMetalPortVlanAttachment_L2Bonded(t *testing.T) {
 	rs := acctest.RandString(10)
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccMetalPortVlanAttachmentCheckDestroyed,
+		PreCheck:          func() { testAccPreCheck(t) },
+		ExternalProviders: testExternalProviders,
+		Providers:         testAccProviders,
+		CheckDestroy:      testAccMetalPortVlanAttachmentCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccMetalPortVlanAttachmentConfig_L2Bonded_1(rs),
@@ -121,13 +115,6 @@ resource "equinix_metal_device" "test" {
   billing_cycle    = "hourly"
   project_id       = equinix_metal_project.test.id
   termination_time = "%s"
-
-  lifecycle {
-	ignore_changes = [
-	  plan,
-	  metro,
-	]
-  }
 }
 `, confAccMetalDevice_base(preferable_plans, preferable_metros, preferable_os), name, testDeviceTerminationTime())
 }
@@ -172,9 +159,10 @@ func TestAccMetalPortVlanAttachment_L2Individual(t *testing.T) {
 	rs := acctest.RandString(10)
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccMetalPortVlanAttachmentCheckDestroyed,
+		PreCheck:          func() { testAccPreCheck(t) },
+		ExternalProviders: testExternalProviders,
+		Providers:         testAccProviders,
+		CheckDestroy:      testAccMetalPortVlanAttachmentCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccMetalPortVlanAttachmentConfig_L2Individual_1(rs),
@@ -217,13 +205,6 @@ resource "equinix_metal_device" "test" {
   billing_cycle    = "hourly"
   project_id       = equinix_metal_project.test.id
   termination_time = "%s"
-
-  lifecycle {
-    ignore_changes = [
-      plan,
-      metro,
-    ]
-  }
 }`, confAccMetalDevice_base(preferable_plans, preferable_metros, preferable_os), name, testDeviceTerminationTime())
 }
 
@@ -254,9 +235,10 @@ func TestAccMetalPortVlanAttachment_hybridBasic(t *testing.T) {
 	rs := acctest.RandString(10)
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccMetalPortVlanAttachmentCheckDestroyed,
+		PreCheck:          func() { testAccPreCheck(t) },
+		ExternalProviders: testExternalProviders,
+		Providers:         testAccProviders,
+		CheckDestroy:      testAccMetalPortVlanAttachmentCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccMetalPortVlanAttachmentConfig_Hybrid_1(rs),
@@ -297,13 +279,6 @@ resource "equinix_metal_device" "test" {
   billing_cycle    = "hourly"
   project_id       = equinix_metal_project.test.id
   termination_time = "%s"
-
-  lifecycle {
-    ignore_changes = [
-      plan,
-	  metro,
-    ]
-  }
 }`, confAccMetalDevice_base(preferable_plans, preferable_metros, preferable_os), name, testDeviceTerminationTime())
 }
 
@@ -335,9 +310,10 @@ func TestAccMetalPortVlanAttachment_hybridMultipleVlans(t *testing.T) {
 	rs := acctest.RandString(10)
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccMetalPortVlanAttachmentCheckDestroyed,
+		PreCheck:          func() { testAccPreCheck(t) },
+		ExternalProviders: testExternalProviders,
+		Providers:         testAccProviders,
+		CheckDestroy:      testAccMetalPortVlanAttachmentCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccMetalPortVlanAttachmentConfig_HybridMultipleVlans_1(rs),
@@ -420,13 +396,6 @@ resource "equinix_metal_device" "test" {
   billing_cycle    = "hourly"
   project_id       = equinix_metal_project.test.id
   termination_time = "%s"
-
-  lifecycle {
-    ignore_changes = [
-      plan,
-	  metro,
-    ]
-  }
 }`, confAccMetalDevice_base(preferable_plans, preferable_metros, preferable_os), name, testDeviceTerminationTime())
 }
 
@@ -472,9 +441,10 @@ func TestAccMetalPortVlanAttachment_L2Native(t *testing.T) {
 	rs := acctest.RandString(10)
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccMetalPortVlanAttachmentCheckDestroyed,
+		PreCheck:          func() { testAccPreCheck(t) },
+		ExternalProviders: testExternalProviders,
+		Providers:         testAccProviders,
+		CheckDestroy:      testAccMetalPortVlanAttachmentCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccMetalPortVlanAttachmentConfig_L2Native_1(rs),

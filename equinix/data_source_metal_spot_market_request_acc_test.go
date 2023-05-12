@@ -17,9 +17,10 @@ func TestAccDataSourceMetalSpotMarketRequest_basic(t *testing.T) {
 		metKey packngo.SpotMarketRequest
 	)
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccMetalSpotMarketRequestCheckDestroyed,
+		PreCheck:          func() { testAccPreCheck(t) },
+		ExternalProviders: testExternalProviders,
+		Providers:         testAccProviders,
+		CheckDestroy:      testAccMetalSpotMarketRequestCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccDataSourceMetalSpotMarketRequestConfig_basic(projectName),
@@ -70,13 +71,6 @@ resource "equinix_metal_spot_market_request" "req" {
     operating_system = local.os
     plan             = local.plan
   }
-  
-  lifecycle {
-    ignore_changes = [
-      instance_parameters,
-      facilities,
-    ]
-  }
 }
 
 data "equinix_metal_spot_market_request" "dreq" {
@@ -106,13 +100,6 @@ resource "equinix_metal_spot_market_request" "req" {
     billing_cycle    = "hourly"
     operating_system = local.os
     plan             = local.plan
-  }
-
-  lifecycle {
-    ignore_changes = [
-      instance_parameters,
-      metro,
-    ]
   }
 }
 

@@ -26,13 +26,6 @@ resource "equinix_metal_device" "test" {
   billing_cycle    = "hourly"
   project_id       = equinix_metal_project.test.id
   termination_time = "%s"
-
-  lifecycle {
-	ignore_changes = [
-	  plan,
-	  metro
-	]
-  }
 }
 
 locals {
@@ -204,9 +197,10 @@ resource "equinix_metal_vlan" "test2" {
 func TestAccMetalPort_hybridBondedVxlan(t *testing.T) {
 	rs := acctest.RandString(10)
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccMetalPortDestroyed,
+		PreCheck:          func() { testAccPreCheck(t) },
+		ExternalProviders: testExternalProviders,
+		Providers:         testAccProviders,
+		CheckDestroy:      testAccMetalPortDestroyed,
 		Steps: []resource.TestStep{
 			{
 				Config: confAccMetalPort_HybridBondedVxlan(rs),
@@ -232,9 +226,10 @@ func TestAccMetalPort_hybridBondedVxlan(t *testing.T) {
 func TestAccMetalPort_L2IndividualNativeVlan(t *testing.T) {
 	rs := acctest.RandString(10)
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccMetalPortDestroyed,
+		PreCheck:          func() { testAccPreCheck(t) },
+		ExternalProviders: testExternalProviders,
+		Providers:         testAccProviders,
+		CheckDestroy:      testAccMetalPortDestroyed,
 		Steps: []resource.TestStep{
 			{
 				Config: confAccMetalPort_L2IndividualNativeVlan(rs),
@@ -264,9 +259,10 @@ func TestAccMetalPort_L2IndividualNativeVlan(t *testing.T) {
 func testAccMetalPortTemplate(t *testing.T, conf func(string) string, expectedType string) {
 	rs := acctest.RandString(10)
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccMetalPortDestroyed,
+		PreCheck:          func() { testAccPreCheck(t) },
+		ExternalProviders: testExternalProviders,
+		Providers:         testAccProviders,
+		CheckDestroy:      testAccMetalPortDestroyed,
 		Steps: []resource.TestStep{
 			{
 				Config: conf(rs),
