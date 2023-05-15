@@ -52,7 +52,7 @@ func dataSourceMetalMetroRead(d *schema.ResourceData, meta interface{}) error {
 		}
 		for _, s := range res.Servers {
 			if !s.Available {
-				return fmt.Errorf("not enough capacity in metro %s for %d device(s) of plan %s", s.Facility, s.Quantity, s.Plan)
+				return fmt.Errorf("not enough capacity in metro %s for %d device(s) of plan %s", s.Metro, s.Quantity, s.Plan)
 			}
 		}
 		if err != nil {
