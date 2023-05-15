@@ -195,11 +195,8 @@ API auth token in the top of the page and see JSON from the API response.
 [Device plans API docs](https://metal.equinix.com/developers/api/plans), set your auth token in the
 top of the page and see JSON from the API response.
 * `project_id` - (Required) The ID of the project in which to create the device
-* `project_ssh_key_ids` - (Optional) Array of IDs of the project SSH keys which should be added to the device.
-If you omit this, SSH keys of all the members of the parent project will be added to the device. If
-you specify this array, only the listed project SSH keys will be added. Project SSH keys can be
-created with the [equinix_metal_project_ssh_key](equinix_metal_project_ssh_key.md) resource.
-* `user_ssh_key_ids` - (Optional) Array of IDs of the user SSH keys which should be added to the device. If you omit this, SSH keys of all the members of the parent project will be added to the device. If you specify this array, only the listed user SSH keys (and any project_ssh_key_ids) will be added. User SSH keys can be created with the [equinix_metal_ssh_key](equinix_metal_ssh_key.md) resource
+* `project_ssh_key_ids` - (Optional) Array of IDs of the project SSH keys which should be added to the device. If you specify this array, only the listed project SSH keys (and any SSH keys for the users specified in user_ssh_key_ids) will be added. If no SSH keys are specified (both user_ssh_keys_ids and project_ssh_key_ids are empty lists or omitted), all parent project keys, parent project members keys and organization members keys will be included.  Project SSH keys can be created with the [equinix_metal_project_ssh_key](equinix_metal_project_ssh_key.md) resource.
+* `user_ssh_key_ids` - (Optional) Array of IDs of the users whose SSH keys should be added to the device. If you specify this array, only the listed users' SSH keys (and any project SSH keys specified in project_ssh_key_ids) will be added. If no SSH keys are specified (both user_ssh_keys_ids and project_ssh_key_ids are empty lists or omitted), all parent project keys, parent project members keys and organization members keys will be included. User SSH keys can be created with the [equinix_metal_ssh_key](equinix_metal_ssh_key.md) resource.
 * `reinstall` - (Optional) Whether the device should be reinstalled instead of destroyed when
 modifying user_data, custom_data, or operating system. See [Reinstall](#reinstall) below for more
 details.
