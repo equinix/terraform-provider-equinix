@@ -10,7 +10,7 @@ import (
 
 var (
 	matchErrMissingFeature = regexp.MustCompile(`.*doesn't have feature.*`)
-	matchErrNoCapacity     = regexp.MustCompile(`Not enough capacity.*`)
+	matchErrNoCapacity     = regexp.MustCompile(`not enough capacity.*`)
 )
 
 func TestAccDataSourceMetalFacility_basic(t *testing.T) {
