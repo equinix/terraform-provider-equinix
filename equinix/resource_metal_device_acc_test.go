@@ -636,9 +636,10 @@ func TestAccMetalDevice_importBasic(t *testing.T) {
 				Config: testAccMetalDeviceConfig_basic(rs),
 			},
 			{
-				ResourceName:      "equinix_metal_device.test",
-				ImportState:       true,
-				ImportStateVerify: true,
+				ResourceName:            "equinix_metal_device.test",
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"termination_time"}, // Remove when API returns termination_time for on-demand instances
 			},
 		},
 	})
