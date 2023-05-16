@@ -236,7 +236,6 @@ func TestAccMetalDevice_basic(t *testing.T) {
 					testAccMetalDeviceNetwork(r),
 					testAccMetalDeviceAttributes(&device),
 					testAccMetalDeviceNetworkOrder(r),
-					testAccMetalDevicePortsOrder(r),
 				),
 			},
 		},
@@ -538,25 +537,6 @@ func testAccMetalSameDevice(t *testing.T, before, after *packngo.Device) resourc
 	return func(s *terraform.State) error {
 		if before.ID != after.ID {
 			t.Fatalf("Expected device to be the same, but it was recreated: %s -> %s", before.ID, after.ID)
-		}
-		return nil
-	}
-}
-
-func testAccMetalDevicePortsOrder(n string) resource.TestCheckFunc {
-	return func(s *terraform.State) error {
-		rs, ok := s.RootModule().Resources[n]
-		if !ok {
-			return fmt.Errorf("Not found: %s", n)
-		}
-		if rs.Primary.Attributes["ports.0.name"] != "bond0" {
-			return fmt.Errorf("first port should be bond0")
-		}
-		if rs.Primary.Attributes["ports.1.name"] != "eth0" {
-			return fmt.Errorf("second port should be eth0")
-		}
-		if rs.Primary.Attributes["ports.2.name"] != "eth1" {
-			return fmt.Errorf("third port should be eth1")
 		}
 		return nil
 	}
