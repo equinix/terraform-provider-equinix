@@ -9,7 +9,7 @@ import (
 
 	v4 "github.com/equinix-labs/fabric-go/fabric/v4"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
@@ -194,7 +194,7 @@ func resourceFabricConnectionUpdate(ctx context.Context, d *schema.ResourceData,
 
 func waitForConnectionUpdateCompletion(uuid string, meta interface{}, ctx context.Context) (v4.Connection, error) {
 	log.Printf("Waiting for connection update to complete, uuid %s", uuid)
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Target: []string{"COMPLETED"},
 		Refresh: func() (interface{}, string, error) {
 			client := meta.(*Config).fabricClient
@@ -224,7 +224,7 @@ func waitForConnectionUpdateCompletion(uuid string, meta interface{}, ctx contex
 
 func waitUntilConnectionIsProvisioned(uuid string, meta interface{}, ctx context.Context) error {
 	log.Printf("Waiting for connection to be provisioned, uuid %s", uuid)
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Pending: []string{
 			string(v4.PROVISIONING_ConnectionState),
 		},
@@ -253,7 +253,7 @@ func waitUntilConnectionIsProvisioned(uuid string, meta interface{}, ctx context
 
 func waitUntilConnectionIsActive(uuid string, meta interface{}, ctx context.Context) (v4.Connection, error) {
 	log.Printf("Waiting for connection to be in active state, uuid %s", uuid)
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Target: []string{
 			string(v4.ACTIVE_ConnectionState),
 		},
@@ -308,7 +308,7 @@ func resourceFabricConnectionDelete(ctx context.Context, d *schema.ResourceData,
 
 func waitUntilConnectionDeprovisioned(uuid string, meta interface{}, ctx context.Context) error {
 	log.Printf("Waiting for connection to be deprovisioned, uuid %s", uuid)
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Pending: []string{
 			string(v4.DEPROVISIONING_ConnectionState),
 		},

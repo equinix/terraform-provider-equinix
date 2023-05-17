@@ -6,7 +6,7 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/packethost/packngo"
 )
@@ -294,7 +294,7 @@ func resourceMetalSpotMarketRequestCreate(d *schema.ResourceData, meta interface
 	d.SetId(smr.ID)
 
 	if waitForDevices {
-		stateConf := &resource.StateChangeConf{
+		stateConf := &retry.StateChangeConf{
 			Pending:        []string{"not_done"},
 			Target:         []string{"done"},
 			Refresh:        resourceStateRefreshFunc(d, meta),
@@ -367,7 +367,7 @@ func resourceMetalSpotMarketRequestDelete(d *schema.ResourceData, meta interface
 			return nil
 		}
 
-		stateConf := &resource.StateChangeConf{
+		stateConf := &retry.StateChangeConf{
 			Pending:        []string{"not_done"},
 			Target:         []string{"done"},
 			Refresh:        resourceStateRefreshFunc(d, meta),
@@ -418,7 +418,7 @@ func getInstanceParams(params *packngo.SpotMarketRequestInstanceParameters) Inst
 	return p
 }
 
-func resourceStateRefreshFunc(d *schema.ResourceData, meta interface{}) resource.StateRefreshFunc {
+func resourceStateRefreshFunc(d *schema.ResourceData, meta interface{}) retry.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 		meta.(*Config).addModuleToMetalUserAgent(d)
 		client := meta.(*Config).metal

@@ -10,7 +10,7 @@ import (
 	"github.com/equinix/ecx-go/v2"
 	"github.com/equinix/rest-go"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 )
@@ -674,7 +674,7 @@ func resourceECXL2ConnectionCreate(ctx context.Context, d *schema.ResourceData, 
 		return diag.FromErr(err)
 	}
 	d.SetId(ecx.StringValue(primaryID))
-	waitConfigs := []*resource.StateChangeConf{
+	waitConfigs := []*retry.StateChangeConf{
 		createConnectionStatusProvisioningWaitConfiguration(client.GetL2Connection, d.Id(), 5*time.Second, d.Timeout(schema.TimeoutCreate)),
 	}
 	if ecx.StringValue(secondaryID) != "" {
@@ -780,7 +780,7 @@ func resourceECXL2ConnectionDelete(ctx context.Context, d *schema.ResourceData, 
 		}
 		return diag.FromErr(err)
 	}
-	waitConfigs := []*resource.StateChangeConf{
+	waitConfigs := []*retry.StateChangeConf{
 		createConnectionStatusDeleteWaitConfiguration(client.GetL2Connection, d.Id(), 5*time.Second, d.Timeout(schema.TimeoutDelete)),
 	}
 	if redID, ok := d.GetOk(ecxL2ConnectionSchemaNames["RedundantUUID"]); ok {
@@ -1132,7 +1132,7 @@ func fillFabricL2ConnectionUpdateRequest(updateReq ecx.L2ConnectionUpdateRequest
 	return updateReq
 }
 
-func createConnectionStatusProvisioningWaitConfiguration(fetchFunc getL2Connection, id string, delay time.Duration, timeout time.Duration) *resource.StateChangeConf {
+func createConnectionStatusProvisioningWaitConfiguration(fetchFunc getL2Connection, id string, delay time.Duration, timeout time.Duration) *retry.StateChangeConf {
 	pending := []string{
 		ecx.ConnectionStatusProvisioning,
 		ecx.ConnectionStatusPendingAutoApproval,
@@ -1146,7 +1146,7 @@ func createConnectionStatusProvisioningWaitConfiguration(fetchFunc getL2Connecti
 	return createConnectionStatusWaitConfiguration(fetchFunc, id, delay, timeout, target, pending)
 }
 
-func createConnectionStatusDeleteWaitConfiguration(fetchFunc getL2Connection, id string, delay time.Duration, timeout time.Duration) *resource.StateChangeConf {
+func createConnectionStatusDeleteWaitConfiguration(fetchFunc getL2Connection, id string, delay time.Duration, timeout time.Duration) *retry.StateChangeConf {
 	pending := []string{
 		ecx.ConnectionStatusDeprovisioning,
 	}
@@ -1158,8 +1158,8 @@ func createConnectionStatusDeleteWaitConfiguration(fetchFunc getL2Connection, id
 	return createConnectionStatusWaitConfiguration(fetchFunc, id, delay, timeout, target, pending)
 }
 
-func createConnectionStatusWaitConfiguration(fetchFunc getL2Connection, id string, delay time.Duration, timeout time.Duration, target []string, pending []string) *resource.StateChangeConf {
-	return &resource.StateChangeConf{
+func createConnectionStatusWaitConfiguration(fetchFunc getL2Connection, id string, delay time.Duration, timeout time.Duration, target []string, pending []string) *retry.StateChangeConf {
+	return &retry.StateChangeConf{
 		Pending:    pending,
 		Target:     target,
 		Timeout:    timeout,

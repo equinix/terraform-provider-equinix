@@ -10,7 +10,7 @@ import (
 
 	v4 "github.com/equinix-labs/fabric-go/fabric/v4"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
@@ -154,7 +154,7 @@ func resourceFabricServiceProfileUpdate(ctx context.Context, d *schema.ResourceD
 
 func waitForServiceProfileUpdateCompletion(uuid string, meta interface{}, ctx context.Context) (v4.ServiceProfile, error) {
 	log.Printf("Waiting for service profile update to complete, uuid %s", uuid)
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Target: []string{"COMPLETED"},
 		Refresh: func() (interface{}, string, error) {
 			client := meta.(*Config).fabricClient
@@ -182,7 +182,7 @@ func waitForServiceProfileUpdateCompletion(uuid string, meta interface{}, ctx co
 func waitForActiveServiceProfileAndPopulateETag(uuid string, meta interface{}, ctx context.Context) (v4.ServiceProfile, error, int64) {
 	log.Printf("Waiting for service profile to be in active state, uuid %s", uuid)
 	var eTag int64 = 0
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Target: []string{string(v4.ACTIVE_ServiceProfileStateEnum)},
 		Refresh: func() (interface{}, string, error) {
 			client := meta.(*Config).fabricClient

@@ -9,7 +9,7 @@ import (
 	"github.com/equinix/ne-go"
 	"github.com/equinix/rest-go"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 )
@@ -255,8 +255,8 @@ func createNetworkBGPUpdateRequest(requestFunc bgpUpdateRequest, bgp *ne.BGPConf
 
 type getBGPConfig func(uuid string) (*ne.BGPConfiguration, error)
 
-func createBGPConfigStatusProvisioningWaitConfiguration(fetchFunc getBGPConfig, id string, delay time.Duration, timeout time.Duration) *resource.StateChangeConf {
-	return &resource.StateChangeConf{
+func createBGPConfigStatusProvisioningWaitConfiguration(fetchFunc getBGPConfig, id string, delay time.Duration, timeout time.Duration) *retry.StateChangeConf {
+	return &retry.StateChangeConf{
 		Pending: []string{
 			ne.BGPProvisioningStatusProvisioning,
 			ne.BGPProvisioningStatusPendingUpdate,
