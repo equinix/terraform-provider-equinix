@@ -7,7 +7,8 @@ import (
 	"sync"
 	"time"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
+
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/packethost/packngo"
@@ -120,7 +121,7 @@ func getPorts(ps []packngo.Port) []map[string]interface{} {
 	return ret
 }
 
-func hwReservationStateRefreshFunc(client *packngo.Client, reservationId, instanceId string) resource.StateRefreshFunc {
+func hwReservationStateRefreshFunc(client *packngo.Client, reservationId, instanceId string) retry.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 		r, _, err := client.HardwareReservations.Get(reservationId, &packngo.GetOptions{Includes: []string{"device"}})
 		state := deprovisioning
@@ -142,7 +143,7 @@ func hwReservationStateRefreshFunc(client *packngo.Client, reservationId, instan
 }
 
 func waitUntilReservationProvisionable(client *packngo.Client, reservationId, instanceId string, delay, timeout, minTimeout time.Duration) error {
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Pending:    []string{deprovisioning},
 		Target:     []string{provisionable, reprovisioned},
 		Refresh:    hwReservationStateRefreshFunc(client, reservationId, instanceId),
@@ -183,7 +184,7 @@ func waitForDeviceAttribute(d *schema.ResourceData, targets []string, pending []
 		return "", fmt.Errorf("unsupported attr to wait for: %s", attribute)
 	}
 
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Pending: pending,
 		Target:  targets,
 		Refresh: func() (interface{}, string, error) {

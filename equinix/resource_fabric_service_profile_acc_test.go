@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 
 	v4 "github.com/equinix-labs/fabric-go/fabric/v4"
@@ -166,7 +167,7 @@ func checkServiceProfileDelete(s *terraform.State) error {
 
 func waitAndCheckServiceProfileDeleted(uuid string, client *v4.APIClient, ctx context.Context) (v4.ServiceProfile, error) {
 	log.Printf("Waiting for service profile to be in deleted, uuid %s", uuid)
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Target: []string{string(v4.DELETED_ServiceProfileStateEnum)},
 		Refresh: func() (interface{}, string, error) {
 			dbConn, _, err := client.ServiceProfilesApi.GetServiceProfileByUuid(ctx, uuid, nil)

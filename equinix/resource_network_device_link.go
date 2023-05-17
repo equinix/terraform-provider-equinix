@@ -8,7 +8,7 @@ import (
 	"github.com/equinix/ne-go"
 	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 )
@@ -431,8 +431,8 @@ func flattenNetworkDeviceLinkConnections(currentConnections *schema.Set, connect
 
 type getDeviceLinkGroup func(uuid string) (*ne.DeviceLinkGroup, error)
 
-func createDeviceLinkStatusProvisioningWaitConfiguration(fetchFunc getDeviceLinkGroup, id string, delay time.Duration, timeout time.Duration) *resource.StateChangeConf {
-	return &resource.StateChangeConf{
+func createDeviceLinkStatusProvisioningWaitConfiguration(fetchFunc getDeviceLinkGroup, id string, delay time.Duration, timeout time.Duration) *retry.StateChangeConf {
+	return &retry.StateChangeConf{
 		Pending: []string{
 			ne.DeviceLinkGroupStatusProvisioning,
 		},
@@ -452,8 +452,8 @@ func createDeviceLinkStatusProvisioningWaitConfiguration(fetchFunc getDeviceLink
 	}
 }
 
-func createDeviceLinkStatusDeleteWaitConfiguration(fetchFunc getDeviceLinkGroup, id string, delay time.Duration, timeout time.Duration) *resource.StateChangeConf {
-	return &resource.StateChangeConf{
+func createDeviceLinkStatusDeleteWaitConfiguration(fetchFunc getDeviceLinkGroup, id string, delay time.Duration, timeout time.Duration) *retry.StateChangeConf {
+	return &retry.StateChangeConf{
 		Pending: []string{
 			ne.DeviceLinkGroupStatusDeprovisioning,
 		},

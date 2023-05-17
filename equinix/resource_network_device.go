@@ -12,7 +12,7 @@ import (
 	"github.com/equinix/ne-go"
 	"github.com/equinix/rest-go"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 )
@@ -884,7 +884,7 @@ func resourceNetworkDeviceCreate(ctx context.Context, d *schema.ResourceData, m 
 		return diag.FromErr(err)
 	}
 	d.SetId(ne.StringValue(primary.UUID))
-	waitConfigs := []*resource.StateChangeConf{
+	waitConfigs := []*retry.StateChangeConf{
 		createNetworkDeviceStatusProvisioningWaitConfiguration(client.GetDevice, ne.StringValue(primary.UUID), 5*time.Second, d.Timeout(schema.TimeoutCreate)),
 		createNetworkDeviceLicenseStatusWaitConfiguration(client.GetDevice, ne.StringValue(primary.UUID), 5*time.Second, d.Timeout(schema.TimeoutCreate)),
 	}
@@ -982,7 +982,7 @@ func resourceNetworkDeviceDelete(ctx context.Context, d *schema.ResourceData, m 
 	client := m.(*Config).ne
 	m.(*Config).addModuleToNEUserAgent(&client, d)
 	var diags diag.Diagnostics
-	waitConfigs := []*resource.StateChangeConf{
+	waitConfigs := []*retry.StateChangeConf{
 		createNetworkDeviceStatusDeleteWaitConfiguration(client.GetDevice, d.Id(), 5*time.Second, d.Timeout(schema.TimeoutDelete)),
 	}
 	if v, ok := d.GetOk(neDeviceSchemaNames["Secondary"]); ok {
@@ -1495,8 +1495,8 @@ func fillNetworkDeviceUpdateRequest(updateReq ne.DeviceUpdateRequest, changes ma
 	return updateReq
 }
 
-func getNetworkDeviceStateChangeConfigs(c ne.Client, deviceID string, timeout time.Duration, changes map[string]interface{}) []*resource.StateChangeConf {
-	configs := make([]*resource.StateChangeConf, 0, len(changes))
+func getNetworkDeviceStateChangeConfigs(c ne.Client, deviceID string, timeout time.Duration, changes map[string]interface{}) []*retry.StateChangeConf {
+	configs := make([]*retry.StateChangeConf, 0, len(changes))
 	if changeValue, found := changes[neDeviceSchemaNames["ACLTemplateUUID"]]; found {
 		aclTemplateUuid, ok := changeValue.(string)
 		if ok && aclTemplateUuid != "" {
@@ -1553,7 +1553,7 @@ type (
 	getAdditionalBandwidthDetails func(uuid string) (*ne.DeviceAdditionalBandwidthDetails, error)
 )
 
-func createNetworkDeviceStatusProvisioningWaitConfiguration(fetchFunc getDevice, id string, delay time.Duration, timeout time.Duration) *resource.StateChangeConf {
+func createNetworkDeviceStatusProvisioningWaitConfiguration(fetchFunc getDevice, id string, delay time.Duration, timeout time.Duration) *retry.StateChangeConf {
 	pending := []string{
 		ne.DeviceStateInitializing,
 		ne.DeviceStateProvisioning,
@@ -1567,7 +1567,7 @@ func createNetworkDeviceStatusProvisioningWaitConfiguration(fetchFunc getDevice,
 	return createNetworkDeviceStatusWaitConfiguration(fetchFunc, id, delay, timeout, target, pending)
 }
 
-func createNetworkDeviceStatusDeleteWaitConfiguration(fetchFunc getDevice, id string, delay time.Duration, timeout time.Duration) *resource.StateChangeConf {
+func createNetworkDeviceStatusDeleteWaitConfiguration(fetchFunc getDevice, id string, delay time.Duration, timeout time.Duration) *retry.StateChangeConf {
 	pending := []string{
 		ne.DeviceStateDeprovisioning,
 	}
@@ -1577,8 +1577,8 @@ func createNetworkDeviceStatusDeleteWaitConfiguration(fetchFunc getDevice, id st
 	return createNetworkDeviceStatusWaitConfiguration(fetchFunc, id, delay, timeout, target, pending)
 }
 
-func createNetworkDeviceStatusWaitConfiguration(fetchFunc getDevice, id string, delay time.Duration, timeout time.Duration, target []string, pending []string) *resource.StateChangeConf {
-	return &resource.StateChangeConf{
+func createNetworkDeviceStatusWaitConfiguration(fetchFunc getDevice, id string, delay time.Duration, timeout time.Duration, target []string, pending []string) *retry.StateChangeConf {
+	return &retry.StateChangeConf{
 		Pending:    pending,
 		Target:     target,
 		Timeout:    timeout,
@@ -1594,7 +1594,7 @@ func createNetworkDeviceStatusWaitConfiguration(fetchFunc getDevice, id string, 
 	}
 }
 
-func createNetworkDeviceLicenseStatusWaitConfiguration(fetchFunc getDevice, id string, delay time.Duration, timeout time.Duration) *resource.StateChangeConf {
+func createNetworkDeviceLicenseStatusWaitConfiguration(fetchFunc getDevice, id string, delay time.Duration, timeout time.Duration) *retry.StateChangeConf {
 	pending := []string{
 		ne.DeviceLicenseStateApplying,
 		ne.DeviceLicenseStateWaitingClusterSetUp,
@@ -1604,7 +1604,7 @@ func createNetworkDeviceLicenseStatusWaitConfiguration(fetchFunc getDevice, id s
 		ne.DeviceLicenseStateRegistered,
 		ne.DeviceLicenseStateApplied,
 	}
-	return &resource.StateChangeConf{
+	return &retry.StateChangeConf{
 		Pending:    pending,
 		Target:     target,
 		Timeout:    timeout,
@@ -1620,8 +1620,8 @@ func createNetworkDeviceLicenseStatusWaitConfiguration(fetchFunc getDevice, id s
 	}
 }
 
-func createNetworkDeviceACLStatusWaitConfiguration(fetchFunc getACL, id string, delay time.Duration, timeout time.Duration) *resource.StateChangeConf {
-	return &resource.StateChangeConf{
+func createNetworkDeviceACLStatusWaitConfiguration(fetchFunc getACL, id string, delay time.Duration, timeout time.Duration) *retry.StateChangeConf {
+	return &retry.StateChangeConf{
 		Pending: []string{
 			ne.ACLDeviceStatusProvisioning,
 		},
@@ -1641,8 +1641,8 @@ func createNetworkDeviceACLStatusWaitConfiguration(fetchFunc getACL, id string, 
 	}
 }
 
-func createNetworkDeviceAdditionalBandwidthStatusWaitConfiguration(fetchFunc getAdditionalBandwidthDetails, deviceID string, delay time.Duration, timeout time.Duration) *resource.StateChangeConf {
-	return &resource.StateChangeConf{
+func createNetworkDeviceAdditionalBandwidthStatusWaitConfiguration(fetchFunc getAdditionalBandwidthDetails, deviceID string, delay time.Duration, timeout time.Duration) *retry.StateChangeConf {
+	return &retry.StateChangeConf{
 		Pending: []string{
 			ne.DeviceAdditionalBandwidthStatusProvisioning,
 		},

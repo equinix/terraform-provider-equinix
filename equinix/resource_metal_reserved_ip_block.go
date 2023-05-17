@@ -8,7 +8,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/structure"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
@@ -298,7 +298,7 @@ func resourceMetalReservedIPBlockCreate(d *schema.ResourceData, meta interface{}
 	if wfs != string(packngo.IPReservationStateCreated) {
 		target = append(target, wfs)
 	}
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Pending:    []string{string(packngo.IPReservationStatePending)},
 		Target:     target,
 		Refresh:    reservedIPStateRefreshFunc(client, d.Id()),
@@ -347,7 +347,7 @@ func resourceMetalReservedIPBlockUpdate(d *schema.ResourceData, meta interface{}
 	return resourceMetalReservedIPBlockRead(d, meta)
 }
 
-func reservedIPStateRefreshFunc(client *packngo.Client, reservedIPId string) resource.StateRefreshFunc {
+func reservedIPStateRefreshFunc(client *packngo.Client, reservedIPId string) retry.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 		reservedIP, _, err := client.ProjectIPs.Get(reservedIPId, nil)
 		if err != nil {
