@@ -190,8 +190,18 @@ func TestAccMetalDevice_sshConfig(t *testing.T) {
 			{
 				Config: testAccMetalDeviceConfig_ssh_key(rs, userSSHKey, projSSHKey),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr(
-						r, "ssh_key_ids.#", "2"),
+					resource.TestCheckTypeSetElemAttrPair(
+						r,
+						"ssh_key_ids.*",
+						"equinix_metal_ssh_key.test",
+						"id",
+					),
+					resource.TestCheckTypeSetElemAttrPair(
+						r,
+						"ssh_key_ids.*",
+						"equinix_metal_project_ssh_key.test",
+						"id",
+					),
 				),
 			},
 		},
@@ -886,7 +896,7 @@ resource "equinix_metal_device" "test" {
 	operating_system = local.os
 	billing_cycle    = "hourly"
 	project_id       = equinix_metal_project.test.id
-	user_ssh_key_ids = [equinix_metal_ssh_key.test.id]
+	user_ssh_key_ids = [equinix_metal_ssh_key.test.owner_id]
 	project_ssh_key_ids = [equinix_metal_project_ssh_key.test.id]
 
 	lifecycle {
