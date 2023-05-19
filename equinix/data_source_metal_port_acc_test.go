@@ -12,8 +12,9 @@ func TestAccDataSourceMetalPort_byName(t *testing.T) {
 	rs := acctest.RandString(10)
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:  func() { testAccPreCheck(t) },
-		Providers: testAccProviders,
+		PreCheck:          func() { testAccPreCheck(t) },
+		ExternalProviders: testExternalProviders,
+		Providers:         testAccProviders,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccDataSourceMetalPortConfig_byName(rs),
@@ -42,13 +43,6 @@ resource "equinix_metal_device" "test" {
   billing_cycle    = "hourly"
   project_id       = equinix_metal_project.test.id
   termination_time = "%s"
-
-  lifecycle {
-    ignore_changes = [
-      plan,
-      metro,
-    ]
-  }
 }
 
 data "equinix_metal_port" "test" {
@@ -63,8 +57,9 @@ func TestAccDataSourceMetalPort_byId(t *testing.T) {
 	rs := acctest.RandString(10)
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:  func() { testAccPreCheck(t) },
-		Providers: testAccProviders,
+		PreCheck:          func() { testAccPreCheck(t) },
+		ExternalProviders: testExternalProviders,
+		Providers:         testAccProviders,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccDataSourceMetalPortConfig_byId(rs),
@@ -93,13 +88,6 @@ resource "equinix_metal_device" "test" {
   billing_cycle    = "hourly"
   project_id       = equinix_metal_project.test.id
   termination_time = "%s"
-
-  lifecycle {
-    ignore_changes = [
-      plan,
-      metro,
-    ]
-  }
 }
 
 data "equinix_metal_port" "test" {

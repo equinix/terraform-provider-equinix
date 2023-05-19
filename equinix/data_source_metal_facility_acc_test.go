@@ -17,8 +17,9 @@ func TestAccDataSourceMetalFacility_basic(t *testing.T) {
 	testFac := "dc13"
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:  func() { testAccPreCheck(t) },
-		Providers: testAccProviders,
+		PreCheck:          func() { testAccPreCheck(t) },
+		ExternalProviders: testExternalProviders,
+		Providers:         testAccProviders,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccDataSourceMetalFacilityConfig_basic(testFac),
@@ -48,8 +49,9 @@ func TestAccDataSourceMetalFacility_basic(t *testing.T) {
 
 func TestAccDataSourceMetalFacility_Features(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:  func() { testAccPreCheck(t) },
-		Providers: testAccProviders,
+		PreCheck:          func() { testAccPreCheck(t) },
+		ExternalProviders: testExternalProviders,
+		Providers:         testAccProviders,
 		Steps: []resource.TestStep{
 			{
 				Config:      testAccDataSourceMetalFacilityConfig_missingFeatures(),

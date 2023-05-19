@@ -78,9 +78,10 @@ func TestAccMetalConnection_shared(t *testing.T) {
 	rs := acctest.RandString(10)
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccMetalConnectionCheckDestroyed,
+		PreCheck:          func() { testAccPreCheck(t) },
+		ExternalProviders: testExternalProviders,
+		Providers:         testAccProviders,
+		CheckDestroy:      testAccMetalConnectionCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccMetalConnectionConfig_Shared(rs),
@@ -150,9 +151,10 @@ func TestAccMetalConnection_dedicated(t *testing.T) {
 	rs := acctest.RandString(10)
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccMetalConnectionCheckDestroyed,
+		PreCheck:          func() { testAccPreCheck(t) },
+		ExternalProviders: testExternalProviders,
+		Providers:         testAccProviders,
+		CheckDestroy:      testAccMetalConnectionCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccMetalConnectionConfig_dedicated(rs),
@@ -206,9 +208,10 @@ func TestAccMetalConnection_tunnel(t *testing.T) {
 	rs := acctest.RandString(10)
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccMetalConnectionCheckDestroyed,
+		PreCheck:          func() { testAccPreCheck(t) },
+		ExternalProviders: testExternalProviders,
+		Providers:         testAccProviders,
+		CheckDestroy:      testAccMetalConnectionCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccMetalConnectionConfig_tunnel(rs),
@@ -281,9 +284,10 @@ func TestAccMetalConnection_sharedVlans(t *testing.T) {
 	step5Vlans := ""
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccMetalConnectionCheckDestroyed,
+		PreCheck:          func() { testAccPreCheck(t) },
+		ExternalProviders: testExternalProviders,
+		Providers:         testAccProviders,
+		CheckDestroy:      testAccMetalConnectionCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccMetalConnectionConfig_sharedVlans(rs, step1Vlans),

@@ -55,9 +55,10 @@ func TestAccMetalSSHKey_basic(t *testing.T) {
 	}
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccMetalSSHKeyCheckDestroyed,
+		PreCheck:          func() { testAccPreCheck(t) },
+		ExternalProviders: testExternalProviders,
+		Providers:         testAccProviders,
+		CheckDestroy:      testAccMetalSSHKeyCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccMetalSSHKeyConfig_basic(rInt, publicKeyMaterial),
@@ -83,9 +84,10 @@ func TestAccMetalSSHKey_projectBasic(t *testing.T) {
 	}
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccMetalSSHKeyCheckDestroyed,
+		PreCheck:          func() { testAccPreCheck(t) },
+		ExternalProviders: testExternalProviders,
+		Providers:         testAccProviders,
+		CheckDestroy:      testAccMetalSSHKeyCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccCheckMetalSSHKeyConfig_projectBasic(rInt, publicKeyMaterial),
@@ -109,9 +111,10 @@ func TestAccMetalSSHKey_update(t *testing.T) {
 	}
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccMetalSSHKeyCheckDestroyed,
+		PreCheck:          func() { testAccPreCheck(t) },
+		ExternalProviders: testExternalProviders,
+		Providers:         testAccProviders,
+		CheckDestroy:      testAccMetalSSHKeyCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccMetalSSHKeyConfig_basic(rInt, publicKeyMaterial),
@@ -143,9 +146,10 @@ func TestAccMetalSSHKey_projectImportBasic(t *testing.T) {
 		t.Fatalf("Cannot generate test SSH key pair: %s", err)
 	}
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccMetalSSHKeyCheckDestroyed,
+		PreCheck:          func() { testAccPreCheck(t) },
+		ExternalProviders: testExternalProviders,
+		Providers:         testAccProviders,
+		CheckDestroy:      testAccMetalSSHKeyCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccCheckMetalSSHKeyConfig_projectBasic(acctest.RandInt(), sshKey),
@@ -165,9 +169,10 @@ func TestAccMetalSSHKey_importBasic(t *testing.T) {
 		t.Fatalf("Cannot generate test SSH key pair: %s", err)
 	}
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccMetalSSHKeyCheckDestroyed,
+		PreCheck:          func() { testAccPreCheck(t) },
+		ExternalProviders: testExternalProviders,
+		Providers:         testAccProviders,
+		CheckDestroy:      testAccMetalSSHKeyCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccMetalSSHKeyConfig_basic(acctest.RandInt(), sshKey),

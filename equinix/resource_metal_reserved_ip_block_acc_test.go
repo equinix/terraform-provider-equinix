@@ -72,9 +72,10 @@ func TestAccMetalReservedIPBlock_global(t *testing.T) {
 	rs := acctest.RandString(10)
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccMetalReservedIPBlockCheckDestroyed,
+		PreCheck:          func() { testAccPreCheck(t) },
+		ExternalProviders: testExternalProviders,
+		Providers:         testAccProviders,
+		CheckDestroy:      testAccMetalReservedIPBlockCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccMetalReservedIPBlockConfig_global(rs),
@@ -103,9 +104,10 @@ func TestAccMetalReservedIPBlock_public(t *testing.T) {
 	rs := acctest.RandString(10)
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccMetalReservedIPBlockCheckDestroyed,
+		PreCheck:          func() { testAccPreCheck(t) },
+		ExternalProviders: testExternalProviders,
+		Providers:         testAccProviders,
+		CheckDestroy:      testAccMetalReservedIPBlockCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccMetalReservedIPBlockConfig_public(rs),
@@ -137,9 +139,10 @@ func TestAccMetalReservedIPBlock_metro(t *testing.T) {
 	tag := "tag"
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccMetalReservedIPBlockCheckDestroyed,
+		PreCheck:          func() { testAccPreCheck(t) },
+		ExternalProviders: testExternalProviders,
+		Providers:         testAccProviders,
+		CheckDestroy:      testAccMetalReservedIPBlockCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccMetalReservedIPBlockConfig_metro(rs, tag),
@@ -175,9 +178,10 @@ func TestAccMetalReservedIPBlock_importBasic(t *testing.T) {
 	rs := acctest.RandString(10)
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccMetalReservedIPBlockCheckDestroyed,
+		PreCheck:          func() { testAccPreCheck(t) },
+		ExternalProviders: testExternalProviders,
+		Providers:         testAccProviders,
+		CheckDestroy:      testAccMetalReservedIPBlockCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccMetalReservedIPBlockConfig_public(rs),
@@ -224,9 +228,10 @@ resource "equinix_metal_reserved_ip_block" "test" {
 
 func TestAccMetalReservedIPBlock_facilityToMetro(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccMetalReservedIPBlockCheckDestroyed,
+		PreCheck:          func() { testAccPreCheck(t) },
+		ExternalProviders: testExternalProviders,
+		Providers:         testAccProviders,
+		CheckDestroy:      testAccMetalReservedIPBlockCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccMetalReservedIPBlockConfig_facilityToMetro(`   facility = "ny5"`),
@@ -262,12 +267,6 @@ resource "equinix_metal_reserved_ip_block" "test" {
 	facility    = local.facility
 	type        = "public_ipv4"
 	quantity    = 2
-
-	lifecycle {
-		ignore_changes = [
-			facility,
-		]
-	}
 }
 
 resource "equinix_metal_device" "test" {
@@ -286,13 +285,6 @@ resource "equinix_metal_device" "test" {
 	 type = "private_ipv4"
   }
   termination_time = "%s"
-
-  lifecycle {
-    ignore_changes = [
-      plan,
-      facilities,
-    ]
-  }
 }
 `, confAccMetalDevice_base(preferable_plans, preferable_metros, preferable_os), name, testDeviceTerminationTime())
 }
@@ -301,9 +293,10 @@ func TestAccMetalReservedIPBlock_device(t *testing.T) {
 	rs := acctest.RandString(10)
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccMetalReservedIPBlockCheckDestroyed,
+		PreCheck:          func() { testAccPreCheck(t) },
+		ExternalProviders: testExternalProviders,
+		Providers:         testAccProviders,
+		CheckDestroy:      testAccMetalReservedIPBlockCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccMetalReservedIP_device(rs),

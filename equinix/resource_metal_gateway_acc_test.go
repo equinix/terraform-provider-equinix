@@ -10,9 +10,10 @@ import (
 
 func TestAccMetalGateway_privateIPv4(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccMetalGatewayCheckDestroyed,
+		PreCheck:          func() { testAccPreCheck(t) },
+		ExternalProviders: testExternalProviders,
+		Providers:         testAccProviders,
+		CheckDestroy:      testAccMetalGatewayCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccMetalGatewayConfig_privateIPv4(),
@@ -50,9 +51,10 @@ resource "equinix_metal_gateway" "test" {
 
 func TestAccMetalGateway_existingReservation(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccMetalGatewayCheckDestroyed,
+		PreCheck:          func() { testAccPreCheck(t) },
+		ExternalProviders: testExternalProviders,
+		Providers:         testAccProviders,
+		CheckDestroy:      testAccMetalGatewayCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccMetalGatewayConfig_existingReservation(),
@@ -112,9 +114,10 @@ func testAccMetalGatewayCheckDestroyed(s *terraform.State) error {
 
 func TestAccMetalGateway_importBasic(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccMetalGatewayCheckDestroyed,
+		PreCheck:          func() { testAccPreCheck(t) },
+		ExternalProviders: testExternalProviders,
+		Providers:         testAccProviders,
+		CheckDestroy:      testAccMetalGatewayCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccMetalGatewayConfig_privateIPv4(),

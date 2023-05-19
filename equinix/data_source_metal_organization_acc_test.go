@@ -14,9 +14,10 @@ func TestAccDataSourceMetalOrganization_basic(t *testing.T) {
 	rInt := acctest.RandInt()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccMetalOrganizationCheckDestroyed,
+		PreCheck:          func() { testAccPreCheck(t) },
+		ExternalProviders: testExternalProviders,
+		Providers:         testAccProviders,
+		CheckDestroy:      testAccMetalOrganizationCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccDataSourceMetalOrganizationConfig_basic(rInt),

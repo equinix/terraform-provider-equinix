@@ -12,9 +12,10 @@ func TestAccDataSourceMetalDevice_basic(t *testing.T) {
 	projectName := fmt.Sprintf("ds-device-%s", acctest.RandString(10))
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccMetalDeviceCheckDestroyed,
+		PreCheck:          func() { testAccPreCheck(t) },
+		ExternalProviders: testExternalProviders,
+		Providers:         testAccProviders,
+		CheckDestroy:      testAccMetalDeviceCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
 				Config: testDataSourceMetalDeviceConfig_basic(projectName),
@@ -53,13 +54,6 @@ resource "equinix_metal_device" "test" {
   billing_cycle    = "hourly"
   project_id       = "${equinix_metal_project.test.id}"
   termination_time = "%s"
-
-  lifecycle {
-    ignore_changes = [
-      plan,
-      metro,
-    ]
-  }
 }
 
 data "equinix_metal_device" "test" {
@@ -72,9 +66,10 @@ func TestAccDataSourceMetalDevice_byID(t *testing.T) {
 	projectName := fmt.Sprintf("ds-device-by-id-%s", acctest.RandString(10))
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccMetalDeviceCheckDestroyed,
+		PreCheck:          func() { testAccPreCheck(t) },
+		ExternalProviders: testExternalProviders,
+		Providers:         testAccProviders,
+		CheckDestroy:      testAccMetalDeviceCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
 				Config: testDataSourceMetalDeviceConfig_byID(projectName),
@@ -113,13 +108,6 @@ resource "equinix_metal_device" "test" {
   billing_cycle    = "hourly"
   project_id       = "${equinix_metal_project.test.id}"
   termination_time = "%s"
-
-  lifecycle {
-    ignore_changes = [
-      plan,
-      metro,
-    ]
-  }
 }
 
 data "equinix_metal_device" "test" {

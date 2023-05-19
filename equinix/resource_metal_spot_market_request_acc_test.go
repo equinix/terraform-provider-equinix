@@ -15,9 +15,10 @@ func TestAccMetalSpotMarketRequest_basic(t *testing.T) {
 	projSuffix := acctest.RandString(10)
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccMetalSpotMarketRequestCheckDestroyed,
+		PreCheck:          func() { testAccPreCheck(t) },
+		ExternalProviders: testExternalProviders,
+		Providers:         testAccProviders,
+		CheckDestroy:      testAccMetalSpotMarketRequestCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccMetalSpotMarketRequestConfig_basic(projSuffix),
@@ -104,13 +105,6 @@ resource "equinix_metal_spot_market_request" "request" {
     operating_system = local.os
     plan             = local.plan
   }
-
-  lifecycle {
-    ignore_changes = [
-      instance_parameters,
-      facilities,
-    ]
-  }
 }`, confAccMetalDevice_base(preferable_plans, preferable_metros, preferable_os), projSuffix)
 }
 
@@ -141,13 +135,6 @@ resource "equinix_metal_spot_market_request" "request" {
     operating_system = local.os
     plan             = local.plan
   }
-
-  lifecycle {
-    ignore_changes = [
-      instance_parameters,
-      facilities,
-    ]
-  }
 }`, confAccMetalDevice_base(preferable_plans, preferable_metros, preferable_os), projSuffix)
 }
 
@@ -155,9 +142,10 @@ func TestAccMetalSpotMarketRequest_Import(t *testing.T) {
 	projSuffix := acctest.RandString(10)
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccMetalSpotMarketRequestCheckDestroyed,
+		PreCheck:          func() { testAccPreCheck(t) },
+		ExternalProviders: testExternalProviders,
+		Providers:         testAccProviders,
+		CheckDestroy:      testAccMetalSpotMarketRequestCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccCheckMetalSpotMarketRequestConfig_import(projSuffix),

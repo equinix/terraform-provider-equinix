@@ -80,9 +80,10 @@ func TestAccMetalVlan_metro(t *testing.T) {
 	metro := "sv"
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccMetalVlanCheckDestroyed,
+		PreCheck:          func() { testAccPreCheck(t) },
+		ExternalProviders: testExternalProviders,
+		Providers:         testAccProviders,
+		CheckDestroy:      testAccMetalVlanCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccCheckMetalVlanConfig_metro(rs, metro, "tfacc-vlan"),
@@ -103,9 +104,10 @@ func TestAccMetalVlan_basic(t *testing.T) {
 	fac := "ny5"
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccMetalVlanCheckDestroyed,
+		PreCheck:          func() { testAccPreCheck(t) },
+		ExternalProviders: testExternalProviders,
+		Providers:         testAccProviders,
+		CheckDestroy:      testAccMetalVlanCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccMetalVlanConfig_var(rs, fac, "tfacc-vlan"),
@@ -181,9 +183,10 @@ func TestAccMetalVlan_importBasic(t *testing.T) {
 	fac := "ny5"
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccMetalVlanCheckDestroyed,
+		PreCheck:          func() { testAccPreCheck(t) },
+		ExternalProviders: testExternalProviders,
+		Providers:         testAccProviders,
+		CheckDestroy:      testAccMetalVlanCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccMetalVlanConfig_var(rs, fac, "tfacc-vlan"),

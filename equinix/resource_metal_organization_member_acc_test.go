@@ -14,8 +14,9 @@ func TestAccResourceMetalOrganizationMember_owner(t *testing.T) {
 	rInt := acctest.RandInt()
 	org := &packngo.Organization{}
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:  func() { testAccPreCheck(t) },
-		Providers: testAccProviders,
+		PreCheck:          func() { testAccPreCheck(t) },
+		ExternalProviders: testExternalProviders,
+		Providers:         testAccProviders,
 		// TODO: CheckDestroy: testAccMetalOrganizationMemberCheckDestroyed,
 		CheckDestroy: nil,
 		Steps: []resource.TestStep{
@@ -51,8 +52,9 @@ func TestAccResourceMetalOrganizationMember_basic(t *testing.T) {
 	rInt := acctest.RandInt()
 	org := &packngo.Organization{}
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:  func() { testAccPreCheck(t) },
-		Providers: testAccProviders,
+		PreCheck:          func() { testAccPreCheck(t) },
+		ExternalProviders: testExternalProviders,
+		Providers:         testAccProviders,
 		// TODO: CheckDestroy: testAccMetalOrganizationMemberCheckDestroyed,
 		CheckDestroy: nil,
 		Steps: []resource.TestStep{

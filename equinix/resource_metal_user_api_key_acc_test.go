@@ -51,6 +51,7 @@ func testSweepUserAPIKeys(region string) error {
 func TestAccMetalUserAPIKey_basic(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
+		ExternalProviders:    testExternalProviders,
 		Providers:    testAccProviders,
 		CheckDestroy: testAccMetalUserAPIKeyCheckDestroyed,
 		Steps: []resource.TestStep{

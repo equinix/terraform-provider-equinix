@@ -72,9 +72,10 @@ func TestAccMetalVRF_basic(t *testing.T) {
 	rInt := acctest.RandInt()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccMetalVRFCheckDestroyed,
+		PreCheck:          func() { testAccPreCheck(t) },
+		ExternalProviders: testExternalProviders,
+		Providers:         testAccProviders,
+		CheckDestroy:      testAccMetalVRFCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccMetalVRFConfig_basic(rInt),
@@ -100,9 +101,10 @@ func TestAccMetalVRF_withIPRanges(t *testing.T) {
 	rInt := acctest.RandInt()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccMetalVRFCheckDestroyed,
+		PreCheck:          func() { testAccPreCheck(t) },
+		ExternalProviders: testExternalProviders,
+		Providers:         testAccProviders,
+		CheckDestroy:      testAccMetalVRFCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccMetalVRFConfig_basic(rInt),
@@ -142,9 +144,10 @@ func TestAccMetalVRF_withIPReservations(t *testing.T) {
 	rInt := acctest.RandInt()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccMetalVRFCheckDestroyed,
+		PreCheck:          func() { testAccPreCheck(t) },
+		ExternalProviders: testExternalProviders,
+		Providers:         testAccProviders,
+		CheckDestroy:      testAccMetalVRFCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccMetalVRFConfig_withIPRanges(rInt),
@@ -183,9 +186,10 @@ func TestAccMetalVRF_withGateway(t *testing.T) {
 	rInt := acctest.RandInt()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccMetalVRFCheckDestroyed,
+		PreCheck:          func() { testAccPreCheck(t) },
+		ExternalProviders: testExternalProviders,
+		Providers:         testAccProviders,
+		CheckDestroy:      testAccMetalVRFCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccMetalVRFConfig_withIPReservations(rInt),
@@ -224,9 +228,10 @@ func TestAccMetalVRFConfig_withConnection(t *testing.T) {
 	nniVlan := acctest.RandIntRange(1024, 1093)
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccMetalVRFCheckDestroyed,
+		PreCheck:          func() { testAccPreCheck(t) },
+		ExternalProviders: testExternalProviders,
+		Providers:         testAccProviders,
+		CheckDestroy:      testAccMetalVRFCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccMetalVRFConfig_withVC(rInt, nniVlan),
