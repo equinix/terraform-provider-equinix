@@ -1,6 +1,7 @@
 package equinix
 
 import (
+	"sort"
 	"strings"
 	"time"
 
@@ -96,6 +97,7 @@ func dataSourceMetalSpotMarketRequestRead(d *schema.ResourceData, meta interface
 	for _, f := range facs {
 		facCodes = append(facCodes, f.Code)
 	}
+	sort.Strings(facCodes) // avoid changes if we get the same facilities in a different order
 
 	d.SetId(id)
 

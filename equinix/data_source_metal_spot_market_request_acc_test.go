@@ -28,11 +28,6 @@ func TestAccDataSourceMetalSpotMarketRequest_basic(t *testing.T) {
 				),
 			},
 			{
-				Config:             testAccDataSourceMetalSpotMarketRequestConfig_metro(projectName),
-				PlanOnly:           true,
-				ExpectNonEmptyPlan: true,
-			},
-			{
 				Config: testAccDataSourceMetalSpotMarketRequestConfig_metro(projectName),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckMetalSpotMarketRequestExists("equinix_metal_spot_market_request.req", &metKey),

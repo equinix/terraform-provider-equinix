@@ -3,6 +3,8 @@ package equinix
 import (
 	"fmt"
 	"log"
+	"reflect"
+	"sort"
 	"strconv"
 	"time"
 
@@ -66,6 +68,39 @@ func resourceMetalSpotMarketRequest() *schema.Resource {
 				Computed:      true,
 				ForceNew:      true,
 				ConflictsWith: []string{"metro"},
+				DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
+					oldData, newData := d.GetChange("facilities")
+
+					// If this function is called and oldData or newData is nil,
+					// then the attribute changed
+					if oldData == nil || newData == nil {
+						return false
+					}
+
+					oldArray := oldData.([]interface{})
+					newArray := newData.([]interface{})
+
+					// If the number of items in the list is different,
+					// then the attribute changed
+					if len(oldArray) != len(newArray) {
+						return false
+					}
+
+					// Convert data to string arrays
+					oldFacilities := make([]string, len(oldArray))
+					newFacilities := make([]string, len(newArray))
+					for i, oldFacility := range oldArray {
+						oldFacilities[i] = fmt.Sprint(oldFacility)
+					}
+					for j, newFacility := range newArray {
+						newFacilities[j] = fmt.Sprint(newFacility)
+					}
+					// Sort the old and new arrays so that we don't show a diff
+					// if the facilities are the same but the order is different
+					sort.Strings(oldFacilities)
+					sort.Strings(newFacilities)
+					return reflect.DeepEqual(oldFacilities, newFacilities)
+				},
 			},
 			"metro": {
 				Type:          schema.TypeString,
