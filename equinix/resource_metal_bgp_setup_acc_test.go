@@ -108,7 +108,13 @@ resource "equinix_metal_bgp_session" "test6" {
 }
 
 data "equinix_metal_device_bgp_neighbors" "test" {
-	device_id  = equinix_metal_bgp_session.test4.device_id
+	device_id  = equinix_metal_device.test.id
+
+	# Need to wait until all sessions are created
+	depends_on = [
+	  equinix_metal_bgp_session.test4,
+	  equinix_metal_bgp_session.test6
+	]
 }
 `, confAccMetalDevice_base(preferable_plans, preferable_metros, preferable_os), name, testDeviceTerminationTime())
 }
