@@ -329,32 +329,7 @@ func resourceMetalVirtualCircuitUpdate(d *schema.ResourceData, meta interface{})
 func resourceMetalVirtualCircuitDelete(d *schema.ResourceData, meta interface{}) error {
 	meta.(*Config).addModuleToMetalUserAgent(d)
 	client := meta.(*Config).metal
-	// we first disconnect VLAN from the VC
-	empty := ""
-	_, _, err := client.VirtualCircuits.Update(
-		d.Id(),
-		&packngo.VCUpdateRequest{VirtualNetworkID: &empty},
-		nil,
-	)
-	if err != nil {
-		return err
-	}
 
-	// we wait until vc status is not deactivating. VRF VCs will be in the "active" state.
-	detachWaiter := getVCStateWaiter(
-		client,
-		d.Id(),
-		d.Timeout(schema.TimeoutDelete),
-		[]string{string(packngo.VCStatusDeactivating)},
-		[]string{string(packngo.VCStatusWaiting), string(packngo.VCStatusActive)},
-	)
-
-	_, err = detachWaiter.WaitForState()
-	if err != nil {
-		return fmt.Errorf("Error waiting for virtual circuit %s status is not deactivating before deleting it: %s", d.Id(), err)
-	}
-
-	// then we delete the VC. VRF VCs will be in the "active" state.
 	resp, err := client.VirtualCircuits.Delete(d.Id())
 	if ignoreResponseErrors(httpForbidden, httpNotFound)(resp, err) != nil {
 		return friendlyError(err)
