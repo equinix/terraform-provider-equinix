@@ -269,7 +269,7 @@ func getVCStateWaiter(client *packngo.Client, id string, timeout time.Duration, 
 			vc, _, err := client.VirtualCircuits.Get(
 				id,
 				&packngo.GetOptions{Includes: []string{
-					"project", "port", "virtual_network",
+					"project", "virtual_network",
 					"vrf",
 				}}, // TODO: we are not using the returned VC. Remove the includes?
 			)
