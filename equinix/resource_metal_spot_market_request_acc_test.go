@@ -93,7 +93,7 @@ data "equinix_metal_spot_market_request" "dreq" {
 
 resource "equinix_metal_spot_market_request" "request" {
   project_id       = equinix_metal_project.test.id
-  max_bid_price    = data.equinix_metal_spot_market_price.test.price * 1.2
+  max_bid_price    = format("%%.2f", data.equinix_metal_spot_market_price.test.price)
   facilities       = [data.equinix_metal_spot_market_price.test.facility]
   devices_min      = 1
   devices_max      = 1
@@ -123,7 +123,7 @@ data "equinix_metal_spot_market_price" "test" {
 
 resource "equinix_metal_spot_market_request" "request" {
   project_id       = equinix_metal_project.test.id
-  max_bid_price    = data.equinix_metal_spot_market_price.test.price * 1.2
+  max_bid_price    = data.equinix_metal_spot_market_price.test.price
   facilities       = [data.equinix_metal_spot_market_price.test.facility]
   devices_min      = 1
   devices_max      = 1
