@@ -10,7 +10,7 @@ At minimum, you must set below variables in `terraform.tfvars` file:
 * `equinix_client_secret` - Equinix client secret ID (consumer secret),
   obtained same way as above
 
-`fg_uuid` - UUID of ECX Fabric Gateway on a-side 
+`fg_uuid` - UUID of ECX Fabric Gateway on a-side
 `zside_port_name` -  Name of ECX Fabric z-side port , i.e. ops-user100-CX-SV5-NL-Qinq-BO-10G-SEC-JP-000
 `connection_name` - the name of the connection
 `connection_type` - connection type, please refer schema
