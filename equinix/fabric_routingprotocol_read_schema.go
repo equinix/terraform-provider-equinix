@@ -77,6 +77,7 @@ func readDirectConnectionIpv4Sch() map[string]*schema.Schema {
 		},
 	}
 }
+
 func readDirectConnectionIpv6Sch() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
 		"equinix_iface_ip": {
@@ -182,6 +183,7 @@ func readBgpConnectionIpv6Sch() map[string]*schema.Schema {
 		},
 	}
 }
+
 func readRoutingProtocolBfdSch() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
 		"enabled": {
@@ -197,6 +199,7 @@ func readRoutingProtocolBfdSch() map[string]*schema.Schema {
 		},
 	}
 }
+
 func readRoutingProtocolOperationSch() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
 		"errors": {
@@ -209,6 +212,7 @@ func readRoutingProtocolOperationSch() map[string]*schema.Schema {
 		},
 	}
 }
+
 func readRoutingProtocolChangeSch() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
 		//"description": {
