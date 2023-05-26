@@ -1037,6 +1037,26 @@ func routingProtocolChangeToTerra(routingProtocolChange *v4.RoutingProtocolChang
 	return rpChangeSet
 }
 
+func getRoutingProtocolPatchUpdateRequest(rp v4.RoutingProtocolData, d *schema.ResourceData) (v4.ConnectionChangeOperation, error) {
+	changeOps := v4.ConnectionChangeOperation{}
+	existingBgpIpv4Status := rp.BgpIpv4.Enabled
+	existingBgpIpv6Status := rp.BgpIpv6.Enabled
+	updateBgpIpv4Status := d.Get("rp.BgpIpv4.Enabled")
+	updateBgpIpv6Status := d.Get("rp.BgpIpv6.Enabled")
+
+	log.Printf("existing BGP IPv4 Status: %t, existing BGP IPv6 Status: %t, Update BGP IPv4 Request: %t, Update BGP Ipv6 Request: %t",
+		existingBgpIpv4Status, existingBgpIpv6Status, updateBgpIpv4Status, updateBgpIpv6Status)
+
+	if existingBgpIpv4Status != updateBgpIpv4Status {
+		changeOps = v4.ConnectionChangeOperation{Op: "replace", Path: "/bgpIpv4/enabled", Value: updateBgpIpv4Status}
+	} else if existingBgpIpv6Status != updateBgpIpv6Status {
+		changeOps = v4.ConnectionChangeOperation{Op: "replace", Path: "/bgpIpv6/enabled", Value: updateBgpIpv6Status}
+	} else {
+		return changeOps, fmt.Errorf("nothing to update for the routing protocol %s", rp.RoutingProtocolBgpData.Uuid)
+	}
+	return changeOps, nil
+}
+
 func getUpdateRequest(conn v4.Connection, d *schema.ResourceData) (v4.ConnectionChangeOperation, error) {
 	changeOps := v4.ConnectionChangeOperation{}
 	existingName := conn.Name

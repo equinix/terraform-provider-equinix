@@ -99,7 +99,7 @@ func createDirectConnectionIpv6Sch() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
 		"equinix_iface_ip": {
 			Type:        schema.TypeString,
-			Required:    false,
+			Optional:    true,
 			Description: "Equinix side Interface IP address\n\n",
 		},
 	}
@@ -171,7 +171,7 @@ func createBgpConnectionIpv4Sch() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
 		"customer_peer_ip": {
 			Type:        schema.TypeString,
-			Required:    false,
+			Required:    true,
 			Description: "Customer side peering ip",
 		},
 		"equinix_peer_ip": {
@@ -196,7 +196,7 @@ func createBgpConnectionIpv6Sch() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
 		"customer_peer_ip": {
 			Type:        schema.TypeString,
-			Required:    false,
+			Required:    true,
 			Description: "Customer side peering ip",
 		},
 		"equinix_peer_ip": {
@@ -226,7 +226,7 @@ func createRoutingProtocolBfdSch() map[string]*schema.Schema {
 		},
 		"interval": {
 			Type:     schema.TypeString,
-			Optional: false,
+			Optional: true,
 			Default:  100,
 			// todo: validation
 			Description: "Interval range between the received BFD control packets",
@@ -268,10 +268,10 @@ func createRoutingProtocolChangeSch() map[string]*schema.Schema {
 			Description: "Uniquely identifies a change",
 		},
 		"type": {
-			Type:         schema.TypeString,
-			Computed:     true,
-			ValidateFunc: validation.StringInSlice([]string{"ROUTING_PROTOCOL_UPDATE", "ROUTING_PROTOCOL_CREATION", "ROUTING_PROTOCOL_DELETION"}, true),
-			Description:  "Type of change",
+			Type:     schema.TypeString,
+			Computed: true,
+			//ValidateFunc: validation.StringInSlice([]string{"ROUTING_PROTOCOL_UPDATE", "ROUTING_PROTOCOL_CREATION", "ROUTING_PROTOCOL_DELETION"}, true),
+			Description: "Type of change",
 		},
 		"href": {
 			Type:        schema.TypeString,
@@ -283,6 +283,11 @@ func createRoutingProtocolChangeSch() map[string]*schema.Schema {
 
 func createFabricRoutingProtocolResourceSchema() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
+		"connection_uuid": {
+			Type:        schema.TypeString,
+			Required:    true,
+			Description: "Connection URI associated with Routing Protocol",
+		},
 		"href": {
 			Type:        schema.TypeString,
 			Computed:    true,
@@ -290,18 +295,19 @@ func createFabricRoutingProtocolResourceSchema() map[string]*schema.Schema {
 		},
 		"type": {
 			Type:         schema.TypeString,
-			Required:     true,
+			Optional:     true,
 			ValidateFunc: validation.StringInSlice([]string{"BGP", "DIRECT"}, true),
 			Description:  "Defines the routing protocol type like BGP or DIRECT",
 		},
 		"uuid": {
 			Type:        schema.TypeString,
+			Optional:    true,
 			Computed:    true,
 			Description: "Equinix-assigned routing protocol identifier",
 		},
 		"name": {
 			Type:        schema.TypeString,
-			Required:    true,
+			Optional:    true,
 			Description: "Routing Protocol name. An alpha-numeric 24 characters string which can include only hyphens and underscores",
 		},
 		"description": {
@@ -310,10 +316,9 @@ func createFabricRoutingProtocolResourceSchema() map[string]*schema.Schema {
 			Description: "Customer-provided Fabric Routing Protocol description",
 		},
 		"state": {
-			Type:         schema.TypeString,
-			Computed:     true,
-			ValidateFunc: validation.StringInSlice([]string{"PROVISIONED", "DEPROVISIONED", "PROVISIONING", "DEPROVISIONING", "REPROVISIONING", "FAILED"}, true),
-			Description:  "Routing Protocol overall state",
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "Routing Protocol overall state",
 		},
 		"operation": {
 			Type:        schema.TypeSet,
@@ -331,10 +336,9 @@ func createFabricRoutingProtocolResourceSchema() map[string]*schema.Schema {
 				Schema: createRoutingProtocolChangeSch(),
 			},
 		},
-		// fixme: questions about primative behaviors for ipv4 and ipv6
 		"direct_ipv4": {
 			Type:        schema.TypeSet,
-			Required:    true,
+			Optional:    true,
 			Description: "Routing Protocol Direct IPv4",
 			Elem: &schema.Resource{
 				Schema: createDirectConnectionIpv4Sch(),
@@ -366,7 +370,7 @@ func createFabricRoutingProtocolResourceSchema() map[string]*schema.Schema {
 		},
 		"customer_asn": {
 			Type:        schema.TypeInt,
-			Required:    true,
+			Optional:    true,
 			Description: "Customer-provided ASN",
 		},
 		"equinix_asn": {

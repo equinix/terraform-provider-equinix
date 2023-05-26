@@ -1,5 +1,5 @@
-equinix_client_id      = ""
-equinix_client_secret  = ""
+equinix_client_id      = "MyEquinixClientId"
+equinix_client_secret  = "MyEquinixSecret"
 
 notifications_type = "ALL"
 notifications_emails = ["example@equinix.com","test1@equinix.com"]
