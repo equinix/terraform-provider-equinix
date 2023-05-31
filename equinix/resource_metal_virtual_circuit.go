@@ -266,13 +266,7 @@ func getVCStateWaiter(client *packngo.Client, id string, timeout time.Duration, 
 		Pending: pending,
 		Target:  target,
 		Refresh: func() (interface{}, string, error) {
-			vc, _, err := client.VirtualCircuits.Get(
-				id,
-				&packngo.GetOptions{Includes: []string{
-					"project", "port", "virtual_network",
-					"vrf",
-				}}, // TODO: we are not using the returned VC. Remove the includes?
-			)
+			vc, _, err := client.VirtualCircuits.Get(id, nil)
 			if err != nil {
 				return 0, "", err
 			}
