@@ -2,12 +2,18 @@ package equinix
 
 import (
 	"fmt"
+	"regexp"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"github.com/packethost/packngo"
+)
+
+var (
+	matchErrOverbid = regexp.MustCompile(".* exceeds the maximum bid price .*")
+	matchErrTimeout = regexp.MustCompile(".* timeout while waiting for state to become 'done' .")
 )
 
 func TestAccMetalSpotMarketRequest_basic(t *testing.T) {
@@ -19,6 +25,7 @@ func TestAccMetalSpotMarketRequest_basic(t *testing.T) {
 		ExternalProviders: testExternalProviders,
 		Providers:         testAccProviders,
 		CheckDestroy:      testAccMetalSpotMarketRequestCheckDestroyed,
+		ErrorCheck:        skipIfOverbidOrTimedOut(t),
 		Steps: []resource.TestStep{
 			{
 				Config: testAccMetalSpotMarketRequestConfig_basic(projSuffix),
@@ -83,8 +90,8 @@ resource "equinix_metal_project" "test" {
 }
 
 data "equinix_metal_spot_market_price" "test" {
-  facility = local.facility
-  plan     = local.plan
+  metro = local.metro
+  plan  = local.plan
 }
 
 data "equinix_metal_spot_market_request" "dreq" {
@@ -94,7 +101,7 @@ data "equinix_metal_spot_market_request" "dreq" {
 resource "equinix_metal_spot_market_request" "request" {
   project_id       = equinix_metal_project.test.id
   max_bid_price    = format("%%.2f", data.equinix_metal_spot_market_price.test.price)
-  facilities       = [data.equinix_metal_spot_market_price.test.facility]
+  metro            = data.equinix_metal_spot_market_price.test.metro
   devices_min      = 1
   devices_max      = 1
   wait_for_devices = true
@@ -117,14 +124,14 @@ resource "equinix_metal_project" "test" {
 }
 
 data "equinix_metal_spot_market_price" "test" {
-  facility = local.facility
-  plan     = local.plan
+  metro = local.metro
+  plan  = local.plan
 }
 
 resource "equinix_metal_spot_market_request" "request" {
   project_id       = equinix_metal_project.test.id
-  max_bid_price    = data.equinix_metal_spot_market_price.test.price
-  facilities       = [data.equinix_metal_spot_market_price.test.facility]
+  max_bid_price    = format("%%.2f", data.equinix_metal_spot_market_price.test.price)
+  metro            = data.equinix_metal_spot_market_price.test.metro
   devices_min      = 1
   devices_max      = 1
   wait_for_devices = true
@@ -146,6 +153,7 @@ func TestAccMetalSpotMarketRequest_Import(t *testing.T) {
 		ExternalProviders: testExternalProviders,
 		Providers:         testAccProviders,
 		CheckDestroy:      testAccMetalSpotMarketRequestCheckDestroyed,
+		ErrorCheck:        skipIfOverbidOrTimedOut(t),
 		Steps: []resource.TestStep{
 			{
 				Config: testAccCheckMetalSpotMarketRequestConfig_import(projSuffix),
@@ -158,4 +166,29 @@ func TestAccMetalSpotMarketRequest_Import(t *testing.T) {
 			},
 		},
 	})
+}
+
+// In CI, we frequently see errors that the spot market bid price is higher
+// than the maximum allowed price.  However, reducing our bid price even by
+// 0.01 causes the tests to consistently hit the 30-minute `wait_for_devices`
+// timeout because our bid isn't high enough to actually win a device.  Spot
+// prices fluctuate by design, so it's impossible to automatically, consistently
+// find a bid that will win devices before the timeout _and_ stay below the max
+// allowed bid.  This function serves to smooth out acceptance test workflow
+// failures by skipping the test after the fact if our bid was too high or too
+// low, since the resource is behaving as expected for those scenarios.
+func skipIfOverbidOrTimedOut(t *testing.T) resource.ErrorCheckFunc {
+	return func(err error) error {
+		if err == nil {
+			return nil
+		}
+		if matchErrOverbid.MatchString(err.Error()) {
+			t.Skipf("price was higher than max allowed bid; skipping")
+		}
+		if matchErrTimeout.MatchString(err.Error()) {
+			t.Skipf("timed out waiting for devices (bid was probably too low); skipping")
+		}
+
+		return err
+	}
 }
