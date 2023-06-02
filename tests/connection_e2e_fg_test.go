@@ -13,9 +13,20 @@ func TestfgCreate(t *testing.T) {
 		TerraformDir: "../examples/fabric-gateway",
 	})
 
-	defer terraform.Destroy(t, terraformOptions)
+	//defer terraform.Destroy(t, terraformOptions)
 
 	terraform.InitAndApply(t, terraformOptions)
 	output := terraform.Output(t, terraformOptions, "fg_result")
+	assert.NotNil(t, output)
+
+	terraformOptions := terraform.WithDefaultRetryableErrors(t, &terraform.Options{
+		TerraformDir: "../examples/fg2port",
+	})
+
+	defer terraform.Destroy(t, terraformOptions)
+
+	terraform.InitAndApply(t, terraformOptions)
+	output := terraform.Output(t, terraformOptions, "fg2port_result")
+
 	assert.NotNil(t, output)
 }
