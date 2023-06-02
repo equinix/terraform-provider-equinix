@@ -112,6 +112,10 @@ services, and `auth_token` to interact with Equinix Metal.
 
 * `max_retry_wait_seconds` (Optional) Maximum time to wait in case of network failure.
 
+* `metal_base` (Optional) The Equinix Metal API base path for the API `endpoint`.
+   This argument can also be specified with the `EQUINIX_API_METAL_BASE` shell environment
+   variable. (Defaults to `/metal/v1`)
+
 These parameters can be provided in [Terraform variable
 files](https://www.terraform.io/docs/configuration/variables.html#variable-definitions-tfvars-files)
 or as environment variables. Nevertheless, please note that it is [not

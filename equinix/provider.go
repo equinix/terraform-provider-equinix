@@ -27,6 +27,7 @@ var (
 
 const (
 	endpointEnvVar       = "EQUINIX_API_ENDPOINT"
+	metalBaseEnvVar      = "EQUINIX_API_METAL_BASE"
 	clientIDEnvVar       = "EQUINIX_API_CLIENTID"
 	clientSecretEnvVar   = "EQUINIX_API_CLIENTSECRET"
 	clientTokenEnvVar    = "EQUINIX_API_TOKEN"
@@ -53,6 +54,12 @@ func Provider() *schema.Provider {
 				DefaultFunc:  schema.EnvDefaultFunc(endpointEnvVar, DefaultBaseURL),
 				ValidateFunc: validation.IsURLWithHTTPorHTTPS,
 				Description:  fmt.Sprintf("The Equinix API base URL to point out desired environment. Defaults to %s", DefaultBaseURL),
+			},
+			"metal_base": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				DefaultFunc: schema.EnvDefaultFunc(metalBaseEnvVar, metalBasePath),
+				Description: fmt.Sprintf("The Equinix Metal API base path for the API `endpoint`. Defaults to %s", metalBasePath),
 			},
 			"client_id": {
 				Type:        schema.TypeString,
