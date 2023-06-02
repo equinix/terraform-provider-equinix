@@ -16,5 +16,5 @@ so we recommend using our other community resources instead of asking here 👍.
 
 If you have a support request or question please check following resources:
 
-* please check [Equinix Provider usage examples](https://github.com/equinix/terraform-provider-equinix/tree/master/examples)
+* please check [Equinix Provider usage examples](https://github.com/equinix/terraform-provider-equinix/tree/main/examples)
 * please check forum and contact from on [Equinix Developer Portal](https://developer.equinix.com)
