@@ -206,7 +206,7 @@ func updateNativeVlan(cpr *ClientPortResource) error {
 	currentNative := getCurrentNative(cpr.Port)
 	specifiedNative := getSpecifiedNative(cpr.Resource)
 
-	if (currentNative != specifiedNative) {
+	if currentNative != specifiedNative {
 		var port *packngo.Port
 		var err error
 		if specifiedNative == "" && currentNative != "" {
