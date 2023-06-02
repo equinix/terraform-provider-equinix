@@ -55,7 +55,7 @@ resource "azurerm_express_route_circuit" "example" {
 [Equinix Service Token](https://docs.equinix.com/en-us/Content/Interconnection/Fabric/service%20tokens/Fabric-Service-Tokens.htm)
 to the cloud virtual interconnection asset.
 
-In this example, we will establish a redundant connection from a Network Edge device (See [Edge networking examples](https://github.com/equinix/terraform-provider-equinix/tree/master/examples/edge-networking) for usage details of
+In this example, we will establish a redundant connection from a Network Edge device (See [Edge networking examples](https://github.com/equinix/terraform-provider-equinix/tree/main/examples/edge-networking) for usage details of
 [equinix_network_device](https://registry.terraform.io/providers/equinix/equinix/latest/docs/resources/equinix_network_device)
 resource). Note that the value of `authorization_key` must be the `azurerm_express_route_circuit.example.service_key`
 (i.e. the pairing key mentioned above).
@@ -198,7 +198,7 @@ with your request.
 
 ## References
 
-- See [Equinix connectivity examples](https://github.com/equinix/terraform-provider-equinix/tree/master/examples/connectivity)
+- See [Equinix connectivity examples](https://github.com/equinix/terraform-provider-equinix/tree/main/examples/connectivity)
 for providers for which there is no module available yet.
 - See the [API how to guides](https://developer.equinix.com/docs/how-guide-v3-apis) for further
 details on each cloud service provider requirements.

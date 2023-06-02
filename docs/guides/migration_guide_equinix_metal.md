@@ -15,7 +15,7 @@ Before starting to migrate your Terraform templates, please upgrade
 
 ## Fast migration with Equinix Migration Tool
 
-As part of the release v1.5.0, a migration tool has been supplied that will automatically update your `Metal` terraform plans and state files to work with the unified `Equinix` provider. The latest version of the `Equinix Migration Tool` can be found [here](https://github.com/equinix/terraform-provider-equinix/releases/latest). You will need to download the zip file corresponding to your operating system from the `Assets` section. Once unzipped you will find a folder `equinix-migration-tool` with the tool binary. Please, refer to the migration tool [readme file](https://github.com/equinix/terraform-provider-equinix/tree/master/cmd/migration-tool#readme) for further details.
+As part of the release v1.5.0, a migration tool has been supplied that will automatically update your `Metal` terraform plans and state files to work with the unified `Equinix` provider. The latest version of the `Equinix Migration Tool` can be found [here](https://github.com/equinix/terraform-provider-equinix/releases/latest). You will need to download the zip file corresponding to your operating system from the `Assets` section. Once unzipped you will find a folder `equinix-migration-tool` with the tool binary. Please, refer to the migration tool [readme file](https://github.com/equinix/terraform-provider-equinix/tree/main/cmd/migration-tool#readme) for further details.
 
 Once downloaded, you will need to unzip the file and use the binary corresponding to your OS. Running this tool against your terraform project directory will:
 
