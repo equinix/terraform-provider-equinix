@@ -12,24 +12,6 @@ func readRoutingProtocolBaseSch() map[string]*schema.Schema {
 			Required:    true,
 			Description: "Routing Protocol configuration type",
 		},
-		//"direct": {
-		//	Type:        schema.TypeSet,
-		//	Required:    true,
-		//	Description: "Routing Protocol configuration for DIRECT",
-		//	Elem: &schema.Resource{
-		//		Schema: createRoutingProtocolDirectTypeSch(),
-		//	},
-		//	ExactlyOneOf: []string{"bgp","direct"},
-		//},
-		//"bgp": {
-		//	Type:        schema.TypeSet,
-		//	Required:    true,
-		//	Description: "Routing Protocol configuration for DIRECT",
-		//	Elem: &schema.Resource{
-		//		Schema: createRoutingProtocolBgpTypeSch(),
-		//	},
-		//	ExactlyOneOf: []string{"bgp","direct"},
-		//},
 	}
 	maps.Copy(rpDataSchema, readRoutingProtocolDirectTypeSch())
 	maps.Copy(rpDataSchema, readRoutingProtocolBgpTypeSch())
@@ -46,7 +28,7 @@ func readRoutingProtocolDirectTypeSch() map[string]*schema.Schema {
 		},
 		"name": {
 			Type:        schema.TypeString,
-			Required:    true,
+			Optional:    true,
 			Description: "Routing Protocol name. An alpha-numeric 24 characters string which can include only hyphens and underscores",
 		},
 		"direct_ipv4": {
@@ -97,7 +79,7 @@ func readRoutingProtocolBgpTypeSch() map[string]*schema.Schema {
 		},
 		"name": {
 			Type:        schema.TypeString,
-			Required:    true,
+			Optional:    true,
 			Description: "Routing Protocol name. An alpha-numeric 24 characters string which can include only hyphens and underscores",
 		},
 		"bgp_ipv4": {

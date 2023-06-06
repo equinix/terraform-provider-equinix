@@ -17,7 +17,6 @@ func dataSourceRoutingProtocol() *schema.Resource {
 
 func dataSourceRoutingProtocolRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	uuid, _ := d.Get("uuid").(string)
-	//connection_uuid, _ := d.Get("connection_uuid").(string) //fixme: is this how you set a new variable from input???
 	d.SetId(uuid)
 	return resourceFabricRoutingProtocolRead(ctx, d, meta)
 }
