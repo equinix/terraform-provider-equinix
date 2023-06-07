@@ -1,7 +1,6 @@
 equinix_client_id      = "MyEquinixClientId"
 equinix_client_secret  = "MyEquinixSecret"
 
-fg_name = "terra_fg"
 fg_name = "terra_e2e_fg-523"
 fg_type = "XF_GATEWAY"
 notifications_type = "ALL"
@@ -11,7 +10,6 @@ fg_location = "CH"
 fg_package = "PRO"
 fg_project = "776847000642406"
 fg_account = "203612"
-aside_ap_type = "GW"
 connection_name = "terra_e2e_fg2p"
 connection_type = "IP_VC"
 bandwidth = 50
