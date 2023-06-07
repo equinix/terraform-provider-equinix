@@ -75,7 +75,7 @@ func createFabricGatewayResourceSchema() map[string]*schema.Schema {
 		"state": {
 			Type:        schema.TypeString,
 			Computed:    true,
-			Description: "Connection overall state",
+			Description: "Fabric Gateway overall state",
 		},
 		"equinix_asn": {
 			Type:        schema.TypeInt,
@@ -94,7 +94,7 @@ func createFabricGatewayResourceSchema() map[string]*schema.Schema {
 		"change_log": {
 			Type:        schema.TypeSet,
 			Computed:    true,
-			Description: "Captures connection lifecycle change information",
+			Description: "Captures Fabric Gateway lifecycle change information",
 			Elem: &schema.Resource{
 				Schema: createChangeLogSch(),
 			},
@@ -125,7 +125,7 @@ func createFabricGatewayResourceSchema() map[string]*schema.Schema {
 		"account": {
 			Type:        schema.TypeSet,
 			Optional:    true,
-			Description: "Customer account information that is associated with this connection",
+			Description: "Customer account information that is associated with this Fabric Gateway",
 			MaxItems:    1,
 			Elem: &schema.Resource{
 				Schema: createFgAccountSch(),
@@ -134,7 +134,7 @@ func createFabricGatewayResourceSchema() map[string]*schema.Schema {
 		"order": {
 			Type:        schema.TypeSet,
 			Optional:    true,
-			Description: "Order related to this connection information",
+			Description: "Order information related to this Fabric Gateway",
 			MaxItems:    1,
 			Elem: &schema.Resource{
 				Schema: createOrderSch(),
@@ -143,7 +143,7 @@ func createFabricGatewayResourceSchema() map[string]*schema.Schema {
 		"notifications": {
 			Type:        schema.TypeList,
 			Required:    true,
-			Description: "Preferences for notifications on connection configuration or status changes",
+			Description: "Preferences for notifications on Fabric Gateway configuration or status changes",
 			Elem: &schema.Resource{
 				Schema: createNotificationSch(),
 			},

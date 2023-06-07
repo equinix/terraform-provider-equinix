@@ -37,7 +37,7 @@ func readFabricGatewayResourceSchema() map[string]*schema.Schema {
 		"state": {
 			Type:        schema.TypeString,
 			Computed:    true,
-			Description: "Connection overall state",
+			Description: "Fabric Gateway overall state",
 		},
 		"equinix_asn": {
 			Type:        schema.TypeInt,
@@ -91,7 +91,7 @@ func readFabricGatewayResourceSchema() map[string]*schema.Schema {
 		"project": {
 			Type:        schema.TypeSet,
 			Optional:    true,
-			Computed: 	 true,
+			Computed:    true,
 			Description: "Project information",
 			Elem: &schema.Resource{
 				Schema: readGatewayProjectSch(),
@@ -100,7 +100,7 @@ func readFabricGatewayResourceSchema() map[string]*schema.Schema {
 		"account": {
 			Type:        schema.TypeSet,
 			Computed:    true,
-			Description: "Customer account information that is associated with this connection",
+			Description: "Customer account information that is associated with this Fabric Gateway",
 			Elem: &schema.Resource{
 				Schema: readAccountSch(),
 			},
@@ -108,7 +108,7 @@ func readFabricGatewayResourceSchema() map[string]*schema.Schema {
 		"order": {
 			Type:        schema.TypeSet,
 			Computed:    true,
-			Description: "Order related to this connection information",
+			Description: "Order information related to this Fabric Gateway",
 			Elem: &schema.Resource{
 				Schema: readOrderSch(),
 			},
