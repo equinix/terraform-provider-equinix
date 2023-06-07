@@ -818,6 +818,52 @@ func portToTerra(port *v4.SimplifiedPort) *schema.Set {
 	return portSet
 }
 
+func routingProtocolDirectIpv4ToFabric(routingProtocolDirectIpv4Request []interface{}) v4.DirectConnectionIpv4 {
+	mappedRpDirectIpv4 := v4.DirectConnectionIpv4{}
+	for _, str := range routingProtocolDirectIpv4Request {
+		directIpv4Map := str.(map[string]interface{})
+		equinixIfaceIp := directIpv4Map["equinix_iface_ip"].(string)
+
+		mappedRpDirectIpv4 = v4.DirectConnectionIpv4{EquinixIfaceIp: equinixIfaceIp}
+	}
+	return mappedRpDirectIpv4
+}
+
+func routingProtocolDirectIpv6ToFabric(routingProtocolDirectIpv6Request []interface{}) v4.DirectConnectionIpv6 {
+	mappedRpDirectIpv6 := v4.DirectConnectionIpv6{}
+	for _, str := range routingProtocolDirectIpv6Request {
+		directIpv6Map := str.(map[string]interface{})
+		equinixIfaceIp := directIpv6Map["equinix_iface_ip"].(string)
+
+		mappedRpDirectIpv6 = v4.DirectConnectionIpv6{EquinixIfaceIp: equinixIfaceIp}
+	}
+	return mappedRpDirectIpv6
+}
+
+func routingProtocolBgpIpv4ToFabric(routingProtocolBgpIpv4Request []interface{}) v4.BgpConnectionIpv4 {
+	mappedRpBgpIpv4 := v4.BgpConnectionIpv4{}
+	for _, str := range routingProtocolBgpIpv4Request {
+		bgpIpv4Map := str.(map[string]interface{})
+		customerPeerIp := bgpIpv4Map["customer_peer_ip"].(string)
+		enabled := bgpIpv4Map["enabled"].(bool)
+
+		mappedRpBgpIpv4 = v4.BgpConnectionIpv4{CustomerPeerIp: customerPeerIp, Enabled: enabled}
+	}
+	return mappedRpBgpIpv4
+}
+
+func routingProtocolBgpIpv6ToFabric(routingProtocolBgpIpv6Request []interface{}) v4.BgpConnectionIpv6 {
+	mappedRpBgpIpv6 := v4.BgpConnectionIpv6{}
+	for _, str := range routingProtocolBgpIpv6Request {
+		bgpIpv6Map := str.(map[string]interface{})
+		customerPeerIp := bgpIpv6Map["customer_peer_ip"].(string)
+		enabled := bgpIpv6Map["enabled"].(bool)
+
+		mappedRpBgpIpv6 = v4.BgpConnectionIpv6{CustomerPeerIp: customerPeerIp, Enabled: enabled}
+	}
+	return mappedRpBgpIpv6
+}
+
 func routingProtocolBfdToFabric(routingProtocolBfdRequest []interface{}) v4.RoutingProtocolBfd {
 	mappedRpBfd := v4.RoutingProtocolBfd{}
 	for _, str := range routingProtocolBfdRequest {
@@ -828,6 +874,18 @@ func routingProtocolBfdToFabric(routingProtocolBfdRequest []interface{}) v4.Rout
 		mappedRpBfd = v4.RoutingProtocolBfd{Enabled: bfdEnabled, Interval: bfdInterval}
 	}
 	return mappedRpBfd
+}
+
+func routingProtocolChangeToFabric(routingProtocolChangeRequest []interface{}) v4.RoutingProtocolChange {
+	mappedRpChange := v4.RoutingProtocolChange{}
+	for _, str := range routingProtocolChangeRequest {
+		rpChangeMap := str.(map[string]interface{})
+		uuid := rpChangeMap["uuid"].(string)
+		rpChangeType := rpChangeMap["type"].(string)
+
+		mappedRpChange = v4.RoutingProtocolChange{Uuid: uuid, Type_: rpChangeType}
+	}
+	return mappedRpChange
 }
 
 func routingProtocolDirectTypeToTerra(routingProtocolDirect *v4.RoutingProtocolDirectType) *schema.Set {
@@ -965,17 +1023,16 @@ func routingProtocolBgpConnectionIpv6ToTerra(routingProtocolBgpIpv6 *v4.BgpConne
 	return rpBgpIpv6Set
 }
 
->>>>>>>  added resourceFabricRoutingProtocolRead(); fixed some minor errors in helper
 func routingProtocolBfdToTerra(routingProtocolBfd *v4.RoutingProtocolBfd) *schema.Set {
 	if routingProtocolBfd == nil {
 		return nil
 	}
 	routingProtocolBfds := []*v4.RoutingProtocolBfd{routingProtocolBfd}
 	mappedRpBfds := make([]interface{}, len(routingProtocolBfds))
-	for i, rpBfds := range routingProtocolBfds {
+	for i, routingProtocolBfd := range routingProtocolBfds {
 		mappedRpBfds[i] = map[string]interface{}{
-			"enabled":  rpBfds.Enabled,
-			"interval": rpBfds.Interval,
+			"enabled":  routingProtocolBfd.Enabled,
+			"interval": routingProtocolBfd.Interval,
 		}
 	}
 	rpBfdSet := schema.NewSet(
@@ -1003,18 +1060,6 @@ func routingProtocolOperationToTerra(routingProtocolOperation *v4.RoutingProtoco
 		mappedRpOperations,
 	)
 	return rpOperationSet
-}
-
-func routingProtocolChangeToFabric(routingProtocolChangeRequest []interface{}) v4.RoutingProtocolChange {
-	mappedRpChange := v4.RoutingProtocolChange{}
-	for _, str := range routingProtocolChangeRequest {
-		rpChangeMap := str.(map[string]interface{})
-		uuid := rpChangeMap["uuid"].(string)
-		rpChangeType := rpChangeMap["type"].(string)
-
-		mappedRpChange = v4.RoutingProtocolChange{Uuid: uuid, Type_: rpChangeType}
-	}
-	return mappedRpChange
 }
 
 func routingProtocolChangeToTerra(routingProtocolChange *v4.RoutingProtocolChange) *schema.Set {

@@ -7,26 +7,24 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestfgCreate(t *testing.T) {
+func TestFabricGatewayCreate(t *testing.T) {
 	// retryable errors in terraform testing.
 	terraformOptions := terraform.WithDefaultRetryableErrors(t, &terraform.Options{
 		TerraformDir: "../examples/fabric-gateway",
 	})
 
-	//defer terraform.Destroy(t, terraformOptions)
-
 	terraform.InitAndApply(t, terraformOptions)
 	output := terraform.Output(t, terraformOptions, "fg_result")
 	assert.NotNil(t, output)
 
-	terraformOptions := terraform.WithDefaultRetryableErrors(t, &terraform.Options{
+	terraformOptions = terraform.WithDefaultRetryableErrors(t, &terraform.Options{
 		TerraformDir: "../examples/fg2port",
 	})
 
 	defer terraform.Destroy(t, terraformOptions)
 
 	terraform.InitAndApply(t, terraformOptions)
-	output := terraform.Output(t, terraformOptions, "fg2port_result")
+	output = terraform.Output(t, terraformOptions, "fg2port_result")
 
 	assert.NotNil(t, output)
 }
