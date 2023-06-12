@@ -69,7 +69,7 @@ The following arguments are supported:
 
 * `name` - (Required) The name of the project.
 * `organization_id` - (Required) The UUID of organization under which you want to create the project. If you
-leave it out, the project will be create under your the default organization of your account.
+leave it out, the project will be created under your the default organization of your account.
 * `payment_method_id` - The UUID of payment method for this project. The payment method and the
 project need to belong to the same organization (passed with `organization_id`, or default).
 * `backend_transfer` - Enable or disable [Backend Transfer](https://metal.equinix.com/developers/docs/networking/backend-transfer/), default is `false`.
