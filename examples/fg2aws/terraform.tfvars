@@ -1,5 +1,5 @@
-equinix_client_id      = "vcblONGpBkGYB2dvr5LLmeT8icAyHBxvZgJ84gZCysjmTSFR"
-equinix_client_secret  = "aumXi9YpZkAIrbFdKGSaCxmXMy3PgH8wd36CxMCtqvVWAVIzrgBxifG3yP7GM9Sm"
+equinix_client_id      = "MyEquinixClientId"
+equinix_client_secret  = "MyEquinixSecret"
 
 fg_name = "terra_e2e_fg"
 fg_type = "XF_GATEWAY"
