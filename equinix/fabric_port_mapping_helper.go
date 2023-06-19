@@ -129,7 +129,7 @@ func fabricPortsListToTerra(ports v4.AllPortsResponse) []map[string]interface{} 
 			"location":            locationToTerra(port.Location),
 			"device":              deviceToTerra(port.Device),
 			"encapsulation":       encapsulationToTerra(port.Encapsulation),
-			"lag":                 port.LagEnabled,
+			"lag_enabled":         port.LagEnabled,
 		}
 	}
 	return mappedPortsl
