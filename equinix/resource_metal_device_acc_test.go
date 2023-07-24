@@ -966,6 +966,10 @@ func (m *mockDeviceService) Reboot(string) (*packngo.Response, error) {
 	return nil, mockFuncNotImplemented("Reboot")
 }
 
+func (m *mockDeviceService) Rescue(string) (*packngo.Response, error) {
+	return nil, mockFuncNotImplemented("Rescue")
+}
+
 func (m *mockDeviceService) Reinstall(string, *packngo.DeviceReinstallFields) (*packngo.Response, error) {
 	return nil, mockFuncNotImplemented("Reinstall")
 }
