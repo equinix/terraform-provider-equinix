@@ -336,6 +336,11 @@ func createDataSourceNetworkDeviceSchema() map[string]*schema.Schema {
 						Computed:    true,
 						Description: neDeviceDescriptions["LicenseFileID"],
 					},
+					neDeviceSchemaNames["CloudInitFileID"]: {
+						Type:        schema.TypeString,
+						Computed:    true,
+						Description: neDeviceDescriptions["CloudInitFileID"],
+					},
 					neDeviceSchemaNames["ACLTemplateUUID"]: {
 						Type:        schema.TypeString,
 						Computed:    true,
