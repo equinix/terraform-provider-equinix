@@ -275,6 +275,11 @@ func createDataSourceNetworkDeviceSchema() map[string]*schema.Schema {
 			Computed:    true,
 			Description: neDeviceDescriptions["ZoneCode"],
 		},
+		neDeviceSchemaNames["Connectivity"]: {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: neDeviceDescriptions["Connectivity"],
+		},
 		neDeviceSchemaNames["Secondary"]: {
 			Type:        schema.TypeList,
 			Computed:    true,

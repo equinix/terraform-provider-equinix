@@ -46,6 +46,7 @@ func TestNetworkDevice_createFromResourceData(t *testing.T) {
 		IsSelfManaged:       ne.Bool(false),
 		VendorConfiguration: expectedPrimaryVendorConfig,
 		UserPublicKey:       &expectedPrimaryUserKey,
+		Connectivity:        ne.String("INTERNET-ACCESS"),
 	}
 	rawData := map[string]interface{}{
 		neDeviceSchemaNames["Name"]:                ne.StringValue(expectedPrimary.Name),

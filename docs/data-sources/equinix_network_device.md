@@ -49,6 +49,7 @@ NOTE: Exactly one of either `uuid` or `name` must be specified.
   * APPLIED
   * WAITING_FOR_CLUSTER_SETUP
   * REGISTRATION_FAILED
+  * NA
 * `license_file_id` - Unique identifier of applied license file
 * `ibx` - Device location Equinix Business Exchange name
 * `region` - Device location region
@@ -71,3 +72,4 @@ primary or secondary
 * `zone_code` - Device location zone code
 * `cluster_id` - The id of the cluster
 * `num_of_nodes` - The number of nodes in the cluster
+* `connectivity` - Device accessibility (INTERNET-ACCESS or PRIVATE or INTERNET-ACCESS-WITH-PRVT-MGMT)

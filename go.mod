@@ -6,7 +6,7 @@ require (
 	github.com/antihax/optional v1.0.0
 	github.com/equinix-labs/fabric-go v0.4.0
 	github.com/equinix/ecx-go/v2 v2.3.1
-	github.com/equinix/ne-go v1.10.0
+	github.com/equinix/ne-go v1.11.0
 	github.com/equinix/oauth2-go v1.0.0
 	github.com/equinix/rest-go v1.3.0
 	github.com/gruntwork-io/terratest v0.43.0
