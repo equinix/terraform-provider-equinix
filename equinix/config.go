@@ -15,6 +15,7 @@ import (
 	"time"
 
 	v4 "github.com/equinix-labs/fabric-go/fabric/v4"
+	metalv1 "github.com/equinix-labs/metal-go/metal/v1"
 	"github.com/equinix/ecx-go/v2"
 	"github.com/equinix/ne-go"
 	"github.com/equinix/oauth2-go"
@@ -80,13 +81,15 @@ type Config struct {
 	PageSize       int
 	Token          string
 
-	ecx   ecx.Client
-	ne    ne.Client
-	metal *packngo.Client
+	ecx     ecx.Client
+	ne      ne.Client
+	metal   *packngo.Client
+	metalgo *metalv1.APIClient
 
-	ecxUserAgent   string
-	neUserAgent    string
-	metalUserAgent string
+	ecxUserAgent     string
+	neUserAgent      string
+	metalUserAgent   string
+	metalGoUserAgent string
 
 	terraformVersion string
 	fabricClient     *v4.APIClient
@@ -158,6 +161,7 @@ func (c *Config) Load(ctx context.Context) error {
 	c.ecx = ecxClient
 	c.ne = neClient
 	c.metal = c.NewMetalClient()
+	c.metalgo = c.NewMetalGoClient()
 	c.fabricClient = c.NewFabricClient()
 	return nil
 }
@@ -183,11 +187,11 @@ func (c *Config) NewFabricClient() *v4.APIClient {
 	return client
 }
 
-// NewMetalClient returns a new client for accessing Equinix Metal's API.
+// NewMetalClient returns a new packngo client for accessing Equinix Metal's API.
 func (c *Config) NewMetalClient() *packngo.Client {
 	transport := http.DefaultTransport
 	// transport = &DumpTransport{http.DefaultTransport} // Debug only
-	transport = logging.NewTransport("Equinix Metal", transport)
+	transport = logging.NewTransport("Equinix Metal (packngo)", transport)
 	retryClient := retryablehttp.NewClient()
 	retryClient.HTTPClient.Transport = transport
 	retryClient.RetryMax = c.MaxRetries
@@ -200,6 +204,35 @@ func (c *Config) NewMetalClient() *packngo.Client {
 	client, _ := packngo.NewClientWithBaseURL(consumerToken, c.AuthToken, standardClient, baseURL.String())
 	client.UserAgent = c.fullUserAgent(client.UserAgent)
 	c.metalUserAgent = client.UserAgent
+	return client
+}
+
+// NewMetalGoClient returns a new metal-go client for accessing Equinix Metal's API.
+func (c *Config) NewMetalGoClient() *metalv1.APIClient {
+	transport := http.DefaultTransport
+	transport = logging.NewSubsystemLoggingHTTPTransport("Equinix Metal (metal-go)", transport)
+	retryClient := retryablehttp.NewClient()
+	retryClient.HTTPClient.Transport = transport
+	retryClient.RetryMax = c.MaxRetries
+	retryClient.RetryWaitMin = time.Second
+	retryClient.RetryWaitMax = c.MaxRetryWait
+	retryClient.CheckRetry = MetalRetryPolicy
+	standardClient := retryClient.StandardClient()
+
+	baseURL, _ := url.Parse(c.BaseURL)
+	baseURL.Path = path.Join(baseURL.Path, metalBasePath) + "/"
+
+	configuration := metalv1.NewConfiguration()
+	configuration.Servers = metalv1.ServerConfigurations{
+		metalv1.ServerConfiguration{
+			URL: baseURL.String(),
+		},
+	}
+	configuration.HTTPClient = standardClient
+	configuration.AddDefaultHeader("X-Auth-Token", os.Getenv("METAL_AUTH_TOKEN"))
+	configuration.UserAgent = c.fullUserAgent(configuration.UserAgent)
+	client := metalv1.NewAPIClient(configuration)
+	c.metalGoUserAgent = client.GetConfig().UserAgent
 	return client
 }
 
@@ -269,6 +302,10 @@ func (c *Config) addModuleToNEUserAgent(client *ne.Client, d *schema.ResourceDat
 // clients on a query-by-query basis.
 func (c *Config) addModuleToMetalUserAgent(d *schema.ResourceData) {
 	c.metal.UserAgent = generateModuleUserAgentString(d, c.metalUserAgent)
+}
+
+func (c *Config) addModuleToMetalGoUserAgent(d *schema.ResourceData) {
+	c.metalgo.GetConfig().UserAgent = generateModuleUserAgentString(d, c.metalUserAgent)
 }
 
 func generateModuleUserAgentString(d *schema.ResourceData, baseUserAgent string) string {
