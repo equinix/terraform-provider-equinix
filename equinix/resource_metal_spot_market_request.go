@@ -135,6 +135,11 @@ func resourceMetalSpotMarketRequest() *schema.Resource {
 							Required: true,
 						},
 						"termintation_time": {
+							Type:       schema.TypeString,
+							Computed:   true,
+							Deprecated: "Use instance_parameters.termination_time instead",
+						},
+						"termination_time": {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
@@ -449,6 +454,7 @@ func getInstanceParams(params *packngo.SpotMarketRequestInstanceParameters) Inst
 	}}
 	if params.TerminationTime != nil {
 		p[0]["termintation_time"] = params.TerminationTime.Time
+		p[0]["termination_time"] = params.TerminationTime.Time
 	}
 	return p
 }
