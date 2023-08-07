@@ -827,7 +827,7 @@ resource "equinix_metal_device" "test" {
 }`, confAccMetalDevice_base(preferable_plans, preferable_metros, preferable_os), projSuffix, testDeviceTerminationTime())
 }
 
-func testAccMetalDeviceConfig_ssh_key(projSuffix, userSSSHKey, projSSHKey string) string {
+func testAccMetalDeviceConfig_ssh_key(projSuffix, userSSHKey, projSSHKey string) string {
 	return fmt.Sprintf(`
 %s
 
@@ -856,7 +856,7 @@ resource "equinix_metal_device" "test" {
 	user_ssh_key_ids = [equinix_metal_ssh_key.test.owner_id]
 	project_ssh_key_ids = [equinix_metal_project_ssh_key.test.id]
   }
-`, confAccMetalDevice_base(preferable_plans, preferable_metros, preferable_os), projSSHKey, projSSHKey, userSSSHKey, projSSHKey, projSSHKey)
+`, confAccMetalDevice_base(preferable_plans, preferable_metros, preferable_os), projSuffix, projSuffix, userSSHKey, projSSHKey, projSSHKey)
 }
 
 func testAccMetalDeviceConfig_facility_list(projSuffix string) string {

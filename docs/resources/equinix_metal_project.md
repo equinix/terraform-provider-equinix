@@ -67,7 +67,7 @@ template.
 
 The following arguments are supported:
 
-* `name` - (Required) The name of the project.
+* `name` - (Required) The name of the project.  The maximum length is 80 characters
 * `organization_id` - (Required) The UUID of organization under which you want to create the project. If you
 leave it out, the project will be created under your the default organization of your account.
 * `payment_method_id` - The UUID of payment method for this project. The payment method and the

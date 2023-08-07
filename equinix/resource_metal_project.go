@@ -25,7 +25,7 @@ func resourceMetalProject() *schema.Resource {
 		Schema: map[string]*schema.Schema{
 			"name": {
 				Type:        schema.TypeString,
-				Description: "The name of the project",
+				Description: "The name of the project.  The maximum length is 80 characters.",
 				Required:    true,
 			},
 			"created": {
