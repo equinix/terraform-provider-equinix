@@ -74,6 +74,48 @@ func testAccMetalConnectionConfig_Shared(randstr string) string {
 		randstr, randstr)
 }
 
+func testAccMetalConnectionConfig_Shared_zside(randstr string) string {
+	return fmt.Sprintf(`
+        resource "equinix_metal_project" "test" {
+            name = "tfacc-conn-pro-%s"
+        }
+
+        resource "equinix_metal_connection" "test" {
+            name               = "tfacc-conn-%s"
+            project_id         = equinix_metal_project.test.id
+            type               = "shared"
+            redundancy         = "redundant"
+            metro              = "sv"
+			service_token_type = "z_side"
+        }`,
+		randstr, randstr)
+}
+
+func TestAccMetalConnection_shared_zside(t *testing.T) {
+	rs := acctest.RandString(10)
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t) },
+		ExternalProviders: testExternalProviders,
+		Providers:         testAccProviders,
+		CheckDestroy:      testAccMetalConnectionCheckDestroyed,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccMetalConnectionConfig_Shared_zside(rs),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(
+						"equinix_metal_connection.test", "speed", "10Gbps"),
+					resource.TestCheckResourceAttr(
+						"equinix_metal_connection.test", "service_tokens.0.type", "z_side"),
+					resource.TestCheckResourceAttr(
+						"equinix_metal_connection.test", "service_token_type", "z_side"),
+				),
+			},
+		},
+	})
+
+
+}
+
 func TestAccMetalConnection_shared(t *testing.T) {
 	rs := acctest.RandString(10)
 
