@@ -118,8 +118,9 @@ func resourceMetalConnection() *schema.Resource {
 			},
 			"speed": {
 				Type:        schema.TypeString,
-				Required:    true,
-				Description: fmt.Sprintf("Port speed. Allowed values are %s", strings.Join(speeds, ", ")),
+				Optional:    true,
+				Computed:    true,
+				Description: fmt.Sprintf("Port speed. Required for a_side connections. Allowed values are %s", strings.Join(speeds, ", ")),
 			},
 			"description": {
 				Type:        schema.TypeString,
@@ -214,16 +215,25 @@ func resourceMetalConnectionCreate(d *schema.ResourceData, meta interface{}) err
 	}
 	connRedundancy := packngo.ConnectionRedundancy(d.Get("redundancy").(string))
 
-	speed, err := speedStrToUint(d.Get("speed").(string))
-	if err != nil {
-		return err
-	}
-
 	connReq := packngo.ConnectionCreateRequest{
 		Name:       d.Get("name").(string),
 		Redundancy: connRedundancy,
 		Type:       connType,
-		Speed:      speed,
+	}
+
+	speedRaw, speedOk := d.GetOk("speed")
+
+	// missing speed is tolerated only for shared connections of type z_side
+	// https://github.com/equinix/terraform-provider-equinix/issues/276
+	if (connType == packngo.ConnectionDedicated) || (tokenType == "a_side") {
+		if !speedOk {
+			return fmt.Errorf("you must set speed, it's optional only for shared connections of type z_side")
+		}
+		speed, err := speedStrToUint(speedRaw.(string))
+		if err != nil {
+			return err
+		}
+		connReq.Speed = speed
 	}
 
 	// this could be generalized, see $ grep "d.Get(\"tags" *
