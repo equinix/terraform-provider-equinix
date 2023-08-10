@@ -307,13 +307,10 @@ func readFabricPortResourceSchema() map[string]*schema.Schema {
 				Schema: readFabricPortEncapsulation(),
 			},
 		},
-		"lag": {
-			Type:        schema.TypeSet,
+		"lag_enabled": {
+			Type:        schema.TypeBool,
 			Computed:    true,
 			Description: "Port Lag",
-			Elem: &schema.Resource{
-				Schema: readFabricPortLag(),
-			},
 		},
 	}
 }
