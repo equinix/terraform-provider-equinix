@@ -34,11 +34,11 @@ func createFgAccountSch() map[string]*schema.Schema {
 	}
 }
 
-var createFabricGatewayProjectSchRes = &schema.Resource{
+var createCloudRouterProjectSchRes = &schema.Resource{
 	Schema: createGatewayProjectSch(),
 }
 
-func createFabricGatewayProjectSch() map[string]*schema.Schema {
+func createCloudRouterProjectSch() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
 		"project_id": {
 			Type:        schema.TypeString,
@@ -55,7 +55,7 @@ func createFabricGatewayProjectSch() map[string]*schema.Schema {
 	}
 }
 
-func createFabricGatewayResourceSchema() map[string]*schema.Schema {
+func createCloudRouterResourceSchema() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
 		"href": {
 			Type:        schema.TypeString,
@@ -119,7 +119,7 @@ func createFabricGatewayResourceSchema() map[string]*schema.Schema {
 			Optional:    true,
 			Description: "Fabric Gateway project",
 			Elem: &schema.Resource{
-				Schema: createFabricGatewayProjectSch(),
+				Schema: createCloudRouterProjectSch(),
 			},
 		},
 		"account": {

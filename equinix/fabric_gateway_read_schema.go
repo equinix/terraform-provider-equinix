@@ -12,7 +12,7 @@ func readPackageSch() map[string]*schema.Schema {
 	}
 }
 
-func readFabricGatewayResourceSchema() map[string]*schema.Schema {
+func readCloudRouterResourceSchema() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
 		"uuid": {
 			Type:        schema.TypeString,

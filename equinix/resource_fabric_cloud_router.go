@@ -13,7 +13,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
-func resourceFabricGateway() *schema.Resource {
+func resourceCloudRouter() *schema.Resource {
 	return &schema.Resource{
 		Timeouts: &schema.ResourceTimeout{
 			Create: schema.DefaultTimeout(6 * time.Minute),
@@ -21,20 +21,20 @@ func resourceFabricGateway() *schema.Resource {
 			Delete: schema.DefaultTimeout(6 * time.Minute),
 			Read:   schema.DefaultTimeout(6 * time.Minute),
 		},
-		ReadContext:   resourceFabricGatewayRead,
-		CreateContext: resourceFabricGatewayCreate,
-		UpdateContext: resourceFabricGatewayUpdate,
-		DeleteContext: resourceFabricGatewayDelete,
+		ReadContext:   resourceCloudRouterRead,
+		CreateContext: resourceCloudRouterCreate,
+		UpdateContext: resourceCloudRouterUpdate,
+		DeleteContext: resourceCloudRouterDelete,
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
-		Schema: createFabricGatewayResourceSchema(),
+		Schema: createCloudRouterResourceSchema(),
 
 		Description: "Fabric V4 API compatible resource allows creation and management of Equinix Fabric Gateway\n\n~> **Note** Equinix Fabric v4 resources and datasources are currently in Beta. The interfaces related to `equinix_fabric_` resources and datasources may change ahead of general availability. Please, do not hesitate to report any problems that you experience by opening a new [issue](https://github.com/equinix/terraform-provider-equinix/issues/new?template=bug.md)",
 	}
 }
 
-func resourceFabricGatewayCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceCloudRouterCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*Config).fabricClient
 	ctx = context.WithValue(ctx, v4.ContextAccessToken, meta.(*Config).FabricAuthToken)
 	schemaNotifications := d.Get("notifications").([]interface{})
@@ -42,18 +42,18 @@ func resourceFabricGatewayCreate(ctx context.Context, d *schema.ResourceData, me
 	schemaOrder := d.Get("order").(*schema.Set).List()
 	order := orderToFabric(schemaOrder)
 	schemaAccount := d.Get("account").(*schema.Set).List()
-	account := accountToFabricGateway(schemaAccount)
+	account := accountToCloudRouter(schemaAccount)
 	schemaLocation := d.Get("location").(*schema.Set).List()
-	location := locationToFabricGateway(schemaLocation)
+	location := locationToCloudRouter(schemaLocation)
 	project := v4.Project{}
 	schemaProject := d.Get("project").(*schema.Set).List()
 	if len(schemaProject) != 0 {
-		project = projectToFabricGateway(schemaProject)
+		project = projectToCloudRouter(schemaProject)
 	}
 	schemaPackage := d.Get("package").(*schema.Set).List()
-	packages := packageToFabricGateway(schemaPackage)
+	packages := packageToCloudRouter(schemaPackage)
 
-	createRequest := v4.FabricGatewayPostRequest{
+	createRequest := v4.CloudRouterPostRequest{
 		Name:          d.Get("name").(string),
 		Type_:         d.Get("type").(string),
 		Order:         &order,
@@ -64,7 +64,7 @@ func resourceFabricGatewayCreate(ctx context.Context, d *schema.ResourceData, me
 		Project:       &project,
 	}
 
-	fg, _, err := client.GatewaysApi.CreateGateway(ctx, createRequest)
+	fg, _, err := client.CloudRoutersApi.CreateGateway(ctx, createRequest)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -74,13 +74,13 @@ func resourceFabricGatewayCreate(ctx context.Context, d *schema.ResourceData, me
 		return diag.Errorf("error waiting for FG (%s) to be created: %s", d.Id(), err)
 	}
 
-	return resourceFabricGatewayRead(ctx, d, meta)
+	return resourceCloudRouterRead(ctx, d, meta)
 }
 
-func resourceFabricGatewayRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceCloudRouterRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*Config).fabricClient
 	ctx = context.WithValue(ctx, v4.ContextAccessToken, meta.(*Config).FabricAuthToken)
-	fabricGateway, _, err := client.GatewaysApi.GetGatewayByUuid(ctx, d.Id())
+	CloudRouter, _, err := client.CloudRoutersApi.GetGatewayByUuid(ctx, d.Id())
 	if err != nil {
 		log.Printf("[WARN] Fabric Gateway %s not found , error %s", d.Id(), err)
 		if !strings.Contains(err.Error(), "500") {
@@ -88,18 +88,18 @@ func resourceFabricGatewayRead(ctx context.Context, d *schema.ResourceData, meta
 		}
 		return diag.FromErr(err)
 	}
-	d.SetId(fabricGateway.Uuid)
-	return setFabricGatewayMap(d, fabricGateway)
+	d.SetId(CloudRouter.Uuid)
+	return setCloudRouterMap(d, CloudRouter)
 }
 
-func setFabricGatewayMap(d *schema.ResourceData, fg v4.FabricGateway) diag.Diagnostics {
+func setCloudRouterMap(d *schema.ResourceData, fg v4.CloudRouter) diag.Diagnostics {
 	diags := diag.Diagnostics{}
 	err := setMap(d, map[string]interface{}{
 		"name":          fg.Name,
 		"href":          fg.Href,
 		"type":          fg.Type_,
 		"state":         fg.State,
-		"package":       fabricGatewayPackageToTerra(fg.Package_),
+		"package":       CloudRouterPackageToTerra(fg.Package_),
 		"location":      locationFGToTerra(fg.Location),
 		"change_log":    changeLogToTerra(fg.ChangeLog),
 		"account":       accountFgToTerra(fg.Account),
@@ -112,7 +112,7 @@ func setFabricGatewayMap(d *schema.ResourceData, fg v4.FabricGateway) diag.Diagn
 	return diags
 }
 
-func resourceFabricGatewayUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceCloudRouterUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*Config).fabricClient
 	ctx = context.WithValue(ctx, v4.ContextAccessToken, meta.(*Config).FabricAuthToken)
 	dbConn, err := waitUntilFGIsProvisioned(d.Id(), meta, ctx)
@@ -123,16 +123,16 @@ func resourceFabricGatewayUpdate(ctx context.Context, d *schema.ResourceData, me
 		return diag.Errorf("either timed out or errored out while fetching Fabric Gateway for uuid %s and error %v", d.Id(), err)
 	}
 	// TO-DO
-	update, err := getFabricGatewayUpdateRequest(dbConn, d)
+	update, err := getCloudRouterUpdateRequest(dbConn, d)
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	updates := []v4.FabricGatewayChangeOperation{update}
-	_, res, err := client.GatewaysApi.UpdateGatewayByUuid(ctx, updates, d.Id())
+	updates := []v4.CloudRouterChangeOperation{update}
+	_, res, err := client.CloudRoutersApi.UpdateGatewayByUuid(ctx, updates, d.Id())
 	if err != nil {
 		return diag.FromErr(fmt.Errorf("error response for the Fabric Gateway update, response %v, error %v", res, err))
 	}
-	updateFg := v4.FabricGateway{}
+	updateFg := v4.CloudRouter{}
 	updateFg, err = waitForFGUpdateCompletion(d.Id(), meta, ctx)
 
 	if err != nil {
@@ -143,16 +143,16 @@ func resourceFabricGatewayUpdate(ctx context.Context, d *schema.ResourceData, me
 	}
 
 	d.SetId(updateFg.Uuid)
-	return setFabricGatewayMap(d, updateFg)
+	return setCloudRouterMap(d, updateFg)
 }
 
-func waitForFGUpdateCompletion(uuid string, meta interface{}, ctx context.Context) (v4.FabricGateway, error) {
+func waitForFGUpdateCompletion(uuid string, meta interface{}, ctx context.Context) (v4.CloudRouter, error) {
 	log.Printf("Waiting for FG update to complete, uuid %s", uuid)
 	stateConf := &resource.StateChangeConf{
-		Target: []string{string(v4.PROVISIONED_FabricGatewayAccessPointState)},
+		Target: []string{string(v4.PROVISIONED_CloudRouterAccessPointState)},
 		Refresh: func() (interface{}, string, error) {
 			client := meta.(*Config).fabricClient
-			dbConn, _, err := client.GatewaysApi.GetGatewayByUuid(ctx, uuid)
+			dbConn, _, err := client.CloudRoutersApi.GetGatewayByUuid(ctx, uuid)
 			if err != nil {
 				return "", "", err
 			}
@@ -164,27 +164,27 @@ func waitForFGUpdateCompletion(uuid string, meta interface{}, ctx context.Contex
 	}
 
 	inter, err := stateConf.WaitForStateContext(ctx)
-	dbConn := v4.FabricGateway{}
+	dbConn := v4.CloudRouter{}
 
 	if err == nil {
-		dbConn = inter.(v4.FabricGateway)
+		dbConn = inter.(v4.CloudRouter)
 	}
 	return dbConn, err
 }
 
-func waitUntilFGIsProvisioned(uuid string, meta interface{}, ctx context.Context) (v4.FabricGateway, error) {
+func waitUntilFGIsProvisioned(uuid string, meta interface{}, ctx context.Context) (v4.CloudRouter, error) {
 	log.Printf("Waiting for FG to be provisioned, uuid %s", uuid)
 	stateConf := &resource.StateChangeConf{
 		Pending: []string{
-			string(v4.PROVISIONING_FabricGatewayAccessPointState),
+			string(v4.PROVISIONED_CloudRouterAccessPointState),
 		},
 		Target: []string{
 			string(v4.PENDING_INTERFACE_CONFIGURATION_EquinixStatus),
-			string(v4.PROVISIONED_FabricGatewayAccessPointState),
+			string(v4.PROVISIONED_CloudRouterAccessPointState),
 		},
 		Refresh: func() (interface{}, string, error) {
 			client := meta.(*Config).fabricClient
-			dbConn, _, err := client.GatewaysApi.GetGatewayByUuid(ctx, uuid)
+			dbConn, _, err := client.CloudRoutersApi.GetGatewayByUuid(ctx, uuid)
 			if err != nil {
 				return "", "", err
 			}
@@ -196,19 +196,19 @@ func waitUntilFGIsProvisioned(uuid string, meta interface{}, ctx context.Context
 	}
 
 	inter, err := stateConf.WaitForStateContext(ctx)
-	dbConn := v4.FabricGateway{}
+	dbConn := v4.CloudRouter{}
 
 	if err == nil {
-		dbConn = inter.(v4.FabricGateway)
+		dbConn = inter.(v4.CloudRouter)
 	}
 	return dbConn, err
 }
 
-func resourceFabricGatewayDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceCloudRouterDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	diags := diag.Diagnostics{}
 	client := meta.(*Config).fabricClient
 	ctx = context.WithValue(ctx, v4.ContextAccessToken, meta.(*Config).FabricAuthToken)
-	resp, err := client.GatewaysApi.DeleteGatewayByUuid(ctx, d.Id())
+	resp, err := client.CloudRoutersApi.DeleteGatewayByUuid(ctx, d.Id())
 	if err != nil {
 		errors, ok := err.(v4.GenericSwaggerError).Model().([]v4.ModelError)
 		if ok {
@@ -231,14 +231,14 @@ func waitUntilFGDeprovisioned(uuid string, meta interface{}, ctx context.Context
 	log.Printf("Waiting for Fabric Gateway to be deprovisioned, uuid %s", uuid)
 	stateConf := &resource.StateChangeConf{
 		Pending: []string{
-			string(v4.DEPROVISIONING_FabricGatewayAccessPointState),
+			string(v4.DEPROVISIONING_CloudRouterAccessPointState),
 		},
 		Target: []string{
-			string(v4.DEPROVISIONED_FabricGatewayAccessPointState),
+			string(v4.DEPROVISIONED_CloudRouterAccessPointState),
 		},
 		Refresh: func() (interface{}, string, error) {
 			client := meta.(*Config).fabricClient
-			dbConn, _, err := client.GatewaysApi.GetGatewayByUuid(ctx, uuid)
+			dbConn, _, err := client.CloudRoutersApi.GetGatewayByUuid(ctx, uuid)
 			if err != nil {
 				return "", "", err
 			}

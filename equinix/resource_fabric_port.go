@@ -48,7 +48,7 @@ func setFabricPortMap(d *schema.ResourceData, port v4.Port) diag.Diagnostics {
 		"location":            locationToTerra(port.Location),
 		"device":              deviceToTerra(port.Device),
 		"encapsulation":       encapsulationToTerra(port.Encapsulation),
-		"lag_enabled":         port.LagEnabled,
+		"lag":                 port.LagEnabled,
 	})
 	if err != nil {
 		return diag.FromErr(err)

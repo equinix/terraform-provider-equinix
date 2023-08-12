@@ -9,7 +9,7 @@ data "equinix_fabric_ports" "zside" {
   }
 }
 
-resource "equinix_fabric_gateway" "test"{
+resource "equinix_fabric_cloud_router" "test"{
   name = var.fg_name
   type = var.fg_type
   notifications{
@@ -34,6 +34,6 @@ resource "equinix_fabric_gateway" "test"{
 }
 
 output "fg_result" {
-  value = equinix_fabric_gateway.test.id
+  value = equinix_fabric_cloud_router.test.id
 }
 

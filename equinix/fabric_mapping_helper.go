@@ -64,7 +64,7 @@ func accessPointToFabric(accessPointRequest []interface{}) v4.AccessPoint {
 		if len(gatewayRequest) != 0 {
 			mappedGWr := gatewayToFabric(gatewayRequest)
 			if mappedGWr.Uuid != "" {
-				accessPoint.Gateway = &mappedGWr
+				accessPoint.Router = &mappedGWr
 			}
 		}
 		apt := v4.AccessPointType(typeVal)
@@ -100,15 +100,15 @@ func accessPointToFabric(accessPointRequest []interface{}) v4.AccessPoint {
 	return accessPoint
 }
 
-func gatewayToFabric(gatewayRequest []interface{}) v4.FabricGateway {
+func gatewayToFabric(gatewayRequest []interface{}) v4.CloudRouter {
 	if gatewayRequest == nil {
-		return v4.FabricGateway{}
+		return v4.CloudRouter{}
 	}
-	gatewayMapped := v4.FabricGateway{}
+	gatewayMapped := v4.CloudRouter{}
 	for _, gwr := range gatewayRequest {
 		gwrMap := gwr.(map[string]interface{})
 		gwuuid := gwrMap["uuid"].(string)
-		gatewayMapped = v4.FabricGateway{Uuid: gwuuid}
+		gatewayMapped = v4.CloudRouter{Uuid: gwuuid}
 	}
 	return gatewayMapped
 }
@@ -229,7 +229,7 @@ func locationToFabric(locationList []interface{}) v4.SimplifiedLocation {
 	return sl
 }
 
-func accountToFabricGateway(accountList []interface{}) v4.SimplifiedAccount {
+func accountToCloudRouter(accountList []interface{}) v4.SimplifiedAccount {
 	sa := v4.SimplifiedAccount{}
 	for _, ll := range accountList {
 		llMap := ll.(map[string]interface{})
@@ -239,7 +239,7 @@ func accountToFabricGateway(accountList []interface{}) v4.SimplifiedAccount {
 	return sa
 }
 
-func locationToFabricGateway(locationList []interface{}) v4.SimplifiedLocationWithoutIbx {
+func locationToCloudRouter(locationList []interface{}) v4.SimplifiedLocationWithoutIbx {
 	sl := v4.SimplifiedLocationWithoutIbx{}
 	for _, ll := range locationList {
 		llMap := ll.(map[string]interface{})
@@ -249,17 +249,17 @@ func locationToFabricGateway(locationList []interface{}) v4.SimplifiedLocationWi
 	return sl
 }
 
-func packageToFabricGateway(packageList []interface{}) v4.FabricGatewayPackageType {
-	p := v4.FabricGatewayPackageType{}
+func packageToCloudRouter(packageList []interface{}) v4.CloudRouterPackageType {
+	p := v4.CloudRouterPackageType{}
 	for _, pl := range packageList {
 		plMap := pl.(map[string]interface{})
 		code := plMap["code"].(string)
-		p = v4.FabricGatewayPackageType{Code: code}
+		p = v4.CloudRouterPackageType{Code: code}
 	}
 	return p
 }
 
-func projectToFabricGateway(projectRequest []interface{}) v4.Project {
+func projectToCloudRouter(projectRequest []interface{}) v4.Project {
 	if projectRequest == nil {
 		return v4.Project{}
 	}
@@ -559,26 +559,26 @@ func additionalInfoToTerra(additionalInfol []v4.ConnectionSideAdditionalInfo) []
 	return mappedadditionalInfol
 }
 
-func fabricGatewayToTerra(virtualGateway *v4.FabricGateway) *schema.Set {
-	if virtualGateway == nil {
+func CloudRouterToTerra(cloudRouter *v4.CloudRouter) *schema.Set {
+	if cloudRouter == nil {
 		return nil
 	}
-	virtualGateways := []*v4.FabricGateway{virtualGateway}
-	mappedvirtualGateways := make([]interface{}, len(virtualGateways))
-	for _, virtualGateway := range virtualGateways {
-		mappedvirtualGateway := make(map[string]interface{})
-		mappedvirtualGateway["uuid"] = virtualGateway.Uuid
-		mappedvirtualGateway["href"] = virtualGateway.Href
-		mappedvirtualGateways = append(mappedvirtualGateways, mappedvirtualGateway)
+	cloudRouters := []*v4.CloudRouter{cloudRouter}
+	mappedCloudRouters := make([]interface{}, len(cloudRouters))
+	for _, cloudRouter := range cloudRouters {
+		mappedCloudRouter := make(map[string]interface{})
+		mappedCloudRouter["uuid"] = cloudRouter.Uuid
+		mappedCloudRouter["href"] = cloudRouter.Href
+		mappedCloudRouters = append(mappedCloudRouters, mappedCloudRouter)
 	}
 	linkedProtocolSet := schema.NewSet(
 		schema.HashResource(createGatewayProjectSchRes),
-		mappedvirtualGateways)
+		mappedCloudRouters)
 	return linkedProtocolSet
 }
 
-func fabricGatewayPackageToTerra(packageType *v4.FabricGatewayPackageType) *schema.Set {
-	packageTypes := []*v4.FabricGatewayPackageType{packageType}
+func CloudRouterPackageToTerra(packageType *v4.CloudRouterPackageType) *schema.Set {
+	packageTypes := []*v4.CloudRouterPackageType{packageType}
 	mappedPackages := make([]interface{}, len(packageTypes))
 	for i, packageType := range packageTypes {
 		mappedPackages[i] = map[string]interface{}{
@@ -668,8 +668,8 @@ func accessPointToTerra(accessPoint *v4.AccessPoint) *schema.Set {
 		if accessPoint.Profile != nil {
 			mappedAccessPoint["profile"] = simplifiedServiceProfileToTerra(accessPoint.Profile)
 		}
-		if accessPoint.Gateway != nil {
-			mappedAccessPoint["gateway"] = fabricGatewayToTerra(accessPoint.Gateway)
+		if accessPoint.Router != nil {
+			mappedAccessPoint["gateway"] = CloudRouterToTerra(accessPoint.Router)
 		}
 		if accessPoint.LinkProtocol != nil {
 			mappedAccessPoint["link_protocol"] = linkedProtocolToTerra(*accessPoint.LinkProtocol)
@@ -1122,8 +1122,8 @@ func getUpdateRequest(conn v4.Connection, d *schema.ResourceData) (v4.Connection
 	return changeOps, nil
 }
 
-func getFabricGatewayUpdateRequest(conn v4.FabricGateway, d *schema.ResourceData) (v4.FabricGatewayChangeOperation, error) {
-	changeOps := v4.FabricGatewayChangeOperation{}
+func getCloudRouterUpdateRequest(conn v4.CloudRouter, d *schema.ResourceData) (v4.CloudRouterChangeOperation, error) {
+	changeOps := v4.CloudRouterChangeOperation{}
 	existingName := conn.Name
 	existingPackage := conn.Package_.Code
 	updateNameVal := d.Get("name")
@@ -1133,9 +1133,9 @@ func getFabricGatewayUpdateRequest(conn v4.FabricGateway, d *schema.ResourceData
 		existingName, existingPackage, updateNameVal, updatePackageVal)
 
 	if existingName != updateNameVal {
-		changeOps = v4.FabricGatewayChangeOperation{Op: "replace", Path: "/name", Value: &updateNameVal}
+		changeOps = v4.CloudRouterChangeOperation{Op: "replace", Path: "/name", Value: &updateNameVal}
 	} else if existingPackage != updatePackageVal {
-		changeOps = v4.FabricGatewayChangeOperation{Op: "replace", Path: "/package", Value: &updatePackageVal}
+		changeOps = v4.CloudRouterChangeOperation{Op: "replace", Path: "/package", Value: &updatePackageVal}
 	} else {
 		return changeOps, fmt.Errorf("nothing to update for the connection %s", existingName)
 	}

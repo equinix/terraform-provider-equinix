@@ -10,25 +10,25 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 )
 
-func TestAccFabricGatewayCreate(t *testing.T) {
+func TestAccCloudRouterCreate(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
-		CheckDestroy: checkFabricGatewayDelete,
+		CheckDestroy: checkCloudRouterDelete,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccFabricGatewayCreateConfig("fg_tf_acc_test"),
+				Config: testAccCloudRouterCreateConfig("fg_tf_acc_test"),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(
-						"equinix_fabric_gateway.test", "name", fmt.Sprint("fg_tf_acc_test")),
+						"equinix_fabric_cloud_router.test", "name", fmt.Sprint("fg_tf_acc_test")),
 				),
 				ExpectNonEmptyPlan: false,
 			},
 			{
-				Config: testAccFabricGatewayCreateConfig("fg_tf_acc_update"),
+				Config: testAccCloudRouterCreateConfig("fg_tf_acc_update"),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(
-						"equinix_fabric_gateway.test", "name", fmt.Sprint("fg_tf_acc_update")),
+						"equinix_fabric_cloud_router.test", "name", fmt.Sprint("fg_tf_acc_update")),
 				),
 				ExpectNonEmptyPlan: false,
 			},
@@ -36,11 +36,11 @@ func TestAccFabricGatewayCreate(t *testing.T) {
 	})
 }
 
-func checkFabricGatewayDelete(s *terraform.State) error {
+func checkCloudRouterDelete(s *terraform.State) error {
 	ctx := context.Background()
 	ctx = context.WithValue(ctx, v4.ContextAccessToken, testAccProvider.Meta().(*Config).FabricAuthToken)
 	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "equinix_fabric_gateway" {
+		if rs.Type != "equinix_fabric_cloud_router" {
 			continue
 		}
 		err := waitUntilFGDeprovisioned(rs.Primary.ID, testAccProvider.Meta(), ctx)
@@ -51,8 +51,8 @@ func checkFabricGatewayDelete(s *terraform.State) error {
 	return nil
 }
 
-func testAccFabricGatewayCreateConfig(name string) string {
-	return fmt.Sprintf(`resource "equinix_fabric_gateway" "test"{
+func testAccCloudRouterCreateConfig(name string) string {
+	return fmt.Sprintf(`resource "equinix_fabric_cloud_router" "test"{
 			type = "XF_GATEWAY"
 			name = "%s"
 			location{
@@ -80,24 +80,24 @@ func testAccFabricGatewayCreateConfig(name string) string {
 		}`, name)
 }
 
-func TestAccFabricGatewayRead(t *testing.T) {
+func TestAccCloudRouterRead(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccFabricGatewayReadConfig(),
+				Config: testAccCloudRouterReadConfig(),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(
-						"equinix_fabric_gateway.test", "name", fmt.Sprint("fg_tf_acc_test")),
+						"equinix_fabric_cloud_router.test", "name", fmt.Sprint("fg_tf_acc_test")),
 				),
 			},
 		},
 	})
 }
 
-func testAccFabricGatewayReadConfig() string {
-	return fmt.Sprint(`data "equinix_fabric_gateway" "test" {
+func testAccCloudRouterReadConfig() string {
+	return fmt.Sprint(`data "equinix_fabric_cloud_router" "test" {
 		uuid = "3e91216d-526a-45d2-9029-0c8c8ba48b60"
 	}`)
 }
