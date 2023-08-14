@@ -1,9 +1,11 @@
 package equinix
 
 import (
+	"context"
 	"log"
 	"time"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/packethost/packngo"
 )
@@ -15,12 +17,12 @@ func resourceMetalVRF() *schema.Resource {
 			Update: schema.DefaultTimeout(20 * time.Minute),
 			Delete: schema.DefaultTimeout(20 * time.Minute),
 		},
-		Read:   resourceMetalVRFRead,
-		Create: resourceMetalVRFCreate,
-		Update: resourceMetalVRFUpdate,
-		Delete: resourceMetalVRFDelete,
+		ReadContext:   resourceMetalVRFRead,
+		CreateContext: resourceMetalVRFCreate,
+		UpdateContext: resourceMetalVRFUpdate,
+		DeleteContext: resourceMetalVRFDelete,
 		Importer: &schema.ResourceImporter{
-			State: schema.ImportStatePassthrough,
+			StateContext: schema.ImportStatePassthroughContext,
 		},
 
 		Schema: map[string]*schema.Schema{
@@ -61,7 +63,7 @@ func resourceMetalVRF() *schema.Resource {
 	}
 }
 
-func resourceMetalVRFCreate(d *schema.ResourceData, meta interface{}) error {
+func resourceMetalVRFCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	meta.(*Config).addModuleToMetalUserAgent(d)
 	client := meta.(*Config).metal
 
@@ -76,15 +78,15 @@ func resourceMetalVRFCreate(d *schema.ResourceData, meta interface{}) error {
 	projectId := d.Get("project_id").(string)
 	vrf, _, err := client.VRFs.Create(projectId, createRequest)
 	if err != nil {
-		return friendlyError(err)
+		return diag.FromErr(friendlyError(err))
 	}
 
 	d.SetId(vrf.ID)
 
-	return resourceMetalVRFRead(d, meta)
+	return resourceMetalVRFRead(ctx, d, meta)
 }
 
-func resourceMetalVRFUpdate(d *schema.ResourceData, meta interface{}) error {
+func resourceMetalVRFUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	meta.(*Config).addModuleToMetalUserAgent(d)
 	client := meta.(*Config).metal
 
@@ -108,13 +110,13 @@ func resourceMetalVRFUpdate(d *schema.ResourceData, meta interface{}) error {
 
 	_, _, err := client.VRFs.Update(d.Id(), updateRequest)
 	if err != nil {
-		return friendlyError(err)
+		return diag.FromErr(friendlyError(err))
 	}
 
-	return resourceMetalVRFRead(d, meta)
+	return resourceMetalVRFRead(ctx, d, meta)
 }
 
-func resourceMetalVRFRead(d *schema.ResourceData, meta interface{}) error {
+func resourceMetalVRFRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	meta.(*Config).addModuleToMetalUserAgent(d)
 	client := meta.(*Config).metal
 
@@ -128,7 +130,7 @@ func resourceMetalVRFRead(d *schema.ResourceData, meta interface{}) error {
 
 			return nil
 		}
-		return err
+		return diag.FromErr(err)
 	}
 	m := map[string]interface{}{
 		"name":        vrf.Name,
@@ -139,10 +141,10 @@ func resourceMetalVRFRead(d *schema.ResourceData, meta interface{}) error {
 		"project_id":  vrf.Project.ID,
 	}
 
-	return setMap(d, m)
+	return diag.FromErr(setMap(d, m))
 }
 
-func resourceMetalVRFDelete(d *schema.ResourceData, meta interface{}) error {
+func resourceMetalVRFDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	meta.(*Config).addModuleToMetalUserAgent(d)
 	client := meta.(*Config).metal
 
@@ -151,5 +153,5 @@ func resourceMetalVRFDelete(d *schema.ResourceData, meta interface{}) error {
 		d.SetId("")
 	}
 
-	return friendlyError(err)
+	return diag.FromErr(friendlyError(err))
 }

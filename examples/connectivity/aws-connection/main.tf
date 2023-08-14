@@ -31,11 +31,11 @@ resource "equinix_ecx_l2_connection" "example" {
   authorization_key = var.aws_account_id
 }
 
-locals  {
-   aws_connection_id = one([
-       for action_data in one(equinix_ecx_l2_connection.example.actions).required_data: action_data["value"]
-       if action_data["key"] == "awsConnectionId"
-   ])
+locals {
+  aws_connection_id = one([
+    for action_data in one(equinix_ecx_l2_connection.example.actions).required_data : action_data["value"]
+    if action_data["key"] == "awsConnectionId"
+  ])
 }
 
 resource "aws_dx_connection_confirmation" "confirmation" {

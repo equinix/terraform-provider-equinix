@@ -1,12 +1,15 @@
 package equinix
 
 import (
+	"context"
+
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 func dataSourceMetalVRF() *schema.Resource {
 	return &schema.Resource{
-		Read: dataSourceMetalVRFRead,
+		ReadContext: dataSourceMetalVRFRead,
 
 		Schema: map[string]*schema.Schema{
 			"vrf_id": {
@@ -49,9 +52,9 @@ func dataSourceMetalVRF() *schema.Resource {
 	}
 }
 
-func dataSourceMetalVRFRead(d *schema.ResourceData, meta interface{}) error {
+func dataSourceMetalVRFRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	vrfId, _ := d.Get("vrf_id").(string)
 
 	d.SetId(vrfId)
-	return resourceMetalVRFRead(d, meta)
+	return resourceMetalVRFRead(ctx, d, meta)
 }

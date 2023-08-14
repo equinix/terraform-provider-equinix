@@ -17,38 +17,38 @@ data "equinix_fabric_ports" "zside" {
 resource "equinix_fabric_connection" "p2p-qinq" {
   name = var.connection_name
   type = var.connection_type
-  notifications{
-    type=var.notifications_type
-    emails=var.notifications_emails
+  notifications {
+    type   = var.notifications_type
+    emails = var.notifications_emails
   }
   bandwidth = var.bandwidth
   order {
-    purchase_order_number= var.purchase_order_number
+    purchase_order_number = var.purchase_order_number
   }
   a_side {
     access_point {
-      type= var.aside_ap_type
+      type = var.aside_ap_type
       port {
-        uuid= data.equinix_fabric_ports.aside.data.0.uuid
+        uuid = data.equinix_fabric_ports.aside.data.0.uuid
       }
       link_protocol {
-        type= var.aside_link_protocol_type
-        vlan_s_tag= var.aside_link_protocol_stag
+        type       = var.aside_link_protocol_type
+        vlan_s_tag = var.aside_link_protocol_stag
       }
     }
   }
   z_side {
     access_point {
-      type= var.zside_ap_type
+      type = var.zside_ap_type
       port {
-        uuid= data.equinix_fabric_ports.zside.data.0.uuid
+        uuid = data.equinix_fabric_ports.zside.data.0.uuid
       }
       link_protocol {
-        type= var.zside_link_protocol_type
-        vlan_s_tag= var.zside_link_protocol_stag
+        type       = var.zside_link_protocol_type
+        vlan_s_tag = var.zside_link_protocol_stag
       }
       location {
-        metro_code= var.zside_location
+        metro_code = var.zside_location
       }
     }
   }

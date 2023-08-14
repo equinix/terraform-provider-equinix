@@ -1,6 +1,7 @@
 package equinix
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"log"
@@ -8,6 +9,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/structure"
@@ -215,12 +217,12 @@ func resourceMetalReservedIPBlock() *schema.Resource {
 	}
 	// TODO: add comments field, used for reservations that are not automatically approved
 	return &schema.Resource{
-		Create: resourceMetalReservedIPBlockCreate,
-		Read:   resourceMetalReservedIPBlockRead,
-		Update: resourceMetalReservedIPBlockUpdate,
-		Delete: resourceMetalReservedIPBlockDelete,
+		CreateContext: resourceMetalReservedIPBlockCreate,
+		ReadContext:   resourceMetalReservedIPBlockRead,
+		UpdateContext: resourceMetalReservedIPBlockUpdate,
+		DeleteContext: resourceMetalReservedIPBlockDelete,
 		Importer: &schema.ResourceImporter{
-			State: schema.ImportStatePassthrough,
+			StateContext: schema.ImportStatePassthroughContext,
 		},
 
 		Schema: reservedBlockSchema,
@@ -230,7 +232,7 @@ func resourceMetalReservedIPBlock() *schema.Resource {
 	}
 }
 
-func resourceMetalReservedIPBlockCreate(d *schema.ResourceData, meta interface{}) error {
+func resourceMetalReservedIPBlockCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	meta.(*Config).addModuleToMetalUserAgent(d)
 	client := meta.(*Config).metal
 
@@ -248,11 +250,11 @@ func resourceMetalReservedIPBlockCreate(d *schema.ResourceData, meta interface{}
 	switch typ {
 	case "global_ipv4":
 		if facOk || metOk {
-			return fmt.Errorf("facility and metro can't be set for global IP block reservation")
+			return diag.FromErr(fmt.Errorf("facility and metro can't be set for global IP block reservation"))
 		}
 	case "public_ipv4":
 		if !(facOk || metOk) {
-			return fmt.Errorf("you should set either metro or facility for non-global IP block reservation")
+			return diag.FromErr(fmt.Errorf("you should set either metro or facility for non-global IP block reservation"))
 		}
 	}
 
@@ -287,7 +289,7 @@ func resourceMetalReservedIPBlockCreate(d *schema.ResourceData, meta interface{}
 
 	blockAddr, _, err := client.ProjectIPs.Create(projectID, &req)
 	if err != nil {
-		return fmt.Errorf("error reserving IP address block: %s", err)
+		return diag.FromErr(fmt.Errorf("error reserving IP address block: %s", err))
 	}
 	d.Set("project_id", projectID)
 	d.SetId(blockAddr.ID)
@@ -306,13 +308,13 @@ func resourceMetalReservedIPBlockCreate(d *schema.ResourceData, meta interface{}
 		MinTimeout: 15 * time.Second,
 	}
 	if _, err := stateConf.WaitForState(); err != nil {
-		return fmt.Errorf("error waiting for IP Reservation (%s) to become %s: %s", d.Id(), wfs, err)
+		return diag.FromErr(fmt.Errorf("error waiting for IP Reservation (%s) to become %s: %s", d.Id(), wfs, err))
 	}
 
-	return resourceMetalReservedIPBlockRead(d, meta)
+	return resourceMetalReservedIPBlockRead(ctx, d, meta)
 }
 
-func resourceMetalReservedIPBlockUpdate(d *schema.ResourceData, meta interface{}) error {
+func resourceMetalReservedIPBlockUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	meta.(*Config).addModuleToMetalUserAgent(d)
 	client := meta.(*Config).metal
 	id := d.Id()
@@ -335,16 +337,16 @@ func resourceMetalReservedIPBlockUpdate(d *schema.ResourceData, meta interface{}
 	if d.HasChange("custom_data") {
 		var v interface{}
 		if err := json.Unmarshal([]byte(d.Get("custom_data").(string)), v); err != nil {
-			return fmt.Errorf("error unmarshalling custom_data: %w", err)
+			return diag.FromErr(fmt.Errorf("error unmarshalling custom_data: %w", err))
 		}
 		req.CustomData = v
 	}
 
 	if _, _, err := client.ProjectIPs.Update(id, req, nil); err != nil {
-		return fmt.Errorf("error updating IP reservation: %w", err)
+		return diag.FromErr(fmt.Errorf("error updating IP reservation: %w", err))
 	}
 
-	return resourceMetalReservedIPBlockRead(d, meta)
+	return resourceMetalReservedIPBlockRead(ctx, d, meta)
 }
 
 func reservedIPStateRefreshFunc(client *packngo.Client, reservedIPId string) retry.StateRefreshFunc {
@@ -454,7 +456,7 @@ func loadBlock(d *schema.ResourceData, reservedBlock *packngo.IPAddressReservati
 	return setMap(d, attributeMap)
 }
 
-func resourceMetalReservedIPBlockRead(d *schema.ResourceData, meta interface{}) error {
+func resourceMetalReservedIPBlockRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	meta.(*Config).addModuleToMetalUserAgent(d)
 	client := meta.(*Config).metal
 
@@ -470,11 +472,11 @@ func resourceMetalReservedIPBlockRead(d *schema.ResourceData, meta interface{}) 
 			d.SetId("")
 			return nil
 		}
-		return fmt.Errorf("error reading IP address block with ID %s: %s", id, err)
+		return diag.FromErr(fmt.Errorf("error reading IP address block with ID %s: %s", id, err))
 	}
 	err = loadBlock(d, reservedBlock)
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	if (reservedBlock.Description != nil) && (*(reservedBlock.Description) != "") {
@@ -485,7 +487,7 @@ func resourceMetalReservedIPBlockRead(d *schema.ResourceData, meta interface{}) 
 	return nil
 }
 
-func resourceMetalReservedIPBlockDelete(d *schema.ResourceData, meta interface{}) error {
+func resourceMetalReservedIPBlockDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	meta.(*Config).addModuleToMetalUserAgent(d)
 	client := meta.(*Config).metal
 
@@ -494,7 +496,7 @@ func resourceMetalReservedIPBlockDelete(d *schema.ResourceData, meta interface{}
 	resp, err := client.ProjectIPs.Remove(id)
 
 	if ignoreResponseErrors(httpForbidden, httpNotFound)(resp, err) != nil {
-		return fmt.Errorf("error deleting IP reservation block %s: %s", id, err)
+		return diag.FromErr(fmt.Errorf("error deleting IP reservation block %s: %s", id, err))
 	}
 
 	d.SetId("")

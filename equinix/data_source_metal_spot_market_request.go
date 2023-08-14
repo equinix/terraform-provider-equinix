@@ -1,17 +1,19 @@
 package equinix
 
 import (
+	"context"
 	"sort"
 	"strings"
 	"time"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/packethost/packngo"
 )
 
 func dataSourceMetalSpotMarketRequest() *schema.Resource {
 	return &schema.Resource{
-		Read: dataSourceMetalSpotMarketRequestRead,
+		ReadContext: dataSourceMetalSpotMarketRequestRead,
 
 		Schema: map[string]*schema.Schema{
 			"request_id": {
@@ -72,7 +74,7 @@ func dataSourceMetalSpotMarketRequest() *schema.Resource {
 	}
 }
 
-func dataSourceMetalSpotMarketRequestRead(d *schema.ResourceData, meta interface{}) error {
+func dataSourceMetalSpotMarketRequestRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*Config).metal
 	id := d.Get("request_id").(string)
 
@@ -83,7 +85,7 @@ func dataSourceMetalSpotMarketRequestRead(d *schema.ResourceData, meta interface
 			d.SetId("")
 			return nil
 		}
-		return err
+		return diag.FromErr(err)
 	}
 
 	deviceIDs := make([]string, len(smr.Devices))
@@ -101,7 +103,7 @@ func dataSourceMetalSpotMarketRequestRead(d *schema.ResourceData, meta interface
 
 	d.SetId(id)
 
-	return setMap(d, map[string]interface{}{
+	return diag.FromErr(setMap(d, map[string]interface{}{
 		"device_ids": deviceIDs,
 		"end_at": func(d *schema.ResourceData, k string) error {
 			if smr.EndAt != nil {
@@ -122,5 +124,5 @@ func dataSourceMetalSpotMarketRequestRead(d *schema.ResourceData, meta interface
 		"plan":          smr.Plan.Slug,
 		"project_id":    smr.Project.ID,
 		// TODO: created_at is not in packngo
-	})
+	}))
 }

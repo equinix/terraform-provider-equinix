@@ -53,7 +53,7 @@ variable "connection_speed_unit" {
   default     = "MB"
 
   validation {
-    condition = contains(["MB", "GB"], var.connection_speed_unit)
+    condition     = contains(["MB", "GB"], var.connection_speed_unit)
     error_message = "Invalid speed unit. Required one of:  MB, GB."
   }
 }

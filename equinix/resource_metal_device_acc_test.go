@@ -1,6 +1,7 @@
 package equinix
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"net"
@@ -1121,7 +1122,7 @@ func TestAccMetalDevice_readErrorHandling(t *testing.T) {
 			if tt.args.newResource {
 				d.MarkNewResource()
 			}
-			if err := resourceMetalDeviceRead(d, tt.args.meta); (err != nil) != tt.wantErr {
+			if err := resourceMetalDeviceRead(context.Background(), d, tt.args.meta); (err != nil) != tt.wantErr {
 				t.Errorf("resourceMetalDeviceRead() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})

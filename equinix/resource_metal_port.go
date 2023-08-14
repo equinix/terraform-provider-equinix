@@ -1,8 +1,11 @@
 package equinix
 
 import (
+	"context"
 	"log"
 	"time"
+
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
@@ -25,13 +28,13 @@ func resourceMetalPort() *schema.Resource {
 			Update: schema.DefaultTimeout(20 * time.Minute),
 			Delete: schema.DefaultTimeout(20 * time.Minute),
 		},
-		Read: resourceMetalPortRead,
+		ReadContext: resourceMetalPortRead,
 		// Create and Update are the same func
-		Create: resourceMetalPortUpdate,
-		Update: resourceMetalPortUpdate,
-		Delete: resourceMetalPortDelete,
+		CreateContext: resourceMetalPortUpdate,
+		UpdateContext: resourceMetalPortUpdate,
+		DeleteContext: resourceMetalPortDelete,
 		Importer: &schema.ResourceImporter{
-			State: schema.ImportStatePassthrough,
+			StateContext: schema.ImportStatePassthroughContext,
 		},
 
 		Schema: map[string]*schema.Schema{
@@ -116,10 +119,10 @@ func resourceMetalPort() *schema.Resource {
 	}
 }
 
-func resourceMetalPortUpdate(d *schema.ResourceData, meta interface{}) error {
+func resourceMetalPortUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	cpr, _, err := getClientPortResource(d, meta)
 	if err != nil {
-		return friendlyError(err)
+		return diag.FromErr(friendlyError(err))
 	}
 
 	for _, f := range [](func(*ClientPortResource) error){
@@ -133,14 +136,14 @@ func resourceMetalPortUpdate(d *schema.ResourceData, meta interface{}) error {
 		updateNativeVlan,
 	} {
 		if err := f(cpr); err != nil {
-			return friendlyError(err)
+			return diag.FromErr(friendlyError(err))
 		}
 	}
 
-	return resourceMetalPortRead(d, meta)
+	return resourceMetalPortRead(ctx, d, meta)
 }
 
-func resourceMetalPortRead(d *schema.ResourceData, meta interface{}) error {
+func resourceMetalPortRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	meta.(*Config).addModuleToMetalUserAgent(d)
 	client := meta.(*Config).metal
 
@@ -152,7 +155,7 @@ func resourceMetalPortRead(d *schema.ResourceData, meta interface{}) error {
 
 			return nil
 		}
-		return err
+		return diag.FromErr(err)
 	}
 	m := map[string]interface{}{
 		"port_id":           port.ID,
@@ -192,15 +195,15 @@ func resourceMetalPortRead(d *schema.ResourceData, meta interface{}) error {
 	}
 
 	d.SetId(port.ID)
-	return setMap(d, m)
+	return diag.FromErr(setMap(d, m))
 }
 
-func resourceMetalPortDelete(d *schema.ResourceData, meta interface{}) error {
+func resourceMetalPortDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	resetRaw, resetOk := d.GetOk("reset_on_delete")
 	if resetOk && resetRaw.(bool) {
 		cpr, resp, err := getClientPortResource(d, meta)
 		if ignoreResponseErrors(httpForbidden, httpNotFound)(resp, err) != nil {
-			return err
+			return diag.FromErr(err)
 		}
 
 		// to reset the port to defaults we iterate through helpers (used in
@@ -216,7 +219,7 @@ func resourceMetalPortDelete(d *schema.ResourceData, meta interface{}) error {
 			"vlan_ids":       []string{},
 			"vxlan_ids":      nil,
 		}); err != nil {
-			return err
+			return diag.FromErr(err)
 		}
 		for _, f := range [](func(*ClientPortResource) error){
 			batchVlans(true),
@@ -224,7 +227,7 @@ func resourceMetalPortDelete(d *schema.ResourceData, meta interface{}) error {
 			convertToL3,
 		} {
 			if err := f(cpr); err != nil {
-				return err
+				return diag.FromErr(err)
 			}
 		}
 		// TODO(displague) error or warn?
