@@ -43,7 +43,7 @@ On resource destruction wait until devices are removed.
 * `locked` - (Optional) Blocks deletion of the SpotMarketRequest device until the lock is disabled.
 * `instance_parameters` - (Required) Key/Value pairs of parameters for devices provisioned from
 this request. Valid keys are: `billing_cycle`, `plan`, `operating_system`, `hostname`,
-`termintation_time`, `always_pxe`, `description`, `features`, `locked`, `project_ssh_keys`,
+`termination_time`, `always_pxe`, `description`, `features`, `locked`, `project_ssh_keys`,
 `user_ssh_keys`, `userdata`, `customdata`, `ipxe_script_url`, `tags`. You can find each parameter
 description in [equinix_metal_device](equinix_metal_device.md) docs.
 
