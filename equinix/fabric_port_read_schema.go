@@ -148,7 +148,7 @@ func readPortsRedundancySch() map[string]*schema.Schema {
 			Description: "Access point redundancy",
 		},
 		"group": {
-			Type:        schema.TypeInt,
+			Type:        schema.TypeString,
 			Computed:    true,
 			Description: "Port redundancy group",
 		},

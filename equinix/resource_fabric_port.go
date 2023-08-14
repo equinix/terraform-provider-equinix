@@ -2,8 +2,10 @@ package equinix
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"log"
+	"runtime/debug"
 	"strings"
 
 	"github.com/antihax/optional"
@@ -65,7 +67,22 @@ func setPortsListMap(d *schema.ResourceData, spl v4.AllPortsResponse) diag.Diagn
 	return diags
 }
 
-func resourceFabricPortGetByPortName(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceFabricPortGetByPortName(ctx context.Context, d *schema.ResourceData, meta interface{}) (diags diag.Diagnostics) {
+	defer func() {
+		if r := recover(); r != nil {
+			log.Printf("[ERROR] Panic occurred during GET /fabric/v4/ports: %+v", r)
+			log.Printf("[ERROR] Stack Trace from Panic: %s", debug.Stack())
+			diags = diag.FromErr(errors.New(`
+				there is a schema error in the return value from the GET /fabric/v4/ports endpoint.
+				Set the following env variable TF_LOG=DEBUG and rerun the terraform apply.
+				Copy the log output and open an issue with it in the Github for the Equinix Terraform Provider.
+				https://github.com/equinix/terraform-provider-equinix
+				We will review and correct as soon as possible.
+				Thank you!
+			`))
+		}
+	}()
+
 	client := meta.(*Config).fabricClient
 	ctx = context.WithValue(ctx, v4.ContextAccessToken, meta.(*Config).FabricAuthToken)
 	portNameParam := d.Get("filters").(*schema.Set).List()
