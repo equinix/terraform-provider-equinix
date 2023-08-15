@@ -270,8 +270,8 @@ func testAccFabricCreateFG2portConnectionConfig(name string) string {
 		}
 		a_side {
 		access_point {
-			type = "GW"
-      		gateway {
+			type = "CLOUD_ROUTER"
+      		router {
         		uuid = "4f543d31-88f7-4eaf-b378-6b6a08e31e94"
       		}
 			}

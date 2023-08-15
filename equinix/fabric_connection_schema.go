@@ -296,8 +296,8 @@ func createConnectionSideAccessPointRes() *schema.Resource {
 			"type": {
 				Type:         schema.TypeString,
 				Optional:     true,
-				ValidateFunc: validation.StringInSlice([]string{"COLO", "VD", "VG", "SP", "IGW", "SUBNET", "GW"}, true),
-				Description:  "Access point type - COLO, VD, VG, SP, IGW, SUBNET, GW",
+				ValidateFunc: validation.StringInSlice([]string{"COLO", "VD", "VG", "SP", "IGW", "SUBNET", "CLOUD_ROUTER"}, true),
+				Description:  "Access point type - COLO, VD, VG, SP, IGW, SUBNET, CLOUD_ROUTER",
 			},
 			"authentication_key": {
 				Type:        schema.TypeString,
@@ -341,7 +341,7 @@ func createConnectionSideAccessPointRes() *schema.Resource {
 					Schema: createServiceProfileSch(),
 				},
 			},
-			"gateway": {
+			"router": {
 				Type:        schema.TypeSet,
 				Optional:    true,
 				Description: "Gateway access point information",
