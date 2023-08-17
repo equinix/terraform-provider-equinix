@@ -7,7 +7,7 @@ data "equinix_fabric_ports" "zside" {
     name = var.zside_port_name
   }
 }
-resource "equinix_fabric_connection" "fg2port"{
+resource "equinix_fabric_connection" "fcr2port"{
   name = var.connection_name
   type = var.connection_type
   notifications{
@@ -21,8 +21,8 @@ resource "equinix_fabric_connection" "fg2port"{
   a_side {
     access_point {
       type= var.aside_ap_type
-      gateway {
-        uuid= var.fg_uuid
+      router {
+        uuid= var.fcr_uuid
       }
     }
   }
@@ -44,5 +44,5 @@ resource "equinix_fabric_connection" "fg2port"{
 }
 
 output "connection_result" {
-  value = equinix_fabric_connection.fg2port.id
+  value = equinix_fabric_connection.fcr2port.id
 }

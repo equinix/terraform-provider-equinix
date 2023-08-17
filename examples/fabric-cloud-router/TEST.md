@@ -1,49 +1,49 @@
-# Terraform examples for Fabric Gateway (FG)
+# Terraform examples for Fabric Cloud Router (FCR)
 
-## Create FG
+## Create FCR
 
-```cd fabric-gateway/
-echo "=============Initialize FG Resource==========="
+```cd FCR/
+echo "=============Initialize FCR Resource==========="
 terraform init
 
-echo "=============Create FG ==========="
+echo "=============Create FCR ==========="
 
-terraform apply -auto-approve -var="fg_name=terra_fg-test"
+terraform apply -auto-approve -var="fcr_name=terra_fcr-test"
 
-echo "=============GET FG ==========="
+echo "=============GET FCR ==========="
 
 terraform show
 
 result=$(terraform show | grep state)
 
-echo "######### FG $result ##########"
+echo "######### FCR $result ##########"
 ```
-## Update FG
-```#--------update FG name
-echo "=============Update FG Name==========="
+## Update FCR
+```#--------update FCR name
+echo "=============Update FCR Name==========="
 
-terraform apply -refresh -auto-approve -var="fg_name=terra_fg-test-update"
+terraform apply -refresh -auto-approve -var="fcr_name=terra_fcr-test-update"
 
 terraform show
 
 result=$(terraform show | grep "name   ")
 
-echo "######### FG  updated $result ######### "
+echo "######### FCR  updated $result ######### "
 
-result=$(terraform show | grep fg_result)
+result=$(terraform show | grep fcr_result)
 
-fgid=$(echo $result | awk -F "=" '{print $2}' | xargs)
+fcrid=$(echo $result | awk -F "=" '{print $2}' | xargs)
 ```
 
 ## Create Connection
 ```
-echo "=============Create FG2port Connection ==========="
+echo "=============Create FCR2port Connection ==========="
 
-cd ../fg2port
+cd ../fcr2port
 
 terraform init
 
-terraform apply -auto-approve -var="fg_uuid=$fgid"
+terraform apply -auto-approve -var="fcr_uuid=$fcrid"
 
 echo "=============GET Connection ==========="
 
@@ -60,7 +60,7 @@ con_id=$(echo $result | awk -F "=" '{print $2}' | xargs)
 
 ## Configure Routing Protocol(RP) direct IP
 ```
-echo "=============Config Direct RP on FG2port Connection ==========="
+echo "=============Config Direct RP on FCR2port Connection ==========="
 
 cd ../routing-protocol-direct
 
@@ -75,7 +75,7 @@ terraform show
 
 ## Update IP address
 ```
-echo "=============Update Direct RP on FG2port Connection ==========="
+echo "=============Update Direct RP on FCR2port Connection ==========="
 
 terraform apply -refresh -auto-approve -var="connection_uuid=$con_id" -var="equinix_ipv4_ip="190.1.1.1/30"" -var="equinix_ipv6_ip="190::1:1/126""
 
@@ -87,7 +87,7 @@ echo "######### RP $result #########"
 ```
 ## Configure BGP
 
-```echo "=============Config BGP on FG2port Connection ==========="
+```echo "=============Config BGP on FCR2port Connection ==========="
 
 cd ../routing-protocol-bgp
 
@@ -108,7 +108,7 @@ echo "######### BGP $result #########"
 ```
 echo "=============GET Connection Status ==========="
 
-cd ../fg2port
+cd ../fcr2port
 
 terraform apply -refresh-only  -auto-approve
 
@@ -122,7 +122,7 @@ echo "######### Connection $result #########"
 ```
 echo "=============Update Connection BW ==========="
 
-terraform apply -refresh -auto-approve -var="bandwidth=50" -var="fg_uuid=$fgid"
+terraform apply -refresh -auto-approve -var="bandwidth=50" -var="fcr_uuid=$fcrid"
 
 terraform show
 
@@ -138,11 +138,11 @@ terraform destroy
 
 terraform show
 ```
-## Delete FG
+## Delete FCR
 ```
-echo "=============Delete FG ==========="
+echo "=============Delete FCR ==========="
 
-cd ../fabric-gateway
+cd ../FCR
 
 terraform destroy -auto-approve
 

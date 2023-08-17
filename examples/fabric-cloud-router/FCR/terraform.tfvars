@@ -2,7 +2,7 @@ equinix_client_id      = ""
 equinix_client_secret  = ""
 
 fg_name = "terra_e2e_fg"
-fg_type = "XF_GATEWAY"
+fg_type = "XF_ROUTER"
 notifications_type = "ALL"
 notifications_emails = ["example@equinix.com","test1@equinix.com"]
 purchase_order_number = "1-323292"
