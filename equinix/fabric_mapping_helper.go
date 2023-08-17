@@ -59,7 +59,7 @@ func accessPointToFabric(accessPointRequest []interface{}) v4.AccessPoint {
 			peeringType := v4.PeeringType(peeringTypeRaw)
 			accessPoint.PeeringType = &peeringType
 		}
-		gatewayRequest := accessPointMap["gateway"].(*schema.Set).List()
+		gatewayRequest := accessPointMap["router"].(*schema.Set).List()
 
 		if len(gatewayRequest) != 0 {
 			mappedGWr := gatewayToFabric(gatewayRequest)
@@ -669,7 +669,7 @@ func accessPointToTerra(accessPoint *v4.AccessPoint) *schema.Set {
 			mappedAccessPoint["profile"] = simplifiedServiceProfileToTerra(accessPoint.Profile)
 		}
 		if accessPoint.Router != nil {
-			mappedAccessPoint["gateway"] = CloudRouterToTerra(accessPoint.Router)
+			mappedAccessPoint["router"] = CloudRouterToTerra(accessPoint.Router)
 		}
 		if accessPoint.LinkProtocol != nil {
 			mappedAccessPoint["link_protocol"] = linkedProtocolToTerra(*accessPoint.LinkProtocol)

@@ -419,7 +419,7 @@ func readConnectionSideAccessPointSch() map[string]*schema.Schema {
 				Schema: readServiceProfileSch(),
 			},
 		},
-		"gateway": {
+		"router": {
 			Type:        schema.TypeSet,
 			Computed:    true,
 			Description: "Gateway access point information",
