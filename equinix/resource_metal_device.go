@@ -12,8 +12,8 @@ import (
 	"sort"
 	"time"
 
-	"github.com/hashicorp/errwrap"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/structure"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
@@ -37,12 +37,12 @@ func resourceMetalDevice() *schema.Resource {
 			Update: schema.DefaultTimeout(30 * time.Minute),
 			Delete: schema.DefaultTimeout(30 * time.Minute),
 		},
-		Create: resourceMetalDeviceCreate,
-		Read:   resourceMetalDeviceRead,
-		Update: resourceMetalDeviceUpdate,
-		Delete: resourceMetalDeviceDelete,
+		CreateContext:      diagnosticsWrapper(resourceMetalDeviceCreate),
+		ReadWithoutTimeout: diagnosticsWrapper(resourceMetalDeviceRead),
+		UpdateContext:      diagnosticsWrapper(resourceMetalDeviceUpdate),
+		DeleteContext:      diagnosticsWrapper(resourceMetalDeviceDelete),
 		Importer: &schema.ResourceImporter{
-			State: schema.ImportStatePassthrough,
+			StateContext: schema.ImportStatePassthroughContext,
 		},
 		Schema: map[string]*schema.Schema{
 			"project_id": {
@@ -468,7 +468,7 @@ func reinstallDisabledAndNoChangesAllowed(attribute string) customdiff.ResourceC
 	}
 }
 
-func resourceMetalDeviceCreate(d *schema.ResourceData, meta interface{}) error {
+func resourceMetalDeviceCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) error {
 	meta.(*Config).addModuleToMetalUserAgent(d)
 	client := meta.(*Config).metal
 
@@ -492,7 +492,7 @@ func resourceMetalDeviceCreate(d *schema.ResourceData, meta interface{}) error {
 	metroRaw, metroOk := d.GetOk("metro")
 
 	if !facsOk && !metroOk {
-		return friendlyError(errors.New("one of facilies and metro must be configured"))
+		return errors.New("one of facilies and metro must be configured")
 	}
 
 	if facsOk {
@@ -575,16 +575,17 @@ func resourceMetalDeviceCreate(d *schema.ResourceData, meta interface{}) error {
 	if attr, ok := d.GetOk("storage"); ok {
 		s, err := structure.NormalizeJsonString(attr.(string))
 		if err != nil {
-			return errwrap.Wrapf("storage param contains invalid JSON: {{err}}", err)
+			return fmt.Errorf("storage param contains invalid JSON: %s", err)
 		}
 		var cpr packngo.CPR
 		err = json.Unmarshal([]byte(s), &cpr)
 		if err != nil {
-			return errwrap.Wrapf("Error parsing Storage string: {{err}}", err)
+			return fmt.Errorf("error parsing Storage string: %s", err)
 		}
 		createRequest.Storage = &cpr
 	}
 
+	start := time.Now()
 	newDevice, _, err := client.Devices.Create(createRequest)
 	if err != nil {
 		retErr := friendlyError(err)
@@ -596,14 +597,15 @@ func resourceMetalDeviceCreate(d *schema.ResourceData, meta interface{}) error {
 
 	d.SetId(newDevice.ID)
 
-	if err = waitForActiveDevice(d, meta); err != nil {
+	createTimeout := d.Timeout(schema.TimeoutCreate) - time.Minute - time.Since(start)
+	if err = waitForActiveDevice(ctx, d, meta, createTimeout); err != nil {
 		return err
 	}
 
-	return resourceMetalDeviceRead(d, meta)
+	return resourceMetalDeviceRead(ctx, d, meta)
 }
 
-func resourceMetalDeviceRead(d *schema.ResourceData, meta interface{}) error {
+func resourceMetalDeviceRead(ctx context.Context, d *schema.ResourceData, meta interface{}) error {
 	meta.(*Config).addModuleToMetalUserAgent(d)
 	client := meta.(*Config).metal
 
@@ -706,7 +708,7 @@ func resourceMetalDeviceRead(d *schema.ResourceData, meta interface{}) error {
 	return nil
 }
 
-func resourceMetalDeviceUpdate(d *schema.ResourceData, meta interface{}) error {
+func resourceMetalDeviceUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) error {
 	meta.(*Config).addModuleToMetalUserAgent(d)
 	client := meta.(*Config).metal
 
@@ -761,20 +763,22 @@ func resourceMetalDeviceUpdate(d *schema.ResourceData, meta interface{}) error {
 		dPXE := d.Get("always_pxe").(bool)
 		ur.AlwaysPXE = &dPXE
 	}
+
+	start := time.Now()
 	if !reflect.DeepEqual(ur, packngo.DeviceUpdateRequest{}) {
 		if _, _, err := client.Devices.Update(d.Id(), &ur); err != nil {
 			return friendlyError(err)
 		}
 	}
 
-	if err := doReinstall(client, d, meta); err != nil {
+	if err := doReinstall(ctx, client, d, meta, start); err != nil {
 		return err
 	}
 
-	return resourceMetalDeviceRead(d, meta)
+	return resourceMetalDeviceRead(ctx, d, meta)
 }
 
-func doReinstall(client *packngo.Client, d *schema.ResourceData, meta interface{}) error {
+func doReinstall(ctx context.Context, client *packngo.Client, d *schema.ResourceData, meta interface{}, start time.Time) error {
 	if d.HasChange("operating_system") || d.HasChange("user_data") || d.HasChange("custom_data") {
 		reinstall, ok := d.GetOk("reinstall")
 
@@ -802,7 +806,8 @@ func doReinstall(client *packngo.Client, d *schema.ResourceData, meta interface{
 			return friendlyError(err)
 		}
 
-		if err := waitForActiveDevice(d, meta); err != nil {
+		deleteTimeout := d.Timeout(schema.TimeoutUpdate) - time.Minute - time.Since(start)
+		if err := waitForActiveDevice(ctx, d, meta, deleteTimeout); err != nil {
 			return err
 		}
 	}
@@ -810,7 +815,7 @@ func doReinstall(client *packngo.Client, d *schema.ResourceData, meta interface{
 	return nil
 }
 
-func resourceMetalDeviceDelete(d *schema.ResourceData, meta interface{}) error {
+func resourceMetalDeviceDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) error {
 	meta.(*Config).addModuleToMetalUserAgent(d)
 	client := meta.(*Config).metal
 
@@ -834,7 +839,7 @@ func resourceMetalDeviceDelete(d *schema.ResourceData, meta interface{}) error {
 			// avoid "context: deadline exceeded"
 			timeout := d.Timeout(schema.TimeoutDelete) - time.Minute - time.Since(start)
 
-			err := waitUntilReservationProvisionable(client, resId.(string), d.Id(), 10*time.Second, timeout, 3*time.Second)
+			err := waitUntilReservationProvisionable(ctx, client, resId.(string), d.Id(), 10*time.Second, timeout, 3*time.Second)
 			if err != nil {
 				return err
 			}
@@ -843,9 +848,31 @@ func resourceMetalDeviceDelete(d *schema.ResourceData, meta interface{}) error {
 	return nil
 }
 
-func waitForActiveDevice(d *schema.ResourceData, meta interface{}) error {
+func waitForActiveDevice(ctx context.Context, d *schema.ResourceData, meta interface{}, timeout time.Duration) error {
+	targets := []string{"active", "failed"}
+	pending := []string{"queued", "provisioning", "reinstalling"}
+
+	stateConf := &retry.StateChangeConf{
+		Pending: pending,
+		Target:  targets,
+		Refresh: func() (interface{}, string, error) {
+			meta.(*Config).addModuleToMetalUserAgent(d)
+			client := meta.(*Config).metal
+
+			device, _, err := client.Devices.Get(d.Id(), &packngo.GetOptions{Includes: []string{"project"}})
+			if err == nil {
+				retAttrVal := device.State
+				return retAttrVal, retAttrVal, nil
+			}
+			return "error", "error", err
+		},
+		Timeout:    timeout,
+		Delay:      10 * time.Second,
+		MinTimeout: 3 * time.Second,
+	}
+
 	// Wait for the device so we can get the networking attributes that show up after a while.
-	state, err := waitForDeviceAttribute(d, []string{"active", "failed"}, []string{"queued", "provisioning", "reinstalling"}, "state", meta)
+	state, err := waitForDeviceAttribute(ctx, d, stateConf)
 	if err != nil {
 		d.SetId("")
 		fErr := friendlyError(err)

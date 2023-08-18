@@ -1,6 +1,7 @@
 package equinix
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"path"
@@ -14,7 +15,7 @@ import (
 
 func dataSourceMetalDevice() *schema.Resource {
 	return &schema.Resource{
-		Read: dataSourceMetalDeviceRead,
+		ReadWithoutTimeout: diagnosticsWrapper(dataSourceMetalDeviceRead),
 		Schema: map[string]*schema.Schema{
 			"hostname": {
 				Type:          schema.TypeString,
@@ -201,7 +202,7 @@ func dataSourceMetalDevice() *schema.Resource {
 	}
 }
 
-func dataSourceMetalDeviceRead(d *schema.ResourceData, meta interface{}) error {
+func dataSourceMetalDeviceRead(ctx context.Context, d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*Config).metal
 
 	hostnameRaw, hostnameOK := d.GetOk("hostname")

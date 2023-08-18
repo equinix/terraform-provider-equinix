@@ -1,6 +1,7 @@
 package equinix
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"net"
@@ -74,8 +75,9 @@ func testSweepDevices(region string) error {
 
 // Regexp vars for use with resource.ExpectError
 var (
-	matchErrMustBeProvided    = regexp.MustCompile(".* must be provided when .*")
-	matchErrShouldNotBeAnIPXE = regexp.MustCompile(`.*"user_data" should not be an iPXE.*`)
+	matchErrMustBeProvided     = regexp.MustCompile(".* must be provided when .*")
+	matchErrShouldNotBeAnIPXE  = regexp.MustCompile(`.*"user_data" should not be an iPXE.*`)
+	matchErrDeviceReadyTimeout = regexp.MustCompile(".* timeout while waiting for state to become 'active, failed'.*")
 )
 
 // This function should be used to find available plans in all test where a metal_device resource is needed.
@@ -331,6 +333,28 @@ func TestAccMetalDevice_update(t *testing.T) {
 					testAccMetalDeviceExists(r, &d5),
 					testAccMetalSameDevice(t, &d4, &d5),
 				),
+			},
+		},
+	})
+}
+
+func TestAccMetalDevice_timeouts(t *testing.T) {
+	rs := acctest.RandString(10)
+	rInt := acctest.RandInt()
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t) },
+		ExternalProviders: testExternalProviders,
+		Providers:         testAccProviders,
+		CheckDestroy:      testAccMetalDeviceCheckDestroyed,
+		Steps: []resource.TestStep{
+			{
+				Config:      testAccMetalDeviceConfig_timeout(rInt, rs),
+				ExpectError: matchErrDeviceReadyTimeout,
+			},
+			{
+				Config:      testAccMetalDeviceConfig_reinstall_timeout(rInt+1, rs),
+				ExpectError: matchErrDeviceReadyTimeout,
 			},
 		},
 	})
@@ -696,6 +720,38 @@ resource "equinix_metal_device" "test" {
 `, confAccMetalDevice_base(preferable_plans, preferable_metros, preferable_os), projSuffix, rInt, rInt, testDeviceTerminationTime())
 }
 
+func testAccMetalDeviceConfig_reinstall_timeout(rInt int, projSuffix string) string {
+	return fmt.Sprintf(`
+%s
+
+resource "equinix_metal_project" "test" {
+    name = "tfacc-device-%s"
+}
+
+resource "equinix_metal_device" "test" {
+  hostname         = "tfacc-test-device-%d"
+  plan             = local.plan
+  metro            = local.metro
+  operating_system = local.os
+  billing_cycle    = "hourly"
+  project_id       = "${equinix_metal_project.test.id}"
+  tags             = ["%d"]
+  user_data = "#!/usr/bin/env sh\necho Reinstall\n"
+  termination_time = "%s"
+
+  reinstall {
+	  enabled = true
+	  deprovision_fast = true
+  }
+
+  timeouts {
+	create = "10s"
+	update = "10s"
+  }
+}
+`, confAccMetalDevice_base(preferable_plans, preferable_metros, preferable_os), projSuffix, rInt, rInt, testDeviceTerminationTime())
+}
+
 func testAccMetalDeviceConfig_allowAttributeChanges(rInt int, projSuffix string, userdata string, customdata string, attributeName string) string {
 	return fmt.Sprintf(`
 %s
@@ -938,6 +994,31 @@ resource "equinix_metal_device" "test_ipxe_missing" {
   always_pxe       = true
 }`
 
+func testAccMetalDeviceConfig_timeout(rInt int, projSuffix string) string {
+	return fmt.Sprintf(`
+%s
+
+resource "equinix_metal_project" "test" {
+  name = "tfacc-device-%s"
+}
+resource "equinix_metal_device" "test" {
+  hostname         = "tfacc-test-device-%d"
+  plan             = local.plan
+  metro            = local.metro
+  operating_system = local.os
+  billing_cycle    = "hourly"
+  project_id       = "${equinix_metal_project.test.id}"
+  tags             = ["%d"]
+  user_data = "#!/usr/bin/env sh\necho Reinstall\n"
+  termination_time = "%s"
+
+  timeouts {
+	create = "10s"
+	update = "10s"
+  }
+}`, confAccMetalDevice_base(preferable_plans, preferable_metros, preferable_os), projSuffix, rInt, rInt, testDeviceTerminationTime())
+}
+
 type mockDeviceService struct {
 	GetFn func(deviceID string, opts *packngo.GetOptions) (*packngo.Device, *packngo.Response, error)
 }
@@ -1121,7 +1202,7 @@ func TestAccMetalDevice_readErrorHandling(t *testing.T) {
 			if tt.args.newResource {
 				d.MarkNewResource()
 			}
-			if err := resourceMetalDeviceRead(d, tt.args.meta); (err != nil) != tt.wantErr {
+			if err := resourceMetalDeviceRead(context.Background(), d, tt.args.meta); (err != nil) != tt.wantErr {
 				t.Errorf("resourceMetalDeviceRead() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})
