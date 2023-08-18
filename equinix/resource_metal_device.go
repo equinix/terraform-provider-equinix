@@ -806,8 +806,8 @@ func doReinstall(ctx context.Context, client *packngo.Client, d *schema.Resource
 			return friendlyError(err)
 		}
 
-		updateTimeout := d.Timeout(schema.TimeoutUpdate) - 30*time.Second - time.Since(start)
-		if err := waitForActiveDevice(ctx, d, meta, updateTimeout); err != nil {
+		deleteTimeout := d.Timeout(schema.TimeoutUpdate) - 30*time.Second - time.Since(start)
+		if err := waitForActiveDevice(ctx, d, meta, deleteTimeout); err != nil {
 			return err
 		}
 	}
