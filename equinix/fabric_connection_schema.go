@@ -344,7 +344,7 @@ func createConnectionSideAccessPointRes() *schema.Resource {
 			"router": {
 				Type:        schema.TypeSet,
 				Optional:    true,
-				Description: "Gateway access point information",
+				Description: "Cloud Router access point information",
 				MaxItems:    1,
 				Elem: &schema.Resource{
 					Schema: createVirtualGatewaySch(),

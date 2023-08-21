@@ -1,4 +1,4 @@
-# ECX Fabric Gateway CRUD operations
+# ECX Fabric Cloud Router CRUD operations
 This example shows how to create Fabric Cloud Router.
 
 Note: Each time you need to create a new Fabric Cloud Router resource, 

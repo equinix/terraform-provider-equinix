@@ -122,7 +122,7 @@ func readFabricServiceProfileSchema() map[string]*schema.Schema {
 			Computed:    true,
 			Description: "Project information",
 			Elem: &schema.Resource{
-				Schema: readGatewayProjectSch(),
+				Schema: readCloudRouterProjectSch(),
 			},
 		},
 		"change_log": {
@@ -414,7 +414,7 @@ func readAllOfServiceProfileChangeLogSch() map[string]*schema.Schema {
 	}
 }
 
-func readGatewayProjectSch() map[string]*schema.Schema {
+func readCloudRouterProjectSch() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
 		"project_id": {
 			Type:        schema.TypeString,
@@ -470,5 +470,5 @@ var readOrderRes = &schema.Resource{
 }
 
 var readGatewayProjectSchRes = &schema.Resource{
-	Schema: readGatewayProjectSch(),
+	Schema: readCloudRouterProjectSch(),
 }

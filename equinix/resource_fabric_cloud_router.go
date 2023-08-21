@@ -30,7 +30,7 @@ func resourceCloudRouter() *schema.Resource {
 		},
 		Schema: createCloudRouterResourceSchema(),
 
-		Description: "Fabric V4 API compatible resource allows creation and management of Equinix Fabric Gateway\n\n~> **Note** Equinix Fabric v4 resources and datasources are currently in Beta. The interfaces related to `equinix_fabric_` resources and datasources may change ahead of general availability. Please, do not hesitate to report any problems that you experience by opening a new [issue](https://github.com/equinix/terraform-provider-equinix/issues/new?template=bug.md)",
+		Description: "Fabric V4 API compatible resource allows creation and management of Equinix Fabric Cloud Router\n\n~> **Note** Equinix Fabric v4 resources and datasources are currently in Beta. The interfaces related to `equinix_fabric_` resources and datasources may change ahead of general availability. Please, do not hesitate to report any problems that you experience by opening a new [issue](https://github.com/equinix/terraform-provider-equinix/issues/new?template=bug.md)",
 	}
 }
 
@@ -82,7 +82,7 @@ func resourceCloudRouterRead(ctx context.Context, d *schema.ResourceData, meta i
 	ctx = context.WithValue(ctx, v4.ContextAccessToken, meta.(*Config).FabricAuthToken)
 	CloudRouter, _, err := client.CloudRoutersApi.GetGatewayByUuid(ctx, d.Id())
 	if err != nil {
-		log.Printf("[WARN] Fabric Gateway %s not found , error %s", d.Id(), err)
+		log.Printf("[WARN] Fabric Cloud Router %s not found , error %s", d.Id(), err)
 		if !strings.Contains(err.Error(), "500") {
 			d.SetId("")
 		}
@@ -120,7 +120,7 @@ func resourceCloudRouterUpdate(ctx context.Context, d *schema.ResourceData, meta
 		if !strings.Contains(err.Error(), "500") {
 			d.SetId("")
 		}
-		return diag.Errorf("either timed out or errored out while fetching Fabric Gateway for uuid %s and error %v", d.Id(), err)
+		return diag.Errorf("either timed out or errored out while fetching Fabric Cloud Router for uuid %s and error %v", d.Id(), err)
 	}
 	// TO-DO
 	update, err := getCloudRouterUpdateRequest(dbConn, d)
@@ -130,7 +130,7 @@ func resourceCloudRouterUpdate(ctx context.Context, d *schema.ResourceData, meta
 	updates := []v4.CloudRouterChangeOperation{update}
 	_, res, err := client.CloudRoutersApi.UpdateGatewayByUuid(ctx, updates, d.Id())
 	if err != nil {
-		return diag.FromErr(fmt.Errorf("error response for the Fabric Gateway update, response %v, error %v", res, err))
+		return diag.FromErr(fmt.Errorf("error response for the Fabric Cloud Router update, response %v, error %v", res, err))
 	}
 	updateFg := v4.CloudRouter{}
 	updateFg, err = waitForFGUpdateCompletion(d.Id(), meta, ctx)
@@ -139,7 +139,7 @@ func resourceCloudRouterUpdate(ctx context.Context, d *schema.ResourceData, meta
 		if !strings.Contains(err.Error(), "500") {
 			d.SetId("")
 		}
-		return diag.FromErr(fmt.Errorf("errored while waiting for successful Fabric Gateway update, response %v, error %v", res, err))
+		return diag.FromErr(fmt.Errorf("errored while waiting for successful Fabric Cloud Router update, response %v, error %v", res, err))
 	}
 
 	d.SetId(updateFg.Uuid)
@@ -217,7 +217,7 @@ func resourceCloudRouterDelete(ctx context.Context, d *schema.ResourceData, meta
 				return diags
 			}
 		}
-		return diag.FromErr(fmt.Errorf("error response for the Fabric Gateway delete. Error %v and response %v", err, resp))
+		return diag.FromErr(fmt.Errorf("error response for the Fabric Cloud Router delete. Error %v and response %v", err, resp))
 	}
 
 	err = waitUntilFGDeprovisioned(d.Id(), meta, ctx)
@@ -228,7 +228,7 @@ func resourceCloudRouterDelete(ctx context.Context, d *schema.ResourceData, meta
 }
 
 func waitUntilFGDeprovisioned(uuid string, meta interface{}, ctx context.Context) error {
-	log.Printf("Waiting for Fabric Gateway to be deprovisioned, uuid %s", uuid)
+	log.Printf("Waiting for Fabric Cloud Router to be deprovisioned, uuid %s", uuid)
 	stateConf := &resource.StateChangeConf{
 		Pending: []string{
 			string(v4.DEPROVISIONING_CloudRouterAccessPointState),

@@ -7,7 +7,7 @@ func readPackageSch() map[string]*schema.Schema {
 		"code": {
 			Type:        schema.TypeString,
 			Computed:    true,
-			Description: "Fabric Gateway package code",
+			Description: "Fabric Cloud Router package code",
 		},
 	}
 }
@@ -17,27 +17,27 @@ func readCloudRouterResourceSchema() map[string]*schema.Schema {
 		"uuid": {
 			Type:        schema.TypeString,
 			Optional:    true,
-			Description: "Equinix-assigned Fabric Gateway identifier",
+			Description: "Equinix-assigned Fabric Cloud Router identifier",
 		},
 		"href": {
 			Type:        schema.TypeString,
 			Computed:    true,
-			Description: "Fabric Gateway URI information",
+			Description: "Fabric Cloud Router URI information",
 		},
 		"name": {
 			Type:        schema.TypeString,
 			Computed:    true,
-			Description: "Fabric Gateway name. An alpha-numeric 24 characters string which can include only hyphens and underscores",
+			Description: "Fabric Cloud Router name. An alpha-numeric 24 characters string which can include only hyphens and underscores",
 		},
 		"description": {
 			Type:        schema.TypeString,
 			Computed:    true,
-			Description: "Customer-provided Fabric Gateway description",
+			Description: "Customer-provided Fabric Cloud Router description",
 		},
 		"state": {
 			Type:        schema.TypeString,
 			Computed:    true,
-			Description: "Fabric Gateway overall state",
+			Description: "Fabric Cloud Router overall state",
 		},
 		"equinix_asn": {
 			Type:        schema.TypeInt,
@@ -62,7 +62,7 @@ func readCloudRouterResourceSchema() map[string]*schema.Schema {
 		"package": {
 			Type:        schema.TypeSet,
 			Computed:    true,
-			Description: "Fabric Gateway package information",
+			Description: "Fabric Cloud Router package information",
 			Elem: &schema.Resource{
 				Schema: readPackageSch(),
 			},
@@ -70,7 +70,7 @@ func readCloudRouterResourceSchema() map[string]*schema.Schema {
 		"change_log": {
 			Type:        schema.TypeSet,
 			Computed:    true,
-			Description: "Captures Fabric Gateway lifecycle change information",
+			Description: "Captures Fabric Cloud Router lifecycle change information",
 			Elem: &schema.Resource{
 				Schema: readChangeLogSch(),
 			},
@@ -78,12 +78,12 @@ func readCloudRouterResourceSchema() map[string]*schema.Schema {
 		"type": {
 			Type:        schema.TypeString,
 			Computed:    true,
-			Description: "Defines the Fabric Gateway type like XF_GATEWAY",
+			Description: "Defines the Fabric Cloud Router type like XF_GATEWAY",
 		},
 		"location": {
 			Type:        schema.TypeSet,
 			Computed:    true,
-			Description: "Fabric Gateway location",
+			Description: "Fabric Cloud Router location",
 			Elem: &schema.Resource{
 				Schema: readLocationSch(),
 			},
@@ -94,13 +94,13 @@ func readCloudRouterResourceSchema() map[string]*schema.Schema {
 			Computed:    true,
 			Description: "Project information",
 			Elem: &schema.Resource{
-				Schema: readGatewayProjectSch(),
+				Schema: readCloudRouterProjectSch(),
 			},
 		},
 		"account": {
 			Type:        schema.TypeSet,
 			Computed:    true,
-			Description: "Customer account information that is associated with this Fabric Gateway",
+			Description: "Customer account information that is associated with this Fabric Cloud Router",
 			Elem: &schema.Resource{
 				Schema: readAccountSch(),
 			},
@@ -108,7 +108,7 @@ func readCloudRouterResourceSchema() map[string]*schema.Schema {
 		"order": {
 			Type:        schema.TypeSet,
 			Computed:    true,
-			Description: "Order information related to this Fabric Gateway",
+			Description: "Order information related to this Fabric Cloud Router",
 			Elem: &schema.Resource{
 				Schema: readOrderSch(),
 			},
@@ -116,7 +116,7 @@ func readCloudRouterResourceSchema() map[string]*schema.Schema {
 		"notifications": {
 			Type:        schema.TypeList,
 			Computed:    true,
-			Description: "Preferences for notifications on Fabric Gateway configuration or status changes",
+			Description: "Preferences for notifications on Fabric Cloud Router configuration or status changes",
 			Elem: &schema.Resource{
 				Schema: readNotificationSch(),
 			},
