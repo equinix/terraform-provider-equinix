@@ -422,7 +422,7 @@ func readConnectionSideAccessPointSch() map[string]*schema.Schema {
 		"router": {
 			Type:        schema.TypeSet,
 			Computed:    true,
-			Description: "Gateway access point information",
+			Description: "Cloud Router access point information",
 			Elem: &schema.Resource{
 				Schema: readVirtualGatewaySch(),
 			},

@@ -10,7 +10,7 @@ func createPackageSch() map[string]*schema.Schema {
 		"code": {
 			Type:        schema.TypeString,
 			Required:    true,
-			Description: "Fabric Gateway package code",
+			Description: "Fabric Cloud Router package code",
 		},
 	}
 }
@@ -35,7 +35,7 @@ func createFgAccountSch() map[string]*schema.Schema {
 }
 
 var createCloudRouterProjectSchRes = &schema.Resource{
-	Schema: createGatewayProjectSch(),
+	Schema: createCloudRouterProjectSch(),
 }
 
 func createCloudRouterProjectSch() map[string]*schema.Schema {
@@ -60,22 +60,22 @@ func createCloudRouterResourceSchema() map[string]*schema.Schema {
 		"href": {
 			Type:        schema.TypeString,
 			Computed:    true,
-			Description: "Fabric Gateway URI information",
+			Description: "Fabric Cloud Router URI information",
 		},
 		"name": {
 			Type:        schema.TypeString,
 			Required:    true,
-			Description: "Fabric Gateway name. An alpha-numeric 24 characters string which can include only hyphens and underscores",
+			Description: "Fabric Cloud Router name. An alpha-numeric 24 characters string which can include only hyphens and underscores",
 		},
 		"description": {
 			Type:        schema.TypeString,
 			Optional:    true,
-			Description: "Customer-provided Fabric Gateway description",
+			Description: "Customer-provided Fabric Cloud Router description",
 		},
 		"state": {
 			Type:        schema.TypeString,
 			Computed:    true,
-			Description: "Fabric Gateway overall state",
+			Description: "Fabric Cloud Router overall state",
 		},
 		"equinix_asn": {
 			Type:        schema.TypeInt,
@@ -85,7 +85,7 @@ func createCloudRouterResourceSchema() map[string]*schema.Schema {
 		"package": {
 			Type:        schema.TypeSet,
 			Required:    true,
-			Description: "Fabric Gateway location",
+			Description: "Fabric Cloud Router location",
 			MaxItems:    1,
 			Elem: &schema.Resource{
 				Schema: createPackageSch(),
@@ -94,7 +94,7 @@ func createCloudRouterResourceSchema() map[string]*schema.Schema {
 		"change_log": {
 			Type:        schema.TypeSet,
 			Computed:    true,
-			Description: "Captures Fabric Gateway lifecycle change information",
+			Description: "Captures Fabric Cloud Router lifecycle change information",
 			Elem: &schema.Resource{
 				Schema: createChangeLogSch(),
 			},
@@ -108,7 +108,7 @@ func createCloudRouterResourceSchema() map[string]*schema.Schema {
 		"location": {
 			Type:        schema.TypeSet,
 			Required:    true,
-			Description: "Fabric Gateway location",
+			Description: "Fabric Cloud Router location",
 			MaxItems:    1,
 			Elem: &schema.Resource{
 				Schema: createLocationSch(),
@@ -117,7 +117,7 @@ func createCloudRouterResourceSchema() map[string]*schema.Schema {
 		"project": {
 			Type:        schema.TypeSet,
 			Optional:    true,
-			Description: "Fabric Gateway project",
+			Description: "Fabric Cloud Router project",
 			Elem: &schema.Resource{
 				Schema: createCloudRouterProjectSch(),
 			},
@@ -125,7 +125,7 @@ func createCloudRouterResourceSchema() map[string]*schema.Schema {
 		"account": {
 			Type:        schema.TypeSet,
 			Optional:    true,
-			Description: "Customer account information that is associated with this Fabric Gateway",
+			Description: "Customer account information that is associated with this Fabric Cloud Router",
 			MaxItems:    1,
 			Elem: &schema.Resource{
 				Schema: createFgAccountSch(),
@@ -134,7 +134,7 @@ func createCloudRouterResourceSchema() map[string]*schema.Schema {
 		"order": {
 			Type:        schema.TypeSet,
 			Optional:    true,
-			Description: "Order information related to this Fabric Gateway",
+			Description: "Order information related to this Fabric Cloud Router",
 			MaxItems:    1,
 			Elem: &schema.Resource{
 				Schema: createOrderSch(),
@@ -143,7 +143,7 @@ func createCloudRouterResourceSchema() map[string]*schema.Schema {
 		"notifications": {
 			Type:        schema.TypeList,
 			Required:    true,
-			Description: "Preferences for notifications on Fabric Gateway configuration or status changes",
+			Description: "Preferences for notifications on Fabric Cloud Router configuration or status changes",
 			Elem: &schema.Resource{
 				Schema: createNotificationSch(),
 			},

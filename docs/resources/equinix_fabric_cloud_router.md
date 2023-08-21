@@ -3,13 +3,13 @@
 page_title: "equinix_fabric_gateway Resource - terraform-provider-equinix"
 subcategory: ""
 description: |-
-  Fabric V4 API compatible resource allows creation and management of Equinix Fabric Gateway
+  Fabric V4 API compatible resource allows creation and management of Equinix Fabric Cloud Router
   ~> Note Equinix Fabric v4 resources and datasources are currently in Beta. The interfaces related to equinix_fabric_ resources and datasources may change ahead of general availability. Please, do not hesitate to report any problems that you experience by opening a new issue https://github.com/equinix/terraform-provider-equinix/issues/new?template=bug.md
 ---
 
 # equinix_fabric_gateway (Resource)
 
-Fabric V4 API compatible resource allows creation and management of Equinix Fabric Gateway
+Fabric V4 API compatible resource allows creation and management of Equinix Fabric Cloud Router
 
 ~> **Note** Equinix Fabric v4 resources and datasources are currently in Beta. The interfaces related to `equinix_fabric_` resources and datasources may change ahead of general availability. Please, do not hesitate to report any problems that you experience by opening a new [issue](https://github.com/equinix/terraform-provider-equinix/issues/new?template=bug.md)
 
@@ -21,27 +21,27 @@ API documentation can be found here - https://developer.equinix.com/dev-docs/fab
 
 ### Required
 
-- `location` (Block Set, Min: 1, Max: 1) Fabric Gateway location (see [below for nested schema](#nestedblock--location))
-- `name` (String) Fabric Gateway name. An alpha-numeric 24 characters string which can include only hyphens and underscores
-- `notifications` (Block List, Min: 1) Preferences for notifications on Fabric Gateway configuration or status changes (see [below for nested schema](#nestedblock--notifications))
-- `package` (Block Set, Min: 1, Max: 1) Fabric Gateway location (see [below for nested schema](#nestedblock--package))
+- `location` (Block Set, Min: 1, Max: 1) Fabric Cloud Router location (see [below for nested schema](#nestedblock--location))
+- `name` (String) Fabric Cloud Router name. An alpha-numeric 24 characters string which can include only hyphens and underscores
+- `notifications` (Block List, Min: 1) Preferences for notifications on Fabric Cloud Router configuration or status changes (see [below for nested schema](#nestedblock--notifications))
+- `package` (Block Set, Min: 1, Max: 1) Fabric Cloud Router package (see [below for nested schema](#nestedblock--package))
 - `type` (String) Defines the FG type like XF_GATEWAY
 
 ### Optional
 
-- `account` (Block Set, Max: 1) Customer account information that is associated with this Fabric Gateway (see [below for nested schema](#nestedblock--account))
-- `description` (String) Customer-provided Fabric Gateway description
-- `order` (Block Set, Max: 1) Order information related to this Fabric Gateway (see [below for nested schema](#nestedblock--order))
-- `project` (Block Set) Fabric Gateway project (see [below for nested schema](#nestedblock--project))
+- `account` (Block Set, Max: 1) Customer account information that is associated with this Fabric Cloud Router (see [below for nested schema](#nestedblock--account))
+- `description` (String) Customer-provided Fabric Cloud Router description
+- `order` (Block Set, Max: 1) Order information related to this Fabric Cloud Router (see [below for nested schema](#nestedblock--order))
+- `project` (Block Set) Fabric Cloud Router project (see [below for nested schema](#nestedblock--project))
 - `timeouts` (Block, Optional) (see [below for nested schema](#nestedblock--timeouts))
 
 ### Read-Only
 
-- `change_log` (Set of Object) Captures Fabric Gateway lifecycle change information (see [below for nested schema](#nestedatt--change_log))
+- `change_log` (Set of Object) Captures Fabric Cloud Router lifecycle change information (see [below for nested schema](#nestedatt--change_log))
 - `equinix_asn` (Number) Equinix ASN
-- `href` (String) Fabric Gateway URI information
+- `href` (String) Fabric Cloud Router URI information
 - `id` (String) The ID of this resource.
-- `state` (String) Fabric Gateway overall state
+- `state` (String) Fabric Cloud Router overall state
 
 <a id="nestedblock--location"></a>
 ### Nested Schema for `location`
@@ -72,7 +72,7 @@ Optional:
 
 Required:
 
-- `code` (String) Fabric Gateway package code
+- `code` (String) Fabric Cloud Router package code
 
 
 <a id="nestedblock--account"></a>

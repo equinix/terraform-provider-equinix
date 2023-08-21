@@ -10,7 +10,7 @@ import (
 func TestCloudRouterCreate(t *testing.T) {
 	// retryable errors in terraform testing.
 	terraformOptions := terraform.WithDefaultRetryableErrors(t, &terraform.Options{
-		TerraformDir: "../examples/fabric-gateway",
+		TerraformDir: "../examples/fabric-cloud-router",
 	})
 
 	terraform.InitAndApply(t, terraformOptions)

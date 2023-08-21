@@ -1,10 +1,10 @@
-# ECX FG Connection BGP CRUD operations
+# ECX Fabric Cloud Router Connection BGP CRUD operations
 This example shows how to create Config BGP on FG connection .
 
 Note: Each time you need to create a BGP resource add-on
 make a copy of the base folder - examples/routing-protocol-bgp/ and CD into this folder to perform all the CRUD operations.
 
-## Define values for the Fabric Gateway create
+## Define values for the Fabric Cloud Router create
 At minimum, you must set below variables in `terraform.tfvars` file:
 - `equinix_client_id` - Equinix client ID (consumer key), obtained after
   registering app in the developer platform

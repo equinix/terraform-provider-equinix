@@ -59,10 +59,10 @@ func accessPointToFabric(accessPointRequest []interface{}) v4.AccessPoint {
 			peeringType := v4.PeeringType(peeringTypeRaw)
 			accessPoint.PeeringType = &peeringType
 		}
-		gatewayRequest := accessPointMap["router"].(*schema.Set).List()
+		cloudRouterRequest := accessPointMap["router"].(*schema.Set).List()
 
-		if len(gatewayRequest) != 0 {
-			mappedGWr := gatewayToFabric(gatewayRequest)
+		if len(cloudRouterRequest) != 0 {
+			mappedGWr := cloudRouterToFabric(cloudRouterRequest)
 			if mappedGWr.Uuid != "" {
 				accessPoint.Router = &mappedGWr
 			}
@@ -100,17 +100,17 @@ func accessPointToFabric(accessPointRequest []interface{}) v4.AccessPoint {
 	return accessPoint
 }
 
-func gatewayToFabric(gatewayRequest []interface{}) v4.CloudRouter {
-	if gatewayRequest == nil {
+func cloudRouterToFabric(cloudRouterRequest []interface{}) v4.CloudRouter {
+	if cloudRouterRequest == nil {
 		return v4.CloudRouter{}
 	}
-	gatewayMapped := v4.CloudRouter{}
-	for _, gwr := range gatewayRequest {
-		gwrMap := gwr.(map[string]interface{})
-		gwuuid := gwrMap["uuid"].(string)
-		gatewayMapped = v4.CloudRouter{Uuid: gwuuid}
+	cloudRouterMapped := v4.CloudRouter{}
+	for _, crr := range cloudRouterRequest {
+		crrMap := crr.(map[string]interface{})
+		cruuid := crrMap["uuid"].(string)
+		cloudRouterMapped = v4.CloudRouter{Uuid: cruuid}
 	}
-	return gatewayMapped
+	return cloudRouterMapped
 }
 
 func projectToFabric(projectRequest []interface{}) v4.Project {
