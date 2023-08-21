@@ -260,6 +260,8 @@ github.com/envoyproxy/go-control-plane v0.10.2-0.20220325020618-49ff273808a1/go.
 github.com/envoyproxy/protoc-gen-validate v0.1.0/go.mod h1:iSmxcyjqTsJpI2R4NaDN7+kN2VEUnK/pcBlmesArF7c=
 github.com/equinix-labs/fabric-go v0.6.0 h1:5NeRngEAWc0tmJqS6ZfIaZ/rQ1bsO50LeF0oAs0+Fp0=
 github.com/equinix-labs/fabric-go v0.6.0/go.mod h1:I5G92PqNFLih8y0gfXaUXNI9ph6DFjlfZhBKtR5IysA=
+github.com/equinix-labs/metal-go v0.16.0 h1:4YmGx9SRFkDtHiEqRsSjlgJDztV6NHqH1eeaOZcK7d4=
+github.com/equinix-labs/metal-go v0.16.0/go.mod h1:SmxCklxW+KjmBLVMdEXgtFO5gD5/b4N0VxcNgUYbOH4=
 github.com/equinix/ecx-go/v2 v2.3.1 h1:gFcAIeyaEUw7S8ebqApmT7E/S7pC7Ac3wgScp89fkPU=
 github.com/equinix/ecx-go/v2 v2.3.1/go.mod h1:FvCdZ3jXU8Z4CPKig2DT+4J2HdwgRK17pIcznM7RXyk=
 github.com/equinix/ne-go v1.10.0 h1:hy1umXQFPi1b3z/maZ8kqLRFlD1PXD4qp0cV8rnyL8k=
