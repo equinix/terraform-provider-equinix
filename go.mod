@@ -4,7 +4,7 @@ go 1.20
 
 require (
 	github.com/antihax/optional v1.0.0
-	github.com/equinix-labs/fabric-go v0.5.0
+	github.com/equinix-labs/fabric-go v0.6.0
 	github.com/equinix/ecx-go/v2 v2.3.1
 	github.com/equinix/ne-go v1.10.0
 	github.com/equinix/oauth2-go v1.0.0
@@ -108,5 +108,3 @@ require (
 	google.golang.org/protobuf v1.31.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
-
-replace github.com/equinix-labs/fabric-go v0.5.0 => github.com/manu-equinix/fabric-go v0.4.4-alpha.0.20230808184111-f3ee4cfbd3f8
