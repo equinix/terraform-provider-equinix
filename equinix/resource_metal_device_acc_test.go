@@ -2,6 +2,7 @@ package equinix
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"log"
 	"net"
@@ -11,6 +12,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -338,28 +340,6 @@ func TestAccMetalDevice_update(t *testing.T) {
 	})
 }
 
-func TestAccMetalDevice_timeouts(t *testing.T) {
-	rs := acctest.RandString(10)
-	rInt := acctest.RandInt()
-
-	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
-		ExternalProviders: testExternalProviders,
-		Providers:         testAccProviders,
-		CheckDestroy:      testAccMetalDeviceCheckDestroyed,
-		Steps: []resource.TestStep{
-			{
-				Config:      testAccMetalDeviceConfig_timeout(rInt, rs),
-				ExpectError: matchErrDeviceReadyTimeout,
-			},
-			{
-				Config:      testAccMetalDeviceConfig_reinstall_timeout(rInt+1, rs),
-				ExpectError: matchErrDeviceReadyTimeout,
-			},
-		},
-	})
-}
-
 func TestAccMetalDevice_IPXEScriptUrl(t *testing.T) {
 	var device, d2 packngo.Device
 	rs := acctest.RandString(10)
@@ -579,6 +559,23 @@ func testAccMetalDeviceExists(n string, device *packngo.Device) resource.TestChe
 	}
 }
 
+func testAccWaitForMetalDeviceActive(n string) resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		defaultTimeout := 20 * time.Minute
+
+		rs, ok := s.RootModule().Resources[n]
+		if !ok {
+			return fmt.Errorf("Not found: %s", n)
+		}
+		if rs.Primary.ID == "" {
+			return fmt.Errorf("No Record ID is set")
+		}
+		rd := new(schema.ResourceData)
+		rd.SetId(rs.Primary.ID)
+		return waitForActiveDevice(context.Background(), rd, testAccProvider.Meta(), defaultTimeout)
+	}
+}
+
 func testAccMetalSameDevice(t *testing.T, before, after *packngo.Device) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		if before.ID != after.ID {
@@ -720,38 +717,6 @@ resource "equinix_metal_device" "test" {
 `, confAccMetalDevice_base(preferable_plans, preferable_metros, preferable_os), projSuffix, rInt, rInt, testDeviceTerminationTime())
 }
 
-func testAccMetalDeviceConfig_reinstall_timeout(rInt int, projSuffix string) string {
-	return fmt.Sprintf(`
-%s
-
-resource "equinix_metal_project" "test" {
-    name = "tfacc-device-%s"
-}
-
-resource "equinix_metal_device" "test" {
-  hostname         = "tfacc-test-device-%d"
-  plan             = local.plan
-  metro            = local.metro
-  operating_system = local.os
-  billing_cycle    = "hourly"
-  project_id       = "${equinix_metal_project.test.id}"
-  tags             = ["%d"]
-  user_data = "#!/usr/bin/env sh\necho Reinstall\n"
-  termination_time = "%s"
-
-  reinstall {
-	  enabled = true
-	  deprovision_fast = true
-  }
-
-  timeouts {
-	create = "10s"
-	update = "10s"
-  }
-}
-`, confAccMetalDevice_base(preferable_plans, preferable_metros, preferable_os), projSuffix, rInt, rInt, testDeviceTerminationTime())
-}
-
 func testAccMetalDeviceConfig_allowAttributeChanges(rInt int, projSuffix string, userdata string, customdata string, attributeName string) string {
 	return fmt.Sprintf(`
 %s
@@ -798,30 +763,6 @@ resource "equinix_metal_device" "test" {
   billing_cycle    = "hourly"
   project_id       = "${equinix_metal_project.test.id}"
   tags             = ["%d"]
-  termination_time = "%s"
-}
-`, confAccMetalDevice_base(preferable_plans, preferable_metros, preferable_os), projSuffix, rInt, rInt, rInt, testDeviceTerminationTime())
-}
-
-func testAccMetalDeviceConfig_varname_pxe(rInt int, projSuffix string) string {
-	return fmt.Sprintf(`
-%s
-
-resource "equinix_metal_project" "test" {
-    name = "tfacc-device-%s"
-}
-
-resource "equinix_metal_device" "test" {
-  hostname         = "tfacc-test-device-%d"
-  description      = "test-desc-%d"
-  plan             = local.plan
-  metro            = local.metro
-  operating_system = local.os
-  billing_cycle    = "hourly"
-  project_id       = "${equinix_metal_project.test.id}"
-  tags             = ["%d"]
-  always_pxe       = true
-  ipxe_script_url  = "http://matchbox.foo.wtf:8080/boot.ipxe"
   termination_time = "%s"
 }
 `, confAccMetalDevice_base(preferable_plans, preferable_metros, preferable_os), projSuffix, rInt, rInt, rInt, testDeviceTerminationTime())
@@ -994,33 +935,34 @@ resource "equinix_metal_device" "test_ipxe_missing" {
   always_pxe       = true
 }`
 
-func testAccMetalDeviceConfig_timeout(rInt int, projSuffix string) string {
+func testAccMetalDeviceConfig_timeout(projSuffix string) string {
 	return fmt.Sprintf(`
-%s
-
 resource "equinix_metal_project" "test" {
-  name = "tfacc-device-%s"
+    name = "tfacc-device-%s"
 }
+
 resource "equinix_metal_device" "test" {
-  hostname         = "tfacc-test-device-%d"
-  plan             = local.plan
-  metro            = local.metro
-  operating_system = local.os
-  billing_cycle    = "hourly"
+  hostname         = "tfacc-test-device"
+  description      = "test-desc"
+  plan             = "c3.small.x86"
+  metro            = "DA"
+  operating_system = "ubuntu_20_04"
   project_id       = "${equinix_metal_project.test.id}"
-  tags             = ["%d"]
-  user_data = "#!/usr/bin/env sh\necho Reinstall\n"
   termination_time = "%s"
 
   timeouts {
 	create = "10s"
 	update = "10s"
   }
-}`, confAccMetalDevice_base(preferable_plans, preferable_metros, preferable_os), projSuffix, rInt, rInt, testDeviceTerminationTime())
+}
+`, projSuffix, testDeviceTerminationTime())
 }
 
 type mockDeviceService struct {
-	GetFn func(deviceID string, opts *packngo.GetOptions) (*packngo.Device, *packngo.Response, error)
+	GetFn    func(deviceID string, opts *packngo.GetOptions) (*packngo.Device, *packngo.Response, error)
+	CreateFn func(device *packngo.DeviceCreateRequest) (*packngo.Device, *packngo.Response, error)
+	UpdateFn func(string, *packngo.DeviceUpdateRequest) (*packngo.Device, *packngo.Response, error)
+	DeleteFn func(string, bool) (*packngo.Response, error)
 }
 
 func (m *mockDeviceService) Get(deviceID string, opts *packngo.GetOptions) (*packngo.Device, *packngo.Response, error) {
@@ -1028,19 +970,19 @@ func (m *mockDeviceService) Get(deviceID string, opts *packngo.GetOptions) (*pac
 }
 
 func (m *mockDeviceService) Create(device *packngo.DeviceCreateRequest) (*packngo.Device, *packngo.Response, error) {
-	return nil, nil, mockFuncNotImplemented("Create")
+	return m.CreateFn(device)
 }
 
-func (m *mockDeviceService) Delete(string, bool) (*packngo.Response, error) {
-	return nil, mockFuncNotImplemented("Delete")
+func (m *mockDeviceService) Delete(deviceId string, forceDetachVolume bool) (*packngo.Response, error) {
+	return m.DeleteFn(deviceId, forceDetachVolume)
 }
 
 func (m *mockDeviceService) List(string, *packngo.ListOptions) ([]packngo.Device, *packngo.Response, error) {
 	return nil, nil, mockFuncNotImplemented("List")
 }
 
-func (m *mockDeviceService) Update(string, *packngo.DeviceUpdateRequest) (*packngo.Device, *packngo.Response, error) {
-	return nil, nil, mockFuncNotImplemented("Update")
+func (m *mockDeviceService) Update(deviceId string, updateReq *packngo.DeviceUpdateRequest) (*packngo.Device, *packngo.Response, error) {
+	return m.UpdateFn(deviceId, updateReq)
 }
 
 func (m *mockDeviceService) Reboot(string) (*packngo.Response, error) {
@@ -1207,4 +1149,70 @@ func TestAccMetalDevice_readErrorHandling(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestAccMetalDevice_timeouts(t *testing.T) {
+	d1 := &packngo.Device{
+		State: "active",
+	}
+	projSuffix := acctest.RandString(10)
+
+	mockMetalDeviceService := &mockDeviceService{
+		CreateFn: func(device *packngo.DeviceCreateRequest) (*packngo.Device, *packngo.Response, error) {
+			return d1, &packngo.Response{Response: &http.Response{Status: matchErrDeviceReadyTimeout.String(), StatusCode: 500}},
+				errors.New(matchErrDeviceReadyTimeout.String())
+		},
+		GetFn: func(deviceID string, opts *packngo.GetOptions) (*packngo.Device, *packngo.Response, error) {
+			return d1, &packngo.Response{Response: &http.Response{Status: "Success", StatusCode: 200}}, nil
+		},
+	}
+	mockMetalProjectService := &mockProjectService{
+		GetFn: func(projectID string, opts *packngo.GetOptions) (*packngo.Project, *packngo.Response, error) {
+			project := &packngo.Project{ID: "test"}
+			httpResp := &http.Response{Status: "Success", StatusCode: 200}
+			return project, &packngo.Response{Response: httpResp}, nil
+		},
+		CreateFn: func(pcr *packngo.ProjectCreateRequest) (*packngo.Project, *packngo.Response, error) {
+			project := &packngo.Project{ID: "test"}
+			httpResp := &http.Response{Status: "Success", StatusCode: 200}
+			return project, &packngo.Response{Response: httpResp}, nil
+		},
+		DeleteFn: func(projectID string) (*packngo.Response, error) {
+			httpResp := &http.Response{Status: "Success", StatusCode: 200}
+			return &packngo.Response{Response: httpResp}, nil
+		},
+	}
+	mockBgpsvc := &mockBgpConfigService{
+		GetFn: func(projectID string, getOpt *packngo.GetOptions) (*packngo.BGPConfig, *packngo.Response, error) {
+			return nil, nil, nil
+		},
+	}
+
+	mockEquinix := Provider()
+	mockEquinix.ConfigureContextFunc = func(ctx context.Context, d *schema.ResourceData) (interface{}, diag.Diagnostics) {
+		config := Config{
+			metal: &packngo.Client{
+				Devices:   mockMetalDeviceService,
+				Projects:  mockMetalProjectService,
+				BGPConfig: mockBgpsvc,
+			},
+		}
+		return &config, nil
+	}
+
+	mockProviders := map[string]func() (*schema.Provider, error){
+		"equinix": func() (*schema.Provider, error) {
+			return mockEquinix, nil
+		},
+	}
+	resource.ParallelTest(t, resource.TestCase{
+		ProviderFactories: mockProviders,
+		ExternalProviders: testExternalProviders,
+		Steps: []resource.TestStep{
+			{
+				Config:      testAccMetalDeviceConfig_timeout(projSuffix),
+				ExpectError: matchErrDeviceReadyTimeout,
+			},
+		},
+	})
 }
