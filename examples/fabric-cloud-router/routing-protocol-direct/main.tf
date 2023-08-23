@@ -3,7 +3,7 @@ provider "equinix" {
   client_secret = var.equinix_client_secret
 }
 
-resource "equinix_fabric_routingprotocol" "test"{
+resource "equinix_fabric_routing_protocol" "test"{
   connection_uuid = var.connection_uuid
   type = var.rp_type
   name = var.rp_name
@@ -16,6 +16,6 @@ resource "equinix_fabric_routingprotocol" "test"{
 }
 
 output "rp_result" {
-  value = equinix_fabric_routingprotocol.test.id
+  value = equinix_fabric_routing_protocol.test.id
 }
 

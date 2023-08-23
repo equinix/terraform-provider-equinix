@@ -19,7 +19,7 @@ func TestAccFabricCreateDirectRoutingProtocol(t *testing.T) {
 			{
 				Config: testAccFabricCreateRoutingProtocolDirectConfig("99d6bdc8-206f-4bff-a899-0dba708c03db", "190.1.1.1/30", "172::1:1/126"),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckTypeSetElemNestedAttrs("equinix_fabric_routingprotocol.test", "direct_ipv4.*", map[string]string{
+					resource.TestCheckTypeSetElemNestedAttrs("equinix_fabric_routing_protocol.test", "direct_ipv4.*", map[string]string{
 						"equinix_iface_ip": fmt.Sprintf("190.1.1.1/30"),
 					}),
 				),
@@ -27,7 +27,7 @@ func TestAccFabricCreateDirectRoutingProtocol(t *testing.T) {
 			}, {
 				Config: testAccFabricCreateRoutingProtocolDirectConfig("99d6bdc8-206f-4bff-a899-0dba708c03db", "190.1.1.1/26", "172::1:1/126"),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckTypeSetElemNestedAttrs("equinix_fabric_routingprotocol.test", "direct_ipv4.*", map[string]string{
+					resource.TestCheckTypeSetElemNestedAttrs("equinix_fabric_routing_protocol.test", "direct_ipv4.*", map[string]string{
 						"equinix_iface_ip": fmt.Sprintf("190.1.1.1/26"),
 					}),
 				),
@@ -38,7 +38,7 @@ func TestAccFabricCreateDirectRoutingProtocol(t *testing.T) {
 }
 
 func testAccFabricCreateRoutingProtocolDirectConfig(connectionUuid string, ipv4 string, ipv6 string) string {
-	return fmt.Sprintf(`	resource "equinix_fabric_routingprotocol" "test" {
+	return fmt.Sprintf(`	resource "equinix_fabric_routing_protocol" "test" {
 		connection_uuid = "%s"
 
 		type = "DIRECT"
@@ -61,7 +61,7 @@ func TestAccFabricCreateBgpRoutingProtocol(t *testing.T) {
 			{
 				Config: testAccFabricCreateRoutingProtocolBgpConfig("99d6bdc8-206f-4bff-a899-0dba708c03db", "190.1.1.2", ""),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckTypeSetElemNestedAttrs("equinix_fabric_routingprotocol.test", "bgp_ipv4.*", map[string]string{
+					resource.TestCheckTypeSetElemNestedAttrs("equinix_fabric_routing_protocol.test", "bgp_ipv4.*", map[string]string{
 						"customer_peer_ip": fmt.Sprintf("190.1.1.2"),
 					}),
 				),
@@ -70,7 +70,7 @@ func TestAccFabricCreateBgpRoutingProtocol(t *testing.T) {
 			{
 				Config: testAccFabricCreateRoutingProtocolBgpConfig("99d6bdc8-206f-4bff-a899-0dba708c03db", "190.1.1.3", "172::1:2"),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckTypeSetElemNestedAttrs("equinix_fabric_routingprotocol.test", "bgp_ipv4.*", map[string]string{
+					resource.TestCheckTypeSetElemNestedAttrs("equinix_fabric_routing_protocol.test", "bgp_ipv4.*", map[string]string{
 						"customer_peer_ip": fmt.Sprintf("190.1.1.3"),
 					}),
 				),
@@ -81,7 +81,7 @@ func TestAccFabricCreateBgpRoutingProtocol(t *testing.T) {
 }
 
 func testAccFabricCreateRoutingProtocolBgpConfig(connectionUuid string, ipv4 string, ipv6 string) string {
-	return fmt.Sprintf(`	resource "equinix_fabric_routingprotocol" "test" {
+	return fmt.Sprintf(`	resource "equinix_fabric_routing_protocol" "test" {
 		connection_uuid = "%s"
 
 		type = "BGP"
@@ -99,7 +99,7 @@ func checkRoutingProtocolDelete(s *terraform.State) error {
 	ctx := context.Background()
 	ctx = context.WithValue(ctx, v4.ContextAccessToken, testAccProvider.Meta().(*Config).FabricAuthToken)
 	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "equinix_fabric_routingprotocol" {
+		if rs.Type != "equinix_fabric_routing_protocol" {
 			continue
 		}
 		err := waitUntilRoutingProtocolIsDeprovisioned(rs.Primary.ID, rs.Primary.Attributes["connection_uuid"], testAccProvider.Meta(), ctx)
@@ -119,9 +119,9 @@ func TestAccFabricReadRoutingProtocolByUuid(t *testing.T) {
 				Config: testAccFabricReadRoutingProtocolConfig("99d6bdc8-206f-4bff-a899-0dba708c03db", "00f48313-ab13-4524-aaad-93c31b5b8848"),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(
-						"equinix_fabric_routingprotocol.test", "type", fmt.Sprint("DIRECT")),
+						"equinix_fabric_routing_protocol.test", "type", fmt.Sprint("DIRECT")),
 					resource.TestCheckResourceAttr(
-						"equinix_fabric_routingprotocol.test", "state", fmt.Sprint("PROVISIONED")),
+						"equinix_fabric_routing_protocol.test", "state", fmt.Sprint("PROVISIONED")),
 				),
 			},
 		},
@@ -129,7 +129,7 @@ func TestAccFabricReadRoutingProtocolByUuid(t *testing.T) {
 }
 
 func testAccFabricReadRoutingProtocolConfig(connectionUuid string, routingProtocolUuid string) string {
-	return fmt.Sprintf(`data "equinix_fabric_routingprotocol" "test" {
+	return fmt.Sprintf(`data "equinix_fabric_routing_protocol" "test" {
 	connection_uuid = "%s"
 	uuid = "%s"
 	}`, connectionUuid, routingProtocolUuid)
