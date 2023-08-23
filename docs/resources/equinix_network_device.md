@@ -43,6 +43,7 @@ resource "equinix_network_device" "csr1000v-ha" {
   metro_code      = data.equinix_network_account.dc.metro_code
   type_code       = "CSR1000V"
   self_managed    = false
+  connectivity    = "INTERNET-ACCESS"
   byol            = false
   package_code    = "SEC"
   notifications   = ["john@equinix.com", "marry@equinix.com", "fred@equinix.com"]
@@ -190,6 +191,7 @@ resource "equinix_network_device" "arista-ha" {
   metro_code      = data.equinix_network_account.sv.metro_code
   type_code       = "ARISTA-ROUTER"
   self_managed    = true
+  connectivity    = "PRIVATE"
   byol            = true
   package_code    = "CloudEOS"
   notifications   = ["test@equinix.com"]
@@ -261,6 +263,8 @@ on a device (max one key).  See [SSH Key](#ssh-key) below for more details.
 device configurations. See [Secondary Device](#secondary-device) below for more details.
 * `cluster_details` - (Optional) An object that has the cluster details. See
 [Cluster Details](#cluster-details) below for more details.
+* `connectivity` - (Optional) Device accessibility (INTERNET-ACCESS or PRIVATE or INTERNET-ACCESS-WITH-PRVT-MGMT).
+If not specified, default will be INTERNET-ACCESS 
 
 ### Secondary Device
 

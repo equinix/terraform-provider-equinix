@@ -60,6 +60,7 @@ var neDeviceSchemaNames = map[string]string{
 	"Secondary":           "secondary_device",
 	"ClusterDetails":      "cluster_details",
 	"ValidStatusList":     "valid_status_list",
+	"Connectivity":        "connectivity",
 }
 
 var neDeviceDescriptions = map[string]string{
@@ -105,6 +106,7 @@ var neDeviceDescriptions = map[string]string{
 	"Secondary":           "Definition of secondary device applicable for HA setup",
 	"ClusterDetails":      "An object that has the cluster details",
 	"ValidStatusList":     "Comma Separated List of states to be considered valid when searching by name",
+	"Connectivity":        "Parameter to identify internet access for device. Supported Values: INTERNET-ACCESS(default) or PRIVATE or INTERNET-ACCESS-WITH-PRVT-MGMT",
 }
 
 var neDeviceInterfaceSchemaNames = map[string]string{
@@ -478,6 +480,14 @@ func createNetworkDeviceSchema() map[string]*schema.Schema {
 			Type:        schema.TypeString,
 			Computed:    true,
 			Description: neDeviceDescriptions["ZoneCode"],
+		},
+		neDeviceSchemaNames["Connectivity"]: {
+			Type:         schema.TypeString,
+			Optional:     true,
+			ForceNew:     true,
+			Default:      "INTERNET-ACCESS",
+			ValidateFunc: validation.StringInSlice([]string{"INTERNET-ACCESS", "PRIVATE", "INTERNET-ACCESS-WITH-PRVT-MGMT"}, false),
+			Description:  neDeviceDescriptions["Connectivity"],
 		},
 		neDeviceSchemaNames["Secondary"]: {
 			Type:        schema.TypeList,
@@ -1100,6 +1110,9 @@ func createNetworkDevices(d *schema.ResourceData) (*ne.Device, *ne.Device) {
 	if v, ok := d.GetOk(neDeviceSchemaNames["ClusterDetails"]); ok {
 		primary.ClusterDetails = expandNetworkDeviceClusterDetails(v.([]interface{}))
 	}
+	if v, ok := d.GetOk(neDeviceSchemaNames["Connectivity"]); ok {
+		primary.Connectivity = ne.String(v.(string))
+	}
 	return primary, secondary
 }
 
@@ -1603,6 +1616,7 @@ func createNetworkDeviceLicenseStatusWaitConfiguration(fetchFunc getDevice, id s
 	target := []string{
 		ne.DeviceLicenseStateRegistered,
 		ne.DeviceLicenseStateApplied,
+		ne.DeviceLicenseStateNA,
 	}
 	return &retry.StateChangeConf{
 		Pending:    pending,

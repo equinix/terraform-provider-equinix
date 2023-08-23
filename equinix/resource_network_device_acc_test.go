@@ -542,6 +542,7 @@ func TestAccNetworkDevice_PaloAlto_HA_Self_BYOL(t *testing.T) {
 		"device-resourceName":            "test",
 		"device-account_name":            accountName.(string),
 		"device-self_managed":            true,
+		"connectivity":                   "PRIVATE",
 		"device-byol":                    true,
 		"device-name":                    fmt.Sprintf("%s-%s", tstResourcePrefix, randString(6)),
 		"device-metro_code":              metro.(string),
@@ -1033,6 +1034,9 @@ func testAccNeDeviceAttributes(device *ne.Device, ctx map[string]interface{}) re
 		}
 		if v, ok := ctx["device-vendorConfig_serialNumber"]; ok && device.VendorConfiguration["serialNumber"] != v.(string) {
 			return fmt.Errorf("device-vendorConfig_serialNumber does not match %v - %v", device.VendorConfiguration["serialNumber"], v)
+		}
+		if v, ok := ctx["connectivity"]; ok && ne.StringValue(device.Connectivity) != v.(string) {
+			return fmt.Errorf("connectivity does not match %v - %v", ne.StringValue(device.Connectivity), v)
 		}
 		return nil
 	}
