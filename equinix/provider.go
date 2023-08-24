@@ -129,6 +129,7 @@ func Provider() *schema.Provider {
 			"equinix_metal_organization":         dataSourceMetalOrganization(),
 			"equinix_metal_spot_market_price":    dataSourceSpotMarketPrice(),
 			"equinix_metal_device":               dataSourceMetalDevice(),
+			"equinix_metal_devices":              dataSourceMetalDevices(),
 			"equinix_metal_device_bgp_neighbors": dataSourceMetalDeviceBGPNeighbors(),
 			"equinix_metal_plans":                dataSourceMetalPlans(),
 			"equinix_metal_port":                 dataSourceMetalPort(),
