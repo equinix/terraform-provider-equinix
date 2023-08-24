@@ -597,7 +597,7 @@ func resourceMetalDeviceCreate(ctx context.Context, d *schema.ResourceData, meta
 
 	d.SetId(newDevice.ID)
 
-	createTimeout := d.Timeout(schema.TimeoutCreate) - time.Minute - time.Since(start)
+	createTimeout := d.Timeout(schema.TimeoutCreate) - 30*time.Second - time.Since(start)
 	if err = waitForActiveDevice(ctx, d, meta, createTimeout); err != nil {
 		return err
 	}
@@ -806,7 +806,7 @@ func doReinstall(ctx context.Context, client *packngo.Client, d *schema.Resource
 			return friendlyError(err)
 		}
 
-		deleteTimeout := d.Timeout(schema.TimeoutUpdate) - time.Minute - time.Since(start)
+		deleteTimeout := d.Timeout(schema.TimeoutUpdate) - 30*time.Second - time.Since(start)
 		if err := waitForActiveDevice(ctx, d, meta, deleteTimeout); err != nil {
 			return err
 		}
@@ -837,7 +837,7 @@ func resourceMetalDeviceDelete(ctx context.Context, d *schema.ResourceData, meta
 		wfrd, wfrdOK := d.GetOk("wait_for_reservation_deprovision")
 		if wfrdOK && wfrd.(bool) {
 			// avoid "context: deadline exceeded"
-			timeout := d.Timeout(schema.TimeoutDelete) - time.Minute - time.Since(start)
+			timeout := d.Timeout(schema.TimeoutDelete) - 30*time.Second - time.Since(start)
 
 			err := waitUntilReservationProvisionable(ctx, client, resId.(string), d.Id(), 10*time.Second, timeout, 3*time.Second)
 			if err != nil {
