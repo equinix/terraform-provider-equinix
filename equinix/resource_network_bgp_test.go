@@ -2,7 +2,6 @@ package equinix
 
 import (
 	"context"
-	"github.com/packethost/packngo"
 	"testing"
 	"time"
 
@@ -99,20 +98,6 @@ func (r *mockedBGPUpdateRequest) WithAuthenticationKey(v string) ne.BGPUpdateReq
 
 func (r *mockedBGPUpdateRequest) Execute() error {
 	return nil
-}
-
-var _ packngo.BGPConfigService = &mockBgpConfigService{}
-
-type mockBgpConfigService struct {
-	GetFn    func(projectID string, getOpt *packngo.GetOptions) (*packngo.BGPConfig, *packngo.Response, error)
-	CreateFn func(projectID string, request packngo.CreateBGPConfigRequest) (*packngo.Response, error)
-}
-
-func (s *mockBgpConfigService) Get(projectID string, getOpt *packngo.GetOptions) (*packngo.BGPConfig, *packngo.Response, error) {
-	return s.GetFn(projectID, getOpt)
-}
-func (s *mockBgpConfigService) Create(projectID string, request packngo.CreateBGPConfigRequest) (*packngo.Response, error) {
-	return s.CreateFn(projectID, request)
 }
 
 func TestNetworkBGP_createUpdateRequest(t *testing.T) {
