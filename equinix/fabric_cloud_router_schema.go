@@ -19,11 +19,11 @@ var createPackageRes = &schema.Resource{
 	Schema: createPackageSch(),
 }
 
-var createFgAccountRes = &schema.Resource{
-	Schema: createFgAccountSch(),
+var createCloudRouterAccountRes = &schema.Resource{
+	Schema: createCloudRouterAccountSch(),
 }
 
-func createFgAccountSch() map[string]*schema.Schema {
+func createCloudRouterAccountSch() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
 		"account_number": {
 			Type:        schema.TypeInt,
@@ -128,7 +128,7 @@ func createCloudRouterResourceSchema() map[string]*schema.Schema {
 			Description: "Customer account information that is associated with this Fabric Cloud Router",
 			MaxItems:    1,
 			Elem: &schema.Resource{
-				Schema: createFgAccountSch(),
+				Schema: createCloudRouterAccountSch(),
 			},
 		},
 		"order": {

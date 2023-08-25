@@ -59,7 +59,8 @@ Read-Only:
 
 - `account` (Set of Object) (see [below for nested schema](#nestedobjatt--a_side--access_point--account))
 - `authentication_key` (String)
-- `gateway` (Set of Object) (see [below for nested schema](#nestedobjatt--a_side--access_point--gateway))
+- **Deprecated** `gateway` Use `router` instead (Set of Object) (see [below for nested schema](#nestedobjatt--a_side--access_point--router))
+- `router` CloudRouter; Replaces `gateway` attribute (Set of Object) (see [below for nested schema](#nestedobjatt--a_side--access_point--router))
 - `interface` (Set of Object) (see [below for nested schema](#nestedobjatt--a_side--access_point--interface))
 - `link_protocol` (Set of Object) (see [below for nested schema](#nestedobjatt--a_side--access_point--link_protocol))
 - `location` (Set of Object) (see [below for nested schema](#nestedobjatt--a_side--access_point--location))
@@ -85,8 +86,8 @@ Read-Only:
 - `organization_name` (String)
 
 
-<a id="nestedobjatt--a_side--access_point--gateway"></a>
-### Nested Schema for `a_side.access_point.gateway`
+<a id="nestedobjatt--a_side--access_point--router"></a>
+### Nested Schema for `a_side.access_point.router`
 
 Read-Only:
 
@@ -366,7 +367,8 @@ Read-Only:
 
 - `account` (Set of Object) (see [below for nested schema](#nestedobjatt--z_side--access_point--account))
 - `authentication_key` (String)
-- `gateway` (Set of Object) (see [below for nested schema](#nestedobjatt--z_side--access_point--gateway))
+- **Deprecated** `gateway` Use `router` instead (Set of Object) (see [below for nested schema](#nestedobjatt--z_side--access_point--router))
+- `router` CloudRouter; Replaces `gateway` attribute (Set of Object) (see [below for nested schema](#nestedobjatt--z_side--access_point--router))
 - `interface` (Set of Object) (see [below for nested schema](#nestedobjatt--z_side--access_point--interface))
 - `link_protocol` (Set of Object) (see [below for nested schema](#nestedobjatt--z_side--access_point--link_protocol))
 - `location` (Set of Object) (see [below for nested schema](#nestedobjatt--z_side--access_point--location))
@@ -392,8 +394,8 @@ Read-Only:
 - `organization_name` (String)
 
 
-<a id="nestedobjatt--z_side--access_point--gateway"></a>
-### Nested Schema for `z_side.access_point.gateway`
+<a id="nestedobjatt--z_side--access_point--router"></a>
+### Nested Schema for `z_side.access_point.router`
 
 Read-Only:
 

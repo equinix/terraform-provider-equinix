@@ -297,7 +297,7 @@ func accountToTerra(account *v4.SimplifiedAccount) *schema.Set {
 	return accountSet
 }
 
-func accountFgToTerra(account *v4.SimplifiedAccount) *schema.Set {
+func accountCloudRouterToTerra(account *v4.SimplifiedAccount) *schema.Set {
 	if account == nil {
 		return nil
 	}
@@ -309,7 +309,7 @@ func accountFgToTerra(account *v4.SimplifiedAccount) *schema.Set {
 		}
 	}
 	accountSet := schema.NewSet(
-		schema.HashResource(createFgAccountRes),
+		schema.HashResource(createCloudRouterAccountRes),
 		mappedAccounts,
 	)
 
@@ -487,7 +487,7 @@ func locationToTerra(location *v4.SimplifiedLocation) *schema.Set {
 	return locationSet
 }
 
-func locationFGToTerra(location *v4.SimplifiedLocationWithoutIbx) *schema.Set {
+func locationCloudRouterToTerra(location *v4.SimplifiedLocationWithoutIbx) *schema.Set {
 	locations := []*v4.SimplifiedLocationWithoutIbx{location}
 	mappedLocations := make([]interface{}, len(locations))
 	for i, location := range locations {

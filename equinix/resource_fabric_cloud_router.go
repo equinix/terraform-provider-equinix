@@ -64,14 +64,14 @@ func resourceCloudRouterCreate(ctx context.Context, d *schema.ResourceData, meta
 		Project:       &project,
 	}
 
-	fg, _, err := client.CloudRoutersApi.CreateGateway(ctx, createRequest)
+	fcr, _, err := client.CloudRoutersApi.CreateGateway(ctx, createRequest)
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	d.SetId(fg.Uuid)
+	d.SetId(fcr.Uuid)
 
-	if _, err = waitUntilFGIsProvisioned(d.Id(), meta, ctx); err != nil {
-		return diag.Errorf("error waiting for FG (%s) to be created: %s", d.Id(), err)
+	if _, err = waitUntilCloudRouterIsProvisioned(d.Id(), meta, ctx); err != nil {
+		return diag.Errorf("error waiting for Cloud Router (%s) to be created: %s", d.Id(), err)
 	}
 
 	return resourceCloudRouterRead(ctx, d, meta)
@@ -92,19 +92,19 @@ func resourceCloudRouterRead(ctx context.Context, d *schema.ResourceData, meta i
 	return setCloudRouterMap(d, CloudRouter)
 }
 
-func setCloudRouterMap(d *schema.ResourceData, fg v4.CloudRouter) diag.Diagnostics {
+func setCloudRouterMap(d *schema.ResourceData, fcr v4.CloudRouter) diag.Diagnostics {
 	diags := diag.Diagnostics{}
 	err := setMap(d, map[string]interface{}{
-		"name":          fg.Name,
-		"href":          fg.Href,
-		"type":          fg.Type_,
-		"state":         fg.State,
-		"package":       CloudRouterPackageToTerra(fg.Package_),
-		"location":      locationFGToTerra(fg.Location),
-		"change_log":    changeLogToTerra(fg.ChangeLog),
-		"account":       accountFgToTerra(fg.Account),
-		"notifications": notificationToTerra(fg.Notifications),
-		"project":       projectToTerra(fg.Project),
+		"name":          fcr.Name,
+		"href":          fcr.Href,
+		"type":          fcr.Type_,
+		"state":         fcr.State,
+		"package":       CloudRouterPackageToTerra(fcr.Package_),
+		"location":      locationCloudRouterToTerra(fcr.Location),
+		"change_log":    changeLogToTerra(fcr.ChangeLog),
+		"account":       accountCloudRouterToTerra(fcr.Account),
+		"notifications": notificationToTerra(fcr.Notifications),
+		"project":       projectToTerra(fcr.Project),
 	})
 	if err != nil {
 		return diag.FromErr(err)
@@ -115,7 +115,7 @@ func setCloudRouterMap(d *schema.ResourceData, fg v4.CloudRouter) diag.Diagnosti
 func resourceCloudRouterUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*Config).fabricClient
 	ctx = context.WithValue(ctx, v4.ContextAccessToken, meta.(*Config).FabricAuthToken)
-	dbConn, err := waitUntilFGIsProvisioned(d.Id(), meta, ctx)
+	dbConn, err := waitUntilCloudRouterIsProvisioned(d.Id(), meta, ctx)
 	if err != nil {
 		if !strings.Contains(err.Error(), "500") {
 			d.SetId("")
@@ -133,7 +133,7 @@ func resourceCloudRouterUpdate(ctx context.Context, d *schema.ResourceData, meta
 		return diag.FromErr(fmt.Errorf("error response for the Fabric Cloud Router update, response %v, error %v", res, err))
 	}
 	updateFg := v4.CloudRouter{}
-	updateFg, err = waitForFGUpdateCompletion(d.Id(), meta, ctx)
+	updateFg, err = waitForCloudRouterUpdateCompletion(d.Id(), meta, ctx)
 
 	if err != nil {
 		if !strings.Contains(err.Error(), "500") {
@@ -146,8 +146,8 @@ func resourceCloudRouterUpdate(ctx context.Context, d *schema.ResourceData, meta
 	return setCloudRouterMap(d, updateFg)
 }
 
-func waitForFGUpdateCompletion(uuid string, meta interface{}, ctx context.Context) (v4.CloudRouter, error) {
-	log.Printf("Waiting for FG update to complete, uuid %s", uuid)
+func waitForCloudRouterUpdateCompletion(uuid string, meta interface{}, ctx context.Context) (v4.CloudRouter, error) {
+	log.Printf("Waiting for Cloud Router update to complete, uuid %s", uuid)
 	stateConf := &resource.StateChangeConf{
 		Target: []string{string(v4.PROVISIONED_CloudRouterAccessPointState)},
 		Refresh: func() (interface{}, string, error) {
@@ -172,8 +172,8 @@ func waitForFGUpdateCompletion(uuid string, meta interface{}, ctx context.Contex
 	return dbConn, err
 }
 
-func waitUntilFGIsProvisioned(uuid string, meta interface{}, ctx context.Context) (v4.CloudRouter, error) {
-	log.Printf("Waiting for FG to be provisioned, uuid %s", uuid)
+func waitUntilCloudRouterIsProvisioned(uuid string, meta interface{}, ctx context.Context) (v4.CloudRouter, error) {
+	log.Printf("Waiting for Cloud Router to be provisioned, uuid %s", uuid)
 	stateConf := &resource.StateChangeConf{
 		Pending: []string{
 			string(v4.PROVISIONED_CloudRouterAccessPointState),
@@ -220,14 +220,14 @@ func resourceCloudRouterDelete(ctx context.Context, d *schema.ResourceData, meta
 		return diag.FromErr(fmt.Errorf("error response for the Fabric Cloud Router delete. Error %v and response %v", err, resp))
 	}
 
-	err = waitUntilFGDeprovisioned(d.Id(), meta, ctx)
+	err = waitUntilCloudRouterDeprovisioned(d.Id(), meta, ctx)
 	if err != nil {
 		return diag.FromErr(fmt.Errorf("API call failed while waiting for resource deletion. Error %v", err))
 	}
 	return diags
 }
 
-func waitUntilFGDeprovisioned(uuid string, meta interface{}, ctx context.Context) error {
+func waitUntilCloudRouterDeprovisioned(uuid string, meta interface{}, ctx context.Context) error {
 	log.Printf("Waiting for Fabric Cloud Router to be deprovisioned, uuid %s", uuid)
 	stateConf := &resource.StateChangeConf{
 		Pending: []string{
