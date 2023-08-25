@@ -42,7 +42,8 @@ resource "equinix_fabric_connection" "sp-private-qinq" {
         uuid= data.equinix_fabric_ports.aside.data.0.uuid
       }
       link_protocol {
-        vlan_s_tag= var.aside_link_protocol_stag
+        type= var.aside_link_protocol_type
+        vlan_tag= var.aside_link_protocol_stag
       }
     }
   }
@@ -57,7 +58,8 @@ resource "equinix_fabric_connection" "sp-private-qinq" {
         uuid= data.equinix_fabric_service_profiles.spprivate.data.0.uuid
       }
       link_protocol {
-        vlan_s_tag= var.aside_link_protocol_stag
+        type= var.zside_link_protocol_type
+        vlan_tag= var.zside_link_protocol_stag
       }
       location {
         metro_code= var.zside_location

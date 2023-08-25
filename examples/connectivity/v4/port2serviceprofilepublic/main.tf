@@ -37,7 +37,7 @@ resource "equinix_fabric_connection" "port2profile" {
       }
       link_protocol {
         type= var.aside_link_protocol_type
-        vlan_s_tag= var.aside_link_protocol_stag
+        vlan_tag= var.aside_link_protocol_stag
       }
     }
   }
