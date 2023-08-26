@@ -60,6 +60,10 @@ func accessPointToFabric(accessPointRequest []interface{}) v4.AccessPoint {
 			accessPoint.PeeringType = &peeringType
 		}
 		cloudRouterRequest := accessPointMap["router"].(*schema.Set).List()
+		if len(cloudRouterRequest) == 0 {
+			log.Print("[DEBUG] The router attribute was not used, attempting to revert to deprecated gateway attribute")
+			cloudRouterRequest = accessPointMap["gateway"].(*schema.Set).List()
+		}
 
 		if len(cloudRouterRequest) != 0 {
 			mappedGWr := cloudRouterToFabric(cloudRouterRequest)
