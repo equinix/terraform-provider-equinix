@@ -419,6 +419,15 @@ func readConnectionSideAccessPointSch() map[string]*schema.Schema {
 				Schema: readServiceProfileSch(),
 			},
 		},
+		"gateway": {
+			Type:        schema.TypeSet,
+			Computed:    true,
+			Deprecated:  "router attribute will be returned instead",
+			Description: "Cloud Router access point information",
+			Elem: &schema.Resource{
+				Schema: readVirtualGatewaySch(),
+			},
+		},
 		"router": {
 			Type:        schema.TypeSet,
 			Computed:    true,

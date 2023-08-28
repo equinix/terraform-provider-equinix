@@ -60,6 +60,10 @@ func accessPointToFabric(accessPointRequest []interface{}) v4.AccessPoint {
 			accessPoint.PeeringType = &peeringType
 		}
 		cloudRouterRequest := accessPointMap["router"].(*schema.Set).List()
+		if len(cloudRouterRequest) == 0 {
+			log.Print("[DEBUG] The router attribute was not used, attempting to revert to deprecated gateway attribute")
+			cloudRouterRequest = accessPointMap["gateway"].(*schema.Set).List()
+		}
 
 		if len(cloudRouterRequest) != 0 {
 			mappedGWr := cloudRouterToFabric(cloudRouterRequest)
@@ -297,7 +301,7 @@ func accountToTerra(account *v4.SimplifiedAccount) *schema.Set {
 	return accountSet
 }
 
-func accountFgToTerra(account *v4.SimplifiedAccount) *schema.Set {
+func accountCloudRouterToTerra(account *v4.SimplifiedAccount) *schema.Set {
 	if account == nil {
 		return nil
 	}
@@ -309,7 +313,7 @@ func accountFgToTerra(account *v4.SimplifiedAccount) *schema.Set {
 		}
 	}
 	accountSet := schema.NewSet(
-		schema.HashResource(createFgAccountRes),
+		schema.HashResource(createCloudRouterAccountRes),
 		mappedAccounts,
 	)
 
@@ -487,7 +491,7 @@ func locationToTerra(location *v4.SimplifiedLocation) *schema.Set {
 	return locationSet
 }
 
-func locationFGToTerra(location *v4.SimplifiedLocationWithoutIbx) *schema.Set {
+func locationCloudRouterToTerra(location *v4.SimplifiedLocationWithoutIbx) *schema.Set {
 	locations := []*v4.SimplifiedLocationWithoutIbx{location}
 	mappedLocations := make([]interface{}, len(locations))
 	for i, location := range locations {

@@ -7,7 +7,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestFG2PortCreateConnection(t *testing.T) {
+func TestCloudRouter2PortCreateConnection(t *testing.T) {
 	// retryable errors in terraform testing.
 	terraformOptions := terraform.WithDefaultRetryableErrors(t, &terraform.Options{
 		TerraformDir: "../examples/fg2port",

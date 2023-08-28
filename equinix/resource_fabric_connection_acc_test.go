@@ -40,14 +40,14 @@ func TestAccFabricCreateConnection(t *testing.T) {
 	})
 }
 
-func TestAccFabricCreateFGConnection(t *testing.T) {
+func TestAccFabricCreateCloudRouterConnection(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: checkConnectionDelete,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccFabricCreateFG2portConnectionConfig("fabric_tf_acc_FG2port1"),
+				Config: testAccFabricCreateCloudRouter2portConnectionConfig("fabric_tf_acc_FG2port1"),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(
 						"equinix_fabric_connection.test", "name", fmt.Sprint("fabric_tf_acc_FG2port1")),
@@ -57,7 +57,7 @@ func TestAccFabricCreateFGConnection(t *testing.T) {
 				ExpectNonEmptyPlan: true,
 			},
 			{
-				Config: testAccFabricCreateFG2portConnectionConfig("fabric_tf_acc_FG2port2"),
+				Config: testAccFabricCreateCloudRouter2portConnectionConfig("fabric_tf_acc_FG2port2"),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(
 						"equinix_fabric_connection.test", "name", fmt.Sprint("fabric_tf_acc_test_FG2port2")),
@@ -253,7 +253,7 @@ func testAccFabricUpdateConnectionConfig(bandwidth int32) string {
 `, bandwidth)
 }
 
-func testAccFabricCreateFG2portConnectionConfig(name string) string {
+func testAccFabricCreateCloudRouter2portConnectionConfig(name string) string {
 	return fmt.Sprintf(`resource "equinix_fabric_connection" "test" {
 		type = "IP_VC"
 		name = "%s"

@@ -341,6 +341,16 @@ func createConnectionSideAccessPointRes() *schema.Resource {
 					Schema: createServiceProfileSch(),
 				},
 			},
+			"gateway": {
+				Type:        schema.TypeSet,
+				Optional:    true,
+				Deprecated:  "use router attribute instead; gateway is no longer a part of the supported backend",
+				Description: "Cloud Router access point information",
+				MaxItems:    1,
+				Elem: &schema.Resource{
+					Schema: createVirtualGatewaySch(),
+				},
+			},
 			"router": {
 				Type:        schema.TypeSet,
 				Optional:    true,
