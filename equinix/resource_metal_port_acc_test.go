@@ -7,7 +7,13 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
+	"github.com/packethost/packngo"
+)
+
+var (
+	matchErrPortReadyTimeout = regexp.MustCompile(".* timeout while waiting for state to become 'completed'.*")
 )
 
 func confAccMetalPort_base(name string) string {
@@ -194,12 +200,44 @@ resource "equinix_metal_vlan" "test2" {
 `, confAccMetalPort_base(name))
 }
 
+func confAccMetalPort_HybridBonded_timeout(rInt int, name, createTimeout, updateTimeout string) string {
+	if createTimeout == "" {
+		createTimeout = "20m"
+	}
+	if updateTimeout == "" {
+		updateTimeout = "20m"
+	}
+
+	return fmt.Sprintf(`
+%s
+
+resource "equinix_metal_port" "bond0" {
+  port_id  = local.bond0_id
+  layer2   = false
+  bonded   = true
+  reset_on_delete = true
+  vlan_ids = [equinix_metal_vlan.test.id]
+  timeouts {
+    create = "%s"
+	update = "%s"
+  }
+  depends_on = [equinix_metal_vlan.test]
+}
+
+resource "equinix_metal_vlan" "test" {
+  description = "tfacc-vlan test-%d"
+  metro       = equinix_metal_device.test.metro
+  project_id  = equinix_metal_project.test.id
+}
+`, confAccMetalPort_base(name), createTimeout, updateTimeout, rInt)
+}
+
 func TestAccMetalPort_hybridBondedVxlan(t *testing.T) {
 	rs := acctest.RandString(10)
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t) },
 		ExternalProviders: testExternalProviders,
-		Providers:         testAccProviders,
+		ProviderFactories: testAccProviderFactories,
 		CheckDestroy:      testAccMetalPortDestroyed,
 		Steps: []resource.TestStep{
 			{
@@ -228,7 +266,7 @@ func TestAccMetalPort_L2IndividualNativeVlan(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t) },
 		ExternalProviders: testExternalProviders,
-		Providers:         testAccProviders,
+		ProviderFactories: testAccProviderFactories,
 		CheckDestroy:      testAccMetalPortDestroyed,
 		Steps: []resource.TestStep{
 			{
@@ -261,7 +299,7 @@ func testAccMetalPortTemplate(t *testing.T, conf func(string) string, expectedTy
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t) },
 		ExternalProviders: testExternalProviders,
-		Providers:         testAccProviders,
+		ProviderFactories: testAccProviderFactories,
 		CheckDestroy:      testAccMetalPortDestroyed,
 		Steps: []resource.TestStep{
 			{
@@ -339,4 +377,114 @@ func testAccMetalPortDestroyed(s *terraform.State) error {
 		}
 	}
 	return nil
+}
+
+func testAccWaitForPortActive(deviceName, portName string) resource.ImportStateIdFunc {
+	return func(state *terraform.State) (string, error) {
+		rs, ok := state.RootModule().Resources[deviceName]
+		if !ok {
+			return "", fmt.Errorf("Device Not found in the state: %s", deviceName)
+		}
+		if rs.Primary.ID == "" {
+			return "", fmt.Errorf("No Record ID is set")
+		}
+
+		meta := testAccProvider.Meta()
+		rd := new(schema.ResourceData)
+		meta.(*Config).addModuleToMetalUserAgent(rd)
+		client := meta.(*Config).metal
+		device, _, err := client.Devices.Get(rs.Primary.ID, &packngo.GetOptions{Includes: []string{"ports"}})
+		if err != nil {
+			return "", fmt.Errorf("error while fetching device with Id [%s], error: %w", rs.Primary.ID, err)
+		}
+		if device == nil {
+			return "", fmt.Errorf("Not able to find devices with Id [%s]", rs.Primary.ID)
+		}
+		if len(device.NetworkPorts) == 0 {
+			return "", fmt.Errorf("Found no ports for the device with Id [%s]", rs.Primary.ID)
+		}
+
+		for _, port := range device.NetworkPorts {
+			if port.Name == portName {
+				return port.ID, nil
+			}
+		}
+
+		return "", fmt.Errorf("No port with name [%s] found", portName)
+	}
+}
+
+func TestAccMetalPortCreate_hybridBonded_timeout(t *testing.T) {
+	rs := acctest.RandString(10)
+	rInt := acctest.RandInt()
+	deviceName := "equinix_metal_device.test"
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t) },
+		ExternalProviders: testExternalProviders,
+		ProviderFactories: testAccProviderFactories,
+		CheckDestroy:      testAccMetalPortDestroyed,
+		Steps: []resource.TestStep{
+			{
+				Config:      confAccMetalPort_HybridBonded_timeout(rInt, rs, "5s", ""),
+				ExpectError: matchErrPortReadyTimeout,
+			},
+			{
+				/**
+				Step 1 errors out, state doesnt have port, need to import that in the state before deleting
+				*/
+				ResourceName:       "equinix_metal_port.bond0",
+				ImportState:        true,
+				ImportStateIdFunc:  testAccWaitForPortActive(deviceName, "bond0"),
+				ImportStatePersist: true,
+			},
+			{
+				Config:  confAccMetalPort_HybridBonded_timeout(rInt, rs, "5s", ""),
+				Destroy: true,
+			},
+		},
+	})
+}
+
+func TestAccMetalPortUpdate_hybridBonded_timeout(t *testing.T) {
+	rs := acctest.RandString(10)
+	rInt := acctest.RandInt()
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t) },
+		ExternalProviders: testExternalProviders,
+		ProviderFactories: testAccProviderFactories,
+		CheckDestroy:      testAccMetalPortDestroyed,
+		Steps: []resource.TestStep{
+			{
+				Config: confAccMetalPort_HybridBonded_timeout(rInt, rs, "", "5s"),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("equinix_metal_port.bond0", "name", "bond0"),
+					resource.TestCheckResourceAttr("equinix_metal_port.bond0", "type", "NetworkBondPort"),
+					resource.TestCheckResourceAttrSet("equinix_metal_port.bond0", "bonded"),
+					resource.TestCheckResourceAttrSet("equinix_metal_port.bond0", "disbond_supported"),
+					resource.TestCheckResourceAttrSet("equinix_metal_port.bond0", "port_id"),
+					resource.TestCheckResourceAttr("equinix_metal_port.bond0", "network_type", "hybrid-bonded"),
+				),
+			},
+			{
+				Config:      confAccMetalPort_HybridBonded_timeout(rInt+1, rs, "", "5s"),
+				ExpectError: matchErrPortReadyTimeout,
+			},
+			{
+				ResourceName: "equinix_metal_port.bond0",
+				ImportState:  true,
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("equinix_metal_port.bond0", "network_type", "layer3"),
+				),
+			},
+			{
+				Config: confAccMetalPort_HybridBonded_timeout(rInt+1, rs, "", ""),
+			},
+			{
+				Config:  confAccMetalPort_HybridBonded_timeout(rInt+1, rs, "", ""),
+				Destroy: true,
+			},
+		},
+	})
 }
