@@ -43,7 +43,7 @@ func checkCloudRouterDelete(s *terraform.State) error {
 		if rs.Type != "equinix_fabric_cloud_router" {
 			continue
 		}
-		err := waitUntilFGDeprovisioned(rs.Primary.ID, testAccProvider.Meta(), ctx)
+		err := waitUntilCloudRouterDeprovisioned(rs.Primary.ID, testAccProvider.Meta(), ctx)
 		if err != nil {
 			return fmt.Errorf("API call failed while waiting for resource deletion")
 		}
@@ -89,7 +89,7 @@ func TestAccCloudRouterRead(t *testing.T) {
 				Config: testAccCloudRouterReadConfig(),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(
-						"equinix_fabric_cloud_router.test", "name", fmt.Sprint("fg_tf_acc_test")),
+						"equinix_fabric_cloud_router.test", "name", fmt.Sprint("fcr_tf_acc_test")),
 				),
 			},
 		},
