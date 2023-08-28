@@ -43,7 +43,7 @@ resource "equinix_fabric_connection" "sp-private-qinq" {
       }
       link_protocol {
         type= var.aside_link_protocol_type
-        vlan_tag= var.aside_link_protocol_stag
+        vlan_tag= var.aside_link_protocol_tag
       }
     }
   }
@@ -59,7 +59,7 @@ resource "equinix_fabric_connection" "sp-private-qinq" {
       }
       link_protocol {
         type= var.zside_link_protocol_type
-        vlan_tag= var.zside_link_protocol_stag
+        vlan_tag= var.zside_link_protocol_tag
       }
       location {
         metro_code= var.zside_location
