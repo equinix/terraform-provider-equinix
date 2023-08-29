@@ -3,6 +3,6 @@ terraform {
     equinix = {
       source = "developer.equinix.com/terraform/equinix"
       version = "9.0.0"
-     }
+    }
   }
 }
