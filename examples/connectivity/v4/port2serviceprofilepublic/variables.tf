@@ -11,7 +11,7 @@ variable "purchase_order_number" {}
 variable "aside_ap_type" {}
 variable "aside_port_uuid" {}
 variable "aside_link_protocol_type" {}
-variable "aside_link_protocol_stag" {}
+variable "aside_link_protocol_tag" {}
 variable "zside_ap_type" {}
 variable "zside_ap_profile_type" {}
 variable "zside_ap_profile_uuid" {}
