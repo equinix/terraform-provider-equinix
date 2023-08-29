@@ -24,7 +24,7 @@ Fabric V4 API compatible resource allows creation and management of Equinix Fabr
 - `bandwidth` (Number) Connection bandwidth in Mbps
 - `name` (String) Connection name. An alpha-numeric 24 characters string which can include only hyphens and underscores
 - `notifications` (Block List, Min: 1) Preferences for notifications on connection configuration or status changes (see [below for nested schema](#nestedblock--notifications))
-- `type` (String) Defines the connection type like VG_VC, EVPL_VC, EPL_VC, EC_VC, GW_VC, ACCESS_EPL_VC
+- `type` (String) Defines the connection type like VG_VC, EVPL_VC, EPL_VC, EC_VC, IP_VC, ACCESS_EPL_VC
 - `z_side` (Block Set, Min: 1) Destination or Provider side connection configuration object of the multi-segment connection (see [below for nested schema](#nestedblock--z_side))
 
 ### Optional
@@ -61,7 +61,8 @@ Optional:
 Optional:
 
 - `authentication_key` (String) Authentication key for provider based connections
-- `gateway` (Block Set) Gateway access point information (see [below for nested schema](#nestedblock--a_side--access_point--gateway))
+- **Deprecated** `gateway` Use `router` attribute instead; (Block Set) (see [below for nested schema](#nestedblock--a_side--access_point--router))
+- `router` (Block Set) Cloud Router access point information that replaces `gateway` (refers to [below for nested schema](#nestedblock--a_side--access_point--router))
 - `interface` (Block Set) Virtual device interface (see [below for nested schema](#nestedblock--a_side--access_point--interface))
 - `link_protocol` (Block Set) Connection link protocol (see [below for nested schema](#nestedblock--a_side--access_point--link_protocol))
 - `location` (Block Set) Access point location (see [below for nested schema](#nestedblock--a_side--access_point--location))
@@ -78,8 +79,8 @@ Read-Only:
 
 - `account` (Set of Object) Account (see [below for nested schema](#nestedatt--a_side--access_point--account))
 
-<a id="nestedblock--a_side--access_point--gateway"></a>
-### Nested Schema for `a_side.access_point.gateway`
+<a id="nestedblock--a_side--access_point--router"></a>
+### Nested Schema for `a_side.access_point.router`
 
 Optional:
 
@@ -262,7 +263,8 @@ Optional:
 Optional:
 
 - `authentication_key` (String) Authentication key for provider based connections
-- `gateway` (Block Set) Gateway access point information (see [below for nested schema](#nestedblock--z_side--access_point--gateway))
+- **Deprecated** `gateway` Use `router` attribute instead; (Block Set) (see [below for nested schema](#nestedblock--z_side--access_point--router))
+- `router` (Block Set) Cloud Router access point information that replaces `gateway` (refers to [below for nested schema](#nestedblock--z_side--access_point--router))
 - `interface` (Block Set) Virtual device interface (see [below for nested schema](#nestedblock--z_side--access_point--interface))
 - `link_protocol` (Block Set) Connection link protocol (see [below for nested schema](#nestedblock--z_side--access_point--link_protocol))
 - `location` (Block Set) Access point location (see [below for nested schema](#nestedblock--z_side--access_point--location))
@@ -279,8 +281,8 @@ Read-Only:
 
 - `account` (Set of Object) Account (see [below for nested schema](#nestedatt--z_side--access_point--account))
 
-<a id="nestedblock--z_side--access_point--gateway"></a>
-### Nested Schema for `z_side.access_point.gateway`
+<a id="nestedblock--z_side--access_point--router"></a>
+### Nested Schema for `z_side.access_point.router`
 
 Optional:
 

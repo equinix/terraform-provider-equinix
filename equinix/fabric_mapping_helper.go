@@ -59,12 +59,16 @@ func accessPointToFabric(accessPointRequest []interface{}) v4.AccessPoint {
 			peeringType := v4.PeeringType(peeringTypeRaw)
 			accessPoint.PeeringType = &peeringType
 		}
-		gatewayRequest := accessPointMap["gateway"].(*schema.Set).List()
+		cloudRouterRequest := accessPointMap["router"].(*schema.Set).List()
+		if len(cloudRouterRequest) == 0 {
+			log.Print("[DEBUG] The router attribute was not used, attempting to revert to deprecated gateway attribute")
+			cloudRouterRequest = accessPointMap["gateway"].(*schema.Set).List()
+		}
 
-		if len(gatewayRequest) != 0 {
-			mappedGWr := gatewayToFabric(gatewayRequest)
+		if len(cloudRouterRequest) != 0 {
+			mappedGWr := cloudRouterToFabric(cloudRouterRequest)
 			if mappedGWr.Uuid != "" {
-				accessPoint.Gateway = &mappedGWr
+				accessPoint.Router = &mappedGWr
 			}
 		}
 		apt := v4.AccessPointType(typeVal)
@@ -100,17 +104,17 @@ func accessPointToFabric(accessPointRequest []interface{}) v4.AccessPoint {
 	return accessPoint
 }
 
-func gatewayToFabric(gatewayRequest []interface{}) v4.VirtualGateway {
-	if gatewayRequest == nil {
-		return v4.VirtualGateway{}
+func cloudRouterToFabric(cloudRouterRequest []interface{}) v4.CloudRouter {
+	if cloudRouterRequest == nil {
+		return v4.CloudRouter{}
 	}
-	gatewayMapped := v4.VirtualGateway{}
-	for _, gwr := range gatewayRequest {
-		gwrMap := gwr.(map[string]interface{})
-		gwuuid := gwrMap["uuid"].(string)
-		gatewayMapped = v4.VirtualGateway{Uuid: gwuuid}
+	cloudRouterMapped := v4.CloudRouter{}
+	for _, crr := range cloudRouterRequest {
+		crrMap := crr.(map[string]interface{})
+		cruuid := crrMap["uuid"].(string)
+		cloudRouterMapped = v4.CloudRouter{Uuid: cruuid}
 	}
-	return gatewayMapped
+	return cloudRouterMapped
 }
 
 func projectToFabric(projectRequest []interface{}) v4.Project {
@@ -121,8 +125,7 @@ func projectToFabric(projectRequest []interface{}) v4.Project {
 	for _, pr := range projectRequest {
 		prMap := pr.(map[string]interface{})
 		projectId := prMap["project_id"].(string)
-		href := prMap["href"].(string)
-		mappedPr = v4.Project{ProjectId: projectId, Href: href}
+		mappedPr = v4.Project{ProjectId: projectId}
 	}
 	return mappedPr
 }
@@ -230,6 +233,49 @@ func locationToFabric(locationList []interface{}) v4.SimplifiedLocation {
 	return sl
 }
 
+func accountToCloudRouter(accountList []interface{}) v4.SimplifiedAccount {
+	sa := v4.SimplifiedAccount{}
+	for _, ll := range accountList {
+		llMap := ll.(map[string]interface{})
+		ac := llMap["account_number"].(int)
+		sa = v4.SimplifiedAccount{AccountNumber: int64(ac)}
+	}
+	return sa
+}
+
+func locationToCloudRouter(locationList []interface{}) v4.SimplifiedLocationWithoutIbx {
+	sl := v4.SimplifiedLocationWithoutIbx{}
+	for _, ll := range locationList {
+		llMap := ll.(map[string]interface{})
+		mc := llMap["metro_code"].(string)
+		sl = v4.SimplifiedLocationWithoutIbx{MetroCode: mc}
+	}
+	return sl
+}
+
+func packageToCloudRouter(packageList []interface{}) v4.CloudRouterPackageType {
+	p := v4.CloudRouterPackageType{}
+	for _, pl := range packageList {
+		plMap := pl.(map[string]interface{})
+		code := plMap["code"].(string)
+		p = v4.CloudRouterPackageType{Code: code}
+	}
+	return p
+}
+
+func projectToCloudRouter(projectRequest []interface{}) v4.Project {
+	if projectRequest == nil {
+		return v4.Project{}
+	}
+	mappedPr := v4.Project{}
+	for _, pr := range projectRequest {
+		prMap := pr.(map[string]interface{})
+		projectId := prMap["project_id"].(string)
+		mappedPr = v4.Project{ProjectId: projectId}
+	}
+	return mappedPr
+}
+
 func accountToTerra(account *v4.SimplifiedAccount) *schema.Set {
 	if account == nil {
 		return nil
@@ -249,6 +295,25 @@ func accountToTerra(account *v4.SimplifiedAccount) *schema.Set {
 	}
 	accountSet := schema.NewSet(
 		schema.HashResource(createAccountRes),
+		mappedAccounts,
+	)
+
+	return accountSet
+}
+
+func accountCloudRouterToTerra(account *v4.SimplifiedAccount) *schema.Set {
+	if account == nil {
+		return nil
+	}
+	accounts := []*v4.SimplifiedAccount{account}
+	mappedAccounts := make([]interface{}, len(accounts))
+	for i, account := range accounts {
+		mappedAccounts[i] = map[string]interface{}{
+			"account_number": int(account.AccountNumber),
+		}
+	}
+	accountSet := schema.NewSet(
+		schema.HashResource(createCloudRouterAccountRes),
 		mappedAccounts,
 	)
 
@@ -426,6 +491,23 @@ func locationToTerra(location *v4.SimplifiedLocation) *schema.Set {
 	return locationSet
 }
 
+func locationCloudRouterToTerra(location *v4.SimplifiedLocationWithoutIbx) *schema.Set {
+	locations := []*v4.SimplifiedLocationWithoutIbx{location}
+	mappedLocations := make([]interface{}, len(locations))
+	for i, location := range locations {
+		mappedLocations[i] = map[string]interface{}{
+			"region":     location.Region,
+			"metro_name": location.MetroName,
+			"metro_code": location.MetroCode,
+		}
+	}
+	locationSet := schema.NewSet(
+		schema.HashResource(createLocationRes),
+		mappedLocations,
+	)
+	return locationSet
+}
+
 func serviceTokenToTerra(serviceToken *v4.ServiceToken) *schema.Set {
 	if serviceToken == nil {
 		return nil
@@ -481,22 +563,37 @@ func additionalInfoToTerra(additionalInfol []v4.ConnectionSideAdditionalInfo) []
 	return mappedadditionalInfol
 }
 
-func fabricGatewayToTerra(virtualGateway *v4.VirtualGateway) *schema.Set {
-	if virtualGateway == nil {
+func CloudRouterToTerra(cloudRouter *v4.CloudRouter) *schema.Set {
+	if cloudRouter == nil {
 		return nil
 	}
-	virtualGateways := []*v4.VirtualGateway{virtualGateway}
-	mappedvirtualGateways := make([]interface{}, len(virtualGateways))
-	for _, virtualGateway := range virtualGateways {
-		mappedvirtualGateway := make(map[string]interface{})
-		mappedvirtualGateway["uuid"] = virtualGateway.Uuid
-		mappedvirtualGateway["href"] = virtualGateway.Href
-		mappedvirtualGateways = append(mappedvirtualGateways, mappedvirtualGateway)
+	cloudRouters := []*v4.CloudRouter{cloudRouter}
+	mappedCloudRouters := make([]interface{}, len(cloudRouters))
+	for _, cloudRouter := range cloudRouters {
+		mappedCloudRouter := make(map[string]interface{})
+		mappedCloudRouter["uuid"] = cloudRouter.Uuid
+		mappedCloudRouter["href"] = cloudRouter.Href
+		mappedCloudRouters = append(mappedCloudRouters, mappedCloudRouter)
 	}
 	linkedProtocolSet := schema.NewSet(
 		schema.HashResource(createGatewayProjectSchRes),
-		mappedvirtualGateways)
+		mappedCloudRouters)
 	return linkedProtocolSet
+}
+
+func CloudRouterPackageToTerra(packageType *v4.CloudRouterPackageType) *schema.Set {
+	packageTypes := []*v4.CloudRouterPackageType{packageType}
+	mappedPackages := make([]interface{}, len(packageTypes))
+	for i, packageType := range packageTypes {
+		mappedPackages[i] = map[string]interface{}{
+			"code": packageType.Code,
+		}
+	}
+	packageSet := schema.NewSet(
+		schema.HashResource(createPackageRes),
+		mappedPackages,
+	)
+	return packageSet
 }
 
 func projectToTerra(project *v4.Project) *schema.Set {
@@ -508,7 +605,6 @@ func projectToTerra(project *v4.Project) *schema.Set {
 	for _, project := range projects {
 		mappedProject := make(map[string]interface{})
 		mappedProject["project_id"] = project.ProjectId
-		mappedProject["href"] = project.Href
 		mappedProjects = append(mappedProjects, mappedProject)
 	}
 	projectSet := schema.NewSet(
@@ -576,8 +672,8 @@ func accessPointToTerra(accessPoint *v4.AccessPoint) *schema.Set {
 		if accessPoint.Profile != nil {
 			mappedAccessPoint["profile"] = simplifiedServiceProfileToTerra(accessPoint.Profile)
 		}
-		if accessPoint.Gateway != nil {
-			mappedAccessPoint["gateway"] = fabricGatewayToTerra(accessPoint.Gateway)
+		if accessPoint.Router != nil {
+			mappedAccessPoint["router"] = CloudRouterToTerra(accessPoint.Router)
 		}
 		if accessPoint.LinkProtocol != nil {
 			mappedAccessPoint["link_protocol"] = linkedProtocolToTerra(*accessPoint.LinkProtocol)
@@ -726,6 +822,290 @@ func portToTerra(port *v4.SimplifiedPort) *schema.Set {
 	return portSet
 }
 
+func routingProtocolDirectIpv4ToFabric(routingProtocolDirectIpv4Request []interface{}) v4.DirectConnectionIpv4 {
+	mappedRpDirectIpv4 := v4.DirectConnectionIpv4{}
+	for _, str := range routingProtocolDirectIpv4Request {
+		directIpv4Map := str.(map[string]interface{})
+		equinixIfaceIp := directIpv4Map["equinix_iface_ip"].(string)
+
+		mappedRpDirectIpv4 = v4.DirectConnectionIpv4{EquinixIfaceIp: equinixIfaceIp}
+	}
+	return mappedRpDirectIpv4
+}
+
+func routingProtocolDirectIpv6ToFabric(routingProtocolDirectIpv6Request []interface{}) v4.DirectConnectionIpv6 {
+	mappedRpDirectIpv6 := v4.DirectConnectionIpv6{}
+	for _, str := range routingProtocolDirectIpv6Request {
+		directIpv6Map := str.(map[string]interface{})
+		equinixIfaceIp := directIpv6Map["equinix_iface_ip"].(string)
+
+		mappedRpDirectIpv6 = v4.DirectConnectionIpv6{EquinixIfaceIp: equinixIfaceIp}
+	}
+	return mappedRpDirectIpv6
+}
+
+func routingProtocolBgpIpv4ToFabric(routingProtocolBgpIpv4Request []interface{}) v4.BgpConnectionIpv4 {
+	mappedRpBgpIpv4 := v4.BgpConnectionIpv4{}
+	for _, str := range routingProtocolBgpIpv4Request {
+		bgpIpv4Map := str.(map[string]interface{})
+		customerPeerIp := bgpIpv4Map["customer_peer_ip"].(string)
+		enabled := bgpIpv4Map["enabled"].(bool)
+
+		mappedRpBgpIpv4 = v4.BgpConnectionIpv4{CustomerPeerIp: customerPeerIp, Enabled: enabled}
+	}
+	return mappedRpBgpIpv4
+}
+
+func routingProtocolBgpIpv6ToFabric(routingProtocolBgpIpv6Request []interface{}) v4.BgpConnectionIpv6 {
+	mappedRpBgpIpv6 := v4.BgpConnectionIpv6{}
+	for _, str := range routingProtocolBgpIpv6Request {
+		bgpIpv6Map := str.(map[string]interface{})
+		customerPeerIp := bgpIpv6Map["customer_peer_ip"].(string)
+		enabled := bgpIpv6Map["enabled"].(bool)
+
+		mappedRpBgpIpv6 = v4.BgpConnectionIpv6{CustomerPeerIp: customerPeerIp, Enabled: enabled}
+	}
+	return mappedRpBgpIpv6
+}
+
+func routingProtocolBfdToFabric(routingProtocolBfdRequest []interface{}) v4.RoutingProtocolBfd {
+	mappedRpBfd := v4.RoutingProtocolBfd{}
+	for _, str := range routingProtocolBfdRequest {
+		rpBfdMap := str.(map[string]interface{})
+		bfdEnabled := rpBfdMap["enabled"].(bool)
+		bfdInterval := rpBfdMap["interval"].(string)
+
+		mappedRpBfd = v4.RoutingProtocolBfd{Enabled: bfdEnabled, Interval: bfdInterval}
+	}
+	return mappedRpBfd
+}
+
+func routingProtocolChangeToFabric(routingProtocolChangeRequest []interface{}) v4.RoutingProtocolChange {
+	mappedRpChange := v4.RoutingProtocolChange{}
+	for _, str := range routingProtocolChangeRequest {
+		rpChangeMap := str.(map[string]interface{})
+		uuid := rpChangeMap["uuid"].(string)
+		rpChangeType := rpChangeMap["type"].(string)
+
+		mappedRpChange = v4.RoutingProtocolChange{Uuid: uuid, Type_: rpChangeType}
+	}
+	return mappedRpChange
+}
+
+func routingProtocolDirectTypeToTerra(routingProtocolDirect *v4.RoutingProtocolDirectType) *schema.Set {
+	if routingProtocolDirect == nil {
+		return nil
+	}
+	routingProtocolDirects := []*v4.RoutingProtocolDirectType{routingProtocolDirect}
+	mappedDirects := make([]interface{}, len(routingProtocolDirects))
+	for _, routingProtocolDirect := range routingProtocolDirects {
+		mappedDirect := make(map[string]interface{})
+		mappedDirect["type"] = routingProtocolDirect.Type_
+		mappedDirect["name"] = routingProtocolDirect.Name
+		if routingProtocolDirect.DirectIpv4 != nil {
+			mappedDirect["direct_ipv4"] = routingProtocolDirectConnectionIpv4ToTerra(routingProtocolDirect.DirectIpv4)
+		}
+		if routingProtocolDirect.DirectIpv6 != nil {
+			mappedDirect["direct_ipv6"] = routingProtocolDirectConnectionIpv6ToTerra(routingProtocolDirect.DirectIpv6)
+		}
+		mappedDirects = append(mappedDirects, mappedDirect)
+	}
+	rpDirectSet := schema.NewSet(
+		schema.HashResource(createRoutingProtocolDirectTypeRes),
+		mappedDirects,
+	)
+
+	return rpDirectSet
+}
+
+func routingProtocolDirectConnectionIpv4ToTerra(routingProtocolDirectIpv4 *v4.DirectConnectionIpv4) *schema.Set {
+	if routingProtocolDirectIpv4 == nil {
+		return nil
+	}
+	routingProtocolDirectIpv4s := []*v4.DirectConnectionIpv4{routingProtocolDirectIpv4}
+	mappedDirectIpv4s := make([]interface{}, len(routingProtocolDirectIpv4s))
+	for i, routingProtocolDirectIpv4 := range routingProtocolDirectIpv4s {
+		mappedDirectIpv4s[i] = map[string]interface{}{
+			"equinix_iface_ip": routingProtocolDirectIpv4.EquinixIfaceIp,
+		}
+	}
+	rpDirectIpv4Set := schema.NewSet(
+		schema.HashResource(createDirectConnectionIpv4Res),
+		mappedDirectIpv4s,
+	)
+	return rpDirectIpv4Set
+}
+
+func routingProtocolDirectConnectionIpv6ToTerra(routingProtocolDirectIpv6 *v4.DirectConnectionIpv6) *schema.Set {
+	if routingProtocolDirectIpv6 == nil {
+		return nil
+	}
+	routingProtocolDirectIpv6s := []*v4.DirectConnectionIpv6{routingProtocolDirectIpv6}
+	mappedDirectIpv6s := make([]interface{}, len(routingProtocolDirectIpv6s))
+	for i, routingProtocolDirectIpv6 := range routingProtocolDirectIpv6s {
+		mappedDirectIpv6s[i] = map[string]interface{}{
+			"equinix_iface_ip": routingProtocolDirectIpv6.EquinixIfaceIp,
+		}
+	}
+	rpDirectIpv6Set := schema.NewSet(
+		schema.HashResource(createDirectConnectionIpv6Res),
+		mappedDirectIpv6s,
+	)
+	return rpDirectIpv6Set
+}
+
+func routingProtocolBgpTypeToTerra(routingProtocolBgp *v4.RoutingProtocolBgpType) *schema.Set {
+	if routingProtocolBgp == nil {
+		return nil
+	}
+	routingProtocolBgps := []*v4.RoutingProtocolBgpType{routingProtocolBgp}
+	mappedBgps := make([]interface{}, len(routingProtocolBgps))
+	for _, routingProtocolBgp := range routingProtocolBgps {
+		mappedBgp := make(map[string]interface{})
+		mappedBgp["type"] = routingProtocolBgp.Type_
+		mappedBgp["name"] = routingProtocolBgp.Name
+		if routingProtocolBgp.BgpIpv4 != nil {
+			mappedBgp["bgp_ipv4"] = routingProtocolBgpConnectionIpv4ToTerra(routingProtocolBgp.BgpIpv4)
+		}
+		if routingProtocolBgp.BgpIpv6 != nil {
+			mappedBgp["bgp_ipv6"] = routingProtocolBgpConnectionIpv6ToTerra(routingProtocolBgp.BgpIpv6)
+		}
+		mappedBgp["customer_asn"] = routingProtocolBgp.CustomerAsn
+		mappedBgp["bgp_auth_key"] = routingProtocolBgp.BgpAuthKey
+		if routingProtocolBgp.Bfd != nil {
+			mappedBgp["bfd"] = routingProtocolBfdToTerra(routingProtocolBgp.Bfd)
+		}
+
+		mappedBgps = append(mappedBgps, mappedBgp)
+
+	}
+	rpBgpSet := schema.NewSet(
+		schema.HashResource(createRoutingProtocolBgpTypeRes),
+		mappedBgps,
+	)
+
+	return rpBgpSet
+}
+
+func routingProtocolBgpConnectionIpv4ToTerra(routingProtocolBgpIpv4 *v4.BgpConnectionIpv4) *schema.Set {
+	if routingProtocolBgpIpv4 == nil {
+		return nil
+	}
+	routingProtocolBgpIpv4s := []*v4.BgpConnectionIpv4{routingProtocolBgpIpv4}
+	mappedBgpIpv4s := make([]interface{}, len(routingProtocolBgpIpv4s))
+	for i, routingProtocolBgpIpv4 := range routingProtocolBgpIpv4s {
+		mappedBgpIpv4s[i] = map[string]interface{}{
+			"customer_peer_ip": routingProtocolBgpIpv4.CustomerPeerIp,
+			"equinix_peer_ip":  routingProtocolBgpIpv4.EquinixPeerIp,
+			"enabled":          routingProtocolBgpIpv4.Enabled,
+		}
+	}
+	rpBgpIpv4Set := schema.NewSet(
+		schema.HashResource(createBgpConnectionIpv4Res),
+		mappedBgpIpv4s,
+	)
+	return rpBgpIpv4Set
+}
+
+func routingProtocolBgpConnectionIpv6ToTerra(routingProtocolBgpIpv6 *v4.BgpConnectionIpv6) *schema.Set {
+	if routingProtocolBgpIpv6 == nil {
+		return nil
+	}
+	routingProtocolBgpIpv6s := []*v4.BgpConnectionIpv6{routingProtocolBgpIpv6}
+	mappedBgpIpv6s := make([]interface{}, len(routingProtocolBgpIpv6s))
+	for i, routingProtocolBgpIpv6 := range routingProtocolBgpIpv6s {
+		mappedBgpIpv6s[i] = map[string]interface{}{
+			"customer_peer_ip": routingProtocolBgpIpv6.CustomerPeerIp,
+			"equinix_peer_ip":  routingProtocolBgpIpv6.EquinixPeerIp,
+			"enabled":          routingProtocolBgpIpv6.Enabled,
+		}
+	}
+	rpBgpIpv6Set := schema.NewSet(
+		schema.HashResource(createBgpConnectionIpv6Res),
+		mappedBgpIpv6s,
+	)
+	return rpBgpIpv6Set
+}
+
+func routingProtocolBfdToTerra(routingProtocolBfd *v4.RoutingProtocolBfd) *schema.Set {
+	if routingProtocolBfd == nil {
+		return nil
+	}
+	routingProtocolBfds := []*v4.RoutingProtocolBfd{routingProtocolBfd}
+	mappedRpBfds := make([]interface{}, len(routingProtocolBfds))
+	for i, routingProtocolBfd := range routingProtocolBfds {
+		mappedRpBfds[i] = map[string]interface{}{
+			"enabled":  routingProtocolBfd.Enabled,
+			"interval": routingProtocolBfd.Interval,
+		}
+	}
+	rpBfdSet := schema.NewSet(
+		schema.HashResource(createRoutingProtocolBfdRes),
+		mappedRpBfds,
+	)
+	return rpBfdSet
+}
+
+func routingProtocolOperationToTerra(routingProtocolOperation *v4.RoutingProtocolOperation) *schema.Set {
+	if routingProtocolOperation == nil {
+		return nil
+	}
+	routingProtocolOperations := []*v4.RoutingProtocolOperation{routingProtocolOperation}
+	mappedRpOperations := make([]interface{}, len(routingProtocolOperations))
+	for _, routingProtocolOperation := range routingProtocolOperations {
+		mappedRpOperation := make(map[string]interface{})
+		if routingProtocolOperation.Errors != nil {
+			mappedRpOperation["errors"] = errorToTerra(routingProtocolOperation.Errors)
+		}
+		mappedRpOperations = append(mappedRpOperations, mappedRpOperation)
+	}
+	rpOperationSet := schema.NewSet(
+		schema.HashResource(createRoutingProtocolOperationRes),
+		mappedRpOperations,
+	)
+	return rpOperationSet
+}
+
+func routingProtocolChangeToTerra(routingProtocolChange *v4.RoutingProtocolChange) *schema.Set {
+	if routingProtocolChange == nil {
+		return nil
+	}
+	routingProtocolChanges := []*v4.RoutingProtocolChange{routingProtocolChange}
+	mappedRpChanges := make([]interface{}, len(routingProtocolChanges))
+	for i, rpChanges := range routingProtocolChanges {
+		mappedRpChanges[i] = map[string]interface{}{
+			"uuid": rpChanges.Uuid,
+			"type": rpChanges.Type_,
+			"href": rpChanges.Href,
+		}
+	}
+	rpChangeSet := schema.NewSet(
+		schema.HashResource(createRoutingProtocolChangeRes),
+		mappedRpChanges,
+	)
+	return rpChangeSet
+}
+
+func getRoutingProtocolPatchUpdateRequest(rp v4.RoutingProtocolData, d *schema.ResourceData) (v4.ConnectionChangeOperation, error) {
+	changeOps := v4.ConnectionChangeOperation{}
+	existingBgpIpv4Status := rp.BgpIpv4.Enabled
+	existingBgpIpv6Status := rp.BgpIpv6.Enabled
+	updateBgpIpv4Status := d.Get("rp.BgpIpv4.Enabled")
+	updateBgpIpv6Status := d.Get("rp.BgpIpv6.Enabled")
+
+	log.Printf("existing BGP IPv4 Status: %t, existing BGP IPv6 Status: %t, Update BGP IPv4 Request: %t, Update BGP Ipv6 Request: %t",
+		existingBgpIpv4Status, existingBgpIpv6Status, updateBgpIpv4Status, updateBgpIpv6Status)
+
+	if existingBgpIpv4Status != updateBgpIpv4Status {
+		changeOps = v4.ConnectionChangeOperation{Op: "replace", Path: "/bgpIpv4/enabled", Value: updateBgpIpv4Status}
+	} else if existingBgpIpv6Status != updateBgpIpv6Status {
+		changeOps = v4.ConnectionChangeOperation{Op: "replace", Path: "/bgpIpv6/enabled", Value: updateBgpIpv6Status}
+	} else {
+		return changeOps, fmt.Errorf("nothing to update for the routing protocol %s", rp.RoutingProtocolBgpData.Uuid)
+	}
+	return changeOps, nil
+}
+
 func getUpdateRequest(conn v4.Connection, d *schema.ResourceData) (v4.ConnectionChangeOperation, error) {
 	changeOps := v4.ConnectionChangeOperation{}
 	existingName := conn.Name
@@ -740,6 +1120,26 @@ func getUpdateRequest(conn v4.Connection, d *schema.ResourceData) (v4.Connection
 		changeOps = v4.ConnectionChangeOperation{Op: "replace", Path: "/name", Value: updateNameVal}
 	} else if existingBandwidth != updateBandwidthVal {
 		changeOps = v4.ConnectionChangeOperation{Op: "replace", Path: "/bandwidth", Value: updateBandwidthVal}
+	} else {
+		return changeOps, fmt.Errorf("nothing to update for the connection %s", existingName)
+	}
+	return changeOps, nil
+}
+
+func getCloudRouterUpdateRequest(conn v4.CloudRouter, d *schema.ResourceData) (v4.CloudRouterChangeOperation, error) {
+	changeOps := v4.CloudRouterChangeOperation{}
+	existingName := conn.Name
+	existingPackage := conn.Package_.Code
+	updateNameVal := d.Get("name")
+	updatePackageVal := d.Get("conn.Package_.Code")
+
+	log.Printf("existing name %s, existing Package %s, Update Name Request %s, Update Package Request %s ",
+		existingName, existingPackage, updateNameVal, updatePackageVal)
+
+	if existingName != updateNameVal {
+		changeOps = v4.CloudRouterChangeOperation{Op: "replace", Path: "/name", Value: &updateNameVal}
+	} else if existingPackage != updatePackageVal {
+		changeOps = v4.CloudRouterChangeOperation{Op: "replace", Path: "/package", Value: &updatePackageVal}
 	} else {
 		return changeOps, fmt.Errorf("nothing to update for the connection %s", existingName)
 	}

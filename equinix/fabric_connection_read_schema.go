@@ -422,7 +422,16 @@ func readConnectionSideAccessPointSch() map[string]*schema.Schema {
 		"gateway": {
 			Type:        schema.TypeSet,
 			Computed:    true,
-			Description: "Gateway access point information",
+			Deprecated:  "router attribute will be returned instead",
+			Description: "Cloud Router access point information",
+			Elem: &schema.Resource{
+				Schema: readVirtualGatewaySch(),
+			},
+		},
+		"router": {
+			Type:        schema.TypeSet,
+			Computed:    true,
+			Description: "Cloud Router access point information",
 			Elem: &schema.Resource{
 				Schema: readVirtualGatewaySch(),
 			},
@@ -782,7 +791,7 @@ func readFabricConnectionResourceSchema() map[string]*schema.Schema {
 		"type": {
 			Type:        schema.TypeString,
 			Computed:    true,
-			Description: "Defines the connection type like VG_VC, EVPL_VC, EPL_VC, EC_VC, GW_VC, ACCESS_EPL_VC",
+			Description: "Defines the connection type like VG_VC, EVPL_VC, EPL_VC, EC_VC, IP_VC, ACCESS_EPL_VC",
 		},
 		"bandwidth": {
 			Type:        schema.TypeInt,

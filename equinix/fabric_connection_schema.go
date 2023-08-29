@@ -296,8 +296,8 @@ func createConnectionSideAccessPointRes() *schema.Resource {
 			"type": {
 				Type:         schema.TypeString,
 				Optional:     true,
-				ValidateFunc: validation.StringInSlice([]string{"COLO", "VD", "VG", "SP", "IGW", "SUBNET", "GW"}, true),
-				Description:  "Access point type - COLO, VD, VG, SP, IGW, SUBNET, GW",
+				ValidateFunc: validation.StringInSlice([]string{"COLO", "VD", "VG", "SP", "IGW", "SUBNET", "CLOUD_ROUTER"}, true),
+				Description:  "Access point type - COLO, VD, VG, SP, IGW, SUBNET, CLOUD_ROUTER",
 			},
 			"authentication_key": {
 				Type:        schema.TypeString,
@@ -306,6 +306,7 @@ func createConnectionSideAccessPointRes() *schema.Resource {
 			},
 			"account": {
 				Type:        schema.TypeSet,
+				Optional:    true,
 				Computed:    true,
 				Description: "Account",
 				Elem: &schema.Resource{
@@ -343,7 +344,17 @@ func createConnectionSideAccessPointRes() *schema.Resource {
 			"gateway": {
 				Type:        schema.TypeSet,
 				Optional:    true,
-				Description: "Gateway access point information",
+				Deprecated:  "use router attribute instead; gateway is no longer a part of the supported backend",
+				Description: "Cloud Router access point information",
+				MaxItems:    1,
+				Elem: &schema.Resource{
+					Schema: createVirtualGatewaySch(),
+				},
+			},
+			"router": {
+				Type:        schema.TypeSet,
+				Optional:    true,
+				Description: "Cloud Router access point information",
 				MaxItems:    1,
 				Elem: &schema.Resource{
 					Schema: createVirtualGatewaySch(),
@@ -748,8 +759,8 @@ func createFabricConnectionResourceSchema() map[string]*schema.Schema {
 		"type": {
 			Type:         schema.TypeString,
 			Required:     true,
-			ValidateFunc: validation.StringInSlice([]string{"VG_VC", "EVPL_VC", "EPL_VC", "EC_VC", "GW_VC", "ACCESS_EPL_VC"}, true),
-			Description:  "Defines the connection type like VG_VC, EVPL_VC, EPL_VC, EC_VC, GW_VC, ACCESS_EPL_VC",
+			ValidateFunc: validation.StringInSlice([]string{"VG_VC", "EVPL_VC", "EPL_VC", "EC_VC", "IP_VC", "ACCESS_EPL_VC"}, true),
+			Description:  "Defines the connection type like VG_VC, EVPL_VC, EPL_VC, EC_VC, IP_VC, ACCESS_EPL_VC",
 		},
 		"bandwidth": {
 			Type:        schema.TypeInt,
