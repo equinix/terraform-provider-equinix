@@ -18,9 +18,10 @@ import (
 )
 
 var (
-	testAccProviders      map[string]*schema.Provider
-	testAccProvider       *schema.Provider
-	testExternalProviders map[string]resource.ExternalProvider
+	testAccProviders         map[string]*schema.Provider
+	testAccProviderFactories map[string]func() (*schema.Provider, error)
+	testAccProvider          *schema.Provider
+	testExternalProviders    map[string]resource.ExternalProvider
 )
 
 type mockedResourceDataProvider struct {
@@ -126,6 +127,11 @@ func init() {
 	testAccProvider = Provider()
 	testAccProviders = map[string]*schema.Provider{
 		"equinix": testAccProvider,
+	}
+	testAccProviderFactories = map[string]func() (*schema.Provider, error){
+		"equinix": func() (*schema.Provider, error) {
+			return testAccProvider, nil
+		},
 	}
 	testExternalProviders = map[string]resource.ExternalProvider{
 		"random": {

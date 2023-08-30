@@ -1,6 +1,8 @@
 package equinix
 
 import (
+	"context"
+	"errors"
 	"fmt"
 	"log"
 	"strings"
@@ -8,7 +10,6 @@ import (
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
-
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/packethost/packngo"
@@ -142,7 +143,7 @@ func hwReservationStateRefreshFunc(client *packngo.Client, reservationId, instan
 	}
 }
 
-func waitUntilReservationProvisionable(client *packngo.Client, reservationId, instanceId string, delay, timeout, minTimeout time.Duration) error {
+func waitUntilReservationProvisionable(ctx context.Context, client *packngo.Client, reservationId, instanceId string, delay, timeout, minTimeout time.Duration) error {
 	stateConf := &retry.StateChangeConf{
 		Pending:    []string{deprovisioning},
 		Target:     []string{provisionable, reprovisioned},
@@ -151,7 +152,7 @@ func waitUntilReservationProvisionable(client *packngo.Client, reservationId, in
 		Delay:      delay,
 		MinTimeout: minTimeout,
 	}
-	_, err := stateConf.WaitForState()
+	_, err := stateConf.WaitForStateContext(ctx)
 	return err
 }
 
@@ -166,7 +167,7 @@ func getWaitForDeviceLock(deviceID string) *sync.WaitGroup {
 	return wg
 }
 
-func waitForDeviceAttribute(d *schema.ResourceData, targets []string, pending []string, attribute string, meta interface{}) (string, error) {
+func waitForDeviceAttribute(ctx context.Context, d *schema.ResourceData, stateConf *retry.StateChangeConf) (string, error) {
 	wg := getWaitForDeviceLock(d.Id())
 	wg.Wait()
 
@@ -180,68 +181,17 @@ func waitForDeviceAttribute(d *schema.ResourceData, targets []string, pending []
 		wgMutex.Unlock()
 	}()
 
-	if attribute != "state" && attribute != "network_type" {
-		return "", fmt.Errorf("unsupported attr to wait for: %s", attribute)
+	if stateConf == nil || stateConf.Refresh == nil {
+		return "", errors.New("invalid stateconf to wait for")
 	}
 
-	stateConf := &retry.StateChangeConf{
-		Pending: pending,
-		Target:  targets,
-		Refresh: func() (interface{}, string, error) {
-			meta.(*Config).addModuleToMetalUserAgent(d)
-			client := meta.(*Config).metal
-
-			device, _, err := client.Devices.Get(d.Id(), &packngo.GetOptions{Includes: []string{"project"}})
-			if err == nil {
-				retAttrVal := device.State
-				if attribute == "network_type" {
-					networkType := device.GetNetworkType()
-					retAttrVal = networkType
-				}
-				return retAttrVal, retAttrVal, nil
-			}
-			return "error", "error", err
-		},
-		Timeout:    60 * time.Minute,
-		Delay:      10 * time.Second,
-		MinTimeout: 3 * time.Second,
-	}
-
-	attrValRaw, err := stateConf.WaitForState()
+	attrValRaw, err := stateConf.WaitForStateContext(ctx)
 
 	if v, ok := attrValRaw.(string); ok {
 		return v, err
 	}
 
 	return "", err
-}
-
-// powerOnAndWait Powers on the device and waits for it to be active.
-func powerOnAndWait(d *schema.ResourceData, meta interface{}) error {
-	meta.(*Config).addModuleToMetalUserAgent(d)
-	client := meta.(*Config).metal
-
-	_, err := client.Devices.PowerOn(d.Id())
-	if err != nil {
-		return friendlyError(err)
-	}
-
-	_, err = waitForDeviceAttribute(d, []string{"active", "failed"}, []string{"off"}, "state", client)
-	if err != nil {
-		return err
-	}
-	state := d.Get("state").(string)
-	if state != "active" {
-		return friendlyError(fmt.Errorf("device in non-active state \"%s\"", state))
-	}
-	return nil
-}
-
-func validateFacilityForDevice(v interface{}, k string) (ws []string, errors []error) {
-	if v.(string) == "any" {
-		errors = append(errors, fmt.Errorf(`cannot use facility: "any"`))
-	}
-	return
 }
 
 func ipAddressSchema() *schema.Resource {
