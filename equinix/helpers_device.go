@@ -2,6 +2,7 @@ package equinix
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"log"
@@ -9,6 +10,7 @@ import (
 	"sync"
 	"time"
 
+	metalv1 "github.com/equinix-labs/metal-go/metal/v1"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
@@ -95,6 +97,48 @@ func getNetworkInfo(ips []*packngo.IPAddressAssignment) NetworkInfo {
 	return ni
 }
 
+func getMetalGoNetworkType(device *metalv1.Device) (*string, error) {
+
+	pgDevice := packngo.Device{}
+	res, err := device.MarshalJSON()
+	if err != nil {
+		json.Unmarshal(res, pgDevice)
+		networkType := pgDevice.GetNetworkType()
+		return &networkType, nil
+	}
+	return nil, err
+}
+
+func getMetalGoNetworkInfo(ips []metalv1.IPAssignment) NetworkInfo {
+	ni := NetworkInfo{Networks: make([]map[string]interface{}, 0, 1)}
+	for _, ip := range ips {
+		network := map[string]interface{}{
+			"address": *ip.Address,
+			"gateway": *ip.Gateway,
+			"family":  *ip.AddressFamily,
+			"cidr":    *ip.Cidr,
+			"public":  *ip.Public,
+		}
+		ni.Networks = append(ni.Networks, network)
+
+		// Initial device IPs are fixed and marked as "Management"
+		if !ip.HasManagement() || *ip.Management {
+			if *ip.AddressFamily == int32(4) {
+				if !ip.HasPublic() || *ip.Public {
+					ni.Host = *ip.Address
+					ni.IPv4SubnetSize = int(*ip.Cidr)
+					ni.PublicIPv4 = *ip.Address
+				} else {
+					ni.PrivateIPv4 = *ip.Address
+				}
+			} else {
+				ni.PublicIPv6 = *ip.Address
+			}
+		}
+	}
+	return ni
+}
+
 func getNetworkRank(family int, public bool) int {
 	switch {
 	case family == 4 && public:
@@ -116,6 +160,21 @@ func getPorts(ps []packngo.Port) []map[string]interface{} {
 			"type":   p.Type,
 			"mac":    p.Data.MAC,
 			"bonded": p.Data.Bonded,
+		}
+		ret = append(ret, port)
+	}
+	return ret
+}
+
+func getMetalGoPorts(ps []metalv1.Port) []map[string]interface{} {
+	ret := make([]map[string]interface{}, 0, 1)
+	for _, p := range ps {
+		port := map[string]interface{}{
+			"name":   p.GetName(),
+			"id":     p.GetId(),
+			"type":   p.GetType(),
+			"mac":    p.Data.GetMac(),
+			"bonded": p.Data.GetBonded(),
 		}
 		ret = append(ret, port)
 	}
