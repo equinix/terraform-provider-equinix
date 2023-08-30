@@ -916,28 +916,74 @@ resource "equinix_metal_device" "test_ipxe_missing" {
   always_pxe       = true
 }`
 
-func testAccMetalDeviceConfig_timeout(projSuffix string) string {
+func testAccMetalDeviceConfig_timeout(projSuffix, createTimeout, updateTimeout, deleteTimeout string) string {
+	if createTimeout == "" {
+		createTimeout = "20m"
+	}
+	if updateTimeout == "" {
+		updateTimeout = "20m"
+	}
+	if deleteTimeout == "" {
+		deleteTimeout = "20m"
+	}
+
 	return fmt.Sprintf(`
+%s
+
 resource "equinix_metal_project" "test" {
     name = "tfacc-device-%s"
 }
 
 resource "equinix_metal_device" "test" {
   hostname         = "tfacc-test-device"
-  description      = "test-desc"
-  plan             = "c3.small.x86"
-  metro            = "DA"
-  operating_system = "ubuntu_20_04"
+  plan             = local.plan
+  metro            = local.metro
+  operating_system = local.os
+  billing_cycle    = "hourly"
   project_id       = "${equinix_metal_project.test.id}"
   termination_time = "%s"
-  depends_on = [equinix_metal_project.test]
 
   timeouts {
-	create = "10s"
-	update = "10s"
+	create = "%s"
+	update = "%s"
+    delete = "%s"
   }
 }
-`, projSuffix, testDeviceTerminationTime())
+`, confAccMetalDevice_base(preferable_plans, preferable_metros, preferable_os), projSuffix, testDeviceTerminationTime(), createTimeout, updateTimeout, deleteTimeout)
+}
+
+func testAccMetalDeviceConfig_reinstall_timeout(projSuffix, updateTimeout string) string {
+	if updateTimeout == "" {
+		updateTimeout = "20m"
+	}
+
+	return fmt.Sprintf(`
+%s
+
+resource "equinix_metal_project" "test" {
+    name = "tfacc-device-%s"
+}
+
+resource "equinix_metal_device" "test" {
+  hostname         = "tfacc-test-device"
+  plan             = local.plan
+  metro            = local.metro
+  operating_system = local.os
+  billing_cycle    = "hourly"
+  project_id       = "${equinix_metal_project.test.id}"
+  user_data = "#!/usr/bin/env sh\necho Reinstall\n"
+  termination_time = "%s"
+
+  reinstall {
+	  enabled = true
+	  deprovision_fast = true
+  }
+
+  timeouts {
+	update = "%s"
+  }
+}
+`, confAccMetalDevice_base(preferable_plans, preferable_metros, preferable_os), projSuffix, testDeviceTerminationTime(), updateTimeout)
 }
 
 type mockDeviceService struct {
@@ -1162,7 +1208,7 @@ func testAccWaitForMetalDeviceActive(project, deviceHostName string) resource.Im
 	}
 }
 
-func TestAccMetalDevice_importBasicTimeout(t *testing.T) {
+func TestAccMetalDeviceCreate_timeout(t *testing.T) {
 	rs := acctest.RandString(10)
 	r := "equinix_metal_device.test"
 	hostname := "tfacc-test-device"
@@ -1175,7 +1221,7 @@ func TestAccMetalDevice_importBasicTimeout(t *testing.T) {
 		CheckDestroy:      testAccMetalDeviceCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
-				Config:      testAccMetalDeviceConfig_timeout(rs),
+				Config:      testAccMetalDeviceConfig_timeout(rs, "10s", "", ""),
 				ExpectError: matchErrDeviceReadyTimeout,
 			},
 			{
@@ -1188,8 +1234,33 @@ func TestAccMetalDevice_importBasicTimeout(t *testing.T) {
 				ImportStatePersist: true,
 			},
 			{
-				Config:  testAccMetalDeviceConfig_timeout(rs),
+				Config:  testAccMetalDeviceConfig_timeout(rs, "", "", ""),
 				Destroy: true,
+			},
+		},
+	})
+}
+
+func TestAccMetalDeviceUpdate_timeout(t *testing.T) {
+	var d1 packngo.Device
+	rs := acctest.RandString(10)
+	r := "equinix_metal_device.test"
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t) },
+		ExternalProviders: testExternalProviders,
+		ProviderFactories: testAccProviderFactories,
+		CheckDestroy:      testAccMetalDeviceCheckDestroyed,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccMetalDeviceConfig_timeout(rs, "", "", ""),
+				Check: resource.ComposeTestCheckFunc(
+					testAccMetalDeviceExists(r, &d1),
+				),
+			},
+			{
+				Config:      testAccMetalDeviceConfig_reinstall_timeout(rs, "10s"),
+				ExpectError: matchErrDeviceReadyTimeout,
 			},
 		},
 	})
