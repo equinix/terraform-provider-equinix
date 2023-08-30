@@ -410,6 +410,11 @@ func resourceMetalDevice() *schema.Resource {
 					},
 				},
 			},
+			"sos_hostname": {
+				Type:        schema.TypeString,
+				Description: "The hostname to use for [Serial over SSH](https://deploy.equinix.com/developers/docs/metal/resilience-recovery/serial-over-ssh/) access to the device",
+				Computed:    true,
+			},
 		},
 		CustomizeDiff: customdiff.Sequence(
 			customdiff.ForceNewIf("custom_data", reinstallDisabledAndNoChangesAllowed("custom_data")),
@@ -606,10 +611,10 @@ func resourceMetalDeviceCreate(ctx context.Context, d *schema.ResourceData, meta
 }
 
 func resourceMetalDeviceRead(ctx context.Context, d *schema.ResourceData, meta interface{}) error {
-	meta.(*Config).addModuleToMetalUserAgent(d)
-	client := meta.(*Config).metal
+	meta.(*Config).addModuleToMetalGoUserAgent(d)
+	client := meta.(*Config).metalgo
 
-	device, _, err := client.Devices.Get(d.Id(), deviceReadOptions)
+	device, _, err := client.DevicesApi.FindDeviceById(context.Background(), d.Id()).Include(deviceCommonIncludes).Execute()
 	if err != nil {
 		err = friendlyError(err)
 
@@ -625,23 +630,24 @@ func resourceMetalDeviceRead(ctx context.Context, d *schema.ResourceData, meta i
 		return err
 	}
 
-	d.Set("hostname", device.Hostname)
-	d.Set("plan", device.Plan.Slug)
-	d.Set("deployed_facility", device.Facility.Code)
-	d.Set("facilities", []string{device.Facility.Code})
+	d.Set("hostname", device.GetHostname())
+	d.Set("plan", device.Plan.GetSlug())
+	d.Set("deployed_facility", device.Facility.GetCode())
+	d.Set("facilities", []string{device.Facility.GetCode()})
 	if device.Metro != nil {
-		d.Set("metro", device.Metro.Code)
+		d.Set("metro", device.Metro.GetCode())
 	}
-	d.Set("operating_system", device.OS.Slug)
-	d.Set("state", device.State)
-	d.Set("billing_cycle", device.BillingCycle)
-	d.Set("locked", device.Locked)
-	d.Set("created", device.Created)
-	d.Set("updated", device.Updated)
-	d.Set("ipxe_script_url", device.IPXEScriptURL)
-	d.Set("always_pxe", device.AlwaysPXE)
-	d.Set("root_password", device.RootPassword)
-	d.Set("project_id", device.Project.ID)
+	d.Set("operating_system", device.OperatingSystem.GetSlug())
+	d.Set("state", device.GetState())
+	d.Set("billing_cycle", device.GetBillingCycle())
+	d.Set("locked", device.GetLocked())
+	d.Set("created", device.GetCreatedAt())
+	d.Set("updated", device.GetUpdatedAt())
+	d.Set("ipxe_script_url", device.GetIpxeScriptUrl())
+	d.Set("always_pxe", device.GetAlwaysPxe())
+	d.Set("root_password", device.GetRootPassword())
+	d.Set("project_id", device.Project.GetId())
+	d.Set("sos_hostname", device.GetSos())
 	if device.Storage != nil {
 		rawStorageBytes, err := json.Marshal(device.Storage)
 		if err != nil {
@@ -655,10 +661,13 @@ func resourceMetalDeviceRead(ctx context.Context, d *schema.ResourceData, meta i
 		d.Set("storage", storageString)
 	}
 	if device.HardwareReservation != nil {
-		d.Set("deployed_hardware_reservation_id", device.HardwareReservation.ID)
+		d.Set("deployed_hardware_reservation_id", device.HardwareReservation.GetId())
 	}
 
-	networkType := device.GetNetworkType()
+	networkType, err := getMetalGoNetworkType(device)
+	if err != nil {
+		return fmt.Errorf("[ERR] Error computing network type for device (%s): %s", d.Id(), err)
+	}
 	d.Set("network_type", networkType)
 
 	wfrd := "wait_for_reservation_deprovision"
@@ -676,18 +685,18 @@ func resourceMetalDeviceRead(ctx context.Context, d *schema.ResourceData, meta i
 
 	d.Set("tags", device.Tags)
 	keyIDs := []string{}
-	for _, k := range device.SSHKeys {
-		keyIDs = append(keyIDs, path.Base(k.URL))
+	for _, k := range device.SshKeys {
+		keyIDs = append(keyIDs, path.Base(k.Href))
 	}
 	d.Set("ssh_key_ids", keyIDs)
-	networkInfo := getNetworkInfo(device.Network)
+	networkInfo := getMetalGoNetworkInfo(device.IpAddresses)
 
 	sort.SliceStable(networkInfo.Networks, func(i, j int) bool {
-		famI := networkInfo.Networks[i]["family"].(int)
-		famJ := networkInfo.Networks[j]["family"].(int)
+		famI := networkInfo.Networks[i]["family"].(int32)
+		famJ := networkInfo.Networks[j]["family"].(int32)
 		pubI := networkInfo.Networks[i]["public"].(bool)
 		pubJ := networkInfo.Networks[j]["public"].(bool)
-		return getNetworkRank(famI, pubI) < getNetworkRank(famJ, pubJ)
+		return getNetworkRank(int(famI), pubI) < getNetworkRank(int(famJ), pubJ)
 	})
 
 	d.Set("network", networkInfo.Networks)
@@ -695,7 +704,7 @@ func resourceMetalDeviceRead(ctx context.Context, d *schema.ResourceData, meta i
 	d.Set("access_private_ipv4", networkInfo.PrivateIPv4)
 	d.Set("access_public_ipv6", networkInfo.PublicIPv6)
 
-	ports := getPorts(device.NetworkPorts)
+	ports := getMetalGoPorts(device.NetworkPorts)
 	d.Set("ports", ports)
 
 	if networkInfo.Host != "" {
