@@ -10,7 +10,7 @@ import (
 func TestAlibabaCreateConnection(t *testing.T) {
 	// retryable errors in terraform testing.
 	terraformOptions := terraform.WithDefaultRetryableErrors(t, &terraform.Options{
-		TerraformDir: "../examples/connectivity/v4/alibaba",
+		TerraformDir: "../examples/fabric/v4/portConnectivity/alibaba",
 	})
 
 	defer terraform.Destroy(t, terraformOptions)

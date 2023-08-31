@@ -43,6 +43,6 @@ resource "equinix_fabric_connection" "fcr2port"{
   }
 }
 
-output "connection_result" {
+output "fcr2port_result" {
   value = equinix_fabric_connection.fcr2port.id
 }

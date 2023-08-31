@@ -28,29 +28,25 @@ If you don't want to take advantage of the [Equinix Fabric Terraform Modules](#e
 you can also find below some basic examples on how to establish connectivity with
 the most popular service providers.
 
-* [alibaba-cloud](alibaba-cloud-connection/) - establishing layer 2 connection between
-Equinix Fabric port and Alibaba Express Connect
-* [aws-connection](aws-connection/) - establishing layer 2 connection between
-Equinix Fabric port and AWS Direct Connect
-* [azure-connection](azure-connection/) - establishing layer 2 connection between
-Equinix Fabric port and Microsoft Azure ExpressRoute
-* [equinix-metal](equinix-metal-to-fabric-connection/) - establishing layer 2 connection between
-Equinix Fabric port and Equinix Metal
-* [gcp-connection](gcp-connection/) - establishing layer 2 connection between
-Equinix Fabric port and Google Cloud Partner Interconnect
-* [ibm-cloud-connection](ibm-cloud-connection/) - establishing layer 2 connection
-between Equinix Fabric port and IBM Direct Link
-* [oracle-cloud-connection](oracle-cloud-connection/) - establishing layer2 connection
-between Equinix Fabric port and Oracle Cloud FastConnect
+* [alibaba-cloud](./alibaba) - establishing layer 2 connection between
+  Equinix Fabric port and Alibaba Express Connect
+* [aws-connection](./aws) - establishing layer 2 connection between
+  Equinix Fabric port and AWS Direct Connect
+* [azure-connection](./azure) - establishing layer 2 connection between
+  Equinix Fabric port and Microsoft Azure ExpressRoute
+* [gcp-connection](./google) - establishing layer 2 connection between
+  Equinix Fabric port and Google Cloud Partner Interconnect
+* [oracle-cloud-connection](./oracle) - establishing layer2 connection
+  between Equinix Fabric port and Oracle Cloud FastConnect
 
 ## Equinix Fabric Examples To Connect To Your Own Assets
 
-* [self-port-port-connection](self-port-port-connection/) - establishing layer2 connection
-between two Equinix Fabric ports
+* [self-port-port-connection](./port2portself) - establishing layer2 connection
+  between two Equinix Fabric ports
 
-## Equinix Fabric examples To Create a Seller Profile
+## Equinix Fabric examples To Connect to a Seller Profile
 Examples of using Equinix Fabric resources
 to establish connectivity with most popular service providers
 
-* [private-profile](private-profile/) - creating layer 2 private service  profile
-* [public-profile](public-profile/) - creating layer 2 public service seller profile
+* [private-profile](./port2serviceprofileprivate) - creating layer 2 private service profile connection
+* [public-profile](./port2serviceprofilepublic) - creating layer 2 public service seller profile connection

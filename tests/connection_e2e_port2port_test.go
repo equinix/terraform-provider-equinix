@@ -10,7 +10,7 @@ import (
 func TestPort2PortCreateConnection(t *testing.T) {
 	// retryable errors in terraform testing.
 	terraformOptions := terraform.WithDefaultRetryableErrors(t, &terraform.Options{
-		TerraformDir: "../examples/connectivity/v4/port2portself",
+		TerraformDir: "../examples/fabric/v4/portConnectivity/port2portself",
 	})
 
 	defer terraform.Destroy(t, terraformOptions)

@@ -10,7 +10,7 @@ import (
 func TestOracleCreateConnection(t *testing.T) {
 	// retryable errors in terraform testing.
 	terraformOptions := terraform.WithDefaultRetryableErrors(t, &terraform.Options{
-		TerraformDir: "../examples/connectivity/v4/oracle",
+		TerraformDir: "../examples/fabric/v4/portConnectivity/oracle",
 	})
 
 	defer terraform.Destroy(t, terraformOptions)

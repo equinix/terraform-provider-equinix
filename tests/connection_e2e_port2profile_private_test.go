@@ -7,15 +7,16 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestCloudRouter2PortCreateConnection(t *testing.T) {
+func TestSPPrivateCreateConnection(t *testing.T) {
 	// retryable errors in terraform testing.
 	terraformOptions := terraform.WithDefaultRetryableErrors(t, &terraform.Options{
-		TerraformDir: "../examples/fg2port",
+		TerraformDir: "../examples/fabric/v4/portConnectivity/port2serviceprofileprivate",
 	})
 
 	defer terraform.Destroy(t, terraformOptions)
 
 	terraform.InitAndApply(t, terraformOptions)
+
 	output := terraform.Output(t, terraformOptions, "connection_result")
 	assert.NotNil(t, output)
 }

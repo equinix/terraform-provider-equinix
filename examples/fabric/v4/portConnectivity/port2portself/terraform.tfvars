@@ -1,5 +1,6 @@
-equinix_client_id      = "MyEquinixClientId"
-equinix_client_secret  = "MyEquinixSecret"
+/* Client details for opsuser100 in uat with the UAT1 App in Developer Portal */
+equinix_client_id     = "MyEquinixClientId"
+equinix_client_secret = "MyEquinixSecret"
 
 connection_name = "terra_e2e_p2p"
 connection_type = "EVPL_VC"

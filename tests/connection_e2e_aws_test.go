@@ -10,7 +10,7 @@ import (
 func TestAwsCreateConnection(t *testing.T) {
 	// retryable errors in terraform testing.
 	terraformOptions := terraform.WithDefaultRetryableErrors(t, &terraform.Options{
-		TerraformDir: "../examples/connectivity/v4/aws",
+		TerraformDir: "../examples/fabric/v4/portConnectivity/aws",
 	})
 
 	defer terraform.Destroy(t, terraformOptions)
