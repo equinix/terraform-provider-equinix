@@ -1,5 +1,5 @@
 # ECX Fabric Cloud Router Connection BGP CRUD operations
-This example shows how to create Config BGP on FG connection .
+This example shows how to create Config BGP on FCR connection .
 
 Note: Each time you need to create a BGP resource add-on
 make a copy of the base folder - examples/routing-protocol-bgp/ and CD into this folder to perform all the CRUD operations.
@@ -14,7 +14,7 @@ At minimum, you must set below variables in `terraform.tfvars` file:
 - `rp_type`- Type of routing Protocol entity, "BGP"
 - connection_uuid = "d557cb4c-9052-4298-b5ca-8a9ed914cf03"
   rp_type = "DIRECT"
-  rp_name = "FG-RP"
+  rp_name = "FCR-RP"
   customer_peer_ipv4 = "192.1.1.2"
   customer_peer_ipv6 = "192::1:2"
   customer_asn = "100"
@@ -29,9 +29,9 @@ At minimum, you must set below variables in `terraform.tfvars` file:
 ## Routing-protocol BGP : Create, Read, Update and Delete(CRUD) operations
 Note: `–auto-approve` command does not prompt the user for validating the applying config. Remove it to get a prompt to confirm the operation.
 
-| Operation |              Command              |                                                               Description |
-|:----------|:---------------------------------:|--------------------------------------------------------------------------:|
-| CREATE    |  `terraform apply –auto-approve`  |                                                    Creates an FG resource |
-| READ      |         `terraform show`          |                          Reads/Shows the current state of the FG resource |
-| UPDATE    |    `terraform apply -refresh`     | Updates the FG resource with values provided in the terraform.tfvars file |
-| DELETE    | `terraform destroy –auto-approve` |                                           Deletes the created FG resource |
+| Operation |              Command              |                                                                Description |
+|:----------|:---------------------------------:|---------------------------------------------------------------------------:|
+| CREATE    |  `terraform apply –auto-approve`  |                                                    Creates an FCR resource |
+| READ      |         `terraform show`          |                          Reads/Shows the current state of the FCR resource |
+| UPDATE    |    `terraform apply -refresh`     | Updates the FCR resource with values provided in the terraform.tfvars file |
+| DELETE    | `terraform destroy –auto-approve` |                                           Deletes the created FCR resource |

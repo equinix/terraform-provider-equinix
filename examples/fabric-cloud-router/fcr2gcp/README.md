@@ -1,6 +1,6 @@
-# ECX Fabric Layer2 Connection from fabric cloud router to AWS
+# ECX Fabric Layer2 Connection from fabric cloud router to google
 
-This example shows how create connection from Fabric Cloud Router to AWS, on ECX Fabric ports.
+This example shows how create connection from Fabric Cloud Router to google, on ECX Fabric ports.
 
 ## Adjust variables
 At minimum, you must set below variables in `terraform.tfvars` file:
@@ -20,21 +20,16 @@ At minimum, you must set below variables in `terraform.tfvars` file:
 `redundancy` - Port redundancy
 `aside_ap_type` - Fabric Cloud Router type
 `zside_ap_type` - Z side access point type
-`zside_ap_authentication_key` - AWS authorization key, account number like 357848912121
+`zside_ap_authentication_key` - Google authorization key following a pattern, like **9da09fe8-a33b-4457-ab7d-d91f83152276/us-west1/1**
 `zside_ap_profile_type` - Service profile type
-`fabric_sp_name` - Service profile name, fetched based on Service Profile get call using Service Profile search schema
 `zside_location` - Seller location
 `seller_region` - Seller region code
-
-## AWS login
-
-Log in to AWS portal use account that has permission to create necessary resources.
 
 ## Initialize
 - First step is to initialize the terraform directory/resource we are going to work on.
   In the given example, the folder to perform CRUD operations on a fcr2port connection can be found at examples/fcr2port/.
 
-- Change directory into - `CD fcr2aws/`
+- Change directory into - `CD fcr2gcp/`
 - Initialize Terraform plugins - `terraform init`
 
 ## Fabric Cloud Router to port connection : Create, Read, Update and Delete(CRUD) operations
