@@ -25,7 +25,7 @@ API documentation can be found here - https://developer.equinix.com/dev-docs/fab
 - `name` (String) Fabric Cloud Router name. An alpha-numeric 24 characters string which can include only hyphens and underscores
 - `notifications` (Block List, Min: 1) Preferences for notifications on Fabric Cloud Router configuration or status changes (see [below for nested schema](#nestedblock--notifications))
 - `package` (Block Set, Min: 1, Max: 1) Fabric Cloud Router package (see [below for nested schema](#nestedblock--package))
-- `type` (String) Defines the FG type like XF_GATEWAY
+- `type` (String) Defines the FCR type like XF_GATEWAY
 
 ### Optional
 

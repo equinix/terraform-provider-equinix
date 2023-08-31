@@ -103,7 +103,7 @@ func createCloudRouterResourceSchema() map[string]*schema.Schema {
 			Type:         schema.TypeString,
 			Required:     true,
 			ValidateFunc: validation.StringInSlice([]string{"XF_ROUTER"}, true),
-			Description:  "Defines the FG type like XF_ROUTER",
+			Description:  "Defines the FCR type like XF_ROUTER",
 		},
 		"location": {
 			Type:        schema.TypeSet,
