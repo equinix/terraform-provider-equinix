@@ -14,17 +14,17 @@ func TestCloudRouterCreate(t *testing.T) {
 	})
 
 	terraform.InitAndApply(t, terraformOptions)
-	output := terraform.Output(t, terraformOptions, "fg_result")
+	output := terraform.Output(t, terraformOptions, "fcr_result")
 	assert.NotNil(t, output)
 
 	terraformOptions = terraform.WithDefaultRetryableErrors(t, &terraform.Options{
-		TerraformDir: "../examples/fg2port",
+		TerraformDir: "../examples/fabric-cloud-router/fcr",
 	})
 
 	defer terraform.Destroy(t, terraformOptions)
 
 	terraform.InitAndApply(t, terraformOptions)
-	output = terraform.Output(t, terraformOptions, "fg2port_result")
+	output = terraform.Output(t, terraformOptions, "fcr_result")
 
 	assert.NotNil(t, output)
 }
