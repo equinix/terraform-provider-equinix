@@ -4,7 +4,9 @@ subcategory: "Metal"
 
 # equinix_metal_devices
 
-Provides an Equinix Metal devices datasource. This can be used to find devices that meet a filter criteria.
+The datasource can be used to find a list of devices which meet filter criteria.
+
+If you need to fetch a single device by ID or by project ID and hostname, use the [equinix_metal_device](equinix_metal_device.md) datasource.
 
 ## Example Usage
 
@@ -52,7 +54,7 @@ The following arguments are supported:
 * `project_id` - (Optional) ID of project containing the devices. Exactly one of `project_id` and `organization_id` must be set.
 * `organization_id` - (Optional) ID of organization containing the devices.
 * `search` - (Optional) - Search string to filter devices by hostname, description, short_id, reservation short_id, tags, plan name, plan slug, facility code, facility name, operating system name, operating system slug, IP addresses.
-* `filter` - (Optional) One or more attribute/values pairs to filter off of
+* `filter` - (Optional) One or more attribute/values pairs to filter. List of atributes to filter can be found in the [attribute reference](equinix_metal_device.md#attributes-reference) of the `equinix_metal_device` datasource.
   - `attribute` - (Required) The attribute used to filter. Filter attributes are case-sensitive
   - `values` - (Required) The filter values. Filter values are case-sensitive. If you specify multiple values for a filter, the values are joined with an OR by default, and the request returns all results that match any of the specified values
   - `match_by` - (Optional) The type of comparison to apply. One of: `in` , `re`, `substring`, `less_than`, `less_than_or_equal`, `greater_than`, `greater_than_or_equal`. Default is `in`.
