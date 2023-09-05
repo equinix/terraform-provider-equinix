@@ -43,7 +43,7 @@ output "devices" {
 
 ## search vs filter
 
-The difference between `search` and `filter` is that `search` is API parameter and the "filtering" will happen in the API side. The `filter` attribute is used in the terraform provider to fiter resoruces returned by the API.
+The difference between `search` and `filter` is that `search` is an API parameter, interpreted by the Equinix Metal service. The "filter" arguments will reduce the API list (or search) results by applying client-side filtering, within this provider.
 
 ## Argument Reference
 
