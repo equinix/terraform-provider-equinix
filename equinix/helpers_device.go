@@ -287,13 +287,13 @@ func getDeviceMap(device metalv1.Device) map[string]interface{} {
 
 	return map[string]interface{}{
 		"hostname":            device.GetHostname(),
-		"project_id":          *device.GetProject().Id,
+		"project_id":          device.Project.GetId(),
 		"description":         device.GetDescription(),
 		"device_id":           device.GetId(),
-		"facility":            *device.GetFacility().Code,
-		"metro":               *device.GetMetro().Code,
-		"plan":                *device.GetPlan().Slug,
-		"operating_system":    *device.GetOperatingSystem().Slug,
+		"facility":            device.Facility.GetCode(),
+		"metro":               device.Metro.GetCode(),
+		"plan":                device.Plan.GetSlug(),
+		"operating_system":    device.OperatingSystem.GetSlug(),
 		"state":               device.GetState(),
 		"billing_cycle":       device.GetBillingCycle(),
 		"ipxe_script_url":     device.GetIpxeScriptUrl(),
