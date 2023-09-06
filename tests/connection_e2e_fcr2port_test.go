@@ -16,6 +16,6 @@ func TestCloudRouter2PortCreateConnection(t *testing.T) {
 	defer terraform.Destroy(t, terraformOptions)
 
 	terraform.InitAndApply(t, terraformOptions)
-	output := terraform.Output(t, terraformOptions, "fcr2port_connection_result")
+	output := terraform.Output(t, terraformOptions, "connection_result")
 	assert.NotNil(t, output)
 }

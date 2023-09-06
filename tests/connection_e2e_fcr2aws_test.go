@@ -10,12 +10,12 @@ import (
 func TestCloudRouter2AwsCreateConnection(t *testing.T) {
 	// retryable errors in terraform testing.
 	terraformOptions := terraform.WithDefaultRetryableErrors(t, &terraform.Options{
-		TerraformDir: "../examples/fabric-cloud-router/fg2aws",
+		TerraformDir: "../examples/fabric/v4/cloudRouterConnectivity/cloudRouter2aws",
 	})
 
 	defer terraform.Destroy(t, terraformOptions)
 
 	terraform.InitAndApply(t, terraformOptions)
-	output := terraform.Output(t, terraformOptions, "fg2aws_connection_result")
+	output := terraform.Output(t, terraformOptions, "connection_result")
 	assert.NotNil(t, output)
 }
