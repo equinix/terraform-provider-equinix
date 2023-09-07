@@ -210,7 +210,7 @@ func (c *Config) NewMetalClient() *packngo.Client {
 // NewMetalGoClient returns a new metal-go client for accessing Equinix Metal's API.
 func (c *Config) NewMetalGoClient() *metalv1.APIClient {
 	transport := http.DefaultTransport
-	transport = logging.NewSubsystemLoggingHTTPTransport("Equinix Metal (metal-go)", transport)
+	transport = logging.NewTransport("Equinix Metal (metal-go)", transport)
 	retryClient := retryablehttp.NewClient()
 	retryClient.HTTPClient.Transport = transport
 	retryClient.RetryMax = c.MaxRetries
