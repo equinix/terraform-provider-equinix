@@ -2,12 +2,16 @@ provider "equinix" {
   client_id     = var.equinix_client_id
   client_secret = var.equinix_client_secret
 }
-data "equinix_fabric_ports" "zside" {
-  filters {
-    name = var.zside_port_name
+data "equinix_fabric_service_profiles" "aws" {
+  filter {
+    property = "/name"
+    operator = "="
+    values = [var.fabric_sp_name]
   }
 }
-resource "equinix_fabric_connection" "fcr2port"{
+
+
+resource "equinix_fabric_connection" "fcr2aws"{
   name = var.connection_name
   type = var.connection_type
   notifications{
@@ -15,6 +19,8 @@ resource "equinix_fabric_connection" "fcr2port"{
     emails=var.notifications_emails
   }
   bandwidth = var.bandwidth
+  redundancy {priority= var.redundancy}
+
   order {
     purchase_order_number= var.purchase_order_number
   }
@@ -29,12 +35,11 @@ resource "equinix_fabric_connection" "fcr2port"{
   z_side {
     access_point {
       type= var.zside_ap_type
-      port {
-        uuid= data.equinix_fabric_ports.zside.data.0.uuid
-      }
-      link_protocol {
-        type= var.zside_link_protocol_type
-        vlan_tag= var.zside_link_protocol_tag
+      authentication_key= var.zside_ap_authentication_key
+      seller_region = var.seller_region
+      profile {
+        type= var.zside_ap_profile_type
+        uuid= data.equinix_fabric_service_profiles.aws.data.0.uuid
       }
       location {
         metro_code= var.zside_location
@@ -44,5 +49,6 @@ resource "equinix_fabric_connection" "fcr2port"{
 }
 
 output "connection_result" {
-  value = equinix_fabric_connection.fcr2port.id
+  value = equinix_fabric_connection.fcr2aws.id
 }
+
