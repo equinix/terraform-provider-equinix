@@ -6,11 +6,13 @@ import (
 	"log"
 	"net"
 	"net/http"
+	"net/http/httptest"
 	"regexp"
 	"strings"
 	"testing"
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -986,84 +988,10 @@ resource "equinix_metal_device" "test" {
 `, confAccMetalDevice_base(preferable_plans, preferable_metros, preferable_os), projSuffix, testDeviceTerminationTime(), updateTimeout)
 }
 
-type mockDeviceService struct {
-	GetFn func(deviceID string, opts *packngo.GetOptions) (*packngo.Device, *packngo.Response, error)
-}
-
-func (m *mockDeviceService) Get(deviceID string, opts *packngo.GetOptions) (*packngo.Device, *packngo.Response, error) {
-	return m.GetFn(deviceID, opts)
-}
-
-func (m *mockDeviceService) Create(device *packngo.DeviceCreateRequest) (*packngo.Device, *packngo.Response, error) {
-	return nil, nil, mockFuncNotImplemented("Create")
-}
-
-func (m *mockDeviceService) Delete(deviceId string, forceDetachVolume bool) (*packngo.Response, error) {
-	return nil, mockFuncNotImplemented("Delete")
-}
-
-func (m *mockDeviceService) List(string, *packngo.ListOptions) ([]packngo.Device, *packngo.Response, error) {
-	return nil, nil, mockFuncNotImplemented("List")
-}
-
-func (m *mockDeviceService) Update(deviceId string, updateReq *packngo.DeviceUpdateRequest) (*packngo.Device, *packngo.Response, error) {
-	return nil, nil, mockFuncNotImplemented("Update")
-}
-
-func (m *mockDeviceService) Reboot(string) (*packngo.Response, error) {
-	return nil, mockFuncNotImplemented("Reboot")
-}
-
-func (m *mockDeviceService) Rescue(string) (*packngo.Response, error) {
-	return nil, mockFuncNotImplemented("Rescue")
-}
-
-func (m *mockDeviceService) Reinstall(string, *packngo.DeviceReinstallFields) (*packngo.Response, error) {
-	return nil, mockFuncNotImplemented("Reinstall")
-}
-
-func (m *mockDeviceService) PowerOff(string) (*packngo.Response, error) {
-	return nil, mockFuncNotImplemented("PowerOff")
-}
-
-func (m *mockDeviceService) PowerOn(string) (*packngo.Response, error) {
-	return nil, mockFuncNotImplemented("PowerOn")
-}
-
-func (m *mockDeviceService) Lock(string) (*packngo.Response, error) {
-	return nil, mockFuncNotImplemented("Lock")
-}
-
-func (m *mockDeviceService) Unlock(string) (*packngo.Response, error) {
-	return nil, mockFuncNotImplemented("Unlock")
-}
-
-func (m *mockDeviceService) ListBGPSessions(string, *packngo.ListOptions) ([]packngo.BGPSession, *packngo.Response, error) {
-	return nil, nil, mockFuncNotImplemented("ListBGPSessions")
-}
-
-func (m *mockDeviceService) ListBGPNeighbors(string, *packngo.ListOptions) ([]packngo.BGPNeighbor, *packngo.Response, error) {
-	return nil, nil, mockFuncNotImplemented("ListBGPNeighbors")
-}
-
-func (m *mockDeviceService) ListEvents(string, *packngo.ListOptions) ([]packngo.Event, *packngo.Response, error) {
-	return nil, nil, mockFuncNotImplemented("ListEvents")
-}
-
-func (m *mockDeviceService) GetBandwidth(string, *packngo.BandwidthOpts) (*packngo.BandwidthIO, *packngo.Response, error) {
-	return nil, nil, mockFuncNotImplemented("GetBandwidth")
-}
-
-func mockFuncNotImplemented(f string) error {
-	return fmt.Errorf("mockDeviceService %s function not yet implemented", f)
-}
-
-var _ packngo.DeviceService = (*mockDeviceService)(nil)
-
 func TestAccMetalDevice_readErrorHandling(t *testing.T) {
 	type args struct {
 		newResource bool
-		meta        *Config
+		handler     func(w http.ResponseWriter, r *http.Request)
 	}
 
 	tests := []struct {
@@ -1075,15 +1003,10 @@ func TestAccMetalDevice_readErrorHandling(t *testing.T) {
 			name: "forbiddenAfterProvision",
 			args: args{
 				newResource: false,
-				meta: &Config{
-					metal: &packngo.Client{
-						Devices: &mockDeviceService{
-							GetFn: func(deviceID string, opts *packngo.GetOptions) (*packngo.Device, *packngo.Response, error) {
-								httpResp := &http.Response{Status: "403 Forbidden", StatusCode: 403}
-								return nil, &packngo.Response{Response: httpResp}, &packngo.ErrorResponse{Response: httpResp}
-							},
-						},
-					},
+				handler: func(w http.ResponseWriter, r *http.Request) {
+					w.Header().Add("Content-Type", "application/json")
+					w.Header().Add("X-Request-Id", "needed for friendlyError")
+					w.WriteHeader(http.StatusForbidden)
 				},
 			},
 			wantErr: false,
@@ -1092,19 +1015,10 @@ func TestAccMetalDevice_readErrorHandling(t *testing.T) {
 			name: "notFoundAfterProvision",
 			args: args{
 				newResource: false,
-				meta: &Config{
-					metal: &packngo.Client{
-						Devices: &mockDeviceService{
-							GetFn: func(deviceID string, opts *packngo.GetOptions) (*packngo.Device, *packngo.Response, error) {
-								httpResp := &http.Response{
-									Status:     "404 NotFound",
-									StatusCode: 404,
-									Header:     http.Header{"Content-Type": []string{"application/json"}, "X-Request-Id": []string{"12345"}},
-								}
-								return nil, &packngo.Response{Response: httpResp}, &packngo.ErrorResponse{Response: httpResp}
-							},
-						},
-					},
+				handler: func(w http.ResponseWriter, r *http.Request) {
+					w.Header().Add("Content-Type", "application/json")
+					w.Header().Add("X-Request-Id", "needed for friendlyError")
+					w.WriteHeader(http.StatusNotFound)
 				},
 			},
 			wantErr: false,
@@ -1113,15 +1027,10 @@ func TestAccMetalDevice_readErrorHandling(t *testing.T) {
 			name: "forbiddenWaitForActiveDeviceProvision",
 			args: args{
 				newResource: true,
-				meta: &Config{
-					metal: &packngo.Client{
-						Devices: &mockDeviceService{
-							GetFn: func(deviceID string, opts *packngo.GetOptions) (*packngo.Device, *packngo.Response, error) {
-								httpResp := &http.Response{Status: "403 Forbidden", StatusCode: 403}
-								return nil, &packngo.Response{Response: httpResp}, &packngo.ErrorResponse{Response: httpResp}
-							},
-						},
-					},
+				handler: func(w http.ResponseWriter, r *http.Request) {
+					w.Header().Add("Content-Type", "application/json")
+					w.Header().Add("X-Request-Id", "needed for friendlyError")
+					w.WriteHeader(http.StatusForbidden)
 				},
 			},
 			wantErr: true,
@@ -1130,15 +1039,10 @@ func TestAccMetalDevice_readErrorHandling(t *testing.T) {
 			name: "notFoundProvision",
 			args: args{
 				newResource: true,
-				meta: &Config{
-					metal: &packngo.Client{
-						Devices: &mockDeviceService{
-							GetFn: func(deviceID string, opts *packngo.GetOptions) (*packngo.Device, *packngo.Response, error) {
-								httpResp := &http.Response{Status: "404 NotFound", StatusCode: 404}
-								return nil, &packngo.Response{Response: httpResp}, &packngo.ErrorResponse{Response: httpResp}
-							},
-						},
-					},
+				handler: func(w http.ResponseWriter, r *http.Request) {
+					w.Header().Add("Content-Type", "application/json")
+					w.Header().Add("X-Request-Id", "needed for friendlyError")
+					w.WriteHeader(http.StatusNotFound)
 				},
 			},
 			wantErr: true,
@@ -1147,15 +1051,10 @@ func TestAccMetalDevice_readErrorHandling(t *testing.T) {
 			name: "errorProvision",
 			args: args{
 				newResource: true,
-				meta: &Config{
-					metal: &packngo.Client{
-						Devices: &mockDeviceService{
-							GetFn: func(deviceID string, opts *packngo.GetOptions) (*packngo.Device, *packngo.Response, error) {
-								httpResp := &http.Response{Status: "400 BadRequest", StatusCode: 400}
-								return nil, &packngo.Response{Response: httpResp}, &packngo.ErrorResponse{Response: httpResp}
-							},
-						},
-					},
+				handler: func(w http.ResponseWriter, r *http.Request) {
+					w.Header().Add("Content-Type", "application/json")
+					w.Header().Add("X-Request-Id", "needed for friendlyError")
+					w.WriteHeader(http.StatusBadRequest)
 				},
 			},
 			wantErr: true,
@@ -1164,14 +1063,26 @@ func TestAccMetalDevice_readErrorHandling(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			var d *schema.ResourceData
-			d = new(schema.ResourceData)
+			ctx := context.Background()
+			d := new(schema.ResourceData)
 			if tt.args.newResource {
 				d.MarkNewResource()
+			} else {
+				d.SetId(uuid.New().String())
 			}
-			if err := resourceMetalDeviceRead(context.Background(), d, tt.args.meta); (err != nil) != tt.wantErr {
+
+			mockAPI := httptest.NewServer(http.HandlerFunc(tt.args.handler))
+			meta := &Config{
+				BaseURL: mockAPI.URL,
+				Token:   "fakeTokenForMock",
+			}
+			meta.Load(ctx)
+
+			if err := resourceMetalDeviceRead(ctx, d, meta); (err != nil) != tt.wantErr {
 				t.Errorf("resourceMetalDeviceRead() error = %v, wantErr %v", err, tt.wantErr)
 			}
+
+			mockAPI.Close()
 		})
 	}
 }
