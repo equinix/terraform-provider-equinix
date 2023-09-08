@@ -614,9 +614,9 @@ func resourceMetalDeviceRead(ctx context.Context, d *schema.ResourceData, meta i
 	meta.(*Config).addModuleToMetalGoUserAgent(d)
 	client := meta.(*Config).metalgo
 
-	device, _, err := client.DevicesApi.FindDeviceById(context.Background(), d.Id()).Include(deviceCommonIncludes).Execute()
+	device, resp, err := client.DevicesApi.FindDeviceById(context.Background(), d.Id()).Include(deviceCommonIncludes).Execute()
 	if err != nil {
-		err = friendlyError(err)
+		err = friendlyErrorForMetalGo(err, resp)
 
 		// If the device somehow already destroyed, mark as successfully gone.
 		// Checking d.IsNewResource prevents the creation of a resource from failing
