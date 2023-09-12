@@ -51,3 +51,4 @@ resource "equinix_fabric_connection" "fcr2oracle" {
 output "connection_result" {
   value = equinix_fabric_connection.fcr2oracle.id
 }
+
