@@ -39,9 +39,9 @@ Log in to Oracle Cloud portal use account that has permission to create necessar
 ## Fabric Cloud Router to port connection : Create, Read, Update and Delete(CRUD) operations
 Note: `–auto-approve` command does not prompt the user for validating the applying config. Remove it to get a prompt to confirm the operation.
 
-| Operation |              Command              |                                                            Description |
-|:----------|:---------------------------------:|-----------------------------------------------------------------------:|
-| CREATE    |  `terraform apply –auto-approve`  |                                 Creates a fcr2port connection resource |
-| READ      |         `terraform show`          |      Reads/Shows the current state of the fcr2port connection resource |
-| UPDATE    |    `terraform apply -refresh`     | Updates the fcr2port with values provided in the terraform.tfvars file |
-| DELETE    | `terraform destroy –auto-approve` |                       Deletes the created fcr2port connection resource |
+| Operation |              Command              |                                                              Description |
+|:----------|:---------------------------------:|-------------------------------------------------------------------------:|
+| CREATE    |  `terraform apply –auto-approve`  |                                 Creates a fcr2oracle connection resource |
+| READ      |         `terraform show`          |      Reads/Shows the current state of the fcr2oracle connection resource |
+| UPDATE    |    `terraform apply -refresh`     | Updates the fcr2oracle with values provided in the terraform.tfvars file |
+| DELETE    | `terraform destroy –auto-approve` |                       Deletes the created fcr2oracle connection resource |
