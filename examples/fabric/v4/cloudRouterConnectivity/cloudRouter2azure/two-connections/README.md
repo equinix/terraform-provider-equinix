@@ -16,7 +16,9 @@ At minimum, you must set below variables in `terraform.tfvars` file:
 `notifications_type` - notification type
 `notifications_emails` - List of emails
 `bandwidth` - bandwidth in MBs
-`redundancy` - Port redundancy
+`redundancy` - Port redundancy **Note: in order to use resource dependency with redundancy because it is a set type with
+max items of 1; put it into the one() terraform function before attempting to address its children. 
+I.e. one(equinix_fabric_connection.connection_name.redundancy).group**
 `aside_ap_type` - Fabric Cloud Router type
 `zside_ap_type` - Z side access point type
 `zside_ap_authentication_key` - Azure authorization key, service key generated from Azure Portal
@@ -33,7 +35,7 @@ Log in to Azure portal use account that has permission to create necessary resou
 - First step is to initialize the terraform directory/resource we are going to work on.
   In the given example, the folder to perform CRUD operations on a fcr2port connection can be found at examples/fcr2port/.
 
-- Change directory into - `CD cloudRouter2azure/single-connection`
+- Change directory into - `CD cloudRouter2azure/two-connections`
 - Initialize Terraform plugins - `terraform init`
 
 ## Fabric Cloud Router to port connection : Create, Read, Update and Delete(CRUD) operations
@@ -44,4 +46,4 @@ Note: `–auto-approve` command does not prompt the user for validating the appl
 | CREATE    |  `terraform apply –auto-approve`  |                                 Creates a fcr2azure connection resource |
 | READ      |         `terraform show`          |      Reads/Shows the current state of the fcr2azure connection resource |
 | UPDATE    |    `terraform apply -refresh`     | Updates the fcr2azure with values provided in the terraform.tfvars file |
-| DELETE    | `terraform destroy –auto-approve` |                       Deletes the created fcr2azure connection resource |
+| DELETE    | `terraform destroy –auto-approve` |                    Deletes the created fcr2azure connection resource(s) |

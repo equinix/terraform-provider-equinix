@@ -156,9 +156,11 @@ func redundancyToFabric(schemaRedundancy []interface{}) v4.ConnectionRedundancy 
 	red := v4.ConnectionRedundancy{}
 	for _, r := range schemaRedundancy {
 		redundancyMap := r.(map[string]interface{})
-		priorityCont := v4.ConnectionPriority(redundancyMap["priority"].(string))
+		connectionPriority := v4.ConnectionPriority(redundancyMap["priority"].(string))
+		redundancyGroup := redundancyMap["group"].(string)
 		red = v4.ConnectionRedundancy{
-			Priority: &priorityCont,
+			Priority: &connectionPriority,
+			Group:    redundancyGroup,
 		}
 	}
 	return red

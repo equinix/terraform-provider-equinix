@@ -453,6 +453,7 @@ func createRedundancySch() map[string]*schema.Schema {
 		"group": {
 			Type:        schema.TypeString,
 			Computed:    true,
+			Optional:    true,
 			Description: "Redundancy group identifier",
 		},
 		"priority": {
