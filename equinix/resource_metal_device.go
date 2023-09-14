@@ -664,7 +664,7 @@ func resourceMetalDeviceRead(ctx context.Context, d *schema.ResourceData, meta i
 		d.Set("deployed_hardware_reservation_id", device.HardwareReservation.GetId())
 	}
 
-	networkType, err := getMetalGoNetworkType(device)
+	networkType, err := getNetworkTypeMetalGo(device)
 	if err != nil {
 		return fmt.Errorf("[ERR] Error computing network type for device (%s): %s", d.Id(), err)
 	}
@@ -689,7 +689,7 @@ func resourceMetalDeviceRead(ctx context.Context, d *schema.ResourceData, meta i
 		keyIDs = append(keyIDs, path.Base(k.Href))
 	}
 	d.Set("ssh_key_ids", keyIDs)
-	networkInfo := getMetalGoNetworkInfo(device.IpAddresses)
+	networkInfo := getNetworkInfoMetalGo(device.IpAddresses)
 
 	sort.SliceStable(networkInfo.Networks, func(i, j int) bool {
 		famI := networkInfo.Networks[i]["family"].(int32)
@@ -704,7 +704,7 @@ func resourceMetalDeviceRead(ctx context.Context, d *schema.ResourceData, meta i
 	d.Set("access_private_ipv4", networkInfo.PrivateIPv4)
 	d.Set("access_public_ipv6", networkInfo.PublicIPv6)
 
-	ports := getMetalGoPorts(device.NetworkPorts)
+	ports := getPortsMetalGo(device.NetworkPorts)
 	d.Set("ports", ports)
 
 	if networkInfo.Host != "" {
