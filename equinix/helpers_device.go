@@ -97,7 +97,7 @@ func getNetworkInfo(ips []*packngo.IPAddressAssignment) NetworkInfo {
 	return ni
 }
 
-func getMetalGoNetworkType(device *metalv1.Device) (*string, error) {
+func getNetworkTypeMetalGo(device *metalv1.Device) (*string, error) {
 
 	pgDevice := packngo.Device{}
 	res, err := device.MarshalJSON()
@@ -109,30 +109,30 @@ func getMetalGoNetworkType(device *metalv1.Device) (*string, error) {
 	return nil, err
 }
 
-func getMetalGoNetworkInfo(ips []metalv1.IPAssignment) NetworkInfo {
+func getNetworkInfoMetalGo(ips []metalv1.IPAssignment) NetworkInfo {
 	ni := NetworkInfo{Networks: make([]map[string]interface{}, 0, 1)}
 	for _, ip := range ips {
 		network := map[string]interface{}{
-			"address": *ip.Address,
-			"gateway": *ip.Gateway,
-			"family":  *ip.AddressFamily,
-			"cidr":    *ip.Cidr,
-			"public":  *ip.Public,
+			"address": ip.GetAddress(),
+			"gateway": ip.GetGateway(),
+			"family":  ip.GetAddressFamily(),
+			"cidr":    ip.GetCidr(),
+			"public":  ip.GetPublic(),
 		}
 		ni.Networks = append(ni.Networks, network)
 
 		// Initial device IPs are fixed and marked as "Management"
-		if !ip.HasManagement() || *ip.Management {
-			if *ip.AddressFamily == int32(4) {
-				if !ip.HasPublic() || *ip.Public {
-					ni.Host = *ip.Address
-					ni.IPv4SubnetSize = int(*ip.Cidr)
-					ni.PublicIPv4 = *ip.Address
+		if ip.GetManagement() {
+			if ip.GetAddressFamily() == 4 {
+				if ip.GetPublic() {
+					ni.Host = ip.GetAddress()
+					ni.IPv4SubnetSize = int(ip.GetCidr())
+					ni.PublicIPv4 = ip.GetAddress()
 				} else {
-					ni.PrivateIPv4 = *ip.Address
+					ni.PrivateIPv4 = ip.GetAddress()
 				}
 			} else {
-				ni.PublicIPv6 = *ip.Address
+				ni.PublicIPv6 = ip.GetAddress()
 			}
 		}
 	}
@@ -166,7 +166,7 @@ func getPorts(ps []packngo.Port) []map[string]interface{} {
 	return ret
 }
 
-func getMetalGoPorts(ps []metalv1.Port) []map[string]interface{} {
+func getPortsMetalGo(ps []metalv1.Port) []map[string]interface{} {
 	ret := make([]map[string]interface{}, 0, 1)
 	for _, p := range ps {
 		port := map[string]interface{}{
