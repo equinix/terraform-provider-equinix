@@ -31,7 +31,7 @@ resource  "equinix_fabric_connection" "fcr2azure"{
     access_point {
       type = var.aside_ap_type
       router {
-        uuid = var.cloud_router_uuid
+        uuid = var.cloud_router_primary_uuid
       }
     }
   }
@@ -63,6 +63,11 @@ resource  "equinix_fabric_connection" "fcr2azure2"{
   }
 
   bandwidth = var.bandwidth
+  /*`redundancy` - Cloud router redundancy **Note: in order to use resource dependency with redundancy because
+    it is a set type with max items of 1; put it into the one() terraform function before attempting to address
+    its children.
+    I.e. one(equinix_fabric_connection.connection_name.redundancy).group**
+  */
   redundancy {
     priority = "SECONDARY"
     group = one(equinix_fabric_connection.fcr2azure.redundancy).group
@@ -74,7 +79,7 @@ resource  "equinix_fabric_connection" "fcr2azure2"{
     access_point {
       type = var.aside_ap_type
       router {
-        uuid = var.cloud_router_uuid
+        uuid = var.cloud_router_secondary_uuid
       }
     }
   }
