@@ -18,6 +18,7 @@ At minimum, you must set below variables in `terraform.tfvars` file:
 `bandwidth` - bandwidth in MBs
 `aside_ap_type` - Fabric Cloud Router type
 `peering_type` - Peering type for the ECX Fabric Cloud Router on the a-side; typically PRIVATE
+**Note: You can use one Cloud Router for both connections if you would like**
 `cloud_router_primary_uuid` - UUID of ECX Fabric Cloud Router on a-side
 `cloud_router_secondary_uuid` - UUID of ECX Fabric Cloud Router on a-side for secondary connection
 `zside_ap_type` - Z side access point type
