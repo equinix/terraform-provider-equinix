@@ -142,9 +142,10 @@ Read-Only:
 <a id="nestedatt--a_side--access_point--port--redundancy"></a>
 ### Nested Schema for `a_side.access_point.port.redundancy`
 
-Read-Only:
+Optional:
 
 - `priority` (String)
+- `group` (String)
 
 
 
