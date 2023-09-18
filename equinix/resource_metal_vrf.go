@@ -1,26 +1,20 @@
 package equinix
 
 import (
-	"log"
-	"time"
-
+	"context"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/packethost/packngo"
+	"log"
 )
 
 func resourceMetalVRF() *schema.Resource {
 	return &schema.Resource{
-		Timeouts: &schema.ResourceTimeout{
-			Create: schema.DefaultTimeout(20 * time.Minute),
-			Update: schema.DefaultTimeout(20 * time.Minute),
-			Delete: schema.DefaultTimeout(20 * time.Minute),
-		},
-		Read:   resourceMetalVRFRead,
-		Create: resourceMetalVRFCreate,
-		Update: resourceMetalVRFUpdate,
-		Delete: resourceMetalVRFDelete,
+		ReadWithoutTimeout:   diagnosticsWrapper(resourceMetalVRFRead),
+		CreateWithoutTimeout: diagnosticsWrapper(resourceMetalVRFCreate),
+		UpdateWithoutTimeout: diagnosticsWrapper(resourceMetalVRFUpdate),
+		DeleteWithoutTimeout: diagnosticsWrapper(resourceMetalVRFDelete),
 		Importer: &schema.ResourceImporter{
-			State: schema.ImportStatePassthrough,
+			StateContext: schema.ImportStatePassthroughContext,
 		},
 
 		Schema: map[string]*schema.Schema{
@@ -61,7 +55,7 @@ func resourceMetalVRF() *schema.Resource {
 	}
 }
 
-func resourceMetalVRFCreate(d *schema.ResourceData, meta interface{}) error {
+func resourceMetalVRFCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) error {
 	meta.(*Config).addModuleToMetalUserAgent(d)
 	client := meta.(*Config).metal
 
@@ -81,10 +75,10 @@ func resourceMetalVRFCreate(d *schema.ResourceData, meta interface{}) error {
 
 	d.SetId(vrf.ID)
 
-	return resourceMetalVRFRead(d, meta)
+	return resourceMetalVRFRead(ctx, d, meta)
 }
 
-func resourceMetalVRFUpdate(d *schema.ResourceData, meta interface{}) error {
+func resourceMetalVRFUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) error {
 	meta.(*Config).addModuleToMetalUserAgent(d)
 	client := meta.(*Config).metal
 
@@ -111,10 +105,10 @@ func resourceMetalVRFUpdate(d *schema.ResourceData, meta interface{}) error {
 		return friendlyError(err)
 	}
 
-	return resourceMetalVRFRead(d, meta)
+	return resourceMetalVRFRead(ctx, d, meta)
 }
 
-func resourceMetalVRFRead(d *schema.ResourceData, meta interface{}) error {
+func resourceMetalVRFRead(ctx context.Context, d *schema.ResourceData, meta interface{}) error {
 	meta.(*Config).addModuleToMetalUserAgent(d)
 	client := meta.(*Config).metal
 
@@ -142,7 +136,7 @@ func resourceMetalVRFRead(d *schema.ResourceData, meta interface{}) error {
 	return setMap(d, m)
 }
 
-func resourceMetalVRFDelete(d *schema.ResourceData, meta interface{}) error {
+func resourceMetalVRFDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) error {
 	meta.(*Config).addModuleToMetalUserAgent(d)
 	client := meta.(*Config).metal
 
