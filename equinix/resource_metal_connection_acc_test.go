@@ -113,7 +113,6 @@ func TestAccMetalConnection_shared_zside(t *testing.T) {
 		},
 	})
 
-
 }
 
 func TestAccMetalConnection_shared(t *testing.T) {

@@ -198,7 +198,7 @@ func resourceNetworkDevice() *schema.Resource {
 		UpdateContext: resourceNetworkDeviceUpdate,
 		DeleteContext: resourceNetworkDeviceDelete,
 		Importer: &schema.ResourceImporter{
-			State: schema.ImportStatePassthrough,
+			StateContext: schema.ImportStatePassthroughContext,
 		},
 		Schema: createNetworkDeviceSchema(),
 		Timeouts: &schema.ResourceTimeout{
