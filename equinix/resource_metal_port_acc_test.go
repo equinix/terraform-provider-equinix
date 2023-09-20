@@ -439,6 +439,16 @@ func TestAccMetalPortCreate_hybridBonded_timeout(t *testing.T) {
 				ImportStatePersist: true,
 			},
 			{
+				ResourceName: "equinix_metal_port.bond0",
+				ImportState:  true,
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("equinix_metal_port.bond0", "network_type", "layer3"),
+				),
+			},
+			{
+				Config: confAccMetalPort_HybridBonded_timeout(rInt, rs, "5s", ""),
+			},
+			{
 				Config:  confAccMetalPort_HybridBonded_timeout(rInt, rs, "5s", ""),
 				Destroy: true,
 			},
