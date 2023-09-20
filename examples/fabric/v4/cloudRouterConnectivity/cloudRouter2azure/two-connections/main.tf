@@ -42,7 +42,7 @@ resource  "equinix_fabric_connection" "fcr2azure"{
       authentication_key = var.zside_ap_authentication_key
       profile {
         type = var.zside_ap_profile_type
-        uuid = var.zside_ap_profile_uuid
+        uuid = data.equinix_fabric_service_profiles.azure.id
       }
       location {
         metro_code = var.zside_location
@@ -90,7 +90,7 @@ resource  "equinix_fabric_connection" "fcr2azure2"{
       authentication_key = var.zside_ap_authentication_key
       profile {
         type = var.zside_ap_profile_type
-        uuid = var.zside_ap_profile_uuid
+        uuid = data.equinix_fabric_service_profiles.azure.id
       }
       location {
         metro_code = var.zside_location

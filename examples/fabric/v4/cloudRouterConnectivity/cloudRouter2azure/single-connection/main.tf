@@ -41,7 +41,7 @@ resource  "equinix_fabric_connection" "fcr2azure"{
       peering_type = var.peering_type
       profile {
         type = var.zside_ap_profile_type
-        uuid = var.zside_ap_profile_uuid
+        uuid = data.equinix_fabric_service_profiles.azure.id
       }
       location {
         metro_code = var.zside_location
