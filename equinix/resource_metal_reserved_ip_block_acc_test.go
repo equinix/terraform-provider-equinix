@@ -3,12 +3,17 @@ package equinix
 import (
 	"bytes"
 	"fmt"
+	"regexp"
 	"testing"
 	"text/template"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
+)
+
+var (
+	matchIpBlockErrTimeout = regexp.MustCompile(".* timeout while waiting for state to become 'created'.*")
 )
 
 func testAccMetalReservedIPBlockConfig_global(name string) string {
@@ -28,7 +33,11 @@ resource "equinix_metal_reserved_ip_block" "test" {
 }`, name, name)
 }
 
-func testAccMetalReservedIPBlockConfig_public(name string) string {
+func testAccMetalReservedIPBlockConfig_public(name, createTimeout string) string {
+	if createTimeout == "" {
+		createTimeout = "20m"
+	}
+
 	return fmt.Sprintf(`
 resource "equinix_metal_project" "foobar" {
 	name = "tfacc-reserved_ip_block-%s"
@@ -41,7 +50,11 @@ resource "equinix_metal_reserved_ip_block" "test" {
 	description = "tfacc-reserved_ip_block-%s"
 	quantity    = 2
 	tags        = ["Tag1", "Tag2"]
-}`, name, name)
+
+    timeouts {
+      create = "%s"
+    }
+}`, name, name, createTimeout)
 }
 
 // testAccMetalReservedIPBlockConfig_metro generates a config for a metro IP
@@ -74,7 +87,7 @@ func TestAccMetalReservedIPBlock_global(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t) },
 		ExternalProviders: testExternalProviders,
-		Providers:         testAccProviders,
+		ProviderFactories: testAccProviderFactories,
 		CheckDestroy:      testAccMetalReservedIPBlockCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
@@ -106,11 +119,11 @@ func TestAccMetalReservedIPBlock_public(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t) },
 		ExternalProviders: testExternalProviders,
-		Providers:         testAccProviders,
+		ProviderFactories: testAccProviderFactories,
 		CheckDestroy:      testAccMetalReservedIPBlockCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccMetalReservedIPBlockConfig_public(rs),
+				Config: testAccMetalReservedIPBlockConfig_public(rs, ""),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(
 						"equinix_metal_reserved_ip_block.test", "facility", "ny5"),
@@ -141,7 +154,7 @@ func TestAccMetalReservedIPBlock_metro(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t) },
 		ExternalProviders: testExternalProviders,
-		Providers:         testAccProviders,
+		ProviderFactories: testAccProviderFactories,
 		CheckDestroy:      testAccMetalReservedIPBlockCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
@@ -180,11 +193,11 @@ func TestAccMetalReservedIPBlock_importBasic(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t) },
 		ExternalProviders: testExternalProviders,
-		Providers:         testAccProviders,
+		ProviderFactories: testAccProviderFactories,
 		CheckDestroy:      testAccMetalReservedIPBlockCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccMetalReservedIPBlockConfig_public(rs),
+				Config: testAccMetalReservedIPBlockConfig_public(rs, ""),
 			},
 			{
 				ResourceName:            "equinix_metal_reserved_ip_block.test",
@@ -230,7 +243,7 @@ func TestAccMetalReservedIPBlock_facilityToMetro(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t) },
 		ExternalProviders: testExternalProviders,
-		Providers:         testAccProviders,
+		ProviderFactories: testAccProviderFactories,
 		CheckDestroy:      testAccMetalReservedIPBlockCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
@@ -295,7 +308,7 @@ func TestAccMetalReservedIPBlock_device(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t) },
 		ExternalProviders: testExternalProviders,
-		Providers:         testAccProviders,
+		ProviderFactories: testAccProviderFactories,
 		CheckDestroy:      testAccMetalReservedIPBlockCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
@@ -306,6 +319,23 @@ func TestAccMetalReservedIPBlock_device(t *testing.T) {
 						"equinix_metal_device.test", "network.0.gateway",
 					),
 				),
+			},
+		},
+	})
+}
+
+func TestAccMetalReservedIPBlockCreate_public_timeout(t *testing.T) {
+	rs := acctest.RandString(10)
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t) },
+		ExternalProviders: testExternalProviders,
+		ProviderFactories: testAccProviderFactories,
+		CheckDestroy:      testAccMetalReservedIPBlockCheckDestroyed,
+		Steps: []resource.TestStep{
+			{
+				Config:      testAccMetalReservedIPBlockConfig_public(rs, "2s"),
+				ExpectError: matchIpBlockErrTimeout,
 			},
 		},
 	})

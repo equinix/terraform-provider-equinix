@@ -1,6 +1,7 @@
 package equinix
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"log"
@@ -215,12 +216,12 @@ func resourceMetalReservedIPBlock() *schema.Resource {
 	}
 	// TODO: add comments field, used for reservations that are not automatically approved
 	return &schema.Resource{
-		Create: resourceMetalReservedIPBlockCreate,
-		Read:   resourceMetalReservedIPBlockRead,
-		Update: resourceMetalReservedIPBlockUpdate,
-		Delete: resourceMetalReservedIPBlockDelete,
+		CreateContext:        diagnosticsWrapper(resourceMetalReservedIPBlockCreate),
+		ReadWithoutTimeout:   diagnosticsWrapper(resourceMetalReservedIPBlockRead),
+		UpdateWithoutTimeout: diagnosticsWrapper(resourceMetalReservedIPBlockUpdate),
+		DeleteWithoutTimeout: diagnosticsWrapper(resourceMetalReservedIPBlockDelete),
 		Importer: &schema.ResourceImporter{
-			State: schema.ImportStatePassthrough,
+			StateContext: schema.ImportStatePassthroughContext,
 		},
 
 		Schema: reservedBlockSchema,
@@ -230,14 +231,14 @@ func resourceMetalReservedIPBlock() *schema.Resource {
 	}
 }
 
-func resourceMetalReservedIPBlockCreate(d *schema.ResourceData, meta interface{}) error {
+func resourceMetalReservedIPBlockCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) error {
 	meta.(*Config).addModuleToMetalUserAgent(d)
 	client := meta.(*Config).metal
 
 	quantity := d.Get("quantity").(int)
 	typ := d.Get("type").(string)
 
-	req := packngo.IPReservationRequest{
+	req := packngo.IPReservationCreateRequest{
 		Type:     packngo.IPReservationType(typ),
 		Quantity: quantity,
 	}
@@ -285,6 +286,7 @@ func resourceMetalReservedIPBlockCreate(d *schema.ResourceData, meta interface{}
 	req.Network = d.Get("network").(string)
 	req.CIDR = d.Get("cidr").(int)
 
+	start := time.Now()
 	blockAddr, _, err := client.ProjectIPs.Create(projectID, &req)
 	if err != nil {
 		return fmt.Errorf("error reserving IP address block: %s", err)
@@ -302,17 +304,17 @@ func resourceMetalReservedIPBlockCreate(d *schema.ResourceData, meta interface{}
 		Pending:    []string{string(packngo.IPReservationStatePending)},
 		Target:     target,
 		Refresh:    reservedIPStateRefreshFunc(client, d.Id()),
-		Timeout:    d.Timeout(schema.TimeoutCreate),
+		Timeout:    d.Timeout(schema.TimeoutCreate) - 30*time.Second - time.Since(start),
 		MinTimeout: 15 * time.Second,
 	}
-	if _, err := stateConf.WaitForState(); err != nil {
+	if _, err := stateConf.WaitForStateContext(ctx); err != nil {
 		return fmt.Errorf("error waiting for IP Reservation (%s) to become %s: %s", d.Id(), wfs, err)
 	}
 
-	return resourceMetalReservedIPBlockRead(d, meta)
+	return resourceMetalReservedIPBlockRead(ctx, d, meta)
 }
 
-func resourceMetalReservedIPBlockUpdate(d *schema.ResourceData, meta interface{}) error {
+func resourceMetalReservedIPBlockUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) error {
 	meta.(*Config).addModuleToMetalUserAgent(d)
 	client := meta.(*Config).metal
 	id := d.Id()
@@ -344,7 +346,7 @@ func resourceMetalReservedIPBlockUpdate(d *schema.ResourceData, meta interface{}
 		return fmt.Errorf("error updating IP reservation: %w", err)
 	}
 
-	return resourceMetalReservedIPBlockRead(d, meta)
+	return resourceMetalReservedIPBlockRead(ctx, d, meta)
 }
 
 func reservedIPStateRefreshFunc(client *packngo.Client, reservedIPId string) retry.StateRefreshFunc {
@@ -454,7 +456,7 @@ func loadBlock(d *schema.ResourceData, reservedBlock *packngo.IPAddressReservati
 	return setMap(d, attributeMap)
 }
 
-func resourceMetalReservedIPBlockRead(d *schema.ResourceData, meta interface{}) error {
+func resourceMetalReservedIPBlockRead(ctx context.Context, d *schema.ResourceData, meta interface{}) error {
 	meta.(*Config).addModuleToMetalUserAgent(d)
 	client := meta.(*Config).metal
 
@@ -485,7 +487,7 @@ func resourceMetalReservedIPBlockRead(d *schema.ResourceData, meta interface{}) 
 	return nil
 }
 
-func resourceMetalReservedIPBlockDelete(d *schema.ResourceData, meta interface{}) error {
+func resourceMetalReservedIPBlockDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) error {
 	meta.(*Config).addModuleToMetalUserAgent(d)
 	client := meta.(*Config).metal
 
