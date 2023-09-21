@@ -8,7 +8,6 @@ variable "bandwidth" {}
 variable "redundancy" {}
 variable "redundancy_group_uuid" {}
 variable "purchase_order_number" {}
-variable "peering_type" {}
 variable "aside_ap_type" {}
 variable "fcr_uuid" {}
 variable "zside_ap_type" {}

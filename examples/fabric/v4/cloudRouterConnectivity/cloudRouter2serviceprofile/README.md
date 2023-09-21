@@ -25,7 +25,7 @@ At minimum, you must set below variables in `terraform.tfvars` file:
 
 ## Initialize
 - First step is to initialize the terraform directory/resource we are going to work on.
-  In the given example, the folder to perform CRUD operations on a fcr2serviceprofile connection can be found at examples/fcr2port/.
+  In the given example, the folder to perform CRUD operations on a fcr2serviceprofile connection can be found at examples/fcr2serviceprofile/.
 
 - Change directory into - `CD cloudRouter2serviceprofile`
 - Initialize Terraform plugins - `terraform init`

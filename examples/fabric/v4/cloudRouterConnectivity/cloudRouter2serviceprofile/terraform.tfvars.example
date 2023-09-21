@@ -8,7 +8,6 @@ bandwidth = 50
 redundancy = "SECONDARY" #"PRIMARY" #||
 redundancy_group_uuid = "53e04795-e6da-4756-9462-8bdc9b1f96d3" #OPTIONAL
 purchase_order_number = "1-323292"
-peering_type="PRIVATE"
 aside_ap_type = "CLOUD_ROUTER"
 fcr_uuid = "Fabric Cloud Router UUID"
 zside_ap_type = "SP"
