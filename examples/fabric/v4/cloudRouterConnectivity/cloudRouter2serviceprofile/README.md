@@ -25,7 +25,7 @@ At minimum, you must set below variables in `terraform.tfvars` file:
 
 ## Initialize
 - First step is to initialize the terraform directory/resource we are going to work on.
-  In the given example, the folder to perform CRUD operations on a fcr2serviceprofile connection can be found at examples/fcr2serviceprofile/.
+  In the given example, the folder to perform CRUD operations on a fcr2serviceprofile connection can be found at examples/fabric/v4/cloudRouterConnectivity/cloudRouter2serviceprofile.
 
 - Change directory into - `CD cloudRouter2serviceprofile`
 - Initialize Terraform plugins - `terraform init`
@@ -33,9 +33,9 @@ At minimum, you must set below variables in `terraform.tfvars` file:
 ## Fabric Cloud Router to ServiceProfile connection : Create, Read, Update and Delete(CRUD) operations
 Note: `–auto-approve` command does not prompt the user for validating the applying config. Remove it to get a prompt to confirm the operation.
 
-| Operation |              Command              |                                                            Description |
-|:----------|:---------------------------------:|-----------------------------------------------------------------------:|
-| CREATE    |  `terraform apply –auto-approve`  |                                 Creates a fcr2port connection resource |
-| READ      |         `terraform show`          |      Reads/Shows the current state of the fcr2port connection resource |
-| UPDATE    |    `terraform apply -refresh`     | Updates the fcr2port with values provided in the terraform.tfvars file |
-| DELETE    | `terraform destroy –auto-approve` |                       Deletes the created fcr2port connection resource |
+| Operation |              Command              |                                                                      Description |
+|:----------|:---------------------------------:|---------------------------------------------------------------------------------:|
+| CREATE    |  `terraform apply –auto-approve`  |                                 Creates a fcr2serviceprofile connection resource |
+| READ      |         `terraform show`          |      Reads/Shows the current state of the fcr2serviceprofile connection resource |
+| UPDATE    |    `terraform apply -refresh`     | Updates the fcr2serviceprofile with values provided in the terraform.tfvars file |
+| DELETE    | `terraform destroy –auto-approve` |                       Deletes the created fcr2serviceprofile connection resource |
