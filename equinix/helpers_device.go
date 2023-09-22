@@ -130,13 +130,13 @@ func getNetworkInfo(ips []*packngo.IPAddressAssignment) NetworkInfo {
 }
 
 func getNetworkTypeMetalGo(device *metalv1.Device) (*string, error) {
-
 	pgDevice := packngo.Device{}
 	res, err := device.MarshalJSON()
-	if err != nil {
-		json.Unmarshal(res, pgDevice)
-		networkType := pgDevice.GetNetworkType()
-		return &networkType, nil
+	if err == nil {
+		if err = json.Unmarshal(res, &pgDevice); err == nil {
+			networkType := pgDevice.GetNetworkType()
+			return &networkType, nil
+		}
 	}
 	return nil, err
 }
