@@ -1,39 +1,48 @@
+# OSX Specific files
 *.dll
 *.exe
-*.terraform.lock.hcl
 .DS_Store
-example.tf
+
+# Terraform specific files
 terraform.tfplan
 terraform.tfstate
+*.terraform.lock.hcl
+./*.tfstate
+.terraform/
+example.tf
+terraform-provider-equinix
+.terraform.lock.hcl
+*.tfvars
+
+# Local Scripts
 bin/
 modules-dev/
 /pkg/
+
+# External libraries
 website/.vagrant
 website/.bundle
 website/build
 website/node_modules
 .vagrant/
+website/vendor
+vendor
+
 *.backup
-./*.tfstate
-.terraform/
 *.log
 *.bak
 *~
 .*.swp
+
+# IDE Files
 .idea
 .vscode
 *.iml
 *.test
-*.iml
-.env
 
-website/vendor
-vendor
+# Local environment variables
+.env
 
 # Test exclusions
 !command/test-fixtures/**/*.tfstate
 !command/test-fixtures/**/.terraform/
-
-# Ignore provider's binary
-terraform-provider-equinix
-.terraform.lock.hcl

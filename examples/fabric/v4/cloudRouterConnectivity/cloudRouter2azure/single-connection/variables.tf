@@ -14,6 +14,5 @@ variable "fcr_uuid" {}
 variable "zside_ap_type" {}
 variable "zside_ap_authentication_key" {}
 variable "zside_ap_profile_type" {}
-variable "zside_ap_profile_uuid" {}
 variable "zside_location" {}
 variable "fabric_sp_name" {}

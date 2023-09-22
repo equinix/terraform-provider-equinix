@@ -1,5 +1,9 @@
 # Terraform examples for Fabric Cloud Router (FCR)
 
+## Setup
+
+Review [setup guide](../../README.md).
+
 ## Create FCR
 
 ```cd FCR/

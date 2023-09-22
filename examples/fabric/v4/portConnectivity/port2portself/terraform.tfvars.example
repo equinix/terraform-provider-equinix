@@ -1,4 +1,3 @@
-/* Client details for opsuser100 in uat with the UAT1 App in Developer Portal */
 equinix_client_id     = "MyEquinixClientId"
 equinix_client_secret = "MyEquinixSecret"
 
