@@ -1,6 +1,7 @@
 package equinix
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"reflect"
@@ -15,12 +16,12 @@ import (
 
 func resourceMetalVirtualCircuit() *schema.Resource {
 	return &schema.Resource{
-		Read:   resourceMetalVirtualCircuitRead,
-		Create: resourceMetalVirtualCircuitCreate,
-		Update: resourceMetalVirtualCircuitUpdate,
-		Delete: resourceMetalVirtualCircuitDelete,
+		ReadWithoutTimeout:   diagnosticsWrapper(resourceMetalVirtualCircuitRead),
+		CreateContext:        diagnosticsWrapper(resourceMetalVirtualCircuitCreate),
+		UpdateWithoutTimeout: diagnosticsWrapper(resourceMetalVirtualCircuitUpdate),
+		DeleteContext:        diagnosticsWrapper(resourceMetalVirtualCircuitDelete),
 		Importer: &schema.ResourceImporter{
-			State: schema.ImportStatePassthrough,
+			StateContext: schema.ImportStatePassthroughContext,
 		},
 
 		Schema: map[string]*schema.Schema{
@@ -137,7 +138,7 @@ func resourceMetalVirtualCircuit() *schema.Resource {
 	}
 }
 
-func resourceMetalVirtualCircuitCreate(d *schema.ResourceData, meta interface{}) error {
+func resourceMetalVirtualCircuitCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) error {
 	meta.(*Config).addModuleToMetalUserAgent(d)
 	client := meta.(*Config).metal
 	vncr := packngo.VCCreateRequest{
@@ -182,22 +183,22 @@ func resourceMetalVirtualCircuitCreate(d *schema.ResourceData, meta interface{})
 	createWaiter := getVCStateWaiter(
 		client,
 		vc.ID,
-		d.Timeout(schema.TimeoutCreate),
+		d.Timeout(schema.TimeoutCreate)-30*time.Second,
 		[]string{string(packngo.VCStatusActivating)},
 		[]string{string(packngo.VCStatusActive)},
 	)
 
-	_, err = createWaiter.WaitForState()
+	_, err = createWaiter.WaitForStateContext(ctx)
 	if err != nil {
 		return fmt.Errorf("Error waiting for virtual circuit %s to be created: %s", vc.ID, err.Error())
 	}
 
 	d.SetId(vc.ID)
 
-	return resourceMetalVirtualCircuitRead(d, meta)
+	return resourceMetalVirtualCircuitRead(ctx, d, meta)
 }
 
-func resourceMetalVirtualCircuitRead(d *schema.ResourceData, meta interface{}) error {
+func resourceMetalVirtualCircuitRead(ctx context.Context, d *schema.ResourceData, meta interface{}) error {
 	meta.(*Config).addModuleToMetalUserAgent(d)
 	client := meta.(*Config).metal
 	vcId := d.Id()
@@ -278,7 +279,7 @@ func getVCStateWaiter(client *packngo.Client, id string, timeout time.Duration, 
 	}
 }
 
-func resourceMetalVirtualCircuitUpdate(d *schema.ResourceData, meta interface{}) error {
+func resourceMetalVirtualCircuitUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) error {
 	meta.(*Config).addModuleToMetalUserAgent(d)
 	client := meta.(*Config).metal
 
@@ -323,10 +324,10 @@ func resourceMetalVirtualCircuitUpdate(d *schema.ResourceData, meta interface{})
 			return friendlyError(err)
 		}
 	}
-	return resourceMetalVirtualCircuitRead(d, meta)
+	return resourceMetalVirtualCircuitRead(ctx, d, meta)
 }
 
-func resourceMetalVirtualCircuitDelete(d *schema.ResourceData, meta interface{}) error {
+func resourceMetalVirtualCircuitDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) error {
 	meta.(*Config).addModuleToMetalUserAgent(d)
 	client := meta.(*Config).metal
 
@@ -338,12 +339,12 @@ func resourceMetalVirtualCircuitDelete(d *schema.ResourceData, meta interface{})
 	deleteWaiter := getVCStateWaiter(
 		client,
 		d.Id(),
-		d.Timeout(schema.TimeoutDelete),
+		d.Timeout(schema.TimeoutDelete)-30*time.Second,
 		[]string{string(packngo.VCStatusDeleting)},
 		[]string{},
 	)
 
-	_, err = deleteWaiter.WaitForState()
+	_, err = deleteWaiter.WaitForStateContext(ctx)
 	if ignoreResponseErrors(httpForbidden, httpNotFound)(nil, err) != nil {
 		return fmt.Errorf("Error deleting virtual circuit %s: %s", d.Id(), err)
 	}
