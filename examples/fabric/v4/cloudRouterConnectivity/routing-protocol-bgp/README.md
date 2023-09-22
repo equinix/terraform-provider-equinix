@@ -6,21 +6,18 @@ make a copy of the base folder - examples/routing-protocol-bgp/ and CD into this
 
 ## Define values for the Fabric Cloud Router create
 At minimum, you must set below variables in `terraform.tfvars` file:
-- `equinix_client_id` - Equinix client ID (consumer key), obtained after
-  registering app in the developer platform
-- `equinix_client_secret` - Equinix client secret ID (consumer secret),
-  obtained same way as above
-- `rp_name`- Name of routing Protocol
-- `rp_type`- Type of routing Protocol entity, "BGP"
-- `bgp_enabled_` - Enable or Disable BGP ipv4 and ipv6 sessions
-- connection_uuid = "d557cb4c-9052-4298-b5ca-8a9ed914cf03"
-  rp_type = "DIRECT"
-  rp_name = "FCR-RP"
-  customer_peer_ipv4 = "192.1.1.2"
-  customer_peer_ipv6 = "192::1:2"
-  bgp_enabled_ipv4 = "true" #Can either be true or false
-- bgp_enabled_ipv6 = "true" #Can either be true or false
-  customer_asn = "100"
+- `equinix_client_id` - Equinix client ID (consumer key), obtained after registering app in the developer platform
+- `equinix_client_secret` - Equinix client secret ID (consumer secret), obtained same way as above
+- `rp_name` - Name of routing Protocol
+- `rp_type` - Type of routing Protocol entity, "BGP"
+- `connection_uuid` - "d557cb4c-9052-4298-b5ca-8a9ed914cf03"
+- `rp_type` - "DIRECT"
+- `rp_name` - "FCR-RP"
+- `customer_peer_ipv4` - "192.1.1.2"
+- `customer_peer_ipv6` - "192::1:2"
+- `bgp_enabled_ipv4` - "true" 
+- `bgp_enabled_ipv6` - "true" 
+- `customer_asn` - "100"
 
 ## Initialize
 - First step is to initialize the terraform directory/resource we are going to work on.
