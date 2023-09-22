@@ -12,18 +12,21 @@ At minimum, you must set below variables in `terraform.tfvars` file:
   obtained same way as above
 - `rp_name`- Name of routing Protocol
 - `rp_type`- Type of routing Protocol entity, "BGP"
+- `bgp_enabled_` - Enable or Disable BGP ipv4 and ipv6 sessions
 - connection_uuid = "d557cb4c-9052-4298-b5ca-8a9ed914cf03"
   rp_type = "DIRECT"
   rp_name = "FCR-RP"
   customer_peer_ipv4 = "192.1.1.2"
   customer_peer_ipv6 = "192::1:2"
+  bgp_enabled_ipv4 = "true" #Can either be true or false
+- bgp_enabled_ipv6 = "true" #Can either be true or false
   customer_asn = "100"
 
 ## Initialize
 - First step is to initialize the terraform directory/resource we are going to work on.
-  In the given example, the folder to perform CRUD operations on an RP resource can be found at examples/routing-protocol-bgp/.
+  In the given example, the folder to perform CRUD operations on an RP resource can be found at examples/fabric/v4/cloudRouterConnectivity/routing-protocol-bgp/.
 
-- Change directory into - `CD examples/routing-protocol-bgp/`
+- Change directory into - `CD examples/fabric/v4/cloudRouterConnectivity/routing-protocol-bgp/`
 - Initialize Terraform plugins - `terraform init`
 
 ## Routing-protocol BGP : Create, Read, Update and Delete(CRUD) operations
