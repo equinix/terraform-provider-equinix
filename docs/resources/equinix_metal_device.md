@@ -285,6 +285,7 @@ See [network_types guide](../guides/network_types.md) for more info.
 more details.
 * `project_id` - The ID of the project the device belongs to.
 * `root_password` - Root password to the server (disabled after 24 hours).
+* `sos_hostname` - The hostname to use for [Serial over SSH](https://deploy.equinix.com/developers/docs/metal/resilience-recovery/serial-over-ssh/) access to the device
 * `ssh_key_ids` - List of IDs of SSH keys deployed in the device, can be both user and project SSH keys.
 * `state` - The status of the device.
 * `tags` - Tags attached to the device.

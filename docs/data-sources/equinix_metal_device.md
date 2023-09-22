@@ -70,6 +70,7 @@ In addition to all arguments above, the following attributes are exported:
 * `ports` - List of ports assigned to the device. See [Ports Attribute](#ports-attribute) below for
 more details.
 * `root_password` - Root password to the server (if still available).
+* `sos_hostname` - The hostname to use for [Serial over SSH](https://deploy.equinix.com/developers/docs/metal/resilience-recovery/serial-over-ssh/) access to the device
 * `ssh_key_ids` - List of IDs of SSH keys deployed in the device, can be both user or project SSH keys.
 * `state` - The state of the device.
 * `tags` - Tags attached to the device.
