@@ -1,8 +1,8 @@
 # ECX Fabric Cloud Router Connection BGP CRUD operations
-This example shows how to create Config BGP on FCR connection .
+This example shows how to Config BGP Routing Protocol details for an existing FCR connection.
 
 Note: Each time you need to create a BGP resource add-on
-make a copy of the base folder - examples/routing-protocol-bgp/ and CD into this folder to perform all the CRUD operations.
+make a copy of the base folder - examples/fabric/v4/cloudRouterConnectivity/routing-protocol-bgp/ and CD into this folder to perform all the CRUD operations.
 
 ## Define values for the Fabric Cloud Router create
 At minimum, you must set below variables in `terraform.tfvars` file:
@@ -10,14 +10,12 @@ At minimum, you must set below variables in `terraform.tfvars` file:
 - `equinix_client_secret` - Equinix client secret ID (consumer secret), obtained same way as above
 - `rp_name` - Name of routing Protocol
 - `rp_type` - Type of routing Protocol entity, "BGP"
-- `connection_uuid` - "d557cb4c-9052-4298-b5ca-8a9ed914cf03"
-- `rp_type` - "DIRECT"
-- `rp_name` - "FCR-RP"
-- `customer_peer_ipv4` - "192.1.1.2"
-- `customer_peer_ipv6` - "192::1:2"
-- `bgp_enabled_ipv4` - "true" 
-- `bgp_enabled_ipv6` - "true" 
-- `customer_asn` - "100"
+- `connection_uuid` - FCR Connection UUID
+- `customer_peer_ipv4` - Customer Side IpV4 Address
+- `customer_peer_ipv6` - Customer Side IpV6 Address
+- `bgp_enabled_ipv4` - Enable BGP IpV4 session from customer side
+- `bgp_enabled_ipv6` - Enable BGP IpV6 session from customer side
+- `customer_asn` - Customer ASN Number
 
 ## Initialize
 - First step is to initialize the terraform directory/resource we are going to work on.
