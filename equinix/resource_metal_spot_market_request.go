@@ -1,6 +1,7 @@
 package equinix
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"reflect"
@@ -15,11 +16,11 @@ import (
 
 func resourceMetalSpotMarketRequest() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceMetalSpotMarketRequestCreate,
-		Read:   resourceMetalSpotMarketRequestRead,
-		Delete: resourceMetalSpotMarketRequestDelete,
+		CreateContext: diagnosticsWrapper(resourceMetalSpotMarketRequestCreate),
+		ReadContext:   diagnosticsWrapper(resourceMetalSpotMarketRequestRead),
+		DeleteContext: diagnosticsWrapper(resourceMetalSpotMarketRequestDelete),
 		Importer: &schema.ResourceImporter{
-			State: schema.ImportStatePassthrough,
+			StateContext: schema.ImportStatePassthroughContext,
 		},
 		Schema: map[string]*schema.Schema{
 			"devices_min": {
@@ -211,7 +212,7 @@ func resourceMetalSpotMarketRequest() *schema.Resource {
 	}
 }
 
-func resourceMetalSpotMarketRequestCreate(d *schema.ResourceData, meta interface{}) error {
+func resourceMetalSpotMarketRequestCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) error {
 	meta.(*Config).addModuleToMetalUserAgent(d)
 	client := meta.(*Config).metal
 	var waitForDevices bool
@@ -326,6 +327,7 @@ func resourceMetalSpotMarketRequestCreate(d *schema.ResourceData, meta interface
 		Parameters:  params,
 	}
 
+	start := time.Now()
 	smr, _, err := client.SpotMarketRequests.Create(smrc, d.Get("project_id").(string))
 	if err != nil {
 		return err
@@ -338,22 +340,22 @@ func resourceMetalSpotMarketRequestCreate(d *schema.ResourceData, meta interface
 			Pending:        []string{"not_done"},
 			Target:         []string{"done"},
 			Refresh:        resourceStateRefreshFunc(d, meta),
-			Timeout:        d.Timeout(schema.TimeoutCreate),
+			Timeout:        d.Timeout(schema.TimeoutCreate) - time.Since(start) - time.Second*10, // reduce 30s to avoid context deadline
 			MinTimeout:     5 * time.Second,
 			Delay:          3 * time.Second, // Wait 10 secs before starting
 			NotFoundChecks: 600,             // Setting high number, to support long timeouts
 		}
 
-		_, err = stateConf.WaitForState()
+		_, err = stateConf.WaitForStateContext(ctx)
 		if err != nil {
 			return err
 		}
 	}
 
-	return resourceMetalSpotMarketRequestRead(d, meta)
+	return resourceMetalSpotMarketRequestRead(ctx, d, meta)
 }
 
-func resourceMetalSpotMarketRequestRead(d *schema.ResourceData, meta interface{}) error {
+func resourceMetalSpotMarketRequestRead(ctx context.Context, d *schema.ResourceData, meta interface{}) error {
 	meta.(*Config).addModuleToMetalUserAgent(d)
 	client := meta.(*Config).metal
 
@@ -393,7 +395,7 @@ func resourceMetalSpotMarketRequestRead(d *schema.ResourceData, meta interface{}
 	})
 }
 
-func resourceMetalSpotMarketRequestDelete(d *schema.ResourceData, meta interface{}) error {
+func resourceMetalSpotMarketRequestDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) error {
 	meta.(*Config).addModuleToMetalUserAgent(d)
 	client := meta.(*Config).metal
 	var waitForDevices bool
@@ -411,13 +413,13 @@ func resourceMetalSpotMarketRequestDelete(d *schema.ResourceData, meta interface
 			Pending:        []string{"not_done"},
 			Target:         []string{"done"},
 			Refresh:        resourceStateRefreshFunc(d, meta),
-			Timeout:        d.Timeout(schema.TimeoutDelete),
+			Timeout:        d.Timeout(schema.TimeoutDelete) - 30*time.Second,
 			MinTimeout:     5 * time.Second,
 			Delay:          3 * time.Second, // Wait 10 secs before starting
 			NotFoundChecks: 600,             // Setting high number, to support long timeouts
 		}
 
-		_, err = stateConf.WaitForState()
+		_, err = stateConf.WaitForStateContext(ctx)
 		if err != nil {
 			return err
 		}
@@ -431,32 +433,6 @@ func resourceMetalSpotMarketRequestDelete(d *schema.ResourceData, meta interface
 	}
 	resp, err := client.SpotMarketRequests.Delete(d.Id(), true)
 	return ignoreResponseErrors(httpForbidden, httpNotFound)(resp, err)
-}
-
-type InstanceParams []map[string]interface{}
-
-func getInstanceParams(params *packngo.SpotMarketRequestInstanceParameters) InstanceParams {
-	p := InstanceParams{{
-		"billing_cycle":    params.BillingCycle,
-		"plan":             params.Plan,
-		"operating_system": params.OperatingSystem,
-		"hostname":         params.Hostname,
-		"always_pxe":       params.AlwaysPXE,
-		"description":      params.Description,
-		"features":         params.Features,
-		"locked":           params.Locked,
-		"project_ssh_keys": params.ProjectSSHKeys,
-		"user_ssh_keys":    params.UserSSHKeys,
-		"userdata":         params.UserData,
-		"customdata":       params.CustomData,
-		"ipxe_script_url":  params.IPXEScriptURL,
-		"tags":             params.Tags,
-	}}
-	if params.TerminationTime != nil {
-		p[0]["termintation_time"] = params.TerminationTime.Time
-		p[0]["termination_time"] = params.TerminationTime.Time
-	}
-	return p
 }
 
 func resourceStateRefreshFunc(d *schema.ResourceData, meta interface{}) retry.StateRefreshFunc {

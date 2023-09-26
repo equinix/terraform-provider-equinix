@@ -2,18 +2,17 @@ package equinix
 
 import (
 	"fmt"
-	"regexp"
-	"testing"
-
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"github.com/packethost/packngo"
+	"regexp"
+	"testing"
 )
 
 var (
 	matchErrOverbid = regexp.MustCompile(".* exceeds the maximum bid price .*")
-	matchErrTimeout = regexp.MustCompile(".* timeout while waiting for state to become 'done' .")
+	matchErrTimeout = regexp.MustCompile(".* timeout while waiting for state to become 'done'.*")
 )
 
 func TestAccMetalSpotMarketRequest_basic(t *testing.T) {
@@ -23,7 +22,7 @@ func TestAccMetalSpotMarketRequest_basic(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t) },
 		ExternalProviders: testExternalProviders,
-		Providers:         testAccProviders,
+		ProviderFactories: testAccProviderFactories,
 		CheckDestroy:      testAccMetalSpotMarketRequestCheckDestroyed,
 		ErrorCheck:        skipIfOverbidOrTimedOut(t),
 		Steps: []resource.TestStep{
@@ -151,7 +150,7 @@ func TestAccMetalSpotMarketRequest_Import(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t) },
 		ExternalProviders: testExternalProviders,
-		Providers:         testAccProviders,
+		ProviderFactories: testAccProviderFactories,
 		CheckDestroy:      testAccMetalSpotMarketRequestCheckDestroyed,
 		ErrorCheck:        skipIfOverbidOrTimedOut(t),
 		Steps: []resource.TestStep{
@@ -191,4 +190,72 @@ func skipIfOverbidOrTimedOut(t *testing.T) resource.ErrorCheckFunc {
 
 		return err
 	}
+}
+
+func testAccMetalSpotMarketRequestConfig_timeout(projSuffix, createTimeout string) string {
+	if createTimeout == "" {
+		createTimeout = "30m"
+	}
+
+	return fmt.Sprintf(`
+%s
+
+resource "equinix_metal_project" "test" {
+  name = "tfacc-spot_market_request-%s"
+}
+
+data "equinix_metal_spot_market_price" "test" {
+  metro = local.metro
+  plan  = local.plan
+}
+
+data "equinix_metal_spot_market_request" "dreq" {
+  request_id = equinix_metal_spot_market_request.request.id
+  timeouts {
+    create = "%s"
+  }
+}
+
+resource "equinix_metal_spot_market_request" "request" {
+  project_id       = equinix_metal_project.test.id
+  max_bid_price    = format("%%.2f", data.equinix_metal_spot_market_price.test.price)
+  metro            = data.equinix_metal_spot_market_price.test.metro
+  devices_min      = 1
+  devices_max      = 1
+  wait_for_devices = true
+
+  instance_parameters {
+    hostname         = "tfacc-testspot"
+    billing_cycle    = "hourly"
+    operating_system = local.os
+    plan             = local.plan
+  }
+
+  timeouts {
+    create = "%s"
+  }
+}`, confAccMetalDevice_base(preferable_plans, preferable_metros, preferable_os), projSuffix, createTimeout, createTimeout)
+}
+
+func TestAccMetalSpotMarketRequestCreate_WithTimeout(t *testing.T) {
+	projSuffix := acctest.RandString(10)
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t) },
+		ExternalProviders: testExternalProviders,
+		ProviderFactories: testAccProviderFactories,
+		CheckDestroy:      testAccMetalSpotMarketRequestCheckDestroyed,
+		ErrorCheck: func(err error) error {
+			if matchErrOverbid.MatchString(err.Error()) {
+				t.Skipf("price was higher than max allowed bid; skipping")
+			}
+			return err
+		},
+		Steps: []resource.TestStep{
+			{
+				Config:      testAccMetalSpotMarketRequestConfig_timeout(projSuffix, "5s"),
+				ExpectError: matchErrTimeout,
+			},
+		},
+	})
 }
