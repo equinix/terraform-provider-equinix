@@ -7,7 +7,7 @@ data "equinix_fabric_service_profiles" "sp" {
   filter {
     property = "/name"
     operator = "="
-    values = [var.fabric_sp_name]
+    values   = [var.fabric_sp_name]
   }
 }
 
@@ -15,17 +15,17 @@ resource "equinix_fabric_connection" "fcr2profile" {
   name = var.connection_name
   type = var.connection_type
   notifications{
-    type=var.notifications_type
-    emails=var.notifications_emails
+    type   = var.notifications_type
+    emails = var.notifications_emails
   }
   bandwidth = var.bandwidth
-  redundancy {priority= var.redundancy}
+  redundancy {priority = var.redundancy}
   order {
-    purchase_order_number= var.purchase_order_number
+    purchase_order_number = var.purchase_order_number
   }
   a_side {
     access_point {
-      type= var.aside_ap_type
+      type = var.aside_ap_type
       router {
         uuid = var.fcr_uuid
       }
@@ -33,13 +33,13 @@ resource "equinix_fabric_connection" "fcr2profile" {
   }
   z_side {
     access_point {
-      type= var.zside_ap_type
+      type = var.zside_ap_type
       profile {
-        type= var.zside_ap_profile_type
-        uuid= data.equinix_fabric_service_profiles.sp.id
+        type = var.zside_ap_profile_type
+        uuid = data.equinix_fabric_service_profiles.sp.id
       }
       location {
-        metro_code= var.zside_location
+        metro_code = var.zside_location
       }
     }
   }
