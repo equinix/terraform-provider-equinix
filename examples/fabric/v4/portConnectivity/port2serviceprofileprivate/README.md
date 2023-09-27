@@ -32,9 +32,9 @@ This example shows how to create layer2 between ECX Fabric Port and Private Sell
 ## Port to Service Profile Private connection  : Create, Read, Update and Delete(CRUD) operations
 Note: `–auto-approve` command does not prompt the user for validating the applying config. Remove it to get a prompt to confirm the operation.
 
-| Operation |              Command              |                                                                       Description |
-|:----------|:---------------------------------:|----------------------------------------------------------------------------------:|
-| CREATE    |  `terraform apply –auto-approve`  |                                Creates an port2serviceprofile connection resource |
-| READ      |         `terraform show`          |      Reads/Shows the current state of the port2serviceprofile connection resource |
-| UPDATE    |    `terraform apply -refresh`     | Updates the port2serviceprofile with values provided in the terraform.tfvars file |
-| DELETE    | `terraform destroy –auto-approve` |                              Deletes the created port2alibaba connection resource |
+| Operation |              Command              |                                                                              Description |
+|:----------|:---------------------------------:|-----------------------------------------------------------------------------------------:|
+| CREATE    |  `terraform apply –auto-approve`  |                                 Creates a port2serviceprofileprivate connection resource |
+| READ      |         `terraform show`          |      Reads/Shows the current state of the port2serviceprofileprivate connection resource |
+| UPDATE    |    `terraform apply -refresh`     | Updates the port2serviceprofileprivate with values provided in the terraform.tfvars file |
+| DELETE    | `terraform destroy –auto-approve` |                       Deletes the created port2serviceprofileprivate connection resource |

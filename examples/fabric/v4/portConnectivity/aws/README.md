@@ -45,7 +45,7 @@ Note: `–auto-approve` command does not prompt the user for validating the appl
 
 | Operation |              Command              |                                                            Description |
 |:----------|:---------------------------------:|-----------------------------------------------------------------------:|
-| CREATE    |  `terraform apply –auto-approve`  |                                Creates an port2aws connection resource |
+| CREATE    |  `terraform apply –auto-approve`  |                                 Creates a port2aws connection resource |
 | READ      |         `terraform show`          |      Reads/Shows the current state of the port2aws connection resource |
 | UPDATE    |    `terraform apply -refresh`     | Updates the port2aws with values provided in the terraform.tfvars file |
 | DELETE    | `terraform destroy –auto-approve` |                       Deletes the created port2aws connection resource |

@@ -27,9 +27,9 @@ At minimum, you must set below variables in `terraform.tfvars` file:
 ## Routing-protocol BGP : Create, Read, Update and Delete(CRUD) operations
 Note: `–auto-approve` command does not prompt the user for validating the applying config. Remove it to get a prompt to confirm the operation.
 
-| Operation |              Command              |                                                               Description |
-|:----------|:---------------------------------:|--------------------------------------------------------------------------:|
-| CREATE    |  `terraform apply –auto-approve`  |                                                    Creates an FCR resource |
-| READ      |         `terraform show`          |                          Reads/Shows the current state of the FCR resource |
-| UPDATE    |    `terraform apply -refresh`     | Updates the FCR resource with values provided in the terraform.tfvars file |
-| DELETE    | `terraform destroy –auto-approve` |                                           Deletes the created FCR resource |
+| Operation |              Command              |                                                                                 Description |
+|:----------|:---------------------------------:|--------------------------------------------------------------------------------------------:|
+| CREATE    |  `terraform apply –auto-approve`  |                                                     Creates a BGP Routing Protocol resource |
+| READ      |         `terraform show`          |                          Reads/Shows the current state of the BGP Routing Protocol resource |
+| UPDATE    |    `terraform apply -refresh`     | Updates the BGP Routing Protocol resource with values provided in the terraform.tfvars file |
+| DELETE    | `terraform destroy –auto-approve` |                                           Deletes the created BGP Routing Protocol resource |
