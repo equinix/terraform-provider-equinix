@@ -1,8 +1,11 @@
 package equinix
 
 import (
+	"context"
+
+	metalv1 "github.com/equinix-labs/metal-go/metal/v1"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/packethost/packngo"
 )
 
 func bgpNeighborSchema() *schema.Resource {
@@ -85,7 +88,7 @@ func bgpRouteSchema() *schema.Resource {
 
 func dataSourceMetalDeviceBGPNeighbors() *schema.Resource {
 	return &schema.Resource{
-		Read: dataSourceMetalDeviceBGPNeighborsRead,
+		ReadContext: dataSourceMetalDeviceBGPNeighborsRead,
 		Schema: map[string]*schema.Schema{
 			"device_id": {
 				Type:        schema.TypeString,
@@ -102,13 +105,13 @@ func dataSourceMetalDeviceBGPNeighbors() *schema.Resource {
 	}
 }
 
-func dataSourceMetalDeviceBGPNeighborsRead(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*Config).metal
+func dataSourceMetalDeviceBGPNeighborsRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	client := meta.(*Config).metalgo
 	deviceID := d.Get("device_id").(string)
 
-	bgpNeighborsRaw, _, err := client.Devices.ListBGPNeighbors(deviceID, nil)
+	bgpNeighborsRaw, _, err := client.DevicesApi.GetBgpNeighborData(ctx, deviceID).Execute()
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	d.Set("bgp_neighbors", getBgpNeighbors(bgpNeighborsRaw))
@@ -116,28 +119,28 @@ func dataSourceMetalDeviceBGPNeighborsRead(d *schema.ResourceData, meta interfac
 	return nil
 }
 
-func getRoutesSlice(routes []packngo.BGPRoute) []map[string]interface{} {
+func getRoutesSlice(routes []metalv1.BgpRoute) []map[string]interface{} {
 	ret := []map[string]interface{}{}
 	for _, r := range routes {
 		ret = append(ret, map[string]interface{}{
-			"route": r.Route, "exact": r.Exact,
+			"route": r.GetRoute(), "exact": r.GetExact(),
 		})
 	}
 	return ret
 }
 
-func getBgpNeighbors(ns []packngo.BGPNeighbor) []map[string]interface{} {
+func getBgpNeighbors(ns *metalv1.BgpSessionNeighbors) []map[string]interface{} {
 	ret := make([]map[string]interface{}, 0, 1)
-	for _, n := range ns {
+	for _, n := range ns.BgpNeighbors {
 		neighbor := map[string]interface{}{
-			"address_family": n.AddressFamily,
-			"customer_as":    n.CustomerAs,
-			"customer_ip":    n.CustomerIP,
-			"md5_enabled":    n.Md5Enabled,
-			"md5_password":   n.Md5Password,
-			"multihop":       n.Multihop,
-			"peer_as":        n.PeerAs,
-			"peer_ips":       n.PeerIps,
+			"address_family": n.GetAddressFamily(),
+			"customer_as":    n.GetCustomerAs(),
+			"customer_ip":    n.GetCustomerIp(),
+			"md5_enabled":    n.GetMd5Enabled(),
+			"md5_password":   n.GetMd5Password(),
+			"multihop":       n.GetMultihop(),
+			"peer_as":        n.GetPeerAs(),
+			"peer_ips":       n.GetPeerIps(),
 			"routes_in":      getRoutesSlice(n.RoutesIn),
 			"routes_out":     getRoutesSlice(n.RoutesOut),
 		}
