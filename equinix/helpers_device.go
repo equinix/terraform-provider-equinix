@@ -69,7 +69,7 @@ type NetworkInfo struct {
 	PrivateIPv4    string
 }
 
-func getNetworkInfoMetalGo(ips []metalv1.IPAssignment) NetworkInfo {
+func getNetworkInfo(ips []metalv1.IPAssignment) NetworkInfo {
 	ni := NetworkInfo{Networks: make([]map[string]interface{}, 0, 1)}
 	for _, ip := range ips {
 		network := map[string]interface{}{
@@ -99,37 +99,7 @@ func getNetworkInfoMetalGo(ips []metalv1.IPAssignment) NetworkInfo {
 	return ni
 }
 
-func getNetworkInfo(ips []*packngo.IPAddressAssignment) NetworkInfo {
-	ni := NetworkInfo{Networks: make([]map[string]interface{}, 0, 1)}
-	for _, ip := range ips {
-		network := map[string]interface{}{
-			"address": ip.Address,
-			"gateway": ip.Gateway,
-			"family":  ip.AddressFamily,
-			"cidr":    ip.CIDR,
-			"public":  ip.Public,
-		}
-		ni.Networks = append(ni.Networks, network)
-
-		// Initial device IPs are fixed and marked as "Management"
-		if ip.Management {
-			if ip.AddressFamily == 4 {
-				if ip.Public {
-					ni.Host = ip.Address
-					ni.IPv4SubnetSize = ip.CIDR
-					ni.PublicIPv4 = ip.Address
-				} else {
-					ni.PrivateIPv4 = ip.Address
-				}
-			} else {
-				ni.PublicIPv6 = ip.Address
-			}
-		}
-	}
-	return ni
-}
-
-func getNetworkTypeMetalGo(device *metalv1.Device) (*string, error) {
+func getNetworkType(device *metalv1.Device) (*string, error) {
 	pgDevice := packngo.Device{}
 	res, err := device.MarshalJSON()
 	if err == nil {
@@ -153,7 +123,7 @@ func getNetworkRank(family int, public bool) int {
 	return 3
 }
 
-func getPortsMetalGo(ps []metalv1.Port) []map[string]interface{} {
+func getPorts(ps []metalv1.Port) []map[string]interface{} {
 	ret := make([]map[string]interface{}, 0, 1)
 	for _, p := range ps {
 		port := map[string]interface{}{
@@ -162,21 +132,6 @@ func getPortsMetalGo(ps []metalv1.Port) []map[string]interface{} {
 			"type":   p.GetType(),
 			"mac":    p.Data.GetMac(),
 			"bonded": p.Data.GetBonded(),
-		}
-		ret = append(ret, port)
-	}
-	return ret
-}
-
-func getPorts(ps []packngo.Port) []map[string]interface{} {
-	ret := make([]map[string]interface{}, 0, 1)
-	for _, p := range ps {
-		port := map[string]interface{}{
-			"name":   p.Name,
-			"id":     p.ID,
-			"type":   p.Type,
-			"mac":    p.Data.MAC,
-			"bonded": p.Data.Bonded,
 		}
 		ret = append(ret, port)
 	}
@@ -284,7 +239,7 @@ func ipAddressSchema() *schema.Resource {
 }
 
 func getDeviceMap(device metalv1.Device) map[string]interface{} {
-	networkInfo := getNetworkInfoMetalGo(device.IpAddresses)
+	networkInfo := getNetworkInfo(device.IpAddresses)
 	sort.SliceStable(networkInfo.Networks, func(i, j int) bool {
 		famI := int(*networkInfo.Networks[i]["family"].(*int32))
 		famJ := int(*networkInfo.Networks[j]["family"].(*int32))
@@ -296,7 +251,7 @@ func getDeviceMap(device metalv1.Device) map[string]interface{} {
 	for _, k := range device.SshKeys {
 		keyIDs = append(keyIDs, path.Base(k.GetHref()))
 	}
-	ports := getPortsMetalGo(device.NetworkPorts)
+	ports := getPorts(device.NetworkPorts)
 
 	return map[string]interface{}{
 		"hostname":            device.GetHostname(),
@@ -319,5 +274,6 @@ func getDeviceMap(device metalv1.Device) map[string]interface{} {
 		"network":             networkInfo.Networks,
 		"ssh_key_ids":         keyIDs,
 		"ports":               ports,
+		"sos_hostname":        device.GetSos(),
 	}
 }
