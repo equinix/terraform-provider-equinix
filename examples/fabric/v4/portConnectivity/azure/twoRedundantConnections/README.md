@@ -41,9 +41,9 @@ Bandwidth in Terraform must match the bandwidth of the ExpressRoute Circuit crea
 
 ## Initialize
 - First step is to initialize the terraform directory/resource we are going to work on.
-  In the given example, the folder to perform CRUD operations for port2azure redundant connections can be found at examples/fabric/v4/portConnectivity/azure/twoRedundantConnection.
+  In the given example, the folder to perform CRUD operations for port2azure redundant connections can be found at examples/fabric/v4/portConnectivity/azure/twoRedundantConnections.
 
-- Change directory into - `CD examples/fabric/v4/portConnectivity/azure/twoRedundantConnection`
+- Change directory into - `CD examples/fabric/v4/portConnectivity/azure/twoRedundantConnections`
 - Initialize Terraform plugins - `terraform init`
 
 ## Port to Azure connection  : Create, Read, Update and Delete(CRUD) operations
