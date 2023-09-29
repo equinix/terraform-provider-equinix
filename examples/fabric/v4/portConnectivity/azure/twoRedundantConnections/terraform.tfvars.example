@@ -1,8 +1,8 @@
 equinix_client_id      = "MyEquinixClientId"
 equinix_client_secret  = "MyEquinixSecret"
 
-pri_connection_name = "terraform_port2azure_pri"
-sec_connection_name = "terraform_port2azure_sec"
+pri_connection_name = "Terra_Port2Azure_Pri"
+sec_connection_name = "Terra_Port2Azure_Sec"
 connection_type = "EVPL_VC"
 notifications_type = "ALL"
 notifications_emails = ["example@equinix.com"]
