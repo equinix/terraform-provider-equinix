@@ -71,7 +71,7 @@ jobs:
         version:
           - stable
         terraform:
-          - '1.1.5'
+          - '1.5'
     steps:
 
     - name: Check out code into the Go module directory
