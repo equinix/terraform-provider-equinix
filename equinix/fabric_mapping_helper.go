@@ -2,11 +2,12 @@ package equinix
 
 import (
 	"fmt"
-	"log"
-
 	v4 "github.com/equinix-labs/fabric-go/fabric/v4"
 	"github.com/equinix/terraform-provider-equinix/internal/converters"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"log"
+	"math/rand"
+	"time"
 )
 
 func serviceTokenToFabric(serviceTokenRequest []interface{}) (v4.ServiceToken, error) {
@@ -1255,4 +1256,37 @@ func getCloudRouterUpdateRequest(conn v4.CloudRouter, d *schema.ResourceData) (v
 		return changeOps, fmt.Errorf("nothing to update for the connection %s", existingName)
 	}
 	return changeOps, nil
+}
+
+func getNetworkUpdateRequest(network v4.Network, d *schema.ResourceData) (v4.NetworkChangeOperation, error) {
+	changeOps := v4.NetworkChangeOperation{}
+	existingName := network.Name
+	updateNameVal := d.Get("name")
+
+	log.Printf("existing name %s, Update Name Request %s ", existingName, updateNameVal)
+
+	if existingName != updateNameVal {
+		changeOps = v4.NetworkChangeOperation{Op: "replace", Path: "/name", Value: &updateNameVal}
+	} else {
+		return changeOps, fmt.Errorf("nothing to update for the Fabric Network: %s", existingName)
+	}
+	return changeOps, nil
+}
+
+const allowed_charset = "abcdefghijklmnopqrstuvwxyz" +
+	"ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789#$&@"
+
+var seededRand = rand.New(
+	rand.NewSource(time.Now().UnixNano()))
+
+func CorrelationIdWithCharset(length int, charset string) string {
+	b := make([]byte, length)
+	for i := range b {
+		b[i] = charset[seededRand.Intn(len(charset))]
+	}
+	return string(b)
+}
+
+func CorrelationId(length int) string {
+	return CorrelationIdWithCharset(length, allowed_charset)
 }
