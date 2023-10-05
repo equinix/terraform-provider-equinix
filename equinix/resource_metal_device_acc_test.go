@@ -118,12 +118,28 @@ resource "random_integer" "plan_idx" {
   max = length(data.equinix_metal_plans.test.plans) - 1
 }
 
+resource "terraform_data" "plan" {
+  input = data.equinix_metal_plans.test.plans[random_integer.plan_idx.result]
+
+  lifecycle {
+	ignore_changes = ["input"]
+  }
+}
+
 // Select a metal facility randomly and lock it in
 // so that we don't pick a different one for
 // every subsequent terraform plan
 resource "random_integer" "facility_idx" {
   min = 0
   max = length(local.facilities) - 1
+}
+
+resource "terraform_data" "facility" {
+  input = local.facilities[random_integer.facility_idx.result]
+
+  lifecycle {
+	ignore_changes = ["input"]
+  }
 }
 
 // Select a metal metro randomly and lock it in
@@ -134,18 +150,25 @@ resource "random_integer" "metro_idx" {
   max = length(local.metros) - 1
 }
 
+resource "terraform_data" "metro" {
+  input = local.metros[random_integer.metro_idx.result]
+
+  lifecycle {
+	ignore_changes = ["input"]
+  }
+}
+
 locals {
     // Select a random plan
-    selected_plan     = data.equinix_metal_plans.test.plans[random_integer.plan_idx.result]
-    plan              = local.selected_plan.slug
+    plan              = terraform_data.plan.output.slug
 
     // Select a random facility from the facilities in which the selected plan is available, excluding decommed facilities
-    facilities             = sort(tolist(setsubtract(local.selected_plan.available_in, ["nrt1", "dfw2", "ewr1", "ams1", "sjc1", "ld7", "sy4", "ny6"])))
-    facility               = local.facilities[random_integer.facility_idx.result]
+    facilities             = sort(tolist(setsubtract(terraform_data.plan.output.available_in, ["nrt1", "dfw2", "ewr1", "ams1", "sjc1", "ld7", "sy4", "ny6"])))
+    facility               = terraform_data.facility.output
 
     // Select a random metro from the metros in which the selected plan is available
-    metros             = sort(tolist(local.selected_plan.available_in_metros))
-    metro              = local.metros[random_integer.metro_idx.result]
+    metros             = sort(tolist(terraform_data.plan.output.available_in_metros))
+    metro              = terraform_data.metro.output
 
     os = [%s][0]
 }
