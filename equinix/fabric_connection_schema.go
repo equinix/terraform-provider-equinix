@@ -798,8 +798,8 @@ func createFabricConnectionResourceSchema() map[string]*schema.Schema {
 			Type:        schema.TypeList,
 			Optional:    true,
 			Description: "Connection additional information",
-			Elem: &schema.Resource{
-				Schema: createAdditionalInfoSch(),
+			Elem: &schema.Schema{
+				Type: schema.TypeMap,
 			},
 		},
 		"order": {
