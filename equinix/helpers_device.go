@@ -241,10 +241,10 @@ func ipAddressSchema() *schema.Resource {
 func getDeviceMap(device metalv1.Device) map[string]interface{} {
 	networkInfo := getNetworkInfo(device.IpAddresses)
 	sort.SliceStable(networkInfo.Networks, func(i, j int) bool {
-		famI := int(*networkInfo.Networks[i]["family"].(*int32))
-		famJ := int(*networkInfo.Networks[j]["family"].(*int32))
-		pubI := *networkInfo.Networks[i]["public"].(*bool)
-		pubJ := *networkInfo.Networks[j]["public"].(*bool)
+		famI := int(networkInfo.Networks[i]["family"].(int32))
+		famJ := int(networkInfo.Networks[j]["family"].(int32))
+		pubI := networkInfo.Networks[i]["public"].(bool)
+		pubJ := networkInfo.Networks[j]["public"].(bool)
 		return getNetworkRank(famI, pubI) < getNetworkRank(famJ, pubJ)
 	})
 	keyIDs := []string{}
