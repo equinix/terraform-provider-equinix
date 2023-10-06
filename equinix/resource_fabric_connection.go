@@ -204,7 +204,7 @@ func resourceFabricConnectionUpdate(ctx context.Context, d *schema.ResourceData,
 		if !strings.Contains(err.Error(), "500") {
 			d.SetId("")
 		}
-		return diag.Errorf("either timed out or errored out while fetching connection for uuid %s and error %v", d.Id(), err)
+		return diag.Errorf("either timed out or errored out while fetching connection for uuid %s: error -> %v", d.Id(), err)
 	}
 
 	diags := diag.Diagnostics{}
@@ -218,7 +218,7 @@ func resourceFabricConnectionUpdate(ctx context.Context, d *schema.ResourceData,
 	for _, update := range updateRequests {
 		_, _, err := client.ConnectionsApi.UpdateConnectionByUuid(ctx, update, d.Id())
 		if err != nil {
-			diags = append(diags, diag.Diagnostic{Severity: 2, Summary: fmt.Sprintf("error response for the connection update: %v, update body: %v", err, update)})
+			diags = append(diags, diag.Diagnostic{Severity: 2, Summary: fmt.Sprintf("connectionn property update request error: %v [update payload: %v] (other updates will be successful if the payload is not shown)", err, update)})
 			continue
 		}
 
@@ -237,10 +237,8 @@ func resourceFabricConnectionUpdate(ctx context.Context, d *schema.ResourceData,
 			if !strings.Contains(err.Error(), "500") {
 				d.SetId("")
 			}
-			diags = append(diags, diag.Diagnostic{Severity: 2, Summary: fmt.Sprintf("errored while waiting for successful connection update: %v", err)})
+			diags = append(diags, diag.Diagnostic{Severity: 2, Summary: fmt.Sprintf("connection property update completion timeout error: %v [update payload: %v] (other updates will be successful if the payload is not shown)", err, update)})
 		}
-
-		diags = append(diags, diag.Diagnostic{Severity: 1, Summary: fmt.Sprintf("Update completed successfully for: %v", update)})
 	}
 
 	d.SetId(updatedConn.Uuid)
