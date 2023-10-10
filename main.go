@@ -6,7 +6,6 @@ import (
 	"log"
 
 	"github.com/equinix/terraform-provider-equinix/equinix"
-	"github.com/equinix/terraform-provider-equinix/internal/provider"
 	"github.com/equinix/terraform-provider-equinix/version"
 
 	"github.com/hashicorp/terraform-plugin-framework/providerserver"
@@ -27,7 +26,7 @@ func main() {
 
 	providers := []func() tfprotov5.ProviderServer{
 		providerserver.NewProtocol5(
-			provider.CreateFrameworkProvider(version.ProviderVersion)),
+			equinix.CreateFrameworkProvider(version.ProviderVersion)),
 		equinix.Provider().GRPCProvider,
 	}
 
@@ -51,4 +50,6 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+
+	//plugin.Serve(opts)
 }
