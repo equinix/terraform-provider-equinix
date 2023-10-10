@@ -1,15 +1,16 @@
 package equinix
 
 import (
+	"context"
 	"fmt"
 	"strings"
 	"time"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/packethost/packngo"
+	"github.com/pkg/errors"
 )
-
-type portVlanAction func(*packngo.PortAssignRequest) (*packngo.Port, *packngo.Response, error)
 
 type ClientPortResource struct {
 	Client   *packngo.Client
@@ -126,20 +127,7 @@ func specifiedVlanIds(d *schema.ResourceData) []string {
 	return []string{}
 }
 
-func processVlansOnPort(port *packngo.Port, vlanIds []string, f portVlanAction) (*packngo.Port, error) {
-	par := packngo.PortAssignRequest{PortID: port.ID}
-	for _, vId := range vlanIds {
-		par.VirtualNetworkID = vId
-		var err error
-		port, _, err = f(&par)
-		if err != nil {
-			return nil, err
-		}
-	}
-	return port, nil
-}
-
-func batchVlans(removeOnly bool) func(*ClientPortResource) error {
+func batchVlans(ctx context.Context, start time.Time, removeOnly bool) func(*ClientPortResource) error {
 	return func(cpr *ClientPortResource) error {
 		var vlansToAssign []string
 		var currentNative string
@@ -171,35 +159,53 @@ func batchVlans(removeOnly bool) func(*ClientPortResource) error {
 				Native: &native,
 			})
 		}
-		return createAndWaitForBatch(cpr.Client, cpr.Port.ID, vacr)
+		return createAndWaitForBatch(ctx, start, cpr, vacr)
 	}
 }
 
-func createAndWaitForBatch(c *packngo.Client, portID string, vacr *packngo.VLANAssignmentBatchCreateRequest) error {
+func createAndWaitForBatch(ctx context.Context, start time.Time, cpr *ClientPortResource, vacr *packngo.VLANAssignmentBatchCreateRequest) error {
 	if len(vacr.VLANAssignments) == 0 {
 		return nil
 	}
+
+	portID := cpr.Port.ID
+	c := cpr.Client
+
 	b, _, err := c.VLANAssignments.CreateBatch(portID, vacr, nil)
 	if err != nil {
 		return fmt.Errorf("vlan assignment batch could not be created: %w", err)
 	}
 
-	// 15 minutes = 180 * 5sec-retry
-	for i := 0; i < 180; i++ {
-		<-time.After(5 * time.Second)
-		b, _, err := c.VLANAssignments.GetBatch(portID, b.ID, nil)
-		if err != nil {
-			return fmt.Errorf("vlan assignment batch %s could not be polled: %w", b.ID, err)
-		}
-		if b.State == packngo.VLANAssignmentBatchCompleted {
-			return nil
-		}
-		if b.State == packngo.VLANAssignmentBatchFailed {
-			return fmt.Errorf("vlan assignment batch %s provisioning failed: %s", b.ID, strings.Join(b.ErrorMessages, "; "))
-		}
-	}
+	deadline, _ := ctx.Deadline()
+	// originally set timeout in ctx by TF
+	ctxTimeout := deadline.Sub(start)
 
-	return fmt.Errorf("vlan assignment batch %s is not complete after timeout", b.ID)
+	stateChangeConf := &retry.StateChangeConf{
+		Delay:      5 * time.Second,
+		Pending:    []string{string(packngo.VLANAssignmentBatchQueued), string(packngo.VLANAssignmentBatchInProgress)},
+		Target:     []string{string(packngo.VLANAssignmentBatchCompleted)},
+		MinTimeout: 5 * time.Second,
+		Timeout:    ctxTimeout - time.Since(start) - 30*time.Second,
+		Refresh: func() (result interface{}, state string, err error) {
+			b, _, err := c.VLANAssignments.GetBatch(portID, b.ID, nil)
+			switch b.State {
+			case packngo.VLANAssignmentBatchFailed:
+				return b, string(packngo.VLANAssignmentBatchFailed),
+					fmt.Errorf("vlan assignment batch %s provisioning failed: %s", b.ID, strings.Join(b.ErrorMessages, "; "))
+			case packngo.VLANAssignmentBatchCompleted:
+				return b, string(packngo.VLANAssignmentBatchCompleted), nil
+			default:
+				if err != nil {
+					return b, "", fmt.Errorf("vlan assignment batch %s could not be polled: %w", b.ID, err)
+				}
+				return b, string(b.State), err
+			}
+		},
+	}
+	if _, err = stateChangeConf.WaitForStateContext(ctx); err != nil {
+		return errors.Wrapf(err, "vlan assignment batch %s is not complete after timeout", b.ID)
+	}
+	return nil
 }
 
 func updateNativeVlan(cpr *ClientPortResource) error {

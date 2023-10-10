@@ -1,6 +1,7 @@
 package equinix
 
 import (
+	"context"
 	"log"
 	"time"
 
@@ -21,17 +22,17 @@ var (
 func resourceMetalPort() *schema.Resource {
 	return &schema.Resource{
 		Timeouts: &schema.ResourceTimeout{
-			Create: schema.DefaultTimeout(20 * time.Minute),
-			Update: schema.DefaultTimeout(20 * time.Minute),
-			Delete: schema.DefaultTimeout(20 * time.Minute),
+			Create: schema.DefaultTimeout(30 * time.Minute),
+			Update: schema.DefaultTimeout(30 * time.Minute),
+			Delete: schema.DefaultTimeout(30 * time.Minute),
 		},
-		Read: resourceMetalPortRead,
+		ReadWithoutTimeout: diagnosticsWrapper(resourceMetalPortRead),
 		// Create and Update are the same func
-		Create: resourceMetalPortUpdate,
-		Update: resourceMetalPortUpdate,
-		Delete: resourceMetalPortDelete,
+		CreateContext: diagnosticsWrapper(resourceMetalPortUpdate),
+		UpdateContext: diagnosticsWrapper(resourceMetalPortUpdate),
+		DeleteContext: diagnosticsWrapper(resourceMetalPortDelete),
 		Importer: &schema.ResourceImporter{
-			State: schema.ImportStatePassthrough,
+			StateContext: schema.ImportStatePassthroughContext,
 		},
 
 		Schema: map[string]*schema.Schema{
@@ -116,7 +117,8 @@ func resourceMetalPort() *schema.Resource {
 	}
 }
 
-func resourceMetalPortUpdate(d *schema.ResourceData, meta interface{}) error {
+func resourceMetalPortUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) error {
+	start := time.Now()
 	cpr, _, err := getClientPortResource(d, meta)
 	if err != nil {
 		return friendlyError(err)
@@ -124,12 +126,12 @@ func resourceMetalPortUpdate(d *schema.ResourceData, meta interface{}) error {
 
 	for _, f := range [](func(*ClientPortResource) error){
 		portSanityChecks,
-		batchVlans(true),
+		batchVlans(ctx, start, true),
 		makeDisbond,
 		convertToL2,
 		makeBond,
 		convertToL3,
-		batchVlans(false),
+		batchVlans(ctx, start, false),
 		updateNativeVlan,
 	} {
 		if err := f(cpr); err != nil {
@@ -137,10 +139,10 @@ func resourceMetalPortUpdate(d *schema.ResourceData, meta interface{}) error {
 		}
 	}
 
-	return resourceMetalPortRead(d, meta)
+	return resourceMetalPortRead(ctx, d, meta)
 }
 
-func resourceMetalPortRead(d *schema.ResourceData, meta interface{}) error {
+func resourceMetalPortRead(ctx context.Context, d *schema.ResourceData, meta interface{}) error {
 	meta.(*Config).addModuleToMetalUserAgent(d)
 	client := meta.(*Config).metal
 
@@ -195,9 +197,10 @@ func resourceMetalPortRead(d *schema.ResourceData, meta interface{}) error {
 	return setMap(d, m)
 }
 
-func resourceMetalPortDelete(d *schema.ResourceData, meta interface{}) error {
+func resourceMetalPortDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) error {
 	resetRaw, resetOk := d.GetOk("reset_on_delete")
 	if resetOk && resetRaw.(bool) {
+		start := time.Now()
 		cpr, resp, err := getClientPortResource(d, meta)
 		if ignoreResponseErrors(httpForbidden, httpNotFound)(resp, err) != nil {
 			return err
@@ -219,7 +222,7 @@ func resourceMetalPortDelete(d *schema.ResourceData, meta interface{}) error {
 			return err
 		}
 		for _, f := range [](func(*ClientPortResource) error){
-			batchVlans(true),
+			batchVlans(ctx, start, true),
 			makeBond,
 			convertToL3,
 		} {

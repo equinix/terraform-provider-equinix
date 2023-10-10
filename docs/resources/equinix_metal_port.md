@@ -30,6 +30,17 @@ ports.
 attached VLANs (from `vlan_ids` parameter).
 * `reset_on_delete` - (Optional) Behavioral setting to reset the port to default settings (layer3 bonded mode without any vlan attached) before delete/destroy.
 
+### Timeouts
+
+The `timeouts` block allows you to specify [timeouts](https://www.terraform.io/configuration/resources#operation-timeouts) for certain actions:
+
+These timeout includes the time to disbond, convert to L2/L3, bond and update native vLAN.  
+
+* `create` - (Defaults to 30 mins) Used when creating the Port.
+* `update` - (Defaults to 30 mins) Used when updating the Port.
+* `delete` - (Defaults to 30 mins) Used when deleting the Port.
+
+
 ## Attributes Reference
 
 In addition to all arguments above, the following attributes are exported:

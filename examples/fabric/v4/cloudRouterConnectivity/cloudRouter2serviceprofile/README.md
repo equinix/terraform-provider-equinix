@@ -5,23 +5,20 @@ This example shows how create single connection from Fabric Cloud Router to Sell
 ## Adjust variables
 At minimum, you must set below variables in `terraform.tfvars` file:
 
-* `equinix_client_id` - Equinix client ID (consumer key), obtained after
-  registering app in the developer platform
-* `equinix_client_secret` - Equinix client secret ID (consumer secret),
-  obtained same way as above
-
-`fcr_uuid` - UUID of ECX Fabric Cloud Router on a-sideshow
-`connection_name` - the name of the connection
-`connection_type` - connection type, please refer schema
-`notifications_type` - notification type
-`notifications_emails` - List of emails
-`bandwidth` - bandwidth in MBs
-`redundancy` - Port redundancy
-`aside_ap_type` - Fabric Cloud Router type
-`zside_ap_type` - Z side access point type
-`zside_ap_profile_type` - Service profile type
-`fabric_sp_name` - Service profile name, fetched based on Service Profile get call using Service Profile search schema
-`zside_location` - Seller location
+- `equinix_client_id` - Equinix client ID (consumer key), obtained after registering app in the developer platform
+- `equinix_client_secret` - Equinix client secret ID (consumer secret), obtained same way as above
+- `fcr_uuid` - UUID of ECX Fabric Cloud Router on a-sideshow
+- `connection_name` - the name of the connection
+- `connection_type` - connection type, please refer schema
+- `notifications_type` - notification type
+- `notifications_emails` - List of emails
+- `bandwidth` - bandwidth in MBs
+- `redundancy` - Port redundancy
+- `aside_ap_type` - Fabric Cloud Router type
+- `zside_ap_type` - Z side access point type
+- `zside_ap_profile_type` - Service profile type
+- `fabric_sp_name` - Service profile name, fetched based on Service Profile get call using Service Profile search schema
+- `zside_location` - Seller location
 
 ## Initialize
 - First step is to initialize the terraform directory/resource we are going to work on.
