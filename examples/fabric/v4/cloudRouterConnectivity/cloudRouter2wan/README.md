@@ -10,14 +10,14 @@ At minimum, you must set below variables in `terraform.tfvars` file:
 * `equinix_client_secret` - Equinix client secret ID (consumer secret),
   obtained same way as above
 
-`fcr_uuid` - UUID of ECX Fabric Cloud Router on a-side 
-`zside_port_name` -  Name of ECX Fabric z-side port , i.e. ops-user100-CX-SV5-NL-Qinq-BO-10G-SEC-JP-000
+`fcr_uuid` - UUID of ECX Fabric Cloud Router on a-side
+`network_uuid` - UUID of ipwan network on z-side
 `connection_name` - the name of the connection
 `connection_type` - connection type, please refer schema
 `notifications_type` - notification type
 `notifications_emails` - List of emails
+`purchase_order_number` - Purchase order number
 `bandwidth` - bandwidth in MBs
-`redundancy` - Port redundancy
 `aside_ap_type` - Fabric Cloud Router type
 `zside_ap_type` - Z side access point type, ipwan
 
@@ -25,7 +25,7 @@ At minimum, you must set below variables in `terraform.tfvars` file:
 - First step is to initialize the terraform directory/resource we are going to work on.
   In the given example, the folder to perform CRUD operations on a fcr2wan connection can be found at examples/fcr2port/.
 
-- Change directory into - `CD examples/cloudRouter2wan/`
+- Change directory into - `CD examples/fabric/v4/cloudRouterConnectivity/cloudRouter2wan/`
 - Initialize Terraform plugins - `terraform init`
 
 ## Fabric Cloud Router to wan connection : Create, Read, Update and Delete(CRUD) operations
