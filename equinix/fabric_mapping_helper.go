@@ -41,6 +41,7 @@ func accessPointToFabric(accessPointRequest []interface{}) v4.AccessPoint {
 		portList := accessPointMap["port"].(*schema.Set).List()
 		profileList := accessPointMap["profile"].(*schema.Set).List()
 		locationList := accessPointMap["location"].(*schema.Set).List()
+		networkList := accessPointMap["network"].(*schema.Set).List()
 		typeVal := accessPointMap["type"].(string)
 		authenticationKey := accessPointMap["authentication_key"].(string)
 		if authenticationKey != "" {
@@ -77,6 +78,13 @@ func accessPointToFabric(accessPointRequest []interface{}) v4.AccessPoint {
 			port := portToFabric(portList)
 			if port.Uuid != "" {
 				accessPoint.Port = &port
+			}
+		}
+
+		if len(networkList) != 0 {
+			network := networkToFabric(networkList)
+			if network.Uuid != "" {
+				accessPoint.Network = &network
 			}
 		}
 		linkProtocolList := accessPointMap["link_protocol"].(*schema.Set).List()
@@ -202,6 +210,15 @@ func portToFabric(portList []interface{}) v4.SimplifiedPort {
 		plMap := pl.(map[string]interface{})
 		uuid := plMap["uuid"].(string)
 		p = v4.SimplifiedPort{Uuid: uuid}
+	}
+	return p
+}
+func networkToFabric(networkList []interface{}) v4.SimplifiedNetwork {
+	p := v4.SimplifiedNetwork{}
+	for _, pl := range networkList {
+		plMap := pl.(map[string]interface{})
+		uuid := plMap["uuid"].(string)
+		p = v4.SimplifiedNetwork{Uuid: uuid}
 	}
 	return p
 }
