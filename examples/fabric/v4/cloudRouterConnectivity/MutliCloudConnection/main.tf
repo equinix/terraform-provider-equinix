@@ -211,8 +211,3 @@ resource "equinix_fabric_routing_protocol" "aws-bgp-protocol" {
 output "aws_rp_bgp_id" {
   value = equinix_fabric_routing_protocol.aws-bgp-protocol.id
 }
-
-
-
-
-
