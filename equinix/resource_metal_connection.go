@@ -105,7 +105,7 @@ func resourceMetalConnection() *schema.Resource {
 				Description: "The preferred email used for communication and notifications about the Equinix Fabric interconnection. Required when using a Project API key. Optional and defaults to the primary user email address when using a User API key",
 				Optional:    true,
 				Computed:    true,
-				ForceNew: true, // TODO(displague) packngo needs updating
+				ForceNew:    true, // TODO(displague) packngo needs updating
 			},
 			"type": {
 				Type:        schema.TypeString,

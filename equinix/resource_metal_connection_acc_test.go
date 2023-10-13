@@ -70,6 +70,7 @@ func testAccMetalConnectionConfig_Shared(randstr string) string {
             metro              = "sv"
 			speed              = "50Mbps"
 			service_token_type = "a_side"
+			contact_email      = "tfacc@example.com"
         }`,
 		randstr, randstr)
 }
@@ -108,12 +109,12 @@ func TestAccMetalConnection_shared_zside(t *testing.T) {
 						"equinix_metal_connection.test", "service_tokens.0.type", "z_side"),
 					resource.TestCheckResourceAttr(
 						"equinix_metal_connection.test", "service_token_type", "z_side"),
+					resource.TestCheckResourceAttrSet(
+						"equinix_metal_connection.test", "contact_email"),
 				),
 			},
 		},
 	})
-
-
 }
 
 func TestAccMetalConnection_shared(t *testing.T) {
@@ -136,6 +137,8 @@ func TestAccMetalConnection_shared(t *testing.T) {
 						"equinix_metal_connection.test", "service_token_type", "a_side"),
 					resource.TestCheckResourceAttr(
 						"equinix_metal_connection.test", "service_tokens.0.max_allowed_speed", "50Mbps"),
+					resource.TestCheckResourceAttr(
+						"equinix_metal_connection.test", "contact_email", "tfacc@example.com"),
 				),
 			},
 			{
