@@ -100,6 +100,13 @@ func resourceMetalConnection() *schema.Resource {
 					string(packngo.ConnectionPrimary),
 				}, false),
 			},
+			"contact_email": {
+				Type:        schema.TypeString,
+				Description: "The preferred email used for communication and notifications about the Equinix Fabric interconnection. Required when using a Project API key. Optional and defaults to the primary user email address when using a User API key",
+				Optional:    true,
+				Computed:    true,
+				ForceNew: true, // TODO(displague) packngo needs updating
+			},
 			"type": {
 				Type:        schema.TypeString,
 				Required:    true,
@@ -221,6 +228,11 @@ func resourceMetalConnectionCreate(d *schema.ResourceData, meta interface{}) err
 		Type:       connType,
 	}
 
+	// missing email is tolerated for user keys (can't be reasonably detected)
+	if contactEmail, ok := d.GetOk("contact_email"); ok {
+		connReq.ContactEmail = contactEmail.(string)
+	}
+
 	speedRaw, speedOk := d.GetOk("speed")
 
 	// missing speed is tolerated only for shared connections of type z_side
@@ -333,6 +345,9 @@ func resourceMetalConnectionUpdate(d *schema.ResourceData, meta interface{}) err
 		redundancy := packngo.ConnectionRedundancy(d.Get("redundancy").(string))
 		ur.Redundancy = redundancy
 	}
+
+	// TODO(displague) packngo does not implement ContactEmail for update
+	// if d.HasChange("contact_email" {}
 
 	if d.HasChange("tags") {
 		ts := d.Get("tags")
@@ -455,6 +470,7 @@ func resourceMetalConnectionRead(d *schema.ResourceData, meta interface{}) error
 	return setMap(d, map[string]interface{}{
 		"organization_id":    conn.Organization.ID,
 		"project_id":         projectId,
+		"contact_email":      conn.ContactEmail,
 		"name":               conn.Name,
 		"description":        conn.Description,
 		"status":             conn.Status,
