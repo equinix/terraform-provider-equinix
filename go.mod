@@ -4,7 +4,7 @@ go 1.20
 
 require (
 	github.com/antihax/optional v1.0.0
-	github.com/equinix-labs/fabric-go v0.6.0
+	github.com/equinix-labs/fabric-go v0.7.0
 	github.com/equinix-labs/metal-go v0.16.0
 	github.com/equinix/ecx-go/v2 v2.3.1
 	github.com/equinix/ne-go v1.11.0
@@ -114,4 +114,4 @@ require (
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
 
-replace github.com/equinix-labs/fabric-go v0.6.0 => github.com/thogarty/fabric-go v0.7.0
+replace github.com/equinix-labs/fabric-go v0.7.0 => github.com/thogarty/fabric-go v0.7.0
