@@ -38,7 +38,7 @@ At minimum, you must set below variables in `terraform.tfvars` file:
 `azure_fabric_sp_name` - Service profile name like i.e. AZURE
 
 `azure_rp_name`- Name of Direct routing Protocol
-`azure_rp_type`- Type of Direct routing Protocol entity, "DIRECT" or "BGP"
+`azure_rp_type`- Type of Direct routing Protocol entity, "DIRECT"
 `azure_equinix_ipv4_ip` = Equinix Side IpV4 Address
 `azure_equinix_ipv6_ip` = Equinix Side IpV6 Address
 
@@ -67,7 +67,7 @@ At minimum, you must set below variables in `terraform.tfvars` file:
 `aws_seller_region` - Seller region code
 
 `aws_rp_name`- Name of Direct routing Protocol
-`aws_rp_type`- Type of Direct routing Protocol entity, "DIRECT" or "BGP"
+`aws_rp_type`- Type of Direct routing Protocol entity, "DIRECT"
 `aws_equinix_ipv4_ip` = Equinix Side IpV4 Address
 `aws_equinix_ipv6_ip` = Equinix Side IpV6 Address
 

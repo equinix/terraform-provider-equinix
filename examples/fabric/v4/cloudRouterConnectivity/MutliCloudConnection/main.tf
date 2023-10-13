@@ -78,8 +78,8 @@ resource  "equinix_fabric_connection" "fcr2azure"{
     }
   }
 }
-output "azure_connection_azure" {
-  value = var.azure_connection_name
+output "azure_connection_name" {
+  value = equinix_fabric_connection.fcr2azure.name
 }
 output "azure_connection_id" {
   value = equinix_fabric_connection.fcr2azure.id
@@ -168,7 +168,7 @@ resource "equinix_fabric_connection" "fcr2aws"{
 }
 
 output "aws_connection_name" {
-  value = var.aws_connection_name
+  value = equinix_fabric_connection.fcr2aws.name
 }
 
 output "aws_connection_id" {
