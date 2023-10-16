@@ -29,6 +29,7 @@ In addition to all arguments above, the following attributes are exported:
 * `name` - Name of the connection resource.
 * `metro` - Slug of a metro to which the connection belongs.
 * `facility` - (**Deprecated**) Slug of a facility to which the connection belongs. Use metro instead; read the [facility to metro migration guide](https://registry.terraform.io/providers/equinix/equinix/latest/docs/guides/migration_guide_facilities_to_metros_devices)
+* `contact_email` - The preferred email used for communication and notifications about the Equinix Fabric interconnection.
 * `redundancy` - Connection redundancy, reduntant or primary.
 * `type` - Connection type, dedicated or shared.
 * `project_id` - ID of project to which the connection belongs.

@@ -21,6 +21,7 @@ resource "equinix_metal_connection" "example" {
     metro              = "sv"
     speed              = "1000Mbps"
     service_token_type = "a_side"
+    contact_email      = "username@example.com"
 }
 
 data "equinix_ecx_l2_sellerprofile" "example" {
@@ -64,6 +65,7 @@ resource "equinix_metal_connection" "example" {
     metro              = "FR"
     speed              = "200Mbps"
     service_token_type = "z_side"
+    contact_email      = "username@example.com"
 }
 
 data "equinix_ecx_port" "example" {
@@ -92,6 +94,7 @@ resource "equinix_metal_connection" "example" {
     metro           = "SV"
     redundancy      = "redundant"
     type            = "shared"
+    contact_email   = "username@example.com"
 }
 
 data "equinix_ecx_port" "example" {
@@ -118,6 +121,7 @@ The following arguments are supported:
 * `facility` - (**Deprecated**) Facility where the connection will be created.   Use metro instead; read the [facility to metro migration guide](https://registry.terraform.io/providers/equinix/equinix/latest/docs/guides/migration_guide_facilities_to_metros_devices)
 * `redundancy` - (Required) Connection redundancy - redundant or primary.
 * `type` - (Required) Connection type - dedicated or shared.
+* `contact_email` - (Required) The preferred email used for communication and notifications about the Equinix Fabric interconnection. Required when using a Project API key. Optional and defaults to the primary user email address when using a User API key.
 * `project_id` - (Optional) ID of the project where the connection is scoped to, must be set for.
 * `speed` - (Required) Connection speed - one of 50Mbps, 200Mbps, 500Mbps, 1Gbps, 2Gbps, 5Gbps, 10Gbps.
 * `description` - (Optional) Description for the connection resource.

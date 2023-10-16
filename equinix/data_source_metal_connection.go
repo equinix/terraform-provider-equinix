@@ -107,6 +107,11 @@ func dataSourceMetalConnection() *schema.Resource {
 				Computed:    true,
 				Description: "Name of the connection resource",
 			},
+			"contact_email": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The preferred email used for communication and notifications about the Equinix Fabric interconnection",
+			},
 			"facility": {
 				Type:        schema.TypeString,
 				Computed:    true,
