@@ -17,3 +17,6 @@ zside_ap_profile_type = "L2_PROFILE"
 zside_location = "SV"
 seller_region = "us-west-1"
 fabric_sp_name = "AWS Direct Connect"
+
+aws_access_key = "AWS Client Access Key"
+aws_secret_key = "AWS Client Secret Key"

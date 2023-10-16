@@ -18,6 +18,7 @@ resource "equinix_fabric_connection" "fcr2aws"{
     type=var.notifications_type
     emails=var.notifications_emails
   }
+  additional_info= [{"key"= "accessKey", "value"= var.aws_access_key }, {"key"= "secretKey", "value"= var.aws_secret_key }]
   bandwidth = var.bandwidth
   redundancy {priority= var.redundancy}
 

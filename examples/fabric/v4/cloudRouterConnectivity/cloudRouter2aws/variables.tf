@@ -19,3 +19,6 @@ variable "zside_ap_profile_type" {}
 variable "fabric_sp_name" {}
 variable "zside_location" {}
 variable "seller_region" {}
+
+variable "aws_access_key" {}
+variable "aws_secret_key" {}

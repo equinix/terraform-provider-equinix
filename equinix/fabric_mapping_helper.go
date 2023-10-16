@@ -339,11 +339,11 @@ func accountCloudRouterToTerra(account *v4.SimplifiedAccount) *schema.Set {
 	return accountSet
 }
 
-func errorToTerra(errors []v4.ModelError) []map[string]interface{} {
+func errorToTerra(errors []v4.ModelError) []interface{} {
 	if errors == nil {
 		return nil
 	}
-	mappedErrors := make([]map[string]interface{}, len(errors))
+	mappedErrors := make([]interface{}, len(errors))
 	for index, mError := range errors {
 		mappedErrors[index] = map[string]interface{}{
 			"error_code":      mError.ErrorCode,
@@ -357,11 +357,11 @@ func errorToTerra(errors []v4.ModelError) []map[string]interface{} {
 	return mappedErrors
 }
 
-func errorAdditionalInfoToTerra(additionalInfol []v4.PriceErrorAdditionalInfo) []map[string]interface{} {
+func errorAdditionalInfoToTerra(additionalInfol []v4.PriceErrorAdditionalInfo) []interface{} {
 	if additionalInfol == nil {
 		return nil
 	}
-	mappedAdditionalInfol := make([]map[string]interface{}, len(additionalInfol))
+	mappedAdditionalInfol := make([]interface{}, len(additionalInfol))
 	for index, additionalInfo := range additionalInfol {
 		mappedAdditionalInfol[index] = map[string]interface{}{
 			"property": additionalInfo.Property,
@@ -1125,23 +1125,50 @@ func getRoutingProtocolPatchUpdateRequest(rp v4.RoutingProtocolData, d *schema.R
 	return changeOps, nil
 }
 
-func getUpdateRequest(conn v4.Connection, d *schema.ResourceData) (v4.ConnectionChangeOperation, error) {
-	changeOps := v4.ConnectionChangeOperation{}
+func getUpdateRequests(conn v4.Connection, d *schema.ResourceData) ([][]v4.ConnectionChangeOperation, error) {
+	var changeOps [][]v4.ConnectionChangeOperation
 	existingName := conn.Name
 	existingBandwidth := int(conn.Bandwidth)
 	updateNameVal := d.Get("name").(string)
 	updateBandwidthVal := d.Get("bandwidth").(int)
+	additionalInfo := d.Get("additional_info").([]interface{})
 
-	log.Printf("existing name %s, existing bandwidth %d, Update Name Request %s, Update Bandwidth Request %d ",
-		existingName, existingBandwidth, updateNameVal, updateBandwidthVal)
+	awsSecrets, hasAWSSecrets := additionalInfoContainsAWSSecrets(additionalInfo)
 
 	if existingName != updateNameVal {
-		changeOps = v4.ConnectionChangeOperation{Op: "replace", Path: "/name", Value: updateNameVal}
-	} else if existingBandwidth != updateBandwidthVal {
-		changeOps = v4.ConnectionChangeOperation{Op: "replace", Path: "/bandwidth", Value: updateBandwidthVal}
-	} else {
+		changeOps = append(changeOps, []v4.ConnectionChangeOperation{
+			{
+				Op:    "replace",
+				Path:  "/name",
+				Value: updateNameVal,
+			},
+		})
+	}
+
+	if existingBandwidth != updateBandwidthVal {
+		changeOps = append(changeOps, []v4.ConnectionChangeOperation{
+			{
+				Op:    "replace",
+				Path:  "/bandwidth",
+				Value: updateBandwidthVal,
+			},
+		})
+	}
+
+	if *conn.Operation.ProviderStatus == v4.PENDING_APPROVAL_ProviderStatus && hasAWSSecrets {
+		changeOps = append(changeOps, []v4.ConnectionChangeOperation{
+			{
+				Op:    "add",
+				Path:  "",
+				Value: map[string]interface{}{"additionalInfo": awsSecrets},
+			},
+		})
+	}
+
+	if len(changeOps) == 0 {
 		return changeOps, fmt.Errorf("nothing to update for the connection %s", existingName)
 	}
+
 	return changeOps, nil
 }
 
