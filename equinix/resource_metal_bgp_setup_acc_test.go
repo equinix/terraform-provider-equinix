@@ -82,7 +82,7 @@ resource "equinix_metal_project" "test" {
 resource "equinix_metal_device" "test" {
     hostname         = "tfacc-test-bgp-sesh"
     plan             = local.plan
-    facilities       = local.facilities
+    metro            = local.metro
     operating_system = local.os
     billing_cycle    = "hourly"
     project_id       = "${equinix_metal_project.test.id}"
