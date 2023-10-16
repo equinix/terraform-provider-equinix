@@ -17,7 +17,6 @@ variable "azure_notifications_type" {}
 variable "azure_notifications_emails" {}
 variable "azure_bandwidth" {}
 variable "azure_redundancy" {}
-variable "azure_redundancy_group_uuid" {}
 variable "azure_purchase_order_number" {}
 variable "azure_peering_type" {}
 variable "azure_aside_ap_type" {}
@@ -25,7 +24,6 @@ variable "azure_aside_ap_type" {}
 variable "azure_zside_ap_type" {}
 variable "azure_zside_ap_authentication_key" {}
 variable "azure_zside_ap_profile_type" {}
-variable "azure_zside_ap_profile_uuid" {}
 variable "azure_zside_location" {}
 variable "azure_fabric_sp_name" {}
 

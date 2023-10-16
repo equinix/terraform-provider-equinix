@@ -1,11 +1,11 @@
-equinix_client_id      = "MyEquinixClientId"
-equinix_client_secret  = "MyEquinixSecret"
+equinix_client_id     = "MyEquinixClientId"
+equinix_client_secret = "MyEquinixSecret"
 
 #FCR
 fcr_name              = "TERA_E2E_FCR"
 fcr_type              = "XF_ROUTER"
 notifications_type    = "ALL"
-notifications_emails  = ["example@equinix.com","test1@equinix.com"]
+notifications_emails  = ["example@equinix.com", "test1@equinix.com"]
 purchase_order_number = "1-323290"
 fcr_location          = "SV"
 fcr_package           = "PRO"
@@ -48,7 +48,7 @@ azure_bgp_customer_asn       = "100"
 aws_connection_name       = "FCR_2_AWS"
 aws_connection_type       = "IP_VC"
 aws_notifications_type    = "ALL"
-aws_notifications_emails  = ["example@equinix.com","test1@equinix.com"]
+aws_notifications_emails  = ["example@equinix.com", "test1@equinix.com"]
 aws_purchase_order_number = "1-323293"
 aws_bandwidth             = 50
 aws_redundancy            = "SECONDARY"
