@@ -83,6 +83,21 @@ func createVirtualGatewaySch() map[string]*schema.Schema {
 	}
 }
 
+func createNetworkSch() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"uuid": {
+			Type:        schema.TypeString,
+			Optional:    true,
+			Description: "Equinix-assigned Network identifier",
+		},
+		"href": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "Unique Resource Identifier",
+		},
+	}
+}
+
 var createGatewayProjectSchRes = &schema.Resource{
 	Schema: createGatewayProjectSch(),
 }
@@ -296,8 +311,8 @@ func createConnectionSideAccessPointRes() *schema.Resource {
 			"type": {
 				Type:         schema.TypeString,
 				Optional:     true,
-				ValidateFunc: validation.StringInSlice([]string{"COLO", "VD", "VG", "SP", "IGW", "SUBNET", "CLOUD_ROUTER"}, true),
-				Description:  "Access point type - COLO, VD, VG, SP, IGW, SUBNET, CLOUD_ROUTER",
+				ValidateFunc: validation.StringInSlice([]string{"COLO", "VD", "VG", "SP", "IGW", "SUBNET", "CLOUD_ROUTER", "NETWORK"}, true),
+				Description:  "Access point type - COLO, VD, VG, SP, IGW, SUBNET, CLOUD_ROUTER, NETWORK",
 			},
 			"authentication_key": {
 				Type:        schema.TypeString,
@@ -358,6 +373,15 @@ func createConnectionSideAccessPointRes() *schema.Resource {
 				MaxItems:    1,
 				Elem: &schema.Resource{
 					Schema: createVirtualGatewaySch(),
+				},
+			},
+			"network": {
+				Type:        schema.TypeSet,
+				Optional:    true,
+				Description: "network access point information",
+				MaxItems:    1,
+				Elem: &schema.Resource{
+					Schema: createNetworkSch(),
 				},
 			},
 			"link_protocol": {
@@ -760,8 +784,8 @@ func createFabricConnectionResourceSchema() map[string]*schema.Schema {
 		"type": {
 			Type:         schema.TypeString,
 			Required:     true,
-			ValidateFunc: validation.StringInSlice([]string{"VG_VC", "EVPL_VC", "EPL_VC", "EC_VC", "IP_VC", "ACCESS_EPL_VC"}, true),
-			Description:  "Defines the connection type like VG_VC, EVPL_VC, EPL_VC, EC_VC, IP_VC, ACCESS_EPL_VC",
+			ValidateFunc: validation.StringInSlice([]string{"VG_VC", "EVPL_VC", "EPL_VC", "EC_VC", "IP_VC", "IPWAN_VC", "ACCESS_EPL_VC"}, true),
+			Description:  "Defines the connection type like VG_VC, EVPL_VC, EPL_VC, EC_VC, IP_VC, IPWAN_VC,ACCESS_EPL_VC",
 		},
 		"bandwidth": {
 			Type:        schema.TypeInt,
