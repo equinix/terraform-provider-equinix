@@ -27,7 +27,7 @@ resource "equinix_metal_project_ssh_key" "test" {
 resource "equinix_metal_device" "test" {
     hostname            = "tfacc-device-key-test"
     plan                = local.plan
-    facilities          = local.facilities
+    metro               = local.metro
     operating_system    = local.os
     billing_cycle       = "hourly"
     project_ssh_key_ids = ["${equinix_metal_project_ssh_key.test.id}"]

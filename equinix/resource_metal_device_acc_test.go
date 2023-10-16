@@ -126,6 +126,14 @@ resource "terraform_data" "plan" {
   }
 }
 
+resource "terraform_data" "facilities" {
+  input = sort(tolist(setsubtract(terraform_data.plan.output.available_in, ["nrt1", "dfw2", "ewr1", "ams1", "sjc1", "ld7", "sy4", "ny6"])))
+
+  lifecycle {
+    ignore_changes = ["input"]
+  }
+}
+
 // Select a metal facility randomly and lock it in
 // so that we don't pick a different one for
 // every subsequent terraform plan
@@ -163,7 +171,7 @@ locals {
     plan              = terraform_data.plan.output.slug
 
     // Select a random facility from the facilities in which the selected plan is available, excluding decommed facilities
-    facilities             = sort(tolist(setsubtract(terraform_data.plan.output.available_in, ["nrt1", "dfw2", "ewr1", "ams1", "sjc1", "ld7", "sy4", "ny6"])))
+    facilities             = terraform_data.facilities.output
     facility               = terraform_data.facility.output
 
     // Select a random metro from the metros in which the selected plan is available
