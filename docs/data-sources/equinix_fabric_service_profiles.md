@@ -22,6 +22,7 @@ Fabric V4 API compatible data resource that allow user to fetch Service Profile 
 
 - `filter` (Block Set) Service Profile Search Filter (see [below for nested schema](#nestedblock--filter))
 - `sort` (Block List) Service Profile Sort criteria for Search Request response payload (see [below for nested schema](#nestedblock--sort))
+- `view_point` (String) Service Profile Search Buyer/Seller Representation. Possible values are aSide and zSide.
 
 ### Read-Only
 
