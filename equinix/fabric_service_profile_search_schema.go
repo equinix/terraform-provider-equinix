@@ -5,7 +5,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 )
 
-func createServiceProfilesSearchExpressionSch() map[string]*schema.Schema {
+func createServiceProfilesSearchFilterSch() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
 		"property": {
 			Type:        schema.TypeString,

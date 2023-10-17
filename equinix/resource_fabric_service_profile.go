@@ -2,7 +2,9 @@ package equinix
 
 import (
 	"context"
+	"errors"
 	"fmt"
+	"github.com/antihax/optional"
 	"log"
 	"strconv"
 	"strings"
@@ -279,11 +281,25 @@ func resourceServiceProfilesSearchRequest(ctx context.Context, d *schema.Resourc
 	serviceProfileFlt = filter
 	schemaSort := d.Get("sort").([]interface{})
 	sort := serviceProfilesSearchSortRequestToFabric(schemaSort)
+	schemaViewPoint := d.Get("view_point").(string)
+
+	if schemaViewPoint != "" && (schemaViewPoint != string(v4.A_SIDE_ViewPoint) || schemaViewPoint != string(v4.Z_SIDE_ViewPoint)) {
+		return diag.FromErr(errors.New("view_point can only be set to aSide or zSide. Omitting it will default to aSide"))
+	}
+
+	viewPoint := &v4.ServiceProfilesApiSearchServiceProfilesOpts{
+		ViewPoint: optional.NewString(schemaViewPoint),
+	}
+
+	if schemaViewPoint == "" {
+		viewPoint = nil
+	}
+
 	createServiceProfilesSearchRequest := v4.ServiceProfileSearchRequest{
 		Filter: &serviceProfileFlt,
 		Sort:   sort,
 	}
-	serviceProfiles, _, err := client.ServiceProfilesApi.SearchServiceProfiles(ctx, createServiceProfilesSearchRequest, nil)
+	serviceProfiles, _, err := client.ServiceProfilesApi.SearchServiceProfiles(ctx, createServiceProfilesSearchRequest, viewPoint)
 	if err != nil {
 		if !strings.Contains(err.Error(), "500") {
 			error := v4.ModelError{}
