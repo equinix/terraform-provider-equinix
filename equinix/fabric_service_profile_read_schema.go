@@ -446,12 +446,18 @@ func readFabricServiceProfilesSearchSchema() map[string]*schema.Schema {
 				Schema: readFabricServiceProfileSchemaUpdated(),
 			},
 		},
+		"view_point": {
+			Type:        schema.TypeString,
+			Optional:    true,
+			Description: "flips view between buyer and seller representation. Available values : aSide, zSide. Default value : aSide",
+		},
 		"filter": {
 			Type:        schema.TypeSet,
 			Optional:    true,
 			Description: "Service Profile Search Filter",
+			MaxItems:    1,
 			Elem: &schema.Resource{
-				Schema: createServiceProfilesSearchExpressionSch(),
+				Schema: createServiceProfilesSearchFilterSch(),
 			},
 		},
 		"sort": {
