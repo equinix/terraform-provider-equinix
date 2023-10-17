@@ -64,7 +64,7 @@ func resourceCloudRouterCreate(ctx context.Context, d *schema.ResourceData, meta
 		Project:       &project,
 	}
 
-	fcr, _, err := client.CloudRoutersApi.CreateGateway(ctx, createRequest)
+	fcr, _, err := client.CloudRoutersApi.CreateCloudRouter(ctx, createRequest)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -80,7 +80,7 @@ func resourceCloudRouterCreate(ctx context.Context, d *schema.ResourceData, meta
 func resourceCloudRouterRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*Config).fabricClient
 	ctx = context.WithValue(ctx, v4.ContextAccessToken, meta.(*Config).FabricAuthToken)
-	CloudRouter, _, err := client.CloudRoutersApi.GetGatewayByUuid(ctx, d.Id())
+	CloudRouter, _, err := client.CloudRoutersApi.GetCloudRouterByUuid(ctx, d.Id())
 	if err != nil {
 		log.Printf("[WARN] Fabric Cloud Router %s not found , error %s", d.Id(), err)
 		if !strings.Contains(err.Error(), "500") {
@@ -128,7 +128,7 @@ func resourceCloudRouterUpdate(ctx context.Context, d *schema.ResourceData, meta
 		return diag.FromErr(err)
 	}
 	updates := []v4.CloudRouterChangeOperation{update}
-	_, res, err := client.CloudRoutersApi.UpdateGatewayByUuid(ctx, updates, d.Id())
+	_, res, err := client.CloudRoutersApi.UpdateCloudRouterByUuid(ctx, updates, d.Id())
 	if err != nil {
 		return diag.FromErr(fmt.Errorf("error response for the Fabric Cloud Router update, response %v, error %v", res, err))
 	}
@@ -152,7 +152,7 @@ func waitForCloudRouterUpdateCompletion(uuid string, meta interface{}, ctx conte
 		Target: []string{string(v4.PROVISIONED_CloudRouterAccessPointState)},
 		Refresh: func() (interface{}, string, error) {
 			client := meta.(*Config).fabricClient
-			dbConn, _, err := client.CloudRoutersApi.GetGatewayByUuid(ctx, uuid)
+			dbConn, _, err := client.CloudRoutersApi.GetCloudRouterByUuid(ctx, uuid)
 			if err != nil {
 				return "", "", err
 			}
@@ -184,7 +184,7 @@ func waitUntilCloudRouterIsProvisioned(uuid string, meta interface{}, ctx contex
 		},
 		Refresh: func() (interface{}, string, error) {
 			client := meta.(*Config).fabricClient
-			dbConn, _, err := client.CloudRoutersApi.GetGatewayByUuid(ctx, uuid)
+			dbConn, _, err := client.CloudRoutersApi.GetCloudRouterByUuid(ctx, uuid)
 			if err != nil {
 				return "", "", err
 			}
@@ -208,7 +208,7 @@ func resourceCloudRouterDelete(ctx context.Context, d *schema.ResourceData, meta
 	diags := diag.Diagnostics{}
 	client := meta.(*Config).fabricClient
 	ctx = context.WithValue(ctx, v4.ContextAccessToken, meta.(*Config).FabricAuthToken)
-	resp, err := client.CloudRoutersApi.DeleteGatewayByUuid(ctx, d.Id())
+	resp, err := client.CloudRoutersApi.DeleteCloudRouterByUuid(ctx, d.Id())
 	if err != nil {
 		errors, ok := err.(v4.GenericSwaggerError).Model().([]v4.ModelError)
 		if ok {
@@ -238,7 +238,7 @@ func waitUntilCloudRouterDeprovisioned(uuid string, meta interface{}, ctx contex
 		},
 		Refresh: func() (interface{}, string, error) {
 			client := meta.(*Config).fabricClient
-			dbConn, _, err := client.CloudRoutersApi.GetGatewayByUuid(ctx, uuid)
+			dbConn, _, err := client.CloudRoutersApi.GetCloudRouterByUuid(ctx, uuid)
 			if err != nil {
 				return "", "", err
 			}

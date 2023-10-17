@@ -283,7 +283,7 @@ func resourceServiceProfilesSearchRequest(ctx context.Context, d *schema.Resourc
 		Filter: &serviceProfileFlt,
 		Sort:   sort,
 	}
-	serviceProfiles, _, err := client.ServiceProfilesApi.SearchServiceProfiles(ctx, createServiceProfilesSearchRequest)
+	serviceProfiles, _, err := client.ServiceProfilesApi.SearchServiceProfiles(ctx, createServiceProfilesSearchRequest, nil)
 	if err != nil {
 		if !strings.Contains(err.Error(), "500") {
 			error := v4.ModelError{}

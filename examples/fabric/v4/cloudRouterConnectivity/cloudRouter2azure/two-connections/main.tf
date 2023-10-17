@@ -3,15 +3,15 @@ provider "equinix" {
   client_secret = var.equinix_client_secret
 }
 
-data "equinix_fabric_service_profiles" "azure"{
-  filter{
+data "equinix_fabric_service_profiles" "azure" {
+  filter {
     property = "/name"
     operator = "="
-    values = [var.fabric_sp_name]
+    values   = [var.fabric_sp_name]
   }
 }
 
-resource  "equinix_fabric_connection" "fcr2azure"{
+resource "equinix_fabric_connection" "fcr2azure" {
   name = var.pri_connection_name
   type = var.connection_type
 
@@ -52,7 +52,7 @@ resource  "equinix_fabric_connection" "fcr2azure"{
   }
 }
 
-resource  "equinix_fabric_connection" "fcr2azure2"{
+resource "equinix_fabric_connection" "fcr2azure2" {
   name = var.sec_connection_name
 
   type = var.connection_type
@@ -70,7 +70,7 @@ resource  "equinix_fabric_connection" "fcr2azure2"{
   */
   redundancy {
     priority = "SECONDARY"
-    group = one(equinix_fabric_connection.fcr2azure.redundancy).group
+    group    = one(equinix_fabric_connection.fcr2azure.redundancy).group
   }
   order {
     purchase_order_number = var.sec_purchase_order_number

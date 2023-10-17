@@ -3,12 +3,12 @@ provider "equinix" {
   client_secret = var.equinix_client_secret
 }
 
-resource "equinix_fabric_cloud_router" "test"{
+resource "equinix_fabric_cloud_router" "test" {
   name = var.fcr_name
   type = var.fcr_type
-  notifications{
-    type =var.notifications_type
-    emails =var.notifications_emails
+  notifications {
+    type   = var.notifications_type
+    emails = var.notifications_emails
   }
   order {
     purchase_order_number = var.purchase_order_number
@@ -22,24 +22,24 @@ resource "equinix_fabric_cloud_router" "test"{
   project {
     project_id = var.fcr_project
   }
- account {
+  account {
     account_number = var.fcr_account
- }
+  }
 }
 
 output "fcr_result" {
   value = equinix_fabric_cloud_router.test.id
 }
 
-data "equinix_fabric_service_profiles" "azure"{
-  filter{
+data "equinix_fabric_service_profiles" "azure" {
+  filter {
     property = "/name"
     operator = "="
     values   = [var.azure_fabric_sp_name]
   }
 }
 
-resource  "equinix_fabric_connection" "fcr2azure"{
+resource "equinix_fabric_connection" "fcr2azure" {
   name = var.azure_connection_name
   type = var.azure_connection_type
 
@@ -85,14 +85,14 @@ output "azure_connection_id" {
   value = equinix_fabric_connection.fcr2azure.id
 }
 
-resource "equinix_fabric_routing_protocol" "azure-direct-protocol"{
+resource "equinix_fabric_routing_protocol" "azure-direct-protocol" {
   connection_uuid = equinix_fabric_connection.fcr2azure.id
   type            = var.azure_rp_type
   name            = var.azure_rp_name
   direct_ipv4 {
     equinix_iface_ip = var.azure_equinix_ipv4_ip
   }
-  direct_ipv6{
+  direct_ipv6 {
     equinix_iface_ip = var.azure_equinix_ipv6_ip
   }
 }
@@ -114,7 +114,7 @@ resource "equinix_fabric_routing_protocol" "azure-bgp-protocol" {
     enabled          = var.azure_bgp_enabled_ipv6
   }
   customer_asn = var.azure_bgp_customer_asn
-  depends_on = [equinix_fabric_routing_protocol.azure-direct-protocol]
+  depends_on   = [equinix_fabric_routing_protocol.azure-direct-protocol]
 }
 
 output "azure_rp_bgp_id" {
@@ -130,16 +130,16 @@ data "equinix_fabric_service_profiles" "aws" {
   }
 }
 
-resource "equinix_fabric_connection" "fcr2aws"{
+resource "equinix_fabric_connection" "fcr2aws" {
   name = var.aws_connection_name
   type = var.aws_connection_type
-  notifications{
+  notifications {
     type   = var.aws_notifications_type
     emails = var.aws_notifications_emails
   }
-  additional_info = [{"key"= "accessKey", "value"= var.aws_access_key }, {"key"= "secretKey", "value"= var.aws_secret_key }]
+  additional_info = [{ "key" = "accessKey", "value" = var.aws_access_key }, { "key" = "secretKey", "value" = var.aws_secret_key }]
   bandwidth       = var.aws_bandwidth
-  redundancy {priority = var.aws_redundancy}
+  redundancy { priority = var.aws_redundancy }
   order {
     purchase_order_number = var.aws_purchase_order_number
   }
@@ -153,9 +153,9 @@ resource "equinix_fabric_connection" "fcr2aws"{
   }
   z_side {
     access_point {
-      type = var.aws_zside_ap_type
+      type               = var.aws_zside_ap_type
       authentication_key = var.aws_zside_ap_authentication_key
-      seller_region = var.aws_seller_region
+      seller_region      = var.aws_seller_region
       profile {
         type = var.aws_zside_ap_profile_type
         uuid = data.equinix_fabric_service_profiles.aws.id
@@ -175,16 +175,16 @@ output "aws_connection_id" {
   value = equinix_fabric_connection.fcr2aws.id
 }
 
-resource "equinix_fabric_routing_protocol" "aws-direct-protocol"{
+resource "equinix_fabric_routing_protocol" "aws-direct-protocol" {
   connection_uuid = equinix_fabric_connection.fcr2aws.id
-  type = var.aws_rp_type
-  name = var.aws_rp_name
+  type            = var.aws_rp_type
+  name            = var.aws_rp_name
   direct_ipv4 {
     equinix_iface_ip = var.aws_equinix_ipv4_ip
   }
-  direct_ipv6{
-   equinix_iface_ip = var.aws_equinix_ipv6_ip
- }
+  direct_ipv6 {
+    equinix_iface_ip = var.aws_equinix_ipv6_ip
+  }
 }
 
 output "aws_rp_direct_id" {
