@@ -283,7 +283,7 @@ func resourceServiceProfilesSearchRequest(ctx context.Context, d *schema.Resourc
 	sort := serviceProfilesSearchSortRequestToFabric(schemaSort)
 	schemaViewPoint := d.Get("view_point").(string)
 
-	if schemaViewPoint != "" && (schemaViewPoint != string(v4.A_SIDE_ViewPoint) || schemaViewPoint != string(v4.Z_SIDE_ViewPoint)) {
+	if schemaViewPoint != "" && schemaViewPoint != string(v4.A_SIDE_ViewPoint) && schemaViewPoint != string(v4.Z_SIDE_ViewPoint) {
 		return diag.FromErr(errors.New("view_point can only be set to aSide or zSide. Omitting it will default to aSide"))
 	}
 
