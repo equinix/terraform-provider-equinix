@@ -403,20 +403,20 @@ func TestProvider_schemaSetToMap(t *testing.T) {
 func testAccPreCheck(t *testing.T) {
 	var err error
 
-	if _, err = getFromEnv(clientTokenEnvVar); err != nil {
-		_, err = getFromEnv(clientIDEnvVar)
+	if _, err = getFromEnv(ClientTokenEnvVar); err != nil {
+		_, err = getFromEnv(ClientIDEnvVar)
 		if err == nil {
-			_, err = getFromEnv(clientSecretEnvVar)
+			_, err = getFromEnv(ClientSecretEnvVar)
 		}
 	}
 
 	if err == nil {
-		_, err = getFromEnv(metalAuthTokenEnvVar)
+		_, err = getFromEnv(MetalAuthTokenEnvVar)
 	}
 
 	if err != nil {
 		t.Fatalf("To run acceptance tests, one of '%s' or pair '%s' - '%s' must be set for Equinix Fabric and Network Edge, and '%s' for Equinix Metal",
-			clientTokenEnvVar, clientIDEnvVar, clientSecretEnvVar, metalAuthTokenEnvVar)
+			ClientTokenEnvVar, ClientIDEnvVar, ClientSecretEnvVar, MetalAuthTokenEnvVar)
 	}
 }
 

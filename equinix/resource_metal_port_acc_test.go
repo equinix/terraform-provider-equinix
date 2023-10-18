@@ -5,6 +5,8 @@ import (
 	"regexp"
 	"testing"
 
+	"github.com/equinix/terraform-provider-equinix/internal"
+
 	"github.com/equinix/terraform-provider-equinix/internal/config"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
@@ -373,7 +375,7 @@ func testAccMetalPortDestroyed(s *terraform.State) error {
 		if err != nil {
 			return fmt.Errorf("Error getting port %s during destroy check", pid)
 		}
-		err = portProperlyDestroyed(p)
+		err = internal.PortProperlyDestroyed(p)
 		if err != nil {
 			return err
 		}

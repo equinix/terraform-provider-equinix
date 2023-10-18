@@ -4,6 +4,8 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/equinix/terraform-provider-equinix/internal"
+
 	"github.com/equinix/terraform-provider-equinix/internal/config"
 
 	"github.com/equinix/ecx-go/v2"
@@ -445,13 +447,13 @@ func createECXL2ServiceProfile(d *schema.ResourceData) *ecx.L2ServiceProfile {
 		profile.Name = ecx.String(v.(string))
 	}
 	if v, ok := d.GetOk(ecxL2ServiceProfileSchemaNames["OnBandwidthThresholdNotification"]); ok {
-		profile.OnBandwidthThresholdNotification = expandSetToStringList(v.(*schema.Set))
+		profile.OnBandwidthThresholdNotification = internal.ExpandSetToStringList(v.(*schema.Set))
 	}
 	if v, ok := d.GetOk(ecxL2ServiceProfileSchemaNames["OnProfileApprovalRejectNotification"]); ok {
-		profile.OnProfileApprovalRejectNotification = expandSetToStringList(v.(*schema.Set))
+		profile.OnProfileApprovalRejectNotification = internal.ExpandSetToStringList(v.(*schema.Set))
 	}
 	if v, ok := d.GetOk(ecxL2ServiceProfileSchemaNames["OnVcApprovalRejectionNotification"]); ok {
-		profile.OnVcApprovalRejectionNotification = expandSetToStringList(v.(*schema.Set))
+		profile.OnVcApprovalRejectionNotification = internal.ExpandSetToStringList(v.(*schema.Set))
 	}
 	if v, ok := d.GetOk(ecxL2ServiceProfileSchemaNames["OverSubscription"]); ok {
 		profile.OverSubscription = ecx.String(v.(string))
@@ -460,7 +462,7 @@ func createECXL2ServiceProfile(d *schema.ResourceData) *ecx.L2ServiceProfile {
 		profile.Private = ecx.Bool(v.(bool))
 	}
 	if v, ok := d.GetOk(ecxL2ServiceProfileSchemaNames["PrivateUserEmails"]); ok {
-		profile.PrivateUserEmails = expandSetToStringList(v.(*schema.Set))
+		profile.PrivateUserEmails = internal.ExpandSetToStringList(v.(*schema.Set))
 	}
 	if v, ok := d.GetOk(ecxL2ServiceProfileSchemaNames["RequiredRedundancy"]); ok {
 		profile.RequiredRedundancy = ecx.Bool(v.(bool))
@@ -550,7 +552,7 @@ func updateECXL2ServiceProfileResource(profile *ecx.L2ServiceProfile, d *schema.
 	// API accepts capitalizations of the private user emails and converts it to a lowercase string
 	// If API retuns same emails in lowercase we keep to suppress diff
 	if v, ok := d.GetOk(ecxL2ServiceProfileSchemaNames["PrivateUserEmails"]); ok {
-		prevPrivateUserEmails := expandSetToStringList(v.(*schema.Set))
+		prevPrivateUserEmails := internal.ExpandSetToStringList(v.(*schema.Set))
 		if slicesMatchCaseInsensitive(prevPrivateUserEmails, profile.PrivateUserEmails) {
 			profile.PrivateUserEmails = prevPrivateUserEmails
 		}

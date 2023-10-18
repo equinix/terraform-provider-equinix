@@ -4,6 +4,8 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/equinix/terraform-provider-equinix/internal"
+
 	"github.com/equinix/terraform-provider-equinix/internal/config"
 
 	"github.com/equinix/ne-go"
@@ -122,19 +124,19 @@ func dataSourceNetworkDevicePlatformRead(ctx context.Context, d *schema.Resource
 			continue
 		}
 		if v, ok := d.GetOk(networkDevicePlatformSchemaNames["PackageCodes"]); ok {
-			pkgCodes := expandSetToStringList(v.(*schema.Set))
+			pkgCodes := internal.ExpandSetToStringList(v.(*schema.Set))
 			if !stringsFound(pkgCodes, platform.PackageCodes) {
 				continue
 			}
 		}
 		if v, ok := d.GetOk(networkDevicePlatformSchemaNames["ManagementTypes"]); ok {
-			mgmtTypes := expandSetToStringList(v.(*schema.Set))
+			mgmtTypes := internal.ExpandSetToStringList(v.(*schema.Set))
 			if !stringsFound(mgmtTypes, platform.ManagementTypes) {
 				continue
 			}
 		}
 		if v, ok := d.GetOk(networkDevicePlatformSchemaNames["LicenseOptions"]); ok {
-			licOptions := expandSetToStringList(v.(*schema.Set))
+			licOptions := internal.ExpandSetToStringList(v.(*schema.Set))
 			if !stringsFound(licOptions, platform.LicenseOptions) {
 				continue
 			}

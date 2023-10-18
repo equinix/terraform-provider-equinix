@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/equinix/terraform-provider-equinix/internal"
 	"github.com/equinix/terraform-provider-equinix/internal/config"
 
 	metalv1 "github.com/equinix-labs/metal-go/metal/v1"
@@ -95,5 +96,5 @@ func flattenDevice(rawDevice interface{}, meta interface{}, extra map[string]int
 	if !ok {
 		return nil, fmt.Errorf("expected device to be of type *metalv1.Device, got %T", rawDevice)
 	}
-	return getDeviceMap(device), nil
+	return internal.GetDeviceMap(device), nil
 }

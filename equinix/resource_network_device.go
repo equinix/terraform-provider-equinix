@@ -9,6 +9,8 @@ import (
 	"path/filepath"
 	"time"
 
+	"github.com/equinix/terraform-provider-equinix/internal"
+
 	"github.com/equinix/terraform-provider-equinix/internal/config"
 
 	"github.com/equinix/ne-go"
@@ -1072,7 +1074,7 @@ func createNetworkDevices(d *schema.ResourceData) (*ne.Device, *ne.Device) {
 		primary.AccountNumber = ne.String(v.(string))
 	}
 	if v, ok := d.GetOk(neDeviceSchemaNames["Notifications"]); ok {
-		primary.Notifications = expandSetToStringList(v.(*schema.Set))
+		primary.Notifications = internal.ExpandSetToStringList(v.(*schema.Set))
 	}
 	if v, ok := d.GetOk(neDeviceSchemaNames["PurchaseOrderNumber"]); ok {
 		primary.PurchaseOrderNumber = ne.String(v.(string))
@@ -1094,7 +1096,7 @@ func createNetworkDevices(d *schema.ResourceData) (*ne.Device, *ne.Device) {
 	}
 	primary.IsSelfManaged = ne.Bool(d.Get(neDeviceSchemaNames["IsSelfManaged"]).(bool))
 	if v, ok := d.GetOk(neDeviceSchemaNames["VendorConfiguration"]); ok {
-		primary.VendorConfiguration = expandInterfaceMapToStringMap(v.(map[string]interface{}))
+		primary.VendorConfiguration = internal.ExpandInterfaceMapToStringMap(v.(map[string]interface{}))
 	}
 	if v, ok := d.GetOk(neDeviceSchemaNames["WanInterfaceId"]); ok {
 		primary.WanInterfaceId = ne.String(v.(string))
@@ -1318,7 +1320,7 @@ func expandNetworkDeviceSecondary(devices []interface{}) *ne.Device {
 		transformed.AccountNumber = ne.String(v.(string))
 	}
 	if v, ok := device[neDeviceSchemaNames["Notifications"]]; ok {
-		transformed.Notifications = expandSetToStringList(v.(*schema.Set))
+		transformed.Notifications = internal.ExpandSetToStringList(v.(*schema.Set))
 	}
 	if v, ok := device[neDeviceSchemaNames["AdditionalBandwidth"]]; ok && !isEmpty(v) {
 		transformed.AdditionalBandwidth = ne.Int(v.(int))
@@ -1327,7 +1329,7 @@ func expandNetworkDeviceSecondary(devices []interface{}) *ne.Device {
 		transformed.WanInterfaceId = ne.String(v.(string))
 	}
 	if v, ok := device[neDeviceSchemaNames["VendorConfiguration"]]; ok {
-		transformed.VendorConfiguration = expandInterfaceMapToStringMap(v.(map[string]interface{}))
+		transformed.VendorConfiguration = internal.ExpandInterfaceMapToStringMap(v.(map[string]interface{}))
 	}
 	if v, ok := device[neDeviceSchemaNames["UserPublicKey"]]; ok {
 		userKeys := expandNetworkDeviceUserKeys(v.(*schema.Set))
@@ -1498,7 +1500,7 @@ func fillNetworkDeviceUpdateRequest(updateReq ne.DeviceUpdateRequest, changes ma
 		case neDeviceSchemaNames["TermLength"]:
 			updateReq.WithTermLength(changeValue.(int))
 		case neDeviceSchemaNames["Notifications"]:
-			updateReq.WithNotifications(expandSetToStringList(changeValue.(*schema.Set)))
+			updateReq.WithNotifications(internal.ExpandSetToStringList(changeValue.(*schema.Set)))
 		case neDeviceSchemaNames["AdditionalBandwidth"]:
 			updateReq.WithAdditionalBandwidth(changeValue.(int))
 		case neDeviceSchemaNames["ACLTemplateUUID"]:

@@ -4,6 +4,8 @@ import (
 	"context"
 	"log"
 
+	"github.com/equinix/terraform-provider-equinix/internal"
+
 	equinix_errors "github.com/equinix/terraform-provider-equinix/internal/errors"
 	equinix_schema "github.com/equinix/terraform-provider-equinix/internal/schema"
 
@@ -69,7 +71,7 @@ func resourceMetalVRFCreate(ctx context.Context, d *schema.ResourceData, meta in
 		Description: d.Get("description").(string),
 		Metro:       d.Get("metro").(string),
 		LocalASN:    d.Get("local_asn").(int),
-		IPRanges:    expandSetToStringList(d.Get("ip_ranges").(*schema.Set)),
+		IPRanges:    internal.ExpandSetToStringList(d.Get("ip_ranges").(*schema.Set)),
 	}
 
 	projectId := d.Get("project_id").(string)
@@ -101,7 +103,7 @@ func resourceMetalVRFUpdate(ctx context.Context, d *schema.ResourceData, meta in
 		updateRequest.LocalASN = iPtr(d.Get("local_asn").(int))
 	}
 	if d.HasChange("ip_ranges") {
-		ipRanges := expandSetToStringList(d.Get("ip_ranges").(*schema.Set))
+		ipRanges := internal.ExpandSetToStringList(d.Get("ip_ranges").(*schema.Set))
 		updateRequest.IPRanges = &ipRanges
 	}
 

@@ -14,6 +14,7 @@ import (
 
 	"golang.org/x/exp/slices"
 
+	"github.com/equinix/terraform-provider-equinix/internal"
 	"github.com/equinix/terraform-provider-equinix/internal/converters"
 
 	equinix_errors "github.com/equinix/terraform-provider-equinix/internal/errors"
@@ -130,7 +131,7 @@ func resourceMetalDevice() *schema.Resource {
 				Type:        schema.TypeList,
 				Description: "A list of IP address types for the device (structure is documented below)",
 				Optional:    true,
-				Elem:        ipAddressSchema(),
+				Elem:        internal.IpAddressSchema(),
 				MinItems:    1,
 			},
 			"plan": {
@@ -488,7 +489,7 @@ func resourceMetalDeviceCreate(ctx context.Context, d *schema.ResourceData, meta
 	_, ok := d.GetOk("ip_address")
 	if ok {
 		arr := d.Get("ip_address").([]interface{})
-		addressTypesSlice = getNewIPAddressSlice(arr)
+		addressTypesSlice = internal.GetNewIPAddressSlice(arr)
 	}
 
 	createRequest := &packngo.DeviceCreateRequest{
@@ -671,7 +672,7 @@ func resourceMetalDeviceRead(ctx context.Context, d *schema.ResourceData, meta i
 		d.Set("deployed_hardware_reservation_id", device.HardwareReservation.GetId())
 	}
 
-	networkType, err := getNetworkType(device)
+	networkType, err := internal.GetNetworkType(device)
 	if err != nil {
 		return fmt.Errorf("[ERR] Error computing network type for device (%s): %s", d.Id(), err)
 	}
@@ -696,14 +697,14 @@ func resourceMetalDeviceRead(ctx context.Context, d *schema.ResourceData, meta i
 		keyIDs = append(keyIDs, path.Base(k.Href))
 	}
 	d.Set("ssh_key_ids", keyIDs)
-	networkInfo := getNetworkInfo(device.IpAddresses)
+	networkInfo := internal.GetNetworkInfo(device.IpAddresses)
 
 	sort.SliceStable(networkInfo.Networks, func(i, j int) bool {
 		famI := networkInfo.Networks[i]["family"].(int32)
 		famJ := networkInfo.Networks[j]["family"].(int32)
 		pubI := networkInfo.Networks[i]["public"].(bool)
 		pubJ := networkInfo.Networks[j]["public"].(bool)
-		return getNetworkRank(int(famI), pubI) < getNetworkRank(int(famJ), pubJ)
+		return internal.GetNetworkRank(int(famI), pubI) < internal.GetNetworkRank(int(famJ), pubJ)
 	})
 
 	d.Set("network", networkInfo.Networks)
@@ -711,7 +712,7 @@ func resourceMetalDeviceRead(ctx context.Context, d *schema.ResourceData, meta i
 	d.Set("access_private_ipv4", networkInfo.PrivateIPv4)
 	d.Set("access_public_ipv6", networkInfo.PublicIPv6)
 
-	ports := getPorts(device.NetworkPorts)
+	ports := internal.GetPorts(device.NetworkPorts)
 	d.Set("ports", ports)
 
 	if networkInfo.Host != "" {
@@ -855,7 +856,7 @@ func resourceMetalDeviceDelete(ctx context.Context, d *schema.ResourceData, meta
 			// avoid "context: deadline exceeded"
 			timeout := d.Timeout(schema.TimeoutDelete) - 30*time.Second - time.Since(start)
 
-			err := waitUntilReservationProvisionable(ctx, client, resId.(string), d.Id(), 10*time.Second, timeout, 3*time.Second)
+			err := internal.WaitUntilReservationProvisionable(ctx, client, resId.(string), d.Id(), 10*time.Second, timeout, 3*time.Second)
 			if err != nil {
 				return err
 			}
@@ -888,7 +889,7 @@ func waitForActiveDevice(ctx context.Context, d *schema.ResourceData, meta inter
 	}
 
 	// Wait for the device so we can get the networking attributes that show up after a while.
-	state, err := waitForDeviceAttribute(ctx, d, stateConf)
+	state, err := internal.WaitForDeviceAttribute(ctx, d, stateConf)
 	if err != nil {
 		d.SetId("")
 		fErr := equinix_errors.FriendlyError(err)

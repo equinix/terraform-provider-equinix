@@ -1,4 +1,4 @@
-package equinix
+package internal
 
 import (
 	"context"
@@ -18,13 +18,18 @@ import (
 	"github.com/pkg/errors"
 )
 
+var (
+	L2Types = []string{"layer2-individual", "layer2-bonded"}
+	L3Types = []string{"layer3", "hybrid", "hybrid-bonded"}
+)
+
 type ClientPortResource struct {
 	Client   *packngo.Client
 	Port     *packngo.Port
 	Resource *schema.ResourceData
 }
 
-func getClientPortResource(d *schema.ResourceData, meta interface{}) (*ClientPortResource, *packngo.Response, error) {
+func GetClientPortResource(d *schema.ResourceData, meta interface{}) (*ClientPortResource, *packngo.Response, error) {
 	meta.(*config.Config).AddModuleToMetalUserAgent(d)
 	client := meta.(*config.Config).Metal
 
@@ -47,7 +52,7 @@ func getClientPortResource(d *schema.ResourceData, meta interface{}) (*ClientPor
 	return cpr, resp, nil
 }
 
-func getPortByResourceData(d *schema.ResourceData, client *packngo.Client) (*packngo.Port, error) {
+func GetPortByResourceData(d *schema.ResourceData, client *packngo.Client) (*packngo.Port, error) {
 	portId, portIdOk := d.GetOk("port_id")
 	resourceId := d.Id()
 
@@ -133,7 +138,7 @@ func specifiedVlanIds(d *schema.ResourceData) []string {
 	return []string{}
 }
 
-func batchVlans(ctx context.Context, start time.Time, removeOnly bool) func(*ClientPortResource) error {
+func BatchVlans(ctx context.Context, start time.Time, removeOnly bool) func(*ClientPortResource) error {
 	return func(cpr *ClientPortResource) error {
 		var vlansToAssign []string
 		var currentNative string
@@ -214,7 +219,7 @@ func createAndWaitForBatch(ctx context.Context, start time.Time, cpr *ClientPort
 	return nil
 }
 
-func updateNativeVlan(cpr *ClientPortResource) error {
+func UpdateNativeVlan(cpr *ClientPortResource) error {
 	currentNative := getCurrentNative(cpr.Port)
 	specifiedNative := getSpecifiedNative(cpr.Resource)
 
@@ -265,17 +270,17 @@ func processBondAction(cpr *ClientPortResource, actionIsBond bool) error {
 	return nil
 }
 
-func makeBond(cpr *ClientPortResource) error {
+func MakeBond(cpr *ClientPortResource) error {
 	return processBondAction(cpr, true)
 }
 
-func makeDisbond(cpr *ClientPortResource) error {
+func MakeDisbond(cpr *ClientPortResource) error {
 	return processBondAction(cpr, false)
 }
 
-func convertToL2(cpr *ClientPortResource) error {
+func ConvertToL2(cpr *ClientPortResource) error {
 	l2, l2Ok := cpr.Resource.GetOkExists("layer2")
-	isLayer2 := slices.Contains(l2Types, cpr.Port.NetworkType)
+	isLayer2 := slices.Contains(L2Types, cpr.Port.NetworkType)
 
 	if l2Ok && l2.(bool) && !isLayer2 {
 		port, _, err := cpr.Client.Ports.ConvertToLayerTwo(cpr.Port.ID)
@@ -287,9 +292,9 @@ func convertToL2(cpr *ClientPortResource) error {
 	return nil
 }
 
-func convertToL3(cpr *ClientPortResource) error {
+func ConvertToL3(cpr *ClientPortResource) error {
 	l2, l2Ok := cpr.Resource.GetOkExists("layer2")
-	isLayer2 := slices.Contains(l2Types, cpr.Port.NetworkType)
+	isLayer2 := slices.Contains(L2Types, cpr.Port.NetworkType)
 
 	if l2Ok && !l2.(bool) && isLayer2 {
 		ips := []packngo.AddressRequest{
@@ -306,7 +311,7 @@ func convertToL3(cpr *ClientPortResource) error {
 	return nil
 }
 
-func portSanityChecks(cpr *ClientPortResource) error {
+func PortSanityChecks(cpr *ClientPortResource) error {
 	isBondPort := cpr.Port.Type == "NetworkBondPort"
 
 	// Constraint: Only bond ports have layer2 mode
@@ -342,7 +347,7 @@ func portSanityChecks(cpr *ClientPortResource) error {
 	return nil
 }
 
-func portProperlyDestroyed(port *packngo.Port) error {
+func PortProperlyDestroyed(port *packngo.Port) error {
 	var errs []string
 	if !port.Data.Bonded {
 		errs = append(errs, fmt.Sprintf("port %s wasn't bonded after equinix_metal_port destroy;", port.ID))

@@ -56,7 +56,7 @@ func resourceMetalSpotMarketRequest() *schema.Resource {
 					if err != nil {
 						return false
 					}
-					// suppress diff if the difference between existing and new bid price
+					// suppress diff if the internal.Difference between existing and new bid price
 					// is less than 2%
 					diffThreshold := .02
 					priceDiff := oldF / newF

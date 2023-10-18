@@ -1,4 +1,4 @@
-package equinix
+package metal_project_ssh_key
 
 import (
 	"fmt"
@@ -13,7 +13,7 @@ import (
 	"github.com/packethost/packngo"
 )
 
-func dataSourceMetalProjectSSHKey() *schema.Resource {
+func DataSource() *schema.Resource {
 	return &schema.Resource{
 		Read: dataSourceMetalProjectSSHKeyRead,
 		Schema: map[string]*schema.Schema{

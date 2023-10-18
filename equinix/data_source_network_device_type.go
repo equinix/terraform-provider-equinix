@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/equinix/terraform-provider-equinix/internal"
+
 	"github.com/equinix/terraform-provider-equinix/internal/config"
 
 	"github.com/equinix/ne-go"
@@ -89,7 +91,7 @@ func dataSourceNetworkDeviceTypeRead(ctx context.Context, d *schema.ResourceData
 	name := d.Get(networkDeviceTypeSchemaNames["Name"]).(string)
 	vendor := d.Get(networkDeviceTypeSchemaNames["Vendor"]).(string)
 	category := d.Get(networkDeviceTypeSchemaNames["Category"]).(string)
-	metroCodes := expandSetToStringList(d.Get(networkDeviceTypeSchemaNames["MetroCodes"]).(*schema.Set))
+	metroCodes := internal.ExpandSetToStringList(d.Get(networkDeviceTypeSchemaNames["MetroCodes"]).(*schema.Set))
 	if err != nil {
 		return diag.FromErr(err)
 	}

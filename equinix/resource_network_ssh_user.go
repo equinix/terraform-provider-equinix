@@ -4,6 +4,8 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/equinix/terraform-provider-equinix/internal"
+
 	"github.com/equinix/terraform-provider-equinix/internal/config"
 
 	"github.com/equinix/ne-go"
@@ -127,8 +129,8 @@ func resourceNetworkSSHUserUpdate(ctx context.Context, d *schema.ResourceData, m
 	}
 	if d.HasChange(networkSSHUserSchemaNames["DeviceUUIDs"]) {
 		a, b := d.GetChange(networkSSHUserSchemaNames["DeviceUUIDs"])
-		aList := expandSetToStringList(a.(*schema.Set))
-		bList := expandSetToStringList(b.(*schema.Set))
+		aList := internal.ExpandSetToStringList(a.(*schema.Set))
+		bList := internal.ExpandSetToStringList(b.(*schema.Set))
 		updateReq.WithDeviceChange(aList, bList)
 	}
 	if err := updateReq.Execute(); err != nil {
@@ -160,7 +162,7 @@ func createNetworkSSHUser(d *schema.ResourceData) ne.SSHUser {
 		user.Password = ne.String(v.(string))
 	}
 	if v, ok := d.GetOk(networkSSHUserSchemaNames["DeviceUUIDs"]); ok {
-		user.DeviceUUIDs = expandSetToStringList(v.(*schema.Set))
+		user.DeviceUUIDs = internal.ExpandSetToStringList(v.(*schema.Set))
 	}
 	return user
 }

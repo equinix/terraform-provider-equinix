@@ -1,4 +1,4 @@
-package equinix
+package metal_ssh_key
 
 import (
 	"log"
@@ -13,7 +13,7 @@ import (
 	"github.com/packethost/packngo"
 )
 
-func metalSSHKeyCommonFields() map[string]*schema.Schema {
+func MetalSSHKeyCommonFields() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
 		"name": {
 			Type:        schema.TypeString,
@@ -52,21 +52,21 @@ func metalSSHKeyCommonFields() map[string]*schema.Schema {
 	}
 }
 
-func resourceMetalSSHKey() *schema.Resource {
+func Resource() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceMetalSSHKeyCreate,
-		Read:   resourceMetalSSHKeyRead,
-		Update: resourceMetalSSHKeyUpdate,
-		Delete: resourceMetalSSHKeyDelete,
+		Create: ResourceMetalSSHKeyCreate,
+		Read:   ResourceMetalSSHKeyRead,
+		Update: ResourceMetalSSHKeyUpdate,
+		Delete: ResourceMetalSSHKeyDelete,
 		Importer: &schema.ResourceImporter{
 			State: schema.ImportStatePassthrough,
 		},
 
-		Schema: metalSSHKeyCommonFields(),
+		Schema: MetalSSHKeyCommonFields(),
 	}
 }
 
-func resourceMetalSSHKeyCreate(d *schema.ResourceData, meta interface{}) error {
+func ResourceMetalSSHKeyCreate(d *schema.ResourceData, meta interface{}) error {
 	meta.(*config.Config).AddModuleToMetalUserAgent(d)
 	client := meta.(*config.Config).Metal
 
@@ -87,10 +87,10 @@ func resourceMetalSSHKeyCreate(d *schema.ResourceData, meta interface{}) error {
 
 	d.SetId(key.ID)
 
-	return resourceMetalSSHKeyRead(d, meta)
+	return ResourceMetalSSHKeyRead(d, meta)
 }
 
-func resourceMetalSSHKeyRead(d *schema.ResourceData, meta interface{}) error {
+func ResourceMetalSSHKeyRead(d *schema.ResourceData, meta interface{}) error {
 	meta.(*config.Config).AddModuleToMetalUserAgent(d)
 	client := meta.(*config.Config).Metal
 
@@ -126,7 +126,7 @@ func resourceMetalSSHKeyRead(d *schema.ResourceData, meta interface{}) error {
 	return nil
 }
 
-func resourceMetalSSHKeyUpdate(d *schema.ResourceData, meta interface{}) error {
+func ResourceMetalSSHKeyUpdate(d *schema.ResourceData, meta interface{}) error {
 	meta.(*config.Config).AddModuleToMetalUserAgent(d)
 	client := meta.(*config.Config).Metal
 
@@ -147,10 +147,10 @@ func resourceMetalSSHKeyUpdate(d *schema.ResourceData, meta interface{}) error {
 		return equinix_errors.FriendlyError(err)
 	}
 
-	return resourceMetalSSHKeyRead(d, meta)
+	return ResourceMetalSSHKeyRead(d, meta)
 }
 
-func resourceMetalSSHKeyDelete(d *schema.ResourceData, meta interface{}) error {
+func ResourceMetalSSHKeyDelete(d *schema.ResourceData, meta interface{}) error {
 	meta.(*config.Config).AddModuleToMetalUserAgent(d)
 	client := meta.(*config.Config).Metal
 

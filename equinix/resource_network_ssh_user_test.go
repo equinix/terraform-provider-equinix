@@ -3,6 +3,8 @@ package equinix
 import (
 	"testing"
 
+	"github.com/equinix/terraform-provider-equinix/internal"
+
 	"github.com/equinix/ne-go"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/stretchr/testify/assert"
@@ -44,5 +46,5 @@ func TestNetworkSSHUser_updateResourceData(t *testing.T) {
 	assert.Nil(t, err, "Update of resource data does not return error")
 	assert.Equal(t, ne.StringValue(input.Username), d.Get(networkSSHUserSchemaNames["Username"]), "Username matches")
 	assert.Equal(t, ne.StringValue(input.Password), d.Get(networkSSHUserSchemaNames["Password"]), "Password matches")
-	assert.Equal(t, input.DeviceUUIDs, expandSetToStringList(d.Get(networkSSHUserSchemaNames["DeviceUUIDs"]).(*schema.Set)), "DeviceUUIDs matches")
+	assert.Equal(t, input.DeviceUUIDs, internal.ExpandSetToStringList(d.Get(networkSSHUserSchemaNames["DeviceUUIDs"]).(*schema.Set)), "DeviceUUIDs matches")
 }

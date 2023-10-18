@@ -6,6 +6,7 @@ import (
 	"regexp"
 	"strings"
 
+	"github.com/equinix/terraform-provider-equinix/internal"
 	"github.com/equinix/terraform-provider-equinix/internal/config"
 
 	"github.com/equinix/ecx-go/v2"
@@ -98,8 +99,8 @@ func dataSourceECXL2SellerProfilesRead(ctx context.Context, d *schema.ResourceDa
 	}
 	var filteredProfiles []ecx.L2ServiceProfile
 	nameRegex := d.Get(ecxL2SellerProfilesSchemaNames["NameRegex"]).(string)
-	metros := expandSetToStringList(d.Get(ecxL2SellerProfilesSchemaNames["Metros"]).(*schema.Set))
-	speedBands := expandSetToStringList(d.Get(ecxL2SellerProfilesSchemaNames["SpeedBands"]).(*schema.Set))
+	metros := internal.ExpandSetToStringList(d.Get(ecxL2SellerProfilesSchemaNames["Metros"]).(*schema.Set))
+	speedBands := internal.ExpandSetToStringList(d.Get(ecxL2SellerProfilesSchemaNames["SpeedBands"]).(*schema.Set))
 	orgName := d.Get(ecxL2SellerProfilesSchemaNames["OrganizationName"]).(string)
 	globalOrgName := d.Get(ecxL2SellerProfilesSchemaNames["GlobalOrganization"]).(string)
 	for _, profile := range profiles {
