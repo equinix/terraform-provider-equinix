@@ -47,7 +47,6 @@ jobs:
           echo "Environment: ${{ github.event_name == 'pull_request_target' && github.event.pull_request.head.repo.full_name != github.repository && 'external' || 'internal' }}"
           echo "Concurrency Group: ${{ github.event_name == 'pull_request_target' && format('acctest-authorize-pr-{0}', github.event.pull_request.number) || 'acctest-authorize' }}"
           echo "Cancel In Progress: ${{ cancel-in-progress }}"
-      - run: true
 
   build:
     name: Build
