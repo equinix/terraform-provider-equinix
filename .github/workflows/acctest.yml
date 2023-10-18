@@ -13,6 +13,7 @@ name: Acceptance Tests
 
 on:
   pull_request_target:
+    types: [opened, synchronize, reopened, ready_for_review]
     paths-ignore:
       - 'LICENSE'
       - '**.md'
@@ -27,7 +28,7 @@ permissions:
 
 jobs:
   authorize:
-    if: ${{ github.event_name == 'pull_request_target' && github.event.pull_request.draft == false }}
+    if: (github.event_name == 'workflow_dispatch') || (github.event_name == 'pull_request_target' && !github.event.pull_request.draft)
     environment:
       ${{ github.event_name == 'pull_request_target' &&
       github.event.pull_request.head.repo.full_name != github.repository &&
