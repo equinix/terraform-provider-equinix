@@ -56,11 +56,11 @@ func resourceNetworkCreate(ctx context.Context, d *schema.ResourceData, meta int
 		Project:       &project,
 	}
 
-	fabricNetwork, _, err := client.NetworksApi.CreateNetwork(ctx, createRequest)
+	fabricNetwork,_, err := client.NetworksApi.CreateNetwork(ctx, createRequest)
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	d.SetId(fabricNetwork.uuid)
+	d.SetId(fabricNetwork.)
 
 	if _, err = waitUntilNetworkIsProvisioned(d.Id(), meta, ctx); err != nil {
 		return diag.Errorf("error waiting for Cloud Router (%s) to be created: %s", d.Id(), err)
@@ -82,7 +82,7 @@ func resourceNetworkRead(ctx context.Context, d *schema.ResourceData, meta inter
 	}
 	d.SetId(fabricNetwork.Uuid)
 	return setNetworkMap(d, fabricNetwork)
-}
+}x
 
 func setNetworkMap(d *schema.ResourceData, nt v4.Network) diag.Diagnostics {
 	diags := diag.Diagnostics{}

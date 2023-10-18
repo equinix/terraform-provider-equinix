@@ -20,6 +20,30 @@ func createNetworkAccountSch() map[string]*schema.Schema {
 	}
 }
 
+var createNetworkChangeRes = &schema.Resource{
+	Schema: createNetworkChangeSch(),
+}
+
+func createNetworkChangeSch() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"href": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "href",
+		},
+		"uuid": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "UUID of Network",
+		},
+		"type": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "network type",
+		},
+	}
+}
+
 var createNetworkProjectSchRes = &schema.Resource{
 	Schema: createNetworkProjectSch(),
 }
@@ -106,10 +130,10 @@ func createNetworkResourceSchema() map[string]*schema.Schema {
 		"change": {
 			Type:        schema.TypeSet,
 			Optional:    true,
-			Description: "Order information related to this Fabric Network",
+			Description: "Change information related to this Fabric Network",
 			MaxItems:    1,
 			Elem: &schema.Resource{
-				Schema: createChangeSch(),
+				Schema: createNetworkChangeSch(),
 			},
 		},
 		"notifications": {
