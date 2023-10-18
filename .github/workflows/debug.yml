@@ -1,0 +1,139 @@
+name: Debug Tests
+# This workflow determines whether a PR comes from an external fork
+# (which requires approval from us) or from a branch on this repository
+# (which means it was made by us and can run immediately).  Once a PR
+# is approved, the PR code gains access to secrets referenced in this
+# workflow.
+
+# The 'build' job and subsequent jobs, are executed only when the pull
+# request is not a draft, regardless of whether it is from an internal
+# branch or external fork.
+
+# Any changes to this job, even from internal contributors, require heavy scrutiny.
+
+on:
+  pull_request_target:
+    types: [opened, synchronize, reopened, ready_for_review]
+    paths-ignore:
+      - 'LICENSE'
+      - '**.md'
+      - 'website/**'
+      - 'docs/**'
+      - '.github/ISSUE_TEMPLATE/**'
+  workflow_dispatch:
+
+permissions:
+  pull-requests: read
+  contents: read
+
+jobs:
+
+  authorize:
+    if: (github.event_name == 'workflow_dispatch') || (github.event_name == 'pull_request_target' && github.event.pull_request.draft == false)
+    environment:
+      ${{ github.event_name == 'pull_request_target' &&
+      github.event.pull_request.head.repo.full_name != github.repository &&
+      'external' || 'internal' }}
+    runs-on: ubuntu-latest
+    concurrency:
+      group: ${{ github.event_name == 'pull_request_target' && format('acctest-authorize-pr-{0}', github.event.pull_request.number) || 'acctest-authorize' }}
+      cancel-in-progress: true
+    steps:
+      - name: Debugging Output
+        run: |
+          echo "GitHub Event Name: ${{ github.event_name }}"
+          echo "Is Pull Request Draft: ${{ github.event_name == 'pull_request_target' && github.event.pull_request.draft }}"
+          echo "Head Repo Full Name: ${{ github.event_name == 'pull_request_target' && github.event.pull_request.head.repo.full_name }}"
+          echo "Repository: ${{ github.repository }}"
+          echo "Environment: ${{ github.event_name == 'pull_request_target' && github.event.pull_request.head.repo.full_name != github.repository && 'external' || 'internal' }}"
+          echo "Concurrency Group: ${{ github.event_name == 'pull_request_target' && format('acctest-authorize-pr-{0}', github.event.pull_request.number) || 'acctest-authorize' }}"
+          echo "new test"
+
+  build:
+    name: Build
+    needs: authorize
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+
+    - name: Check out code into the Go module directory
+      uses: actions/checkout@v4
+      with:
+          ref: ${{ github.event.pull_request.head.sha || github.ref }}
+
+    - name: Set up Go
+      uses: actions/setup-go@v4
+      with:
+        go-version-file: './go.mod'
+      id: go
+
+    - name: Get dependencies
+      run: |
+        go mod download
+
+    - name: Build
+      run: |
+        go build -v .
+  
+  test:
+    name: Matrix Test
+    needs: build
+    concurrency: acctest
+    runs-on: ubuntu-latest
+    timeout-minutes: 240
+    strategy:
+      fail-fast: false
+      matrix:
+        version:
+          - stable
+        terraform:
+          - '1.5'
+    steps:
+
+    - name: Check out code into the Go module directory
+      uses: actions/checkout@v4
+      with:
+        ref: ${{ github.event.pull_request.head.sha || github.ref }}
+
+    - name: Set up Go
+      uses: actions/setup-go@v4
+      with:
+        go-version-file: './go.mod'
+      id: go
+
+    - name: Get dependencies
+      run: |
+        go mod download
+
+    - name: TF acceptance tests
+      timeout-minutes: 180
+      env:
+        TF_ACC: "1"
+        TF_ACC_TERRAFORM_VERSION: ${{ matrix.terraform }}
+        # TF_SCHEMA_PANIC_ON_ERROR: "1"
+        # TF_LOG: "DEBUG"
+        #
+        EQUINIX_API_TOKEN: ${{ secrets.EQUINIX_API_TOKEN }}
+        METAL_AUTH_TOKEN: ${{ secrets.METAL_AUTH_TOKEN }}
+        TF_ACC_METAL_DEDICATED_CONNECTION_ID: ${{ secrets.TF_ACC_METAL_DEDICATED_CONNECTION_ID }}
+      run: |
+        go test ./... -v -coverprofile coverage.txt -covermode=atomic -count 1 -parallel 8 -run "(Metal)|(Provider)|(Migration)" -timeout 180m
+
+    - name: Sweeper
+      if: ${{ always() }}
+      env:
+        EQUINIX_API_TOKEN: ${{ secrets.EQUINIX_API_TOKEN }}
+        METAL_AUTH_TOKEN: ${{ secrets.METAL_AUTH_TOKEN }}
+        SWEEP: "all" #Flag required to define the regions that the sweeper is to be ran in
+        SWEEP_ALLOW_FAILURES: "true" #Enable to allow Sweeper Tests to continue after failures
+        SWEEP_DIR: "./equinix"
+      run: |
+        # Added sweep-run to filter Metal test
+        go test ${SWEEP_DIR} -v -timeout 180m -sweep=${SWEEP} -sweep-allow-failures=${SWEEP_ALLOW_FAILURES} -sweep-run=$(grep -o 'AddTestSweepers("[^"]*"' equinix/resource_metal_* |cut -d '"' -f2 | paste -s -d, -)
+
+    - name: Upload coverage to Codecov
+      if: ${{ always() }}
+      uses: codecov/codecov-action@v3
+      with:
+        token: ${{ secrets.CODECOV_TOKEN }}
+        files: ./coverage.txt
