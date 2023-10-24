@@ -4,11 +4,16 @@ name: Acceptance Tests
 # (which means it was made by us and can run immediately).  Once a PR
 # is approved, the PR code gains access to secrets referenced in this
 # workflow.
-# Any changes to this job, even from internal contributors, require
-# heavy scrutiny.
+
+# The 'build' job and subsequent jobs, are executed only when the pull
+# request is not a draft, regardless of whether it is from an internal
+# branch or external fork.
+
+# Any changes to this job, even from internal contributors, require heavy scrutiny.
 
 on:
   pull_request_target:
+    types: [opened, synchronize, reopened, ready_for_review]
     paths-ignore:
       - 'LICENSE'
       - '**.md'
@@ -22,7 +27,9 @@ permissions:
   contents: read
 
 jobs:
+
   authorize:
+    if: (github.event_name == 'workflow_dispatch') || (github.event_name == 'pull_request_target' && github.event.pull_request.draft == false)
     environment:
       ${{ github.event_name == 'pull_request_target' &&
       github.event.pull_request.head.repo.full_name != github.repository &&
