@@ -22,23 +22,33 @@ func friendlyError(err error) error {
 		if 0 == len(errors) {
 			errors = Errors{e.SingleError}
 		}
-		er := &ErrorResponse{
-			StatusCode: resp.StatusCode,
-			Errors:     errors,
-		}
-		respHead := resp.Header
 
-		// this checks if the error comes from API (and not from cache/LB)
-		if len(errors) > 0 {
-			ct := respHead.Get("Content-Type")
-			xrid := respHead.Get("X-Request-Id")
-			if strings.Contains(ct, "application/json") && len(xrid) > 0 {
-				er.IsAPIError = true
-			}
-		}
-		return er
+		return convertToFriendlyError(errors, resp)
 	}
 	return err
+}
+
+func friendlyErrorForMetalGo(err error, resp *http.Response) error {
+	errors := Errors([]string{err.Error()})
+	return convertToFriendlyError(errors, resp)
+}
+
+func convertToFriendlyError(errors Errors, resp *http.Response) error {
+	er := &ErrorResponse{
+		StatusCode: resp.StatusCode,
+		Errors:     errors,
+	}
+	respHead := resp.Header
+
+	// this checks if the error comes from API (and not from cache/LB)
+	if len(errors) > 0 {
+		ct := respHead.Get("Content-Type")
+		xrid := respHead.Get("X-Request-Id")
+		if strings.Contains(ct, "application/json") && len(xrid) > 0 {
+			er.IsAPIError = true
+		}
+	}
+	return er
 }
 
 func isForbidden(err error) bool {
