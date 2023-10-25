@@ -24,12 +24,12 @@ func serviceTokenToFabric(serviceTokenRequest []interface{}) v4.ServiceToken {
 
 func additionalInfoToFabric(additionalInfoRequest []interface{}) []v4.ConnectionSideAdditionalInfo {
 	var mappedaiArray []v4.ConnectionSideAdditionalInfo
-	for i, ai := range additionalInfoRequest {
+	for _, ai := range additionalInfoRequest {
 		aiMap := ai.(map[string]interface{})
 		key := aiMap["key"].(string)
 		value := aiMap["value"].(string)
 		mappedai := v4.ConnectionSideAdditionalInfo{Key: key, Value: value}
-		mappedaiArray[i] = mappedai
+		mappedaiArray = append(mappedaiArray, mappedai)
 	}
 	return mappedaiArray
 }

@@ -7,16 +7,15 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestIBMCreateConnection(t *testing.T) {
+func TestFCRMultiCloudCreateConnection(t *testing.T) {
 	// retryable errors in terraform testing.
 	terraformOptions := terraform.WithDefaultRetryableErrors(t, &terraform.Options{
-		TerraformDir: "../examples/fabric/v4/portConnectivity/ibm/ibm2.0",
+		TerraformDir: "../examples/fabric/v4/cloudRouterConnectivity/multiCloudConnection",
 	})
 
 	defer terraform.Destroy(t, terraformOptions)
 
 	terraform.InitAndApply(t, terraformOptions)
-
 	output := terraform.Output(t, terraformOptions, "connection_result")
 	assert.NotNil(t, output)
 }
