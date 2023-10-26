@@ -39,8 +39,6 @@ func resourceCloudRouterCreate(ctx context.Context, d *schema.ResourceData, meta
 	ctx = context.WithValue(ctx, v4.ContextAccessToken, meta.(*Config).FabricAuthToken)
 	schemaNotifications := d.Get("notifications").([]interface{})
 	notifications := notificationToFabric(schemaNotifications)
-	schemaOrder := d.Get("order").(*schema.Set).List()
-	order := orderToFabric(schemaOrder)
 	schemaAccount := d.Get("account").(*schema.Set).List()
 	account := accountToCloudRouter(schemaAccount)
 	schemaLocation := d.Get("location").(*schema.Set).List()
@@ -56,12 +54,16 @@ func resourceCloudRouterCreate(ctx context.Context, d *schema.ResourceData, meta
 	createRequest := v4.CloudRouterPostRequest{
 		Name:          d.Get("name").(string),
 		Type_:         d.Get("type").(string),
-		Order:         &order,
 		Location:      &location,
 		Notifications: notifications,
 		Package_:      &packages,
 		Account:       &account,
 		Project:       &project,
+	}
+
+	if v, ok := d.GetOk("order"); ok {
+		order := orderToFabric(v.(*schema.Set).List())
+		createRequest.Order = &order
 	}
 
 	fcr, _, err := client.CloudRoutersApi.CreateCloudRouter(ctx, createRequest)
