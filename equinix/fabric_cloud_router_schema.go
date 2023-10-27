@@ -118,6 +118,7 @@ func createCloudRouterResourceSchema() map[string]*schema.Schema {
 			Type:        schema.TypeSet,
 			Optional:    true,
 			Description: "Fabric Cloud Router project",
+			MaxItems:    1,
 			Elem: &schema.Resource{
 				Schema: createCloudRouterProjectSch(),
 			},
