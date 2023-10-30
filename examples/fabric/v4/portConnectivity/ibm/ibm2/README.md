@@ -1,6 +1,6 @@
-# ECX Fabric Layer2 Redundant Connection to IBM 2.0
+# ECX Fabric Layer2 Redundant Connection to IBM 2
 
-This example shows how to create Layer 2 Connection between ECX Fabric ports and IBM 2.0 Cloud.
+This example shows how to create Layer 2 Connection between ECX Fabric ports and IBM2 Cloud.
 
 ## Adjust variables
 
@@ -36,17 +36,17 @@ Log in to IBM portal with an account that has permission to create necessary res
 
 ## Initialize
 - First step is to initialize the terraform directory/resource we are going to work on.
-  In the given example, the folder to perform CRUD operations for port2ibm2.0 redundant connections can be found at examples/fabric/v4/portConnectivity/ibm/ibm2.0.
+  In the given example, the folder to perform CRUD operations for port2ibm2 redundant connections can be found at examples/fabric/v4/portConnectivity/ibm/ibm2.
 
-- Change directory into - `CD examples/fabric/v4/portConnectivity/ibm/ibm2.0`
+- Change directory into - `CD examples/fabric/v4/portConnectivity/ibm/ibm2`
 - Initialize Terraform plugins - `terraform init`
 
-## Port to IBM 2.0 connection  : Create, Read, Update and Delete(CRUD) operations
+## Port to IBM2 connection  : Create, Read, Update and Delete(CRUD) operations
 Note: `–auto-approve` command does not prompt the user for validating the applying config. Remove it to get a prompt to confirm the operation.
 
 | Operation |              Command              |                                                                Description |
 |:----------|:---------------------------------:|---------------------------------------------------------------------------:|
-| CREATE    |  `terraform apply –auto-approve`  |                                 Creates a port2ibm2.0 connection resources |
-| READ      |         `terraform show`          |      Reads/Shows the current state of the port2ibm2.0 connection resources |
+| CREATE    |  `terraform apply –auto-approve`  |                                   Creates a port2ibm2 connection resources |
+| READ      |         `terraform show`          |        Reads/Shows the current state of the port2ibm2 connection resources |
 | UPDATE    |    `terraform apply -refresh`     |  Updates the connections with values provided in the terraform.tfvars file |
-| DELETE    | `terraform destroy –auto-approve` |                       Deletes the created port2ibm2.0 connection resources |
+| DELETE    | `terraform destroy –auto-approve` |                         Deletes the created port2ibm2 connection resources |

@@ -1,7 +1,7 @@
 equinix_client_id      = "MyEquinixClientId"
 equinix_client_secret  = "MyEquinixClientSecret"
 
-connection_name             = "Terra_Port2IBM2.0"
+connection_name             = "Terra_Port2IBM2"
 connection_type             = "EVPL_VC"
 notifications_type          = "ALL"
 notifications_emails        = ["example@equinix.com"]

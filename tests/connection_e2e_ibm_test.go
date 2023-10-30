@@ -10,7 +10,7 @@ import (
 func TestIBMCreateConnection(t *testing.T) {
 	// retryable errors in terraform testing.
 	terraformOptions := terraform.WithDefaultRetryableErrors(t, &terraform.Options{
-		TerraformDir: "../examples/fabric/v4/portConnectivity/ibm/ibm2.0",
+		TerraformDir: "../examples/fabric/v4/portConnectivity/ibm/ibm2",
 	})
 
 	defer terraform.Destroy(t, terraformOptions)
