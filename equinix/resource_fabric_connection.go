@@ -48,6 +48,7 @@ func resourceFabricConnectionCreate(ctx context.Context, d *schema.ResourceData,
 	projectReq := d.Get("project").(*schema.Set).List()
 	project := projectToFabric(projectReq)
 	additionalInfo := d.Get("additional_info").([]interface{})
+	additionalinfo := additionalInfoToFabric(additionalInfo)
 	connectionASide := v4.ConnectionSide{}
 	for _, as := range aside {
 		asideMap := as.(map[string]interface{})
@@ -91,15 +92,16 @@ func resourceFabricConnectionCreate(ctx context.Context, d *schema.ResourceData,
 	}
 
 	createRequest := v4.ConnectionPostRequest{
-		Name:          d.Get("name").(string),
-		Type_:         &conType,
-		Order:         &order,
-		Notifications: notifications,
-		Bandwidth:     int32(d.Get("bandwidth").(int)),
-		Redundancy:    &red,
-		ASide:         &connectionASide,
-		ZSide:         &connectionZSide,
-		Project:       &project,
+		Name:           d.Get("name").(string),
+		Type_:          &conType,
+		Order:          &order,
+		Notifications:  notifications,
+		Bandwidth:      int32(d.Get("bandwidth").(int)),
+		AdditionalInfo: additionalinfo,
+		Redundancy:     &red,
+		ASide:          &connectionASide,
+		ZSide:          &connectionZSide,
+		Project:        &project,
 	}
 
 	conn, _, err := client.ConnectionsApi.CreateConnection(ctx, createRequest)
@@ -231,13 +233,15 @@ func resourceFabricConnectionUpdate(ctx context.Context, d *schema.ResourceData,
 			waitFunction = waitForConnectionProviderStatusChange
 		}
 
-		updatedConn, err = waitFunction(d.Id(), meta, ctx)
+		conn, err := waitFunction(d.Id(), meta, ctx)
 
 		if err != nil {
 			if !strings.Contains(err.Error(), "500") {
 				d.SetId("")
 			}
 			diags = append(diags, diag.Diagnostic{Severity: 2, Summary: fmt.Sprintf("connection property update completion timeout error: %v [update payload: %v] (other updates will be successful if the payload is not shown)", err, update)})
+		} else {
+			updatedConn = conn
 		}
 	}
 
