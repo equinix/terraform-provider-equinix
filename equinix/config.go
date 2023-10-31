@@ -229,7 +229,7 @@ func (c *Config) NewMetalGoClient() *metalv1.APIClient {
 		},
 	}
 	configuration.HTTPClient = standardClient
-	configuration.AddDefaultHeader("X-Auth-Token", os.Getenv("METAL_AUTH_TOKEN"))
+	configuration.AddDefaultHeader("X-Auth-Token", c.AuthToken)
 	configuration.UserAgent = c.fullUserAgent(configuration.UserAgent)
 	client := metalv1.NewAPIClient(configuration)
 	c.metalGoUserAgent = client.GetConfig().UserAgent
