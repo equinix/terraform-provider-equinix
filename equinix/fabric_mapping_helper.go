@@ -249,7 +249,6 @@ func simplifiedServiceProfileToFabric(profileList []interface{}) v4.SimplifiedSe
 
 func locationToFabric(locationList []interface{}) v4.SimplifiedLocation {
 	sl := v4.SimplifiedLocation{}
-	log.Printf("[DEBUG]value of sl", sl)
 	for _, ll := range locationList {
 		llMap := ll.(map[string]interface{})
 		metroName := llMap["metro_name"]

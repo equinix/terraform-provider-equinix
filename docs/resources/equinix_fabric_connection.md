@@ -103,6 +103,12 @@ Read-Only:
 
 - `id` (String) id
 
+<a id="nestedblock--a_side--access_point--netwrok"></a>
+### Nested Schema for `a_side.access_point.network`
+
+Required:
+- `uuid` (String) Equinix-assigned network identifier
+
 
 <a id="nestedblock--a_side--access_point--link_protocol"></a>
 ### Nested Schema for `a_side.access_point.link_protocol`
@@ -191,10 +197,6 @@ Optional:
 
 - `type` (String) Virtual Device type
 - `uuid` (String) Equinix-assigned Virtual Device identifier
-
-Read-Only:
-
-- `href` (String) Unique Resource Identifier
 
 
 <a id="nestedatt--a_side--access_point--account"></a>

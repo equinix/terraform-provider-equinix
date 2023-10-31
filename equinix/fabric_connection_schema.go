@@ -229,6 +229,11 @@ func createAccessPointVirtualDeviceSch() map[string]*schema.Schema {
 			Optional:    true,
 			Description: "Virtual Device type",
 		},
+		"name": {
+			Type:        schema.TypeString,
+			Optional:    true,
+			Description: "Customer-assigned Virtual Device Name",
+		},
 	}
 }
 
@@ -240,7 +245,7 @@ func createAccessPointInterface() map[string]*schema.Schema {
 			Description: "Equinix-assigned interface identifier",
 		},
 		"id": {
-			Type:        schema.TypeString,
+			Type:        schema.TypeInt,
 			Computed:    true,
 			Description: "id",
 		},
