@@ -268,9 +268,11 @@ func virtualdeviceToFabric(virtualdeviceList []interface{}) v4.VirtualDevice {
 	vd := v4.VirtualDevice{}
 	for _, ll := range virtualdeviceList {
 		llMap := ll.(map[string]interface{})
+		hr := llMap["href"].(string)
 		tp := llMap["type"].(string)
 		ud := llMap["uuid"].(string)
-		vd = v4.VirtualDevice{Type_: tp, Uuid: ud}
+		na := llMap["name"].(string)
+		vd = v4.VirtualDevice{Href: hr, Type_: tp, Uuid: ud, Name: na}
 	}
 	return vd
 }
@@ -279,8 +281,10 @@ func interfaceToFabric(interfaceList []interface{}) v4.ModelInterface {
 	il := v4.ModelInterface{}
 	for _, ll := range interfaceList {
 		llMap := ll.(map[string]interface{})
+		ud := llMap["uuid"].(string)
 		tp := llMap["type"].(string)
-		il = v4.ModelInterface{Type_: tp}
+		id := llMap["id"].(int)
+		il = v4.ModelInterface{Type_: tp, Uuid: ud, Id: int32(id)}
 	}
 	return il
 }
