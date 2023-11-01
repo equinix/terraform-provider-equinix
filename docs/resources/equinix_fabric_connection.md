@@ -64,6 +64,7 @@ Optional:
 - **Deprecated** `gateway` Use `router` attribute instead; (Block Set) (see [below for nested schema](#nestedblock--a_side--access_point--router))
 - `router` (Block Set) Cloud Router access point information that replaces `gateway` (refers to [below for nested schema](#nestedblock--a_side--access_point--router))
 - `interface` (Block Set) Virtual device interface (see [below for nested schema](#nestedblock--a_side--access_point--interface))
+- `network` (Block Set) Simplified Network (see [below for nested schema](#nestedblock--a_side--access_point--network))
 - `link_protocol` (Block Set) Connection link protocol (see [below for nested schema](#nestedblock--a_side--access_point--link_protocol))
 - `location` (Block Set) Access point location (see [below for nested schema](#nestedblock--a_side--access_point--location))
 - `peering_type` (String) Peering Type- PRIVATE,MICROSOFT,PUBLIC, MANUAL

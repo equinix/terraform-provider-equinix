@@ -30,6 +30,12 @@ At minimum, you must set below variables in `terraform.tfvars` file:
 `seller_asn` - Seller ASN Number
 `seller_region` - Seller Region
 
+## Note
+* You can modify the IBM side of the connection using parameters passed to additional_info field
+  `{"key": "Global", "value": "false"}`
+  `{"key": "BGP_IBM_CIDR", "value": "172.16.0.18/30"}`
+  `{"key": "BGP_CER_CIDR", "value": "172.16.0.19/30"}`
+
 ## IBM login
 
 Log in to IBM portal with an account that has permission to create necessary resources.
