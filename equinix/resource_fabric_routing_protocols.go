@@ -197,9 +197,11 @@ func resourceFabricRoutingProtocolsCreate(ctx context.Context, d *schema.Resourc
 		d.SetId(id)
 		directRPUUID, bgpRPUUID := readUUIDsFromId(id)
 		if _, err = waitUntilRoutingProtocolIsProvisioned(directRPUUID, connectionUUID, meta, ctx); err != nil {
+			d.SetId("")
 			return diag.Errorf("error waiting for Routing Protocol %s to be created: %s", d.Id(), err)
 		}
 		if _, err = waitUntilRoutingProtocolIsProvisioned(bgpRPUUID, connectionUUID, meta, ctx); err != nil {
+			d.SetId(directRPUUID)
 			return diag.Errorf("error waiting for Routing Protocol %s to be created: %s", d.Id(), err)
 		}
 	} else {
@@ -210,6 +212,7 @@ func resourceFabricRoutingProtocolsCreate(ctx context.Context, d *schema.Resourc
 		d.SetId(fabricRoutingProtocol.RoutingProtocolDirectData.Uuid)
 
 		if _, err = waitUntilRoutingProtocolIsProvisioned(fabricRoutingProtocol.RoutingProtocolDirectData.Uuid, connectionUUID, meta, ctx); err != nil {
+			d.SetId("")
 			return diag.Errorf("error waiting for Routing Protocol %s to be created: %s", d.Id(), err)
 		}
 	}
