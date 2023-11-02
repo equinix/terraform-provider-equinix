@@ -229,7 +229,7 @@ Optional:
 - `key` (String) Additional information key
 - `value` (String) Additional information value
 
-~> **NOTE:** Connection could be modified from Service Provider Side by using parameters passed to additional_info field:  `{"key": "ASN", "value": "1111"}` `{"key": "Global", "value": "false"}` `{"key": "BGP_IBM_CIDR", "value": "172.16.0.18/30"}` `{"key": "BGP_CER_CIDR", "value": "172.16.0.19/30"}`
+~> **NOTE:** Port to IBM Connections could be modified from IBM Service Provider Side by using parameters passed to additional_info field:  `{"key": "ASN", "value": "1111"}` `{"key": "Global", "value": "false"}` `{"key": "BGP_IBM_CIDR", "value": "172.16.0.18/30"}` `{"key": "BGP_CER_CIDR", "value": "172.16.0.19/30"}`
 
 <a id="nestedblock--a_side--service_token"></a>
 ### Nested Schema for `a_side.service_token`
