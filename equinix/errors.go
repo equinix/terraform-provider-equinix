@@ -98,7 +98,7 @@ func setMap(d *schema.ResourceData, m map[string]interface{}) error {
 			err = f(d, key)
 		} else {
 			if key == "router" {
-				d.Set("gateway", v)
+				err = d.Set("gateway", v)
 			}
 			err = d.Set(key, v)
 		}

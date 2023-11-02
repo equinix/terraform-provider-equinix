@@ -3,13 +3,13 @@
 page_title: "equinix_fabric_routing_protocol Resource - terraform-provider-equinix"
 subcategory: "Fabric"
 description: |-
-  Fabric V4 API compatible resource allows creation and management of Equinix Fabric connection
+  Fabric V4 API compatible resource allows creation and management of Equinix Fabric routing protocol
   ~> Note Equinix Fabric v4 resources and datasources are currently in Beta. The interfaces related to equinix_fabric_ resources and datasources may change ahead of general availability. Please, do not hesitate to report any problems that you experience by opening a new issue https://github.com/equinix/terraform-provider-equinix/issues/new?template=bug.md
 ---
 
 # equinix_fabric_routing_protocol (Resource)
 
-Fabric V4 API compatible resource allows creation and management of Equinix Fabric connection
+Fabric V4 API compatible resource allows creation and management of Equinix Fabric routing protocol
 
 ~> **Note** Equinix Fabric v4 resources and datasources are currently in Beta. The interfaces related to `equinix_fabric_` resources and datasources may change ahead of general availability. Please, do not hesitate to report any problems that you experience by opening a new [issue](https://github.com/equinix/terraform-provider-equinix/issues/new?template=bug.md)
 

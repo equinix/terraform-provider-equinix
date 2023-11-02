@@ -899,42 +899,92 @@ func routingProtocolBfdToFabric(routingProtocolBfdRequest []interface{}) v4.Rout
 	return mappedRpBfd
 }
 
-func routingProtocolChangeToFabric(routingProtocolChangeRequest []interface{}) v4.RoutingProtocolChange {
-	mappedRpChange := v4.RoutingProtocolChange{}
-	for _, str := range routingProtocolChangeRequest {
-		rpChangeMap := str.(map[string]interface{})
-		uuid := rpChangeMap["uuid"].(string)
-		rpChangeType := rpChangeMap["type"].(string)
-
-		mappedRpChange = v4.RoutingProtocolChange{Uuid: uuid, Type_: rpChangeType}
+func directRoutingProtocolToFabric(directRoutingProtocolConfig []interface{}) v4.RoutingProtocolDirectType {
+	mappedDirectRP := v4.RoutingProtocolDirectType{}
+	for _, rp := range directRoutingProtocolConfig {
+		rpMap := rp.(map[string]interface{})
+		mappedDirectRP.Type_ = rpMap["type"].(string)
+		mappedDirectRP.Name = rpMap["name"].(string)
+		directIpv4 := routingProtocolDirectIpv4ToFabric(rpMap["direct_ipv4"].(*schema.Set).List())
+		directIpv6 := routingProtocolDirectIpv6ToFabric(rpMap["direct_ipv6"].(*schema.Set).List())
+		mappedDirectRP.DirectIpv4 = &directIpv4
+		mappedDirectRP.DirectIpv6 = &directIpv6
 	}
-	return mappedRpChange
+
+	return mappedDirectRP
 }
 
-func routingProtocolDirectTypeToTerra(routingProtocolDirect *v4.RoutingProtocolDirectType) *schema.Set {
-	if routingProtocolDirect == nil {
-		return nil
+func bgpRoutingProtocolToFabric(bgpRoutingProtocolConfig []interface{}) v4.RoutingProtocolBgpType {
+	mappedBgpRp := v4.RoutingProtocolBgpType{}
+	for _, rp := range bgpRoutingProtocolConfig {
+		rpMap := rp.(map[string]interface{})
+		mappedBgpRp.Type_ = rpMap["type"].(string)
+		mappedBgpRp.Name = rpMap["name"].(string)
+		bgpIpv4 := routingProtocolBgpIpv4ToFabric(rpMap["bgp_ipv4"].(*schema.Set).List())
+		bgpIpv6 := routingProtocolBgpIpv6ToFabric(rpMap["bgp_ipv6"].(*schema.Set).List())
+		mappedBgpRp.BgpIpv4 = &bgpIpv4
+		mappedBgpRp.BgpIpv6 = &bgpIpv6
+		mappedBgpRp.CustomerAsn = int64(rpMap["customer_asn"].(int))
+		mappedBgpRp.EquinixAsn = int64(rpMap["equinix_asn"].(int))
+		mappedBgpRp.BgpAuthKey = rpMap["bgp_auth_key"].(string)
+		bgpBfd := routingProtocolBfdToFabric(rpMap["bfd"].(*schema.Set).List())
+		mappedBgpRp.Bfd = &bgpBfd
 	}
-	routingProtocolDirects := []*v4.RoutingProtocolDirectType{routingProtocolDirect}
-	mappedDirects := make([]interface{}, len(routingProtocolDirects))
-	for _, routingProtocolDirect := range routingProtocolDirects {
-		mappedDirect := make(map[string]interface{})
-		mappedDirect["type"] = routingProtocolDirect.Type_
-		mappedDirect["name"] = routingProtocolDirect.Name
-		if routingProtocolDirect.DirectIpv4 != nil {
-			mappedDirect["direct_ipv4"] = routingProtocolDirectConnectionIpv4ToTerra(routingProtocolDirect.DirectIpv4)
-		}
-		if routingProtocolDirect.DirectIpv6 != nil {
-			mappedDirect["direct_ipv6"] = routingProtocolDirectConnectionIpv6ToTerra(routingProtocolDirect.DirectIpv6)
-		}
-		mappedDirects = append(mappedDirects, mappedDirect)
+
+	return mappedBgpRp
+}
+
+func directRoutingProtocolToTerra(directRoutingProtocol v4.RoutingProtocolDirectData) *schema.Set {
+	mappedDirectRoutingProtocol := map[string]interface{}{
+		"type":        directRoutingProtocol.Type_,
+		"name":        directRoutingProtocol.Name,
+		"direct_ipv4": routingProtocolDirectConnectionIpv4ToTerra(directRoutingProtocol.DirectIpv4),
+		"direct_ipv6": routingProtocolDirectConnectionIpv6ToTerra(directRoutingProtocol.DirectIpv6),
+		"href":        directRoutingProtocol.Href,
+		"uuid":        directRoutingProtocol.Uuid,
+		"state":       directRoutingProtocol.State,
+		"operation":   routingProtocolOperationToTerra(directRoutingProtocol.Operation),
+		"change":      routingProtocolChangeToTerra(directRoutingProtocol.Change),
+		"change_log":  changeLogToTerra(directRoutingProtocol.Changelog),
 	}
-	rpDirectSet := schema.NewSet(
-		schema.HashResource(createRoutingProtocolDirectTypeRes),
-		mappedDirects,
+
+	directRoutingProtocolSet := schema.NewSet(
+		schema.HashResource(&schema.Resource{
+			Schema: DirectRoutingProtocolSch(),
+		}),
+		[]interface{}{mappedDirectRoutingProtocol},
 	)
 
-	return rpDirectSet
+	return directRoutingProtocolSet
+}
+
+func bgpRoutingProtocolToTerra(bgpRoutingProtocol v4.RoutingProtocolBgpData) *schema.Set {
+
+	mappedBGPRoutingProtocol := map[string]interface{}{
+		"type":         bgpRoutingProtocol.Type_,
+		"name":         bgpRoutingProtocol.Name,
+		"bgp_ipv4":     routingProtocolBgpConnectionIpv4ToTerra(bgpRoutingProtocol.BgpIpv4),
+		"bgp_ipv6":     routingProtocolBgpConnectionIpv6ToTerra(bgpRoutingProtocol.BgpIpv6),
+		"customer_asn": int(bgpRoutingProtocol.CustomerAsn),
+		"equinix_asn":  int(bgpRoutingProtocol.EquinixAsn),
+		"bgp_auth_key": bgpRoutingProtocol.BgpAuthKey,
+		"bfd":          routingProtocolBfdToTerra(bgpRoutingProtocol.Bfd),
+		"href":         bgpRoutingProtocol.Href,
+		"uuid":         bgpRoutingProtocol.Uuid,
+		"state":        bgpRoutingProtocol.State,
+		"operation":    routingProtocolOperationToTerra(bgpRoutingProtocol.Operation),
+		"change":       routingProtocolChangeToTerra(bgpRoutingProtocol.Change),
+		"change_log":   changeLogToTerra(bgpRoutingProtocol.Changelog),
+	}
+
+	bgpRoutingProtocolSet := schema.NewSet(
+		schema.HashResource(&schema.Resource{
+			Schema: BGPRoutingProtocolSch(),
+		}),
+		[]interface{}{mappedBGPRoutingProtocol},
+	)
+
+	return bgpRoutingProtocolSet
 }
 
 func routingProtocolDirectConnectionIpv4ToTerra(routingProtocolDirectIpv4 *v4.DirectConnectionIpv4) *schema.Set {
@@ -971,39 +1021,6 @@ func routingProtocolDirectConnectionIpv6ToTerra(routingProtocolDirectIpv6 *v4.Di
 		mappedDirectIpv6s,
 	)
 	return rpDirectIpv6Set
-}
-
-func routingProtocolBgpTypeToTerra(routingProtocolBgp *v4.RoutingProtocolBgpType) *schema.Set {
-	if routingProtocolBgp == nil {
-		return nil
-	}
-	routingProtocolBgps := []*v4.RoutingProtocolBgpType{routingProtocolBgp}
-	mappedBgps := make([]interface{}, len(routingProtocolBgps))
-	for _, routingProtocolBgp := range routingProtocolBgps {
-		mappedBgp := make(map[string]interface{})
-		mappedBgp["type"] = routingProtocolBgp.Type_
-		mappedBgp["name"] = routingProtocolBgp.Name
-		if routingProtocolBgp.BgpIpv4 != nil {
-			mappedBgp["bgp_ipv4"] = routingProtocolBgpConnectionIpv4ToTerra(routingProtocolBgp.BgpIpv4)
-		}
-		if routingProtocolBgp.BgpIpv6 != nil {
-			mappedBgp["bgp_ipv6"] = routingProtocolBgpConnectionIpv6ToTerra(routingProtocolBgp.BgpIpv6)
-		}
-		mappedBgp["customer_asn"] = routingProtocolBgp.CustomerAsn
-		mappedBgp["bgp_auth_key"] = routingProtocolBgp.BgpAuthKey
-		if routingProtocolBgp.Bfd != nil {
-			mappedBgp["bfd"] = routingProtocolBfdToTerra(routingProtocolBgp.Bfd)
-		}
-
-		mappedBgps = append(mappedBgps, mappedBgp)
-
-	}
-	rpBgpSet := schema.NewSet(
-		schema.HashResource(createRoutingProtocolBgpTypeRes),
-		mappedBgps,
-	)
-
-	return rpBgpSet
 }
 
 func routingProtocolBgpConnectionIpv4ToTerra(routingProtocolBgpIpv4 *v4.BgpConnectionIpv4) *schema.Set {
@@ -1103,26 +1120,6 @@ func routingProtocolChangeToTerra(routingProtocolChange *v4.RoutingProtocolChang
 		mappedRpChanges,
 	)
 	return rpChangeSet
-}
-
-func getRoutingProtocolPatchUpdateRequest(rp v4.RoutingProtocolData, d *schema.ResourceData) (v4.ConnectionChangeOperation, error) {
-	changeOps := v4.ConnectionChangeOperation{}
-	existingBgpIpv4Status := rp.BgpIpv4.Enabled
-	existingBgpIpv6Status := rp.BgpIpv6.Enabled
-	updateBgpIpv4Status := d.Get("rp.BgpIpv4.Enabled")
-	updateBgpIpv6Status := d.Get("rp.BgpIpv6.Enabled")
-
-	log.Printf("existing BGP IPv4 Status: %t, existing BGP IPv6 Status: %t, Update BGP IPv4 Request: %t, Update BGP Ipv6 Request: %t",
-		existingBgpIpv4Status, existingBgpIpv6Status, updateBgpIpv4Status, updateBgpIpv6Status)
-
-	if existingBgpIpv4Status != updateBgpIpv4Status {
-		changeOps = v4.ConnectionChangeOperation{Op: "replace", Path: "/bgpIpv4/enabled", Value: updateBgpIpv4Status}
-	} else if existingBgpIpv6Status != updateBgpIpv6Status {
-		changeOps = v4.ConnectionChangeOperation{Op: "replace", Path: "/bgpIpv6/enabled", Value: updateBgpIpv6Status}
-	} else {
-		return changeOps, fmt.Errorf("nothing to update for the routing protocol %s", rp.RoutingProtocolBgpData.Uuid)
-	}
-	return changeOps, nil
 }
 
 func getUpdateRequests(conn v4.Connection, d *schema.ResourceData) ([][]v4.ConnectionChangeOperation, error) {
