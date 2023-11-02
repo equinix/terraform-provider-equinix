@@ -305,7 +305,7 @@ func (c *Config) addModuleToMetalUserAgent(d *schema.ResourceData) {
 }
 
 func (c *Config) addModuleToMetalGoUserAgent(d *schema.ResourceData) {
-	c.metalgo.GetConfig().UserAgent = generateModuleUserAgentString(d, c.metalUserAgent)
+	c.metalgo.GetConfig().UserAgent = generateModuleUserAgentString(d, c.metalGoUserAgent)
 }
 
 func generateModuleUserAgentString(d *schema.ResourceData, baseUserAgent string) string {
