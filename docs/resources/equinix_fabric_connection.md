@@ -64,6 +64,7 @@ Optional:
 - **Deprecated** `gateway` Use `router` attribute instead; (Block Set) (see [below for nested schema](#nestedblock--a_side--access_point--router))
 - `router` (Block Set) Cloud Router access point information that replaces `gateway` (refers to [below for nested schema](#nestedblock--a_side--access_point--router))
 - `interface` (Block Set) Virtual device interface (see [below for nested schema](#nestedblock--a_side--access_point--interface))
+- `network` (Block Set) Simplified Network (see [below for nested schema](#nestedblock--a_side--access_point--network))
 - `link_protocol` (Block Set) Connection link protocol (see [below for nested schema](#nestedblock--a_side--access_point--link_protocol))
 - `location` (Block Set) Access point location (see [below for nested schema](#nestedblock--a_side--access_point--location))
 - `peering_type` (String) Peering Type- PRIVATE,MICROSOFT,PUBLIC, MANUAL
@@ -102,6 +103,12 @@ Optional:
 Read-Only:
 
 - `id` (String) id
+
+<a id="nestedblock--a_side--access_point--network"></a>
+### Nested Schema for `a_side.access_point.network`
+
+Required:
+- `uuid` (String) Equinix-assigned network identifier
 
 
 <a id="nestedblock--a_side--access_point--link_protocol"></a>
@@ -190,7 +197,9 @@ Optional:
 Optional:
 
 - `type` (String) Virtual Device type
+- `name` (String) Customer-assigned Virtual Device Name
 - `uuid` (String) Equinix-assigned Virtual Device identifier
+
 
 Read-Only:
 
@@ -220,6 +229,7 @@ Optional:
 - `key` (String) Additional information key
 - `value` (String) Additional information value
 
+~> **NOTE:** Port to IBM Connections could be modified from IBM Service Provider Side by using parameters passed to additional_info field:  `{"key": "ASN", "value": "1111"}` `{"key": "Global", "value": "false"}` `{"key": "BGP_IBM_CIDR", "value": "172.16.0.18/30"}` `{"key": "BGP_CER_CIDR", "value": "172.16.0.19/30"}`
 
 <a id="nestedblock--a_side--service_token"></a>
 ### Nested Schema for `a_side.service_token`

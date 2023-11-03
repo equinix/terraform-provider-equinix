@@ -28,7 +28,7 @@ resource "equinix_fabric_connection" "ibm2" {
 
   bandwidth = var.bandwidth
 
-  additional_info  = [{key = "ASN", value = var.seller_asn }, {"key"= "Global","value" = "false"}, {"key" = "BGP_IBM_CIDR","value" = "172.16.0.18/30"},{"key" = "BGP_CER_CIDR","value" = "172.16.0.19/30"} ]
+  additional_info = [{key = "ASN", value = var.seller_asn }]
 
   redundancy {  priority  = var.redundancy  }
   order {

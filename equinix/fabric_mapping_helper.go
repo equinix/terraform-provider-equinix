@@ -41,6 +41,8 @@ func accessPointToFabric(accessPointRequest []interface{}) v4.AccessPoint {
 		portList := accessPointMap["port"].(*schema.Set).List()
 		profileList := accessPointMap["profile"].(*schema.Set).List()
 		locationList := accessPointMap["location"].(*schema.Set).List()
+		virtualdeviceList := accessPointMap["virtual_device"].(*schema.Set).List()
+		interfaceList := accessPointMap["interface"].(*schema.Set).List()
 		networkList := accessPointMap["network"].(*schema.Set).List()
 		typeVal := accessPointMap["type"].(string)
 		authenticationKey := accessPointMap["authentication_key"].(string)
@@ -106,6 +108,16 @@ func accessPointToFabric(accessPointRequest []interface{}) v4.AccessPoint {
 		if len(locationList) != 0 {
 			sl := locationToFabric(locationList)
 			accessPoint.Location = &sl
+		}
+
+		if len(virtualdeviceList) != 0 {
+			vd := virtualdeviceToFabric(virtualdeviceList)
+			accessPoint.VirtualDevice = &vd
+		}
+
+		if len(interfaceList) != 0 {
+			il := interfaceToFabric(interfaceList)
+			accessPoint.Interface_ = &il
 		}
 
 	}
@@ -250,6 +262,31 @@ func locationToFabric(locationList []interface{}) v4.SimplifiedLocation {
 		sl = v4.SimplifiedLocation{MetroCode: mc, Region: region, Ibx: ibx, MetroName: metroNamestr}
 	}
 	return sl
+}
+
+func virtualdeviceToFabric(virtualdeviceList []interface{}) v4.VirtualDevice {
+	vd := v4.VirtualDevice{}
+	for _, ll := range virtualdeviceList {
+		llMap := ll.(map[string]interface{})
+		hr := llMap["href"].(string)
+		tp := llMap["type"].(string)
+		ud := llMap["uuid"].(string)
+		na := llMap["name"].(string)
+		vd = v4.VirtualDevice{Href: hr, Type_: tp, Uuid: ud, Name: na}
+	}
+	return vd
+}
+
+func interfaceToFabric(interfaceList []interface{}) v4.ModelInterface {
+	il := v4.ModelInterface{}
+	for _, ll := range interfaceList {
+		llMap := ll.(map[string]interface{})
+		ud := llMap["uuid"].(string)
+		tp := llMap["type"].(string)
+		id := llMap["id"].(int)
+		il = v4.ModelInterface{Type_: tp, Uuid: ud, Id: int32(id)}
+	}
+	return il
 }
 
 func accountToCloudRouter(accountList []interface{}) v4.SimplifiedAccount {

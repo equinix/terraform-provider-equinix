@@ -61,7 +61,7 @@ resource "equinix_ecx_l2_connection" "ports-2-azure" {
   vlan_ctag         = 2512
   seller_metro_code = "SV"
   named_tag         = "PRIVATE"
-  authorization_key = "c4dff8e8-b52f-4b34-b0d4-c4588f7338f3
+  authorization_key = "c4dff8e8-b52f-4b34-b0d4-c4588f7338f3"
   secondary_connection {
     name      = "tf-azure-sec"
     port_uuid = data.equinix_ecx_port.sv-qinq-sec.id
