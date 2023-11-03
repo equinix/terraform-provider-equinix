@@ -103,10 +103,11 @@ var ecxL2ServiceProfileSpeedBandDescriptions = map[string]string{
 
 func resourceECXL2ServiceProfile() *schema.Resource {
 	return &schema.Resource{
-		CreateContext: resourceECXL2ServiceProfileCreate,
-		ReadContext:   resourceECXL2ServiceProfileRead,
-		UpdateContext: resourceECXL2ServiceProfileUpdate,
-		DeleteContext: resourceECXL2ServiceProfileDelete,
+		DeprecationMessage: "This resource is deprecated. End of Life will be June 30th, 2024. Use equinix_fabric_service_profile instead.",
+		CreateContext:      resourceECXL2ServiceProfileCreate,
+		ReadContext:        resourceECXL2ServiceProfileRead,
+		UpdateContext:      resourceECXL2ServiceProfileUpdate,
+		DeleteContext:      resourceECXL2ServiceProfileDelete,
 		Importer: &schema.ResourceImporter{
 			State: schema.ImportStatePassthrough,
 		},

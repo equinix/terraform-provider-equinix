@@ -33,8 +33,9 @@ var ecxL2SellerProfilesDescriptions = map[string]string{
 
 func dataSourceECXL2SellerProfiles() *schema.Resource {
 	return &schema.Resource{
-		ReadContext: dataSourceECXL2SellerProfilesRead,
-		Description: "Use this data source to get list of Equinix Fabric layer 2 seller profiles",
+		DeprecationMessage: "This resource is deprecated. End of Life will be June 30th, 2024. Use equinix_fabric_service_profiles instead.",
+		ReadContext:        dataSourceECXL2SellerProfilesRead,
+		Description:        "Use this data source to get list of Equinix Fabric layer 2 seller profiles",
 		Schema: map[string]*schema.Schema{
 			ecxL2SellerProfilesSchemaNames["NameRegex"]: {
 				Type:         schema.TypeString,
