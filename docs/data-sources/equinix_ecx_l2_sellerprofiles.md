@@ -2,6 +2,10 @@
 subcategory: "Fabric"
 ---
 
+# DEPRECATED RESOURCE
+
+End of Life will be June 30th, 2024. Use equinix_fabric_service_profiles instead.
+
 # equinix_ecx_l2_sellerprofiles (Data Source)
 
 Use this data source to get details of available Equinix Fabric layer 2 seller profiles. It is

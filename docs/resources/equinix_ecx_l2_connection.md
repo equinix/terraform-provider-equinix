@@ -2,6 +2,10 @@
 subcategory: "Fabric"
 ---
 
+# DEPRECATED RESOURCE
+
+End of Life will be June 30th, 2024. Use equinix_fabric_connection instead.
+
 # equinix_ecx_l2_connection (Resource)
 
 Resource `equinix_ecx_l2_connection` allows creation and management of Equinix Fabric
