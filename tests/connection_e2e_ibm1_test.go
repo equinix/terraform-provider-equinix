@@ -7,10 +7,10 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestIBM2CreateConnection(t *testing.T) {
+func TestIBM1CreateConnection(t *testing.T) {
 	// retryable errors in terraform testing.
 	terraformOptions := terraform.WithDefaultRetryableErrors(t, &terraform.Options{
-		TerraformDir: "../examples/fabric/v4/portConnectivity/ibm/ibm2",
+		TerraformDir: "../examples/fabric/v4/portConnectivity/ibm/ibm1",
 	})
 
 	defer terraform.Destroy(t, terraformOptions)
