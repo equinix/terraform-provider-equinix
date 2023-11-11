@@ -4,7 +4,7 @@ page_title: "equinix_fabric_routing_protocols Resource - terraform-provider-equi
 subcategory: "Fabric"
 description: |-
 Fabric V4 API compatible data resource that allows user to fetch routing protocols for a given routing protocol ids
-~> Note Equinix Fabric v4 resources and datasources are currently in Beta. The interfaces related to equinix_fabric_ resources and datasources may change ahead of general availability. Please, do not hesitate to report any problems that you experience by opening a new issue https://github.com/equinix/terraform-provider-equinix/issues/new?template=bug.md
+~> Note Equinix Fabric v4 resources and datasources are currently in Beta. The interfaces related to equinix_fabric_ resources and datasources may change ahead of general availability. Please, do not hesitate to report any problems that you experience by opening a new issue https://github.com/equinix/terraform-provider-equinix/issues/new?assignees=&labels=bug&projects=&template=bug.yml&title=%5BBug%5D%3A+equinix_fabric_routing_protocols
 ---
 
 # equinix_fabric_routing_protocols (Data Source)
