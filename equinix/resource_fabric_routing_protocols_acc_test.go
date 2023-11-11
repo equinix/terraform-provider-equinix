@@ -24,6 +24,9 @@ func TestAccFabricCreateRoutingProtocols(t *testing.T) {
 					}),
 				),
 				ExpectNonEmptyPlan: true,
+				ImportStateId:      "<connection_uuid>/<direct_uuid>/<bgp_uuid>",
+				ImportState:        true,
+				ImportStateVerify:  true,
 			},
 		},
 	})
