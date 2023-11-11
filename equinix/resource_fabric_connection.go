@@ -226,7 +226,7 @@ func resourceFabricConnectionUpdate(ctx context.Context, d *schema.ResourceData,
 	for _, update := range updateRequests {
 		_, httpResponse, err := client.ConnectionsApi.UpdateConnectionByUuid(ctx, update, d.Id())
 		if err != nil {
-			diags = append(diags, networkErrorOutput(fmt.Errorf("connectionn property update request error: %v [update payload: %v] (other updates will be successful if the payload is not shown)", err, update), httpResponse)...)
+			diags = append(diags, networkErrorOutput(fmt.Errorf("connection property update request error: %v [update payload: %v] (other updates will be successful if the payload is not shown)", err, update), httpResponse)...)
 			continue
 		}
 
