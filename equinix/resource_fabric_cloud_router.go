@@ -183,10 +183,9 @@ func waitUntilCloudRouterIsProvisioned(uuid string, meta interface{}, ctx contex
 	log.Printf("Waiting for Cloud Router to be provisioned, uuid %s", uuid)
 	stateConf := &resource.StateChangeConf{
 		Pending: []string{
-			string(v4.PROVISIONED_CloudRouterAccessPointState),
+			string(v4.PROVISIONING_CloudRouterAccessPointState),
 		},
 		Target: []string{
-			string(v4.PENDING_INTERFACE_CONFIGURATION_EquinixStatus),
 			string(v4.PROVISIONED_CloudRouterAccessPointState),
 		},
 		Refresh: func() (interface{}, string, error) {
