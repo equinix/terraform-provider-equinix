@@ -97,16 +97,21 @@ func resourceCloudRouterRead(ctx context.Context, d *schema.ResourceData, meta i
 func setCloudRouterMap(d *schema.ResourceData, fcr v4.CloudRouter) diag.Diagnostics {
 	diags := diag.Diagnostics{}
 	err := setMap(d, map[string]interface{}{
-		"name":          fcr.Name,
-		"href":          fcr.Href,
-		"type":          fcr.Type_,
-		"state":         fcr.State,
-		"package":       CloudRouterPackageToTerra(fcr.Package_),
-		"location":      locationCloudRouterToTerra(fcr.Location),
-		"change_log":    changeLogToTerra(fcr.ChangeLog),
-		"account":       accountCloudRouterToTerra(fcr.Account),
-		"notifications": notificationToTerra(fcr.Notifications),
-		"project":       projectToTerra(fcr.Project),
+		"name":                  fcr.Name,
+		"href":                  fcr.Href,
+		"type":                  fcr.Type_,
+		"state":                 fcr.State,
+		"package":               cloudRouterPackageToTerra(fcr.Package_),
+		"location":              locationCloudRouterToTerra(fcr.Location),
+		"change_log":            changeLogToTerra(fcr.ChangeLog),
+		"account":               accountCloudRouterToTerra(fcr.Account),
+		"notifications":         notificationToTerra(fcr.Notifications),
+		"project":               projectToTerra(fcr.Project),
+		"equinix_asn":           fcr.EquinixAsn,
+		"bgp_ipv4_routes_count": fcr.BgpIpv4RoutesCount,
+		"bgp_ipv6_routes_count": fcr.BgpIpv6RoutesCount,
+		"connections_count":     fcr.ConnectionsCount,
+		"order":                 orderToTerra(fcr.Order),
 	})
 	if err != nil {
 		return diag.FromErr(err)
