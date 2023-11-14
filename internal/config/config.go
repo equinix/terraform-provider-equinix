@@ -1,4 +1,4 @@
-package equinix
+package config
 
 import (
 	"context"
@@ -27,6 +27,15 @@ import (
 	"github.com/packethost/packngo"
 	xoauth2 "golang.org/x/oauth2"
 )
+
+var (
+	UuidRE         = regexp.MustCompile("^[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-4[a-fA-F0-9]{3}-[8|9|aA|bB][a-fA-F0-9]{3}-[a-fA-F0-9]{12}$")
+	IpAddressTypes = []string{"public_ipv4", "private_ipv4", "public_ipv6"}
+)
+
+type ProviderMeta struct {
+	ModuleName string `cty:"module_name"`
+}
 
 type DumpTransport struct {
 	r http.RoundTripper
@@ -81,18 +90,18 @@ type Config struct {
 	PageSize       int
 	Token          string
 
-	ecx     ecx.Client
-	ne      ne.Client
-	metal   *packngo.Client
-	metalgo *metalv1.APIClient
+	Ecx     ecx.Client
+	Ne      ne.Client
+	Metal   *packngo.Client
+	Metalgo *metalv1.APIClient
 
 	ecxUserAgent     string
 	neUserAgent      string
 	metalUserAgent   string
 	metalGoUserAgent string
 
-	terraformVersion string
-	fabricClient     *v4.APIClient
+	TerraformVersion string
+	FabricClient     *v4.APIClient
 	FabricAuthToken  string
 }
 
@@ -158,15 +167,17 @@ func (c *Config) Load(ctx context.Context) error {
 		"User-agent": c.neUserAgent,
 	})
 
-	c.ecx = ecxClient
-	c.ne = neClient
-	c.metal = c.NewMetalClient()
-	c.metalgo = c.NewMetalGoClient()
-	c.fabricClient = c.NewFabricClient()
+	c.Ecx = ecxClient
+	c.Ne = neClient
+	c.Metal = c.NewMetalClient()
+	c.Metalgo = c.NewMetalGoClient()
+	c.FabricClient = c.NewFabricClient()
 	return nil
 }
 
 // NewFabricClient returns a new client for accessing Equinix Fabric's v4 API.
+// uncomment the funct when migrating Fabric resources to use
+// functions from internal/
 func (c *Config) NewFabricClient() *v4.APIClient {
 	transport := logging.NewTransport("Equinix Fabric", http.DefaultTransport)
 	authClient := &http.Client{
@@ -281,14 +292,14 @@ func terraformUserAgent(version string) string {
 	return ua
 }
 
-func (c *Config) addModuleToECXUserAgent(client *ecx.Client, d *schema.ResourceData) {
+func (c *Config) AddModuleToECXUserAgent(client *ecx.Client, d *schema.ResourceData) {
 	cli := *client
 	rc := cli.(*ecx.RestClient)
 	rc.SetHeader("User-agent", generateModuleUserAgentString(d, c.ecxUserAgent))
 	*client = rc
 }
 
-func (c *Config) addModuleToNEUserAgent(client *ne.Client, d *schema.ResourceData) {
+func (c *Config) AddModuleToNEUserAgent(client *ne.Client, d *schema.ResourceData) {
 	cli := *client
 	rc := cli.(*ne.RestClient)
 	rc.SetHeader("User-agent", generateModuleUserAgentString(d, c.neUserAgent))
@@ -300,16 +311,16 @@ func (c *Config) addModuleToNEUserAgent(client *ne.Client, d *schema.ResourceDat
 // the UserAgent resulting in swapped UserAgent.
 // This can be fixed by letting the headers be overwritten on the initialized Packngo ServiceOp
 // clients on a query-by-query basis.
-func (c *Config) addModuleToMetalUserAgent(d *schema.ResourceData) {
-	c.metal.UserAgent = generateModuleUserAgentString(d, c.metalUserAgent)
+func (c *Config) AddModuleToMetalUserAgent(d *schema.ResourceData) {
+	c.Metal.UserAgent = generateModuleUserAgentString(d, c.metalUserAgent)
 }
 
-func (c *Config) addModuleToMetalGoUserAgent(d *schema.ResourceData) {
-	c.metalgo.GetConfig().UserAgent = generateModuleUserAgentString(d, c.metalGoUserAgent)
+func (c *Config) AddModuleToMetalGoUserAgent(d *schema.ResourceData) {
+	c.Metalgo.GetConfig().UserAgent = generateModuleUserAgentString(d, c.metalGoUserAgent)
 }
 
 func generateModuleUserAgentString(d *schema.ResourceData, baseUserAgent string) string {
-	var m providerMeta
+	var m ProviderMeta
 	err := d.GetProviderMeta(&m)
 	if err != nil {
 		log.Printf("[WARN] error retrieving provider_meta")
@@ -323,7 +334,7 @@ func generateModuleUserAgentString(d *schema.ResourceData, baseUserAgent string)
 }
 
 func (c *Config) fullUserAgent(suffix string) string {
-	tfUserAgent := terraformUserAgent(c.terraformVersion)
+	tfUserAgent := terraformUserAgent(c.TerraformVersion)
 	userAgent := fmt.Sprintf("%s terraform-provider-equinix/%s %s", tfUserAgent, version.ProviderVersion, suffix)
 	return strings.TrimSpace(userAgent)
 }

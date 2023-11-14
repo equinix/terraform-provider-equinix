@@ -3,11 +3,13 @@ package equinix
 import (
 	"context"
 	"fmt"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"log"
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/equinix/terraform-provider-equinix/internal/config"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 
 	v4 "github.com/equinix-labs/fabric-go/fabric/v4"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -47,8 +49,8 @@ func resourceFabricRoutingProtocol() *schema.Resource {
 }
 
 func resourceFabricRoutingProtocolRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := meta.(*Config).fabricClient
-	ctx = context.WithValue(ctx, v4.ContextAccessToken, meta.(*Config).FabricAuthToken)
+	client := meta.(*config.Config).FabricClient
+	ctx = context.WithValue(ctx, v4.ContextAccessToken, meta.(*config.Config).FabricAuthToken)
 	log.Printf("[WARN] Routing Protocol Connection uuid: %s", d.Get("connection_uuid").(string))
 	fabricRoutingProtocol, _, err := client.RoutingProtocolsApi.GetConnectionRoutingProtocolByUuid(ctx, d.Id(), d.Get("connection_uuid").(string))
 	if err != nil {
@@ -69,8 +71,8 @@ func resourceFabricRoutingProtocolRead(ctx context.Context, d *schema.ResourceDa
 }
 
 func resourceFabricRoutingProtocolCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := meta.(*Config).fabricClient
-	ctx = context.WithValue(ctx, v4.ContextAccessToken, meta.(*Config).FabricAuthToken)
+	client := meta.(*config.Config).FabricClient
+	ctx = context.WithValue(ctx, v4.ContextAccessToken, meta.(*config.Config).FabricAuthToken)
 	schemaBgpIpv4 := d.Get("bgp_ipv4").(*schema.Set).List()
 	bgpIpv4 := routingProtocolBgpIpv4ToFabric(schemaBgpIpv4)
 	schemaBgpIpv6 := d.Get("bgp_ipv6").(*schema.Set).List()
@@ -152,8 +154,8 @@ func resourceFabricRoutingProtocolCreate(ctx context.Context, d *schema.Resource
 }
 
 func resourceFabricRoutingProtocolUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := meta.(*Config).fabricClient
-	ctx = context.WithValue(ctx, v4.ContextAccessToken, meta.(*Config).FabricAuthToken)
+	client := meta.(*config.Config).FabricClient
+	ctx = context.WithValue(ctx, v4.ContextAccessToken, meta.(*config.Config).FabricAuthToken)
 
 	/* todo: support patch bgp in the future - switch between PUT and PATCH
 	1. get getRoutingProtocolPatchUpdateRequest()
@@ -251,8 +253,8 @@ func resourceFabricRoutingProtocolUpdate(ctx context.Context, d *schema.Resource
 
 func resourceFabricRoutingProtocolDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	diags := diag.Diagnostics{}
-	client := meta.(*Config).fabricClient
-	ctx = context.WithValue(ctx, v4.ContextAccessToken, meta.(*Config).FabricAuthToken)
+	client := meta.(*config.Config).FabricClient
+	ctx = context.WithValue(ctx, v4.ContextAccessToken, meta.(*config.Config).FabricAuthToken)
 	_, resp, err := client.RoutingProtocolsApi.DeleteConnectionRoutingProtocolByUuid(ctx, d.Id(), d.Get("connection_uuid").(string))
 	if err != nil {
 		errors, ok := err.(v4.GenericSwaggerError).Model().([]v4.ModelError)
@@ -324,7 +326,7 @@ func waitUntilRoutingProtocolIsProvisioned(uuid string, connUuid string, meta in
 			string(v4.PROVISIONED_ConnectionState),
 		},
 		Refresh: func() (interface{}, string, error) {
-			client := meta.(*Config).fabricClient
+			client := meta.(*config.Config).FabricClient
 			dbConn, _, err := client.RoutingProtocolsApi.GetConnectionRoutingProtocolByUuid(ctx, uuid, connUuid)
 			if err != nil {
 				return "", "", err
@@ -361,7 +363,7 @@ func waitUntilRoutingProtocolIsDeprovisioned(uuid string, connUuid string, meta 
 			strconv.Itoa(404),
 		},
 		Refresh: func() (interface{}, string, error) {
-			client := meta.(*Config).fabricClient
+			client := meta.(*config.Config).FabricClient
 			dbConn, resp, _ := client.RoutingProtocolsApi.GetConnectionRoutingProtocolByUuid(ctx, uuid, connUuid)
 			// fixme: check for error code instead?
 			// ignore error for Target
@@ -382,7 +384,7 @@ func waitForRoutingProtocolUpdateCompletion(rpChangeUuid string, uuid string, co
 	stateConf := &resource.StateChangeConf{
 		Target: []string{"COMPLETED"},
 		Refresh: func() (interface{}, string, error) {
-			client := meta.(*Config).fabricClient
+			client := meta.(*config.Config).FabricClient
 			dbConn, _, err := client.RoutingProtocolsApi.GetConnectionRoutingProtocolsChangeByUuid(ctx, connUuid, uuid, rpChangeUuid)
 			if err != nil {
 				return "", "", err

@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"log"
 
+	"github.com/equinix/terraform-provider-equinix/internal/config"
+
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/packethost/packngo"
 )
@@ -65,8 +67,8 @@ func resourceMetalPortVlanAttachment() *schema.Resource {
 }
 
 func resourceMetalPortVlanAttachmentCreate(d *schema.ResourceData, meta interface{}) error {
-	meta.(*Config).addModuleToMetalUserAgent(d)
-	client := meta.(*Config).metal
+	meta.(*config.Config).AddModuleToMetalUserAgent(d)
+	client := meta.(*config.Config).Metal
 	deviceID := d.Get("device_id").(string)
 	pName := d.Get("port_name").(string)
 	vlanVNID := d.Get("vlan_vnid").(int)
@@ -158,8 +160,8 @@ func resourceMetalPortVlanAttachmentCreate(d *schema.ResourceData, meta interfac
 }
 
 func resourceMetalPortVlanAttachmentRead(d *schema.ResourceData, meta interface{}) error {
-	meta.(*Config).addModuleToMetalUserAgent(d)
-	client := meta.(*Config).metal
+	meta.(*config.Config).AddModuleToMetalUserAgent(d)
+	client := meta.(*config.Config).Metal
 	deviceID := d.Get("device_id").(string)
 	pName := d.Get("port_name").(string)
 	vlanVNID := d.Get("vlan_vnid").(int)
@@ -212,8 +214,8 @@ func resourceMetalPortVlanAttachmentRead(d *schema.ResourceData, meta interface{
 }
 
 func resourceMetalPortVlanAttachmentUpdate(d *schema.ResourceData, meta interface{}) error {
-	meta.(*Config).addModuleToMetalUserAgent(d)
-	client := meta.(*Config).metal
+	meta.(*config.Config).AddModuleToMetalUserAgent(d)
+	client := meta.(*config.Config).Metal
 	if d.HasChange("native") {
 		native := d.Get("native").(bool)
 		portID := d.Get("port_id").(string)
@@ -235,8 +237,8 @@ func resourceMetalPortVlanAttachmentUpdate(d *schema.ResourceData, meta interfac
 }
 
 func resourceMetalPortVlanAttachmentDelete(d *schema.ResourceData, meta interface{}) error {
-	meta.(*Config).addModuleToMetalUserAgent(d)
-	client := meta.(*Config).metal
+	meta.(*config.Config).AddModuleToMetalUserAgent(d)
+	client := meta.(*config.Config).Metal
 	pID := d.Get("port_id").(string)
 	vlanID := d.Get("vlan_id").(string)
 	native := d.Get("native").(bool)

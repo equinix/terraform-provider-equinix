@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/equinix/terraform-provider-equinix/internal/config"
+
 	"github.com/equinix/ne-go"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -67,12 +69,12 @@ func dataSourceNetworkAccount() *schema.Resource {
 }
 
 func dataSourceNetworkAccountRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	conf := m.(*Config)
+	conf := m.(*config.Config)
 	var diags diag.Diagnostics
 	metro := d.Get(networkAccountSchemaNames["MetroCode"]).(string)
 	name := d.Get(networkAccountSchemaNames["Name"]).(string)
 	status := d.Get(networkAccountSchemaNames["Status"]).(string)
-	accounts, err := conf.ne.GetAccounts(metro)
+	accounts, err := conf.Ne.GetAccounts(metro)
 	if err != nil {
 		return diag.FromErr(err)
 	}

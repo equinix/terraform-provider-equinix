@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/equinix/terraform-provider-equinix/internal/config"
+
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/packethost/packngo"
@@ -93,8 +95,8 @@ func resourceMetalGateway() *schema.Resource {
 }
 
 func resourceMetalGatewayCreate(d *schema.ResourceData, meta interface{}) error {
-	meta.(*Config).addModuleToMetalUserAgent(d)
-	client := meta.(*Config).metal
+	meta.(*config.Config).AddModuleToMetalUserAgent(d)
+	client := meta.(*config.Config).Metal
 
 	_, hasIPReservation := d.GetOk("ip_reservation_id")
 	_, hasSubnetSize := d.GetOk("private_ipv4_subnet_size")
@@ -120,8 +122,8 @@ func resourceMetalGatewayCreate(d *schema.ResourceData, meta interface{}) error 
 }
 
 func resourceMetalGatewayRead(d *schema.ResourceData, meta interface{}) error {
-	meta.(*Config).addModuleToMetalUserAgent(d)
-	client := meta.(*Config).metal
+	meta.(*config.Config).AddModuleToMetalUserAgent(d)
+	client := meta.(*config.Config).Metal
 
 	mgId := d.Id()
 	includes := &packngo.GetOptions{Includes: []string{"project", "ip_reservation", "virtual_network", "vrf"}}
@@ -152,8 +154,8 @@ func resourceMetalGatewayRead(d *schema.ResourceData, meta interface{}) error {
 }
 
 func resourceMetalGatewayDelete(d *schema.ResourceData, meta interface{}) error {
-	meta.(*Config).addModuleToMetalUserAgent(d)
-	client := meta.(*Config).metal
+	meta.(*config.Config).AddModuleToMetalUserAgent(d)
+	client := meta.(*config.Config).Metal
 	resp, err := client.MetalGateways.Delete(d.Id())
 	if ignoreResponseErrors(httpForbidden, httpNotFound)(resp, err) != nil {
 		return friendlyError(err)

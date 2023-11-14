@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/equinix/terraform-provider-equinix/internal/config"
+
 	"github.com/equinix/ne-go"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -620,10 +622,10 @@ func dataSourceNetworkDevice() *schema.Resource {
 	}
 }
 
-func getDeviceByName(deviceName string, conf *Config, validDeviceStateList *[]string) (*ne.Device, error) {
+func getDeviceByName(deviceName string, conf *config.Config, validDeviceStateList *[]string) (*ne.Device, error) {
 	var devices []ne.Device
 	err := error(nil)
-	devices, err = conf.ne.GetDevices(*validDeviceStateList)
+	devices, err = conf.Ne.GetDevices(*validDeviceStateList)
 	if err != nil {
 		return nil, fmt.Errorf("'devices: %v'", devices)
 	}
@@ -636,7 +638,7 @@ func getDeviceByName(deviceName string, conf *Config, validDeviceStateList *[]st
 }
 
 func dataSourceNetworkDeviceRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	conf := m.(*Config)
+	conf := m.(*config.Config)
 	var diags diag.Diagnostics
 	var err error
 	var primary, secondary *ne.Device
@@ -655,7 +657,7 @@ func dataSourceNetworkDeviceRead(ctx context.Context, d *schema.ResourceData, m 
 	if nameExists {
 		primary, err = getDeviceByName(name, conf, validDeviceStatusList)
 	} else {
-		primary, err = conf.ne.GetDevice(uuid)
+		primary, err = conf.Ne.GetDevice(uuid)
 	}
 
 	if err != nil {
@@ -668,7 +670,7 @@ func dataSourceNetworkDeviceRead(ctx context.Context, d *schema.ResourceData, m 
 	}
 	if ne.StringValue(primary.RedundantUUID) != "" {
 
-		secondary, err = conf.ne.GetDevice(ne.StringValue(primary.RedundantUUID))
+		secondary, err = conf.Ne.GetDevice(ne.StringValue(primary.RedundantUUID))
 		if err != nil {
 			return diag.Errorf("cannot fetch secondary network device due to '%v'", err)
 		}

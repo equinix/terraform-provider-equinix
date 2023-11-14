@@ -4,6 +4,8 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/equinix/terraform-provider-equinix/internal/config"
+
 	"github.com/equinix/ecx-go/v2"
 	"github.com/equinix/rest-go"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -341,8 +343,8 @@ func createECXL2ServiceProfileResourceSchema() map[string]*schema.Schema {
 }
 
 func resourceECXL2ServiceProfileCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	client := m.(*Config).ecx
-	m.(*Config).addModuleToECXUserAgent(&client, d)
+	client := m.(*config.Config).Ecx
+	m.(*config.Config).AddModuleToECXUserAgent(&client, d)
 	var diags diag.Diagnostics
 	profile := createECXL2ServiceProfile(d)
 	uuid, err := client.CreateL2ServiceProfile(*profile)
@@ -355,8 +357,8 @@ func resourceECXL2ServiceProfileCreate(ctx context.Context, d *schema.ResourceDa
 }
 
 func resourceECXL2ServiceProfileRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	client := m.(*Config).ecx
-	m.(*Config).addModuleToECXUserAgent(&client, d)
+	client := m.(*config.Config).Ecx
+	m.(*config.Config).AddModuleToECXUserAgent(&client, d)
 	var diags diag.Diagnostics
 	profile, err := client.GetL2ServiceProfile(d.Id())
 	if err != nil {
@@ -369,8 +371,8 @@ func resourceECXL2ServiceProfileRead(ctx context.Context, d *schema.ResourceData
 }
 
 func resourceECXL2ServiceProfileUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	client := m.(*Config).ecx
-	m.(*Config).addModuleToECXUserAgent(&client, d)
+	client := m.(*config.Config).Ecx
+	m.(*config.Config).AddModuleToECXUserAgent(&client, d)
 	var diags diag.Diagnostics
 	profile := createECXL2ServiceProfile(d)
 	if err := client.UpdateL2ServiceProfile(*profile); err != nil {
@@ -381,8 +383,8 @@ func resourceECXL2ServiceProfileUpdate(ctx context.Context, d *schema.ResourceDa
 }
 
 func resourceECXL2ServiceProfileDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	client := m.(*Config).ecx
-	m.(*Config).addModuleToECXUserAgent(&client, d)
+	client := m.(*config.Config).Ecx
+	m.(*config.Config).AddModuleToECXUserAgent(&client, d)
 	var diags diag.Diagnostics
 	if err := client.DeleteL2ServiceProfile(d.Id()); err != nil {
 		restErr, ok := err.(rest.Error)

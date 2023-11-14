@@ -4,11 +4,13 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/antihax/optional"
 	"log"
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/antihax/optional"
+	"github.com/equinix/terraform-provider-equinix/internal/config"
 
 	v4 "github.com/equinix-labs/fabric-go/fabric/v4"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -37,8 +39,8 @@ func resourceFabricServiceProfile() *schema.Resource {
 }
 
 func resourceFabricServiceProfileRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := meta.(*Config).fabricClient
-	ctx = context.WithValue(ctx, v4.ContextAccessToken, meta.(*Config).FabricAuthToken)
+	client := meta.(*config.Config).FabricClient
+	ctx = context.WithValue(ctx, v4.ContextAccessToken, meta.(*config.Config).FabricAuthToken)
 	serviceProfile, _, err := client.ServiceProfilesApi.GetServiceProfileByUuid(ctx, d.Id(), nil)
 	if err != nil {
 		if !strings.Contains(err.Error(), "500") {
@@ -53,8 +55,8 @@ func resourceFabricServiceProfileRead(ctx context.Context, d *schema.ResourceDat
 }
 
 func resourceFabricServiceProfileCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := meta.(*Config).fabricClient
-	ctx = context.WithValue(ctx, v4.ContextAccessToken, meta.(*Config).FabricAuthToken)
+	client := meta.(*config.Config).FabricClient
+	ctx = context.WithValue(ctx, v4.ContextAccessToken, meta.(*config.Config).FabricAuthToken)
 
 	createRequest := getServiceProfileRequestPayload(d)
 	sp, _, err := client.ServiceProfilesApi.CreateServiceProfile(ctx, createRequest)
@@ -123,8 +125,8 @@ func getServiceProfileRequestPayload(d *schema.ResourceData) v4.ServiceProfileRe
 }
 
 func resourceFabricServiceProfileUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := meta.(*Config).fabricClient
-	ctx = context.WithValue(ctx, v4.ContextAccessToken, meta.(*Config).FabricAuthToken)
+	client := meta.(*config.Config).FabricClient
+	ctx = context.WithValue(ctx, v4.ContextAccessToken, meta.(*config.Config).FabricAuthToken)
 	uuid := d.Id()
 	updateRequest := getServiceProfileRequestPayload(d)
 
@@ -159,7 +161,7 @@ func waitForServiceProfileUpdateCompletion(uuid string, meta interface{}, ctx co
 	stateConf := &retry.StateChangeConf{
 		Target: []string{"COMPLETED"},
 		Refresh: func() (interface{}, string, error) {
-			client := meta.(*Config).fabricClient
+			client := meta.(*config.Config).FabricClient
 			dbServiceProfile, _, err := client.ServiceProfilesApi.GetServiceProfileByUuid(ctx, uuid, nil)
 			if err != nil {
 				return "", "", err
@@ -187,7 +189,7 @@ func waitForActiveServiceProfileAndPopulateETag(uuid string, meta interface{}, c
 	stateConf := &retry.StateChangeConf{
 		Target: []string{string(v4.ACTIVE_ServiceProfileStateEnum)},
 		Refresh: func() (interface{}, string, error) {
-			client := meta.(*Config).fabricClient
+			client := meta.(*config.Config).FabricClient
 			dbServiceProfile, res, err := client.ServiceProfilesApi.GetServiceProfileByUuid(ctx, uuid, nil)
 			if err != nil {
 				return nil, "", err
@@ -219,8 +221,8 @@ func waitForActiveServiceProfileAndPopulateETag(uuid string, meta interface{}, c
 
 func resourceFabricServiceProfileDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	diags := diag.Diagnostics{}
-	client := meta.(*Config).fabricClient
-	ctx = context.WithValue(ctx, v4.ContextAccessToken, meta.(*Config).FabricAuthToken)
+	client := meta.(*config.Config).FabricClient
+	ctx = context.WithValue(ctx, v4.ContextAccessToken, meta.(*config.Config).FabricAuthToken)
 	uuid := d.Id()
 	if uuid == "" {
 		return diag.Errorf("No uuid found %v ", uuid)
@@ -273,8 +275,8 @@ func setFabricServiceProfilesListMap(d *schema.ResourceData, spl v4.ServiceProfi
 }
 
 func resourceServiceProfilesSearchRequest(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := meta.(*Config).fabricClient
-	ctx = context.WithValue(ctx, v4.ContextAccessToken, meta.(*Config).FabricAuthToken)
+	client := meta.(*config.Config).FabricClient
+	ctx = context.WithValue(ctx, v4.ContextAccessToken, meta.(*config.Config).FabricAuthToken)
 	schemaFilter := d.Get("filter").(*schema.Set).List()
 	filter := serviceProfilesSearchFilterRequestToFabric(schemaFilter)
 	var serviceProfileFlt v4.ServiceProfileFilter // Cast ServiceProfile search expression struct type to interface

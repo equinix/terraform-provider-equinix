@@ -6,6 +6,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/equinix/terraform-provider-equinix/internal/config"
+
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/packethost/packngo"
@@ -19,8 +21,8 @@ type ClientPortResource struct {
 }
 
 func getClientPortResource(d *schema.ResourceData, meta interface{}) (*ClientPortResource, *packngo.Response, error) {
-	meta.(*Config).addModuleToMetalUserAgent(d)
-	client := meta.(*Config).metal
+	meta.(*config.Config).AddModuleToMetalUserAgent(d)
+	client := meta.(*config.Config).Metal
 
 	port_id := d.Get("port_id").(string)
 

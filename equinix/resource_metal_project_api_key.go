@@ -3,6 +3,8 @@ package equinix
 import (
 	"log"
 
+	"github.com/equinix/terraform-provider-equinix/internal/config"
+
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/packethost/packngo"
 )
@@ -47,8 +49,8 @@ func resourceMetalProjectAPIKey() *schema.Resource {
 }
 
 func resourceMetalAPIKeyCreate(d *schema.ResourceData, meta interface{}) error {
-	meta.(*Config).addModuleToMetalUserAgent(d)
-	client := meta.(*Config).metal
+	meta.(*config.Config).AddModuleToMetalUserAgent(d)
+	client := meta.(*config.Config).Metal
 
 	projectId := ""
 
@@ -82,8 +84,8 @@ func projectIdFromResourceData(d *schema.ResourceData) string {
 }
 
 func resourceMetalAPIKeyRead(d *schema.ResourceData, meta interface{}) error {
-	meta.(*Config).addModuleToMetalUserAgent(d)
-	client := meta.(*Config).metal
+	meta.(*config.Config).AddModuleToMetalUserAgent(d)
+	client := meta.(*config.Config).Metal
 
 	projectId := projectIdFromResourceData(d)
 
@@ -133,8 +135,8 @@ func resourceMetalAPIKeyRead(d *schema.ResourceData, meta interface{}) error {
 }
 
 func resourceMetalAPIKeyDelete(d *schema.ResourceData, meta interface{}) error {
-	meta.(*Config).addModuleToMetalUserAgent(d)
-	client := meta.(*Config).metal
+	meta.(*config.Config).AddModuleToMetalUserAgent(d)
+	client := meta.(*config.Config).Metal
 
 	resp, err := client.APIKeys.Delete(d.Id())
 	if ignoreResponseErrors(httpForbidden, httpNotFound)(resp, err) != nil {

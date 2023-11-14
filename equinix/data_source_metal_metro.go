@@ -3,6 +3,8 @@ package equinix
 import (
 	"fmt"
 
+	"github.com/equinix/terraform-provider-equinix/internal/config"
+
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/packethost/packngo"
 )
@@ -37,7 +39,7 @@ func dataSourceMetalMetro() *schema.Resource {
 }
 
 func dataSourceMetalMetroRead(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*Config).metal
+	client := meta.(*config.Config).Metal
 	code := d.Get("code").(string)
 
 	_, capacityOk := d.GetOk("capacity")

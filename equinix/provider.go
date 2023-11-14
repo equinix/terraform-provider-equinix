@@ -12,6 +12,7 @@ import (
 	v4 "github.com/equinix-labs/fabric-go/fabric/v4"
 	"github.com/equinix/ecx-go/v2"
 	"github.com/equinix/rest-go"
+	"github.com/equinix/terraform-provider-equinix/internal/config"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
@@ -50,9 +51,9 @@ func Provider() *schema.Provider {
 			"endpoint": {
 				Type:         schema.TypeString,
 				Optional:     true,
-				DefaultFunc:  schema.EnvDefaultFunc(endpointEnvVar, DefaultBaseURL),
+				DefaultFunc:  schema.EnvDefaultFunc(endpointEnvVar, config.DefaultBaseURL),
 				ValidateFunc: validation.IsURLWithHTTPorHTTPS,
-				Description:  fmt.Sprintf("The Equinix API base URL to point out desired environment. Defaults to %s", DefaultBaseURL),
+				Description:  fmt.Sprintf("The Equinix API base URL to point out desired environment. Defaults to %s", config.DefaultBaseURL),
 			},
 			"client_id": {
 				Type:        schema.TypeString,
@@ -81,9 +82,9 @@ func Provider() *schema.Provider {
 			"request_timeout": {
 				Type:         schema.TypeInt,
 				Optional:     true,
-				DefaultFunc:  schema.EnvDefaultFunc(clientTimeoutEnvVar, DefaultTimeout),
+				DefaultFunc:  schema.EnvDefaultFunc(clientTimeoutEnvVar, config.DefaultTimeout),
 				ValidateFunc: validation.IntAtLeast(1),
-				Description:  fmt.Sprintf("The duration of time, in seconds, that the Equinix Platform API Client should wait before canceling an API request.  Defaults to %d", DefaultTimeout),
+				Description:  fmt.Sprintf("The duration of time, in seconds, that the Equinix Platform API Client should wait before canceling an API request.  Defaults to %d", config.DefaultTimeout),
 			},
 			"response_max_page_size": {
 				Type:         schema.TypeInt,
@@ -199,7 +200,7 @@ func configureProvider(ctx context.Context, d *schema.ResourceData, p *schema.Pr
 	mrws := d.Get("max_retry_wait_seconds").(int)
 	rt := d.Get("request_timeout").(int)
 
-	config := Config{
+	config := config.Config{
 		AuthToken:      d.Get("auth_token").(string),
 		BaseURL:        d.Get("endpoint").(string),
 		ClientID:       d.Get("client_id").(string),
@@ -215,11 +216,11 @@ func configureProvider(ctx context.Context, d *schema.ResourceData, p *schema.Pr
 	if err := d.GetProviderMeta(&meta); err != nil {
 		return nil, diag.FromErr(err)
 	}
-	config.terraformVersion = p.TerraformVersion
-	if config.terraformVersion == "" {
+	config.TerraformVersion = p.TerraformVersion
+	if config.TerraformVersion == "" {
 		// Terraform 0.12 introduced this field to the protocol
 		// We can therefore assume that if it's missing it's 0.10 or 0.11
-		config.terraformVersion = "0.11+compatible"
+		config.TerraformVersion = "0.11+compatible"
 	}
 
 	stopCtx, ok := schema.StopContext(ctx)

@@ -7,6 +7,8 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/equinix/terraform-provider-equinix/internal/config"
+
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/packethost/packngo"
@@ -198,8 +200,8 @@ func resourceMetalConnection() *schema.Resource {
 }
 
 func resourceMetalConnectionCreate(d *schema.ResourceData, meta interface{}) error {
-	meta.(*Config).addModuleToMetalUserAgent(d)
-	client := meta.(*Config).metal
+	meta.(*config.Config).AddModuleToMetalUserAgent(d)
+	client := meta.(*config.Config).Metal
 
 	facility, facOk := d.GetOk("facility")
 	metro, metOk := d.GetOk("metro")
@@ -315,8 +317,8 @@ func resourceMetalConnectionCreate(d *schema.ResourceData, meta interface{}) err
 }
 
 func resourceMetalConnectionUpdate(d *schema.ResourceData, meta interface{}) error {
-	meta.(*Config).addModuleToMetalUserAgent(d)
-	client := meta.(*Config).metal
+	meta.(*config.Config).AddModuleToMetalUserAgent(d)
+	client := meta.(*config.Config).Metal
 
 	if d.HasChange("locked") {
 		var action func(string) (*packngo.Response, error)
@@ -423,8 +425,8 @@ func updateHiddenVirtualCircuitVNID(client *packngo.Client, port map[string]inte
 }
 
 func resourceMetalConnectionRead(d *schema.ResourceData, meta interface{}) error {
-	meta.(*Config).addModuleToMetalUserAgent(d)
-	client := meta.(*Config).metal
+	meta.(*config.Config).AddModuleToMetalUserAgent(d)
+	client := meta.(*config.Config).Metal
 
 	connId := d.Id()
 	conn, _, err := client.Connections.Get(
@@ -489,8 +491,8 @@ func resourceMetalConnectionRead(d *schema.ResourceData, meta interface{}) error
 }
 
 func resourceMetalConnectionDelete(d *schema.ResourceData, meta interface{}) error {
-	meta.(*Config).addModuleToMetalUserAgent(d)
-	client := meta.(*Config).metal
+	meta.(*config.Config).AddModuleToMetalUserAgent(d)
+	client := meta.(*config.Config).Metal
 	resp, err := client.Connections.Delete(d.Id(), true)
 	if ignoreResponseErrors(httpForbidden, httpNotFound)(resp, err) != nil {
 		return friendlyError(err)

@@ -6,6 +6,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/equinix/terraform-provider-equinix/internal/config"
+
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/packethost/packngo"
 )
@@ -74,7 +76,7 @@ func dataSourceMetalSpotMarketRequest() *schema.Resource {
 }
 
 func dataSourceMetalSpotMarketRequestRead(ctx context.Context, d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*Config).metal
+	client := meta.(*config.Config).Metal
 	id := d.Get("request_id").(string)
 
 	smr, _, err := client.SpotMarketRequests.Get(id, &packngo.GetOptions{Includes: []string{"project", "devices", "facilities", "metro"}})

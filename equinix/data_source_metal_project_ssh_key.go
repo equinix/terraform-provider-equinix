@@ -5,6 +5,8 @@ import (
 	"path"
 	"strings"
 
+	"github.com/equinix/terraform-provider-equinix/internal/config"
+
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/packethost/packngo"
@@ -64,7 +66,7 @@ func dataSourceMetalProjectSSHKey() *schema.Resource {
 }
 
 func dataSourceMetalProjectSSHKeyRead(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*Config).metal
+	client := meta.(*config.Config).Metal
 
 	search := d.Get("search").(string)
 	id := d.Get("id").(string)

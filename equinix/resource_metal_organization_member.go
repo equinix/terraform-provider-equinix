@@ -6,6 +6,8 @@ import (
 	"path"
 	"strings"
 
+	"github.com/equinix/terraform-provider-equinix/internal/config"
+
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/packethost/packngo"
@@ -117,7 +119,7 @@ func resourceMetalOrganizationMember() *schema.Resource {
 }
 
 func resourceMetalOrganizationMemberCreate(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*Config).metal
+	client := meta.(*config.Config).Metal
 
 	email := d.Get("invitee").(string)
 	createRequest := &packngo.InvitationCreateRequest{
@@ -154,7 +156,7 @@ func findMember(invitee string, members []packngo.Member, invitations []packngo.
 }
 
 func resourceMetalOrganizationMemberRead(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*Config).metal
+	client := meta.(*config.Config).Metal
 	parts := strings.Split(d.Id(), ":")
 	invitee := parts[0]
 	orgID := parts[1]
@@ -219,7 +221,7 @@ func resourceMetalOrganizationMemberRead(d *schema.ResourceData, meta interface{
 }
 
 func resourceMetalOrganizationMemberDelete(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*Config).metal
+	client := meta.(*config.Config).Metal
 
 	listOpts := &packngo.ListOptions{Includes: []string{"user"}}
 	invitations, _, err := client.Invitations.List(d.Get("organization_id").(string), listOpts)

@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/equinix/terraform-provider-equinix/internal/config"
+
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
@@ -74,7 +76,7 @@ func TestAccMetalProjectSSHKey_basic(t *testing.T) {
 }
 
 func testAccMetalProjectSSHKeyCheckDestroyed(s *terraform.State) error {
-	client := testAccProvider.Meta().(*Config).metal
+	client := testAccProvider.Meta().(*config.Config).Metal
 
 	for _, rs := range s.RootModule().Resources {
 		if rs.Type != "equinix_metal_project_ssh_key" {

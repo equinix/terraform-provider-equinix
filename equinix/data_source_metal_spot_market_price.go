@@ -3,6 +3,8 @@ package equinix
 import (
 	"fmt"
 
+	"github.com/equinix/terraform-provider-equinix/internal/config"
+
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/packethost/packngo"
 )
@@ -40,7 +42,7 @@ func dataSourceSpotMarketPrice() *schema.Resource {
 }
 
 func dataSourceMetalSpotMarketPriceRead(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*Config).metal
+	client := meta.(*config.Config).Metal
 	sms := client.SpotMarket.(*packngo.SpotMarketServiceOp)
 	facility := d.Get("facility").(string)
 	metro := d.Get("metro").(string)

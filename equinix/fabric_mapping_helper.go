@@ -3,8 +3,6 @@ package equinix
 import (
 	"fmt"
 	"log"
-	"math/rand"
-	"time"
 
 	v4 "github.com/equinix-labs/fabric-go/fabric/v4"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -1227,22 +1225,4 @@ func getCloudRouterUpdateRequest(conn v4.CloudRouter, d *schema.ResourceData) (v
 		return changeOps, fmt.Errorf("nothing to update for the connection %s", existingName)
 	}
 	return changeOps, nil
-}
-
-const allowed_charset = "abcdefghijklmnopqrstuvwxyz" +
-	"ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789#$&@"
-
-var seededRand = rand.New(
-	rand.NewSource(time.Now().UnixNano()))
-
-func CorrelationIdWithCharset(length int, charset string) string {
-	b := make([]byte, length)
-	for i := range b {
-		b[i] = charset[seededRand.Intn(len(charset))]
-	}
-	return string(b)
-}
-
-func CorrelationId(length int) string {
-	return CorrelationIdWithCharset(length, allowed_charset)
 }

@@ -7,6 +7,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/equinix/terraform-provider-equinix/internal/config"
+
 	v4 "github.com/equinix-labs/fabric-go/fabric/v4"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
@@ -35,8 +37,8 @@ func resourceCloudRouter() *schema.Resource {
 }
 
 func resourceCloudRouterCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := meta.(*Config).fabricClient
-	ctx = context.WithValue(ctx, v4.ContextAccessToken, meta.(*Config).FabricAuthToken)
+	client := meta.(*config.Config).FabricClient
+	ctx = context.WithValue(ctx, v4.ContextAccessToken, meta.(*config.Config).FabricAuthToken)
 	schemaNotifications := d.Get("notifications").([]interface{})
 	notifications := notificationToFabric(schemaNotifications)
 	schemaAccount := d.Get("account").(*schema.Set).List()
@@ -80,8 +82,8 @@ func resourceCloudRouterCreate(ctx context.Context, d *schema.ResourceData, meta
 }
 
 func resourceCloudRouterRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := meta.(*Config).fabricClient
-	ctx = context.WithValue(ctx, v4.ContextAccessToken, meta.(*Config).FabricAuthToken)
+	client := meta.(*config.Config).FabricClient
+	ctx = context.WithValue(ctx, v4.ContextAccessToken, meta.(*config.Config).FabricAuthToken)
 	CloudRouter, _, err := client.CloudRoutersApi.GetCloudRouterByUuid(ctx, d.Id())
 	if err != nil {
 		log.Printf("[WARN] Fabric Cloud Router %s not found , error %s", d.Id(), err)
@@ -115,8 +117,8 @@ func setCloudRouterMap(d *schema.ResourceData, fcr v4.CloudRouter) diag.Diagnost
 }
 
 func resourceCloudRouterUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := meta.(*Config).fabricClient
-	ctx = context.WithValue(ctx, v4.ContextAccessToken, meta.(*Config).FabricAuthToken)
+	client := meta.(*config.Config).FabricClient
+	ctx = context.WithValue(ctx, v4.ContextAccessToken, meta.(*config.Config).FabricAuthToken)
 	dbConn, err := waitUntilCloudRouterIsProvisioned(d.Id(), meta, ctx)
 	if err != nil {
 		if !strings.Contains(err.Error(), "500") {
@@ -153,7 +155,7 @@ func waitForCloudRouterUpdateCompletion(uuid string, meta interface{}, ctx conte
 	stateConf := &resource.StateChangeConf{
 		Target: []string{string(v4.PROVISIONED_CloudRouterAccessPointState)},
 		Refresh: func() (interface{}, string, error) {
-			client := meta.(*Config).fabricClient
+			client := meta.(*config.Config).FabricClient
 			dbConn, _, err := client.CloudRoutersApi.GetCloudRouterByUuid(ctx, uuid)
 			if err != nil {
 				return "", "", err
@@ -185,7 +187,7 @@ func waitUntilCloudRouterIsProvisioned(uuid string, meta interface{}, ctx contex
 			string(v4.PROVISIONED_CloudRouterAccessPointState),
 		},
 		Refresh: func() (interface{}, string, error) {
-			client := meta.(*Config).fabricClient
+			client := meta.(*config.Config).FabricClient
 			dbConn, _, err := client.CloudRoutersApi.GetCloudRouterByUuid(ctx, uuid)
 			if err != nil {
 				return "", "", err
@@ -208,8 +210,8 @@ func waitUntilCloudRouterIsProvisioned(uuid string, meta interface{}, ctx contex
 
 func resourceCloudRouterDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	diags := diag.Diagnostics{}
-	client := meta.(*Config).fabricClient
-	ctx = context.WithValue(ctx, v4.ContextAccessToken, meta.(*Config).FabricAuthToken)
+	client := meta.(*config.Config).FabricClient
+	ctx = context.WithValue(ctx, v4.ContextAccessToken, meta.(*config.Config).FabricAuthToken)
 	resp, err := client.CloudRoutersApi.DeleteCloudRouterByUuid(ctx, d.Id())
 	if err != nil {
 		errors, ok := err.(v4.GenericSwaggerError).Model().([]v4.ModelError)
@@ -239,7 +241,7 @@ func waitUntilCloudRouterDeprovisioned(uuid string, meta interface{}, ctx contex
 			string(v4.DEPROVISIONED_CloudRouterAccessPointState),
 		},
 		Refresh: func() (interface{}, string, error) {
-			client := meta.(*Config).fabricClient
+			client := meta.(*config.Config).FabricClient
 			dbConn, _, err := client.CloudRoutersApi.GetCloudRouterByUuid(ctx, uuid)
 			if err != nil {
 				return "", "", err

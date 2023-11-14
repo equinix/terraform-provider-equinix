@@ -4,6 +4,8 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/equinix/terraform-provider-equinix/internal/config"
+
 	"github.com/equinix/ecx-go/v2"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -97,10 +99,10 @@ func dataSourceECXPort() *schema.Resource {
 }
 
 func dataSourceECXPortRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	conf := m.(*Config)
+	conf := m.(*config.Config)
 	var diags diag.Diagnostics
 	name := d.Get(ecxPortSchemaNames["Name"]).(string)
-	ports, err := conf.ecx.GetUserPorts()
+	ports, err := conf.Ecx.GetUserPorts()
 	if err != nil {
 		return diag.FromErr(err)
 	}

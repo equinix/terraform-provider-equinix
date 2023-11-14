@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"log"
 
+	"github.com/equinix/terraform-provider-equinix/internal/config"
+
 	"github.com/equinix/ne-go"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
@@ -29,7 +31,7 @@ func testSweepNetworkSSHUser(region string) error {
 		log.Printf("[INFO][SWEEPER_LOG] error loading configuration: %s", err)
 		return err
 	}
-	users, err := config.ne.GetSSHUsers()
+	users, err := config.Ne.GetSSHUsers()
 	if err != nil {
 		log.Printf("[INFO][SWEEPER_LOG] error fetching NetworkSSHUser list: %s", err)
 		return err
@@ -38,7 +40,7 @@ func testSweepNetworkSSHUser(region string) error {
 		if !isSweepableTestResource(ne.StringValue(user.Username)) {
 			continue
 		}
-		if err := config.ne.DeleteSSHUser(ne.StringValue(user.UUID)); err != nil {
+		if err := config.Ne.DeleteSSHUser(ne.StringValue(user.UUID)); err != nil {
 			log.Printf("[INFO][SWEEPER_LOG] error deleting NetworkSSHUser resource %s (%s): %s", ne.StringValue(user.UUID), ne.StringValue(user.Username), err)
 		} else {
 			log.Printf("[INFO][SWEEPER_LOG] sent delete request for NetworkSSHUser resource %s (%s)", ne.StringValue(user.UUID), ne.StringValue(user.Username))
@@ -78,7 +80,7 @@ func testAccNeSSHUserExists(resourceName string, user *ne.SSHUser) resource.Test
 		if rs.Primary.ID == "" {
 			return fmt.Errorf("resource has no ID attribute set")
 		}
-		client := testAccProvider.Meta().(*Config).ne
+		client := testAccProvider.Meta().(*config.Config).Ne
 		resp, err := client.GetSSHUser(rs.Primary.ID)
 		if err != nil {
 			return fmt.Errorf("error when fetching SSH user '%s': %s", rs.Primary.ID, err)

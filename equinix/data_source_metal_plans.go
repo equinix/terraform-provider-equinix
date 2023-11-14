@@ -3,7 +3,9 @@ package equinix
 import (
 	"fmt"
 
-	"github.com/equinix/terraform-provider-equinix/equinix/internal/datalist"
+	"github.com/equinix/terraform-provider-equinix/internal/config"
+
+	"github.com/equinix/terraform-provider-equinix/internal/datalist"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/packethost/packngo"
 )
@@ -21,7 +23,7 @@ func dataSourceMetalPlans() *schema.Resource {
 }
 
 func getPlans(meta interface{}, extra map[string]interface{}) ([]interface{}, error) {
-	client := meta.(*Config).metal
+	client := meta.(*config.Config).Metal
 	opts := &packngo.ListOptions{
 		Includes: []string{"available_in", "available_in_metros"},
 	}

@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/equinix/terraform-provider-equinix/internal/config"
+
 	v4 "github.com/equinix-labs/fabric-go/fabric/v4"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
@@ -72,7 +74,7 @@ func TestAccFabricCreateCloudRouterConnection(t *testing.T) {
 
 func checkConnectionDelete(s *terraform.State) error {
 	ctx := context.Background()
-	ctx = context.WithValue(ctx, v4.ContextAccessToken, testAccProvider.Meta().(*Config).FabricAuthToken)
+	ctx = context.WithValue(ctx, v4.ContextAccessToken, testAccProvider.Meta().(*config.Config).FabricAuthToken)
 	for _, rs := range s.RootModule().Resources {
 		if rs.Type != "equinix_fabric_connection" {
 			continue

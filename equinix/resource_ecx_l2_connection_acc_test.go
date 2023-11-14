@@ -7,6 +7,8 @@ import (
 	"regexp"
 	"testing"
 
+	"github.com/equinix/terraform-provider-equinix/internal/config"
+
 	"github.com/equinix/ecx-go/v2"
 	"github.com/equinix/rest-go"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -44,7 +46,7 @@ func testSweepECXL2Connections(region string) error {
 		log.Printf("[INFO][SWEEPER_LOG] error loading configuration: %s", err)
 		return err
 	}
-	conns, err := config.ecx.GetL2OutgoingConnections([]string{
+	conns, err := config.Ecx.GetL2OutgoingConnections([]string{
 		ecx.ConnectionStatusNotAvailable,
 		ecx.ConnectionStatusPendingAutoApproval,
 		ecx.ConnectionStatusPendingBGPPeering,
@@ -62,7 +64,7 @@ func testSweepECXL2Connections(region string) error {
 			nonSweepableCount++
 			continue
 		}
-		if err := config.ecx.DeleteL2Connection(ecx.StringValue(conn.UUID)); err != nil {
+		if err := config.Ecx.DeleteL2Connection(ecx.StringValue(conn.UUID)); err != nil {
 			log.Printf("[INFO][SWEEPER_LOG] error deleting ECXL2Connection resource %s (%s): %s", ecx.StringValue(conn.UUID), ecx.StringValue(conn.Name), err)
 		} else {
 			log.Printf("[INFO][SWEEPER_LOG] sent delete request for ECXL2Connection resource %s (%s)", ecx.StringValue(conn.UUID), ecx.StringValue(conn.Name))
@@ -363,8 +365,8 @@ func TestAccFabricL2Connection_ServiceToken_HA_SP(t *testing.T) {
 	}
 	mockEquinix := Provider()
 	mockEquinix.ConfigureContextFunc = func(c context.Context, d *schema.ResourceData) (interface{}, diag.Diagnostics) {
-		config := Config{
-			ecx: mockECXClient,
+		config := config.Config{
+			Ecx: mockECXClient,
 		}
 		return &config, nil
 	}
@@ -496,8 +498,8 @@ func TestAccFabricL2Connection_ZSideServiceToken_Single(t *testing.T) {
 	}
 	mockEquinix := Provider()
 	mockEquinix.ConfigureContextFunc = func(c context.Context, d *schema.ResourceData) (interface{}, diag.Diagnostics) {
-		config := Config{
-			ecx: mockECXClient,
+		config := config.Config{
+			Ecx: mockECXClient,
 		}
 		return &config, nil
 	}
@@ -540,7 +542,7 @@ func testAccFabricL2ConnectionExists(resourceName string, conn *ecx.L2Connection
 		if !ok {
 			return fmt.Errorf("resource not found: %s", resourceName)
 		}
-		client := testAccProvider.Meta().(*Config).ecx
+		client := testAccProvider.Meta().(*config.Config).Ecx
 		if rs.Primary.ID == "" {
 			return fmt.Errorf("resource has no ID attribute set")
 		}
@@ -563,7 +565,7 @@ func testAccFabricL2ConnectionSecondaryExists(resourceName string, conn *ecx.L2C
 		if !ok {
 			return fmt.Errorf("resource not found: %s", resourceName)
 		}
-		client := testAccProvider.Meta().(*Config).ecx
+		client := testAccProvider.Meta().(*config.Config).Ecx
 
 		if connID, ok := rs.Primary.Attributes["secondary_connection.0.uuid"]; ok {
 			resp, err := client.GetL2Connection(connID)

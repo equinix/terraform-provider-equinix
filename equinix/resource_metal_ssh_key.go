@@ -5,6 +5,8 @@ import (
 	"path"
 	"strings"
 
+	"github.com/equinix/terraform-provider-equinix/internal/config"
+
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/packethost/packngo"
 )
@@ -63,8 +65,8 @@ func resourceMetalSSHKey() *schema.Resource {
 }
 
 func resourceMetalSSHKeyCreate(d *schema.ResourceData, meta interface{}) error {
-	meta.(*Config).addModuleToMetalUserAgent(d)
-	client := meta.(*Config).metal
+	meta.(*config.Config).AddModuleToMetalUserAgent(d)
+	client := meta.(*config.Config).Metal
 
 	createRequest := &packngo.SSHKeyCreateRequest{
 		Label: d.Get("name").(string),
@@ -87,8 +89,8 @@ func resourceMetalSSHKeyCreate(d *schema.ResourceData, meta interface{}) error {
 }
 
 func resourceMetalSSHKeyRead(d *schema.ResourceData, meta interface{}) error {
-	meta.(*Config).addModuleToMetalUserAgent(d)
-	client := meta.(*Config).metal
+	meta.(*config.Config).AddModuleToMetalUserAgent(d)
+	client := meta.(*config.Config).Metal
 
 	key, _, err := client.SSHKeys.Get(d.Id(), nil)
 	if err != nil {
@@ -123,8 +125,8 @@ func resourceMetalSSHKeyRead(d *schema.ResourceData, meta interface{}) error {
 }
 
 func resourceMetalSSHKeyUpdate(d *schema.ResourceData, meta interface{}) error {
-	meta.(*Config).addModuleToMetalUserAgent(d)
-	client := meta.(*Config).metal
+	meta.(*config.Config).AddModuleToMetalUserAgent(d)
+	client := meta.(*config.Config).Metal
 
 	updateRequest := &packngo.SSHKeyUpdateRequest{}
 
@@ -147,8 +149,8 @@ func resourceMetalSSHKeyUpdate(d *schema.ResourceData, meta interface{}) error {
 }
 
 func resourceMetalSSHKeyDelete(d *schema.ResourceData, meta interface{}) error {
-	meta.(*Config).addModuleToMetalUserAgent(d)
-	client := meta.(*Config).metal
+	meta.(*config.Config).AddModuleToMetalUserAgent(d)
+	client := meta.(*config.Config).Metal
 
 	resp, err := client.SSHKeys.Delete(d.Id())
 	if ignoreResponseErrors(httpForbidden, httpNotFound)(resp, err) != nil {

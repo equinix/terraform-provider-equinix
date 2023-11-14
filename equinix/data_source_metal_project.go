@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"path"
 
+	"github.com/equinix/terraform-provider-equinix/internal/config"
+
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/packethost/packngo"
@@ -104,7 +106,7 @@ func dataSourceMetalProject() *schema.Resource {
 }
 
 func dataSourceMetalProjectRead(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*Config).metal
+	client := meta.(*config.Config).Metal
 	nameRaw, nameOK := d.GetOk("name")
 	projectIdRaw, projectIdOK := d.GetOk("project_id")
 

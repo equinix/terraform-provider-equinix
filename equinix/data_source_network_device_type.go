@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/equinix/terraform-provider-equinix/internal/config"
+
 	"github.com/equinix/ne-go"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -81,9 +83,9 @@ func dataSourceNetworkDeviceType() *schema.Resource {
 }
 
 func dataSourceNetworkDeviceTypeRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	conf := m.(*Config)
+	conf := m.(*config.Config)
 	var diags diag.Diagnostics
-	types, err := conf.ne.GetDeviceTypes()
+	types, err := conf.Ne.GetDeviceTypes()
 	name := d.Get(networkDeviceTypeSchemaNames["Name"]).(string)
 	vendor := d.Get(networkDeviceTypeSchemaNames["Vendor"]).(string)
 	category := d.Get(networkDeviceTypeSchemaNames["Category"]).(string)

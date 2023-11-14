@@ -4,6 +4,8 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/equinix/terraform-provider-equinix/internal/config"
+
 	"github.com/equinix/ne-go"
 	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -74,8 +76,8 @@ func createNetworkSSHUserResourceSchema() map[string]*schema.Schema {
 }
 
 func resourceNetworkSSHUserCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	client := m.(*Config).ne
-	m.(*Config).addModuleToNEUserAgent(&client, d)
+	client := m.(*config.Config).Ne
+	m.(*config.Config).AddModuleToNEUserAgent(&client, d)
 
 	var diags diag.Diagnostics
 	user := createNetworkSSHUser(d)
@@ -102,8 +104,8 @@ func resourceNetworkSSHUserCreate(ctx context.Context, d *schema.ResourceData, m
 }
 
 func resourceNetworkSSHUserRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	client := m.(*Config).ne
-	m.(*Config).addModuleToNEUserAgent(&client, d)
+	client := m.(*config.Config).Ne
+	m.(*config.Config).AddModuleToNEUserAgent(&client, d)
 	var diags diag.Diagnostics
 	user, err := client.GetSSHUser(d.Id())
 	if err != nil {
@@ -116,8 +118,8 @@ func resourceNetworkSSHUserRead(ctx context.Context, d *schema.ResourceData, m i
 }
 
 func resourceNetworkSSHUserUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	client := m.(*Config).ne
-	m.(*Config).addModuleToNEUserAgent(&client, d)
+	client := m.(*config.Config).Ne
+	m.(*config.Config).AddModuleToNEUserAgent(&client, d)
 	var diags diag.Diagnostics
 	updateReq := client.NewSSHUserUpdateRequest(d.Id())
 	if v, ok := d.GetOk(networkSSHUserSchemaNames["Password"]); ok && d.HasChange(networkSSHUserSchemaNames["Password"]) {
@@ -137,8 +139,8 @@ func resourceNetworkSSHUserUpdate(ctx context.Context, d *schema.ResourceData, m
 }
 
 func resourceNetworkSSHUserDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	client := m.(*Config).ne
-	m.(*Config).addModuleToNEUserAgent(&client, d)
+	client := m.(*config.Config).Ne
+	m.(*config.Config).AddModuleToNEUserAgent(&client, d)
 	var diags diag.Diagnostics
 	if err := client.DeleteSSHUser(d.Id()); err != nil {
 		return diag.FromErr(err)

@@ -3,6 +3,8 @@ package equinix
 import (
 	"regexp"
 
+	"github.com/equinix/terraform-provider-equinix/internal/config"
+
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/packethost/packngo"
@@ -100,8 +102,8 @@ func createMetalOrganizationAddressResourceSchema() map[string]*schema.Schema {
 }
 
 func resourceMetalOrganizationCreate(d *schema.ResourceData, meta interface{}) error {
-	meta.(*Config).addModuleToMetalUserAgent(d)
-	client := meta.(*Config).metal
+	meta.(*config.Config).AddModuleToMetalUserAgent(d)
+	client := meta.(*config.Config).Metal
 
 	createRequest := &packngo.OrganizationCreateRequest{
 		Name:    d.Get("name").(string),
@@ -135,8 +137,8 @@ func resourceMetalOrganizationCreate(d *schema.ResourceData, meta interface{}) e
 }
 
 func resourceMetalOrganizationRead(d *schema.ResourceData, meta interface{}) error {
-	meta.(*Config).addModuleToMetalUserAgent(d)
-	client := meta.(*Config).metal
+	meta.(*config.Config).AddModuleToMetalUserAgent(d)
+	client := meta.(*config.Config).Metal
 
 	key, _, err := client.Organizations.Get(d.Id(), &packngo.GetOptions{Includes: []string{"address"}})
 	if err != nil {
@@ -166,8 +168,8 @@ func resourceMetalOrganizationRead(d *schema.ResourceData, meta interface{}) err
 }
 
 func resourceMetalOrganizationUpdate(d *schema.ResourceData, meta interface{}) error {
-	meta.(*Config).addModuleToMetalUserAgent(d)
-	client := meta.(*Config).metal
+	meta.(*config.Config).AddModuleToMetalUserAgent(d)
+	client := meta.(*config.Config).Metal
 
 	changes := getResourceDataChangedKeys([]string{"name", "description", "website", "twitter", "logo", "address"}, d)
 	updateRequest := &packngo.OrganizationUpdateRequest{}
@@ -203,8 +205,8 @@ func resourceMetalOrganizationUpdate(d *schema.ResourceData, meta interface{}) e
 }
 
 func resourceMetalOrganizationDelete(d *schema.ResourceData, meta interface{}) error {
-	meta.(*Config).addModuleToMetalUserAgent(d)
-	client := meta.(*Config).metal
+	meta.(*config.Config).AddModuleToMetalUserAgent(d)
+	client := meta.(*config.Config).Metal
 
 	resp, err := client.Organizations.Delete(d.Id())
 	if ignoreResponseErrors(httpForbidden, httpNotFound)(resp, err) != nil {

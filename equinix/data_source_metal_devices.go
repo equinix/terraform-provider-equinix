@@ -4,8 +4,10 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/equinix/terraform-provider-equinix/internal/config"
+
 	metalv1 "github.com/equinix-labs/metal-go/metal/v1"
-	"github.com/equinix/terraform-provider-equinix/equinix/internal/datalist"
+	"github.com/equinix/terraform-provider-equinix/internal/datalist"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
@@ -50,7 +52,7 @@ func dataSourceMetalDevices() *schema.Resource {
 }
 
 func getDevices(meta interface{}, extra map[string]interface{}) ([]interface{}, error) {
-	client := meta.(*Config).metalgo
+	client := meta.(*config.Config).Metalgo
 	projectID := extra["project_id"].(string)
 	orgID := extra["organization_id"].(string)
 

@@ -7,6 +7,8 @@ import (
 	"sort"
 	"time"
 
+	"github.com/equinix/terraform-provider-equinix/internal/config"
+
 	"github.com/equinix/ne-go"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -111,11 +113,11 @@ func dataSourceNetworkDeviceSoftware() *schema.Resource {
 }
 
 func dataSourceNetworkDeviceSoftwareRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	conf := m.(*Config)
+	conf := m.(*config.Config)
 	var diags diag.Diagnostics
 	typeCode := d.Get(networkDeviceSoftwareSchemaNames["DeviceTypeCode"]).(string)
 	pkgCodes := expandSetToStringList(d.Get(networkDeviceSoftwareSchemaNames["PackageCodes"]).(*schema.Set))
-	versions, err := conf.ne.GetDeviceSoftwareVersions(typeCode)
+	versions, err := conf.Ne.GetDeviceSoftwareVersions(typeCode)
 	if err != nil {
 		return diag.FromErr(err)
 	}

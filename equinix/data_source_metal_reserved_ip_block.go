@@ -5,6 +5,8 @@ import (
 	"net"
 	"strings"
 
+	"github.com/equinix/terraform-provider-equinix/internal/config"
+
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/packethost/packngo"
 )
@@ -119,7 +121,7 @@ func dataSourceMetalReservedIPBlock() *schema.Resource {
 }
 
 func dataSourceMetalReservedIPBlockRead(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*Config).metal
+	client := meta.(*config.Config).Metal
 
 	blockId, blockIdOk := d.GetOk("id")
 	projectId, projectIdOk := d.GetOk("project_id")

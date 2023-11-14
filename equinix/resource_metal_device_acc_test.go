@@ -12,6 +12,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/equinix/terraform-provider-equinix/internal/config"
+
 	"github.com/google/uuid"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
@@ -538,7 +540,7 @@ func TestAccMetalDevice_allowChangesErrorOnUnsupportedAttribute(t *testing.T) {
 }
 
 func testAccMetalDeviceCheckDestroyed(s *terraform.State) error {
-	client := testAccProvider.Meta().(*Config).metal
+	client := testAccProvider.Meta().(*config.Config).Metal
 
 	for _, rs := range s.RootModule().Resources {
 		if rs.Type != "equinix_metal_device" {
@@ -574,7 +576,7 @@ func testAccMetalDeviceExists(n string, device *packngo.Device) resource.TestChe
 			return fmt.Errorf("No Record ID is set")
 		}
 
-		client := testAccProvider.Meta().(*Config).metal
+		client := testAccProvider.Meta().(*config.Config).Metal
 
 		foundDevice, _, err := client.Devices.Get(rs.Primary.ID, nil)
 		if err != nil {
@@ -1103,7 +1105,7 @@ func TestAccMetalDevice_readErrorHandling(t *testing.T) {
 			}
 
 			mockAPI := httptest.NewServer(http.HandlerFunc(tt.args.handler))
-			meta := &Config{
+			meta := &config.Config{
 				BaseURL: mockAPI.URL,
 				Token:   "fakeTokenForMock",
 			}
@@ -1132,8 +1134,8 @@ func testAccWaitForMetalDeviceActive(project, deviceHostName string) resource.Im
 
 		meta := testAccProvider.Meta()
 		rd := new(schema.ResourceData)
-		meta.(*Config).addModuleToMetalUserAgent(rd)
-		client := meta.(*Config).metal
+		meta.(*config.Config).AddModuleToMetalUserAgent(rd)
+		client := meta.(*config.Config).Metal
 		devices, _, err := client.Devices.List(rs.Primary.ID, &packngo.ListOptions{Search: deviceHostName})
 		if err != nil {
 			return "", fmt.Errorf("error while fetching devices for project [%s], error: %w", rs.Primary.ID, err)

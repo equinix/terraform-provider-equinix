@@ -3,6 +3,8 @@ package equinix
 import (
 	"log"
 
+	"github.com/equinix/terraform-provider-equinix/internal/config"
+
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/packethost/packngo"
@@ -71,8 +73,8 @@ func getAndPossiblySetNetworkType(d *schema.ResourceData, c *packngo.Client, tar
 }
 
 func resourceMetalDeviceNetworkTypeCreate(d *schema.ResourceData, meta interface{}) error {
-	meta.(*Config).addModuleToMetalUserAgent(d)
-	client := meta.(*Config).metal
+	meta.(*config.Config).AddModuleToMetalUserAgent(d)
+	client := meta.(*config.Config).Metal
 
 	ntype := d.Get("type").(string)
 	err := getAndPossiblySetNetworkType(d, client, ntype)
@@ -84,8 +86,8 @@ func resourceMetalDeviceNetworkTypeCreate(d *schema.ResourceData, meta interface
 }
 
 func resourceMetalDeviceNetworkTypeRead(d *schema.ResourceData, meta interface{}) error {
-	meta.(*Config).addModuleToMetalUserAgent(d)
-	client := meta.(*Config).metal
+	meta.(*config.Config).AddModuleToMetalUserAgent(d)
+	client := meta.(*config.Config).Metal
 
 	_, devNType, err := getDevIDandNetworkType(d, client)
 	if err != nil {
@@ -113,8 +115,8 @@ func resourceMetalDeviceNetworkTypeRead(d *schema.ResourceData, meta interface{}
 }
 
 func resourceMetalDeviceNetworkTypeUpdate(d *schema.ResourceData, meta interface{}) error {
-	meta.(*Config).addModuleToMetalUserAgent(d)
-	client := meta.(*Config).metal
+	meta.(*config.Config).AddModuleToMetalUserAgent(d)
+	client := meta.(*config.Config).Metal
 
 	ntype := d.Get("type").(string)
 	if d.HasChange("type") {

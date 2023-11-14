@@ -9,6 +9,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/equinix/terraform-provider-equinix/internal/config"
+
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/structure"
@@ -232,8 +234,8 @@ func resourceMetalReservedIPBlock() *schema.Resource {
 }
 
 func resourceMetalReservedIPBlockCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) error {
-	meta.(*Config).addModuleToMetalUserAgent(d)
-	client := meta.(*Config).metal
+	meta.(*config.Config).AddModuleToMetalUserAgent(d)
+	client := meta.(*config.Config).Metal
 
 	quantity := d.Get("quantity").(int)
 	typ := d.Get("type").(string)
@@ -315,8 +317,8 @@ func resourceMetalReservedIPBlockCreate(ctx context.Context, d *schema.ResourceD
 }
 
 func resourceMetalReservedIPBlockUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) error {
-	meta.(*Config).addModuleToMetalUserAgent(d)
-	client := meta.(*Config).metal
+	meta.(*config.Config).AddModuleToMetalUserAgent(d)
+	client := meta.(*config.Config).Metal
 	id := d.Id()
 	req := &packngo.IPAddressUpdateRequest{}
 	if d.HasChange("tags") {
@@ -457,8 +459,8 @@ func loadBlock(d *schema.ResourceData, reservedBlock *packngo.IPAddressReservati
 }
 
 func resourceMetalReservedIPBlockRead(ctx context.Context, d *schema.ResourceData, meta interface{}) error {
-	meta.(*Config).addModuleToMetalUserAgent(d)
-	client := meta.(*Config).metal
+	meta.(*config.Config).AddModuleToMetalUserAgent(d)
+	client := meta.(*config.Config).Metal
 
 	id := d.Id()
 	getOpts := &packngo.GetOptions{Includes: []string{"facility", "metro", "project", "vrf"}}
@@ -488,8 +490,8 @@ func resourceMetalReservedIPBlockRead(ctx context.Context, d *schema.ResourceDat
 }
 
 func resourceMetalReservedIPBlockDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) error {
-	meta.(*Config).addModuleToMetalUserAgent(d)
-	client := meta.(*Config).metal
+	meta.(*config.Config).AddModuleToMetalUserAgent(d)
+	client := meta.(*config.Config).Metal
 
 	id := d.Id()
 

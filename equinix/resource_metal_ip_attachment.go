@@ -5,6 +5,8 @@ import (
 	"log"
 	"path"
 
+	"github.com/equinix/terraform-provider-equinix/internal/config"
+
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/packethost/packngo"
 )
@@ -34,8 +36,8 @@ func resourceMetalIPAttachment() *schema.Resource {
 }
 
 func resourceMetalIPAttachmentCreate(d *schema.ResourceData, meta interface{}) error {
-	meta.(*Config).addModuleToMetalUserAgent(d)
-	client := meta.(*Config).metal
+	meta.(*config.Config).AddModuleToMetalUserAgent(d)
+	client := meta.(*config.Config).Metal
 
 	deviceID := d.Get("device_id").(string)
 	ipa := d.Get("cidr_notation").(string)
@@ -51,8 +53,8 @@ func resourceMetalIPAttachmentCreate(d *schema.ResourceData, meta interface{}) e
 }
 
 func resourceMetalIPAttachmentRead(d *schema.ResourceData, meta interface{}) error {
-	meta.(*Config).addModuleToMetalUserAgent(d)
-	client := meta.(*Config).metal
+	meta.(*config.Config).AddModuleToMetalUserAgent(d)
+	client := meta.(*config.Config).Metal
 	assignment, _, err := client.DeviceIPs.Get(d.Id(), nil)
 	if err != nil {
 		err = friendlyError(err)
@@ -87,8 +89,8 @@ func resourceMetalIPAttachmentRead(d *schema.ResourceData, meta interface{}) err
 }
 
 func resourceMetalIPAttachmentDelete(d *schema.ResourceData, meta interface{}) error {
-	meta.(*Config).addModuleToMetalUserAgent(d)
-	client := meta.(*Config).metal
+	meta.(*config.Config).AddModuleToMetalUserAgent(d)
+	client := meta.(*config.Config).Metal
 
 	resp, err := client.DeviceIPs.Unassign(d.Id())
 	if ignoreResponseErrors(httpForbidden, httpNotFound)(resp, err) != nil {
