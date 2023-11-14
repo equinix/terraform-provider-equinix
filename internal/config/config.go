@@ -19,6 +19,7 @@ import (
 	"github.com/equinix/ecx-go/v2"
 	"github.com/equinix/ne-go"
 	"github.com/equinix/oauth2-go"
+	"github.com/equinix/terraform-provider-equinix/internal/fabric_utils"
 	"github.com/equinix/terraform-provider-equinix/version"
 	"github.com/hashicorp/go-retryablehttp"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/logging"
@@ -186,7 +187,7 @@ func (c *Config) NewFabricClient() *v4.APIClient {
 	authClient.Timeout = c.requestTimeout()
 	fabricHeaderMap := map[string]string{
 		"X-SOURCE":         "API",
-		"X-CORRELATION-ID": CorrelationId(25),
+		"X-CORRELATION-ID": fabric_utils.CorrelationId(25),
 	}
 	v4Configuration := v4.Configuration{
 		BasePath:      c.BaseURL,
