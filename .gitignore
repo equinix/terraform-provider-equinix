@@ -6,13 +6,11 @@
 # Terraform specific files
 terraform.tfplan
 terraform.tfstate
-*.terraform.lock.hcl
-./*.tfstate
 .terraform/
 example.tf
 terraform-provider-equinix
-.terraform.lock.hcl
 *.tfvars
+*.terraform*
 
 # Local Scripts
 bin/

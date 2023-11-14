@@ -1,0 +1,17 @@
+equinix_client_id     = "MyEquinixClientId"
+equinix_client_secret = "MyEquinixSecret"
+
+connection_uuid = "b0eb3892-6404-442b-85c0-4f8fcf53d55b"
+
+direct_rp_name  = "FCR-Con-Direct-RP"
+equinix_ipv4_ip = "190.1.1.1/30"
+equinix_ipv6_ip = "190::1:1/126"
+
+
+bgp_rp_name        = "FCR-Con-BGP-RP"
+customer_peer_ipv4 = "190.1.1.2"
+bgp_ipv4_enabled   = true
+customer_peer_ipv6 = "190::1:2"
+bgp_ipv6_enabled   = true
+equinix_asn        = "1345"
+customer_asn       = "100"
