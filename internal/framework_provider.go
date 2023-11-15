@@ -1,20 +1,22 @@
-package equinix
+package internal
 
 import (
 	"context"
 	"fmt"
 
-	"github.com/equinix/terraform-provider-equinix/equinix/helper"
-	"github.com/equinix/terraform-provider-equinix/equinix/metal_ssh_key"
+	"github.com/equinix/terraform-provider-equinix/internal/config"
+	"github.com/equinix/terraform-provider-equinix/internal/metal_ssh_key"
+	"github.com/hashicorp/terraform-plugin-framework-validators/int64validator"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/provider"
 	"github.com/hashicorp/terraform-plugin-framework/provider/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
+	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 )
 
 type FrameworkProvider struct {
 	ProviderVersion string
-	Meta            *helper.FrameworkProviderMeta
+	Meta            *config.Config
 }
 
 func CreateFrameworkProvider(version string) provider.Provider {
@@ -40,7 +42,11 @@ func (p *FrameworkProvider) Schema(
 		Attributes: map[string]schema.Attribute{
 			"endpoint": schema.StringAttribute{
 				Optional:    true,
-				Description: "The Equinix API base URL to point out desired environment. Defaults to " + DefaultBaseURL,
+				Description: "The Equinix API base URL to point out desired environment. Defaults to " + config.DefaultBaseURL,
+				// TODO:
+				// Add Validator for url with scheme. It's hard to find where they moved url
+				// particualr validator to, if in even exist in the TF golang codebase.
+				// Select and add validators for other attributes too.
 			},
 			"client_id": schema.StringAttribute{
 				Optional:    true,
@@ -60,11 +66,17 @@ func (p *FrameworkProvider) Schema(
 			},
 			"request_timeout": schema.Int64Attribute{
 				Optional:    true,
-				Description: "The duration of time, in seconds, that the Equinix Platform API Client should wait before canceling an API request. Defaults to " + fmt.Sprint(DefaultTimeout),
+				Description: "The duration of time, in seconds, that the Equinix Platform API Client should wait before canceling an API request. Defaults to " + fmt.Sprint(config.DefaultTimeout),
+				Validators: []validator.Int64{
+					int64validator.AtLeast(1),
+				},
 			},
 			"response_max_page_size": schema.Int64Attribute{
 				Optional:    true,
 				Description: "The maximum number of records in a single response for REST queries that produce paginated responses",
+				Validators: []validator.Int64{
+					int64validator.AtLeast(100),
+				},
 			},
 			"max_retries": schema.Int64Attribute{
 				Optional:    true,

@@ -2,10 +2,32 @@ package helper
 
 import (
 	"context"
-
+	"fmt"
+	
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
+	"github.com/equinix/terraform-provider-equinix/internal/config"
 )
+
+func GetDataSourceMeta(
+	req datasource.ConfigureRequest,
+	resp *datasource.ConfigureResponse,
+) *config.Config {
+	meta, ok := req.ProviderData.(*config.Config)
+
+	if !ok {
+		resp.Diagnostics.AddError(
+			"Unexpected DataSource Configure Type",
+			fmt.Sprintf(
+				"Expected *http.Client, got: %T. Please report this issue to the provider developers.",
+				req.ProviderData,
+			),
+		)
+		return nil
+	}
+
+	return meta
+}
 
 // NewBaseDataSource returns a new instance of the BaseDataSource
 // struct for cleaner initialization.
@@ -20,15 +42,14 @@ type BaseDataSourceConfig struct {
 	Name string
 
 	// Optional
-	Schema        *schema.Schema
-	IsEarlyAccess bool
+	Schema *schema.Schema
 }
 
 // BaseDataSource contains various re-usable fields and methods
 // intended for use in data source implementations by composition.
 type BaseDataSource struct {
 	Config BaseDataSourceConfig
-	Meta   *FrameworkProviderMeta
+	Meta   *config.Config
 }
 
 func (r *BaseDataSource) Configure(

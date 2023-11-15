@@ -6,6 +6,7 @@ import (
 	"log"
 
 	"github.com/equinix/terraform-provider-equinix/equinix"
+	"github.com/equinix/terraform-provider-equinix/internal"
 	"github.com/equinix/terraform-provider-equinix/version"
 
 	"github.com/hashicorp/terraform-plugin-framework/providerserver"
@@ -26,7 +27,7 @@ func main() {
 
 	providers := []func() tfprotov5.ProviderServer{
 		providerserver.NewProtocol5(
-			equinix.CreateFrameworkProvider(version.ProviderVersion)),
+			internal.CreateFrameworkProvider(version.ProviderVersion)),
 		equinix.Provider().GRPCProvider,
 	}
 

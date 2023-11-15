@@ -3,9 +3,10 @@ package metal_ssh_key
 import (
 	"context"
 
-	"github.com/equinix/terraform-provider-equinix/equinix/helper"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
+	"github.com/equinix/terraform-provider-equinix/internal/helper"
+
 )
 
 func NewDataSource() datasource.DataSource {

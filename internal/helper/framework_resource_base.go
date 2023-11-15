@@ -3,14 +3,32 @@ package helper
 import (
 	"context"
 	"fmt"
-	"strconv"
 
-	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
-	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/equinix/terraform-provider-equinix/internal/config"
 )
+
+func GetResourceMeta(
+	req resource.ConfigureRequest,
+	resp *resource.ConfigureResponse,
+) *config.Config {
+	meta, ok := req.ProviderData.(*config.Config)
+
+	if !ok {
+		resp.Diagnostics.AddError(
+			"Unexpected Resource Configure Type",
+			fmt.Sprintf(
+				"Expected *http.Client, got: %T. Please report this issue to the provider developers.",
+				req.ProviderData,
+			),
+		)
+		return nil
+	}
+
+	return meta
+}
 
 // NewBaseResource returns a new instance of the BaseResource
 // struct for cleaner initialization.
@@ -24,18 +42,16 @@ func NewBaseResource(cfg BaseResourceConfig) BaseResource {
 type BaseResourceConfig struct {
 	Name   string
 	IDAttr string
-	IDType attr.Type
 
 	// Optional
-	Schema        *schema.Schema
-	IsEarlyAccess bool
+	Schema *schema.Schema
 }
 
 // BaseResource contains various re-usable fields and methods
 // intended for use in resource implementations by composition.
 type BaseResource struct {
 	Config BaseResourceConfig
-	Meta   *FrameworkProviderMeta
+	Meta   *config.Config
 }
 
 func (r *BaseResource) Configure(
@@ -92,11 +108,6 @@ func (r *BaseResource) ImportState(
 		idAttr = "id"
 	}
 
-	idType := r.Config.IDType
-	if idType == nil {
-		idType = types.Int64Type
-	}
-
 	attrPath := path.Root(idAttr)
 
 	if attrPath.Equal(path.Empty()) {
@@ -112,14 +123,8 @@ func (r *BaseResource) ImportState(
 	var err error
 	var idValue any
 
-	switch idType {
-	case types.Int64Type:
-		idValue, err = strconv.ParseInt(req.ID, 10, 64)
-	case types.StringType:
-		idValue = req.ID
-	default:
-		err = fmt.Errorf("unsupported id attribute type: %v", idType)
-	}
+	idValue = req.ID
+
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Failed to convert ID attribute",

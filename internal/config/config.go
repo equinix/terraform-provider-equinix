@@ -19,7 +19,6 @@ import (
 	"github.com/equinix/ecx-go/v2"
 	"github.com/equinix/ne-go"
 	"github.com/equinix/oauth2-go"
-	"github.com/equinix/terraform-provider-equinix/internal/fabric_utils"
 	"github.com/equinix/terraform-provider-equinix/version"
 	"github.com/hashicorp/go-retryablehttp"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/logging"
@@ -76,6 +75,15 @@ var (
 	DefaultBaseURL   = "https://api.equinix.com"
 	DefaultTimeout   = 30
 	redirectsErrorRe = regexp.MustCompile(`stopped after \d+ redirects\z`)
+)
+
+const (
+	EndpointEnvVar       = "EQUINIX_API_ENDPOINT"
+	ClientIDEnvVar       = "EQUINIX_API_CLIENTID"
+	ClientSecretEnvVar   = "EQUINIX_API_CLIENTSECRET"
+	ClientTokenEnvVar    = "EQUINIX_API_TOKEN"
+	ClientTimeoutEnvVar  = "EQUINIX_API_TIMEOUT"
+	MetalAuthTokenEnvVar = "METAL_AUTH_TOKEN"
 )
 
 // Config is the configuration structure used to instantiate the Equinix
@@ -187,7 +195,7 @@ func (c *Config) NewFabricClient() *v4.APIClient {
 	authClient.Timeout = c.requestTimeout()
 	fabricHeaderMap := map[string]string{
 		"X-SOURCE":         "API",
-		"X-CORRELATION-ID": fabric_utils.CorrelationId(25),
+		"X-CORRELATION-ID": CorrelationId(25),
 	}
 	v4Configuration := v4.Configuration{
 		BasePath:      c.BaseURL,
