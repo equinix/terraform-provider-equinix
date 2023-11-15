@@ -20,7 +20,7 @@ func TestAccCloudRouterCreate(t *testing.T) {
 				Config: testAccCloudRouterCreateConfig("fg_tf_acc_test"),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(
-						"equinix_fabric_cloud_router.test", "name", fmt.Sprint("fg_tf_acc_test")),
+						"equinix_fabric_cloud_router.test", "name", "fg_tf_acc_test"),
 				),
 				ExpectNonEmptyPlan: false,
 			},
@@ -28,7 +28,7 @@ func TestAccCloudRouterCreate(t *testing.T) {
 				Config: testAccCloudRouterCreateConfig("fg_tf_acc_update"),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(
-						"equinix_fabric_cloud_router.test", "name", fmt.Sprint("fg_tf_acc_update")),
+						"equinix_fabric_cloud_router.test", "name", "fg_tf_acc_update"),
 				),
 				ExpectNonEmptyPlan: false,
 			},
@@ -59,22 +59,22 @@ func testAccCloudRouterCreateConfig(name string) string {
 			  metro_code  = "SV"
 			}
 			package{
-				  code = "PRO"
+				code = "PRO"
 			}
 			order{
 				purchase_order_number = "1-234567"
 			}
-			   notifications{
-				  type = "ALL"
-				  emails = [
+			notifications{
+				type = "ALL"
+				emails = [
 					"test@equinix.com",
 					"test1@equinix.com"
 				]
 			}
-				project{
-				   project_id = "776847000642406"
+			project{
+				project_id = "776847000642406"
 			}
-			  account {
+			account {
 				account_number = 203612
 			}
 		}`, name)
@@ -89,7 +89,7 @@ func TestAccCloudRouterRead(t *testing.T) {
 				Config: testAccCloudRouterReadConfig(),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(
-						"equinix_fabric_cloud_router.test", "name", fmt.Sprint("fcr_tf_acc_test")),
+						"equinix_fabric_cloud_router.test", "name", "fcr_tf_acc_test"),
 				),
 			},
 		},
@@ -97,7 +97,7 @@ func TestAccCloudRouterRead(t *testing.T) {
 }
 
 func testAccCloudRouterReadConfig() string {
-	return fmt.Sprint(`data "equinix_fabric_cloud_router" "test" {
+	return `data "equinix_fabric_cloud_router" "test" {
 		uuid = "3e91216d-526a-45d2-9029-0c8c8ba48b60"
-	}`)
+	}`
 }
