@@ -8,6 +8,8 @@ import (
 	"runtime/debug"
 	"strings"
 
+	"github.com/equinix/terraform-provider-equinix/internal/config"
+
 	"github.com/antihax/optional"
 	v4 "github.com/equinix-labs/fabric-go/fabric/v4"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -15,8 +17,8 @@ import (
 )
 
 func resourceFabricPortRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := meta.(*Config).fabricClient
-	ctx = context.WithValue(ctx, v4.ContextAccessToken, meta.(*Config).FabricAuthToken)
+	client := meta.(*config.Config).FabricClient
+	ctx = context.WithValue(ctx, v4.ContextAccessToken, meta.(*config.Config).FabricAuthToken)
 	port, _, err := client.PortsApi.GetPortByUuid(ctx, d.Id())
 	if err != nil {
 		log.Printf("[WARN] Port %s not found , error %s", d.Id(), err)
@@ -83,8 +85,8 @@ func resourceFabricPortGetByPortName(ctx context.Context, d *schema.ResourceData
 		}
 	}()
 
-	client := meta.(*Config).fabricClient
-	ctx = context.WithValue(ctx, v4.ContextAccessToken, meta.(*Config).FabricAuthToken)
+	client := meta.(*config.Config).FabricClient
+	ctx = context.WithValue(ctx, v4.ContextAccessToken, meta.(*config.Config).FabricAuthToken)
 	portNameParam := d.Get("filters").(*schema.Set).List()
 	portName := portNameQueryParamToFabric(portNameParam)
 	ports, _, err := client.PortsApi.GetPorts(ctx, &portName)

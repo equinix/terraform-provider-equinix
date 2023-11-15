@@ -6,6 +6,8 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/equinix/terraform-provider-equinix/internal/config"
+
 	"github.com/equinix/ne-go"
 	"github.com/equinix/rest-go"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -224,8 +226,8 @@ func networkACLTemplateDeviceDetailsSchema() map[string]*schema.Schema {
 }
 
 func resourceNetworkACLTemplateCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	client := m.(*Config).ne
-	m.(*Config).addModuleToNEUserAgent(&client, d)
+	client := m.(*config.Config).Ne
+	m.(*config.Config).AddModuleToNEUserAgent(&client, d)
 	var diags diag.Diagnostics
 	template := createACLTemplate(d)
 	uuid, err := client.CreateACLTemplate(template)
@@ -238,8 +240,8 @@ func resourceNetworkACLTemplateCreate(ctx context.Context, d *schema.ResourceDat
 }
 
 func resourceNetworkACLTemplateRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	client := m.(*Config).ne
-	m.(*Config).addModuleToNEUserAgent(&client, d)
+	client := m.(*config.Config).Ne
+	m.(*config.Config).AddModuleToNEUserAgent(&client, d)
 	var diags diag.Diagnostics
 	template, err := client.GetACLTemplate(d.Id())
 	if err != nil {
@@ -258,8 +260,8 @@ func resourceNetworkACLTemplateRead(ctx context.Context, d *schema.ResourceData,
 }
 
 func resourceNetworkACLTemplateUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	client := m.(*Config).ne
-	m.(*Config).addModuleToNEUserAgent(&client, d)
+	client := m.(*config.Config).Ne
+	m.(*config.Config).AddModuleToNEUserAgent(&client, d)
 	var diags diag.Diagnostics
 	template := createACLTemplate(d)
 	if err := client.ReplaceACLTemplate(d.Id(), template); err != nil {
@@ -270,8 +272,8 @@ func resourceNetworkACLTemplateUpdate(ctx context.Context, d *schema.ResourceDat
 }
 
 func resourceNetworkACLTemplateDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	client := m.(*Config).ne
-	m.(*Config).addModuleToNEUserAgent(&client, d)
+	client := m.(*config.Config).Ne
+	m.(*config.Config).AddModuleToNEUserAgent(&client, d)
 	var diags diag.Diagnostics
 	if devID, ok := d.GetOk(networkACLTemplateSchemaNames["DeviceUUID"]); ok {
 		if err := client.NewDeviceUpdateRequest(devID.(string)).WithACLTemplate("").Execute(); err != nil {

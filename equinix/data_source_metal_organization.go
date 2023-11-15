@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"path"
 
+	"github.com/equinix/terraform-provider-equinix/internal/config"
+
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/packethost/packngo"
 )
@@ -108,7 +110,7 @@ func findOrgByName(os []packngo.Organization, name string) (*packngo.Organizatio
 }
 
 func dataSourceMetalOrganizationRead(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*Config).metal
+	client := meta.(*config.Config).Metal
 	nameRaw, nameOK := d.GetOk("name")
 	orgIdRaw, orgIdOK := d.GetOk("organization_id")
 

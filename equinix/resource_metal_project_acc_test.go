@@ -8,6 +8,8 @@ import (
 	"regexp"
 	"testing"
 
+	"github.com/equinix/terraform-provider-equinix/internal/config"
+
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
@@ -135,8 +137,8 @@ func TestAccMetalProject_errorHandling(t *testing.T) {
 	}
 	mockEquinix := Provider()
 	mockEquinix.ConfigureContextFunc = func(ctx context.Context, d *schema.ResourceData) (interface{}, diag.Diagnostics) {
-		config := Config{
-			metal: &packngo.Client{Projects: mockMetalProjectService},
+		config := config.Config{
+			Metal: &packngo.Client{Projects: mockMetalProjectService},
 		}
 		return &config, nil
 	}
@@ -167,8 +169,8 @@ func TestAccMetalProject_apiErrorHandling(t *testing.T) {
 	}
 	mockEquinix := Provider()
 	mockEquinix.ConfigureContextFunc = func(ctx context.Context, d *schema.ResourceData) (interface{}, diag.Diagnostics) {
-		config := Config{
-			metal: &packngo.Client{Projects: mockMetalProjectService},
+		config := config.Config{
+			Metal: &packngo.Client{Projects: mockMetalProjectService},
 		}
 		return &config, nil
 	}
@@ -346,7 +348,7 @@ func TestAccMetalProject_BGPUpdate(t *testing.T) {
 }
 
 func testAccMetalProjectCheckDestroyed(s *terraform.State) error {
-	client := testAccProvider.Meta().(*Config).metal
+	client := testAccProvider.Meta().(*config.Config).Metal
 
 	for _, rs := range s.RootModule().Resources {
 		if rs.Type != "equinix_metal_project" {
@@ -370,7 +372,7 @@ func testAccMetalProjectExists(n string, project *packngo.Project) resource.Test
 			return fmt.Errorf("No Record ID is set")
 		}
 
-		client := testAccProvider.Meta().(*Config).metal
+		client := testAccProvider.Meta().(*config.Config).Metal
 
 		foundProject, _, err := client.Projects.Get(rs.Primary.ID, nil)
 		if err != nil {

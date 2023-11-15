@@ -2,9 +2,11 @@ package equinix
 
 import (
 	"context"
+	"log"
+
+	"github.com/equinix/terraform-provider-equinix/internal/config"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/packethost/packngo"
-	"log"
 )
 
 func resourceMetalVRF() *schema.Resource {
@@ -56,8 +58,8 @@ func resourceMetalVRF() *schema.Resource {
 }
 
 func resourceMetalVRFCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) error {
-	meta.(*Config).addModuleToMetalUserAgent(d)
-	client := meta.(*Config).metal
+	meta.(*config.Config).AddModuleToMetalUserAgent(d)
+	client := meta.(*config.Config).Metal
 
 	createRequest := &packngo.VRFCreateRequest{
 		Name:        d.Get("name").(string),
@@ -79,8 +81,8 @@ func resourceMetalVRFCreate(ctx context.Context, d *schema.ResourceData, meta in
 }
 
 func resourceMetalVRFUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) error {
-	meta.(*Config).addModuleToMetalUserAgent(d)
-	client := meta.(*Config).metal
+	meta.(*config.Config).AddModuleToMetalUserAgent(d)
+	client := meta.(*config.Config).Metal
 
 	sPtr := func(s string) *string { return &s }
 	iPtr := func(i int) *int { return &i }
@@ -109,8 +111,8 @@ func resourceMetalVRFUpdate(ctx context.Context, d *schema.ResourceData, meta in
 }
 
 func resourceMetalVRFRead(ctx context.Context, d *schema.ResourceData, meta interface{}) error {
-	meta.(*Config).addModuleToMetalUserAgent(d)
-	client := meta.(*Config).metal
+	meta.(*config.Config).AddModuleToMetalUserAgent(d)
+	client := meta.(*config.Config).Metal
 
 	getOpts := &packngo.GetOptions{Includes: []string{"project", "metro"}}
 
@@ -137,8 +139,8 @@ func resourceMetalVRFRead(ctx context.Context, d *schema.ResourceData, meta inte
 }
 
 func resourceMetalVRFDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) error {
-	meta.(*Config).addModuleToMetalUserAgent(d)
-	client := meta.(*Config).metal
+	meta.(*config.Config).AddModuleToMetalUserAgent(d)
+	client := meta.(*config.Config).Metal
 
 	resp, err := client.VRFs.Delete(d.Id())
 	if ignoreResponseErrors(httpForbidden, httpNotFound)(resp, err) == nil {

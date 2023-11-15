@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"log"
 
+	"github.com/equinix/terraform-provider-equinix/internal/config"
+
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/packethost/packngo"
@@ -67,7 +69,7 @@ func dataSourceMetalPreCreatedIPBlock() *schema.Resource {
 
 func dataSourceMetalPreCreatedIPBlockRead(d *schema.ResourceData, meta interface{}) error {
 	var types string
-	client := meta.(*Config).metal
+	client := meta.(*config.Config).Metal
 	projectID := d.Get("project_id").(string)
 
 	ipv := d.Get("address_family").(int)

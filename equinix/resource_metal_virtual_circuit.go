@@ -9,6 +9,8 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/equinix/terraform-provider-equinix/internal/config"
+
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/packethost/packngo"
@@ -139,8 +141,8 @@ func resourceMetalVirtualCircuit() *schema.Resource {
 }
 
 func resourceMetalVirtualCircuitCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) error {
-	meta.(*Config).addModuleToMetalUserAgent(d)
-	client := meta.(*Config).metal
+	meta.(*config.Config).AddModuleToMetalUserAgent(d)
+	client := meta.(*config.Config).Metal
 	vncr := packngo.VCCreateRequest{
 		VirtualNetworkID: d.Get("vlan_id").(string),
 		Name:             d.Get("name").(string),
@@ -199,8 +201,8 @@ func resourceMetalVirtualCircuitCreate(ctx context.Context, d *schema.ResourceDa
 }
 
 func resourceMetalVirtualCircuitRead(ctx context.Context, d *schema.ResourceData, meta interface{}) error {
-	meta.(*Config).addModuleToMetalUserAgent(d)
-	client := meta.(*Config).metal
+	meta.(*config.Config).AddModuleToMetalUserAgent(d)
+	client := meta.(*config.Config).Metal
 	vcId := d.Id()
 
 	vc, _, err := client.VirtualCircuits.Get(
@@ -280,8 +282,8 @@ func getVCStateWaiter(client *packngo.Client, id string, timeout time.Duration, 
 }
 
 func resourceMetalVirtualCircuitUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) error {
-	meta.(*Config).addModuleToMetalUserAgent(d)
-	client := meta.(*Config).metal
+	meta.(*config.Config).AddModuleToMetalUserAgent(d)
+	client := meta.(*config.Config).Metal
 
 	ur := packngo.VCUpdateRequest{}
 	if d.HasChange("vlan_id") {
@@ -328,8 +330,8 @@ func resourceMetalVirtualCircuitUpdate(ctx context.Context, d *schema.ResourceDa
 }
 
 func resourceMetalVirtualCircuitDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) error {
-	meta.(*Config).addModuleToMetalUserAgent(d)
-	client := meta.(*Config).metal
+	meta.(*config.Config).AddModuleToMetalUserAgent(d)
+	client := meta.(*config.Config).Metal
 
 	resp, err := client.VirtualCircuits.Delete(d.Id())
 	if ignoreResponseErrors(httpForbidden, httpNotFound)(resp, err) != nil {

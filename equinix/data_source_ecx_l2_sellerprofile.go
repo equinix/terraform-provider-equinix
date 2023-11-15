@@ -6,6 +6,8 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/equinix/terraform-provider-equinix/internal/config"
+
 	"github.com/equinix/ecx-go/v2"
 	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -229,12 +231,12 @@ func createECXL2SellerProfileSchema() map[string]*schema.Schema {
 }
 
 func dataSourceECXL2SellerProfileRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	conf := m.(*Config)
+	conf := m.(*config.Config)
 	var diags diag.Diagnostics
 	name := d.Get(ecxL2SellerProfileSchemaNames["Name"]).(string)
 	orgName := d.Get(ecxL2SellerProfileSchemaNames["OrganizationName"]).(string)
 	orgGlobalName := d.Get(ecxL2SellerProfileSchemaNames["GlobalOrganization"]).(string)
-	profiles, err := conf.ecx.GetL2SellerProfiles()
+	profiles, err := conf.Ecx.GetL2SellerProfiles()
 	if err != nil {
 		return diag.FromErr(err)
 	}

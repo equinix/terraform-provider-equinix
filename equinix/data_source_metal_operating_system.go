@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/equinix/terraform-provider-equinix/internal/config"
+
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/packethost/packngo"
 )
@@ -42,7 +44,7 @@ func dataSourceOperatingSystem() *schema.Resource {
 }
 
 func dataSourceMetalOperatingSystemRead(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*Config).metal
+	client := meta.(*config.Config).Metal
 
 	name, nameOK := d.GetOk("name")
 	distro, distroOK := d.GetOk("distro")

@@ -6,6 +6,8 @@ import (
 	"regexp"
 	"strings"
 
+	"github.com/equinix/terraform-provider-equinix/internal/config"
+
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/packethost/packngo"
@@ -123,8 +125,8 @@ func expandBGPConfig(d *schema.ResourceData) packngo.CreateBGPConfigRequest {
 }
 
 func resourceMetalProjectCreate(d *schema.ResourceData, meta interface{}) error {
-	meta.(*Config).addModuleToMetalUserAgent(d)
-	client := meta.(*Config).metal
+	meta.(*config.Config).AddModuleToMetalUserAgent(d)
+	client := meta.(*config.Config).Metal
 
 	createRequest := &packngo.ProjectCreateRequest{
 		Name:           d.Get("name").(string),
@@ -159,8 +161,8 @@ func resourceMetalProjectCreate(d *schema.ResourceData, meta interface{}) error 
 }
 
 func resourceMetalProjectRead(d *schema.ResourceData, meta interface{}) error {
-	meta.(*Config).addModuleToMetalUserAgent(d)
-	client := meta.(*Config).metal
+	meta.(*config.Config).AddModuleToMetalUserAgent(d)
+	client := meta.(*config.Config).Metal
 
 	proj, _, err := client.Projects.Get(d.Id(), nil)
 	if err != nil {
@@ -232,8 +234,8 @@ func flattenBGPConfig(l *packngo.BGPConfig) []map[string]interface{} {
 }
 
 func resourceMetalProjectUpdate(d *schema.ResourceData, meta interface{}) error {
-	meta.(*Config).addModuleToMetalUserAgent(d)
-	client := meta.(*Config).metal
+	meta.(*config.Config).AddModuleToMetalUserAgent(d)
+	client := meta.(*config.Config).Metal
 	updateRequest := &packngo.ProjectUpdateRequest{}
 	if d.HasChange("name") {
 		pName := d.Get("name").(string)
@@ -284,8 +286,8 @@ func resourceMetalProjectUpdate(d *schema.ResourceData, meta interface{}) error 
 }
 
 func resourceMetalProjectDelete(d *schema.ResourceData, meta interface{}) error {
-	meta.(*Config).addModuleToMetalUserAgent(d)
-	client := meta.(*Config).metal
+	meta.(*config.Config).AddModuleToMetalUserAgent(d)
+	client := meta.(*config.Config).Metal
 
 	resp, err := client.Projects.Delete(d.Id())
 	if ignoreResponseErrors(httpForbidden, httpNotFound)(resp, err) != nil {

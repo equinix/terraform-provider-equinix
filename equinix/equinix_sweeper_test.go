@@ -7,6 +7,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/equinix/terraform-provider-equinix/internal/config"
+
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 )
 
@@ -16,12 +18,12 @@ func TestMain(m *testing.M) {
 	resource.TestMain(m)
 }
 
-func sharedConfigForRegion(region string) (*Config, error) {
-	endpoint := getFromEnvDefault(endpointEnvVar, DefaultBaseURL)
+func sharedConfigForRegion(region string) (*config.Config, error) {
+	endpoint := getFromEnvDefault(endpointEnvVar, config.DefaultBaseURL)
 	clientToken := getFromEnvDefault(clientTokenEnvVar, "")
 	clientID := getFromEnvDefault(clientIDEnvVar, "")
 	clientSecret := getFromEnvDefault(clientSecretEnvVar, "")
-	clientTimeout := getFromEnvDefault(clientTimeoutEnvVar, strconv.Itoa(DefaultTimeout))
+	clientTimeout := getFromEnvDefault(clientTimeoutEnvVar, strconv.Itoa(config.DefaultTimeout))
 	clientTimeoutInt, err := strconv.Atoi(clientTimeout)
 	if err != nil {
 		return nil, fmt.Errorf("cannot convert value of '%s' env variable to int", clientTimeoutEnvVar)
@@ -33,7 +35,7 @@ func sharedConfigForRegion(region string) (*Config, error) {
 			clientTokenEnvVar, clientIDEnvVar, clientSecretEnvVar, metalAuthTokenEnvVar)
 	}
 
-	return &Config{
+	return &config.Config{
 		AuthToken:      metalAuthToken,
 		BaseURL:        endpoint,
 		Token:          clientToken,

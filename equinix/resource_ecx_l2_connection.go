@@ -7,6 +7,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/equinix/terraform-provider-equinix/internal/config"
+
 	"github.com/equinix/ecx-go/v2"
 	"github.com/equinix/rest-go"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -658,8 +660,8 @@ func createECXL2ConnectionActionsRequiredDataSchema() map[string]*schema.Schema 
 }
 
 func resourceECXL2ConnectionCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	client := m.(*Config).ecx
-	m.(*Config).addModuleToECXUserAgent(&client, d)
+	client := m.(*config.Config).Ecx
+	m.(*config.Config).AddModuleToECXUserAgent(&client, d)
 
 	var diags diag.Diagnostics
 	primary, secondary := createECXL2Connections(d)
@@ -696,8 +698,8 @@ func resourceECXL2ConnectionCreate(ctx context.Context, d *schema.ResourceData, 
 }
 
 func resourceECXL2ConnectionRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	client := m.(*Config).ecx
-	m.(*Config).addModuleToECXUserAgent(&client, d)
+	client := m.(*config.Config).Ecx
+	m.(*config.Config).AddModuleToECXUserAgent(&client, d)
 	var diags diag.Diagnostics
 	var err error
 	var primary *ecx.L2Connection
@@ -741,8 +743,8 @@ func resourceECXL2ConnectionRead(ctx context.Context, d *schema.ResourceData, m 
 }
 
 func resourceECXL2ConnectionUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	client := m.(*Config).ecx
-	m.(*Config).addModuleToECXUserAgent(&client, d)
+	client := m.(*config.Config).Ecx
+	m.(*config.Config).AddModuleToECXUserAgent(&client, d)
 	var diags diag.Diagnostics
 	supportedChanges := []string{
 		ecxL2ConnectionSchemaNames["Name"],
@@ -766,8 +768,8 @@ func resourceECXL2ConnectionUpdate(ctx context.Context, d *schema.ResourceData, 
 }
 
 func resourceECXL2ConnectionDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	client := m.(*Config).ecx
-	m.(*Config).addModuleToECXUserAgent(&client, d)
+	client := m.(*config.Config).Ecx
+	m.(*config.Config).AddModuleToECXUserAgent(&client, d)
 
 	var diags diag.Diagnostics
 	if err := client.DeleteL2Connection(d.Id()); err != nil {

@@ -7,6 +7,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/equinix/terraform-provider-equinix/internal/config"
+
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
@@ -150,9 +152,9 @@ func testAccFabricCreateServiceProfileConfig(name string) string {
 }
 
 func checkServiceProfileDelete(s *terraform.State) error {
-	client := testAccProvider.Meta().(*Config).fabricClient
+	client := testAccProvider.Meta().(*config.Config).FabricClient
 	ctx := context.Background()
-	ctx = context.WithValue(ctx, v4.ContextAccessToken, testAccProvider.Meta().(*Config).FabricAuthToken)
+	ctx = context.WithValue(ctx, v4.ContextAccessToken, testAccProvider.Meta().(*config.Config).FabricAuthToken)
 	for _, rs := range s.RootModule().Resources {
 		if rs.Type != "equinix_fabric_service_profile" {
 			continue

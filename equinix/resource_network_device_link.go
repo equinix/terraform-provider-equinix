@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/equinix/terraform-provider-equinix/internal/config"
+
 	"github.com/equinix/ne-go"
 	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -220,8 +222,8 @@ func createNetworkDeviceLinkConnectionResourceSchema() map[string]*schema.Schema
 }
 
 func resourceNetworkDeviceLinkCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	client := m.(*Config).ne
-	m.(*Config).addModuleToNEUserAgent(&client, d)
+	client := m.(*config.Config).Ne
+	m.(*config.Config).AddModuleToNEUserAgent(&client, d)
 	var diags diag.Diagnostics
 	link := createNetworkDeviceLink(d)
 	uuid, err := client.CreateDeviceLinkGroup(link)
@@ -242,8 +244,8 @@ func resourceNetworkDeviceLinkCreate(ctx context.Context, d *schema.ResourceData
 }
 
 func resourceNetworkDeviceLinkRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	client := m.(*Config).ne
-	m.(*Config).addModuleToNEUserAgent(&client, d)
+	client := m.(*config.Config).Ne
+	m.(*config.Config).AddModuleToNEUserAgent(&client, d)
 	var diags diag.Diagnostics
 	link, err := client.GetDeviceLinkGroup(d.Id())
 	if err != nil {
@@ -266,8 +268,8 @@ func resourceNetworkDeviceLinkRead(ctx context.Context, d *schema.ResourceData, 
 }
 
 func resourceNetworkDeviceLinkUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	client := m.(*Config).ne
-	m.(*Config).addModuleToNEUserAgent(&client, d)
+	client := m.(*config.Config).Ne
+	m.(*config.Config).AddModuleToNEUserAgent(&client, d)
 	var diags diag.Diagnostics
 	changes := getResourceDataChangedKeys([]string{
 		networkDeviceLinkSchemaNames["Name"], networkDeviceLinkSchemaNames["Subnet"],
@@ -304,8 +306,8 @@ func resourceNetworkDeviceLinkUpdate(ctx context.Context, d *schema.ResourceData
 }
 
 func resourceNetworkDeviceLinkDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	client := m.(*Config).ne
-	m.(*Config).addModuleToNEUserAgent(&client, d)
+	client := m.(*config.Config).Ne
+	m.(*config.Config).AddModuleToNEUserAgent(&client, d)
 	var diags diag.Diagnostics
 	if err := client.DeleteDeviceLinkGroup(d.Id()); err != nil {
 		if isRestNotFoundError(err) {

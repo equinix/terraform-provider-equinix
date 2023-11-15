@@ -6,6 +6,8 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/equinix/terraform-provider-equinix/internal/config"
+
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
@@ -346,7 +348,7 @@ func TestAccMetalPortVlanAttachment_hybridMultipleVlans(t *testing.T) {
 }
 
 func testAccMetalPortVlanAttachmentCheckDestroyed(s *terraform.State) error {
-	client := testAccProvider.Meta().(*Config).metal
+	client := testAccProvider.Meta().(*config.Config).Metal
 
 	device_id := ""
 	vlan_id := ""

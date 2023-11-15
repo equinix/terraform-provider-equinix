@@ -9,6 +9,8 @@ import (
 	"path/filepath"
 	"time"
 
+	"github.com/equinix/terraform-provider-equinix/internal/config"
+
 	"github.com/equinix/ne-go"
 	"github.com/equinix/rest-go"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -874,8 +876,8 @@ func createVendorConfigurationSchema() map[string]*schema.Schema {
 }
 
 func resourceNetworkDeviceCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	client := m.(*Config).ne
-	m.(*Config).addModuleToNEUserAgent(&client, d)
+	client := m.(*config.Config).Ne
+	m.(*config.Config).AddModuleToNEUserAgent(&client, d)
 	var diags diag.Diagnostics
 	primary, secondary := createNetworkDevices(d)
 	var err error
@@ -927,8 +929,8 @@ func resourceNetworkDeviceCreate(ctx context.Context, d *schema.ResourceData, m 
 }
 
 func resourceNetworkDeviceRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	client := m.(*Config).ne
-	m.(*Config).addModuleToNEUserAgent(&client, d)
+	client := m.(*config.Config).Ne
+	m.(*config.Config).AddModuleToNEUserAgent(&client, d)
 	var diags diag.Diagnostics
 	var err error
 	var primary, secondary *ne.Device
@@ -953,8 +955,8 @@ func resourceNetworkDeviceRead(ctx context.Context, d *schema.ResourceData, m in
 }
 
 func resourceNetworkDeviceUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	client := m.(*Config).ne
-	m.(*Config).addModuleToNEUserAgent(&client, d)
+	client := m.(*config.Config).Ne
+	m.(*config.Config).AddModuleToNEUserAgent(&client, d)
 	var diags diag.Diagnostics
 	supportedChanges := []string{
 		neDeviceSchemaNames["Name"], neDeviceSchemaNames["TermLength"],
@@ -989,8 +991,8 @@ func resourceNetworkDeviceUpdate(ctx context.Context, d *schema.ResourceData, m 
 }
 
 func resourceNetworkDeviceDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	client := m.(*Config).ne
-	m.(*Config).addModuleToNEUserAgent(&client, d)
+	client := m.(*config.Config).Ne
+	m.(*config.Config).AddModuleToNEUserAgent(&client, d)
 	var diags diag.Diagnostics
 	waitConfigs := []*retry.StateChangeConf{
 		createNetworkDeviceStatusDeleteWaitConfiguration(client.GetDevice, d.Id(), 5*time.Second, d.Timeout(schema.TimeoutDelete)),

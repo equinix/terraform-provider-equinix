@@ -3,6 +3,8 @@ package equinix
 import (
 	"log"
 
+	"github.com/equinix/terraform-provider-equinix/internal/config"
+
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/packethost/packngo"
@@ -49,8 +51,8 @@ func resourceMetalBGPSession() *schema.Resource {
 }
 
 func resourceMetalBGPSessionCreate(d *schema.ResourceData, meta interface{}) error {
-	meta.(*Config).addModuleToMetalUserAgent(d)
-	client := meta.(*Config).metal
+	meta.(*config.Config).AddModuleToMetalUserAgent(d)
+	client := meta.(*config.Config).Metal
 
 	dID := d.Get("device_id").(string)
 	addressFamily := d.Get("address_family").(string)
@@ -70,8 +72,8 @@ func resourceMetalBGPSessionCreate(d *schema.ResourceData, meta interface{}) err
 }
 
 func resourceMetalBGPSessionRead(d *schema.ResourceData, meta interface{}) error {
-	meta.(*Config).addModuleToMetalUserAgent(d)
-	client := meta.(*Config).metal
+	meta.(*config.Config).AddModuleToMetalUserAgent(d)
+	client := meta.(*config.Config).Metal
 
 	bgpSession, _, err := client.BGPSessions.Get(d.Id(),
 		&packngo.GetOptions{Includes: []string{"device"}})
@@ -100,8 +102,8 @@ func resourceMetalBGPSessionRead(d *schema.ResourceData, meta interface{}) error
 }
 
 func resourceMetalBGPSessionDelete(d *schema.ResourceData, meta interface{}) error {
-	meta.(*Config).addModuleToMetalUserAgent(d)
-	client := meta.(*Config).metal
+	meta.(*config.Config).AddModuleToMetalUserAgent(d)
+	client := meta.(*config.Config).Metal
 	resp, err := client.BGPSessions.Delete(d.Id())
 	return ignoreResponseErrors(httpForbidden, httpNotFound)(resp, err)
 }

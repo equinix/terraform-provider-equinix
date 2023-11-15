@@ -3,13 +3,15 @@ package equinix
 import (
 	"context"
 	"fmt"
+	"net/http"
+	"strings"
+
 	"github.com/equinix/ne-go"
 	"github.com/equinix/rest-go"
+	"github.com/equinix/terraform-provider-equinix/internal/config"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
-	"net/http"
-	"strings"
 )
 
 var networkFileSchemaNames = map[string]string{
@@ -111,8 +113,8 @@ func createNetworkFileSchema() map[string]*schema.Schema {
 }
 
 func resourceNetworkFileCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	client := m.(*Config).ne
-	m.(*Config).addModuleToNEUserAgent(&client, d)
+	client := m.(*config.Config).Ne
+	m.(*config.Config).AddModuleToNEUserAgent(&client, d)
 	var diags diag.Diagnostics
 	fileRequest := createFileRequest(d)
 	uuid, err := client.UploadFile(fileRequest["MetroCode"], fileRequest["DeviceTypeCode"], fileRequest["ProcessType"],
@@ -127,8 +129,8 @@ func resourceNetworkFileCreate(ctx context.Context, d *schema.ResourceData, m in
 }
 
 func resourceNetworkFileRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	client := m.(*Config).ne
-	m.(*Config).addModuleToNEUserAgent(&client, d)
+	client := m.(*config.Config).Ne
+	m.(*config.Config).AddModuleToNEUserAgent(&client, d)
 	var diags diag.Diagnostics
 	file, err := client.GetFile(d.Id())
 	if err != nil {

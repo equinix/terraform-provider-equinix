@@ -5,6 +5,8 @@ import (
 	"log"
 	"time"
 
+	"github.com/equinix/terraform-provider-equinix/internal/config"
+
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
@@ -143,8 +145,8 @@ func resourceMetalPortUpdate(ctx context.Context, d *schema.ResourceData, meta i
 }
 
 func resourceMetalPortRead(ctx context.Context, d *schema.ResourceData, meta interface{}) error {
-	meta.(*Config).addModuleToMetalUserAgent(d)
-	client := meta.(*Config).metal
+	meta.(*config.Config).AddModuleToMetalUserAgent(d)
+	client := meta.(*config.Config).Metal
 
 	port, err := getPortByResourceData(d, client)
 	if err != nil {

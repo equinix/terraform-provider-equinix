@@ -9,6 +9,8 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/equinix/terraform-provider-equinix/internal/config"
+
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/packethost/packngo"
@@ -213,8 +215,8 @@ func resourceMetalSpotMarketRequest() *schema.Resource {
 }
 
 func resourceMetalSpotMarketRequestCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) error {
-	meta.(*Config).addModuleToMetalUserAgent(d)
-	client := meta.(*Config).metal
+	meta.(*config.Config).AddModuleToMetalUserAgent(d)
+	client := meta.(*config.Config).Metal
 	var waitForDevices bool
 
 	metro := d.Get("metro").(string)
@@ -356,8 +358,8 @@ func resourceMetalSpotMarketRequestCreate(ctx context.Context, d *schema.Resourc
 }
 
 func resourceMetalSpotMarketRequestRead(ctx context.Context, d *schema.ResourceData, meta interface{}) error {
-	meta.(*Config).addModuleToMetalUserAgent(d)
-	client := meta.(*Config).metal
+	meta.(*config.Config).AddModuleToMetalUserAgent(d)
+	client := meta.(*config.Config).Metal
 
 	smr, _, err := client.SpotMarketRequests.Get(d.Id(), &packngo.GetOptions{Includes: []string{"project", "devices", "facilities", "metro"}})
 	if err != nil {
@@ -396,8 +398,8 @@ func resourceMetalSpotMarketRequestRead(ctx context.Context, d *schema.ResourceD
 }
 
 func resourceMetalSpotMarketRequestDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) error {
-	meta.(*Config).addModuleToMetalUserAgent(d)
-	client := meta.(*Config).metal
+	meta.(*config.Config).AddModuleToMetalUserAgent(d)
+	client := meta.(*config.Config).Metal
 	var waitForDevices bool
 
 	if val, ok := d.GetOk("wait_for_devices"); ok {
@@ -437,8 +439,8 @@ func resourceMetalSpotMarketRequestDelete(ctx context.Context, d *schema.Resourc
 
 func resourceStateRefreshFunc(d *schema.ResourceData, meta interface{}) retry.StateRefreshFunc {
 	return func() (interface{}, string, error) {
-		meta.(*Config).addModuleToMetalUserAgent(d)
-		client := meta.(*Config).metal
+		meta.(*config.Config).AddModuleToMetalUserAgent(d)
+		client := meta.(*config.Config).Metal
 
 		smr, _, err := client.SpotMarketRequests.Get(d.Id(), &packngo.GetOptions{Includes: []string{"project", "devices", "facilities", "metro"}})
 		if err != nil {

@@ -3,6 +3,8 @@ package equinix
 import (
 	"fmt"
 
+	"github.com/equinix/terraform-provider-equinix/internal/config"
+
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/packethost/packngo"
 )
@@ -88,7 +90,7 @@ func metroOffacilityMatch(ref string, facility *packngo.Facility) bool {
 }
 
 func dataSourceMetalIPBlockRangesRead(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*Config).metal
+	client := meta.(*config.Config).Metal
 	projectID := d.Get("project_id").(string)
 	ips, _, err := client.ProjectIPs.List(projectID, nil)
 	if err != nil {

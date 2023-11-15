@@ -12,6 +12,8 @@ import (
 	"sort"
 	"time"
 
+	"github.com/equinix/terraform-provider-equinix/internal/config"
+
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -473,8 +475,8 @@ func reinstallDisabledAndNoChangesAllowed(attribute string) customdiff.ResourceC
 }
 
 func resourceMetalDeviceCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) error {
-	meta.(*Config).addModuleToMetalUserAgent(d)
-	client := meta.(*Config).metal
+	meta.(*config.Config).AddModuleToMetalUserAgent(d)
+	client := meta.(*config.Config).Metal
 
 	var addressTypesSlice []packngo.IPAddressCreateRequest
 	_, ok := d.GetOk("ip_address")
@@ -610,8 +612,8 @@ func resourceMetalDeviceCreate(ctx context.Context, d *schema.ResourceData, meta
 }
 
 func resourceMetalDeviceRead(ctx context.Context, d *schema.ResourceData, meta interface{}) error {
-	meta.(*Config).addModuleToMetalGoUserAgent(d)
-	client := meta.(*Config).metalgo
+	meta.(*config.Config).AddModuleToMetalGoUserAgent(d)
+	client := meta.(*config.Config).Metalgo
 
 	device, resp, err := client.DevicesApi.FindDeviceById(context.Background(), d.Id()).Include(deviceCommonIncludes).Execute()
 	if err != nil {
@@ -717,8 +719,8 @@ func resourceMetalDeviceRead(ctx context.Context, d *schema.ResourceData, meta i
 }
 
 func resourceMetalDeviceUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) error {
-	meta.(*Config).addModuleToMetalUserAgent(d)
-	client := meta.(*Config).metal
+	meta.(*config.Config).AddModuleToMetalUserAgent(d)
+	client := meta.(*config.Config).Metal
 
 	if d.HasChange("locked") {
 		var action func(string) (*packngo.Response, error)
@@ -824,8 +826,8 @@ func doReinstall(ctx context.Context, client *packngo.Client, d *schema.Resource
 }
 
 func resourceMetalDeviceDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) error {
-	meta.(*Config).addModuleToMetalUserAgent(d)
-	client := meta.(*Config).metal
+	meta.(*config.Config).AddModuleToMetalUserAgent(d)
+	client := meta.(*config.Config).Metal
 
 	fdvIf, fdvOk := d.GetOk("force_detach_volumes")
 	fdv := false
@@ -864,8 +866,8 @@ func waitForActiveDevice(ctx context.Context, d *schema.ResourceData, meta inter
 		Pending: pending,
 		Target:  targets,
 		Refresh: func() (interface{}, string, error) {
-			meta.(*Config).addModuleToMetalUserAgent(d)
-			client := meta.(*Config).metal
+			meta.(*config.Config).AddModuleToMetalUserAgent(d)
+			client := meta.(*config.Config).Metal
 
 			device, _, err := client.Devices.Get(d.Id(), &packngo.GetOptions{Includes: []string{"project"}})
 			if err == nil {

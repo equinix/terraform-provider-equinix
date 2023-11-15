@@ -4,6 +4,8 @@ import (
 	"errors"
 	"path"
 
+	"github.com/equinix/terraform-provider-equinix/internal/config"
+
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/packethost/packngo"
 )
@@ -76,8 +78,8 @@ func resourceMetalVlan() *schema.Resource {
 }
 
 func resourceMetalVlanCreate(d *schema.ResourceData, meta interface{}) error {
-	meta.(*Config).addModuleToMetalUserAgent(d)
-	client := meta.(*Config).metal
+	meta.(*config.Config).AddModuleToMetalUserAgent(d)
+	client := meta.(*config.Config).Metal
 
 	facRaw, facOk := d.GetOk("facility")
 	metroRaw, metroOk := d.GetOk("metro")
@@ -110,8 +112,8 @@ func resourceMetalVlanCreate(d *schema.ResourceData, meta interface{}) error {
 }
 
 func resourceMetalVlanRead(d *schema.ResourceData, meta interface{}) error {
-	meta.(*Config).addModuleToMetalUserAgent(d)
-	client := meta.(*Config).metal
+	meta.(*config.Config).AddModuleToMetalUserAgent(d)
+	client := meta.(*config.Config).Metal
 
 	vlan, _, err := client.ProjectVirtualNetworks.Get(d.Id(),
 		&packngo.GetOptions{Includes: []string{"assigned_to"}})
@@ -133,8 +135,8 @@ func resourceMetalVlanRead(d *schema.ResourceData, meta interface{}) error {
 }
 
 func resourceMetalVlanDelete(d *schema.ResourceData, meta interface{}) error {
-	meta.(*Config).addModuleToMetalUserAgent(d)
-	client := meta.(*Config).metal
+	meta.(*config.Config).AddModuleToMetalUserAgent(d)
+	client := meta.(*config.Config).Metal
 
 	id := d.Id()
 	vlan, resp, err := client.ProjectVirtualNetworks.Get(id, &packngo.GetOptions{Includes: []string{"instances", "instances.network_ports.virtual_networks", "internet_gateway"}})

@@ -7,6 +7,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/equinix/terraform-provider-equinix/internal/config"
+
 	v4 "github.com/equinix-labs/fabric-go/fabric/v4"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
@@ -35,8 +37,8 @@ func resourceFabricConnection() *schema.Resource {
 }
 
 func resourceFabricConnectionCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := meta.(*Config).fabricClient
-	ctx = context.WithValue(ctx, v4.ContextAccessToken, meta.(*Config).FabricAuthToken)
+	client := meta.(*config.Config).FabricClient
+	ctx = context.WithValue(ctx, v4.ContextAccessToken, meta.(*config.Config).FabricAuthToken)
 	conType := v4.ConnectionType(d.Get("type").(string))
 	schemaNotifications := d.Get("notifications").([]interface{})
 	notifications := notificationToFabric(schemaNotifications)
@@ -154,8 +156,8 @@ func additionalInfoContainsAWSSecrets(info []interface{}) ([]interface{}, bool) 
 }
 
 func resourceFabricConnectionRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := meta.(*Config).fabricClient
-	ctx = context.WithValue(ctx, v4.ContextAccessToken, meta.(*Config).FabricAuthToken)
+	client := meta.(*config.Config).FabricClient
+	ctx = context.WithValue(ctx, v4.ContextAccessToken, meta.(*config.Config).FabricAuthToken)
 	conn, _, err := client.ConnectionsApi.GetConnectionByUuid(ctx, d.Id(), nil)
 	if err != nil {
 		log.Printf("[WARN] Connection %s not found , error %s", d.Id(), err)
@@ -199,8 +201,8 @@ func setFabricMap(d *schema.ResourceData, conn v4.Connection) diag.Diagnostics {
 }
 
 func resourceFabricConnectionUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := meta.(*Config).fabricClient
-	ctx = context.WithValue(ctx, v4.ContextAccessToken, meta.(*Config).FabricAuthToken)
+	client := meta.(*config.Config).FabricClient
+	ctx = context.WithValue(ctx, v4.ContextAccessToken, meta.(*config.Config).FabricAuthToken)
 	dbConn, err := verifyConnectionCreated(d.Id(), meta, ctx)
 	if err != nil {
 		if !strings.Contains(err.Error(), "500") {
@@ -254,7 +256,7 @@ func waitForConnectionUpdateCompletion(uuid string, meta interface{}, ctx contex
 	stateConf := &retry.StateChangeConf{
 		Target: []string{"COMPLETED"},
 		Refresh: func() (interface{}, string, error) {
-			client := meta.(*Config).fabricClient
+			client := meta.(*config.Config).FabricClient
 			dbConn, _, err := client.ConnectionsApi.GetConnectionByUuid(ctx, uuid, nil)
 			if err != nil {
 				return "", "", err
@@ -291,7 +293,7 @@ func waitUntilConnectionIsCreated(uuid string, meta interface{}, ctx context.Con
 			string(v4.ACTIVE_ConnectionState),
 		},
 		Refresh: func() (interface{}, string, error) {
-			client := meta.(*Config).fabricClient
+			client := meta.(*config.Config).FabricClient
 			dbConn, _, err := client.ConnectionsApi.GetConnectionByUuid(ctx, uuid, nil)
 			if err != nil {
 				return "", "", err
@@ -319,7 +321,7 @@ func waitForConnectionProviderStatusChange(uuid string, meta interface{}, ctx co
 			string(v4.PROVISIONED_ProviderStatus),
 		},
 		Refresh: func() (interface{}, string, error) {
-			client := meta.(*Config).fabricClient
+			client := meta.(*config.Config).FabricClient
 			dbConn, _, err := client.ConnectionsApi.GetConnectionByUuid(ctx, uuid, nil)
 			if err != nil {
 				return "", "", err
@@ -349,7 +351,7 @@ func verifyConnectionCreated(uuid string, meta interface{}, ctx context.Context)
 			string(v4.PENDING_ConnectionState),
 		},
 		Refresh: func() (interface{}, string, error) {
-			client := meta.(*Config).fabricClient
+			client := meta.(*config.Config).FabricClient
 			dbConn, _, err := client.ConnectionsApi.GetConnectionByUuid(ctx, uuid, nil)
 			if err != nil {
 				return "", "", err
@@ -372,8 +374,8 @@ func verifyConnectionCreated(uuid string, meta interface{}, ctx context.Context)
 
 func resourceFabricConnectionDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	diags := diag.Diagnostics{}
-	client := meta.(*Config).fabricClient
-	ctx = context.WithValue(ctx, v4.ContextAccessToken, meta.(*Config).FabricAuthToken)
+	client := meta.(*config.Config).FabricClient
+	ctx = context.WithValue(ctx, v4.ContextAccessToken, meta.(*config.Config).FabricAuthToken)
 	_, _, err := client.ConnectionsApi.DeleteConnectionByUuid(ctx, d.Id())
 	if err != nil {
 		errors, ok := err.(v4.GenericSwaggerError).Model().([]v4.ModelError)
@@ -403,7 +405,7 @@ func waitUntilConnectionDeprovisioned(uuid string, meta interface{}, ctx context
 			string(v4.DEPROVISIONED_ConnectionState),
 		},
 		Refresh: func() (interface{}, string, error) {
-			client := meta.(*Config).fabricClient
+			client := meta.(*config.Config).FabricClient
 			dbConn, _, err := client.ConnectionsApi.GetConnectionByUuid(ctx, uuid, nil)
 			if err != nil {
 				return "", "", err

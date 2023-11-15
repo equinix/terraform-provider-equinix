@@ -3,6 +3,8 @@ package equinix
 import (
 	"fmt"
 
+	"github.com/equinix/terraform-provider-equinix/internal/config"
+
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/packethost/packngo"
 )
@@ -67,7 +69,7 @@ func dataSourceMetalVlan() *schema.Resource {
 }
 
 func dataSourceMetalVlanRead(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*Config).metal
+	client := meta.(*config.Config).Metal
 
 	projectRaw, projectOk := d.GetOk("project_id")
 	vxlanRaw, vxlanOk := d.GetOk("vxlan")

@@ -69,7 +69,7 @@ func TestAccMetalUserAPIKey_basic(t *testing.T) {
 }
 
 func testAccMetalUserAPIKeyCheckDestroyed(s *terraform.State) error {
-	client := testAccProvider.Meta().(*Config).metal
+	client := testAccProvider.Meta().(*config.Config).Metal
 	for _, rs := range s.RootModule().Resources {
 		if rs.Type != "equinix_metal_user_api_key" {
 			continue
