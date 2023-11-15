@@ -129,10 +129,11 @@ type (
 
 func resourceECXL2Connection() *schema.Resource {
 	return &schema.Resource{
-		CreateContext: resourceECXL2ConnectionCreate,
-		ReadContext:   resourceECXL2ConnectionRead,
-		UpdateContext: resourceECXL2ConnectionUpdate,
-		DeleteContext: resourceECXL2ConnectionDelete,
+		DeprecationMessage: "This resource is deprecated. End of Life will be June 30th, 2024. Use equinix_fabric_connection instead.",
+		CreateContext:      resourceECXL2ConnectionCreate,
+		ReadContext:        resourceECXL2ConnectionRead,
+		UpdateContext:      resourceECXL2ConnectionUpdate,
+		DeleteContext:      resourceECXL2ConnectionDelete,
 		Importer: &schema.ResourceImporter{
 			StateContext: func(ctx context.Context, d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
 				// The expected ID to import redundant connections is '(primaryID):(secondaryID)', e.g.,

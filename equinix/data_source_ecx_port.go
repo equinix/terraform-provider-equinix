@@ -40,8 +40,9 @@ var ecxPortDescriptions = map[string]string{
 
 func dataSourceECXPort() *schema.Resource {
 	return &schema.Resource{
-		ReadContext: dataSourceECXPortRead,
-		Description: "Use this data source to get details of Equinix Fabric port with a given name",
+		DeprecationMessage: "This resource is deprecated. End of Life will be June 30th, 2024. Use equinix_fabric_port and equinix_fabric_ports instead.",
+		ReadContext:        dataSourceECXPortRead,
+		Description:        "Use this data source to get details of Equinix Fabric port with a given name",
 		Schema: map[string]*schema.Schema{
 			ecxPortSchemaNames["UUID"]: {
 				Type:        schema.TypeString,
