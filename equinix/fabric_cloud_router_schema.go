@@ -149,5 +149,20 @@ func createCloudRouterResourceSchema() map[string]*schema.Schema {
 				Schema: createNotificationSch(),
 			},
 		},
+		"bgp_ipv4_routes_count": {
+			Type:        schema.TypeInt,
+			Computed:    true,
+			Description: "Access point used and maximum number of IPv4 BGP routes",
+		},
+		"bgp_ipv6_routes_count": {
+			Type:        schema.TypeInt,
+			Computed:    true,
+			Description: "Access point used and maximum number of IPv6 BGP routes",
+		},
+		"connections_count": {
+			Type:        schema.TypeInt,
+			Computed:    true,
+			Description: "Number of connections associated with this Access point",
+		},
 	}
 }
