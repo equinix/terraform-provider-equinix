@@ -1,9 +1,8 @@
 package metal_ssh_key
 
 import (
-	"path"
-
 	"context"
+	"path"
 
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
@@ -15,6 +14,7 @@ import (
 )
 
 type ResourceModel struct {
+	ID          types.String `tfsdk:"id"`
 	Name        types.String `tfsdk:"name,omitempty"`
 	PublicKey   types.String `tfsdk:"public_key,omitempty"`
 	ProjectID   types.String `tfsdk:"project_id,omitempty"`
@@ -24,6 +24,7 @@ type ResourceModel struct {
 }
 
 func (rm *ResourceModel) parse(key *packngo.SSHKey) {
+	rm.ID = types.StringValue(key.ID)
 	rm.Name = types.StringValue(key.Label)
 	rm.PublicKey = types.StringValue(key.Key)
 	rm.ProjectID = types.StringValue(path.Base(key.Owner.Href))
@@ -52,48 +53,115 @@ func (r *Resource) Create(
 	req resource.CreateRequest,
 	resp *resource.CreateResponse,
 ) {
-	client := meta.(*Config).metal
+	// r.Meta.AddModuleToMetalUserAgent(d)
+	client := r.Meta.Metal
 
+	// Retrieve values from plan
+    var rm ResourceModel
+    resp.Diagnostics.Append(req.Plan.Get(ctx, &rm)...)
+    if resp.Diagnostics.HasError() {
+        return
+    }
+
+	// Generate API request body from plan
 	createRequest := &packngo.SSHKeyCreateRequest{
-		Label: d.Get("name").(string),
-		Key:   d.Get("public_key").(string),
+		Label: rm.Name.ValueString(),
+		Key:   rm.PublicKey.ValueString(),
 	}
 
-	projectID, isProjectKey := d.GetOk("project_id")
-	if isProjectKey {
-		createRequest.ProjectID = projectID.(string)
+	if rm.ProjectID.ValueString() != "" {
+		createRequest.ProjectID = rm.ProjectID.ValueString()
 	}
 
+	// Create API resource
 	key, _, err := client.SSHKeys.Create(createRequest)
 	if err != nil {
-		return friendlyError(err)
+		resp.Diagnostics.AddError(
+			"Failed to create SSH Key",
+			helper.FriendlyError(err).Error(),
+		)
+		return
 	}
 
-	d.SetId(key.ID)
-
-	return resourceMetalSSHKeyRead(d, meta)
+	// Set state to fully populated data
+	rm.parse(key)
+	resp.Diagnostics.Append(resp.State.Set(ctx, &rm)...)
 }
 
 func (r *Resource) Read(
-	ctx context.Context,
-	req resource.ReadRequest,
-	resp *resource.ReadResponse,
+    ctx context.Context,
+    req resource.ReadRequest,
+    resp *resource.ReadResponse,
 ) {
+    // client := req.ProviderMeta.(*Config).metal
+    
+	// var rm ResourceModel
+
+	// resp.Diagnostics.Append(req.State.Get(ctx, &rm)...)
+	// if resp.Diagnostics.HasError() {
+	// 	return
+	// }
+
+    // key, _, err := client.SSHKeys.Get(rm.ID.ValueString(), nil)
+    // if err != nil {
+    //     resp.Error = helper.FriendlyError(err)
+    //     return
+    // }
+
+    // // Set the resource's state with the populated ResourceModel
+	// rm.parse(key)
+	// resp.Diagnostics.Append(resp.State.Set(ctx, &rm)...)
 }
 
+
 func (r *Resource) Update(
-	ctx context.Context,
-	req resource.UpdateRequest,
-	resp *resource.UpdateResponse,
+    ctx context.Context,
+    req resource.UpdateRequest,
+    resp *resource.UpdateResponse,
 ) {
+    // client := r.Meta.Metal
+    // id := req.ID
+
+    // // Check if any attributes have changed
+    // if req.HasChange("name") || req.HasChange("public_key") {
+    //     updateRequest := &packngo.SSHKeyUpdateRequest{}
+
+    //     if req.HasChange("name") {
+    //         name := req.New.State.(*ResourceModel).Name
+    //         updateRequest.Label = string(name)
+    //     }
+
+    //     if req.HasChange("public_key") {
+    //         publicKey := req.New.State.(*ResourceModel).PublicKey
+    //         updateRequest.Key = string(publicKey)
+    //     }
+
+    //     _, _, err := client.SSHKeys.Update(id, updateRequest)
+    //     if err != nil {
+    //         resp.Error = friendlyError(err)
+    //         return
+    //     }
+    // }
 }
 
 func (r *Resource) Delete(
-	ctx context.Context,
-	req resource.DeleteRequest,
-	resp *resource.DeleteResponse,
+    ctx context.Context,
+    req resource.DeleteRequest,
+    resp *resource.DeleteResponse,
 ) {
+    // client := req.Meta.Metal
+    // id := req.ID
+
+    // _, err := client.SSHKeys.Delete(id)
+    // if err != nil && !isNotFound(err) {
+    //     resp.Error = friendlyError(err)
+    //     return
+    // }
+
+    // // Set the resource's ID to an empty string to mark it as deleted
+    // resp.State = nil
 }
+
 
 var frameworkResourceSchema = schema.Schema{
 	Attributes: map[string]schema.Attribute{
