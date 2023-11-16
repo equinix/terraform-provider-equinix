@@ -11,7 +11,7 @@ const allowed_charset = "abcdefghijklmnopqrstuvwxyz" +
 var seededRand = rand.New(
 	rand.NewSource(time.Now().UnixNano()))
 
-func CorrelationIdWithCharset(length int, charset string) string {
+func correlationIdWithCharset(length int, charset string) string {
 	b := make([]byte, length)
 	for i := range b {
 		b[i] = charset[seededRand.Intn(len(charset))]
@@ -19,6 +19,6 @@ func CorrelationIdWithCharset(length int, charset string) string {
 	return string(b)
 }
 
-func CorrelationId(length int) string {
-	return CorrelationIdWithCharset(length, allowed_charset)
+func correlationId(length int) string {
+	return correlationIdWithCharset(length, allowed_charset)
 }
