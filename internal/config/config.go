@@ -186,7 +186,7 @@ func (c *Config) NewFabricClient() *v4.APIClient {
 	authClient.Timeout = c.requestTimeout()
 	fabricHeaderMap := map[string]string{
 		"X-SOURCE":         "API",
-		"X-CORRELATION-ID": CorrelationId(25),
+		"X-CORRELATION-ID": correlationId(25),
 	}
 	v4Configuration := v4.Configuration{
 		BasePath:      c.BaseURL,
