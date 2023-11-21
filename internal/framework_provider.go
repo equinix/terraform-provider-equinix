@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/equinix/terraform-provider-equinix/internal/config"
+	"github.com/equinix/terraform-provider-equinix/internal/metal_bgp_session"
 	"github.com/equinix/terraform-provider-equinix/internal/metal_ssh_key"
 	"github.com/hashicorp/terraform-plugin-framework-validators/int64validator"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
@@ -92,6 +93,7 @@ func (p *FrameworkProvider) Schema(
 
 func (p *FrameworkProvider) Resources(ctx context.Context) []func() resource.Resource {
 	return []func() resource.Resource{
+		metal_bgp_session.NewResource,
 		metal_ssh_key.NewResource,
 	}
 }
