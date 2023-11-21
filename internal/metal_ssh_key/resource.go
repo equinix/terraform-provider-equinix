@@ -4,7 +4,6 @@ import (
 	"context"
 	"path"
 	"fmt"
-	"log"
 
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
@@ -20,7 +19,6 @@ type ResourceModel struct {
 	ID          types.String `tfsdk:"id"`
 	Name        types.String `tfsdk:"name"`
 	PublicKey   types.String `tfsdk:"public_key"`
-	// ProjectID   types.String `tfsdk:"project_id"`
 	Fingerprint types.String `tfsdk:"fingerprint"`
 	Created     types.String `tfsdk:"created"`
 	Updated     types.String `tfsdk:"updated"`
@@ -31,7 +29,6 @@ func (rm *ResourceModel) parse(key *packngo.SSHKey) diag.Diagnostics {
 	rm.ID = types.StringValue(key.ID)
 	rm.Name = types.StringValue(key.Label)
 	rm.PublicKey = types.StringValue(key.Key)
-	// rm.ProjectID = types.StringValue(path.Base(key.Owner.Href))
 	rm.Fingerprint = types.StringValue(key.FingerPrint)
 	rm.Created = types.StringValue(key.Created)
 	rm.Updated = types.StringValue(key.Updated)
@@ -75,10 +72,6 @@ func (r *Resource) Create(
 		Key:   plan.PublicKey.ValueString(),
 	}
 
-	// if plan.ProjectID.ValueString() != "" {
-	// 	createRequest.ProjectID = plan.ProjectID.ValueString()
-	// }
-
 	// Create API resource
 	key, _, err := client.SSHKeys.Create(createRequest)
 	if err != nil {
@@ -89,12 +82,13 @@ func (r *Resource) Create(
 		return
 	}
 
-	// Set state to fully populated data
+	// Parse API response into the Terraform state
 	resp.Diagnostics.Append(plan.parse(key)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
+	// Set state to fully populated data
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
 
@@ -223,7 +217,6 @@ func (r *Resource) Delete(
 			err.Error(),
 		)
 	}
-
 }
 
 var frameworkResourceSchema = schema.Schema{
