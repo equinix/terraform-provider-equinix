@@ -66,7 +66,7 @@ func (p *FrameworkProvider) Schema(
 			},
 			"request_timeout": schema.Int64Attribute{
 				Optional:    true,
-				Description: "The duration of time, in seconds, that the Equinix Platform API Client should wait before canceling an API request. Defaults to " + fmt.Sprint(config.DefaultTimeout),
+				Description:  fmt.Sprintf("The duration of time, in seconds, that the Equinix Platform API Client should wait before canceling an API request.  Defaults to %d", config.DefaultTimeout),
 				Validators: []validator.Int64{
 					int64validator.AtLeast(1),
 				},
@@ -80,11 +80,11 @@ func (p *FrameworkProvider) Schema(
 			},
 			"max_retries": schema.Int64Attribute{
 				Optional:    true,
-				Description: "Maximum number of retries.",
+				// Description: "Maximum number of retries.",
 			},
 			"max_retry_wait_seconds": schema.Int64Attribute{
 				Optional:    true,
-				Description: "Maximum number of seconds to wait before retrying a request.",
+				// Description: "Maximum number of seconds to wait before retrying a request.",
 			},
 		},
 	}
@@ -99,6 +99,6 @@ func (p *FrameworkProvider) Resources(ctx context.Context) []func() resource.Res
 func (p *FrameworkProvider) DataSources(ctx context.Context) []func() datasource.DataSource {
 	// return nil
 	return []func() datasource.DataSource{
-		metal_ssh_key.NewDataSource,
+		// metal_ssh_key.NewDataSource,
 	}
 }
