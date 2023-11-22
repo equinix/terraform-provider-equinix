@@ -26,6 +26,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/meta"
 	"github.com/packethost/packngo"
 	xoauth2 "golang.org/x/oauth2"
+	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 )
 
 var (
@@ -320,6 +321,27 @@ func (c *Config) AddModuleToNEUserAgent(client *ne.Client, d *schema.ResourceDat
 // the UserAgent resulting in swapped UserAgent.
 // This can be fixed by letting the headers be overwritten on the initialized Packngo ServiceOp
 // clients on a query-by-query basis.
+func (c *Config) AddFwModuleToMetalUserAgent(ctx context.Context, meta tfsdk.Config) {
+	c.Metal.UserAgent = generateFwModuleUserAgentString(ctx, meta, c.metalUserAgent)
+}
+
+func (c *Config) AddFwModuleToMetaGolUserAgent(ctx context.Context, meta tfsdk.Config) {
+	c.Metalgo.GetConfig().UserAgent = generateFwModuleUserAgentString(ctx, meta, c.metalGoUserAgent)
+}
+
+func generateFwModuleUserAgentString(ctx context.Context, meta tfsdk.Config, baseUserAgent string) string {
+	var m ProviderMeta
+	diags := meta.Get(ctx, &m)
+	if diags.HasError() {
+		log.Printf("[WARN] error retrieving provider_meta")
+		return baseUserAgent
+	}
+	if m.ModuleName != "" {
+		return strings.Join([]string{m.ModuleName, baseUserAgent}, " ")
+	}
+	return baseUserAgent
+}
+
 func (c *Config) AddModuleToMetalUserAgent(d *schema.ResourceData) {
 	c.Metal.UserAgent = generateModuleUserAgentString(d, c.metalUserAgent)
 }

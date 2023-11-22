@@ -56,7 +56,8 @@ func (r *Resource) Create(
 	req resource.CreateRequest,
 	resp *resource.CreateResponse,
 ) {
-	// r.Meta.AddModuleToMetalUserAgent(d)
+
+	r.Meta.AddFwModuleToMetalUserAgent(ctx, req.ProviderMeta)
 	client := r.Meta.Metal
 
 	// Retrieve values from plan
@@ -97,7 +98,7 @@ func (r *Resource) Read(
 	req resource.ReadRequest,
 	resp *resource.ReadResponse,
 ) {
-	// r.Meta.AddModuleToMetalUserAgent(d)
+	r.Meta.AddFwModuleToMetalUserAgent(ctx, req.ProviderMeta)
 	client := r.Meta.Metal
 
 	// Retrieve values from plan
@@ -147,7 +148,7 @@ func (r *Resource) Update(
     req resource.UpdateRequest,
     resp *resource.UpdateResponse,
 ) {
-	// r.Meta.AddModuleToMetalUserAgent(d)
+	r.Meta.AddFwModuleToMetalUserAgent(ctx, req.ProviderMeta)
 	client := r.Meta.Metal
 
 	// Retrieve values from plan
@@ -195,7 +196,7 @@ func (r *Resource) Delete(
 	req resource.DeleteRequest,
 	resp *resource.DeleteResponse,
 ) {
-	// r.Meta.AddModuleToMetalUserAgent(d)
+	r.Meta.AddFwModuleToMetalUserAgent(ctx, req.ProviderMeta)
 	client := r.Meta.Metal
 
 	// Retrieve values from plan

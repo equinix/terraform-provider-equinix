@@ -3,6 +3,7 @@ package internal
 import (
 	"context"
 	"fmt"
+	"regexp"
 
 	"github.com/equinix/terraform-provider-equinix/internal/config"
 	"github.com/equinix/terraform-provider-equinix/internal/metal_bgp_session"
@@ -13,7 +14,10 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/provider/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
+	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 )
+
+var urlRE = regexp.MustCompile(`^https?://(?:www\.)?[a-zA-Z0-9./]+$`)
 
 type FrameworkProvider struct {
 	ProviderVersion string
@@ -44,10 +48,9 @@ func (p *FrameworkProvider) Schema(
 			"endpoint": schema.StringAttribute{
 				Optional:    true,
 				Description: "The Equinix API base URL to point out desired environment. Defaults to " + config.DefaultBaseURL,
-				// TODO:
-				// Add Validator for url with scheme. It's hard to find where they moved url
-				// particualr validator to, if in even exist in the TF golang codebase.
-				// Select and add validators for other attributes too.
+				Validators: []validator.String{
+					stringvalidator.RegexMatches(urlRE, "must be a valid URL with http or https schema"),
+				},
 			},
 			"client_id": schema.StringAttribute{
 				Optional:    true,
