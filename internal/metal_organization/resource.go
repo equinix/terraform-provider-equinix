@@ -132,6 +132,7 @@ func (r *Resource) Create(ctx context.Context, req resource.CreateRequest, resp 
     // API call to create the organization
     org, _, err := client.Organizations.Create(&createRequest)
     if err != nil {
+        err = helper.FriendlyError(err)
         resp.Diagnostics.AddError(
             "Error creating Organization",
             "Could not create Organization: " + err.Error(),
