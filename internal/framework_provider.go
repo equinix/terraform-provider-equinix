@@ -8,6 +8,7 @@ import (
 	"github.com/equinix/terraform-provider-equinix/internal/config"
 	"github.com/equinix/terraform-provider-equinix/internal/metal_bgp_session"
 	"github.com/equinix/terraform-provider-equinix/internal/metal_ssh_key"
+	"github.com/equinix/terraform-provider-equinix/internal/metal_project"
 	"github.com/hashicorp/terraform-plugin-framework-validators/int64validator"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/provider"
@@ -98,6 +99,7 @@ func (p *FrameworkProvider) Resources(ctx context.Context) []func() resource.Res
 	return []func() resource.Resource{
 		metal_bgp_session.NewResource,
 		metal_ssh_key.NewResource,
+		metal_project.NewResource,
 	}
 }
 

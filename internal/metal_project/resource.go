@@ -22,14 +22,14 @@ import (
 var uuidRE = regexp.MustCompile("^[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-4[a-fA-F0-9]{3}-[8|9|aA|bB][a-fA-F0-9]{3}-[a-fA-F0-9]{12}$")
 
 type ProjectResourceModel struct {
-	ID              types.String  `tfsdk:"id"`
-	Name            types.String  `tfsdk:"name"`
-	Created         types.String  `tfsdk:"created"`
-	Updated         types.String  `tfsdk:"updated"`
-	BackendTransfer types.Bool    `tfsdk:"backend_transfer"`
-	PaymentMethodID types.String  `tfsdk:"payment_method_id"`
-	OrganizationID  types.String  `tfsdk:"organization_id"`
-	BGPConfig       *BGPConfigModel     `tfsdk:"bgp_config"`
+	ID              types.String    `tfsdk:"id"`
+	Name            types.String    `tfsdk:"name"`
+	Created         types.String    `tfsdk:"created"`
+	Updated         types.String    `tfsdk:"updated"`
+	BackendTransfer types.Bool      `tfsdk:"backend_transfer"`
+	PaymentMethodID types.String    `tfsdk:"payment_method_id"`
+	OrganizationID  types.String    `tfsdk:"organization_id"`
+	BGPConfig       *BGPConfigModel `tfsdk:"bgp_config"`
 }
 
 type BGPConfigModel struct {
@@ -56,8 +56,6 @@ func (bgp *BGPConfigModel) equal(other *BGPConfigModel) bool {
 
 func (rm *ProjectResourceModel) parse(project *packngo.Project, bgpConfig *packngo.BGPConfig) diag.Diagnostics {
 	var diags diag.Diagnostics
-
-	// Assuming 'project' is the API response object
 	rm.ID = types.StringValue(project.ID) 
 	rm.Name = types.StringValue(project.Name)
 	rm.Created = types.StringValue(project.Created)

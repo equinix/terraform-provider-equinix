@@ -166,7 +166,7 @@ func Provider() *schema.Provider {
 			"equinix_metal_organization_member":  resourceMetalOrganizationMember(),
 			"equinix_metal_port":                 resourceMetalPort(),
 			"equinix_metal_project_ssh_key":      resourceMetalProjectSSHKey(),
-			"equinix_metal_project":              resourceMetalProject(),
+			// "equinix_metal_project":              resourceMetalProject(),
 			"equinix_metal_organization":         resourceMetalOrganization(),
 			"equinix_metal_reserved_ip_block":    resourceMetalReservedIPBlock(),
 			"equinix_metal_ip_attachment":        resourceMetalIPAttachment(),
