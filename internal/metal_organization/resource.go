@@ -78,7 +78,7 @@ func NewResource() resource.Resource {
 	return &Resource{
 		BaseResource: helper.NewBaseResource(
 			helper.BaseResourceConfig{
-				Name:   "equinix_organization",
+				Name:   "equinix_metal_organization",
 				Schema: &organizationResourceSchema,
 			},
 		),
