@@ -157,6 +157,7 @@ func Provider() *schema.Provider {
 			"equinix_network_acl_template":       resourceNetworkACLTemplate(),
 			"equinix_network_device_link":        resourceNetworkDeviceLink(),
 			"equinix_network_file":               resourceNetworkFile(),
+	
 			"equinix_metal_user_api_key":         resourceMetalUserAPIKey(),
 			"equinix_metal_project_api_key":      resourceMetalProjectAPIKey(),
 			"equinix_metal_connection":           resourceMetalConnection(),
@@ -171,7 +172,7 @@ func Provider() *schema.Provider {
 			"equinix_metal_reserved_ip_block":    resourceMetalReservedIPBlock(),
 			"equinix_metal_ip_attachment":        resourceMetalIPAttachment(),
 			"equinix_metal_spot_market_request":  resourceMetalSpotMarketRequest(),
-			"equinix_metal_vlan":                 resourceMetalVlan(),
+			// "equinix_metal_vlan":                 resourceMetalVlan(),
 			"equinix_metal_virtual_circuit":      resourceMetalVirtualCircuit(),
 			"equinix_metal_vrf":                  resourceMetalVRF(),
 			// "equinix_metal_bgp_session":          resourceMetalBGPSession(),
