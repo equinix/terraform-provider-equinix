@@ -11,6 +11,7 @@ import (
 	"github.com/equinix/terraform-provider-equinix/internal/metal_project"
 	"github.com/equinix/terraform-provider-equinix/internal/metal_organization"
 	"github.com/equinix/terraform-provider-equinix/internal/metal_organization_member"
+	"github.com/equinix/terraform-provider-equinix/internal/metal_port"
 	"github.com/hashicorp/terraform-plugin-framework-validators/int64validator"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/provider"
@@ -104,6 +105,7 @@ func (p *FrameworkProvider) Resources(ctx context.Context) []func() resource.Res
 		metal_project.NewResource,
 		metal_organization.NewResource,
 		metal_organization_member.NewResource,
+		metal_port.NewResource,
 	}
 }
 

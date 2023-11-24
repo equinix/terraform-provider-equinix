@@ -18,6 +18,31 @@ type ClientPortData struct {
 	Data	MetalPortResourceModel
 }
 
+func updatePort(ctx context.Context, client *packngo.Client, plan MetalPortResourceModel) error {
+	start := time.Now()
+	cpd, _, err := getPortData(client, plan)
+	if err != nil {
+		return helper.FriendlyError(err)
+	}
+
+	for _, f := range [](func(*ClientPortData) error){
+		portSanityChecks(ctx),
+		batchVlans(ctx, start, true),
+		makeDisbond,
+		convertToL2,
+		makeBond,
+		convertToL3,
+		batchVlans(ctx, start, false),
+		updateNativeVlan,
+	} {
+		if err := f(cpd); err != nil {
+			return helper.FriendlyError(err)
+		}
+	}
+
+	return nil
+}
+
 func getPortData(client *packngo.Client, data MetalPortResourceModel) (*ClientPortData, *packngo.Response, error) {
 	getOpts := &packngo.GetOptions{Includes: []string{
 		"native_virtual_network",
@@ -52,7 +77,7 @@ func getPortByResourceData(d MetalPortResourceModel, client *packngo.Client) (*p
 	// check parameter sanity only for a new (not-yet-created) resource
 	if resourceId.IsNull() {
 		if !portId.IsNull() && (!deviceId.IsNull() || !portName.IsNull()) {
-			return nil, fmt.Errorf("you must specify either id or (device_id and name)")
+			return nil, fmt.Errorf("you must specify either port_id or (device_id and name)")
 		}
 	}
 
@@ -70,7 +95,7 @@ func getPortByResourceData(d MetalPortResourceModel, client *packngo.Client) (*p
 		}
 	} else {
 		if deviceId.IsNull() && portName.IsNull() {
-			return nil, fmt.Errorf("If you don't use port_id, you must supply both device_id and name")
+			return nil, fmt.Errorf("if you don't use port_id, you must supply both device_id and name")
 		}
 		device, _, err := client.Devices.Get(deviceId.ValueString(), getOpts)
 		if err != nil {
@@ -111,7 +136,8 @@ func specifiedVlanIds(ctx context.Context, d MetalPortResourceModel) ([]string, 
 		var ids []string
 		diags := d.VlanIDs.ElementsAs(ctx, &ids, false)
 		if diags.HasError(){
-			return nil, fmt.Errorf("%w", diags.Errors())
+			return nil, fmt.Errorf("failed to validate vlan IDs: %s", diags.Errors())
+			
 		}
 	}
 
@@ -119,7 +145,7 @@ func specifiedVlanIds(ctx context.Context, d MetalPortResourceModel) ([]string, 
 		var ids []string
 		diags := d.VxlanIDs.ElementsAs(ctx, &ids, false)
 		if diags.HasError(){
-			return nil, fmt.Errorf("%w", diags.Errors())
+			return nil, fmt.Errorf("failed to validate vxlan IDs: %s", diags.Errors())
 		}
 	}
 
