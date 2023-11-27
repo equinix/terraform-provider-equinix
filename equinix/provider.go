@@ -160,7 +160,7 @@ func Provider() *schema.Provider {
 	
 			"equinix_metal_user_api_key":         resourceMetalUserAPIKey(),
 			"equinix_metal_project_api_key":      resourceMetalProjectAPIKey(),
-			"equinix_metal_connection":           resourceMetalConnection(),
+			// "equinix_metal_connection":           resourceMetalConnection(),
 			"equinix_metal_device":               resourceMetalDevice(),
 			"equinix_metal_device_network_type":  resourceMetalDeviceNetworkType(),
 			// "equinix_metal_ssh_key":              resourceMetalSSHKey(),

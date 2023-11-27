@@ -7,19 +7,20 @@ import (
 
 	"github.com/equinix/terraform-provider-equinix/internal/config"
 	"github.com/equinix/terraform-provider-equinix/internal/metal_bgp_session"
-	"github.com/equinix/terraform-provider-equinix/internal/metal_ssh_key"
-	"github.com/equinix/terraform-provider-equinix/internal/metal_project"
+	"github.com/equinix/terraform-provider-equinix/internal/metal_connection"
 	"github.com/equinix/terraform-provider-equinix/internal/metal_organization"
 	"github.com/equinix/terraform-provider-equinix/internal/metal_organization_member"
 	"github.com/equinix/terraform-provider-equinix/internal/metal_port"
+	"github.com/equinix/terraform-provider-equinix/internal/metal_project"
+	"github.com/equinix/terraform-provider-equinix/internal/metal_ssh_key"
 	"github.com/equinix/terraform-provider-equinix/internal/metal_vlan"
 	"github.com/hashicorp/terraform-plugin-framework-validators/int64validator"
+	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/provider"
 	"github.com/hashicorp/terraform-plugin-framework/provider/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
-	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 )
 
 var urlRE = regexp.MustCompile(`^https?://(?:www\.)?[a-zA-Z0-9./]+$`)
@@ -108,6 +109,7 @@ func (p *FrameworkProvider) Resources(ctx context.Context) []func() resource.Res
 		metal_organization_member.NewResource,
 		metal_port.NewResource,
 		metal_vlan.NewResource,
+		metal_connection.NewResource,
 	}
 }
 
