@@ -4,6 +4,8 @@ import (
 	"errors"
 	"path"
 
+	equinix_errors "github.com/equinix/terraform-provider-equinix/internal/errors"
+
 	"github.com/equinix/terraform-provider-equinix/internal/config"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -86,10 +88,10 @@ func resourceMetalVlanCreate(d *schema.ResourceData, meta interface{}) error {
 	vxlanRaw, vxlanOk := d.GetOk("vxlan")
 
 	if !facOk && !metroOk {
-		return friendlyError(errors.New("one of facility or metro must be configured"))
+		return equinix_errors.FriendlyError(errors.New("one of facility or metro must be configured"))
 	}
 	if facOk && vxlanOk {
-		return friendlyError(errors.New("you can set vxlan only for metro vlans"))
+		return equinix_errors.FriendlyError(errors.New("you can set vxlan only for metro vlans"))
 	}
 
 	createRequest := &packngo.VirtualNetworkCreateRequest{
@@ -105,7 +107,7 @@ func resourceMetalVlanCreate(d *schema.ResourceData, meta interface{}) error {
 	}
 	vlan, _, err := client.ProjectVirtualNetworks.Create(createRequest)
 	if err != nil {
-		return friendlyError(err)
+		return equinix_errors.FriendlyError(err)
 	}
 	d.SetId(vlan.ID)
 	return resourceMetalVlanRead(d, meta)
@@ -118,8 +120,8 @@ func resourceMetalVlanRead(d *schema.ResourceData, meta interface{}) error {
 	vlan, _, err := client.ProjectVirtualNetworks.Get(d.Id(),
 		&packngo.GetOptions{Includes: []string{"assigned_to"}})
 	if err != nil {
-		err = friendlyError(err)
-		if isNotFound(err) {
+		err = equinix_errors.FriendlyError(err)
+		if equinix_errors.IsNotFound(err) {
 			d.SetId("")
 			return nil
 		}
@@ -140,8 +142,8 @@ func resourceMetalVlanDelete(d *schema.ResourceData, meta interface{}) error {
 
 	id := d.Id()
 	vlan, resp, err := client.ProjectVirtualNetworks.Get(id, &packngo.GetOptions{Includes: []string{"instances", "instances.network_ports.virtual_networks", "internet_gateway"}})
-	if ignoreResponseErrors(httpForbidden, httpNotFound)(resp, err) != nil {
-		return friendlyError(err)
+	if equinix_errors.IgnoreResponseErrors(equinix_errors.HttpForbidden, equinix_errors.HttpNotFound)(resp, err) != nil {
+		return equinix_errors.FriendlyError(err)
 	} else if err != nil {
 		// missing vlans are deleted
 		return nil
@@ -158,8 +160,8 @@ func resourceMetalVlanDelete(d *schema.ResourceData, meta interface{}) error {
 				if aID == id {
 					_, resp, err := client.Ports.Unassign(p.ID, id)
 
-					if ignoreResponseErrors(httpForbidden, httpNotFound)(resp, err) != nil {
-						return friendlyError(err)
+					if equinix_errors.IgnoreResponseErrors(equinix_errors.HttpForbidden, equinix_errors.HttpNotFound)(resp, err) != nil {
+						return equinix_errors.FriendlyError(err)
 					}
 				}
 			}
@@ -168,5 +170,5 @@ func resourceMetalVlanDelete(d *schema.ResourceData, meta interface{}) error {
 
 	// TODO(displague) do we need to unassign gateway connections before delete?
 
-	return friendlyError(ignoreResponseErrors(httpForbidden, httpNotFound)(client.ProjectVirtualNetworks.Delete(id)))
+	return equinix_errors.FriendlyError(equinix_errors.IgnoreResponseErrors(equinix_errors.HttpForbidden, equinix_errors.HttpNotFound)(client.ProjectVirtualNetworks.Delete(id)))
 }

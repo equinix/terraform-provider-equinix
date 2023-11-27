@@ -3,6 +3,9 @@ package equinix
 import (
 	"log"
 
+	equinix_errors "github.com/equinix/terraform-provider-equinix/internal/errors"
+	equinix_schema "github.com/equinix/terraform-provider-equinix/internal/schema"
+
 	"github.com/equinix/terraform-provider-equinix/internal/config"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -67,7 +70,7 @@ func resourceMetalAPIKeyCreate(d *schema.ResourceData, meta interface{}) error {
 
 	apiKey, _, err := client.APIKeys.Create(createRequest)
 	if err != nil {
-		return friendlyError(err)
+		return equinix_errors.FriendlyError(err)
 	}
 
 	d.SetId(apiKey.ID)
@@ -103,10 +106,10 @@ func resourceMetalAPIKeyRead(d *schema.ResourceData, meta interface{}) error {
 	}
 
 	if err != nil {
-		err = friendlyError(err)
+		err = equinix_errors.FriendlyError(err)
 		// If the key is somehow already destroyed, mark as
 		// succesfully gone
-		if isNotFound(err) {
+		if equinix_errors.IsNotFound(err) {
 			log.Printf("[WARN] Project APIKey (%s) not found, removing from state", d.Id())
 			d.SetId("")
 			return nil
@@ -131,7 +134,7 @@ func resourceMetalAPIKeyRead(d *schema.ResourceData, meta interface{}) error {
 		attrMap["user_id"] = apiKey.User.ID
 	}
 
-	return setMap(d, attrMap)
+	return equinix_schema.SetMap(d, attrMap)
 }
 
 func resourceMetalAPIKeyDelete(d *schema.ResourceData, meta interface{}) error {
@@ -139,8 +142,8 @@ func resourceMetalAPIKeyDelete(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*config.Config).Metal
 
 	resp, err := client.APIKeys.Delete(d.Id())
-	if ignoreResponseErrors(httpForbidden, httpNotFound)(resp, err) != nil {
-		return friendlyError(err)
+	if equinix_errors.IgnoreResponseErrors(equinix_errors.HttpForbidden, equinix_errors.HttpNotFound)(resp, err) != nil {
+		return equinix_errors.FriendlyError(err)
 	}
 
 	d.SetId("")

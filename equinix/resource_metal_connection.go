@@ -7,6 +7,9 @@ import (
 	"strconv"
 	"strings"
 
+	equinix_errors "github.com/equinix/terraform-provider-equinix/internal/errors"
+	equinix_schema "github.com/equinix/terraform-provider-equinix/internal/schema"
+
 	"github.com/equinix/terraform-provider-equinix/internal/config"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -295,7 +298,7 @@ func resourceMetalConnectionCreate(d *schema.ResourceData, meta interface{}) err
 			}
 			proj, _, err := client.Projects.Get(projectId.(string), &packngo.GetOptions{Includes: []string{"organization"}})
 			if err != nil {
-				return friendlyError(err)
+				return equinix_errors.FriendlyError(err)
 			}
 			organizationId = proj.Organization.ID
 		}
@@ -328,7 +331,7 @@ func resourceMetalConnectionUpdate(d *schema.ResourceData, meta interface{}) err
 			action = client.Devices.Unlock
 		}
 		if _, err := action(d.Id()); err != nil {
-			return friendlyError(err)
+			return equinix_errors.FriendlyError(err)
 		}
 	}
 	ur := packngo.ConnectionUpdateRequest{}
@@ -362,13 +365,13 @@ func resourceMetalConnectionUpdate(d *schema.ResourceData, meta interface{}) err
 			}
 			ur.Tags = sts
 		default:
-			return friendlyError(fmt.Errorf("garbage in tags: %s", ts))
+			return equinix_errors.FriendlyError(fmt.Errorf("garbage in tags: %s", ts))
 		}
 	}
 
 	if !reflect.DeepEqual(ur, packngo.ConnectionUpdateRequest{}) {
 		if _, _, err := client.Connections.Update(d.Id(), &ur, nil); err != nil {
-			return friendlyError(err)
+			return equinix_errors.FriendlyError(err)
 		}
 	}
 
@@ -389,19 +392,19 @@ func resourceMetalConnectionUpdate(d *schema.ResourceData, meta interface{}) err
 					if i+1 > len(newVlans) {
 						// The VNID was removed; unassign the old VNID
 						if _, _, err := updateHiddenVirtualCircuitVNID(client, ports[i].(map[string]interface{}), ""); err != nil {
-							return friendlyError(err)
+							return equinix_errors.FriendlyError(err)
 						}
 					} else {
 						j := slices.Index(oldVlans, newVlans[i])
 						if j > i {
 							// The VNID was moved to a different list index; unassign the VNID for the old index so that it is available for reassignment
 							if _, _, err := updateHiddenVirtualCircuitVNID(client, ports[j].(map[string]interface{}), ""); err != nil {
-								return friendlyError(err)
+								return equinix_errors.FriendlyError(err)
 							}
 						}
 						// Assign the VNID (whether it is new or moved) to the correct port
 						if _, _, err := updateHiddenVirtualCircuitVNID(client, ports[i].(map[string]interface{}), strconv.Itoa(newVlans[i])); err != nil {
-							return friendlyError(err)
+							return equinix_errors.FriendlyError(err)
 						}
 					}
 				}
@@ -469,7 +472,7 @@ func resourceMetalConnectionRead(d *schema.ResourceData, meta interface{}) error
 		d.Set("vlans", vlans)
 	}
 
-	return setMap(d, map[string]interface{}{
+	return equinix_schema.SetMap(d, map[string]interface{}{
 		"organization_id":    conn.Organization.ID,
 		"project_id":         projectId,
 		"contact_email":      conn.ContactEmail,
@@ -494,8 +497,8 @@ func resourceMetalConnectionDelete(d *schema.ResourceData, meta interface{}) err
 	meta.(*config.Config).AddModuleToMetalUserAgent(d)
 	client := meta.(*config.Config).Metal
 	resp, err := client.Connections.Delete(d.Id(), true)
-	if ignoreResponseErrors(httpForbidden, httpNotFound)(resp, err) != nil {
-		return friendlyError(err)
+	if equinix_errors.IgnoreResponseErrors(equinix_errors.HttpForbidden, equinix_errors.HttpNotFound)(resp, err) != nil {
+		return equinix_errors.FriendlyError(err)
 	}
 	return nil
 }

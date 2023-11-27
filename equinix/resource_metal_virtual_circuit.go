@@ -9,6 +9,9 @@ import (
 	"strconv"
 	"time"
 
+	equinix_errors "github.com/equinix/terraform-provider-equinix/internal/errors"
+	equinix_schema "github.com/equinix/terraform-provider-equinix/internal/schema"
+
 	"github.com/equinix/terraform-provider-equinix/internal/config"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
@@ -227,7 +230,7 @@ func resourceMetalVirtualCircuitRead(ctx context.Context, d *schema.ResourceData
 		log.Printf("[DEBUG] Could not parse connection and port ID from port href %s", vc.Port.Href.Href)
 	}
 
-	return setMap(d, map[string]interface{}{
+	return equinix_schema.SetMap(d, map[string]interface{}{
 		"project_id": vc.Project.ID,
 		"port_id":    portID,
 		"vlan_id": func(d *schema.ResourceData, k string) error {
@@ -317,13 +320,13 @@ func resourceMetalVirtualCircuitUpdate(ctx context.Context, d *schema.ResourceDa
 			}
 			ur.Tags = &sts
 		default:
-			return friendlyError(fmt.Errorf("garbage in tags: %s", ts))
+			return equinix_errors.FriendlyError(fmt.Errorf("garbage in tags: %s", ts))
 		}
 	}
 
 	if !reflect.DeepEqual(ur, packngo.VCUpdateRequest{}) {
 		if _, _, err := client.VirtualCircuits.Update(d.Id(), &ur, nil); err != nil {
-			return friendlyError(err)
+			return equinix_errors.FriendlyError(err)
 		}
 	}
 	return resourceMetalVirtualCircuitRead(ctx, d, meta)
@@ -334,8 +337,8 @@ func resourceMetalVirtualCircuitDelete(ctx context.Context, d *schema.ResourceDa
 	client := meta.(*config.Config).Metal
 
 	resp, err := client.VirtualCircuits.Delete(d.Id())
-	if ignoreResponseErrors(httpForbidden, httpNotFound)(resp, err) != nil {
-		return friendlyError(err)
+	if equinix_errors.IgnoreResponseErrors(equinix_errors.HttpForbidden, equinix_errors.HttpNotFound)(resp, err) != nil {
+		return equinix_errors.FriendlyError(err)
 	}
 
 	deleteWaiter := getVCStateWaiter(
@@ -347,7 +350,7 @@ func resourceMetalVirtualCircuitDelete(ctx context.Context, d *schema.ResourceDa
 	)
 
 	_, err = deleteWaiter.WaitForStateContext(ctx)
-	if ignoreResponseErrors(httpForbidden, httpNotFound)(nil, err) != nil {
+	if equinix_errors.IgnoreResponseErrors(equinix_errors.HttpForbidden, equinix_errors.HttpNotFound)(nil, err) != nil {
 		return fmt.Errorf("Error deleting virtual circuit %s: %s", d.Id(), err)
 	}
 	d.SetId("")

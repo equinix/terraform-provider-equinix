@@ -8,6 +8,8 @@ import (
 	"strings"
 	"time"
 
+	equinix_schema "github.com/equinix/terraform-provider-equinix/internal/schema"
+
 	"github.com/equinix/terraform-provider-equinix/internal/config"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 
@@ -280,7 +282,7 @@ func setFabricRoutingProtocolMap(d *schema.ResourceData, rp v4.RoutingProtocolDa
 
 	err := error(nil)
 	if rp.Type_ == "BGP" {
-		err = setMap(d, map[string]interface{}{
+		err = equinix_schema.SetMap(d, map[string]interface{}{
 			"name":         rp.RoutingProtocolBgpData.Name,
 			"href":         rp.RoutingProtocolBgpData.Href,
 			"type":         rp.RoutingProtocolBgpData.Type_,
@@ -296,7 +298,7 @@ func setFabricRoutingProtocolMap(d *schema.ResourceData, rp v4.RoutingProtocolDa
 			"change_log":   changeLogToTerra(rp.RoutingProtocolBgpData.Changelog),
 		})
 	} else if rp.Type_ == "DIRECT" {
-		err = setMap(d, map[string]interface{}{
+		err = equinix_schema.SetMap(d, map[string]interface{}{
 			"name":        rp.RoutingProtocolDirectData.Name,
 			"href":        rp.RoutingProtocolDirectData.Href,
 			"type":        rp.RoutingProtocolDirectData.Type_,

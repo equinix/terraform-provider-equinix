@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"strings"
 
+	equinix_schema "github.com/equinix/terraform-provider-equinix/internal/schema"
+
 	"github.com/equinix/terraform-provider-equinix/internal/config"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -122,7 +124,7 @@ func dataSourceMetalFacilityRead(d *schema.ResourceData, meta interface{}) error
 				}
 			}
 			d.SetId(f.ID)
-			return setMap(d, map[string]interface{}{
+			return equinix_schema.SetMap(d, map[string]interface{}{
 				"code":     f.Code,
 				"name":     f.Name,
 				"features": f.Features,

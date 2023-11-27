@@ -7,6 +7,8 @@ import (
 	"strings"
 	"time"
 
+	equinix_schema "github.com/equinix/terraform-provider-equinix/internal/schema"
+
 	"github.com/equinix/terraform-provider-equinix/internal/config"
 
 	v4 "github.com/equinix-labs/fabric-go/fabric/v4"
@@ -98,7 +100,7 @@ func resourceCloudRouterRead(ctx context.Context, d *schema.ResourceData, meta i
 
 func setCloudRouterMap(d *schema.ResourceData, fcr v4.CloudRouter) diag.Diagnostics {
 	diags := diag.Diagnostics{}
-	err := setMap(d, map[string]interface{}{
+	err := equinix_schema.SetMap(d, map[string]interface{}{
 		"name":                  fcr.Name,
 		"href":                  fcr.Href,
 		"type":                  fcr.Type_,

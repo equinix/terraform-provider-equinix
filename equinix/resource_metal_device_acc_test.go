@@ -1038,7 +1038,7 @@ func TestAccMetalDevice_readErrorHandling(t *testing.T) {
 				newResource: false,
 				handler: func(w http.ResponseWriter, r *http.Request) {
 					w.Header().Add("Content-Type", "application/json")
-					w.Header().Add("X-Request-Id", "needed for friendlyError")
+					w.Header().Add("X-Request-Id", "needed for equinix_errors.FriendlyError")
 					w.WriteHeader(http.StatusForbidden)
 				},
 			},
@@ -1050,7 +1050,7 @@ func TestAccMetalDevice_readErrorHandling(t *testing.T) {
 				newResource: false,
 				handler: func(w http.ResponseWriter, r *http.Request) {
 					w.Header().Add("Content-Type", "application/json")
-					w.Header().Add("X-Request-Id", "needed for friendlyError")
+					w.Header().Add("X-Request-Id", "needed for equinix_errors.FriendlyError")
 					w.WriteHeader(http.StatusNotFound)
 				},
 			},
@@ -1062,7 +1062,7 @@ func TestAccMetalDevice_readErrorHandling(t *testing.T) {
 				newResource: true,
 				handler: func(w http.ResponseWriter, r *http.Request) {
 					w.Header().Add("Content-Type", "application/json")
-					w.Header().Add("X-Request-Id", "needed for friendlyError")
+					w.Header().Add("X-Request-Id", "needed for equinix_errors.FriendlyError")
 					w.WriteHeader(http.StatusForbidden)
 				},
 			},
@@ -1074,7 +1074,7 @@ func TestAccMetalDevice_readErrorHandling(t *testing.T) {
 				newResource: true,
 				handler: func(w http.ResponseWriter, r *http.Request) {
 					w.Header().Add("Content-Type", "application/json")
-					w.Header().Add("X-Request-Id", "needed for friendlyError")
+					w.Header().Add("X-Request-Id", "needed for equinix_errors.FriendlyError")
 					w.WriteHeader(http.StatusNotFound)
 				},
 			},
@@ -1086,7 +1086,7 @@ func TestAccMetalDevice_readErrorHandling(t *testing.T) {
 				newResource: true,
 				handler: func(w http.ResponseWriter, r *http.Request) {
 					w.Header().Add("Content-Type", "application/json")
-					w.Header().Add("X-Request-Id", "needed for friendlyError")
+					w.Header().Add("X-Request-Id", "needed for equinix_errors.FriendlyError")
 					w.WriteHeader(http.StatusBadRequest)
 				},
 			},

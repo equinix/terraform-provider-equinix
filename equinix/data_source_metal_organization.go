@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"path"
 
+	equinix_schema "github.com/equinix/terraform-provider-equinix/internal/schema"
+
 	"github.com/equinix/terraform-provider-equinix/internal/config"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -147,7 +149,7 @@ func dataSourceMetalOrganizationRead(d *schema.ResourceData, meta interface{}) e
 	}
 
 	d.SetId(org.ID)
-	return setMap(d, map[string]interface{}{
+	return equinix_schema.SetMap(d, map[string]interface{}{
 		"organization_id": org.ID,
 		"name":            org.Name,
 		"description":     org.Description,

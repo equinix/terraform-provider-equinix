@@ -9,6 +9,8 @@ import (
 	"strings"
 	"time"
 
+	equinix_schema "github.com/equinix/terraform-provider-equinix/internal/schema"
+
 	"github.com/antihax/optional"
 	"github.com/equinix/terraform-provider-equinix/internal/config"
 
@@ -236,7 +238,7 @@ func resourceFabricServiceProfileDelete(ctx context.Context, d *schema.ResourceD
 
 func setFabricServiceProfileMap(d *schema.ResourceData, sp v4.ServiceProfile) diag.Diagnostics {
 	diags := diag.Diagnostics{}
-	err := setMap(d, map[string]interface{}{
+	err := equinix_schema.SetMap(d, map[string]interface{}{
 		"href":                      sp.Href,
 		"type":                      sp.Type_,
 		"name":                      sp.Name,
@@ -265,7 +267,7 @@ func setFabricServiceProfileMap(d *schema.ResourceData, sp v4.ServiceProfile) di
 
 func setFabricServiceProfilesListMap(d *schema.ResourceData, spl v4.ServiceProfiles) diag.Diagnostics {
 	diags := diag.Diagnostics{}
-	err := setMap(d, map[string]interface{}{
+	err := equinix_schema.SetMap(d, map[string]interface{}{
 		"data": fabricServiceProfilesListToTerra(spl),
 	})
 	if err != nil {

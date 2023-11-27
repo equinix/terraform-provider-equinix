@@ -8,6 +8,8 @@ import (
 	"runtime/debug"
 	"strings"
 
+	equinix_schema "github.com/equinix/terraform-provider-equinix/internal/schema"
+
 	"github.com/equinix/terraform-provider-equinix/internal/config"
 
 	"github.com/antihax/optional"
@@ -33,7 +35,7 @@ func resourceFabricPortRead(ctx context.Context, d *schema.ResourceData, meta in
 
 func setFabricPortMap(d *schema.ResourceData, port v4.Port) diag.Diagnostics {
 	diags := diag.Diagnostics{}
-	err := setMap(d, map[string]interface{}{
+	err := equinix_schema.SetMap(d, map[string]interface{}{
 		"name":                port.Name,
 		"bandwidth":           port.Bandwidth,
 		"available_bandwidth": port.AvailableBandwidth,
@@ -60,7 +62,7 @@ func setFabricPortMap(d *schema.ResourceData, port v4.Port) diag.Diagnostics {
 
 func setPortsListMap(d *schema.ResourceData, spl v4.AllPortsResponse) diag.Diagnostics {
 	diags := diag.Diagnostics{}
-	err := setMap(d, map[string]interface{}{
+	err := equinix_schema.SetMap(d, map[string]interface{}{
 		"data": fabricPortsListToTerra(spl),
 	})
 	if err != nil {

@@ -12,6 +12,8 @@ import (
 	"sort"
 	"time"
 
+	equinix_errors "github.com/equinix/terraform-provider-equinix/internal/errors"
+
 	"github.com/equinix/terraform-provider-equinix/internal/config"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
@@ -534,13 +536,13 @@ func resourceMetalDeviceCreate(ctx context.Context, d *schema.ResourceData, meta
 	} else {
 		wfrd := "wait_for_reservation_deprovision"
 		if d.Get(wfrd).(bool) {
-			return friendlyError(fmt.Errorf("You can't set %s when not using a hardware reservation", wfrd))
+			return equinix_errors.FriendlyError(fmt.Errorf("You can't set %s when not using a hardware reservation", wfrd))
 		}
 	}
 
 	if createRequest.OS == "custom_ipxe" {
 		if createRequest.IPXEScriptURL == "" && createRequest.UserData == "" {
-			return friendlyError(errors.New("\"ipxe_script_url\" or \"user_data\"" +
+			return equinix_errors.FriendlyError(errors.New("\"ipxe_script_url\" or \"user_data\"" +
 				" must be provided when \"custom_ipxe\" OS is selected."))
 		}
 
@@ -548,14 +550,14 @@ func resourceMetalDeviceCreate(ctx context.Context, d *schema.ResourceData, meta
 		// which case it's an error.
 		if createRequest.IPXEScriptURL != "" {
 			if matchIPXEScript.MatchString(createRequest.UserData) {
-				return friendlyError(errors.New("\"user_data\" should not be an iPXE " +
+				return equinix_errors.FriendlyError(errors.New("\"user_data\" should not be an iPXE " +
 					"script when \"ipxe_script_url\" is also provided."))
 			}
 		}
 	}
 
 	if createRequest.OS != "custom_ipxe" && createRequest.IPXEScriptURL != "" {
-		return friendlyError(errors.New("\"ipxe_script_url\" argument provided, but" +
+		return equinix_errors.FriendlyError(errors.New("\"ipxe_script_url\" argument provided, but" +
 			" OS is not \"custom_ipxe\". Please verify and fix device arguments."))
 	}
 
@@ -594,8 +596,8 @@ func resourceMetalDeviceCreate(ctx context.Context, d *schema.ResourceData, meta
 	start := time.Now()
 	newDevice, _, err := client.Devices.Create(createRequest)
 	if err != nil {
-		retErr := friendlyError(err)
-		if isNotFound(retErr) {
+		retErr := equinix_errors.FriendlyError(err)
+		if equinix_errors.IsNotFound(retErr) {
 			retErr = fmt.Errorf("%s, make sure project \"%s\" exists", retErr, createRequest.ProjectID)
 		}
 		return retErr
@@ -617,12 +619,12 @@ func resourceMetalDeviceRead(ctx context.Context, d *schema.ResourceData, meta i
 
 	device, resp, err := client.DevicesApi.FindDeviceById(context.Background(), d.Id()).Include(deviceCommonIncludes).Execute()
 	if err != nil {
-		err = friendlyErrorForMetalGo(err, resp)
+		err = equinix_errors.FriendlyErrorForMetalGo(err, resp)
 
 		// If the device somehow already destroyed, mark as successfully gone.
 		// Checking d.IsNewResource prevents the creation of a resource from failing
 		// silently. Note d.IsNewResource is false in resource import operations.
-		if !d.IsNewResource() && (isNotFound(err) || isForbidden(err)) {
+		if !d.IsNewResource() && (equinix_errors.IsNotFound(err) || equinix_errors.IsForbidden(err)) {
 			log.Printf("[WARN] Device (%s) not found or in failed status, removing from state", d.Id())
 			d.SetId("")
 			return nil
@@ -730,7 +732,7 @@ func resourceMetalDeviceUpdate(ctx context.Context, d *schema.ResourceData, meta
 			action = client.Devices.Unlock
 		}
 		if _, err := action(d.Id()); err != nil {
-			return friendlyError(err)
+			return equinix_errors.FriendlyError(err)
 		}
 	}
 	ur := packngo.DeviceUpdateRequest{}
@@ -762,7 +764,7 @@ func resourceMetalDeviceUpdate(ctx context.Context, d *schema.ResourceData, meta
 			}
 			ur.Tags = &sts
 		default:
-			return friendlyError(fmt.Errorf("garbage in tags: %s", ts))
+			return equinix_errors.FriendlyError(fmt.Errorf("garbage in tags: %s", ts))
 		}
 	}
 	if d.HasChange("ipxe_script_url") {
@@ -777,7 +779,7 @@ func resourceMetalDeviceUpdate(ctx context.Context, d *schema.ResourceData, meta
 	start := time.Now()
 	if !reflect.DeepEqual(ur, packngo.DeviceUpdateRequest{}) {
 		if _, _, err := client.Devices.Update(d.Id(), &ur); err != nil {
-			return friendlyError(err)
+			return equinix_errors.FriendlyError(err)
 		}
 	}
 
@@ -813,7 +815,7 @@ func doReinstall(ctx context.Context, client *packngo.Client, d *schema.Resource
 		}
 
 		if _, err := client.Devices.Reinstall(d.Id(), &reinstallOptions); err != nil {
-			return friendlyError(err)
+			return equinix_errors.FriendlyError(err)
 		}
 
 		updateTimeout := d.Timeout(schema.TimeoutUpdate) - 30*time.Second - time.Since(start)
@@ -838,8 +840,8 @@ func resourceMetalDeviceDelete(ctx context.Context, d *schema.ResourceData, meta
 	start := time.Now()
 
 	resp, err := client.Devices.Delete(d.Id(), fdv)
-	if ignoreResponseErrors(httpForbidden, httpNotFound)(resp, err) != nil {
-		return friendlyError(err)
+	if equinix_errors.IgnoreResponseErrors(equinix_errors.HttpForbidden, equinix_errors.HttpNotFound)(resp, err) != nil {
+		return equinix_errors.FriendlyError(err)
 	}
 
 	resId, resIdOk := d.GetOk("deployed_hardware_reservation_id")
@@ -885,8 +887,8 @@ func waitForActiveDevice(ctx context.Context, d *schema.ResourceData, meta inter
 	state, err := waitForDeviceAttribute(ctx, d, stateConf)
 	if err != nil {
 		d.SetId("")
-		fErr := friendlyError(err)
-		if isForbidden(fErr) {
+		fErr := equinix_errors.FriendlyError(err)
+		if equinix_errors.IsForbidden(fErr) {
 			// If the device doesn't get to the active state, we can't recover it from here.
 
 			return errors.New("provisioning time limit exceeded; the Equinix Metal team will investigate")

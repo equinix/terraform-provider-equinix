@@ -5,6 +5,9 @@ import (
 	"log"
 	"time"
 
+	equinix_errors "github.com/equinix/terraform-provider-equinix/internal/errors"
+	equinix_schema "github.com/equinix/terraform-provider-equinix/internal/schema"
+
 	"github.com/equinix/terraform-provider-equinix/internal/config"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -123,7 +126,7 @@ func resourceMetalPortUpdate(ctx context.Context, d *schema.ResourceData, meta i
 	start := time.Now()
 	cpr, _, err := getClientPortResource(d, meta)
 	if err != nil {
-		return friendlyError(err)
+		return equinix_errors.FriendlyError(err)
 	}
 
 	for _, f := range [](func(*ClientPortResource) error){
@@ -137,7 +140,7 @@ func resourceMetalPortUpdate(ctx context.Context, d *schema.ResourceData, meta i
 		updateNativeVlan,
 	} {
 		if err := f(cpr); err != nil {
-			return friendlyError(err)
+			return equinix_errors.FriendlyError(err)
 		}
 	}
 
@@ -150,7 +153,7 @@ func resourceMetalPortRead(ctx context.Context, d *schema.ResourceData, meta int
 
 	port, err := getPortByResourceData(d, client)
 	if err != nil {
-		if isNotFound(err) || isForbidden(err) {
+		if equinix_errors.IsNotFound(err) || equinix_errors.IsForbidden(err) {
 			log.Printf("[WARN] Port (%s) not accessible, removing from state", d.Id())
 			d.SetId("")
 
@@ -196,7 +199,7 @@ func resourceMetalPortRead(ctx context.Context, d *schema.ResourceData, meta int
 	}
 
 	d.SetId(port.ID)
-	return setMap(d, m)
+	return equinix_schema.SetMap(d, m)
 }
 
 func resourceMetalPortDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) error {
@@ -204,7 +207,7 @@ func resourceMetalPortDelete(ctx context.Context, d *schema.ResourceData, meta i
 	if resetOk && resetRaw.(bool) {
 		start := time.Now()
 		cpr, resp, err := getClientPortResource(d, meta)
-		if ignoreResponseErrors(httpForbidden, httpNotFound)(resp, err) != nil {
+		if equinix_errors.IgnoreResponseErrors(equinix_errors.HttpForbidden, equinix_errors.HttpNotFound)(resp, err) != nil {
 			return err
 		}
 
@@ -214,7 +217,7 @@ func resourceMetalPortDelete(ctx context.Context, d *schema.ResourceData, meta i
 		port := resourceMetalPort()
 		copy := port.Data(d.State())
 		cpr.Resource = copy
-		if err = setMap(cpr.Resource, map[string]interface{}{
+		if err = equinix_schema.SetMap(cpr.Resource, map[string]interface{}{
 			"layer2":         false,
 			"bonded":         true,
 			"native_vlan_id": nil,
