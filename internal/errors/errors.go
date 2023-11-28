@@ -1,11 +1,9 @@
 package errors
 
 import (
-	"fmt"
+	"github.com/packethost/packngo"
 	"net/http"
 	"strings"
-
-	"github.com/packethost/packngo"
 )
 
 // FriendlyError improves error messages when the API error is blank or in an
