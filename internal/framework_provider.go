@@ -14,6 +14,7 @@ import (
 	"github.com/equinix/terraform-provider-equinix/internal/metal_project"
 	"github.com/equinix/terraform-provider-equinix/internal/metal_ssh_key"
 	"github.com/equinix/terraform-provider-equinix/internal/metal_vlan"
+	"github.com/equinix/terraform-provider-equinix/internal/metal_gateway"
 	"github.com/hashicorp/terraform-plugin-framework-validators/int64validator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
@@ -110,6 +111,9 @@ func (p *FrameworkProvider) Resources(ctx context.Context) []func() resource.Res
 		metal_port.NewResource,
 		metal_vlan.NewResource,
 		metal_connection.NewResource,
+		func() resource.Resource {
+            return metal_gateway.NewResource(ctx)
+        },
 	}
 }
 

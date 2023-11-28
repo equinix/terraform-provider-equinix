@@ -177,7 +177,7 @@ func Provider() *schema.Provider {
 			"equinix_metal_vrf":                  resourceMetalVRF(),
 			// "equinix_metal_bgp_session":          resourceMetalBGPSession(),
 			"equinix_metal_port_vlan_attachment": resourceMetalPortVlanAttachment(),
-			"equinix_metal_gateway":              resourceMetalGateway(),
+			// "equinix_metal_gateway":              resourceMetalGateway(),
 		},
 		ProviderMetaSchema: map[string]*schema.Schema{
 			"module_name": {
