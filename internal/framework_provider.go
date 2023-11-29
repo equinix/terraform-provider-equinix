@@ -8,13 +8,14 @@ import (
 	"github.com/equinix/terraform-provider-equinix/internal/config"
 	"github.com/equinix/terraform-provider-equinix/internal/metal_bgp_session"
 	"github.com/equinix/terraform-provider-equinix/internal/metal_connection"
+	"github.com/equinix/terraform-provider-equinix/internal/metal_gateway"
+	"github.com/equinix/terraform-provider-equinix/internal/metal_ip_attachment"
 	"github.com/equinix/terraform-provider-equinix/internal/metal_organization"
 	"github.com/equinix/terraform-provider-equinix/internal/metal_organization_member"
 	"github.com/equinix/terraform-provider-equinix/internal/metal_port"
 	"github.com/equinix/terraform-provider-equinix/internal/metal_project"
 	"github.com/equinix/terraform-provider-equinix/internal/metal_ssh_key"
 	"github.com/equinix/terraform-provider-equinix/internal/metal_vlan"
-	"github.com/equinix/terraform-provider-equinix/internal/metal_gateway"
 	"github.com/hashicorp/terraform-plugin-framework-validators/int64validator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
@@ -114,6 +115,7 @@ func (p *FrameworkProvider) Resources(ctx context.Context) []func() resource.Res
 		func() resource.Resource {
             return metal_gateway.NewResource(ctx)
         },
+		metal_ip_attachment.NewResource,
 	}
 }
 
