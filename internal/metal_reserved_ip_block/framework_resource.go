@@ -88,8 +88,8 @@ func (r *Resource) Create(ctx context.Context, req resource.CreateRequest, resp 
     if err != nil {
         err = helper.FriendlyError(err)
         resp.Diagnostics.AddError(
-            "Error creating MetalReservedIPBlock",
-            fmt.Sprintf("Could not create MetalReservedIPBlock: %s", err),
+            "Error creating Metal Reserved IPBlock",
+            fmt.Sprintf("Could not create Metal Reserved IP Block: %s", err),
         )
         return
     }
@@ -193,7 +193,7 @@ func (r *Resource) Read(ctx context.Context, req resource.ReadRequest, resp *res
 
 		resp.Diagnostics.AddError(
 			"Error reading Metal Reserved IP Block",
-			fmt.Sprintf("Could not read MetalReservedIPBlock with ID %s: %s", id, err),
+			fmt.Sprintf("Could not read Metal Reserved IP Block with ID %s: %s", id, err),
 		)
 		return
     }
@@ -257,8 +257,8 @@ func (r *Resource) Update(ctx context.Context, req resource.UpdateRequest, resp 
     if err != nil {
         err = helper.FriendlyError(err)
         resp.Diagnostics.AddError(
-            "Error updating MetalReservedIPBlock",
-            fmt.Sprintf("Could not update MetalReservedIPBlock with ID %s: %s", id, err),
+            "Error updating Metal Reserved IP Block",
+            fmt.Sprintf("Could not update Metal Reserved IP Block with ID %s: %s", id, err),
         )
         return
     }
