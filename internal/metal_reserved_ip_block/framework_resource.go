@@ -115,7 +115,7 @@ func (r *Resource) Create(ctx context.Context, req resource.CreateRequest, resp 
     if err != nil {
         err = helper.FriendlyError(err)
         resp.Diagnostics.AddError(
-            "Error waiting for creationg of IP Reservation",
+            "Error waiting for creation of IP Reservation",
             fmt.Sprintf("error waiting for IP Reservation (%s) to become %s: %s", blockAddr.ID, wfs, err),
         )
         return

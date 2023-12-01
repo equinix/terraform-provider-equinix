@@ -16,6 +16,7 @@ import (
 	"github.com/equinix/terraform-provider-equinix/internal/metal_project"
 	"github.com/equinix/terraform-provider-equinix/internal/metal_reserved_ip_block"
 	"github.com/equinix/terraform-provider-equinix/internal/metal_ssh_key"
+	"github.com/equinix/terraform-provider-equinix/internal/metal_virtual_circuit"
 	"github.com/equinix/terraform-provider-equinix/internal/metal_vlan"
 	"github.com/equinix/terraform-provider-equinix/internal/metal_vrf"
 	"github.com/hashicorp/terraform-plugin-framework-validators/int64validator"
@@ -122,6 +123,9 @@ func (p *FrameworkProvider) Resources(ctx context.Context) []func() resource.Res
             return metal_reserved_ip_block.NewResource(ctx)
         },
 		metal_vrf.NewResource,
+		func() resource.Resource {
+            return metal_virtual_circuit.NewResource(ctx)
+        },
 	}
 }
 

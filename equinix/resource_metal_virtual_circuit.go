@@ -160,21 +160,8 @@ func resourceMetalVirtualCircuitCreate(ctx context.Context, d *schema.ResourceDa
 	portId := d.Get("port_id").(string)
 	projectId := d.Get("project_id").(string)
 
-	tags := d.Get("tags.#").(int)
-	if tags > 0 {
-		vncr.Tags = convertStringArr(d.Get("tags").([]interface{}))
-	}
+	
 
-	if nniVlan, ok := d.GetOk("nni_vlan"); ok {
-		vncr.NniVLAN = nniVlan.(int)
-	}
-	conn, _, err := client.Connections.Get(connId, nil)
-	if err != nil {
-		return err
-	}
-	if conn.Status == string(packngo.VCStatusPending) {
-		return fmt.Errorf("Connection request with name %s and ID %s wasn't approved yet", conn.Name, conn.ID)
-	}
 
 	vc, _, err := client.VirtualCircuits.Create(projectId, connId, portId, &vncr, nil)
 	if err != nil {

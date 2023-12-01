@@ -173,7 +173,7 @@ func Provider() *schema.Provider {
 			// "equinix_metal_ip_attachment":        resourceMetalIPAttachment(),
 			"equinix_metal_spot_market_request":  resourceMetalSpotMarketRequest(),
 			// "equinix_metal_vlan":                 resourceMetalVlan(),
-			"equinix_metal_virtual_circuit":      resourceMetalVirtualCircuit(),
+			// "equinix_metal_virtual_circuit":      resourceMetalVirtualCircuit(),
 			// "equinix_metal_vrf":                  resourceMetalVRF(),
 			// "equinix_metal_bgp_session":          resourceMetalBGPSession(),
 			"equinix_metal_port_vlan_attachment": resourceMetalPortVlanAttachment(),

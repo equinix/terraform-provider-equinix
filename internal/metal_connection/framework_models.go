@@ -148,15 +148,15 @@ func (rm *MetalConnectionResourceModel) parseConnectionPorts(ctx context.Context
     }
 
     for _, p := range cps {
-         // Parse VirtualCircuits
-         portVcIDs := make([]string, len(p.VirtualCircuits))
-         for i, vc := range p.VirtualCircuits {
-             portVcIDs[i] = vc.ID
-         }
-         vcIDs, diags := types.ListValueFrom(ctx, types.StringType, portVcIDs)
-         if diags.HasError() {
-             return diags
-         }
+        // Parse VirtualCircuits
+        portVcIDs := make([]string, len(p.VirtualCircuits))
+        for i, vc := range p.VirtualCircuits {
+            portVcIDs[i] = vc.ID
+        }
+        vcIDs, diags := types.ListValueFrom(ctx, types.StringType, portVcIDs)
+        if diags.HasError() {
+            return diags
+        }
         connPort := Port{
             ID:                types.StringValue(p.ID),
             Name:              types.StringValue(p.Name),
