@@ -50,7 +50,7 @@ func resourceFabricConnectionCreate(ctx context.Context, d *schema.ResourceData,
 	projectReq := d.Get("project").(*schema.Set).List()
 	project := projectToFabric(projectReq)
 	additionalInfo := d.Get("additional_info").([]interface{})
-	additionalinfo := additionalInfoToFabric(additionalInfo)
+	additionalinfoGoToTerraState := additionalInfoToFabric(additionalInfo)
 	connectionASide := v4.ConnectionSide{}
 	for _, as := range aside {
 		asideMap := as.(map[string]interface{})
@@ -63,7 +63,10 @@ func resourceFabricConnectionCreate(ctx context.Context, d *schema.ResourceData,
 			connectionASide = v4.ConnectionSide{AccessPoint: &ap}
 		}
 		if len(serviceTokenRequest) != 0 {
-			mappedServiceToken := serviceTokenToFabric(serviceTokenRequest)
+			mappedServiceToken, err := serviceTokenToFabric(serviceTokenRequest)
+			if err != nil {
+				return diag.FromErr(err)
+			}
 			connectionASide = v4.ConnectionSide{ServiceToken: &mappedServiceToken}
 		}
 		if len(additionalInfoRequest) != 0 {
@@ -84,7 +87,10 @@ func resourceFabricConnectionCreate(ctx context.Context, d *schema.ResourceData,
 			connectionZSide = v4.ConnectionSide{AccessPoint: &ap}
 		}
 		if len(serviceTokenRequest) != 0 {
-			mappedServiceToken := serviceTokenToFabric(serviceTokenRequest)
+			mappedServiceToken, err := serviceTokenToFabric(serviceTokenRequest)
+			if err != nil {
+				return diag.FromErr(err)
+			}
 			connectionZSide = v4.ConnectionSide{ServiceToken: &mappedServiceToken}
 		}
 		if len(additionalInfoRequest) != 0 {
@@ -99,7 +105,7 @@ func resourceFabricConnectionCreate(ctx context.Context, d *schema.ResourceData,
 		Order:          &order,
 		Notifications:  notifications,
 		Bandwidth:      int32(d.Get("bandwidth").(int)),
-		AdditionalInfo: additionalinfo,
+		AdditionalInfo: additionalinfoGoToTerraState,
 		Redundancy:     &red,
 		ASide:          &connectionASide,
 		ZSide:          &connectionZSide,

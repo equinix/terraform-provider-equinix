@@ -247,6 +247,7 @@ func createAccessPointInterface() map[string]*schema.Schema {
 		"id": {
 			Type:        schema.TypeInt,
 			Computed:    true,
+			Optional:    true,
 			Description: "id",
 		},
 		"type": {
