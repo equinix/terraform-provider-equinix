@@ -8,6 +8,7 @@ import (
 	"github.com/equinix/terraform-provider-equinix/internal/config"
 	"github.com/equinix/terraform-provider-equinix/internal/metal_bgp_session"
 	"github.com/equinix/terraform-provider-equinix/internal/metal_connection"
+	"github.com/equinix/terraform-provider-equinix/internal/metal_device_network_type"
 	"github.com/equinix/terraform-provider-equinix/internal/metal_gateway"
 	"github.com/equinix/terraform-provider-equinix/internal/metal_ip_attachment"
 	"github.com/equinix/terraform-provider-equinix/internal/metal_organization"
@@ -126,6 +127,7 @@ func (p *FrameworkProvider) Resources(ctx context.Context) []func() resource.Res
 		func() resource.Resource {
             return metal_virtual_circuit.NewResource(ctx)
         },
+		metal_device_network_type.NewResource,
 	}
 }
 
