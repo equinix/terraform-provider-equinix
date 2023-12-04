@@ -9,6 +9,8 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/equinix/terraform-provider-equinix/internal/converters"
+
 	equinix_errors "github.com/equinix/terraform-provider-equinix/internal/errors"
 	equinix_schema "github.com/equinix/terraform-provider-equinix/internal/schema"
 
@@ -114,7 +116,7 @@ func resourceMetalSpotMarketRequest() *schema.Resource {
 				Optional:      true,
 				ForceNew:      true,
 				ConflictsWith: []string{"facilities"},
-				StateFunc:     toLower,
+				StateFunc:     converters.ToLowerIf,
 			},
 			"instance_parameters": {
 				Type:        schema.TypeList,

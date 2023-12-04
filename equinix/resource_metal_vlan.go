@@ -4,6 +4,8 @@ import (
 	"errors"
 	"path"
 
+	"github.com/equinix/terraform-provider-equinix/internal/converters"
+
 	equinix_errors "github.com/equinix/terraform-provider-equinix/internal/errors"
 
 	"github.com/equinix/terraform-provider-equinix/internal/config"
@@ -66,7 +68,7 @@ func resourceMetalVlan() *schema.Resource {
 					}
 					return old == new
 				},
-				StateFunc: toLower,
+				StateFunc: converters.ToLowerIf,
 			},
 			"vxlan": {
 				Type:        schema.TypeInt,

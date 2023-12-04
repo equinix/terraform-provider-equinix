@@ -6,6 +6,10 @@ import (
 	"strings"
 	"time"
 
+	"golang.org/x/exp/slices"
+
+	"github.com/equinix/terraform-provider-equinix/internal/converters"
+
 	"github.com/equinix/terraform-provider-equinix/internal/config"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
@@ -119,12 +123,12 @@ func specifiedVlanIds(d *schema.ResourceData) []string {
 	// either vlan_ids or vxlan_ids should be set, TF should ensure that
 	vlanIdsRaw, vlanIdsOk := d.GetOk("vlan_ids")
 	if vlanIdsOk {
-		return convertStringArr(vlanIdsRaw.(*schema.Set).List())
+		return converters.IfArrToStringArr(vlanIdsRaw.(*schema.Set).List())
 	}
 
 	vxlanIdsRaw, vxlanIdsOk := d.GetOk("vxlan_ids")
 	if vxlanIdsOk {
-		return convertIntArr(vxlanIdsRaw.(*schema.Set).List())
+		return converters.IfArrToIntStringArr(vxlanIdsRaw.(*schema.Set).List())
 	}
 	return []string{}
 }
@@ -133,14 +137,14 @@ func batchVlans(ctx context.Context, start time.Time, removeOnly bool) func(*Cli
 	return func(cpr *ClientPortResource) error {
 		var vlansToAssign []string
 		var currentNative string
-		vlansToRemove := difference(
+		vlansToRemove := converters.Difference(
 			attachedVlanIds(cpr.Port),
 			specifiedVlanIds(cpr.Resource),
 		)
 		if !removeOnly {
 			currentNative = getCurrentNative(cpr.Port)
 
-			vlansToAssign = difference(
+			vlansToAssign = converters.Difference(
 				specifiedVlanIds(cpr.Resource),
 				attachedVlanIds(cpr.Port),
 			)
@@ -271,7 +275,7 @@ func makeDisbond(cpr *ClientPortResource) error {
 
 func convertToL2(cpr *ClientPortResource) error {
 	l2, l2Ok := cpr.Resource.GetOkExists("layer2")
-	isLayer2 := contains(l2Types, cpr.Port.NetworkType)
+	isLayer2 := slices.Contains(l2Types, cpr.Port.NetworkType)
 
 	if l2Ok && l2.(bool) && !isLayer2 {
 		port, _, err := cpr.Client.Ports.ConvertToLayerTwo(cpr.Port.ID)
@@ -285,7 +289,7 @@ func convertToL2(cpr *ClientPortResource) error {
 
 func convertToL3(cpr *ClientPortResource) error {
 	l2, l2Ok := cpr.Resource.GetOkExists("layer2")
-	isLayer2 := contains(l2Types, cpr.Port.NetworkType)
+	isLayer2 := slices.Contains(l2Types, cpr.Port.NetworkType)
 
 	if l2Ok && !l2.(bool) && isLayer2 {
 		ips := []packngo.AddressRequest{
@@ -327,7 +331,7 @@ func portSanityChecks(cpr *ClientPortResource) error {
 	if nativeVlanOk {
 		nativeVlan := nativeVlanRaw.(string)
 		vlans := specifiedVlanIds(cpr.Resource)
-		if !contains(vlans, nativeVlan) {
+		if !slices.Contains(vlans, nativeVlan) {
 			return fmt.Errorf("the native VLAN to be set is not (being) assigned to the port")
 		}
 		if len(vlans) < 2 {

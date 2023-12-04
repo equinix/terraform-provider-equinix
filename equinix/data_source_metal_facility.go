@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/equinix/terraform-provider-equinix/internal/converters"
+
 	equinix_schema "github.com/equinix/terraform-provider-equinix/internal/schema"
 
 	"github.com/equinix/terraform-provider-equinix/internal/config"
@@ -118,7 +120,7 @@ func dataSourceMetalFacilityRead(d *schema.ResourceData, meta interface{}) error
 	for _, f := range facilities {
 		if f.Code == code {
 			if dfOk {
-				unsupported := difference(convertStringArr(dfRaw.(*schema.Set).List()), f.Features)
+				unsupported := converters.Difference(converters.IfArrToStringArr(dfRaw.(*schema.Set).List()), f.Features)
 				if len(unsupported) > 0 {
 					return fmt.Errorf("facililty %s doesn't have feature(s) %v", f.Code, unsupported)
 				}

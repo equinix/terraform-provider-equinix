@@ -9,6 +9,8 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/equinix/terraform-provider-equinix/internal/hashcode"
+
 	"github.com/equinix/ecx-go/v2"
 	"github.com/equinix/rest-go"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
@@ -378,7 +380,7 @@ func TestProvider_schemaSetToMap(t *testing.T) {
 	}
 	setFunc := func(v interface{}) int {
 		i := v.(item)
-		return hashcodeString(i.id)
+		return hashcode.String(i.id)
 	}
 	items := []interface{}{
 		item{"id1", 100, 200},

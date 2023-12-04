@@ -3,6 +3,8 @@ package equinix
 import (
 	"fmt"
 
+	"github.com/equinix/terraform-provider-equinix/internal/converters"
+
 	"github.com/equinix/terraform-provider-equinix/internal/config"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -29,7 +31,7 @@ func dataSourceMetalIPBlockRanges() *schema.Resource {
 				Type:        schema.TypeString,
 				Description: "Metro code filtering the IP blocks. Global IPv4 blocks will be listed anyway. If you omit this and facility, all the block from the project will be listed",
 				Optional:    true,
-				StateFunc:   toLower,
+				StateFunc:   converters.ToLowerIf,
 			},
 			"public_ipv4": {
 				Type:        schema.TypeList,

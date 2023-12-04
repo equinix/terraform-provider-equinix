@@ -7,6 +7,8 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/equinix/terraform-provider-equinix/internal/converters"
+
 	equinix_errors "github.com/equinix/terraform-provider-equinix/internal/errors"
 	equinix_schema "github.com/equinix/terraform-provider-equinix/internal/schema"
 
@@ -94,7 +96,7 @@ func resourceMetalConnection() *schema.Resource {
 				Description:   "Metro where the connection will be created",
 				ConflictsWith: []string{"facility"},
 				ForceNew:      true,
-				StateFunc:     toLower,
+				StateFunc:     converters.ToLowerIf,
 			},
 			"redundancy": {
 				Type:        schema.TypeString,
@@ -223,7 +225,7 @@ func resourceMetalConnectionCreate(d *schema.ResourceData, meta interface{}) err
 	vlans := []int{}
 	vlansNum := d.Get("vlans.#").(int)
 	if vlansNum > 0 {
-		vlans = convertIntArr2(d.Get("vlans").([]interface{}))
+		vlans = converters.IfArrToIntArr(d.Get("vlans").([]interface{}))
 	}
 	connRedundancy := packngo.ConnectionRedundancy(d.Get("redundancy").(string))
 
@@ -256,7 +258,7 @@ func resourceMetalConnectionCreate(d *schema.ResourceData, meta interface{}) err
 	// this could be generalized, see $ grep "d.Get(\"tags" *
 	tags := d.Get("tags.#").(int)
 	if tags > 0 {
-		connReq.Tags = convertStringArr(d.Get("tags").([]interface{}))
+		connReq.Tags = converters.IfArrToStringArr(d.Get("tags").([]interface{}))
 	}
 
 	if metOk {
@@ -381,8 +383,8 @@ func resourceMetalConnectionUpdate(d *schema.ResourceData, meta interface{}) err
 
 		if connType == packngo.ConnectionShared {
 			old, new := d.GetChange("vlans")
-			oldVlans := convertIntArr2(old.([]interface{}))
-			newVlans := convertIntArr2(new.([]interface{}))
+			oldVlans := converters.IfArrToIntArr(old.([]interface{}))
+			newVlans := converters.IfArrToIntArr(new.([]interface{}))
 			maxVlans := int(math.Max(float64(len(oldVlans)), float64(len(newVlans))))
 
 			ports := d.Get("ports").([]interface{})

@@ -5,6 +5,8 @@ import (
 	"log"
 	"time"
 
+	"golang.org/x/exp/slices"
+
 	equinix_errors "github.com/equinix/terraform-provider-equinix/internal/errors"
 	equinix_schema "github.com/equinix/terraform-provider-equinix/internal/schema"
 
@@ -170,8 +172,8 @@ func resourceMetalPortRead(ctx context.Context, d *schema.ResourceData, meta int
 		"bonded":            port.Data.Bonded,
 		"disbond_supported": port.DisbondOperationSupported,
 	}
-	l2 := contains(l2Types, port.NetworkType)
-	l3 := contains(l3Types, port.NetworkType)
+	l2 := slices.Contains(l2Types, port.NetworkType)
+	l3 := slices.Contains(l3Types, port.NetworkType)
 
 	if l2 {
 		m["layer2"] = true

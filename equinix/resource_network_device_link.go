@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/equinix/terraform-provider-equinix/internal/hashcode"
+
 	"github.com/equinix/terraform-provider-equinix/internal/config"
 
 	"github.com/equinix/ne-go"
@@ -491,7 +493,7 @@ func networkDeviceLinkDeviceKey(v interface{}) string {
 }
 
 func networkDeviceLinkDeviceHash(v interface{}) int {
-	return hashcodeString(networkDeviceLinkDeviceKey(v))
+	return hashcode.String(networkDeviceLinkDeviceKey(v))
 }
 
 func networkDeviceLinkConnectionKey(v interface{}) string {
@@ -513,5 +515,5 @@ func networkDeviceLinkConnectionKey(v interface{}) string {
 }
 
 func networkDeviceLinkConnectionHash(v interface{}) int {
-	return hashcodeString(networkDeviceLinkConnectionKey(v))
+	return hashcode.String(networkDeviceLinkConnectionKey(v))
 }
