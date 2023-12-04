@@ -3,6 +3,8 @@ package equinix
 import (
 	"log"
 
+	equinix_errors "github.com/equinix/terraform-provider-equinix/internal/errors"
+
 	"github.com/equinix/terraform-provider-equinix/internal/config"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -91,9 +93,9 @@ func resourceMetalDeviceNetworkTypeRead(d *schema.ResourceData, meta interface{}
 
 	_, devNType, err := getDevIDandNetworkType(d, client)
 	if err != nil {
-		err = friendlyError(err)
+		err = equinix_errors.FriendlyError(err)
 
-		if isNotFound(err) {
+		if equinix_errors.IsNotFound(err) {
 			log.Printf("[WARN] Device (%s) for Network Type request not found, removing from state", d.Id())
 			d.SetId("")
 			return nil

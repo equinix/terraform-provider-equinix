@@ -4,6 +4,9 @@ import (
 	"fmt"
 	"time"
 
+	equinix_errors "github.com/equinix/terraform-provider-equinix/internal/errors"
+	equinix_schema "github.com/equinix/terraform-provider-equinix/internal/schema"
+
 	"github.com/equinix/terraform-provider-equinix/internal/config"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
@@ -138,7 +141,7 @@ func resourceMetalGatewayRead(d *schema.ResourceData, meta interface{}) error {
 		privateIPv4SubnetSize = 1 << (32 - mg.IPReservation.CIDR)
 	}
 
-	return setMap(d, map[string]interface{}{
+	return equinix_schema.SetMap(d, map[string]interface{}{
 		"project_id":               mg.Project.ID,
 		"vlan_id":                  mg.VirtualNetwork.ID,
 		"ip_reservation_id":        mg.IPReservation.ID,
@@ -157,8 +160,8 @@ func resourceMetalGatewayDelete(d *schema.ResourceData, meta interface{}) error 
 	meta.(*config.Config).AddModuleToMetalUserAgent(d)
 	client := meta.(*config.Config).Metal
 	resp, err := client.MetalGateways.Delete(d.Id())
-	if ignoreResponseErrors(httpForbidden, httpNotFound)(resp, err) != nil {
-		return friendlyError(err)
+	if equinix_errors.IgnoreResponseErrors(equinix_errors.HttpForbidden, equinix_errors.HttpNotFound)(resp, err) != nil {
+		return equinix_errors.FriendlyError(err)
 	}
 
 	deleteWaiter := getGatewayStateWaiter(
@@ -170,7 +173,7 @@ func resourceMetalGatewayDelete(d *schema.ResourceData, meta interface{}) error 
 	)
 
 	_, err = deleteWaiter.WaitForState()
-	if ignoreResponseErrors(httpForbidden, httpNotFound)(nil, err) != nil {
+	if equinix_errors.IgnoreResponseErrors(equinix_errors.HttpForbidden, equinix_errors.HttpNotFound)(nil, err) != nil {
 		return fmt.Errorf("Error deleting Metal Gateway %s: %s", d.Id(), err)
 	}
 

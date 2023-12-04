@@ -4,6 +4,9 @@ import (
 	"context"
 	"log"
 
+	equinix_errors "github.com/equinix/terraform-provider-equinix/internal/errors"
+	equinix_schema "github.com/equinix/terraform-provider-equinix/internal/schema"
+
 	"github.com/equinix/terraform-provider-equinix/internal/config"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/packethost/packngo"
@@ -72,7 +75,7 @@ func resourceMetalVRFCreate(ctx context.Context, d *schema.ResourceData, meta in
 	projectId := d.Get("project_id").(string)
 	vrf, _, err := client.VRFs.Create(projectId, createRequest)
 	if err != nil {
-		return friendlyError(err)
+		return equinix_errors.FriendlyError(err)
 	}
 
 	d.SetId(vrf.ID)
@@ -104,7 +107,7 @@ func resourceMetalVRFUpdate(ctx context.Context, d *schema.ResourceData, meta in
 
 	_, _, err := client.VRFs.Update(d.Id(), updateRequest)
 	if err != nil {
-		return friendlyError(err)
+		return equinix_errors.FriendlyError(err)
 	}
 
 	return resourceMetalVRFRead(ctx, d, meta)
@@ -118,7 +121,7 @@ func resourceMetalVRFRead(ctx context.Context, d *schema.ResourceData, meta inte
 
 	vrf, _, err := client.VRFs.Get(d.Id(), getOpts)
 	if err != nil {
-		if isNotFound(err) || isForbidden(err) {
+		if equinix_errors.IsNotFound(err) || equinix_errors.IsForbidden(err) {
 			log.Printf("[WARN] VRF (%s) not accessible, removing from state", d.Id())
 			d.SetId("")
 
@@ -135,7 +138,7 @@ func resourceMetalVRFRead(ctx context.Context, d *schema.ResourceData, meta inte
 		"project_id":  vrf.Project.ID,
 	}
 
-	return setMap(d, m)
+	return equinix_schema.SetMap(d, m)
 }
 
 func resourceMetalVRFDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) error {
@@ -143,9 +146,9 @@ func resourceMetalVRFDelete(ctx context.Context, d *schema.ResourceData, meta in
 	client := meta.(*config.Config).Metal
 
 	resp, err := client.VRFs.Delete(d.Id())
-	if ignoreResponseErrors(httpForbidden, httpNotFound)(resp, err) == nil {
+	if equinix_errors.IgnoreResponseErrors(equinix_errors.HttpForbidden, equinix_errors.HttpNotFound)(resp, err) == nil {
 		d.SetId("")
 	}
 
-	return friendlyError(err)
+	return equinix_errors.FriendlyError(err)
 }

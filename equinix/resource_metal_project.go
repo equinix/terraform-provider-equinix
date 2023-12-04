@@ -6,6 +6,8 @@ import (
 	"regexp"
 	"strings"
 
+	equinix_errors "github.com/equinix/terraform-provider-equinix/internal/errors"
+
 	"github.com/equinix/terraform-provider-equinix/internal/config"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -135,7 +137,7 @@ func resourceMetalProjectCreate(d *schema.ResourceData, meta interface{}) error 
 
 	project, _, err := client.Projects.Create(createRequest)
 	if err != nil {
-		return friendlyError(err)
+		return equinix_errors.FriendlyError(err)
 	}
 
 	d.SetId(project.ID)
@@ -145,7 +147,7 @@ func resourceMetalProjectCreate(d *schema.ResourceData, meta interface{}) error 
 		bgpCR := expandBGPConfig(d)
 		_, err := client.BGPConfig.Create(project.ID, bgpCR)
 		if err != nil {
-			return friendlyError(err)
+			return equinix_errors.FriendlyError(err)
 		}
 	}
 
@@ -154,7 +156,7 @@ func resourceMetalProjectCreate(d *schema.ResourceData, meta interface{}) error 
 		pur := packngo.ProjectUpdateRequest{BackendTransfer: &backendTransfer}
 		_, _, err := client.Projects.Update(project.ID, &pur)
 		if err != nil {
-			return friendlyError(err)
+			return equinix_errors.FriendlyError(err)
 		}
 	}
 	return resourceMetalProjectRead(d, meta)
@@ -166,10 +168,10 @@ func resourceMetalProjectRead(d *schema.ResourceData, meta interface{}) error {
 
 	proj, _, err := client.Projects.Get(d.Id(), nil)
 	if err != nil {
-		err = friendlyError(err)
+		err = equinix_errors.FriendlyError(err)
 
 		// If the project somehow already destroyed, mark as successfully gone.
-		if isNotFound(err) {
+		if equinix_errors.IsNotFound(err) {
 			d.SetId("")
 
 			return nil
@@ -195,7 +197,7 @@ func resourceMetalProjectRead(d *schema.ResourceData, meta interface{}) error {
 		if bgpConf.ID != "" {
 			err := d.Set("bgp_config", flattenBGPConfig(bgpConf))
 			if err != nil {
-				err = friendlyError(err)
+				err = equinix_errors.FriendlyError(err)
 				return err
 			}
 		}
@@ -257,7 +259,7 @@ func resourceMetalProjectUpdate(d *schema.ResourceData, meta interface{}) error 
 			bgpCreateRequest := expandBGPConfig(d)
 			_, err := client.BGPConfig.Create(d.Id(), bgpCreateRequest)
 			if err != nil {
-				return friendlyError(err)
+				return equinix_errors.FriendlyError(err)
 			}
 		} else {
 			if len(oldarr) == 1 {
@@ -272,13 +274,13 @@ func resourceMetalProjectUpdate(d *schema.ResourceData, meta interface{}) error 
 					m["asn"].(int))
 
 				errStr := fmt.Errorf("BGP Config can not be removed from a project, please add back\n%s", bgpConfStr)
-				return friendlyError(errStr)
+				return equinix_errors.FriendlyError(errStr)
 			}
 		}
 	} else {
 		_, _, err := client.Projects.Update(d.Id(), updateRequest)
 		if err != nil {
-			return friendlyError(err)
+			return equinix_errors.FriendlyError(err)
 		}
 	}
 
@@ -290,8 +292,8 @@ func resourceMetalProjectDelete(d *schema.ResourceData, meta interface{}) error 
 	client := meta.(*config.Config).Metal
 
 	resp, err := client.Projects.Delete(d.Id())
-	if ignoreResponseErrors(httpForbidden, httpNotFound)(resp, err) != nil {
-		return friendlyError(err)
+	if equinix_errors.IgnoreResponseErrors(equinix_errors.HttpForbidden, equinix_errors.HttpNotFound)(resp, err) != nil {
+		return equinix_errors.FriendlyError(err)
 	}
 
 	d.SetId("")

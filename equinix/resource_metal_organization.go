@@ -3,6 +3,9 @@ package equinix
 import (
 	"regexp"
 
+	equinix_errors "github.com/equinix/terraform-provider-equinix/internal/errors"
+	equinix_schema "github.com/equinix/terraform-provider-equinix/internal/schema"
+
 	"github.com/equinix/terraform-provider-equinix/internal/config"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -128,7 +131,7 @@ func resourceMetalOrganizationCreate(d *schema.ResourceData, meta interface{}) e
 
 	org, _, err := client.Organizations.Create(createRequest)
 	if err != nil {
-		return friendlyError(err)
+		return equinix_errors.FriendlyError(err)
 	}
 
 	d.SetId(org.ID)
@@ -142,10 +145,10 @@ func resourceMetalOrganizationRead(d *schema.ResourceData, meta interface{}) err
 
 	key, _, err := client.Organizations.Get(d.Id(), &packngo.GetOptions{Includes: []string{"address"}})
 	if err != nil {
-		err = friendlyError(err)
+		err = equinix_errors.FriendlyError(err)
 
 		// If the project somehow already destroyed, mark as succesfully gone.
-		if isNotFound(err) {
+		if equinix_errors.IsNotFound(err) {
 			d.SetId("")
 
 			return nil
@@ -155,7 +158,7 @@ func resourceMetalOrganizationRead(d *schema.ResourceData, meta interface{}) err
 	}
 
 	d.SetId(key.ID)
-	return setMap(d, map[string]interface{}{
+	return equinix_schema.SetMap(d, map[string]interface{}{
 		"name":        key.Name,
 		"description": key.Description,
 		"website":     key.Website,
@@ -198,7 +201,7 @@ func resourceMetalOrganizationUpdate(d *schema.ResourceData, meta interface{}) e
 
 	_, _, err := client.Organizations.Update(d.Id(), updateRequest)
 	if err != nil {
-		return friendlyError(err)
+		return equinix_errors.FriendlyError(err)
 	}
 
 	return resourceMetalOrganizationRead(d, meta)
@@ -209,8 +212,8 @@ func resourceMetalOrganizationDelete(d *schema.ResourceData, meta interface{}) e
 	client := meta.(*config.Config).Metal
 
 	resp, err := client.Organizations.Delete(d.Id())
-	if ignoreResponseErrors(httpForbidden, httpNotFound)(resp, err) != nil {
-		return friendlyError(err)
+	if equinix_errors.IgnoreResponseErrors(equinix_errors.HttpForbidden, equinix_errors.HttpNotFound)(resp, err) != nil {
+		return equinix_errors.FriendlyError(err)
 	}
 
 	d.SetId("")

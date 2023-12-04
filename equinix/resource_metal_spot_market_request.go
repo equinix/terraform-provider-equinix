@@ -9,6 +9,9 @@ import (
 	"strconv"
 	"time"
 
+	equinix_errors "github.com/equinix/terraform-provider-equinix/internal/errors"
+	equinix_schema "github.com/equinix/terraform-provider-equinix/internal/schema"
+
 	"github.com/equinix/terraform-provider-equinix/internal/config"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
@@ -363,8 +366,8 @@ func resourceMetalSpotMarketRequestRead(ctx context.Context, d *schema.ResourceD
 
 	smr, _, err := client.SpotMarketRequests.Get(d.Id(), &packngo.GetOptions{Includes: []string{"project", "devices", "facilities", "metro"}})
 	if err != nil {
-		err = friendlyError(err)
-		if isNotFound(err) {
+		err = equinix_errors.FriendlyError(err)
+		if equinix_errors.IsNotFound(err) {
 			log.Printf("[WARN] SpotMarketRequest (%s) not found, removing from state", d.Id())
 			d.SetId("")
 			return nil
@@ -377,7 +380,7 @@ func resourceMetalSpotMarketRequestRead(ctx context.Context, d *schema.ResourceD
 		metro = smr.Metro.Code
 	}
 
-	return setMap(d, map[string]interface{}{
+	return equinix_schema.SetMap(d, map[string]interface{}{
 		"metro":         metro,
 		"project_id":    smr.Project.ID,
 		"devices_min":   smr.DevicesMin,
@@ -428,13 +431,13 @@ func resourceMetalSpotMarketRequestDelete(ctx context.Context, d *schema.Resourc
 
 		for _, d := range smr.Devices {
 			resp, err := client.Devices.Delete(d.ID, true)
-			if ignoreResponseErrors(httpForbidden, httpNotFound)(resp, err) != nil {
+			if equinix_errors.IgnoreResponseErrors(equinix_errors.HttpForbidden, equinix_errors.HttpNotFound)(resp, err) != nil {
 				return err
 			}
 		}
 	}
 	resp, err := client.SpotMarketRequests.Delete(d.Id(), true)
-	return ignoreResponseErrors(httpForbidden, httpNotFound)(resp, err)
+	return equinix_errors.IgnoreResponseErrors(equinix_errors.HttpForbidden, equinix_errors.HttpNotFound)(resp, err)
 }
 
 func resourceStateRefreshFunc(d *schema.ResourceData, meta interface{}) retry.StateRefreshFunc {

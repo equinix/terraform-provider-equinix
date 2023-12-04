@@ -3,6 +3,8 @@ package equinix
 import (
 	"fmt"
 
+	equinix_schema "github.com/equinix/terraform-provider-equinix/internal/schema"
+
 	"github.com/equinix/terraform-provider-equinix/internal/config"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -70,7 +72,7 @@ func dataSourceMetalMetroRead(d *schema.ResourceData, meta interface{}) error {
 	for _, m := range metros {
 		if m.Code == code {
 			d.SetId(m.ID)
-			return setMap(d, map[string]interface{}{
+			return equinix_schema.SetMap(d, map[string]interface{}{
 				"id":      m.ID,
 				"code":    m.Code,
 				"name":    m.Name,

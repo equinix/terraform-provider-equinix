@@ -5,6 +5,7 @@ import (
 	"path"
 
 	"github.com/equinix/terraform-provider-equinix/internal/config"
+	equinix_errors "github.com/equinix/terraform-provider-equinix/internal/errors"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
@@ -157,7 +158,7 @@ func dataSourceMetalProjectRead(d *schema.ResourceData, meta interface{}) error 
 		if bgpConf.ID != "" {
 			err := d.Set("bgp_config", flattenBGPConfig(bgpConf))
 			if err != nil {
-				err = friendlyError(err)
+				err = equinix_errors.FriendlyError(err)
 				return err
 			}
 		}

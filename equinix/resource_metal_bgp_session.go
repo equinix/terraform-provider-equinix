@@ -3,6 +3,8 @@ package equinix
 import (
 	"log"
 
+	equinix_errors "github.com/equinix/terraform-provider-equinix/internal/errors"
+
 	"github.com/equinix/terraform-provider-equinix/internal/config"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -64,7 +66,7 @@ func resourceMetalBGPSessionCreate(d *schema.ResourceData, meta interface{}) err
 			DefaultRoute:  &defaultRoute,
 		})
 	if err != nil {
-		return friendlyError(err)
+		return equinix_errors.FriendlyError(err)
 	}
 
 	d.SetId(bgpSession.ID)
@@ -78,8 +80,8 @@ func resourceMetalBGPSessionRead(d *schema.ResourceData, meta interface{}) error
 	bgpSession, _, err := client.BGPSessions.Get(d.Id(),
 		&packngo.GetOptions{Includes: []string{"device"}})
 	if err != nil {
-		err = friendlyError(err)
-		if isNotFound(err) {
+		err = equinix_errors.FriendlyError(err)
+		if equinix_errors.IsNotFound(err) {
 			log.Printf("[WARN] BGP Session (%s) not found, removing from state", d.Id())
 
 			d.SetId("")
@@ -105,5 +107,5 @@ func resourceMetalBGPSessionDelete(d *schema.ResourceData, meta interface{}) err
 	meta.(*config.Config).AddModuleToMetalUserAgent(d)
 	client := meta.(*config.Config).Metal
 	resp, err := client.BGPSessions.Delete(d.Id())
-	return ignoreResponseErrors(httpForbidden, httpNotFound)(resp, err)
+	return equinix_errors.IgnoreResponseErrors(equinix_errors.HttpForbidden, equinix_errors.HttpNotFound)(resp, err)
 }

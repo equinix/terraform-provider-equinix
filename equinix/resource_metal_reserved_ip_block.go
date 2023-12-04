@@ -9,6 +9,9 @@ import (
 	"strings"
 	"time"
 
+	equinix_errors "github.com/equinix/terraform-provider-equinix/internal/errors"
+	equinix_schema "github.com/equinix/terraform-provider-equinix/internal/schema"
+
 	"github.com/equinix/terraform-provider-equinix/internal/config"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
@@ -455,7 +458,7 @@ func loadBlock(d *schema.ResourceData, reservedBlock *packngo.IPAddressReservati
 		}
 	}
 
-	return setMap(d, attributeMap)
+	return equinix_schema.SetMap(d, attributeMap)
 }
 
 func resourceMetalReservedIPBlockRead(ctx context.Context, d *schema.ResourceData, meta interface{}) error {
@@ -468,8 +471,8 @@ func resourceMetalReservedIPBlockRead(ctx context.Context, d *schema.ResourceDat
 
 	reservedBlock, _, err := client.ProjectIPs.Get(id, getOpts)
 	if err != nil {
-		err = friendlyError(err)
-		if isNotFound(err) {
+		err = equinix_errors.FriendlyError(err)
+		if equinix_errors.IsNotFound(err) {
 			log.Printf("[WARN] Reserved IP Block (%s) not found, removing from state", d.Id())
 			d.SetId("")
 			return nil
@@ -497,7 +500,7 @@ func resourceMetalReservedIPBlockDelete(ctx context.Context, d *schema.ResourceD
 
 	resp, err := client.ProjectIPs.Remove(id)
 
-	if ignoreResponseErrors(httpForbidden, httpNotFound)(resp, err) != nil {
+	if equinix_errors.IgnoreResponseErrors(equinix_errors.HttpForbidden, equinix_errors.HttpNotFound)(resp, err) != nil {
 		return fmt.Errorf("error deleting IP reservation block %s: %s", id, err)
 	}
 

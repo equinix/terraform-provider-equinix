@@ -3,6 +3,8 @@ package equinix
 import (
 	"fmt"
 
+	equinix_schema "github.com/equinix/terraform-provider-equinix/internal/schema"
+
 	"github.com/equinix/terraform-provider-equinix/internal/config"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -118,5 +120,5 @@ func dataSourceMetalHardwareReservationRead(d *schema.ResourceData, meta interfa
 	}
 
 	d.SetId(hr.ID)
-	return setMap(d, m)
+	return equinix_schema.SetMap(d, m)
 }

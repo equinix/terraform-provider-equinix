@@ -3,6 +3,9 @@ package equinix
 import (
 	"fmt"
 
+	equinix_errors "github.com/equinix/terraform-provider-equinix/internal/errors"
+	equinix_schema "github.com/equinix/terraform-provider-equinix/internal/schema"
+
 	"github.com/equinix/terraform-provider-equinix/internal/config"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -78,7 +81,7 @@ func dataSourceMetalVlanRead(d *schema.ResourceData, meta interface{}) error {
 	facilityRaw, facilityOk := d.GetOk("facility")
 
 	if !(vlanIdOk || (vxlanOk || projectOk || metroOk || facilityOk)) {
-		return friendlyError(fmt.Errorf("You must set either vlan_id or a combination of vxlan, project_id, and, metro or facility"))
+		return equinix_errors.FriendlyError(fmt.Errorf("You must set either vlan_id or a combination of vxlan, project_id, and, metro or facility"))
 	}
 
 	var vlan *packngo.VirtualNetwork
@@ -90,7 +93,7 @@ func dataSourceMetalVlanRead(d *schema.ResourceData, meta interface{}) error {
 			&packngo.GetOptions{Includes: []string{"assigned_to"}},
 		)
 		if err != nil {
-			return friendlyError(err)
+			return equinix_errors.FriendlyError(err)
 		}
 
 	} else {
@@ -103,12 +106,12 @@ func dataSourceMetalVlanRead(d *schema.ResourceData, meta interface{}) error {
 			&packngo.GetOptions{Includes: []string{"assigned_to"}},
 		)
 		if err != nil {
-			return friendlyError(err)
+			return equinix_errors.FriendlyError(err)
 		}
 
 		vlan, err = matchingVlan(vlans.VirtualNetworks, vxlan, projectID, facility, metro)
 		if err != nil {
-			return friendlyError(err)
+			return equinix_errors.FriendlyError(err)
 		}
 	}
 
@@ -119,7 +122,7 @@ func dataSourceMetalVlanRead(d *schema.ResourceData, meta interface{}) error {
 
 	d.SetId(vlan.ID)
 
-	return setMap(d, map[string]interface{}{
+	return equinix_schema.SetMap(d, map[string]interface{}{
 		"vlan_id":     vlan.ID,
 		"project_id":  vlan.Project.ID,
 		"vxlan":       vlan.VXLAN,
@@ -144,11 +147,11 @@ func matchingVlan(vlans []packngo.VirtualNetwork, vxlan int, projectID, facility
 		matches = append(matches, v)
 	}
 	if len(matches) > 1 {
-		return nil, friendlyError(fmt.Errorf("Project %s has more than one matching VLAN", projectID))
+		return nil, equinix_errors.FriendlyError(fmt.Errorf("Project %s has more than one matching VLAN", projectID))
 	}
 
 	if len(matches) == 0 {
-		return nil, friendlyError(fmt.Errorf("Project %s does not have matching VLANs", projectID))
+		return nil, equinix_errors.FriendlyError(fmt.Errorf("Project %s does not have matching VLANs", projectID))
 	}
 	return &matches[0], nil
 }

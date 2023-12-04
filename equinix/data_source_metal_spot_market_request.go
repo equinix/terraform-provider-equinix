@@ -6,6 +6,9 @@ import (
 	"strings"
 	"time"
 
+	equinix_errors "github.com/equinix/terraform-provider-equinix/internal/errors"
+	equinix_schema "github.com/equinix/terraform-provider-equinix/internal/schema"
+
 	"github.com/equinix/terraform-provider-equinix/internal/config"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -81,8 +84,8 @@ func dataSourceMetalSpotMarketRequestRead(ctx context.Context, d *schema.Resourc
 
 	smr, _, err := client.SpotMarketRequests.Get(id, &packngo.GetOptions{Includes: []string{"project", "devices", "facilities", "metro"}})
 	if err != nil {
-		err = friendlyError(err)
-		if isNotFound(err) {
+		err = equinix_errors.FriendlyError(err)
+		if equinix_errors.IsNotFound(err) {
 			d.SetId("")
 			return nil
 		}
@@ -104,7 +107,7 @@ func dataSourceMetalSpotMarketRequestRead(ctx context.Context, d *schema.Resourc
 
 	d.SetId(id)
 
-	return setMap(d, map[string]interface{}{
+	return equinix_schema.SetMap(d, map[string]interface{}{
 		"device_ids": deviceIDs,
 		"end_at": func(d *schema.ResourceData, k string) error {
 			if smr.EndAt != nil {

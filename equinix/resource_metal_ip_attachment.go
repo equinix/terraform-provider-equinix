@@ -5,6 +5,8 @@ import (
 	"log"
 	"path"
 
+	equinix_errors "github.com/equinix/terraform-provider-equinix/internal/errors"
+
 	"github.com/equinix/terraform-provider-equinix/internal/config"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -57,10 +59,10 @@ func resourceMetalIPAttachmentRead(d *schema.ResourceData, meta interface{}) err
 	client := meta.(*config.Config).Metal
 	assignment, _, err := client.DeviceIPs.Get(d.Id(), nil)
 	if err != nil {
-		err = friendlyError(err)
+		err = equinix_errors.FriendlyError(err)
 
 		// If the IP attachment was already destroyed, mark as succesfully gone.
-		if isNotFound(err) {
+		if equinix_errors.IsNotFound(err) {
 			log.Printf("[WARN] IP attachment (%q) not found, removing from state", d.Id())
 			d.SetId("")
 			return nil
@@ -93,8 +95,8 @@ func resourceMetalIPAttachmentDelete(d *schema.ResourceData, meta interface{}) e
 	client := meta.(*config.Config).Metal
 
 	resp, err := client.DeviceIPs.Unassign(d.Id())
-	if ignoreResponseErrors(httpForbidden, httpNotFound)(resp, err) != nil {
-		return friendlyError(err)
+	if equinix_errors.IgnoreResponseErrors(equinix_errors.HttpForbidden, equinix_errors.HttpNotFound)(resp, err) != nil {
+		return equinix_errors.FriendlyError(err)
 	}
 
 	d.SetId("")

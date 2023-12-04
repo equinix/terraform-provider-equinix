@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/equinix/terraform-provider-equinix/internal/config"
+	equinix_errors "github.com/equinix/terraform-provider-equinix/internal/errors"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
@@ -86,7 +87,7 @@ func dataSourceMetalProjectSSHKeyRead(d *schema.ResourceData, meta interface{}) 
 	}
 	keys, _, err := client.Projects.ListSSHKeys(projectID, searchOpts)
 	if err != nil {
-		err = fmt.Errorf("Error listing project ssh keys: %s", friendlyError(err))
+		err = fmt.Errorf("Error listing project ssh keys: %s", equinix_errors.FriendlyError(err))
 		return err
 	}
 

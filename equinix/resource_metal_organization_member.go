@@ -6,6 +6,9 @@ import (
 	"path"
 	"strings"
 
+	equinix_errors "github.com/equinix/terraform-provider-equinix/internal/errors"
+	equinix_schema "github.com/equinix/terraform-provider-equinix/internal/schema"
+
 	"github.com/equinix/terraform-provider-equinix/internal/config"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -132,7 +135,7 @@ func resourceMetalOrganizationMemberCreate(d *schema.ResourceData, meta interfac
 	orgID := d.Get("organization_id").(string)
 	_, _, err := client.Invitations.Create(orgID, createRequest, nil)
 	if err != nil {
-		return friendlyError(err)
+		return equinix_errors.FriendlyError(err)
 	}
 
 	d.SetId(fmt.Sprintf("%s:%s", email, orgID))
@@ -164,9 +167,9 @@ func resourceMetalOrganizationMemberRead(d *schema.ResourceData, meta interface{
 	listOpts := &packngo.ListOptions{Includes: []string{"user"}}
 	invitations, _, err := client.Invitations.List(orgID, listOpts)
 	if err != nil {
-		err = friendlyError(err)
+		err = equinix_errors.FriendlyError(err)
 		// If the org was destroyed, mark as gone.
-		if isNotFound(err) {
+		if equinix_errors.IsNotFound(err) {
 			d.SetId("")
 			return nil
 		}
@@ -175,9 +178,9 @@ func resourceMetalOrganizationMemberRead(d *schema.ResourceData, meta interface{
 
 	members, _, err := client.Members.List(orgID, &packngo.GetOptions{Includes: []string{"user"}})
 	if err != nil {
-		err = friendlyError(err)
+		err = equinix_errors.FriendlyError(err)
 		// If the org was destroyed, mark as gone.
-		if isNotFound(err) {
+		if equinix_errors.IsNotFound(err) {
 			d.SetId("")
 			return nil
 		}
@@ -195,7 +198,7 @@ func resourceMetalOrganizationMemberRead(d *schema.ResourceData, meta interface{
 		for _, project := range member.Member.Projects {
 			projectIDs = append(projectIDs, path.Base(project.URL))
 		}
-		return setMap(d, map[string]interface{}{
+		return equinix_schema.SetMap(d, map[string]interface{}{
 			"state":           "active",
 			"roles":           stringArrToIfArr(member.Member.Roles),
 			"projects_ids":    stringArrToIfArr(projectIDs),
@@ -206,7 +209,7 @@ func resourceMetalOrganizationMemberRead(d *schema.ResourceData, meta interface{
 		for _, project := range member.Invitation.Projects {
 			projectIDs = append(projectIDs, path.Base(project.Href))
 		}
-		return setMap(d, map[string]interface{}{
+		return equinix_schema.SetMap(d, map[string]interface{}{
 			"state":           "invited",
 			"organization_id": path.Base(member.Invitation.Organization.Href),
 			"roles":           member.Invitation.Roles,
@@ -226,9 +229,9 @@ func resourceMetalOrganizationMemberDelete(d *schema.ResourceData, meta interfac
 	listOpts := &packngo.ListOptions{Includes: []string{"user"}}
 	invitations, _, err := client.Invitations.List(d.Get("organization_id").(string), listOpts)
 	if err != nil {
-		err = friendlyError(err)
+		err = equinix_errors.FriendlyError(err)
 		// If the org was destroyed, mark as gone.
-		if isNotFound(err) {
+		if equinix_errors.IsNotFound(err) {
 			d.SetId("")
 			return nil
 		}
@@ -238,9 +241,9 @@ func resourceMetalOrganizationMemberDelete(d *schema.ResourceData, meta interfac
 	orgID := d.Get("organization_id").(string)
 	org, _, err := client.Organizations.Get(orgID, &packngo.GetOptions{Includes: []string{"members", "members.user"}})
 	if err != nil {
-		err = friendlyError(err)
+		err = equinix_errors.FriendlyError(err)
 		// If the org was destroyed, mark as gone.
-		if isNotFound(err) {
+		if equinix_errors.IsNotFound(err) {
 			d.SetId("")
 			return nil
 		}
@@ -256,9 +259,9 @@ func resourceMetalOrganizationMemberDelete(d *schema.ResourceData, meta interfac
 	if member.isMember() {
 		_, err = client.Members.Delete(orgID, member.Member.ID)
 		if err != nil {
-			err = friendlyError(err)
+			err = equinix_errors.FriendlyError(err)
 			// If the member was deleted, mark as gone.
-			if isNotFound(err) {
+			if equinix_errors.IsNotFound(err) {
 				d.SetId("")
 				return nil
 			}
@@ -267,9 +270,9 @@ func resourceMetalOrganizationMemberDelete(d *schema.ResourceData, meta interfac
 	} else if member.isInvitation() {
 		_, err = client.Invitations.Delete(member.Invitation.ID)
 		if err != nil {
-			err = friendlyError(err)
+			err = equinix_errors.FriendlyError(err)
 			// If the invitation was deleted, mark as gone.
-			if isNotFound(err) {
+			if equinix_errors.IsNotFound(err) {
 				d.SetId("")
 				return nil
 			}

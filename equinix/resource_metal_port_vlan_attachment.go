@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"log"
 
+	equinix_errors "github.com/equinix/terraform-provider-equinix/internal/errors"
+
 	"github.com/equinix/terraform-provider-equinix/internal/config"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -168,9 +170,9 @@ func resourceMetalPortVlanAttachmentRead(d *schema.ResourceData, meta interface{
 
 	dev, _, err := client.Devices.Get(deviceID, &packngo.GetOptions{Includes: []string{"virtual_networks,project,native_virtual_network"}})
 	if err != nil {
-		err = friendlyError(err)
+		err = equinix_errors.FriendlyError(err)
 
-		if isNotFound(err) {
+		if equinix_errors.IsNotFound(err) {
 			log.Printf("[WARN] Device (%s) for Port Vlan Attachment not found, removing from state", d.Id())
 			d.SetId("")
 			return nil
@@ -244,7 +246,7 @@ func resourceMetalPortVlanAttachmentDelete(d *schema.ResourceData, meta interfac
 	native := d.Get("native").(bool)
 	if native {
 		_, resp, err := client.DevicePorts.UnassignNative(pID)
-		if ignoreResponseErrors(httpForbidden, httpNotFound)(resp, err) != nil {
+		if equinix_errors.IgnoreResponseErrors(equinix_errors.HttpForbidden, equinix_errors.HttpNotFound)(resp, err) != nil {
 			return err
 		}
 	}
@@ -253,7 +255,7 @@ func resourceMetalPortVlanAttachmentDelete(d *schema.ResourceData, meta interfac
 	metalMutexKV.Lock(lockId)
 	defer metalMutexKV.Unlock(lockId)
 	portPtr, resp, err := client.DevicePorts.Unassign(par)
-	if ignoreResponseErrors(httpForbidden, httpNotFound, isNotAssigned)(resp, err) != nil {
+	if equinix_errors.IgnoreResponseErrors(equinix_errors.HttpForbidden, equinix_errors.HttpNotFound, equinix_errors.IsNotAssigned)(resp, err) != nil {
 		return err
 	}
 	forceBond := d.Get("force_bond").(bool)
@@ -262,11 +264,11 @@ func resourceMetalPortVlanAttachmentDelete(d *schema.ResourceData, meta interfac
 		portName := d.Get("port_name").(string)
 		port, err := client.DevicePorts.GetPortByName(deviceID, portName)
 		if err != nil {
-			return friendlyError(err)
+			return equinix_errors.FriendlyError(err)
 		}
 		_, _, err = client.DevicePorts.Bond(port, false)
 		if err != nil {
-			return friendlyError(err)
+			return equinix_errors.FriendlyError(err)
 		}
 	}
 	return nil

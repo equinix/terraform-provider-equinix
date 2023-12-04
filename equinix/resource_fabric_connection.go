@@ -7,6 +7,8 @@ import (
 	"strings"
 	"time"
 
+	equinix_schema "github.com/equinix/terraform-provider-equinix/internal/schema"
+
 	"github.com/equinix/terraform-provider-equinix/internal/config"
 
 	v4 "github.com/equinix-labs/fabric-go/fabric/v4"
@@ -172,7 +174,7 @@ func resourceFabricConnectionRead(ctx context.Context, d *schema.ResourceData, m
 
 func setFabricMap(d *schema.ResourceData, conn v4.Connection) diag.Diagnostics {
 	diags := diag.Diagnostics{}
-	err := setMap(d, map[string]interface{}{
+	err := equinix_schema.SetMap(d, map[string]interface{}{
 		"name":      conn.Name,
 		"bandwidth": conn.Bandwidth,
 		"href":      conn.Href,
