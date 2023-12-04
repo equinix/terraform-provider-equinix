@@ -92,7 +92,7 @@ func (r *Resource) Read(ctx context.Context, req resource.ReadRequest, resp *res
         // If the VRF was destroyed, mark as gone
 		if helper.IsNotFound(err) || helper.IsForbidden(err) {
 			resp.Diagnostics.AddWarning(
-				"Metal Metal",
+				"Metal VRF",
 				fmt.Sprintf("[WARN] VRF (%s) not accessible, removing from state", id),
 			)
 			resp.State.RemoveResource(ctx)

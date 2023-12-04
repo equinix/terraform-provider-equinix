@@ -16,6 +16,7 @@ import (
 	"github.com/equinix/terraform-provider-equinix/internal/metal_port"
 	"github.com/equinix/terraform-provider-equinix/internal/metal_project"
 	"github.com/equinix/terraform-provider-equinix/internal/metal_reserved_ip_block"
+	"github.com/equinix/terraform-provider-equinix/internal/metal_spot_market_request"
 	"github.com/equinix/terraform-provider-equinix/internal/metal_ssh_key"
 	"github.com/equinix/terraform-provider-equinix/internal/metal_virtual_circuit"
 	"github.com/equinix/terraform-provider-equinix/internal/metal_vlan"
@@ -128,6 +129,9 @@ func (p *FrameworkProvider) Resources(ctx context.Context) []func() resource.Res
             return metal_virtual_circuit.NewResource(ctx)
         },
 		metal_device_network_type.NewResource,
+		func() resource.Resource {
+            return metal_spot_market_request.NewResource(ctx)
+        },
 	}
 }
 

@@ -36,7 +36,7 @@ func (r *Resource) Create(ctx context.Context, req resource.CreateRequest, resp 
     r.Meta.AddFwModuleToMetalUserAgent(ctx, req.ProviderMeta)
     client := r.Meta.Metal
 
-    // Convert the plan to your API's request format
+    // Target type
     ntype := plan.Type.ValueString()
 
     // Making an API call to configure the resource
@@ -93,7 +93,7 @@ func (r *Resource) Read(ctx context.Context, req resource.ReadRequest, resp *res
         return
 	}
 
-    // Map the created resource data back to the Terraform state
+    // Parse the API response into the Terraform state
     var resourceState MetalDeviceNetworkTypeResourceModel
     resourceState.parse(device, state.Type.ValueString())
     diags = resp.State.Set(ctx, &resourceState)

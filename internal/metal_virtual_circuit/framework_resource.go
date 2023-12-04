@@ -116,7 +116,7 @@ func (r *Resource) Create(ctx context.Context, req resource.CreateRequest, resp 
     if err != nil {
         err = helper.FriendlyError(err)
         resp.Diagnostics.AddError(
-            "Error waiting for creationg of Metal Virtual Circuit",
+            "Error waiting for creation of Metal Virtual Circuit",
             fmt.Sprintf("error waiting for Virtual Circuit (%s) to become %s: %s", vc.ID, targetState, err),
         )
         return
