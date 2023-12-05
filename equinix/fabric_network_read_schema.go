@@ -17,7 +17,7 @@ func readChangeSch() map[string]*schema.Schema {
 		"type": {
 			Type:        schema.TypeString,
 			Computed:    true,
-			Description: "network type",
+			Description: "network change type",
 		},
 	}
 }
@@ -52,7 +52,7 @@ func readNetworkResourceSchema() map[string]*schema.Schema {
 		"connections_count": {
 			Type:        schema.TypeInt,
 			Computed:    true,
-			Description: "",
+			Description: "Connections count",
 		},
 		"change_log": {
 			Type:        schema.TypeSet,
@@ -70,6 +70,7 @@ func readNetworkResourceSchema() map[string]*schema.Schema {
 		"location": {
 			Type:        schema.TypeSet,
 			Computed:    true,
+			Optional:    true,
 			Description: "Fabric Network location",
 			Elem: &schema.Resource{
 				Schema: readLocationSch(),

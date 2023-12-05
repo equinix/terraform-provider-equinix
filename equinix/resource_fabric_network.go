@@ -46,24 +46,26 @@ func resourceNetworkCreate(ctx context.Context, d *schema.ResourceData, meta int
 	if len(schemaProject) != 0 {
 		project = projectToFabric(schemaProject)
 	}
+	netType := v4.NetworkType(d.Get("type").(string))
+	netScope := v4.NetworkScope(d.Get("scope").(string))
 
 	createRequest := v4.NetworkPostRequest{
 		Name:          d.Get("name").(string),
-		Type_:         d.Get("type").(*v4.NetworkType),
-		Scope:         d.Get("type").(*v4.NetworkScope),
+		Type_:         &netType,
+		Scope:         &netScope,
 		Location:      &location,
 		Notifications: notifications,
 		Project:       &project,
 	}
 
-	fabricNetwork,_, err := client.NetworksApi.CreateNetwork(ctx, createRequest)
+	fabricNetwork, _, err := client.NetworksApi.CreateNetwork(ctx, createRequest)
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	d.SetId(fabricNetwork.)
+	d.SetId(fabricNetwork.Uuid)
 
 	if _, err = waitUntilNetworkIsProvisioned(d.Id(), meta, ctx); err != nil {
-		return diag.Errorf("error waiting for Cloud Router (%s) to be created: %s", d.Id(), err)
+		return diag.Errorf("error waiting for Network (%s) to be created: %s", d.Id(), err)
 	}
 
 	return resourceNetworkRead(ctx, d, meta)
@@ -82,7 +84,7 @@ func resourceNetworkRead(ctx context.Context, d *schema.ResourceData, meta inter
 	}
 	d.SetId(fabricNetwork.Uuid)
 	return setNetworkMap(d, fabricNetwork)
-}x
+}
 
 func setNetworkMap(d *schema.ResourceData, nt v4.Network) diag.Diagnostics {
 	diags := diag.Diagnostics{}
@@ -90,9 +92,13 @@ func setNetworkMap(d *schema.ResourceData, nt v4.Network) diag.Diagnostics {
 		"name":          nt.Name,
 		"type":          nt.Type_,
 		"scope":         nt.Scope,
+		"state":         nt.State,
+		"operation":     NetworkOperationToTerra(nt.Operation),
+		"change":        simplifiedNetworkChangeToTerra(nt.Change),
 		"location":      locationToTerra(nt.Location),
 		"notifications": notificationToTerra(nt.Notifications),
 		"project":       projectToTerra(nt.Project),
+		"change_log":    changeLogToTerra(nt.ChangeLog),
 	})
 	if err != nil {
 		return diag.FromErr(err)
@@ -135,7 +141,7 @@ func resourceNetworkUpdate(ctx context.Context, d *schema.ResourceData, meta int
 }
 
 func waitForNetworkUpdateCompletion(uuid string, meta interface{}, ctx context.Context) (v4.Network, error) {
-	log.Printf("Waiting for Cloud Router update to complete, uuid %s", uuid)
+	log.Printf("Waiting for Network update to complete, uuid %s", uuid)
 	stateConf := &resource.StateChangeConf{
 		Target: []string{string(v4.PROVISIONED_NetworkEquinixStatus)},
 		Refresh: func() (interface{}, string, error) {
@@ -144,7 +150,7 @@ func waitForNetworkUpdateCompletion(uuid string, meta interface{}, ctx context.C
 			if err != nil {
 				return "", "", err
 			}
-			return dbConn, string(*dbConn.State), nil
+			return dbConn, string(*dbConn.Operation.EquinixStatus), nil
 		},
 		Timeout:    2 * time.Minute,
 		Delay:      30 * time.Second,
@@ -175,7 +181,7 @@ func waitUntilNetworkIsProvisioned(uuid string, meta interface{}, ctx context.Co
 			if err != nil {
 				return "", "", err
 			}
-			return dbConn, string(*dbConn.State), nil
+			return dbConn, string(*dbConn.Operation.EquinixStatus), nil
 		},
 		Timeout:    5 * time.Minute,
 		Delay:      30 * time.Second,
@@ -229,7 +235,7 @@ func waitUntilNetworkDeprovisioned(uuid string, meta interface{}, ctx context.Co
 			if err != nil {
 				return "", "", err
 			}
-			return dbConn, string(*dbConn.State), nil
+			return dbConn, string(*dbConn.Operation.EquinixStatus), nil
 		},
 		Timeout:    5 * time.Minute,
 		Delay:      30 * time.Second,

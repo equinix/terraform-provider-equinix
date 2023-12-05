@@ -5,21 +5,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 )
 
-var createNetworkAccountRes = &schema.Resource{
-	Schema: createNetworkAccountSch(),
-}
-
-func createNetworkAccountSch() map[string]*schema.Schema {
-	return map[string]*schema.Schema{
-		"account_number": {
-			Type:        schema.TypeInt,
-			Computed:    true,
-			Optional:    true,
-			Description: "Account Number",
-		},
-	}
-}
-
 var createNetworkChangeRes = &schema.Resource{
 	Schema: createNetworkChangeSch(),
 }
@@ -44,8 +29,18 @@ func createNetworkChangeSch() map[string]*schema.Schema {
 	}
 }
 
-var createNetworkProjectSchRes = &schema.Resource{
-	Schema: createNetworkProjectSch(),
+var createNetworkOperationSchRes = &schema.Resource{
+	Schema: createNetworkOperationSch(),
+}
+
+func createNetworkOperationSch() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"equinix_status": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "Network operation status",
+		},
+	}
 }
 
 func createNetworkProjectSch() map[string]*schema.Schema {
@@ -82,28 +77,25 @@ func createNetworkResourceSchema() map[string]*schema.Schema {
 			Computed:    true,
 			Description: "Fabric Network overall state",
 		},
+		"scope": {
+			Type:        schema.TypeString,
+			Required:    true,
+			Description: "Fabric Network scope",
+		},
 		"equinix_asn": {
 			Type:        schema.TypeInt,
 			Computed:    true,
 			Description: "Equinix ASN",
 		},
-		"change_log": {
-			Type:        schema.TypeSet,
-			Computed:    true,
-			Description: "Captures Fabric Network lifecycle change information",
-			Elem: &schema.Resource{
-				Schema: createChangeLogSch(),
-			},
-		},
 		"type": {
 			Type:         schema.TypeString,
 			Required:     true,
-			ValidateFunc: validation.StringInSlice([]string{"IP_WAN"}, true),
-			Description:  "Defines the Network type like IP_WAN",
+			ValidateFunc: validation.StringInSlice([]string{"IPWAN", "EPLAN", "EVPLAN"}, true),
+			Description:  "Supported Network types - EVPLAN, EPLAN, IPWAN",
 		},
 		"location": {
 			Type:        schema.TypeSet,
-			Required:    true,
+			Optional:    true,
 			Description: "Fabric Network location",
 			MaxItems:    1,
 			Elem: &schema.Resource{
@@ -118,13 +110,13 @@ func createNetworkResourceSchema() map[string]*schema.Schema {
 				Schema: createNetworkProjectSch(),
 			},
 		},
-		"account": {
+		"operation": {
 			Type:        schema.TypeSet,
 			Optional:    true,
-			Description: "Customer account information that is associated with this Fabric Network",
+			Description: "Network operation information that is associated with this Fabric Network",
 			MaxItems:    1,
 			Elem: &schema.Resource{
-				Schema: createNetworkAccountSch(),
+				Schema: createNetworkOperationSch(),
 			},
 		},
 		"change": {
@@ -142,6 +134,14 @@ func createNetworkResourceSchema() map[string]*schema.Schema {
 			Description: "Preferences for notifications on Fabric Network configuration or status changes",
 			Elem: &schema.Resource{
 				Schema: createNotificationSch(),
+			},
+		},
+		"change_log": {
+			Type:        schema.TypeSet,
+			Computed:    true,
+			Description: "Captures Fabric Network lifecycle change information",
+			Elem: &schema.Resource{
+				Schema: createChangeLogSch(),
 			},
 		},
 	}
