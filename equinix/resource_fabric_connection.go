@@ -49,8 +49,8 @@ func resourceFabricConnectionCreate(ctx context.Context, d *schema.ResourceData,
 	aside := d.Get("a_side").(*schema.Set).List()
 	projectReq := d.Get("project").(*schema.Set).List()
 	project := projectToFabric(projectReq)
-	additionalInfo := d.Get("additional_info").([]interface{})
-	additionalinfoGoToTerraState := additionalInfoToFabric(additionalInfo)
+	additionalInfoTerraConfig := d.Get("additional_info").([]interface{})
+	additionalInfo := additionalInfoTerraToGo(additionalInfoTerraConfig)
 	connectionASide := v4.ConnectionSide{}
 	for _, as := range aside {
 		asideMap := as.(map[string]interface{})
@@ -70,7 +70,7 @@ func resourceFabricConnectionCreate(ctx context.Context, d *schema.ResourceData,
 			connectionASide = v4.ConnectionSide{ServiceToken: &mappedServiceToken}
 		}
 		if len(additionalInfoRequest) != 0 {
-			mappedAdditionalInfo := additionalInfoToFabric(additionalInfoRequest)
+			mappedAdditionalInfo := additionalInfoTerraToGo(additionalInfoRequest)
 			connectionASide = v4.ConnectionSide{AdditionalInfo: mappedAdditionalInfo}
 		}
 	}
@@ -94,7 +94,7 @@ func resourceFabricConnectionCreate(ctx context.Context, d *schema.ResourceData,
 			connectionZSide = v4.ConnectionSide{ServiceToken: &mappedServiceToken}
 		}
 		if len(additionalInfoRequest) != 0 {
-			mappedAdditionalInfo := additionalInfoToFabric(additionalInfoRequest)
+			mappedAdditionalInfo := additionalInfoTerraToGo(additionalInfoRequest)
 			connectionZSide = v4.ConnectionSide{AdditionalInfo: mappedAdditionalInfo}
 		}
 	}
@@ -105,7 +105,7 @@ func resourceFabricConnectionCreate(ctx context.Context, d *schema.ResourceData,
 		Order:          &order,
 		Notifications:  notifications,
 		Bandwidth:      int32(d.Get("bandwidth").(int)),
-		AdditionalInfo: additionalinfoGoToTerraState,
+		AdditionalInfo: additionalInfo,
 		Redundancy:     &red,
 		ASide:          &connectionASide,
 		ZSide:          &connectionZSide,
@@ -122,7 +122,7 @@ func resourceFabricConnectionCreate(ctx context.Context, d *schema.ResourceData,
 		return diag.Errorf("error waiting for connection (%s) to be created: %s", d.Id(), err)
 	}
 
-	awsSecrets, hasAWSSecrets := additionalInfoContainsAWSSecrets(additionalInfo)
+	awsSecrets, hasAWSSecrets := additionalInfoContainsAWSSecrets(additionalInfoTerraConfig)
 	if hasAWSSecrets {
 		patchChangeOperation := []v4.ConnectionChangeOperation{
 			{

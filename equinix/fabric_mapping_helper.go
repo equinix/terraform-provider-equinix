@@ -28,7 +28,7 @@ func serviceTokenToFabric(serviceTokenRequest []interface{}) (v4.ServiceToken, e
 	return mappedST, nil
 }
 
-func additionalInfoToFabric(additionalInfoRequest []interface{}) []v4.ConnectionSideAdditionalInfo {
+func additionalInfoTerraToGo(additionalInfoRequest []interface{}) []v4.ConnectionSideAdditionalInfo {
 	var mappedaiArray []v4.ConnectionSideAdditionalInfo
 	for _, ai := range additionalInfoRequest {
 		aiMap := ai.(map[string]interface{})
