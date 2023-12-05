@@ -4,13 +4,14 @@ import (
 	"context"
 	"fmt"
 	v4 "github.com/equinix-labs/fabric-go/fabric/v4"
+	"github.com/equinix/terraform-provider-equinix/internal/config"
+	equinix_schema "github.com/equinix/terraform-provider-equinix/internal/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"log"
 	"strings"
 	"time"
-
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 func resourceNetwork() *schema.Resource {
@@ -35,8 +36,8 @@ func resourceNetwork() *schema.Resource {
 }
 
 func resourceNetworkCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := meta.(*Config).fabricClient
-	ctx = context.WithValue(ctx, v4.ContextAccessToken, meta.(*Config).FabricAuthToken)
+	client := meta.(*config.Config).FabricClient
+	ctx = context.WithValue(ctx, v4.ContextAccessToken, meta.(*config.Config).FabricAuthToken)
 	schemaNotifications := d.Get("notifications").([]interface{})
 	notifications := notificationToFabric(schemaNotifications)
 	schemaLocation := d.Get("location").(*schema.Set).List()
@@ -72,8 +73,8 @@ func resourceNetworkCreate(ctx context.Context, d *schema.ResourceData, meta int
 }
 
 func resourceNetworkRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := meta.(*Config).fabricClient
-	ctx = context.WithValue(ctx, v4.ContextAccessToken, meta.(*Config).FabricAuthToken)
+	client := meta.(*config.Config).FabricClient
+	ctx = context.WithValue(ctx, v4.ContextAccessToken, meta.(*config.Config).FabricAuthToken)
 	fabricNetwork, _, err := client.NetworksApi.GetNetworkByUuid(ctx, d.Id())
 	if err != nil {
 		log.Printf("[WARN] Fabric Network %s not found , error %s", d.Id(), err)
@@ -88,7 +89,7 @@ func resourceNetworkRead(ctx context.Context, d *schema.ResourceData, meta inter
 
 func setNetworkMap(d *schema.ResourceData, nt v4.Network) diag.Diagnostics {
 	diags := diag.Diagnostics{}
-	err := setMap(d, map[string]interface{}{
+	err := equinix_schema.SetMap(d, map[string]interface{}{
 		"name":          nt.Name,
 		"type":          nt.Type_,
 		"scope":         nt.Scope,
@@ -107,8 +108,8 @@ func setNetworkMap(d *schema.ResourceData, nt v4.Network) diag.Diagnostics {
 }
 
 func resourceNetworkUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := meta.(*Config).fabricClient
-	ctx = context.WithValue(ctx, v4.ContextAccessToken, meta.(*Config).FabricAuthToken)
+	client := meta.(*config.Config).FabricClient
+	ctx = context.WithValue(ctx, v4.ContextAccessToken, meta.(*config.Config).FabricAuthToken)
 	dbConn, err := waitUntilNetworkIsProvisioned(d.Id(), meta, ctx)
 	if err != nil {
 		if !strings.Contains(err.Error(), "500") {
@@ -145,7 +146,7 @@ func waitForNetworkUpdateCompletion(uuid string, meta interface{}, ctx context.C
 	stateConf := &resource.StateChangeConf{
 		Target: []string{string(v4.PROVISIONED_NetworkEquinixStatus)},
 		Refresh: func() (interface{}, string, error) {
-			client := meta.(*Config).fabricClient
+			client := meta.(*config.Config).FabricClient
 			dbConn, _, err := client.NetworksApi.GetNetworkByUuid(ctx, uuid)
 			if err != nil {
 				return "", "", err
@@ -176,7 +177,7 @@ func waitUntilNetworkIsProvisioned(uuid string, meta interface{}, ctx context.Co
 			string(v4.PROVISIONED_NetworkEquinixStatus),
 		},
 		Refresh: func() (interface{}, string, error) {
-			client := meta.(*Config).fabricClient
+			client := meta.(*config.Config).FabricClient
 			dbConn, _, err := client.NetworksApi.GetNetworkByUuid(ctx, uuid)
 			if err != nil {
 				return "", "", err
@@ -199,8 +200,8 @@ func waitUntilNetworkIsProvisioned(uuid string, meta interface{}, ctx context.Co
 
 func resourceNetworkDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	diags := diag.Diagnostics{}
-	client := meta.(*Config).fabricClient
-	ctx = context.WithValue(ctx, v4.ContextAccessToken, meta.(*Config).FabricAuthToken)
+	client := meta.(*config.Config).FabricClient
+	ctx = context.WithValue(ctx, v4.ContextAccessToken, meta.(*config.Config).FabricAuthToken)
 	_, resp, err := client.NetworksApi.DeleteNetworkByUuid(ctx, d.Id())
 	if err != nil {
 		errors, ok := err.(v4.GenericSwaggerError).Model().([]v4.ModelError)
@@ -230,7 +231,7 @@ func waitUntilNetworkDeprovisioned(uuid string, meta interface{}, ctx context.Co
 			string(v4.DEPROVISIONED_NetworkEquinixStatus),
 		},
 		Refresh: func() (interface{}, string, error) {
-			client := meta.(*Config).fabricClient
+			client := meta.(*config.Config).FabricClient
 			dbConn, _, err := client.NetworksApi.GetNetworkByUuid(ctx, uuid)
 			if err != nil {
 				return "", "", err
