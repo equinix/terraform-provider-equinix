@@ -9,6 +9,7 @@ func readServiceTokenSch() map[string]*schema.Schema {
 		"type": {
 			Type:        schema.TypeString,
 			Computed:    true,
+			Optional:    true,
 			Description: "Token type - VC_TOKEN",
 		},
 		"href": {
@@ -332,15 +333,18 @@ func readAccessPointInterface() map[string]*schema.Schema {
 		"uuid": {
 			Type:        schema.TypeString,
 			Computed:    true,
+			Optional:    true,
 			Description: "Equinix-assigned interface identifier",
 		},
 		"id": {
-			Type:        schema.TypeString,
+			Type:        schema.TypeInt,
 			Computed:    true,
+			Optional:    true,
 			Description: "Access Point Interface id",
 		},
 		"type": {
 			Type:        schema.TypeString,
+			Optional:    true,
 			Computed:    true,
 			Description: "Interface type- CSP",
 		},
@@ -481,6 +485,7 @@ func readFabricConnectionSideSch() map[string]*schema.Schema {
 		"service_token": {
 			Type:        schema.TypeSet,
 			Computed:    true,
+			Optional:    true,
 			Description: "For service token based connections, Service tokens authorize users to access protected resources and services. Resource owners can distribute the tokens to trusted partners and vendors, allowing selected third parties to work directly with Equinix network assets",
 			Elem: &schema.Resource{
 				Schema: readServiceTokenSch(),

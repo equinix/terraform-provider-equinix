@@ -8,19 +8,27 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
-func serviceTokenToFabric(serviceTokenRequest []interface{}) v4.ServiceToken {
+func serviceTokenToFabric(serviceTokenRequest []interface{}) (v4.ServiceToken, error) {
 	mappedST := v4.ServiceToken{}
 	for _, str := range serviceTokenRequest {
 		stMap := str.(map[string]interface{})
 		stType := stMap["type"].(string)
 		uuid := stMap["uuid"].(string)
-		stTypeObj := v4.ServiceTokenType(stType)
-		mappedST = v4.ServiceToken{Type_: &stTypeObj, Uuid: uuid}
+		if stType != "" {
+			if stType != "VC_TOKEN" {
+				return v4.ServiceToken{}, fmt.Errorf("invalid service token type in config. Must be: VC_TOKEN; Received: %s", stType)
+			}
+			stTypeObj := v4.ServiceTokenType(stType)
+			mappedST = v4.ServiceToken{Uuid: uuid, Type_: &stTypeObj}
+		} else {
+			mappedST = v4.ServiceToken{Uuid: uuid}
+		}
+
 	}
-	return mappedST
+	return mappedST, nil
 }
 
-func additionalInfoToFabric(additionalInfoRequest []interface{}) []v4.ConnectionSideAdditionalInfo {
+func additionalInfoTerraToGo(additionalInfoRequest []interface{}) []v4.ConnectionSideAdditionalInfo {
 	var mappedaiArray []v4.ConnectionSideAdditionalInfo
 	for _, ai := range additionalInfoRequest {
 		aiMap := ai.(map[string]interface{})
@@ -241,6 +249,7 @@ func simplifiedServiceProfileToFabric(profileList []interface{}) v4.SimplifiedSe
 		spte := v4.ServiceProfileTypeEnum(ptype)
 		uuid := plMap["uuid"].(string)
 		ssp = v4.SimplifiedServiceProfile{Uuid: uuid, Type_: &spte}
+
 	}
 	return ssp
 }
@@ -715,7 +724,7 @@ func interfaceToTerra(mInterface *v4.ModelInterface) *schema.Set {
 	mappedMInterfaces := make([]interface{}, len(mInterfaces))
 	for _, mInterface := range mInterfaces {
 		mappedMInterface := make(map[string]interface{})
-		mappedMInterface["id"] = mInterface.Id
+		mappedMInterface["id"] = int(mInterface.Id)
 		mappedMInterface["type"] = mInterface.Type_
 		mappedMInterface["uuid"] = mInterface.Uuid
 		mappedMInterfaces = append(mappedMInterfaces, mappedMInterface)
