@@ -5,8 +5,6 @@ import (
 	v4 "github.com/equinix-labs/fabric-go/fabric/v4"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"log"
-	"math/rand"
-	"time"
 )
 
 func serviceTokenToFabric(serviceTokenRequest []interface{}) (v4.ServiceToken, error) {
@@ -439,6 +437,25 @@ func operationToTerra(operation *v4.ConnectionOperation) *schema.Set {
 	return operationSet
 }
 
+func NetworkOperationToTerra(operation *v4.NetworkOperation) *schema.Set {
+	if operation == nil {
+		return nil
+	}
+	operations := []*v4.NetworkOperation{operation}
+	mappedOperations := make([]interface{}, len(operations))
+	for _, operation := range operations {
+		mappedOperation := make(map[string]interface{})
+		mappedOperation["equinix_status"] = string(*operation.EquinixStatus)
+		mappedOperations = append(mappedOperations, mappedOperation)
+	}
+
+	operationSet := schema.NewSet(
+		schema.HashResource(createNetworkOperationSchRes),
+		mappedOperations,
+	)
+	return operationSet
+}
+
 func orderMappingToTerra(order *v4.Order) *schema.Set {
 	if order == nil {
 		return nil
@@ -538,14 +555,17 @@ func notificationToTerra(notifications []v4.SimplifiedNotification) []map[string
 }
 
 func locationToTerra(location *v4.SimplifiedLocation) *schema.Set {
+	if location == nil {
+		return nil
+	}
 	locations := []*v4.SimplifiedLocation{location}
 	mappedLocations := make([]interface{}, len(locations))
-	for i, location := range locations {
+	for i, loc := range locations {
 		mappedLocations[i] = map[string]interface{}{
-			"region":     location.Region,
-			"metro_name": location.MetroName,
-			"metro_code": location.MetroCode,
-			"ibx":        location.Ibx,
+			"region":     loc.Region,
+			"metro_name": loc.MetroName,
+			"metro_code": loc.MetroCode,
+			"ibx":        loc.Ibx,
 		}
 	}
 	locationSet := schema.NewSet(
@@ -818,6 +838,24 @@ func simplifiedServiceProfileToTerra(profile *v4.SimplifiedServiceProfile) *sche
 		mappedProfiles,
 	)
 	return profileSet
+}
+
+func simplifiedNetworkChangeToTerra(networkChange *v4.SimplifiedNetworkChange) *schema.Set {
+	changes := []*v4.SimplifiedNetworkChange{networkChange}
+	mappedChanges := make([]interface{}, len(changes))
+	for _, change := range changes {
+		mappedChange := make(map[string]interface{})
+		mappedChange["href"] = change.Href
+		mappedChange["type"] = string(*change.Type_)
+		mappedChange["uuid"] = change.Uuid
+		mappedChanges = append(mappedChanges, mappedChange)
+	}
+
+	changeSet := schema.NewSet(
+		schema.HashResource(createNetworkChangeRes),
+		mappedChanges,
+	)
+	return changeSet
 }
 
 func accessPointTypeConfigToTerra(spAccessPointTypes []v4.ServiceProfileAccessPointType) []interface{} {
@@ -1270,22 +1308,4 @@ func getNetworkUpdateRequest(network v4.Network, d *schema.ResourceData) (v4.Net
 		return changeOps, fmt.Errorf("nothing to update for the Fabric Network: %s", existingName)
 	}
 	return changeOps, nil
-}
-
-const allowed_charset = "abcdefghijklmnopqrstuvwxyz" +
-	"ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789#$&@"
-
-var seededRand = rand.New(
-	rand.NewSource(time.Now().UnixNano()))
-
-func CorrelationIdWithCharset(length int, charset string) string {
-	b := make([]byte, length)
-	for i := range b {
-		b[i] = charset[seededRand.Intn(len(charset))]
-	}
-	return string(b)
-}
-
-func CorrelationId(length int) string {
-	return CorrelationIdWithCharset(length, allowed_charset)
 }

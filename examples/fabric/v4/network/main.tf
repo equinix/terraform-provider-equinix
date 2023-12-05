@@ -12,12 +12,12 @@ resource "equinix_fabric_network" "test"{
     type=var.notifications_type
     emails=var.notifications_emails
   }
-  order {
-    purchase_order_number= var.purchase_order_number
+  project {
+    project_id= var.project_id
   }
 }
 
-output "fcr_result" {
+output "network_result" {
   value = equinix_fabric_network.test.id
 }
 
