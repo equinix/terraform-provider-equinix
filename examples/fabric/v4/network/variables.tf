@@ -5,5 +5,5 @@ variable "network_name" {}
 variable "network_type" {}
 variable "notifications_type" {}
 variable "notifications_emails" {}
-variable "purchase_order_number" {}
+variable "project_id" {}
 variable "network_scope" {}
