@@ -270,6 +270,8 @@ github.com/equinix-labs/metal-go v0.26.0 h1:0rBTyjF8j58dg++kMFLRi9Jhs5gng5BFn5Y0
 github.com/equinix-labs/metal-go v0.26.0/go.mod h1:SmxCklxW+KjmBLVMdEXgtFO5gD5/b4N0VxcNgUYbOH4=
 github.com/equinix-labs/metal-go v0.27.0 h1:p5Bqus/gSs5oQezHWXWpc0IzkQl06+yZgbXT5jB7AWs=
 github.com/equinix-labs/metal-go v0.27.0/go.mod h1:SmxCklxW+KjmBLVMdEXgtFO5gD5/b4N0VxcNgUYbOH4=
+github.com/equinix-labs/metal-go v0.29.0 h1:dTi48+ni4Xbey0VJjHrkoAOxJvVPl9ukA/6DoJv6o8s=
+github.com/equinix-labs/metal-go v0.29.0/go.mod h1:SmxCklxW+KjmBLVMdEXgtFO5gD5/b4N0VxcNgUYbOH4=
 github.com/equinix/ecx-go/v2 v2.3.1 h1:gFcAIeyaEUw7S8ebqApmT7E/S7pC7Ac3wgScp89fkPU=
 github.com/equinix/ecx-go/v2 v2.3.1/go.mod h1:FvCdZ3jXU8Z4CPKig2DT+4J2HdwgRK17pIcznM7RXyk=
 github.com/equinix/ne-go v1.11.0 h1:ja6G2fmcGrLsOeV25Mq6pDfH+/cUlvxJbnE8uRXTGGk=
