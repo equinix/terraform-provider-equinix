@@ -107,6 +107,7 @@ func createGatewayProjectSch() map[string]*schema.Schema {
 		"project_id": {
 			Type:        schema.TypeString,
 			Computed:    true,
+			Optional:    true,
 			Description: "Project Id",
 		},
 		"href": {
@@ -790,8 +791,8 @@ func createFabricConnectionResourceSchema() map[string]*schema.Schema {
 		"type": {
 			Type:         schema.TypeString,
 			Required:     true,
-			ValidateFunc: validation.StringInSlice([]string{"VG_VC", "EVPL_VC", "EPL_VC", "EC_VC", "IP_VC", "IPWAN_VC", "ACCESS_EPL_VC"}, true),
-			Description:  "Defines the connection type like VG_VC, EVPL_VC, EPL_VC, EC_VC, IP_VC, IPWAN_VC,ACCESS_EPL_VC",
+			ValidateFunc: validation.StringInSlice([]string{"VG_VC", "EVPL_VC", "EPL_VC", "EC_VC", "IP_VC", "IPWAN_VC", "ACCESS_EPL_VC", "EVPLAN_VC", "EPLAN_VC"}, true),
+			Description:  "Defines the connection type like VG_VC, EVPL_VC, EPL_VC, EC_VC, IP_VC, IPWAN_VC,ACCESS_EPL_VC,EVPLAN_VC, EPLAN_VC",
 		},
 		"bandwidth": {
 			Type:        schema.TypeInt,
