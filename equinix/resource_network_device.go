@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/equinix/terraform-provider-equinix/internal/config"
+	equinix_validation "github.com/equinix/terraform-provider-equinix/internal/validation"
 
 	"github.com/equinix/ne-go"
 	"github.com/equinix/rest-go"
@@ -252,7 +253,7 @@ func createNetworkDeviceSchema() map[string]*schema.Schema {
 			Type:         schema.TypeString,
 			Required:     true,
 			ForceNew:     true,
-			ValidateFunc: stringIsMetroCode(),
+			ValidateFunc: equinix_validation.StringIsMetroCode,
 			Description:  neDeviceDescriptions["MetroCode"],
 		},
 		neDeviceSchemaNames["IBX"]: {
@@ -374,7 +375,7 @@ func createNetworkDeviceSchema() map[string]*schema.Schema {
 			MinItems: 1,
 			Elem: &schema.Schema{
 				Type:         schema.TypeString,
-				ValidateFunc: stringIsEmailAddress(),
+				ValidateFunc: equinix_validation.StringIsEmailAddress,
 			},
 			Description: neDeviceDescriptions["Notifications"],
 		},
@@ -523,7 +524,7 @@ func createNetworkDeviceSchema() map[string]*schema.Schema {
 						Type:         schema.TypeString,
 						Required:     true,
 						ForceNew:     true,
-						ValidateFunc: stringIsMetroCode(),
+						ValidateFunc: equinix_validation.StringIsMetroCode,
 						Description:  neDeviceDescriptions["MetroCode"],
 					},
 					neDeviceSchemaNames["IBX"]: {
@@ -608,7 +609,7 @@ func createNetworkDeviceSchema() map[string]*schema.Schema {
 						MinItems: 1,
 						Elem: &schema.Schema{
 							Type:         schema.TypeString,
-							ValidateFunc: stringIsEmailAddress(),
+							ValidateFunc: equinix_validation.StringIsEmailAddress,
 						},
 						Description: neDeviceDescriptions["Notifications"],
 					},

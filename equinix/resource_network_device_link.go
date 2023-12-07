@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/equinix/terraform-provider-equinix/internal/hashcode"
-
 	"github.com/equinix/terraform-provider-equinix/internal/config"
+	"github.com/equinix/terraform-provider-equinix/internal/hashcode"
+	equinix_validation "github.com/equinix/terraform-provider-equinix/internal/validation"
 
 	"github.com/equinix/ne-go"
 	"github.com/hashicorp/go-cty/cty"
@@ -197,13 +197,13 @@ func createNetworkDeviceLinkConnectionResourceSchema() map[string]*schema.Schema
 		networkDeviceLinkConnectionSchemaNames["SourceMetroCode"]: {
 			Type:         schema.TypeString,
 			Required:     true,
-			ValidateFunc: stringIsMetroCode(),
+			ValidateFunc: equinix_validation.StringIsMetroCode,
 			Description:  networkDeviceLinkConnectionDescriptions["SourceMetroCode"],
 		},
 		networkDeviceLinkConnectionSchemaNames["DestinationMetroCode"]: {
 			Type:         schema.TypeString,
 			Required:     true,
-			ValidateFunc: stringIsMetroCode(),
+			ValidateFunc: equinix_validation.StringIsMetroCode,
 			Description:  networkDeviceLinkConnectionDescriptions["DestinationMetroCode"],
 		},
 		networkDeviceLinkConnectionSchemaNames["SourceZoneCode"]: {

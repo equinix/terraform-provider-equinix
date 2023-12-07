@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/equinix/terraform-provider-equinix/internal/config"
+	equinix_validation "github.com/equinix/terraform-provider-equinix/internal/validation"
 
 	"github.com/equinix/ne-go"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -61,7 +62,7 @@ func dataSourceNetworkAccount() *schema.Resource {
 			networkAccountSchemaNames["MetroCode"]: {
 				Type:         schema.TypeString,
 				Required:     true,
-				ValidateFunc: stringIsMetroCode(),
+				ValidateFunc: equinix_validation.StringIsMetroCode,
 				Description:  networkAccountDescriptions["MetroCode"],
 			},
 		},
