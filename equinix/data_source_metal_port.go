@@ -1,6 +1,7 @@
 package equinix
 
 import (
+	"github.com/equinix/terraform-provider-equinix/internal/network"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
@@ -31,7 +32,7 @@ func dataSourceMetalPort() *schema.Resource {
 			"network_type": {
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "One of " + NetworkTypeListHB,
+				Description: "One of " + network.NetworkTypeListHB,
 			},
 			"type": {
 				Type:        schema.TypeString,

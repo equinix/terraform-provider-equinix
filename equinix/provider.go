@@ -16,13 +16,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 )
 
-var (
-	DeviceNetworkTypes   = []string{"layer3", "hybrid", "layer2-individual", "layer2-bonded"}
-	DeviceNetworkTypesHB = []string{"layer3", "hybrid", "hybrid-bonded", "layer2-individual", "layer2-bonded"}
-	NetworkTypeList      = strings.Join(DeviceNetworkTypes, ", ")
-	NetworkTypeListHB    = strings.Join(DeviceNetworkTypesHB, ", ")
-)
-
 // Provider returns Equinix terraform *schema.Provider
 func Provider() *schema.Provider {
 	provider := &schema.Provider{
