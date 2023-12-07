@@ -1,4 +1,4 @@
-package equinix
+package hashcode
 
 import (
 	"hash/crc32"
@@ -11,7 +11,7 @@ import (
 // and invert it if the result is negative.
 //
 // Originally from https://github.com/hashicorp/terraform-plugin-sdk/blob/main/internal/helper/hashcode/hashcode.go
-func hashcodeString(s string) int {
+func String(s string) int {
 	v := int(crc32.ChecksumIEEE([]byte(s)))
 	if v >= 0 {
 		return v

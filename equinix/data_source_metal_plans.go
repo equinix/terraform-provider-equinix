@@ -3,6 +3,8 @@ package equinix
 import (
 	"fmt"
 
+	"github.com/equinix/terraform-provider-equinix/internal/converters"
+
 	"github.com/equinix/terraform-provider-equinix/internal/config"
 
 	"github.com/equinix/terraform-provider-equinix/internal/datalist"
@@ -108,10 +110,10 @@ func flattenPlan(rawPlan interface{}, meta interface{}, extra map[string]interfa
 		metros = append(metros, m.Code)
 	}
 
-	flattenedFacs := schema.NewSet(schema.HashString, stringArrToIfArr(facs))
-	flattenedMetros := schema.NewSet(schema.HashString, stringArrToIfArr(metros))
+	flattenedFacs := schema.NewSet(schema.HashString, converters.StringArrToIfArr(facs))
+	flattenedMetros := schema.NewSet(schema.HashString, converters.StringArrToIfArr(metros))
 	flattenedDepTypes := schema.NewSet(schema.HashString,
-		stringArrToIfArr(plan.DeploymentTypes))
+		converters.StringArrToIfArr(plan.DeploymentTypes))
 
 	flattenedPlan := map[string]interface{}{
 		"id":                  plan.ID,

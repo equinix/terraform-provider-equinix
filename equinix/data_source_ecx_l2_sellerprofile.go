@@ -6,6 +6,8 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/equinix/terraform-provider-equinix/internal/hashcode"
+
 	"github.com/equinix/terraform-provider-equinix/internal/config"
 
 	"github.com/equinix/ecx-go/v2"
@@ -349,19 +351,19 @@ func ecxL2ServiceProfileSpeedBandHash(v interface{}) int {
 	m := v.(map[string]interface{})
 	buf.WriteString(fmt.Sprintf("%d-", m[ecxL2ServiceProfileSpeedBandSchemaNames["Speed"]].(int)))
 	buf.WriteString(fmt.Sprintf("%s-", m[ecxL2ServiceProfileSpeedBandSchemaNames["SpeedUnit"]].(string)))
-	return hashcodeString(buf.String())
+	return hashcode.String(buf.String())
 }
 
 func ecxL2SellerProfileMetroHash(v interface{}) int {
 	var buf bytes.Buffer
 	m := v.(map[string]interface{})
 	buf.WriteString(fmt.Sprintf("%s-", m[ecxL2SellerProfileMetrosSchemaNames["Code"]].(string)))
-	return hashcodeString(buf.String())
+	return hashcode.String(buf.String())
 }
 
 func ecxL2SellerProfileAdditionalInfoHash(v interface{}) int {
 	var buf bytes.Buffer
 	m := v.(map[string]interface{})
 	buf.WriteString(fmt.Sprintf("%s-", m[ecxL2SellerProfileAdditionalInfosSchemaNames["Name"]].(string)))
-	return hashcodeString(buf.String())
+	return hashcode.String(buf.String())
 }

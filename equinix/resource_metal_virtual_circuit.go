@@ -9,6 +9,8 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/equinix/terraform-provider-equinix/internal/converters"
+
 	equinix_errors "github.com/equinix/terraform-provider-equinix/internal/errors"
 	equinix_schema "github.com/equinix/terraform-provider-equinix/internal/schema"
 
@@ -165,7 +167,7 @@ func resourceMetalVirtualCircuitCreate(ctx context.Context, d *schema.ResourceDa
 
 	tags := d.Get("tags.#").(int)
 	if tags > 0 {
-		vncr.Tags = convertStringArr(d.Get("tags").([]interface{}))
+		vncr.Tags = converters.IfArrToStringArr(d.Get("tags").([]interface{}))
 	}
 
 	if nniVlan, ok := d.GetOk("nni_vlan"); ok {

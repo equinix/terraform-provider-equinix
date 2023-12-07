@@ -1,20 +1,11 @@
-package equinix
+package converters
 
 import (
 	"strconv"
 	"strings"
 )
 
-func contains(s []string, e string) bool {
-	for _, a := range s {
-		if a == e {
-			return true
-		}
-	}
-	return false
-}
-
-func stringArrToIfArr(sli []string) []interface{} {
+func StringArrToIfArr(sli []string) []interface{} {
 	var arr []interface{}
 	for _, v := range sli {
 		arr = append(arr, v)
@@ -22,7 +13,7 @@ func stringArrToIfArr(sli []string) []interface{} {
 	return arr
 }
 
-func convertStringArr(ifaceArr []interface{}) []string {
+func IfArrToStringArr(ifaceArr []interface{}) []string {
 	var arr []string
 	for _, v := range ifaceArr {
 		if v == nil {
@@ -33,7 +24,7 @@ func convertStringArr(ifaceArr []interface{}) []string {
 	return arr
 }
 
-func convertIntArr(ifaceArr []interface{}) []string {
+func IfArrToIntStringArr(ifaceArr []interface{}) []string {
 	var arr []string
 	for _, v := range ifaceArr {
 		if v == nil {
@@ -44,7 +35,7 @@ func convertIntArr(ifaceArr []interface{}) []string {
 	return arr
 }
 
-func convertIntArr2(ifaceArr []interface{}) []int {
+func IfArrToIntArr(ifaceArr []interface{}) []int {
 	var arr []int
 	for _, v := range ifaceArr {
 		if v == nil {
@@ -55,12 +46,12 @@ func convertIntArr2(ifaceArr []interface{}) []int {
 	return arr
 }
 
-func toLower(v interface{}) string {
+func ToLowerIf(v interface{}) string {
 	return strings.ToLower(v.(string))
 }
 
 // from https://stackoverflow.com/a/45428032
-func difference(a, b []string) []string {
+func Difference(a, b []string) []string {
 	mb := make(map[string]struct{}, len(b))
 	for _, x := range b {
 		mb[x] = struct{}{}

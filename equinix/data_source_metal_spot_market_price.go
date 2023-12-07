@@ -3,6 +3,8 @@ package equinix
 import (
 	"fmt"
 
+	"github.com/equinix/terraform-provider-equinix/internal/converters"
+
 	"github.com/equinix/terraform-provider-equinix/internal/config"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -25,7 +27,7 @@ func dataSourceSpotMarketPrice() *schema.Resource {
 				Description:   "Name of the metro",
 				ConflictsWith: []string{"facility"},
 				Optional:      true,
-				StateFunc:     toLower,
+				StateFunc:     converters.ToLowerIf,
 			},
 			"plan": {
 				Type:        schema.TypeString,

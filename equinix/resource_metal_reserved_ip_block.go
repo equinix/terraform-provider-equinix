@@ -9,6 +9,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/equinix/terraform-provider-equinix/internal/converters"
+
 	equinix_errors "github.com/equinix/terraform-provider-equinix/internal/errors"
 	equinix_schema "github.com/equinix/terraform-provider-equinix/internal/schema"
 
@@ -134,7 +136,7 @@ func resourceMetalReservedIPBlock() *schema.Resource {
 			}
 			return fromState == fromHCL
 		},
-		StateFunc: toLower,
+		StateFunc: converters.ToLowerIf,
 	}
 	reservedBlockSchema["description"] = &schema.Schema{
 		Type:        schema.TypeString,

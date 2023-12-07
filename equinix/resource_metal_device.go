@@ -12,6 +12,10 @@ import (
 	"sort"
 	"time"
 
+	"golang.org/x/exp/slices"
+
+	"github.com/equinix/terraform-provider-equinix/internal/converters"
+
 	equinix_errors "github.com/equinix/terraform-provider-equinix/internal/errors"
 
 	"github.com/equinix/terraform-provider-equinix/internal/config"
@@ -98,7 +102,7 @@ func resourceMetalDevice() *schema.Resource {
 					}
 					return old == new
 				},
-				StateFunc: toLower,
+				StateFunc: converters.ToLowerIf,
 			},
 			"facilities": {
 				Type:        schema.TypeList,
@@ -110,12 +114,12 @@ func resourceMetalDevice() *schema.Resource {
 				MinItems:    1,
 				DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
 					fsRaw := d.Get("facilities")
-					fs := convertStringArr(fsRaw.([]interface{}))
+					fs := converters.IfArrToStringArr(fsRaw.([]interface{}))
 					df := d.Get("deployed_facility").(string)
-					if contains(fs, df) {
+					if slices.Contains(fs, df) {
 						return true
 					}
-					if contains(fs, "any") && (len(df) != 0) {
+					if slices.Contains(fs, "any") && (len(df) != 0) {
 						return true
 					}
 					return false
@@ -401,7 +405,7 @@ func resourceMetalDevice() *schema.Resource {
 								ValidateFunc: func(val interface{}, key string) (warns []string, errs []error) {
 									attribute := val.(string)
 									supportedAttributes := []string{"custom_data", "user_data"}
-									if !contains(supportedAttributes, attribute) {
+									if !slices.Contains(supportedAttributes, attribute) {
 										errs = []error{fmt.Errorf("behavior.allow_changes was given %s, but only supports %v", attribute, supportedAttributes)}
 									}
 									return
@@ -463,11 +467,11 @@ func reinstallDisabledAndNoChangesAllowed(attribute string) customdiff.ResourceC
 			behavior_list := behavior.([]interface{})
 			behavior_config := behavior_list[0].(map[string]interface{})
 
-			allow_changes := convertStringArr(behavior_config["allow_changes"].([]interface{}))
+			allow_changes := converters.IfArrToStringArr(behavior_config["allow_changes"].([]interface{}))
 
 			// This means we got a valid behavior specification, so we set ForceNew
 			// to true if behavior.allow_changes includes the attribute that is changing
-			return !contains(allow_changes, attribute)
+			return !slices.Contains(allow_changes, attribute)
 		}
 
 		// This means reinstall is enabled, so it doesn't matter what the behavior
@@ -504,7 +508,7 @@ func resourceMetalDeviceCreate(ctx context.Context, d *schema.ResourceData, meta
 	}
 
 	if facsOk {
-		createRequest.Facility = convertStringArr(facsRaw.([]interface{}))
+		createRequest.Facility = converters.IfArrToStringArr(facsRaw.([]interface{}))
 	}
 
 	if metroOk {
@@ -567,17 +571,17 @@ func resourceMetalDeviceCreate(ctx context.Context, d *schema.ResourceData, meta
 
 	projectKeys := d.Get("project_ssh_key_ids.#").(int)
 	if projectKeys > 0 {
-		createRequest.ProjectSSHKeys = convertStringArr(d.Get("project_ssh_key_ids").([]interface{}))
+		createRequest.ProjectSSHKeys = converters.IfArrToStringArr(d.Get("project_ssh_key_ids").([]interface{}))
 	}
 
 	userKeys := d.Get("user_ssh_key_ids.#").(int)
 	if userKeys > 0 {
-		createRequest.UserSSHKeys = convertStringArr(d.Get("user_ssh_key_ids").([]interface{}))
+		createRequest.UserSSHKeys = converters.IfArrToStringArr(d.Get("user_ssh_key_ids").([]interface{}))
 	}
 
 	tags := d.Get("tags.#").(int)
 	if tags > 0 {
-		createRequest.Tags = convertStringArr(d.Get("tags").([]interface{}))
+		createRequest.Tags = converters.IfArrToStringArr(d.Get("tags").([]interface{}))
 	}
 
 	if attr, ok := d.GetOk("storage"); ok {

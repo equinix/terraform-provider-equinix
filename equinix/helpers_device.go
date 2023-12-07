@@ -12,6 +12,8 @@ import (
 	"sync"
 	"time"
 
+	"github.com/equinix/terraform-provider-equinix/internal/converters"
+
 	equinix_errors "github.com/equinix/terraform-provider-equinix/internal/errors"
 
 	metalv1 "github.com/equinix-labs/metal-go/metal/v1"
@@ -49,7 +51,7 @@ func ifToIPCreateRequest(m interface{}) packngo.IPAddressCreateRequest {
 		iacr.Public = true
 	}
 	iacr.CIDR = ia["cidr"].(int)
-	iacr.Reservations = convertStringArr(ia["reservation_ids"].([]interface{}))
+	iacr.Reservations = converters.IfArrToStringArr(ia["reservation_ids"].([]interface{}))
 	return iacr
 }
 
@@ -269,7 +271,7 @@ func getDeviceMap(device metalv1.Device) map[string]interface{} {
 		"ipxe_script_url":     device.GetIpxeScriptUrl(),
 		"always_pxe":          device.GetAlwaysPxe(),
 		"root_password":       device.GetRootPassword(),
-		"tags":                stringArrToIfArr(device.GetTags()),
+		"tags":                converters.StringArrToIfArr(device.GetTags()),
 		"access_public_ipv6":  networkInfo.PublicIPv6,
 		"access_public_ipv4":  networkInfo.PublicIPv4,
 		"access_private_ipv4": networkInfo.PrivateIPv4,

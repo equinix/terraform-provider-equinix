@@ -3,6 +3,8 @@ package equinix
 import (
 	"fmt"
 
+	"github.com/equinix/terraform-provider-equinix/internal/converters"
+
 	equinix_errors "github.com/equinix/terraform-provider-equinix/internal/errors"
 	equinix_schema "github.com/equinix/terraform-provider-equinix/internal/schema"
 
@@ -47,7 +49,7 @@ func dataSourceMetalVlan() *schema.Resource {
 				Computed:      true,
 				ConflictsWith: []string{"vlan_id", "facility"},
 				Description:   "Metro where the VLAN is deployed",
-				StateFunc:     toLower,
+				StateFunc:     converters.ToLowerIf,
 			},
 			"vlan_id": {
 				Type:          schema.TypeString,

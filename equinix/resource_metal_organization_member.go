@@ -6,6 +6,8 @@ import (
 	"path"
 	"strings"
 
+	"github.com/equinix/terraform-provider-equinix/internal/converters"
+
 	equinix_errors "github.com/equinix/terraform-provider-equinix/internal/errors"
 	equinix_schema "github.com/equinix/terraform-provider-equinix/internal/schema"
 
@@ -127,8 +129,8 @@ func resourceMetalOrganizationMemberCreate(d *schema.ResourceData, meta interfac
 	email := d.Get("invitee").(string)
 	createRequest := &packngo.InvitationCreateRequest{
 		Invitee:     email,
-		Roles:       convertStringArr(d.Get("roles").(*schema.Set).List()),
-		ProjectsIDs: convertStringArr(d.Get("projects_ids").(*schema.Set).List()),
+		Roles:       converters.IfArrToStringArr(d.Get("roles").(*schema.Set).List()),
+		ProjectsIDs: converters.IfArrToStringArr(d.Get("projects_ids").(*schema.Set).List()),
 		Message:     strings.TrimSpace(d.Get("message").(string)),
 	}
 
@@ -200,8 +202,8 @@ func resourceMetalOrganizationMemberRead(d *schema.ResourceData, meta interface{
 		}
 		return equinix_schema.SetMap(d, map[string]interface{}{
 			"state":           "active",
-			"roles":           stringArrToIfArr(member.Member.Roles),
-			"projects_ids":    stringArrToIfArr(projectIDs),
+			"roles":           converters.StringArrToIfArr(member.Member.Roles),
+			"projects_ids":    converters.StringArrToIfArr(projectIDs),
 			"organization_id": path.Base(member.Member.Organization.URL),
 		})
 	} else if member.isInvitation() {

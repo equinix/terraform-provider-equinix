@@ -6,6 +6,8 @@ import (
 	"testing"
 	"time"
 
+	"golang.org/x/exp/slices"
+
 	"github.com/packethost/packngo"
 )
 
@@ -79,7 +81,7 @@ func Test_waitUntilReservationProvisionable(t *testing.T) {
 								*invoked++
 
 								var device *packngo.Device
-								if opts != nil && contains(opts.Includes, "device") {
+								if opts != nil && slices.Contains(opts.Includes, "device") {
 									device = &packngo.Device{ID: response.id}
 								}
 								return &packngo.HardwareReservation{
@@ -114,7 +116,7 @@ func Test_waitUntilReservationProvisionable(t *testing.T) {
 								*invoked++
 
 								var device *packngo.Device
-								if opts != nil && contains(opts.Includes, "device") {
+								if opts != nil && slices.Contains(opts.Includes, "device") {
 									device = &packngo.Device{ID: response.id}
 								}
 								return &packngo.HardwareReservation{
