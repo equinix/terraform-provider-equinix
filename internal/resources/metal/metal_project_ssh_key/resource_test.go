@@ -1,4 +1,4 @@
-package equinix
+package metal_project_ssh_key_test
 
 import (
 	"fmt"
@@ -6,6 +6,7 @@ import (
 
 	"github.com/equinix/terraform-provider-equinix/internal/config"
 
+	"github.com/equinix/terraform-provider-equinix/internal/acceptance"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
@@ -37,7 +38,13 @@ resource "equinix_metal_device" "test" {
     termination_time    = "%s"
 }
 
-`, confAccMetalDevice_base(preferable_plans, preferable_metros, preferable_os), name, publicSshKey, testDeviceTerminationTime())
+`, acceptance.ConfAccMetalDevice_base(
+		acceptance.Preferable_plans,
+		acceptance.Preferable_metros,
+		acceptance.Preferable_os),
+		name,
+		publicSshKey,
+		acceptance.TestDeviceTerminationTime())
 }
 
 func TestAccMetalProjectSSHKey_basic(t *testing.T) {
@@ -50,15 +57,15 @@ func TestAccMetalProjectSSHKey_basic(t *testing.T) {
 	cfg := testAccMetalProjectSSHKeyConfig_basic(rs, publicKeyMaterial)
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
-		ExternalProviders: testExternalProviders,
-		Providers:         testAccProviders,
+		PreCheck:          func() { acceptance.TestAccPreCheckMetal(t) },
+		ExternalProviders: acceptance.TestExternalProviders,
+		Providers:         acceptance.TestAccProviders,
 		CheckDestroy:      testAccMetalProjectSSHKeyCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
 				Config: cfg,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckMetalSSHKeyExists("equinix_metal_project_ssh_key.test", &key),
+					acceptance.TestAccCheckMetalSSHKeyExists("equinix_metal_project_ssh_key.test", &key),
 					resource.TestCheckResourceAttr(
 						"equinix_metal_project_ssh_key.test", "public_key", publicKeyMaterial),
 					resource.TestCheckResourceAttrPair(
@@ -76,7 +83,7 @@ func TestAccMetalProjectSSHKey_basic(t *testing.T) {
 }
 
 func testAccMetalProjectSSHKeyCheckDestroyed(s *terraform.State) error {
-	client := testAccProvider.Meta().(*config.Config).Metal
+	client := acceptance.TestAccProvider.Meta().(*config.Config).Metal
 
 	for _, rs := range s.RootModule().Resources {
 		if rs.Type != "equinix_metal_project_ssh_key" {

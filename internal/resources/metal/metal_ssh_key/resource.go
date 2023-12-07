@@ -1,4 +1,4 @@
-package equinix
+package metal_ssh_key
 
 import (
 	"log"
@@ -13,60 +13,21 @@ import (
 	"github.com/packethost/packngo"
 )
 
-func metalSSHKeyCommonFields() map[string]*schema.Schema {
-	return map[string]*schema.Schema{
-		"name": {
-			Type:        schema.TypeString,
-			Description: "The name of the SSH key for identification",
-			Required:    true,
-		},
-
-		"public_key": {
-			Type:        schema.TypeString,
-			Description: "The public key. If this is a file, it",
-			Required:    true,
-			ForceNew:    true,
-		},
-		"fingerprint": {
-			Type:        schema.TypeString,
-			Description: "The fingerprint of the SSH key",
-			Computed:    true,
-		},
-
-		"created": {
-			Type:        schema.TypeString,
-			Description: "The timestamp for when the SSH key was created",
-			Computed:    true,
-		},
-
-		"updated": {
-			Type:        schema.TypeString,
-			Description: "The timestamp for the last time the SSH key was updated",
-			Computed:    true,
-		},
-		"owner_id": {
-			Type:        schema.TypeString,
-			Description: "The UUID of the Equinix Metal API User who owns this key",
-			Computed:    true,
-		},
-	}
-}
-
-func resourceMetalSSHKey() *schema.Resource {
+func Resource() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceMetalSSHKeyCreate,
-		Read:   resourceMetalSSHKeyRead,
-		Update: resourceMetalSSHKeyUpdate,
-		Delete: resourceMetalSSHKeyDelete,
+		Create: create,
+		Read:   read,
+		Update: update,
+		Delete: delete,
 		Importer: &schema.ResourceImporter{
 			State: schema.ImportStatePassthrough,
 		},
 
-		Schema: metalSSHKeyCommonFields(),
+		Schema: CommonFieldsResource(),
 	}
 }
 
-func resourceMetalSSHKeyCreate(d *schema.ResourceData, meta interface{}) error {
+func create(d *schema.ResourceData, meta interface{}) error {
 	meta.(*config.Config).AddModuleToMetalUserAgent(d)
 	client := meta.(*config.Config).Metal
 
@@ -87,10 +48,10 @@ func resourceMetalSSHKeyCreate(d *schema.ResourceData, meta interface{}) error {
 
 	d.SetId(key.ID)
 
-	return resourceMetalSSHKeyRead(d, meta)
+	return read(d, meta)
 }
 
-func resourceMetalSSHKeyRead(d *schema.ResourceData, meta interface{}) error {
+func read(d *schema.ResourceData, meta interface{}) error {
 	meta.(*config.Config).AddModuleToMetalUserAgent(d)
 	client := meta.(*config.Config).Metal
 
@@ -126,7 +87,7 @@ func resourceMetalSSHKeyRead(d *schema.ResourceData, meta interface{}) error {
 	return nil
 }
 
-func resourceMetalSSHKeyUpdate(d *schema.ResourceData, meta interface{}) error {
+func update(d *schema.ResourceData, meta interface{}) error {
 	meta.(*config.Config).AddModuleToMetalUserAgent(d)
 	client := meta.(*config.Config).Metal
 
@@ -147,10 +108,10 @@ func resourceMetalSSHKeyUpdate(d *schema.ResourceData, meta interface{}) error {
 		return equinix_errors.FriendlyError(err)
 	}
 
-	return resourceMetalSSHKeyRead(d, meta)
+	return read(d, meta)
 }
 
-func resourceMetalSSHKeyDelete(d *schema.ResourceData, meta interface{}) error {
+func delete(d *schema.ResourceData, meta interface{}) error {
 	meta.(*config.Config).AddModuleToMetalUserAgent(d)
 	client := meta.(*config.Config).Metal
 

@@ -9,6 +9,9 @@ import (
 	"strings"
 	"time"
 
+	"github.com/equinix/terraform-provider-equinix/internal/resources/metal/metal_project_ssh_key"
+	"github.com/equinix/terraform-provider-equinix/internal/resources/metal/metal_ssh_key"
+
 	v4 "github.com/equinix-labs/fabric-go/fabric/v4"
 	"github.com/equinix/ecx-go/v2"
 	"github.com/equinix/rest-go"
@@ -24,15 +27,6 @@ var (
 	DeviceNetworkTypesHB = []string{"layer3", "hybrid", "hybrid-bonded", "layer2-individual", "layer2-bonded"}
 	NetworkTypeList      = strings.Join(DeviceNetworkTypes, ", ")
 	NetworkTypeListHB    = strings.Join(DeviceNetworkTypesHB, ", ")
-)
-
-const (
-	endpointEnvVar       = "EQUINIX_API_ENDPOINT"
-	clientIDEnvVar       = "EQUINIX_API_CLIENTID"
-	clientSecretEnvVar   = "EQUINIX_API_CLIENTSECRET"
-	clientTokenEnvVar    = "EQUINIX_API_TOKEN"
-	clientTimeoutEnvVar  = "EQUINIX_API_TIMEOUT"
-	metalAuthTokenEnvVar = "METAL_AUTH_TOKEN"
 )
 
 // resourceDataProvider provies interface to schema.ResourceData
@@ -51,38 +45,38 @@ func Provider() *schema.Provider {
 			"endpoint": {
 				Type:         schema.TypeString,
 				Optional:     true,
-				DefaultFunc:  schema.EnvDefaultFunc(endpointEnvVar, config.DefaultBaseURL),
+				DefaultFunc:  schema.EnvDefaultFunc(config.EndpointEnvVar, config.DefaultBaseURL),
 				ValidateFunc: validation.IsURLWithHTTPorHTTPS,
 				Description:  fmt.Sprintf("The Equinix API base URL to point out desired environment. Defaults to %s", config.DefaultBaseURL),
 			},
 			"client_id": {
 				Type:        schema.TypeString,
 				Optional:    true,
-				DefaultFunc: schema.EnvDefaultFunc(clientIDEnvVar, ""),
+				DefaultFunc: schema.EnvDefaultFunc(config.ClientIDEnvVar, ""),
 				Description: "API Consumer Key available under My Apps section in developer portal",
 			},
 			"client_secret": {
 				Type:        schema.TypeString,
 				Optional:    true,
-				DefaultFunc: schema.EnvDefaultFunc(clientSecretEnvVar, ""),
+				DefaultFunc: schema.EnvDefaultFunc(config.ClientSecretEnvVar, ""),
 				Description: "API Consumer secret available under My Apps section in developer portal",
 			},
 			"token": {
 				Type:        schema.TypeString,
 				Optional:    true,
-				DefaultFunc: schema.EnvDefaultFunc(clientTokenEnvVar, ""),
+				DefaultFunc: schema.EnvDefaultFunc(config.ClientTokenEnvVar, ""),
 				Description: "API token from the developer sandbox",
 			},
 			"auth_token": {
 				Type:        schema.TypeString,
 				Optional:    true,
-				DefaultFunc: schema.EnvDefaultFunc(metalAuthTokenEnvVar, ""),
+				DefaultFunc: schema.EnvDefaultFunc(config.MetalAuthTokenEnvVar, ""),
 				Description: "The Equinix Metal API auth key for API operations",
 			},
 			"request_timeout": {
 				Type:         schema.TypeInt,
 				Optional:     true,
-				DefaultFunc:  schema.EnvDefaultFunc(clientTimeoutEnvVar, config.DefaultTimeout),
+				DefaultFunc:  schema.EnvDefaultFunc(config.ClientTimeoutEnvVar, config.DefaultTimeout),
 				ValidateFunc: validation.IntAtLeast(1),
 				Description:  fmt.Sprintf("The duration of time, in seconds, that the Equinix Platform API Client should wait before canceling an API request.  Defaults to %d", config.DefaultTimeout),
 			},
@@ -135,7 +129,7 @@ func Provider() *schema.Provider {
 			"equinix_metal_plans":                dataSourceMetalPlans(),
 			"equinix_metal_port":                 dataSourceMetalPort(),
 			"equinix_metal_project":              dataSourceMetalProject(),
-			"equinix_metal_project_ssh_key":      dataSourceMetalProjectSSHKey(),
+			"equinix_metal_project_ssh_key":      metal_project_ssh_key.DataSource(),
 			"equinix_metal_reserved_ip_block":    dataSourceMetalReservedIPBlock(),
 			"equinix_metal_spot_market_request":  dataSourceMetalSpotMarketRequest(),
 			"equinix_metal_virtual_circuit":      dataSourceMetalVirtualCircuit(),
@@ -162,10 +156,10 @@ func Provider() *schema.Provider {
 			"equinix_metal_connection":           resourceMetalConnection(),
 			"equinix_metal_device":               resourceMetalDevice(),
 			"equinix_metal_device_network_type":  resourceMetalDeviceNetworkType(),
-			"equinix_metal_ssh_key":              resourceMetalSSHKey(),
+			"equinix_metal_ssh_key":              metal_ssh_key.Resource(),
 			"equinix_metal_organization_member":  resourceMetalOrganizationMember(),
 			"equinix_metal_port":                 resourceMetalPort(),
-			"equinix_metal_project_ssh_key":      resourceMetalProjectSSHKey(),
+			"equinix_metal_project_ssh_key":      metal_project_ssh_key.Resource(),
 			"equinix_metal_project":              resourceMetalProject(),
 			"equinix_metal_organization":         resourceMetalOrganization(),
 			"equinix_metal_reserved_ip_block":    resourceMetalReservedIPBlock(),

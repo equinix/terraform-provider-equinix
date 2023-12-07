@@ -9,6 +9,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/equinix/terraform-provider-equinix/internal/config"
 	"github.com/equinix/terraform-provider-equinix/internal/hashcode"
 
 	"github.com/equinix/ecx-go/v2"
@@ -403,20 +404,20 @@ func TestProvider_schemaSetToMap(t *testing.T) {
 func testAccPreCheck(t *testing.T) {
 	var err error
 
-	if _, err = getFromEnv(clientTokenEnvVar); err != nil {
-		_, err = getFromEnv(clientIDEnvVar)
+	if _, err = getFromEnv(config.ClientTokenEnvVar); err != nil {
+		_, err = getFromEnv(config.ClientIDEnvVar)
 		if err == nil {
-			_, err = getFromEnv(clientSecretEnvVar)
+			_, err = getFromEnv(config.ClientSecretEnvVar)
 		}
 	}
 
 	if err == nil {
-		_, err = getFromEnv(metalAuthTokenEnvVar)
+		_, err = getFromEnv(config.MetalAuthTokenEnvVar)
 	}
 
 	if err != nil {
 		t.Fatalf("To run acceptance tests, one of '%s' or pair '%s' - '%s' must be set for Equinix Fabric and Network Edge, and '%s' for Equinix Metal",
-			clientTokenEnvVar, clientIDEnvVar, clientSecretEnvVar, metalAuthTokenEnvVar)
+			config.ClientTokenEnvVar, config.ClientIDEnvVar, config.ClientSecretEnvVar, config.MetalAuthTokenEnvVar)
 	}
 }
 
