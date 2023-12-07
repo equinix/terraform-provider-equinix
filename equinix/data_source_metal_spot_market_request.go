@@ -74,7 +74,12 @@ func dataSourceMetalSpotMarketRequest() *schema.Resource {
 				Computed:    true,
 			},
 		},
-		Timeouts: resourceDefaultTimeouts,
+		Timeouts: &schema.ResourceTimeout{
+			Create:  schema.DefaultTimeout(60 * time.Minute),
+			Update:  schema.DefaultTimeout(60 * time.Minute),
+			Delete:  schema.DefaultTimeout(60 * time.Minute),
+			Default: schema.DefaultTimeout(60 * time.Minute),
+		},
 	}
 }
 
