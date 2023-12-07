@@ -11,6 +11,7 @@ import (
 
 	"github.com/equinix/terraform-provider-equinix/internal/config"
 	"github.com/equinix/terraform-provider-equinix/internal/converters"
+	equinix_schema "github.com/equinix/terraform-provider-equinix/internal/schema"
 	equinix_validation "github.com/equinix/terraform-provider-equinix/internal/validation"
 
 	"github.com/equinix/ne-go"
@@ -965,11 +966,11 @@ func resourceNetworkDeviceUpdate(ctx context.Context, d *schema.ResourceData, m 
 		neDeviceSchemaNames["ACLTemplateUUID"], neDeviceSchemaNames["MgmtAclTemplateUuid"],
 	}
 	updateReq := client.NewDeviceUpdateRequest(d.Id())
-	primaryChanges := getResourceDataChangedKeys(supportedChanges, d)
+	primaryChanges := equinix_schema.GetResourceDataChangedKeys(supportedChanges, d)
 	var clusterChanges map[string]interface{}
 	clusterSupportedChanges := []string{neDeviceClusterSchemaNames["ClusterName"]}
 	if _, ok := d.GetOk(neDeviceSchemaNames["ClusterDetails"]); ok {
-		clusterChanges = getResourceDataListElementChanges(clusterSupportedChanges, neDeviceSchemaNames["ClusterDetails"], 0, d)
+		clusterChanges = equinix_schema.GetResourceDataListElementChanges(clusterSupportedChanges, neDeviceSchemaNames["ClusterDetails"], 0, d)
 		for key, value := range clusterChanges {
 			primaryChanges[key] = value
 		}
@@ -979,7 +980,7 @@ func resourceNetworkDeviceUpdate(ctx context.Context, d *schema.ResourceData, m 
 	}
 	var secondaryChanges map[string]interface{}
 	if v, ok := d.GetOk(neDeviceSchemaNames["RedundantUUID"]); ok {
-		secondaryChanges = getResourceDataListElementChanges(supportedChanges, neDeviceSchemaNames["Secondary"], 0, d)
+		secondaryChanges = equinix_schema.GetResourceDataListElementChanges(supportedChanges, neDeviceSchemaNames["Secondary"], 0, d)
 		secondaryUpdateReq := client.NewDeviceUpdateRequest(v.(string))
 		if err := fillNetworkDeviceUpdateRequest(secondaryUpdateReq, secondaryChanges).Execute(); err != nil {
 			return diag.FromErr(err)
