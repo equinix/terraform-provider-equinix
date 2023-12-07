@@ -7,6 +7,7 @@ import (
 	"github.com/equinix/terraform-provider-equinix/internal/config"
 
 	"github.com/equinix/ecx-go/v2"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
@@ -17,8 +18,8 @@ func TestAccFabricL2ServiceProfile_Private(t *testing.T) {
 	secPortName, _ := schema.EnvDefaultFunc(secPortEnvVar, "sit-001-CX-SV5-NL-Dot1q-BO-10G-SEC-JUN-36")()
 	context := map[string]interface{}{
 		"resourceName":                       "test",
-		"name":                               fmt.Sprintf("%s-%s", tstResourcePrefix, randString(6)),
-		"description":                        randString(100),
+		"name":                               fmt.Sprintf("%s-%s", tstResourcePrefix, acctest.RandString(6)),
+		"description":                        acctest.RandString(100),
 		"bandwidth_threshold_notifications":  []string{"John.Doe@example.com", "Marry.Doe@example.com"},
 		"profile_statuschange_notifications": []string{"John.Doe@example.com", "Marry.Doe@example.com"},
 		"vc_statuschange_notifications":      []string{"John.Doe@example.com", "Marry.Doe@example.com"},

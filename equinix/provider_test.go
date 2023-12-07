@@ -446,14 +446,6 @@ func nprintf(format string, params map[string]interface{}) string {
 	return format
 }
 
-func randInt(n int) int {
-	return acctest.RandIntRange(0, n)
-}
-
-func randString(length int) string {
-	return acctest.RandString(length)
-}
-
 func getFromEnv(varName string) (string, error) {
 	if v := os.Getenv(varName); v != "" {
 		return v, nil
