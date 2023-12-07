@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/equinix/terraform-provider-equinix/internal/config"
+	equinix_errors "github.com/equinix/terraform-provider-equinix/internal/errors"
 	equinix_validation "github.com/equinix/terraform-provider-equinix/internal/validation"
 
 	"github.com/equinix/ecx-go/v2"
@@ -392,7 +393,7 @@ func resourceECXL2ServiceProfileDelete(ctx context.Context, d *schema.ResourceDa
 		restErr, ok := err.(rest.Error)
 		if ok {
 			// IC-PROFILE-004 =  profile does not exist
-			if hasApplicationErrorCode(restErr.ApplicationErrors, "IC-PROFILE-004") {
+			if equinix_errors.HasApplicationErrorCode(restErr.ApplicationErrors, "IC-PROFILE-004") {
 				return diags
 			}
 		}

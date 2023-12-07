@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/equinix/terraform-provider-equinix/internal/config"
+	equinix_errors "github.com/equinix/terraform-provider-equinix/internal/errors"
 	"github.com/equinix/terraform-provider-equinix/internal/hashcode"
 	equinix_validation "github.com/equinix/terraform-provider-equinix/internal/validation"
 
@@ -251,7 +252,7 @@ func resourceNetworkDeviceLinkRead(ctx context.Context, d *schema.ResourceData, 
 	var diags diag.Diagnostics
 	link, err := client.GetDeviceLinkGroup(d.Id())
 	if err != nil {
-		if isRestNotFoundError(err) {
+		if equinix_errors.IsRestNotFoundError(err) {
 			d.SetId("")
 			return nil
 		}
@@ -312,7 +313,7 @@ func resourceNetworkDeviceLinkDelete(ctx context.Context, d *schema.ResourceData
 	m.(*config.Config).AddModuleToNEUserAgent(&client, d)
 	var diags diag.Diagnostics
 	if err := client.DeleteDeviceLinkGroup(d.Id()); err != nil {
-		if isRestNotFoundError(err) {
+		if equinix_errors.IsRestNotFoundError(err) {
 			return nil
 		}
 		return diag.FromErr(err)
@@ -470,7 +471,7 @@ func createDeviceLinkStatusDeleteWaitConfiguration(fetchFunc getDeviceLinkGroup,
 		Refresh: func() (interface{}, string, error) {
 			resp, err := fetchFunc(id)
 			if err != nil {
-				if isRestNotFoundError(err) {
+				if equinix_errors.IsRestNotFoundError(err) {
 					return resp, ne.DeviceLinkGroupStatusDeprovisioned, nil
 				}
 				return nil, "", err

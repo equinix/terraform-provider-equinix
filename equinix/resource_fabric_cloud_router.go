@@ -224,7 +224,7 @@ func resourceCloudRouterDelete(ctx context.Context, d *schema.ResourceData, meta
 		errors, ok := err.(v4.GenericSwaggerError).Model().([]v4.ModelError)
 		if ok {
 			// EQ-3040055 = There is an existing update in REQUESTED state
-			if hasModelErrorCode(errors, "EQ-3040055") {
+			if equinix_errors.HasModelErrorCode(errors, "EQ-3040055") {
 				return diags
 			}
 		}

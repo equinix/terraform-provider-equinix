@@ -387,7 +387,7 @@ func resourceFabricConnectionDelete(ctx context.Context, d *schema.ResourceData,
 		errors, ok := err.(v4.GenericSwaggerError).Model().([]v4.ModelError)
 		if ok {
 			// EQ-3142509 = Connection already deleted
-			if hasModelErrorCode(errors, "EQ-3142509") {
+			if equinix_errors.HasModelErrorCode(errors, "EQ-3142509") {
 				return diags
 			}
 		}

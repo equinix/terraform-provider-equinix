@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/equinix/terraform-provider-equinix/internal/config"
+	equinix_errors "github.com/equinix/terraform-provider-equinix/internal/errors"
 	equinix_validation "github.com/equinix/terraform-provider-equinix/internal/validation"
 
 	"github.com/equinix/ecx-go/v2"
@@ -778,7 +779,7 @@ func resourceECXL2ConnectionDelete(ctx context.Context, d *schema.ResourceData, 
 		restErr, ok := err.(rest.Error)
 		if ok {
 			// IC-LAYER2-4021 = Connection already deleted
-			if hasApplicationErrorCode(restErr.ApplicationErrors, "IC-LAYER2-4021") {
+			if equinix_errors.HasApplicationErrorCode(restErr.ApplicationErrors, "IC-LAYER2-4021") {
 				return diags
 			}
 		}
@@ -792,7 +793,7 @@ func resourceECXL2ConnectionDelete(ctx context.Context, d *schema.ResourceData, 
 			restErr, ok := err.(rest.Error)
 			if ok {
 				// IC-LAYER2-4021 = Connection already deleted
-				if hasApplicationErrorCode(restErr.ApplicationErrors, "IC-LAYER2-4021") {
+				if equinix_errors.HasApplicationErrorCode(restErr.ApplicationErrors, "IC-LAYER2-4021") {
 					return diags
 				}
 			}

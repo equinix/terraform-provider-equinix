@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	fabric "github.com/equinix-labs/fabric-go/fabric/v4"
+	"github.com/equinix/rest-go"
 	"github.com/packethost/packngo"
 )
 
@@ -191,4 +192,31 @@ func IgnoreResponseErrors(ignore ...func(resp *http.Response, err error) bool) f
 		}
 		return err
 	}
+}
+
+func IsRestNotFoundError(err error) bool {
+	if restErr, ok := err.(rest.Error); ok {
+		if restErr.HTTPCode == http.StatusNotFound {
+			return true
+		}
+	}
+	return false
+}
+
+func HasApplicationErrorCode(errors []rest.ApplicationError, code string) bool {
+	for _, err := range errors {
+		if err.Code == code {
+			return true
+		}
+	}
+	return false
+}
+
+func HasModelErrorCode(errors []fabric.ModelError, code string) bool {
+	for _, err := range errors {
+		if err.ErrorCode == code {
+			return true
+		}
+	}
+	return false
 }
