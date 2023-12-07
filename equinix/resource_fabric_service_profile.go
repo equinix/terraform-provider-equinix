@@ -9,6 +9,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/equinix/terraform-provider-equinix/internal/converters"
 	equinix_errors "github.com/equinix/terraform-provider-equinix/internal/errors"
 	equinix_schema "github.com/equinix/terraform-provider-equinix/internal/schema"
 
@@ -77,7 +78,7 @@ func getServiceProfileRequestPayload(d *schema.ResourceData) v4.ServiceProfileRe
 	var tags []string
 	if d.Get("tags") != nil {
 		schemaTags := d.Get("tags").([]interface{})
-		tags = expandListToStringList(schemaTags)
+		tags = converters.IfArrToStringArr(schemaTags)
 	}
 
 	spVisibility := v4.ServiceProfileVisibilityEnum(d.Get("visibility").(string))
@@ -85,7 +86,7 @@ func getServiceProfileRequestPayload(d *schema.ResourceData) v4.ServiceProfileRe
 	var spAllowedEmails []string
 	if d.Get("allowed_emails") != nil {
 		schemaAllowedEmails := d.Get("allowed_emails").([]interface{})
-		spAllowedEmails = expandListToStringList(schemaAllowedEmails)
+		spAllowedEmails = converters.IfArrToStringArr(schemaAllowedEmails)
 	}
 
 	schemaAccessPointTypeConfigs := d.Get("access_point_type_configs").([]interface{})

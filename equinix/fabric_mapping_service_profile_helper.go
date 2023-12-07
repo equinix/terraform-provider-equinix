@@ -2,6 +2,7 @@ package equinix
 
 import (
 	v4 "github.com/equinix-labs/fabric-go/fabric/v4"
+	"github.com/equinix/terraform-provider-equinix/internal/converters"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
@@ -200,7 +201,7 @@ func accessPointTypeConfigsToFabric(schemaAccessPointTypeConfigs []interface{}) 
 		}
 
 		supportedBandwidthsRaw := accessPoint.(map[string]interface{})["supported_bandwidths"].([]interface{})
-		spSupportedBandwidths := expandListToInt32List(supportedBandwidthsRaw)
+		spSupportedBandwidths := converters.ListToInt32List(supportedBandwidthsRaw)
 
 		accessPointTypeConfigs = append(accessPointTypeConfigs, v4.ServiceProfileAccessPointType{
 			Type_:                        &spType,
@@ -270,7 +271,7 @@ func customFieldsToFabric(schemaCustomField []interface{}) []v4.CustomField {
 		cfRequired := customField.(map[string]interface{})["required"].(bool)
 		cfDataType := customField.(map[string]interface{})["data_type"].(string)
 		optionsRaw := customField.(map[string]interface{})["options"].([]interface{})
-		cfOptions := expandListToStringList(optionsRaw)
+		cfOptions := converters.IfArrToStringArr(optionsRaw)
 		cfCaptureInEmail := customField.(map[string]interface{})["capture_in_email"].(bool)
 		customFields = append(customFields, v4.CustomField{
 			Label:          cfLabel,
@@ -387,7 +388,7 @@ func metrosToFabric(schemaMetros []interface{}) []v4.ServiceMetro {
 		mCode := metro.(map[string]interface{})["code"].(string)
 		mName := metro.(map[string]interface{})["name"].(string)
 		ibxsRaw := metro.(map[string]interface{})["ibxs"].([]interface{})
-		mIbxs := expandListToStringList(ibxsRaw)
+		mIbxs := converters.IfArrToStringArr(ibxsRaw)
 		mInTrail := metro.(map[string]interface{})["in_trail"].(bool)
 		mDisplayName := metro.(map[string]interface{})["display_name"].(string)
 		mSellerRegions := metro.(map[string]interface{})["seller_regions"].(map[string]string)
@@ -444,7 +445,7 @@ func serviceProfilesSearchFilterRequestToFabric(schemaServiceProfileFilterReques
 		sProperty := s.(map[string]interface{})["property"].(string)
 		operator := s.(map[string]interface{})["operator"].(string)
 		valuesRaw := s.(map[string]interface{})["values"].([]interface{})
-		values := expandListToStringList(valuesRaw)
+		values := converters.IfArrToStringArr(valuesRaw)
 		mappedFilter = v4.ServiceProfileSimpleExpression{Property: sProperty, Operator: operator, Values: values}
 	}
 	return mappedFilter

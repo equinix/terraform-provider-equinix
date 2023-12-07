@@ -222,35 +222,6 @@ func configureProvider(ctx context.Context, d *schema.ResourceData, p *schema.Pr
 	return &config, nil
 }
 
-func expandListToStringList(list []interface{}) []string {
-	result := make([]string, len(list))
-	for i, v := range list {
-		result[i] = fmt.Sprint(v)
-	}
-	return result
-}
-
-func expandListToInt32List(list []interface{}) []int32 {
-	result := make([]int32, len(list))
-	for i, v := range list {
-		result[i] = int32(v.(int))
-	}
-	return result
-}
-
-func expandSetToStringList(set *schema.Set) []string {
-	list := set.List()
-	return expandListToStringList(list)
-}
-
-func expandInterfaceMapToStringMap(mapIn map[string]interface{}) map[string]string {
-	mapOut := make(map[string]string)
-	for k, v := range mapIn {
-		mapOut[k] = fmt.Sprintf("%v", v)
-	}
-	return mapOut
-}
-
 func stringsFound(source []string, target []string) bool {
 	for i := range source {
 		if !isStringInSlice(source[i], target) {

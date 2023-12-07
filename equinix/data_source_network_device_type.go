@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/equinix/terraform-provider-equinix/internal/config"
+	"github.com/equinix/terraform-provider-equinix/internal/converters"
 	equinix_validation "github.com/equinix/terraform-provider-equinix/internal/validation"
 
 	"github.com/equinix/ne-go"
@@ -90,7 +91,7 @@ func dataSourceNetworkDeviceTypeRead(ctx context.Context, d *schema.ResourceData
 	name := d.Get(networkDeviceTypeSchemaNames["Name"]).(string)
 	vendor := d.Get(networkDeviceTypeSchemaNames["Vendor"]).(string)
 	category := d.Get(networkDeviceTypeSchemaNames["Category"]).(string)
-	metroCodes := expandSetToStringList(d.Get(networkDeviceTypeSchemaNames["MetroCodes"]).(*schema.Set))
+	metroCodes := converters.SetToStringList(d.Get(networkDeviceTypeSchemaNames["MetroCodes"]).(*schema.Set))
 	if err != nil {
 		return diag.FromErr(err)
 	}
