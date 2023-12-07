@@ -151,49 +151,6 @@ func TestProvider_stringsFound_negative(t *testing.T) {
 	assert.False(t, result, "Given strings were found")
 }
 
-func TestProvider_isEmpty(t *testing.T) {
-	// given
-	input := []interface{}{
-		"test",
-		"",
-		nil,
-		123,
-		0,
-		43.43,
-	}
-	expected := []bool{
-		false,
-		true,
-		true,
-		false,
-		true,
-		false,
-		true,
-	}
-	// when then
-	for i := range input {
-		assert.Equal(t, expected[i], isEmpty(input[i]), "Input %v produces expected result %v", input[i], expected[i])
-	}
-}
-
-func TestProvider_setSchemaValueIfNotEmpty(t *testing.T) {
-	// given
-	key := "test"
-	s := map[string]*schema.Schema{
-		key: {
-			Type:     schema.TypeString,
-			Optional: true,
-		},
-	}
-	var b *int = nil
-	d := schema.TestResourceDataRaw(t, s, make(map[string]interface{}))
-	// when
-	setSchemaValueIfNotEmpty(key, b, d)
-	// then
-	_, ok := d.GetOk(key)
-	assert.False(t, ok, "Key was not set")
-}
-
 func TestProvider_slicesMatch(t *testing.T) {
 	// given
 	input := [][][]string{
@@ -300,11 +257,4 @@ func copyMap(source map[string]interface{}) map[string]interface{} {
 		target[k] = v
 	}
 	return target
-}
-
-func setSchemaValueIfNotEmpty(key string, value interface{}, d *schema.ResourceData) error {
-	if !isEmpty(value) {
-		return d.Set(key, value)
-	}
-	return nil
 }

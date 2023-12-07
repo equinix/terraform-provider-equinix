@@ -1032,40 +1032,40 @@ func expandECXL2ConnectionSecondary(conns []interface{}) *ecx.L2Connection {
 	if v, ok := conn[ecxL2ConnectionSchemaNames["Name"]]; ok {
 		transformed.Name = ecx.String(v.(string))
 	}
-	if v, ok := conn[ecxL2ConnectionSchemaNames["ProfileUUID"]]; ok && !isEmpty(v) {
+	if v, ok := conn[ecxL2ConnectionSchemaNames["ProfileUUID"]]; ok && !equinix_validation.IsEmpty(v) {
 		transformed.ProfileUUID = ecx.String(v.(string))
 	}
-	if v, ok := conn[ecxL2ConnectionSchemaNames["Speed"]]; ok && !isEmpty(v) {
+	if v, ok := conn[ecxL2ConnectionSchemaNames["Speed"]]; ok && !equinix_validation.IsEmpty(v) {
 		transformed.Speed = ecx.Int(v.(int))
 	}
-	if v, ok := conn[ecxL2ConnectionSchemaNames["SpeedUnit"]]; ok && !isEmpty(v) {
+	if v, ok := conn[ecxL2ConnectionSchemaNames["SpeedUnit"]]; ok && !equinix_validation.IsEmpty(v) {
 		transformed.SpeedUnit = ecx.String(v.(string))
 	}
-	if v, ok := conn[ecxL2ConnectionSchemaNames["PortUUID"]]; ok && !isEmpty(v) {
+	if v, ok := conn[ecxL2ConnectionSchemaNames["PortUUID"]]; ok && !equinix_validation.IsEmpty(v) {
 		transformed.PortUUID = ecx.String(v.(string))
 	}
-	if v, ok := conn[ecxL2ConnectionSchemaNames["DeviceUUID"]]; ok && !isEmpty(v) {
+	if v, ok := conn[ecxL2ConnectionSchemaNames["DeviceUUID"]]; ok && !equinix_validation.IsEmpty(v) {
 		transformed.DeviceUUID = ecx.String(v.(string))
 	}
-	if v, ok := conn[ecxL2ConnectionSchemaNames["DeviceInterfaceID"]]; ok && !isEmpty(v) {
+	if v, ok := conn[ecxL2ConnectionSchemaNames["DeviceInterfaceID"]]; ok && !equinix_validation.IsEmpty(v) {
 		transformed.DeviceInterfaceID = ecx.Int(v.(int))
 	}
-	if v, ok := conn[ecxL2ConnectionSchemaNames["VlanSTag"]]; ok && !isEmpty(v) {
+	if v, ok := conn[ecxL2ConnectionSchemaNames["VlanSTag"]]; ok && !equinix_validation.IsEmpty(v) {
 		transformed.VlanSTag = ecx.Int(v.(int))
 	}
-	if v, ok := conn[ecxL2ConnectionSchemaNames["VlanCTag"]]; ok && !isEmpty(v) {
+	if v, ok := conn[ecxL2ConnectionSchemaNames["VlanCTag"]]; ok && !equinix_validation.IsEmpty(v) {
 		transformed.VlanCTag = ecx.Int(v.(int))
 	}
-	if v, ok := conn[ecxL2ConnectionSchemaNames["SellerRegion"]]; ok && !isEmpty(v) {
+	if v, ok := conn[ecxL2ConnectionSchemaNames["SellerRegion"]]; ok && !equinix_validation.IsEmpty(v) {
 		transformed.SellerRegion = ecx.String(v.(string))
 	}
-	if v, ok := conn[ecxL2ConnectionSchemaNames["SellerMetroCode"]]; ok && !isEmpty(v) {
+	if v, ok := conn[ecxL2ConnectionSchemaNames["SellerMetroCode"]]; ok && !equinix_validation.IsEmpty(v) {
 		transformed.SellerMetroCode = ecx.String(v.(string))
 	}
-	if v, ok := conn[ecxL2ConnectionSchemaNames["AuthorizationKey"]]; ok && !isEmpty(v) {
+	if v, ok := conn[ecxL2ConnectionSchemaNames["AuthorizationKey"]]; ok && !equinix_validation.IsEmpty(v) {
 		transformed.AuthorizationKey = ecx.String(v.(string))
 	}
-	if v, ok := conn[ecxL2ConnectionSchemaNames["ServiceToken"]]; ok && !isEmpty(v) {
+	if v, ok := conn[ecxL2ConnectionSchemaNames["ServiceToken"]]; ok && !equinix_validation.IsEmpty(v) {
 		transformed.ServiceToken = ecx.String(v.(string))
 	}
 	return &transformed

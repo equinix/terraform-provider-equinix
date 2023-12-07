@@ -1294,46 +1294,46 @@ func expandNetworkDeviceSecondary(devices []interface{}) *ne.Device {
 	}
 	device := devices[0].(map[string]interface{})
 	transformed := &ne.Device{}
-	if v, ok := device[neDeviceSchemaNames["UUID"]]; ok && !isEmpty(v) {
+	if v, ok := device[neDeviceSchemaNames["UUID"]]; ok && !equinix_validation.IsEmpty(v) {
 		transformed.UUID = ne.String(v.(string))
 	}
-	if v, ok := device[neDeviceSchemaNames["Name"]]; ok && !isEmpty(v) {
+	if v, ok := device[neDeviceSchemaNames["Name"]]; ok && !equinix_validation.IsEmpty(v) {
 		transformed.Name = ne.String(v.(string))
 	}
-	if v, ok := device[neDeviceSchemaNames["MetroCode"]]; ok && !isEmpty(v) {
+	if v, ok := device[neDeviceSchemaNames["MetroCode"]]; ok && !equinix_validation.IsEmpty(v) {
 		transformed.MetroCode = ne.String(v.(string))
 	}
-	if v, ok := device[neDeviceSchemaNames["HostName"]]; ok && !isEmpty(v) {
+	if v, ok := device[neDeviceSchemaNames["HostName"]]; ok && !equinix_validation.IsEmpty(v) {
 		transformed.HostName = ne.String(v.(string))
 	}
-	if v, ok := device[neDeviceSchemaNames["LicenseToken"]]; ok && !isEmpty(v) {
+	if v, ok := device[neDeviceSchemaNames["LicenseToken"]]; ok && !equinix_validation.IsEmpty(v) {
 		transformed.LicenseToken = ne.String(v.(string))
 	}
-	if v, ok := device[neDeviceSchemaNames["LicenseFile"]]; ok && !isEmpty(v) {
+	if v, ok := device[neDeviceSchemaNames["LicenseFile"]]; ok && !equinix_validation.IsEmpty(v) {
 		transformed.LicenseFile = ne.String(v.(string))
 	}
-	if v, ok := device[neDeviceSchemaNames["LicenseFileID"]]; ok && !isEmpty(v) {
+	if v, ok := device[neDeviceSchemaNames["LicenseFileID"]]; ok && !equinix_validation.IsEmpty(v) {
 		transformed.LicenseFileID = ne.String(v.(string))
 	}
-	if v, ok := device[neDeviceSchemaNames["CloudInitFileID"]]; ok && !isEmpty(v) {
+	if v, ok := device[neDeviceSchemaNames["CloudInitFileID"]]; ok && !equinix_validation.IsEmpty(v) {
 		transformed.CloudInitFileID = ne.String(v.(string))
 	}
-	if v, ok := device[neDeviceSchemaNames["ACLTemplateUUID"]]; ok && !isEmpty(v) {
+	if v, ok := device[neDeviceSchemaNames["ACLTemplateUUID"]]; ok && !equinix_validation.IsEmpty(v) {
 		transformed.ACLTemplateUUID = ne.String(v.(string))
 	}
-	if v, ok := device[neDeviceSchemaNames["MgmtAclTemplateUuid"]]; ok && !isEmpty(v) {
+	if v, ok := device[neDeviceSchemaNames["MgmtAclTemplateUuid"]]; ok && !equinix_validation.IsEmpty(v) {
 		transformed.MgmtAclTemplateUuid = ne.String(v.(string))
 	}
-	if v, ok := device[neDeviceSchemaNames["AccountNumber"]]; ok && !isEmpty(v) {
+	if v, ok := device[neDeviceSchemaNames["AccountNumber"]]; ok && !equinix_validation.IsEmpty(v) {
 		transformed.AccountNumber = ne.String(v.(string))
 	}
 	if v, ok := device[neDeviceSchemaNames["Notifications"]]; ok {
 		transformed.Notifications = converters.SetToStringList(v.(*schema.Set))
 	}
-	if v, ok := device[neDeviceSchemaNames["AdditionalBandwidth"]]; ok && !isEmpty(v) {
+	if v, ok := device[neDeviceSchemaNames["AdditionalBandwidth"]]; ok && !equinix_validation.IsEmpty(v) {
 		transformed.AdditionalBandwidth = ne.Int(v.(int))
 	}
-	if v, ok := device[neDeviceSchemaNames["WanInterfaceId"]]; ok && !isEmpty(v) {
+	if v, ok := device[neDeviceSchemaNames["WanInterfaceId"]]; ok && !equinix_validation.IsEmpty(v) {
 		transformed.WanInterfaceId = ne.String(v.(string))
 	}
 	if v, ok := device[neDeviceSchemaNames["VendorConfiguration"]]; ok {
@@ -1441,7 +1441,7 @@ func expandNetworkDeviceClusterDetails(clusterDetails []interface{}) *ne.Cluster
 	}
 	clusterDetail := clusterDetails[0].(map[string]interface{})
 	transformed := &ne.ClusterDetails{}
-	if v, ok := clusterDetail[neDeviceClusterSchemaNames["ClusterName"]]; ok && !isEmpty(v) {
+	if v, ok := clusterDetail[neDeviceClusterSchemaNames["ClusterName"]]; ok && !equinix_validation.IsEmpty(v) {
 		transformed.ClusterName = ne.String(v.(string))
 	}
 	if v, ok := clusterDetail[neDeviceClusterSchemaNames["Node0"]]; ok {
@@ -1463,10 +1463,10 @@ func expandNetworkDeviceClusterNodeDetail(clusterNodeDetails []interface{}) *ne.
 	if v, ok := clusterNodeDetail[neDeviceClusterNodeSchemaNames["VendorConfiguration"]]; ok {
 		transformed.VendorConfiguration = expandVendorConfiguration(v.([]interface{}))
 	}
-	if v, ok := clusterNodeDetail[neDeviceClusterNodeSchemaNames["LicenseFileId"]]; ok && !isEmpty(v) {
+	if v, ok := clusterNodeDetail[neDeviceClusterNodeSchemaNames["LicenseFileId"]]; ok && !equinix_validation.IsEmpty(v) {
 		transformed.LicenseFileId = ne.String(v.(string))
 	}
-	if v, ok := clusterNodeDetail[neDeviceClusterNodeSchemaNames["LicenseToken"]]; ok && !isEmpty(v) {
+	if v, ok := clusterNodeDetail[neDeviceClusterNodeSchemaNames["LicenseToken"]]; ok && !equinix_validation.IsEmpty(v) {
 		transformed.LicenseToken = ne.String(v.(string))
 	}
 	return transformed
@@ -1479,22 +1479,22 @@ func expandVendorConfiguration(vendorConfigs []interface{}) map[string]string {
 	}
 	vendorConfig := vendorConfigs[0].(map[string]interface{})
 	transformed := make(map[string]string)
-	if v, ok := vendorConfig[neDeviceVendorConfigSchemaNames["Hostname"]]; ok && !isEmpty(v) {
+	if v, ok := vendorConfig[neDeviceVendorConfigSchemaNames["Hostname"]]; ok && !equinix_validation.IsEmpty(v) {
 		transformed["hostname"] = v.(string)
 	}
-	if v, ok := vendorConfig[neDeviceVendorConfigSchemaNames["AdminPassword"]]; ok && !isEmpty(v) {
+	if v, ok := vendorConfig[neDeviceVendorConfigSchemaNames["AdminPassword"]]; ok && !equinix_validation.IsEmpty(v) {
 		transformed["adminPassword"] = v.(string)
 	}
-	if v, ok := vendorConfig[neDeviceVendorConfigSchemaNames["Controller1"]]; ok && !isEmpty(v) {
+	if v, ok := vendorConfig[neDeviceVendorConfigSchemaNames["Controller1"]]; ok && !equinix_validation.IsEmpty(v) {
 		transformed["controller1"] = v.(string)
 	}
-	if v, ok := vendorConfig[neDeviceVendorConfigSchemaNames["ActivationKey"]]; ok && !isEmpty(v) {
+	if v, ok := vendorConfig[neDeviceVendorConfigSchemaNames["ActivationKey"]]; ok && !equinix_validation.IsEmpty(v) {
 		transformed["activationKey"] = v.(string)
 	}
-	if v, ok := vendorConfig[neDeviceVendorConfigSchemaNames["ControllerFqdn"]]; ok && !isEmpty(v) {
+	if v, ok := vendorConfig[neDeviceVendorConfigSchemaNames["ControllerFqdn"]]; ok && !equinix_validation.IsEmpty(v) {
 		transformed["controllerFqdn"] = v.(string)
 	}
-	if v, ok := vendorConfig[neDeviceVendorConfigSchemaNames["RootPassword"]]; ok && !isEmpty(v) {
+	if v, ok := vendorConfig[neDeviceVendorConfigSchemaNames["RootPassword"]]; ok && !equinix_validation.IsEmpty(v) {
 		transformed["rootPassword"] = v.(string)
 	}
 	return transformed

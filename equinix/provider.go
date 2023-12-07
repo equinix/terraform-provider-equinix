@@ -9,7 +9,6 @@ import (
 	"github.com/equinix/terraform-provider-equinix/internal/resources/metal/metal_project_ssh_key"
 	"github.com/equinix/terraform-provider-equinix/internal/resources/metal/metal_ssh_key"
 
-	"github.com/equinix/ecx-go/v2"
 	"github.com/equinix/terraform-provider-equinix/internal/config"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -230,23 +229,6 @@ func isStringInSlice(needle string, hay []string) bool {
 		}
 	}
 	return false
-}
-
-func isEmpty(v interface{}) bool {
-	switch v := v.(type) {
-	case int:
-		return v == 0
-	case *int:
-		return ecx.IntValue(v) == 0
-	case string:
-		return v == ""
-	case *string:
-		return ecx.StringValue(v) == ""
-	case nil:
-		return true
-	default:
-		return false
-	}
 }
 
 func slicesMatch(s1, s2 []string) bool {

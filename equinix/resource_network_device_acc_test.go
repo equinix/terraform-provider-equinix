@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	"github.com/equinix/terraform-provider-equinix/internal/config"
+	"github.com/equinix/terraform-provider-equinix/internal/validation"
 
 	"github.com/equinix/ne-go"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -1242,7 +1243,7 @@ func testAccNetworkDevice(ctx map[string]interface{}) string {
 data "equinix_network_account" "test" {
   metro_code = "%{device-metro_code}"
   status     = "Active"`, ctx)
-	if v, ok := ctx["device-account_name"]; ok && !isEmpty(v) {
+	if v, ok := ctx["device-account_name"]; ok && !validation.IsEmpty(v) {
 		config += nprintf(`
   name = "%{device-account_name}"`, ctx)
 	}
@@ -1253,7 +1254,7 @@ data "equinix_network_account" "test" {
 data "equinix_network_account" "test-secondary" {
   metro_code = "%{device-secondary_metro_code}"
   status     = "Active"`, ctx)
-		if v, ok := ctx["device-secondary_account_name"]; ok && !isEmpty(v) {
+		if v, ok := ctx["device-secondary_account_name"]; ok && !validation.IsEmpty(v) {
 			config += nprintf(`
   name = "%{device-secondary_account_name}"`, ctx)
 		}
