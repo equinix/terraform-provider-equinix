@@ -69,20 +69,20 @@ func FormatFabricError(err error) error {
 	// If in future one would like to do something with the response body of the API request
 	// The line below is how to access it with the SwaggerCodegen Fabric Go 12/7/2023 - thogarty
 	// errors = append(errors, string(err.(fabric.GenericSwaggerError).Body()))
-	var errors []string
+	var errors Errors
 	errors = append(errors, err.Error())
 	if fabricErrs, ok := err.(fabric.GenericSwaggerError).Model().([]fabric.ModelError); ok {
 		for _, e := range fabricErrs {
+			errors = append(errors, fmt.Sprintf("Code: %s", e.ErrorCode))
 			errors = append(errors, fmt.Sprintf("Message: %s", e.ErrorMessage))
 			errors = append(errors, fmt.Sprintf("Details: %s", e.Details))
 			if additionalInfo := FormatFabricAdditionalInfo(e.AdditionalInfo); additionalInfo != "" {
 				errors = append(errors, fmt.Sprintf("AdditionalInfo: [%s]", additionalInfo))
 			}
-			errors = append(errors, fmt.Sprintf("Code: %s", e.ErrorCode))
 		}
 	}
 
-	return fmt.Errorf("%s", strings.Join(errors, ", "))
+	return errors
 }
 
 func IsForbidden(err error) bool {
