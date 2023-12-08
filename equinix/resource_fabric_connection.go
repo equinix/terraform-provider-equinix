@@ -169,6 +169,10 @@ func resourceFabricConnectionRead(ctx context.Context, d *schema.ResourceData, m
 	ctx = context.WithValue(ctx, v4.ContextAccessToken, meta.(*config.Config).FabricAuthToken)
 	conn, _, err := client.ConnectionsApi.GetConnectionByUuid(ctx, d.Id(), nil)
 	if err != nil {
+		log.Printf("[WARN] Connection %s not found , error %s", d.Id(), err)
+		if !strings.Contains(err.Error(), "500") {
+			d.SetId("")
+		}
 		return diag.FromErr(equinix_errors.FormatFabricError(err))
 	}
 	d.SetId(conn.Uuid)
