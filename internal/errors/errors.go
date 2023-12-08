@@ -2,11 +2,11 @@ package errors
 
 import (
 	"fmt"
-	v4 "github.com/equinix-labs/fabric-go/fabric/v4"
-
-	"github.com/packethost/packngo"
 	"net/http"
 	"strings"
+
+	fabric "github.com/equinix-labs/fabric-go/fabric/v4"
+	"github.com/packethost/packngo"
 )
 
 // FriendlyError improves error messages when the API error is blank or in an
@@ -48,7 +48,7 @@ func convertToFriendlyError(errors Errors, resp *http.Response) error {
 	return er
 }
 
-func FormatFabricAdditionalInfo(additionalInfo []v4.PriceErrorAdditionalInfo) string {
+func FormatFabricAdditionalInfo(additionalInfo []fabric.PriceErrorAdditionalInfo) string {
 	var str []string
 	for _, addInfo := range additionalInfo {
 		property, reason := addInfo.Property, addInfo.Reason
@@ -68,10 +68,10 @@ func FormatFabricAdditionalInfo(additionalInfo []v4.PriceErrorAdditionalInfo) st
 func FormatFabricError(err error) error {
 	// If in future one would like to do something with the response body of the API request
 	// The line below is how to access it with the SwaggerCodegen Fabric Go 12/7/2023 - thogarty
-	// errors = append(errors, string(err.(v4.GenericSwaggerError).Body()))
+	// errors = append(errors, string(err.(fabric.GenericSwaggerError).Body()))
 	var errors []string
 	errors = append(errors, err.Error())
-	if fabricErrs, ok := err.(v4.GenericSwaggerError).Model().([]v4.ModelError); ok {
+	if fabricErrs, ok := err.(fabric.GenericSwaggerError).Model().([]fabric.ModelError); ok {
 		for _, e := range fabricErrs {
 			errors = append(errors, fmt.Sprintf("Code: %s", e.ErrorCode))
 			errors = append(errors, fmt.Sprintf("Message: %s", e.ErrorMessage))
