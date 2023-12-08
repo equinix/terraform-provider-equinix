@@ -6,7 +6,6 @@ import (
 	"strings"
 
 	equinix_errors "github.com/equinix/terraform-provider-equinix/internal/errors"
-	equinix_validation "github.com/equinix/terraform-provider-equinix/internal/validation"
 
 	"github.com/equinix/terraform-provider-equinix/internal/config"
 
@@ -55,7 +54,7 @@ func resourceMetalProject() *schema.Resource {
 					return strings.EqualFold(strings.Trim(old, `"`), strings.Trim(new, `"`))
 				},
 				ValidateFunc: validation.Any(
-					equinix_validation.StringIsUuid,
+					validation.IsUUID,
 					validation.StringIsEmpty,
 				),
 			},
@@ -68,7 +67,7 @@ func resourceMetalProject() *schema.Resource {
 				DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
 					return strings.EqualFold(strings.Trim(old, `"`), strings.Trim(new, `"`))
 				},
-				ValidateFunc: equinix_validation.StringIsUuid,
+				ValidateFunc: validation.IsUUID,
 			},
 			"bgp_config": {
 				Type:        schema.TypeList,

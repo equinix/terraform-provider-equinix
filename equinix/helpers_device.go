@@ -15,7 +15,6 @@ import (
 	"github.com/equinix/terraform-provider-equinix/internal/converters"
 
 	equinix_errors "github.com/equinix/terraform-provider-equinix/internal/errors"
-	equinix_validation "github.com/equinix/terraform-provider-equinix/internal/validation"
 
 	metalv1 "github.com/equinix-labs/metal-go/metal/v1"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
@@ -236,7 +235,7 @@ func ipAddressSchema() *schema.Resource {
 				MinItems:    1,
 				Elem: &schema.Schema{
 					Type:         schema.TypeString,
-					ValidateFunc: equinix_validation.StringIsUuid,
+					ValidateFunc: validation.IsUUID,
 				},
 			},
 		},
