@@ -73,12 +73,12 @@ func FormatFabricError(err error) error {
 	errors = append(errors, err.Error())
 	if fabricErrs, ok := err.(fabric.GenericSwaggerError).Model().([]fabric.ModelError); ok {
 		for _, e := range fabricErrs {
-			errors = append(errors, fmt.Sprintf("Code: %s", e.ErrorCode))
 			errors = append(errors, fmt.Sprintf("Message: %s", e.ErrorMessage))
 			errors = append(errors, fmt.Sprintf("Details: %s", e.Details))
 			if additionalInfo := FormatFabricAdditionalInfo(e.AdditionalInfo); additionalInfo != "" {
 				errors = append(errors, fmt.Sprintf("AdditionalInfo: [%s]", additionalInfo))
 			}
+			errors = append(errors, fmt.Sprintf("Code: %s", e.ErrorCode))
 		}
 	}
 
