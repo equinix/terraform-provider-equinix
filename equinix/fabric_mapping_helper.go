@@ -438,7 +438,7 @@ func operationToTerra(operation *v4.ConnectionOperation) *schema.Set {
 	return operationSet
 }
 
-func NetworkOperationToTerra(operation *v4.NetworkOperation) *schema.Set {
+func networkOperationToTerra(operation *v4.NetworkOperation) *schema.Set {
 	if operation == nil {
 		return nil
 	}

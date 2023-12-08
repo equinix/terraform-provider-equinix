@@ -94,7 +94,7 @@ func setNetworkMap(d *schema.ResourceData, nt v4.Network) diag.Diagnostics {
 		"type":          nt.Type_,
 		"scope":         nt.Scope,
 		"state":         nt.State,
-		"operation":     NetworkOperationToTerra(nt.Operation),
+		"operation":     networkOperationToTerra(nt.Operation),
 		"change":        simplifiedNetworkChangeToTerra(nt.Change),
 		"location":      locationToTerra(nt.Location),
 		"notifications": notificationToTerra(nt.Notifications),
