@@ -9,6 +9,7 @@ import (
 	"strings"
 	"time"
 
+	equinix_errors "github.com/equinix/terraform-provider-equinix/internal/errors"
 	equinix_schema "github.com/equinix/terraform-provider-equinix/internal/schema"
 
 	"github.com/antihax/optional"
@@ -46,11 +47,9 @@ func resourceFabricServiceProfileRead(ctx context.Context, d *schema.ResourceDat
 	serviceProfile, _, err := client.ServiceProfilesApi.GetServiceProfileByUuid(ctx, d.Id(), nil)
 	if err != nil {
 		if !strings.Contains(err.Error(), "500") {
-			error := v4.ModelError{}
 			d.SetId("")
-			log.Printf("Error Status Message: %s", error.ErrorMessage)
 		}
-		return diag.FromErr(err)
+		return diag.FromErr(equinix_errors.FormatFabricError(err))
 	}
 	d.SetId(serviceProfile.Uuid)
 	return setFabricServiceProfileMap(d, serviceProfile)
@@ -63,7 +62,7 @@ func resourceFabricServiceProfileCreate(ctx context.Context, d *schema.ResourceD
 	createRequest := getServiceProfileRequestPayload(d)
 	sp, _, err := client.ServiceProfilesApi.CreateServiceProfile(ctx, createRequest)
 	if err != nil {
-		return diag.FromErr(err)
+		return diag.FromErr(equinix_errors.FormatFabricError(err))
 	}
 	d.SetId(sp.Uuid)
 	return resourceFabricServiceProfileRead(ctx, d, meta)
@@ -142,9 +141,9 @@ func resourceFabricServiceProfileUpdate(ctx context.Context, d *schema.ResourceD
 		return diag.Errorf("Either timed out or errored out while fetching service profile for uuid %s and error %v", uuid, err)
 	}
 
-	_, res, err := client.ServiceProfilesApi.PutServiceProfileByUuid(ctx, updateRequest, strconv.FormatInt(eTag, 10), uuid)
+	_, _, err = client.ServiceProfilesApi.PutServiceProfileByUuid(ctx, updateRequest, strconv.FormatInt(eTag, 10), uuid)
 	if err != nil {
-		return diag.FromErr(fmt.Errorf("error response for the service profile update, response %v, error %v", res, err))
+		return diag.FromErr(equinix_errors.FormatFabricError(err))
 	}
 	updatedServiceProfile := v4.ServiceProfile{}
 	updatedServiceProfile, err = waitForServiceProfileUpdateCompletion(uuid, meta, ctx)
@@ -152,7 +151,7 @@ func resourceFabricServiceProfileUpdate(ctx context.Context, d *schema.ResourceD
 		if !strings.Contains(err.Error(), "500") {
 			d.SetId("")
 		}
-		return diag.FromErr(fmt.Errorf("errored while waiting for successful service profile update, response %v, error %v", res, err))
+		return diag.FromErr(fmt.Errorf("errored while waiting for successful service profile update, error %v", err))
 	}
 	d.SetId(updatedServiceProfile.Uuid)
 	return setFabricServiceProfileMap(d, updatedServiceProfile)
@@ -166,7 +165,7 @@ func waitForServiceProfileUpdateCompletion(uuid string, meta interface{}, ctx co
 			client := meta.(*config.Config).FabricClient
 			dbServiceProfile, _, err := client.ServiceProfilesApi.GetServiceProfileByUuid(ctx, uuid, nil)
 			if err != nil {
-				return "", "", err
+				return "", "", equinix_errors.FormatFabricError(err)
 			}
 			updatableState := "COMPLETED"
 			return dbServiceProfile, updatableState, nil
@@ -194,7 +193,7 @@ func waitForActiveServiceProfileAndPopulateETag(uuid string, meta interface{}, c
 			client := meta.(*config.Config).FabricClient
 			dbServiceProfile, res, err := client.ServiceProfilesApi.GetServiceProfileByUuid(ctx, uuid, nil)
 			if err != nil {
-				return nil, "", err
+				return nil, "", equinix_errors.FormatFabricError(err)
 			}
 
 			eTagStr := res.Header.Get("ETag")
@@ -229,9 +228,9 @@ func resourceFabricServiceProfileDelete(ctx context.Context, d *schema.ResourceD
 	if uuid == "" {
 		return diag.Errorf("No uuid found %v ", uuid)
 	}
-	_, resp, err := client.ServiceProfilesApi.DeleteServiceProfileByUuid(ctx, uuid)
+	_, _, err := client.ServiceProfilesApi.DeleteServiceProfileByUuid(ctx, uuid)
 	if err != nil {
-		return diag.FromErr(fmt.Errorf("error response for the Service Profile delete error %v and response %v", err, resp))
+		return diag.FromErr(equinix_errors.FormatFabricError(err))
 	}
 	return diags
 }
@@ -306,11 +305,9 @@ func resourceServiceProfilesSearchRequest(ctx context.Context, d *schema.Resourc
 	serviceProfiles, _, err := client.ServiceProfilesApi.SearchServiceProfiles(ctx, createServiceProfilesSearchRequest, viewPoint)
 	if err != nil {
 		if !strings.Contains(err.Error(), "500") {
-			error := v4.ModelError{}
 			d.SetId("")
-			log.Printf("Error Status Message: %s", error.ErrorMessage)
 		}
-		return diag.FromErr(err)
+		return diag.FromErr(equinix_errors.FormatFabricError(err))
 	}
 
 	if len(serviceProfiles.Data) != 1 {

@@ -7,6 +7,7 @@ import (
 	"strings"
 	"time"
 
+	equinix_errors "github.com/equinix/terraform-provider-equinix/internal/errors"
 	equinix_schema "github.com/equinix/terraform-provider-equinix/internal/schema"
 
 	"github.com/equinix/terraform-provider-equinix/internal/config"
@@ -72,7 +73,7 @@ func resourceCloudRouterCreate(ctx context.Context, d *schema.ResourceData, meta
 
 	fcr, _, err := client.CloudRoutersApi.CreateCloudRouter(ctx, createRequest)
 	if err != nil {
-		return diag.FromErr(err)
+		return diag.FromErr(equinix_errors.FormatFabricError(err))
 	}
 	d.SetId(fcr.Uuid)
 
@@ -92,7 +93,7 @@ func resourceCloudRouterRead(ctx context.Context, d *schema.ResourceData, meta i
 		if !strings.Contains(err.Error(), "500") {
 			d.SetId("")
 		}
-		return diag.FromErr(err)
+		return diag.FromErr(equinix_errors.FormatFabricError(err))
 	}
 	d.SetId(CloudRouter.Uuid)
 	return setCloudRouterMap(d, CloudRouter)
@@ -139,9 +140,9 @@ func resourceCloudRouterUpdate(ctx context.Context, d *schema.ResourceData, meta
 		return diag.FromErr(err)
 	}
 	updates := []v4.CloudRouterChangeOperation{update}
-	_, res, err := client.CloudRoutersApi.UpdateCloudRouterByUuid(ctx, updates, d.Id())
+	_, _, err = client.CloudRoutersApi.UpdateCloudRouterByUuid(ctx, updates, d.Id())
 	if err != nil {
-		return diag.FromErr(fmt.Errorf("error response for the Fabric Cloud Router update, response %v, error %v", res, err))
+		return diag.FromErr(equinix_errors.FormatFabricError(err))
 	}
 	updateFg := v4.CloudRouter{}
 	updateFg, err = waitForCloudRouterUpdateCompletion(d.Id(), meta, ctx)
@@ -150,7 +151,7 @@ func resourceCloudRouterUpdate(ctx context.Context, d *schema.ResourceData, meta
 		if !strings.Contains(err.Error(), "500") {
 			d.SetId("")
 		}
-		return diag.FromErr(fmt.Errorf("errored while waiting for successful Fabric Cloud Router update, response %v, error %v", res, err))
+		return diag.FromErr(fmt.Errorf("errored while waiting for successful Fabric Cloud Router update, error %v", err))
 	}
 
 	d.SetId(updateFg.Uuid)
@@ -165,7 +166,7 @@ func waitForCloudRouterUpdateCompletion(uuid string, meta interface{}, ctx conte
 			client := meta.(*config.Config).FabricClient
 			dbConn, _, err := client.CloudRoutersApi.GetCloudRouterByUuid(ctx, uuid)
 			if err != nil {
-				return "", "", err
+				return "", "", equinix_errors.FormatFabricError(err)
 			}
 			return dbConn, string(*dbConn.State), nil
 		},
@@ -196,7 +197,7 @@ func waitUntilCloudRouterIsProvisioned(uuid string, meta interface{}, ctx contex
 			client := meta.(*config.Config).FabricClient
 			dbConn, _, err := client.CloudRoutersApi.GetCloudRouterByUuid(ctx, uuid)
 			if err != nil {
-				return "", "", err
+				return "", "", equinix_errors.FormatFabricError(err)
 			}
 			return dbConn, string(*dbConn.State), nil
 		},
@@ -218,7 +219,7 @@ func resourceCloudRouterDelete(ctx context.Context, d *schema.ResourceData, meta
 	diags := diag.Diagnostics{}
 	client := meta.(*config.Config).FabricClient
 	ctx = context.WithValue(ctx, v4.ContextAccessToken, meta.(*config.Config).FabricAuthToken)
-	resp, err := client.CloudRoutersApi.DeleteCloudRouterByUuid(ctx, d.Id())
+	_, err := client.CloudRoutersApi.DeleteCloudRouterByUuid(ctx, d.Id())
 	if err != nil {
 		errors, ok := err.(v4.GenericSwaggerError).Model().([]v4.ModelError)
 		if ok {
@@ -227,7 +228,7 @@ func resourceCloudRouterDelete(ctx context.Context, d *schema.ResourceData, meta
 				return diags
 			}
 		}
-		return diag.FromErr(fmt.Errorf("error response for the Fabric Cloud Router delete. Error %v and response %v", err, resp))
+		return diag.FromErr(equinix_errors.FormatFabricError(err))
 	}
 
 	err = waitUntilCloudRouterDeprovisioned(d.Id(), meta, ctx)
@@ -250,7 +251,7 @@ func waitUntilCloudRouterDeprovisioned(uuid string, meta interface{}, ctx contex
 			client := meta.(*config.Config).FabricClient
 			dbConn, _, err := client.CloudRoutersApi.GetCloudRouterByUuid(ctx, uuid)
 			if err != nil {
-				return "", "", err
+				return "", "", equinix_errors.FormatFabricError(err)
 			}
 			return dbConn, string(*dbConn.State), nil
 		},
