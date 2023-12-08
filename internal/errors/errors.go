@@ -1,6 +1,9 @@
 package errors
 
 import (
+	"fmt"
+	v4 "github.com/equinix-labs/fabric-go/fabric/v4"
+
 	"github.com/packethost/packngo"
 	"net/http"
 	"strings"
@@ -43,6 +46,43 @@ func convertToFriendlyError(errors Errors, resp *http.Response) error {
 		}
 	}
 	return er
+}
+
+func FormatFabricAdditionalInfo(additionalInfo []v4.PriceErrorAdditionalInfo) string {
+	var str []string
+	for _, addInfo := range additionalInfo {
+		property, reason := addInfo.Property, addInfo.Reason
+		if property != "" {
+			property = fmt.Sprintf("Property: %s, ", addInfo.Property)
+		}
+		if reason != "" {
+			reason = fmt.Sprintf("%s", addInfo.Reason)
+		} else {
+			reason = fmt.Sprintf("Reason: Not Provided")
+		}
+		str = append(str, fmt.Sprintf("{%s%s}", property, reason))
+	}
+	return strings.Join(str, ", ")
+}
+
+func FormatFabricError(err error) error {
+	// If in future one would like to do something with the response body of the API request
+	// The line below is how to access it with the SwaggerCodegen Fabric Go 12/7/2023 - thogarty
+	// errors = append(errors, string(err.(v4.GenericSwaggerError).Body()))
+	var errors []string
+	errors = append(errors, err.Error())
+	if fabricErrs, ok := err.(v4.GenericSwaggerError).Model().([]v4.ModelError); ok {
+		for _, e := range fabricErrs {
+			errors = append(errors, fmt.Sprintf("ErrorCode: %s", e.ErrorCode))
+			errors = append(errors, fmt.Sprintf("ErrorMessage: %s", e.ErrorMessage))
+			errors = append(errors, fmt.Sprintf("ErrorDetails: %s", e.Details))
+			if additionalInfo := FormatFabricAdditionalInfo(e.AdditionalInfo); additionalInfo != "" {
+				errors = append(errors, fmt.Sprintf("AdditionalInfo: [%s]", additionalInfo))
+			}
+		}
+	}
+
+	return fmt.Errorf("%s", strings.Join(errors, ", "))
 }
 
 func IsForbidden(err error) bool {

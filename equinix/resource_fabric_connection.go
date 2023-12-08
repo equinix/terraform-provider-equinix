@@ -7,6 +7,7 @@ import (
 	"strings"
 	"time"
 
+	equinix_errors "github.com/equinix/terraform-provider-equinix/internal/errors"
 	equinix_schema "github.com/equinix/terraform-provider-equinix/internal/schema"
 
 	"github.com/equinix/terraform-provider-equinix/internal/config"
@@ -114,9 +115,9 @@ func resourceFabricConnectionCreate(ctx context.Context, d *schema.ResourceData,
 		Project:        &project,
 	}
 
-	conn, httpResponse, err := client.ConnectionsApi.CreateConnection(ctx, createRequest)
+	conn, _, err := client.ConnectionsApi.CreateConnection(ctx, createRequest)
 	if err != nil {
-		return networkErrorOutput(err, httpResponse)
+		return diag.FromErr(equinix_errors.FormatFabricError(err))
 	}
 	d.SetId(conn.Uuid)
 
@@ -134,12 +135,12 @@ func resourceFabricConnectionCreate(ctx context.Context, d *schema.ResourceData,
 			},
 		}
 
-		_, patchHttpResponse, patchErr := client.ConnectionsApi.UpdateConnectionByUuid(ctx, patchChangeOperation, conn.Uuid)
+		_, _, patchErr := client.ConnectionsApi.UpdateConnectionByUuid(ctx, patchChangeOperation, conn.Uuid)
 		if patchErr != nil {
-			return networkErrorOutput(err, patchHttpResponse)
+			return diag.FromErr(equinix_errors.FormatFabricError(patchErr))
 		}
 
-		if _, statusChangeErr := waitForConnectionProviderStatusChange(d.Id(), meta, ctx); err != nil {
+		if _, statusChangeErr := waitForConnectionProviderStatusChange(d.Id(), meta, ctx); statusChangeErr != nil {
 			return diag.Errorf("error waiting for AWS Approval for connection %s: %v", d.Id(), statusChangeErr)
 		}
 	}
@@ -166,9 +167,9 @@ func additionalInfoContainsAWSSecrets(info []interface{}) ([]interface{}, bool) 
 func resourceFabricConnectionRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*config.Config).FabricClient
 	ctx = context.WithValue(ctx, v4.ContextAccessToken, meta.(*config.Config).FabricAuthToken)
-	conn, httpResponse, err := client.ConnectionsApi.GetConnectionByUuid(ctx, d.Id(), nil)
+	conn, _, err := client.ConnectionsApi.GetConnectionByUuid(ctx, d.Id(), nil)
 	if err != nil {
-		return networkErrorOutput(err, httpResponse)
+		return diag.FromErr(equinix_errors.FormatFabricError(err))
 	}
 	d.SetId(conn.Uuid)
 	return setFabricMap(d, conn)
@@ -224,9 +225,9 @@ func resourceFabricConnectionUpdate(ctx context.Context, d *schema.ResourceData,
 	updatedConn := dbConn
 
 	for _, update := range updateRequests {
-		_, httpResponse, err := client.ConnectionsApi.UpdateConnectionByUuid(ctx, update, d.Id())
+		_, _, err := client.ConnectionsApi.UpdateConnectionByUuid(ctx, update, d.Id())
 		if err != nil {
-			diags = append(diags, networkErrorOutput(fmt.Errorf("connection property update request error: %v [update payload: %v] (other updates will be successful if the payload is not shown)", err, update), httpResponse)...)
+			diags = append(diags, diag.Diagnostic{Severity: 0, Summary: fmt.Sprintf("connection property update request error: %v [update payload: %v] (other updates will be successful if the payload is not shown)", equinix_errors.FormatFabricError(err), update)})
 			continue
 		}
 
@@ -242,7 +243,7 @@ func resourceFabricConnectionUpdate(ctx context.Context, d *schema.ResourceData,
 		conn, err := waitFunction(d.Id(), meta, ctx)
 
 		if err != nil {
-			diags = append(diags, diag.Diagnostic{Severity: 2, Summary: fmt.Sprintf("connection property update completion timeout error: %v [update payload: %v] (other updates will be successful if the payload is not shown)", err, update)})
+			diags = append(diags, diag.Diagnostic{Severity: 0, Summary: fmt.Sprintf("connection property update completion timeout error: %v [update payload: %v] (other updates will be successful if the payload is not shown)", err, update)})
 		} else {
 			updatedConn = conn
 		}
@@ -260,7 +261,7 @@ func waitForConnectionUpdateCompletion(uuid string, meta interface{}, ctx contex
 			client := meta.(*config.Config).FabricClient
 			dbConn, _, err := client.ConnectionsApi.GetConnectionByUuid(ctx, uuid, nil)
 			if err != nil {
-				return "", "", err
+				return "", "", equinix_errors.FormatFabricError(err)
 			}
 			updatableState := ""
 			if dbConn.Change.Status == "COMPLETED" {
@@ -297,7 +298,7 @@ func waitUntilConnectionIsCreated(uuid string, meta interface{}, ctx context.Con
 			client := meta.(*config.Config).FabricClient
 			dbConn, _, err := client.ConnectionsApi.GetConnectionByUuid(ctx, uuid, nil)
 			if err != nil {
-				return "", "", err
+				return "", "", equinix_errors.FormatFabricError(err)
 			}
 			return dbConn, string(*dbConn.State), nil
 		},
@@ -325,7 +326,7 @@ func waitForConnectionProviderStatusChange(uuid string, meta interface{}, ctx co
 			client := meta.(*config.Config).FabricClient
 			dbConn, _, err := client.ConnectionsApi.GetConnectionByUuid(ctx, uuid, nil)
 			if err != nil {
-				return "", "", err
+				return "", "", equinix_errors.FormatFabricError(err)
 			}
 			return dbConn, string(*dbConn.Operation.ProviderStatus), nil
 		},
@@ -355,7 +356,7 @@ func verifyConnectionCreated(uuid string, meta interface{}, ctx context.Context)
 			client := meta.(*config.Config).FabricClient
 			dbConn, _, err := client.ConnectionsApi.GetConnectionByUuid(ctx, uuid, nil)
 			if err != nil {
-				return "", "", err
+				return "", "", equinix_errors.FormatFabricError(err)
 			}
 			return dbConn, string(*dbConn.State), nil
 		},
@@ -377,7 +378,7 @@ func resourceFabricConnectionDelete(ctx context.Context, d *schema.ResourceData,
 	diags := diag.Diagnostics{}
 	client := meta.(*config.Config).FabricClient
 	ctx = context.WithValue(ctx, v4.ContextAccessToken, meta.(*config.Config).FabricAuthToken)
-	_, httpResponse, err := client.ConnectionsApi.DeleteConnectionByUuid(ctx, d.Id())
+	_, _, err := client.ConnectionsApi.DeleteConnectionByUuid(ctx, d.Id())
 	if err != nil {
 		errors, ok := err.(v4.GenericSwaggerError).Model().([]v4.ModelError)
 		if ok {
@@ -386,7 +387,7 @@ func resourceFabricConnectionDelete(ctx context.Context, d *schema.ResourceData,
 				return diags
 			}
 		}
-		return networkErrorOutput(fmt.Errorf("error response for the connection delete: %v", err), httpResponse)
+		return diag.FromErr(equinix_errors.FormatFabricError(err))
 	}
 
 	err = waitUntilConnectionDeprovisioned(d.Id(), meta, ctx)
@@ -409,7 +410,7 @@ func waitUntilConnectionDeprovisioned(uuid string, meta interface{}, ctx context
 			client := meta.(*config.Config).FabricClient
 			dbConn, _, err := client.ConnectionsApi.GetConnectionByUuid(ctx, uuid, nil)
 			if err != nil {
-				return "", "", err
+				return "", "", equinix_errors.FormatFabricError(err)
 			}
 			return dbConn, string(*dbConn.State), nil
 		},
