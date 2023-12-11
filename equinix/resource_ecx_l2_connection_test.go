@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/equinix/ecx-go/v2"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/stretchr/testify/assert"
 )
@@ -69,34 +70,34 @@ func TestFabricL2Connection_updateResourceData(t *testing.T) {
 	// given
 	d := schema.TestResourceDataRaw(t, createECXL2ConnectionResourceSchema(), make(map[string]interface{}))
 	input := &ecx.L2Connection{
-		UUID:                ecx.String(randString(36)),
-		Name:                ecx.String(randString(36)),
-		ProfileUUID:         ecx.String(randString(36)),
+		UUID:                ecx.String(acctest.RandString(36)),
+		Name:                ecx.String(acctest.RandString(36)),
+		ProfileUUID:         ecx.String(acctest.RandString(36)),
 		Speed:               ecx.Int(50),
 		SpeedUnit:           ecx.String("MB"),
 		Status:              ecx.String(ecx.ConnectionStatusProvisioned),
 		ProviderStatus:      ecx.String(ecx.ConnectionStatusProvisioned),
 		Notifications:       []string{"bla@bla.com"},
-		PurchaseOrderNumber: ecx.String(randString(10)),
-		PortUUID:            ecx.String(randString(36)),
-		DeviceUUID:          ecx.String(randString(36)),
-		VendorToken:         ecx.String(randString(36)),
-		VlanSTag:            ecx.Int(randInt(2000)),
-		VlanCTag:            ecx.Int(randInt(2000)),
-		NamedTag:            ecx.String(randString(100)),
-		AdditionalInfo:      []ecx.L2ConnectionAdditionalInfo{{Name: ecx.String(randString(10)), Value: ecx.String(randString(10))}},
-		ZSidePortUUID:       ecx.String(randString(36)),
-		ZSideVlanCTag:       ecx.Int(randInt(2000)),
-		ZSideVlanSTag:       ecx.Int(randInt(2000)),
-		SellerRegion:        ecx.String(randString(10)),
-		SellerMetroCode:     ecx.String(randString(2)),
-		AuthorizationKey:    ecx.String(randString(10)),
-		RedundancyGroup:     ecx.String(randString(36)),
-		RedundancyType:      ecx.String(randString(10)),
+		PurchaseOrderNumber: ecx.String(acctest.RandString(10)),
+		PortUUID:            ecx.String(acctest.RandString(36)),
+		DeviceUUID:          ecx.String(acctest.RandString(36)),
+		VendorToken:         ecx.String(acctest.RandString(36)),
+		VlanSTag:            ecx.Int(acctest.RandIntRange(0, 2000)),
+		VlanCTag:            ecx.Int(acctest.RandIntRange(0, 2000)),
+		NamedTag:            ecx.String(acctest.RandString(100)),
+		AdditionalInfo:      []ecx.L2ConnectionAdditionalInfo{{Name: ecx.String(acctest.RandString(10)), Value: ecx.String(acctest.RandString(10))}},
+		ZSidePortUUID:       ecx.String(acctest.RandString(36)),
+		ZSideVlanCTag:       ecx.Int(acctest.RandIntRange(0, 2000)),
+		ZSideVlanSTag:       ecx.Int(acctest.RandIntRange(0, 2000)),
+		SellerRegion:        ecx.String(acctest.RandString(10)),
+		SellerMetroCode:     ecx.String(acctest.RandString(2)),
+		AuthorizationKey:    ecx.String(acctest.RandString(10)),
+		RedundancyGroup:     ecx.String(acctest.RandString(36)),
+		RedundancyType:      ecx.String(acctest.RandString(10)),
 	}
-	prevServiceToken := ecx.String(randString(20))
+	prevServiceToken := ecx.String(acctest.RandString(20))
 	d.Set(ecxL2ConnectionSchemaNames["ServiceToken"], prevServiceToken)
-	prevZsideServiceToken := ecx.String(randString(20))
+	prevZsideServiceToken := ecx.String(acctest.RandString(20))
 	d.Set(ecxL2ConnectionSchemaNames["ZSideServiceToken"], prevZsideServiceToken)
 
 	// when
@@ -138,30 +139,30 @@ func TestFabricL2Connection_updateResourceData(t *testing.T) {
 func TestFabricL2Connection_flattenSecondary(t *testing.T) {
 	// given
 	input := &ecx.L2Connection{
-		UUID:             ecx.String(randString(36)),
-		Name:             ecx.String(randString(36)),
-		ProfileUUID:      ecx.String(randString(36)),
+		UUID:             ecx.String(acctest.RandString(36)),
+		Name:             ecx.String(acctest.RandString(36)),
+		ProfileUUID:      ecx.String(acctest.RandString(36)),
 		Speed:            ecx.Int(50),
 		SpeedUnit:        ecx.String("MB"),
 		Status:           ecx.String(ecx.ConnectionStatusProvisioned),
 		ProviderStatus:   ecx.String(ecx.ConnectionStatusProvisioned),
-		PortUUID:         ecx.String(randString(36)),
-		DeviceUUID:       ecx.String(randString(36)),
-		VlanSTag:         ecx.Int(randInt(2000)),
-		VlanCTag:         ecx.Int(randInt(2000)),
-		ZSidePortUUID:    ecx.String(randString(36)),
-		ZSideVlanCTag:    ecx.Int(randInt(2000)),
-		ZSideVlanSTag:    ecx.Int(randInt(2000)),
-		SellerRegion:     ecx.String(randString(10)),
-		SellerMetroCode:  ecx.String(randString(2)),
-		AuthorizationKey: ecx.String(randString(10)),
-		RedundancyGroup:  ecx.String(randString(10)),
-		RedundancyType:   ecx.String(randString(10)),
-		VendorToken:      ecx.String(randString(36)),
+		PortUUID:         ecx.String(acctest.RandString(36)),
+		DeviceUUID:       ecx.String(acctest.RandString(36)),
+		VlanSTag:         ecx.Int(acctest.RandIntRange(0, 2000)),
+		VlanCTag:         ecx.Int(acctest.RandIntRange(0, 2000)),
+		ZSidePortUUID:    ecx.String(acctest.RandString(36)),
+		ZSideVlanCTag:    ecx.Int(acctest.RandIntRange(0, 2000)),
+		ZSideVlanSTag:    ecx.Int(acctest.RandIntRange(0, 2000)),
+		SellerRegion:     ecx.String(acctest.RandString(10)),
+		SellerMetroCode:  ecx.String(acctest.RandString(2)),
+		AuthorizationKey: ecx.String(acctest.RandString(10)),
+		RedundancyGroup:  ecx.String(acctest.RandString(10)),
+		RedundancyType:   ecx.String(acctest.RandString(10)),
+		VendorToken:      ecx.String(acctest.RandString(36)),
 	}
 	previousInput := &ecx.L2Connection{
-		DeviceInterfaceID: ecx.Int(randInt(10)),
-		ServiceToken:      ecx.String(randString(36)),
+		DeviceInterfaceID: ecx.Int(acctest.RandIntRange(0, 10)),
+		ServiceToken:      ecx.String(acctest.RandString(36)),
 	}
 	expected := []interface{}{
 		map[string]interface{}{
@@ -246,8 +247,8 @@ func TestFabricL2Connection_flattenAdditionalInfo(t *testing.T) {
 	// given
 	input := []ecx.L2ConnectionAdditionalInfo{
 		{
-			Name:  ecx.String(randString(32)),
-			Value: ecx.String(randString(32)),
+			Name:  ecx.String(acctest.RandString(32)),
+			Value: ecx.String(acctest.RandString(32)),
 		},
 	}
 	expected := []interface{}{
@@ -271,8 +272,8 @@ func TestFabricL2Connection_expandAdditionalInfo(t *testing.T) {
 	// given
 	input := schema.NewSet(f, []interface{}{
 		map[string]interface{}{
-			ecxL2ConnectionAdditionalInfoSchemaNames["Name"]:  randString(36),
-			ecxL2ConnectionAdditionalInfoSchemaNames["Value"]: randString(36),
+			ecxL2ConnectionAdditionalInfoSchemaNames["Name"]:  acctest.RandString(36),
+			ecxL2ConnectionAdditionalInfoSchemaNames["Value"]: acctest.RandString(36),
 		},
 	})
 	inputList := input.List()
@@ -293,16 +294,16 @@ func TestFabricL2Connection_flattenActions(t *testing.T) {
 	// given
 	input := []ecx.L2ConnectionAction{
 		{
-			Type:        ecx.String(randString(32)),
-			OperationID: ecx.String(randString(32)),
-			Message:     ecx.String(randString(32)),
+			Type:        ecx.String(acctest.RandString(32)),
+			OperationID: ecx.String(acctest.RandString(32)),
+			Message:     ecx.String(acctest.RandString(32)),
 			RequiredData: []ecx.L2ConnectionActionData{
 				{
-					Key:               ecx.String(randString(10)),
-					Label:             ecx.String(randString(10)),
-					Value:             ecx.String(randString(10)),
+					Key:               ecx.String(acctest.RandString(10)),
+					Label:             ecx.String(acctest.RandString(10)),
+					Value:             ecx.String(acctest.RandString(10)),
 					IsEditable:        ecx.Bool(true),
-					ValidationPattern: ecx.String(randString(10)),
+					ValidationPattern: ecx.String(acctest.RandString(10)),
 				},
 			},
 		},
@@ -365,7 +366,7 @@ func TestFabricL2Connection_fillUpdateRequest(t *testing.T) {
 	// given
 	updateReq := mockedL2ConnectionUpdateRequest{}
 	changes := map[string]interface{}{
-		ecxL2ConnectionSchemaNames["Name"]:      randString(32),
+		ecxL2ConnectionSchemaNames["Name"]:      acctest.RandString(32),
 		ecxL2ConnectionSchemaNames["Speed"]:     50,
 		ecxL2ConnectionSchemaNames["SpeedUnit"]: "MB",
 	}

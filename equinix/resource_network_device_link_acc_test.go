@@ -9,6 +9,7 @@ import (
 	"github.com/equinix/terraform-provider-equinix/internal/config"
 
 	"github.com/equinix/ne-go"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
@@ -63,24 +64,24 @@ func TestAccNetworkDeviceLink(t *testing.T) {
 		"device-account_name":               accountName.(string),
 		"device-self_managed":               false,
 		"device-byol":                       false,
-		"device-name":                       fmt.Sprintf("%s-%s", tstResourcePrefix, randString(6)),
+		"device-name":                       fmt.Sprintf("%s-%s", tstResourcePrefix, acctest.RandString(6)),
 		"device-throughput":                 500,
 		"device-throughput_unit":            "Mbps",
 		"device-metro_code":                 metro.(string),
 		"device-type_code":                  "CSR1000V",
 		"device-package_code":               "SEC",
 		"device-notifications":              []string{"test@equinix.com"},
-		"device-hostname":                   fmt.Sprintf("tf-%s", randString(6)),
+		"device-hostname":                   fmt.Sprintf("tf-%s", acctest.RandString(6)),
 		"device-term_length":                1,
 		"device-version":                    "16.09.05",
 		"device-core_count":                 2,
-		"device-secondary_name":             fmt.Sprintf("%s-%s", tstResourcePrefix, randString(6)),
+		"device-secondary_name":             fmt.Sprintf("%s-%s", tstResourcePrefix, acctest.RandString(6)),
 		"device-secondary_account_name":     accountNameSecondary.(string),
 		"device-secondary_metro_code":       metroSecondary.(string),
-		"device-secondary_hostname":         fmt.Sprintf("tf-%s", randString(6)),
+		"device-secondary_hostname":         fmt.Sprintf("tf-%s", acctest.RandString(6)),
 		"device-secondary_notifications":    []string{"test@equinix.com"},
 		"link-resourceName":                 "test",
-		"link-name":                         fmt.Sprintf("%s-%s", tstResourcePrefix, randString(6)),
+		"link-name":                         fmt.Sprintf("%s-%s", tstResourcePrefix, acctest.RandString(6)),
 		"link-subnet":                       "10.69.1.0/24",
 		"link-device_1_asn":                 23404,
 		"link-device_1_interface_id":        6,

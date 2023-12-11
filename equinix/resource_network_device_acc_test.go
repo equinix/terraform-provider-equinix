@@ -9,6 +9,7 @@ import (
 	"github.com/equinix/terraform-provider-equinix/internal/config"
 
 	"github.com/equinix/ne-go"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
@@ -90,36 +91,36 @@ func TestAccNetworkDevice_CSR1000V_HA_Managed_Sub(t *testing.T) {
 		"device-account_name":            accountName.(string),
 		"device-self_managed":            false,
 		"device-byol":                    false,
-		"device-name":                    fmt.Sprintf("%s-%s", tstResourcePrefix, randString(6)),
+		"device-name":                    fmt.Sprintf("%s-%s", tstResourcePrefix, acctest.RandString(6)),
 		"device-throughput":              500,
 		"device-throughput_unit":         "Mbps",
 		"device-metro_code":              metro.(string),
 		"device-type_code":               "CSR1000V",
 		"device-package_code":            "SEC",
 		"device-notifications":           []string{"marry@equinix.com", "john@equinix.com"},
-		"device-hostname":                fmt.Sprintf("tf-%s", randString(41)),
+		"device-hostname":                fmt.Sprintf("tf-%s", acctest.RandString(41)),
 		"device-term_length":             1,
 		"device-version":                 "16.09.05",
 		"device-core_count":              2,
-		"device-purchase_order_number":   randString(10),
-		"device-order_reference":         randString(10),
+		"device-purchase_order_number":   acctest.RandString(10),
+		"device-order_reference":         acctest.RandString(10),
 		"device-interface_count":         24,
 		"device-additional_bandwidth":    0,
-		"device-secondary_name":          fmt.Sprintf("%s-%s", tstResourcePrefix, randString(6)),
-		"device-secondary_hostname":      fmt.Sprintf("tf-%s", randString(6)),
+		"device-secondary_name":          fmt.Sprintf("%s-%s", tstResourcePrefix, acctest.RandString(6)),
+		"device-secondary_hostname":      fmt.Sprintf("tf-%s", acctest.RandString(6)),
 		"device-secondary_notifications": []string{"secondary@equinix.com"},
 		"user-resourceName":              "tst-user",
-		"user-username":                  fmt.Sprintf("%s-%s", tstResourcePrefix, randString(6)),
-		"user-password":                  randString(10),
+		"user-username":                  fmt.Sprintf("%s-%s", tstResourcePrefix, acctest.RandString(6)),
+		"user-password":                  acctest.RandString(10),
 	}
 
 	contextWithACLs := copyMap(context)
 	contextWithACLs["acl-resourceName"] = "acl-pri"
-	contextWithACLs["acl-name"] = fmt.Sprintf("%s-%s", tstResourcePrefix, randString(6))
-	contextWithACLs["acl-description"] = randString(50)
+	contextWithACLs["acl-name"] = fmt.Sprintf("%s-%s", tstResourcePrefix, acctest.RandString(6))
+	contextWithACLs["acl-description"] = acctest.RandString(50)
 	contextWithACLs["acl-secondary_resourceName"] = "acl-sec"
-	contextWithACLs["acl-secondary_name"] = fmt.Sprintf("%s-%s", tstResourcePrefix, randString(6))
-	contextWithACLs["acl-secondary_description"] = randString(50)
+	contextWithACLs["acl-secondary_name"] = fmt.Sprintf("%s-%s", tstResourcePrefix, acctest.RandString(6))
+	contextWithACLs["acl-secondary_description"] = acctest.RandString(50)
 	deviceResourceName := fmt.Sprintf("equinix_network_device.%s", context["device-resourceName"].(string))
 	userResourceName := fmt.Sprintf("equinix_network_ssh_user.%s", context["user-resourceName"].(string))
 	priACLResourceName := fmt.Sprintf("equinix_network_acl_template.%s", contextWithACLs["acl-resourceName"].(string))
@@ -178,34 +179,34 @@ func TestAccNetworkDevice_CSR1000V_HA_Self_BYOL(t *testing.T) {
 		"device-account_name":            accountName.(string),
 		"device-self_managed":            true,
 		"device-byol":                    true,
-		"device-name":                    fmt.Sprintf("%s-%s", tstResourcePrefix, randString(6)),
+		"device-name":                    fmt.Sprintf("%s-%s", tstResourcePrefix, acctest.RandString(6)),
 		"device-throughput":              500,
 		"device-throughput_unit":         "Mbps",
 		"device-metro_code":              metro.(string),
 		"device-type_code":               "CSR1000V",
 		"device-package_code":            "SEC",
 		"device-notifications":           []string{"marry@equinix.com", "john@equinix.com"},
-		"device-hostname":                fmt.Sprintf("tf-%s", randString(6)),
+		"device-hostname":                fmt.Sprintf("tf-%s", acctest.RandString(6)),
 		"device-term_length":             1,
 		"device-version":                 "16.09.05",
 		"device-core_count":              2,
-		"device-purchase_order_number":   randString(10),
-		"device-order_reference":         randString(10),
-		"device-secondary_name":          fmt.Sprintf("%s-%s", tstResourcePrefix, randString(6)),
-		"device-secondary_hostname":      fmt.Sprintf("tf-%s", randString(6)),
+		"device-purchase_order_number":   acctest.RandString(10),
+		"device-order_reference":         acctest.RandString(10),
+		"device-secondary_name":          fmt.Sprintf("%s-%s", tstResourcePrefix, acctest.RandString(6)),
+		"device-secondary_hostname":      fmt.Sprintf("tf-%s", acctest.RandString(6)),
 		"device-secondary_notifications": []string{"secondary@equinix.com"},
 		"sshkey-resourceName":            "test",
-		"sshkey-name":                    fmt.Sprintf("%s-%s", tstResourcePrefix, randString(6)),
+		"sshkey-name":                    fmt.Sprintf("%s-%s", tstResourcePrefix, acctest.RandString(6)),
 		"sshkey-public_key":              "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQCXdzXBHaVpKpdO0udnB+4JOgUq7APO2rPXfrevvlZrps98AtlwXXVWZ5duRH5NFNfU4G9HCSiAPsebgjY0fG85tcShpXfHfACLt0tBW8XhfLQP2T6S50FQ1brBdURMDCMsD7duOXqvc0dlbs2/KcswHvuUmqVzob3bz7n1bQ48wIHsPg4ARqYhy5LN3OkllJH/6GEfqi8lKZx01/P/gmJMORcJujuOyXRB+F2iXBVYdhjML3Qg4+tEekBcVZOxUbERRZ0pvQ52Y6wUhn2VsjljixyqeOdmD0m6DayDQgSWms6bKPpBqN7zhXXk4qe8bXT4tQQba65b2CQ2A91jw2KgM/YZNmjyUJ+Rf1cQosJf9twqbAZDZ6rAEmj9zzvQ5vD/CGuzxdVMkePLlUK4VGjPu7cVzhXrnq4318WqZ5/lNiCST8NQ0fssChN8ANUzr/p/wwv3faFMVNmjxXTZMsbMFT/fbb2MVVuqNFN65drntlg6/xEao8gZROuRYiakBx8= user@host",
 	}
 
 	contextWithACLs := copyMap(context)
 	contextWithACLs["acl-resourceName"] = "acl-pri"
-	contextWithACLs["acl-name"] = fmt.Sprintf("%s-%s", tstResourcePrefix, randString(6))
-	contextWithACLs["acl-description"] = randString(50)
+	contextWithACLs["acl-name"] = fmt.Sprintf("%s-%s", tstResourcePrefix, acctest.RandString(6))
+	contextWithACLs["acl-description"] = acctest.RandString(50)
 	contextWithACLs["acl-secondary_resourceName"] = "acl-sec"
-	contextWithACLs["acl-secondary_name"] = fmt.Sprintf("%s-%s", tstResourcePrefix, randString(6))
-	contextWithACLs["acl-secondary_description"] = randString(50)
+	contextWithACLs["acl-secondary_name"] = fmt.Sprintf("%s-%s", tstResourcePrefix, acctest.RandString(6))
+	contextWithACLs["acl-secondary_description"] = acctest.RandString(50)
 	deviceResourceName := fmt.Sprintf("equinix_network_device.%s", context["device-resourceName"].(string))
 	priACLResourceName := fmt.Sprintf("equinix_network_acl_template.%s", contextWithACLs["acl-resourceName"].(string))
 	secACLResourceName := fmt.Sprintf("equinix_network_acl_template.%s", contextWithACLs["acl-secondary_resourceName"].(string))
@@ -254,26 +255,26 @@ func TestAccNetworkDevice_vSRX_HA_Managed_Sub(t *testing.T) {
 		"device-account_name":            accountName.(string),
 		"device-self_managed":            false,
 		"device-byol":                    false,
-		"device-name":                    fmt.Sprintf("%s-%s", tstResourcePrefix, randString(6)),
+		"device-name":                    fmt.Sprintf("%s-%s", tstResourcePrefix, acctest.RandString(6)),
 		"device-metro_code":              metro.(string),
 		"device-type_code":               "VSRX",
 		"device-package_code":            "STD",
 		"device-notifications":           []string{"marry@equinix.com", "john@equinix.com"},
-		"device-hostname":                fmt.Sprintf("tf-%s", randString(6)),
+		"device-hostname":                fmt.Sprintf("tf-%s", acctest.RandString(6)),
 		"device-term_length":             1,
 		"device-version":                 "19.2R2.7",
 		"device-core_count":              2,
-		"device-purchase_order_number":   randString(10),
-		"device-order_reference":         randString(10),
-		"device-secondary_name":          fmt.Sprintf("%s-%s", tstResourcePrefix, randString(6)),
-		"device-secondary_hostname":      fmt.Sprintf("tf-%s", randString(6)),
+		"device-purchase_order_number":   acctest.RandString(10),
+		"device-order_reference":         acctest.RandString(10),
+		"device-secondary_name":          fmt.Sprintf("%s-%s", tstResourcePrefix, acctest.RandString(6)),
+		"device-secondary_hostname":      fmt.Sprintf("tf-%s", acctest.RandString(6)),
 		"device-secondary_notifications": []string{"secondary@equinix.com"},
 	}
 
 	contextWithChanges := copyMap(context)
 	contextWithChanges["user-resourceName"] = "test"
-	contextWithChanges["user-username"] = fmt.Sprintf("%s-%s", tstResourcePrefix, randString(6))
-	contextWithChanges["user-password"] = randString(10)
+	contextWithChanges["user-username"] = fmt.Sprintf("%s-%s", tstResourcePrefix, acctest.RandString(6))
+	contextWithChanges["user-password"] = acctest.RandString(10)
 	deviceResourceName := fmt.Sprintf("equinix_network_device.%s", context["device-resourceName"].(string))
 	userResourceName := fmt.Sprintf("equinix_network_ssh_user.%s", contextWithChanges["user-resourceName"].(string))
 	var primary, secondary ne.Device
@@ -324,40 +325,40 @@ func TestAccNetworkDevice_vSRX_HA_Managed_BYOL(t *testing.T) {
 		"device-account_name":            accountName.(string),
 		"device-self_managed":            false,
 		"device-byol":                    true,
-		"device-name":                    fmt.Sprintf("%s-%s", tstResourcePrefix, randString(6)),
+		"device-name":                    fmt.Sprintf("%s-%s", tstResourcePrefix, acctest.RandString(6)),
 		"device-license_file":            licenseFile.(string),
 		"device-metro_code":              metro.(string),
 		"device-type_code":               "VSRX",
 		"device-package_code":            "STD",
 		"device-notifications":           []string{"marry@equinix.com", "john@equinix.com"},
-		"device-hostname":                fmt.Sprintf("tf-%s", randString(6)),
+		"device-hostname":                fmt.Sprintf("tf-%s", acctest.RandString(6)),
 		"device-term_length":             1,
 		"device-version":                 "19.2R2.7",
 		"device-core_count":              2,
-		"device-purchase_order_number":   randString(10),
-		"device-order_reference":         randString(10),
-		"device-secondary_name":          fmt.Sprintf("%s-%s", tstResourcePrefix, randString(6)),
+		"device-purchase_order_number":   acctest.RandString(10),
+		"device-order_reference":         acctest.RandString(10),
+		"device-secondary_name":          fmt.Sprintf("%s-%s", tstResourcePrefix, acctest.RandString(6)),
 		"device-secondary_license_file":  licenseFile.(string),
-		"device-secondary_hostname":      fmt.Sprintf("tf-%s", randString(6)),
+		"device-secondary_hostname":      fmt.Sprintf("tf-%s", acctest.RandString(6)),
 		"device-secondary_notifications": []string{"secondary@equinix.com"},
 		"acl-resourceName":               "acl-pri",
-		"acl-name":                       fmt.Sprintf("%s-%s", tstResourcePrefix, randString(6)),
-		"acl-description":                randString(50),
+		"acl-name":                       fmt.Sprintf("%s-%s", tstResourcePrefix, acctest.RandString(6)),
+		"acl-description":                acctest.RandString(50),
 		"acl-secondary_resourceName":     "acl-sec",
-		"acl-secondary_name":             fmt.Sprintf("%s-%s", tstResourcePrefix, randString(6)),
-		"acl-secondary_description":      randString(50),
+		"acl-secondary_name":             fmt.Sprintf("%s-%s", tstResourcePrefix, acctest.RandString(6)),
+		"acl-secondary_description":      acctest.RandString(50),
 	}
 
 	contextWithChanges := copyMap(context)
-	contextWithChanges["device-name"] = fmt.Sprintf("%s-%s", tstResourcePrefix, randString(6))
+	contextWithChanges["device-name"] = fmt.Sprintf("%s-%s", tstResourcePrefix, acctest.RandString(6))
 	contextWithChanges["device-additional_bandwidth"] = 100
 	contextWithChanges["device-notifications"] = []string{"jerry@equinix.com", "tom@equinix.com"}
-	contextWithChanges["device-secondary_name"] = fmt.Sprintf("%s-%s", tstResourcePrefix, randString(6))
+	contextWithChanges["device-secondary_name"] = fmt.Sprintf("%s-%s", tstResourcePrefix, acctest.RandString(6))
 	contextWithChanges["device-secondary_additional_bandwidth"] = 100
 	contextWithChanges["device-secondary_notifications"] = []string{"miki@equinix.com", "mini@equinix.com"}
 	contextWithChanges["user-resourceName"] = "test"
-	contextWithChanges["user-username"] = fmt.Sprintf("%s-%s", tstResourcePrefix, randString(6))
-	contextWithChanges["user-password"] = randString(10)
+	contextWithChanges["user-username"] = fmt.Sprintf("%s-%s", tstResourcePrefix, acctest.RandString(6))
+	contextWithChanges["user-password"] = acctest.RandString(10)
 	deviceResourceName := fmt.Sprintf("equinix_network_device.%s", context["device-resourceName"].(string))
 	userResourceName := fmt.Sprintf("equinix_network_ssh_user.%s", contextWithChanges["user-resourceName"].(string))
 	var primary, secondary ne.Device
@@ -406,28 +407,28 @@ func TestAccNetworkDevice_vSRX_HA_Self_BYOL(t *testing.T) {
 		"device-account_name":            accountName.(string),
 		"device-self_managed":            true,
 		"device-byol":                    true,
-		"device-name":                    fmt.Sprintf("%s-%s", tstResourcePrefix, randString(6)),
+		"device-name":                    fmt.Sprintf("%s-%s", tstResourcePrefix, acctest.RandString(6)),
 		"device-metro_code":              metro.(string),
 		"device-type_code":               "VSRX",
 		"device-package_code":            "STD",
 		"device-notifications":           []string{"marry@equinix.com", "john@equinix.com"},
-		"device-hostname":                fmt.Sprintf("tf-%s", randString(6)),
+		"device-hostname":                fmt.Sprintf("tf-%s", acctest.RandString(6)),
 		"device-term_length":             1,
 		"device-version":                 "19.2R2.7",
 		"device-core_count":              2,
-		"device-purchase_order_number":   randString(10),
-		"device-order_reference":         randString(10),
-		"device-secondary_name":          fmt.Sprintf("%s-%s", tstResourcePrefix, randString(6)),
-		"device-secondary_hostname":      fmt.Sprintf("tf-%s", randString(6)),
+		"device-purchase_order_number":   acctest.RandString(10),
+		"device-order_reference":         acctest.RandString(10),
+		"device-secondary_name":          fmt.Sprintf("%s-%s", tstResourcePrefix, acctest.RandString(6)),
+		"device-secondary_hostname":      fmt.Sprintf("tf-%s", acctest.RandString(6)),
 		"device-secondary_notifications": []string{"secondary@equinix.com"},
 		"acl-resourceName":               "acl-pri",
-		"acl-name":                       fmt.Sprintf("%s-%s", tstResourcePrefix, randString(6)),
-		"acl-description":                randString(50),
+		"acl-name":                       fmt.Sprintf("%s-%s", tstResourcePrefix, acctest.RandString(6)),
+		"acl-description":                acctest.RandString(50),
 		"acl-secondary_resourceName":     "acl-sec",
-		"acl-secondary_name":             fmt.Sprintf("%s-%s", tstResourcePrefix, randString(6)),
-		"acl-secondary_description":      randString(50),
+		"acl-secondary_name":             fmt.Sprintf("%s-%s", tstResourcePrefix, acctest.RandString(6)),
+		"acl-secondary_description":      acctest.RandString(50),
 		"sshkey-resourceName":            "test",
-		"sshkey-name":                    fmt.Sprintf("%s-%s", tstResourcePrefix, randString(6)),
+		"sshkey-name":                    fmt.Sprintf("%s-%s", tstResourcePrefix, acctest.RandString(6)),
 		"sshkey-public_key":              "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQCXdzXBHaVpKpdO0udnB+4JOgUq7APO2rPXfrevvlZrps98AtlwXXVWZ5duRH5NFNfU4G9HCSiAPsebgjY0fG85tcShpXfHfACLt0tBW8XhfLQP2T6S50FQ1brBdURMDCMsD7duOXqvc0dlbs2/KcswHvuUmqVzob3bz7n1bQ48wIHsPg4ARqYhy5LN3OkllJH/6GEfqi8lKZx01/P/gmJMORcJujuOyXRB+F2iXBVYdhjML3Qg4+tEekBcVZOxUbERRZ0pvQ52Y6wUhn2VsjljixyqeOdmD0m6DayDQgSWms6bKPpBqN7zhXXk4qe8bXT4tQQba65b2CQ2A91jw2KgM/YZNmjyUJ+Rf1cQosJf9twqbAZDZ6rAEmj9zzvQ5vD/CGuzxdVMkePLlUK4VGjPu7cVzhXrnq4318WqZ5/lNiCST8NQ0fssChN8ANUzr/p/wwv3faFMVNmjxXTZMsbMFT/fbb2MVVuqNFN65drntlg6/xEao8gZROuRYiakBx8= user@host",
 	}
 
@@ -462,34 +463,34 @@ func TestAccNetworkDevice_PaloAlto_HA_Managed_Sub(t *testing.T) {
 		"device-account_name":            accountName.(string),
 		"device-self_managed":            false,
 		"device-byol":                    false,
-		"device-name":                    fmt.Sprintf("%s-%s", tstResourcePrefix, randString(6)),
+		"device-name":                    fmt.Sprintf("%s-%s", tstResourcePrefix, acctest.RandString(6)),
 		"device-metro_code":              metro.(string),
 		"device-type_code":               "PA-VM",
 		"device-package_code":            "VM100",
 		"device-notifications":           []string{"marry@equinix.com", "john@equinix.com"},
-		"device-hostname":                fmt.Sprintf("tf-%s", randString(6)),
+		"device-hostname":                fmt.Sprintf("tf-%s", acctest.RandString(6)),
 		"device-term_length":             1,
 		"device-version":                 "9.0.4",
 		"device-core_count":              2,
-		"device-purchase_order_number":   randString(10),
-		"device-order_reference":         randString(10),
-		"device-secondary_name":          fmt.Sprintf("%s-%s", tstResourcePrefix, randString(6)),
-		"device-secondary_hostname":      fmt.Sprintf("tf-%s", randString(6)),
+		"device-purchase_order_number":   acctest.RandString(10),
+		"device-order_reference":         acctest.RandString(10),
+		"device-secondary_name":          fmt.Sprintf("%s-%s", tstResourcePrefix, acctest.RandString(6)),
+		"device-secondary_hostname":      fmt.Sprintf("tf-%s", acctest.RandString(6)),
 		"device-secondary_notifications": []string{"secondary@equinix.com"},
 		"acl-resourceName":               "acl-pri",
-		"acl-name":                       fmt.Sprintf("%s-%s", tstResourcePrefix, randString(6)),
-		"acl-description":                randString(50),
+		"acl-name":                       fmt.Sprintf("%s-%s", tstResourcePrefix, acctest.RandString(6)),
+		"acl-description":                acctest.RandString(50),
 		"acl-secondary_resourceName":     "acl-sec",
-		"acl-secondary_name":             fmt.Sprintf("%s-%s", tstResourcePrefix, randString(6)),
-		"acl-secondary_description":      randString(50),
+		"acl-secondary_name":             fmt.Sprintf("%s-%s", tstResourcePrefix, acctest.RandString(6)),
+		"acl-secondary_description":      acctest.RandString(50),
 	}
 
 	contextWithChanges := copyMap(context)
 	contextWithChanges["device-additional_bandwidth"] = 50
 	contextWithChanges["device-secondary_additional_bandwidth"] = 50
 	contextWithChanges["user-resourceName"] = "tst-user"
-	contextWithChanges["user-username"] = fmt.Sprintf("%s-%s", tstResourcePrefix, randString(6))
-	contextWithChanges["user-password"] = randString(10)
+	contextWithChanges["user-username"] = fmt.Sprintf("%s-%s", tstResourcePrefix, acctest.RandString(6))
+	contextWithChanges["user-password"] = acctest.RandString(10)
 	var primary, secondary ne.Device
 	var primaryACL, secondaryACL ne.ACLTemplate
 	var user ne.SSHUser
@@ -546,32 +547,32 @@ func TestAccNetworkDevice_PaloAlto_HA_Self_BYOL(t *testing.T) {
 		"device-self_managed":            true,
 		"connectivity":                   "PRIVATE",
 		"device-byol":                    true,
-		"device-name":                    fmt.Sprintf("%s-%s", tstResourcePrefix, randString(6)),
+		"device-name":                    fmt.Sprintf("%s-%s", tstResourcePrefix, acctest.RandString(6)),
 		"device-metro_code":              metro.(string),
 		"device-type_code":               "PA-VM",
 		"device-package_code":            "VM100",
 		"device-notifications":           []string{"marry@equinix.com", "john@equinix.com"},
-		"device-hostname":                fmt.Sprintf("tf-%s", randString(6)),
+		"device-hostname":                fmt.Sprintf("tf-%s", acctest.RandString(6)),
 		"device-term_length":             1,
 		"device-version":                 "9.0.4",
 		"device-core_count":              2,
-		"device-purchase_order_number":   randString(10),
-		"device-order_reference":         randString(10),
-		"device-secondary_name":          fmt.Sprintf("%s-%s", tstResourcePrefix, randString(6)),
-		"device-secondary_hostname":      fmt.Sprintf("tf-%s", randString(6)),
+		"device-purchase_order_number":   acctest.RandString(10),
+		"device-order_reference":         acctest.RandString(10),
+		"device-secondary_name":          fmt.Sprintf("%s-%s", tstResourcePrefix, acctest.RandString(6)),
+		"device-secondary_hostname":      fmt.Sprintf("tf-%s", acctest.RandString(6)),
 		"device-secondary_notifications": []string{"secondary@equinix.com"},
 		"sshkey-resourceName":            "test",
-		"sshkey-name":                    fmt.Sprintf("%s-%s", tstResourcePrefix, randString(6)),
+		"sshkey-name":                    fmt.Sprintf("%s-%s", tstResourcePrefix, acctest.RandString(6)),
 		"sshkey-public_key":              "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQCXdzXBHaVpKpdO0udnB+4JOgUq7APO2rPXfrevvlZrps98AtlwXXVWZ5duRH5NFNfU4G9HCSiAPsebgjY0fG85tcShpXfHfACLt0tBW8XhfLQP2T6S50FQ1brBdURMDCMsD7duOXqvc0dlbs2/KcswHvuUmqVzob3bz7n1bQ48wIHsPg4ARqYhy5LN3OkllJH/6GEfqi8lKZx01/P/gmJMORcJujuOyXRB+F2iXBVYdhjML3Qg4+tEekBcVZOxUbERRZ0pvQ52Y6wUhn2VsjljixyqeOdmD0m6DayDQgSWms6bKPpBqN7zhXXk4qe8bXT4tQQba65b2CQ2A91jw2KgM/YZNmjyUJ+Rf1cQosJf9twqbAZDZ6rAEmj9zzvQ5vD/CGuzxdVMkePLlUK4VGjPu7cVzhXrnq4318WqZ5/lNiCST8NQ0fssChN8ANUzr/p/wwv3faFMVNmjxXTZMsbMFT/fbb2MVVuqNFN65drntlg6/xEao8gZROuRYiakBx8= user@host",
 	}
 
 	contextWithACLs := copyMap(context)
 	contextWithACLs["acl-resourceName"] = "acl-pri"
-	contextWithACLs["acl-name"] = fmt.Sprintf("%s-%s", tstResourcePrefix, randString(6))
-	contextWithACLs["acl-description"] = randString(50)
+	contextWithACLs["acl-name"] = fmt.Sprintf("%s-%s", tstResourcePrefix, acctest.RandString(6))
+	contextWithACLs["acl-description"] = acctest.RandString(50)
 	contextWithACLs["acl-secondary_resourceName"] = "acl-sec"
-	contextWithACLs["acl-secondary_name"] = fmt.Sprintf("%s-%s", tstResourcePrefix, randString(6))
-	contextWithACLs["acl-secondary_description"] = randString(50)
+	contextWithACLs["acl-secondary_name"] = fmt.Sprintf("%s-%s", tstResourcePrefix, acctest.RandString(6))
+	contextWithACLs["acl-secondary_description"] = acctest.RandString(50)
 	deviceResourceName := fmt.Sprintf("equinix_network_device.%s", context["device-resourceName"].(string))
 	priACLResourceName := fmt.Sprintf("equinix_network_acl_template.%s", contextWithACLs["acl-resourceName"].(string))
 	secACLResourceName := fmt.Sprintf("equinix_network_acl_template.%s", contextWithACLs["acl-secondary_resourceName"].(string))
@@ -620,7 +621,7 @@ func TestAccNetworkDevice_CSRSDWAN_HA_Self_BYOL(t *testing.T) {
 		"device-account_name":                           accountName.(string),
 		"device-self_managed":                           true,
 		"device-byol":                                   true,
-		"device-name":                                   fmt.Sprintf("%s-%s", tstResourcePrefix, randString(6)),
+		"device-name":                                   fmt.Sprintf("%s-%s", tstResourcePrefix, acctest.RandString(6)),
 		"device-metro_code":                             metro.(string),
 		"device-license_file":                           licFile.(string),
 		"device-throughput":                             250,
@@ -631,23 +632,23 @@ func TestAccNetworkDevice_CSRSDWAN_HA_Self_BYOL(t *testing.T) {
 		"device-term_length":                            1,
 		"device-version":                                "16.12.3",
 		"device-core_count":                             2,
-		"device-purchase_order_number":                  randString(10),
-		"device-order_reference":                        randString(10),
+		"device-purchase_order_number":                  acctest.RandString(10),
+		"device-order_reference":                        acctest.RandString(10),
 		"device-vendorConfig_enabled":                   true,
 		"device-vendorConfig_siteId":                    "10",
 		"device-vendorConfig_systemIpAddress":           "1.1.1.1",
-		"device-secondary_name":                         fmt.Sprintf("%s-%s", tstResourcePrefix, randString(6)),
+		"device-secondary_name":                         fmt.Sprintf("%s-%s", tstResourcePrefix, acctest.RandString(6)),
 		"device-secondary_license_file":                 licFile.(string),
 		"device-secondary_notifications":                []string{"secondary@equinix.com"},
 		"device-secondary_vendorConfig_enabled":         true,
 		"device-secondary_vendorConfig_siteId":          "20",
 		"device-secondary_vendorConfig_systemIpAddress": "2.2.2.2",
 		"acl-resourceName":                              "acl-pri",
-		"acl-name":                                      fmt.Sprintf("%s-%s", tstResourcePrefix, randString(6)),
-		"acl-description":                               randString(50),
+		"acl-name":                                      fmt.Sprintf("%s-%s", tstResourcePrefix, acctest.RandString(6)),
+		"acl-description":                               acctest.RandString(50),
 		"acl-secondary_resourceName":                    "acl-sec",
-		"acl-secondary_name":                            fmt.Sprintf("%s-%s", tstResourcePrefix, randString(6)),
-		"acl-secondary_description":                     randString(50),
+		"acl-secondary_name":                            fmt.Sprintf("%s-%s", tstResourcePrefix, acctest.RandString(6)),
+		"acl-secondary_description":                     acctest.RandString(50),
 	}
 
 	deviceResourceName := fmt.Sprintf("equinix_network_device.%s", context["device-resourceName"].(string))
@@ -697,7 +698,7 @@ func TestAccNetworkDevice_Versa_HA_Self_BYOL(t *testing.T) {
 		"device-account_name":                        accountName.(string),
 		"device-self_managed":                        true,
 		"device-byol":                                true,
-		"device-name":                                fmt.Sprintf("%s-%s", tstResourcePrefix, randString(6)),
+		"device-name":                                fmt.Sprintf("%s-%s", tstResourcePrefix, acctest.RandString(6)),
 		"device-metro_code":                          metro.(string),
 		"device-type_code":                           "VERSA_SDWAN",
 		"device-package_code":                        "FLEX_VNF_2",
@@ -705,15 +706,15 @@ func TestAccNetworkDevice_Versa_HA_Self_BYOL(t *testing.T) {
 		"device-term_length":                         1,
 		"device-version":                             "16.1R2S8",
 		"device-core_count":                          2,
-		"device-purchase_order_number":               randString(10),
-		"device-order_reference":                     randString(10),
+		"device-purchase_order_number":               acctest.RandString(10),
+		"device-order_reference":                     acctest.RandString(10),
 		"device-vendorConfig_enabled":                true,
 		"device-vendorConfig_controller1":            controller1.(string),
 		"device-vendorConfig_controller2":            controller2.(string),
 		"device-vendorConfig_localId":                localID.(string),
 		"device-vendorConfig_remoteId":               remoteID.(string),
 		"device-vendorConfig_serialNumber":           serialNumber.(string),
-		"device-secondary_name":                      fmt.Sprintf("%s-%s", tstResourcePrefix, randString(6)),
+		"device-secondary_name":                      fmt.Sprintf("%s-%s", tstResourcePrefix, acctest.RandString(6)),
 		"device-secondary_notifications":             []string{"secondary@equinix.com"},
 		"device-secondary_vendorConfig_enabled":      true,
 		"device-secondary_vendorConfig_controller1":  controller1.(string),
@@ -722,11 +723,11 @@ func TestAccNetworkDevice_Versa_HA_Self_BYOL(t *testing.T) {
 		"device-secondary_vendorConfig_remoteId":     remoteID.(string),
 		"device-secondary_vendorConfig_serialNumber": serialNumber.(string),
 		"acl-resourceName":                           "acl-pri",
-		"acl-name":                                   fmt.Sprintf("%s-%s", tstResourcePrefix, randString(6)),
-		"acl-description":                            randString(50),
+		"acl-name":                                   fmt.Sprintf("%s-%s", tstResourcePrefix, acctest.RandString(6)),
+		"acl-description":                            acctest.RandString(50),
 		"acl-secondary_resourceName":                 "acl-sec",
-		"acl-secondary_name":                         fmt.Sprintf("%s-%s", tstResourcePrefix, randString(6)),
-		"acl-secondary_description":                  randString(50),
+		"acl-secondary_name":                         fmt.Sprintf("%s-%s", tstResourcePrefix, acctest.RandString(6)),
+		"acl-secondary_description":                  acctest.RandString(50),
 	}
 
 	deviceResourceName := fmt.Sprintf("equinix_network_device.%s", context["device-resourceName"].(string))
@@ -764,14 +765,14 @@ func TestAccNetworkDevice_Versa_HA_Self_BYOL(t *testing.T) {
 func TestAccNetworkDevice_CGENIX_HA_Self_BYOL(t *testing.T) {
 	metro, _ := schema.EnvDefaultFunc(networkDeviceMetroEnvVar, "SV")()
 	accountName, _ := schema.EnvDefaultFunc(networkDeviceAccountNameEnvVar, "")()
-	licenseKey, _ := schema.EnvDefaultFunc(networkDeviceCGENIXLicenseKeyEnvVar, randString(10))()
-	licenseSecret, _ := schema.EnvDefaultFunc(networkDeviceCGENIXLicenseSecretEnvVar, randString(10))()
+	licenseKey, _ := schema.EnvDefaultFunc(networkDeviceCGENIXLicenseKeyEnvVar, acctest.RandString(10))()
+	licenseSecret, _ := schema.EnvDefaultFunc(networkDeviceCGENIXLicenseSecretEnvVar, acctest.RandString(10))()
 	context := map[string]interface{}{
 		"device-resourceName":                         "test",
 		"device-account_name":                         accountName.(string),
 		"device-self_managed":                         true,
 		"device-byol":                                 true,
-		"device-name":                                 fmt.Sprintf("%s-%s", tstResourcePrefix, randString(6)),
+		"device-name":                                 fmt.Sprintf("%s-%s", tstResourcePrefix, acctest.RandString(6)),
 		"device-metro_code":                           metro.(string),
 		"device-type_code":                            "CGENIXSDWAN",
 		"device-package_code":                         "3102V",
@@ -779,22 +780,22 @@ func TestAccNetworkDevice_CGENIX_HA_Self_BYOL(t *testing.T) {
 		"device-term_length":                          1,
 		"device-version":                              "5.2.1-b11",
 		"device-core_count":                           2,
-		"device-purchase_order_number":                randString(10),
-		"device-order_reference":                      randString(10),
+		"device-purchase_order_number":                acctest.RandString(10),
+		"device-order_reference":                      acctest.RandString(10),
 		"device-vendorConfig_enabled":                 true,
 		"device-vendorConfig_licenseKey":              licenseKey.(string),
 		"device-vendorConfig_licenseSecret":           licenseSecret.(string),
-		"device-secondary_name":                       fmt.Sprintf("%s-%s", tstResourcePrefix, randString(6)),
+		"device-secondary_name":                       fmt.Sprintf("%s-%s", tstResourcePrefix, acctest.RandString(6)),
 		"device-secondary_notifications":              []string{"secondary@equinix.com"},
 		"device-secondary_vendorConfig_enabled":       true,
 		"device-secondary_vendorConfig_licenseKey":    licenseKey.(string),
 		"device-secondary_vendorConfig_licenseSecret": licenseSecret.(string),
 		"acl-resourceName":                            "acl-pri",
-		"acl-name":                                    fmt.Sprintf("%s-%s", tstResourcePrefix, randString(6)),
-		"acl-description":                             randString(50),
+		"acl-name":                                    fmt.Sprintf("%s-%s", tstResourcePrefix, acctest.RandString(6)),
+		"acl-description":                             acctest.RandString(50),
 		"acl-secondary_resourceName":                  "acl-sec",
-		"acl-secondary_name":                          fmt.Sprintf("%s-%s", tstResourcePrefix, randString(6)),
-		"acl-secondary_description":                   randString(50),
+		"acl-secondary_name":                          fmt.Sprintf("%s-%s", tstResourcePrefix, acctest.RandString(6)),
+		"acl-secondary_description":                   acctest.RandString(50),
 	}
 
 	deviceResourceName := fmt.Sprintf("equinix_network_device.%s", context["device-resourceName"].(string))
@@ -838,7 +839,7 @@ func TestAccNetworkDevice_PaloAlto_Cluster_Self_BYOL(t *testing.T) {
 		"device-account_name":                accountName.(string),
 		"device-self_managed":                true,
 		"device-byol":                        true,
-		"device-name":                        fmt.Sprintf("%s-%s", tstResourcePrefix, randString(6)),
+		"device-name":                        fmt.Sprintf("%s-%s", tstResourcePrefix, acctest.RandString(6)),
 		"device-metro_code":                  metro.(string),
 		"device-type_code":                   "PA-VM",
 		"device-package_code":                "VM100",
@@ -847,22 +848,22 @@ func TestAccNetworkDevice_PaloAlto_Cluster_Self_BYOL(t *testing.T) {
 		"device-version":                     "10.1.3",
 		"device-interface_count":             10,
 		"device-core_count":                  2,
-		"device-cluster_name":                fmt.Sprintf("%s-%s", tstResourcePrefix, randString(6)),
+		"device-cluster_name":                fmt.Sprintf("%s-%s", tstResourcePrefix, acctest.RandString(6)),
 		"device-node0_vendorConfig_enabled":  true,
-		"device-node0_vendorConfig_hostname": fmt.Sprintf("tf-%s", randString(6)),
+		"device-node0_vendorConfig_hostname": fmt.Sprintf("tf-%s", acctest.RandString(6)),
 		"device-node0_license_token":         licenseToken.(string),
 		"device-node1_vendorConfig_enabled":  true,
-		"device-node1_vendorConfig_hostname": fmt.Sprintf("tf-%s", randString(6)),
+		"device-node1_vendorConfig_hostname": fmt.Sprintf("tf-%s", acctest.RandString(6)),
 		"device-node1_license_token":         licenseToken.(string),
 		"sshkey-resourceName":                "test",
-		"sshkey-name":                        fmt.Sprintf("%s-%s", tstResourcePrefix, randString(6)),
+		"sshkey-name":                        fmt.Sprintf("%s-%s", tstResourcePrefix, acctest.RandString(6)),
 		"sshkey-public_key":                  "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQCXdzXBHaVpKpdO0udnB+4JOgUq7APO2rPXfrevvlZrps98AtlwXXVWZ5duRH5NFNfU4G9HCSiAPsebgjY0fG85tcShpXfHfACLt0tBW8XhfLQP2T6S50FQ1brBdURMDCMsD7duOXqvc0dlbs2/KcswHvuUmqVzob3bz7n1bQ48wIHsPg4ARqYhy5LN3OkllJH/6GEfqi8lKZx01/P/gmJMORcJujuOyXRB+F2iXBVYdhjML3Qg4+tEekBcVZOxUbERRZ0pvQ52Y6wUhn2VsjljixyqeOdmD0m6DayDQgSWms6bKPpBqN7zhXXk4qe8bXT4tQQba65b2CQ2A91jw2KgM/YZNmjyUJ+Rf1cQosJf9twqbAZDZ6rAEmj9zzvQ5vD/CGuzxdVMkePLlUK4VGjPu7cVzhXrnq4318WqZ5/lNiCST8NQ0fssChN8ANUzr/p/wwv3faFMVNmjxXTZMsbMFT/fbb2MVVuqNFN65drntlg6/xEao8gZROuRYiakBx8= user@host",
 		"acl-resourceName":                   "acl-cluster",
-		"acl-name":                           fmt.Sprintf("%s-%s", tstResourcePrefix, randString(6)),
-		"acl-description":                    randString(50),
+		"acl-name":                           fmt.Sprintf("%s-%s", tstResourcePrefix, acctest.RandString(6)),
+		"acl-description":                    acctest.RandString(50),
 		"mgmtAcl-resourceName":               "mgmtAcl-cluster",
-		"mgmtAcl-name":                       fmt.Sprintf("%s-%s", tstResourcePrefix, randString(6)),
-		"mgmtAcl-description":                randString(50),
+		"mgmtAcl-name":                       fmt.Sprintf("%s-%s", tstResourcePrefix, acctest.RandString(6)),
+		"mgmtAcl-description":                acctest.RandString(50),
 	}
 
 	deviceResourceName := fmt.Sprintf("equinix_network_device.%s", context["device-resourceName"].(string))

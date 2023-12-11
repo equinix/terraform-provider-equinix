@@ -12,6 +12,7 @@ import (
 	"github.com/equinix/ecx-go/v2"
 	"github.com/equinix/rest-go"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
@@ -85,12 +86,12 @@ func TestAccFabricL2Connection_Port_Single_AWS(t *testing.T) {
 		"port-name":                        portName.(string),
 		"connection-resourceName":          "test",
 		"connection-profile_name":          spName.(string),
-		"connection-name":                  fmt.Sprintf("%s-%s", tstResourcePrefix, randString(6)),
+		"connection-name":                  fmt.Sprintf("%s-%s", tstResourcePrefix, acctest.RandString(6)),
 		"connection-speed":                 50,
 		"connection-speed_unit":            "MB",
 		"connection-notifications":         []string{"marry@equinix.com", "john@equinix.com"},
-		"connection-purchase_order_number": randString(10),
-		"connection-vlan_stag":             randInt(2000),
+		"connection-purchase_order_number": acctest.RandString(10),
+		"connection-vlan_stag":             acctest.RandIntRange(0, 2000),
 		"connection-seller_region":         "us-west-1",
 		"connection-seller_metro_code":     "SV",
 		"connection-authorization_key":     authKey.(string),
@@ -135,21 +136,21 @@ func TestAccFabricL2Connection_Port_HA_Azure(t *testing.T) {
 		"port-secondary_name":              secPortName.(string),
 		"connection-resourceName":          "test",
 		"connection-profile_name":          spName.(string),
-		"connection-name":                  fmt.Sprintf("%s-%s", tstResourcePrefix, randString(6)),
+		"connection-name":                  fmt.Sprintf("%s-%s", tstResourcePrefix, acctest.RandString(6)),
 		"connection-speed":                 50,
 		"connection-speed_unit":            "MB",
 		"connection-notifications":         []string{"marry@equinix.com", "john@equinix.com"},
-		"connection-purchase_order_number": randString(10),
-		"connection-vlan_stag":             randInt(2000),
+		"connection-purchase_order_number": acctest.RandString(10),
+		"connection-vlan_stag":             acctest.RandIntRange(0, 2000),
 		"connection-seller_metro_code":     "LD",
 		"connection-authorization_key":     serviceKey,
 		"connection-named_tag":             "PRIVATE",
-		"connection-secondary_name":        fmt.Sprintf("%s-%s", tstResourcePrefix, randString(6)),
-		"connection-secondary_vlan_stag":   randInt(2000),
+		"connection-secondary_name":        fmt.Sprintf("%s-%s", tstResourcePrefix, acctest.RandString(6)),
+		"connection-secondary_vlan_stag":   acctest.RandIntRange(0, 2000),
 	}
 	contextWithChanges := copyMap(context)
-	contextWithChanges["connection-name"] = fmt.Sprintf("%s-%s", tstResourcePrefix, randString(6))
-	contextWithChanges["connection-secondary_name"] = fmt.Sprintf("%s-%s", tstResourcePrefix, randString(6))
+	contextWithChanges["connection-name"] = fmt.Sprintf("%s-%s", tstResourcePrefix, acctest.RandString(6))
+	contextWithChanges["connection-secondary_name"] = fmt.Sprintf("%s-%s", tstResourcePrefix, acctest.RandString(6))
 	resourceName := fmt.Sprintf("equinix_ecx_l2_connection.%s", context["connection-resourceName"].(string))
 	var primary, secondary ecx.L2Connection
 	resource.ParallelTest(t, resource.TestCase{
@@ -207,35 +208,35 @@ func TestAccFabricL2Connection_Device_HA_GCP(t *testing.T) {
 		"device-account_name":                      accountName.(string),
 		"device-self_managed":                      true,
 		"device-byol":                              true,
-		"device-name":                              fmt.Sprintf("%s-%s", tstResourcePrefix, randString(6)),
+		"device-name":                              fmt.Sprintf("%s-%s", tstResourcePrefix, acctest.RandString(6)),
 		"device-metro_code":                        deviceMetro.(string),
 		"device-type_code":                         "PA-VM",
 		"device-package_code":                      "VM100",
 		"device-notifications":                     []string{"marry@equinix.com", "john@equinix.com"},
-		"device-hostname":                          fmt.Sprintf("tf-%s", randString(6)),
+		"device-hostname":                          fmt.Sprintf("tf-%s", acctest.RandString(6)),
 		"device-term_length":                       1,
 		"device-version":                           "9.0.4",
 		"device-core_count":                        2,
-		"device-purchase_order_number":             randString(10),
-		"device-order_reference":                   randString(10),
-		"device-secondary_name":                    fmt.Sprintf("%s-%s", tstResourcePrefix, randString(6)),
-		"device-secondary_hostname":                fmt.Sprintf("tf-%s", randString(6)),
+		"device-purchase_order_number":             acctest.RandString(10),
+		"device-order_reference":                   acctest.RandString(10),
+		"device-secondary_name":                    fmt.Sprintf("%s-%s", tstResourcePrefix, acctest.RandString(6)),
+		"device-secondary_hostname":                fmt.Sprintf("tf-%s", acctest.RandString(6)),
 		"device-secondary_notifications":           []string{"secondary@equinix.com"},
 		"sshkey-resourceName":                      "test",
-		"sshkey-name":                              fmt.Sprintf("%s-%s", tstResourcePrefix, randString(6)),
+		"sshkey-name":                              fmt.Sprintf("%s-%s", tstResourcePrefix, acctest.RandString(6)),
 		"sshkey-public_key":                        "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQCXdzXBHaVpKpdO0udnB+4JOgUq7APO2rPXfrevvlZrps98AtlwXXVWZ5duRH5NFNfU4G9HCSiAPsebgjY0fG85tcShpXfHfACLt0tBW8XhfLQP2T6S50FQ1brBdURMDCMsD7duOXqvc0dlbs2/KcswHvuUmqVzob3bz7n1bQ48wIHsPg4ARqYhy5LN3OkllJH/6GEfqi8lKZx01/P/gmJMORcJujuOyXRB+F2iXBVYdhjML3Qg4+tEekBcVZOxUbERRZ0pvQ52Y6wUhn2VsjljixyqeOdmD0m6DayDQgSWms6bKPpBqN7zhXXk4qe8bXT4tQQba65b2CQ2A91jw2KgM/YZNmjyUJ+Rf1cQosJf9twqbAZDZ6rAEmj9zzvQ5vD/CGuzxdVMkePLlUK4VGjPu7cVzhXrnq4318WqZ5/lNiCST8NQ0fssChN8ANUzr/p/wwv3faFMVNmjxXTZMsbMFT/fbb2MVVuqNFN65drntlg6/xEao8gZROuRYiakBx8= user@host",
 		"connection-resourceName":                  "test",
-		"connection-name":                          fmt.Sprintf("%s-%s", tstResourcePrefix, randString(6)),
+		"connection-name":                          fmt.Sprintf("%s-%s", tstResourcePrefix, acctest.RandString(6)),
 		"connection-profile_name":                  priSPName.(string),
 		"connection-speed":                         50,
 		"connection-speed_unit":                    "MB",
 		"connection-notifications":                 []string{"marry@equinix.com", "john@equinix.com"},
-		"connection-purchase_order_number":         randString(10),
+		"connection-purchase_order_number":         acctest.RandString(10),
 		"connection-seller_metro_code":             "SV",
 		"connection-seller_region":                 "us-west2",
 		"connection-authorization_key":             priServiceKey.(string),
 		"connection-device_interface_id":           5,
-		"connection-secondary_name":                fmt.Sprintf("%s-%s", tstResourcePrefix, randString(6)),
+		"connection-secondary_name":                fmt.Sprintf("%s-%s", tstResourcePrefix, acctest.RandString(6)),
 		"connection-secondary_profile_name":        secSPName.(string),
 		"connection-secondary_speed":               100,
 		"connection-secondary_speed_unit":          "MB",
