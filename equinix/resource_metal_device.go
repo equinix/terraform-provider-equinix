@@ -20,6 +20,7 @@ import (
 
 	"github.com/equinix/terraform-provider-equinix/internal/config"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -44,10 +45,10 @@ func resourceMetalDevice() *schema.Resource {
 			Update: schema.DefaultTimeout(30 * time.Minute),
 			Delete: schema.DefaultTimeout(30 * time.Minute),
 		},
-		CreateContext:      diagnosticsWrapper(resourceMetalDeviceCreate),
-		ReadWithoutTimeout: diagnosticsWrapper(resourceMetalDeviceRead),
-		UpdateContext:      diagnosticsWrapper(resourceMetalDeviceUpdate),
-		DeleteContext:      diagnosticsWrapper(resourceMetalDeviceDelete),
+		CreateContext:      resourceMetalDeviceCreate,
+		ReadWithoutTimeout: resourceMetalDeviceRead,
+		UpdateContext:      resourceMetalDeviceUpdate,
+		DeleteContext:      resourceMetalDeviceDelete,
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
@@ -480,7 +481,7 @@ func reinstallDisabledAndNoChangesAllowed(attribute string) customdiff.ResourceC
 	}
 }
 
-func resourceMetalDeviceCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) error {
+func resourceMetalDeviceCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	meta.(*config.Config).AddModuleToMetalUserAgent(d)
 	client := meta.(*config.Config).Metal
 
@@ -504,7 +505,7 @@ func resourceMetalDeviceCreate(ctx context.Context, d *schema.ResourceData, meta
 	metroRaw, metroOk := d.GetOk("metro")
 
 	if !facsOk && !metroOk {
-		return errors.New("one of facilies and metro must be configured")
+		return diag.Errorf("one of facilies and metro must be configured")
 	}
 
 	if facsOk {
@@ -530,7 +531,7 @@ func resourceMetalDeviceCreate(ctx context.Context, d *schema.ResourceData, meta
 	if attr, ok := d.GetOk("termination_time"); ok {
 		tt, err := time.ParseInLocation(time.RFC3339, attr.(string), time.UTC)
 		if err != nil {
-			return err
+			return diag.FromErr(err)
 		}
 		createRequest.TerminationTime = &packngo.Timestamp{Time: tt}
 	}
@@ -540,29 +541,29 @@ func resourceMetalDeviceCreate(ctx context.Context, d *schema.ResourceData, meta
 	} else {
 		wfrd := "wait_for_reservation_deprovision"
 		if d.Get(wfrd).(bool) {
-			return equinix_errors.FriendlyError(fmt.Errorf("You can't set %s when not using a hardware reservation", wfrd))
+			return diag.FromErr(equinix_errors.FriendlyError(fmt.Errorf("You can't set %s when not using a hardware reservation", wfrd)))
 		}
 	}
 
 	if createRequest.OS == "custom_ipxe" {
 		if createRequest.IPXEScriptURL == "" && createRequest.UserData == "" {
-			return equinix_errors.FriendlyError(errors.New("\"ipxe_script_url\" or \"user_data\"" +
-				" must be provided when \"custom_ipxe\" OS is selected."))
+			return diag.FromErr(equinix_errors.FriendlyError(errors.New("\"ipxe_script_url\" or \"user_data\"" +
+				" must be provided when \"custom_ipxe\" OS is selected.")))
 		}
 
 		// ipxe_script_url + user_data is OK, unless user_data is an ipxe script in
 		// which case it's an error.
 		if createRequest.IPXEScriptURL != "" {
 			if matchIPXEScript.MatchString(createRequest.UserData) {
-				return equinix_errors.FriendlyError(errors.New("\"user_data\" should not be an iPXE " +
-					"script when \"ipxe_script_url\" is also provided."))
+				return diag.Errorf("\"user_data\" should not be an iPXE " +
+					"script when \"ipxe_script_url\" is also provided.")
 			}
 		}
 	}
 
 	if createRequest.OS != "custom_ipxe" && createRequest.IPXEScriptURL != "" {
-		return equinix_errors.FriendlyError(errors.New("\"ipxe_script_url\" argument provided, but" +
-			" OS is not \"custom_ipxe\". Please verify and fix device arguments."))
+		return diag.Errorf("\"ipxe_script_url\" argument provided, but" +
+			" OS is not \"custom_ipxe\". Please verify and fix device arguments.")
 	}
 
 	if attr, ok := d.GetOk("always_pxe"); ok {
@@ -587,12 +588,12 @@ func resourceMetalDeviceCreate(ctx context.Context, d *schema.ResourceData, meta
 	if attr, ok := d.GetOk("storage"); ok {
 		s, err := structure.NormalizeJsonString(attr.(string))
 		if err != nil {
-			return fmt.Errorf("storage param contains invalid JSON: %s", err)
+			return diag.Errorf("storage param contains invalid JSON: %s", err)
 		}
 		var cpr packngo.CPR
 		err = json.Unmarshal([]byte(s), &cpr)
 		if err != nil {
-			return fmt.Errorf("error parsing Storage string: %s", err)
+			return diag.Errorf("error parsing Storage string: %s", err)
 		}
 		createRequest.Storage = &cpr
 	}
@@ -604,20 +605,20 @@ func resourceMetalDeviceCreate(ctx context.Context, d *schema.ResourceData, meta
 		if equinix_errors.IsNotFound(retErr) {
 			retErr = fmt.Errorf("%s, make sure project \"%s\" exists", retErr, createRequest.ProjectID)
 		}
-		return retErr
+		return diag.FromErr(retErr)
 	}
 
 	d.SetId(newDevice.ID)
 
 	createTimeout := d.Timeout(schema.TimeoutCreate) - 30*time.Second - time.Since(start)
 	if err = waitForActiveDevice(ctx, d, meta, createTimeout); err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	return resourceMetalDeviceRead(ctx, d, meta)
 }
 
-func resourceMetalDeviceRead(ctx context.Context, d *schema.ResourceData, meta interface{}) error {
+func resourceMetalDeviceRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	meta.(*config.Config).AddModuleToMetalGoUserAgent(d)
 	client := meta.(*config.Config).Metalgo
 
@@ -634,7 +635,7 @@ func resourceMetalDeviceRead(ctx context.Context, d *schema.ResourceData, meta i
 			return nil
 		}
 
-		return err
+		return diag.FromErr(err)
 	}
 
 	d.Set("hostname", device.GetHostname())
@@ -658,12 +659,12 @@ func resourceMetalDeviceRead(ctx context.Context, d *schema.ResourceData, meta i
 	if device.Storage != nil {
 		rawStorageBytes, err := json.Marshal(device.Storage)
 		if err != nil {
-			return fmt.Errorf("[ERR] Error getting storage JSON string for device (%s): %s", d.Id(), err)
+			return diag.Errorf("[ERR] Error getting storage JSON string for device (%s): %s", d.Id(), err)
 		}
 
 		storageString, err := structure.NormalizeJsonString(string(rawStorageBytes))
 		if err != nil {
-			return fmt.Errorf("[ERR] Error normalizing storage JSON string for device (%s): %s", d.Id(), err)
+			return diag.Errorf("[ERR] Error normalizing storage JSON string for device (%s): %s", d.Id(), err)
 		}
 		d.Set("storage", storageString)
 	}
@@ -673,7 +674,7 @@ func resourceMetalDeviceRead(ctx context.Context, d *schema.ResourceData, meta i
 
 	networkType, err := getNetworkType(device)
 	if err != nil {
-		return fmt.Errorf("[ERR] Error computing network type for device (%s): %s", d.Id(), err)
+		return diag.Errorf("[ERR] Error computing network type for device (%s): %s", d.Id(), err)
 	}
 	d.Set("network_type", networkType)
 
@@ -724,7 +725,7 @@ func resourceMetalDeviceRead(ctx context.Context, d *schema.ResourceData, meta i
 	return nil
 }
 
-func resourceMetalDeviceUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) error {
+func resourceMetalDeviceUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	meta.(*config.Config).AddModuleToMetalUserAgent(d)
 	client := meta.(*config.Config).Metal
 
@@ -736,7 +737,7 @@ func resourceMetalDeviceUpdate(ctx context.Context, d *schema.ResourceData, meta
 			action = client.Devices.Unlock
 		}
 		if _, err := action(d.Id()); err != nil {
-			return equinix_errors.FriendlyError(err)
+			return diag.FromErr(equinix_errors.FriendlyError(err))
 		}
 	}
 	ur := packngo.DeviceUpdateRequest{}
@@ -768,7 +769,7 @@ func resourceMetalDeviceUpdate(ctx context.Context, d *schema.ResourceData, meta
 			}
 			ur.Tags = &sts
 		default:
-			return equinix_errors.FriendlyError(fmt.Errorf("garbage in tags: %s", ts))
+			return diag.Errorf("garbage in tags: %s", ts)
 		}
 	}
 	if d.HasChange("ipxe_script_url") {
@@ -783,12 +784,12 @@ func resourceMetalDeviceUpdate(ctx context.Context, d *schema.ResourceData, meta
 	start := time.Now()
 	if !reflect.DeepEqual(ur, packngo.DeviceUpdateRequest{}) {
 		if _, _, err := client.Devices.Update(d.Id(), &ur); err != nil {
-			return equinix_errors.FriendlyError(err)
+			return diag.FromErr(equinix_errors.FriendlyError(err))
 		}
 	}
 
 	if err := doReinstall(ctx, client, d, meta, start); err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	return resourceMetalDeviceRead(ctx, d, meta)
@@ -831,7 +832,7 @@ func doReinstall(ctx context.Context, client *packngo.Client, d *schema.Resource
 	return nil
 }
 
-func resourceMetalDeviceDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) error {
+func resourceMetalDeviceDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	meta.(*config.Config).AddModuleToMetalUserAgent(d)
 	client := meta.(*config.Config).Metal
 
@@ -845,7 +846,7 @@ func resourceMetalDeviceDelete(ctx context.Context, d *schema.ResourceData, meta
 
 	resp, err := client.Devices.Delete(d.Id(), fdv)
 	if equinix_errors.IgnoreResponseErrors(equinix_errors.HttpForbidden, equinix_errors.HttpNotFound)(resp, err) != nil {
-		return equinix_errors.FriendlyError(err)
+		return diag.FromErr(equinix_errors.FriendlyError(err))
 	}
 
 	resId, resIdOk := d.GetOk("deployed_hardware_reservation_id")
@@ -857,7 +858,7 @@ func resourceMetalDeviceDelete(ctx context.Context, d *schema.ResourceData, meta
 
 			err := waitUntilReservationProvisionable(ctx, client, resId.(string), d.Id(), 10*time.Second, timeout, 3*time.Second)
 			if err != nil {
-				return err
+				return diag.FromErr(err)
 			}
 		}
 	}
