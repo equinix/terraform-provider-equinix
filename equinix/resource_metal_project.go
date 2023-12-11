@@ -3,7 +3,6 @@ package equinix
 import (
 	"fmt"
 	"path"
-	"regexp"
 	"strings"
 
 	equinix_errors "github.com/equinix/terraform-provider-equinix/internal/errors"
@@ -14,8 +13,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/packethost/packngo"
 )
-
-var uuidRE = regexp.MustCompile("^[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-4[a-fA-F0-9]{3}-[8|9|aA|bB][a-fA-F0-9]{3}-[a-fA-F0-9]{12}$")
 
 func resourceMetalProject() *schema.Resource {
 	return &schema.Resource{
@@ -57,7 +54,7 @@ func resourceMetalProject() *schema.Resource {
 					return strings.EqualFold(strings.Trim(old, `"`), strings.Trim(new, `"`))
 				},
 				ValidateFunc: validation.Any(
-					validation.StringMatch(uuidRE, "must be a valid UUID"),
+					validation.IsUUID,
 					validation.StringIsEmpty,
 				),
 			},
@@ -70,7 +67,7 @@ func resourceMetalProject() *schema.Resource {
 				DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
 					return strings.EqualFold(strings.Trim(old, `"`), strings.Trim(new, `"`))
 				},
-				ValidateFunc: validation.StringMatch(uuidRE, "must be a valid UUID"),
+				ValidateFunc: validation.IsUUID,
 			},
 			"bgp_config": {
 				Type:        schema.TypeList,

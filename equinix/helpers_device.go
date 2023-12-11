@@ -235,7 +235,7 @@ func ipAddressSchema() *schema.Resource {
 				MinItems:    1,
 				Elem: &schema.Schema{
 					Type:         schema.TypeString,
-					ValidateFunc: validation.StringMatch(uuidRE, "must be a valid UUID"),
+					ValidateFunc: validation.IsUUID,
 				},
 			},
 		},
