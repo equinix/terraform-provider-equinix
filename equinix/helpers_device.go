@@ -16,7 +16,7 @@ import (
 
 	equinix_errors "github.com/equinix/terraform-provider-equinix/internal/errors"
 
-	metalv1 "github.com/equinix-labs/metal-go/metal/v1"
+	"github.com/equinix/equinix-sdk-go/services/metalv1"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
