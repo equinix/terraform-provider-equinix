@@ -233,13 +233,6 @@ func configureProvider(ctx context.Context, d *schema.ResourceData, p *schema.Pr
 	return &config, nil
 }
 
-var resourceDefaultTimeouts = &schema.ResourceTimeout{
-	Create:  schema.DefaultTimeout(60 * time.Minute),
-	Update:  schema.DefaultTimeout(60 * time.Minute),
-	Delete:  schema.DefaultTimeout(60 * time.Minute),
-	Default: schema.DefaultTimeout(60 * time.Minute),
-}
-
 func expandListToStringList(list []interface{}) []string {
 	result := make([]string, len(list))
 	for i, v := range list {
