@@ -15,8 +15,8 @@ import (
 	"time"
 
 	v4 "github.com/equinix-labs/fabric-go/fabric/v4"
-	metalv1 "github.com/equinix-labs/metal-go/metal/v1"
 	"github.com/equinix/ecx-go/v2"
+	"github.com/equinix/equinix-sdk-go/services/metalv1"
 	"github.com/equinix/ne-go"
 	"github.com/equinix/oauth2-go"
 	"github.com/equinix/terraform-provider-equinix/version"
