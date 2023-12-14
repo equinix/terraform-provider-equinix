@@ -379,6 +379,26 @@ func TestNetworkDevice_statusDeleteWaitConfiguration(t *testing.T) {
 	assert.Equal(t, delay, waitConfig.MinTimeout, "Device status wait configuration min timeout matches")
 }
 
+func TestNetworkDevice_statusResourceUpgradeWaitConfiguration(t *testing.T) {
+	// given
+	deviceID := "test"
+	var queriedDeviceID string
+	fetchFunc := func(uuid string) (*ne.Device, error) {
+		queriedDeviceID = uuid
+		return &ne.Device{Status: ne.String(ne.DeviceStateProvisioned)}, nil
+	}
+	delay := 100 * time.Millisecond
+	timeout := 10 * time.Minute
+	// when
+	waitConfig := createNetworkDeviceStatusResourceUpgradeWaitConfiguration(fetchFunc, deviceID, delay, timeout)
+	_, err := waitConfig.WaitForStateContext(context.Background())
+	// then
+	assert.Nil(t, err, "WaitForState does not return an error")
+	assert.Equal(t, deviceID, queriedDeviceID, "Queried device ID matches")
+	assert.Equal(t, timeout, waitConfig.Timeout, "Device status wait configuration timeout matches")
+	assert.Equal(t, delay, waitConfig.MinTimeout, "Device status wait configuration min timeout matches")
+}
+
 func TestNetworkDevice_licenseStatusWaitConfiguration(t *testing.T) {
 	// given
 	deviceID := "test"

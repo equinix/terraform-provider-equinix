@@ -425,7 +425,6 @@ func createNetworkDeviceSchema() map[string]*schema.Schema {
 		neDeviceSchemaNames["CoreCount"]: {
 			Type:         schema.TypeInt,
 			Required:     true,
-			ForceNew:     true,
 			ValidateFunc: validation.IntAtLeast(1),
 			Description:  neDeviceDescriptions["CoreCount"],
 		},
@@ -959,7 +958,7 @@ func resourceNetworkDeviceUpdate(ctx context.Context, d *schema.ResourceData, m 
 	m.(*config.Config).AddModuleToNEUserAgent(&client, d)
 	var diags diag.Diagnostics
 	supportedChanges := []string{
-		neDeviceSchemaNames["Name"], neDeviceSchemaNames["TermLength"],
+		neDeviceSchemaNames["Name"], neDeviceSchemaNames["TermLength"], neDeviceSchemaNames["CoreCount"],
 		neDeviceSchemaNames["Notifications"], neDeviceSchemaNames["AdditionalBandwidth"],
 		neDeviceSchemaNames["ACLTemplateUUID"], neDeviceSchemaNames["MgmtAclTemplateUuid"],
 	}
@@ -1499,6 +1498,8 @@ func fillNetworkDeviceUpdateRequest(updateReq ne.DeviceUpdateRequest, changes ma
 			updateReq.WithTermLength(changeValue.(int))
 		case neDeviceSchemaNames["Notifications"]:
 			updateReq.WithNotifications(expandSetToStringList(changeValue.(*schema.Set)))
+		case neDeviceSchemaNames["CoreCount"]:
+			updateReq.WithCore(changeValue.(int))
 		case neDeviceSchemaNames["AdditionalBandwidth"]:
 			updateReq.WithAdditionalBandwidth(changeValue.(int))
 		case neDeviceSchemaNames["ACLTemplateUUID"]:
@@ -1530,6 +1531,11 @@ func getNetworkDeviceStateChangeConfigs(c ne.Client, deviceID string, timeout ti
 	if _, found := changes[neDeviceSchemaNames["AdditionalBandwidth"]]; found {
 		configs = append(configs,
 			createNetworkDeviceAdditionalBandwidthStatusWaitConfiguration(c.GetDeviceAdditionalBandwidthDetails, deviceID, 1*time.Second, timeout),
+		)
+	}
+	if _, found := changes[neDeviceSchemaNames["CoreCount"]]; found {
+		configs = append(configs,
+			createNetworkDeviceStatusResourceUpgradeWaitConfiguration(c.GetDevice, deviceID, 5*time.Second, timeout),
 		)
 	}
 	return configs
@@ -1588,6 +1594,19 @@ func createNetworkDeviceStatusDeleteWaitConfiguration(fetchFunc getDevice, id st
 	}
 	target := []string{
 		ne.DeviceStateDeprovisioned,
+	}
+	return createNetworkDeviceStatusWaitConfiguration(fetchFunc, id, delay, timeout, target, pending)
+}
+
+func createNetworkDeviceStatusResourceUpgradeWaitConfiguration(fetchFunc getDevice, id string, delay time.Duration, timeout time.Duration) *retry.StateChangeConf {
+	pending := []string{
+		ne.DeviceStateResourceUpgradeInProgress,
+		ne.DeviceStateWaitingPrimary,
+		ne.DeviceStateWaitingSecondary,
+		ne.DeviceStateWaitingClusterNodes,
+	}
+	target := []string{
+		ne.DeviceStateProvisioned,
 	}
 	return createNetworkDeviceStatusWaitConfiguration(fetchFunc, id, delay, timeout, target, pending)
 }

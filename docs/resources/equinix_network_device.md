@@ -227,7 +227,7 @@ The following arguments are supported:
 * `hostname` - (Optional) Device hostname prefix.
 * `package_code` - (Required) Device software package code.
 * `version` - (Required) Device software software version.
-* `core_count` - (Required) Number of CPU cores used by device.
+* `core_count` - (Required) Number of CPU cores used by device. (**NOTE: Use this field to resize your device. When resizing your HA devices, primary device will be upgraded first. If the upgrade failed, device will be automatically rolled back to the previous state with original core number.**)
 * `term_length` - (Required) Device term length.
 * `self_managed` - (Optional) Boolean value that determines device management mode, i.e.,
 `self-managed` or `Equinix-managed` (default).
@@ -356,7 +356,7 @@ In addition to all arguments above, the following attributes are exported:
 * `status` - Device provisioning status. Possible values are
   `INITIALIZING`, `PROVISIONING`, `WAITING_FOR_PRIMARY`, `WAITING_FOR_SECONDARY`,
   `WAITING_FOR_REPLICA_CLUSTER_NODES`, `CLUSTER_SETUP_IN_PROGRESS`, `FAILED`, `PROVISIONED`,
-  `DEPROVISIONING`, `DEPROVISIONED`.
+  `DEPROVISIONING`, `DEPROVISIONED`, `RESOURCE_UPGRADE_IN_PROGRESS`, `RESOURCE_UPGRADE_FAILED`.
 * `license_status` - Device license registration status. Possible values are `APPLYING_LICENSE`,
   `REGISTERED`, `APPLIED`, `WAITING_FOR_CLUSTER_SETUP`, `REGISTRATION_FAILED`.
 * `license_file_id` - Unique identifier of applied license file.
