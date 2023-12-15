@@ -394,7 +394,7 @@ This resource provides the following [Timeouts configuration](https://www.terraf
 options:
 
 * create - Default is 90 minutes
-* update - Default is 30 minutes
+* update - Default is 90 minutes
 * delete - Default is 30 minutes
 
 ## Import

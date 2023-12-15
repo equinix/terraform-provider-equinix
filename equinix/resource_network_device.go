@@ -205,7 +205,7 @@ func resourceNetworkDevice() *schema.Resource {
 		Schema: createNetworkDeviceSchema(),
 		Timeouts: &schema.ResourceTimeout{
 			Create: schema.DefaultTimeout(90 * time.Minute),
-			Update: schema.DefaultTimeout(30 * time.Minute),
+			Update: schema.DefaultTimeout(90 * time.Minute),
 			Delete: schema.DefaultTimeout(30 * time.Minute),
 		},
 		Description: "Resource allows creation and management of Equinix Network Edge virtual devices",
