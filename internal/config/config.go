@@ -28,6 +28,15 @@ import (
 	xoauth2 "golang.org/x/oauth2"
 )
 
+const (
+	EndpointEnvVar       = "EQUINIX_API_ENDPOINT"
+	ClientIDEnvVar       = "EQUINIX_API_CLIENTID"
+	ClientSecretEnvVar   = "EQUINIX_API_CLIENTSECRET"
+	ClientTokenEnvVar    = "EQUINIX_API_TOKEN"
+	ClientTimeoutEnvVar  = "EQUINIX_API_TIMEOUT"
+	MetalAuthTokenEnvVar = "METAL_AUTH_TOKEN"
+)
+
 type ProviderMeta struct {
 	ModuleName string `cty:"module_name"`
 }

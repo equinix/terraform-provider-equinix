@@ -1,4 +1,4 @@
-package equinix
+package metal_project_ssh_key_test
 
 import (
 	"fmt"
@@ -7,6 +7,8 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+
+	"github.com/equinix/terraform-provider-equinix/internal/acceptance"
 )
 
 func TestAccDataSourceMetalProjectSSHKey_bySearch(t *testing.T) {
@@ -19,10 +21,10 @@ func TestAccDataSourceMetalProjectSSHKey_bySearch(t *testing.T) {
 	}
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                  func() { testAccPreCheck(t) },
-		Providers:                 testAccProviders,
+		PreCheck:                  func() { acceptance.TestAccPreCheckMetal(t) },
+		Providers:                 acceptance.TestAccProviders,
 		PreventPostDestroyRefresh: true,
-		CheckDestroy:              testAccMetalSSHKeyCheckDestroyed,
+		CheckDestroy:              testAccMetalProjectSSHKeyCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccDataSourceMetalProjectSSHKeyConfig_bySearch(keyName, publicKeyMaterial),
@@ -58,10 +60,10 @@ func TestAccDataSourceMetalProjectSSHKeyDataSource_yID(t *testing.T) {
 	}
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                  func() { testAccPreCheck(t) },
-		Providers:                 testAccProviders,
+		PreCheck:                  func() { acceptance.TestAccPreCheckMetal(t) },
+		Providers:                 acceptance.TestAccProviders,
 		PreventPostDestroyRefresh: true,
-		CheckDestroy:              testAccMetalSSHKeyCheckDestroyed,
+		CheckDestroy:              testAccMetalProjectSSHKeyCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccDataSourceMetalProjectSSHKeyDataSourceConfig_byID(keyName, publicKeyMaterial),
