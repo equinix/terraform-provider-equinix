@@ -443,13 +443,3 @@ func schemaSetToMap(set *schema.Set) map[int]interface{} {
 	}
 	return transformed
 }
-
-func diagnosticsWrapper(fn func(ctx context.Context, d *schema.ResourceData, meta interface{}) error) func(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	return func(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-		if err := fn(ctx, d, meta); err != nil {
-			return diag.FromErr(err)
-		}
-
-		return nil
-	}
-}

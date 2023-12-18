@@ -6,7 +6,7 @@ import (
 
 func dataSourceMetalPort() *schema.Resource {
 	return &schema.Resource{
-		ReadWithoutTimeout: diagnosticsWrapper(resourceMetalPortRead),
+		ReadWithoutTimeout: resourceMetalPortRead,
 
 		Schema: map[string]*schema.Schema{
 			"port_id": {

@@ -2,7 +2,6 @@ package equinix
 
 import (
 	"context"
-	"fmt"
 	"log"
 	"reflect"
 	"regexp"
@@ -16,6 +15,7 @@ import (
 
 	"github.com/equinix/terraform-provider-equinix/internal/config"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/packethost/packngo"
@@ -23,10 +23,10 @@ import (
 
 func resourceMetalVirtualCircuit() *schema.Resource {
 	return &schema.Resource{
-		ReadWithoutTimeout:   diagnosticsWrapper(resourceMetalVirtualCircuitRead),
-		CreateContext:        diagnosticsWrapper(resourceMetalVirtualCircuitCreate),
-		UpdateWithoutTimeout: diagnosticsWrapper(resourceMetalVirtualCircuitUpdate),
-		DeleteContext:        diagnosticsWrapper(resourceMetalVirtualCircuitDelete),
+		ReadWithoutTimeout:   resourceMetalVirtualCircuitRead,
+		CreateContext:        resourceMetalVirtualCircuitCreate,
+		UpdateWithoutTimeout: resourceMetalVirtualCircuitUpdate,
+		DeleteContext:        resourceMetalVirtualCircuitDelete,
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
@@ -145,7 +145,7 @@ func resourceMetalVirtualCircuit() *schema.Resource {
 	}
 }
 
-func resourceMetalVirtualCircuitCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) error {
+func resourceMetalVirtualCircuitCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	meta.(*config.Config).AddModuleToMetalUserAgent(d)
 	client := meta.(*config.Config).Metal
 	vncr := packngo.VCCreateRequest{
@@ -175,16 +175,16 @@ func resourceMetalVirtualCircuitCreate(ctx context.Context, d *schema.ResourceDa
 	}
 	conn, _, err := client.Connections.Get(connId, nil)
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 	if conn.Status == string(packngo.VCStatusPending) {
-		return fmt.Errorf("Connection request with name %s and ID %s wasn't approved yet", conn.Name, conn.ID)
+		return diag.Errorf("Connection request with name %s and ID %s wasn't approved yet", conn.Name, conn.ID)
 	}
 
 	vc, _, err := client.VirtualCircuits.Create(projectId, connId, portId, &vncr, nil)
 	if err != nil {
 		log.Printf("[DEBUG] Error creating virtual circuit: %s", err)
-		return err
+		return diag.FromErr(err)
 	}
 	// TODO: offer to wait while VCStatusPending
 	createWaiter := getVCStateWaiter(
@@ -197,7 +197,7 @@ func resourceMetalVirtualCircuitCreate(ctx context.Context, d *schema.ResourceDa
 
 	_, err = createWaiter.WaitForStateContext(ctx)
 	if err != nil {
-		return fmt.Errorf("Error waiting for virtual circuit %s to be created: %s", vc.ID, err.Error())
+		return diag.Errorf("Error waiting for virtual circuit %s to be created: %s", vc.ID, err.Error())
 	}
 
 	d.SetId(vc.ID)
@@ -205,7 +205,7 @@ func resourceMetalVirtualCircuitCreate(ctx context.Context, d *schema.ResourceDa
 	return resourceMetalVirtualCircuitRead(ctx, d, meta)
 }
 
-func resourceMetalVirtualCircuitRead(ctx context.Context, d *schema.ResourceData, meta interface{}) error {
+func resourceMetalVirtualCircuitRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	meta.(*config.Config).AddModuleToMetalUserAgent(d)
 	client := meta.(*config.Config).Metal
 	vcId := d.Id()
@@ -215,7 +215,7 @@ func resourceMetalVirtualCircuitRead(ctx context.Context, d *schema.ResourceData
 		&packngo.GetOptions{Includes: []string{"project", "virtual_network", "vrf"}},
 	)
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	// TODO: use API field from VC responses when available The regexp is
@@ -232,7 +232,7 @@ func resourceMetalVirtualCircuitRead(ctx context.Context, d *schema.ResourceData
 		log.Printf("[DEBUG] Could not parse connection and port ID from port href %s", vc.Port.Href.Href)
 	}
 
-	return equinix_schema.SetMap(d, map[string]interface{}{
+	err = equinix_schema.SetMap(d, map[string]interface{}{
 		"project_id": vc.Project.ID,
 		"port_id":    portID,
 		"vlan_id": func(d *schema.ResourceData, k string) error {
@@ -267,6 +267,8 @@ func resourceMetalVirtualCircuitRead(ctx context.Context, d *schema.ResourceData
 			return nil
 		},
 	})
+
+	return diag.FromErr(err)
 }
 
 func getVCStateWaiter(client *packngo.Client, id string, timeout time.Duration, pending, target []string) *retry.StateChangeConf {
@@ -286,7 +288,7 @@ func getVCStateWaiter(client *packngo.Client, id string, timeout time.Duration, 
 	}
 }
 
-func resourceMetalVirtualCircuitUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) error {
+func resourceMetalVirtualCircuitUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	meta.(*config.Config).AddModuleToMetalUserAgent(d)
 	client := meta.(*config.Config).Metal
 
@@ -322,25 +324,25 @@ func resourceMetalVirtualCircuitUpdate(ctx context.Context, d *schema.ResourceDa
 			}
 			ur.Tags = &sts
 		default:
-			return equinix_errors.FriendlyError(fmt.Errorf("garbage in tags: %s", ts))
+			return diag.Errorf("garbage in tags: %s", ts)
 		}
 	}
 
 	if !reflect.DeepEqual(ur, packngo.VCUpdateRequest{}) {
 		if _, _, err := client.VirtualCircuits.Update(d.Id(), &ur, nil); err != nil {
-			return equinix_errors.FriendlyError(err)
+			return diag.FromErr(equinix_errors.FriendlyError(err))
 		}
 	}
 	return resourceMetalVirtualCircuitRead(ctx, d, meta)
 }
 
-func resourceMetalVirtualCircuitDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) error {
+func resourceMetalVirtualCircuitDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	meta.(*config.Config).AddModuleToMetalUserAgent(d)
 	client := meta.(*config.Config).Metal
 
 	resp, err := client.VirtualCircuits.Delete(d.Id())
 	if equinix_errors.IgnoreResponseErrors(equinix_errors.HttpForbidden, equinix_errors.HttpNotFound)(resp, err) != nil {
-		return equinix_errors.FriendlyError(err)
+		return diag.FromErr(equinix_errors.FriendlyError(err))
 	}
 
 	deleteWaiter := getVCStateWaiter(
@@ -353,7 +355,7 @@ func resourceMetalVirtualCircuitDelete(ctx context.Context, d *schema.ResourceDa
 
 	_, err = deleteWaiter.WaitForStateContext(ctx)
 	if equinix_errors.IgnoreResponseErrors(equinix_errors.HttpForbidden, equinix_errors.HttpNotFound)(nil, err) != nil {
-		return fmt.Errorf("Error deleting virtual circuit %s: %s", d.Id(), err)
+		return diag.Errorf("Error deleting virtual circuit %s: %s", d.Id(), err)
 	}
 	d.SetId("")
 	return nil

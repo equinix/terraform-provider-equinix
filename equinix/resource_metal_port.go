@@ -12,6 +12,7 @@ import (
 
 	"github.com/equinix/terraform-provider-equinix/internal/config"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
@@ -33,11 +34,11 @@ func resourceMetalPort() *schema.Resource {
 			Update: schema.DefaultTimeout(30 * time.Minute),
 			Delete: schema.DefaultTimeout(30 * time.Minute),
 		},
-		ReadWithoutTimeout: diagnosticsWrapper(resourceMetalPortRead),
+		ReadWithoutTimeout: resourceMetalPortRead,
 		// Create and Update are the same func
-		CreateContext: diagnosticsWrapper(resourceMetalPortUpdate),
-		UpdateContext: diagnosticsWrapper(resourceMetalPortUpdate),
-		DeleteContext: diagnosticsWrapper(resourceMetalPortDelete),
+		CreateContext: resourceMetalPortUpdate,
+		UpdateContext: resourceMetalPortUpdate,
+		DeleteContext: resourceMetalPortDelete,
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
@@ -124,11 +125,11 @@ func resourceMetalPort() *schema.Resource {
 	}
 }
 
-func resourceMetalPortUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) error {
+func resourceMetalPortUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	start := time.Now()
 	cpr, _, err := getClientPortResource(d, meta)
 	if err != nil {
-		return equinix_errors.FriendlyError(err)
+		return diag.FromErr(equinix_errors.FriendlyError(err))
 	}
 
 	for _, f := range [](func(*ClientPortResource) error){
@@ -142,14 +143,14 @@ func resourceMetalPortUpdate(ctx context.Context, d *schema.ResourceData, meta i
 		updateNativeVlan,
 	} {
 		if err := f(cpr); err != nil {
-			return equinix_errors.FriendlyError(err)
+			return diag.FromErr(equinix_errors.FriendlyError(err))
 		}
 	}
 
 	return resourceMetalPortRead(ctx, d, meta)
 }
 
-func resourceMetalPortRead(ctx context.Context, d *schema.ResourceData, meta interface{}) error {
+func resourceMetalPortRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	meta.(*config.Config).AddModuleToMetalUserAgent(d)
 	client := meta.(*config.Config).Metal
 
@@ -161,7 +162,7 @@ func resourceMetalPortRead(ctx context.Context, d *schema.ResourceData, meta int
 
 			return nil
 		}
-		return err
+		return diag.FromErr(err)
 	}
 	m := map[string]interface{}{
 		"port_id":           port.ID,
@@ -201,16 +202,16 @@ func resourceMetalPortRead(ctx context.Context, d *schema.ResourceData, meta int
 	}
 
 	d.SetId(port.ID)
-	return equinix_schema.SetMap(d, m)
+	return diag.FromErr(equinix_schema.SetMap(d, m))
 }
 
-func resourceMetalPortDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) error {
+func resourceMetalPortDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	resetRaw, resetOk := d.GetOk("reset_on_delete")
 	if resetOk && resetRaw.(bool) {
 		start := time.Now()
 		cpr, resp, err := getClientPortResource(d, meta)
 		if equinix_errors.IgnoreResponseErrors(equinix_errors.HttpForbidden, equinix_errors.HttpNotFound)(resp, err) != nil {
-			return err
+			return diag.FromErr(err)
 		}
 
 		// to reset the port to defaults we iterate through helpers (used in
@@ -226,7 +227,7 @@ func resourceMetalPortDelete(ctx context.Context, d *schema.ResourceData, meta i
 			"vlan_ids":       []string{},
 			"vxlan_ids":      nil,
 		}); err != nil {
-			return err
+			return diag.FromErr(err)
 		}
 		for _, f := range [](func(*ClientPortResource) error){
 			batchVlans(ctx, start, true),
@@ -234,7 +235,7 @@ func resourceMetalPortDelete(ctx context.Context, d *schema.ResourceData, meta i
 			convertToL3,
 		} {
 			if err := f(cpr); err != nil {
-				return err
+				return diag.FromErr(err)
 			}
 		}
 		// TODO(displague) error or warn?

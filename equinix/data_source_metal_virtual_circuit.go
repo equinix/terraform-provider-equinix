@@ -3,12 +3,13 @@ package equinix
 import (
 	"context"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 func dataSourceMetalVirtualCircuit() *schema.Resource {
 	return &schema.Resource{
-		ReadContext: diagnosticsWrapper(dataSourceMetalVirtualCircuitRead),
+		ReadContext: dataSourceMetalVirtualCircuitRead,
 
 		Schema: map[string]*schema.Schema{
 			"virtual_circuit_id": {
@@ -114,7 +115,7 @@ func dataSourceMetalVirtualCircuit() *schema.Resource {
 	}
 }
 
-func dataSourceMetalVirtualCircuitRead(ctx context.Context, d *schema.ResourceData, meta interface{}) error {
+func dataSourceMetalVirtualCircuitRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	vcId := d.Get("virtual_circuit_id").(string)
 	d.SetId(vcId)
 	return resourceMetalVirtualCircuitRead(ctx, d, meta)
