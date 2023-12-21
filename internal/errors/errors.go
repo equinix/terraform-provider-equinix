@@ -220,3 +220,22 @@ func HasModelErrorCode(errors []fabric.ModelError, code string) bool {
 	}
 	return false
 }
+
+// ignoreHttpResponseErrors ignores http response errors when matched by one of the
+// provided checks
+func IgnoreHttpResponseErrors(ignore ...func(resp *http.Response, err error) bool) func(resp *http.Response, err error) error {
+	return func(resp *http.Response, err error) error {
+		mute := false
+		for _, ignored := range ignore {
+			if ignored(resp, err) {
+				mute = true
+				break
+			}
+		}
+
+		if mute {
+			return nil
+		}
+		return err
+	}
+}

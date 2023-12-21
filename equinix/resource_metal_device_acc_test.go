@@ -14,12 +14,12 @@ import (
 
 	"github.com/equinix/terraform-provider-equinix/internal/config"
 
+	"github.com/equinix/equinix-sdk-go/services/metalv1"
 	"github.com/google/uuid"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
-	"github.com/packethost/packngo"
 )
 
 // list of plans and metros and os used as filter criteria to find available hardware to run tests
@@ -190,7 +190,7 @@ func testDeviceTerminationTime() string {
 }
 
 func TestAccMetalDevice_facilityList(t *testing.T) {
-	var device packngo.Device
+	var device metalv1.Device
 	rs := acctest.RandString(10)
 	r := "equinix_metal_device.test"
 
@@ -249,7 +249,7 @@ func TestAccMetalDevice_sshConfig(t *testing.T) {
 }
 
 func TestAccMetalDevice_basic(t *testing.T) {
-	var device packngo.Device
+	var device metalv1.Device
 	rs := acctest.RandString(10)
 	r := "equinix_metal_device.test"
 
@@ -294,7 +294,7 @@ func TestAccMetalDevice_basic(t *testing.T) {
 }
 
 func TestAccMetalDevice_metro(t *testing.T) {
-	var device packngo.Device
+	var device metalv1.Device
 	rs := acctest.RandString(10)
 	r := "equinix_metal_device.test"
 
@@ -317,7 +317,7 @@ func TestAccMetalDevice_metro(t *testing.T) {
 }
 
 func TestAccMetalDevice_update(t *testing.T) {
-	var d1, d2, d3, d4, d5 packngo.Device
+	var d1, d2, d3, d4, d5 metalv1.Device
 	rs := acctest.RandString(10)
 	rInt := acctest.RandInt()
 	r := "equinix_metal_device.test"
@@ -374,7 +374,7 @@ func TestAccMetalDevice_update(t *testing.T) {
 }
 
 func TestAccMetalDevice_IPXEScriptUrl(t *testing.T) {
-	var device, d2 packngo.Device
+	var device, d2 metalv1.Device
 	rs := acctest.RandString(10)
 	r := "equinix_metal_device.test_ipxe_script_url"
 
@@ -412,7 +412,7 @@ func TestAccMetalDevice_IPXEScriptUrl(t *testing.T) {
 }
 
 func TestAccMetalDevice_IPXEConflictingFields(t *testing.T) {
-	var device packngo.Device
+	var device metalv1.Device
 	rs := acctest.RandString(10)
 	r := "equinix_metal_device.test_ipxe_conflict"
 
@@ -434,7 +434,7 @@ func TestAccMetalDevice_IPXEConflictingFields(t *testing.T) {
 }
 
 func TestAccMetalDevice_IPXEConfigMissing(t *testing.T) {
-	var device packngo.Device
+	var device metalv1.Device
 	rs := acctest.RandString(10)
 	r := "equinix_metal_device.test_ipxe_config_missing"
 
@@ -456,7 +456,7 @@ func TestAccMetalDevice_IPXEConfigMissing(t *testing.T) {
 }
 
 func TestAccMetalDevice_allowUserdataChanges(t *testing.T) {
-	var d1, d2 packngo.Device
+	var d1, d2 metalv1.Device
 	rs := acctest.RandString(10)
 	rInt := acctest.RandInt()
 	r := "equinix_metal_device.test"
@@ -490,7 +490,7 @@ func TestAccMetalDevice_allowUserdataChanges(t *testing.T) {
 }
 
 func TestAccMetalDevice_allowCustomdataChanges(t *testing.T) {
-	var d1, d2 packngo.Device
+	var d1, d2 metalv1.Device
 	rs := acctest.RandString(10)
 	rInt := acctest.RandInt()
 	r := "equinix_metal_device.test"
@@ -553,20 +553,20 @@ func testAccMetalDeviceCheckDestroyed(s *terraform.State) error {
 	return nil
 }
 
-func testAccMetalDeviceAttributes(device *packngo.Device) resource.TestCheckFunc {
+func testAccMetalDeviceAttributes(device *metalv1.Device) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
-		if device.Hostname != "tfacc-test-device" {
-			return fmt.Errorf("Bad name: %s", device.Hostname)
+		if device.GetHostname() != "tfacc-test-device" {
+			return fmt.Errorf("Bad name: %s", device.GetHostname())
 		}
-		if device.State != "active" {
-			return fmt.Errorf("Device should be 'active', not '%s'", device.State)
+		if device.GetState() != metalv1.DEVICESTATE_ACTIVE {
+			return fmt.Errorf("Device should be 'active', not '%s'", device.GetState())
 		}
 
 		return nil
 	}
 }
 
-func testAccMetalDeviceExists(n string, device *packngo.Device) resource.TestCheckFunc {
+func testAccMetalDeviceExists(n string, device *metalv1.Device) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
@@ -576,13 +576,13 @@ func testAccMetalDeviceExists(n string, device *packngo.Device) resource.TestChe
 			return fmt.Errorf("No Record ID is set")
 		}
 
-		client := testAccProvider.Meta().(*config.Config).Metal
+		client := testAccProvider.Meta().(*config.Config).Metalgo
 
-		foundDevice, _, err := client.Devices.Get(rs.Primary.ID, nil)
+		foundDevice, _, err := client.DevicesApi.FindDeviceById(context.TODO(), rs.Primary.ID).Execute()
 		if err != nil {
 			return err
 		}
-		if foundDevice.ID != rs.Primary.ID {
+		if foundDevice.GetId() != rs.Primary.ID {
 			return fmt.Errorf("Record not found: %v - %v", rs.Primary.ID, foundDevice)
 		}
 
@@ -592,10 +592,10 @@ func testAccMetalDeviceExists(n string, device *packngo.Device) resource.TestChe
 	}
 }
 
-func testAccMetalSameDevice(t *testing.T, before, after *packngo.Device) resource.TestCheckFunc {
+func testAccMetalSameDevice(t *testing.T, before, after *metalv1.Device) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
-		if before.ID != after.ID {
-			t.Fatalf("Expected device to be the same, but it was recreated: %s -> %s", before.ID, after.ID)
+		if before.GetId() != after.GetId() {
+			t.Fatalf("Expected device to be the same, but it was recreated: %s -> %s", before.GetId(), after.GetId())
 		}
 		return nil
 	}
@@ -1134,12 +1134,13 @@ func testAccWaitForMetalDeviceActive(project, deviceHostName string) resource.Im
 
 		meta := testAccProvider.Meta()
 		rd := new(schema.ResourceData)
-		meta.(*config.Config).AddModuleToMetalUserAgent(rd)
-		client := meta.(*config.Config).Metal
-		devices, _, err := client.Devices.List(rs.Primary.ID, &packngo.ListOptions{Search: deviceHostName})
+		meta.(*config.Config).AddModuleToMetalGoUserAgent(rd)
+		client := meta.(*config.Config).Metalgo
+		resp, _, err := client.DevicesApi.FindProjectDevices(context.TODO(), rs.Primary.ID).Search(deviceHostName).Execute()
 		if err != nil {
 			return "", fmt.Errorf("error while fetching devices for project [%s], error: %w", rs.Primary.ID, err)
 		}
+		devices := resp.Devices
 		if len(devices) == 0 {
 			return "", fmt.Errorf("Not able to find devices in project [%s]", rs.Primary.ID)
 		}
@@ -1147,8 +1148,8 @@ func testAccWaitForMetalDeviceActive(project, deviceHostName string) resource.Im
 			return "", fmt.Errorf("Found more than one device with the hostname in project [%s]", rs.Primary.ID)
 		}
 
-		rd.SetId(devices[0].ID)
-		return devices[0].ID, waitForActiveDevice(context.Background(), rd, testAccProvider.Meta(), defaultTimeout)
+		rd.SetId(devices[0].GetId())
+		return devices[0].GetId(), waitForActiveDevice(context.Background(), rd, testAccProvider.Meta(), defaultTimeout)
 	}
 }
 
@@ -1186,7 +1187,7 @@ func TestAccMetalDeviceCreate_timeout(t *testing.T) {
 }
 
 func TestAccMetalDeviceUpdate_timeout(t *testing.T) {
-	var d1 packngo.Device
+	var d1 metalv1.Device
 	rs := acctest.RandString(10)
 	r := "equinix_metal_device.test"
 
