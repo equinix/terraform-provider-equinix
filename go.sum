@@ -265,6 +265,8 @@ github.com/equinix/ecx-go/v2 v2.3.1 h1:gFcAIeyaEUw7S8ebqApmT7E/S7pC7Ac3wgScp89fk
 github.com/equinix/ecx-go/v2 v2.3.1/go.mod h1:FvCdZ3jXU8Z4CPKig2DT+4J2HdwgRK17pIcznM7RXyk=
 github.com/equinix/equinix-sdk-go v0.30.0 h1:u/+/p00mfAhDhoLvP1jTKruXndAYWoTwqN65BTbAPCg=
 github.com/equinix/equinix-sdk-go v0.30.0/go.mod h1:qnpdRzVftHFNaJFk1VSIrAOTLrIoeDrxzUr3l8ARyvQ=
+github.com/equinix/equinix-sdk-go v0.31.0 h1:BVD67nmpPEutsCGkYDuy0rykGNeQ5H3FIX+Dz5DpP7w=
+github.com/equinix/equinix-sdk-go v0.31.0/go.mod h1:qnpdRzVftHFNaJFk1VSIrAOTLrIoeDrxzUr3l8ARyvQ=
 github.com/equinix/ne-go v1.12.0 h1:xZxnVWRIqFkos4ls9nSx92FMGkV8jSPTEaosLGE4Vvw=
 github.com/equinix/ne-go v1.12.0/go.mod h1:eHkkxM4nbTB7DZ9X9zGnwfYnxIJWIsU3aHA+FAoZ1EI=
 github.com/equinix/oauth2-go v1.0.0 h1:fHtAPGq82PdgtK5vEThs8Vwz6f7D/8SX4tE3NJu+KcU=
