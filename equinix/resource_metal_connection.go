@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	"github.com/equinix/terraform-provider-equinix/internal/converters"
+	"github.com/equinix/terraform-provider-equinix/internal/schema/metal_connection"
 
 	equinix_errors "github.com/equinix/terraform-provider-equinix/internal/errors"
 	equinix_schema "github.com/equinix/terraform-provider-equinix/internal/schema"
@@ -20,48 +21,9 @@ import (
 	"golang.org/x/exp/slices"
 )
 
-var (
-	mega          uint64 = 1000 * 1000
-	giga          uint64 = 1000 * mega
-	allowedSpeeds        = []struct {
-		Int uint64
-		Str string
-	}{
-		{50 * mega, "50Mbps"},
-		{200 * mega, "200Mbps"},
-		{500 * mega, "500Mbps"},
-		{1 * giga, "1Gbps"},
-		{2 * giga, "2Gbps"},
-		{5 * giga, "5Gbps"},
-		{10 * giga, "10Gbps"},
-	}
-)
-
-func speedStrToUint(speed string) (uint64, error) {
-	allowedStrings := []string{}
-	for _, allowedSpeed := range allowedSpeeds {
-		if allowedSpeed.Str == speed {
-			return allowedSpeed.Int, nil
-		}
-		allowedStrings = append(allowedStrings, allowedSpeed.Str)
-	}
-	return 0, fmt.Errorf("invalid speed string: %s. Allowed strings: %s", speed, strings.Join(allowedStrings, ", "))
-}
-
-func speedUintToStr(speed uint64) (string, error) {
-	allowedUints := []uint64{}
-	for _, allowedSpeed := range allowedSpeeds {
-		if speed == allowedSpeed.Int {
-			return allowedSpeed.Str, nil
-		}
-		allowedUints = append(allowedUints, allowedSpeed.Int)
-	}
-	return "", fmt.Errorf("%d is not allowed speed value. Allowed values: %v", speed, allowedUints)
-}
-
 func resourceMetalConnection() *schema.Resource {
 	speeds := []string{}
-	for _, allowedSpeed := range allowedSpeeds {
+	for _, allowedSpeed := range metal_connection.AllowedSpeeds {
 		speeds = append(speeds, allowedSpeed.Str)
 	}
 	return &schema.Resource{
@@ -248,7 +210,7 @@ func resourceMetalConnectionCreate(d *schema.ResourceData, meta interface{}) err
 		if !speedOk {
 			return fmt.Errorf("you must set speed, it's optional only for shared connections of type z_side")
 		}
-		speed, err := speedStrToUint(speedRaw.(string))
+		speed, err := metal_connection.SpeedStrToUint(speedRaw.(string))
 		if err != nil {
 			return err
 		}
@@ -459,7 +421,7 @@ func resourceMetalConnectionRead(d *schema.ResourceData, meta interface{}) error
 	}
 	speed := "0"
 	if conn.Speed > 0 {
-		speed, err = speedUintToStr(conn.Speed)
+		speed, err = metal_connection.SpeedUintToStr(conn.Speed)
 		if err != nil {
 			return err
 		}
