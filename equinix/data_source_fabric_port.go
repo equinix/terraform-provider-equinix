@@ -7,7 +7,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
-func dataSourceFabricPort() *schema.Resource {
+func DataSourceFabricPort() *schema.Resource {
 	return &schema.Resource{
 		ReadContext: dataSourceFabricPortRead,
 		Schema:      FabricPortResourceSchema(),
@@ -21,7 +21,7 @@ func dataSourceFabricPortRead(ctx context.Context, d *schema.ResourceData, meta 
 	return resourceFabricPortRead(ctx, d, meta)
 }
 
-func dataSourceFabricGetPortsByName() *schema.Resource {
+func DataSourceFabricGetPortsByName() *schema.Resource {
 	return &schema.Resource{
 		ReadContext: dataSourceFabricGetPortsByNameResponseRead,
 		Schema:      readFabricPortsResponseSchema(),

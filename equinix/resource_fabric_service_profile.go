@@ -188,7 +188,7 @@ func linkProtocolConfigSch() map[string]*schema.Schema {
 	}
 }
 
-func resourceFabricServiceProfile() *schema.Resource {
+func ResourceFabricServiceProfile() *schema.Resource {
 	return &schema.Resource{
 		Timeouts: &schema.ResourceTimeout{
 			Create: schema.DefaultTimeout(6 * time.Minute),

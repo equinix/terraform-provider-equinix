@@ -7,7 +7,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
-func dataSourceRoutingProtocol() *schema.Resource {
+func DataSourceRoutingProtocol() *schema.Resource {
 	return &schema.Resource{
 		ReadContext: dataSourceRoutingProtocolRead,
 		Schema:      readFabricRoutingProtocolResourceSchema(),

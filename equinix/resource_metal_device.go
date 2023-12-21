@@ -40,7 +40,7 @@ var (
 	deviceCommonIncludes = []string{"project", "metro", "facility", "hardware_reservation"}
 )
 
-func resourceMetalDevice() *schema.Resource {
+func ResourceMetalDevice() *schema.Resource {
 	return &schema.Resource{
 		Timeouts: &schema.ResourceTimeout{
 			Create: schema.DefaultTimeout(30 * time.Minute),

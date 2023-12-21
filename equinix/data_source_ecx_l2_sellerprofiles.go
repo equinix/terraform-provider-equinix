@@ -35,7 +35,7 @@ var ecxL2SellerProfilesDescriptions = map[string]string{
 	"Profiles":           "Resulting list of profiles that match filtering criteria",
 }
 
-func dataSourceECXL2SellerProfiles() *schema.Resource {
+func DataSourceECXL2SellerProfiles() *schema.Resource {
 	return &schema.Resource{
 		DeprecationMessage: "This resource is deprecated. End of Life will be June 30th, 2024. Use equinix_fabric_service_profiles instead.",
 		ReadContext:        dataSourceECXL2SellerProfilesRead,

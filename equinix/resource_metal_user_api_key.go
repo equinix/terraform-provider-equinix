@@ -4,7 +4,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
-func resourceMetalUserAPIKey() *schema.Resource {
+func ResourceMetalUserAPIKey() *schema.Resource {
 	userKeySchema := schemaMetalAPIKey()
 	userKeySchema["user_id"] = &schema.Schema{
 		Type:        schema.TypeString,

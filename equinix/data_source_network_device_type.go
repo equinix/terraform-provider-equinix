@@ -33,7 +33,7 @@ var networkDeviceTypeDescriptions = map[string]string{
 	"MetroCodes":  "List of metro codes where device type has to be available",
 }
 
-func dataSourceNetworkDeviceType() *schema.Resource {
+func DataSourceNetworkDeviceType() *schema.Resource {
 	return &schema.Resource{
 		ReadContext: dataSourceNetworkDeviceTypeRead,
 		Description: "Use this data source to get Equinix Network Edge device type details",

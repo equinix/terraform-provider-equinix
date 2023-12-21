@@ -35,7 +35,7 @@ func intInSlice(valid []int) schema.SchemaValidateFunc {
 	}
 }
 
-func resourceMetalGateway() *schema.Resource {
+func ResourceMetalGateway() *schema.Resource {
 	return &schema.Resource{
 		Read:   resourceMetalGatewayRead,
 		Create: resourceMetalGatewayCreate,

@@ -10,7 +10,7 @@ import (
 	"github.com/packethost/packngo"
 )
 
-func dataSourceOperatingSystem() *schema.Resource {
+func DataSourceOperatingSystem() *schema.Resource {
 	return &schema.Resource{
 		Read: dataSourceMetalOperatingSystemRead,
 		Schema: map[string]*schema.Schema{

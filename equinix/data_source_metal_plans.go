@@ -12,7 +12,7 @@ import (
 	"github.com/packethost/packngo"
 )
 
-func dataSourceMetalPlans() *schema.Resource {
+func DataSourceMetalPlans() *schema.Resource {
 	dataListConfig := &datalist.ResourceConfig{
 		RecordSchema:               planSchema(),
 		ResultAttributeName:        "plans",

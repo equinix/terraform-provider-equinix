@@ -7,7 +7,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
-func dataSourceFabricServiceProfileReadByUuid() *schema.Resource {
+func DataSourceFabricServiceProfileReadByUuid() *schema.Resource {
 	return &schema.Resource{
 		ReadContext: dataSourceFabricServiceProfileRead,
 		Schema:      readFabricServiceProfileSchema(),
@@ -21,7 +21,7 @@ func dataSourceFabricServiceProfileRead(ctx context.Context, d *schema.ResourceD
 	return resourceFabricServiceProfileRead(ctx, d, meta)
 }
 
-func dataSourceFabricSearchServiceProfilesByName() *schema.Resource {
+func DataSourceFabricSearchServiceProfilesByName() *schema.Resource {
 	return &schema.Resource{
 		ReadContext: dataSourceFabricSearchServiceProfilesRead,
 		Schema:      readFabricServiceProfilesSearchSchema(),

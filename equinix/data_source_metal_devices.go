@@ -11,8 +11,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
-func dataSourceMetalDevices() *schema.Resource {
-	dsmd := dataSourceMetalDevice()
+func DataSourceMetalDevices() *schema.Resource {
+	dsmd := DataSourceMetalDevice()
 	sch := dsmd.Schema
 	for _, v := range sch {
 		if v.Optional {

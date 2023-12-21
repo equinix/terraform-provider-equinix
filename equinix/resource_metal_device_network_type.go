@@ -13,7 +13,7 @@ import (
 	"github.com/packethost/packngo"
 )
 
-func resourceMetalDeviceNetworkType() *schema.Resource {
+func ResourceMetalDeviceNetworkType() *schema.Resource {
 	return &schema.Resource{
 		Create: resourceMetalDeviceNetworkTypeCreate,
 		Read:   resourceMetalDeviceNetworkTypeRead,

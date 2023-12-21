@@ -7,7 +7,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
-func dataSourceMetalVRF() *schema.Resource {
+func DataSourceMetalVRF() *schema.Resource {
 	return &schema.Resource{
 		ReadWithoutTimeout: dataSourceMetalVRFRead,
 

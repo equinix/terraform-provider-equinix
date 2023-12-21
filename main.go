@@ -5,7 +5,6 @@ import (
 	"flag"
 	"log"
 
-	"github.com/equinix/terraform-provider-equinix/equinix"
 	"github.com/equinix/terraform-provider-equinix/internal/provider"
 	"github.com/equinix/terraform-provider-equinix/version"
 
@@ -28,7 +27,7 @@ func main() {
 	providers := []func() tfprotov5.ProviderServer{
 		providerserver.NewProtocol5(
 			provider.CreateFrameworkProvider(version.ProviderVersion)),
-		equinix.Provider().GRPCProvider,
+		provider.Provider().GRPCProvider,
 	}
 
 	muxServer, err := tf5muxserver.NewMuxServer(ctx, providers...)

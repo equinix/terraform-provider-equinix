@@ -102,7 +102,7 @@ func TestAccMetalDevice_readErrorHandling(t *testing.T) {
 			meta.Load(ctx)
 
 			if err := resourceMetalDeviceRead(ctx, d, meta); (err != nil) != tt.wantErr {
-				t.Errorf("resourceMetalDeviceRead() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf(" ResourceMetalDeviceRead() error = %v, wantErr %v", err, tt.wantErr)
 			}
 
 			mockAPI.Close()

@@ -7,7 +7,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
-func dataSourceMetalVirtualCircuit() *schema.Resource {
+func DataSourceMetalVirtualCircuit() *schema.Resource {
 	return &schema.Resource{
 		ReadContext: dataSourceMetalVirtualCircuitRead,
 

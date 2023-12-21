@@ -8,7 +8,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/equinix/terraform-provider-equinix/equinix"
 	"github.com/equinix/terraform-provider-equinix/internal/config"
 	"github.com/equinix/terraform-provider-equinix/version"
 
@@ -32,7 +31,7 @@ var (
 )
 
 func init() {
-	TestAccProvider = equinix.Provider()
+	TestAccProvider = provider.Provider()
 	TestAccProviders = map[string]*schema.Provider{
 		"equinix": TestAccProvider,
 	}

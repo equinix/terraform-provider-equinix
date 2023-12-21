@@ -21,7 +21,7 @@ import (
 	"github.com/packethost/packngo"
 )
 
-func resourceMetalVirtualCircuit() *schema.Resource {
+func ResourceMetalVirtualCircuit() *schema.Resource {
 	return &schema.Resource{
 		ReadWithoutTimeout:   resourceMetalVirtualCircuitRead,
 		CreateContext:        resourceMetalVirtualCircuitCreate,

@@ -11,7 +11,7 @@ import (
 	"github.com/packethost/packngo"
 )
 
-func dataSourceSpotMarketPrice() *schema.Resource {
+func DataSourceSpotMarketPrice() *schema.Resource {
 	return &schema.Resource{
 		Read: dataSourceMetalSpotMarketPriceRead,
 		Schema: map[string]*schema.Schema{

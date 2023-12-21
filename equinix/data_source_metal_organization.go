@@ -12,7 +12,7 @@ import (
 	"github.com/packethost/packngo"
 )
 
-func dataSourceMetalOrganization() *schema.Resource {
+func DataSourceMetalOrganization() *schema.Resource {
 	return &schema.Resource{
 		Read: dataSourceMetalOrganizationRead,
 

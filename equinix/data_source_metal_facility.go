@@ -48,7 +48,7 @@ func capacitySchema() *schema.Schema {
 	}
 }
 
-func dataSourceMetalFacility() *schema.Resource {
+func DataSourceMetalFacility() *schema.Resource {
 	return &schema.Resource{
 		Read: dataSourceMetalFacilityRead,
 		Schema: map[string]*schema.Schema{

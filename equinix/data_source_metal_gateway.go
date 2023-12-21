@@ -6,7 +6,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
-func dataSourceMetalGateway() *schema.Resource {
+func DataSourceMetalGateway() *schema.Resource {
 	return &schema.Resource{
 		Read: dataSourceMetalGatewayRead,
 

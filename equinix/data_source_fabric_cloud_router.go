@@ -7,7 +7,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
-func dataSourceCloudRouter() *schema.Resource {
+func DataSourceCloudRouter() *schema.Resource {
 	return &schema.Resource{
 		ReadContext: dataSourceCloudRouterRead,
 		Schema:      readCloudRouterResourceSchema(),

@@ -11,7 +11,7 @@ import (
 	"github.com/packethost/packngo"
 )
 
-func dataSourceMetalPreCreatedIPBlock() *schema.Resource {
+func DataSourceMetalPreCreatedIPBlock() *schema.Resource {
 	s := metalIPComputedFields()
 	s["project_id"] = &schema.Schema{
 		Type:        schema.TypeString,

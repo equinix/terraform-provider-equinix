@@ -13,7 +13,7 @@ import (
 	"github.com/packethost/packngo"
 )
 
-func resourceMetalIPAttachment() *schema.Resource {
+func ResourceMetalIPAttachment() *schema.Resource {
 	ipAttachmentSchema := metalIPResourceComputedFields()
 	ipAttachmentSchema["device_id"] = &schema.Schema{
 		Type:     schema.TypeString,

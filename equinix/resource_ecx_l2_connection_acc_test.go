@@ -7,9 +7,9 @@ import (
 	"regexp"
 	"testing"
 
-	"github.com/equinix/terraform-provider-equinix/equinix"
 	"github.com/equinix/terraform-provider-equinix/internal/acceptance"
 	"github.com/equinix/terraform-provider-equinix/internal/config"
+	"github.com/equinix/terraform-provider-equinix/internal/provider"
 
 	"github.com/equinix/ecx-go/v2"
 	"github.com/equinix/rest-go"
@@ -366,7 +366,7 @@ func TestAccFabricL2Connection_ServiceToken_HA_SP(t *testing.T) {
 			return err
 		},
 	}
-	mockEquinix := equinix.Provider()
+	mockEquinix := provider.Provider()
 	mockEquinix.ConfigureContextFunc = func(c context.Context, d *schema.ResourceData) (interface{}, diag.Diagnostics) {
 		config := config.Config{
 			Ecx: mockECXClient,
@@ -499,7 +499,7 @@ func TestAccFabricL2Connection_ZSideServiceToken_Single(t *testing.T) {
 			return err
 		},
 	}
-	mockEquinix := equinix.Provider()
+	mockEquinix := provider.Provider()
 	mockEquinix.ConfigureContextFunc = func(c context.Context, d *schema.ResourceData) (interface{}, diag.Diagnostics) {
 		config := config.Config{
 			Ecx: mockECXClient,

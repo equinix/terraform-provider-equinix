@@ -39,7 +39,7 @@ var networkFileDescriptions = map[string]string{
 	"Status":         "File upload status",
 }
 
-func resourceNetworkFile() *schema.Resource {
+func ResourceNetworkFile() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: resourceNetworkFileCreate,
 		ReadContext:   resourceNetworkFileRead,

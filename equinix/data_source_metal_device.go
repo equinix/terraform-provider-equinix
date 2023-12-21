@@ -17,7 +17,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/structure"
 )
 
-func dataSourceMetalDevice() *schema.Resource {
+func DataSourceMetalDevice() *schema.Resource {
 	return &schema.Resource{
 		ReadWithoutTimeout: dataSourceMetalDeviceRead,
 		Schema: map[string]*schema.Schema{

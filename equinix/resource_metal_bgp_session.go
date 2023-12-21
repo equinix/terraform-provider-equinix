@@ -12,7 +12,7 @@ import (
 	"github.com/packethost/packngo"
 )
 
-func resourceMetalBGPSession() *schema.Resource {
+func ResourceMetalBGPSession() *schema.Resource {
 	return &schema.Resource{
 		Create: resourceMetalBGPSessionCreate,
 		Read:   resourceMetalBGPSessionRead,

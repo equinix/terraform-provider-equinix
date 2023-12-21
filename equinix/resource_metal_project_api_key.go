@@ -35,7 +35,7 @@ func schemaMetalAPIKey() map[string]*schema.Schema {
 	}
 }
 
-func resourceMetalProjectAPIKey() *schema.Resource {
+func ResourceMetalProjectAPIKey() *schema.Resource {
 	projectKeySchema := schemaMetalAPIKey()
 	projectKeySchema["project_id"] = &schema.Schema{
 		Type:        schema.TypeString,

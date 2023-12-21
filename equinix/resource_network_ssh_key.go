@@ -29,7 +29,7 @@ var networkSSHKeyDescriptions = map[string]string{
 	"Type":  "The type of SSH key: RSA (default) or DSA",
 }
 
-func resourceNetworkSSHKey() *schema.Resource {
+func ResourceNetworkSSHKey() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: resourceNetworkSSHKeyCreate,
 		ReadContext:   resourceNetworkSSHKeyRead,

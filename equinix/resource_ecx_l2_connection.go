@@ -131,7 +131,7 @@ type (
 	getL2Connection func(uuid string) (*ecx.L2Connection, error)
 )
 
-func resourceECXL2Connection() *schema.Resource {
+func ResourceECXL2Connection() *schema.Resource {
 	return &schema.Resource{
 		DeprecationMessage: "This resource is deprecated. End of Life will be June 30th, 2024. Use equinix_fabric_connection instead.",
 		CreateContext:      resourceECXL2ConnectionCreate,

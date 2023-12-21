@@ -78,7 +78,7 @@ var networkDeviceLinkDeprecatedDescriptions = map[string]string{
 	"DestinationZoneCode": "DestinationZoneCode is not required",
 }
 
-func resourceNetworkDeviceLink() *schema.Resource {
+func ResourceNetworkDeviceLink() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: resourceNetworkDeviceLinkCreate,
 		ReadContext:   resourceNetworkDeviceLinkRead,

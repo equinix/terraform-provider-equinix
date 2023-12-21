@@ -88,7 +88,7 @@ func bgpRouteSchema() *schema.Resource {
 	}
 }
 
-func dataSourceMetalDeviceBGPNeighbors() *schema.Resource {
+func DataSourceMetalDeviceBGPNeighbors() *schema.Resource {
 	return &schema.Resource{
 		ReadContext: dataSourceMetalDeviceBGPNeighborsRead,
 		Schema: map[string]*schema.Schema{

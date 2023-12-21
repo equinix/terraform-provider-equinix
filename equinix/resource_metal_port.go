@@ -27,7 +27,7 @@ var (
 	l3Types = []string{"layer3", "hybrid", "hybrid-bonded"}
 )
 
-func resourceMetalPort() *schema.Resource {
+func ResourceMetalPort() *schema.Resource {
 	return &schema.Resource{
 		Timeouts: &schema.ResourceTimeout{
 			Create: schema.DefaultTimeout(30 * time.Minute),
@@ -217,7 +217,7 @@ func resourceMetalPortDelete(ctx context.Context, d *schema.ResourceData, meta i
 		// to reset the port to defaults we iterate through helpers (used in
 		// create/update), some of which rely on resource state. reuse those helpers by
 		// setting ephemeral state.
-		port := resourceMetalPort()
+		port := ResourceMetalPort()
 		copy := port.Data(d.State())
 		cpr.Resource = copy
 		if err = equinix_schema.SetMap(cpr.Resource, map[string]interface{}{

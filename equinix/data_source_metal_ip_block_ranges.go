@@ -11,7 +11,7 @@ import (
 	"github.com/packethost/packngo"
 )
 
-func dataSourceMetalIPBlockRanges() *schema.Resource {
+func DataSourceMetalIPBlockRanges() *schema.Resource {
 	return &schema.Resource{
 		Read: dataSourceMetalIPBlockRangesRead,
 

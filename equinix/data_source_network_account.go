@@ -30,7 +30,7 @@ var networkAccountDescriptions = map[string]string{
 	"MetroCode": "Account location metro cod",
 }
 
-func dataSourceNetworkAccount() *schema.Resource {
+func DataSourceNetworkAccount() *schema.Resource {
 	return &schema.Resource{
 		ReadContext: dataSourceNetworkAccountRead,
 		Description: "Use this data source to get number and identifier of Equinix Network Edge billing account in a given metro location",

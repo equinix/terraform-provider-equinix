@@ -14,7 +14,7 @@ import (
 	"github.com/packethost/packngo"
 )
 
-func dataSourceMetalVlan() *schema.Resource {
+func DataSourceMetalVlan() *schema.Resource {
 	return &schema.Resource{
 		Read: dataSourceMetalVlanRead,
 		Importer: &schema.ResourceImporter{

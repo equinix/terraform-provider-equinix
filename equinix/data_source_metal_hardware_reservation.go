@@ -11,7 +11,7 @@ import (
 	"github.com/packethost/packngo"
 )
 
-func dataSourceMetalHardwareReservation() *schema.Resource {
+func DataSourceMetalHardwareReservation() *schema.Resource {
 	return &schema.Resource{
 		Read: dataSourceMetalHardwareReservationRead,
 

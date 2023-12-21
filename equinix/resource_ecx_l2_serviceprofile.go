@@ -107,7 +107,7 @@ var ecxL2ServiceProfileSpeedBandDescriptions = map[string]string{
 	"SpeedUnit": "Unit of the speed/bandwidth supported by given service profile",
 }
 
-func resourceECXL2ServiceProfile() *schema.Resource {
+func ResourceECXL2ServiceProfile() *schema.Resource {
 	return &schema.Resource{
 		DeprecationMessage: "This resource is deprecated. End of Life will be June 30th, 2024. Use equinix_fabric_service_profile instead.",
 		CreateContext:      resourceECXL2ServiceProfileCreate,

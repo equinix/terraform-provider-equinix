@@ -11,7 +11,7 @@ import (
 	"github.com/packethost/packngo"
 )
 
-func dataSourceMetalReservedIPBlock() *schema.Resource {
+func DataSourceMetalReservedIPBlock() *schema.Resource {
 	return &schema.Resource{
 		Read: dataSourceMetalReservedIPBlockRead,
 		Schema: map[string]*schema.Schema{

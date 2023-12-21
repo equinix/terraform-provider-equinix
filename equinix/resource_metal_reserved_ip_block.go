@@ -88,7 +88,7 @@ func metalIPResourceComputedFields() map[string]*schema.Schema {
 	return s
 }
 
-func resourceMetalReservedIPBlock() *schema.Resource {
+func ResourceMetalReservedIPBlock() *schema.Resource {
 	reservedBlockSchema := metalIPResourceComputedFields()
 	reservedBlockSchema["project_id"] = &schema.Schema{
 		Type:        schema.TypeString,

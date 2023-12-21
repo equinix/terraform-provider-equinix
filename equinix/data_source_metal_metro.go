@@ -11,7 +11,7 @@ import (
 	"github.com/packethost/packngo"
 )
 
-func dataSourceMetalMetro() *schema.Resource {
+func DataSourceMetalMetro() *schema.Resource {
 	return &schema.Resource{
 		Read: dataSourceMetalMetroRead,
 		Schema: map[string]*schema.Schema{

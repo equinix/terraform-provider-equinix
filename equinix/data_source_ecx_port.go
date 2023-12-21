@@ -38,7 +38,7 @@ var ecxPortDescriptions = map[string]string{
 	"Status":        "Port status that indicates whether a port has been assigned or is ready for connection",
 }
 
-func dataSourceECXPort() *schema.Resource {
+func DataSourceECXPort() *schema.Resource {
 	return &schema.Resource{
 		DeprecationMessage: "This resource is deprecated. End of Life will be June 30th, 2024. Use equinix_fabric_port and equinix_fabric_ports instead.",
 		ReadContext:        dataSourceECXPortRead,

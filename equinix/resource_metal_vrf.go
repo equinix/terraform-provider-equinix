@@ -14,7 +14,7 @@ import (
 	"github.com/packethost/packngo"
 )
 
-func resourceMetalVRF() *schema.Resource {
+func ResourceMetalVRF() *schema.Resource {
 	return &schema.Resource{
 		ReadWithoutTimeout:   resourceMetalVRFRead,
 		CreateWithoutTimeout: resourceMetalVRFCreate,

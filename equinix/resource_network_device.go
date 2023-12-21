@@ -196,7 +196,7 @@ var neDeviceVendorConfigDescriptions = map[string]string{
 	"RootPassword":   "The CLI password of the device. This field is relevant only for the Velocloud SDWAN cluster",
 }
 
-func resourceNetworkDevice() *schema.Resource {
+func ResourceNetworkDevice() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: resourceNetworkDeviceCreate,
 		ReadContext:   resourceNetworkDeviceRead,

@@ -13,7 +13,7 @@ import (
 	"github.com/packethost/packngo"
 )
 
-func resourceMetalOrganization() *schema.Resource {
+func ResourceMetalOrganization() *schema.Resource {
 	return &schema.Resource{
 		Create: resourceMetalOrganizationCreate,
 		Read:   resourceMetalOrganizationRead,

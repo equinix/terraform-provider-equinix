@@ -5,7 +5,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
-func dataSourceMetalPort() *schema.Resource {
+func DataSourceMetalPort() *schema.Resource {
 	return &schema.Resource{
 		ReadWithoutTimeout: resourceMetalPortRead,
 

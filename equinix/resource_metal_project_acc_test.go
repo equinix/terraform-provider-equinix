@@ -9,9 +9,9 @@ import (
 	"regexp"
 	"testing"
 
-	"github.com/equinix/terraform-provider-equinix/equinix"
 	"github.com/equinix/terraform-provider-equinix/internal/acceptance"
 	"github.com/equinix/terraform-provider-equinix/internal/config"
+	"github.com/equinix/terraform-provider-equinix/internal/provider"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -86,7 +86,7 @@ func TestAccMetalProject_errorHandling(t *testing.T) {
 		w.WriteHeader(http.StatusUnprocessableEntity)
 	}
 	mockAPI := httptest.NewServer(http.HandlerFunc(handler))
-	mockEquinix := equinix.Provider()
+	mockEquinix := provider.Provider()
 	mockEquinix.ConfigureContextFunc = func(ctx context.Context, d *schema.ResourceData) (interface{}, diag.Diagnostics) {
 		config := config.Config{
 			BaseURL:   mockAPI.URL,
@@ -121,7 +121,7 @@ func TestAccMetalProject_apiErrorHandling(t *testing.T) {
 		w.WriteHeader(http.StatusUnprocessableEntity)
 	}
 	mockAPI := httptest.NewServer(http.HandlerFunc(handler))
-	mockEquinix := equinix.Provider()
+	mockEquinix := provider.Provider()
 	mockEquinix.ConfigureContextFunc = func(ctx context.Context, d *schema.ResourceData) (interface{}, diag.Diagnostics) {
 		config := config.Config{
 			BaseURL:   mockAPI.URL,

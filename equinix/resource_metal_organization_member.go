@@ -31,7 +31,7 @@ func (m *member) isInvitation() bool {
 	return m.Invitation != nil
 }
 
-func resourceMetalOrganizationMember() *schema.Resource {
+func ResourceMetalOrganizationMember() *schema.Resource {
 	return &schema.Resource{
 		Create: resourceMetalOrganizationMemberCreate,
 		Read:   resourceMetalOrganizationMemberRead,

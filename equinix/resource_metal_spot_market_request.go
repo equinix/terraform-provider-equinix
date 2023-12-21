@@ -22,7 +22,7 @@ import (
 	"github.com/packethost/packngo"
 )
 
-func resourceMetalSpotMarketRequest() *schema.Resource {
+func ResourceMetalSpotMarketRequest() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: resourceMetalSpotMarketRequestCreate,
 		ReadContext:   resourceMetalSpotMarketRequestRead,

@@ -77,7 +77,7 @@ var ecxL2SellerProfileAdditionalInfosDescriptions = map[string]string{
 	"IsCaptureInEmail": "Specified if additional information attribute can be captured in email",
 }
 
-func dataSourceECXL2SellerProfile() *schema.Resource {
+func DataSourceECXL2SellerProfile() *schema.Resource {
 	return &schema.Resource{
 		DeprecationMessage: "This resource is deprecated. End of Life will be June 30th, 2024. Use equinix_fabric_service_profile instead.",
 		ReadContext:        dataSourceECXL2SellerProfileRead,

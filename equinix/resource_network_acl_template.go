@@ -79,7 +79,7 @@ var networkACLTemplateDeprecateDescriptions = map[string]string{
 	"Subnets":    "Use Subnet instead",
 }
 
-func resourceNetworkACLTemplate() *schema.Resource {
+func ResourceNetworkACLTemplate() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: resourceNetworkACLTemplateCreate,
 		ReadContext:   resourceNetworkACLTemplateRead,

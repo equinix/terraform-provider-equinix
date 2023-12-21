@@ -14,7 +14,7 @@ import (
 	"github.com/packethost/packngo"
 )
 
-func resourceMetalVlan() *schema.Resource {
+func ResourceMetalVlan() *schema.Resource {
 	return &schema.Resource{
 		Create: resourceMetalVlanCreate,
 		Read:   resourceMetalVlanRead,

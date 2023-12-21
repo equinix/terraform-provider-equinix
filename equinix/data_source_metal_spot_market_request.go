@@ -16,7 +16,7 @@ import (
 	"github.com/packethost/packngo"
 )
 
-func dataSourceMetalSpotMarketRequest() *schema.Resource {
+func DataSourceMetalSpotMarketRequest() *schema.Resource {
 	return &schema.Resource{
 		ReadContext: dataSourceMetalSpotMarketRequestRead,
 

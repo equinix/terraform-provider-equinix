@@ -13,7 +13,7 @@ import (
 	"github.com/packethost/packngo"
 )
 
-func resourceMetalPortVlanAttachment() *schema.Resource {
+func ResourceMetalPortVlanAttachment() *schema.Resource {
 	return &schema.Resource{
 		Create: resourceMetalPortVlanAttachmentCreate,
 		Read:   resourceMetalPortVlanAttachmentRead,

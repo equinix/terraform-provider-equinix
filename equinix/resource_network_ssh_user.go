@@ -28,7 +28,7 @@ var networkSSHUserDescriptions = map[string]string{
 	"DeviceUUIDs": "list of device identifiers to which user will have access",
 }
 
-func resourceNetworkSSHUser() *schema.Resource {
+func ResourceNetworkSSHUser() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: resourceNetworkSSHUserCreate,
 		ReadContext:   resourceNetworkSSHUserRead,

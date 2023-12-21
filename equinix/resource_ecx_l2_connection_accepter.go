@@ -25,7 +25,7 @@ var ecxL2ConnectionAccepterDescriptions = map[string]string{
 	"AWSConnectionID": "Identifier of a hosted Direct Connect connection on AWS side, applicable for accepter resource with connections to AWS only",
 }
 
-func resourceECXL2ConnectionAccepter() *schema.Resource {
+func ResourceECXL2ConnectionAccepter() *schema.Resource {
 	return &schema.Resource{
 		DeprecationMessage: "This resource is deprecated and will be removed in a future version of the provider. Please use the equivalent resource `aws_dx_connection_confirmation` in the 'AWS' provider instead.",
 		CreateContext:      resourceECXL2ConnectionAccepterCreate,

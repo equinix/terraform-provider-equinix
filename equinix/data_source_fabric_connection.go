@@ -2,6 +2,7 @@ package equinix
 
 import (
 	"context"
+
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
@@ -24,7 +25,7 @@ func readFabricConnectionResourceSchema() map[string]*schema.Schema {
 	return sch
 }
 
-func dataSourceFabricConnection() *schema.Resource {
+func DataSourceFabricConnection() *schema.Resource {
 	return &schema.Resource{
 		ReadContext: dataSourceFabricConnectionRead,
 		Schema:      readFabricConnectionResourceSchema(),

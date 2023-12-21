@@ -44,7 +44,7 @@ var networkDeviceSoftwareDescriptions = map[string]string{
 
 const networkDeviceSoftwareDateLayout = "2006-01-02"
 
-func dataSourceNetworkDeviceSoftware() *schema.Resource {
+func DataSourceNetworkDeviceSoftware() *schema.Resource {
 	return &schema.Resource{
 		ReadContext: dataSourceNetworkDeviceSoftwareRead,
 		Description: "Use this data source to get Equinix Network Edge device software details for a given device type.",
