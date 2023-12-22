@@ -1,8 +1,12 @@
-package equinix
+package mutexkv
 
 import (
 	"log"
 	"sync"
+)
+
+var (
+	Metal = NewMutexKV()
 )
 
 // MutexKV is a simple key/value store for arbitrary mutexes. It can be used to
