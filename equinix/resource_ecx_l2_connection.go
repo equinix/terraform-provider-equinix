@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/equinix/terraform-provider-equinix/internal/config"
+	equinix_validation "github.com/equinix/terraform-provider-equinix/internal/validation"
 
 	"github.com/equinix/ecx-go/v2"
 	"github.com/equinix/rest-go"
@@ -210,7 +211,7 @@ func createECXL2ConnectionResourceSchema() map[string]*schema.Schema {
 			MinItems: 1,
 			Elem: &schema.Schema{
 				Type:         schema.TypeString,
-				ValidateFunc: stringIsEmailAddress(),
+				ValidateFunc: equinix_validation.StringIsEmailAddress,
 			},
 			Description: ecxL2ConnectionDescriptions["Notifications"],
 		},
@@ -324,7 +325,7 @@ func createECXL2ConnectionResourceSchema() map[string]*schema.Schema {
 			Optional:     true,
 			Computed:     true,
 			ForceNew:     true,
-			ValidateFunc: stringIsMetroCode(),
+			ValidateFunc: equinix_validation.StringIsMetroCode,
 			Description:  ecxL2ConnectionDescriptions["SellerMetroCode"],
 		},
 		ecxL2ConnectionSchemaNames["AuthorizationKey"]: {
@@ -576,7 +577,7 @@ func createECXL2ConnectionSecondaryResourceSchema() map[string]*schema.Schema {
 			Optional:     true,
 			Computed:     true,
 			ForceNew:     true,
-			ValidateFunc: stringIsMetroCode(),
+			ValidateFunc: equinix_validation.StringIsMetroCode,
 			Description:  ecxL2ConnectionDescriptions["SellerMetroCode"],
 		},
 		ecxL2ConnectionSchemaNames["AuthorizationKey"]: {

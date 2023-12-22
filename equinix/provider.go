@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"net/http"
 	"reflect"
-	"regexp"
 	"strings"
 	"time"
 
@@ -272,24 +271,6 @@ func hasModelErrorCode(errors []v4.ModelError, code string) bool {
 		}
 	}
 	return false
-}
-
-func stringIsMetroCode() schema.SchemaValidateFunc {
-	return validation.StringMatch(regexp.MustCompile("^[A-Z]{2}$"), "MetroCode must consist of two capital letters")
-}
-
-func stringIsEmailAddress() schema.SchemaValidateFunc {
-	return validation.StringMatch(regexp.MustCompile("^[^ @]+@[^ @]+$"), "not valid email address")
-}
-
-func stringIsPortDefinition() schema.SchemaValidateFunc {
-	return validation.StringMatch(
-		regexp.MustCompile("^(([0-9]+(,[0-9]+){0,9})|([0-9]+-[0-9]+)|(any))$"),
-		"port definition has to be: up to 10 comma sepparated numbers (22,23), range (20-23) or word 'any'")
-}
-
-func stringIsSpeedBand() schema.SchemaValidateFunc {
-	return validation.StringMatch(regexp.MustCompile("^[0-9]+(MB|GB)$"), "SpeedBand should consist of digit followed by MB or GB")
 }
 
 func stringsFound(source []string, target []string) bool {

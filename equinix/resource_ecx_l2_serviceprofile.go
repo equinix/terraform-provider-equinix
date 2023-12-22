@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/equinix/terraform-provider-equinix/internal/config"
+	equinix_validation "github.com/equinix/terraform-provider-equinix/internal/validation"
 
 	"github.com/equinix/ecx-go/v2"
 	"github.com/equinix/rest-go"
@@ -205,7 +206,7 @@ func createECXL2ServiceProfileResourceSchema() map[string]*schema.Schema {
 			Description: ecxL2ServiceProfileDescriptions["OnBandwidthThresholdNotification"],
 			Elem: &schema.Schema{
 				Type:         schema.TypeString,
-				ValidateFunc: stringIsEmailAddress(),
+				ValidateFunc: equinix_validation.StringIsEmailAddress,
 			},
 		},
 		ecxL2ServiceProfileSchemaNames["OnProfileApprovalRejectNotification"]: {
@@ -215,7 +216,7 @@ func createECXL2ServiceProfileResourceSchema() map[string]*schema.Schema {
 			Description: ecxL2ServiceProfileDescriptions["OnProfileApprovalRejectNotification"],
 			Elem: &schema.Schema{
 				Type:         schema.TypeString,
-				ValidateFunc: stringIsEmailAddress(),
+				ValidateFunc: equinix_validation.StringIsEmailAddress,
 			},
 		},
 		ecxL2ServiceProfileSchemaNames["OnVcApprovalRejectionNotification"]: {
@@ -225,7 +226,7 @@ func createECXL2ServiceProfileResourceSchema() map[string]*schema.Schema {
 			Description: ecxL2ServiceProfileDescriptions["OnVcApprovalRejectionNotification"],
 			Elem: &schema.Schema{
 				Type:         schema.TypeString,
-				ValidateFunc: stringIsEmailAddress(),
+				ValidateFunc: equinix_validation.StringIsEmailAddress,
 			},
 		},
 		ecxL2ServiceProfileSchemaNames["OverSubscription"]: {
@@ -248,7 +249,7 @@ func createECXL2ServiceProfileResourceSchema() map[string]*schema.Schema {
 			Description: ecxL2ServiceProfileDescriptions["PrivateUserEmails"],
 			Elem: &schema.Schema{
 				Type:         schema.TypeString,
-				ValidateFunc: stringIsEmailAddress(),
+				ValidateFunc: equinix_validation.StringIsEmailAddress,
 			},
 		},
 		ecxL2ServiceProfileSchemaNames["RequiredRedundancy"]: {
@@ -312,7 +313,7 @@ func createECXL2ServiceProfileResourceSchema() map[string]*schema.Schema {
 					ecxL2ServiceProfilePortSchemaNames["MetroCode"]: {
 						Type:         schema.TypeString,
 						Required:     true,
-						ValidateFunc: stringIsMetroCode(),
+						ValidateFunc: equinix_validation.StringIsMetroCode,
 						Description:  ecxL2ServiceProfilePortDescriptions["MetroCode"],
 					},
 				},

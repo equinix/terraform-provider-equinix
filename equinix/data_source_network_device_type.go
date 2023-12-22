@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/equinix/terraform-provider-equinix/internal/config"
+	equinix_validation "github.com/equinix/terraform-provider-equinix/internal/validation"
 
 	"github.com/equinix/ne-go"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -74,7 +75,7 @@ func dataSourceNetworkDeviceType() *schema.Resource {
 				MinItems: 1,
 				Elem: &schema.Schema{
 					Type:         schema.TypeString,
-					ValidateFunc: stringIsMetroCode(),
+					ValidateFunc: equinix_validation.StringIsMetroCode,
 				},
 				Description: networkDeviceTypeDescriptions["MetroCodes"],
 			},
