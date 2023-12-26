@@ -20,7 +20,7 @@ require (
 	github.com/packethost/packngo v0.30.0
 	github.com/pkg/errors v0.9.1
 	github.com/stretchr/testify v1.8.4
-	golang.org/x/exp v0.0.0-20231110203233-9a3e6036ecaa
+	golang.org/x/exp v0.0.0-20231226003508-02704c960a9b
 	golang.org/x/oauth2 v0.14.0
 )
 
