@@ -1,25 +1,28 @@
 package equinix
 
 import (
+	"context"
 	"fmt"
 	"path"
 	"strings"
+	"time"
 
+	"github.com/equinix/equinix-sdk-go/services/metalv1"
 	equinix_errors "github.com/equinix/terraform-provider-equinix/internal/errors"
 
 	"github.com/equinix/terraform-provider-equinix/internal/config"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
-	"github.com/packethost/packngo"
 )
 
 func resourceMetalProject() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceMetalProjectCreate,
-		Read:   resourceMetalProjectRead,
-		Update: resourceMetalProjectUpdate,
-		Delete: resourceMetalProjectDelete,
+		CreateContext: resourceMetalProjectCreate,
+		ReadContext:   resourceMetalProjectRead,
+		UpdateContext: resourceMetalProjectUpdate,
+		DeleteContext: resourceMetalProjectDelete,
 		Importer: &schema.ResourceImporter{
 			State: schema.ImportStatePassthrough,
 		},
@@ -110,60 +113,69 @@ func resourceMetalProject() *schema.Resource {
 	}
 }
 
-func expandBGPConfig(d *schema.ResourceData) packngo.CreateBGPConfigRequest {
-	bgpCreateRequest := packngo.CreateBGPConfigRequest{
-		DeploymentType: d.Get("bgp_config.0.deployment_type").(string),
-		Asn:            d.Get("bgp_config.0.asn").(int),
+func expandBGPConfig(d *schema.ResourceData) (*metalv1.BgpConfigRequestInput, error) {
+	bgpDeploymentType, err := metalv1.NewBgpConfigRequestInputDeploymentTypeFromValue(d.Get("bgp_config.0.deployment_type").(string))
+	if err != nil {
+		return nil, err
+	}
+
+	bgpCreateRequest := metalv1.BgpConfigRequestInput{
+		DeploymentType: *bgpDeploymentType,
+		Asn:            d.Get("bgp_config.0.asn").(int32),
 	}
 	md5, ok := d.GetOk("bgp_config.0.md5")
 	if ok {
-		bgpCreateRequest.Md5 = md5.(string)
+		bgpCreateRequest.Md5 = metalv1.PtrString(md5.(string))
 	}
 
-	return bgpCreateRequest
+	return &bgpCreateRequest, nil
 }
 
-func resourceMetalProjectCreate(d *schema.ResourceData, meta interface{}) error {
-	meta.(*config.Config).AddModuleToMetalUserAgent(d)
-	client := meta.(*config.Config).Metal
+func resourceMetalProjectCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	meta.(*config.Config).AddModuleToMetalGoUserAgent(d)
+	client := meta.(*config.Config).Metalgo
 
-	createRequest := &packngo.ProjectCreateRequest{
+	createRequest := metalv1.ProjectCreateFromRootInput{
 		Name:           d.Get("name").(string),
-		OrganizationID: d.Get("organization_id").(string),
+		OrganizationId: metalv1.PtrString(d.Get("organization_id").(string)),
 	}
 
-	project, _, err := client.Projects.Create(createRequest)
+	project, _, err := client.ProjectsApi.CreateProject(ctx).ProjectCreateFromRootInput(createRequest).Execute()
 	if err != nil {
-		return equinix_errors.FriendlyError(err)
+		return diag.FromErr(equinix_errors.FriendlyError(err))
 	}
 
-	d.SetId(project.ID)
+	d.SetId(project.GetId())
 
 	_, hasBGPConfig := d.GetOk("bgp_config")
 	if hasBGPConfig {
-		bgpCR := expandBGPConfig(d)
-		_, err := client.BGPConfig.Create(project.ID, bgpCR)
+		bgpCR, err := expandBGPConfig(d)
+		if err == nil {
+			_, err = client.BGPApi.RequestBgpConfig(ctx, project.GetId()).BgpConfigRequestInput(*bgpCR).Execute()
+		}
 		if err != nil {
-			return equinix_errors.FriendlyError(err)
+			return diag.FromErr(equinix_errors.FriendlyError(err))
 		}
 	}
 
 	backendTransfer := d.Get("backend_transfer").(bool)
 	if backendTransfer {
-		pur := packngo.ProjectUpdateRequest{BackendTransfer: &backendTransfer}
-		_, _, err := client.Projects.Update(project.ID, &pur)
+		pur := metalv1.ProjectUpdateInput{
+			BackendTransferEnabled: &backendTransfer,
+		}
+		_, _, err := client.ProjectsApi.UpdateProject(ctx, project.GetId()).ProjectUpdateInput(pur).Execute()
 		if err != nil {
-			return equinix_errors.FriendlyError(err)
+			return diag.FromErr(equinix_errors.FriendlyError(err))
 		}
 	}
-	return resourceMetalProjectRead(d, meta)
+	return resourceMetalProjectRead(ctx, d, meta)
 }
 
-func resourceMetalProjectRead(d *schema.ResourceData, meta interface{}) error {
+func resourceMetalProjectRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	meta.(*config.Config).AddModuleToMetalUserAgent(d)
-	client := meta.(*config.Config).Metal
+	client := meta.(*config.Config).Metalgo
 
-	proj, _, err := client.Projects.Get(d.Id(), nil)
+	proj, _, err := client.ProjectsApi.FindProjectById(ctx, d.Id()).Execute()
 	if err != nil {
 		err = equinix_errors.FriendlyError(err)
 
@@ -174,35 +186,34 @@ func resourceMetalProjectRead(d *schema.ResourceData, meta interface{}) error {
 			return nil
 		}
 
-		return err
+		return diag.FromErr(err)
 	}
 
-	d.SetId(proj.ID)
-	if len(proj.PaymentMethod.URL) != 0 {
-		d.Set("payment_method_id", path.Base(proj.PaymentMethod.URL))
+	d.SetId(proj.GetId())
+	if len(proj.PaymentMethod.GetHref()) != 0 {
+		d.Set("payment_method_id", path.Base(proj.PaymentMethod.GetHref()))
 	}
 	d.Set("name", proj.Name)
-	d.Set("organization_id", path.Base(proj.Organization.URL))
-	d.Set("created", proj.Created)
-	d.Set("updated", proj.Updated)
-	d.Set("backend_transfer", proj.BackendTransfer)
+	//d.Set("organization_id", path.Base(proj.Organization.GetHref())) // spec: organization has no href
+	d.Set("created", proj.GetCreatedAt().Format(time.RFC3339))
+	d.Set("updated", proj.GetUpdatedAt().Format(time.RFC3339))
+	//d.Set("backend_transfer", proj.BackendTransfer) // No backend_transfer_enabled property in API spec
 
-	bgpConf, _, err := client.BGPConfig.Get(proj.ID, nil)
+	bgpConf, _, err := client.BGPApi.FindBgpConfigByProject(ctx, proj.GetId()).Execute()
 
 	if (err == nil) && (bgpConf != nil) {
 		// guard against an empty struct
-		if bgpConf.ID != "" {
+		if bgpConf.GetId() != "" {
 			err := d.Set("bgp_config", flattenBGPConfig(bgpConf))
 			if err != nil {
-				err = equinix_errors.FriendlyError(err)
-				return err
+				return diag.FromErr(equinix_errors.FriendlyError(err))
 			}
 		}
 	}
 	return nil
 }
 
-func flattenBGPConfig(l *packngo.BGPConfig) []map[string]interface{} {
+func flattenBGPConfig(l *metalv1.BgpConfig) []map[string]interface{} {
 	result := make([]map[string]interface{}, 0, 1)
 
 	if l == nil {
@@ -211,20 +222,20 @@ func flattenBGPConfig(l *packngo.BGPConfig) []map[string]interface{} {
 
 	r := make(map[string]interface{})
 
-	if l.Status != "" {
-		r["status"] = l.Status
+	if l.GetStatus() != "" {
+		r["status"] = l.GetStatus()
 	}
-	if l.DeploymentType != "" {
-		r["deployment_type"] = l.DeploymentType
+	if l.GetDeploymentType() != "" {
+		r["deployment_type"] = l.GetDeploymentType()
 	}
-	if l.Md5 != "" {
-		r["md5"] = l.Md5
+	if l.GetMd5() != "" {
+		r["md5"] = l.GetMd5()
 	}
-	if l.Asn != 0 {
-		r["asn"] = l.Asn
+	if l.GetAsn() != 0 {
+		r["asn"] = l.GetAsn()
 	}
-	if l.MaxPrefix != 0 {
-		r["max_prefix"] = l.MaxPrefix
+	if l.GetMaxPrefix() != 0 {
+		r["max_prefix"] = l.GetMaxPrefix()
 	}
 
 	result = append(result, r)
@@ -232,31 +243,33 @@ func flattenBGPConfig(l *packngo.BGPConfig) []map[string]interface{} {
 	return result
 }
 
-func resourceMetalProjectUpdate(d *schema.ResourceData, meta interface{}) error {
-	meta.(*config.Config).AddModuleToMetalUserAgent(d)
-	client := meta.(*config.Config).Metal
-	updateRequest := &packngo.ProjectUpdateRequest{}
+func resourceMetalProjectUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	meta.(*config.Config).AddModuleToMetalGoUserAgent(d)
+	client := meta.(*config.Config).Metalgo
+	updateRequest := metalv1.ProjectUpdateInput{}
 	if d.HasChange("name") {
 		pName := d.Get("name").(string)
 		updateRequest.Name = &pName
 	}
 	if d.HasChange("payment_method_id") {
 		pPayment := d.Get("payment_method_id").(string)
-		updateRequest.PaymentMethodID = &pPayment
+		updateRequest.PaymentMethodId = &pPayment
 	}
 	if d.HasChange("backend_transfer") {
 		pBT := d.Get("backend_transfer").(bool)
-		updateRequest.BackendTransfer = &pBT
+		updateRequest.BackendTransferEnabled = &pBT
 	}
 	if d.HasChange("bgp_config") {
 		o, n := d.GetChange("bgp_config")
 		oldarr := o.([]interface{})
 		newarr := n.([]interface{})
 		if len(newarr) == 1 {
-			bgpCreateRequest := expandBGPConfig(d)
-			_, err := client.BGPConfig.Create(d.Id(), bgpCreateRequest)
+			bgpCreateRequest, err := expandBGPConfig(d)
+			if err == nil {
+				_, err = client.BGPApi.RequestBgpConfig(ctx, d.Id()).BgpConfigRequestInput(*bgpCreateRequest).Execute()
+			}
 			if err != nil {
-				return equinix_errors.FriendlyError(err)
+				return diag.FromErr(equinix_errors.FriendlyError(err))
 			}
 		} else {
 			if len(oldarr) == 1 {
@@ -270,27 +283,26 @@ func resourceMetalProjectUpdate(d *schema.ResourceData, meta interface{}) error 
 						"}", m["deployment_type"].(string), m["md5"].(string),
 					m["asn"].(int))
 
-				errStr := fmt.Errorf("BGP Config can not be removed from a project, please add back\n%s", bgpConfStr)
-				return equinix_errors.FriendlyError(errStr)
+				return diag.Errorf("BGP Config can not be removed from a project, please add back\n%s", bgpConfStr)
 			}
 		}
 	} else {
-		_, _, err := client.Projects.Update(d.Id(), updateRequest)
+		_, _, err := client.ProjectsApi.UpdateProject(ctx, d.Id()).ProjectUpdateInput(updateRequest).Execute()
 		if err != nil {
-			return equinix_errors.FriendlyError(err)
+			return diag.FromErr(equinix_errors.FriendlyError(err))
 		}
 	}
 
-	return resourceMetalProjectRead(d, meta)
+	return resourceMetalProjectRead(ctx, d, meta)
 }
 
-func resourceMetalProjectDelete(d *schema.ResourceData, meta interface{}) error {
-	meta.(*config.Config).AddModuleToMetalUserAgent(d)
-	client := meta.(*config.Config).Metal
+func resourceMetalProjectDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	meta.(*config.Config).AddModuleToMetalGoUserAgent(d)
+	client := meta.(*config.Config).Metalgo
 
-	resp, err := client.Projects.Delete(d.Id())
-	if equinix_errors.IgnoreResponseErrors(equinix_errors.HttpForbidden, equinix_errors.HttpNotFound)(resp, err) != nil {
-		return equinix_errors.FriendlyError(err)
+	resp, err := client.ProjectsApi.DeleteProject(ctx, d.Id()).Execute()
+	if equinix_errors.IgnoreHttpResponseErrors(equinix_errors.HttpForbidden, equinix_errors.HttpNotFound)(resp, err) != nil {
+		return diag.FromErr(equinix_errors.FriendlyError(err))
 	}
 
 	d.SetId("")
