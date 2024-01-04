@@ -13,6 +13,497 @@ Fabric V4 API compatible resource allows creation and management of Equinix Fabr
 
 ~> **Note** Equinix Fabric v4 resources and datasources are currently in Beta. The interfaces related to `equinix_fabric_` resources and datasources may change ahead of general availability. Please, do not hesitate to report any problems that you experience by opening a new [issue](https://github.com/equinix/terraform-provider-equinix/issues/new?template=bug.md)
 
+## Example Usage
+
+Port to Port EVPL_VC Connection:
+```hcl
+resource "equinix_fabric_connection" "port2port" {
+  name = "ConnectionName"
+  type = "EVPL_VC"
+  notifications {
+    type = "ALL"
+    emails = ["example@equinix.com","test1@equinix.com"]
+  }
+  bandwidth = 50
+  order {
+    purchase_order_number= "1-323292"
+  }
+  a_side {
+    access_point {
+      type = "COLO"
+      port {
+        uuid = "<aside_port_uuid>"
+      }
+      link_protocol {
+        type = "QINQ"
+        vlan_s_tag = "1976"
+        
+      }
+    }
+  }
+  z_side {
+    access_point {
+      type = "COLO"
+      port {
+        uuid = "<zside_port_uuid>"
+      }
+      link_protocol {
+        type = "QINQ"
+        vlan_s_tag = "3711"
+      }
+      location {
+        metro_code= "SV"
+      }
+    }
+  }
+}
+```
+
+Port to AWS EVPL_VC Connection:
+```hcl
+resource "equinix_fabric_connection" "port2aws" {
+  name = "ConnectionName"
+  type = "EVPL_VC"
+  notifications {
+    type = "ALL"
+    emails = ["example@equinix.com","test1@equinix.com"]
+  }
+  bandwidth = 50
+  redundancy { priority= "PRIMARY" }
+  order {
+    purchase_order_number= "1-323929"
+  }
+  a_side {
+    access_point {
+      type= "COLO"
+      port {
+        uuid = "<aside_port_uuid>"
+      }
+      link_protocol {
+        type = "QINQ"
+        vlan_s_tag = "2019"
+        vlan_c_tag = "2112"
+      }
+    }
+  }
+  z_side {
+    access_point {
+      type = "SP"
+      authentication_key = "<aws_account_id>"
+      seller_region = "us-west-1"
+      profile {
+        type = "L2_PROFILE"
+        uuid = "<service_profile_uuid>"
+      }
+      location {
+        metro_code = "SV"
+      }
+    }
+  }
+}
+```
+
+Port to Port EPL Connection:
+```hcl
+resource "equinix_fabric_connection" "epl" {
+  name = "ConnectionName"
+  type = "EPL_VC"
+  notifications {
+    type   = "ALL"
+    emails = ["example@equinix.com", "test1@equinix.com"]
+  }
+  bandwidth = 50
+  order {
+    purchase_order_number = "1-323292"
+  }
+  a_side {
+    access_point {
+      type = "COLO"
+      port {
+        uuid = "<aside_port_uuid>"
+      }
+    }
+  }
+  z_side {
+    access_point {
+      type = "COLO"
+      port {
+        uuid = "<zside_port_uuid>"
+      }
+      location {
+        metro_code = "SV"
+      }
+    }
+  }
+}
+```
+
+Port to Port ACCESS_EPL_VC Connection:
+```hcl
+resource "equinix_fabric_connection" "access_epl_vc" {
+  name = "ConnectionName"
+  type = "ACCESS_EPL_VC"
+  notifications {
+    type   = "ALL"
+    emails = ["example@equinix.com", "test1@equinix.com"]
+  }
+  bandwidth = 50
+  order {
+    purchase_order_number = "1-323292"
+  }
+  a_side {
+    access_point {
+      type = "COLO"
+      port {
+        uuid = "<aside_port_uuid>"
+      }
+      link_protocol {
+        type       = "QINQ"
+        vlan_s_tag = "1976"
+      }
+    }
+  }
+  z_side {
+    access_point {
+      type = "COLO"
+      port {
+        uuid = "<zside_port_uuid>"
+      }
+      location {
+        metro_code = "SV"
+      }
+    }
+  }
+}
+```
+
+Virtual Device to Port Connection:
+```hcl
+resource "equinix_fabric_connection" "vd2port" {
+  name = "ConnectionName"
+  type = "EVPL_VC"
+  notifications {
+    type   = "ALL"
+    emails = ["example@equinix.com", "test1@equinix.com"]
+  }
+  bandwidth = 50
+  order {
+    purchase_order_number = "1-323292"
+  }
+  a_side {
+    access_point {
+      type = "VD"
+      virtual_device {
+        type = "EDGE"
+        uuid = "<device_uuid>"
+      }
+      interface {
+        type = "NETWORK"
+        id = 45654
+      }
+    }
+  }
+  z_side {
+    access_point {
+      type = "COLO"
+      port {
+        uuid = "<zside_port_uuid>"
+      }
+      link_protocol {
+        type       = "DOT1Q"
+        vlan_s_tag = "3711"
+      }
+      location {
+        metro_code = "SV"
+      }
+    }
+  }
+}
+```
+
+Virtual Device to Service Token Connection:
+```hcl
+resource "equinix_fabric_connection" "vd2token" {
+  name = "ConnectionName"
+  type = "EVPL_VC"
+  notifications {
+    type   = "ALL"
+    emails = ["example@equinix.com", "test1@equinix.com"]
+  }
+  bandwidth = 50
+  order {
+    purchase_order_number = "1-323292"
+  }
+  a_side {
+    access_point {
+      type = "VD"
+      virtual_device {
+        type = "EDGE"
+        uuid = "<device_uuid>"
+      }
+      interface {
+        type = "NETWORK"
+        id = 45654
+      }
+    }
+  }
+  z_side {
+    service_token {
+      uuid = "<service_token_uuid>"
+    }
+  }
+}
+```
+
+Service Token to AWS Connection:
+```hcl
+resource "equinix_fabric_connection" "token2aws" {
+  name = "ConnectionName"
+  type = "EVPL_VC"
+  notifications {
+    type   = "ALL"
+    emails = ["example@equinix.com", "test1@equinix.com"]
+  }
+  bandwidth = 50
+  order {
+    purchase_order_number = "1-323292"
+  }
+  a_side {
+    service_token {
+      uuid = "<service_token_uuid>"
+    }
+  }
+  z_side {
+    access_point {
+      type = "SP"
+      authentication_key = "<aws_account_id>"
+      seller_region = "us-west-1"
+      profile {
+        type = "L2_PROFILE"
+        uuid = "<service_profile_uuid>"
+      }
+      location {
+        metro_code = "SV"
+      }
+    }
+  }
+}
+```
+
+Cloud Router to Port Connection:
+```hcl
+resource "equinix_fabric_connection" "fcr2port"{
+  name = "ConnectionName"
+  type = "IP_VC"
+  notifications{
+    type = "ALL"
+    emails = ["example@equinix.com","test1@equinix.com"]
+  }
+  bandwidth = 50
+  order {
+    purchase_order_number = "1-323292"
+  }
+  a_side {
+    access_point {
+      type = "CLOUD_ROUTER"
+      router {
+        uuid = "<cloud_router_uuid>"
+      }
+    }
+  }
+  z_side {
+    access_point {
+      type = "COLO"
+      port {
+        uuid = "<port_uuid>"
+      }
+      link_protocol {
+        type = "DOT1Q"
+        vlan_tag = "2711"
+      }
+      location {
+        metro_code = "SV"
+      }
+    }
+  }
+}
+```
+
+Cloud Router to Azure Connection:
+```hcl
+resource "equinix_fabric_connection" "fcr2azure"{
+  name = "ConnectionName"
+  type = "IP_VC"
+  notifications{
+    type = "ALL"
+    emails = ["example@equinix.com","test1@equinix.com"]
+  }
+  bandwidth = 50
+  order {
+    purchase_order_number = "1-323292"
+  }
+  a_side {
+    access_point {
+      type = "CLOUD_ROUTER"
+      router {
+        uuid = "<cloud_router_uuid>"
+      }
+    }
+  }
+  z_side {
+    access_point {
+      type = "SP"
+      authentication_key = "<Azure_ExpressRouter_Auth_Key>"
+      peering_type = "PRIVATE"
+      profile {
+        type = "L2_PROFILE"
+        uuid = "<Azure_Service_Profile_UUID>"
+      }
+      location {
+        metro_code = "SV"
+      }
+    }
+  }
+}
+```
+
+Cloud Router to Network Connection:
+```hcl
+resource "equinix_fabric_connection" "fcr2network"{
+  name = "ConnectionName"
+  type = "IPWAN_VC"
+  notifications{
+    type = "ALL"
+    emails = ["example@equinix.com","test1@equinix.com"]
+  }
+  bandwidth = 50
+  order {
+    purchase_order_number = "1-323292"
+  }
+  a_side {
+    access_point {
+      type = "CLOUD_ROUTER"
+      router {
+        uuid = "<cloud_router_uuid>"
+      }
+    }
+  }
+  z_side {
+    access_point {
+      type = "NETWORK"
+      network {
+        uuid = "<network_uuid>"
+      }
+    }
+  }
+}
+```
+
+Virtual Device to Network Connection:
+```hcl
+resource "equinix_fabric_connection" "vd2token" {
+  name = "ConnectionName"
+  type = "EVPLAN_VC"
+  notifications {
+    type   = "ALL"
+    emails = ["example@equinix.com", "test1@equinix.com"]
+  }
+  bandwidth = 50
+  order {
+    purchase_order_number = "1-323292"
+  }
+  a_side {
+    access_point {
+      type = "VD"
+      virtual_device {
+        type = "EDGE"
+        uuid = "<device_uuid>"
+      }
+      interface {
+        type = "NETWORK"
+        id = 45654
+      }
+    }
+  }
+  z_side {
+    access_point {
+      type = "NETWORK"
+      network {
+        uuid = "<network_uuid>"
+      }
+    }
+  }
+}
+```
+
+EPLAN Port to Network Connection:
+```hcl
+resource "equinix_fabric_connection" "epl" {
+  name = "ConnectionName"
+  type = "EPLAN_VC"
+  notifications {
+    type   = "ALL"
+    emails = ["example@equinix.com", "test1@equinix.com"]
+  }
+  bandwidth = 50
+  order {
+    purchase_order_number = "1-323292"
+  }
+  a_side {
+    access_point {
+      type = "COLO"
+      port {
+        uuid = "<aside_port_uuid>"
+      }
+    }
+  }
+  z_side {
+    access_point {
+      type = "NETWORK"
+      network {
+        uuid = "<network_uuid>"
+      }
+    }
+  }
+}
+```
+
+EVPLAN Port to Network Connection:
+```hcl
+resource "equinix_fabric_connection" "epl" {
+  name = "ConnectionName"
+  type = "EVPLAN_VC"
+  notifications {
+    type   = "ALL"
+    emails = ["example@equinix.com", "test1@equinix.com"]
+  }
+  bandwidth = 50
+  order {
+    purchase_order_number = "1-323292"
+  }
+  a_side {
+    access_point {
+      type = "COLO"
+      port {
+        uuid = "<aside_port_uuid>"
+      }
+      link_protocol {
+        type = "DOT1Q"
+        vlan_s_tag = "1976"
+
+      }
+    }
+  }
+  z_side {
+    access_point {
+      type = "NETWORK"
+      network {
+        uuid = "<network_uuid>"
+      }
+    }
+  }
+}
+```
 
 
 <!-- schema generated by tfplugindocs -->
