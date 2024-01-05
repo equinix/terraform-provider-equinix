@@ -100,6 +100,11 @@ resource "equinix_fabric_connection" "port2aws" {
       }
     }
   }
+  
+  additional_info = [
+    { key = "accessKey", value = "<aws_access_key>" },
+    { key = "secretKey", value = "<aws_secret_key>" }
+  ]
 }
 ```
 
