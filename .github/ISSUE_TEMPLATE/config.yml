@@ -1,7 +1,7 @@
 blank_issues_enabled: true
 contact_links:
   - name: Terraform Equinix Provider Questions
-    url: https://community.equinix.com/t5/forums/filteredbylabelpage/board-id/OR/label-name/Developer
+    url: https://community.equinix.com/developers
     about: GitHub issues in this repository are only intended for bug reports and feature requests. Other issues will be closed. Please ask and answer questions through the Equinix Community Forum.
 
   - name: Terraform Core Bug Reports and Feature Requests
