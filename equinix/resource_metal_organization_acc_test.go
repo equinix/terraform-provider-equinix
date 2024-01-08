@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"testing"
+	"time"
 
 	"github.com/equinix/terraform-provider-equinix/internal/config"
 
@@ -75,7 +76,8 @@ func TestAccMetalOrganization_create(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccMetalOrganizationConfig_basicUpdate(rInt),
+				PreConfig: testAccMetalWaitForOrganization,
+				Config:    testAccMetalOrganizationConfig_basicUpdate(rInt),
 				Check: resource.ComposeTestCheckFunc(
 					testAccMetalOrganizationExists("equinix_metal_organization.test", &org2),
 					resource.TestCheckResourceAttr(
@@ -102,6 +104,14 @@ func testAccMetalSameOrganization(t *testing.T, before, after *packngo.Organizat
 		}
 		return nil
 	}
+}
+
+func testAccMetalWaitForOrganization() {
+	// Some aspect of organization creation takes a while
+	// to propagate; updating an organization too soon after
+	// create causes test failures and probably doesn't
+	// reflect real-world usage.
+	time.Sleep(5 * time.Minute)
 }
 
 func TestAccMetalOrganization_importBasic(t *testing.T) {
