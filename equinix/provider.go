@@ -3,7 +3,6 @@ package equinix
 import (
 	"context"
 	"fmt"
-	"net/http"
 	"reflect"
 	"strings"
 	"time"
@@ -11,9 +10,7 @@ import (
 	"github.com/equinix/terraform-provider-equinix/internal/resources/metal/metal_project_ssh_key"
 	"github.com/equinix/terraform-provider-equinix/internal/resources/metal/metal_ssh_key"
 
-	v4 "github.com/equinix-labs/fabric-go/fabric/v4"
 	"github.com/equinix/ecx-go/v2"
-	"github.com/equinix/rest-go"
 	"github.com/equinix/terraform-provider-equinix/internal/config"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -254,24 +251,6 @@ func expandInterfaceMapToStringMap(mapIn map[string]interface{}) map[string]stri
 	return mapOut
 }
 
-func hasApplicationErrorCode(errors []rest.ApplicationError, code string) bool {
-	for _, err := range errors {
-		if err.Code == code {
-			return true
-		}
-	}
-	return false
-}
-
-func hasModelErrorCode(errors []v4.ModelError, code string) bool {
-	for _, err := range errors {
-		if err.ErrorCode == code {
-			return true
-		}
-	}
-	return false
-}
-
 func stringsFound(source []string, target []string) bool {
 	for i := range source {
 		if !isStringInSlice(source[i], target) {
@@ -396,15 +375,6 @@ func slicesMatchCaseInsensitive(s1, s2 []string) bool {
 		}
 	}
 	return true
-}
-
-func isRestNotFoundError(err error) bool {
-	if restErr, ok := err.(rest.Error); ok {
-		if restErr.HTTPCode == http.StatusNotFound {
-			return true
-		}
-	}
-	return false
 }
 
 func schemaSetToMap(set *schema.Set) map[int]interface{} {
