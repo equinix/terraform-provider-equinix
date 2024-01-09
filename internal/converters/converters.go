@@ -1,8 +1,11 @@
 package converters
 
 import (
+	"fmt"
 	"strconv"
 	"strings"
+
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 func StringArrToIfArr(sli []string) []interface{} {
@@ -63,4 +66,25 @@ func Difference(a, b []string) []string {
 		}
 	}
 	return diff
+}
+
+func ListToInt32List(list []interface{}) []int32 {
+	result := make([]int32, len(list))
+	for i, v := range list {
+		result[i] = int32(v.(int))
+	}
+	return result
+}
+
+func SetToStringList(set *schema.Set) []string {
+	list := set.List()
+	return IfArrToStringArr(list)
+}
+
+func InterfaceMapToStringMap(mapIn map[string]interface{}) map[string]string {
+	mapOut := make(map[string]string)
+	for k, v := range mapIn {
+		mapOut[k] = fmt.Sprintf("%v", v)
+	}
+	return mapOut
 }

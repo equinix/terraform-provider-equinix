@@ -7,6 +7,7 @@ import (
 	"net/http"
 
 	"github.com/equinix/terraform-provider-equinix/internal/config"
+	"github.com/equinix/terraform-provider-equinix/internal/converters"
 	equinix_validation "github.com/equinix/terraform-provider-equinix/internal/validation"
 
 	"github.com/equinix/ne-go"
@@ -338,7 +339,7 @@ func expandACLTemplateInboundRules(rules []interface{}) []ne.ACLTemplateInboundR
 		rule := ne.ACLTemplateInboundRule{}
 		rule.SeqNo = ne.Int(i + 1)
 		if v, ok := ruleMap[networkACLTemplateInboundRuleSchemaNames["Subnets"]]; ok {
-			rule.Subnets = expandListToStringList(v.([]interface{}))
+			rule.Subnets = converters.IfArrToStringArr(v.([]interface{}))
 		}
 		if v, ok := ruleMap[networkACLTemplateInboundRuleSchemaNames["Subnet"]]; ok {
 			rule.Subnet = ne.String(v.(string))

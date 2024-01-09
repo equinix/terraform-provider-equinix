@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/equinix/terraform-provider-equinix/internal/config"
+	"github.com/equinix/terraform-provider-equinix/internal/converters"
 
 	"github.com/equinix/ne-go"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -116,7 +117,7 @@ func dataSourceNetworkDeviceSoftwareRead(ctx context.Context, d *schema.Resource
 	conf := m.(*config.Config)
 	var diags diag.Diagnostics
 	typeCode := d.Get(networkDeviceSoftwareSchemaNames["DeviceTypeCode"]).(string)
-	pkgCodes := expandSetToStringList(d.Get(networkDeviceSoftwareSchemaNames["PackageCodes"]).(*schema.Set))
+	pkgCodes := converters.SetToStringList(d.Get(networkDeviceSoftwareSchemaNames["PackageCodes"]).(*schema.Set))
 	versions, err := conf.Ne.GetDeviceSoftwareVersions(typeCode)
 	if err != nil {
 		return diag.FromErr(err)

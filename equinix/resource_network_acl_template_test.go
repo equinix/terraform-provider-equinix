@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/equinix/ne-go"
+	"github.com/equinix/terraform-provider-equinix/internal/converters"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/stretchr/testify/assert"
 )
@@ -119,7 +120,7 @@ func TestNetworkACLTemplate_expandInboundRules(t *testing.T) {
 	expected := []ne.ACLTemplateInboundRule{
 		{
 			SeqNo:       ne.Int(1),
-			Subnets:     expandListToStringList(input[0].(map[string]interface{})[networkACLTemplateInboundRuleSchemaNames["Subnets"]].([]interface{})),
+			Subnets:     converters.IfArrToStringArr(input[0].(map[string]interface{})[networkACLTemplateInboundRuleSchemaNames["Subnets"]].([]interface{})),
 			Subnet:      nilSubnet,
 			Protocol:    ne.String(input[0].(map[string]interface{})[networkACLTemplateInboundRuleSchemaNames["Protocol"]].(string)),
 			SrcPort:     ne.String(input[0].(map[string]interface{})[networkACLTemplateInboundRuleSchemaNames["SrcPort"]].(string)),

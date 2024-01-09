@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/equinix/terraform-provider-equinix/internal/config"
+	"github.com/equinix/terraform-provider-equinix/internal/converters"
 	equinix_errors "github.com/equinix/terraform-provider-equinix/internal/errors"
 	equinix_validation "github.com/equinix/terraform-provider-equinix/internal/validation"
 
@@ -827,7 +828,7 @@ func createECXL2Connections(d *schema.ResourceData) (*ecx.L2Connection, *ecx.L2C
 		primary.SpeedUnit = ecx.String(v.(string))
 	}
 	if v, ok := d.GetOk(ecxL2ConnectionSchemaNames["Notifications"]); ok {
-		primary.Notifications = expandSetToStringList(v.(*schema.Set))
+		primary.Notifications = converters.SetToStringList(v.(*schema.Set))
 	}
 	if v, ok := d.GetOk(ecxL2ConnectionSchemaNames["PurchaseOrderNumber"]); ok {
 		primary.PurchaseOrderNumber = ecx.String(v.(string))

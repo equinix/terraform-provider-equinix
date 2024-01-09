@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/equinix/ecx-go/v2"
+	"github.com/equinix/terraform-provider-equinix/internal/converters"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/stretchr/testify/assert"
@@ -112,7 +113,7 @@ func TestFabricL2Connection_updateResourceData(t *testing.T) {
 	assert.Equal(t, ecx.StringValue(input.SpeedUnit), d.Get(ecxL2ConnectionSchemaNames["SpeedUnit"]), "SpeedUnit matches")
 	assert.Equal(t, ecx.StringValue(input.Status), d.Get(ecxL2ConnectionSchemaNames["Status"]), "Status matches")
 	assert.Equal(t, ecx.StringValue(input.ProviderStatus), d.Get(ecxL2ConnectionSchemaNames["ProviderStatus"]), "ProviderStatus matches")
-	assert.Equal(t, input.Notifications, expandSetToStringList(d.Get(ecxL2ConnectionSchemaNames["Notifications"]).(*schema.Set)), "Notifications matches")
+	assert.Equal(t, input.Notifications, converters.SetToStringList(d.Get(ecxL2ConnectionSchemaNames["Notifications"]).(*schema.Set)), "Notifications matches")
 	assert.Equal(t, ecx.StringValue(input.PurchaseOrderNumber), d.Get(ecxL2ConnectionSchemaNames["PurchaseOrderNumber"]), "PurchaseOrderNumber matches")
 	assert.Equal(t, ecx.StringValue(input.PortUUID), d.Get(ecxL2ConnectionSchemaNames["PortUUID"]), "PortUUID matches")
 	assert.Equal(t, ecx.StringValue(input.DeviceUUID), d.Get(ecxL2ConnectionSchemaNames["DeviceUUID"]), "DeviceUUID matches")
