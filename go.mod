@@ -7,7 +7,7 @@ require (
 	github.com/equinix-labs/fabric-go v0.7.1
 	github.com/equinix/ecx-go/v2 v2.3.1
 	github.com/equinix/equinix-sdk-go v0.31.0
-	github.com/equinix/ne-go v1.12.0
+	github.com/equinix/ne-go v1.13.0
 	github.com/equinix/oauth2-go v1.0.0
 	github.com/equinix/rest-go v1.3.0
 	github.com/google/uuid v1.5.0

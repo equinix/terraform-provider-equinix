@@ -966,6 +966,14 @@ func resourceNetworkDeviceUpdate(ctx context.Context, d *schema.ResourceData, m 
 	}
 	updateReq := client.NewDeviceUpdateRequest(d.Id())
 	primaryChanges := getResourceDataChangedKeys(supportedChanges, d)
+	var clusterChanges map[string]interface{}
+	clusterSupportedChanges := []string{neDeviceClusterSchemaNames["ClusterName"]}
+	if _, ok := d.GetOk(neDeviceSchemaNames["ClusterDetails"]); ok {
+		clusterChanges = getResourceDataListElementChanges(clusterSupportedChanges, neDeviceSchemaNames["ClusterDetails"], 0, d)
+		for key, value := range clusterChanges {
+			primaryChanges[key] = value
+		}
+	}
 	if err := fillNetworkDeviceUpdateRequest(updateReq, primaryChanges).Execute(); err != nil {
 		return diag.FromErr(err)
 	}
@@ -1506,6 +1514,8 @@ func fillNetworkDeviceUpdateRequest(updateReq ne.DeviceUpdateRequest, changes ma
 			updateReq.WithACLTemplate(changeValue.(string))
 		case neDeviceSchemaNames["MgmtAclTemplateUuid"]:
 			updateReq.WithMgmtAclTemplate(changeValue.(string))
+		case neDeviceClusterSchemaNames["ClusterName"]:
+			updateReq.WithClusterName(changeValue.(string))
 		}
 	}
 	return updateReq
