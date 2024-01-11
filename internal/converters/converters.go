@@ -17,12 +17,9 @@ func StringArrToIfArr(sli []string) []interface{} {
 }
 
 func IfArrToStringArr(ifaceArr []interface{}) []string {
-	var arr []string
-	for _, v := range ifaceArr {
-		if v == nil {
-			continue
-		}
-		arr = append(arr, v.(string))
+	arr := make([]string, len(ifaceArr))
+	for i, v := range ifaceArr {
+		arr[i] = fmt.Sprint(v)
 	}
 	return arr
 }
