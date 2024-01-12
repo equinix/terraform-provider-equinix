@@ -2,11 +2,9 @@
 subcategory: "Fabric"
 ---
 
-# DEPRECATED RESOURCE
-
-End of Life will be June 30th, 2024. Use equinix_fabric_service_profile instead.
-
 # equinix_ecx_l2_serviceprofile (Resource)
+
+!> **DEPRECATED** End of Life will be June 30th, 2024. Use `equinix_fabric_service_profile` instead.
 
 Resource `equinix_ecx_l2_serviceprofile` is used to manage layer 2 service profiles
 in Equinix Fabric.

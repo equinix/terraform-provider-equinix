@@ -4,15 +4,11 @@ page_title: "equinix_fabric_service_profile Data Source - terraform-provider-equ
 subcategory: "Fabric"
 description: |-
   Fabric V4 API compatible data resource that allow user to fetch Service Profile by UUID filter criteria
-  ~> Note Equinix Fabric v4 resources and datasources are currently in Beta. The interfaces related to equinix_fabric_ resources and datasources may change ahead of general availability
 ---
 
 # equinix_fabric_service_profile (Data Source)
 
 Fabric V4 API compatible data resource that allow user to fetch Service Profile by UUID filter criteria
-
-~> **Note** Equinix Fabric v4 resources and datasources are currently in Beta. The interfaces related to `equinix_fabric_` resources and datasources may change ahead of general availability
-
 
 ## Example Usage
 

@@ -4,14 +4,11 @@ page_title: "equinix_fabric_connection Data Source - terraform-provider-equinix"
 subcategory: "Fabric"
 description: |-
   Fabric V4 API compatible data resource that allow user to fetch connection for a given UUID
-  ~> Note Equinix Fabric v4 resources and datasources are currently in Beta. The interfaces related to equinix_fabric_ resources and datasources may change ahead of general availability. Please, do not hesitate to report any problems that you experience by opening a new issue https://github.com/equinix/terraform-provider-equinix/issues/new?template=bug.md
 ---
 
 # equinix_fabric_connection (Data Source)
 
 Fabric V4 API compatible data resource that allow user to fetch connection for a given UUID
-
-~> **Note** Equinix Fabric v4 resources and datasources are currently in Beta. The interfaces related to `equinix_fabric_` resources and datasources may change ahead of general availability. Please, do not hesitate to report any problems that you experience by opening a new [issue](https://github.com/equinix/terraform-provider-equinix/issues/new?template=bug.md)
 
 ## Example Usage
 
