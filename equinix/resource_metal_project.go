@@ -194,10 +194,10 @@ func resourceMetalProjectRead(ctx context.Context, d *schema.ResourceData, meta 
 		d.Set("payment_method_id", path.Base(proj.PaymentMethod.GetHref()))
 	}
 	d.Set("name", proj.Name)
-	//d.Set("organization_id", path.Base(proj.Organization.GetHref())) // spec: organization has no href
+	d.Set("organization_id", path.Base(proj.Organization.AdditionalProperties["href"].(string))) // spec: organization has no href
 	d.Set("created", proj.GetCreatedAt().Format(time.RFC3339))
 	d.Set("updated", proj.GetUpdatedAt().Format(time.RFC3339))
-	//d.Set("backend_transfer", proj.BackendTransfer) // No backend_transfer_enabled property in API spec
+	d.Set("backend_transfer", proj.AdditionalProperties["backend_transfer_enabled"].(bool)) // No backend_transfer_enabled property in API spec
 
 	bgpConf, _, err := client.BGPApi.FindBgpConfigByProject(ctx, proj.GetId()).Execute()
 

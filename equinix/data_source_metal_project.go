@@ -147,7 +147,7 @@ func dataSourceMetalProjectRead(ctx context.Context, d *schema.ResourceData, met
 	d.Set("organization_id", path.Base(project.Organization.GetId())) // Should be gethref?
 	d.Set("created", project.GetCreatedAt().Format(time.RFC3339))
 	d.Set("updated", project.GetUpdatedAt().Format(time.RFC3339))
-	//d.Set("backend_transfer", project.BackendTransfer) // No backend_transfer_enabled property in API spec
+	d.Set("backend_transfer", project.AdditionalProperties["backend_transfer_enabled"].(bool)) // No backend_transfer_enabled property in API spec
 
 	bgpConf, _, err := client.BGPApi.FindBgpConfigByProject(ctx, project.GetId()).Execute()
 	userIds := []string{}
