@@ -4,7 +4,7 @@ subcategory: "Fabric"
 
 # equinix_ecx_l2_connection_accepter (Resource)
 
-!> **DEPRECATED** Use the [`aws_dx_connection_confirmation`](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/dx_connection_confirmation)
+!> **DEPRECATED** End of Life will be June 30th, 2024. Use the [`aws_dx_connection_confirmation`](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/dx_connection_confirmation)
 resource from the [AWS provider](https://registry.terraform.io/providers/hashicorp/aws/latest/docs).
 The documentation below applies to version v1.3 and below of the Equinix provider. Later versions
 of the Equinix provider will return an error, requiring usage of the
