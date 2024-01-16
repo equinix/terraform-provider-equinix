@@ -7,7 +7,6 @@ import (
 	"time"
 
 	"github.com/equinix/terraform-provider-equinix/internal/config"
-	equinix_errors "github.com/equinix/terraform-provider-equinix/internal/errors"
 
 	"github.com/equinix/equinix-sdk-go/services/metalv1"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -161,7 +160,6 @@ func dataSourceMetalProjectRead(ctx context.Context, d *schema.ResourceData, met
 		if bgpConf.GetId() != "" {
 			err := d.Set("bgp_config", flattenBGPConfig(bgpConf))
 			if err != nil {
-				err = equinix_errors.FriendlyError(err)
 				return diag.FromErr(err)
 			}
 		}

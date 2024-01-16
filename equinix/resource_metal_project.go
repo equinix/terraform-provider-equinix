@@ -121,7 +121,7 @@ func expandBGPConfig(d *schema.ResourceData) (*metalv1.BgpConfigRequestInput, er
 
 	bgpCreateRequest := metalv1.BgpConfigRequestInput{
 		DeploymentType: *bgpDeploymentType,
-		Asn:            d.Get("bgp_config.0.asn").(int32),
+		Asn:            int32(d.Get("bgp_config.0.asn").(int)),
 	}
 	md5, ok := d.GetOk("bgp_config.0.md5")
 	if ok {
@@ -136,13 +136,18 @@ func resourceMetalProjectCreate(ctx context.Context, d *schema.ResourceData, met
 	client := meta.(*config.Config).Metalgo
 
 	createRequest := metalv1.ProjectCreateFromRootInput{
-		Name:           d.Get("name").(string),
-		OrganizationId: metalv1.PtrString(d.Get("organization_id").(string)),
+		Name: d.Get("name").(string),
 	}
 
-	project, _, err := client.ProjectsApi.CreateProject(ctx).ProjectCreateFromRootInput(createRequest).Execute()
+	organization_id := d.Get("organization_id").(string)
+	if organization_id != "" {
+		createRequest.OrganizationId = &organization_id
+	}
+
+	project, resp, err := client.ProjectsApi.CreateProject(ctx).ProjectCreateFromRootInput(createRequest).Execute()
+
 	if err != nil {
-		return diag.FromErr(equinix_errors.FriendlyError(err))
+		return diag.FromErr(equinix_errors.FriendlyErrorForMetalGo(err, resp))
 	}
 
 	d.SetId(project.GetId())
@@ -151,10 +156,10 @@ func resourceMetalProjectCreate(ctx context.Context, d *schema.ResourceData, met
 	if hasBGPConfig {
 		bgpCR, err := expandBGPConfig(d)
 		if err == nil {
-			_, err = client.BGPApi.RequestBgpConfig(ctx, project.GetId()).BgpConfigRequestInput(*bgpCR).Execute()
+			resp, err = client.BGPApi.RequestBgpConfig(ctx, project.GetId()).BgpConfigRequestInput(*bgpCR).Execute()
 		}
 		if err != nil {
-			return diag.FromErr(equinix_errors.FriendlyError(err))
+			return diag.FromErr(equinix_errors.FriendlyErrorForMetalGo(err, resp))
 		}
 	}
 
@@ -165,7 +170,7 @@ func resourceMetalProjectCreate(ctx context.Context, d *schema.ResourceData, met
 		}
 		_, _, err := client.ProjectsApi.UpdateProject(ctx, project.GetId()).ProjectUpdateInput(pur).Execute()
 		if err != nil {
-			return diag.FromErr(equinix_errors.FriendlyError(err))
+			return diag.FromErr(equinix_errors.FriendlyErrorForMetalGo(err, resp))
 		}
 	}
 	return resourceMetalProjectRead(ctx, d, meta)
@@ -175,9 +180,9 @@ func resourceMetalProjectRead(ctx context.Context, d *schema.ResourceData, meta 
 	meta.(*config.Config).AddModuleToMetalUserAgent(d)
 	client := meta.(*config.Config).Metalgo
 
-	proj, _, err := client.ProjectsApi.FindProjectById(ctx, d.Id()).Execute()
+	proj, resp, err := client.ProjectsApi.FindProjectById(ctx, d.Id()).Execute()
 	if err != nil {
-		err = equinix_errors.FriendlyError(err)
+		err = equinix_errors.FriendlyErrorForMetalGo(err, resp)
 
 		// If the project somehow already destroyed, mark as successfully gone.
 		if equinix_errors.IsNotFound(err) {
@@ -194,6 +199,8 @@ func resourceMetalProjectRead(ctx context.Context, d *schema.ResourceData, meta 
 		d.Set("payment_method_id", path.Base(proj.PaymentMethod.GetHref()))
 	}
 	d.Set("name", proj.Name)
+	fmt.Println(proj.Organization.AdditionalProperties)
+	fmt.Println(proj.Organization.AdditionalProperties["href"])
 	d.Set("organization_id", path.Base(proj.Organization.AdditionalProperties["href"].(string))) // spec: organization has no href
 	d.Set("created", proj.GetCreatedAt().Format(time.RFC3339))
 	d.Set("updated", proj.GetUpdatedAt().Format(time.RFC3339))
@@ -206,7 +213,7 @@ func resourceMetalProjectRead(ctx context.Context, d *schema.ResourceData, meta 
 		if bgpConf.GetId() != "" {
 			err := d.Set("bgp_config", flattenBGPConfig(bgpConf))
 			if err != nil {
-				return diag.FromErr(equinix_errors.FriendlyError(err))
+				return diag.FromErr(equinix_errors.FriendlyErrorForMetalGo(err, resp))
 			}
 		}
 	}
@@ -265,11 +272,13 @@ func resourceMetalProjectUpdate(ctx context.Context, d *schema.ResourceData, met
 		newarr := n.([]interface{})
 		if len(newarr) == 1 {
 			bgpCreateRequest, err := expandBGPConfig(d)
-			if err == nil {
-				_, err = client.BGPApi.RequestBgpConfig(ctx, d.Id()).BgpConfigRequestInput(*bgpCreateRequest).Execute()
-			}
 			if err != nil {
-				return diag.FromErr(equinix_errors.FriendlyError(err))
+				return diag.FromErr(err)
+			}
+
+			resp, err := client.BGPApi.RequestBgpConfig(ctx, d.Id()).BgpConfigRequestInput(*bgpCreateRequest).Execute()
+			if err != nil {
+				return diag.FromErr(equinix_errors.FriendlyErrorForMetalGo(err, resp))
 			}
 		} else {
 			if len(oldarr) == 1 {
@@ -287,9 +296,9 @@ func resourceMetalProjectUpdate(ctx context.Context, d *schema.ResourceData, met
 			}
 		}
 	} else {
-		_, _, err := client.ProjectsApi.UpdateProject(ctx, d.Id()).ProjectUpdateInput(updateRequest).Execute()
+		_, resp, err := client.ProjectsApi.UpdateProject(ctx, d.Id()).ProjectUpdateInput(updateRequest).Execute()
 		if err != nil {
-			return diag.FromErr(equinix_errors.FriendlyError(err))
+			return diag.FromErr(equinix_errors.FriendlyErrorForMetalGo(err, resp))
 		}
 	}
 
@@ -302,7 +311,7 @@ func resourceMetalProjectDelete(ctx context.Context, d *schema.ResourceData, met
 
 	resp, err := client.ProjectsApi.DeleteProject(ctx, d.Id()).Execute()
 	if equinix_errors.IgnoreHttpResponseErrors(equinix_errors.HttpForbidden, equinix_errors.HttpNotFound)(resp, err) != nil {
-		return diag.FromErr(equinix_errors.FriendlyError(err))
+		return diag.FromErr(equinix_errors.FriendlyErrorForMetalGo(err, resp))
 	}
 
 	d.SetId("")
