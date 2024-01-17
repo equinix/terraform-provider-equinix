@@ -13,8 +13,8 @@ import (
 	"github.com/equinix/terraform-provider-equinix/version"
 
 	"github.com/equinix/terraform-provider-equinix/internal/provider"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 const (

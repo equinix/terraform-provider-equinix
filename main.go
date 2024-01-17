@@ -43,7 +43,7 @@ func main() {
 	}
 
 	err = tf5server.Serve(
-		"registry.terraform.io/equinix/equinix",
+		"registry.terraform.io/equnix/equinix",
 		muxServer.ProviderServer,
 		serveOpts...,
 	)
