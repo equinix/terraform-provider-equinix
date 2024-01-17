@@ -9,6 +9,7 @@ import (
 	"github.com/equinix/terraform-provider-equinix/internal/acceptance"
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/plancheck"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	"github.com/packethost/packngo"
 )
@@ -95,4 +96,57 @@ func testAccMetalProjectSSHKeyCheckDestroyed(s *terraform.State) error {
 	}
 
 	return nil
+}
+
+
+// Test to verify that switching from SDKv2 to the Framework has not affected provider's behavior
+// Note: Once migrated, this test, which duplicates TestAccMetalProjectSSHKey_basic, may be removed
+func TestAccMetalProjectSSHKey_upgradeFromVersion(t *testing.T) {
+	rs := acctest.RandString(10)
+	var key packngo.SSHKey
+	publicKeyMaterial, _, err := acctest.RandSSHKeyPair("")
+	if err != nil {
+		t.Fatalf("Cannot generate test SSH key pair: %s", err)
+	}
+	cfg := testAccMetalProjectSSHKeyConfig_basic(rs, publicKeyMaterial)
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { acceptance.TestAccPreCheckMetal(t) },
+		ExternalProviders: acceptance.TestExternalProviders,
+		Providers:         acceptance.TestAccProviders,
+		CheckDestroy:      testAccMetalProjectSSHKeyCheckDestroyed,
+		Steps: []resource.TestStep{
+			{
+				ExternalProviders: map[string]resource.ExternalProvider{
+					"equinix": {
+						VersionConstraint: "1.24.0", // latest version with equinix_metal_project_ssh_key defined on SDKv2
+						Source:            "equinix/equinix",
+					},
+				},
+				Config: cfg,
+				Check: resource.ComposeTestCheckFunc(
+					acceptance.TestAccCheckMetalSSHKeyExists("equinix_metal_project_ssh_key.test", &key),
+					resource.TestCheckResourceAttr(
+						"equinix_metal_project_ssh_key.test", "public_key", publicKeyMaterial),
+					resource.TestCheckResourceAttrPair(
+						"equinix_metal_device.test", "ssh_key_ids.0",
+						"equinix_metal_project_ssh_key.test", "id",
+					),
+					resource.TestCheckResourceAttrPair(
+						"equinix_metal_project.test", "id",
+						"equinix_metal_project_ssh_key.test", "project_id",
+					),
+				),
+			},
+			{
+				ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+				Config: cfg,
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectEmptyPlan(),
+					},
+				},
+			},
+		},
+	})
 }

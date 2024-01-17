@@ -10,9 +10,11 @@ import (
 
 	"github.com/equinix/terraform-provider-equinix/equinix"
 	"github.com/equinix/terraform-provider-equinix/internal/config"
+	"github.com/equinix/terraform-provider-equinix/version"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/equinix/terraform-provider-equinix/internal/provider"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 const (
@@ -26,6 +28,7 @@ var (
 	TestAccProviders         map[string]*schema.Provider
 	TestAccProviderFactories map[string]func() (*schema.Provider, error)
 	TestExternalProviders    map[string]resource.ExternalProvider
+	TestAccFrameworkProvider *provider.FrameworkProvider
 )
 
 func init() {
@@ -43,6 +46,7 @@ func init() {
 			Source: "hashicorp/random",
 		},
 	}
+	TestAccFrameworkProvider = provider.CreateFrameworkProvider(version.ProviderVersion).(*provider.FrameworkProvider)
 }
 
 func TestAccPreCheck(t *testing.T) {

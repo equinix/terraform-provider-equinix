@@ -7,7 +7,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
-
+	"github.com/hashicorp/terraform-plugin-testing/plancheck"
 	"github.com/equinix/terraform-provider-equinix/internal/acceptance"
 )
 
@@ -144,4 +144,59 @@ resource "equinix_metal_project_ssh_key" "foobar" {
 }`, keyName, keyName, publicSshKey)
 
 	return config
+}
+
+// Test to verify that switching from SDKv2 to the Framework has not affected provider's behavior
+// Note: Once migrated, this test, which duplicates TestAccDataSourceMetalProjectSSHKey_bySearch, may be removed
+func TestAccDataSourceMetalProjectSSHKey_upgradeFromVersion(t *testing.T) {
+	datasourceName := "data.equinix_metal_project_ssh_key.foobar"
+	keyName := acctest.RandomWithPrefix("tfacc-project-key")
+
+	publicKeyMaterial, _, err := acctest.RandSSHKeyPair("")
+	if err != nil {
+		t.Fatalf("Cannot generate test SSH key pair: %s", err)
+	}
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:                  func() { acceptance.TestAccPreCheckMetal(t) },
+		Providers:                 acceptance.TestAccProviders,
+		PreventPostDestroyRefresh: true,
+		CheckDestroy:              testAccMetalProjectSSHKeyCheckDestroyed,
+		Steps: []resource.TestStep{
+			{
+				ExternalProviders: map[string]resource.ExternalProvider{
+					"equinix": {
+						VersionConstraint: "1.24.0", // latest version with ds equinix_metal_project_ssh_key defined on SDKv2
+						Source:            "equinix/equinix",
+					},
+				},
+				Config: testAccDataSourceMetalProjectSSHKeyConfig_bySearch(keyName, publicKeyMaterial),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(
+						datasourceName, "name", keyName),
+					resource.TestCheckResourceAttr(
+						datasourceName, "public_key", publicKeyMaterial),
+				),
+			},
+			{
+				ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+				Config: testAccDataSourceMetalProjectSSHKeyConfig_bySearch(keyName, publicKeyMaterial),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectEmptyPlan(),
+					},
+				},
+			},
+			{
+				Config:      testAccDataSourceMetalProjectSSHKeyConfig_noKey(keyName, publicKeyMaterial),
+				ExpectError: regexp.MustCompile("was not found"),
+			},
+			{
+				// Exit the tests with an empty state and a valid config
+				// following the previous error config. This is needed for the
+				// destroy step to succeed.
+				Config: `/* this config intentionally left blank */`,
+			},
+		},
+	})
 }
