@@ -82,6 +82,7 @@ var (
 	matchErrMustBeProvided     = regexp.MustCompile(".* must be provided when .*")
 	matchErrShouldNotBeAnIPXE  = regexp.MustCompile(`.*"user_data" should not be an iPXE.*`)
 	matchErrDeviceReadyTimeout = regexp.MustCompile(".* timeout while waiting for state to become 'active, failed'.*")
+	matchErrDeviceLocked       = regexp.MustCompile(".*Cannot delete a locked item.*")
 )
 
 // This function should be used to find available plans in all test where a metal_device resource is needed.
@@ -287,29 +288,6 @@ func TestAccMetalDevice_basic(t *testing.T) {
 					testAccMetalDeviceNetwork(r),
 					testAccMetalDeviceAttributes(&device),
 					testAccMetalDeviceNetworkOrder(r),
-				),
-			},
-		},
-	})
-}
-
-func TestAccMetalDevice_metro(t *testing.T) {
-	var device metalv1.Device
-	rs := acctest.RandString(10)
-	r := "equinix_metal_device.test"
-
-	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
-		ExternalProviders: testExternalProviders,
-		Providers:         testAccProviders,
-		CheckDestroy:      testAccMetalDeviceCheckDestroyed,
-		Steps: []resource.TestStep{
-			{
-				Config: testAccMetalDeviceConfig_metro(rs),
-				Check: resource.ComposeTestCheckFunc(
-					testAccMetalDeviceExists(r, &device),
-					testAccMetalDeviceNetwork(r),
-					testAccMetalDeviceAttributes(&device),
 				),
 			},
 		},
@@ -784,26 +762,6 @@ resource "equinix_metal_device" "test" {
 `, confAccMetalDevice_base(preferable_plans, preferable_metros, preferable_os), projSuffix, rInt, rInt, rInt, testDeviceTerminationTime())
 }
 
-func testAccMetalDeviceConfig_metro(projSuffix string) string {
-	return fmt.Sprintf(`
-%s
-
-resource "equinix_metal_project" "test" {
-    name = "tfacc-device-%s"
-}
-
-resource "equinix_metal_device" "test" {
-  hostname         = "tfacc-test-device"
-  plan             = local.plan
-  metro            = local.metro
-  operating_system = local.os
-  billing_cycle    = "hourly"
-  project_id       = "${equinix_metal_project.test.id}"
-  termination_time = "%s"
-}
-`, confAccMetalDevice_base(preferable_plans, preferable_metros, preferable_os), projSuffix, testDeviceTerminationTime())
-}
-
 func testAccMetalDeviceConfig_minimal(projSuffix string) string {
 	return fmt.Sprintf(`
 %s
@@ -1209,4 +1167,61 @@ func TestAccMetalDeviceUpdate_timeout(t *testing.T) {
 			},
 		},
 	})
+}
+
+func TestAccMetalDevice_LockingAndUnlocking(t *testing.T) {
+	var d1 metalv1.Device
+	rs := acctest.RandString(10)
+	r := "equinix_metal_device.test"
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t) },
+		ExternalProviders: testExternalProviders,
+		ProviderFactories: testAccProviderFactories,
+		CheckDestroy:      testAccMetalDeviceCheckDestroyed,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccMetalDeviceConfig_lockable(rs, true),
+				Check: resource.ComposeTestCheckFunc(
+					testAccMetalDeviceExists(r, &d1),
+				),
+			},
+			{
+				Config:      testAccMetalDeviceConfig_lockable(rs, true),
+				Destroy:     true,
+				ExpectError: matchErrDeviceLocked,
+			},
+			{
+				Config: testAccMetalDeviceConfig_lockable(rs, false),
+				Check: resource.ComposeTestCheckFunc(
+					testAccMetalDeviceExists(r, &d1),
+				),
+			},
+			{
+				Config:  testAccMetalDeviceConfig_lockable(rs, false),
+				Destroy: true,
+			},
+		},
+	})
+}
+
+func testAccMetalDeviceConfig_lockable(projSuffix string, locked bool) string {
+	return fmt.Sprintf(`
+%s
+
+resource "equinix_metal_project" "test" {
+    name = "tfacc-device-%s"
+}
+
+
+resource "equinix_metal_device" "test" {
+  hostname         = "tfacc-test-device"
+  plan             = local.plan
+  metro            = local.metro
+  operating_system = local.os
+  billing_cycle    = "hourly"
+  project_id       = "${equinix_metal_project.test.id}"
+  locked           = %v
+  termination_time = "%s"
+}`, confAccMetalDevice_base(preferable_plans, preferable_metros, preferable_os), projSuffix, locked, testDeviceTerminationTime())
 }

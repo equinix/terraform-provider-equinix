@@ -185,7 +185,8 @@ func resourceMetalDevice() *schema.Resource {
 			},
 			"locked": {
 				Type:        schema.TypeBool,
-				Description: "Whether the device is locked",
+				Description: "Whether the device is locked or unlocked. Locking a device prevents you from deleting or reinstalling the device or performing a firmware update on the device, and it prevents an instance with a termination time set from being reclaimed, even if the termination time was reached",
+				Optional:    true,
 				Computed:    true,
 			},
 			"access_public_ipv6": {
@@ -874,6 +875,7 @@ type deviceCreateRequest interface {
 	SetPlan(string)
 	SetOperatingSystem(string)
 	SetIpAddresses([]metalv1.IPAddress)
+	SetLocked(bool)
 }
 
 func setupDeviceCreateRequest(d *schema.ResourceData, createRequest deviceCreateRequest) diag.Diagnostics {
@@ -934,6 +936,10 @@ func setupDeviceCreateRequest(d *schema.ResourceData, createRequest deviceCreate
 		if d.Get(wfrd).(bool) {
 			return diag.Errorf("You can't set %s when not using a hardware reservation", wfrd)
 		}
+	}
+
+	if attr, ok := d.GetOk("locked"); ok {
+		createRequest.SetLocked(attr.(bool))
 	}
 
 	if createRequest.GetOperatingSystem() == "custom_ipxe" {

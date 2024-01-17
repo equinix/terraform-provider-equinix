@@ -268,7 +268,7 @@ It is useful when using the `next-available` hardware reservation.
 * `description` - Description string for the device.
 * `hostname` - The hostname of the device.
 * `id` - The ID of the device.
-* `locked` - Whether the device is locked.
+* `locked` - Whether the device is locked or unlocked. Locking a device prevents you from deleting or reinstalling the device or performing a firmware update on the device, and it prevents an instance with a termination time set from being reclaimed, even if the termination time was reached
 * `metro` - The metro area where the device is deployed.
 * `network` - The device's private and public IP (v4 and v6) network details. See
 [Network Attribute](#network-attribute) below for more details.
