@@ -72,6 +72,8 @@ jobs:
     needs: build
     concurrency: acctest
     runs-on: ubuntu-latest
+    env:
+      EQUINIX_API_ENDPOINT: "https://uatapi.equinix.com"
     timeout-minutes: 240
     strategy:
       fail-fast: false
