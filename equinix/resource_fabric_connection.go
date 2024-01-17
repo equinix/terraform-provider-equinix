@@ -321,9 +321,9 @@ func waitForConnectionProviderStatusChange(uuid string, meta interface{}, ctx co
 	stateConf := &retry.StateChangeConf{
 		Pending: []string{
 			string(v4.PENDING_APPROVAL_ProviderStatus),
+			string(v4.PROVISIONING_ProviderStatus),
 		},
 		Target: []string{
-			string(v4.PROVISIONING_ProviderStatus),
 			string(v4.PROVISIONED_ProviderStatus),
 		},
 		Refresh: func() (interface{}, string, error) {
