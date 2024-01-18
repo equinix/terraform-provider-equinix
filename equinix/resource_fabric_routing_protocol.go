@@ -12,7 +12,7 @@ import (
 	equinix_schema "github.com/equinix/terraform-provider-equinix/internal/schema"
 
 	"github.com/equinix/terraform-provider-equinix/internal/config"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 
 	v4 "github.com/equinix-labs/fabric-go/fabric/v4"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -314,7 +314,7 @@ func setFabricRoutingProtocolMap(d *schema.ResourceData, rp v4.RoutingProtocolDa
 
 func waitUntilRoutingProtocolIsProvisioned(uuid string, connUuid string, meta interface{}, ctx context.Context) (v4.RoutingProtocolData, error) {
 	log.Printf("Waiting for routing protocol to be provisioned, uuid %s", uuid)
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Pending: []string{
 			string(v4.PROVISIONING_ConnectionState),
 			string(v4.REPROVISIONING_ConnectionState),
@@ -355,7 +355,7 @@ func waitUntilRoutingProtocolIsDeprovisioned(uuid string, connUuid string, meta 
 	log.Printf("Waiting for routing protocol to be deprovisioned, uuid %s", uuid)
 
 	/* check if resource is not found */
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Target: []string{
 			strconv.Itoa(404),
 		},
@@ -378,7 +378,7 @@ func waitUntilRoutingProtocolIsDeprovisioned(uuid string, connUuid string, meta 
 
 func waitForRoutingProtocolUpdateCompletion(rpChangeUuid string, uuid string, connUuid string, meta interface{}, ctx context.Context) (v4.RoutingProtocolChangeData, error) {
 	log.Printf("Waiting for routing protocol update to complete, uuid %s", uuid)
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Target: []string{"COMPLETED"},
 		Refresh: func() (interface{}, string, error) {
 			client := meta.(*config.Config).FabricClient
