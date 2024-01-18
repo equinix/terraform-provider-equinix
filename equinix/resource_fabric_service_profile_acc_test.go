@@ -9,9 +9,9 @@ import (
 
 	"github.com/equinix/terraform-provider-equinix/internal/config"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/terraform"
 
 	v4 "github.com/equinix-labs/fabric-go/fabric/v4"
 )
