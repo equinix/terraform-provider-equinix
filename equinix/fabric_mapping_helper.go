@@ -76,7 +76,7 @@ func accessPointToFabric(accessPointRequest []interface{}) v4.AccessPoint {
 		}
 
 		if len(cloudRouterRequest) != 0 {
-			mappedGWr := cloudRouterToFabric(cloudRouterRequest)
+			mappedGWr := cloudRouterTerraToGo(cloudRouterRequest)
 			if mappedGWr.Uuid != "" {
 				accessPoint.Router = &mappedGWr
 			}
@@ -131,7 +131,7 @@ func accessPointToFabric(accessPointRequest []interface{}) v4.AccessPoint {
 	return accessPoint
 }
 
-func cloudRouterToFabric(cloudRouterRequest []interface{}) v4.CloudRouter {
+func cloudRouterTerraToGo(cloudRouterRequest []interface{}) v4.CloudRouter {
 	if cloudRouterRequest == nil {
 		return v4.CloudRouter{}
 	}
@@ -250,7 +250,6 @@ func simplifiedServiceProfileToFabric(profileList []interface{}) v4.SimplifiedSe
 		spte := v4.ServiceProfileTypeEnum(ptype)
 		uuid := plMap["uuid"].(string)
 		ssp = v4.SimplifiedServiceProfile{Uuid: uuid, Type_: &spte}
-
 	}
 	return ssp
 }
@@ -297,49 +296,6 @@ func interfaceToFabric(interfaceList []interface{}) v4.ModelInterface {
 	return il
 }
 
-func accountToCloudRouter(accountList []interface{}) v4.SimplifiedAccount {
-	sa := v4.SimplifiedAccount{}
-	for _, ll := range accountList {
-		llMap := ll.(map[string]interface{})
-		ac := llMap["account_number"].(int)
-		sa = v4.SimplifiedAccount{AccountNumber: int64(ac)}
-	}
-	return sa
-}
-
-func locationToCloudRouter(locationList []interface{}) v4.SimplifiedLocationWithoutIbx {
-	sl := v4.SimplifiedLocationWithoutIbx{}
-	for _, ll := range locationList {
-		llMap := ll.(map[string]interface{})
-		mc := llMap["metro_code"].(string)
-		sl = v4.SimplifiedLocationWithoutIbx{MetroCode: mc}
-	}
-	return sl
-}
-
-func packageToCloudRouter(packageList []interface{}) v4.CloudRouterPackageType {
-	p := v4.CloudRouterPackageType{}
-	for _, pl := range packageList {
-		plMap := pl.(map[string]interface{})
-		code := plMap["code"].(string)
-		p = v4.CloudRouterPackageType{Code: code}
-	}
-	return p
-}
-
-func projectToCloudRouter(projectRequest []interface{}) v4.Project {
-	if projectRequest == nil {
-		return v4.Project{}
-	}
-	mappedPr := v4.Project{}
-	for _, pr := range projectRequest {
-		prMap := pr.(map[string]interface{})
-		projectId := prMap["project_id"].(string)
-		mappedPr = v4.Project{ProjectId: projectId}
-	}
-	return mappedPr
-}
-
 func accountToTerra(account *v4.SimplifiedAccount) *schema.Set {
 	if account == nil {
 		return nil
@@ -377,7 +333,7 @@ func accountCloudRouterToTerra(account *v4.SimplifiedAccount) *schema.Set {
 		}
 	}
 	accountSet := schema.NewSet(
-		schema.HashResource(createCloudRouterAccountRes),
+		schema.HashResource(&schema.Resource{Schema: createAccountSch()}),
 		mappedAccounts,
 	)
 
@@ -643,41 +599,6 @@ func cloudRouterToTerra(cloudRouter *v4.CloudRouter) *schema.Set {
 		schema.HashResource(createGatewayProjectSchRes),
 		mappedCloudRouters)
 	return linkedProtocolSet
-}
-
-func cloudRouterPackageToTerra(packageType *v4.CloudRouterPackageType) *schema.Set {
-	packageTypes := []*v4.CloudRouterPackageType{packageType}
-	mappedPackages := make([]interface{}, len(packageTypes))
-	for i, packageType := range packageTypes {
-		mappedPackages[i] = map[string]interface{}{
-			"code": packageType.Code,
-		}
-	}
-	packageSet := schema.NewSet(
-		schema.HashResource(createPackageRes),
-		mappedPackages,
-	)
-	return packageSet
-}
-
-func orderToTerra(order *v4.Order) *schema.Set {
-	if order == nil {
-		return nil
-	}
-	orders := []*v4.Order{order}
-	mappedOrders := make([]interface{}, len(orders))
-	for _, order := range orders {
-		mappedOrder := make(map[string]interface{})
-		mappedOrder["purchase_order_number"] = order.PurchaseOrderNumber
-		mappedOrder["billing_tier"] = order.BillingTier
-		mappedOrder["order_id"] = order.OrderId
-		mappedOrder["order_number"] = order.OrderNumber
-		mappedOrders = append(mappedOrders, mappedOrder)
-	}
-	orderSet := schema.NewSet(
-		schema.HashResource(readOrderRes),
-		mappedOrders)
-	return orderSet
 }
 
 func projectToTerra(project *v4.Project) *schema.Set {
@@ -1234,25 +1155,5 @@ func getUpdateRequests(conn v4.Connection, d *schema.ResourceData) ([][]v4.Conne
 		return changeOps, fmt.Errorf("nothing to update for the connection %s", existingName)
 	}
 
-	return changeOps, nil
-}
-
-func getCloudRouterUpdateRequest(conn v4.CloudRouter, d *schema.ResourceData) (v4.CloudRouterChangeOperation, error) {
-	changeOps := v4.CloudRouterChangeOperation{}
-	existingName := conn.Name
-	existingPackage := conn.Package_.Code
-	updateNameVal := d.Get("name")
-	updatePackageVal := d.Get("conn.Package_.Code")
-
-	log.Printf("existing name %s, existing Package %s, Update Name Request %s, Update Package Request %s ",
-		existingName, existingPackage, updateNameVal, updatePackageVal)
-
-	if existingName != updateNameVal {
-		changeOps = v4.CloudRouterChangeOperation{Op: "replace", Path: "/name", Value: &updateNameVal}
-	} else if existingPackage != updatePackageVal {
-		changeOps = v4.CloudRouterChangeOperation{Op: "replace", Path: "/package", Value: &updatePackageVal}
-	} else {
-		return changeOps, fmt.Errorf("nothing to update for the connection %s", existingName)
-	}
 	return changeOps, nil
 }

@@ -3,6 +3,7 @@ package equinix
 import (
 	"context"
 	"fmt"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"log"
 	"strings"
 	"time"
@@ -17,6 +18,145 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
+
+func resourcesFabricCloudRouterPackageSch() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"code": {
+			Type:        schema.TypeString,
+			Required:    true,
+			Description: "Fabric Cloud Router package code",
+		},
+	}
+}
+
+func resourcesFabricCloudRouterResourceSchema() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"uuid": {
+			Type:        schema.TypeString,
+			Optional:    true,
+			Computed:    true,
+			Description: "Equinix-assigned Fabric Cloud Router identifier",
+		},
+		"href": {
+			Type:        schema.TypeString,
+			Optional:    true,
+			Computed:    true,
+			Description: "Fabric Cloud Router URI information",
+		},
+		"name": {
+			Type:        schema.TypeString,
+			Required:    true,
+			Description: "Fabric Cloud Router name. An alpha-numeric 24 characters string which can include only hyphens and underscores",
+		},
+		"description": {
+			Type:        schema.TypeString,
+			Optional:    true,
+			Description: "Customer-provided Fabric Cloud Router description",
+		},
+		"state": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "Fabric Cloud Router overall state",
+		},
+		"equinix_asn": {
+			Type:        schema.TypeInt,
+			Computed:    true,
+			Description: "Equinix ASN",
+		},
+		"package": {
+			Type:        schema.TypeSet,
+			Required:    true,
+			Description: "Fabric Cloud Router location",
+			MaxItems:    1,
+			Elem: &schema.Resource{
+				Schema: resourcesFabricCloudRouterPackageSch(),
+			},
+		},
+		"change_log": {
+			Type:        schema.TypeSet,
+			Computed:    true,
+			Description: "Captures Fabric Cloud Router lifecycle change information",
+			Elem: &schema.Resource{
+				Schema: createChangeLogSch(),
+			},
+		},
+		"type": {
+			Type:         schema.TypeString,
+			Required:     true,
+			ValidateFunc: validation.StringInSlice([]string{"XF_ROUTER"}, true),
+			Description:  "Defines the FCR type like XF_ROUTER",
+		},
+		"location": {
+			Type:        schema.TypeSet,
+			Required:    true,
+			Description: "Fabric Cloud Router location",
+			MaxItems:    1,
+			Elem: &schema.Resource{
+				Schema: createLocationSch(),
+			},
+		},
+		"project": {
+			Type:        schema.TypeSet,
+			Required:    true,
+			Description: "Fabric Cloud Router project",
+			MaxItems:    1,
+			Elem: &schema.Resource{
+				Schema: createGatewayProjectSch(),
+			},
+		},
+		"account": {
+			Type:        schema.TypeSet,
+			Required:    true,
+			Description: "Customer account information that is associated with this Fabric Cloud Router",
+			MaxItems:    1,
+			Elem: &schema.Resource{
+				Schema: createAccountSch(),
+			},
+		},
+		"order": {
+			Type:        schema.TypeSet,
+			Computed:    true,
+			Description: "Order information related to this Fabric Cloud Router",
+			MaxItems:    1,
+			Elem: &schema.Resource{
+				Schema: createOrderSch(),
+			},
+		},
+		"notifications": {
+			Type:        schema.TypeList,
+			Required:    true,
+			Description: "Preferences for notifications on Fabric Cloud Router configuration or status changes",
+			Elem: &schema.Resource{
+				Schema: createNotificationSch(),
+			},
+		},
+		"bgp_ipv4_routes_count": {
+			Type:        schema.TypeInt,
+			Computed:    true,
+			Description: "Access point used and maximum number of IPv4 BGP routes",
+		},
+		"bgp_ipv6_routes_count": {
+			Type:        schema.TypeInt,
+			Computed:    true,
+			Description: "Access point used and maximum number of IPv6 BGP routes",
+		},
+		"distinct_ipv4_prefixes_count": {
+			Type:        schema.TypeInt,
+			Computed:    true,
+			Description: "Number of distinct ipv4 routes",
+		},
+		"distinct_ipv6_prefixes_count": {
+			Type:        schema.TypeInt,
+			Computed:    true,
+			Description: "Number of distinct ipv6 routes",
+		},
+		"connections_count": {
+			Type:        schema.TypeInt,
+			Computed:    true,
+			Description: "Number of connections associated with this Access point",
+		},
+	}
+}
 
 func resourceCloudRouter() *schema.Resource {
 	return &schema.Resource{
@@ -33,28 +173,67 @@ func resourceCloudRouter() *schema.Resource {
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
-		Schema: createCloudRouterResourceSchema(),
+		Schema: resourcesFabricCloudRouterResourceSchema(),
 
 		Description: "Fabric V4 API compatible resource allows creation and management of Equinix Fabric Cloud Router\n\n~> **Note** Equinix Fabric v4 resources and datasources are currently in Beta. The interfaces related to `equinix_fabric_` resources and datasources may change ahead of general availability. Please, do not hesitate to report any problems that you experience by opening a new [issue](https://github.com/equinix/terraform-provider-equinix/issues/new?template=bug.md)",
 	}
 }
 
+func accountCloudRouterTerraToGo(accountList []interface{}) v4.SimplifiedAccount {
+	sa := v4.SimplifiedAccount{}
+	for _, ll := range accountList {
+		llMap := ll.(map[string]interface{})
+		ac := llMap["account_number"].(int)
+		sa = v4.SimplifiedAccount{AccountNumber: int64(ac)}
+	}
+	return sa
+}
+func locationCloudRouterTerraToGo(locationList []interface{}) v4.SimplifiedLocationWithoutIbx {
+	sl := v4.SimplifiedLocationWithoutIbx{}
+	for _, ll := range locationList {
+		llMap := ll.(map[string]interface{})
+		mc := llMap["metro_code"].(string)
+		sl = v4.SimplifiedLocationWithoutIbx{MetroCode: mc}
+	}
+	return sl
+}
+func packageCloudRouterTerraToGo(packageList []interface{}) v4.CloudRouterPackageType {
+	p := v4.CloudRouterPackageType{}
+	for _, pl := range packageList {
+		plMap := pl.(map[string]interface{})
+		code := plMap["code"].(string)
+		p = v4.CloudRouterPackageType{Code: code}
+	}
+	return p
+}
+func projectCloudRouterTerraToGo(projectRequest []interface{}) v4.Project {
+	if projectRequest == nil {
+		return v4.Project{}
+	}
+	mappedPr := v4.Project{}
+	for _, pr := range projectRequest {
+		prMap := pr.(map[string]interface{})
+		projectId := prMap["project_id"].(string)
+		mappedPr = v4.Project{ProjectId: projectId}
+	}
+	return mappedPr
+}
 func resourceCloudRouterCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*config.Config).FabricClient
 	ctx = context.WithValue(ctx, v4.ContextAccessToken, meta.(*config.Config).FabricAuthToken)
 	schemaNotifications := d.Get("notifications").([]interface{})
 	notifications := notificationToFabric(schemaNotifications)
 	schemaAccount := d.Get("account").(*schema.Set).List()
-	account := accountToCloudRouter(schemaAccount)
+	account := accountCloudRouterTerraToGo(schemaAccount)
 	schemaLocation := d.Get("location").(*schema.Set).List()
-	location := locationToCloudRouter(schemaLocation)
+	location := locationCloudRouterTerraToGo(schemaLocation)
 	project := v4.Project{}
 	schemaProject := d.Get("project").(*schema.Set).List()
 	if len(schemaProject) != 0 {
-		project = projectToCloudRouter(schemaProject)
+		project = projectCloudRouterTerraToGo(schemaProject)
 	}
 	schemaPackage := d.Get("package").(*schema.Set).List()
-	packages := packageToCloudRouter(schemaPackage)
+	packages := packageCloudRouterTerraToGo(schemaPackage)
 
 	createRequest := v4.CloudRouterPostRequest{
 		Name:          d.Get("name").(string),
@@ -99,29 +278,85 @@ func resourceCloudRouterRead(ctx context.Context, d *schema.ResourceData, meta i
 	return setCloudRouterMap(d, CloudRouter)
 }
 
+func packageCloudRouterGoToTerra(packageType *v4.CloudRouterPackageType) *schema.Set {
+	packageTypes := []*v4.CloudRouterPackageType{packageType}
+	mappedPackages := make([]interface{}, len(packageTypes))
+	for i, packageType := range packageTypes {
+		mappedPackages[i] = map[string]interface{}{
+			"code": packageType.Code,
+		}
+	}
+	packageSet := schema.NewSet(
+		schema.HashResource(&schema.Resource{Schema: resourcesFabricCloudRouterPackageSch()}),
+		mappedPackages,
+	)
+	return packageSet
+}
+
+func orderCloudRouterGoToTerra(order *v4.Order) *schema.Set {
+	if order == nil {
+		return nil
+	}
+	orders := []*v4.Order{order}
+	mappedOrders := make([]interface{}, len(orders))
+	for _, order := range orders {
+		mappedOrder := make(map[string]interface{})
+		mappedOrder["purchase_order_number"] = order.PurchaseOrderNumber
+		mappedOrder["billing_tier"] = order.BillingTier
+		mappedOrder["order_id"] = order.OrderId
+		mappedOrder["order_number"] = order.OrderNumber
+		mappedOrders = append(mappedOrders, mappedOrder)
+	}
+	orderSet := schema.NewSet(
+		schema.HashResource(readOrderRes),
+		mappedOrders)
+	return orderSet
+}
+
 func setCloudRouterMap(d *schema.ResourceData, fcr v4.CloudRouter) diag.Diagnostics {
 	diags := diag.Diagnostics{}
 	err := equinix_schema.SetMap(d, map[string]interface{}{
-		"name":                  fcr.Name,
-		"href":                  fcr.Href,
-		"type":                  fcr.Type_,
-		"state":                 fcr.State,
-		"package":               cloudRouterPackageToTerra(fcr.Package_),
-		"location":              locationCloudRouterToTerra(fcr.Location),
-		"change_log":            changeLogToTerra(fcr.ChangeLog),
-		"account":               accountCloudRouterToTerra(fcr.Account),
-		"notifications":         notificationToTerra(fcr.Notifications),
-		"project":               projectToTerra(fcr.Project),
-		"equinix_asn":           fcr.EquinixAsn,
-		"bgp_ipv4_routes_count": fcr.BgpIpv4RoutesCount,
-		"bgp_ipv6_routes_count": fcr.BgpIpv6RoutesCount,
-		"connections_count":     fcr.ConnectionsCount,
-		"order":                 orderToTerra(fcr.Order),
+		"name":                         fcr.Name,
+		"href":                         fcr.Href,
+		"type":                         fcr.Type_,
+		"state":                        fcr.State,
+		"package":                      packageCloudRouterGoToTerra(fcr.Package_),
+		"location":                     locationCloudRouterToTerra(fcr.Location),
+		"change_log":                   changeLogToTerra(fcr.ChangeLog),
+		"account":                      accountCloudRouterToTerra(fcr.Account),
+		"notifications":                notificationToTerra(fcr.Notifications),
+		"project":                      projectToTerra(fcr.Project),
+		"equinix_asn":                  fcr.EquinixAsn,
+		"bgp_ipv4_routes_count":        fcr.BgpIpv4RoutesCount,
+		"bgp_ipv6_routes_count":        fcr.BgpIpv6RoutesCount,
+		"distinct_ipv4_prefixes_count": fcr.DistinctIpv4PrefixesCount,
+		"distinct_ipv6_prefixes_count": fcr.DistinctIpv6PrefixesCount,
+		"connections_count":            fcr.ConnectionsCount,
+		"order":                        orderCloudRouterGoToTerra(fcr.Order),
 	})
 	if err != nil {
 		return diag.FromErr(err)
 	}
 	return diags
+}
+func getCloudRouterUpdateRequest(conn v4.CloudRouter, d *schema.ResourceData) (v4.CloudRouterChangeOperation, error) {
+	changeOps := v4.CloudRouterChangeOperation{}
+	existingName := conn.Name
+	existingPackage := conn.Package_.Code
+	updateNameVal := d.Get("name")
+	updatePackageVal := d.Get("conn.Package_.Code")
+
+	log.Printf("existing name %s, existing Package %s, Update Name Request %s, Update Package Request %s ",
+		existingName, existingPackage, updateNameVal, updatePackageVal)
+
+	if existingName != updateNameVal {
+		changeOps = v4.CloudRouterChangeOperation{Op: "replace", Path: "/name", Value: &updateNameVal}
+	} else if existingPackage != updatePackageVal {
+		changeOps = v4.CloudRouterChangeOperation{Op: "replace", Path: "/package", Value: &updatePackageVal}
+	} else {
+		return changeOps, fmt.Errorf("nothing to update for the connection %s", existingName)
+	}
+	return changeOps, nil
 }
 
 func resourceCloudRouterUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
