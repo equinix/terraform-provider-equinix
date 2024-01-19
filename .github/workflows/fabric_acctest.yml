@@ -122,7 +122,7 @@ jobs:
           SWEEP_DIR: "./equinix"
         run: |
           # Added sweep-run to filter Fabric PNFV test
-          go test ${SWEEP_DIR} -v -timeout 180m -sweep=${SWEEP} -sweep-allow-failures=${SWEEP_ALLOW_FAILURES} -sweep-run=$(grep -o 'AddTestSweepers("[^"]*PNFV"' equinix/resource_fabric_* | cut -d '"' -f2 | paste -s -d, -)
+          go test ${SWEEP_DIR} -v -timeout 180m -sweep=${SWEEP} -sweep-allow-failures=${SWEEP_ALLOW_FAILURES} -sweep-run="nothing"
 
       - name: Upload coverage to Codecov
         if: ${{ always() }}
@@ -185,7 +185,7 @@ jobs:
           SWEEP_DIR: "./equinix"
         run: |
           # Added sweep-run to filter Fabric PFCR test
-          go test ${SWEEP_DIR} -v -timeout 180m -sweep=${SWEEP} -sweep-allow-failures=${SWEEP_ALLOW_FAILURES} -sweep-run=$(grep -o 'AddTestSweepers("[^"]*PFCR"' equinix/resource_fabric_* | cut -d '"' -f2 | paste -s -d, -)
+          go test ${SWEEP_DIR} -v -timeout 180m -sweep=${SWEEP} -sweep-allow-failures=${SWEEP_ALLOW_FAILURES} -sweep-run="nothing"
 
       - name: Upload coverage to Codecov
         if: ${{ always() }}
