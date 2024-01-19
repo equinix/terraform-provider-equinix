@@ -131,11 +131,15 @@ jobs:
           token: ${{ secrets.CODECOV_TOKEN }}
           files: ./coverage_pnfv.txt
 
-      - name: Upload base coverage report for PNFV
+      - name: Create Go Coverage HTML File
+        run: |
+          go tool cover -html=./coverage_pfnv.txt -o ./coverage_pnfv.html
+
+      - name: Upload HTML Coverage Report for PNFV
         uses: actions/upload-artifact@v2
         with:
           name: Fabric PNFV Coverage Report
-          path: ./coverage_pnfv.txt
+          path: ./coverage_pnfv.html
 
   test-PFCR:
     name: Matrix Test
@@ -200,8 +204,12 @@ jobs:
           token: ${{ secrets.CODECOV_TOKEN }}
           files: ./coverage_pfcr.txt
 
-      - name: Upload base coverage report for PFCR
+      - name: Create Go Coverage HTML File
+        run: |
+          go tool cover -html=./coverage_pfcr.txt -o ./coverage_pfcr.html
+
+      - name: Upload HTML Coverage Report for PFCR
         uses: actions/upload-artifact@v2
         with:
           name: Fabric PFCR Coverage Report
-          path: ./coverage_pfcr.txt
+          path: ./coverage_pfcr.html
