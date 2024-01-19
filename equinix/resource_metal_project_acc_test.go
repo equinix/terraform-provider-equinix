@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"net/http/httptest"
 	"regexp"
 	"testing"
 
@@ -75,72 +76,23 @@ func TestAccMetalProject_basic(t *testing.T) {
 	})
 }
 
-type mockProjectService struct {
-	CreateFn              func(project *packngo.ProjectCreateRequest) (*packngo.Project, *packngo.Response, error)
-	UpdateFn              func(projectID string, project *packngo.ProjectUpdateRequest) (*packngo.Project, *packngo.Response, error)
-	ListFn                func(project *packngo.ListOptions) ([]packngo.Project, *packngo.Response, error)
-	DeleteFn              func(projectID string) (*packngo.Response, error)
-	GetFn                 func(projectID string, opts *packngo.GetOptions) (*packngo.Project, *packngo.Response, error)
-	ListBGPSessionsFn     func(projectID string, opts *packngo.ListOptions) ([]packngo.BGPSession, *packngo.Response, error)
-	ListEventsFn          func(projectID string, opts *packngo.ListOptions) ([]packngo.Event, *packngo.Response, error)
-	ListSSHKeysFn         func(projectID string, opts *packngo.ListOptions) ([]packngo.SSHKey, *packngo.Response, error)
-	DiscoverBGPSessionsFn func(projectID string, opts *packngo.GetOptions) ([]packngo.BGPDiscoverResponse, *packngo.Response, error)
-}
-
-func (m *mockProjectService) Create(project *packngo.ProjectCreateRequest) (*packngo.Project, *packngo.Response, error) {
-	return m.CreateFn(project)
-}
-
-func (m *mockProjectService) List(project *packngo.ListOptions) ([]packngo.Project, *packngo.Response, error) {
-	return m.ListFn(project)
-}
-
-func (m *mockProjectService) Delete(projectID string) (*packngo.Response, error) {
-	return m.DeleteFn(projectID)
-}
-
-func (m *mockProjectService) Get(projectID string, opts *packngo.GetOptions) (*packngo.Project, *packngo.Response, error) {
-	return m.GetFn(projectID, opts)
-}
-
-func (m *mockProjectService) ListBGPSessions(projectID string, opts *packngo.ListOptions) ([]packngo.BGPSession, *packngo.Response, error) {
-	return m.ListBGPSessionsFn(projectID, opts)
-}
-
-func (m *mockProjectService) Update(projectID string, project *packngo.ProjectUpdateRequest) (*packngo.Project, *packngo.Response, error) {
-	return m.UpdateFn(projectID, project)
-}
-
-func (m *mockProjectService) ListSSHKeys(projectID string, opts *packngo.ListOptions) ([]packngo.SSHKey, *packngo.Response, error) {
-	return m.ListSSHKeysFn(projectID, opts)
-}
-
-func (m *mockProjectService) ListEvents(projectID string, opts *packngo.ListOptions) ([]packngo.Event, *packngo.Response, error) {
-	return m.ListEventsFn(projectID, opts)
-}
-
-func (m *mockProjectService) DiscoverBGPSessions(projectID string, opts *packngo.ListOptions) (*packngo.BGPDiscoverResponse, *packngo.Response, error) {
-	return m.DiscoverBGPSessions(projectID, opts)
-}
-
-var _ packngo.ProjectService = (*mockProjectService)(nil)
-
 // TODO(displague) How do we test this without TF_ACC set?
 func TestAccMetalProject_errorHandling(t *testing.T) {
 	rInt := acctest.RandInt()
 
-	mockMetalProjectService := &mockProjectService{
-		CreateFn: func(project *packngo.ProjectCreateRequest) (*packngo.Project, *packngo.Response, error) {
-			httpResp := &http.Response{Status: "422 Unprocessable Entity", StatusCode: 422}
-			return nil, &packngo.Response{Response: httpResp}, &packngo.ErrorResponse{Response: httpResp}
-		},
+	handler := func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusUnprocessableEntity)
 	}
+	mockAPI := httptest.NewServer(http.HandlerFunc(handler))
 	mockEquinix := Provider()
 	mockEquinix.ConfigureContextFunc = func(ctx context.Context, d *schema.ResourceData) (interface{}, diag.Diagnostics) {
 		config := config.Config{
-			Metal: &packngo.Client{Projects: mockMetalProjectService},
+			BaseURL:   mockAPI.URL,
+			Token:     "fake-for-mock-test",
+			AuthToken: "fake-for-mock-test",
 		}
-		return &config, nil
+		err := config.Load(ctx)
+		return &config, diag.FromErr(err)
 	}
 
 	mockProviders := map[string]*schema.Provider{
@@ -161,18 +113,21 @@ func TestAccMetalProject_errorHandling(t *testing.T) {
 func TestAccMetalProject_apiErrorHandling(t *testing.T) {
 	rInt := acctest.RandInt()
 
-	mockMetalProjectService := &mockProjectService{
-		CreateFn: func(project *packngo.ProjectCreateRequest) (*packngo.Project, *packngo.Response, error) {
-			httpResp := &http.Response{Status: "422 Unprocessable Entity", StatusCode: 422, Header: http.Header{"Content-Type": []string{"application/json"}, "X-Request-Id": []string{"12345"}}}
-			return nil, &packngo.Response{Response: httpResp}, &packngo.ErrorResponse{Response: httpResp}
-		},
+	handler := func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Add("Content-Type", "application/json")
+		w.Header().Add("X-Request-Id", "needed for equinix_errors.FriendlyError")
+		w.WriteHeader(http.StatusUnprocessableEntity)
 	}
+	mockAPI := httptest.NewServer(http.HandlerFunc(handler))
 	mockEquinix := Provider()
 	mockEquinix.ConfigureContextFunc = func(ctx context.Context, d *schema.ResourceData) (interface{}, diag.Diagnostics) {
 		config := config.Config{
-			Metal: &packngo.Client{Projects: mockMetalProjectService},
+			BaseURL:   mockAPI.URL,
+			Token:     "fake-for-mock-test",
+			AuthToken: "fake-for-mock-test",
 		}
-		return &config, nil
+		err := config.Load(ctx)
+		return &config, diag.FromErr(err)
 	}
 
 	mockProviders := map[string]*schema.Provider{
