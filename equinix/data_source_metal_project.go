@@ -16,7 +16,7 @@ import (
 
 func dataSourceMetalProject() *schema.Resource {
 	return &schema.Resource{
-		ReadContext: dataSourceMetalProjectRead,
+		ReadWithoutTimeout: dataSourceMetalProjectRead,
 		Schema: map[string]*schema.Schema{
 			"name": {
 				Type:          schema.TypeString,

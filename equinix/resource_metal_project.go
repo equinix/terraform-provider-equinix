@@ -19,10 +19,10 @@ import (
 
 func resourceMetalProject() *schema.Resource {
 	return &schema.Resource{
-		CreateContext: resourceMetalProjectCreate,
-		ReadContext:   resourceMetalProjectRead,
-		UpdateContext: resourceMetalProjectUpdate,
-		DeleteContext: resourceMetalProjectDelete,
+		CreateWithoutTimeout: resourceMetalProjectCreate,
+		ReadWithoutTimeout:   resourceMetalProjectRead,
+		UpdateWithoutTimeout: resourceMetalProjectUpdate,
+		DeleteWithoutTimeout: resourceMetalProjectDelete,
 		Importer: &schema.ResourceImporter{
 			State: schema.ImportStatePassthrough,
 		},
