@@ -8,6 +8,7 @@ import (
 	"github.com/equinix/terraform-provider-equinix/internal/config"
 	equinix_errors "github.com/equinix/terraform-provider-equinix/internal/errors"
 	"github.com/equinix/terraform-provider-equinix/internal/hashcode"
+	equinix_schema "github.com/equinix/terraform-provider-equinix/internal/schema"
 	equinix_validation "github.com/equinix/terraform-provider-equinix/internal/validation"
 
 	"github.com/equinix/ne-go"
@@ -274,7 +275,7 @@ func resourceNetworkDeviceLinkUpdate(ctx context.Context, d *schema.ResourceData
 	client := m.(*config.Config).Ne
 	m.(*config.Config).AddModuleToNEUserAgent(&client, d)
 	var diags diag.Diagnostics
-	changes := getResourceDataChangedKeys([]string{
+	changes := equinix_schema.GetResourceDataChangedKeys([]string{
 		networkDeviceLinkSchemaNames["Name"], networkDeviceLinkSchemaNames["Subnet"],
 		networkDeviceLinkSchemaNames["Devices"], networkDeviceLinkSchemaNames["Links"],
 	}, d)
@@ -517,4 +518,15 @@ func networkDeviceLinkConnectionKey(v interface{}) string {
 
 func networkDeviceLinkConnectionHash(v interface{}) int {
 	return hashcode.String(networkDeviceLinkConnectionKey(v))
+}
+
+func schemaSetToMap(set *schema.Set) map[int]interface{} {
+	transformed := make(map[int]interface{})
+	if set != nil {
+		list := set.List()
+		for i := range list {
+			transformed[set.F(list[i])] = list[i]
+		}
+	}
+	return transformed
 }
