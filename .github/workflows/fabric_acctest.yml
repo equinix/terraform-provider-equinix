@@ -125,11 +125,18 @@ jobs:
           go test ${SWEEP_DIR} -v -timeout 180m -sweep=${SWEEP} -sweep-allow-failures=${SWEEP_ALLOW_FAILURES} -sweep-run="nothing"
 
       - name: Upload coverage to Codecov
+        concurrency: codecov-upload
         if: ${{ always() }}
         uses: codecov/codecov-action@v3
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           files: ./coverage_pnfv.txt
+
+      - name: Upload base coverage report for PNFV
+        uses: actions/upload-artifact@v2
+        with:
+          name: Fabric PNFV Coverage Report
+          path: ./coverage_pnfv.txt
 
   test-PFCR:
     name: Matrix Test
@@ -188,8 +195,15 @@ jobs:
           go test ${SWEEP_DIR} -v -timeout 180m -sweep=${SWEEP} -sweep-allow-failures=${SWEEP_ALLOW_FAILURES} -sweep-run="nothing"
 
       - name: Upload coverage to Codecov
+        concurrency: codecov-upload
         if: ${{ always() }}
         uses: codecov/codecov-action@v3
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           files: ./coverage_pfcr.txt
+
+      - name: Upload base coverage report for PFCR
+        uses: actions/upload-artifact@v2
+        with:
+          name: Fabric PFCR Coverage Report
+          path: ./coverage_pfcr.txt
