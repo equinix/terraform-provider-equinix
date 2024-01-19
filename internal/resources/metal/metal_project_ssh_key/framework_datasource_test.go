@@ -147,7 +147,7 @@ resource "equinix_metal_project_ssh_key" "foobar" {
 }
 
 // Test to verify that switching from SDKv2 to the Framework has not affected provider's behavior
-// Note: Once migrated, this test, which duplicates TestAccDataSourceMetalProjectSSHKey_bySearch, may be removed
+// TODO (ocobles): once migrated, this test may be removed
 func TestAccDataSourceMetalProjectSSHKey_upgradeFromVersion(t *testing.T) {
 	datasourceName := "data.equinix_metal_project_ssh_key.foobar"
 	keyName := acctest.RandomWithPrefix("tfacc-project-key")
@@ -159,14 +159,13 @@ func TestAccDataSourceMetalProjectSSHKey_upgradeFromVersion(t *testing.T) {
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                  func() { acceptance.TestAccPreCheckMetal(t) },
-		Providers:                 acceptance.TestAccProviders,
 		PreventPostDestroyRefresh: true,
 		CheckDestroy:              testAccMetalProjectSSHKeyCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
 				ExternalProviders: map[string]resource.ExternalProvider{
 					"equinix": {
-						VersionConstraint: "1.24.0", // latest version with ds equinix_metal_project_ssh_key defined on SDKv2
+						VersionConstraint: "1.24.0", // latest version with resource defined on SDKv2
 						Source:            "equinix/equinix",
 					},
 				},
@@ -186,16 +185,6 @@ func TestAccDataSourceMetalProjectSSHKey_upgradeFromVersion(t *testing.T) {
 						plancheck.ExpectEmptyPlan(),
 					},
 				},
-			},
-			{
-				Config:      testAccDataSourceMetalProjectSSHKeyConfig_noKey(keyName, publicKeyMaterial),
-				ExpectError: regexp.MustCompile("was not found"),
-			},
-			{
-				// Exit the tests with an empty state and a valid config
-				// following the previous error config. This is needed for the
-				// destroy step to succeed.
-				Config: `/* this config intentionally left blank */`,
 			},
 		},
 	})

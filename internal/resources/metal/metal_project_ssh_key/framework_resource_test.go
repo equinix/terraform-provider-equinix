@@ -100,7 +100,7 @@ func testAccMetalProjectSSHKeyCheckDestroyed(s *terraform.State) error {
 
 
 // Test to verify that switching from SDKv2 to the Framework has not affected provider's behavior
-// Note: Once migrated, this test, which duplicates TestAccMetalProjectSSHKey_basic, may be removed
+// TODO (ocobles): once migrated, this test may be removed
 func TestAccMetalProjectSSHKey_upgradeFromVersion(t *testing.T) {
 	rs := acctest.RandString(10)
 	var key packngo.SSHKey
@@ -112,14 +112,12 @@ func TestAccMetalProjectSSHKey_upgradeFromVersion(t *testing.T) {
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acceptance.TestAccPreCheckMetal(t) },
-		ExternalProviders: acceptance.TestExternalProviders,
-		Providers:         acceptance.TestAccProviders,
 		CheckDestroy:      testAccMetalProjectSSHKeyCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
 				ExternalProviders: map[string]resource.ExternalProvider{
 					"equinix": {
-						VersionConstraint: "1.24.0", // latest version with equinix_metal_project_ssh_key defined on SDKv2
+						VersionConstraint: "1.24.0", // latest version with resource defined on SDKv2
 						Source:            "equinix/equinix",
 					},
 				},

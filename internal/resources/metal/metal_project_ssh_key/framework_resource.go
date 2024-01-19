@@ -77,7 +77,7 @@ func (r *Resource) Read(
 	r.Meta.AddFwModuleToMetalUserAgent(ctx, req.ProviderMeta)
 	client := r.Meta.Metal
 
-	// Retrieve values from plan
+	// Retrieve values from state
 	var state ResourceModel
 	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
 	if resp.Diagnostics.HasError() {
@@ -146,7 +146,7 @@ func (r *Resource) Update(
 		updateRequest.Key = plan.PublicKey.ValueStringPointer()
 	}
 
-	// Use your API client to update the resource
+	// Update the resource
 	key, _, err := client.SSHKeys.Update(plan.ID.ValueString(), updateRequest)
 	if err != nil {
 		err = equinix_errors.FriendlyError(err)
@@ -185,7 +185,7 @@ func (r *Resource) Delete(
 	// Extract the ID of the resource from the state
 	id := state.ID.ValueString()
 
-	// Use your API client to delete the resource
+	// Use API client to delete the resource
 	deleteResp, err := client.SSHKeys.Delete(id)
 	if equinix_errors.IgnoreResponseErrors(equinix_errors.HttpForbidden, equinix_errors.HttpNotFound)(deleteResp, err) != nil {
 		err = equinix_errors.FriendlyError(err)
