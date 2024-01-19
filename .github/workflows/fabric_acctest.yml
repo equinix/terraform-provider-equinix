@@ -133,7 +133,7 @@ jobs:
 
       - name: Create Go Coverage HTML File
         run: |
-          go tool cover -html=./coverage_pfnv.txt -o ./coverage_pnfv.html
+          go tool cover -html=./coverage_pnfv.txt -o ./coverage_pnfv.html
 
       - name: Upload HTML Coverage Report for PNFV
         uses: actions/upload-artifact@v2
