@@ -44,7 +44,7 @@ data "equinix_fabric_cloud_router" "cloud_router_data_name" {
 - `name` (String) Fabric Cloud Router name. An alpha-numeric 24 characters string which can include only hyphens and underscores
 - `notifications` (List of Object) Preferences for notifications on Fabric Cloud Router configuration or status changes (see [below for nested schema](#nestedatt--notifications))
 - `order` (Set of Object) Order information related to this Fabric Cloud Router (see [below for nested schema](#nestedatt--order))
-- `package` (Set of Object) Fabric Cloud Router location (see [below for nested schema](#nestedatt--package))
+- `package` (Set of Object) Fabric Cloud Router Package Type (see [below for nested schema](#nestedatt--package))
 - `project` (Set of Object) Fabric Cloud Router project (see [below for nested schema](#nestedatt--project))
 - `state` (String) Fabric Cloud Router overall state
 - `type` (String) Defines the FCR type like XF_ROUTER
@@ -129,5 +129,4 @@ Read-Only:
 
 - `href` (String)
 - `project_id` (String)
-
 

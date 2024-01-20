@@ -3,6 +3,7 @@ package equinix
 import (
 	"context"
 	"fmt"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"log"
 	"strings"
@@ -16,7 +17,6 @@ import (
 	v4 "github.com/equinix-labs/fabric-go/fabric/v4"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 func resourcesFabricCloudRouterPackageSch() map[string]*schema.Schema {
@@ -66,7 +66,7 @@ func resourcesFabricCloudRouterResourceSchema() map[string]*schema.Schema {
 		"package": {
 			Type:        schema.TypeSet,
 			Required:    true,
-			Description: "Fabric Cloud Router location",
+			Description: "Fabric Cloud Router Package Type",
 			MaxItems:    1,
 			Elem: &schema.Resource{
 				Schema: resourcesFabricCloudRouterPackageSch(),
@@ -115,7 +115,7 @@ func resourcesFabricCloudRouterResourceSchema() map[string]*schema.Schema {
 		},
 		"order": {
 			Type:        schema.TypeSet,
-			Computed:    true,
+			Required:    true,
 			Description: "Order information related to this Fabric Cloud Router",
 			MaxItems:    1,
 			Elem: &schema.Resource{
@@ -293,26 +293,6 @@ func packageCloudRouterGoToTerra(packageType *v4.CloudRouterPackageType) *schema
 	return packageSet
 }
 
-func orderCloudRouterGoToTerra(order *v4.Order) *schema.Set {
-	if order == nil {
-		return nil
-	}
-	orders := []*v4.Order{order}
-	mappedOrders := make([]interface{}, len(orders))
-	for _, order := range orders {
-		mappedOrder := make(map[string]interface{})
-		mappedOrder["purchase_order_number"] = order.PurchaseOrderNumber
-		mappedOrder["billing_tier"] = order.BillingTier
-		mappedOrder["order_id"] = order.OrderId
-		mappedOrder["order_number"] = order.OrderNumber
-		mappedOrders = append(mappedOrders, mappedOrder)
-	}
-	orderSet := schema.NewSet(
-		schema.HashResource(readOrderRes),
-		mappedOrders)
-	return orderSet
-}
-
 func setCloudRouterMap(d *schema.ResourceData, fcr v4.CloudRouter) diag.Diagnostics {
 	diags := diag.Diagnostics{}
 	err := equinix_schema.SetMap(d, map[string]interface{}{
@@ -332,7 +312,7 @@ func setCloudRouterMap(d *schema.ResourceData, fcr v4.CloudRouter) diag.Diagnost
 		"distinct_ipv4_prefixes_count": fcr.DistinctIpv4PrefixesCount,
 		"distinct_ipv6_prefixes_count": fcr.DistinctIpv6PrefixesCount,
 		"connections_count":            fcr.ConnectionsCount,
-		"order":                        orderCloudRouterGoToTerra(fcr.Order),
+		"order":                        equinix_schema.OrderCloudRouterGoToTerra(fcr.Order),
 	})
 	if err != nil {
 		return diag.FromErr(err)

@@ -49,7 +49,8 @@ resource "equinix_fabric_cloud_router" "new_cloud_router"{
 - `location` (Block Set, Min: 1, Max: 1) Fabric Cloud Router location (see [below for nested schema](#nestedblock--location))
 - `name` (String) Fabric Cloud Router name. An alpha-numeric 24 characters string which can include only hyphens and underscores
 - `notifications` (Block List, Min: 1) Preferences for notifications on Fabric Cloud Router configuration or status changes (see [below for nested schema](#nestedblock--notifications))
-- `package` (Block Set, Min: 1, Max: 1) Fabric Cloud Router location (see [below for nested schema](#nestedblock--package))
+- `order` (Block Set, Min: 1, Max: 1) Order information related to this Fabric Cloud Router (see [below for nested schema](#nestedblock--order))
+- `package` (Block Set, Min: 1, Max: 1) Fabric Cloud Router Package Type (see [below for nested schema](#nestedblock--package))
 - `project` (Block Set, Min: 1, Max: 1) Fabric Cloud Router project (see [below for nested schema](#nestedblock--project))
 - `type` (String) Defines the FCR type like XF_ROUTER
 
@@ -70,7 +71,6 @@ resource "equinix_fabric_cloud_router" "new_cloud_router"{
 - `distinct_ipv6_prefixes_count` (Number) Number of distinct ipv6 routes
 - `equinix_asn` (Number) Equinix ASN
 - `id` (String) The ID of this resource.
-- `order` (Set of Object) Order information related to this Fabric Cloud Router (see [below for nested schema](#nestedatt--order))
 - `state` (String) Fabric Cloud Router overall state
 
 <a id="nestedblock--account"></a>
@@ -109,6 +109,20 @@ Required:
 Optional:
 
 - `send_interval` (String) Send interval
+
+
+<a id="nestedblock--order"></a>
+### Nested Schema for `order`
+
+Optional:
+
+- `billing_tier` (String) Billing tier for connection bandwidth
+- `purchase_order_number` (String) Purchase order number
+
+Read-Only:
+
+- `order_id` (String) Order Identification
+- `order_number` (String) Order Reference Number
 
 
 <a id="nestedblock--package"></a>
@@ -159,15 +173,3 @@ Read-Only:
 - `updated_by_email` (String)
 - `updated_by_full_name` (String)
 - `updated_date_time` (String)
-
-
-<a id="nestedatt--order"></a>
-### Nested Schema for `order`
-
-Read-Only:
-
-- `billing_tier` (String)
-- `order_id` (String)
-- `order_number` (String)
-- `purchase_order_number` (String)
-
