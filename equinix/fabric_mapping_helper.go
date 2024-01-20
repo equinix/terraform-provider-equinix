@@ -2,6 +2,7 @@ package equinix
 
 import (
 	"fmt"
+	equinix_schema "github.com/equinix/terraform-provider-equinix/internal/schema"
 	"log"
 
 	v4 "github.com/equinix-labs/fabric-go/fabric/v4"
@@ -357,8 +358,9 @@ func accountToTerra(account *v4.SimplifiedAccount) *schema.Set {
 			"global_cust_id":           account.GlobalCustId,
 		}
 	}
+	hashAccount := &schema.Resource{Schema: equinix_schema.AccountSch()}
 	accountSet := schema.NewSet(
-		schema.HashResource(createAccountRes),
+		schema.HashResource(hashAccount),
 		mappedAccounts,
 	)
 
@@ -431,9 +433,8 @@ func operationToTerra(operation *v4.ConnectionOperation) *schema.Set {
 		}
 		mappedOperations = append(mappedOperations, mappedOperation)
 	}
-
 	operationSet := schema.NewSet(
-		schema.HashResource(createOperationRes),
+		schema.HashResource(&schema.Resource{Schema: operationSch()}),
 		mappedOperations,
 	)
 	return operationSet
@@ -454,7 +455,7 @@ func orderMappingToTerra(order *v4.Order) *schema.Set {
 		mappedOrders = append(mappedOrders, mappedOrder)
 	}
 	orderSet := schema.NewSet(
-		schema.HashResource(createOrderRes),
+		schema.HashResource(&schema.Resource{Schema: equinix_schema.OrderSch()}),
 		mappedOrders,
 	)
 	return orderSet
@@ -482,7 +483,7 @@ func changeLogToTerra(changeLog *v4.Changelog) *schema.Set {
 		mappedChangeLogs = append(mappedChangeLogs, mappedChangeLog)
 	}
 	changeLogSet := schema.NewSet(
-		schema.HashResource(createChangeLogRes),
+		schema.HashResource(&schema.Resource{Schema: equinix_schema.ChangeLogSch()}),
 		mappedChangeLogs,
 	)
 	return changeLogSet
@@ -497,7 +498,7 @@ func portRedundancyToTerra(redundancy *v4.PortRedundancy) *schema.Set {
 		mappedRedundancys = append(mappedRedundancys, mappedRedundancy)
 	}
 	redundancySet := schema.NewSet(
-		schema.HashResource(createPortRedundancyRes),
+		schema.HashResource(&schema.Resource{Schema: equinix_schema.RedundancySch()}),
 		mappedRedundancys,
 	)
 	return redundancySet
@@ -516,7 +517,7 @@ func redundancyToTerra(redundancy *v4.ConnectionRedundancy) *schema.Set {
 		mappedRedundancys = append(mappedRedundancys, mappedRedundancy)
 	}
 	redundancySet := schema.NewSet(
-		schema.HashResource(createRedundancyRes),
+		schema.HashResource(&schema.Resource{Schema: equinix_schema.RedundancySch()}),
 		mappedRedundancys,
 	)
 	return redundancySet
@@ -549,7 +550,7 @@ func locationToTerra(location *v4.SimplifiedLocation) *schema.Set {
 		}
 	}
 	locationSet := schema.NewSet(
-		schema.HashResource(createLocationRes),
+		schema.HashResource(&schema.Resource{Schema: equinix_schema.LocationSch()}),
 		mappedLocations,
 	)
 	return locationSet
@@ -566,7 +567,7 @@ func locationCloudRouterToTerra(location *v4.SimplifiedLocationWithoutIbx) *sche
 		}
 	}
 	locationSet := schema.NewSet(
-		schema.HashResource(createLocationRes),
+		schema.HashResource(&schema.Resource{Schema: equinix_schema.LocationSch()}),
 		mappedLocations,
 	)
 	return locationSet
@@ -588,7 +589,7 @@ func serviceTokenToTerra(serviceToken *v4.ServiceToken) *schema.Set {
 		mappedServiceTokens = append(mappedServiceTokens, mappedServiceToken)
 	}
 	serviceTokenSet := schema.NewSet(
-		schema.HashResource(createServiceTokenRes),
+		schema.HashResource(&schema.Resource{Schema: serviceTokenSch()}),
 		mappedServiceTokens,
 	)
 	return serviceTokenSet
@@ -607,7 +608,7 @@ func connectionSideToTerra(connectionSide *v4.ConnectionSide) *schema.Set {
 		mappedConnectionSides = append(mappedConnectionSides, mappedConnectionSide)
 	}
 	connectionSideSet := schema.NewSet(
-		schema.HashResource(createFabricConnectionSideRes()),
+		schema.HashResource(connectionSideSch()),
 		mappedConnectionSides,
 	)
 	return connectionSideSet
@@ -640,7 +641,7 @@ func cloudRouterToTerra(cloudRouter *v4.CloudRouter) *schema.Set {
 		mappedCloudRouters = append(mappedCloudRouters, mappedCloudRouter)
 	}
 	linkedProtocolSet := schema.NewSet(
-		schema.HashResource(createGatewayProjectSchRes),
+		schema.HashResource(&schema.Resource{Schema: equinix_schema.ProjectSch()}),
 		mappedCloudRouters)
 	return linkedProtocolSet
 }
@@ -675,7 +676,7 @@ func orderToTerra(order *v4.Order) *schema.Set {
 		mappedOrders = append(mappedOrders, mappedOrder)
 	}
 	orderSet := schema.NewSet(
-		schema.HashResource(readOrderRes),
+		schema.HashResource(&schema.Resource{Schema: equinix_schema.OrderSch()}),
 		mappedOrders)
 	return orderSet
 }
@@ -712,7 +713,7 @@ func virtualDeviceToTerra(virtualDevice *v4.VirtualDevice) *schema.Set {
 		mappedVirtualDevices = append(mappedVirtualDevices, mappedVirtualDevice)
 	}
 	virtualDeviceSet := schema.NewSet(
-		schema.HashResource(createAccessPointVirtualDeviceRes),
+		schema.HashResource(&schema.Resource{Schema: accessPointVirtualDeviceSch()}),
 		mappedVirtualDevices)
 	return virtualDeviceSet
 }
@@ -731,7 +732,7 @@ func interfaceToTerra(mInterface *v4.ModelInterface) *schema.Set {
 		mappedMInterfaces = append(mappedMInterfaces, mappedMInterface)
 	}
 	mInterfaceSet := schema.NewSet(
-		schema.HashResource(createAccessPointVirtualDeviceRes),
+		schema.HashResource(&schema.Resource{Schema: accessPointInterface()}),
 		mappedMInterfaces)
 	return mInterfaceSet
 }
@@ -777,7 +778,7 @@ func accessPointToTerra(accessPoint *v4.AccessPoint) *schema.Set {
 		mappedAccessPoints = append(mappedAccessPoints, mappedAccessPoint)
 	}
 	accessPointSet := schema.NewSet(
-		schema.HashResource(createConnectionSideAccessPointRes()),
+		schema.HashResource(accessPointSch()),
 		mappedAccessPoints,
 	)
 	return accessPointSet
@@ -795,7 +796,7 @@ func linkedProtocolToTerra(linkedProtocol v4.SimplifiedLinkProtocol) *schema.Set
 		mappedLinkedProtocols = append(mappedLinkedProtocols, mappedLinkedProtocol)
 	}
 	linkedProtocolSet := schema.NewSet(
-		schema.HashResource(createAccessPointLinkProtocolSchRes),
+		schema.HashResource(&schema.Resource{Schema: accessPointLinkProtocolSch()}),
 		mappedLinkedProtocols)
 	return linkedProtocolSet
 }
@@ -814,7 +815,7 @@ func simplifiedServiceProfileToTerra(profile *v4.SimplifiedServiceProfile) *sche
 	}
 
 	profileSet := schema.NewSet(
-		schema.HashResource(createServiceProfileSchRes),
+		schema.HashResource(&schema.Resource{Schema: serviceProfileSch()}),
 		mappedProfiles,
 	)
 	return profileSet
@@ -900,7 +901,7 @@ func portToTerra(port *v4.SimplifiedPort) *schema.Set {
 		mappedPorts = append(mappedPorts, mappedPort)
 	}
 	portSet := schema.NewSet(
-		schema.HashResource(createPortRes),
+		schema.HashResource(&schema.Resource{Schema: portSch()}),
 		mappedPorts,
 	)
 	return portSet

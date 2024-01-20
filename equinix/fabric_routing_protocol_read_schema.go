@@ -1,6 +1,7 @@
 package equinix
 
 import (
+	equinix_schema "github.com/equinix/terraform-provider-equinix/internal/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"golang.org/x/exp/maps"
 )
@@ -189,7 +190,7 @@ func readRoutingProtocolOperationSch() map[string]*schema.Schema {
 			Computed:    true,
 			Description: "Errors occurred",
 			Elem: &schema.Resource{
-				Schema: readOperationalErrorSch(),
+				Schema: equinix_schema.OperationalErrorSch(),
 			},
 		},
 	}
@@ -334,7 +335,7 @@ func readFabricRoutingProtocolResourceSchema() map[string]*schema.Schema {
 			Computed:    true,
 			Description: "Captures Routing Protocol lifecycle change information",
 			Elem: &schema.Resource{
-				Schema: readChangeLogSch(),
+				Schema: equinix_schema.ChangeLogSch(),
 			},
 		},
 	}

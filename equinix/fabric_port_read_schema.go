@@ -1,6 +1,7 @@
 package equinix
 
 import (
+	equinix_schema "github.com/equinix/terraform-provider-equinix/internal/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
@@ -20,36 +21,8 @@ func readPortDeviceSch() map[string]*schema.Schema {
 			Computed:    true,
 			Description: "Port device redundancy",
 			Elem: &schema.Resource{
-				Schema: readRedundancySch(),
+				Schema: equinix_schema.RedundancySch(),
 			},
-		},
-	}
-}
-
-var readPortDeviceRedundancyRes = &schema.Resource{
-	Schema: readRedundancySch(),
-}
-
-var readPortInterfaceRes = &schema.Resource{
-	Schema: readPortInterfaceSch(),
-}
-
-func readPortInterfaceSch() map[string]*schema.Schema {
-	return map[string]*schema.Schema{
-		"type": {
-			Type:        schema.TypeString,
-			Computed:    true,
-			Description: "Port interface type",
-		},
-		"if_index": {
-			Type:        schema.TypeString,
-			Computed:    true,
-			Description: "Port interface index",
-		},
-		"name": {
-			Type:        schema.TypeString,
-			Computed:    true,
-			Description: "Port interface name",
 		},
 	}
 }
@@ -264,7 +237,7 @@ func readFabricPortResourceSchema() map[string]*schema.Schema {
 			Computed:    true,
 			Description: "Customer account information that is associated with this port",
 			Elem: &schema.Resource{
-				Schema: readAccountSch(),
+				Schema: equinix_schema.AccountSch(),
 			},
 		},
 		"change_log": {
@@ -272,7 +245,7 @@ func readFabricPortResourceSchema() map[string]*schema.Schema {
 			Computed:    true,
 			Description: "Captures port lifecycle change information",
 			Elem: &schema.Resource{
-				Schema: readChangeLogSch(),
+				Schema: equinix_schema.ChangeLogSch(),
 			},
 		},
 		"location": {
@@ -280,7 +253,7 @@ func readFabricPortResourceSchema() map[string]*schema.Schema {
 			Computed:    true,
 			Description: "Port location information",
 			Elem: &schema.Resource{
-				Schema: readLocationSch(),
+				Schema: equinix_schema.LocationSch(),
 			},
 		},
 		"device": {

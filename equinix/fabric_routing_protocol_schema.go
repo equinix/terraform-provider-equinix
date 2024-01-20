@@ -1,6 +1,7 @@
 package equinix
 
 import (
+	equinix_schema "github.com/equinix/terraform-provider-equinix/internal/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"golang.org/x/exp/maps"
@@ -227,7 +228,7 @@ func createRoutingProtocolOperationSch() map[string]*schema.Schema {
 			Computed:    true,
 			Description: "Errors occurred",
 			Elem: &schema.Resource{
-				Schema: createOperationalErrorSch(),
+				Schema: equinix_schema.OperationalErrorSch(),
 			},
 		},
 	}
@@ -378,7 +379,7 @@ func createFabricRoutingProtocolResourceSchema() map[string]*schema.Schema {
 			Computed:    true,
 			Description: "Captures Routing Protocol lifecycle change information",
 			Elem: &schema.Resource{
-				Schema: createChangeLogSch(),
+				Schema: equinix_schema.ChangeLogSch(),
 			},
 		},
 	}

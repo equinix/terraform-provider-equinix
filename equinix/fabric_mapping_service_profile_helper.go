@@ -3,6 +3,7 @@ package equinix
 import (
 	v4 "github.com/equinix-labs/fabric-go/fabric/v4"
 	"github.com/equinix/terraform-provider-equinix/internal/converters"
+	equinix_schema "github.com/equinix/terraform-provider-equinix/internal/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
@@ -55,7 +56,7 @@ func marketingInfoMappingToTerra(mkinfo *v4.MarketingInfo) *schema.Set {
 		mappedMkInfos = append(mappedMkInfos, mappedMkInfo)
 	}
 	marketingInfoSet := schema.NewSet(
-		schema.HashResource(readOrderRes),
+		schema.HashResource(&schema.Resource{Schema: equinix_schema.OrderSch()}),
 		mappedMkInfos,
 	)
 	return marketingInfoSet

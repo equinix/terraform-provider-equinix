@@ -1,6 +1,7 @@
 package equinix
 
 import (
+	equinix_schema "github.com/equinix/terraform-provider-equinix/internal/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
@@ -41,7 +42,7 @@ func readFabricServiceProfileSchema() map[string]*schema.Schema {
 			Computed:    true,
 			Description: "Preferences for notifications on connection configuration or status changes",
 			Elem: &schema.Resource{
-				Schema: readNotificationSch(),
+				Schema: equinix_schema.NotificationSch(),
 			},
 		},
 		"access_point_type_configs": {
@@ -49,7 +50,7 @@ func readFabricServiceProfileSchema() map[string]*schema.Schema {
 			Computed:    true,
 			Description: "Access point config information",
 			Elem: &schema.Resource{
-				Schema: readAccessPointTypeConfigSch(),
+				Schema: equinix_schema.AccessPointTypeConfigSch(),
 			},
 		},
 
@@ -130,7 +131,7 @@ func readFabricServiceProfileSchema() map[string]*schema.Schema {
 			Computed:    true,
 			Description: "Captures connection lifecycle change information",
 			Elem: &schema.Resource{
-				Schema: readChangeLogSch(),
+				Schema: equinix_schema.ChangeLogSch(),
 			},
 		},
 	}
@@ -283,7 +284,7 @@ func readServiceProfileAccessPointColo() map[string]*schema.Schema {
 			Computed:    true,
 			Description: "Colo/Port Location",
 			Elem: &schema.Resource{
-				Schema: createLocationSch(),
+				Schema: equinix_schema.LocationSch(),
 			},
 		},
 		"seller_region": {
@@ -469,10 +470,6 @@ func readFabricServiceProfilesSearchSchema() map[string]*schema.Schema {
 			},
 		},
 	}
-}
-
-var readOrderRes = &schema.Resource{
-	Schema: readOrderSch(),
 }
 
 var readGatewayProjectSchRes = &schema.Resource{

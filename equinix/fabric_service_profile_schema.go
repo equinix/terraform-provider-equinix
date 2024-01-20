@@ -1,6 +1,7 @@
 package equinix
 
 import (
+	equinix_schema "github.com/equinix/terraform-provider-equinix/internal/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
@@ -41,7 +42,7 @@ func createFabricServiceProfileSchema() map[string]*schema.Schema {
 			Optional:    true,
 			Description: "Preferences for notifications on connection configuration or status changes",
 			Elem: &schema.Resource{
-				Schema: createNotificationSch(),
+				Schema: equinix_schema.NotificationSch(),
 			},
 		},
 		"access_point_type_configs": {
@@ -132,7 +133,7 @@ func createFabricServiceProfileSchema() map[string]*schema.Schema {
 			Description: "Project information",
 			MaxItems:    1,
 			Elem: &schema.Resource{
-				Schema: createGatewayProjectSch(),
+				Schema: equinix_schema.ProjectSch(),
 			},
 		},
 		"change_log": {
@@ -140,7 +141,7 @@ func createFabricServiceProfileSchema() map[string]*schema.Schema {
 			Computed:    true,
 			Description: "Captures connection lifecycle change information",
 			Elem: &schema.Resource{
-				Schema: createChangeLogSch(),
+				Schema: equinix_schema.ChangeLogSch(),
 			},
 		},
 	}
@@ -245,7 +246,7 @@ func createServiceProfileAccessPointColo() map[string]*schema.Schema {
 			Description: "Colo/Port Location",
 			MaxItems:    1,
 			Elem: &schema.Resource{
-				Schema: createLocationSch(),
+				Schema: equinix_schema.LocationSch(),
 			},
 		},
 		"seller_region": {
@@ -284,7 +285,7 @@ func createServiceProfileAccessPointVd() map[string]*schema.Schema {
 			Description: "Device Location",
 			MaxItems:    1,
 			Elem: &schema.Resource{
-				Schema: createLocationSch(),
+				Schema: equinix_schema.LocationSch(),
 			},
 		},
 		"interface_uuid": {

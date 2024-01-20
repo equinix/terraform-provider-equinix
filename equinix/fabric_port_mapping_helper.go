@@ -2,6 +2,7 @@ package equinix
 
 import (
 	v4 "github.com/equinix-labs/fabric-go/fabric/v4"
+	equinix_schema "github.com/equinix/terraform-provider-equinix/internal/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
@@ -39,7 +40,7 @@ func portOperationToTerra(operation *v4.PortOperation) *schema.Set {
 		mappedOperations = append(mappedOperations, mappedOperation)
 	}
 	operationSet := schema.NewSet(
-		schema.HashResource(createOperationRes),
+		schema.HashResource(&schema.Resource{Schema: operationSch()}),
 		mappedOperations,
 	)
 	return operationSet
@@ -58,7 +59,7 @@ func portDeviceRedundancyToTerra(redundancy *v4.PortDeviceRedundancy) *schema.Se
 		mappedRedundancies = append(mappedRedundancies, mappedRedundancy)
 	}
 	redundancySet := schema.NewSet(
-		schema.HashResource(readPortDeviceRedundancyRes),
+		schema.HashResource(&schema.Resource{Schema: equinix_schema.RedundancySch()}),
 		mappedRedundancies,
 	)
 	return redundancySet

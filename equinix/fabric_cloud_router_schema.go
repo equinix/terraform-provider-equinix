@@ -1,6 +1,7 @@
 package equinix
 
 import (
+	equinix_schema "github.com/equinix/terraform-provider-equinix/internal/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 )
@@ -96,7 +97,7 @@ func createCloudRouterResourceSchema() map[string]*schema.Schema {
 			Computed:    true,
 			Description: "Captures Fabric Cloud Router lifecycle change information",
 			Elem: &schema.Resource{
-				Schema: createChangeLogSch(),
+				Schema: equinix_schema.ChangeLogSch(),
 			},
 		},
 		"type": {
@@ -111,7 +112,7 @@ func createCloudRouterResourceSchema() map[string]*schema.Schema {
 			Description: "Fabric Cloud Router location",
 			MaxItems:    1,
 			Elem: &schema.Resource{
-				Schema: createLocationSch(),
+				Schema: equinix_schema.LocationSch(),
 			},
 		},
 		"project": {
@@ -138,7 +139,7 @@ func createCloudRouterResourceSchema() map[string]*schema.Schema {
 			Description: "Order information related to this Fabric Cloud Router",
 			MaxItems:    1,
 			Elem: &schema.Resource{
-				Schema: createOrderSch(),
+				Schema: equinix_schema.OrderSch(),
 			},
 		},
 		"notifications": {
@@ -146,7 +147,7 @@ func createCloudRouterResourceSchema() map[string]*schema.Schema {
 			Required:    true,
 			Description: "Preferences for notifications on Fabric Cloud Router configuration or status changes",
 			Elem: &schema.Resource{
-				Schema: createNotificationSch(),
+				Schema: equinix_schema.NotificationSch(),
 			},
 		},
 		"bgp_ipv4_routes_count": {
