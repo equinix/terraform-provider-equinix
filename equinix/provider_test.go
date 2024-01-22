@@ -7,11 +7,19 @@ import (
 	"regexp"
 	"strings"
 	"testing"
+	"context"
 
 	"github.com/equinix/terraform-provider-equinix/internal/config"
 	"github.com/equinix/terraform-provider-equinix/internal/provider"
 	"github.com/equinix/terraform-provider-equinix/version"
 
+<<<<<<< HEAD
+	"github.com/equinix/terraform-provider-equinix/internal/config"
+	"github.com/equinix/terraform-provider-equinix/internal/provider"
+	"github.com/equinix/terraform-provider-equinix/version"
+
+=======
+>>>>>>> cdab7fa (fixup! fix framework tests)
 	"github.com/equinix/ecx-go/v2"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
