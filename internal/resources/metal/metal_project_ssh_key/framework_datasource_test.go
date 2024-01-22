@@ -22,7 +22,7 @@ func TestAccDataSourceMetalProjectSSHKey_bySearch(t *testing.T) {
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                  func() { acceptance.TestAccPreCheckMetal(t) },
-		Providers:                 acceptance.TestAccProviders,
+		ProtoV5ProviderFactories:  acceptance.ProtoV5ProviderFactories,
 		PreventPostDestroyRefresh: true,
 		CheckDestroy:              testAccMetalProjectSSHKeyCheckDestroyed,
 		Steps: []resource.TestStep{
@@ -61,7 +61,7 @@ func TestAccDataSourceMetalProjectSSHKeyDataSource_yID(t *testing.T) {
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                  func() { acceptance.TestAccPreCheckMetal(t) },
-		Providers:                 acceptance.TestAccProviders,
+		ProtoV5ProviderFactories:  acceptance.ProtoV5ProviderFactories,
 		PreventPostDestroyRefresh: true,
 		CheckDestroy:              testAccMetalProjectSSHKeyCheckDestroyed,
 		Steps: []resource.TestStep{

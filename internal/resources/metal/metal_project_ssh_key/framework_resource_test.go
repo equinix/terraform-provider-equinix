@@ -58,10 +58,10 @@ func TestAccMetalProjectSSHKey_basic(t *testing.T) {
 	cfg := testAccMetalProjectSSHKeyConfig_basic(rs, publicKeyMaterial)
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acceptance.TestAccPreCheckMetal(t) },
-		ExternalProviders: acceptance.TestExternalProviders,
-		Providers:         acceptance.TestAccProviders,
-		CheckDestroy:      testAccMetalProjectSSHKeyCheckDestroyed,
+		PreCheck:                 func() { acceptance.TestAccPreCheckMetal(t) },
+		ExternalProviders:        acceptance.TestExternalProviders,
+		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		CheckDestroy:             testAccMetalProjectSSHKeyCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
 				Config: cfg,
@@ -120,6 +120,9 @@ func TestAccMetalProjectSSHKey_upgradeFromVersion(t *testing.T) {
 						VersionConstraint: "1.24.0", // latest version with resource defined on SDKv2
 						Source:            "equinix/equinix",
 					},
+					"random": {
+						Source: "hashicorp/random",
+					},
 				},
 				Config: cfg,
 				Check: resource.ComposeTestCheckFunc(
@@ -137,6 +140,11 @@ func TestAccMetalProjectSSHKey_upgradeFromVersion(t *testing.T) {
 				),
 			},
 			{
+				ExternalProviders: map[string]resource.ExternalProvider{
+					"random": {
+						Source: "hashicorp/random",
+					},
+				},
 				ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
 				Config: cfg,
 				ConfigPlanChecks: resource.ConfigPlanChecks{
