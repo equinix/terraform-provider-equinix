@@ -1,4 +1,4 @@
-package equinix
+package metal_connection
 
 import (
 	"fmt"
@@ -8,7 +8,6 @@ import (
 	"strings"
 
 	"github.com/equinix/terraform-provider-equinix/internal/converters"
-	"github.com/equinix/terraform-provider-equinix/internal/schema/metal_connection"
 
 	equinix_errors "github.com/equinix/terraform-provider-equinix/internal/errors"
 	equinix_schema "github.com/equinix/terraform-provider-equinix/internal/schema"
@@ -21,9 +20,9 @@ import (
 	"golang.org/x/exp/slices"
 )
 
-func resourceMetalConnection() *schema.Resource {
+func Resource() *schema.Resource {
 	speeds := []string{}
-	for _, allowedSpeed := range metal_connection.AllowedSpeeds {
+	for _, allowedSpeed := range allowedSpeeds {
 		speeds = append(speeds, allowedSpeed.Str)
 	}
 	return &schema.Resource{
@@ -210,7 +209,7 @@ func resourceMetalConnectionCreate(d *schema.ResourceData, meta interface{}) err
 		if !speedOk {
 			return fmt.Errorf("you must set speed, it's optional only for shared connections of type z_side")
 		}
-		speed, err := metal_connection.SpeedStrToUint(speedRaw.(string))
+		speed, err := speedStrToUint(speedRaw.(string))
 		if err != nil {
 			return err
 		}
@@ -421,7 +420,7 @@ func resourceMetalConnectionRead(d *schema.ResourceData, meta interface{}) error
 	}
 	speed := "0"
 	if conn.Speed > 0 {
-		speed, err = metal_connection.SpeedUintToStr(conn.Speed)
+		speed, err = speedUintToStr(conn.Speed)
 		if err != nil {
 			return err
 		}

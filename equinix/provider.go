@@ -6,6 +6,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/equinix/terraform-provider-equinix/internal/resources/metal/metal_connection"
 	"github.com/equinix/terraform-provider-equinix/internal/resources/metal/metal_project_ssh_key"
 	"github.com/equinix/terraform-provider-equinix/internal/resources/metal/metal_ssh_key"
 
@@ -94,7 +95,7 @@ func Provider() *schema.Provider {
 			"equinix_metal_hardware_reservation": dataSourceMetalHardwareReservation(),
 			"equinix_metal_metro":                dataSourceMetalMetro(),
 			"equinix_metal_facility":             dataSourceMetalFacility(),
-			"equinix_metal_connection":           dataSourceMetalConnection(),
+			"equinix_metal_connection":           metal_connection.DataSource(),
 			"equinix_metal_gateway":              dataSourceMetalGateway(),
 			"equinix_metal_ip_block_ranges":      dataSourceMetalIPBlockRanges(),
 			"equinix_metal_precreated_ip_block":  dataSourceMetalPreCreatedIPBlock(),
@@ -131,7 +132,7 @@ func Provider() *schema.Provider {
 			"equinix_network_file":               resourceNetworkFile(),
 			"equinix_metal_user_api_key":         resourceMetalUserAPIKey(),
 			"equinix_metal_project_api_key":      resourceMetalProjectAPIKey(),
-			"equinix_metal_connection":           resourceMetalConnection(),
+			"equinix_metal_connection":           metal_connection.Resource(),
 			"equinix_metal_device":               resourceMetalDevice(),
 			"equinix_metal_device_network_type":  resourceMetalDeviceNetworkType(),
 			"equinix_metal_ssh_key":              metal_ssh_key.Resource(),

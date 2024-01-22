@@ -6,25 +6,25 @@ import (
 )
 
 var (
-	Mega          uint64 = 1000 * 1000
-	Giga          uint64 = 1000 * Mega
-	AllowedSpeeds        = []struct {
+	mega          uint64 = 1000 * 1000
+	giga          uint64 = 1000 * mega
+	allowedSpeeds        = []struct {
 		Int uint64
 		Str string
 	}{
-		{50 * Mega, "50Mbps"},
-		{200 * Mega, "200Mbps"},
-		{500 * Mega, "500Mbps"},
-		{1 * Giga, "1Gbps"},
-		{2 * Giga, "2Gbps"},
-		{5 * Giga, "5Gbps"},
-		{10 * Giga, "10Gbps"},
+		{50 * mega, "50Mbps"},
+		{200 * mega, "200Mbps"},
+		{500 * mega, "500Mbps"},
+		{1 * giga, "1Gbps"},
+		{2 * giga, "2Gbps"},
+		{5 * giga, "5Gbps"},
+		{10 * giga, "10Gbps"},
 	}
 )
 
-func SpeedStrToUint(speed string) (uint64, error) {
+func speedStrToUint(speed string) (uint64, error) {
 	allowedStrings := []string{}
-	for _, allowedSpeed := range AllowedSpeeds {
+	for _, allowedSpeed := range allowedSpeeds {
 		if allowedSpeed.Str == speed {
 			return allowedSpeed.Int, nil
 		}
@@ -33,9 +33,9 @@ func SpeedStrToUint(speed string) (uint64, error) {
 	return 0, fmt.Errorf("invalid speed string: %s. Allowed strings: %s", speed, strings.Join(allowedStrings, ", "))
 }
 
-func SpeedUintToStr(speed uint64) (string, error) {
+func speedUintToStr(speed uint64) (string, error) {
 	allowedUints := []uint64{}
-	for _, allowedSpeed := range AllowedSpeeds {
+	for _, allowedSpeed := range allowedSpeeds {
 		if speed == allowedSpeed.Int {
 			return allowedSpeed.Str, nil
 		}

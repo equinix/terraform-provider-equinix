@@ -1,10 +1,9 @@
-package equinix
+package metal_connection
 
 import (
 	"fmt"
 	"strings"
 
-	"github.com/equinix/terraform-provider-equinix/internal/schema/metal_connection"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/packethost/packngo"
 )
@@ -89,9 +88,9 @@ func connectionPortSchema() *schema.Resource {
 	}
 }
 
-func dataSourceMetalConnection() *schema.Resource {
+func DataSource() *schema.Resource {
 	speeds := []string{}
-	for _, allowedSpeed := range metal_connection.AllowedSpeeds {
+	for _, allowedSpeed := range allowedSpeeds {
 		speeds = append(speeds, allowedSpeed.Str)
 	}
 	return &schema.Resource{
@@ -263,7 +262,7 @@ func dataSourceMetalConnectionRead(d *schema.ResourceData, meta interface{}) err
 func getServiceTokens(tokens []packngo.FabricServiceToken) ([]map[string]interface{}, error) {
 	tokenList := []map[string]interface{}{}
 	for _, token := range tokens {
-		speed, err := metal_connection.SpeedUintToStr(token.MaxAllowedSpeed)
+		speed, err := speedUintToStr(token.MaxAllowedSpeed)
 		if err != nil {
 			return nil, err
 		}
