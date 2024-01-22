@@ -6,12 +6,20 @@ import (
 	"regexp"
 	"strings"
 	"testing"
+	"context"
+
+	"github.com/equinix/terraform-provider-equinix/internal/config"
+	"github.com/equinix/terraform-provider-equinix/internal/provider"
+	"github.com/equinix/terraform-provider-equinix/version"
 
 	"github.com/equinix/ecx-go/v2"
-	"github.com/equinix/terraform-provider-equinix/internal/config"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/stretchr/testify/assert"
+
+	"github.com/hashicorp/terraform-plugin-framework/providerserver"
+	"github.com/hashicorp/terraform-plugin-go/tfprotov5"
+	"github.com/hashicorp/terraform-plugin-mux/tf5muxserver"
 )
 
 var (
@@ -19,6 +27,24 @@ var (
 	testAccProviderFactories map[string]func() (*schema.Provider, error)
 	testAccProvider          *schema.Provider
 	testExternalProviders    map[string]resource.ExternalProvider
+	testAccFrameworkProvider *provider.FrameworkProvider
+
+	testAccProtoV5ProviderFactories = map[string]func() (tfprotov5.ProviderServer, error){
+		"equinix": func() (tfprotov5.ProviderServer, error) {
+			ctx := context.Background()
+			providers := []func() tfprotov5.ProviderServer{
+				testAccProviders["equinix"].GRPCProvider,
+				providerserver.NewProtocol5(
+					testAccFrameworkProvider,
+				),
+			}
+			muxServer, err := tf5muxserver.NewMuxServer(ctx, providers...)
+			if err != nil {
+				return nil, err
+			}
+			return muxServer.ProviderServer(), nil
+		},
+	}
 )
 
 type mockECXClient struct {
@@ -113,6 +139,9 @@ func init() {
 			Source: "hashicorp/random",
 		},
 	}
+	// during framework migration, it is required to duplicate this (TestAccFrameworkProvider declared in internal package)
+	// for e2e tests that need already migrated resources. Importing from internal produces and import cycle error
+	testAccFrameworkProvider = provider.CreateFrameworkProvider(version.ProviderVersion).(*provider.FrameworkProvider)
 }
 
 func TestProvider(t *testing.T) {

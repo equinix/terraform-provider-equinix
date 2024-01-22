@@ -12,7 +12,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/equinix/terraform-provider-equinix/internal/acceptance"
 	"github.com/equinix/terraform-provider-equinix/internal/config"
 
 	"github.com/equinix/equinix-sdk-go/services/metalv1"
@@ -225,7 +224,8 @@ func TestAccMetalDevice_sshConfig(t *testing.T) {
 	}
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { testAccPreCheck(t) },
-		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		Providers:                testAccProviders,
+		ProtoV5ProviderFactories: testAccProtoV5ProviderFactories,
 		ExternalProviders:        testExternalProviders,
 		CheckDestroy:             testAccMetalDeviceCheckDestroyed,
 		Steps: []resource.TestStep{
