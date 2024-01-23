@@ -11,7 +11,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/path"
-    "github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
 )
 
 var subnetSizes = []int64{8, 16, 32, 64, 128}
@@ -76,13 +75,6 @@ func resourceSchema(ctx context.Context) schema.Schema {
 				Description: "Status of the gateway resource",
 				Computed:    true,
 			},
-		},
-		Blocks: map[string]schema.Block{
-			"timeouts": timeouts.Block(ctx, timeouts.Opts{
-				Create: true,
-				Update: true,
-				Delete: true,
-			}),
 		},
 	}
 }

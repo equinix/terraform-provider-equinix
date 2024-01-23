@@ -48,6 +48,5 @@ func (rm *ResourceModel) parse(mg *packngo.MetalGateway) diag.Diagnostics {
     }
 
     rm.State = types.StringValue(string(mg.State))
-
     return diags
 }
