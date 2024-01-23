@@ -43,15 +43,15 @@ func resourceCloudRouterCreate(ctx context.Context, d *schema.ResourceData, meta
 	client := meta.(*config.Config).FabricClient
 	ctx = context.WithValue(ctx, v4.ContextAccessToken, meta.(*config.Config).FabricAuthToken)
 	schemaNotifications := d.Get("notifications").([]interface{})
-	notifications := notificationToFabric(schemaNotifications)
+	notifications := equinix_schema.NotificationsToFabric(schemaNotifications)
 	schemaAccount := d.Get("account").(*schema.Set).List()
 	account := accountToCloudRouter(schemaAccount)
 	schemaLocation := d.Get("location").(*schema.Set).List()
-	location := locationToCloudRouter(schemaLocation)
+	location := equinix_schema.LocationWithoutIBXToFabric(schemaLocation)
 	project := v4.Project{}
 	schemaProject := d.Get("project").(*schema.Set).List()
 	if len(schemaProject) != 0 {
-		project = projectToCloudRouter(schemaProject)
+		project = equinix_schema.ProjectToFabric(schemaProject)
 	}
 	schemaPackage := d.Get("package").(*schema.Set).List()
 	packages := packageToCloudRouter(schemaPackage)
@@ -67,7 +67,7 @@ func resourceCloudRouterCreate(ctx context.Context, d *schema.ResourceData, meta
 	}
 
 	if v, ok := d.GetOk("order"); ok {
-		order := orderToFabric(v.(*schema.Set).List())
+		order := equinix_schema.OrderToFabric(v.(*schema.Set).List())
 		createRequest.Order = &order
 	}
 
@@ -107,16 +107,16 @@ func setCloudRouterMap(d *schema.ResourceData, fcr v4.CloudRouter) diag.Diagnost
 		"type":                  fcr.Type_,
 		"state":                 fcr.State,
 		"package":               cloudRouterPackageToTerra(fcr.Package_),
-		"location":              locationCloudRouterToTerra(fcr.Location),
-		"change_log":            changeLogToTerra(fcr.ChangeLog),
+		"location":              equinix_schema.LocationWithoutIBXToTerra(fcr.Location),
+		"change_log":            equinix_schema.ChangeLogToTerra(fcr.ChangeLog),
 		"account":               accountCloudRouterToTerra(fcr.Account),
-		"notifications":         notificationToTerra(fcr.Notifications),
-		"project":               projectToTerra(fcr.Project),
+		"notifications":         equinix_schema.NotificationsToTerra(fcr.Notifications),
+		"project":               equinix_schema.ProjectToTerra(fcr.Project),
 		"equinix_asn":           fcr.EquinixAsn,
 		"bgp_ipv4_routes_count": fcr.BgpIpv4RoutesCount,
 		"bgp_ipv6_routes_count": fcr.BgpIpv6RoutesCount,
 		"connections_count":     fcr.ConnectionsCount,
-		"order":                 orderToTerra(fcr.Order),
+		"order":                 equinix_schema.OrderToTerra(fcr.Order),
 	})
 	if err != nil {
 		return diag.FromErr(err)

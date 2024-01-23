@@ -2,7 +2,7 @@ package schema
 
 import "reflect"
 
-// resourceDataProvider provies interface to schema.ResourceData
+// resourceDataProvider proxies interface to schema.ResourceData
 // for convenient mocking purposes
 type resourceDataProvider interface {
 	Get(key string) interface{}

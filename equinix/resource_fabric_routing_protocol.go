@@ -290,7 +290,7 @@ func setFabricRoutingProtocolMap(d *schema.ResourceData, rp v4.RoutingProtocolDa
 			"bfd":          routingProtocolBfdToTerra(rp.Bfd),
 			"bgp_auth_key": rp.BgpAuthKey,
 			"change":       routingProtocolChangeToTerra(rp.RoutingProtocolBgpData.Change),
-			"change_log":   changeLogToTerra(rp.RoutingProtocolBgpData.Changelog),
+			"change_log":   equinix_schema.ChangeLogToTerra(rp.RoutingProtocolBgpData.Changelog),
 		})
 	} else if rp.Type_ == "DIRECT" {
 		err = equinix_schema.SetMap(d, map[string]interface{}{
@@ -302,7 +302,7 @@ func setFabricRoutingProtocolMap(d *schema.ResourceData, rp v4.RoutingProtocolDa
 			"direct_ipv4": routingProtocolDirectConnectionIpv4ToTerra(rp.DirectIpv4),
 			"direct_ipv6": routingProtocolDirectConnectionIpv6ToTerra(rp.DirectIpv6),
 			"change":      routingProtocolChangeToTerra(rp.RoutingProtocolDirectData.Change),
-			"change_log":  changeLogToTerra(rp.RoutingProtocolDirectData.Changelog),
+			"change_log":  equinix_schema.ChangeLogToTerra(rp.RoutingProtocolDirectData.Changelog),
 		})
 	}
 	if err != nil {

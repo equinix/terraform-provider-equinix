@@ -73,7 +73,7 @@ func getServiceProfileRequestPayload(d *schema.ResourceData) v4.ServiceProfileRe
 	spType := v4.ServiceProfileTypeEnum(d.Get("type").(string))
 
 	schemaNotifications := d.Get("notifications").([]interface{})
-	notifications := notificationToFabric(schemaNotifications)
+	notifications := equinix_schema.NotificationsToFabric(schemaNotifications)
 
 	var tags []string
 	if d.Get("tags") != nil {
@@ -244,7 +244,7 @@ func setFabricServiceProfileMap(d *schema.ResourceData, sp v4.ServiceProfile) di
 		"name":                      sp.Name,
 		"uuid":                      sp.Uuid,
 		"description":               sp.Description,
-		"notifications":             notificationToTerra(sp.Notifications),
+		"notifications":             equinix_schema.NotificationsToTerra(sp.Notifications),
 		"tags":                      tagsFabricSpToTerra(sp.Tags),
 		"visibility":                sp.Visibility,
 		"access_point_type_configs": accessPointTypeConfigToTerra(sp.AccessPointTypeConfigs),
@@ -256,7 +256,7 @@ func setFabricServiceProfileMap(d *schema.ResourceData, sp v4.ServiceProfile) di
 		"self_profile":              sp.SelfProfile,
 		"state":                     sp.State,
 		"account":                   serviceProfileAccountFabricSpToTerra(sp.Account),
-		"project":                   projectToTerra(sp.Project),
+		"project":                   equinix_schema.ProjectToTerra(sp.Project),
 		"change_log":                allOfServiceProfileChangeLogToTerra(sp.ChangeLog),
 	})
 	if err != nil {

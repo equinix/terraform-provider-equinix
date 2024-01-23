@@ -1,8 +1,7 @@
-package utils
+package schema
 
 import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 )
 
 func OrderSch() map[string]*schema.Schema {
@@ -232,7 +231,7 @@ func ChangeLogSch() map[string]*schema.Schema {
 	}
 }
 
-func OperationalErrorSch() map[string]*schema.Schema {
+func ErrorSch() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
 		"error_code": {
 			Type:        schema.TypeString,
@@ -281,24 +280,6 @@ func ErrorAdditionalInfoSch() map[string]*schema.Schema {
 			Type:        schema.TypeString,
 			Computed:    true,
 			Description: "Reason for the error",
-		},
-	}
-}
-
-func RedundancySch() map[string]*schema.Schema {
-	return map[string]*schema.Schema{
-		"group": {
-			Type:        schema.TypeString,
-			Computed:    true,
-			Optional:    true,
-			Description: "Redundancy group identifier (UUID of primary connection)",
-		},
-		"priority": {
-			Type:         schema.TypeString,
-			Computed:     true,
-			Optional:     true,
-			ValidateFunc: validation.StringInSlice([]string{"PRIMARY", "SECONDARY"}, true),
-			Description:  "Connection priority in redundancy group - PRIMARY, SECONDARY",
 		},
 	}
 }

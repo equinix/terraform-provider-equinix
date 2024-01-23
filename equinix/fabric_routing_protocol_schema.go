@@ -228,7 +228,7 @@ func createRoutingProtocolOperationSch() map[string]*schema.Schema {
 			Computed:    true,
 			Description: "Errors occurred",
 			Elem: &schema.Resource{
-				Schema: equinix_schema.OperationalErrorSch(),
+				Schema: equinix_schema.ErrorSch(),
 			},
 		},
 	}

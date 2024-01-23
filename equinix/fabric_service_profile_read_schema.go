@@ -123,7 +123,7 @@ func readFabricServiceProfileSchema() map[string]*schema.Schema {
 			Computed:    true,
 			Description: "Project information",
 			Elem: &schema.Resource{
-				Schema: readCloudRouterProjectSch(),
+				Schema: equinix_schema.ProjectSch(),
 			},
 		},
 		"change_log": {
@@ -415,21 +415,6 @@ func readAllOfServiceProfileChangeLogSch() map[string]*schema.Schema {
 	}
 }
 
-func readCloudRouterProjectSch() map[string]*schema.Schema {
-	return map[string]*schema.Schema{
-		"project_id": {
-			Type:        schema.TypeString,
-			Computed:    true,
-			Description: "Project Id",
-		},
-		"href": {
-			Type:        schema.TypeString,
-			Computed:    true,
-			Description: "Unique Resource URL",
-		},
-	}
-}
-
 func readFabricServiceProfileSchemaUpdated() map[string]*schema.Schema {
 	sch := readFabricServiceProfileSchema()
 	sch["uuid"].Optional = true
@@ -470,8 +455,4 @@ func readFabricServiceProfilesSearchSchema() map[string]*schema.Schema {
 			},
 		},
 	}
-}
-
-var readGatewayProjectSchRes = &schema.Resource{
-	Schema: readCloudRouterProjectSch(),
 }

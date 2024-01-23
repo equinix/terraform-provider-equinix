@@ -67,7 +67,7 @@ func FabricConnectionResourceSchema() map[string]*schema.Schema {
 			Description: "Connection Redundancy Configuration",
 			MaxItems:    1,
 			Elem: &schema.Resource{
-				Schema: equinix_schema.RedundancySch(),
+				Schema: connectionRedundancySch(),
 			},
 		},
 		"a_side": {
@@ -379,7 +379,7 @@ func serviceProfileSch() map[string]*schema.Schema {
 			Computed:    true,
 			Description: "Access point config information",
 			Elem: &schema.Resource{
-				Schema: equinix_schema.AccessPointTypeConfigSch(),
+				Schema: accessPointTypeConfigSch(),
 			},
 		},
 	}
@@ -513,7 +513,7 @@ func portSch() map[string]*schema.Schema {
 			Computed:    true,
 			Description: "Redundancy Information",
 			Elem: &schema.Resource{
-				Schema: equinix_schema.RedundancySch(),
+				Schema: PortRedundancySch(),
 			},
 		},
 	}
@@ -576,8 +576,26 @@ func operationSch() map[string]*schema.Schema {
 			Computed:    true,
 			Description: "Errors occurred",
 			Elem: &schema.Resource{
-				Schema: equinix_schema.OperationalErrorSch(),
+				Schema: equinix_schema.ErrorSch(),
 			},
+		},
+	}
+}
+
+func connectionRedundancySch() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"group": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Optional:    true,
+			Description: "Redundancy group identifier (UUID of primary connection)",
+		},
+		"priority": {
+			Type:         schema.TypeString,
+			Computed:     true,
+			Optional:     true,
+			ValidateFunc: validation.StringInSlice([]string{"PRIMARY", "SECONDARY"}, true),
+			Description:  "Connection priority in redundancy group - PRIMARY, SECONDARY",
 		},
 	}
 }
@@ -608,14 +626,14 @@ func resourceFabricConnectionCreate(ctx context.Context, d *schema.ResourceData,
 	ctx = context.WithValue(ctx, v4.ContextAccessToken, meta.(*config.Config).FabricAuthToken)
 	conType := v4.ConnectionType(d.Get("type").(string))
 	schemaNotifications := d.Get("notifications").([]interface{})
-	notifications := notificationToFabric(schemaNotifications)
+	notifications := equinix_schema.NotificationsToFabric(schemaNotifications)
 	schemaRedundancy := d.Get("redundancy").(*schema.Set).List()
 	red := redundancyToFabric(schemaRedundancy)
 	schemaOrder := d.Get("order").(*schema.Set).List()
-	order := orderToFabric(schemaOrder)
+	order := equinix_schema.OrderToFabric(schemaOrder)
 	aside := d.Get("a_side").(*schema.Set).List()
 	projectReq := d.Get("project").(*schema.Set).List()
-	project := projectToFabric(projectReq)
+	project := equinix_schema.ProjectToFabric(projectReq)
 	additionalInfoTerraConfig := d.Get("additional_info").([]interface{})
 	additionalInfo := additionalInfoTerraToGo(additionalInfoTerraConfig)
 	connectionASide := v4.ConnectionSide{}
@@ -757,15 +775,15 @@ func setFabricMap(d *schema.ResourceData, conn v4.Connection) diag.Diagnostics {
 		"state":           conn.State,
 		"direction":       conn.Direction,
 		"operation":       operationToTerra(conn.Operation),
-		"order":           orderMappingToTerra(conn.Order),
-		"change_log":      changeLogToTerra(conn.ChangeLog),
+		"order":           equinix_schema.OrderToTerra(conn.Order),
+		"change_log":      equinix_schema.ChangeLogToTerra(conn.ChangeLog),
 		"redundancy":      redundancyToTerra(conn.Redundancy),
-		"notifications":   notificationToTerra(conn.Notifications),
+		"notifications":   equinix_schema.NotificationsToTerra(conn.Notifications),
 		"account":         accountToTerra(conn.Account),
 		"a_side":          connectionSideToTerra(conn.ASide),
 		"z_side":          connectionSideToTerra(conn.ZSide),
 		"additional_info": additionalInfoToTerra(conn.AdditionalInfo),
-		"project":         projectToTerra(conn.Project),
+		"project":         equinix_schema.ProjectToTerra(conn.Project),
 	})
 	if err != nil {
 		return diag.FromErr(err)
@@ -989,4 +1007,40 @@ func WaitUntilConnectionDeprovisioned(uuid string, meta interface{}, ctx context
 
 	_, err := stateConf.WaitForStateContext(ctx)
 	return err
+}
+
+func redundancyToFabric(schemaRedundancy []interface{}) v4.ConnectionRedundancy {
+	if schemaRedundancy == nil {
+		return v4.ConnectionRedundancy{}
+	}
+	red := v4.ConnectionRedundancy{}
+	for _, r := range schemaRedundancy {
+		redundancyMap := r.(map[string]interface{})
+		connectionPriority := v4.ConnectionPriority(redundancyMap["priority"].(string))
+		redundancyGroup := redundancyMap["group"].(string)
+		red = v4.ConnectionRedundancy{
+			Priority: &connectionPriority,
+			Group:    redundancyGroup,
+		}
+	}
+	return red
+}
+
+func redundancyToTerra(redundancy *v4.ConnectionRedundancy) *schema.Set {
+	if redundancy == nil {
+		return nil
+	}
+	redundancies := []*v4.ConnectionRedundancy{redundancy}
+	mappedRedundancys := make([]interface{}, len(redundancies))
+	for _, redundancy := range redundancies {
+		mappedRedundancy := make(map[string]interface{})
+		mappedRedundancy["group"] = redundancy.Group
+		mappedRedundancy["priority"] = string(*redundancy.Priority)
+		mappedRedundancys = append(mappedRedundancys, mappedRedundancy)
+	}
+	redundancySet := schema.NewSet(
+		schema.HashResource(&schema.Resource{Schema: connectionRedundancySch()}),
+		mappedRedundancys,
+	)
+	return redundancySet
 }

@@ -97,7 +97,7 @@ func readCloudRouterResourceSchema() map[string]*schema.Schema {
 			Computed:    true,
 			Description: "Project information",
 			Elem: &schema.Resource{
-				Schema: readCloudRouterProjectSch(),
+				Schema: equinix_schema.ProjectSch(),
 			},
 		},
 		"account": {

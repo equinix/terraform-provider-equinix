@@ -71,7 +71,7 @@ func accessPointColoFabricSpToTerra(accessPointColol []v4.ServiceProfileAccessPo
 		mappedAccessPointColol[index] = map[string]interface{}{
 			"type":                      accessPointColo.Type_,
 			"uuid":                      accessPointColo.Uuid,
-			"location":                  locationToTerra(accessPointColo.Location),
+			"location":                  equinix_schema.LocationToTerra(accessPointColo.Location),
 			"seller_region":             accessPointColo.SellerRegion,
 			"seller_region_description": accessPointColo.SellerRegionDescription,
 			"cross_connect_id":          accessPointColo.CrossConnectId,
@@ -339,7 +339,7 @@ func portsToFabric(schemaPorts []interface{}) []v4.ServiceProfileAccessPointColo
 		locationList := port.(map[string]interface{})["location"].(interface{}).(*schema.Set).List()
 		pLocation := v4.SimplifiedLocation{}
 		if len(locationList) != 0 {
-			pLocation = locationToFabric(locationList)
+			pLocation = equinix_schema.LocationToFabric(locationList)
 		}
 		pSellerRegion := port.(map[string]interface{})["seller_region"].(string)
 		pSellerRegionDescription := port.(map[string]interface{})["seller_region_description"].(string)
@@ -367,7 +367,7 @@ func virtualDevicesToFabric(schemaVirtualDevices []interface{}) []v4.ServiceProf
 		locationList := virtualDevice.(map[string]interface{})["location"].(interface{}).(*schema.Set).List()
 		vLocation := v4.SimplifiedLocation{}
 		if len(locationList) != 0 {
-			vLocation = locationToFabric(locationList)
+			vLocation = equinix_schema.LocationToFabric(locationList)
 		}
 		pInterfaceUuid := virtualDevice.(map[string]interface{})["interface_uuid"].(string)
 		virtualDevices = append(virtualDevices, v4.ServiceProfileAccessPointVd{
@@ -418,7 +418,7 @@ func fabricServiceProfilesListToTerra(serviceProfiles v4.ServiceProfiles) []map[
 			"name":                      serviceProfile.Name,
 			"uuid":                      serviceProfile.Uuid,
 			"description":               serviceProfile.Description,
-			"notifications":             notificationToTerra(serviceProfile.Notifications),
+			"notifications":             equinix_schema.NotificationsToTerra(serviceProfile.Notifications),
 			"tags":                      tagsFabricSpToTerra(serviceProfile.Tags),
 			"visibility":                serviceProfile.Visibility,
 			"access_point_type_configs": accessPointTypeConfigToTerra(serviceProfile.AccessPointTypeConfigs),
@@ -430,7 +430,7 @@ func fabricServiceProfilesListToTerra(serviceProfiles v4.ServiceProfiles) []map[
 			"self_profile":              serviceProfile.SelfProfile,
 			"state":                     serviceProfile.State,
 			"account":                   serviceProfileAccountFabricSpToTerra(serviceProfile.Account),
-			"project":                   projectToTerra(serviceProfile.Project),
+			"project":                   equinix_schema.ProjectToTerra(serviceProfile.Project),
 			"change_log":                allOfServiceProfileChangeLogToTerra(serviceProfile.ChangeLog),
 		}
 	}
