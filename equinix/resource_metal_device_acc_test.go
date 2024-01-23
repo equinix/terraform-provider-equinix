@@ -224,7 +224,6 @@ func TestAccMetalDevice_sshConfig(t *testing.T) {
 	}
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { testAccPreCheck(t) },
-		Providers:                testAccProviders,
 		ProtoV5ProviderFactories: testAccProtoV5ProviderFactories,
 		ExternalProviders:        testExternalProviders,
 		CheckDestroy:             testAccMetalDeviceCheckDestroyed,
