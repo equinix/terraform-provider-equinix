@@ -1,4 +1,4 @@
-package equinix
+package equinix_test
 
 import (
 	"fmt"
@@ -50,9 +50,9 @@ func testSweepUserAPIKeys(region string) error {
 
 func TestAccMetalUserAPIKey_basic(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		ExternalProviders:    testExternalProviders,
-		Providers:    testAccProviders,
+		PreCheck:     func() { acceptance.TestAccPreCheck(t) },
+		ExternalProviders:    acceptance.TestExternalProviders,
+		Providers:    acceptance.TestAccProviders,
 		CheckDestroy: testAccMetalUserAPIKeyCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
@@ -69,7 +69,7 @@ func TestAccMetalUserAPIKey_basic(t *testing.T) {
 }
 
 func testAccMetalUserAPIKeyCheckDestroyed(s *terraform.State) error {
-	client := testAccProvider.Meta().(*config.Config).Metal
+	client := acceptance.TestAccProvider.Meta().(*config.Config).Metal
 	for _, rs := range s.RootModule().Resources {
 		if rs.Type != "equinix_metal_user_api_key" {
 			continue

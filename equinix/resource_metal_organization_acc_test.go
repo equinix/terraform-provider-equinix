@@ -1,4 +1,4 @@
-package equinix
+package equinix_test
 
 import (
 	"fmt"
@@ -6,6 +6,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/equinix/terraform-provider-equinix/internal/acceptance"
 	"github.com/equinix/terraform-provider-equinix/internal/config"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
@@ -54,9 +55,9 @@ func TestAccMetalOrganization_create(t *testing.T) {
 	rInt := acctest.RandInt()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
-		ExternalProviders: testExternalProviders,
-		Providers:         testAccProviders,
+		PreCheck:          func() { acceptance.TestAccPreCheck(t) },
+		ExternalProviders: acceptance.TestExternalProviders,
+		Providers:         acceptance.TestAccProviders,
 		CheckDestroy:      testAccMetalOrganizationCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
@@ -117,9 +118,9 @@ func testAccMetalWaitForOrganization() {
 func TestAccMetalOrganization_importBasic(t *testing.T) {
 	rInt := acctest.RandInt()
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
-		ExternalProviders: testExternalProviders,
-		Providers:         testAccProviders,
+		PreCheck:          func() { acceptance.TestAccPreCheck(t) },
+		ExternalProviders: acceptance.TestExternalProviders,
+		Providers:         acceptance.TestAccProviders,
 		CheckDestroy:      testAccMetalOrganizationCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
@@ -135,7 +136,7 @@ func TestAccMetalOrganization_importBasic(t *testing.T) {
 }
 
 func testAccMetalOrganizationCheckDestroyed(s *terraform.State) error {
-	client := testAccProvider.Meta().(*config.Config).Metal
+	client := acceptance.TestAccProvider.Meta().(*config.Config).Metal
 
 	for _, rs := range s.RootModule().Resources {
 		if rs.Type != "equinix_metal_organization" {
@@ -159,7 +160,7 @@ func testAccMetalOrganizationExists(n string, org *packngo.Organization) resourc
 			return fmt.Errorf("No Record ID is set")
 		}
 
-		client := testAccProvider.Meta().(*config.Config).Metal
+		client := acceptance.TestAccProvider.Meta().(*config.Config).Metal
 
 		foundOrg, _, err := client.Organizations.Get(rs.Primary.ID, &packngo.GetOptions{Includes: []string{"address", "primary_owner"}})
 		if err != nil {

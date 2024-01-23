@@ -1,4 +1,4 @@
-package equinix
+package equinix_test
 
 import (
 	"context"
@@ -7,6 +7,8 @@ import (
 	"regexp"
 	"testing"
 
+	"github.com/equinix/terraform-provider-equinix/equinix"
+	"github.com/equinix/terraform-provider-equinix/internal/acceptance"
 	"github.com/equinix/terraform-provider-equinix/internal/config"
 
 	"github.com/equinix/ecx-go/v2"
@@ -100,8 +102,8 @@ func TestAccFabricL2Connection_Port_Single_AWS(t *testing.T) {
 	resourceName := fmt.Sprintf("equinix_ecx_l2_connection.%s", context["connection-resourceName"].(string))
 	var testConn ecx.L2Connection
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:  func() { testAccPreCheck(t) },
-		Providers: testAccProviders,
+		PreCheck:  func() { acceptance.TestAccPreCheck(t) },
+		Providers: acceptance.TestAccProviders,
 		Steps: []resource.TestStep{
 			{
 				Config: newTestAccConfig(context).withPort().withConnection().build(),
@@ -154,8 +156,8 @@ func TestAccFabricL2Connection_Port_HA_Azure(t *testing.T) {
 	resourceName := fmt.Sprintf("equinix_ecx_l2_connection.%s", context["connection-resourceName"].(string))
 	var primary, secondary ecx.L2Connection
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:  func() { testAccPreCheck(t) },
-		Providers: testAccProviders,
+		PreCheck:  func() { acceptance.TestAccPreCheck(t) },
+		Providers: acceptance.TestAccProviders,
 		Steps: []resource.TestStep{
 			{
 				Config: newTestAccConfig(context).withPort().withConnection().build(),
@@ -248,8 +250,8 @@ func TestAccFabricL2Connection_Device_HA_GCP(t *testing.T) {
 	connResourceName := fmt.Sprintf("equinix_ecx_l2_connection.%s", context["connection-resourceName"].(string))
 	var primary, secondary ecx.L2Connection
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:  func() { testAccPreCheck(t) },
-		Providers: testAccProviders,
+		PreCheck:  func() { acceptance.TestAccPreCheck(t) },
+		Providers: acceptance.TestAccProviders,
 		Steps: []resource.TestStep{
 			{
 				Config: newTestAccConfig(context).withDevice().withSSHKey().
@@ -364,7 +366,7 @@ func TestAccFabricL2Connection_ServiceToken_HA_SP(t *testing.T) {
 			return err
 		},
 	}
-	mockEquinix := Provider()
+	mockEquinix := equinix.Provider()
 	mockEquinix.ConfigureContextFunc = func(c context.Context, d *schema.ResourceData) (interface{}, diag.Diagnostics) {
 		config := config.Config{
 			Ecx: mockECXClient,
@@ -377,7 +379,7 @@ func TestAccFabricL2Connection_ServiceToken_HA_SP(t *testing.T) {
 
 	resourceName := fmt.Sprintf("equinix_ecx_l2_connection.%s", ctx["connection-resourceName"].(string))
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                  func() { testAccPreCheck(t) },
+		PreCheck:                  func() { acceptance.TestAccPreCheck(t) },
 		Providers:                 mockProviders,
 		PreventPostDestroyRefresh: true,
 		Steps: []resource.TestStep{
@@ -497,7 +499,7 @@ func TestAccFabricL2Connection_ZSideServiceToken_Single(t *testing.T) {
 			return err
 		},
 	}
-	mockEquinix := Provider()
+	mockEquinix := equinix.Provider()
 	mockEquinix.ConfigureContextFunc = func(c context.Context, d *schema.ResourceData) (interface{}, diag.Diagnostics) {
 		config := config.Config{
 			Ecx: mockECXClient,
@@ -510,7 +512,7 @@ func TestAccFabricL2Connection_ZSideServiceToken_Single(t *testing.T) {
 
 	resourceName := fmt.Sprintf("equinix_ecx_l2_connection.%s", ctx["connection-resourceName"].(string))
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                  func() { testAccPreCheck(t) },
+		PreCheck:                  func() { acceptance.TestAccPreCheck(t) },
 		Providers:                 mockProviders,
 		PreventPostDestroyRefresh: true,
 		Steps: []resource.TestStep{
@@ -543,7 +545,7 @@ func testAccFabricL2ConnectionExists(resourceName string, conn *ecx.L2Connection
 		if !ok {
 			return fmt.Errorf("resource not found: %s", resourceName)
 		}
-		client := testAccProvider.Meta().(*config.Config).Ecx
+		client := acceptance.TestAccProvider.Meta().(*config.Config).Ecx
 		if rs.Primary.ID == "" {
 			return fmt.Errorf("resource has no ID attribute set")
 		}
@@ -566,7 +568,7 @@ func testAccFabricL2ConnectionSecondaryExists(resourceName string, conn *ecx.L2C
 		if !ok {
 			return fmt.Errorf("resource not found: %s", resourceName)
 		}
-		client := testAccProvider.Meta().(*config.Config).Ecx
+		client := acceptance.TestAccProvider.Meta().(*config.Config).Ecx
 
 		if connID, ok := rs.Primary.Attributes["secondary_connection.0.uuid"]; ok {
 			resp, err := client.GetL2Connection(connID)

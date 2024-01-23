@@ -1,18 +1,19 @@
-package equinix
+package equinix_test
 
 import (
 	"fmt"
 	"testing"
 
+	"github.com/equinix/terraform-provider-equinix/internal/acceptance"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
 
 func TestAccDataSourceMetalMetro_basic(t *testing.T) {
 	testMetro := "da"
 	resource.ParallelTest(t, resource.TestCase{ // Step 3/4, expected an error with pattern, no match on: Error running pre-apply refresh: exit status 1
-		PreCheck:          func() { testAccPreCheck(t) },
-		ExternalProviders: testExternalProviders,
-		Providers:         testAccProviders,
+		PreCheck:          func() { acceptance.TestAccPreCheck(t) },
+		ExternalProviders: acceptance.TestExternalProviders,
+		Providers:         acceptance.TestAccProviders,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccDataSourceMetalMetroConfig_basic(testMetro),

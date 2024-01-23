@@ -1,4 +1,4 @@
-package equinix
+package equinix_test
 
 import (
 	"fmt"
@@ -6,6 +6,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/equinix/terraform-provider-equinix/internal/acceptance"
 	"github.com/equinix/terraform-provider-equinix/internal/config"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
@@ -73,9 +74,9 @@ func TestAccMetalPortVlanAttachment_L2Bonded(t *testing.T) {
 	rs := acctest.RandString(10)
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
-		ExternalProviders: testExternalProviders,
-		Providers:         testAccProviders,
+		PreCheck:          func() { acceptance.TestAccPreCheck(t) },
+		ExternalProviders: acceptance.TestExternalProviders,
+		Providers:         acceptance.TestAccProviders,
 		CheckDestroy:      testAccMetalPortVlanAttachmentCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
@@ -161,9 +162,9 @@ func TestAccMetalPortVlanAttachment_L2Individual(t *testing.T) {
 	rs := acctest.RandString(10)
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
-		ExternalProviders: testExternalProviders,
-		Providers:         testAccProviders,
+		PreCheck:          func() { acceptance.TestAccPreCheck(t) },
+		ExternalProviders: acceptance.TestExternalProviders,
+		Providers:         acceptance.TestAccProviders,
 		CheckDestroy:      testAccMetalPortVlanAttachmentCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
@@ -237,9 +238,9 @@ func TestAccMetalPortVlanAttachment_hybridBasic(t *testing.T) {
 	rs := acctest.RandString(10)
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
-		ExternalProviders: testExternalProviders,
-		Providers:         testAccProviders,
+		PreCheck:          func() { acceptance.TestAccPreCheck(t) },
+		ExternalProviders: acceptance.TestExternalProviders,
+		Providers:         acceptance.TestAccProviders,
 		CheckDestroy:      testAccMetalPortVlanAttachmentCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
@@ -312,9 +313,9 @@ func TestAccMetalPortVlanAttachment_hybridMultipleVlans(t *testing.T) {
 	rs := acctest.RandString(10)
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
-		ExternalProviders: testExternalProviders,
-		Providers:         testAccProviders,
+		PreCheck:          func() { acceptance.TestAccPreCheck(t) },
+		ExternalProviders: acceptance.TestExternalProviders,
+		Providers:         acceptance.TestAccProviders,
 		CheckDestroy:      testAccMetalPortVlanAttachmentCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
@@ -348,7 +349,7 @@ func TestAccMetalPortVlanAttachment_hybridMultipleVlans(t *testing.T) {
 }
 
 func testAccMetalPortVlanAttachmentCheckDestroyed(s *terraform.State) error {
-	client := testAccProvider.Meta().(*config.Config).Metal
+	client := acceptance.TestAccProvider.Meta().(*config.Config).Metal
 
 	device_id := ""
 	vlan_id := ""
@@ -443,9 +444,9 @@ func TestAccMetalPortVlanAttachment_L2Native(t *testing.T) {
 	rs := acctest.RandString(10)
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
-		ExternalProviders: testExternalProviders,
-		Providers:         testAccProviders,
+		PreCheck:          func() { acceptance.TestAccPreCheck(t) },
+		ExternalProviders: acceptance.TestExternalProviders,
+		Providers:         acceptance.TestAccProviders,
 		CheckDestroy:      testAccMetalPortVlanAttachmentCheckDestroyed,
 		Steps: []resource.TestStep{
 			{

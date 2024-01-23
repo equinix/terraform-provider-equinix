@@ -1,10 +1,11 @@
-package equinix
+package equinix_test
 
 import (
 	"context"
 	"fmt"
 	"log"
 
+	"github.com/equinix/terraform-provider-equinix/internal/acceptance"
 	"github.com/equinix/terraform-provider-equinix/internal/config"
 
 	"github.com/equinix/ne-go"
@@ -80,7 +81,7 @@ func testAccNeSSHUserExists(resourceName string, user *ne.SSHUser) resource.Test
 		if rs.Primary.ID == "" {
 			return fmt.Errorf("resource has no ID attribute set")
 		}
-		client := testAccProvider.Meta().(*config.Config).Ne
+		client := acceptance.TestAccProvider.Meta().(*config.Config).Ne
 		resp, err := client.GetSSHUser(rs.Primary.ID)
 		if err != nil {
 			return fmt.Errorf("error when fetching SSH user '%s': %s", rs.Primary.ID, err)

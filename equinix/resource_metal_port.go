@@ -239,7 +239,7 @@ func resourceMetalPortDelete(ctx context.Context, d *schema.ResourceData, meta i
 			}
 		}
 		// TODO(displague) error or warn?
-		if warn := portProperlyDestroyed(cpr.Port); warn != nil {
+		if warn := PortProperlyDestroyed(cpr.Port); warn != nil {
 			log.Printf("[WARN] %s\n", warn)
 		}
 	}

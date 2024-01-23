@@ -1,9 +1,10 @@
-package equinix
+package equinix_test
 
 import (
 	"fmt"
 	"testing"
 
+	"github.com/equinix/terraform-provider-equinix/internal/acceptance"
 	"github.com/equinix/terraform-provider-equinix/internal/config"
 
 	"github.com/equinix/ecx-go/v2"
@@ -37,8 +38,8 @@ func TestAccFabricL2ServiceProfile_Private(t *testing.T) {
 	resourceName := fmt.Sprintf("equinix_ecx_l2_serviceprofile.%s", context["resourceName"].(string))
 	var testProfile ecx.L2ServiceProfile
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:  func() { testAccPreCheck(t) },
-		Providers: testAccProviders,
+		PreCheck:  func() { acceptance.TestAccPreCheck(t) },
+		Providers: acceptance.TestAccProviders,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccECXL2PrivateServiceProfile(context),
@@ -65,7 +66,7 @@ func testAccECXL2ServiceProfileExists(resourceName string, profile *ecx.L2Servic
 		if !ok {
 			return fmt.Errorf("resource not found: %s", resourceName)
 		}
-		client := testAccProvider.Meta().(*config.Config).Ecx
+		client := acceptance.TestAccProvider.Meta().(*config.Config).Ecx
 		if rs.Primary.ID == "" {
 			return fmt.Errorf("resource has no ID attribute set")
 		}

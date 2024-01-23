@@ -1,4 +1,4 @@
-package equinix
+package equinix_test
 
 import (
 	"context"
@@ -6,6 +6,7 @@ import (
 	"log"
 	"testing"
 
+	"github.com/equinix/terraform-provider-equinix/internal/acceptance"
 	"github.com/equinix/terraform-provider-equinix/internal/config"
 
 	"github.com/equinix/ne-go"
@@ -129,8 +130,8 @@ func TestAccNetworkDevice_CSR1000V_HA_Managed_Sub(t *testing.T) {
 	var user ne.SSHUser
 	var primaryACL, secondaryACL ne.ACLTemplate
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:  func() { testAccPreCheck(t) },
-		Providers: testAccProviders,
+		PreCheck:  func() { acceptance.TestAccPreCheck(t) },
+		Providers: acceptance.TestAccProviders,
 		Steps: []resource.TestStep{
 			{
 				Config: newTestAccConfig(context).withDevice().withSSHUser().build(),
@@ -213,8 +214,8 @@ func TestAccNetworkDevice_CSR1000V_HA_Self_BYOL(t *testing.T) {
 	var primary, secondary ne.Device
 	var primaryACL, secondaryACL ne.ACLTemplate
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:  func() { testAccPreCheck(t) },
-		Providers: testAccProviders,
+		PreCheck:  func() { acceptance.TestAccPreCheck(t) },
+		Providers: acceptance.TestAccProviders,
 		Steps: []resource.TestStep{
 			{
 				Config: newTestAccConfig(context).withDevice().withSSHKey().build(),
@@ -280,8 +281,8 @@ func TestAccNetworkDevice_vSRX_HA_Managed_Sub(t *testing.T) {
 	var primary, secondary ne.Device
 	var user ne.SSHUser
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:  func() { testAccPreCheck(t) },
-		Providers: testAccProviders,
+		PreCheck:  func() { acceptance.TestAccPreCheck(t) },
+		Providers: acceptance.TestAccProviders,
 		Steps: []resource.TestStep{
 			{
 				Config: newTestAccConfig(context).withDevice().build(),
@@ -364,8 +365,8 @@ func TestAccNetworkDevice_vSRX_HA_Managed_BYOL(t *testing.T) {
 	var primary, secondary ne.Device
 	var user ne.SSHUser
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:  func() { testAccPreCheck(t) },
-		Providers: testAccProviders,
+		PreCheck:  func() { acceptance.TestAccPreCheck(t) },
+		Providers: acceptance.TestAccProviders,
 		Steps: []resource.TestStep{
 			{
 				Config: newTestAccConfig(context).withDevice().withACL().build(),
@@ -435,8 +436,8 @@ func TestAccNetworkDevice_vSRX_HA_Self_BYOL(t *testing.T) {
 	deviceResourceName := fmt.Sprintf("equinix_network_device.%s", context["device-resourceName"].(string))
 	var primary, secondary ne.Device
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:  func() { testAccPreCheck(t) },
-		Providers: testAccProviders,
+		PreCheck:  func() { acceptance.TestAccPreCheck(t) },
+		Providers: acceptance.TestAccProviders,
 		Steps: []resource.TestStep{
 			{
 				Config: newTestAccConfig(context).withDevice().withACL().withSSHKey().build(),
@@ -499,8 +500,8 @@ func TestAccNetworkDevice_PaloAlto_HA_Managed_Sub(t *testing.T) {
 	secACLResourceName := fmt.Sprintf("equinix_network_acl_template.%s", context["acl-secondary_resourceName"].(string))
 	userResourceName := fmt.Sprintf("equinix_network_ssh_user.%s", contextWithChanges["user-resourceName"].(string))
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:  func() { testAccPreCheck(t) },
-		Providers: testAccProviders,
+		PreCheck:  func() { acceptance.TestAccPreCheck(t) },
+		Providers: acceptance.TestAccProviders,
 		Steps: []resource.TestStep{
 			{
 				Config: newTestAccConfig(context).withDevice().withACL().build(),
@@ -579,8 +580,8 @@ func TestAccNetworkDevice_PaloAlto_HA_Self_BYOL(t *testing.T) {
 	var primary, secondary ne.Device
 	var primaryACL, secondaryACL ne.ACLTemplate
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:  func() { testAccPreCheck(t) },
-		Providers: testAccProviders,
+		PreCheck:  func() { acceptance.TestAccPreCheck(t) },
+		Providers: acceptance.TestAccProviders,
 		Steps: []resource.TestStep{
 			{
 				Config: newTestAccConfig(context).withDevice().withSSHKey().build(),
@@ -657,8 +658,8 @@ func TestAccNetworkDevice_CSRSDWAN_HA_Self_BYOL(t *testing.T) {
 	var primary, secondary ne.Device
 	var primaryACL, secondaryACL ne.ACLTemplate
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:  func() { testAccPreCheck(t) },
-		Providers: testAccProviders,
+		PreCheck:  func() { acceptance.TestAccPreCheck(t) },
+		Providers: acceptance.TestAccProviders,
 		Steps: []resource.TestStep{
 			{
 				Config: newTestAccConfig(context).withDevice().withACL().build(),
@@ -736,8 +737,8 @@ func TestAccNetworkDevice_Versa_HA_Self_BYOL(t *testing.T) {
 	var primary, secondary ne.Device
 	var primaryACL, secondaryACL ne.ACLTemplate
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:  func() { testAccPreCheck(t) },
-		Providers: testAccProviders,
+		PreCheck:  func() { acceptance.TestAccPreCheck(t) },
+		Providers: acceptance.TestAccProviders,
 		Steps: []resource.TestStep{
 			{
 				Config: newTestAccConfig(context).withDevice().withACL().build(),
@@ -804,8 +805,8 @@ func TestAccNetworkDevice_CGENIX_HA_Self_BYOL(t *testing.T) {
 	var primary, secondary ne.Device
 	var primaryACL, secondaryACL ne.ACLTemplate
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:  func() { testAccPreCheck(t) },
-		Providers: testAccProviders,
+		PreCheck:  func() { acceptance.TestAccPreCheck(t) },
+		Providers: acceptance.TestAccProviders,
 		Steps: []resource.TestStep{
 			{
 				Config: newTestAccConfig(context).withDevice().withACL().build(),
@@ -872,8 +873,8 @@ func TestAccNetworkDevice_PaloAlto_Cluster_Self_BYOL(t *testing.T) {
 	var primary ne.Device
 	var wanAcl, mgmtAcl ne.ACLTemplate
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:  func() { testAccPreCheck(t) },
-		Providers: testAccProviders,
+		PreCheck:  func() { acceptance.TestAccPreCheck(t) },
+		Providers: acceptance.TestAccProviders,
 		Steps: []resource.TestStep{
 			{
 				Config: newTestAccConfig(context).withDevice().withSSHKey().withACL().build(),
@@ -909,7 +910,7 @@ func testAccNeDeviceExists(resourceName string, device *ne.Device) resource.Test
 		if rs.Primary.ID == "" {
 			return fmt.Errorf("resource has no ID attribute set")
 		}
-		client := testAccProvider.Meta().(*config.Config).Ne
+		client := acceptance.TestAccProvider.Meta().(*config.Config).Ne
 		resp, err := client.GetDevice(rs.Primary.ID)
 		if err != nil {
 			return fmt.Errorf("error when fetching network device '%s': %s", rs.Primary.ID, err)
@@ -924,7 +925,7 @@ func testAccNeDeviceSecondaryExists(primary, secondary *ne.Device) resource.Test
 		if ne.StringValue(primary.RedundantUUID) == "" {
 			return fmt.Errorf("secondary device UUID is not set")
 		}
-		client := testAccProvider.Meta().(*config.Config).Ne
+		client := acceptance.TestAccProvider.Meta().(*config.Config).Ne
 		resp, err := client.GetDevice(ne.StringValue(primary.RedundantUUID))
 		if err != nil {
 			return fmt.Errorf("error when fetching network device '%s': %s", ne.StringValue(primary.RedundantUUID), err)
@@ -943,7 +944,7 @@ func testAccNeDevicePairExists(resourceName string, primary, secondary *ne.Devic
 		if rs.Primary.ID == "" {
 			return fmt.Errorf("resource has no ID attribute set")
 		}
-		client := testAccProvider.Meta().(*config.Config).Ne
+		client := acceptance.TestAccProvider.Meta().(*config.Config).Ne
 		resp, err := client.GetDevice(rs.Primary.ID)
 		if err != nil {
 			return fmt.Errorf("error when fetching primary network device '%s': %s", rs.Primary.ID, err)
@@ -1133,7 +1134,7 @@ func testAccNeDeviceACL(resourceName string, device *ne.Device) resource.TestChe
 		}
 		templateId := rs.Primary.ID
 		deviceID := ne.StringValue(device.UUID)
-		client := testAccProvider.Meta().(*config.Config).Ne
+		client := acceptance.TestAccProvider.Meta().(*config.Config).Ne
 		if ne.StringValue(device.ACLTemplateUUID) != rs.Primary.ID {
 			return fmt.Errorf("acl_template_id for device %s does not match %v - %v", deviceID, ne.StringValue(device.ACLTemplateUUID), templateId)
 		}
@@ -1242,7 +1243,7 @@ func testAccNetworkDevice(ctx map[string]interface{}) string {
 data "equinix_network_account" "test" {
   metro_code = "%{device-metro_code}"
   status     = "Active"`, ctx)
-	if v, ok := ctx["device-account_name"]; ok && !isEmpty(v) {
+	if v, ok := ctx["device-account_name"]; ok && v.(string) != "" {
 		config += nprintf(`
   name = "%{device-account_name}"`, ctx)
 	}
@@ -1253,7 +1254,7 @@ data "equinix_network_account" "test" {
 data "equinix_network_account" "test-secondary" {
   metro_code = "%{device-secondary_metro_code}"
   status     = "Active"`, ctx)
-		if v, ok := ctx["device-secondary_account_name"]; ok && !isEmpty(v) {
+		if v, ok := ctx["device-secondary_account_name"]; ok && v.(string) != "" {
 			config += nprintf(`
   name = "%{device-secondary_account_name}"`, ctx)
 		}

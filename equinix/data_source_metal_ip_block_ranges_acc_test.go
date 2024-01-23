@@ -1,9 +1,10 @@
-package equinix
+package equinix_test
 
 import (
 	"fmt"
 	"testing"
 
+	"github.com/equinix/terraform-provider-equinix/internal/acceptance"
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
@@ -12,9 +13,9 @@ func TestAccDataSourceMetalIPBlockRanges_basic(t *testing.T) {
 	rs := acctest.RandString(10)
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
-		ExternalProviders: testExternalProviders,
-		Providers:         testAccProviders,
+		PreCheck:          func() { acceptance.TestAccPreCheck(t) },
+		ExternalProviders: acceptance.TestExternalProviders,
+		Providers:         acceptance.TestAccProviders,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccDataSourceMetalIPBlockRangesConfig_basic(rs),

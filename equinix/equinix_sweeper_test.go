@@ -1,4 +1,4 @@
-package equinix
+package equinix_test
 
 import (
 	"fmt"
@@ -7,6 +7,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/equinix/terraform-provider-equinix/internal/acceptance"
 	"github.com/equinix/terraform-provider-equinix/internal/config"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -19,16 +20,16 @@ func TestMain(m *testing.M) {
 }
 
 func sharedConfigForRegion(region string) (*config.Config, error) {
-	endpoint := getFromEnvDefault(config.EndpointEnvVar, config.DefaultBaseURL)
-	clientToken := getFromEnvDefault(config.ClientTokenEnvVar, "")
-	clientID := getFromEnvDefault(config.ClientIDEnvVar, "")
-	clientSecret := getFromEnvDefault(config.ClientSecretEnvVar, "")
-	clientTimeout := getFromEnvDefault(config.ClientTimeoutEnvVar, strconv.Itoa(config.DefaultTimeout))
+	endpoint := acceptance.GetFromEnvDefault(config.EndpointEnvVar, config.DefaultBaseURL)
+	clientToken := acceptance.GetFromEnvDefault(config.ClientTokenEnvVar, "")
+	clientID := acceptance.GetFromEnvDefault(config.ClientIDEnvVar, "")
+	clientSecret := acceptance.GetFromEnvDefault(config.ClientSecretEnvVar, "")
+	clientTimeout := acceptance.GetFromEnvDefault(config.ClientTimeoutEnvVar, strconv.Itoa(config.DefaultTimeout))
 	clientTimeoutInt, err := strconv.Atoi(clientTimeout)
 	if err != nil {
 		return nil, fmt.Errorf("cannot convert value of '%s' env variable to int", config.ClientTimeoutEnvVar)
 	}
-	metalAuthToken := getFromEnvDefault(config.MetalAuthTokenEnvVar, "")
+	metalAuthToken := acceptance.GetFromEnvDefault(config.MetalAuthTokenEnvVar, "")
 
 	if clientToken == "" && (clientID == "" || clientSecret == "") && metalAuthToken == "" {
 		return nil, fmt.Errorf("To run acceptance tests sweeper, one of '%s' or pair '%s' - '%s' must be set for Equinix Fabric and Network Edge, and '%s' for Equinix Metal",

@@ -1,21 +1,20 @@
-package equinix
+package equinix_test
 
 import (
 	"context"
 	"fmt"
 	"log"
 	"net"
-	"net/http"
-	"net/http/httptest"
 	"regexp"
 	"strings"
 	"testing"
 	"time"
 
+	"github.com/equinix/terraform-provider-equinix/equinix"
+	"github.com/equinix/terraform-provider-equinix/internal/acceptance"
 	"github.com/equinix/terraform-provider-equinix/internal/config"
 
 	"github.com/equinix/equinix-sdk-go/services/metalv1"
-	"github.com/google/uuid"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -196,9 +195,9 @@ func TestAccMetalDevice_facilityList(t *testing.T) {
 	r := "equinix_metal_device.test"
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
-		ExternalProviders: testExternalProviders,
-		Providers:         testAccProviders,
+		PreCheck:          func() { acceptance.TestAccPreCheck(t) },
+		ExternalProviders: acceptance.TestExternalProviders,
+		Providers:         acceptance.TestAccProviders,
 		CheckDestroy:      testAccMetalDeviceCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
@@ -223,9 +222,9 @@ func TestAccMetalDevice_sshConfig(t *testing.T) {
 		t.Fatalf("Cannot generate test SSH key pair: %s", err)
 	}
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { testAccPreCheck(t) },
-		ProtoV5ProviderFactories: testAccProtoV5ProviderFactories,
-		ExternalProviders:        testExternalProviders,
+		PreCheck:                 func() { acceptance.TestAccPreCheck(t) },
+		ExternalProviders:        acceptance.TestExternalProviders,
+		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
 		CheckDestroy:             testAccMetalDeviceCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
@@ -255,9 +254,9 @@ func TestAccMetalDevice_basic(t *testing.T) {
 	r := "equinix_metal_device.test"
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
-		ExternalProviders: testExternalProviders,
-		Providers:         testAccProviders,
+		PreCheck:          func() { acceptance.TestAccPreCheck(t) },
+		ExternalProviders: acceptance.TestExternalProviders,
+		Providers:         acceptance.TestAccProviders,
 		CheckDestroy:      testAccMetalDeviceCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
@@ -301,9 +300,9 @@ func TestAccMetalDevice_update(t *testing.T) {
 	r := "equinix_metal_device.test"
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
-		ExternalProviders: testExternalProviders,
-		Providers:         testAccProviders,
+		PreCheck:          func() { acceptance.TestAccPreCheck(t) },
+		ExternalProviders: acceptance.TestExternalProviders,
+		Providers:         acceptance.TestAccProviders,
 		CheckDestroy:      testAccMetalDeviceCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
@@ -357,9 +356,9 @@ func TestAccMetalDevice_IPXEScriptUrl(t *testing.T) {
 	r := "equinix_metal_device.test_ipxe_script_url"
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
-		ExternalProviders: testExternalProviders,
-		Providers:         testAccProviders,
+		PreCheck:          func() { acceptance.TestAccPreCheck(t) },
+		ExternalProviders: acceptance.TestExternalProviders,
+		Providers:         acceptance.TestAccProviders,
 		CheckDestroy:      testAccMetalDeviceCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
@@ -395,9 +394,9 @@ func TestAccMetalDevice_IPXEConflictingFields(t *testing.T) {
 	r := "equinix_metal_device.test_ipxe_conflict"
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
-		ExternalProviders: testExternalProviders,
-		Providers:         testAccProviders,
+		PreCheck:          func() { acceptance.TestAccPreCheck(t) },
+		ExternalProviders: acceptance.TestExternalProviders,
+		Providers:         acceptance.TestAccProviders,
 		CheckDestroy:      testAccMetalDeviceCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
@@ -417,9 +416,9 @@ func TestAccMetalDevice_IPXEConfigMissing(t *testing.T) {
 	r := "equinix_metal_device.test_ipxe_config_missing"
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
-		ExternalProviders: testExternalProviders,
-		Providers:         testAccProviders,
+		PreCheck:          func() { acceptance.TestAccPreCheck(t) },
+		ExternalProviders: acceptance.TestExternalProviders,
+		Providers:         acceptance.TestAccProviders,
 		CheckDestroy:      testAccMetalDeviceCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
@@ -443,9 +442,9 @@ func TestAccMetalDevice_allowUserdataChanges(t *testing.T) {
 	userdata2 := fmt.Sprintf("#!/usr/bin/env sh\necho 'Allow userdata changes %d'\n", rInt+1)
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
-		ExternalProviders: testExternalProviders,
-		Providers:         testAccProviders,
+		PreCheck:          func() { acceptance.TestAccPreCheck(t) },
+		ExternalProviders: acceptance.TestExternalProviders,
+		Providers:         acceptance.TestAccProviders,
 		CheckDestroy:      testAccMetalDeviceCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
@@ -477,9 +476,9 @@ func TestAccMetalDevice_allowCustomdataChanges(t *testing.T) {
 	customdata2 := fmt.Sprintf(`{"message": "Allow customdata changes %d"}`, rInt+1)
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
-		ExternalProviders: testExternalProviders,
-		Providers:         testAccProviders,
+		PreCheck:          func() { acceptance.TestAccPreCheck(t) },
+		ExternalProviders: acceptance.TestExternalProviders,
+		Providers:         acceptance.TestAccProviders,
 		CheckDestroy:      testAccMetalDeviceCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
@@ -506,8 +505,8 @@ func TestAccMetalDevice_allowChangesErrorOnUnsupportedAttribute(t *testing.T) {
 	rInt := acctest.RandInt()
 
 	resource.Test(t, resource.TestCase{
-		ExternalProviders: testExternalProviders,
-		Providers:         testAccProviders,
+		ExternalProviders: acceptance.TestExternalProviders,
+		Providers:         acceptance.TestAccProviders,
 		Steps: []resource.TestStep{
 			{
 				Config:      testAccMetalDeviceConfig_allowAttributeChanges(rInt, rs, "", "", "project_id"),
@@ -518,7 +517,7 @@ func TestAccMetalDevice_allowChangesErrorOnUnsupportedAttribute(t *testing.T) {
 }
 
 func testAccMetalDeviceCheckDestroyed(s *terraform.State) error {
-	client := testAccProvider.Meta().(*config.Config).Metal
+	client := acceptance.TestAccProvider.Meta().(*config.Config).Metal
 
 	for _, rs := range s.RootModule().Resources {
 		if rs.Type != "equinix_metal_device" {
@@ -554,7 +553,7 @@ func testAccMetalDeviceExists(n string, device *metalv1.Device) resource.TestChe
 			return fmt.Errorf("No Record ID is set")
 		}
 
-		client := testAccProvider.Meta().(*config.Config).Metalgo
+		client := acceptance.TestAccProvider.Meta().(*config.Config).Metalgo
 
 		foundDevice, _, err := client.DevicesApi.FindDeviceById(context.TODO(), rs.Primary.ID).Execute()
 		if err != nil {
@@ -645,9 +644,9 @@ func TestAccMetalDevice_importBasic(t *testing.T) {
 	rs := acctest.RandString(10)
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
-		ExternalProviders: testExternalProviders,
-		Providers:         testAccProviders,
+		PreCheck:          func() { acceptance.TestAccPreCheck(t) },
+		ExternalProviders: acceptance.TestExternalProviders,
+		Providers:         acceptance.TestAccProviders,
 		CheckDestroy:      testAccMetalDeviceCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
@@ -979,105 +978,6 @@ resource "equinix_metal_device" "test" {
 `, confAccMetalDevice_base(preferable_plans, preferable_metros, preferable_os), projSuffix, testDeviceTerminationTime(), updateTimeout)
 }
 
-func TestAccMetalDevice_readErrorHandling(t *testing.T) {
-	type args struct {
-		newResource bool
-		handler     func(w http.ResponseWriter, r *http.Request)
-	}
-
-	tests := []struct {
-		name    string
-		args    args
-		wantErr bool
-	}{
-		{
-			name: "forbiddenAfterProvision",
-			args: args{
-				newResource: false,
-				handler: func(w http.ResponseWriter, r *http.Request) {
-					w.Header().Add("Content-Type", "application/json")
-					w.Header().Add("X-Request-Id", "needed for equinix_errors.FriendlyError")
-					w.WriteHeader(http.StatusForbidden)
-				},
-			},
-			wantErr: false,
-		},
-		{
-			name: "notFoundAfterProvision",
-			args: args{
-				newResource: false,
-				handler: func(w http.ResponseWriter, r *http.Request) {
-					w.Header().Add("Content-Type", "application/json")
-					w.Header().Add("X-Request-Id", "needed for equinix_errors.FriendlyError")
-					w.WriteHeader(http.StatusNotFound)
-				},
-			},
-			wantErr: false,
-		},
-		{
-			name: "forbiddenWaitForActiveDeviceProvision",
-			args: args{
-				newResource: true,
-				handler: func(w http.ResponseWriter, r *http.Request) {
-					w.Header().Add("Content-Type", "application/json")
-					w.Header().Add("X-Request-Id", "needed for equinix_errors.FriendlyError")
-					w.WriteHeader(http.StatusForbidden)
-				},
-			},
-			wantErr: true,
-		},
-		{
-			name: "notFoundProvision",
-			args: args{
-				newResource: true,
-				handler: func(w http.ResponseWriter, r *http.Request) {
-					w.Header().Add("Content-Type", "application/json")
-					w.Header().Add("X-Request-Id", "needed for equinix_errors.FriendlyError")
-					w.WriteHeader(http.StatusNotFound)
-				},
-			},
-			wantErr: true,
-		},
-		{
-			name: "errorProvision",
-			args: args{
-				newResource: true,
-				handler: func(w http.ResponseWriter, r *http.Request) {
-					w.Header().Add("Content-Type", "application/json")
-					w.Header().Add("X-Request-Id", "needed for equinix_errors.FriendlyError")
-					w.WriteHeader(http.StatusBadRequest)
-				},
-			},
-			wantErr: true,
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			ctx := context.Background()
-			d := new(schema.ResourceData)
-			if tt.args.newResource {
-				d.MarkNewResource()
-			} else {
-				d.SetId(uuid.New().String())
-			}
-
-			mockAPI := httptest.NewServer(http.HandlerFunc(tt.args.handler))
-			meta := &config.Config{
-				BaseURL: mockAPI.URL,
-				Token:   "fakeTokenForMock",
-			}
-			meta.Load(ctx)
-
-			if err := resourceMetalDeviceRead(ctx, d, meta); (err != nil) != tt.wantErr {
-				t.Errorf("resourceMetalDeviceRead() error = %v, wantErr %v", err, tt.wantErr)
-			}
-
-			mockAPI.Close()
-		})
-	}
-}
-
 func testAccWaitForMetalDeviceActive(project, deviceHostName string) resource.ImportStateIdFunc {
 	return func(state *terraform.State) (string, error) {
 		defaultTimeout := 20 * time.Minute
@@ -1090,7 +990,7 @@ func testAccWaitForMetalDeviceActive(project, deviceHostName string) resource.Im
 			return "", fmt.Errorf("No Record ID is set")
 		}
 
-		meta := testAccProvider.Meta()
+		meta := acceptance.TestAccProvider.Meta()
 		rd := new(schema.ResourceData)
 		meta.(*config.Config).AddModuleToMetalGoUserAgent(rd)
 		client := meta.(*config.Config).Metalgo
@@ -1107,7 +1007,7 @@ func testAccWaitForMetalDeviceActive(project, deviceHostName string) resource.Im
 		}
 
 		rd.SetId(devices[0].GetId())
-		return devices[0].GetId(), waitForActiveDevice(context.Background(), rd, testAccProvider.Meta(), defaultTimeout)
+		return devices[0].GetId(), equinix.WaitForActiveDevice(context.Background(), rd, acceptance.TestAccProvider.Meta(), defaultTimeout)
 	}
 }
 
@@ -1118,9 +1018,9 @@ func TestAccMetalDeviceCreate_timeout(t *testing.T) {
 	project := "equinix_metal_project.test"
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
-		ExternalProviders: testExternalProviders,
-		ProviderFactories: testAccProviderFactories,
+		PreCheck:          func() { acceptance.TestAccPreCheck(t) },
+		ExternalProviders: acceptance.TestExternalProviders,
+		ProviderFactories: acceptance.TestAccProviderFactories,
 		CheckDestroy:      testAccMetalDeviceCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
@@ -1150,9 +1050,9 @@ func TestAccMetalDeviceUpdate_timeout(t *testing.T) {
 	r := "equinix_metal_device.test"
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
-		ExternalProviders: testExternalProviders,
-		ProviderFactories: testAccProviderFactories,
+		PreCheck:          func() { acceptance.TestAccPreCheck(t) },
+		ExternalProviders: acceptance.TestExternalProviders,
+		ProviderFactories: acceptance.TestAccProviderFactories,
 		CheckDestroy:      testAccMetalDeviceCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
@@ -1175,9 +1075,9 @@ func TestAccMetalDevice_LockingAndUnlocking(t *testing.T) {
 	r := "equinix_metal_device.test"
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
-		ExternalProviders: testExternalProviders,
-		ProviderFactories: testAccProviderFactories,
+		PreCheck:          func() { acceptance.TestAccPreCheck(t) },
+		ExternalProviders: acceptance.TestExternalProviders,
+		ProviderFactories: acceptance.TestAccProviderFactories,
 		CheckDestroy:      testAccMetalDeviceCheckDestroyed,
 		Steps: []resource.TestStep{
 			{

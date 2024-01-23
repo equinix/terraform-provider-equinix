@@ -1,10 +1,11 @@
-package equinix
+package equinix_test
 
 import (
 	"fmt"
 	"log"
 	"testing"
 
+	"github.com/equinix/terraform-provider-equinix/internal/acceptance"
 	"github.com/equinix/terraform-provider-equinix/internal/config"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
@@ -82,9 +83,9 @@ func TestAccMetalVlan_metro(t *testing.T) {
 	metro := "sv"
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
-		ExternalProviders: testExternalProviders,
-		Providers:         testAccProviders,
+		PreCheck:          func() { acceptance.TestAccPreCheck(t) },
+		ExternalProviders: acceptance.TestExternalProviders,
+		Providers:         acceptance.TestAccProviders,
 		CheckDestroy:      testAccMetalVlanCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
@@ -106,9 +107,9 @@ func TestAccMetalVlan_basic(t *testing.T) {
 	fac := "ny5"
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
-		ExternalProviders: testExternalProviders,
-		Providers:         testAccProviders,
+		PreCheck:          func() { acceptance.TestAccPreCheck(t) },
+		ExternalProviders: acceptance.TestExternalProviders,
+		Providers:         acceptance.TestAccProviders,
 		CheckDestroy:      testAccMetalVlanCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
@@ -135,7 +136,7 @@ func testAccCheckMetalVlanExists(n string, vlan *packngo.VirtualNetwork) resourc
 			return fmt.Errorf("No Record ID is set")
 		}
 
-		client := testAccProvider.Meta().(*config.Config).Metal
+		client := acceptance.TestAccProvider.Meta().(*config.Config).Metal
 
 		foundVlan, _, err := client.ProjectVirtualNetworks.Get(rs.Primary.ID, nil)
 		if err != nil {
@@ -152,7 +153,7 @@ func testAccCheckMetalVlanExists(n string, vlan *packngo.VirtualNetwork) resourc
 }
 
 func testAccMetalVlanCheckDestroyed(s *terraform.State) error {
-	client := testAccProvider.Meta().(*config.Config).Metal
+	client := acceptance.TestAccProvider.Meta().(*config.Config).Metal
 
 	for _, rs := range s.RootModule().Resources {
 		if rs.Type != "equinix_metal_vlan" {
@@ -185,9 +186,9 @@ func TestAccMetalVlan_importBasic(t *testing.T) {
 	fac := "ny5"
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
-		ExternalProviders: testExternalProviders,
-		Providers:         testAccProviders,
+		PreCheck:          func() { acceptance.TestAccPreCheck(t) },
+		ExternalProviders: acceptance.TestExternalProviders,
+		Providers:         acceptance.TestAccProviders,
 		CheckDestroy:      testAccMetalVlanCheckDestroyed,
 		Steps: []resource.TestStep{
 			{

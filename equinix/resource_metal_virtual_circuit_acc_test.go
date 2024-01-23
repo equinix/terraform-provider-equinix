@@ -1,4 +1,4 @@
-package equinix
+package equinix_test
 
 import (
 	"fmt"
@@ -6,6 +6,7 @@ import (
 	"os"
 	"testing"
 
+	"github.com/equinix/terraform-provider-equinix/internal/acceptance"
 	"github.com/equinix/terraform-provider-equinix/internal/config"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
@@ -61,7 +62,7 @@ func testSweepVirtualCircuits(region string) error {
 }
 
 func testAccMetalVirtualCircuitCheckDestroyed(s *terraform.State) error {
-	client := testAccProvider.Meta().(*config.Config).Metal
+	client := acceptance.TestAccProvider.Meta().(*config.Config).Metal
 
 	for _, rs := range s.RootModule().Resources {
 		if rs.Type != "equinix_metal_virtual_circuit" {
@@ -123,9 +124,9 @@ func TestAccMetalVirtualCircuit_dedicated(t *testing.T) {
 	ri := acctest.RandIntRange(1024, 1093)
 
 	resource.ParallelTest(t, resource.TestCase{ // Error: Error waiting for virtual circuit 863d4df5-b3ea-46ee-8497-858cb0cbfcb9 to be created: GET https://api.equinix.com/metal/v1/virtual-circuits/863d4df5-b3ea-46ee-8497-858cb0cbfcb9?include=project%2Cport%2Cvirtual_network%2Cvrf: 500 Oh snap, something went wrong! We've logged the error and will take a look - please reach out to us if you continue having trouble.
-		PreCheck:          func() { testAccPreCheck(t) },
-		ExternalProviders: testExternalProviders,
-		ProviderFactories: testAccProviderFactories,
+		PreCheck:          func() { acceptance.TestAccPreCheck(t) },
+		ExternalProviders: acceptance.TestExternalProviders,
+		ProviderFactories: acceptance.TestAccProviderFactories,
 		CheckDestroy:      testAccMetalVirtualCircuitCheckDestroyed,
 		Steps: []resource.TestStep{
 			{

@@ -561,7 +561,7 @@ func resourceMetalDeviceCreate(ctx context.Context, d *schema.ResourceData, meta
 	d.SetId(newDevice.GetId())
 
 	createTimeout := d.Timeout(schema.TimeoutCreate) - 30*time.Second - time.Since(start)
-	if err = waitForActiveDevice(ctx, d, meta, createTimeout); err != nil {
+	if err = WaitForActiveDevice(ctx, d, meta, createTimeout); err != nil {
 		return diag.FromErr(err)
 	}
 
@@ -772,7 +772,7 @@ func doReinstall(ctx context.Context, client *metalv1.APIClient, d *schema.Resou
 		}
 
 		updateTimeout := d.Timeout(schema.TimeoutUpdate) - 30*time.Second - time.Since(start)
-		if err := waitForActiveDevice(ctx, d, meta, updateTimeout); err != nil {
+		if err := WaitForActiveDevice(ctx, d, meta, updateTimeout); err != nil {
 			return err
 		}
 	}
@@ -813,7 +813,7 @@ func resourceMetalDeviceDelete(ctx context.Context, d *schema.ResourceData, meta
 	return nil
 }
 
-func waitForActiveDevice(ctx context.Context, d *schema.ResourceData, meta interface{}, timeout time.Duration) error {
+func WaitForActiveDevice(ctx context.Context, d *schema.ResourceData, meta interface{}, timeout time.Duration) error {
 	targets := []string{"active", "failed"}
 	pending := []string{"queued", "provisioning", "reinstalling"}
 

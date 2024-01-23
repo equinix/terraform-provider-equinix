@@ -1,4 +1,4 @@
-package equinix
+package equinix_test
 
 import (
 	"fmt"
@@ -7,6 +7,7 @@ import (
 	"strconv"
 	"testing"
 
+	"github.com/equinix/terraform-provider-equinix/internal/acceptance"
 	"github.com/equinix/terraform-provider-equinix/internal/config"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
@@ -78,9 +79,9 @@ func TestAccMetalVRF_basic(t *testing.T) {
 	rInt := acctest.RandInt()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
-		ExternalProviders: testExternalProviders,
-		Providers:         testAccProviders,
+		PreCheck:          func() { acceptance.TestAccPreCheck(t) },
+		ExternalProviders: acceptance.TestExternalProviders,
+		Providers:         acceptance.TestAccProviders,
 		CheckDestroy:      testAccMetalVRFCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
@@ -107,9 +108,9 @@ func TestAccMetalVRF_withIPRanges(t *testing.T) {
 	rInt := acctest.RandInt()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
-		ExternalProviders: testExternalProviders,
-		Providers:         testAccProviders,
+		PreCheck:          func() { acceptance.TestAccPreCheck(t) },
+		ExternalProviders: acceptance.TestExternalProviders,
+		Providers:         acceptance.TestAccProviders,
 		CheckDestroy:      testAccMetalVRFCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
@@ -150,9 +151,9 @@ func TestAccMetalVRF_withIPReservations(t *testing.T) {
 	rInt := acctest.RandInt()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
-		ExternalProviders: testExternalProviders,
-		Providers:         testAccProviders,
+		PreCheck:          func() { acceptance.TestAccPreCheck(t) },
+		ExternalProviders: acceptance.TestExternalProviders,
+		Providers:         acceptance.TestAccProviders,
 		CheckDestroy:      testAccMetalVRFCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
@@ -192,9 +193,9 @@ func TestAccMetalVRF_withGateway(t *testing.T) {
 	rInt := acctest.RandInt()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
-		ExternalProviders: testExternalProviders,
-		Providers:         testAccProviders,
+		PreCheck:          func() { acceptance.TestAccPreCheck(t) },
+		ExternalProviders: acceptance.TestExternalProviders,
+		Providers:         acceptance.TestAccProviders,
 		CheckDestroy:      testAccMetalVRFCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
@@ -234,9 +235,9 @@ func TestAccMetalVRFConfig_withConnection(t *testing.T) {
 	nniVlan := acctest.RandIntRange(1024, 1093)
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
-		ExternalProviders: testExternalProviders,
-		Providers:         testAccProviders,
+		PreCheck:          func() { acceptance.TestAccPreCheck(t) },
+		ExternalProviders: acceptance.TestExternalProviders,
+		Providers:         acceptance.TestAccProviders,
 		CheckDestroy:      testAccMetalVRFCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
@@ -302,7 +303,7 @@ func TestAccMetalVRFConfig_withConnection(t *testing.T) {
 }
 
 func testAccMetalVRFCheckDestroyed(s *terraform.State) error {
-	client := testAccProvider.Meta().(*config.Config).Metal
+	client := acceptance.TestAccProvider.Meta().(*config.Config).Metal
 
 	for _, rs := range s.RootModule().Resources {
 		if rs.Type != "equinix_metal_vrf" {
@@ -326,7 +327,7 @@ func testAccMetalVRFExists(n string, vrf *packngo.VRF) resource.TestCheckFunc {
 			return fmt.Errorf("No Record ID is set")
 		}
 
-		client := testAccProvider.Meta().(*config.Config).Metal
+		client := acceptance.TestAccProvider.Meta().(*config.Config).Metal
 
 		foundResource, _, err := client.VRFs.Get(rs.Primary.ID, nil)
 		if err != nil {

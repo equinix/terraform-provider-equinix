@@ -342,7 +342,7 @@ func portSanityChecks(cpr *ClientPortResource) error {
 	return nil
 }
 
-func portProperlyDestroyed(port *packngo.Port) error {
+func PortProperlyDestroyed(port *packngo.Port) error {
 	var errs []string
 	if !port.Data.Bonded {
 		errs = append(errs, fmt.Sprintf("port %s wasn't bonded after equinix_metal_port destroy;", port.ID))

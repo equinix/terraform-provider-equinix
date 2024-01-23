@@ -1,10 +1,11 @@
-package equinix
+package equinix_test
 
 import (
 	"fmt"
 	"regexp"
 	"testing"
 
+	"github.com/equinix/terraform-provider-equinix/internal/acceptance"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
@@ -17,8 +18,8 @@ func TestAccDataSourceFabricPort_basic(t *testing.T) {
 	}
 	resourceName := fmt.Sprintf("data.equinix_ecx_port.%s", context["port-resourceName"].(string))
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:  func() { testAccPreCheck(t) },
-		Providers: testAccProviders,
+		PreCheck:  func() { acceptance.TestAccPreCheck(t) },
+		Providers: acceptance.TestAccProviders,
 		Steps: []resource.TestStep{
 			{
 				Config: newTestAccConfig(context).withPort().build(),

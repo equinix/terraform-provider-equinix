@@ -1,10 +1,11 @@
-package equinix
+package equinix_test
 
 import (
 	"fmt"
 	"strconv"
 	"testing"
 
+	"github.com/equinix/terraform-provider-equinix/internal/acceptance"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 )
@@ -19,8 +20,8 @@ func TestAccDataSourceECXL2SellerProfiles_nameRegex(t *testing.T) {
 	}
 	resourceName := fmt.Sprintf("data.equinix_ecx_l2_sellerprofiles.%s", context["resourceName"].(string))
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:  func() { testAccPreCheck(t) },
-		Providers: testAccProviders,
+		PreCheck:  func() { acceptance.TestAccPreCheck(t) },
+		Providers: acceptance.TestAccProviders,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccDataSourceECXL2SellerProfilesConfig_nameRegex(context),

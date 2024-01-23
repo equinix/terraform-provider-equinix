@@ -1,9 +1,10 @@
-package equinix
+package equinix_test
 
 import (
 	"fmt"
 	"testing"
 
+	"github.com/equinix/terraform-provider-equinix/internal/acceptance"
 	"github.com/equinix/terraform-provider-equinix/internal/config"
 
 	"github.com/equinix/ne-go"
@@ -26,8 +27,8 @@ func TestAccNetworkFile_VSRX(t *testing.T) {
 	resourceName := fmt.Sprintf("equinix_network_file.%s", context["resourceName"].(string))
 	var file ne.File
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:  func() { testAccPreCheck(t) },
-		Providers: testAccProviders,
+		PreCheck:  func() { acceptance.TestAccPreCheck(t) },
+		Providers: acceptance.TestAccProviders,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccNetworkFile(context),
@@ -68,7 +69,7 @@ func testAccNetworkFileExists(resourceName string, file *ne.File) resource.TestC
 		if !ok {
 			return fmt.Errorf("resource not found: %s", resourceName)
 		}
-		client := testAccProvider.Meta().(*config.Config).Ne
+		client := acceptance.TestAccProvider.Meta().(*config.Config).Ne
 		if rs.Primary.ID == "" {
 			return fmt.Errorf("resource has no ID attribute set")
 		}

@@ -1,9 +1,10 @@
-package equinix
+package equinix_test
 
 import (
 	"fmt"
 	"testing"
 
+	"github.com/equinix/terraform-provider-equinix/internal/acceptance"
 	"github.com/equinix/terraform-provider-equinix/internal/config"
 
 	"github.com/equinix/ne-go"
@@ -57,8 +58,8 @@ func TestAccNetworkBGP_CSR1000V_Single_AWS(t *testing.T) {
 	resourceName := fmt.Sprintf("equinix_network_bgp.%s", context["bgp-resourceName"].(string))
 	var bgpConfig ne.BGPConfiguration
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:  func() { testAccPreCheck(t) },
-		Providers: testAccProviders,
+		PreCheck:  func() { acceptance.TestAccPreCheck(t) },
+		Providers: acceptance.TestAccProviders,
 		Steps: []resource.TestStep{
 			{
 				Config: newTestAccConfig(context).withDevice().withSSHUser().withConnection().withBGP().build(),
@@ -131,7 +132,7 @@ func testAccNeBGPExists(resourceName string, bgpConfig *ne.BGPConfiguration) res
 		if !ok {
 			return fmt.Errorf("resource not found: %s", resourceName)
 		}
-		client := testAccProvider.Meta().(*config.Config).Ne
+		client := acceptance.TestAccProvider.Meta().(*config.Config).Ne
 		if rs.Primary.ID == "" {
 			return fmt.Errorf("resource has no ID attribute set")
 		}

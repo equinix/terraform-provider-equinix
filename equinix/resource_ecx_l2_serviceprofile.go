@@ -3,6 +3,7 @@ package equinix
 import (
 	"context"
 	"fmt"
+	"strings"
 
 	"github.com/equinix/terraform-provider-equinix/internal/config"
 	"github.com/equinix/terraform-provider-equinix/internal/converters"
@@ -658,4 +659,29 @@ func expandECXL2ServiceProfileSpeedBands(bands *schema.Set) []ecx.L2ServiceProfi
 		})
 	}
 	return transformed
+}
+
+// Deprecated: use stdlib slices.EqualFunc instead
+func slicesMatchCaseInsensitive(s1, s2 []string) bool {
+	if len(s1) != len(s2) {
+		return false
+	}
+	visited := make([]bool, len(s1))
+	for i := 0; i < len(s1); i++ {
+		found := false
+		for j := 0; j < len(s2); j++ {
+			if visited[j] {
+				continue
+			}
+			if strings.EqualFold(s1[i], s2[j]) {
+				visited[j] = true
+				found = true
+				break
+			}
+		}
+		if !found {
+			return false
+		}
+	}
+	return true
 }

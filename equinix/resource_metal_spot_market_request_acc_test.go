@@ -1,10 +1,11 @@
-package equinix
+package equinix_test
 
 import (
 	"fmt"
 	"regexp"
 	"testing"
 
+	"github.com/equinix/terraform-provider-equinix/internal/acceptance"
 	"github.com/equinix/terraform-provider-equinix/internal/config"
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -22,9 +23,9 @@ func TestAccMetalSpotMarketRequest_basic(t *testing.T) {
 	projSuffix := acctest.RandString(10)
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
-		ExternalProviders: testExternalProviders,
-		ProviderFactories: testAccProviderFactories,
+		PreCheck:          func() { acceptance.TestAccPreCheck(t) },
+		ExternalProviders: acceptance.TestExternalProviders,
+		ProviderFactories: acceptance.TestAccProviderFactories,
 		CheckDestroy:      testAccMetalSpotMarketRequestCheckDestroyed,
 		ErrorCheck:        skipIfOverbidOrTimedOut(t),
 		Steps: []resource.TestStep{
@@ -42,7 +43,7 @@ func TestAccMetalSpotMarketRequest_basic(t *testing.T) {
 }
 
 func testAccMetalSpotMarketRequestCheckDestroyed(s *terraform.State) error {
-	client := testAccProvider.Meta().(*config.Config).Metal
+	client := acceptance.TestAccProvider.Meta().(*config.Config).Metal
 
 	for _, rs := range s.RootModule().Resources {
 		if rs.Type != "equinix_metal_spot_market_request" {
@@ -66,7 +67,7 @@ func testAccCheckMetalSpotMarketRequestExists(n string, key *packngo.SpotMarketR
 			return fmt.Errorf("No Record ID is set")
 		}
 
-		client := testAccProvider.Meta().(*config.Config).Metal
+		client := acceptance.TestAccProvider.Meta().(*config.Config).Metal
 
 		foundKey, _, err := client.SpotMarketRequests.Get(rs.Primary.ID, &packngo.GetOptions{Includes: []string{"project", "devices", "facilities", "metro"}})
 		if err != nil {
@@ -150,9 +151,9 @@ func TestAccMetalSpotMarketRequest_Import(t *testing.T) {
 	projSuffix := acctest.RandString(10)
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
-		ExternalProviders: testExternalProviders,
-		ProviderFactories: testAccProviderFactories,
+		PreCheck:          func() { acceptance.TestAccPreCheck(t) },
+		ExternalProviders: acceptance.TestExternalProviders,
+		ProviderFactories: acceptance.TestAccProviderFactories,
 		CheckDestroy:      testAccMetalSpotMarketRequestCheckDestroyed,
 		ErrorCheck:        skipIfOverbidOrTimedOut(t),
 		Steps: []resource.TestStep{
@@ -243,9 +244,9 @@ func TestAccMetalSpotMarketRequestCreate_WithTimeout(t *testing.T) {
 	projSuffix := acctest.RandString(10)
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
-		ExternalProviders: testExternalProviders,
-		ProviderFactories: testAccProviderFactories,
+		PreCheck:          func() { acceptance.TestAccPreCheck(t) },
+		ExternalProviders: acceptance.TestExternalProviders,
+		ProviderFactories: acceptance.TestAccProviderFactories,
 		CheckDestroy:      testAccMetalSpotMarketRequestCheckDestroyed,
 		ErrorCheck: func(err error) error {
 			if matchErrOverbid.MatchString(err.Error()) {

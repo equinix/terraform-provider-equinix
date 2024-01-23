@@ -1,9 +1,10 @@
-package equinix
+package equinix_test
 
 import (
 	"fmt"
 	"testing"
 
+	"github.com/equinix/terraform-provider-equinix/internal/acceptance"
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
@@ -14,9 +15,9 @@ func TestAccResourceMetalOrganizationMember_owner(t *testing.T) {
 	rInt := acctest.RandInt()
 	org := &packngo.Organization{}
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
-		ExternalProviders: testExternalProviders,
-		Providers:         testAccProviders,
+		PreCheck:          func() { acceptance.TestAccPreCheck(t) },
+		ExternalProviders: acceptance.TestExternalProviders,
+		Providers:         acceptance.TestAccProviders,
 		// TODO: CheckDestroy: testAccMetalOrganizationMemberCheckDestroyed,
 		CheckDestroy: nil,
 		Steps: []resource.TestStep{
@@ -52,9 +53,9 @@ func TestAccResourceMetalOrganizationMember_basic(t *testing.T) {
 	rInt := acctest.RandInt()
 	org := &packngo.Organization{}
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
-		ExternalProviders: testExternalProviders,
-		Providers:         testAccProviders,
+		PreCheck:          func() { acceptance.TestAccPreCheck(t) },
+		ExternalProviders: acceptance.TestExternalProviders,
+		Providers:         acceptance.TestAccProviders,
 		// TODO: CheckDestroy: testAccMetalOrganizationMemberCheckDestroyed,
 		CheckDestroy: nil,
 		Steps: []resource.TestStep{
