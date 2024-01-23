@@ -1,10 +1,12 @@
-package equinix
+package equinix_test
 
 import (
 	"context"
 	"fmt"
 	"testing"
 
+	"github.com/equinix/terraform-provider-equinix/equinix"
+	"github.com/equinix/terraform-provider-equinix/internal/acceptance"
 	"github.com/equinix/terraform-provider-equinix/internal/config"
 
 	v4 "github.com/equinix-labs/fabric-go/fabric/v4"
@@ -14,8 +16,8 @@ import (
 
 func TestAccCloudRouterCreate(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
+		PreCheck:     func() { acceptance.TestAccPreCheck(t) },
+		Providers:    acceptance.TestAccProviders,
 		CheckDestroy: checkCloudRouterDelete,
 		Steps: []resource.TestStep{
 			{
@@ -40,12 +42,12 @@ func TestAccCloudRouterCreate(t *testing.T) {
 
 func checkCloudRouterDelete(s *terraform.State) error {
 	ctx := context.Background()
-	ctx = context.WithValue(ctx, v4.ContextAccessToken, testAccProvider.Meta().(*config.Config).FabricAuthToken)
+	ctx = context.WithValue(ctx, v4.ContextAccessToken, acceptance.TestAccProvider.Meta().(*config.Config).FabricAuthToken)
 	for _, rs := range s.RootModule().Resources {
 		if rs.Type != "equinix_fabric_cloud_router" {
 			continue
 		}
-		err := waitUntilCloudRouterDeprovisioned(rs.Primary.ID, testAccProvider.Meta(), ctx)
+		err := equinix.WaitUntilCloudRouterDeprovisioned(rs.Primary.ID, acceptance.TestAccProvider.Meta(), ctx)
 		if err != nil {
 			return fmt.Errorf("API call failed while waiting for resource deletion")
 		}
@@ -84,8 +86,8 @@ func testAccCloudRouterCreateConfig(name string) string {
 
 func TestAccCloudRouterRead(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:  func() { testAccPreCheck(t) },
-		Providers: testAccProviders,
+		PreCheck:  func() { acceptance.TestAccPreCheck(t) },
+		Providers: acceptance.TestAccProviders,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccCloudRouterReadConfig(),

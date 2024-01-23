@@ -264,7 +264,7 @@ func resourceFabricRoutingProtocolDelete(ctx context.Context, d *schema.Resource
 		return diag.FromErr(equinix_errors.FormatFabricError(err))
 	}
 
-	err = waitUntilRoutingProtocolIsDeprovisioned(d.Id(), d.Get("connection_uuid").(string), meta, ctx)
+	err = WaitUntilRoutingProtocolIsDeprovisioned(d.Id(), d.Get("connection_uuid").(string), meta, ctx)
 	if err != nil {
 		return diag.FromErr(fmt.Errorf("API call failed while waiting for resource deletion. Error %v", err))
 	}
@@ -351,7 +351,7 @@ func waitUntilRoutingProtocolIsProvisioned(uuid string, connUuid string, meta in
 	return dbConn, err
 }
 
-func waitUntilRoutingProtocolIsDeprovisioned(uuid string, connUuid string, meta interface{}, ctx context.Context) error {
+func WaitUntilRoutingProtocolIsDeprovisioned(uuid string, connUuid string, meta interface{}, ctx context.Context) error {
 	log.Printf("Waiting for routing protocol to be deprovisioned, uuid %s", uuid)
 
 	/* check if resource is not found */
