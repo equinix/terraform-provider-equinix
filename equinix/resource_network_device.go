@@ -1509,6 +1509,8 @@ func fillNetworkDeviceUpdateRequest(updateReq ne.DeviceUpdateRequest, changes ma
 			updateReq.WithTermLength(changeValue.(int))
 		case neDeviceSchemaNames["Notifications"]:
 			updateReq.WithNotifications(converters.SetToStringList(changeValue.(*schema.Set)))
+		case neDeviceSchemaNames["CoreCount"]:
+			updateReq.WithCore(changeValue.(int))
 		case neDeviceSchemaNames["AdditionalBandwidth"]:
 			updateReq.WithAdditionalBandwidth(changeValue.(int))
 		case neDeviceSchemaNames["ACLTemplateUUID"]:
