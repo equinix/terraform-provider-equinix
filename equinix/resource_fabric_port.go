@@ -230,6 +230,7 @@ func readFabricPortsResponseSchema() map[string]*schema.Schema {
 			Type:        schema.TypeSet,
 			Required:    true,
 			Description: "name",
+			MaxItems:    1,
 			Elem: &schema.Resource{
 				Schema: readGetPortsByNameQueryParamSch(),
 			},
