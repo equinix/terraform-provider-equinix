@@ -6,7 +6,7 @@ import (
 	"regexp"
 
 	"github.com/equinix/terraform-provider-equinix/internal/config"
-	"github.com/equinix/terraform-provider-equinix/internal/resources/metal/metal_project_ssh_key"
+	"github.com/equinix/terraform-provider-equinix/internal/resources/metal/project_ssh_key"
 	"github.com/hashicorp/terraform-plugin-framework-validators/int64validator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
