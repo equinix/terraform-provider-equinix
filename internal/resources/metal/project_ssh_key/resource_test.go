@@ -1,4 +1,4 @@
-package metal_project_ssh_key_test
+package project_ssh_key_test
 
 import (
 	"fmt"

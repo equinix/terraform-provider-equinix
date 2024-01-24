@@ -1,4 +1,4 @@
-package metal_project_ssh_key
+package project_ssh_key
 
 import (
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"

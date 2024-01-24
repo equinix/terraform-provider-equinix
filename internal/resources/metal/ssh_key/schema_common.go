@@ -1,4 +1,4 @@
-package metal_ssh_key
+package ssh_key
 
 import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
