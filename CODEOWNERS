@@ -6,5 +6,5 @@
 *fabric*            @equinix/governor-digin-fabric
 *ecx*               @equinix/governor-digin-fabric
 *connection_e2e*    @equinix/governor-digin-fabric
-*equinix_network*   @equinix/network-edge-team
-**/edge-networking  @equinix/network-edge-team
+*equinix_network*   @equinix/governor-ne-network-edge-engineering
+**/edge-networking  @equinix/governor-ne-network-edge-engineering
