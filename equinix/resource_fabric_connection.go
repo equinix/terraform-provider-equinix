@@ -127,7 +127,6 @@ func FabricConnectionResourceSchema() map[string]*schema.Schema {
 			Type:        schema.TypeSet,
 			Computed:    true,
 			Description: "Connection type-specific operational data",
-			MaxItems:    1,
 			Elem: &schema.Resource{
 				Schema: operationSch(),
 			},
@@ -136,7 +135,6 @@ func FabricConnectionResourceSchema() map[string]*schema.Schema {
 			Type:        schema.TypeSet,
 			Computed:    true,
 			Description: "Customer account information that is associated with this connection",
-			MaxItems:    1,
 			Elem: &schema.Resource{
 				Schema: equinix_schema.AccountSch(),
 			},
@@ -145,7 +143,6 @@ func FabricConnectionResourceSchema() map[string]*schema.Schema {
 			Type:        schema.TypeSet,
 			Computed:    true,
 			Description: "Captures connection lifecycle change information",
-			MaxItems:    1,
 			Elem: &schema.Resource{
 				Schema: equinix_schema.ChangeLogSch(),
 			},

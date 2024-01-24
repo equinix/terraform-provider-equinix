@@ -132,26 +132,6 @@ func FabricPortResourceSchema() map[string]*schema.Schema {
 				Schema: portOperationSch(),
 			},
 		},
-		"bandwidth": {
-			Type:        schema.TypeInt,
-			Computed:    true,
-			Description: "Port bandwidth in Mbps",
-		},
-		"available_bandwidth": {
-			Type:        schema.TypeInt,
-			Computed:    true,
-			Description: "Port available bandwidth in Mbps",
-		},
-		"used_bandwidth": {
-			Type:        schema.TypeInt,
-			Computed:    true,
-			Description: "Port used bandwidth in Mbps",
-		},
-		"service_type": {
-			Type:        schema.TypeString,
-			Computed:    true,
-			Description: "Port service type",
-		},
 		"account": {
 			Type:        schema.TypeSet,
 			Computed:    true,
@@ -167,6 +147,26 @@ func FabricPortResourceSchema() map[string]*schema.Schema {
 			Elem: &schema.Resource{
 				Schema: equinix_schema.ChangeLogSch(),
 			},
+		},
+		"service_type": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "Port service type",
+		},
+		"bandwidth": {
+			Type:        schema.TypeInt,
+			Computed:    true,
+			Description: "Port bandwidth in Mbps",
+		},
+		"available_bandwidth": {
+			Type:        schema.TypeInt,
+			Computed:    true,
+			Description: "Port available bandwidth in Mbps",
+		},
+		"used_bandwidth": {
+			Type:        schema.TypeInt,
+			Computed:    true,
+			Description: "Port used bandwidth in Mbps",
 		},
 		"location": {
 			Type:        schema.TypeSet,
@@ -208,16 +208,6 @@ func FabricPortResourceSchema() map[string]*schema.Schema {
 	}
 }
 
-func readGetPortsByNameQueryParamSch() map[string]*schema.Schema {
-	return map[string]*schema.Schema{
-		"name": {
-			Type:        schema.TypeString,
-			Optional:    true,
-			Description: "Query Parameter to Get Ports By Name",
-		},
-	}
-}
-
 func readFabricPortResourceSchemaUpdated() map[string]*schema.Schema {
 	sch := FabricPortResourceSchema()
 	sch["uuid"].Computed = true
@@ -238,11 +228,21 @@ func readFabricPortsResponseSchema() map[string]*schema.Schema {
 		},
 		"filters": {
 			Type:        schema.TypeSet,
-			Optional:    true,
+			Required:    true,
 			Description: "name",
 			Elem: &schema.Resource{
 				Schema: readGetPortsByNameQueryParamSch(),
 			},
+		},
+	}
+}
+
+func readGetPortsByNameQueryParamSch() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"name": {
+			Type:        schema.TypeString,
+			Required:    true,
+			Description: "Query Parameter to Get Ports By Name",
 		},
 	}
 }
