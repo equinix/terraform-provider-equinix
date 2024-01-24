@@ -1,4 +1,4 @@
-package equinix
+package metal_connection_test
 
 import (
 	"fmt"
@@ -6,45 +6,15 @@ import (
 
 	"github.com/equinix/terraform-provider-equinix/internal/config"
 
+	"github.com/equinix/terraform-provider-equinix/internal/acceptance"
+
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 )
 
-const (
-	metalDedicatedConnIDEnvVar = "TF_ACC_METAL_DEDICATED_CONNECTION_ID"
-)
-
-func TestSpeedConversion(t *testing.T) {
-	speedUint, err := speedStrToUint("50Mbps")
-	if err != nil {
-		t.Errorf("Error converting speed string to uint64: %s", err)
-	}
-	if speedUint != 50*mega {
-		t.Errorf("Speed string conversion failed. Expected: %d, got: %d", 50*mega, speedUint)
-	}
-
-	speedStr, err := speedUintToStr(50 * mega)
-	if err != nil {
-		t.Errorf("Error converting speed uint to string: %s", err)
-	}
-	if speedStr != "50Mbps" {
-		t.Errorf("Speed uint conversion failed. Expected: %s, got: %s", "50Mbps", speedStr)
-	}
-
-	speedUint, err = speedStrToUint("100Gbps")
-	if err == nil {
-		t.Errorf("Expected error converting invalid speed string to uint, got: %d", speedUint)
-	}
-
-	speedStr, err = speedUintToStr(100 * giga)
-	if err == nil {
-		t.Errorf("Expected error converting invalid speed uint to string, got: %s", speedStr)
-	}
-}
-
 func testAccMetalConnectionCheckDestroyed(s *terraform.State) error {
-	client := testAccProvider.Meta().(*config.Config).Metal
+	client := acceptance.TestAccProvider.Meta().(*config.Config).Metal
 
 	for _, rs := range s.RootModule().Resources {
 		if rs.Type != "equinix_metal_connection" {
@@ -97,9 +67,9 @@ func testAccMetalConnectionConfig_Shared_zside(randstr string) string {
 func TestAccMetalConnection_shared_zside(t *testing.T) {
 	rs := acctest.RandString(10)
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
-		ExternalProviders: testExternalProviders,
-		Providers:         testAccProviders,
+		PreCheck:          func() { acceptance.TestAccPreCheckMetal(t) },
+		ExternalProviders: acceptance.TestExternalProviders,
+		Providers:         acceptance.TestAccProviders,
 		CheckDestroy:      testAccMetalConnectionCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
@@ -123,9 +93,9 @@ func TestAccMetalConnection_shared(t *testing.T) {
 	rs := acctest.RandString(10)
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
-		ExternalProviders: testExternalProviders,
-		Providers:         testAccProviders,
+		PreCheck:          func() { acceptance.TestAccPreCheckMetal(t) },
+		ExternalProviders: acceptance.TestExternalProviders,
+		Providers:         acceptance.TestAccProviders,
 		CheckDestroy:      testAccMetalConnectionCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
@@ -198,9 +168,9 @@ func TestAccMetalConnection_dedicated(t *testing.T) {
 	rs := acctest.RandString(10)
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
-		ExternalProviders: testExternalProviders,
-		Providers:         testAccProviders,
+		PreCheck:          func() { acceptance.TestAccPreCheckMetal(t) },
+		ExternalProviders: acceptance.TestExternalProviders,
+		Providers:         acceptance.TestAccProviders,
 		CheckDestroy:      testAccMetalConnectionCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
@@ -255,9 +225,9 @@ func TestAccMetalConnection_tunnel(t *testing.T) {
 	rs := acctest.RandString(10)
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
-		ExternalProviders: testExternalProviders,
-		Providers:         testAccProviders,
+		PreCheck:          func() { acceptance.TestAccPreCheckMetal(t) },
+		ExternalProviders: acceptance.TestExternalProviders,
+		Providers:         acceptance.TestAccProviders,
 		CheckDestroy:      testAccMetalConnectionCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
@@ -331,9 +301,9 @@ func TestAccMetalConnection_sharedVlans(t *testing.T) {
 	step5Vlans := ""
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
-		ExternalProviders: testExternalProviders,
-		Providers:         testAccProviders,
+		PreCheck:          func() { acceptance.TestAccPreCheckMetal(t) },
+		ExternalProviders: acceptance.TestExternalProviders,
+		Providers:         acceptance.TestAccProviders,
 		CheckDestroy:      testAccMetalConnectionCheckDestroyed,
 		Steps: []resource.TestStep{
 			{

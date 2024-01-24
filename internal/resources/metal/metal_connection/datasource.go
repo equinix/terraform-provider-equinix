@@ -1,4 +1,4 @@
-package equinix
+package metal_connection
 
 import (
 	"fmt"
@@ -88,7 +88,7 @@ func connectionPortSchema() *schema.Resource {
 	}
 }
 
-func dataSourceMetalConnection() *schema.Resource {
+func DataSource() *schema.Resource {
 	speeds := []string{}
 	for _, allowedSpeed := range allowedSpeeds {
 		speeds = append(speeds, allowedSpeed.Str)
