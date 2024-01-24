@@ -6,30 +6,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
-//func setNestedAttributesToComputed(top *schema.Schema) *schema.Schema {
-//	if reflect.TypeOf(top.Elem)
-//}
-//
-
-// Recursive function to traverse nested schema definitions
-//
-//	func traverseSchema(attr string, sch *schema.Schema) {
-//		switch t := sch.Elem.(type) {
-//		case *schema.Resource:
-//			// Recursive call for nested resources
-//			for nestedAttr, nestedSchema := range t.Schema {
-//				// Recursive call for each nested attribute
-//
-//				traverseSchema(nestedAttr, nestedSchema)
-//			}
-//		case *schema.Schema:
-//			// Handle nested simple types (e.g., TypeMap)
-//			if t.Elem != nil {
-//				// Recursive call for nested elements within TypeList or TypeSet
-//				traverseSchema(attr, t)
-//			}
-//		}
-//	}
 func readFabricConnectionResourceSchema() map[string]*schema.Schema {
 	sch := FabricConnectionResourceSchema()
 	for key, _ := range sch {

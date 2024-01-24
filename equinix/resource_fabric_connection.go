@@ -561,16 +561,6 @@ func operationSch() map[string]*schema.Schema {
 			Computed:    true,
 			Description: "Connection status",
 		},
-		//"operational_status": {
-		//	Type:        schema.TypeString,
-		//	Computed:    true,
-		//	Description: "Connection operational status",
-		//},
-		//"operational_status_changed_at": {
-		//	Type:        schema.TypeString,
-		//	Computed:    true,
-		//	Description: "When connection transitioned into current operational status",
-		//},
 		"errors": {
 			Type:        schema.TypeList,
 			Computed:    true,
@@ -628,7 +618,7 @@ func resourceFabricConnectionCreate(ctx context.Context, d *schema.ResourceData,
 	schemaNotifications := d.Get("notifications").([]interface{})
 	notifications := equinix_schema.NotificationsToFabric(schemaNotifications)
 	schemaRedundancy := d.Get("redundancy").(*schema.Set).List()
-	red := redundancyToFabric(schemaRedundancy)
+	red := connectionRedundancyToFabric(schemaRedundancy)
 	schemaOrder := d.Get("order").(*schema.Set).List()
 	order := equinix_schema.OrderToFabric(schemaOrder)
 	aside := d.Get("a_side").(*schema.Set).List()
@@ -777,7 +767,7 @@ func setFabricMap(d *schema.ResourceData, conn v4.Connection) diag.Diagnostics {
 		"operation":       operationToTerra(conn.Operation),
 		"order":           equinix_schema.OrderToTerra(conn.Order),
 		"change_log":      equinix_schema.ChangeLogToTerra(conn.ChangeLog),
-		"redundancy":      redundancyToTerra(conn.Redundancy),
+		"redundancy":      connectionRedundancyToTerra(conn.Redundancy),
 		"notifications":   equinix_schema.NotificationsToTerra(conn.Notifications),
 		"account":         accountToTerra(conn.Account),
 		"a_side":          connectionSideToTerra(conn.ASide),
@@ -1009,7 +999,7 @@ func WaitUntilConnectionDeprovisioned(uuid string, meta interface{}, ctx context
 	return err
 }
 
-func redundancyToFabric(schemaRedundancy []interface{}) v4.ConnectionRedundancy {
+func connectionRedundancyToFabric(schemaRedundancy []interface{}) v4.ConnectionRedundancy {
 	if schemaRedundancy == nil {
 		return v4.ConnectionRedundancy{}
 	}
@@ -1026,7 +1016,7 @@ func redundancyToFabric(schemaRedundancy []interface{}) v4.ConnectionRedundancy 
 	return red
 }
 
-func redundancyToTerra(redundancy *v4.ConnectionRedundancy) *schema.Set {
+func connectionRedundancyToTerra(redundancy *v4.ConnectionRedundancy) *schema.Set {
 	if redundancy == nil {
 		return nil
 	}

@@ -50,7 +50,7 @@ func readFabricServiceProfileSchema() map[string]*schema.Schema {
 			Computed:    true,
 			Description: "Access point config information",
 			Elem: &schema.Resource{
-				Schema: equinix_schema.AccessPointTypeConfigSch(),
+				Schema: AccessPointTypeConfigSch(),
 			},
 		},
 
