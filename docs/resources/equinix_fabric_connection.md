@@ -513,18 +513,20 @@ resource "equinix_fabric_connection" "epl" {
 
 ### Required
 
-- `a_side` (Block Set, Min: 1) Requester or Customer side connection configuration object of the multi-segment connection (see [below for nested schema](#nestedblock--a_side))
+- `a_side` (Block Set, Min: 1, Max: 1) Requester or Customer side connection configuration object of the multi-segment connection (see [below for nested schema](#nestedblock--a_side))
 - `bandwidth` (Number) Connection bandwidth in Mbps
 - `name` (String) Connection name. An alpha-numeric 24 characters string which can include only hyphens and underscores
 - `notifications` (Block List, Min: 1) Preferences for notifications on connection configuration or status changes (see [below for nested schema](#nestedblock--notifications))
-- `type` (String) Defines the connection type like VG_VC, EVPL_VC, EPL_VC, EC_VC, IP_VC, ACCESS_EPL_VC
-- `z_side` (Block Set, Min: 1) Destination or Provider side connection configuration object of the multi-segment connection (see [below for nested schema](#nestedblock--z_side))
+- `order` (Block Set, Min: 1, Max: 1) Order details (see [below for nested schema](#nestedblock--order))
+- `type` (String) Defines the connection type like EVPL_VC, EPL_VC, IPWAN_VC, ACCESS_EPL_VC, EVPLAN_VC, EPLAN_VC
+- `z_side` (Block Set, Min: 1, Max: 1) Destination or Provider side connection configuration object of the multi-segment connection (see [below for nested schema](#nestedblock--z_side))
 
 ### Optional
 
-- `additional_info` (Block List) Connection additional information (see [below for nested schema](#nestedblock--additional_info))
-- `order` (Block Set) Order related to this connection information (see [below for nested schema](#nestedblock--order))
-- `redundancy` (Block Set) Redundancy Information (see [below for nested schema](#nestedblock--redundancy))
+- `additional_info` (List of Map of String) Connection additional information
+- `description` (String) Customer-provided connection description
+- `project` (Block Set, Max: 1) Project information (see [below for nested schema](#nestedblock--project))
+- `redundancy` (Block Set, Max: 1) Connection Redundancy Configuration (see [below for nested schema](#nestedblock--redundancy))
 - `timeouts` (Block, Optional) (see [below for nested schema](#nestedblock--timeouts))
 
 ### Read-Only
@@ -536,17 +538,17 @@ resource "equinix_fabric_connection" "epl" {
 - `id` (String) The ID of this resource.
 - `is_remote` (Boolean) Connection property derived from access point locations
 - `operation` (Set of Object) Connection type-specific operational data (see [below for nested schema](#nestedatt--operation))
-- `project` (Block Set) Project information (see [below for nested schema](#nestedblock--project))
 - `state` (String) Connection overall state
+- `uuid` (String) Equinix-assigned connection identifier
 
 <a id="nestedblock--a_side"></a>
 ### Nested Schema for `a_side`
 
 Optional:
 
-- `access_point` (Block Set) Point of access details (see [below for nested schema](#nestedblock--a_side--access_point))
+- `access_point` (Block Set, Max: 1) Point of access details (see [below for nested schema](#nestedblock--a_side--access_point))
 - `additional_info` (Block List) Connection side additional information (see [below for nested schema](#nestedblock--a_side--additional_info))
-- `service_token` (Block Set) For service token based connections, Service tokens authorize users to access protected resources and services. Resource owners can distribute the tokens to trusted partners and vendors, allowing selected third parties to work directly with Equinix network assets (see [below for nested schema](#nestedblock--a_side--service_token))
+- `service_token` (Block Set, Max: 1) For service token based connections, Service tokens authorize users to access protected resources and services. Resource owners can distribute the tokens to trusted partners and vendors, allowing selected third parties to work directly with Equinix network assets (see [below for nested schema](#nestedblock--a_side--service_token))
 
 <a id="nestedblock--a_side--access_point"></a>
 ### Nested Schema for `a_side.access_point`
@@ -554,27 +556,26 @@ Optional:
 Optional:
 
 - `authentication_key` (String) Authentication key for provider based connections
-- **Deprecated** `gateway` Use `router` attribute instead; (Block Set) (see [below for nested schema](#nestedblock--a_side--access_point--router))
-- `router` (Block Set) Cloud Router access point information that replaces `gateway` (refers to [below for nested schema](#nestedblock--a_side--access_point--router))
-- `interface` (Block Set) Virtual device interface (see [below for nested schema](#nestedblock--a_side--access_point--interface))
-- `network` (Block Set) Simplified Network (see [below for nested schema](#nestedblock--a_side--access_point--network))
-- `link_protocol` (Block Set) Connection link protocol (see [below for nested schema](#nestedblock--a_side--access_point--link_protocol))
-- `location` (Block Set) Access point location (see [below for nested schema](#nestedblock--a_side--access_point--location))
+- `gateway` (Block Set, Max: 1, Deprecated) Cloud Router access point information (see [below for nested schema](#nestedblock--a_side--access_point--gateway))
+- `interface` (Block Set, Max: 1) Virtual device interface (see [below for nested schema](#nestedblock--a_side--access_point--interface))
+- `link_protocol` (Block Set, Max: 1) Connection link protocol (see [below for nested schema](#nestedblock--a_side--access_point--link_protocol))
+- `location` (Block Set, Max: 1) Access point location (see [below for nested schema](#nestedblock--a_side--access_point--location))
+- `network` (Block Set, Max: 1) network access point information (see [below for nested schema](#nestedblock--a_side--access_point--network))
 - `peering_type` (String) Peering Type- PRIVATE,MICROSOFT,PUBLIC, MANUAL
-- `port` (Block Set) Port access point information (see [below for nested schema](#nestedblock--a_side--access_point--port))
-- `profile` (Block Set) Service Profile (see [below for nested schema](#nestedblock--a_side--access_point--profile))
+- `port` (Block Set, Max: 1) Port access point information (see [below for nested schema](#nestedblock--a_side--access_point--port))
+- `profile` (Block Set, Max: 1) Service Profile (see [below for nested schema](#nestedblock--a_side--access_point--profile))
 - `provider_connection_id` (String) Provider assigned Connection Id
-- `routing_protocols` (Block List) Access point routing protocols configuration (see [below for nested schema](#nestedblock--a_side--access_point--routing_protocols))
+- `router` (Block Set, Max: 1) Cloud Router access point information (see [below for nested schema](#nestedblock--a_side--access_point--router))
 - `seller_region` (String) Access point seller region
-- `type` (String) Access point type - COLO, VD, VG, SP, IGW, SUBNET, GW
-- `virtual_device` (Block Set) Virtual device (see [below for nested schema](#nestedblock--a_side--access_point--virtual_device))
+- `type` (String) Access point type - COLO, VD, VG, SP, IGW, SUBNET, CLOUD_ROUTER, NETWORK
+- `virtual_device` (Block Set, Max: 1) Virtual device (see [below for nested schema](#nestedblock--a_side--access_point--virtual_device))
 
 Read-Only:
 
-- `account` (Set of Object) Account (see [below for nested schema](#nestedatt--a_side--access_point--account))
+- `account` (Block Set) Account (see [below for nested schema](#nestedblock--a_side--access_point--account))
 
-<a id="nestedblock--a_side--access_point--router"></a>
-### Nested Schema for `a_side.access_point.router`
+<a id="nestedblock--a_side--access_point--gateway"></a>
+### Nested Schema for `a_side.access_point.gateway`
 
 Optional:
 
@@ -590,18 +591,9 @@ Read-Only:
 
 Optional:
 
+- `id` (Number) id
 - `type` (String) Interface type
 - `uuid` (String) Equinix-assigned interface identifier
-
-Read-Only:
-
-- `id` (String) id
-
-<a id="nestedblock--a_side--access_point--network"></a>
-### Nested Schema for `a_side.access_point.network`
-
-Required:
-- `uuid` (String) Equinix-assigned network identifier
 
 
 <a id="nestedblock--a_side--access_point--link_protocol"></a>
@@ -626,6 +618,18 @@ Optional:
 - `region` (String) Access point region
 
 
+<a id="nestedblock--a_side--access_point--network"></a>
+### Nested Schema for `a_side.access_point.network`
+
+Optional:
+
+- `uuid` (String) Equinix-assigned Network identifier
+
+Read-Only:
+
+- `href` (String) Unique Resource Identifier
+
+
 <a id="nestedblock--a_side--access_point--port"></a>
 ### Nested Schema for `a_side.access_point.port`
 
@@ -642,10 +646,11 @@ Read-Only:
 <a id="nestedatt--a_side--access_point--port--redundancy"></a>
 ### Nested Schema for `a_side.access_point.port.redundancy`
 
-Optional:
+Read-Only:
 
-- `priority` (String)
+- `enabled` (Boolean)
 - `group` (String)
+- `priority` (String)
 
 
 
@@ -674,14 +679,16 @@ Read-Only:
 
 
 
-<a id="nestedblock--a_side--access_point--routing_protocols"></a>
-### Nested Schema for `a_side.access_point.routing_protocols`
+<a id="nestedblock--a_side--access_point--router"></a>
+### Nested Schema for `a_side.access_point.router`
 
 Optional:
 
-- `state` (String) Routing protocol instance state
-- `type` (String) Routing Protocol type
-- `uuid` (String) Equinix-assigned Routing protocol identifier
+- `uuid` (String) Equinix-assigned virtual gateway identifier
+
+Read-Only:
+
+- `href` (String) Unique Resource Identifier
 
 
 <a id="nestedblock--a_side--access_point--virtual_device"></a>
@@ -689,28 +696,27 @@ Optional:
 
 Optional:
 
-- `type` (String) Virtual Device type
 - `name` (String) Customer-assigned Virtual Device Name
+- `type` (String) Virtual Device type
 - `uuid` (String) Equinix-assigned Virtual Device identifier
-
 
 Read-Only:
 
 - `href` (String) Unique Resource Identifier
 
 
-<a id="nestedatt--a_side--access_point--account"></a>
+<a id="nestedblock--a_side--access_point--account"></a>
 ### Nested Schema for `a_side.access_point.account`
 
 Read-Only:
 
-- `account_name` (String)
-- `account_number` (Number)
-- `global_cust_id` (String)
-- `global_org_id` (String)
-- `global_organization_name` (String)
-- `org_id` (Number)
-- `organization_name` (String)
+- `account_name` (String) Account Name
+- `account_number` (Number) Account Number
+- `global_cust_id` (String) Global Customer organization identifier
+- `global_org_id` (String) Global organization identifier
+- `global_organization_name` (String) Global organization name
+- `org_id` (Number) Customer organization identifier
+- `organization_name` (String) Customer organization name
 
 
 
@@ -722,7 +728,6 @@ Optional:
 - `key` (String) Additional information key
 - `value` (String) Additional information value
 
-~> **NOTE:** Port to IBM Connections could be modified from IBM Service Provider Side by using parameters passed to additional_info field:  `{"key": "ASN", "value": "1111"}` `{"key": "Global", "value": "false"}` `{"key": "BGP_IBM_CIDR", "value": "172.16.0.18/30"}` `{"key": "BGP_CER_CIDR", "value": "172.16.0.19/30"}`
 
 <a id="nestedblock--a_side--service_token"></a>
 ### Nested Schema for `a_side.service_token`
@@ -752,14 +757,25 @@ Optional:
 - `send_interval` (String) Send interval
 
 
+<a id="nestedblock--order"></a>
+### Nested Schema for `order`
+
+Optional:
+
+- `billing_tier` (String) Billing tier for connection bandwidth
+- `order_id` (String) Order Identification
+- `order_number` (String) Order Reference Number
+- `purchase_order_number` (String) Purchase order number
+
+
 <a id="nestedblock--z_side"></a>
 ### Nested Schema for `z_side`
 
 Optional:
 
-- `access_point` (Block Set) Point of access details (see [below for nested schema](#nestedblock--z_side--access_point))
+- `access_point` (Block Set, Max: 1) Point of access details (see [below for nested schema](#nestedblock--z_side--access_point))
 - `additional_info` (Block List) Connection side additional information (see [below for nested schema](#nestedblock--z_side--additional_info))
-- `service_token` (Block Set) For service token based connections, Service tokens authorize users to access protected resources and services. Resource owners can distribute the tokens to trusted partners and vendors, allowing selected third parties to work directly with Equinix network assets (see [below for nested schema](#nestedblock--z_side--service_token))
+- `service_token` (Block Set, Max: 1) For service token based connections, Service tokens authorize users to access protected resources and services. Resource owners can distribute the tokens to trusted partners and vendors, allowing selected third parties to work directly with Equinix network assets (see [below for nested schema](#nestedblock--z_side--service_token))
 
 <a id="nestedblock--z_side--access_point"></a>
 ### Nested Schema for `z_side.access_point`
@@ -767,26 +783,26 @@ Optional:
 Optional:
 
 - `authentication_key` (String) Authentication key for provider based connections
-- **Deprecated** `gateway` Use `router` attribute instead; (Block Set) (see [below for nested schema](#nestedblock--z_side--access_point--router))
-- `router` (Block Set) Cloud Router access point information that replaces `gateway` (refers to [below for nested schema](#nestedblock--z_side--access_point--router))
-- `interface` (Block Set) Virtual device interface (see [below for nested schema](#nestedblock--z_side--access_point--interface))
-- `link_protocol` (Block Set) Connection link protocol (see [below for nested schema](#nestedblock--z_side--access_point--link_protocol))
-- `location` (Block Set) Access point location (see [below for nested schema](#nestedblock--z_side--access_point--location))
+- `gateway` (Block Set, Max: 1, Deprecated) Cloud Router access point information (see [below for nested schema](#nestedblock--z_side--access_point--gateway))
+- `interface` (Block Set, Max: 1) Virtual device interface (see [below for nested schema](#nestedblock--z_side--access_point--interface))
+- `link_protocol` (Block Set, Max: 1) Connection link protocol (see [below for nested schema](#nestedblock--z_side--access_point--link_protocol))
+- `location` (Block Set, Max: 1) Access point location (see [below for nested schema](#nestedblock--z_side--access_point--location))
+- `network` (Block Set, Max: 1) network access point information (see [below for nested schema](#nestedblock--z_side--access_point--network))
 - `peering_type` (String) Peering Type- PRIVATE,MICROSOFT,PUBLIC, MANUAL
-- `port` (Block Set) Port access point information (see [below for nested schema](#nestedblock--z_side--access_point--port))
-- `profile` (Block Set) Service Profile (see [below for nested schema](#nestedblock--z_side--access_point--profile))
+- `port` (Block Set, Max: 1) Port access point information (see [below for nested schema](#nestedblock--z_side--access_point--port))
+- `profile` (Block Set, Max: 1) Service Profile (see [below for nested schema](#nestedblock--z_side--access_point--profile))
 - `provider_connection_id` (String) Provider assigned Connection Id
-- `routing_protocols` (Block List) Access point routing protocols configuration (see [below for nested schema](#nestedblock--z_side--access_point--routing_protocols))
+- `router` (Block Set, Max: 1) Cloud Router access point information (see [below for nested schema](#nestedblock--z_side--access_point--router))
 - `seller_region` (String) Access point seller region
-- `type` (String) Access point type - COLO, VD, VG, SP, IGW, SUBNET, GW
-- `virtual_device` (Block Set) Virtual device (see [below for nested schema](#nestedblock--z_side--access_point--virtual_device))
+- `type` (String) Access point type - COLO, VD, VG, SP, IGW, SUBNET, CLOUD_ROUTER, NETWORK
+- `virtual_device` (Block Set, Max: 1) Virtual device (see [below for nested schema](#nestedblock--z_side--access_point--virtual_device))
 
 Read-Only:
 
-- `account` (Set of Object) Account (see [below for nested schema](#nestedatt--z_side--access_point--account))
+- `account` (Block Set) Account (see [below for nested schema](#nestedblock--z_side--access_point--account))
 
-<a id="nestedblock--z_side--access_point--router"></a>
-### Nested Schema for `z_side.access_point.router`
+<a id="nestedblock--z_side--access_point--gateway"></a>
+### Nested Schema for `z_side.access_point.gateway`
 
 Optional:
 
@@ -802,12 +818,9 @@ Read-Only:
 
 Optional:
 
+- `id` (Number) id
 - `type` (String) Interface type
 - `uuid` (String) Equinix-assigned interface identifier
-
-Read-Only:
-
-- `id` (String) id
 
 
 <a id="nestedblock--z_side--access_point--link_protocol"></a>
@@ -832,6 +845,18 @@ Optional:
 - `region` (String) Access point region
 
 
+<a id="nestedblock--z_side--access_point--network"></a>
+### Nested Schema for `z_side.access_point.network`
+
+Optional:
+
+- `uuid` (String) Equinix-assigned Network identifier
+
+Read-Only:
+
+- `href` (String) Unique Resource Identifier
+
+
 <a id="nestedblock--z_side--access_point--port"></a>
 ### Nested Schema for `z_side.access_point.port`
 
@@ -850,6 +875,8 @@ Read-Only:
 
 Read-Only:
 
+- `enabled` (Boolean)
+- `group` (String)
 - `priority` (String)
 
 
@@ -879,14 +906,16 @@ Read-Only:
 
 
 
-<a id="nestedblock--z_side--access_point--routing_protocols"></a>
-### Nested Schema for `z_side.access_point.routing_protocols`
+<a id="nestedblock--z_side--access_point--router"></a>
+### Nested Schema for `z_side.access_point.router`
 
 Optional:
 
-- `state` (String) Routing protocol instance state
-- `type` (String) Routing Protocol type
-- `uuid` (String) Equinix-assigned Routing protocol identifier
+- `uuid` (String) Equinix-assigned virtual gateway identifier
+
+Read-Only:
+
+- `href` (String) Unique Resource Identifier
 
 
 <a id="nestedblock--z_side--access_point--virtual_device"></a>
@@ -894,6 +923,7 @@ Optional:
 
 Optional:
 
+- `name` (String) Customer-assigned Virtual Device Name
 - `type` (String) Virtual Device type
 - `uuid` (String) Equinix-assigned Virtual Device identifier
 
@@ -902,18 +932,18 @@ Read-Only:
 - `href` (String) Unique Resource Identifier
 
 
-<a id="nestedatt--z_side--access_point--account"></a>
+<a id="nestedblock--z_side--access_point--account"></a>
 ### Nested Schema for `z_side.access_point.account`
 
 Read-Only:
 
-- `account_name` (String)
-- `account_number` (Number)
-- `global_cust_id` (String)
-- `global_org_id` (String)
-- `global_organization_name` (String)
-- `org_id` (Number)
-- `organization_name` (String)
+- `account_name` (String) Account Name
+- `account_number` (Number) Account Number
+- `global_cust_id` (String) Global Customer organization identifier
+- `global_org_id` (String) Global organization identifier
+- `global_organization_name` (String) Global organization name
+- `org_id` (Number) Customer organization identifier
+- `organization_name` (String) Customer organization name
 
 
 
@@ -941,27 +971,16 @@ Read-Only:
 
 
 
-<a id="nestedblock--additional_info"></a>
-### Nested Schema for `additional_info`
+<a id="nestedblock--project"></a>
+### Nested Schema for `project`
 
 Optional:
 
-- `key` (String) Additional information key
-- `value` (String) Additional information value
-
-
-<a id="nestedblock--order"></a>
-### Nested Schema for `order`
-
-Optional:
-
-- `billing_tier` (String) Billing tier for connection bandwidth
-- `purchase_order_number` (String) Purchase order number
+- `project_id` (String) Project Id
 
 Read-Only:
 
-- `order_id` (String) Order Identification
-- `order_number` (String) Order Reference Number
+- `href` (String) Unique Resource URL
 
 
 <a id="nestedblock--redundancy"></a>
@@ -969,11 +988,8 @@ Read-Only:
 
 Optional:
 
-- `priority` (String) Priority type- PRIMARY, SECONDARY
-
-Read-Only:
-
-- `group` (String) Redundancy group identifier
+- `group` (String) Redundancy group identifier (UUID of primary connection)
+- `priority` (String) Connection priority in redundancy group - PRIMARY, SECONDARY
 
 
 <a id="nestedblock--timeouts"></a>
@@ -1048,16 +1064,3 @@ Read-Only:
 
 - `property` (String)
 - `reason` (String)
-
-
-
-
-<a id="nestedblock--project"></a>
-### Nested Schema for `project`
-
-Read-Only:
-
-- `href` (String) Unique Resource URL
-- `project_id` (String) Project Id
-
-
