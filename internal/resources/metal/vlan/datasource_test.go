@@ -9,10 +9,10 @@ import (
 	"github.com/equinix/terraform-provider-equinix/internal/config"
 	"github.com/equinix/terraform-provider-equinix/internal/resources/metal/vlan"
 
+	"github.com/equinix/equinix-sdk-go/services/metalv1"
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
-	"github.com/packethost/packngo"
 )
 
 func TestAccDataSourceMetalVlan_byVxlanFacility(t *testing.T) {
@@ -227,7 +227,7 @@ data "equinix_metal_vlan" "dsvlan" {
 
 func TestMetalVlan_MatchingVlan(t *testing.T) {
 	type args struct {
-		vlans     []packngo.VirtualNetwork
+		vlans     []metalv1.VirtualNetwork
 		vxlan     int
 		projectID string
 		facility  string
@@ -236,52 +236,52 @@ func TestMetalVlan_MatchingVlan(t *testing.T) {
 	tests := []struct {
 		name    string
 		args    args
-		want    *packngo.VirtualNetwork
+		want    *metalv1.VirtualNetwork
 		wantErr bool
 	}{
 		{
 			name: "MatchingVLAN",
 			args: args{
-				vlans:     []packngo.VirtualNetwork{{VXLAN: 123}},
+				vlans:     []metalv1.VirtualNetwork{{Vxlan: metalv1.PtrInt32(123)}},
 				vxlan:     123,
 				projectID: "",
 				facility:  "",
 				metro:     "",
 			},
-			want:    &packngo.VirtualNetwork{VXLAN: 123},
+			want:    &metalv1.VirtualNetwork{Vxlan: metalv1.PtrInt32(123)},
 			wantErr: false,
 		},
 		{
 			name: "MatchingFac",
 			args: args{
-				vlans:    []packngo.VirtualNetwork{{FacilityCode: "fac"}},
+				vlans:    []metalv1.VirtualNetwork{{FacilityCode: "fac"}},
 				facility: "fac",
 			},
-			want:    &packngo.VirtualNetwork{FacilityCode: "fac"},
+			want:    &metalv1.VirtualNetwork{FacilityCode: "fac"},
 			wantErr: false,
 		},
 		{
 			name: "MatchingMet",
 			args: args{
-				vlans: []packngo.VirtualNetwork{{MetroCode: "met"}},
+				vlans: []metalv1.VirtualNetwork{{MetroCode: metalv1.PtrString("met")}},
 				metro: "met",
 			},
-			want:    &packngo.VirtualNetwork{MetroCode: "met"},
+			want:    &metalv1.VirtualNetwork{MetroCode: metalv1.PtrString("met")},
 			wantErr: false,
 		},
 		{
 			name: "SecondMatch",
 			args: args{
-				vlans: []packngo.VirtualNetwork{{FacilityCode: "fac"}, {MetroCode: "met"}},
+				vlans: []metalv1.VirtualNetwork{{FacilityCode: "fac"}, {MetroCode: metalv1.PtrString("met")}},
 				metro: "met",
 			},
-			want:    &packngo.VirtualNetwork{MetroCode: "met"},
+			want:    &metalv1.VirtualNetwork{MetroCode: metalv1.PtrString("met")},
 			wantErr: false,
 		},
 		{
 			name: "TwoMatches",
 			args: args{
-				vlans: []packngo.VirtualNetwork{{MetroCode: "met"}, {MetroCode: "met"}},
+				vlans: []metalv1.VirtualNetwork{{MetroCode: metalv1.PtrString("met")}, {MetroCode: metalv1.PtrString("met")}},
 				metro: "met",
 			},
 			want:    nil,
@@ -290,10 +290,10 @@ func TestMetalVlan_MatchingVlan(t *testing.T) {
 		{
 			name: "ComplexMatch",
 			args: args{
-				vlans: []packngo.VirtualNetwork{{VXLAN: 987, FacilityCode: "fac", MetroCode: "skip"}, {VXLAN: 123, FacilityCode: "fac", MetroCode: "met"}, {VXLAN: 456, FacilityCode: "fac", MetroCode: "nope"}},
+				vlans: []metalv1.VirtualNetwork{{Vxlan: metalv1.PtrInt32(987), FacilityCode: "fac", MetroCode: metalv1.PtrString("skip")}, {VXLAN: metalv1.PtrInt32(123), FacilityCode: "fac", MetroCode: metalv1.PtrString("met")}, {Vxlan: metalv1.PtrInt32(456), FacilityCode: "fac", MetroCode: metalv1.PtrString("nope")}},
 				metro: "met",
 			},
-			want:    &packngo.VirtualNetwork{VXLAN: 123, FacilityCode: "fac", MetroCode: "met"},
+			want:    &metalv1.VirtualNetwork{Vxlan: metalv1.PtrInt32(123), FacilityCode: "fac", MetroCode: metalv1.PtrString("met")},
 			wantErr: false,
 		},
 		{

@@ -3,20 +3,20 @@ package vlan
 import (
 	"fmt"
 
+	"github.com/equinix/equinix-sdk-go/services/metalv1"
 	equinix_errors "github.com/equinix/terraform-provider-equinix/internal/errors"
-	"github.com/packethost/packngo"
 )
 
-func MatchingVlan(vlans []packngo.VirtualNetwork, vxlan int, projectID, facility, metro string) (*packngo.VirtualNetwork, error) {
-	matches := []packngo.VirtualNetwork{}
+func MatchingVlan(vlans []metalv1.VirtualNetwork, vxlan int, projectID, facility, metro string) (*metalv1.VirtualNetwork, error) {
+	matches := []metalv1.VirtualNetwork{}
 	for _, v := range vlans {
-		if vxlan != 0 && v.VXLAN != vxlan {
+		if vxlan != 0 && int(v.GetVxlan()) != vxlan {
 			continue
 		}
 		if facility != "" && v.FacilityCode != facility {
 			continue
 		}
-		if metro != "" && v.MetroCode != metro {
+		if metro != "" && v.GetMetroCode() != metro {
 			continue
 		}
 		matches = append(matches, v)

@@ -1,7 +1,7 @@
 package vlan
 
 import (
-	"fmt"
+	"context"
 
 	"github.com/equinix/terraform-provider-equinix/internal/converters"
 
@@ -10,13 +10,14 @@ import (
 
 	"github.com/equinix/terraform-provider-equinix/internal/config"
 
+	"github.com/equinix/equinix-sdk-go/services/metalv1"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/packethost/packngo"
 )
 
 func DataSource() *schema.Resource {
 	return &schema.Resource{
-		Read: dataSourceMetalVlanRead,
+		ReadWithoutTimeout: dataSourceMetalVlanRead,
 		Importer: &schema.ResourceImporter{
 			State: schema.ImportStatePassthrough,
 		},
@@ -73,8 +74,8 @@ func DataSource() *schema.Resource {
 	}
 }
 
-func dataSourceMetalVlanRead(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*config.Config).Metal
+func dataSourceMetalVlanRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	client := meta.(*config.Config).Metalgo
 
 	projectRaw, projectOk := d.GetOk("project_id")
 	vxlanRaw, vxlanOk := d.GetOk("vxlan")
@@ -83,19 +84,19 @@ func dataSourceMetalVlanRead(d *schema.ResourceData, meta interface{}) error {
 	facilityRaw, facilityOk := d.GetOk("facility")
 
 	if !(vlanIdOk || (vxlanOk || projectOk || metroOk || facilityOk)) {
-		return equinix_errors.FriendlyError(fmt.Errorf("You must set either vlan_id or a combination of vxlan, project_id, and, metro or facility"))
+		return diag.Errorf("You must set either vlan_id or a combination of vxlan, project_id, and, metro or facility")
 	}
 
-	var vlan *packngo.VirtualNetwork
+	var vlan *metalv1.VirtualNetwork
 
 	if vlanIdOk {
 		var err error
-		vlan, _, err = client.ProjectVirtualNetworks.Get(
-			vlanIdRaw.(string),
-			&packngo.GetOptions{Includes: []string{"assigned_to"}},
-		)
+		vlan, _, err = client.VLANsApi.
+			GetVirtualNetwork(ctx, vlanIdRaw.(string)).
+			Include([]string{"assigned_to"}).Execute()
+
 		if err != nil {
-			return equinix_errors.FriendlyError(err)
+			return diag.FromErr(equinix_errors.FriendlyError(err))
 		}
 
 	} else {
@@ -103,33 +104,33 @@ func dataSourceMetalVlanRead(d *schema.ResourceData, meta interface{}) error {
 		vxlan := vxlanRaw.(int)
 		metro := metroRaw.(string)
 		facility := facilityRaw.(string)
-		vlans, _, err := client.ProjectVirtualNetworks.List(
-			projectRaw.(string),
-			&packngo.GetOptions{Includes: []string{"assigned_to"}},
-		)
+		vlans, _, err := client.VLANsApi.
+			FindVirtualNetworks(ctx, projectRaw.(string)).
+			Include([]string{"assigned_to"}).Execute()
+
 		if err != nil {
-			return equinix_errors.FriendlyError(err)
+			return diag.FromErr(equinix_errors.FriendlyError(err))
 		}
 
 		vlan, err = MatchingVlan(vlans.VirtualNetworks, vxlan, projectID, facility, metro)
 		if err != nil {
-			return equinix_errors.FriendlyError(err)
+			return diag.FromErr(equinix_errors.FriendlyError(err))
 		}
 	}
 
 	assignedDevices := []string{}
 	for _, d := range vlan.Instances {
-		assignedDevices = append(assignedDevices, d.ID)
+		assignedDevices = append(assignedDevices, d.GetId()) // instances is a list of href, should be list of device?
 	}
 
-	d.SetId(vlan.ID)
+	d.SetId(vlan.GetId())
 
-	return equinix_schema.SetMap(d, map[string]interface{}{
-		"vlan_id":     vlan.ID,
-		"project_id":  vlan.Project.ID,
-		"vxlan":       vlan.VXLAN,
-		"facility":    vlan.FacilityCode,
+	return diag.FromErr(equinix_schema.SetMap(d, map[string]interface{}{
+		"vlan_id":     vlan.GetId(),
+		"project_id":  vlan.AssignedTo.GetId(), // vlan assigned_to is an href; should be project?
+		"vxlan":       vlan.GetVxlan(),
+		"facility":    vlan.FacilityCode, // facility is deprecated, vlan is metro-scoped; remove this attr?
 		"metro":       vlan.MetroCode,
 		"description": vlan.Description,
-	})
+	}))
 }
