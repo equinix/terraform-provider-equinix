@@ -129,7 +129,7 @@ func dataSourceMetalVlanRead(ctx context.Context, d *schema.ResourceData, meta i
 		"vlan_id":     vlan.GetId(),
 		"project_id":  vlan.AssignedTo.GetId(), // vlan assigned_to is an href; should be project?
 		"vxlan":       vlan.GetVxlan(),
-		"facility":    vlan.FacilityCode, // facility is deprecated, vlan is metro-scoped; remove this attr?
+		"facility":    nil, //vlan.FacilityCode, // facility is deprecated, vlan is metro-scoped; remove this attr?
 		"metro":       vlan.MetroCode,
 		"description": vlan.Description,
 	}))

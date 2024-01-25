@@ -86,16 +86,16 @@ func resourceMetalVlanCreate(ctx context.Context, d *schema.ResourceData, meta i
 	meta.(*config.Config).AddModuleToMetalGoUserAgent(d)
 	client := meta.(*config.Config).Metalgo
 
-	facRaw, facOk := d.GetOk("facility")
+	//facRaw, facOk := d.GetOk("facility")
 	metroRaw, metroOk := d.GetOk("metro")
-	vxlanRaw, vxlanOk := d.GetOk("vxlan")
+	vxlanRaw, _ := d.GetOk("vxlan")
 
-	if !facOk && !metroOk {
+	if /*!facOk &&*/ !metroOk {
 		return diag.Errorf("one of facility or metro must be configured")
 	}
-	if facOk && vxlanOk {
+	/*if facOk && vxlanOk {
 		return diag.Errorf("you can set vxlan only for metro vlans")
-	}
+	}*/
 
 	createRequest := metalv1.VirtualNetworkCreateInput{
 		Description: metalv1.PtrString(d.Get("description").(string)),
@@ -104,9 +104,9 @@ func resourceMetalVlanCreate(ctx context.Context, d *schema.ResourceData, meta i
 		createRequest.Metro = metalv1.PtrString(metroRaw.(string))
 		createRequest.Vxlan = metalv1.PtrInt32(int32(vxlanRaw.(int)))
 	}
-	if facOk {
+	/*if facOk {
 		createRequest.Facility = facRaw.(string)
-	}
+	}*/
 	vlan, _, err := client.VLANsApi.CreateVirtualNetwork(ctx, d.Get("project_id").(string)).VirtualNetworkCreateInput(createRequest).Execute()
 	if err != nil {
 		return diag.FromErr(equinix_errors.FriendlyError(err))
@@ -133,7 +133,7 @@ func resourceMetalVlanRead(ctx context.Context, d *schema.ResourceData, meta int
 	d.Set("description", vlan.Description)
 	d.Set("project_id", vlan.AssignedTo.GetId()) // assigned_to is a project but specced as an href
 	d.Set("vxlan", vlan.GetVxlan())
-	d.Set("facility", vlan.FacilityCode) // vlan spec does not include facility_code; should we remove it?
+	//d.Set("facility", vlan.FacilityCode) // vlan spec does not include facility_code; should we remove it?
 	d.Set("metro", vlan.MetroCode)
 	return nil
 }
@@ -154,10 +154,10 @@ func resourceMetalVlanDelete(ctx context.Context, d *schema.ResourceData, meta i
 	// all device ports must be unassigned before delete
 	for _, i := range vlan.Instances {
 		for _, p := range i.NetworkPorts { // instances is specced as a list of href; should be devices?
-			for _, a := range p.AttachedVirtualNetworks {
+			for _, a := range p.VirtualNetworks { // ...aaaand device virtual_network is also an href
 				// a.ID is not set despite including instaces.network_ports.virtual_networks
 				// TODO(displague) packngo should offer GetID() that uses ID or Href
-				aID := path.Base(a.Href)
+				aID := path.Base(a.GetHref())
 
 				if aID == id {
 					portInput := metalv1.PortAssignInput{

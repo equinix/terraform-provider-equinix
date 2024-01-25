@@ -252,15 +252,6 @@ func TestMetalVlan_MatchingVlan(t *testing.T) {
 			wantErr: false,
 		},
 		{
-			name: "MatchingFac",
-			args: args{
-				vlans:    []metalv1.VirtualNetwork{{FacilityCode: "fac"}},
-				facility: "fac",
-			},
-			want:    &metalv1.VirtualNetwork{FacilityCode: "fac"},
-			wantErr: false,
-		},
-		{
 			name: "MatchingMet",
 			args: args{
 				vlans: []metalv1.VirtualNetwork{{MetroCode: metalv1.PtrString("met")}},
@@ -272,7 +263,7 @@ func TestMetalVlan_MatchingVlan(t *testing.T) {
 		{
 			name: "SecondMatch",
 			args: args{
-				vlans: []metalv1.VirtualNetwork{{FacilityCode: "fac"}, {MetroCode: metalv1.PtrString("met")}},
+				vlans: []metalv1.VirtualNetwork{{MetroCode: metalv1.PtrString("fac")}, {MetroCode: metalv1.PtrString("met")}},
 				metro: "met",
 			},
 			want:    &metalv1.VirtualNetwork{MetroCode: metalv1.PtrString("met")},
@@ -290,10 +281,10 @@ func TestMetalVlan_MatchingVlan(t *testing.T) {
 		{
 			name: "ComplexMatch",
 			args: args{
-				vlans: []metalv1.VirtualNetwork{{Vxlan: metalv1.PtrInt32(987), FacilityCode: "fac", MetroCode: metalv1.PtrString("skip")}, {VXLAN: metalv1.PtrInt32(123), FacilityCode: "fac", MetroCode: metalv1.PtrString("met")}, {Vxlan: metalv1.PtrInt32(456), FacilityCode: "fac", MetroCode: metalv1.PtrString("nope")}},
+				vlans: []metalv1.VirtualNetwork{{Vxlan: metalv1.PtrInt32(987), MetroCode: metalv1.PtrString("skip")}, {Vxlan: metalv1.PtrInt32(123), MetroCode: metalv1.PtrString("met")}, {Vxlan: metalv1.PtrInt32(456), MetroCode: metalv1.PtrString("nope")}},
 				metro: "met",
 			},
-			want:    &metalv1.VirtualNetwork{Vxlan: metalv1.PtrInt32(123), FacilityCode: "fac", MetroCode: metalv1.PtrString("met")},
+			want:    &metalv1.VirtualNetwork{Vxlan: metalv1.PtrInt32(123), MetroCode: metalv1.PtrString("met")},
 			wantErr: false,
 		},
 		{
