@@ -1,6 +1,6 @@
 module github.com/equinix/terraform-provider-equinix
 
-go 1.20
+go 1.21
 
 require (
 	github.com/antihax/optional v1.0.0
