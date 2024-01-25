@@ -136,7 +136,7 @@ jobs:
           go tool cover -html=./coverage_pnfv.txt -o ./coverage_pnfv.html
 
       - name: Upload HTML Coverage Report for PNFV
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         with:
           name: Fabric PNFV Coverage Report
           path: ./coverage_pnfv.html
@@ -209,7 +209,7 @@ jobs:
           go tool cover -html=./coverage_pfcr.txt -o ./coverage_pfcr.html
 
       - name: Upload HTML Coverage Report for PFCR
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         with:
           name: Fabric PFCR Coverage Report
           path: ./coverage_pfcr.html
