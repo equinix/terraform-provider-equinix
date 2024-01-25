@@ -1,4 +1,4 @@
-package equinix
+package vlan
 
 import (
 	"errors"
@@ -14,7 +14,7 @@ import (
 	"github.com/packethost/packngo"
 )
 
-func resourceMetalVlan() *schema.Resource {
+func Resource() *schema.Resource {
 	return &schema.Resource{
 		Create: resourceMetalVlanCreate,
 		Read:   resourceMetalVlanRead,

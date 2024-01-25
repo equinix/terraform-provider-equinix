@@ -1,4 +1,4 @@
-package equinix
+package vlan
 
 import (
 	"fmt"
@@ -14,7 +14,7 @@ import (
 	"github.com/packethost/packngo"
 )
 
-func dataSourceMetalVlan() *schema.Resource {
+func DataSource() *schema.Resource {
 	return &schema.Resource{
 		Read: dataSourceMetalVlanRead,
 		Importer: &schema.ResourceImporter{
@@ -111,7 +111,7 @@ func dataSourceMetalVlanRead(d *schema.ResourceData, meta interface{}) error {
 			return equinix_errors.FriendlyError(err)
 		}
 
-		vlan, err = matchingVlan(vlans.VirtualNetworks, vxlan, projectID, facility, metro)
+		vlan, err = MatchingVlan(vlans.VirtualNetworks, vxlan, projectID, facility, metro)
 		if err != nil {
 			return equinix_errors.FriendlyError(err)
 		}
@@ -132,28 +132,4 @@ func dataSourceMetalVlanRead(d *schema.ResourceData, meta interface{}) error {
 		"metro":       vlan.MetroCode,
 		"description": vlan.Description,
 	})
-}
-
-func matchingVlan(vlans []packngo.VirtualNetwork, vxlan int, projectID, facility, metro string) (*packngo.VirtualNetwork, error) {
-	matches := []packngo.VirtualNetwork{}
-	for _, v := range vlans {
-		if vxlan != 0 && v.VXLAN != vxlan {
-			continue
-		}
-		if facility != "" && v.FacilityCode != facility {
-			continue
-		}
-		if metro != "" && v.MetroCode != metro {
-			continue
-		}
-		matches = append(matches, v)
-	}
-	if len(matches) > 1 {
-		return nil, equinix_errors.FriendlyError(fmt.Errorf("Project %s has more than one matching VLAN", projectID))
-	}
-
-	if len(matches) == 0 {
-		return nil, equinix_errors.FriendlyError(fmt.Errorf("Project %s does not have matching VLANs", projectID))
-	}
-	return &matches[0], nil
 }
