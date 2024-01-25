@@ -5,11 +5,12 @@ import (
 	"fmt"
 	"testing"
 
+	v4 "github.com/equinix-labs/fabric-go/fabric/v4"
+
 	"github.com/equinix/terraform-provider-equinix/equinix"
 	"github.com/equinix/terraform-provider-equinix/internal/acceptance"
 	"github.com/equinix/terraform-provider-equinix/internal/config"
 
-	v4 "github.com/equinix-labs/fabric-go/fabric/v4"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 )
@@ -25,30 +26,106 @@ func testSweepCloudRouters(region string) error {
 	return nil
 }
 
-func TestAccCloudRouterCreate(t *testing.T) {
+func TestAccCloudRouterCreateOnlyRequiredParameters_PFCR(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { acceptance.TestAccPreCheck(t) },
 		Providers:    acceptance.TestAccProviders,
 		CheckDestroy: checkCloudRouterDelete,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCloudRouterCreateConfig("fg_tf_acc_test"),
+				Config: testAccCloudRouterCreateOnlyRequiredParameterConfig("fcr_tf_acc_test"),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(
-						"equinix_fabric_cloud_router.test", "name", "fg_tf_acc_test"),
+						"equinix_fabric_cloud_router.test", "name", "fcr_tf_acc_test"),
 				),
 				ExpectNonEmptyPlan: false,
 			},
 			{
-				Config: testAccCloudRouterCreateConfig("fg_tf_acc_update"),
+				Config: testAccCloudRouterCreateOnlyRequiredParameterConfig("fcr_tf_acc_update"),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(
-						"equinix_fabric_cloud_router.test", "name", "fg_tf_acc_update"),
+						"equinix_fabric_cloud_router.test", "name", "fcr_tf_acc_update"),
 				),
 				ExpectNonEmptyPlan: false,
 			},
 		},
 	})
+}
+
+func testAccCloudRouterCreateOnlyRequiredParameterConfig(name string) string {
+	return fmt.Sprintf(`resource "equinix_fabric_cloud_router" "test"{
+		type = "XF_ROUTER"
+		name = "%s"
+		location{
+			metro_code  = "SV"
+		}
+		package{
+			code = "LAB"
+		}
+		order{
+			purchase_order_number = "1-234567"
+		}
+		notifications{
+			type = "ALL"
+			emails = [
+				"test@equinix.com",
+				"test1@equinix.com"
+			]
+		}
+		project{
+			project_id = "291639000636552"
+		}
+		account {
+			account_number = 201257
+		}
+	}`, name)
+}
+
+func TestAccCloudRouterCreateMixedParameters_PFCR(t *testing.T) {
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:     func() { acceptance.TestAccPreCheck(t) },
+		Providers:    acceptance.TestAccProviders,
+		CheckDestroy: checkCloudRouterDelete,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCloudRouterCreateMixedParameterConfig(),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(
+						"equinix_fabric_cloud_router.example", "name", "fcr_acc_test"),
+				),
+			},
+		},
+	})
+}
+func testAccCloudRouterCreateMixedParameterConfig() string {
+	return fmt.Sprintf(`resource "equinix_fabric_cloud_router" "example"{
+		type = "XF_ROUTER"
+		name = "fcr_acc_test"
+		location{
+			region      = "AMER"
+			metro_code  = "SV"
+			metro_name = "Silicon Valley"
+		}
+		package{
+			code = "STANDARD"
+		}
+		order{
+			purchase_order_number = "1-234567"
+		}
+		notifications{
+			type = "ALL"
+			emails = [
+				"test@equinix.com",
+				"test1@equinix.com"
+					]
+		}
+		project{
+			project_id = "291639000636552"
+		}
+		account {
+			account_number = 201257
+		}
+	}`)
 }
 
 func checkCloudRouterDelete(s *terraform.State) error {
@@ -64,55 +141,4 @@ func checkCloudRouterDelete(s *terraform.State) error {
 		}
 	}
 	return nil
-}
-
-func testAccCloudRouterCreateConfig(name string) string {
-	return fmt.Sprintf(`resource "equinix_fabric_cloud_router" "test"{
-			type = "XF_GATEWAY"
-			name = "%s"
-			location{
-			  metro_code  = "SV"
-			}
-			package{
-				code = "PRO"
-			}
-			order{
-				purchase_order_number = "1-234567"
-			}
-			notifications{
-				type = "ALL"
-				emails = [
-					"test@equinix.com",
-					"test1@equinix.com"
-				]
-			}
-			project{
-				project_id = "776847000642406"
-			}
-			account {
-				account_number = 203612
-			}
-		}`, name)
-}
-
-func TestAccCloudRouterRead(t *testing.T) {
-	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:  func() { acceptance.TestAccPreCheck(t) },
-		Providers: acceptance.TestAccProviders,
-		Steps: []resource.TestStep{
-			{
-				Config: testAccCloudRouterReadConfig(),
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr(
-						"equinix_fabric_cloud_router.test", "name", "fcr_tf_acc_test"),
-				),
-			},
-		},
-	})
-}
-
-func testAccCloudRouterReadConfig() string {
-	return `data "equinix_fabric_cloud_router" "test" {
-		uuid = "3e91216d-526a-45d2-9029-0c8c8ba48b60"
-	}`
 }
