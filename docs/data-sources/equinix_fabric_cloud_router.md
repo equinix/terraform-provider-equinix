@@ -25,15 +25,16 @@ data "equinix_fabric_cloud_router" "cloud_router_data_name" {
 
 ### Optional
 
+- `project` (Block Set) Project information (see [below for nested schema](#nestedblock--project))
 - `uuid` (String) Equinix-assigned Fabric Cloud Router identifier
 
 ### Read-Only
 
 - `account` (Set of Object) Customer account information that is associated with this Fabric Cloud Router (see [below for nested schema](#nestedatt--account))
-- `bgp_ipv4_routes_count` (Number)
-- `bgp_ipv6_routes_count` (Number)
+- `bgp_ipv4_routes_count` (Number) Access point used and maximum number of IPv4 BGP routes
+- `bgp_ipv6_routes_count` (Number) Access point used and maximum number of IPv6 BGP routes
 - `change_log` (Set of Object) Captures Fabric Cloud Router lifecycle change information (see [below for nested schema](#nestedatt--change_log))
-- `connections_count` (Number)
+- `connections_count` (Number) Number of connections associated with this Access point
 - `description` (String) Customer-provided Fabric Cloud Router description
 - `equinix_asn` (Number) Equinix ASN
 - `href` (String) Fabric Cloud Router URI information
@@ -43,9 +44,20 @@ data "equinix_fabric_cloud_router" "cloud_router_data_name" {
 - `notifications` (List of Object) Preferences for notifications on Fabric Cloud Router configuration or status changes (see [below for nested schema](#nestedatt--notifications))
 - `order` (Set of Object) Order information related to this Fabric Cloud Router (see [below for nested schema](#nestedatt--order))
 - `package` (Set of Object) Fabric Cloud Router package information (see [below for nested schema](#nestedatt--package))
-- `project` (Block Set) Project information (see [below for nested schema](#nestedblock--project))
 - `state` (String) Fabric Cloud Router overall state
 - `type` (String) Defines the Fabric Cloud Router type like XF_GATEWAY
+
+<a id="nestedblock--project"></a>
+### Nested Schema for `project`
+
+Optional:
+
+- `project_id` (String) Project Id
+
+Read-Only:
+
+- `href` (String) Unique Resource URL
+
 
 <a id="nestedatt--account"></a>
 ### Nested Schema for `account`
@@ -85,7 +97,6 @@ Read-Only:
 
 Read-Only:
 
-- `href` (String)
 - `ibx` (String)
 - `metro_code` (String)
 - `metro_name` (String)
@@ -119,14 +130,3 @@ Read-Only:
 Read-Only:
 
 - `code` (String)
-
-
-<a id="nestedblock--project"></a>
-### Nested Schema for `project`
-
-Read-Only:
-
-- `href` (String) Unique Resource URL
-- `project_id` (String) Project Id
-
-

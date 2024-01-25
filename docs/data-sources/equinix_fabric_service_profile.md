@@ -226,5 +226,3 @@ Read-Only:
 
 - `href` (String)
 - `project_id` (String)
-
-
