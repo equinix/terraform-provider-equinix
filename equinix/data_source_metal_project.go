@@ -1,20 +1,22 @@
 package equinix
 
 import (
+	"context"
 	"fmt"
 	"path"
+	"time"
 
 	"github.com/equinix/terraform-provider-equinix/internal/config"
-	equinix_errors "github.com/equinix/terraform-provider-equinix/internal/errors"
 
+	"github.com/equinix/equinix-sdk-go/services/metalv1"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
-	"github.com/packethost/packngo"
 )
 
 func dataSourceMetalProject() *schema.Resource {
 	return &schema.Resource{
-		Read: dataSourceMetalProjectRead,
+		ReadWithoutTimeout: dataSourceMetalProjectRead,
 		Schema: map[string]*schema.Schema{
 			"name": {
 				Type:          schema.TypeString,
@@ -106,70 +108,69 @@ func dataSourceMetalProject() *schema.Resource {
 	}
 }
 
-func dataSourceMetalProjectRead(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*config.Config).Metal
+func dataSourceMetalProjectRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	client := meta.(*config.Config).Metalgo
 	nameRaw, nameOK := d.GetOk("name")
 	projectIdRaw, projectIdOK := d.GetOk("project_id")
 
 	if !projectIdOK && !nameOK {
-		return fmt.Errorf("you must supply project_id or name")
+		return diag.Errorf("you must supply project_id or name")
 	}
-	var project *packngo.Project
+	var project *metalv1.Project
 
 	if nameOK {
 		name := nameRaw.(string)
 
-		os, _, err := client.Projects.List(nil)
+		os, _, err := client.ProjectsApi.FindProjects(ctx).Execute()
 		if err != nil {
-			return err
+			return diag.FromErr(err)
 		}
 
 		project, err = findProjectByName(os, name)
 		if err != nil {
-			return err
+			return diag.FromErr(err)
 		}
 	} else {
 		projectId := projectIdRaw.(string)
 		var err error
-		project, _, err = client.Projects.Get(projectId, nil)
+		project, _, err = client.ProjectsApi.FindProjectById(ctx, projectId).Execute()
 		if err != nil {
-			return err
+			return diag.FromErr(err)
 		}
 	}
 
-	d.SetId(project.ID)
-	d.Set("payment_method_id", path.Base(project.PaymentMethod.URL))
-	d.Set("name", project.Name)
-	d.Set("project_id", project.ID)
-	d.Set("organization_id", path.Base(project.Organization.URL))
-	d.Set("created", project.Created)
-	d.Set("updated", project.Updated)
-	d.Set("backend_transfer", project.BackendTransfer)
+	d.SetId(project.GetId())
+	d.Set("payment_method_id", path.Base(project.PaymentMethod.GetHref()))
+	d.Set("name", project.GetName())
+	d.Set("project_id", project.GetId())
+	d.Set("organization_id", path.Base(project.Organization.GetId())) // Should be gethref?
+	d.Set("created", project.GetCreatedAt().Format(time.RFC3339))
+	d.Set("updated", project.GetUpdatedAt().Format(time.RFC3339))
+	d.Set("backend_transfer", project.AdditionalProperties["backend_transfer_enabled"].(bool)) // No backend_transfer_enabled property in API spec
 
-	bgpConf, _, err := client.BGPConfig.Get(project.ID, nil)
+	bgpConf, _, err := client.BGPApi.FindBgpConfigByProject(ctx, project.GetId()).Execute()
 	userIds := []string{}
-	for _, u := range project.Users {
-		userIds = append(userIds, path.Base(u.URL))
+	for _, u := range project.GetMembers() {
+		userIds = append(userIds, path.Base(u.GetHref()))
 	}
 	d.Set("user_ids", userIds)
 
 	if (err == nil) && (bgpConf != nil) {
 		// guard against an empty struct
-		if bgpConf.ID != "" {
+		if bgpConf.GetId() != "" {
 			err := d.Set("bgp_config", flattenBGPConfig(bgpConf))
 			if err != nil {
-				err = equinix_errors.FriendlyError(err)
-				return err
+				return diag.FromErr(err)
 			}
 		}
 	}
 	return nil
 }
 
-func findProjectByName(ps []packngo.Project, name string) (*packngo.Project, error) {
-	results := make([]packngo.Project, 0)
-	for _, p := range ps {
-		if p.Name == name {
+func findProjectByName(ps *metalv1.ProjectList, name string) (*metalv1.Project, error) {
+	results := make([]metalv1.Project, 0)
+	for _, p := range ps.Projects {
+		if p.GetName() == name {
 			results = append(results, p)
 		}
 	}

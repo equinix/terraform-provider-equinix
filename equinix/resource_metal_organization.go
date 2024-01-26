@@ -174,7 +174,7 @@ func resourceMetalOrganizationUpdate(d *schema.ResourceData, meta interface{}) e
 	meta.(*config.Config).AddModuleToMetalUserAgent(d)
 	client := meta.(*config.Config).Metal
 
-	changes := getResourceDataChangedKeys([]string{"name", "description", "website", "twitter", "logo", "address"}, d)
+	changes := equinix_schema.GetResourceDataChangedKeys([]string{"name", "description", "website", "twitter", "logo", "address"}, d)
 	updateRequest := &packngo.OrganizationUpdateRequest{}
 	for change, changeValue := range changes {
 		switch change {

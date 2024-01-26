@@ -10,23 +10,25 @@ import (
 	"reflect"
 	"regexp"
 	"sort"
+	"strings"
 	"time"
 
 	"golang.org/x/exp/slices"
 
 	"github.com/equinix/terraform-provider-equinix/internal/converters"
+	"github.com/equinix/terraform-provider-equinix/internal/network"
 
 	equinix_errors "github.com/equinix/terraform-provider-equinix/internal/errors"
 
 	"github.com/equinix/terraform-provider-equinix/internal/config"
 
+	"github.com/equinix/equinix-sdk-go/services/metalv1"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/structure"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
-	"github.com/packethost/packngo"
 )
 
 var (
@@ -131,8 +133,32 @@ func resourceMetalDevice() *schema.Resource {
 				Type:        schema.TypeList,
 				Description: "A list of IP address types for the device (structure is documented below)",
 				Optional:    true,
-				Elem:        ipAddressSchema(),
-				MinItems:    1,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"type": {
+							Type:         schema.TypeString,
+							Required:     true,
+							ValidateFunc: validation.StringInSlice(ipAddressTypes, false),
+							Description:  fmt.Sprintf("one of %s", strings.Join(ipAddressTypes, ",")),
+						},
+						"cidr": {
+							Type:        schema.TypeInt,
+							Optional:    true,
+							Description: "CIDR suffix for IP block assigned to this device",
+						},
+						"reservation_ids": {
+							Type:        schema.TypeList,
+							Optional:    true,
+							Description: "IDs of reservations to pick the blocks from",
+							MinItems:    1,
+							Elem: &schema.Schema{
+								Type:         schema.TypeString,
+								ValidateFunc: validation.IsUUID,
+							},
+						},
+					},
+				},
+				MinItems: 1,
 			},
 			"plan": {
 				Type:        schema.TypeString,
@@ -160,7 +186,8 @@ func resourceMetalDevice() *schema.Resource {
 			},
 			"locked": {
 				Type:        schema.TypeBool,
-				Description: "Whether the device is locked",
+				Description: "Whether the device is locked or unlocked. Locking a device prevents you from deleting or reinstalling the device or performing a firmware update on the device, and it prevents an instance with a termination time set from being reclaimed, even if the termination time was reached",
+				Optional:    true,
 				Computed:    true,
 			},
 			"access_public_ipv6": {
@@ -180,7 +207,7 @@ func resourceMetalDevice() *schema.Resource {
 			},
 			"network_type": {
 				Type:        schema.TypeString,
-				Description: "Network type of a device, used in [Layer 2 networking](https://metal.equinix.com/developers/docs/networking/layer2/). Will be one of " + NetworkTypeListHB,
+				Description: "Network type of a device, used in [Layer 2 networking](https://metal.equinix.com/developers/docs/networking/layer2/). Will be one of " + network.NetworkTypeListHB,
 				Computed:    true,
 				Deprecated:  "You should handle Network Type with one of 'equinix_metal_port' or 'equinix_metal_device_network_type' resources. See section 'Guides' for more info",
 			},
@@ -482,24 +509,10 @@ func reinstallDisabledAndNoChangesAllowed(attribute string) customdiff.ResourceC
 }
 
 func resourceMetalDeviceCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	meta.(*config.Config).AddModuleToMetalUserAgent(d)
-	client := meta.(*config.Config).Metal
+	meta.(*config.Config).AddModuleToMetalGoUserAgent(d)
+	client := meta.(*config.Config).Metalgo
 
-	var addressTypesSlice []packngo.IPAddressCreateRequest
-	_, ok := d.GetOk("ip_address")
-	if ok {
-		arr := d.Get("ip_address").([]interface{})
-		addressTypesSlice = getNewIPAddressSlice(arr)
-	}
-
-	createRequest := &packngo.DeviceCreateRequest{
-		Hostname:     d.Get("hostname").(string),
-		Plan:         d.Get("plan").(string),
-		IPAddresses:  addressTypesSlice,
-		OS:           d.Get("operating_system").(string),
-		BillingCycle: d.Get("billing_cycle").(string),
-		ProjectID:    d.Get("project_id").(string),
-	}
+	createRequest := metalv1.CreateDeviceRequest{}
 
 	facsRaw, facsOk := d.GetOk("facilities")
 	metroRaw, metroOk := d.GetOk("metro")
@@ -509,106 +522,43 @@ func resourceMetalDeviceCreate(ctx context.Context, d *schema.ResourceData, meta
 	}
 
 	if facsOk {
-		createRequest.Facility = converters.IfArrToStringArr(facsRaw.([]interface{}))
+		facilityRequest := &metalv1.DeviceCreateInFacilityInput{
+			Facility: converters.IfArrToStringArr(facsRaw.([]interface{})),
+		}
+
+		diagErr := setupDeviceCreateRequest(d, facilityRequest)
+		if diagErr != nil {
+			return diagErr
+		}
+
+		createRequest.DeviceCreateInFacilityInput = facilityRequest
 	}
 
 	if metroOk {
-		createRequest.Metro = metroRaw.(string)
-	}
-
-	if attr, ok := d.GetOk("user_data"); ok {
-		createRequest.UserData = attr.(string)
-	}
-
-	if attr, ok := d.GetOk("custom_data"); ok {
-		createRequest.CustomData = attr.(string)
-	}
-
-	if attr, ok := d.GetOk("ipxe_script_url"); ok {
-		createRequest.IPXEScriptURL = attr.(string)
-	}
-
-	if attr, ok := d.GetOk("termination_time"); ok {
-		tt, err := time.ParseInLocation(time.RFC3339, attr.(string), time.UTC)
-		if err != nil {
-			return diag.FromErr(err)
-		}
-		createRequest.TerminationTime = &packngo.Timestamp{Time: tt}
-	}
-
-	if attr, ok := d.GetOk("hardware_reservation_id"); ok {
-		createRequest.HardwareReservationID = attr.(string)
-	} else {
-		wfrd := "wait_for_reservation_deprovision"
-		if d.Get(wfrd).(bool) {
-			return diag.FromErr(equinix_errors.FriendlyError(fmt.Errorf("You can't set %s when not using a hardware reservation", wfrd)))
-		}
-	}
-
-	if createRequest.OS == "custom_ipxe" {
-		if createRequest.IPXEScriptURL == "" && createRequest.UserData == "" {
-			return diag.FromErr(equinix_errors.FriendlyError(errors.New("\"ipxe_script_url\" or \"user_data\"" +
-				" must be provided when \"custom_ipxe\" OS is selected.")))
+		metroRequest := &metalv1.DeviceCreateInMetroInput{
+			Metro: metroRaw.(string),
 		}
 
-		// ipxe_script_url + user_data is OK, unless user_data is an ipxe script in
-		// which case it's an error.
-		if createRequest.IPXEScriptURL != "" {
-			if matchIPXEScript.MatchString(createRequest.UserData) {
-				return diag.Errorf("\"user_data\" should not be an iPXE " +
-					"script when \"ipxe_script_url\" is also provided.")
-			}
+		diagErr := setupDeviceCreateRequest(d, metroRequest)
+		if diagErr != nil {
+			return diagErr
 		}
-	}
 
-	if createRequest.OS != "custom_ipxe" && createRequest.IPXEScriptURL != "" {
-		return diag.Errorf("\"ipxe_script_url\" argument provided, but" +
-			" OS is not \"custom_ipxe\". Please verify and fix device arguments.")
-	}
-
-	if attr, ok := d.GetOk("always_pxe"); ok {
-		createRequest.AlwaysPXE = attr.(bool)
-	}
-
-	projectKeys := d.Get("project_ssh_key_ids.#").(int)
-	if projectKeys > 0 {
-		createRequest.ProjectSSHKeys = converters.IfArrToStringArr(d.Get("project_ssh_key_ids").([]interface{}))
-	}
-
-	userKeys := d.Get("user_ssh_key_ids.#").(int)
-	if userKeys > 0 {
-		createRequest.UserSSHKeys = converters.IfArrToStringArr(d.Get("user_ssh_key_ids").([]interface{}))
-	}
-
-	tags := d.Get("tags.#").(int)
-	if tags > 0 {
-		createRequest.Tags = converters.IfArrToStringArr(d.Get("tags").([]interface{}))
-	}
-
-	if attr, ok := d.GetOk("storage"); ok {
-		s, err := structure.NormalizeJsonString(attr.(string))
-		if err != nil {
-			return diag.Errorf("storage param contains invalid JSON: %s", err)
-		}
-		var cpr packngo.CPR
-		err = json.Unmarshal([]byte(s), &cpr)
-		if err != nil {
-			return diag.Errorf("error parsing Storage string: %s", err)
-		}
-		createRequest.Storage = &cpr
+		createRequest.DeviceCreateInMetroInput = metroRequest
 	}
 
 	start := time.Now()
-	newDevice, _, err := client.Devices.Create(createRequest)
+	projectID := d.Get("project_id").(string)
+	newDevice, _, err := client.DevicesApi.CreateDevice(ctx, projectID).CreateDeviceRequest(createRequest).Execute()
 	if err != nil {
 		retErr := equinix_errors.FriendlyError(err)
 		if equinix_errors.IsNotFound(retErr) {
-			retErr = fmt.Errorf("%s, make sure project \"%s\" exists", retErr, createRequest.ProjectID)
+			retErr = fmt.Errorf("%s, make sure project \"%s\" exists", retErr, projectID)
 		}
 		return diag.FromErr(retErr)
 	}
 
-	d.SetId(newDevice.ID)
+	d.SetId(newDevice.GetId())
 
 	createTimeout := d.Timeout(schema.TimeoutCreate) - 30*time.Second - time.Since(start)
 	if err = waitForActiveDevice(ctx, d, meta, createTimeout); err != nil {
@@ -726,21 +676,14 @@ func resourceMetalDeviceRead(ctx context.Context, d *schema.ResourceData, meta i
 }
 
 func resourceMetalDeviceUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	meta.(*config.Config).AddModuleToMetalUserAgent(d)
-	client := meta.(*config.Config).Metal
+	meta.(*config.Config).AddModuleToMetalGoUserAgent(d)
+	client := meta.(*config.Config).Metalgo
+
+	ur := metalv1.DeviceUpdateInput{}
 
 	if d.HasChange("locked") {
-		var action func(string) (*packngo.Response, error)
-		if d.Get("locked").(bool) {
-			action = client.Devices.Lock
-		} else {
-			action = client.Devices.Unlock
-		}
-		if _, err := action(d.Id()); err != nil {
-			return diag.FromErr(equinix_errors.FriendlyError(err))
-		}
+		ur.Locked = metalv1.PtrBool(d.Get("locked").(bool))
 	}
-	ur := packngo.DeviceUpdateRequest{}
 
 	if d.HasChange("description") {
 		dDesc := d.Get("description").(string)
@@ -748,11 +691,15 @@ func resourceMetalDeviceUpdate(ctx context.Context, d *schema.ResourceData, meta
 	}
 	if d.HasChange("user_data") {
 		dUserData := d.Get("user_data").(string)
-		ur.UserData = &dUserData
+		ur.Userdata = &dUserData
 	}
 	if d.HasChange("custom_data") {
-		dCustomData := d.Get("custom_data").(string)
-		ur.CustomData = &dCustomData
+		var customdata map[string]interface{}
+		err := json.Unmarshal([]byte(d.Get("custom_data").(string)), &customdata)
+		if err != nil {
+			return diag.Errorf("error reading custom_data from state: %v", err)
+		}
+		ur.Customdata = customdata
 	}
 	if d.HasChange("hostname") {
 		dHostname := d.Get("hostname").(string)
@@ -767,23 +714,23 @@ func resourceMetalDeviceUpdate(ctx context.Context, d *schema.ResourceData, meta
 			for _, v := range ts.([]interface{}) {
 				sts = append(sts, v.(string))
 			}
-			ur.Tags = &sts
+			ur.Tags = sts
 		default:
 			return diag.Errorf("garbage in tags: %s", ts)
 		}
 	}
 	if d.HasChange("ipxe_script_url") {
 		dUrl := d.Get("ipxe_script_url").(string)
-		ur.IPXEScriptURL = &dUrl
+		ur.IpxeScriptUrl = &dUrl
 	}
 	if d.HasChange("always_pxe") {
 		dPXE := d.Get("always_pxe").(bool)
-		ur.AlwaysPXE = &dPXE
+		ur.AlwaysPxe = &dPXE
 	}
 
 	start := time.Now()
-	if !reflect.DeepEqual(ur, packngo.DeviceUpdateRequest{}) {
-		if _, _, err := client.Devices.Update(d.Id(), &ur); err != nil {
+	if !reflect.DeepEqual(ur, metalv1.DeviceUpdateInput{}) {
+		if _, _, err := client.DevicesApi.UpdateDevice(ctx, d.Id()).DeviceUpdateInput(ur).Execute(); err != nil {
 			return diag.FromErr(equinix_errors.FriendlyError(err))
 		}
 	}
@@ -795,7 +742,7 @@ func resourceMetalDeviceUpdate(ctx context.Context, d *schema.ResourceData, meta
 	return resourceMetalDeviceRead(ctx, d, meta)
 }
 
-func doReinstall(ctx context.Context, client *packngo.Client, d *schema.ResourceData, meta interface{}, start time.Time) error {
+func doReinstall(ctx context.Context, client *metalv1.APIClient, d *schema.ResourceData, meta interface{}, start time.Time) error {
 	if d.HasChange("operating_system") || d.HasChange("user_data") || d.HasChange("custom_data") {
 		reinstall, ok := d.GetOk("reinstall")
 
@@ -813,13 +760,14 @@ func doReinstall(ctx context.Context, client *packngo.Client, d *schema.Resource
 			return nil
 		}
 
-		reinstallOptions := packngo.DeviceReinstallFields{
-			OperatingSystem: d.Get("operating_system").(string),
-			PreserveData:    reinstall_config["preserve_data"].(bool),
-			DeprovisionFast: reinstall_config["deprovision_fast"].(bool),
+		reinstallOptions := metalv1.DeviceActionInput{
+			Type:            metalv1.DEVICEACTIONINPUTTYPE_REINSTALL,
+			OperatingSystem: metalv1.PtrString(d.Get("operating_system").(string)),
+			PreserveData:    metalv1.PtrBool(reinstall_config["preserve_data"].(bool)),
+			DeprovisionFast: metalv1.PtrBool(reinstall_config["deprovision_fast"].(bool)),
 		}
 
-		if _, err := client.Devices.Reinstall(d.Id(), &reinstallOptions); err != nil {
+		if _, err := client.DevicesApi.PerformAction(ctx, d.Id()).DeviceActionInput(reinstallOptions).Execute(); err != nil {
 			return equinix_errors.FriendlyError(err)
 		}
 
@@ -833,8 +781,8 @@ func doReinstall(ctx context.Context, client *packngo.Client, d *schema.Resource
 }
 
 func resourceMetalDeviceDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	meta.(*config.Config).AddModuleToMetalUserAgent(d)
-	client := meta.(*config.Config).Metal
+	meta.(*config.Config).AddModuleToMetalGoUserAgent(d)
+	client := meta.(*config.Config).Metalgo
 
 	fdvIf, fdvOk := d.GetOk("force_detach_volumes")
 	fdv := false
@@ -844,8 +792,8 @@ func resourceMetalDeviceDelete(ctx context.Context, d *schema.ResourceData, meta
 
 	start := time.Now()
 
-	resp, err := client.Devices.Delete(d.Id(), fdv)
-	if equinix_errors.IgnoreResponseErrors(equinix_errors.HttpForbidden, equinix_errors.HttpNotFound)(resp, err) != nil {
+	resp, err := client.DevicesApi.DeleteDevice(ctx, d.Id()).ForceDelete(fdv).Execute()
+	if equinix_errors.IgnoreHttpResponseErrors(equinix_errors.HttpForbidden, equinix_errors.HttpNotFound)(resp, err) != nil {
 		return diag.FromErr(equinix_errors.FriendlyError(err))
 	}
 
@@ -873,12 +821,12 @@ func waitForActiveDevice(ctx context.Context, d *schema.ResourceData, meta inter
 		Pending: pending,
 		Target:  targets,
 		Refresh: func() (interface{}, string, error) {
-			meta.(*config.Config).AddModuleToMetalUserAgent(d)
-			client := meta.(*config.Config).Metal
+			meta.(*config.Config).AddModuleToMetalGoUserAgent(d)
+			client := meta.(*config.Config).Metalgo
 
-			device, _, err := client.Devices.Get(d.Id(), &packngo.GetOptions{Includes: []string{"project"}})
+			device, _, err := client.DevicesApi.FindDeviceById(ctx, d.Id()).Include([]string{"project"}).Execute()
 			if err == nil {
-				retAttrVal := device.State
+				retAttrVal := fmt.Sprint(device.GetState())
 				return retAttrVal, retAttrVal, nil
 			}
 			return "error", "error", err
@@ -907,4 +855,177 @@ func waitForActiveDevice(ctx context.Context, d *schema.ResourceData, meta inter
 	}
 
 	return nil
+}
+
+type deviceCreateRequest interface {
+	SetUserdata(string)
+	GetUserdata() string
+	SetCustomdata(map[string]interface{})
+	SetAlwaysPxe(bool)
+	SetIpxeScriptUrl(string)
+	GetIpxeScriptUrl() string
+	SetTerminationTime(time.Time)
+	SetHardwareReservationId(string)
+	SetBillingCycle(metalv1.DeviceCreateInputBillingCycle)
+	GetOperatingSystem() string
+	SetProjectSshKeys([]string)
+	SetUserSshKeys([]string)
+	SetTags([]string)
+	SetStorage(metalv1.Storage)
+	SetHostname(string)
+	SetPlan(string)
+	SetOperatingSystem(string)
+	SetIpAddresses([]metalv1.IPAddress)
+	SetLocked(bool)
+}
+
+func setupDeviceCreateRequest(d *schema.ResourceData, createRequest deviceCreateRequest) diag.Diagnostics {
+	var addressTypesSlice []metalv1.IPAddress
+	_, ok := d.GetOk("ip_address")
+	if ok {
+		arr := d.Get("ip_address").([]interface{})
+
+		addressTypesSlice = getNewIPAddressSlice(arr)
+	}
+
+	if hostname, ok := d.GetOk("hostname"); ok {
+		createRequest.SetHostname(hostname.(string))
+	}
+
+	createRequest.SetPlan(d.Get("plan").(string))
+	createRequest.SetIpAddresses(addressTypesSlice)
+	createRequest.SetOperatingSystem(d.Get("operating_system").(string))
+
+	if rawBillingCycle, ok := d.GetOk("billing_cycle"); ok {
+		billingCycle, err := metalv1.NewDeviceCreateInputBillingCycleFromValue(rawBillingCycle.(string))
+		if err != nil {
+			return diag.Errorf("unknown billing cycle: %v", err)
+		}
+
+		createRequest.SetBillingCycle(*billingCycle)
+	}
+
+	if attr, ok := d.GetOk("user_data"); ok {
+		createRequest.SetUserdata(attr.(string))
+	}
+
+	if attr, ok := d.GetOk("custom_data"); ok {
+		var customdata map[string]interface{}
+		err := json.Unmarshal([]byte(attr.(string)), &customdata)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+		createRequest.SetCustomdata(customdata)
+	}
+
+	if attr, ok := d.GetOk("ipxe_script_url"); ok {
+		createRequest.SetIpxeScriptUrl(attr.(string))
+	}
+
+	if attr, ok := d.GetOk("termination_time"); ok {
+		tt, err := time.ParseInLocation(time.RFC3339, attr.(string), time.UTC)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+		createRequest.SetTerminationTime(tt)
+	}
+
+	if attr, ok := d.GetOk("hardware_reservation_id"); ok {
+		createRequest.SetHardwareReservationId(attr.(string))
+	} else {
+		wfrd := "wait_for_reservation_deprovision"
+		if d.Get(wfrd).(bool) {
+			return diag.Errorf("You can't set %s when not using a hardware reservation", wfrd)
+		}
+	}
+
+	if attr, ok := d.GetOk("locked"); ok {
+		createRequest.SetLocked(attr.(bool))
+	}
+
+	if createRequest.GetOperatingSystem() == "custom_ipxe" {
+		if createRequest.GetIpxeScriptUrl() == "" && createRequest.GetUserdata() == "" {
+			return diag.Errorf("\"ipxe_script_url\" or \"user_data\"" +
+				" must be provided when \"custom_ipxe\" OS is selected.")
+		}
+
+		// ipxe_script_url + user_data is OK, unless user_data is an ipxe script in
+		// which case it's an error.
+		if createRequest.GetIpxeScriptUrl() != "" {
+			if matchIPXEScript.MatchString(createRequest.GetUserdata()) {
+				return diag.Errorf("\"user_data\" should not be an iPXE " +
+					"script when \"ipxe_script_url\" is also provided.")
+			}
+		}
+	}
+
+	if createRequest.GetOperatingSystem() != "custom_ipxe" && createRequest.GetIpxeScriptUrl() != "" {
+		return diag.Errorf("\"ipxe_script_url\" argument provided, but" +
+			" OS is not \"custom_ipxe\". Please verify and fix device arguments.")
+	}
+
+	if attr, ok := d.GetOk("always_pxe"); ok {
+		createRequest.SetAlwaysPxe(attr.(bool))
+	}
+
+	projectKeys := d.Get("project_ssh_key_ids.#").(int)
+	if projectKeys > 0 {
+		createRequest.SetProjectSshKeys(converters.IfArrToStringArr(d.Get("project_ssh_key_ids").([]interface{})))
+	}
+
+	userKeys := d.Get("user_ssh_key_ids.#").(int)
+	if userKeys > 0 {
+		createRequest.SetUserSshKeys(converters.IfArrToStringArr(d.Get("user_ssh_key_ids").([]interface{})))
+	}
+
+	tags := d.Get("tags.#").(int)
+	if tags > 0 {
+		createRequest.SetTags(converters.IfArrToStringArr(d.Get("tags").([]interface{})))
+	}
+
+	if attr, ok := d.GetOk("storage"); ok {
+		s, err := structure.NormalizeJsonString(attr.(string))
+		if err != nil {
+			return diag.Errorf("storage param contains invalid JSON: %s", err)
+		}
+		var storage metalv1.Storage
+		err = json.Unmarshal([]byte(s), &storage)
+		if err != nil {
+			return diag.Errorf("error parsing Storage string: %s", err)
+		}
+		createRequest.SetStorage(storage)
+	}
+
+	return nil
+}
+
+func getNewIPAddressSlice(arr []interface{}) []metalv1.IPAddress {
+	addressTypesSlice := make([]metalv1.IPAddress, len(arr))
+
+	for i, m := range arr {
+		addressTypesSlice[i] = ifToIPCreateRequest(m)
+	}
+	return addressTypesSlice
+}
+
+func ifToIPCreateRequest(m interface{}) metalv1.IPAddress {
+	iacr := metalv1.IPAddress{}
+	ia := m.(map[string]interface{})
+	at := ia["type"].(string)
+	switch at {
+	case "public_ipv4":
+		iacr.SetAddressFamily(4)
+		iacr.SetPublic(true)
+	case "private_ipv4":
+		iacr.SetAddressFamily(4)
+		iacr.SetPublic(false)
+	case "public_ipv6":
+		iacr.SetAddressFamily(6)
+		iacr.SetPublic(true)
+	}
+	if cidr := ia["cidr"].(int); cidr > 0 {
+		iacr.SetCidr(int32(cidr))
+	}
+	iacr.SetIpReservations(converters.IfArrToStringArr(ia["reservation_ids"].([]interface{})))
+	return iacr
 }

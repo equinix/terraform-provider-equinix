@@ -3,10 +3,10 @@ package equinix
 import (
 	"context"
 	"fmt"
-	"reflect"
 	"strings"
 	"time"
 
+	"github.com/equinix/terraform-provider-equinix/internal/resources/metal/metal_connection"
 	"github.com/equinix/terraform-provider-equinix/internal/resources/metal/metal_project_ssh_key"
 	"github.com/equinix/terraform-provider-equinix/internal/resources/metal/metal_ssh_key"
 
@@ -16,22 +16,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 )
-
-var (
-	DeviceNetworkTypes   = []string{"layer3", "hybrid", "layer2-individual", "layer2-bonded"}
-	DeviceNetworkTypesHB = []string{"layer3", "hybrid", "hybrid-bonded", "layer2-individual", "layer2-bonded"}
-	NetworkTypeList      = strings.Join(DeviceNetworkTypes, ", ")
-	NetworkTypeListHB    = strings.Join(DeviceNetworkTypesHB, ", ")
-)
-
-// resourceDataProvider provies interface to schema.ResourceData
-// for convenient mocking purposes
-type resourceDataProvider interface {
-	Get(key string) interface{}
-	GetOk(key string) (interface{}, bool)
-	HasChange(key string) bool
-	GetChange(key string) (interface{}, interface{})
-}
 
 // Provider returns Equinix terraform *schema.Provider
 func Provider() *schema.Provider {
@@ -111,7 +95,7 @@ func Provider() *schema.Provider {
 			"equinix_metal_hardware_reservation": dataSourceMetalHardwareReservation(),
 			"equinix_metal_metro":                dataSourceMetalMetro(),
 			"equinix_metal_facility":             dataSourceMetalFacility(),
-			"equinix_metal_connection":           dataSourceMetalConnection(),
+			"equinix_metal_connection":           metal_connection.DataSource(),
 			"equinix_metal_gateway":              dataSourceMetalGateway(),
 			"equinix_metal_ip_block_ranges":      dataSourceMetalIPBlockRanges(),
 			"equinix_metal_precreated_ip_block":  dataSourceMetalPreCreatedIPBlock(),
@@ -148,7 +132,7 @@ func Provider() *schema.Provider {
 			"equinix_network_file":               resourceNetworkFile(),
 			"equinix_metal_user_api_key":         resourceMetalUserAPIKey(),
 			"equinix_metal_project_api_key":      resourceMetalProjectAPIKey(),
-			"equinix_metal_connection":           resourceMetalConnection(),
+			"equinix_metal_connection":           metal_connection.Resource(),
 			"equinix_metal_device":               resourceMetalDevice(),
 			"equinix_metal_device_network_type":  resourceMetalDeviceNetworkType(),
 			"equinix_metal_ssh_key":              metal_ssh_key.Resource(),
@@ -249,40 +233,6 @@ func isStringInSlice(needle string, hay []string) bool {
 	return false
 }
 
-func getResourceDataChangedKeys(keys []string, d resourceDataProvider) map[string]interface{} {
-	changed := make(map[string]interface{})
-	for _, key := range keys {
-		if v := d.Get(key); v != nil && d.HasChange(key) {
-			changed[key] = v
-		}
-	}
-	return changed
-}
-
-func getResourceDataListElementChanges(keys []string, listKeyName string, listIndex int, d resourceDataProvider) map[string]interface{} {
-	changed := make(map[string]interface{})
-	if !d.HasChange(listKeyName) {
-		return changed
-	}
-	old, new := d.GetChange(listKeyName)
-	oldList := old.([]interface{})
-	newList := new.([]interface{})
-	if len(oldList) < listIndex || len(newList) < listIndex {
-		return changed
-	}
-	return getMapChangedKeys(keys, oldList[listIndex].(map[string]interface{}), newList[listIndex].(map[string]interface{}))
-}
-
-func getMapChangedKeys(keys []string, old, new map[string]interface{}) map[string]interface{} {
-	changed := make(map[string]interface{})
-	for _, key := range keys {
-		if !reflect.DeepEqual(old[key], new[key]) {
-			changed[key] = new[key]
-		}
-	}
-	return changed
-}
-
 func isEmpty(v interface{}) bool {
 	switch v := v.(type) {
 	case int:
@@ -346,15 +296,4 @@ func slicesMatchCaseInsensitive(s1, s2 []string) bool {
 		}
 	}
 	return true
-}
-
-func schemaSetToMap(set *schema.Set) map[int]interface{} {
-	transformed := make(map[int]interface{})
-	if set != nil {
-		list := set.List()
-		for i := range list {
-			transformed[set.F(list[i])] = list[i]
-		}
-	}
-	return transformed
 }

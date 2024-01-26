@@ -375,7 +375,7 @@ func resourceCloudRouterUpdate(ctx context.Context, d *schema.ResourceData, meta
 
 func waitForCloudRouterUpdateCompletion(uuid string, meta interface{}, ctx context.Context) (v4.CloudRouter, error) {
 	log.Printf("Waiting for Cloud Router update to complete, uuid %s", uuid)
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Target: []string{string(v4.PROVISIONED_CloudRouterAccessPointState)},
 		Refresh: func() (interface{}, string, error) {
 			client := meta.(*config.Config).FabricClient
@@ -401,7 +401,7 @@ func waitForCloudRouterUpdateCompletion(uuid string, meta interface{}, ctx conte
 
 func waitUntilCloudRouterIsProvisioned(uuid string, meta interface{}, ctx context.Context) (v4.CloudRouter, error) {
 	log.Printf("Waiting for Cloud Router to be provisioned, uuid %s", uuid)
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Pending: []string{
 			string(v4.PROVISIONING_CloudRouterAccessPointState),
 		},
@@ -455,7 +455,7 @@ func resourceCloudRouterDelete(ctx context.Context, d *schema.ResourceData, meta
 
 func waitUntilCloudRouterDeprovisioned(uuid string, meta interface{}, ctx context.Context) error {
 	log.Printf("Waiting for Fabric Cloud Router to be deprovisioned, uuid %s", uuid)
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Pending: []string{
 			string(v4.DEPROVISIONING_CloudRouterAccessPointState),
 		},

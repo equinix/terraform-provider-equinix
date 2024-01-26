@@ -9,14 +9,12 @@ import (
 
 	"github.com/equinix/terraform-provider-equinix/internal/config"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
+	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/terraform"
 )
 
-var (
-	matchIpBlockErrTimeout = regexp.MustCompile(".* timeout while waiting for state to become 'created'.*")
-)
+var matchIpBlockErrTimeout = regexp.MustCompile(".* timeout while waiting for state to become 'created'.*")
 
 func testAccMetalReservedIPBlockConfig_global(name string) string {
 	return fmt.Sprintf(`

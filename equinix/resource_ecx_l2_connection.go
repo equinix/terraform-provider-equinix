@@ -10,6 +10,7 @@ import (
 	"github.com/equinix/terraform-provider-equinix/internal/config"
 	"github.com/equinix/terraform-provider-equinix/internal/converters"
 	equinix_errors "github.com/equinix/terraform-provider-equinix/internal/errors"
+	equinix_schema "github.com/equinix/terraform-provider-equinix/internal/schema"
 	equinix_validation "github.com/equinix/terraform-provider-equinix/internal/validation"
 
 	"github.com/equinix/ecx-go/v2"
@@ -755,13 +756,13 @@ func resourceECXL2ConnectionUpdate(ctx context.Context, d *schema.ResourceData, 
 		ecxL2ConnectionSchemaNames["Speed"],
 		ecxL2ConnectionSchemaNames["SpeedUnit"],
 	}
-	primaryChanges := getResourceDataChangedKeys(supportedChanges, d)
+	primaryChanges := equinix_schema.GetResourceDataChangedKeys(supportedChanges, d)
 	primaryUpdateReq := client.NewL2ConnectionUpdateRequest(d.Id())
 	if err := fillFabricL2ConnectionUpdateRequest(primaryUpdateReq, primaryChanges).Execute(); err != nil {
 		return diag.FromErr(err)
 	}
 	if redID, ok := d.GetOk(ecxL2ConnectionSchemaNames["RedundantUUID"]); ok {
-		secondaryChanges := getResourceDataListElementChanges(supportedChanges, ecxL2ConnectionSchemaNames["SecondaryConnection"], 0, d)
+		secondaryChanges := equinix_schema.GetResourceDataListElementChanges(supportedChanges, ecxL2ConnectionSchemaNames["SecondaryConnection"], 0, d)
 		secondaryUpdateReq := client.NewL2ConnectionUpdateRequest(redID.(string))
 		if err := fillFabricL2ConnectionUpdateRequest(secondaryUpdateReq, secondaryChanges).Execute(); err != nil {
 			return diag.FromErr(err)
