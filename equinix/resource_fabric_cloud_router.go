@@ -312,7 +312,7 @@ func setCloudRouterMap(d *schema.ResourceData, fcr v4.CloudRouter) diag.Diagnost
 		"distinct_ipv4_prefixes_count": fcr.DistinctIpv4PrefixesCount,
 		"distinct_ipv6_prefixes_count": fcr.DistinctIpv6PrefixesCount,
 		"connections_count":            fcr.ConnectionsCount,
-		"order":                        equinix_schema.OrderCloudRouterGoToTerra(fcr.Order),
+		"order":                        equinix_schema.OrderGoToTerra(fcr.Order),
 	})
 	if err != nil {
 		return diag.FromErr(err)

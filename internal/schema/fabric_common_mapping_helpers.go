@@ -1,11 +1,11 @@
-package equinix_schema
+package schema
 
 import (
 	v4 "github.com/equinix-labs/fabric-go/fabric/v4"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
-func OrderCloudRouterGoToTerra(order *v4.Order) *schema.Set {
+func OrderGoToTerra(order *v4.Order) *schema.Set {
 	if order == nil {
 		return nil
 	}
