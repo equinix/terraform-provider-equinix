@@ -1,10 +1,11 @@
 # See https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners#example-of-a-codeowners-file
 #
-*                   @equinix/governor-metal-client-interfaces
-/cmd/migration-tool @equinix/governor-metal-client-interfaces
-*metal*             @t0mk @equinix/governor-metal-client-interfaces
-*fabric*            @equinix/governor-digin-fabric
-*ecx*               @equinix/governor-digin-fabric
-*connection_e2e*    @equinix/governor-digin-fabric
-*equinix_network*   @equinix/governor-ne-network-edge-engineering
-**/edge-networking  @equinix/governor-ne-network-edge-engineering
+*                       @equinix/governor-devrel-engineering
+/cmd/migration-tool     @equinix/governor-metal-client-interfaces
+*metal*                 @t0mk @equinix/governor-metal-client-interfaces
+*fabric*                @equinix/governor-digin-fabric
+*ecx*                   @equinix/governor-digin-fabric
+*connection_e2e*        @equinix/governor-digin-fabric
+*resource_network_*     @equinix/governor-ne-network-edge-engineering
+*data_source_network_*  @equinix/governor-ne-network-edge-engineering
+**/edge-networking      @equinix/governor-ne-network-edge-engineering
