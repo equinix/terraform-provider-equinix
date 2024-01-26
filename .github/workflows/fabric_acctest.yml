@@ -37,7 +37,7 @@ jobs:
       'external' || 'internal' }}
     runs-on: ubuntu-latest
     concurrency:
-      group: ${{ github.event_name == 'pull_request_target' && format('acctest-authorize-pr-{0}', github.event.pull_request.number) || 'acctest-authorize' }}
+      group: ${{ github.event_name == 'pull_request_target' && format('acctest-authorize-pr-{0}', github.event.pull_request.number) }}
       cancel-in-progress: true
     steps:
       - run: true
@@ -71,7 +71,6 @@ jobs:
   test-PFNV:
     name: Matrix Test
     needs: build
-    concurrency: fabricacctestpfnv
     runs-on: ubuntu-latest
     env:
       EQUINIX_API_ENDPOINT: "https://uatapi.equinix.com"
@@ -131,20 +130,9 @@ jobs:
           token: ${{ secrets.CODECOV_TOKEN }}
           files: ./coverage_pnfv.txt
 
-      - name: Create Go Coverage HTML File
-        run: |
-          go tool cover -html=./coverage_pnfv.txt -o ./coverage_pnfv.html
-
-      - name: Upload HTML Coverage Report for PNFV
-        uses: actions/upload-artifact@v4
-        with:
-          name: Fabric PNFV Coverage Report
-          path: ./coverage_pnfv.html
-
   test-PFCR:
     name: Matrix Test
     needs: build
-    concurrency: fabricacctestpfcr
     runs-on: ubuntu-latest
     env:
       EQUINIX_API_ENDPOINT: "https://uatapi.equinix.com"
@@ -203,13 +191,3 @@ jobs:
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           files: ./coverage_pfcr.txt
-
-      - name: Create Go Coverage HTML File
-        run: |
-          go tool cover -html=./coverage_pfcr.txt -o ./coverage_pfcr.html
-
-      - name: Upload HTML Coverage Report for PFCR
-        uses: actions/upload-artifact@v4
-        with:
-          name: Fabric PFCR Coverage Report
-          path: ./coverage_pfcr.html
