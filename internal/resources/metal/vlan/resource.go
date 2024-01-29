@@ -88,7 +88,7 @@ func resourceMetalVlanCreate(ctx context.Context, d *schema.ResourceData, meta i
 
 	//facRaw, facOk := d.GetOk("facility")
 	metroRaw, metroOk := d.GetOk("metro")
-	vxlanRaw, _ := d.GetOk("vxlan")
+	vxlanRaw, vxlanOk := d.GetOk("vxlan")
 
 	if /*!facOk &&*/ !metroOk {
 		return diag.Errorf("one of facility or metro must be configured")
@@ -102,7 +102,9 @@ func resourceMetalVlanCreate(ctx context.Context, d *schema.ResourceData, meta i
 	}
 	if metroOk {
 		createRequest.Metro = metalv1.PtrString(metroRaw.(string))
-		createRequest.Vxlan = metalv1.PtrInt32(int32(vxlanRaw.(int)))
+		if vxlanOk {
+			createRequest.Vxlan = metalv1.PtrInt32(int32(vxlanRaw.(int)))
+		}
 	}
 	/*if facOk {
 		createRequest.Facility = facRaw.(string)
