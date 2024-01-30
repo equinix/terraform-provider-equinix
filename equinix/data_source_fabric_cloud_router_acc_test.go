@@ -1,7 +1,8 @@
-package equinix
+package equinix_test
 
 import (
 	"fmt"
+	"github.com/equinix/terraform-provider-equinix/internal/acceptance"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	_ "github.com/hashicorp/terraform-plugin-testing/terraform"
 	"testing"
@@ -10,12 +11,12 @@ import (
 func TestAccDataSourceFabricCloudRouter_PFCR(t *testing.T) {
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
-		ExternalProviders: testExternalProviders,
-		Providers:         testAccProviders,
+		PreCheck:          func() { acceptance.TestAccPreCheck(t) },
+		ExternalProviders: acceptance.TestExternalProviders,
+		Providers:         acceptance.TestAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: ConfigCreateCloudRouterResource(),
+				Config: ConfigCreateCloudRouterResource_PFCR(),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("data.equinix_fabric_cloud_router.example", "name", "Test_FCR"),
 					resource.TestCheckResourceAttr("data.equinix_fabric_cloud_router.example", "type", "XF_ROUTER"),
@@ -45,7 +46,7 @@ func TestAccDataSourceFabricCloudRouter_PFCR(t *testing.T) {
 	})
 }
 
-func ConfigCreateCloudRouterResource() string {
+func ConfigCreateCloudRouterResource_PFCR() string {
 	return fmt.Sprintf(`
 		resource "equinix_fabric_cloud_router" "example" {
 		name = "Test_FCR"
