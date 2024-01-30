@@ -2,6 +2,7 @@ package equinix_test
 
 import (
 	"fmt"
+	"github.com/equinix/terraform-provider-equinix/internal/acceptance"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -10,8 +11,8 @@ import (
 func TestAccFabricDataSourceConnection_PFCR(t *testing.T) {
 	ports := GetFabricEnvPorts(t)
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
+		PreCheck:     func() { acceptance.TestAccPreCheck(t) },
+		Providers:    acceptance.TestAccProviders,
 		CheckDestroy: CheckConnectionDelete,
 		Steps: []resource.TestStep{
 			{

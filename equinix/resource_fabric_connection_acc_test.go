@@ -4,6 +4,8 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/equinix/terraform-provider-equinix/equinix"
+	"github.com/equinix/terraform-provider-equinix/internal/acceptance"
 	"os"
 	"testing"
 
@@ -43,12 +45,12 @@ func TestAccFabricCreatePort2SPConnection_PFCR(t *testing.T) {
 	ports := GetFabricEnvPorts(t)
 	connectionsTestData := GetFabricEnvConnectionTestData(t)
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
+		PreCheck:     func() { acceptance.TestAccPreCheck(t) },
+		Providers:    acceptance.TestAccProviders,
 		CheckDestroy: CheckConnectionDelete,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccFabricCreatePort2SPConnectionConfig(connectionsTestData["public-sp"]["spName"], "port2sp_PFCR", ports["pfcr"]["dot1q"][0].Uuid),
+				Config: testAccFabricCreatePort2SPConnectionConfig(connectionsTestData["pfcr"]["publicSPName"], "port2sp_PFCR", ports["pfcr"]["dot1q"][0].Uuid),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("equinix_fabric_connection.test", "id"),
 					resource.TestCheckResourceAttr(
@@ -137,17 +139,36 @@ func TestAccFabricCreatePort2PortConnection_PFCR(t *testing.T) {
 	t.Skip("Is Successful; skipping because of duration")
 	ports := GetFabricEnvPorts(t)
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
+		PreCheck:     func() { acceptance.TestAccPreCheck(t) },
+		Providers:    acceptance.TestAccProviders,
 		CheckDestroy: CheckConnectionDelete,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccFabricCreatePort2PortConnectionConfig(50, ports["pfcr"]["dot1q"][0].Uuid, ports["pfcr"]["dot1q"][1].Uuid),
 				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttrSet("equinix_fabric_connection.test", "id"),
 					resource.TestCheckResourceAttr(
-						"equinix_fabric_connection.test", "name", "port_test_PFCR"),
+						"equinix_fabric_connection.test", "name", "port_test__PFCR"),
 					resource.TestCheckResourceAttr(
 						"equinix_fabric_connection.test", "bandwidth", "50"),
+					resource.TestCheckResourceAttr(
+						"equinix_fabric_connection.test", "type", "EVPL_VC"),
+					resource.TestCheckResourceAttr(
+						"equinix_fabric_connection.test", "redundancy.0.priority", "PRIMARY"),
+					resource.TestCheckResourceAttr(
+						"equinix_fabric_connection.test", "order.0.purchase_order_number", "1-129105284100"),
+					resource.TestCheckResourceAttr(
+						"equinix_fabric_connection.test", "a_side.0.access_point.0.type", "COLO"),
+					resource.TestCheckResourceAttr(
+						"equinix_fabric_connection.test", "a_side.0.access_point.0.link_protocol.0.type", "DOT1Q"),
+					resource.TestCheckResourceAttr(
+						"equinix_fabric_connection.test", "a_side.0.access_point.0.link_protocol.0.vlan_tag", "2397"),
+					resource.TestCheckResourceAttr(
+						"equinix_fabric_connection.test", "z_side.0.access_point.0.type", "COLO"),
+					resource.TestCheckResourceAttr(
+						"equinix_fabric_connection.test", "z_side.0.access_point.0.link_protocol.0.type", "DOT1Q"),
+					resource.TestCheckResourceAttr(
+						"equinix_fabric_connection.test", "z_side.0.access_point.0.link_protocol.0.vlan_tag", "2398"),
 				),
 				ExpectNonEmptyPlan: true,
 			},
@@ -158,6 +179,24 @@ func TestAccFabricCreatePort2PortConnection_PFCR(t *testing.T) {
 						"equinix_fabric_connection.test", "name", "port_test_PFCR"),
 					resource.TestCheckResourceAttr(
 						"equinix_fabric_connection.test", "bandwidth", "100"),
+					resource.TestCheckResourceAttr(
+						"equinix_fabric_connection.test", "type", "EVPL_VC"),
+					resource.TestCheckResourceAttr(
+						"equinix_fabric_connection.test", "redundancy.0.priority", "PRIMARY"),
+					resource.TestCheckResourceAttr(
+						"equinix_fabric_connection.test", "order.0.purchase_order_number", "1-129105284100"),
+					resource.TestCheckResourceAttr(
+						"equinix_fabric_connection.test", "a_side.0.access_point.0.type", "COLO"),
+					resource.TestCheckResourceAttr(
+						"equinix_fabric_connection.test", "a_side.0.access_point.0.link_protocol.0.type", "DOT1Q"),
+					resource.TestCheckResourceAttr(
+						"equinix_fabric_connection.test", "a_side.0.access_point.0.link_protocol.0.vlan_tag", "2397"),
+					resource.TestCheckResourceAttr(
+						"equinix_fabric_connection.test", "z_side.0.access_point.0.type", "COLO"),
+					resource.TestCheckResourceAttr(
+						"equinix_fabric_connection.test", "z_side.0.access_point.0.link_protocol.0.type", "DOT1Q"),
+					resource.TestCheckResourceAttr(
+						"equinix_fabric_connection.test", "z_side.0.access_point.0.link_protocol.0.vlan_tag", "2398"),
 				),
 				ExpectNonEmptyPlan: true,
 			},
@@ -174,8 +213,8 @@ func testAccFabricCreatePort2PortConnectionConfig(bandwidth int32, aSidePortUuid
 			emails = ["test@equinix.com","test1@equinix.com"]
 		}
 		order {
-		purchase_order_number = "1-129105284100"
-			}
+			purchase_order_number = "1-129105284100"
+		}
 		bandwidth = %d
 		a_side {
 			access_point {
@@ -214,8 +253,8 @@ func TestAccFabricCreateCloudRouter2PortConnection_PFCR(t *testing.T) {
 	t.Skip("Skipping while focused on port connection")
 	ports := GetFabricEnvPorts(t)
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
+		PreCheck:     func() { acceptance.TestAccPreCheck(t) },
+		Providers:    acceptance.TestAccProviders,
 		CheckDestroy: CheckConnectionDelete,
 		Steps: []resource.TestStep{
 			{
@@ -225,6 +264,24 @@ func TestAccFabricCreateCloudRouter2PortConnection_PFCR(t *testing.T) {
 						"equinix_fabric_connection.test", "name", "fcr_test_PFCR"),
 					resource.TestCheckResourceAttr(
 						"equinix_fabric_connection.test", "bandwidth", "50"),
+					resource.TestCheckResourceAttr(
+						"equinix_fabric_connection.test", "type", "IP_VC"),
+					resource.TestCheckResourceAttr(
+						"equinix_fabric_connection.test", "redundancy.0.priority", "PRIMARY"),
+					resource.TestCheckResourceAttr(
+						"equinix_fabric_connection.test", "order.0.purchase_order_number", "123485"),
+					resource.TestCheckResourceAttr(
+						"equinix_fabric_connection.test", "project.0.project_id", "291639000636552"),
+					resource.TestCheckResourceAttr(
+						"equinix_fabric_connection.test", "a_side.0.access_point.0.type", "CLOUD_ROUTER"),
+					resource.TestCheckResourceAttrSet(
+						"equinix_fabric_connection.test", "a_side.0.access_point.0.router"),
+					resource.TestCheckResourceAttr(
+						"equinix_fabric_connection.test", "z_side.0.access_point.0.type", "COLO"),
+					resource.TestCheckResourceAttr(
+						"equinix_fabric_connection.test", "z_side.0.access_point.0.link_protocol.0.type", "DOT1Q"),
+					resource.TestCheckResourceAttr(
+						"equinix_fabric_connection.test", "z_side.0.access_point.0.link_protocol.0.vlan_tag", "2325"),
 				),
 				ExpectNonEmptyPlan: true,
 			},
@@ -305,14 +362,99 @@ func testAccFabricCreateCloudRouter2PortConnectionConfig(name, portUuid string) 
 	}`, name, portUuid)
 }
 
+func TestAccFabricCreateVirtualDevice2NetworkConnection_PNFV(t *testing.T) {
+	t.Skip("Skipping while PFNV account gets fixed")
+	connectionTestData := GetFabricEnvConnectionTestData(t)
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:     func() { acceptance.TestAccPreCheck(t) },
+		Providers:    acceptance.TestAccProviders,
+		CheckDestroy: CheckConnectionDelete,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccFabricCreateVirtualDevice2NetworkConnectionConfig("vd2network_PNFV", connectionTestData["pnfv"]["virtualDevice"], connectionTestData["pnfv"]["network"]),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(
+						"equinix_fabric_connection.test", "name", "vd2network_PFCR"),
+					resource.TestCheckResourceAttr(
+						"equinix_fabric_connection.test", "bandwidth", "50"),
+					resource.TestCheckResourceAttr(
+						"equinix_fabric_connection.test", "type", "EVPL_VC"),
+					resource.TestCheckResourceAttr(
+						"equinix_fabric_connection.test", "redundancy.0.priority", "PRIMARY"),
+					resource.TestCheckResourceAttr(
+						"equinix_fabric_connection.test", "order.0.purchase_order_number", "123485"),
+					resource.TestCheckResourceAttr(
+						"equinix_fabric_connection.test", "project.0.project_id", "291639000636552"),
+					resource.TestCheckResourceAttr(
+						"equinix_fabric_connection.test", "a_side.0.access_point.0.type", "VD"),
+					resource.TestCheckResourceAttr(
+						"equinix_fabric_connection.test", "a_side.0.access_point.0.virtual_device.0.type", "NETWORK"),
+					resource.TestCheckResourceAttr(
+						"equinix_fabric_connection.test", "a_side.0.access_point.0.virtual_device.0.uuid", connectionTestData["pnfv"]["virtualDevice"]),
+					resource.TestCheckResourceAttr(
+						"equinix_fabric_connection.test", "a_side.0.access_point.0.interface.0.type", "NETWORK"),
+					resource.TestCheckResourceAttr(
+						"equinix_fabric_connection.test", "a_side.0.access_point.0.interface.0.id", "7"),
+					resource.TestCheckResourceAttr(
+						"equinix_fabric_connection.test", "z_side.0.access_point.0.type", "NETWORK"),
+					resource.TestCheckResourceAttr(
+						"equinix_fabric_connection.test", "z_side.0.access_point.0.network.0.uuid", connectionTestData["pnfv"]["network"]),
+				),
+				ExpectNonEmptyPlan: true,
+			},
+		},
+	})
+}
+
+func testAccFabricCreateVirtualDevice2NetworkConnectionConfig(name, virtualDeviceUuid, networkUuid string) string {
+	return fmt.Sprintf(`
+
+	resource "equinix_fabric_connection" "test" {
+		type = "EVPL_VC"
+		name = "%s"
+		notifications{
+			type = "ALL"
+			emails = ["test@equinix.com","test1@equinix.com"]
+		}
+		order {
+			purchase_order_number = "123485"
+		}
+		bandwidth = 50
+		redundancy {
+			priority= "PRIMARY"
+		}
+		a_side {
+			access_point {
+				type = "VD"
+				virtual_device {
+					type = "EDGE"
+					uuid = "%s"
+				}
+				interface {
+					type = "NETWORK"
+					id = 7
+				}
+			}
+		}
+		z_side {
+			access_point {
+				type = "NETWORK"
+				network {
+					uuid "%s"
+				}
+			}
+		}
+	}`, name, virtualDeviceUuid, networkUuid)
+}
+
 func CheckConnectionDelete(s *terraform.State) error {
 	ctx := context.Background()
-	ctx = context.WithValue(ctx, v4.ContextAccessToken, testAccProvider.Meta().(*config.Config).FabricAuthToken)
+	ctx = context.WithValue(ctx, v4.ContextAccessToken, acceptance.TestAccProvider.Meta().(*config.Config).FabricAuthToken)
 	for _, rs := range s.RootModule().Resources {
 		if rs.Type != "equinix_fabric_connection" {
 			continue
 		}
-		err := waitUntilConnectionDeprovisioned(rs.Primary.ID, testAccProvider.Meta(), ctx)
+		err := equinix.WaitUntilConnectionDeprovisioned(rs.Primary.ID, acceptance.TestAccProvider.Meta(), ctx)
 		if err != nil {
 			return fmt.Errorf("API call failed while waiting for resource deletion")
 		}
