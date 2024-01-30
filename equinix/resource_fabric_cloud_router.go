@@ -231,14 +231,14 @@ func resourceCloudRouterDelete(ctx context.Context, d *schema.ResourceData, meta
 		return diag.FromErr(equinix_errors.FormatFabricError(err))
 	}
 
-	err = waitUntilCloudRouterDeprovisioned(d.Id(), meta, ctx)
+	err = WaitUntilCloudRouterDeprovisioned(d.Id(), meta, ctx)
 	if err != nil {
 		return diag.FromErr(fmt.Errorf("API call failed while waiting for resource deletion. Error %v", err))
 	}
 	return diags
 }
 
-func waitUntilCloudRouterDeprovisioned(uuid string, meta interface{}, ctx context.Context) error {
+func WaitUntilCloudRouterDeprovisioned(uuid string, meta interface{}, ctx context.Context) error {
 	log.Printf("Waiting for Fabric Cloud Router to be deprovisioned, uuid %s", uuid)
 	stateConf := &retry.StateChangeConf{
 		Pending: []string{

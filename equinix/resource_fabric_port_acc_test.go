@@ -1,16 +1,17 @@
-package equinix
+package equinix_test
 
 import (
 	"fmt"
 	"testing"
 
+	"github.com/equinix/terraform-provider-equinix/internal/acceptance"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
 
 func TestAccFabricReadPort(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:  func() { testAccPreCheck(t) },
-		Providers: testAccProviders,
+		PreCheck:  func() { acceptance.TestAccPreCheck(t) },
+		Providers: acceptance.TestAccProviders,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccFabricReadPortConfig(),
@@ -41,8 +42,8 @@ func testAccFabricReadGetPortsByNameConfig(name string) string {
 
 func TestAccFabricGetPortsByName(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:  func() { testAccPreCheck(t) },
-		Providers: testAccProviders,
+		PreCheck:  func() { acceptance.TestAccPreCheck(t) },
+		Providers: acceptance.TestAccProviders,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccFabricReadGetPortsByNameConfig("ops-user100-CX-DC11-NL-Dot1q-BO-10G-SEC-JP-113"),

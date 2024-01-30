@@ -1,4 +1,4 @@
-package equinix
+package equinix_test
 
 import (
 	"context"
@@ -7,6 +7,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/equinix/terraform-provider-equinix/internal/acceptance"
 	"github.com/equinix/terraform-provider-equinix/internal/config"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
@@ -36,8 +37,8 @@ func testAccFabricReadServiceProfilesListConfig(name string) string {
 
 func TestAccFabricReadServiceProfileByUuid(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:  func() { testAccPreCheck(t) },
-		Providers: testAccProviders,
+		PreCheck:  func() { acceptance.TestAccPreCheck(t) },
+		Providers: acceptance.TestAccProviders,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccFabricReadServiceProfileConfig("bfb74121-7e2c-4f74-99b3-69cdafb03b41"),
@@ -54,8 +55,8 @@ func TestAccFabricReadServiceProfileByUuid(t *testing.T) {
 
 func TestAccFabricSearchServiceProfilesByName(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:  func() { testAccPreCheck(t) },
-		Providers: testAccProviders,
+		PreCheck:  func() { acceptance.TestAccPreCheck(t) },
+		Providers: acceptance.TestAccProviders,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccFabricReadServiceProfilesListConfig("Azure ExpressRoute"),
@@ -76,8 +77,8 @@ func TestAccFabricSearchServiceProfilesByName(t *testing.T) {
 
 func TestAccFabricCreateServiceProfile(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
+		PreCheck:     func() { acceptance.TestAccPreCheck(t) },
+		Providers:    acceptance.TestAccProviders,
 		CheckDestroy: checkServiceProfileDelete,
 		Steps: []resource.TestStep{
 			{
@@ -152,9 +153,9 @@ func testAccFabricCreateServiceProfileConfig(name string) string {
 }
 
 func checkServiceProfileDelete(s *terraform.State) error {
-	client := testAccProvider.Meta().(*config.Config).FabricClient
+	client := acceptance.TestAccProvider.Meta().(*config.Config).FabricClient
 	ctx := context.Background()
-	ctx = context.WithValue(ctx, v4.ContextAccessToken, testAccProvider.Meta().(*config.Config).FabricAuthToken)
+	ctx = context.WithValue(ctx, v4.ContextAccessToken, acceptance.TestAccProvider.Meta().(*config.Config).FabricAuthToken)
 	for _, rs := range s.RootModule().Resources {
 		if rs.Type != "equinix_fabric_service_profile" {
 			continue

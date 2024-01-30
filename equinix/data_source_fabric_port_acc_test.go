@@ -1,17 +1,18 @@
-package equinix
+package equinix_test
 
 import (
 	"fmt"
 	"testing"
 
+	"github.com/equinix/terraform-provider-equinix/internal/acceptance"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
 
 func TestAccDataSourceFabricPort_PNFV(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
-		ExternalProviders: testExternalProviders,
-		Providers:         testAccProviders,
+		PreCheck:          func() { acceptance.TestAccPreCheck(t) },
+		ExternalProviders: acceptance.TestExternalProviders,
+		Providers:         acceptance.TestAccProviders,
 		Steps: []resource.TestStep{
 			{
 				Config: testDataSourceFabricPort("c4d85dbe-fa99-a999-f7e0-306a5c00af26"),
@@ -36,9 +37,9 @@ func testDataSourceFabricPort(port_uuid string) string {
 
 func TestAccDataSourceFabricPorts_PNFV(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
-		ExternalProviders: testExternalProviders,
-		Providers:         testAccProviders,
+		PreCheck:          func() { acceptance.TestAccPreCheck(t) },
+		ExternalProviders: acceptance.TestExternalProviders,
+		Providers:         acceptance.TestAccProviders,
 		Steps: []resource.TestStep{
 			{
 				Config: testDataSourceFabricPorts("eqx-nfv-201091-CX-SV1-L-Dot1q-BO-20G-PRI-JP-395"),

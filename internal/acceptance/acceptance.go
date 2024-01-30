@@ -45,6 +45,26 @@ func init() {
 	}
 }
 
+func TestAccPreCheck(t *testing.T) {
+	var err error
+
+	if _, err = GetFromEnv(config.ClientTokenEnvVar); err != nil {
+		_, err = GetFromEnv(config.ClientIDEnvVar)
+		if err == nil {
+			_, err = GetFromEnv(config.ClientSecretEnvVar)
+		}
+	}
+
+	if err == nil {
+		_, err = GetFromEnv(config.MetalAuthTokenEnvVar)
+	}
+
+	if err != nil {
+		t.Fatalf("To run acceptance tests, one of '%s' or pair '%s' - '%s' must be set for Equinix Fabric and Network Edge, and '%s' for Equinix Metal",
+			config.ClientTokenEnvVar, config.ClientIDEnvVar, config.ClientSecretEnvVar, config.MetalAuthTokenEnvVar)
+	}
+}
+
 func TestAccPreCheckMetal(t *testing.T) {
 	if os.Getenv(config.MetalAuthTokenEnvVar) == "" {
 		t.Fatalf(missingMetalToken, config.MetalAuthTokenEnvVar)
@@ -55,21 +75,14 @@ func IsSweepableTestResource(namePrefix string) bool {
 	return strings.HasPrefix(namePrefix, tstResourcePrefix)
 }
 
-func getFromEnvDefault(varName string, defaultValue string) string {
-	if v := os.Getenv(varName); v != "" {
-		return v
-	}
-	return defaultValue
-}
-
 func GetConfigForNonStandardMetalTest() (*config.Config, error) {
-	endpoint := getFromEnvDefault(config.EndpointEnvVar, config.DefaultBaseURL)
-	clientTimeout := getFromEnvDefault(config.ClientTimeoutEnvVar, strconv.Itoa(config.DefaultTimeout))
+	endpoint := GetFromEnvDefault(config.EndpointEnvVar, config.DefaultBaseURL)
+	clientTimeout := GetFromEnvDefault(config.ClientTimeoutEnvVar, strconv.Itoa(config.DefaultTimeout))
 	clientTimeoutInt, err := strconv.Atoi(clientTimeout)
 	if err != nil {
 		return nil, fmt.Errorf("cannot convert value of '%s' env variable to int", config.ClientTimeoutEnvVar)
 	}
-	metalAuthToken := getFromEnvDefault(config.MetalAuthTokenEnvVar, "")
+	metalAuthToken := GetFromEnvDefault(config.MetalAuthTokenEnvVar, "")
 
 	if metalAuthToken == "" {
 		return nil, fmt.Errorf(missingMetalToken, config.MetalAuthTokenEnvVar)
