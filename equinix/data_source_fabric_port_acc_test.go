@@ -1,26 +1,45 @@
 package equinix_test
 
 import (
+	"encoding/json"
 	"fmt"
+	v4 "github.com/equinix-labs/fabric-go/fabric/v4"
+	"os"
 	"testing"
 
 	"github.com/equinix/terraform-provider-equinix/internal/acceptance"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
 
+const (
+	FabricDedicatedPortEnvVar = "TF_ACC_FABRIC_DEDICATED_PORTS"
+)
+
+type EnvPorts map[string]map[string][]v4.Port
+
+func GetFabricEnvPorts(t *testing.T) EnvPorts {
+	var ports EnvPorts
+	portJson := os.Getenv(FabricDedicatedPortEnvVar)
+	if err := json.Unmarshal([]byte(portJson), &ports); err != nil {
+		t.Fatalf("Failed reading port data from environment: %v, %s", err, portJson)
+	}
+	return ports
+}
+
 func TestAccDataSourceFabricPort_PNFV(t *testing.T) {
+	port := GetFabricEnvPorts(t)
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acceptance.TestAccPreCheck(t) },
 		ExternalProviders: acceptance.TestExternalProviders,
 		Providers:         acceptance.TestAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testDataSourceFabricPort("c4d85dbe-fa99-a999-f7e0-306a5c00af26"),
+				Config: testDataSourceFabricPort(port["pnfv"]["dot1q"][0].Uuid),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(
-						"data.equinix_fabric_port.test", "name", "eqx-nfv-201091-CX-SV1-L-Dot1q-BO-20G-PRI-JP-395"),
+						"data.equinix_fabric_port.test", "name", port["pnfv"]["dot1q"][0].Name),
 					resource.TestCheckResourceAttr(
-						"data.equinix_fabric_port.test", "type", "XF_PORT"),
+						"data.equinix_fabric_port.test", "type", string(*port["pnfv"]["dot1q"][0].Type_)),
 				),
 			},
 		},
@@ -36,18 +55,19 @@ func testDataSourceFabricPort(port_uuid string) string {
 }
 
 func TestAccDataSourceFabricPorts_PNFV(t *testing.T) {
+	port := GetFabricEnvPorts(t)
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acceptance.TestAccPreCheck(t) },
 		ExternalProviders: acceptance.TestExternalProviders,
 		Providers:         acceptance.TestAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testDataSourceFabricPorts("eqx-nfv-201091-CX-SV1-L-Dot1q-BO-20G-PRI-JP-395"),
+				Config: testDataSourceFabricPorts(port["pnfv"]["dot1q"][0].Name),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(
-						"data.equinix_fabric_ports.test", "id", "c4d85dbe-fa99-a999-f7e0-306a5c00af26"),
+						"data.equinix_fabric_ports.test", "id", port["pnfv"]["dot1q"][0].Uuid),
 					resource.TestCheckResourceAttr(
-						"data.equinix_fabric_ports.test", "data.0.type", "XF_PORT"),
+						"data.equinix_fabric_ports.test", "data.0.type", string(*port["pnfv"]["dot1q"][0].Type_)),
 				),
 			},
 		},

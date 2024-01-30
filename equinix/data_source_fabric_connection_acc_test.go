@@ -1,0 +1,97 @@
+package equinix_test
+
+import (
+	"fmt"
+	"testing"
+
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+)
+
+func TestAccFabricDataSourceConnection_PFCR(t *testing.T) {
+	ports := GetFabricEnvPorts(t)
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: CheckConnectionDelete,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccFabricDataSourceConnectionConfig(50, ports["pfcr"]["dot1q"][0].Uuid, ports["pfcr"]["dot1q"][1].Uuid),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttrSet("data.equinix_fabric_connection.test", "id"),
+					resource.TestCheckResourceAttr(
+						"data.equinix_fabric_connection.test", "name", "ds_con_test_PFCR"),
+					resource.TestCheckResourceAttr(
+						"data.equinix_fabric_connection.test", "bandwidth", "50"),
+					resource.TestCheckResourceAttr(
+						"data.equinix_fabric_connection.test", "type", "EVPL_VC"),
+					resource.TestCheckResourceAttr(
+						"data.equinix_fabric_connection.test", "redundancy.0.priority", "PRIMARY"),
+					resource.TestCheckResourceAttr(
+						"data.equinix_fabric_connection.test", "order.0.purchase_order_number", "1-129105284100"),
+					resource.TestCheckResourceAttr(
+						"data.equinix_fabric_connection.test", "a_side.0.access_point.0.type", "COLO"),
+					resource.TestCheckResourceAttr(
+						"data.equinix_fabric_connection.test", "a_side.0.access_point.0.link_protocol.0.type", "DOT1Q"),
+					resource.TestCheckResourceAttr(
+						"data.equinix_fabric_connection.test", "a_side.0.access_point.0.link_protocol.0.vlan_tag", "2397"),
+					resource.TestCheckResourceAttr(
+						"data.equinix_fabric_connection.test", "a_side.0.access_point.0.location.0.metro_code", "DC"),
+					resource.TestCheckResourceAttr(
+						"data.equinix_fabric_connection.test", "z_side.0.access_point.0.type", "COLO"),
+					resource.TestCheckResourceAttr(
+						"data.equinix_fabric_connection.test", "z_side.0.access_point.0.link_protocol.0.type", "DOT1Q"),
+					resource.TestCheckResourceAttr(
+						"data.equinix_fabric_connection.test", "z_side.0.access_point.0.link_protocol.0.vlan_tag", "2398"),
+					resource.TestCheckResourceAttr(
+						"data.equinix_fabric_connection.test", "z_side.0.access_point.0.location.0.metro_code", "SV"),
+				),
+				ExpectNonEmptyPlan: true,
+			},
+		},
+	})
+}
+
+func testAccFabricDataSourceConnectionConfig(bandwidth int32, aSidePortUuid, zSidePortUuid string) string {
+	return fmt.Sprintf(`
+
+resource "equinix_fabric_connection" "test" {
+	type = "EVPL_VC"
+	name = "ds_con_test_PFCR"
+	notifications{
+		type = "ALL"
+		emails = ["test@equinix.com","test1@equinix.com"]
+	}
+	order {
+		purchase_order_number = "1-129105284100"
+	}
+	bandwidth = %d
+	a_side {
+		access_point {
+			type = "COLO"
+			port {
+			 	uuid = "%s"
+			}
+			link_protocol {
+				type= "DOT1Q"
+				vlan_tag= 2397
+			}
+		}
+	}
+	z_side {
+		access_point {
+			type = "COLO"
+			port {
+			 	uuid = "%s"
+			}
+			link_protocol {
+				type= "DOT1Q"
+				vlan_tag= 2398
+			}
+		}
+	}
+}
+
+data "equinix_fabric_connection" "test" {
+		uuid = equinix_fabric_connection.test.id
+}`, bandwidth, aSidePortUuid, zSidePortUuid)
+}
