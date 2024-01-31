@@ -394,14 +394,14 @@ func resourceFabricConnectionDelete(ctx context.Context, d *schema.ResourceData,
 		return diag.FromErr(equinix_errors.FormatFabricError(err))
 	}
 
-	err = waitUntilConnectionDeprovisioned(d.Id(), meta, ctx)
+	err = WaitUntilConnectionDeprovisioned(d.Id(), meta, ctx)
 	if err != nil {
 		return diag.FromErr(fmt.Errorf("API call failed while waiting for resource deletion. Error %v", err))
 	}
 	return diags
 }
 
-func waitUntilConnectionDeprovisioned(uuid string, meta interface{}, ctx context.Context) error {
+func WaitUntilConnectionDeprovisioned(uuid string, meta interface{}, ctx context.Context) error {
 	log.Printf("Waiting for connection to be deprovisioned, uuid %s", uuid)
 	stateConf := &retry.StateChangeConf{
 		Pending: []string{
