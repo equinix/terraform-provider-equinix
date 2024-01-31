@@ -4,7 +4,7 @@ subcategory: "Metal"
 
 # equinix_metal_port (Resource)
 
-Use this resource to configure network ports on an Equnix Metal device. This resource can control both
+Use this resource to configure network ports on an Equinix Metal device. This resource can control both
 physical and bond ports.
 
 This Terraform resource doesn't create an API resource in Equinix Metal, but rather provides finer
