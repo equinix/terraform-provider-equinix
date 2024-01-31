@@ -37,7 +37,7 @@ jobs:
       'external' || 'internal' }}
     runs-on: ubuntu-latest
     concurrency:
-      group: ${{ github.event_name == 'pull_request_target' && format('acctest-authorize-pr-{0}', github.event.pull_request.number) || 'acctest-authorize' }}
+      group: ${{ github.event_name == 'pull_request_target' && format('fabric-acctest-authorize-pr-{0}', github.event.pull_request.number) || 'fabric-acctest-authorize' }}
       cancel-in-progress: true
     steps:
       - run: true
@@ -71,7 +71,6 @@ jobs:
   test-PFNV:
     name: Matrix Test
     needs: build
-    concurrency: fabricacctestpfnv
     runs-on: ubuntu-latest
     env:
       EQUINIX_API_ENDPOINT: "https://uatapi.equinix.com"
@@ -134,7 +133,6 @@ jobs:
   test-PFCR:
     name: Matrix Test
     needs: build
-    concurrency: fabricacctestpfcr
     runs-on: ubuntu-latest
     env:
       EQUINIX_API_ENDPOINT: "https://uatapi.equinix.com"

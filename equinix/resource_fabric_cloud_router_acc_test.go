@@ -14,6 +14,17 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 )
 
+func init() {
+	resource.AddTestSweepers("equinix_fabric_cloud_router_PFCR", &resource.Sweeper{
+		Name: "equinix_fabric_cloud_router",
+		F:    testSweepCloudRouters,
+	})
+}
+
+func testSweepCloudRouters(region string) error {
+	return nil
+}
+
 func TestAccCloudRouterCreate(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { acceptance.TestAccPreCheck(t) },
