@@ -37,7 +37,7 @@ jobs:
       'external' || 'internal' }}
     runs-on: ubuntu-latest
     concurrency:
-      group: ${{ github.event_name == 'pull_request_target' && format('acctest-authorize-pr-{0}', github.event.pull_request.number) }}
+      group: ${{ github.event_name == 'pull_request_target' && format('fabric-acctest-authorize-pr-{0}', github.event.pull_request.number) || 'fabric-acctest-authorize' }}
       cancel-in-progress: true
     steps:
       - run: true
