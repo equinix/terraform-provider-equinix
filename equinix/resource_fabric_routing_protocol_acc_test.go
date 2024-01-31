@@ -1,21 +1,23 @@
-package equinix
+package equinix_test
 
 import (
 	"context"
 	"fmt"
 	"testing"
 
+	"github.com/equinix/terraform-provider-equinix/equinix"
+	"github.com/equinix/terraform-provider-equinix/internal/acceptance"
 	"github.com/equinix/terraform-provider-equinix/internal/config"
 
 	v4 "github.com/equinix-labs/fabric-go/fabric/v4"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/terraform"
 )
 
 func TestAccFabricCreateDirectRoutingProtocol(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
+		PreCheck:     func() { acceptance.TestAccPreCheck(t) },
+		Providers:    acceptance.TestAccProviders,
 		CheckDestroy: checkRoutingProtocolDelete,
 		Steps: []resource.TestStep{
 			{
@@ -56,8 +58,8 @@ func testAccFabricCreateRoutingProtocolDirectConfig(connectionUuid string, ipv4 
 
 func TestAccFabricCreateBgpRoutingProtocol(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
+		PreCheck:     func() { acceptance.TestAccPreCheck(t) },
+		Providers:    acceptance.TestAccProviders,
 		CheckDestroy: checkRoutingProtocolDelete,
 		Steps: []resource.TestStep{
 			{
@@ -99,12 +101,12 @@ func testAccFabricCreateRoutingProtocolBgpConfig(connectionUuid string, ipv4 str
 
 func checkRoutingProtocolDelete(s *terraform.State) error {
 	ctx := context.Background()
-	ctx = context.WithValue(ctx, v4.ContextAccessToken, testAccProvider.Meta().(*config.Config).FabricAuthToken)
+	ctx = context.WithValue(ctx, v4.ContextAccessToken, acceptance.TestAccProvider.Meta().(*config.Config).FabricAuthToken)
 	for _, rs := range s.RootModule().Resources {
 		if rs.Type != "equinix_fabric_routing_protocol" {
 			continue
 		}
-		err := waitUntilRoutingProtocolIsDeprovisioned(rs.Primary.ID, rs.Primary.Attributes["connection_uuid"], testAccProvider.Meta(), ctx)
+		err := equinix.WaitUntilRoutingProtocolIsDeprovisioned(rs.Primary.ID, rs.Primary.Attributes["connection_uuid"], acceptance.TestAccProvider.Meta(), ctx)
 		if err != nil {
 			return fmt.Errorf("API call failed while waiting for resource deletion")
 		}
@@ -114,8 +116,8 @@ func checkRoutingProtocolDelete(s *terraform.State) error {
 
 func TestAccFabricReadRoutingProtocolByUuid(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:  func() { testAccPreCheck(t) },
-		Providers: testAccProviders,
+		PreCheck:  func() { acceptance.TestAccPreCheck(t) },
+		Providers: acceptance.TestAccProviders,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccFabricReadRoutingProtocolConfig("99d6bdc8-206f-4bff-a899-0dba708c03db", "00f48313-ab13-4524-aaad-93c31b5b8848"),

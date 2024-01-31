@@ -9,7 +9,7 @@ import (
 
 	"github.com/equinix/terraform-provider-equinix/internal/config"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
 
 const tstResourcePrefix = "tfacc"
@@ -19,20 +19,20 @@ func TestMain(m *testing.M) {
 }
 
 func sharedConfigForRegion(region string) (*config.Config, error) {
-	endpoint := getFromEnvDefault(endpointEnvVar, config.DefaultBaseURL)
-	clientToken := getFromEnvDefault(clientTokenEnvVar, "")
-	clientID := getFromEnvDefault(clientIDEnvVar, "")
-	clientSecret := getFromEnvDefault(clientSecretEnvVar, "")
-	clientTimeout := getFromEnvDefault(clientTimeoutEnvVar, strconv.Itoa(config.DefaultTimeout))
+	endpoint := getFromEnvDefault(config.EndpointEnvVar, config.DefaultBaseURL)
+	clientToken := getFromEnvDefault(config.ClientTokenEnvVar, "")
+	clientID := getFromEnvDefault(config.ClientIDEnvVar, "")
+	clientSecret := getFromEnvDefault(config.ClientSecretEnvVar, "")
+	clientTimeout := getFromEnvDefault(config.ClientTimeoutEnvVar, strconv.Itoa(config.DefaultTimeout))
 	clientTimeoutInt, err := strconv.Atoi(clientTimeout)
 	if err != nil {
-		return nil, fmt.Errorf("cannot convert value of '%s' env variable to int", clientTimeoutEnvVar)
+		return nil, fmt.Errorf("cannot convert value of '%s' env variable to int", config.ClientTimeoutEnvVar)
 	}
-	metalAuthToken := getFromEnvDefault(metalAuthTokenEnvVar, "")
+	metalAuthToken := getFromEnvDefault(config.MetalAuthTokenEnvVar, "")
 
 	if clientToken == "" && (clientID == "" || clientSecret == "") && metalAuthToken == "" {
 		return nil, fmt.Errorf("To run acceptance tests sweeper, one of '%s' or pair '%s' - '%s' must be set for Equinix Fabric and Network Edge, and '%s' for Equinix Metal",
-			clientTokenEnvVar, clientIDEnvVar, clientSecretEnvVar, metalAuthTokenEnvVar)
+			config.ClientTokenEnvVar, config.ClientIDEnvVar, config.ClientSecretEnvVar, config.MetalAuthTokenEnvVar)
 	}
 
 	return &config.Config{

@@ -2,20 +2,15 @@ package equinix
 
 import (
 	"fmt"
-	"net/http"
 	"os"
-	"reflect"
 	"regexp"
 	"strings"
 	"testing"
 
-	"github.com/equinix/terraform-provider-equinix/internal/hashcode"
-
 	"github.com/equinix/ecx-go/v2"
-	"github.com/equinix/rest-go"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/equinix/terraform-provider-equinix/internal/config"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -25,28 +20,6 @@ var (
 	testAccProvider          *schema.Provider
 	testExternalProviders    map[string]resource.ExternalProvider
 )
-
-type mockedResourceDataProvider struct {
-	actual map[string]interface{}
-	old    map[string]interface{}
-}
-
-func (r mockedResourceDataProvider) Get(key string) interface{} {
-	return r.actual[key]
-}
-
-func (r mockedResourceDataProvider) GetOk(key string) (interface{}, bool) {
-	v, ok := r.actual[key]
-	return v, ok
-}
-
-func (r mockedResourceDataProvider) HasChange(key string) bool {
-	return !reflect.DeepEqual(r.old[key], r.actual[key])
-}
-
-func (r mockedResourceDataProvider) GetChange(key string) (interface{}, interface{}) {
-	return r.old[key], r.actual[key]
-}
 
 type mockECXClient struct {
 	GetUserPortsFn func() ([]ecx.Port, error)
@@ -148,23 +121,6 @@ func TestProvider(t *testing.T) {
 	}
 }
 
-func TestProvider_hasApplicationErrorCode(t *testing.T) {
-	// given
-	code := "ERR-505"
-	errors := []rest.ApplicationError{
-		{
-			Code: "ERR-505",
-		},
-		{
-			Code: acctest.RandString(10),
-		},
-	}
-	// when
-	result := hasApplicationErrorCode(errors, code)
-	// then
-	assert.True(t, result, "Error list contains error with given code")
-}
-
 func TestProvider_stringsFound(t *testing.T) {
 	// given
 	needles := []string{"key1", "key5"}
@@ -193,82 +149,6 @@ func TestProvider_stringsFound_negative(t *testing.T) {
 	result := stringsFound(needles, hay)
 	// then
 	assert.False(t, result, "Given strings were found")
-}
-
-func TestProvider_resourceDataChangedKeys(t *testing.T) {
-	// given
-	keys := []string{"key", "keyTwo", "keyThree"}
-	rd := mockedResourceDataProvider{
-		actual: map[string]interface{}{
-			"key":    "value",
-			"keyTwo": "newValueTwo",
-		},
-		old: map[string]interface{}{
-			"key":    "value",
-			"keyTwo": "valueTwo",
-		},
-	}
-	expected := map[string]interface{}{
-		"keyTwo": "newValueTwo",
-	}
-	// when
-	result := getResourceDataChangedKeys(keys, rd)
-	// then
-	assert.Equal(t, expected, result, "Function returns valid key changes")
-}
-
-func TestProvider_resourceDataListElementChanges(t *testing.T) {
-	// given
-	keys := []string{"key", "keyTwo", "keyThree"}
-	listKeyName := "myList"
-	rd := mockedResourceDataProvider{
-		old: map[string]interface{}{
-			listKeyName: []interface{}{
-				map[string]interface{}{
-					"key":      "value",
-					"keyTwo":   "valueTwo",
-					"keyThree": 50,
-				},
-			},
-		},
-		actual: map[string]interface{}{
-			listKeyName: []interface{}{
-				map[string]interface{}{
-					"key":      "value",
-					"keyTwo":   "newValueTwo",
-					"keyThree": 100,
-				},
-			},
-		},
-	}
-	expected := map[string]interface{}{
-		"keyTwo":   "newValueTwo",
-		"keyThree": 100,
-	}
-	// when
-	result := getResourceDataListElementChanges(keys, listKeyName, 0, rd)
-	// then
-	assert.Equal(t, expected, result, "Function returns valid key changes")
-}
-
-func TestProvider_mapChanges(t *testing.T) {
-	// given
-	keys := []string{"key", "keyTwo", "keyThree"}
-	old := map[string]interface{}{
-		"key":    "value",
-		"keyTwo": "valueTwo",
-	}
-	new := map[string]interface{}{
-		"key":    "newValue",
-		"keyTwo": "valueTwo",
-	}
-	expected := map[string]interface{}{
-		"key": "newValue",
-	}
-	// when
-	result := getMapChangedKeys(keys, old, new)
-	// then
-	assert.Equal(t, expected, result, "Function returns valid key changes")
 }
 
 func TestProvider_isEmpty(t *testing.T) {
@@ -350,52 +230,6 @@ func TestProvider_slicesMatch(t *testing.T) {
 	}
 }
 
-func TestProvider_isRestNotFoundError(t *testing.T) {
-	// given
-	input := []error{
-		rest.Error{HTTPCode: http.StatusNotFound, Message: "Not Found"},
-		rest.Error{HTTPCode: http.StatusInternalServerError, Message: "Internal Server Error"},
-		fmt.Errorf("some bogus error"),
-	}
-	expected := []bool{
-		true,
-		false,
-		false,
-	}
-	// when
-	result := make([]bool, len(input))
-	for i := range input {
-		result[i] = isRestNotFoundError(input[i])
-	}
-	// then
-	assert.Equal(t, expected, result, "Result matches expected output")
-}
-
-func TestProvider_schemaSetToMap(t *testing.T) {
-	// given
-	type item struct {
-		id       string
-		valueOne int
-		valueTwo int
-	}
-	setFunc := func(v interface{}) int {
-		i := v.(item)
-		return hashcode.String(i.id)
-	}
-	items := []interface{}{
-		item{"id1", 100, 200},
-		item{"id2", 666, 999},
-		item{"id3", 0, 100},
-	}
-	set := schema.NewSet(setFunc, items)
-	// when
-	list := schemaSetToMap(set)
-	// then
-	assert.Equal(t, items[0], list[setFunc(items[0])])
-	assert.Equal(t, items[1], list[setFunc(items[1])])
-	assert.Equal(t, items[2], list[setFunc(items[2])])
-}
-
 //‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾
 // Test helper functions
 //_______________________________________________________________________
@@ -403,20 +237,20 @@ func TestProvider_schemaSetToMap(t *testing.T) {
 func testAccPreCheck(t *testing.T) {
 	var err error
 
-	if _, err = getFromEnv(clientTokenEnvVar); err != nil {
-		_, err = getFromEnv(clientIDEnvVar)
+	if _, err = getFromEnv(config.ClientTokenEnvVar); err != nil {
+		_, err = getFromEnv(config.ClientIDEnvVar)
 		if err == nil {
-			_, err = getFromEnv(clientSecretEnvVar)
+			_, err = getFromEnv(config.ClientSecretEnvVar)
 		}
 	}
 
 	if err == nil {
-		_, err = getFromEnv(metalAuthTokenEnvVar)
+		_, err = getFromEnv(config.MetalAuthTokenEnvVar)
 	}
 
 	if err != nil {
 		t.Fatalf("To run acceptance tests, one of '%s' or pair '%s' - '%s' must be set for Equinix Fabric and Network Edge, and '%s' for Equinix Metal",
-			clientTokenEnvVar, clientIDEnvVar, clientSecretEnvVar, metalAuthTokenEnvVar)
+			config.ClientTokenEnvVar, config.ClientIDEnvVar, config.ClientSecretEnvVar, config.MetalAuthTokenEnvVar)
 	}
 }
 
@@ -444,14 +278,6 @@ func nprintf(format string, params map[string]interface{}) string {
 		format = strings.Replace(format, "%{"+key+"}", strVal, -1)
 	}
 	return format
-}
-
-func randInt(n int) int {
-	return acctest.RandIntRange(0, n)
-}
-
-func randString(length int) string {
-	return acctest.RandString(length)
 }
 
 func getFromEnv(varName string) (string, error) {

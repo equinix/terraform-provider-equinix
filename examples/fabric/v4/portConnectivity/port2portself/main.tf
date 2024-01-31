@@ -35,9 +35,6 @@ resource "equinix_fabric_connection" "p2p-qinq" {
         type= var.aside_link_protocol_type
         vlan_s_tag= var.aside_link_protocol_stag
       }
-      gateway {
-        uuid= "XF_ROUTER"
-      }
     }
   }
   z_side {

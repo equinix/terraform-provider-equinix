@@ -5,9 +5,11 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/equinix/terraform-provider-equinix/internal/hashcode"
-
 	"github.com/equinix/terraform-provider-equinix/internal/config"
+	equinix_errors "github.com/equinix/terraform-provider-equinix/internal/errors"
+	"github.com/equinix/terraform-provider-equinix/internal/hashcode"
+	equinix_schema "github.com/equinix/terraform-provider-equinix/internal/schema"
+	equinix_validation "github.com/equinix/terraform-provider-equinix/internal/validation"
 
 	"github.com/equinix/ne-go"
 	"github.com/hashicorp/go-cty/cty"
@@ -197,13 +199,13 @@ func createNetworkDeviceLinkConnectionResourceSchema() map[string]*schema.Schema
 		networkDeviceLinkConnectionSchemaNames["SourceMetroCode"]: {
 			Type:         schema.TypeString,
 			Required:     true,
-			ValidateFunc: stringIsMetroCode(),
+			ValidateFunc: equinix_validation.StringIsMetroCode,
 			Description:  networkDeviceLinkConnectionDescriptions["SourceMetroCode"],
 		},
 		networkDeviceLinkConnectionSchemaNames["DestinationMetroCode"]: {
 			Type:         schema.TypeString,
 			Required:     true,
-			ValidateFunc: stringIsMetroCode(),
+			ValidateFunc: equinix_validation.StringIsMetroCode,
 			Description:  networkDeviceLinkConnectionDescriptions["DestinationMetroCode"],
 		},
 		networkDeviceLinkConnectionSchemaNames["SourceZoneCode"]: {
@@ -251,7 +253,7 @@ func resourceNetworkDeviceLinkRead(ctx context.Context, d *schema.ResourceData, 
 	var diags diag.Diagnostics
 	link, err := client.GetDeviceLinkGroup(d.Id())
 	if err != nil {
-		if isRestNotFoundError(err) {
+		if equinix_errors.IsRestNotFoundError(err) {
 			d.SetId("")
 			return nil
 		}
@@ -273,7 +275,7 @@ func resourceNetworkDeviceLinkUpdate(ctx context.Context, d *schema.ResourceData
 	client := m.(*config.Config).Ne
 	m.(*config.Config).AddModuleToNEUserAgent(&client, d)
 	var diags diag.Diagnostics
-	changes := getResourceDataChangedKeys([]string{
+	changes := equinix_schema.GetResourceDataChangedKeys([]string{
 		networkDeviceLinkSchemaNames["Name"], networkDeviceLinkSchemaNames["Subnet"],
 		networkDeviceLinkSchemaNames["Devices"], networkDeviceLinkSchemaNames["Links"],
 	}, d)
@@ -312,7 +314,7 @@ func resourceNetworkDeviceLinkDelete(ctx context.Context, d *schema.ResourceData
 	m.(*config.Config).AddModuleToNEUserAgent(&client, d)
 	var diags diag.Diagnostics
 	if err := client.DeleteDeviceLinkGroup(d.Id()); err != nil {
-		if isRestNotFoundError(err) {
+		if equinix_errors.IsRestNotFoundError(err) {
 			return nil
 		}
 		return diag.FromErr(err)
@@ -470,7 +472,7 @@ func createDeviceLinkStatusDeleteWaitConfiguration(fetchFunc getDeviceLinkGroup,
 		Refresh: func() (interface{}, string, error) {
 			resp, err := fetchFunc(id)
 			if err != nil {
-				if isRestNotFoundError(err) {
+				if equinix_errors.IsRestNotFoundError(err) {
 					return resp, ne.DeviceLinkGroupStatusDeprovisioned, nil
 				}
 				return nil, "", err
@@ -516,4 +518,15 @@ func networkDeviceLinkConnectionKey(v interface{}) string {
 
 func networkDeviceLinkConnectionHash(v interface{}) int {
 	return hashcode.String(networkDeviceLinkConnectionKey(v))
+}
+
+func schemaSetToMap(set *schema.Set) map[int]interface{} {
+	transformed := make(map[int]interface{})
+	if set != nil {
+		list := set.List()
+		for i := range list {
+			transformed[set.F(list[i])] = list[i]
+		}
+	}
+	return transformed
 }

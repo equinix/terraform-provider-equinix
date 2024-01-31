@@ -9,6 +9,7 @@ import (
 	"github.com/equinix/ne-go"
 	"github.com/equinix/rest-go"
 	"github.com/equinix/terraform-provider-equinix/internal/config"
+	equinix_validation "github.com/equinix/terraform-provider-equinix/internal/validation"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
@@ -75,7 +76,7 @@ func createNetworkFileSchema() map[string]*schema.Schema {
 			Type:         schema.TypeString,
 			Required:     true,
 			ForceNew:     true,
-			ValidateFunc: stringIsMetroCode(),
+			ValidateFunc: equinix_validation.StringIsMetroCode,
 			Description:  networkFileDescriptions["MetroCode"],
 		},
 		networkFileSchemaNames["DeviceTypeCode"]: {

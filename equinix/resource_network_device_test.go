@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/equinix/ne-go"
+	"github.com/equinix/terraform-provider-equinix/internal/converters"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/stretchr/testify/assert"
 )
@@ -143,7 +144,7 @@ func TestNetworkDevice_updateResourceData(t *testing.T) {
 	assert.Empty(t, d.Get(neDeviceSchemaNames["LicenseToken"]), "LicenseToken is empty")
 	assert.Equal(t, ne.StringValue(inputPrimary.ACLTemplateUUID), d.Get(neDeviceSchemaNames["ACLTemplateUUID"]), "ACLTemplateUUID matches")
 	assert.Equal(t, ne.StringValue(inputPrimary.AccountNumber), d.Get(neDeviceSchemaNames["AccountNumber"]), "AccountNumber matches")
-	assert.Equal(t, inputPrimary.Notifications, expandSetToStringList(d.Get(neDeviceSchemaNames["Notifications"]).(*schema.Set)), "Notifications matches")
+	assert.Equal(t, inputPrimary.Notifications, converters.SetToStringList(d.Get(neDeviceSchemaNames["Notifications"]).(*schema.Set)), "Notifications matches")
 	assert.Equal(t, ne.StringValue(inputPrimary.PurchaseOrderNumber), d.Get(neDeviceSchemaNames["PurchaseOrderNumber"]), "PurchaseOrderNumber matches")
 	assert.Equal(t, ne.IntValue(inputPrimary.TermLength), d.Get(neDeviceSchemaNames["TermLength"]), "TermLength matches")
 	assert.Equal(t, ne.IntValue(inputPrimary.AdditionalBandwidth), d.Get(neDeviceSchemaNames["AdditionalBandwidth"]), "AdditionalBandwidth matches")
@@ -152,7 +153,7 @@ func TestNetworkDevice_updateResourceData(t *testing.T) {
 	assert.Empty(t, d.Get(neDeviceSchemaNames["WanInterfaceId"]), "Wan Interface Id is empty")
 	assert.Equal(t, ne.IntValue(inputPrimary.CoreCount), d.Get(neDeviceSchemaNames["CoreCount"]), "CoreCount matches")
 	assert.Equal(t, ne.BoolValue(inputPrimary.IsSelfManaged), d.Get(neDeviceSchemaNames["IsSelfManaged"]), "IsSelfManaged matches")
-	assert.Equal(t, inputPrimary.VendorConfiguration, expandInterfaceMapToStringMap(d.Get(neDeviceSchemaNames["VendorConfiguration"]).(map[string]interface{})), "VendorConfiguration matches")
+	assert.Equal(t, inputPrimary.VendorConfiguration, converters.InterfaceMapToStringMap(d.Get(neDeviceSchemaNames["VendorConfiguration"]).(map[string]interface{})), "VendorConfiguration matches")
 	assert.Equal(t, inputPrimary.UserPublicKey, expandNetworkDeviceUserKeys(d.Get(neDeviceSchemaNames["UserPublicKey"]).(*schema.Set))[0], "UserPublicKey matches")
 	assert.Equal(t, ne.IntValue(inputPrimary.ASN), d.Get(neDeviceSchemaNames["ASN"]), "ASN matches")
 	assert.Equal(t, ne.StringValue(inputPrimary.ZoneCode), d.Get(neDeviceSchemaNames["ZoneCode"]), "ZoneCode matches")
@@ -296,7 +297,7 @@ func TestNetworkDevice_expandSecondary(t *testing.T) {
 		LicenseFile:         ne.String(input[0].(map[string]interface{})[neDeviceSchemaNames["LicenseFile"]].(string)),
 		ACLTemplateUUID:     ne.String(input[0].(map[string]interface{})[neDeviceSchemaNames["ACLTemplateUUID"]].(string)),
 		AccountNumber:       ne.String(input[0].(map[string]interface{})[neDeviceSchemaNames["AccountNumber"]].(string)),
-		Notifications:       expandSetToStringList(input[0].(map[string]interface{})[neDeviceSchemaNames["Notifications"]].(*schema.Set)),
+		Notifications:       converters.SetToStringList(input[0].(map[string]interface{})[neDeviceSchemaNames["Notifications"]].(*schema.Set)),
 		AdditionalBandwidth: ne.Int(input[0].(map[string]interface{})[neDeviceSchemaNames["AdditionalBandwidth"]].(int)),
 		VendorConfiguration: map[string]string{
 			"key": "value",
@@ -371,6 +372,26 @@ func TestNetworkDevice_statusDeleteWaitConfiguration(t *testing.T) {
 	timeout := 10 * time.Minute
 	// when
 	waitConfig := createNetworkDeviceStatusDeleteWaitConfiguration(fetchFunc, deviceID, delay, timeout)
+	_, err := waitConfig.WaitForStateContext(context.Background())
+	// then
+	assert.Nil(t, err, "WaitForState does not return an error")
+	assert.Equal(t, deviceID, queriedDeviceID, "Queried device ID matches")
+	assert.Equal(t, timeout, waitConfig.Timeout, "Device status wait configuration timeout matches")
+	assert.Equal(t, delay, waitConfig.MinTimeout, "Device status wait configuration min timeout matches")
+}
+
+func TestNetworkDevice_statusResourceUpgradeWaitConfiguration(t *testing.T) {
+	// given
+	deviceID := "test"
+	var queriedDeviceID string
+	fetchFunc := func(uuid string) (*ne.Device, error) {
+		queriedDeviceID = uuid
+		return &ne.Device{Status: ne.String(ne.DeviceStateProvisioned)}, nil
+	}
+	delay := 100 * time.Millisecond
+	timeout := 10 * time.Minute
+	// when
+	waitConfig := createNetworkDeviceStatusResourceUpgradeWaitConfiguration(fetchFunc, deviceID, delay, timeout)
 	_, err := waitConfig.WaitForStateContext(context.Background())
 	// then
 	assert.Nil(t, err, "WaitForState does not return an error")

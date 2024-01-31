@@ -7,6 +7,8 @@ import (
 	"strings"
 
 	"github.com/equinix/terraform-provider-equinix/internal/config"
+	"github.com/equinix/terraform-provider-equinix/internal/converters"
+	equinix_validation "github.com/equinix/terraform-provider-equinix/internal/validation"
 
 	"github.com/equinix/ecx-go/v2"
 	"github.com/hashicorp/go-cty/cty"
@@ -52,7 +54,7 @@ func dataSourceECXL2SellerProfiles() *schema.Resource {
 				Description: ecxL2SellerProfilesDescriptions["Metros"],
 				Elem: &schema.Schema{
 					Type:         schema.TypeString,
-					ValidateFunc: stringIsMetroCode(),
+					ValidateFunc: equinix_validation.StringIsMetroCode,
 				},
 			},
 			ecxL2SellerProfilesSchemaNames["SpeedBands"]: {
@@ -62,7 +64,7 @@ func dataSourceECXL2SellerProfiles() *schema.Resource {
 				Description: ecxL2SellerProfilesDescriptions["SpeedBands"],
 				Elem: &schema.Schema{
 					Type:         schema.TypeString,
-					ValidateFunc: stringIsSpeedBand(),
+					ValidateFunc: equinix_validation.StringIsSpeedBand,
 				},
 			},
 			ecxL2SellerProfilesSchemaNames["OrganizationName"]: {
@@ -98,8 +100,8 @@ func dataSourceECXL2SellerProfilesRead(ctx context.Context, d *schema.ResourceDa
 	}
 	var filteredProfiles []ecx.L2ServiceProfile
 	nameRegex := d.Get(ecxL2SellerProfilesSchemaNames["NameRegex"]).(string)
-	metros := expandSetToStringList(d.Get(ecxL2SellerProfilesSchemaNames["Metros"]).(*schema.Set))
-	speedBands := expandSetToStringList(d.Get(ecxL2SellerProfilesSchemaNames["SpeedBands"]).(*schema.Set))
+	metros := converters.SetToStringList(d.Get(ecxL2SellerProfilesSchemaNames["Metros"]).(*schema.Set))
+	speedBands := converters.SetToStringList(d.Get(ecxL2SellerProfilesSchemaNames["SpeedBands"]).(*schema.Set))
 	orgName := d.Get(ecxL2SellerProfilesSchemaNames["OrganizationName"]).(string)
 	globalOrgName := d.Get(ecxL2SellerProfilesSchemaNames["GlobalOrganization"]).(string)
 	for _, profile := range profiles {

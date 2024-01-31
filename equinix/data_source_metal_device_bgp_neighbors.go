@@ -5,7 +5,7 @@ import (
 
 	"github.com/equinix/terraform-provider-equinix/internal/config"
 
-	metalv1 "github.com/equinix-labs/metal-go/metal/v1"
+	"github.com/equinix/equinix-sdk-go/services/metalv1"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )

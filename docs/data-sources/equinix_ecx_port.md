@@ -2,11 +2,9 @@
 subcategory: "Fabric"
 ---
 
-# DEPRECATED RESOURCE
-
-End of Life will be June 30th, 2024. Use equinix_fabric_port and equinix_fabric_ports instead.
-
 # equinix_ecx_port (Data Source)
+
+!> **DEPRECATED** End of Life will be June 30th, 2024. Use `equinix_fabric_port` and `equinix_fabric_ports` instead.
 
 Use this data source to get details of Equinix Fabric port with a given name.
 

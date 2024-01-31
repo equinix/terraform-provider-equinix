@@ -4,20 +4,22 @@ import (
 	"context"
 	"log"
 
+	"github.com/equinix/terraform-provider-equinix/internal/converters"
 	equinix_errors "github.com/equinix/terraform-provider-equinix/internal/errors"
 	equinix_schema "github.com/equinix/terraform-provider-equinix/internal/schema"
 
 	"github.com/equinix/terraform-provider-equinix/internal/config"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/packethost/packngo"
 )
 
 func resourceMetalVRF() *schema.Resource {
 	return &schema.Resource{
-		ReadWithoutTimeout:   diagnosticsWrapper(resourceMetalVRFRead),
-		CreateWithoutTimeout: diagnosticsWrapper(resourceMetalVRFCreate),
-		UpdateWithoutTimeout: diagnosticsWrapper(resourceMetalVRFUpdate),
-		DeleteWithoutTimeout: diagnosticsWrapper(resourceMetalVRFDelete),
+		ReadWithoutTimeout:   resourceMetalVRFRead,
+		CreateWithoutTimeout: resourceMetalVRFCreate,
+		UpdateWithoutTimeout: resourceMetalVRFUpdate,
+		DeleteWithoutTimeout: resourceMetalVRFDelete,
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
@@ -60,7 +62,7 @@ func resourceMetalVRF() *schema.Resource {
 	}
 }
 
-func resourceMetalVRFCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) error {
+func resourceMetalVRFCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	meta.(*config.Config).AddModuleToMetalUserAgent(d)
 	client := meta.(*config.Config).Metal
 
@@ -69,13 +71,13 @@ func resourceMetalVRFCreate(ctx context.Context, d *schema.ResourceData, meta in
 		Description: d.Get("description").(string),
 		Metro:       d.Get("metro").(string),
 		LocalASN:    d.Get("local_asn").(int),
-		IPRanges:    expandSetToStringList(d.Get("ip_ranges").(*schema.Set)),
+		IPRanges:    converters.SetToStringList(d.Get("ip_ranges").(*schema.Set)),
 	}
 
 	projectId := d.Get("project_id").(string)
 	vrf, _, err := client.VRFs.Create(projectId, createRequest)
 	if err != nil {
-		return equinix_errors.FriendlyError(err)
+		return diag.FromErr(equinix_errors.FriendlyError(err))
 	}
 
 	d.SetId(vrf.ID)
@@ -83,7 +85,7 @@ func resourceMetalVRFCreate(ctx context.Context, d *schema.ResourceData, meta in
 	return resourceMetalVRFRead(ctx, d, meta)
 }
 
-func resourceMetalVRFUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) error {
+func resourceMetalVRFUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	meta.(*config.Config).AddModuleToMetalUserAgent(d)
 	client := meta.(*config.Config).Metal
 
@@ -101,19 +103,19 @@ func resourceMetalVRFUpdate(ctx context.Context, d *schema.ResourceData, meta in
 		updateRequest.LocalASN = iPtr(d.Get("local_asn").(int))
 	}
 	if d.HasChange("ip_ranges") {
-		ipRanges := expandSetToStringList(d.Get("ip_ranges").(*schema.Set))
+		ipRanges := converters.SetToStringList(d.Get("ip_ranges").(*schema.Set))
 		updateRequest.IPRanges = &ipRanges
 	}
 
 	_, _, err := client.VRFs.Update(d.Id(), updateRequest)
 	if err != nil {
-		return equinix_errors.FriendlyError(err)
+		return diag.FromErr(equinix_errors.FriendlyError(err))
 	}
 
 	return resourceMetalVRFRead(ctx, d, meta)
 }
 
-func resourceMetalVRFRead(ctx context.Context, d *schema.ResourceData, meta interface{}) error {
+func resourceMetalVRFRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	meta.(*config.Config).AddModuleToMetalUserAgent(d)
 	client := meta.(*config.Config).Metal
 
@@ -127,7 +129,7 @@ func resourceMetalVRFRead(ctx context.Context, d *schema.ResourceData, meta inte
 
 			return nil
 		}
-		return err
+		return diag.FromErr(err)
 	}
 	m := map[string]interface{}{
 		"name":        vrf.Name,
@@ -138,10 +140,10 @@ func resourceMetalVRFRead(ctx context.Context, d *schema.ResourceData, meta inte
 		"project_id":  vrf.Project.ID,
 	}
 
-	return equinix_schema.SetMap(d, m)
+	return diag.FromErr(equinix_schema.SetMap(d, m))
 }
 
-func resourceMetalVRFDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) error {
+func resourceMetalVRFDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	meta.(*config.Config).AddModuleToMetalUserAgent(d)
 	client := meta.(*config.Config).Metal
 
@@ -150,5 +152,5 @@ func resourceMetalVRFDelete(ctx context.Context, d *schema.ResourceData, meta in
 		d.SetId("")
 	}
 
-	return equinix_errors.FriendlyError(err)
+	return diag.FromErr(equinix_errors.FriendlyError(err))
 }

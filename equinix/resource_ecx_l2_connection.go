@@ -8,6 +8,10 @@ import (
 	"time"
 
 	"github.com/equinix/terraform-provider-equinix/internal/config"
+	"github.com/equinix/terraform-provider-equinix/internal/converters"
+	equinix_errors "github.com/equinix/terraform-provider-equinix/internal/errors"
+	equinix_schema "github.com/equinix/terraform-provider-equinix/internal/schema"
+	equinix_validation "github.com/equinix/terraform-provider-equinix/internal/validation"
 
 	"github.com/equinix/ecx-go/v2"
 	"github.com/equinix/rest-go"
@@ -210,7 +214,7 @@ func createECXL2ConnectionResourceSchema() map[string]*schema.Schema {
 			MinItems: 1,
 			Elem: &schema.Schema{
 				Type:         schema.TypeString,
-				ValidateFunc: stringIsEmailAddress(),
+				ValidateFunc: equinix_validation.StringIsEmailAddress,
 			},
 			Description: ecxL2ConnectionDescriptions["Notifications"],
 		},
@@ -324,7 +328,7 @@ func createECXL2ConnectionResourceSchema() map[string]*schema.Schema {
 			Optional:     true,
 			Computed:     true,
 			ForceNew:     true,
-			ValidateFunc: stringIsMetroCode(),
+			ValidateFunc: equinix_validation.StringIsMetroCode,
 			Description:  ecxL2ConnectionDescriptions["SellerMetroCode"],
 		},
 		ecxL2ConnectionSchemaNames["AuthorizationKey"]: {
@@ -576,7 +580,7 @@ func createECXL2ConnectionSecondaryResourceSchema() map[string]*schema.Schema {
 			Optional:     true,
 			Computed:     true,
 			ForceNew:     true,
-			ValidateFunc: stringIsMetroCode(),
+			ValidateFunc: equinix_validation.StringIsMetroCode,
 			Description:  ecxL2ConnectionDescriptions["SellerMetroCode"],
 		},
 		ecxL2ConnectionSchemaNames["AuthorizationKey"]: {
@@ -752,13 +756,13 @@ func resourceECXL2ConnectionUpdate(ctx context.Context, d *schema.ResourceData, 
 		ecxL2ConnectionSchemaNames["Speed"],
 		ecxL2ConnectionSchemaNames["SpeedUnit"],
 	}
-	primaryChanges := getResourceDataChangedKeys(supportedChanges, d)
+	primaryChanges := equinix_schema.GetResourceDataChangedKeys(supportedChanges, d)
 	primaryUpdateReq := client.NewL2ConnectionUpdateRequest(d.Id())
 	if err := fillFabricL2ConnectionUpdateRequest(primaryUpdateReq, primaryChanges).Execute(); err != nil {
 		return diag.FromErr(err)
 	}
 	if redID, ok := d.GetOk(ecxL2ConnectionSchemaNames["RedundantUUID"]); ok {
-		secondaryChanges := getResourceDataListElementChanges(supportedChanges, ecxL2ConnectionSchemaNames["SecondaryConnection"], 0, d)
+		secondaryChanges := equinix_schema.GetResourceDataListElementChanges(supportedChanges, ecxL2ConnectionSchemaNames["SecondaryConnection"], 0, d)
 		secondaryUpdateReq := client.NewL2ConnectionUpdateRequest(redID.(string))
 		if err := fillFabricL2ConnectionUpdateRequest(secondaryUpdateReq, secondaryChanges).Execute(); err != nil {
 			return diag.FromErr(err)
@@ -777,7 +781,7 @@ func resourceECXL2ConnectionDelete(ctx context.Context, d *schema.ResourceData, 
 		restErr, ok := err.(rest.Error)
 		if ok {
 			// IC-LAYER2-4021 = Connection already deleted
-			if hasApplicationErrorCode(restErr.ApplicationErrors, "IC-LAYER2-4021") {
+			if equinix_errors.HasApplicationErrorCode(restErr.ApplicationErrors, "IC-LAYER2-4021") {
 				return diags
 			}
 		}
@@ -791,7 +795,7 @@ func resourceECXL2ConnectionDelete(ctx context.Context, d *schema.ResourceData, 
 			restErr, ok := err.(rest.Error)
 			if ok {
 				// IC-LAYER2-4021 = Connection already deleted
-				if hasApplicationErrorCode(restErr.ApplicationErrors, "IC-LAYER2-4021") {
+				if equinix_errors.HasApplicationErrorCode(restErr.ApplicationErrors, "IC-LAYER2-4021") {
 					return diags
 				}
 			}
@@ -825,7 +829,7 @@ func createECXL2Connections(d *schema.ResourceData) (*ecx.L2Connection, *ecx.L2C
 		primary.SpeedUnit = ecx.String(v.(string))
 	}
 	if v, ok := d.GetOk(ecxL2ConnectionSchemaNames["Notifications"]); ok {
-		primary.Notifications = expandSetToStringList(v.(*schema.Set))
+		primary.Notifications = converters.SetToStringList(v.(*schema.Set))
 	}
 	if v, ok := d.GetOk(ecxL2ConnectionSchemaNames["PurchaseOrderNumber"]); ok {
 		primary.PurchaseOrderNumber = ecx.String(v.(string))

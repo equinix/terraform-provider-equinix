@@ -4,6 +4,7 @@ import (
 	"log"
 
 	equinix_errors "github.com/equinix/terraform-provider-equinix/internal/errors"
+	"github.com/equinix/terraform-provider-equinix/internal/network"
 
 	"github.com/equinix/terraform-provider-equinix/internal/config"
 
@@ -31,9 +32,9 @@ func resourceMetalDeviceNetworkType() *schema.Resource {
 			},
 			"type": {
 				Type:         schema.TypeString,
-				Description:  "Network type to set. Must be one of " + NetworkTypeListHB,
+				Description:  "Network type to set. Must be one of " + network.NetworkTypeListHB,
 				Required:     true,
-				ValidateFunc: validation.StringInSlice(DeviceNetworkTypesHB, false),
+				ValidateFunc: validation.StringInSlice(network.DeviceNetworkTypesHB, false),
 			},
 		},
 	}

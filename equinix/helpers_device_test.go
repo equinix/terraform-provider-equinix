@@ -2,40 +2,21 @@ package equinix
 
 import (
 	"context"
-	"fmt"
+	"net/http"
+	"net/http/httptest"
+	"strings"
 	"testing"
 	"time"
 
-	"golang.org/x/exp/slices"
-
-	"github.com/packethost/packngo"
+	"github.com/equinix/equinix-sdk-go/services/metalv1"
+	"github.com/equinix/terraform-provider-equinix/internal/config"
 )
-
-type mockHWService struct {
-	GetFn  func(string, *packngo.GetOptions) (*packngo.HardwareReservation, *packngo.Response, error)
-	ListFn func(string, *packngo.ListOptions) ([]packngo.HardwareReservation, *packngo.Response, error)
-	MoveFn func(string, string) (*packngo.HardwareReservation, *packngo.Response, error)
-}
-
-func (m *mockHWService) Get(id string, opt *packngo.GetOptions) (*packngo.HardwareReservation, *packngo.Response, error) {
-	return m.GetFn(id, opt)
-}
-
-func (m *mockHWService) List(project string, opt *packngo.ListOptions) ([]packngo.HardwareReservation, *packngo.Response, error) {
-	return m.ListFn(project, opt)
-}
-
-func (m *mockHWService) Move(id string, dest string) (*packngo.HardwareReservation, *packngo.Response, error) {
-	return m.MoveFn(id, dest)
-}
-
-var _ packngo.HardwareReservationService = (*mockHWService)(nil)
 
 func Test_waitUntilReservationProvisionable(t *testing.T) {
 	type args struct {
 		reservationId string
 		instanceId    string
-		meta          *packngo.Client
+		handler       func(w http.ResponseWriter, r *http.Request)
 	}
 
 	tests := []struct {
@@ -48,12 +29,10 @@ func Test_waitUntilReservationProvisionable(t *testing.T) {
 			args: args{
 				reservationId: "reservationId",
 				instanceId:    "instanceId",
-				meta: &packngo.Client{
-					HardwareReservations: &mockHWService{
-						GetFn: func(_ string, _ *packngo.GetOptions) (*packngo.HardwareReservation, *packngo.Response, error) {
-							return nil, nil, fmt.Errorf("boom")
-						},
-					},
+				handler: func(w http.ResponseWriter, r *http.Request) {
+					w.Header().Add("Content-Type", "application/json")
+					w.Header().Add("X-Request-Id", "needed for equinix_errors.FriendlyError")
+					w.WriteHeader(http.StatusInternalServerError)
 				},
 			},
 			wantErr: true,
@@ -63,34 +42,42 @@ func Test_waitUntilReservationProvisionable(t *testing.T) {
 			args: args{
 				reservationId: "reservationId",
 				instanceId:    "instanceId",
-				meta: &packngo.Client{
-					HardwareReservations: (func() *mockHWService {
-						invoked := new(int)
+				handler: (func() func(w http.ResponseWriter, r *http.Request) {
+					invoked := new(int)
 
-						responses := map[int]struct {
-							id            string
-							provisionable bool
-						}{
-							0: {"instanceId", false}, // should retry
-							1: {"", true},            // should return success
+					responses := map[int]struct {
+						id            string
+						provisionable bool
+					}{
+						0: {"instanceId", false}, // should retry
+						1: {"", true},            // should return success
+					}
+
+					return func(w http.ResponseWriter, r *http.Request) {
+						response := responses[*invoked]
+						*invoked++
+
+						var device *metalv1.Device
+						include := r.URL.Query().Get("include")
+						if strings.Contains(include, "device") {
+							device = &metalv1.Device{Id: &response.id}
+						}
+						reservation := metalv1.HardwareReservation{
+							Device: device, Provisionable: &response.provisionable,
 						}
 
-						return &mockHWService{
-							GetFn: func(_ string, opts *packngo.GetOptions) (*packngo.HardwareReservation, *packngo.Response, error) {
-								response := responses[*invoked]
-								*invoked++
-
-								var device *packngo.Device
-								if opts != nil && slices.Contains(opts.Includes, "device") {
-									device = &packngo.Device{ID: response.id}
-								}
-								return &packngo.HardwareReservation{
-									Device: device, Provisionable: response.provisionable,
-								}, nil, nil
-							},
+						body, err := reservation.MarshalJSON()
+						if err != nil {
+							// This should never be reached and indicates a failure in the test itself
+							panic(err)
 						}
-					})(),
-				},
+
+						w.Header().Add("Content-Type", "application/json")
+						w.Header().Add("X-Request-Id", "needed for equinix_errors.FriendlyError")
+						w.WriteHeader(http.StatusOK)
+						w.Write(body)
+					}
+				})(),
 			},
 			wantErr: false,
 		},
@@ -99,33 +86,41 @@ func Test_waitUntilReservationProvisionable(t *testing.T) {
 			args: args{
 				reservationId: "reservationId",
 				instanceId:    "instanceId",
-				meta: &packngo.Client{
-					HardwareReservations: (func() *mockHWService {
-						responses := map[int]struct {
-							id            string
-							provisionable bool
-						}{
-							0: {"instanceId", false},      // should retry
-							1: {"new instance id", false}, // should return success
-						}
-						invoked := new(int)
+				handler: (func() func(w http.ResponseWriter, r *http.Request) {
+					responses := map[int]struct {
+						id            string
+						provisionable bool
+					}{
+						0: {"instanceId", false},      // should retry
+						1: {"new instance id", false}, // should return success
+					}
+					invoked := new(int)
 
-						return &mockHWService{
-							GetFn: func(_ string, opts *packngo.GetOptions) (*packngo.HardwareReservation, *packngo.Response, error) {
-								response := responses[*invoked]
-								*invoked++
+					return func(w http.ResponseWriter, r *http.Request) {
+						response := responses[*invoked]
+						*invoked++
 
-								var device *packngo.Device
-								if opts != nil && slices.Contains(opts.Includes, "device") {
-									device = &packngo.Device{ID: response.id}
-								}
-								return &packngo.HardwareReservation{
-									Device: device, Provisionable: response.provisionable,
-								}, nil, nil
-							},
+						var device *metalv1.Device
+						include := r.URL.Query().Get("include")
+						if strings.Contains(include, "device") {
+							device = &metalv1.Device{Id: &response.id}
 						}
-					})(),
-				},
+						reservation := metalv1.HardwareReservation{
+							Device: device, Provisionable: &response.provisionable,
+						}
+
+						body, err := reservation.MarshalJSON()
+						if err != nil {
+							// This should never be reached and indicates a failure in the test itself
+							panic(err)
+						}
+
+						w.Header().Add("Content-Type", "application/json")
+						w.Header().Add("X-Request-Id", "needed for equinix_errors.FriendlyError")
+						w.WriteHeader(http.StatusOK)
+						w.Write(body)
+					}
+				})(),
 			},
 			wantErr: false,
 		},
@@ -134,27 +129,43 @@ func Test_waitUntilReservationProvisionable(t *testing.T) {
 			args: args{
 				reservationId: "reservationId",
 				instanceId:    "instanceId",
-				meta: &packngo.Client{
-					HardwareReservations: &mockHWService{
-						GetFn: func(_ string, _ *packngo.GetOptions) (*packngo.HardwareReservation, *packngo.Response, error) {
-							return &packngo.HardwareReservation{
-								Device: nil, Provisionable: false,
-							}, nil, nil
-						},
-					},
+				handler: func(w http.ResponseWriter, r *http.Request) {
+					reservation := metalv1.HardwareReservation{
+						Device: nil, Provisionable: metalv1.PtrBool(false),
+					}
+
+					body, err := reservation.MarshalJSON()
+					if err != nil {
+						// This should never be reached and indicates a failure in the test itself
+						panic(err)
+					}
+
+					w.Header().Add("Content-Type", "application/json")
+					w.Header().Add("X-Request-Id", "needed for equinix_errors.FriendlyError")
+					w.WriteHeader(http.StatusOK)
+					w.Write(body)
 				},
 			},
 			wantErr: true,
 		},
 	}
 
-	// delay and minTimeout * 2 should be less than timeout for each test.
-	// timeout * number of tests that reach timeout must be less than 30s (default go test timeout).
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if err := waitUntilReservationProvisionable(context.Background(), tt.args.meta, tt.args.reservationId, tt.args.instanceId, 50*time.Millisecond, 1*time.Second, 50*time.Millisecond); (err != nil) != tt.wantErr {
+			ctx := context.Background()
+
+			mockAPI := httptest.NewServer(http.HandlerFunc(tt.args.handler))
+			meta := &config.Config{
+				BaseURL: mockAPI.URL,
+				Token:   "fakeTokenForMock",
+			}
+			meta.Load(ctx)
+
+			if err := waitUntilReservationProvisionable(ctx, meta.Metalgo, tt.args.reservationId, tt.args.instanceId, 50*time.Millisecond, 1*time.Second, 50*time.Millisecond); (err != nil) != tt.wantErr {
 				t.Errorf("waitUntilReservationProvisionable() error = %v, wantErr %v", err, tt.wantErr)
 			}
+
+			mockAPI.Close()
 		})
 	}
 }

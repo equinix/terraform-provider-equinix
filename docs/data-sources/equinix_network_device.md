@@ -42,6 +42,8 @@ NOTE: Exactly one of either `uuid` or `name` must be specified.
   * FAILED
   * DEPROVISIONING
   * DEPROVISIONED
+  * RESOURCE_UPGRADE_IN_PROGRESS
+  * RESOURCE_UPGRADE_FAILED
 * `valid_status_list` - Comma separated list of device states (from see `status` for full list) to be considered valid. Default is 'PROVISIONED'.  Case insensitive. 
 * `license_status` - Device license registration status
   * APPLYING_LICENSE

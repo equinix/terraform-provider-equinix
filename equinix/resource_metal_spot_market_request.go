@@ -16,6 +16,7 @@ import (
 
 	"github.com/equinix/terraform-provider-equinix/internal/config"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/packethost/packngo"
@@ -23,9 +24,9 @@ import (
 
 func resourceMetalSpotMarketRequest() *schema.Resource {
 	return &schema.Resource{
-		CreateContext: diagnosticsWrapper(resourceMetalSpotMarketRequestCreate),
-		ReadContext:   diagnosticsWrapper(resourceMetalSpotMarketRequestRead),
-		DeleteContext: diagnosticsWrapper(resourceMetalSpotMarketRequestDelete),
+		CreateContext: resourceMetalSpotMarketRequestCreate,
+		ReadContext:   resourceMetalSpotMarketRequestRead,
+		DeleteContext: resourceMetalSpotMarketRequestDelete,
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
@@ -219,7 +220,7 @@ func resourceMetalSpotMarketRequest() *schema.Resource {
 	}
 }
 
-func resourceMetalSpotMarketRequestCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) error {
+func resourceMetalSpotMarketRequestCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	meta.(*config.Config).AddModuleToMetalUserAgent(d)
 	client := meta.(*config.Config).Metal
 	var waitForDevices bool
@@ -258,7 +259,7 @@ func resourceMetalSpotMarketRequestCreate(ctx context.Context, d *schema.Resourc
 
 	if params.OperatingSystem == "custom_ipxe" {
 		if params.IPXEScriptURL == "" && params.UserData == "" {
-			return fmt.Errorf("\"ipxe_script_url\" or \"user_data\"" +
+			return diag.Errorf("\"ipxe_script_url\" or \"user_data\"" +
 				" must be provided when \"custom_ipxe\" OS is selected.")
 		}
 
@@ -266,14 +267,14 @@ func resourceMetalSpotMarketRequestCreate(ctx context.Context, d *schema.Resourc
 		// which case it's an error.
 		if params.IPXEScriptURL != "" {
 			if matchIPXEScript.MatchString(params.UserData) {
-				return fmt.Errorf("\"user_data\" should not be an iPXE " +
+				return diag.Errorf("\"user_data\" should not be an iPXE " +
 					"script when \"ipxe_script_url\" is also provided.")
 			}
 		}
 	}
 
 	if params.OperatingSystem != "custom_ipxe" && params.IPXEScriptURL != "" {
-		return fmt.Errorf("\"ipxe_script_url\" argument provided, but" +
+		return diag.Errorf("\"ipxe_script_url\" argument provided, but" +
 			" OS is not \"custom_ipxe\". Please verify and fix device arguments.")
 	}
 
@@ -337,7 +338,7 @@ func resourceMetalSpotMarketRequestCreate(ctx context.Context, d *schema.Resourc
 	start := time.Now()
 	smr, _, err := client.SpotMarketRequests.Create(smrc, d.Get("project_id").(string))
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	d.SetId(smr.ID)
@@ -355,14 +356,14 @@ func resourceMetalSpotMarketRequestCreate(ctx context.Context, d *schema.Resourc
 
 		_, err = stateConf.WaitForStateContext(ctx)
 		if err != nil {
-			return err
+			return diag.FromErr(err)
 		}
 	}
 
 	return resourceMetalSpotMarketRequestRead(ctx, d, meta)
 }
 
-func resourceMetalSpotMarketRequestRead(ctx context.Context, d *schema.ResourceData, meta interface{}) error {
+func resourceMetalSpotMarketRequestRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	meta.(*config.Config).AddModuleToMetalUserAgent(d)
 	client := meta.(*config.Config).Metal
 
@@ -374,7 +375,7 @@ func resourceMetalSpotMarketRequestRead(ctx context.Context, d *schema.ResourceD
 			d.SetId("")
 			return nil
 		}
-		return err
+		return diag.FromErr(err)
 	}
 
 	metro := ""
@@ -382,7 +383,7 @@ func resourceMetalSpotMarketRequestRead(ctx context.Context, d *schema.ResourceD
 		metro = smr.Metro.Code
 	}
 
-	return equinix_schema.SetMap(d, map[string]interface{}{
+	err = equinix_schema.SetMap(d, map[string]interface{}{
 		"metro":         metro,
 		"project_id":    smr.Project.ID,
 		"devices_min":   smr.DevicesMin,
@@ -400,9 +401,11 @@ func resourceMetalSpotMarketRequestRead(ctx context.Context, d *schema.ResourceD
 			return d.Set(k, facilityCodes)
 		},
 	})
+
+	return diag.FromErr(err)
 }
 
-func resourceMetalSpotMarketRequestDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) error {
+func resourceMetalSpotMarketRequestDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	meta.(*config.Config).AddModuleToMetalUserAgent(d)
 	client := meta.(*config.Config).Metal
 	var waitForDevices bool
@@ -428,18 +431,18 @@ func resourceMetalSpotMarketRequestDelete(ctx context.Context, d *schema.Resourc
 
 		_, err = stateConf.WaitForStateContext(ctx)
 		if err != nil {
-			return err
+			return diag.FromErr(err)
 		}
 
 		for _, d := range smr.Devices {
 			resp, err := client.Devices.Delete(d.ID, true)
 			if equinix_errors.IgnoreResponseErrors(equinix_errors.HttpForbidden, equinix_errors.HttpNotFound)(resp, err) != nil {
-				return err
+				return diag.FromErr(err)
 			}
 		}
 	}
 	resp, err := client.SpotMarketRequests.Delete(d.Id(), true)
-	return equinix_errors.IgnoreResponseErrors(equinix_errors.HttpForbidden, equinix_errors.HttpNotFound)(resp, err)
+	return diag.FromErr(equinix_errors.IgnoreResponseErrors(equinix_errors.HttpForbidden, equinix_errors.HttpNotFound)(resp, err))
 }
 
 func resourceStateRefreshFunc(d *schema.ResourceData, meta interface{}) retry.StateRefreshFunc {

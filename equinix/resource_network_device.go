@@ -10,6 +10,9 @@ import (
 	"time"
 
 	"github.com/equinix/terraform-provider-equinix/internal/config"
+	"github.com/equinix/terraform-provider-equinix/internal/converters"
+	equinix_schema "github.com/equinix/terraform-provider-equinix/internal/schema"
+	equinix_validation "github.com/equinix/terraform-provider-equinix/internal/validation"
 
 	"github.com/equinix/ne-go"
 	"github.com/equinix/rest-go"
@@ -205,7 +208,7 @@ func resourceNetworkDevice() *schema.Resource {
 		Schema: createNetworkDeviceSchema(),
 		Timeouts: &schema.ResourceTimeout{
 			Create: schema.DefaultTimeout(90 * time.Minute),
-			Update: schema.DefaultTimeout(30 * time.Minute),
+			Update: schema.DefaultTimeout(90 * time.Minute),
 			Delete: schema.DefaultTimeout(30 * time.Minute),
 		},
 		Description: "Resource allows creation and management of Equinix Network Edge virtual devices",
@@ -252,7 +255,7 @@ func createNetworkDeviceSchema() map[string]*schema.Schema {
 			Type:         schema.TypeString,
 			Required:     true,
 			ForceNew:     true,
-			ValidateFunc: stringIsMetroCode(),
+			ValidateFunc: equinix_validation.StringIsMetroCode,
 			Description:  neDeviceDescriptions["MetroCode"],
 		},
 		neDeviceSchemaNames["IBX"]: {
@@ -374,7 +377,7 @@ func createNetworkDeviceSchema() map[string]*schema.Schema {
 			MinItems: 1,
 			Elem: &schema.Schema{
 				Type:         schema.TypeString,
-				ValidateFunc: stringIsEmailAddress(),
+				ValidateFunc: equinix_validation.StringIsEmailAddress,
 			},
 			Description: neDeviceDescriptions["Notifications"],
 		},
@@ -425,7 +428,6 @@ func createNetworkDeviceSchema() map[string]*schema.Schema {
 		neDeviceSchemaNames["CoreCount"]: {
 			Type:         schema.TypeInt,
 			Required:     true,
-			ForceNew:     true,
 			ValidateFunc: validation.IntAtLeast(1),
 			Description:  neDeviceDescriptions["CoreCount"],
 		},
@@ -524,7 +526,7 @@ func createNetworkDeviceSchema() map[string]*schema.Schema {
 						Type:         schema.TypeString,
 						Required:     true,
 						ForceNew:     true,
-						ValidateFunc: stringIsMetroCode(),
+						ValidateFunc: equinix_validation.StringIsMetroCode,
 						Description:  neDeviceDescriptions["MetroCode"],
 					},
 					neDeviceSchemaNames["IBX"]: {
@@ -609,7 +611,7 @@ func createNetworkDeviceSchema() map[string]*schema.Schema {
 						MinItems: 1,
 						Elem: &schema.Schema{
 							Type:         schema.TypeString,
-							ValidateFunc: stringIsEmailAddress(),
+							ValidateFunc: equinix_validation.StringIsEmailAddress,
 						},
 						Description: neDeviceDescriptions["Notifications"],
 					},
@@ -959,18 +961,26 @@ func resourceNetworkDeviceUpdate(ctx context.Context, d *schema.ResourceData, m 
 	m.(*config.Config).AddModuleToNEUserAgent(&client, d)
 	var diags diag.Diagnostics
 	supportedChanges := []string{
-		neDeviceSchemaNames["Name"], neDeviceSchemaNames["TermLength"],
+		neDeviceSchemaNames["Name"], neDeviceSchemaNames["TermLength"], neDeviceSchemaNames["CoreCount"],
 		neDeviceSchemaNames["Notifications"], neDeviceSchemaNames["AdditionalBandwidth"],
 		neDeviceSchemaNames["ACLTemplateUUID"], neDeviceSchemaNames["MgmtAclTemplateUuid"],
 	}
 	updateReq := client.NewDeviceUpdateRequest(d.Id())
-	primaryChanges := getResourceDataChangedKeys(supportedChanges, d)
+	primaryChanges := equinix_schema.GetResourceDataChangedKeys(supportedChanges, d)
+	var clusterChanges map[string]interface{}
+	clusterSupportedChanges := []string{neDeviceClusterSchemaNames["ClusterName"]}
+	if _, ok := d.GetOk(neDeviceSchemaNames["ClusterDetails"]); ok {
+		clusterChanges = equinix_schema.GetResourceDataListElementChanges(clusterSupportedChanges, neDeviceSchemaNames["ClusterDetails"], 0, d)
+		for key, value := range clusterChanges {
+			primaryChanges[key] = value
+		}
+	}
 	if err := fillNetworkDeviceUpdateRequest(updateReq, primaryChanges).Execute(); err != nil {
 		return diag.FromErr(err)
 	}
 	var secondaryChanges map[string]interface{}
 	if v, ok := d.GetOk(neDeviceSchemaNames["RedundantUUID"]); ok {
-		secondaryChanges = getResourceDataListElementChanges(supportedChanges, neDeviceSchemaNames["Secondary"], 0, d)
+		secondaryChanges = equinix_schema.GetResourceDataListElementChanges(supportedChanges, neDeviceSchemaNames["Secondary"], 0, d)
 		secondaryUpdateReq := client.NewDeviceUpdateRequest(v.(string))
 		if err := fillNetworkDeviceUpdateRequest(secondaryUpdateReq, secondaryChanges).Execute(); err != nil {
 			return diag.FromErr(err)
@@ -1072,7 +1082,7 @@ func createNetworkDevices(d *schema.ResourceData) (*ne.Device, *ne.Device) {
 		primary.AccountNumber = ne.String(v.(string))
 	}
 	if v, ok := d.GetOk(neDeviceSchemaNames["Notifications"]); ok {
-		primary.Notifications = expandSetToStringList(v.(*schema.Set))
+		primary.Notifications = converters.SetToStringList(v.(*schema.Set))
 	}
 	if v, ok := d.GetOk(neDeviceSchemaNames["PurchaseOrderNumber"]); ok {
 		primary.PurchaseOrderNumber = ne.String(v.(string))
@@ -1094,7 +1104,7 @@ func createNetworkDevices(d *schema.ResourceData) (*ne.Device, *ne.Device) {
 	}
 	primary.IsSelfManaged = ne.Bool(d.Get(neDeviceSchemaNames["IsSelfManaged"]).(bool))
 	if v, ok := d.GetOk(neDeviceSchemaNames["VendorConfiguration"]); ok {
-		primary.VendorConfiguration = expandInterfaceMapToStringMap(v.(map[string]interface{}))
+		primary.VendorConfiguration = converters.InterfaceMapToStringMap(v.(map[string]interface{}))
 	}
 	if v, ok := d.GetOk(neDeviceSchemaNames["WanInterfaceId"]); ok {
 		primary.WanInterfaceId = ne.String(v.(string))
@@ -1318,7 +1328,7 @@ func expandNetworkDeviceSecondary(devices []interface{}) *ne.Device {
 		transformed.AccountNumber = ne.String(v.(string))
 	}
 	if v, ok := device[neDeviceSchemaNames["Notifications"]]; ok {
-		transformed.Notifications = expandSetToStringList(v.(*schema.Set))
+		transformed.Notifications = converters.SetToStringList(v.(*schema.Set))
 	}
 	if v, ok := device[neDeviceSchemaNames["AdditionalBandwidth"]]; ok && !isEmpty(v) {
 		transformed.AdditionalBandwidth = ne.Int(v.(int))
@@ -1327,7 +1337,7 @@ func expandNetworkDeviceSecondary(devices []interface{}) *ne.Device {
 		transformed.WanInterfaceId = ne.String(v.(string))
 	}
 	if v, ok := device[neDeviceSchemaNames["VendorConfiguration"]]; ok {
-		transformed.VendorConfiguration = expandInterfaceMapToStringMap(v.(map[string]interface{}))
+		transformed.VendorConfiguration = converters.InterfaceMapToStringMap(v.(map[string]interface{}))
 	}
 	if v, ok := device[neDeviceSchemaNames["UserPublicKey"]]; ok {
 		userKeys := expandNetworkDeviceUserKeys(v.(*schema.Set))
@@ -1498,13 +1508,17 @@ func fillNetworkDeviceUpdateRequest(updateReq ne.DeviceUpdateRequest, changes ma
 		case neDeviceSchemaNames["TermLength"]:
 			updateReq.WithTermLength(changeValue.(int))
 		case neDeviceSchemaNames["Notifications"]:
-			updateReq.WithNotifications(expandSetToStringList(changeValue.(*schema.Set)))
+			updateReq.WithNotifications(converters.SetToStringList(changeValue.(*schema.Set)))
+		case neDeviceSchemaNames["CoreCount"]:
+			updateReq.WithCore(changeValue.(int))
 		case neDeviceSchemaNames["AdditionalBandwidth"]:
 			updateReq.WithAdditionalBandwidth(changeValue.(int))
 		case neDeviceSchemaNames["ACLTemplateUUID"]:
 			updateReq.WithACLTemplate(changeValue.(string))
 		case neDeviceSchemaNames["MgmtAclTemplateUuid"]:
 			updateReq.WithMgmtAclTemplate(changeValue.(string))
+		case neDeviceClusterSchemaNames["ClusterName"]:
+			updateReq.WithClusterName(changeValue.(string))
 		}
 	}
 	return updateReq
@@ -1530,6 +1544,11 @@ func getNetworkDeviceStateChangeConfigs(c ne.Client, deviceID string, timeout ti
 	if _, found := changes[neDeviceSchemaNames["AdditionalBandwidth"]]; found {
 		configs = append(configs,
 			createNetworkDeviceAdditionalBandwidthStatusWaitConfiguration(c.GetDeviceAdditionalBandwidthDetails, deviceID, 1*time.Second, timeout),
+		)
+	}
+	if _, found := changes[neDeviceSchemaNames["CoreCount"]]; found {
+		configs = append(configs,
+			createNetworkDeviceStatusResourceUpgradeWaitConfiguration(c.GetDevice, deviceID, 5*time.Second, timeout),
 		)
 	}
 	return configs
@@ -1588,6 +1607,19 @@ func createNetworkDeviceStatusDeleteWaitConfiguration(fetchFunc getDevice, id st
 	}
 	target := []string{
 		ne.DeviceStateDeprovisioned,
+	}
+	return createNetworkDeviceStatusWaitConfiguration(fetchFunc, id, delay, timeout, target, pending)
+}
+
+func createNetworkDeviceStatusResourceUpgradeWaitConfiguration(fetchFunc getDevice, id string, delay time.Duration, timeout time.Duration) *retry.StateChangeConf {
+	pending := []string{
+		ne.DeviceStateResourceUpgradeInProgress,
+		ne.DeviceStateWaitingPrimary,
+		ne.DeviceStateWaitingSecondary,
+		ne.DeviceStateWaitingClusterNodes,
+	}
+	target := []string{
+		ne.DeviceStateProvisioned,
 	}
 	return createNetworkDeviceStatusWaitConfiguration(fetchFunc, id, delay, timeout, target, pending)
 }

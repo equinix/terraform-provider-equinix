@@ -15,8 +15,8 @@ import (
 	"time"
 
 	v4 "github.com/equinix-labs/fabric-go/fabric/v4"
-	metalv1 "github.com/equinix-labs/metal-go/metal/v1"
 	"github.com/equinix/ecx-go/v2"
+	"github.com/equinix/equinix-sdk-go/services/metalv1"
 	"github.com/equinix/ne-go"
 	"github.com/equinix/oauth2-go"
 	"github.com/equinix/terraform-provider-equinix/version"
@@ -28,9 +28,13 @@ import (
 	xoauth2 "golang.org/x/oauth2"
 )
 
-var (
-	UuidRE         = regexp.MustCompile("^[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-4[a-fA-F0-9]{3}-[8|9|aA|bB][a-fA-F0-9]{3}-[a-fA-F0-9]{12}$")
-	IpAddressTypes = []string{"public_ipv4", "private_ipv4", "public_ipv6"}
+const (
+	EndpointEnvVar       = "EQUINIX_API_ENDPOINT"
+	ClientIDEnvVar       = "EQUINIX_API_CLIENTID"
+	ClientSecretEnvVar   = "EQUINIX_API_CLIENTSECRET"
+	ClientTokenEnvVar    = "EQUINIX_API_TOKEN"
+	ClientTimeoutEnvVar  = "EQUINIX_API_TIMEOUT"
+	MetalAuthTokenEnvVar = "METAL_AUTH_TOKEN"
 )
 
 type ProviderMeta struct {

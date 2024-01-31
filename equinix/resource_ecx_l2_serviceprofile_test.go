@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/equinix/ecx-go/v2"
+	"github.com/equinix/terraform-provider-equinix/internal/converters"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/stretchr/testify/assert"
 )
@@ -167,12 +168,12 @@ func TestFabricL2ServiceProfile_updateResourceData(t *testing.T) {
 	assert.Equal(t, ecx.BoolValue(input.EquinixManagedPortAndVlan), d.Get(ecxL2ServiceProfileSchemaNames["EquinixManagedPortAndVlan"]), "EquinixManagedPortAndVlan matches")
 	assert.Equal(t, ecx.StringValue(input.IntegrationID), d.Get(ecxL2ServiceProfileSchemaNames["IntegrationID"]), "IntegrationID matches")
 	assert.Equal(t, ecx.StringValue(input.Name), d.Get(ecxL2ServiceProfileSchemaNames["Name"]), "Name matches")
-	assert.Equal(t, input.OnBandwidthThresholdNotification, expandSetToStringList(d.Get(ecxL2ServiceProfileSchemaNames["OnBandwidthThresholdNotification"]).(*schema.Set)), "OnBandwidthThresholdNotification matches")
-	assert.Equal(t, input.OnProfileApprovalRejectNotification, expandSetToStringList(d.Get(ecxL2ServiceProfileSchemaNames["OnProfileApprovalRejectNotification"]).(*schema.Set)), "OnProfileApprovalRejectNotification matches")
-	assert.Equal(t, input.OnVcApprovalRejectionNotification, expandSetToStringList(d.Get(ecxL2ServiceProfileSchemaNames["OnVcApprovalRejectionNotification"]).(*schema.Set)), "OnVcApprovalRejectionNotification matches")
+	assert.Equal(t, input.OnBandwidthThresholdNotification, converters.SetToStringList(d.Get(ecxL2ServiceProfileSchemaNames["OnBandwidthThresholdNotification"]).(*schema.Set)), "OnBandwidthThresholdNotification matches")
+	assert.Equal(t, input.OnProfileApprovalRejectNotification, converters.SetToStringList(d.Get(ecxL2ServiceProfileSchemaNames["OnProfileApprovalRejectNotification"]).(*schema.Set)), "OnProfileApprovalRejectNotification matches")
+	assert.Equal(t, input.OnVcApprovalRejectionNotification, converters.SetToStringList(d.Get(ecxL2ServiceProfileSchemaNames["OnVcApprovalRejectionNotification"]).(*schema.Set)), "OnVcApprovalRejectionNotification matches")
 	assert.Equal(t, ecx.StringValue(input.OverSubscription), d.Get(ecxL2ServiceProfileSchemaNames["OverSubscription"]), "OverSubscription matches")
 	assert.Equal(t, ecx.BoolValue(input.Private), d.Get(ecxL2ServiceProfileSchemaNames["Private"]), "Private matches")
-	assert.Equal(t, input.PrivateUserEmails, expandSetToStringList(d.Get(ecxL2ServiceProfileSchemaNames["PrivateUserEmails"]).(*schema.Set)), "PrivateUserEmails matches")
+	assert.Equal(t, input.PrivateUserEmails, converters.SetToStringList(d.Get(ecxL2ServiceProfileSchemaNames["PrivateUserEmails"]).(*schema.Set)), "PrivateUserEmails matches")
 	assert.Equal(t, ecx.BoolValue(input.RequiredRedundancy), d.Get(ecxL2ServiceProfileSchemaNames["RequiredRedundancy"]), "RequiredRedundancy matches")
 	assert.Equal(t, ecx.BoolValue(input.SpeedFromAPI), d.Get(ecxL2ServiceProfileSchemaNames["SpeedFromAPI"]), "SpeedFromAPI matches")
 	assert.Equal(t, ecx.StringValue(input.TagType), d.Get(ecxL2ServiceProfileSchemaNames["TagType"]), "TagType matches")

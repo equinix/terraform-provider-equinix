@@ -5,6 +5,8 @@ import (
 	"net/http"
 	"strings"
 
+	fabric "github.com/equinix-labs/fabric-go/fabric/v4"
+	"github.com/equinix/rest-go"
 	"github.com/packethost/packngo"
 )
 
@@ -45,6 +47,43 @@ func convertToFriendlyError(errors Errors, resp *http.Response) error {
 		}
 	}
 	return er
+}
+
+func FormatFabricAdditionalInfo(additionalInfo []fabric.PriceErrorAdditionalInfo) string {
+	var str []string
+	for _, addInfo := range additionalInfo {
+		property, reason := addInfo.Property, addInfo.Reason
+		if property != "" {
+			property = fmt.Sprintf("Property: %s, ", addInfo.Property)
+		}
+		if reason != "" {
+			reason = fmt.Sprintf("%s", addInfo.Reason)
+		} else {
+			reason = fmt.Sprintf("Reason: Not Provided")
+		}
+		str = append(str, fmt.Sprintf("{%s%s}", property, reason))
+	}
+	return strings.Join(str, ", ")
+}
+
+func FormatFabricError(err error) error {
+	// If in future one would like to do something with the response body of the API request
+	// The line below is how to access it with the SwaggerCodegen Fabric Go 12/7/2023 - thogarty
+	// errors = append(errors, string(err.(fabric.GenericSwaggerError).Body()))
+	var errors Errors
+	errors = append(errors, err.Error())
+	if fabricErrs, ok := err.(fabric.GenericSwaggerError).Model().([]fabric.ModelError); ok {
+		for _, e := range fabricErrs {
+			errors = append(errors, fmt.Sprintf("Code: %s", e.ErrorCode))
+			errors = append(errors, fmt.Sprintf("Message: %s", e.ErrorMessage))
+			errors = append(errors, fmt.Sprintf("Details: %s", e.Details))
+			if additionalInfo := FormatFabricAdditionalInfo(e.AdditionalInfo); additionalInfo != "" {
+				errors = append(errors, fmt.Sprintf("AdditionalInfo: [%s]", additionalInfo))
+			}
+		}
+	}
+
+	return errors
 }
 
 func IsForbidden(err error) bool {
@@ -143,6 +182,52 @@ func IgnoreResponseErrors(ignore ...func(resp *http.Response, err error) bool) f
 		mute := false
 		for _, ignored := range ignore {
 			if ignored(r, err) {
+				mute = true
+				break
+			}
+		}
+
+		if mute {
+			return nil
+		}
+		return err
+	}
+}
+
+func IsRestNotFoundError(err error) bool {
+	if restErr, ok := err.(rest.Error); ok {
+		if restErr.HTTPCode == http.StatusNotFound {
+			return true
+		}
+	}
+	return false
+}
+
+func HasApplicationErrorCode(errors []rest.ApplicationError, code string) bool {
+	for _, err := range errors {
+		if err.Code == code {
+			return true
+		}
+	}
+	return false
+}
+
+func HasModelErrorCode(errors []fabric.ModelError, code string) bool {
+	for _, err := range errors {
+		if err.ErrorCode == code {
+			return true
+		}
+	}
+	return false
+}
+
+// ignoreHttpResponseErrors ignores http response errors when matched by one of the
+// provided checks
+func IgnoreHttpResponseErrors(ignore ...func(resp *http.Response, err error) bool) func(resp *http.Response, err error) error {
+	return func(resp *http.Response, err error) error {
+		mute := false
+		for _, ignored := range ignore {
+			if ignored(resp, err) {
 				mute = true
 				break
 			}

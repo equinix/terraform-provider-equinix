@@ -9,15 +9,17 @@ import (
 	"strings"
 
 	"github.com/equinix/terraform-provider-equinix/internal/config"
+	"github.com/equinix/terraform-provider-equinix/internal/network"
 
-	metalv1 "github.com/equinix-labs/metal-go/metal/v1"
+	"github.com/equinix/equinix-sdk-go/services/metalv1"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/structure"
 )
 
 func dataSourceMetalDevice() *schema.Resource {
 	return &schema.Resource{
-		ReadWithoutTimeout: diagnosticsWrapper(dataSourceMetalDeviceRead),
+		ReadWithoutTimeout: dataSourceMetalDeviceRead,
 		Schema: map[string]*schema.Schema{
 			"hostname": {
 				Type:          schema.TypeString,
@@ -106,7 +108,7 @@ func dataSourceMetalDevice() *schema.Resource {
 			},
 			"network_type": {
 				Type:        schema.TypeString,
-				Description: "L2 network type of the device, one of" + NetworkTypeList,
+				Description: "L2 network type of the device, one of" + network.NetworkTypeList,
 				Computed:    true,
 			},
 			"hardware_reservation_id": {
@@ -209,7 +211,7 @@ func dataSourceMetalDevice() *schema.Resource {
 	}
 }
 
-func dataSourceMetalDeviceRead(ctx context.Context, d *schema.ResourceData, meta interface{}) error {
+func dataSourceMetalDeviceRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*config.Config).Metalgo
 
 	hostnameRaw, hostnameOK := d.GetOk("hostname")
@@ -217,32 +219,32 @@ func dataSourceMetalDeviceRead(ctx context.Context, d *schema.ResourceData, meta
 	deviceIdRaw, deviceIdOK := d.GetOk("device_id")
 
 	if !deviceIdOK && !hostnameOK {
-		return fmt.Errorf("You must supply device_id or hostname")
+		return diag.Errorf("You must supply device_id or hostname")
 	}
 	var device *metalv1.Device
 
 	if hostnameOK {
 		if !projectIdOK {
-			return fmt.Errorf("If you lookup via hostname, you must supply project_id")
+			return diag.Errorf("If you lookup via hostname, you must supply project_id")
 		}
 		hostname := hostnameRaw.(string)
 		projectId := projectIdRaw.(string)
 
 		ds, _, err := client.DevicesApi.FindProjectDevices(ctx, projectId).Hostname(hostname).Include(deviceCommonIncludes).Execute()
 		if err != nil {
-			return err
+			return diag.FromErr(err)
 		}
 
 		device, err = findDeviceByHostname(ds, hostname)
 		if err != nil {
-			return err
+			return diag.FromErr(err)
 		}
 	} else {
 		deviceId := deviceIdRaw.(string)
 		var err error
 		device, _, err = client.DevicesApi.FindDeviceById(ctx, deviceId).Include(deviceCommonIncludes).Execute()
 		if err != nil {
-			return err
+			return diag.FromErr(err)
 		}
 	}
 
@@ -265,12 +267,12 @@ func dataSourceMetalDeviceRead(ctx context.Context, d *schema.ResourceData, meta
 	if device.Storage != nil {
 		rawStorageBytes, err := json.Marshal(device.Storage)
 		if err != nil {
-			return fmt.Errorf("[ERR] Error getting storage JSON string for device (%s): %s", d.Id(), err)
+			return diag.Errorf("[ERR] Error getting storage JSON string for device (%s): %s", d.Id(), err)
 		}
 
 		storageString, err := structure.NormalizeJsonString(string(rawStorageBytes))
 		if err != nil {
-			return fmt.Errorf("[ERR] Error normalizing storage JSON string for device (%s): %s", d.Id(), err)
+			return diag.Errorf("[ERR] Error normalizing storage JSON string for device (%s): %s", d.Id(), err)
 		}
 		d.Set("storage", storageString)
 	}
@@ -280,7 +282,7 @@ func dataSourceMetalDeviceRead(ctx context.Context, d *schema.ResourceData, meta
 	}
 	networkType, err := getNetworkType(device)
 	if err != nil {
-		return fmt.Errorf("[ERR] Error computing network type for device (%s): %s", d.Id(), err)
+		return diag.Errorf("[ERR] Error computing network type for device (%s): %s", d.Id(), err)
 	}
 
 	d.Set("network_type", networkType)

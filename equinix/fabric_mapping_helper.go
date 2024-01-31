@@ -3,6 +3,7 @@ package equinix
 import (
 	"fmt"
 	v4 "github.com/equinix-labs/fabric-go/fabric/v4"
+	"github.com/equinix/terraform-provider-equinix/internal/converters"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"log"
 )
@@ -164,7 +165,7 @@ func notificationToFabric(schemaNotifications []interface{}) []v4.SimplifiedNoti
 		ntype := n.(map[string]interface{})["type"].(string)
 		interval := n.(map[string]interface{})["send_interval"].(string)
 		emailsRaw := n.(map[string]interface{})["emails"].([]interface{})
-		emails := expandListToStringList(emailsRaw)
+		emails := converters.IfArrToStringArr(emailsRaw)
 		notifications = append(notifications, v4.SimplifiedNotification{
 			Type_:        ntype,
 			SendInterval: interval,

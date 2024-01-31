@@ -7,15 +7,16 @@ import (
 	"github.com/equinix/terraform-provider-equinix/internal/config"
 
 	"github.com/equinix/ne-go"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
+	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/terraform"
 )
 
 func TestAccNetworkFile_VSRX(t *testing.T) {
 	context := map[string]interface{}{
 		"resourceName":   "test",
-		"fileName":       fmt.Sprintf("%s-%s", tstResourcePrefix, randString(6)) + ".lic",
-		"content":        randString(50),
+		"fileName":       fmt.Sprintf("%s-%s", tstResourcePrefix, acctest.RandString(6)) + ".lic",
+		"content":        acctest.RandString(50),
 		"metroCode":      "SV",
 		"deviceTypeCode": "VSRX",
 		"processType":    "LICENSE",

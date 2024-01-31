@@ -7,6 +7,8 @@ import (
 	"net/http"
 
 	"github.com/equinix/terraform-provider-equinix/internal/config"
+	"github.com/equinix/terraform-provider-equinix/internal/converters"
+	equinix_validation "github.com/equinix/terraform-provider-equinix/internal/validation"
 
 	"github.com/equinix/ne-go"
 	"github.com/equinix/rest-go"
@@ -114,7 +116,7 @@ func createNetworkACLTemplateSchema() map[string]*schema.Schema {
 			Type:         schema.TypeString,
 			Optional:     true,
 			Deprecated:   networkACLTemplateDeprecateDescriptions["MetroCode"],
-			ValidateFunc: stringIsMetroCode(),
+			ValidateFunc: equinix_validation.StringIsMetroCode,
 			Description:  networkACLTemplateDescriptions["MetroCode"],
 		},
 		networkACLTemplateSchemaNames["DeviceUUID"]: {
@@ -187,13 +189,13 @@ func createNetworkACLTemplateInboundRuleSchema() map[string]*schema.Schema {
 		networkACLTemplateInboundRuleSchemaNames["SrcPort"]: {
 			Type:         schema.TypeString,
 			Required:     true,
-			ValidateFunc: stringIsPortDefinition(),
+			ValidateFunc: equinix_validation.StringIsPortDefinition,
 			Description:  networkACLTemplateInboundRuleDescriptions["SrcPort"],
 		},
 		networkACLTemplateInboundRuleSchemaNames["DstPort"]: {
 			Type:         schema.TypeString,
 			Required:     true,
-			ValidateFunc: stringIsPortDefinition(),
+			ValidateFunc: equinix_validation.StringIsPortDefinition,
 			Description:  networkACLTemplateInboundRuleDescriptions["DstPort"],
 		},
 		networkACLTemplateInboundRuleSchemaNames["Description"]: {
@@ -337,7 +339,7 @@ func expandACLTemplateInboundRules(rules []interface{}) []ne.ACLTemplateInboundR
 		rule := ne.ACLTemplateInboundRule{}
 		rule.SeqNo = ne.Int(i + 1)
 		if v, ok := ruleMap[networkACLTemplateInboundRuleSchemaNames["Subnets"]]; ok {
-			rule.Subnets = expandListToStringList(v.([]interface{}))
+			rule.Subnets = converters.IfArrToStringArr(v.([]interface{}))
 		}
 		if v, ok := ruleMap[networkACLTemplateInboundRuleSchemaNames["Subnet"]]; ok {
 			rule.Subnet = ne.String(v.(string))

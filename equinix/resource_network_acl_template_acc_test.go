@@ -9,8 +9,9 @@ import (
 	"github.com/equinix/terraform-provider-equinix/internal/config"
 
 	"github.com/equinix/ne-go"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
+	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/terraform"
 )
 
 func init() {
@@ -55,13 +56,13 @@ func testSweepNetworkACLTemplate(region string) error {
 func TestAccNetworkACLTemplate(t *testing.T) {
 	context := map[string]interface{}{
 		"resourceName":               "test",
-		"name":                       fmt.Sprintf("%s-%s", tstResourcePrefix, randString(6)),
-		"description":                randString(50),
+		"name":                       fmt.Sprintf("%s-%s", tstResourcePrefix, acctest.RandString(6)),
+		"description":                acctest.RandString(50),
 		"inbound_rule_1_subnet":      "10.0.0.0/16",
 		"inbound_rule_1_protocol":    "TCP",
 		"inbound_rule_1_src_port":    "any",
 		"inbound_rule_1_dst_port":    "22-23",
-		"inbound_rule_1_description": randString(50),
+		"inbound_rule_1_description": acctest.RandString(50),
 		"inbound_rule_2_subnet":      "192.168.16.0/24",
 		"inbound_rule_2_protocol":    "UDP",
 		"inbound_rule_2_src_port":    "any",
@@ -72,8 +73,8 @@ func TestAccNetworkACLTemplate(t *testing.T) {
 		"inbound_rule_3_dst_port":    "any",
 	}
 	contextWithChanges := copyMap(context)
-	contextWithChanges["description"] = randString(50)
-	contextWithChanges["inbound_rule_1_description"] = randString(50)
+	contextWithChanges["description"] = acctest.RandString(50)
+	contextWithChanges["inbound_rule_1_description"] = acctest.RandString(50)
 	contextWithChanges["inbound_rule_3_subnet"] = "4.4.4.4/32"
 	contextWithChanges["inbound_rule_3_protocol"] = "TCP"
 	contextWithChanges["inbound_rule_3_dst_port"] = "2048"

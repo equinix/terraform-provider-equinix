@@ -8,6 +8,7 @@ import (
 	"runtime/debug"
 	"strings"
 
+	equinix_errors "github.com/equinix/terraform-provider-equinix/internal/errors"
 	equinix_schema "github.com/equinix/terraform-provider-equinix/internal/schema"
 
 	"github.com/equinix/terraform-provider-equinix/internal/config"
@@ -27,7 +28,7 @@ func resourceFabricPortRead(ctx context.Context, d *schema.ResourceData, meta in
 		if !strings.Contains(err.Error(), "500") {
 			d.SetId("")
 		}
-		return diag.FromErr(err)
+		return diag.FromErr(equinix_errors.FormatFabricError(err))
 	}
 	d.SetId(port.Uuid)
 	return setFabricPortMap(d, port)
@@ -52,7 +53,7 @@ func setFabricPortMap(d *schema.ResourceData, port v4.Port) diag.Diagnostics {
 		"location":            locationToTerra(port.Location),
 		"device":              deviceToTerra(port.Device),
 		"encapsulation":       encapsulationToTerra(port.Encapsulation),
-		"lag":                 port.LagEnabled,
+		"lag_enabled":         port.LagEnabled,
 	})
 	if err != nil {
 		return diag.FromErr(err)
@@ -97,7 +98,7 @@ func resourceFabricPortGetByPortName(ctx context.Context, d *schema.ResourceData
 		if !strings.Contains(err.Error(), "500") {
 			d.SetId("")
 		}
-		return diag.FromErr(err)
+		return diag.FromErr(equinix_errors.FormatFabricError(err))
 	}
 	if len(ports.Data) != 1 {
 		error := fmt.Errorf("incorrect # of records are found for the port name parameter criteria - %d , please change the criteria", len(ports.Data))

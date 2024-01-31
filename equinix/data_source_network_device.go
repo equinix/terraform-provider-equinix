@@ -23,6 +23,8 @@ var neDeviceStateMap = map[string]string{
 	"waiting_for_replica_cluster_nodes": ne.DeviceStateWaitingClusterNodes,
 	"waiting_for_primary":               ne.DeviceStateWaitingPrimary,
 	"waiting_for_secondary":             ne.DeviceStateWaitingSecondary,
+	"resource_upgrade_in_progress":      ne.DeviceStateResourceUpgradeInProgress,
+	"resource_upgrade_failed":           ne.DeviceStateResourceUpgradeFailed,
 }
 
 func getNeDeviceStatusList(deviceStateText string) (*[]string, error) {

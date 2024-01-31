@@ -5,6 +5,9 @@ import (
 	"fmt"
 
 	"github.com/equinix/terraform-provider-equinix/internal/config"
+	"github.com/equinix/terraform-provider-equinix/internal/converters"
+	equinix_errors "github.com/equinix/terraform-provider-equinix/internal/errors"
+	equinix_validation "github.com/equinix/terraform-provider-equinix/internal/validation"
 
 	"github.com/equinix/ecx-go/v2"
 	"github.com/equinix/rest-go"
@@ -205,7 +208,7 @@ func createECXL2ServiceProfileResourceSchema() map[string]*schema.Schema {
 			Description: ecxL2ServiceProfileDescriptions["OnBandwidthThresholdNotification"],
 			Elem: &schema.Schema{
 				Type:         schema.TypeString,
-				ValidateFunc: stringIsEmailAddress(),
+				ValidateFunc: equinix_validation.StringIsEmailAddress,
 			},
 		},
 		ecxL2ServiceProfileSchemaNames["OnProfileApprovalRejectNotification"]: {
@@ -215,7 +218,7 @@ func createECXL2ServiceProfileResourceSchema() map[string]*schema.Schema {
 			Description: ecxL2ServiceProfileDescriptions["OnProfileApprovalRejectNotification"],
 			Elem: &schema.Schema{
 				Type:         schema.TypeString,
-				ValidateFunc: stringIsEmailAddress(),
+				ValidateFunc: equinix_validation.StringIsEmailAddress,
 			},
 		},
 		ecxL2ServiceProfileSchemaNames["OnVcApprovalRejectionNotification"]: {
@@ -225,7 +228,7 @@ func createECXL2ServiceProfileResourceSchema() map[string]*schema.Schema {
 			Description: ecxL2ServiceProfileDescriptions["OnVcApprovalRejectionNotification"],
 			Elem: &schema.Schema{
 				Type:         schema.TypeString,
-				ValidateFunc: stringIsEmailAddress(),
+				ValidateFunc: equinix_validation.StringIsEmailAddress,
 			},
 		},
 		ecxL2ServiceProfileSchemaNames["OverSubscription"]: {
@@ -248,7 +251,7 @@ func createECXL2ServiceProfileResourceSchema() map[string]*schema.Schema {
 			Description: ecxL2ServiceProfileDescriptions["PrivateUserEmails"],
 			Elem: &schema.Schema{
 				Type:         schema.TypeString,
-				ValidateFunc: stringIsEmailAddress(),
+				ValidateFunc: equinix_validation.StringIsEmailAddress,
 			},
 		},
 		ecxL2ServiceProfileSchemaNames["RequiredRedundancy"]: {
@@ -312,7 +315,7 @@ func createECXL2ServiceProfileResourceSchema() map[string]*schema.Schema {
 					ecxL2ServiceProfilePortSchemaNames["MetroCode"]: {
 						Type:         schema.TypeString,
 						Required:     true,
-						ValidateFunc: stringIsMetroCode(),
+						ValidateFunc: equinix_validation.StringIsMetroCode,
 						Description:  ecxL2ServiceProfilePortDescriptions["MetroCode"],
 					},
 				},
@@ -391,7 +394,7 @@ func resourceECXL2ServiceProfileDelete(ctx context.Context, d *schema.ResourceDa
 		restErr, ok := err.(rest.Error)
 		if ok {
 			// IC-PROFILE-004 =  profile does not exist
-			if hasApplicationErrorCode(restErr.ApplicationErrors, "IC-PROFILE-004") {
+			if equinix_errors.HasApplicationErrorCode(restErr.ApplicationErrors, "IC-PROFILE-004") {
 				return diags
 			}
 		}
@@ -445,13 +448,13 @@ func createECXL2ServiceProfile(d *schema.ResourceData) *ecx.L2ServiceProfile {
 		profile.Name = ecx.String(v.(string))
 	}
 	if v, ok := d.GetOk(ecxL2ServiceProfileSchemaNames["OnBandwidthThresholdNotification"]); ok {
-		profile.OnBandwidthThresholdNotification = expandSetToStringList(v.(*schema.Set))
+		profile.OnBandwidthThresholdNotification = converters.SetToStringList(v.(*schema.Set))
 	}
 	if v, ok := d.GetOk(ecxL2ServiceProfileSchemaNames["OnProfileApprovalRejectNotification"]); ok {
-		profile.OnProfileApprovalRejectNotification = expandSetToStringList(v.(*schema.Set))
+		profile.OnProfileApprovalRejectNotification = converters.SetToStringList(v.(*schema.Set))
 	}
 	if v, ok := d.GetOk(ecxL2ServiceProfileSchemaNames["OnVcApprovalRejectionNotification"]); ok {
-		profile.OnVcApprovalRejectionNotification = expandSetToStringList(v.(*schema.Set))
+		profile.OnVcApprovalRejectionNotification = converters.SetToStringList(v.(*schema.Set))
 	}
 	if v, ok := d.GetOk(ecxL2ServiceProfileSchemaNames["OverSubscription"]); ok {
 		profile.OverSubscription = ecx.String(v.(string))
@@ -460,7 +463,7 @@ func createECXL2ServiceProfile(d *schema.ResourceData) *ecx.L2ServiceProfile {
 		profile.Private = ecx.Bool(v.(bool))
 	}
 	if v, ok := d.GetOk(ecxL2ServiceProfileSchemaNames["PrivateUserEmails"]); ok {
-		profile.PrivateUserEmails = expandSetToStringList(v.(*schema.Set))
+		profile.PrivateUserEmails = converters.SetToStringList(v.(*schema.Set))
 	}
 	if v, ok := d.GetOk(ecxL2ServiceProfileSchemaNames["RequiredRedundancy"]); ok {
 		profile.RequiredRedundancy = ecx.Bool(v.(bool))
@@ -550,7 +553,7 @@ func updateECXL2ServiceProfileResource(profile *ecx.L2ServiceProfile, d *schema.
 	// API accepts capitalizations of the private user emails and converts it to a lowercase string
 	// If API retuns same emails in lowercase we keep to suppress diff
 	if v, ok := d.GetOk(ecxL2ServiceProfileSchemaNames["PrivateUserEmails"]); ok {
-		prevPrivateUserEmails := expandSetToStringList(v.(*schema.Set))
+		prevPrivateUserEmails := converters.SetToStringList(v.(*schema.Set))
 		if slicesMatchCaseInsensitive(prevPrivateUserEmails, profile.PrivateUserEmails) {
 			profile.PrivateUserEmails = prevPrivateUserEmails
 		}

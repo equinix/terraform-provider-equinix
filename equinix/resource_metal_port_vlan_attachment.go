@@ -7,6 +7,7 @@ import (
 	equinix_errors "github.com/equinix/terraform-provider-equinix/internal/errors"
 
 	"github.com/equinix/terraform-provider-equinix/internal/config"
+	"github.com/equinix/terraform-provider-equinix/internal/mutexkv"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/packethost/packngo"
@@ -139,8 +140,8 @@ func resourceMetalPortVlanAttachmentCreate(d *schema.ResourceData, meta interfac
 		// Equinix Metal doesn't allow multiple VLANs to be assigned
 		// to the same port at the same time
 		lockId := "vlan-attachment-" + port.ID
-		metalMutexKV.Lock(lockId)
-		defer metalMutexKV.Unlock(lockId)
+		mutexkv.Metal.Lock(lockId)
+		defer mutexkv.Metal.Unlock(lockId)
 
 		_, _, err = client.DevicePorts.Assign(par)
 		if err != nil {
@@ -252,8 +253,8 @@ func resourceMetalPortVlanAttachmentDelete(d *schema.ResourceData, meta interfac
 	}
 	par := &packngo.PortAssignRequest{PortID: pID, VirtualNetworkID: vlanID}
 	lockId := "vlan-detachment-" + pID
-	metalMutexKV.Lock(lockId)
-	defer metalMutexKV.Unlock(lockId)
+	mutexkv.Metal.Lock(lockId)
+	defer mutexkv.Metal.Unlock(lockId)
 	portPtr, resp, err := client.DevicePorts.Unassign(par)
 	if equinix_errors.IgnoreResponseErrors(equinix_errors.HttpForbidden, equinix_errors.HttpNotFound, equinix_errors.IsNotAssigned)(resp, err) != nil {
 		return err
