@@ -12,6 +12,17 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 )
 
+func init() {
+	resource.AddTestSweepers("equinix_fabric_connection_PNFV", &resource.Sweeper{
+		Name: "equinix_fabric_connection",
+		F:    testSweepConnections,
+	})
+}
+
+func testSweepConnections(region string) error {
+	return nil
+}
+
 func TestAccFabricCreateConnection(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
