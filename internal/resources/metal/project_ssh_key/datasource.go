@@ -15,7 +15,7 @@ func NewDataSource() datasource.DataSource {
 		BaseDataSource: framework.NewBaseDataSource(
 			framework.BaseDataSourceConfig{
 				Name:   "equinix_metal_project_ssh_key",
-				Schema: &frameworkDataSourceSchema,
+				Schema: &dataSourceSchema,
 			},
 		),
 	}

@@ -7,7 +7,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 )
 
-var frameworkDataSourceSchema = schema.Schema{
+var dataSourceSchema = schema.Schema{
 	Attributes: map[string]schema.Attribute{
 		"project_id": schema.StringAttribute{
 			Description: "The ID of parent project",
@@ -16,16 +16,20 @@ var frameworkDataSourceSchema = schema.Schema{
 		"search": schema.StringAttribute{
 			Description:  "The name, fingerprint, id, or public_key of the SSH Key to search for in the Equinix Metal project",
 			Optional:    true,
-			Validators: []validator.String{
+			Validators:  []validator.String{
 				stringvalidator.AtLeastOneOf(path.Expressions{
 					path.MatchRoot("id"),
 				}...),
+				stringvalidator.LengthAtLeast(1),
 			},
 		},
 		"id": schema.StringAttribute{
 			Description: "The id of the SSH Key",
 			Optional:    true,
 			Computed:    true,
+			Validators:  []validator.String{
+				stringvalidator.LengthAtLeast(1),
+			},
 		},
 		"name": schema.StringAttribute{
 			Description: "The label of the Equinix Metal SSH Key",

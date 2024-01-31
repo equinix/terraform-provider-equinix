@@ -16,7 +16,7 @@ func NewResource() resource.Resource {
 		BaseResource: framework.NewBaseResource(
 			framework.BaseResourceConfig{
 				Name:   "equinix_metal_project_ssh_key",
-				Schema: &frameworkResourceSchema,
+				Schema: GetResourceSchema(),
 			},
 		),
 	}
@@ -53,7 +53,7 @@ func (r *Resource) Create(
 	key, _, err := client.SSHKeys.Create(createRequest)
 	if err != nil {
 		resp.Diagnostics.AddError(
-			"Failed to create SSH Key",
+			"Failed to create Project SSH Key",
 			equinix_errors.FriendlyError(err).Error(),
 		)
 		return
@@ -96,14 +96,14 @@ func (r *Resource) Read(
 		// succesfully gone
 		if equinix_errors.IsNotFound(err) {
 			resp.Diagnostics.AddWarning(
-				"SSHKey",
+				"Equinix Metal Project SSHKey not found during refresh",
 				fmt.Sprintf("[WARN] SSHKey (%s) not found, removing from state", id),
 			)
 			resp.State.RemoveResource(ctx)
 			return
 		}
 		resp.Diagnostics.AddError(
-			fmt.Sprintf("Failed to get SSHKey %s", id),
+			fmt.Sprintf("Failed to get Project SSHKey %s", id),
 			err.Error(),
 		)
 	}
@@ -190,7 +190,7 @@ func (r *Resource) Delete(
 	if equinix_errors.IgnoreResponseErrors(equinix_errors.HttpForbidden, equinix_errors.HttpNotFound)(deleteResp, err) != nil {
 		err = equinix_errors.FriendlyError(err)
 		resp.Diagnostics.AddError(
-			fmt.Sprintf("Failed to delete SSHKey %s", id),
+			fmt.Sprintf("Failed to delete Project SSHKey %s", id),
 			err.Error(),
 		)
 	}

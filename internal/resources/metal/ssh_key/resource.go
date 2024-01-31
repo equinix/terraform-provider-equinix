@@ -1,125 +1,195 @@
 package ssh_key
 
 import (
-	"log"
-	"path"
-	"strings"
+	"context"
+	"fmt"
 
-	equinix_errors "github.com/equinix/terraform-provider-equinix/internal/errors"
-
-	"github.com/equinix/terraform-provider-equinix/internal/config"
-
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/packethost/packngo"
+	"github.com/equinix/terraform-provider-equinix/internal/framework"
+	equinix_errors "github.com/equinix/terraform-provider-equinix/internal/errors"
 )
 
-func Resource() *schema.Resource {
-	return &schema.Resource{
-		Create: create,
-		Read:   read,
-		Update: update,
-		Delete: delete,
-		Importer: &schema.ResourceImporter{
-			State: schema.ImportStatePassthrough,
-		},
-
-		Schema: CommonFieldsResource(),
+func NewResource() resource.Resource {
+	return &Resource{
+		BaseResource: framework.NewBaseResource(
+			framework.BaseResourceConfig{
+				Name:   "equinix_metal_ssh_key",
+				Schema: GetResourceSchema(),
+			},
+		),
 	}
 }
 
-func create(d *schema.ResourceData, meta interface{}) error {
-	meta.(*config.Config).AddModuleToMetalUserAgent(d)
-	client := meta.(*config.Config).Metal
+type Resource struct {
+	framework.BaseResource
+}
 
+func (r *Resource) Create(
+	ctx context.Context,
+	req resource.CreateRequest,
+	resp *resource.CreateResponse,
+) {
+
+	r.Meta.AddFwModuleToMetalUserAgent(ctx, req.ProviderMeta)
+	client := r.Meta.Metal
+
+	// Retrieve values from plan
+	var plan ResourceModel
+	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	// Generate API request body from plan
 	createRequest := &packngo.SSHKeyCreateRequest{
-		Label: d.Get("name").(string),
-		Key:   d.Get("public_key").(string),
+		Label: plan.Name.ValueString(),
+		Key:   plan.PublicKey.ValueString(),
 	}
 
-	projectID, isProjectKey := d.GetOk("project_id")
-	if isProjectKey {
-		createRequest.ProjectID = projectID.(string)
-	}
-
+	// Create API resource
 	key, _, err := client.SSHKeys.Create(createRequest)
 	if err != nil {
-		return equinix_errors.FriendlyError(err)
+		resp.Diagnostics.AddError(
+			"Failed to create SSH Key",
+			equinix_errors.FriendlyError(err).Error(),
+		)
+		return
 	}
 
-	d.SetId(key.ID)
+	// Parse API response into the Terraform state
+	resp.Diagnostics.Append(plan.parse(key)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
 
-	return read(d, meta)
+	// Set state to fully populated data
+	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
 
-func read(d *schema.ResourceData, meta interface{}) error {
-	meta.(*config.Config).AddModuleToMetalUserAgent(d)
-	client := meta.(*config.Config).Metal
+func (r *Resource) Read(
+	ctx context.Context,
+	req resource.ReadRequest,
+	resp *resource.ReadResponse,
+) {
+	r.Meta.AddFwModuleToMetalUserAgent(ctx, req.ProviderMeta)
+	client := r.Meta.Metal
 
-	key, _, err := client.SSHKeys.Get(d.Id(), nil)
+	// Retrieve values from state
+	var state ResourceModel
+	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	// Extract the ID of the resource from the state
+    id := state.ID.ValueString()
+
+    // Use API client to get the current state of the resource
+	key, _, err := client.SSHKeys.Get(id, nil)
 	if err != nil {
 		err = equinix_errors.FriendlyError(err)
 
 		// If the key is somehow already destroyed, mark as
 		// succesfully gone
 		if equinix_errors.IsNotFound(err) {
-			log.Printf("[WARN] SSHKey (%s) not found, removing from state", d.Id())
-			d.SetId("")
-			return nil
+			resp.Diagnostics.AddWarning(
+				"Equinix Metal SSHKey not found during refresh",
+				fmt.Sprintf("[WARN] SSHKey (%s) not found, removing from state", id),
+			)
+			resp.State.RemoveResource(ctx)
+			return
 		}
-
-		return err
+		resp.Diagnostics.AddError(
+			fmt.Sprintf("Failed to get SSHKey %s", id),
+			err.Error(),
+		)
 	}
 
-	ownerID := path.Base(key.Owner.Href)
-
-	d.SetId(key.ID)
-	d.Set("name", key.Label)
-	d.Set("public_key", key.Key)
-	d.Set("fingerprint", key.FingerPrint)
-	d.Set("owner_id", ownerID)
-	d.Set("created", key.Created)
-	d.Set("updated", key.Updated)
-
-	if strings.Contains(key.Owner.Href, "/projects/") {
-		d.Set("project_id", ownerID)
+	// Set state to fully populated data
+	resp.Diagnostics.Append(state.parse(key)...)
+	if resp.Diagnostics.HasError() {
+		return
 	}
 
-	return nil
+	// Update the Terraform state
+	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 }
 
-func update(d *schema.ResourceData, meta interface{}) error {
-	meta.(*config.Config).AddModuleToMetalUserAgent(d)
-	client := meta.(*config.Config).Metal
+
+func (r *Resource) Update(
+    ctx context.Context,
+    req resource.UpdateRequest,
+    resp *resource.UpdateResponse,
+) {
+	r.Meta.AddFwModuleToMetalUserAgent(ctx, req.ProviderMeta)
+	client := r.Meta.Metal
+
+	// Retrieve values from plan
+	var state, plan ResourceModel
+	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
+	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	// Extract the ID of the resource from the state
+	id := plan.ID.ValueString()
 
 	updateRequest := &packngo.SSHKeyUpdateRequest{}
-
-	if d.HasChange("name") {
-		kName := d.Get("name").(string)
-		updateRequest.Label = &kName
+	if !state.Name.Equal(plan.Name) {
+		updateRequest.Label = plan.Name.ValueStringPointer()
+	}
+	if !state.PublicKey.Equal(plan.PublicKey) {
+		updateRequest.Key = plan.PublicKey.ValueStringPointer()
 	}
 
-	if d.HasChange("public_key") {
-		kKey := d.Get("public_key").(string)
-		updateRequest.Key = &kKey
-	}
-
-	_, _, err := client.SSHKeys.Update(d.Id(), updateRequest)
+	// Update the resource
+	key, _, err := client.SSHKeys.Update(plan.ID.ValueString(), updateRequest)
 	if err != nil {
-		return equinix_errors.FriendlyError(err)
+		err = equinix_errors.FriendlyError(err)
+		resp.Diagnostics.AddError(
+			"Error updating resource",
+			"Could not update resource with ID " + id + ": " + err.Error(),
+		)
+		return
 	}
 
-	return read(d, meta)
+	// Set state to fully populated data
+	resp.Diagnostics.Append(plan.parse(key)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	// Read the updated state back into Terraform state
+	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
 
-func delete(d *schema.ResourceData, meta interface{}) error {
-	meta.(*config.Config).AddModuleToMetalUserAgent(d)
-	client := meta.(*config.Config).Metal
+func (r *Resource) Delete(
+	ctx context.Context,
+	req resource.DeleteRequest,
+	resp *resource.DeleteResponse,
+) {
+	r.Meta.AddFwModuleToMetalUserAgent(ctx, req.ProviderMeta)
+	client := r.Meta.Metal
 
-	resp, err := client.SSHKeys.Delete(d.Id())
-	if equinix_errors.IgnoreResponseErrors(equinix_errors.HttpForbidden, equinix_errors.HttpNotFound)(resp, err) != nil {
-		return equinix_errors.FriendlyError(err)
+	// Retrieve values from plan
+	var state ResourceModel
+	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
+	if resp.Diagnostics.HasError() {
+		return
 	}
 
-	d.SetId("")
-	return nil
+	// Extract the ID of the resource from the state
+	id := state.ID.ValueString()
+
+	// Use API client to delete the resource
+	deleteResp, err := client.SSHKeys.Delete(id)
+	if equinix_errors.IgnoreResponseErrors(equinix_errors.HttpForbidden, equinix_errors.HttpNotFound)(deleteResp, err) != nil {
+		err = equinix_errors.FriendlyError(err)
+		resp.Diagnostics.AddError(
+			fmt.Sprintf("Failed to delete SSHKey %s", id),
+			err.Error(),
+		)
+	}
 }
