@@ -423,7 +423,7 @@ resource "equinix_fabric_connection" "vd2token" {
       }
       interface {
         type = "NETWORK"
-        id = 45654
+        id = 7
       }
     }
   }
