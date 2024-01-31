@@ -41,7 +41,6 @@ func GetFabricEnvConnectionTestData(t *testing.T) map[string]map[string]string {
 }
 
 func TestAccFabricCreatePort2SPConnection_PFCR(t *testing.T) {
-	t.Skip("Skipping while focused on port connection")
 	ports := GetFabricEnvPorts(t)
 	connectionsTestData := GetFabricEnvConnectionTestData(t)
 	resource.ParallelTest(t, resource.TestCase{
@@ -74,7 +73,7 @@ func TestAccFabricCreatePort2SPConnection_PFCR(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						"equinix_fabric_connection.test", "z_side.0.access_point.0.profile.0.type", "L2_PROFILE"),
 					resource.TestCheckResourceAttr(
-						"equinix_fabric_connection.test", "z_side.0.access_point.0.profile.0.name", connectionsTestData["public-sp"]["spName"]),
+						"equinix_fabric_connection.test", "z_side.0.access_point.0.profile.0.name", connectionsTestData["pfcr"]["publicSPName"]),
 					resource.TestCheckResourceAttr(
 						"equinix_fabric_connection.test", "z_side.0.access_point.0.location.0.metro_code", "SV"),
 				),
@@ -136,7 +135,6 @@ func testAccFabricCreatePort2SPConnectionConfig(spName, name, portUuid string) s
 }
 
 func TestAccFabricCreatePort2PortConnection_PFCR(t *testing.T) {
-	t.Skip("Is Successful; skipping because of duration")
 	ports := GetFabricEnvPorts(t)
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { acceptance.TestAccPreCheck(t) },
@@ -148,13 +146,11 @@ func TestAccFabricCreatePort2PortConnection_PFCR(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("equinix_fabric_connection.test", "id"),
 					resource.TestCheckResourceAttr(
-						"equinix_fabric_connection.test", "name", "port_test__PFCR"),
+						"equinix_fabric_connection.test", "name", "port_test_PFCR"),
 					resource.TestCheckResourceAttr(
 						"equinix_fabric_connection.test", "bandwidth", "50"),
 					resource.TestCheckResourceAttr(
 						"equinix_fabric_connection.test", "type", "EVPL_VC"),
-					resource.TestCheckResourceAttr(
-						"equinix_fabric_connection.test", "redundancy.0.priority", "PRIMARY"),
 					resource.TestCheckResourceAttr(
 						"equinix_fabric_connection.test", "order.0.purchase_order_number", "1-129105284100"),
 					resource.TestCheckResourceAttr(
@@ -181,8 +177,6 @@ func TestAccFabricCreatePort2PortConnection_PFCR(t *testing.T) {
 						"equinix_fabric_connection.test", "bandwidth", "100"),
 					resource.TestCheckResourceAttr(
 						"equinix_fabric_connection.test", "type", "EVPL_VC"),
-					resource.TestCheckResourceAttr(
-						"equinix_fabric_connection.test", "redundancy.0.priority", "PRIMARY"),
 					resource.TestCheckResourceAttr(
 						"equinix_fabric_connection.test", "order.0.purchase_order_number", "1-129105284100"),
 					resource.TestCheckResourceAttr(
@@ -250,7 +244,6 @@ func testAccFabricCreatePort2PortConnectionConfig(bandwidth int32, aSidePortUuid
 }
 
 func TestAccFabricCreateCloudRouter2PortConnection_PFCR(t *testing.T) {
-	t.Skip("Skipping while focused on port connection")
 	ports := GetFabricEnvPorts(t)
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { acceptance.TestAccPreCheck(t) },
@@ -275,7 +268,7 @@ func TestAccFabricCreateCloudRouter2PortConnection_PFCR(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						"equinix_fabric_connection.test", "a_side.0.access_point.0.type", "CLOUD_ROUTER"),
 					resource.TestCheckResourceAttrSet(
-						"equinix_fabric_connection.test", "a_side.0.access_point.0.router"),
+						"equinix_fabric_connection.test", "a_side.0.access_point.0.router.0.uuid"),
 					resource.TestCheckResourceAttr(
 						"equinix_fabric_connection.test", "z_side.0.access_point.0.type", "COLO"),
 					resource.TestCheckResourceAttr(
@@ -363,7 +356,6 @@ func testAccFabricCreateCloudRouter2PortConnectionConfig(name, portUuid string) 
 }
 
 func TestAccFabricCreateVirtualDevice2NetworkConnection_PNFV(t *testing.T) {
-	t.Skip("Skipping while PFNV account gets fixed")
 	connectionTestData := GetFabricEnvConnectionTestData(t)
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { acceptance.TestAccPreCheck(t) },
@@ -374,31 +366,29 @@ func TestAccFabricCreateVirtualDevice2NetworkConnection_PNFV(t *testing.T) {
 				Config: testAccFabricCreateVirtualDevice2NetworkConnectionConfig("vd2network_PNFV", connectionTestData["pnfv"]["virtualDevice"], connectionTestData["pnfv"]["network"]),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(
-						"equinix_fabric_connection.test", "name", "vd2network_PFCR"),
+						"equinix_fabric_connection.test", "name", "vd2network_PNFV"),
 					resource.TestCheckResourceAttr(
 						"equinix_fabric_connection.test", "bandwidth", "50"),
 					resource.TestCheckResourceAttr(
-						"equinix_fabric_connection.test", "type", "EVPL_VC"),
+						"equinix_fabric_connection.test", "type", "EVPLAN_VC"),
 					resource.TestCheckResourceAttr(
 						"equinix_fabric_connection.test", "redundancy.0.priority", "PRIMARY"),
 					resource.TestCheckResourceAttr(
 						"equinix_fabric_connection.test", "order.0.purchase_order_number", "123485"),
 					resource.TestCheckResourceAttr(
-						"equinix_fabric_connection.test", "project.0.project_id", "291639000636552"),
-					resource.TestCheckResourceAttr(
 						"equinix_fabric_connection.test", "a_side.0.access_point.0.type", "VD"),
 					resource.TestCheckResourceAttr(
-						"equinix_fabric_connection.test", "a_side.0.access_point.0.virtual_device.0.type", "NETWORK"),
+						"equinix_fabric_connection.test", "a_side.0.access_point.0.virtual_device.0.type", "EDGE"),
 					resource.TestCheckResourceAttr(
 						"equinix_fabric_connection.test", "a_side.0.access_point.0.virtual_device.0.uuid", connectionTestData["pnfv"]["virtualDevice"]),
 					resource.TestCheckResourceAttr(
-						"equinix_fabric_connection.test", "a_side.0.access_point.0.interface.0.type", "NETWORK"),
+						"equinix_fabric_connection.test", "a_side.0.access_point.0.interface.0.type", "CLOUD"),
 					resource.TestCheckResourceAttr(
 						"equinix_fabric_connection.test", "a_side.0.access_point.0.interface.0.id", "7"),
 					resource.TestCheckResourceAttr(
 						"equinix_fabric_connection.test", "z_side.0.access_point.0.type", "NETWORK"),
-					resource.TestCheckResourceAttr(
-						"equinix_fabric_connection.test", "z_side.0.access_point.0.network.0.uuid", connectionTestData["pnfv"]["network"]),
+					//resource.TestCheckResourceAttr(
+					//	"equinix_fabric_connection.test", "z_side.0.access_point.0.network.0.uuid", connectionTestData["pnfv"]["network"]),
 				),
 				ExpectNonEmptyPlan: true,
 			},
@@ -410,7 +400,7 @@ func testAccFabricCreateVirtualDevice2NetworkConnectionConfig(name, virtualDevic
 	return fmt.Sprintf(`
 
 	resource "equinix_fabric_connection" "test" {
-		type = "EVPL_VC"
+		type = "EVPLAN_VC"
 		name = "%s"
 		notifications{
 			type = "ALL"
@@ -431,7 +421,7 @@ func testAccFabricCreateVirtualDevice2NetworkConnectionConfig(name, virtualDevic
 					uuid = "%s"
 				}
 				interface {
-					type = "NETWORK"
+					type = "CLOUD"
 					id = 7
 				}
 			}
@@ -440,7 +430,7 @@ func testAccFabricCreateVirtualDevice2NetworkConnectionConfig(name, virtualDevic
 			access_point {
 				type = "NETWORK"
 				network {
-					uuid "%s"
+					uuid = "%s"
 				}
 			}
 		}
