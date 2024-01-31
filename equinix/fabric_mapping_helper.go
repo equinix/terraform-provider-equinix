@@ -437,25 +437,6 @@ func operationToTerra(operation *v4.ConnectionOperation) *schema.Set {
 	return operationSet
 }
 
-func networkOperationToTerra(operation *v4.NetworkOperation) *schema.Set {
-	if operation == nil {
-		return nil
-	}
-	operations := []*v4.NetworkOperation{operation}
-	mappedOperations := make([]interface{}, len(operations))
-	for _, operation := range operations {
-		mappedOperation := make(map[string]interface{})
-		mappedOperation["equinix_status"] = string(*operation.EquinixStatus)
-		mappedOperations = append(mappedOperations, mappedOperation)
-	}
-
-	operationSet := schema.NewSet(
-		schema.HashResource(createNetworkOperationSchRes),
-		mappedOperations,
-	)
-	return operationSet
-}
-
 func orderMappingToTerra(order *v4.Order) *schema.Set {
 	if order == nil {
 		return nil
@@ -838,24 +819,6 @@ func simplifiedServiceProfileToTerra(profile *v4.SimplifiedServiceProfile) *sche
 		mappedProfiles,
 	)
 	return profileSet
-}
-
-func simplifiedNetworkChangeToTerra(networkChange *v4.SimplifiedNetworkChange) *schema.Set {
-	changes := []*v4.SimplifiedNetworkChange{networkChange}
-	mappedChanges := make([]interface{}, len(changes))
-	for _, change := range changes {
-		mappedChange := make(map[string]interface{})
-		mappedChange["href"] = change.Href
-		mappedChange["type"] = string(*change.Type_)
-		mappedChange["uuid"] = change.Uuid
-		mappedChanges = append(mappedChanges, mappedChange)
-	}
-
-	changeSet := schema.NewSet(
-		schema.HashResource(createNetworkChangeRes),
-		mappedChanges,
-	)
-	return changeSet
 }
 
 func accessPointTypeConfigToTerra(spAccessPointTypes []v4.ServiceProfileAccessPointType) []interface{} {
@@ -1291,21 +1254,6 @@ func getCloudRouterUpdateRequest(conn v4.CloudRouter, d *schema.ResourceData) (v
 		changeOps = v4.CloudRouterChangeOperation{Op: "replace", Path: "/package", Value: &updatePackageVal}
 	} else {
 		return changeOps, fmt.Errorf("nothing to update for the connection %s", existingName)
-	}
-	return changeOps, nil
-}
-
-func getNetworkUpdateRequest(network v4.Network, d *schema.ResourceData) (v4.NetworkChangeOperation, error) {
-	changeOps := v4.NetworkChangeOperation{}
-	existingName := network.Name
-	updateNameVal := d.Get("name")
-
-	log.Printf("existing name %s, Update Name Request %s ", existingName, updateNameVal)
-
-	if existingName != updateNameVal {
-		changeOps = v4.NetworkChangeOperation{Op: "replace", Path: "/name", Value: &updateNameVal}
-	} else {
-		return changeOps, fmt.Errorf("nothing to update for the Fabric Network: %s", existingName)
 	}
 	return changeOps, nil
 }
