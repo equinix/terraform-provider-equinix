@@ -1,12 +1,12 @@
 package equinix
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"regexp"
 	"strings"
 	"testing"
-	"context"
 
 	"github.com/equinix/terraform-provider-equinix/internal/config"
 	"github.com/equinix/terraform-provider-equinix/internal/provider"

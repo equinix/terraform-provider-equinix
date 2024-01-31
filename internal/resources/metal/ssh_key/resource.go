@@ -4,10 +4,10 @@ import (
 	"context"
 	"fmt"
 
+	equinix_errors "github.com/equinix/terraform-provider-equinix/internal/errors"
+	"github.com/equinix/terraform-provider-equinix/internal/framework"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/packethost/packngo"
-	"github.com/equinix/terraform-provider-equinix/internal/framework"
-	equinix_errors "github.com/equinix/terraform-provider-equinix/internal/errors"
 )
 
 func NewResource() resource.Resource {
@@ -83,9 +83,9 @@ func (r *Resource) Read(
 	}
 
 	// Extract the ID of the resource from the state
-    id := state.ID.ValueString()
+	id := state.ID.ValueString()
 
-    // Use API client to get the current state of the resource
+	// Use API client to get the current state of the resource
 	key, _, err := client.SSHKeys.Get(id, nil)
 	if err != nil {
 		err = equinix_errors.FriendlyError(err)
@@ -116,11 +116,10 @@ func (r *Resource) Read(
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 }
 
-
 func (r *Resource) Update(
-    ctx context.Context,
-    req resource.UpdateRequest,
-    resp *resource.UpdateResponse,
+	ctx context.Context,
+	req resource.UpdateRequest,
+	resp *resource.UpdateResponse,
 ) {
 	r.Meta.AddFwModuleToMetalUserAgent(ctx, req.ProviderMeta)
 	client := r.Meta.Metal
@@ -150,7 +149,7 @@ func (r *Resource) Update(
 		err = equinix_errors.FriendlyError(err)
 		resp.Diagnostics.AddError(
 			"Error updating resource",
-			"Could not update resource with ID " + id + ": " + err.Error(),
+			"Could not update resource with ID "+id+": "+err.Error(),
 		)
 		return
 	}

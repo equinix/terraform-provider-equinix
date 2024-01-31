@@ -4,10 +4,10 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/equinix/terraform-provider-equinix/internal/config"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
-	"github.com/equinix/terraform-provider-equinix/internal/config"
 )
 
 func GetResourceMeta(

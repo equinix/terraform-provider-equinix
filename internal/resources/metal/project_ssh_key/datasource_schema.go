@@ -2,8 +2,8 @@ package project_ssh_key
 
 import (
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
-	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 )
 
@@ -14,9 +14,9 @@ var dataSourceSchema = schema.Schema{
 			Required:    true,
 		},
 		"search": schema.StringAttribute{
-			Description:  "The name, fingerprint, id, or public_key of the SSH Key to search for in the Equinix Metal project",
+			Description: "The name, fingerprint, id, or public_key of the SSH Key to search for in the Equinix Metal project",
 			Optional:    true,
-			Validators:  []validator.String{
+			Validators: []validator.String{
 				stringvalidator.AtLeastOneOf(path.Expressions{
 					path.MatchRoot("id"),
 				}...),
@@ -27,7 +27,7 @@ var dataSourceSchema = schema.Schema{
 			Description: "The id of the SSH Key",
 			Optional:    true,
 			Computed:    true,
-			Validators:  []validator.String{
+			Validators: []validator.String{
 				stringvalidator.LengthAtLeast(1),
 			},
 		},

@@ -7,11 +7,11 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/equinix/terraform-provider-equinix/internal/config"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/provider"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
-	"github.com/equinix/terraform-provider-equinix/internal/config"
 )
 
 type FrameworkProviderConfig struct {

@@ -3,10 +3,10 @@ package framework
 import (
 	"context"
 	"fmt"
-	
+
+	"github.com/equinix/terraform-provider-equinix/internal/config"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
-	"github.com/equinix/terraform-provider-equinix/internal/config"
 )
 
 func GetDataSourceMeta(

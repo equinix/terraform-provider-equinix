@@ -8,7 +8,7 @@ import (
 )
 
 func GetResourceSchema() *schema.Schema {
-    sch := GetCommonFieldsSchema()
+	sch := GetCommonFieldsSchema()
 	sch.Attributes["name"] = schema.StringAttribute{
 		Description: "The name of the SSH key for identification",
 		Required:    true,
@@ -24,8 +24,8 @@ func GetResourceSchema() *schema.Schema {
 }
 
 func GetCommonFieldsSchema() *schema.Schema {
-    return &schema.Schema{
-        Attributes: map[string]schema.Attribute{
+	return &schema.Schema{
+		Attributes: map[string]schema.Attribute{
 			"id": framework.IDAttributeDefaultDescription(),
 			"fingerprint": schema.StringAttribute{
 				Description: "The fingerprint of the SSH key",

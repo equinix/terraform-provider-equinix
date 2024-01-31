@@ -235,8 +235,8 @@ func TestAccMetalSSHKey_upgradeFromVersion(t *testing.T) {
 	cfg := testAccMetalSSHKeyConfig_basic(rInt, publicKeyMaterial)
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acceptance.TestAccPreCheckMetal(t) },
-		CheckDestroy:      testAccMetalSSHKeyCheckDestroyed,
+		PreCheck:     func() { acceptance.TestAccPreCheckMetal(t) },
+		CheckDestroy: testAccMetalSSHKeyCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
 				ExternalProviders: map[string]resource.ExternalProvider{
@@ -258,7 +258,7 @@ func TestAccMetalSSHKey_upgradeFromVersion(t *testing.T) {
 			},
 			{
 				ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
-				Config: cfg,
+				Config:                   cfg,
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectEmptyPlan(),

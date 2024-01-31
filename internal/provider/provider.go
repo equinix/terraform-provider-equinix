@@ -6,14 +6,14 @@ import (
 	"regexp"
 
 	"github.com/equinix/terraform-provider-equinix/internal/config"
-	metalsshkey "github.com/equinix/terraform-provider-equinix/internal/resources/metal/ssh_key"
 	metalprojectsshkey "github.com/equinix/terraform-provider-equinix/internal/resources/metal/project_ssh_key"
+	metalsshkey "github.com/equinix/terraform-provider-equinix/internal/resources/metal/ssh_key"
 	"github.com/hashicorp/terraform-plugin-framework-validators/int64validator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/provider"
-	"github.com/hashicorp/terraform-plugin-framework/provider/schema"
 	"github.com/hashicorp/terraform-plugin-framework/provider/metaschema"
+	"github.com/hashicorp/terraform-plugin-framework/provider/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 )
@@ -71,7 +71,7 @@ func (p *FrameworkProvider) Schema(
 			},
 			"request_timeout": schema.Int64Attribute{
 				Optional:    true,
-				Description:  fmt.Sprintf("The duration of time, in seconds, that the Equinix Platform API Client should wait before canceling an API request.  Defaults to %d", config.DefaultTimeout),
+				Description: fmt.Sprintf("The duration of time, in seconds, that the Equinix Platform API Client should wait before canceling an API request.  Defaults to %d", config.DefaultTimeout),
 				Validators: []validator.Int64{
 					int64validator.AtLeast(1),
 				},
@@ -103,7 +103,7 @@ func (p *FrameworkProvider) MetaSchema(
 	resp.Schema = metaschema.Schema{
 		Attributes: map[string]metaschema.Attribute{
 			"module_name": schema.StringAttribute{
-				Optional:    true,
+				Optional: true,
 			},
 		},
 	}

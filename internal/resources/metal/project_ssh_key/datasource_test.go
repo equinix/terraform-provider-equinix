@@ -5,10 +5,10 @@ import (
 	"regexp"
 	"testing"
 
+	"github.com/equinix/terraform-provider-equinix/internal/acceptance"
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/plancheck"
-	"github.com/equinix/terraform-provider-equinix/internal/acceptance"
 )
 
 func TestAccDataSourceMetalProjectSSHKey_bySearch(t *testing.T) {
@@ -179,7 +179,7 @@ func TestAccDataSourceMetalProjectSSHKey_upgradeFromVersion(t *testing.T) {
 			},
 			{
 				ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
-				Config: testAccDataSourceMetalProjectSSHKeyConfig_bySearch(keyName, publicKeyMaterial),
+				Config:                   testAccDataSourceMetalProjectSSHKeyConfig_bySearch(keyName, publicKeyMaterial),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectEmptyPlan(),

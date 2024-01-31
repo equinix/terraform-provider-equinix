@@ -1,13 +1,13 @@
 package project_ssh_key
 
 import (
-	"github.com/hashicorp/terraform-plugin-framework/datasource"
-	"github.com/equinix/terraform-provider-equinix/internal/framework"
 	equinix_errors "github.com/equinix/terraform-provider-equinix/internal/errors"
+	"github.com/equinix/terraform-provider-equinix/internal/framework"
+	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/packethost/packngo"
 
-	"fmt"
 	"context"
+	"fmt"
 )
 
 func NewDataSource() datasource.DataSource {
@@ -41,9 +41,9 @@ func (r *DataSource) Read(
 	}
 
 	// Extract the ID of the resource from the state
-    id := data.ID.ValueString()
-    search := data.Search.ValueString()
-    projectID := data.ProjectID.ValueString()
+	id := data.ID.ValueString()
+	search := data.Search.ValueString()
+	projectID := data.ProjectID.ValueString()
 
 	var (
 		key        packngo.SSHKey
@@ -54,7 +54,7 @@ func (r *DataSource) Read(
 		searchOpts = &packngo.SearchOptions{Search: search}
 	}
 
-    // Use API client to list SSH keys
+	// Use API client to list SSH keys
 	keys, _, err := client.Projects.ListSSHKeys(projectID, searchOpts)
 	if err != nil {
 		err = equinix_errors.FriendlyError(err)

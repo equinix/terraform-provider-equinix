@@ -98,7 +98,6 @@ func testAccMetalProjectSSHKeyCheckDestroyed(s *terraform.State) error {
 	return nil
 }
 
-
 // Test to verify that switching from SDKv2 to the Framework has not affected provider's behavior
 // TODO (ocobles): once migrated, this test may be removed
 func TestAccMetalProjectSSHKey_upgradeFromVersion(t *testing.T) {
@@ -111,8 +110,8 @@ func TestAccMetalProjectSSHKey_upgradeFromVersion(t *testing.T) {
 	cfg := testAccMetalProjectSSHKeyConfig_basic(rs, publicKeyMaterial)
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acceptance.TestAccPreCheckMetal(t) },
-		CheckDestroy:      testAccMetalProjectSSHKeyCheckDestroyed,
+		PreCheck:     func() { acceptance.TestAccPreCheckMetal(t) },
+		CheckDestroy: testAccMetalProjectSSHKeyCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
 				ExternalProviders: map[string]resource.ExternalProvider{
@@ -146,7 +145,7 @@ func TestAccMetalProjectSSHKey_upgradeFromVersion(t *testing.T) {
 					},
 				},
 				ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
-				Config: cfg,
+				Config:                   cfg,
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectEmptyPlan(),
