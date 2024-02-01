@@ -1,4 +1,4 @@
-package equinix
+package vrf
 
 import (
 	"context"
@@ -7,7 +7,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
-func dataSourceMetalVRF() *schema.Resource {
+func DataSource() *schema.Resource {
 	return &schema.Resource{
 		ReadWithoutTimeout: dataSourceMetalVRFRead,
 

@@ -1,18 +1,20 @@
-package equinix
+package vrf_test
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"os"
 	"strconv"
 	"testing"
 
+	"github.com/equinix/terraform-provider-equinix/internal/acceptance"
 	"github.com/equinix/terraform-provider-equinix/internal/config"
 
+	"github.com/equinix/equinix-sdk-go/services/metalv1"
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
-	"github.com/packethost/packngo"
 )
 
 const (
@@ -34,7 +36,7 @@ func init() {
 
 func testSweepVRFs(region string) error {
 	log.Printf("[DEBUG] Sweeping VRFs")
-	config, err := sharedConfigForRegion(region)
+	config, err := acceptance.GetConfigForNonStandardMetalTest()
 	if err != nil {
 		return fmt.Errorf("[INFO][SWEEPER_LOG] Error getting configuration for sweeping VRFs: %s", err)
 	}
@@ -45,7 +47,7 @@ func testSweepVRFs(region string) error {
 	}
 	pids := []string{}
 	for _, p := range ps {
-		if isSweepableTestResource(p.Name) {
+		if acceptance.IsSweepableTestResource(p.Name) {
 			pids = append(pids, p.ID)
 		}
 	}
@@ -57,7 +59,7 @@ func testSweepVRFs(region string) error {
 			continue
 		}
 		for _, d := range ds {
-			if isSweepableTestResource(d.Name) {
+			if acceptance.IsSweepableTestResource(d.Name) {
 				dids = append(dids, d.ID)
 			}
 		}
@@ -74,13 +76,13 @@ func testSweepVRFs(region string) error {
 }
 
 func TestAccMetalVRF_basic(t *testing.T) {
-	var vrf packngo.VRF
+	var vrf metalv1.Vrf
 	rInt := acctest.RandInt()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
-		ExternalProviders: testExternalProviders,
-		Providers:         testAccProviders,
+		PreCheck:          func() { acceptance.TestAccPreCheckMetal(t) },
+		ExternalProviders: acceptance.TestExternalProviders,
+		Providers:         acceptance.TestAccProviders,
 		CheckDestroy:      testAccMetalVRFCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
@@ -103,13 +105,13 @@ func TestAccMetalVRF_basic(t *testing.T) {
 }
 
 func TestAccMetalVRF_withIPRanges(t *testing.T) {
-	var vrf packngo.VRF
+	var vrf metalv1.Vrf
 	rInt := acctest.RandInt()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
-		ExternalProviders: testExternalProviders,
-		Providers:         testAccProviders,
+		PreCheck:          func() { acceptance.TestAccPreCheckMetal(t) },
+		ExternalProviders: acceptance.TestExternalProviders,
+		Providers:         acceptance.TestAccProviders,
 		CheckDestroy:      testAccMetalVRFCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
@@ -146,13 +148,13 @@ func TestAccMetalVRF_withIPRanges(t *testing.T) {
 }
 
 func TestAccMetalVRF_withIPReservations(t *testing.T) {
-	var vrf packngo.VRF
+	var vrf metalv1.Vrf
 	rInt := acctest.RandInt()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
-		ExternalProviders: testExternalProviders,
-		Providers:         testAccProviders,
+		PreCheck:          func() { acceptance.TestAccPreCheckMetal(t) },
+		ExternalProviders: acceptance.TestExternalProviders,
+		Providers:         acceptance.TestAccProviders,
 		CheckDestroy:      testAccMetalVRFCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
@@ -188,13 +190,13 @@ func TestAccMetalVRF_withIPReservations(t *testing.T) {
 }
 
 func TestAccMetalVRF_withGateway(t *testing.T) {
-	var vrf packngo.VRF
+	var vrf metalv1.Vrf
 	rInt := acctest.RandInt()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
-		ExternalProviders: testExternalProviders,
-		Providers:         testAccProviders,
+		PreCheck:          func() { acceptance.TestAccPreCheckMetal(t) },
+		ExternalProviders: acceptance.TestExternalProviders,
+		Providers:         acceptance.TestAccProviders,
 		CheckDestroy:      testAccMetalVRFCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
@@ -229,14 +231,14 @@ func TestAccMetalVRF_withGateway(t *testing.T) {
 }
 
 func TestAccMetalVRFConfig_withConnection(t *testing.T) {
-	var vrf packngo.VRF
+	var vrf metalv1.Vrf
 	rInt := acctest.RandInt()
 	nniVlan := acctest.RandIntRange(1024, 1093)
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
-		ExternalProviders: testExternalProviders,
-		Providers:         testAccProviders,
+		PreCheck:          func() { acceptance.TestAccPreCheckMetal(t) },
+		ExternalProviders: acceptance.TestExternalProviders,
+		Providers:         acceptance.TestAccProviders,
 		CheckDestroy:      testAccMetalVRFCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
@@ -302,13 +304,13 @@ func TestAccMetalVRFConfig_withConnection(t *testing.T) {
 }
 
 func testAccMetalVRFCheckDestroyed(s *terraform.State) error {
-	client := testAccProvider.Meta().(*config.Config).Metal
+	client := acceptance.TestAccProvider.Meta().(*config.Config).Metalgo
 
 	for _, rs := range s.RootModule().Resources {
 		if rs.Type != "equinix_metal_vrf" {
 			continue
 		}
-		if _, _, err := client.VRFs.Get(rs.Primary.ID, nil); err == nil {
+		if _, _, err := client.VRFsApi.FindVrfById(context.Background(), rs.Primary.ID).Execute(); err == nil {
 			return fmt.Errorf("Metal VRF still exists")
 		}
 	}
@@ -316,7 +318,7 @@ func testAccMetalVRFCheckDestroyed(s *terraform.State) error {
 	return nil
 }
 
-func testAccMetalVRFExists(n string, vrf *packngo.VRF) resource.TestCheckFunc {
+func testAccMetalVRFExists(n string, vrf *metalv1.Vrf) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
@@ -326,13 +328,13 @@ func testAccMetalVRFExists(n string, vrf *packngo.VRF) resource.TestCheckFunc {
 			return fmt.Errorf("No Record ID is set")
 		}
 
-		client := testAccProvider.Meta().(*config.Config).Metal
+		client := acceptance.TestAccProvider.Meta().(*config.Config).Metalgo
 
-		foundResource, _, err := client.VRFs.Get(rs.Primary.ID, nil)
+		foundResource, _, err := client.VRFsApi.FindVrfById(context.Background(), rs.Primary.ID).Execute()
 		if err != nil {
 			return err
 		}
-		if foundResource.ID != rs.Primary.ID {
+		if foundResource.GetId() != rs.Primary.ID {
 			return fmt.Errorf("Record not found: %v - %v", rs.Primary.ID, foundResource)
 		}
 
