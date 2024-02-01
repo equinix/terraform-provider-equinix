@@ -9,6 +9,7 @@ import (
 	"time"
 
 	equinix_errors "github.com/equinix/terraform-provider-equinix/internal/errors"
+	equinix_fabric_schema "github.com/equinix/terraform-provider-equinix/internal/fabric/schema"
 	equinix_schema "github.com/equinix/terraform-provider-equinix/internal/schema"
 
 	"github.com/equinix/terraform-provider-equinix/internal/config"
@@ -19,7 +20,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
-func FabricConnectionResourceSchema() map[string]*schema.Schema {
+func fabricConnectionResourceSchema() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
 		"type": {
 			Type:         schema.TypeString,
@@ -39,7 +40,7 @@ func FabricConnectionResourceSchema() map[string]*schema.Schema {
 			Description: "Order details",
 			MaxItems:    1,
 			Elem: &schema.Resource{
-				Schema: equinix_schema.OrderSch(),
+				Schema: equinix_fabric_schema.OrderSch(),
 			},
 		},
 		"notifications": {
@@ -47,7 +48,7 @@ func FabricConnectionResourceSchema() map[string]*schema.Schema {
 			Required:    true,
 			Description: "Preferences for notifications on connection configuration or status changes",
 			Elem: &schema.Resource{
-				Schema: equinix_schema.NotificationSch(),
+				Schema: equinix_fabric_schema.NotificationSch(),
 			},
 		},
 		"bandwidth": {
@@ -92,7 +93,7 @@ func FabricConnectionResourceSchema() map[string]*schema.Schema {
 			Description: "Project information",
 			MaxItems:    1,
 			Elem: &schema.Resource{
-				Schema: equinix_schema.ProjectSch(),
+				Schema: equinix_fabric_schema.ProjectSch(),
 			},
 		},
 		"additional_info": {
@@ -136,7 +137,7 @@ func FabricConnectionResourceSchema() map[string]*schema.Schema {
 			Computed:    true,
 			Description: "Customer account information that is associated with this connection",
 			Elem: &schema.Resource{
-				Schema: equinix_schema.AccountSch(),
+				Schema: equinix_fabric_schema.AccountSch(),
 			},
 		},
 		"change_log": {
@@ -144,7 +145,7 @@ func FabricConnectionResourceSchema() map[string]*schema.Schema {
 			Computed:    true,
 			Description: "Captures connection lifecycle change information",
 			Elem: &schema.Resource{
-				Schema: equinix_schema.ChangeLogSch(),
+				Schema: equinix_fabric_schema.ChangeLogSch(),
 			},
 		},
 		"is_remote": {
@@ -232,7 +233,7 @@ func accessPointSch() *schema.Resource {
 				Computed:    true,
 				Description: "Account",
 				Elem: &schema.Resource{
-					Schema: equinix_schema.AccountSch(),
+					Schema: equinix_fabric_schema.AccountSch(),
 				},
 			},
 			"location": {
@@ -242,7 +243,7 @@ func accessPointSch() *schema.Resource {
 				Description: "Access point location",
 				MaxItems:    1,
 				Elem: &schema.Resource{
-					Schema: equinix_schema.LocationSch(),
+					Schema: equinix_fabric_schema.LocationSch(),
 				},
 			},
 			"port": {
@@ -376,7 +377,7 @@ func serviceProfileSch() map[string]*schema.Schema {
 			Computed:    true,
 			Description: "Access point config information",
 			Elem: &schema.Resource{
-				Schema: accessPointTypeConfigSch(),
+				Schema: connectionAccessPointTypeConfigSch(),
 			},
 		},
 	}
@@ -516,7 +517,7 @@ func portSch() map[string]*schema.Schema {
 	}
 }
 
-func accessPointTypeConfigSch() map[string]*schema.Schema {
+func connectionAccessPointTypeConfigSch() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
 		"type": {
 			Type:        schema.TypeString,
@@ -563,7 +564,7 @@ func operationSch() map[string]*schema.Schema {
 			Computed:    true,
 			Description: "Errors occurred",
 			Elem: &schema.Resource{
-				Schema: equinix_schema.ErrorSch(),
+				Schema: equinix_fabric_schema.ErrorSch(),
 			},
 		},
 	}
@@ -602,7 +603,7 @@ func resourceFabricConnection() *schema.Resource {
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
-		Schema: FabricConnectionResourceSchema(),
+		Schema: fabricConnectionResourceSchema(),
 
 		Description: "Fabric V4 API compatible resource allows creation and management of Equinix Fabric connection",
 	}
@@ -613,14 +614,14 @@ func resourceFabricConnectionCreate(ctx context.Context, d *schema.ResourceData,
 	ctx = context.WithValue(ctx, v4.ContextAccessToken, meta.(*config.Config).FabricAuthToken)
 	conType := v4.ConnectionType(d.Get("type").(string))
 	schemaNotifications := d.Get("notifications").([]interface{})
-	notifications := equinix_schema.NotificationsToFabric(schemaNotifications)
+	notifications := equinix_fabric_schema.NotificationsToFabric(schemaNotifications)
 	schemaRedundancy := d.Get("redundancy").(*schema.Set).List()
 	red := connectionRedundancyToFabric(schemaRedundancy)
 	schemaOrder := d.Get("order").(*schema.Set).List()
-	order := equinix_schema.OrderToFabric(schemaOrder)
+	order := equinix_fabric_schema.OrderToFabric(schemaOrder)
 	aside := d.Get("a_side").(*schema.Set).List()
 	projectReq := d.Get("project").(*schema.Set).List()
-	project := equinix_schema.ProjectToFabric(projectReq)
+	project := equinix_fabric_schema.ProjectToFabric(projectReq)
 	additionalInfoTerraConfig := d.Get("additional_info").([]interface{})
 	additionalInfo := additionalInfoTerraToGo(additionalInfoTerraConfig)
 	connectionASide := v4.ConnectionSide{}
@@ -762,15 +763,15 @@ func setFabricMap(d *schema.ResourceData, conn v4.Connection) diag.Diagnostics {
 		"state":           conn.State,
 		"direction":       conn.Direction,
 		"operation":       operationToTerra(conn.Operation),
-		"order":           equinix_schema.OrderToTerra(conn.Order),
-		"change_log":      equinix_schema.ChangeLogToTerra(conn.ChangeLog),
+		"order":           equinix_fabric_schema.OrderToTerra(conn.Order),
+		"change_log":      equinix_fabric_schema.ChangeLogToTerra(conn.ChangeLog),
 		"redundancy":      connectionRedundancyToTerra(conn.Redundancy),
-		"notifications":   equinix_schema.NotificationsToTerra(conn.Notifications),
+		"notifications":   equinix_fabric_schema.NotificationsToTerra(conn.Notifications),
 		"account":         accountToTerra(conn.Account),
 		"a_side":          connectionSideToTerra(conn.ASide),
 		"z_side":          connectionSideToTerra(conn.ZSide),
 		"additional_info": additionalInfoToTerra(conn.AdditionalInfo),
-		"project":         equinix_schema.ProjectToTerra(conn.Project),
+		"project":         equinix_fabric_schema.ProjectToTerra(conn.Project),
 	})
 	if err != nil {
 		return diag.FromErr(err)

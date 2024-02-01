@@ -1,7 +1,7 @@
 package equinix
 
 import (
-	equinix_schema "github.com/equinix/terraform-provider-equinix/internal/schema"
+	equinix_schema "github.com/equinix/terraform-provider-equinix/internal/fabric/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
@@ -50,7 +50,7 @@ func readFabricServiceProfileSchema() map[string]*schema.Schema {
 			Computed:    true,
 			Description: "Access point config information",
 			Elem: &schema.Resource{
-				Schema: AccessPointTypeConfigSch(),
+				Schema: serviceProfileAccessPointTypeConfigSch(),
 			},
 		},
 

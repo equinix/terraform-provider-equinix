@@ -9,6 +9,7 @@ import (
 	"strings"
 
 	equinix_errors "github.com/equinix/terraform-provider-equinix/internal/errors"
+	equinix_fabric_schema "github.com/equinix/terraform-provider-equinix/internal/fabric/schema"
 	equinix_schema "github.com/equinix/terraform-provider-equinix/internal/schema"
 
 	"github.com/equinix/terraform-provider-equinix/internal/config"
@@ -137,7 +138,7 @@ func FabricPortResourceSchema() map[string]*schema.Schema {
 			Computed:    true,
 			Description: "Customer account information that is associated with this port",
 			Elem: &schema.Resource{
-				Schema: equinix_schema.AccountSch(),
+				Schema: equinix_fabric_schema.AccountSch(),
 			},
 		},
 		"change_log": {
@@ -145,7 +146,7 @@ func FabricPortResourceSchema() map[string]*schema.Schema {
 			Computed:    true,
 			Description: "Captures port lifecycle change information",
 			Elem: &schema.Resource{
-				Schema: equinix_schema.ChangeLogSch(),
+				Schema: equinix_fabric_schema.ChangeLogSch(),
 			},
 		},
 		"service_type": {
@@ -173,7 +174,7 @@ func FabricPortResourceSchema() map[string]*schema.Schema {
 			Computed:    true,
 			Description: "Port location information",
 			Elem: &schema.Resource{
-				Schema: equinix_schema.LocationSch(),
+				Schema: equinix_fabric_schema.LocationSch(),
 			},
 		},
 		"device": {
@@ -398,8 +399,8 @@ func fabricPortsListToTerra(ports v4.AllPortsResponse) []map[string]interface{} 
 			"operation":           portOperationToTerra(port.Operation),
 			"redundancy":          PortRedundancyToTerra(port.Redundancy),
 			"account":             accountToTerra(port.Account),
-			"change_log":          equinix_schema.ChangeLogToTerra(port.Changelog),
-			"location":            equinix_schema.LocationToTerra(port.Location),
+			"change_log":          equinix_fabric_schema.ChangeLogToTerra(port.Changelog),
+			"location":            equinix_fabric_schema.LocationToTerra(port.Location),
 			"device":              portDeviceToTerra(port.Device),
 			"encapsulation":       portEncapsulationToTerra(port.Encapsulation),
 			"lag_enabled":         port.LagEnabled,
@@ -438,8 +439,8 @@ func setFabricPortMap(d *schema.ResourceData, port v4.Port) diag.Diagnostics {
 		"operation":           portOperationToTerra(port.Operation),
 		"redundancy":          PortRedundancyToTerra(port.Redundancy),
 		"account":             accountToTerra(port.Account),
-		"change_log":          equinix_schema.ChangeLogToTerra(port.Changelog),
-		"location":            equinix_schema.LocationToTerra(port.Location),
+		"change_log":          equinix_fabric_schema.ChangeLogToTerra(port.Changelog),
+		"location":            equinix_fabric_schema.LocationToTerra(port.Location),
 		"device":              portDeviceToTerra(port.Device),
 		"encapsulation":       portEncapsulationToTerra(port.Encapsulation),
 		"lag_enabled":         port.LagEnabled,

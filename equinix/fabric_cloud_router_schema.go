@@ -1,7 +1,7 @@
 package equinix
 
 import (
-	equinix_schema "github.com/equinix/terraform-provider-equinix/internal/schema"
+	equinix_schema "github.com/equinix/terraform-provider-equinix/internal/fabric/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 )

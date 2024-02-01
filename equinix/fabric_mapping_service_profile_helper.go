@@ -3,7 +3,7 @@ package equinix
 import (
 	v4 "github.com/equinix-labs/fabric-go/fabric/v4"
 	"github.com/equinix/terraform-provider-equinix/internal/converters"
-	equinix_schema "github.com/equinix/terraform-provider-equinix/internal/schema"
+	equinix_schema "github.com/equinix/terraform-provider-equinix/internal/fabric/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 

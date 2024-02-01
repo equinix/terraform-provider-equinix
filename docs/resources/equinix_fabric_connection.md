@@ -561,7 +561,7 @@ resource "equinix_fabric_connection" "epl" {
 - `name` (String) Connection name. An alpha-numeric 24 characters string which can include only hyphens and underscores
 - `notifications` (Block List, Min: 1) Preferences for notifications on connection configuration or status changes (see [below for nested schema](#nestedblock--notifications))
 - `order` (Block Set, Min: 1, Max: 1) Order details (see [below for nested schema](#nestedblock--order))
-- `type` (String) Defines the connection type like EVPL_VC, EPL_VC, IPWAN_VC, ACCESS_EPL_VC, EVPLAN_VC, EPLAN_VC
+- `type` (String) Defines the connection type like EVPL_VC, EPL_VC, IPWAN_VC, IP_VC, ACCESS_EPL_VC, EVPLAN_VC, EPLAN_VC, EIA_VC, EC_VC
 - `z_side` (Block Set, Min: 1, Max: 1) Destination or Provider side connection configuration object of the multi-segment connection (see [below for nested schema](#nestedblock--z_side))
 
 ### Optional
@@ -572,7 +572,7 @@ resource "equinix_fabric_connection" "epl" {
 - `redundancy` (Block Set, Max: 1) Connection Redundancy Configuration (see [below for nested schema](#nestedblock--redundancy))
 - `timeouts` (Block, Optional) (see [below for nested schema](#nestedblock--timeouts))
 
-~> **NOTE:** Port to IBM Connections could be modified from IBM Service Provider Side by using parameters passed to additional_info field:  `{"key": "ASN", "value": "1111"}` `{"key": "Global", "value": "false"}` `{"key": "BGP_IBM_CIDR", "value": "172.16.0.18/30"}` `{"key": "BGP_CER_CIDR", "value": "172.16.0.19/30"}`
+-~> **NOTE:** Port to IBM Connections could be modified from IBM Service Provider Side by using parameters passed to additional_info field:  `{"key": "ASN", "value": "1111"}` `{"key": "Global", "value": "false"}` `{"key": "BGP_IBM_CIDR", "value": "172.16.0.18/30"}` `{"key": "BGP_CER_CIDR", "value": "172.16.0.19/30"}`
 
 ### Read-Only
 
@@ -828,7 +828,7 @@ Optional:
 Optional:
 
 - `authentication_key` (String) Authentication key for provider based connections
-- `gateway` (Block Set, Max: 1, Deprecated) Cloud Router access point information (see [below for nested schema](#nestedblock--z_side--access_point--gateway))
+- `gateway` (Block Set, Max: 1, Deprecated) **Deprecated** `gateway` Use `router` attribute instead (see [below for nested schema](#nestedblock--z_side--access_point--gateway))
 - `interface` (Block Set, Max: 1) Virtual device interface (see [below for nested schema](#nestedblock--z_side--access_point--interface))
 - `link_protocol` (Block Set, Max: 1) Connection link protocol (see [below for nested schema](#nestedblock--z_side--access_point--link_protocol))
 - `location` (Block Set, Max: 1) Access point location (see [below for nested schema](#nestedblock--z_side--access_point--location))
@@ -837,7 +837,7 @@ Optional:
 - `port` (Block Set, Max: 1) Port access point information (see [below for nested schema](#nestedblock--z_side--access_point--port))
 - `profile` (Block Set, Max: 1) Service Profile (see [below for nested schema](#nestedblock--z_side--access_point--profile))
 - `provider_connection_id` (String) Provider assigned Connection Id
-- `router` (Block Set, Max: 1) Cloud Router access point information (see [below for nested schema](#nestedblock--z_side--access_point--router))
+- `router` (Block Set, Max: 1) Cloud Router access point information that replaces `gateway` (see [below for nested schema](#nestedblock--z_side--access_point--router))
 - `seller_region` (String) Access point seller region
 - `type` (String) Access point type - COLO, VD, VG, SP, IGW, SUBNET, CLOUD_ROUTER, NETWORK
 - `virtual_device` (Block Set, Max: 1) Virtual device (see [below for nested schema](#nestedblock--z_side--access_point--virtual_device))

@@ -44,7 +44,7 @@ data "equinix_fabric_connection" "connection_data_name" {
 - `project` (Set of Object) Project information (see [below for nested schema](#nestedatt--project))
 - `redundancy` (Set of Object) Connection Redundancy Configuration (see [below for nested schema](#nestedatt--redundancy))
 - `state` (String) Connection overall state
-- `type` (String) Defines the connection type like EVPL_VC, EPL_VC, IPWAN_VC, ACCESS_EPL_VC, EVPLAN_VC, EPLAN_VC
+- `type` (String) Defines the connection type like EVPL_VC, EPL_VC, IPWAN_VC, IP_VC, ACCESS_EPL_VC, EVPLAN_VC, EPLAN_VC, EIA_VC, EC_VC
 - `z_side` (Set of Object) Destination or Provider side connection configuration object of the multi-segment connection (see [below for nested schema](#nestedatt--z_side))
 
 <a id="nestedatt--a_side"></a>
@@ -63,7 +63,7 @@ Read-Only:
 
 - `account` (Set of Object) (see [below for nested schema](#nestedobjatt--a_side--access_point--account))
 - `authentication_key` (String)
-- `gateway` (Set of Object) (see [below for nested schema](#nestedobjatt--a_side--access_point--gateway))
+- `gateway` (Set of Object, Deprecated) **Deprecated** `gateway` Use `router` attribute instead (see [below for nested schema](#nestedobjatt--a_side--access_point--gateway))
 - `interface` (Set of Object) (see [below for nested schema](#nestedobjatt--a_side--access_point--interface))
 - `link_protocol` (Set of Object) (see [below for nested schema](#nestedobjatt--a_side--access_point--link_protocol))
 - `location` (Set of Object) (see [below for nested schema](#nestedobjatt--a_side--access_point--location))
@@ -346,7 +346,7 @@ Read-Only:
 
 - `account` (Set of Object) (see [below for nested schema](#nestedobjatt--z_side--access_point--account))
 - `authentication_key` (String)
-- `gateway` (Set of Object) (see [below for nested schema](#nestedobjatt--z_side--access_point--gateway))
+- `gateway` (Set of Object, Deprecated) **Deprecated** `gateway` Use `router` attribute instead (see [below for nested schema](#nestedobjatt--z_side--access_point--gateway))
 - `interface` (Set of Object) (see [below for nested schema](#nestedobjatt--z_side--access_point--interface))
 - `link_protocol` (Set of Object) (see [below for nested schema](#nestedobjatt--z_side--access_point--link_protocol))
 - `location` (Set of Object) (see [below for nested schema](#nestedobjatt--z_side--access_point--location))
