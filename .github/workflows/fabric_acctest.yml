@@ -37,7 +37,7 @@ jobs:
       'external' || 'internal' }}
     runs-on: ubuntu-latest
     concurrency:
-      group: ${{ github.event_name == 'pull_request_target' && format('acctest-authorize-pr-{0}', github.event.pull_request.number) || 'acctest-authorize' }}
+      group: ${{ github.event_name == 'pull_request_target' && format('fabric-acctest-authorize-pr-{0}', github.event.pull_request.number) || 'fabric-acctest-authorize' }}
       cancel-in-progress: true
     steps:
       - run: true
@@ -71,7 +71,6 @@ jobs:
   test-PFNV:
     name: Matrix Test
     needs: build
-    concurrency: fabricacctestpfnv
     runs-on: ubuntu-latest
     env:
       EQUINIX_API_ENDPOINT: "https://uatapi.equinix.com"
@@ -105,6 +104,8 @@ jobs:
         env:
           TF_ACC: "1"
           TF_ACC_TERRAFORM_VERSION: ${{ matrix.terraform }}
+          TF_ACC_FABRIC_CONNECTIONS_TEST_DATA: ${{ secrets.TF_ACC_FABRIC_CONNECTIONS_TEST_DATA }}
+          TF_ACC_FABRIC_DEDICATED_PORTS: ${{ secrets.TF_ACC_FABRIC_DEDICATED_PORTS }}
           EQUINIX_API_CLIENTID: ${{ secrets.EQUINIX_API_CLIENTID_PNFV }}
           EQUINIX_API_CLIENTSECRET: ${{ secrets.EQUINIX_API_CLIENTSECRET_PNFV }}
           METAL_AUTH_TOKEN: ${{ secrets.METAL_AUTH_TOKEN }}
@@ -134,7 +135,6 @@ jobs:
   test-PFCR:
     name: Matrix Test
     needs: build
-    concurrency: fabricacctestpfcr
     runs-on: ubuntu-latest
     env:
       EQUINIX_API_ENDPOINT: "https://uatapi.equinix.com"
@@ -168,6 +168,8 @@ jobs:
         env:
           TF_ACC: "1"
           TF_ACC_TERRAFORM_VERSION: ${{ matrix.terraform }}
+          TF_ACC_FABRIC_CONNECTIONS_TEST_DATA: ${{ secrets.TF_ACC_FABRIC_CONNECTIONS_TEST_DATA }}
+          TF_ACC_FABRIC_DEDICATED_PORTS: ${{ secrets.TF_ACC_FABRIC_DEDICATED_PORTS }}
           EQUINIX_API_CLIENTID: ${{ secrets.EQUINIX_API_CLIENTID_PFCR }}
           EQUINIX_API_CLIENTSECRET: ${{ secrets.EQUINIX_API_CLIENTSECRET_PFCR }}
           METAL_AUTH_TOKEN: ${{ secrets.METAL_AUTH_TOKEN }}
