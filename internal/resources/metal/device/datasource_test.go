@@ -1,24 +1,25 @@
-package equinix
+package device_test
 
 import (
 	"fmt"
 	"testing"
 
+	"github.com/equinix/terraform-provider-equinix/internal/acceptance"
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
 
 func TestAccDataSourceMetalDevice_basic(t *testing.T) {
-	projectName := fmt.Sprintf("ds-device-%s", acctest.RandString(10))
+	projSuffix := fmt.Sprintf("ds-device-%s", acctest.RandString(10))
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { testAccPreCheck(t) },
-		ExternalProviders:        testExternalProviders,
-		ProtoV5ProviderFactories: testAccProtoV5ProviderFactories,
+		PreCheck:                 func() { acceptance.TestAccPreCheck(t) },
+		ExternalProviders:        acceptance.TestExternalProviders,
+		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
 		CheckDestroy:             testAccMetalDeviceCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
-				Config: testDataSourceMetalDeviceConfig_basic(projectName),
+				Config: testDataSourceMetalDeviceConfig_basic(projSuffix),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(
 						"data.equinix_metal_device.test", "hostname", "tfacc-test-device"),
@@ -59,20 +60,20 @@ resource "equinix_metal_device" "test" {
 data "equinix_metal_device" "test" {
   project_id       = equinix_metal_project.test.id
   hostname         = equinix_metal_device.test.hostname
-}`, confAccMetalDevice_base(preferable_plans, preferable_metros, preferable_os), projSuffix, testDeviceTerminationTime())
+}`, acceptance.ConfAccMetalDevice_base(acceptance.Preferable_plans, acceptance.Preferable_metros, acceptance.Preferable_os), projSuffix, acceptance.TestDeviceTerminationTime())
 }
 
 func TestAccDataSourceMetalDevice_byID(t *testing.T) {
-	projectName := fmt.Sprintf("ds-device-by-id-%s", acctest.RandString(10))
+	projSuffix := fmt.Sprintf("ds-device-by-id-%s", acctest.RandString(10))
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { testAccPreCheck(t) },
-		ExternalProviders:        testExternalProviders,
-		ProtoV5ProviderFactories: testAccProtoV5ProviderFactories,
+		PreCheck:                 func() { acceptance.TestAccPreCheck(t) },
+		ExternalProviders:        acceptance.TestExternalProviders,
+		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
 		CheckDestroy:             testAccMetalDeviceCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
-				Config: testDataSourceMetalDeviceConfig_byID(projectName),
+				Config: testDataSourceMetalDeviceConfig_byID(projSuffix),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(
 						"data.equinix_metal_device.test", "hostname", "tfacc-test-device"),
@@ -112,5 +113,5 @@ resource "equinix_metal_device" "test" {
 
 data "equinix_metal_device" "test" {
   device_id       = equinix_metal_device.test.id
-}`, confAccMetalDevice_base(preferable_plans, preferable_metros, preferable_os), projSuffix, testDeviceTerminationTime())
+}`, acceptance.ConfAccMetalDevice_base(acceptance.Preferable_plans, acceptance.Preferable_metros, acceptance.Preferable_os), projSuffix, acceptance.TestDeviceTerminationTime())
 }

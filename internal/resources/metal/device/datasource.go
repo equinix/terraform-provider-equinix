@@ -1,4 +1,4 @@
-package equinix
+package device
 
 import (
 	"context"
@@ -17,7 +17,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/structure"
 )
 
-func dataSourceMetalDevice() *schema.Resource {
+func DataSource() *schema.Resource {
 	return &schema.Resource{
 		Description: `The datasource can be used to fetch a single device.
 

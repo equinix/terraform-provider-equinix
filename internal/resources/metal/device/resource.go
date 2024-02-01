@@ -1,4 +1,4 @@
-package equinix
+package device
 
 import (
 	"context"
@@ -40,7 +40,7 @@ var (
 	deviceCommonIncludes = []string{"project", "metro", "facility", "hardware_reservation"}
 )
 
-func resourceMetalDevice() *schema.Resource {
+func Resource() *schema.Resource {
 	return &schema.Resource{
 		Description: `Provides an Equinix Metal device resource. This can be used to create, modify, and delete devices.
 
@@ -51,7 +51,7 @@ func resourceMetalDevice() *schema.Resource {
 			Delete: schema.DefaultTimeout(30 * time.Minute),
 		},
 		CreateContext:      resourceMetalDeviceCreate,
-		ReadWithoutTimeout: resourceMetalDeviceRead,
+		ReadWithoutTimeout: Read,
 		UpdateContext:      resourceMetalDeviceUpdate,
 		DeleteContext:      resourceMetalDeviceDelete,
 		Importer: &schema.ResourceImporter{
@@ -563,14 +563,14 @@ func resourceMetalDeviceCreate(ctx context.Context, d *schema.ResourceData, meta
 	d.SetId(newDevice.GetId())
 
 	createTimeout := d.Timeout(schema.TimeoutCreate) - 30*time.Second - time.Since(start)
-	if err = waitForActiveDevice(ctx, d, meta, createTimeout); err != nil {
+	if err = WaitForActiveDevice(ctx, d, meta, createTimeout); err != nil {
 		return diag.FromErr(err)
 	}
 
-	return resourceMetalDeviceRead(ctx, d, meta)
+	return Read(ctx, d, meta)
 }
 
-func resourceMetalDeviceRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func Read(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*config.Config).NewMetalClientForSDK(d)
 
 	device, resp, err := client.DevicesApi.FindDeviceById(ctx, d.Id()).Include(deviceCommonIncludes).Execute()
@@ -739,7 +739,7 @@ func resourceMetalDeviceUpdate(ctx context.Context, d *schema.ResourceData, meta
 		return diag.FromErr(err)
 	}
 
-	return resourceMetalDeviceRead(ctx, d, meta)
+	return Read(ctx, d, meta)
 }
 
 func doReinstall(ctx context.Context, client *metalv1.APIClient, d *schema.ResourceData, meta interface{}, start time.Time) error {
@@ -772,7 +772,7 @@ func doReinstall(ctx context.Context, client *metalv1.APIClient, d *schema.Resou
 		}
 
 		updateTimeout := d.Timeout(schema.TimeoutUpdate) - 30*time.Second - time.Since(start)
-		if err := waitForActiveDevice(ctx, d, meta, updateTimeout); err != nil {
+		if err := WaitForActiveDevice(ctx, d, meta, updateTimeout); err != nil {
 			return err
 		}
 	}
@@ -803,7 +803,7 @@ func resourceMetalDeviceDelete(ctx context.Context, d *schema.ResourceData, meta
 			// avoid "context: deadline exceeded"
 			timeout := d.Timeout(schema.TimeoutDelete) - 30*time.Second - time.Since(start)
 
-			err := waitUntilReservationProvisionable(ctx, client, resId.(string), d.Id(), 10*time.Second, timeout, 3*time.Second)
+			err := WaitUntilReservationProvisionable(ctx, client, resId.(string), d.Id(), 10*time.Second, timeout, 3*time.Second)
 			if err != nil {
 				return diag.FromErr(err)
 			}
@@ -812,7 +812,7 @@ func resourceMetalDeviceDelete(ctx context.Context, d *schema.ResourceData, meta
 	return nil
 }
 
-func waitForActiveDevice(ctx context.Context, d *schema.ResourceData, meta interface{}, timeout time.Duration) error {
+func WaitForActiveDevice(ctx context.Context, d *schema.ResourceData, meta interface{}, timeout time.Duration) error {
 	targets := []string{"active", "failed"}
 	pending := []string{"queued", "provisioning", "reinstalling"}
 
@@ -849,7 +849,7 @@ func waitForActiveDevice(ctx context.Context, d *schema.ResourceData, meta inter
 
 	if state != "active" {
 		d.SetId("")
-		return fmt.Errorf("Device in non-active state \"%s\"", state)
+		return fmt.Errorf("device in non-active state \"%s\"", state)
 	}
 
 	return nil
