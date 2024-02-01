@@ -99,11 +99,15 @@ jobs:
         run: |
           go mod download
 
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{ matrix.terraform }}
+          terraform_wrapper: false
+
       - name: TF Fabric PNFV acceptance tests
         timeout-minutes: 180
         env:
           TF_ACC: "1"
-          TF_ACC_TERRAFORM_VERSION: ${{ matrix.terraform }}
           TF_ACC_FABRIC_CONNECTIONS_TEST_DATA: ${{ secrets.TF_ACC_FABRIC_CONNECTIONS_TEST_DATA }}
           TF_ACC_FABRIC_DEDICATED_PORTS: ${{ secrets.TF_ACC_FABRIC_DEDICATED_PORTS }}
           EQUINIX_API_CLIENTID: ${{ secrets.EQUINIX_API_CLIENTID_PNFV }}
@@ -163,11 +167,15 @@ jobs:
         run: |
           go mod download
 
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{ matrix.terraform }}
+          terraform_wrapper: false
+
       - name: TF Fabric PFCR acceptance tests
         timeout-minutes: 180
         env:
           TF_ACC: "1"
-          TF_ACC_TERRAFORM_VERSION: ${{ matrix.terraform }}
           TF_ACC_FABRIC_CONNECTIONS_TEST_DATA: ${{ secrets.TF_ACC_FABRIC_CONNECTIONS_TEST_DATA }}
           TF_ACC_FABRIC_DEDICATED_PORTS: ${{ secrets.TF_ACC_FABRIC_DEDICATED_PORTS }}
           EQUINIX_API_CLIENTID: ${{ secrets.EQUINIX_API_CLIENTID_PFCR }}
