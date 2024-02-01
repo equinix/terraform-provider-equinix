@@ -18,7 +18,7 @@ func TestAccDataSourceFabricCloudRouter_PFCR(t *testing.T) {
 			{
 				Config: ConfigCreateCloudRouterResource_PFCR(),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr("data.equinix_fabric_cloud_router.example", "name", "Test_FCR"),
+					resource.TestCheckResourceAttr("data.equinix_fabric_cloud_router.example", "name", "Test_PFCR"),
 					resource.TestCheckResourceAttr("data.equinix_fabric_cloud_router.example", "type", "XF_ROUTER"),
 					resource.TestCheckResourceAttr("data.equinix_fabric_cloud_router.example", "notifications.0.type", "ALL"),
 					resource.TestCheckResourceAttr("data.equinix_fabric_cloud_router.example", "notifications.0.emails.0", "test@equinix.com"),
@@ -49,7 +49,7 @@ func TestAccDataSourceFabricCloudRouter_PFCR(t *testing.T) {
 func ConfigCreateCloudRouterResource_PFCR() string {
 	return fmt.Sprintf(`
 		resource "equinix_fabric_cloud_router" "example" {
-		name = "Test_FCR"
+		name = "Test_PFCR"
 		type = "XF_ROUTER"
 		notifications{
 			type="ALL"

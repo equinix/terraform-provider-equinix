@@ -33,18 +33,37 @@ func TestAccCloudRouterCreateOnlyRequiredParameters_PFCR(t *testing.T) {
 		CheckDestroy: checkCloudRouterDelete,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCloudRouterCreateOnlyRequiredParameterConfig("fcr_tf_acc_test"),
+				Config: testAccCloudRouterCreateOnlyRequiredParameterConfig_PFCR("fcr_acctest_PFCR"),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr(
-						"equinix_fabric_cloud_router.test", "name", "fcr_tf_acc_test"),
+					resource.TestCheckResourceAttr("equinix_fabric_cloud_router.test", "name", "fcr_acctest_PFCR"),
+					resource.TestCheckResourceAttr("equinix_fabric_cloud_router.test", "type", "XF_ROUTER"),
+					resource.TestCheckResourceAttr("equinix_fabric_cloud_router.test", "notifications.0.type", "ALL"),
+					resource.TestCheckResourceAttr("equinix_fabric_cloud_router.test", "notifications.0.emails.0", "test@equinix.com"),
+					resource.TestCheckResourceAttr("equinix_fabric_cloud_router.test", "order.0.purchase_order_number", "1-234567"),
+					resource.TestCheckResourceAttr("equinix_fabric_cloud_router.test", "location.0.metro_code", "SV"),
+					resource.TestCheckResourceAttr("equinix_fabric_cloud_router.test", "package.0.code", "LAB"),
+					resource.TestCheckResourceAttrSet("equinix_fabric_cloud_router.test", "project.0.project_id"),
+					resource.TestCheckResourceAttrSet("equinix_fabric_cloud_router.test", "account.0.account_number"),
+					resource.TestCheckResourceAttrSet("equinix_fabric_cloud_router.test", "href"),
+					resource.TestCheckResourceAttr("equinix_fabric_cloud_router.test", "state", "PROVISIONED"),
+					resource.TestCheckResourceAttrSet("equinix_fabric_cloud_router.test", "equinix_asn"),
+					resource.TestCheckResourceAttr("equinix_fabric_cloud_router.test", "bgp_ipv4_routes_count", "0"),
+					resource.TestCheckResourceAttr("equinix_fabric_cloud_router.test", "bgp_ipv6_routes_count", "0"),
+					resource.TestCheckResourceAttr("equinix_fabric_cloud_router.test", "connections_count", "0"),
+					resource.TestCheckResourceAttrSet("equinix_fabric_cloud_router.test", "change_log.0.created_by"),
+					resource.TestCheckResourceAttrSet("equinix_fabric_cloud_router.test", "change_log.0.created_by_full_name"),
+					resource.TestCheckResourceAttrSet("equinix_fabric_cloud_router.test", "change_log.0.created_by_email"),
+					resource.TestCheckResourceAttrSet("equinix_fabric_cloud_router.test", "change_log.0.created_date_time"),
+					resource.TestCheckResourceAttrSet("equinix_fabric_cloud_router.test", "change_log.0.updated_date_time"),
+					resource.TestCheckResourceAttrSet("equinix_fabric_cloud_router.test", "change_log.0.deleted_date_time"),
 				),
 				ExpectNonEmptyPlan: false,
 			},
 			{
-				Config: testAccCloudRouterCreateOnlyRequiredParameterConfig("fcr_tf_acc_update"),
+				Config: testAccCloudRouterCreateOnlyRequiredParameterConfig_PFCR("fcr_update_PFCR"),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(
-						"equinix_fabric_cloud_router.test", "name", "fcr_tf_acc_update"),
+						"equinix_fabric_cloud_router.test", "name", "fcr_update_PFCR"),
 				),
 				ExpectNonEmptyPlan: false,
 			},
@@ -52,7 +71,7 @@ func TestAccCloudRouterCreateOnlyRequiredParameters_PFCR(t *testing.T) {
 	})
 }
 
-func testAccCloudRouterCreateOnlyRequiredParameterConfig(name string) string {
+func testAccCloudRouterCreateOnlyRequiredParameterConfig_PFCR(name string) string {
 	return fmt.Sprintf(`resource "equinix_fabric_cloud_router" "test"{
 		type = "XF_ROUTER"
 		name = "%s"
@@ -88,19 +107,41 @@ func TestAccCloudRouterCreateMixedParameters_PFCR(t *testing.T) {
 		CheckDestroy: checkCloudRouterDelete,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCloudRouterCreateMixedParameterConfig(),
+				Config: testAccCloudRouterCreateMixedParameterConfig_PFCR(),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(
-						"equinix_fabric_cloud_router.example", "name", "fcr_acc_test"),
+						"equinix_fabric_cloud_router.example", "name", "fcr_acc_test_PFCR"),
+					resource.TestCheckResourceAttr("equinix_fabric_cloud_router.example", "type", "XF_ROUTER"),
+					resource.TestCheckResourceAttr("equinix_fabric_cloud_router.example", "notifications.0.type", "ALL"),
+					resource.TestCheckResourceAttr("equinix_fabric_cloud_router.example", "notifications.0.emails.0", "test@equinix.com"),
+					resource.TestCheckResourceAttr("equinix_fabric_cloud_router.example", "order.0.purchase_order_number", "1-234567"),
+					resource.TestCheckResourceAttr("equinix_fabric_cloud_router.example", "location.0.metro_code", "SV"),
+					resource.TestCheckResourceAttr("equinix_fabric_cloud_router.example", "location.0.region", "AMER"),
+					resource.TestCheckResourceAttr("equinix_fabric_cloud_router.example", "location.0.metro_name", "Silicon Valley"),
+					resource.TestCheckResourceAttr("equinix_fabric_cloud_router.example", "package.0.code", "STANDARD"),
+					resource.TestCheckResourceAttrSet("equinix_fabric_cloud_router.example", "project.0.project_id"),
+					resource.TestCheckResourceAttrSet("equinix_fabric_cloud_router.example", "account.0.account_number"),
+					resource.TestCheckResourceAttrSet("equinix_fabric_cloud_router.example", "href"),
+					resource.TestCheckResourceAttr("equinix_fabric_cloud_router.example", "state", "PROVISIONED"),
+					resource.TestCheckResourceAttrSet("equinix_fabric_cloud_router.example", "equinix_asn"),
+					resource.TestCheckResourceAttr("equinix_fabric_cloud_router.example", "bgp_ipv4_routes_count", "0"),
+					resource.TestCheckResourceAttr("equinix_fabric_cloud_router.example", "bgp_ipv6_routes_count", "0"),
+					resource.TestCheckResourceAttr("equinix_fabric_cloud_router.example", "connections_count", "0"),
+					resource.TestCheckResourceAttrSet("equinix_fabric_cloud_router.example", "change_log.0.created_by"),
+					resource.TestCheckResourceAttrSet("equinix_fabric_cloud_router.example", "change_log.0.created_by_full_name"),
+					resource.TestCheckResourceAttrSet("equinix_fabric_cloud_router.example", "change_log.0.created_by_email"),
+					resource.TestCheckResourceAttrSet("equinix_fabric_cloud_router.example", "change_log.0.created_date_time"),
+					resource.TestCheckResourceAttrSet("equinix_fabric_cloud_router.example", "change_log.0.updated_date_time"),
+					resource.TestCheckResourceAttrSet("equinix_fabric_cloud_router.example", "change_log.0.deleted_date_time"),
 				),
 			},
 		},
 	})
 }
-func testAccCloudRouterCreateMixedParameterConfig() string {
+func testAccCloudRouterCreateMixedParameterConfig_PFCR() string {
 	return fmt.Sprintf(`resource "equinix_fabric_cloud_router" "example"{
 		type = "XF_ROUTER"
-		name = "fcr_acc_test"
+		name = "fcr_acc_test_PFCR"
 		location{
 			region      = "AMER"
 			metro_code  = "SV"
