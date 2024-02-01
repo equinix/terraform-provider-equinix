@@ -121,12 +121,12 @@ func dataSourceMetalProjectRead(ctx context.Context, d *schema.ResourceData, met
 	if nameOK {
 		name := nameRaw.(string)
 
-		os, _, err := client.ProjectsApi.FindProjects(ctx).Execute()
+		projects, err := client.ProjectsApi.FindProjects(ctx).Name(name).ExecuteWithPagination()
 		if err != nil {
 			return diag.FromErr(err)
 		}
 
-		project, err = findProjectByName(os, name)
+		project, err = findProjectByName(projects, name)
 		if err != nil {
 			return diag.FromErr(err)
 		}
