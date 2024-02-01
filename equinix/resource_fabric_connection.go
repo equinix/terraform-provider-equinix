@@ -24,8 +24,8 @@ func FabricConnectionResourceSchema() map[string]*schema.Schema {
 		"type": {
 			Type:         schema.TypeString,
 			Required:     true,
-			ValidateFunc: validation.StringInSlice([]string{"EVPL_VC", "EPL_VC", "IPWAN_VC", "ACCESS_EPL_VC", "EVPLAN_VC", "EPLAN_VC"}, false),
-			Description:  "Defines the connection type like EVPL_VC, EPL_VC, IPWAN_VC, ACCESS_EPL_VC, EVPLAN_VC, EPLAN_VC",
+			ValidateFunc: validation.StringInSlice([]string{"EVPL_VC", "EPL_VC", "IP_VC" "IPWAN_VC", "ACCESS_EPL_VC", "EVPLAN_VC", "EPLAN_VC" "EIA_VC", "EC_VC"}, false),
+			Description:  "Defines the connection type like EVPL_VC, EPL_VC, IPWAN_VC, IP_VC, ACCESS_EPL_VC, EVPLAN_VC, EPLAN_VC, EIA_VC, EC_VC",
 		},
 		"name": {
 			Type:         schema.TypeString,
