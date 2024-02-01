@@ -1,4 +1,4 @@
-package equinix
+package device
 
 import (
 	"context"
@@ -40,7 +40,7 @@ var (
 	deviceCommonIncludes = []string{"project", "metro", "facility", "hardware_reservation"}
 )
 
-func resourceMetalDevice() *schema.Resource {
+func Resource() *schema.Resource {
 	return &schema.Resource{
 		Description: `Provides an Equinix Metal device resource. This can be used to create, modify, and delete devices.
 
@@ -51,7 +51,7 @@ func resourceMetalDevice() *schema.Resource {
 			Delete: schema.DefaultTimeout(30 * time.Minute),
 		},
 		CreateContext:      resourceMetalDeviceCreate,
-		ReadWithoutTimeout: resourceMetalDeviceRead,
+		ReadWithoutTimeout: Read,
 		UpdateContext:      resourceMetalDeviceUpdate,
 		DeleteContext:      resourceMetalDeviceDelete,
 		Importer: &schema.ResourceImporter{
@@ -563,14 +563,14 @@ func resourceMetalDeviceCreate(ctx context.Context, d *schema.ResourceData, meta
 	d.SetId(newDevice.GetId())
 
 	createTimeout := d.Timeout(schema.TimeoutCreate) - 30*time.Second - time.Since(start)
-	if err = waitForActiveDevice(ctx, d, meta, createTimeout); err != nil {
+	if err = WaitForActiveDevice(ctx, d, meta, createTimeout); err != nil {
 		return diag.FromErr(err)
 	}
 
-	return resourceMetalDeviceRead(ctx, d, meta)
+	return Read(ctx, d, meta)
 }
 
-func resourceMetalDeviceRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func Read(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*config.Config).NewMetalClientForSDK(d)
 
 	device, resp, err := client.DevicesApi.FindDeviceById(ctx, d.Id()).Include(deviceCommonIncludes).Execute()
@@ -589,24 +589,25 @@ func resourceMetalDeviceRead(ctx context.Context, d *schema.ResourceData, meta i
 		return diag.FromErr(err)
 	}
 
-	d.Set("hostname", device.GetHostname())
-	d.Set("plan", device.Plan.GetSlug())
-	d.Set("deployed_facility", device.Facility.GetCode())
-	d.Set("facilities", []string{device.Facility.GetCode()})
+	var errs []error
+	errs = append(errs, d.Set("hostname", device.GetHostname()))
+	errs = append(errs, d.Set("plan", device.Plan.GetSlug()))
+	errs = append(errs, d.Set("deployed_facility", device.Facility.GetCode()))
+	errs = append(errs, d.Set("facilities", []string{device.Facility.GetCode()}))
 	if device.Metro != nil {
-		d.Set("metro", device.Metro.GetCode())
+		errs = append(errs, d.Set("metro", device.Metro.GetCode()))
 	}
-	d.Set("operating_system", device.OperatingSystem.GetSlug())
-	d.Set("state", device.GetState())
-	d.Set("billing_cycle", device.GetBillingCycle())
-	d.Set("locked", device.GetLocked())
-	d.Set("created", device.GetCreatedAt().Format(time.RFC3339))
-	d.Set("updated", device.GetUpdatedAt().Format(time.RFC3339))
-	d.Set("ipxe_script_url", device.GetIpxeScriptUrl())
-	d.Set("always_pxe", device.GetAlwaysPxe())
-	d.Set("root_password", device.GetRootPassword())
-	d.Set("project_id", device.Project.GetId())
-	d.Set("sos_hostname", device.GetSos())
+	errs = append(errs, d.Set("operating_system", device.OperatingSystem.GetSlug()))
+	errs = append(errs, d.Set("state", device.GetState()))
+	errs = append(errs, d.Set("billing_cycle", device.GetBillingCycle()))
+	errs = append(errs, d.Set("locked", device.GetLocked()))
+	errs = append(errs, d.Set("created", device.GetCreatedAt().Format(time.RFC3339)))
+	errs = append(errs, d.Set("updated", device.GetUpdatedAt().Format(time.RFC3339)))
+	errs = append(errs, d.Set("ipxe_script_url", device.GetIpxeScriptUrl()))
+	errs = append(errs, d.Set("always_pxe", device.GetAlwaysPxe()))
+	errs = append(errs, d.Set("root_password", device.GetRootPassword()))
+	errs = append(errs, d.Set("project_id", device.Project.GetId()))
+	errs = append(errs, d.Set("sos_hostname", device.GetSos()))
 	if device.Storage != nil {
 		rawStorageBytes, err := json.Marshal(device.Storage)
 		if err != nil {
@@ -617,37 +618,37 @@ func resourceMetalDeviceRead(ctx context.Context, d *schema.ResourceData, meta i
 		if err != nil {
 			return diag.Errorf("[ERR] Error normalizing storage JSON string for device (%s): %s", d.Id(), err)
 		}
-		d.Set("storage", storageString)
+		errs = append(errs, d.Set("storage", storageString))
 	}
 	if device.HardwareReservation != nil {
-		d.Set("deployed_hardware_reservation_id", device.HardwareReservation.GetId())
+		errs = append(errs, d.Set("deployed_hardware_reservation_id", device.HardwareReservation.GetId()))
 	}
 
 	networkType, err := getNetworkType(device)
 	if err != nil {
 		return diag.Errorf("[ERR] Error computing network type for device (%s): %s", d.Id(), err)
 	}
-	d.Set("network_type", networkType)
+	errs = append(errs, d.Set("network_type", networkType))
 
 	wfrd := "wait_for_reservation_deprovision"
 	if _, ok := d.GetOk(wfrd); !ok {
-		d.Set(wfrd, nil)
+		errs = append(errs, d.Set(wfrd, nil))
 	}
 	fdv := "force_detach_volumes"
 	if _, ok := d.GetOk(fdv); !ok {
-		d.Set(fdv, nil)
+		errs = append(errs, d.Set(fdv, nil))
 	}
 	tt := "termination_time"
 	if _, ok := d.GetOk(tt); !ok {
-		d.Set(tt, nil)
+		errs = append(errs, d.Set(tt, nil))
 	}
 
-	d.Set("tags", device.Tags)
+	errs = append(errs, d.Set("tags", device.Tags))
 	keyIDs := []string{}
 	for _, k := range device.SshKeys {
 		keyIDs = append(keyIDs, path.Base(k.Href))
 	}
-	d.Set("ssh_key_ids", keyIDs)
+	errs = append(errs, d.Set("ssh_key_ids", keyIDs))
 	networkInfo := getNetworkInfo(device.IpAddresses)
 
 	sort.SliceStable(networkInfo.Networks, func(i, j int) bool {
@@ -658,19 +659,24 @@ func resourceMetalDeviceRead(ctx context.Context, d *schema.ResourceData, meta i
 		return getNetworkRank(int(famI), pubI) < getNetworkRank(int(famJ), pubJ)
 	})
 
-	d.Set("network", networkInfo.Networks)
-	d.Set("access_public_ipv4", networkInfo.PublicIPv4)
-	d.Set("access_private_ipv4", networkInfo.PrivateIPv4)
-	d.Set("access_public_ipv6", networkInfo.PublicIPv6)
+	errs = append(errs, d.Set("network", networkInfo.Networks))
+	errs = append(errs, d.Set("access_public_ipv4", networkInfo.PublicIPv4))
+	errs = append(errs, d.Set("access_private_ipv4", networkInfo.PrivateIPv4))
+	errs = append(errs, d.Set("access_public_ipv6", networkInfo.PublicIPv6))
 
 	ports := getPorts(device.NetworkPorts)
-	d.Set("ports", ports)
+	errs = append(errs, d.Set("ports", ports))
 
 	if networkInfo.Host != "" {
 		d.SetConnInfo(map[string]string{
 			"type": "ssh",
 			"host": networkInfo.Host,
 		})
+	}
+
+	err = errors.Join(errs...)
+	if err != nil {
+		return diag.FromErr(err)
 	}
 
 	return nil
@@ -739,7 +745,7 @@ func resourceMetalDeviceUpdate(ctx context.Context, d *schema.ResourceData, meta
 		return diag.FromErr(err)
 	}
 
-	return resourceMetalDeviceRead(ctx, d, meta)
+	return Read(ctx, d, meta)
 }
 
 func doReinstall(ctx context.Context, client *metalv1.APIClient, d *schema.ResourceData, meta interface{}, start time.Time) error {
@@ -772,7 +778,7 @@ func doReinstall(ctx context.Context, client *metalv1.APIClient, d *schema.Resou
 		}
 
 		updateTimeout := d.Timeout(schema.TimeoutUpdate) - 30*time.Second - time.Since(start)
-		if err := waitForActiveDevice(ctx, d, meta, updateTimeout); err != nil {
+		if err := WaitForActiveDevice(ctx, d, meta, updateTimeout); err != nil {
 			return err
 		}
 	}
@@ -803,7 +809,7 @@ func resourceMetalDeviceDelete(ctx context.Context, d *schema.ResourceData, meta
 			// avoid "context: deadline exceeded"
 			timeout := d.Timeout(schema.TimeoutDelete) - 30*time.Second - time.Since(start)
 
-			err := waitUntilReservationProvisionable(ctx, client, resId.(string), d.Id(), 10*time.Second, timeout, 3*time.Second)
+			err := WaitUntilReservationProvisionable(ctx, client, resId.(string), d.Id(), 10*time.Second, timeout, 3*time.Second)
 			if err != nil {
 				return diag.FromErr(err)
 			}
@@ -812,7 +818,7 @@ func resourceMetalDeviceDelete(ctx context.Context, d *schema.ResourceData, meta
 	return nil
 }
 
-func waitForActiveDevice(ctx context.Context, d *schema.ResourceData, meta interface{}, timeout time.Duration) error {
+func WaitForActiveDevice(ctx context.Context, d *schema.ResourceData, meta interface{}, timeout time.Duration) error {
 	targets := []string{"active", "failed"}
 	pending := []string{"queued", "provisioning", "reinstalling"}
 
@@ -849,7 +855,7 @@ func waitForActiveDevice(ctx context.Context, d *schema.ResourceData, meta inter
 
 	if state != "active" {
 		d.SetId("")
-		return fmt.Errorf("Device in non-active state \"%s\"", state)
+		return fmt.Errorf("device in non-active state \"%s\"", state)
 	}
 
 	return nil

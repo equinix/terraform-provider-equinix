@@ -1,4 +1,4 @@
-package equinix
+package device
 
 import (
 	"context"
@@ -71,6 +71,10 @@ func getNetworkInfo(ips []metalv1.IPAssignment) NetworkInfo {
 	return ni
 }
 
+// Deprecated: this exists for backwards compatibility with
+// packngo-based resources.  It relies on the deprecated packngo
+// SDK and either the logic from packngo should be pulled in to
+// the provider or this functionality should be removed entirely
 func getNetworkType(device *metalv1.Device) (*string, error) {
 	pgDevice := packngo.Device{}
 	res, err := device.MarshalJSON()
@@ -131,7 +135,7 @@ func hwReservationStateRefreshFunc(ctx context.Context, client *metalv1.APIClien
 	}
 }
 
-func waitUntilReservationProvisionable(ctx context.Context, client *metalv1.APIClient, reservationId, instanceId string, delay, timeout, minTimeout time.Duration) error {
+func WaitUntilReservationProvisionable(ctx context.Context, client *metalv1.APIClient, reservationId, instanceId string, delay, timeout, minTimeout time.Duration) error {
 	stateConf := &retry.StateChangeConf{
 		Pending:    []string{deprovisioning},
 		Target:     []string{provisionable, reprovisioned},
