@@ -267,7 +267,7 @@ func accessPointSch() *schema.Resource {
 				Type:        schema.TypeSet,
 				Optional:    true,
 				Deprecated:  "use router attribute instead; gateway is no longer a part of the supported backend",
-				Description: "Cloud Router access point information",
+				Description: "**Deprecated** `gateway` Use `router` attribute instead",
 				MaxItems:    1,
 				Elem: &schema.Resource{
 					Schema: cloudRouterSch(),
@@ -276,7 +276,7 @@ func accessPointSch() *schema.Resource {
 			"router": {
 				Type:        schema.TypeSet,
 				Optional:    true,
-				Description: "Cloud Router access point information",
+				Description: "Cloud Router access point information that replaces `gateway`",
 				MaxItems:    1,
 				Elem: &schema.Resource{
 					Schema: cloudRouterSch(),

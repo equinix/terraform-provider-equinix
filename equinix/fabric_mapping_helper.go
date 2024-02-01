@@ -442,6 +442,7 @@ func accessPointToTerra(accessPoint *v4.AccessPoint) *schema.Set {
 		}
 		if accessPoint.Router != nil {
 			mappedAccessPoint["router"] = cloudRouterToTerra(accessPoint.Router)
+			mappedAccessPoint["gateway"] = cloudRouterToTerra(accessPoint.Router)
 		}
 		if accessPoint.LinkProtocol != nil {
 			mappedAccessPoint["link_protocol"] = linkedProtocolToTerra(*accessPoint.LinkProtocol)
