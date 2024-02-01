@@ -1,4 +1,4 @@
-package equinix
+package project
 
 import (
 	"context"
@@ -14,7 +14,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 )
 
-func dataSourceMetalProject() *schema.Resource {
+func DataSource() *schema.Resource {
 	return &schema.Resource{
 		ReadWithoutTimeout: dataSourceMetalProjectRead,
 		Schema: map[string]*schema.Schema{
