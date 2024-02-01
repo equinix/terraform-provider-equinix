@@ -1,4 +1,4 @@
-package equinix
+package device_test
 
 import (
 	"context"
@@ -10,9 +10,10 @@ import (
 
 	"github.com/equinix/equinix-sdk-go/services/metalv1"
 	"github.com/equinix/terraform-provider-equinix/internal/config"
+	"github.com/equinix/terraform-provider-equinix/internal/resources/metal/device"
 )
 
-func Test_waitUntilReservationProvisionable(t *testing.T) {
+func Test_WaitUntilReservationProvisionable(t *testing.T) {
 	type args struct {
 		reservationId string
 		instanceId    string
@@ -162,7 +163,7 @@ func Test_waitUntilReservationProvisionable(t *testing.T) {
 			meta.Load(ctx)
 
 			client := meta.NewMetalClientForTesting()
-			if err := waitUntilReservationProvisionable(ctx, client, tt.args.reservationId, tt.args.instanceId, 50*time.Millisecond, 1*time.Second, 50*time.Millisecond); (err != nil) != tt.wantErr {
+			if err := device.WaitUntilReservationProvisionable(ctx, client, tt.args.reservationId, tt.args.instanceId, 50*time.Millisecond, 1*time.Second, 50*time.Millisecond); (err != nil) != tt.wantErr {
 				t.Errorf("waitUntilReservationProvisionable() error = %v, wantErr %v", err, tt.wantErr)
 			}
 

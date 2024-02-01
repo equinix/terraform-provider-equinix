@@ -1,4 +1,4 @@
-package equinix
+package device
 
 import (
 	"context"
@@ -131,7 +131,7 @@ func hwReservationStateRefreshFunc(ctx context.Context, client *metalv1.APIClien
 	}
 }
 
-func waitUntilReservationProvisionable(ctx context.Context, client *metalv1.APIClient, reservationId, instanceId string, delay, timeout, minTimeout time.Duration) error {
+func WaitUntilReservationProvisionable(ctx context.Context, client *metalv1.APIClient, reservationId, instanceId string, delay, timeout, minTimeout time.Duration) error {
 	stateConf := &retry.StateChangeConf{
 		Pending:    []string{deprovisioning},
 		Target:     []string{provisionable, reprovisioned},

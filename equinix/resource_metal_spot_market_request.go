@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"reflect"
+	"regexp"
 	"sort"
 	"strconv"
 	"time"
@@ -20,6 +21,10 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/packethost/packngo"
+)
+
+var (
+	matchIPXEScript = regexp.MustCompile(`(?i)^#![i]?pxe`)
 )
 
 func resourceMetalSpotMarketRequest() *schema.Resource {
