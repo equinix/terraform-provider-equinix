@@ -1,9 +1,0 @@
-equinix_client_id      = ""
-equinix_client_secret  = ""
-
-network_name = "terraform_fabric_network_example"
-network_type = "IPWAN"
-network_scope = "GLOBAL"
-notifications_type = "ALL"
-notifications_emails = ["example@equinix.com","test1@equinix.com"]
-project_id = "1234568910"

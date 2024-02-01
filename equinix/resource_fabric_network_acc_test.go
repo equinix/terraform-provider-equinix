@@ -45,7 +45,7 @@ func checkNetworkDelete(s *terraform.State) error {
 		if rs.Type != "equinix_fabric_network" {
 			continue
 		}
-		err := waitUntilNetworkDeprovisioned(rs.Primary.ID, testAccProvider.Meta(), ctx)
+		err := waitUntilFabricNetworkDeprovisioned(rs.Primary.ID, testAccProvider.Meta(), ctx)
 		if err != nil {
 			return fmt.Errorf("API call failed while waiting for resource deletion")
 		}
