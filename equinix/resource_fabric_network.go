@@ -5,6 +5,7 @@ import (
 	"fmt"
 	v4 "github.com/equinix-labs/fabric-go/fabric/v4"
 	"github.com/equinix/terraform-provider-equinix/internal/config"
+	equinix_errors "github.com/equinix/terraform-provider-equinix/internal/errors"
 	equinix_schema "github.com/equinix/terraform-provider-equinix/internal/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
@@ -377,7 +378,7 @@ func resourceFabricNetworkDelete(ctx context.Context, d *schema.ResourceData, me
 		errors, ok := err.(v4.GenericSwaggerError).Model().([]v4.ModelError)
 		if ok {
 			// EQ-3040055 = There is an existing update in REQUESTED state
-			if hasModelErrorCode(errors, "EQ-3040055") {
+			if equinix_errors.HasModelErrorCode(errors, "EQ-3040055") {
 				return diags
 			}
 		}
