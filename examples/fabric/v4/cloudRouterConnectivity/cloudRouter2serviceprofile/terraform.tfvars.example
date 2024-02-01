@@ -1,4 +1,4 @@
-equinix_client_id      = "Equinix_Client_Id"
+equinix_client_id      = "Equnix_Client_Id"
 equinix_client_secret  = "Equinix_Client_Secret"
 connection_name = "cloudRouter_gen_csp"
 connection_type = "IP_VC"
