@@ -7,8 +7,6 @@ import (
 	"time"
 
 	"github.com/equinix/terraform-provider-equinix/internal/resources/metal/metal_connection"
-	"github.com/equinix/terraform-provider-equinix/internal/resources/metal/metal_project_ssh_key"
-	"github.com/equinix/terraform-provider-equinix/internal/resources/metal/metal_ssh_key"
 
 	"github.com/equinix/ecx-go/v2"
 	"github.com/equinix/terraform-provider-equinix/internal/config"
@@ -66,14 +64,16 @@ func Provider() *schema.Provider {
 				Description:  "The maximum number of records in a single response for REST queries that produce paginated responses",
 			},
 			"max_retries": {
-				Type:     schema.TypeInt,
-				Optional: true,
-				Default:  10,
+				Type:        schema.TypeInt,
+				Optional:    true,
+				Default:     10,
+				Description: "Maximum number of retries.",
 			},
 			"max_retry_wait_seconds": {
-				Type:     schema.TypeInt,
-				Optional: true,
-				Default:  30,
+				Type:        schema.TypeInt,
+				Optional:    true,
+				Default:     30,
+				Description: "Maximum number of seconds to wait before retrying a request.",
 			},
 		},
 		DataSourcesMap: map[string]*schema.Resource{
@@ -108,7 +108,6 @@ func Provider() *schema.Provider {
 			"equinix_metal_plans":                dataSourceMetalPlans(),
 			"equinix_metal_port":                 dataSourceMetalPort(),
 			"equinix_metal_project":              dataSourceMetalProject(),
-			"equinix_metal_project_ssh_key":      metal_project_ssh_key.DataSource(),
 			"equinix_metal_reserved_ip_block":    dataSourceMetalReservedIPBlock(),
 			"equinix_metal_spot_market_request":  dataSourceMetalSpotMarketRequest(),
 			"equinix_metal_virtual_circuit":      dataSourceMetalVirtualCircuit(),
@@ -135,10 +134,8 @@ func Provider() *schema.Provider {
 			"equinix_metal_connection":           metal_connection.Resource(),
 			"equinix_metal_device":               resourceMetalDevice(),
 			"equinix_metal_device_network_type":  resourceMetalDeviceNetworkType(),
-			"equinix_metal_ssh_key":              metal_ssh_key.Resource(),
 			"equinix_metal_organization_member":  resourceMetalOrganizationMember(),
 			"equinix_metal_port":                 resourceMetalPort(),
-			"equinix_metal_project_ssh_key":      metal_project_ssh_key.Resource(),
 			"equinix_metal_project":              resourceMetalProject(),
 			"equinix_metal_organization":         resourceMetalOrganization(),
 			"equinix_metal_reserved_ip_block":    resourceMetalReservedIPBlock(),
