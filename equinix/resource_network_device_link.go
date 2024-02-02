@@ -20,21 +20,23 @@ import (
 )
 
 var networkDeviceLinkSchemaNames = map[string]string{
-	"UUID":    "uuid",
-	"Name":    "name",
-	"Subnet":  "subnet",
-	"Devices": "device",
-	"Links":   "link",
-	"Status":  "status",
+	"UUID":      "uuid",
+	"Name":      "name",
+	"Subnet":    "subnet",
+	"Devices":   "device",
+	"Links":     "link",
+	"Status":    "status",
+	"ProjectID": "project_id",
 }
 
 var networkDeviceLinkDescriptions = map[string]string{
-	"UUID":    "Device link unique identifier",
-	"Name":    "Device link name",
-	"Subnet":  "Device link subnet CIDR.",
-	"Devices": "Definition of one or more devices belonging to the device link",
-	"Links":   "Definition of one or more, inter metro connections belonging to the device link",
-	"Status":  "Device link provisioning status",
+	"UUID":      "Device link unique identifier",
+	"Name":      "Device link name",
+	"Subnet":    "Device link subnet CIDR.",
+	"Devices":   "Definition of one or more devices belonging to the device link",
+	"Links":     "Definition of one or more, inter metro connections belonging to the device link",
+	"Status":    "Device link provisioning status",
+	"ProjectID": "Unique identifier of Resource",
 }
 
 var networkDeviceLinkDeviceSchemaNames = map[string]string{
@@ -113,6 +115,14 @@ func createNetworkDeviceLinkResourceSchema() map[string]*schema.Schema {
 			Required:     true,
 			ValidateFunc: validation.StringLenBetween(3, 50),
 			Description:  networkDeviceLinkSchemaNames["Name"],
+		},
+		networkDeviceLinkSchemaNames["ProjectID"]: {
+			Type:         schema.TypeString,
+			Optional:     true,
+			ForceNew:     true,
+			Computed:     true,
+			ValidateFunc: validation.IsUUID,
+			Description:  networkDeviceLinkSchemaNames["ProjectID"],
 		},
 		networkDeviceLinkSchemaNames["Subnet"]: {
 			Type:         schema.TypeString,
@@ -338,6 +348,9 @@ func createNetworkDeviceLink(d *schema.ResourceData) ne.DeviceLinkGroup {
 	if v, ok := d.GetOk(networkDeviceLinkSchemaNames["Subnet"]); ok {
 		link.Subnet = ne.String(v.(string))
 	}
+	if v, ok := d.GetOk(networkDeviceLinkSchemaNames["ProjectID"]); ok {
+		link.ProjectID = ne.String(v.(string))
+	}
 	if v, ok := d.GetOk(networkDeviceLinkSchemaNames["Devices"]); ok {
 		link.Devices = expandNetworkDeviceLinkDevices(v.(*schema.Set))
 	}
@@ -365,6 +378,9 @@ func updateNetworkDeviceLinkResource(link *ne.DeviceLinkGroup, d *schema.Resourc
 	}
 	if err := d.Set(networkDeviceLinkSchemaNames["Links"], flattenNetworkDeviceLinkConnections(d.Get(networkDeviceLinkSchemaNames["Devices"]).(*schema.Set), link.Links)); err != nil {
 		return fmt.Errorf("error setting Links: %s", err)
+	}
+	if err := d.Set(networkDeviceLinkSchemaNames["ProjectID"], link.ProjectID); err != nil {
+		return fmt.Errorf("error setting ProjectID: %s", err)
 	}
 	return nil
 }

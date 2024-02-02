@@ -284,6 +284,11 @@ func createDataSourceNetworkDeviceSchema() map[string]*schema.Schema {
 			Computed:    true,
 			Description: neDeviceDescriptions["Connectivity"],
 		},
+		neDeviceSchemaNames["ProjectID"]: {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: neDeviceDescriptions["ProjectID"],
+		},
 		neDeviceSchemaNames["Secondary"]: {
 			Type:        schema.TypeList,
 			Computed:    true,
@@ -787,6 +792,9 @@ func updateDataSourceNetworkDeviceResource(primary *ne.Device, secondary *ne.Dev
 	}
 	if err := d.Set(neDeviceSchemaNames["ZoneCode"], primary.ZoneCode); err != nil {
 		return fmt.Errorf("error reading ZoneCode: %s", err)
+	}
+	if err := d.Set(neDeviceSchemaNames["ProjectID"], primary.ProjectID); err != nil {
+		return fmt.Errorf("error reading ProjectID: %s", err)
 	}
 	if secondary != nil {
 		if v, ok := d.GetOk(neDeviceSchemaNames["Secondary"]); ok {
