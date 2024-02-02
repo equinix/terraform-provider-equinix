@@ -8,9 +8,9 @@ import (
 	equinix_errors "github.com/equinix/terraform-provider-equinix/internal/errors"
 	equinix_schema "github.com/equinix/terraform-provider-equinix/internal/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"log"
 	"strings"
 	"time"
@@ -385,14 +385,14 @@ func resourceFabricNetworkDelete(ctx context.Context, d *schema.ResourceData, me
 		return diag.FromErr(fmt.Errorf("error response for the Fabric Network delete. Error %v and response %v", err, resp))
 	}
 
-	err = waitUntilFabricNetworkDeprovisioned(d.Id(), meta, ctx)
+	err = WaitUntilFabricNetworkDeprovisioned(d.Id(), meta, ctx)
 	if err != nil {
 		return diag.FromErr(fmt.Errorf("API call failed while waiting for resource deletion. Error %v", err))
 	}
 	return diags
 }
 
-func waitUntilFabricNetworkDeprovisioned(uuid string, meta interface{}, ctx context.Context) error {
+func WaitUntilFabricNetworkDeprovisioned(uuid string, meta interface{}, ctx context.Context) error {
 	log.Printf("Waiting for Fabric Network to be deprovisioned, uuid %s", uuid)
 	stateConf := &resource.StateChangeConf{
 		Pending: []string{
