@@ -95,6 +95,9 @@ func LocationToFabric(locationList []interface{}) v4.SimplifiedLocation {
 }
 
 func LocationToTerra(location *v4.SimplifiedLocation) *schema.Set {
+	if location == nil {
+		return nil
+	}
 	locations := []*v4.SimplifiedLocation{location}
 	mappedLocations := make([]interface{}, len(locations))
 	for i, location := range locations {

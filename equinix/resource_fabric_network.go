@@ -144,7 +144,7 @@ func FabricNetworkResourceSchema() map[string]*schema.Schema {
 		},
 	}
 }
-func resourceNetwork() *schema.Resource {
+func resourceFabricNetwork() *schema.Resource {
 	return &schema.Resource{
 		Timeouts: &schema.ResourceTimeout{
 			Create: schema.DefaultTimeout(6 * time.Minute),
@@ -419,7 +419,7 @@ func WaitUntilFabricNetworkDeprovisioned(uuid string, meta interface{}, ctx cont
 			}
 			return dbConn, string(*dbConn.Operation.EquinixStatus), nil
 		},
-		Timeout:    5 * time.Minute,
+		Timeout:    6 * time.Minute,
 		Delay:      30 * time.Second,
 		MinTimeout: 30 * time.Second,
 	}

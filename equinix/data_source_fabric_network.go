@@ -24,15 +24,15 @@ func readFabricNetworkResourceSchema() map[string]*schema.Schema {
 	}
 	return sch
 }
-func dataSourceNetwork() *schema.Resource {
+func dataSourceFabricNetwork() *schema.Resource {
 	return &schema.Resource{
-		ReadContext: dataSourceNetworkRead,
+		ReadContext: dataSourceFabricNetworkRead,
 		Schema:      readFabricNetworkResourceSchema(),
 		Description: "Fabric V4 API compatible data resource that allow user to fetch Fabric Network for a given UUID\n\n~> **Note** Equinix Fabric v4 resources and datasources are currently in Beta. The interfaces related to `equinix_fabric_` resources and datasources may change ahead of general availability. Please, do not hesitate to report any problems that you experience by opening a new [issue](https://github.com/equinix/terraform-provider-equinix/issues/new?template=bug.md)",
 	}
 }
 
-func dataSourceNetworkRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func dataSourceFabricNetworkRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	uuid, _ := d.Get("uuid").(string)
 	d.SetId(uuid)
 	return resourceFabricNetworkRead(ctx, d, meta)
