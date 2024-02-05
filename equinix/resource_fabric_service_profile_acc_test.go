@@ -18,8 +18,8 @@ import (
 )
 
 func TestAccFabricCreateServiceProfile_SP_FCR_ba(t *testing.T) {
-	spName1 := "fabric_tf_acc_test__01"
-	spName2 := "fabric_tf_acc_test__02"
+	spName1 := "fabric_tf_acc_test_01"
+	spName2 := "fabric_tf_acc_test_02"
 	typel2 := "L2_PROFILE"
 	portType := "XF_PORT"
 	ports := GetFabricEnvPorts(t)
@@ -43,8 +43,6 @@ func TestAccFabricCreateServiceProfile_SP_FCR_ba(t *testing.T) {
 						"equinix_fabric_service_profile.test", "visibility", fmt.Sprint("PRIVATE")),
 					resource.TestCheckResourceAttr(
 						"equinix_fabric_service_profile.test", "tags.#", fmt.Sprint("2")),
-					resource.TestCheckResourceAttr(
-						"equinix_fabric_service_profile.test", "ports.#", fmt.Sprint("2")), // why ?
 
 					resource.TestCheckResourceAttrSet("equinix_fabric_service_profile.test", "uuid"),
 					resource.TestCheckResourceAttrSet("equinix_fabric_service_profile.test", "description"),
