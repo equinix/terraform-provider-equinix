@@ -36,7 +36,7 @@ data "equinix_fabric_port" "port_data_name" {
 - `encapsulation` (Set of Object) Port encapsulation protocol (see [below for nested schema](#nestedatt--encapsulation))
 - `href` (String) Port URI information
 - `id` (String) The ID of this resource.
-- `lag` (Set of Object) Port Lag (see [below for nested schema](#nestedatt--lag))
+- `lag_enabled` (Boolean) Port Lag
 - `location` (Set of Object) Port location information (see [below for nested schema](#nestedatt--location))
 - `name` (String) Port name
 - `operation` (Set of Object) Port specific operational data (see [below for nested schema](#nestedatt--operation))
@@ -92,6 +92,7 @@ Read-Only:
 
 Read-Only:
 
+- `enabled` (Boolean)
 - `group` (String)
 - `priority` (String)
 
@@ -106,23 +107,11 @@ Read-Only:
 - `type` (String)
 
 
-<a id="nestedatt--lag"></a>
-### Nested Schema for `lag`
-
-Read-Only:
-
-- `enabled` (Boolean)
-- `id` (String)
-- `member_status` (String)
-- `name` (String)
-
-
 <a id="nestedatt--location"></a>
 ### Nested Schema for `location`
 
 Read-Only:
 
-- `href` (String)
 - `ibx` (String)
 - `metro_code` (String)
 - `metro_name` (String)
@@ -145,7 +134,5 @@ Read-Only:
 Read-Only:
 
 - `enabled` (Boolean)
-- `group` (Number)
+- `group` (String)
 - `priority` (String)
-
-

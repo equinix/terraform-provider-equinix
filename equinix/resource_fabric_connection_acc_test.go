@@ -292,7 +292,6 @@ func TestAccFabricCreateCloudRouter2PortConnection_PFCR(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						"equinix_fabric_connection.test", "z_side.0.access_point.0.link_protocol.0.vlan_tag", "2325"),
 				),
-				ExpectNonEmptyPlan: true,
 			},
 		},
 	})
