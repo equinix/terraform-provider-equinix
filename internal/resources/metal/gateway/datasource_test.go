@@ -1,6 +1,5 @@
 package gateway_test
 
-
 import (
 	"fmt"
 	"testing"
@@ -8,7 +7,6 @@ import (
 	"github.com/equinix/terraform-provider-equinix/internal/acceptance"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/plancheck"
-
 )
 
 func TestAccDataSourceMetalGateway_privateIPv4(t *testing.T) {

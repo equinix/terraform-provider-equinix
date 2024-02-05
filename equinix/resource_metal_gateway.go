@@ -1,7 +1,6 @@
 package equinix
 
 import (
-
 	equinix_schema "github.com/equinix/terraform-provider-equinix/internal/schema"
 
 	"github.com/equinix/terraform-provider-equinix/internal/config"

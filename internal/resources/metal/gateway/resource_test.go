@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/equinix/terraform-provider-equinix/internal/config"
 	"github.com/equinix/terraform-provider-equinix/internal/acceptance"
+	"github.com/equinix/terraform-provider-equinix/internal/config"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/plancheck"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
@@ -16,7 +16,7 @@ func TestAccMetalGateway_privateIPv4(t *testing.T) {
 		PreCheck:                 func() { acceptance.TestAccPreCheckMetal(t) },
 		ExternalProviders:        acceptance.TestExternalProviders,
 		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
-		CheckDestroy:      testAccMetalGatewayCheckDestroyed,
+		CheckDestroy:             testAccMetalGatewayCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccMetalGatewayConfig_privateIPv4(),
@@ -160,7 +160,7 @@ func TestAccMetalGateway_upgradeFromVersion(t *testing.T) {
 			},
 			{
 				ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
-				Config: testAccMetalGatewayConfig_privateIPv4(),
+				Config:                   testAccMetalGatewayConfig_privateIPv4(),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectEmptyPlan(),
