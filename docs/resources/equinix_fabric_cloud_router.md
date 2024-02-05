@@ -10,8 +10,6 @@ description: |-
 
 Fabric V4 API compatible resource allows creation and management of [Equinix Fabric Cloud Router](https://docs.equinix.com/en-us/Content/Interconnection/FCR/FCR-intro.htm#HowItWorks).
 
-~> **Note** Equinix Fabric v4 resources and datasources are currently in Beta. The interfaces related to `equinix_fabric_` resources and datasources may change ahead of general availability. Please, do not hesitate to report any problems that you experience by opening a new [issue](https://github.com/equinix/terraform-provider-equinix/issues/new?template=bug.md)
-
 Additional Fabric Cloud Router documentation:
 * Getting Started: <https://docs.equinix.com/en-us/Content/Interconnection/FCR/FCR-intro.htm#HowItWorks>
 * API: <https://developer.equinix.com/dev-docs/fabric/api-reference/fabric-v4-apis#fabric-cloud-routers>
@@ -52,20 +50,23 @@ resource "equinix_fabric_cloud_router" "new_cloud_router"{
 - `location` (Block Set, Min: 1, Max: 1) Fabric Cloud Router location (see [below for nested schema](#nestedblock--location))
 - `name` (String) Fabric Cloud Router name. An alpha-numeric 24 characters string which can include only hyphens and underscores
 - `notifications` (Block List, Min: 1) Preferences for notifications on Fabric Cloud Router configuration or status changes (see [below for nested schema](#nestedblock--notifications))
-- `package` (Block Set, Min: 1, Max: 1) Fabric Cloud Router package (see [below for nested schema](#nestedblock--package))
-- `type` (String) Defines the FCR type like XF_GATEWAY
+- `package` (Block Set, Min: 1, Max: 1) Fabric Cloud Router location (see [below for nested schema](#nestedblock--package))
+- `type` (String) Defines the FCR type like XF_ROUTER
 
 ### Optional
 
 - `account` (Block Set, Max: 1) Customer account information that is associated with this Fabric Cloud Router (see [below for nested schema](#nestedblock--account))
 - `description` (String) Customer-provided Fabric Cloud Router description
 - `order` (Block Set, Max: 1) Order information related to this Fabric Cloud Router (see [below for nested schema](#nestedblock--order))
-- `project` (Block Set) Fabric Cloud Router project (see [below for nested schema](#nestedblock--project))
+- `project` (Block Set, Max: 1) Fabric Cloud Router project (see [below for nested schema](#nestedblock--project))
 - `timeouts` (Block, Optional) (see [below for nested schema](#nestedblock--timeouts))
 
 ### Read-Only
 
+- `bgp_ipv4_routes_count` (Number) Access point used and maximum number of IPv4 BGP routes
+- `bgp_ipv6_routes_count` (Number) Access point used and maximum number of IPv6 BGP routes
 - `change_log` (Set of Object) Captures Fabric Cloud Router lifecycle change information (see [below for nested schema](#nestedatt--change_log))
+- `connections_count` (Number) Number of connections associated with this Access point
 - `equinix_asn` (Number) Equinix ASN
 - `href` (String) Fabric Cloud Router URI information
 - `id` (String) The ID of this resource.
@@ -117,12 +118,9 @@ Optional:
 Optional:
 
 - `billing_tier` (String) Billing tier for connection bandwidth
-- `purchase_order_number` (String) Purchase order number
-
-Read-Only:
-
 - `order_id` (String) Order Identification
 - `order_number` (String) Order Reference Number
+- `purchase_order_number` (String) Purchase order number
 
 
 <a id="nestedblock--project"></a>
@@ -162,5 +160,3 @@ Read-Only:
 - `updated_by_email` (String)
 - `updated_by_full_name` (String)
 - `updated_date_time` (String)
-
-

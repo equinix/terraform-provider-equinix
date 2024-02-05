@@ -8,6 +8,7 @@ import (
 	"time"
 
 	equinix_errors "github.com/equinix/terraform-provider-equinix/internal/errors"
+	equinix_fabric_schema "github.com/equinix/terraform-provider-equinix/internal/fabric/schema"
 	equinix_schema "github.com/equinix/terraform-provider-equinix/internal/schema"
 
 	"github.com/equinix/terraform-provider-equinix/internal/config"
@@ -35,7 +36,7 @@ func resourceCloudRouter() *schema.Resource {
 		},
 		Schema: createCloudRouterResourceSchema(),
 
-		Description: "Fabric V4 API compatible resource allows creation and management of Equinix Fabric Cloud Router\n\n~> **Note** Equinix Fabric v4 resources and datasources are currently in Beta. The interfaces related to `equinix_fabric_` resources and datasources may change ahead of general availability. Please, do not hesitate to report any problems that you experience by opening a new [issue](https://github.com/equinix/terraform-provider-equinix/issues/new?template=bug.md)",
+		Description: "Fabric V4 API compatible resource allows creation and management of Equinix Fabric Cloud Router",
 	}
 }
 
@@ -43,15 +44,15 @@ func resourceCloudRouterCreate(ctx context.Context, d *schema.ResourceData, meta
 	client := meta.(*config.Config).FabricClient
 	ctx = context.WithValue(ctx, v4.ContextAccessToken, meta.(*config.Config).FabricAuthToken)
 	schemaNotifications := d.Get("notifications").([]interface{})
-	notifications := notificationToFabric(schemaNotifications)
+	notifications := equinix_fabric_schema.NotificationsToFabric(schemaNotifications)
 	schemaAccount := d.Get("account").(*schema.Set).List()
 	account := accountToCloudRouter(schemaAccount)
 	schemaLocation := d.Get("location").(*schema.Set).List()
-	location := locationToCloudRouter(schemaLocation)
+	location := equinix_fabric_schema.LocationWithoutIBXToFabric(schemaLocation)
 	project := v4.Project{}
 	schemaProject := d.Get("project").(*schema.Set).List()
 	if len(schemaProject) != 0 {
-		project = projectToCloudRouter(schemaProject)
+		project = equinix_fabric_schema.ProjectToFabric(schemaProject)
 	}
 	schemaPackage := d.Get("package").(*schema.Set).List()
 	packages := packageToCloudRouter(schemaPackage)
@@ -67,7 +68,7 @@ func resourceCloudRouterCreate(ctx context.Context, d *schema.ResourceData, meta
 	}
 
 	if v, ok := d.GetOk("order"); ok {
-		order := orderToFabric(v.(*schema.Set).List())
+		order := equinix_fabric_schema.OrderToFabric(v.(*schema.Set).List())
 		createRequest.Order = &order
 	}
 
@@ -107,16 +108,16 @@ func setCloudRouterMap(d *schema.ResourceData, fcr v4.CloudRouter) diag.Diagnost
 		"type":                  fcr.Type_,
 		"state":                 fcr.State,
 		"package":               cloudRouterPackageToTerra(fcr.Package_),
-		"location":              locationCloudRouterToTerra(fcr.Location),
-		"change_log":            changeLogToTerra(fcr.ChangeLog),
+		"location":              equinix_fabric_schema.LocationWithoutIBXToTerra(fcr.Location),
+		"change_log":            equinix_fabric_schema.ChangeLogToTerra(fcr.ChangeLog),
 		"account":               accountCloudRouterToTerra(fcr.Account),
-		"notifications":         notificationToTerra(fcr.Notifications),
-		"project":               projectToTerra(fcr.Project),
+		"notifications":         equinix_fabric_schema.NotificationsToTerra(fcr.Notifications),
+		"project":               equinix_fabric_schema.ProjectToTerra(fcr.Project),
 		"equinix_asn":           fcr.EquinixAsn,
 		"bgp_ipv4_routes_count": fcr.BgpIpv4RoutesCount,
 		"bgp_ipv6_routes_count": fcr.BgpIpv6RoutesCount,
 		"connections_count":     fcr.ConnectionsCount,
-		"order":                 orderToTerra(fcr.Order),
+		"order":                 equinix_fabric_schema.OrderToTerra(fcr.Order),
 	})
 	if err != nil {
 		return diag.FromErr(err)

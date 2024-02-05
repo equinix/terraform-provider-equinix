@@ -11,6 +11,7 @@ import (
 
 	"github.com/equinix/terraform-provider-equinix/internal/converters"
 	equinix_errors "github.com/equinix/terraform-provider-equinix/internal/errors"
+	equinix_fabric_schema "github.com/equinix/terraform-provider-equinix/internal/fabric/schema"
 	equinix_schema "github.com/equinix/terraform-provider-equinix/internal/schema"
 
 	"github.com/antihax/optional"
@@ -21,6 +22,171 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
+
+func serviceProfileAccessPointTypeConfigSch() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"type": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "Type of access point type config - VD, COLO",
+		},
+		"uuid": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "Equinix-assigned access point type config identifier",
+		},
+		"connection_redundancy_required": {
+			Type:        schema.TypeBool,
+			Computed:    true,
+			Description: "Mandate redundant connections",
+		},
+		"allow_bandwidth_auto_approval": {
+			Type:        schema.TypeBool,
+			Computed:    true,
+			Description: "Setting to enable or disable the ability of the buyer to change connection bandwidth without approval of the seller",
+		},
+		"allow_remote_connections": {
+			Type:        schema.TypeBool,
+			Computed:    true,
+			Description: "Setting to allow or prohibit remote connections to the service profile",
+		},
+		"allow_bandwidth_upgrade": {
+			Type:        schema.TypeBool,
+			Computed:    true,
+			Description: "Availability of a bandwidth upgrade. The default is false",
+		},
+		"connection_label": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "An alternative term for connection in case it's different in your organization.",
+		},
+		"enable_auto_generate_service_key": {
+			Type:        schema.TypeBool,
+			Computed:    true,
+			Description: "Applicable to Verizon Software Defined Interconnect service profile.",
+		},
+		"bandwidth_alert_threshold": {
+			Type:        schema.TypeFloat,
+			Computed:    true,
+			Description: "Percentage of port bandwidth at which an allocation alert is generated",
+		},
+		"allow_custom_bandwidth": {
+			Type:        schema.TypeBool,
+			Computed:    true,
+			Description: "Setting to enable or disable the ability of the buyer to customize the bandwidth",
+		},
+		"api_config": {
+			Type:        schema.TypeSet,
+			Computed:    true,
+			Description: "API configuration settings and preferences.",
+			Elem: &schema.Resource{
+				Schema: apiConfigSch(),
+			},
+		},
+		"authentication_key": {
+			Type:        schema.TypeSet,
+			Computed:    true,
+			Description: "Authentication key configuration",
+			Elem: &schema.Resource{
+				Schema: authenticationKeySch(),
+			},
+		},
+		"link_protocol_config": {
+			Type:        schema.TypeSet,
+			Computed:    true,
+			Description: "Settings and preferences for the link protocol used at the access point.",
+			Elem: &schema.Resource{
+				Schema: linkProtocolConfigSch(),
+			},
+		},
+		"supported_bandwidths": {
+			Type:        schema.TypeList,
+			Computed:    true,
+			Description: "Allowed connection bandwidths (Mbps).",
+			Elem:        &schema.Schema{Type: schema.TypeInt},
+		},
+	}
+}
+
+func apiConfigSch() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"api_available": {
+			Type:        schema.TypeBool,
+			Computed:    true,
+			Description: "Indicates if it's possible to establish connections based on the given service profile using the Equinix Fabric API.",
+		},
+		"equinix_managed_vlan": {
+			Type:        schema.TypeBool,
+			Computed:    true,
+			Description: "Setting indicating that the VLAN is managed by Equinix (true) or not (false)",
+		},
+		"allow_over_subscription": {
+			Type:        schema.TypeBool,
+			Computed:    true,
+			Description: "Setting showing that oversubscription support is available (true) or not (false). The default is false",
+		},
+		"over_subscription_limit": {
+			Type:        schema.TypeInt,
+			Computed:    true,
+			Description: "Port bandwidth multiplier that determines the total bandwidth that can be allocated to users creating connections to your services.",
+		},
+		"bandwidth_from_api": {
+			Type:        schema.TypeBool,
+			Computed:    true,
+			Description: "Indicates if the connection bandwidth can be obtained directly from the cloud service provider.",
+		},
+		"integration_id": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "A unique identifier issued during onboarding and used to integrate the customer's service profile with the Equinix Fabric API.",
+		},
+		"equinix_managed_port": {
+			Type:        schema.TypeBool,
+			Computed:    true,
+			Description: "Setting indicating that the port is managed by Equinix (true) or not (false)",
+		},
+	}
+}
+
+func authenticationKeySch() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"required": {
+			Type:        schema.TypeBool,
+			Computed:    true,
+			Description: "Requirement to configure an authentication key.",
+		},
+		"label": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "Name of the parameter that must be provided to authorize the connection.",
+		},
+		"description": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "Description of authorization key",
+		},
+	}
+}
+
+func linkProtocolConfigSch() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"encapsulation_strategy": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "Additional tagging information required by the seller profile.",
+		},
+		"reuse_vlan_s_tag": {
+			Type:        schema.TypeBool,
+			Computed:    true,
+			Description: "Automatically accept subsequent DOT1Q to QINQ connections that use the same authentication key. These connections will have the same VLAN S-tag assigned as the initial connection.",
+		},
+		"encapsulation": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "Data frames encapsulation standard.UNTAGGED - Untagged encapsulation for EPL connections. DOT1Q - DOT1Q encapsulation standard. QINQ - QINQ encapsulation standard.",
+		},
+	}
+}
 
 func resourceFabricServiceProfile() *schema.Resource {
 	return &schema.Resource{
@@ -38,7 +204,7 @@ func resourceFabricServiceProfile() *schema.Resource {
 			StateContext: schema.ImportStatePassthroughContext,
 		},
 		Schema:      createFabricServiceProfileSchema(),
-		Description: "Fabric V4 API compatible resource allows creation and management of Equinix Fabric Service Profile\n\n~> **Note** Equinix Fabric v4 resources and datasources are currently in Beta. The interfaces related to `equinix_fabric_` resources and datasources may change ahead of general availability. Please, do not hesitate to report any problems that you experience by opening a new [issue](https://github.com/equinix/terraform-provider-equinix/issues/new?template=bug.md)",
+		Description: "Fabric V4 API compatible resource allows creation and management of Equinix Fabric Service Profile",
 	}
 }
 
@@ -73,7 +239,7 @@ func getServiceProfileRequestPayload(d *schema.ResourceData) v4.ServiceProfileRe
 	spType := v4.ServiceProfileTypeEnum(d.Get("type").(string))
 
 	schemaNotifications := d.Get("notifications").([]interface{})
-	notifications := notificationToFabric(schemaNotifications)
+	notifications := equinix_fabric_schema.NotificationsToFabric(schemaNotifications)
 
 	var tags []string
 	if d.Get("tags") != nil {
@@ -244,7 +410,7 @@ func setFabricServiceProfileMap(d *schema.ResourceData, sp v4.ServiceProfile) di
 		"name":                      sp.Name,
 		"uuid":                      sp.Uuid,
 		"description":               sp.Description,
-		"notifications":             notificationToTerra(sp.Notifications),
+		"notifications":             equinix_fabric_schema.NotificationsToTerra(sp.Notifications),
 		"tags":                      tagsFabricSpToTerra(sp.Tags),
 		"visibility":                sp.Visibility,
 		"access_point_type_configs": accessPointTypeConfigToTerra(sp.AccessPointTypeConfigs),
@@ -256,7 +422,7 @@ func setFabricServiceProfileMap(d *schema.ResourceData, sp v4.ServiceProfile) di
 		"self_profile":              sp.SelfProfile,
 		"state":                     sp.State,
 		"account":                   serviceProfileAccountFabricSpToTerra(sp.Account),
-		"project":                   projectToTerra(sp.Project),
+		"project":                   equinix_fabric_schema.ProjectToTerra(sp.Project),
 		"change_log":                allOfServiceProfileChangeLogToTerra(sp.ChangeLog),
 	})
 	if err != nil {

@@ -1,6 +1,9 @@
 package equinix
 
-import "github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+import (
+	equinix_schema "github.com/equinix/terraform-provider-equinix/internal/fabric/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+)
 
 func readPackageSch() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
@@ -16,7 +19,7 @@ func readCloudRouterResourceSchema() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
 		"uuid": {
 			Type:        schema.TypeString,
-			Optional:    true,
+			Required:    true,
 			Description: "Equinix-assigned Fabric Cloud Router identifier",
 		},
 		"href": {
@@ -72,7 +75,7 @@ func readCloudRouterResourceSchema() map[string]*schema.Schema {
 			Computed:    true,
 			Description: "Captures Fabric Cloud Router lifecycle change information",
 			Elem: &schema.Resource{
-				Schema: readChangeLogSch(),
+				Schema: equinix_schema.ChangeLogSch(),
 			},
 		},
 		"type": {
@@ -85,16 +88,15 @@ func readCloudRouterResourceSchema() map[string]*schema.Schema {
 			Computed:    true,
 			Description: "Fabric Cloud Router location",
 			Elem: &schema.Resource{
-				Schema: readLocationSch(),
+				Schema: equinix_schema.LocationSch(),
 			},
 		},
 		"project": {
 			Type:        schema.TypeSet,
-			Optional:    true,
 			Computed:    true,
 			Description: "Project information",
 			Elem: &schema.Resource{
-				Schema: readCloudRouterProjectSch(),
+				Schema: equinix_schema.ProjectSch(),
 			},
 		},
 		"account": {
@@ -102,7 +104,7 @@ func readCloudRouterResourceSchema() map[string]*schema.Schema {
 			Computed:    true,
 			Description: "Customer account information that is associated with this Fabric Cloud Router",
 			Elem: &schema.Resource{
-				Schema: readAccountSch(),
+				Schema: equinix_schema.AccountSch(),
 			},
 		},
 		"order": {
@@ -110,7 +112,7 @@ func readCloudRouterResourceSchema() map[string]*schema.Schema {
 			Computed:    true,
 			Description: "Order information related to this Fabric Cloud Router",
 			Elem: &schema.Resource{
-				Schema: readOrderSch(),
+				Schema: equinix_schema.OrderSch(),
 			},
 		},
 		"notifications": {
@@ -118,7 +120,7 @@ func readCloudRouterResourceSchema() map[string]*schema.Schema {
 			Computed:    true,
 			Description: "Preferences for notifications on Fabric Cloud Router configuration or status changes",
 			Elem: &schema.Resource{
-				Schema: readNotificationSch(),
+				Schema: equinix_schema.NotificationSch(),
 			},
 		},
 	}

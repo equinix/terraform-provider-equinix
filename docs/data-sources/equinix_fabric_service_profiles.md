@@ -27,13 +27,13 @@ data "equinix_fabric_service_profiles" "service_profiles_data_name" {
 
 ### Optional
 
-- `filter` (Block Set) Service Profile Search Filter (see [below for nested schema](#nestedblock--filter))
+- `filter` (Block Set, Max: 1) Service Profile Search Filter (see [below for nested schema](#nestedblock--filter))
 - `sort` (Block List) Service Profile Sort criteria for Search Request response payload (see [below for nested schema](#nestedblock--sort))
-- `view_point` (String) Service Profile Search Buyer/Seller Representation. Possible values are aSide and zSide.
+- `view_point` (String) flips view between buyer and seller representation. Available values : aSide, zSide. Default value : aSide
 
 ### Read-Only
 
-- `data` (List of Object) List of  Service Profiles (see [below for nested schema](#nestedatt--data))
+- `data` (List of Object) List of Service Profiles (see [below for nested schema](#nestedatt--data))
 - `id` (String) The ID of this resource.
 
 <a id="nestedblock--filter"></a>
@@ -256,5 +256,3 @@ Read-Only:
 
 - `href` (String)
 - `project_id` (String)
-
-
