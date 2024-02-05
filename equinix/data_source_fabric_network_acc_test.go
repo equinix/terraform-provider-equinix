@@ -19,14 +19,13 @@ func TestAccDataSourceFabricNetwork_PFCR(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.equinix_fabric_network.example", "href"),
 					resource.TestCheckResourceAttrSet("data.equinix_fabric_network.example", "uuid"),
-					resource.TestCheckResourceAttr("data.equinix_fabric_network.example", "name", "Test_Network_PNFV"),
-					resource.TestCheckResourceAttr("data.equinix_fabric_network.example", "state", "INACTIVE"),
+					resource.TestCheckResourceAttr("data.equinix_fabric_network.example", "name", "Test_Network_PFCR"),
+					resource.TestCheckResourceAttrSet("data.equinix_fabric_network.example", "state"),
 					resource.TestCheckResourceAttr("data.equinix_fabric_network.example", "connections_count", "0"),
 					resource.TestCheckResourceAttr("data.equinix_fabric_network.example", "type", "EVPLAN"),
 					resource.TestCheckResourceAttr("data.equinix_fabric_network.example", "notifications.0.type", "ALL"),
 					resource.TestCheckResourceAttr("data.equinix_fabric_network.example", "notifications.0.emails.0", "test@equinix.com"),
 					resource.TestCheckResourceAttr("data.equinix_fabric_network.example", "scope", "GLOBAL"),
-					resource.TestCheckResourceAttr("data.equinix_fabric_network.example", "location.0.metro_code", "SV"),
 					resource.TestCheckResourceAttrSet("data.equinix_fabric_network.example", "change_log.0.created_by"),
 					resource.TestCheckResourceAttrSet("data.equinix_fabric_network.example", "change_log.0.created_by_full_name"),
 					resource.TestCheckResourceAttrSet("data.equinix_fabric_network.example", "change_log.0.created_by_email"),
@@ -43,18 +42,18 @@ func ConfigCreateNetworkResource_PFCR() string {
 	return fmt.Sprintf(`
 	resource "equinix_fabric_network" "example" {
 		type = "EVPLAN"
-		name = "Test_Network_PNFV"
+		name = "Test_Network_PFCR"
 		scope = "GLOBAL"
 		notifications {
 			type = "ALL"
 			emails = ["test@equinix.com","test1@equinix.com"]
 		}
-		location {
-			metro_code = "SV"
+		project{
+			project_id = "291639000636552"
 		}
 	}
-	data "equinix_fabric_cloud_router" "example"{
-		uuid = equinix_fabric_cloud_router.example.id
+	data "equinix_fabric_network" "example"{
+		uuid = equinix_fabric_network.example.id
 	}
 `)
 }

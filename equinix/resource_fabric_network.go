@@ -48,8 +48,7 @@ func FabricNetworkProjectSch() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
 		"project_id": {
 			Type:        schema.TypeString,
-			Computed:    true,
-			Optional:    true,
+			Required:    true,
 			Description: "Project Id",
 		},
 	}
@@ -65,6 +64,11 @@ func FabricNetworkResourceSchema() map[string]*schema.Schema {
 			Type:        schema.TypeString,
 			Required:    true,
 			Description: "Fabric Network name. An alpha-numeric 24 characters string which can include only hyphens and underscores",
+		},
+		"uuid": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "Equinix-assigned network identifier",
 		},
 		"state": {
 			Type:        schema.TypeString,
@@ -94,8 +98,7 @@ func FabricNetworkResourceSchema() map[string]*schema.Schema {
 		},
 		"project": {
 			Type:        schema.TypeSet,
-			Computed:    true,
-			Optional:    true,
+			Required:    true,
 			Description: "Fabric Network project",
 			Elem: &schema.Resource{
 				Schema: FabricNetworkProjectSch(),
@@ -105,7 +108,6 @@ func FabricNetworkResourceSchema() map[string]*schema.Schema {
 			Type:        schema.TypeSet,
 			Computed:    true,
 			Description: "Network operation information that is associated with this Fabric Network",
-			MaxItems:    1,
 			Elem: &schema.Resource{
 				Schema: FabricNetworkOperationSch(),
 			},
@@ -114,7 +116,6 @@ func FabricNetworkResourceSchema() map[string]*schema.Schema {
 			Type:        schema.TypeSet,
 			Computed:    true,
 			Description: "Change information related to this Fabric Network",
-			MaxItems:    1,
 			Elem: &schema.Resource{
 				Schema: FabricNetworkChangeSch(),
 			},
@@ -134,6 +135,11 @@ func FabricNetworkResourceSchema() map[string]*schema.Schema {
 			Elem: &schema.Resource{
 				Schema: createChangeLogSch(),
 			},
+		},
+		"connections_count": {
+			Type:        schema.TypeInt,
+			Computed:    true,
+			Description: "Number of connections associated with this Access point",
 		},
 	}
 }
@@ -248,16 +254,19 @@ func simplifiedFabricNetworkChangeToTerra(networkChange *v4.SimplifiedNetworkCha
 func setFabricNetworkMap(d *schema.ResourceData, nt v4.Network) diag.Diagnostics {
 	diags := diag.Diagnostics{}
 	err := equinix_schema.SetMap(d, map[string]interface{}{
-		"name":          nt.Name,
-		"type":          nt.Type_,
-		"scope":         nt.Scope,
-		"state":         nt.State,
-		"operation":     FabricNetworkOperationToTerra(nt.Operation),
-		"change":        simplifiedFabricNetworkChangeToTerra(nt.Change),
-		"location":      locationToTerra(nt.Location),
-		"notifications": notificationToTerra(nt.Notifications),
-		"project":       projectToTerra(nt.Project),
-		"change_log":    changeLogToTerra(nt.ChangeLog),
+		"name":              nt.Name,
+		"href":              nt.Href,
+		"uuid":              nt.Uuid,
+		"type":              nt.Type_,
+		"scope":             nt.Scope,
+		"state":             nt.State,
+		"operation":         FabricNetworkOperationToTerra(nt.Operation),
+		"change":            simplifiedFabricNetworkChangeToTerra(nt.Change),
+		"location":          locationToTerra(nt.Location),
+		"notifications":     notificationToTerra(nt.Notifications),
+		"project":           projectToTerra(nt.Project),
+		"change_log":        changeLogToTerra(nt.ChangeLog),
+		"connections_count": nt.ConnectionsCount,
 	})
 	if err != nil {
 		return diag.FromErr(err)

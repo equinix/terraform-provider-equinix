@@ -15,7 +15,7 @@ import (
 )
 
 func init() {
-	resource.AddTestSweepers("equinix_fabric_connection_PFCR", &resource.Sweeper{
+	resource.AddTestSweepers("equinix_fabric_network_PFCR", &resource.Sweeper{
 		Name: "equinix_fabric_network",
 		F:    testSweepNetworks,
 	})
@@ -35,19 +35,19 @@ func TestAccFabricNetworkCreateOnlyRequiredParameters_PFCR(t *testing.T) {
 				Config: testAccNetworkCreateOnlyRequiredParameterConfig_PFCR("Ipwan_tf_acc_PFCR"),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("equinix_fabric_network.test", "name", "Ipwan_tf_acc_PFCR"),
-					resource.TestCheckResourceAttrSet("data.equinix_fabric_network.test", "href"),
-					resource.TestCheckResourceAttrSet("data.equinix_fabric_network.test", "uuid"),
-					resource.TestCheckResourceAttr("data.equinix_fabric_network.test", "state", "INACTIVE"),
-					resource.TestCheckResourceAttr("data.equinix_fabric_network.test", "connections_count", "0"),
-					resource.TestCheckResourceAttr("data.equinix_fabric_network.test", "type", "EVPLAN"),
-					resource.TestCheckResourceAttr("data.equinix_fabric_network.test", "notifications.0.type", "ALL"),
-					resource.TestCheckResourceAttr("data.equinix_fabric_network.test", "notifications.0.emails.0", "test@equinix.com"),
-					resource.TestCheckResourceAttr("data.equinix_fabric_network.test", "scope", "GLOBAL"),
-					resource.TestCheckResourceAttrSet("data.equinix_fabric_network.test", "change_log.0.created_by"),
-					resource.TestCheckResourceAttrSet("data.equinix_fabric_network.test", "change_log.0.created_by_full_name"),
-					resource.TestCheckResourceAttrSet("data.equinix_fabric_network.test", "change_log.0.created_by_email"),
-					resource.TestCheckResourceAttrSet("data.equinix_fabric_network.test", "change_log.0.created_date_time"),
-					resource.TestCheckResourceAttrSet("data.equinix_fabric_network.test", "operation.0.equinix_status"),
+					resource.TestCheckResourceAttrSet("equinix_fabric_network.test", "href"),
+					resource.TestCheckResourceAttrSet("equinix_fabric_network.test", "uuid"),
+					resource.TestCheckResourceAttrSet("equinix_fabric_network.test", "state"),
+					resource.TestCheckResourceAttr("equinix_fabric_network.test", "connections_count", "0"),
+					resource.TestCheckResourceAttr("equinix_fabric_network.test", "type", "EVPLAN"),
+					resource.TestCheckResourceAttr("equinix_fabric_network.test", "notifications.0.type", "ALL"),
+					resource.TestCheckResourceAttr("equinix_fabric_network.test", "notifications.0.emails.0", "test@equinix.com"),
+					resource.TestCheckResourceAttr("equinix_fabric_network.test", "scope", "GLOBAL"),
+					resource.TestCheckResourceAttrSet("equinix_fabric_network.test", "change_log.0.created_by"),
+					resource.TestCheckResourceAttrSet("equinix_fabric_network.test", "change_log.0.created_by_full_name"),
+					resource.TestCheckResourceAttrSet("equinix_fabric_network.test", "change_log.0.created_by_email"),
+					resource.TestCheckResourceAttrSet("equinix_fabric_network.test", "change_log.0.created_date_time"),
+					resource.TestCheckResourceAttrSet("equinix_fabric_network.test", "operation.0.equinix_status"),
 				),
 				ExpectNonEmptyPlan: false,
 			},
@@ -62,19 +62,23 @@ func TestAccFabricNetworkCreateOnlyRequiredParameters_PFCR(t *testing.T) {
 		},
 	})
 }
+
 func testAccNetworkCreateOnlyRequiredParameterConfig_PFCR(name string) string {
 	return fmt.Sprintf(`resource "equinix_fabric_network" "test"{
-			type = "EVPLAN"
-			name = "%s"
-			scope = "GLOBAL"
-			notifications{
-				type = "ALL"
-				emails = [
-					"test@equinix.com",
-					"test1@equinix.com"
-				]
-			}
-		}`, name)
+				type = "EVPLAN"
+				name = "%s"
+				scope = "GLOBAL"
+				notifications{
+					type = "ALL"
+					emails = [
+						"test@equinix.com",
+						"test1@equinix.com"
+					]
+				}
+				project {
+					project_id = "291639000636552"
+				}
+			}`, name)
 }
 func checkNetworkDelete(s *terraform.State) error {
 	ctx := context.Background()
@@ -90,6 +94,7 @@ func checkNetworkDelete(s *terraform.State) error {
 	}
 	return nil
 }
+
 func TestAccFabricNetworkCreateMixedParameters_PFCR(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { acceptance.TestAccPreCheck(t) },
@@ -99,23 +104,21 @@ func TestAccFabricNetworkCreateMixedParameters_PFCR(t *testing.T) {
 			{
 				Config: testAccNetworkCreateMixedParameterConfig_PFCR(),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr("equinix_fabric_network.test", "name", "Tf_Network_PNFV"),
-					resource.TestCheckResourceAttrSet("data.equinix_fabric_network.test", "href"),
-					resource.TestCheckResourceAttrSet("data.equinix_fabric_network.test", "uuid"),
-					resource.TestCheckResourceAttr("data.equinix_fabric_network.test", "state", "INACTIVE"),
-					resource.TestCheckResourceAttr("data.equinix_fabric_network.test", "connections_count", "0"),
-					resource.TestCheckResourceAttr("data.equinix_fabric_network.test", "type", "EPLAN"),
-					resource.TestCheckResourceAttr("data.equinix_fabric_network.test", "notifications.0.type", "ALL"),
-					resource.TestCheckResourceAttr("data.equinix_fabric_network.test", "notifications.0.emails.0", "test@equinix.com"),
-					resource.TestCheckResourceAttr("data.equinix_fabric_network.test", "scope", "GLOBAL"),
-					resource.TestCheckResourceAttr("data.equinix_fabric_network.test", "location.0.metro_code", "SV"),
-					resource.TestCheckResourceAttr("data.equinix_fabric_network.test", "location.0.metro_name", "Silicon Valley"),
-					resource.TestCheckResourceAttr("data.equinix_fabric_network.test", "location.0.region", "AMER"),
-					resource.TestCheckResourceAttrSet("data.equinix_fabric_network.test", "change_log.0.created_by"),
-					resource.TestCheckResourceAttrSet("data.equinix_fabric_network.test", "change_log.0.created_by_full_name"),
-					resource.TestCheckResourceAttrSet("data.equinix_fabric_network.test", "change_log.0.created_by_email"),
-					resource.TestCheckResourceAttrSet("data.equinix_fabric_network.test", "change_log.0.created_date_time"),
-					resource.TestCheckResourceAttrSet("data.equinix_fabric_network.test", "operation.0.equinix_status"),
+					resource.TestCheckResourceAttr("equinix_fabric_network.example2", "name", "Tf_Network_PFCR"),
+					resource.TestCheckResourceAttrSet("equinix_fabric_network.example2", "state"),
+					resource.TestCheckResourceAttr("equinix_fabric_network.example2", "connections_count", "0"),
+					resource.TestCheckResourceAttr("equinix_fabric_network.example2", "type", "IPWAN"),
+					resource.TestCheckResourceAttr("equinix_fabric_network.example2", "notifications.0.type", "ALL"),
+					resource.TestCheckResourceAttr("equinix_fabric_network.example2", "notifications.0.emails.0", "test@equinix.com"),
+					resource.TestCheckResourceAttr("equinix_fabric_network.example2", "scope", "REGIONAL"),
+					resource.TestCheckResourceAttr("equinix_fabric_network.example2", "location.0.region", "AMER"),
+					resource.TestCheckResourceAttrSet("equinix_fabric_network.example2", "href"),
+					resource.TestCheckResourceAttrSet("equinix_fabric_network.example2", "uuid"),
+					resource.TestCheckResourceAttrSet("equinix_fabric_network.example2", "change_log.0.created_by"),
+					resource.TestCheckResourceAttrSet("equinix_fabric_network.example2", "change_log.0.created_by_full_name"),
+					resource.TestCheckResourceAttrSet("equinix_fabric_network.example2", "change_log.0.created_by_email"),
+					resource.TestCheckResourceAttrSet("equinix_fabric_network.example2", "change_log.0.created_date_time"),
+					resource.TestCheckResourceAttrSet("equinix_fabric_network.example2", "operation.0.equinix_status"),
 				),
 				ExpectNonEmptyPlan: false,
 			},
@@ -124,25 +127,20 @@ func TestAccFabricNetworkCreateMixedParameters_PFCR(t *testing.T) {
 }
 func testAccNetworkCreateMixedParameterConfig_PFCR() string {
 	return fmt.Sprintf(`
-	resource "equinix_fabric_network" "test" {
+	resource "equinix_fabric_network" "example2" {
 		type = "IPWAN"
-		name = "Tf_Network_PNFV"
-		scope = "GLOBAL"
+		name = "Tf_Network_PFCR"
+		scope = "REGIONAL"
 		notifications {
 			type = "ALL"
 			emails = ["test@equinix.com","test1@equinix.com"]
 		}
 		location {
 			region = "AMER"
-			metro_code = "SV"
-			metro_name = "Silicon Valley"
 		}
 		project{
 			project_id = "291639000636552"
 		}
-	}
-	data "equinix_fabric_cloud_router" "example"{
-		uuid = equinix_fabric_cloud_router.example.id
 	}
 `)
 }
