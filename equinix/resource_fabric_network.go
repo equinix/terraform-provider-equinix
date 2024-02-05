@@ -419,7 +419,7 @@ func WaitUntilFabricNetworkDeprovisioned(uuid string, meta interface{}, ctx cont
 			}
 			return dbConn, string(*dbConn.Operation.EquinixStatus), nil
 		},
-		Timeout:    6 * time.Minute,
+		Timeout:    7 * time.Minute,
 		Delay:      30 * time.Second,
 		MinTimeout: 30 * time.Second,
 	}
