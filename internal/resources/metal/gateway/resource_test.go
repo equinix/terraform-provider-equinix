@@ -144,7 +144,7 @@ func TestAccMetalGateway_upgradeFromVersion(t *testing.T) {
 			{
 				ExternalProviders: map[string]resource.ExternalProvider{
 					"equinix": {
-						VersionConstraint: "1.24.0", // latest version with resource defined on SDKv2
+						VersionConstraint: "1.27.0", // latest version with resource defined on SDKv2
 						Source:            "equinix/equinix",
 					},
 				},

@@ -14,7 +14,7 @@ import (
 	"github.com/packethost/packngo"
 )
 
-// var _ resource.ResourceWithModifyPlan = &Resource{}
+var _ resource.ResourceWithModifyPlan = &Resource{}
 
 func NewResource() resource.Resource {
 	r := Resource{

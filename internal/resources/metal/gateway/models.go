@@ -5,6 +5,7 @@ import (
 	"github.com/packethost/packngo"
     "github.com/hashicorp/terraform-plugin-framework/diag"
     "github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
+    "github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 )
 
 type ResourceModel struct {
@@ -18,35 +19,69 @@ type ResourceModel struct {
     Timeouts              timeouts.Value `tfsdk:"timeouts"`
 }
 
-func (rm *ResourceModel) parse(mg *packngo.MetalGateway) diag.Diagnostics {
-    var diags diag.Diagnostics
+func (m *ResourceModel) parse(gw *packngo.MetalGateway) diag.Diagnostics {
+    // Convert Metal Gateway data to the Terraform state
+    m.ID = types.StringValue(gw.ID)
+    m.ProjectID = types.StringValue(gw.Project.ID)
+    m.VlanID = types.StringValue(gw.VirtualNetwork.ID)
+
+    if gw.VRF != nil {
+        m.VrfID = types.StringValue(gw.VRF.ID)
+    } else {
+        m.VrfID = types.StringNull()
+    }
+
+    if gw.IPReservation != nil {
+        m.IPReservationID = types.StringValue(gw.IPReservation.ID)
+    } else {
+        m.IPReservationID = types.StringNull()
+    }
+
+    m.PrivateIPv4SubnetSize = calculateSubnetSize(gw.IPReservation)
+    m.State = types.StringValue(string(gw.State))
+    return nil
+}
+
+type DataSourceModel struct {
+    ID                    types.String `tfsdk:"id"`
+	GatewayID             types.String `tfsdk:"gateway_id"`
+	ProjectID             types.String `tfsdk:"project_id"`
+    VlanID                types.String `tfsdk:"vlan_id"`
+    VrfID                 types.String `tfsdk:"vrf_id"`
+    IPReservationID       types.String `tfsdk:"ip_reservation_id"`
+    PrivateIPv4SubnetSize types.Int64  `tfsdk:"private_ipv4_subnet_size"`
+    State                 types.String `tfsdk:"state"`
+}
+
+func (m *DataSourceModel) parse(gw *packngo.MetalGateway) diag.Diagnostics {
 
     // Convert Metal Gateway data to the Terraform state
-    rm.ID = types.StringValue(mg.ID)
-    rm.ProjectID = types.StringValue(mg.Project.ID)
-    rm.VlanID = types.StringValue(mg.VirtualNetwork.ID)
+    m.ID = types.StringValue(gw.ID)
+    m.ProjectID = types.StringValue(gw.Project.ID)
+    m.VlanID = types.StringValue(gw.VirtualNetwork.ID)
 
-    if mg.VRF != nil {
-        rm.VrfID = types.StringValue(mg.VRF.ID)
+	if gw.VRF != nil {
+        m.VrfID = types.StringValue(gw.VRF.ID)
     } else {
-        rm.VrfID = types.StringNull()
+        m.VrfID = types.StringNull()
     }
 
-    if mg.IPReservation != nil {
-        rm.IPReservationID = types.StringValue(mg.IPReservation.ID)
+    if gw.IPReservation != nil {
+        m.IPReservationID = types.StringValue(gw.IPReservation.ID)
     } else {
-        rm.IPReservationID = types.StringNull()
+        m.IPReservationID = types.StringNull()
     }
 
-    // Calculate subnet size if it's a private IPv4 subnet
+    m.PrivateIPv4SubnetSize = calculateSubnetSize(gw.IPReservation)
+    m.State = types.StringValue(string(gw.State))
+	return nil
+}
+
+func calculateSubnetSize(ip  *packngo.IPAddressReservation) basetypes.Int64Value {
     privateIPv4SubnetSize := uint64(0)
-    if !mg.IPReservation.Public {
-        privateIPv4SubnetSize = 1 << (32 - mg.IPReservation.CIDR)
-        rm.PrivateIPv4SubnetSize = types.Int64Value(int64(privateIPv4SubnetSize))
-    } else {
-        rm.PrivateIPv4SubnetSize = types.Int64Null()
+    if !ip.Public {
+        privateIPv4SubnetSize = 1 << (32 - ip.CIDR)
+        return types.Int64Value(int64(privateIPv4SubnetSize))
     }
-
-    rm.State = types.StringValue(string(mg.State))
-    return diags
+    return types.Int64Null()
 }
