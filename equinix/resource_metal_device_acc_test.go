@@ -223,10 +223,10 @@ func TestAccMetalDevice_sshConfig(t *testing.T) {
 		t.Fatalf("Cannot generate test SSH key pair: %s", err)
 	}
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
-		ExternalProviders: testExternalProviders,
-		Providers:         testAccProviders,
-		CheckDestroy:      testAccMetalDeviceCheckDestroyed,
+		PreCheck:                 func() { testAccPreCheck(t) },
+		ProtoV5ProviderFactories: testAccProtoV5ProviderFactories,
+		ExternalProviders:        testExternalProviders,
+		CheckDestroy:             testAccMetalDeviceCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccMetalDeviceConfig_ssh_key(rs, userSSHKey, projSSHKey),

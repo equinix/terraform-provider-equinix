@@ -10,6 +10,7 @@ import (
 	"time"
 
 	equinix_errors "github.com/equinix/terraform-provider-equinix/internal/errors"
+	equinix_fabric_schema "github.com/equinix/terraform-provider-equinix/internal/fabric/schema"
 	equinix_schema "github.com/equinix/terraform-provider-equinix/internal/schema"
 
 	"github.com/equinix/terraform-provider-equinix/internal/config"
@@ -175,7 +176,7 @@ func resourceCloudRouter() *schema.Resource {
 		},
 		Schema: resourcesFabricCloudRouterResourceSchema(),
 
-		Description: "Fabric V4 API compatible resource allows creation and management of Equinix Fabric Cloud Router\n\n~> **Note** Equinix Fabric v4 resources and datasources are currently in Beta. The interfaces related to `equinix_fabric_` resources and datasources may change ahead of general availability. Please, do not hesitate to report any problems that you experience by opening a new [issue](https://github.com/equinix/terraform-provider-equinix/issues/new?template=bug.md)",
+		Description: "Fabric V4 API compatible resource allows creation and management of Equinix Fabric Cloud Router",
 	}
 }
 
@@ -222,7 +223,7 @@ func resourceCloudRouterCreate(ctx context.Context, d *schema.ResourceData, meta
 	client := meta.(*config.Config).FabricClient
 	ctx = context.WithValue(ctx, v4.ContextAccessToken, meta.(*config.Config).FabricAuthToken)
 	schemaNotifications := d.Get("notifications").([]interface{})
-	notifications := notificationToFabric(schemaNotifications)
+	notifications := equinix_fabric_schema.NotificationsToFabric(schemaNotifications)
 	schemaAccount := d.Get("account").(*schema.Set).List()
 	account := accountCloudRouterTerraToGo(schemaAccount)
 	schemaLocation := d.Get("location").(*schema.Set).List()
@@ -246,7 +247,7 @@ func resourceCloudRouterCreate(ctx context.Context, d *schema.ResourceData, meta
 	}
 
 	if v, ok := d.GetOk("order"); ok {
-		order := orderToFabric(v.(*schema.Set).List())
+		order := equinix_fabric_schema.OrderToFabric(v.(*schema.Set).List())
 		createRequest.Order = &order
 	}
 
@@ -276,21 +277,6 @@ func resourceCloudRouterRead(ctx context.Context, d *schema.ResourceData, meta i
 	}
 	d.SetId(CloudRouter.Uuid)
 	return setCloudRouterMap(d, CloudRouter)
-}
-
-func packageCloudRouterGoToTerra(packageType *v4.CloudRouterPackageType) *schema.Set {
-	packageTypes := []*v4.CloudRouterPackageType{packageType}
-	mappedPackages := make([]interface{}, len(packageTypes))
-	for i, packageType := range packageTypes {
-		mappedPackages[i] = map[string]interface{}{
-			"code": packageType.Code,
-		}
-	}
-	packageSet := schema.NewSet(
-		schema.HashResource(&schema.Resource{Schema: resourcesFabricCloudRouterPackageSch()}),
-		mappedPackages,
-	)
-	return packageSet
 }
 
 func setCloudRouterMap(d *schema.ResourceData, fcr v4.CloudRouter) diag.Diagnostics {
@@ -446,14 +432,14 @@ func resourceCloudRouterDelete(ctx context.Context, d *schema.ResourceData, meta
 		return diag.FromErr(equinix_errors.FormatFabricError(err))
 	}
 
-	err = waitUntilCloudRouterDeprovisioned(d.Id(), meta, ctx)
+	err = WaitUntilCloudRouterDeprovisioned(d.Id(), meta, ctx)
 	if err != nil {
 		return diag.FromErr(fmt.Errorf("API call failed while waiting for resource deletion. Error %v", err))
 	}
 	return diags
 }
 
-func waitUntilCloudRouterDeprovisioned(uuid string, meta interface{}, ctx context.Context) error {
+func WaitUntilCloudRouterDeprovisioned(uuid string, meta interface{}, ctx context.Context) error {
 	log.Printf("Waiting for Fabric Cloud Router to be deprovisioned, uuid %s", uuid)
 	stateConf := &retry.StateChangeConf{
 		Pending: []string{

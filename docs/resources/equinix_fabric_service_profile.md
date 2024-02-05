@@ -57,13 +57,14 @@ resource "equinix_fabric_service_profile" "new_service_profile" {
 ### Optional
 
 - `access_point_type_configs` (Block List) Access point config information (see [below for nested schema](#nestedblock--access_point_type_configs))
-- `account` (Block Set) Account (see [below for nested schema](#nestedblock--account))
+- `account` (Block Set, Max: 1) Account (see [below for nested schema](#nestedblock--account))
 - `allowed_emails` (List of String) Array of contact emails
 - `custom_fields` (Block List) Custom Fields (see [below for nested schema](#nestedblock--custom_fields))
-- `marketing_info` (Block Set) Marketing Info (see [below for nested schema](#nestedblock--marketing_info))
+- `marketing_info` (Block Set, Max: 1) Marketing Info (see [below for nested schema](#nestedblock--marketing_info))
 - `metros` (Block List) Access point config information (see [below for nested schema](#nestedblock--metros))
 - `notifications` (Block List) Preferences for notifications on connection configuration or status changes (see [below for nested schema](#nestedblock--notifications))
 - `ports` (Block List) Ports (see [below for nested schema](#nestedblock--ports))
+- `project` (Block Set, Max: 1) Project information (see [below for nested schema](#nestedblock--project))
 - `self_profile` (Boolean) Self Profile
 - `state` (String) Service profile state - ACTIVE, PENDING_APPROVAL, DELETED, REJECTED
 - `tags` (List of String) Tags attached to the connection
@@ -76,7 +77,6 @@ resource "equinix_fabric_service_profile" "new_service_profile" {
 - `change_log` (Set of Object) Captures connection lifecycle change information (see [below for nested schema](#nestedatt--change_log))
 - `href` (String) Service Profile URI response attribute
 - `id` (String) The ID of this resource.
-- `project` (Block Set) Project information (see [below for nested schema](#nestedblock--project))
 - `uuid` (String) Equinix assigned service profile identifier
 
 <a id="nestedblock--access_point_type_configs"></a>
@@ -92,13 +92,13 @@ Optional:
 - `allow_bandwidth_upgrade` (Boolean) Availability of a bandwidth upgrade. The default is false
 - `allow_custom_bandwidth` (Boolean) Setting to enable or disable the ability of the buyer to customize the bandwidth
 - `allow_remote_connections` (Boolean) Setting to allow or prohibit remote connections to the service profile
-- `api_config` (Block Set) Api configuration details (see [below for nested schema](#nestedblock--access_point_type_configs--api_config))
-- `authentication_key` (Block Set) Authentication key details (see [below for nested schema](#nestedblock--access_point_type_configs--authentication_key))
+- `api_config` (Block Set, Max: 1) Api configuration details (see [below for nested schema](#nestedblock--access_point_type_configs--api_config))
+- `authentication_key` (Block Set, Max: 1) Authentication key details (see [below for nested schema](#nestedblock--access_point_type_configs--authentication_key))
 - `bandwidth_alert_threshold` (Number) Percentage of port bandwidth at which an allocation alert is generated
 - `connection_label` (String) Custom name for Connection
 - `connection_redundancy_required` (Boolean) Mandate redundant connections
 - `enable_auto_generate_service_key` (Boolean) Enable auto generate service key
-- `link_protocol_config` (Block Set) Link protocol configuration details (see [below for nested schema](#nestedblock--access_point_type_configs--link_protocol_config))
+- `link_protocol_config` (Block Set, Max: 1) Link protocol configuration details (see [below for nested schema](#nestedblock--access_point_type_configs--link_protocol_config))
 - `supported_bandwidths` (List of Number) Supported bandwidths
 
 Read-Only:
@@ -228,7 +228,7 @@ Required:
 Optional:
 
 - `cross_connect_id` (String) Cross Connect Id
-- `location` (Block Set) Colo/Port Location (see [below for nested schema](#nestedblock--ports--location))
+- `location` (Block Set, Max: 1) Colo/Port Location (see [below for nested schema](#nestedblock--ports--location))
 - `seller_region` (String) Seller Region
 - `seller_region_description` (String) Seller Region details
 
@@ -242,6 +242,18 @@ Optional:
 - `metro_name` (String) Access point metro name
 - `region` (String) Access point region
 
+
+
+<a id="nestedblock--project"></a>
+### Nested Schema for `project`
+
+Optional:
+
+- `project_id` (String) Project Id
+
+Read-Only:
+
+- `href` (String) Unique Resource URL
 
 
 <a id="nestedblock--timeouts"></a>
@@ -266,7 +278,7 @@ Required:
 Optional:
 
 - `interface_uuid` (String) Device Interface Uuid
-- `location` (Block Set) Device Location (see [below for nested schema](#nestedblock--virtual_devices--location))
+- `location` (Block Set, Max: 1) Device Location (see [below for nested schema](#nestedblock--virtual_devices--location))
 
 <a id="nestedblock--virtual_devices--location"></a>
 ### Nested Schema for `virtual_devices.location`
@@ -297,14 +309,3 @@ Read-Only:
 - `updated_by_email` (String)
 - `updated_by_full_name` (String)
 - `updated_date_time` (String)
-
-
-<a id="nestedblock--project"></a>
-### Nested Schema for `project`
-
-Read-Only:
-
-- `href` (String) Unique Resource URL
-- `project_id` (String) Project Id
-
-

@@ -1,14 +1,14 @@
-package metal_project_ssh_key_test
+package project_ssh_key_test
 
 import (
 	"fmt"
 	"regexp"
 	"testing"
 
+	"github.com/equinix/terraform-provider-equinix/internal/acceptance"
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
-
-	"github.com/equinix/terraform-provider-equinix/internal/acceptance"
+	"github.com/hashicorp/terraform-plugin-testing/plancheck"
 )
 
 func TestAccDataSourceMetalProjectSSHKey_bySearch(t *testing.T) {
@@ -22,7 +22,7 @@ func TestAccDataSourceMetalProjectSSHKey_bySearch(t *testing.T) {
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                  func() { acceptance.TestAccPreCheckMetal(t) },
-		Providers:                 acceptance.TestAccProviders,
+		ProtoV5ProviderFactories:  acceptance.ProtoV5ProviderFactories,
 		PreventPostDestroyRefresh: true,
 		CheckDestroy:              testAccMetalProjectSSHKeyCheckDestroyed,
 		Steps: []resource.TestStep{
@@ -61,7 +61,7 @@ func TestAccDataSourceMetalProjectSSHKeyDataSource_yID(t *testing.T) {
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                  func() { acceptance.TestAccPreCheckMetal(t) },
-		Providers:                 acceptance.TestAccProviders,
+		ProtoV5ProviderFactories:  acceptance.ProtoV5ProviderFactories,
 		PreventPostDestroyRefresh: true,
 		CheckDestroy:              testAccMetalProjectSSHKeyCheckDestroyed,
 		Steps: []resource.TestStep{
@@ -144,4 +144,48 @@ resource "equinix_metal_project_ssh_key" "foobar" {
 }`, keyName, keyName, publicSshKey)
 
 	return config
+}
+
+// Test to verify that switching from SDKv2 to the Framework has not affected provider's behavior
+// TODO (ocobles): once migrated, this test may be removed
+func TestAccDataSourceMetalProjectSSHKey_upgradeFromVersion(t *testing.T) {
+	datasourceName := "data.equinix_metal_project_ssh_key.foobar"
+	keyName := acctest.RandomWithPrefix("tfacc-project-key")
+
+	publicKeyMaterial, _, err := acctest.RandSSHKeyPair("")
+	if err != nil {
+		t.Fatalf("Cannot generate test SSH key pair: %s", err)
+	}
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:                  func() { acceptance.TestAccPreCheckMetal(t) },
+		PreventPostDestroyRefresh: true,
+		CheckDestroy:              testAccMetalProjectSSHKeyCheckDestroyed,
+		Steps: []resource.TestStep{
+			{
+				ExternalProviders: map[string]resource.ExternalProvider{
+					"equinix": {
+						VersionConstraint: "1.24.0", // latest version with resource defined on SDKv2
+						Source:            "equinix/equinix",
+					},
+				},
+				Config: testAccDataSourceMetalProjectSSHKeyConfig_bySearch(keyName, publicKeyMaterial),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(
+						datasourceName, "name", keyName),
+					resource.TestCheckResourceAttr(
+						datasourceName, "public_key", publicKeyMaterial),
+				),
+			},
+			{
+				ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+				Config:                   testAccDataSourceMetalProjectSSHKeyConfig_bySearch(keyName, publicKeyMaterial),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectEmptyPlan(),
+					},
+				},
+			},
+		},
+	})
 }

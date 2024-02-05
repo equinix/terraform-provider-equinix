@@ -2,10 +2,10 @@ package equinix
 
 import (
 	"fmt"
+	equinix_schema "github.com/equinix/terraform-provider-equinix/internal/fabric/schema"
 	"log"
 
 	v4 "github.com/equinix-labs/fabric-go/fabric/v4"
-	"github.com/equinix/terraform-provider-equinix/internal/converters"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
@@ -76,7 +76,7 @@ func accessPointToFabric(accessPointRequest []interface{}) v4.AccessPoint {
 		}
 
 		if len(cloudRouterRequest) != 0 {
-			mappedGWr := cloudRouterTerraToGo(cloudRouterRequest)
+			mappedGWr := cloudRouterToFabric(cloudRouterRequest)
 			if mappedGWr.Uuid != "" {
 				accessPoint.Router = &mappedGWr
 			}
@@ -113,7 +113,7 @@ func accessPointToFabric(accessPointRequest []interface{}) v4.AccessPoint {
 		}
 
 		if len(locationList) != 0 {
-			sl := locationToFabric(locationList)
+			sl := equinix_schema.LocationToFabric(locationList)
 			accessPoint.Location = &sl
 		}
 
@@ -131,7 +131,7 @@ func accessPointToFabric(accessPointRequest []interface{}) v4.AccessPoint {
 	return accessPoint
 }
 
-func cloudRouterTerraToGo(cloudRouterRequest []interface{}) v4.CloudRouter {
+func cloudRouterToFabric(cloudRouterRequest []interface{}) v4.CloudRouter {
 	if cloudRouterRequest == nil {
 		return v4.CloudRouter{}
 	}
@@ -142,71 +142,6 @@ func cloudRouterTerraToGo(cloudRouterRequest []interface{}) v4.CloudRouter {
 		cloudRouterMapped = v4.CloudRouter{Uuid: cruuid}
 	}
 	return cloudRouterMapped
-}
-
-func projectToFabric(projectRequest []interface{}) v4.Project {
-	if len(projectRequest) == 0 {
-		return v4.Project{}
-	}
-	mappedPr := v4.Project{}
-	for _, pr := range projectRequest {
-		prMap := pr.(map[string]interface{})
-		projectId := prMap["project_id"].(string)
-		mappedPr = v4.Project{ProjectId: projectId}
-	}
-	return mappedPr
-}
-
-func notificationToFabric(schemaNotifications []interface{}) []v4.SimplifiedNotification {
-	if schemaNotifications == nil {
-		return []v4.SimplifiedNotification{}
-	}
-	var notifications []v4.SimplifiedNotification
-	for _, n := range schemaNotifications {
-		ntype := n.(map[string]interface{})["type"].(string)
-		interval := n.(map[string]interface{})["send_interval"].(string)
-		emailsRaw := n.(map[string]interface{})["emails"].([]interface{})
-		emails := converters.IfArrToStringArr(emailsRaw)
-		notifications = append(notifications, v4.SimplifiedNotification{
-			Type_:        ntype,
-			SendInterval: interval,
-			Emails:       emails,
-		})
-	}
-	return notifications
-}
-
-func redundancyToFabric(schemaRedundancy []interface{}) v4.ConnectionRedundancy {
-	if schemaRedundancy == nil {
-		return v4.ConnectionRedundancy{}
-	}
-	red := v4.ConnectionRedundancy{}
-	for _, r := range schemaRedundancy {
-		redundancyMap := r.(map[string]interface{})
-		connectionPriority := v4.ConnectionPriority(redundancyMap["priority"].(string))
-		redundancyGroup := redundancyMap["group"].(string)
-		red = v4.ConnectionRedundancy{
-			Priority: &connectionPriority,
-			Group:    redundancyGroup,
-		}
-	}
-	return red
-}
-
-func orderToFabric(schemaOrder []interface{}) v4.Order {
-	if schemaOrder == nil {
-		return v4.Order{}
-	}
-	order := v4.Order{}
-	for _, o := range schemaOrder {
-		orderMap := o.(map[string]interface{})
-		purchaseOrderNumber := orderMap["purchase_order_number"]
-		billingTier := orderMap["billing_tier"]
-		orderId := orderMap["order_id"]
-		orderNumber := orderMap["order_number"]
-		order = v4.Order{PurchaseOrderNumber: purchaseOrderNumber.(string), BillingTier: billingTier.(string), OrderId: orderId.(string), OrderNumber: orderNumber.(string)}
-	}
-	return order
 }
 
 func linkProtocolToFabric(linkProtocolList []interface{}) v4.SimplifiedLinkProtocol {
@@ -223,15 +158,6 @@ func linkProtocolToFabric(linkProtocolList []interface{}) v4.SimplifiedLinkProto
 	return slp
 }
 
-func portToFabric(portList []interface{}) v4.SimplifiedPort {
-	p := v4.SimplifiedPort{}
-	for _, pl := range portList {
-		plMap := pl.(map[string]interface{})
-		uuid := plMap["uuid"].(string)
-		p = v4.SimplifiedPort{Uuid: uuid}
-	}
-	return p
-}
 func networkToFabric(networkList []interface{}) v4.SimplifiedNetwork {
 	p := v4.SimplifiedNetwork{}
 	for _, pl := range networkList {
@@ -250,25 +176,9 @@ func simplifiedServiceProfileToFabric(profileList []interface{}) v4.SimplifiedSe
 		spte := v4.ServiceProfileTypeEnum(ptype)
 		uuid := plMap["uuid"].(string)
 		ssp = v4.SimplifiedServiceProfile{Uuid: uuid, Type_: &spte}
+
 	}
 	return ssp
-}
-
-func locationToFabric(locationList []interface{}) v4.SimplifiedLocation {
-	sl := v4.SimplifiedLocation{}
-	for _, ll := range locationList {
-		llMap := ll.(map[string]interface{})
-		metroName := llMap["metro_name"]
-		var metroNamestr string
-		if metroName != nil {
-			metroNamestr = metroName.(string)
-		}
-		region := llMap["region"].(string)
-		mc := llMap["metro_code"].(string)
-		ibx := llMap["ibx"].(string)
-		sl = v4.SimplifiedLocation{MetroCode: mc, Region: region, Ibx: ibx, MetroName: metroNamestr}
-	}
-	return sl
 }
 
 func virtualdeviceToFabric(virtualdeviceList []interface{}) v4.VirtualDevice {
@@ -313,8 +223,9 @@ func accountToTerra(account *v4.SimplifiedAccount) *schema.Set {
 			"global_cust_id":           account.GlobalCustId,
 		}
 	}
+	hashAccount := &schema.Resource{Schema: equinix_schema.AccountSch()}
 	accountSet := schema.NewSet(
-		schema.HashResource(createAccountRes),
+		schema.HashResource(hashAccount),
 		mappedAccounts,
 	)
 
@@ -340,38 +251,6 @@ func accountCloudRouterToTerra(account *v4.SimplifiedAccount) *schema.Set {
 	return accountSet
 }
 
-func errorToTerra(errors []v4.ModelError) []interface{} {
-	if errors == nil {
-		return nil
-	}
-	mappedErrors := make([]interface{}, len(errors))
-	for index, mError := range errors {
-		mappedErrors[index] = map[string]interface{}{
-			"error_code":      mError.ErrorCode,
-			"error_message":   mError.ErrorMessage,
-			"correlation_id":  mError.CorrelationId,
-			"details":         mError.Details,
-			"help":            mError.Help,
-			"additional_info": errorAdditionalInfoToTerra(mError.AdditionalInfo),
-		}
-	}
-	return mappedErrors
-}
-
-func errorAdditionalInfoToTerra(additionalInfol []v4.PriceErrorAdditionalInfo) []interface{} {
-	if additionalInfol == nil {
-		return nil
-	}
-	mappedAdditionalInfol := make([]interface{}, len(additionalInfol))
-	for index, additionalInfo := range additionalInfol {
-		mappedAdditionalInfol[index] = map[string]interface{}{
-			"property": additionalInfo.Property,
-			"reason":   additionalInfo.Reason,
-		}
-	}
-	return mappedAdditionalInfol
-}
-
 func operationToTerra(operation *v4.ConnectionOperation) *schema.Set {
 	if operation == nil {
 		return nil
@@ -383,149 +262,15 @@ func operationToTerra(operation *v4.ConnectionOperation) *schema.Set {
 		mappedOperation["provider_status"] = string(*operation.ProviderStatus)
 		mappedOperation["equinix_status"] = string(*operation.EquinixStatus)
 		if operation.Errors != nil {
-			mappedOperation["errors"] = errorToTerra(operation.Errors)
+			mappedOperation["errors"] = equinix_schema.ErrorToTerra(operation.Errors)
 		}
 		mappedOperations = append(mappedOperations, mappedOperation)
 	}
-
 	operationSet := schema.NewSet(
-		schema.HashResource(createOperationRes),
+		schema.HashResource(&schema.Resource{Schema: operationSch()}),
 		mappedOperations,
 	)
 	return operationSet
-}
-
-func orderMappingToTerra(order *v4.Order) *schema.Set {
-	if order == nil {
-		return nil
-	}
-	orders := []*v4.Order{order}
-	mappedOrders := make([]interface{}, len(orders))
-	for _, order := range orders {
-		mappedOrder := make(map[string]interface{})
-		mappedOrder["purchase_order_number"] = order.PurchaseOrderNumber
-		mappedOrder["billing_tier"] = order.BillingTier
-		mappedOrder["order_id"] = order.OrderId
-		mappedOrder["order_number"] = order.OrderNumber
-		mappedOrders = append(mappedOrders, mappedOrder)
-	}
-	orderSet := schema.NewSet(
-		schema.HashResource(createOrderRes),
-		mappedOrders,
-	)
-	return orderSet
-}
-
-func changeLogToTerra(changeLog *v4.Changelog) *schema.Set {
-	if changeLog == nil {
-		return nil
-	}
-	changeLogs := []*v4.Changelog{changeLog}
-	mappedChangeLogs := make([]interface{}, len(changeLogs))
-	for _, changeLog := range changeLogs {
-		mappedChangeLog := make(map[string]interface{})
-		mappedChangeLog["created_by"] = changeLog.CreatedBy
-		mappedChangeLog["created_by_full_name"] = changeLog.CreatedByFullName
-		mappedChangeLog["created_by_email"] = changeLog.CreatedByEmail
-		mappedChangeLog["created_date_time"] = changeLog.CreatedDateTime.String()
-		mappedChangeLog["updated_by"] = changeLog.UpdatedBy
-		mappedChangeLog["updated_by_full_name"] = changeLog.UpdatedByFullName
-		mappedChangeLog["updated_date_time"] = changeLog.UpdatedDateTime.String()
-		mappedChangeLog["deleted_by"] = changeLog.DeletedBy
-		mappedChangeLog["deleted_by_full_name"] = changeLog.DeletedByFullName
-		mappedChangeLog["deleted_by_email"] = changeLog.DeletedByEmail
-		mappedChangeLog["deleted_date_time"] = changeLog.DeletedDateTime.String()
-		mappedChangeLogs = append(mappedChangeLogs, mappedChangeLog)
-	}
-	changeLogSet := schema.NewSet(
-		schema.HashResource(createChangeLogRes),
-		mappedChangeLogs,
-	)
-	return changeLogSet
-}
-
-func portRedundancyToTerra(redundancy *v4.PortRedundancy) *schema.Set {
-	redundancies := []*v4.PortRedundancy{redundancy}
-	mappedRedundancys := make([]interface{}, len(redundancies))
-	for _, redundancy := range redundancies {
-		mappedRedundancy := make(map[string]interface{})
-		mappedRedundancy["priority"] = string(*redundancy.Priority)
-		mappedRedundancys = append(mappedRedundancys, mappedRedundancy)
-	}
-	redundancySet := schema.NewSet(
-		schema.HashResource(createPortRedundancyRes),
-		mappedRedundancys,
-	)
-	return redundancySet
-}
-
-func redundancyToTerra(redundancy *v4.ConnectionRedundancy) *schema.Set {
-	if redundancy == nil {
-		return nil
-	}
-	redundancies := []*v4.ConnectionRedundancy{redundancy}
-	mappedRedundancys := make([]interface{}, len(redundancies))
-	for _, redundancy := range redundancies {
-		mappedRedundancy := make(map[string]interface{})
-		mappedRedundancy["group"] = redundancy.Group
-		mappedRedundancy["priority"] = string(*redundancy.Priority)
-		mappedRedundancys = append(mappedRedundancys, mappedRedundancy)
-	}
-	redundancySet := schema.NewSet(
-		schema.HashResource(createRedundancyRes),
-		mappedRedundancys,
-	)
-	return redundancySet
-}
-
-func notificationToTerra(notifications []v4.SimplifiedNotification) []map[string]interface{} {
-	if notifications == nil {
-		return nil
-	}
-	mappedNotifications := make([]map[string]interface{}, len(notifications))
-	for index, notification := range notifications {
-		mappedNotifications[index] = map[string]interface{}{
-			"type":          notification.Type_,
-			"send_interval": notification.SendInterval,
-			"emails":        notification.Emails,
-		}
-	}
-	return mappedNotifications
-}
-
-func locationToTerra(location *v4.SimplifiedLocation) *schema.Set {
-	locations := []*v4.SimplifiedLocation{location}
-	mappedLocations := make([]interface{}, len(locations))
-	for i, location := range locations {
-		mappedLocations[i] = map[string]interface{}{
-			"region":     location.Region,
-			"metro_name": location.MetroName,
-			"metro_code": location.MetroCode,
-			"ibx":        location.Ibx,
-		}
-	}
-	locationSet := schema.NewSet(
-		schema.HashResource(createLocationRes),
-		mappedLocations,
-	)
-	return locationSet
-}
-
-func locationCloudRouterToTerra(location *v4.SimplifiedLocationWithoutIbx) *schema.Set {
-	locations := []*v4.SimplifiedLocationWithoutIbx{location}
-	mappedLocations := make([]interface{}, len(locations))
-	for i, location := range locations {
-		mappedLocations[i] = map[string]interface{}{
-			"region":     location.Region,
-			"metro_name": location.MetroName,
-			"metro_code": location.MetroCode,
-		}
-	}
-	locationSet := schema.NewSet(
-		schema.HashResource(createLocationRes),
-		mappedLocations,
-	)
-	return locationSet
 }
 
 func serviceTokenToTerra(serviceToken *v4.ServiceToken) *schema.Set {
@@ -544,7 +289,7 @@ func serviceTokenToTerra(serviceToken *v4.ServiceToken) *schema.Set {
 		mappedServiceTokens = append(mappedServiceTokens, mappedServiceToken)
 	}
 	serviceTokenSet := schema.NewSet(
-		schema.HashResource(createServiceTokenRes),
+		schema.HashResource(&schema.Resource{Schema: serviceTokenSch()}),
 		mappedServiceTokens,
 	)
 	return serviceTokenSet
@@ -563,7 +308,7 @@ func connectionSideToTerra(connectionSide *v4.ConnectionSide) *schema.Set {
 		mappedConnectionSides = append(mappedConnectionSides, mappedConnectionSide)
 	}
 	connectionSideSet := schema.NewSet(
-		schema.HashResource(createFabricConnectionSideRes()),
+		schema.HashResource(connectionSideSch()),
 		mappedConnectionSides,
 	)
 	return connectionSideSet
@@ -596,9 +341,24 @@ func cloudRouterToTerra(cloudRouter *v4.CloudRouter) *schema.Set {
 		mappedCloudRouters = append(mappedCloudRouters, mappedCloudRouter)
 	}
 	linkedProtocolSet := schema.NewSet(
-		schema.HashResource(createGatewayProjectSchRes),
+		schema.HashResource(&schema.Resource{Schema: equinix_schema.ProjectSch()}),
 		mappedCloudRouters)
 	return linkedProtocolSet
+}
+
+func cloudRouterPackageToTerra(packageType *v4.CloudRouterPackageType) *schema.Set {
+	packageTypes := []*v4.CloudRouterPackageType{packageType}
+	mappedPackages := make([]interface{}, len(packageTypes))
+	for i, packageType := range packageTypes {
+		mappedPackages[i] = map[string]interface{}{
+			"code": packageType.Code,
+		}
+	}
+	packageSet := schema.NewSet(
+		schema.HashResource(createPackageRes),
+		mappedPackages,
+	)
+	return packageSet
 }
 
 func projectToTerra(project *v4.Project) *schema.Set {
@@ -633,7 +393,7 @@ func virtualDeviceToTerra(virtualDevice *v4.VirtualDevice) *schema.Set {
 		mappedVirtualDevices = append(mappedVirtualDevices, mappedVirtualDevice)
 	}
 	virtualDeviceSet := schema.NewSet(
-		schema.HashResource(createAccessPointVirtualDeviceRes),
+		schema.HashResource(&schema.Resource{Schema: accessPointVirtualDeviceSch()}),
 		mappedVirtualDevices)
 	return virtualDeviceSet
 }
@@ -652,7 +412,7 @@ func interfaceToTerra(mInterface *v4.ModelInterface) *schema.Set {
 		mappedMInterfaces = append(mappedMInterfaces, mappedMInterface)
 	}
 	mInterfaceSet := schema.NewSet(
-		schema.HashResource(createAccessPointVirtualDeviceRes),
+		schema.HashResource(&schema.Resource{Schema: accessPointInterface()}),
 		mappedMInterfaces)
 	return mInterfaceSet
 }
@@ -669,7 +429,7 @@ func accessPointToTerra(accessPoint *v4.AccessPoint) *schema.Set {
 			mappedAccessPoint["account"] = accountToTerra(accessPoint.Account)
 		}
 		if accessPoint.Location != nil {
-			mappedAccessPoint["location"] = locationToTerra(accessPoint.Location)
+			mappedAccessPoint["location"] = equinix_schema.LocationToTerra(accessPoint.Location)
 		}
 		if accessPoint.Port != nil {
 			mappedAccessPoint["port"] = portToTerra(accessPoint.Port)
@@ -679,6 +439,7 @@ func accessPointToTerra(accessPoint *v4.AccessPoint) *schema.Set {
 		}
 		if accessPoint.Router != nil {
 			mappedAccessPoint["router"] = cloudRouterToTerra(accessPoint.Router)
+			mappedAccessPoint["gateway"] = cloudRouterToTerra(accessPoint.Router)
 		}
 		if accessPoint.LinkProtocol != nil {
 			mappedAccessPoint["link_protocol"] = linkedProtocolToTerra(*accessPoint.LinkProtocol)
@@ -698,7 +459,7 @@ func accessPointToTerra(accessPoint *v4.AccessPoint) *schema.Set {
 		mappedAccessPoints = append(mappedAccessPoints, mappedAccessPoint)
 	}
 	accessPointSet := schema.NewSet(
-		schema.HashResource(createConnectionSideAccessPointRes()),
+		schema.HashResource(accessPointSch()),
 		mappedAccessPoints,
 	)
 	return accessPointSet
@@ -716,7 +477,7 @@ func linkedProtocolToTerra(linkedProtocol v4.SimplifiedLinkProtocol) *schema.Set
 		mappedLinkedProtocols = append(mappedLinkedProtocols, mappedLinkedProtocol)
 	}
 	linkedProtocolSet := schema.NewSet(
-		schema.HashResource(createAccessPointLinkProtocolSchRes),
+		schema.HashResource(&schema.Resource{Schema: accessPointLinkProtocolSch()}),
 		mappedLinkedProtocols)
 	return linkedProtocolSet
 }
@@ -735,7 +496,7 @@ func simplifiedServiceProfileToTerra(profile *v4.SimplifiedServiceProfile) *sche
 	}
 
 	profileSet := schema.NewSet(
-		schema.HashResource(createServiceProfileSchRes),
+		schema.HashResource(&schema.Resource{Schema: serviceProfileSch()}),
 		mappedProfiles,
 	)
 	return profileSet
@@ -805,26 +566,6 @@ func supportedBandwidthsToTerra(supportedBandwidths *[]int32) []interface{} {
 		mappedSupportedBandwidths = append(mappedSupportedBandwidths, int(bandwidth))
 	}
 	return mappedSupportedBandwidths
-}
-
-func portToTerra(port *v4.SimplifiedPort) *schema.Set {
-	ports := []*v4.SimplifiedPort{port}
-	mappedPorts := make([]interface{}, len(ports))
-	for _, port := range ports {
-		mappedPort := make(map[string]interface{})
-		mappedPort["href"] = port.Href
-		mappedPort["name"] = port.Name
-		mappedPort["uuid"] = port.Uuid
-		if port.Redundancy != nil {
-			mappedPort["redundancy"] = portRedundancyToTerra(port.Redundancy)
-		}
-		mappedPorts = append(mappedPorts, mappedPort)
-	}
-	portSet := schema.NewSet(
-		schema.HashResource(createPortRes),
-		mappedPorts,
-	)
-	return portSet
 }
 
 func routingProtocolDirectIpv4ToFabric(routingProtocolDirectIpv4Request []interface{}) v4.DirectConnectionIpv4 {
@@ -1060,7 +801,7 @@ func routingProtocolOperationToTerra(routingProtocolOperation *v4.RoutingProtoco
 	for _, routingProtocolOperation := range routingProtocolOperations {
 		mappedRpOperation := make(map[string]interface{})
 		if routingProtocolOperation.Errors != nil {
-			mappedRpOperation["errors"] = errorToTerra(routingProtocolOperation.Errors)
+			mappedRpOperation["errors"] = equinix_schema.ErrorToTerra(routingProtocolOperation.Errors)
 		}
 		mappedRpOperations = append(mappedRpOperations, mappedRpOperation)
 	}

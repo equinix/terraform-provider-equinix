@@ -87,6 +87,7 @@ Read-Only:
 
 Read-Only:
 
+- `href` (String)
 - `ibx` (String)
 - `metro_code` (String)
 - `metro_name` (String)
