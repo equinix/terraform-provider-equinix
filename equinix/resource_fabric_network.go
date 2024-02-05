@@ -6,6 +6,7 @@ import (
 	v4 "github.com/equinix-labs/fabric-go/fabric/v4"
 	"github.com/equinix/terraform-provider-equinix/internal/config"
 	equinix_errors "github.com/equinix/terraform-provider-equinix/internal/errors"
+	equinix_fabric_schema "github.com/equinix/terraform-provider-equinix/internal/fabric/schema"
 	equinix_schema "github.com/equinix/terraform-provider-equinix/internal/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -93,7 +94,7 @@ func FabricNetworkResourceSchema() map[string]*schema.Schema {
 			Description: "Fabric Network location",
 			MaxItems:    1,
 			Elem: &schema.Resource{
-				Schema: createLocationSch(),
+				Schema: equinix_fabric_schema.LocationSch(),
 			},
 		},
 		"project": {
@@ -125,7 +126,7 @@ func FabricNetworkResourceSchema() map[string]*schema.Schema {
 			Required:    true,
 			Description: "Preferences for notifications on Fabric Network configuration or status changes",
 			Elem: &schema.Resource{
-				Schema: createNotificationSch(),
+				Schema: equinix_fabric_schema.NotificationSch(),
 			},
 		},
 		"change_log": {
@@ -133,7 +134,7 @@ func FabricNetworkResourceSchema() map[string]*schema.Schema {
 			Computed:    true,
 			Description: "Captures Fabric Network lifecycle change information",
 			Elem: &schema.Resource{
-				Schema: createChangeLogSch(),
+				Schema: equinix_fabric_schema.ChangeLogSch(),
 			},
 		},
 		"connections_count": {
@@ -168,13 +169,13 @@ func resourceFabricNetworkCreate(ctx context.Context, d *schema.ResourceData, me
 	client := meta.(*config.Config).FabricClient
 	ctx = context.WithValue(ctx, v4.ContextAccessToken, meta.(*config.Config).FabricAuthToken)
 	schemaNotifications := d.Get("notifications").([]interface{})
-	notifications := notificationToFabric(schemaNotifications)
+	notifications := equinix_fabric_schema.NotificationsToFabric(schemaNotifications)
 	schemaLocation := d.Get("location").(*schema.Set).List()
-	location := locationToFabric(schemaLocation)
+	location := equinix_fabric_schema.LocationToFabric(schemaLocation)
 	project := v4.Project{}
 	schemaProject := d.Get("project").(*schema.Set).List()
 	if len(schemaProject) != 0 {
-		project = projectToFabric(schemaProject)
+		project = equinix_fabric_schema.ProjectToFabric(schemaProject)
 	}
 	netType := v4.NetworkType(d.Get("type").(string))
 	netScope := v4.NetworkScope(d.Get("scope").(string))
@@ -262,10 +263,10 @@ func setFabricNetworkMap(d *schema.ResourceData, nt v4.Network) diag.Diagnostics
 		"state":             nt.State,
 		"operation":         FabricNetworkOperationToTerra(nt.Operation),
 		"change":            simplifiedFabricNetworkChangeToTerra(nt.Change),
-		"location":          locationToTerra(nt.Location),
-		"notifications":     notificationToTerra(nt.Notifications),
-		"project":           projectToTerra(nt.Project),
-		"change_log":        changeLogToTerra(nt.ChangeLog),
+		"location":          equinix_fabric_schema.LocationToTerra(nt.Location),
+		"notifications":     equinix_fabric_schema.NotificationsToTerra(nt.Notifications),
+		"project":           equinix_fabric_schema.ProjectToTerra(nt.Project),
+		"change_log":        equinix_fabric_schema.ChangeLogToTerra(nt.ChangeLog),
 		"connections_count": nt.ConnectionsCount,
 	})
 	if err != nil {
