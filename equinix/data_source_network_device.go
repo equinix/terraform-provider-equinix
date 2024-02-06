@@ -805,6 +805,7 @@ func updateDataSourceNetworkDeviceResource(primary *ne.Device, secondary *ne.Dev
 		if v, ok := d.GetOk(neDeviceSchemaNames["Secondary"]); ok {
 			secondaryFromSchema := expandNetworkDeviceSecondary(v.([]interface{}))
 			secondary.LicenseFile = secondaryFromSchema.LicenseFile
+			secondary.ProjectID = secondaryFromSchema.ProjectID
 		}
 		if err := d.Set(neDeviceSchemaNames["Secondary"], flattenNetworkDeviceSecondary(secondary)); err != nil {
 			return fmt.Errorf("error reading Secondary: %s", err)
