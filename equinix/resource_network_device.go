@@ -1344,9 +1344,6 @@ func expandNetworkDeviceSecondary(devices []interface{}) *ne.Device {
 	if v, ok := device[neDeviceSchemaNames["CloudInitFileID"]]; ok && !isEmpty(v) {
 		transformed.CloudInitFileID = ne.String(v.(string))
 	}
-	if v, ok := device[neDeviceSchemaNames["ProjectID"]]; ok && !isEmpty(v) {
-		transformed.ProjectID = ne.String(v.(string))
-	}
 	if v, ok := device[neDeviceSchemaNames["ACLTemplateUUID"]]; ok && !isEmpty(v) {
 		transformed.ACLTemplateUUID = ne.String(v.(string))
 	}
