@@ -20,7 +20,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 )
 
-func FabricCloudRouterPackageSch() map[string]*schema.Schema {
+func fabricCloudRouterPackageSch() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
 		"code": {
 			Type:        schema.TypeString,
@@ -29,7 +29,7 @@ func FabricCloudRouterPackageSch() map[string]*schema.Schema {
 		},
 	}
 }
-func FabricCloudRouterAccountSch() map[string]*schema.Schema {
+func fabricCloudRouterAccountSch() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
 		"account_number": {
 			Type:        schema.TypeInt,
@@ -39,7 +39,7 @@ func FabricCloudRouterAccountSch() map[string]*schema.Schema {
 		},
 	}
 }
-func FabricCloudRouterProjectSch() map[string]*schema.Schema {
+func fabricCloudRouterProjectSch() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
 		"project_id": {
 			Type:        schema.TypeString,
@@ -56,7 +56,7 @@ func FabricCloudRouterProjectSch() map[string]*schema.Schema {
 	}
 }
 
-func FabricCloudRouterResourceSchema() map[string]*schema.Schema {
+func fabricCloudRouterResourceSchema() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
 		"uuid": {
 			Type:        schema.TypeString,
@@ -97,7 +97,7 @@ func FabricCloudRouterResourceSchema() map[string]*schema.Schema {
 			Description: "Fabric Cloud Router Package Type",
 			MaxItems:    1,
 			Elem: &schema.Resource{
-				Schema: FabricCloudRouterPackageSch(),
+				Schema: fabricCloudRouterPackageSch(),
 			},
 		},
 		"change_log": {
@@ -112,7 +112,7 @@ func FabricCloudRouterResourceSchema() map[string]*schema.Schema {
 			Type:         schema.TypeString,
 			Required:     true,
 			ValidateFunc: validation.StringInSlice([]string{"XF_ROUTER"}, true),
-			Description:  "Defines the FCR type like XF_ROUTER",
+			Description:  "Defines the FCR type like; XF_ROUTER",
 		},
 		"location": {
 			Type:        schema.TypeSet,
@@ -126,10 +126,10 @@ func FabricCloudRouterResourceSchema() map[string]*schema.Schema {
 		"project": {
 			Type:        schema.TypeSet,
 			Required:    true,
-			Description: "Customer resource hierarchy project information.\nApplicable to customers onboarded to Equinix Identity and Access Management. For more information see Identity and Access Management: Projects",
+			Description: "Customer resource hierarchy project information.Applicable to customers onboarded to Equinix Identity and Access Management. For more information see Identity and Access Management: Projects",
 			MaxItems:    1,
 			Elem: &schema.Resource{
-				Schema: FabricCloudRouterProjectSch(),
+				Schema: fabricCloudRouterProjectSch(),
 			},
 		},
 		"account": {
@@ -138,7 +138,7 @@ func FabricCloudRouterResourceSchema() map[string]*schema.Schema {
 			Description: "Customer account information that is associated with this Fabric Cloud Router",
 			MaxItems:    1,
 			Elem: &schema.Resource{
-				Schema: FabricCloudRouterAccountSch(),
+				Schema: fabricCloudRouterAccountSch(),
 			},
 		},
 		"order": {
@@ -161,27 +161,27 @@ func FabricCloudRouterResourceSchema() map[string]*schema.Schema {
 		"bgp_ipv4_routes_count": {
 			Type:        schema.TypeInt,
 			Computed:    true,
-			Description: "Access point used and maximum number of IPv4 BGP routes",
+			Description: "Number of IPv4 BGP routes in use (including non-distinct prefixes)",
 		},
 		"bgp_ipv6_routes_count": {
 			Type:        schema.TypeInt,
 			Computed:    true,
-			Description: "Access point used and maximum number of IPv6 BGP routes",
+			Description: "Number of IPv6 BGP routes in use (including non-distinct prefixes)",
 		},
 		"distinct_ipv4_prefixes_count": {
 			Type:        schema.TypeInt,
 			Computed:    true,
-			Description: "Number of IPv4 BGP routes in use (including non-distinct prefixes).",
+			Description: "Number of distinct IPv4 routes",
 		},
 		"distinct_ipv6_prefixes_count": {
 			Type:        schema.TypeInt,
 			Computed:    true,
-			Description: "Number of IPv6 BGP routes in use (including non-distinct prefixes)",
+			Description: "Number of distinct IPv6 routes",
 		},
 		"connections_count": {
 			Type:        schema.TypeInt,
 			Computed:    true,
-			Description: "Number of connections associated with this Access point",
+			Description: "Number of connections associated with this Fabric Cloud Router instance",
 		},
 	}
 }
@@ -201,7 +201,7 @@ func resourceFabricCloudRouter() *schema.Resource {
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
-		Schema: FabricCloudRouterResourceSchema(),
+		Schema: fabricCloudRouterResourceSchema(),
 
 		Description: "Fabric V4 API compatible resource allows creation and management of Equinix Fabric Cloud Router",
 	}
@@ -359,7 +359,7 @@ func packageCloudRouterGoToTerra(packageType *v4.CloudRouterPackageType) *schema
 		}
 	}
 	packageSet := schema.NewSet(
-		schema.HashResource(&schema.Resource{Schema: FabricCloudRouterPackageSch()}),
+		schema.HashResource(&schema.Resource{Schema: fabricCloudRouterPackageSch()}),
 		mappedPackages,
 	)
 	return packageSet

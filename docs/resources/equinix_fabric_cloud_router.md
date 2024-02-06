@@ -53,9 +53,8 @@ resource "equinix_fabric_cloud_router" "new_cloud_router"{
 - `notifications` (Block List, Min: 1) Preferences for notifications on Fabric Cloud Router configuration or status changes (see [below for nested schema](#nestedblock--notifications))
 - `order` (Block Set, Min: 1, Max: 1) Order information related to this Fabric Cloud Router (see [below for nested schema](#nestedblock--order))
 - `package` (Block Set, Min: 1, Max: 1) Fabric Cloud Router Package Type (see [below for nested schema](#nestedblock--package))
-- `project` (Block Set, Min: 1, Max: 1) Customer resource hierarchy project information.
-  Applicable to customers onboarded to Equinix Identity and Access Management. For more information see Identity and Access Management: Projects (see [below for nested schema](#nestedblock--project))
-- `type` (String) Defines the FCR type like XF_ROUTER
+- `project` (Block Set, Min: 1, Max: 1) Customer resource hierarchy project information.Applicable to customers onboarded to Equinix Identity and Access Management. For more information see Identity and Access Management: Projects (see [below for nested schema](#nestedblock--project))
+- `type` (String) Defines the FCR type like; XF_ROUTER
 
 ### Optional
 
@@ -66,12 +65,12 @@ resource "equinix_fabric_cloud_router" "new_cloud_router"{
 
 ### Read-Only
 
-- `bgp_ipv4_routes_count` (Number) Access point used and maximum number of IPv4 BGP routes
-- `bgp_ipv6_routes_count` (Number) Access point used and maximum number of IPv6 BGP routes
+- `bgp_ipv4_routes_count` (Number) Number of IPv4 BGP routes in use (including non-distinct prefixes)
+- `bgp_ipv6_routes_count` (Number) Number of IPv6 BGP routes in use (including non-distinct prefixes)
 - `change_log` (Set of Object) Captures Fabric Cloud Router lifecycle change information (see [below for nested schema](#nestedatt--change_log))
-- `connections_count` (Number) Number of connections associated with this Access point
-- `distinct_ipv4_prefixes_count` (Number) Number of IPv4 BGP routes in use (including non-distinct prefixes).
-- `distinct_ipv6_prefixes_count` (Number) Number of IPv6 BGP routes in use (including non-distinct prefixes)
+- `connections_count` (Number) Number of connections associated with this Fabric Cloud Router instance
+- `distinct_ipv4_prefixes_count` (Number) Number of distinct IPv4 routes
+- `distinct_ipv6_prefixes_count` (Number) Number of distinct IPv6 routes
 - `equinix_asn` (Number) Equinix ASN
 - `id` (String) The ID of this resource.
 - `state` (String) Fabric Cloud Router overall state
