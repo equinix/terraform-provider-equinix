@@ -71,9 +71,10 @@ func FabricCloudRouterResourceSchema() map[string]*schema.Schema {
 			Description: "Fabric Cloud Router URI information",
 		},
 		"name": {
-			Type:        schema.TypeString,
-			Required:    true,
-			Description: "Fabric Cloud Router name. An alpha-numeric 24 characters string which can include only hyphens and underscores",
+			Type:         schema.TypeString,
+			Required:     true,
+			ValidateFunc: validation.StringLenBetween(1, 24),
+			Description:  "Fabric Cloud Router name. An alpha-numeric 24 characters string which can include only hyphens and underscores",
 		},
 		"description": {
 			Type:        schema.TypeString,
@@ -125,7 +126,7 @@ func FabricCloudRouterResourceSchema() map[string]*schema.Schema {
 		"project": {
 			Type:        schema.TypeSet,
 			Required:    true,
-			Description: "Fabric Cloud Router project",
+			Description: "Customer resource hierarchy project information.\nApplicable to customers onboarded to Equinix Identity and Access Management. For more information see Identity and Access Management: Projects",
 			MaxItems:    1,
 			Elem: &schema.Resource{
 				Schema: FabricCloudRouterProjectSch(),
@@ -170,12 +171,12 @@ func FabricCloudRouterResourceSchema() map[string]*schema.Schema {
 		"distinct_ipv4_prefixes_count": {
 			Type:        schema.TypeInt,
 			Computed:    true,
-			Description: "Number of distinct ipv4 routes",
+			Description: "Number of IPv4 BGP routes in use (including non-distinct prefixes).",
 		},
 		"distinct_ipv6_prefixes_count": {
 			Type:        schema.TypeInt,
 			Computed:    true,
-			Description: "Number of distinct ipv6 routes",
+			Description: "Number of IPv6 BGP routes in use (including non-distinct prefixes)",
 		},
 		"connections_count": {
 			Type:        schema.TypeInt,
@@ -324,7 +325,7 @@ func setCloudRouterMap(d *schema.ResourceData, fcr v4.CloudRouter) diag.Diagnost
 		"distinct_ipv4_prefixes_count": fcr.DistinctIpv4PrefixesCount,
 		"distinct_ipv6_prefixes_count": fcr.DistinctIpv6PrefixesCount,
 		"connections_count":            fcr.ConnectionsCount,
-		"order":                        equinix_schema.OrderGoToTerra(fcr.Order),
+		"order":                        equinix_fabric_schema.OrderToTerra(fcr.Order),
 	})
 	if err != nil {
 		return diag.FromErr(err)

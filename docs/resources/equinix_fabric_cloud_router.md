@@ -10,8 +10,6 @@ description: |-
 
 Fabric V4 API compatible resource allows creation and management of [Equinix Fabric Cloud Router](https://docs.equinix.com/en-us/Content/Interconnection/FCR/FCR-intro.htm#HowItWorks).
 
-~> **Note** Equinix Fabric v4 resources and datasources are currently in Beta. The interfaces related to `equinix_fabric_` resources and datasources may change ahead of general availability. Please, do not hesitate to report any problems that you experience by opening a new [issue](https://github.com/equinix/terraform-provider-equinix/issues/new?template=bug.md)
-
 Additional Fabric Cloud Router documentation:
 * Getting Started: <https://docs.equinix.com/en-us/Content/Interconnection/FCR/FCR-intro.htm#HowItWorks>
 * API: <https://developer.equinix.com/dev-docs/fabric/api-reference/fabric-v4-apis#fabric-cloud-routers>
@@ -55,7 +53,8 @@ resource "equinix_fabric_cloud_router" "new_cloud_router"{
 - `notifications` (Block List, Min: 1) Preferences for notifications on Fabric Cloud Router configuration or status changes (see [below for nested schema](#nestedblock--notifications))
 - `order` (Block Set, Min: 1, Max: 1) Order information related to this Fabric Cloud Router (see [below for nested schema](#nestedblock--order))
 - `package` (Block Set, Min: 1, Max: 1) Fabric Cloud Router Package Type (see [below for nested schema](#nestedblock--package))
-- `project` (Block Set, Min: 1, Max: 1) Fabric Cloud Router project (see [below for nested schema](#nestedblock--project))
+- `project` (Block Set, Min: 1, Max: 1) Customer resource hierarchy project information.
+  Applicable to customers onboarded to Equinix Identity and Access Management. For more information see Identity and Access Management: Projects (see [below for nested schema](#nestedblock--project))
 - `type` (String) Defines the FCR type like XF_ROUTER
 
 ### Optional
@@ -71,8 +70,8 @@ resource "equinix_fabric_cloud_router" "new_cloud_router"{
 - `bgp_ipv6_routes_count` (Number) Access point used and maximum number of IPv6 BGP routes
 - `change_log` (Set of Object) Captures Fabric Cloud Router lifecycle change information (see [below for nested schema](#nestedatt--change_log))
 - `connections_count` (Number) Number of connections associated with this Access point
-- `distinct_ipv4_prefixes_count` (Number) Number of distinct ipv4 routes
-- `distinct_ipv6_prefixes_count` (Number) Number of distinct ipv6 routes
+- `distinct_ipv4_prefixes_count` (Number) Number of IPv4 BGP routes in use (including non-distinct prefixes).
+- `distinct_ipv6_prefixes_count` (Number) Number of IPv6 BGP routes in use (including non-distinct prefixes)
 - `equinix_asn` (Number) Equinix ASN
 - `id` (String) The ID of this resource.
 - `state` (String) Fabric Cloud Router overall state

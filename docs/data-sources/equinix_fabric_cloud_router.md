@@ -35,8 +35,8 @@ data "equinix_fabric_cloud_router" "cloud_router_data_name" {
 - `change_log` (Set of Object) Captures Fabric Cloud Router lifecycle change information (see [below for nested schema](#nestedatt--change_log))
 - `connections_count` (Number) Number of connections associated with this Access point
 - `description` (String) Customer-provided Fabric Cloud Router description
-- `distinct_ipv4_prefixes_count` (Number) Number of distinct ipv4 routes
-- `distinct_ipv6_prefixes_count` (Number) Number of distinct ipv6 routes
+- `distinct_ipv4_prefixes_count` (Number) Number of IPv4 BGP routes in use (including non-distinct prefixes).
+- `distinct_ipv6_prefixes_count` (Number) Number of IPv6 BGP routes in use (including non-distinct prefixes)
 - `equinix_asn` (Number) Equinix ASN
 - `href` (String) Fabric Cloud Router URI information
 - `id` (String) The ID of this resource.
@@ -45,7 +45,8 @@ data "equinix_fabric_cloud_router" "cloud_router_data_name" {
 - `notifications` (List of Object) Preferences for notifications on Fabric Cloud Router configuration or status changes (see [below for nested schema](#nestedatt--notifications))
 - `order` (Set of Object) Order information related to this Fabric Cloud Router (see [below for nested schema](#nestedatt--order))
 - `package` (Set of Object) Fabric Cloud Router Package Type (see [below for nested schema](#nestedatt--package))
-- `project` (Set of Object) Fabric Cloud Router project (see [below for nested schema](#nestedatt--project))
+- `project` (Set of Object) Customer resource hierarchy project information.
+  Applicable to customers onboarded to Equinix Identity and Access Management. For more information see Identity and Access Management: Projects (see [below for nested schema](#nestedatt--project))
 - `state` (String) Fabric Cloud Router overall state
 - `type` (String) Defines the FCR type like XF_ROUTER
 
