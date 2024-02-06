@@ -1258,6 +1258,7 @@ func updateNetworkDeviceResource(primary *ne.Device, secondary *ne.Device, d *sc
 			secondary.LicenseFile = secondaryFromSchema.LicenseFile
 			secondary.LicenseToken = secondaryFromSchema.LicenseToken
 			secondary.CloudInitFileID = secondaryFromSchema.CloudInitFileID
+			secondary.ProjectID = secondaryFromSchema.ProjectID
 		}
 		if err := d.Set(neDeviceSchemaNames["Secondary"], flattenNetworkDeviceSecondary(secondary)); err != nil {
 			return fmt.Errorf("error reading Secondary: %s", err)
@@ -1342,6 +1343,9 @@ func expandNetworkDeviceSecondary(devices []interface{}) *ne.Device {
 	}
 	if v, ok := device[neDeviceSchemaNames["CloudInitFileID"]]; ok && !isEmpty(v) {
 		transformed.CloudInitFileID = ne.String(v.(string))
+	}
+	if v, ok := device[neDeviceSchemaNames["ProjectID"]]; ok && !isEmpty(v) {
+		transformed.ProjectID = ne.String(v.(string))
 	}
 	if v, ok := device[neDeviceSchemaNames["ACLTemplateUUID"]]; ok && !isEmpty(v) {
 		transformed.ACLTemplateUUID = ne.String(v.(string))
