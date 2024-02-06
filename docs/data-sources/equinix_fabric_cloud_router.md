@@ -54,13 +54,7 @@ data "equinix_fabric_cloud_router" "cloud_router_data_name" {
 
 Read-Only:
 
-- `account_name` (String)
 - `account_number` (Number)
-- `global_cust_id` (String)
-- `global_org_id` (String)
-- `global_organization_name` (String)
-- `org_id` (Number)
-- `organization_name` (String)
 
 
 <a id="nestedatt--change_log"></a>
@@ -87,7 +81,6 @@ Read-Only:
 
 Read-Only:
 
-- `href` (String)
 - `ibx` (String)
 - `metro_code` (String)
 - `metro_name` (String)

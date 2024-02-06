@@ -232,25 +232,6 @@ func accountToTerra(account *v4.SimplifiedAccount) *schema.Set {
 	return accountSet
 }
 
-func accountCloudRouterToTerra(account *v4.SimplifiedAccount) *schema.Set {
-	if account == nil {
-		return nil
-	}
-	accounts := []*v4.SimplifiedAccount{account}
-	mappedAccounts := make([]interface{}, len(accounts))
-	for i, account := range accounts {
-		mappedAccounts[i] = map[string]interface{}{
-			"account_number": int(account.AccountNumber),
-		}
-	}
-	accountSet := schema.NewSet(
-		schema.HashResource(&schema.Resource{Schema: createAccountSch()}),
-		mappedAccounts,
-	)
-
-	return accountSet
-}
-
 func operationToTerra(operation *v4.ConnectionOperation) *schema.Set {
 	if operation == nil {
 		return nil
@@ -344,38 +325,6 @@ func cloudRouterToTerra(cloudRouter *v4.CloudRouter) *schema.Set {
 		schema.HashResource(&schema.Resource{Schema: equinix_schema.ProjectSch()}),
 		mappedCloudRouters)
 	return linkedProtocolSet
-}
-
-func cloudRouterPackageToTerra(packageType *v4.CloudRouterPackageType) *schema.Set {
-	packageTypes := []*v4.CloudRouterPackageType{packageType}
-	mappedPackages := make([]interface{}, len(packageTypes))
-	for i, packageType := range packageTypes {
-		mappedPackages[i] = map[string]interface{}{
-			"code": packageType.Code,
-		}
-	}
-	packageSet := schema.NewSet(
-		schema.HashResource(createPackageRes),
-		mappedPackages,
-	)
-	return packageSet
-}
-
-func projectToTerra(project *v4.Project) *schema.Set {
-	if project == nil {
-		return nil
-	}
-	projects := []*v4.Project{project}
-	mappedProjects := make([]interface{}, len(projects))
-	for _, project := range projects {
-		mappedProject := make(map[string]interface{})
-		mappedProject["project_id"] = project.ProjectId
-		mappedProjects = append(mappedProjects, mappedProject)
-	}
-	projectSet := schema.NewSet(
-		schema.HashResource(readGatewayProjectSchRes),
-		mappedProjects)
-	return projectSet
 }
 
 func virtualDeviceToTerra(virtualDevice *v4.VirtualDevice) *schema.Set {

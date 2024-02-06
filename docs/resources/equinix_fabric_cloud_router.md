@@ -80,15 +80,9 @@ resource "equinix_fabric_cloud_router" "new_cloud_router"{
 <a id="nestedblock--account"></a>
 ### Nested Schema for `account`
 
-Read-Only:
+Optional:
 
-- `account_name` (String) Account Name
 - `account_number` (Number) Account Number
-- `global_cust_id` (String) Global Customer organization identifier
-- `global_org_id` (String) Global organization identifier
-- `global_organization_name` (String) Global organization name
-- `org_id` (Number) Customer organization identifier
-- `organization_name` (String) Customer organization name
 
 
 <a id="nestedblock--location"></a>
@@ -121,12 +115,9 @@ Optional:
 Optional:
 
 - `billing_tier` (String) Billing tier for connection bandwidth
-- `purchase_order_number` (String) Purchase order number
-
-Read-Only:
-
 - `order_id` (String) Order Identification
 - `order_number` (String) Order Reference Number
+- `purchase_order_number` (String) Purchase order number
 
 
 <a id="nestedblock--package"></a>
@@ -142,11 +133,8 @@ Required:
 
 Optional:
 
-- `project_id` (String) Project Id
-
-Read-Only:
-
 - `href` (String) Unique Resource URL
+- `project_id` (String) Project Id
 
 
 <a id="nestedblock--timeouts"></a>
