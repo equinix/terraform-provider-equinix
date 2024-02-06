@@ -113,7 +113,7 @@ var neDeviceDescriptions = map[string]string{
 	"ClusterDetails":      "An object that has the cluster details",
 	"ValidStatusList":     "Comma Separated List of states to be considered valid when searching by name",
 	"Connectivity":        "Parameter to identify internet access for device. Supported Values: INTERNET-ACCESS(default) or PRIVATE or INTERNET-ACCESS-WITH-PRVT-MGMT",
-	"ProjectID":           "Unique identifier of Resource",
+	"ProjectID":           "The unique identifier of Project Resource to which device is scoped to",
 }
 
 var neDeviceInterfaceSchemaNames = map[string]string{
@@ -1258,7 +1258,6 @@ func updateNetworkDeviceResource(primary *ne.Device, secondary *ne.Device, d *sc
 			secondary.LicenseFile = secondaryFromSchema.LicenseFile
 			secondary.LicenseToken = secondaryFromSchema.LicenseToken
 			secondary.CloudInitFileID = secondaryFromSchema.CloudInitFileID
-			secondary.ProjectID = secondaryFromSchema.ProjectID
 		}
 		if err := d.Set(neDeviceSchemaNames["Secondary"], flattenNetworkDeviceSecondary(secondary)); err != nil {
 			return fmt.Errorf("error reading Secondary: %s", err)

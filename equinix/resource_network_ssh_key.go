@@ -28,7 +28,7 @@ var networkSSHKeyDescriptions = map[string]string{
 	"Name":      "The name of SSH key used for identification",
 	"Value":     "The SSH public key. If this is a file, it can be read using the file interpolation function",
 	"Type":      "The type of SSH key: RSA (default) or DSA",
-	"ProjectID": "The unique identifier of the resource-ssh public key",
+	"ProjectID": "The unique identifier of Project Resource to which ssh key is scoped to",
 }
 
 func resourceNetworkSSHKey() *schema.Resource {

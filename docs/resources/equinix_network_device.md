@@ -296,7 +296,8 @@ device configurations. See [Secondary Device](#secondary-device) below for more 
 [Cluster Details](#cluster-details) below for more details.
 * `connectivity` - (Optional) Device accessibility (INTERNET-ACCESS or PRIVATE or INTERNET-ACCESS-WITH-PRVT-MGMT).
 If not specified, default will be INTERNET-ACCESS
-* `project_id` - (Optional) ID of the project where the device is scoped to, must be set for.
+* `project_id` - (Optional) Unique Identifier for the project resource where the device is scoped to.If you
+leave it out, the device will be created under the default project id of your organization.
 
 ### Secondary Device
 

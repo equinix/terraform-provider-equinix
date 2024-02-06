@@ -48,7 +48,8 @@ between self configured devices.
 device link. See [Device](#device) section below for more details.
 * `link` - (Optional) definition of one or more, inter metro, connections belonging
 to the device link. See [Link](#link) section below for more details.
-* `project_id` -  (Optional) ID of the project where the device link is scoped to, must be set for.
+* `project_id` - (Optional) Unique Identifier for the project resource where the device link is scoped to.If you
+  leave it out, the device link will be created under the default project id of your organization.
 
 ### Device
 

@@ -36,7 +36,7 @@ var networkDeviceLinkDescriptions = map[string]string{
 	"Devices":   "Definition of one or more devices belonging to the device link",
 	"Links":     "Definition of one or more, inter metro connections belonging to the device link",
 	"Status":    "Device link provisioning status",
-	"ProjectID": "Unique identifier of Resource",
+	"ProjectID": "The unique identifier of Project Resource to which device link is scoped to",
 }
 
 var networkDeviceLinkDeviceSchemaNames = map[string]string{

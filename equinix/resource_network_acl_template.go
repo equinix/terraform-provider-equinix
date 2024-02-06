@@ -38,7 +38,7 @@ var networkACLTemplateDescriptions = map[string]string{
 	"DeviceACLStatus": "Status of ACL template provisioning process on a device, where template was applied",
 	"InboundRules":    "One or more rules to specify allowed inbound traffic. Rules are ordered, matching traffic rule stops processing subsequent ones.",
 	"DeviceDetails":   "Device Details to which ACL template is assigned to. ",
-	"ProjectID":       "Unique identifier of Resource",
+	"ProjectID":       "The unique identifier of Project Resource to which ACL template is scoped to",
 }
 
 var networkACLTemplateInboundRuleSchemaNames = map[string]string{

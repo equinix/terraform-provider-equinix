@@ -34,7 +34,8 @@ The following arguments are supported:
 * `public_key` - (Required) The SSH public key. If this is a file, it can be read using the file
 interpolation function.
 * `type` - (Optional) The type of SSH key: `RSA` (default) or `DSA`.
-* `project_id` - (Optional) ID of the project where the ssh key is scoped to, must be set for.
+* `project_id` - (Optional) Unique Identifier for the project resource where the SSH key is scoped to.If you
+leave it out, the ssh key will be created under the default project id of your organization.
 
 ## Attributes Reference
 

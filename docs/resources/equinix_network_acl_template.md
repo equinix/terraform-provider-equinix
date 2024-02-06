@@ -39,10 +39,11 @@ resource "equinix_network_acl_template" "myacl" {
 The following arguments are supported:
 
 * `name` - (Required) ACL template name.
+* `project_id` -  (Optional) Unique Identifier for the project resource where the acl template is scoped to.If you
+leave it out, the ACL template will be created under the default project id of your organization.
 * `description` - (Optional) ACL template description, up to 200 characters.
 * `metro_code` - (Deprecated) ACL template location metro code.
 * `inbound_rule` - (Required) One or more rules to specify allowed inbound traffic.
-* `project_id` -  (Optional) ID of the project where the acl template is scoped to, must be set for.
 Rules are ordered, matching traffic rule stops processing subsequent ones.
 
 The `inbound_rule` block has below fields:
