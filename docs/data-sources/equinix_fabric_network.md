@@ -19,9 +19,9 @@ Fabric V4 API compatible data resource that allow user to fetch Fabric Network f
 
 ### Read-Only
 
-- `change` (Set of Object) Change information related to this Fabric Network (see [below for nested schema](#nestedatt--change))
-- `change_log` (Set of Object) Captures Fabric Network lifecycle change information (see [below for nested schema](#nestedatt--change_log))
-- `connections_count` (Number) Number of connections associated with this Access point
+- `change` (Set of Object) Information on asset change operation (see [below for nested schema](#nestedatt--change))
+- `change_log` (Set of Object) A permanent record of asset creation, modification, or deletion (see [below for nested schema](#nestedatt--change_log))
+- `connections_count` (Number) Number of connections associated with this network
 - `href` (String) Fabric Network URI information
 - `id` (String) The ID of this resource.
 - `location` (Set of Object) Fabric Network location (see [below for nested schema](#nestedatt--location))

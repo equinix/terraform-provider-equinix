@@ -8,7 +8,7 @@ import (
 )
 
 func readFabricNetworkResourceSchema() map[string]*schema.Schema {
-	sch := FabricNetworkResourceSchema()
+	sch := fabricNetworkResourceSchema()
 	for key, _ := range sch {
 		if key == "uuid" {
 			sch[key].Required = true

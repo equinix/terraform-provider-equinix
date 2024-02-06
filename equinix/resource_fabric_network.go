@@ -18,44 +18,44 @@ import (
 	"time"
 )
 
-func FabricNetworkChangeSch() map[string]*schema.Schema {
+func fabricNetworkChangeSch() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
 		"href": {
 			Type:        schema.TypeString,
 			Computed:    true,
-			Description: "href",
+			Description: "Absolute URL that returns the details of the given change.\nExample: https://api.equinix.com/fabric/v4/networks/92dc376a-a932-43aa-a6a2-c806dedbd784",
 		},
 		"uuid": {
 			Type:        schema.TypeString,
 			Computed:    true,
-			Description: "UUID of Network Change",
+			Description: "Asset change request identifier.",
 		},
 		"type": {
 			Type:        schema.TypeString,
 			Computed:    true,
-			Description: "network change type: NETWORK_CREATION, NETWORK_UPDATE, NETWORK_DELETION",
+			Description: "Asset instance change request type.: NETWORK_CREATION, NETWORK_UPDATE, NETWORK_DELETION",
 		},
 	}
 }
-func FabricNetworkOperationSch() map[string]*schema.Schema {
+func fabricNetworkOperationSch() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
 		"equinix_status": {
 			Type:        schema.TypeString,
 			Computed:    true,
-			Description: "Network operation status",
+			Description: "Progress towards provisioning a given asset.",
 		},
 	}
 }
-func FabricNetworkProjectSch() map[string]*schema.Schema {
+func fabricNetworkProjectSch() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
 		"project_id": {
 			Type:        schema.TypeString,
 			Required:    true,
-			Description: "Project Id",
+			Description: "Customer project identifier",
 		},
 	}
 }
-func FabricNetworkResourceSchema() map[string]*schema.Schema {
+func fabricNetworkResourceSchema() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
 		"href": {
 			Type:        schema.TypeString,
@@ -63,9 +63,10 @@ func FabricNetworkResourceSchema() map[string]*schema.Schema {
 			Description: "Fabric Network URI information",
 		},
 		"name": {
-			Type:        schema.TypeString,
-			Required:    true,
-			Description: "Fabric Network name. An alpha-numeric 24 characters string which can include only hyphens and underscores",
+			Type:         schema.TypeString,
+			Required:     true,
+			ValidateFunc: validation.StringLenBetween(1, 24),
+			Description:  "Fabric Network name. An alpha-numeric 24 characters string which can include only hyphens and underscores",
 		},
 		"uuid": {
 			Type:        schema.TypeString,
@@ -103,7 +104,7 @@ func FabricNetworkResourceSchema() map[string]*schema.Schema {
 			Required:    true,
 			Description: "Fabric Network project",
 			Elem: &schema.Resource{
-				Schema: FabricNetworkProjectSch(),
+				Schema: fabricNetworkProjectSch(),
 			},
 		},
 		"operation": {
@@ -111,15 +112,15 @@ func FabricNetworkResourceSchema() map[string]*schema.Schema {
 			Computed:    true,
 			Description: "Network operation information that is associated with this Fabric Network",
 			Elem: &schema.Resource{
-				Schema: FabricNetworkOperationSch(),
+				Schema: fabricNetworkOperationSch(),
 			},
 		},
 		"change": {
 			Type:        schema.TypeSet,
 			Computed:    true,
-			Description: "Change information related to this Fabric Network",
+			Description: "Information on asset change operation",
 			Elem: &schema.Resource{
-				Schema: FabricNetworkChangeSch(),
+				Schema: fabricNetworkChangeSch(),
 			},
 		},
 		"notifications": {
@@ -133,7 +134,7 @@ func FabricNetworkResourceSchema() map[string]*schema.Schema {
 		"change_log": {
 			Type:        schema.TypeSet,
 			Computed:    true,
-			Description: "Captures Fabric Network lifecycle change information",
+			Description: "A permanent record of asset creation, modification, or deletion",
 			Elem: &schema.Resource{
 				Schema: equinix_fabric_schema.ChangeLogSch(),
 			},
@@ -141,7 +142,7 @@ func FabricNetworkResourceSchema() map[string]*schema.Schema {
 		"connections_count": {
 			Type:        schema.TypeInt,
 			Computed:    true,
-			Description: "Number of connections associated with this Access point",
+			Description: "Number of connections associated with this network",
 		},
 	}
 }
@@ -160,7 +161,7 @@ func resourceFabricNetwork() *schema.Resource {
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
-		Schema: FabricNetworkResourceSchema(),
+		Schema: fabricNetworkResourceSchema(),
 
 		Description: "Fabric V4 API compatible resource allows creation and management of Equinix Fabric Network",
 	}
@@ -192,12 +193,12 @@ func resourceFabricNetworkCreate(ctx context.Context, d *schema.ResourceData, me
 
 	fabricNetwork, _, err := client.NetworksApi.CreateNetwork(ctx, createRequest)
 	if err != nil {
-		return diag.FromErr(err)
+		return diag.FromErr(equinix_errors.FormatFabricError(err))
 	}
 	d.SetId(fabricNetwork.Uuid)
 
 	if _, err = waitUntilFabricNetworkIsProvisioned(d.Id(), meta, ctx); err != nil {
-		return diag.Errorf("error waiting for Network (%s) to be created: %s", d.Id(), err)
+		return diag.Errorf("error waiting for Network (%s) to be created: %s", d.Id(), equinix_errors.FormatFabricError(err))
 	}
 
 	return resourceFabricNetworkRead(ctx, d, meta)
@@ -208,16 +209,16 @@ func resourceFabricNetworkRead(ctx context.Context, d *schema.ResourceData, meta
 	ctx = context.WithValue(ctx, v4.ContextAccessToken, meta.(*config.Config).FabricAuthToken)
 	fabricNetwork, _, err := client.NetworksApi.GetNetworkByUuid(ctx, d.Id())
 	if err != nil {
-		log.Printf("[WARN] Fabric Network %s not found , error %s", d.Id(), err)
+		log.Printf("[WARN] Fabric Network %s not found , error %s", d.Id(), equinix_errors.FormatFabricError(err))
 		if !strings.Contains(err.Error(), "500") {
 			d.SetId("")
 		}
-		return diag.FromErr(err)
+		return diag.FromErr(equinix_errors.FormatFabricError(err))
 	}
 	d.SetId(fabricNetwork.Uuid)
 	return setFabricNetworkMap(d, fabricNetwork)
 }
-func FabricNetworkOperationToTerra(operation *v4.NetworkOperation) *schema.Set {
+func fabricNetworkOperationToTerra(operation *v4.NetworkOperation) *schema.Set {
 	if operation == nil {
 		return nil
 	}
@@ -230,7 +231,7 @@ func FabricNetworkOperationToTerra(operation *v4.NetworkOperation) *schema.Set {
 	}
 
 	operationSet := schema.NewSet(
-		schema.HashResource(&schema.Resource{Schema: FabricNetworkOperationSch()}),
+		schema.HashResource(&schema.Resource{Schema: fabricNetworkOperationSch()}),
 		mappedOperations,
 	)
 	return operationSet
@@ -247,7 +248,7 @@ func simplifiedFabricNetworkChangeToTerra(networkChange *v4.SimplifiedNetworkCha
 	}
 
 	changeSet := schema.NewSet(
-		schema.HashResource(&schema.Resource{Schema: FabricNetworkChangeSch()}),
+		schema.HashResource(&schema.Resource{Schema: fabricNetworkChangeSch()}),
 		mappedChanges,
 	)
 	return changeSet
@@ -262,7 +263,7 @@ func setFabricNetworkMap(d *schema.ResourceData, nt v4.Network) diag.Diagnostics
 		"type":              nt.Type_,
 		"scope":             nt.Scope,
 		"state":             nt.State,
-		"operation":         FabricNetworkOperationToTerra(nt.Operation),
+		"operation":         fabricNetworkOperationToTerra(nt.Operation),
 		"change":            simplifiedFabricNetworkChangeToTerra(nt.Change),
 		"location":          equinix_fabric_schema.LocationToTerra(nt.Location),
 		"notifications":     equinix_fabric_schema.NotificationsToTerra(nt.Notifications),
@@ -271,7 +272,7 @@ func setFabricNetworkMap(d *schema.ResourceData, nt v4.Network) diag.Diagnostics
 		"connections_count": nt.ConnectionsCount,
 	})
 	if err != nil {
-		return diag.FromErr(err)
+		return diag.FromErr(equinix_errors.FormatFabricError(err))
 	}
 	return diags
 }
@@ -297,7 +298,7 @@ func resourceFabricNetworkUpdate(ctx context.Context, d *schema.ResourceData, me
 		if !strings.Contains(err.Error(), "500") {
 			d.SetId("")
 		}
-		return diag.Errorf("either timed out or errored out while fetching Fabric Network for uuid %s and error %v", d.Id(), err)
+		return diag.Errorf("either timed out or errored out while fetching Fabric Network for uuid %s and error %v", d.Id(), equinix_errors.FormatFabricError(err))
 	}
 	// TO-DO
 	update, err := getFabricNetworkUpdateRequest(dbConn, d)
@@ -307,7 +308,7 @@ func resourceFabricNetworkUpdate(ctx context.Context, d *schema.ResourceData, me
 	updates := []v4.NetworkChangeOperation{update}
 	_, res, err := client.NetworksApi.UpdateNetworkByUuid(ctx, updates, d.Id())
 	if err != nil {
-		return diag.FromErr(fmt.Errorf("error response for the Fabric Network update, response %v, error %v", res, err))
+		return diag.FromErr(fmt.Errorf("error response for the Fabric Network update, response %v, error %v", res, equinix_errors.FormatFabricError(err)))
 	}
 	updateFg := v4.Network{}
 	updateFg, err = waitForFabricNetworkUpdateCompletion(d.Id(), meta, ctx)
@@ -316,7 +317,7 @@ func resourceFabricNetworkUpdate(ctx context.Context, d *schema.ResourceData, me
 		if !strings.Contains(err.Error(), "500") {
 			d.SetId("")
 		}
-		return diag.FromErr(fmt.Errorf("errored while waiting for successful Fabric Network update, response %v, error %v", res, err))
+		return diag.FromErr(fmt.Errorf("errored while waiting for successful Fabric Network update, response %v, error %v", res, equinix_errors.FormatFabricError(err)))
 	}
 
 	d.SetId(updateFg.Uuid)
@@ -331,7 +332,7 @@ func waitForFabricNetworkUpdateCompletion(uuid string, meta interface{}, ctx con
 			client := meta.(*config.Config).FabricClient
 			dbConn, _, err := client.NetworksApi.GetNetworkByUuid(ctx, uuid)
 			if err != nil {
-				return "", "", err
+				return "", "", equinix_errors.FormatFabricError(err)
 			}
 			return dbConn, string(*dbConn.Operation.EquinixStatus), nil
 		},
@@ -346,7 +347,7 @@ func waitForFabricNetworkUpdateCompletion(uuid string, meta interface{}, ctx con
 	if err == nil {
 		dbConn = inter.(v4.Network)
 	}
-	return dbConn, err
+	return dbConn, equinix_errors.FormatFabricError(err)
 }
 
 func waitUntilFabricNetworkIsProvisioned(uuid string, meta interface{}, ctx context.Context) (v4.Network, error) {
@@ -362,7 +363,7 @@ func waitUntilFabricNetworkIsProvisioned(uuid string, meta interface{}, ctx cont
 			client := meta.(*config.Config).FabricClient
 			dbConn, _, err := client.NetworksApi.GetNetworkByUuid(ctx, uuid)
 			if err != nil {
-				return "", "", err
+				return "", "", equinix_errors.FormatFabricError(err)
 			}
 			return dbConn, string(*dbConn.Operation.EquinixStatus), nil
 		},
@@ -377,7 +378,7 @@ func waitUntilFabricNetworkIsProvisioned(uuid string, meta interface{}, ctx cont
 	if err == nil {
 		dbConn = inter.(v4.Network)
 	}
-	return dbConn, err
+	return dbConn, equinix_errors.FormatFabricError(err)
 }
 
 func resourceFabricNetworkDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
@@ -393,12 +394,12 @@ func resourceFabricNetworkDelete(ctx context.Context, d *schema.ResourceData, me
 				return diags
 			}
 		}
-		return diag.FromErr(fmt.Errorf("error response for the Fabric Network delete. Error %v and response %v", err, resp))
+		return diag.FromErr(fmt.Errorf("error response for the Fabric Network delete. Error %v and response %v", equinix_errors.FormatFabricError(err), resp))
 	}
 
 	err = WaitUntilFabricNetworkDeprovisioned(d.Id(), meta, ctx)
 	if err != nil {
-		return diag.FromErr(fmt.Errorf("API call failed while waiting for resource deletion. Error %v", err))
+		return diag.FromErr(fmt.Errorf("API call failed while waiting for resource deletion. Error %v", equinix_errors.FormatFabricError(err)))
 	}
 	return diags
 }
@@ -416,7 +417,7 @@ func WaitUntilFabricNetworkDeprovisioned(uuid string, meta interface{}, ctx cont
 			client := meta.(*config.Config).FabricClient
 			dbConn, _, err := client.NetworksApi.GetNetworkByUuid(ctx, uuid)
 			if err != nil {
-				return "", "", err
+				return "", "", equinix_errors.FormatFabricError(err)
 			}
 			return dbConn, string(*dbConn.Operation.EquinixStatus), nil
 		},
@@ -426,5 +427,5 @@ func WaitUntilFabricNetworkDeprovisioned(uuid string, meta interface{}, ctx cont
 	}
 
 	_, err := stateConf.WaitForStateContext(ctx)
-	return err
+	return equinix_errors.FormatFabricError(err)
 }

@@ -15,7 +15,7 @@ func TestAccDataSourceFabricNetwork_PFCR(t *testing.T) {
 		Providers:         acceptance.TestAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: ConfigCreateNetworkResource_PFCR(),
+				Config: configCreateNetworkResource_PFCR(),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.equinix_fabric_network.example", "href"),
 					resource.TestCheckResourceAttrSet("data.equinix_fabric_network.example", "uuid"),
@@ -38,7 +38,7 @@ func TestAccDataSourceFabricNetwork_PFCR(t *testing.T) {
 	})
 }
 
-func ConfigCreateNetworkResource_PFCR() string {
+func configCreateNetworkResource_PFCR() string {
 	return fmt.Sprintf(`
 	resource "equinix_fabric_network" "example" {
 		type = "EVPLAN"

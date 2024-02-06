@@ -2,9 +2,8 @@ package equinix
 
 import (
 	"fmt"
-	"log"
-
 	equinix_schema "github.com/equinix/terraform-provider-equinix/internal/fabric/schema"
+	"log"
 
 	v4 "github.com/equinix-labs/fabric-go/fabric/v4"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
