@@ -43,7 +43,7 @@ func (r *Resource) Schema(
 		s.Blocks = make(map[string]schema.Block)
 	}
 	s.Blocks["timeouts"] = timeouts.Block(ctx, timeouts.Opts{
-		Create: true,
+		Delete: true,
 	})
 	resp.Schema = s
 }
