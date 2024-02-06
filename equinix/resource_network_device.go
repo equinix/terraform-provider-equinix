@@ -50,6 +50,7 @@ var neDeviceSchemaNames = map[string]string{
 	"PurchaseOrderNumber": "purchase_order_number",
 	"RedundancyType":      "redundancy_type",
 	"RedundantUUID":       "redundant_id",
+	"ProjectID":           "project_id",
 	"TermLength":          "term_length",
 	"AdditionalBandwidth": "additional_bandwidth",
 	"OrderReference":      "order_reference",
@@ -112,6 +113,7 @@ var neDeviceDescriptions = map[string]string{
 	"ClusterDetails":      "An object that has the cluster details",
 	"ValidStatusList":     "Comma Separated List of states to be considered valid when searching by name",
 	"Connectivity":        "Parameter to identify internet access for device. Supported Values: INTERNET-ACCESS(default) or PRIVATE or INTERNET-ACCESS-WITH-PRVT-MGMT",
+	"ProjectID":           "The unique identifier of Project Resource to which device is scoped to",
 }
 
 var neDeviceInterfaceSchemaNames = map[string]string{
@@ -404,6 +406,14 @@ func createNetworkDeviceSchema() map[string]*schema.Schema {
 			ValidateFunc: validation.IntInSlice([]int{1, 12, 24, 36}),
 			Description:  neDeviceDescriptions["TermLength"],
 		},
+		neDeviceSchemaNames["ProjectID"]: {
+			Type:         schema.TypeString,
+			Optional:     true,
+			ForceNew:     true,
+			Computed:     true,
+			ValidateFunc: validation.IsUUID,
+			Description:  neDeviceDescriptions["ProjectID"],
+		},
 		neDeviceSchemaNames["AdditionalBandwidth"]: {
 			Type:        schema.TypeInt,
 			Optional:    true,
@@ -505,6 +515,11 @@ func createNetworkDeviceSchema() map[string]*schema.Schema {
 						Type:        schema.TypeString,
 						Computed:    true,
 						Description: neDeviceDescriptions["UUID"],
+					},
+					neDeviceSchemaNames["ProjectID"]: {
+						Type:        schema.TypeString,
+						Computed:    true,
+						Description: neDeviceDescriptions["ProjectID"],
 					},
 					neDeviceSchemaNames["Name"]: {
 						Type:         schema.TypeString,
@@ -1044,6 +1059,9 @@ func createNetworkDevices(d *schema.ResourceData) (*ne.Device, *ne.Device) {
 	if v, ok := d.GetOk(neDeviceSchemaNames["MetroCode"]); ok {
 		primary.MetroCode = ne.String(v.(string))
 	}
+	if v, ok := d.GetOk(neDeviceSchemaNames["ProjectID"]); ok {
+		primary.ProjectID = ne.String(v.(string))
+	}
 	if v, ok := d.GetOk(neDeviceSchemaNames["Throughput"]); ok {
 		primary.Throughput = ne.Int(v.(int))
 	}
@@ -1134,6 +1152,9 @@ func updateNetworkDeviceResource(primary *ne.Device, secondary *ne.Device, d *sc
 	}
 	if err := d.Set(neDeviceSchemaNames["Name"], primary.Name); err != nil {
 		return fmt.Errorf("error reading Name: %s", err)
+	}
+	if err := d.Set(neDeviceSchemaNames["ProjectID"], primary.ProjectID); err != nil {
+		return fmt.Errorf("error reading ProjectID: %s", err)
 	}
 	if err := d.Set(neDeviceSchemaNames["TypeCode"], primary.TypeCode); err != nil {
 		return fmt.Errorf("error reading TypeCode: %s", err)
@@ -1277,6 +1298,7 @@ func flattenNetworkDeviceSecondary(device *ne.Device) interface{} {
 	transformed[neDeviceSchemaNames["AccountNumber"]] = device.AccountNumber
 	transformed[neDeviceSchemaNames["Notifications"]] = device.Notifications
 	transformed[neDeviceSchemaNames["RedundancyType"]] = device.RedundancyType
+	transformed[neDeviceSchemaNames["ProjectID"]] = device.ProjectID
 	transformed[neDeviceSchemaNames["RedundantUUID"]] = device.RedundantUUID
 	transformed[neDeviceSchemaNames["AdditionalBandwidth"]] = device.AdditionalBandwidth
 	transformed[neDeviceSchemaNames["Interfaces"]] = flattenNetworkDeviceInterfaces(device.Interfaces)
@@ -1299,6 +1321,9 @@ func expandNetworkDeviceSecondary(devices []interface{}) *ne.Device {
 	}
 	if v, ok := device[neDeviceSchemaNames["Name"]]; ok && !isEmpty(v) {
 		transformed.Name = ne.String(v.(string))
+	}
+	if v, ok := device[neDeviceSchemaNames["ProjectID"]]; ok && !isEmpty(v) {
+		transformed.ProjectID = ne.String(v.(string))
 	}
 	if v, ok := device[neDeviceSchemaNames["MetroCode"]]; ok && !isEmpty(v) {
 		transformed.MetroCode = ne.String(v.(string))
