@@ -15,6 +15,7 @@ Network Edge virtual network device links.
 resource "equinix_network_device_link" "test" {
   name   = "test-link"
   subnet = "192.168.40.64/27"
+  project_id  = "a86d7112-d740-4758-9c9c-31e66373746b"
   device {
     id           = equinix_network_device.test.uuid
     asn          = equinix_network_device.test.asn > 0 ? equinix_network_device.test.asn : 22111
@@ -47,6 +48,7 @@ between self configured devices.
 device link. See [Device](#device) section below for more details.
 * `link` - (Optional) definition of one or more, inter metro, connections belonging
 to the device link. See [Link](#link) section below for more details.
+* `project_id` -  (Optional) ID of the project where the device link is scoped to, must be set for.
 
 ### Device
 

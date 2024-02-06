@@ -17,6 +17,7 @@ traffic. Templates can be assigned to the network devices.
 resource "equinix_network_acl_template" "myacl" {
   name        = "test"
   description = "Test ACL template"
+  project_id = "a86d7112-d740-4758-9c9c-31e66373746b"
   inbound_rule {
     subnet  = "1.1.1.1/32"
     protocol = "IP"
@@ -41,6 +42,7 @@ The following arguments are supported:
 * `description` - (Optional) ACL template description, up to 200 characters.
 * `metro_code` - (Deprecated) ACL template location metro code.
 * `inbound_rule` - (Required) One or more rules to specify allowed inbound traffic.
+* `project_id` -  (Optional) ID of the project where the acl template is scoped to, must be set for.
 Rules are ordered, matching traffic rule stops processing subsequent ones.
 
 The `inbound_rule` block has below fields:

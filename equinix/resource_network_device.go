@@ -516,6 +516,11 @@ func createNetworkDeviceSchema() map[string]*schema.Schema {
 						Computed:    true,
 						Description: neDeviceDescriptions["UUID"],
 					},
+					neDeviceSchemaNames["ProjectID"]: {
+						Type:        schema.TypeString,
+						Computed:    true,
+						Description: neDeviceDescriptions["ProjectID"],
+					},
 					neDeviceSchemaNames["Name"]: {
 						Type:         schema.TypeString,
 						Required:     true,
@@ -1253,6 +1258,7 @@ func updateNetworkDeviceResource(primary *ne.Device, secondary *ne.Device, d *sc
 			secondary.LicenseFile = secondaryFromSchema.LicenseFile
 			secondary.LicenseToken = secondaryFromSchema.LicenseToken
 			secondary.CloudInitFileID = secondaryFromSchema.CloudInitFileID
+			secondary.ProjectID = secondaryFromSchema.ProjectID
 		}
 		if err := d.Set(neDeviceSchemaNames["Secondary"], flattenNetworkDeviceSecondary(secondary)); err != nil {
 			return fmt.Errorf("error reading Secondary: %s", err)
@@ -1293,6 +1299,7 @@ func flattenNetworkDeviceSecondary(device *ne.Device) interface{} {
 	transformed[neDeviceSchemaNames["AccountNumber"]] = device.AccountNumber
 	transformed[neDeviceSchemaNames["Notifications"]] = device.Notifications
 	transformed[neDeviceSchemaNames["RedundancyType"]] = device.RedundancyType
+	transformed[neDeviceSchemaNames["ProjectID"]] = device.ProjectID
 	transformed[neDeviceSchemaNames["RedundantUUID"]] = device.RedundantUUID
 	transformed[neDeviceSchemaNames["AdditionalBandwidth"]] = device.AdditionalBandwidth
 	transformed[neDeviceSchemaNames["Interfaces"]] = flattenNetworkDeviceInterfaces(device.Interfaces)
@@ -1336,6 +1343,9 @@ func expandNetworkDeviceSecondary(devices []interface{}) *ne.Device {
 	}
 	if v, ok := device[neDeviceSchemaNames["CloudInitFileID"]]; ok && !isEmpty(v) {
 		transformed.CloudInitFileID = ne.String(v.(string))
+	}
+	if v, ok := device[neDeviceSchemaNames["ProjectID"]]; ok && !isEmpty(v) {
+		transformed.ProjectID = ne.String(v.(string))
 	}
 	if v, ok := device[neDeviceSchemaNames["ACLTemplateUUID"]]; ok && !isEmpty(v) {
 		transformed.ACLTemplateUUID = ne.String(v.(string))
