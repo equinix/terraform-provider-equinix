@@ -9,6 +9,7 @@ import (
 	"time"
 
 	equinix_errors "github.com/equinix/terraform-provider-equinix/internal/errors"
+	equinix_fabric_schema "github.com/equinix/terraform-provider-equinix/internal/fabric/schema"
 	equinix_schema "github.com/equinix/terraform-provider-equinix/internal/schema"
 
 	"github.com/equinix/terraform-provider-equinix/internal/config"
@@ -47,7 +48,7 @@ func resourceFabricRoutingProtocol() *schema.Resource {
 		},
 		Schema: createFabricRoutingProtocolResourceSchema(),
 
-		Description: "Fabric V4 API compatible resource allows creation and management of Equinix Fabric connection\n\n~> **Note** Equinix Fabric v4 resources and datasources are currently in Beta. The interfaces related to `equinix_fabric_` resources and datasources may change ahead of general availability. Please, do not hesitate to report any problems that you experience by opening a new [issue](https://github.com/equinix/terraform-provider-equinix/issues/new?template=bug.md)",
+		Description: "Fabric V4 API compatible resource allows creation and management of Equinix Fabric connection",
 	}
 }
 
@@ -290,7 +291,7 @@ func setFabricRoutingProtocolMap(d *schema.ResourceData, rp v4.RoutingProtocolDa
 			"bfd":          routingProtocolBfdToTerra(rp.Bfd),
 			"bgp_auth_key": rp.BgpAuthKey,
 			"change":       routingProtocolChangeToTerra(rp.RoutingProtocolBgpData.Change),
-			"change_log":   changeLogToTerra(rp.RoutingProtocolBgpData.Changelog),
+			"change_log":   equinix_fabric_schema.ChangeLogToTerra(rp.RoutingProtocolBgpData.Changelog),
 		})
 	} else if rp.Type_ == "DIRECT" {
 		err = equinix_schema.SetMap(d, map[string]interface{}{
@@ -302,7 +303,7 @@ func setFabricRoutingProtocolMap(d *schema.ResourceData, rp v4.RoutingProtocolDa
 			"direct_ipv4": routingProtocolDirectConnectionIpv4ToTerra(rp.DirectIpv4),
 			"direct_ipv6": routingProtocolDirectConnectionIpv6ToTerra(rp.DirectIpv6),
 			"change":      routingProtocolChangeToTerra(rp.RoutingProtocolDirectData.Change),
-			"change_log":  changeLogToTerra(rp.RoutingProtocolDirectData.Changelog),
+			"change_log":  equinix_fabric_schema.ChangeLogToTerra(rp.RoutingProtocolDirectData.Changelog),
 		})
 	}
 	if err != nil {
