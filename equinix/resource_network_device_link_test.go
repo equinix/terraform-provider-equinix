@@ -12,8 +12,9 @@ func TestNetworkDeviceLink_createFromResourceData(t *testing.T) {
 	// given
 
 	expected := ne.DeviceLinkGroup{
-		Name:   ne.String("testGroup"),
-		Subnet: ne.String("10.10.1.0/24"),
+		Name:      ne.String("testGroup"),
+		Subnet:    ne.String("10.10.1.0/24"),
+		ProjectID: ne.String("68ccfd49-39b1-478e-957a-67c72f719d7a"),
 		Devices: []ne.DeviceLinkGroupDevice{
 			{
 				DeviceID:    ne.String("3eee8518-b19d-4de5-afd8-afd9b67e6e8c"),
@@ -39,8 +40,9 @@ func TestNetworkDeviceLink_createFromResourceData(t *testing.T) {
 	}
 
 	rawData := map[string]interface{}{
-		networkDeviceLinkSchemaNames["Name"]:   ne.StringValue(expected.Name),
-		networkDeviceLinkSchemaNames["Subnet"]: ne.StringValue(expected.Subnet),
+		networkDeviceLinkSchemaNames["Name"]:      ne.StringValue(expected.Name),
+		networkDeviceLinkSchemaNames["Subnet"]:    ne.StringValue(expected.Subnet),
+		networkDeviceLinkSchemaNames["ProjectID"]: ne.StringValue(expected.ProjectID),
 	}
 	d := schema.TestResourceDataRaw(t, createNetworkDeviceLinkResourceSchema(), rawData)
 	d.Set(networkDeviceLinkSchemaNames["Devices"], flattenNetworkDeviceLinkDevices(nil, expected.Devices))
