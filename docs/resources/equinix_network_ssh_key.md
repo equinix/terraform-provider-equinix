@@ -22,6 +22,7 @@ resource "equinix_network_ssh_key" "john" {
   WQnuAHCy9N4Td0Sntzu/xhCZ8xN0oO67Cqlsk98xSRLXeg21PuuhOYJw0DLF6L68zU2OO0RzqoNq/F
   jIsltSUJPAIfYKL0yEefeNWOXSrasI1ezw== John.Kent@company.com"
   type       = "RSA"
+  project_id = "a86d7112-d740-4758-9c9c-31e66373746b"
 }
 ```
 
@@ -33,6 +34,8 @@ The following arguments are supported:
 * `public_key` - (Required) The SSH public key. If this is a file, it can be read using the file
 interpolation function.
 * `type` - (Optional) The type of SSH key: `RSA` (default) or `DSA`.
+* `project_id` - (Optional) Unique Identifier for the project resource where the SSH key is scoped to.If you
+leave it out, the ssh key will be created under the default project id of your organization.
 
 ## Attributes Reference
 

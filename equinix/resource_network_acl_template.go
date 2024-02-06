@@ -26,6 +26,7 @@ var networkACLTemplateSchemaNames = map[string]string{
 	"DeviceACLStatus": "device_acl_status",
 	"InboundRules":    "inbound_rule",
 	"DeviceDetails":   "device_details",
+	"ProjectID":       "project_id",
 }
 
 var networkACLTemplateDescriptions = map[string]string{
@@ -37,6 +38,7 @@ var networkACLTemplateDescriptions = map[string]string{
 	"DeviceACLStatus": "Status of ACL template provisioning process on a device, where template was applied",
 	"InboundRules":    "One or more rules to specify allowed inbound traffic. Rules are ordered, matching traffic rule stops processing subsequent ones.",
 	"DeviceDetails":   "Device Details to which ACL template is assigned to. ",
+	"ProjectID":       "The unique identifier of Project Resource to which ACL template is scoped to",
 }
 
 var networkACLTemplateInboundRuleSchemaNames = map[string]string{
@@ -146,6 +148,14 @@ func createNetworkACLTemplateSchema() map[string]*schema.Schema {
 				Schema: networkACLTemplateDeviceDetailsSchema(),
 			},
 			Description: networkACLTemplateDescriptions["DeviceDetails"],
+		},
+		networkACLTemplateSchemaNames["ProjectID"]: {
+			Type:         schema.TypeString,
+			Optional:     true,
+			Computed:     true,
+			ForceNew:     true,
+			ValidateFunc: validation.IsUUID,
+			Description:  networkACLTemplateDescriptions["ProjectID"],
 		},
 	}
 }
@@ -296,6 +306,9 @@ func createACLTemplate(d *schema.ResourceData) ne.ACLTemplate {
 	if v, ok := d.GetOk(networkACLTemplateSchemaNames["Description"]); ok {
 		template.Description = ne.String(v.(string))
 	}
+	if v, ok := d.GetOk(networkACLTemplateSchemaNames["ProjectID"]); ok {
+		template.ProjectID = ne.String(v.(string))
+	}
 	if v, ok := d.GetOk(networkACLTemplateSchemaNames["MetroCode"]); ok {
 		template.MetroCode = ne.String(v.(string))
 	}
@@ -317,6 +330,9 @@ func updateACLTemplateResource(template *ne.ACLTemplate, d *schema.ResourceData)
 	}
 	if err := d.Set(networkACLTemplateSchemaNames["DeviceACLStatus"], template.DeviceACLStatus); err != nil {
 		return fmt.Errorf("error reading %s: %s", networkACLTemplateSchemaNames["DeviceACLStatus"], err)
+	}
+	if err := d.Set(networkACLTemplateSchemaNames["ProjectID"], template.ProjectID); err != nil {
+		return fmt.Errorf("error reading %s: %s", networkACLTemplateSchemaNames["ProjectID"], err)
 	}
 	var inboundRules []ne.ACLTemplateInboundRule
 	if v, ok := d.GetOk(networkACLTemplateSchemaNames["InboundRules"]); ok {

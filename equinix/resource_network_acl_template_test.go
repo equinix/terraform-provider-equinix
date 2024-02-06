@@ -14,6 +14,7 @@ func TestNetworkACLTemplate_createFromResourceData(t *testing.T) {
 		Name:        ne.String("test"),
 		Description: ne.String("testTemplate"),
 		MetroCode:   ne.String("SV"),
+		ProjectID:   ne.String("68ccfd49-39b1-478e-957a-67c72f719d7a"),
 		InboundRules: []ne.ACLTemplateInboundRule{
 			{
 				SeqNo:       ne.Int(1),
@@ -30,6 +31,7 @@ func TestNetworkACLTemplate_createFromResourceData(t *testing.T) {
 		networkACLTemplateSchemaNames["Name"]:        ne.StringValue(expected.Name),
 		networkACLTemplateSchemaNames["Description"]: ne.StringValue(expected.Description),
 		networkACLTemplateSchemaNames["MetroCode"]:   ne.StringValue(expected.MetroCode),
+		networkACLTemplateSchemaNames["ProjectID"]:   ne.StringValue(expected.ProjectID),
 	}
 	d := schema.TestResourceDataRaw(t, createNetworkACLTemplateSchema(), rawData)
 	d.Set(networkACLTemplateSchemaNames["InboundRules"], flattenACLTemplateInboundRules(expected.InboundRules, expected.InboundRules))
