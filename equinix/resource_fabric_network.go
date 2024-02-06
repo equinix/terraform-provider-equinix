@@ -298,7 +298,7 @@ func resourceFabricNetworkUpdate(ctx context.Context, d *schema.ResourceData, me
 		if !strings.Contains(err.Error(), "500") {
 			d.SetId("")
 		}
-		return diag.Errorf("either timed out or errored out while fetching Fabric Network for uuid %s and error %v", d.Id(), equinix_errors.FormatFabricError(err))
+		return diag.Errorf("either timed out or errored out while fetching Fabric Network for uuid %s and error %v", d.Id(), err)
 	}
 	// TO-DO
 	update, err := getFabricNetworkUpdateRequest(dbConn, d)
@@ -317,7 +317,7 @@ func resourceFabricNetworkUpdate(ctx context.Context, d *schema.ResourceData, me
 		if !strings.Contains(err.Error(), "500") {
 			d.SetId("")
 		}
-		return diag.FromErr(fmt.Errorf("errored while waiting for successful Fabric Network update, response %v, error %v", res, equinix_errors.FormatFabricError(err)))
+		return diag.FromErr(fmt.Errorf("errored while waiting for successful Fabric Network update, response %v, error %v", res, err))
 	}
 
 	d.SetId(updateFg.Uuid)
@@ -399,7 +399,7 @@ func resourceFabricNetworkDelete(ctx context.Context, d *schema.ResourceData, me
 
 	err = WaitUntilFabricNetworkDeprovisioned(d.Id(), meta, ctx)
 	if err != nil {
-		return diag.FromErr(fmt.Errorf("API call failed while waiting for resource deletion. Error %v", equinix_errors.FormatFabricError(err)))
+		return diag.FromErr(fmt.Errorf("API call failed while waiting for resource deletion. Error %v", err))
 	}
 	return diags
 }
