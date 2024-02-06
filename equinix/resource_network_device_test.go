@@ -187,6 +187,8 @@ func TestNetworkDevice_flattenSecondary(t *testing.T) {
 		RedundancyType:      ne.String("PRIMARY"),
 		RedundantUUID:       ne.String("c2a147a3-ff47-4a24-a6e5-d6d7ce6459f3"),
 		AdditionalBandwidth: ne.Int(50),
+		ProjectID:           ne.String("68ccfd49-39b1-478e-957a-67c72f719d7a"),
+
 		Interfaces: []ne.DeviceInterface{
 			{
 				ID:                ne.Int(1),
@@ -231,6 +233,7 @@ func TestNetworkDevice_flattenSecondary(t *testing.T) {
 			neDeviceSchemaNames["RedundancyType"]:      input.RedundancyType,
 			neDeviceSchemaNames["RedundantUUID"]:       input.RedundantUUID,
 			neDeviceSchemaNames["AdditionalBandwidth"]: input.AdditionalBandwidth,
+			neDeviceSchemaNames["ProjectID"]:           input.ProjectID,
 			neDeviceSchemaNames["Interfaces"]: []interface{}{
 				map[string]interface{}{
 					neDeviceInterfaceSchemaNames["ID"]:                input.Interfaces[0].ID,
