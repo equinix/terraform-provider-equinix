@@ -49,7 +49,7 @@ func TestAccDataSourceMetalProjectSSHKey_bySearch(t *testing.T) {
 	})
 }
 
-func TestAccDataSourceMetalProjectSSHKeyDataSource_yID(t *testing.T) {
+func TestAccDataSourceMetalProjectSSHKeyDataSource_byID(t *testing.T) {
 	datasourceName := "data.equinix_metal_project_ssh_key.foobar"
 
 	publicKeyMaterial, _, err := acctest.RandSSHKeyPair("")

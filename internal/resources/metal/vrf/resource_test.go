@@ -109,10 +109,10 @@ func TestAccMetalVRF_withIPRanges(t *testing.T) {
 	rInt := acctest.RandInt()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acceptance.TestAccPreCheckMetal(t) },
-		ExternalProviders: acceptance.TestExternalProviders,
-		Providers:         acceptance.TestAccProviders,
-		CheckDestroy:      testAccMetalVRFCheckDestroyed,
+		PreCheck:                 func() { acceptance.TestAccPreCheckMetal(t) },
+		ExternalProviders:        acceptance.TestExternalProviders,
+		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		CheckDestroy:             testAccMetalVRFCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccMetalVRFConfig_basic(rInt),
@@ -152,10 +152,10 @@ func TestAccMetalVRF_withIPReservations(t *testing.T) {
 	rInt := acctest.RandInt()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acceptance.TestAccPreCheckMetal(t) },
-		ExternalProviders: acceptance.TestExternalProviders,
-		Providers:         acceptance.TestAccProviders,
-		CheckDestroy:      testAccMetalVRFCheckDestroyed,
+		PreCheck:                 func() { acceptance.TestAccPreCheckMetal(t) },
+		ExternalProviders:        acceptance.TestExternalProviders,
+		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		CheckDestroy:             testAccMetalVRFCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccMetalVRFConfig_withIPRanges(rInt),
@@ -194,10 +194,10 @@ func TestAccMetalVRF_withGateway(t *testing.T) {
 	rInt := acctest.RandInt()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acceptance.TestAccPreCheckMetal(t) },
-		ExternalProviders: acceptance.TestExternalProviders,
-		Providers:         acceptance.TestAccProviders,
-		CheckDestroy:      testAccMetalVRFCheckDestroyed,
+		PreCheck:                 func() { acceptance.TestAccPreCheckMetal(t) },
+		ExternalProviders:        acceptance.TestExternalProviders,
+		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		CheckDestroy:             testAccMetalVRFCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccMetalVRFConfig_withIPReservations(rInt),
@@ -459,4 +459,33 @@ func testAccMetalVRFConfig_withVCGateway(r, nniVlan int) string {
 		metal_ip = "192.168.100.16"
 		customer_ip = "192.168.100.17"
 	}`, testConnection, r, r, nniVlan)
+}
+
+func TestAccMetalVRF_upgrade(t *testing.T) {
+	var vrf metalv1.Vrf
+	rInt := acctest.RandInt()
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:                 func() { acceptance.TestAccPreCheckMetal(t) },
+		ExternalProviders:        acceptance.TestExternalProviders,
+		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		CheckDestroy:             testAccMetalVRFCheckDestroyed,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccMetalVRFConfig_basic(rInt),
+				Check: resource.ComposeTestCheckFunc(
+					testAccMetalVRFExists("equinix_metal_vrf.test", &vrf),
+					resource.TestCheckResourceAttr(
+						"equinix_metal_vrf.test", "name", fmt.Sprintf("tfacc-vrf-%d", rInt)),
+					resource.TestCheckResourceAttrSet(
+						"equinix_metal_vrf.test", "local_asn"),
+				),
+			},
+			{
+				ResourceName:      "equinix_metal_vrf.test",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+		},
+	})
 }
