@@ -320,7 +320,7 @@ func (c *Config) AddFwModuleToMetalUserAgent(ctx context.Context, meta tfsdk.Con
 	c.Metal.UserAgent = generateFwModuleUserAgentString(ctx, meta, c.metalUserAgent)
 }
 
-func (c *Config) AddFwModuleToMetaGolUserAgent(ctx context.Context, meta tfsdk.Config) {
+func (c *Config) AddFwModuleToMetalGoUserAgent(ctx context.Context, meta tfsdk.Config) {
 	c.Metalgo.GetConfig().UserAgent = generateFwModuleUserAgentString(ctx, meta, c.metalGoUserAgent)
 }
 

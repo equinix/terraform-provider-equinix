@@ -6,12 +6,12 @@ import (
 
 	"github.com/equinix/terraform-provider-equinix/internal/config"
 
+	"github.com/equinix/equinix-sdk-go/services/metalv1"
 	"github.com/equinix/terraform-provider-equinix/internal/acceptance"
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/plancheck"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
-	"github.com/packethost/packngo"
 )
 
 func testAccMetalProjectSSHKeyConfig_basic(name, publicSshKey string) string {
@@ -50,7 +50,7 @@ resource "equinix_metal_device" "test" {
 
 func TestAccMetalProjectSSHKey_basic(t *testing.T) {
 	rs := acctest.RandString(10)
-	var key packngo.SSHKey
+	var key metalv1.SSHKey
 	publicKeyMaterial, _, err := acctest.RandSSHKeyPair("")
 	if err != nil {
 		t.Fatalf("Cannot generate test SSH key pair: %s", err)
@@ -102,7 +102,7 @@ func testAccMetalProjectSSHKeyCheckDestroyed(s *terraform.State) error {
 // TODO (ocobles): once migrated, this test may be removed
 func TestAccMetalProjectSSHKey_upgradeFromVersion(t *testing.T) {
 	rs := acctest.RandString(10)
-	var key packngo.SSHKey
+	var key metalv1.SSHKey
 	publicKeyMaterial, _, err := acctest.RandSSHKeyPair("")
 	if err != nil {
 		t.Fatalf("Cannot generate test SSH key pair: %s", err)
