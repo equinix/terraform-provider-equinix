@@ -10,6 +10,7 @@ import (
 	equinix_schema "github.com/equinix/terraform-provider-equinix/internal/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"log"
@@ -161,7 +162,7 @@ func resourceFabricNetwork() *schema.Resource {
 		},
 		Schema: FabricNetworkResourceSchema(),
 
-		Description: "Fabric V4 API compatible resource allows creation and management of Equinix Fabric Network\n\n~> **Note** Equinix Fabric v4 resources and datasources are currently in Beta. The interfaces related to `equinix_fabric_` resources and datasources may change ahead of general availability. Please, do not hesitate to report any problems that you experience by opening a new [issue](https://github.com/equinix/terraform-provider-equinix/issues/new?template=bug.md)",
+		Description: "Fabric V4 API compatible resource allows creation and management of Equinix Fabric Network",
 	}
 }
 
