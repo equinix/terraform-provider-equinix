@@ -38,7 +38,7 @@ resource "equinix_metal_vlan" "test" {
 resource "equinix_metal_reserved_ip_block" "test" {
   project_id = local.project_id
   metro      = "sv"
-  quantity   = 2
+  quantity   = 8
 }
 
 resource "equinix_metal_gateway" "test" {

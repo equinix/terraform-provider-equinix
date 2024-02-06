@@ -14,7 +14,7 @@ var dataSourceSchema = schema.Schema{
 		},
 		"project_id": schema.StringAttribute{
 			Description: "UUID of the Project where the Gateway is scoped to",
-			Required:    true,
+			Computed:    true,
 		},
 		"vlan_id": schema.StringAttribute{
 			Description: "UUID of the associated VLAN",
