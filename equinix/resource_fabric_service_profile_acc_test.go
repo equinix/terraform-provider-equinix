@@ -17,26 +17,27 @@ import (
 	v4 "github.com/equinix-labs/fabric-go/fabric/v4"
 )
 
-func TestAccFabricCreateServiceProfile_SP_FCR_ba(t *testing.T) {
-	spName1 := "fabric_tf_acc_test_01"
-	spName2 := "fabric_tf_acc_test_02"
-	typel2 := "L2_PROFILE"
-	portType := "XF_PORT"
+func TestAccFabricCreateServiceProfile_PFCR(t *testing.T) {
 	ports := GetFabricEnvPorts(t)
-	portTcFirst := ports["pfcr"]["dot1q"][0]
-	portTcSecond := ports["pfcr"]["qinq"][0]
+
+	var portTcFirst, portTcSecond v4.Port
+	if len(ports) > 0 {
+		portTcFirst = ports["pfcr"]["dot1q"][0]
+		portTcSecond = ports["pfcr"]["qinq"][0]
+	}
+
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { acceptance.TestAccPreCheck(t) },
 		Providers:    acceptance.TestAccProviders,
 		CheckDestroy: checkServiceProfileDelete,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccFabricCreateServiceProfileConfig(spName1, typel2, portTcFirst.Uuid, portType, portTcFirst.Location.MetroCode),
+				Config: testAccFabricCreateServiceProfileConfig(portTcFirst.Uuid, "XF_PORT", portTcFirst.Location.MetroCode),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(
-						"equinix_fabric_service_profile.test", "name", fmt.Sprint(spName1)),
+						"equinix_fabric_service_profile.test", "name", fmt.Sprint("ds_con_sp_PFCR")),
 					resource.TestCheckResourceAttr(
-						"equinix_fabric_service_profile.test", "type", fmt.Sprint(typel2)),
+						"equinix_fabric_service_profile.test", "type", fmt.Sprint("L2_PROFILE")),
 					resource.TestCheckResourceAttr(
 						"equinix_fabric_service_profile.test", "state", fmt.Sprint("ACTIVE")),
 					resource.TestCheckResourceAttr(
@@ -63,12 +64,12 @@ func TestAccFabricCreateServiceProfile_SP_FCR_ba(t *testing.T) {
 				ExpectNonEmptyPlan: true,
 			},
 			{
-				Config: testAccFabricCreateServiceProfileConfig(spName2, typel2, portTcSecond.Uuid, portType, portTcSecond.Location.MetroCode),
+				Config: testAccFabricCreateServiceProfileConfig(portTcSecond.Uuid, "XF_PORT", portTcSecond.Location.MetroCode),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(
-						"equinix_fabric_service_profile.test", "name", fmt.Sprint(spName2)),
+						"equinix_fabric_service_profile.test", "name", fmt.Sprint("ds_con_sp_PFCR")),
 					resource.TestCheckResourceAttr(
-						"equinix_fabric_service_profile.test", "type", fmt.Sprint(typel2)),
+						"equinix_fabric_service_profile.test", "type", fmt.Sprint("L2_PROFILE")),
 					resource.TestCheckResourceAttr(
 						"equinix_fabric_service_profile.test", "state", fmt.Sprint("ACTIVE")),
 					resource.TestCheckResourceAttr(
@@ -97,11 +98,11 @@ func TestAccFabricCreateServiceProfile_SP_FCR_ba(t *testing.T) {
 	})
 }
 
-func testAccFabricCreateServiceProfileConfig(name string, typel2 string, portUUID string, portType string, portMetroCode string) string {
+func testAccFabricCreateServiceProfileConfig(portUUID string, portType string, portMetroCode string) string {
 	return fmt.Sprintf(`resource "equinix_fabric_service_profile" "test" {
-  name = "%s"
+  name = "ds_con_sp_PFCR"
   description = "Generic SP"
-  type = "%s"
+  type = "L2_PROFILE"
   notifications {
       emails = ["opsuser100@equinix.com"]
       type = "BANDWIDTH_ALERT"
@@ -139,12 +140,12 @@ func testAccFabricCreateServiceProfileConfig(name string, typel2 string, portUUI
         label = "Service Key"
         description = "XYZ"
       }
-      supported_bandwidths = [100,500]
+      supported_bandwidths = [500]
   }
   marketing_info {
     promotion = false
   }
-}`, name, typel2, portUUID, portType, portMetroCode)
+}`, portUUID, portType, portMetroCode)
 }
 
 func checkServiceProfileDelete(s *terraform.State) error {
