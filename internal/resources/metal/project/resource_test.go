@@ -1,4 +1,4 @@
-package equinix
+package project_test
 
 import (
 	"context"
@@ -9,6 +9,8 @@ import (
 	"regexp"
 	"testing"
 
+	"github.com/equinix/terraform-provider-equinix/equinix"
+	"github.com/equinix/terraform-provider-equinix/internal/acceptance"
 	"github.com/equinix/terraform-provider-equinix/internal/config"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -29,7 +31,7 @@ func init() {
 
 func testSweepProjects(region string) error {
 	log.Printf("[DEBUG] Sweeping projects")
-	config, err := sharedConfigForRegion(region)
+	config, err := acceptance.GetConfigForNonStandardMetalTest()
 	if err != nil {
 		return fmt.Errorf("[INFO][SWEEPER_LOG] Error getting configuration for sweeping projects: %s", err)
 	}
@@ -40,7 +42,7 @@ func testSweepProjects(region string) error {
 	}
 	pids := []string{}
 	for _, p := range ps {
-		if isSweepableTestResource(p.Name) {
+		if acceptance.IsSweepableTestResource(p.Name) {
 			pids = append(pids, p.ID)
 		}
 	}
@@ -59,9 +61,9 @@ func TestAccMetalProject_basic(t *testing.T) {
 	rInt := acctest.RandInt()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
-		ExternalProviders: testExternalProviders,
-		Providers:         testAccProviders,
+		PreCheck:          func() { acceptance.TestAccPreCheck(t) },
+		ExternalProviders: acceptance.TestExternalProviders,
+		Providers:         acceptance.TestAccProviders,
 		CheckDestroy:      testAccMetalProjectCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
@@ -84,7 +86,7 @@ func TestAccMetalProject_errorHandling(t *testing.T) {
 		w.WriteHeader(http.StatusUnprocessableEntity)
 	}
 	mockAPI := httptest.NewServer(http.HandlerFunc(handler))
-	mockEquinix := Provider()
+	mockEquinix := equinix.Provider()
 	mockEquinix.ConfigureContextFunc = func(ctx context.Context, d *schema.ResourceData) (interface{}, diag.Diagnostics) {
 		config := config.Config{
 			BaseURL:   mockAPI.URL,
@@ -119,7 +121,7 @@ func TestAccMetalProject_apiErrorHandling(t *testing.T) {
 		w.WriteHeader(http.StatusUnprocessableEntity)
 	}
 	mockAPI := httptest.NewServer(http.HandlerFunc(handler))
-	mockEquinix := Provider()
+	mockEquinix := equinix.Provider()
 	mockEquinix.ConfigureContextFunc = func(ctx context.Context, d *schema.ResourceData) (interface{}, diag.Diagnostics) {
 		config := config.Config{
 			BaseURL:   mockAPI.URL,
@@ -149,9 +151,9 @@ func TestAccMetalProject_BGPBasic(t *testing.T) {
 	rInt := acctest.RandInt()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
-		ExternalProviders: testExternalProviders,
-		Providers:         testAccProviders,
+		PreCheck:          func() { acceptance.TestAccPreCheck(t) },
+		ExternalProviders: acceptance.TestExternalProviders,
+		Providers:         acceptance.TestAccProviders,
 		CheckDestroy:      testAccMetalProjectCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
@@ -177,9 +179,9 @@ func TestAccMetalProject_backendTransferUpdate(t *testing.T) {
 	rInt := acctest.RandInt()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
-		ExternalProviders: testExternalProviders,
-		Providers:         testAccProviders,
+		PreCheck:          func() { acceptance.TestAccPreCheck(t) },
+		ExternalProviders: acceptance.TestExternalProviders,
+		Providers:         acceptance.TestAccProviders,
 		CheckDestroy:      testAccMetalProjectCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
@@ -220,9 +222,9 @@ func TestAccMetalProject_update(t *testing.T) {
 	rInt := acctest.RandInt()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
-		ExternalProviders: testExternalProviders,
-		Providers:         testAccProviders,
+		PreCheck:          func() { acceptance.TestAccPreCheck(t) },
+		ExternalProviders: acceptance.TestExternalProviders,
+		Providers:         acceptance.TestAccProviders,
 		CheckDestroy:      testAccMetalProjectCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
@@ -260,9 +262,9 @@ func TestAccMetalProject_BGPUpdate(t *testing.T) {
 	res := "equinix_metal_project.foobar"
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
-		ExternalProviders: testExternalProviders,
-		Providers:         testAccProviders,
+		PreCheck:          func() { acceptance.TestAccPreCheck(t) },
+		ExternalProviders: acceptance.TestExternalProviders,
+		Providers:         acceptance.TestAccProviders,
 		CheckDestroy:      testAccMetalProjectCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
@@ -303,7 +305,7 @@ func TestAccMetalProject_BGPUpdate(t *testing.T) {
 }
 
 func testAccMetalProjectCheckDestroyed(s *terraform.State) error {
-	client := testAccProvider.Meta().(*config.Config).Metal
+	client := acceptance.TestAccProvider.Meta().(*config.Config).Metal
 
 	for _, rs := range s.RootModule().Resources {
 		if rs.Type != "equinix_metal_project" {
@@ -327,7 +329,7 @@ func testAccMetalProjectExists(n string, project *packngo.Project) resource.Test
 			return fmt.Errorf("No Record ID is set")
 		}
 
-		client := testAccProvider.Meta().(*config.Config).Metal
+		client := acceptance.TestAccProvider.Meta().(*config.Config).Metal
 
 		foundProject, _, err := client.Projects.Get(rs.Primary.ID, nil)
 		if err != nil {
@@ -393,9 +395,9 @@ func TestAccMetalProject_organization(t *testing.T) {
 	rn := acctest.RandStringFromCharSet(12, "abcdef0123456789")
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
-		ExternalProviders: testExternalProviders,
-		Providers:         testAccProviders,
+		PreCheck:          func() { acceptance.TestAccPreCheck(t) },
+		ExternalProviders: acceptance.TestExternalProviders,
+		Providers:         acceptance.TestAccProviders,
 		CheckDestroy:      testAccMetalProjectCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
@@ -419,9 +421,9 @@ func TestAccMetalProject_importBasic(t *testing.T) {
 	rInt := acctest.RandInt()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
-		ExternalProviders: testExternalProviders,
-		Providers:         testAccProviders,
+		PreCheck:          func() { acceptance.TestAccPreCheck(t) },
+		ExternalProviders: acceptance.TestExternalProviders,
+		Providers:         acceptance.TestAccProviders,
 		CheckDestroy:      testAccMetalProjectCheckDestroyed,
 		Steps: []resource.TestStep{
 			{

@@ -1,4 +1,4 @@
-package equinix
+package project
 
 import (
 	"context"
@@ -17,7 +17,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 )
 
-func resourceMetalProject() *schema.Resource {
+func Resource() *schema.Resource {
 	return &schema.Resource{
 		CreateWithoutTimeout: resourceMetalProjectCreate,
 		ReadWithoutTimeout:   resourceMetalProjectRead,
