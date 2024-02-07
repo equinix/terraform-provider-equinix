@@ -109,7 +109,7 @@ func DataSource() *schema.Resource {
 }
 
 func dataSourceMetalProjectRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := meta.(*config.Config).Metalgo
+	client := meta.(*config.Config).NewMetalClientForSDK(d)
 	nameRaw, nameOK := d.GetOk("name")
 	projectIdRaw, projectIdOK := d.GetOk("project_id")
 

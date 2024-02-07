@@ -95,15 +95,13 @@ type Config struct {
 	PageSize       int
 	Token          string
 
-	Ecx     ecx.Client
-	Ne      ne.Client
-	Metal   *packngo.Client
-	Metalgo *metalv1.APIClient
+	Ecx   ecx.Client
+	Ne    ne.Client
+	Metal *packngo.Client
 
-	ecxUserAgent     string
-	neUserAgent      string
-	metalUserAgent   string
-	metalGoUserAgent string
+	ecxUserAgent   string
+	neUserAgent    string
+	metalUserAgent string
 
 	TerraformVersion string
 	FabricClient     *v4.APIClient
@@ -163,11 +161,11 @@ func (c *Config) Load(ctx context.Context) error {
 		ecxClient.SetPageSize(c.PageSize)
 		neClient.SetPageSize(c.PageSize)
 	}
-	c.ecxUserAgent = c.fullUserAgent("equinix/ecx-go")
+	c.ecxUserAgent = c.tfSdkUserAgent("equinix/ecx-go")
 	ecxClient.SetHeaders(map[string]string{
 		"User-agent": c.ecxUserAgent,
 	})
-	c.neUserAgent = c.fullUserAgent("equinix/ecx-go")
+	c.neUserAgent = c.tfSdkUserAgent("equinix/ecx-go")
 	neClient.SetHeaders(map[string]string{
 		"User-agent": c.neUserAgent,
 	})
@@ -175,7 +173,6 @@ func (c *Config) Load(ctx context.Context) error {
 	c.Ecx = ecxClient
 	c.Ne = neClient
 	c.Metal = c.NewMetalClient()
-	c.Metalgo = c.NewMetalGoClient()
 	c.FabricClient = c.NewFabricClient()
 	return nil
 }
@@ -204,6 +201,7 @@ func (c *Config) NewFabricClient() *v4.APIClient {
 }
 
 // NewMetalClient returns a new packngo client for accessing Equinix Metal's API.
+// Deprecated: migrate to NewMetalClientForSdk or NewMetalClientForFramework instead
 func (c *Config) NewMetalClient() *packngo.Client {
 	transport := http.DefaultTransport
 	// transport = &DumpTransport{http.DefaultTransport} // Debug only
@@ -218,13 +216,41 @@ func (c *Config) NewMetalClient() *packngo.Client {
 	baseURL, _ := url.Parse(c.BaseURL)
 	baseURL.Path = path.Join(baseURL.Path, metalBasePath) + "/"
 	client, _ := packngo.NewClientWithBaseURL(consumerToken, c.AuthToken, standardClient, baseURL.String())
-	client.UserAgent = c.fullUserAgent(client.UserAgent)
+	client.UserAgent = c.tfSdkUserAgent(client.UserAgent)
 	c.metalUserAgent = client.UserAgent
 	return client
 }
 
-// NewMetalGoClient returns a new metal-go client for accessing Equinix Metal's API.
-func (c *Config) NewMetalGoClient() *metalv1.APIClient {
+func (c *Config) NewMetalClientForSDK(d *schema.ResourceData) *metalv1.APIClient {
+	client := c.newMetalClient()
+
+	baseUserAgent := c.tfSdkUserAgent(client.GetConfig().UserAgent)
+	client.GetConfig().UserAgent = generateModuleUserAgentString(d, baseUserAgent)
+
+	return client
+}
+
+func (c *Config) NewMetalClientForFramework(ctx context.Context, meta tfsdk.Config) *metalv1.APIClient {
+	client := c.newMetalClient()
+
+	baseUserAgent := c.tfFrameworkUserAgent(client.GetConfig().UserAgent)
+	client.GetConfig().UserAgent = generateFwModuleUserAgentString(ctx, meta, baseUserAgent)
+
+	return client
+}
+
+// This is a short-term shim to allow tests to continue to have a client for cleanup and validation
+// code that is outside of the resource or datasource under test
+// Deprecated: when possible, API clients for test cleanup/validation should be moved to the acceptance package
+func (c *Config) NewMetalClientForTesting() *metalv1.APIClient {
+	client := c.newMetalClient()
+
+	client.GetConfig().UserAgent = fmt.Sprintf("tf-acceptance-tests %v", client.GetConfig().UserAgent)
+
+	return client
+}
+
+func (c *Config) newMetalClient() *metalv1.APIClient {
 	transport := http.DefaultTransport
 	transport = logging.NewTransport("Equinix Metal (metal-go)", transport)
 	retryClient := retryablehttp.NewClient()
@@ -246,9 +272,7 @@ func (c *Config) NewMetalGoClient() *metalv1.APIClient {
 	}
 	configuration.HTTPClient = standardClient
 	configuration.AddDefaultHeader("X-Auth-Token", c.AuthToken)
-	configuration.UserAgent = c.fullUserAgent(configuration.UserAgent)
 	client := metalv1.NewAPIClient(configuration)
-	c.metalGoUserAgent = client.GetConfig().UserAgent
 	return client
 }
 
@@ -282,10 +306,7 @@ func MetalRetryPolicy(ctx context.Context, resp *http.Response, err error) (bool
 	return false, nil
 }
 
-func terraformUserAgent(version string) string {
-	ua := fmt.Sprintf("HashiCorp Terraform/%s (+https://www.terraform.io) Terraform Plugin SDK/%s",
-		version, meta.SDKVersionString())
-
+func appendUserAgentFromEnv(ua string) string {
 	if add := os.Getenv(uaEnvVar); add != "" {
 		add = strings.TrimSpace(add)
 		if len(add) > 0 {
@@ -320,10 +341,6 @@ func (c *Config) AddFwModuleToMetalUserAgent(ctx context.Context, meta tfsdk.Con
 	c.Metal.UserAgent = generateFwModuleUserAgentString(ctx, meta, c.metalUserAgent)
 }
 
-func (c *Config) AddFwModuleToMetalGoUserAgent(ctx context.Context, meta tfsdk.Config) {
-	c.Metalgo.GetConfig().UserAgent = generateFwModuleUserAgentString(ctx, meta, c.metalGoUserAgent)
-}
-
 func generateFwModuleUserAgentString(ctx context.Context, meta tfsdk.Config, baseUserAgent string) string {
 	var m ProviderMeta
 	diags := meta.Get(ctx, &m)
@@ -341,10 +358,6 @@ func (c *Config) AddModuleToMetalUserAgent(d *schema.ResourceData) {
 	c.Metal.UserAgent = generateModuleUserAgentString(d, c.metalUserAgent)
 }
 
-func (c *Config) AddModuleToMetalGoUserAgent(d *schema.ResourceData) {
-	c.Metalgo.GetConfig().UserAgent = generateModuleUserAgentString(d, c.metalGoUserAgent)
-}
-
 func generateModuleUserAgentString(d *schema.ResourceData, baseUserAgent string) string {
 	var m ProviderMeta
 	err := d.GetProviderMeta(&m)
@@ -359,8 +372,18 @@ func generateModuleUserAgentString(d *schema.ResourceData, baseUserAgent string)
 	return baseUserAgent
 }
 
-func (c *Config) fullUserAgent(suffix string) string {
-	tfUserAgent := terraformUserAgent(c.TerraformVersion)
-	userAgent := fmt.Sprintf("%s terraform-provider-equinix/%s %s", tfUserAgent, version.ProviderVersion, suffix)
+func (c *Config) tfSdkUserAgent(suffix string) string {
+	baseUserAgent := fmt.Sprintf("HashiCorp Terraform/%s (+https://www.terraform.io) Terraform Plugin SDK/%s",
+		c.TerraformVersion, meta.SDKVersionString())
+	baseUserAgent = appendUserAgentFromEnv(baseUserAgent)
+	userAgent := fmt.Sprintf("%s terraform-provider-equinix/%s %s", baseUserAgent, version.ProviderVersion, suffix)
+	return strings.TrimSpace(userAgent)
+}
+
+func (c *Config) tfFrameworkUserAgent(suffix string) string {
+	baseUserAgent := fmt.Sprintf("HashiCorp Terraform/%s (+https://www.terraform.io) Terraform Plugin Framework/%s",
+		c.TerraformVersion, "TODO: get framework plugin version")
+	baseUserAgent = appendUserAgentFromEnv(baseUserAgent)
+	userAgent := fmt.Sprintf("%s terraform-provider-equinix/%s %s", baseUserAgent, version.ProviderVersion, suffix)
 	return strings.TrimSpace(userAgent)
 }

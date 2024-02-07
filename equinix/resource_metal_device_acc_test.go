@@ -554,7 +554,7 @@ func testAccMetalDeviceExists(n string, device *metalv1.Device) resource.TestChe
 			return fmt.Errorf("No Record ID is set")
 		}
 
-		client := testAccProvider.Meta().(*config.Config).Metalgo
+		client := testAccProvider.Meta().(*config.Config).NewMetalClientForTesting()
 
 		foundDevice, _, err := client.DevicesApi.FindDeviceById(context.TODO(), rs.Primary.ID).Execute()
 		if err != nil {
@@ -1092,8 +1092,7 @@ func testAccWaitForMetalDeviceActive(project, deviceHostName string) resource.Im
 
 		meta := testAccProvider.Meta()
 		rd := new(schema.ResourceData)
-		meta.(*config.Config).AddModuleToMetalGoUserAgent(rd)
-		client := meta.(*config.Config).Metalgo
+		client := meta.(*config.Config).NewMetalClientForTesting()
 		resp, _, err := client.DevicesApi.FindProjectDevices(context.TODO(), rs.Primary.ID).Search(deviceHostName).Execute()
 		if err != nil {
 			return "", fmt.Errorf("error while fetching devices for project [%s], error: %w", rs.Primary.ID, err)

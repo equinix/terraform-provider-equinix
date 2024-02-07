@@ -24,7 +24,7 @@ func dataSourceMetalPlans() *schema.Resource {
 	return datalist.NewResource(dataListConfig)
 }
 
-func getPlans(meta interface{}, extra map[string]interface{}) ([]interface{}, error) {
+func getPlans(_ *schema.ResourceData, meta interface{}, extra map[string]interface{}) ([]interface{}, error) {
 	client := meta.(*config.Config).Metal
 	opts := &packngo.ListOptions{
 		Includes: []string{"available_in", "available_in_metros"},
