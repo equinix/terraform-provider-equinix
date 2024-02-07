@@ -7,9 +7,7 @@ import (
 
 	"github.com/equinix/terraform-provider-equinix/equinix"
 	"github.com/equinix/terraform-provider-equinix/internal/acceptance"
-	"github.com/equinix/terraform-provider-equinix/internal/config"
 
-	v4 "github.com/equinix-labs/fabric-go/fabric/v4"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 )
@@ -197,7 +195,6 @@ data "equinix_fabric_routing_protocol" "bgp" {
 
 func checkRoutingProtocolDelete(s *terraform.State) error {
 	ctx := context.Background()
-	ctx = context.WithValue(ctx, v4.ContextAccessToken, acceptance.TestAccProvider.Meta().(*config.Config).FabricAuthToken)
 	for _, rs := range s.RootModule().Resources {
 		if rs.Type != "equinix_fabric_routing_protocol" {
 			continue

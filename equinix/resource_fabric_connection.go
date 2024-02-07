@@ -3,10 +3,11 @@ package equinix
 import (
 	"context"
 	"fmt"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"log"
 	"strings"
 	"time"
+
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 
 	equinix_errors "github.com/equinix/terraform-provider-equinix/internal/errors"
 	equinix_fabric_schema "github.com/equinix/terraform-provider-equinix/internal/fabric/schema"
@@ -612,7 +613,6 @@ func resourceFabricConnection() *schema.Resource {
 
 func resourceFabricConnectionCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*config.Config).FabricClient
-	ctx = context.WithValue(ctx, v4.ContextAccessToken, meta.(*config.Config).FabricAuthToken)
 	conType := v4.ConnectionType(d.Get("type").(string))
 	schemaNotifications := d.Get("notifications").([]interface{})
 	notifications := equinix_fabric_schema.NotificationsToFabric(schemaNotifications)
@@ -737,7 +737,6 @@ func additionalInfoContainsAWSSecrets(info []interface{}) ([]interface{}, bool) 
 
 func resourceFabricConnectionRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*config.Config).FabricClient
-	ctx = context.WithValue(ctx, v4.ContextAccessToken, meta.(*config.Config).FabricAuthToken)
 	conn, _, err := client.ConnectionsApi.GetConnectionByUuid(ctx, d.Id(), nil)
 	if err != nil {
 		log.Printf("[WARN] Connection %s not found , error %s", d.Id(), err)
@@ -799,7 +798,6 @@ func setFabricMap(d *schema.ResourceData, conn v4.Connection) diag.Diagnostics {
 
 func resourceFabricConnectionUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*config.Config).FabricClient
-	ctx = context.WithValue(ctx, v4.ContextAccessToken, meta.(*config.Config).FabricAuthToken)
 	dbConn, err := verifyConnectionCreated(d.Id(), meta, ctx)
 	if err != nil {
 		if !strings.Contains(err.Error(), "500") {
@@ -969,7 +967,6 @@ func verifyConnectionCreated(uuid string, meta interface{}, ctx context.Context)
 func resourceFabricConnectionDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	diags := diag.Diagnostics{}
 	client := meta.(*config.Config).FabricClient
-	ctx = context.WithValue(ctx, v4.ContextAccessToken, meta.(*config.Config).FabricAuthToken)
 	_, _, err := client.ConnectionsApi.DeleteConnectionByUuid(ctx, d.Id())
 	if err != nil {
 		errors, ok := err.(v4.GenericSwaggerError).Model().([]v4.ModelError)

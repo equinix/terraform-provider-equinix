@@ -5,11 +5,8 @@ import (
 	"fmt"
 	"testing"
 
-	v4 "github.com/equinix-labs/fabric-go/fabric/v4"
-
 	"github.com/equinix/terraform-provider-equinix/equinix"
 	"github.com/equinix/terraform-provider-equinix/internal/acceptance"
-	"github.com/equinix/terraform-provider-equinix/internal/config"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
@@ -171,7 +168,6 @@ func testAccCloudRouterCreateMixedParameterConfig_PFCR() string {
 
 func checkCloudRouterDelete(s *terraform.State) error {
 	ctx := context.Background()
-	ctx = context.WithValue(ctx, v4.ContextAccessToken, acceptance.TestAccProvider.Meta().(*config.Config).FabricAuthToken)
 	for _, rs := range s.RootModule().Resources {
 		if rs.Type != "equinix_fabric_cloud_router" {
 			continue

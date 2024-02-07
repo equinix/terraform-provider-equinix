@@ -3,6 +3,7 @@ package equinix
 import (
 	"context"
 	"fmt"
+
 	v4 "github.com/equinix-labs/fabric-go/fabric/v4"
 	"github.com/equinix/terraform-provider-equinix/internal/config"
 	equinix_errors "github.com/equinix/terraform-provider-equinix/internal/errors"
@@ -11,10 +12,11 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
-	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"log"
 	"time"
+
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
 
 func fabricNetworkChangeSch() map[string]*schema.Schema {
@@ -168,7 +170,6 @@ func resourceFabricNetwork() *schema.Resource {
 
 func resourceFabricNetworkCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*config.Config).FabricClient
-	ctx = context.WithValue(ctx, v4.ContextAccessToken, meta.(*config.Config).FabricAuthToken)
 	schemaNotifications := d.Get("notifications").([]interface{})
 	notifications := equinix_fabric_schema.NotificationsToFabric(schemaNotifications)
 	schemaLocation := d.Get("location").(*schema.Set).List()
@@ -202,7 +203,6 @@ func resourceFabricNetworkCreate(ctx context.Context, d *schema.ResourceData, me
 
 func resourceFabricNetworkRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*config.Config).FabricClient
-	ctx = context.WithValue(ctx, v4.ContextAccessToken, meta.(*config.Config).FabricAuthToken)
 	fabricNetwork, _, err := client.NetworksApi.GetNetworkByUuid(ctx, d.Id())
 	if err != nil {
 		return diag.FromErr(equinix_errors.FormatFabricError(err))
@@ -284,7 +284,6 @@ func getFabricNetworkUpdateRequest(network v4.Network, d *schema.ResourceData) (
 }
 func resourceFabricNetworkUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*config.Config).FabricClient
-	ctx = context.WithValue(ctx, v4.ContextAccessToken, meta.(*config.Config).FabricAuthToken)
 	dbConn, err := waitUntilFabricNetworkIsProvisioned(d.Id(), meta, ctx)
 	if err != nil {
 		return diag.Errorf("either timed out or errored out while fetching Fabric Network for uuid %s and error %v", d.Id(), err)
@@ -369,7 +368,6 @@ func waitUntilFabricNetworkIsProvisioned(uuid string, meta interface{}, ctx cont
 func resourceFabricNetworkDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	diags := diag.Diagnostics{}
 	client := meta.(*config.Config).FabricClient
-	ctx = context.WithValue(ctx, v4.ContextAccessToken, meta.(*config.Config).FabricAuthToken)
 	_, _, err := client.NetworksApi.DeleteNetworkByUuid(ctx, d.Id())
 	if err != nil {
 		errors, ok := err.(v4.GenericSwaggerError).Model().([]v4.ModelError)
