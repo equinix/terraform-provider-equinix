@@ -14,7 +14,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"log"
-	"strings"
 	"time"
 )
 
@@ -198,7 +197,7 @@ func resourceFabricNetworkCreate(ctx context.Context, d *schema.ResourceData, me
 	d.SetId(fabricNetwork.Uuid)
 
 	if _, err = waitUntilFabricNetworkIsProvisioned(d.Id(), meta, ctx); err != nil {
-		return diag.Errorf("error waiting for Network (%s) to be created: %s", d.Id(), equinix_errors.FormatFabricError(err))
+		return diag.Errorf("error waiting for Network (%s) to be created: %s", d.Id(), err)
 	}
 
 	return resourceFabricNetworkRead(ctx, d, meta)
@@ -210,10 +209,7 @@ func resourceFabricNetworkRead(ctx context.Context, d *schema.ResourceData, meta
 	fabricNetwork, _, err := client.NetworksApi.GetNetworkByUuid(ctx, d.Id())
 	if err != nil {
 		log.Printf("[WARN] Fabric Network %s not found , error %s", d.Id(), equinix_errors.FormatFabricError(err))
-		if !strings.Contains(err.Error(), "500") {
-			d.SetId("")
-		}
-		return diag.FromErr(equinix_errors.FormatFabricError(err))
+		return diag.FromErr(err)
 	}
 	d.SetId(fabricNetwork.Uuid)
 	return setFabricNetworkMap(d, fabricNetwork)
@@ -272,7 +268,7 @@ func setFabricNetworkMap(d *schema.ResourceData, nt v4.Network) diag.Diagnostics
 		"connections_count": nt.ConnectionsCount,
 	})
 	if err != nil {
-		return diag.FromErr(equinix_errors.FormatFabricError(err))
+		return diag.FromErr(err)
 	}
 	return diags
 }
@@ -295,9 +291,6 @@ func resourceFabricNetworkUpdate(ctx context.Context, d *schema.ResourceData, me
 	ctx = context.WithValue(ctx, v4.ContextAccessToken, meta.(*config.Config).FabricAuthToken)
 	dbConn, err := waitUntilFabricNetworkIsProvisioned(d.Id(), meta, ctx)
 	if err != nil {
-		if !strings.Contains(err.Error(), "500") {
-			d.SetId("")
-		}
 		return diag.Errorf("either timed out or errored out while fetching Fabric Network for uuid %s and error %v", d.Id(), err)
 	}
 	// TO-DO
@@ -314,10 +307,7 @@ func resourceFabricNetworkUpdate(ctx context.Context, d *schema.ResourceData, me
 	updateFg, err = waitForFabricNetworkUpdateCompletion(d.Id(), meta, ctx)
 
 	if err != nil {
-		if !strings.Contains(err.Error(), "500") {
-			d.SetId("")
-		}
-		return diag.FromErr(fmt.Errorf("errored while waiting for successful Fabric Network update, response %v, error %v", res, err))
+		return diag.Errorf("errored while waiting for successful Fabric Network update, response %v, error %v", res, err)
 	}
 
 	d.SetId(updateFg.Uuid)
@@ -347,7 +337,7 @@ func waitForFabricNetworkUpdateCompletion(uuid string, meta interface{}, ctx con
 	if err == nil {
 		dbConn = inter.(v4.Network)
 	}
-	return dbConn, equinix_errors.FormatFabricError(err)
+	return dbConn, err
 }
 
 func waitUntilFabricNetworkIsProvisioned(uuid string, meta interface{}, ctx context.Context) (v4.Network, error) {
@@ -378,7 +368,7 @@ func waitUntilFabricNetworkIsProvisioned(uuid string, meta interface{}, ctx cont
 	if err == nil {
 		dbConn = inter.(v4.Network)
 	}
-	return dbConn, equinix_errors.FormatFabricError(err)
+	return dbConn, err
 }
 
 func resourceFabricNetworkDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
@@ -399,7 +389,7 @@ func resourceFabricNetworkDelete(ctx context.Context, d *schema.ResourceData, me
 
 	err = WaitUntilFabricNetworkDeprovisioned(d.Id(), meta, ctx)
 	if err != nil {
-		return diag.FromErr(fmt.Errorf("API call failed while waiting for resource deletion. Error %v", err))
+		return diag.Errorf("API call failed while waiting for resource deletion. Error %v", err)
 	}
 	return diags
 }
@@ -427,5 +417,5 @@ func WaitUntilFabricNetworkDeprovisioned(uuid string, meta interface{}, ctx cont
 	}
 
 	_, err := stateConf.WaitForStateContext(ctx)
-	return equinix_errors.FormatFabricError(err)
+	return err
 }
