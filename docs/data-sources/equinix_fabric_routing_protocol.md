@@ -166,5 +166,3 @@ Read-Only:
 
 - `property` (String)
 - `reason` (String)
-
-
