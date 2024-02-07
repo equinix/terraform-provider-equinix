@@ -208,7 +208,7 @@ func resourceFabricNetworkRead(ctx context.Context, d *schema.ResourceData, meta
 	ctx = context.WithValue(ctx, v4.ContextAccessToken, meta.(*config.Config).FabricAuthToken)
 	fabricNetwork, _, err := client.NetworksApi.GetNetworkByUuid(ctx, d.Id())
 	if err != nil {
-		log.Printf("[WARN] Fabric Network %s not found , error %s", d.Id(), equinix_errors.FormatFabricError(err))
+		diag.Errorf("[WARN] Fabric Network %s not found , error %s", d.Id(), equinix_errors.FormatFabricError(err))
 		return diag.FromErr(err)
 	}
 	d.SetId(fabricNetwork.Uuid)
@@ -293,7 +293,6 @@ func resourceFabricNetworkUpdate(ctx context.Context, d *schema.ResourceData, me
 	if err != nil {
 		return diag.Errorf("either timed out or errored out while fetching Fabric Network for uuid %s and error %v", d.Id(), err)
 	}
-	// TO-DO
 	update, err := getFabricNetworkUpdateRequest(dbConn, d)
 	if err != nil {
 		return diag.FromErr(err)
@@ -301,7 +300,7 @@ func resourceFabricNetworkUpdate(ctx context.Context, d *schema.ResourceData, me
 	updates := []v4.NetworkChangeOperation{update}
 	_, res, err := client.NetworksApi.UpdateNetworkByUuid(ctx, updates, d.Id())
 	if err != nil {
-		return diag.FromErr(fmt.Errorf("error response for the Fabric Network update, response %v, error %v", res, equinix_errors.FormatFabricError(err)))
+		return diag.Errorf("error response for the Fabric Network update, response %v, error %v", res, equinix_errors.FormatFabricError(err))
 	}
 	updateFg := v4.Network{}
 	updateFg, err = waitForFabricNetworkUpdateCompletion(d.Id(), meta, ctx)
@@ -384,7 +383,7 @@ func resourceFabricNetworkDelete(ctx context.Context, d *schema.ResourceData, me
 				return diags
 			}
 		}
-		return diag.FromErr(fmt.Errorf("error response for the Fabric Network delete. Error %v and response %v", equinix_errors.FormatFabricError(err), resp))
+		return diag.Errorf("error response for the Fabric Network delete. Error %v and response %v", equinix_errors.FormatFabricError(err), resp)
 	}
 
 	err = WaitUntilFabricNetworkDeprovisioned(d.Id(), meta, ctx)
