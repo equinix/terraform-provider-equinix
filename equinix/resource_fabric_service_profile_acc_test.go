@@ -20,10 +20,13 @@ import (
 func TestAccFabricCreateServiceProfile_PFCR(t *testing.T) {
 	ports := GetFabricEnvPorts(t)
 
-	var portTcFirst, portTcSecond v4.Port
+	var portUuidDot1Q, portMetroCodeDot1Q string
+	var portUuidQinq, portMetroCodeQinq string
 	if len(ports) > 0 {
-		portTcFirst = ports["pfcr"]["dot1q"][0]
-		portTcSecond = ports["pfcr"]["qinq"][0]
+		portUuidDot1Q = ports["pfcr"]["dot1q"][0].Uuid
+		portMetroCodeDot1Q = ports["pfcr"]["dot1q"][0].Location.MetroCode
+		portUuidQinq = ports["pfcr"]["qinq"][0].Uuid
+		portMetroCodeQinq = ports["pfcr"]["qinq"][0].Location.MetroCode
 	}
 
 	resource.ParallelTest(t, resource.TestCase{
@@ -32,25 +35,25 @@ func TestAccFabricCreateServiceProfile_PFCR(t *testing.T) {
 		CheckDestroy: checkServiceProfileDelete,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccFabricCreateServiceProfileConfig(portTcFirst.Uuid, "XF_PORT", portTcFirst.Location.MetroCode),
+				Config: testAccFabricCreateServiceProfileConfig(portUuidDot1Q, "XF_PORT", portMetroCodeDot1Q),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(
-						"equinix_fabric_service_profile.test", "name", fmt.Sprint("ds_con_sp_PFCR")),
+						"equinix_fabric_service_profile.test", "name", "ds_con_sp_PFCR"),
 					resource.TestCheckResourceAttr(
-						"equinix_fabric_service_profile.test", "type", fmt.Sprint("L2_PROFILE")),
+						"equinix_fabric_service_profile.test", "type", "L2_PROFILE"),
 					resource.TestCheckResourceAttr(
-						"equinix_fabric_service_profile.test", "state", fmt.Sprint("ACTIVE")),
+						"equinix_fabric_service_profile.test", "state", "ACTIVE"),
 					resource.TestCheckResourceAttr(
-						"equinix_fabric_service_profile.test", "visibility", fmt.Sprint("PRIVATE")),
+						"equinix_fabric_service_profile.test", "visibility", "PRIVATE"),
 					resource.TestCheckResourceAttr(
-						"equinix_fabric_service_profile.test", "tags.#", fmt.Sprint("2")),
+						"equinix_fabric_service_profile.test", "tags.#", "2"),
 
 					resource.TestCheckResourceAttrSet("equinix_fabric_service_profile.test", "uuid"),
 					resource.TestCheckResourceAttrSet("equinix_fabric_service_profile.test", "description"),
 					resource.TestCheckResourceAttrSet("equinix_fabric_service_profile.test", "visibility"),
 					resource.TestCheckResourceAttrSet("equinix_fabric_service_profile.test", "href"),
 					resource.TestCheckResourceAttr(
-						"equinix_fabric_service_profile.test", "metros.0.code", portTcFirst.Location.MetroCode),
+						"equinix_fabric_service_profile.test", "metros.0.code", portMetroCodeDot1Q),
 					resource.TestCheckResourceAttrSet("equinix_fabric_service_profile.test", "metros.0.name"),
 					resource.TestCheckResourceAttrSet("equinix_fabric_service_profile.test", "metros.0.display_name"),
 					resource.TestCheckResourceAttrSet("equinix_fabric_service_profile.test", "access_point_type_configs.0.uuid"),
@@ -64,24 +67,24 @@ func TestAccFabricCreateServiceProfile_PFCR(t *testing.T) {
 				ExpectNonEmptyPlan: true,
 			},
 			{
-				Config: testAccFabricCreateServiceProfileConfig(portTcSecond.Uuid, "XF_PORT", portTcSecond.Location.MetroCode),
+				Config: testAccFabricCreateServiceProfileConfig(portUuidQinq, "XF_PORT", portMetroCodeQinq),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(
-						"equinix_fabric_service_profile.test", "name", fmt.Sprint("ds_con_sp_PFCR")),
+						"equinix_fabric_service_profile.test", "name", "ds_con_sp_PFCR"),
 					resource.TestCheckResourceAttr(
-						"equinix_fabric_service_profile.test", "type", fmt.Sprint("L2_PROFILE")),
+						"equinix_fabric_service_profile.test", "type", "L2_PROFILE"),
 					resource.TestCheckResourceAttr(
-						"equinix_fabric_service_profile.test", "state", fmt.Sprint("ACTIVE")),
+						"equinix_fabric_service_profile.test", "state", "ACTIVE"),
 					resource.TestCheckResourceAttr(
-						"equinix_fabric_service_profile.test", "visibility", fmt.Sprint("PRIVATE")),
+						"equinix_fabric_service_profile.test", "visibility", "PRIVATE"),
 					resource.TestCheckResourceAttr(
-						"equinix_fabric_service_profile.test", "tags.#", fmt.Sprint("2")),
+						"equinix_fabric_service_profile.test", "tags.#", "2"),
 					resource.TestCheckResourceAttrSet("equinix_fabric_service_profile.test", "uuid"),
 					resource.TestCheckResourceAttrSet("equinix_fabric_service_profile.test", "description"),
 					resource.TestCheckResourceAttrSet("equinix_fabric_service_profile.test", "visibility"),
 					resource.TestCheckResourceAttrSet("equinix_fabric_service_profile.test", "href"),
 					resource.TestCheckResourceAttr(
-						"equinix_fabric_service_profile.test", "metros.0.code", portTcSecond.Location.MetroCode),
+						"equinix_fabric_service_profile.test", "metros.0.code", portMetroCodeQinq),
 					resource.TestCheckResourceAttrSet("equinix_fabric_service_profile.test", "metros.0.name"),
 					resource.TestCheckResourceAttrSet("equinix_fabric_service_profile.test", "metros.0.display_name"),
 					resource.TestCheckResourceAttrSet("equinix_fabric_service_profile.test", "access_point_type_configs.0.uuid"),
