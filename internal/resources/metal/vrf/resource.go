@@ -70,7 +70,7 @@ func resourceMetalVRFCreate(ctx context.Context, d *schema.ResourceData, meta in
 		Name:        d.Get("name").(string),
 		Description: metalv1.PtrString(d.Get("description").(string)),
 		Metro:       d.Get("metro").(string),
-		LocalAsn:    metalv1.PtrInt32(d.Get("local_asn").(int32)),
+		LocalAsn:    metalv1.PtrInt32(int32(d.Get("local_asn").(int))),
 		IpRanges:    converters.SetToStringList(d.Get("ip_ranges").(*schema.Set)),
 	}
 
@@ -100,7 +100,7 @@ func resourceMetalVRFUpdate(ctx context.Context, d *schema.ResourceData, meta in
 		updateRequest.SetDescription(d.Get("description").(string))
 	}
 	if d.HasChange("local_asn") {
-		updateRequest.SetLocalAsn(d.Get("local_asn").(int32))
+		updateRequest.SetLocalAsn(int32(d.Get("local_asn").(int)))
 	}
 	if d.HasChange("ip_ranges") {
 		ipRanges := converters.SetToStringList(d.Get("ip_ranges").(*schema.Set))
