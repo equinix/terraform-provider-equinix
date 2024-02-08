@@ -144,7 +144,7 @@ func TestAccMetalGateway_upgradeFromVersion(t *testing.T) {
 			{
 				ExternalProviders: map[string]resource.ExternalProvider{
 					"equinix": {
-						VersionConstraint: "1.27.0", // latest version with resource defined on SDKv2
+						VersionConstraint: "1.28.0", // latest version with resource defined on SDKv2
 						Source:            "equinix/equinix",
 					},
 				},
@@ -153,9 +153,8 @@ func TestAccMetalGateway_upgradeFromVersion(t *testing.T) {
 					resource.TestCheckResourceAttrPair(
 						"equinix_metal_gateway.test", "project_id",
 						"equinix_metal_project.test", "id"),
-					resource.TestCheckResourceAttrPair(
-						"equinix_metal_gateway.test", "ip_reservation_id",
-						"equinix_metal_reserved_ip_block.test", "id"),
+					resource.TestCheckResourceAttr(
+						"equinix_metal_gateway.test", "private_ipv4_subnet_size", "8"),
 				),
 			},
 			{
