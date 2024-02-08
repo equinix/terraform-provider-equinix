@@ -1,4 +1,4 @@
-package metal_connection_test
+package connection_test
 
 import (
 	"fmt"

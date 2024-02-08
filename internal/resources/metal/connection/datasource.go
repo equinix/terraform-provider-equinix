@@ -1,9 +1,11 @@
-package metal_connection
+package connection
 
 import (
 	"fmt"
 	"strings"
 
+	"github.com/equinix/terraform-provider-equinix/internal/config"
+	equinix_schema "github.com/equinix/terraform-provider-equinix/internal/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/packethost/packngo"
 )
@@ -280,4 +282,70 @@ func getServiceTokens(tokens []packngo.FabricServiceToken) ([]map[string]interfa
 		tokenList = append(tokenList, rawToken)
 	}
 	return tokenList, nil
+}
+
+func resourceMetalConnectionRead(d *schema.ResourceData, meta interface{}) error {
+	meta.(*config.Config).AddModuleToMetalUserAgent(d)
+	client := meta.(*config.Config).Metal
+
+	connId := d.Id()
+	conn, _, err := client.Connections.Get(
+		connId,
+		&packngo.GetOptions{Includes: []string{"service_tokens", "organization", "facility", "metro", "project"}})
+	if err != nil {
+		return err
+	}
+
+	d.SetId(conn.ID)
+
+	projectId := d.Get("project_id").(string)
+	// fix the project id get when it's added straight to the Connection API resource
+	// https://github.com/packethost/packngo/issues/317
+	if conn.Type == packngo.ConnectionShared {
+		projectId = conn.Ports[0].VirtualCircuits[0].Project.ID
+	}
+	mode := "standard"
+	if conn.Mode != nil {
+		mode = string(*conn.Mode)
+	}
+	side := ""
+	if len(conn.Tokens) > 0 {
+		side = string(conn.Tokens[0].ServiceTokenType)
+	}
+	speed := "0"
+	if conn.Speed > 0 {
+		speed, err = speedUintToStr(conn.Speed)
+		if err != nil {
+			return err
+		}
+	}
+	serviceTokens, err := getServiceTokens(conn.Tokens)
+	if err != nil {
+		return err
+	}
+
+	vlans := getConnectionVlans(conn)
+	if vlans != nil {
+		d.Set("vlans", vlans)
+	}
+
+	return equinix_schema.SetMap(d, map[string]interface{}{
+		"organization_id":    conn.Organization.ID,
+		"project_id":         projectId,
+		"contact_email":      conn.ContactEmail,
+		"name":               conn.Name,
+		"description":        conn.Description,
+		"status":             conn.Status,
+		"redundancy":         conn.Redundancy,
+		"facility":           conn.Facility.Code,
+		"metro":              conn.Metro.Code,
+		"token":              conn.Token,
+		"type":               conn.Type,
+		"speed":              speed,
+		"ports":              getConnectionPorts(conn.Ports),
+		"mode":               mode,
+		"tags":               conn.Tags,
+		"service_tokens":     serviceTokens,
+		"service_token_type": side,
+	})
 }
