@@ -24,8 +24,10 @@ func TestAccFabricCreateServiceProfile_PFCR(t *testing.T) {
 	var portUuidQinq, portMetroCodeQinq string
 	if len(ports) > 0 {
 		portUuidDot1Q = ports["pfcr"]["dot1q"][0].Uuid
+		portTypeDot1Q = ports["pfcr"]["dot1q"][0].type
 		portMetroCodeDot1Q = ports["pfcr"]["dot1q"][0].Location.MetroCode
 		portUuidQinq = ports["pfcr"]["qinq"][0].Uuid
+		portTypeQinq = ports["pfcr"]["qinq"][0].type
 		portMetroCodeQinq = ports["pfcr"]["qinq"][0].Location.MetroCode
 	}
 
@@ -35,7 +37,7 @@ func TestAccFabricCreateServiceProfile_PFCR(t *testing.T) {
 		CheckDestroy: checkServiceProfileDelete,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccFabricCreateServiceProfileConfig(portUuidDot1Q, "XF_PORT", portMetroCodeDot1Q),
+				Config: testAccFabricCreateServiceProfileConfig(portUuidDot1Q, portTypeDot1Q, portMetroCodeDot1Q),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(
 						"equinix_fabric_service_profile.test", "name", "ds_con_sp_PFCR"),
@@ -67,7 +69,7 @@ func TestAccFabricCreateServiceProfile_PFCR(t *testing.T) {
 				ExpectNonEmptyPlan: true,
 			},
 			{
-				Config: testAccFabricCreateServiceProfileConfig(portUuidQinq, "XF_PORT", portMetroCodeQinq),
+				Config: testAccFabricCreateServiceProfileConfig(portUuidQinq, portTypeQinq, portMetroCodeQinq),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(
 						"equinix_fabric_service_profile.test", "name", "ds_con_sp_PFCR"),
