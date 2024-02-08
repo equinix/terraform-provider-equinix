@@ -235,10 +235,10 @@ func TestAccMetalVRFConfig_withConnection(t *testing.T) {
 	nniVlan := acctest.RandIntRange(1024, 1093)
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acceptance.TestAccPreCheckMetal(t) },
-		ExternalProviders: acceptance.TestExternalProviders,
-		ProviderFactories: acceptance.TestAccProviderFactories,
-		CheckDestroy:      testAccMetalVRFCheckDestroyed,
+		PreCheck:                 func() { acceptance.TestAccPreCheckMetal(t) },
+		ExternalProviders:        acceptance.TestExternalProviders,
+		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		CheckDestroy:             testAccMetalVRFCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccMetalVRFConfig_withVC(rInt, nniVlan),
