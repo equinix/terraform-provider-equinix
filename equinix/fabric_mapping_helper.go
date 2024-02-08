@@ -49,6 +49,7 @@ func accessPointToFabric(accessPointRequest []interface{}) v4.AccessPoint {
 		profileList := accessPointMap["profile"].(*schema.Set).List()
 		locationList := accessPointMap["location"].(*schema.Set).List()
 		virtualdeviceList := accessPointMap["virtual_device"].(*schema.Set).List()
+		virtualnetworkList := accessPointMap["virtual_network"].(*schema.Set).List()
 		interfaceList := accessPointMap["interface"].(*schema.Set).List()
 		networkList := accessPointMap["network"].(*schema.Set).List()
 		typeVal := accessPointMap["type"].(string)
@@ -122,6 +123,11 @@ func accessPointToFabric(accessPointRequest []interface{}) v4.AccessPoint {
 			accessPoint.VirtualDevice = &vd
 		}
 
+		if len(virtualnetworkList) != 0 {
+			vn := virtualnetworkToFabric(virtualnetworkList)
+			accessPoint.VirtualNetwork = &vn
+		}
+
 		if len(interfaceList) != 0 {
 			il := interfaceToFabric(interfaceList)
 			accessPoint.Interface_ = &il
@@ -192,6 +198,16 @@ func virtualdeviceToFabric(virtualdeviceList []interface{}) v4.VirtualDevice {
 		vd = v4.VirtualDevice{Href: hr, Type_: tp, Uuid: ud, Name: na}
 	}
 	return vd
+}
+
+func virtualnetworkToFabric(virtualnetworkList []interface{}) v4.VirtualNetwork {
+	vn := v4.VirtualNetwork{}
+	for _, ll := range virtualnetworkList {
+		llMap := ll.(map[string]interface{})
+		ud := llMap["uuid"].(string)
+		vn = v4.VirtualNetwork{Uuid: ud}
+	}
+	return vn
 }
 
 func interfaceToFabric(interfaceList []interface{}) v4.ModelInterface {
@@ -401,6 +417,23 @@ func virtualDeviceToTerra(virtualDevice *v4.VirtualDevice) *schema.Set {
 	return virtualDeviceSet
 }
 
+func virtualNetworkToTerra(virtualNetwork *v4.VirtualNetwork) *schema.Set {
+	if virtualNetwork == nil {
+		return nil
+	}
+	virtualNetworks := []*v4.VirtualNetwork{virtualNetwork}
+	mappedVirtualNetworks := make([]interface{}, len(virtualNetworks))
+	for _, virtualNetwork := range virtualNetworks {
+		mappedVirtualNetwork := make(map[string]interface{})
+		mappedVirtualNetwork["uuid"] = virtualNetwork.Uuid
+		mappedVirtualNetworks = append(mappedVirtualNetworks, mappedVirtualNetwork)
+	}
+	virtualNetworkSet := schema.NewSet(
+		schema.HashResource(&schema.Resource{Schema: accessPointvirtualNetworkSch()}),
+		mappedVirtualNetworks)
+	return virtualNetworkSet
+}
+
 func interfaceToTerra(mInterface *v4.ModelInterface) *schema.Set {
 	if mInterface == nil {
 		return nil
@@ -449,6 +482,9 @@ func accessPointToTerra(accessPoint *v4.AccessPoint) *schema.Set {
 		}
 		if accessPoint.VirtualDevice != nil {
 			mappedAccessPoint["virtual_device"] = virtualDeviceToTerra(accessPoint.VirtualDevice)
+		}
+		if accessPoint.VirtualNetwork != nil {
+			mappedAccessPoint["virtual_network"] = virtualNetworkToTerra(accessPoint.VirtualNetwork)
 		}
 		if accessPoint.Interface_ != nil {
 			mappedAccessPoint["interface"] = interfaceToTerra(accessPoint.Interface_)
