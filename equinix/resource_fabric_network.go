@@ -208,8 +208,7 @@ func resourceFabricNetworkRead(ctx context.Context, d *schema.ResourceData, meta
 	ctx = context.WithValue(ctx, v4.ContextAccessToken, meta.(*config.Config).FabricAuthToken)
 	fabricNetwork, _, err := client.NetworksApi.GetNetworkByUuid(ctx, d.Id())
 	if err != nil {
-		diag.Errorf("[WARN] Fabric Network %s not found , error %s", d.Id(), equinix_errors.FormatFabricError(err))
-		return diag.FromErr(err)
+		return diag.FromErr(equinix_errors.FormatFabricError(err))
 	}
 	d.SetId(fabricNetwork.Uuid)
 	return setFabricNetworkMap(d, fabricNetwork)
@@ -295,12 +294,12 @@ func resourceFabricNetworkUpdate(ctx context.Context, d *schema.ResourceData, me
 	}
 	update, err := getFabricNetworkUpdateRequest(dbConn, d)
 	if err != nil {
-		return diag.FromErr(err)
+		return diag.Errorf("error retrieving intended updates from network config: %v", err)
 	}
 	updates := []v4.NetworkChangeOperation{update}
 	_, res, err := client.NetworksApi.UpdateNetworkByUuid(ctx, updates, d.Id())
 	if err != nil {
-		return diag.Errorf("error response for the Fabric Network update, response %v, error %v", res, equinix_errors.FormatFabricError(err))
+		return diag.FromErr(equinix_errors.FormatFabricError(err))
 	}
 	updateFg := v4.Network{}
 	updateFg, err = waitForFabricNetworkUpdateCompletion(d.Id(), meta, ctx)
@@ -374,7 +373,7 @@ func resourceFabricNetworkDelete(ctx context.Context, d *schema.ResourceData, me
 	diags := diag.Diagnostics{}
 	client := meta.(*config.Config).FabricClient
 	ctx = context.WithValue(ctx, v4.ContextAccessToken, meta.(*config.Config).FabricAuthToken)
-	_, resp, err := client.NetworksApi.DeleteNetworkByUuid(ctx, d.Id())
+	_, _, err := client.NetworksApi.DeleteNetworkByUuid(ctx, d.Id())
 	if err != nil {
 		errors, ok := err.(v4.GenericSwaggerError).Model().([]v4.ModelError)
 		if ok {
@@ -383,7 +382,7 @@ func resourceFabricNetworkDelete(ctx context.Context, d *schema.ResourceData, me
 				return diags
 			}
 		}
-		return diag.Errorf("error response for the Fabric Network delete. Error %v and response %v", equinix_errors.FormatFabricError(err), resp)
+		return diag.FromErr(equinix_errors.FormatFabricError(err))
 	}
 
 	err = WaitUntilFabricNetworkDeprovisioned(d.Id(), meta, ctx)
