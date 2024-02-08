@@ -876,7 +876,7 @@ func waitUntilConnectionIsCreated(uuid string, meta interface{}, ctx context.Con
 			}
 			return dbConn, string(*dbConn.State), nil
 		},
-		Timeout:    5 * time.Minute,
+		Timeout:    10 * time.Minute,
 		Delay:      30 * time.Second,
 		MinTimeout: 30 * time.Second,
 	}
