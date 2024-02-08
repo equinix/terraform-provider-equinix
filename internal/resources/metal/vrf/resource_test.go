@@ -237,7 +237,7 @@ func TestAccMetalVRFConfig_withConnection(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acceptance.TestAccPreCheckMetal(t) },
 		ExternalProviders: acceptance.TestExternalProviders,
-		Providers:         acceptance.TestAccProviders,
+		ProviderFactories: acceptance.TestAccProviderFactories,
 		CheckDestroy:      testAccMetalVRFCheckDestroyed,
 		Steps: []resource.TestStep{
 			{

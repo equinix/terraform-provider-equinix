@@ -70,8 +70,11 @@ func resourceMetalVRFCreate(ctx context.Context, d *schema.ResourceData, meta in
 		Name:        d.Get("name").(string),
 		Description: metalv1.PtrString(d.Get("description").(string)),
 		Metro:       d.Get("metro").(string),
-		LocalAsn:    metalv1.PtrInt32(int32(d.Get("local_asn").(int))),
 		IpRanges:    converters.SetToStringList(d.Get("ip_ranges").(*schema.Set)),
+	}
+
+	if value, ok := d.GetOk("local_asn"); ok {
+		createRequest.LocalAsn = metalv1.PtrInt32(int32(value.(int)))
 	}
 
 	projectId := d.Get("project_id").(string)

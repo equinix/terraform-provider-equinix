@@ -51,8 +51,6 @@ resource "equinix_metal_project" "test" {
 resource "equinix_metal_vrf" "test" {
 	name = "tfacc-vrf-%d"
 	metro = "%s"
-	local_asn = "65000"
-	ip_ranges = ["192.168.100.0/25"]
 	project_id = equinix_metal_project.test.id
 }
 
