@@ -70,6 +70,7 @@ func TestAccFabricReadServiceProfileByUuid_PFCR(t *testing.T) {
 	var portUuid, portMetroCode string
 	if len(ports) > 0 {
 		portUuid = ports["pfcr"]["dot1q"][0].Uuid
+		portType = ports["pfcr"]["dot1q"][0].type
 		portMetroCode = ports["pfcr"]["dot1q"][0].Location.MetroCode
 	}
 
@@ -79,7 +80,7 @@ func TestAccFabricReadServiceProfileByUuid_PFCR(t *testing.T) {
 		CheckDestroy: checkServiceProfileDelete,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccFabricReadServiceProfileConfig("ds_con_sp_PFCR", portUuid, "XF_PORT", portMetroCode),
+				Config: testAccFabricReadServiceProfileConfig("ds_con_sp_PFCR", portUuid, portType, portMetroCode),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(
 						"data.equinix_fabric_service_profile.test", "name", "ds_con_sp_PFCR"),
