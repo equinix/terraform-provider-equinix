@@ -11,6 +11,7 @@ import (
 	"os"
 	"path"
 	"regexp"
+	"runtime/debug"
 	"strings"
 	"time"
 
@@ -24,7 +25,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/logging"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/meta"
 	"github.com/packethost/packngo"
 	xoauth2 "golang.org/x/oauth2"
 )
@@ -373,17 +373,35 @@ func generateModuleUserAgentString(d *schema.ResourceData, baseUserAgent string)
 }
 
 func (c *Config) tfSdkUserAgent(suffix string) string {
+	sdkModulePath := "github.com/hashicorp/terraform-plugin-sdk"
 	baseUserAgent := fmt.Sprintf("HashiCorp Terraform/%s (+https://www.terraform.io) Terraform Plugin SDK/%s",
-		c.TerraformVersion, meta.SDKVersionString())
+		c.TerraformVersion, moduleVersionFromBuild(sdkModulePath))
 	baseUserAgent = appendUserAgentFromEnv(baseUserAgent)
 	userAgent := fmt.Sprintf("%s terraform-provider-equinix/%s %s", baseUserAgent, version.ProviderVersion, suffix)
 	return strings.TrimSpace(userAgent)
 }
 
 func (c *Config) tfFrameworkUserAgent(suffix string) string {
+	frameworkModulePath := "github.com/hashicorp/terraform-plugin-framework"
 	baseUserAgent := fmt.Sprintf("HashiCorp Terraform/%s (+https://www.terraform.io) Terraform Plugin Framework/%s",
-		c.TerraformVersion, "TODO: get framework plugin version")
+		c.TerraformVersion, moduleVersionFromBuild(frameworkModulePath))
 	baseUserAgent = appendUserAgentFromEnv(baseUserAgent)
 	userAgent := fmt.Sprintf("%s terraform-provider-equinix/%s %s", baseUserAgent, version.ProviderVersion, suffix)
 	return strings.TrimSpace(userAgent)
+}
+
+func moduleVersionFromBuild(modulePath string) string {
+	buildInfo, ok := debug.ReadBuildInfo()
+
+	if !ok {
+		return "buildinfo-failed"
+	}
+
+	for _, dependency := range buildInfo.Deps {
+		if dependency.Path == modulePath {
+			return dependency.Version
+		}
+	}
+
+	return "unknown-version"
 }
