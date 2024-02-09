@@ -43,6 +43,48 @@ func OrderToTerra(order *v4.Order) *schema.Set {
 	return orderSet
 }
 
+func AccountToTerra[Account *v4.SimplifiedAccount | *v4.AllOfServiceProfileAccount](account Account) *schema.Set {
+	if account == nil {
+		return nil
+	}
+	var mappedAccount map[string]interface{}
+	switch any(account).(type) {
+	case *v4.SimplifiedAccount:
+		simplifiedAccount := any(account).(*v4.SimplifiedAccount)
+		mappedAccount = map[string]interface{}{
+			"account_number":           int(simplifiedAccount.AccountNumber),
+			"account_name":             simplifiedAccount.AccountName,
+			"org_id":                   int(simplifiedAccount.OrgId),
+			"organization_name":        simplifiedAccount.OrganizationName,
+			"global_org_id":            simplifiedAccount.GlobalOrgId,
+			"global_organization_name": simplifiedAccount.GlobalOrganizationName,
+			"global_cust_id":           simplifiedAccount.GlobalCustId,
+			"ucm_id":                   simplifiedAccount.UcmId,
+		}
+	case *v4.AllOfServiceProfileAccount:
+		allSPAccount := any(account).(*v4.AllOfServiceProfileAccount)
+		mappedAccount = map[string]interface{}{
+			"account_number":           int(allSPAccount.AccountNumber),
+			"account_name":             allSPAccount.AccountName,
+			"org_id":                   int(allSPAccount.OrgId),
+			"organization_name":        allSPAccount.OrganizationName,
+			"global_org_id":            allSPAccount.GlobalOrgId,
+			"global_organization_name": allSPAccount.GlobalOrganizationName,
+			"global_cust_id":           allSPAccount.GlobalCustId,
+			"ucm_id":                   allSPAccount.UcmId,
+		}
+	default:
+		return nil
+	}
+
+	accountSet := schema.NewSet(
+		schema.HashResource(&schema.Resource{Schema: AccountSch()}),
+		[]interface{}{mappedAccount},
+	)
+
+	return accountSet
+}
+
 func NotificationsToFabric(schemaNotifications []interface{}) []v4.SimplifiedNotification {
 	if schemaNotifications == nil {
 		return []v4.SimplifiedNotification{}
@@ -169,30 +211,48 @@ func ProjectToTerra(project *v4.Project) *schema.Set {
 	return projectSet
 }
 
-func ChangeLogToTerra(changeLog *v4.Changelog) *schema.Set {
+func ChangeLogToTerra[ChangeLog *v4.Changelog | *v4.AllOfServiceProfileChangeLog](changeLog ChangeLog) *schema.Set {
 	if changeLog == nil {
 		return nil
 	}
-	changeLogs := []*v4.Changelog{changeLog}
-	mappedChangeLogs := make([]interface{}, len(changeLogs))
-	for _, changeLog := range changeLogs {
-		mappedChangeLog := make(map[string]interface{})
-		mappedChangeLog["created_by"] = changeLog.CreatedBy
-		mappedChangeLog["created_by_full_name"] = changeLog.CreatedByFullName
-		mappedChangeLog["created_by_email"] = changeLog.CreatedByEmail
-		mappedChangeLog["created_date_time"] = changeLog.CreatedDateTime.String()
-		mappedChangeLog["updated_by"] = changeLog.UpdatedBy
-		mappedChangeLog["updated_by_full_name"] = changeLog.UpdatedByFullName
-		mappedChangeLog["updated_date_time"] = changeLog.UpdatedDateTime.String()
-		mappedChangeLog["deleted_by"] = changeLog.DeletedBy
-		mappedChangeLog["deleted_by_full_name"] = changeLog.DeletedByFullName
-		mappedChangeLog["deleted_by_email"] = changeLog.DeletedByEmail
-		mappedChangeLog["deleted_date_time"] = changeLog.DeletedDateTime.String()
-		mappedChangeLogs = append(mappedChangeLogs, mappedChangeLog)
+	var mappedChangeLog map[string]interface{}
+	switch any(changeLog).(type) {
+	case *v4.Changelog:
+		baseChangeLog := any(changeLog).(*v4.Changelog)
+		mappedChangeLog = map[string]interface{}{
+			"created_by":           baseChangeLog.CreatedBy,
+			"created_by_full_name": baseChangeLog.CreatedByFullName,
+			"created_by_email":     baseChangeLog.CreatedByEmail,
+			"created_date_time":    baseChangeLog.CreatedDateTime.String(),
+			"updated_by":           baseChangeLog.UpdatedBy,
+			"updated_by_full_name": baseChangeLog.UpdatedByFullName,
+			"updated_date_time":    baseChangeLog.UpdatedDateTime.String(),
+			"deleted_by":           baseChangeLog.DeletedBy,
+			"deleted_by_full_name": baseChangeLog.DeletedByFullName,
+			"deleted_by_email":     baseChangeLog.DeletedByEmail,
+			"deleted_date_time":    baseChangeLog.DeletedDateTime.String(),
+		}
+	case *v4.AllOfServiceProfileChangeLog:
+		allOfChangeLog := any(changeLog).(*v4.AllOfServiceProfileChangeLog)
+		mappedChangeLog = map[string]interface{}{
+			"created_by":           allOfChangeLog.CreatedBy,
+			"created_by_full_name": allOfChangeLog.CreatedByFullName,
+			"created_by_email":     allOfChangeLog.CreatedByEmail,
+			"created_date_time":    allOfChangeLog.CreatedDateTime.String(),
+			"updated_by":           allOfChangeLog.UpdatedBy,
+			"updated_by_full_name": allOfChangeLog.UpdatedByFullName,
+			"updated_date_time":    allOfChangeLog.UpdatedDateTime.String(),
+			"deleted_by":           allOfChangeLog.DeletedBy,
+			"deleted_by_full_name": allOfChangeLog.DeletedByFullName,
+			"deleted_by_email":     allOfChangeLog.DeletedByEmail,
+			"deleted_date_time":    allOfChangeLog.DeletedDateTime.String(),
+		}
+	default:
+		return nil
 	}
 	changeLogSet := schema.NewSet(
 		schema.HashResource(&schema.Resource{Schema: ChangeLogSch()}),
-		mappedChangeLogs,
+		[]interface{}{mappedChangeLog},
 	)
 	return changeLogSet
 }

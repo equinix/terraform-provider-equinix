@@ -89,6 +89,7 @@ Read-Only:
 - `global_organization_name` (String)
 - `org_id` (Number)
 - `organization_name` (String)
+- `ucm_id` (String)
 
 
 <a id="nestedobjatt--a_side--access_point--gateway"></a>
@@ -238,6 +239,7 @@ Read-Only:
 - `global_organization_name` (String)
 - `org_id` (Number)
 - `organization_name` (String)
+- `ucm_id` (String)
 
 
 <a id="nestedatt--change_log"></a>
@@ -372,6 +374,7 @@ Read-Only:
 - `global_organization_name` (String)
 - `org_id` (Number)
 - `organization_name` (String)
+- `ucm_id` (String)
 
 
 <a id="nestedobjatt--z_side--access_point--gateway"></a>

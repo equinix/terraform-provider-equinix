@@ -61,63 +61,43 @@ func AccountSch() map[string]*schema.Schema {
 		"account_number": {
 			Type:        schema.TypeInt,
 			Computed:    true,
-			Description: "Account Number",
+			Description: "Equinix-assigned account number.",
 		},
 		"account_name": {
 			Type:        schema.TypeString,
 			Computed:    true,
-			Description: "Account Name",
+			Description: "Legal name of the accountholder.",
 		},
 		"org_id": {
 			Type:        schema.TypeInt,
 			Computed:    true,
-			Description: "Customer organization identifier",
+			Description: "Equinix-assigned ID of the subscriber's organization.",
 		},
 		"organization_name": {
 			Type:        schema.TypeString,
 			Computed:    true,
-			Description: "Customer organization name",
+			Description: "Equinix-assigned name of the subscriber's organization.",
 		},
 		"global_org_id": {
 			Type:        schema.TypeString,
 			Computed:    true,
-			Description: "Global organization identifier",
+			Description: "Equinix-assigned ID of the subscriber's parent organization.",
 		},
 		"global_organization_name": {
 			Type:        schema.TypeString,
 			Computed:    true,
-			Description: "Global organization name",
+			Description: "Equinix-assigned name of the subscriber's parent organization.",
 		},
-		//"ucm_id": {
-		//	Type:        schema.TypeString,
-		//	Computed:    true,
-		//	Description: "Account ucmId",
-		//},
 		"global_cust_id": {
 			Type:        schema.TypeString,
 			Computed:    true,
-			Description: "Global Customer organization identifier",
+			Description: "Equinix-assigned ID of the subscriber's parent organization.",
 		},
-		//"reseller_account_number": {
-		//	Type:        schema.TypeInt,
-		//	Computed:    true,
-		//	Description: "Reseller account number",
-		//},
-		//"reseller_account_name": {
-		//	Type:        schema.TypeString,
-		//	Computed:    true,
-		//	Description: "Reseller account name",
-		//},
-		//"reseller_ucm_id": {
-		//	Type:        schema.TypeString,
-		//	Computed:    true,
-		//	Description: "Reseller account ucmId",
-		//},
-		//"reseller_org_id": {
-		//	Type:        schema.TypeInt,
-		//	Computed:    true,
-		//	Description: "Reseller customer organization identifier",
-		//},
+		"ucm_id": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "Enterprise datastore id",
+		},
 	}
 }
 
