@@ -65,3 +65,9 @@ In addition to all arguments above, the following attributes are exported:
 
 * `state` - Status of the gateway resource.
 * `vrf_id` - UUID of the VRF associated with the IP Reservation
+
+## Timeouts
+
+[Configuration options](https://developer.hashicorp.com/terraform/language/resources/syntax#operation-timeouts):
+
+* `delete` - (Default `20m`)
