@@ -67,11 +67,12 @@ data "equinix_fabric_service_profile" "test" {
 func TestAccFabricReadServiceProfileByUuid_PFCR(t *testing.T) {
 	ports := GetFabricEnvPorts(t)
 
-	var portUuid, portMetroCode string
+	var portUuid, portMetroCode, portType string
 	if len(ports) > 0 {
-		portUuid = ports["pfcr"]["dot1q"][0].Uuid
-		portType = ports["pfcr"]["dot1q"][0].type
-		portMetroCode = ports["pfcr"]["dot1q"][0].Location.MetroCode
+		port := ports["pfcr"]["dot1q"][0]
+		portUuid = port.Uuid
+		portType = string(*port.Type_)
+		portMetroCode = port.Location.MetroCode
 	}
 
 	resource.ParallelTest(t, resource.TestCase{
