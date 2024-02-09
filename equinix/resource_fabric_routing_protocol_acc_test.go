@@ -27,7 +27,7 @@ func TestAccFabricCreateDirectRoutingProtocol_PFCR_A(t *testing.T) {
 		CheckDestroy: checkRoutingProtocolDelete,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccFabricCreateRoutingProtocolConfig("fcr_test_PFCR", portUuid, "190.1.1.1", "172::1:1"),
+				Config: testAccFabricCreateRoutingProtocolConfig("fcr_test_PFCR", portUuid, "190.1.1.1/30", "190::1:1/126"),
 				//Config: testAccFabricCreateRoutingProtocolConfig("fcr_test_PFCR", portUuid),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckTypeSetElemAttr("equinix_fabric_routing_protocol.test", "anything.*", "Anything"),
@@ -173,7 +173,7 @@ resource "equinix_fabric_connection" "this" {
 			}
 			link_protocol {
 				type= "DOT1Q"
-				vlan_tag= 2328
+				vlan_tag= 2334
 			}
 			location {
 				metro_code = "SV"
@@ -184,15 +184,14 @@ resource "equinix_fabric_connection" "this" {
 
 resource "equinix_fabric_routing_protocol" "this" {
 	connection_uuid = equinix_fabric_connection.this.id
-	bgp_ipv4{
-		customer_peer_ip = "%s"
+	direct_ipv4{
+		equinix_iface_ip = "%s"
 	}
-	bgp_ipv6{
-		customer_peer_ip = "%s"
+	direct_ipv6{
+		equinix_iface_ip = "%s"
 	}
-	type = "BGP"
+	type = "DIRECT"
 	name = "fabric_tf_acc_test_rpDirect"
-	customer_asn = "100"
 }`, name, portUuid, ip4, ip6)
 }
 
