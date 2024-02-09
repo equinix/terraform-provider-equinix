@@ -98,7 +98,6 @@ func Provider() *schema.Provider {
 			"equinix_metal_metro":                dataSourceMetalMetro(),
 			"equinix_metal_facility":             dataSourceMetalFacility(),
 			"equinix_metal_connection":           metal_connection.DataSource(),
-			"equinix_metal_gateway":              dataSourceMetalGateway(),
 			"equinix_metal_ip_block_ranges":      dataSourceMetalIPBlockRanges(),
 			"equinix_metal_precreated_ip_block":  dataSourceMetalPreCreatedIPBlock(),
 			"equinix_metal_operating_system":     dataSourceOperatingSystem(),
@@ -148,7 +147,6 @@ func Provider() *schema.Provider {
 			"equinix_metal_vrf":                  vrf.Resource(),
 			"equinix_metal_bgp_session":          resourceMetalBGPSession(),
 			"equinix_metal_port_vlan_attachment": resourceMetalPortVlanAttachment(),
-			"equinix_metal_gateway":              resourceMetalGateway(),
 		},
 		ProviderMetaSchema: map[string]*schema.Schema{
 			"module_name": {

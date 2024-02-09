@@ -38,7 +38,7 @@ resource "equinix_metal_vlan" "test" {
 resource "equinix_metal_reserved_ip_block" "test" {
   project_id = local.project_id
   metro      = "sv"
-  quantity   = 2
+  quantity   = 8
 }
 
 resource "equinix_metal_gateway" "test" {
@@ -65,3 +65,9 @@ In addition to all arguments above, the following attributes are exported:
 
 * `state` - Status of the gateway resource.
 * `vrf_id` - UUID of the VRF associated with the IP Reservation
+
+## Timeouts
+
+[Configuration options](https://developer.hashicorp.com/terraform/language/resources/syntax#operation-timeouts):
+
+* `delete` - (Default `20m`)
