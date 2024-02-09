@@ -6,6 +6,7 @@ import (
 	"regexp"
 
 	"github.com/equinix/terraform-provider-equinix/internal/config"
+	metalgateway "github.com/equinix/terraform-provider-equinix/internal/resources/metal/gateway"
 	metalprojectsshkey "github.com/equinix/terraform-provider-equinix/internal/resources/metal/project_ssh_key"
 	metalsshkey "github.com/equinix/terraform-provider-equinix/internal/resources/metal/ssh_key"
 	"github.com/hashicorp/terraform-plugin-framework-validators/int64validator"
@@ -111,13 +112,15 @@ func (p *FrameworkProvider) MetaSchema(
 
 func (p *FrameworkProvider) Resources(ctx context.Context) []func() resource.Resource {
 	return []func() resource.Resource{
-		metalsshkey.NewResource,
+		metalgateway.NewResource,
 		metalprojectsshkey.NewResource,
+		metalsshkey.NewResource,
 	}
 }
 
 func (p *FrameworkProvider) DataSources(ctx context.Context) []func() datasource.DataSource {
 	return []func() datasource.DataSource{
+		metalgateway.NewDataSource,
 		metalprojectsshkey.NewDataSource,
 	}
 }
