@@ -14,6 +14,10 @@ import (
 	"github.com/packethost/packngo"
 )
 
+const (
+	metalDedicatedConnIDEnvVar = "TF_ACC_METAL_DEDICATED_CONNECTION_ID"
+)
+
 func init() {
 	resource.AddTestSweepers("equinix_metal_virtual_circuit", &resource.Sweeper{
 		Name:         "equinix_metal_virtual_circuit",
