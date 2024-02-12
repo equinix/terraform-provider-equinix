@@ -81,7 +81,7 @@ func TestAccFabricReadServiceProfileByUuid_PFCR(t *testing.T) {
 		CheckDestroy: checkServiceProfileDelete,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccFabricReadServiceProfileConfig("ds_con_sp_PFCR", portUuid, portType, portMetroCode),
+				Config: testAccFabricReadServiceProfileConfig("fr_sp_PFCR", portUuid, portType, portMetroCode),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(
 						"data.equinix_fabric_service_profile.test", "name", "ds_con_sp_PFCR"),
