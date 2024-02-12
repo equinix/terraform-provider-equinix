@@ -43,7 +43,7 @@ func TestAccFabricCreateServiceProfile_PFCR(t *testing.T) {
 				Config: testAccFabricCreateServiceProfileConfig(portUuidDot1Q, portTypeDot1Q, portMetroCodeDot1Q),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(
-						"equinix_fabric_service_profile.test", "name", "ds_con_sp_PFCR"),
+						"equinix_fabric_service_profile.test", "name", "fc_sp_PFCR""),
 					resource.TestCheckResourceAttr(
 						"equinix_fabric_service_profile.test", "type", "L2_PROFILE"),
 					resource.TestCheckResourceAttr(
@@ -75,7 +75,7 @@ func TestAccFabricCreateServiceProfile_PFCR(t *testing.T) {
 				Config: testAccFabricCreateServiceProfileConfig(portUuidQinq, portTypeQinq, portMetroCodeQinq),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(
-						"equinix_fabric_service_profile.test", "name", "ds_con_sp_PFCR"),
+						"equinix_fabric_service_profile.test", "name", "fc_sp_PFCR"),
 					resource.TestCheckResourceAttr(
 						"equinix_fabric_service_profile.test", "type", "L2_PROFILE"),
 					resource.TestCheckResourceAttr(
@@ -108,7 +108,7 @@ func TestAccFabricCreateServiceProfile_PFCR(t *testing.T) {
 
 func testAccFabricCreateServiceProfileConfig(portUUID string, portType string, portMetroCode string) string {
 	return fmt.Sprintf(`resource "equinix_fabric_service_profile" "test" {
-  name = "ds_con_sp_PFCR"
+  name = "fc_sp_PFCR""
   description = "Generic SP"
   type = "L2_PROFILE"
   notifications {
