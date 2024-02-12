@@ -140,7 +140,6 @@ func fabricServiceProfileSchema() map[string]*schema.Schema {
 			Type:        schema.TypeSet,
 			Computed:    true,
 			Description: "Service Profile Owner Account Information",
-			MaxItems:    1,
 			Elem: &schema.Resource{
 				Schema: equinix_fabric_schema.AccountSch(),
 			},
