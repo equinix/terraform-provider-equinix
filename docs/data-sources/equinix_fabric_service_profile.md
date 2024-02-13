@@ -25,14 +25,10 @@ data "equinix_fabric_service_profile" "service_profile_data_name" {
 
 - `uuid` (String) Equinix assigned service profile identifier
 
-### Optional
-
-- `state` (String) Service profile state - ACTIVE, PENDING_APPROVAL, DELETED, REJECTED
-
 ### Read-Only
 
 - `access_point_type_configs` (List of Object) Access point config information (see [below for nested schema](#nestedatt--access_point_type_configs))
-- `account` (Set of Object) Account (see [below for nested schema](#nestedatt--account))
+- `account` (Set of Object) Service Profile Owner Account Information (see [below for nested schema](#nestedatt--account))
 - `allowed_emails` (List of String) Array of contact emails
 - `change_log` (Set of Object) Captures connection lifecycle change information (see [below for nested schema](#nestedatt--change_log))
 - `custom_fields` (List of Object) Custom Fields (see [below for nested schema](#nestedatt--custom_fields))
@@ -46,8 +42,10 @@ data "equinix_fabric_service_profile" "service_profile_data_name" {
 - `ports` (List of Object) Ports (see [below for nested schema](#nestedatt--ports))
 - `project` (Set of Object) Project information (see [below for nested schema](#nestedatt--project))
 - `self_profile` (Boolean) Self Profile indicating if the profile is created for customer's  self use
-- `tags` (Set of String) Tags attached to the connection
+- `state` (String) Service profile state - ACTIVE, PENDING_APPROVAL, DELETED, REJECTED
+- `tags` (List of String) Tags attached to the connection
 - `type` (String) Service profile type - L2_PROFILE, L3_PROFILE, ECIA_PROFILE, ECMC_PROFILE
+- `virtual_devices` (List of Object) Virtual Devices (see [below for nested schema](#nestedatt--virtual_devices))
 - `visibility` (String) Service profile visibility - PUBLIC, PRIVATE
 
 <a id="nestedatt--access_point_type_configs"></a>
@@ -226,3 +224,24 @@ Read-Only:
 
 - `href` (String)
 - `project_id` (String)
+
+
+<a id="nestedatt--virtual_devices"></a>
+### Nested Schema for `virtual_devices`
+
+Read-Only:
+
+- `interface_uuid` (String)
+- `location` (Set of Object) (see [below for nested schema](#nestedobjatt--virtual_devices--location))
+- `type` (String)
+- `uuid` (String)
+
+<a id="nestedobjatt--virtual_devices--location"></a>
+### Nested Schema for `virtual_devices.location`
+
+Read-Only:
+
+- `ibx` (String)
+- `metro_code` (String)
+- `metro_name` (String)
+- `region` (String)
