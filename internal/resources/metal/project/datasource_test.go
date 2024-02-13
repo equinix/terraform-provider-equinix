@@ -32,6 +32,9 @@ func TestAccDataSourceMetalProject_byId(t *testing.T) {
 					resource.TestCheckResourceAttrPair(
 						"equinix_metal_project.foobar", "id",
 						"data.equinix_metal_project.test", "id"),
+					resource.TestCheckResourceAttrPair(
+						"equinix_metal_project.foobar", "organization_id",
+						"data.equinix_metal_project.test", "organization_id"),
 				),
 			},
 		},
