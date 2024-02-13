@@ -1,10 +1,11 @@
-package equinix
+package organization_test
 
 import (
 	"fmt"
 	"testing"
 	"time"
 
+	"github.com/equinix/terraform-provider-equinix/internal/acceptance"
 	"github.com/equinix/terraform-provider-equinix/internal/config"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
@@ -18,9 +19,9 @@ func TestAccMetalOrganization_create(t *testing.T) {
 	rInt := acctest.RandInt()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { testAccPreCheck(t) },
-		ExternalProviders:        testExternalProviders,
-		ProtoV5ProviderFactories: testAccProtoV5ProviderFactories,
+		PreCheck:                 func() { acceptance.TestAccPreCheckMetal(t) },
+		ExternalProviders:        acceptance.TestExternalProviders,
+		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
 		CheckDestroy:             testAccMetalOrganizationCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
@@ -81,10 +82,10 @@ func testAccMetalWaitForOrganization() {
 func TestAccMetalOrganization_importBasic(t *testing.T) {
 	rInt := acctest.RandInt()
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { testAccPreCheck(t) },
-		ExternalProviders:        testExternalProviders,
-		ProtoV5ProviderFactories: testAccProtoV5ProviderFactories,
-		CheckDestroy:             testAccMetalOrganizationCheckDestroyed,
+		PreCheck:          func() { acceptance.TestAccPreCheckMetal(t) },
+		ExternalProviders: acceptance.TestExternalProviders,
+		Providers:         acceptance.TestAccProviders,
+		CheckDestroy:      testAccMetalOrganizationCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccMetalOrganizationConfig_basic(rInt),
@@ -99,7 +100,7 @@ func TestAccMetalOrganization_importBasic(t *testing.T) {
 }
 
 func testAccMetalOrganizationCheckDestroyed(s *terraform.State) error {
-	client := testAccProvider.Meta().(*config.Config).Metal
+	client := acceptance.TestAccProvider.Meta().(*config.Config).Metal
 
 	for _, rs := range s.RootModule().Resources {
 		if rs.Type != "equinix_metal_organization" {
@@ -123,7 +124,7 @@ func testAccMetalOrganizationExists(n string, org *packngo.Organization) resourc
 			return fmt.Errorf("No Record ID is set")
 		}
 
-		client := testAccProvider.Meta().(*config.Config).Metal
+		client := acceptance.TestAccProvider.Meta().(*config.Config).Metal
 
 		foundOrg, _, err := client.Organizations.Get(rs.Primary.ID, &packngo.GetOptions{Includes: []string{"address", "primary_owner"}})
 		if err != nil {
@@ -158,13 +159,13 @@ func testAccMetalOrganizationConfig_basicUpdate(r int) string {
 resource "equinix_metal_organization" "test" {
 	name = "tfacc-org-%d"
 	description = "baz"
-	address {
+	address = [
 		address = "tfacc org street"
 		city = "Madrid"
 		zip_code = "28108"
 		country = "ES"
 		state   = "Madrid"
-	}
+	]
 	twitter = "@Equinix"
 }`, r)
 }
