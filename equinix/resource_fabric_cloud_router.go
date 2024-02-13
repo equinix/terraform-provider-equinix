@@ -3,6 +3,9 @@ package equinix
 import (
 	"context"
 	"fmt"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"log"
 	"strings"
 	"time"
@@ -15,11 +18,175 @@ import (
 
 	v4 "github.com/equinix-labs/fabric-go/fabric/v4"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
-func resourceCloudRouter() *schema.Resource {
+func fabricCloudRouterPackageSch() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"code": {
+			Type:        schema.TypeString,
+			Required:    true,
+			Description: "Fabric Cloud Router package code",
+		},
+	}
+}
+func fabricCloudRouterAccountSch() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"account_number": {
+			Type:        schema.TypeInt,
+			Computed:    true,
+			Optional:    true,
+			Description: "Account Number",
+		},
+	}
+}
+func fabricCloudRouterProjectSch() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"project_id": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Optional:    true,
+			Description: "Project Id",
+		},
+		"href": {
+			Type:        schema.TypeString,
+			Optional:    true,
+			Computed:    true,
+			Description: "Unique Resource URL",
+		},
+	}
+}
+
+func fabricCloudRouterResourceSchema() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"uuid": {
+			Type:        schema.TypeString,
+			Optional:    true,
+			Computed:    true,
+			Description: "Equinix-assigned Fabric Cloud Router identifier",
+		},
+		"href": {
+			Type:        schema.TypeString,
+			Optional:    true,
+			Computed:    true,
+			Description: "Fabric Cloud Router URI information",
+		},
+		"name": {
+			Type:         schema.TypeString,
+			Required:     true,
+			ValidateFunc: validation.StringLenBetween(1, 24),
+			Description:  "Fabric Cloud Router name. An alpha-numeric 24 characters string which can include only hyphens and underscores",
+		},
+		"description": {
+			Type:        schema.TypeString,
+			Optional:    true,
+			Description: "Customer-provided Fabric Cloud Router description",
+		},
+		"state": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "Fabric Cloud Router overall state",
+		},
+		"equinix_asn": {
+			Type:        schema.TypeInt,
+			Computed:    true,
+			Description: "Equinix ASN",
+		},
+		"package": {
+			Type:        schema.TypeSet,
+			Required:    true,
+			Description: "Fabric Cloud Router Package Type",
+			MaxItems:    1,
+			Elem: &schema.Resource{
+				Schema: fabricCloudRouterPackageSch(),
+			},
+		},
+		"change_log": {
+			Type:        schema.TypeSet,
+			Computed:    true,
+			Description: "Captures Fabric Cloud Router lifecycle change information",
+			Elem: &schema.Resource{
+				Schema: equinix_fabric_schema.ChangeLogSch(),
+			},
+		},
+		"type": {
+			Type:         schema.TypeString,
+			Required:     true,
+			ValidateFunc: validation.StringInSlice([]string{"XF_ROUTER"}, true),
+			Description:  "Defines the FCR type like; XF_ROUTER",
+		},
+		"location": {
+			Type:        schema.TypeSet,
+			Required:    true,
+			Description: "Fabric Cloud Router location",
+			MaxItems:    1,
+			Elem: &schema.Resource{
+				Schema: equinix_fabric_schema.LocationSch(),
+			},
+		},
+		"project": {
+			Type:        schema.TypeSet,
+			Required:    true,
+			Description: "Customer resource hierarchy project information.Applicable to customers onboarded to Equinix Identity and Access Management. For more information see Identity and Access Management: Projects",
+			MaxItems:    1,
+			Elem: &schema.Resource{
+				Schema: fabricCloudRouterProjectSch(),
+			},
+		},
+		"account": {
+			Type:        schema.TypeSet,
+			Required:    true,
+			Description: "Customer account information that is associated with this Fabric Cloud Router",
+			MaxItems:    1,
+			Elem: &schema.Resource{
+				Schema: fabricCloudRouterAccountSch(),
+			},
+		},
+		"order": {
+			Type:        schema.TypeSet,
+			Required:    true,
+			Description: "Order information related to this Fabric Cloud Router",
+			MaxItems:    1,
+			Elem: &schema.Resource{
+				Schema: equinix_fabric_schema.OrderSch(),
+			},
+		},
+		"notifications": {
+			Type:        schema.TypeList,
+			Required:    true,
+			Description: "Preferences for notifications on Fabric Cloud Router configuration or status changes",
+			Elem: &schema.Resource{
+				Schema: equinix_fabric_schema.NotificationSch(),
+			},
+		},
+		"bgp_ipv4_routes_count": {
+			Type:        schema.TypeInt,
+			Computed:    true,
+			Description: "Number of IPv4 BGP routes in use (including non-distinct prefixes)",
+		},
+		"bgp_ipv6_routes_count": {
+			Type:        schema.TypeInt,
+			Computed:    true,
+			Description: "Number of IPv6 BGP routes in use (including non-distinct prefixes)",
+		},
+		"distinct_ipv4_prefixes_count": {
+			Type:        schema.TypeInt,
+			Computed:    true,
+			Description: "Number of distinct IPv4 routes",
+		},
+		"distinct_ipv6_prefixes_count": {
+			Type:        schema.TypeInt,
+			Computed:    true,
+			Description: "Number of distinct IPv6 routes",
+		},
+		"connections_count": {
+			Type:        schema.TypeInt,
+			Computed:    true,
+			Description: "Number of connections associated with this Fabric Cloud Router instance",
+		},
+	}
+}
+
+func resourceFabricCloudRouter() *schema.Resource {
 	return &schema.Resource{
 		Timeouts: &schema.ResourceTimeout{
 			Create: schema.DefaultTimeout(6 * time.Minute),
@@ -27,35 +194,74 @@ func resourceCloudRouter() *schema.Resource {
 			Delete: schema.DefaultTimeout(6 * time.Minute),
 			Read:   schema.DefaultTimeout(6 * time.Minute),
 		},
-		ReadContext:   resourceCloudRouterRead,
-		CreateContext: resourceCloudRouterCreate,
-		UpdateContext: resourceCloudRouterUpdate,
-		DeleteContext: resourceCloudRouterDelete,
+		ReadContext:   resourceFabricCloudRouterRead,
+		CreateContext: resourceFabricCloudRouterCreate,
+		UpdateContext: resourceFabricCloudRouterUpdate,
+		DeleteContext: resourceFabricCloudRouterDelete,
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
-		Schema: createCloudRouterResourceSchema(),
+		Schema: fabricCloudRouterResourceSchema(),
 
 		Description: "Fabric V4 API compatible resource allows creation and management of Equinix Fabric Cloud Router",
 	}
 }
 
-func resourceCloudRouterCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func accountCloudRouterTerraToGo(accountList []interface{}) v4.SimplifiedAccount {
+	sa := v4.SimplifiedAccount{}
+	for _, ll := range accountList {
+		llMap := ll.(map[string]interface{})
+		ac := llMap["account_number"].(int)
+		sa = v4.SimplifiedAccount{AccountNumber: int64(ac)}
+	}
+	return sa
+}
+func locationCloudRouterTerraToGo(locationList []interface{}) v4.SimplifiedLocationWithoutIbx {
+	sl := v4.SimplifiedLocationWithoutIbx{}
+	for _, ll := range locationList {
+		llMap := ll.(map[string]interface{})
+		mc := llMap["metro_code"].(string)
+		sl = v4.SimplifiedLocationWithoutIbx{MetroCode: mc}
+	}
+	return sl
+}
+func packageCloudRouterTerraToGo(packageList []interface{}) v4.CloudRouterPackageType {
+	p := v4.CloudRouterPackageType{}
+	for _, pl := range packageList {
+		plMap := pl.(map[string]interface{})
+		code := plMap["code"].(string)
+		p = v4.CloudRouterPackageType{Code: code}
+	}
+	return p
+}
+func projectCloudRouterTerraToGo(projectRequest []interface{}) v4.Project {
+	if projectRequest == nil {
+		return v4.Project{}
+	}
+	mappedPr := v4.Project{}
+	for _, pr := range projectRequest {
+		prMap := pr.(map[string]interface{})
+		projectId := prMap["project_id"].(string)
+		mappedPr = v4.Project{ProjectId: projectId}
+	}
+	return mappedPr
+}
+func resourceFabricCloudRouterCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*config.Config).FabricClient
 	ctx = context.WithValue(ctx, v4.ContextAccessToken, meta.(*config.Config).FabricAuthToken)
 	schemaNotifications := d.Get("notifications").([]interface{})
 	notifications := equinix_fabric_schema.NotificationsToFabric(schemaNotifications)
 	schemaAccount := d.Get("account").(*schema.Set).List()
-	account := accountToCloudRouter(schemaAccount)
+	account := accountCloudRouterTerraToGo(schemaAccount)
 	schemaLocation := d.Get("location").(*schema.Set).List()
-	location := equinix_fabric_schema.LocationWithoutIBXToFabric(schemaLocation)
+	location := locationCloudRouterTerraToGo(schemaLocation)
 	project := v4.Project{}
 	schemaProject := d.Get("project").(*schema.Set).List()
 	if len(schemaProject) != 0 {
-		project = equinix_fabric_schema.ProjectToFabric(schemaProject)
+		project = projectCloudRouterTerraToGo(schemaProject)
 	}
 	schemaPackage := d.Get("package").(*schema.Set).List()
-	packages := packageToCloudRouter(schemaPackage)
+	packages := packageCloudRouterTerraToGo(schemaPackage)
 
 	createRequest := v4.CloudRouterPostRequest{
 		Name:          d.Get("name").(string),
@@ -82,10 +288,10 @@ func resourceCloudRouterCreate(ctx context.Context, d *schema.ResourceData, meta
 		return diag.Errorf("error waiting for Cloud Router (%s) to be created: %s", d.Id(), err)
 	}
 
-	return resourceCloudRouterRead(ctx, d, meta)
+	return resourceFabricCloudRouterRead(ctx, d, meta)
 }
 
-func resourceCloudRouterRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceFabricCloudRouterRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*config.Config).FabricClient
 	ctx = context.WithValue(ctx, v4.ContextAccessToken, meta.(*config.Config).FabricAuthToken)
 	CloudRouter, _, err := client.CloudRoutersApi.GetCloudRouterByUuid(ctx, d.Id())
@@ -103,29 +309,82 @@ func resourceCloudRouterRead(ctx context.Context, d *schema.ResourceData, meta i
 func setCloudRouterMap(d *schema.ResourceData, fcr v4.CloudRouter) diag.Diagnostics {
 	diags := diag.Diagnostics{}
 	err := equinix_schema.SetMap(d, map[string]interface{}{
-		"name":                  fcr.Name,
-		"href":                  fcr.Href,
-		"type":                  fcr.Type_,
-		"state":                 fcr.State,
-		"package":               cloudRouterPackageToTerra(fcr.Package_),
-		"location":              equinix_fabric_schema.LocationWithoutIBXToTerra(fcr.Location),
-		"change_log":            equinix_fabric_schema.ChangeLogToTerra(fcr.ChangeLog),
-		"account":               accountCloudRouterToTerra(fcr.Account),
-		"notifications":         equinix_fabric_schema.NotificationsToTerra(fcr.Notifications),
-		"project":               equinix_fabric_schema.ProjectToTerra(fcr.Project),
-		"equinix_asn":           fcr.EquinixAsn,
-		"bgp_ipv4_routes_count": fcr.BgpIpv4RoutesCount,
-		"bgp_ipv6_routes_count": fcr.BgpIpv6RoutesCount,
-		"connections_count":     fcr.ConnectionsCount,
-		"order":                 equinix_fabric_schema.OrderToTerra(fcr.Order),
+		"name":                         fcr.Name,
+		"href":                         fcr.Href,
+		"type":                         fcr.Type_,
+		"state":                        fcr.State,
+		"package":                      packageCloudRouterGoToTerra(fcr.Package_),
+		"location":                     equinix_fabric_schema.LocationWithoutIBXToTerra(fcr.Location),
+		"change_log":                   equinix_fabric_schema.ChangeLogToTerra(fcr.ChangeLog),
+		"account":                      accountCloudRouterToTerra(fcr.Account),
+		"notifications":                equinix_fabric_schema.NotificationsToTerra(fcr.Notifications),
+		"project":                      equinix_fabric_schema.ProjectToTerra(fcr.Project),
+		"equinix_asn":                  fcr.EquinixAsn,
+		"bgp_ipv4_routes_count":        fcr.BgpIpv4RoutesCount,
+		"bgp_ipv6_routes_count":        fcr.BgpIpv6RoutesCount,
+		"distinct_ipv4_prefixes_count": fcr.DistinctIpv4PrefixesCount,
+		"distinct_ipv6_prefixes_count": fcr.DistinctIpv6PrefixesCount,
+		"connections_count":            fcr.ConnectionsCount,
+		"order":                        equinix_fabric_schema.OrderToTerra(fcr.Order),
 	})
 	if err != nil {
 		return diag.FromErr(err)
 	}
 	return diags
 }
+func accountCloudRouterToTerra(account *v4.SimplifiedAccount) *schema.Set {
+	if account == nil {
+		return nil
+	}
+	accounts := []*v4.SimplifiedAccount{account}
+	mappedAccounts := make([]interface{}, len(accounts))
+	for i, account := range accounts {
+		mappedAccounts[i] = map[string]interface{}{
+			"account_number": int(account.AccountNumber),
+		}
+	}
+	accountSet := schema.NewSet(
+		schema.HashResource(&schema.Resource{Schema: equinix_fabric_schema.AccountSch()}),
+		mappedAccounts,
+	)
 
-func resourceCloudRouterUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	return accountSet
+}
+func packageCloudRouterGoToTerra(packageType *v4.CloudRouterPackageType) *schema.Set {
+	packageTypes := []*v4.CloudRouterPackageType{packageType}
+	mappedPackages := make([]interface{}, len(packageTypes))
+	for i, packageType := range packageTypes {
+		mappedPackages[i] = map[string]interface{}{
+			"code": packageType.Code,
+		}
+	}
+	packageSet := schema.NewSet(
+		schema.HashResource(&schema.Resource{Schema: fabricCloudRouterPackageSch()}),
+		mappedPackages,
+	)
+	return packageSet
+}
+func getCloudRouterUpdateRequest(conn v4.CloudRouter, d *schema.ResourceData) (v4.CloudRouterChangeOperation, error) {
+	changeOps := v4.CloudRouterChangeOperation{}
+	existingName := conn.Name
+	existingPackage := conn.Package_.Code
+	updateNameVal := d.Get("name")
+	updatePackageVal := d.Get("conn.Package_.Code")
+
+	log.Printf("existing name %s, existing Package %s, Update Name Request %s, Update Package Request %s ",
+		existingName, existingPackage, updateNameVal, updatePackageVal)
+
+	if existingName != updateNameVal {
+		changeOps = v4.CloudRouterChangeOperation{Op: "replace", Path: "/name", Value: &updateNameVal}
+	} else if existingPackage != updatePackageVal {
+		changeOps = v4.CloudRouterChangeOperation{Op: "replace", Path: "/package", Value: &updatePackageVal}
+	} else {
+		return changeOps, fmt.Errorf("nothing to update for the connection %s", existingName)
+	}
+	return changeOps, nil
+}
+
+func resourceFabricCloudRouterUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*config.Config).FabricClient
 	ctx = context.WithValue(ctx, v4.ContextAccessToken, meta.(*config.Config).FabricAuthToken)
 	dbConn, err := waitUntilCloudRouterIsProvisioned(d.Id(), meta, ctx)
@@ -216,7 +475,7 @@ func waitUntilCloudRouterIsProvisioned(uuid string, meta interface{}, ctx contex
 	return dbConn, err
 }
 
-func resourceCloudRouterDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceFabricCloudRouterDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	diags := diag.Diagnostics{}
 	client := meta.(*config.Config).FabricClient
 	ctx = context.WithValue(ctx, v4.ContextAccessToken, meta.(*config.Config).FabricAuthToken)

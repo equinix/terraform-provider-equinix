@@ -30,11 +30,13 @@ data "equinix_fabric_cloud_router" "cloud_router_data_name" {
 ### Read-Only
 
 - `account` (Set of Object) Customer account information that is associated with this Fabric Cloud Router (see [below for nested schema](#nestedatt--account))
-- `bgp_ipv4_routes_count` (Number) Access point used and maximum number of IPv4 BGP routes
-- `bgp_ipv6_routes_count` (Number) Access point used and maximum number of IPv6 BGP routes
+- `bgp_ipv4_routes_count` (Number) Number of IPv4 BGP routes in use (including non-distinct prefixes)
+- `bgp_ipv6_routes_count` (Number) Number of IPv6 BGP routes in use (including non-distinct prefixes)
 - `change_log` (Set of Object) Captures Fabric Cloud Router lifecycle change information (see [below for nested schema](#nestedatt--change_log))
-- `connections_count` (Number) Number of connections associated with this Access point
+- `connections_count` (Number) Number of connections associated with this Fabric Cloud Router instance
 - `description` (String) Customer-provided Fabric Cloud Router description
+- `distinct_ipv4_prefixes_count` (Number) Number of distinct IPv4 routes
+- `distinct_ipv6_prefixes_count` (Number) Number of distinct IPv6 routes
 - `equinix_asn` (Number) Equinix ASN
 - `href` (String) Fabric Cloud Router URI information
 - `id` (String) The ID of this resource.
@@ -42,23 +44,17 @@ data "equinix_fabric_cloud_router" "cloud_router_data_name" {
 - `name` (String) Fabric Cloud Router name. An alpha-numeric 24 characters string which can include only hyphens and underscores
 - `notifications` (List of Object) Preferences for notifications on Fabric Cloud Router configuration or status changes (see [below for nested schema](#nestedatt--notifications))
 - `order` (Set of Object) Order information related to this Fabric Cloud Router (see [below for nested schema](#nestedatt--order))
-- `package` (Set of Object) Fabric Cloud Router package information (see [below for nested schema](#nestedatt--package))
-- `project` (Set of Object) Project information (see [below for nested schema](#nestedatt--project))
+- `package` (Set of Object) Fabric Cloud Router Package Type (see [below for nested schema](#nestedatt--package))
+- `project` (Set of Object) Customer resource hierarchy project information.Applicable to customers onboarded to Equinix Identity and Access Management. For more information see Identity and Access Management: Projects (see [below for nested schema](#nestedatt--project))
 - `state` (String) Fabric Cloud Router overall state
-- `type` (String) Defines the Fabric Cloud Router type like XF_GATEWAY
+- `type` (String) Defines the FCR type like; XF_ROUTER
 
 <a id="nestedatt--account"></a>
 ### Nested Schema for `account`
 
 Read-Only:
 
-- `account_name` (String)
 - `account_number` (Number)
-- `global_cust_id` (String)
-- `global_org_id` (String)
-- `global_organization_name` (String)
-- `org_id` (Number)
-- `organization_name` (String)
 
 
 <a id="nestedatt--change_log"></a>
@@ -127,3 +123,4 @@ Read-Only:
 
 - `href` (String)
 - `project_id` (String)
+
