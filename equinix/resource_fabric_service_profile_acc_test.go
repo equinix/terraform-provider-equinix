@@ -3,14 +3,11 @@ package equinix_test
 import (
 	"context"
 	"fmt"
-	"log"
-	"testing"
-	"time"
-
+	"github.com/equinix/terraform-provider-equinix/equinix"
 	"github.com/equinix/terraform-provider-equinix/internal/acceptance"
 	"github.com/equinix/terraform-provider-equinix/internal/config"
+	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 
@@ -20,18 +17,17 @@ import (
 func TestAccFabricCreateServiceProfile_PFCR(t *testing.T) {
 	ports := GetFabricEnvPorts(t)
 
-	var portUuidDot1Q, portMetroCodeDot1Q string
-	var portUuidQinq, portMetroCodeQinq string
-	var portTypeDot1Q, portTypeQinq string
+	var portUuidDot1Q, portMetroCodeDot1Q, portTypeDot1Q string
+	var portUuidQinq, portMetroCodeQinq, portTypeQinq string
 	if len(ports) > 0 {
 		portDot1Q := ports["pfcr"]["dot1q"][0]
 		portQinq := ports["pfcr"]["qinq"][0]
 		portUuidDot1Q = portDot1Q.Uuid
-		portTypeDot1Q = string(*portDot1Q.Type_)
 		portMetroCodeDot1Q = portDot1Q.Location.MetroCode
+		portTypeDot1Q = string(*portDot1Q.Type_)
 		portUuidQinq = portQinq.Uuid
-		portTypeQinq = string(*portQinq.Type_)
 		portMetroCodeQinq = portQinq.Location.MetroCode
+		portTypeQinq = string(*portQinq.Type_)
 	}
 
 	resource.ParallelTest(t, resource.TestCase{
@@ -43,7 +39,7 @@ func TestAccFabricCreateServiceProfile_PFCR(t *testing.T) {
 				Config: testAccFabricCreateServiceProfileConfig(portUuidDot1Q, portTypeDot1Q, portMetroCodeDot1Q),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(
-						"equinix_fabric_service_profile.test", "name", "fc_sp_PFCR""),
+						"equinix_fabric_service_profile.test", "name", "SP_ResourceCreation_PFCR"),
 					resource.TestCheckResourceAttr(
 						"equinix_fabric_service_profile.test", "type", "L2_PROFILE"),
 					resource.TestCheckResourceAttr(
@@ -75,7 +71,7 @@ func TestAccFabricCreateServiceProfile_PFCR(t *testing.T) {
 				Config: testAccFabricCreateServiceProfileConfig(portUuidQinq, portTypeQinq, portMetroCodeQinq),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(
-						"equinix_fabric_service_profile.test", "name", "fc_sp_PFCR"),
+						"equinix_fabric_service_profile.test", "name", "SP_ResourceCreation_PFCR"),
 					resource.TestCheckResourceAttr(
 						"equinix_fabric_service_profile.test", "type", "L2_PROFILE"),
 					resource.TestCheckResourceAttr(
@@ -108,7 +104,7 @@ func TestAccFabricCreateServiceProfile_PFCR(t *testing.T) {
 
 func testAccFabricCreateServiceProfileConfig(portUUID string, portType string, portMetroCode string) string {
 	return fmt.Sprintf(`resource "equinix_fabric_service_profile" "test" {
-  name = "fc_sp_PFCR""
+  name = "SP_ResourceCreation_PFCR"
   description = "Generic SP"
   type = "L2_PROFILE"
   notifications {
@@ -164,38 +160,10 @@ func checkServiceProfileDelete(s *terraform.State) error {
 		if rs.Type != "equinix_fabric_service_profile" {
 			continue
 		}
-		_, err := waitAndCheckServiceProfileDeleted(rs.Primary.ID, client, ctx)
+		err := equinix.WaitAndCheckServiceProfileDeleted(rs.Primary.ID, client, ctx)
 		if err != nil {
-			return fmt.Errorf("API call failed while waiting for resource deletion")
+			return fmt.Errorf("API call failed while waiting for resource deletion: %v", err)
 		}
 	}
 	return nil
-}
-
-func waitAndCheckServiceProfileDeleted(uuid string, client *v4.APIClient, ctx context.Context) (v4.ServiceProfile, error) {
-	log.Printf("Waiting for service profile to be in deleted, uuid %s", uuid)
-	stateConf := &retry.StateChangeConf{
-		Target: []string{string(v4.DELETED_ServiceProfileStateEnum)},
-		Refresh: func() (interface{}, string, error) {
-			dbConn, _, err := client.ServiceProfilesApi.GetServiceProfileByUuid(ctx, uuid, nil)
-			if err != nil {
-				return "", "", err
-			}
-			updatableState := ""
-			if *dbConn.State == v4.DELETED_ServiceProfileStateEnum {
-				updatableState = string(*dbConn.State)
-			}
-			return dbConn, updatableState, nil
-		},
-		Timeout:    1 * time.Minute,
-		Delay:      10 * time.Second,
-		MinTimeout: 10 * time.Second,
-	}
-	inter, err := stateConf.WaitForStateContext(ctx)
-	dbConn := v4.ServiceProfile{}
-
-	if err == nil {
-		dbConn = inter.(v4.ServiceProfile)
-	}
-	return dbConn, err
 }
