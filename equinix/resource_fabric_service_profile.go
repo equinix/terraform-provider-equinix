@@ -393,13 +393,42 @@ func resourceFabricServiceProfileDelete(ctx context.Context, d *schema.ResourceD
 	ctx = context.WithValue(ctx, v4.ContextAccessToken, meta.(*config.Config).FabricAuthToken)
 	uuid := d.Id()
 	if uuid == "" {
-		return diag.Errorf("No uuid found %v ", uuid)
+		return diag.Errorf("No uuid found for Service Profile Deletion %v ", uuid)
 	}
 	_, _, err := client.ServiceProfilesApi.DeleteServiceProfileByUuid(ctx, uuid)
 	if err != nil {
 		return diag.FromErr(equinix_errors.FormatFabricError(err))
 	}
+
+	waitErr := WaitAndCheckServiceProfileDeleted(uuid, client, ctx)
+	if waitErr != nil {
+		return diag.Errorf("Error while waiting for Service Profile deletion: %v", waitErr)
+	}
+
 	return diags
+}
+
+func WaitAndCheckServiceProfileDeleted(uuid string, client *v4.APIClient, ctx context.Context) error {
+	log.Printf("Waiting for service profile to be in deleted, uuid %s", uuid)
+	stateConf := &retry.StateChangeConf{
+		Target: []string{string(v4.DELETED_ServiceProfileStateEnum)},
+		Refresh: func() (interface{}, string, error) {
+			dbConn, _, err := client.ServiceProfilesApi.GetServiceProfileByUuid(ctx, uuid, nil)
+			if err != nil {
+				return "", "", equinix_errors.FormatFabricError(err)
+			}
+			updatableState := ""
+			if *dbConn.State == v4.DELETED_ServiceProfileStateEnum {
+				updatableState = string(*dbConn.State)
+			}
+			return dbConn, updatableState, nil
+		},
+		Timeout:    1 * time.Minute,
+		Delay:      10 * time.Second,
+		MinTimeout: 10 * time.Second,
+	}
+	_, err := stateConf.WaitForStateContext(ctx)
+	return err
 }
 
 func setFabricServiceProfileMap(d *schema.ResourceData, sp v4.ServiceProfile) diag.Diagnostics {
