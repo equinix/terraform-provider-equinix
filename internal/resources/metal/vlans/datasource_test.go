@@ -1,10 +1,11 @@
-package equinix
+package vlans
 
 import (
 	"fmt"
 	"reflect"
 	"testing"
 
+	"github.com/equinix/terraform-provider-equinix/internal/acceptance"
 	"github.com/equinix/terraform-provider-equinix/internal/config"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
@@ -18,9 +19,9 @@ func TestAccDataSourceMetalVlan_byVxlanFacility(t *testing.T) {
 	fac := "sv15"
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
-		ExternalProviders: testExternalProviders,
-		Providers:         testAccProviders,
+		PreCheck:          func() { acceptance.TestAccPreCheckMetal(t) },
+		ExternalProviders: acceptance.TestExternalProviders,
+		ProviderFactories: acceptance.TestAccProviderFactories,
 		CheckDestroy:      testAccMetalDatasourceVlanCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
@@ -65,9 +66,9 @@ func TestAccDataSourceMetalVlan_byVxlanMetro(t *testing.T) {
 	metro := "sv"
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
-		ExternalProviders: testExternalProviders,
-		Providers:         testAccProviders,
+		PreCheck:          func() { acceptance.TestAccPreCheckMetal(t) },
+		ExternalProviders: acceptance.TestExternalProviders,
+		ProviderFactories: acceptance.TestAccProviderFactories,
 		CheckDestroy:      testAccMetalDatasourceVlanCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
@@ -136,9 +137,9 @@ func TestAccDataSourceMetalVlan_byVlanId(t *testing.T) {
 	metro := "sv"
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
-		ExternalProviders: testExternalProviders,
-		Providers:         testAccProviders,
+		PreCheck:          func() { acceptance.TestAccPreCheckMetal(t) },
+		ExternalProviders: acceptance.TestExternalProviders,
+		ProviderFactories: acceptance.TestAccProviderFactories,
 		CheckDestroy:      testAccMetalDatasourceVlanCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
@@ -182,9 +183,9 @@ func TestAccDataSourceMetalVlan_byProjectId(t *testing.T) {
 	metro := "sv"
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
-		ExternalProviders: testExternalProviders,
-		Providers:         testAccProviders,
+		PreCheck:          func() { acceptance.TestAccPreCheckMetal(t) },
+		ExternalProviders: acceptance.TestExternalProviders,
+		ProviderFactories: acceptance.TestAccProviderFactories,
 		CheckDestroy:      testAccMetalDatasourceVlanCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
@@ -322,7 +323,7 @@ func TestMetalVlan_matchingVlan(t *testing.T) {
 }
 
 func testAccMetalDatasourceVlanCheckDestroyed(s *terraform.State) error {
-	client := testAccProvider.Meta().(*config.Config).Metal
+	client := acceptance.TestAccProvider.Meta().(*config.Config).Metal
 
 	for _, rs := range s.RootModule().Resources {
 		if rs.Type != "equinix_metal_vlan" {
