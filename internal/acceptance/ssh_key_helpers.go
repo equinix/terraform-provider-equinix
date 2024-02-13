@@ -20,7 +20,7 @@ func TestAccCheckMetalSSHKeyExists(n string, key *metalv1.SSHKey) resource.TestC
 			return fmt.Errorf("No Record ID is set")
 		}
 
-		client := TestAccProvider.Meta().(*config.Config).Metalgo
+		client := TestAccProvider.Meta().(*config.Config).NewMetalClientForTesting()
 
 		foundKey, _, err := client.SSHKeysApi.FindSSHKeyById(context.Background(), rs.Primary.ID).Execute()
 		if err != nil {
