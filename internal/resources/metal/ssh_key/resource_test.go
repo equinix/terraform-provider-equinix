@@ -9,11 +9,11 @@ import (
 	"github.com/equinix/terraform-provider-equinix/internal/acceptance"
 	"github.com/equinix/terraform-provider-equinix/internal/config"
 
+	"github.com/equinix/equinix-sdk-go/services/metalv1"
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/plancheck"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
-	"github.com/packethost/packngo"
 )
 
 func init() {
@@ -51,7 +51,7 @@ func testSweepSSHKeys(region string) error {
 }
 
 func TestAccMetalSSHKey_basic(t *testing.T) {
-	var key packngo.SSHKey
+	var key metalv1.SSHKey
 	rInt := acctest.RandInt()
 	publicKeyMaterial, _, err := acctest.RandSSHKeyPair("")
 	if err != nil {
@@ -105,7 +105,7 @@ func TestAccMetalSSHKey_projectBasic(t *testing.T) {
 }
 
 func TestAccMetalSSHKey_update(t *testing.T) {
-	var key packngo.SSHKey
+	var key metalv1.SSHKey
 	rInt := acctest.RandInt()
 	publicKeyMaterial, _, err := acctest.RandSSHKeyPair("")
 	if err != nil {
@@ -226,7 +226,7 @@ resource "equinix_metal_project_ssh_key" "foobar" {
 // Test to verify that switching from SDKv2 to the Framework has not affected provider's behavior
 // TODO (ocobles): once migrated, this test may be removed
 func TestAccMetalSSHKey_upgradeFromVersion(t *testing.T) {
-	var key packngo.SSHKey
+	var key metalv1.SSHKey
 	rInt := acctest.RandInt()
 	publicKeyMaterial, _, err := acctest.RandSSHKeyPair("")
 	if err != nil {

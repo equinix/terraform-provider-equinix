@@ -4,10 +4,10 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/equinix/equinix-sdk-go/services/metalv1"
 	equinix_errors "github.com/equinix/terraform-provider-equinix/internal/errors"
 	"github.com/equinix/terraform-provider-equinix/internal/framework"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
-	"github.com/packethost/packngo"
 )
 
 func NewResource() resource.Resource {
@@ -32,7 +32,7 @@ func (r *Resource) Create(
 ) {
 
 	r.Meta.AddFwModuleToMetalUserAgent(ctx, req.ProviderMeta)
-	client := r.Meta.Metal
+	client := r.Meta.Metalgo
 
 	// Retrieve values from plan
 	var plan ResourceModel
@@ -42,13 +42,13 @@ func (r *Resource) Create(
 	}
 
 	// Generate API request body from plan
-	createRequest := &packngo.SSHKeyCreateRequest{
-		Label: plan.Name.ValueString(),
-		Key:   plan.PublicKey.ValueString(),
+	createRequest := &metalv1.SSHKeyCreateInput{
+		Label: plan.Name.ValueStringPointer(),
+		Key:   plan.PublicKey.ValueStringPointer(),
 	}
 
 	// Create API resource
-	key, _, err := client.SSHKeys.Create(createRequest)
+	key, _, err := client.SSHKeysApi.CreateSSHKey(context.Background()).SSHKeyCreateInput(*createRequest).Execute()
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Failed to create SSH Key",
@@ -73,7 +73,7 @@ func (r *Resource) Read(
 	resp *resource.ReadResponse,
 ) {
 	r.Meta.AddFwModuleToMetalUserAgent(ctx, req.ProviderMeta)
-	client := r.Meta.Metal
+	client := r.Meta.Metalgo
 
 	// Retrieve values from state
 	var state ResourceModel
@@ -86,7 +86,7 @@ func (r *Resource) Read(
 	id := state.ID.ValueString()
 
 	// Use API client to get the current state of the resource
-	key, _, err := client.SSHKeys.Get(id, nil)
+	key, _, err := client.SSHKeysApi.FindSSHKeyById(context.Background(), id).Include(nil).Execute()
 	if err != nil {
 		err = equinix_errors.FriendlyError(err)
 
@@ -122,7 +122,7 @@ func (r *Resource) Update(
 	resp *resource.UpdateResponse,
 ) {
 	r.Meta.AddFwModuleToMetalUserAgent(ctx, req.ProviderMeta)
-	client := r.Meta.Metal
+	client := r.Meta.Metalgo
 
 	// Retrieve values from plan
 	var state, plan ResourceModel
@@ -135,7 +135,7 @@ func (r *Resource) Update(
 	// Extract the ID of the resource from the state
 	id := plan.ID.ValueString()
 
-	updateRequest := &packngo.SSHKeyUpdateRequest{}
+	updateRequest := &metalv1.SSHKeyInput{}
 	if !state.Name.Equal(plan.Name) {
 		updateRequest.Label = plan.Name.ValueStringPointer()
 	}
@@ -144,7 +144,7 @@ func (r *Resource) Update(
 	}
 
 	// Update the resource
-	key, _, err := client.SSHKeys.Update(plan.ID.ValueString(), updateRequest)
+	key, _, err := client.SSHKeysApi.UpdateSSHKey(context.Background(), id).SSHKeyInput(*updateRequest).Execute()
 	if err != nil {
 		err = equinix_errors.FriendlyError(err)
 		resp.Diagnostics.AddError(
@@ -170,7 +170,7 @@ func (r *Resource) Delete(
 	resp *resource.DeleteResponse,
 ) {
 	r.Meta.AddFwModuleToMetalUserAgent(ctx, req.ProviderMeta)
-	client := r.Meta.Metal
+	client := r.Meta.Metalgo
 
 	// Retrieve values from plan
 	var state ResourceModel
@@ -183,8 +183,8 @@ func (r *Resource) Delete(
 	id := state.ID.ValueString()
 
 	// Use API client to delete the resource
-	deleteResp, err := client.SSHKeys.Delete(id)
-	if equinix_errors.IgnoreResponseErrors(equinix_errors.HttpForbidden, equinix_errors.HttpNotFound)(deleteResp, err) != nil {
+	deleteResp, err := client.SSHKeysApi.DeleteSSHKey(context.Background(), id).Execute()
+	if equinix_errors.IgnoreHttpResponseErrors(equinix_errors.HttpForbidden, equinix_errors.HttpNotFound)(deleteResp, err) != nil {
 		err = equinix_errors.FriendlyError(err)
 		resp.Diagnostics.AddError(
 			fmt.Sprintf("Failed to delete SSHKey %s", id),

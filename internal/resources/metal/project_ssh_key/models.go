@@ -3,9 +3,9 @@ package project_ssh_key
 import (
 	"path"
 
+	"github.com/equinix/equinix-sdk-go/services/metalv1"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"github.com/packethost/packngo"
 )
 
 type ResourceModel struct {
@@ -19,14 +19,16 @@ type ResourceModel struct {
 	ProjectID   types.String `tfsdk:"project_id"`
 }
 
-func (m *ResourceModel) parse(key *packngo.SSHKey) diag.Diagnostics {
-	m.ID = types.StringValue(key.ID)
-	m.Name = types.StringValue(key.Label)
-	m.PublicKey = types.StringValue(key.Key)
-	m.Fingerprint = types.StringValue(key.FingerPrint)
-	m.Created = types.StringValue(key.Created)
-	m.Updated = types.StringValue(key.Updated)
-	m.OwnerID = types.StringValue(path.Base(key.Owner.Href))
+func (m *ResourceModel) parse(key *metalv1.SSHKey) diag.Diagnostics {
+	m.ID = types.StringValue(key.GetId())
+	m.Name = types.StringValue(key.GetLabel())
+	m.PublicKey = types.StringValue(key.GetKey())
+	m.Fingerprint = types.StringValue(key.GetFingerprint())
+	m.Created = types.StringValue(key.CreatedAt.GoString())
+	m.Updated = types.StringValue(key.UpdatedAt.GoString())
+
+	ownerID := key.AdditionalProperties["owner"].(map[string]interface{})
+	m.OwnerID = types.StringValue(path.Base(ownerID["href"].(string)))
 	m.ProjectID = m.OwnerID
 	return nil
 }
@@ -46,14 +48,16 @@ type DataSourceModel struct {
 	ProjectID   types.String `tfsdk:"project_id"`
 }
 
-func (m *DataSourceModel) parse(key *packngo.SSHKey) diag.Diagnostics {
-	m.ID = types.StringValue(key.ID)
-	m.Name = types.StringValue(key.Label)
-	m.PublicKey = types.StringValue(key.Key)
-	m.Fingerprint = types.StringValue(key.FingerPrint)
-	m.Created = types.StringValue(key.Created)
-	m.Updated = types.StringValue(key.Updated)
-	m.OwnerID = types.StringValue(path.Base(key.Owner.Href))
+func (m *DataSourceModel) parse(key *metalv1.SSHKey) diag.Diagnostics {
+	m.ID = types.StringValue(key.GetId())
+	m.Name = types.StringValue(key.GetLabel())
+	m.PublicKey = types.StringValue(key.GetKey())
+	m.Fingerprint = types.StringValue(key.GetFingerprint())
+	m.Created = types.StringValue(key.CreatedAt.GoString())
+	m.Updated = types.StringValue(key.UpdatedAt.GoString())
+
+	ownerID := key.AdditionalProperties["owner"].(map[string]interface{})
+	m.OwnerID = types.StringValue(path.Base(ownerID["href"].(string)))
 	m.ProjectID = m.OwnerID
 	return nil
 }

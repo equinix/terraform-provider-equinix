@@ -1,10 +1,10 @@
 package project_ssh_key
 
 import (
+	"github.com/equinix/equinix-sdk-go/services/metalv1"
 	equinix_errors "github.com/equinix/terraform-provider-equinix/internal/errors"
 	"github.com/equinix/terraform-provider-equinix/internal/framework"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
-	"github.com/packethost/packngo"
 
 	"context"
 	"fmt"
@@ -30,8 +30,8 @@ func (r *DataSource) Read(
 	req datasource.ReadRequest,
 	resp *datasource.ReadResponse,
 ) {
-	r.Meta.AddFwModuleToMetalUserAgent(ctx, req.ProviderMeta)
-	client := r.Meta.Metal
+	r.Meta.AddFwModuleToMetalGoUserAgent(ctx, req.ProviderMeta)
+	client := r.Meta.Metalgo
 
 	// Retrieve values from plan
 	var data DataSourceModel
@@ -46,16 +46,11 @@ func (r *DataSource) Read(
 	projectID := data.ProjectID.ValueString()
 
 	var (
-		key        packngo.SSHKey
-		searchOpts *packngo.SearchOptions
+		key metalv1.SSHKey
 	)
 
-	if search != "" {
-		searchOpts = &packngo.SearchOptions{Search: search}
-	}
-
 	// Use API client to list SSH keys
-	keys, _, err := client.Projects.ListSSHKeys(projectID, searchOpts)
+	keysList, _, err := client.SSHKeysApi.FindProjectSSHKeys(context.Background(), projectID).Query(search).Execute()
 	if err != nil {
 		err = equinix_errors.FriendlyError(err)
 		resp.Diagnostics.AddError(
@@ -65,6 +60,7 @@ func (r *DataSource) Read(
 		return
 	}
 
+	keys := keysList.GetSshKeys()
 	for i := range keys {
 		// use the first match for searches
 		if search != "" {
@@ -73,13 +69,13 @@ func (r *DataSource) Read(
 		}
 
 		// otherwise find the matching ID
-		if keys[i].ID == id {
+		if keys[i].GetId() == id {
 			key = keys[i]
 			break
 		}
 	}
 
-	if key.ID == "" {
+	if key.GetId() == "" {
 		// Not Found
 		resp.Diagnostics.AddError(
 			"Error listing project ssh keys",
