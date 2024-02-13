@@ -226,32 +226,6 @@ func packageToCloudRouter(packageList []interface{}) v4.CloudRouterPackageType {
 	return p
 }
 
-func accountToTerra(account *v4.SimplifiedAccount) *schema.Set {
-	if account == nil {
-		return nil
-	}
-	accounts := []*v4.SimplifiedAccount{account}
-	mappedAccounts := make([]interface{}, len(accounts))
-	for i, account := range accounts {
-		mappedAccounts[i] = map[string]interface{}{
-			"account_number":           int(account.AccountNumber),
-			"account_name":             account.AccountName,
-			"org_id":                   int(account.OrgId),
-			"organization_name":        account.OrganizationName,
-			"global_org_id":            account.GlobalOrgId,
-			"global_organization_name": account.GlobalOrganizationName,
-			"global_cust_id":           account.GlobalCustId,
-		}
-	}
-	hashAccount := &schema.Resource{Schema: equinix_schema.AccountSch()}
-	accountSet := schema.NewSet(
-		schema.HashResource(hashAccount),
-		mappedAccounts,
-	)
-
-	return accountSet
-}
-
 func accountCloudRouterToTerra(account *v4.SimplifiedAccount) *schema.Set {
 	if account == nil {
 		return nil
@@ -429,7 +403,7 @@ func accessPointToTerra(accessPoint *v4.AccessPoint) *schema.Set {
 			mappedAccessPoint["type"] = string(*accessPoint.Type_)
 		}
 		if accessPoint.Account != nil {
-			mappedAccessPoint["account"] = accountToTerra(accessPoint.Account)
+			mappedAccessPoint["account"] = equinix_schema.AccountToTerra(accessPoint.Account)
 		}
 		if accessPoint.Location != nil {
 			mappedAccessPoint["location"] = equinix_schema.LocationToTerra(accessPoint.Location)
@@ -539,7 +513,7 @@ func apiConfigToTerra(apiConfig *v4.ApiConfig) *schema.Set {
 		mappedApiConfigs = append(mappedApiConfigs, mappedApiConfig)
 	}
 	apiConfigSet := schema.NewSet(
-		schema.HashResource(createApiConfigSchRes),
+		schema.HashResource(&schema.Resource{Schema: createApiConfigSch()}),
 		mappedApiConfigs)
 	return apiConfigSet
 }
@@ -555,7 +529,7 @@ func authenticationKeyToTerra(authenticationKey *v4.AuthenticationKey) *schema.S
 		mappedAuthenticationKeys = append(mappedAuthenticationKeys, mappedAuthenticationKey)
 	}
 	apiConfigSet := schema.NewSet(
-		schema.HashResource(createAuthenticationKeySchRes),
+		schema.HashResource(&schema.Resource{Schema: createAuthenticationKeySch()}),
 		mappedAuthenticationKeys)
 	return apiConfigSet
 }

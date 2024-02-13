@@ -75,9 +75,10 @@ Read-Only:
 - `project` (Set of Object) (see [below for nested schema](#nestedobjatt--data--project))
 - `self_profile` (Boolean)
 - `state` (String)
-- `tags` (Set of String)
+- `tags` (List of String)
 - `type` (String)
 - `uuid` (String)
+- `virtual_devices` (List of Object) (see [below for nested schema](#nestedobjatt--data--virtual_devices))
 - `visibility` (String)
 
 <a id="nestedobjatt--data--access_point_type_configs"></a>
@@ -256,3 +257,24 @@ Read-Only:
 
 - `href` (String)
 - `project_id` (String)
+
+
+<a id="nestedobjatt--data--virtual_devices"></a>
+### Nested Schema for `data.virtual_devices`
+
+Read-Only:
+
+- `interface_uuid` (String)
+- `location` (Set of Object) (see [below for nested schema](#nestedobjatt--data--virtual_devices--location))
+- `type` (String)
+- `uuid` (String)
+
+<a id="nestedobjatt--data--virtual_devices--location"></a>
+### Nested Schema for `data.virtual_devices.location`
+
+Read-Only:
+
+- `ibx` (String)
+- `metro_code` (String)
+- `metro_name` (String)
+- `region` (String)
