@@ -48,6 +48,7 @@ func TestNetworkDevice_createFromResourceData(t *testing.T) {
 		VendorConfiguration: expectedPrimaryVendorConfig,
 		UserPublicKey:       &expectedPrimaryUserKey,
 		Connectivity:        ne.String("INTERNET-ACCESS"),
+		ProjectID:           ne.String("68ccfd49-39b1-478e-957a-67c72f719d7a"),
 	}
 	rawData := map[string]interface{}{
 		neDeviceSchemaNames["Name"]:                ne.StringValue(expectedPrimary.Name),
@@ -72,6 +73,7 @@ func TestNetworkDevice_createFromResourceData(t *testing.T) {
 		neDeviceSchemaNames["WanInterfaceId"]:      ne.StringValue(expectedPrimary.WanInterfaceId),
 		neDeviceSchemaNames["CoreCount"]:           ne.IntValue(expectedPrimary.CoreCount),
 		neDeviceSchemaNames["IsSelfManaged"]:       ne.BoolValue(expectedPrimary.IsSelfManaged),
+		neDeviceSchemaNames["ProjectID"]:           ne.StringValue(expectedPrimary.ProjectID),
 	}
 	d := schema.TestResourceDataRaw(t, createNetworkDeviceSchema(), rawData)
 	d.Set(neDeviceSchemaNames["Notifications"], expectedPrimary.Notifications)
@@ -92,6 +94,7 @@ func TestNetworkDevice_updateResourceData(t *testing.T) {
 	inputPrimary := &ne.Device{
 		Name:                ne.String("device"),
 		TypeCode:            ne.String("CSR1000V"),
+		ProjectID:           ne.String("68ccfd49-39b1-478e-957a-67c72f719d7a"),
 		MetroCode:           ne.String("SV"),
 		Throughput:          ne.Int(100),
 		ThroughputUnit:      ne.String("Mbps"),
@@ -157,6 +160,7 @@ func TestNetworkDevice_updateResourceData(t *testing.T) {
 	assert.Equal(t, inputPrimary.UserPublicKey, expandNetworkDeviceUserKeys(d.Get(neDeviceSchemaNames["UserPublicKey"]).(*schema.Set))[0], "UserPublicKey matches")
 	assert.Equal(t, ne.IntValue(inputPrimary.ASN), d.Get(neDeviceSchemaNames["ASN"]), "ASN matches")
 	assert.Equal(t, ne.StringValue(inputPrimary.ZoneCode), d.Get(neDeviceSchemaNames["ZoneCode"]), "ZoneCode matches")
+	assert.Equal(t, ne.StringValue(inputPrimary.ProjectID), d.Get(neDeviceSchemaNames["ProjectID"]), "ProjectID matches")
 	assert.Equal(t, secondarySchemaLicenseFile, ne.StringValue(expandNetworkDeviceSecondary(d.Get(neDeviceSchemaNames["Secondary"]).([]interface{})).LicenseFile), "Secondary LicenseFile matches")
 }
 
@@ -183,6 +187,8 @@ func TestNetworkDevice_flattenSecondary(t *testing.T) {
 		RedundancyType:      ne.String("PRIMARY"),
 		RedundantUUID:       ne.String("c2a147a3-ff47-4a24-a6e5-d6d7ce6459f3"),
 		AdditionalBandwidth: ne.Int(50),
+		ProjectID:           ne.String("68ccfd49-39b1-478e-957a-67c72f719d7a"),
+
 		Interfaces: []ne.DeviceInterface{
 			{
 				ID:                ne.Int(1),
@@ -227,6 +233,7 @@ func TestNetworkDevice_flattenSecondary(t *testing.T) {
 			neDeviceSchemaNames["RedundancyType"]:      input.RedundancyType,
 			neDeviceSchemaNames["RedundantUUID"]:       input.RedundantUUID,
 			neDeviceSchemaNames["AdditionalBandwidth"]: input.AdditionalBandwidth,
+			neDeviceSchemaNames["ProjectID"]:           input.ProjectID,
 			neDeviceSchemaNames["Interfaces"]: []interface{}{
 				map[string]interface{}{
 					neDeviceInterfaceSchemaNames["ID"]:                input.Interfaces[0].ID,

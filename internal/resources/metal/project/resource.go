@@ -1,4 +1,4 @@
-package equinix
+package project
 
 import (
 	"context"
@@ -17,7 +17,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 )
 
-func resourceMetalProject() *schema.Resource {
+func Resource() *schema.Resource {
 	return &schema.Resource{
 		CreateWithoutTimeout: resourceMetalProjectCreate,
 		ReadWithoutTimeout:   resourceMetalProjectRead,
@@ -199,8 +199,6 @@ func resourceMetalProjectRead(ctx context.Context, d *schema.ResourceData, meta 
 		d.Set("payment_method_id", path.Base(proj.PaymentMethod.GetHref()))
 	}
 	d.Set("name", proj.Name)
-	fmt.Println(proj.Organization.AdditionalProperties)
-	fmt.Println(proj.Organization.AdditionalProperties["href"])
 	d.Set("organization_id", path.Base(proj.Organization.AdditionalProperties["href"].(string))) // spec: organization has no href
 	d.Set("created", proj.GetCreatedAt().Format(time.RFC3339))
 	d.Set("updated", proj.GetUpdatedAt().Format(time.RFC3339))

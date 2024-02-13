@@ -1,4 +1,4 @@
-package equinix
+package project
 
 import (
 	"context"
@@ -14,7 +14,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 )
 
-func dataSourceMetalProject() *schema.Resource {
+func DataSource() *schema.Resource {
 	return &schema.Resource{
 		ReadWithoutTimeout: dataSourceMetalProjectRead,
 		Schema: map[string]*schema.Schema{
@@ -121,12 +121,12 @@ func dataSourceMetalProjectRead(ctx context.Context, d *schema.ResourceData, met
 	if nameOK {
 		name := nameRaw.(string)
 
-		os, _, err := client.ProjectsApi.FindProjects(ctx).Execute()
+		projects, err := client.ProjectsApi.FindProjects(ctx).Name(name).ExecuteWithPagination()
 		if err != nil {
 			return diag.FromErr(err)
 		}
 
-		project, err = findProjectByName(os, name)
+		project, err = findProjectByName(projects, name)
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -143,7 +143,7 @@ func dataSourceMetalProjectRead(ctx context.Context, d *schema.ResourceData, met
 	d.Set("payment_method_id", path.Base(project.PaymentMethod.GetHref()))
 	d.Set("name", project.GetName())
 	d.Set("project_id", project.GetId())
-	d.Set("organization_id", path.Base(project.Organization.GetId())) // Should be gethref?
+	d.Set("organization_id", path.Base(project.Organization.AdditionalProperties["href"].(string))) // spec: organization has no href
 	d.Set("created", project.GetCreatedAt().Format(time.RFC3339))
 	d.Set("updated", project.GetUpdatedAt().Format(time.RFC3339))
 	d.Set("backend_transfer", project.AdditionalProperties["backend_transfer_enabled"].(bool)) // No backend_transfer_enabled property in API spec
