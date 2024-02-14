@@ -31,8 +31,7 @@ func (r *Resource) Create(
 	resp *resource.CreateResponse,
 ) {
 
-	r.Meta.AddFwModuleToMetalGoUserAgent(ctx, req.ProviderMeta)
-	client := r.Meta.Metalgo
+	client := r.Meta.NewMetalClientForFramework(ctx, req.ProviderMeta)
 
 	// Retrieve values from plan
 	var plan ResourceModel
@@ -74,8 +73,7 @@ func (r *Resource) Read(
 	req resource.ReadRequest,
 	resp *resource.ReadResponse,
 ) {
-	r.Meta.AddFwModuleToMetalGoUserAgent(ctx, req.ProviderMeta)
-	client := r.Meta.Metalgo
+	client := r.Meta.NewMetalClientForFramework(ctx, req.ProviderMeta)
 
 	// Retrieve values from state
 	var state ResourceModel
@@ -123,8 +121,7 @@ func (r *Resource) Update(
 	req resource.UpdateRequest,
 	resp *resource.UpdateResponse,
 ) {
-	r.Meta.AddFwModuleToMetalGoUserAgent(ctx, req.ProviderMeta)
-	client := r.Meta.Metalgo
+	client := r.Meta.NewMetalClientForFramework(ctx, req.ProviderMeta)
 
 	// Retrieve values from plan
 	var state, plan ResourceModel
@@ -171,8 +168,7 @@ func (r *Resource) Delete(
 	req resource.DeleteRequest,
 	resp *resource.DeleteResponse,
 ) {
-	r.Meta.AddFwModuleToMetalGoUserAgent(ctx, req.ProviderMeta)
-	client := r.Meta.Metalgo
+	client := r.Meta.NewMetalClientForFramework(ctx, req.ProviderMeta)
 
 	// Retrieve values from plan
 	var state ResourceModel

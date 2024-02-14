@@ -30,8 +30,7 @@ func (r *DataSource) Read(
 	req datasource.ReadRequest,
 	resp *datasource.ReadResponse,
 ) {
-	r.Meta.AddFwModuleToMetalGoUserAgent(ctx, req.ProviderMeta)
-	client := r.Meta.Metalgo
+	client := r.Meta.NewMetalClientForFramework(ctx, req.ProviderMeta)
 
 	// Retrieve values from plan
 	var data DataSourceModel

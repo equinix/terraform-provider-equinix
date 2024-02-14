@@ -51,8 +51,8 @@ func dataSourceMetalDevices() *schema.Resource {
 	return datalist.NewResource(dataListConfig)
 }
 
-func getDevices(meta interface{}, extra map[string]interface{}) ([]interface{}, error) {
-	client := meta.(*config.Config).Metalgo
+func getDevices(d *schema.ResourceData, meta interface{}, extra map[string]interface{}) ([]interface{}, error) {
+	client := meta.(*config.Config).NewMetalClientForSDK(d)
 	projectID := extra["project_id"].(string)
 	orgID := extra["organization_id"].(string)
 

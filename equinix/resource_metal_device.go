@@ -509,8 +509,7 @@ func reinstallDisabledAndNoChangesAllowed(attribute string) customdiff.ResourceC
 }
 
 func resourceMetalDeviceCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	meta.(*config.Config).AddModuleToMetalGoUserAgent(d)
-	client := meta.(*config.Config).Metalgo
+	client := meta.(*config.Config).NewMetalClientForSDK(d)
 
 	createRequest := metalv1.CreateDeviceRequest{}
 
@@ -569,8 +568,7 @@ func resourceMetalDeviceCreate(ctx context.Context, d *schema.ResourceData, meta
 }
 
 func resourceMetalDeviceRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	meta.(*config.Config).AddModuleToMetalGoUserAgent(d)
-	client := meta.(*config.Config).Metalgo
+	client := meta.(*config.Config).NewMetalClientForSDK(d)
 
 	device, resp, err := client.DevicesApi.FindDeviceById(context.Background(), d.Id()).Include(deviceCommonIncludes).Execute()
 	if err != nil {
@@ -676,8 +674,7 @@ func resourceMetalDeviceRead(ctx context.Context, d *schema.ResourceData, meta i
 }
 
 func resourceMetalDeviceUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	meta.(*config.Config).AddModuleToMetalGoUserAgent(d)
-	client := meta.(*config.Config).Metalgo
+	client := meta.(*config.Config).NewMetalClientForSDK(d)
 
 	ur := metalv1.DeviceUpdateInput{}
 
@@ -781,8 +778,7 @@ func doReinstall(ctx context.Context, client *metalv1.APIClient, d *schema.Resou
 }
 
 func resourceMetalDeviceDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	meta.(*config.Config).AddModuleToMetalGoUserAgent(d)
-	client := meta.(*config.Config).Metalgo
+	client := meta.(*config.Config).NewMetalClientForSDK(d)
 
 	fdvIf, fdvOk := d.GetOk("force_detach_volumes")
 	fdv := false
@@ -821,8 +817,7 @@ func waitForActiveDevice(ctx context.Context, d *schema.ResourceData, meta inter
 		Pending: pending,
 		Target:  targets,
 		Refresh: func() (interface{}, string, error) {
-			meta.(*config.Config).AddModuleToMetalGoUserAgent(d)
-			client := meta.(*config.Config).Metalgo
+			client := meta.(*config.Config).NewMetalClientForSDK(d)
 
 			device, _, err := client.DevicesApi.FindDeviceById(ctx, d.Id()).Include([]string{"project"}).Execute()
 			if err == nil {

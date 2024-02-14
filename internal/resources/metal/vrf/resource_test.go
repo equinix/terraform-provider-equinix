@@ -303,7 +303,7 @@ func TestAccMetalVRFConfig_withConnection(t *testing.T) {
 }
 
 func testAccMetalVRFCheckDestroyed(s *terraform.State) error {
-	client := acceptance.TestAccProvider.Meta().(*config.Config).Metalgo
+	client := acceptance.TestAccProvider.Meta().(*config.Config).NewMetalClientForTesting()
 
 	for _, rs := range s.RootModule().Resources {
 		if rs.Type != "equinix_metal_vrf" {
@@ -327,7 +327,7 @@ func testAccMetalVRFExists(n string, vrf *metalv1.Vrf) resource.TestCheckFunc {
 			return fmt.Errorf("No Record ID is set")
 		}
 
-		client := acceptance.TestAccProvider.Meta().(*config.Config).Metalgo
+		client := acceptance.TestAccProvider.Meta().(*config.Config).NewMetalClientForTesting()
 
 		foundResource, _, err := client.VRFsApi.FindVrfById(context.Background(), rs.Primary.ID).Execute()
 		if err != nil {

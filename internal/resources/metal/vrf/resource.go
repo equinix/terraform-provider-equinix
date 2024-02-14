@@ -63,8 +63,7 @@ func Resource() *schema.Resource {
 }
 
 func resourceMetalVRFCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	meta.(*config.Config).AddModuleToMetalUserAgent(d)
-	client := meta.(*config.Config).Metalgo
+	client := meta.(*config.Config).NewMetalClientForSDK(d)
 
 	createRequest := metalv1.VrfCreateInput{
 		Name:        d.Get("name").(string),
@@ -92,8 +91,7 @@ func resourceMetalVRFCreate(ctx context.Context, d *schema.ResourceData, meta in
 }
 
 func resourceMetalVRFUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	meta.(*config.Config).AddModuleToMetalUserAgent(d)
-	client := meta.(*config.Config).Metalgo
+	client := meta.(*config.Config).NewMetalClientForSDK(d)
 
 	updateRequest := metalv1.VrfUpdateInput{}
 	if d.HasChange("name") {
@@ -122,8 +120,7 @@ func resourceMetalVRFUpdate(ctx context.Context, d *schema.ResourceData, meta in
 }
 
 func resourceMetalVRFRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	meta.(*config.Config).AddModuleToMetalUserAgent(d)
-	client := meta.(*config.Config).Metalgo
+	client := meta.(*config.Config).NewMetalClientForSDK(d)
 
 	vrf, _, err := client.VRFsApi.
 		FindVrfById(ctx, d.Id()).
