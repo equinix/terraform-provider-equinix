@@ -16,6 +16,7 @@ API documentation can be found here - https://developer.equinix.com/dev-docs/fab
 
 ```hcl
 data "equinix_fabric_routing_protocol" "routing_protocol_data_name" {
+  connection_uuid = "<uuid_of_connection_routing_protocol_is_applied_to>"
   uuid = "<uuid_of_routing_protocol>"
 }
 ```
@@ -26,89 +27,55 @@ data "equinix_fabric_routing_protocol" "routing_protocol_data_name" {
 ### Required
 
 - `connection_uuid` (String) Connection URI associated with Routing Protocol
-
-### Optional
-
-- `bfd` (Block Set) Bidirectional Forwarding Detection (see [below for nested schema](#nestedblock--bfd))
-- `bgp_auth_key` (String) BGP authorization key
-- `bgp_ipv4` (Block Set) Routing Protocol BGP IPv4 (see [below for nested schema](#nestedblock--bgp_ipv4))
-- `bgp_ipv6` (Block Set) Routing Protocol BGP IPv6 (see [below for nested schema](#nestedblock--bgp_ipv6))
-- `customer_asn` (Number) Customer-provided ASN
-- `description` (String) Customer-provided Fabric Routing Protocol description
-- `direct_ipv4` (Block Set) Routing Protocol Direct IPv4 (see [below for nested schema](#nestedblock--direct_ipv4))
-- `direct_ipv6` (Block Set) Routing Protocol Direct IPv6 (see [below for nested schema](#nestedblock--direct_ipv6))
-- `name` (String) Routing Protocol name. An alpha-numeric 24 characters string which can include only hyphens and underscores
-- `type` (String) Defines the routing protocol type like BGP or DIRECT
 - `uuid` (String) Equinix-assigned routing protocol identifier
 
 ### Read-Only
 
+- `bfd` (Set of Object) Bidirectional Forwarding Detection (see [below for nested schema](#nestedatt--bfd))
+- `bgp_auth_key` (String) BGP authorization key
+- `bgp_ipv4` (Set of Object) Routing Protocol BGP IPv4 (see [below for nested schema](#nestedatt--bgp_ipv4))
+- `bgp_ipv6` (Set of Object) Routing Protocol BGP IPv6 (see [below for nested schema](#nestedatt--bgp_ipv6))
 - `change` (Set of Object) Routing Protocol configuration Changes (see [below for nested schema](#nestedatt--change))
 - `change_log` (Set of Object) Captures Routing Protocol lifecycle change information (see [below for nested schema](#nestedatt--change_log))
+- `customer_asn` (Number) Customer-provided ASN
+- `description` (String) Customer-provided Fabric Routing Protocol description
+- `direct_ipv4` (Set of Object) Routing Protocol Direct IPv4 (see [below for nested schema](#nestedatt--direct_ipv4))
+- `direct_ipv6` (Set of Object) Routing Protocol Direct IPv6 (see [below for nested schema](#nestedatt--direct_ipv6))
 - `equinix_asn` (Number) Equinix ASN
 - `href` (String) Routing Protocol URI information
 - `id` (String) The ID of this resource.
+- `name` (String) Routing Protocol name. An alpha-numeric 24 characters string which can include only hyphens and underscores
 - `operation` (Set of Object) Routing Protocol type-specific operational data (see [below for nested schema](#nestedatt--operation))
 - `state` (String) Routing Protocol overall state
+- `type` (String) Defines the routing protocol type like BGP or DIRECT
 
-<a id="nestedblock--bfd"></a>
+<a id="nestedatt--bfd"></a>
 ### Nested Schema for `bfd`
 
-Required:
+Read-Only:
 
-- `enabled` (Boolean) Bidirectional Forwarding Detection enablement
-
-Optional:
-
-- `interval` (String) Interval range between the received BFD control packets
+- `enabled` (Boolean)
+- `interval` (String)
 
 
-<a id="nestedblock--bgp_ipv4"></a>
+<a id="nestedatt--bgp_ipv4"></a>
 ### Nested Schema for `bgp_ipv4`
 
-Required:
-
-- `customer_peer_ip` (String) Customer side peering ip
-
-Optional:
-
-- `enabled` (Boolean) Admin status for the BGP session
-
 Read-Only:
 
-- `equinix_peer_ip` (String) Equinix side peering ip
+- `customer_peer_ip` (String)
+- `enabled` (Boolean)
+- `equinix_peer_ip` (String)
 
 
-<a id="nestedblock--bgp_ipv6"></a>
+<a id="nestedatt--bgp_ipv6"></a>
 ### Nested Schema for `bgp_ipv6`
 
-Required:
-
-- `customer_peer_ip` (String) Customer side peering ip
-
-Optional:
-
-- `enabled` (Boolean) Admin status for the BGP session
-
 Read-Only:
 
-- `equinix_peer_ip` (String) Equinix side peering ip
-
-
-<a id="nestedblock--direct_ipv4"></a>
-### Nested Schema for `direct_ipv4`
-
-Required:
-
-- `equinix_iface_ip` (String) Equinix side Interface IP address
-
-
-<a id="nestedblock--direct_ipv6"></a>
-### Nested Schema for `direct_ipv6`
-
-Optional:
-
-- `equinix_iface_ip` (String) Equinix side Interface IP address
+- `customer_peer_ip` (String)
+- `enabled` (Boolean)
+- `equinix_peer_ip` (String)
 
 
 <a id="nestedatt--change"></a>
@@ -138,6 +105,22 @@ Read-Only:
 - `updated_by_email` (String)
 - `updated_by_full_name` (String)
 - `updated_date_time` (String)
+
+
+<a id="nestedatt--direct_ipv4"></a>
+### Nested Schema for `direct_ipv4`
+
+Read-Only:
+
+- `equinix_iface_ip` (String)
+
+
+<a id="nestedatt--direct_ipv6"></a>
+### Nested Schema for `direct_ipv6`
+
+Read-Only:
+
+- `equinix_iface_ip` (String)
 
 
 <a id="nestedatt--operation"></a>
