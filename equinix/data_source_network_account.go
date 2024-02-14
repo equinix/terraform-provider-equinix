@@ -20,6 +20,7 @@ var networkAccountSchemaNames = map[string]string{
 	"Status":    "status",
 	"UCMID":     "ucm_id",
 	"MetroCode": "metro_code",
+	"ProjectID": "project_id",
 }
 
 var networkAccountDescriptions = map[string]string{
@@ -28,6 +29,7 @@ var networkAccountDescriptions = map[string]string{
 	"Status":    "Account status for filtering. Possible values are Active, Processing, Submitted, Staged",
 	"UCMID":     "Account unique identifier",
 	"MetroCode": "Account location metro cod",
+	"ProjectID": "The unique identifier of Project Resource to which billing account is scoped to",
 }
 
 func dataSourceNetworkAccount() *schema.Resource {
@@ -65,6 +67,14 @@ func dataSourceNetworkAccount() *schema.Resource {
 				ValidateFunc: equinix_validation.StringIsMetroCode,
 				Description:  networkAccountDescriptions["MetroCode"],
 			},
+			networkAccountSchemaNames["ProjectID"]: {
+				Type:         schema.TypeString,
+				Computed:     true,
+				Optional:     true,
+				ForceNew:     true,
+				ValidateFunc: validation.IsUUID,
+				Description:  networkAccountDescriptions["ProjectID"],
+			},
 		},
 	}
 }
@@ -75,6 +85,7 @@ func dataSourceNetworkAccountRead(ctx context.Context, d *schema.ResourceData, m
 	metro := d.Get(networkAccountSchemaNames["MetroCode"]).(string)
 	name := d.Get(networkAccountSchemaNames["Name"]).(string)
 	status := d.Get(networkAccountSchemaNames["Status"]).(string)
+	projectId := d.Get(networkAccountSchemaNames["ProjectID"]).(string)
 	accounts, err := conf.Ne.GetAccounts(metro)
 	if err != nil {
 		return diag.FromErr(err)
@@ -82,6 +93,9 @@ func dataSourceNetworkAccountRead(ctx context.Context, d *schema.ResourceData, m
 	var filtered []ne.Account
 	for _, account := range accounts {
 		if name != "" && ne.StringValue(account.Name) != name {
+			continue
+		}
+		if projectId != "" && ne.StringValue(account.ProjectID) != projectId {
 			continue
 		}
 		if status != "" && !strings.EqualFold(ne.StringValue(account.Status), status) {
@@ -117,6 +131,9 @@ func updateNetworkAccountResource(account ne.Account, metroCode string, d *schem
 	}
 	if err := d.Set(networkAccountSchemaNames["MetroCode"], metroCode); err != nil {
 		return fmt.Errorf("error reading MetroCode: %s", err)
+	}
+	if err := d.Set(networkAccountSchemaNames["ProjectID"], account.ProjectID); err != nil {
+		return fmt.Errorf("error reading ProjectID: %s", err)
 	}
 	return nil
 }

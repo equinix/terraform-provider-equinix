@@ -17,6 +17,8 @@ in corresponding metro location.
 data "equinix_network_account" "dc" {
   metro_code = "DC"
   status     = "Active"
+  project_id = "a86d7112-d740-4758-9c9c-31e66373746b"
+" 
 }
 
 output "number" {
@@ -32,6 +34,8 @@ The following arguments are supported:
 * `name` - (Optional) Account name for filtering.
 * `status` - (Optional) Account status for filtering. Possible values are: `Active`, `Processing`,
 `Submitted`, `Staged`.
+* `project_id` - (Optional) Unique Identifier for the project resource where the account is scoped to.If you
+leave it out, all the billing accounts are returned under all projects in your organization and search criteria will return more than one account.
 
 ## Attributes Reference
 
