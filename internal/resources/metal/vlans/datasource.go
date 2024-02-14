@@ -111,7 +111,7 @@ func dataSourceMetalVlanRead(ctx context.Context, d *schema.ResourceData, meta i
 			return diag.FromErr(equinix_errors.FriendlyError(err))
 		}
 
-		vlan, err = matchingVlan(vlans.VirtualNetworks, vxlan, projectID, facility, metro)
+		vlan, err = MatchingVlan(vlans.VirtualNetworks, vxlan, projectID, facility, metro)
 		if err != nil {
 			return diag.FromErr(equinix_errors.FriendlyError(err))
 		}
@@ -134,7 +134,7 @@ func dataSourceMetalVlanRead(ctx context.Context, d *schema.ResourceData, meta i
 	}))
 }
 
-func matchingVlan(vlans []packngo.VirtualNetwork, vxlan int, projectID, facility, metro string) (*packngo.VirtualNetwork, error) {
+func MatchingVlan(vlans []packngo.VirtualNetwork, vxlan int, projectID, facility, metro string) (*packngo.VirtualNetwork, error) {
 	matches := []packngo.VirtualNetwork{}
 	for _, v := range vlans {
 		if vxlan != 0 && v.VXLAN != vxlan {

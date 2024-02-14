@@ -1,4 +1,4 @@
-package vlans
+package vlans_test
 
 import (
 	"fmt"
