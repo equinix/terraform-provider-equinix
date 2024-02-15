@@ -14,6 +14,12 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 )
 
+// Note:
+// Keeping data "equinix_fabric_routing_protocol" tests in this file
+// due to the long setup times required for RP tests.
+// The FCR, Connection and RPs will already be created in the resource test, so the
+// data_source tests will just leverage the RPs there to retrieve the data and check results
+
 func TestAccFabricCreateDirectRoutingProtocol_PFCR_A(t *testing.T) {
 	ports := GetFabricEnvPorts(t)
 
@@ -29,9 +35,9 @@ func TestAccFabricCreateDirectRoutingProtocol_PFCR_A(t *testing.T) {
 		CheckDestroy: checkRoutingProtocolDelete,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccFabricCreateRoutingProtocolConfig("fcr_test_PFCR", portUuid),
+				Config: testAccFabricCreateRoutingProtocolConfig("RP_Conn_Test_PFCR", portUuid),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrSet("equinix_fabric_routing_protocol.direct", "uuid"),
+					resource.TestCheckResourceAttrSet("equinix_fabric_routing_protocol.direct", "id"),
 					resource.TestCheckResourceAttr("equinix_fabric_routing_protocol.direct", "type", "DIRECT"),
 					resource.TestCheckResourceAttr("equinix_fabric_routing_protocol.direct", "state", "PROVISIONED"),
 					resource.TestCheckResourceAttrSet("equinix_fabric_routing_protocol.direct", "change.0.uuid"),
@@ -39,18 +45,39 @@ func TestAccFabricCreateDirectRoutingProtocol_PFCR_A(t *testing.T) {
 					resource.TestCheckResourceAttr("equinix_fabric_routing_protocol.direct", "direct_ipv4.0.equinix_iface_ip", "190.1.1.1/30"),
 					resource.TestCheckResourceAttr("equinix_fabric_routing_protocol.direct", "direct_ipv6.0.equinix_iface_ip", "190::1:1/126"),
 
-					resource.TestCheckResourceAttrSet("equinix_fabric_routing_protocol.bgp", "uuid"),
+					resource.TestCheckResourceAttrSet("equinix_fabric_routing_protocol.bgp", "id"),
 					resource.TestCheckResourceAttr("equinix_fabric_routing_protocol.bgp", "type", "BGP"),
 					resource.TestCheckResourceAttr("equinix_fabric_routing_protocol.bgp", "state", "PROVISIONED"),
 					resource.TestCheckResourceAttrSet("equinix_fabric_routing_protocol.bgp", "change.0.uuid"),
 					resource.TestCheckResourceAttr("equinix_fabric_routing_protocol.bgp", "change.0.type", "ROUTING_PROTOCOL_CREATION"),
-					resource.TestCheckResourceAttr("equinix_fabric_routing_protocol.bgp", "bgpIpv4.0.customerPeerIp", "190.1.1.2"),
-					resource.TestCheckResourceAttr("equinix_fabric_routing_protocol.bgp", "bgpIpv4.0.equinixPeerIp", "190.1.1.1"),
-					resource.TestCheckResourceAttr("equinix_fabric_routing_protocol.bgp", "bgpIpv4.0.enabled", "true"),
-					resource.TestCheckResourceAttr("equinix_fabric_routing_protocol.bgp", "bgpIpv6.0.customerPeerIp", "190::1:2"),
-					resource.TestCheckResourceAttr("equinix_fabric_routing_protocol.bgp", "bgpIpv6.0.equinixPeerIp", "190::1:1"),
-					resource.TestCheckResourceAttr("equinix_fabric_routing_protocol.bgp", "bgpIpv6.0.enabled", "true"),
-					resource.TestCheckResourceAttr("equinix_fabric_routing_protocol.bgp", "customerAsn", "100"),
+					resource.TestCheckResourceAttr("equinix_fabric_routing_protocol.bgp", "bgp_ipv4.0.customer_peer_ip", "190.1.1.2"),
+					resource.TestCheckResourceAttr("equinix_fabric_routing_protocol.bgp", "bgp_ipv4.0.equinix_peer_ip", "190.1.1.1"),
+					resource.TestCheckResourceAttr("equinix_fabric_routing_protocol.bgp", "bgp_ipv4.0.enabled", "true"),
+					resource.TestCheckResourceAttr("equinix_fabric_routing_protocol.bgp", "bgp_ipv6.0.customer_peer_ip", "190::1:2"),
+					resource.TestCheckResourceAttr("equinix_fabric_routing_protocol.bgp", "bgp_ipv6.0.equinix_peer_ip", "190::1:1"),
+					resource.TestCheckResourceAttr("equinix_fabric_routing_protocol.bgp", "bgp_ipv6.0.enabled", "true"),
+					resource.TestCheckResourceAttr("equinix_fabric_routing_protocol.bgp", "customer_asn", "100"),
+
+					resource.TestCheckResourceAttrSet("data.equinix_fabric_routing_protocol.direct", "id"),
+					resource.TestCheckResourceAttr("data.equinix_fabric_routing_protocol.direct", "type", "DIRECT"),
+					resource.TestCheckResourceAttr("data.equinix_fabric_routing_protocol.direct", "state", "PROVISIONED"),
+					resource.TestCheckResourceAttrSet("data.equinix_fabric_routing_protocol.direct", "change.0.uuid"),
+					resource.TestCheckResourceAttr("data.equinix_fabric_routing_protocol.direct", "change.0.type", "ROUTING_PROTOCOL_CREATION"),
+					resource.TestCheckResourceAttr("data.equinix_fabric_routing_protocol.direct", "direct_ipv4.0.equinix_iface_ip", "190.1.1.1/30"),
+					resource.TestCheckResourceAttr("data.equinix_fabric_routing_protocol.direct", "direct_ipv6.0.equinix_iface_ip", "190::1:1/126"),
+
+					resource.TestCheckResourceAttrSet("data.equinix_fabric_routing_protocol.bgp", "id"),
+					resource.TestCheckResourceAttr("data.equinix_fabric_routing_protocol.bgp", "type", "BGP"),
+					resource.TestCheckResourceAttr("data.equinix_fabric_routing_protocol.bgp", "state", "PROVISIONED"),
+					resource.TestCheckResourceAttrSet("data.equinix_fabric_routing_protocol.bgp", "change.0.uuid"),
+					resource.TestCheckResourceAttr("data.equinix_fabric_routing_protocol.bgp", "change.0.type", "ROUTING_PROTOCOL_CREATION"),
+					resource.TestCheckResourceAttr("data.equinix_fabric_routing_protocol.bgp", "bgp_ipv4.0.customer_peer_ip", "190.1.1.2"),
+					resource.TestCheckResourceAttr("data.equinix_fabric_routing_protocol.bgp", "bgp_ipv4.0.equinix_peer_ip", "190.1.1.1"),
+					resource.TestCheckResourceAttr("data.equinix_fabric_routing_protocol.bgp", "bgp_ipv4.0.enabled", "true"),
+					resource.TestCheckResourceAttr("data.equinix_fabric_routing_protocol.bgp", "bgp_ipv6.0.customer_peer_ip", "190::1:2"),
+					resource.TestCheckResourceAttr("data.equinix_fabric_routing_protocol.bgp", "bgp_ipv6.0.equinix_peer_ip", "190::1:1"),
+					resource.TestCheckResourceAttr("data.equinix_fabric_routing_protocol.bgp", "bgp_ipv6.0.enabled", "true"),
+					resource.TestCheckResourceAttr("data.equinix_fabric_routing_protocol.bgp", "customer_asn", "100"),
 				),
 				ExpectNonEmptyPlan: true,
 			},
@@ -63,7 +90,7 @@ func testAccFabricCreateRoutingProtocolConfig(name, portUuid string) string {
 
 resource "equinix_fabric_cloud_router" "this" {
 	type = "XF_ROUTER"
-	name = "Test_PFCR"
+	name = "RP_Test_PFCR"
 	location{
 		metro_code  = "SV"
 	}
@@ -129,30 +156,43 @@ resource "equinix_fabric_connection" "this" {
 
 resource "equinix_fabric_routing_protocol" "direct" {
 	connection_uuid = equinix_fabric_connection.this.id
+	type = "DIRECT"
+	name = "rp_direct_PFCR"
 	direct_ipv4{
 		equinix_iface_ip = "190.1.1.1/30"
 	}
 	direct_ipv6{
 		equinix_iface_ip = "190::1:1/126"
 	}
-	type = "DIRECT"
-	name = "fabric_tf_acc_test_rpDirect"
 }
 
 resource "equinix_fabric_routing_protocol" "bgp" {
 	depends_on = [
-    equinix_fabric_routing_protocol.direct
+      equinix_fabric_routing_protocol.direct
   	]
 	connection_uuid = equinix_fabric_connection.this.id
+	type = "BGP"
+	name = "rp_bgp_PFCR"
 	bgp_ipv4{
 		customer_peer_ip = "190.1.1.2"
 	}
 	bgp_ipv6{
 		customer_peer_ip = "190::1:2"
 	}
-	type = "BGP"
 	customer_asn = "100"
-}`, name, portUuid)
+}
+
+data "equinix_fabric_routing_protocol" "direct" {
+	connection_uuid = equinix_fabric_connection.this.id
+	uuid = equinix_fabric_routing_protocol.direct.id
+}
+
+data "equinix_fabric_routing_protocol" "bgp" {
+	connection_uuid = equinix_fabric_connection.this.id
+	uuid = equinix_fabric_routing_protocol.bgp.id
+}
+
+`, name, portUuid)
 }
 
 func checkRoutingProtocolDelete(s *terraform.State) error {
@@ -169,28 +209,3 @@ func checkRoutingProtocolDelete(s *terraform.State) error {
 	}
 	return nil
 }
-
-//func TestAccFabricReadRoutingProtocolByUuid(t *testing.T) {
-//	resource.ParallelTest(t, resource.TestCase{
-//		PreCheck:  func() { acceptance.TestAccPreCheck(t) },
-//		Providers: acceptance.TestAccProviders,
-//		Steps: []resource.TestStep{
-//			{
-//				Config: testAccFabricReadRoutingProtocolConfig("99d6bdc8-206f-4bff-a899-0dba708c03db", "00f48313-ab13-4524-aaad-93c31b5b8848"),
-//				Check: resource.ComposeTestCheckFunc(
-//					resource.TestCheckResourceAttr(
-//						"equinix_fabric_routing_protocol.test", "type", fmt.Sprint("DIRECT")),
-//					resource.TestCheckResourceAttr(
-//						"equinix_fabric_routing_protocol.test", "state", fmt.Sprint("PROVISIONED")),
-//				),
-//			},
-//		},
-//	})
-//}
-//
-//func testAccFabricReadRoutingProtocolConfig(connectionUuid string, routingProtocolUuid string) string {
-//	return fmt.Sprintf(`data "equinix_fabric_routing_protocol" "test" {
-//	connection_uuid = "%s"
-//	uuid = "%s"
-//	}`, connectionUuid, routingProtocolUuid)
-//}
