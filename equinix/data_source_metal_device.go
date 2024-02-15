@@ -212,7 +212,7 @@ func dataSourceMetalDevice() *schema.Resource {
 }
 
 func dataSourceMetalDeviceRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := meta.(*config.Config).Metalgo
+	client := meta.(*config.Config).NewMetalClientForSDK(d)
 
 	hostnameRaw, hostnameOK := d.GetOk("hostname")
 	projectIdRaw, projectIdOK := d.GetOk("project_id")

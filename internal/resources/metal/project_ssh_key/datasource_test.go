@@ -49,7 +49,7 @@ func TestAccDataSourceMetalProjectSSHKey_bySearch(t *testing.T) {
 	})
 }
 
-func TestAccDataSourceMetalProjectSSHKeyDataSource_yID(t *testing.T) {
+func TestAccDataSourceMetalProjectSSHKeyDataSource_byID(t *testing.T) {
 	datasourceName := "data.equinix_metal_project_ssh_key.foobar"
 
 	publicKeyMaterial, _, err := acctest.RandSSHKeyPair("")
@@ -165,7 +165,7 @@ func TestAccDataSourceMetalProjectSSHKey_upgradeFromVersion(t *testing.T) {
 			{
 				ExternalProviders: map[string]resource.ExternalProvider{
 					"equinix": {
-						VersionConstraint: "1.24.0", // latest version with resource defined on SDKv2
+						VersionConstraint: "1.27.0", // latest version with resource defined on SDKv2
 						Source:            "equinix/equinix",
 					},
 				},

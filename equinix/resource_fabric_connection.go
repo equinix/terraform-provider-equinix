@@ -595,7 +595,7 @@ func connectionRedundancySch() map[string]*schema.Schema {
 			Type:        schema.TypeString,
 			Computed:    true,
 			Optional:    true,
-			Description: "Redundancy group identifier (UUID of primary connection)",
+			Description: "Redundancy group identifier (Use the redundancy.0.group UUID of primary connection; e.g. one(equinix_fabric_connection.primary_port_connection.redundancy).group or equinix_fabric_connection.primary_port_connection.redundancy.0.group)",
 		},
 		"priority": {
 			Type:         schema.TypeString,
@@ -786,7 +786,7 @@ func setFabricMap(d *schema.ResourceData, conn v4.Connection) diag.Diagnostics {
 		"change_log":      equinix_fabric_schema.ChangeLogToTerra(conn.ChangeLog),
 		"redundancy":      connectionRedundancyToTerra(conn.Redundancy),
 		"notifications":   equinix_fabric_schema.NotificationsToTerra(conn.Notifications),
-		"account":         accountToTerra(conn.Account),
+		"account":         equinix_fabric_schema.AccountToTerra(conn.Account),
 		"a_side":          connectionSideToTerra(conn.ASide),
 		"z_side":          connectionSideToTerra(conn.ZSide),
 		"additional_info": additionalInfoToTerra(conn.AdditionalInfo),

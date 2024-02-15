@@ -108,7 +108,7 @@ func dataSourceMetalDeviceBGPNeighbors() *schema.Resource {
 }
 
 func dataSourceMetalDeviceBGPNeighborsRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := meta.(*config.Config).Metalgo
+	client := meta.(*config.Config).NewMetalClientForSDK(d)
 	deviceID := d.Get("device_id").(string)
 
 	bgpNeighborsRaw, _, err := client.DevicesApi.GetBgpNeighborData(ctx, deviceID).Execute()

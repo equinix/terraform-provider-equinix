@@ -1,4 +1,4 @@
-package equinix
+package vrf
 
 import (
 	"context"
@@ -8,13 +8,13 @@ import (
 	equinix_errors "github.com/equinix/terraform-provider-equinix/internal/errors"
 	equinix_schema "github.com/equinix/terraform-provider-equinix/internal/schema"
 
+	"github.com/equinix/equinix-sdk-go/services/metalv1"
 	"github.com/equinix/terraform-provider-equinix/internal/config"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/packethost/packngo"
 )
 
-func resourceMetalVRF() *schema.Resource {
+func Resource() *schema.Resource {
 	return &schema.Resource{
 		ReadWithoutTimeout:   resourceMetalVRFRead,
 		CreateWithoutTimeout: resourceMetalVRFCreate,
@@ -63,51 +63,55 @@ func resourceMetalVRF() *schema.Resource {
 }
 
 func resourceMetalVRFCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	meta.(*config.Config).AddModuleToMetalUserAgent(d)
-	client := meta.(*config.Config).Metal
+	client := meta.(*config.Config).NewMetalClientForSDK(d)
 
-	createRequest := &packngo.VRFCreateRequest{
+	createRequest := metalv1.VrfCreateInput{
 		Name:        d.Get("name").(string),
-		Description: d.Get("description").(string),
+		Description: metalv1.PtrString(d.Get("description").(string)),
 		Metro:       d.Get("metro").(string),
-		LocalASN:    d.Get("local_asn").(int),
-		IPRanges:    converters.SetToStringList(d.Get("ip_ranges").(*schema.Set)),
+		IpRanges:    converters.SetToStringList(d.Get("ip_ranges").(*schema.Set)),
+	}
+
+	if value, ok := d.GetOk("local_asn"); ok {
+		createRequest.LocalAsn = metalv1.PtrInt32(int32(value.(int)))
 	}
 
 	projectId := d.Get("project_id").(string)
-	vrf, _, err := client.VRFs.Create(projectId, createRequest)
+	vrf, _, err := client.VRFsApi.
+		CreateVrf(ctx, projectId).
+		VrfCreateInput(createRequest).
+		Execute()
 	if err != nil {
 		return diag.FromErr(equinix_errors.FriendlyError(err))
 	}
 
-	d.SetId(vrf.ID)
+	d.SetId(vrf.GetId())
 
 	return resourceMetalVRFRead(ctx, d, meta)
 }
 
 func resourceMetalVRFUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	meta.(*config.Config).AddModuleToMetalUserAgent(d)
-	client := meta.(*config.Config).Metal
+	client := meta.(*config.Config).NewMetalClientForSDK(d)
 
-	sPtr := func(s string) *string { return &s }
-	iPtr := func(i int) *int { return &i }
-
-	updateRequest := &packngo.VRFUpdateRequest{}
+	updateRequest := metalv1.VrfUpdateInput{}
 	if d.HasChange("name") {
-		updateRequest.Name = sPtr(d.Get("name").(string))
+		updateRequest.SetName(d.Get("name").(string))
 	}
 	if d.HasChange("description") {
-		updateRequest.Description = sPtr(d.Get("description").(string))
+		updateRequest.SetDescription(d.Get("description").(string))
 	}
 	if d.HasChange("local_asn") {
-		updateRequest.LocalASN = iPtr(d.Get("local_asn").(int))
+		updateRequest.SetLocalAsn(int32(d.Get("local_asn").(int)))
 	}
 	if d.HasChange("ip_ranges") {
 		ipRanges := converters.SetToStringList(d.Get("ip_ranges").(*schema.Set))
-		updateRequest.IPRanges = &ipRanges
+		updateRequest.SetIpRanges(ipRanges)
 	}
 
-	_, _, err := client.VRFs.Update(d.Id(), updateRequest)
+	_, _, err := client.VRFsApi.
+		UpdateVrf(ctx, d.Id()).
+		VrfUpdateInput(updateRequest).
+		Execute()
 	if err != nil {
 		return diag.FromErr(equinix_errors.FriendlyError(err))
 	}
@@ -116,12 +120,12 @@ func resourceMetalVRFUpdate(ctx context.Context, d *schema.ResourceData, meta in
 }
 
 func resourceMetalVRFRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	meta.(*config.Config).AddModuleToMetalUserAgent(d)
-	client := meta.(*config.Config).Metal
+	client := meta.(*config.Config).NewMetalClientForSDK(d)
 
-	getOpts := &packngo.GetOptions{Includes: []string{"project", "metro"}}
-
-	vrf, _, err := client.VRFs.Get(d.Id(), getOpts)
+	vrf, _, err := client.VRFsApi.
+		FindVrfById(ctx, d.Id()).
+		Include([]string{"project", "metro"}).
+		Execute()
 	if err != nil {
 		if equinix_errors.IsNotFound(err) || equinix_errors.IsForbidden(err) {
 			log.Printf("[WARN] VRF (%s) not accessible, removing from state", d.Id())
@@ -132,12 +136,12 @@ func resourceMetalVRFRead(ctx context.Context, d *schema.ResourceData, meta inte
 		return diag.FromErr(err)
 	}
 	m := map[string]interface{}{
-		"name":        vrf.Name,
-		"description": vrf.Description,
-		"metro":       vrf.Metro.Code,
-		"local_asn":   vrf.LocalASN,
-		"ip_ranges":   vrf.IPRanges,
-		"project_id":  vrf.Project.ID,
+		"name":        vrf.GetName(),
+		"description": vrf.GetDescription(),
+		"metro":       vrf.Metro.GetCode(),
+		"local_asn":   vrf.GetLocalAsn(),
+		"ip_ranges":   vrf.GetIpRanges(),
+		"project_id":  vrf.Project.GetId(),
 	}
 
 	return diag.FromErr(equinix_schema.SetMap(d, m))

@@ -1,20 +1,19 @@
-package project_ssh_key
+package gateway
 
 import (
-	"github.com/equinix/equinix-sdk-go/services/metalv1"
 	equinix_errors "github.com/equinix/terraform-provider-equinix/internal/errors"
 	"github.com/equinix/terraform-provider-equinix/internal/framework"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
+	"github.com/packethost/packngo"
 
 	"context"
-	"fmt"
 )
 
 func NewDataSource() datasource.DataSource {
 	return &DataSource{
 		BaseDataSource: framework.NewBaseDataSource(
 			framework.BaseDataSourceConfig{
-				Name:   "equinix_metal_project_ssh_key",
+				Name:   "equinix_metal_gateway",
 				Schema: &dataSourceSchema,
 			},
 		),
@@ -30,7 +29,9 @@ func (r *DataSource) Read(
 	req datasource.ReadRequest,
 	resp *datasource.ReadResponse,
 ) {
-	client := r.Meta.NewMetalClientForFramework(ctx, req.ProviderMeta)
+	// Retrieve the API client from the provider metadata
+	r.Meta.AddFwModuleToMetalUserAgent(ctx, req.ProviderMeta)
+	client := r.Meta.Metal
 
 	// Retrieve values from plan
 	var data DataSourceModel
@@ -40,51 +41,22 @@ func (r *DataSource) Read(
 	}
 
 	// Extract the ID of the resource from the state
-	id := data.ID.ValueString()
-	search := data.Search.ValueString()
-	projectID := data.ProjectID.ValueString()
+	id := data.GatewayID.ValueString()
 
-	var (
-		key metalv1.SSHKey
-	)
-
-	// Use API client to list SSH keys
-	keysList, _, err := client.SSHKeysApi.FindProjectSSHKeys(context.Background(), projectID).Query(search).Execute()
+	// API call to get the Metal Gateway
+	includes := &packngo.GetOptions{Includes: []string{"project", "ip_reservation", "virtual_network", "vrf"}}
+	gw, _, err := client.MetalGateways.Get(id, includes)
 	if err != nil {
 		err = equinix_errors.FriendlyError(err)
 		resp.Diagnostics.AddError(
-			"Error listing project ssh keys",
-			err.Error(),
-		)
-		return
-	}
-
-	keys := keysList.GetSshKeys()
-	for i := range keys {
-		// use the first match for searches
-		if search != "" {
-			key = keys[i]
-			break
-		}
-
-		// otherwise find the matching ID
-		if keys[i].GetId() == id {
-			key = keys[i]
-			break
-		}
-	}
-
-	if key.GetId() == "" {
-		// Not Found
-		resp.Diagnostics.AddError(
-			"Error listing project ssh keys",
-			fmt.Errorf("project %q SSH Key matching %q was not found", projectID, search).Error(),
+			"Error reading Metal Gateway",
+			"Could not read Metal Gateway with ID "+id+": "+err.Error(),
 		)
 		return
 	}
 
 	// Set state to fully populated data
-	resp.Diagnostics.Append(data.parse(&key)...)
+	resp.Diagnostics.Append(data.parse(gw)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}

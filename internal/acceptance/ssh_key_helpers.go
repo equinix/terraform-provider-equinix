@@ -1,15 +1,16 @@
 package acceptance
 
 import (
+	"context"
 	"fmt"
 
+	"github.com/equinix/equinix-sdk-go/services/metalv1"
 	"github.com/equinix/terraform-provider-equinix/internal/config"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
-	"github.com/packethost/packngo"
 )
 
-func TestAccCheckMetalSSHKeyExists(n string, key *packngo.SSHKey) resource.TestCheckFunc {
+func TestAccCheckMetalSSHKeyExists(n string, key *metalv1.SSHKey) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
@@ -19,13 +20,13 @@ func TestAccCheckMetalSSHKeyExists(n string, key *packngo.SSHKey) resource.TestC
 			return fmt.Errorf("No Record ID is set")
 		}
 
-		client := TestAccProvider.Meta().(*config.Config).Metal
+		client := TestAccProvider.Meta().(*config.Config).NewMetalClientForTesting()
 
-		foundKey, _, err := client.SSHKeys.Get(rs.Primary.ID, nil)
+		foundKey, _, err := client.SSHKeysApi.FindSSHKeyById(context.Background(), rs.Primary.ID).Execute()
 		if err != nil {
 			return err
 		}
-		if foundKey.ID != rs.Primary.ID {
+		if foundKey.GetId() != rs.Primary.ID {
 			return fmt.Errorf("SSh Key not found: %v - %v", rs.Primary.ID, foundKey)
 		}
 

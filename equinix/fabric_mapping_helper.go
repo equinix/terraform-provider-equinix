@@ -222,71 +222,6 @@ func interfaceToFabric(interfaceList []interface{}) v4.ModelInterface {
 	return il
 }
 
-func accountToCloudRouter(accountList []interface{}) v4.SimplifiedAccount {
-	sa := v4.SimplifiedAccount{}
-	for _, ll := range accountList {
-		llMap := ll.(map[string]interface{})
-		ac := llMap["account_number"].(int)
-		sa = v4.SimplifiedAccount{AccountNumber: int64(ac)}
-	}
-	return sa
-}
-
-func packageToCloudRouter(packageList []interface{}) v4.CloudRouterPackageType {
-	p := v4.CloudRouterPackageType{}
-	for _, pl := range packageList {
-		plMap := pl.(map[string]interface{})
-		code := plMap["code"].(string)
-		p = v4.CloudRouterPackageType{Code: code}
-	}
-	return p
-}
-
-func accountToTerra(account *v4.SimplifiedAccount) *schema.Set {
-	if account == nil {
-		return nil
-	}
-	accounts := []*v4.SimplifiedAccount{account}
-	mappedAccounts := make([]interface{}, len(accounts))
-	for i, account := range accounts {
-		mappedAccounts[i] = map[string]interface{}{
-			"account_number":           int(account.AccountNumber),
-			"account_name":             account.AccountName,
-			"org_id":                   int(account.OrgId),
-			"organization_name":        account.OrganizationName,
-			"global_org_id":            account.GlobalOrgId,
-			"global_organization_name": account.GlobalOrganizationName,
-			"global_cust_id":           account.GlobalCustId,
-		}
-	}
-	hashAccount := &schema.Resource{Schema: equinix_schema.AccountSch()}
-	accountSet := schema.NewSet(
-		schema.HashResource(hashAccount),
-		mappedAccounts,
-	)
-
-	return accountSet
-}
-
-func accountCloudRouterToTerra(account *v4.SimplifiedAccount) *schema.Set {
-	if account == nil {
-		return nil
-	}
-	accounts := []*v4.SimplifiedAccount{account}
-	mappedAccounts := make([]interface{}, len(accounts))
-	for i, account := range accounts {
-		mappedAccounts[i] = map[string]interface{}{
-			"account_number": int(account.AccountNumber),
-		}
-	}
-	accountSet := schema.NewSet(
-		schema.HashResource(createCloudRouterAccountRes),
-		mappedAccounts,
-	)
-
-	return accountSet
-}
-
 func operationToTerra(operation *v4.ConnectionOperation) *schema.Set {
 	if operation == nil {
 		return nil
@@ -382,21 +317,6 @@ func cloudRouterToTerra(cloudRouter *v4.CloudRouter) *schema.Set {
 	return linkedProtocolSet
 }
 
-func cloudRouterPackageToTerra(packageType *v4.CloudRouterPackageType) *schema.Set {
-	packageTypes := []*v4.CloudRouterPackageType{packageType}
-	mappedPackages := make([]interface{}, len(packageTypes))
-	for i, packageType := range packageTypes {
-		mappedPackages[i] = map[string]interface{}{
-			"code": packageType.Code,
-		}
-	}
-	packageSet := schema.NewSet(
-		schema.HashResource(createPackageRes),
-		mappedPackages,
-	)
-	return packageSet
-}
-
 func virtualDeviceToTerra(virtualDevice *v4.VirtualDevice) *schema.Set {
 	if virtualDevice == nil {
 		return nil
@@ -462,7 +382,7 @@ func accessPointToTerra(accessPoint *v4.AccessPoint) *schema.Set {
 			mappedAccessPoint["type"] = string(*accessPoint.Type_)
 		}
 		if accessPoint.Account != nil {
-			mappedAccessPoint["account"] = accountToTerra(accessPoint.Account)
+			mappedAccessPoint["account"] = equinix_schema.AccountToTerra(accessPoint.Account)
 		}
 		if accessPoint.Location != nil {
 			mappedAccessPoint["location"] = equinix_schema.LocationToTerra(accessPoint.Location)
@@ -575,7 +495,7 @@ func apiConfigToTerra(apiConfig *v4.ApiConfig) *schema.Set {
 		mappedApiConfigs = append(mappedApiConfigs, mappedApiConfig)
 	}
 	apiConfigSet := schema.NewSet(
-		schema.HashResource(createApiConfigSchRes),
+		schema.HashResource(&schema.Resource{Schema: createApiConfigSch()}),
 		mappedApiConfigs)
 	return apiConfigSet
 }
@@ -591,7 +511,7 @@ func authenticationKeyToTerra(authenticationKey *v4.AuthenticationKey) *schema.S
 		mappedAuthenticationKeys = append(mappedAuthenticationKeys, mappedAuthenticationKey)
 	}
 	apiConfigSet := schema.NewSet(
-		schema.HashResource(createAuthenticationKeySchRes),
+		schema.HashResource(&schema.Resource{Schema: createAuthenticationKeySch()}),
 		mappedAuthenticationKeys)
 	return apiConfigSet
 }
@@ -935,25 +855,5 @@ func getUpdateRequests(conn v4.Connection, d *schema.ResourceData) ([][]v4.Conne
 		return changeOps, fmt.Errorf("nothing to update for the connection %s", existingName)
 	}
 
-	return changeOps, nil
-}
-
-func getCloudRouterUpdateRequest(conn v4.CloudRouter, d *schema.ResourceData) (v4.CloudRouterChangeOperation, error) {
-	changeOps := v4.CloudRouterChangeOperation{}
-	existingName := conn.Name
-	existingPackage := conn.Package_.Code
-	updateNameVal := d.Get("name")
-	updatePackageVal := d.Get("conn.Package_.Code")
-
-	log.Printf("existing name %s, existing Package %s, Update Name Request %s, Update Package Request %s ",
-		existingName, existingPackage, updateNameVal, updatePackageVal)
-
-	if existingName != updateNameVal {
-		changeOps = v4.CloudRouterChangeOperation{Op: "replace", Path: "/name", Value: &updateNameVal}
-	} else if existingPackage != updatePackageVal {
-		changeOps = v4.CloudRouterChangeOperation{Op: "replace", Path: "/package", Value: &updatePackageVal}
-	} else {
-		return changeOps, fmt.Errorf("nothing to update for the connection %s", existingName)
-	}
 	return changeOps, nil
 }

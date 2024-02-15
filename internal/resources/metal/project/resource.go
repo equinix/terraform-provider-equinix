@@ -132,8 +132,7 @@ func expandBGPConfig(d *schema.ResourceData) (*metalv1.BgpConfigRequestInput, er
 }
 
 func resourceMetalProjectCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	meta.(*config.Config).AddModuleToMetalGoUserAgent(d)
-	client := meta.(*config.Config).Metalgo
+	client := meta.(*config.Config).NewMetalClientForSDK(d)
 
 	createRequest := metalv1.ProjectCreateFromRootInput{
 		Name: d.Get("name").(string),
@@ -177,8 +176,7 @@ func resourceMetalProjectCreate(ctx context.Context, d *schema.ResourceData, met
 }
 
 func resourceMetalProjectRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	meta.(*config.Config).AddModuleToMetalUserAgent(d)
-	client := meta.(*config.Config).Metalgo
+	client := meta.(*config.Config).NewMetalClientForSDK(d)
 
 	proj, resp, err := client.ProjectsApi.FindProjectById(ctx, d.Id()).Execute()
 	if err != nil {
@@ -199,8 +197,6 @@ func resourceMetalProjectRead(ctx context.Context, d *schema.ResourceData, meta 
 		d.Set("payment_method_id", path.Base(proj.PaymentMethod.GetHref()))
 	}
 	d.Set("name", proj.Name)
-	fmt.Println(proj.Organization.AdditionalProperties)
-	fmt.Println(proj.Organization.AdditionalProperties["href"])
 	d.Set("organization_id", path.Base(proj.Organization.AdditionalProperties["href"].(string))) // spec: organization has no href
 	d.Set("created", proj.GetCreatedAt().Format(time.RFC3339))
 	d.Set("updated", proj.GetUpdatedAt().Format(time.RFC3339))
@@ -251,8 +247,7 @@ func flattenBGPConfig(l *metalv1.BgpConfig) []map[string]interface{} {
 }
 
 func resourceMetalProjectUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	meta.(*config.Config).AddModuleToMetalGoUserAgent(d)
-	client := meta.(*config.Config).Metalgo
+	client := meta.(*config.Config).NewMetalClientForSDK(d)
 	updateRequest := metalv1.ProjectUpdateInput{}
 	if d.HasChange("name") {
 		pName := d.Get("name").(string)
@@ -306,8 +301,7 @@ func resourceMetalProjectUpdate(ctx context.Context, d *schema.ResourceData, met
 }
 
 func resourceMetalProjectDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	meta.(*config.Config).AddModuleToMetalGoUserAgent(d)
-	client := meta.(*config.Config).Metalgo
+	client := meta.(*config.Config).NewMetalClientForSDK(d)
 
 	resp, err := client.ProjectsApi.DeleteProject(ctx, d.Id()).Execute()
 	if equinix_errors.IgnoreHttpResponseErrors(equinix_errors.HttpForbidden, equinix_errors.HttpNotFound)(resp, err) != nil {

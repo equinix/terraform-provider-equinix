@@ -161,7 +161,8 @@ func Test_waitUntilReservationProvisionable(t *testing.T) {
 			}
 			meta.Load(ctx)
 
-			if err := waitUntilReservationProvisionable(ctx, meta.Metalgo, tt.args.reservationId, tt.args.instanceId, 50*time.Millisecond, 1*time.Second, 50*time.Millisecond); (err != nil) != tt.wantErr {
+			client := meta.NewMetalClientForTesting()
+			if err := waitUntilReservationProvisionable(ctx, client, tt.args.reservationId, tt.args.instanceId, 50*time.Millisecond, 1*time.Second, 50*time.Millisecond); (err != nil) != tt.wantErr {
 				t.Errorf("waitUntilReservationProvisionable() error = %v, wantErr %v", err, tt.wantErr)
 			}
 

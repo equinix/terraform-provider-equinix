@@ -109,7 +109,7 @@ func DataSource() *schema.Resource {
 }
 
 func dataSourceMetalProjectRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := meta.(*config.Config).Metalgo
+	client := meta.(*config.Config).NewMetalClientForSDK(d)
 	nameRaw, nameOK := d.GetOk("name")
 	projectIdRaw, projectIdOK := d.GetOk("project_id")
 
@@ -143,7 +143,7 @@ func dataSourceMetalProjectRead(ctx context.Context, d *schema.ResourceData, met
 	d.Set("payment_method_id", path.Base(project.PaymentMethod.GetHref()))
 	d.Set("name", project.GetName())
 	d.Set("project_id", project.GetId())
-	d.Set("organization_id", path.Base(project.Organization.GetId())) // Should be gethref?
+	d.Set("organization_id", path.Base(project.Organization.AdditionalProperties["href"].(string))) // spec: organization has no href
 	d.Set("created", project.GetCreatedAt().Format(time.RFC3339))
 	d.Set("updated", project.GetUpdatedAt().Format(time.RFC3339))
 	d.Set("backend_transfer", project.AdditionalProperties["backend_transfer_enabled"].(bool)) // No backend_transfer_enabled property in API spec
