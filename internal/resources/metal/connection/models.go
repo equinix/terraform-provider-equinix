@@ -8,32 +8,56 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	"github.com/packethost/packngo"
 )
 
 type ResourceModel struct {
-	ID               types.String `tfsdk:"id"`
-	Name             types.String `tfsdk:"name"`
-	Facility         types.String `tfsdk:"facility"`
-	Metro            types.String `tfsdk:"metro"`
-	Redundancy       types.String `tfsdk:"redundancy"`
-	ContactEmail     types.String `tfsdk:"contact_email"`
-	Type             types.String `tfsdk:"type"`
-	ProjectID        types.String `tfsdk:"project_id"`
-	Speed            types.String `tfsdk:"speed"`
-	Description      types.String `tfsdk:"description"`
-	Mode             types.String `tfsdk:"mode"`
-	Tags             types.List   `tfsdk:"tags"`  // List of strings
-	Vlans            types.List   `tfsdk:"vlans"` // List of ints
-	ServiceTokenType types.String `tfsdk:"service_token_type"`
-	OrganizationID   types.String `tfsdk:"organization_id"`
-	Status           types.String `tfsdk:"status"`
-	Token            types.String `tfsdk:"token"`
-	Ports            types.List   `tfsdk:"ports"`          // List of Port
-	ServiceTokens    types.List   `tfsdk:"service_tokens"` // List of ServiceToken
+	ID               types.String        `tfsdk:"id"`
+	Name             types.String        `tfsdk:"name"`
+	Facility         types.String        `tfsdk:"facility"`
+	Metro            types.String        `tfsdk:"metro"`
+	Redundancy       types.String        `tfsdk:"redundancy"`
+	ContactEmail     types.String        `tfsdk:"contact_email"`
+	Type             types.String        `tfsdk:"type"`
+	ProjectID        types.String        `tfsdk:"project_id"`
+	Speed            types.String        `tfsdk:"speed"`
+	Description      types.String        `tfsdk:"description"`
+	Mode             types.String        `tfsdk:"mode"`
+	Tags             types.List          `tfsdk:"tags"`  // List of strings
+	Vlans            types.List          `tfsdk:"vlans"` // List of ints
+	ServiceTokenType types.String        `tfsdk:"service_token_type"`
+	OrganizationID   types.String        `tfsdk:"organization_id"`
+	Status           types.String        `tfsdk:"status"`
+	Token            types.String        `tfsdk:"token"`
+	Ports            []PortModel         `tfsdk:"ports"`          // List of Port
+	ServiceTokens    []ServiceTokenModel `tfsdk:"service_tokens"` // List of ServiceToken
 }
 
-type Port struct {
+type DataSourceModel struct {
+	ID               types.String        `tfsdk:"id"`
+	ConnectionID     types.String        `tfsdk:"connection_id"`
+	Name             types.String        `tfsdk:"name"`
+	Facility         types.String        `tfsdk:"facility"`
+	Metro            types.String        `tfsdk:"metro"`
+	Redundancy       types.String        `tfsdk:"redundancy"`
+	ContactEmail     types.String        `tfsdk:"contact_email"`
+	Type             types.String        `tfsdk:"type"`
+	ProjectID        types.String        `tfsdk:"project_id"`
+	Speed            types.String        `tfsdk:"speed"`
+	Description      types.String        `tfsdk:"description"`
+	Mode             types.String        `tfsdk:"mode"`
+	Tags             types.List          `tfsdk:"tags"`  // List of strings
+	Vlans            types.List          `tfsdk:"vlans"` // List of ints
+	ServiceTokenType types.String        `tfsdk:"service_token_type"`
+	OrganizationID   types.String        `tfsdk:"organization_id"`
+	Status           types.String        `tfsdk:"status"`
+	Token            types.String        `tfsdk:"token"`
+	Ports            []PortModel         `tfsdk:"ports"`          // List of Port
+	ServiceTokens    []ServiceTokenModel `tfsdk:"service_tokens"` // List of ServiceToken
+}
+
+type PortModel struct {
 	ID                types.String `tfsdk:"id"`
 	Name              types.String `tfsdk:"name"`
 	Role              types.String `tfsdk:"role"`
@@ -43,7 +67,7 @@ type Port struct {
 	VirtualCircuitIDs types.List   `tfsdk:"virtual_circuit_ids"` // List of String
 }
 
-type ServiceToken struct {
+type ServiceTokenModel struct {
 	ID              types.String `tfsdk:"id"`
 	MaxAllowedSpeed types.String `tfsdk:"max_allowed_speed"`
 	Role            types.String `tfsdk:"role"`
@@ -51,44 +75,71 @@ type ServiceToken struct {
 	Type            types.String `tfsdk:"type"`
 }
 
+func (m *DataSourceModel) parse(ctx context.Context, conn *packngo.Connection) diag.Diagnostics {
+	var diags diag.Diagnostics
+
+	m.ConnectionID = types.StringValue(conn.ID)
+	parseConnection(ctx, conn,
+		&m.ID, &m.OrganizationID, &m.Name, &m.Facility, &m.Metro,
+		&m.Description, &m.ContactEmail, &m.Status, &m.Redundancy,
+		&m.Token, &m.Type, &m.Mode, &m.ServiceTokenType, &m.Speed,
+		&m.ProjectID, &m.Tags, &m.Vlans, &m.Ports, &m.ServiceTokens,
+	)
+
+	return diags
+}
+
 func (m *ResourceModel) parse(ctx context.Context, conn *packngo.Connection) diag.Diagnostics {
 	var diags diag.Diagnostics
 
-	m.ID = types.StringValue(conn.ID)
-	m.OrganizationID = types.StringValue(conn.Organization.ID)
-	m.Name = types.StringValue(conn.Name)
-	m.Facility = types.StringValue(conn.Facility.Code)
+	parseConnection(ctx, conn,
+		&m.ID, &m.OrganizationID, &m.Name, &m.Facility, &m.Metro,
+		&m.Description, &m.ContactEmail, &m.Status, &m.Redundancy,
+		&m.Token, &m.Type, &m.Mode, &m.ServiceTokenType, &m.Speed,
+		&m.ProjectID, &m.Tags, &m.Vlans, &m.Ports, &m.ServiceTokens,
+	)
+
+	return diags
+}
+
+func parseConnection(ctx context.Context, conn *packngo.Connection, id, orgID, name, facility, metro, description, contactEmail, status, redundancy, token, typ, mode, serviceTokenType, speed, projectID *basetypes.StringValue, tags, vlans *basetypes.ListValue, ports *[]PortModel, serviceTokens *[]ServiceTokenModel) diag.Diagnostics {
+	var diags diag.Diagnostics
+
+	*id = types.StringValue(conn.ID)
+	*orgID = types.StringValue(conn.Organization.ID)
+	*name = types.StringValue(conn.Name)
+	*facility = types.StringValue(conn.Facility.Code)
 
 	// TODO(ocobles) we were using "StateFunc: converters.ToLowerIf" for "metro" field in the sdkv2
 	// version of this resource. StateFunc doesn't exist in terraform and it requires implementation
 	// of bespoke logic before storing state. To ensure backward compatibility we ignore lower/upper
 	// case diff for now, but we may want to require input upper case
-	if !strings.EqualFold(m.Metro.ValueString(), conn.Metro.Code) {
-		m.Metro = types.StringValue(conn.Metro.Code)
+	if !strings.EqualFold(metro.ValueString(), conn.Metro.Code) {
+		*metro = types.StringValue(conn.Metro.Code)
 	}
 
 	// TODO(ocobles) API returns "" when description was not provided
 	// To ensure backward compatibility we ignore null/empty diff
-	if !m.Description.IsNull() || (m.Description.IsNull() && conn.Description != "") {
-		m.Description = types.StringValue(conn.Description)
+	if !description.IsNull() || (description.IsNull() && conn.Description != "") {
+		*description = types.StringValue(conn.Description)
 	}
 
-	m.ContactEmail = types.StringValue(conn.ContactEmail)
-	m.Status = types.StringValue(conn.Status)
-	m.Redundancy = types.StringValue(string(conn.Redundancy))
-	m.Token = types.StringValue(conn.Token)
-	m.Type = types.StringValue(string(conn.Type))
+	*contactEmail = types.StringValue(conn.ContactEmail)
+	*status = types.StringValue(conn.Status)
+	*redundancy = types.StringValue(string(conn.Redundancy))
+	*token = types.StringValue(conn.Token)
+	*typ = types.StringValue(string(conn.Type))
 
 	if conn.Mode != nil {
-		m.Mode = types.StringValue(string(*conn.Mode))
+		*mode = types.StringValue(string(*conn.Mode))
 	}
 
-	if !m.Tags.IsNull() || (m.Tags.IsNull() && conn.Tags != nil && len(conn.Tags) > 0) {
-		tags, diags := types.ListValueFrom(ctx, types.StringType, conn.Tags)
+	if !tags.IsNull() || (tags.IsNull() && conn.Tags != nil && len(conn.Tags) > 0) {
+		connTags, diags := types.ListValueFrom(ctx, types.StringType, conn.Tags)
 		if diags.HasError() {
 			return diags
 		}
-		m.Tags = tags
+		*tags = connTags
 	}
 
 	// Parse Service Token Type
@@ -96,14 +147,14 @@ func (m *ResourceModel) parse(ctx context.Context, conn *packngo.Connection) dia
 	if len(conn.Tokens) > 0 {
 		tokenType = string(conn.Tokens[0].ServiceTokenType)
 	}
-	m.ServiceTokenType = types.StringValue(tokenType)
+	*serviceTokenType = types.StringValue(tokenType)
 
 	// Parse Speed
 	if !(tokenType == "z_side" && conn.Type == packngo.ConnectionShared) {
-		speed := "0"
+		connSpeed := "0"
 		var err error
 		if conn.Speed > 0 {
-			speed, err = speedUintToStr(conn.Speed)
+			connSpeed, err = speedUintToStr(conn.Speed)
 			if err != nil {
 				diags.AddError(
 					fmt.Sprintf("Failed to convert Speed (%d) to string", conn.Speed),
@@ -112,7 +163,7 @@ func (m *ResourceModel) parse(ctx context.Context, conn *packngo.Connection) dia
 				return diags
 			}
 		}
-		m.Speed = types.StringValue(speed)
+		*speed = types.StringValue(connSpeed)
 	}
 
 	// Parse Project ID
@@ -121,24 +172,36 @@ func (m *ResourceModel) parse(ctx context.Context, conn *packngo.Connection) dia
 	if conn.Type == packngo.ConnectionShared {
 		// Note: we were using conn.Ports[0].VirtualCircuits[0].Project.ID in the sdkv2 version but
 		// it is empty and in framework that produces an unexpected new value.
-		m.ProjectID = types.StringValue(path.Base(conn.Ports[0].VirtualCircuits[0].Project.URL))
+		*projectID = types.StringValue(path.Base(conn.Ports[0].VirtualCircuits[0].Project.URL))
 	}
 
 	// Parse Vlans
-	diags = m.parseConnectionVlans(ctx, conn)
+	connVlans, diags := parseConnectionVlans(ctx, conn)
 	if diags.HasError() {
 		return diags
 	}
+	*vlans = *connVlans
 
 	// Parse Ports
-	diags = m.parseConnectionPorts(ctx, conn.Ports)
+	connPorts, diags := parseConnectionPorts(ctx, conn.Ports)
 	if diags.HasError() {
 		return diags
 	}
+	*ports = *connPorts
 
 	// Parse ServiceTokens
-	connServiceTokens := make([]ServiceToken, len(conn.Tokens))
-	for i, token := range conn.Tokens {
+	connServiceTokens, diags := parseConnectionServiceTokens(ctx, conn.Tokens)
+	if diags.HasError() {
+		return diags
+	}
+	*serviceTokens = *connServiceTokens
+
+	return diags
+}
+
+func parseConnectionServiceTokens(ctx context.Context, fst []packngo.FabricServiceToken) (*[]ServiceTokenModel, diag.Diagnostics) {
+	connServiceTokens := make([]ServiceTokenModel, len(fst))
+	for i, token := range fst {
 		speed, err := speedUintToStr(token.MaxAllowedSpeed)
 		if err != nil {
 			var diags diag.Diagnostics
@@ -146,9 +209,9 @@ func (m *ResourceModel) parse(ctx context.Context, conn *packngo.Connection) dia
 				fmt.Sprintf("Failed to convert token MaxAllowedSpeed (%d) to string", token.MaxAllowedSpeed),
 				err.Error(),
 			)
-			return diags
+			return nil, diags
 		}
-		connServiceTokens[i] = ServiceToken{
+		connServiceTokens[i] = ServiceTokenModel{
 			ID:              types.StringValue(token.ID),
 			MaxAllowedSpeed: types.StringValue(speed),
 			Role:            types.StringValue(string(token.Role)),
@@ -156,17 +219,11 @@ func (m *ResourceModel) parse(ctx context.Context, conn *packngo.Connection) dia
 			Type:            types.StringValue(string(token.ServiceTokenType)),
 		}
 	}
-	serviceTokens, diags := types.ListValueFrom(ctx, ServiceTokensObjectType, connServiceTokens)
-	if diags.HasError() {
-		return diags
-	}
-	m.ServiceTokens = serviceTokens
-
-	return diags
+	return &connServiceTokens, nil
 }
 
-func (m *ResourceModel) parseConnectionPorts(ctx context.Context, cps []packngo.ConnectionPort) diag.Diagnostics {
-	ret := make([]Port, len(cps))
+func parseConnectionPorts(ctx context.Context, cps []packngo.ConnectionPort) (*[]PortModel, diag.Diagnostics) {
+	ret := make([]PortModel, len(cps))
 	order := map[packngo.ConnectionPortRole]int{
 		packngo.ConnectionPortPrimary:   0,
 		packngo.ConnectionPortSecondary: 1,
@@ -180,9 +237,9 @@ func (m *ResourceModel) parseConnectionPorts(ctx context.Context, cps []packngo.
 		}
 		vcIDs, diags := types.ListValueFrom(ctx, types.StringType, portVcIDs)
 		if diags.HasError() {
-			return diags
+			return nil, diags
 		}
-		connPort := Port{
+		connPort := PortModel{
 			ID:                types.StringValue(p.ID),
 			Name:              types.StringValue(p.Name),
 			Role:              types.StringValue(string(p.Role)),
@@ -195,16 +252,10 @@ func (m *ResourceModel) parseConnectionPorts(ctx context.Context, cps []packngo.
 		// Sort the ports by role, asserting the API always returns primary for len of 1 responses
 		ret[order[p.Role]] = connPort
 	}
-
-	ports, diags := types.ListValueFrom(ctx, PortsObjectType, ret)
-	if diags.HasError() {
-		return diags
-	}
-	m.Ports = ports
-	return nil
+	return &ret, nil
 }
 
-func (m *ResourceModel) parseConnectionVlans(ctx context.Context, conn *packngo.Connection) diag.Diagnostics {
+func parseConnectionVlans(ctx context.Context, conn *packngo.Connection) (*basetypes.ListValue, diag.Diagnostics) {
 	var ret []int
 
 	if conn.Type == packngo.ConnectionShared {
@@ -226,8 +277,7 @@ func (m *ResourceModel) parseConnectionVlans(ctx context.Context, conn *packngo.
 	}
 	vlans, diags := types.ListValueFrom(ctx, types.Int64Type, ret)
 	if diags.HasError() {
-		return diags
+		return nil, diags
 	}
-	m.Vlans = vlans
-	return nil
+	return &vlans, nil
 }

@@ -7,7 +7,6 @@ import (
 	"time"
 
 	"github.com/equinix/terraform-provider-equinix/internal/config"
-	metal_connection "github.com/equinix/terraform-provider-equinix/internal/resources/metal/connection"
 	metal_project "github.com/equinix/terraform-provider-equinix/internal/resources/metal/project"
 	"github.com/equinix/terraform-provider-equinix/internal/resources/metal/vrf"
 
@@ -98,7 +97,6 @@ func Provider() *schema.Provider {
 			"equinix_metal_hardware_reservation": dataSourceMetalHardwareReservation(),
 			"equinix_metal_metro":                dataSourceMetalMetro(),
 			"equinix_metal_facility":             dataSourceMetalFacility(),
-			"equinix_metal_connection":           metal_connection.DataSource(),
 			"equinix_metal_ip_block_ranges":      dataSourceMetalIPBlockRanges(),
 			"equinix_metal_precreated_ip_block":  dataSourceMetalPreCreatedIPBlock(),
 			"equinix_metal_operating_system":     dataSourceOperatingSystem(),

@@ -124,5 +124,6 @@ func (p *FrameworkProvider) DataSources(ctx context.Context) []func() datasource
 	return []func() datasource.DataSource{
 		metalgateway.NewDataSource,
 		metalprojectsshkey.NewDataSource,
+		metalconnection.NewDataSource,
 	}
 }
