@@ -224,7 +224,7 @@ func accessPointSch() *schema.Resource {
 			"type": {
 				Type:         schema.TypeString,
 				Optional:     true,
-				ValidateFunc: validation.StringInSlice([]string{"COLO", "VD", "VG", "SP", "IGW", "SUBNET", "CLOUD_ROUTER", "NETWORK"}, true),
+				ValidateFunc: validation.StringInSlice([]string{"COLO", "VD", "VG", "SP", "IGW", "SUBNET", "CLOUD_ROUTER", "NETWORK", "METAL_NETWORK"}, true),
 				Description:  "Access point type - COLO, VD, VG, SP, IGW, SUBNET, CLOUD_ROUTER, NETWORK",
 			},
 			"account": {
@@ -317,6 +317,15 @@ func accessPointSch() *schema.Resource {
 				MaxItems:    1,
 				Elem: &schema.Resource{
 					Schema: networkSch(),
+				},
+			},
+			"virtual_network": {
+				Type:        schema.TypeSet,
+				Optional:    true,
+				Description: "Virtual Network Information",
+				MaxItems:    1,
+				Elem: &schema.Resource{
+					Schema: accessPointvirtualNetworkSch(),
 				},
 			},
 			"seller_region": {
@@ -469,6 +478,16 @@ func accessPointInterface() map[string]*schema.Schema {
 			Type:        schema.TypeString,
 			Optional:    true,
 			Description: "Interface type",
+		},
+	}
+}
+
+func accessPointvirtualNetworkSch() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"uuid": {
+			Type:        schema.TypeString,
+			Optional:    true,
+			Description: "Equinix-assigned Virtual Network identifier",
 		},
 	}
 }
