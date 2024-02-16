@@ -35,7 +35,7 @@ The following arguments are supported:
 * `status` - (Optional) Account status for filtering. Possible values are: `Active`, `Processing`,
 `Submitted`, `Staged`.
 * `project_id` - (Optional) Unique Identifier for the project resource where the account is scoped to.If you
-leave it out, all the billing accounts are returned under all projects in your organization and search criteria will return more than one account.
+leave it out, all the billing accounts under all projects in your organization will be returned and it may return more than one account.
 
 ## Attributes Reference
 
