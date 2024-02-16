@@ -7,6 +7,24 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
+func readFabricRoutingProtocolResourceSchema() map[string]*schema.Schema {
+	sch := createFabricRoutingProtocolResourceSchema()
+	for key, _ := range sch {
+		if key == "uuid" || key == "connection_uuid" {
+			sch[key].Required = true
+			sch[key].Optional = false
+			sch[key].Computed = false
+		} else {
+			sch[key].Required = false
+			sch[key].Optional = false
+			sch[key].Computed = true
+			sch[key].MaxItems = 0
+			sch[key].ValidateFunc = nil
+		}
+	}
+	return sch
+}
+
 func dataSourceRoutingProtocol() *schema.Resource {
 	return &schema.Resource{
 		ReadContext: dataSourceRoutingProtocolRead,
