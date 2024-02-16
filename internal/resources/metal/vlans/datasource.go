@@ -4,116 +4,93 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/equinix/terraform-provider-equinix/internal/config"
-	"github.com/equinix/terraform-provider-equinix/internal/converters"
 	equinix_errors "github.com/equinix/terraform-provider-equinix/internal/errors"
-	equinix_schema "github.com/equinix/terraform-provider-equinix/internal/schema"
+	"github.com/equinix/terraform-provider-equinix/internal/framework"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-framework/datasource"
+	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/packethost/packngo"
 )
 
-func DataSource() *schema.Resource {
-	return &schema.Resource{
-		ReadWithoutTimeout: dataSourceMetalVlanRead,
-		Importer: &schema.ResourceImporter{
-			StateContext: schema.ImportStatePassthroughContext,
-		},
-		Schema: map[string]*schema.Schema{
-			"project_id": {
-				Type:          schema.TypeString,
-				Optional:      true,
-				Computed:      true,
-				ConflictsWith: []string{"vlan_id"},
-				Description:   "ID of parent project of the VLAN. Use together with vxlan and metro or facility",
+func NewDataSource() datasource.DataSource {
+	return &DataSource{
+		BaseDataSource: framework.NewBaseDataSource(
+			framework.BaseDataSourceConfig{
+				Name: "equinix_metal_vlan",
 			},
-			"vxlan": {
-				Type:          schema.TypeInt,
-				Optional:      true,
-				Computed:      true,
-				ConflictsWith: []string{"vlan_id"},
-				Description:   "VXLAN numner of the VLAN. Unique in a project and facility or metro. Use with project_id",
-			},
-			"facility": {
-				Type:          schema.TypeString,
-				Optional:      true,
-				Computed:      true,
-				ConflictsWith: []string{"vlan_id", "metro"},
-				Description:   "Facility where the VLAN is deployed",
-				Deprecated:    "Use metro instead of facility.  For more information, read the migration guide: https://registry.terraform.io/providers/equinix/equinix/latest/docs/guides/migration_guide_facilities_to_metros_devices",
-			},
-			"metro": {
-				Type:          schema.TypeString,
-				Optional:      true,
-				Computed:      true,
-				ConflictsWith: []string{"vlan_id", "facility"},
-				Description:   "Metro where the VLAN is deployed",
-				StateFunc:     converters.ToLowerIf,
-			},
-			"vlan_id": {
-				Type:          schema.TypeString,
-				Optional:      true,
-				Computed:      true,
-				ConflictsWith: []string{"project_id", "vxlan", "metro", "facility"},
-				Description:   "Metal UUID of the VLAN resource",
-			},
-			"description": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "VLAN description text",
-			},
-			"assigned_devices_ids": {
-				Type:        schema.TypeList,
-				Computed:    true,
-				Elem:        &schema.Schema{Type: schema.TypeString},
-				Description: "List of device IDs to which this VLAN is assigned",
-			},
-		},
+		),
 	}
 }
 
-func dataSourceMetalVlanRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := meta.(*config.Config).Metal
+func (r *DataSource) Schema(
+	ctx context.Context,
+	req datasource.SchemaRequest,
+	resp *datasource.SchemaResponse,
+) {
+	s := dataSourceSchema()
+	if s.Blocks == nil {
+		s.Blocks = make(map[string]schema.Block)
+	}
+	resp.Schema = s
+}
 
-	projectRaw, projectOk := d.GetOk("project_id")
-	vxlanRaw, vxlanOk := d.GetOk("vxlan")
-	vlanIdRaw, vlanIdOk := d.GetOk("vlan_id")
-	metroRaw, metroOk := d.GetOk("metro")
-	facilityRaw, facilityOk := d.GetOk("facility")
+type DataSource struct {
+	framework.BaseDataSource
+	framework.WithTimeouts
+}
 
-	if !(vlanIdOk || (vxlanOk || projectOk || metroOk || facilityOk)) {
-		return diag.FromErr(equinix_errors.FriendlyError(fmt.Errorf("You must set either vlan_id or a combination of vxlan, project_id, and, metro or facility")))
+func (r *DataSource) Read(
+	ctx context.Context,
+	req datasource.ReadRequest,
+	resp *datasource.ReadResponse,
+) {
+	r.Meta.AddFwModuleToMetalUserAgent(ctx, req.ProviderMeta)
+	client := r.Meta.Metal
+
+	var data DataSourceModel
+	resp.Diagnostics.Append(req.Config.Get(ctx, &data)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	if data.VlanID.IsNull() &&
+		(data.Vxlan.IsNull() && data.ProjectID.IsNull() && data.Metro.IsNull() && data.Facility.IsNull()) {
+		resp.Diagnostics.AddError("Error fetching Vlan datasource",
+			equinix_errors.
+				FriendlyError(fmt.Errorf("You must set either vlan_id or a combination of vxlan, project_id, and, metro or facility")).
+				Error())
+		return
 	}
 
 	var vlan *packngo.VirtualNetwork
 
-	if vlanIdOk {
+	if !data.VlanID.IsNull() {
 		var err error
 		vlan, _, err = client.ProjectVirtualNetworks.Get(
-			vlanIdRaw.(string),
+			data.VlanID.ValueString(),
 			&packngo.GetOptions{Includes: []string{"assigned_to"}},
 		)
 		if err != nil {
-			return diag.FromErr(equinix_errors.FriendlyError(err))
+			resp.Diagnostics.AddError("Error fetching Vlan using vlanId", equinix_errors.FriendlyError(err).Error())
+			return
 		}
 
 	} else {
-		projectID := projectRaw.(string)
-		vxlan := vxlanRaw.(int)
-		metro := metroRaw.(string)
-		facility := facilityRaw.(string)
 		vlans, _, err := client.ProjectVirtualNetworks.List(
-			projectRaw.(string),
+			data.ProjectID.ValueString(),
 			&packngo.GetOptions{Includes: []string{"assigned_to"}},
 		)
 		if err != nil {
-			return diag.FromErr(equinix_errors.FriendlyError(err))
+			resp.Diagnostics.AddError("Error fetching vlans list for projectId",
+				equinix_errors.FriendlyError(err).Error())
+			return
 		}
 
-		vlan, err = MatchingVlan(vlans.VirtualNetworks, vxlan, projectID, facility, metro)
+		vlan, err = MatchingVlan(vlans.VirtualNetworks, int(data.Vxlan.ValueInt64()), data.ProjectID.ValueString(),
+			data.Facility.ValueString(), data.Metro.ValueString())
 		if err != nil {
-			return diag.FromErr(equinix_errors.FriendlyError(err))
+			resp.Diagnostics.AddError("Error expected vlan not found", equinix_errors.FriendlyError(err).Error())
+			return
 		}
 	}
 
@@ -122,16 +99,14 @@ func dataSourceMetalVlanRead(ctx context.Context, d *schema.ResourceData, meta i
 		assignedDevices = append(assignedDevices, d.ID)
 	}
 
-	d.SetId(vlan.ID)
+	// Set state to fully populated data
+	resp.Diagnostics.Append(data.parse(vlan)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
 
-	return diag.FromErr(equinix_schema.SetMap(d, map[string]interface{}{
-		"vlan_id":     vlan.ID,
-		"project_id":  vlan.Project.ID,
-		"vxlan":       vlan.VXLAN,
-		"facility":    vlan.FacilityCode,
-		"metro":       vlan.MetroCode,
-		"description": vlan.Description,
-	}))
+	// Update the Terraform state
+	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
 func MatchingVlan(vlans []packngo.VirtualNetwork, vxlan int, projectID, facility, metro string) (*packngo.VirtualNetwork, error) {
