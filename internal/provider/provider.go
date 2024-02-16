@@ -4,13 +4,6 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/equinix/terraform-provider-equinix/internal/config"
-	metalconnection "github.com/equinix/terraform-provider-equinix/internal/resources/metal/connection"
-	metalgateway "github.com/equinix/terraform-provider-equinix/internal/resources/metal/gateway"
-	metalorganization "github.com/equinix/terraform-provider-equinix/internal/resources/metal/organization"
-	metalprojectsshkey "github.com/equinix/terraform-provider-equinix/internal/resources/metal/project_ssh_key"
-	metalsshkey "github.com/equinix/terraform-provider-equinix/internal/resources/metal/ssh_key"
-	equinix_validation "github.com/equinix/terraform-provider-equinix/internal/validation"
 	"github.com/hashicorp/terraform-plugin-framework-validators/int64validator"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/provider"
@@ -18,6 +11,15 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/provider/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
+
+	"github.com/equinix/terraform-provider-equinix/internal/config"
+	metalconnection "github.com/equinix/terraform-provider-equinix/internal/resources/metal/connection"
+	metalgateway "github.com/equinix/terraform-provider-equinix/internal/resources/metal/gateway"
+	metalorganization "github.com/equinix/terraform-provider-equinix/internal/resources/metal/organization"
+	metalprojectsshkey "github.com/equinix/terraform-provider-equinix/internal/resources/metal/project_ssh_key"
+	metalsshkey "github.com/equinix/terraform-provider-equinix/internal/resources/metal/ssh_key"
+	"github.com/equinix/terraform-provider-equinix/internal/resources/metal/vlans"
+	equinix_validation "github.com/equinix/terraform-provider-equinix/internal/validation"
 )
 
 type FrameworkProvider struct {
@@ -116,6 +118,7 @@ func (p *FrameworkProvider) Resources(ctx context.Context) []func() resource.Res
 		metalsshkey.NewResource,
 		metalconnection.NewResource,
 		metalorganization.NewResource,
+		vlans.NewResource,
 	}
 }
 
@@ -125,5 +128,6 @@ func (p *FrameworkProvider) DataSources(ctx context.Context) []func() datasource
 		metalprojectsshkey.NewDataSource,
 		metalconnection.NewDataSource,
 		metalorganization.NewDataSource,
+		vlans.NewDataSource,
 	}
 }

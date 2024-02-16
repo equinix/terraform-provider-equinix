@@ -6,61 +6,13 @@ import (
 
 	"github.com/equinix/terraform-provider-equinix/internal/acceptance"
 	"github.com/equinix/terraform-provider-equinix/internal/config"
+	"github.com/hashicorp/terraform-plugin-testing/plancheck"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	"github.com/packethost/packngo"
 )
-
-func init() {
-	resource.AddTestSweepers("equinix_metal_vlan", &resource.Sweeper{
-		Name:         "equinix_metal_vlan",
-		Dependencies: []string{"equinix_metal_virtual_circuit", "equinix_metal_vrf", "equinix_metal_device"},
-		F:            testSweepVlans,
-	})
-}
-
-func testSweepVlans(region string) error {
-	log.Printf("[DEBUG] Sweeping vlans")
-	config, err := acceptance.GetConfigForNonStandardMetalTest()
-	if err != nil {
-		return fmt.Errorf("[INFO][SWEEPER_LOG] Error getting configuration for sweeping vlans: %s", err)
-	}
-	metal := config.NewMetalClient()
-	ps, _, err := metal.Projects.List(nil)
-	if err != nil {
-		return fmt.Errorf("[INFO][SWEEPER_LOG] Error getting project list for sweeping vlans: %s", err)
-	}
-	pids := []string{}
-	for _, p := range ps {
-		if acceptance.IsSweepableTestResource(p.Name) {
-			pids = append(pids, p.ID)
-		}
-	}
-	dids := []string{}
-	for _, pid := range pids {
-		ds, _, err := metal.ProjectVirtualNetworks.List(pid, nil)
-		if err != nil {
-			log.Printf("Error listing vlans to sweep: %s", err)
-			continue
-		}
-		for _, d := range ds.VirtualNetworks {
-			if acceptance.IsSweepableTestResource(d.Description) {
-				dids = append(dids, d.ID)
-			}
-		}
-	}
-
-	for _, did := range dids {
-		log.Printf("Removing vlan %s", did)
-		_, err := metal.ProjectVirtualNetworks.Delete(did)
-		if err != nil {
-			return fmt.Errorf("Error deleting vlan %s", err)
-		}
-	}
-	return nil
-}
 
 func testAccCheckMetalVlanConfig_metro(projSuffix, metro, desc string) string {
 	return fmt.Sprintf(`
@@ -78,6 +30,7 @@ resource "equinix_metal_vlan" "foovlan" {
 }
 
 func TestAccMetalVlan_metro(t *testing.T) {
+	var vlan packngo.VirtualNetwork
 	rs := acctest.RandString(10)
 	metro := "sv"
 
@@ -90,35 +43,11 @@ func TestAccMetalVlan_metro(t *testing.T) {
 			{
 				Config: testAccCheckMetalVlanConfig_metro(rs, metro, "tfacc-vlan"),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr(
-						"equinix_metal_vlan.foovlan", "metro", metro),
-					resource.TestCheckResourceAttr(
-						"equinix_metal_vlan.foovlan", "facility", ""),
-				),
-			},
-		},
-	})
-}
-
-func TestAccMetalVlan_basic(t *testing.T) {
-	var vlan packngo.VirtualNetwork
-	rs := acctest.RandString(10)
-	fac := "ny5"
-
-	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { acceptance.TestAccPreCheckMetal(t) },
-		ExternalProviders:        acceptance.TestExternalProviders,
-		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
-		CheckDestroy:             testAccMetalVlanCheckDestroyed,
-		Steps: []resource.TestStep{
-			{
-				Config: testAccMetalVlanConfig_var(rs, fac, "tfacc-vlan"),
-				Check: resource.ComposeTestCheckFunc(
 					testAccCheckMetalVlanExists("equinix_metal_vlan.foovlan", &vlan),
 					resource.TestCheckResourceAttr(
 						"equinix_metal_vlan.foovlan", "description", "tfacc-vlan"),
 					resource.TestCheckResourceAttr(
-						"equinix_metal_vlan.foovlan", "facility", fac),
+						"equinix_metal_vlan.foovlan", "metro", metro),
 				),
 			},
 		},
@@ -166,23 +95,9 @@ func testAccMetalVlanCheckDestroyed(s *terraform.State) error {
 	return nil
 }
 
-func testAccMetalVlanConfig_var(projSuffix, facility, desc string) string {
-	return fmt.Sprintf(`
-resource "equinix_metal_project" "foobar" {
-    name = "tfacc-vlan-%s"
-}
-
-resource "equinix_metal_vlan" "foovlan" {
-    project_id = "${equinix_metal_project.foobar.id}"
-    facility = "%s"
-    description = "%s"
-}
-`, projSuffix, facility, desc)
-}
-
 func TestAccMetalVlan_importBasic(t *testing.T) {
 	rs := acctest.RandString(10)
-	fac := "ny5"
+	metro := "sv"
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.TestAccPreCheckMetal(t) },
@@ -191,12 +106,50 @@ func TestAccMetalVlan_importBasic(t *testing.T) {
 		CheckDestroy:             testAccMetalVlanCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccMetalVlanConfig_var(rs, fac, "tfacc-vlan"),
+				Config: testAccCheckMetalVlanConfig_metro(rs, metro, "tfacc-vlan"),
 			},
 			{
 				ResourceName:      "equinix_metal_vlan.foovlan",
 				ImportState:       true,
 				ImportStateVerify: true,
+			},
+		},
+	})
+}
+
+func TestAccMetalVlan_metro_upgradeFromVersion(t *testing.T) {
+	var vlan packngo.VirtualNetwork
+	rs := acctest.RandString(10)
+	metro := "sv"
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:     func() { acceptance.TestAccPreCheckMetal(t) },
+		CheckDestroy: testAccMetalDatasourceVlanCheckDestroyed,
+		Steps: []resource.TestStep{
+			{
+				ExternalProviders: map[string]resource.ExternalProvider{
+					"equinix": {
+						VersionConstraint: "1.29.0", // latest version with resource defined on SDKv2
+						Source:            "equinix/equinix",
+					},
+				},
+				Config: testAccCheckMetalVlanConfig_metro(rs, metro, "tfacc-vlan"),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckMetalVlanExists("equinix_metal_vlan.foovlan", &vlan),
+					resource.TestCheckResourceAttr(
+						"equinix_metal_vlan.foovlan", "description", "tfacc-vlan"),
+					resource.TestCheckResourceAttr(
+						"equinix_metal_vlan.foovlan", "metro", metro),
+				),
+			},
+			{
+				ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+				Config:                   testAccCheckMetalVlanConfig_metro(rs, metro, "tfacc-vlan"),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectEmptyPlan(),
+					},
+				},
 			},
 		},
 	})
