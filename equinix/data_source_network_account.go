@@ -69,8 +69,8 @@ func dataSourceNetworkAccount() *schema.Resource {
 			},
 			networkAccountSchemaNames["ProjectID"]: {
 				Type:         schema.TypeString,
-				Computed:     true,
 				Optional:     true,
+				Computed:     true,
 				ValidateFunc: validation.IsUUID,
 				Description:  networkAccountDescriptions["ProjectID"],
 			},
