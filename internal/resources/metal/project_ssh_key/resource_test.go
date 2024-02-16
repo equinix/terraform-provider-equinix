@@ -60,7 +60,7 @@ func TestAccMetalProjectSSHKey_basic(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.TestAccPreCheckMetal(t) },
 		ExternalProviders:        acceptance.TestExternalProviders,
-		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
 		CheckDestroy:             testAccMetalProjectSSHKeyCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
@@ -144,7 +144,7 @@ func TestAccMetalProjectSSHKey_upgradeFromVersion(t *testing.T) {
 						Source: "hashicorp/random",
 					},
 				},
-				ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+				ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
 				Config:                   cfg,
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
