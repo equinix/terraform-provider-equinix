@@ -1023,6 +1023,27 @@ func accessPointTypeConfigsToFabric(schemaAccessPointTypeConfigs []interface{}) 
 	return accessPointTypeConfigs
 }
 
+func accessPointTypeConfigToTerra(spAccessPointTypes []v4.ServiceProfileAccessPointType) []interface{} {
+	mappedSpAccessPointTypes := make([]interface{}, len(spAccessPointTypes))
+	for index, spAccessPointType := range spAccessPointTypes {
+		mappedSpAccessPointTypes[index] = map[string]interface{}{
+			"type":                             string(*spAccessPointType.Type_),
+			"uuid":                             spAccessPointType.Uuid,
+			"allow_remote_connections":         spAccessPointType.AllowRemoteConnections,
+			"allow_custom_bandwidth":           spAccessPointType.AllowCustomBandwidth,
+			"allow_bandwidth_auto_approval":    spAccessPointType.AllowBandwidthAutoApproval,
+			"enable_auto_generate_service_key": spAccessPointType.EnableAutoGenerateServiceKey,
+			"connection_redundancy_required":   spAccessPointType.ConnectionRedundancyRequired,
+			"connection_label":                 spAccessPointType.ConnectionLabel,
+			"api_config":                       apiConfigToTerra(spAccessPointType.ApiConfig),
+			"authentication_key":               authenticationKeyToTerra(spAccessPointType.AuthenticationKey),
+			"supported_bandwidths":             supportedBandwidthsToTerra(spAccessPointType.SupportedBandwidths),
+		}
+	}
+
+	return mappedSpAccessPointTypes
+}
+
 func apiConfigToFabric(apiConfigl []interface{}) v4.ApiConfig {
 	if apiConfigl == nil {
 		return v4.ApiConfig{}

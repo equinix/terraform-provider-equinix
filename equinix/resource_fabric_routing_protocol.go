@@ -3,6 +3,7 @@ package equinix
 import (
 	"context"
 	"fmt"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"log"
 	"strconv"
 	"strings"
@@ -19,6 +20,238 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
+
+func createDirectConnectionIpv4Sch() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"equinix_iface_ip": {
+			Type:        schema.TypeString,
+			Required:    true,
+			Description: "Equinix side Interface IP address",
+		},
+	}
+}
+
+func createDirectConnectionIpv6Sch() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"equinix_iface_ip": {
+			Type:        schema.TypeString,
+			Optional:    true,
+			Description: "Equinix side Interface IP address\n\n",
+		},
+	}
+}
+
+func createBgpConnectionIpv4Sch() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"customer_peer_ip": {
+			Type:        schema.TypeString,
+			Required:    true,
+			Description: "Customer side peering ip",
+		},
+		"equinix_peer_ip": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "Equinix side peering ip",
+		},
+		"enabled": {
+			Type:        schema.TypeBool,
+			Optional:    true,
+			Default:     true,
+			Description: "Admin status for the BGP session",
+		},
+	}
+}
+
+func createBgpConnectionIpv6Sch() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"customer_peer_ip": {
+			Type:        schema.TypeString,
+			Required:    true,
+			Description: "Customer side peering ip",
+		},
+		"equinix_peer_ip": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "Equinix side peering ip",
+		},
+		"enabled": {
+			Type:        schema.TypeBool,
+			Optional:    true,
+			Default:     true,
+			Description: "Admin status for the BGP session",
+		},
+	}
+}
+
+func createRoutingProtocolBfdSch() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"enabled": {
+			Type:        schema.TypeBool,
+			Required:    true,
+			Description: "Bidirectional Forwarding Detection enablement",
+		},
+		"interval": {
+			Type:        schema.TypeString,
+			Optional:    true,
+			Default:     100,
+			Description: "Interval range between the received BFD control packets",
+		},
+	}
+}
+
+func createRoutingProtocolOperationSch() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"errors": {
+			Type:        schema.TypeList,
+			Computed:    true,
+			Description: "Errors occurred",
+			Elem: &schema.Resource{
+				Schema: equinix_fabric_schema.ErrorSch(),
+			},
+		},
+	}
+}
+
+func createRoutingProtocolChangeSch() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"uuid": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "Uniquely identifies a change",
+		},
+		"type": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "Type of change",
+		},
+		"href": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "Routing Protocol Change URI",
+		},
+	}
+}
+
+func createFabricRoutingProtocolResourceSchema() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"connection_uuid": {
+			Type:        schema.TypeString,
+			Required:    true,
+			Description: "Connection URI associated with Routing Protocol",
+		},
+		"href": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "Routing Protocol URI information",
+		},
+		"type": {
+			Type:         schema.TypeString,
+			Optional:     true,
+			ValidateFunc: validation.StringInSlice([]string{"BGP", "DIRECT"}, true),
+			Description:  "Defines the routing protocol type like BGP or DIRECT",
+		},
+		"uuid": {
+			Type:        schema.TypeString,
+			Optional:    true,
+			Computed:    true,
+			Description: "Equinix-assigned routing protocol identifier",
+		},
+		"name": {
+			Type:        schema.TypeString,
+			Optional:    true,
+			Description: "Routing Protocol name. An alpha-numeric 24 characters string which can include only hyphens and underscores",
+		},
+		"description": {
+			Type:        schema.TypeString,
+			Optional:    true,
+			Description: "Customer-provided Fabric Routing Protocol description",
+		},
+		"state": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "Routing Protocol overall state",
+		},
+		"operation": {
+			Type:        schema.TypeSet,
+			Computed:    true,
+			Description: "Routing Protocol type-specific operational data",
+			Elem: &schema.Resource{
+				Schema: createRoutingProtocolOperationSch(),
+			},
+		},
+		"change": {
+			Type:        schema.TypeSet,
+			Computed:    true,
+			Description: "Routing Protocol configuration Changes",
+			Elem: &schema.Resource{
+				Schema: createRoutingProtocolChangeSch(),
+			},
+		},
+		"direct_ipv4": {
+			Type:        schema.TypeSet,
+			Optional:    true,
+			Description: "Routing Protocol Direct IPv4",
+			Elem: &schema.Resource{
+				Schema: createDirectConnectionIpv4Sch(),
+			},
+		},
+		"direct_ipv6": {
+			Type:        schema.TypeSet,
+			Optional:    true,
+			Description: "Routing Protocol Direct IPv6",
+			Elem: &schema.Resource{
+				Schema: createDirectConnectionIpv6Sch(),
+			},
+		},
+		"bgp_ipv4": {
+			Type:        schema.TypeSet,
+			Optional:    true,
+			Description: "Routing Protocol BGP IPv4",
+			Elem: &schema.Resource{
+				Schema: createBgpConnectionIpv4Sch(),
+			},
+		},
+		"bgp_ipv6": {
+			Type:        schema.TypeSet,
+			Optional:    true,
+			Description: "Routing Protocol BGP IPv6",
+			Elem: &schema.Resource{
+				Schema: createBgpConnectionIpv6Sch(),
+			},
+		},
+		"customer_asn": {
+			Type:        schema.TypeInt,
+			Optional:    true,
+			Description: "Customer-provided ASN",
+		},
+		"equinix_asn": {
+			Type:        schema.TypeInt,
+			Computed:    true,
+			Description: "Equinix ASN",
+		},
+		"bgp_auth_key": {
+			Type:        schema.TypeString,
+			Optional:    true,
+			Description: "BGP authorization key",
+		},
+		"bfd": {
+			Type:        schema.TypeSet,
+			Optional:    true,
+			Description: "Bidirectional Forwarding Detection",
+			Elem: &schema.Resource{
+				Schema: createRoutingProtocolBfdSch(),
+			},
+		},
+		"change_log": {
+			Type:        schema.TypeSet,
+			Computed:    true,
+			Description: "Captures Routing Protocol lifecycle change information",
+			Elem: &schema.Resource{
+				Schema: equinix_fabric_schema.ChangeLogSch(),
+			},
+		},
+	}
+}
 
 func resourceFabricRoutingProtocol() *schema.Resource {
 	return &schema.Resource{
@@ -405,4 +638,197 @@ func waitForRoutingProtocolUpdateCompletion(rpChangeUuid string, uuid string, co
 		dbConn = inter.(v4.RoutingProtocolChangeData)
 	}
 	return dbConn, err
+}
+
+func routingProtocolDirectIpv4ToFabric(routingProtocolDirectIpv4Request []interface{}) v4.DirectConnectionIpv4 {
+	mappedRpDirectIpv4 := v4.DirectConnectionIpv4{}
+	for _, str := range routingProtocolDirectIpv4Request {
+		directIpv4Map := str.(map[string]interface{})
+		equinixIfaceIp := directIpv4Map["equinix_iface_ip"].(string)
+
+		mappedRpDirectIpv4 = v4.DirectConnectionIpv4{EquinixIfaceIp: equinixIfaceIp}
+	}
+	return mappedRpDirectIpv4
+}
+
+func routingProtocolDirectIpv6ToFabric(routingProtocolDirectIpv6Request []interface{}) v4.DirectConnectionIpv6 {
+	mappedRpDirectIpv6 := v4.DirectConnectionIpv6{}
+	for _, str := range routingProtocolDirectIpv6Request {
+		directIpv6Map := str.(map[string]interface{})
+		equinixIfaceIp := directIpv6Map["equinix_iface_ip"].(string)
+
+		mappedRpDirectIpv6 = v4.DirectConnectionIpv6{EquinixIfaceIp: equinixIfaceIp}
+	}
+	return mappedRpDirectIpv6
+}
+
+func routingProtocolBgpIpv4ToFabric(routingProtocolBgpIpv4Request []interface{}) v4.BgpConnectionIpv4 {
+	mappedRpBgpIpv4 := v4.BgpConnectionIpv4{}
+	for _, str := range routingProtocolBgpIpv4Request {
+		bgpIpv4Map := str.(map[string]interface{})
+		customerPeerIp := bgpIpv4Map["customer_peer_ip"].(string)
+		enabled := bgpIpv4Map["enabled"].(bool)
+
+		mappedRpBgpIpv4 = v4.BgpConnectionIpv4{CustomerPeerIp: customerPeerIp, Enabled: enabled}
+	}
+	return mappedRpBgpIpv4
+}
+
+func routingProtocolBgpIpv6ToFabric(routingProtocolBgpIpv6Request []interface{}) v4.BgpConnectionIpv6 {
+	mappedRpBgpIpv6 := v4.BgpConnectionIpv6{}
+	for _, str := range routingProtocolBgpIpv6Request {
+		bgpIpv6Map := str.(map[string]interface{})
+		customerPeerIp := bgpIpv6Map["customer_peer_ip"].(string)
+		enabled := bgpIpv6Map["enabled"].(bool)
+
+		mappedRpBgpIpv6 = v4.BgpConnectionIpv6{CustomerPeerIp: customerPeerIp, Enabled: enabled}
+	}
+	return mappedRpBgpIpv6
+}
+
+func routingProtocolBfdToFabric(routingProtocolBfdRequest []interface{}) v4.RoutingProtocolBfd {
+	mappedRpBfd := v4.RoutingProtocolBfd{}
+	for _, str := range routingProtocolBfdRequest {
+		rpBfdMap := str.(map[string]interface{})
+		bfdEnabled := rpBfdMap["enabled"].(bool)
+		bfdInterval := rpBfdMap["interval"].(string)
+
+		mappedRpBfd = v4.RoutingProtocolBfd{Enabled: bfdEnabled, Interval: bfdInterval}
+	}
+	return mappedRpBfd
+}
+
+func routingProtocolDirectConnectionIpv4ToTerra(routingProtocolDirectIpv4 *v4.DirectConnectionIpv4) *schema.Set {
+	if routingProtocolDirectIpv4 == nil {
+		return nil
+	}
+	routingProtocolDirectIpv4s := []*v4.DirectConnectionIpv4{routingProtocolDirectIpv4}
+	mappedDirectIpv4s := make([]interface{}, len(routingProtocolDirectIpv4s))
+	for i, routingProtocolDirectIpv4 := range routingProtocolDirectIpv4s {
+		mappedDirectIpv4s[i] = map[string]interface{}{
+			"equinix_iface_ip": routingProtocolDirectIpv4.EquinixIfaceIp,
+		}
+	}
+	rpDirectIpv4Set := schema.NewSet(
+		schema.HashResource(&schema.Resource{Schema: createDirectConnectionIpv4Sch()}),
+		mappedDirectIpv4s,
+	)
+	return rpDirectIpv4Set
+}
+
+func routingProtocolDirectConnectionIpv6ToTerra(routingProtocolDirectIpv6 *v4.DirectConnectionIpv6) *schema.Set {
+	if routingProtocolDirectIpv6 == nil {
+		return nil
+	}
+	routingProtocolDirectIpv6s := []*v4.DirectConnectionIpv6{routingProtocolDirectIpv6}
+	mappedDirectIpv6s := make([]interface{}, len(routingProtocolDirectIpv6s))
+	for i, routingProtocolDirectIpv6 := range routingProtocolDirectIpv6s {
+		mappedDirectIpv6s[i] = map[string]interface{}{
+			"equinix_iface_ip": routingProtocolDirectIpv6.EquinixIfaceIp,
+		}
+	}
+	rpDirectIpv6Set := schema.NewSet(
+		schema.HashResource(&schema.Resource{Schema: createDirectConnectionIpv6Sch()}),
+		mappedDirectIpv6s,
+	)
+	return rpDirectIpv6Set
+}
+
+func routingProtocolBgpConnectionIpv4ToTerra(routingProtocolBgpIpv4 *v4.BgpConnectionIpv4) *schema.Set {
+	if routingProtocolBgpIpv4 == nil {
+		return nil
+	}
+	routingProtocolBgpIpv4s := []*v4.BgpConnectionIpv4{routingProtocolBgpIpv4}
+	mappedBgpIpv4s := make([]interface{}, len(routingProtocolBgpIpv4s))
+	for i, routingProtocolBgpIpv4 := range routingProtocolBgpIpv4s {
+		mappedBgpIpv4s[i] = map[string]interface{}{
+			"customer_peer_ip": routingProtocolBgpIpv4.CustomerPeerIp,
+			"equinix_peer_ip":  routingProtocolBgpIpv4.EquinixPeerIp,
+			"enabled":          routingProtocolBgpIpv4.Enabled,
+		}
+	}
+	rpBgpIpv4Set := schema.NewSet(
+		schema.HashResource(&schema.Resource{Schema: createBgpConnectionIpv4Sch()}),
+		mappedBgpIpv4s,
+	)
+	return rpBgpIpv4Set
+}
+
+func routingProtocolBgpConnectionIpv6ToTerra(routingProtocolBgpIpv6 *v4.BgpConnectionIpv6) *schema.Set {
+	if routingProtocolBgpIpv6 == nil {
+		return nil
+	}
+	routingProtocolBgpIpv6s := []*v4.BgpConnectionIpv6{routingProtocolBgpIpv6}
+	mappedBgpIpv6s := make([]interface{}, len(routingProtocolBgpIpv6s))
+	for i, routingProtocolBgpIpv6 := range routingProtocolBgpIpv6s {
+		mappedBgpIpv6s[i] = map[string]interface{}{
+			"customer_peer_ip": routingProtocolBgpIpv6.CustomerPeerIp,
+			"equinix_peer_ip":  routingProtocolBgpIpv6.EquinixPeerIp,
+			"enabled":          routingProtocolBgpIpv6.Enabled,
+		}
+	}
+	rpBgpIpv6Set := schema.NewSet(
+		schema.HashResource(&schema.Resource{Schema: createBgpConnectionIpv6Sch()}),
+		mappedBgpIpv6s,
+	)
+	return rpBgpIpv6Set
+}
+
+func routingProtocolBfdToTerra(routingProtocolBfd *v4.RoutingProtocolBfd) *schema.Set {
+	if routingProtocolBfd == nil {
+		return nil
+	}
+	routingProtocolBfds := []*v4.RoutingProtocolBfd{routingProtocolBfd}
+	mappedRpBfds := make([]interface{}, len(routingProtocolBfds))
+	for i, routingProtocolBfd := range routingProtocolBfds {
+		mappedRpBfds[i] = map[string]interface{}{
+			"enabled":  routingProtocolBfd.Enabled,
+			"interval": routingProtocolBfd.Interval,
+		}
+	}
+	rpBfdSet := schema.NewSet(
+		schema.HashResource(&schema.Resource{Schema: createRoutingProtocolBfdSch()}),
+		mappedRpBfds,
+	)
+	return rpBfdSet
+}
+
+func routingProtocolOperationToTerra(routingProtocolOperation *v4.RoutingProtocolOperation) *schema.Set {
+	if routingProtocolOperation == nil {
+		return nil
+	}
+	routingProtocolOperations := []*v4.RoutingProtocolOperation{routingProtocolOperation}
+	mappedRpOperations := make([]interface{}, len(routingProtocolOperations))
+	for _, routingProtocolOperation := range routingProtocolOperations {
+		mappedRpOperation := make(map[string]interface{})
+		if routingProtocolOperation.Errors != nil {
+			mappedRpOperation["errors"] = equinix_fabric_schema.ErrorToTerra(routingProtocolOperation.Errors)
+		}
+		mappedRpOperations = append(mappedRpOperations, mappedRpOperation)
+	}
+	rpOperationSet := schema.NewSet(
+		schema.HashResource(&schema.Resource{Schema: createRoutingProtocolOperationSch()}),
+		mappedRpOperations,
+	)
+	return rpOperationSet
+}
+
+func routingProtocolChangeToTerra(routingProtocolChange *v4.RoutingProtocolChange) *schema.Set {
+	if routingProtocolChange == nil {
+		return nil
+	}
+	routingProtocolChanges := []*v4.RoutingProtocolChange{routingProtocolChange}
+	mappedRpChanges := make([]interface{}, len(routingProtocolChanges))
+	for i, rpChanges := range routingProtocolChanges {
+		mappedRpChanges[i] = map[string]interface{}{
+			"uuid": rpChanges.Uuid,
+			"type": rpChanges.Type_,
+			"href": rpChanges.Href,
+		}
+	}
+	rpChangeSet := schema.NewSet(
+		schema.HashResource(&schema.Resource{Schema: createRoutingProtocolChangeSch()}),
+		mappedRpChanges,
+	)
+	return rpChangeSet
 }
