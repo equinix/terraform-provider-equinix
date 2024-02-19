@@ -87,17 +87,17 @@ var dataSourceSchema = schema.Schema{
 			Computed:           true,
 			DeprecationMessage: "If your organization already has connection service tokens enabled, use `service_tokens` instead",
 		},
-		"service_tokens": schema.ListNestedAttribute{
+	},
+	Blocks: map[string]schema.Block{
+		"service_tokens": schema.ListNestedBlock{
 			Description: "Only used with shared connection. List of service tokens required to continue the setup process with [equinix_ecx_l2_connection](https://registry.terraform.io/providers/equinix/equinix/latest/docs/resources/equinix_ecx_l2_connection) or from the [Equinix Fabric Portal](https://ecxfabric.equinix.com/dashboard)",
-			Computed:    true,
-			NestedObject: schema.NestedAttributeObject{
+			NestedObject: schema.NestedBlockObject{
 				Attributes: serviceTokensDataSourceNestedAttribute,
 			},
 		},
-		"ports": schema.ListNestedAttribute{
+		"ports": schema.ListNestedBlock{
 			Description: "List of connection ports - primary (`ports[0]`) and secondary (`ports[1]`)",
-			Computed:    true,
-			NestedObject: schema.NestedAttributeObject{
+			NestedObject: schema.NestedBlockObject{
 				Attributes: portsDataSourceNestedAttribute,
 			},
 		},

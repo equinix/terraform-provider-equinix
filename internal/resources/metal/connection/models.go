@@ -13,48 +13,48 @@ import (
 )
 
 type ResourceModel struct {
-	ID               types.String        `tfsdk:"id"`
-	Name             types.String        `tfsdk:"name"`
-	Facility         types.String        `tfsdk:"facility"`
-	Metro            types.String        `tfsdk:"metro"`
-	Redundancy       types.String        `tfsdk:"redundancy"`
-	ContactEmail     types.String        `tfsdk:"contact_email"`
-	Type             types.String        `tfsdk:"type"`
-	ProjectID        types.String        `tfsdk:"project_id"`
-	Speed            types.String        `tfsdk:"speed"`
-	Description      types.String        `tfsdk:"description"`
-	Mode             types.String        `tfsdk:"mode"`
-	Tags             types.List          `tfsdk:"tags"`  // List of strings
-	Vlans            types.List          `tfsdk:"vlans"` // List of ints
-	ServiceTokenType types.String        `tfsdk:"service_token_type"`
-	OrganizationID   types.String        `tfsdk:"organization_id"`
-	Status           types.String        `tfsdk:"status"`
-	Token            types.String        `tfsdk:"token"`
-	Ports            []PortModel         `tfsdk:"ports"`          // List of Port
-	ServiceTokens    []ServiceTokenModel `tfsdk:"service_tokens"` // List of ServiceToken
+	ID               types.String `tfsdk:"id"`
+	Name             types.String `tfsdk:"name"`
+	Facility         types.String `tfsdk:"facility"`
+	Metro            types.String `tfsdk:"metro"`
+	Redundancy       types.String `tfsdk:"redundancy"`
+	ContactEmail     types.String `tfsdk:"contact_email"`
+	Type             types.String `tfsdk:"type"`
+	ProjectID        types.String `tfsdk:"project_id"`
+	Speed            types.String `tfsdk:"speed"`
+	Description      types.String `tfsdk:"description"`
+	Mode             types.String `tfsdk:"mode"`
+	Tags             types.List   `tfsdk:"tags"`  // List of strings
+	Vlans            types.List   `tfsdk:"vlans"` // List of ints
+	ServiceTokenType types.String `tfsdk:"service_token_type"`
+	OrganizationID   types.String `tfsdk:"organization_id"`
+	Status           types.String `tfsdk:"status"`
+	Token            types.String `tfsdk:"token"`
+	Ports            types.List   `tfsdk:"ports"`          // List of Port
+	ServiceTokens    types.List   `tfsdk:"service_tokens"` // List of ServiceToken
 }
 
 type DataSourceModel struct {
-	ID               types.String        `tfsdk:"id"`
-	ConnectionID     types.String        `tfsdk:"connection_id"`
-	Name             types.String        `tfsdk:"name"`
-	Facility         types.String        `tfsdk:"facility"`
-	Metro            types.String        `tfsdk:"metro"`
-	Redundancy       types.String        `tfsdk:"redundancy"`
-	ContactEmail     types.String        `tfsdk:"contact_email"`
-	Type             types.String        `tfsdk:"type"`
-	ProjectID        types.String        `tfsdk:"project_id"`
-	Speed            types.String        `tfsdk:"speed"`
-	Description      types.String        `tfsdk:"description"`
-	Mode             types.String        `tfsdk:"mode"`
-	Tags             types.List          `tfsdk:"tags"`  // List of strings
-	Vlans            types.List          `tfsdk:"vlans"` // List of ints
-	ServiceTokenType types.String        `tfsdk:"service_token_type"`
-	OrganizationID   types.String        `tfsdk:"organization_id"`
-	Status           types.String        `tfsdk:"status"`
-	Token            types.String        `tfsdk:"token"`
-	Ports            []PortModel         `tfsdk:"ports"`          // List of Port
-	ServiceTokens    []ServiceTokenModel `tfsdk:"service_tokens"` // List of ServiceToken
+	ID               types.String `tfsdk:"id"`
+	ConnectionID     types.String `tfsdk:"connection_id"`
+	Name             types.String `tfsdk:"name"`
+	Facility         types.String `tfsdk:"facility"`
+	Metro            types.String `tfsdk:"metro"`
+	Redundancy       types.String `tfsdk:"redundancy"`
+	ContactEmail     types.String `tfsdk:"contact_email"`
+	Type             types.String `tfsdk:"type"`
+	ProjectID        types.String `tfsdk:"project_id"`
+	Speed            types.String `tfsdk:"speed"`
+	Description      types.String `tfsdk:"description"`
+	Mode             types.String `tfsdk:"mode"`
+	Tags             types.List   `tfsdk:"tags"`  // List of strings
+	Vlans            types.List   `tfsdk:"vlans"` // List of ints
+	ServiceTokenType types.String `tfsdk:"service_token_type"`
+	OrganizationID   types.String `tfsdk:"organization_id"`
+	Status           types.String `tfsdk:"status"`
+	Token            types.String `tfsdk:"token"`
+	Ports            types.List   `tfsdk:"ports"`          // List of Port
+	ServiceTokens    types.List   `tfsdk:"service_tokens"` // List of ServiceToken
 }
 
 type PortModel struct {
@@ -69,6 +69,7 @@ type PortModel struct {
 
 type ServiceTokenModel struct {
 	ID              types.String `tfsdk:"id"`
+	ExpiresAt       types.String `tfsdk:"expires_at"`
 	MaxAllowedSpeed types.String `tfsdk:"max_allowed_speed"`
 	Role            types.String `tfsdk:"role"`
 	State           types.String `tfsdk:"state"`
@@ -102,7 +103,13 @@ func (m *ResourceModel) parse(ctx context.Context, conn *packngo.Connection) dia
 	return diags
 }
 
-func parseConnection(ctx context.Context, conn *packngo.Connection, id, orgID, name, facility, metro, description, contactEmail, status, redundancy, token, typ, mode, serviceTokenType, speed, projectID *basetypes.StringValue, tags, vlans *basetypes.ListValue, ports *[]PortModel, serviceTokens *[]ServiceTokenModel) diag.Diagnostics {
+func parseConnection(
+	ctx context.Context,
+	conn *packngo.Connection,
+	id, orgID, name, facility, metro, description, contactEmail, status, redundancy,
+	token, typ, mode, serviceTokenType, speed, projectID *basetypes.StringValue,
+	tags, vlans, ports, serviceTokens *basetypes.ListValue,
+) diag.Diagnostics {
 	var diags diag.Diagnostics
 
 	*id = types.StringValue(conn.ID)
@@ -199,7 +206,7 @@ func parseConnection(ctx context.Context, conn *packngo.Connection, id, orgID, n
 	return diags
 }
 
-func parseConnectionServiceTokens(ctx context.Context, fst []packngo.FabricServiceToken) (*[]ServiceTokenModel, diag.Diagnostics) {
+func parseConnectionServiceTokens(ctx context.Context, fst []packngo.FabricServiceToken) (*basetypes.ListValue, diag.Diagnostics) {
 	connServiceTokens := make([]ServiceTokenModel, len(fst))
 	for i, token := range fst {
 		speed, err := speedUintToStr(token.MaxAllowedSpeed)
@@ -218,11 +225,20 @@ func parseConnectionServiceTokens(ctx context.Context, fst []packngo.FabricServi
 			State:           types.StringValue(token.State),
 			Type:            types.StringValue(string(token.ServiceTokenType)),
 		}
+		if token.ExpiresAt != nil {
+			connServiceTokens[i].ExpiresAt = types.StringValue(token.ExpiresAt.String())
+		}
 	}
-	return &connServiceTokens, nil
+
+	serviceTokens, diags := types.ListValueFrom(ctx, ServiceTokensObjectType, connServiceTokens)
+	if diags.HasError() {
+		return nil, diags
+	}
+
+	return &serviceTokens, nil
 }
 
-func parseConnectionPorts(ctx context.Context, cps []packngo.ConnectionPort) (*[]PortModel, diag.Diagnostics) {
+func parseConnectionPorts(ctx context.Context, cps []packngo.ConnectionPort) (*basetypes.ListValue, diag.Diagnostics) {
 	ret := make([]PortModel, len(cps))
 	order := map[packngo.ConnectionPortRole]int{
 		packngo.ConnectionPortPrimary:   0,
@@ -252,7 +268,12 @@ func parseConnectionPorts(ctx context.Context, cps []packngo.ConnectionPort) (*[
 		// Sort the ports by role, asserting the API always returns primary for len of 1 responses
 		ret[order[p.Role]] = connPort
 	}
-	return &ret, nil
+
+	ports, diags := types.ListValueFrom(ctx, PortsObjectType, ret)
+	if diags.HasError() {
+		return nil, diags
+	}
+	return &ports, nil
 }
 
 func parseConnectionVlans(ctx context.Context, conn *packngo.Connection) (*basetypes.ListValue, diag.Diagnostics) {

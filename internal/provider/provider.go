@@ -6,8 +6,8 @@ import (
 	"regexp"
 
 	"github.com/equinix/terraform-provider-equinix/internal/config"
-	metalgateway "github.com/equinix/terraform-provider-equinix/internal/resources/metal/gateway"
 	metalconnection "github.com/equinix/terraform-provider-equinix/internal/resources/metal/connection"
+	metalgateway "github.com/equinix/terraform-provider-equinix/internal/resources/metal/gateway"
 	metalprojectsshkey "github.com/equinix/terraform-provider-equinix/internal/resources/metal/project_ssh_key"
 	metalsshkey "github.com/equinix/terraform-provider-equinix/internal/resources/metal/ssh_key"
 	"github.com/hashicorp/terraform-plugin-framework-validators/int64validator"

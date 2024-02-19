@@ -6,6 +6,7 @@ import (
 	"github.com/equinix/terraform-provider-equinix/internal/framework"
 	"github.com/hashicorp/terraform-plugin-framework-validators/listvalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
+	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
@@ -147,17 +148,17 @@ var resourceSchema = schema.Schema{
 			Computed:           true,
 			DeprecationMessage: "If your organization already has connection service tokens enabled, use `service_tokens` instead",
 		},
-		"service_tokens": schema.ListNestedAttribute{
+	},
+	Blocks: map[string]schema.Block{
+		"service_tokens": schema.ListNestedBlock{
 			Description: "Only used with shared connection. List of service tokens required to continue the setup process with [equinix_ecx_l2_connection](https://registry.terraform.io/providers/equinix/equinix/latest/docs/resources/equinix_ecx_l2_connection) or from the [Equinix Fabric Portal](https://ecxfabric.equinix.com/dashboard)",
-			Computed:    true,
-			NestedObject: schema.NestedAttributeObject{
+			NestedObject: schema.NestedBlockObject{
 				Attributes: serviceTokensResourceNestedAttribute,
 			},
 		},
-		"ports": schema.ListNestedAttribute{
+		"ports": schema.ListNestedBlock{
 			Description: "List of connection ports - primary (`ports[0]`) and secondary (`ports[1]`)",
-			Computed:    true,
-			NestedObject: schema.NestedAttributeObject{
+			NestedObject: schema.NestedBlockObject{
 				Attributes: portsResourceNestedAttribute,
 			},
 		},
@@ -193,6 +194,18 @@ var portsResourceNestedAttribute = map[string]schema.Attribute{
 	},
 }
 
+var PortsObjectType = types.ObjectType{
+	AttrTypes: map[string]attr.Type{
+		"id":                  types.StringType,
+		"name":                types.StringType,
+		"role":                types.StringType,
+		"speed":               types.StringType,
+		"status":              types.StringType,
+		"link_status":         types.StringType,
+		"virtual_circuit_ids": types.ListType{ElemType: types.StringType},
+	},
+}
+
 var serviceTokensResourceNestedAttribute = map[string]schema.Attribute{
 	"id": framework.IDAttribute("ID of the service token"),
 	"expires_at": schema.StringAttribute{
@@ -214,5 +227,16 @@ var serviceTokensResourceNestedAttribute = map[string]schema.Attribute{
 	"role": schema.StringAttribute{
 		Description: "Role of the service token",
 		Computed:    true,
+	},
+}
+
+var ServiceTokensObjectType = types.ObjectType{
+	AttrTypes: map[string]attr.Type{
+		"id":                types.StringType,
+		"expires_at":        types.StringType,
+		"max_allowed_speed": types.StringType,
+		"role":              types.StringType,
+		"state":             types.StringType,
+		"type":              types.StringType,
 	},
 }

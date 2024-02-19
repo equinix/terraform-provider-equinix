@@ -352,11 +352,17 @@ func (r *Resource) Update(
 
 			maxVlans := int(math.Max(float64(len(oldVlans)), float64(len(newVlans))))
 
+			ports := make([]PortModel, 0, len(plan.Ports.Elements()))
+			if diags := plan.Ports.ElementsAs(ctx, &ports, false); diags != nil {
+				resp.Diagnostics.Append(diags...)
+				return
+			}
+
 			for i := 0; i < maxVlans; i++ {
 				if oldVlans[i] != (newVlans[i]) {
 					if i+1 > len(newVlans) {
 						// The VNID was removed; unassign the old VNID
-						if _, _, diags := updateHiddenVirtualCircuitVNID(ctx, client, plan.Ports[i], ""); diags.HasError() {
+						if _, _, diags := updateHiddenVirtualCircuitVNID(ctx, client, ports[i], ""); diags.HasError() {
 							resp.Diagnostics.Append(diags...)
 							return
 						}
@@ -364,13 +370,13 @@ func (r *Resource) Update(
 						j := slices.Index(oldVlans, newVlans[i])
 						if j > i {
 							// The VNID was moved to a different list index; unassign the VNID for the old index so that it is available for reassignment
-							if _, _, diags := updateHiddenVirtualCircuitVNID(ctx, client, plan.Ports[j], ""); diags.HasError() {
+							if _, _, diags := updateHiddenVirtualCircuitVNID(ctx, client, ports[j], ""); diags.HasError() {
 								resp.Diagnostics.Append(diags...)
 								return
 							}
 						}
 						// Assign the VNID (whether it is new or moved) to the correct port
-						if _, _, diags := updateHiddenVirtualCircuitVNID(ctx, client, plan.Ports[i], strconv.Itoa(newVlans[i])); diags.HasError() {
+						if _, _, diags := updateHiddenVirtualCircuitVNID(ctx, client, ports[i], strconv.Itoa(newVlans[i])); diags.HasError() {
 							resp.Diagnostics.Append(diags...)
 							return
 						}
