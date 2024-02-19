@@ -6,7 +6,6 @@ import (
 	"github.com/equinix/terraform-provider-equinix/internal/framework"
 	"github.com/hashicorp/terraform-plugin-framework-validators/listvalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
-	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
@@ -194,18 +193,6 @@ var portsResourceNestedAttribute = map[string]schema.Attribute{
 	},
 }
 
-var PortsObjectType = types.ObjectType{
-	AttrTypes: map[string]attr.Type{
-		"id":                  types.StringType,
-		"name":                types.StringType,
-		"role":                types.StringType,
-		"speed":               types.StringType,
-		"status":              types.StringType,
-		"link_status":         types.StringType,
-		"virtual_circuit_ids": types.ListType{ElemType: types.StringType},
-	},
-}
-
 var serviceTokensResourceNestedAttribute = map[string]schema.Attribute{
 	"id": framework.IDAttribute("ID of the service token"),
 	"expires_at": schema.StringAttribute{
@@ -227,16 +214,5 @@ var serviceTokensResourceNestedAttribute = map[string]schema.Attribute{
 	"role": schema.StringAttribute{
 		Description: "Role of the service token",
 		Computed:    true,
-	},
-}
-
-var ServiceTokensObjectType = types.ObjectType{
-	AttrTypes: map[string]attr.Type{
-		"id":                types.StringType,
-		"expires_at":        types.StringType,
-		"max_allowed_speed": types.StringType,
-		"role":              types.StringType,
-		"state":             types.StringType,
-		"type":              types.StringType,
 	},
 }

@@ -6,6 +6,7 @@ import (
 	"path"
 	"strings"
 
+	fwtypes "github.com/equinix/terraform-provider-equinix/internal/framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
@@ -230,7 +231,8 @@ func parseConnectionServiceTokens(ctx context.Context, fst []packngo.FabricServi
 		}
 	}
 
-	serviceTokens, diags := types.ListValueFrom(ctx, ServiceTokensObjectType, connServiceTokens)
+	ServiceTokenObjectType := fwtypes.NewObjectTypeOf[ServiceTokenModel](ctx).ObjectType
+	serviceTokens, diags := types.ListValueFrom(ctx, ServiceTokenObjectType, connServiceTokens)
 	if diags.HasError() {
 		return nil, diags
 	}
@@ -269,7 +271,8 @@ func parseConnectionPorts(ctx context.Context, cps []packngo.ConnectionPort) (*b
 		ret[order[p.Role]] = connPort
 	}
 
-	ports, diags := types.ListValueFrom(ctx, PortsObjectType, ret)
+	portObjectType := fwtypes.NewObjectTypeOf[PortModel](ctx).ObjectType
+	ports, diags := types.ListValueFrom(ctx, portObjectType, ret)
 	if diags.HasError() {
 		return nil, diags
 	}
