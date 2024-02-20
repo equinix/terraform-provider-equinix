@@ -37,79 +37,19 @@ func (r *Resource) Create(
 	resp *resource.CreateResponse,
 ) {
 
-	r.Meta.AddFwModuleToMetalUserAgent(ctx, req.ProviderMeta)
-	client := r.Meta.Metal
-
-	// Retrieve values from plan
 	var plan ResourceModel
-	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
+	diags := req.Plan.Get(ctx, &plan)
+	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	// Generate API request body from plan
-	createRequest := &packngo.ConnectionCreateRequest{
-		Name:       plan.Name.ValueString(),
-		Redundancy: packngo.ConnectionRedundancy(plan.Redundancy.ValueString()),
-		Type:       packngo.ConnectionType(plan.Type.ValueString()),
-	}
+	// Retrieve the API client from the provider metadata
+	r.Meta.AddFwModuleToMetalUserAgent(ctx, req.ProviderMeta)
+	client := r.Meta.Metal
 
-	// missing email is tolerated for user keys (can't be reasonably detected)
-	if plan.ContactEmail.ValueString() != "" {
-		createRequest.ContactEmail = plan.ContactEmail.ValueString()
-	}
-
-	var tokenType packngo.FabricServiceTokenType
-	if plan.ServiceTokenType.ValueString() != "" {
-		tokenType = packngo.FabricServiceTokenType(plan.ServiceTokenType.ValueString())
-	}
-
-	// Handle the speed setting
-	// Note: missing speed is tolerated only for shared connections of type z_side
-	// https://github.com/equinix/terraform-provider-equinix/issues/276
-	if plan.Type.ValueString() == string(packngo.ConnectionDedicated) || tokenType == "a_side" {
-		if plan.Speed.ValueStringPointer() == nil {
-			resp.Diagnostics.AddError(
-				"Error creating Metal Connection",
-				"You must set speed, it's optional only for shared connections of type z_side",
-			)
-			return
-		}
-		speed, err := speedStrToUint(plan.Speed.ValueString())
-		if err != nil {
-			resp.Diagnostics.AddError(
-				"Error creating Metal Connection",
-				"Could not parse connection speed: "+err.Error(),
-			)
-			return
-		}
-		createRequest.Speed = speed
-	}
-
-	// Add tags if they are set
-	if len(plan.Tags.Elements()) > 0 {
-		tags := []string{}
-		if diags := plan.Tags.ElementsAs(ctx, &tags, false); diags != nil {
-			resp.Diagnostics.Append(diags...)
-			return
-		}
-		createRequest.Tags = tags
-	}
-
-	if plan.Metro.ValueString() != "" {
-		createRequest.Metro = plan.Metro.ValueString()
-	}
-
-	if plan.Facility.ValueString() != "" {
-		createRequest.Facility = plan.Facility.ValueString()
-	}
-
-	if plan.Description.ValueString() != "" {
-		createRequest.Description = plan.Description.ValueStringPointer()
-	}
-
-	vlans := []int{}
-	if diags := plan.Vlans.ElementsAs(ctx, &vlans, false); diags != nil {
+	createRequest, diags := generateCreateRequest(ctx, plan)
+	if diags != nil {
 		resp.Diagnostics.Append(diags...)
 		return
 	}
@@ -118,8 +58,9 @@ func (r *Resource) Create(
 	var conn *packngo.Connection
 	var err error
 	projectId := plan.ProjectID.ValueString()
+
+	// Shared connection specific logic
 	if plan.Type.ValueString() == string(packngo.ConnectionShared) {
-		// Shared connection specific logic
 		if projectId == "" {
 			resp.Diagnostics.AddError(
 				"Missing project_id",
@@ -127,46 +68,21 @@ func (r *Resource) Create(
 			)
 			return
 		}
-		if plan.Mode.ValueString() == string(packngo.ConnectionModeTunnel) {
-			resp.Diagnostics.AddError(
-				"Wrong mode",
-				"tunnel mode is not supported for 'shared' connections",
-			)
-			return
-		}
-		if createRequest.Redundancy == packngo.ConnectionPrimary && len(vlans) == 2 {
-			resp.Diagnostics.AddError(
-				"Wrong number of vlans",
-				"when you create a 'shared' connection without redundancy, you must only set max 1 vlan",
-			)
-			return
-		}
-		createRequest.VLANs = vlans
-		createRequest.ServiceTokenType = tokenType
-
-		var speed uint64
-		speed, err = speedStrToUint(plan.Speed.ValueString())
-		if err != nil {
-			resp.Diagnostics.AddError(
-				"Error creating Metal Connection",
-				"Could not parse connection speed: "+err.Error(),
-			)
-			return
-		}
-		createRequest.Speed = speed
 
 		// Create the shared connection
 		var err error
 		conn, _, err = client.Connections.ProjectCreate(projectId, createRequest)
 		if err != nil {
 			resp.Diagnostics.AddError(
-				"Error creating MetalConnection",
-				"Could not create MetalConnection: "+err.Error(),
+				"Error creating Metal Connection",
+				"Could not create a shared Metal Connection: "+err.Error(),
 			)
 			return
 		}
-	} else {
-		// Dedicated connection specific logic
+	}
+
+	// Dedicated connection specific logic
+	if plan.Type.ValueString() == string(packngo.ConnectionDedicated) {
 		organizationId := plan.OrganizationID.ValueString()
 		if organizationId == "" {
 			proj, _, err := client.Projects.Get(projectId, &packngo.GetOptions{Includes: []string{"organization"}})
@@ -179,28 +95,13 @@ func (r *Resource) Create(
 			}
 			organizationId = proj.Organization.ID
 		}
-		if plan.ServiceTokenType.ValueString() != "" {
-			resp.Diagnostics.AddError(
-				"Failed to create Metal Connection",
-				"when you create a 'dedicated' connection, you must not set service_token_type",
-			)
-			return
-		}
-		if len(vlans) > 0 {
-			resp.Diagnostics.AddError(
-				"Failed to create Metal Connection",
-				"when you create a 'dedicated' connection, you must not set vlans",
-			)
-			return
-		}
-		createRequest.Mode = packngo.ConnectionMode(plan.Mode.ValueString())
 
 		// Create the dedicated connection
 		conn, _, err = client.Connections.OrganizationCreate(organizationId, createRequest)
 		if err != nil {
 			resp.Diagnostics.AddError(
-				"Error creating MetalConnection",
-				"Could not create MetalConnection: "+err.Error(),
+				"Error creating Metal Connection",
+				"Could not create Metal Connection: "+err.Error(),
 			)
 			return
 		}
@@ -221,15 +122,16 @@ func (r *Resource) Read(
 	req resource.ReadRequest,
 	resp *resource.ReadResponse,
 ) {
-	r.Meta.AddFwModuleToMetalUserAgent(ctx, req.ProviderMeta)
-	client := r.Meta.Metal
-
-	// Retrieve values from state
 	var state ResourceModel
-	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
+	diags := req.State.Get(ctx, &state)
+	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
+
+	// Retrieve the API client from the provider metadata
+	r.Meta.AddFwModuleToMetalUserAgent(ctx, req.ProviderMeta)
+	client := r.Meta.Metal
 
 	// Extract the ID of the resource from the state
 	id := state.ID.ValueString()
@@ -325,10 +227,9 @@ func (r *Resource) Update(
 
 	if !reflect.DeepEqual(updateRequest, packngo.ConnectionUpdateRequest{}) {
 		if _, _, err := client.Connections.Update(id, updateRequest, nil); err != nil {
-			err = equinix_errors.FriendlyError(err)
 			resp.Diagnostics.AddError(
 				"Error updating Metal Connection",
-				"Could not update Connection with ID "+id+": "+err.Error(),
+				"Could not update Connection with ID "+id+": "+equinix_errors.FriendlyError(err).Error(),
 			)
 		}
 	}
@@ -426,12 +327,14 @@ func (r *Resource) Delete(
 	req resource.DeleteRequest,
 	resp *resource.DeleteResponse,
 ) {
+	// Retrieve the API client
 	r.Meta.AddFwModuleToMetalUserAgent(ctx, req.ProviderMeta)
 	client := r.Meta.Metal
 
-	// Retrieve values from plan
+	// Retrieve the current state
 	var state ResourceModel
-	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
+	diags := req.State.Get(ctx, &state)
+	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -439,15 +342,119 @@ func (r *Resource) Delete(
 	// Extract the ID of the resource from the state
 	id := state.ID.ValueString()
 
-	// Use API client to delete the resource
+	// API call to delete the Metal Connection
 	deleteResp, err := client.Connections.Delete(id, true)
 	if equinix_errors.IgnoreResponseErrors(equinix_errors.HttpForbidden, equinix_errors.HttpNotFound)(deleteResp, err) != nil {
-		err = equinix_errors.FriendlyError(err)
 		resp.Diagnostics.AddError(
 			fmt.Sprintf("Failed to delete Metal Connection %s", id),
-			err.Error(),
+			equinix_errors.FriendlyError(err).Error(),
 		)
 	}
+}
+
+func generateCreateRequest(ctx context.Context, plan ResourceModel) (*packngo.ConnectionCreateRequest, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	createRequest := &packngo.ConnectionCreateRequest{
+		Name:       plan.Name.ValueString(),
+		Redundancy: packngo.ConnectionRedundancy(plan.Redundancy.ValueString()),
+		Type:       packngo.ConnectionType(plan.Type.ValueString()),
+	}
+	// missing email is tolerated for user keys (can't be reasonably detected)
+	if plan.ContactEmail.ValueString() != "" {
+		createRequest.ContactEmail = plan.ContactEmail.ValueString()
+	}
+	if plan.ServiceTokenType.ValueString() != "" {
+		createRequest.ServiceTokenType = packngo.FabricServiceTokenType(plan.ServiceTokenType.ValueString())
+	}
+	// Handle the speed setting
+	// Note: missing speed is tolerated only for shared connections of type z_side
+	// https://github.com/equinix/terraform-provider-equinix/issues/276
+	if plan.Type.ValueString() == string(packngo.ConnectionDedicated) || plan.ServiceTokenType.ValueString() == "a_side" {
+		if plan.Speed.ValueStringPointer() == nil {
+			// missing speed
+			diags.AddError(
+				"Error creating Metal Connection",
+				"You must set speed, it's optional only for shared connections of type z_side",
+			)
+			return nil, diags
+		} else {
+			speed, err := speedStrToUint(plan.Speed.ValueString())
+			if err != nil {
+				// wrong speed value
+				diags.AddError(
+					"Error creating Metal Connection",
+					"Could not parse connection speed: "+err.Error(),
+				)
+				return nil, diags
+			}
+			createRequest.Speed = speed
+		}
+	}
+	// Add tags if they are set
+	if len(plan.Tags.Elements()) > 0 {
+		tags := []string{}
+		if diags = plan.Tags.ElementsAs(ctx, &tags, false); diags != nil {
+			return nil, diags
+		}
+		createRequest.Tags = tags
+	}
+	if plan.Metro.ValueString() != "" {
+		createRequest.Metro = plan.Metro.ValueString()
+	}
+	if plan.Facility.ValueString() != "" {
+		createRequest.Facility = plan.Facility.ValueString()
+	}
+	if plan.Description.ValueString() != "" {
+		createRequest.Description = plan.Description.ValueStringPointer()
+	}
+	vlans := []int{}
+	if diags := plan.Vlans.ElementsAs(ctx, &vlans, false); diags != nil {
+		return nil, diags
+	}
+	createRequest.VLANs = vlans
+	createRequest.Mode = packngo.ConnectionMode(plan.Mode.ValueString())
+
+	// Shared connection specific logic
+	if plan.Type.ValueString() == string(packngo.ConnectionShared) {
+		if createRequest.Mode == packngo.ConnectionModeTunnel {
+			// wrong mode
+			diags.AddError(
+				"Wrong mode",
+				"tunnel mode is not supported for 'shared' connections",
+			)
+			return nil, diags
+		}
+		if createRequest.Redundancy == packngo.ConnectionPrimary && len(vlans) == 2 {
+			// wrong number of vlans
+			diags.AddError(
+				"Wrong number of vlans",
+				"when you create a 'shared' connection without redundancy, you must only set max 1 vlan",
+			)
+			return nil, diags
+		}
+	}
+
+	// Dedicated connection specific logic
+	if plan.Type.ValueString() == string(packngo.ConnectionDedicated) {
+		if createRequest.ServiceTokenType != "" {
+			// must not set service_token_type
+			diags.AddError(
+				"Failed to create Metal Connection",
+				"when you create a 'dedicated' connection, you must not set service_token_type",
+			)
+			return nil, diags
+		}
+		if len(createRequest.VLANs) > 0 {
+			// must not set vlans
+			diags.AddError(
+				"Failed to create Metal Connection",
+				"when you create a 'dedicated' connection, you must not set vlans",
+			)
+			return nil, diags
+		}
+	}
+	return createRequest, nil
 }
 
 func updateHiddenVirtualCircuitVNID(ctx context.Context, client *packngo.Client, port PortModel, newVNID string) (*packngo.VirtualCircuit, *packngo.Response, diag.Diagnostics) {
@@ -463,10 +470,9 @@ func updateHiddenVirtualCircuitVNID(ctx context.Context, client *packngo.Client,
 	ucr.VirtualNetworkID = &newVNID
 	vc, resp, err := client.VirtualCircuits.Update(vcid, &ucr, nil)
 	if err != nil {
-		err = equinix_errors.FriendlyError(err)
 		diags.AddError(
 			"Error Updating Metal Connection",
-			"Could not update Metal Connection: "+err.Error(),
+			"Could not update Metal Connection: "+equinix_errors.FriendlyError(err).Error(),
 		)
 		return nil, nil, diags
 	}
