@@ -151,28 +151,24 @@ func parseConnection(
 	}
 
 	// Parse Service Token Type
-	tokenType := ""
 	if len(conn.Tokens) > 0 {
-		tokenType = string(conn.Tokens[0].ServiceTokenType)
+		*serviceTokenType = types.StringValue(string(conn.Tokens[0].ServiceTokenType))
 	}
-	*serviceTokenType = types.StringValue(tokenType)
 
 	// Parse Speed
-	if !(tokenType == "z_side" && conn.Type == packngo.ConnectionShared) {
-		connSpeed := "0"
-		var err error
-		if conn.Speed > 0 {
-			connSpeed, err = speedUintToStr(conn.Speed)
-			if err != nil {
-				diags.AddError(
-					fmt.Sprintf("Failed to convert Speed (%d) to string", conn.Speed),
-					err.Error(),
-				)
-				return diags
-			}
+	connSpeed := "0"
+	var err error
+	if conn.Speed > 0 {
+		connSpeed, err = speedUintToStr(conn.Speed)
+		if err != nil {
+			diags.AddError(
+				fmt.Sprintf("Failed to convert Speed (%d) to string", conn.Speed),
+				err.Error(),
+			)
+			return diags
 		}
-		*speed = types.StringValue(connSpeed)
 	}
+	*speed = types.StringValue(connSpeed)
 
 	// Parse Project ID
 	// fix the project id get when it's added straight to the Connection API resource
@@ -188,7 +184,9 @@ func parseConnection(
 	if diags.HasError() {
 		return diags
 	}
-	*vlans = *connVlans
+	if !connVlans.IsNull() {
+		*vlans = *connVlans
+	}
 
 	// Parse Ports
 	connPorts, diags := parseConnectionPorts(ctx, conn.Ports)
