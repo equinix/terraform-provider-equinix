@@ -14,6 +14,7 @@ func TestAccDataSourceNetworkAccount_basic(t *testing.T) {
 		"resourceName": "tf-account",
 		"metro_code":   metro.(string),
 		"status":       "active",
+		"project_id":   "92cbcfd9-347b-4da5-901d-2cea82575941",
 	}
 	resourceName := fmt.Sprintf("data.equinix_network_account.%s", context["resourceName"].(string))
 	resource.ParallelTest(t, resource.TestCase{
@@ -27,6 +28,7 @@ func TestAccDataSourceNetworkAccount_basic(t *testing.T) {
 					resource.TestCheckResourceAttrSet(resourceName, "number"),
 					resource.TestCheckResourceAttrSet(resourceName, "status"),
 					resource.TestCheckResourceAttrSet(resourceName, "ucm_id"),
+					resource.TestCheckResourceAttrSet(resourceName, "project_id"),
 				),
 			},
 		},
