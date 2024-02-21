@@ -188,20 +188,7 @@ func (r *Resource) Update(
 
 	// Prepare update request based on the changes
 	updateRequest := &packngo.ConnectionUpdateRequest{}
-	// TODO (ocobles) The legacy SDK code includes below code snippet which
-	// looks incorrect as "locked" is a device field. Delete it when we are sure it is not necessary
-	//
-	// if d.HasChange("locked") {
-	// 	var action func(string) (*packngo.Response, error)
-	// 	if d.Get("locked").(bool) {
-	// 		action = client.Devices.Lock
-	// 	} else {
-	// 		action = client.Devices.Unlock
-	// 	}
-	// 	if _, err := action(d.Id()); err != nil {
-	// 		return friendlyError(err)
-	// 	}
-	// }
+
 	if !state.Description.Equal(plan.Description) {
 		updateRequest.Description = plan.Description.ValueStringPointer()
 	}
