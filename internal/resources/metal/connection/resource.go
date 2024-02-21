@@ -401,11 +401,14 @@ func generateCreateRequest(ctx context.Context, plan ResourceModel) (*packngo.Co
 		return nil, diags
 	}
 	createRequest.VLANs = vlans
-	createRequest.Mode = packngo.ConnectionMode(plan.Mode.ValueString())
 
 	// Shared connection specific logic
 	if plan.Type.ValueString() == string(packngo.ConnectionShared) {
-		if createRequest.Mode == packngo.ConnectionModeTunnel {
+		// TODO(ocobles) The "mode" of the interconnection is only relevant to Dedicated Ports.
+		// Fabric VCs won't have this field. We should consider add a default "mode" value only
+		// when connection plan.Type.ValueString() == packngo.ConnectionDedicated. This validation
+		// not needed.
+		if packngo.ConnectionMode(plan.Mode.ValueString()) == packngo.ConnectionModeTunnel {
 			// wrong mode
 			diags.AddError(
 				"Wrong mode",
@@ -425,6 +428,7 @@ func generateCreateRequest(ctx context.Context, plan ResourceModel) (*packngo.Co
 
 	// Dedicated connection specific logic
 	if plan.Type.ValueString() == string(packngo.ConnectionDedicated) {
+		createRequest.Mode = packngo.ConnectionMode(plan.Mode.ValueString())
 		if createRequest.ServiceTokenType != "" {
 			// must not set service_token_type
 			diags.AddError(

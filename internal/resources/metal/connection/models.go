@@ -139,6 +139,7 @@ func parseConnection(
 	*token = types.StringValue(conn.Token)
 	*typ = types.StringValue(string(conn.Type))
 
+	*mode = types.StringValue(string(packngo.ConnectionModeStandard))
 	if conn.Mode != nil {
 		*mode = types.StringValue(string(*conn.Mode))
 	}
