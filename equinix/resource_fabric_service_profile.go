@@ -863,11 +863,11 @@ func resourceServiceProfilesSearchRequest(ctx context.Context, d *schema.Resourc
 	return setFabricServiceProfilesListMap(d, serviceProfiles)
 }
 
-func customFieldFabricSpToTerra(customFieldl []v4.CustomField) []map[string]interface{} {
+func customFieldFabricSpToTerra(customFieldl []v4.CustomField) []interface{} {
 	if customFieldl == nil {
 		return nil
 	}
-	mappedCustomFieldl := make([]map[string]interface{}, len(customFieldl))
+	mappedCustomFieldl := make([]interface{}, len(customFieldl))
 	for index, customField := range customFieldl {
 		mappedCustomFieldl[index] = map[string]interface{}{
 			"label":       customField.Label,
@@ -880,49 +880,42 @@ func customFieldFabricSpToTerra(customFieldl []v4.CustomField) []map[string]inte
 	return mappedCustomFieldl
 }
 
-func processStepFabricSpToTerra(processStepl []v4.ProcessStep) []map[string]interface{} {
+func processStepFabricSpToTerra(processStepl []v4.ProcessStep) []interface{} {
 	if processStepl == nil {
 		return nil
 	}
-	mappedProcessStepl := make([]map[string]interface{}, len(processStepl))
-	for index, processStep := range processStepl {
-		mappedProcessStepl[index] = map[string]interface{}{
-			"title":       processStep.Title,
-			"sub_title":   processStep.SubTitle,
-			"description": processStep.Description,
-		}
+	mappedProcessStep := map[string]interface{}{
+		"title":       processStepl[0].Title,
+		"sub_title":   processStepl[0].SubTitle,
+		"description": processStepl[0].Description,
 	}
-	return mappedProcessStepl
+
+	return []interface{}{mappedProcessStep}
 }
 
 func marketingInfoMappingToTerra(mkinfo *v4.MarketingInfo) *schema.Set {
 	if mkinfo == nil {
 		return nil
 	}
-	mkinfos := []*v4.MarketingInfo{mkinfo}
-	mappedMkInfos := make([]interface{}, 0)
-	for _, mkinfo := range mkinfos {
-		mappedMkInfo := make(map[string]interface{})
-		mappedMkInfo["logo"] = mkinfo.Logo
-		mappedMkInfo["promotion"] = mkinfo.Promotion
-		processStepl := processStepFabricSpToTerra(mkinfo.ProcessSteps)
-		if processStepl != nil {
-			mappedMkInfo["process_step"] = processStepl
-		}
-		mappedMkInfos = append(mappedMkInfos, mappedMkInfo)
+	mappedMkInfo := make(map[string]interface{})
+	mappedMkInfo["logo"] = mkinfo.Logo
+	mappedMkInfo["promotion"] = mkinfo.Promotion
+	processStepl := processStepFabricSpToTerra(mkinfo.ProcessSteps)
+	if processStepl != nil {
+		mappedMkInfo["process_step"] = processStepl
 	}
 	marketingInfoSet := schema.NewSet(
 		schema.HashResource(&schema.Resource{Schema: createMarketingInfoSch()}),
-		mappedMkInfos,
+		[]interface{}{mappedMkInfo},
 	)
 	return marketingInfoSet
 }
 
-func accessPointColoFabricSpToTerra(accessPointColol []v4.ServiceProfileAccessPointColo) []map[string]interface{} {
+func accessPointColoFabricSpToTerra(accessPointColol []v4.ServiceProfileAccessPointColo) []interface{} {
 	if accessPointColol == nil {
 		return nil
 	}
-	mappedAccessPointColol := make([]map[string]interface{}, len(accessPointColol))
+	mappedAccessPointColol := make([]interface{}, len(accessPointColol))
 	for index, accessPointColo := range accessPointColol {
 		mappedAccessPointColol[index] = map[string]interface{}{
 			"type":                      accessPointColo.Type_,
@@ -936,22 +929,20 @@ func accessPointColoFabricSpToTerra(accessPointColol []v4.ServiceProfileAccessPo
 	return mappedAccessPointColol
 }
 
-func serviceMetroFabricSpToTerra(serviceMetrol []v4.ServiceMetro) []map[string]interface{} {
+func serviceMetroFabricSpToTerra(serviceMetrol []v4.ServiceMetro) []interface{} {
 	if serviceMetrol == nil {
 		return nil
 	}
-	mappedServiceMetrol := make([]map[string]interface{}, len(serviceMetrol))
-	for index, serviceMetro := range serviceMetrol {
-		mappedServiceMetrol[index] = map[string]interface{}{
-			"code":           serviceMetro.Code,
-			"name":           serviceMetro.Name,
-			"ibxs":           serviceMetro.Ibxs,
-			"in_trail":       serviceMetro.InTrail,
-			"display_name":   serviceMetro.DisplayName,
-			"seller_regions": serviceMetro.SellerRegions,
-		}
+	mappedServiceMetrol := map[string]interface{}{
+		"code":           serviceMetrol[0].Code,
+		"name":           serviceMetrol[0].Name,
+		"ibxs":           serviceMetrol[0].Ibxs,
+		"in_trail":       serviceMetrol[0].InTrail,
+		"display_name":   serviceMetrol[0].DisplayName,
+		"seller_regions": serviceMetrol[0].SellerRegions,
 	}
-	return mappedServiceMetrol
+
+	return []interface{}{mappedServiceMetrol}
 }
 
 func tagsFabricSpToTerra(tagsl *[]string) []interface{} {

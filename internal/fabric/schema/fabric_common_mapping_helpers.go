@@ -140,19 +140,15 @@ func LocationToTerra(location *v4.SimplifiedLocation) *schema.Set {
 	if location == nil {
 		return nil
 	}
-	locations := []*v4.SimplifiedLocation{location}
-	mappedLocations := make([]interface{}, len(locations))
-	for i, location := range locations {
-		mappedLocations[i] = map[string]interface{}{
-			"region":     location.Region,
-			"metro_name": location.MetroName,
-			"metro_code": location.MetroCode,
-			"ibx":        location.Ibx,
-		}
-	}
+	mappedLocations := make(map[string]interface{})
+	mappedLocations["region"] = location.Region
+	mappedLocations["metro_name"] = location.MetroName
+	mappedLocations["metro_code"] = location.MetroCode
+	mappedLocations["ibx"] = location.Ibx
+
 	locationSet := schema.NewSet(
 		schema.HashResource(&schema.Resource{Schema: LocationSch()}),
-		mappedLocations,
+		[]interface{}{mappedLocations},
 	)
 	return locationSet
 }
