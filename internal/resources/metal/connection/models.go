@@ -86,8 +86,15 @@ func (m *DataSourceModel) parse(ctx context.Context, conn *packngo.Connection) d
 		&m.ID, &m.OrganizationID, &m.Name, &m.Facility, &m.Metro,
 		&m.Description, &m.ContactEmail, &m.Status, &m.Redundancy,
 		&m.Token, &m.Type, &m.Mode, &m.ServiceTokenType, &m.Speed,
-		&m.ProjectID, &m.Tags, &m.Vlans, &m.Ports, &m.ServiceTokens,
+		&m.ProjectID, &m.Vlans, &m.Ports, &m.ServiceTokens,
 	)
+
+	connTags, diags := types.ListValueFrom(ctx, types.StringType, conn.Tags)
+	if diags.HasError() {
+		return diags
+	}
+	m.Tags = connTags
+
 	return diags
 }
 
@@ -98,8 +105,20 @@ func (m *ResourceModel) parse(ctx context.Context, conn *packngo.Connection) dia
 		&m.ID, &m.OrganizationID, &m.Name, &m.Facility, &m.Metro,
 		&m.Description, &m.ContactEmail, &m.Status, &m.Redundancy,
 		&m.Token, &m.Type, &m.Mode, &m.ServiceTokenType, &m.Speed,
-		&m.ProjectID, &m.Tags, &m.Vlans, &m.Ports, &m.ServiceTokens,
+		&m.ProjectID, &m.Vlans, &m.Ports, &m.ServiceTokens,
 	)
+
+	connTags, diags := types.ListValueFrom(ctx, types.StringType, conn.Tags)
+	if diags.HasError() {
+		return diags
+	}
+	// TODO(ocobles) workaround to keep compatibility with older releases using SDKv2
+	if m.Tags.IsNull() && len(conn.Tags) == 0 {
+		m.Tags = types.ListNull(types.StringType)
+	} else {
+		m.Tags = connTags
+	}
+
 	return diags
 }
 
@@ -108,7 +127,7 @@ func parseConnection(
 	conn *packngo.Connection,
 	id, orgID, name, facility, metro, description, contactEmail, status, redundancy,
 	token, typ, mode, serviceTokenType, speed, projectID *basetypes.StringValue,
-	tags, vlans *basetypes.ListValue,
+	vlans *basetypes.ListValue,
 	ports *fwtypes.ListNestedObjectValueOf[PortModel],
 	serviceTokens *fwtypes.ListNestedObjectValueOf[ServiceTokenModel],
 ) diag.Diagnostics {
@@ -118,6 +137,12 @@ func parseConnection(
 	*orgID = types.StringValue(conn.Organization.ID)
 	*name = types.StringValue(conn.Name)
 	*facility = types.StringValue(conn.Facility.Code)
+	*description = types.StringValue(conn.Description)
+	*contactEmail = types.StringValue(conn.ContactEmail)
+	*status = types.StringValue(conn.Status)
+	*redundancy = types.StringValue(string(conn.Redundancy))
+	*token = types.StringValue(conn.Token)
+	*typ = types.StringValue(string(conn.Type))
 
 	// TODO(ocobles) we were using "StateFunc: converters.ToLowerIf" for "metro" field in the sdkv2
 	// version of this resource. StateFunc doesn't exist in terraform and it requires implementation
@@ -127,29 +152,9 @@ func parseConnection(
 		*metro = types.StringValue(conn.Metro.Code)
 	}
 
-	// TODO(ocobles) API returns "" when description was not provided
-	// To ensure backward compatibility we ignore null/empty diff
-	if !description.IsNull() || (description.IsNull() && conn.Description != "") {
-		*description = types.StringValue(conn.Description)
-	}
-
-	*contactEmail = types.StringValue(conn.ContactEmail)
-	*status = types.StringValue(conn.Status)
-	*redundancy = types.StringValue(string(conn.Redundancy))
-	*token = types.StringValue(conn.Token)
-	*typ = types.StringValue(string(conn.Type))
-
 	*mode = types.StringValue(string(packngo.ConnectionModeStandard))
 	if conn.Mode != nil {
 		*mode = types.StringValue(string(*conn.Mode))
-	}
-
-	if !tags.IsNull() || (tags.IsNull() && conn.Tags != nil && len(conn.Tags) > 0) {
-		connTags, diags := types.ListValueFrom(ctx, types.StringType, conn.Tags)
-		if diags.HasError() {
-			return diags
-		}
-		*tags = connTags
 	}
 
 	// Parse Service Token Type

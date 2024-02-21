@@ -11,6 +11,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/listplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
@@ -37,6 +38,7 @@ func resourceSchema(ctx context.Context) schema.Schema {
 				DeprecationMessage: "Use metro instead of facility. For more information, read the migration guide.",
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.RequiresReplace(),
+					stringplanmodifier.UseStateForUnknown(),
 				},
 				Validators: []validator.String{
 					stringvalidator.ExactlyOneOf(path.Expressions{
@@ -50,6 +52,7 @@ func resourceSchema(ctx context.Context) schema.Schema {
 				Computed:    true,
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.RequiresReplace(),
+					stringplanmodifier.UseStateForUnknown(),
 				},
 			},
 			"redundancy": schema.StringAttribute{
@@ -68,6 +71,7 @@ func resourceSchema(ctx context.Context) schema.Schema {
 				Computed:    true,
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.RequiresReplace(), // TODO(displague) packngo needs updating
+					stringplanmodifier.UseStateForUnknown(),
 				},
 			},
 			"type": schema.StringAttribute{
@@ -88,7 +92,6 @@ func resourceSchema(ctx context.Context) schema.Schema {
 				Optional:    true,
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.RequiresReplace(),
-					stringplanmodifier.UseStateForUnknown(),
 				},
 			},
 			"speed": schema.StringAttribute{
@@ -96,9 +99,12 @@ func resourceSchema(ctx context.Context) schema.Schema {
 				Optional:    true,
 				Computed:    true,
 			},
+			// TODO(ocobles) workaround - API returns "" when description was not provided. Computed=true will
+			// ensure backward compatibility since that change was tolerated in SDKv2
 			"description": schema.StringAttribute{
 				Description: "Description of the connection resource",
 				Optional:    true,
+				Computed:    true,
 			},
 			"mode": schema.StringAttribute{
 				Description: "Mode for connections in IBX facilities with the dedicated type - standard or tunnel",
@@ -141,14 +147,21 @@ func resourceSchema(ctx context.Context) schema.Schema {
 						path.MatchRoot("project_id"),
 					}...),
 				},
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.RequiresReplace(),
+					stringplanmodifier.UseStateForUnknown(),
+				},
 			},
 			"status": schema.StringAttribute{
 				Description: "Status of the connection resource",
 				Computed:    true,
 			},
 			"token": schema.StringAttribute{
-				Description:        "Only used with shared connection. Fabric Token required to continue the setup process with [equinix_ecx_l2_connection](https://registry.terraform.io/providers/equinix/equinix/latest/docs/resources/equinix_ecx_l2_connection) or from the [Equinix Fabric Portal](https://ecxfabric.equinix.com/dashboard)",
-				Computed:           true,
+				Description: "Only used with shared connection. Fabric Token required to continue the setup process with [equinix_ecx_l2_connection](https://registry.terraform.io/providers/equinix/equinix/latest/docs/resources/equinix_ecx_l2_connection) or from the [Equinix Fabric Portal](https://ecxfabric.equinix.com/dashboard)",
+				Computed:    true,
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.UseStateForUnknown(),
+				},
 				DeprecationMessage: "If your organization already has connection service tokens enabled, use `service_tokens` instead",
 			},
 			"ports": schema.ListAttribute{
@@ -156,12 +169,18 @@ func resourceSchema(ctx context.Context) schema.Schema {
 				CustomType:  fwtypes.NewListNestedObjectTypeOf[PortModel](ctx),
 				ElementType: fwtypes.NewObjectTypeOf[PortModel](ctx),
 				Computed:    true,
+				PlanModifiers: []planmodifier.List{
+					listplanmodifier.UseStateForUnknown(),
+				},
 			},
 			"service_tokens": schema.ListAttribute{
 				Description: "Only used with shared connection. List of service tokens required to continue the setup process with [equinix_ecx_l2_connection](https://registry.terraform.io/providers/equinix/equinix/latest/docs/resources/equinix_ecx_l2_connection) or from the [Equinix Fabric Portal](https://ecxfabric.equinix.com/dashboard)",
 				CustomType:  fwtypes.NewListNestedObjectTypeOf[ServiceTokenModel](ctx),
 				ElementType: fwtypes.NewObjectTypeOf[ServiceTokenModel](ctx),
 				Computed:    true,
+				PlanModifiers: []planmodifier.List{
+					listplanmodifier.UseStateForUnknown(),
+				},
 			},
 		},
 	}

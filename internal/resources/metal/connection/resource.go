@@ -285,12 +285,12 @@ func (r *Resource) Update(
 					}
 				}
 			}
+		} else {
+			resp.Diagnostics.AddError(
+				"Error updating Metal Connection",
+				"Could not update Metal Connection with ID "+id+": when you update a 'dedicated' connection, you cannot set vlans",
+			)
 		}
-	} else {
-		resp.Diagnostics.AddError(
-			"Error updating Metal Connection",
-			"Could not update Metal Connection with ID "+id+": when you update a 'dedicated' connection, you cannot set vlans",
-		)
 	}
 
 	// Use API client to get the current state of the resource
