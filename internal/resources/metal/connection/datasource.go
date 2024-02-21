@@ -14,8 +14,7 @@ func NewDataSource() datasource.DataSource {
 	return &DataSource{
 		BaseDataSource: framework.NewBaseDataSource(
 			framework.BaseDataSourceConfig{
-				Name:   "equinix_metal_connection",
-				Schema: &dataSourceSchema,
+				Name: "equinix_metal_connection",
 			},
 		),
 	}
@@ -23,6 +22,14 @@ func NewDataSource() datasource.DataSource {
 
 type DataSource struct {
 	framework.BaseDataSource
+}
+
+func (r *DataSource) Schema(
+	ctx context.Context,
+	req datasource.SchemaRequest,
+	resp *datasource.SchemaResponse,
+) {
+	resp.Schema = dataSourceSchema(ctx)
 }
 
 func (r *DataSource) Read(

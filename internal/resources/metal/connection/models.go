@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	fwtypes "github.com/equinix/terraform-provider-equinix/internal/framework/types"
+	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
@@ -14,58 +15,58 @@ import (
 )
 
 type ResourceModel struct {
-	ID               types.String `tfsdk:"id"`
-	Name             types.String `tfsdk:"name"`
-	Facility         types.String `tfsdk:"facility"`
-	Metro            types.String `tfsdk:"metro"`
-	Redundancy       types.String `tfsdk:"redundancy"`
-	ContactEmail     types.String `tfsdk:"contact_email"`
-	Type             types.String `tfsdk:"type"`
-	ProjectID        types.String `tfsdk:"project_id"`
-	Speed            types.String `tfsdk:"speed"`
-	Description      types.String `tfsdk:"description"`
-	Mode             types.String `tfsdk:"mode"`
-	Tags             types.List   `tfsdk:"tags"`  // List of strings
-	Vlans            types.List   `tfsdk:"vlans"` // List of ints
-	ServiceTokenType types.String `tfsdk:"service_token_type"`
-	OrganizationID   types.String `tfsdk:"organization_id"`
-	Status           types.String `tfsdk:"status"`
-	Token            types.String `tfsdk:"token"`
-	Ports            types.List   `tfsdk:"ports"`          // List of Port
-	ServiceTokens    types.List   `tfsdk:"service_tokens"` // List of ServiceToken
+	ID               types.String                                       `tfsdk:"id"`
+	Name             types.String                                       `tfsdk:"name"`
+	Facility         types.String                                       `tfsdk:"facility"`
+	Metro            types.String                                       `tfsdk:"metro"`
+	Redundancy       types.String                                       `tfsdk:"redundancy"`
+	ContactEmail     types.String                                       `tfsdk:"contact_email"`
+	Type             types.String                                       `tfsdk:"type"`
+	ProjectID        types.String                                       `tfsdk:"project_id"`
+	Speed            types.String                                       `tfsdk:"speed"`
+	Description      types.String                                       `tfsdk:"description"`
+	Mode             types.String                                       `tfsdk:"mode"`
+	Tags             types.List                                         `tfsdk:"tags"`  // List of strings
+	Vlans            types.List                                         `tfsdk:"vlans"` // List of ints
+	ServiceTokenType types.String                                       `tfsdk:"service_token_type"`
+	OrganizationID   types.String                                       `tfsdk:"organization_id"`
+	Status           types.String                                       `tfsdk:"status"`
+	Token            types.String                                       `tfsdk:"token"`
+	Ports            fwtypes.ListNestedObjectValueOf[PortModel]         `tfsdk:"ports"`          // List of Port
+	ServiceTokens    fwtypes.ListNestedObjectValueOf[ServiceTokenModel] `tfsdk:"service_tokens"` // List of ServiceToken
 }
 
 type DataSourceModel struct {
-	ID               types.String `tfsdk:"id"`
-	ConnectionID     types.String `tfsdk:"connection_id"`
-	Name             types.String `tfsdk:"name"`
-	Facility         types.String `tfsdk:"facility"`
-	Metro            types.String `tfsdk:"metro"`
-	Redundancy       types.String `tfsdk:"redundancy"`
-	ContactEmail     types.String `tfsdk:"contact_email"`
-	Type             types.String `tfsdk:"type"`
-	ProjectID        types.String `tfsdk:"project_id"`
-	Speed            types.String `tfsdk:"speed"`
-	Description      types.String `tfsdk:"description"`
-	Mode             types.String `tfsdk:"mode"`
-	Tags             types.List   `tfsdk:"tags"`  // List of strings
-	Vlans            types.List   `tfsdk:"vlans"` // List of ints
-	ServiceTokenType types.String `tfsdk:"service_token_type"`
-	OrganizationID   types.String `tfsdk:"organization_id"`
-	Status           types.String `tfsdk:"status"`
-	Token            types.String `tfsdk:"token"`
-	Ports            types.List   `tfsdk:"ports"`          // List of Port
-	ServiceTokens    types.List   `tfsdk:"service_tokens"` // List of ServiceToken
+	ID               types.String                                       `tfsdk:"id"`
+	ConnectionID     types.String                                       `tfsdk:"connection_id"`
+	Name             types.String                                       `tfsdk:"name"`
+	Facility         types.String                                       `tfsdk:"facility"`
+	Metro            types.String                                       `tfsdk:"metro"`
+	Redundancy       types.String                                       `tfsdk:"redundancy"`
+	ContactEmail     types.String                                       `tfsdk:"contact_email"`
+	Type             types.String                                       `tfsdk:"type"`
+	ProjectID        types.String                                       `tfsdk:"project_id"`
+	Speed            types.String                                       `tfsdk:"speed"`
+	Description      types.String                                       `tfsdk:"description"`
+	Mode             types.String                                       `tfsdk:"mode"`
+	Tags             types.List                                         `tfsdk:"tags"`  // List of strings
+	Vlans            types.List                                         `tfsdk:"vlans"` // List of ints
+	ServiceTokenType types.String                                       `tfsdk:"service_token_type"`
+	OrganizationID   types.String                                       `tfsdk:"organization_id"`
+	Status           types.String                                       `tfsdk:"status"`
+	Token            types.String                                       `tfsdk:"token"`
+	Ports            fwtypes.ListNestedObjectValueOf[PortModel]         `tfsdk:"ports"`          // List of Port
+	ServiceTokens    fwtypes.ListNestedObjectValueOf[ServiceTokenModel] `tfsdk:"service_tokens"` // List of ServiceToken
 }
 
 type PortModel struct {
-	ID                types.String `tfsdk:"id"`
-	Name              types.String `tfsdk:"name"`
-	Role              types.String `tfsdk:"role"`
-	Speed             types.Int64  `tfsdk:"speed"`
-	Status            types.String `tfsdk:"status"`
-	LinkStatus        types.String `tfsdk:"link_status"`
-	VirtualCircuitIDs types.List   `tfsdk:"virtual_circuit_ids"` // List of String
+	ID                types.String                      `tfsdk:"id"`
+	Name              types.String                      `tfsdk:"name"`
+	Role              types.String                      `tfsdk:"role"`
+	Speed             types.Int64                       `tfsdk:"speed"`
+	Status            types.String                      `tfsdk:"status"`
+	LinkStatus        types.String                      `tfsdk:"link_status"`
+	VirtualCircuitIDs fwtypes.ListValueOf[types.String] `tfsdk:"virtual_circuit_ids"` // List of String
 }
 
 type ServiceTokenModel struct {
@@ -87,7 +88,6 @@ func (m *DataSourceModel) parse(ctx context.Context, conn *packngo.Connection) d
 		&m.Token, &m.Type, &m.Mode, &m.ServiceTokenType, &m.Speed,
 		&m.ProjectID, &m.Tags, &m.Vlans, &m.Ports, &m.ServiceTokens,
 	)
-
 	return diags
 }
 
@@ -100,7 +100,6 @@ func (m *ResourceModel) parse(ctx context.Context, conn *packngo.Connection) dia
 		&m.Token, &m.Type, &m.Mode, &m.ServiceTokenType, &m.Speed,
 		&m.ProjectID, &m.Tags, &m.Vlans, &m.Ports, &m.ServiceTokens,
 	)
-
 	return diags
 }
 
@@ -109,7 +108,9 @@ func parseConnection(
 	conn *packngo.Connection,
 	id, orgID, name, facility, metro, description, contactEmail, status, redundancy,
 	token, typ, mode, serviceTokenType, speed, projectID *basetypes.StringValue,
-	tags, vlans, ports, serviceTokens *basetypes.ListValue,
+	tags, vlans *basetypes.ListValue,
+	ports *fwtypes.ListNestedObjectValueOf[PortModel],
+	serviceTokens *fwtypes.ListNestedObjectValueOf[ServiceTokenModel],
 ) diag.Diagnostics {
 	var diags diag.Diagnostics
 
@@ -188,24 +189,23 @@ func parseConnection(
 		*vlans = *connVlans
 	}
 
-	// Parse Ports
 	connPorts, diags := parseConnectionPorts(ctx, conn.Ports)
 	if diags.HasError() {
 		return diags
 	}
-	*ports = *connPorts
+	*ports = connPorts
 
 	// Parse ServiceTokens
 	connServiceTokens, diags := parseConnectionServiceTokens(ctx, conn.Tokens)
 	if diags.HasError() {
 		return diags
 	}
-	*serviceTokens = *connServiceTokens
+	*serviceTokens = connServiceTokens
 
 	return diags
 }
 
-func parseConnectionServiceTokens(ctx context.Context, fst []packngo.FabricServiceToken) (*basetypes.ListValue, diag.Diagnostics) {
+func parseConnectionServiceTokens(ctx context.Context, fst []packngo.FabricServiceToken) (fwtypes.ListNestedObjectValueOf[ServiceTokenModel], diag.Diagnostics) {
 	connServiceTokens := make([]ServiceTokenModel, len(fst))
 	for i, token := range fst {
 		speed, err := speedUintToStr(token.MaxAllowedSpeed)
@@ -215,7 +215,7 @@ func parseConnectionServiceTokens(ctx context.Context, fst []packngo.FabricServi
 				fmt.Sprintf("Failed to convert token MaxAllowedSpeed (%d) to string", token.MaxAllowedSpeed),
 				err.Error(),
 			)
-			return nil, diags
+			return fwtypes.NewListNestedObjectValueOfNull[ServiceTokenModel](ctx), diags
 		}
 		connServiceTokens[i] = ServiceTokenModel{
 			ID:              types.StringValue(token.ID),
@@ -229,16 +229,10 @@ func parseConnectionServiceTokens(ctx context.Context, fst []packngo.FabricServi
 		}
 	}
 
-	ServiceTokenObjectType := fwtypes.NewObjectTypeOf[ServiceTokenModel](ctx).ObjectType
-	serviceTokens, diags := types.ListValueFrom(ctx, ServiceTokenObjectType, connServiceTokens)
-	if diags.HasError() {
-		return nil, diags
-	}
-
-	return &serviceTokens, nil
+	return fwtypes.NewListNestedObjectValueOfValueSlice(ctx, connServiceTokens), nil
 }
 
-func parseConnectionPorts(ctx context.Context, cps []packngo.ConnectionPort) (*basetypes.ListValue, diag.Diagnostics) {
+func parseConnectionPorts(ctx context.Context, cps []packngo.ConnectionPort) (fwtypes.ListNestedObjectValueOf[PortModel], diag.Diagnostics) {
 	ret := make([]PortModel, len(cps))
 	order := map[packngo.ConnectionPortRole]int{
 		packngo.ConnectionPortPrimary:   0,
@@ -247,13 +241,13 @@ func parseConnectionPorts(ctx context.Context, cps []packngo.ConnectionPort) (*b
 
 	for _, p := range cps {
 		// Parse VirtualCircuits
-		portVcIDs := make([]string, len(p.VirtualCircuits))
+		portVcIDs := make([]attr.Value, len(p.VirtualCircuits))
 		for i, vc := range p.VirtualCircuits {
-			portVcIDs[i] = vc.ID
+			portVcIDs[i] = types.StringValue(vc.ID)
 		}
-		vcIDs, diags := types.ListValueFrom(ctx, types.StringType, portVcIDs)
+		vcIDs, diags := fwtypes.NewListValueOf[types.String](ctx, portVcIDs)
 		if diags.HasError() {
-			return nil, diags
+			return fwtypes.NewListNestedObjectValueOfNull[PortModel](ctx), diags
 		}
 		connPort := PortModel{
 			ID:                types.StringValue(p.ID),
@@ -269,12 +263,7 @@ func parseConnectionPorts(ctx context.Context, cps []packngo.ConnectionPort) (*b
 		ret[order[p.Role]] = connPort
 	}
 
-	portObjectType := fwtypes.NewObjectTypeOf[PortModel](ctx).ObjectType
-	ports, diags := types.ListValueFrom(ctx, portObjectType, ret)
-	if diags.HasError() {
-		return nil, diags
-	}
-	return &ports, nil
+	return fwtypes.NewListNestedObjectValueOfValueSlice(ctx, ret), nil
 }
 
 func parseConnectionVlans(ctx context.Context, conn *packngo.Connection) (*basetypes.ListValue, diag.Diagnostics) {

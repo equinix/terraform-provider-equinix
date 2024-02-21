@@ -20,8 +20,7 @@ func NewResource() resource.Resource {
 	return &Resource{
 		BaseResource: framework.NewBaseResource(
 			framework.BaseResourceConfig{
-				Name:   "equinix_metal_connection",
-				Schema: &resourceSchema,
+				Name: "equinix_metal_connection",
 			},
 		),
 	}
@@ -29,6 +28,14 @@ func NewResource() resource.Resource {
 
 type Resource struct {
 	framework.BaseResource
+}
+
+func (r *Resource) Schema(
+	ctx context.Context,
+	req resource.SchemaRequest,
+	resp *resource.SchemaResponse,
+) {
+	resp.Schema = resourceSchema(ctx)
 }
 
 func (r *Resource) Create(
