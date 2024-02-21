@@ -373,7 +373,7 @@ func TestAccMetalConnection_shared_zside_upgradeFromVersion(t *testing.T) {
 			{
 				ExternalProviders: map[string]resource.ExternalProvider{
 					"equinix": {
-						VersionConstraint: "1.28.0", // latest version with resource defined on SDKv2
+						VersionConstraint: "1.29.0", // latest version with resource defined on SDKv2
 						Source:            "equinix/equinix",
 					},
 				},

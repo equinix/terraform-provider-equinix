@@ -134,7 +134,7 @@ func TestAccDataSourceMetalConnection_withoutVlans_upgradeFromVersion(t *testing
 			{
 				ExternalProviders: map[string]resource.ExternalProvider{
 					"equinix": {
-						VersionConstraint: "1.28.0", // latest version with resource defined on SDKv2
+						VersionConstraint: "1.29.0", // latest version with resource defined on SDKv2
 						Source:            "equinix/equinix",
 					},
 				},
