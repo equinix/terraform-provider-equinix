@@ -3,7 +3,6 @@ package connection
 import (
 	"context"
 	"fmt"
-	"math"
 	"reflect"
 	"strconv"
 
@@ -252,37 +251,54 @@ func (r *Resource) Update(
 				return
 			}
 
-			maxVlans := int(math.Max(float64(len(oldVlans)), float64(len(newVlans))))
-
 			ports := make([]PortModel, 0, len(plan.Ports.Elements()))
 			if diags := plan.Ports.ElementsAs(ctx, &ports, false); diags != nil {
 				resp.Diagnostics.Append(diags...)
 				return
 			}
 
-			for i := 0; i < maxVlans; i++ {
-				if oldVlans[i] != (newVlans[i]) {
-					if i+1 > len(newVlans) {
-						// The VNID was removed; unassign the old VNID
-						if _, _, diags := updateHiddenVirtualCircuitVNID(ctx, client, ports[i], ""); diags.HasError() {
-							resp.Diagnostics.Append(diags...)
-							return
-						}
-					} else {
-						j := slices.Index(oldVlans, newVlans[i])
-						if j > i {
-							// The VNID was moved to a different list index; unassign the VNID for the old index so that it is available for reassignment
-							if _, _, diags := updateHiddenVirtualCircuitVNID(ctx, client, ports[j], ""); diags.HasError() {
+			for i, oldID := range oldVlans {
+				if i < len(newVlans) {
+					newID := newVlans[i]
+
+					// If the VNIDs are different
+					if oldID != newID {
+						// Check if the new VNID is present elsewhere in the oldVlans list
+						newIndex := slices.Index(oldVlans, newID)
+						if newIndex != -1 {
+							// If the new VNID is found in the oldVlans list, unassign the old VNID and assign the new VNID
+							if _, _, diags := updateHiddenVirtualCircuitVNID(ctx, client, ports[i], ""); diags.HasError() {
+								resp.Diagnostics.Append(diags...)
+								return
+							}
+							if _, _, diags := updateHiddenVirtualCircuitVNID(ctx, client, ports[newIndex], strconv.Itoa(newID)); diags.HasError() {
+								resp.Diagnostics.Append(diags...)
+								return
+							}
+						} else {
+							// If the new VNID is not found elsewhere in the oldVlans list, assign the new VNID
+							if _, _, diags := updateHiddenVirtualCircuitVNID(ctx, client, ports[i], strconv.Itoa(newID)); diags.HasError() {
 								resp.Diagnostics.Append(diags...)
 								return
 							}
 						}
-						// Assign the VNID (whether it is new or moved) to the correct port
-						if _, _, diags := updateHiddenVirtualCircuitVNID(ctx, client, ports[i], strconv.Itoa(newVlans[i])); diags.HasError() {
-							resp.Diagnostics.Append(diags...)
-							return
-						}
 					}
+				}
+			}
+
+			// If newVlans has more VNIDs than oldVlans, assign the remaining new VNIDs
+			for i := len(oldVlans); i < len(newVlans); i++ {
+				if _, _, diags := updateHiddenVirtualCircuitVNID(ctx, client, ports[i], strconv.Itoa(newVlans[i])); diags.HasError() {
+					resp.Diagnostics.Append(diags...)
+					return
+				}
+			}
+
+			// If oldVlans has more VNIDs than newVlans, unassign the removed VNIDs
+			for i := len(newVlans); i < len(oldVlans); i++ {
+				if _, _, diags := updateHiddenVirtualCircuitVNID(ctx, client, ports[i], ""); diags.HasError() {
+					resp.Diagnostics.Append(diags...)
+					return
 				}
 			}
 		} else {
