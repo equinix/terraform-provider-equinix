@@ -29,7 +29,7 @@ type ResourceConfig struct {
 	// Return all of the records on which the data list resource should operate.
 	// The `meta` argument is the same meta argument passed into the resource's Read
 	// function.
-	GetRecords func(d *schema.ResourceData, meta interface{}, extra map[string]interface{}) ([]interface{}, error)
+	GetRecords func(ctx context.Context, d *schema.ResourceData, meta interface{}, extra map[string]interface{}) ([]interface{}, error)
 
 	// Extra parameters to expose on the datasource alongside `filter` and `sort`.
 	ExtraQuerySchema map[string]*schema.Schema
@@ -89,7 +89,7 @@ func dataListResourceRead(config *ResourceConfig) schema.ReadContextFunc {
 			extra[attr] = d.Get(attr)
 		}
 
-		records, err := config.GetRecords(d, meta, extra)
+		records, err := config.GetRecords(ctx, d, meta, extra)
 		if err != nil {
 			return diag.Errorf("Unable to load records: %s", err)
 		}

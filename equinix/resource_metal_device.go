@@ -570,7 +570,7 @@ func resourceMetalDeviceCreate(ctx context.Context, d *schema.ResourceData, meta
 func resourceMetalDeviceRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*config.Config).NewMetalClientForSDK(d)
 
-	device, resp, err := client.DevicesApi.FindDeviceById(context.Background(), d.Id()).Include(deviceCommonIncludes).Execute()
+	device, resp, err := client.DevicesApi.FindDeviceById(ctx, d.Id()).Include(deviceCommonIncludes).Execute()
 	if err != nil {
 		err = equinix_errors.FriendlyErrorForMetalGo(err, resp)
 
