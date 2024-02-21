@@ -10,6 +10,8 @@ description: |-
 
 Fabric V4 API compatible resource allows creation and management of Equinix Fabric Network
 
+## Example Usage
+
 ```hcl
 resource "equinix_fabric_network" "new_network"{
   name = "Network-SV"
