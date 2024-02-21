@@ -239,14 +239,10 @@ func TestAccMetalConnection_tunnel(t *testing.T) {
 				),
 			},
 			{
-				ResourceName:      "equinix_metal_connection.test",
-				ImportState:       true,
-				ImportStateVerify: true,
-				ImportStateVerifyIgnore: []string{
-					"project_id",
-					"facility",
-					"organization_id",
-				},
+				ResourceName:            "equinix_metal_connection.test",
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"project_id"},
 			},
 		},
 	})

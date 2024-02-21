@@ -11,6 +11,7 @@ import (
 	"github.com/equinix/terraform-provider-equinix/internal/framework"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
+	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/packethost/packngo"
 	"golang.org/x/exp/slices"
@@ -114,6 +115,13 @@ func (r *Resource) Create(
 		}
 	}
 
+	// Use API client to get the current state of the resource
+	conn, diags = getConnection(ctx, client, &resp.State, conn.ID)
+	if diags != nil {
+		resp.Diagnostics.Append(diags...)
+		return
+	}
+
 	// Parse API response into the Terraform state
 	resp.Diagnostics.Append(plan.parse(ctx, conn)...)
 	if resp.Diagnostics.HasError() {
@@ -144,23 +152,9 @@ func (r *Resource) Read(
 	id := state.ID.ValueString()
 
 	// Use API client to get the current state of the resource
-	getOpts := &packngo.GetOptions{Includes: []string{"service_tokens", "organization", "facility", "metro", "project"}}
-	conn, _, err := client.Connections.Get(id, getOpts)
-	if err != nil {
-		// If the Metal Connection is not found, remove it from the state
-		if equinix_errors.IsNotFound(err) {
-			resp.Diagnostics.AddWarning(
-				"Metal Connection",
-				fmt.Sprintf("[WARN] Connection (%s) not found, removing from state", id),
-			)
-			resp.State.RemoveResource(ctx)
-			return
-		}
-
-		resp.Diagnostics.AddError(
-			"Error reading Metal Connection",
-			"Could not read Metal Connection with ID "+id+": "+err.Error(),
-		)
+	conn, diags := getConnection(ctx, client, &resp.State, id)
+	if diags != nil {
+		resp.Diagnostics.Append(diags...)
 		return
 	}
 
@@ -299,23 +293,10 @@ func (r *Resource) Update(
 		)
 	}
 
-	// Retrieve the Metal Connection from the API
-	conn, _, err := client.Connections.Get(id, &packngo.GetOptions{Includes: []string{"service_tokens", "organization", "facility", "metro", "project"}})
-	if err != nil {
-		// If the Metal Connection is not found, remove it from the state
-		if equinix_errors.IsNotFound(err) {
-			resp.Diagnostics.AddWarning(
-				"Metal Connection",
-				fmt.Sprintf("[WARN] Connection (%s) not found, removing from state", id),
-			)
-			resp.State.RemoveResource(ctx)
-			return
-		}
-
-		resp.Diagnostics.AddError(
-			"Error reading Metal Connection",
-			"Could not read Metal Connection with ID "+id+": "+err.Error(),
-		)
+	// Use API client to get the current state of the resource
+	conn, diags := getConnection(ctx, client, &resp.State, id)
+	if diags != nil {
+		resp.Diagnostics.Append(diags...)
 		return
 	}
 
@@ -462,6 +443,32 @@ func generateCreateRequest(ctx context.Context, plan ResourceModel) (*packngo.Co
 		}
 	}
 	return createRequest, nil
+}
+
+func getConnection(ctx context.Context, client *packngo.Client, state *tfsdk.State, id string) (*packngo.Connection, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	// Use API client to get the current state of the resource
+	getOpts := &packngo.GetOptions{Includes: []string{"service_tokens", "organization", "facility", "metro", "project"}}
+	conn, _, err := client.Connections.Get(id, getOpts)
+	if err != nil {
+		// If the Metal Connection is not found, remove it from the state
+		if equinix_errors.IsNotFound(err) {
+			diags.AddWarning(
+				"Metal Connection",
+				fmt.Sprintf("[WARN] Connection (%s) not found, removing from state", id),
+			)
+			state.RemoveResource(ctx)
+			return nil, diags
+		}
+
+		diags.AddError(
+			"Error reading Metal Connection",
+			"Could not read Metal Connection with ID "+id+": "+err.Error(),
+		)
+		return nil, diags
+	}
+	return conn, diags
 }
 
 func updateHiddenVirtualCircuitVNID(ctx context.Context, client *packngo.Client, port PortModel, newVNID string) (*packngo.VirtualCircuit, *packngo.Response, diag.Diagnostics) {
