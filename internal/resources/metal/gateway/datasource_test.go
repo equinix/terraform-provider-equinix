@@ -12,7 +12,7 @@ import (
 func TestAccDataSourceMetalGateway_privateIPv4(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.TestAccPreCheck(t) },
-		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
+		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
 		CheckDestroy:             testAccMetalGatewayCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
@@ -78,7 +78,7 @@ func TestAccDataSourceMetalProjectSSHKey_upgradeFromVersion(t *testing.T) {
 				),
 			},
 			{
-				ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
+				ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
 				Config:                   testAccDataSourceMetalGatewayConfig_privateIPv4(),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{

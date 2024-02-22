@@ -70,7 +70,7 @@ func TestAccMetalConnection_shared_zside(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.TestAccPreCheckMetal(t) },
 		ExternalProviders:        acceptance.TestExternalProviders,
-		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
+		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
 		CheckDestroy:             testAccMetalConnectionCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
@@ -96,7 +96,7 @@ func TestAccMetalConnection_shared(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.TestAccPreCheckMetal(t) },
 		ExternalProviders:        acceptance.TestExternalProviders,
-		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
+		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
 		CheckDestroy:             testAccMetalConnectionCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
@@ -171,7 +171,7 @@ func TestAccMetalConnection_dedicated(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.TestAccPreCheckMetal(t) },
 		ExternalProviders:        acceptance.TestExternalProviders,
-		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
+		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
 		CheckDestroy:             testAccMetalConnectionCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
@@ -228,7 +228,7 @@ func TestAccMetalConnection_tunnel(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.TestAccPreCheckMetal(t) },
 		ExternalProviders:        acceptance.TestExternalProviders,
-		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
+		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
 		CheckDestroy:             testAccMetalConnectionCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
@@ -304,7 +304,7 @@ func TestAccMetalConnection_sharedVlans(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.TestAccPreCheckMetal(t) },
 		ExternalProviders:        acceptance.TestExternalProviders,
-		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
+		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
 		CheckDestroy:             testAccMetalConnectionCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
@@ -390,7 +390,7 @@ func TestAccMetalConnection_shared_zside_upgradeFromVersion(t *testing.T) {
 				),
 			},
 			{
-				ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
+				ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
 				Config:                   cfg,
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{

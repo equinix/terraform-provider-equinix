@@ -23,7 +23,7 @@ func TestAccDataSourceMetalVrfDataSource_byID(t *testing.T) {
 		PreCheck:                  func() { acceptance.TestAccPreCheckMetal(t) },
 		PreventPostDestroyRefresh: true,
 		ExternalProviders:         acceptance.TestExternalProviders,
-		ProtoV6ProviderFactories:  acceptance.ProtoV6ProviderFactories,
+		ProtoV5ProviderFactories:  acceptance.ProtoV5ProviderFactories,
 		CheckDestroy:              testAccMetalVRFCheckDestroyed,
 		Steps: []resource.TestStep{
 			{

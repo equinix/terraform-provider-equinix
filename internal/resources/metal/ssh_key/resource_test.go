@@ -60,7 +60,7 @@ func TestAccMetalSSHKey_basic(t *testing.T) {
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.TestAccPreCheckMetal(t) },
-		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
+		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
 		CheckDestroy:             testAccMetalSSHKeyCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
@@ -88,7 +88,7 @@ func TestAccMetalSSHKey_projectBasic(t *testing.T) {
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.TestAccPreCheckMetal(t) },
-		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
+		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
 		CheckDestroy:             testAccMetalSSHKeyCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
@@ -114,7 +114,7 @@ func TestAccMetalSSHKey_update(t *testing.T) {
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.TestAccPreCheckMetal(t) },
-		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
+		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
 		CheckDestroy:             testAccMetalSSHKeyCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
@@ -148,7 +148,7 @@ func TestAccMetalSSHKey_projectImportBasic(t *testing.T) {
 	}
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.TestAccPreCheckMetal(t) },
-		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
+		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
 		CheckDestroy:             testAccMetalSSHKeyCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
@@ -170,7 +170,7 @@ func TestAccMetalSSHKey_importBasic(t *testing.T) {
 	}
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.TestAccPreCheckMetal(t) },
-		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
+		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
 		CheckDestroy:             testAccMetalSSHKeyCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
@@ -257,7 +257,7 @@ func TestAccMetalSSHKey_upgradeFromVersion(t *testing.T) {
 				),
 			},
 			{
-				ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
+				ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
 				Config:                   cfg,
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{

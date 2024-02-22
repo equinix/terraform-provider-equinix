@@ -5,15 +5,15 @@ import (
 	"flag"
 	"log"
 
-	sdkprovider "github.com/equinix/terraform-provider-equinix/equinix"
-	frameworkprovider "github.com/equinix/terraform-provider-equinix/internal/provider"
+	"github.com/equinix/terraform-provider-equinix/equinix"
+	"github.com/equinix/terraform-provider-equinix/internal/provider"
 	"github.com/equinix/terraform-provider-equinix/version"
 
 	"github.com/hashicorp/terraform-plugin-framework/providerserver"
-	"github.com/hashicorp/terraform-plugin-go/tfprotov6"
-	"github.com/hashicorp/terraform-plugin-go/tfprotov6/tf6server"
-	"github.com/hashicorp/terraform-plugin-mux/tf5to6server"
-	"github.com/hashicorp/terraform-plugin-mux/tf6muxserver"
+	"github.com/hashicorp/terraform-plugin-go/tfprotov5"
+	"github.com/hashicorp/terraform-plugin-go/tfprotov5/tf5server"
+	"github.com/hashicorp/terraform-plugin-mux/tf5muxserver"
+	"github.com/hashicorp/terraform-plugin-mux/tf6to5server"
 )
 
 //go:generate go run github.com/hashicorp/terraform-plugin-docs/cmd/tfplugindocs
@@ -26,32 +26,32 @@ func main() {
 	flag.BoolVar(&debugMode, "debug", false, "set to true to run the provider with support for debuggers like delve")
 	flag.Parse()
 
-	upgradedSdkProvider, err := tf5to6server.UpgradeServer(
-		context.Background(),
-		sdkprovider.Provider().GRPCProvider,
-	)
+	frameworkServer := providerserver.NewProtocol6(provider.CreateFrameworkProvider(version.ProviderVersion))
 
-	providers := []func() tfprotov6.ProviderServer{
-		func() tfprotov6.ProviderServer {
-			return upgradedSdkProvider
+	providers := []func() tfprotov5.ProviderServer{
+		func() tfprotov5.ProviderServer {
+			downgradedServer, err := tf6to5server.DowngradeServer(ctx, frameworkServer)
+
+			if err != nil {
+				log.Fatal(err)
+			}
+			return downgradedServer
 		},
-
-		// Example terraform-plugin-framework provider
-		providerserver.NewProtocol6(frameworkprovider.CreateFrameworkProvider(version.ProviderVersion)),
+		equinix.Provider().GRPCProvider,
 	}
 
-	muxServer, err := tf6muxserver.NewMuxServer(ctx, providers...)
+	muxServer, err := tf5muxserver.NewMuxServer(ctx, providers...)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	var serveOpts []tf6server.ServeOpt
+	var serveOpts []tf5server.ServeOpt
 
 	if debugMode {
-		serveOpts = append(serveOpts, tf6server.WithManagedDebug())
+		serveOpts = append(serveOpts, tf5server.WithManagedDebug())
 	}
 
-	err = tf6server.Serve(
+	err = tf5server.Serve(
 		"registry.terraform.io/equinix/equinix",
 		muxServer.ProviderServer,
 		serveOpts...,

@@ -4,28 +4,30 @@ import (
 	"context"
 
 	"github.com/hashicorp/terraform-plugin-framework/providerserver"
-	"github.com/hashicorp/terraform-plugin-go/tfprotov6"
-	"github.com/hashicorp/terraform-plugin-mux/tf5to6server"
-	"github.com/hashicorp/terraform-plugin-mux/tf6muxserver"
+	"github.com/hashicorp/terraform-plugin-go/tfprotov5"
+	"github.com/hashicorp/terraform-plugin-mux/tf5muxserver"
+	"github.com/hashicorp/terraform-plugin-mux/tf6to5server"
 )
 
-var ProtoV6ProviderFactories = map[string]func() (tfprotov6.ProviderServer, error){
-	"equinix": func() (tfprotov6.ProviderServer, error) {
+var ProtoV5ProviderFactories = map[string]func() (tfprotov5.ProviderServer, error){
+	"equinix": func() (tfprotov5.ProviderServer, error) {
 		ctx := context.Background()
-		providers := []func() tfprotov6.ProviderServer{
-			func() tfprotov6.ProviderServer {
-				upgradedSdkProvider, err := tf5to6server.UpgradeServer(context.Background(), TestAccProviders["equinix"].GRPCProvider)
+
+		frameworkServer := providerserver.NewProtocol6(TestAccFrameworkProvider)
+
+		providers := []func() tfprotov5.ProviderServer{
+			func() tfprotov5.ProviderServer {
+				downgradedServer, err := tf6to5server.DowngradeServer(ctx, frameworkServer)
+
 				if err != nil {
 					panic(err)
 				}
-				return upgradedSdkProvider
+				return downgradedServer
 			},
-			providerserver.NewProtocol6(
-				TestAccFrameworkProvider,
-			),
+			TestAccProviders["equinix"].GRPCProvider,
 		}
 
-		muxServer, err := tf6muxserver.NewMuxServer(ctx, providers...)
+		muxServer, err := tf5muxserver.NewMuxServer(ctx, providers...)
 		if err != nil {
 			return nil, err
 		}
