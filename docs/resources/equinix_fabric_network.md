@@ -13,12 +13,12 @@ Fabric V4 API compatible resource allows creation and management of Equinix Fabr
 ## Example Usage
 
 ```hcl
-resource "equinix_fabric_network" "new_network"{
-  name = "Network-SV"
-  type = "EVPLAN"
+resource "equinix_fabric_network" "new_network" {
+  name  = "Network-SV"
+  type  = "EVPLAN"
   scope = "GLOBAL"
-  notifications{
-    type = "ALL"
+  notifications {
+    type   = "ALL"
     emails = ["example@equinix.com","test1@equinix.com"]
   }
   project {
