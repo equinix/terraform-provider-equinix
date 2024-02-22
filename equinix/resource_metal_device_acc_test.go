@@ -13,6 +13,7 @@ import (
 	"time"
 
 	"github.com/equinix/terraform-provider-equinix/internal/config"
+	"golang.org/x/exp/slices"
 
 	"github.com/equinix/equinix-sdk-go/services/metalv1"
 	"github.com/google/uuid"
@@ -38,38 +39,46 @@ func init() {
 
 func testSweepDevices(region string) error {
 	log.Printf("[DEBUG] Sweeping devices")
+	ctx := context.Background()
 	config, err := sharedConfigForRegion(region)
 	if err != nil {
 		return fmt.Errorf("[INFO][SWEEPER_LOG] Error getting configuration for sweeping devices: %s", err)
 	}
-	metal := config.NewMetalClient()
-	ps, _, err := metal.Projects.List(nil)
+	metal := config.NewMetalClientForTesting()
+	ps, _, err := metal.ProjectsApi.FindProjects(ctx).Execute()
 	if err != nil {
 		return fmt.Errorf("[INFO][SWEEPER_LOG] Error getting project list for sweepeing devices: %s", err)
 	}
 	pids := []string{}
-	for _, p := range ps {
-		if isSweepableTestResource(p.Name) {
-			pids = append(pids, p.ID)
+	for _, p := range ps.Projects {
+		if isSweepableTestResource(p.GetName()) {
+			pids = append(pids, p.GetId())
 		}
 	}
 	dids := []string{}
 	for _, pid := range pids {
-		ds, _, err := metal.Devices.List(pid, nil)
+		ds, _, err := metal.DevicesApi.FindProjectDevices(ctx, pid).Execute()
 		if err != nil {
 			log.Printf("Error listing devices to sweep: %s", err)
 			continue
 		}
-		for _, d := range ds {
-			if isSweepableTestResource(d.Hostname) {
-				dids = append(dids, d.ID)
+		for _, d := range ds.Devices {
+			if isSweepableTestResource(d.GetHostname()) {
+				nonSweepableDeviceStates := []metalv1.DeviceState{
+					metalv1.DEVICESTATE_PROVISIONING,
+					metalv1.DEVICESTATE_DEPROVISIONING,
+				}
+				if slices.Contains(nonSweepableDeviceStates, d.GetState()) {
+					log.Printf("[WARNING] skipping sweep for device %s because it is still %s", d.GetId(), d.GetState())
+				} else {
+					dids = append(dids, d.GetId())
+				}
 			}
 		}
 	}
 
 	for _, did := range dids {
-		log.Printf("Removing device %s", did)
-		_, err := metal.Devices.Delete(did, true)
+		_, err := metal.DevicesApi.DeleteDevice(ctx, did).Execute()
 		if err != nil {
 			return fmt.Errorf("Error deleting device %s", err)
 		}
