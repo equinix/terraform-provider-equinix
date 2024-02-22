@@ -44,10 +44,12 @@ func testSweepVirtualCircuits(region string) error {
 			return fmt.Errorf("[INFO][SWEEPER_LOG] Error getting connections list for sweeping VirtualCircuits: %s", err)
 		}
 		for _, conn := range conns {
-			for _, port := range conn.Ports {
-				for _, vc := range port.VirtualCircuits {
-					if isSweepableTestResource(vc.Name) {
-						vcs[vc.ID] = &vc
+			if conn.Type != packngo.ConnectionShared {
+				for _, port := range conn.Ports {
+					for _, vc := range port.VirtualCircuits {
+						if isSweepableTestResource(vc.Name) {
+							vcs[vc.ID] = &vc
+						}
 					}
 				}
 			}
