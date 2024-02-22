@@ -110,9 +110,9 @@ func getPorts(ps []metalv1.Port) []map[string]interface{} {
 	return ret
 }
 
-func hwReservationStateRefreshFunc(client *metalv1.APIClient, reservationId, instanceId string) retry.StateRefreshFunc {
+func hwReservationStateRefreshFunc(ctx context.Context, client *metalv1.APIClient, reservationId, instanceId string) retry.StateRefreshFunc {
 	return func() (interface{}, string, error) {
-		r, _, err := client.HardwareReservationsApi.FindHardwareReservationById(context.TODO(), reservationId).Include([]string{"device"}).Execute()
+		r, _, err := client.HardwareReservationsApi.FindHardwareReservationById(ctx, reservationId).Include([]string{"device"}).Execute()
 		state := deprovisioning
 		switch {
 		case err != nil:
@@ -135,7 +135,7 @@ func waitUntilReservationProvisionable(ctx context.Context, client *metalv1.APIC
 	stateConf := &retry.StateChangeConf{
 		Pending:    []string{deprovisioning},
 		Target:     []string{provisionable, reprovisioned},
-		Refresh:    hwReservationStateRefreshFunc(client, reservationId, instanceId),
+		Refresh:    hwReservationStateRefreshFunc(ctx, client, reservationId, instanceId),
 		Timeout:    timeout,
 		Delay:      delay,
 		MinTimeout: minTimeout,

@@ -47,7 +47,7 @@ func (r *Resource) Create(
 	}
 
 	// Create API resource
-	key, _, err := client.SSHKeysApi.CreateSSHKey(context.Background()).SSHKeyCreateInput(*createRequest).Execute()
+	key, _, err := client.SSHKeysApi.CreateSSHKey(ctx).SSHKeyCreateInput(*createRequest).Execute()
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Failed to create SSH Key",
@@ -84,7 +84,7 @@ func (r *Resource) Read(
 	id := state.ID.ValueString()
 
 	// Use API client to get the current state of the resource
-	key, _, err := client.SSHKeysApi.FindSSHKeyById(context.Background(), id).Include(nil).Execute()
+	key, _, err := client.SSHKeysApi.FindSSHKeyById(ctx, id).Include(nil).Execute()
 	if err != nil {
 		err = equinix_errors.FriendlyError(err)
 
@@ -141,7 +141,7 @@ func (r *Resource) Update(
 	}
 
 	// Update the resource
-	key, _, err := client.SSHKeysApi.UpdateSSHKey(context.Background(), id).SSHKeyInput(*updateRequest).Execute()
+	key, _, err := client.SSHKeysApi.UpdateSSHKey(ctx, id).SSHKeyInput(*updateRequest).Execute()
 	if err != nil {
 		err = equinix_errors.FriendlyError(err)
 		resp.Diagnostics.AddError(
@@ -179,7 +179,7 @@ func (r *Resource) Delete(
 	id := state.ID.ValueString()
 
 	// Use API client to delete the resource
-	deleteResp, err := client.SSHKeysApi.DeleteSSHKey(context.Background(), id).Execute()
+	deleteResp, err := client.SSHKeysApi.DeleteSSHKey(ctx, id).Execute()
 	if equinix_errors.IgnoreHttpResponseErrors(equinix_errors.HttpForbidden, equinix_errors.HttpNotFound)(deleteResp, err) != nil {
 		err = equinix_errors.FriendlyError(err)
 		resp.Diagnostics.AddError(

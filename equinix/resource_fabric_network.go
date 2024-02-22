@@ -173,11 +173,8 @@ func resourceFabricNetworkCreate(ctx context.Context, d *schema.ResourceData, me
 	notifications := equinix_fabric_schema.NotificationsToFabric(schemaNotifications)
 	schemaLocation := d.Get("location").(*schema.Set).List()
 	location := equinix_fabric_schema.LocationToFabric(schemaLocation)
-	project := v4.Project{}
 	schemaProject := d.Get("project").(*schema.Set).List()
-	if len(schemaProject) != 0 {
-		project = equinix_fabric_schema.ProjectToFabric(schemaProject)
-	}
+	project := equinix_fabric_schema.ProjectToFabric(schemaProject)
 	netType := v4.NetworkType(d.Get("type").(string))
 	netScope := v4.NetworkScope(d.Get("scope").(string))
 
@@ -187,7 +184,7 @@ func resourceFabricNetworkCreate(ctx context.Context, d *schema.ResourceData, me
 		Scope:         &netScope,
 		Location:      &location,
 		Notifications: notifications,
-		Project:       &project,
+		Project:       project,
 	}
 
 	fabricNetwork, _, err := client.NetworksApi.CreateNetwork(ctx, createRequest)

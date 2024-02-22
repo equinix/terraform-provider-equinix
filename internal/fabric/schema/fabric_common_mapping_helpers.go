@@ -184,16 +184,15 @@ func LocationWithoutIBXToTerra(location *v4.SimplifiedLocationWithoutIbx) *schem
 	return locationSet
 }
 
-func ProjectToFabric(projectRequest []interface{}) v4.Project {
+func ProjectToFabric(projectRequest []interface{}) *v4.Project {
 	if len(projectRequest) == 0 {
-		return v4.Project{}
+		return nil
 	}
-	mappedPr := v4.Project{}
-	for _, pr := range projectRequest {
-		prMap := pr.(map[string]interface{})
-		projectId := prMap["project_id"].(string)
-		mappedPr = v4.Project{ProjectId: projectId}
-	}
+	mappedPr := &v4.Project{}
+	prMap := projectRequest[0].(map[string]interface{})
+	projectId := prMap["project_id"].(string)
+	mappedPr.ProjectId = projectId
+
 	return mappedPr
 }
 
@@ -201,16 +200,11 @@ func ProjectToTerra(project *v4.Project) *schema.Set {
 	if project == nil {
 		return nil
 	}
-	projects := []*v4.Project{project}
-	mappedProjects := make([]interface{}, len(projects))
-	for _, project := range projects {
-		mappedProject := make(map[string]interface{})
-		mappedProject["project_id"] = project.ProjectId
-		mappedProjects = append(mappedProjects, mappedProject)
-	}
+	mappedProject := make(map[string]interface{})
+	mappedProject["project_id"] = project.ProjectId
 	projectSet := schema.NewSet(
 		schema.HashResource(&schema.Resource{Schema: ProjectSch()}),
-		mappedProjects)
+		[]interface{}{mappedProject})
 	return projectSet
 }
 

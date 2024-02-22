@@ -373,7 +373,7 @@ func generateModuleUserAgentString(d *schema.ResourceData, baseUserAgent string)
 }
 
 func (c *Config) tfSdkUserAgent(suffix string) string {
-	sdkModulePath := "github.com/hashicorp/terraform-plugin-sdk"
+	sdkModulePath := "github.com/hashicorp/terraform-plugin-sdk/v2"
 	baseUserAgent := fmt.Sprintf("HashiCorp Terraform/%s (+https://www.terraform.io) Terraform Plugin SDK/%s",
 		c.TerraformVersion, moduleVersionFromBuild(sdkModulePath))
 	baseUserAgent = appendUserAgentFromEnv(baseUserAgent)
