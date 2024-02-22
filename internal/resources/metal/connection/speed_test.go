@@ -1,4 +1,4 @@
-package metal_connection
+package connection
 
 import (
 	"testing"

@@ -1,4 +1,4 @@
-package metal_connection_test
+package connection_test
 
 import (
 	"fmt"
@@ -7,15 +7,16 @@ import (
 	"github.com/equinix/terraform-provider-equinix/internal/acceptance"
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/plancheck"
 )
 
 func TestAccDataSourceMetalConnection_withoutVlans(t *testing.T) {
 	rInt := acctest.RandInt()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acceptance.TestAccPreCheckMetal(t) },
-		ExternalProviders: acceptance.TestExternalProviders,
-		Providers:         acceptance.TestAccProviders,
+		PreCheck:                 func() { acceptance.TestAccPreCheckMetal(t) },
+		ExternalProviders:        acceptance.TestExternalProviders,
+		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
 		Steps: []resource.TestStep{
 			{
 				Config: testDataSourceMetalConnectionConfig_withoutVlans(rInt),
@@ -60,9 +61,9 @@ func TestAccDataSourceMetalConnection_withVlans(t *testing.T) {
 	rInt := acctest.RandInt()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acceptance.TestAccPreCheckMetal(t) },
-		ExternalProviders: acceptance.TestExternalProviders,
-		Providers:         acceptance.TestAccProviders,
+		PreCheck:                 func() { acceptance.TestAccPreCheckMetal(t) },
+		ExternalProviders:        acceptance.TestExternalProviders,
+		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
 		Steps: []resource.TestStep{
 			{
 				Config: testDataSourceMetalConnectionConfig_withVlans(rInt),
@@ -120,4 +121,44 @@ func testDataSourceMetalConnectionConfig_withVlans(r int) string {
     		connection_id = equinix_metal_connection.test.id
 		}`,
 		r, r, r, r)
+}
+
+// Test to verify that switching from SDKv2 to the Framework has not affected provider's behavior
+// TODO (ocobles): once migrated, this test may be removed
+func TestAccDataSourceMetalConnection_withoutVlans_upgradeFromVersion(t *testing.T) {
+	rInt := acctest.RandInt()
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:     func() { acceptance.TestAccPreCheckMetal(t) },
+		CheckDestroy: testAccMetalConnectionCheckDestroyed,
+		Steps: []resource.TestStep{
+			{
+				ExternalProviders: map[string]resource.ExternalProvider{
+					"equinix": {
+						VersionConstraint: "1.29.0", // latest version with resource defined on SDKv2
+						Source:            "equinix/equinix",
+					},
+				},
+				Config: testDataSourceMetalConnectionConfig_withoutVlans(rInt),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttrPair(
+						"equinix_metal_connection.test", "id",
+						"data.equinix_metal_connection.test", "id"),
+					resource.TestCheckResourceAttrPair(
+						"equinix_metal_connection.test", "vlans.#",
+						"data.equinix_metal_connection.test", "vlans.#"),
+					resource.TestCheckResourceAttr(
+						"data.equinix_metal_connection.test", "vlans.#", "0"),
+				),
+			},
+			{
+				ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+				Config:                   testDataSourceMetalConnectionConfig_withoutVlans(rInt),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectEmptyPlan(),
+					},
+				},
+			},
+		},
+	})
 }
