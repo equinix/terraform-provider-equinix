@@ -90,6 +90,7 @@ func fabricConnectionResourceSchema() map[string]*schema.Schema {
 		"project": {
 			Type:        schema.TypeSet,
 			Optional:    true,
+			Computed:    true,
 			Description: "Project information",
 			MaxItems:    1,
 			Elem: &schema.Resource{
@@ -620,8 +621,8 @@ func resourceFabricConnectionCreate(ctx context.Context, d *schema.ResourceData,
 	schemaOrder := d.Get("order").(*schema.Set).List()
 	order := equinix_fabric_schema.OrderToFabric(schemaOrder)
 	aside := d.Get("a_side").(*schema.Set).List()
-	projectReq := d.Get("project").(*schema.Set).List()
-	project := equinix_fabric_schema.ProjectToFabric(projectReq)
+	terraConfigProject := d.Get("project").(*schema.Set).List()
+	project := equinix_fabric_schema.ProjectToFabric(terraConfigProject)
 	additionalInfoTerraConfig := d.Get("additional_info").([]interface{})
 	additionalInfo := additionalInfoTerraToGo(additionalInfoTerraConfig)
 	connectionASide := v4.ConnectionSide{}
@@ -682,7 +683,7 @@ func resourceFabricConnectionCreate(ctx context.Context, d *schema.ResourceData,
 		Redundancy:     &red,
 		ASide:          &connectionASide,
 		ZSide:          &connectionZSide,
-		Project:        &project,
+		Project:        project,
 	}
 
 	conn, _, err := client.ConnectionsApi.CreateConnection(ctx, createRequest)
@@ -751,28 +752,45 @@ func resourceFabricConnectionRead(ctx context.Context, d *schema.ResourceData, m
 
 func setFabricMap(d *schema.ResourceData, conn v4.Connection) diag.Diagnostics {
 	diags := diag.Diagnostics{}
-	err := equinix_schema.SetMap(d, map[string]interface{}{
-		"name":      conn.Name,
-		"bandwidth": conn.Bandwidth,
-		"href":      conn.Href,
-		// TODO v4.ConnectionPostRequest doesn't have a "description" field,
-		// so it always returns empty because it was never in the API, that produces an inconsistency
-		// "description":     conn.Description,
-		"is_remote":       conn.IsRemote,
-		"type":            conn.Type_,
-		"state":           conn.State,
-		"direction":       conn.Direction,
-		"operation":       operationToTerra(conn.Operation),
-		"order":           equinix_fabric_schema.OrderToTerra(conn.Order),
-		"change_log":      equinix_fabric_schema.ChangeLogToTerra(conn.ChangeLog),
-		"redundancy":      connectionRedundancyToTerra(conn.Redundancy),
-		"notifications":   equinix_fabric_schema.NotificationsToTerra(conn.Notifications),
-		"account":         equinix_fabric_schema.AccountToTerra(conn.Account),
-		"a_side":          connectionSideToTerra(conn.ASide),
-		"z_side":          connectionSideToTerra(conn.ZSide),
-		"additional_info": additionalInfoToTerra(conn.AdditionalInfo),
-		"project":         equinix_fabric_schema.ProjectToTerra(conn.Project),
-	})
+	connection := make(map[string]interface{})
+	connection["name"] = conn.Name
+	connection["bandwidth"] = conn.Bandwidth
+	connection["href"] = conn.Href
+	connection["is_remote"] = conn.IsRemote
+	connection["type"] = conn.Type_
+	connection["state"] = conn.State
+	connection["direction"] = conn.Direction
+	if conn.Operation != nil {
+		connection["operation"] = connectionOperationToTerra(conn.Operation)
+	}
+	if conn.Order != nil {
+		connection["order"] = equinix_fabric_schema.OrderToTerra(conn.Order)
+	}
+	if conn.ChangeLog != nil {
+		connection["change_log"] = equinix_fabric_schema.ChangeLogToTerra(conn.ChangeLog)
+	}
+	if conn.Redundancy != nil {
+		connection["redundancy"] = connectionRedundancyToTerra(conn.Redundancy)
+	}
+	if conn.Notifications != nil {
+		connection["notifications"] = equinix_fabric_schema.NotificationsToTerra(conn.Notifications)
+	}
+	if conn.Account != nil {
+		connection["account"] = equinix_fabric_schema.AccountToTerra(conn.Account)
+	}
+	if conn.ASide != nil {
+		connection["a_side"] = connectionSideToTerra(conn.ASide)
+	}
+	if conn.ZSide != nil {
+		connection["z_side"] = connectionSideToTerra(conn.ZSide)
+	}
+	if conn.AdditionalInfo != nil {
+		connection["additional_info"] = additionalInfoToTerra(conn.AdditionalInfo)
+	}
+	if conn.Project != nil {
+		connection["project"] = equinix_fabric_schema.ProjectToTerra(conn.Project)
+	}
+	err := equinix_schema.SetMap(d, connection)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -1230,7 +1248,7 @@ func interfaceToFabric(interfaceList []interface{}) v4.ModelInterface {
 	return il
 }
 
-func operationToTerra(operation *v4.ConnectionOperation) *schema.Set {
+func connectionOperationToTerra(operation *v4.ConnectionOperation) *schema.Set {
 	if operation == nil {
 		return nil
 	}
