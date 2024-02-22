@@ -9,9 +9,9 @@ import (
 
 func TestAccDataSourceMetalOperatingSystem_basic(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
-		ExternalProviders: testExternalProviders,
-		Providers:         testAccProviders,
+		PreCheck:                 func() { testAccPreCheck(t) },
+		ExternalProviders:        testExternalProviders,
+		ProtoV5ProviderFactories: testAccProtoV5ProviderFactories,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccDataSourceMetalOperatingSystemConfig_basic,
@@ -33,9 +33,9 @@ var matchErrOSNotFound = regexp.MustCompile(".*There are no operating systems*")
 
 func TestAccDataSourceMetalOperatingSystem_notFound(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
-		ExternalProviders: testExternalProviders,
-		Providers:         testAccProviders,
+		PreCheck:                 func() { testAccPreCheck(t) },
+		ExternalProviders:        testExternalProviders,
+		ProtoV5ProviderFactories: testAccProtoV5ProviderFactories,
 		Steps: []resource.TestStep{
 			{
 				Config:      testAccDataSourceMetalOperatingSystemConfig_notFound,
@@ -55,9 +55,9 @@ var matchErrOSAmbiguous = regexp.MustCompile(".*There is more than one operating
 
 func TestAccDataSourceMetalOperatingSystem_ambiguous(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
-		ExternalProviders: testExternalProviders,
-		Providers:         testAccProviders,
+		PreCheck:                 func() { testAccPreCheck(t) },
+		ExternalProviders:        testExternalProviders,
+		ProtoV5ProviderFactories: testAccProtoV5ProviderFactories,
 		Steps: []resource.TestStep{
 			{
 				Config:      testAccDataSourceMetalOperatingSystemConfig_ambiguous,
