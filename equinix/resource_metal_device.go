@@ -29,6 +29,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/structure"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
 
 var (
@@ -1023,4 +1024,60 @@ func ifToIPCreateRequest(m interface{}) metalv1.IPAddress {
 	}
 	iacr.SetIpReservations(converters.IfArrToStringArr(ia["reservation_ids"].([]interface{})))
 	return iacr
+}
+
+func addMetalDeviceSweeper() {
+	resource.AddTestSweepers("equinix_metal_device", &resource.Sweeper{
+		Name: "equinix_metal_device",
+		F:    testSweepDevices,
+	})
+}
+
+func testSweepDevices(region string) error {
+	log.Printf("[DEBUG] Sweeping devices")
+	ctx := context.Background()
+	config, err := sharedConfigForRegion(region)
+	if err != nil {
+		return fmt.Errorf("[INFO][SWEEPER_LOG] Error getting configuration for sweeping devices: %s", err)
+	}
+	metal := config.NewMetalClientForTesting()
+	ps, _, err := metal.ProjectsApi.FindProjects(ctx).Execute()
+	if err != nil {
+		return fmt.Errorf("[INFO][SWEEPER_LOG] Error getting project list for sweepeing devices: %s", err)
+	}
+	pids := []string{}
+	for _, p := range ps.Projects {
+		if isSweepableTestResource(p.GetName()) {
+			pids = append(pids, p.GetId())
+		}
+	}
+	dids := []string{}
+	for _, pid := range pids {
+		ds, _, err := metal.DevicesApi.FindProjectDevices(ctx, pid).Execute()
+		if err != nil {
+			log.Printf("Error listing devices to sweep: %s", err)
+			continue
+		}
+		for _, d := range ds.Devices {
+			if isSweepableTestResource(d.GetHostname()) {
+				nonSweepableDeviceStates := []metalv1.DeviceState{
+					metalv1.DEVICESTATE_PROVISIONING,
+					metalv1.DEVICESTATE_DEPROVISIONING,
+				}
+				if slices.Contains(nonSweepableDeviceStates, d.GetState()) {
+					log.Printf("[WARNING] skipping sweep for device %s because it is still %s", d.GetId(), d.GetState())
+				} else {
+					dids = append(dids, d.GetId())
+				}
+			}
+		}
+	}
+
+	for _, did := range dids {
+		_, err := metal.DevicesApi.DeleteDevice(ctx, did).Execute()
+		if err != nil {
+			return fmt.Errorf("Error deleting device %s", err)
+		}
+	}
+	return nil
 }
