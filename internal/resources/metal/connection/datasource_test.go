@@ -16,7 +16,7 @@ func TestAccDataSourceMetalConnection_withoutVlans(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.TestAccPreCheckMetal(t) },
 		ExternalProviders:        acceptance.TestExternalProviders,
-		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
 				Config: testDataSourceMetalConnectionConfig_withoutVlans(rInt),
@@ -63,7 +63,7 @@ func TestAccDataSourceMetalConnection_withVlans(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.TestAccPreCheckMetal(t) },
 		ExternalProviders:        acceptance.TestExternalProviders,
-		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
 				Config: testDataSourceMetalConnectionConfig_withVlans(rInt),
@@ -151,7 +151,7 @@ func TestAccDataSourceMetalConnection_withoutVlans_upgradeFromVersion(t *testing
 				),
 			},
 			{
-				ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+				ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
 				Config:                   testDataSourceMetalConnectionConfig_withoutVlans(rInt),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
