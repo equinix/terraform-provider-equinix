@@ -22,7 +22,7 @@ resource "equinix_fabric_network" "new_network" {
     emails = ["example@equinix.com","test1@equinix.com"]
   }
   project {
-  	project_id = "776847000642406"
+    project_id = "776847000642406"
   }
 }
 ```
