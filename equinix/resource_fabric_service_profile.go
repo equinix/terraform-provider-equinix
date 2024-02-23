@@ -986,16 +986,16 @@ func accessPointTypeConfigsToFabric(schemaAccessPointTypeConfigs []interface{}) 
 		spBandwidthAlertThreshold := accessPoint.(map[string]interface{})["bandwidth_alert_threshold"].(float64)
 		spAllowCustomBandwidth := accessPoint.(map[string]interface{})["allow_custom_bandwidth"].(bool)
 
-		var spApiConfig v4.ApiConfig
+		var spApiConfig *v4.ApiConfig
 		if accessPoint.(map[string]interface{})["api_config"] != nil {
 			apiConfig := accessPoint.(map[string]interface{})["api_config"].(interface{}).(*schema.Set).List()
-			spApiConfig = *apiConfigToFabric(apiConfig)
+			spApiConfig = apiConfigToFabric(apiConfig)
 		}
 
-		var spAuthenticationKey v4.AuthenticationKey
+		var spAuthenticationKey *v4.AuthenticationKey
 		if accessPoint.(map[string]interface{})["authentication_key"] != nil {
 			authenticationKey := accessPoint.(map[string]interface{})["authentication_key"].(interface{}).(*schema.Set).List()
-			spAuthenticationKey = *authenticationKeyToFabric(authenticationKey)
+			spAuthenticationKey = authenticationKeyToFabric(authenticationKey)
 		}
 
 		supportedBandwidthsRaw := accessPoint.(map[string]interface{})["supported_bandwidths"].([]interface{})
@@ -1010,8 +1010,8 @@ func accessPointTypeConfigsToFabric(schemaAccessPointTypeConfigs []interface{}) 
 			EnableAutoGenerateServiceKey: spEnableAutoGenerateServiceKey,
 			BandwidthAlertThreshold:      spBandwidthAlertThreshold,
 			AllowCustomBandwidth:         spAllowCustomBandwidth,
-			ApiConfig:                    &spApiConfig,
-			AuthenticationKey:            &spAuthenticationKey,
+			ApiConfig:                    spApiConfig,
+			AuthenticationKey:            spAuthenticationKey,
 			SupportedBandwidths:          &spSupportedBandwidths,
 		})
 	}
@@ -1043,14 +1043,14 @@ func apiConfigToFabric(apiConfigs []interface{}) *v4.ApiConfig {
 	if apiConfigs == nil {
 		return nil
 	}
-	apiConfigRes := v4.ApiConfig{}
+	var apiConfigRes *v4.ApiConfig
 	for _, apiConfig := range apiConfigs {
 		psApiAvailable := apiConfig.(map[string]interface{})["api_available"].(interface{}).(bool)
 		psEquinixManagedVlan := apiConfig.(map[string]interface{})["equinix_managed_vlan"].(interface{}).(bool)
 		psBandwidthFromApi := apiConfig.(map[string]interface{})["bandwidth_from_api"].(interface{}).(bool)
 		psIntegrationId := apiConfig.(map[string]interface{})["integration_id"].(interface{}).(string)
 		psEquinixManagedPort := apiConfig.(map[string]interface{})["equinix_managed_port"].(interface{}).(bool)
-		apiConfigRes = v4.ApiConfig{
+		apiConfigRes = &v4.ApiConfig{
 			ApiAvailable:       psApiAvailable,
 			EquinixManagedVlan: psEquinixManagedVlan,
 			BandwidthFromApi:   psBandwidthFromApi,
@@ -1058,25 +1058,25 @@ func apiConfigToFabric(apiConfigs []interface{}) *v4.ApiConfig {
 			EquinixManagedPort: psEquinixManagedPort,
 		}
 	}
-	return &apiConfigRes
+	return apiConfigRes
 }
 
 func authenticationKeyToFabric(authenticationKeys []interface{}) *v4.AuthenticationKey {
 	if authenticationKeys == nil {
 		return nil
 	}
-	authenticationKeyRes := v4.AuthenticationKey{}
+	var authenticationKeyRes *v4.AuthenticationKey
 	for _, authenticationKey := range authenticationKeys {
 		psRequired := authenticationKey.(map[string]interface{})["required"].(interface{}).(bool)
 		psLabel := authenticationKey.(map[string]interface{})["label"].(interface{}).(string)
 		psDescription := authenticationKey.(map[string]interface{})["description"].(interface{}).(string)
-		authenticationKeyRes = v4.AuthenticationKey{
+		authenticationKeyRes = &v4.AuthenticationKey{
 			Required:    psRequired,
 			Label:       psLabel,
 			Description: psDescription,
 		}
 	}
-	return &authenticationKeyRes
+	return authenticationKeyRes
 }
 
 func customFieldsToFabric(schemaCustomField []interface{}) []v4.CustomField {
@@ -1150,7 +1150,7 @@ func portsToFabric(schemaPorts []interface{}) []v4.ServiceProfileAccessPointColo
 	if schemaPorts == nil {
 		return nil
 	}
-	schemaPortRes := make([]v4.ServiceProfileAccessPointColo, len(schemaPorts))
+	serviceProfileAccessPointColos := make([]v4.ServiceProfileAccessPointColo, len(schemaPorts))
 	for index, schemaPort := range schemaPorts {
 		pType := schemaPort.(map[string]interface{})["type"].(string)
 		pUuid := schemaPort.(map[string]interface{})["uuid"].(string)
@@ -1162,7 +1162,7 @@ func portsToFabric(schemaPorts []interface{}) []v4.ServiceProfileAccessPointColo
 		pSellerRegion := schemaPort.(map[string]interface{})["seller_region"].(string)
 		pSellerRegionDescription := schemaPort.(map[string]interface{})["seller_region_description"].(string)
 		pCrossConnectId := schemaPort.(map[string]interface{})["cross_connect_id"].(string)
-		schemaPortRes[index] = v4.ServiceProfileAccessPointColo{
+		serviceProfileAccessPointColos[index] = v4.ServiceProfileAccessPointColo{
 			Type_:                   pType,
 			Uuid:                    pUuid,
 			Location:                &pLocation,
@@ -1171,7 +1171,7 @@ func portsToFabric(schemaPorts []interface{}) []v4.ServiceProfileAccessPointColo
 			CrossConnectId:          pCrossConnectId,
 		}
 	}
-	return schemaPortRes
+	return serviceProfileAccessPointColos
 }
 
 func virtualDevicesToFabric(schemaVirtualDevices []interface{}) []v4.ServiceProfileAccessPointVd {
