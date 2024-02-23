@@ -16,7 +16,7 @@ func TestAccResourceMetalOrganizationMember_owner(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { testAccPreCheck(t) },
 		ExternalProviders:        testExternalProviders,
-		ProtoV5ProviderFactories: testAccProtoV5ProviderFactories,
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		// TODO: CheckDestroy: testAccMetalOrganizationMemberCheckDestroyed,
 		CheckDestroy: nil,
 		Steps: []resource.TestStep{
@@ -54,7 +54,7 @@ func TestAccResourceMetalOrganizationMember_basic(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { testAccPreCheck(t) },
 		ExternalProviders:        testExternalProviders,
-		ProtoV5ProviderFactories: testAccProtoV5ProviderFactories,
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		// TODO: CheckDestroy: testAccMetalOrganizationMemberCheckDestroyed,
 		CheckDestroy: nil,
 		Steps: []resource.TestStep{

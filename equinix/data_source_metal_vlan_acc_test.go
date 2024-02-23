@@ -20,7 +20,7 @@ func TestAccDataSourceMetalVlan_byVxlanFacility(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { testAccPreCheck(t) },
 		ExternalProviders:        testExternalProviders,
-		ProtoV5ProviderFactories: testAccProtoV5ProviderFactories,
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		CheckDestroy:             testAccMetalDatasourceVlanCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
@@ -67,7 +67,7 @@ func TestAccDataSourceMetalVlan_byVxlanMetro(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { testAccPreCheck(t) },
 		ExternalProviders:        testExternalProviders,
-		ProtoV5ProviderFactories: testAccProtoV5ProviderFactories,
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		CheckDestroy:             testAccMetalDatasourceVlanCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
@@ -138,7 +138,7 @@ func TestAccDataSourceMetalVlan_byVlanId(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { testAccPreCheck(t) },
 		ExternalProviders:        testExternalProviders,
-		ProtoV5ProviderFactories: testAccProtoV5ProviderFactories,
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		CheckDestroy:             testAccMetalDatasourceVlanCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
@@ -184,7 +184,7 @@ func TestAccDataSourceMetalVlan_byProjectId(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { testAccPreCheck(t) },
 		ExternalProviders:        testExternalProviders,
-		ProtoV5ProviderFactories: testAccProtoV5ProviderFactories,
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		CheckDestroy:             testAccMetalDatasourceVlanCheckDestroyed,
 		Steps: []resource.TestStep{
 			{

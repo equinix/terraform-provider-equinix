@@ -22,7 +22,7 @@ This repository is [Maintained](https://github.com/equinix-labs/equinix-labs/blo
 
 ## Requirements
 
-- [Terraform](https://www.terraform.io/downloads.html) 0.12+
+- [Terraform](https://www.terraform.io/downloads.html) 1.0.0+
 
 ## Using the provider
 
