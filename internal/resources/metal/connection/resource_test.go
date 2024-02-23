@@ -1,4 +1,4 @@
-package metal_connection_test
+package connection_test
 
 import (
 	"fmt"
@@ -10,6 +10,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/plancheck"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 )
 
@@ -67,10 +68,10 @@ func testAccMetalConnectionConfig_Shared_zside(randstr string) string {
 func TestAccMetalConnection_shared_zside(t *testing.T) {
 	rs := acctest.RandString(10)
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acceptance.TestAccPreCheckMetal(t) },
-		ExternalProviders: acceptance.TestExternalProviders,
-		Providers:         acceptance.TestAccProviders,
-		CheckDestroy:      testAccMetalConnectionCheckDestroyed,
+		PreCheck:                 func() { acceptance.TestAccPreCheckMetal(t) },
+		ExternalProviders:        acceptance.TestExternalProviders,
+		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		CheckDestroy:             testAccMetalConnectionCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccMetalConnectionConfig_Shared_zside(rs),
@@ -93,10 +94,10 @@ func TestAccMetalConnection_shared(t *testing.T) {
 	rs := acctest.RandString(10)
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acceptance.TestAccPreCheckMetal(t) },
-		ExternalProviders: acceptance.TestExternalProviders,
-		Providers:         acceptance.TestAccProviders,
-		CheckDestroy:      testAccMetalConnectionCheckDestroyed,
+		PreCheck:                 func() { acceptance.TestAccPreCheckMetal(t) },
+		ExternalProviders:        acceptance.TestExternalProviders,
+		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		CheckDestroy:             testAccMetalConnectionCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccMetalConnectionConfig_Shared(rs),
@@ -168,10 +169,10 @@ func TestAccMetalConnection_dedicated(t *testing.T) {
 	rs := acctest.RandString(10)
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acceptance.TestAccPreCheckMetal(t) },
-		ExternalProviders: acceptance.TestExternalProviders,
-		Providers:         acceptance.TestAccProviders,
-		CheckDestroy:      testAccMetalConnectionCheckDestroyed,
+		PreCheck:                 func() { acceptance.TestAccPreCheckMetal(t) },
+		ExternalProviders:        acceptance.TestExternalProviders,
+		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		CheckDestroy:             testAccMetalConnectionCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccMetalConnectionConfig_dedicated(rs),
@@ -225,10 +226,10 @@ func TestAccMetalConnection_tunnel(t *testing.T) {
 	rs := acctest.RandString(10)
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acceptance.TestAccPreCheckMetal(t) },
-		ExternalProviders: acceptance.TestExternalProviders,
-		Providers:         acceptance.TestAccProviders,
-		CheckDestroy:      testAccMetalConnectionCheckDestroyed,
+		PreCheck:                 func() { acceptance.TestAccPreCheckMetal(t) },
+		ExternalProviders:        acceptance.TestExternalProviders,
+		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		CheckDestroy:             testAccMetalConnectionCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccMetalConnectionConfig_tunnel(rs),
@@ -301,10 +302,10 @@ func TestAccMetalConnection_sharedVlans(t *testing.T) {
 	step5Vlans := ""
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acceptance.TestAccPreCheckMetal(t) },
-		ExternalProviders: acceptance.TestExternalProviders,
-		Providers:         acceptance.TestAccProviders,
-		CheckDestroy:      testAccMetalConnectionCheckDestroyed,
+		PreCheck:                 func() { acceptance.TestAccPreCheckMetal(t) },
+		ExternalProviders:        acceptance.TestExternalProviders,
+		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		CheckDestroy:             testAccMetalConnectionCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccMetalConnectionConfig_sharedVlans(rs, step1Vlans),
@@ -355,6 +356,47 @@ func TestAccMetalConnection_sharedVlans(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						"equinix_metal_connection.test", "vlans.#", "0"),
 				),
+			},
+		},
+	})
+}
+
+// Test to verify that switching from SDKv2 to the Framework has not affected provider's behavior
+// TODO (ocobles): once migrated, this test may be removed
+func TestAccMetalConnection_shared_zside_upgradeFromVersion(t *testing.T) {
+	rs := acctest.RandString(10)
+	cfg := testAccMetalConnectionConfig_Shared_zside(rs)
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:     func() { acceptance.TestAccPreCheckMetal(t) },
+		CheckDestroy: testAccMetalConnectionCheckDestroyed,
+		Steps: []resource.TestStep{
+			{
+				ExternalProviders: map[string]resource.ExternalProvider{
+					"equinix": {
+						VersionConstraint: "1.29.0", // latest version with resource defined on SDKv2
+						Source:            "equinix/equinix",
+					},
+				},
+				Config: cfg,
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(
+						"equinix_metal_connection.test", "speed", "10Gbps"),
+					resource.TestCheckResourceAttr(
+						"equinix_metal_connection.test", "service_tokens.0.type", "z_side"),
+					resource.TestCheckResourceAttr(
+						"equinix_metal_connection.test", "service_token_type", "z_side"),
+					resource.TestCheckResourceAttrSet(
+						"equinix_metal_connection.test", "contact_email"),
+				),
+			},
+			{
+				ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+				Config:                   cfg,
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectEmptyPlan(),
+					},
+				},
 			},
 		},
 	})
