@@ -10,9 +10,9 @@ import (
 func TestAccDataSourcePlans_Basic(t *testing.T) {
 	testSlug := "m2.xlarge.x86"
 	resource.Test(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
-		ExternalProviders: testExternalProviders,
-		Providers:         testAccProviders,
+		PreCheck:                 func() { testAccPreCheck(t) },
+		ExternalProviders:        testExternalProviders,
+		ProtoV5ProviderFactories: testAccProtoV5ProviderFactories,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccDataSourcePlansConfigBasic(testSlug),

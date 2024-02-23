@@ -196,10 +196,10 @@ func TestAccMetalDevice_facilityList(t *testing.T) {
 	r := "equinix_metal_device.test"
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
-		ExternalProviders: testExternalProviders,
-		Providers:         testAccProviders,
-		CheckDestroy:      testAccMetalDeviceCheckDestroyed,
+		PreCheck:                 func() { testAccPreCheck(t) },
+		ExternalProviders:        testExternalProviders,
+		ProtoV5ProviderFactories: testAccProtoV5ProviderFactories,
+		CheckDestroy:             testAccMetalDeviceCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccMetalDeviceConfig_facility_list(rs),
@@ -255,10 +255,10 @@ func TestAccMetalDevice_basic(t *testing.T) {
 	r := "equinix_metal_device.test"
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
-		ExternalProviders: testExternalProviders,
-		Providers:         testAccProviders,
-		CheckDestroy:      testAccMetalDeviceCheckDestroyed,
+		PreCheck:                 func() { testAccPreCheck(t) },
+		ExternalProviders:        testExternalProviders,
+		ProtoV5ProviderFactories: testAccProtoV5ProviderFactories,
+		CheckDestroy:             testAccMetalDeviceCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccMetalDeviceConfig_minimal(rs),
@@ -301,10 +301,10 @@ func TestAccMetalDevice_update(t *testing.T) {
 	r := "equinix_metal_device.test"
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
-		ExternalProviders: testExternalProviders,
-		Providers:         testAccProviders,
-		CheckDestroy:      testAccMetalDeviceCheckDestroyed,
+		PreCheck:                 func() { testAccPreCheck(t) },
+		ExternalProviders:        testExternalProviders,
+		ProtoV5ProviderFactories: testAccProtoV5ProviderFactories,
+		CheckDestroy:             testAccMetalDeviceCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccMetalDeviceConfig_varname(rInt, rs),
@@ -357,10 +357,10 @@ func TestAccMetalDevice_IPXEScriptUrl(t *testing.T) {
 	r := "equinix_metal_device.test_ipxe_script_url"
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
-		ExternalProviders: testExternalProviders,
-		Providers:         testAccProviders,
-		CheckDestroy:      testAccMetalDeviceCheckDestroyed,
+		PreCheck:                 func() { testAccPreCheck(t) },
+		ExternalProviders:        testExternalProviders,
+		ProtoV5ProviderFactories: testAccProtoV5ProviderFactories,
+		CheckDestroy:             testAccMetalDeviceCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccMetalDeviceConfig_ipxe_script_url(rs, "https://boot.netboot.xyz", "true"),
@@ -395,10 +395,10 @@ func TestAccMetalDevice_IPXEConflictingFields(t *testing.T) {
 	r := "equinix_metal_device.test_ipxe_conflict"
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
-		ExternalProviders: testExternalProviders,
-		Providers:         testAccProviders,
-		CheckDestroy:      testAccMetalDeviceCheckDestroyed,
+		PreCheck:                 func() { testAccPreCheck(t) },
+		ExternalProviders:        testExternalProviders,
+		ProtoV5ProviderFactories: testAccProtoV5ProviderFactories,
+		CheckDestroy:             testAccMetalDeviceCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(testAccMetalDeviceConfig_ipxe_conflict, confAccMetalDevice_base(preferable_plans, preferable_metros, preferable_os), rs),
@@ -417,10 +417,10 @@ func TestAccMetalDevice_IPXEConfigMissing(t *testing.T) {
 	r := "equinix_metal_device.test_ipxe_config_missing"
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
-		ExternalProviders: testExternalProviders,
-		Providers:         testAccProviders,
-		CheckDestroy:      testAccMetalDeviceCheckDestroyed,
+		PreCheck:                 func() { testAccPreCheck(t) },
+		ExternalProviders:        testExternalProviders,
+		ProtoV5ProviderFactories: testAccProtoV5ProviderFactories,
+		CheckDestroy:             testAccMetalDeviceCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(testAccMetalDeviceConfig_ipxe_missing, confAccMetalDevice_base(preferable_plans, preferable_metros, preferable_os), rs),
@@ -443,10 +443,10 @@ func TestAccMetalDevice_allowUserdataChanges(t *testing.T) {
 	userdata2 := fmt.Sprintf("#!/usr/bin/env sh\necho 'Allow userdata changes %d'\n", rInt+1)
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
-		ExternalProviders: testExternalProviders,
-		Providers:         testAccProviders,
-		CheckDestroy:      testAccMetalDeviceCheckDestroyed,
+		PreCheck:                 func() { testAccPreCheck(t) },
+		ExternalProviders:        testExternalProviders,
+		ProtoV5ProviderFactories: testAccProtoV5ProviderFactories,
+		CheckDestroy:             testAccMetalDeviceCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccMetalDeviceConfig_allowAttributeChanges(rInt, rs, userdata1, "", "user_data"),
@@ -477,10 +477,10 @@ func TestAccMetalDevice_allowCustomdataChanges(t *testing.T) {
 	customdata2 := fmt.Sprintf(`{"message": "Allow customdata changes %d"}`, rInt+1)
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
-		ExternalProviders: testExternalProviders,
-		Providers:         testAccProviders,
-		CheckDestroy:      testAccMetalDeviceCheckDestroyed,
+		PreCheck:                 func() { testAccPreCheck(t) },
+		ExternalProviders:        testExternalProviders,
+		ProtoV5ProviderFactories: testAccProtoV5ProviderFactories,
+		CheckDestroy:             testAccMetalDeviceCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccMetalDeviceConfig_allowAttributeChanges(rInt, rs, "", customdata1, "custom_data"),
@@ -506,8 +506,8 @@ func TestAccMetalDevice_allowChangesErrorOnUnsupportedAttribute(t *testing.T) {
 	rInt := acctest.RandInt()
 
 	resource.Test(t, resource.TestCase{
-		ExternalProviders: testExternalProviders,
-		Providers:         testAccProviders,
+		ExternalProviders:        testExternalProviders,
+		ProtoV5ProviderFactories: testAccProtoV5ProviderFactories,
 		Steps: []resource.TestStep{
 			{
 				Config:      testAccMetalDeviceConfig_allowAttributeChanges(rInt, rs, "", "", "project_id"),
@@ -645,10 +645,10 @@ func TestAccMetalDevice_importBasic(t *testing.T) {
 	rs := acctest.RandString(10)
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
-		ExternalProviders: testExternalProviders,
-		Providers:         testAccProviders,
-		CheckDestroy:      testAccMetalDeviceCheckDestroyed,
+		PreCheck:                 func() { testAccPreCheck(t) },
+		ExternalProviders:        testExternalProviders,
+		ProtoV5ProviderFactories: testAccProtoV5ProviderFactories,
+		CheckDestroy:             testAccMetalDeviceCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccMetalDeviceConfig_basic(rs),
