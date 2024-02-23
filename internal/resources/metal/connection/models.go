@@ -76,7 +76,6 @@ type ServiceTokenModel struct {
 	Role            types.String `tfsdk:"role"`
 	State           types.String `tfsdk:"state"`
 	Type            types.String `tfsdk:"type"`
-	ExpiresAt       types.String `tfsdk:"expires_at"`
 }
 
 func (m *DataSourceModel) parse(ctx context.Context, conn *packngo.Connection) diag.Diagnostics {
