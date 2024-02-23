@@ -617,7 +617,7 @@ func getServiceProfileRequestPayload(d *schema.ResourceData) v4.ServiceProfileRe
 		AllowedEmails:          spAllowedEmails,
 		AccessPointTypeConfigs: spAccessPointTypeConfigs,
 		CustomFields:           spCustomFields,
-		MarketingInfo:          &spMarketingInfo,
+		MarketingInfo:          spMarketingInfo,
 		Ports:                  spPorts,
 		VirtualDevices:         spVirtualDevices,
 		Metros:                 spMetros,
@@ -863,13 +863,13 @@ func resourceServiceProfilesSearchRequest(ctx context.Context, d *schema.Resourc
 	return setFabricServiceProfilesListMap(d, serviceProfiles)
 }
 
-func customFieldFabricSpToTerra(customFieldl []v4.CustomField) []map[string]interface{} {
-	if customFieldl == nil {
+func customFieldFabricSpToTerra(customFields []v4.CustomField) []interface{} {
+	if customFields == nil {
 		return nil
 	}
-	mappedCustomFieldl := make([]map[string]interface{}, len(customFieldl))
-	for index, customField := range customFieldl {
-		mappedCustomFieldl[index] = map[string]interface{}{
+	mappedCustomFields := make([]interface{}, len(customFields))
+	for index, customField := range customFields {
+		mappedCustomFields[index] = map[string]interface{}{
 			"label":       customField.Label,
 			"description": customField.Description,
 			"required":    customField.Required,
@@ -877,54 +877,49 @@ func customFieldFabricSpToTerra(customFieldl []v4.CustomField) []map[string]inte
 			"options":     customField.Options,
 		}
 	}
-	return mappedCustomFieldl
+	return mappedCustomFields
 }
 
-func processStepFabricSpToTerra(processStepl []v4.ProcessStep) []map[string]interface{} {
-	if processStepl == nil {
+func processStepFabricSpToTerra(processSteps []v4.ProcessStep) []interface{} {
+	if processSteps == nil {
 		return nil
 	}
-	mappedProcessStepl := make([]map[string]interface{}, len(processStepl))
-	for index, processStep := range processStepl {
-		mappedProcessStepl[index] = map[string]interface{}{
+	mappedProcessSteps := make([]interface{}, len(processSteps))
+	for index, processStep := range processSteps {
+		mappedProcessSteps[index] = map[string]interface{}{
 			"title":       processStep.Title,
 			"sub_title":   processStep.SubTitle,
 			"description": processStep.Description,
 		}
 	}
-	return mappedProcessStepl
+	return mappedProcessSteps
 }
 
 func marketingInfoMappingToTerra(mkinfo *v4.MarketingInfo) *schema.Set {
 	if mkinfo == nil {
 		return nil
 	}
-	mkinfos := []*v4.MarketingInfo{mkinfo}
-	mappedMkInfos := make([]interface{}, 0)
-	for _, mkinfo := range mkinfos {
-		mappedMkInfo := make(map[string]interface{})
-		mappedMkInfo["logo"] = mkinfo.Logo
-		mappedMkInfo["promotion"] = mkinfo.Promotion
-		processStepl := processStepFabricSpToTerra(mkinfo.ProcessSteps)
-		if processStepl != nil {
-			mappedMkInfo["process_step"] = processStepl
-		}
-		mappedMkInfos = append(mappedMkInfos, mappedMkInfo)
+	mappedMkInfo := make(map[string]interface{})
+	mappedMkInfo["logo"] = mkinfo.Logo
+	mappedMkInfo["promotion"] = mkinfo.Promotion
+	processSteps := processStepFabricSpToTerra(mkinfo.ProcessSteps)
+	if processSteps != nil {
+		mappedMkInfo["process_step"] = processSteps
 	}
 	marketingInfoSet := schema.NewSet(
 		schema.HashResource(&schema.Resource{Schema: createMarketingInfoSch()}),
-		mappedMkInfos,
+		[]interface{}{mappedMkInfo},
 	)
 	return marketingInfoSet
 }
 
-func accessPointColoFabricSpToTerra(accessPointColol []v4.ServiceProfileAccessPointColo) []map[string]interface{} {
-	if accessPointColol == nil {
+func accessPointColoFabricSpToTerra(accessPointColos []v4.ServiceProfileAccessPointColo) []interface{} {
+	if accessPointColos == nil {
 		return nil
 	}
-	mappedAccessPointColol := make([]map[string]interface{}, len(accessPointColol))
-	for index, accessPointColo := range accessPointColol {
-		mappedAccessPointColol[index] = map[string]interface{}{
+	mappedAccessPointColos := make([]interface{}, len(accessPointColos))
+	for index, accessPointColo := range accessPointColos {
+		mappedAccessPointColos[index] = map[string]interface{}{
 			"type":                      accessPointColo.Type_,
 			"uuid":                      accessPointColo.Uuid,
 			"location":                  equinix_fabric_schema.LocationToTerra(accessPointColo.Location),
@@ -933,16 +928,16 @@ func accessPointColoFabricSpToTerra(accessPointColol []v4.ServiceProfileAccessPo
 			"cross_connect_id":          accessPointColo.CrossConnectId,
 		}
 	}
-	return mappedAccessPointColol
+	return mappedAccessPointColos
 }
 
-func serviceMetroFabricSpToTerra(serviceMetrol []v4.ServiceMetro) []map[string]interface{} {
-	if serviceMetrol == nil {
+func serviceMetroFabricSpToTerra(serviceMetros []v4.ServiceMetro) []interface{} {
+	if serviceMetros == nil {
 		return nil
 	}
-	mappedServiceMetrol := make([]map[string]interface{}, len(serviceMetrol))
-	for index, serviceMetro := range serviceMetrol {
-		mappedServiceMetrol[index] = map[string]interface{}{
+	mappedServiceMetros := make([]interface{}, len(serviceMetros))
+	for index, serviceMetro := range serviceMetros {
+		mappedServiceMetros[index] = map[string]interface{}{
 			"code":           serviceMetro.Code,
 			"name":           serviceMetro.Name,
 			"ibxs":           serviceMetro.Ibxs,
@@ -951,16 +946,16 @@ func serviceMetroFabricSpToTerra(serviceMetrol []v4.ServiceMetro) []map[string]i
 			"seller_regions": serviceMetro.SellerRegions,
 		}
 	}
-	return mappedServiceMetrol
+	return mappedServiceMetros
 }
 
-func tagsFabricSpToTerra(tagsl *[]string) []interface{} {
-	if tagsl == nil {
+func tagsFabricSpToTerra(tags *[]string) []interface{} {
+	if tags == nil {
 		return nil
 	}
-	mappedTags := make([]interface{}, 0)
-	for _, tag := range *tagsl {
-		mappedTags = append(mappedTags, tag)
+	mappedTags := make([]interface{}, len(*tags))
+	for index, tag := range *tags {
+		mappedTags[index] = tag
 	}
 	return mappedTags
 }
@@ -991,13 +986,13 @@ func accessPointTypeConfigsToFabric(schemaAccessPointTypeConfigs []interface{}) 
 		spBandwidthAlertThreshold := accessPoint.(map[string]interface{})["bandwidth_alert_threshold"].(float64)
 		spAllowCustomBandwidth := accessPoint.(map[string]interface{})["allow_custom_bandwidth"].(bool)
 
-		var spApiConfig v4.ApiConfig
+		var spApiConfig *v4.ApiConfig
 		if accessPoint.(map[string]interface{})["api_config"] != nil {
 			apiConfig := accessPoint.(map[string]interface{})["api_config"].(interface{}).(*schema.Set).List()
 			spApiConfig = apiConfigToFabric(apiConfig)
 		}
 
-		var spAuthenticationKey v4.AuthenticationKey
+		var spAuthenticationKey *v4.AuthenticationKey
 		if accessPoint.(map[string]interface{})["authentication_key"] != nil {
 			authenticationKey := accessPoint.(map[string]interface{})["authentication_key"].(interface{}).(*schema.Set).List()
 			spAuthenticationKey = authenticationKeyToFabric(authenticationKey)
@@ -1015,8 +1010,8 @@ func accessPointTypeConfigsToFabric(schemaAccessPointTypeConfigs []interface{}) 
 			EnableAutoGenerateServiceKey: spEnableAutoGenerateServiceKey,
 			BandwidthAlertThreshold:      spBandwidthAlertThreshold,
 			AllowCustomBandwidth:         spAllowCustomBandwidth,
-			ApiConfig:                    &spApiConfig,
-			AuthenticationKey:            &spAuthenticationKey,
+			ApiConfig:                    spApiConfig,
+			AuthenticationKey:            spAuthenticationKey,
 			SupportedBandwidths:          &spSupportedBandwidths,
 		})
 	}
@@ -1044,18 +1039,18 @@ func accessPointTypeConfigToTerra(spAccessPointTypes []v4.ServiceProfileAccessPo
 	return mappedSpAccessPointTypes
 }
 
-func apiConfigToFabric(apiConfigl []interface{}) v4.ApiConfig {
-	if apiConfigl == nil {
-		return v4.ApiConfig{}
+func apiConfigToFabric(apiConfigs []interface{}) *v4.ApiConfig {
+	if apiConfigs == nil {
+		return nil
 	}
-	var apiConfigs v4.ApiConfig
-	for _, apiCongig := range apiConfigl {
-		psApiAvailable := apiCongig.(map[string]interface{})["api_available"].(interface{}).(bool)
-		psEquinixManagedVlan := apiCongig.(map[string]interface{})["equinix_managed_vlan"].(interface{}).(bool)
-		psBandwidthFromApi := apiCongig.(map[string]interface{})["bandwidth_from_api"].(interface{}).(bool)
-		psIntegrationId := apiCongig.(map[string]interface{})["integration_id"].(interface{}).(string)
-		psEquinixManagedPort := apiCongig.(map[string]interface{})["equinix_managed_port"].(interface{}).(bool)
-		apiConfigs = v4.ApiConfig{
+	var apiConfigRes *v4.ApiConfig
+	for _, apiConfig := range apiConfigs {
+		psApiAvailable := apiConfig.(map[string]interface{})["api_available"].(interface{}).(bool)
+		psEquinixManagedVlan := apiConfig.(map[string]interface{})["equinix_managed_vlan"].(interface{}).(bool)
+		psBandwidthFromApi := apiConfig.(map[string]interface{})["bandwidth_from_api"].(interface{}).(bool)
+		psIntegrationId := apiConfig.(map[string]interface{})["integration_id"].(interface{}).(string)
+		psEquinixManagedPort := apiConfig.(map[string]interface{})["equinix_managed_port"].(interface{}).(bool)
+		apiConfigRes = &v4.ApiConfig{
 			ApiAvailable:       psApiAvailable,
 			EquinixManagedVlan: psEquinixManagedVlan,
 			BandwidthFromApi:   psBandwidthFromApi,
@@ -1063,25 +1058,25 @@ func apiConfigToFabric(apiConfigl []interface{}) v4.ApiConfig {
 			EquinixManagedPort: psEquinixManagedPort,
 		}
 	}
-	return apiConfigs
+	return apiConfigRes
 }
 
-func authenticationKeyToFabric(authenticationKeyl []interface{}) v4.AuthenticationKey {
-	if authenticationKeyl == nil {
-		return v4.AuthenticationKey{}
+func authenticationKeyToFabric(authenticationKeys []interface{}) *v4.AuthenticationKey {
+	if authenticationKeys == nil {
+		return nil
 	}
-	var authenticationKeys v4.AuthenticationKey
-	for _, authKey := range authenticationKeyl {
-		psRequired := authKey.(map[string]interface{})["required"].(interface{}).(bool)
-		psLabel := authKey.(map[string]interface{})["label"].(interface{}).(string)
-		psDescription := authKey.(map[string]interface{})["description"].(interface{}).(string)
-		authenticationKeys = v4.AuthenticationKey{
+	var authenticationKeyRes *v4.AuthenticationKey
+	for _, authenticationKey := range authenticationKeys {
+		psRequired := authenticationKey.(map[string]interface{})["required"].(interface{}).(bool)
+		psLabel := authenticationKey.(map[string]interface{})["label"].(interface{}).(string)
+		psDescription := authenticationKey.(map[string]interface{})["description"].(interface{}).(string)
+		authenticationKeyRes = &v4.AuthenticationKey{
 			Required:    psRequired,
 			Label:       psLabel,
 			Description: psDescription,
 		}
 	}
-	return authenticationKeys
+	return authenticationKeyRes
 }
 
 func customFieldsToFabric(schemaCustomField []interface{}) []v4.CustomField {
@@ -1109,12 +1104,12 @@ func customFieldsToFabric(schemaCustomField []interface{}) []v4.CustomField {
 	return customFields
 }
 
-func marketingInfoToFabric(schemaMarketingInfo []interface{}) v4.MarketingInfo {
-	if schemaMarketingInfo == nil {
-		return v4.MarketingInfo{}
+func marketingInfoToFabric(schemaMarketingInfos []interface{}) *v4.MarketingInfo {
+	if schemaMarketingInfos == nil {
+		return nil
 	}
-	marketingInfos := v4.MarketingInfo{}
-	for _, marketingInfo := range schemaMarketingInfo {
+	marketingInfoRes := v4.MarketingInfo{}
+	for _, marketingInfo := range schemaMarketingInfos {
 		miLogo := marketingInfo.(map[string]interface{})["logo"].(string)
 		miPromotion := marketingInfo.(map[string]interface{})["promotion"].(bool)
 
@@ -1124,59 +1119,59 @@ func marketingInfoToFabric(schemaMarketingInfo []interface{}) v4.MarketingInfo {
 			miProcessSteps = processStepToFabric(processStepsList)
 		}
 
-		marketingInfos = v4.MarketingInfo{
+		marketingInfoRes = v4.MarketingInfo{
 			Logo:         miLogo,
 			Promotion:    miPromotion,
 			ProcessSteps: miProcessSteps,
 		}
 	}
-	return marketingInfos
+	return &marketingInfoRes
 }
 
-func processStepToFabric(processStepl []interface{}) []v4.ProcessStep {
-	if processStepl == nil {
-		return []v4.ProcessStep{}
+func processStepToFabric(processSteps []interface{}) []v4.ProcessStep {
+	if processSteps == nil {
+		return nil
 	}
-	var processSteps []v4.ProcessStep
-	for _, processStep := range processStepl {
+	processStepRes := make([]v4.ProcessStep, len(processSteps))
+	for index, processStep := range processSteps {
 		psTitle := processStep.(map[string]interface{})["title"].(interface{}).(string)
 		psSubTitle := processStep.(map[string]interface{})["sub_title"].(interface{}).(string)
 		psDescription := processStep.(map[string]interface{})["description"].(interface{}).(string)
-		processSteps = append(processSteps, v4.ProcessStep{
+		processStepRes[index] = v4.ProcessStep{
 			Title:       psTitle,
 			SubTitle:    psSubTitle,
 			Description: psDescription,
-		})
+		}
 	}
-	return processSteps
+	return processStepRes
 }
 
 func portsToFabric(schemaPorts []interface{}) []v4.ServiceProfileAccessPointColo {
 	if schemaPorts == nil {
-		return []v4.ServiceProfileAccessPointColo{}
+		return nil
 	}
-	var ports []v4.ServiceProfileAccessPointColo
-	for _, port := range schemaPorts {
-		pType := port.(map[string]interface{})["type"].(string)
-		pUuid := port.(map[string]interface{})["uuid"].(string)
-		locationList := port.(map[string]interface{})["location"].(interface{}).(*schema.Set).List()
+	serviceProfileAccessPointColos := make([]v4.ServiceProfileAccessPointColo, len(schemaPorts))
+	for index, schemaPort := range schemaPorts {
+		pType := schemaPort.(map[string]interface{})["type"].(string)
+		pUuid := schemaPort.(map[string]interface{})["uuid"].(string)
+		locationList := schemaPort.(map[string]interface{})["location"].(interface{}).(*schema.Set).List()
 		pLocation := v4.SimplifiedLocation{}
 		if len(locationList) != 0 {
 			pLocation = equinix_fabric_schema.LocationToFabric(locationList)
 		}
-		pSellerRegion := port.(map[string]interface{})["seller_region"].(string)
-		pSellerRegionDescription := port.(map[string]interface{})["seller_region_description"].(string)
-		pCrossConnectId := port.(map[string]interface{})["cross_connect_id"].(string)
-		ports = append(ports, v4.ServiceProfileAccessPointColo{
+		pSellerRegion := schemaPort.(map[string]interface{})["seller_region"].(string)
+		pSellerRegionDescription := schemaPort.(map[string]interface{})["seller_region_description"].(string)
+		pCrossConnectId := schemaPort.(map[string]interface{})["cross_connect_id"].(string)
+		serviceProfileAccessPointColos[index] = v4.ServiceProfileAccessPointColo{
 			Type_:                   pType,
 			Uuid:                    pUuid,
 			Location:                &pLocation,
 			SellerRegion:            pSellerRegion,
 			SellerRegionDescription: pSellerRegionDescription,
 			CrossConnectId:          pCrossConnectId,
-		})
+		}
 	}
-	return ports
+	return serviceProfileAccessPointColos
 }
 
 func virtualDevicesToFabric(schemaVirtualDevices []interface{}) []v4.ServiceProfileAccessPointVd {
