@@ -1108,7 +1108,7 @@ func marketingInfoToFabric(schemaMarketingInfos []interface{}) *v4.MarketingInfo
 	if schemaMarketingInfos == nil {
 		return nil
 	}
-	MarketingInfoRes := v4.MarketingInfo{}
+	marketingInfoRes := v4.MarketingInfo{}
 	for _, marketingInfo := range schemaMarketingInfos {
 		miLogo := marketingInfo.(map[string]interface{})["logo"].(string)
 		miPromotion := marketingInfo.(map[string]interface{})["promotion"].(bool)
@@ -1119,13 +1119,13 @@ func marketingInfoToFabric(schemaMarketingInfos []interface{}) *v4.MarketingInfo
 			miProcessSteps = processStepToFabric(processStepsList)
 		}
 
-		MarketingInfoRes = v4.MarketingInfo{
+		marketingInfoRes = v4.MarketingInfo{
 			Logo:         miLogo,
 			Promotion:    miPromotion,
 			ProcessSteps: miProcessSteps,
 		}
 	}
-	return &MarketingInfoRes
+	return &marketingInfoRes
 }
 
 func processStepToFabric(processSteps []interface{}) []v4.ProcessStep {
