@@ -15,10 +15,10 @@ func TestAccDataSourceMetalProject_byId(t *testing.T) {
 	rn := acctest.RandStringFromCharSet(12, "abcdef0123456789")
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acceptance.TestAccPreCheck(t) },
-		ExternalProviders: acceptance.TestExternalProviders,
-		Providers:         acceptance.TestAccProviders,
-		CheckDestroy:      testAccMetalProjectCheckDestroyed,
+		PreCheck:                 func() { acceptance.TestAccPreCheck(t) },
+		ExternalProviders:        acceptance.TestExternalProviders,
+		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		CheckDestroy:             testAccMetalProjectCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccDataSourceMetalProject_byId(rn),
@@ -69,10 +69,10 @@ func TestAccDataSourceMetalProject_byName(t *testing.T) {
 	rn := acctest.RandStringFromCharSet(12, "abcdef0123456789")
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acceptance.TestAccPreCheck(t) },
-		ExternalProviders: acceptance.TestExternalProviders,
-		Providers:         acceptance.TestAccProviders,
-		CheckDestroy:      testAccMetalProjectCheckDestroyed,
+		PreCheck:                 func() { acceptance.TestAccPreCheck(t) },
+		ExternalProviders:        acceptance.TestExternalProviders,
+		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		CheckDestroy:             testAccMetalProjectCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccDataSourceMetalProject_byName(rn),

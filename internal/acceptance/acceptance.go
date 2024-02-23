@@ -25,7 +25,6 @@ const (
 var (
 	TestAccProvider          *schema.Provider
 	TestAccProviders         map[string]*schema.Provider
-	TestAccProviderFactories map[string]func() (*schema.Provider, error)
 	TestExternalProviders    map[string]resource.ExternalProvider
 	TestAccFrameworkProvider *provider.FrameworkProvider
 )
@@ -34,11 +33,6 @@ func init() {
 	TestAccProvider = equinix.Provider()
 	TestAccProviders = map[string]*schema.Provider{
 		"equinix": TestAccProvider,
-	}
-	TestAccProviderFactories = map[string]func() (*schema.Provider, error){
-		"equinix": func() (*schema.Provider, error) {
-			return TestAccProvider, nil
-		},
 	}
 	TestExternalProviders = map[string]resource.ExternalProvider{
 		"random": {
