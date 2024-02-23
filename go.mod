@@ -118,3 +118,5 @@ require (
 	google.golang.org/protobuf v1.32.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
+
+replace github.com/equinix/ne-go => /Users/kdhulipala/workspace/projects/terraform-kpdhulipala/ne-go
