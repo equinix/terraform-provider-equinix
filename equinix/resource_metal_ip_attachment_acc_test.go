@@ -15,10 +15,10 @@ func TestAccMetalIPAttachment_basic(t *testing.T) {
 	rs := acctest.RandString(10)
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
-		ExternalProviders: testExternalProviders,
-		Providers:         testAccProviders,
-		CheckDestroy:      testAccMetalIPAttachmentCheckDestroyed,
+		PreCheck:                 func() { testAccPreCheck(t) },
+		ExternalProviders:        testExternalProviders,
+		ProtoV5ProviderFactories: testAccProtoV5ProviderFactories,
+		CheckDestroy:             testAccMetalIPAttachmentCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccMetalIPAttachmentConfig_basic(rs),
@@ -73,10 +73,10 @@ func TestAccMetalIPAttachment_metro(t *testing.T) {
 	rs := acctest.RandString(10)
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
-		ExternalProviders: testExternalProviders,
-		Providers:         testAccProviders,
-		CheckDestroy:      testAccMetalIPAttachmentCheckDestroyed,
+		PreCheck:                 func() { testAccPreCheck(t) },
+		ExternalProviders:        testExternalProviders,
+		ProtoV5ProviderFactories: testAccProtoV5ProviderFactories,
+		CheckDestroy:             testAccMetalIPAttachmentCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccMetalIPAttachmentConfig_metro(rs),

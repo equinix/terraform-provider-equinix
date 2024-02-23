@@ -1,4 +1,4 @@
-package metal_connection
+package connection
 
 import (
 	"fmt"
@@ -21,6 +21,14 @@ var (
 		{10 * giga, "10Gbps"},
 	}
 )
+
+func allowedSpeedsString() string {
+	allowedStrings := []string{}
+	for _, allowedSpeed := range allowedSpeeds {
+		allowedStrings = append(allowedStrings, allowedSpeed.Str)
+	}
+	return strings.Join(allowedStrings, ", ")
+}
 
 func speedStrToUint(speed string) (uint64, error) {
 	allowedStrings := []string{}

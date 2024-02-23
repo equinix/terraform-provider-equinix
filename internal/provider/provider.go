@@ -6,6 +6,7 @@ import (
 	"regexp"
 
 	"github.com/equinix/terraform-provider-equinix/internal/config"
+	metalconnection "github.com/equinix/terraform-provider-equinix/internal/resources/metal/connection"
 	metalgateway "github.com/equinix/terraform-provider-equinix/internal/resources/metal/gateway"
 	metalprojectsshkey "github.com/equinix/terraform-provider-equinix/internal/resources/metal/project_ssh_key"
 	metalsshkey "github.com/equinix/terraform-provider-equinix/internal/resources/metal/ssh_key"
@@ -115,6 +116,7 @@ func (p *FrameworkProvider) Resources(ctx context.Context) []func() resource.Res
 		metalgateway.NewResource,
 		metalprojectsshkey.NewResource,
 		metalsshkey.NewResource,
+		metalconnection.NewResource,
 	}
 }
 
@@ -122,5 +124,6 @@ func (p *FrameworkProvider) DataSources(ctx context.Context) []func() datasource
 	return []func() datasource.DataSource{
 		metalgateway.NewDataSource,
 		metalprojectsshkey.NewDataSource,
+		metalconnection.NewDataSource,
 	}
 }
