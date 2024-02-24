@@ -7,7 +7,7 @@ require (
 	github.com/equinix-labs/fabric-go v0.7.1
 	github.com/equinix/ecx-go/v2 v2.3.1
 	github.com/equinix/equinix-sdk-go v0.32.0
-	github.com/equinix/ne-go v1.15.0
+	github.com/equinix/ne-go v1.16.0
 	github.com/equinix/oauth2-go v1.0.0
 	github.com/equinix/rest-go v1.3.0
 	github.com/google/uuid v1.5.0
@@ -118,5 +118,3 @@ require (
 	google.golang.org/protobuf v1.32.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
-
-replace github.com/equinix/ne-go => /Users/kdhulipala/workspace/projects/terraform-kpdhulipala/ne-go

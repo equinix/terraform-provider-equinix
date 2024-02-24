@@ -419,11 +419,12 @@ func createNetworkDeviceSchema() map[string]*schema.Schema {
 			Description:  neDeviceDescriptions["ProjectID"],
 		},
 		neDeviceSchemaNames["DiverseFromDeviceUUID"]: {
-			Type:         schema.TypeString,
-			Computed:     true,
-			Optional:     true,
-			ValidateFunc: validation.IsUUID,
-			Description:  neDeviceDescriptions["DiverseFromDeviceUUID"],
+			Type:          schema.TypeString,
+			Computed:      true,
+			Optional:      true,
+			ValidateFunc:  validation.IsUUID,
+			ConflictsWith: []string{neDeviceSchemaNames["Secondary"]},
+			Description:   neDeviceDescriptions["DiverseFromDeviceUUID"],
 		},
 		neDeviceSchemaNames["DiverseFromDeviceName"]: {
 			Type:        schema.TypeString,
@@ -922,6 +923,9 @@ func resourceNetworkDeviceCreate(ctx context.Context, d *schema.ResourceData, m 
 		return diag.Errorf("could not upload secondary device license file due to %s", err)
 	}
 	if secondary != nil {
+		if primary.DiverseFromDeviceUUID != nil {
+			return diag.Errorf("could not pass diverse_device_id in HA request")
+		}
 		primary.UUID, secondary.UUID, err = client.CreateRedundantDevice(*primary, *secondary)
 	} else {
 		primary.UUID, err = client.CreateDevice(*primary)
