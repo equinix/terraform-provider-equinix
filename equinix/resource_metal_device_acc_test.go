@@ -1117,10 +1117,10 @@ func TestAccMetalDeviceCreate_timeout(t *testing.T) {
 	project := "equinix_metal_project.test"
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
-		ExternalProviders: testExternalProviders,
-		ProviderFactories: testAccProviderFactories,
-		CheckDestroy:      testAccMetalDeviceCheckDestroyed,
+		PreCheck:                 func() { testAccPreCheck(t) },
+		ExternalProviders:        testExternalProviders,
+		ProtoV5ProviderFactories: testAccProtoV5ProviderFactories,
+		CheckDestroy:             testAccMetalDeviceCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
 				Config:      testAccMetalDeviceConfig_timeout(rs, "10s", "", ""),
@@ -1149,10 +1149,10 @@ func TestAccMetalDeviceUpdate_timeout(t *testing.T) {
 	r := "equinix_metal_device.test"
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
-		ExternalProviders: testExternalProviders,
-		ProviderFactories: testAccProviderFactories,
-		CheckDestroy:      testAccMetalDeviceCheckDestroyed,
+		PreCheck:                 func() { testAccPreCheck(t) },
+		ExternalProviders:        testExternalProviders,
+		ProtoV5ProviderFactories: testAccProtoV5ProviderFactories,
+		CheckDestroy:             testAccMetalDeviceCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccMetalDeviceConfig_timeout(rs, "", "", ""),
@@ -1174,10 +1174,10 @@ func TestAccMetalDevice_LockingAndUnlocking(t *testing.T) {
 	r := "equinix_metal_device.test"
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
-		ExternalProviders: testExternalProviders,
-		ProviderFactories: testAccProviderFactories,
-		CheckDestroy:      testAccMetalDeviceCheckDestroyed,
+		PreCheck:                 func() { testAccPreCheck(t) },
+		ExternalProviders:        testExternalProviders,
+		ProtoV5ProviderFactories: testAccProtoV5ProviderFactories,
+		CheckDestroy:             testAccMetalDeviceCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccMetalDeviceConfig_lockable(rs, true),
