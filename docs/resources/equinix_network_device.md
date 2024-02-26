@@ -302,6 +302,8 @@ leave it out, the device will be created under the default project id of your or
 * `diverse_device_id` - (Optional) Unique ID of an existing device.
 Use this field to let Equinix know if you want your new device to be in a different location from any existing virtual 
 device. This field is only meaningful for single devices.
+* `diverse_device_name` - Name of the device with diverse device uuid. This field is returned in device details if the 
+device is created by passing diverse_device_id.
 
 ### Secondary Device
 
