@@ -1051,7 +1051,7 @@ func testSweepDevices(region string) error {
 			pids = append(pids, p.GetId())
 		}
 	}
-	dids := []string{}
+
 	for _, pid := range pids {
 		ds, _, err := metal.DevicesApi.FindProjectDevices(ctx, pid).Execute()
 		if err != nil {
@@ -1059,24 +1059,41 @@ func testSweepDevices(region string) error {
 			continue
 		}
 		for _, d := range ds.Devices {
-			if isSweepableTestResource(d.GetHostname()) {
-				nonSweepableDeviceStates := []metalv1.DeviceState{
-					metalv1.DEVICESTATE_PROVISIONING,
-					metalv1.DEVICESTATE_DEPROVISIONING,
-				}
-				if slices.Contains(nonSweepableDeviceStates, d.GetState()) {
-					log.Printf("[WARNING] skipping sweep for device %s because it is still %s", d.GetId(), d.GetState())
-				} else {
-					dids = append(dids, d.GetId())
-				}
+			err := sweepDevice(ctx, metal, d)
+			if err != nil {
+				return fmt.Errorf("Error deleting device %s", err)
 			}
 		}
 	}
 
-	for _, did := range dids {
-		_, err := metal.DevicesApi.DeleteDevice(ctx, did).Execute()
-		if err != nil {
-			return fmt.Errorf("Error deleting device %s", err)
+	return nil
+}
+
+func sweepDevice(ctx context.Context, metal *metalv1.APIClient, d metalv1.Device) error {
+	if isSweepableTestResource(d.GetHostname()) {
+		nonSweepableDeviceStates := []metalv1.DeviceState{
+			metalv1.DEVICESTATE_PROVISIONING,
+			metalv1.DEVICESTATE_DEPROVISIONING,
+		}
+
+		if slices.Contains(nonSweepableDeviceStates, d.GetState()) {
+			log.Printf("[WARNING] skipping sweep for device %s because it is still %s", d.GetId(), d.GetState())
+		} else {
+			if d.GetLocked() {
+				// If a device is locked, we have to unlock it first before deleting
+				unlockDevice := metalv1.DeviceUpdateInput{
+					Locked: metalv1.PtrBool(false),
+				}
+				_, _, err := metal.DevicesApi.UpdateDevice(ctx, d.GetId()).DeviceUpdateInput(unlockDevice).Execute()
+				if err != nil {
+					return err
+				}
+			}
+
+			_, err := metal.DevicesApi.DeleteDevice(ctx, d.GetId()).Execute()
+			if err != nil {
+				return err
+			}
 		}
 	}
 	return nil
