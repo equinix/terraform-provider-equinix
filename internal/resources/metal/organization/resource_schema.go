@@ -4,6 +4,9 @@ import (
 	"context"
 
 	"github.com/equinix/terraform-provider-equinix/internal/framework"
+	fwtypes "github.com/equinix/terraform-provider-equinix/internal/framework/types"
+	equinix_validation "github.com/equinix/terraform-provider-equinix/internal/validation"
+	"github.com/hashicorp/terraform-plugin-framework-validators/listvalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
@@ -41,32 +44,41 @@ func GetResourceSchema(ctx context.Context) schema.Schema {
 			},
 		},
 		Blocks: map[string]schema.Block{
-			"address": schema.SingleNestedBlock{
+			"address": schema.ListNestedBlock{
 				Description: "Address information block",
-				Attributes: map[string]schema.Attribute{
-					"address": schema.StringAttribute{
-						Description: "Postal address",
-						Required:    true,
-					},
-					"city": schema.StringAttribute{
-						Description: "City name",
-						Required:    true,
-					},
-					"zip_code": schema.StringAttribute{
-						Description: "Zip Code",
-						Required:    true,
-					},
-					"country": schema.StringAttribute{
-						Description: "Two letter country code (ISO 3166-1 alpha-2), e.g. US",
-						Required:    true,
-						Validators: []validator.String{
-							stringvalidator.LengthBetween(0, 18),
-							stringvalidator.RegexMatches(StringToRegex("(?i)^[a-z]{2}$"), "Address country must be a two letter code (ISO 3166-1 alpha-2)"),
+				Validators: []validator.List{
+					listvalidator.IsRequired(),
+					listvalidator.SizeAtLeast(1),
+					listvalidator.SizeAtMost(1),
+				},
+				CustomType: fwtypes.NewListNestedObjectTypeOf[AddressResourceModel](ctx),
+				NestedObject: schema.NestedBlockObject{
+					Attributes: map[string]schema.Attribute{
+						"address": schema.StringAttribute{
+							Description: "Postal address",
+							Required:    true,
 						},
-					},
-					"state": schema.StringAttribute{
-						Description: "State name",
-						Optional:    true,
+						"city": schema.StringAttribute{
+							Description: "City name",
+							Required:    true,
+						},
+						"zip_code": schema.StringAttribute{
+							Description: "Zip Code",
+							Required:    true,
+						},
+						"country": schema.StringAttribute{
+							Description: "Two letter country code (ISO 3166-1 alpha-2), e.g. US",
+							Required:    true,
+							Validators: []validator.String{
+								stringvalidator.LengthBetween(0, 18),
+								equinix_validation.StringIsCountryCode,
+							},
+						},
+						"state": schema.StringAttribute{
+							Description: "State name",
+							Optional:    true,
+							Computed:    true,
+						},
 					},
 				},
 			},

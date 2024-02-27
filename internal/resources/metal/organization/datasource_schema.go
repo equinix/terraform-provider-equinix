@@ -25,7 +25,7 @@ func dataSourceSchema(ctx context.Context) schema.Schema {
 			},
 			"description": schema.StringAttribute{
 				Description: "Description string",
-				Computed:    true,
+				Optional:    true,
 			},
 			"website": schema.StringAttribute{
 				Description: "Website link",
