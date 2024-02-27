@@ -6,6 +6,7 @@ import (
 
 	equinix_errors "github.com/equinix/terraform-provider-equinix/internal/errors"
 	"github.com/equinix/terraform-provider-equinix/internal/framework"
+	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/packethost/packngo"
 )
@@ -37,54 +38,37 @@ func (r *Resource) Create(
 	req resource.CreateRequest,
 	resp *resource.CreateResponse,
 ) {
-	r.Meta.AddFwModuleToMetalUserAgent(ctx, req.ProviderMeta)
-	client := r.Meta.Metal
-
-	// Retrieve values from plan
 	var plan ResourceModel
-	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
+	diags := req.Plan.Get(ctx, &plan)
+	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	addressresourcemodel := make([]AddressResourceModel, 1)
-	if diags := plan.address.ElementsAs(ctx, &addressresourcemodel, false); diags != nil {
-		resp.Diagnostics.AddError(
-			"Failed to extract resource data",
-			"Unable to process resource data",
-		)
-		return
-	}
-	address := packngo.Address{}
-	if !addressresourcemodel[0].address.IsNull() {
-		address.Address = addressresourcemodel[0].address.ValueString()
-	}
+	// Retrieve the API client from the provider metadata
+	r.Meta.AddFwModuleToMetalUserAgent(ctx, req.ProviderMeta)
+	client := r.Meta.Metal
 
-	if !addressresourcemodel[0].city.IsNull() {
-		address.City = addressresourcemodel[0].city.ValueStringPointer()
-	}
-
-	if !addressresourcemodel[0].state.IsNull() {
-		address.State = addressresourcemodel[0].state.ValueStringPointer()
-	}
-
-	if !addressresourcemodel[0].zipCode.IsNull() {
-		address.ZipCode = addressresourcemodel[0].zipCode.ValueString()
-	}
-
-	if !addressresourcemodel[0].country.IsNull() {
-		address.Country = addressresourcemodel[0].country.ValueString()
-	}
 	// Generate API request body from plan
-	createRequest := &packngo.OrganizationCreateRequest{
-		Name:    plan.name.ValueString(),
-		Address: address,
+	addressresourcemodel, _ := plan.Address.ToSlice(ctx)
+	address := packngo.Address{
+		Address: addressresourcemodel[0].Address.ValueString(),
+		City:    addressresourcemodel[0].City.ValueStringPointer(),
+		ZipCode: addressresourcemodel[0].ZipCode.ValueString(),
+		Country: addressresourcemodel[0].Country.ValueString(),
+	}
+	if !addressresourcemodel[0].State.IsNull() {
+		address.State = addressresourcemodel[0].State.ValueStringPointer()
 	}
 
-	createRequest.Website = plan.website.ValueString()
-	createRequest.Description = plan.description.ValueString()
-	createRequest.Twitter = plan.twitter.ValueString()
-	createRequest.Logo = plan.logo.ValueString()
+	createRequest := &packngo.OrganizationCreateRequest{
+		Name:        plan.Name.ValueString(),
+		Website:     plan.Website.ValueString(),
+		Description: plan.Description.ValueString(),
+		Twitter:     plan.Twitter.ValueString(),
+		Logo:        plan.Logo.ValueString(),
+		Address:     address,
+	}
 
 	org, _, err := client.Organizations.Create(createRequest)
 	if err != nil {
@@ -95,8 +79,16 @@ func (r *Resource) Create(
 		return
 	}
 
-	// Parse API response into the Terraform state
-	plan.parse(ctx, org)
+	// API call to get the Metal Organization
+	diags, err = getOrganizationAndParse(ctx, client, &plan, org.ID)
+	resp.Diagnostics.Append(diags...)
+	if err != nil {
+		resp.Diagnostics.AddError(
+			"Error reading Metal Organization",
+			"Could not read Metal Organization with ID "+org.ID+": "+err.Error(),
+		)
+		return
+	}
 
 	// Set state to fully populated data
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
@@ -107,21 +99,23 @@ func (r *Resource) Read(
 	req resource.ReadRequest,
 	resp *resource.ReadResponse,
 ) {
-	// Retrieve the API client from the provider metadata
-	r.Meta.AddFwModuleToMetalUserAgent(ctx, req.ProviderMeta)
-	client := r.Meta.Metal
-
-	// Retrieve values from state
 	var state ResourceModel
-	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
+	diags := req.State.Get(ctx, &state)
+	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	// // Extract the ID of the resource from the state
-	id := state.id.ValueString()
+	// Retrieve the API client from the provider metadata
+	r.Meta.AddFwModuleToMetalUserAgent(ctx, req.ProviderMeta)
+	client := r.Meta.Metal
 
-	org, _, err := client.Organizations.Get(id, &packngo.GetOptions{Includes: []string{"address"}})
+	// // Extract the ID of the resource from the state
+	id := state.ID.ValueString()
+
+	// API call to get the Metal Organization
+	diags, err := getOrganizationAndParse(ctx, client, &state, id)
+	resp.Diagnostics.Append(diags...)
 	if err != nil {
 		err = equinix_errors.FriendlyError(err)
 
@@ -129,20 +123,17 @@ func (r *Resource) Read(
 		// succesfully gone
 		if equinix_errors.IsNotFound(err) {
 			resp.Diagnostics.AddWarning(
-				"Equinix Metal Organizations not found during refresh",
+				"Equinix Metal Organization not found during refresh",
 				fmt.Sprintf("[WARN] Organization (%s) not found, removing from state", id),
 			)
 			resp.State.RemoveResource(ctx)
 			return
 		}
 		resp.Diagnostics.AddError(
-			fmt.Sprintf("Failed to get Organization %s", id),
-			err.Error(),
+			"Error updating resource",
+			"Could not read Metal Organization with ID "+id+": "+err.Error(),
 		)
 	}
-
-	// Set state to fully populated data
-	state.parse(ctx, org)
 
 	// Update the Terraform state
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
@@ -165,28 +156,31 @@ func (r *Resource) Update(
 	}
 
 	// Extract the ID of the resource from the state
-	id := plan.id.ValueString()
+	id := plan.ID.ValueString()
 
 	updateRequest := &packngo.OrganizationUpdateRequest{}
-	if !state.name.Equal(plan.name) {
-		updateRequest.Name = plan.name.ValueStringPointer()
+
+	if !state.Name.Equal(plan.Name) {
+		updateRequest.Name = plan.Name.ValueStringPointer()
 
 	}
-	if !state.description.Equal(plan.description) {
-		updateRequest.Description = plan.description.ValueStringPointer()
+	if !state.Description.Equal(plan.Description) {
+		updateRequest.Description = plan.Description.ValueStringPointer()
 	}
-	if !state.website.Equal(plan.website) {
-		updateRequest.Website = plan.website.ValueStringPointer()
-	}
-
-	if !state.twitter.Equal(plan.twitter) {
-		updateRequest.Twitter = plan.twitter.ValueStringPointer()
+	if !state.Website.Equal(plan.Website) {
+		updateRequest.Website = plan.Website.ValueStringPointer()
 	}
 
-	if !state.address.Equal(plan.address) {
+	if !state.Twitter.Equal(plan.Twitter) {
+		updateRequest.Twitter = plan.Twitter.ValueStringPointer()
+	}
 
+	// Ensure updateRequest.Address is initialized
+	updateRequest.Address = &packngo.Address{}
+
+	if !state.Address.Equal(plan.Address) {
 		addressresourcemodel := make([]AddressResourceModel, 1)
-		if diags := plan.address.ElementsAs(ctx, &addressresourcemodel, false); diags != nil {
+		if diags := plan.Address.ElementsAs(ctx, &addressresourcemodel, false); diags != nil {
 			resp.Diagnostics.AddError(
 				"Failed to extract resource data",
 				"Unable to process resource data",
@@ -194,26 +188,49 @@ func (r *Resource) Update(
 			return
 		}
 
-		updateRequest.Address.Address = addressresourcemodel[0].address.ValueString()
-		updateRequest.Address.City = addressresourcemodel[0].city.ValueStringPointer()
-		updateRequest.Address.State = addressresourcemodel[0].state.ValueStringPointer()
-		updateRequest.Address.ZipCode = addressresourcemodel[0].zipCode.ValueString()
-		updateRequest.Address.Country = addressresourcemodel[0].country.ValueString()
+		if !addressresourcemodel[0].Address.IsNull() {
+			updateRequest.Address.Address = *addressresourcemodel[0].Address.ValueStringPointer()
+		}
+
+		if !addressresourcemodel[0].City.IsNull() {
+			updateRequest.Address.City = addressresourcemodel[0].City.ValueStringPointer()
+		}
+
+		if !addressresourcemodel[0].State.IsNull() {
+			updateRequest.Address.State = addressresourcemodel[0].State.ValueStringPointer()
+		}
+
+		if !addressresourcemodel[0].ZipCode.IsNull() {
+			updateRequest.Address.ZipCode = addressresourcemodel[0].ZipCode.ValueString()
+		}
+
+		if !addressresourcemodel[0].Country.IsNull() {
+			updateRequest.Address.Country = addressresourcemodel[0].Country.ValueString()
+		}
 	}
 
 	// Update the resource
-	org, _, err := client.Organizations.Update(id, updateRequest)
+	_, _, err := client.Organizations.Update(id, updateRequest)
 	if err != nil {
 		err = equinix_errors.FriendlyError(err)
 		resp.Diagnostics.AddError(
 			"Error updating resource",
-			"Could not update resource with ID "+id+": "+err.Error(),
+			"Could not update Metal Organization with ID "+id+": "+err.Error(),
 		)
 		return
 	}
 
-	// Set state to fully populated data
-	plan.parse(ctx, org)
+	// API call to get the Metal Organization
+	diags, err := getOrganizationAndParse(ctx, client, &plan, id)
+	resp.Diagnostics.Append(diags...)
+	if err != nil {
+		err = equinix_errors.FriendlyError(err)
+		resp.Diagnostics.AddError(
+			"Error updating resource",
+			"Could not read Metal Organization with ID "+id+": "+err.Error(),
+		)
+		return
+	}
 
 	// Read the updated state back into Terraform state
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
@@ -235,7 +252,7 @@ func (r *Resource) Delete(
 	}
 
 	// Extract the ID of the resource from the state
-	id := state.id.ValueString()
+	id := state.ID.ValueString()
 
 	// Use API client to delete the resource
 	deleteResp, err := client.Organizations.Delete(id)
@@ -246,4 +263,20 @@ func (r *Resource) Delete(
 			err.Error(),
 		)
 	}
+}
+
+func getOrganizationAndParse(ctx context.Context, client *packngo.Client, state *ResourceModel, id string) (diags diag.Diagnostics, err error) {
+	// API call to get the Metal Organization
+	includes := &packngo.GetOptions{Includes: []string{"address"}}
+	org, _, err := client.Organizations.Get(id, includes)
+	if err != nil {
+		return diags, equinix_errors.FriendlyError(err)
+	}
+	// Parse the API response into the Terraform state
+	diags = state.parse(ctx, org)
+	if diags.HasError() {
+		return diags, fmt.Errorf("error parsing Metal Organization response")
+	}
+
+	return diags, nil
 }

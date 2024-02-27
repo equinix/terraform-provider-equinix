@@ -14,8 +14,7 @@ func TestAccDataSourceOrganizations_basic(t *testing.T) {
 	var org packngo.Organization
 	rInt := acctest.RandInt()
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { acceptance.TestAccPreCheck(t) },
-		ExternalProviders:        acceptance.TestExternalProviders,
+		PreCheck:                 func() { acceptance.TestAccPreCheckMetal(t); acceptance.TestAccPreCheckProviderConfigured(t) },
 		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
 		CheckDestroy:             testAccMetalOrganizationCheckDestroyed,
 		Steps: []resource.TestStep{
@@ -58,13 +57,16 @@ func testAccDataSourceMetalOrganizationConfig_basic(r int) string {
 resource "equinix_metal_organization" "test" {
 	name = "tfacc-datasource-org-%d"
 	description = "quux"
-	address  {
+	address {
 		address = "tfacc org street"
 		city = "london"
 		zip_code = "12345"
 		country = "GB"
-		state   = "Madrid"
 	}
+}
+
+data "equinix_metal_organization" "test" {
+  organization_id = equinix_metal_organization.test.id
 }
 `, r)
 }

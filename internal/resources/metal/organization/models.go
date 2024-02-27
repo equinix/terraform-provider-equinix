@@ -2,80 +2,72 @@ package organization
 
 import (
 	"context"
-	"fmt"
-	"regexp"
 
 	fwtypes "github.com/equinix/terraform-provider-equinix/internal/framework/types"
+	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/packethost/packngo"
 )
 
 type AddressResourceModel struct {
-	address types.String  `tfsdk:"address"`
-	city    *types.String `tfsdk:"city"`
-	country types.String  `tfsdk:"country"`
-	state   *types.String `tfsdk:"state"`
-	zipCode types.String  `tfsdk:"zip_code"`
+	Address types.String `tfsdk:"address"`
+	City    types.String `tfsdk:"city"`
+	Country types.String `tfsdk:"country"`
+	State   types.String `tfsdk:"state"`
+	ZipCode types.String `tfsdk:"zip_code"`
 }
 
 type ResourceModel struct {
-	id          types.String                                          `tfsdk:"id"`
-	name        types.String                                          `tfsdk:"name"`
-	description types.String                                          `tfsdk:"description"`
-	website     types.String                                          `tfsdk:"website"`
-	twitter     types.String                                          `tfsdk:"twitter"`
-	logo        types.String                                          `tfsdk:"logo"`
-	created     types.String                                          `tfsdk:"created"`
-	updated     types.String                                          `tfsdk:"updated"`
-	address     fwtypes.ListNestedObjectValueOf[AddressResourceModel] `tfsdk:"address"` // List of Address
+	ID          types.String                                          `tfsdk:"id"`
+	Name        types.String                                          `tfsdk:"name"`
+	Description types.String                                          `tfsdk:"description"`
+	Website     types.String                                          `tfsdk:"website"`
+	Twitter     types.String                                          `tfsdk:"twitter"`
+	Logo        types.String                                          `tfsdk:"logo"`
+	Created     types.String                                          `tfsdk:"created"`
+	Updated     types.String                                          `tfsdk:"updated"`
+	Address     fwtypes.ListNestedObjectValueOf[AddressResourceModel] `tfsdk:"address"`
 }
 
 func (m *ResourceModel) parse(ctx context.Context, org *packngo.Organization) diag.Diagnostics {
-	m.id = types.StringValue(org.ID)
-	m.name = types.StringValue(org.Name)
-	m.description = types.StringValue(org.Description)
-	m.website = types.StringValue(org.Website)
-	m.twitter = types.StringValue(org.Twitter)
-	m.logo = types.StringValue(org.Logo)
-	m.created = types.StringValue(org.Created)
-	m.updated = types.StringValue(org.Updated)
+	m.ID = types.StringValue(org.ID)
+	m.Name = types.StringValue(org.Name)
+	m.Description = ignoreEmptyString(m.Description, org.Description)
+	m.Website = ignoreEmptyString(m.Website, org.Website)
+	m.Twitter = ignoreEmptyString(m.Twitter, org.Twitter)
+	m.Logo = ignoreEmptyString(m.Logo, org.Logo)
+	m.Created = types.StringValue(org.Created)
+	m.Updated = types.StringValue(org.Updated)
 
-	var addressResModels []AddressResourceModel
-	city := types.StringValue(*org.Address.City)
-	state := types.StringValue(*org.Address.State)
-	addressResModels = append(addressResModels, AddressResourceModel{
-		address: types.StringValue(org.Address.Address),
-		city:    &city,
-		country: types.StringValue(org.Address.Country),
-		state:   &state,
-		zipCode: types.StringValue(org.Address.ZipCode),
-	})
-	m.address = fwtypes.NewListNestedObjectValueOfValueSlice(ctx, addressResModels)
+	m.Address = parseAddress(ctx, org.Address)
+
 	return nil
 }
 
 type DataSourceModel struct {
-	id              types.String                                          `tfsdk:"id"`
-	name            types.String                                          `tfsdk:"name"`
-	organization_id types.String                                          `tfsdk:"organization_id"`
-	description     types.String                                          `tfsdk:"description"`
-	website         types.String                                          `tfsdk:"website"`
-	twitter         types.String                                          `tfsdk:"twitter"`
-	logo            types.String                                          `tfsdk:"logo"`
-	project_ids     []types.List                                          `tfsdk:"project_ids"`
-	address         fwtypes.ListNestedObjectValueOf[AddressResourceModel] `tfsdk:"address"` // List of Address
+	ID             types.String                                          `tfsdk:"id"`
+	Name           types.String                                          `tfsdk:"name"`
+	OrganizationID types.String                                          `tfsdk:"organization_id"`
+	Description    types.String                                          `tfsdk:"description"`
+	Website        types.String                                          `tfsdk:"website"`
+	Twitter        types.String                                          `tfsdk:"twitter"`
+	Logo           types.String                                          `tfsdk:"logo"`
+	ProjectIDs     []types.List                                          `tfsdk:"project_ids"`
+	Address        fwtypes.ListNestedObjectValueOf[AddressResourceModel] `tfsdk:"address"` // List of Address
 }
 
 func (m *DataSourceModel) parse(ctx context.Context, org *packngo.Organization) diag.Diagnostics {
 	var diags diag.Diagnostics
-	m.id = types.StringValue(org.ID)
-	m.name = types.StringValue(org.Name)
-	m.organization_id = types.StringValue(org.ID)
-	m.description = types.StringValue(org.Description)
-	m.website = types.StringValue(org.Website)
-	m.twitter = types.StringValue(org.Twitter)
+	// Convert Metal Organization data to the Terraform state
+	m.ID = types.StringValue(org.ID)
+	m.Name = types.StringValue(org.Name)
+	m.OrganizationID = types.StringValue(org.ID)
+	m.Description = ignoreEmptyString(m.Description, org.Description)
+	m.Website = types.StringValue(org.Website)
+	m.Twitter = types.StringValue(org.Twitter)
+	m.Logo = types.StringValue(org.Logo)
+	m.Address = parseAddress(ctx, org.Address)
 
 	projects := make([]string, len(org.Projects))
 	pList := make([]basetypes.ListValue, len(org.Projects))
@@ -83,36 +75,28 @@ func (m *DataSourceModel) parse(ctx context.Context, org *packngo.Organization) 
 		projects[i] = p.ID
 		projList, _ := types.ListValueFrom(ctx, types.StringType, p.ID)
 		pList = append(pList, projList)
-
 	}
-
-	m.project_ids = pList
-
-	m.logo = types.StringValue(org.Logo)
-
-	addressresourcemodel := make([]AddressResourceModel, 1)
-
-	cityValue := types.StringValue(*org.Address.City)
-	stateValue := types.StringValue(*org.Address.State)
-	arm := AddressResourceModel{
-		address: types.StringValue(org.Address.Address),
-		city:    &cityValue,
-		country: types.StringValue(org.Address.Country),
-		state:   &stateValue,
-		zipCode: types.StringValue(org.Address.ZipCode),
-	}
-	addressresourcemodel[0] = arm
-	m.address = fwtypes.NewListNestedObjectValueOfValueSlice(ctx, addressresourcemodel)
+	m.ProjectIDs = pList
 
 	return diags
 }
 
-func StringToRegex(pattern string) (regExp *regexp.Regexp) {
-	regExp, err := regexp.Compile(pattern)
-	if err != nil {
-		fmt.Println("Error compiling regex:", err)
-		return
+func parseAddress(ctx context.Context, addr packngo.Address) fwtypes.ListNestedObjectValueOf[AddressResourceModel] {
+	addressresourcemodel := make([]AddressResourceModel, 1)
+	addressresourcemodel[0] = AddressResourceModel{
+		Address: types.StringValue(addr.Address),
+		City:    types.StringPointerValue(addr.City),
+		Country: types.StringValue(addr.Country),
+		State:   types.StringPointerValue(addr.State),
+		ZipCode: types.StringValue(addr.ZipCode),
 	}
+	return fwtypes.NewListNestedObjectValueOfValueSlice(ctx, addressresourcemodel)
+}
 
-	return regExp
+func ignoreEmptyString(original basetypes.StringValue, updated string) basetypes.StringValue {
+	if original.IsNull() && updated == "" {
+		return types.StringNull()
+	} else {
+		return types.StringValue(updated)
+	}
 }

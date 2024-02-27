@@ -10,6 +10,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/plancheck"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	"github.com/packethost/packngo"
 )
@@ -19,8 +20,7 @@ func TestAccMetalOrganization_create(t *testing.T) {
 	rInt := acctest.RandInt()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { acceptance.TestAccPreCheckMetal(t) },
-		ExternalProviders:        acceptance.TestExternalProviders,
+		PreCheck:                 func() { acceptance.TestAccPreCheckMetal(t); acceptance.TestAccPreCheckProviderConfigured(t) },
 		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
 		CheckDestroy:             testAccMetalOrganizationCheckDestroyed,
 		Steps: []resource.TestStep{
@@ -62,6 +62,68 @@ func TestAccMetalOrganization_create(t *testing.T) {
 	})
 }
 
+func TestAccMetalOrganization_importBasic(t *testing.T) {
+	rInt := acctest.RandInt()
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:                 func() { acceptance.TestAccPreCheckMetal(t); acceptance.TestAccPreCheckProviderConfigured(t) },
+		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		CheckDestroy:             testAccMetalOrganizationCheckDestroyed,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccMetalOrganizationConfig_basic(rInt),
+			},
+			{
+				ResourceName:      "equinix_metal_organization.test",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+		},
+	})
+}
+
+// Test to verify that switching from SDKv2 to the Framework has not affected provider's behavior
+func TestAccMetalOrganization_upgradeFromVersion(t *testing.T) {
+	var org packngo.Organization
+	rInt := acctest.RandInt()
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:     func() { acceptance.TestAccPreCheckMetal(t); acceptance.TestAccPreCheckProviderConfigured(t) },
+		CheckDestroy: testAccMetalOrganizationCheckDestroyed,
+		Steps: []resource.TestStep{
+			{
+				ExternalProviders: map[string]resource.ExternalProvider{
+					"equinix": {
+						VersionConstraint: "1.29.0", // latest version with resource defined on SDKv2
+						Source:            "equinix/equinix",
+					},
+				},
+				Config: testAccMetalOrganizationConfig_basic(rInt),
+				Check: resource.ComposeTestCheckFunc(
+					testAccMetalOrganizationExists("equinix_metal_organization.test", &org),
+					resource.TestCheckResourceAttr(
+						"equinix_metal_organization.test", "name", fmt.Sprintf("tfacc-org-%d", rInt)),
+					resource.TestCheckResourceAttr(
+						"equinix_metal_organization.test", "description", "quux"),
+					resource.TestCheckResourceAttr(
+						"equinix_metal_organization.test", "address.0.city", "London"),
+					resource.TestCheckResourceAttr(
+						"equinix_metal_organization.test", "address.0.state", ""),
+					resource.TestCheckResourceAttr(
+						"equinix_metal_organization.test", "address.0.zip_code", "12345"),
+				),
+			},
+			{
+				ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+				Config:                   testAccMetalOrganizationConfig_basic(rInt),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectEmptyPlan(),
+					},
+				},
+			},
+		},
+	})
+}
+
 func testAccMetalSameOrganization(t *testing.T, before, after *packngo.Organization) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		if before.ID != after.ID {
@@ -77,26 +139,6 @@ func testAccMetalWaitForOrganization() {
 	// create causes test failures and probably doesn't
 	// reflect real-world usage.
 	time.Sleep(5 * time.Minute)
-}
-
-func TestAccMetalOrganization_importBasic(t *testing.T) {
-	rInt := acctest.RandInt()
-	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acceptance.TestAccPreCheckMetal(t) },
-		ExternalProviders: acceptance.TestExternalProviders,
-		Providers:         acceptance.TestAccProviders,
-		CheckDestroy:      testAccMetalOrganizationCheckDestroyed,
-		Steps: []resource.TestStep{
-			{
-				Config: testAccMetalOrganizationConfig_basic(rInt),
-			},
-			{
-				ResourceName:      "equinix_metal_organization.test",
-				ImportState:       true,
-				ImportStateVerify: true,
-			},
-		},
-	})
 }
 
 func testAccMetalOrganizationCheckDestroyed(s *terraform.State) error {
@@ -159,13 +201,13 @@ func testAccMetalOrganizationConfig_basicUpdate(r int) string {
 resource "equinix_metal_organization" "test" {
 	name = "tfacc-org-%d"
 	description = "baz"
-	address = [
+	address {
 		address = "tfacc org street"
 		city = "Madrid"
 		zip_code = "28108"
 		country = "ES"
 		state   = "Madrid"
-	]
+	}
 	twitter = "@Equinix"
 }`, r)
 }

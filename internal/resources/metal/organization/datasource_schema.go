@@ -5,23 +5,33 @@ import (
 
 	"github.com/equinix/terraform-provider-equinix/internal/framework"
 	fwtypes "github.com/equinix/terraform-provider-equinix/internal/framework/types"
+	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/path"
+	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
 func dataSourceSchema(ctx context.Context) schema.Schema {
 	return schema.Schema{
 		Attributes: map[string]schema.Attribute{
+
 			"id": framework.IDAttributeDefaultDescription(),
 			"name": schema.StringAttribute{
 				Description: "The name of the Organization",
 				Optional:    true,
 				Computed:    true,
+				Validators: []validator.String{
+					stringvalidator.ExactlyOneOf(path.MatchRoot("organization_id"), path.MatchRoot("name")),
+				},
 			},
 			"organization_id": schema.StringAttribute{
 				Description: "The UUID of the organization resource",
 				Optional:    true,
 				Computed:    true,
+				Validators: []validator.String{
+					stringvalidator.ExactlyOneOf(path.MatchRoot("organization_id"), path.MatchRoot("name")),
+				},
 			},
 			"description": schema.StringAttribute{
 				Description: "Description string",

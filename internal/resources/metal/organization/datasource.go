@@ -14,7 +14,7 @@ func NewDataSource() datasource.DataSource {
 	return &DataSource{
 		BaseDataSource: framework.NewBaseDataSource(
 			framework.BaseDataSourceConfig{
-				Name: "equinix_metal_organizations",
+				Name: "equinix_metal_organization",
 			},
 		),
 	}
@@ -48,22 +48,46 @@ func (r *DataSource) Read(
 	}
 
 	// Extract the ID of the resource from the state
-	id := data.organization_id.ValueString()
+	orgId := data.OrganizationID
+	name := data.Name
 
-	var org *packngo.Organization
+	var (
+		orgOk *packngo.Organization
+	)
 
-	// orgs, _, err := client.Organizations.List(&packngo.GetOptions{Includes: []string{"address"}})
-	org, _, err := client.Organizations.Get(id, &packngo.GetOptions{Includes: []string{"address"}})
-	if err != nil {
-		err = equinix_errors.FriendlyError(err)
-		resp.Diagnostics.AddError(
-			"Error listing Organizations",
-			err.Error(),
-		)
-		return
+	if !name.IsNull() {
+		orgList, _, err := client.Organizations.List(&packngo.GetOptions{Includes: []string{"address"}})
+		if err != nil {
+			err = equinix_errors.FriendlyError(err)
+			resp.Diagnostics.AddError(
+				"Error listing Organizations",
+				err.Error(),
+			)
+			return
+		}
+		orgOk, err = findOrgByName(orgList, name.ValueString())
+		if err != nil {
+			resp.Diagnostics.AddError(
+				"Error listing organizations ", fmt.Errorf("organizations was not found").Error(),
+			)
+			return
+		}
+
+	} else {
+		orgID := orgId.ValueString()
+		org, _, err := client.Organizations.Get(orgID, &packngo.GetOptions{Includes: []string{"address"}})
+		if err != nil {
+			err = equinix_errors.FriendlyError(err)
+			resp.Diagnostics.AddError(
+				"Error getting Organization",
+				err.Error(),
+			)
+			return
+		}
+		orgOk = org
 	}
 
-	if org.ID == "" {
+	if orgOk.ID == "" {
 		// Not Found
 		resp.Diagnostics.AddError(
 			"Error listing organizations ", fmt.Errorf("organizations was not found").Error(),
@@ -72,8 +96,24 @@ func (r *DataSource) Read(
 	}
 
 	// Set state to fully populated data
-	data.parse(ctx, org)
+	data.parse(ctx, orgOk)
 
 	// Update the Terraform state
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
+}
+
+func findOrgByName(os []packngo.Organization, name string) (*packngo.Organization, error) {
+	results := make([]packngo.Organization, 0)
+	for _, o := range os {
+		if o.Name == name {
+			results = append(results, o)
+		}
+	}
+	if len(results) == 1 {
+		return &results[0], nil
+	}
+	if len(results) == 0 {
+		return nil, fmt.Errorf("no organization found with name %s", name)
+	}
+	return nil, fmt.Errorf("too many organizations found with name %s (found %d, expected 1)", name, len(results))
 }
