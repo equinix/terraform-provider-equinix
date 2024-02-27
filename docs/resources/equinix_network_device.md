@@ -411,7 +411,6 @@ for more details.
 * `zone_code` - Device location zone code.
 * `cluster_id` - The ID of the cluster.
 * `num_of_nodes` - The number of nodes in the cluster.
-* `diverse_device_id` - diverse device UUID
 * `diverse_device_name` - Name of the device with diverse device UUID. This field is returned in device details if the
 device is created by passing diverse_device_id.
 
