@@ -429,7 +429,6 @@ func createNetworkDeviceSchema() map[string]*schema.Schema {
 		neDeviceSchemaNames["DiverseFromDeviceName"]: {
 			Type:        schema.TypeString,
 			Computed:    true,
-			Optional:    true,
 			Description: neDeviceDescriptions["DiverseFromDeviceName"],
 		},
 		neDeviceSchemaNames["AdditionalBandwidth"]: {
@@ -1082,9 +1081,6 @@ func createNetworkDevices(d *schema.ResourceData) (*ne.Device, *ne.Device) {
 	}
 	if v, ok := d.GetOk(neDeviceSchemaNames["DiverseFromDeviceUUID"]); ok {
 		primary.DiverseFromDeviceUUID = ne.String(v.(string))
-	}
-	if v, ok := d.GetOk(neDeviceSchemaNames["DiverseFromDeviceName"]); ok {
-		primary.DiverseFromDeviceName = ne.String(v.(string))
 	}
 	if v, ok := d.GetOk(neDeviceSchemaNames["Throughput"]); ok {
 		primary.Throughput = ne.Int(v.(int))

@@ -76,7 +76,6 @@ func TestNetworkDevice_createFromResourceData(t *testing.T) {
 		neDeviceSchemaNames["IsSelfManaged"]:         ne.BoolValue(expectedPrimary.IsSelfManaged),
 		neDeviceSchemaNames["ProjectID"]:             ne.StringValue(expectedPrimary.ProjectID),
 		neDeviceSchemaNames["DiverseFromDeviceUUID"]: ne.StringValue(expectedPrimary.DiverseFromDeviceUUID),
-		neDeviceSchemaNames["DiverseFromDeviceName"]: ne.StringValue(expectedPrimary.DiverseFromDeviceName),
 	}
 	d := schema.TestResourceDataRaw(t, createNetworkDeviceSchema(), rawData)
 	d.Set(neDeviceSchemaNames["Notifications"], expectedPrimary.Notifications)

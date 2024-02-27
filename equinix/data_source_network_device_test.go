@@ -57,3 +57,27 @@ func TestGetDeviceStatusList(t *testing.T) {
 	input = "provisioning, provisioned,somethingInvalid " // error on invalid entries
 	test(input, nil, true)
 }
+
+func TestStringIsValidDeviceStateList(t *testing.T) {
+	test := func(input string, expected bool, expectError bool) {
+		result, err := stringIsValidDeviceStateList(input, input)
+		if err != nil {
+			if expectError {
+				return // got an expected error, so good
+			}
+			t.Errorf("got unexpected error: { %v } with input: %v", err, input)
+			return
+		}
+
+		if expectError {
+			t.Errorf("did not receive expected error with input: %v", input)
+			return
+		}
+
+		if (result == nil) != expected {
+			t.Errorf("bad %v !=  %v", result, expected)
+		}
+	}
+	test("initialized", false, true)
+	test("initializing", true, false)
+}
