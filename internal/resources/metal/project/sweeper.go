@@ -5,18 +5,20 @@ import (
 	"log"
 
 	"github.com/equinix/terraform-provider-equinix/internal/sweep"
+	"github.com/hashicorp/go-multierror"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
 
 func AddTestSweeper() {
 	resource.AddTestSweepers("equinix_metal_project", &resource.Sweeper{
 		Name:         "equinix_metal_project",
-		Dependencies: []string{"equinix_metal_vlan"},
+		Dependencies: []string{"equinix_metal_device", "equinix_metal_vlan"},
 		F:            testSweepProjects,
 	})
 }
 
 func testSweepProjects(region string) error {
+	var errs error
 	log.Printf("[DEBUG] Sweeping projects")
 	config, err := sweep.GetConfigForMetal()
 	if err != nil {
@@ -37,8 +39,8 @@ func testSweepProjects(region string) error {
 		log.Printf("Removing project %s", pid)
 		_, err := metal.Projects.Delete(pid)
 		if err != nil {
-			return fmt.Errorf("Error deleting project %s", err)
+			errs = multierror.Append(errs, fmt.Errorf("Error deleting project %s", err))
 		}
 	}
-	return nil
+	return errs
 }

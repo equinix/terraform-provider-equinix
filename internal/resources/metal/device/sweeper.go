@@ -7,6 +7,7 @@ import (
 
 	"github.com/equinix/equinix-sdk-go/services/metalv1"
 	"github.com/equinix/terraform-provider-equinix/internal/sweep"
+	"github.com/hashicorp/go-multierror"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"golang.org/x/exp/slices"
 )
@@ -19,6 +20,7 @@ func AddTestSweeper() {
 }
 
 func testSweepDevices(region string) error {
+	var errs error
 	log.Printf("[DEBUG] Sweeping devices")
 	ctx := context.Background()
 	config, err := sweep.GetConfigForMetal()
@@ -26,7 +28,7 @@ func testSweepDevices(region string) error {
 		return fmt.Errorf("[INFO][SWEEPER_LOG] Error getting configuration for sweeping devices: %s", err)
 	}
 	metal := config.NewMetalClientForTesting()
-	ps, _, err := metal.ProjectsApi.FindProjects(ctx).Execute()
+	ps, err := metal.ProjectsApi.FindProjects(ctx).ExecuteWithPagination()
 	if err != nil {
 		return fmt.Errorf("[INFO][SWEEPER_LOG] Error getting project list for sweepeing devices: %s", err)
 	}
@@ -46,12 +48,12 @@ func testSweepDevices(region string) error {
 		for _, d := range ds.Devices {
 			err := sweepDevice(ctx, metal, d)
 			if err != nil {
-				return fmt.Errorf("Error deleting device %s", err)
+				errs = multierror.Append(errs, fmt.Errorf("Error deleting device %s", err))
 			}
 		}
 	}
 
-	return nil
+	return errs
 }
 
 func sweepDevice(ctx context.Context, metal *metalv1.APIClient, d metalv1.Device) error {
