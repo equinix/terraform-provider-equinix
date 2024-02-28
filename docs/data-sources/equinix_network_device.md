@@ -75,3 +75,5 @@ primary or secondary
 * `cluster_id` - The id of the cluster
 * `num_of_nodes` - The number of nodes in the cluster
 * `connectivity` - Device accessibility (INTERNET-ACCESS or PRIVATE or INTERNET-ACCESS-WITH-PRVT-MGMT)
+* `diverse_device_id` - diverse device uuid
+* `diverse_device_name` - Name of the device with diverse device UUID

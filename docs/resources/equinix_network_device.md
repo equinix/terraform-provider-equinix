@@ -195,6 +195,7 @@ resource "equinix_network_device" "vsrx-single" {
   term_length     = 12
   additional_bandwidth = 5
   project_id      = "a86d7112-d740-4758-9c9c-31e66373746b"
+  diverse_device_id = "ed7891bd-15b4-4f72-ac56-d96cfdacddcc"
   ssh_key {
     username = "test-username"
     key_name = "valid-key-name"
@@ -298,6 +299,9 @@ device configurations. See [Secondary Device](#secondary-device) below for more 
 If not specified, default will be INTERNET-ACCESS
 * `project_id` - (Optional) Unique Identifier for the project resource where the device is scoped to.If you
 leave it out, the device will be created under the default project id of your organization.
+* `diverse_device_id` - (Optional) Unique ID of an existing device.
+Use this field to let Equinix know if you want your new device to be in a different location from any existing virtual 
+device. This field is only meaningful for single devices.
 
 ### Secondary Device
 
@@ -407,6 +411,8 @@ for more details.
 * `zone_code` - Device location zone code.
 * `cluster_id` - The ID of the cluster.
 * `num_of_nodes` - The number of nodes in the cluster.
+* `diverse_device_name` - Name of the device with diverse device UUID. This field is returned in device details if the
+device is created by passing diverse_device_id.
 
 ### Interface Attribute
 
