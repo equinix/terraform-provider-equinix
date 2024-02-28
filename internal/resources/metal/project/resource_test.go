@@ -3,7 +3,6 @@ package project_test
 import (
 	"context"
 	"fmt"
-	"log"
 	"net/http"
 	"net/http/httptest"
 	"regexp"
@@ -20,41 +19,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	"github.com/packethost/packngo"
 )
-
-func init() {
-	resource.AddTestSweepers("equinix_metal_project", &resource.Sweeper{
-		Name:         "equinix_metal_project",
-		Dependencies: []string{"equinix_metal_vlan"},
-		F:            testSweepProjects,
-	})
-}
-
-func testSweepProjects(region string) error {
-	log.Printf("[DEBUG] Sweeping projects")
-	config, err := acceptance.GetConfigForNonStandardMetalTest()
-	if err != nil {
-		return fmt.Errorf("[INFO][SWEEPER_LOG] Error getting configuration for sweeping projects: %s", err)
-	}
-	metal := config.NewMetalClient()
-	ps, _, err := metal.Projects.List(nil)
-	if err != nil {
-		return fmt.Errorf("[INFO][SWEEPER_LOG] Error getting project list for sweeping projects: %s", err)
-	}
-	pids := []string{}
-	for _, p := range ps {
-		if acceptance.IsSweepableTestResource(p.Name) {
-			pids = append(pids, p.ID)
-		}
-	}
-	for _, pid := range pids {
-		log.Printf("Removing project %s", pid)
-		_, err := metal.Projects.Delete(pid)
-		if err != nil {
-			return fmt.Errorf("Error deleting project %s", err)
-		}
-	}
-	return nil
-}
 
 func TestAccMetalProject_basic(t *testing.T) {
 	var project packngo.Project

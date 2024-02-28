@@ -2,7 +2,6 @@ package equinix
 
 import (
 	"fmt"
-	"log"
 	"testing"
 	"time"
 
@@ -13,41 +12,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	"github.com/packethost/packngo"
 )
-
-func init() {
-	resource.AddTestSweepers("equinix_metal_organization", &resource.Sweeper{
-		Name:         "equinix_metal_organization",
-		Dependencies: []string{"equinix_metal_project"},
-		F:            testSweepOrganizations,
-	})
-}
-
-func testSweepOrganizations(region string) error {
-	log.Printf("[DEBUG] Sweeping organizations")
-	config, err := sharedConfigForRegion(region)
-	if err != nil {
-		return fmt.Errorf("[INFO][SWEEPER_LOG] Error getting configuration for sweeping organizations: %s", err)
-	}
-	metal := config.NewMetalClient()
-	os, _, err := metal.Organizations.List(nil)
-	if err != nil {
-		return fmt.Errorf("[INFO][SWEEPER_LOG] Error getting org list for sweeping organizations: %s", err)
-	}
-	oids := []string{}
-	for _, o := range os {
-		if isSweepableTestResource(o.Name) {
-			oids = append(oids, o.ID)
-		}
-	}
-	for _, oid := range oids {
-		log.Printf("Removing organization %s", oid)
-		_, err := metal.Organizations.Delete(oid)
-		if err != nil {
-			return fmt.Errorf("Error deleting organization %s", err)
-		}
-	}
-	return nil
-}
 
 func TestAccMetalOrganization_create(t *testing.T) {
 	var org, org2 packngo.Organization
