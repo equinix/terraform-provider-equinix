@@ -3,12 +3,13 @@ package equinix
 import (
 	"context"
 	"fmt"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"log"
 	"strings"
 	"time"
+
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 
 	equinix_errors "github.com/equinix/terraform-provider-equinix/internal/errors"
 	equinix_fabric_schema "github.com/equinix/terraform-provider-equinix/internal/fabric/schema"
@@ -477,14 +478,16 @@ func resourceFabricCloudRouterDelete(ctx context.Context, d *schema.ResourceData
 	client := meta.(*config.Config).FabricClient
 	_, err := client.CloudRoutersApi.DeleteCloudRouterByUuid(ctx, d.Id())
 	if err != nil {
-		errors, ok := err.(v4.GenericSwaggerError).Model().([]v4.ModelError)
-		if ok {
-			// EQ-3040055 = There is an existing update in REQUESTED state
-			if equinix_errors.HasModelErrorCode(errors, "EQ-3040055") {
-				return diags
+		if genericError, ok := err.(v4.GenericSwaggerError); ok {
+			errors, ok := genericError.Model().([]v4.ModelError)
+			if ok {
+				// EQ-3040055 = There is an existing update in REQUESTED state
+				if equinix_errors.HasModelErrorCode(errors, "EQ-3040055") {
+					return diags
+				}
 			}
+			return diag.FromErr(equinix_errors.FormatFabricError(err))
 		}
-		return diag.FromErr(equinix_errors.FormatFabricError(err))
 	}
 
 	err = WaitUntilCloudRouterDeprovisioned(d.Id(), meta, ctx)
