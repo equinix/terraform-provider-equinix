@@ -2,6 +2,7 @@ package acceptance
 
 import (
 	"os"
+	"sync"
 	"testing"
 
 	"github.com/equinix/terraform-provider-equinix/equinix"
@@ -10,6 +11,7 @@ import (
 	"github.com/equinix/terraform-provider-equinix/internal/provider"
 	"github.com/equinix/terraform-provider-equinix/version"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	terraformsdk "github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
 
@@ -22,6 +24,13 @@ var (
 	TestAccProviders         map[string]*schema.Provider
 	TestExternalProviders    map[string]resource.ExternalProvider
 	TestAccFrameworkProvider *provider.FrameworkProvider
+	// testAccProviderConfigure ensures Provider is only configured once
+	//
+	// The PreCheck(t) function is invoked for every test and this prevents
+	// extraneous reconfiguration to the same values each time. However, this does
+	// not prevent reconfiguration that may happen should the address of
+	// Provider be errantly reused in ProviderFactories.
+	testAccProviderConfigure sync.Once
 )
 
 func init() {
@@ -61,4 +70,15 @@ func TestAccPreCheckMetal(t *testing.T) {
 	if os.Getenv(config.MetalAuthTokenEnvVar) == "" {
 		t.Fatalf(missingMetalToken, config.MetalAuthTokenEnvVar)
 	}
+}
+
+func TestAccPreCheckProviderConfigured(t *testing.T) {
+	// Since we are outside the scope of the Terraform configuration we must
+	// call Configure() to properly initialize the provider configuration.
+	testAccProviderConfigure.Do(func() {
+		diags := TestAccProvider.Configure(Context(t), terraformsdk.NewResourceConfigRaw(nil))
+		if diags.HasError() {
+			t.Fatalf("configuring provider")
+		}
+	})
 }

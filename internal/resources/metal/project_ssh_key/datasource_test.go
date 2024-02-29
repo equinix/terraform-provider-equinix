@@ -158,7 +158,7 @@ func TestAccDataSourceMetalProjectSSHKey_upgradeFromVersion(t *testing.T) {
 	}
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                  func() { acceptance.TestAccPreCheckMetal(t) },
+		PreCheck:                  func() { acceptance.TestAccPreCheckMetal(t); acceptance.TestAccPreCheckProviderConfigured(t) },
 		PreventPostDestroyRefresh: true,
 		CheckDestroy:              testAccMetalProjectSSHKeyCheckDestroyed,
 		Steps: []resource.TestStep{

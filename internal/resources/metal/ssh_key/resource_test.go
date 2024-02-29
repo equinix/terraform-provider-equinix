@@ -199,7 +199,7 @@ func TestAccMetalSSHKey_upgradeFromVersion(t *testing.T) {
 	cfg := testAccMetalSSHKeyConfig_basic(rInt, publicKeyMaterial)
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     func() { acceptance.TestAccPreCheckMetal(t) },
+		PreCheck:     func() { acceptance.TestAccPreCheckMetal(t); acceptance.TestAccPreCheckProviderConfigured(t) },
 		CheckDestroy: testAccMetalSSHKeyCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
