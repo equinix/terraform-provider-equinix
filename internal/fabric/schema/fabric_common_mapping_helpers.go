@@ -2,23 +2,24 @@ package schema
 
 import (
 	v4 "github.com/equinix-labs/fabric-go/fabric/v4"
+	"github.com/equinix/equinix-sdk-go/services/fabricv4"
 	"github.com/equinix/terraform-provider-equinix/internal/converters"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
-func OrderToFabric(schemaOrder []interface{}) v4.Order {
-	if schemaOrder == nil {
-		return v4.Order{}
+func OrderTerraformToGo(orderTerraform []interface{}) *fabricv4.Order {
+	if orderTerraform == nil || len(orderTerraform) == 0 {
+		return nil
 	}
-	order := v4.Order{}
-	for _, o := range schemaOrder {
-		orderMap := o.(map[string]interface{})
-		purchaseOrderNumber := orderMap["purchase_order_number"]
-		billingTier := orderMap["billing_tier"]
-		orderId := orderMap["order_id"]
-		orderNumber := orderMap["order_number"]
-		order = v4.Order{PurchaseOrderNumber: purchaseOrderNumber.(string), BillingTier: billingTier.(string), OrderId: orderId.(string), OrderNumber: orderNumber.(string)}
-	}
+	var order *fabricv4.Order
+
+	orderMap := orderTerraform[0].(map[string]interface{})
+	purchaseOrderNumber := orderMap["purchase_order_number"].(*string)
+	billingTier := orderMap["billing_tier"].(*string)
+	orderId := orderMap["order_id"].(*string)
+	orderNumber := orderMap["order_number"].(*string)
+	order = &fabricv4.Order{PurchaseOrderNumber: purchaseOrderNumber, BillingTier: billingTier, OrderId: orderId, OrderNumber: orderNumber}
+
 	return order
 }
 
@@ -85,21 +86,22 @@ func AccountToTerra[Account *v4.SimplifiedAccount | *v4.AllOfServiceProfileAccou
 	return accountSet
 }
 
-func NotificationsToFabric(schemaNotifications []interface{}) []v4.SimplifiedNotification {
-	if schemaNotifications == nil {
-		return []v4.SimplifiedNotification{}
+func NotificationsTerraformToGo(notificationsTerraform []interface{}) []fabricv4.SimplifiedNotification {
+	if notificationsTerraform == nil || len(notificationsTerraform) == 0 {
+		return nil
 	}
-	var notifications []v4.SimplifiedNotification
-	for _, n := range schemaNotifications {
-		ntype := n.(map[string]interface{})["type"].(string)
-		interval := n.(map[string]interface{})["send_interval"].(string)
-		emailsRaw := n.(map[string]interface{})["emails"].([]interface{})
+	notifications := make([]fabricv4.SimplifiedNotification, len(notificationsTerraform))
+	for index, notification := range notificationsTerraform {
+		notificationMap := notification.(map[string]interface{})
+		notificationType := fabricv4.SimplifiedNotificationType(notificationMap["type"].(string))
+		interval := notificationMap["send_interval"].(*string)
+		emailsRaw := notificationMap["emails"].([]interface{})
 		emails := converters.IfArrToStringArr(emailsRaw)
-		notifications = append(notifications, v4.SimplifiedNotification{
-			Type_:        ntype,
+		notifications[index] = fabricv4.SimplifiedNotification{
+			Type:         notificationType,
 			SendInterval: interval,
 			Emails:       emails,
-		})
+		}
 	}
 	return notifications
 }
@@ -119,21 +121,19 @@ func NotificationsToTerra(notifications []v4.SimplifiedNotification) []map[strin
 	return mappedNotifications
 }
 
-func LocationToFabric(locationList []interface{}) v4.SimplifiedLocation {
-	sl := v4.SimplifiedLocation{}
-	for _, ll := range locationList {
-		llMap := ll.(map[string]interface{})
-		metroName := llMap["metro_name"]
-		var metroNamestr string
-		if metroName != nil {
-			metroNamestr = metroName.(string)
-		}
-		region := llMap["region"].(string)
-		mc := llMap["metro_code"].(string)
-		ibx := llMap["ibx"].(string)
-		sl = v4.SimplifiedLocation{MetroCode: mc, Region: region, Ibx: ibx, MetroName: metroNamestr}
+func LocationToFabric(locationList []interface{}) *fabricv4.SimplifiedLocation {
+	if locationList == nil || len(locationList) == 0 {
+		return nil
 	}
-	return sl
+
+	var location *fabricv4.SimplifiedLocation
+	locationListMap := locationList[0].(map[string]interface{})
+	metroName := locationListMap["metro_name"].(*string)
+	region := locationListMap["region"].(*string)
+	mc := locationListMap["metro_code"].(*string)
+	ibx := locationListMap["ibx"].(*string)
+	location = &fabricv4.SimplifiedLocation{MetroCode: mc, Region: region, Ibx: ibx, MetroName: metroName}
+	return location
 }
 
 func LocationToTerra(location *v4.SimplifiedLocation) *schema.Set {
@@ -180,16 +180,16 @@ func LocationWithoutIBXToTerra(location *v4.SimplifiedLocationWithoutIbx) *schem
 	return locationSet
 }
 
-func ProjectToFabric(projectRequest []interface{}) *v4.Project {
-	if len(projectRequest) == 0 {
+func ProjectTerraformToGo(projectTerraform []interface{}) *fabricv4.Project {
+	if projectTerraform == nil || len(projectTerraform) == 0 {
 		return nil
 	}
-	mappedPr := &v4.Project{}
-	prMap := projectRequest[0].(map[string]interface{})
-	projectId := prMap["project_id"].(string)
-	mappedPr.ProjectId = projectId
+	var project *fabricv4.Project
+	projectMap := projectTerraform[0].(map[string]interface{})
+	projectId := projectMap["project_id"].(string)
+	project.ProjectId = projectId
 
-	return mappedPr
+	return project
 }
 
 func ProjectToTerra(project *v4.Project) *schema.Set {
