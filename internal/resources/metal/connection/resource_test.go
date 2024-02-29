@@ -367,7 +367,7 @@ func TestAccMetalConnection_shared_zside_upgradeFromVersion(t *testing.T) {
 	rs := acctest.RandString(10)
 	cfg := testAccMetalConnectionConfig_Shared_zside(rs)
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     func() { acceptance.TestAccPreCheckMetal(t) },
+		PreCheck:     func() { acceptance.TestAccPreCheckMetal(t); acceptance.TestAccPreCheckProviderConfigured(t) },
 		CheckDestroy: testAccMetalConnectionCheckDestroyed,
 		Steps: []resource.TestStep{
 			{

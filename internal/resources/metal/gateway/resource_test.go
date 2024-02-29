@@ -138,7 +138,7 @@ func TestAccMetalGateway_importBasic(t *testing.T) {
 // TODO (ocobles): once migrated, this test may be removed
 func TestAccMetalGateway_upgradeFromVersion(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     func() { acceptance.TestAccPreCheckMetal(t) },
+		PreCheck:     func() { acceptance.TestAccPreCheckMetal(t); acceptance.TestAccPreCheckProviderConfigured(t) },
 		CheckDestroy: testAccMetalGatewayCheckDestroyed,
 		Steps: []resource.TestStep{
 			{

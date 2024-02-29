@@ -128,7 +128,7 @@ func testDataSourceMetalConnectionConfig_withVlans(r int) string {
 func TestAccDataSourceMetalConnection_withoutVlans_upgradeFromVersion(t *testing.T) {
 	rInt := acctest.RandInt()
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     func() { acceptance.TestAccPreCheckMetal(t) },
+		PreCheck:     func() { acceptance.TestAccPreCheckMetal(t); acceptance.TestAccPreCheckProviderConfigured(t) },
 		CheckDestroy: testAccMetalConnectionCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
