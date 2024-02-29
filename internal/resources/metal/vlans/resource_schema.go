@@ -40,50 +40,26 @@ func resourceSchema(ctx context.Context) schema.Schema {
 				Description:        "Facility where to create the VLAN",
 				DeprecationMessage: "Use metro instead of facility.  For more information, read the migration guide: https://registry.terraform.io/providers/equinix/equinix/latest/docs/guides/migration_guide_facilities_to_metros_devices",
 				Optional:           true,
+				Computed:           true,
 				Validators: []validator.String{
-					stringvalidator.ConflictsWith(path.Expressions{
-						path.MatchRoot("metro"),
-					}...),
+					stringvalidator.ConflictsWith(path.MatchRoot("metro")),
 				},
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.RequiresReplace(),
 					stringplanmodifier.UseStateForUnknown(),
 				},
-				// TODO: aayushrangwala to check if this is needed with the framework changes
-				//DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
-				//	suppress diff when unsetting facility
-				//if len(old) > 0 && new == "" {
-				//	return true
-				//}
-				//return old == new
-				//},
 			},
 			"metro": schema.StringAttribute{
 				Description: "Metro in which to create the VLAN",
 				Optional:    true,
+				Computed:    true,
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.RequiresReplace(),
 				},
 				Validators: []validator.String{
-					stringvalidator.ConflictsWith(path.Expressions{
-						path.MatchRoot("facility"),
-					}...),
+					stringvalidator.ConflictsWith(path.MatchRoot("facility")),
+					stringvalidator.AtLeastOneOf(path.MatchRoot("facility"), path.MatchRoot("metro")),
 				},
-				// TODO: aayushrangwala to check if this is needed with the framework changes
-				//DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
-				//	_, facOk := d.GetOk("facility")
-				// new - new val from template
-				// old - old val from state
-				//
-				// suppress diff if metro is manually set for first time, and
-				// facility is already set
-				//if len(new) > 0 && old == "" && facOk {
-				//	return facOk
-				//}
-				//return old == new
-				//},
-				// TODO: add statefunc in framework
-				//StateFunc: converters.ToLowerIf,
 			},
 			"vxlan": schema.Int64Attribute{
 				Description: "VLAN ID, must be unique in metro",

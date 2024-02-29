@@ -11,6 +11,10 @@ import (
 	"github.com/packethost/packngo"
 )
 
+var (
+	vlanDefaultIncludes = []string{"assigned_to", "facility", "metro"}
+)
+
 type Resource struct {
 	framework.BaseResource
 	framework.WithTimeouts
@@ -79,6 +83,13 @@ func (r *Resource) Create(ctx context.Context, request resource.CreateRequest, r
 		return
 	}
 
+	// get the current state of newly created vlan with default include fields
+	vlan, _, err = client.ProjectVirtualNetworks.Get(vlan.ID, &packngo.GetOptions{Includes: vlanDefaultIncludes})
+	if err != nil {
+		response.Diagnostics.AddError("Error reading Vlan after create", equinix_errors.FriendlyError(err).Error())
+		return
+	}
+
 	// Parse API response into the Terraform state
 	response.Diagnostics.Append(data.parse(vlan)...)
 	if response.Diagnostics.HasError() {
@@ -102,7 +113,7 @@ func (r *Resource) Read(ctx context.Context, request resource.ReadRequest, respo
 
 	vlan, _, err := client.ProjectVirtualNetworks.Get(
 		data.ID.ValueString(),
-		&packngo.GetOptions{Includes: []string{"assigned_to"}},
+		&packngo.GetOptions{Includes: vlanDefaultIncludes},
 	)
 	if err != nil {
 		if equinix_errors.IsNotFound(err) {

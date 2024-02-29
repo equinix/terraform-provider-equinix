@@ -62,24 +62,20 @@ type ResourceModel struct {
 
 func (m *ResourceModel) parse(vlan *packngo.VirtualNetwork) diag.Diagnostics {
 	m.ID = types.StringValue(vlan.ID)
+	m.Description = types.StringValue(vlan.Description)
+	m.Vxlan = types.Int64Value(int64(vlan.VXLAN))
 
 	if vlan.Project.ID != "" {
 		m.ProjectID = types.StringValue(vlan.Project.ID)
 	}
 
-	m.Facility = types.StringNull()
-	if vlan.FacilityCode != "" {
-		m.Facility = types.StringValue(vlan.FacilityCode)
+	if vlan.Facility != nil {
+		m.Facility = types.StringValue(vlan.Facility.Code)
+		m.Metro = types.StringValue(strings.ToLower(vlan.Facility.Metro.Code))
 	}
 
-	m.Description = types.StringValue(vlan.Description)
-	m.Vxlan = types.Int64Value(int64(vlan.VXLAN))
-
-	// version of this resource. StateFunc doesn't exist in terraform and it requires implementation
-	// of bespoke logic before storing state. To ensure backward compatibility we ignore lower/upper
-	// case diff for now, but we may want to require input upper case
-	if !strings.EqualFold(m.Metro.ValueString(), vlan.MetroCode) {
-		m.Metro = types.StringValue(vlan.MetroCode)
+	if vlan.Metro != nil {
+		m.Metro = types.StringValue(strings.ToLower(vlan.Metro.Code))
 	}
 	return nil
 }
