@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/equinix/equinix-sdk-go/services/fabricv4"
 	"log"
 	"runtime/debug"
 	"strings"
@@ -249,14 +250,16 @@ func readGetPortsByNameQueryParamSch() map[string]*schema.Schema {
 	}
 }
 
-func portToFabric(portList []interface{}) v4.SimplifiedPort {
-	p := v4.SimplifiedPort{}
-	for _, pl := range portList {
-		plMap := pl.(map[string]interface{})
-		uuid := plMap["uuid"].(string)
-		p = v4.SimplifiedPort{Uuid: uuid}
+func portToFabric(portList []interface{}) *fabricv4.SimplifiedPort {
+	if portList == nil || len(portList) == 0 {
+		return nil
 	}
-	return p
+	var port *fabricv4.SimplifiedPort
+	portListMap := portList[0].(map[string]interface{})
+	uuid := portListMap["uuid"].(*string)
+	port = &fabricv4.SimplifiedPort{Uuid: uuid}
+
+	return port
 }
 
 func portToTerra(port *v4.SimplifiedPort) *schema.Set {
