@@ -68,11 +68,11 @@ func (r *Resource) Create(
 	}
 
 	// API call to create the project
-	project, apiResp, err := client.ProjectsApi.CreateProject(ctx).ProjectCreateFromRootInput(createRequest).Execute()
+	project, createResp, err := client.ProjectsApi.CreateProject(ctx).ProjectCreateFromRootInput(createRequest).Execute()
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error creating project",
-			"Could not create project: " + equinix_errors.FriendlyErrorForMetalGo(err, apiResp).Error(),
+			"Could not create project: " + equinix_errors.FriendlyErrorForMetalGo(err, createResp).Error(),
 		)
 		return
 	}
@@ -81,7 +81,6 @@ func (r *Resource) Create(
 	if !plan.BGPConfig.IsNull() {
 		bgpCreateRequest, err := expandBGPConfig(ctx, plan.BGPConfig)
 		if err != nil {
-			err = equinix_errors.FriendlyErrorForMetalGo(err, apiResp)
 			resp.Diagnostics.AddError(
 				"Error creating project",
 				"Could not validate BGP Config: " + err.Error(),
@@ -89,9 +88,9 @@ func (r *Resource) Create(
 			return
 		}
 	
-		apiResp, err = client.BGPApi.RequestBgpConfig(ctx, project.GetId()).BgpConfigRequestInput(*bgpCreateRequest).Execute()
+		createResp, err = client.BGPApi.RequestBgpConfig(ctx, project.GetId()).BgpConfigRequestInput(*bgpCreateRequest).Execute()
 		if err != nil {
-			err = equinix_errors.FriendlyErrorForMetalGo(err, apiResp)
+			err = equinix_errors.FriendlyErrorForMetalGo(err, createResp)
 			resp.Diagnostics.AddError(
 				"Error creating BGP configuration",
 				"Could not create BGP configuration for project: " + err.Error(),
@@ -105,9 +104,9 @@ func (r *Resource) Create(
 		pur :=  metalv1.ProjectUpdateInput{
 			BackendTransferEnabled: plan.BackendTransfer.ValueBoolPointer(),
 		}
-		_, _, err := client.ProjectsApi.UpdateProject(ctx, project.GetId()).ProjectUpdateInput(pur).Execute()
+		_, updateResp, err := client.ProjectsApi.UpdateProject(ctx, project.GetId()).ProjectUpdateInput(pur).Execute()
 		if err != nil {
-			err = equinix_errors.FriendlyErrorForMetalGo(err, apiResp)
+			err = equinix_errors.FriendlyErrorForMetalGo(err, updateResp)
 			resp.Diagnostics.AddError(
 					"Error enabling Backend Transfer",
 					"Could not enable Backend Transfer for project with ID " + project.GetId() + ": " + err.Error(),
@@ -201,49 +200,6 @@ func expandBGPConfig(ctx context.Context, bgpConfig fwtypes.ListNestedObjectValu
 	return &bgpCreateRequest, nil
 }
 
-// func resourceMetalProjectCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-// 	client := meta.(*config.Config).NewMetalClientForSDK(d)
-
-// 	createRequest := metalv1.ProjectCreateFromRootInput{
-// 		Name: d.Get("name").(string),
-// 	}
-
-// 	organization_id := d.Get("organization_id").(string)
-// 	if organization_id != "" {
-// 		createRequest.OrganizationId = &organization_id
-// 	}
-
-// 	project, resp, err := client.ProjectsApi.CreateProject(ctx).ProjectCreateFromRootInput(createRequest).Execute()
-
-// 	if err != nil {
-// 		return diag.FromErr(equinix_errors.FriendlyErrorForMetalGo(err, resp))
-// 	}
-
-// 	d.SetId(project.GetId())
-
-// 	_, hasBGPConfig := d.GetOk("bgp_config")
-// 	if hasBGPConfig {
-// 		bgpCR, err := expandBGPConfig(d)
-// 		if err == nil {
-// 			resp, err = client.BGPApi.RequestBgpConfig(ctx, project.GetId()).BgpConfigRequestInput(*bgpCR).Execute()
-// 		}
-// 		if err != nil {
-// 			return diag.FromErr(equinix_errors.FriendlyErrorForMetalGo(err, resp))
-// 		}
-// 	}
-
-// 	backendTransfer := d.Get("backend_transfer").(bool)
-// 	if backendTransfer {
-// 		pur := metalv1.ProjectUpdateInput{
-// 			BackendTransferEnabled: &backendTransfer,
-// 		}
-// 		_, _, err := client.ProjectsApi.UpdateProject(ctx, project.GetId()).ProjectUpdateInput(pur).Execute()
-// 		if err != nil {
-// 			return diag.FromErr(equinix_errors.FriendlyErrorForMetalGo(err, resp))
-// 		}
-// 	}
-// 	return resourceMetalProjectRead(ctx, d, meta)
-// }
 
 // func resourceMetalProjectRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 // 	client := meta.(*config.Config).NewMetalClientForSDK(d)
@@ -352,3 +308,29 @@ func expandBGPConfig(ctx context.Context, bgpConfig fwtypes.ListNestedObjectValu
 // 	d.SetId("")
 // 	return nil
 // }
+
+func (r *Resource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
+	// Retrieve the current state
+	var state ResourceModel
+	diags := req.State.Get(ctx, &state)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	// Retrieve the API client from the provider metadata
+	client := r.Meta.NewMetalClientForFramework(ctx, req.ProviderMeta)
+
+	// Extract the ID of the resource from the state
+	id := state.ID.ValueString()
+
+    // API call to delete the project
+	deleteResp, err := client.ProjectsApi.DeleteProject(ctx, id).Execute()
+	if equinix_errors.IgnoreHttpResponseErrors(equinix_errors.HttpForbidden, equinix_errors.HttpNotFound)(deleteResp, err) != nil {
+		err = equinix_errors.FriendlyErrorForMetalGo(err, deleteResp)
+		resp.Diagnostics.AddError(
+			fmt.Sprintf("Failed to delete Project %s", id),
+			err.Error(),
+		)
+	}
+}
