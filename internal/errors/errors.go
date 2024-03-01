@@ -2,6 +2,7 @@ package errors
 
 import (
 	"fmt"
+	"github.com/equinix/equinix-sdk-go/services/fabricv4"
 	"net/http"
 	"strings"
 
@@ -66,6 +67,23 @@ func FormatFabricAdditionalInfo(additionalInfo []fabric.PriceErrorAdditionalInfo
 	return strings.Join(str, ", ")
 }
 
+func FormatFabricv4AdditionalInfo(additionalInfo []fabricv4.PriceErrorAdditionalInfo) string {
+	var str []string
+	for _, addInfo := range additionalInfo {
+		property, reason := *addInfo.Property, *addInfo.Reason
+		if property != "" {
+			property = fmt.Sprintf("Property: %s, ", property)
+		}
+		if reason != "" {
+			reason = fmt.Sprintf("%s", reason)
+		} else {
+			reason = fmt.Sprintf("Reason: Not Provided")
+		}
+		str = append(str, fmt.Sprintf("{%s%s}", property, reason))
+	}
+	return strings.Join(str, ", ")
+}
+
 func FormatFabricError(err error) error {
 	// If in future one would like to do something with the response body of the API request
 	// The line below is how to access it with the SwaggerCodegen Fabric Go 12/7/2023 - thogarty
@@ -78,6 +96,15 @@ func FormatFabricError(err error) error {
 			errors = append(errors, fmt.Sprintf("Message: %s", e.ErrorMessage))
 			errors = append(errors, fmt.Sprintf("Details: %s", e.Details))
 			if additionalInfo := FormatFabricAdditionalInfo(e.AdditionalInfo); additionalInfo != "" {
+				errors = append(errors, fmt.Sprintf("AdditionalInfo: [%s]", additionalInfo))
+			}
+		}
+	} else if fabricErrs, ok := err.(*fabricv4.GenericOpenAPIError).Model().([]fabricv4.Error); ok {
+		for _, e := range fabricErrs {
+			errors = append(errors, fmt.Sprintf("Code: %s", e.ErrorCode))
+			errors = append(errors, fmt.Sprintf("Message: %s", e.ErrorMessage))
+			errors = append(errors, fmt.Sprintf("Details: %s", e.Details))
+			if additionalInfo := FormatFabricv4AdditionalInfo(e.AdditionalInfo); additionalInfo != "" {
 				errors = append(errors, fmt.Sprintf("AdditionalInfo: [%s]", additionalInfo))
 			}
 		}
