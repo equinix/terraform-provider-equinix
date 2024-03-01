@@ -4,15 +4,15 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/equinix/equinix-sdk-go/services/metalv1"
 	"github.com/equinix/terraform-provider-equinix/internal/acceptance"
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/plancheck"
-	"github.com/packethost/packngo"
 )
 
 func TestAccDataSourceMetalProject_byId(t *testing.T) {
-	var project packngo.Project
+	var project metalv1.Project
 	rn := acctest.RandStringFromCharSet(12, "abcdef0123456789")
 
 	resource.ParallelTest(t, resource.TestCase{
@@ -66,7 +66,7 @@ data equinix_metal_project "test" {
 }
 
 func TestAccDataSourceMetalProject_byName(t *testing.T) {
-	var project packngo.Project
+	var project metalv1.Project
 	rn := acctest.RandStringFromCharSet(12, "abcdef0123456789")
 
 	resource.ParallelTest(t, resource.TestCase{
@@ -119,7 +119,7 @@ data equinix_metal_project "test" {
 // Test to verify that switching from SDKv2 to the Framework has not affected provider's behavior
 // TODO (ocobles): once migrated, this test may be removed
 func TestAccDataSourceMetalProject_byId_upgradeFromVersion(t *testing.T) {
-	var project packngo.Project
+	var project metalv1.Project
 	rn := acctest.RandStringFromCharSet(12, "abcdef0123456789")
 	cfg := testAccDataSourceMetalProject_byId(rn)
 	resource.ParallelTest(t, resource.TestCase{
