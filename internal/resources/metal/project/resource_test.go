@@ -16,6 +16,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/plancheck"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	"github.com/packethost/packngo"
 )
@@ -397,6 +398,43 @@ func TestAccMetalProject_importBasic(t *testing.T) {
 				ResourceName:      "equinix_metal_project.foobar",
 				ImportState:       true,
 				ImportStateVerify: true,
+			},
+		},
+	})
+}
+
+// Test to verify that switching from SDKv2 to the Framework has not affected provider's behavior
+// TODO (ocobles): once migrated, this test may be removed
+func TestAccMetalProject_basic_upgradeFromVersion(t *testing.T) {
+	var project packngo.Project
+	rInt := acctest.RandInt()
+	cfg := testAccMetalProjectConfig_basic(rInt)
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:     func() { acceptance.TestAccPreCheckMetal(t); acceptance.TestAccPreCheckProviderConfigured(t) },
+		CheckDestroy: testAccMetalProjectCheckDestroyed,
+		Steps: []resource.TestStep{
+			{
+				ExternalProviders: map[string]resource.ExternalProvider{
+					"equinix": {
+						VersionConstraint: "1.30.0", // latest version with resource defined on SDKv2
+						Source:            "equinix/equinix",
+					},
+				},
+				Config: cfg,
+				Check: resource.ComposeTestCheckFunc(
+					testAccMetalProjectExists("equinix_metal_project.foobar", &project),
+					resource.TestCheckResourceAttr(
+						"equinix_metal_project.foobar", "name", fmt.Sprintf("tfacc-project-%d", rInt)),
+				),
+			},
+			{
+				ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+				Config:                   cfg,
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectEmptyPlan(),
+					},
+				},
 			},
 		},
 	})

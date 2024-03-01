@@ -3,6 +3,7 @@ package project
 import (
 	"context"
 	"path"
+	"strings"
 	"time"
 
 	"github.com/equinix/equinix-sdk-go/services/metalv1"
@@ -13,13 +14,26 @@ import (
 )
 
 type ResourceModel struct {
-	ID              types.String                                     `tfsdk:"id"`
-	Name            types.String                                     `tfsdk:"name"`
-	Created         types.String                                     `tfsdk:"created"`
-	Updated         types.String                                     `tfsdk:"updated"`
-	BackendTransfer types.Bool                                       `tfsdk:"backend_transfer"`
-	PaymentMethodID types.String                                     `tfsdk:"payment_method_id"`
-	OrganizationID  types.String                                     `tfsdk:"organization_id"`
+	ID              types.String                                    `tfsdk:"id"`
+	Name            types.String                                    `tfsdk:"name"`
+	Created         types.String                                    `tfsdk:"created"`
+	Updated         types.String                                    `tfsdk:"updated"`
+	BackendTransfer types.Bool                                      `tfsdk:"backend_transfer"`
+	PaymentMethodID types.String                                    `tfsdk:"payment_method_id"`
+	OrganizationID  types.String                                    `tfsdk:"organization_id"`
+	BGPConfig       fwtypes.ListNestedObjectValueOf[BGPConfigModel] `tfsdk:"bgp_config"`
+}
+
+type DataSourceModel struct {
+	ID              types.String                                    `tfsdk:"id"`
+	Name            types.String                                    `tfsdk:"name"`
+	ProjectID       types.String                                    `tfsdk:"project_id"`
+	Created         types.String                                    `tfsdk:"created"`
+	Updated         types.String                                    `tfsdk:"updated"`
+	BackendTransfer types.Bool                                      `tfsdk:"backend_transfer"`
+	PaymentMethodID types.String                                    `tfsdk:"payment_method_id"`
+	OrganizationID  types.String                                    `tfsdk:"organization_id"`
+	UserIDs         types.List                                      `tfsdk:"user_ids"`
 	BGPConfig       fwtypes.ListNestedObjectValueOf[BGPConfigModel] `tfsdk:"bgp_config"`
 }
 
@@ -33,19 +47,54 @@ type BGPConfigModel struct {
 
 func (m *ResourceModel) parse(ctx context.Context, project *metalv1.Project, bgpConfig *metalv1.BgpConfig) diag.Diagnostics {
 	var diags diag.Diagnostics
-	m.ID              = types.StringValue(project.GetId()) 
-	m.Name            = types.StringValue(project.GetId())
-	m.Created         = types.StringValue(project.GetCreatedAt().Format(time.RFC3339))
-	m.Updated         = types.StringValue(project.GetUpdatedAt().Format(time.RFC3339))
+	m.ID = types.StringValue(project.GetId())
+	m.Name = types.StringValue(project.GetName())
+	m.Created = types.StringValue(project.GetCreatedAt().Format(time.RFC3339))
+	m.Updated = types.StringValue(project.GetUpdatedAt().Format(time.RFC3339))
 	m.BackendTransfer = types.BoolValue(project.AdditionalProperties["backend_transfer_enabled"].(bool)) // No backend_transfer_enabled property in API spec
+	m.OrganizationID = types.StringValue(path.Base(project.Organization.AdditionalProperties["href"].(string)))
 
-	m.OrganizationID  = types.StringValue(path.Base(project.Organization.AdditionalProperties["href"].(string)))
+	m.PaymentMethodID = types.StringValue("")
+	if len(project.PaymentMethod.GetHref()) != 0 {
+		newValue := path.Base(project.PaymentMethod.GetHref())
+		if !strings.EqualFold(strings.Trim(m.PaymentMethodID.ValueString(), `"`), strings.Trim(newValue, `"`)) {
+			m.PaymentMethodID = types.StringValue(path.Base(project.PaymentMethod.GetHref()))
+		}
+	}
 
+	// Handle BGP Config if present
+	m.BGPConfig = parseBGPConfig(ctx, bgpConfig)
+
+	return diags
+}
+
+func (m *DataSourceModel) parse(ctx context.Context, project *metalv1.Project, bgpConfig *metalv1.BgpConfig) diag.Diagnostics {
+	var diags diag.Diagnostics
+	m.ID = types.StringValue(project.GetId())
+	m.ProjectID = types.StringValue(project.GetId())
+	m.Name = types.StringValue(project.GetName())
+	m.Created = types.StringValue(project.GetCreatedAt().Format(time.RFC3339))
+	m.Updated = types.StringValue(project.GetUpdatedAt().Format(time.RFC3339))
+	m.BackendTransfer = types.BoolValue(project.AdditionalProperties["backend_transfer_enabled"].(bool)) // No backend_transfer_enabled property in API spec
+	m.OrganizationID = types.StringValue(path.Base(project.Organization.AdditionalProperties["href"].(string)))
+
+	m.PaymentMethodID = types.StringValue("")
 	if len(project.PaymentMethod.GetHref()) != 0 {
 		m.PaymentMethodID = types.StringValue(path.Base(project.PaymentMethod.GetHref()))
 	}
 
-	// Handle BGP Config if present	
+	// Parse User IDs
+	projUserIds := []string{}
+	for _, u := range project.GetMembers() {
+		projUserIds = append(projUserIds, path.Base(u.GetHref()))
+	}
+	userIDs, diags := types.ListValueFrom(ctx, types.StringType, projUserIds)
+	if diags.HasError() {
+		return diags
+	}
+	m.UserIDs = userIDs
+
+	// Handle BGP Config if present
 	m.BGPConfig = parseBGPConfig(ctx, bgpConfig)
 
 	return diags

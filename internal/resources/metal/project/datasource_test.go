@@ -7,6 +7,7 @@ import (
 	"github.com/equinix/terraform-provider-equinix/internal/acceptance"
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/plancheck"
 	"github.com/packethost/packngo"
 )
 
@@ -113,4 +114,50 @@ data equinix_metal_project "test" {
 	name = equinix_metal_project.foobar.name
 }
 `, r)
+}
+
+// Test to verify that switching from SDKv2 to the Framework has not affected provider's behavior
+// TODO (ocobles): once migrated, this test may be removed
+func TestAccDataSourceMetalProject_byId_upgradeFromVersion(t *testing.T) {
+	var project packngo.Project
+	rn := acctest.RandStringFromCharSet(12, "abcdef0123456789")
+	cfg := testAccDataSourceMetalProject_byId(rn)
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:     func() { acceptance.TestAccPreCheckMetal(t); acceptance.TestAccPreCheckProviderConfigured(t) },
+		CheckDestroy: testAccMetalProjectCheckDestroyed,
+		Steps: []resource.TestStep{
+			{
+				ExternalProviders: map[string]resource.ExternalProvider{
+					"equinix": {
+						VersionConstraint: "1.30.0", // latest version with resource defined on SDKv2
+						Source:            "equinix/equinix",
+					},
+				},
+				Config: cfg,
+				Check: resource.ComposeTestCheckFunc(
+					testAccMetalProjectExists("equinix_metal_project.foobar", &project),
+					resource.TestCheckResourceAttr(
+						"equinix_metal_project.foobar", "name", fmt.Sprintf("tfacc-project-%s", rn)),
+					resource.TestCheckResourceAttr(
+						"equinix_metal_project.foobar", "bgp_config.0.md5",
+						"2SFsdfsg43"),
+					resource.TestCheckResourceAttrPair(
+						"equinix_metal_project.foobar", "id",
+						"data.equinix_metal_project.test", "id"),
+					resource.TestCheckResourceAttrPair(
+						"equinix_metal_project.foobar", "organization_id",
+						"data.equinix_metal_project.test", "organization_id"),
+				),
+			},
+			{
+				ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+				Config:                   cfg,
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectEmptyPlan(),
+					},
+				},
+			},
+		},
+	})
 }

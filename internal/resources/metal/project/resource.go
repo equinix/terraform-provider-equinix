@@ -10,7 +10,6 @@ import (
 	"github.com/equinix/terraform-provider-equinix/internal/framework"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
-
 )
 
 func NewResource() resource.Resource {
@@ -66,7 +65,7 @@ func (r *Resource) Create(
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error creating project",
-			"Could not create project: " + equinix_errors.FriendlyErrorForMetalGo(err, createResp).Error(),
+			"Could not create project: "+equinix_errors.FriendlyErrorForMetalGo(err, createResp).Error(),
 		)
 		return
 	}
@@ -77,17 +76,17 @@ func (r *Resource) Create(
 		if err != nil {
 			resp.Diagnostics.AddError(
 				"Error creating project",
-				"Could not validate BGP Config: " + err.Error(),
+				"Could not validate BGP Config: "+err.Error(),
 			)
 			return
 		}
-	
+
 		createResp, err = client.BGPApi.RequestBgpConfig(ctx, project.GetId()).BgpConfigRequestInput(*bgpCreateRequest).Execute()
 		if err != nil {
 			err = equinix_errors.FriendlyErrorForMetalGo(err, createResp)
 			resp.Diagnostics.AddError(
 				"Error creating BGP configuration",
-				"Could not create BGP configuration for project: " + err.Error(),
+				"Could not create BGP configuration for project: "+err.Error(),
 			)
 			return
 		}
@@ -95,15 +94,15 @@ func (r *Resource) Create(
 
 	// Enable Backend Transfer if True
 	if plan.BackendTransfer.ValueBool() {
-		pur :=  metalv1.ProjectUpdateInput{
+		pur := metalv1.ProjectUpdateInput{
 			BackendTransferEnabled: plan.BackendTransfer.ValueBoolPointer(),
 		}
 		_, updateResp, err := client.ProjectsApi.UpdateProject(ctx, project.GetId()).ProjectUpdateInput(pur).Execute()
 		if err != nil {
 			err = equinix_errors.FriendlyErrorForMetalGo(err, updateResp)
 			resp.Diagnostics.AddError(
-					"Error enabling Backend Transfer",
-					"Could not enable Backend Transfer for project with ID " + project.GetId() + ": " + err.Error(),
+				"Error enabling Backend Transfer",
+				"Could not enable Backend Transfer for project with ID "+project.GetId()+": "+err.Error(),
 			)
 			return
 		}
@@ -120,8 +119,8 @@ func (r *Resource) Create(
 	var bgpConfig *metalv1.BgpConfig
 	if !plan.BGPConfig.IsNull() {
 		bgpConfig, diags = fetchBGPConfig(ctx, client, project.GetId())
-        diags.Append(diags...)
-		if diags.HasError(){
+		diags.Append(diags...)
+		if diags.HasError() {
 			return
 		}
 	}
@@ -166,8 +165,8 @@ func (r *Resource) Read(
 	var bgpConfig *metalv1.BgpConfig
 	if !state.BGPConfig.IsNull() {
 		bgpConfig, diags = fetchBGPConfig(ctx, client, project.GetId())
-        diags.Append(diags...)
-		if diags.HasError(){
+		diags.Append(diags...)
+		if diags.HasError() {
 			return
 		}
 	}
@@ -183,28 +182,28 @@ func (r *Resource) Read(
 }
 
 func fetchProject(ctx context.Context, client *metalv1.APIClient, projectID string) (*metalv1.Project, diag.Diagnostics) {
-    var diags diag.Diagnostics
+	var diags diag.Diagnostics
 
 	project, apiResp, err := client.ProjectsApi.FindProjectById(ctx, projectID).Execute()
-    if err != nil {
+	if err != nil {
 		err = equinix_errors.FriendlyErrorForMetalGo(err, apiResp)
 
-        // Check if the Project no longer exists
-        if equinix_errors.IsNotFound(err) {
-            diags.AddWarning(
-                "Project not found",
-                fmt.Sprintf("Project (%s) not found, removing from state", projectID),
-            )
-        } else {
-            diags.AddError(
-                "Error reading project",
-                "Could not read project with ID " + projectID + ": " + err.Error(),
-            )
-        }
-        return nil, diags
-    }
+		// Check if the Project no longer exists
+		if equinix_errors.IsNotFound(err) {
+			diags.AddWarning(
+				"Project not found",
+				fmt.Sprintf("Project (%s) not found, removing from state", projectID),
+			)
+		} else {
+			diags.AddError(
+				"Error reading project",
+				"Could not read project with ID "+projectID+": "+err.Error(),
+			)
+		}
+		return nil, diags
+	}
 
-    return project, diags
+	return project, diags
 }
 
 func (r *Resource) Update(
@@ -238,14 +237,14 @@ func (r *Resource) Update(
 	if state.Name != plan.Name {
 		updateRequest.Name = plan.Name.ValueStringPointer()
 	}
-	if state.PaymentMethodID != plan.Name {
+	if state.PaymentMethodID != plan.PaymentMethodID {
 		updateRequest.PaymentMethodId = plan.PaymentMethodID.ValueStringPointer()
 	}
 	if state.BackendTransfer != plan.BackendTransfer {
 		updateRequest.BackendTransferEnabled = plan.BackendTransfer.ValueBoolPointer()
 	}
 
-	// NOTE (ocobles): adding UpdateProject insidte this condition to replicate old behavior
+	// NOTE (ocobles): adding UpdateProject inside this condition to replicate old behavior
 	// but it is not clear to me if it was a mistake. I think the project should be updated if
 	// has changes regardless of whether there are changes to the BGP configuration or not.
 	// Open discussion: https://github.com/equinix/terraform-provider-equinix/discussions/466
@@ -257,10 +256,10 @@ func (r *Resource) Update(
 			friendlyErr := equinix_errors.FriendlyErrorForMetalGo(err, updateResp)
 			resp.Diagnostics.AddError(
 				"Error updating project",
-				"Could not update project with ID " + id + ": " + friendlyErr.Error(),
+				"Could not update project with ID "+id+": "+friendlyErr.Error(),
 			)
 			return
-		}	
+		}
 	}
 
 	// Use API client to get the current state of the resource
@@ -295,7 +294,7 @@ func (r *Resource) Delete(ctx context.Context, req resource.DeleteRequest, resp 
 	// Extract the ID of the resource from the state
 	id := state.ID.ValueString()
 
-    // API call to delete the project
+	// API call to delete the project
 	deleteResp, err := client.ProjectsApi.DeleteProject(ctx, id).Execute()
 	if equinix_errors.IgnoreHttpResponseErrors(equinix_errors.HttpForbidden, equinix_errors.HttpNotFound)(deleteResp, err) != nil {
 		err = equinix_errors.FriendlyErrorForMetalGo(err, deleteResp)

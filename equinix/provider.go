@@ -7,9 +7,7 @@ import (
 	"time"
 
 	"github.com/equinix/terraform-provider-equinix/internal/config"
-	metal_project "github.com/equinix/terraform-provider-equinix/internal/resources/metal/project"
 	"github.com/equinix/terraform-provider-equinix/internal/resources/metal/vrf"
-
 	"github.com/equinix/ecx-go/v2"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -106,7 +104,6 @@ func Provider() *schema.Provider {
 			"equinix_metal_device_bgp_neighbors": dataSourceMetalDeviceBGPNeighbors(),
 			"equinix_metal_plans":                dataSourceMetalPlans(),
 			"equinix_metal_port":                 dataSourceMetalPort(),
-			"equinix_metal_project":              metal_project.DataSource(),
 			"equinix_metal_reserved_ip_block":    dataSourceMetalReservedIPBlock(),
 			"equinix_metal_spot_market_request":  dataSourceMetalSpotMarketRequest(),
 			"equinix_metal_virtual_circuit":      dataSourceMetalVirtualCircuit(),
@@ -133,7 +130,6 @@ func Provider() *schema.Provider {
 			"equinix_metal_device":               resourceMetalDevice(),
 			"equinix_metal_device_network_type":  resourceMetalDeviceNetworkType(),
 			"equinix_metal_port":                 resourceMetalPort(),
-			"equinix_metal_project":              metal_project.Resource(),
 			"equinix_metal_reserved_ip_block":    resourceMetalReservedIPBlock(),
 			"equinix_metal_ip_attachment":        resourceMetalIPAttachment(),
 			"equinix_metal_spot_market_request":  resourceMetalSpotMarketRequest(),
