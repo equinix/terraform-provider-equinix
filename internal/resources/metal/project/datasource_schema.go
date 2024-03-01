@@ -39,7 +39,7 @@ func dataSourceSchema(ctx context.Context) schema.Schema {
 				Description: "The timestamp for the last time the project was updated",
 				Computed:    true,
 			},
-			"backend_transfer": schema.StringAttribute{
+			"backend_transfer": schema.BoolAttribute{
 				Description: "Whether Backend Transfer is enabled for this project",
 				Computed:    true,
 			},

@@ -58,6 +58,13 @@ func (r *DataSource) Read(
 			)
 			return
 		}
+		if len(projects.Projects) == 0 {
+			resp.Diagnostics.AddError(
+				"Error reading Metal Project",
+				"No project found with name "+name,
+			)
+			return
+		}
 		if len(projects.Projects) > 1 {
 			resp.Diagnostics.AddError(
 				"Error reading Metal Project",
@@ -66,14 +73,6 @@ func (r *DataSource) Read(
 			return
 		}
 		project = &projects.Projects[0]
-		// project, err = findProjectByName(projects, name)
-		// if err != nil {
-		// 	resp.Diagnostics.AddError(
-		// 		"Error reading Metal Project",
-		// 		"Could not read Metal Connection with ID "+id+": "+err.Error(),
-		// 	)
-		// 	return
-		// }
 	} else {
 		id := data.ProjectID.ValueString()
 		var err error
