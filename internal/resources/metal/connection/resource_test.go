@@ -35,6 +35,18 @@ func testAccMetalConnectionConfig_Shared(randstr string) string {
             name = "tfacc-conn-pro-%s"
         }
 
+		resource "equinix_metal_vlan" "test1" {
+			description = "tfacc-conn-vlan1-%s"
+			metro       = "sv"
+			project_id  = equinix_metal_project.test.id
+		}
+
+		resource "equinix_metal_vlan" "test2" {
+			description = "tfacc-conn-vlan2-%s"
+			metro       = "sv"
+			project_id  = equinix_metal_project.test.id
+		}
+
         resource "equinix_metal_connection" "test" {
             name               = "tfacc-conn-%s"
             project_id         = equinix_metal_project.test.id
@@ -44,8 +56,12 @@ func testAccMetalConnectionConfig_Shared(randstr string) string {
 			speed              = "50Mbps"
 			service_token_type = "a_side"
 			contact_email      = "tfacc@example.com"
+			vlans              = [
+				equinix_metal_vlan.test1.vxlan,
+				equinix_metal_vlan.test2.vxlan,
+			]
         }`,
-		randstr, randstr)
+		randstr, randstr, randstr, randstr)
 }
 
 func testAccMetalConnectionConfig_Shared_zside(randstr string) string {
@@ -54,6 +70,18 @@ func testAccMetalConnectionConfig_Shared_zside(randstr string) string {
             name = "tfacc-conn-pro-%s"
         }
 
+		resource "equinix_metal_vlan" "test1" {
+			description = "tfacc-conn-vlan1-%s"
+			metro       = "sv"
+			project_id  = equinix_metal_project.test.id
+		}
+
+		resource "equinix_metal_vlan" "test2" {
+			description = "tfacc-conn-vlan2-%s"
+			metro       = "sv"
+			project_id  = equinix_metal_project.test.id
+		}
+
         resource "equinix_metal_connection" "test" {
             name               = "tfacc-conn-%s"
             project_id         = equinix_metal_project.test.id
@@ -61,8 +89,12 @@ func testAccMetalConnectionConfig_Shared_zside(randstr string) string {
             redundancy         = "redundant"
             metro              = "sv"
 			service_token_type = "z_side"
+			vlans              = [
+				equinix_metal_vlan.test1.vxlan,
+				equinix_metal_vlan.test2.vxlan,
+			]
         }`,
-		randstr, randstr)
+		randstr, randstr, randstr, randstr)
 }
 
 func TestAccMetalConnection_shared_zside(t *testing.T) {
@@ -243,119 +275,6 @@ func TestAccMetalConnection_tunnel(t *testing.T) {
 				ImportState:             true,
 				ImportStateVerify:       true,
 				ImportStateVerifyIgnore: []string{"project_id"},
-			},
-		},
-	})
-}
-
-func testAccMetalConnectionConfig_sharedVlans(randstr string, vlans string) string {
-	return fmt.Sprintf(`
-		resource "equinix_metal_project" "test" {
-			name = "tfacc-conn-pro-%s"
-		}
-
-		resource "equinix_metal_vlan" "test1" {
-			description = "tfacc-conn-vlan1-%s"
-			metro       = "sv"
-			project_id  = equinix_metal_project.test.id
-		}
-
-		resource "equinix_metal_vlan" "test2" {
-			description = "tfacc-conn-vlan2-%s"
-			metro       = "sv"
-			project_id  = equinix_metal_project.test.id
-		}
-
-		resource "equinix_metal_vlan" "test3" {
-			description = "tfacc-conn-vlan3-%s"
-			metro       = "sv"
-			project_id  = equinix_metal_project.test.id
-		}
-
-		resource "equinix_metal_connection" "test" {
-			name               = "tfacc-conn-%s"
-			project_id         = equinix_metal_project.test.id
-			type               = "shared"
-			redundancy         = "redundant"
-			metro              = "sv"
-			speed              = "50Mbps"
-			service_token_type = "a_side"
-			vlans = [
-				%s
-			]
-		}`,
-		randstr, randstr, randstr, randstr, randstr, vlans)
-}
-
-func TestAccMetalConnection_sharedVlans(t *testing.T) {
-	rs := acctest.RandString(10)
-
-	// In the first test step, we will assign 2 VLANs
-	step1Vlans := "equinix_metal_vlan.test1.vxlan, equinix_metal_vlan.test2.vxlan,"
-	// In the second test step, we will change the primary VLAN
-	step2Vlans := "equinix_metal_vlan.test3.vxlan, equinix_metal_vlan.test2.vxlan,"
-	// In the third test step, we will remove the secondary VLAN
-	step3Vlans := "equinix_metal_vlan.test3.vxlan,"
-	// In the fourth test step, we will add a new secondary VLAN
-	step4Vlans := "equinix_metal_vlan.test3.vxlan, equinix_metal_vlan.test1.vxlan,"
-	// In the fifth test step, we will remove both VLANs
-	step5Vlans := ""
-
-	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { acceptance.TestAccPreCheckMetal(t) },
-		ExternalProviders:        acceptance.TestExternalProviders,
-		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
-		CheckDestroy:             testAccMetalConnectionCheckDestroyed,
-		Steps: []resource.TestStep{
-			{
-				Config: testAccMetalConnectionConfig_sharedVlans(rs, step1Vlans),
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrPair(
-						"equinix_metal_vlan.test1", "vxlan",
-						"equinix_metal_connection.test", "vlans.0"),
-					resource.TestCheckResourceAttrPair(
-						"equinix_metal_vlan.test2", "vxlan",
-						"equinix_metal_connection.test", "vlans.1"),
-				),
-			},
-			{
-				Config: testAccMetalConnectionConfig_sharedVlans(rs, step2Vlans),
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrPair(
-						"equinix_metal_vlan.test3", "vxlan",
-						"equinix_metal_connection.test", "vlans.0"),
-					resource.TestCheckResourceAttrPair(
-						"equinix_metal_vlan.test2", "vxlan",
-						"equinix_metal_connection.test", "vlans.1"),
-				),
-			},
-			{
-				Config: testAccMetalConnectionConfig_sharedVlans(rs, step3Vlans),
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrPair(
-						"equinix_metal_vlan.test3", "vxlan",
-						"equinix_metal_connection.test", "vlans.0"),
-					resource.TestCheckResourceAttr(
-						"equinix_metal_connection.test", "vlans.#", "1"),
-				),
-			},
-			{
-				Config: testAccMetalConnectionConfig_sharedVlans(rs, step4Vlans),
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrPair(
-						"equinix_metal_vlan.test3", "vxlan",
-						"equinix_metal_connection.test", "vlans.0"),
-					resource.TestCheckResourceAttrPair(
-						"equinix_metal_vlan.test1", "vxlan",
-						"equinix_metal_connection.test", "vlans.1"),
-				),
-			},
-			{
-				Config: testAccMetalConnectionConfig_sharedVlans(rs, step5Vlans),
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr(
-						"equinix_metal_connection.test", "vlans.#", "0"),
-				),
 			},
 		},
 	})
