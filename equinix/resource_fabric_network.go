@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	v4 "github.com/equinix-labs/fabric-go/fabric/v4"
+	"github.com/equinix/equinix-sdk-go/services/fabricv4"
 	"github.com/equinix/terraform-provider-equinix/internal/config"
 	equinix_errors "github.com/equinix/terraform-provider-equinix/internal/errors"
 	equinix_fabric_schema "github.com/equinix/terraform-provider-equinix/internal/fabric/schema"
@@ -167,28 +168,28 @@ func resourceFabricNetwork() *schema.Resource {
 }
 
 func resourceFabricNetworkCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := meta.(*config.Config).FabricClient
-	ctx = context.WithValue(ctx, v4.ContextAccessToken, meta.(*config.Config).FabricAuthToken)
+	client := meta.(*config.Config).NewFabricClientForSDK(d)
+	ctx = context.WithValue(ctx, fabricv4.ContextAccessToken, meta.(*config.Config).FabricAuthToken)
 	schemaNotifications := d.Get("notifications").([]interface{})
-	notifications := equinix_fabric_schema.NotificationsToFabric(schemaNotifications)
+	notifications := equinix_fabric_schema.NotificationsTerraformToGo(schemaNotifications)
 	schemaLocation := d.Get("location").(*schema.Set).List()
-	location := equinix_fabric_schema.LocationToFabric(schemaLocation)
+	location := equinix_fabric_schema.LocationTerraformToGo(schemaLocation)
 	schemaProject := d.Get("project").(*schema.Set).List()
-	project := equinix_fabric_schema.ProjectToFabric(schemaProject)
-	netType := v4.NetworkType(d.Get("type").(string))
-	netScope := v4.NetworkScope(d.Get("scope").(string))
+	project := equinix_fabric_schema.ProjectTerraformToGo(schemaProject)
+	netType := fabricv4.NetworkType(d.Get("type").(string))
+	netScope := fabricv4.NetworkScope(d.Get("scope").(string))
 
-	createRequest := v4.NetworkPostRequest{
+	createRequest := fabricv4.NetworkPostRequest{
 		Name:          d.Get("name").(string),
-		Type_:         &netType,
-		Scope:         &netScope,
-		Location:      &location,
+		Type:          netType,
+		Scope:         netScope,
+		Location:      location,
 		Notifications: notifications,
 		Project:       project,
 	}
 
 	start := time.Now()
-	fabricNetwork, _, err := client.NetworksApi.CreateNetwork(ctx, createRequest)
+	fabricNetwork, _, err := client.NetworksApi.CreateNetwork(ctx).NetworkPostRequest(createRequest).Execute()
 	if err != nil {
 		return diag.FromErr(equinix_errors.FormatFabricError(err))
 	}
@@ -203,66 +204,57 @@ func resourceFabricNetworkCreate(ctx context.Context, d *schema.ResourceData, me
 }
 
 func resourceFabricNetworkRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := meta.(*config.Config).FabricClient
-	ctx = context.WithValue(ctx, v4.ContextAccessToken, meta.(*config.Config).FabricAuthToken)
-	fabricNetwork, _, err := client.NetworksApi.GetNetworkByUuid(ctx, d.Id())
+	client := meta.(*config.Config).NewFabricClientForSDK(d)
+	ctx = context.WithValue(ctx, fabricv4.ContextAccessToken, meta.(*config.Config).FabricAuthToken)
+	fabricNetwork, _, err := client.NetworksApi.GetNetworkByUuid(ctx, d.Id()).Execute()
 	if err != nil {
 		return diag.FromErr(equinix_errors.FormatFabricError(err))
 	}
 	d.SetId(fabricNetwork.Uuid)
 	return setFabricNetworkMap(d, fabricNetwork)
 }
-func fabricNetworkOperationToTerra(operation *v4.NetworkOperation) *schema.Set {
+func fabricNetworkOperationGoToTerraform(operation *fabricv4.NetworkOperation) *schema.Set {
 	if operation == nil {
 		return nil
 	}
-	operations := []*v4.NetworkOperation{operation}
-	mappedOperations := make([]interface{}, len(operations))
-	for _, operation := range operations {
-		mappedOperation := make(map[string]interface{})
-		mappedOperation["equinix_status"] = string(*operation.EquinixStatus)
-		mappedOperations = append(mappedOperations, mappedOperation)
-	}
+	mappedOperation := make(map[string]interface{})
+	mappedOperation["equinix_status"] = string(*operation.EquinixStatus)
 
 	operationSet := schema.NewSet(
 		schema.HashResource(&schema.Resource{Schema: fabricNetworkOperationSch()}),
-		mappedOperations,
+		[]interface{}{mappedOperation},
 	)
 	return operationSet
 }
-func simplifiedFabricNetworkChangeToTerra(networkChange *v4.SimplifiedNetworkChange) *schema.Set {
-	changes := []*v4.SimplifiedNetworkChange{networkChange}
-	mappedChanges := make([]interface{}, len(changes))
-	for _, change := range changes {
-		mappedChange := make(map[string]interface{})
-		mappedChange["href"] = change.Href
-		mappedChange["type"] = string(*change.Type_)
-		mappedChange["uuid"] = change.Uuid
-		mappedChanges = append(mappedChanges, mappedChange)
-	}
+func simplifiedFabricNetworkChangeGoToTerraform(networkChange *fabricv4.SimplifiedNetworkChange) *schema.Set {
+
+	mappedChange := make(map[string]interface{})
+	mappedChange["href"] = networkChange.Href
+	mappedChange["type"] = string(*networkChange.Type)
+	mappedChange["uuid"] = networkChange.Uuid
 
 	changeSet := schema.NewSet(
 		schema.HashResource(&schema.Resource{Schema: fabricNetworkChangeSch()}),
-		mappedChanges,
+		[]interface{}{mappedChange},
 	)
 	return changeSet
 }
 
-func setFabricNetworkMap(d *schema.ResourceData, nt v4.Network) diag.Diagnostics {
+func setFabricNetworkMap(d *schema.ResourceData, nt fabricv4.Network) diag.Diagnostics {
 	diags := diag.Diagnostics{}
 	err := equinix_schema.SetMap(d, map[string]interface{}{
 		"name":              nt.Name,
 		"href":              nt.Href,
 		"uuid":              nt.Uuid,
-		"type":              nt.Type_,
+		"type":              nt.Type,
 		"scope":             nt.Scope,
 		"state":             nt.State,
-		"operation":         fabricNetworkOperationToTerra(nt.Operation),
-		"change":            simplifiedFabricNetworkChangeToTerra(nt.Change),
-		"location":          equinix_fabric_schema.LocationToTerra(nt.Location),
-		"notifications":     equinix_fabric_schema.NotificationsToTerra(nt.Notifications),
-		"project":           equinix_fabric_schema.ProjectToTerra(nt.Project),
-		"change_log":        equinix_fabric_schema.ChangeLogToTerra(nt.ChangeLog),
+		"operation":         fabricNetworkOperationGoToTerraform(nt.Operation),
+		"change":            simplifiedFabricNetworkChangeGoToTerraform(nt.Change),
+		"location":          equinix_fabric_schema.LocationGoToTerraform(nt.Location),
+		"notifications":     equinix_fabric_schema.NotificationsGoToTerraform(nt.Notifications),
+		"project":           equinix_fabric_schema.ProjectGoToTerraform(nt.Project),
+		"change_log":        equinix_fabric_schema.ChangeLogGoToTerraform(nt.ChangeLog),
 		"connections_count": nt.ConnectionsCount,
 	})
 	if err != nil {

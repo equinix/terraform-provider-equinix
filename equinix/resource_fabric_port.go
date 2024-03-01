@@ -250,7 +250,7 @@ func readGetPortsByNameQueryParamSch() map[string]*schema.Schema {
 	}
 }
 
-func portToFabric(portList []interface{}) *fabricv4.SimplifiedPort {
+func portTerraformToGo(portList []interface{}) *fabricv4.SimplifiedPort {
 	if portList == nil || len(portList) == 0 {
 		return nil
 	}
@@ -262,42 +262,33 @@ func portToFabric(portList []interface{}) *fabricv4.SimplifiedPort {
 	return port
 }
 
-func portToTerra(port *v4.SimplifiedPort) *schema.Set {
-	ports := []*v4.SimplifiedPort{port}
-	mappedPorts := make([]interface{}, len(ports))
-	for _, port := range ports {
-		mappedPort := make(map[string]interface{})
-		mappedPort["href"] = port.Href
-		mappedPort["name"] = port.Name
-		mappedPort["uuid"] = port.Uuid
-		if port.Redundancy != nil {
-			mappedPort["redundancy"] = PortRedundancyToTerra(port.Redundancy)
-		}
-		mappedPorts = append(mappedPorts, mappedPort)
+func portGoToTerraform(port *fabricv4.SimplifiedPort) *schema.Set {
+	mappedPort := make(map[string]interface{})
+	mappedPort["href"] = port.Href
+	mappedPort["name"] = port.Name
+	mappedPort["uuid"] = port.Uuid
+	if port.Redundancy != nil {
+		mappedPort["redundancy"] = portRedundancyGoToTerraform(port.Redundancy)
 	}
 	portSet := schema.NewSet(
 		schema.HashResource(&schema.Resource{Schema: portSch()}),
-		mappedPorts,
+		[]interface{}{mappedPort},
 	)
 	return portSet
 }
 
-func PortRedundancyToTerra(redundancy *v4.PortRedundancy) *schema.Set {
+func portRedundancyGoToTerraform(redundancy *fabricv4.PortRedundancy) *schema.Set {
 	if redundancy == nil {
 		return nil
 	}
-	redundancies := []*v4.PortRedundancy{redundancy}
-	mappedRedundancies := make([]interface{}, 0)
-	for _, redundancy := range redundancies {
-		mappedRedundancy := make(map[string]interface{})
-		mappedRedundancy["enabled"] = redundancy.Enabled
-		mappedRedundancy["group"] = redundancy.Group
-		mappedRedundancy["priority"] = string(*redundancy.Priority)
-		mappedRedundancies = append(mappedRedundancies, mappedRedundancy)
-	}
+	mappedRedundancy := make(map[string]interface{})
+	mappedRedundancy["enabled"] = redundancy.Enabled
+	mappedRedundancy["group"] = redundancy.Group
+	mappedRedundancy["priority"] = string(*redundancy.Priority)
+
 	redundancySet := schema.NewSet(
 		schema.HashResource(&schema.Resource{Schema: PortRedundancySch()}),
-		mappedRedundancies,
+		[]interface{}{mappedRedundancy},
 	)
 	return redundancySet
 }
@@ -400,10 +391,10 @@ func fabricPortsListToTerra(ports v4.AllPortsResponse) []map[string]interface{} 
 			"state":               port.State,
 			"service_type":        port.ServiceType,
 			"operation":           portOperationToTerra(port.Operation),
-			"redundancy":          PortRedundancyToTerra(port.Redundancy),
-			"account":             equinix_fabric_schema.AccountToTerra(port.Account),
-			"change_log":          equinix_fabric_schema.ChangeLogToTerra(port.Changelog),
-			"location":            equinix_fabric_schema.LocationToTerra(port.Location),
+			"redundancy":          portRedundancyGoToTerraform(port.Redundancy),
+			"account":             equinix_fabric_schema.AccountGoToTerraform(port.Account),
+			"change_log":          equinix_fabric_schema.ChangeLogGoToTerraform(port.Changelog),
+			"location":            equinix_fabric_schema.LocationGoToTerraform(port.Location),
 			"device":              portDeviceToTerra(port.Device),
 			"encapsulation":       portEncapsulationToTerra(port.Encapsulation),
 			"lag_enabled":         port.LagEnabled,
@@ -440,10 +431,10 @@ func setFabricPortMap(d *schema.ResourceData, port v4.Port) diag.Diagnostics {
 		"state":               port.State,
 		"service_type":        port.ServiceType,
 		"operation":           portOperationToTerra(port.Operation),
-		"redundancy":          PortRedundancyToTerra(port.Redundancy),
-		"account":             equinix_fabric_schema.AccountToTerra(port.Account),
-		"change_log":          equinix_fabric_schema.ChangeLogToTerra(port.Changelog),
-		"location":            equinix_fabric_schema.LocationToTerra(port.Location),
+		"redundancy":          portRedundancyGoToTerraform(port.Redundancy),
+		"account":             equinix_fabric_schema.AccountGoToTerraform(port.Account),
+		"change_log":          equinix_fabric_schema.ChangeLogGoToTerraform(port.Changelog),
+		"location":            equinix_fabric_schema.LocationGoToTerraform(port.Location),
 		"device":              portDeviceToTerra(port.Device),
 		"encapsulation":       portEncapsulationToTerra(port.Encapsulation),
 		"lag_enabled":         port.LagEnabled,

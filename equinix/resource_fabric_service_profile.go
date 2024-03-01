@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/equinix/equinix-sdk-go/services/fabricv4"
 	"log"
 	"strconv"
 	"strings"
@@ -1024,21 +1025,22 @@ func accessPointTypeConfigsToFabric(schemaAccessPointTypeConfigs []interface{}) 
 	return accessPointTypeConfigs
 }
 
-func accessPointTypeConfigToTerra(spAccessPointTypes []v4.ServiceProfileAccessPointType) []interface{} {
+func accessPointTypeConfigToTerra(spAccessPointTypes []fabricv4.ServiceProfileAccessPointType) []interface{} {
 	mappedSpAccessPointTypes := make([]interface{}, len(spAccessPointTypes))
 	for index, spAccessPointType := range spAccessPointTypes {
+		spAccessPointTypeColo := spAccessPointType.ServiceProfileAccessPointTypeCOLO
 		mappedSpAccessPointTypes[index] = map[string]interface{}{
-			"type":                             string(*spAccessPointType.Type_),
-			"uuid":                             spAccessPointType.Uuid,
-			"allow_remote_connections":         spAccessPointType.AllowRemoteConnections,
-			"allow_custom_bandwidth":           spAccessPointType.AllowCustomBandwidth,
-			"allow_bandwidth_auto_approval":    spAccessPointType.AllowBandwidthAutoApproval,
-			"enable_auto_generate_service_key": spAccessPointType.EnableAutoGenerateServiceKey,
-			"connection_redundancy_required":   spAccessPointType.ConnectionRedundancyRequired,
-			"connection_label":                 spAccessPointType.ConnectionLabel,
-			"api_config":                       apiConfigToTerra(spAccessPointType.ApiConfig),
-			"authentication_key":               authenticationKeyToTerra(spAccessPointType.AuthenticationKey),
-			"supported_bandwidths":             supportedBandwidthsToTerra(spAccessPointType.SupportedBandwidths),
+			"type":                             string(spAccessPointTypeColo.Type),
+			"uuid":                             spAccessPointTypeColo.Uuid,
+			"allow_remote_connections":         spAccessPointTypeColo.AllowRemoteConnections,
+			"allow_custom_bandwidth":           spAccessPointTypeColo.AllowCustomBandwidth,
+			"allow_bandwidth_auto_approval":    spAccessPointTypeColo.AllowBandwidthAutoApproval,
+			"enable_auto_generate_service_key": spAccessPointTypeColo.EnableAutoGenerateServiceKey,
+			"connection_redundancy_required":   spAccessPointTypeColo.ConnectionRedundancyRequired,
+			"connection_label":                 spAccessPointTypeColo.ConnectionLabel,
+			"api_config":                       apiConfigToTerra(spAccessPointTypeColo.ApiConfig),
+			"authentication_key":               authenticationKeyToTerra(spAccessPointTypeColo.AuthenticationKey),
+			"supported_bandwidths":             supportedBandwidthsToTerra(spAccessPointTypeColo.SupportedBandwidths),
 		}
 	}
 

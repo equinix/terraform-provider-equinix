@@ -23,39 +23,34 @@ func OrderTerraformToGo(orderTerraform []interface{}) *fabricv4.Order {
 	return order
 }
 
-func OrderToTerra(order *v4.Order) *schema.Set {
+func OrderGoToTerraform(order *fabricv4.Order) *schema.Set {
 	if order == nil {
 		return nil
 	}
-	orders := []*v4.Order{order}
-	mappedOrders := make([]interface{}, len(orders))
-	for _, order := range orders {
-		mappedOrder := make(map[string]interface{})
-		mappedOrder["purchase_order_number"] = order.PurchaseOrderNumber
-		mappedOrder["billing_tier"] = order.BillingTier
-		mappedOrder["order_id"] = order.OrderId
-		mappedOrder["order_number"] = order.OrderNumber
-		mappedOrders = append(mappedOrders, mappedOrder)
-	}
+	mappedOrder := make(map[string]interface{})
+	mappedOrder["purchase_order_number"] = order.PurchaseOrderNumber
+	mappedOrder["billing_tier"] = order.BillingTier
+	mappedOrder["order_id"] = order.OrderId
+	mappedOrder["order_number"] = order.OrderNumber
 	orderSet := schema.NewSet(
 		schema.HashResource(&schema.Resource{Schema: OrderSch()}),
-		mappedOrders,
+		[]interface{}{mappedOrder},
 	)
 	return orderSet
 }
 
-func AccountToTerra[Account *v4.SimplifiedAccount | *v4.AllOfServiceProfileAccount](account Account) *schema.Set {
+func AccountGoToTerraform[Account *fabricv4.SimplifiedAccount | *v4.AllOfServiceProfileAccount](account Account) *schema.Set {
 	if account == nil {
 		return nil
 	}
 	var mappedAccount map[string]interface{}
 	switch any(account).(type) {
-	case *v4.SimplifiedAccount:
-		simplifiedAccount := any(account).(*v4.SimplifiedAccount)
+	case *fabricv4.SimplifiedAccount:
+		simplifiedAccount := any(account).(*fabricv4.SimplifiedAccount)
 		mappedAccount = map[string]interface{}{
-			"account_number":           int(simplifiedAccount.AccountNumber),
+			"account_number":           int(*simplifiedAccount.AccountNumber),
 			"account_name":             simplifiedAccount.AccountName,
-			"org_id":                   int(simplifiedAccount.OrgId),
+			"org_id":                   int(*simplifiedAccount.OrgId),
 			"organization_name":        simplifiedAccount.OrganizationName,
 			"global_org_id":            simplifiedAccount.GlobalOrgId,
 			"global_organization_name": simplifiedAccount.GlobalOrganizationName,
@@ -106,14 +101,14 @@ func NotificationsTerraformToGo(notificationsTerraform []interface{}) []fabricv4
 	return notifications
 }
 
-func NotificationsToTerra(notifications []v4.SimplifiedNotification) []map[string]interface{} {
+func NotificationsGoToTerraform(notifications []fabricv4.SimplifiedNotification) []map[string]interface{} {
 	if notifications == nil {
 		return nil
 	}
 	mappedNotifications := make([]map[string]interface{}, len(notifications))
 	for index, notification := range notifications {
 		mappedNotifications[index] = map[string]interface{}{
-			"type":          notification.Type_,
+			"type":          notification.Type,
 			"send_interval": notification.SendInterval,
 			"emails":        notification.Emails,
 		}
@@ -121,7 +116,7 @@ func NotificationsToTerra(notifications []v4.SimplifiedNotification) []map[strin
 	return mappedNotifications
 }
 
-func LocationToFabric(locationList []interface{}) *fabricv4.SimplifiedLocation {
+func LocationTerraformToGo(locationList []interface{}) *fabricv4.SimplifiedLocation {
 	if locationList == nil || len(locationList) == 0 {
 		return nil
 	}
@@ -136,7 +131,7 @@ func LocationToFabric(locationList []interface{}) *fabricv4.SimplifiedLocation {
 	return location
 }
 
-func LocationToTerra(location *v4.SimplifiedLocation) *schema.Set {
+func LocationGoToTerraform(location *fabricv4.SimplifiedLocation) *schema.Set {
 	if location == nil {
 		return nil
 	}
@@ -153,7 +148,7 @@ func LocationToTerra(location *v4.SimplifiedLocation) *schema.Set {
 	return locationSet
 }
 
-func LocationWithoutIBXToFabric(locationList []interface{}) v4.SimplifiedLocationWithoutIbx {
+func LocationWithoutIBXTerraformToGo(locationList []interface{}) v4.SimplifiedLocationWithoutIbx {
 	sl := v4.SimplifiedLocationWithoutIbx{}
 	for _, ll := range locationList {
 		llMap := ll.(map[string]interface{})
@@ -163,19 +158,16 @@ func LocationWithoutIBXToFabric(locationList []interface{}) v4.SimplifiedLocatio
 	return sl
 }
 
-func LocationWithoutIBXToTerra(location *v4.SimplifiedLocationWithoutIbx) *schema.Set {
-	locations := []*v4.SimplifiedLocationWithoutIbx{location}
-	mappedLocations := make([]interface{}, len(locations))
-	for i, location := range locations {
-		mappedLocations[i] = map[string]interface{}{
-			"region":     location.Region,
-			"metro_name": location.MetroName,
-			"metro_code": location.MetroCode,
-		}
+func LocationWithoutIBXGoToTerraform(location *fabricv4.SimplifiedLocationWithoutIBX) *schema.Set {
+	mappedLocation := map[string]interface{}{
+		"region":     location.Region,
+		"metro_name": location.MetroName,
+		"metro_code": location.MetroCode,
 	}
+
 	locationSet := schema.NewSet(
 		schema.HashResource(&schema.Resource{Schema: LocationSch()}),
-		mappedLocations,
+		[]interface{}{mappedLocation},
 	)
 	return locationSet
 }
@@ -192,7 +184,7 @@ func ProjectTerraformToGo(projectTerraform []interface{}) *fabricv4.Project {
 	return project
 }
 
-func ProjectToTerra(project *v4.Project) *schema.Set {
+func ProjectGoToTerraform(project *fabricv4.Project) *schema.Set {
 	if project == nil {
 		return nil
 	}
@@ -204,14 +196,14 @@ func ProjectToTerra(project *v4.Project) *schema.Set {
 	return projectSet
 }
 
-func ChangeLogToTerra[ChangeLog *v4.Changelog | *v4.AllOfServiceProfileChangeLog](changeLog ChangeLog) *schema.Set {
+func ChangeLogGoToTerraform[ChangeLog *fabricv4.Changelog | *v4.AllOfServiceProfileChangeLog](changeLog ChangeLog) *schema.Set {
 	if changeLog == nil {
 		return nil
 	}
 	var mappedChangeLog map[string]interface{}
 	switch any(changeLog).(type) {
-	case *v4.Changelog:
-		baseChangeLog := any(changeLog).(*v4.Changelog)
+	case *fabricv4.Changelog:
+		baseChangeLog := any(changeLog).(*fabricv4.Changelog)
 		mappedChangeLog = map[string]interface{}{
 			"created_by":           baseChangeLog.CreatedBy,
 			"created_by_full_name": baseChangeLog.CreatedByFullName,
@@ -250,8 +242,8 @@ func ChangeLogToTerra[ChangeLog *v4.Changelog | *v4.AllOfServiceProfileChangeLog
 	return changeLogSet
 }
 
-func ErrorToTerra(errors []v4.ModelError) []interface{} {
-	if errors == nil {
+func ErrorGoToTerraform(errors []fabricv4.Error) []interface{} {
+	if errors == nil || len(errors) == 0 {
 		return nil
 	}
 	mappedErrors := make([]interface{}, len(errors))
@@ -262,13 +254,13 @@ func ErrorToTerra(errors []v4.ModelError) []interface{} {
 			"correlation_id":  mError.CorrelationId,
 			"details":         mError.Details,
 			"help":            mError.Help,
-			"additional_info": ErrorAdditionalInfoToTerra(mError.AdditionalInfo),
+			"additional_info": ErrorAdditionalInfoGoToTerraform(mError.AdditionalInfo),
 		}
 	}
 	return mappedErrors
 }
 
-func ErrorAdditionalInfoToTerra(additionalInfol []v4.PriceErrorAdditionalInfo) []interface{} {
+func ErrorAdditionalInfoGoToTerraform(additionalInfol []fabricv4.PriceErrorAdditionalInfo) []interface{} {
 	if additionalInfol == nil {
 		return nil
 	}
