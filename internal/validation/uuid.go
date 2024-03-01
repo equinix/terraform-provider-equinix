@@ -8,7 +8,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 )
 
-// uuidValidator validates that a string Attribute's value is valid JSON.
+// uuidValidator validates that a string Attribute's value is valid UUID.
 type uuidValidator struct{}
 
 // Description describes the validation in plain text formatting.
