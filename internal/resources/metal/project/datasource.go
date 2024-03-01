@@ -102,19 +102,3 @@ func (r *DataSource) Read(
 	// Update the Terraform state
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
-
-// func findProjectByName(ps *metalv1.ProjectList, name string) (*metalv1.Project, error) {
-// 	results := make([]metalv1.Project, 0)
-// 	for _, p := range ps.Projects {
-// 		if p.GetName() == name {
-// 			results = append(results, p)
-// 		}
-// 	}
-// 	if len(results) == 1 {
-// 		return &results[0], nil
-// 	}
-// 	if len(results) == 0 {
-// 		return nil, fmt.Errorf("no project found with name %s", name)
-// 	}
-// 	return nil, fmt.Errorf("too many projects found with name %s (found %d, expected 1)", name, len(results))
-// }
