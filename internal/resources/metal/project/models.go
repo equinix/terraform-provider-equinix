@@ -65,17 +65,3 @@ func parseBGPConfig(ctx context.Context, bgpConfig *metalv1.BgpConfig) fwtypes.L
 	}
 	return fwtypes.NewListNestedObjectValueOfNull[BGPConfigModel](ctx)
 }
-
-func (bgp *BGPConfigModel) equal(other *BGPConfigModel) bool {
-    if bgp == nil && other == nil {
-        return true
-    }
-    if bgp == nil || other == nil {
-        return false
-    }
-    return bgp.DeploymentType == other.DeploymentType &&
-           bgp.ASN == other.ASN &&
-           bgp.MD5 == other.MD5 &&
-           bgp.Status == other.Status &&
-           bgp.MaxPrefix == other.MaxPrefix
-}
