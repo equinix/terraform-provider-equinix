@@ -248,6 +248,15 @@ func HasModelErrorCode(errors []fabric.ModelError, code string) bool {
 	return false
 }
 
+func HasErrorCode(errors []fabricv4.Error, code string) bool {
+	for _, err := range errors {
+		if err.ErrorCode == code {
+			return true
+		}
+	}
+	return false
+}
+
 // ignoreHttpResponseErrors ignores http response errors when matched by one of the
 // provided checks
 func IgnoreHttpResponseErrors(ignore ...func(resp *http.Response, err error) bool) func(resp *http.Response, err error) error {

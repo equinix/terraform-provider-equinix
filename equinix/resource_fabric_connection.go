@@ -13,7 +13,6 @@ import (
 
 	"github.com/equinix/terraform-provider-equinix/internal/config"
 
-	v4 "github.com/equinix-labs/fabric-go/fabric/v4"
 	"github.com/equinix/equinix-sdk-go/services/fabricv4"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
@@ -653,7 +652,7 @@ func resourceFabricConnectionCreate(ctx context.Context, d *schema.ResourceData,
 	d.SetId(*conn.Uuid)
 
 	createTimeout := d.Timeout(schema.TimeoutCreate) - 30*time.Second - time.Since(start)
-	if err = waitUntilConnectionIsCreated(d.Id(), meta, ctx, createTimeout); err != nil {
+	if err = waitUntilConnectionIsCreated(d.Id(), meta, d, ctx, createTimeout); err != nil {
 		return diag.Errorf("error waiting for connection (%s) to be created: %s", d.Id(), err)
 	}
 
@@ -673,7 +672,7 @@ func resourceFabricConnectionCreate(ctx context.Context, d *schema.ResourceData,
 		}
 
 		createTimeout := d.Timeout(schema.TimeoutCreate) - 30*time.Second - time.Since(start)
-		if _, statusChangeErr := waitForConnectionProviderStatusChange(d.Id(), meta, ctx, createTimeout); statusChangeErr != nil {
+		if _, statusChangeErr := waitForConnectionProviderStatusChange(d.Id(), meta, d, ctx, createTimeout); statusChangeErr != nil {
 			return diag.Errorf("error waiting for AWS Approval for connection %s: %v", d.Id(), statusChangeErr)
 		}
 	}
@@ -699,7 +698,7 @@ func additionalInfoContainsAWSSecrets(info []interface{}) ([]interface{}, bool) 
 
 func resourceFabricConnectionRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*config.Config).NewFabricClientForSDK(d)
-	ctx = context.WithValue(ctx, v4.ContextAccessToken, meta.(*config.Config).FabricAuthToken)
+	ctx = context.WithValue(ctx, fabricv4.ContextAccessToken, meta.(*config.Config).FabricAuthToken)
 	conn, _, err := client.ConnectionsApi.GetConnectionByUuid(ctx, d.Id()).Execute()
 	if err != nil {
 		log.Printf("[WARN] Connection %s not found , error %s", d.Id(), err)
@@ -760,11 +759,11 @@ func setFabricMap(d *schema.ResourceData, conn *fabricv4.Connection) diag.Diagno
 }
 
 func resourceFabricConnectionUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := meta.(*config.Config).FabricClient
-	ctx = context.WithValue(ctx, v4.ContextAccessToken, meta.(*config.Config).FabricAuthToken)
+	client := meta.(*config.Config).NewFabricClientForSDK(d)
+	ctx = context.WithValue(ctx, fabricv4.ContextAccessToken, meta.(*config.Config).FabricAuthToken)
 	start := time.Now()
 	updateTimeout := d.Timeout(schema.TimeoutUpdate) - 30*time.Second - time.Since(start)
-	dbConn, err := verifyConnectionCreated(d.Id(), meta, ctx, updateTimeout)
+	dbConn, err := verifyConnectionCreated(d.Id(), meta, d, ctx, updateTimeout)
 	if err != nil {
 		if !strings.Contains(err.Error(), "500") {
 			d.SetId("")
@@ -781,13 +780,13 @@ func resourceFabricConnectionUpdate(ctx context.Context, d *schema.ResourceData,
 	updatedConn := dbConn
 
 	for _, update := range updateRequests {
-		_, _, err := client.ConnectionsApi.UpdateConnectionByUuid(ctx, update, d.Id())
+		_, _, err := client.ConnectionsApi.UpdateConnectionByUuid(ctx, d.Id()).ConnectionChangeOperation(update).Execute()
 		if err != nil {
 			diags = append(diags, diag.Diagnostic{Severity: 0, Summary: fmt.Sprintf("connection property update request error: %v [update payload: %v] (other updates will be successful if the payload is not shown)", equinix_errors.FormatFabricError(err), update)})
 			continue
 		}
 
-		var waitFunction func(uuid string, meta interface{}, ctx context.Context, timeout time.Duration) (v4.Connection, error)
+		var waitFunction func(uuid string, meta interface{}, d *schema.ResourceData, ctx context.Context, timeout time.Duration) (*fabricv4.Connection, error)
 		if update[0].Op == "replace" {
 			// Update type is either name or bandwidth
 			waitFunction = waitForConnectionUpdateCompletion
@@ -797,7 +796,7 @@ func resourceFabricConnectionUpdate(ctx context.Context, d *schema.ResourceData,
 		}
 
 		updateTimeout := d.Timeout(schema.TimeoutUpdate) - 30*time.Second - time.Since(start)
-		conn, err := waitFunction(d.Id(), meta, ctx, updateTimeout)
+		conn, err := waitFunction(d.Id(), meta, d, ctx, updateTimeout)
 
 		if err != nil {
 			diags = append(diags, diag.Diagnostic{Severity: 0, Summary: fmt.Sprintf("connection property update completion timeout error: %v [update payload: %v] (other updates will be successful if the payload is not shown)", err, update)})
@@ -806,23 +805,23 @@ func resourceFabricConnectionUpdate(ctx context.Context, d *schema.ResourceData,
 		}
 	}
 
-	d.SetId(updatedConn.Uuid)
+	d.SetId(*updatedConn.Uuid)
 	return append(diags, setFabricMap(d, updatedConn)...)
 }
 
-func waitForConnectionUpdateCompletion(uuid string, meta interface{}, ctx context.Context, timeout time.Duration) (v4.Connection, error) {
+func waitForConnectionUpdateCompletion(uuid string, meta interface{}, d *schema.ResourceData, ctx context.Context, timeout time.Duration) (*fabricv4.Connection, error) {
 	log.Printf("[DEBUG] Waiting for connection update to complete, uuid %s", uuid)
 	stateConf := &retry.StateChangeConf{
 		Target: []string{"COMPLETED"},
 		Refresh: func() (interface{}, string, error) {
-			client := meta.(*config.Config).FabricClient
-			dbConn, _, err := client.ConnectionsApi.GetConnectionByUuid(ctx, uuid, nil)
+			client := meta.(*config.Config).NewFabricClientForSDK(d)
+			dbConn, _, err := client.ConnectionsApi.GetConnectionByUuid(ctx, uuid).Execute()
 			if err != nil {
 				return "", "", equinix_errors.FormatFabricError(err)
 			}
 			updatableState := ""
-			if dbConn.Change.Status == "COMPLETED" {
-				updatableState = dbConn.Change.Status
+			if string(*dbConn.Change.Status) == "COMPLETED" {
+				updatableState = string(*dbConn.Change.Status)
 			}
 			return dbConn, updatableState, nil
 		},
@@ -832,28 +831,28 @@ func waitForConnectionUpdateCompletion(uuid string, meta interface{}, ctx contex
 	}
 
 	inter, err := stateConf.WaitForStateContext(ctx)
-	dbConn := v4.Connection{}
+	var dbConn *fabricv4.Connection
 
 	if err == nil {
-		dbConn = inter.(v4.Connection)
+		dbConn = inter.(*fabricv4.Connection)
 	}
 	return dbConn, err
 }
 
-func waitUntilConnectionIsCreated(uuid string, meta interface{}, ctx context.Context, timeout time.Duration) error {
+func waitUntilConnectionIsCreated(uuid string, meta interface{}, d *schema.ResourceData, ctx context.Context, timeout time.Duration) error {
 	log.Printf("Waiting for connection to be created, uuid %s", uuid)
 	stateConf := &retry.StateChangeConf{
 		Pending: []string{
-			string(v4.PROVISIONING_ConnectionState),
+			string(fabricv4.CONNECTIONSTATE_PROVISIONING),
 		},
 		Target: []string{
-			string(v4.PENDING_ConnectionState),
-			string(v4.PROVISIONED_ConnectionState),
-			string(v4.ACTIVE_ConnectionState),
+			string(fabricv4.CONNECTIONSTATE_PENDING),
+			string(fabricv4.CONNECTIONSTATE_PROVISIONED),
+			string(fabricv4.CONNECTIONSTATE_ACTIVE),
 		},
 		Refresh: func() (interface{}, string, error) {
-			client := meta.(*config.Config).FabricClient
-			dbConn, _, err := client.ConnectionsApi.GetConnectionByUuid(ctx, uuid, nil)
+			client := meta.(*config.Config).NewFabricClientForSDK(d)
+			dbConn, _, err := client.ConnectionsApi.GetConnectionByUuid(ctx, uuid).Execute()
 			if err != nil {
 				return "", "", equinix_errors.FormatFabricError(err)
 			}
@@ -869,19 +868,19 @@ func waitUntilConnectionIsCreated(uuid string, meta interface{}, ctx context.Con
 	return err
 }
 
-func waitForConnectionProviderStatusChange(uuid string, meta interface{}, ctx context.Context, timeout time.Duration) (v4.Connection, error) {
+func waitForConnectionProviderStatusChange(uuid string, meta interface{}, d *schema.ResourceData, ctx context.Context, timeout time.Duration) (*fabricv4.Connection, error) {
 	log.Printf("DEBUG: wating for provider status to update. Connection uuid: %s", uuid)
 	stateConf := &retry.StateChangeConf{
 		Pending: []string{
-			string(v4.PENDING_APPROVAL_ProviderStatus),
-			string(v4.PROVISIONING_ProviderStatus),
+			string(fabricv4.PROVIDERSTATUS_PENDING_APPROVAL),
+			string(fabricv4.PROVIDERSTATUS_PROVISIONING),
 		},
 		Target: []string{
-			string(v4.PROVISIONED_ProviderStatus),
+			string(fabricv4.PROVIDERSTATUS_PROVISIONED),
 		},
 		Refresh: func() (interface{}, string, error) {
-			client := meta.(*config.Config).FabricClient
-			dbConn, _, err := client.ConnectionsApi.GetConnectionByUuid(ctx, uuid, nil)
+			client := meta.(*config.Config).NewFabricClientForSDK(d)
+			dbConn, _, err := client.ConnectionsApi.GetConnectionByUuid(ctx, uuid).Execute()
 			if err != nil {
 				return "", "", equinix_errors.FormatFabricError(err)
 			}
@@ -893,25 +892,25 @@ func waitForConnectionProviderStatusChange(uuid string, meta interface{}, ctx co
 	}
 
 	inter, err := stateConf.WaitForStateContext(ctx)
-	dbConn := v4.Connection{}
+	var dbConn *fabricv4.Connection
 
 	if err == nil {
-		dbConn = inter.(v4.Connection)
+		dbConn = inter.(*fabricv4.Connection)
 	}
 	return dbConn, err
 }
 
-func verifyConnectionCreated(uuid string, meta interface{}, ctx context.Context, timeout time.Duration) (v4.Connection, error) {
+func verifyConnectionCreated(uuid string, meta interface{}, d *schema.ResourceData, ctx context.Context, timeout time.Duration) (*fabricv4.Connection, error) {
 	log.Printf("Waiting for connection to be in created state, uuid %s", uuid)
 	stateConf := &retry.StateChangeConf{
 		Target: []string{
-			string(v4.ACTIVE_ConnectionState),
-			string(v4.PROVISIONED_ConnectionState),
-			string(v4.PENDING_ConnectionState),
+			string(fabricv4.CONNECTIONSTATE_ACTIVE),
+			string(fabricv4.CONNECTIONSTATE_PROVISIONED),
+			string(fabricv4.CONNECTIONSTATE_PENDING),
 		},
 		Refresh: func() (interface{}, string, error) {
-			client := meta.(*config.Config).FabricClient
-			dbConn, _, err := client.ConnectionsApi.GetConnectionByUuid(ctx, uuid, nil)
+			client := meta.(*config.Config).NewFabricClientForSDK(d)
+			dbConn, _, err := client.ConnectionsApi.GetConnectionByUuid(ctx, uuid).Execute()
 			if err != nil {
 				return "", "", equinix_errors.FormatFabricError(err)
 			}
@@ -923,25 +922,25 @@ func verifyConnectionCreated(uuid string, meta interface{}, ctx context.Context,
 	}
 
 	inter, err := stateConf.WaitForStateContext(ctx)
-	dbConn := v4.Connection{}
+	var dbConn *fabricv4.Connection
 
 	if err == nil {
-		dbConn = inter.(v4.Connection)
+		dbConn = inter.(*fabricv4.Connection)
 	}
 	return dbConn, err
 }
 
 func resourceFabricConnectionDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	diags := diag.Diagnostics{}
-	client := meta.(*config.Config).FabricClient
-	ctx = context.WithValue(ctx, v4.ContextAccessToken, meta.(*config.Config).FabricAuthToken)
+	client := meta.(*config.Config).NewFabricClientForSDK(d)
+	ctx = context.WithValue(ctx, fabricv4.ContextAccessToken, meta.(*config.Config).FabricAuthToken)
 	start := time.Now()
-	_, _, err := client.ConnectionsApi.DeleteConnectionByUuid(ctx, d.Id())
+	_, _, err := client.ConnectionsApi.DeleteConnectionByUuid(ctx, d.Id()).Execute()
 	if err != nil {
-		errors, ok := err.(v4.GenericSwaggerError).Model().([]v4.ModelError)
+		errors, ok := err.(fabricv4.GenericOpenAPIError).Model().([]fabricv4.Error)
 		if ok {
 			// EQ-3142509 = Connection already deleted
-			if equinix_errors.HasModelErrorCode(errors, "EQ-3142509") {
+			if equinix_errors.HasErrorCode(errors, "EQ-3142509") {
 				return diags
 			}
 		}
@@ -949,25 +948,25 @@ func resourceFabricConnectionDelete(ctx context.Context, d *schema.ResourceData,
 	}
 
 	deleteTimeout := d.Timeout(schema.TimeoutDelete) - 30*time.Second - time.Since(start)
-	err = WaitUntilConnectionDeprovisioned(d.Id(), meta, ctx, deleteTimeout)
+	err = WaitUntilConnectionDeprovisioned(d.Id(), meta, d, ctx, deleteTimeout)
 	if err != nil {
 		return diag.FromErr(fmt.Errorf("API call failed while waiting for resource deletion. Error %v", err))
 	}
 	return diags
 }
 
-func WaitUntilConnectionDeprovisioned(uuid string, meta interface{}, ctx context.Context, timeout time.Duration) error {
+func WaitUntilConnectionDeprovisioned(uuid string, meta interface{}, d *schema.ResourceData, ctx context.Context, timeout time.Duration) error {
 	log.Printf("Waiting for connection to be deprovisioned, uuid %s", uuid)
 	stateConf := &retry.StateChangeConf{
 		Pending: []string{
-			string(v4.DEPROVISIONING_ConnectionState),
+			string(fabricv4.CONNECTIONSTATE_DEPROVISIONING),
 		},
 		Target: []string{
-			string(v4.DEPROVISIONED_ConnectionState),
+			string(fabricv4.CONNECTIONSTATE_DEPROVISIONED),
 		},
 		Refresh: func() (interface{}, string, error) {
-			client := meta.(*config.Config).FabricClient
-			dbConn, _, err := client.ConnectionsApi.GetConnectionByUuid(ctx, uuid, nil)
+			client := meta.(*config.Config).NewFabricClientForSDK(d)
+			dbConn, _, err := client.ConnectionsApi.GetConnectionByUuid(ctx, uuid).Execute()
 			if err != nil {
 				return "", "", equinix_errors.FormatFabricError(err)
 			}
@@ -1475,8 +1474,8 @@ func supportedBandwidthsGoToTerraform(supportedBandwidths []int32) []interface{}
 	return mappedSupportedBandwidths
 }
 
-func getUpdateRequests(conn v4.Connection, d *schema.ResourceData) ([][]v4.ConnectionChangeOperation, error) {
-	var changeOps [][]v4.ConnectionChangeOperation
+func getUpdateRequests(conn *fabricv4.Connection, d *schema.ResourceData) ([][]fabricv4.ConnectionChangeOperation, error) {
+	var changeOps [][]fabricv4.ConnectionChangeOperation
 	existingName := conn.Name
 	existingBandwidth := int(conn.Bandwidth)
 	updateNameVal := d.Get("name").(string)
@@ -1486,7 +1485,7 @@ func getUpdateRequests(conn v4.Connection, d *schema.ResourceData) ([][]v4.Conne
 	awsSecrets, hasAWSSecrets := additionalInfoContainsAWSSecrets(additionalInfo)
 
 	if existingName != updateNameVal {
-		changeOps = append(changeOps, []v4.ConnectionChangeOperation{
+		changeOps = append(changeOps, []fabricv4.ConnectionChangeOperation{
 			{
 				Op:    "replace",
 				Path:  "/name",
@@ -1496,7 +1495,7 @@ func getUpdateRequests(conn v4.Connection, d *schema.ResourceData) ([][]v4.Conne
 	}
 
 	if existingBandwidth != updateBandwidthVal {
-		changeOps = append(changeOps, []v4.ConnectionChangeOperation{
+		changeOps = append(changeOps, []fabricv4.ConnectionChangeOperation{
 			{
 				Op:    "replace",
 				Path:  "/bandwidth",
@@ -1505,8 +1504,8 @@ func getUpdateRequests(conn v4.Connection, d *schema.ResourceData) ([][]v4.Conne
 		})
 	}
 
-	if *conn.Operation.ProviderStatus == v4.PENDING_APPROVAL_ProviderStatus && hasAWSSecrets {
-		changeOps = append(changeOps, []v4.ConnectionChangeOperation{
+	if *conn.Operation.ProviderStatus == fabricv4.PROVIDERSTATUS_PENDING_APPROVAL && hasAWSSecrets {
+		changeOps = append(changeOps, []fabricv4.ConnectionChangeOperation{
 			{
 				Op:    "add",
 				Path:  "",

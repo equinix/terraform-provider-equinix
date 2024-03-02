@@ -372,7 +372,7 @@ func portEncapsulationToTerra(portEncapsulation *v4.PortEncapsulation) *schema.S
 	return portEncapsulationSet
 }
 
-func fabricPortsListToTerra(ports v4.AllPortsResponse) []map[string]interface{} {
+func fabricPortsListGoToTerraform(ports v4.AllPortsResponse) []map[string]interface{} {
 	portsl := ports.Data
 	if portsl == nil {
 		return nil
@@ -448,7 +448,7 @@ func setFabricPortMap(d *schema.ResourceData, port v4.Port) diag.Diagnostics {
 func setPortsListMap(d *schema.ResourceData, spl v4.AllPortsResponse) diag.Diagnostics {
 	diags := diag.Diagnostics{}
 	err := equinix_schema.SetMap(d, map[string]interface{}{
-		"data": fabricPortsListToTerra(spl),
+		"data": fabricPortsListGoToTerraform(spl),
 	})
 	if err != nil {
 		return diag.FromErr(err)
