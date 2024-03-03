@@ -3,6 +3,7 @@ package connection
 import (
 	"context"
 
+	"github.com/equinix/equinix-sdk-go/services/metalv1"
 	"github.com/equinix/terraform-provider-equinix/internal/framework"
 	fwtypes "github.com/equinix/terraform-provider-equinix/internal/framework/types"
 
@@ -16,7 +17,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"github.com/packethost/packngo"
 )
 
 func resourceSchema(ctx context.Context) schema.Schema {
@@ -59,8 +59,8 @@ func resourceSchema(ctx context.Context) schema.Schema {
 				Required:    true,
 				Validators: []validator.String{
 					stringvalidator.OneOf(
-						string(packngo.ConnectionRedundant),
-						string(packngo.ConnectionPrimary),
+						string(metalv1.INTERCONNECTIONREDUNDANCY_REDUNDANT),
+						string(metalv1.INTERCONNECTIONREDUNDANCY_PRIMARY),
 					),
 				},
 			},
@@ -69,7 +69,6 @@ func resourceSchema(ctx context.Context) schema.Schema {
 				Optional:    true,
 				Computed:    true,
 				PlanModifiers: []planmodifier.String{
-					stringplanmodifier.RequiresReplace(), // TODO(displague) packngo needs updating
 					stringplanmodifier.UseStateForUnknown(),
 				},
 			},
@@ -81,8 +80,8 @@ func resourceSchema(ctx context.Context) schema.Schema {
 				},
 				Validators: []validator.String{
 					stringvalidator.OneOf(
-						string(packngo.ConnectionDedicated),
-						string(packngo.ConnectionShared),
+						string(metalv1.INTERCONNECTIONTYPE_DEDICATED),
+						string(metalv1.INTERCONNECTIONTYPE_SHARED),
 					),
 				},
 			},
@@ -109,11 +108,11 @@ func resourceSchema(ctx context.Context) schema.Schema {
 				Description: "Mode for connections in IBX facilities with the dedicated type - standard or tunnel",
 				Optional:    true,
 				Computed:    true,
-				Default:     stringdefault.StaticString(string(packngo.ConnectionModeStandard)),
+				Default:     stringdefault.StaticString(string(metalv1.INTERCONNECTIONMODE_STANDARD)),
 				Validators: []validator.String{
 					stringvalidator.OneOf(
-						string(packngo.ConnectionModeStandard),
-						string(packngo.ConnectionModeTunnel),
+						string(metalv1.INTERCONNECTIONMODE_STANDARD),
+						string(metalv1.INTERCONNECTIONMODE_TUNNEL),
 					),
 				},
 			},
@@ -126,6 +125,17 @@ func resourceSchema(ctx context.Context) schema.Schema {
 				Description: "Only used with shared connection. VLANs to attach. Pass one vlan for Primary/Single connection and two vlans for Redundant connection",
 				Optional:    true,
 				ElementType: types.Int64Type,
+				Validators: []validator.List{
+					listvalidator.SizeAtMost(2),
+				},
+				PlanModifiers: []planmodifier.List{
+					listplanmodifier.RequiresReplace(),
+				},
+			},
+			"vrfs": schema.ListAttribute{
+				Description: "Only used with shared connection. VRFs to attach. Pass one VRF for Primary/Single connection and two VRFs for Redundant connection",
+				Optional:    true,
+				ElementType: types.StringType,
 				Validators: []validator.List{
 					listvalidator.SizeAtMost(2),
 				},

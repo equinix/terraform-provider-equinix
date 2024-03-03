@@ -4,12 +4,12 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/equinix/equinix-sdk-go/services/metalv1"
 	"github.com/equinix/terraform-provider-equinix/internal/framework"
 	fwtypes "github.com/equinix/terraform-provider-equinix/internal/framework/types"
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"github.com/packethost/packngo"
 )
 
 func dataSourceSchema(ctx context.Context) schema.Schema {
@@ -59,8 +59,8 @@ func dataSourceSchema(ctx context.Context) schema.Schema {
 			},
 			"mode": schema.StringAttribute{
 				Description: fmt.Sprintf("Connection mode - %s or %s",
-					string(packngo.ConnectionModeStandard),
-					string(packngo.ConnectionModeTunnel),
+					string(metalv1.INTERCONNECTIONMODE_STANDARD),
+					string(metalv1.INTERCONNECTIONMODE_TUNNEL),
 				),
 				Computed: true,
 			},
@@ -73,6 +73,11 @@ func dataSourceSchema(ctx context.Context) schema.Schema {
 				Description: "Attached vlans, only in shared connection",
 				Computed:    true,
 				ElementType: types.Int64Type,
+			},
+			"vrfs": schema.ListAttribute{
+				Description: "Attached vrfs, only in shared connection",
+				Computed:    true,
+				ElementType: types.StringType,
 			},
 			"service_token_type": schema.StringAttribute{
 				Description: "Only used with shared connection. Type of service token to use for the connection, a_side or z_side",

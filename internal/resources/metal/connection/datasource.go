@@ -4,7 +4,6 @@ import (
 	equinix_errors "github.com/equinix/terraform-provider-equinix/internal/errors"
 	"github.com/equinix/terraform-provider-equinix/internal/framework"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
-	"github.com/packethost/packngo"
 
 	"context"
 	"fmt"
@@ -37,8 +36,7 @@ func (r *DataSource) Read(
 	req datasource.ReadRequest,
 	resp *datasource.ReadResponse,
 ) {
-	r.Meta.AddFwModuleToMetalUserAgent(ctx, req.ProviderMeta)
-	client := r.Meta.Metal
+	client := r.Meta.NewMetalClientForFramework(ctx, req.ProviderMeta)
 
 	// Retrieve values from plan
 	var data DataSourceModel
@@ -51,8 +49,10 @@ func (r *DataSource) Read(
 	id := data.ConnectionID.ValueString()
 
 	// Use API client to get the current state of the resource
-	getOpts := &packngo.GetOptions{Includes: []string{"service_tokens", "organization", "facility", "metro", "project"}}
-	conn, _, err := client.Connections.Get(id, getOpts)
+	conn, _, err := client.InterconnectionsApi.GetInterconnection(ctx, id).
+		Include([]string{"service_tokens", "organization", "organization.address", "organization.billing_address", "facility", "metro", "project"}).
+		Execute()
+
 	if err != nil {
 		// If the Metal Connection is not found, remove it from the state
 		if equinix_errors.IsNotFound(err) {
