@@ -3,15 +3,14 @@ package provider
 import (
 	"context"
 	"fmt"
-	"regexp"
 
 	"github.com/equinix/terraform-provider-equinix/internal/config"
 	metalconnection "github.com/equinix/terraform-provider-equinix/internal/resources/metal/connection"
 	metalgateway "github.com/equinix/terraform-provider-equinix/internal/resources/metal/gateway"
 	metalprojectsshkey "github.com/equinix/terraform-provider-equinix/internal/resources/metal/project_ssh_key"
 	metalsshkey "github.com/equinix/terraform-provider-equinix/internal/resources/metal/ssh_key"
+	equinix_validation "github.com/equinix/terraform-provider-equinix/internal/validation"
 	"github.com/hashicorp/terraform-plugin-framework-validators/int64validator"
-	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/provider"
 	"github.com/hashicorp/terraform-plugin-framework/provider/metaschema"
@@ -19,8 +18,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 )
-
-var urlRE = regexp.MustCompile(`^https?://(?:www\.)?[a-zA-Z0-9./]+$`)
 
 type FrameworkProvider struct {
 	ProviderVersion string
@@ -52,7 +49,7 @@ func (p *FrameworkProvider) Schema(
 				Optional:    true,
 				Description: "The Equinix API base URL to point out desired environment. Defaults to " + config.DefaultBaseURL,
 				Validators: []validator.String{
-					stringvalidator.RegexMatches(urlRE, "must be a valid URL with http or https schema"),
+					equinix_validation.URLWithScheme("http", "https"),
 				},
 			},
 			"client_id": schema.StringAttribute{
