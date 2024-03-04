@@ -94,7 +94,7 @@ func resourceSchema(ctx context.Context) schema.Schema {
 				},
 			},
 			"speed": schema.StringAttribute{
-				Description: "Port speed. Required for a_side connections. Values must be in the format '<number>Mbps' or '<number>Gpbs', for example '100Mbps`, '50Gbps'",
+				Description: "Connection speed -  Values must be in the format '<number>Mbps' or '<number>Gpbs', for example '100Mbps' or '50Gbps'.  Actual supported values will depend on the connection type and whether the connection uses VLANs or VRF.",
 				Optional:    true,
 				Computed:    true,
 			},

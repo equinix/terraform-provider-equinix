@@ -145,7 +145,7 @@ The following arguments are supported:
 * `type` - (Required) Connection type - dedicated or shared.
 * `contact_email` - (Optional) The preferred email used for communication and notifications about the Equinix Fabric interconnection. Required when using a Project API key. Optional and defaults to the primary user email address when using a User API key.
 * `project_id` - (Optional) ID of the project where the connection is scoped to, must be set for.
-* `speed` - (Required) Connection speed -  Values must be in the format '<number>Mbps' or '<number>Gpbs', for example '100Mbps`, '50Gbps', etc.
+* `speed` - (Required) Connection speed -  Values must be in the format '<number>Mbps' or '<number>Gpbs', for example '100Mbps' or '50Gbps'.  Actual supported values will depend on the connection type and whether the connection uses VLANs or VRF.
 * `description` - (Optional) Description for the connection resource.
 * `mode` - (Optional) Mode for connections in IBX facilities with the dedicated type - standard or tunnel. Default is standard.
 * `tags` - (Optional) String list of tags.

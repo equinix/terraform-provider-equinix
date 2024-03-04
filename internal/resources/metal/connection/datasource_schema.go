@@ -50,7 +50,7 @@ func dataSourceSchema(ctx context.Context) schema.Schema {
 				Computed:    true,
 			},
 			"speed": schema.StringAttribute{
-				Description: "Port speed. Required for a_side connections. Values will be in the format '<number>Mbps' or '<number>Gpbs', for example '100Mbps`, '50Gbps'",
+				Description: "Connection speed - Values will be in the format '<number>Mbps' or '<number>Gpbs', for example '100Mbps`, '50Gbps', etc.",
 				Computed:    true,
 			},
 			"description": schema.StringAttribute{
