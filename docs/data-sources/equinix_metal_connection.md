@@ -33,7 +33,7 @@ In addition to all arguments above, the following attributes are exported:
 * `redundancy` - Connection redundancy, reduntant or primary.
 * `type` - Connection type, dedicated or shared.
 * `project_id` - ID of project to which the connection belongs.
-* `speed` - Connection speed, one of 50Mbps, 200Mbps, 500Mbps, 1Gbps, 2Gbps, 5Gbps, 10Gbps.
+* `speed` - Connection speed - Values will be in the format '<number>Mbps' or '<number>Gpbs', for example '100Mbps`, '50Gbps', etc.
 * `description` - Description of the connection resource.
 * `mode` - Mode for connections in IBX facilities with the dedicated type - standard or tunnel.
 * `tags` - String list of tags.
