@@ -56,7 +56,7 @@ func (r *Resource) Create(
 	}
 
 	// Include optional fields if they are set
-	if !plan.OrganizationID.IsNull() {
+	if !plan.OrganizationID.IsNull() && !plan.OrganizationID.IsUnknown() {
 		createRequest.OrganizationId = plan.OrganizationID.ValueStringPointer()
 	}
 

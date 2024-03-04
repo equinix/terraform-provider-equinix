@@ -12,13 +12,17 @@ import (
 	"github.com/equinix/terraform-provider-equinix/equinix"
 	"github.com/equinix/terraform-provider-equinix/internal/acceptance"
 	"github.com/equinix/terraform-provider-equinix/internal/config"
+	"github.com/equinix/terraform-provider-equinix/internal/provider"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/plancheck"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
+
+	"github.com/hashicorp/terraform-plugin-framework/providerserver"
+	"github.com/hashicorp/terraform-plugin-go/tfprotov5"
+	"github.com/hashicorp/terraform-plugin-mux/tf5muxserver"
 )
 
 func TestAccMetalProject_basic(t *testing.T) {
@@ -46,30 +50,18 @@ func TestAccMetalProject_basic(t *testing.T) {
 // TODO(displague) How do we test this without TF_ACC set?
 func TestAccMetalProject_errorHandling(t *testing.T) {
 	rInt := acctest.RandInt()
-
 	handler := func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusUnprocessableEntity)
 	}
 	mockAPI := httptest.NewServer(http.HandlerFunc(handler))
-	mockEquinix := equinix.Provider()
-	mockEquinix.ConfigureContextFunc = func(ctx context.Context, d *schema.ResourceData) (interface{}, diag.Diagnostics) {
-		config := config.Config{
-			BaseURL:   mockAPI.URL,
-			Token:     "fake-for-mock-test",
-			AuthToken: "fake-for-mock-test",
-		}
-		err := config.Load(ctx)
-		return &config, diag.FromErr(err)
-	}
+	providerConfig := testAccMetalProviderConfig(mockAPI.URL, "fake-for-mock-test", "fake-for-mock-test")
+	projectConfig := testAccMetalProjectConfig_basic(rInt)
 
-	mockProviders := map[string]*schema.Provider{
-		"equinix": mockEquinix,
-	}
 	resource.ParallelTest(t, resource.TestCase{
-		Providers: mockProviders,
+		ProtoV5ProviderFactories: mockProviderFactories(),
 		Steps: []resource.TestStep{
 			{
-				Config:      testAccMetalProjectConfig_basic(rInt),
+				Config:      providerConfig + "\n" + projectConfig,
 				ExpectError: regexp.MustCompile(`Error: HTTP 422`),
 			},
 		},
@@ -79,36 +71,49 @@ func TestAccMetalProject_errorHandling(t *testing.T) {
 // TODO(displague) How do we test this without TF_ACC set?
 func TestAccMetalProject_apiErrorHandling(t *testing.T) {
 	rInt := acctest.RandInt()
-
 	handler := func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Add("Content-Type", "application/json")
 		w.Header().Add("X-Request-Id", "needed for equinix_errors.FriendlyError")
 		w.WriteHeader(http.StatusUnprocessableEntity)
 	}
 	mockAPI := httptest.NewServer(http.HandlerFunc(handler))
-	mockEquinix := equinix.Provider()
-	mockEquinix.ConfigureContextFunc = func(ctx context.Context, d *schema.ResourceData) (interface{}, diag.Diagnostics) {
-		config := config.Config{
-			BaseURL:   mockAPI.URL,
-			Token:     "fake-for-mock-test",
-			AuthToken: "fake-for-mock-test",
-		}
-		err := config.Load(ctx)
-		return &config, diag.FromErr(err)
-	}
+	providerConfig := testAccMetalProviderConfig(mockAPI.URL, "fake-for-mock-test", "fake-for-mock-test")
+	projectConfig := testAccMetalProjectConfig_basic(rInt)
 
-	mockProviders := map[string]*schema.Provider{
-		"equinix": mockEquinix,
-	}
 	resource.ParallelTest(t, resource.TestCase{
-		Providers: mockProviders,
+		ProtoV5ProviderFactories: mockProviderFactories(),
 		Steps: []resource.TestStep{
 			{
-				Config:      testAccMetalProjectConfig_basic(rInt),
+				Config:      providerConfig + "\n" + projectConfig,
 				ExpectError: regexp.MustCompile(`Error: API Error HTTP 422`),
 			},
 		},
 	})
+}
+
+func mockProviderFactories() map[string]func() (tfprotov5.ProviderServer, error) {
+	mockEquinix := equinix.Provider()
+	mockProviders := map[string]*schema.Provider{
+		"equinix": mockEquinix,
+	}
+
+	mockProviderFactories := map[string]func() (tfprotov5.ProviderServer, error){
+		"equinix": func() (tfprotov5.ProviderServer, error) {
+			ctx := context.Background()
+			providers := []func() tfprotov5.ProviderServer{
+				mockProviders["equinix"].GRPCProvider,
+				providerserver.NewProtocol5(
+					provider.CreateFrameworkProvider("version"),
+				),
+			}
+			muxServer, err := tf5muxserver.NewMuxServer(ctx, providers...)
+			if err != nil {
+				return nil, err
+			}
+			return muxServer.ProviderServer(), nil
+		},
+	}
+	return mockProviderFactories
 }
 
 func TestAccMetalProject_BGPBasic(t *testing.T) {
@@ -308,6 +313,20 @@ func testAccMetalProjectExists(n string, project *metalv1.Project) resource.Test
 
 		return nil
 	}
+}
+
+func testAccMetalProviderConfig(
+	endpoint string,
+	token string,
+	authToken string,
+) string {
+	return fmt.Sprintf(`
+provider "equinix" {
+    endpoint = "%s"
+    token = "%s"
+    auth_token = "%s"
+}
+`, endpoint, token, authToken)
 }
 
 func testAccMetalProjectConfig_BT(r int) string {
