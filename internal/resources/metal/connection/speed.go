@@ -19,6 +19,7 @@ var (
 		{2 * giga, "2Gbps"},
 		{5 * giga, "5Gbps"},
 		{10 * giga, "10Gbps"},
+		{100 * giga, "100Gbps"},
 	}
 )
 

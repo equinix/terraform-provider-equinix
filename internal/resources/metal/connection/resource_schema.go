@@ -130,6 +130,9 @@ func resourceSchema(ctx context.Context) schema.Schema {
 				Validators: []validator.List{
 					listvalidator.SizeAtMost(2),
 				},
+				PlanModifiers: []planmodifier.List{
+					listplanmodifier.RequiresReplace(),
+				},
 			},
 			"service_token_type": schema.StringAttribute{
 				Description: "Only used with shared connection. Type of service token to use for the connection, a_side or z_side",

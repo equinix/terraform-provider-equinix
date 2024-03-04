@@ -9,6 +9,7 @@ import (
 	equinix_errors "github.com/equinix/terraform-provider-equinix/internal/errors"
 	"github.com/equinix/terraform-provider-equinix/internal/framework"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
+	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -74,6 +75,22 @@ func (r *Resource) Create(
 				"project_id is required for 'shared' connection type",
 			)
 			return
+		}
+		if plan.Vlans.IsNull() {
+			resp.Diagnostics.AddAttributeError(
+				path.Root("vlans"),
+				"Missing vlans",
+				"You must specify vlans for 'shared' connection type",
+			)
+			return
+		}
+
+		if plan.Redundancy.ValueString() == "redundant" && len(plan.Vlans.Elements()) < 2 {
+			resp.Diagnostics.AddAttributeError(
+				path.Root("vlans"),
+				"Not enough vlans",
+				"You must specify 2 vlans when for 'shared' connection type with redundancy 'redundant'",
+			)
 		}
 
 		// Create the shared connection

@@ -57,6 +57,11 @@ resource "equinix_ecx_l2_connection" "example" {
 ### Shared Connection with z_side token - Non-redundant Connection from your own Equinix Fabric Port to Equinix Metal
 
 ```hcl
+resource "equinix_metal_vlan" "example" {
+    project_id      = local.my_project_id
+    metro           = "FR"
+}
+
 resource "equinix_metal_connection" "example" {
     name               = "tf-port-to-metal"
     project_id         = local.project_id
@@ -66,6 +71,9 @@ resource "equinix_metal_connection" "example" {
     speed              = "200Mbps"
     service_token_type = "z_side"
     contact_email      = "username@example.com"
+    vlans              = [
+      equinix_metal_vlan.example.vxlan
+    ]
 }
 
 data "equinix_ecx_port" "example" {
@@ -88,6 +96,16 @@ resource "equinix_ecx_l2_connection" "example" {
 ### Shared Connection for organizations without Connection Services Token feature enabled
 
 ```hcl
+resource "equinix_metal_vlan" "example1" {
+    project_id      = local.my_project_id
+    metro           = "SV"
+}
+
+resource "equinix_metal_vlan" "example2" {
+    project_id      = local.my_project_id
+    metro           = "SV"
+}
+
 resource "equinix_metal_connection" "example" {
     name            = "tf-port-to-metal-legacy"
     project_id      = local.my_project_id
@@ -95,6 +113,10 @@ resource "equinix_metal_connection" "example" {
     redundancy      = "redundant"
     type            = "shared"
     contact_email   = "username@example.com"
+    vlans              = [
+      equinix_metal_vlan.example1.vxlan,
+      equinix_metal_vlan.example2.vxlan
+    ]
 }
 
 data "equinix_ecx_port" "example" {
