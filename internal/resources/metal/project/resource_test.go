@@ -62,7 +62,7 @@ func TestAccMetalProject_errorHandling(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config:      providerConfig + "\n" + projectConfig,
-				ExpectError: regexp.MustCompile(`Error: HTTP 422`),
+				ExpectError: regexp.MustCompile(`\bCould not create project: HTTP 422\b`),
 			},
 		},
 	})
@@ -85,7 +85,7 @@ func TestAccMetalProject_apiErrorHandling(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config:      providerConfig + "\n" + projectConfig,
-				ExpectError: regexp.MustCompile(`Error: API Error HTTP 422`),
+				ExpectError: regexp.MustCompile(`\bCould not create project: API Error HTTP 422\b`),
 			},
 		},
 	})
