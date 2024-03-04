@@ -100,7 +100,13 @@ func TestAccDataSourceMetalConnection_withVlans_upgradeFromVersion(t *testing.T)
 						"equinix_metal_connection.test", "vlans.#",
 						"data.equinix_metal_connection.test", "vlans.#"),
 					resource.TestCheckResourceAttr(
-						"data.equinix_metal_connection.test", "vlans.#", "0"),
+						"data.equinix_metal_connection.test", "vlans.#", "2"),
+					resource.TestCheckResourceAttrPair(
+						"equinix_metal_vlan.test1", "vxlan",
+						"data.equinix_metal_connection.test", "vlans.0"),
+					resource.TestCheckResourceAttrPair(
+						"equinix_metal_vlan.test2", "vxlan",
+						"data.equinix_metal_connection.test", "vlans.1"),
 				),
 			},
 			{
