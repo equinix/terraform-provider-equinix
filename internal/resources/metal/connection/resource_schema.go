@@ -2,7 +2,6 @@ package connection
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/equinix/terraform-provider-equinix/internal/framework"
 	fwtypes "github.com/equinix/terraform-provider-equinix/internal/framework/types"
@@ -95,7 +94,7 @@ func resourceSchema(ctx context.Context) schema.Schema {
 				},
 			},
 			"speed": schema.StringAttribute{
-				Description: fmt.Sprintf("Port speed. Required for a_side connections. Allowed values are %s", allowedSpeedsString()),
+				Description: "Port speed. Required for a_side connections. Values must be in the format '<number>Mbps' or '<number>Gpbs', for example '100Mbps`, '50Gbps'",
 				Optional:    true,
 				Computed:    true,
 			},
