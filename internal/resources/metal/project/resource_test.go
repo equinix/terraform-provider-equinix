@@ -92,18 +92,17 @@ func TestAccMetalProject_apiErrorHandling(t *testing.T) {
 }
 
 func mockProviderFactories() map[string]func() (tfprotov5.ProviderServer, error) {
-	mockEquinix := equinix.Provider()
 	mockProviders := map[string]*schema.Provider{
-		"equinix": mockEquinix,
+		"equinix": equinix.Provider(),
 	}
-
+	mockFrameworkProvider := provider.CreateFrameworkProvider("version")
 	mockProviderFactories := map[string]func() (tfprotov5.ProviderServer, error){
 		"equinix": func() (tfprotov5.ProviderServer, error) {
 			ctx := context.Background()
 			providers := []func() tfprotov5.ProviderServer{
 				mockProviders["equinix"].GRPCProvider,
 				providerserver.NewProtocol5(
-					provider.CreateFrameworkProvider("version"),
+					mockFrameworkProvider,
 				),
 			}
 			muxServer, err := tf5muxserver.NewMuxServer(ctx, providers...)
