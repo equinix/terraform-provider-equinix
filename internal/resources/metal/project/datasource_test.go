@@ -43,13 +43,36 @@ func TestAccDataSourceMetalProject_byId(t *testing.T) {
 }
 
 func testAccDataSourceMetalProject_byId(r string) string {
-	return fmt.Sprintf(`
-terraform {
-	provider_meta "equinix" {
-		module_name = "test"
-	}
+	return testAccDataSourceMetalProject_byIdWithVersion(r, "")
 }
 
+func testAccDataSourceMetalProject_byIdWithVersion(r, version string) string {
+
+	// Add provider info if version is provided
+	providerInfo := ""
+	if version != "" {
+		providerInfo = fmt.Sprintf(`
+	required_providers {
+		equinix = {
+			source  = "equinix/equinix"
+			version = "%s"
+		}
+	}
+`, version)
+	}
+
+	// Terraform configuration template
+	terraformConfig := fmt.Sprintf(`
+	terraform {
+		provider_meta "equinix" {
+			module_name = "test"
+		}
+		%s
+	}
+	`, providerInfo)
+
+	// Resource template
+	resourceTemplate := `
 resource "equinix_metal_project" "foobar" {
 	name = "tfacc-project-%s"
 	bgp_config {
@@ -58,11 +81,17 @@ resource "equinix_metal_project" "foobar" {
 		asn = 65000
 	}
 }
+`
 
+	// Datasource template
+	dataSourceTemplate := `
 data equinix_metal_project "test" {
 	project_id = equinix_metal_project.foobar.id
 }
-`, r)
+`
+
+	// Combine templates
+	return fmt.Sprintf("%s%s%s", terraformConfig, fmt.Sprintf(resourceTemplate, r), dataSourceTemplate)
 }
 
 func TestAccDataSourceMetalProject_byName(t *testing.T) {
@@ -122,6 +151,7 @@ func TestAccDataSourceMetalProject_byId_upgradeFromVersion(t *testing.T) {
 	var project metalv1.Project
 	rn := acctest.RandStringFromCharSet(12, "abcdef0123456789")
 	cfg := testAccDataSourceMetalProject_byId(rn)
+	sdkProviderVersion := "1.32.0"
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { acceptance.TestAccPreCheckMetal(t); acceptance.TestAccPreCheckProviderConfigured(t) },
 		CheckDestroy: testAccMetalProjectCheckDestroyed,
@@ -129,11 +159,11 @@ func TestAccDataSourceMetalProject_byId_upgradeFromVersion(t *testing.T) {
 			{
 				ExternalProviders: map[string]resource.ExternalProvider{
 					"equinix": {
-						VersionConstraint: "1.30.0", // latest version with resource defined on SDKv2
+						VersionConstraint: sdkProviderVersion, // latest version with resource defined on SDKv2
 						Source:            "equinix/equinix",
 					},
 				},
-				Config: cfg,
+				Config: testAccDataSourceMetalProject_byIdWithVersion(rn, sdkProviderVersion),
 				Check: resource.ComposeTestCheckFunc(
 					testAccMetalProjectExists("equinix_metal_project.foobar", &project),
 					resource.TestCheckResourceAttr(
