@@ -3,6 +3,7 @@ package project
 import (
 	"context"
 	"fmt"
+	"reflect"
 
 	"github.com/equinix/equinix-sdk-go/services/metalv1"
 	equinix_errors "github.com/equinix/terraform-provider-equinix/internal/errors"
@@ -245,12 +246,9 @@ func (r *Resource) Update(
 		updateRequest.BackendTransferEnabled = plan.BackendTransfer.ValueBoolPointer()
 	}
 
-	// NOTE (ocobles): adding UpdateProject inside this condition to replicate old behavior
-	// but it is not clear to me if it was a mistake. I think the project should be updated if
-	// has changes regardless of whether there are changes to the BGP configuration or not.
-	// Open discussion: https://github.com/equinix/terraform-provider-equinix/discussions/466
 	var project *metalv1.Project
-	if plan.BGPConfig.Equal(state.BGPConfig) {
+	// Check if any update was requested
+	if !reflect.DeepEqual(updateRequest, metalv1.ProjectUpdateInput{}) {
 		// API call to update the project
 		_, updateResp, err := client.ProjectsApi.UpdateProject(ctx, id).ProjectUpdateInput(updateRequest).Execute()
 		if err != nil {
