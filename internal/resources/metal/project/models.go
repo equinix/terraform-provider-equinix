@@ -2,11 +2,10 @@ package project
 
 import (
 	"context"
+	"github.com/equinix/equinix-sdk-go/services/metalv1"
 	"path"
 	"strings"
 	"time"
-
-	"github.com/equinix/equinix-sdk-go/services/metalv1"
 
 	fwtypes "github.com/equinix/terraform-provider-equinix/internal/framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
@@ -101,7 +100,7 @@ func (m *DataSourceModel) parse(ctx context.Context, project *metalv1.Project, b
 }
 
 func parseBGPConfig(ctx context.Context, bgpConfig *metalv1.BgpConfig) fwtypes.ListNestedObjectValueOf[BGPConfigModel] {
-	if bgpConfig != nil {
+	if !isEmptyMetalBGPConfig(bgpConfig) {
 		bgpConfigResourceModel := make([]BGPConfigModel, 1)
 		bgpConfigResourceModel[0] = BGPConfigModel{
 			DeploymentType: types.StringValue(string(bgpConfig.GetDeploymentType())),
@@ -113,4 +112,14 @@ func parseBGPConfig(ctx context.Context, bgpConfig *metalv1.BgpConfig) fwtypes.L
 		return fwtypes.NewListNestedObjectValueOfValueSlice[BGPConfigModel](ctx, bgpConfigResourceModel)
 	}
 	return fwtypes.NewListNestedObjectValueOfNull[BGPConfigModel](ctx)
+}
+
+// isEmptyBGPConfig checks if the provided BgpConfig is considered empty
+func isEmptyMetalBGPConfig(bgp *metalv1.BgpConfig) bool {
+	if metalv1.IsNil(bgp) {
+		return true
+	}
+	return metalv1.IsNil(bgp.DeploymentType) &&
+		metalv1.IsNil(bgp.Asn) &&
+		metalv1.IsNil(bgp.Status)
 }
