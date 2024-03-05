@@ -161,14 +161,15 @@ func (r *Resource) Read(
 		return
 	}
 
-	// Fetch BGP Config if needed
+	// Use API client to fetch BGP Config
 	var bgpConfig *metalv1.BgpConfig
-	if !state.BGPConfig.IsNull() {
-		bgpConfig, diags = fetchBGPConfig(ctx, client, project.GetId())
-		diags.Append(diags...)
-		if diags.HasError() {
-			return
-		}
+	bgpConfig, diags = fetchBGPConfig(ctx, client, project.GetId())
+	diags.Append(diags...)
+	if diags.HasError() {
+		return
+	}
+	if bgpConfig != nil {
+		fmt.Printf("parseBGPConfig Append not nil %v ", bgpConfig)
 	}
 
 	// Parse the API response into the Terraform state
