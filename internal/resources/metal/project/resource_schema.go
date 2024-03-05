@@ -93,6 +93,9 @@ var bgpConfigSchema = map[string]schema.Attribute{
 	"asn": schema.Int64Attribute{
 		Description: "Autonomous System Number for local BGP deployment",
 		Required:    true,
+		PlanModifiers: []planmodifier.Int64{
+			int64planmodifier.RequiresReplace(),
+		},
 	},
 	"md5": schema.StringAttribute{
 		Description: "Password for BGP session in plaintext (not a checksum)",

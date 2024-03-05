@@ -169,9 +169,6 @@ func (r *Resource) Read(
 	if diags.HasError() {
 		return
 	}
-	if bgpConfig != nil {
-		fmt.Printf("parseBGPConfig Append not nil %v ", bgpConfig)
-	}
 
 	// Parse the API response into the Terraform state
 	resp.Diagnostics.Append(state.parse(ctx, project, bgpConfig)...)

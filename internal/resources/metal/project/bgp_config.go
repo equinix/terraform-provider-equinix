@@ -56,7 +56,7 @@ func handleBGPConfigChanges(ctx context.Context, client *metalv1.APIClient, plan
 	bgpRemoved := plan.BGPConfig.IsNull() && !state.BGPConfig.IsNull()
 	bgpChanged := !plan.BGPConfig.IsNull() && !state.BGPConfig.IsNull() && !plan.BGPConfig.Equal(state.BGPConfig)
 
-	if bgpAdded {
+	if bgpAdded || bgpChanged {
 		// Create BGP Config
 		bgpCreateRequest, err := expandBGPConfig(ctx, plan.BGPConfig)
 		if err != nil {
@@ -94,12 +94,6 @@ func handleBGPConfigChanges(ctx context.Context, client *metalv1.APIClient, plan
 		diags.AddError(
 			"Error removing BGP configuration",
 			fmt.Sprintf("BGP Config cannot be removed from a project, please add back\n%s", bgpConfStr),
-		)
-	} else if bgpChanged {
-		// Error
-		diags.AddError(
-			"Error updating BGP configuration",
-			"BGP configuration fields cannot be updated",
 		)
 	} else { // assuming already exists
 		// Fetch the existing BGP Config
