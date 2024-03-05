@@ -16,6 +16,10 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 )
 
+const (
+	RequiresReplacementWhenASNChanged = "Requiring project recreation if BGP was configured and ASN changes."
+)
+
 func resourceSchema(ctx context.Context) schema.Schema {
 	return schema.Schema{
 		Attributes: map[string]schema.Attribute{
@@ -94,7 +98,19 @@ var bgpConfigSchema = map[string]schema.Attribute{
 		Description: "Autonomous System Number for local BGP deployment",
 		Required:    true,
 		PlanModifiers: []planmodifier.Int64{
-			int64planmodifier.RequiresReplace(),
+			int64planmodifier.RequiresReplaceIf(
+				func(
+					ctx context.Context,
+					req planmodifier.Int64Request,
+					resp *int64planmodifier.RequiresReplaceIfFuncResponse,
+				) {
+					oldValue := req.StateValue.ValueInt64()
+					newValue := req.PlanValue.ValueInt64()
+					resp.RequiresReplace = !req.StateValue.IsNull() && oldValue != newValue
+				},
+				RequiresReplacementWhenASNChanged,
+				RequiresReplacementWhenASNChanged,
+			),
 		},
 	},
 	"md5": schema.StringAttribute{
