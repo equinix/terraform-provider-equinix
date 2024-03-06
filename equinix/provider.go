@@ -133,7 +133,6 @@ func Provider() *schema.Provider {
 			"equinix_metal_project_api_key":      resourceMetalProjectAPIKey(),
 			"equinix_metal_device":               resourceMetalDevice(),
 			"equinix_metal_device_network_type":  resourceMetalDeviceNetworkType(),
-			"equinix_metal_organization_member":  resourceMetalOrganizationMember(),
 			"equinix_metal_port":                 resourceMetalPort(),
 			"equinix_metal_project":              metal_project.Resource(),
 			"equinix_metal_reserved_ip_block":    resourceMetalReservedIPBlock(),
