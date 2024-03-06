@@ -26,7 +26,7 @@ require (
 	github.com/hashicorp/terraform-plugin-testing v1.6.0
 	github.com/packethost/packngo v0.31.0
 	github.com/pkg/errors v0.9.1
-	github.com/stretchr/testify v1.8.4
+	github.com/stretchr/testify v1.9.0
 	golang.org/x/exp v0.0.0-20240103183307-be819d1f06fc
 	golang.org/x/oauth2 v0.17.0
 )
@@ -118,3 +118,5 @@ require (
 	google.golang.org/protobuf v1.32.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
+
+replace github.com/equinix/equinix-sdk-go => github.com/equinix/equinix-sdk-go v0.34.1-0.20240305233013-fc2df9b9b9f9

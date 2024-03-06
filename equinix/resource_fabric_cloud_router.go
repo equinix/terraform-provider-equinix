@@ -377,9 +377,9 @@ func getCloudRouterUpdateRequest(conn fabricv4.CloudRouter, d *schema.ResourceDa
 		existingName, existingPackage, updateNameVal, updatePackageVal)
 
 	if *existingName != updateNameVal {
-		changeOps = fabricv4.CloudRouterChangeOperation{Op: "replace", Path: "/name", Value: &updateNameVal}
+		changeOps = fabricv4.CloudRouterChangeOperation{Op: "replace", Path: "/name", Value: updateNameVal}
 	} else if existingPackage != updatePackageVal {
-		changeOps = fabricv4.CloudRouterChangeOperation{Op: "replace", Path: "/package/code", Value: &updatePackageVal}
+		changeOps = fabricv4.CloudRouterChangeOperation{Op: "replace", Path: "/package/code", Value: updatePackageVal}
 	} else {
 		return changeOps, fmt.Errorf("nothing to update for the connection %s", existingName)
 	}

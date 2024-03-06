@@ -264,12 +264,12 @@ func setFabricNetworkMap(d *schema.ResourceData, nt *fabricv4.Network) diag.Diag
 func getFabricNetworkUpdateRequest(network *fabricv4.Network, d *schema.ResourceData) (fabricv4.NetworkChangeOperation, error) {
 	changeOps := fabricv4.NetworkChangeOperation{}
 	existingName := network.Name
-	updateNameVal := d.Get("name")
+	updateNameVal := d.Get("name").(string)
 
 	log.Printf("existing name %s, Update Name Request %s ", existingName, updateNameVal)
 
 	if existingName != updateNameVal {
-		changeOps = fabricv4.NetworkChangeOperation{Op: "replace", Path: "/name", Value: &updateNameVal}
+		changeOps = fabricv4.NetworkChangeOperation{Op: "replace", Path: "/name", Value: updateNameVal}
 	} else {
 		return changeOps, fmt.Errorf("nothing to update for the Fabric Network: %s", existingName)
 	}
