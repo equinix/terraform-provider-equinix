@@ -612,7 +612,6 @@ func resourceFabricConnection() *schema.Resource {
 
 func resourceFabricConnectionCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*config.Config).NewFabricClientForSDK(d)
-	ctx = context.WithValue(ctx, fabricv4.ContextAccessToken, meta.(*config.Config).FabricAuthToken)
 	conType, _ := fabricv4.NewConnectionTypeFromValue(d.Get("type").(string))
 	schemaNotifications := d.Get("notifications").([]interface{})
 	notifications := equinix_fabric_schema.NotificationsTerraformToGo(schemaNotifications)
@@ -695,7 +694,6 @@ func additionalInfoContainsAWSSecrets(info []interface{}) ([]interface{}, bool) 
 
 func resourceFabricConnectionRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*config.Config).NewFabricClientForSDK(d)
-	ctx = context.WithValue(ctx, fabricv4.ContextAccessToken, meta.(*config.Config).FabricAuthToken)
 	conn, _, err := client.ConnectionsApi.GetConnectionByUuid(ctx, d.Id()).Execute()
 	if err != nil {
 		log.Printf("[WARN] Connection %s not found , error %s", d.Id(), err)
@@ -767,7 +765,6 @@ func setFabricMap(d *schema.ResourceData, conn *fabricv4.Connection) diag.Diagno
 
 func resourceFabricConnectionUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*config.Config).NewFabricClientForSDK(d)
-	ctx = context.WithValue(ctx, fabricv4.ContextAccessToken, meta.(*config.Config).FabricAuthToken)
 	dbConn, err := verifyConnectionCreated(d.Id(), meta, d, ctx)
 	if err != nil {
 		if !strings.Contains(err.Error(), "500") {
@@ -937,7 +934,6 @@ func verifyConnectionCreated(uuid string, meta interface{}, d *schema.ResourceDa
 func resourceFabricConnectionDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	diags := diag.Diagnostics{}
 	client := meta.(*config.Config).NewFabricClientForSDK(d)
-	ctx = context.WithValue(ctx, fabricv4.ContextAccessToken, meta.(*config.Config).FabricAuthToken)
 	_, _, err := client.ConnectionsApi.DeleteConnectionByUuid(ctx, d.Id()).Execute()
 	if err != nil {
 		errors, ok := err.(fabricv4.GenericOpenAPIError).Model().([]fabricv4.Error)
