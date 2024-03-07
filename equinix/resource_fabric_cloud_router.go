@@ -215,17 +215,7 @@ func accountCloudRouterTerraformToGo(accountList []interface{}) *fabricv4.Simpli
 
 	return simplifiedAccount
 }
-func locationCloudRouterTerraformToGo(locationList []interface{}) *fabricv4.SimplifiedLocationWithoutIBX {
-	if locationList == nil || len(locationList) == 0 {
-		return nil
-	}
 
-	var locationWithoutIbx *fabricv4.SimplifiedLocationWithoutIBX
-	locationMap := locationList[0].(map[string]interface{})
-	metro_code := locationMap["metro_code"].(string)
-	locationWithoutIbx = &fabricv4.SimplifiedLocationWithoutIBX{MetroCode: metro_code}
-	return locationWithoutIbx
-}
 func packageCloudRouterTerraformToGo(packageList []interface{}) *fabricv4.CloudRouterPackageType {
 	if packageList == nil || len(packageList) == 0 {
 		return nil
@@ -235,13 +225,13 @@ func packageCloudRouterTerraformToGo(packageList []interface{}) *fabricv4.CloudR
 
 	packageMap := packageList[0].(map[string]interface{})
 	code := packageMap["code"].(string)
-	packageType_ := fabricv4.CloudRouterPackageType(code)
-	packageType = &packageType_
+	packageType_, _ := fabricv4.NewCloudRouterPackageTypeFromValue(code)
+	packageType = packageType_
 
 	return packageType
 }
 func projectCloudRouterTerraformToGo(projectTerraform []interface{}) *fabricv4.Project {
-	if projectTerraform == nil {
+	if projectTerraform == nil || len(projectTerraform) == 0 {
 		return nil
 	}
 	var project *fabricv4.Project
@@ -258,14 +248,11 @@ func resourceFabricCloudRouterCreate(ctx context.Context, d *schema.ResourceData
 	schemaAccount := d.Get("account").(*schema.Set).List()
 	account := accountCloudRouterTerraformToGo(schemaAccount)
 	schemaLocation := d.Get("location").(*schema.Set).List()
-	location := locationCloudRouterTerraformToGo(schemaLocation)
-	var project *fabricv4.Project
+	location := equinix_fabric_schema.LocationWithoutIBXTerraformToGo(schemaLocation)
 	schemaProject := d.Get("project").(*schema.Set).List()
-	if len(schemaProject) != 0 {
-		project = projectCloudRouterTerraformToGo(schemaProject)
-	}
+	project := projectCloudRouterTerraformToGo(schemaProject)
 	schemaPackage := d.Get("package").(*schema.Set).List()
-	packages := packageCloudRouterTerraformToGo(schemaPackage)
+	package_ := packageCloudRouterTerraformToGo(schemaPackage)
 
 	type_ := fabricv4.CloudRouterPostRequestType(d.Get("type").(string))
 	createCloudRouterRequest := fabricv4.CloudRouterPostRequest{
@@ -273,7 +260,7 @@ func resourceFabricCloudRouterCreate(ctx context.Context, d *schema.ResourceData
 		Type:          &type_,
 		Location:      location,
 		Notifications: notifications,
-		Package:       packages,
+		Package:       package_,
 		Account:       account,
 		Project:       project,
 	}
@@ -314,24 +301,31 @@ func resourceFabricCloudRouterRead(ctx context.Context, d *schema.ResourceData, 
 
 func setCloudRouterMap(d *schema.ResourceData, fcr *fabricv4.CloudRouter) diag.Diagnostics {
 	diags := diag.Diagnostics{}
+	package_ := fcr.GetPackage()
+	location := fcr.GetLocation()
+	changeLog := fcr.GetChangeLog()
+	account := fcr.GetAccount()
+	notifications := fcr.GetNotifications()
+	project := fcr.GetProject()
+	order := fcr.GetOrder()
 	err := equinix_schema.SetMap(d, map[string]interface{}{
-		"name":                         fcr.Name,
-		"href":                         fcr.Href,
-		"type":                         fcr.Type,
-		"state":                        fcr.State,
-		"package":                      packageCloudRouterGoToTerraform(fcr.Package),
-		"location":                     equinix_fabric_schema.LocationWithoutIBXGoToTerraform(fcr.Location),
-		"change_log":                   equinix_fabric_schema.ChangeLogGoToTerraform(fcr.ChangeLog),
-		"account":                      accountCloudRouterGoToTerraform(fcr.Account),
-		"notifications":                equinix_fabric_schema.NotificationsGoToTerraform(fcr.Notifications),
-		"project":                      equinix_fabric_schema.ProjectGoToTerraform(fcr.Project),
-		"equinix_asn":                  fcr.EquinixAsn,
-		"bgp_ipv4_routes_count":        fcr.BgpIpv4RoutesCount,
-		"bgp_ipv6_routes_count":        fcr.BgpIpv6RoutesCount,
-		"distinct_ipv4_prefixes_count": fcr.DistinctIpv4PrefixesCount,
-		"distinct_ipv6_prefixes_count": fcr.DistinctIpv6PrefixesCount,
-		"connections_count":            fcr.ConnectionsCount,
-		"order":                        equinix_fabric_schema.OrderGoToTerraform(fcr.Order),
+		"name":                         fcr.GetName(),
+		"href":                         fcr.GetHref(),
+		"type":                         fcr.GetType(),
+		"state":                        fcr.GetState(),
+		"package":                      packageCloudRouterGoToTerraform(&package_),
+		"location":                     equinix_fabric_schema.LocationWithoutIBXGoToTerraform(&location),
+		"change_log":                   equinix_fabric_schema.ChangeLogGoToTerraform(&changeLog),
+		"account":                      accountCloudRouterGoToTerraform(&account),
+		"notifications":                equinix_fabric_schema.NotificationsGoToTerraform(notifications),
+		"project":                      equinix_fabric_schema.ProjectGoToTerraform(&project),
+		"equinix_asn":                  fcr.GetEquinixAsn(),
+		"bgp_ipv4_routes_count":        fcr.GetBgpIpv4RoutesCount(),
+		"bgp_ipv6_routes_count":        fcr.GetBgpIpv6RoutesCount(),
+		"distinct_ipv4_prefixes_count": fcr.GetDistinctIpv4PrefixesCount(),
+		"distinct_ipv6_prefixes_count": fcr.GetDistinctIpv6PrefixesCount(),
+		"connections_count":            fcr.GetConnectionsCount(),
+		"order":                        equinix_fabric_schema.OrderGoToTerraform(&order),
 	})
 	if err != nil {
 		return diag.FromErr(err)
@@ -344,7 +338,7 @@ func accountCloudRouterGoToTerraform(account *fabricv4.SimplifiedAccount) *schem
 	}
 
 	mappedAccount := map[string]interface{}{
-		"account_number": int(*account.AccountNumber),
+		"account_number": int(account.GetAccountNumber()),
 	}
 
 	accountSet := schema.NewSet(
@@ -366,15 +360,15 @@ func packageCloudRouterGoToTerraform(packageType *fabricv4.CloudRouterPackageTyp
 }
 func getCloudRouterUpdateRequest(conn fabricv4.CloudRouter, d *schema.ResourceData) (fabricv4.CloudRouterChangeOperation, error) {
 	changeOps := fabricv4.CloudRouterChangeOperation{}
-	existingName := conn.Name
-	existingPackage := conn.Package
+	existingName := conn.GetName()
+	existingPackage := conn.GetPackage()
 	updateNameVal := d.Get("name").(string)
 	updatePackageVal := d.Get("conn.package.0.code")
 
 	log.Printf("[INFO] existing name %s, existing Package %s, new name %s, new package type %s ",
 		existingName, existingPackage, updateNameVal, updatePackageVal)
 
-	if *existingName != updateNameVal {
+	if existingName != updateNameVal {
 		changeOps = fabricv4.CloudRouterChangeOperation{Op: "replace", Path: "/name", Value: updateNameVal}
 	} else if existingPackage != updatePackageVal {
 		changeOps = fabricv4.CloudRouterChangeOperation{Op: "replace", Path: "/package/code", Value: updatePackageVal}

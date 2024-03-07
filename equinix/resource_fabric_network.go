@@ -210,6 +210,7 @@ func resourceFabricNetworkRead(ctx context.Context, d *schema.ResourceData, meta
 	d.SetId(fabricNetwork.Uuid)
 	return setFabricNetworkMap(d, fabricNetwork)
 }
+
 func fabricNetworkOperationGoToTerraform(operation *fabricv4.NetworkOperation) *schema.Set {
 	if operation == nil {
 		return nil
@@ -226,9 +227,9 @@ func fabricNetworkOperationGoToTerraform(operation *fabricv4.NetworkOperation) *
 func simplifiedFabricNetworkChangeGoToTerraform(networkChange *fabricv4.SimplifiedNetworkChange) *schema.Set {
 
 	mappedChange := make(map[string]interface{})
-	mappedChange["href"] = networkChange.Href
-	mappedChange["type"] = string(*networkChange.Type)
-	mappedChange["uuid"] = networkChange.Uuid
+	mappedChange["href"] = networkChange.GetHref()
+	mappedChange["type"] = string(networkChange.GetType())
+	mappedChange["uuid"] = networkChange.GetUuid()
 
 	changeSet := schema.NewSet(
 		schema.HashResource(&schema.Resource{Schema: fabricNetworkChangeSch()}),
@@ -239,20 +240,26 @@ func simplifiedFabricNetworkChangeGoToTerraform(networkChange *fabricv4.Simplifi
 
 func setFabricNetworkMap(d *schema.ResourceData, nt *fabricv4.Network) diag.Diagnostics {
 	diags := diag.Diagnostics{}
+	operation := nt.GetOperation()
+	change := nt.GetChange()
+	location := nt.GetLocation()
+	notifications := nt.GetNotifications()
+	project := nt.GetProject()
+	changeLog := nt.GetChangeLog()
 	err := equinix_schema.SetMap(d, map[string]interface{}{
-		"name":              nt.Name,
-		"href":              nt.Href,
-		"uuid":              nt.Uuid,
-		"type":              nt.Type,
-		"scope":             nt.Scope,
-		"state":             nt.State,
-		"operation":         fabricNetworkOperationGoToTerraform(nt.Operation),
-		"change":            simplifiedFabricNetworkChangeGoToTerraform(nt.Change),
-		"location":          equinix_fabric_schema.LocationGoToTerraform(nt.Location),
-		"notifications":     equinix_fabric_schema.NotificationsGoToTerraform(nt.Notifications),
-		"project":           equinix_fabric_schema.ProjectGoToTerraform(nt.Project),
-		"change_log":        equinix_fabric_schema.ChangeLogGoToTerraform(&nt.ChangeLog),
-		"connections_count": nt.ConnectionsCount,
+		"name":              nt.GetName(),
+		"href":              nt.GetHref(),
+		"uuid":              nt.GetUuid(),
+		"type":              nt.GetType(),
+		"scope":             nt.GetScope(),
+		"state":             nt.GetState(),
+		"operation":         fabricNetworkOperationGoToTerraform(&operation),
+		"change":            simplifiedFabricNetworkChangeGoToTerraform(&change),
+		"location":          equinix_fabric_schema.LocationGoToTerraform(&location),
+		"notifications":     equinix_fabric_schema.NotificationsGoToTerraform(notifications),
+		"project":           equinix_fabric_schema.ProjectGoToTerraform(&project),
+		"change_log":        equinix_fabric_schema.ChangeLogGoToTerraform(&changeLog),
+		"connections_count": nt.GetConnectionsCount(),
 	})
 	if err != nil {
 		return diag.FromErr(err)
@@ -261,7 +268,7 @@ func setFabricNetworkMap(d *schema.ResourceData, nt *fabricv4.Network) diag.Diag
 }
 func getFabricNetworkUpdateRequest(network *fabricv4.Network, d *schema.ResourceData) (fabricv4.NetworkChangeOperation, error) {
 	changeOps := fabricv4.NetworkChangeOperation{}
-	existingName := network.Name
+	existingName := network.GetName()
 	updateNameVal := d.Get("name").(string)
 
 	log.Printf("existing name %s, Update Name Request %s ", existingName, updateNameVal)
