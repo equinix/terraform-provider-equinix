@@ -1038,13 +1038,51 @@ func accessPointTypeConfigToTerra(spAccessPointTypes []fabricv4.ServiceProfileAc
 			"enable_auto_generate_service_key": spAccessPointTypeColo.EnableAutoGenerateServiceKey,
 			"connection_redundancy_required":   spAccessPointTypeColo.ConnectionRedundancyRequired,
 			"connection_label":                 spAccessPointTypeColo.ConnectionLabel,
-			"api_config":                       apiConfigToTerra(spAccessPointTypeColo.ApiConfig),
-			"authentication_key":               authenticationKeyToTerra(spAccessPointTypeColo.AuthenticationKey),
-			"supported_bandwidths":             supportedBandwidthsToTerra(spAccessPointTypeColo.SupportedBandwidths),
+			"api_config":                       apiConfigGoToTerraform(spAccessPointTypeColo.ApiConfig),
+			"authentication_key":               authenticationKeyGoToTerraform(spAccessPointTypeColo.AuthenticationKey),
+			"supported_bandwidths":             supportedBandwidthsGoToTerraform(spAccessPointTypeColo.SupportedBandwidths),
 		}
 	}
 
 	return mappedSpAccessPointTypes
+}
+
+func apiConfigGoToTerraform(apiConfig *fabricv4.ApiConfig) *schema.Set {
+
+	mappedApiConfig := make(map[string]interface{})
+	mappedApiConfig["api_available"] = apiConfig.ApiAvailable
+	mappedApiConfig["equinix_managed_vlan"] = apiConfig.EquinixManagedVlan
+	mappedApiConfig["bandwidth_from_api"] = apiConfig.BandwidthFromApi
+	mappedApiConfig["integration_id"] = apiConfig.IntegrationId
+	mappedApiConfig["equinix_managed_port"] = apiConfig.EquinixManagedPort
+
+	apiConfigSet := schema.NewSet(
+		schema.HashResource(&schema.Resource{Schema: createApiConfigSch()}),
+		[]interface{}{mappedApiConfig})
+	return apiConfigSet
+}
+
+func authenticationKeyGoToTerraform(authenticationKey *fabricv4.AuthenticationKey) *schema.Set {
+	mappedAuthenticationKey := make(map[string]interface{})
+	mappedAuthenticationKey["required"] = authenticationKey.Required
+	mappedAuthenticationKey["label"] = authenticationKey.Label
+	mappedAuthenticationKey["description"] = authenticationKey.Description
+
+	apiConfigSet := schema.NewSet(
+		schema.HashResource(&schema.Resource{Schema: createAuthenticationKeySch()}),
+		[]interface{}{mappedAuthenticationKey})
+	return apiConfigSet
+}
+
+func supportedBandwidthsGoToTerraform(supportedBandwidths []int32) []interface{} {
+	if supportedBandwidths == nil {
+		return nil
+	}
+	mappedSupportedBandwidths := make([]interface{}, len(supportedBandwidths))
+	for index, bandwidth := range supportedBandwidths {
+		mappedSupportedBandwidths[index] = int(bandwidth)
+	}
+	return mappedSupportedBandwidths
 }
 
 func apiConfigToFabric(apiConfigs []interface{}) *v4.ApiConfig {

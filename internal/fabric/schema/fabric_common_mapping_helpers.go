@@ -28,10 +28,10 @@ func OrderGoToTerraform(order *fabricv4.Order) *schema.Set {
 		return nil
 	}
 	mappedOrder := make(map[string]interface{})
-	mappedOrder["purchase_order_number"] = order.PurchaseOrderNumber
-	mappedOrder["billing_tier"] = order.BillingTier
-	mappedOrder["order_id"] = order.OrderId
-	mappedOrder["order_number"] = order.OrderNumber
+	mappedOrder["purchase_order_number"] = order.GetPurchaseOrderNumber()
+	mappedOrder["billing_tier"] = order.GetBillingTier()
+	mappedOrder["order_id"] = order.GetOrderId()
+	mappedOrder["order_number"] = order.GetOrderNumber()
 	orderSet := schema.NewSet(
 		schema.HashResource(&schema.Resource{Schema: OrderSch()}),
 		[]interface{}{mappedOrder},
@@ -48,14 +48,14 @@ func AccountGoToTerraform[Account *fabricv4.SimplifiedAccount | *v4.AllOfService
 	case *fabricv4.SimplifiedAccount:
 		simplifiedAccount := any(account).(*fabricv4.SimplifiedAccount)
 		mappedAccount = map[string]interface{}{
-			"account_number":           int(*simplifiedAccount.AccountNumber),
-			"account_name":             simplifiedAccount.AccountName,
-			"org_id":                   int(*simplifiedAccount.OrgId),
-			"organization_name":        simplifiedAccount.OrganizationName,
-			"global_org_id":            simplifiedAccount.GlobalOrgId,
-			"global_organization_name": simplifiedAccount.GlobalOrganizationName,
-			"global_cust_id":           simplifiedAccount.GlobalCustId,
-			"ucm_id":                   simplifiedAccount.UcmId,
+			"account_number":           int(simplifiedAccount.GetAccountNumber()),
+			"account_name":             simplifiedAccount.GetAccountName(),
+			"org_id":                   int(simplifiedAccount.GetOrgId()),
+			"organization_name":        simplifiedAccount.GetOrganizationName(),
+			"global_org_id":            simplifiedAccount.GetGlobalOrgId(),
+			"global_organization_name": simplifiedAccount.GetGlobalOrganizationName(),
+			"global_cust_id":           simplifiedAccount.GetGlobalCustId(),
+			"ucm_id":                   simplifiedAccount.GetUcmId(),
 		}
 	case *v4.AllOfServiceProfileAccount:
 		allSPAccount := any(account).(*v4.AllOfServiceProfileAccount)
@@ -88,12 +88,12 @@ func NotificationsTerraformToGo(notificationsTerraform []interface{}) []fabricv4
 	notifications := make([]fabricv4.SimplifiedNotification, len(notificationsTerraform))
 	for index, notification := range notificationsTerraform {
 		notificationMap := notification.(map[string]interface{})
-		notificationType := fabricv4.SimplifiedNotificationType(notificationMap["type"].(string))
+		notificationType, _ := fabricv4.NewSimplifiedNotificationTypeFromValue(notificationMap["type"].(string))
 		interval := notificationMap["send_interval"].(*string)
 		emailsRaw := notificationMap["emails"].([]interface{})
 		emails := converters.IfArrToStringArr(emailsRaw)
 		notifications[index] = fabricv4.SimplifiedNotification{
-			Type:         notificationType,
+			Type:         *notificationType,
 			SendInterval: interval,
 			Emails:       emails,
 		}
@@ -108,9 +108,9 @@ func NotificationsGoToTerraform(notifications []fabricv4.SimplifiedNotification)
 	mappedNotifications := make([]map[string]interface{}, len(notifications))
 	for index, notification := range notifications {
 		mappedNotifications[index] = map[string]interface{}{
-			"type":          notification.Type,
-			"send_interval": notification.SendInterval,
-			"emails":        notification.Emails,
+			"type":          notification.GetType(),
+			"send_interval": notification.GetSendInterval(),
+			"emails":        notification.GetEmails(),
 		}
 	}
 	return mappedNotifications
@@ -136,10 +136,10 @@ func LocationGoToTerraform(location *fabricv4.SimplifiedLocation) *schema.Set {
 		return nil
 	}
 	mappedLocations := make(map[string]interface{})
-	mappedLocations["region"] = location.Region
-	mappedLocations["metro_name"] = location.MetroName
-	mappedLocations["metro_code"] = location.MetroCode
-	mappedLocations["ibx"] = location.Ibx
+	mappedLocations["region"] = location.GetRegion()
+	mappedLocations["metro_name"] = location.GetMetroName()
+	mappedLocations["metro_code"] = location.GetMetroCode()
+	mappedLocations["ibx"] = location.GetIbx()
 
 	locationSet := schema.NewSet(
 		schema.HashResource(&schema.Resource{Schema: LocationSch()}),
@@ -160,9 +160,9 @@ func LocationWithoutIBXTerraformToGo(locationList []interface{}) v4.SimplifiedLo
 
 func LocationWithoutIBXGoToTerraform(location *fabricv4.SimplifiedLocationWithoutIBX) *schema.Set {
 	mappedLocation := map[string]interface{}{
-		"region":     location.Region,
-		"metro_name": location.MetroName,
-		"metro_code": location.MetroCode,
+		"region":     location.GetRegion(),
+		"metro_name": location.GetMetroName(),
+		"metro_code": location.GetMetroCode(),
 	}
 
 	locationSet := schema.NewSet(
@@ -189,7 +189,7 @@ func ProjectGoToTerraform(project *fabricv4.Project) *schema.Set {
 		return nil
 	}
 	mappedProject := make(map[string]interface{})
-	mappedProject["project_id"] = project.ProjectId
+	mappedProject["project_id"] = project.GetProjectId()
 	projectSet := schema.NewSet(
 		schema.HashResource(&schema.Resource{Schema: ProjectSch()}),
 		[]interface{}{mappedProject})
@@ -205,17 +205,17 @@ func ChangeLogGoToTerraform[ChangeLog *fabricv4.Changelog | *v4.AllOfServiceProf
 	case *fabricv4.Changelog:
 		baseChangeLog := any(changeLog).(*fabricv4.Changelog)
 		mappedChangeLog = map[string]interface{}{
-			"created_by":           baseChangeLog.CreatedBy,
-			"created_by_full_name": baseChangeLog.CreatedByFullName,
-			"created_by_email":     baseChangeLog.CreatedByEmail,
-			"created_date_time":    baseChangeLog.CreatedDateTime.String(),
-			"updated_by":           baseChangeLog.UpdatedBy,
-			"updated_by_full_name": baseChangeLog.UpdatedByFullName,
-			"updated_date_time":    baseChangeLog.UpdatedDateTime.String(),
-			"deleted_by":           baseChangeLog.DeletedBy,
-			"deleted_by_full_name": baseChangeLog.DeletedByFullName,
-			"deleted_by_email":     baseChangeLog.DeletedByEmail,
-			"deleted_date_time":    baseChangeLog.DeletedDateTime.String(),
+			"created_by":           baseChangeLog.GetCreatedBy(),
+			"created_by_full_name": baseChangeLog.GetCreatedByFullName(),
+			"created_by_email":     baseChangeLog.GetCreatedByEmail(),
+			"created_date_time":    baseChangeLog.GetCreatedDateTime().String(),
+			"updated_by":           baseChangeLog.GetUpdatedBy(),
+			"updated_by_full_name": baseChangeLog.GetUpdatedByFullName(),
+			"updated_date_time":    baseChangeLog.GetUpdatedDateTime().String(),
+			"deleted_by":           baseChangeLog.GetDeletedBy(),
+			"deleted_by_full_name": baseChangeLog.GetDeletedByFullName(),
+			"deleted_by_email":     baseChangeLog.GetDeletedByEmail(),
+			"deleted_date_time":    baseChangeLog.GetDeletedDateTime().String(),
 		}
 	case *v4.AllOfServiceProfileChangeLog:
 		allOfChangeLog := any(changeLog).(*v4.AllOfServiceProfileChangeLog)
@@ -249,12 +249,12 @@ func ErrorGoToTerraform(errors []fabricv4.Error) []interface{} {
 	mappedErrors := make([]interface{}, len(errors))
 	for index, mError := range errors {
 		mappedErrors[index] = map[string]interface{}{
-			"error_code":      mError.ErrorCode,
-			"error_message":   mError.ErrorMessage,
-			"correlation_id":  mError.CorrelationId,
-			"details":         mError.Details,
-			"help":            mError.Help,
-			"additional_info": ErrorAdditionalInfoGoToTerraform(mError.AdditionalInfo),
+			"error_code":      mError.GetErrorCode(),
+			"error_message":   mError.GetErrorMessage(),
+			"correlation_id":  mError.GetCorrelationId(),
+			"details":         mError.GetDetails(),
+			"help":            mError.GetHelp(),
+			"additional_info": ErrorAdditionalInfoGoToTerraform(mError.GetAdditionalInfo()),
 		}
 	}
 	return mappedErrors
@@ -267,8 +267,8 @@ func ErrorAdditionalInfoGoToTerraform(additionalInfol []fabricv4.PriceErrorAddit
 	mappedAdditionalInfol := make([]interface{}, len(additionalInfol))
 	for index, additionalInfo := range additionalInfol {
 		mappedAdditionalInfol[index] = map[string]interface{}{
-			"property": additionalInfo.Property,
-			"reason":   additionalInfo.Reason,
+			"property": additionalInfo.GetProperty(),
+			"reason":   additionalInfo.GetReason(),
 		}
 	}
 	return mappedAdditionalInfol
