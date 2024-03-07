@@ -1,22 +1,21 @@
-package equinix
+package organization_test
 
 import (
 	"fmt"
 	"testing"
 
+	"github.com/equinix/terraform-provider-equinix/internal/acceptance"
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/packethost/packngo"
 )
 
-func TestAccDataSourceMetalOrganization_basic(t *testing.T) {
+func TestAccDataSourceOrganizations_basic(t *testing.T) {
 	var org packngo.Organization
 	rInt := acctest.RandInt()
-
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { testAccPreCheck(t) },
-		ExternalProviders:        testExternalProviders,
-		ProtoV5ProviderFactories: testAccProtoV5ProviderFactories,
+		PreCheck:                 func() { acceptance.TestAccPreCheckMetal(t); acceptance.TestAccPreCheckProviderConfigured(t) },
+		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
 		CheckDestroy:             testAccMetalOrganizationCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
