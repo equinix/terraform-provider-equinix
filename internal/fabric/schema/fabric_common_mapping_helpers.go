@@ -148,14 +148,16 @@ func LocationGoToTerraform(location *fabricv4.SimplifiedLocation) *schema.Set {
 	return locationSet
 }
 
-func LocationWithoutIBXTerraformToGo(locationList []interface{}) v4.SimplifiedLocationWithoutIbx {
-	sl := v4.SimplifiedLocationWithoutIbx{}
-	for _, ll := range locationList {
-		llMap := ll.(map[string]interface{})
-		mc := llMap["metro_code"].(string)
-		sl = v4.SimplifiedLocationWithoutIbx{MetroCode: mc}
+func LocationWithoutIBXTerraformToGo(locationList []interface{}) *fabricv4.SimplifiedLocationWithoutIBX {
+	if locationList == nil || len(locationList) == 0 {
+		return nil
 	}
-	return sl
+
+	var locationWithoutIbx *fabricv4.SimplifiedLocationWithoutIBX
+	locationMap := locationList[0].(map[string]interface{})
+	metro_code := locationMap["metro_code"].(string)
+	locationWithoutIbx = &fabricv4.SimplifiedLocationWithoutIBX{MetroCode: metro_code}
+	return locationWithoutIbx
 }
 
 func LocationWithoutIBXGoToTerraform(location *fabricv4.SimplifiedLocationWithoutIBX) *schema.Set {
