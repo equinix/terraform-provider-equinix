@@ -155,6 +155,9 @@ func (r *Resource) Update(
 		return
 	}
 
+	fmt.Printf("state: %v\n", state)
+	fmt.Printf("plan: %v\n", plan)
+
 	// Extract the ID of the resource from the state
 	id := plan.ID.ValueString()
 
@@ -175,10 +178,8 @@ func (r *Resource) Update(
 		updateRequest.Twitter = plan.Twitter.ValueStringPointer()
 	}
 
-	// Ensure updateRequest.Address is initialized
-	updateRequest.Address = &packngo.Address{}
-
 	if !state.Address.Equal(plan.Address) {
+		updateRequest.Address = &packngo.Address{}
 		addressresourcemodel := make([]AddressResourceModel, 1)
 		if diags := plan.Address.ElementsAs(ctx, &addressresourcemodel, false); diags != nil {
 			resp.Diagnostics.AddError(

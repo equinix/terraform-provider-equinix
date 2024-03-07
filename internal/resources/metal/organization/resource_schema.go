@@ -9,6 +9,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework-validators/listvalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 )
 
@@ -23,18 +24,26 @@ func GetResourceSchema(ctx context.Context) schema.Schema {
 			"description": schema.StringAttribute{
 				Description: "Description string",
 				Optional:    true,
+				Computed:    true,
+				Default:     stringdefault.StaticString(""),
 			},
 			"website": schema.StringAttribute{
 				Description: "Website link",
 				Optional:    true,
+				Computed:    true,
+				Default:     stringdefault.StaticString(""),
 			},
 			"twitter": schema.StringAttribute{
 				Description: "Twitter handle",
 				Optional:    true,
+				Computed:    true,
+				Default:     stringdefault.StaticString(""),
 			},
 			"logo": schema.StringAttribute{
 				Description: "Logo URL",
 				Optional:    true,
+				Computed:    true,
+				Default:     stringdefault.StaticString(""),
 			},
 			"created": schema.StringAttribute{
 				Computed: true,
@@ -78,6 +87,7 @@ func GetResourceSchema(ctx context.Context) schema.Schema {
 							Description: "State name",
 							Optional:    true,
 							Computed:    true,
+							Default:     stringdefault.StaticString(""),
 						},
 					},
 				},

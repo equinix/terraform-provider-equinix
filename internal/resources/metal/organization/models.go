@@ -33,10 +33,10 @@ type ResourceModel struct {
 func (m *ResourceModel) parse(ctx context.Context, org *packngo.Organization) diag.Diagnostics {
 	m.ID = types.StringValue(org.ID)
 	m.Name = types.StringValue(org.Name)
-	m.Description = ignoreEmptyString(m.Description, org.Description)
-	m.Website = ignoreEmptyString(m.Website, org.Website)
-	m.Twitter = ignoreEmptyString(m.Twitter, org.Twitter)
-	m.Logo = ignoreEmptyString(m.Logo, org.Logo)
+	m.Description = types.StringValue(org.Description)
+	m.Website = types.StringValue(org.Website)
+	m.Twitter = types.StringValue(org.Twitter)
+	m.Logo = types.StringValue(org.Logo)
 	m.Created = types.StringValue(org.Created)
 	m.Updated = types.StringValue(org.Updated)
 
@@ -63,7 +63,7 @@ func (m *DataSourceModel) parse(ctx context.Context, org *packngo.Organization) 
 	m.ID = types.StringValue(org.ID)
 	m.Name = types.StringValue(org.Name)
 	m.OrganizationID = types.StringValue(org.ID)
-	m.Description = ignoreEmptyString(m.Description, org.Description)
+	m.Description = types.StringValue(org.Description)
 	m.Website = types.StringValue(org.Website)
 	m.Twitter = types.StringValue(org.Twitter)
 	m.Logo = types.StringValue(org.Logo)
@@ -91,12 +91,4 @@ func parseAddress(ctx context.Context, addr packngo.Address) fwtypes.ListNestedO
 		ZipCode: types.StringValue(addr.ZipCode),
 	}
 	return fwtypes.NewListNestedObjectValueOfValueSlice(ctx, addressresourcemodel)
-}
-
-func ignoreEmptyString(original basetypes.StringValue, updated string) basetypes.StringValue {
-	if original.IsNull() && updated == "" {
-		return types.StringNull()
-	} else {
-		return types.StringValue(updated)
-	}
 }
