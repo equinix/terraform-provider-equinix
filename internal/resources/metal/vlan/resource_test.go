@@ -1,7 +1,8 @@
-package vlans_test
+package vlan_test
 
 import (
 	"fmt"
+	"strings"
 	"testing"
 
 	"github.com/equinix/terraform-provider-equinix/internal/acceptance"
@@ -198,6 +199,39 @@ func TestAccMetalVlan_metro_upgradeFromVersion(t *testing.T) {
 			{
 				ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
 				Config:                   testAccCheckMetalVlanConfig_metro(rs, metro, "tfacc-vlan"),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectEmptyPlan(),
+					},
+				},
+			},
+		},
+	})
+}
+
+func TestAccMetalVlan_metro_suppress_diff(t *testing.T) {
+	var vlan packngo.VirtualNetwork
+	rs := acctest.RandString(10)
+	metro := "sv"
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:                 func() { acceptance.TestAccPreCheckMetal(t) },
+		ExternalProviders:        acceptance.TestExternalProviders,
+		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		CheckDestroy:             testAccMetalVlanCheckDestroyed,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckMetalVlanConfig_metro(rs, metro, "tfacc-vlan"),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckMetalVlanExists("equinix_metal_vlan.foovlan", &vlan),
+					resource.TestCheckResourceAttr(
+						"equinix_metal_vlan.foovlan", "description", "tfacc-vlan"),
+					resource.TestCheckResourceAttr(
+						"equinix_metal_vlan.foovlan", "metro", metro),
+				),
+			},
+			{
+				Config: testAccCheckMetalVlanConfig_metro(rs, strings.ToUpper(metro), "tfacc-vlan"),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectEmptyPlan(),

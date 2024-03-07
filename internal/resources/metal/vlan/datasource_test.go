@@ -1,4 +1,4 @@
-package vlans_test
+package vlan_test
 
 import (
 	"fmt"
@@ -7,7 +7,7 @@ import (
 
 	"github.com/equinix/terraform-provider-equinix/internal/acceptance"
 	"github.com/equinix/terraform-provider-equinix/internal/config"
-	"github.com/equinix/terraform-provider-equinix/internal/resources/metal/vlans"
+	"github.com/equinix/terraform-provider-equinix/internal/resources/metal/vlan"
 	"github.com/hashicorp/terraform-plugin-testing/plancheck"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
@@ -265,7 +265,7 @@ func TestMetalVlan_matchingVlan(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := vlans.MatchingVlan(tt.args.vlans, tt.args.vxlan, tt.args.projectID, tt.args.facility, tt.args.metro)
+			got, err := vlan.MatchingVlan(tt.args.vlans, tt.args.vxlan, tt.args.projectID, tt.args.facility, tt.args.metro)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("matchingVlan() error = %v, wantErr %v", err, tt.wantErr)
 				return
