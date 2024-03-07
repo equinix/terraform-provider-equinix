@@ -262,9 +262,9 @@ func portTerraformToGo(portList []interface{}) *fabricv4.SimplifiedPort {
 
 func portGoToTerraform(port *fabricv4.SimplifiedPort) *schema.Set {
 	mappedPort := make(map[string]interface{})
-	mappedPort["href"] = port.Href
-	mappedPort["name"] = port.Name
-	mappedPort["uuid"] = port.Uuid
+	mappedPort["href"] = port.GetHref()
+	mappedPort["name"] = port.GetName()
+	mappedPort["uuid"] = port.GetUuid()
 	if port.Redundancy != nil {
 		mappedPort["redundancy"] = portRedundancyGoToTerraform(port.Redundancy)
 	}
@@ -280,9 +280,9 @@ func portRedundancyGoToTerraform(redundancy *fabricv4.PortRedundancy) *schema.Se
 		return nil
 	}
 	mappedRedundancy := make(map[string]interface{})
-	mappedRedundancy["enabled"] = redundancy.Enabled
-	mappedRedundancy["group"] = redundancy.Group
-	mappedRedundancy["priority"] = string(*redundancy.Priority)
+	mappedRedundancy["enabled"] = redundancy.GetEnabled()
+	mappedRedundancy["group"] = redundancy.GetGroup()
+	mappedRedundancy["priority"] = string(redundancy.GetPriority())
 
 	redundancySet := schema.NewSet(
 		schema.HashResource(&schema.Resource{Schema: PortRedundancySch()}),
@@ -412,7 +412,8 @@ func setFabricPortMap(d *schema.ResourceData, port *fabricv4.Port) diag.Diagnost
 	return diags
 }
 
-func fabricPortsListGoToTerraform(portResponse *fabricv4.AllPortsResponse) []map[string]interface{} {
+func setPortsListMap(d *schema.ResourceData, portResponse *fabricv4.AllPortsResponse) diag.Diagnostics {
+	diags := diag.Diagnostics{}
 	ports := portResponse.Data
 	if ports == nil {
 		return nil
@@ -421,13 +422,9 @@ func fabricPortsListGoToTerraform(portResponse *fabricv4.AllPortsResponse) []map
 	for index, port := range ports {
 		mappedPorts[index] = fabricPortMap(&port)
 	}
-	return mappedPorts
-}
 
-func setPortsListMap(d *schema.ResourceData, spl *fabricv4.AllPortsResponse) diag.Diagnostics {
-	diags := diag.Diagnostics{}
 	err := equinix_schema.SetMap(d, map[string]interface{}{
-		"data": fabricPortsListGoToTerraform(spl),
+		"data": mappedPorts,
 	})
 	if err != nil {
 		return diag.FromErr(err)
