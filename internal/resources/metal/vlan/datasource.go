@@ -1,4 +1,4 @@
-package vlans
+package vlan
 
 import (
 	"context"
@@ -81,7 +81,7 @@ func (r *DataSource) Read(
 			&packngo.GetOptions{Includes: []string{"assigned_to"}},
 		)
 		if err != nil {
-			resp.Diagnostics.AddError("Error fetching vlans list for projectId",
+			resp.Diagnostics.AddError("Error fetching vlan list for projectId",
 				equinix_errors.FriendlyError(err).Error())
 			return
 		}

@@ -1,7 +1,7 @@
 package sweep_test
 
 import (
-	"github.com/equinix/terraform-provider-equinix/internal/resources/metal/vlans"
+	"github.com/equinix/terraform-provider-equinix/internal/resources/metal/vlan"
 	"testing"
 
 	"github.com/equinix/terraform-provider-equinix/internal/resources/metal/device"
@@ -28,6 +28,6 @@ func addTestSweepers() {
 	ssh_key.AddTestSweeper()
 	user_api_key.AddTestSweeper()
 	virtual_circuit.AddTestSweeper()
-	vlans.AddTestSweeper()
+	vlan.AddTestSweeper()
 	vrf.AddTestSweeper()
 }

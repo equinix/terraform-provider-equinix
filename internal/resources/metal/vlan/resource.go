@@ -1,4 +1,4 @@
-package vlans
+package vlan
 
 import (
 	"context"
@@ -6,6 +6,7 @@ import (
 	"fmt"
 	equinix_errors "github.com/equinix/terraform-provider-equinix/internal/errors"
 	"github.com/equinix/terraform-provider-equinix/internal/framework"
+
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/packethost/packngo"
@@ -62,7 +63,7 @@ func (r *Resource) Create(ctx context.Context, request resource.CreateRequest, r
 	}
 	if !data.Facility.IsNull() && !data.Vxlan.IsNull() {
 		response.Diagnostics.AddError("Invalid input params",
-			equinix_errors.FriendlyError(errors.New("you can set vxlan only for metro vlans")).Error())
+			equinix_errors.FriendlyError(errors.New("you can set vxlan only for metro vlan")).Error())
 		return
 	}
 
@@ -137,7 +138,18 @@ func (r *Resource) Read(ctx context.Context, request resource.ReadRequest, respo
 	response.Diagnostics.Append(response.State.Set(ctx, &data)...)
 }
 
-func (r *Resource) Update(_ context.Context, _ resource.UpdateRequest, _ *resource.UpdateResponse) {}
+func (r *Resource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
+	var data ResourceModel
+	if diag := req.Plan.Get(ctx, &data); diag.HasError() {
+		resp.Diagnostics.Append(diag...)
+		return
+	}
+
+	if diag := resp.State.Set(ctx, &data); diag.HasError() {
+		resp.Diagnostics.Append(diag...)
+		return
+	}
+}
 
 func (r *Resource) Delete(ctx context.Context, request resource.DeleteRequest, response *resource.DeleteResponse) {
 	r.Meta.AddFwModuleToMetalUserAgent(ctx, request.ProviderMeta)

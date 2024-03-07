@@ -1,8 +1,8 @@
-package vlans
+package vlan
 
 import (
 	"context"
-
+	equinixplanmodifiers "github.com/equinix/terraform-provider-equinix/internal/planmodifiers"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
@@ -54,11 +54,13 @@ func resourceSchema(ctx context.Context) schema.Schema {
 				Optional:    true,
 				Computed:    true,
 				PlanModifiers: []planmodifier.String{
-					stringplanmodifier.RequiresReplace(),
+					//stringplanmodifier.RequiresReplace(),
+					equinixplanmodifiers.CaseInsensitiveString(),
 				},
 				Validators: []validator.String{
 					stringvalidator.ConflictsWith(path.MatchRoot("facility")),
-					stringvalidator.AtLeastOneOf(path.MatchRoot("facility"), path.MatchRoot("metro")),
+					stringvalidator.ExactlyOneOf(path.MatchRoot("facility"),
+						path.MatchRoot("metro")),
 				},
 			},
 			"vxlan": schema.Int64Attribute{
