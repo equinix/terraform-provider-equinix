@@ -253,7 +253,6 @@ func projectCloudRouterTerraformToGo(projectTerraform []interface{}) *fabricv4.P
 }
 func resourceFabricCloudRouterCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*config.Config).NewFabricClientForSDK(d)
-	ctx = context.WithValue(ctx, fabricv4.ContextAccessToken, meta.(*config.Config).FabricAuthToken)
 	schemaNotifications := d.Get("notifications").([]interface{})
 	notifications := equinix_fabric_schema.NotificationsTerraformToGo(schemaNotifications)
 	schemaAccount := d.Get("account").(*schema.Set).List()
@@ -301,7 +300,6 @@ func resourceFabricCloudRouterCreate(ctx context.Context, d *schema.ResourceData
 
 func resourceFabricCloudRouterRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*config.Config).NewFabricClientForSDK(d)
-	ctx = context.WithValue(ctx, fabricv4.ContextAccessToken, meta.(*config.Config).FabricAuthToken)
 	cloudRouter, _, err := client.CloudRoutersApi.GetCloudRouterByUuid(ctx, d.Id()).Execute()
 	if err != nil {
 		log.Printf("[WARN] Fabric Cloud Router %s not found , error %s", d.Id(), err)
@@ -388,7 +386,6 @@ func getCloudRouterUpdateRequest(conn fabricv4.CloudRouter, d *schema.ResourceDa
 
 func resourceFabricCloudRouterUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*config.Config).NewFabricClientForSDK(d)
-	ctx = context.WithValue(ctx, fabricv4.ContextAccessToken, meta.(*config.Config).FabricAuthToken)
 	start := time.Now()
 	updateTimeout := d.Timeout(schema.TimeoutUpdate) - 30*time.Second - time.Since(start)
 	dbConn, err := waitUntilCloudRouterIsProvisioned(d.Id(), meta, d, ctx, updateTimeout)
@@ -483,7 +480,6 @@ func waitUntilCloudRouterIsProvisioned(uuid string, meta interface{}, d *schema.
 func resourceFabricCloudRouterDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	diags := diag.Diagnostics{}
 	client := meta.(*config.Config).NewFabricClientForSDK(d)
-	ctx = context.WithValue(ctx, fabricv4.ContextAccessToken, meta.(*config.Config).FabricAuthToken)
 	start := time.Now()
 	_, err := client.CloudRoutersApi.DeleteCloudRouterByUuid(ctx, d.Id()).Execute()
 	if err != nil {

@@ -106,7 +106,6 @@ type Config struct {
 
 	TerraformVersion string
 	FabricClient     *v4.APIClient
-	FabricAuthToken  string
 }
 
 // Load function validates configuration structure fields and configures
@@ -136,23 +135,8 @@ func (c *Config) Load(ctx context.Context) error {
 			BaseURL:      c.BaseURL,
 		}
 		authClient = authConfig.New(ctx)
-
-		if c.ClientID != "" && c.ClientSecret != "" {
-			tke, err := authConfig.TokenSource(ctx, authClient).Token()
-			if err != nil {
-				if err != nil {
-					return err
-				}
-			}
-			if tke != nil {
-				c.FabricAuthToken = tke.AccessToken
-			}
-		}
 	}
 
-	if c.FabricAuthToken == "" {
-		c.FabricAuthToken = c.Token
-	}
 	authClient.Timeout = c.requestTimeout()
 	authClient.Transport = logging.NewTransport("Equinix", authClient.Transport)
 	ecxClient := ecx.NewClient(ctx, c.BaseURL, authClient)
@@ -174,15 +158,15 @@ func (c *Config) Load(ctx context.Context) error {
 	c.Ecx = ecxClient
 	c.Ne = neClient
 	c.Metal = c.NewMetalClient()
-	c.FabricClient = c.NewFabricClient()
+	c.FabricClient = c.NewFabricClient(authClient)
 	return nil
 }
 
 // NewFabricClient returns a new client for accessing Equinix Fabric's v4 API.
 // Deprecated: migrate to NewFabricClientForSDK instead
-func (c *Config) NewFabricClient() *v4.APIClient {
-	transport := logging.NewTransport("Equinix Fabric", http.DefaultTransport)
-	authClient := &http.Client{
+func (c *Config) NewFabricClient(authClient *http.Client) *v4.APIClient {
+	transport := logging.NewTransport("Equinix Fabric", authClient.Transport)
+	loggingClient := &http.Client{
 		Transport: transport,
 	}
 	authClient.Timeout = c.requestTimeout()
@@ -194,7 +178,7 @@ func (c *Config) NewFabricClient() *v4.APIClient {
 		BasePath:      c.BaseURL,
 		DefaultHeader: fabricHeaderMap,
 		UserAgent:     "equinix/fabric-go",
-		HTTPClient:    authClient,
+		HTTPClient:    loggingClient,
 	}
 	client := v4.NewAPIClient(&v4Configuration)
 	return client

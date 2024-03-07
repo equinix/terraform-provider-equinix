@@ -545,7 +545,6 @@ func resourceFabricServiceProfile() *schema.Resource {
 
 func resourceFabricServiceProfileRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*config.Config).FabricClient
-	ctx = context.WithValue(ctx, v4.ContextAccessToken, meta.(*config.Config).FabricAuthToken)
 	serviceProfile, _, err := client.ServiceProfilesApi.GetServiceProfileByUuid(ctx, d.Id(), nil)
 	if err != nil {
 		if !strings.Contains(err.Error(), "500") {
@@ -559,7 +558,6 @@ func resourceFabricServiceProfileRead(ctx context.Context, d *schema.ResourceDat
 
 func resourceFabricServiceProfileCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*config.Config).FabricClient
-	ctx = context.WithValue(ctx, v4.ContextAccessToken, meta.(*config.Config).FabricAuthToken)
 
 	createRequest := getServiceProfileRequestPayload(d)
 	sp, _, err := client.ServiceProfilesApi.CreateServiceProfile(ctx, createRequest)
@@ -629,7 +627,6 @@ func getServiceProfileRequestPayload(d *schema.ResourceData) v4.ServiceProfileRe
 
 func resourceFabricServiceProfileUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*config.Config).FabricClient
-	ctx = context.WithValue(ctx, v4.ContextAccessToken, meta.(*config.Config).FabricAuthToken)
 	uuid := d.Id()
 	updateRequest := getServiceProfileRequestPayload(d)
 
@@ -729,7 +726,6 @@ func waitForActiveServiceProfileAndPopulateETag(uuid string, meta interface{}, c
 func resourceFabricServiceProfileDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	diags := diag.Diagnostics{}
 	client := meta.(*config.Config).FabricClient
-	ctx = context.WithValue(ctx, v4.ContextAccessToken, meta.(*config.Config).FabricAuthToken)
 	uuid := d.Id()
 	if uuid == "" {
 		return diag.Errorf("No uuid found for Service Profile Deletion %v ", uuid)
@@ -829,7 +825,6 @@ func fabricServiceProfileMap(serviceProfile *v4.ServiceProfile) map[string]inter
 
 func resourceServiceProfilesSearchRequest(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*config.Config).FabricClient
-	ctx = context.WithValue(ctx, v4.ContextAccessToken, meta.(*config.Config).FabricAuthToken)
 	schemaFilter := d.Get("filter").(*schema.Set).List()
 	filter := serviceProfilesSearchFilterRequestToFabric(schemaFilter)
 	var serviceProfileFlt v4.ServiceProfileFilter // Cast ServiceProfile search expression struct type to interface

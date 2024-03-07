@@ -361,7 +361,6 @@ func portEncapsulationGoToTerraform(portEncapsulation *fabricv4.PortEncapsulatio
 
 func resourceFabricPortRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*config.Config).NewFabricClientForSDK(d)
-	ctx = context.WithValue(ctx, fabricv4.ContextAccessToken, meta.(*config.Config).FabricAuthToken)
 	port, _, err := client.PortsApi.GetPortByUuid(ctx, d.Id()).Execute()
 	if err != nil {
 		log.Printf("[WARN] Port %s not found , error %s", d.Id(), err)
@@ -453,7 +452,6 @@ func resourceFabricPortGetByPortName(ctx context.Context, d *schema.ResourceData
 	}()
 
 	client := meta.(*config.Config).NewFabricClientForSDK(d)
-	ctx = context.WithValue(ctx, fabricv4.ContextAccessToken, meta.(*config.Config).FabricAuthToken)
 	portNameParam := d.Get("filters").(*schema.Set).List()
 	portName := portName(portNameParam)
 	ports, _, err := client.PortsApi.GetPorts(ctx).Name(*portName).Execute()

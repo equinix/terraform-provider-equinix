@@ -287,7 +287,6 @@ func resourceFabricRoutingProtocol() *schema.Resource {
 
 func resourceFabricRoutingProtocolRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*config.Config).FabricClient
-	ctx = context.WithValue(ctx, v4.ContextAccessToken, meta.(*config.Config).FabricAuthToken)
 	log.Printf("[WARN] Routing Protocol Connection uuid: %s", d.Get("connection_uuid").(string))
 	fabricRoutingProtocol, _, err := client.RoutingProtocolsApi.GetConnectionRoutingProtocolByUuid(ctx, d.Id(), d.Get("connection_uuid").(string))
 	if err != nil {
@@ -309,7 +308,6 @@ func resourceFabricRoutingProtocolRead(ctx context.Context, d *schema.ResourceDa
 
 func resourceFabricRoutingProtocolCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*config.Config).FabricClient
-	ctx = context.WithValue(ctx, v4.ContextAccessToken, meta.(*config.Config).FabricAuthToken)
 	schemaBgpIpv4 := d.Get("bgp_ipv4").(*schema.Set).List()
 	bgpIpv4 := routingProtocolBgpIpv4ToFabric(schemaBgpIpv4)
 	schemaBgpIpv6 := d.Get("bgp_ipv6").(*schema.Set).List()
@@ -395,7 +393,6 @@ func resourceFabricRoutingProtocolCreate(ctx context.Context, d *schema.Resource
 
 func resourceFabricRoutingProtocolUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*config.Config).FabricClient
-	ctx = context.WithValue(ctx, v4.ContextAccessToken, meta.(*config.Config).FabricAuthToken)
 
 	schemaBgpIpv4 := d.Get("bgp_ipv4").(*schema.Set).List()
 	bgpIpv4 := routingProtocolBgpIpv4ToFabric(schemaBgpIpv4)
@@ -491,7 +488,6 @@ func resourceFabricRoutingProtocolUpdate(ctx context.Context, d *schema.Resource
 func resourceFabricRoutingProtocolDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	diags := diag.Diagnostics{}
 	client := meta.(*config.Config).FabricClient
-	ctx = context.WithValue(ctx, v4.ContextAccessToken, meta.(*config.Config).FabricAuthToken)
 	start := time.Now()
 	_, _, err := client.RoutingProtocolsApi.DeleteConnectionRoutingProtocolByUuid(ctx, d.Id(), d.Get("connection_uuid").(string))
 	if err != nil {

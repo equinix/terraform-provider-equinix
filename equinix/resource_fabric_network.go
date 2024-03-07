@@ -168,7 +168,6 @@ func resourceFabricNetwork() *schema.Resource {
 
 func resourceFabricNetworkCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*config.Config).NewFabricClientForSDK(d)
-	ctx = context.WithValue(ctx, fabricv4.ContextAccessToken, meta.(*config.Config).FabricAuthToken)
 	schemaNotifications := d.Get("notifications").([]interface{})
 	notifications := equinix_fabric_schema.NotificationsTerraformToGo(schemaNotifications)
 	schemaLocation := d.Get("location").(*schema.Set).List()
@@ -204,7 +203,6 @@ func resourceFabricNetworkCreate(ctx context.Context, d *schema.ResourceData, me
 
 func resourceFabricNetworkRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*config.Config).NewFabricClientForSDK(d)
-	ctx = context.WithValue(ctx, fabricv4.ContextAccessToken, meta.(*config.Config).FabricAuthToken)
 	fabricNetwork, _, err := client.NetworksApi.GetNetworkByUuid(ctx, d.Id()).Execute()
 	if err != nil {
 		return diag.FromErr(equinix_errors.FormatFabricError(err))
@@ -278,7 +276,6 @@ func getFabricNetworkUpdateRequest(network *fabricv4.Network, d *schema.Resource
 
 func resourceFabricNetworkUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*config.Config).NewFabricClientForSDK(d)
-	ctx = context.WithValue(ctx, fabricv4.ContextAccessToken, meta.(*config.Config).FabricAuthToken)
 	start := time.Now()
 	updateTimeout := d.Timeout(schema.TimeoutUpdate) - 30*time.Second - time.Since(start)
 	dbConn, waitUntilNetworkProvisionedErr := waitUntilFabricNetworkIsProvisioned(d.Id(), meta, d, ctx, updateTimeout)
@@ -366,7 +363,6 @@ func waitUntilFabricNetworkIsProvisioned(uuid string, meta interface{}, d *schem
 func resourceFabricNetworkDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	diags := diag.Diagnostics{}
 	client := meta.(*config.Config).NewFabricClientForSDK(d)
-	ctx = context.WithValue(ctx, fabricv4.ContextAccessToken, meta.(*config.Config).FabricAuthToken)
 	start := time.Now()
 	_, _, err := client.NetworksApi.DeleteNetworkByUuid(ctx, d.Id()).Execute()
 	if err != nil {
