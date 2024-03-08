@@ -6,6 +6,8 @@ import (
 	"fmt"
 	equinix_errors "github.com/equinix/terraform-provider-equinix/internal/errors"
 	"github.com/equinix/terraform-provider-equinix/internal/framework"
+	"github.com/hashicorp/terraform-plugin-framework/types"
+	"strings"
 
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
@@ -72,7 +74,7 @@ func (r *Resource) Create(ctx context.Context, request resource.CreateRequest, r
 		Description: data.Description.ValueString(),
 	}
 	if !data.Metro.IsNull() {
-		createRequest.Metro = data.Metro.ValueString()
+		createRequest.Metro = strings.ToLower(data.Metro.ValueString())
 		createRequest.VXLAN = int(data.Vxlan.ValueInt64())
 	}
 	if !data.Facility.IsNull() {
@@ -99,7 +101,6 @@ func (r *Resource) Create(ctx context.Context, request resource.CreateRequest, r
 
 	// Set state to fully populated data
 	response.Diagnostics.Append(response.State.Set(ctx, &data)...)
-	return
 }
 
 func (r *Resource) Read(ctx context.Context, request resource.ReadRequest, response *resource.ReadResponse) {
@@ -145,6 +146,7 @@ func (r *Resource) Update(ctx context.Context, req resource.UpdateRequest, resp 
 		return
 	}
 
+	data.Metro = types.StringValue(strings.ToLower(data.Metro.ValueString()))
 	if diag := resp.State.Set(ctx, &data); diag.HasError() {
 		resp.Diagnostics.Append(diag...)
 		return

@@ -40,7 +40,6 @@ func resourceSchema(ctx context.Context) schema.Schema {
 				Description:        "Facility where to create the VLAN",
 				DeprecationMessage: "Use metro instead of facility.  For more information, read the migration guide: https://registry.terraform.io/providers/equinix/equinix/latest/docs/guides/migration_guide_facilities_to_metros_devices",
 				Optional:           true,
-				Computed:           true,
 				Validators: []validator.String{
 					stringvalidator.ConflictsWith(path.MatchRoot("metro")),
 				},
@@ -54,11 +53,10 @@ func resourceSchema(ctx context.Context) schema.Schema {
 				Optional:    true,
 				Computed:    true,
 				PlanModifiers: []planmodifier.String{
-					//stringplanmodifier.RequiresReplace(),
+					stringplanmodifier.UseStateForUnknown(),
 					equinixplanmodifiers.CaseInsensitiveString(),
 				},
 				Validators: []validator.String{
-					stringvalidator.ConflictsWith(path.MatchRoot("facility")),
 					stringvalidator.ExactlyOneOf(path.MatchRoot("facility"),
 						path.MatchRoot("metro")),
 				},
@@ -66,6 +64,7 @@ func resourceSchema(ctx context.Context) schema.Schema {
 			"vxlan": schema.Int64Attribute{
 				Description: "VLAN ID, must be unique in metro",
 				PlanModifiers: []planmodifier.Int64{
+					int64planmodifier.UseStateForUnknown(),
 					int64planmodifier.RequiresReplace(),
 				},
 				Optional: true,
