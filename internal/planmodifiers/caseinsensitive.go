@@ -15,12 +15,17 @@ func CaseInsensitiveString() planmodifier.String {
 type caseInsensitivePlanModifier struct{}
 
 func (d *caseInsensitivePlanModifier) PlanModifyString(ctx context.Context, request planmodifier.StringRequest, response *planmodifier.StringResponse) {
+	if request.StateValue.IsNull() && request.PlanValue.IsUnknown() {
+		return
+	}
+
 	oldValue := request.StateValue.ValueString()
 	newValue := request.PlanValue.ValueString()
 
 	result := oldValue
-	if !strings.EqualFold(strings.ToLower(newValue), strings.ToLower(oldValue)) {
+	if !strings.EqualFold(newValue, oldValue) {
 		result = newValue
+		response.RequiresReplace = true
 	}
 
 	response.PlanValue = types.StringValue(result)

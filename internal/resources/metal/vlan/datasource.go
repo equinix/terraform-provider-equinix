@@ -3,6 +3,7 @@ package vlan
 import (
 	"context"
 	"fmt"
+	"strings"
 
 	equinix_errors "github.com/equinix/terraform-provider-equinix/internal/errors"
 	"github.com/equinix/terraform-provider-equinix/internal/framework"
@@ -115,10 +116,10 @@ func MatchingVlan(vlans []packngo.VirtualNetwork, vxlan int, projectID, facility
 		if vxlan != 0 && v.VXLAN != vxlan {
 			continue
 		}
-		if facility != "" && v.FacilityCode != facility {
+		if facility != "" && !strings.EqualFold(v.FacilityCode, facility) {
 			continue
 		}
-		if metro != "" && v.MetroCode != metro {
+		if metro != "" && !strings.EqualFold(v.MetroCode, metro) {
 			continue
 		}
 		matches = append(matches, v)
@@ -128,7 +129,7 @@ func MatchingVlan(vlans []packngo.VirtualNetwork, vxlan int, projectID, facility
 	}
 
 	if len(matches) == 0 {
-		return nil, equinix_errors.FriendlyError(fmt.Errorf("Project %s does not have matching VLANs", projectID))
+		return nil, equinix_errors.FriendlyError(fmt.Errorf("Project %s does not have matching VLANs for vlan [%d] and metro [%s]", projectID, vxlan, metro))
 	}
 	return &matches[0], nil
 }
