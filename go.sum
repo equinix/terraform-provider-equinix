@@ -272,6 +272,8 @@ github.com/equinix/ecx-go/v2 v2.3.1 h1:gFcAIeyaEUw7S8ebqApmT7E/S7pC7Ac3wgScp89fk
 github.com/equinix/ecx-go/v2 v2.3.1/go.mod h1:FvCdZ3jXU8Z4CPKig2DT+4J2HdwgRK17pIcznM7RXyk=
 github.com/equinix/equinix-sdk-go v0.34.0 h1:CgEl174Jm0ima4rzNFXSl3K7RzTy0NF8eji1/dwYS+Q=
 github.com/equinix/equinix-sdk-go v0.34.0/go.mod h1:qnpdRzVftHFNaJFk1VSIrAOTLrIoeDrxzUr3l8ARyvQ=
+github.com/equinix/equinix-sdk-go v0.35.0 h1:p/uwA8QPBAuNnKGc3mQkwjw+6++qUadLNnKFQ8jw+wg=
+github.com/equinix/equinix-sdk-go v0.35.0/go.mod h1:hEb3XLaedz7xhl/dpPIS6eOIiXNPeqNiVoyDrT6paIg=
 github.com/equinix/ne-go v1.16.0 h1:ZijMZxlu/2323RDfisxyeXukMn1TNv5tP5XiXZ8tWRM=
 github.com/equinix/ne-go v1.16.0/go.mod h1:eHkkxM4nbTB7DZ9X9zGnwfYnxIJWIsU3aHA+FAoZ1EI=
 github.com/equinix/oauth2-go v1.0.0 h1:fHtAPGq82PdgtK5vEThs8Vwz6f7D/8SX4tE3NJu+KcU=
@@ -596,6 +598,8 @@ github.com/stretchr/testify v1.8.1/go.mod h1:w2LPCIKwWwSfY2zedu0+kehJoqGctiVI29o
 github.com/stretchr/testify v1.8.2/go.mod h1:w2LPCIKwWwSfY2zedu0+kehJoqGctiVI29o6fzry7u4=
 github.com/stretchr/testify v1.8.4 h1:CcVxjf3Q8PM0mHUKJCdn+eZZtm5yQwehR5yeSVQQcUk=
 github.com/stretchr/testify v1.8.4/go.mod h1:sz/lmYIOXD/1dqDmKjjqLyZ2RngseejIcXlSw2iwfAo=
+github.com/stretchr/testify v1.9.0 h1:HtqpIVDClZ4nwg75+f6Lvsy/wHu+3BoSGCbBAcpTsTg=
+github.com/stretchr/testify v1.9.0/go.mod h1:r2ic/lqez/lEtzL7wO/rwa5dbSLXVDPFyf8C91i36aY=
 github.com/tmccombs/hcl2json v0.3.3 h1:+DLNYqpWE0CsOQiEZu+OZm5ZBImake3wtITYxQ8uLFQ=
 github.com/tmccombs/hcl2json v0.3.3/go.mod h1:Y2chtz2x9bAeRTvSibVRVgbLJhLJXKlUeIvjeVdnm4w=
 github.com/ulikunitz/xz v0.5.10 h1:t92gobL9l3HE202wg3rlk19F6X+JOxl9BBrCCMYEYd8=

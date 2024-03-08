@@ -6,7 +6,7 @@ require (
 	github.com/antihax/optional v1.0.0
 	github.com/equinix-labs/fabric-go v0.7.1
 	github.com/equinix/ecx-go/v2 v2.3.1
-	github.com/equinix/equinix-sdk-go v0.34.0
+	github.com/equinix/equinix-sdk-go v0.35.0
 	github.com/equinix/ne-go v1.16.0
 	github.com/equinix/oauth2-go v1.0.0
 	github.com/equinix/rest-go v1.3.0
@@ -26,7 +26,7 @@ require (
 	github.com/hashicorp/terraform-plugin-testing v1.6.0
 	github.com/packethost/packngo v0.31.0
 	github.com/pkg/errors v0.9.1
-	github.com/stretchr/testify v1.8.4
+	github.com/stretchr/testify v1.9.0
 	golang.org/x/exp v0.0.0-20240103183307-be819d1f06fc
 	golang.org/x/oauth2 v0.18.0
 )
