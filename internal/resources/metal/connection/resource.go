@@ -4,17 +4,14 @@ import (
 	"context"
 	"fmt"
 	"reflect"
-	"strconv"
 
+	"github.com/equinix/equinix-sdk-go/services/metalv1"
 	equinix_errors "github.com/equinix/terraform-provider-equinix/internal/errors"
 	"github.com/equinix/terraform-provider-equinix/internal/framework"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
-	"github.com/hashicorp/terraform-plugin-framework/types"
-	"github.com/packethost/packngo"
-	"golang.org/x/exp/slices"
 )
 
 func NewResource() resource.Resource {
@@ -53,49 +50,25 @@ func (r *Resource) Create(
 	}
 
 	// Retrieve the API client from the provider metadata
-	r.Meta.AddFwModuleToMetalUserAgent(ctx, req.ProviderMeta)
-	client := r.Meta.Metal
+	client := r.Meta.NewMetalClientForFramework(ctx, req.ProviderMeta)
+	projectID := plan.ProjectID.ValueString()
 
-	createRequest, diags := generateCreateRequest(ctx, plan)
-	if diags != nil {
-		resp.Diagnostics.Append(diags...)
+	createRequest, diags := buildCreateRequest(ctx, plan)
+
+	resp.Diagnostics.Append(diags...)
+	if diags.HasError() {
 		return
 	}
 
-	// Create API resource
-	var conn *packngo.Connection
+	// Create connection
 	var err error
-	projectId := plan.ProjectID.ValueString()
+	var conn *metalv1.Interconnection
 
-	// Shared connection specific logic
-	if plan.Type.ValueString() == string(packngo.ConnectionShared) {
-		if projectId == "" {
-			resp.Diagnostics.AddError(
-				"Missing project_id",
-				"project_id is required for 'shared' connection type",
-			)
-			return
-		}
-		if plan.Vlans.IsNull() {
-			resp.Diagnostics.AddAttributeError(
-				path.Root("vlans"),
-				"Missing vlans",
-				"You must specify vlans for 'shared' connection type",
-			)
-			return
-		}
+	if plan.Type.ValueString() == string(metalv1.INTERCONNECTIONTYPE_SHARED) {
+		request := client.InterconnectionsApi.CreateProjectInterconnection(ctx, projectID).
+			CreateOrganizationInterconnectionRequest(createRequest)
 
-		if plan.Redundancy.ValueString() == "redundant" && len(plan.Vlans.Elements()) < 2 {
-			resp.Diagnostics.AddAttributeError(
-				path.Root("vlans"),
-				"Not enough vlans",
-				"You must specify 2 vlans when for 'shared' connection type with redundancy 'redundant'",
-			)
-		}
-
-		// Create the shared connection
-		var err error
-		conn, _, err = client.Connections.ProjectCreate(projectId, createRequest)
+		conn, _, err = request.Execute()
 		if err != nil {
 			resp.Diagnostics.AddError(
 				"Error creating Metal Connection",
@@ -106,33 +79,45 @@ func (r *Resource) Create(
 	}
 
 	// Dedicated connection specific logic
-	if plan.Type.ValueString() == string(packngo.ConnectionDedicated) {
-		organizationId := plan.OrganizationID.ValueString()
-		if organizationId == "" {
-			proj, _, err := client.Projects.Get(projectId, &packngo.GetOptions{Includes: []string{"organization"}})
+	if plan.Type.ValueString() == string(metalv1.INTERCONNECTIONTYPE_DEDICATED) {
+
+		organizationID := plan.OrganizationID.ValueString()
+
+		// get organization ID from project
+		if organizationID == "" {
+			project, _, err := client.ProjectsApi.FindProjectById(ctx, projectID).
+				// NB: organization.address and organization.billing_address needs to
+				// be included otherwise Interconnection otherwise the response is
+				// invalid against the API spec.
+				Include([]string{"organization", "organization.address", "organization.billing_address"}).
+				Execute()
 			if err != nil {
 				resp.Diagnostics.AddError(
-					fmt.Sprintf("Failed to get Project %s", projectId),
+					fmt.Sprintf("Failed to get Project %s", projectID),
 					err.Error(),
 				)
-				return
 			}
-			organizationId = proj.Organization.ID
+
+			org := project.GetOrganization()
+			organizationID = org.GetId()
 		}
 
+		request := client.InterconnectionsApi.CreateOrganizationInterconnection(ctx, organizationID).
+			CreateOrganizationInterconnectionRequest(createRequest)
+
 		// Create the dedicated connection
-		conn, _, err = client.Connections.OrganizationCreate(organizationId, createRequest)
+		conn, _, err = request.Execute()
 		if err != nil {
 			resp.Diagnostics.AddError(
 				"Error creating Metal Connection",
-				"Could not create Metal Connection: "+err.Error(),
+				"Could not create a dedicated Metal Connection: "+err.Error(),
 			)
 			return
 		}
 	}
 
 	// Use API client to get the current state of the resource
-	conn, diags = getConnection(ctx, client, &resp.State, conn.ID)
+	conn, diags = getConnection(ctx, client, &resp.State, *conn.Id)
 	if diags != nil {
 		resp.Diagnostics.Append(diags...)
 		return
@@ -161,8 +146,7 @@ func (r *Resource) Read(
 	}
 
 	// Retrieve the API client from the provider metadata
-	r.Meta.AddFwModuleToMetalUserAgent(ctx, req.ProviderMeta)
-	client := r.Meta.Metal
+	client := r.Meta.NewMetalClientForFramework(ctx, req.ProviderMeta)
 
 	// Extract the ID of the resource from the state
 	id := state.ID.ValueString()
@@ -189,8 +173,7 @@ func (r *Resource) Update(
 	req resource.UpdateRequest,
 	resp *resource.UpdateResponse,
 ) {
-	r.Meta.AddFwModuleToMetalUserAgent(ctx, req.ProviderMeta)
-	client := r.Meta.Metal
+	client := r.Meta.NewMetalClientForFramework(ctx, req.ProviderMeta)
 
 	// Retrieve values from plan
 	var state, plan ResourceModel
@@ -204,21 +187,18 @@ func (r *Resource) Update(
 	id := plan.ID.ValueString()
 
 	// Prepare update request based on the changes
-	updateRequest := &packngo.ConnectionUpdateRequest{}
+	updateRequest := metalv1.InterconnectionUpdateInput{}
 
+	if !state.ContactEmail.Equal(plan.ContactEmail) {
+		updateRequest.ContactEmail = plan.ContactEmail.ValueStringPointer()
+	}
 	if !state.Description.Equal(plan.Description) {
 		updateRequest.Description = plan.Description.ValueStringPointer()
 	}
 	if !state.Mode.Equal(plan.Mode) {
-		mode := packngo.ConnectionMode(plan.Mode.ValueString())
+		mode := metalv1.InterconnectionMode(plan.Mode.ValueString())
 		updateRequest.Mode = &mode
 	}
-	if !state.Redundancy.Equal(plan.Redundancy) {
-		updateRequest.Redundancy = packngo.ConnectionRedundancy(plan.Redundancy.ValueString())
-	}
-
-	// TODO(displague) packngo does not implement ContactEmail for update
-	// if !state.ContactEmail.Equal(plan.ContactEmail) { ... }
 
 	if !state.Tags.Equal(plan.Tags) {
 		tags := []string{}
@@ -229,86 +209,15 @@ func (r *Resource) Update(
 		updateRequest.Tags = tags
 	}
 
-	if !reflect.DeepEqual(updateRequest, packngo.ConnectionUpdateRequest{}) {
-		if _, _, err := client.Connections.Update(id, updateRequest, nil); err != nil {
+	if !reflect.DeepEqual(updateRequest, metalv1.InterconnectionUpdateInput{}) {
+		_, _, err := client.InterconnectionsApi.UpdateInterconnection(ctx, id).
+			InterconnectionUpdateInput(updateRequest).
+			Execute()
+
+		if err != nil {
 			resp.Diagnostics.AddError(
 				"Error updating Metal Connection",
-				"Could not update Connection with ID "+id+": "+equinix_errors.FriendlyError(err).Error(),
-			)
-		}
-	}
-
-	// Don't update VLANs until _after_ the main ConnectionUpdateRequest has succeeded
-	if !state.Vlans.Equal(plan.Vlans) {
-		connType := packngo.ConnectionType(plan.Type.ValueString())
-
-		if connType == packngo.ConnectionShared {
-			oldVlans := []int{}
-			if diags := state.Vlans.ElementsAs(ctx, &oldVlans, false); diags != nil {
-				resp.Diagnostics.Append(diags...)
-				return
-			}
-
-			newVlans := []int{}
-			if diags := plan.Vlans.ElementsAs(ctx, &newVlans, false); diags != nil {
-				resp.Diagnostics.Append(diags...)
-				return
-			}
-
-			ports := make([]PortModel, 0, len(plan.Ports.Elements()))
-			if diags := plan.Ports.ElementsAs(ctx, &ports, false); diags != nil {
-				resp.Diagnostics.Append(diags...)
-				return
-			}
-
-			for i, oldID := range oldVlans {
-				if i < len(newVlans) {
-					newID := newVlans[i]
-
-					// If the VNIDs are different
-					if oldID != newID {
-						// Check if the new VNID is present elsewhere in the oldVlans list
-						newIndex := slices.Index(oldVlans, newID)
-						if newIndex != -1 {
-							// If the new VNID is found in the oldVlans list, unassign the old VNID and assign the new VNID
-							if _, _, diags := updateHiddenVirtualCircuitVNID(ctx, client, ports[i], ""); diags.HasError() {
-								resp.Diagnostics.Append(diags...)
-								return
-							}
-							if _, _, diags := updateHiddenVirtualCircuitVNID(ctx, client, ports[newIndex], strconv.Itoa(newID)); diags.HasError() {
-								resp.Diagnostics.Append(diags...)
-								return
-							}
-						} else {
-							// If the new VNID is not found elsewhere in the oldVlans list, assign the new VNID
-							if _, _, diags := updateHiddenVirtualCircuitVNID(ctx, client, ports[i], strconv.Itoa(newID)); diags.HasError() {
-								resp.Diagnostics.Append(diags...)
-								return
-							}
-						}
-					}
-				}
-			}
-
-			// If newVlans has more VNIDs than oldVlans, assign the remaining new VNIDs
-			for i := len(oldVlans); i < len(newVlans); i++ {
-				if _, _, diags := updateHiddenVirtualCircuitVNID(ctx, client, ports[i], strconv.Itoa(newVlans[i])); diags.HasError() {
-					resp.Diagnostics.Append(diags...)
-					return
-				}
-			}
-
-			// If oldVlans has more VNIDs than newVlans, unassign the removed VNIDs
-			for i := len(newVlans); i < len(oldVlans); i++ {
-				if _, _, diags := updateHiddenVirtualCircuitVNID(ctx, client, ports[i], ""); diags.HasError() {
-					resp.Diagnostics.Append(diags...)
-					return
-				}
-			}
-		} else {
-			resp.Diagnostics.AddError(
-				"Error updating Metal Connection",
-				"Could not update Metal Connection with ID "+id+": when you update a 'dedicated' connection, you cannot set vlans",
+				"Could not update Connection with ID "+id+": "+err.Error(),
 			)
 		}
 	}
@@ -360,121 +269,237 @@ func (r *Resource) Delete(
 	}
 }
 
-func generateCreateRequest(ctx context.Context, plan ResourceModel) (*packngo.ConnectionCreateRequest, diag.Diagnostics) {
-	var diags diag.Diagnostics
+func buildDedicatedPortCreateRequest(ctx context.Context, plan ResourceModel, req *metalv1.CreateOrganizationInterconnectionRequest) (diags diag.Diagnostics) {
+	mode, err := metalv1.NewDedicatedPortCreateInputModeFromValue(plan.Mode.ValueString())
+	if err != nil {
+		diags.AddError(
+			"Error creating metal Connection",
+			err.Error(),
+		)
+	}
 
-	createRequest := &packngo.ConnectionCreateRequest{
+	req.DedicatedPortCreateInput = &metalv1.DedicatedPortCreateInput{
+		Type: metalv1.DEDICATEDPORTCREATEINPUTTYPE_DEDICATED,
+
 		Name:       plan.Name.ValueString(),
-		Redundancy: packngo.ConnectionRedundancy(plan.Redundancy.ValueString()),
-		Type:       packngo.ConnectionType(plan.Type.ValueString()),
-	}
-	// missing email is tolerated for user keys (can't be reasonably detected)
-	if plan.ContactEmail.ValueString() != "" {
-		createRequest.ContactEmail = plan.ContactEmail.ValueString()
-	}
-	if plan.ServiceTokenType.ValueString() != "" {
-		createRequest.ServiceTokenType = packngo.FabricServiceTokenType(plan.ServiceTokenType.ValueString())
-	}
-	// Handle the speed setting
-	// Note: missing speed is tolerated only for shared connections of type z_side
-	// https://github.com/equinix/terraform-provider-equinix/issues/276
-	if plan.Type.ValueString() == string(packngo.ConnectionDedicated) || plan.ServiceTokenType.ValueString() == "a_side" {
-		if plan.Speed.ValueStringPointer() == nil {
-			// missing speed
-			diags.AddError(
-				"Error creating Metal Connection",
-				"You must set speed, it's optional only for shared connections of type z_side",
-			)
-			return nil, diags
-		} else {
-			speed, err := speedStrToUint(plan.Speed.ValueString())
-			if err != nil {
-				// wrong speed value
-				diags.AddError(
-					"Error creating Metal Connection",
-					"Could not parse connection speed: "+err.Error(),
-				)
-				return nil, diags
-			}
-			createRequest.Speed = speed
-		}
-	}
-	// Add tags if they are set
-	if len(plan.Tags.Elements()) > 0 {
-		tags := []string{}
-		if diags = plan.Tags.ElementsAs(ctx, &tags, false); diags != nil {
-			return nil, diags
-		}
-		createRequest.Tags = tags
-	}
-	if plan.Metro.ValueString() != "" {
-		createRequest.Metro = plan.Metro.ValueString()
-	}
-	if plan.Facility.ValueString() != "" {
-		createRequest.Facility = plan.Facility.ValueString()
-	}
-	if plan.Description.ValueString() != "" {
-		createRequest.Description = plan.Description.ValueStringPointer()
-	}
-	vlans := []int{}
-	if diags := plan.Vlans.ElementsAs(ctx, &vlans, false); diags != nil {
-		return nil, diags
-	}
-	createRequest.VLANs = vlans
-
-	// Shared connection specific logic
-	if plan.Type.ValueString() == string(packngo.ConnectionShared) {
-		// TODO(ocobles) The "mode" of the interconnection is only relevant to Dedicated Ports.
-		// Fabric VCs won't have this field. We should consider add a default "mode" value only
-		// when connection plan.Type.ValueString() == packngo.ConnectionDedicated. This validation
-		// not needed.
-		if packngo.ConnectionMode(plan.Mode.ValueString()) == packngo.ConnectionModeTunnel {
-			// wrong mode
-			diags.AddError(
-				"Wrong mode",
-				"tunnel mode is not supported for 'shared' connections",
-			)
-			return nil, diags
-		}
-		if createRequest.Redundancy == packngo.ConnectionPrimary && len(vlans) == 2 {
-			// wrong number of vlans
-			diags.AddError(
-				"Wrong number of vlans",
-				"when you create a 'shared' connection without redundancy, you must only set max 1 vlan",
-			)
-			return nil, diags
-		}
+		Metro:      plan.Metro.ValueString(),
+		Speed:      plan.Speed.ValueStringPointer(),
+		Mode:       mode,
+		Redundancy: plan.Redundancy.ValueString(),
 	}
 
-	// Dedicated connection specific logic
-	if plan.Type.ValueString() == string(packngo.ConnectionDedicated) {
-		createRequest.Mode = packngo.ConnectionMode(plan.Mode.ValueString())
-		if createRequest.ServiceTokenType != "" {
-			// must not set service_token_type
-			diags.AddError(
-				"Failed to create Metal Connection",
-				"when you create a 'dedicated' connection, you must not set service_token_type",
-			)
-			return nil, diags
-		}
-		if len(createRequest.VLANs) > 0 {
-			// must not set vlans
-			diags.AddError(
-				"Failed to create Metal Connection",
-				"when you create a 'dedicated' connection, you must not set vlans",
-			)
-			return nil, diags
-		}
+	if email := plan.ContactEmail.ValueString(); email != "" {
+		req.DedicatedPortCreateInput.ContactEmail = &email
 	}
-	return createRequest, nil
+	if description := plan.Description.ValueString(); description != "" {
+		req.DedicatedPortCreateInput.Description = &description
+	}
+	if project := plan.ProjectID.ValueString(); project != "" {
+		req.DedicatedPortCreateInput.Project = &project
+	}
+	if facility := plan.Facility.ValueString(); facility != "" {
+		req.DedicatedPortCreateInput.FacilityId = &facility
+	}
+
+	tagDiags := getPlanTags(ctx, plan, &req.DedicatedPortCreateInput.Tags)
+	diags.Append(tagDiags...)
+
+	return
 }
 
-func getConnection(ctx context.Context, client *packngo.Client, state *tfsdk.State, id string) (*packngo.Connection, diag.Diagnostics) {
+func buildVLANFabricVCCreateRequest(ctx context.Context, plan ResourceModel, req *metalv1.CreateOrganizationInterconnectionRequest) diag.Diagnostics {
+	diags := validateSharedConnection(plan)
+
+	project := plan.ProjectID.ValueString()
+
+	req.VlanFabricVcCreateInput = &metalv1.VlanFabricVcCreateInput{
+		Type: metalv1.VLANFABRICVCCREATEINPUTTYPE_SHARED,
+
+		Name:             plan.Name.ValueString(),
+		Project:          &project,
+		Metro:            plan.Metro.ValueString(),
+		Redundancy:       plan.Redundancy.ValueString(),
+		ServiceTokenType: metalv1.VlanFabricVcCreateInputServiceTokenType(plan.ServiceTokenType.ValueString()),
+		Speed:            plan.Speed.ValueStringPointer(),
+	}
+
+	if email := plan.ContactEmail.ValueString(); email != "" {
+		req.VlanFabricVcCreateInput.ContactEmail = &email
+	}
+	if description := plan.Description.ValueString(); description != "" {
+		req.VlanFabricVcCreateInput.Description = &description
+	}
+	if facility := plan.Facility.ValueString(); facility != "" {
+		req.VlanFabricVcCreateInput.FacilityId = &facility
+	}
+
+	vlansDiags := plan.Vlans.ElementsAs(ctx, &req.VlanFabricVcCreateInput.Vlans, true)
+	diags.Append(vlansDiags...)
+
+	tagDiags := getPlanTags(ctx, plan, &req.VlanFabricVcCreateInput.Tags)
+	diags.Append(tagDiags...)
+
+	return diags
+}
+
+func buildVRFFabricVCCreateRequest(ctx context.Context, plan ResourceModel, req *metalv1.CreateOrganizationInterconnectionRequest) diag.Diagnostics {
+	diags := validateSharedConnection(plan)
+
+	project := plan.ProjectID.ValueString()
+
+	req.VrfFabricVcCreateInput = &metalv1.VrfFabricVcCreateInput{
+		Type: metalv1.VLANFABRICVCCREATEINPUTTYPE_SHARED,
+
+		Name:             plan.Name.ValueString(),
+		Project:          &project,
+		Metro:            plan.Metro.ValueString(),
+		Redundancy:       plan.Redundancy.ValueString(),
+		ServiceTokenType: metalv1.VlanFabricVcCreateInputServiceTokenType(plan.ServiceTokenType.ValueString()),
+		Speed:            plan.Speed.ValueStringPointer(),
+	}
+
+	if email := plan.ContactEmail.ValueString(); email != "" {
+		req.VrfFabricVcCreateInput.ContactEmail = &email
+	}
+	if description := plan.Description.ValueString(); description != "" {
+		req.VrfFabricVcCreateInput.Description = &description
+	}
+	if facility := plan.Facility.ValueString(); facility != "" {
+		req.VrfFabricVcCreateInput.FacilityId = &facility
+	}
+
+	vrfDiags := plan.Vrfs.ElementsAs(ctx, &req.VrfFabricVcCreateInput.Vrfs, false)
+	diags.Append(vrfDiags...)
+
+	tagDiags := getPlanTags(ctx, plan, &req.VrfFabricVcCreateInput.Tags)
+	diags.Append(tagDiags...)
+
+	return diags
+}
+
+func getPlanTags(ctx context.Context, plan ResourceModel, tags *[]string) diag.Diagnostics {
+	if len(plan.Tags.Elements()) != 0 {
+		return plan.Tags.ElementsAs(context.Background(), tags, false)
+	}
+	return diag.Diagnostics{}
+}
+
+func validateSharedConnection(plan ResourceModel) (diags diag.Diagnostics) {
+	// ensure project ID is set
+	if plan.ProjectID.ValueString() == "" {
+		diags.AddAttributeError(
+			path.Root("project_id"),
+			"Missing project_id",
+			"project_id is required for 'shared' connection type",
+		)
+	}
+
+	// ensure standard connection mode
+	if plan.Mode.ValueString() == string(metalv1.INTERCONNECTIONMODE_TUNNEL) {
+		diags.AddAttributeError(
+			path.Root("mode"),
+			"Wrong mode",
+			"tunnel mode is not supported for 'shared' connections",
+		)
+	}
+
+	entity := "vlan"
+	entityLen := len(plan.Vlans.Elements())
+
+	if entityLen == 0 {
+		// using vrfs
+		entity = "vrf"
+		entityLen = len(plan.Vrfs.Elements())
+	}
+
+	targetLen := 1
+	if plan.Redundancy.ValueString() == string(metalv1.INTERCONNECTIONREDUNDANCY_REDUNDANT) {
+		targetLen = 2
+	}
+
+	// check redundancy
+	if entityLen != targetLen {
+		diags.AddAttributeError(
+			path.Root(entity),
+			fmt.Sprintf("Wrong number of %ss", entity),
+			fmt.Sprintf("shared primary connections must have 1 %[1]s, shared redundant connections must 2 %[1]ss", entity),
+		)
+	}
+
+	return
+}
+
+func buildCreateRequest(ctx context.Context, plan ResourceModel) (request metalv1.CreateOrganizationInterconnectionRequest, diags diag.Diagnostics) {
+	hasVlans := len(plan.Vlans.Elements()) != 0
+	hasVrfs := len(plan.Vrfs.Elements()) != 0
+	connType := metalv1.InterconnectionType(plan.Type.ValueString())
+
+	if hasVlans && hasVrfs {
+		// vlans and vrfs are mutually exclusive
+		diags.AddError(
+			"Cannot specify vlans and vrfs together",
+			"Shared connections must specify either vlans or vrfs",
+		)
+		return
+	}
+
+	if connType == metalv1.INTERCONNECTIONTYPE_DEDICATED && (hasVlans || hasVrfs) {
+		diags.AddAttributeError(
+			path.Root("type"),
+			"Cannot specify vlans or vrfs",
+			"Dedicated connections must not specify vlans or vrfs",
+		)
+
+		return
+	} else if connType == metalv1.INTERCONNECTIONTYPE_SHARED && !(hasVlans || hasVrfs) {
+		diags.AddAttributeError(
+			path.Root("type"),
+			"Must specify either vlans or vrfs",
+			"Shared connections must specify either vlans or vrfs",
+		)
+
+		return
+	}
+
+	// ensure speed is valid if specified
+	if speed := plan.Speed.ValueString(); speed != "" {
+		if err := validateSpeedStr(speed); err != nil {
+			diags.AddAttributeError(
+				path.Root("mode"),
+				"Invalid speed",
+				err.Error(),
+			)
+		}
+	}
+
+	var requestFunc func(context.Context, ResourceModel, *metalv1.CreateOrganizationInterconnectionRequest) diag.Diagnostics
+
+	switch {
+	case hasVlans:
+		requestFunc = buildVLANFabricVCCreateRequest
+
+	case hasVrfs:
+		requestFunc = buildVRFFabricVCCreateRequest
+
+	default:
+		// has to be a dedicated connection
+		requestFunc = buildDedicatedPortCreateRequest
+	}
+
+	return request, requestFunc(ctx, plan, &request)
+}
+
+func getConnection(ctx context.Context, client *metalv1.APIClient, state *tfsdk.State, id string) (*metalv1.Interconnection, diag.Diagnostics) {
 	var diags diag.Diagnostics
 
 	// Use API client to get the current state of the resource
-	getOpts := &packngo.GetOptions{Includes: []string{"service_tokens", "organization", "facility", "metro", "project"}}
-	conn, _, err := client.Connections.Get(id, getOpts)
+	conn, _, err := client.InterconnectionsApi.GetInterconnection(ctx, id).
+		// NB: organization.address and organization.billing_address needs to
+		// be included otherwise Interconnection otherwise the response is
+		// invalid against the API spec.
+		Include([]string{"service_tokens", "organization", "organization.address", "organization.billing_address", "facility", "metro", "project"}).
+		Execute()
+
 	if err != nil {
 		// If the Metal Connection is not found, remove it from the state
 		if equinix_errors.IsNotFound(err) {
@@ -493,26 +518,4 @@ func getConnection(ctx context.Context, client *packngo.Client, state *tfsdk.Sta
 		return nil, diags
 	}
 	return conn, diags
-}
-
-func updateHiddenVirtualCircuitVNID(ctx context.Context, client *packngo.Client, port PortModel, newVNID string) (*packngo.VirtualCircuit, *packngo.Response, diag.Diagnostics) {
-	// This function is used to update the implicit virtual circuits attached to a shared `metal_connection` resource
-	// Do not use this function for a non-shared `metal_connection`
-	vcids := make([]types.String, 0, len(port.VirtualCircuitIDs.Elements()))
-	diags := port.VirtualCircuitIDs.ElementsAs(ctx, &vcids, false)
-	if diags.HasError() {
-		return nil, nil, diags
-	}
-	vcid := vcids[0].ValueString()
-	ucr := packngo.VCUpdateRequest{}
-	ucr.VirtualNetworkID = &newVNID
-	vc, resp, err := client.VirtualCircuits.Update(vcid, &ucr, nil)
-	if err != nil {
-		diags.AddError(
-			"Error Updating Metal Connection",
-			"Could not update Metal Connection: "+equinix_errors.FriendlyError(err).Error(),
-		)
-		return nil, nil, diags
-	}
-	return vc, resp, nil
 }
