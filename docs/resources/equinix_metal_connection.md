@@ -57,6 +57,11 @@ resource "equinix_ecx_l2_connection" "example" {
 ### Shared Connection with z_side token - Non-redundant Connection from your own Equinix Fabric Port to Equinix Metal
 
 ```hcl
+resource "equinix_metal_vlan" "example" {
+    project_id      = local.my_project_id
+    metro           = "FR"
+}
+
 resource "equinix_metal_connection" "example" {
     name               = "tf-port-to-metal"
     project_id         = local.project_id
@@ -66,6 +71,9 @@ resource "equinix_metal_connection" "example" {
     speed              = "200Mbps"
     service_token_type = "z_side"
     contact_email      = "username@example.com"
+    vlans              = [
+      equinix_metal_vlan.example.vxlan
+    ]
 }
 
 data "equinix_ecx_port" "example" {
@@ -88,6 +96,16 @@ resource "equinix_ecx_l2_connection" "example" {
 ### Shared Connection for organizations without Connection Services Token feature enabled
 
 ```hcl
+resource "equinix_metal_vlan" "example1" {
+    project_id      = local.my_project_id
+    metro           = "SV"
+}
+
+resource "equinix_metal_vlan" "example2" {
+    project_id      = local.my_project_id
+    metro           = "SV"
+}
+
 resource "equinix_metal_connection" "example" {
     name            = "tf-port-to-metal-legacy"
     project_id      = local.my_project_id
@@ -95,6 +113,10 @@ resource "equinix_metal_connection" "example" {
     redundancy      = "redundant"
     type            = "shared"
     contact_email   = "username@example.com"
+    vlans              = [
+      equinix_metal_vlan.example1.vxlan,
+      equinix_metal_vlan.example2.vxlan
+    ]
 }
 
 data "equinix_ecx_port" "example" {
@@ -123,7 +145,7 @@ The following arguments are supported:
 * `type` - (Required) Connection type - dedicated or shared.
 * `contact_email` - (Optional) The preferred email used for communication and notifications about the Equinix Fabric interconnection. Required when using a Project API key. Optional and defaults to the primary user email address when using a User API key.
 * `project_id` - (Optional) ID of the project where the connection is scoped to, must be set for.
-* `speed` - (Required) Connection speed - one of 50Mbps, 200Mbps, 500Mbps, 1Gbps, 2Gbps, 5Gbps, 10Gbps.
+* `speed` - (Required) Connection speed -  Values must be in the format '<number>Mbps' or '<number>Gpbs', for example '100Mbps' or '50Gbps'.  Actual supported values will depend on the connection type and whether the connection uses VLANs or VRF.
 * `description` - (Optional) Description for the connection resource.
 * `mode` - (Optional) Mode for connections in IBX facilities with the dedicated type - standard or tunnel. Default is standard.
 * `tags` - (Optional) String list of tags.

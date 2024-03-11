@@ -1,50 +1,50 @@
 package equinix
 
 import (
+	"context"
 	"fmt"
 	"os"
-	"reflect"
 	"regexp"
 	"strings"
 	"testing"
 
 	"github.com/equinix/terraform-provider-equinix/internal/config"
-	"github.com/equinix/terraform-provider-equinix/internal/hashcode"
+	"github.com/equinix/terraform-provider-equinix/internal/provider"
+	"github.com/equinix/terraform-provider-equinix/version"
 
 	"github.com/equinix/ecx-go/v2"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/stretchr/testify/assert"
+
+	"github.com/hashicorp/terraform-plugin-framework/providerserver"
+	"github.com/hashicorp/terraform-plugin-go/tfprotov5"
+	"github.com/hashicorp/terraform-plugin-mux/tf5muxserver"
 )
 
 var (
 	testAccProviders         map[string]*schema.Provider
-	testAccProviderFactories map[string]func() (*schema.Provider, error)
 	testAccProvider          *schema.Provider
 	testExternalProviders    map[string]resource.ExternalProvider
+	testAccFrameworkProvider *provider.FrameworkProvider
+
+	testAccProtoV5ProviderFactories = map[string]func() (tfprotov5.ProviderServer, error){
+		"equinix": func() (tfprotov5.ProviderServer, error) {
+			ctx := context.Background()
+			providers := []func() tfprotov5.ProviderServer{
+				testAccProviders["equinix"].GRPCProvider,
+				providerserver.NewProtocol5(
+					testAccFrameworkProvider,
+				),
+			}
+			muxServer, err := tf5muxserver.NewMuxServer(ctx, providers...)
+			if err != nil {
+				return nil, err
+			}
+			return muxServer.ProviderServer(), nil
+		},
+	}
 )
-
-type mockedResourceDataProvider struct {
-	actual map[string]interface{}
-	old    map[string]interface{}
-}
-
-func (r mockedResourceDataProvider) Get(key string) interface{} {
-	return r.actual[key]
-}
-
-func (r mockedResourceDataProvider) GetOk(key string) (interface{}, bool) {
-	v, ok := r.actual[key]
-	return v, ok
-}
-
-func (r mockedResourceDataProvider) HasChange(key string) bool {
-	return !reflect.DeepEqual(r.old[key], r.actual[key])
-}
-
-func (r mockedResourceDataProvider) GetChange(key string) (interface{}, interface{}) {
-	return r.old[key], r.actual[key]
-}
 
 type mockECXClient struct {
 	GetUserPortsFn func() ([]ecx.Port, error)
@@ -128,16 +128,14 @@ func init() {
 	testAccProviders = map[string]*schema.Provider{
 		"equinix": testAccProvider,
 	}
-	testAccProviderFactories = map[string]func() (*schema.Provider, error){
-		"equinix": func() (*schema.Provider, error) {
-			return testAccProvider, nil
-		},
-	}
 	testExternalProviders = map[string]resource.ExternalProvider{
 		"random": {
 			Source: "hashicorp/random",
 		},
 	}
+	// during framework migration, it is required to duplicate this (TestAccFrameworkProvider declared in internal package)
+	// for e2e tests that need already migrated resources. Importing from internal produces and import cycle error
+	testAccFrameworkProvider = provider.CreateFrameworkProvider(version.ProviderVersion).(*provider.FrameworkProvider)
 }
 
 func TestProvider(t *testing.T) {
@@ -174,82 +172,6 @@ func TestProvider_stringsFound_negative(t *testing.T) {
 	result := stringsFound(needles, hay)
 	// then
 	assert.False(t, result, "Given strings were found")
-}
-
-func TestProvider_resourceDataChangedKeys(t *testing.T) {
-	// given
-	keys := []string{"key", "keyTwo", "keyThree"}
-	rd := mockedResourceDataProvider{
-		actual: map[string]interface{}{
-			"key":    "value",
-			"keyTwo": "newValueTwo",
-		},
-		old: map[string]interface{}{
-			"key":    "value",
-			"keyTwo": "valueTwo",
-		},
-	}
-	expected := map[string]interface{}{
-		"keyTwo": "newValueTwo",
-	}
-	// when
-	result := getResourceDataChangedKeys(keys, rd)
-	// then
-	assert.Equal(t, expected, result, "Function returns valid key changes")
-}
-
-func TestProvider_resourceDataListElementChanges(t *testing.T) {
-	// given
-	keys := []string{"key", "keyTwo", "keyThree"}
-	listKeyName := "myList"
-	rd := mockedResourceDataProvider{
-		old: map[string]interface{}{
-			listKeyName: []interface{}{
-				map[string]interface{}{
-					"key":      "value",
-					"keyTwo":   "valueTwo",
-					"keyThree": 50,
-				},
-			},
-		},
-		actual: map[string]interface{}{
-			listKeyName: []interface{}{
-				map[string]interface{}{
-					"key":      "value",
-					"keyTwo":   "newValueTwo",
-					"keyThree": 100,
-				},
-			},
-		},
-	}
-	expected := map[string]interface{}{
-		"keyTwo":   "newValueTwo",
-		"keyThree": 100,
-	}
-	// when
-	result := getResourceDataListElementChanges(keys, listKeyName, 0, rd)
-	// then
-	assert.Equal(t, expected, result, "Function returns valid key changes")
-}
-
-func TestProvider_mapChanges(t *testing.T) {
-	// given
-	keys := []string{"key", "keyTwo", "keyThree"}
-	old := map[string]interface{}{
-		"key":    "value",
-		"keyTwo": "valueTwo",
-	}
-	new := map[string]interface{}{
-		"key":    "newValue",
-		"keyTwo": "valueTwo",
-	}
-	expected := map[string]interface{}{
-		"key": "newValue",
-	}
-	// when
-	result := getMapChangedKeys(keys, old, new)
-	// then
-	assert.Equal(t, expected, result, "Function returns valid key changes")
 }
 
 func TestProvider_isEmpty(t *testing.T) {
@@ -329,31 +251,6 @@ func TestProvider_slicesMatch(t *testing.T) {
 	for i := range expected {
 		assert.Equal(t, expected[i], results[i])
 	}
-}
-
-func TestProvider_schemaSetToMap(t *testing.T) {
-	// given
-	type item struct {
-		id       string
-		valueOne int
-		valueTwo int
-	}
-	setFunc := func(v interface{}) int {
-		i := v.(item)
-		return hashcode.String(i.id)
-	}
-	items := []interface{}{
-		item{"id1", 100, 200},
-		item{"id2", 666, 999},
-		item{"id3", 0, 100},
-	}
-	set := schema.NewSet(setFunc, items)
-	// when
-	list := schemaSetToMap(set)
-	// then
-	assert.Equal(t, items[0], list[setFunc(items[0])])
-	assert.Equal(t, items[1], list[setFunc(items[1])])
-	assert.Equal(t, items[2], list[setFunc(items[2])])
 }
 
 //‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾

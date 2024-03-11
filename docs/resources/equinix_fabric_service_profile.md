@@ -57,14 +57,14 @@ resource "equinix_fabric_service_profile" "new_service_profile" {
 ### Optional
 
 - `access_point_type_configs` (Block List) Access point config information (see [below for nested schema](#nestedblock--access_point_type_configs))
-- `account` (Block Set) Account (see [below for nested schema](#nestedblock--account))
 - `allowed_emails` (List of String) Array of contact emails
 - `custom_fields` (Block List) Custom Fields (see [below for nested schema](#nestedblock--custom_fields))
-- `marketing_info` (Block Set) Marketing Info (see [below for nested schema](#nestedblock--marketing_info))
+- `marketing_info` (Block Set, Max: 1) Marketing Info (see [below for nested schema](#nestedblock--marketing_info))
 - `metros` (Block List) Access point config information (see [below for nested schema](#nestedblock--metros))
 - `notifications` (Block List) Preferences for notifications on connection configuration or status changes (see [below for nested schema](#nestedblock--notifications))
 - `ports` (Block List) Ports (see [below for nested schema](#nestedblock--ports))
-- `self_profile` (Boolean) Self Profile
+- `project` (Block Set, Max: 1) Project information (see [below for nested schema](#nestedblock--project))
+- `self_profile` (Boolean) Self Profile indicating if the profile is created for customer's  self use
 - `state` (String) Service profile state - ACTIVE, PENDING_APPROVAL, DELETED, REJECTED
 - `tags` (List of String) Tags attached to the connection
 - `timeouts` (Block, Optional) (see [below for nested schema](#nestedblock--timeouts))
@@ -73,10 +73,10 @@ resource "equinix_fabric_service_profile" "new_service_profile" {
 
 ### Read-Only
 
+- `account` (Set of Object) Service Profile Owner Account Information (see [below for nested schema](#nestedatt--account))
 - `change_log` (Set of Object) Captures connection lifecycle change information (see [below for nested schema](#nestedatt--change_log))
 - `href` (String) Service Profile URI response attribute
 - `id` (String) The ID of this resource.
-- `project` (Block Set) Project information (see [below for nested schema](#nestedblock--project))
 - `uuid` (String) Equinix assigned service profile identifier
 
 <a id="nestedblock--access_point_type_configs"></a>
@@ -92,13 +92,13 @@ Optional:
 - `allow_bandwidth_upgrade` (Boolean) Availability of a bandwidth upgrade. The default is false
 - `allow_custom_bandwidth` (Boolean) Setting to enable or disable the ability of the buyer to customize the bandwidth
 - `allow_remote_connections` (Boolean) Setting to allow or prohibit remote connections to the service profile
-- `api_config` (Block Set) Api configuration details (see [below for nested schema](#nestedblock--access_point_type_configs--api_config))
-- `authentication_key` (Block Set) Authentication key details (see [below for nested schema](#nestedblock--access_point_type_configs--authentication_key))
+- `api_config` (Block Set, Max: 1) Api configuration details (see [below for nested schema](#nestedblock--access_point_type_configs--api_config))
+- `authentication_key` (Block Set, Max: 1) Authentication key details (see [below for nested schema](#nestedblock--access_point_type_configs--authentication_key))
 - `bandwidth_alert_threshold` (Number) Percentage of port bandwidth at which an allocation alert is generated
 - `connection_label` (String) Custom name for Connection
 - `connection_redundancy_required` (Boolean) Mandate redundant connections
 - `enable_auto_generate_service_key` (Boolean) Enable auto generate service key
-- `link_protocol_config` (Block Set) Link protocol configuration details (see [below for nested schema](#nestedblock--access_point_type_configs--link_protocol_config))
+- `link_protocol_config` (Block Set, Max: 1) Link protocol configuration details (see [below for nested schema](#nestedblock--access_point_type_configs--link_protocol_config))
 - `supported_bandwidths` (List of Number) Supported bandwidths
 
 Read-Only:
@@ -111,12 +111,12 @@ Read-Only:
 Optional:
 
 - `allow_over_subscription` (Boolean) Setting showing that oversubscription support is available (true) or not (false). The default is false
-- `api_available` (Boolean) Setting indicating whether the API is available (true) or not (false)
-- `bandwidth_from_api` (Boolean) Bandwidth from api
+- `api_available` (Boolean) Indicates if it's possible to establish connections based on the given service profile using the Equinix Fabric API.
+- `bandwidth_from_api` (Boolean) Indicates if the connection bandwidth can be obtained directly from the cloud service provider.
 - `equinix_managed_port` (Boolean) Setting indicating that the port is managed by Equinix (true) or not (false)
 - `equinix_managed_vlan` (Boolean) Setting indicating that the VLAN is managed by Equinix (true) or not (false)
-- `integration_id` (String) Integration id
-- `over_subscription_limit` (Number) A cap on over subscription
+- `integration_id` (String) A unique identifier issued during onboarding and used to integrate the customer's service profile with the Equinix Fabric API.
+- `over_subscription_limit` (Number) Port bandwidth multiplier that determines the total bandwidth that can be allocated to users creating connections to your services. For example, a 10 Gbps port combined with an overSubscriptionLimit parameter value of 10 allows your subscribers to create connections with a total bandwidth of 100 Gbps.
 
 
 <a id="nestedblock--access_point_type_configs--authentication_key"></a>
@@ -124,9 +124,9 @@ Optional:
 
 Optional:
 
-- `description` (String) Description
-- `label` (String) Label
-- `required` (Boolean) Required
+- `description` (String) Description of authorization key
+- `label` (String) Name of the parameter that must be provided to authorize the connection.
+- `required` (Boolean) Requirement to configure an authentication key.
 
 
 <a id="nestedblock--access_point_type_configs--link_protocol_config"></a>
@@ -134,25 +134,10 @@ Optional:
 
 Optional:
 
-- `encapsulation` (String) Port Encapsulation
-- `encapsulation_strategy` (String) Encapsulation strategy
-- `reuse_vlan_s_tag` (Boolean) Reuse vlan sTag
+- `encapsulation` (String) Data frames encapsulation standard.UNTAGGED - Untagged encapsulation for EPL connections. DOT1Q - DOT1Q encapsulation standard. QINQ - QINQ encapsulation standard.
+- `encapsulation_strategy` (String) Additional tagging information required by the seller profile.
+- `reuse_vlan_s_tag` (Boolean) Automatically accept subsequent DOT1Q to QINQ connections that use the same authentication key. These connections will have the same VLAN S-tag assigned as the initial connection.
 
-
-
-<a id="nestedblock--account"></a>
-### Nested Schema for `account`
-
-Optional:
-
-- `account_name` (String) Account Name
-- `account_number` (Number) Account Number
-- `global_cust_id` (String) Global Customer organization identifier
-- `global_org_id` (String) Global organization identifier
-- `global_organization_name` (String) Global organization name
-- `org_id` (Number) Customer organization identifier
-- `organization_name` (String) Customer organization name
-- `ucm_id` (String) Enterprise datastore id
 
 
 <a id="nestedblock--custom_fields"></a>
@@ -228,7 +213,7 @@ Required:
 Optional:
 
 - `cross_connect_id` (String) Cross Connect Id
-- `location` (Block Set) Colo/Port Location (see [below for nested schema](#nestedblock--ports--location))
+- `location` (Block Set, Max: 1) Colo/Port Location (see [below for nested schema](#nestedblock--ports--location))
 - `seller_region` (String) Seller Region
 - `seller_region_description` (String) Seller Region details
 
@@ -242,6 +227,18 @@ Optional:
 - `metro_name` (String) Access point metro name
 - `region` (String) Access point region
 
+
+
+<a id="nestedblock--project"></a>
+### Nested Schema for `project`
+
+Optional:
+
+- `project_id` (String) Project Id
+
+Read-Only:
+
+- `href` (String) Unique Resource URL
 
 
 <a id="nestedblock--timeouts"></a>
@@ -266,7 +263,7 @@ Required:
 Optional:
 
 - `interface_uuid` (String) Device Interface Uuid
-- `location` (Block Set) Device Location (see [below for nested schema](#nestedblock--virtual_devices--location))
+- `location` (Block Set, Max: 1) Device Location (see [below for nested schema](#nestedblock--virtual_devices--location))
 
 <a id="nestedblock--virtual_devices--location"></a>
 ### Nested Schema for `virtual_devices.location`
@@ -278,6 +275,21 @@ Optional:
 - `metro_name` (String) Access point metro name
 - `region` (String) Access point region
 
+
+
+<a id="nestedatt--account"></a>
+### Nested Schema for `account`
+
+Read-Only:
+
+- `account_name` (String)
+- `account_number` (Number)
+- `global_cust_id` (String)
+- `global_org_id` (String)
+- `global_organization_name` (String)
+- `org_id` (Number)
+- `organization_name` (String)
+- `ucm_id` (String)
 
 
 <a id="nestedatt--change_log"></a>
@@ -297,14 +309,3 @@ Read-Only:
 - `updated_by_email` (String)
 - `updated_by_full_name` (String)
 - `updated_date_time` (String)
-
-
-<a id="nestedblock--project"></a>
-### Nested Schema for `project`
-
-Read-Only:
-
-- `href` (String) Unique Resource URL
-- `project_id` (String) Project Id
-
-

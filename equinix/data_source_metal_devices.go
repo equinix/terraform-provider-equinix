@@ -51,8 +51,8 @@ func dataSourceMetalDevices() *schema.Resource {
 	return datalist.NewResource(dataListConfig)
 }
 
-func getDevices(meta interface{}, extra map[string]interface{}) ([]interface{}, error) {
-	client := meta.(*config.Config).Metalgo
+func getDevices(ctx context.Context, d *schema.ResourceData, meta interface{}, extra map[string]interface{}) ([]interface{}, error) {
+	client := meta.(*config.Config).NewMetalClientForSDK(d)
 	projectID := extra["project_id"].(string)
 	orgID := extra["organization_id"].(string)
 
@@ -68,7 +68,7 @@ func getDevices(meta interface{}, extra map[string]interface{}) ([]interface{}, 
 
 	if len(projectID) > 0 {
 		query := client.DevicesApi.FindProjectDevices(
-			context.Background(), projectID).Include(deviceCommonIncludes)
+			ctx, projectID).Include(deviceCommonIncludes)
 		if len(search) > 0 {
 			query = query.Search(search)
 		}
@@ -77,7 +77,7 @@ func getDevices(meta interface{}, extra map[string]interface{}) ([]interface{}, 
 
 	if len(orgID) > 0 {
 		query := client.DevicesApi.FindOrganizationDevices(
-			context.Background(), orgID).Include(deviceCommonIncludes)
+			ctx, orgID).Include(deviceCommonIncludes)
 		if len(search) > 0 {
 			query = query.Search(search)
 		}

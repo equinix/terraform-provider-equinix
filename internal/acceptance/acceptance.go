@@ -1,31 +1,36 @@
 package acceptance
 
 import (
-	"fmt"
 	"os"
-	"strconv"
-	"strings"
+	"sync"
 	"testing"
-	"time"
 
 	"github.com/equinix/terraform-provider-equinix/equinix"
 	"github.com/equinix/terraform-provider-equinix/internal/config"
-
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/equinix/terraform-provider-equinix/internal/env"
+	"github.com/equinix/terraform-provider-equinix/internal/provider"
+	"github.com/equinix/terraform-provider-equinix/version"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	terraformsdk "github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
 
 const (
-	// duplicated from equinix_sweeoer_test.go
-	tstResourcePrefix = "tfacc"
 	missingMetalToken = "To run acceptance tests of Equinix Metal Resources, you must set %s"
 )
 
 var (
 	TestAccProvider          *schema.Provider
 	TestAccProviders         map[string]*schema.Provider
-	TestAccProviderFactories map[string]func() (*schema.Provider, error)
 	TestExternalProviders    map[string]resource.ExternalProvider
+	TestAccFrameworkProvider *provider.FrameworkProvider
+	// testAccProviderConfigure ensures Provider is only configured once
+	//
+	// The PreCheck(t) function is invoked for every test and this prevents
+	// extraneous reconfiguration to the same values each time. However, this does
+	// not prevent reconfiguration that may happen should the address of
+	// Provider be errantly reused in ProviderFactories.
+	testAccProviderConfigure sync.Once
 )
 
 func init() {
@@ -33,15 +38,31 @@ func init() {
 	TestAccProviders = map[string]*schema.Provider{
 		"equinix": TestAccProvider,
 	}
-	TestAccProviderFactories = map[string]func() (*schema.Provider, error){
-		"equinix": func() (*schema.Provider, error) {
-			return TestAccProvider, nil
-		},
-	}
 	TestExternalProviders = map[string]resource.ExternalProvider{
 		"random": {
 			Source: "hashicorp/random",
 		},
+	}
+	TestAccFrameworkProvider = provider.CreateFrameworkProvider(version.ProviderVersion).(*provider.FrameworkProvider)
+}
+
+func TestAccPreCheck(t *testing.T) {
+	var err error
+
+	if _, err = env.Get(config.ClientTokenEnvVar); err != nil {
+		_, err = env.Get(config.ClientIDEnvVar)
+		if err == nil {
+			_, err = env.Get(config.ClientSecretEnvVar)
+		}
+	}
+
+	if err == nil {
+		_, err = env.Get(config.MetalAuthTokenEnvVar)
+	}
+
+	if err != nil {
+		t.Fatalf("To run acceptance tests, one of '%s' or pair '%s' - '%s' must be set for Equinix Fabric and Network Edge, and '%s' for Equinix Metal",
+			config.ClientTokenEnvVar, config.ClientIDEnvVar, config.ClientSecretEnvVar, config.MetalAuthTokenEnvVar)
 	}
 }
 
@@ -51,33 +72,13 @@ func TestAccPreCheckMetal(t *testing.T) {
 	}
 }
 
-func IsSweepableTestResource(namePrefix string) bool {
-	return strings.HasPrefix(namePrefix, tstResourcePrefix)
-}
-
-func getFromEnvDefault(varName string, defaultValue string) string {
-	if v := os.Getenv(varName); v != "" {
-		return v
-	}
-	return defaultValue
-}
-
-func GetConfigForNonStandardMetalTest() (*config.Config, error) {
-	endpoint := getFromEnvDefault(config.EndpointEnvVar, config.DefaultBaseURL)
-	clientTimeout := getFromEnvDefault(config.ClientTimeoutEnvVar, strconv.Itoa(config.DefaultTimeout))
-	clientTimeoutInt, err := strconv.Atoi(clientTimeout)
-	if err != nil {
-		return nil, fmt.Errorf("cannot convert value of '%s' env variable to int", config.ClientTimeoutEnvVar)
-	}
-	metalAuthToken := getFromEnvDefault(config.MetalAuthTokenEnvVar, "")
-
-	if metalAuthToken == "" {
-		return nil, fmt.Errorf(missingMetalToken, config.MetalAuthTokenEnvVar)
-	}
-
-	return &config.Config{
-		AuthToken:      metalAuthToken,
-		BaseURL:        endpoint,
-		RequestTimeout: time.Duration(clientTimeoutInt) * time.Second,
-	}, nil
+func TestAccPreCheckProviderConfigured(t *testing.T) {
+	// Since we are outside the scope of the Terraform configuration we must
+	// call Configure() to properly initialize the provider configuration.
+	testAccProviderConfigure.Do(func() {
+		diags := TestAccProvider.Configure(Context(t), terraformsdk.NewResourceConfigRaw(nil))
+		if diags.HasError() {
+			t.Fatalf("configuring provider")
+		}
+	})
 }

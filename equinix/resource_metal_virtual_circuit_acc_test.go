@@ -2,63 +2,19 @@ package equinix
 
 import (
 	"fmt"
-	"log"
 	"os"
 	"testing"
 
 	"github.com/equinix/terraform-provider-equinix/internal/config"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
-	"github.com/packethost/packngo"
+	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/terraform"
 )
 
-func init() {
-	resource.AddTestSweepers("equinix_metal_virtual_circuit", &resource.Sweeper{
-		Name:         "equinix_metal_virtual_circuit",
-		Dependencies: []string{},
-		F:            testSweepVirtualCircuits,
-	})
-}
-
-func testSweepVirtualCircuits(region string) error {
-	log.Printf("[DEBUG] Sweeping VirtualCircuits")
-	config, err := sharedConfigForRegion(region)
-	if err != nil {
-		return fmt.Errorf("[INFO][SWEEPER_LOG] Error getting configuration for sweeping VirtualCircuits: %s", err)
-	}
-	metal := config.NewMetalClient()
-	orgList, _, err := metal.Organizations.List(nil)
-	if err != nil {
-		return fmt.Errorf("[INFO][SWEEPER_LOG] Error getting organization list for sweeping VirtualCircuits: %s", err)
-	}
-	vcs := map[string]*packngo.VirtualCircuit{}
-	for _, org := range orgList {
-		conns, _, err := metal.Connections.OrganizationList(org.ID, &packngo.GetOptions{Includes: []string{"ports"}})
-		if err != nil {
-			return fmt.Errorf("[INFO][SWEEPER_LOG] Error getting connections list for sweeping VirtualCircuits: %s", err)
-		}
-		for _, conn := range conns {
-			for _, port := range conn.Ports {
-				for _, vc := range port.VirtualCircuits {
-					if isSweepableTestResource(vc.Name) {
-						vcs[vc.ID] = &vc
-					}
-				}
-			}
-		}
-	}
-	for _, vc := range vcs {
-		log.Printf("[INFO][SWEEPER_LOG] Deleting VirtualCircuit: %s", vc.Name)
-		_, err := metal.VirtualCircuits.Delete(vc.ID)
-		if err != nil {
-			return fmt.Errorf("[INFO][SWEEPER_LOG] Error deleting VirtualCircuit: %s", err)
-		}
-	}
-
-	return nil
-}
+const (
+	metalDedicatedConnIDEnvVar = "TF_ACC_METAL_DEDICATED_CONNECTION_ID"
+)
 
 func testAccMetalVirtualCircuitCheckDestroyed(s *terraform.State) error {
 	client := testAccProvider.Meta().(*config.Config).Metal
@@ -123,10 +79,10 @@ func TestAccMetalVirtualCircuit_dedicated(t *testing.T) {
 	ri := acctest.RandIntRange(1024, 1093)
 
 	resource.ParallelTest(t, resource.TestCase{ // Error: Error waiting for virtual circuit 863d4df5-b3ea-46ee-8497-858cb0cbfcb9 to be created: GET https://api.equinix.com/metal/v1/virtual-circuits/863d4df5-b3ea-46ee-8497-858cb0cbfcb9?include=project%2Cport%2Cvirtual_network%2Cvrf: 500 Oh snap, something went wrong! We've logged the error and will take a look - please reach out to us if you continue having trouble.
-		PreCheck:          func() { testAccPreCheck(t) },
-		ExternalProviders: testExternalProviders,
-		ProviderFactories: testAccProviderFactories,
-		CheckDestroy:      testAccMetalVirtualCircuitCheckDestroyed,
+		PreCheck:                 func() { testAccPreCheck(t) },
+		ExternalProviders:        testExternalProviders,
+		ProtoV5ProviderFactories: testAccProtoV5ProviderFactories,
+		CheckDestroy:             testAccMetalVirtualCircuitCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccMetalConnectionConfig_vc(ri),

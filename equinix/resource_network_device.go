@@ -11,6 +11,7 @@ import (
 
 	"github.com/equinix/terraform-provider-equinix/internal/config"
 	"github.com/equinix/terraform-provider-equinix/internal/converters"
+	equinix_schema "github.com/equinix/terraform-provider-equinix/internal/schema"
 	equinix_validation "github.com/equinix/terraform-provider-equinix/internal/validation"
 
 	"github.com/equinix/ne-go"
@@ -22,95 +23,101 @@ import (
 )
 
 var neDeviceSchemaNames = map[string]string{
-	"UUID":                "uuid",
-	"Name":                "name",
-	"TypeCode":            "type_code",
-	"Status":              "status",
-	"MetroCode":           "metro_code",
-	"IBX":                 "ibx",
-	"Region":              "region",
-	"Throughput":          "throughput",
-	"ThroughputUnit":      "throughput_unit",
-	"HostName":            "hostname",
-	"PackageCode":         "package_code",
-	"Version":             "version",
-	"IsBYOL":              "byol",
-	"LicenseToken":        "license_token",
-	"LicenseFile":         "license_file",
-	"LicenseFileID":       "license_file_id",
-	"CloudInitFileID":     "cloud_init_file_id",
-	"LicenseStatus":       "license_status",
-	"ACLTemplateUUID":     "acl_template_id",
-	"MgmtAclTemplateUuid": "mgmt_acl_template_uuid",
-	"SSHIPAddress":        "ssh_ip_address",
-	"SSHIPFqdn":           "ssh_ip_fqdn",
-	"AccountNumber":       "account_number",
-	"Notifications":       "notifications",
-	"PurchaseOrderNumber": "purchase_order_number",
-	"RedundancyType":      "redundancy_type",
-	"RedundantUUID":       "redundant_id",
-	"TermLength":          "term_length",
-	"AdditionalBandwidth": "additional_bandwidth",
-	"OrderReference":      "order_reference",
-	"InterfaceCount":      "interface_count",
-	"CoreCount":           "core_count",
-	"IsSelfManaged":       "self_managed",
-	"WanInterfaceId":      "wan_interface_id",
-	"Interfaces":          "interface",
-	"VendorConfiguration": "vendor_configuration",
-	"UserPublicKey":       "ssh_key",
-	"ASN":                 "asn",
-	"ZoneCode":            "zone_code",
-	"Secondary":           "secondary_device",
-	"ClusterDetails":      "cluster_details",
-	"ValidStatusList":     "valid_status_list",
-	"Connectivity":        "connectivity",
+	"UUID":                  "uuid",
+	"Name":                  "name",
+	"TypeCode":              "type_code",
+	"Status":                "status",
+	"MetroCode":             "metro_code",
+	"IBX":                   "ibx",
+	"Region":                "region",
+	"Throughput":            "throughput",
+	"ThroughputUnit":        "throughput_unit",
+	"HostName":              "hostname",
+	"PackageCode":           "package_code",
+	"Version":               "version",
+	"IsBYOL":                "byol",
+	"LicenseToken":          "license_token",
+	"LicenseFile":           "license_file",
+	"LicenseFileID":         "license_file_id",
+	"CloudInitFileID":       "cloud_init_file_id",
+	"LicenseStatus":         "license_status",
+	"ACLTemplateUUID":       "acl_template_id",
+	"MgmtAclTemplateUuid":   "mgmt_acl_template_uuid",
+	"SSHIPAddress":          "ssh_ip_address",
+	"SSHIPFqdn":             "ssh_ip_fqdn",
+	"AccountNumber":         "account_number",
+	"Notifications":         "notifications",
+	"PurchaseOrderNumber":   "purchase_order_number",
+	"RedundancyType":        "redundancy_type",
+	"RedundantUUID":         "redundant_id",
+	"ProjectID":             "project_id",
+	"TermLength":            "term_length",
+	"AdditionalBandwidth":   "additional_bandwidth",
+	"OrderReference":        "order_reference",
+	"InterfaceCount":        "interface_count",
+	"CoreCount":             "core_count",
+	"IsSelfManaged":         "self_managed",
+	"WanInterfaceId":        "wan_interface_id",
+	"Interfaces":            "interface",
+	"VendorConfiguration":   "vendor_configuration",
+	"UserPublicKey":         "ssh_key",
+	"ASN":                   "asn",
+	"ZoneCode":              "zone_code",
+	"Secondary":             "secondary_device",
+	"ClusterDetails":        "cluster_details",
+	"ValidStatusList":       "valid_status_list",
+	"Connectivity":          "connectivity",
+	"DiverseFromDeviceUUID": "diverse_device_id",
+	"DiverseFromDeviceName": "diverse_device_name",
 }
 
 var neDeviceDescriptions = map[string]string{
-	"UUID":                "Device unique identifier",
-	"Name":                "Device name",
-	"TypeCode":            "Device type code",
-	"Status":              "Device provisioning status",
-	"MetroCode":           "Device location metro code",
-	"IBX":                 "Device location Equinix Business Exchange name",
-	"Region":              "Device location region",
-	"Throughput":          "Device license throughput",
-	"ThroughputUnit":      "Device license throughput unit (Mbps or Gbps)",
-	"HostName":            "Device hostname prefix",
-	"PackageCode":         "Device software package code",
-	"Version":             "Device software software version",
-	"IsBYOL":              "Boolean value that determines device licensing mode: bring your own license or subscription (default)",
-	"LicenseToken":        "License Token applicable for some device types in BYOL licensing mode",
-	"LicenseFile":         "Path to the license file that will be uploaded and applied on a device, applicable for some device types in BYOL licensing mode",
-	"LicenseFileID":       "Unique identifier of applied license file",
-	"CloudInitFileID":     "Unique identifier of applied cloud init file",
-	"LicenseStatus":       "Device license registration status",
-	"ACLTemplateUUID":     "Unique identifier of applied ACL template",
-	"MgmtAclTemplateUuid": "Unique identifier of applied MGMT ACL template",
-	"SSHIPAddress":        "IP address of SSH enabled interface on the device",
-	"SSHIPFqdn":           "FQDN of SSH enabled interface on the device",
-	"AccountNumber":       "Device billing account number",
-	"Notifications":       "List of email addresses that will receive device status notifications",
-	"PurchaseOrderNumber": "Purchase order number associated with a device order",
-	"RedundancyType":      "Device redundancy type applicable for HA devices, either primary or secondary",
-	"RedundantUUID":       "Unique identifier for a redundant device, applicable for HA device",
-	"TermLength":          "Device term length",
-	"AdditionalBandwidth": "Additional Internet bandwidth, in Mbps, that will be allocated to the device",
-	"OrderReference":      "Name/number used to identify device order on the invoice",
-	"InterfaceCount":      "Number of network interfaces on a device. If not specified, default number for a given device type will be used",
-	"CoreCount":           "Number of CPU cores used by device",
-	"IsSelfManaged":       "Boolean value that determines device management mode: self-managed or subscription (default)",
-	"WanInterfaceId":      "device interface id picked for WAN",
-	"Interfaces":          "List of device interfaces",
-	"VendorConfiguration": "Map of vendor specific configuration parameters for a device (controller1, activationKey, managementType, siteId, systemIpAddress)",
-	"UserPublicKey":       "Definition of SSH key that will be provisioned on a device",
-	"ASN":                 "Autonomous system number",
-	"ZoneCode":            "Device location zone code",
-	"Secondary":           "Definition of secondary device applicable for HA setup",
-	"ClusterDetails":      "An object that has the cluster details",
-	"ValidStatusList":     "Comma Separated List of states to be considered valid when searching by name",
-	"Connectivity":        "Parameter to identify internet access for device. Supported Values: INTERNET-ACCESS(default) or PRIVATE or INTERNET-ACCESS-WITH-PRVT-MGMT",
+	"UUID":                  "Device unique identifier",
+	"Name":                  "Device name",
+	"TypeCode":              "Device type code",
+	"Status":                "Device provisioning status",
+	"MetroCode":             "Device location metro code",
+	"IBX":                   "Device location Equinix Business Exchange name",
+	"Region":                "Device location region",
+	"Throughput":            "Device license throughput",
+	"ThroughputUnit":        "Device license throughput unit (Mbps or Gbps)",
+	"HostName":              "Device hostname prefix",
+	"PackageCode":           "Device software package code",
+	"Version":               "Device software software version",
+	"IsBYOL":                "Boolean value that determines device licensing mode: bring your own license or subscription (default)",
+	"LicenseToken":          "License Token applicable for some device types in BYOL licensing mode",
+	"LicenseFile":           "Path to the license file that will be uploaded and applied on a device, applicable for some device types in BYOL licensing mode",
+	"LicenseFileID":         "Unique identifier of applied license file",
+	"CloudInitFileID":       "Unique identifier of applied cloud init file",
+	"LicenseStatus":         "Device license registration status",
+	"ACLTemplateUUID":       "Unique identifier of applied ACL template",
+	"MgmtAclTemplateUuid":   "Unique identifier of applied MGMT ACL template",
+	"SSHIPAddress":          "IP address of SSH enabled interface on the device",
+	"SSHIPFqdn":             "FQDN of SSH enabled interface on the device",
+	"AccountNumber":         "Device billing account number",
+	"Notifications":         "List of email addresses that will receive device status notifications",
+	"PurchaseOrderNumber":   "Purchase order number associated with a device order",
+	"RedundancyType":        "Device redundancy type applicable for HA devices, either primary or secondary",
+	"RedundantUUID":         "Unique identifier for a redundant device, applicable for HA device",
+	"TermLength":            "Device term length",
+	"AdditionalBandwidth":   "Additional Internet bandwidth, in Mbps, that will be allocated to the device",
+	"OrderReference":        "Name/number used to identify device order on the invoice",
+	"InterfaceCount":        "Number of network interfaces on a device. If not specified, default number for a given device type will be used",
+	"CoreCount":             "Number of CPU cores used by device",
+	"IsSelfManaged":         "Boolean value that determines device management mode: self-managed or subscription (default)",
+	"WanInterfaceId":        "device interface id picked for WAN",
+	"Interfaces":            "List of device interfaces",
+	"VendorConfiguration":   "Map of vendor specific configuration parameters for a device (controller1, activationKey, managementType, siteId, systemIpAddress)",
+	"UserPublicKey":         "Definition of SSH key that will be provisioned on a device",
+	"ASN":                   "Autonomous system number",
+	"ZoneCode":              "Device location zone code",
+	"Secondary":             "Definition of secondary device applicable for HA setup",
+	"ClusterDetails":        "An object that has the cluster details",
+	"ValidStatusList":       "Comma Separated List of states to be considered valid when searching by name",
+	"Connectivity":          "Parameter to identify internet access for device. Supported Values: INTERNET-ACCESS(default) or PRIVATE or INTERNET-ACCESS-WITH-PRVT-MGMT",
+	"ProjectID":             "The unique identifier of Project Resource to which device is scoped to",
+	"DiverseFromDeviceUUID": "Unique ID of an existing device",
+	"DiverseFromDeviceName": "Diverse Device Name of an existing device",
 }
 
 var neDeviceInterfaceSchemaNames = map[string]string{
@@ -403,6 +410,27 @@ func createNetworkDeviceSchema() map[string]*schema.Schema {
 			ValidateFunc: validation.IntInSlice([]int{1, 12, 24, 36}),
 			Description:  neDeviceDescriptions["TermLength"],
 		},
+		neDeviceSchemaNames["ProjectID"]: {
+			Type:         schema.TypeString,
+			Optional:     true,
+			ForceNew:     true,
+			Computed:     true,
+			ValidateFunc: validation.IsUUID,
+			Description:  neDeviceDescriptions["ProjectID"],
+		},
+		neDeviceSchemaNames["DiverseFromDeviceUUID"]: {
+			Type:          schema.TypeString,
+			Computed:      true,
+			Optional:      true,
+			ValidateFunc:  validation.IsUUID,
+			ConflictsWith: []string{neDeviceSchemaNames["Secondary"]},
+			Description:   neDeviceDescriptions["DiverseFromDeviceUUID"],
+		},
+		neDeviceSchemaNames["DiverseFromDeviceName"]: {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: neDeviceDescriptions["DiverseFromDeviceName"],
+		},
 		neDeviceSchemaNames["AdditionalBandwidth"]: {
 			Type:        schema.TypeInt,
 			Optional:    true,
@@ -504,6 +532,11 @@ func createNetworkDeviceSchema() map[string]*schema.Schema {
 						Type:        schema.TypeString,
 						Computed:    true,
 						Description: neDeviceDescriptions["UUID"],
+					},
+					neDeviceSchemaNames["ProjectID"]: {
+						Type:        schema.TypeString,
+						Computed:    true,
+						Description: neDeviceDescriptions["ProjectID"],
 					},
 					neDeviceSchemaNames["Name"]: {
 						Type:         schema.TypeString,
@@ -965,11 +998,11 @@ func resourceNetworkDeviceUpdate(ctx context.Context, d *schema.ResourceData, m 
 		neDeviceSchemaNames["ACLTemplateUUID"], neDeviceSchemaNames["MgmtAclTemplateUuid"],
 	}
 	updateReq := client.NewDeviceUpdateRequest(d.Id())
-	primaryChanges := getResourceDataChangedKeys(supportedChanges, d)
+	primaryChanges := equinix_schema.GetResourceDataChangedKeys(supportedChanges, d)
 	var clusterChanges map[string]interface{}
 	clusterSupportedChanges := []string{neDeviceClusterSchemaNames["ClusterName"]}
 	if _, ok := d.GetOk(neDeviceSchemaNames["ClusterDetails"]); ok {
-		clusterChanges = getResourceDataListElementChanges(clusterSupportedChanges, neDeviceSchemaNames["ClusterDetails"], 0, d)
+		clusterChanges = equinix_schema.GetResourceDataListElementChanges(clusterSupportedChanges, neDeviceSchemaNames["ClusterDetails"], 0, d)
 		for key, value := range clusterChanges {
 			primaryChanges[key] = value
 		}
@@ -979,7 +1012,7 @@ func resourceNetworkDeviceUpdate(ctx context.Context, d *schema.ResourceData, m 
 	}
 	var secondaryChanges map[string]interface{}
 	if v, ok := d.GetOk(neDeviceSchemaNames["RedundantUUID"]); ok {
-		secondaryChanges = getResourceDataListElementChanges(supportedChanges, neDeviceSchemaNames["Secondary"], 0, d)
+		secondaryChanges = equinix_schema.GetResourceDataListElementChanges(supportedChanges, neDeviceSchemaNames["Secondary"], 0, d)
 		secondaryUpdateReq := client.NewDeviceUpdateRequest(v.(string))
 		if err := fillNetworkDeviceUpdateRequest(secondaryUpdateReq, secondaryChanges).Execute(); err != nil {
 			return diag.FromErr(err)
@@ -1042,6 +1075,12 @@ func createNetworkDevices(d *schema.ResourceData) (*ne.Device, *ne.Device) {
 	}
 	if v, ok := d.GetOk(neDeviceSchemaNames["MetroCode"]); ok {
 		primary.MetroCode = ne.String(v.(string))
+	}
+	if v, ok := d.GetOk(neDeviceSchemaNames["ProjectID"]); ok {
+		primary.ProjectID = ne.String(v.(string))
+	}
+	if v, ok := d.GetOk(neDeviceSchemaNames["DiverseFromDeviceUUID"]); ok {
+		primary.DiverseFromDeviceUUID = ne.String(v.(string))
 	}
 	if v, ok := d.GetOk(neDeviceSchemaNames["Throughput"]); ok {
 		primary.Throughput = ne.Int(v.(int))
@@ -1133,6 +1172,15 @@ func updateNetworkDeviceResource(primary *ne.Device, secondary *ne.Device, d *sc
 	}
 	if err := d.Set(neDeviceSchemaNames["Name"], primary.Name); err != nil {
 		return fmt.Errorf("error reading Name: %s", err)
+	}
+	if err := d.Set(neDeviceSchemaNames["ProjectID"], primary.ProjectID); err != nil {
+		return fmt.Errorf("error reading ProjectID: %s", err)
+	}
+	if err := d.Set(neDeviceSchemaNames["DiverseFromDeviceUUID"], primary.DiverseFromDeviceUUID); err != nil {
+		return fmt.Errorf("error reading DiverseFromDeviceUUID: %s", err)
+	}
+	if err := d.Set(neDeviceSchemaNames["DiverseFromDeviceName"], primary.DiverseFromDeviceName); err != nil {
+		return fmt.Errorf("error reading DiverseFromDeviceName: %s", err)
 	}
 	if err := d.Set(neDeviceSchemaNames["TypeCode"], primary.TypeCode); err != nil {
 		return fmt.Errorf("error reading TypeCode: %s", err)
@@ -1276,6 +1324,7 @@ func flattenNetworkDeviceSecondary(device *ne.Device) interface{} {
 	transformed[neDeviceSchemaNames["AccountNumber"]] = device.AccountNumber
 	transformed[neDeviceSchemaNames["Notifications"]] = device.Notifications
 	transformed[neDeviceSchemaNames["RedundancyType"]] = device.RedundancyType
+	transformed[neDeviceSchemaNames["ProjectID"]] = device.ProjectID
 	transformed[neDeviceSchemaNames["RedundantUUID"]] = device.RedundantUUID
 	transformed[neDeviceSchemaNames["AdditionalBandwidth"]] = device.AdditionalBandwidth
 	transformed[neDeviceSchemaNames["Interfaces"]] = flattenNetworkDeviceInterfaces(device.Interfaces)
@@ -1298,6 +1347,9 @@ func expandNetworkDeviceSecondary(devices []interface{}) *ne.Device {
 	}
 	if v, ok := device[neDeviceSchemaNames["Name"]]; ok && !isEmpty(v) {
 		transformed.Name = ne.String(v.(string))
+	}
+	if v, ok := device[neDeviceSchemaNames["ProjectID"]]; ok && !isEmpty(v) {
+		transformed.ProjectID = ne.String(v.(string))
 	}
 	if v, ok := device[neDeviceSchemaNames["MetroCode"]]; ok && !isEmpty(v) {
 		transformed.MetroCode = ne.String(v.(string))
@@ -1508,6 +1560,8 @@ func fillNetworkDeviceUpdateRequest(updateReq ne.DeviceUpdateRequest, changes ma
 			updateReq.WithTermLength(changeValue.(int))
 		case neDeviceSchemaNames["Notifications"]:
 			updateReq.WithNotifications(converters.SetToStringList(changeValue.(*schema.Set)))
+		case neDeviceSchemaNames["CoreCount"]:
+			updateReq.WithCore(changeValue.(int))
 		case neDeviceSchemaNames["AdditionalBandwidth"]:
 			updateReq.WithAdditionalBandwidth(changeValue.(int))
 		case neDeviceSchemaNames["ACLTemplateUUID"]:

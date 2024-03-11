@@ -3,7 +3,6 @@ package equinix
 import (
 	"context"
 	"fmt"
-	"log"
 	"net"
 	"net/http"
 	"net/http/httptest"
@@ -14,12 +13,12 @@ import (
 
 	"github.com/equinix/terraform-provider-equinix/internal/config"
 
+	"github.com/equinix/equinix-sdk-go/services/metalv1"
 	"github.com/google/uuid"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
-	"github.com/packethost/packngo"
+	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/terraform"
 )
 
 // list of plans and metros and os used as filter criteria to find available hardware to run tests
@@ -29,59 +28,12 @@ var (
 	preferable_os     = []string{"ubuntu_20_04"}
 )
 
-func init() {
-	resource.AddTestSweepers("equinix_metal_device", &resource.Sweeper{
-		Name: "equinix_metal_device",
-		F:    testSweepDevices,
-	})
-}
-
-func testSweepDevices(region string) error {
-	log.Printf("[DEBUG] Sweeping devices")
-	config, err := sharedConfigForRegion(region)
-	if err != nil {
-		return fmt.Errorf("[INFO][SWEEPER_LOG] Error getting configuration for sweeping devices: %s", err)
-	}
-	metal := config.NewMetalClient()
-	ps, _, err := metal.Projects.List(nil)
-	if err != nil {
-		return fmt.Errorf("[INFO][SWEEPER_LOG] Error getting project list for sweepeing devices: %s", err)
-	}
-	pids := []string{}
-	for _, p := range ps {
-		if isSweepableTestResource(p.Name) {
-			pids = append(pids, p.ID)
-		}
-	}
-	dids := []string{}
-	for _, pid := range pids {
-		ds, _, err := metal.Devices.List(pid, nil)
-		if err != nil {
-			log.Printf("Error listing devices to sweep: %s", err)
-			continue
-		}
-		for _, d := range ds {
-			if isSweepableTestResource(d.Hostname) {
-				dids = append(dids, d.ID)
-			}
-		}
-	}
-
-	for _, did := range dids {
-		log.Printf("Removing device %s", did)
-		_, err := metal.Devices.Delete(did, true)
-		if err != nil {
-			return fmt.Errorf("Error deleting device %s", err)
-		}
-	}
-	return nil
-}
-
 // Regexp vars for use with resource.ExpectError
 var (
 	matchErrMustBeProvided     = regexp.MustCompile(".* must be provided when .*")
 	matchErrShouldNotBeAnIPXE  = regexp.MustCompile(`.*"user_data" should not be an iPXE.*`)
 	matchErrDeviceReadyTimeout = regexp.MustCompile(".* timeout while waiting for state to become 'active, failed'.*")
+	matchErrDeviceLocked       = regexp.MustCompile(".*Cannot delete a locked item.*")
 )
 
 // This function should be used to find available plans in all test where a metal_device resource is needed.
@@ -190,15 +142,15 @@ func testDeviceTerminationTime() string {
 }
 
 func TestAccMetalDevice_facilityList(t *testing.T) {
-	var device packngo.Device
+	var device metalv1.Device
 	rs := acctest.RandString(10)
 	r := "equinix_metal_device.test"
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
-		ExternalProviders: testExternalProviders,
-		Providers:         testAccProviders,
-		CheckDestroy:      testAccMetalDeviceCheckDestroyed,
+		PreCheck:                 func() { testAccPreCheck(t) },
+		ExternalProviders:        testExternalProviders,
+		ProtoV5ProviderFactories: testAccProtoV5ProviderFactories,
+		CheckDestroy:             testAccMetalDeviceCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccMetalDeviceConfig_facility_list(rs),
@@ -222,10 +174,10 @@ func TestAccMetalDevice_sshConfig(t *testing.T) {
 		t.Fatalf("Cannot generate test SSH key pair: %s", err)
 	}
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
-		ExternalProviders: testExternalProviders,
-		Providers:         testAccProviders,
-		CheckDestroy:      testAccMetalDeviceCheckDestroyed,
+		PreCheck:                 func() { testAccPreCheck(t) },
+		ProtoV5ProviderFactories: testAccProtoV5ProviderFactories,
+		ExternalProviders:        testExternalProviders,
+		CheckDestroy:             testAccMetalDeviceCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccMetalDeviceConfig_ssh_key(rs, userSSHKey, projSSHKey),
@@ -249,15 +201,15 @@ func TestAccMetalDevice_sshConfig(t *testing.T) {
 }
 
 func TestAccMetalDevice_basic(t *testing.T) {
-	var device packngo.Device
+	var device metalv1.Device
 	rs := acctest.RandString(10)
 	r := "equinix_metal_device.test"
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
-		ExternalProviders: testExternalProviders,
-		Providers:         testAccProviders,
-		CheckDestroy:      testAccMetalDeviceCheckDestroyed,
+		PreCheck:                 func() { testAccPreCheck(t) },
+		ExternalProviders:        testExternalProviders,
+		ProtoV5ProviderFactories: testAccProtoV5ProviderFactories,
+		CheckDestroy:             testAccMetalDeviceCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccMetalDeviceConfig_minimal(rs),
@@ -293,40 +245,17 @@ func TestAccMetalDevice_basic(t *testing.T) {
 	})
 }
 
-func TestAccMetalDevice_metro(t *testing.T) {
-	var device packngo.Device
-	rs := acctest.RandString(10)
-	r := "equinix_metal_device.test"
-
-	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
-		ExternalProviders: testExternalProviders,
-		Providers:         testAccProviders,
-		CheckDestroy:      testAccMetalDeviceCheckDestroyed,
-		Steps: []resource.TestStep{
-			{
-				Config: testAccMetalDeviceConfig_metro(rs),
-				Check: resource.ComposeTestCheckFunc(
-					testAccMetalDeviceExists(r, &device),
-					testAccMetalDeviceNetwork(r),
-					testAccMetalDeviceAttributes(&device),
-				),
-			},
-		},
-	})
-}
-
 func TestAccMetalDevice_update(t *testing.T) {
-	var d1, d2, d3, d4, d5 packngo.Device
+	var d1, d2, d3, d4, d5 metalv1.Device
 	rs := acctest.RandString(10)
 	rInt := acctest.RandInt()
 	r := "equinix_metal_device.test"
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
-		ExternalProviders: testExternalProviders,
-		Providers:         testAccProviders,
-		CheckDestroy:      testAccMetalDeviceCheckDestroyed,
+		PreCheck:                 func() { testAccPreCheck(t) },
+		ExternalProviders:        testExternalProviders,
+		ProtoV5ProviderFactories: testAccProtoV5ProviderFactories,
+		CheckDestroy:             testAccMetalDeviceCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccMetalDeviceConfig_varname(rInt, rs),
@@ -374,15 +303,15 @@ func TestAccMetalDevice_update(t *testing.T) {
 }
 
 func TestAccMetalDevice_IPXEScriptUrl(t *testing.T) {
-	var device, d2 packngo.Device
+	var device, d2 metalv1.Device
 	rs := acctest.RandString(10)
 	r := "equinix_metal_device.test_ipxe_script_url"
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
-		ExternalProviders: testExternalProviders,
-		Providers:         testAccProviders,
-		CheckDestroy:      testAccMetalDeviceCheckDestroyed,
+		PreCheck:                 func() { testAccPreCheck(t) },
+		ExternalProviders:        testExternalProviders,
+		ProtoV5ProviderFactories: testAccProtoV5ProviderFactories,
+		CheckDestroy:             testAccMetalDeviceCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccMetalDeviceConfig_ipxe_script_url(rs, "https://boot.netboot.xyz", "true"),
@@ -412,15 +341,15 @@ func TestAccMetalDevice_IPXEScriptUrl(t *testing.T) {
 }
 
 func TestAccMetalDevice_IPXEConflictingFields(t *testing.T) {
-	var device packngo.Device
+	var device metalv1.Device
 	rs := acctest.RandString(10)
 	r := "equinix_metal_device.test_ipxe_conflict"
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
-		ExternalProviders: testExternalProviders,
-		Providers:         testAccProviders,
-		CheckDestroy:      testAccMetalDeviceCheckDestroyed,
+		PreCheck:                 func() { testAccPreCheck(t) },
+		ExternalProviders:        testExternalProviders,
+		ProtoV5ProviderFactories: testAccProtoV5ProviderFactories,
+		CheckDestroy:             testAccMetalDeviceCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(testAccMetalDeviceConfig_ipxe_conflict, confAccMetalDevice_base(preferable_plans, preferable_metros, preferable_os), rs),
@@ -434,15 +363,15 @@ func TestAccMetalDevice_IPXEConflictingFields(t *testing.T) {
 }
 
 func TestAccMetalDevice_IPXEConfigMissing(t *testing.T) {
-	var device packngo.Device
+	var device metalv1.Device
 	rs := acctest.RandString(10)
 	r := "equinix_metal_device.test_ipxe_config_missing"
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
-		ExternalProviders: testExternalProviders,
-		Providers:         testAccProviders,
-		CheckDestroy:      testAccMetalDeviceCheckDestroyed,
+		PreCheck:                 func() { testAccPreCheck(t) },
+		ExternalProviders:        testExternalProviders,
+		ProtoV5ProviderFactories: testAccProtoV5ProviderFactories,
+		CheckDestroy:             testAccMetalDeviceCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(testAccMetalDeviceConfig_ipxe_missing, confAccMetalDevice_base(preferable_plans, preferable_metros, preferable_os), rs),
@@ -456,7 +385,7 @@ func TestAccMetalDevice_IPXEConfigMissing(t *testing.T) {
 }
 
 func TestAccMetalDevice_allowUserdataChanges(t *testing.T) {
-	var d1, d2 packngo.Device
+	var d1, d2 metalv1.Device
 	rs := acctest.RandString(10)
 	rInt := acctest.RandInt()
 	r := "equinix_metal_device.test"
@@ -465,10 +394,10 @@ func TestAccMetalDevice_allowUserdataChanges(t *testing.T) {
 	userdata2 := fmt.Sprintf("#!/usr/bin/env sh\necho 'Allow userdata changes %d'\n", rInt+1)
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
-		ExternalProviders: testExternalProviders,
-		Providers:         testAccProviders,
-		CheckDestroy:      testAccMetalDeviceCheckDestroyed,
+		PreCheck:                 func() { testAccPreCheck(t) },
+		ExternalProviders:        testExternalProviders,
+		ProtoV5ProviderFactories: testAccProtoV5ProviderFactories,
+		CheckDestroy:             testAccMetalDeviceCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccMetalDeviceConfig_allowAttributeChanges(rInt, rs, userdata1, "", "user_data"),
@@ -490,7 +419,7 @@ func TestAccMetalDevice_allowUserdataChanges(t *testing.T) {
 }
 
 func TestAccMetalDevice_allowCustomdataChanges(t *testing.T) {
-	var d1, d2 packngo.Device
+	var d1, d2 metalv1.Device
 	rs := acctest.RandString(10)
 	rInt := acctest.RandInt()
 	r := "equinix_metal_device.test"
@@ -499,10 +428,10 @@ func TestAccMetalDevice_allowCustomdataChanges(t *testing.T) {
 	customdata2 := fmt.Sprintf(`{"message": "Allow customdata changes %d"}`, rInt+1)
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
-		ExternalProviders: testExternalProviders,
-		Providers:         testAccProviders,
-		CheckDestroy:      testAccMetalDeviceCheckDestroyed,
+		PreCheck:                 func() { testAccPreCheck(t) },
+		ExternalProviders:        testExternalProviders,
+		ProtoV5ProviderFactories: testAccProtoV5ProviderFactories,
+		CheckDestroy:             testAccMetalDeviceCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccMetalDeviceConfig_allowAttributeChanges(rInt, rs, "", customdata1, "custom_data"),
@@ -528,8 +457,8 @@ func TestAccMetalDevice_allowChangesErrorOnUnsupportedAttribute(t *testing.T) {
 	rInt := acctest.RandInt()
 
 	resource.Test(t, resource.TestCase{
-		ExternalProviders: testExternalProviders,
-		Providers:         testAccProviders,
+		ExternalProviders:        testExternalProviders,
+		ProtoV5ProviderFactories: testAccProtoV5ProviderFactories,
 		Steps: []resource.TestStep{
 			{
 				Config:      testAccMetalDeviceConfig_allowAttributeChanges(rInt, rs, "", "", "project_id"),
@@ -553,20 +482,20 @@ func testAccMetalDeviceCheckDestroyed(s *terraform.State) error {
 	return nil
 }
 
-func testAccMetalDeviceAttributes(device *packngo.Device) resource.TestCheckFunc {
+func testAccMetalDeviceAttributes(device *metalv1.Device) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
-		if device.Hostname != "tfacc-test-device" {
-			return fmt.Errorf("Bad name: %s", device.Hostname)
+		if device.GetHostname() != "tfacc-test-device" {
+			return fmt.Errorf("Bad name: %s", device.GetHostname())
 		}
-		if device.State != "active" {
-			return fmt.Errorf("Device should be 'active', not '%s'", device.State)
+		if device.GetState() != metalv1.DEVICESTATE_ACTIVE {
+			return fmt.Errorf("Device should be 'active', not '%s'", device.GetState())
 		}
 
 		return nil
 	}
 }
 
-func testAccMetalDeviceExists(n string, device *packngo.Device) resource.TestCheckFunc {
+func testAccMetalDeviceExists(n string, device *metalv1.Device) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
@@ -576,13 +505,13 @@ func testAccMetalDeviceExists(n string, device *packngo.Device) resource.TestChe
 			return fmt.Errorf("No Record ID is set")
 		}
 
-		client := testAccProvider.Meta().(*config.Config).Metal
+		client := testAccProvider.Meta().(*config.Config).NewMetalClientForTesting()
 
-		foundDevice, _, err := client.Devices.Get(rs.Primary.ID, nil)
+		foundDevice, _, err := client.DevicesApi.FindDeviceById(context.TODO(), rs.Primary.ID).Execute()
 		if err != nil {
 			return err
 		}
-		if foundDevice.ID != rs.Primary.ID {
+		if foundDevice.GetId() != rs.Primary.ID {
 			return fmt.Errorf("Record not found: %v - %v", rs.Primary.ID, foundDevice)
 		}
 
@@ -592,10 +521,10 @@ func testAccMetalDeviceExists(n string, device *packngo.Device) resource.TestChe
 	}
 }
 
-func testAccMetalSameDevice(t *testing.T, before, after *packngo.Device) resource.TestCheckFunc {
+func testAccMetalSameDevice(t *testing.T, before, after *metalv1.Device) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
-		if before.ID != after.ID {
-			t.Fatalf("Expected device to be the same, but it was recreated: %s -> %s", before.ID, after.ID)
+		if before.GetId() != after.GetId() {
+			t.Fatalf("Expected device to be the same, but it was recreated: %s -> %s", before.GetId(), after.GetId())
 		}
 		return nil
 	}
@@ -667,10 +596,10 @@ func TestAccMetalDevice_importBasic(t *testing.T) {
 	rs := acctest.RandString(10)
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
-		ExternalProviders: testExternalProviders,
-		Providers:         testAccProviders,
-		CheckDestroy:      testAccMetalDeviceCheckDestroyed,
+		PreCheck:                 func() { testAccPreCheck(t) },
+		ExternalProviders:        testExternalProviders,
+		ProtoV5ProviderFactories: testAccProtoV5ProviderFactories,
+		CheckDestroy:             testAccMetalDeviceCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccMetalDeviceConfig_basic(rs),
@@ -782,26 +711,6 @@ resource "equinix_metal_device" "test" {
   termination_time = "%s"
 }
 `, confAccMetalDevice_base(preferable_plans, preferable_metros, preferable_os), projSuffix, rInt, rInt, rInt, testDeviceTerminationTime())
-}
-
-func testAccMetalDeviceConfig_metro(projSuffix string) string {
-	return fmt.Sprintf(`
-%s
-
-resource "equinix_metal_project" "test" {
-    name = "tfacc-device-%s"
-}
-
-resource "equinix_metal_device" "test" {
-  hostname         = "tfacc-test-device"
-  plan             = local.plan
-  metro            = local.metro
-  operating_system = local.os
-  billing_cycle    = "hourly"
-  project_id       = "${equinix_metal_project.test.id}"
-  termination_time = "%s"
-}
-`, confAccMetalDevice_base(preferable_plans, preferable_metros, preferable_os), projSuffix, testDeviceTerminationTime())
 }
 
 func testAccMetalDeviceConfig_minimal(projSuffix string) string {
@@ -1134,12 +1043,12 @@ func testAccWaitForMetalDeviceActive(project, deviceHostName string) resource.Im
 
 		meta := testAccProvider.Meta()
 		rd := new(schema.ResourceData)
-		meta.(*config.Config).AddModuleToMetalUserAgent(rd)
-		client := meta.(*config.Config).Metal
-		devices, _, err := client.Devices.List(rs.Primary.ID, &packngo.ListOptions{Search: deviceHostName})
+		client := meta.(*config.Config).NewMetalClientForTesting()
+		resp, _, err := client.DevicesApi.FindProjectDevices(context.TODO(), rs.Primary.ID).Search(deviceHostName).Execute()
 		if err != nil {
 			return "", fmt.Errorf("error while fetching devices for project [%s], error: %w", rs.Primary.ID, err)
 		}
+		devices := resp.Devices
 		if len(devices) == 0 {
 			return "", fmt.Errorf("Not able to find devices in project [%s]", rs.Primary.ID)
 		}
@@ -1147,8 +1056,8 @@ func testAccWaitForMetalDeviceActive(project, deviceHostName string) resource.Im
 			return "", fmt.Errorf("Found more than one device with the hostname in project [%s]", rs.Primary.ID)
 		}
 
-		rd.SetId(devices[0].ID)
-		return devices[0].ID, waitForActiveDevice(context.Background(), rd, testAccProvider.Meta(), defaultTimeout)
+		rd.SetId(devices[0].GetId())
+		return devices[0].GetId(), waitForActiveDevice(context.Background(), rd, testAccProvider.Meta(), defaultTimeout)
 	}
 }
 
@@ -1159,10 +1068,10 @@ func TestAccMetalDeviceCreate_timeout(t *testing.T) {
 	project := "equinix_metal_project.test"
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
-		ExternalProviders: testExternalProviders,
-		ProviderFactories: testAccProviderFactories,
-		CheckDestroy:      testAccMetalDeviceCheckDestroyed,
+		PreCheck:                 func() { testAccPreCheck(t) },
+		ExternalProviders:        testExternalProviders,
+		ProtoV5ProviderFactories: testAccProtoV5ProviderFactories,
+		CheckDestroy:             testAccMetalDeviceCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
 				Config:      testAccMetalDeviceConfig_timeout(rs, "10s", "", ""),
@@ -1186,15 +1095,15 @@ func TestAccMetalDeviceCreate_timeout(t *testing.T) {
 }
 
 func TestAccMetalDeviceUpdate_timeout(t *testing.T) {
-	var d1 packngo.Device
+	var d1 metalv1.Device
 	rs := acctest.RandString(10)
 	r := "equinix_metal_device.test"
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
-		ExternalProviders: testExternalProviders,
-		ProviderFactories: testAccProviderFactories,
-		CheckDestroy:      testAccMetalDeviceCheckDestroyed,
+		PreCheck:                 func() { testAccPreCheck(t) },
+		ExternalProviders:        testExternalProviders,
+		ProtoV5ProviderFactories: testAccProtoV5ProviderFactories,
+		CheckDestroy:             testAccMetalDeviceCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccMetalDeviceConfig_timeout(rs, "", "", ""),
@@ -1208,4 +1117,61 @@ func TestAccMetalDeviceUpdate_timeout(t *testing.T) {
 			},
 		},
 	})
+}
+
+func TestAccMetalDevice_LockingAndUnlocking(t *testing.T) {
+	var d1 metalv1.Device
+	rs := acctest.RandString(10)
+	r := "equinix_metal_device.test"
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:                 func() { testAccPreCheck(t) },
+		ExternalProviders:        testExternalProviders,
+		ProtoV5ProviderFactories: testAccProtoV5ProviderFactories,
+		CheckDestroy:             testAccMetalDeviceCheckDestroyed,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccMetalDeviceConfig_lockable(rs, true),
+				Check: resource.ComposeTestCheckFunc(
+					testAccMetalDeviceExists(r, &d1),
+				),
+			},
+			{
+				Config:      testAccMetalDeviceConfig_lockable(rs, true),
+				Destroy:     true,
+				ExpectError: matchErrDeviceLocked,
+			},
+			{
+				Config: testAccMetalDeviceConfig_lockable(rs, false),
+				Check: resource.ComposeTestCheckFunc(
+					testAccMetalDeviceExists(r, &d1),
+				),
+			},
+			{
+				Config:  testAccMetalDeviceConfig_lockable(rs, false),
+				Destroy: true,
+			},
+		},
+	})
+}
+
+func testAccMetalDeviceConfig_lockable(projSuffix string, locked bool) string {
+	return fmt.Sprintf(`
+%s
+
+resource "equinix_metal_project" "test" {
+    name = "tfacc-device-%s"
+}
+
+
+resource "equinix_metal_device" "test" {
+  hostname         = "tfacc-test-device"
+  plan             = local.plan
+  metro            = local.metro
+  operating_system = local.os
+  billing_cycle    = "hourly"
+  project_id       = "${equinix_metal_project.test.id}"
+  locked           = %v
+  termination_time = "%s"
+}`, confAccMetalDevice_base(preferable_plans, preferable_metros, preferable_os), projSuffix, locked, testDeviceTerminationTime())
 }

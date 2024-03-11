@@ -4,9 +4,10 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
+	"github.com/equinix/terraform-provider-equinix/internal/config"
+	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	"github.com/packethost/packngo"
 )
 
@@ -14,9 +15,9 @@ func TestAccResourceMetalOrganizationMember_owner(t *testing.T) {
 	rInt := acctest.RandInt()
 	org := &packngo.Organization{}
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
-		ExternalProviders: testExternalProviders,
-		Providers:         testAccProviders,
+		PreCheck:                 func() { testAccPreCheck(t) },
+		ExternalProviders:        testExternalProviders,
+		ProtoV5ProviderFactories: testAccProtoV5ProviderFactories,
 		// TODO: CheckDestroy: testAccMetalOrganizationMemberCheckDestroyed,
 		CheckDestroy: nil,
 		Steps: []resource.TestStep{
@@ -52,9 +53,9 @@ func TestAccResourceMetalOrganizationMember_basic(t *testing.T) {
 	rInt := acctest.RandInt()
 	org := &packngo.Organization{}
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
-		ExternalProviders: testExternalProviders,
-		Providers:         testAccProviders,
+		PreCheck:                 func() { testAccPreCheck(t) },
+		ExternalProviders:        testExternalProviders,
+		ProtoV5ProviderFactories: testAccProtoV5ProviderFactories,
 		// TODO: CheckDestroy: testAccMetalOrganizationMemberCheckDestroyed,
 		CheckDestroy: nil,
 		Steps: []resource.TestStep{
@@ -123,4 +124,30 @@ resource "equinix_metal_organization_member" "member" {
 	message = "This invitation was sent by the github.com/equinix/terraform-provider-equinix acceptance tests to test equinix_metal_organization_member resources."
 }
 `
+}
+
+func testAccMetalOrganizationExists(n string, org *packngo.Organization) resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		rs, ok := s.RootModule().Resources[n]
+		if !ok {
+			return fmt.Errorf("Not found: %s", n)
+		}
+		if rs.Primary.ID == "" {
+			return fmt.Errorf("No Record ID is set")
+		}
+
+		client := testAccProvider.Meta().(*config.Config).Metal
+
+		foundOrg, _, err := client.Organizations.Get(rs.Primary.ID, &packngo.GetOptions{Includes: []string{"address", "primary_owner"}})
+		if err != nil {
+			return err
+		}
+		if foundOrg.ID != rs.Primary.ID {
+			return fmt.Errorf("Record not found: %v - %v", rs.Primary.ID, foundOrg)
+		}
+
+		*org = *foundOrg
+
+		return nil
+	}
 }

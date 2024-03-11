@@ -27,13 +27,13 @@ data "equinix_fabric_service_profiles" "service_profiles_data_name" {
 
 ### Optional
 
-- `filter` (Block Set) Service Profile Search Filter (see [below for nested schema](#nestedblock--filter))
+- `filter` (Block Set, Max: 1) Service Profile Search Filter (see [below for nested schema](#nestedblock--filter))
 - `sort` (Block List) Service Profile Sort criteria for Search Request response payload (see [below for nested schema](#nestedblock--sort))
-- `view_point` (String) Service Profile Search Buyer/Seller Representation. Possible values are aSide and zSide.
+- `view_point` (String) flips view between buyer and seller representation. Available values : aSide, zSide. Default value : aSide
 
 ### Read-Only
 
-- `data` (List of Object) List of  Service Profiles (see [below for nested schema](#nestedatt--data))
+- `data` (List of Object) List of Service Profiles (see [below for nested schema](#nestedatt--data))
 - `id` (String) The ID of this resource.
 
 <a id="nestedblock--filter"></a>
@@ -75,9 +75,10 @@ Read-Only:
 - `project` (Set of Object) (see [below for nested schema](#nestedobjatt--data--project))
 - `self_profile` (Boolean)
 - `state` (String)
-- `tags` (Set of String)
+- `tags` (List of String)
 - `type` (String)
 - `uuid` (String)
+- `virtual_devices` (List of Object) (see [below for nested schema](#nestedobjatt--data--virtual_devices))
 - `visibility` (String)
 
 <a id="nestedobjatt--data--access_point_type_configs"></a>
@@ -258,3 +259,22 @@ Read-Only:
 - `project_id` (String)
 
 
+<a id="nestedobjatt--data--virtual_devices"></a>
+### Nested Schema for `data.virtual_devices`
+
+Read-Only:
+
+- `interface_uuid` (String)
+- `location` (Set of Object) (see [below for nested schema](#nestedobjatt--data--virtual_devices--location))
+- `type` (String)
+- `uuid` (String)
+
+<a id="nestedobjatt--data--virtual_devices--location"></a>
+### Nested Schema for `data.virtual_devices.location`
+
+Read-Only:
+
+- `ibx` (String)
+- `metro_code` (String)
+- `metro_name` (String)
+- `region` (String)

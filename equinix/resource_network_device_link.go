@@ -9,6 +9,7 @@ import (
 	"github.com/equinix/terraform-provider-equinix/internal/config"
 	equinix_errors "github.com/equinix/terraform-provider-equinix/internal/errors"
 	"github.com/equinix/terraform-provider-equinix/internal/hashcode"
+	equinix_schema "github.com/equinix/terraform-provider-equinix/internal/schema"
 	equinix_validation "github.com/equinix/terraform-provider-equinix/internal/validation"
 	"golang.org/x/text/cases"
 	"golang.org/x/text/language"
@@ -30,17 +31,20 @@ var networkDeviceLinkSchemaNames = map[string]string{
 	"MetroLinks":     "metro_link",
 	"RedundancyType": "redundancy_type",
 	"Status":         "status",
+	"ProjectID": "project_id",
 }
 
+
 var networkDeviceLinkDescriptions = map[string]string{
-	"UUID":           "Device link unique identifier",
-	"Name":           "Device link name",
-	"Subnet":         "Device link subnet CIDR.",
-	"Devices":        "Definition of one or more devices belonging to the device link",
-	"Links":          "Definition of one or more, inter metro connections belonging to the device link",
+	"UUID":      "Device link unique identifier",
+	"Name":      "Device link name",
+	"Subnet":    "Device link subnet CIDR.",
+	"Devices":   "Definition of one or more devices belonging to the device link",
+	"Links":     "Definition of one or more, inter metro connections belonging to the device link",
 	"MetroLinks":     "Definition of one or more, inter or intra metro connections belonging to the device link",
 	"RedundancyType": "Device link redundancy type",
-	"Status":         "Device link provisioning status",
+	"Status":    "Device link provisioning status",
+	"ProjectID": "The unique identifier of Project Resource to which device link is scoped to",
 }
 
 var networkDeviceLinkDeviceSchemaNames = map[string]string{
@@ -135,6 +139,14 @@ func createNetworkDeviceLinkResourceSchema() map[string]*schema.Schema {
 			Required:     true,
 			ValidateFunc: validation.StringLenBetween(3, 50),
 			Description:  networkDeviceLinkDescriptions["Name"],
+		},
+		networkDeviceLinkSchemaNames["ProjectID"]: {
+			Type:         schema.TypeString,
+			Optional:     true,
+			ForceNew:     true,
+			Computed:     true,
+			ValidateFunc: validation.IsUUID,
+			Description:  networkDeviceLinkSchemaNames["ProjectID"],
 		},
 		networkDeviceLinkSchemaNames["Subnet"]: {
 			Type:         schema.TypeString,
@@ -348,7 +360,7 @@ func resourceNetworkDeviceLinkUpdate(ctx context.Context, d *schema.ResourceData
 	client := m.(*config.Config).Ne
 	m.(*config.Config).AddModuleToNEUserAgent(&client, d)
 	var diags diag.Diagnostics
-	changes := getResourceDataChangedKeys([]string{
+	changes := equinix_schema.GetResourceDataChangedKeys([]string{
 		networkDeviceLinkSchemaNames["Name"], networkDeviceLinkSchemaNames["Subnet"],
 		networkDeviceLinkSchemaNames["Devices"], networkDeviceLinkSchemaNames["Links"], networkDeviceLinkSchemaNames["MetroLinks"],
 	}, d)
@@ -418,6 +430,8 @@ func createNetworkDeviceLink(d *schema.ResourceData) ne.DeviceLinkGroup {
 	}
 	if v, ok := d.GetOk(networkDeviceLinkSchemaNames["RedundancyType"]); ok {
 		link.RedundancyType = ne.String(cases.Title(language.Und, cases.NoLower).String(v.(string)))
+	if v, ok := d.GetOk(networkDeviceLinkSchemaNames["ProjectID"]); ok {
+		link.ProjectID = ne.String(v.(string))
 	}
 	if v, ok := d.GetOk(networkDeviceLinkSchemaNames["Devices"]); ok {
 		link.Devices = expandNetworkDeviceLinkDevices(v.(*schema.Set))
@@ -455,6 +469,8 @@ func updateNetworkDeviceLinkResource(link *ne.DeviceLinkGroup, d *schema.Resourc
 	}
 	if err := d.Set(networkDeviceLinkSchemaNames["MetroLinks"], flattenNetworkDeviceLinkMetroLinks(d.Get(networkDeviceLinkSchemaNames["Devices"]).(*schema.Set), link.MetroLinks)); err != nil {
 		return fmt.Errorf("error setting Metro Links: %s", err)
+	if err := d.Set(networkDeviceLinkSchemaNames["ProjectID"], link.ProjectID); err != nil {
+		return fmt.Errorf("error setting ProjectID: %s", err)
 	}
 	return nil
 }
@@ -669,4 +685,14 @@ func networkDeviceLinkConnectionHash(v interface{}) int {
 
 func networkDeviceLinkMetroLinkHash(v interface{}) int {
 	return hashcode.String(networkDeviceLinkMetroLinkKey(v))
+
+	func schemaSetToMap(set *schema.Set) map[int]interface{} {
+	transformed := make(map[int]interface{})
+	if set != nil {
+		list := set.List()
+		for i := range list {
+			transformed[set.F(list[i])] = list[i]
+		}
+	}
+	return transformed
 }

@@ -3,35 +3,18 @@ package equinix
 import (
 	"context"
 	"fmt"
-	"reflect"
 	"strings"
 	"time"
 
-	"github.com/equinix/terraform-provider-equinix/internal/resources/metal/metal_project_ssh_key"
-	"github.com/equinix/terraform-provider-equinix/internal/resources/metal/metal_ssh_key"
+	"github.com/equinix/terraform-provider-equinix/internal/config"
+	metal_project "github.com/equinix/terraform-provider-equinix/internal/resources/metal/project"
+	"github.com/equinix/terraform-provider-equinix/internal/resources/metal/vrf"
 
 	"github.com/equinix/ecx-go/v2"
-	"github.com/equinix/terraform-provider-equinix/internal/config"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 )
-
-var (
-	DeviceNetworkTypes   = []string{"layer3", "hybrid", "layer2-individual", "layer2-bonded"}
-	DeviceNetworkTypesHB = []string{"layer3", "hybrid", "hybrid-bonded", "layer2-individual", "layer2-bonded"}
-	NetworkTypeList      = strings.Join(DeviceNetworkTypes, ", ")
-	NetworkTypeListHB    = strings.Join(DeviceNetworkTypesHB, ", ")
-)
-
-// resourceDataProvider provies interface to schema.ResourceData
-// for convenient mocking purposes
-type resourceDataProvider interface {
-	Get(key string) interface{}
-	GetOk(key string) (interface{}, bool)
-	HasChange(key string) bool
-	GetChange(key string) (interface{}, interface{})
-}
 
 // Provider returns Equinix terraform *schema.Provider
 func Provider() *schema.Provider {
@@ -82,14 +65,16 @@ func Provider() *schema.Provider {
 				Description:  "The maximum number of records in a single response for REST queries that produce paginated responses",
 			},
 			"max_retries": {
-				Type:     schema.TypeInt,
-				Optional: true,
-				Default:  10,
+				Type:        schema.TypeInt,
+				Optional:    true,
+				Default:     10,
+				Description: "Maximum number of retries.",
 			},
 			"max_retry_wait_seconds": {
-				Type:     schema.TypeInt,
-				Optional: true,
-				Default:  30,
+				Type:        schema.TypeInt,
+				Optional:    true,
+				Default:     30,
+				Description: "Maximum number of seconds to wait before retrying a request.",
 			},
 		},
 		DataSourcesMap: map[string]*schema.Resource{
@@ -98,7 +83,8 @@ func Provider() *schema.Provider {
 			"equinix_ecx_l2_sellerprofiles":      dataSourceECXL2SellerProfiles(),
 			"equinix_fabric_routing_protocol":    dataSourceRoutingProtocol(),
 			"equinix_fabric_connection":          dataSourceFabricConnection(),
-			"equinix_fabric_cloud_router":        dataSourceCloudRouter(),
+			"equinix_fabric_cloud_router":        dataSourceFabricCloudRouter(),
+			"equinix_fabric_network":             dataSourceFabricNetwork(),
 			"equinix_fabric_port":                dataSourceFabricPort(),
 			"equinix_fabric_ports":               dataSourceFabricGetPortsByName(),
 			"equinix_fabric_service_profile":     dataSourceFabricServiceProfileReadByUuid(),
@@ -111,31 +97,28 @@ func Provider() *schema.Provider {
 			"equinix_metal_hardware_reservation": dataSourceMetalHardwareReservation(),
 			"equinix_metal_metro":                dataSourceMetalMetro(),
 			"equinix_metal_facility":             dataSourceMetalFacility(),
-			"equinix_metal_connection":           dataSourceMetalConnection(),
-			"equinix_metal_gateway":              dataSourceMetalGateway(),
 			"equinix_metal_ip_block_ranges":      dataSourceMetalIPBlockRanges(),
 			"equinix_metal_precreated_ip_block":  dataSourceMetalPreCreatedIPBlock(),
 			"equinix_metal_operating_system":     dataSourceOperatingSystem(),
-			"equinix_metal_organization":         dataSourceMetalOrganization(),
 			"equinix_metal_spot_market_price":    dataSourceSpotMarketPrice(),
 			"equinix_metal_device":               dataSourceMetalDevice(),
 			"equinix_metal_devices":              dataSourceMetalDevices(),
 			"equinix_metal_device_bgp_neighbors": dataSourceMetalDeviceBGPNeighbors(),
 			"equinix_metal_plans":                dataSourceMetalPlans(),
 			"equinix_metal_port":                 dataSourceMetalPort(),
-			"equinix_metal_project":              dataSourceMetalProject(),
-			"equinix_metal_project_ssh_key":      metal_project_ssh_key.DataSource(),
+			"equinix_metal_project":              metal_project.DataSource(),
 			"equinix_metal_reserved_ip_block":    dataSourceMetalReservedIPBlock(),
 			"equinix_metal_spot_market_request":  dataSourceMetalSpotMarketRequest(),
 			"equinix_metal_virtual_circuit":      dataSourceMetalVirtualCircuit(),
 			"equinix_metal_vlan":                 dataSourceMetalVlan(),
-			"equinix_metal_vrf":                  dataSourceMetalVRF(),
+			"equinix_metal_vrf":                  vrf.DataSource(),
 		},
 		ResourcesMap: map[string]*schema.Resource{
 			"equinix_ecx_l2_connection":          resourceECXL2Connection(),
 			"equinix_ecx_l2_connection_accepter": resourceECXL2ConnectionAccepter(),
 			"equinix_ecx_l2_serviceprofile":      resourceECXL2ServiceProfile(),
-			"equinix_fabric_cloud_router":        resourceCloudRouter(),
+			"equinix_fabric_network":             resourceFabricNetwork(),
+			"equinix_fabric_cloud_router":        resourceFabricCloudRouter(),
 			"equinix_fabric_connection":          resourceFabricConnection(),
 			"equinix_fabric_routing_protocol":    resourceFabricRoutingProtocol(),
 			"equinix_fabric_service_profile":     resourceFabricServiceProfile(),
@@ -148,24 +131,19 @@ func Provider() *schema.Provider {
 			"equinix_network_file":               resourceNetworkFile(),
 			"equinix_metal_user_api_key":         resourceMetalUserAPIKey(),
 			"equinix_metal_project_api_key":      resourceMetalProjectAPIKey(),
-			"equinix_metal_connection":           resourceMetalConnection(),
 			"equinix_metal_device":               resourceMetalDevice(),
 			"equinix_metal_device_network_type":  resourceMetalDeviceNetworkType(),
-			"equinix_metal_ssh_key":              metal_ssh_key.Resource(),
 			"equinix_metal_organization_member":  resourceMetalOrganizationMember(),
 			"equinix_metal_port":                 resourceMetalPort(),
-			"equinix_metal_project_ssh_key":      metal_project_ssh_key.Resource(),
-			"equinix_metal_project":              resourceMetalProject(),
-			"equinix_metal_organization":         resourceMetalOrganization(),
+			"equinix_metal_project":              metal_project.Resource(),
 			"equinix_metal_reserved_ip_block":    resourceMetalReservedIPBlock(),
 			"equinix_metal_ip_attachment":        resourceMetalIPAttachment(),
 			"equinix_metal_spot_market_request":  resourceMetalSpotMarketRequest(),
 			"equinix_metal_vlan":                 resourceMetalVlan(),
 			"equinix_metal_virtual_circuit":      resourceMetalVirtualCircuit(),
-			"equinix_metal_vrf":                  resourceMetalVRF(),
+			"equinix_metal_vrf":                  vrf.Resource(),
 			"equinix_metal_bgp_session":          resourceMetalBGPSession(),
 			"equinix_metal_port_vlan_attachment": resourceMetalPortVlanAttachment(),
-			"equinix_metal_gateway":              resourceMetalGateway(),
 		},
 		ProviderMetaSchema: map[string]*schema.Schema{
 			"module_name": {
@@ -249,40 +227,6 @@ func isStringInSlice(needle string, hay []string) bool {
 	return false
 }
 
-func getResourceDataChangedKeys(keys []string, d resourceDataProvider) map[string]interface{} {
-	changed := make(map[string]interface{})
-	for _, key := range keys {
-		if v := d.Get(key); v != nil && d.HasChange(key) {
-			changed[key] = v
-		}
-	}
-	return changed
-}
-
-func getResourceDataListElementChanges(keys []string, listKeyName string, listIndex int, d resourceDataProvider) map[string]interface{} {
-	changed := make(map[string]interface{})
-	if !d.HasChange(listKeyName) {
-		return changed
-	}
-	old, new := d.GetChange(listKeyName)
-	oldList := old.([]interface{})
-	newList := new.([]interface{})
-	if len(oldList) < listIndex || len(newList) < listIndex {
-		return changed
-	}
-	return getMapChangedKeys(keys, oldList[listIndex].(map[string]interface{}), newList[listIndex].(map[string]interface{}))
-}
-
-func getMapChangedKeys(keys []string, old, new map[string]interface{}) map[string]interface{} {
-	changed := make(map[string]interface{})
-	for _, key := range keys {
-		if !reflect.DeepEqual(old[key], new[key]) {
-			changed[key] = new[key]
-		}
-	}
-	return changed
-}
-
 func isEmpty(v interface{}) bool {
 	switch v := v.(type) {
 	case int:
@@ -346,15 +290,4 @@ func slicesMatchCaseInsensitive(s1, s2 []string) bool {
 		}
 	}
 	return true
-}
-
-func schemaSetToMap(set *schema.Set) map[int]interface{} {
-	transformed := make(map[int]interface{})
-	if set != nil {
-		list := set.List()
-		for i := range list {
-			transformed[set.F(list[i])] = list[i]
-		}
-	}
-	return transformed
 }

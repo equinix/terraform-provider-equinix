@@ -1,0 +1,33 @@
+package sweep_test
+
+import (
+	"testing"
+
+	"github.com/equinix/terraform-provider-equinix/internal/resources/metal/device"
+	"github.com/equinix/terraform-provider-equinix/internal/resources/metal/organization"
+	"github.com/equinix/terraform-provider-equinix/internal/resources/metal/project"
+	"github.com/equinix/terraform-provider-equinix/internal/resources/metal/ssh_key"
+	"github.com/equinix/terraform-provider-equinix/internal/resources/metal/user_api_key"
+	"github.com/equinix/terraform-provider-equinix/internal/resources/metal/virtual_circuit"
+	"github.com/equinix/terraform-provider-equinix/internal/resources/metal/vlan"
+	"github.com/equinix/terraform-provider-equinix/internal/resources/metal/vrf"
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+)
+
+func TestMain(m *testing.M) {
+	// Register sweepers for individual resource packages
+	addTestSweepers()
+
+	resource.TestMain(m)
+}
+
+func addTestSweepers() {
+	device.AddTestSweeper()
+	organization.AddTestSweeper()
+	project.AddTestSweeper()
+	ssh_key.AddTestSweeper()
+	user_api_key.AddTestSweeper()
+	virtual_circuit.AddTestSweeper()
+	vlan.AddTestSweeper()
+	vrf.AddTestSweeper()
+}

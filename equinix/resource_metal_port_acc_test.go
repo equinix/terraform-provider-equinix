@@ -7,10 +7,10 @@ import (
 
 	"github.com/equinix/terraform-provider-equinix/internal/config"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
+	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	"github.com/packethost/packngo"
 )
 
@@ -237,10 +237,10 @@ resource "equinix_metal_vlan" "test" {
 func TestAccMetalPort_hybridBondedVxlan(t *testing.T) {
 	rs := acctest.RandString(10)
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
-		ExternalProviders: testExternalProviders,
-		ProviderFactories: testAccProviderFactories,
-		CheckDestroy:      testAccMetalPortDestroyed,
+		PreCheck:                 func() { testAccPreCheck(t) },
+		ExternalProviders:        testExternalProviders,
+		ProtoV5ProviderFactories: testAccProtoV5ProviderFactories,
+		CheckDestroy:             testAccMetalPortDestroyed,
 		Steps: []resource.TestStep{
 			{
 				Config: confAccMetalPort_HybridBondedVxlan(rs),
@@ -266,10 +266,10 @@ func TestAccMetalPort_hybridBondedVxlan(t *testing.T) {
 func TestAccMetalPort_L2IndividualNativeVlan(t *testing.T) {
 	rs := acctest.RandString(10)
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
-		ExternalProviders: testExternalProviders,
-		ProviderFactories: testAccProviderFactories,
-		CheckDestroy:      testAccMetalPortDestroyed,
+		PreCheck:                 func() { testAccPreCheck(t) },
+		ExternalProviders:        testExternalProviders,
+		ProtoV5ProviderFactories: testAccProtoV5ProviderFactories,
+		CheckDestroy:             testAccMetalPortDestroyed,
 		Steps: []resource.TestStep{
 			{
 				Config: confAccMetalPort_L2IndividualNativeVlan(rs),
@@ -299,10 +299,10 @@ func TestAccMetalPort_L2IndividualNativeVlan(t *testing.T) {
 func testAccMetalPortTemplate(t *testing.T, conf func(string) string, expectedType string) {
 	rs := acctest.RandString(10)
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
-		ExternalProviders: testExternalProviders,
-		ProviderFactories: testAccProviderFactories,
-		CheckDestroy:      testAccMetalPortDestroyed,
+		PreCheck:                 func() { testAccPreCheck(t) },
+		ExternalProviders:        testExternalProviders,
+		ProtoV5ProviderFactories: testAccProtoV5ProviderFactories,
+		CheckDestroy:             testAccMetalPortDestroyed,
 		Steps: []resource.TestStep{
 			{
 				Config: conf(rs),
@@ -422,10 +422,10 @@ func TestAccMetalPortCreate_hybridBonded_timeout(t *testing.T) {
 	deviceName := "equinix_metal_device.test"
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
-		ExternalProviders: testExternalProviders,
-		ProviderFactories: testAccProviderFactories,
-		CheckDestroy:      testAccMetalPortDestroyed,
+		PreCheck:                 func() { testAccPreCheck(t) },
+		ExternalProviders:        testExternalProviders,
+		ProtoV5ProviderFactories: testAccProtoV5ProviderFactories,
+		CheckDestroy:             testAccMetalPortDestroyed,
 		Steps: []resource.TestStep{
 			{
 				Config:      confAccMetalPort_HybridBonded_timeout(rInt, rs, "5s", ""),
@@ -463,10 +463,10 @@ func TestAccMetalPortUpdate_hybridBonded_timeout(t *testing.T) {
 	rInt := acctest.RandInt()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
-		ExternalProviders: testExternalProviders,
-		ProviderFactories: testAccProviderFactories,
-		CheckDestroy:      testAccMetalPortDestroyed,
+		PreCheck:                 func() { testAccPreCheck(t) },
+		ExternalProviders:        testExternalProviders,
+		ProtoV5ProviderFactories: testAccProtoV5ProviderFactories,
+		CheckDestroy:             testAccMetalPortDestroyed,
 		Steps: []resource.TestStep{
 			{
 				Config: confAccMetalPort_HybridBonded_timeout(rInt, rs, "", "5s"),

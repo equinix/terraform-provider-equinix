@@ -6,9 +6,9 @@ import (
 	"testing"
 
 	"github.com/equinix/terraform-provider-equinix/internal/config"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
+	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	"github.com/packethost/packngo"
 )
 
@@ -22,11 +22,11 @@ func TestAccMetalSpotMarketRequest_basic(t *testing.T) {
 	projSuffix := acctest.RandString(10)
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
-		ExternalProviders: testExternalProviders,
-		ProviderFactories: testAccProviderFactories,
-		CheckDestroy:      testAccMetalSpotMarketRequestCheckDestroyed,
-		ErrorCheck:        skipIfOverbidOrTimedOut(t),
+		PreCheck:                 func() { testAccPreCheck(t) },
+		ExternalProviders:        testExternalProviders,
+		ProtoV5ProviderFactories: testAccProtoV5ProviderFactories,
+		CheckDestroy:             testAccMetalSpotMarketRequestCheckDestroyed,
+		ErrorCheck:               skipIfOverbidOrTimedOut(t),
 		Steps: []resource.TestStep{
 			{
 				Config: testAccMetalSpotMarketRequestConfig_basic(projSuffix),
@@ -150,11 +150,11 @@ func TestAccMetalSpotMarketRequest_Import(t *testing.T) {
 	projSuffix := acctest.RandString(10)
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
-		ExternalProviders: testExternalProviders,
-		ProviderFactories: testAccProviderFactories,
-		CheckDestroy:      testAccMetalSpotMarketRequestCheckDestroyed,
-		ErrorCheck:        skipIfOverbidOrTimedOut(t),
+		PreCheck:                 func() { testAccPreCheck(t) },
+		ExternalProviders:        testExternalProviders,
+		ProtoV5ProviderFactories: testAccProtoV5ProviderFactories,
+		CheckDestroy:             testAccMetalSpotMarketRequestCheckDestroyed,
+		ErrorCheck:               skipIfOverbidOrTimedOut(t),
 		Steps: []resource.TestStep{
 			{
 				Config: testAccCheckMetalSpotMarketRequestConfig_import(projSuffix),
@@ -243,10 +243,10 @@ func TestAccMetalSpotMarketRequestCreate_WithTimeout(t *testing.T) {
 	projSuffix := acctest.RandString(10)
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
-		ExternalProviders: testExternalProviders,
-		ProviderFactories: testAccProviderFactories,
-		CheckDestroy:      testAccMetalSpotMarketRequestCheckDestroyed,
+		PreCheck:                 func() { testAccPreCheck(t) },
+		ExternalProviders:        testExternalProviders,
+		ProtoV5ProviderFactories: testAccProtoV5ProviderFactories,
+		CheckDestroy:             testAccMetalSpotMarketRequestCheckDestroyed,
 		ErrorCheck: func(err error) error {
 			if matchErrOverbid.MatchString(err.Error()) {
 				t.Skipf("price was higher than max allowed bid; skipping")

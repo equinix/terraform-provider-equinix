@@ -4,11 +4,9 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
-	"fmt"
 	"log"
 	"path"
 	"sort"
-	"strings"
 	"sync"
 	"time"
 
@@ -19,7 +17,6 @@ import (
 	"github.com/equinix/equinix-sdk-go/services/metalv1"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/packethost/packngo"
 )
 
@@ -34,35 +31,6 @@ var (
 	wgMap   = map[string]*sync.WaitGroup{}
 	wgMutex = sync.Mutex{}
 )
-
-func ifToIPCreateRequest(m interface{}) packngo.IPAddressCreateRequest {
-	iacr := packngo.IPAddressCreateRequest{}
-	ia := m.(map[string]interface{})
-	at := ia["type"].(string)
-	switch at {
-	case "public_ipv4":
-		iacr.AddressFamily = 4
-		iacr.Public = true
-	case "private_ipv4":
-		iacr.AddressFamily = 4
-		iacr.Public = false
-	case "public_ipv6":
-		iacr.AddressFamily = 6
-		iacr.Public = true
-	}
-	iacr.CIDR = ia["cidr"].(int)
-	iacr.Reservations = converters.IfArrToStringArr(ia["reservation_ids"].([]interface{}))
-	return iacr
-}
-
-func getNewIPAddressSlice(arr []interface{}) []packngo.IPAddressCreateRequest {
-	addressTypesSlice := make([]packngo.IPAddressCreateRequest, len(arr))
-
-	for i, m := range arr {
-		addressTypesSlice[i] = ifToIPCreateRequest(m)
-	}
-	return addressTypesSlice
-}
 
 type NetworkInfo struct {
 	Networks       []map[string]interface{}
@@ -142,18 +110,18 @@ func getPorts(ps []metalv1.Port) []map[string]interface{} {
 	return ret
 }
 
-func hwReservationStateRefreshFunc(client *packngo.Client, reservationId, instanceId string) retry.StateRefreshFunc {
+func hwReservationStateRefreshFunc(ctx context.Context, client *metalv1.APIClient, reservationId, instanceId string) retry.StateRefreshFunc {
 	return func() (interface{}, string, error) {
-		r, _, err := client.HardwareReservations.Get(reservationId, &packngo.GetOptions{Includes: []string{"device"}})
+		r, _, err := client.HardwareReservationsApi.FindHardwareReservationById(ctx, reservationId).Include([]string{"device"}).Execute()
 		state := deprovisioning
 		switch {
 		case err != nil:
 			err = equinix_errors.FriendlyError(err)
 			state = errstate
-		case r != nil && r.Provisionable:
+		case r != nil && r.GetProvisionable():
 			state = provisionable
-		case r != nil && r.Device != nil && (r.Device.ID != "" && r.Device.ID != instanceId):
-			log.Printf("[WARN] Equinix Metal device instance %s (reservation %s) was reprovisioned to a another instance (%s)", instanceId, reservationId, r.Device.ID)
+		case r != nil && r.Device != nil && (r.Device.GetId() != "" && r.Device.GetId() != instanceId):
+			log.Printf("[WARN] Equinix Metal device instance %s (reservation %s) was reprovisioned to a another instance (%s)", instanceId, reservationId, r.Device.GetId())
 			state = reprovisioned
 		default:
 			log.Printf("[DEBUG] Equinix Metal device instance %s (reservation %s) is still deprovisioning", instanceId, reservationId)
@@ -163,11 +131,11 @@ func hwReservationStateRefreshFunc(client *packngo.Client, reservationId, instan
 	}
 }
 
-func waitUntilReservationProvisionable(ctx context.Context, client *packngo.Client, reservationId, instanceId string, delay, timeout, minTimeout time.Duration) error {
+func waitUntilReservationProvisionable(ctx context.Context, client *metalv1.APIClient, reservationId, instanceId string, delay, timeout, minTimeout time.Duration) error {
 	stateConf := &retry.StateChangeConf{
 		Pending:    []string{deprovisioning},
 		Target:     []string{provisionable, reprovisioned},
-		Refresh:    hwReservationStateRefreshFunc(client, reservationId, instanceId),
+		Refresh:    hwReservationStateRefreshFunc(ctx, client, reservationId, instanceId),
 		Timeout:    timeout,
 		Delay:      delay,
 		MinTimeout: minTimeout,
@@ -212,34 +180,6 @@ func waitForDeviceAttribute(ctx context.Context, d *schema.ResourceData, stateCo
 	}
 
 	return "", err
-}
-
-func ipAddressSchema() *schema.Resource {
-	return &schema.Resource{
-		Schema: map[string]*schema.Schema{
-			"type": {
-				Type:         schema.TypeString,
-				Required:     true,
-				ValidateFunc: validation.StringInSlice(ipAddressTypes, false),
-				Description:  fmt.Sprintf("one of %s", strings.Join(ipAddressTypes, ",")),
-			},
-			"cidr": {
-				Type:        schema.TypeInt,
-				Optional:    true,
-				Description: "CIDR suffix for IP block assigned to this device",
-			},
-			"reservation_ids": {
-				Type:        schema.TypeList,
-				Optional:    true,
-				Description: "IDs of reservations to pick the blocks from",
-				MinItems:    1,
-				Elem: &schema.Schema{
-					Type:         schema.TypeString,
-					ValidateFunc: validation.IsUUID,
-				},
-			},
-		},
-	}
 }
 
 func getDeviceMap(device metalv1.Device) map[string]interface{} {

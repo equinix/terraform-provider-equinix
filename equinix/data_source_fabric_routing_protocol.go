@@ -7,11 +7,29 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
+func readFabricRoutingProtocolResourceSchema() map[string]*schema.Schema {
+	sch := createFabricRoutingProtocolResourceSchema()
+	for key, _ := range sch {
+		if key == "uuid" || key == "connection_uuid" {
+			sch[key].Required = true
+			sch[key].Optional = false
+			sch[key].Computed = false
+		} else {
+			sch[key].Required = false
+			sch[key].Optional = false
+			sch[key].Computed = true
+			sch[key].MaxItems = 0
+			sch[key].ValidateFunc = nil
+		}
+	}
+	return sch
+}
+
 func dataSourceRoutingProtocol() *schema.Resource {
 	return &schema.Resource{
 		ReadContext: dataSourceRoutingProtocolRead,
 		Schema:      readFabricRoutingProtocolResourceSchema(),
-		Description: "Fabric V4 API compatible data resource that allow user to fetch routing protocol for a given UUID\n\n~> **Note** Equinix Fabric v4 resources and datasources are currently in Beta. The interfaces related to `equinix_fabric_` resources and datasources may change ahead of general availability. Please, do not hesitate to report any problems that you experience by opening a new [issue](https://github.com/equinix/terraform-provider-equinix/issues/new?template=bug.md)",
+		Description: "Fabric V4 API compatible data resource that allow user to fetch routing protocol for a given UUID",
 	}
 }
 
