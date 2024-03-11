@@ -3,12 +3,15 @@ package equinix
 import (
 	"context"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/equinix/terraform-provider-equinix/internal/config"
 	equinix_errors "github.com/equinix/terraform-provider-equinix/internal/errors"
 	"github.com/equinix/terraform-provider-equinix/internal/hashcode"
 	equinix_validation "github.com/equinix/terraform-provider-equinix/internal/validation"
+	"golang.org/x/text/cases"
+	"golang.org/x/text/language"
 
 	"github.com/equinix/ne-go"
 	"github.com/hashicorp/go-cty/cty"
@@ -19,21 +22,25 @@ import (
 )
 
 var networkDeviceLinkSchemaNames = map[string]string{
-	"UUID":    "uuid",
-	"Name":    "name",
-	"Subnet":  "subnet",
-	"Devices": "device",
-	"Links":   "link",
-	"Status":  "status",
+	"UUID":           "uuid",
+	"Name":           "name",
+	"Subnet":         "subnet",
+	"Devices":        "device",
+	"Links":          "link",
+	"MetroLinks":     "metro_link",
+	"RedundancyType": "redundancy_type",
+	"Status":         "status",
 }
 
 var networkDeviceLinkDescriptions = map[string]string{
-	"UUID":    "Device link unique identifier",
-	"Name":    "Device link name",
-	"Subnet":  "Device link subnet CIDR.",
-	"Devices": "Definition of one or more devices belonging to the device link",
-	"Links":   "Definition of one or more, inter metro connections belonging to the device link",
-	"Status":  "Device link provisioning status",
+	"UUID":           "Device link unique identifier",
+	"Name":           "Device link name",
+	"Subnet":         "Device link subnet CIDR.",
+	"Devices":        "Definition of one or more devices belonging to the device link",
+	"Links":          "Definition of one or more, inter metro connections belonging to the device link",
+	"MetroLinks":     "Definition of one or more, inter or intra metro connections belonging to the device link",
+	"RedundancyType": "Device link redundancy type",
+	"Status":         "Device link provisioning status",
 }
 
 var networkDeviceLinkDeviceSchemaNames = map[string]string{
@@ -70,6 +77,22 @@ var networkDeviceLinkConnectionDescriptions = map[string]string{
 	"DestinationMetroCode": "Connection destination metro code",
 	"SourceZoneCode":       "Connection source zone code",
 	"DestinationZoneCode":  "Connection destination zone code",
+}
+
+var networkDeviceLinkMetroSchemaNames = map[string]string{
+	"AccountNumber":      "account_number",
+	"AccountReferenceId": "account_reference_id",
+	"MetroCode":          "metro_code",
+	"Throughput":         "throughput",
+	"ThroughputUnit":     "throughput_unit",
+}
+
+var networkDeviceLinkMetroDescriptions = map[string]string{
+	"AccountNumber":      "Billing account number to be used for connection charges",
+	"AccountReferenceId": "Billing account referenceId to be used for connection charges",
+	"metroCode":          "Connection source metro code",
+	"Throughput":         "Connection throughput",
+	"ThroughputUnit":     "Connection throughput unit",
 }
 
 var networkDeviceLinkDeprecatedDescriptions = map[string]string{
@@ -111,13 +134,21 @@ func createNetworkDeviceLinkResourceSchema() map[string]*schema.Schema {
 			Type:         schema.TypeString,
 			Required:     true,
 			ValidateFunc: validation.StringLenBetween(3, 50),
-			Description:  networkDeviceLinkSchemaNames["Name"],
+			Description:  networkDeviceLinkDescriptions["Name"],
 		},
 		networkDeviceLinkSchemaNames["Subnet"]: {
 			Type:         schema.TypeString,
 			Optional:     true,
 			ValidateFunc: validation.IsCIDR,
-			Description:  networkDeviceLinkSchemaNames["Subnet"],
+			Description:  networkDeviceLinkDescriptions["Subnet"],
+		},
+		networkDeviceLinkSchemaNames["RedundancyType"]: {
+			Type:         schema.TypeString,
+			Optional:     true,
+			ForceNew:     true,
+			Default:      "Primary",
+			ValidateFunc: validation.StringInSlice([]string{"Primary", "Secondary", "Hybrid"}, true),
+			Description:  networkDeviceLinkDescriptions["RedundancyType"],
 		},
 		networkDeviceLinkSchemaNames["Devices"]: {
 			Type:     schema.TypeSet,
@@ -127,7 +158,7 @@ func createNetworkDeviceLinkResourceSchema() map[string]*schema.Schema {
 				Schema: createNetworkDeviceLinkDeviceResourceSchema(),
 			},
 			Set:         networkDeviceLinkDeviceHash,
-			Description: networkDeviceLinkSchemaNames["Device"],
+			Description: networkDeviceLinkDescriptions["Device"],
 		},
 		networkDeviceLinkSchemaNames["Links"]: {
 			Type:     schema.TypeSet,
@@ -136,7 +167,15 @@ func createNetworkDeviceLinkResourceSchema() map[string]*schema.Schema {
 				Schema: createNetworkDeviceLinkConnectionResourceSchema(),
 			},
 			Set:         networkDeviceLinkConnectionHash,
-			Description: networkDeviceLinkSchemaNames["Links"],
+			Description: networkDeviceLinkDescriptions["Links"],
+		},
+		networkDeviceLinkSchemaNames["MetroLinks"]: {
+			Type:     schema.TypeSet,
+			Optional: true,
+			Elem: &schema.Resource{
+				Schema: createNetworkDeviceLinkMetroResourceSchema(),
+			},
+			Description: networkDeviceLinkDescriptions["MetroLinks"],
 		},
 	}
 }
@@ -224,6 +263,41 @@ func createNetworkDeviceLinkConnectionResourceSchema() map[string]*schema.Schema
 	}
 }
 
+func createNetworkDeviceLinkMetroResourceSchema() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		networkDeviceLinkMetroSchemaNames["AccountNumber"]: {
+			Type:         schema.TypeString,
+			Required:     true,
+			ValidateFunc: validation.StringIsNotEmpty,
+			Description:  networkDeviceLinkMetroDescriptions["AccountNumber"],
+		},
+		networkDeviceLinkMetroSchemaNames["AccountReferenceId"]: {
+			Type:         schema.TypeString,
+			Optional:     true,
+			ValidateFunc: validation.StringIsNotEmpty,
+			Description:  networkDeviceLinkMetroDescriptions["AccountReferenceId"],
+		},
+		networkDeviceLinkMetroSchemaNames["MetroCode"]: {
+			Type:         schema.TypeString,
+			Required:     true,
+			ValidateFunc: equinix_validation.StringIsMetroCode,
+			Description:  networkDeviceLinkMetroDescriptions["MetroCode"],
+		},
+		networkDeviceLinkMetroSchemaNames["Throughput"]: {
+			Type:         schema.TypeString,
+			Required:     true,
+			ValidateFunc: validation.StringIsNotEmpty,
+			Description:  networkDeviceLinkMetroDescriptions["Throughput"],
+		},
+		networkDeviceLinkMetroSchemaNames["ThroughputUnit"]: {
+			Type:         schema.TypeString,
+			Required:     true,
+			ValidateFunc: validation.StringInSlice([]string{"Mbps", "Gbps"}, false),
+			Description:  networkDeviceLinkMetroDescriptions["ThroughputUnit"],
+		},
+	}
+}
+
 func resourceNetworkDeviceLinkCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	client := m.(*config.Config).Ne
 	m.(*config.Config).AddModuleToNEUserAgent(&client, d)
@@ -276,7 +350,7 @@ func resourceNetworkDeviceLinkUpdate(ctx context.Context, d *schema.ResourceData
 	var diags diag.Diagnostics
 	changes := getResourceDataChangedKeys([]string{
 		networkDeviceLinkSchemaNames["Name"], networkDeviceLinkSchemaNames["Subnet"],
-		networkDeviceLinkSchemaNames["Devices"], networkDeviceLinkSchemaNames["Links"],
+		networkDeviceLinkSchemaNames["Devices"], networkDeviceLinkSchemaNames["Links"], networkDeviceLinkSchemaNames["MetroLinks"],
 	}, d)
 	updateReq := client.NewDeviceLinkGroupUpdateRequest(d.Id())
 	for change, changeValue := range changes {
@@ -285,12 +359,17 @@ func resourceNetworkDeviceLinkUpdate(ctx context.Context, d *schema.ResourceData
 			updateReq.WithGroupName(changeValue.(string))
 		case networkDeviceLinkSchemaNames["Subnet"]:
 			updateReq.WithSubnet(changeValue.(string))
+		case networkDeviceLinkSchemaNames["RedundancyType"]:
+			updateReq.WithRedundancyType(cases.Title(language.Und, cases.NoLower).String(changeValue.(string)))
 		case networkDeviceLinkSchemaNames["Devices"]:
 			deviceList := expandNetworkDeviceLinkDevices(changeValue.(*schema.Set))
 			updateReq.WithDevices(deviceList)
 		case networkDeviceLinkSchemaNames["Links"]:
 			connectionList := expandNetworkDeviceLinkConnections(changeValue.(*schema.Set))
 			updateReq.WithLinks(connectionList)
+		case networkDeviceLinkSchemaNames["MetroLinks"]:
+			metroLinkList := expandNetworkDeviceLinkMetroLinks(changeValue.(*schema.Set))
+			updateReq.WithMetroLinks(metroLinkList)
 		}
 	}
 	if err := updateReq.Execute(); err != nil {
@@ -337,11 +416,17 @@ func createNetworkDeviceLink(d *schema.ResourceData) ne.DeviceLinkGroup {
 	if v, ok := d.GetOk(networkDeviceLinkSchemaNames["Subnet"]); ok {
 		link.Subnet = ne.String(v.(string))
 	}
+	if v, ok := d.GetOk(networkDeviceLinkSchemaNames["RedundancyType"]); ok {
+		link.RedundancyType = ne.String(cases.Title(language.Und, cases.NoLower).String(v.(string)))
+	}
 	if v, ok := d.GetOk(networkDeviceLinkSchemaNames["Devices"]); ok {
 		link.Devices = expandNetworkDeviceLinkDevices(v.(*schema.Set))
 	}
 	if v, ok := d.GetOk(networkDeviceLinkSchemaNames["Links"]); ok {
 		link.Links = expandNetworkDeviceLinkConnections(v.(*schema.Set))
+	}
+	if v, ok := d.GetOk(networkDeviceLinkSchemaNames["MetroLinks"]); ok {
+		link.MetroLinks = expandNetworkDeviceLinkMetroLinks(v.(*schema.Set))
 	}
 	return link
 }
@@ -356,6 +441,9 @@ func updateNetworkDeviceLinkResource(link *ne.DeviceLinkGroup, d *schema.Resourc
 	if err := d.Set(networkDeviceLinkSchemaNames["Subnet"], link.Subnet); err != nil {
 		return fmt.Errorf("error setting Subnet: %s", err)
 	}
+	if err := d.Set(networkDeviceLinkSchemaNames["RedundancyType"], strings.ToLower(*link.RedundancyType)); err != nil {
+		return fmt.Errorf("error setting RedundancyType: %s", err)
+	}
 	if err := d.Set(networkDeviceLinkSchemaNames["Status"], link.Status); err != nil {
 		return fmt.Errorf("error setting Status: %s", err)
 	}
@@ -364,6 +452,9 @@ func updateNetworkDeviceLinkResource(link *ne.DeviceLinkGroup, d *schema.Resourc
 	}
 	if err := d.Set(networkDeviceLinkSchemaNames["Links"], flattenNetworkDeviceLinkConnections(d.Get(networkDeviceLinkSchemaNames["Devices"]).(*schema.Set), link.Links)); err != nil {
 		return fmt.Errorf("error setting Links: %s", err)
+	}
+	if err := d.Set(networkDeviceLinkSchemaNames["MetroLinks"], flattenNetworkDeviceLinkMetroLinks(d.Get(networkDeviceLinkSchemaNames["Devices"]).(*schema.Set), link.MetroLinks)); err != nil {
+		return fmt.Errorf("error setting Metro Links: %s", err)
 	}
 	return nil
 }
@@ -415,7 +506,24 @@ func expandNetworkDeviceLinkConnections(connections *schema.Set) []ne.DeviceLink
 	return transformed
 }
 
+func expandNetworkDeviceLinkMetroLinks(connections *schema.Set) []ne.DeviceLinkGroupMetroLink {
+	connectionList := connections.List()
+	transformed := make([]ne.DeviceLinkGroupMetroLink, len(connectionList))
+	for i := range connectionList {
+		connectionMap := connectionList[i].(map[string]interface{})
+		transformed[i] = ne.DeviceLinkGroupMetroLink{
+			AccountNumber:      ne.String(connectionMap[networkDeviceLinkMetroSchemaNames["AccountNumber"]].(string)),
+			AccountReferenceId: ne.String(connectionMap[networkDeviceLinkMetroSchemaNames["AccountReferenceId"]].(string)),
+			MetroCode:          ne.String(connectionMap[networkDeviceLinkMetroSchemaNames["MetroCode"]].(string)),
+			Throughput:         ne.String(connectionMap[networkDeviceLinkMetroSchemaNames["Throughput"]].(string)),
+			ThroughputUnit:     ne.String(connectionMap[networkDeviceLinkMetroSchemaNames["ThroughputUnit"]].(string)),
+		}
+	}
+	return transformed
+}
+
 func flattenNetworkDeviceLinkConnections(currentConnections *schema.Set, connections []ne.DeviceLinkGroupLink) interface{} {
+	//fmt.Printf("Checking the reson for flatten. %s\n", currentConnections)
 	transformed := make([]interface{}, 0, len(connections))
 	currentConnectionsMap := schemaSetToMap(currentConnections)
 	for i := range connections {
@@ -431,6 +539,30 @@ func flattenNetworkDeviceLinkConnections(currentConnections *schema.Set, connect
 		}
 		transformed = append(transformed, transformedConnection)
 	}
+	return transformed
+}
+
+func flattenNetworkDeviceLinkMetroLinks(currentConnections *schema.Set, connections []ne.DeviceLinkGroupMetroLink) interface{} {
+	transformed := make([]interface{}, 0, len(connections))
+	currentConnectionsMap := schemaSetToMap(currentConnections)
+
+	for i := range connections {
+		transformedConnection := map[string]interface{}{
+			networkDeviceLinkMetroSchemaNames["Throughput"]:     *connections[i].Throughput,
+			networkDeviceLinkMetroSchemaNames["ThroughputUnit"]: *connections[i].ThroughputUnit,
+			networkDeviceLinkMetroSchemaNames["MetroCode"]:      *connections[i].MetroCode,
+		}
+
+		if v, ok := currentConnectionsMap[networkDeviceLinkMetroLinkHash(connections[i])]; ok {
+			currentConnectionMap := v.(map[string]interface{})
+
+			transformedConnection[networkDeviceLinkMetroSchemaNames["AccountNumber"]] = currentConnectionMap[networkDeviceLinkMetroSchemaNames["AccountNumber"]]
+			transformedConnection[networkDeviceLinkMetroSchemaNames["AccountReferenceId"]] = currentConnectionMap[networkDeviceLinkMetroSchemaNames["AccountReferenceId"]]
+		}
+
+		transformed = append(transformed, transformedConnection)
+	}
+
 	return transformed
 }
 
@@ -515,6 +647,26 @@ func networkDeviceLinkConnectionKey(v interface{}) string {
 	return fmt.Sprintf("%v", v)
 }
 
+func networkDeviceLinkMetroLinkKey(v interface{}) string {
+	if v, ok := v.(ne.DeviceLinkGroupMetroLink); ok {
+		return fmt.Sprintf("%s-%s-%s",
+			ne.StringValue(v.MetroCode),
+			ne.StringValue(v.Throughput),
+			ne.StringValue(v.ThroughputUnit))
+	}
+	if v, ok := v.(map[string]interface{}); ok {
+		return fmt.Sprintf("%s-%s-%s",
+			v[networkDeviceLinkConnectionSchemaNames["MetroCode"]],
+			v[networkDeviceLinkConnectionSchemaNames["Throughput"]],
+			v[networkDeviceLinkConnectionSchemaNames["ThroughputUnit"]])
+	}
+	return fmt.Sprintf("%v", v)
+}
+
 func networkDeviceLinkConnectionHash(v interface{}) int {
 	return hashcode.String(networkDeviceLinkConnectionKey(v))
+}
+
+func networkDeviceLinkMetroLinkHash(v interface{}) int {
+	return hashcode.String(networkDeviceLinkMetroLinkKey(v))
 }

@@ -12,8 +12,9 @@ func TestNetworkDeviceLink_createFromResourceData(t *testing.T) {
 	// given
 
 	expected := ne.DeviceLinkGroup{
-		Name:   ne.String("testGroup"),
-		Subnet: ne.String("10.10.1.0/24"),
+		Name:           ne.String("testGroup"),
+		Subnet:         ne.String("10.10.1.0/24"),
+		RedundancyType: ne.String("Primary"),
 		Devices: []ne.DeviceLinkGroupDevice{
 			{
 				DeviceID:    ne.String("3eee8518-b19d-4de5-afd8-afd9b67e6e8c"),
@@ -36,15 +37,33 @@ func TestNetworkDeviceLink_createFromResourceData(t *testing.T) {
 				DestinationZoneCode:  ne.String(""),
 			},
 		},
+		MetroLinks: []ne.DeviceLinkGroupMetroLink{
+			{
+				AccountNumber:      ne.String(""),
+				AccountReferenceId: ne.String(""),
+				MetroCode:          ne.String("MX"),
+				Throughput:         ne.String("10"),
+				ThroughputUnit:     ne.String("Mbps"),
+			},
+			{
+				AccountNumber:      ne.String(""),
+				AccountReferenceId: ne.String(""),
+				MetroCode:          ne.String("LD"),
+				Throughput:         ne.String("10"),
+				ThroughputUnit:     ne.String("Mbps"),
+			},
+		},
 	}
 
 	rawData := map[string]interface{}{
-		networkDeviceLinkSchemaNames["Name"]:   ne.StringValue(expected.Name),
-		networkDeviceLinkSchemaNames["Subnet"]: ne.StringValue(expected.Subnet),
+		networkDeviceLinkSchemaNames["Name"]:           ne.StringValue(expected.Name),
+		networkDeviceLinkSchemaNames["Subnet"]:         ne.StringValue(expected.Subnet),
+		networkDeviceLinkSchemaNames["RedundancyType"]: ne.StringValue(expected.RedundancyType),
 	}
 	d := schema.TestResourceDataRaw(t, createNetworkDeviceLinkResourceSchema(), rawData)
 	d.Set(networkDeviceLinkSchemaNames["Devices"], flattenNetworkDeviceLinkDevices(nil, expected.Devices))
 	d.Set(networkDeviceLinkSchemaNames["Links"], flattenNetworkDeviceLinkConnections(nil, expected.Links))
+	d.Set(networkDeviceLinkSchemaNames["MetroLinks"], flattenNetworkDeviceLinkMetroLinks(nil, expected.MetroLinks))
 	// when
 	result := createNetworkDeviceLink(d)
 	// then
@@ -54,10 +73,11 @@ func TestNetworkDeviceLink_createFromResourceData(t *testing.T) {
 func TestNetworkDeviceLink_updateResourceData(t *testing.T) {
 	// given
 	input := ne.DeviceLinkGroup{
-		UUID:   ne.String("aae04283-10f9-4edb-9395-33681176592b"),
-		Name:   ne.String("testGroup"),
-		Subnet: ne.String("10.10.1.0/24"),
-		Status: ne.String(ne.DeviceLinkGroupStatusProvisioned),
+		UUID:           ne.String("aae04283-10f9-4edb-9395-33681176592b"),
+		Name:           ne.String("testGroup"),
+		Subnet:         ne.String("10.10.1.0/24"),
+		RedundancyType: ne.String("Primary"),
+		Status:         ne.String(ne.DeviceLinkGroupStatusProvisioned),
 		Devices: []ne.DeviceLinkGroupDevice{
 			{
 				DeviceID:    ne.String("3eee8518-b19d-4de5-afd8-afd9b67e6e8c"),
@@ -79,6 +99,22 @@ func TestNetworkDeviceLink_updateResourceData(t *testing.T) {
 				DestinationMetroCode: ne.String("AM"),
 				SourceZoneCode:       ne.String(""),
 				DestinationZoneCode:  ne.String(""),
+			},
+		},
+		MetroLinks: []ne.DeviceLinkGroupMetroLink{
+			{
+				AccountNumber:      ne.String("592205"),
+				AccountReferenceId: ne.String(""),
+				MetroCode:          ne.String("MX"),
+				Throughput:         ne.String("10"),
+				ThroughputUnit:     ne.String("Mbps"),
+			},
+			{
+				AccountNumber:      ne.String("606828"),
+				AccountReferenceId: ne.String(""),
+				MetroCode:          ne.String("LD"),
+				Throughput:         ne.String("10"),
+				ThroughputUnit:     ne.String("Mbps"),
 			},
 		},
 	}
