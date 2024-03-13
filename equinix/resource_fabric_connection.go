@@ -1439,7 +1439,7 @@ func simplifiedServiceProfileGoToTerraform(profile *fabricv4.SimplifiedServicePr
 	mappedProfile["type"] = string(profile.GetType())
 	mappedProfile["name"] = profile.GetName()
 	mappedProfile["uuid"] = profile.GetName()
-	mappedProfile["access_point_type_configs"] = accessPointTypeConfigToTerra(profile.AccessPointTypeConfigs)
+	mappedProfile["access_point_type_configs"] = accessPointTypeConfigGoToTerraform(profile.AccessPointTypeConfigs)
 
 	profileSet := schema.NewSet(
 		schema.HashResource(&schema.Resource{Schema: serviceProfileSch()}),
