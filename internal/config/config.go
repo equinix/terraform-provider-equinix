@@ -15,7 +15,6 @@ import (
 	"strings"
 	"time"
 
-	v4 "github.com/equinix-labs/fabric-go/fabric/v4"
 	"github.com/equinix/ecx-go/v2"
 	"github.com/equinix/equinix-sdk-go/services/fabricv4"
 	"github.com/equinix/equinix-sdk-go/services/metalv1"
@@ -105,7 +104,6 @@ type Config struct {
 	metalUserAgent string
 
 	TerraformVersion string
-	FabricClient     *v4.APIClient
 }
 
 // Load function validates configuration structure fields and configures
@@ -158,30 +156,7 @@ func (c *Config) Load(ctx context.Context) error {
 	c.Ecx = ecxClient
 	c.Ne = neClient
 	c.Metal = c.NewMetalClient()
-	c.FabricClient = c.NewFabricClient(authClient)
 	return nil
-}
-
-// NewFabricClient returns a new client for accessing Equinix Fabric's v4 API.
-// Deprecated: migrate to NewFabricClientForSDK instead
-func (c *Config) NewFabricClient(authClient *http.Client) *v4.APIClient {
-	transport := logging.NewTransport("Equinix Fabric", authClient.Transport)
-	loggingClient := &http.Client{
-		Transport: transport,
-	}
-	authClient.Timeout = c.requestTimeout()
-	fabricHeaderMap := map[string]string{
-		"X-SOURCE":         "API",
-		"X-CORRELATION-ID": correlationId(25),
-	}
-	v4Configuration := v4.Configuration{
-		BasePath:      c.BaseURL,
-		DefaultHeader: fabricHeaderMap,
-		UserAgent:     "equinix/fabric-go",
-		HTTPClient:    loggingClient,
-	}
-	client := v4.NewAPIClient(&v4Configuration)
-	return client
 }
 
 // NewFabricClientForSDK returns a terraform sdkv2 plugin compatible

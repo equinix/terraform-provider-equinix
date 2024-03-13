@@ -1,7 +1,6 @@
 package schema
 
 import (
-	v4 "github.com/equinix-labs/fabric-go/fabric/v4"
 	"github.com/equinix/equinix-sdk-go/services/fabricv4"
 	"github.com/equinix/terraform-provider-equinix/internal/converters"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -39,38 +38,19 @@ func OrderGoToTerraform(order *fabricv4.Order) *schema.Set {
 	return orderSet
 }
 
-func AccountGoToTerraform[Account *fabricv4.SimplifiedAccount | *v4.AllOfServiceProfileAccount](account Account) *schema.Set {
+func AccountGoToTerraform(account *fabricv4.SimplifiedAccount) *schema.Set {
 	if account == nil {
 		return nil
 	}
-	var mappedAccount map[string]interface{}
-	switch any(account).(type) {
-	case *fabricv4.SimplifiedAccount:
-		simplifiedAccount := any(account).(*fabricv4.SimplifiedAccount)
-		mappedAccount = map[string]interface{}{
-			"account_number":           int(simplifiedAccount.GetAccountNumber()),
-			"account_name":             simplifiedAccount.GetAccountName(),
-			"org_id":                   int(simplifiedAccount.GetOrgId()),
-			"organization_name":        simplifiedAccount.GetOrganizationName(),
-			"global_org_id":            simplifiedAccount.GetGlobalOrgId(),
-			"global_organization_name": simplifiedAccount.GetGlobalOrganizationName(),
-			"global_cust_id":           simplifiedAccount.GetGlobalCustId(),
-			"ucm_id":                   simplifiedAccount.GetUcmId(),
-		}
-	case *v4.AllOfServiceProfileAccount:
-		allSPAccount := any(account).(*v4.AllOfServiceProfileAccount)
-		mappedAccount = map[string]interface{}{
-			"account_number":           int(allSPAccount.AccountNumber),
-			"account_name":             allSPAccount.AccountName,
-			"org_id":                   int(allSPAccount.OrgId),
-			"organization_name":        allSPAccount.OrganizationName,
-			"global_org_id":            allSPAccount.GlobalOrgId,
-			"global_organization_name": allSPAccount.GlobalOrganizationName,
-			"global_cust_id":           allSPAccount.GlobalCustId,
-			"ucm_id":                   allSPAccount.UcmId,
-		}
-	default:
-		return nil
+	mappedAccount := map[string]interface{}{
+		"account_number":           int(account.GetAccountNumber()),
+		"account_name":             account.GetAccountName(),
+		"org_id":                   int(account.GetOrgId()),
+		"organization_name":        account.GetOrganizationName(),
+		"global_org_id":            account.GetGlobalOrgId(),
+		"global_organization_name": account.GetGlobalOrganizationName(),
+		"global_cust_id":           account.GetGlobalCustId(),
+		"ucm_id":                   account.GetUcmId(),
 	}
 
 	accountSet := schema.NewSet(
@@ -198,45 +178,25 @@ func ProjectGoToTerraform(project *fabricv4.Project) *schema.Set {
 	return projectSet
 }
 
-func ChangeLogGoToTerraform[ChangeLog *fabricv4.Changelog | *v4.AllOfServiceProfileChangeLog](changeLog ChangeLog) *schema.Set {
+func ChangeLogGoToTerraform(changeLog *fabricv4.Changelog) *schema.Set {
 	if changeLog == nil {
 		return nil
 	}
-	var mappedChangeLog map[string]interface{}
-	switch any(changeLog).(type) {
-	case *fabricv4.Changelog:
-		baseChangeLog := any(changeLog).(*fabricv4.Changelog)
-		mappedChangeLog = map[string]interface{}{
-			"created_by":           baseChangeLog.GetCreatedBy(),
-			"created_by_full_name": baseChangeLog.GetCreatedByFullName(),
-			"created_by_email":     baseChangeLog.GetCreatedByEmail(),
-			"created_date_time":    baseChangeLog.GetCreatedDateTime().String(),
-			"updated_by":           baseChangeLog.GetUpdatedBy(),
-			"updated_by_full_name": baseChangeLog.GetUpdatedByFullName(),
-			"updated_date_time":    baseChangeLog.GetUpdatedDateTime().String(),
-			"deleted_by":           baseChangeLog.GetDeletedBy(),
-			"deleted_by_full_name": baseChangeLog.GetDeletedByFullName(),
-			"deleted_by_email":     baseChangeLog.GetDeletedByEmail(),
-			"deleted_date_time":    baseChangeLog.GetDeletedDateTime().String(),
-		}
-	case *v4.AllOfServiceProfileChangeLog:
-		allOfChangeLog := any(changeLog).(*v4.AllOfServiceProfileChangeLog)
-		mappedChangeLog = map[string]interface{}{
-			"created_by":           allOfChangeLog.CreatedBy,
-			"created_by_full_name": allOfChangeLog.CreatedByFullName,
-			"created_by_email":     allOfChangeLog.CreatedByEmail,
-			"created_date_time":    allOfChangeLog.CreatedDateTime.String(),
-			"updated_by":           allOfChangeLog.UpdatedBy,
-			"updated_by_full_name": allOfChangeLog.UpdatedByFullName,
-			"updated_date_time":    allOfChangeLog.UpdatedDateTime.String(),
-			"deleted_by":           allOfChangeLog.DeletedBy,
-			"deleted_by_full_name": allOfChangeLog.DeletedByFullName,
-			"deleted_by_email":     allOfChangeLog.DeletedByEmail,
-			"deleted_date_time":    allOfChangeLog.DeletedDateTime.String(),
-		}
-	default:
-		return nil
+
+	mappedChangeLog := map[string]interface{}{
+		"created_by":           changeLog.GetCreatedBy(),
+		"created_by_full_name": changeLog.GetCreatedByFullName(),
+		"created_by_email":     changeLog.GetCreatedByEmail(),
+		"created_date_time":    changeLog.GetCreatedDateTime().String(),
+		"updated_by":           changeLog.GetUpdatedBy(),
+		"updated_by_full_name": changeLog.GetUpdatedByFullName(),
+		"updated_date_time":    changeLog.GetUpdatedDateTime().String(),
+		"deleted_by":           changeLog.GetDeletedBy(),
+		"deleted_by_full_name": changeLog.GetDeletedByFullName(),
+		"deleted_by_email":     changeLog.GetDeletedByEmail(),
+		"deleted_date_time":    changeLog.GetDeletedDateTime().String(),
 	}
+
 	changeLogSet := schema.NewSet(
 		schema.HashResource(&schema.Resource{Schema: ChangeLogSch()}),
 		[]interface{}{mappedChangeLog},
