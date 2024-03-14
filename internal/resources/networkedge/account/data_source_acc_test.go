@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/equinix/terraform-provider-equinix/internal/nprintf"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
@@ -36,7 +37,7 @@ func TestAccDataSourceNetworkAccount_basic(t *testing.T) {
 }
 
 func testAccDataSourceNetworkAccountConfig_basic(ctx map[string]interface{}) string {
-	return nprintf(`
+	return nprintf.Nprintf(`
 data "equinix_network_account" "%{resourceName}" {
   metro_code = "%{metro_code}"
   status     = "%{status}"

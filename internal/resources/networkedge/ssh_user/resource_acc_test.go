@@ -5,7 +5,9 @@ import (
 	"fmt"
 	"log"
 
+	"github.com/equinix/terraform-provider-equinix/internal/comparisons"
 	"github.com/equinix/terraform-provider-equinix/internal/config"
+	"github.com/equinix/terraform-provider-equinix/internal/nprintf"
 
 	"github.com/equinix/ne-go"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -50,14 +52,14 @@ func testSweepNetworkSSHUser(region string) error {
 }
 
 func testAccNetworkDeviceUser(ctx map[string]interface{}) string {
-	config := nprintf(`
+	config := nprintf.Nprintf(`
 resource "equinix_network_ssh_user" "%{user-resourceName}" {
   username = "%{user-username}"
   password = "%{user-password}"
   device_ids = [
     equinix_network_device.%{device-resourceName}.id`, ctx)
 	if _, ok := ctx["device-secondary_name"]; ok {
-		config += nprintf(`,
+		config += nprintf.Nprintf(`,
     equinix_network_device.%{device-resourceName}.redundant_id`, ctx)
 	}
 	config += `

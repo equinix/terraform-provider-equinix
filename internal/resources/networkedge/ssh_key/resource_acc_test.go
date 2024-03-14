@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	"github.com/equinix/terraform-provider-equinix/internal/config"
+	"github.com/equinix/terraform-provider-equinix/internal/nprintf"
 
 	"github.com/equinix/ne-go"
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
@@ -84,7 +85,7 @@ func TestAccNetworkSSHKey(t *testing.T) {
 }
 
 func testAccNetworkSSHKey(ctx map[string]interface{}) string {
-	return nprintf(`
+	return nprintf.Nprintf(`
 resource "equinix_network_ssh_key" "%{resourceName}" {
   name       = "%{name}"
   public_key = "%{public_key}"

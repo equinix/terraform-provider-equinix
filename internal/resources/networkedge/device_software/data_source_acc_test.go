@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/equinix/terraform-provider-equinix/internal/nprintf"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
 
@@ -36,7 +37,7 @@ func TestAccDataSourceNetworkDeviceSoftware_versionRegex(t *testing.T) {
 }
 
 func testAccDataSourceNetworkDeviceSoftwareConfig_versionRegex(ctx map[string]interface{}) string {
-	return nprintf(`
+	return nprintf.Nprintf(`
 data "equinix_network_device_software" "%{resourceName}" {
   device_type   = "%{device_type}"
   version_regex = "%{version_regex}"

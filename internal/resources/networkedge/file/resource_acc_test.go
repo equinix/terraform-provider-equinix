@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/equinix/terraform-provider-equinix/internal/config"
+	"github.com/equinix/terraform-provider-equinix/internal/nprintf"
 
 	"github.com/equinix/ne-go"
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
@@ -49,7 +50,7 @@ func TestAccNetworkFile_VSRX(t *testing.T) {
 }
 
 func testAccNetworkFile(ctx map[string]interface{}) string {
-	return nprintf(`
+	return nprintf.Nprintf(`
 resource "equinix_network_file" "%{resourceName}" {
   file_name        = "%{fileName}"
   content          = "%{content}"

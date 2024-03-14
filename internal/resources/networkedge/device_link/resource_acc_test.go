@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	"github.com/equinix/terraform-provider-equinix/internal/config"
+	"github.com/equinix/terraform-provider-equinix/internal/nprintf"
 
 	"github.com/equinix/ne-go"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -134,7 +135,7 @@ func (t *testAccConfig) withDeviceLink() *testAccConfig {
 
 func testAccNetworkDeviceLink(ctx map[string]interface{}) string {
 	var config string
-	config += nprintf(`
+	config += nprintf.Nprintf(`
 resource "equinix_network_device_link" "%{link-resourceName}" {
   name   = "%{link-name}"
   subnet = "%{link-subnet}"

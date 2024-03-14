@@ -1814,25 +1814,25 @@ func expandVendorConfiguration(vendorConfigs []interface{}) map[string]string {
 	if v, ok := vendorConfig[neDeviceVendorConfigSchemaNames["RootPassword"]]; ok && !comparisons.IsEmpty(v) {
 		transformed["rootPassword"] = v.(string)
 	}
-	if v, ok := vendorConfig[neDeviceVendorConfigSchemaNames["PrivateAddress"]]; ok && !isEmpty(v) {
+	if v, ok := vendorConfig[neDeviceVendorConfigSchemaNames["PrivateAddress"]]; ok && !comparisons.IsEmpty(v) {
 		transformed["privateAddress"] = v.(string)
 	}
-	if v, ok := vendorConfig[neDeviceVendorConfigSchemaNames["PrivateCIDRMask"]]; ok && !isEmpty(v) {
+	if v, ok := vendorConfig[neDeviceVendorConfigSchemaNames["PrivateCIDRMask"]]; ok && !comparisons.IsEmpty(v) {
 		transformed["privateCidrMask"] = v.(string)
 	}
-	if v, ok := vendorConfig[neDeviceVendorConfigSchemaNames["LicenseKey"]]; ok && !isEmpty(v) {
+	if v, ok := vendorConfig[neDeviceVendorConfigSchemaNames["LicenseKey"]]; ok && !comparisons.IsEmpty(v) {
 		transformed["licenseKey"] = v.(string)
 	}
-	if v, ok := vendorConfig[neDeviceVendorConfigSchemaNames["LicenseID"]]; ok && !isEmpty(v) {
+	if v, ok := vendorConfig[neDeviceVendorConfigSchemaNames["LicenseID"]]; ok && !comparisons.IsEmpty(v) {
 		transformed["licenseId"] = v.(string)
 	}
-	if v, ok := vendorConfig[neDeviceVendorConfigSchemaNames["PrivateGateway"]]; ok && !isEmpty(v) {
+	if v, ok := vendorConfig[neDeviceVendorConfigSchemaNames["PrivateGateway"]]; ok && !comparisons.IsEmpty(v) {
 		transformed["privateGateway"] = v.(string)
 	}
-	if v, ok := vendorConfig[neDeviceVendorConfigSchemaNames["PanoramaIPAddress"]]; ok && !isEmpty(v) {
+	if v, ok := vendorConfig[neDeviceVendorConfigSchemaNames["PanoramaIPAddress"]]; ok && !comparisons.IsEmpty(v) {
 		transformed["panoramaIpAddress"] = v.(string)
 	}
-	if v, ok := vendorConfig[neDeviceVendorConfigSchemaNames["PanoramaAuthKey"]]; ok && !isEmpty(v) {
+	if v, ok := vendorConfig[neDeviceVendorConfigSchemaNames["PanoramaAuthKey"]]; ok && !comparisons.IsEmpty(v) {
 		transformed["panoramaAuthKey"] = v.(string)
 	}
 	if v, ok := vendorConfig[neDeviceVendorConfigSchemaNames["ManagementType"]]; ok && !isEmpty(v) {

@@ -14,7 +14,6 @@ import (
 	"sort"
 	"strings"
 	"time"
-	"slices"
 
 	"github.com/equinix/terraform-provider-equinix/internal/converters"
 	"github.com/equinix/terraform-provider-equinix/internal/network"

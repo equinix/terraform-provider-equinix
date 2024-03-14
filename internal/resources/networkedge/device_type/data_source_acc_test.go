@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/equinix/terraform-provider-equinix/internal/nprintf"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
@@ -34,7 +35,7 @@ func TestAccDataSourceNetworkDeviceType_basic(t *testing.T) {
 }
 
 func testAccDataSourceNetworkDeviceTypeConfig_basic(ctx map[string]interface{}) string {
-	return nprintf(`
+	return nprintf.Nprintf(`
 data "equinix_network_device_type" "%{resourceName}" {
   category    = "%{category}"
   vendor      = "%{vendor}"

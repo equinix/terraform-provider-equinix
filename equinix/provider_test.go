@@ -4,10 +4,9 @@ import (
 	"context"
 	"fmt"
 	"os"
-	"regexp"
-	"strings"
 	"testing"
 
+	"github.com/equinix/terraform-provider-equinix/internal/comparisons"
 	"github.com/equinix/terraform-provider-equinix/internal/config"
 	"github.com/equinix/terraform-provider-equinix/internal/provider"
 	"github.com/equinix/terraform-provider-equinix/version"
@@ -109,26 +108,6 @@ func newTestAccConfig(ctx map[string]interface{}) *testAccConfig {
 
 func (t *testAccConfig) build() string {
 	return t.config
-}
-
-// nprintf returns a string with all the placeholders replaced by the values from the params map
-//
-// Deprecated: nprintf is shared between NE resource tests and has been
-// centralized ahead of those NE resources moving to separate packages.
-// Use github.com/equinix/terraform-provider-equinix/internal/nprintf.NPrintf instead
-func nprintf(format string, params map[string]interface{}) string {
-	for key, val := range params {
-		var strVal string
-		switch val.(type) {
-		case []string:
-			r := regexp.MustCompile(`" "`)
-			strVal = r.ReplaceAllString(fmt.Sprintf("%q", val), `", "`)
-		default:
-			strVal = fmt.Sprintf("%v", val)
-		}
-		format = strings.Replace(format, "%{"+key+"}", strVal, -1)
-	}
-	return format
 }
 
 func getFromEnv(varName string) (string, error) {
