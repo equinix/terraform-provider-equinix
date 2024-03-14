@@ -47,7 +47,7 @@ func TestAccResourceMetalOrganizationMember_basic(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.TestAccPreCheckMetal(t); acceptance.TestAccPreCheckProviderConfigured(t) },
 		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
-		CheckDestroy:             nil,
+		CheckDestroy:             testAccMetalOrganizationCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccResourceMetalOrganizationMember_basic(rInt),
@@ -96,7 +96,7 @@ resource "equinix_metal_project" "test" {
 func testAccResourceMetalOrganizationMember_owner() string {
 	return `
 	resource "equinix_metal_organization_member" "owner" {
-		invitee = "tfacc.testing.member@equinixmetal.com"
+		invitee = "/* TODO: Add org owner email or token owner email here */"
 		roles = ["owner"]
 		projects_ids = []
 		organization_id = equinix_metal_organization.test.id
@@ -116,8 +116,6 @@ resource "equinix_metal_organization_member" "member" {
 `
 }
 
-// invitee = "/* TODO: Add org owner email or token owner email here */"
-// invitee = "tfacc.testing.member@equinixmetal.com"
 func testAccMetalOrganizationCheckDestroyed(s *terraform.State) error {
 	client := acceptance.TestAccProvider.Meta().(*config.Config).Metal
 

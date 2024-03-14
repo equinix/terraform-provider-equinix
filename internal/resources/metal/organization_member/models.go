@@ -2,11 +2,10 @@ package organizationmember
 
 import (
 	"context"
+	"path"
 
+	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
-
-	"github.com/packethost/packngo"
 )
 
 type ResourceModel struct {
@@ -23,23 +22,50 @@ type ResourceModel struct {
 	State          types.String `tfsdk:"state"`
 }
 
-func (m *ResourceModel) parse(ctx context.Context, org *packngo.Invitation) diag.Diagnostics {
+// func (m *ResourceModel) parse(ctx context.Context, invitee string, members []packngo.Member, invitations []packngo.Invitation) diag.Diagnostics {
+func (m *ResourceModel) parse(ctx context.Context, member *member) diag.Diagnostics {
 	var diags diag.Diagnostics
-	m.Invitee = types.StringValue(org.Invitee)
-	m.InvitedBy = types.StringValue(org.InvitedBy.Href)
-	m.OrganizationID = types.StringValue(org.ID)
 
-	ProjectList, _ := types.SetValueFrom(ctx, types.StringType, org.Projects)
-	m.ProjectsIDs = ProjectList
+	if member.isMember() {
+		projectsList, diag := types.SetValueFrom(ctx, types.StringType, member.Member.Projects)
+		if diag.HasError() {
+			return diag
+		}
+		m.ProjectsIDs = projectsList
+		m.State = types.StringValue("active")
 
-	m.Nonce = types.StringValue(org.Nonce)
-	m.Created = types.StringValue(org.CreatedAt.String())
-	m.Updated = types.StringValue(org.UpdatedAt.String())
+		rolesList, diag := types.SetValueFrom(ctx, types.StringType, member.Member.Roles)
+		if diag.HasError() {
+			return diag
+		}
+		m.Roles = rolesList
+		m.OrganizationID = types.StringValue(member.Member.Organization.URL)
 
-	rolesList, _ := types.SetValueFrom(ctx, types.StringType, org.Roles)
-	m.Roles = rolesList
-	m.State = types.StringValue("active")
+	} else if member.isInvitation() {
 
-	m.ID = types.StringValue(org.ID)
+		projectsList, diag := types.SetValueFrom(ctx, types.StringType, member.Invitation.Projects)
+		if diag.HasError() {
+			return diag
+		}
+		m.ProjectsIDs = projectsList
+
+		m.State = types.StringValue("invited")
+
+		rolesList, diag := types.SetValueFrom(ctx, types.StringType, member.Invitation.Roles)
+		if diag.HasError() {
+			return diag
+		}
+		m.Roles = rolesList
+
+		//m.OrganizationID = types.StringValue(member.Invitation.Organization.Href)
+		m.OrganizationID = types.StringValue(path.Base(member.Invitation.Organization.Href))
+		m.Created = types.StringValue(member.Invitation.CreatedAt.String())
+		m.Updated = types.StringValue(member.Invitation.UpdatedAt.String())
+		m.Nonce = types.StringValue(member.Invitation.Nonce)
+
+		//m.InvitedBy = types.StringValue(member.Invitation.InvitedBy.Href)
+		m.InvitedBy = types.StringValue(path.Base(member.Invitation.InvitedBy.Href))
+		m.ID = types.StringValue(member.Invitation.ID)
+	}
 	return diags
 }

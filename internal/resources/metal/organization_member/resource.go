@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"log"
-	"path"
 	"strings"
 
 	equinix_errors "github.com/equinix/terraform-provider-equinix/internal/errors"
@@ -78,7 +77,7 @@ func (r *Resource) Create(
 		return
 	}
 
-	email := plan.Invitee.ValueString()
+	invite := plan.Invitee.ValueString()
 
 	roles := make([]string, 0)
 	for _, elem := range plan.Roles.Elements() {
@@ -89,31 +88,80 @@ func (r *Resource) Create(
 			}
 		}
 	}
+
 	projects := make([]string, 0)
 	for _, elem := range plan.ProjectsIDs.Elements() {
 		if strValue, ok := elem.(types.String); ok {
 			projects = append(projects, strValue.ValueString())
 		}
 	}
+
 	createRequest := &packngo.InvitationCreateRequest{
-		Invitee:     email,
+		Invitee:     invite,
 		Roles:       roles,
 		ProjectsIDs: projects,
 		Message:     strings.TrimSpace(plan.Message.ValueString()),
 	}
 
 	orgID := plan.OrganizationID.ValueString()
-	invitationRequest, _, err := client.Invitations.Create(orgID, createRequest, nil)
+	_, _, err := client.Invitations.Create(orgID, createRequest, nil)
 	if err != nil {
 		resp.Diagnostics.AddError(
-			"Failed to create Organizations",
-			equinix_errors.FriendlyError(err).Error(),
+			"Failed to create invitation",
+			err.Error(),
+		)
+		return
+	}
+
+	listOpts := &packngo.ListOptions{Includes: []string{"user"}}
+	invitations, _, err := client.Invitations.List(orgID, listOpts)
+	if err != nil {
+		err = equinix_errors.FriendlyError(err)
+		// If the org was destroyed, mark as gone.
+		if equinix_errors.IsNotFound(err) {
+			plan.OrganizationID = basetypes.NewStringNull()
+			return
+		}
+		resp.Diagnostics.AddError(
+			"Failed to list invitations",
+			err.Error(),
+		)
+		return
+	}
+
+	members, _, err := client.Members.List(orgID, listOpts)
+	if err != nil {
+		err = equinix_errors.FriendlyError(err)
+		// If the org was destroyed, mark as gone.
+		if equinix_errors.IsNotFound(err) {
+			return
+		}
+		resp.Diagnostics.AddError(
+			"Failed to List members",
+			err.Error(),
+		)
+		return
+	}
+
+	member, err := findMember(invite, members, invitations)
+	if err != nil {
+		log.Printf("[WARN] Could not find member %s in organization, removing from state", plan.OrganizationID)
+		plan.OrganizationID = basetypes.NewStringNull()
+		resp.Diagnostics.AddError(
+			"Failed to find members",
+			err.Error(),
 		)
 		return
 	}
 
 	// Parse API response into the Terraform state
-	plan.parse(ctx, invitationRequest)
+	if member != nil {
+		diags := plan.parse(ctx, member)
+		if diags.HasError() {
+			resp.Diagnostics.Append(diags...)
+			return
+		}
+	}
 
 	// Set state to fully populated data
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
@@ -147,6 +195,10 @@ func (r *Resource) Read(
 			data.OrganizationID = basetypes.NewStringNull()
 			return
 		}
+		resp.Diagnostics.AddError(
+			"Failed to list invitations",
+			err.Error(),
+		)
 		return
 	}
 
@@ -158,6 +210,10 @@ func (r *Resource) Read(
 			data.OrganizationID = basetypes.NewStringNull()
 			return
 		}
+		resp.Diagnostics.AddError(
+			"Failed to list members",
+			err.Error(),
+		)
 		return
 	}
 	member, err := findMember(invitee, members, invitations)
@@ -167,60 +223,13 @@ func (r *Resource) Read(
 		return
 	}
 
-	if member.isMember() {
-		projectsList, diags := types.SetValueFrom(context.Background(), types.StringType, member.Member.Projects)
-		if diags.HasError() {
-			return
-		}
-		data.ProjectsIDs = projectsList
-		data.State = types.StringValue("active")
-
-		rolesList, diags := types.SetValueFrom(context.Background(), types.StringType, member.Member.Roles)
-		if diags.HasError() {
-			return
-		}
-		data.Roles = rolesList
-		data.OrganizationID = types.StringValue(member.Member.Organization.URL)
-
-		// data.Created = types.StringValue(member.CreatedAt.String())
-		// data.Updated = types.StringValue(member.UpdatedAt.String())
-	} else if member.isInvitation() {
-		projectsList, diags := types.SetValueFrom(context.Background(), types.StringType, member.Member.Projects)
-		if diags.HasError() {
-			return
-		}
-		data.ProjectsIDs = projectsList
-		data.State = types.StringValue("active")
-
-		rolesList, diags := types.SetValueFrom(context.Background(), types.StringType, member.Member.Roles)
-		if diags.HasError() {
-			return
-		}
-		data.Roles = rolesList
-		data.OrganizationID = types.StringValue(member.Member.Organization.URL)
-		data.Created = types.StringValue(member.Invitation.CreatedAt.String())
-		data.Updated = types.StringValue(member.Invitation.UpdatedAt.String())
-		data.Nonce = types.StringValue(member.Invitation.Nonce)
-		data.InvitedBy = types.StringValue(path.Base(member.Invitation.InvitedBy.Href))
+	diags := data.parse(ctx, member)
+	if diags.HasError() {
+		resp.Diagnostics.Append(diags...)
+		return
 	}
-
 	// Set state to fully populated data
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
-}
-
-func findMember(invitee string, members []packngo.Member, invitations []packngo.Invitation) (*member, error) {
-	for _, mbr := range members {
-		if mbr.User.Email == invitee {
-			return &member{Member: &mbr}, nil
-		}
-	}
-
-	for _, inv := range invitations {
-		if inv.Invitee == invitee {
-			return &member{Invitation: &inv}, nil
-		}
-	}
-	return nil, fmt.Errorf("member not found")
 }
 
 func (r *Resource) Delete(
@@ -243,6 +252,10 @@ func (r *Resource) Delete(
 			data.OrganizationID = types.StringNull()
 			return
 		}
+		resp.Diagnostics.AddError(
+			"Failed to list invitations",
+			err.Error(),
+		)
 		return
 	}
 
@@ -254,6 +267,11 @@ func (r *Resource) Delete(
 			data.OrganizationID = types.StringNull()
 			return
 		}
+
+		resp.Diagnostics.AddError(
+			"Failed to get Organizations",
+			err.Error(),
+		)
 		return
 	}
 
@@ -272,6 +290,10 @@ func (r *Resource) Delete(
 				data.OrganizationID = types.StringNull()
 				return
 			}
+			resp.Diagnostics.AddError(
+				"Failed to delete member",
+				err.Error(),
+			)
 			return
 		}
 	} else if member.isInvitation() {
@@ -283,6 +305,11 @@ func (r *Resource) Delete(
 				data.OrganizationID = types.StringNull()
 				return
 			}
+
+			resp.Diagnostics.AddError(
+				"Failed to delete invitation",
+				err.Error(),
+			)
 			return
 		}
 	}
@@ -294,4 +321,19 @@ func (r *Resource) Update(
 	resp *resource.UpdateResponse,
 ) {
 	// This resource does not support updates
+}
+
+func findMember(invitee string, members []packngo.Member, invitations []packngo.Invitation) (*member, error) {
+	for _, mbr := range members {
+		if mbr.User.Email == invitee {
+			return &member{Member: &mbr}, nil
+		}
+	}
+
+	for _, inv := range invitations {
+		if inv.Invitee == invitee {
+			return &member{Invitation: &inv}, nil
+		}
+	}
+	return nil, fmt.Errorf("member not found")
 }
