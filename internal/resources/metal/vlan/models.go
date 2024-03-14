@@ -21,32 +21,22 @@ type DataSourceModel struct {
 
 func (m *DataSourceModel) parse(vlan *packngo.VirtualNetwork) diag.Diagnostics {
 	m.ID = types.StringValue(vlan.ID)
+	m.VlanID = types.StringValue(vlan.ID)
+	m.Description = types.StringValue(vlan.Description)
+	m.Vxlan = types.Int64Value(int64(vlan.VXLAN))
+	m.Facility = types.StringValue("")
 
 	if vlan.Project.ID != "" {
 		m.ProjectID = types.StringValue(vlan.Project.ID)
 	}
 
-	m.VlanID = types.StringValue(vlan.ID)
-	m.Description = types.StringValue(vlan.Description)
-	m.Vxlan = types.Int64Value(int64(vlan.VXLAN))
-
-	var metroCode, facilityCode types.String
 	if vlan.Facility != nil {
-		facilityCode = types.StringValue(vlan.Facility.Code)
-		metroCode = types.StringValue(strings.ToLower(vlan.Facility.Metro.Code))
-	}
-	// version of this resource. StateFunc doesn't exist in terraform and it requires implementation
-	// of bespoke logic before storing state. To ensure backward compatibility we ignore lower/upper
-	// case diff for now, but we may want to require input upper case
-	if !strings.EqualFold(m.Facility.ValueString(), facilityCode.ValueString()) {
-		m.Facility = facilityCode
+		m.Facility = types.StringValue(strings.ToLower(vlan.Facility.Code))
+		m.Metro = types.StringValue(strings.ToLower(vlan.Facility.Metro.Code))
 	}
 
 	if vlan.Metro != nil {
-		metroCode = types.StringValue(strings.ToLower(vlan.Metro.Code))
-	}
-	if !strings.EqualFold(m.Metro.ValueString(), metroCode.ValueString()) {
-		m.Metro = metroCode
+		m.Metro = types.StringValue(strings.ToLower(vlan.Metro.Code))
 	}
 
 	deviceIds := make([]types.String, 0, len(vlan.Instances))
@@ -70,28 +60,20 @@ func (m *ResourceModel) parse(vlan *packngo.VirtualNetwork) diag.Diagnostics {
 	m.ID = types.StringValue(vlan.ID)
 	m.Description = types.StringValue(vlan.Description)
 	m.Vxlan = types.Int64Value(int64(vlan.VXLAN))
+	m.Facility = types.StringValue("")
 
 	if vlan.Project.ID != "" {
 		m.ProjectID = types.StringValue(vlan.Project.ID)
 	}
 
-	var metroCode, facilityCode types.String
 	if vlan.Facility != nil {
-		facilityCode = types.StringValue(vlan.Facility.Code)
-		metroCode = types.StringValue(strings.ToLower(vlan.Facility.Metro.Code))
-	}
-	// version of this resource. StateFunc doesn't exist in terraform and it requires implementation
-	// of bespoke logic before storing state. To ensure backward compatibility we ignore lower/upper
-	// case diff for now, but we may want to require input upper case
-	if !strings.EqualFold(m.Facility.ValueString(), facilityCode.ValueString()) {
-		m.Facility = facilityCode
+		m.Facility = types.StringValue(strings.ToLower(vlan.Facility.Code))
+		m.Metro = types.StringValue(strings.ToLower(vlan.Facility.Metro.Code))
 	}
 
 	if vlan.Metro != nil {
-		metroCode = types.StringValue(strings.ToLower(vlan.Metro.Code))
+		m.Metro = types.StringValue(strings.ToLower(vlan.Metro.Code))
 	}
-	if !strings.EqualFold(m.Metro.ValueString(), metroCode.ValueString()) {
-		m.Metro = metroCode
-	}
+
 	return nil
 }

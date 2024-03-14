@@ -2,14 +2,17 @@ package vlan
 
 import (
 	"context"
-	equinixplanmodifiers "github.com/equinix/terraform-provider-equinix/internal/planmodifiers"
+
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
+
+	equinixplanmodifiers "github.com/equinix/terraform-provider-equinix/internal/planmodifiers"
 )
 
 func resourceSchema(ctx context.Context) schema.Schema {
@@ -40,6 +43,7 @@ func resourceSchema(ctx context.Context) schema.Schema {
 				Description:        "Facility where to create the VLAN",
 				DeprecationMessage: "Use metro instead of facility.  For more information, read the migration guide: https://registry.terraform.io/providers/equinix/equinix/latest/docs/guides/migration_guide_facilities_to_metros_devices",
 				Optional:           true,
+				Computed:           true,
 				Validators: []validator.String{
 					stringvalidator.ConflictsWith(path.MatchRoot("metro")),
 				},
@@ -47,6 +51,7 @@ func resourceSchema(ctx context.Context) schema.Schema {
 					stringplanmodifier.RequiresReplace(),
 					stringplanmodifier.UseStateForUnknown(),
 				},
+				Default: stringdefault.StaticString(""),
 			},
 			"metro": schema.StringAttribute{
 				Description: "Metro in which to create the VLAN",
