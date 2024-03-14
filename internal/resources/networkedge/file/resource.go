@@ -1,4 +1,4 @@
-package equinix
+package file
 
 import (
 	"context"
@@ -39,7 +39,7 @@ var networkFileDescriptions = map[string]string{
 	"Status":         "File upload status",
 }
 
-func resourceNetworkFile() *schema.Resource {
+func Resource() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: resourceNetworkFileCreate,
 		ReadContext:   resourceNetworkFileRead,

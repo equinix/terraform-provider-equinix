@@ -1,4 +1,4 @@
-package equinix
+package acl_template
 
 import (
 	"context"
@@ -81,7 +81,7 @@ var networkACLTemplateDeprecateDescriptions = map[string]string{
 	"Subnets":    "Use Subnet instead",
 }
 
-func resourceNetworkACLTemplate() *schema.Resource {
+func Resource() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: resourceNetworkACLTemplateCreate,
 		ReadContext:   resourceNetworkACLTemplateRead,

@@ -1,4 +1,4 @@
-package equinix
+package platform
 
 import (
 	"context"
@@ -35,7 +35,7 @@ var networkDevicePlatformDescriptions = map[string]string{
 	"LicenseOptions":  "List of device licensing options to limit platform search result. Supported values: BYOL (Bring Your Own License), Sub (license subscription)",
 }
 
-func dataSourceNetworkDevicePlatform() *schema.Resource {
+func DataSource() *schema.Resource {
 	return &schema.Resource{
 		ReadContext: dataSourceNetworkDevicePlatformRead,
 		Description: "Use this data source to get Equinix Network Edge device platform configuration details for a given device type",

@@ -1,4 +1,4 @@
-package equinix
+package file
 
 import (
 	"testing"

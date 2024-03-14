@@ -1,4 +1,4 @@
-package equinix
+package device_link
 
 import (
 	"context"
@@ -100,7 +100,7 @@ var networkDeviceLinkDeprecatedDescriptions = map[string]string{
 	"DestinationZoneCode": "DestinationZoneCode is not required",
 }
 
-func resourceNetworkDeviceLink() *schema.Resource {
+func Resource() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: resourceNetworkDeviceLinkCreate,
 		ReadContext:   resourceNetworkDeviceLinkRead,

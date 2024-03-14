@@ -1,4 +1,4 @@
-package equinix
+package bgp
 
 import (
 	"context"
@@ -42,7 +42,7 @@ var networkBGPDescriptions = map[string]string{
 	"ProvisioningStatus": "BGP peering configuration provisioning status",
 }
 
-func resourceNetworkBGP() *schema.Resource {
+func Resource() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: resourceNetworkBGPCreate,
 		ReadContext:   resourceNetworkBGPRead,

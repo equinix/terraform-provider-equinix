@@ -1,4 +1,4 @@
-package equinix
+package ssh_key
 
 import (
 	"testing"
