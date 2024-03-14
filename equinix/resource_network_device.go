@@ -7,6 +7,7 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"slices"
 	"time"
 
 	"github.com/equinix/terraform-provider-equinix/internal/config"
@@ -972,7 +973,7 @@ func resourceNetworkDeviceRead(ctx context.Context, d *schema.ResourceData, m in
 	if err != nil {
 		return diag.Errorf("cannot fetch primary network device due to %v", err)
 	}
-	if isStringInSlice(ne.StringValue(primary.Status), []string{ne.DeviceStateDeprovisioning, ne.DeviceStateDeprovisioned}) {
+	if slices.Contains([]string{ne.DeviceStateDeprovisioning, ne.DeviceStateDeprovisioned}, ne.StringValue(primary.Status)) {
 		d.SetId("")
 		return diags
 	}

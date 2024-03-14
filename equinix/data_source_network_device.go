@@ -3,6 +3,7 @@ package equinix
 import (
 	"context"
 	"fmt"
+	"slices"
 	"strings"
 
 	"github.com/equinix/terraform-provider-equinix/internal/config"
@@ -686,7 +687,7 @@ func dataSourceNetworkDeviceRead(ctx context.Context, d *schema.ResourceData, m 
 		return diag.Errorf("cannot fetch primary network device due to '%v'", err)
 	}
 
-	if isStringInSlice(ne.StringValue(primary.Status), []string{ne.DeviceStateDeprovisioning, ne.DeviceStateDeprovisioned}) {
+	if slices.Contains([]string{ne.DeviceStateDeprovisioning, ne.DeviceStateDeprovisioned}, ne.StringValue(primary.Status)) {
 		d.SetId("")
 		return diags
 	}
