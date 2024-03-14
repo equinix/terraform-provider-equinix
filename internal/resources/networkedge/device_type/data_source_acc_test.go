@@ -1,4 +1,4 @@
-package equinix
+package device_type
 
 import (
 	"fmt"

@@ -1,4 +1,4 @@
-package equinix
+package device_link
 
 import (
 	"context"
@@ -73,7 +73,7 @@ var networkDeviceLinkMetroDescriptions = map[string]string{
 	"ThroughputUnit": "Connection throughput unit",
 }
 
-func resourceNetworkDeviceLink() *schema.Resource {
+func Resource() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: resourceNetworkDeviceLinkCreate,
 		ReadContext:   resourceNetworkDeviceLinkRead,

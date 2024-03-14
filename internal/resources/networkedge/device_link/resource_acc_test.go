@@ -1,4 +1,4 @@
-package equinix
+package device_link
 
 import (
 	"context"

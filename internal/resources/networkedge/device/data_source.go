@@ -1,4 +1,4 @@
-package equinix
+package device
 
 import (
 	"context"
@@ -680,7 +680,7 @@ func createDataSourceVendorConfigurationSchema() map[string]*schema.Schema {
 	}
 }
 
-func dataSourceNetworkDevice() *schema.Resource {
+func DataSource() *schema.Resource {
 	return &schema.Resource{
 		ReadContext: dataSourceNetworkDeviceRead,
 		Description: "Use this data source to get details of Equinix Network Edge network device with a given Name or UUID",

@@ -1,4 +1,4 @@
-package equinix
+package acl_template
 
 import (
 	"context"
@@ -59,7 +59,7 @@ var networkACLTemplateDeviceDetailSchemaNames = map[string]string{
 	"ACLStatus": "acl_status",
 }
 
-func resourceNetworkACLTemplate() *schema.Resource {
+func Resource() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: resourceNetworkACLTemplateCreate,
 		ReadContext:   resourceNetworkACLTemplateRead,

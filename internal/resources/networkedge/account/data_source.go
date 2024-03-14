@@ -1,4 +1,4 @@
-package equinix
+package account
 
 import (
 	"context"
@@ -32,7 +32,7 @@ var networkAccountDescriptions = map[string]string{
 	"ProjectID": "The unique identifier of Project Resource to which billing account is scoped to",
 }
 
-func dataSourceNetworkAccount() *schema.Resource {
+func DataSource() *schema.Resource {
 	return &schema.Resource{
 		ReadContext: dataSourceNetworkAccountRead,
 		Description: "Use this data source to get number and identifier of Equinix Network Edge billing account in a given metro location",

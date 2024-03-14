@@ -1,4 +1,4 @@
-package equinix
+package ssh_key
 
 import (
 	"context"
@@ -31,7 +31,7 @@ var networkSSHKeyDescriptions = map[string]string{
 	"ProjectID": "The unique identifier of Project Resource to which ssh key is scoped to",
 }
 
-func resourceNetworkSSHKey() *schema.Resource {
+func Resource() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: resourceNetworkSSHKeyCreate,
 		ReadContext:   resourceNetworkSSHKeyRead,

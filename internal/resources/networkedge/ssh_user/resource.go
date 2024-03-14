@@ -1,4 +1,4 @@
-package equinix
+package ssh_user
 
 import (
 	"context"
@@ -28,7 +28,7 @@ var networkSSHUserDescriptions = map[string]string{
 	"DeviceUUIDs": "list of device identifiers to which user will have access",
 }
 
-func resourceNetworkSSHUser() *schema.Resource {
+func Resource() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: resourceNetworkSSHUserCreate,
 		ReadContext:   resourceNetworkSSHUserRead,

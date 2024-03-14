@@ -1,4 +1,4 @@
-package equinix
+package acl_template
 
 import (
 	"context"

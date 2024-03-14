@@ -1,4 +1,4 @@
-package equinix
+package file
 
 import (
 	"context"
@@ -10,10 +10,17 @@ import (
 	"github.com/equinix/rest-go"
 	"github.com/equinix/terraform-provider-equinix/internal/config"
 	equinix_validation "github.com/equinix/terraform-provider-equinix/internal/validation"
+
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 )
+
+// neDeviceSchemaNames is a light copy of the map of Network Edge device schema field names
+var neDeviceSchemaNames = map[string]string{
+	"IsBYOL":        "byol",
+	"IsSelfManaged": "self_managed",
+}
 
 var networkFileSchemaNames = map[string]string{
 	"UUID":           "uuid",
@@ -39,7 +46,7 @@ var networkFileDescriptions = map[string]string{
 	"Status":         "File upload status",
 }
 
-func resourceNetworkFile() *schema.Resource {
+func Resource() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: resourceNetworkFileCreate,
 		ReadContext:   resourceNetworkFileRead,

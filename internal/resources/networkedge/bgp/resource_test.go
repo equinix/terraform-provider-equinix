@@ -1,4 +1,4 @@
-package equinix
+package bgp
 
 import (
 	"context"

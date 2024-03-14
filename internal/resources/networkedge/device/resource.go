@@ -1,4 +1,4 @@
-package equinix
+package device
 
 import (
 	"context"
@@ -238,7 +238,7 @@ var neDeviceVendorConfigDescriptions = map[string]string{
 	"GatewayIP":             "LAN1 Gateway. This field is relevant only for Infoblox Grid Member devices",
 }
 
-func resourceNetworkDevice() *schema.Resource {
+func Resource() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: resourceNetworkDeviceCreate,
 		ReadContext:   resourceNetworkDeviceRead,
