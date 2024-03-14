@@ -5,13 +5,11 @@ import (
 	"fmt"
 	"github.com/equinix/terraform-provider-equinix/equinix"
 	"github.com/equinix/terraform-provider-equinix/internal/acceptance"
-	"github.com/equinix/terraform-provider-equinix/internal/config"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
-
-	v4 "github.com/equinix-labs/fabric-go/fabric/v4"
 )
 
 func TestAccFabricCreateServiceProfile_PFCR(t *testing.T) {
@@ -153,14 +151,12 @@ func testAccFabricCreateServiceProfileConfig(portUUID string, portType string, p
 }
 
 func checkServiceProfileDelete(s *terraform.State) error {
-	client := acceptance.TestAccProvider.Meta().(*config.Config).FabricClient
 	ctx := context.Background()
-	ctx = context.WithValue(ctx, v4.ContextAccessToken, acceptance.TestAccProvider.Meta().(*config.Config).FabricAuthToken)
 	for _, rs := range s.RootModule().Resources {
 		if rs.Type != "equinix_fabric_service_profile" {
 			continue
 		}
-		err := equinix.WaitAndCheckServiceProfileDeleted(rs.Primary.ID, client, ctx)
+		err := equinix.WaitAndCheckServiceProfileDeleted(rs.Primary.ID, acceptance.TestAccProvider.Meta(), &schema.ResourceData{}, ctx)
 		if err != nil {
 			return fmt.Errorf("API call failed while waiting for resource deletion: %v", err)
 		}

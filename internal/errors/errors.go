@@ -6,7 +6,6 @@ import (
 	"net/http"
 	"strings"
 
-	fabric "github.com/equinix-labs/fabric-go/fabric/v4"
 	"github.com/equinix/rest-go"
 	"github.com/packethost/packngo"
 )
@@ -50,23 +49,6 @@ func convertToFriendlyError(errors Errors, resp *http.Response) error {
 	return er
 }
 
-func FormatFabricAdditionalInfo(additionalInfo []fabric.PriceErrorAdditionalInfo) string {
-	var str []string
-	for _, addInfo := range additionalInfo {
-		property, reason := addInfo.Property, addInfo.Reason
-		if property != "" {
-			property = fmt.Sprintf("Property: %s, ", addInfo.Property)
-		}
-		if reason != "" {
-			reason = fmt.Sprintf("%s", addInfo.Reason)
-		} else {
-			reason = fmt.Sprintf("Reason: Not Provided")
-		}
-		str = append(str, fmt.Sprintf("{%s%s}", property, reason))
-	}
-	return strings.Join(str, ", ")
-}
-
 func FormatFabricv4AdditionalInfo(additionalInfo []fabricv4.PriceErrorAdditionalInfo) string {
 	var str []string
 	for _, addInfo := range additionalInfo {
@@ -87,25 +69,18 @@ func FormatFabricv4AdditionalInfo(additionalInfo []fabricv4.PriceErrorAdditional
 func FormatFabricError(err error) error {
 	// If in future one would like to do something with the response body of the API request
 	// The line below is how to access it with the SwaggerCodegen Fabric Go 12/7/2023 - thogarty
-	// errors = append(errors, string(err.(fabric.GenericSwaggerError).Body()))
+	// err.(*fabricv4.GenericOpenAPIError).Body()
 	var errors Errors
 	errors = append(errors, err.Error())
-	if fabricErrs, ok := err.(fabric.GenericSwaggerError).Model().([]fabric.ModelError); ok {
-		for _, e := range fabricErrs {
-			errors = append(errors, fmt.Sprintf("Code: %s", e.ErrorCode))
-			errors = append(errors, fmt.Sprintf("Message: %s", e.ErrorMessage))
-			errors = append(errors, fmt.Sprintf("Details: %s", e.Details))
-			if additionalInfo := FormatFabricAdditionalInfo(e.AdditionalInfo); additionalInfo != "" {
-				errors = append(errors, fmt.Sprintf("AdditionalInfo: [%s]", additionalInfo))
-			}
-		}
-	} else if fabricErrs, ok := err.(*fabricv4.GenericOpenAPIError).Model().([]fabricv4.Error); ok {
-		for _, e := range fabricErrs {
-			errors = append(errors, fmt.Sprintf("Code: %s", e.ErrorCode))
-			errors = append(errors, fmt.Sprintf("Message: %s", e.ErrorMessage))
-			errors = append(errors, fmt.Sprintf("Details: %s", e.Details))
-			if additionalInfo := FormatFabricv4AdditionalInfo(e.AdditionalInfo); additionalInfo != "" {
-				errors = append(errors, fmt.Sprintf("AdditionalInfo: [%s]", additionalInfo))
+	if genericError, ok := err.(*fabricv4.GenericOpenAPIError); ok {
+		if fabricErrs, ok := genericError.Model().([]fabricv4.Error); ok {
+			for _, e := range fabricErrs {
+				errors = append(errors, fmt.Sprintf("Code: %s", e.GetErrorCode()))
+				errors = append(errors, fmt.Sprintf("Message: %s", e.GetErrorMessage()))
+				errors = append(errors, fmt.Sprintf("Details: %s", e.GetDetails()))
+				if additionalInfo := FormatFabricv4AdditionalInfo(e.GetAdditionalInfo()); additionalInfo != "" {
+					errors = append(errors, fmt.Sprintf("AdditionalInfo: [%s]", additionalInfo))
+				}
 			}
 		}
 	}
@@ -233,15 +208,6 @@ func IsRestNotFoundError(err error) bool {
 func HasApplicationErrorCode(errors []rest.ApplicationError, code string) bool {
 	for _, err := range errors {
 		if err.Code == code {
-			return true
-		}
-	}
-	return false
-}
-
-func HasModelErrorCode(errors []fabric.ModelError, code string) bool {
-	for _, err := range errors {
-		if err.ErrorCode == code {
 			return true
 		}
 	}

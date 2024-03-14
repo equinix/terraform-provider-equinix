@@ -165,7 +165,6 @@ func fabricServiceProfileSchema() map[string]*schema.Schema {
 			Optional:     true,
 			Description:  "Flips view between buyer and seller representation. Available values : aSide, zSide. Default value : aSide",
 			ValidateFunc: validation.StringInSlice([]string{"aSide", "zSide"}, false),
-			Default:      "aSide",
 		},
 	}
 }
@@ -735,7 +734,7 @@ func resourceFabricServiceProfileDelete(ctx context.Context, d *schema.ResourceD
 		return diag.FromErr(equinix_errors.FormatFabricError(err))
 	}
 
-	waitErr := WaitAndCheckServiceProfileDeleted(uuid, client, ctx)
+	waitErr := WaitAndCheckServiceProfileDeleted(uuid, meta, d, ctx)
 	if waitErr != nil {
 		return diag.Errorf("Error while waiting for Service Profile deletion: %v", waitErr)
 	}
@@ -743,11 +742,12 @@ func resourceFabricServiceProfileDelete(ctx context.Context, d *schema.ResourceD
 	return diags
 }
 
-func WaitAndCheckServiceProfileDeleted(uuid string, client *fabricv4.APIClient, ctx context.Context) error {
+func WaitAndCheckServiceProfileDeleted(uuid string, meta interface{}, d *schema.ResourceData, ctx context.Context) error {
 	log.Printf("Waiting for service profile to be in deleted, uuid %s", uuid)
 	stateConf := &retry.StateChangeConf{
 		Target: []string{string(fabricv4.SERVICEPROFILESTATEENUM_DELETED)},
 		Refresh: func() (interface{}, string, error) {
+			client := meta.(*config.Config).NewFabricClientForSDK(d)
 			dbConn, _, err := client.ServiceProfilesApi.GetServiceProfileByUuid(ctx, uuid).Execute()
 			if err != nil {
 				return "", "", equinix_errors.FormatFabricError(err)
@@ -1193,24 +1193,24 @@ func portsTerraformToGo(schemaPorts []interface{}) []fabricv4.ServiceProfileAcce
 	serviceProfileAccessPointColos := make([]fabricv4.ServiceProfileAccessPointCOLO, len(schemaPorts))
 	for index, schemaPort := range schemaPorts {
 		portMap := schemaPort.(map[string]interface{})
-		pType, _ := fabricv4.NewServiceProfileAccessPointCOLOTypeFromValue(portMap["type"].(string))
+		pType := fabricv4.ServiceProfileAccessPointCOLOType(portMap["type"].(string))
 		pUuid := portMap["uuid"].(string)
 		locationList := portMap["location"].(interface{}).(*schema.Set).List()
-		var pLocation *fabricv4.SimplifiedLocation
+		var pLocation fabricv4.SimplifiedLocation
 		if len(locationList) != 0 {
 			pLocation = equinix_fabric_schema.LocationTerraformToGo(locationList)
 		}
-		pSellerRegion := portMap["seller_region"].(*string)
-		pSellerRegionDescription := portMap["seller_region_description"].(*string)
-		pCrossConnectId := portMap["cross_connect_id"].(*string)
-		serviceProfileAccessPointColos[index] = fabricv4.ServiceProfileAccessPointCOLO{
-			Type:                    *pType,
-			Uuid:                    pUuid,
-			Location:                pLocation,
-			SellerRegion:            pSellerRegion,
-			SellerRegionDescription: pSellerRegionDescription,
-			CrossConnectId:          pCrossConnectId,
-		}
+		pSellerRegion := portMap["seller_region"].(string)
+		pSellerRegionDescription := portMap["seller_region_description"].(string)
+		pCrossConnectId := portMap["cross_connect_id"].(string)
+		coloPort := fabricv4.ServiceProfileAccessPointCOLO{}
+		coloPort.SetType(pType)
+		coloPort.SetUuid(pUuid)
+		coloPort.SetLocation(pLocation)
+		coloPort.SetSellerRegion(pSellerRegion)
+		coloPort.SetSellerRegionDescription(pSellerRegionDescription)
+		coloPort.SetCrossConnectId(pCrossConnectId)
+		serviceProfileAccessPointColos[index] = coloPort
 	}
 	return serviceProfileAccessPointColos
 }
@@ -1222,20 +1222,20 @@ func virtualDevicesTerraformToGo(schemaVirtualDevices []interface{}) []fabricv4.
 	virtualDevices := make([]fabricv4.ServiceProfileAccessPointVD, len(schemaVirtualDevices))
 	for index, virtualDevice := range schemaVirtualDevices {
 		vdMap := virtualDevice.(map[string]interface{})
-		vType, _ := fabricv4.NewServiceProfileAccessPointVDTypeFromValue(vdMap["type"].(string))
+		vType := fabricv4.ServiceProfileAccessPointVDType(vdMap["type"].(string))
 		vUuid := vdMap["uuid"].(string)
 		locationList := vdMap["location"].(interface{}).(*schema.Set).List()
-		var vLocation *fabricv4.SimplifiedLocation
+		var vLocation fabricv4.SimplifiedLocation
 		if len(locationList) != 0 {
 			vLocation = equinix_fabric_schema.LocationTerraformToGo(locationList)
 		}
-		pInterfaceUuid := vdMap["interface_uuid"].(*string)
-		virtualDevices[index] = fabricv4.ServiceProfileAccessPointVD{
-			Type:          *vType,
-			Uuid:          vUuid,
-			Location:      vLocation,
-			InterfaceUuid: pInterfaceUuid,
-		}
+		vInterfaceUuid := vdMap["interface_uuid"].(string)
+		accessPointVD := fabricv4.ServiceProfileAccessPointVD{}
+		accessPointVD.SetType(vType)
+		accessPointVD.SetUuid(vUuid)
+		accessPointVD.SetLocation(vLocation)
+		accessPointVD.SetInterfaceUuid(vInterfaceUuid)
+		virtualDevices[index] = accessPointVD
 	}
 	return virtualDevices
 }

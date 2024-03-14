@@ -6,18 +6,21 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
-func OrderTerraformToGo(orderTerraform []interface{}) *fabricv4.Order {
+func OrderTerraformToGo(orderTerraform []interface{}) fabricv4.Order {
 	if orderTerraform == nil || len(orderTerraform) == 0 {
-		return nil
+		return fabricv4.Order{}
 	}
-	var order *fabricv4.Order
+	var order fabricv4.Order
 
 	orderMap := orderTerraform[0].(map[string]interface{})
-	purchaseOrderNumber := orderMap["purchase_order_number"].(*string)
-	billingTier := orderMap["billing_tier"].(*string)
-	orderId := orderMap["order_id"].(*string)
-	orderNumber := orderMap["order_number"].(*string)
-	order = &fabricv4.Order{PurchaseOrderNumber: purchaseOrderNumber, BillingTier: billingTier, OrderId: orderId, OrderNumber: orderNumber}
+	purchaseOrderNumber := orderMap["purchase_order_number"].(string)
+	billingTier := orderMap["billing_tier"].(string)
+	orderId := orderMap["order_id"].(string)
+	orderNumber := orderMap["order_number"].(string)
+	order.SetPurchaseOrderNumber(purchaseOrderNumber)
+	order.SetBillingTier(billingTier)
+	order.SetOrderId(orderId)
+	order.SetOrderNumber(orderNumber)
 
 	return order
 }
@@ -69,14 +72,14 @@ func NotificationsTerraformToGo(notificationsTerraform []interface{}) []fabricv4
 	for index, notification := range notificationsTerraform {
 		notificationMap := notification.(map[string]interface{})
 		notificationType, _ := fabricv4.NewSimplifiedNotificationTypeFromValue(notificationMap["type"].(string))
-		interval := notificationMap["send_interval"].(*string)
+		interval := notificationMap["send_interval"].(string)
 		emailsRaw := notificationMap["emails"].([]interface{})
 		emails := converters.IfArrToStringArr(emailsRaw)
-		notifications[index] = fabricv4.SimplifiedNotification{
-			Type:         *notificationType,
-			SendInterval: interval,
-			Emails:       emails,
-		}
+		simplifiedNotification := fabricv4.SimplifiedNotification{}
+		simplifiedNotification.SetType(*notificationType)
+		simplifiedNotification.SetSendInterval(interval)
+		simplifiedNotification.SetEmails(emails)
+		notifications[index] = simplifiedNotification
 	}
 	return notifications
 }
@@ -96,18 +99,22 @@ func NotificationsGoToTerraform(notifications []fabricv4.SimplifiedNotification)
 	return mappedNotifications
 }
 
-func LocationTerraformToGo(locationList []interface{}) *fabricv4.SimplifiedLocation {
+func LocationTerraformToGo(locationList []interface{}) fabricv4.SimplifiedLocation {
 	if locationList == nil || len(locationList) == 0 {
-		return nil
+		return fabricv4.SimplifiedLocation{}
 	}
 
-	var location *fabricv4.SimplifiedLocation
+	var location fabricv4.SimplifiedLocation
 	locationListMap := locationList[0].(map[string]interface{})
-	metroName := locationListMap["metro_name"].(*string)
-	region := locationListMap["region"].(*string)
-	mc := locationListMap["metro_code"].(*string)
-	ibx := locationListMap["ibx"].(*string)
-	location = &fabricv4.SimplifiedLocation{MetroCode: mc, Region: region, Ibx: ibx, MetroName: metroName}
+	metroName := locationListMap["metro_name"].(string)
+	region := locationListMap["region"].(string)
+	mc := locationListMap["metro_code"].(string)
+	ibx := locationListMap["ibx"].(string)
+	location.SetMetroName(metroName)
+	location.SetRegion(region)
+	location.SetMetroCode(mc)
+	location.SetIbx(ibx)
+
 	return location
 }
 
@@ -128,15 +135,15 @@ func LocationGoToTerraform(location *fabricv4.SimplifiedLocation) *schema.Set {
 	return locationSet
 }
 
-func LocationWithoutIBXTerraformToGo(locationList []interface{}) *fabricv4.SimplifiedLocationWithoutIBX {
+func LocationWithoutIBXTerraformToGo(locationList []interface{}) fabricv4.SimplifiedLocationWithoutIBX {
 	if locationList == nil || len(locationList) == 0 {
-		return nil
+		return fabricv4.SimplifiedLocationWithoutIBX{}
 	}
 
-	var locationWithoutIbx *fabricv4.SimplifiedLocationWithoutIBX
+	var locationWithoutIbx fabricv4.SimplifiedLocationWithoutIBX
 	locationMap := locationList[0].(map[string]interface{})
 	metro_code := locationMap["metro_code"].(string)
-	locationWithoutIbx = &fabricv4.SimplifiedLocationWithoutIBX{MetroCode: metro_code}
+	locationWithoutIbx.SetMetroCode(metro_code)
 	return locationWithoutIbx
 }
 
@@ -154,14 +161,14 @@ func LocationWithoutIBXGoToTerraform(location *fabricv4.SimplifiedLocationWithou
 	return locationSet
 }
 
-func ProjectTerraformToGo(projectTerraform []interface{}) *fabricv4.Project {
+func ProjectTerraformToGo(projectTerraform []interface{}) fabricv4.Project {
 	if projectTerraform == nil || len(projectTerraform) == 0 {
-		return nil
+		return fabricv4.Project{}
 	}
-	var project *fabricv4.Project
+	var project fabricv4.Project
 	projectMap := projectTerraform[0].(map[string]interface{})
 	projectId := projectMap["project_id"].(string)
-	project.ProjectId = projectId
+	project.SetProjectId(projectId)
 
 	return project
 }

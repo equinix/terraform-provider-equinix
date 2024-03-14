@@ -248,14 +248,14 @@ func readGetPortsByNameQueryParamSch() map[string]*schema.Schema {
 	}
 }
 
-func portTerraformToGo(portList []interface{}) *fabricv4.SimplifiedPort {
+func portTerraformToGo(portList []interface{}) fabricv4.SimplifiedPort {
 	if portList == nil || len(portList) == 0 {
-		return nil
+		return fabricv4.SimplifiedPort{}
 	}
-	var port *fabricv4.SimplifiedPort
+	var port fabricv4.SimplifiedPort
 	portListMap := portList[0].(map[string]interface{})
-	uuid := portListMap["uuid"].(*string)
-	port = &fabricv4.SimplifiedPort{Uuid: uuid}
+	uuid := portListMap["uuid"].(string)
+	port.SetUuid(uuid)
 
 	return port
 }
