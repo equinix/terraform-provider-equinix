@@ -10,6 +10,7 @@ import (
 	"github.com/equinix/rest-go"
 	"github.com/equinix/terraform-provider-equinix/internal/config"
 	equinix_validation "github.com/equinix/terraform-provider-equinix/internal/validation"
+
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"

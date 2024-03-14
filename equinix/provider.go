@@ -173,24 +173,3 @@ func configureProvider(ctx context.Context, d *schema.ResourceData, p *schema.Pr
 	}
 	return &config, nil
 }
-
-// isEmpty returns true if the value is nil or zero
-// Deprecated: isEmpty is shared between provider, tests, and resources
-// and is being relocated for package refactoring.
-// Use github.com/equinix/terraform-provider-equinix/internal/comparisons.IsEmpty
-func isEmpty(v interface{}) bool {
-	switch v := v.(type) {
-	case int:
-		return v == 0
-	case *int:
-		return v == nil || *v == 0
-	case string:
-		return v == ""
-	case *string:
-		return v == nil || *v == ""
-	case nil:
-		return true
-	default:
-		return false
-	}
-}
