@@ -29,7 +29,7 @@ func testSweepMetalConnections(region string) error {
 		return fmt.Errorf("error getting configuration for sweeping Conections: %s", err)
 	}
 	metal := config.NewMetalClientForTesting()
-	orgList, err := metal.OrganizationsApi.FindOrganizations(ctx).ExecuteWithPagination()
+	orgList, err := metal.OrganizationsApi.FindOrganizations(ctx).Exclude([]string{"address", "billing_address"}).ExecuteWithPagination()
 	if err != nil {
 		return fmt.Errorf("error getting organization list for sweeping Connections: %s", err)
 	}
