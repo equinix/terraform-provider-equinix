@@ -1,6 +1,7 @@
 package virtual_circuit
 
 import (
+	"errors"
 	"fmt"
 	"log"
 
@@ -18,24 +19,25 @@ func AddTestSweeper() {
 }
 
 func testSweepVirtualCircuits(region string) error {
+	var errs []error
 	log.Printf("[DEBUG] Sweeping VirtualCircuits")
 	config, err := sweep.GetConfigForMetal()
 	if err != nil {
-		return fmt.Errorf("[INFO][SWEEPER_LOG] Error getting configuration for sweeping VirtualCircuits: %s", err)
+		return fmt.Errorf("error getting configuration for sweeping VirtualCircuits: %s", err)
 	}
 	metal := config.NewMetalClient()
 	orgList, _, err := metal.Organizations.List(nil)
 	if err != nil {
-		return fmt.Errorf("[INFO][SWEEPER_LOG] Error getting organization list for sweeping VirtualCircuits: %s", err)
+		return fmt.Errorf("error getting organization list for sweeping VirtualCircuits: %s", err)
 	}
 	vcs := map[string]*packngo.VirtualCircuit{}
 	for _, org := range orgList {
 		conns, _, err := metal.Connections.OrganizationList(org.ID, &packngo.GetOptions{Includes: []string{"ports"}})
 		if err != nil {
-			return fmt.Errorf("[INFO][SWEEPER_LOG] Error getting connections list for sweeping VirtualCircuits: %s", err)
+			errs = append(errs, fmt.Errorf("error getting connections list for sweeping VirtualCircuits: %s", err))
 		}
 		for _, conn := range conns {
-			if conn.Type != packngo.ConnectionShared {
+			if conn.Type == packngo.ConnectionDedicated {
 				for _, port := range conn.Ports {
 					for _, vc := range port.VirtualCircuits {
 						if sweep.IsSweepableTestResource(vc.Name) {
@@ -50,9 +52,9 @@ func testSweepVirtualCircuits(region string) error {
 		log.Printf("[INFO][SWEEPER_LOG] Deleting VirtualCircuit: %s", vc.Name)
 		_, err := metal.VirtualCircuits.Delete(vc.ID)
 		if err != nil {
-			return fmt.Errorf("[INFO][SWEEPER_LOG] Error deleting VirtualCircuit: %s", err)
+			errs = append(errs, fmt.Errorf("error deleting VirtualCircuit: %s", err))
 		}
 	}
 
-	return nil
+	return errors.Join(errs...)
 }
