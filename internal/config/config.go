@@ -95,6 +95,8 @@ type Config struct {
 	PageSize       int
 	Token          string
 
+	authClient *http.Client
+
 	Ecx   ecx.Client
 	Ne    ne.Client
 	Metal *packngo.Client
@@ -137,6 +139,7 @@ func (c *Config) Load(ctx context.Context) error {
 
 	authClient.Timeout = c.requestTimeout()
 	authClient.Transport = logging.NewTransport("Equinix", authClient.Transport)
+	c.authClient = authClient
 	ecxClient := ecx.NewClient(ctx, c.BaseURL, authClient)
 	neClient := ne.NewClient(ctx, c.BaseURL, authClient)
 
@@ -173,7 +176,7 @@ func (c *Config) NewFabricClientForSDK(d *schema.ResourceData) *fabricv4.APIClie
 // newFabricClient returns the base fabricv4 client that is then used for either the sdkv2 or framework
 // implementations of the Terraform Provider with exported Methods
 func (c *Config) newFabricClient() *fabricv4.APIClient {
-	transport := logging.NewTransport("Equinix Fabric (fabricv4)", http.DefaultTransport)
+	transport := logging.NewTransport("Equinix Fabric (fabricv4)", c.authClient.Transport)
 
 	retryClient := retryablehttp.NewClient()
 	retryClient.HTTPClient.Transport = transport
@@ -193,7 +196,6 @@ func (c *Config) newFabricClient() *fabricv4.APIClient {
 		},
 	}
 	configuration.HTTPClient = standardClient
-	configuration.AddDefaultHeader("X-Auth-Token", c.AuthToken)
 	configuration.AddDefaultHeader("X-SOURCE", "API")
 	configuration.AddDefaultHeader("X-CORRELATION-ID", correlationId(25))
 	client := fabricv4.NewAPIClient(configuration)

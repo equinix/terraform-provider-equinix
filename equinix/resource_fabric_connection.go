@@ -612,9 +612,11 @@ func resourceFabricConnection() *schema.Resource {
 
 func resourceFabricConnectionCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*config.Config).NewFabricClientForSDK(d)
-	conType, _ := fabricv4.NewConnectionTypeFromValue(d.Get("type").(string))
+	name := d.Get("name").(string)
+	conType := d.Get("type").(string)
 	schemaNotifications := d.Get("notifications").([]interface{})
 	notifications := equinix_fabric_schema.NotificationsTerraformToGo(schemaNotifications)
+	bandwidth := d.Get("bandwidth").(int)
 	schemaRedundancy := d.Get("redundancy").(*schema.Set).List()
 	redundancy := connectionRedundancyTerraformToGo(schemaRedundancy)
 	schemaOrder := d.Get("order").(*schema.Set).List()
@@ -630,18 +632,17 @@ func resourceFabricConnectionCreate(ctx context.Context, d *schema.ResourceData,
 	zSide := d.Get("z_side").(*schema.Set).List()
 	connectionZSide := connectionSideTerraformToGo(zSide)
 
-	createConnectionRequest := fabricv4.ConnectionPostRequest{
-		Name:           d.Get("name").(*string),
-		Type:           conType,
-		Order:          order,
-		Notifications:  notifications,
-		Bandwidth:      d.Get("bandwidth").(*int32),
-		AdditionalInfo: additionalInfo,
-		Redundancy:     redundancy,
-		ASide:          connectionASide,
-		ZSide:          connectionZSide,
-		Project:        project,
-	}
+	createConnectionRequest := fabricv4.ConnectionPostRequest{}
+	createConnectionRequest.SetName(name)
+	createConnectionRequest.SetType(fabricv4.ConnectionType(conType))
+	createConnectionRequest.SetOrder(order)
+	createConnectionRequest.SetNotifications(notifications)
+	createConnectionRequest.SetBandwidth(int32(bandwidth))
+	createConnectionRequest.SetAdditionalInfo(additionalInfo)
+	createConnectionRequest.SetRedundancy(redundancy)
+	createConnectionRequest.SetASide(connectionASide)
+	createConnectionRequest.SetZSide(connectionZSide)
+	createConnectionRequest.SetProject(project)
 
 	start := time.Now()
 	conn, _, err := client.ConnectionsApi.CreateConnection(ctx).ConnectionPostRequest(createConnectionRequest).Execute()
@@ -987,19 +988,17 @@ func WaitUntilConnectionDeprovisioned(uuid string, meta interface{}, d *schema.R
 	return err
 }
 
-func connectionRedundancyTerraformToGo(redundancyTerraform []interface{}) *fabricv4.ConnectionRedundancy {
+func connectionRedundancyTerraformToGo(redundancyTerraform []interface{}) fabricv4.ConnectionRedundancy {
 	if redundancyTerraform == nil || len(redundancyTerraform) == 0 {
-		return nil
+		return fabricv4.ConnectionRedundancy{}
 	}
-	var redundancy *fabricv4.ConnectionRedundancy
+	var redundancy fabricv4.ConnectionRedundancy
 
 	redundancyMap := redundancyTerraform[0].(map[string]interface{})
-	connectionPriority, _ := fabricv4.NewConnectionPriorityFromValue(redundancyMap["priority"].(string))
-	redundancyGroup := redundancyMap["group"].(*string)
-	redundancy = &fabricv4.ConnectionRedundancy{
-		Priority: connectionPriority,
-		Group:    redundancyGroup,
-	}
+	connectionPriority := redundancyMap["priority"].(string)
+	redundancyGroup := redundancyMap["group"].(string)
+	redundancy.SetPriority(fabricv4.ConnectionPriority(connectionPriority))
+	redundancy.SetGroup(redundancyGroup)
 
 	return redundancy
 }
@@ -1018,17 +1017,17 @@ func connectionRedundancyGoToTerraform(redundancy *fabricv4.ConnectionRedundancy
 	return redundancySet
 }
 
-func serviceTokenTerraformToGo(serviceTokenList []interface{}) *fabricv4.ServiceToken {
+func serviceTokenTerraformToGo(serviceTokenList []interface{}) fabricv4.ServiceToken {
 	if serviceTokenList == nil || len(serviceTokenList) == 0 {
-		return nil
+		return fabricv4.ServiceToken{}
 	}
 
-	var serviceToken *fabricv4.ServiceToken
+	var serviceToken fabricv4.ServiceToken
 	serviceTokenMap := serviceTokenList[0].(map[string]interface{})
-	serviceTokenTypeString := serviceTokenMap["type"].(string)
+	serviceTokenType := serviceTokenMap["type"].(string)
 	uuid := serviceTokenMap["uuid"].(string)
-	serviceTokenType, _ := fabricv4.NewServiceTokenTypeFromValue(serviceTokenTypeString)
-	serviceToken = &fabricv4.ServiceToken{Uuid: uuid, Type: serviceTokenType}
+	serviceToken.SetType(fabricv4.ServiceTokenType(serviceTokenType))
+	serviceToken.SetUuid(uuid)
 
 	return serviceToken
 }
@@ -1041,20 +1040,23 @@ func additionalInfoTerraformToGo(additionalInfoList []interface{}) []fabricv4.Co
 	mappedAdditionalInfoList := make([]fabricv4.ConnectionSideAdditionalInfo, len(additionalInfoList))
 	for index, additionalInfo := range additionalInfoList {
 		additionalInfoMap := additionalInfo.(map[string]interface{})
-		key := additionalInfoMap["key"].(*string)
-		value := additionalInfoMap["value"].(*string)
-		additionalInfo := fabricv4.ConnectionSideAdditionalInfo{Key: key, Value: value}
+		key := additionalInfoMap["key"].(string)
+		value := additionalInfoMap["value"].(string)
+
+		additionalInfo := fabricv4.ConnectionSideAdditionalInfo{}
+		additionalInfo.SetKey(key)
+		additionalInfo.SetValue(value)
 		mappedAdditionalInfoList[index] = additionalInfo
 	}
 	return mappedAdditionalInfoList
 }
 
-func connectionSideTerraformToGo(connectionSideTerraform []interface{}) *fabricv4.ConnectionSide {
+func connectionSideTerraformToGo(connectionSideTerraform []interface{}) fabricv4.ConnectionSide {
 	if connectionSideTerraform == nil || len(connectionSideTerraform) == 0 {
-		return nil
+		return fabricv4.ConnectionSide{}
 	}
 
-	var connectionSide *fabricv4.ConnectionSide
+	var connectionSide fabricv4.ConnectionSide
 
 	connectionSideMap := connectionSideTerraform[0].(map[string]interface{})
 	accessPoint := connectionSideMap["access_point"].(*schema.Set).List()
@@ -1062,26 +1064,26 @@ func connectionSideTerraformToGo(connectionSideTerraform []interface{}) *fabricv
 	additionalInfoRequest := connectionSideMap["additional_info"].([]interface{})
 	if len(accessPoint) != 0 {
 		ap := accessPointTerraformToGo(accessPoint)
-		connectionSide.AccessPoint = ap
+		connectionSide.SetAccessPoint(ap)
 	}
 	if len(serviceTokenRequest) != 0 {
 		serviceToken := serviceTokenTerraformToGo(serviceTokenRequest)
-		connectionSide.ServiceToken = serviceToken
+		connectionSide.SetServiceToken(serviceToken)
 	}
 	if len(additionalInfoRequest) != 0 {
 		accessPointAdditionalInfo := additionalInfoTerraformToGo(additionalInfoRequest)
-		connectionSide.AdditionalInfo = accessPointAdditionalInfo
+		connectionSide.SetAdditionalInfo(accessPointAdditionalInfo)
 	}
 
 	return connectionSide
 }
 
-func accessPointTerraformToGo(accessPointTerraform []interface{}) *fabricv4.AccessPoint {
+func accessPointTerraformToGo(accessPointTerraform []interface{}) fabricv4.AccessPoint {
 	if accessPointTerraform == nil || len(accessPointTerraform) == 0 {
-		return nil
+		return fabricv4.AccessPoint{}
 	}
 
-	var accessPoint *fabricv4.AccessPoint
+	var accessPoint fabricv4.AccessPoint
 	accessPointMap := accessPointTerraform[0].(map[string]interface{})
 	portList := accessPointMap["port"].(*schema.Set).List()
 	profileList := accessPointMap["profile"].(*schema.Set).List()
@@ -1092,20 +1094,20 @@ func accessPointTerraformToGo(accessPointTerraform []interface{}) *fabricv4.Acce
 	typeVal := accessPointMap["type"].(string)
 	authenticationKey := accessPointMap["authentication_key"].(string)
 	if authenticationKey != "" {
-		accessPoint.AuthenticationKey = &authenticationKey
+		accessPoint.SetAuthenticationKey(authenticationKey)
 	}
 	providerConnectionId := accessPointMap["provider_connection_id"].(string)
 	if providerConnectionId != "" {
-		accessPoint.ProviderConnectionId = &providerConnectionId
+		accessPoint.SetProviderConnectionId(providerConnectionId)
 	}
 	sellerRegion := accessPointMap["seller_region"].(string)
 	if sellerRegion != "" {
-		accessPoint.SellerRegion = &sellerRegion
+		accessPoint.SetSellerRegion(sellerRegion)
 	}
 	peeringTypeRaw := accessPointMap["peering_type"].(string)
 	if peeringTypeRaw != "" {
 		peeringType, _ := fabricv4.NewPeeringTypeFromValue(peeringTypeRaw)
-		accessPoint.PeeringType = peeringType
+		accessPoint.SetPeeringType(*peeringType)
 	}
 	cloudRouterRequest := accessPointMap["router"].(*schema.Set).List()
 	if len(cloudRouterRequest) == 0 {
@@ -1115,142 +1117,146 @@ func accessPointTerraformToGo(accessPointTerraform []interface{}) *fabricv4.Acce
 
 	if len(cloudRouterRequest) != 0 {
 		cloudRouter := cloudRouterTerraformToGo(cloudRouterRequest)
-		if *cloudRouter.Uuid != "" {
-			accessPoint.Router = cloudRouter
+		if cloudRouter.GetUuid() != "" {
+			accessPoint.SetRouter(cloudRouter)
 		}
 	}
-	apt, _ := fabricv4.NewAccessPointTypeFromValue(typeVal)
-	accessPoint.Type = apt
+	accessPoint.SetType(fabricv4.AccessPointType(typeVal))
 	if len(portList) != 0 {
 		port := portTerraformToGo(portList)
-		if *port.Uuid != "" {
-			accessPoint.Port = port
+		if port.GetUuid() != "" {
+			accessPoint.SetPort(port)
 		}
 	}
 
 	if len(networkList) != 0 {
 		network := networkTerraformToGo(networkList)
-		if network.Uuid != "" {
-			accessPoint.Network = network
+		if network.GetUuid() != "" {
+			accessPoint.SetNetwork(network)
 		}
 	}
 	linkProtocolList := accessPointMap["link_protocol"].(*schema.Set).List()
 
 	if len(linkProtocolList) != 0 {
 		linkProtocol := linkProtocolTerraformToGo(linkProtocolList)
-		if linkProtocol.Type != nil {
-			accessPoint.LinkProtocol = linkProtocol
+		if linkProtocol.GetType().Ptr() != nil {
+			accessPoint.SetLinkProtocol(linkProtocol)
 		}
 	}
 
 	if len(profileList) != 0 {
 		serviceProfile := simplifiedServiceProfileTerraformToGo(profileList)
-		if *serviceProfile.Uuid != "" {
-			accessPoint.Profile = serviceProfile
+		if serviceProfile.GetUuid() != "" {
+			accessPoint.SetProfile(serviceProfile)
 		}
 	}
 
 	if len(locationList) != 0 {
 		location := equinix_fabric_schema.LocationTerraformToGo(locationList)
-		accessPoint.Location = location
+		accessPoint.SetLocation(location)
 	}
 
 	if len(virtualDeviceList) != 0 {
 		virtualDevice := virtualDeviceTerraformToGo(virtualDeviceList)
-		accessPoint.VirtualDevice = virtualDevice
+		accessPoint.SetVirtualDevice(virtualDevice)
 	}
 
 	if len(interfaceList) != 0 {
 		interface_ := interfaceTerraformToGo(interfaceList)
-		accessPoint.Interface = interface_
+		accessPoint.SetInterface(interface_)
 	}
 
 	return accessPoint
 }
 
-func cloudRouterTerraformToGo(cloudRouterRequest []interface{}) *fabricv4.CloudRouter {
+func cloudRouterTerraformToGo(cloudRouterRequest []interface{}) fabricv4.CloudRouter {
 	if cloudRouterRequest == nil || len(cloudRouterRequest) == 0 {
-		return nil
+		return fabricv4.CloudRouter{}
 	}
-	var cloudRouterMapped *fabricv4.CloudRouter
+	var cloudRouter fabricv4.CloudRouter
 	cloudRouterMap := cloudRouterRequest[0].(map[string]interface{})
-	uuid := cloudRouterMap["uuid"].(*string)
-	cloudRouterMapped = &fabricv4.CloudRouter{Uuid: uuid}
+	uuid := cloudRouterMap["uuid"].(string)
+	cloudRouter.SetUuid(uuid)
 
-	return cloudRouterMapped
+	return cloudRouter
 }
 
-func linkProtocolTerraformToGo(linkProtocolList []interface{}) *fabricv4.SimplifiedLinkProtocol {
+func linkProtocolTerraformToGo(linkProtocolList []interface{}) fabricv4.SimplifiedLinkProtocol {
 	if linkProtocolList == nil || len(linkProtocolList) == 0 {
-		return nil
+		return fabricv4.SimplifiedLinkProtocol{}
 	}
 
-	var linkProtocol *fabricv4.SimplifiedLinkProtocol
+	var linkProtocol fabricv4.SimplifiedLinkProtocol
 	lpMap := linkProtocolList[0].(map[string]interface{})
 	lpType := lpMap["type"].(string)
-	lpVlanSTag := lpMap["vlan_s_tag"].(*int32)
-	lpVlanTag := lpMap["vlan_tag"].(*int32)
-	lpVlanCTag := lpMap["vlan_c_tag"].(*int32)
-	lpt, _ := fabricv4.NewLinkProtocolTypeFromValue(lpType)
-	linkProtocol = &fabricv4.SimplifiedLinkProtocol{Type: lpt, VlanSTag: lpVlanSTag, VlanTag: lpVlanTag, VlanCTag: lpVlanCTag}
+	lpVlanSTag := lpMap["vlan_s_tag"].(int32)
+	lpVlanTag := lpMap["vlan_tag"].(int32)
+	lpVlanCTag := lpMap["vlan_c_tag"].(int32)
+	linkProtocol.SetType(fabricv4.LinkProtocolType(lpType))
+	linkProtocol.SetVlanSTag(lpVlanSTag)
+	linkProtocol.SetVlanTag(lpVlanTag)
+	linkProtocol.SetVlanCTag(lpVlanCTag)
 
 	return linkProtocol
 }
 
-func networkTerraformToGo(networkList []interface{}) *fabricv4.SimplifiedNetwork {
+func networkTerraformToGo(networkList []interface{}) fabricv4.SimplifiedNetwork {
 	if networkList == nil || len(networkList) == 0 {
-		return nil
+		return fabricv4.SimplifiedNetwork{}
 	}
-	var network *fabricv4.SimplifiedNetwork
+	var network fabricv4.SimplifiedNetwork
 	networkListMap := networkList[0].(map[string]interface{})
 	uuid := networkListMap["uuid"].(string)
-	network = &fabricv4.SimplifiedNetwork{Uuid: uuid}
+	network.SetUuid(uuid)
 	return network
 }
 
-func simplifiedServiceProfileTerraformToGo(profileList []interface{}) *fabricv4.SimplifiedServiceProfile {
+func simplifiedServiceProfileTerraformToGo(profileList []interface{}) fabricv4.SimplifiedServiceProfile {
 	if profileList == nil || len(profileList) == 0 {
-		return nil
+		return fabricv4.SimplifiedServiceProfile{}
 	}
 
-	var serviceProfile *fabricv4.SimplifiedServiceProfile
+	var serviceProfile fabricv4.SimplifiedServiceProfile
 	profileListMap := profileList[0].(map[string]interface{})
-	profileListType := profileListMap["type"].(string)
-	profileType, _ := fabricv4.NewServiceProfileTypeEnumFromValue(profileListType)
-	uuid := profileListMap["uuid"].(*string)
-	serviceProfile = &fabricv4.SimplifiedServiceProfile{Uuid: uuid, Type: profileType}
+	profileType := profileListMap["type"].(string)
+	uuid := profileListMap["uuid"].(string)
+	serviceProfile.SetType(fabricv4.ServiceProfileTypeEnum(profileType))
+	serviceProfile.SetUuid(uuid)
 	return serviceProfile
 }
 
-func virtualDeviceTerraformToGo(virtualDeviceList []interface{}) *fabricv4.VirtualDevice {
+func virtualDeviceTerraformToGo(virtualDeviceList []interface{}) fabricv4.VirtualDevice {
 	if virtualDeviceList == nil || len(virtualDeviceList) == 0 {
-		return nil
+		return fabricv4.VirtualDevice{}
 	}
 
-	var virtualDevice *fabricv4.VirtualDevice
+	var virtualDevice fabricv4.VirtualDevice
 	virtualDeviceMap := virtualDeviceList[0].(map[string]interface{})
-	href := virtualDeviceMap["href"].(*string)
-	typeString := virtualDeviceMap["type"].(string)
-	type_, _ := fabricv4.NewVirtualDeviceTypeFromValue(typeString)
-	uuid := virtualDeviceMap["uuid"].(*string)
-	name := virtualDeviceMap["name"].(*string)
-	virtualDevice = &fabricv4.VirtualDevice{Href: href, Type: type_, Uuid: uuid, Name: name}
+	href := virtualDeviceMap["href"].(string)
+	type_ := virtualDeviceMap["type"].(string)
+	uuid := virtualDeviceMap["uuid"].(string)
+	name := virtualDeviceMap["name"].(string)
+	virtualDevice.SetHref(href)
+	virtualDevice.SetType(fabricv4.VirtualDeviceType(type_))
+	virtualDevice.SetUuid(uuid)
+	virtualDevice.SetName(name)
 
 	return virtualDevice
 }
 
-func interfaceTerraformToGo(interfaceList []interface{}) *fabricv4.Interface {
+func interfaceTerraformToGo(interfaceList []interface{}) fabricv4.Interface {
 	if interfaceList == nil || len(interfaceList) == 0 {
-		return nil
+		return fabricv4.Interface{}
 	}
 
-	var interface_ *fabricv4.Interface
+	var interface_ fabricv4.Interface
 	interfaceMap := interfaceList[0].(map[string]interface{})
-	uuid := interfaceMap["uuid"].(*string)
-	typeString := interfaceMap["type"].(string)
-	type_, _ := fabricv4.NewInterfaceTypeFromValue(typeString)
-	id := interfaceMap["id"].(*int32)
-	interface_ = &fabricv4.Interface{Type: type_, Uuid: uuid, Id: id}
+	uuid := interfaceMap["uuid"].(string)
+	type_ := interfaceMap["type"].(string)
+	id := interfaceMap["id"].(int)
+	interface_.SetUuid(uuid)
+	interface_.SetType(fabricv4.InterfaceType(type_))
+	interface_.SetId(int32(id))
 
 	return interface_
 }

@@ -258,7 +258,7 @@ func resourceFabricCloudRouterCreate(ctx context.Context, d *schema.ResourceData
 	createCloudRouterRequest := fabricv4.CloudRouterPostRequest{
 		Name:          d.Get("name").(*string),
 		Type:          &type_,
-		Location:      location,
+		Location:      &location,
 		Notifications: notifications,
 		Package:       package_,
 		Account:       account,
@@ -267,7 +267,7 @@ func resourceFabricCloudRouterCreate(ctx context.Context, d *schema.ResourceData
 
 	if orderTerraform, ok := d.GetOk("order"); ok {
 		order := equinix_fabric_schema.OrderTerraformToGo(orderTerraform.(*schema.Set).List())
-		createCloudRouterRequest.Order = order
+		createCloudRouterRequest.SetOrder(order)
 	}
 
 	start := time.Now()

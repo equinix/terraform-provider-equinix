@@ -181,9 +181,9 @@ func resourceFabricNetworkCreate(ctx context.Context, d *schema.ResourceData, me
 		Name:          d.Get("name").(string),
 		Type:          netType,
 		Scope:         netScope,
-		Location:      location,
+		Location:      &location,
 		Notifications: notifications,
-		Project:       project,
+		Project:       &project,
 	}
 
 	start := time.Now()
