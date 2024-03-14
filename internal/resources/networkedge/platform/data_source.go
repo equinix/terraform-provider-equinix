@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/equinix/terraform-provider-equinix/internal/comparisons"
 	"github.com/equinix/terraform-provider-equinix/internal/config"
 	"github.com/equinix/terraform-provider-equinix/internal/converters"
 
@@ -124,19 +125,19 @@ func dataSourceNetworkDevicePlatformRead(ctx context.Context, d *schema.Resource
 		}
 		if v, ok := d.GetOk(networkDevicePlatformSchemaNames["PackageCodes"]); ok {
 			pkgCodes := converters.SetToStringList(v.(*schema.Set))
-			if !stringsFound(pkgCodes, platform.PackageCodes) {
+			if !comparisons.Subsets(pkgCodes, platform.PackageCodes) {
 				continue
 			}
 		}
 		if v, ok := d.GetOk(networkDevicePlatformSchemaNames["ManagementTypes"]); ok {
 			mgmtTypes := converters.SetToStringList(v.(*schema.Set))
-			if !stringsFound(mgmtTypes, platform.ManagementTypes) {
+			if !comparisons.Subsets(mgmtTypes, platform.ManagementTypes) {
 				continue
 			}
 		}
 		if v, ok := d.GetOk(networkDevicePlatformSchemaNames["LicenseOptions"]); ok {
 			licOptions := converters.SetToStringList(v.(*schema.Set))
-			if !stringsFound(licOptions, platform.LicenseOptions) {
+			if !comparisons.Subsets(licOptions, platform.LicenseOptions) {
 				continue
 			}
 		}

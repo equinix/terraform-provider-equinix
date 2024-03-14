@@ -7,6 +7,7 @@ import (
 	"sort"
 	"time"
 
+	"github.com/equinix/terraform-provider-equinix/internal/comparisons"
 	"github.com/equinix/terraform-provider-equinix/internal/config"
 	"github.com/equinix/terraform-provider-equinix/internal/converters"
 
@@ -133,7 +134,7 @@ func dataSourceNetworkDeviceSoftwareRead(ctx context.Context, d *schema.Resource
 		if v, ok := d.GetOk(networkDeviceSoftwareSchemaNames["IsStable"]); ok && v.(bool) != ne.BoolValue(version.IsStable) {
 			continue
 		}
-		if !stringsFound(pkgCodes, version.PackageCodes) {
+		if !comparisons.Subsets(pkgCodes, version.PackageCodes) {
 			continue
 		}
 		filtered = append(filtered, version)

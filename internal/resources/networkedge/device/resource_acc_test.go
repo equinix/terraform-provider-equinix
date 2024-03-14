@@ -987,7 +987,7 @@ func testAccNeDeviceAttributes(device *ne.Device, ctx map[string]interface{}) re
 		if v, ok := ctx["device-package_code"]; ok && ne.StringValue(device.PackageCode) != v.(string) {
 			return fmt.Errorf("device-package_code does not match %v - %v", ne.StringValue(device.PackageCode), v)
 		}
-		if v, ok := ctx["device-notifications"]; ok && !slicesMatch(device.Notifications, v.([]string)) {
+		if v, ok := ctx["device-notifications"]; ok && !comparisons.SlicesMatch(device.Notifications, v.([]string)) {
 			return fmt.Errorf("device-notifications does not match %v - %v", device.Notifications, v)
 		}
 		if v, ok := ctx["device-hostname"]; ok && ne.StringValue(device.HostName) != v.(string) {

@@ -15,6 +15,12 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 )
 
+// neDeviceSchemaNames is a light copy of the map of Network Edge device schema field names
+var neDeviceSchemaNames = map[string]string{
+	"IsBYOL":        "byol",
+	"IsSelfManaged": "self_managed",
+}
+
 var networkFileSchemaNames = map[string]string{
 	"UUID":           "uuid",
 	"FileName":       "file_name",

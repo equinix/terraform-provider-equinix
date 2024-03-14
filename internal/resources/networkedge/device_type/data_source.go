@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/equinix/terraform-provider-equinix/internal/comparisons"
 	"github.com/equinix/terraform-provider-equinix/internal/config"
 	"github.com/equinix/terraform-provider-equinix/internal/converters"
 	equinix_validation "github.com/equinix/terraform-provider-equinix/internal/validation"
@@ -106,7 +107,7 @@ func dataSourceNetworkDeviceTypeRead(ctx context.Context, d *schema.ResourceData
 		if category != "" && !strings.EqualFold(ne.StringValue(deviceType.Category), category) {
 			continue
 		}
-		if !stringsFound(metroCodes, deviceType.MetroCodes) {
+		if !comparisons.Subsets(metroCodes, deviceType.MetroCodes) {
 			continue
 		}
 		filtered = append(filtered, deviceType)
