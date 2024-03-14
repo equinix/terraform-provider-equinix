@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	"github.com/equinix/terraform-provider-equinix/internal/config"
+	"github.com/equinix/terraform-provider-equinix/internal/nprintf"
 
 	"github.com/equinix/ne-go"
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
@@ -110,7 +111,7 @@ func TestAccNetworkACLTemplate(t *testing.T) {
 }
 
 func testAccNetworkACLTemplate(ctx map[string]any) string {
-	return nprintf(`
+	return nprintf.NPrintf(`
 resource "equinix_network_acl_template" "%{resourceName}" {
   name          = "%{name}"
   description   = "%{description}"
