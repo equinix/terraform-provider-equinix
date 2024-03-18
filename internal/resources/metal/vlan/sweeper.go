@@ -11,7 +11,7 @@ import (
 func AddTestSweeper() {
 	resource.AddTestSweepers("equinix_metal_vlan", &resource.Sweeper{
 		Name:         "equinix_metal_vlan",
-		Dependencies: []string{"equinix_metal_virtual_circuit", "equinix_metal_vrf", "equinix_metal_device"},
+		Dependencies: []string{"equinix_metal_connection", "equinix_metal_virtual_circuit", "equinix_metal_vrf", "equinix_metal_device"},
 		F:            testSweepVlans,
 	})
 }
