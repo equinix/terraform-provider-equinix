@@ -25,7 +25,7 @@ func (d *immutableInt64PlanModifier) PlanModifyInt64(ctx context.Context, reques
 	if oldValue != 0 && newValue != oldValue {
 		response.Diagnostics.AddAttributeError(
 			request.Path,
-			"Unexpected Resource Configure Type",
+			"Change not allowed",
 			fmt.Sprintf(
 				"Cannot modify the value of the `%s` field. Resource recreation would be required.",
 				request.Path.String(),

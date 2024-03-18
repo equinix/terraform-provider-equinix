@@ -15,14 +15,15 @@ func TestImmutableStringSet(t *testing.T) {
 		ExpectError bool
 	}{
 		{
-			Old:      0,
-			New:      1234,
-			Expected: 1234,
+			Old:         0,
+			New:         1234,
+			Expected:    1234,
 			ExpectError: false,
 		},
 		{
-			Old:      1234,
-			New:      4321,
+			Old:         1234,
+			New:         4321,
+			Expected:    0,
 			ExpectError: true,
 		},
 	}
