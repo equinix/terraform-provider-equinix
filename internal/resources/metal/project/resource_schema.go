@@ -5,8 +5,8 @@ import (
 
 	"github.com/equinix/terraform-provider-equinix/internal/framework"
 	fwtypes "github.com/equinix/terraform-provider-equinix/internal/framework/types"
-	equinix_validation "github.com/equinix/terraform-provider-equinix/internal/validation"
 	equinix_planmodifiers "github.com/equinix/terraform-provider-equinix/internal/planmodifiers"
+	equinix_validation "github.com/equinix/terraform-provider-equinix/internal/validation"
 	"github.com/hashicorp/terraform-plugin-framework-validators/listvalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
@@ -76,6 +76,9 @@ func resourceSchema(ctx context.Context) schema.Schema {
 				Validators: []validator.List{
 					listvalidator.SizeAtLeast(1),
 					listvalidator.SizeAtMost(1),
+				},
+				PlanModifiers: []planmodifier.List{
+					equinix_planmodifiers.ImmutableList(),
 				},
 				CustomType: fwtypes.NewListNestedObjectTypeOf[BGPConfigModel](ctx),
 				NestedObject: schema.NestedBlockObject{

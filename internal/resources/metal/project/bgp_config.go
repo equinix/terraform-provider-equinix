@@ -2,7 +2,6 @@ package project
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/equinix/equinix-sdk-go/services/metalv1"
 	equinix_errors "github.com/equinix/terraform-provider-equinix/internal/errors"
@@ -53,7 +52,6 @@ func handleBGPConfigChanges(ctx context.Context, client *metalv1.APIClient, plan
 	}
 
 	bgpAdded := !plan.BGPConfig.IsNull() && state.BGPConfig.IsNull()
-	bgpRemoved := plan.BGPConfig.IsNull() && !state.BGPConfig.IsNull()
 	bgpChanged := !plan.BGPConfig.IsNull() && !state.BGPConfig.IsNull() && !plan.BGPConfig.Equal(state.BGPConfig)
 
 	if bgpAdded || bgpChanged {
@@ -78,23 +76,6 @@ func handleBGPConfigChanges(ctx context.Context, client *metalv1.APIClient, plan
 		// Fetch the newly created BGP Config
 		bgpConfig, diags = fetchBGPConfig(ctx, client, projectID)
 		diags.Append(diags...)
-	} else if bgpRemoved {
-		// Delete BGP Config
-		bgpConfigModel, _ := state.BGPConfig.ToSlice(ctx)
-		bgpConfStr := fmt.Sprintf(
-			"bgp_config {\n"+
-				"  deployment_type = \"%s\"\n"+
-				"  md5 = \"%s\"\n"+
-				"  asn = %d\n"+
-				"}",
-			bgpConfigModel[0].DeploymentType.ValueString(),
-			bgpConfigModel[0].MD5.ValueString(),
-			bgpConfigModel[0].ASN.ValueInt64(),
-		)
-		diags.AddError(
-			"Error removing BGP configuration",
-			fmt.Sprintf("BGP Config cannot be removed from a project, please add back\n%s", bgpConfStr),
-		)
 	} else { // assuming already exists
 		// Fetch the existing BGP Config
 		bgpConfig, diags = fetchBGPConfig(ctx, client, projectID)
