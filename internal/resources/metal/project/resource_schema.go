@@ -6,6 +6,7 @@ import (
 	"github.com/equinix/terraform-provider-equinix/internal/framework"
 	fwtypes "github.com/equinix/terraform-provider-equinix/internal/framework/types"
 	equinix_validation "github.com/equinix/terraform-provider-equinix/internal/validation"
+	equinix_planmodifiers "github.com/equinix/terraform-provider-equinix/internal/planmodifiers"
 	"github.com/hashicorp/terraform-plugin-framework-validators/listvalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
@@ -98,19 +99,7 @@ var bgpConfigSchema = map[string]schema.Attribute{
 		Description: "Autonomous System Number for local BGP deployment",
 		Required:    true,
 		PlanModifiers: []planmodifier.Int64{
-			int64planmodifier.RequiresReplaceIf(
-				func(
-					ctx context.Context,
-					req planmodifier.Int64Request,
-					resp *int64planmodifier.RequiresReplaceIfFuncResponse,
-				) {
-					oldValue := req.StateValue.ValueInt64()
-					newValue := req.PlanValue.ValueInt64()
-					resp.RequiresReplace = !req.StateValue.IsNull() && oldValue != newValue
-				},
-				RequiresReplacementWhenASNChanged,
-				RequiresReplacementWhenASNChanged,
-			),
+			equinix_planmodifiers.ImmutableInt64(),
 		},
 	},
 	"md5": schema.StringAttribute{
