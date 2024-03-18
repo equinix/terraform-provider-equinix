@@ -219,7 +219,7 @@ func TestAccMetalProject_update(t *testing.T) {
 func testAccCheckMetalSameProject(t *testing.T, before, after *metalv1.Project) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		if before.GetId() != after.GetId() {
-			t.Fatalf("Expected device to be the same, but it was recreated: %s -> %s", before.GetId(), after.GetId())
+			t.Fatalf("Expected project to be the same, but it was recreated: %s -> %s", before.GetId(), after.GetId())
 		}
 		return nil
 	}
