@@ -4,7 +4,9 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/equinix/terraform-provider-equinix/internal/comparisons"
 	"github.com/equinix/terraform-provider-equinix/internal/config"
+	"github.com/equinix/terraform-provider-equinix/internal/nprintf"
 
 	"github.com/equinix/ecx-go/v2"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -119,13 +121,13 @@ func testAccECXL2ServiceProfileAttributes(profile *ecx.L2ServiceProfile, ctx map
 		if v, ok := ctx["name"]; ok && ecx.StringValue(profile.Name) != v.(string) {
 			return fmt.Errorf("name does not match %v - %v", ecx.StringValue(profile.Name), v)
 		}
-		if v, ok := ctx["bandwidth_threshold_notifications"]; ok && !slicesMatch(profile.OnBandwidthThresholdNotification, v.([]string)) {
+		if v, ok := ctx["bandwidth_threshold_notifications"]; ok && !comparisons.SlicesMatch(profile.OnBandwidthThresholdNotification, v.([]string)) {
 			return fmt.Errorf("bandwidth_threshold_notifications does not match %v - %v", profile.OnBandwidthThresholdNotification, v)
 		}
-		if v, ok := ctx["profile_statuschange_notifications"]; ok && !slicesMatch(profile.OnProfileApprovalRejectNotification, v.([]string)) {
+		if v, ok := ctx["profile_statuschange_notifications"]; ok && !comparisons.SlicesMatch(profile.OnProfileApprovalRejectNotification, v.([]string)) {
 			return fmt.Errorf("profile_statuschange_notifications does not match %v - %v", profile.OnProfileApprovalRejectNotification, v)
 		}
-		if v, ok := ctx["vc_statuschange_notifications"]; ok && !slicesMatch(profile.OnVcApprovalRejectionNotification, v.([]string)) {
+		if v, ok := ctx["vc_statuschange_notifications"]; ok && !comparisons.SlicesMatch(profile.OnVcApprovalRejectionNotification, v.([]string)) {
 			return fmt.Errorf("vc_statuschange_notifications does not match %v - %v", profile.OnVcApprovalRejectionNotification, v)
 		}
 		if v, ok := ctx["oversubscription"]; ok && ecx.StringValue(profile.OverSubscription) != v.(string) {
@@ -134,7 +136,7 @@ func testAccECXL2ServiceProfileAttributes(profile *ecx.L2ServiceProfile, ctx map
 		if v, ok := ctx["private"]; ok && ecx.BoolValue(profile.Private) != v.(bool) {
 			return fmt.Errorf("private does not match %v - %v", ecx.BoolValue(profile.Private), v)
 		}
-		if v, ok := ctx["private_user_emails"]; ok && !slicesMatchCaseInsensitive(profile.PrivateUserEmails, v.([]string)) {
+		if v, ok := ctx["private_user_emails"]; ok && !comparisons.SlicesMatchCaseInsensitive(profile.PrivateUserEmails, v.([]string)) {
 			return fmt.Errorf("private_user_emails does not match %v - %v", profile.PrivateUserEmails, v)
 		}
 		if v, ok := ctx["redundancy_required"]; ok && ecx.BoolValue(profile.RequiredRedundancy) != v.(bool) {
@@ -160,7 +162,7 @@ func testAccECXL2ServiceProfileAttributes(profile *ecx.L2ServiceProfile, ctx map
 }
 
 func testAccECXL2PrivateServiceProfile(ctx map[string]interface{}) string {
-	return nprintf(`
+	return nprintf.NPrintf(`
 data "equinix_ecx_port" "port1" {
     name = "%{port1_name}"
 }

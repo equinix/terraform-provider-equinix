@@ -7,10 +7,11 @@ import (
 	"regexp"
 	"testing"
 
-	"github.com/equinix/terraform-provider-equinix/internal/config"
-
 	"github.com/equinix/ecx-go/v2"
 	"github.com/equinix/rest-go"
+	"github.com/equinix/terraform-provider-equinix/internal/comparisons"
+	"github.com/equinix/terraform-provider-equinix/internal/config"
+	"github.com/equinix/terraform-provider-equinix/internal/nprintf"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
@@ -197,6 +198,9 @@ func TestAccFabricL2Connection_Port_HA_Azure(t *testing.T) {
 }
 
 func TestAccFabricL2Connection_Device_HA_GCP(t *testing.T) {
+	networkDeviceAccountNameEnvVar := "TF_ACC_NETWORK_DEVICE_BILLING_ACCOUNT_NAME"
+	networkDeviceMetroEnvVar := "TF_ACC_NETWORK_DEVICE_METRO"
+
 	deviceMetro, _ := schema.EnvDefaultFunc(networkDeviceMetroEnvVar, "SV")()
 	priSPName, _ := schema.EnvDefaultFunc(gcpOneSpEnvVar, "Google Cloud Partner Interconnect Zone 1")()
 	secSPName, _ := schema.EnvDefaultFunc(gcpTwoSpEnvVar, "Google Cloud Partner Interconnect Zone 2")()
@@ -596,7 +600,7 @@ func testAccFabricL2ConnectionAttributes(conn *ecx.L2Connection, ctx map[string]
 		if v, ok := ctx["connection-speed_unit"]; ok && ecx.StringValue(conn.SpeedUnit) != v.(string) {
 			return fmt.Errorf("speedUnit does not match %v - %v", ecx.StringValue(conn.SpeedUnit), v)
 		}
-		if v, ok := ctx["connection-notifications"]; ok && !slicesMatch(conn.Notifications, v.([]string)) {
+		if v, ok := ctx["connection-notifications"]; ok && !comparisons.SlicesMatch(conn.Notifications, v.([]string)) {
 			return fmt.Errorf("notifications does not match %v - %v", conn.Notifications, v)
 		}
 		if v, ok := ctx["connection-purchase_order_number"]; ok && ecx.StringValue(conn.PurchaseOrderNumber) != v.(string) {
@@ -690,13 +694,13 @@ func (t *testAccConfig) withPort() *testAccConfig {
 
 func testAccFabricPort(ctx map[string]interface{}) string {
 	var config string
-	config += nprintf(`
+	config += nprintf.NPrintf(`
 data "equinix_ecx_port" "%{port-resourceName}" {
   name = "%{port-name}"
 }`, ctx)
 
 	if _, ok := ctx["port-secondary_resourceName"]; ok {
-		config += nprintf(`
+		config += nprintf.NPrintf(`
 data "equinix_ecx_port" "%{port-secondary_resourceName}" {
   name = "%{port-secondary_name}"
 }`, ctx)
@@ -708,20 +712,20 @@ func testAccFabricL2Connection(ctx map[string]interface{}) string {
 	var config string
 	if _, ok := ctx["zside-service_token"]; !ok {
 		if _, ok := ctx["connection-profile_uuid"]; !ok {
-			config += nprintf(`
+			config += nprintf.NPrintf(`
 data "equinix_ecx_l2_sellerprofile" "pri" {
   name = "%{connection-profile_name}"
 }`, ctx)
 		}
 	}
 	if _, ok := ctx["connection-secondary_profile_name"]; ok {
-		config += nprintf(`
+		config += nprintf.NPrintf(`
 data "equinix_ecx_l2_sellerprofile" "sec" {
   name = "%{connection-secondary_profile_name}"
 }`, ctx)
 	}
 
-	config += nprintf(`
+	config += nprintf.NPrintf(`
 resource "equinix_ecx_l2_connection" "%{connection-resourceName}" {
   name                  = "%{connection-name}"
   speed                 = %{connection-speed}
@@ -729,118 +733,118 @@ resource "equinix_ecx_l2_connection" "%{connection-resourceName}" {
   notifications         = %{connection-notifications}
   seller_metro_code     = "%{connection-seller_metro_code}"`, ctx)
 	if _, ok := ctx["connection-authorization_key"]; ok {
-		config += nprintf(`
+		config += nprintf.NPrintf(`
   authorization_key     = "%{connection-authorization_key}"`, ctx)
 	}
 	if _, ok := ctx["zside-service_token"]; !ok {
 		if _, ok := ctx["connection-profile_uuid"]; ok {
-			config += nprintf(`
+			config += nprintf.NPrintf(`
   profile_uuid          = "%{connection-profile_uuid}"`, ctx)
 		} else {
-			config += nprintf(`
+			config += nprintf.NPrintf(`
   profile_uuid          = data.equinix_ecx_l2_sellerprofile.pri.id`, ctx)
 		}
 	}
 	if _, ok := ctx["service_token"]; ok {
-		config += nprintf(`
+		config += nprintf.NPrintf(`
   service_token         = "%{service_token}"`, ctx)
 	}
 	if _, ok := ctx["zside-service_token"]; ok {
-		config += nprintf(`
+		config += nprintf.NPrintf(`
   zside_service_token   = "%{zside-service_token}"`, ctx)
 	}
 	if _, ok := ctx["zside-port_uuid"]; ok {
-		config += nprintf(`
+		config += nprintf.NPrintf(`
   zside_port_uuid       = "%{zside-port_uuid}"`, ctx)
 	}
 	if _, ok := ctx["connection-purchase_order_number"]; ok {
-		config += nprintf(`
+		config += nprintf.NPrintf(`
   purchase_order_number = "%{connection-purchase_order_number}"`, ctx)
 	}
 	if _, ok := ctx["connection-seller_region"]; ok {
-		config += nprintf(`
+		config += nprintf.NPrintf(`
   seller_region         = "%{connection-seller_region}"`, ctx)
 	}
 	if _, ok := ctx["port-uuid"]; ok {
-		config += nprintf(`
+		config += nprintf.NPrintf(`
   port_uuid             = "%{port-uuid}"`, ctx)
 	} else if _, ok := ctx["port-resourceName"]; ok {
-		config += nprintf(`
+		config += nprintf.NPrintf(`
   port_uuid             = data.equinix_ecx_port.%{port-resourceName}.id`, ctx)
 	}
 	if _, ok := ctx["device-resourceName"]; ok {
-		config += nprintf(`
+		config += nprintf.NPrintf(`
   device_uuid           = equinix_network_device.%{device-resourceName}.id`, ctx)
 	}
 	if _, ok := ctx["connection-vlan_stag"]; ok {
-		config += nprintf(`
+		config += nprintf.NPrintf(`
   vlan_stag             = %{connection-vlan_stag}`, ctx)
 	}
 	if _, ok := ctx["connection-vlan_ctag"]; ok {
-		config += nprintf(`
+		config += nprintf.NPrintf(`
   vlan_ctag             = %{connection-vlan_ctag}`, ctx)
 	}
 	if _, ok := ctx["connection-named_tag"]; ok {
-		config += nprintf(`
+		config += nprintf.NPrintf(`
   named_tag             = "%{connection-named_tag}"`, ctx)
 	}
 	if _, ok := ctx["connection-device_interface_id"]; ok {
-		config += nprintf(`
+		config += nprintf.NPrintf(`
   device_interface_id   = %{connection-device_interface_id}`, ctx)
 	}
 	if _, ok := ctx["connection-secondary_name"]; ok {
-		config += nprintf(`
+		config += nprintf.NPrintf(`
   secondary_connection {
     name                = "%{connection-secondary_name}"`, ctx)
 		if _, ok := ctx["connection-secondary_profile_name"]; ok {
-			config += nprintf(`
+			config += nprintf.NPrintf(`
     profile_uuid        = data.equinix_ecx_l2_sellerprofile.sec.id`, ctx)
 		}
 		if _, ok := ctx["secondary-port_uuid"]; ok {
-			config += nprintf(`
+			config += nprintf.NPrintf(`
 	port_uuid             = "%{secondary-port_uuid}"`, ctx)
 		} else if _, ok := ctx["port-secondary_resourceName"]; ok {
-			config += nprintf(`
+			config += nprintf.NPrintf(`
     port_uuid           = data.equinix_ecx_port.%{port-secondary_resourceName}.id`, ctx)
 		}
 		if _, ok := ctx["device-secondary_name"]; ok {
-			config += nprintf(`
+			config += nprintf.NPrintf(`
     device_uuid         = equinix_network_device.%{device-resourceName}.redundant_id`, ctx)
 		}
 		if _, ok := ctx["connection-secondary_vlan_stag"]; ok {
-			config += nprintf(`
+			config += nprintf.NPrintf(`
     vlan_stag           = %{connection-secondary_vlan_stag}`, ctx)
 		}
 		if _, ok := ctx["connection-secondary_vlan_ctag"]; ok {
-			config += nprintf(`
+			config += nprintf.NPrintf(`
     vlan_ctag           = %{connection-secondary_vlan_ctag}`, ctx)
 		}
 		if _, ok := ctx["connection-secondary_device_interface_id"]; ok {
-			config += nprintf(`
+			config += nprintf.NPrintf(`
     device_interface_id = %{connection-secondary_device_interface_id}`, ctx)
 		}
 		if _, ok := ctx["connection-secondary_speed"]; ok {
-			config += nprintf(`
+			config += nprintf.NPrintf(`
     speed               = %{connection-secondary_speed}`, ctx)
 		}
 		if _, ok := ctx["connection-secondary_speed_unit"]; ok {
-			config += nprintf(`
+			config += nprintf.NPrintf(`
     speed_unit          = "%{connection-secondary_speed_unit}"`, ctx)
 		}
 		if _, ok := ctx["connection-secondary_seller_metro_code"]; ok {
-			config += nprintf(`
+			config += nprintf.NPrintf(`
     seller_metro_code   = "%{connection-secondary_seller_metro_code}"`, ctx)
 		}
 		if _, ok := ctx["connection-secondary_seller_region"]; ok {
-			config += nprintf(`
+			config += nprintf.NPrintf(`
     seller_region       = "%{connection-secondary_seller_region}"`, ctx)
 		}
 		if _, ok := ctx["connection-secondary_authorization_key"]; ok {
-			config += nprintf(`
+			config += nprintf.NPrintf(`
     authorization_key   = "%{connection-secondary_authorization_key}"`, ctx)
 		}
 		if _, ok := ctx["secondary-service_token"]; ok {
-			config += nprintf(`
+			config += nprintf.NPrintf(`
     service_token       = "%{secondary-service_token}"`, ctx)
 		}
 		config += `

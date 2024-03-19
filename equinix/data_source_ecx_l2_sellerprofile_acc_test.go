@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/equinix/terraform-provider-equinix/internal/nprintf"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
@@ -38,7 +39,7 @@ func TestAccDataSourceECXL2SellerProfile_basic(t *testing.T) {
 }
 
 func testAccDataSourceECXL2SellerProfileConfig_basic(ctx map[string]interface{}) string {
-	return nprintf(`
+	return nprintf.NPrintf(`
 data "equinix_ecx_l2_sellerprofile" "%{resourceName}" {
   name = "%{name}"
 }

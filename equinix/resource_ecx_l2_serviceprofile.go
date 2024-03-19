@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/equinix/terraform-provider-equinix/internal/comparisons"
 	"github.com/equinix/terraform-provider-equinix/internal/config"
 	"github.com/equinix/terraform-provider-equinix/internal/converters"
 	equinix_errors "github.com/equinix/terraform-provider-equinix/internal/errors"
@@ -554,7 +555,7 @@ func updateECXL2ServiceProfileResource(profile *ecx.L2ServiceProfile, d *schema.
 	// If API retuns same emails in lowercase we keep to suppress diff
 	if v, ok := d.GetOk(ecxL2ServiceProfileSchemaNames["PrivateUserEmails"]); ok {
 		prevPrivateUserEmails := converters.SetToStringList(v.(*schema.Set))
-		if slicesMatchCaseInsensitive(prevPrivateUserEmails, profile.PrivateUserEmails) {
+		if comparisons.SlicesMatchCaseInsensitive(prevPrivateUserEmails, profile.PrivateUserEmails) {
 			profile.PrivateUserEmails = prevPrivateUserEmails
 		}
 	}

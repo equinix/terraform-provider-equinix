@@ -3,9 +3,8 @@ package equinix
 import (
 	"context"
 	"log"
+	"slices"
 	"time"
-
-	"golang.org/x/exp/slices"
 
 	equinix_errors "github.com/equinix/terraform-provider-equinix/internal/errors"
 	equinix_schema "github.com/equinix/terraform-provider-equinix/internal/schema"

@@ -4,10 +4,9 @@ import (
 	"context"
 	"fmt"
 	"os"
-	"regexp"
-	"strings"
 	"testing"
 
+	"github.com/equinix/terraform-provider-equinix/internal/comparisons"
 	"github.com/equinix/terraform-provider-equinix/internal/config"
 	"github.com/equinix/terraform-provider-equinix/internal/provider"
 	"github.com/equinix/terraform-provider-equinix/version"
@@ -144,16 +143,6 @@ func TestProvider(t *testing.T) {
 	}
 }
 
-func TestProvider_stringsFound(t *testing.T) {
-	// given
-	needles := []string{"key1", "key5"}
-	hay := []string{"key1", "key2", "Key3", "key4", "key5"}
-	// when
-	result := stringsFound(needles, hay)
-	// then
-	assert.True(t, result, "Given strings were found")
-}
-
 func TestProvider_atLeastOneStringFound(t *testing.T) {
 	// given
 	needles := []string{"key4", "key2"}
@@ -162,41 +151,6 @@ func TestProvider_atLeastOneStringFound(t *testing.T) {
 	result := atLeastOneStringFound(needles, hay)
 	// then
 	assert.True(t, result, "Given strings were found")
-}
-
-func TestProvider_stringsFound_negative(t *testing.T) {
-	// given
-	needles := []string{"key1", "key6"}
-	hay := []string{"key1", "key2", "Key3", "key4", "key5"}
-	// when
-	result := stringsFound(needles, hay)
-	// then
-	assert.False(t, result, "Given strings were found")
-}
-
-func TestProvider_isEmpty(t *testing.T) {
-	// given
-	input := []interface{}{
-		"test",
-		"",
-		nil,
-		123,
-		0,
-		43.43,
-	}
-	expected := []bool{
-		false,
-		true,
-		true,
-		false,
-		true,
-		false,
-		true,
-	}
-	// when then
-	for i := range input {
-		assert.Equal(t, expected[i], isEmpty(input[i]), "Input %v produces expected result %v", input[i], expected[i])
-	}
 }
 
 func TestProvider_setSchemaValueIfNotEmpty(t *testing.T) {
@@ -215,42 +169,6 @@ func TestProvider_setSchemaValueIfNotEmpty(t *testing.T) {
 	// then
 	_, ok := d.GetOk(key)
 	assert.False(t, ok, "Key was not set")
-}
-
-func TestProvider_slicesMatch(t *testing.T) {
-	// given
-	input := [][][]string{
-		{
-			{"DC", "SV", "FR"},
-			{"FR", "SV", "DC"},
-		},
-		{
-			{"SV"},
-			{},
-		},
-		{
-			{"DC", "DC", "DC"},
-			{"DC", "SV", "DC"},
-		},
-		{
-			{}, {},
-		},
-	}
-	expected := []bool{
-		true,
-		false,
-		false,
-		true,
-	}
-	// when
-	results := make([]bool, len(expected))
-	for i := range input {
-		results[i] = slicesMatch(input[i][0], input[i][1])
-	}
-	// then
-	for i := range expected {
-		assert.Equal(t, expected[i], results[i])
-	}
 }
 
 //‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾
@@ -288,21 +206,6 @@ func (t *testAccConfig) build() string {
 	return t.config
 }
 
-func nprintf(format string, params map[string]interface{}) string {
-	for key, val := range params {
-		var strVal string
-		switch val.(type) {
-		case []string:
-			r := regexp.MustCompile(`" "`)
-			strVal = r.ReplaceAllString(fmt.Sprintf("%q", val), `", "`)
-		default:
-			strVal = fmt.Sprintf("%v", val)
-		}
-		format = strings.Replace(format, "%{"+key+"}", strVal, -1)
-	}
-	return format
-}
-
 func getFromEnv(varName string) (string, error) {
 	if v := os.Getenv(varName); v != "" {
 		return v, nil
@@ -326,7 +229,7 @@ func copyMap(source map[string]interface{}) map[string]interface{} {
 }
 
 func setSchemaValueIfNotEmpty(key string, value interface{}, d *schema.ResourceData) error {
-	if !isEmpty(value) {
+	if !comparisons.IsEmpty(value) {
 		return d.Set(key, value)
 	}
 	return nil

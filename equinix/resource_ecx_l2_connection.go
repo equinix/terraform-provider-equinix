@@ -4,9 +4,11 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"slices"
 	"strings"
 	"time"
 
+	"github.com/equinix/terraform-provider-equinix/internal/comparisons"
 	"github.com/equinix/terraform-provider-equinix/internal/config"
 	"github.com/equinix/terraform-provider-equinix/internal/converters"
 	equinix_errors "github.com/equinix/terraform-provider-equinix/internal/errors"
@@ -714,12 +716,12 @@ func resourceECXL2ConnectionRead(ctx context.Context, d *schema.ResourceData, m 
 	if err != nil {
 		return diag.Errorf("cannot fetch primary connection due to %v", err)
 	}
-	if isStringInSlice(ecx.StringValue(primary.Status), []string{
+	if slices.Contains([]string{
 		ecx.ConnectionStatusPendingDelete,
 		ecx.ConnectionStatusDeprovisioning,
 		ecx.ConnectionStatusDeprovisioned,
 		ecx.ConnectionStatusDeleted,
-	}) {
+	}, ecx.StringValue(primary.Status)) {
 		d.SetId("")
 		return diags
 	}
@@ -1032,40 +1034,40 @@ func expandECXL2ConnectionSecondary(conns []interface{}) *ecx.L2Connection {
 	if v, ok := conn[ecxL2ConnectionSchemaNames["Name"]]; ok {
 		transformed.Name = ecx.String(v.(string))
 	}
-	if v, ok := conn[ecxL2ConnectionSchemaNames["ProfileUUID"]]; ok && !isEmpty(v) {
+	if v, ok := conn[ecxL2ConnectionSchemaNames["ProfileUUID"]]; ok && !comparisons.IsEmpty(v) {
 		transformed.ProfileUUID = ecx.String(v.(string))
 	}
-	if v, ok := conn[ecxL2ConnectionSchemaNames["Speed"]]; ok && !isEmpty(v) {
+	if v, ok := conn[ecxL2ConnectionSchemaNames["Speed"]]; ok && !comparisons.IsEmpty(v) {
 		transformed.Speed = ecx.Int(v.(int))
 	}
-	if v, ok := conn[ecxL2ConnectionSchemaNames["SpeedUnit"]]; ok && !isEmpty(v) {
+	if v, ok := conn[ecxL2ConnectionSchemaNames["SpeedUnit"]]; ok && !comparisons.IsEmpty(v) {
 		transformed.SpeedUnit = ecx.String(v.(string))
 	}
-	if v, ok := conn[ecxL2ConnectionSchemaNames["PortUUID"]]; ok && !isEmpty(v) {
+	if v, ok := conn[ecxL2ConnectionSchemaNames["PortUUID"]]; ok && !comparisons.IsEmpty(v) {
 		transformed.PortUUID = ecx.String(v.(string))
 	}
-	if v, ok := conn[ecxL2ConnectionSchemaNames["DeviceUUID"]]; ok && !isEmpty(v) {
+	if v, ok := conn[ecxL2ConnectionSchemaNames["DeviceUUID"]]; ok && !comparisons.IsEmpty(v) {
 		transformed.DeviceUUID = ecx.String(v.(string))
 	}
-	if v, ok := conn[ecxL2ConnectionSchemaNames["DeviceInterfaceID"]]; ok && !isEmpty(v) {
+	if v, ok := conn[ecxL2ConnectionSchemaNames["DeviceInterfaceID"]]; ok && !comparisons.IsEmpty(v) {
 		transformed.DeviceInterfaceID = ecx.Int(v.(int))
 	}
-	if v, ok := conn[ecxL2ConnectionSchemaNames["VlanSTag"]]; ok && !isEmpty(v) {
+	if v, ok := conn[ecxL2ConnectionSchemaNames["VlanSTag"]]; ok && !comparisons.IsEmpty(v) {
 		transformed.VlanSTag = ecx.Int(v.(int))
 	}
-	if v, ok := conn[ecxL2ConnectionSchemaNames["VlanCTag"]]; ok && !isEmpty(v) {
+	if v, ok := conn[ecxL2ConnectionSchemaNames["VlanCTag"]]; ok && !comparisons.IsEmpty(v) {
 		transformed.VlanCTag = ecx.Int(v.(int))
 	}
-	if v, ok := conn[ecxL2ConnectionSchemaNames["SellerRegion"]]; ok && !isEmpty(v) {
+	if v, ok := conn[ecxL2ConnectionSchemaNames["SellerRegion"]]; ok && !comparisons.IsEmpty(v) {
 		transformed.SellerRegion = ecx.String(v.(string))
 	}
-	if v, ok := conn[ecxL2ConnectionSchemaNames["SellerMetroCode"]]; ok && !isEmpty(v) {
+	if v, ok := conn[ecxL2ConnectionSchemaNames["SellerMetroCode"]]; ok && !comparisons.IsEmpty(v) {
 		transformed.SellerMetroCode = ecx.String(v.(string))
 	}
-	if v, ok := conn[ecxL2ConnectionSchemaNames["AuthorizationKey"]]; ok && !isEmpty(v) {
+	if v, ok := conn[ecxL2ConnectionSchemaNames["AuthorizationKey"]]; ok && !comparisons.IsEmpty(v) {
 		transformed.AuthorizationKey = ecx.String(v.(string))
 	}
-	if v, ok := conn[ecxL2ConnectionSchemaNames["ServiceToken"]]; ok && !isEmpty(v) {
+	if v, ok := conn[ecxL2ConnectionSchemaNames["ServiceToken"]]; ok && !comparisons.IsEmpty(v) {
 		transformed.ServiceToken = ecx.String(v.(string))
 	}
 	return &transformed

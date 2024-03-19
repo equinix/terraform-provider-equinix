@@ -5,6 +5,7 @@ import (
 	"strconv"
 	"testing"
 
+	"github.com/equinix/terraform-provider-equinix/internal/nprintf"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 )
@@ -33,7 +34,7 @@ func TestAccDataSourceECXL2SellerProfiles_nameRegex(t *testing.T) {
 }
 
 func testAccDataSourceECXL2SellerProfilesConfig_nameRegex(ctx map[string]interface{}) string {
-	return nprintf(`
+	return nprintf.NPrintf(`
 data "equinix_ecx_l2_sellerprofiles" "%{resourceName}" {
   name_regex               = "%{name_regex}"
   metro_codes              = %{metro_codes}
