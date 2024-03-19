@@ -27,7 +27,12 @@ func (m *ResourceModel) parse(ctx context.Context, member *member) diag.Diagnost
 	var diags diag.Diagnostics
 
 	if member.isMember() {
-		projectsList, diag := types.SetValueFrom(ctx, types.StringType, member.Member.Projects)
+		projectIDs := []string{}
+		for _, project := range member.Member.Projects {
+			projectIDs = append(projectIDs, path.Base(project.URL))
+		}
+
+		projectsList, diag := types.SetValueFrom(ctx, types.StringType, projectIDs)
 		if diag.HasError() {
 			return diag
 		}
@@ -42,8 +47,11 @@ func (m *ResourceModel) parse(ctx context.Context, member *member) diag.Diagnost
 		m.OrganizationID = types.StringValue(member.Member.Organization.URL)
 
 	} else if member.isInvitation() {
-
-		projectsList, diag := types.SetValueFrom(ctx, types.StringType, member.Invitation.Projects)
+		projectIDs := []string{}
+		for _, project := range member.Invitation.Projects {
+			projectIDs = append(projectIDs, path.Base(project.Href))
+		}
+		projectsList, diag := types.SetValueFrom(ctx, types.StringType, projectIDs)
 		if diag.HasError() {
 			return diag
 		}
@@ -57,13 +65,11 @@ func (m *ResourceModel) parse(ctx context.Context, member *member) diag.Diagnost
 		}
 		m.Roles = rolesList
 
-		//m.OrganizationID = types.StringValue(member.Invitation.Organization.Href)
 		m.OrganizationID = types.StringValue(path.Base(member.Invitation.Organization.Href))
 		m.Created = types.StringValue(member.Invitation.CreatedAt.String())
 		m.Updated = types.StringValue(member.Invitation.UpdatedAt.String())
 		m.Nonce = types.StringValue(member.Invitation.Nonce)
 
-		//m.InvitedBy = types.StringValue(member.Invitation.InvitedBy.Href)
 		m.InvitedBy = types.StringValue(path.Base(member.Invitation.InvitedBy.Href))
 		m.ID = types.StringValue(member.Invitation.ID)
 	}
