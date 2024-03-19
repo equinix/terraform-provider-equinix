@@ -8,6 +8,7 @@ import (
 	metalconnection "github.com/equinix/terraform-provider-equinix/internal/resources/metal/connection"
 	metalgateway "github.com/equinix/terraform-provider-equinix/internal/resources/metal/gateway"
 	metalorganization "github.com/equinix/terraform-provider-equinix/internal/resources/metal/organization"
+	metalorganizationmember "github.com/equinix/terraform-provider-equinix/internal/resources/metal/organization_member"
 	metalprojectsshkey "github.com/equinix/terraform-provider-equinix/internal/resources/metal/project_ssh_key"
 	metalsshkey "github.com/equinix/terraform-provider-equinix/internal/resources/metal/ssh_key"
 	equinix_validation "github.com/equinix/terraform-provider-equinix/internal/validation"
@@ -116,6 +117,7 @@ func (p *FrameworkProvider) Resources(ctx context.Context) []func() resource.Res
 		metalsshkey.NewResource,
 		metalconnection.NewResource,
 		metalorganization.NewResource,
+		metalorganizationmember.NewResource,
 	}
 }
 
