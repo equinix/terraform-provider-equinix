@@ -17,10 +17,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 )
 
-const (
-	RequiresReplacementWhenASNChanged = "Requiring project recreation if BGP was configured and ASN changes."
-)
-
 func resourceSchema(ctx context.Context) schema.Schema {
 	return schema.Schema{
 		Attributes: map[string]schema.Attribute{
