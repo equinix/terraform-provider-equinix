@@ -3,182 +3,102 @@ package project
 import (
 	"context"
 	"fmt"
-	"path"
-	"time"
-
-	"github.com/equinix/terraform-provider-equinix/internal/config"
 
 	"github.com/equinix/equinix-sdk-go/services/metalv1"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
+	"github.com/equinix/terraform-provider-equinix/internal/framework"
+	"github.com/hashicorp/terraform-plugin-framework/datasource"
 )
 
-func DataSource() *schema.Resource {
-	return &schema.Resource{
-		ReadWithoutTimeout: dataSourceMetalProjectRead,
-		Schema: map[string]*schema.Schema{
-			"name": {
-				Type:          schema.TypeString,
-				Description:   "The name which is used to look up the project",
-				Optional:      true,
-				Computed:      true,
-				ConflictsWith: []string{"project_id"},
+func NewDataSource() datasource.DataSource {
+	return &DataSource{
+		BaseDataSource: framework.NewBaseDataSource(
+			framework.BaseDataSourceConfig{
+				Name: "equinix_metal_project",
 			},
-			"project_id": {
-				Type:          schema.TypeString,
-				Description:   "The UUID by which to look up the project",
-				Optional:      true,
-				Computed:      true,
-				ConflictsWith: []string{"name"},
-			},
-
-			"created": {
-				Type:        schema.TypeString,
-				Description: "The timestamp for when the project was created",
-				Computed:    true,
-			},
-
-			"updated": {
-				Type:        schema.TypeString,
-				Description: "The timestamp for the last time the project was updated",
-				Computed:    true,
-			},
-
-			"backend_transfer": {
-				Type:        schema.TypeBool,
-				Description: "Whether Backend Transfer is enabled for this project",
-				Computed:    true,
-			},
-
-			"payment_method_id": {
-				Type:        schema.TypeString,
-				Description: "The UUID of payment method for this project",
-				Computed:    true,
-			},
-
-			"organization_id": {
-				Type:        schema.TypeString,
-				Description: "The UUID of this project's parent organization",
-				Computed:    true,
-			},
-			"user_ids": {
-				Type:        schema.TypeList,
-				Description: "List of UUIDs of user accounts which belong to this project",
-				Computed:    true,
-				Elem:        &schema.Schema{Type: schema.TypeString},
-			},
-			"bgp_config": {
-				Type:        schema.TypeList,
-				Description: "Optional BGP settings. Refer to [Equinix Metal guide for BGP](https://metal.equinix.com/developers/docs/networking/local-global-bgp/)",
-				Computed:    true,
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"deployment_type": {
-							Type:         schema.TypeString,
-							Description:  "Private or public, the private is likely to be usable immediately, the public will need to be review by Equinix Metal engineers",
-							Required:     true,
-							ValidateFunc: validation.StringInSlice([]string{"local", "global"}, false),
-						},
-						"asn": {
-							Type:        schema.TypeInt,
-							Description: "Autonomous System Number for local BGP deployment",
-							Required:    true,
-						},
-						"md5": {
-							Type:        schema.TypeString,
-							Description: "Password for BGP session in plaintext (not a checksum)",
-							Optional:    true,
-							Sensitive:   true,
-						},
-						"status": {
-							Type:        schema.TypeString,
-							Description: "Status of BGP configuration in the project",
-							Computed:    true,
-						},
-						"max_prefix": {
-							Type:        schema.TypeInt,
-							Description: "The maximum number of route filters allowed per server",
-							Computed:    true,
-						},
-					},
-				},
-			},
-		},
+		),
 	}
 }
 
-func dataSourceMetalProjectRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := meta.(*config.Config).NewMetalClientForSDK(d)
-	nameRaw, nameOK := d.GetOk("name")
-	projectIdRaw, projectIdOK := d.GetOk("project_id")
+type DataSource struct {
+	framework.BaseDataSource
+}
 
-	if !projectIdOK && !nameOK {
-		return diag.Errorf("you must supply project_id or name")
+func (r *DataSource) Schema(
+	ctx context.Context,
+	req datasource.SchemaRequest,
+	resp *datasource.SchemaResponse,
+) {
+	resp.Schema = dataSourceSchema(ctx)
+}
+
+func (r *DataSource) Read(
+	ctx context.Context,
+	req datasource.ReadRequest,
+	resp *datasource.ReadResponse,
+) {
+	// Retrieve values from plan
+	var data DataSourceModel
+	resp.Diagnostics.Append(req.Config.Get(ctx, &data)...)
+	if resp.Diagnostics.HasError() {
+		return
 	}
+
+	// Retrieve the API client from the provider metadata
+	client := r.Meta.NewMetalClientForFramework(ctx, req.ProviderMeta)
+
+	// Use API client to get the current state of the resource
 	var project *metalv1.Project
-
-	if nameOK {
-		name := nameRaw.(string)
-
+	if !data.Name.IsNull() {
+		name := data.Name.ValueString()
 		projects, err := client.ProjectsApi.FindProjects(ctx).Name(name).ExecuteWithPagination()
 		if err != nil {
-			return diag.FromErr(err)
+			resp.Diagnostics.AddError(
+				"Error reading Metal Project",
+				"Could not read Metal Connection with Name "+name+": "+err.Error(),
+			)
+			return
 		}
-
-		project, err = findProjectByName(projects, name)
-		if err != nil {
-			return diag.FromErr(err)
+		if len(projects.Projects) == 0 {
+			resp.Diagnostics.AddError(
+				"Error reading Metal Project",
+				"No project found with name "+name,
+			)
+			return
 		}
+		if len(projects.Projects) > 1 {
+			resp.Diagnostics.AddError(
+				"Error reading Metal Project",
+				fmt.Sprintf("too many projects found with name %s (found %d, expected 1)", name, len(projects.Projects)),
+			)
+			return
+		}
+		project = &projects.Projects[0]
 	} else {
-		projectId := projectIdRaw.(string)
+		id := data.ProjectID.ValueString()
 		var err error
-		project, _, err = client.ProjectsApi.FindProjectById(ctx, projectId).Execute()
+		project, _, err = client.ProjectsApi.FindProjectById(ctx, id).Execute()
 		if err != nil {
-			return diag.FromErr(err)
+			resp.Diagnostics.AddError(
+				"Error reading Metal Project",
+				"Could not read Metal Project with ID "+id+": "+err.Error(),
+			)
+			return
 		}
 	}
-
-	d.SetId(project.GetId())
-	d.Set("payment_method_id", path.Base(project.PaymentMethod.GetHref()))
-	d.Set("name", project.GetName())
-	d.Set("project_id", project.GetId())
-	d.Set("organization_id", path.Base(project.Organization.AdditionalProperties["href"].(string))) // spec: organization has no href
-	d.Set("created", project.GetCreatedAt().Format(time.RFC3339))
-	d.Set("updated", project.GetUpdatedAt().Format(time.RFC3339))
-	d.Set("backend_transfer", project.AdditionalProperties["backend_transfer_enabled"].(bool)) // No backend_transfer_enabled property in API spec
 
 	bgpConf, _, err := client.BGPApi.FindBgpConfigByProject(ctx, project.GetId()).Execute()
-	userIds := []string{}
-	for _, u := range project.GetMembers() {
-		userIds = append(userIds, path.Base(u.GetHref()))
+	if err != nil {
+		resp.Diagnostics.AddError(
+			"Error reading Metal Project",
+			"Could not read BGP Config for Metal Project with ID "+project.GetId()+": "+err.Error(),
+		)
 	}
-	d.Set("user_ids", userIds)
+	// Set state to fully populated data
+	resp.Diagnostics.Append(data.parse(ctx, project, bgpConf)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
 
-	if (err == nil) && (bgpConf != nil) {
-		// guard against an empty struct
-		if bgpConf.GetId() != "" {
-			err := d.Set("bgp_config", flattenBGPConfig(bgpConf))
-			if err != nil {
-				return diag.FromErr(err)
-			}
-		}
-	}
-	return nil
-}
-
-func findProjectByName(ps *metalv1.ProjectList, name string) (*metalv1.Project, error) {
-	results := make([]metalv1.Project, 0)
-	for _, p := range ps.Projects {
-		if p.GetName() == name {
-			results = append(results, p)
-		}
-	}
-	if len(results) == 1 {
-		return &results[0], nil
-	}
-	if len(results) == 0 {
-		return nil, fmt.Errorf("no project found with name %s", name)
-	}
-	return nil, fmt.Errorf("too many projects found with name %s (found %d, expected 1)", name, len(results))
+	// Update the Terraform state
+	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
