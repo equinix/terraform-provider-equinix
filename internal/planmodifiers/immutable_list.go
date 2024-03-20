@@ -24,7 +24,7 @@ func (d *immutableListPlanModifier) PlanModifyList(ctx context.Context, request 
 			request.Path,
 			"Change not allowed",
 			fmt.Sprintf(
-				"Cannot remove elements from the `%s` list field. Resource recreation would be required.",
+				"Elements of the `%s` list field can not be removed. Resource recreation would be required.",
 				request.Path.String(),
 			),
 		)
