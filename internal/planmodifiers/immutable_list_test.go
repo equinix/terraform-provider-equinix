@@ -11,19 +11,25 @@ import (
 
 func TestImmutableListSet(t *testing.T) {
 	testCases := []struct {
-		Old, New, Expected []string 
-		ExpectError bool
+		Old, New, Expected []string
+		ExpectError        bool
 	}{
 		{
-			Old:      []string{},
-			New:      []string{"test"},
-			Expected: []string{"test"},
+			Old:         []string{},
+			New:         []string{"test"},
+			Expected:    []string{"test"},
 			ExpectError: false,
 		},
 		{
-			Old:      []string{"test"},
-			New:      []string{},
-			Expected: []string{},
+			Old:         []string{"test"},
+			New:         []string{},
+			Expected:    []string{},
+			ExpectError: true,
+		},
+		{
+			Old:         []string{"foo"},
+			New:         []string{"bar"},
+			Expected:    []string{"bar"},
 			ExpectError: true,
 		},
 	}
@@ -38,7 +44,7 @@ func TestImmutableListSet(t *testing.T) {
 		req := planmodifier.ListRequest{
 			StateValue: stateValue,
 			PlanValue:  planValue,
-			Path: path.Root("test"),
+			Path:       path.Root("test"),
 		}
 
 		var resp planmodifier.ListResponse
@@ -52,7 +58,7 @@ func TestImmutableListSet(t *testing.T) {
 		}
 
 		if !resp.PlanValue.Equal(expectedValue) {
-			value, _:= resp.PlanValue.ToListValue(context.Background())
+			value, _ := resp.PlanValue.ToListValue(context.Background())
 			t.Fatalf("%d: output plan value does not equal expected. Want %v plan value, got %v", i, expectedValue, value)
 		}
 	}
