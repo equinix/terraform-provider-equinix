@@ -64,7 +64,7 @@ func (r *Resource) Create(
 	var err error
 	var conn *metalv1.Interconnection
 
-	if plan.Type.ValueString() == string(metalv1.INTERCONNECTIONTYPE_SHARED) {
+	if plan.Type.ValueString() == string(metalv1.INTERCONNECTIONTYPE_SHARED) || plan.Type.ValueString() == string(metalv1.INTERCONNECTIONTYPE_SHARED_PORT_VLAN) {
 		request := client.InterconnectionsApi.CreateProjectInterconnection(ctx, projectID).
 			CreateOrganizationInterconnectionRequest(createRequest)
 
@@ -377,6 +377,36 @@ func buildVRFFabricVCCreateRequest(ctx context.Context, plan ResourceModel, req 
 	return diags
 }
 
+func buildSharedPortVCVLANCreateRequest(ctx context.Context, plan ResourceModel, req *metalv1.CreateOrganizationInterconnectionRequest) diag.Diagnostics {
+	diags := validateSharedConnection(plan)
+
+	project := plan.ProjectID.ValueString()
+
+	req.SharedPortVCVlanCreateInput = &metalv1.SharedPortVCVlanCreateInput{
+		Type: metalv1.SHAREDPORTVCVLANCREATEINPUTTYPE_SHARED_PORT_VLAN,
+
+		Name:    plan.Name.ValueString(),
+		Project: project,
+		Metro:   plan.Metro.ValueString(),
+		Speed:   plan.Speed.ValueStringPointer(),
+	}
+
+	if email := plan.ContactEmail.ValueString(); email != "" {
+		req.SharedPortVCVlanCreateInput.ContactEmail = &email
+	}
+	if description := plan.Description.ValueString(); description != "" {
+		req.SharedPortVCVlanCreateInput.Description = &description
+	}
+
+	vlansDiags := plan.Vlans.ElementsAs(ctx, &req.SharedPortVCVlanCreateInput.Vlans, true)
+	diags.Append(vlansDiags...)
+
+	tagDiags := getPlanTags(ctx, plan, &req.SharedPortVCVlanCreateInput.Tags)
+	diags.Append(tagDiags...)
+
+	return diags
+}
+
 func getPlanTags(ctx context.Context, plan ResourceModel, tags *[]string) diag.Diagnostics {
 	if len(plan.Tags.Elements()) != 0 {
 		return plan.Tags.ElementsAs(context.Background(), tags, false)
@@ -432,6 +462,8 @@ func validateSharedConnection(plan ResourceModel) (diags diag.Diagnostics) {
 func buildCreateRequest(ctx context.Context, plan ResourceModel) (request metalv1.CreateOrganizationInterconnectionRequest, diags diag.Diagnostics) {
 	hasVlans := len(plan.Vlans.Elements()) != 0
 	hasVrfs := len(plan.Vrfs.Elements()) != 0
+	hasSharedPortVlans := len(plan.Vlans.Elements()) != 0
+
 	connType := metalv1.InterconnectionType(plan.Type.ValueString())
 
 	if hasVlans && hasVrfs {
@@ -459,6 +491,14 @@ func buildCreateRequest(ctx context.Context, plan ResourceModel) (request metalv
 		)
 
 		return
+	} else if connType == metalv1.INTERCONNECTIONTYPE_SHARED_PORT_VLAN && (hasSharedPortVlans) {
+		diags.AddAttributeError(
+			path.Root("type"),
+			"Must specify vlans",
+			"Port Shared connections must specify vlans",
+		)
+
+		return
 	}
 
 	// ensure speed is valid if specified
@@ -480,6 +520,9 @@ func buildCreateRequest(ctx context.Context, plan ResourceModel) (request metalv
 
 	case hasVrfs:
 		requestFunc = buildVRFFabricVCCreateRequest
+
+	case hasSharedPortVlans:
+		requestFunc = buildSharedPortVCVLANCreateRequest
 
 	default:
 		// has to be a dedicated connection
