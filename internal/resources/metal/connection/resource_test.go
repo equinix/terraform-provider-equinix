@@ -98,6 +98,31 @@ func testAccMetalConnectionConfig_SharedVlan(randstr string) string {
 		randstr, randstr, randstr, randstr)
 }
 
+func testAccMetalConnectionConfig_SharedPort(randstr string) string {
+	return fmt.Sprintf(`
+        resource "equinix_metal_project" "test" {
+            name = "tfacc-conn-pro-%s"
+        }
+		resource "equinix_metal_vlan" "test1" {
+			description = "tfacc-conn-vlan1-%s"
+			metro       = "sv"
+			project_id  = equinix_metal_project.test.id
+		}
+        resource "equinix_metal_connection" "test" {
+            name               = "tfacc-conn-%s"
+            project_id         = equinix_metal_project.test.id
+            type               = "shared_port_vlan"
+            redundancy         = "primary"
+            metro              = "sv"
+			speed              = "50Mbps"
+			contact_email      = "tfacc@example.com"
+			vlans              = [
+				equinix_metal_vlan.test1.vxlan,
+			]
+        }`,
+		randstr, randstr, randstr)
+}
+
 func testAccMetalConnectionConfig_SharedPrimaryVrf(randstr string) string {
 	return fmt.Sprintf(`
         resource "equinix_metal_project" "test" {
@@ -268,6 +293,34 @@ func TestAccMetalConnection_sharedVlan(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						"data.equinix_metal_connection.test", "service_tokens.0.max_allowed_speed", "50Mbps"),
 				),
+			},
+		},
+	})
+}
+
+func TestAccMetalConnection_sharedPort(t *testing.T) {
+	rs := acctest.RandString(10)
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:                 func() { acceptance.TestAccPreCheckMetal(t) },
+		ExternalProviders:        acceptance.TestExternalProviders,
+		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		CheckDestroy:             testAccMetalConnectionCheckDestroyed,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccMetalConnectionConfig_SharedPort(rs),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(
+						"equinix_metal_connection.test", "metro", "sv"),
+					resource.TestCheckResourceAttr(
+						"equinix_metal_connection.test", "contact_email", "tfacc@example.com"),
+				),
+			},
+			{
+				ResourceName:            "equinix_metal_connection.test",
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"project_id", "vlans"},
 			},
 		},
 	})

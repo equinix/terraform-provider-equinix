@@ -385,10 +385,11 @@ func buildSharedPortVCVLANCreateRequest(ctx context.Context, plan ResourceModel,
 	req.SharedPortVCVlanCreateInput = &metalv1.SharedPortVCVlanCreateInput{
 		Type: metalv1.SHAREDPORTVCVLANCREATEINPUTTYPE_SHARED_PORT_VLAN,
 
-		Name:    plan.Name.ValueString(),
-		Project: project,
-		Metro:   plan.Metro.ValueString(),
-		Speed:   plan.Speed.ValueStringPointer(),
+		Name:                 plan.Name.ValueString(),
+		Project:              project,
+		Metro:                plan.Metro.ValueString(),
+		Speed:                plan.Speed.ValueStringPointer(),
+		AdditionalProperties: map[string]any{"redundancy": plan.Redundancy.ValueString()},
 	}
 
 	if email := plan.ContactEmail.ValueString(); email != "" {
@@ -462,7 +463,6 @@ func validateSharedConnection(plan ResourceModel) (diags diag.Diagnostics) {
 func buildCreateRequest(ctx context.Context, plan ResourceModel) (request metalv1.CreateOrganizationInterconnectionRequest, diags diag.Diagnostics) {
 	hasVlans := len(plan.Vlans.Elements()) != 0
 	hasVrfs := len(plan.Vrfs.Elements()) != 0
-	hasSharedPortVlans := len(plan.Vlans.Elements()) != 0
 
 	connType := metalv1.InterconnectionType(plan.Type.ValueString())
 
@@ -491,7 +491,7 @@ func buildCreateRequest(ctx context.Context, plan ResourceModel) (request metalv
 		)
 
 		return
-	} else if connType == metalv1.INTERCONNECTIONTYPE_SHARED_PORT_VLAN && (hasSharedPortVlans) {
+	} else if connType == metalv1.INTERCONNECTIONTYPE_SHARED_PORT_VLAN && !(hasVlans) {
 		diags.AddAttributeError(
 			path.Root("type"),
 			"Must specify vlans",
@@ -515,14 +515,14 @@ func buildCreateRequest(ctx context.Context, plan ResourceModel) (request metalv
 	var requestFunc func(context.Context, ResourceModel, *metalv1.CreateOrganizationInterconnectionRequest) diag.Diagnostics
 
 	switch {
+	case hasVlans && connType == metalv1.INTERCONNECTIONTYPE_SHARED_PORT_VLAN:
+		requestFunc = buildSharedPortVCVLANCreateRequest
+
 	case hasVlans:
 		requestFunc = buildVLANFabricVCCreateRequest
 
 	case hasVrfs:
 		requestFunc = buildVRFFabricVCCreateRequest
-
-	case hasSharedPortVlans:
-		requestFunc = buildSharedPortVCVLANCreateRequest
 
 	default:
 		// has to be a dedicated connection
