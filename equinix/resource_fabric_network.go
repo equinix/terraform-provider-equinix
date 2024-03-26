@@ -168,23 +168,27 @@ func resourceFabricNetwork() *schema.Resource {
 
 func resourceFabricNetworkCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*config.Config).NewFabricClientForSDK(d)
+	createRequest := fabricv4.NetworkPostRequest{}
+	createRequest.SetName(d.Get("name").(string))
+
 	schemaNotifications := d.Get("notifications").([]interface{})
 	notifications := equinix_fabric_schema.NotificationsTerraformToGo(schemaNotifications)
-	schemaLocation := d.Get("location").(*schema.Set).List()
-	location := equinix_fabric_schema.LocationTerraformToGo(schemaLocation)
+	createRequest.SetNotifications(notifications)
+
+	if schemaLocation, ok := d.GetOk("location"); ok {
+		location := equinix_fabric_schema.LocationTerraformToGo(schemaLocation.(*schema.Set).List())
+		createRequest.SetLocation(location)
+	}
+
 	schemaProject := d.Get("project").(*schema.Set).List()
 	project := equinix_fabric_schema.ProjectTerraformToGo(schemaProject)
-	netType := fabricv4.NetworkType(d.Get("type").(string))
-	netScope := fabricv4.NetworkScope(d.Get("scope").(string))
+	createRequest.SetProject(project)
 
-	createRequest := fabricv4.NetworkPostRequest{
-		Name:          d.Get("name").(string),
-		Type:          netType,
-		Scope:         netScope,
-		Location:      &location,
-		Notifications: notifications,
-		Project:       &project,
-	}
+	netType := fabricv4.NetworkType(d.Get("type").(string))
+	createRequest.SetType(netType)
+
+	netScope := fabricv4.NetworkScope(d.Get("scope").(string))
+	createRequest.SetScope(netScope)
 
 	start := time.Now()
 	fabricNetwork, _, err := client.NetworksApi.CreateNetwork(ctx).NetworkPostRequest(createRequest).Execute()
@@ -250,7 +254,7 @@ func setFabricNetworkMap(d *schema.ResourceData, nt *fabricv4.Network) diag.Diag
 		"name":              nt.GetName(),
 		"href":              nt.GetHref(),
 		"uuid":              nt.GetUuid(),
-		"type":              nt.GetType(),
+		"type":              string(nt.GetType()),
 		"scope":             nt.GetScope(),
 		"state":             nt.GetState(),
 		"operation":         fabricNetworkOperationGoToTerraform(&operation),
@@ -373,11 +377,12 @@ func resourceFabricNetworkDelete(ctx context.Context, d *schema.ResourceData, me
 	start := time.Now()
 	_, _, err := client.NetworksApi.DeleteNetworkByUuid(ctx, d.Id()).Execute()
 	if err != nil {
-		errors, ok := err.(fabricv4.GenericOpenAPIError).Model().([]fabricv4.Error)
-		if ok {
-			// EQ-3040055 = There is an existing update in REQUESTED state
-			if equinix_errors.HasErrorCode(errors, "EQ-3040055") {
-				return diags
+		if genericError, ok := err.(*fabricv4.GenericOpenAPIError); ok {
+			if fabricErrs, ok := genericError.Model().([]fabricv4.Error); ok {
+				// EQ-3040055 = There is an existing update in REQUESTED state
+				if equinix_errors.HasErrorCode(fabricErrs, "EQ-3040055") {
+					return diags
+				}
 			}
 		}
 		return diag.FromErr(equinix_errors.FormatFabricError(err))

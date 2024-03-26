@@ -410,7 +410,6 @@ func TestAccFabricCreateVirtualDevice2NetworkConnection_PNFV(t *testing.T) {
 					resource.TestCheckResourceAttrSet(
 						"equinix_fabric_connection.test", "z_side.0.access_point.0.network.0.uuid"),
 				),
-				ExpectNonEmptyPlan: true,
 			},
 		},
 	})

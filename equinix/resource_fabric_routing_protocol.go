@@ -297,94 +297,26 @@ func resourceFabricRoutingProtocolRead(ctx context.Context, d *schema.ResourceDa
 		return diag.FromErr(equinix_errors.FormatFabricError(err))
 	}
 
-	switch rpData := fabricRoutingProtocolData.GetActualInstance().(type) {
-	case *fabricv4.RoutingProtocolBGPData:
-		rpChange := rpData.GetChange()
-		rpUuid := rpChange.GetUuid()
-		d.SetId(rpUuid)
-	case *fabricv4.RoutingProtocolDirectData:
-		rpChange := rpData.GetChange()
-		rpUuid := rpChange.GetUuid()
-		d.SetId(rpUuid)
-	}
+	_ = setIdFromAPIResponse(fabricRoutingProtocolData, false, d)
 
 	return setFabricRoutingProtocolMap(d, fabricRoutingProtocolData)
 }
 
 func resourceFabricRoutingProtocolCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*config.Config).NewFabricClientForSDK(d)
-	schemaBgpIpv4 := d.Get("bgp_ipv4").(*schema.Set).List()
-	bgpIpv4 := routingProtocolBgpIpv4TerraformToGo(schemaBgpIpv4)
-	schemaBgpIpv6 := d.Get("bgp_ipv6").(*schema.Set).List()
-	bgpIpv6 := routingProtocolBgpIpv6TerraformToGo(schemaBgpIpv6)
-	schemaDirectIpv4 := d.Get("direct_ipv4").(*schema.Set).List()
-	directIpv4 := routingProtocolDirectIpv4TerraformToGo(schemaDirectIpv4)
-	schemaDirectIpv6 := d.Get("direct_ipv6").(*schema.Set).List()
-	directIpv6 := routingProtocolDirectIpv6TerraformToGo(schemaDirectIpv6)
-	schemaBfd := d.Get("bfd").(*schema.Set).List()
-	bfd := routingProtocolBfdTerraformToGo(schemaBfd)
-	bgpAuthKey := d.Get("bgp_auth_key")
-
-	createRequest := fabricv4.RoutingProtocolBase{}
-	if d.Get("type").(string) == "BGP" {
-		type_, _ := fabricv4.NewRoutingProtocolBGPTypeTypeFromValue(d.Get("type").(string))
-		createRequest = fabricv4.RoutingProtocolBase{
-			RoutingProtocolBGPType: &fabricv4.RoutingProtocolBGPType{
-				Type:        *type_,
-				Name:        d.Get("name").(*string),
-				BgpIpv4:     bgpIpv4,
-				BgpIpv6:     bgpIpv6,
-				CustomerAsn: d.Get("customer_asn").(*int64),
-				EquinixAsn:  d.Get("equinix_asn").(*int64),
-				BgpAuthKey:  bgpAuthKey.(*string),
-				Bfd:         bfd,
-			},
-		}
-		if bgpIpv4.GetCustomerPeerIp() == "" {
-			createRequest.RoutingProtocolBGPType.BgpIpv4 = nil
-		}
-		if bgpIpv6.GetCustomerPeerIp() == "" {
-			createRequest.RoutingProtocolBGPType.BgpIpv6 = nil
-		}
-		if bfd.GetEnabled() == false {
-			createRequest.RoutingProtocolBGPType.Bfd = nil
-		}
-	}
-	if d.Get("type").(string) == "DIRECT" {
-		type_, _ := fabricv4.NewRoutingProtocolDirectTypeTypeFromValue(d.Get("type").(string))
-		createRequest = fabricv4.RoutingProtocolBase{
-			RoutingProtocolDirectType: &fabricv4.RoutingProtocolDirectType{
-				Type:       *type_,
-				Name:       d.Get("name").(*string),
-				DirectIpv4: directIpv4,
-				DirectIpv6: directIpv6,
-			},
-		}
-		if directIpv4.GetEquinixIfaceIp() == "" {
-			createRequest.RoutingProtocolDirectType.DirectIpv4 = nil
-		}
-		if directIpv6.GetEquinixIfaceIp() == "" {
-			createRequest.RoutingProtocolDirectType.DirectIpv6 = nil
-		}
-	}
 
 	start := time.Now()
+	type_ := d.Get("type").(string)
+
+	createRequest := routingProtocolPayloadFromType(type_, d)
+
 	fabricRoutingProtocolData, _, err := client.RoutingProtocolsApi.CreateConnectionRoutingProtocol(ctx, d.Get("connection_uuid").(string)).RoutingProtocolBase(createRequest).Execute()
 
 	if err != nil {
 		return diag.FromErr(equinix_errors.FormatFabricError(err))
 	}
 
-	switch rpData := fabricRoutingProtocolData.GetActualInstance().(type) {
-	case *fabricv4.RoutingProtocolBGPData:
-		rp := rpData.GetChange()
-		rpUuid := rp.GetUuid()
-		d.SetId(rpUuid)
-	case *fabricv4.RoutingProtocolDirectData:
-		rp := rpData.GetChange()
-		rpUuid := rp.GetUuid()
-		d.SetId(rpUuid)
-	}
+	_ = setIdFromAPIResponse(fabricRoutingProtocolData, false, d)
 
 	createTimeout := d.Timeout(schema.TimeoutCreate) - 30*time.Second - time.Since(start)
 	if _, err = waitUntilRoutingProtocolIsProvisioned(d.Id(), d.Get("connection_uuid").(string), meta, d, ctx, createTimeout); err != nil {
@@ -397,60 +329,9 @@ func resourceFabricRoutingProtocolCreate(ctx context.Context, d *schema.Resource
 func resourceFabricRoutingProtocolUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*config.Config).NewFabricClientForSDK(d)
 
-	schemaBgpIpv4 := d.Get("bgp_ipv4").(*schema.Set).List()
-	bgpIpv4 := routingProtocolBgpIpv4TerraformToGo(schemaBgpIpv4)
-	schemaBgpIpv6 := d.Get("bgp_ipv6").(*schema.Set).List()
-	bgpIpv6 := routingProtocolBgpIpv6TerraformToGo(schemaBgpIpv6)
-	schemaDirectIpv4 := d.Get("direct_ipv4").(*schema.Set).List()
-	directIpv4 := routingProtocolDirectIpv4TerraformToGo(schemaDirectIpv4)
-	schemaDirectIpv6 := d.Get("direct_ipv6").(*schema.Set).List()
-	directIpv6 := routingProtocolDirectIpv6TerraformToGo(schemaDirectIpv6)
-	schemaBfd := d.Get("bfd").(*schema.Set).List()
-	bfd := routingProtocolBfdTerraformToGo(schemaBfd)
-	bgpAuthKey := d.Get("bgp_auth_key")
-	if bgpAuthKey == nil {
-		bgpAuthKey = ""
-	}
+	type_ := d.Get("type").(string)
 
-	updateRequest := fabricv4.RoutingProtocolBase{}
-	if d.Get("type").(string) == "BGP" {
-		type_, _ := fabricv4.NewRoutingProtocolBGPTypeTypeFromValue(d.Get("type").(string))
-		updateRequest = fabricv4.RoutingProtocolBase{
-			RoutingProtocolBGPType: &fabricv4.RoutingProtocolBGPType{
-				Type:        *type_,
-				Name:        d.Get("name").(*string),
-				BgpIpv4:     bgpIpv4,
-				BgpIpv6:     bgpIpv6,
-				CustomerAsn: d.Get("customer_asn").(*int64),
-				EquinixAsn:  d.Get("equinix_asn").(*int64),
-				BgpAuthKey:  bgpAuthKey.(*string),
-				Bfd:         bfd,
-			},
-		}
-		if bgpIpv4.GetCustomerPeerIp() == "" {
-			updateRequest.RoutingProtocolBGPType.BgpIpv4 = nil
-		}
-		if bgpIpv6.GetCustomerPeerIp() == "" {
-			updateRequest.RoutingProtocolBGPType.BgpIpv6 = nil
-		}
-	}
-	if d.Get("type").(string) == "DIRECT" {
-		type_, _ := fabricv4.NewRoutingProtocolDirectTypeTypeFromValue(d.Get("type").(string))
-		updateRequest = fabricv4.RoutingProtocolBase{
-			RoutingProtocolDirectType: &fabricv4.RoutingProtocolDirectType{
-				Type:       *type_,
-				Name:       d.Get("name").(*string),
-				DirectIpv4: directIpv4,
-				DirectIpv6: directIpv6,
-			},
-		}
-		if directIpv4.GetEquinixIfaceIp() == "" {
-			updateRequest.RoutingProtocolDirectType.DirectIpv4 = nil
-		}
-		if directIpv6.GetEquinixIfaceIp() == "" {
-			updateRequest.RoutingProtocolDirectType.DirectIpv6 = nil
-		}
-	}
+	updateRequest := routingProtocolPayloadFromType(type_, d)
 
 	start := time.Now()
 	updatedRpResp, _, err := client.RoutingProtocolsApi.ReplaceConnectionRoutingProtocolByUuid(ctx, d.Id(), d.Get("connection_uuid").(string)).RoutingProtocolBase(updateRequest).Execute()
@@ -458,17 +339,7 @@ func resourceFabricRoutingProtocolUpdate(ctx context.Context, d *schema.Resource
 		return diag.FromErr(equinix_errors.FormatFabricError(err))
 	}
 
-	var changeUuid string
-	switch rpData := updatedRpResp.GetActualInstance().(type) {
-	case *fabricv4.RoutingProtocolBGPData:
-		rpChange := rpData.GetChange()
-		changeUuid = rpChange.GetUuid()
-		d.SetId(changeUuid)
-	case *fabricv4.RoutingProtocolDirectData:
-		rpChange := rpData.GetChange()
-		changeUuid = rpChange.GetUuid()
-		d.SetId(changeUuid)
-	}
+	changeUuid := setIdFromAPIResponse(updatedRpResp, true, d)
 
 	updateTimeout := d.Timeout(schema.TimeoutUpdate) - 30*time.Second - time.Since(start)
 	_, err = waitForRoutingProtocolUpdateCompletion(changeUuid, d.Id(), d.Get("connection_uuid").(string), meta, d, ctx, updateTimeout)
@@ -494,11 +365,12 @@ func resourceFabricRoutingProtocolDelete(ctx context.Context, d *schema.Resource
 	client := meta.(*config.Config).NewFabricClientForSDK(d)
 	_, _, err := client.RoutingProtocolsApi.DeleteConnectionRoutingProtocolByUuid(ctx, d.Id(), d.Get("connection_uuid").(string)).Execute()
 	if err != nil {
-		errors, ok := err.(fabricv4.GenericOpenAPIError).Model().([]fabricv4.Error)
-		if ok {
-			// EQ-3142509 = Connection already deleted
-			if equinix_errors.HasErrorCode(errors, "EQ-3142509") {
-				return diags
+		if genericError, ok := err.(*fabricv4.GenericOpenAPIError); ok {
+			if fabricErrs, ok := genericError.Model().([]fabricv4.Error); ok {
+				// EQ-3041121 = Routing Protocol already deleted
+				if equinix_errors.HasErrorCode(fabricErrs, "EQ-3041121") {
+					return diags
+				}
 			}
 		}
 		return diag.FromErr(equinix_errors.FormatFabricError(err))
@@ -511,6 +383,93 @@ func resourceFabricRoutingProtocolDelete(ctx context.Context, d *schema.Resource
 	}
 
 	return diags
+}
+
+func setIdFromAPIResponse(resp *fabricv4.RoutingProtocolData, isChange bool, d *schema.ResourceData) string {
+	var changeUuid string
+
+	switch rpData := resp.GetActualInstance().(type) {
+	case *fabricv4.RoutingProtocolBGPData:
+		if isChange {
+			change := rpData.GetChange()
+			changeUuid = change.GetUuid()
+		}
+		d.SetId(rpData.GetUuid())
+	case *fabricv4.RoutingProtocolDirectData:
+		if isChange {
+			change := rpData.GetChange()
+			changeUuid = change.GetUuid()
+		}
+		d.SetId(rpData.GetUuid())
+	}
+
+	return changeUuid
+}
+
+func routingProtocolPayloadFromType(type_ string, d *schema.ResourceData) fabricv4.RoutingProtocolBase {
+	payload := fabricv4.RoutingProtocolBase{}
+	if type_ == "BGP" {
+		bgpRP := fabricv4.RoutingProtocolBGPType{}
+		bgpType := fabricv4.RoutingProtocolBGPTypeType(type_)
+		bgpRP.SetType(bgpType)
+
+		name := d.Get("name").(string)
+		if name != "" {
+			bgpRP.SetName(name)
+		}
+
+		if customerASNSchema, ok := d.GetOk("customer_asn"); ok {
+			customerASN := int64(customerASNSchema.(int))
+			bgpRP.SetCustomerAsn(customerASN)
+		}
+
+		if equinixASNSchema, ok := d.GetOk("equinix_asn"); ok {
+			equinixASN := int64(equinixASNSchema.(int))
+			bgpRP.SetEquinixAsn(equinixASN)
+		}
+
+		bgpAuthKey := d.Get("bgp_auth_key").(string)
+		if bgpAuthKey != "" {
+			bgpRP.SetBgpAuthKey(bgpAuthKey)
+		}
+
+		if schemaBgpIpv4, ok := d.GetOk("bgp_ipv4"); ok {
+			bgpIpv4 := routingProtocolBgpIpv4TerraformToGo(schemaBgpIpv4.(*schema.Set).List())
+			bgpRP.SetBgpIpv4(bgpIpv4)
+		}
+
+		if schemaBgpIpv6, ok := d.GetOk("bgp_ipv6"); ok {
+			bgpIpv6 := routingProtocolBgpIpv6TerraformToGo(schemaBgpIpv6.(*schema.Set).List())
+			bgpRP.SetBgpIpv6(bgpIpv6)
+		}
+
+		if bfdSchema, ok := d.GetOk("bfd"); ok {
+			bfd := routingProtocolBfdTerraformToGo(bfdSchema.(*schema.Set).List())
+			bgpRP.SetBfd(bfd)
+		}
+		payload = fabricv4.RoutingProtocolBGPTypeAsRoutingProtocolBase(&bgpRP)
+	}
+	if type_ == "DIRECT" {
+		directRP := fabricv4.RoutingProtocolDirectType{}
+		directType := fabricv4.RoutingProtocolDirectTypeType(type_)
+		directRP.SetType(directType)
+
+		name := d.Get("name").(string)
+		if name != "" {
+			directRP.SetName(name)
+		}
+		if schemaDirectIpv4, ok := d.GetOk("direct_ipv4"); ok {
+			directIpv4 := routingProtocolDirectIpv4TerraformToGo(schemaDirectIpv4.(*schema.Set).List())
+			directRP.SetDirectIpv4(directIpv4)
+		}
+
+		if schemaDirectIpv6, ok := d.GetOk("direct_ipv6"); ok {
+			directIpv6 := routingProtocolDirectIpv6TerraformToGo(schemaDirectIpv6.(*schema.Set).List())
+			directRP.SetDirectIpv6(directIpv6)
+		}
+		payload = fabricv4.RoutingProtocolDirectTypeAsRoutingProtocolBase(&directRP)
+	}
+	return payload
 }
 
 func setFabricRoutingProtocolMap(d *schema.ResourceData, routingProtocolData *fabricv4.RoutingProtocolData) diag.Diagnostics {
@@ -527,7 +486,7 @@ func setFabricRoutingProtocolMap(d *schema.ResourceData, routingProtocolData *fa
 		err := equinix_schema.SetMap(d, map[string]interface{}{
 			"name":         rp.GetName(),
 			"href":         rp.GetHref(),
-			"type":         rp.GetType(),
+			"type":         string(rp.GetType()),
 			"state":        rp.GetState(),
 			"operation":    routingProtocolOperationGoToTerraform(&operation),
 			"bgp_ipv4":     routingProtocolBgpConnectionIpv4GoToTerraform(&bgpIpv4),
@@ -551,7 +510,7 @@ func setFabricRoutingProtocolMap(d *schema.ResourceData, routingProtocolData *fa
 		err := equinix_schema.SetMap(d, map[string]interface{}{
 			"name":        rp.GetName(),
 			"href":        rp.GetHref(),
-			"type":        rp.GetType(),
+			"type":        string(rp.GetType()),
 			"state":       rp.GetState(),
 			"operation":   routingProtocolOperationGoToTerraform(&operation),
 			"direct_ipv4": routingProtocolDirectConnectionIpv4GoToTerraform(&directIpv4),
@@ -661,75 +620,83 @@ func waitForRoutingProtocolUpdateCompletion(rpChangeUuid string, uuid string, co
 	return dbConn, err
 }
 
-func routingProtocolDirectIpv4TerraformToGo(routingProtocolDirectIpv4Request []interface{}) *fabricv4.DirectConnectionIpv4 {
+func routingProtocolDirectIpv4TerraformToGo(routingProtocolDirectIpv4Request []interface{}) fabricv4.DirectConnectionIpv4 {
 	if routingProtocolDirectIpv4Request == nil || len(routingProtocolDirectIpv4Request) == 0 {
-		return nil
+		return fabricv4.DirectConnectionIpv4{}
 	}
 
-	var rpDirectIpv4 *fabricv4.DirectConnectionIpv4
+	rpDirectIpv4 := fabricv4.DirectConnectionIpv4{}
 
 	directIpv4Map := routingProtocolDirectIpv4Request[0].(map[string]interface{})
-	equinixIfaceIp := directIpv4Map["equinix_iface_ip"].(*string)
-
-	rpDirectIpv4 = &fabricv4.DirectConnectionIpv4{EquinixIfaceIp: equinixIfaceIp}
+	equinixIfaceIp := directIpv4Map["equinix_iface_ip"].(string)
+	if equinixIfaceIp != "" {
+		rpDirectIpv4.SetEquinixIfaceIp(equinixIfaceIp)
+	}
 
 	return rpDirectIpv4
 }
 
-func routingProtocolDirectIpv6TerraformToGo(routingProtocolDirectIpv6Request []interface{}) *fabricv4.DirectConnectionIpv6 {
+func routingProtocolDirectIpv6TerraformToGo(routingProtocolDirectIpv6Request []interface{}) fabricv4.DirectConnectionIpv6 {
 	if routingProtocolDirectIpv6Request == nil || len(routingProtocolDirectIpv6Request) == 0 {
-		return nil
+		return fabricv4.DirectConnectionIpv6{}
 	}
-	var rpDirectIpv6 *fabricv4.DirectConnectionIpv6
+	rpDirectIpv6 := fabricv4.DirectConnectionIpv6{}
 	directIpv6Map := routingProtocolDirectIpv6Request[0].(map[string]interface{})
 	equinixIfaceIp := directIpv6Map["equinix_iface_ip"].(string)
-
-	rpDirectIpv6 = &fabricv4.DirectConnectionIpv6{EquinixIfaceIp: equinixIfaceIp}
+	if equinixIfaceIp != "" {
+		rpDirectIpv6.SetEquinixIfaceIp(equinixIfaceIp)
+	}
 
 	return rpDirectIpv6
 }
 
-func routingProtocolBgpIpv4TerraformToGo(routingProtocolBgpIpv4Request []interface{}) *fabricv4.BGPConnectionIpv4 {
+func routingProtocolBgpIpv4TerraformToGo(routingProtocolBgpIpv4Request []interface{}) fabricv4.BGPConnectionIpv4 {
 	if routingProtocolBgpIpv4Request == nil || len(routingProtocolBgpIpv4Request) == 0 {
-		return nil
+		return fabricv4.BGPConnectionIpv4{}
 	}
 
-	var rpBgpIpv4 *fabricv4.BGPConnectionIpv4
+	rpBgpIpv4 := fabricv4.BGPConnectionIpv4{}
 	bgpIpv4Map := routingProtocolBgpIpv4Request[0].(map[string]interface{})
 	customerPeerIp := bgpIpv4Map["customer_peer_ip"].(string)
+	if customerPeerIp != "" {
+		rpBgpIpv4.SetCustomerPeerIp(customerPeerIp)
+	}
 	enabled := bgpIpv4Map["enabled"].(bool)
-
-	rpBgpIpv4 = &fabricv4.BGPConnectionIpv4{CustomerPeerIp: customerPeerIp, Enabled: enabled}
+	rpBgpIpv4.SetEnabled(enabled)
 
 	return rpBgpIpv4
 }
 
-func routingProtocolBgpIpv6TerraformToGo(routingProtocolBgpIpv6Request []interface{}) *fabricv4.BGPConnectionIpv6 {
+func routingProtocolBgpIpv6TerraformToGo(routingProtocolBgpIpv6Request []interface{}) fabricv4.BGPConnectionIpv6 {
 	if routingProtocolBgpIpv6Request == nil || len(routingProtocolBgpIpv6Request) == 0 {
-		return nil
+		return fabricv4.BGPConnectionIpv6{}
 	}
 
-	var rpBgpIpv6 *fabricv4.BGPConnectionIpv6
+	rpBgpIpv6 := fabricv4.BGPConnectionIpv6{}
 	bgpIpv6Map := routingProtocolBgpIpv6Request[0].(map[string]interface{})
 	customerPeerIp := bgpIpv6Map["customer_peer_ip"].(string)
+	if customerPeerIp != "" {
+		rpBgpIpv6.SetCustomerPeerIp(customerPeerIp)
+	}
 	enabled := bgpIpv6Map["enabled"].(bool)
-
-	rpBgpIpv6 = &fabricv4.BGPConnectionIpv6{CustomerPeerIp: customerPeerIp, Enabled: enabled}
+	rpBgpIpv6.SetEnabled(enabled)
 
 	return rpBgpIpv6
 }
 
-func routingProtocolBfdTerraformToGo(routingProtocolBfdRequest []interface{}) *fabricv4.RoutingProtocolBFD {
+func routingProtocolBfdTerraformToGo(routingProtocolBfdRequest []interface{}) fabricv4.RoutingProtocolBFD {
 	if routingProtocolBfdRequest == nil || len(routingProtocolBfdRequest) == 0 {
-		return nil
+		return fabricv4.RoutingProtocolBFD{}
 	}
 
-	var rpBfd *fabricv4.RoutingProtocolBFD
+	rpBfd := fabricv4.RoutingProtocolBFD{}
 	rpBfdMap := routingProtocolBfdRequest[0].(map[string]interface{})
 	bfdEnabled := rpBfdMap["enabled"].(bool)
-	bfdInterval := rpBfdMap["interval"].(*string)
-
-	rpBfd = &fabricv4.RoutingProtocolBFD{Enabled: bfdEnabled, Interval: bfdInterval}
+	rpBfd.SetEnabled(bfdEnabled)
+	bfdInterval := rpBfdMap["interval"].(string)
+	if bfdInterval != "" {
+		rpBfd.SetInterval(bfdInterval)
+	}
 
 	return rpBfd
 }
@@ -842,7 +809,7 @@ func routingProtocolChangeGoToTerraform(routingProtocolChange *fabricv4.RoutingP
 
 	mappedRpChange := map[string]interface{}{
 		"uuid": routingProtocolChange.GetUuid(),
-		"type": routingProtocolChange.GetType(),
+		"type": string(routingProtocolChange.GetType()),
 		"href": routingProtocolChange.GetHref(),
 	}
 

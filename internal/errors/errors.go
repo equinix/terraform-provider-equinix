@@ -52,7 +52,7 @@ func convertToFriendlyError(errors Errors, resp *http.Response) error {
 func FormatFabricv4AdditionalInfo(additionalInfo []fabricv4.PriceErrorAdditionalInfo) string {
 	var str []string
 	for _, addInfo := range additionalInfo {
-		property, reason := *addInfo.Property, *addInfo.Reason
+		property, reason := addInfo.GetProperty(), addInfo.GetReason()
 		if property != "" {
 			property = fmt.Sprintf("Property: %s, ", property)
 		}
