@@ -73,7 +73,7 @@ func resourceSchema(ctx context.Context) schema.Schema {
 				},
 			},
 			"type": schema.StringAttribute{
-				Description: "Connection type - dedicated or shared",
+				Description: "Connection type - dedicated, shared or shared_port_vlan",
 				Required:    true,
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.RequiresReplace(),

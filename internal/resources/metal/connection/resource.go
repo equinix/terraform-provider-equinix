@@ -495,7 +495,7 @@ func buildCreateRequest(ctx context.Context, plan ResourceModel) (request metalv
 		diags.AddAttributeError(
 			path.Root("type"),
 			"Must specify vlans",
-			"Port Shared connections must specify vlans",
+			"Shared port connections must specify vlans",
 		)
 
 		return

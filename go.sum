@@ -266,8 +266,8 @@ github.com/envoyproxy/go-control-plane v0.10.2-0.20220325020618-49ff273808a1/go.
 github.com/envoyproxy/protoc-gen-validate v0.1.0/go.mod h1:iSmxcyjqTsJpI2R4NaDN7+kN2VEUnK/pcBlmesArF7c=
 github.com/envoyproxy/protoc-gen-validate v1.0.4 h1:gVPz/FMfvh57HdSJQyvBtF00j8JU4zdyUgIUNhlgg0A=
 github.com/envoyproxy/protoc-gen-validate v1.0.4/go.mod h1:qys6tmnRsYrQqIhm2bvKZH4Blx/1gTIZ2UKVY1M+Yew=
-github.com/equinix-labs/fabric-go v0.7.1 h1:4yk0IKXMcc72rkRVbcYHokAEc1uUB06t6NXK+DtSsbs=
-github.com/equinix-labs/fabric-go v0.7.1/go.mod h1:oqgGS3GOI8hHGPJKsAwDOEX0qRHl52sJGvwA/zMSd90=
+github.com/equinix-labs/fabric-go v0.8.0 h1:aGYU7OU5JzvI0dDq18P0Q0kd9QZ+P9H4yczR0pXldFQ=
+github.com/equinix-labs/fabric-go v0.8.0/go.mod h1:VELMOJtJZ9oegS1QM1DOPlOUWcUiXWn4BaOs+TIlhPc=
 github.com/equinix/ecx-go/v2 v2.3.1 h1:gFcAIeyaEUw7S8ebqApmT7E/S7pC7Ac3wgScp89fkPU=
 github.com/equinix/ecx-go/v2 v2.3.1/go.mod h1:FvCdZ3jXU8Z4CPKig2DT+4J2HdwgRK17pIcznM7RXyk=
 github.com/equinix/equinix-sdk-go v0.35.0 h1:p/uwA8QPBAuNnKGc3mQkwjw+6++qUadLNnKFQ8jw+wg=
