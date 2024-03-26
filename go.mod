@@ -3,7 +3,6 @@ module github.com/equinix/terraform-provider-equinix
 go 1.21
 
 require (
-	github.com/antihax/optional v1.0.0
 	github.com/equinix-labs/fabric-go v0.9.0
 	github.com/equinix/ecx-go/v2 v2.3.1
 	github.com/equinix/equinix-sdk-go v0.34.0
@@ -42,6 +41,7 @@ require (
 	github.com/Masterminds/sprig/v3 v3.2.2 // indirect
 	github.com/ProtonMail/go-crypto v0.0.0-20230828082145-3c4c8a2d2371 // indirect
 	github.com/agext/levenshtein v1.2.3 // indirect
+	github.com/antihax/optional v1.0.0 // indirect
 	github.com/apparentlymart/go-textseg/v15 v15.0.0 // indirect
 	github.com/armon/go-radix v1.0.0 // indirect
 	github.com/aws/aws-sdk-go v1.44.122 // indirect
@@ -119,4 +119,4 @@ require (
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
 
-replace github.com/equinix/equinix-sdk-go => github.com/equinix/equinix-sdk-go v0.34.1-0.20240305233013-fc2df9b9b9f9
+replace github.com/equinix/equinix-sdk-go => github.com/equinix/equinix-sdk-go v0.35.1-0.20240322072158-47160db7d5f8
