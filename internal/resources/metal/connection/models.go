@@ -15,50 +15,52 @@ import (
 )
 
 type ResourceModel struct {
-	ID               types.String                                       `tfsdk:"id"`
-	Name             types.String                                       `tfsdk:"name"`
-	Facility         types.String                                       `tfsdk:"facility"`
-	Metro            types.String                                       `tfsdk:"metro"`
-	Redundancy       types.String                                       `tfsdk:"redundancy"`
-	ContactEmail     types.String                                       `tfsdk:"contact_email"`
-	Type             types.String                                       `tfsdk:"type"`
-	ProjectID        types.String                                       `tfsdk:"project_id"`
-	Speed            types.String                                       `tfsdk:"speed"`
-	Description      types.String                                       `tfsdk:"description"`
-	Mode             types.String                                       `tfsdk:"mode"`
-	Tags             types.List                                         `tfsdk:"tags"`  // List of strings
-	Vlans            types.List                                         `tfsdk:"vlans"` // List of ints
-	Vrfs             types.List                                         `tfsdk:"vrfs"`  // List of strings
-	ServiceTokenType types.String                                       `tfsdk:"service_token_type"`
-	OrganizationID   types.String                                       `tfsdk:"organization_id"`
-	Status           types.String                                       `tfsdk:"status"`
-	Token            types.String                                       `tfsdk:"token"`
-	Ports            fwtypes.ListNestedObjectValueOf[PortModel]         `tfsdk:"ports"`          // List of Port
-	ServiceTokens    fwtypes.ListNestedObjectValueOf[ServiceTokenModel] `tfsdk:"service_tokens"` // List of ServiceToken
+	ID                types.String                                       `tfsdk:"id"`
+	Name              types.String                                       `tfsdk:"name"`
+	Facility          types.String                                       `tfsdk:"facility"`
+	Metro             types.String                                       `tfsdk:"metro"`
+	Redundancy        types.String                                       `tfsdk:"redundancy"`
+	ContactEmail      types.String                                       `tfsdk:"contact_email"`
+	Type              types.String                                       `tfsdk:"type"`
+	ProjectID         types.String                                       `tfsdk:"project_id"`
+	AuthorizationCode types.String                                       `tfsdk:"authorization_code"`
+	Speed             types.String                                       `tfsdk:"speed"`
+	Description       types.String                                       `tfsdk:"description"`
+	Mode              types.String                                       `tfsdk:"mode"`
+	Tags              types.List                                         `tfsdk:"tags"`  // List of strings
+	Vlans             types.List                                         `tfsdk:"vlans"` // List of ints
+	Vrfs              types.List                                         `tfsdk:"vrfs"`  // List of strings
+	ServiceTokenType  types.String                                       `tfsdk:"service_token_type"`
+	OrganizationID    types.String                                       `tfsdk:"organization_id"`
+	Status            types.String                                       `tfsdk:"status"`
+	Token             types.String                                       `tfsdk:"token"`
+	Ports             fwtypes.ListNestedObjectValueOf[PortModel]         `tfsdk:"ports"`          // List of Port
+	ServiceTokens     fwtypes.ListNestedObjectValueOf[ServiceTokenModel] `tfsdk:"service_tokens"` // List of ServiceToken
 }
 
 type DataSourceModel struct {
-	ID               types.String                                       `tfsdk:"id"`
-	ConnectionID     types.String                                       `tfsdk:"connection_id"`
-	Name             types.String                                       `tfsdk:"name"`
-	Facility         types.String                                       `tfsdk:"facility"`
-	Metro            types.String                                       `tfsdk:"metro"`
-	Redundancy       types.String                                       `tfsdk:"redundancy"`
-	ContactEmail     types.String                                       `tfsdk:"contact_email"`
-	Type             types.String                                       `tfsdk:"type"`
-	ProjectID        types.String                                       `tfsdk:"project_id"`
-	Speed            types.String                                       `tfsdk:"speed"`
-	Description      types.String                                       `tfsdk:"description"`
-	Mode             types.String                                       `tfsdk:"mode"`
-	Tags             types.List                                         `tfsdk:"tags"`  // List of strings
-	Vlans            types.List                                         `tfsdk:"vlans"` // List of ints
-	Vrfs             types.List                                         `tfsdk:"vrfs"`  // List of strings
-	ServiceTokenType types.String                                       `tfsdk:"service_token_type"`
-	OrganizationID   types.String                                       `tfsdk:"organization_id"`
-	Status           types.String                                       `tfsdk:"status"`
-	Token            types.String                                       `tfsdk:"token"`
-	Ports            fwtypes.ListNestedObjectValueOf[PortModel]         `tfsdk:"ports"`          // List of Port
-	ServiceTokens    fwtypes.ListNestedObjectValueOf[ServiceTokenModel] `tfsdk:"service_tokens"` // List of ServiceToken
+	ID                types.String                                       `tfsdk:"id"`
+	ConnectionID      types.String                                       `tfsdk:"connection_id"`
+	Name              types.String                                       `tfsdk:"name"`
+	Facility          types.String                                       `tfsdk:"facility"`
+	Metro             types.String                                       `tfsdk:"metro"`
+	Redundancy        types.String                                       `tfsdk:"redundancy"`
+	ContactEmail      types.String                                       `tfsdk:"contact_email"`
+	Type              types.String                                       `tfsdk:"type"`
+	ProjectID         types.String                                       `tfsdk:"project_id"`
+	AuthorizationCode types.String                                       `tfsdk:"authorization_code"`
+	Speed             types.String                                       `tfsdk:"speed"`
+	Description       types.String                                       `tfsdk:"description"`
+	Mode              types.String                                       `tfsdk:"mode"`
+	Tags              types.List                                         `tfsdk:"tags"`  // List of strings
+	Vlans             types.List                                         `tfsdk:"vlans"` // List of ints
+	Vrfs              types.List                                         `tfsdk:"vrfs"`  // List of strings
+	ServiceTokenType  types.String                                       `tfsdk:"service_token_type"`
+	OrganizationID    types.String                                       `tfsdk:"organization_id"`
+	Status            types.String                                       `tfsdk:"status"`
+	Token             types.String                                       `tfsdk:"token"`
+	Ports             fwtypes.ListNestedObjectValueOf[PortModel]         `tfsdk:"ports"`          // List of Port
+	ServiceTokens     fwtypes.ListNestedObjectValueOf[ServiceTokenModel] `tfsdk:"service_tokens"` // List of ServiceToken
 }
 
 type PortModel struct {
@@ -89,7 +91,7 @@ func (m *DataSourceModel) parse(ctx context.Context, conn *metalv1.Interconnecti
 		&m.ID, &m.OrganizationID, &m.Name, &m.Facility, &m.Metro,
 		&m.Description, &m.ContactEmail, &m.Status, &m.Redundancy,
 		&m.Token, &m.Type, &m.Mode, &m.ServiceTokenType, &m.Speed,
-		&m.ProjectID, &m.Vlans, &m.Vrfs, &m.Ports, &m.ServiceTokens,
+		&m.ProjectID, &m.AuthorizationCode, &m.Vlans, &m.Vrfs, &m.Ports, &m.ServiceTokens,
 	)
 
 	connTags, diags := types.ListValueFrom(ctx, types.StringType, conn.Tags)
@@ -108,7 +110,7 @@ func (m *ResourceModel) parse(ctx context.Context, conn *metalv1.Interconnection
 		&m.ID, &m.OrganizationID, &m.Name, &m.Facility, &m.Metro,
 		&m.Description, &m.ContactEmail, &m.Status, &m.Redundancy,
 		&m.Token, &m.Type, &m.Mode, &m.ServiceTokenType, &m.Speed,
-		&m.ProjectID, &m.Vlans, &m.Vrfs, &m.Ports, &m.ServiceTokens,
+		&m.ProjectID, &m.AuthorizationCode, &m.Vlans, &m.Vrfs, &m.Ports, &m.ServiceTokens,
 	)
 
 	connTags, diags := types.ListValueFrom(ctx, types.StringType, conn.Tags)
@@ -136,7 +138,7 @@ func parseConnection(
 	ctx context.Context,
 	conn *metalv1.Interconnection,
 	id, orgID, name, facility, metro, description, contactEmail, status, redundancy,
-	token, typ, mode, serviceTokenType, speed, projectID *basetypes.StringValue,
+	token, typ, mode, serviceTokenType, speed, projectID, authorizationCode *basetypes.StringValue,
 	vlans *basetypes.ListValue,
 	vrfs *basetypes.ListValue,
 	ports *fwtypes.ListNestedObjectValueOf[PortModel],
@@ -154,6 +156,7 @@ func parseConnection(
 	*redundancy = types.StringValue(string(conn.GetRedundancy()))
 	*token = types.StringValue(conn.GetToken())
 	*typ = types.StringValue(string(conn.GetType()))
+	*authorizationCode = types.StringValue(conn.GetAuthorizationCode())
 
 	// TODO(ocobles) we were using "StateFunc: converters.ToLowerIf" for "metro" field in the sdkv2
 	// version of this resource. StateFunc doesn't exist in terraform and it requires implementation

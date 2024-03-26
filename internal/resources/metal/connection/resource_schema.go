@@ -73,7 +73,7 @@ func resourceSchema(ctx context.Context) schema.Schema {
 				},
 			},
 			"type": schema.StringAttribute{
-				Description: "Connection type - dedicated or shared",
+				Description: "Connection type - dedicated, shared or shared_port_vlan",
 				Required:    true,
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.RequiresReplace(),
@@ -82,6 +82,7 @@ func resourceSchema(ctx context.Context) schema.Schema {
 					stringvalidator.OneOf(
 						string(metalv1.INTERCONNECTIONTYPE_DEDICATED),
 						string(metalv1.INTERCONNECTIONTYPE_SHARED),
+						string(metalv1.INTERCONNECTIONTYPE_SHARED_PORT_VLAN),
 					),
 				},
 			},
@@ -193,6 +194,10 @@ func resourceSchema(ctx context.Context) schema.Schema {
 				PlanModifiers: []planmodifier.List{
 					listplanmodifier.UseStateForUnknown(),
 				},
+			},
+			"authorization_code": schema.StringAttribute{
+				Description: "Only used with Fabric Shared connection. Fabric uses this token to be able to give more detailed information about the Metal end of the network, when viewing resources from within Fabric.",
+				Computed:    true,
 			},
 		},
 	}

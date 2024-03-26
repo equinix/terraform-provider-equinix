@@ -108,6 +108,10 @@ func dataSourceSchema(ctx context.Context) schema.Schema {
 				ElementType: fwtypes.NewObjectTypeOf[ServiceTokenModel](ctx),
 				Computed:    true,
 			},
+			"authorization_code": schema.StringAttribute{
+				Description: "Only used with Fabric Shared connection. Fabric uses this token to be able to give more detailed information about the Metal end of the network, when viewing resources from within Fabric.",
+				Computed:    true,
+			},
 		},
 	}
 }

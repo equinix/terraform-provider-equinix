@@ -76,6 +76,59 @@ func testDataSourceMetalConnectionConfig_withVlans(r int) string {
 		r, r, r, r)
 }
 
+func TestAccDataSourceMetalConnection_sharedPort(t *testing.T) {
+	rInt := acctest.RandInt()
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:                 func() { acceptance.TestAccPreCheckMetal(t) },
+		ExternalProviders:        acceptance.TestExternalProviders,
+		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		CheckDestroy:             testAccMetalConnectionCheckDestroyed,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccDataSourceMetalConnectionConfig_SharedPort(rInt),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(
+						"data.equinix_metal_connection.test", "metro", "sv"),
+					resource.TestCheckResourceAttr(
+						"data.equinix_metal_connection.test", "contact_email", "tfacc@example.com"),
+				),
+			},
+		},
+	})
+}
+
+func testAccDataSourceMetalConnectionConfig_SharedPort(r int) string {
+	return fmt.Sprintf(`
+		resource "equinix_metal_project" "test" {
+			name = "tfacc-conn-pro-%d"
+		}
+
+		resource "equinix_metal_vlan" "test1" {
+			description = "tfacc-conn-vlan1-%d"
+			metro       = "sv"
+			project_id  = equinix_metal_project.test.id
+		}
+
+		resource "equinix_metal_connection" "test" {
+			name               = "tfacc-conn-%d"
+			project_id         = equinix_metal_project.test.id
+			type               = "shared_port_vlan"
+			redundancy         = "primary"
+			metro              = "sv"
+			speed              = "50Mbps"
+			contact_email      = "tfacc@example.com"
+			vlans = [
+				equinix_metal_vlan.test1.vxlan,
+			]
+		}
+
+		data "equinix_metal_connection" "test" {
+    		connection_id = equinix_metal_connection.test.id
+		}`,
+		r, r, r)
+}
+
 // Test to verify that switching from SDKv2 to the Framework has not affected provider's behavior
 // TODO (ocobles): once migrated, this test may be removed
 func TestAccDataSourceMetalConnection_withVlans_upgradeFromVersion(t *testing.T) {
