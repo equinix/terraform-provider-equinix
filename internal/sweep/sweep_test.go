@@ -1,6 +1,7 @@
 package sweep_test
 
 import (
+	"github.com/equinix/terraform-provider-equinix/internal/resources/metal/vlan"
 	"testing"
 
 	"github.com/equinix/terraform-provider-equinix/internal/resources/metal/connection"
@@ -10,7 +11,6 @@ import (
 	"github.com/equinix/terraform-provider-equinix/internal/resources/metal/ssh_key"
 	"github.com/equinix/terraform-provider-equinix/internal/resources/metal/user_api_key"
 	"github.com/equinix/terraform-provider-equinix/internal/resources/metal/virtual_circuit"
-	"github.com/equinix/terraform-provider-equinix/internal/resources/metal/vlan"
 	"github.com/equinix/terraform-provider-equinix/internal/resources/metal/vrf"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
