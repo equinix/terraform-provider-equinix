@@ -108,7 +108,7 @@ func testAccMetalConnectionConfig_SharedPort(randstr string) string {
 			metro       = "sv"
 			project_id  = equinix_metal_project.test.id
 		}
-        resource "equinix_metal_connection" "test" {
+		resource "equinix_metal_connection" "test" {
 			name               = "tfacc-conn-%s"
 			project_id         = equinix_metal_project.test.id
 			type               = "shared_port_vlan"
