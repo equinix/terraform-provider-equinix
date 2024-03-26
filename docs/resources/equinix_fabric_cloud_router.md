@@ -31,7 +31,7 @@ resource "equinix_fabric_cloud_router" "new_cloud_router"{
     metro_code = "SV"
   }
   package {
-    code = "PRO"
+    code = "STANDARD"
   }
   project {
   	project_id = "776847000642406"
@@ -53,7 +53,7 @@ resource "equinix_fabric_cloud_router" "new_cloud_router"{
 - `notifications` (Block List, Min: 1) Preferences for notifications on Fabric Cloud Router configuration or status changes (see [below for nested schema](#nestedblock--notifications))
 - `order` (Block Set, Min: 1, Max: 1) Order information related to this Fabric Cloud Router (see [below for nested schema](#nestedblock--order))
 - `package` (Block Set, Min: 1, Max: 1) Fabric Cloud Router Package Type (see [below for nested schema](#nestedblock--package))
-- `project` (Block Set, Min: 1, Max: 1) Customer resource hierarchy project information.Applicable to customers onboarded to Equinix Identity and Access Management. For more information see Identity and Access Management: Projects (see [below for nested schema](#nestedblock--project))
+- `project` (Block Set, Min: 1, Max: 1) Customer resource hierarchy project information. Applicable to customers onboarded to Equinix Identity and Access Management. For more information see Identity and Access Management: Projects (see [below for nested schema](#nestedblock--project))
 - `type` (String) Defines the FCR type like; XF_ROUTER
 
 ### Optional

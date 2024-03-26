@@ -18,7 +18,7 @@ import (
 // The FCR, Connection and RPs will already be created in the resource test, so the
 // data_source tests will just leverage the RPs there to retrieve the data and check results
 
-func TestAccFabricCreateDirectRoutingProtocol_PFCR_A(t *testing.T) {
+func TestAccFabricCreateRoutingProtocols_PFCR(t *testing.T) {
 	ports := GetFabricEnvPorts(t)
 
 	var portUuid string

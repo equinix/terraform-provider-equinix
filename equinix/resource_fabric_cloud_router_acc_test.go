@@ -38,7 +38,7 @@ func TestAccCloudRouterCreateOnlyRequiredParameters_PFCR(t *testing.T) {
 					resource.TestCheckResourceAttr("equinix_fabric_cloud_router.test", "notifications.0.emails.0", "test@equinix.com"),
 					resource.TestCheckResourceAttr("equinix_fabric_cloud_router.test", "order.0.purchase_order_number", "1-234567"),
 					resource.TestCheckResourceAttr("equinix_fabric_cloud_router.test", "location.0.metro_code", "SV"),
-					resource.TestCheckResourceAttr("equinix_fabric_cloud_router.test", "package.0.code", "LAB"),
+					resource.TestCheckResourceAttr("equinix_fabric_cloud_router.test", "package.0.code", "STANDARD"),
 					resource.TestCheckResourceAttrSet("equinix_fabric_cloud_router.test", "project.0.project_id"),
 					resource.TestCheckResourceAttrSet("equinix_fabric_cloud_router.test", "account.0.account_number"),
 					resource.TestCheckResourceAttrSet("equinix_fabric_cloud_router.test", "href"),
@@ -76,7 +76,7 @@ func testAccCloudRouterCreateOnlyRequiredParameterConfig_PFCR(name string) strin
 			metro_code  = "SV"
 		}
 		package{
-			code = "LAB"
+			code = "STANDARD"
 		}
 		order{
 			purchase_order_number = "1-234567"

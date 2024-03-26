@@ -17,10 +17,18 @@ func OrderTerraformToGo(orderTerraform []interface{}) fabricv4.Order {
 	billingTier := orderMap["billing_tier"].(string)
 	orderId := orderMap["order_id"].(string)
 	orderNumber := orderMap["order_number"].(string)
-	order.SetPurchaseOrderNumber(purchaseOrderNumber)
-	order.SetBillingTier(billingTier)
-	order.SetOrderId(orderId)
-	order.SetOrderNumber(orderNumber)
+	if purchaseOrderNumber != "" {
+		order.SetPurchaseOrderNumber(purchaseOrderNumber)
+	}
+	if billingTier != "" {
+		order.SetBillingTier(billingTier)
+	}
+	if orderId != "" {
+		order.SetOrderId(orderId)
+	}
+	if orderNumber != "" {
+		order.SetOrderNumber(orderNumber)
+	}
 
 	return order
 }
@@ -71,13 +79,15 @@ func NotificationsTerraformToGo(notificationsTerraform []interface{}) []fabricv4
 	notifications := make([]fabricv4.SimplifiedNotification, len(notificationsTerraform))
 	for index, notification := range notificationsTerraform {
 		notificationMap := notification.(map[string]interface{})
-		notificationType, _ := fabricv4.NewSimplifiedNotificationTypeFromValue(notificationMap["type"].(string))
-		interval := notificationMap["send_interval"].(string)
+		notificationType := fabricv4.SimplifiedNotificationType(notificationMap["type"].(string))
+		sendInterval := notificationMap["send_interval"].(string)
 		emailsRaw := notificationMap["emails"].([]interface{})
 		emails := converters.IfArrToStringArr(emailsRaw)
 		simplifiedNotification := fabricv4.SimplifiedNotification{}
-		simplifiedNotification.SetType(*notificationType)
-		simplifiedNotification.SetSendInterval(interval)
+		simplifiedNotification.SetType(notificationType)
+		if sendInterval != "" {
+			simplifiedNotification.SetSendInterval(sendInterval)
+		}
 		simplifiedNotification.SetEmails(emails)
 		notifications[index] = simplifiedNotification
 	}
@@ -91,7 +101,7 @@ func NotificationsGoToTerraform(notifications []fabricv4.SimplifiedNotification)
 	mappedNotifications := make([]map[string]interface{}, len(notifications))
 	for index, notification := range notifications {
 		mappedNotifications[index] = map[string]interface{}{
-			"type":          notification.GetType(),
+			"type":          string(notification.GetType()),
 			"send_interval": notification.GetSendInterval(),
 			"emails":        notification.GetEmails(),
 		}
@@ -108,12 +118,20 @@ func LocationTerraformToGo(locationList []interface{}) fabricv4.SimplifiedLocati
 	locationListMap := locationList[0].(map[string]interface{})
 	metroName := locationListMap["metro_name"].(string)
 	region := locationListMap["region"].(string)
-	mc := locationListMap["metro_code"].(string)
+	metroCode := locationListMap["metro_code"].(string)
 	ibx := locationListMap["ibx"].(string)
-	location.SetMetroName(metroName)
-	location.SetRegion(region)
-	location.SetMetroCode(mc)
-	location.SetIbx(ibx)
+	if metroName != "" {
+		location.SetMetroName(metroName)
+	}
+	if region != "" {
+		location.SetRegion(region)
+	}
+	if metroCode != "" {
+		location.SetMetroCode(metroCode)
+	}
+	if ibx != "" {
+		location.SetIbx(ibx)
+	}
 
 	return location
 }
@@ -168,7 +186,9 @@ func ProjectTerraformToGo(projectTerraform []interface{}) fabricv4.Project {
 	var project fabricv4.Project
 	projectMap := projectTerraform[0].(map[string]interface{})
 	projectId := projectMap["project_id"].(string)
-	project.SetProjectId(projectId)
+	if projectId != "" {
+		project.SetProjectId(projectId)
+	}
 
 	return project
 }

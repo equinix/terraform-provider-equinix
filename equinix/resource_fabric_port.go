@@ -349,7 +349,7 @@ func portEncapsulationGoToTerraform(portEncapsulation *fabricv4.PortEncapsulatio
 	}
 
 	mappedPortEncapsulation := make(map[string]interface{})
-	mappedPortEncapsulation["type"] = portEncapsulation.GetType()
+	mappedPortEncapsulation["type"] = string(portEncapsulation.GetType())
 	mappedPortEncapsulation["tag_protocol_id"] = portEncapsulation.GetTagProtocolId()
 
 	portEncapsulationSet := schema.NewSet(
@@ -373,7 +373,7 @@ func resourceFabricPortRead(ctx context.Context, d *schema.ResourceData, meta in
 	return setFabricPortMap(d, port)
 }
 
-func fabricPortMap(port *fabricv4.Port) map[string]interface{} {
+func fabricPortMap(port *fabricv4.PortResponse) map[string]interface{} {
 	operation := port.GetOperation()
 	redundancy := port.GetRedundancy()
 	account := port.GetAccount()
@@ -389,7 +389,7 @@ func fabricPortMap(port *fabricv4.Port) map[string]interface{} {
 		"used_bandwidth":      port.GetUsedBandwidth(),
 		"href":                port.GetHref(),
 		"description":         port.GetDescription(),
-		"type":                port.GetType(),
+		"type":                string(port.GetType()),
 		"state":               port.GetState(),
 		"service_type":        port.GetServiceType(),
 		"operation":           portOperationGoToTerraform(&operation),
@@ -403,7 +403,7 @@ func fabricPortMap(port *fabricv4.Port) map[string]interface{} {
 	}
 }
 
-func setFabricPortMap(d *schema.ResourceData, port *fabricv4.Port) diag.Diagnostics {
+func setFabricPortMap(d *schema.ResourceData, port *fabricv4.PortResponse) diag.Diagnostics {
 	diags := diag.Diagnostics{}
 	err := equinix_schema.SetMap(d, fabricPortMap(port))
 	if err != nil {
@@ -451,7 +451,7 @@ func resourceFabricPortGetByPortName(ctx context.Context, d *schema.ResourceData
 	client := meta.(*config.Config).NewFabricClientForSDK(d)
 	portNameParam := d.Get("filters").(*schema.Set).List()
 	portName := portName(portNameParam)
-	ports, _, err := client.PortsApi.GetPorts(ctx).Name(*portName).Execute()
+	ports, _, err := client.PortsApi.GetPorts(ctx).Name(portName).Execute()
 	if err != nil {
 		log.Printf("[WARN] Ports not found , error %s", err)
 		if !strings.Contains(err.Error(), "500") {
@@ -469,12 +469,12 @@ func resourceFabricPortGetByPortName(ctx context.Context, d *schema.ResourceData
 	return setPortsListMap(d, ports)
 }
 
-func portName(portNameParam []interface{}) *string {
+func portName(portNameParam []interface{}) string {
 	if len(portNameParam) == 0 {
-		return nil
+		return ""
 	}
 
 	pnMap := portNameParam[0].(map[string]interface{})
-	portName := pnMap["name"].(*string)
+	portName := pnMap["name"].(string)
 	return portName
 }
