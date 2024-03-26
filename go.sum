@@ -268,8 +268,8 @@ github.com/equinix-labs/fabric-go v0.9.0 h1:BDJlVNaxpn1cSvjkTgy2zNr7srf8rF+7qOnL
 github.com/equinix-labs/fabric-go v0.9.0/go.mod h1:b/fvMHgVruNItuBIs7nZbcKc2ie4ZatkDHPM47DCF08=
 github.com/equinix/ecx-go/v2 v2.3.1 h1:gFcAIeyaEUw7S8ebqApmT7E/S7pC7Ac3wgScp89fkPU=
 github.com/equinix/ecx-go/v2 v2.3.1/go.mod h1:FvCdZ3jXU8Z4CPKig2DT+4J2HdwgRK17pIcznM7RXyk=
-github.com/equinix/equinix-sdk-go v0.34.1-0.20240305233013-fc2df9b9b9f9 h1:t1paSste+V8rE3nV0ISBVyCvTZV/l1bRQwO7YwdKf1M=
-github.com/equinix/equinix-sdk-go v0.34.1-0.20240305233013-fc2df9b9b9f9/go.mod h1:hEb3XLaedz7xhl/dpPIS6eOIiXNPeqNiVoyDrT6paIg=
+github.com/equinix/equinix-sdk-go v0.35.1-0.20240322072158-47160db7d5f8 h1:4HOq3j5qxfmUDhSfSShNrfv3Ohy5UKO7mYTL6OE0eDU=
+github.com/equinix/equinix-sdk-go v0.35.1-0.20240322072158-47160db7d5f8/go.mod h1:hEb3XLaedz7xhl/dpPIS6eOIiXNPeqNiVoyDrT6paIg=
 github.com/equinix/ne-go v1.16.0 h1:ZijMZxlu/2323RDfisxyeXukMn1TNv5tP5XiXZ8tWRM=
 github.com/equinix/ne-go v1.16.0/go.mod h1:eHkkxM4nbTB7DZ9X9zGnwfYnxIJWIsU3aHA+FAoZ1EI=
 github.com/equinix/oauth2-go v1.0.0 h1:fHtAPGq82PdgtK5vEThs8Vwz6f7D/8SX4tE3NJu+KcU=
