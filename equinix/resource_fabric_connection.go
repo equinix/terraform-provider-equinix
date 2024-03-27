@@ -732,7 +732,7 @@ func setFabricMap(d *schema.ResourceData, conn *fabricv4.Connection) diag.Diagno
 	connection["href"] = conn.GetHref()
 	connection["is_remote"] = conn.GetIsRemote()
 	connection["type"] = string(conn.GetType())
-	connection["state"] = conn.GetState()
+	connection["state"] = string(conn.GetState())
 	connection["direction"] = conn.GetDirection()
 	if conn.Operation != nil {
 		operation := conn.GetOperation()

@@ -45,7 +45,7 @@ func TestAccFabricCreatePort2SPConnection_PFCR(t *testing.T) {
 	var publicSPName, portUuid string
 	if len(ports) > 0 && len(connectionsTestData) > 0 {
 		publicSPName = connectionsTestData["pfcr"]["publicSPName"]
-		portUuid = ports["pfcr"]["dot1q"][0].Uuid
+		portUuid = ports["pfcr"]["dot1q"][0].GetUuid()
 	}
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { acceptance.TestAccPreCheck(t) },
@@ -143,8 +143,8 @@ func TestAccFabricCreatePort2PortConnection_PFCR(t *testing.T) {
 	ports := GetFabricEnvPorts(t)
 	var aSidePortUuid, zSidePortUuid string
 	if len(ports) > 0 {
-		aSidePortUuid = ports["pfcr"]["dot1q"][0].Uuid
-		zSidePortUuid = ports["pfcr"]["dot1q"][1].Uuid
+		aSidePortUuid = ports["pfcr"]["dot1q"][0].GetUuid()
+		zSidePortUuid = ports["pfcr"]["dot1q"][1].GetUuid()
 	}
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { acceptance.TestAccPreCheck(t) },
@@ -258,7 +258,7 @@ func TestAccFabricCreateCloudRouter2PortConnection_PFCR(t *testing.T) {
 	ports := GetFabricEnvPorts(t)
 	var portUuid string
 	if len(ports) > 0 {
-		portUuid = ports["pfcr"]["dot1q"][1].Uuid
+		portUuid = ports["pfcr"]["dot1q"][1].GetUuid()
 	}
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { acceptance.TestAccPreCheck(t) },

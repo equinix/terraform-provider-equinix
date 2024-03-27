@@ -319,7 +319,7 @@ func setCloudRouterMap(d *schema.ResourceData, fcr *fabricv4.CloudRouter) diag.D
 		"name":                         fcr.GetName(),
 		"href":                         fcr.GetHref(),
 		"type":                         string(fcr.GetType()),
-		"state":                        fcr.GetState(),
+		"state":                        string(fcr.GetState()),
 		"package":                      packageCloudRouterGoToTerraform(&package_),
 		"location":                     equinix_fabric_schema.LocationWithoutIBXGoToTerraform(&location),
 		"change_log":                   equinix_fabric_schema.ChangeLogGoToTerraform(&changeLog),
