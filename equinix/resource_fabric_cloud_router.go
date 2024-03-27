@@ -3,12 +3,13 @@ package equinix
 import (
 	"context"
 	"fmt"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"log"
 	"strings"
 	"time"
+
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 
 	equinix_errors "github.com/equinix/terraform-provider-equinix/internal/errors"
 	equinix_fabric_schema "github.com/equinix/terraform-provider-equinix/internal/fabric/schema"
@@ -248,7 +249,6 @@ func projectCloudRouterTerraToGo(projectRequest []interface{}) v4.Project {
 }
 func resourceFabricCloudRouterCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*config.Config).FabricClient
-	ctx = context.WithValue(ctx, v4.ContextAccessToken, meta.(*config.Config).FabricAuthToken)
 	schemaNotifications := d.Get("notifications").([]interface{})
 	notifications := equinix_fabric_schema.NotificationsToFabric(schemaNotifications)
 	schemaAccount := d.Get("account").(*schema.Set).List()
@@ -293,7 +293,6 @@ func resourceFabricCloudRouterCreate(ctx context.Context, d *schema.ResourceData
 
 func resourceFabricCloudRouterRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*config.Config).FabricClient
-	ctx = context.WithValue(ctx, v4.ContextAccessToken, meta.(*config.Config).FabricAuthToken)
 	CloudRouter, _, err := client.CloudRoutersApi.GetCloudRouterByUuid(ctx, d.Id())
 	if err != nil {
 		log.Printf("[WARN] Fabric Cloud Router %s not found , error %s", d.Id(), err)
@@ -386,7 +385,6 @@ func getCloudRouterUpdateRequest(conn v4.CloudRouter, d *schema.ResourceData) (v
 
 func resourceFabricCloudRouterUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*config.Config).FabricClient
-	ctx = context.WithValue(ctx, v4.ContextAccessToken, meta.(*config.Config).FabricAuthToken)
 	dbConn, err := waitUntilCloudRouterIsProvisioned(d.Id(), meta, ctx)
 	if err != nil {
 		if !strings.Contains(err.Error(), "500") {
@@ -478,17 +476,18 @@ func waitUntilCloudRouterIsProvisioned(uuid string, meta interface{}, ctx contex
 func resourceFabricCloudRouterDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	diags := diag.Diagnostics{}
 	client := meta.(*config.Config).FabricClient
-	ctx = context.WithValue(ctx, v4.ContextAccessToken, meta.(*config.Config).FabricAuthToken)
 	_, err := client.CloudRoutersApi.DeleteCloudRouterByUuid(ctx, d.Id())
 	if err != nil {
-		errors, ok := err.(v4.GenericSwaggerError).Model().([]v4.ModelError)
-		if ok {
-			// EQ-3040055 = There is an existing update in REQUESTED state
-			if equinix_errors.HasModelErrorCode(errors, "EQ-3040055") {
-				return diags
+		if genericError, ok := err.(v4.GenericSwaggerError); ok {
+			errors, ok := genericError.Model().([]v4.ModelError)
+			if ok {
+				// EQ-3040055 = There is an existing update in REQUESTED state
+				if equinix_errors.HasModelErrorCode(errors, "EQ-3040055") {
+					return diags
+				}
 			}
+			return diag.FromErr(equinix_errors.FormatFabricError(err))
 		}
-		return diag.FromErr(equinix_errors.FormatFabricError(err))
 	}
 
 	err = WaitUntilCloudRouterDeprovisioned(d.Id(), meta, ctx)
