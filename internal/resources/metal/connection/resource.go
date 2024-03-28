@@ -385,11 +385,10 @@ func buildSharedPortVCVLANCreateRequest(ctx context.Context, plan ResourceModel,
 	req.SharedPortVCVlanCreateInput = &metalv1.SharedPortVCVlanCreateInput{
 		Type: metalv1.SHAREDPORTVCVLANCREATEINPUTTYPE_SHARED_PORT_VLAN,
 
-		Name:                 plan.Name.ValueString(),
-		Project:              project,
-		Metro:                plan.Metro.ValueString(),
-		Speed:                plan.Speed.ValueStringPointer(),
-		AdditionalProperties: map[string]any{"redundancy": plan.Redundancy.ValueString()},
+		Name:    plan.Name.ValueString(),
+		Project: project,
+		Metro:   plan.Metro.ValueString(),
+		Speed:   plan.Speed.ValueStringPointer(),
 	}
 
 	if email := plan.ContactEmail.ValueString(); email != "" {
