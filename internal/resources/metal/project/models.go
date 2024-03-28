@@ -105,9 +105,11 @@ func parseBGPConfig(ctx context.Context, bgpConfig *metalv1.BgpConfig) fwtypes.L
 		bgpConfigResourceModel[0] = BGPConfigModel{
 			DeploymentType: types.StringValue(string(bgpConfig.GetDeploymentType())),
 			ASN:            types.Int64Value(int64(bgpConfig.GetAsn())),
-			MD5:            types.StringValue(bgpConfig.GetMd5()),
 			Status:         types.StringValue(string(bgpConfig.GetStatus())),
 			MaxPrefix:      types.Int64Value(int64(bgpConfig.GetMaxPrefix())),
+		}
+		if bgpConfig.Md5.Get() != nil {
+			bgpConfigResourceModel[0].MD5 = types.StringValue(bgpConfig.GetMd5())
 		}
 		return fwtypes.NewListNestedObjectValueOfValueSlice[BGPConfigModel](ctx, bgpConfigResourceModel)
 	}
