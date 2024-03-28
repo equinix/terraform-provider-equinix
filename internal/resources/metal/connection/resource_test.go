@@ -314,6 +314,8 @@ func TestAccMetalConnection_sharedPort(t *testing.T) {
 						"equinix_metal_connection.test", "metro", "sv"),
 					resource.TestCheckResourceAttr(
 						"equinix_metal_connection.test", "contact_email", "tfacc@example.com"),
+					resource.TestCheckResourceAttrSet("equinix_metal_connection.test", "authorization_code"),
+					resource.TestCheckResourceAttrSet("equinix_metal_connection.test", "redundancy"),
 				),
 			},
 			{
