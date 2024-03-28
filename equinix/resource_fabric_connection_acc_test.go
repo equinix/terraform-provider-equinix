@@ -8,6 +8,7 @@ import (
 	"github.com/equinix/terraform-provider-equinix/internal/acceptance"
 	"os"
 	"testing"
+	"time"
 
 	"github.com/equinix/terraform-provider-equinix/internal/config"
 
@@ -82,7 +83,7 @@ func TestAccFabricCreatePort2SPConnection_PFCR(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						"equinix_fabric_connection.test", "z_side.0.access_point.0.location.0.metro_code", "SV"),
 				),
-				ExpectNonEmptyPlan: true,
+				ExpectNonEmptyPlan: false,
 			},
 		},
 	})
@@ -372,10 +373,9 @@ func testAccFabricCreateCloudRouter2PortConnectionConfig(name, portUuid string) 
 
 func TestAccFabricCreateVirtualDevice2NetworkConnection_PNFV(t *testing.T) {
 	connectionTestData := GetFabricEnvConnectionTestData(t)
-	var virtualDevice, network string
+	var virtualDevice string
 	if len(connectionTestData) > 0 {
 		virtualDevice = connectionTestData["pnfv"]["virtualDevice"]
-		network = connectionTestData["pnfv"]["network"]
 	}
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { acceptance.TestAccPreCheck(t) },
@@ -383,7 +383,7 @@ func TestAccFabricCreateVirtualDevice2NetworkConnection_PNFV(t *testing.T) {
 		CheckDestroy: CheckConnectionDelete,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccFabricCreateVirtualDevice2NetworkConnectionConfig("vd2network_PNFV", virtualDevice, network),
+				Config: testAccFabricCreateVirtualDevice2NetworkConnectionConfig("vd2network_PNFV", virtualDevice),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(
 						"equinix_fabric_connection.test", "name", "vd2network_PNFV"),
@@ -404,11 +404,13 @@ func TestAccFabricCreateVirtualDevice2NetworkConnection_PNFV(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						"equinix_fabric_connection.test", "a_side.0.access_point.0.interface.0.type", "CLOUD"),
 					resource.TestCheckResourceAttr(
-						"equinix_fabric_connection.test", "a_side.0.access_point.0.interface.0.id", "7"),
+						"equinix_fabric_connection.test", "a_side.0.access_point.0.interface.0.id", "6"),
+					resource.TestCheckResourceAttrSet(
+						"equinix_fabric_connection.test", "a_side.0.access_point.0.link_protocol.0.vlan_tag"),
 					resource.TestCheckResourceAttr(
 						"equinix_fabric_connection.test", "z_side.0.access_point.0.type", "NETWORK"),
-					//resource.TestCheckResourceAttr(
-					//	"equinix_fabric_connection.test", "z_side.0.access_point.0.network.0.uuid", connectionTestData["pnfv"]["network"]),
+					resource.TestCheckResourceAttrSet(
+						"equinix_fabric_connection.test", "z_side.0.access_point.0.network.0.uuid"),
 				),
 				ExpectNonEmptyPlan: true,
 			},
@@ -417,8 +419,24 @@ func TestAccFabricCreateVirtualDevice2NetworkConnection_PNFV(t *testing.T) {
 
 }
 
-func testAccFabricCreateVirtualDevice2NetworkConnectionConfig(name, virtualDeviceUuid, networkUuid string) string {
+func testAccFabricCreateVirtualDevice2NetworkConnectionConfig(name, virtualDeviceUuid string) string {
 	return fmt.Sprintf(`
+
+	resource "equinix_fabric_network" "this" {
+		type = "EVPLAN"
+		name = "Tf_Network_PNFV"
+		scope = "REGIONAL"
+		notifications {
+			type = "ALL"
+			emails = ["test@equinix.com","test1@equinix.com"]
+		}
+		location {
+			region = "AMER"
+		}
+		project{
+			project_id = "4f855852-eb47-4721-8e40-b386a3676abf"
+		}
+	}
 
 	resource "equinix_fabric_connection" "test" {
 		type = "EVPLAN_VC"
@@ -443,7 +461,7 @@ func testAccFabricCreateVirtualDevice2NetworkConnectionConfig(name, virtualDevic
 				}
 				interface {
 					type = "CLOUD"
-					id = 7
+					id = 6
 				}
 			}
 		}
@@ -451,11 +469,11 @@ func testAccFabricCreateVirtualDevice2NetworkConnectionConfig(name, virtualDevic
 			access_point {
 				type = "NETWORK"
 				network {
-					uuid = "%s"
+					uuid = equinix_fabric_network.this.id
 				}
 			}
 		}
-	}`, name, virtualDeviceUuid, networkUuid)
+	}`, name, virtualDeviceUuid)
 }
 
 func CheckConnectionDelete(s *terraform.State) error {
@@ -465,7 +483,7 @@ func CheckConnectionDelete(s *terraform.State) error {
 		if rs.Type != "equinix_fabric_connection" {
 			continue
 		}
-		err := equinix.WaitUntilConnectionDeprovisioned(rs.Primary.ID, acceptance.TestAccProvider.Meta(), ctx)
+		err := equinix.WaitUntilConnectionDeprovisioned(rs.Primary.ID, acceptance.TestAccProvider.Meta(), ctx, 10*time.Minute)
 		if err != nil {
 			return fmt.Errorf("API call failed while waiting for resource deletion")
 		}

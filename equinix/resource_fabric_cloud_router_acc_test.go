@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"testing"
+	"time"
 
 	v4 "github.com/equinix-labs/fabric-go/fabric/v4"
 
@@ -41,7 +42,7 @@ func TestAccCloudRouterCreateOnlyRequiredParameters_PFCR(t *testing.T) {
 					resource.TestCheckResourceAttr("equinix_fabric_cloud_router.test", "notifications.0.emails.0", "test@equinix.com"),
 					resource.TestCheckResourceAttr("equinix_fabric_cloud_router.test", "order.0.purchase_order_number", "1-234567"),
 					resource.TestCheckResourceAttr("equinix_fabric_cloud_router.test", "location.0.metro_code", "SV"),
-					resource.TestCheckResourceAttr("equinix_fabric_cloud_router.test", "package.0.code", "LAB"),
+					resource.TestCheckResourceAttr("equinix_fabric_cloud_router.test", "package.0.code", "STANDARD"),
 					resource.TestCheckResourceAttrSet("equinix_fabric_cloud_router.test", "project.0.project_id"),
 					resource.TestCheckResourceAttrSet("equinix_fabric_cloud_router.test", "account.0.account_number"),
 					resource.TestCheckResourceAttrSet("equinix_fabric_cloud_router.test", "href"),
@@ -79,7 +80,7 @@ func testAccCloudRouterCreateOnlyRequiredParameterConfig_PFCR(name string) strin
 			metro_code  = "SV"
 		}
 		package{
-			code = "LAB"
+			code = "STANDARD"
 		}
 		order{
 			purchase_order_number = "1-234567"
@@ -176,7 +177,7 @@ func checkCloudRouterDelete(s *terraform.State) error {
 		if rs.Type != "equinix_fabric_cloud_router" {
 			continue
 		}
-		err := equinix.WaitUntilCloudRouterDeprovisioned(rs.Primary.ID, acceptance.TestAccProvider.Meta(), ctx)
+		err := equinix.WaitUntilCloudRouterDeprovisioned(rs.Primary.ID, acceptance.TestAccProvider.Meta(), ctx, 10*time.Minute)
 		if err != nil {
 			return fmt.Errorf("API call failed while waiting for resource deletion")
 		}

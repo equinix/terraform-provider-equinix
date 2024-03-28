@@ -7,6 +7,7 @@ import (
 	"github.com/equinix/terraform-provider-equinix/internal/acceptance"
 	"github.com/equinix/terraform-provider-equinix/internal/config"
 	"testing"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
@@ -160,7 +161,7 @@ func checkServiceProfileDelete(s *terraform.State) error {
 		if rs.Type != "equinix_fabric_service_profile" {
 			continue
 		}
-		err := equinix.WaitAndCheckServiceProfileDeleted(rs.Primary.ID, client, ctx)
+		err := equinix.WaitAndCheckServiceProfileDeleted(rs.Primary.ID, client, ctx, 10*time.Minute)
 		if err != nil {
 			return fmt.Errorf("API call failed while waiting for resource deletion: %v", err)
 		}

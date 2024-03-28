@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"testing"
+	"time"
 
 	"github.com/equinix/terraform-provider-equinix/equinix"
 	"github.com/equinix/terraform-provider-equinix/internal/acceptance"
@@ -20,7 +21,7 @@ import (
 // The FCR, Connection and RPs will already be created in the resource test, so the
 // data_source tests will just leverage the RPs there to retrieve the data and check results
 
-func TestAccFabricCreateDirectRoutingProtocol_PFCR_A(t *testing.T) {
+func TestAccFabricCreateRoutingProtocols_PFCR(t *testing.T) {
 	ports := GetFabricEnvPorts(t)
 
 	var portUuid string
@@ -202,7 +203,7 @@ func checkRoutingProtocolDelete(s *terraform.State) error {
 		if rs.Type != "equinix_fabric_routing_protocol" {
 			continue
 		}
-		err := equinix.WaitUntilRoutingProtocolIsDeprovisioned(rs.Primary.ID, rs.Primary.Attributes["connection_uuid"], acceptance.TestAccProvider.Meta(), ctx)
+		err := equinix.WaitUntilRoutingProtocolIsDeprovisioned(rs.Primary.ID, rs.Primary.Attributes["connection_uuid"], acceptance.TestAccProvider.Meta(), ctx, 10*time.Minute)
 		if err != nil {
 			return fmt.Errorf("API call failed while waiting for resource deletion")
 		}

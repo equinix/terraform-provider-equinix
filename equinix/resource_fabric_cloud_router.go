@@ -189,10 +189,10 @@ func fabricCloudRouterResourceSchema() map[string]*schema.Schema {
 func resourceFabricCloudRouter() *schema.Resource {
 	return &schema.Resource{
 		Timeouts: &schema.ResourceTimeout{
-			Create: schema.DefaultTimeout(6 * time.Minute),
+			Create: schema.DefaultTimeout(10 * time.Minute),
 			Update: schema.DefaultTimeout(10 * time.Minute),
-			Delete: schema.DefaultTimeout(6 * time.Minute),
-			Read:   schema.DefaultTimeout(6 * time.Minute),
+			Delete: schema.DefaultTimeout(10 * time.Minute),
+			Read:   schema.DefaultTimeout(10 * time.Minute),
 		},
 		ReadContext:   resourceFabricCloudRouterRead,
 		CreateContext: resourceFabricCloudRouterCreate,
@@ -278,13 +278,15 @@ func resourceFabricCloudRouterCreate(ctx context.Context, d *schema.ResourceData
 		createRequest.Order = &order
 	}
 
+	start := time.Now()
 	fcr, _, err := client.CloudRoutersApi.CreateCloudRouter(ctx, createRequest)
 	if err != nil {
 		return diag.FromErr(equinix_errors.FormatFabricError(err))
 	}
 	d.SetId(fcr.Uuid)
 
-	if _, err = waitUntilCloudRouterIsProvisioned(d.Id(), meta, ctx); err != nil {
+	createTimeout := d.Timeout(schema.TimeoutCreate) - 30*time.Second - time.Since(start)
+	if _, err = waitUntilCloudRouterIsProvisioned(d.Id(), meta, ctx, createTimeout); err != nil {
 		return diag.Errorf("error waiting for Cloud Router (%s) to be created: %s", d.Id(), err)
 	}
 
@@ -387,7 +389,9 @@ func getCloudRouterUpdateRequest(conn v4.CloudRouter, d *schema.ResourceData) (v
 func resourceFabricCloudRouterUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*config.Config).FabricClient
 	ctx = context.WithValue(ctx, v4.ContextAccessToken, meta.(*config.Config).FabricAuthToken)
-	dbConn, err := waitUntilCloudRouterIsProvisioned(d.Id(), meta, ctx)
+	start := time.Now()
+	updateTimeout := d.Timeout(schema.TimeoutUpdate) - 30*time.Second - time.Since(start)
+	dbConn, err := waitUntilCloudRouterIsProvisioned(d.Id(), meta, ctx, updateTimeout)
 	if err != nil {
 		if !strings.Contains(err.Error(), "500") {
 			d.SetId("")
@@ -405,7 +409,8 @@ func resourceFabricCloudRouterUpdate(ctx context.Context, d *schema.ResourceData
 		return diag.FromErr(equinix_errors.FormatFabricError(err))
 	}
 	updateFg := v4.CloudRouter{}
-	updateFg, err = waitForCloudRouterUpdateCompletion(d.Id(), meta, ctx)
+	updateTimeout = d.Timeout(schema.TimeoutUpdate) - 30*time.Second - time.Since(start)
+	updateFg, err = waitForCloudRouterUpdateCompletion(d.Id(), meta, ctx, updateTimeout)
 
 	if err != nil {
 		if !strings.Contains(err.Error(), "500") {
@@ -418,7 +423,7 @@ func resourceFabricCloudRouterUpdate(ctx context.Context, d *schema.ResourceData
 	return setCloudRouterMap(d, updateFg)
 }
 
-func waitForCloudRouterUpdateCompletion(uuid string, meta interface{}, ctx context.Context) (v4.CloudRouter, error) {
+func waitForCloudRouterUpdateCompletion(uuid string, meta interface{}, ctx context.Context, timeout time.Duration) (v4.CloudRouter, error) {
 	log.Printf("Waiting for Cloud Router update to complete, uuid %s", uuid)
 	stateConf := &retry.StateChangeConf{
 		Target: []string{string(v4.PROVISIONED_CloudRouterAccessPointState)},
@@ -430,7 +435,7 @@ func waitForCloudRouterUpdateCompletion(uuid string, meta interface{}, ctx conte
 			}
 			return dbConn, string(*dbConn.State), nil
 		},
-		Timeout:    2 * time.Minute,
+		Timeout:    timeout,
 		Delay:      30 * time.Second,
 		MinTimeout: 30 * time.Second,
 	}
@@ -444,7 +449,7 @@ func waitForCloudRouterUpdateCompletion(uuid string, meta interface{}, ctx conte
 	return dbConn, err
 }
 
-func waitUntilCloudRouterIsProvisioned(uuid string, meta interface{}, ctx context.Context) (v4.CloudRouter, error) {
+func waitUntilCloudRouterIsProvisioned(uuid string, meta interface{}, ctx context.Context, timeout time.Duration) (v4.CloudRouter, error) {
 	log.Printf("Waiting for Cloud Router to be provisioned, uuid %s", uuid)
 	stateConf := &retry.StateChangeConf{
 		Pending: []string{
@@ -461,7 +466,7 @@ func waitUntilCloudRouterIsProvisioned(uuid string, meta interface{}, ctx contex
 			}
 			return dbConn, string(*dbConn.State), nil
 		},
-		Timeout:    5 * time.Minute,
+		Timeout:    timeout,
 		Delay:      30 * time.Second,
 		MinTimeout: 30 * time.Second,
 	}
@@ -479,6 +484,7 @@ func resourceFabricCloudRouterDelete(ctx context.Context, d *schema.ResourceData
 	diags := diag.Diagnostics{}
 	client := meta.(*config.Config).FabricClient
 	ctx = context.WithValue(ctx, v4.ContextAccessToken, meta.(*config.Config).FabricAuthToken)
+	start := time.Now()
 	_, err := client.CloudRoutersApi.DeleteCloudRouterByUuid(ctx, d.Id())
 	if err != nil {
 		errors, ok := err.(v4.GenericSwaggerError).Model().([]v4.ModelError)
@@ -491,14 +497,15 @@ func resourceFabricCloudRouterDelete(ctx context.Context, d *schema.ResourceData
 		return diag.FromErr(equinix_errors.FormatFabricError(err))
 	}
 
-	err = WaitUntilCloudRouterDeprovisioned(d.Id(), meta, ctx)
+	deleteTimeout := d.Timeout(schema.TimeoutDelete) - 30*time.Second - time.Since(start)
+	err = WaitUntilCloudRouterDeprovisioned(d.Id(), meta, ctx, deleteTimeout)
 	if err != nil {
 		return diag.FromErr(fmt.Errorf("API call failed while waiting for resource deletion. Error %v", err))
 	}
 	return diags
 }
 
-func WaitUntilCloudRouterDeprovisioned(uuid string, meta interface{}, ctx context.Context) error {
+func WaitUntilCloudRouterDeprovisioned(uuid string, meta interface{}, ctx context.Context, timeout time.Duration) error {
 	log.Printf("Waiting for Fabric Cloud Router to be deprovisioned, uuid %s", uuid)
 	stateConf := &retry.StateChangeConf{
 		Pending: []string{
@@ -515,7 +522,7 @@ func WaitUntilCloudRouterDeprovisioned(uuid string, meta interface{}, ctx contex
 			}
 			return dbConn, string(*dbConn.State), nil
 		},
-		Timeout:    5 * time.Minute,
+		Timeout:    timeout,
 		Delay:      30 * time.Second,
 		MinTimeout: 30 * time.Second,
 	}
