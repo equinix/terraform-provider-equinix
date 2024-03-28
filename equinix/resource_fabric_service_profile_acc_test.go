@@ -21,12 +21,14 @@ func TestAccFabricCreateServiceProfile_PFCR(t *testing.T) {
 	if len(ports) > 0 {
 		portDot1Q := ports["pfcr"]["dot1q"][0]
 		portQinq := ports["pfcr"]["qinq"][0]
-		portUuidDot1Q = portDot1Q.Uuid
-		portMetroCodeDot1Q = portDot1Q.Location.MetroCode
-		portTypeDot1Q = string(*portDot1Q.Type_)
-		portUuidQinq = portQinq.Uuid
-		portMetroCodeQinq = portQinq.Location.MetroCode
-		portTypeQinq = string(*portQinq.Type_)
+		portUuidDot1Q = portDot1Q.GetUuid()
+		portMetroCodeDot1QLocation := portDot1Q.GetLocation()
+		portMetroCodeDot1Q = portMetroCodeDot1QLocation.GetMetroCode()
+		portTypeDot1Q = string(portDot1Q.GetType())
+		portUuidQinq = portQinq.GetUuid()
+		portMetroCodeQinqLocation := portQinq.GetLocation()
+		portMetroCodeQinq = portMetroCodeQinqLocation.GetMetroCode()
+		portTypeQinq = string(portQinq.GetType())
 	}
 
 	resource.ParallelTest(t, resource.TestCase{

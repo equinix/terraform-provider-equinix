@@ -25,7 +25,7 @@ func TestAccFabricCreateRoutingProtocols_PFCR(t *testing.T) {
 	var portUuid string
 
 	if len(ports) > 0 {
-		portUuid = ports["pfcr"]["dot1q"][1].Uuid
+		portUuid = ports["pfcr"]["dot1q"][1].GetUuid()
 	}
 
 	resource.ParallelTest(t, resource.TestCase{
