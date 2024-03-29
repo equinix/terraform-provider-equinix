@@ -165,7 +165,6 @@ func fabricServiceProfileSchema() map[string]*schema.Schema {
 			Optional:     true,
 			Description:  "Flips view between buyer and seller representation. Available values : aSide, zSide. Default value : aSide",
 			ValidateFunc: validation.StringInSlice([]string{"aSide", "zSide"}, false),
-			Default:      "aSide",
 		},
 	}
 }
