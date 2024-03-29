@@ -256,10 +256,10 @@ func createFabricRoutingProtocolResourceSchema() map[string]*schema.Schema {
 func resourceFabricRoutingProtocol() *schema.Resource {
 	return &schema.Resource{
 		Timeouts: &schema.ResourceTimeout{
-			Create: schema.DefaultTimeout(6 * time.Minute),
+			Create: schema.DefaultTimeout(10 * time.Minute),
 			Update: schema.DefaultTimeout(10 * time.Minute),
-			Delete: schema.DefaultTimeout(6 * time.Minute),
-			Read:   schema.DefaultTimeout(6 * time.Minute),
+			Delete: schema.DefaultTimeout(10 * time.Minute),
+			Read:   schema.DefaultTimeout(10 * time.Minute),
 		},
 		ReadContext:   resourceFabricRoutingProtocolRead,
 		CreateContext: resourceFabricRoutingProtocolCreate,
@@ -371,6 +371,8 @@ func resourceFabricRoutingProtocolCreate(ctx context.Context, d *schema.Resource
 			createRequest.DirectIpv6 = nil
 		}
 	}
+
+	start := time.Now()
 	fabricRoutingProtocol, _, err := client.RoutingProtocolsApi.CreateConnectionRoutingProtocol(ctx, createRequest, d.Get("connection_uuid").(string))
 	if err != nil {
 		return diag.FromErr(equinix_errors.FormatFabricError(err))
@@ -383,7 +385,8 @@ func resourceFabricRoutingProtocolCreate(ctx context.Context, d *schema.Resource
 		d.SetId(fabricRoutingProtocol.RoutingProtocolDirectData.Uuid)
 	}
 
-	if _, err = waitUntilRoutingProtocolIsProvisioned(d.Id(), d.Get("connection_uuid").(string), meta, ctx); err != nil {
+	createTimeout := d.Timeout(schema.TimeoutCreate) - 30*time.Second - time.Since(start)
+	if _, err = waitUntilRoutingProtocolIsProvisioned(d.Id(), d.Get("connection_uuid").(string), meta, ctx, createTimeout); err != nil {
 		return diag.Errorf("error waiting for RP (%s) to be created: %s", d.Id(), err)
 	}
 
@@ -453,6 +456,7 @@ func resourceFabricRoutingProtocolUpdate(ctx context.Context, d *schema.Resource
 		}
 	}
 
+	start := time.Now()
 	updatedRpResp, _, err := client.RoutingProtocolsApi.ReplaceConnectionRoutingProtocolByUuid(ctx, updateRequest, d.Id(), d.Get("connection_uuid").(string))
 	if err != nil {
 		return diag.FromErr(equinix_errors.FormatFabricError(err))
@@ -467,14 +471,16 @@ func resourceFabricRoutingProtocolUpdate(ctx context.Context, d *schema.Resource
 		changeUuid = updatedRpResp.RoutingProtocolDirectData.Change.Uuid
 		d.SetId(updatedRpResp.RoutingProtocolDirectData.Uuid)
 	}
-	_, err = waitForRoutingProtocolUpdateCompletion(changeUuid, d.Id(), d.Get("connection_uuid").(string), meta, ctx)
+	updateTimeout := d.Timeout(schema.TimeoutUpdate) - 30*time.Second - time.Since(start)
+	_, err = waitForRoutingProtocolUpdateCompletion(changeUuid, d.Id(), d.Get("connection_uuid").(string), meta, ctx, updateTimeout)
 	if err != nil {
 		if !strings.Contains(err.Error(), "500") {
 			d.SetId("")
 		}
 		return diag.FromErr(fmt.Errorf("timeout updating routing protocol: %v", err))
 	}
-	updatedProvisionedRpResp, err := waitUntilRoutingProtocolIsProvisioned(d.Id(), d.Get("connection_uuid").(string), meta, ctx)
+	updateTimeout = d.Timeout(schema.TimeoutUpdate) - 30*time.Second - time.Since(start)
+	updatedProvisionedRpResp, err := waitUntilRoutingProtocolIsProvisioned(d.Id(), d.Get("connection_uuid").(string), meta, ctx, updateTimeout)
 	if err != nil {
 		return diag.Errorf("error waiting for RP (%s) to be replace updated: %s", d.Id(), err)
 	}
@@ -486,6 +492,7 @@ func resourceFabricRoutingProtocolDelete(ctx context.Context, d *schema.Resource
 	diags := diag.Diagnostics{}
 	client := meta.(*config.Config).FabricClient
 	ctx = context.WithValue(ctx, v4.ContextAccessToken, meta.(*config.Config).FabricAuthToken)
+	start := time.Now()
 	_, _, err := client.RoutingProtocolsApi.DeleteConnectionRoutingProtocolByUuid(ctx, d.Id(), d.Get("connection_uuid").(string))
 	if err != nil {
 		errors, ok := err.(v4.GenericSwaggerError).Model().([]v4.ModelError)
@@ -498,7 +505,8 @@ func resourceFabricRoutingProtocolDelete(ctx context.Context, d *schema.Resource
 		return diag.FromErr(equinix_errors.FormatFabricError(err))
 	}
 
-	err = WaitUntilRoutingProtocolIsDeprovisioned(d.Id(), d.Get("connection_uuid").(string), meta, ctx)
+	deleteTimeout := d.Timeout(schema.TimeoutDelete) - 30*time.Second - time.Since(start)
+	err = WaitUntilRoutingProtocolIsDeprovisioned(d.Id(), d.Get("connection_uuid").(string), meta, ctx, deleteTimeout)
 	if err != nil {
 		return diag.FromErr(fmt.Errorf("API call failed while waiting for resource deletion. Error %v", err))
 	}
@@ -546,7 +554,7 @@ func setFabricRoutingProtocolMap(d *schema.ResourceData, rp v4.RoutingProtocolDa
 	return diags
 }
 
-func waitUntilRoutingProtocolIsProvisioned(uuid string, connUuid string, meta interface{}, ctx context.Context) (v4.RoutingProtocolData, error) {
+func waitUntilRoutingProtocolIsProvisioned(uuid string, connUuid string, meta interface{}, ctx context.Context, timeout time.Duration) (v4.RoutingProtocolData, error) {
 	log.Printf("Waiting for routing protocol to be provisioned, uuid %s", uuid)
 	stateConf := &retry.StateChangeConf{
 		Pending: []string{
@@ -570,7 +578,7 @@ func waitUntilRoutingProtocolIsProvisioned(uuid string, connUuid string, meta in
 			}
 			return dbConn, state, nil
 		},
-		Timeout:    5 * time.Minute,
+		Timeout:    timeout,
 		Delay:      30 * time.Second,
 		MinTimeout: 30 * time.Second,
 	}
@@ -585,7 +593,7 @@ func waitUntilRoutingProtocolIsProvisioned(uuid string, connUuid string, meta in
 	return dbConn, err
 }
 
-func WaitUntilRoutingProtocolIsDeprovisioned(uuid string, connUuid string, meta interface{}, ctx context.Context) error {
+func WaitUntilRoutingProtocolIsDeprovisioned(uuid string, connUuid string, meta interface{}, ctx context.Context, timeout time.Duration) error {
 	log.Printf("Waiting for routing protocol to be deprovisioned, uuid %s", uuid)
 
 	/* check if resource is not found */
@@ -601,7 +609,7 @@ func WaitUntilRoutingProtocolIsDeprovisioned(uuid string, connUuid string, meta 
 			return dbConn, strconv.Itoa(resp.StatusCode), nil
 
 		},
-		Timeout:    5 * time.Minute,
+		Timeout:    timeout,
 		Delay:      30 * time.Second,
 		MinTimeout: 30 * time.Second,
 	}
@@ -610,7 +618,7 @@ func WaitUntilRoutingProtocolIsDeprovisioned(uuid string, connUuid string, meta 
 	return err
 }
 
-func waitForRoutingProtocolUpdateCompletion(rpChangeUuid string, uuid string, connUuid string, meta interface{}, ctx context.Context) (v4.RoutingProtocolChangeData, error) {
+func waitForRoutingProtocolUpdateCompletion(rpChangeUuid string, uuid string, connUuid string, meta interface{}, ctx context.Context, timeout time.Duration) (v4.RoutingProtocolChangeData, error) {
 	log.Printf("Waiting for routing protocol update to complete, uuid %s", uuid)
 	stateConf := &retry.StateChangeConf{
 		Target: []string{"COMPLETED"},
@@ -626,7 +634,7 @@ func waitForRoutingProtocolUpdateCompletion(rpChangeUuid string, uuid string, co
 			}
 			return dbConn, updatableState, nil
 		},
-		Timeout:    2 * time.Minute,
+		Timeout:    timeout,
 		Delay:      30 * time.Second,
 		MinTimeout: 30 * time.Second,
 	}
