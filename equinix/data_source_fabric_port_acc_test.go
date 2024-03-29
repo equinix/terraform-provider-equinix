@@ -15,7 +15,7 @@ const (
 	FabricDedicatedPortEnvVar = "TF_ACC_FABRIC_DEDICATED_PORTS"
 )
 
-type EnvPorts map[string]map[string][]fabricv4.Port
+type EnvPorts map[string]map[string][]fabricv4.PortResponse
 
 func GetFabricEnvPorts(t *testing.T) EnvPorts {
 	var ports EnvPorts
@@ -28,7 +28,7 @@ func GetFabricEnvPorts(t *testing.T) EnvPorts {
 
 func TestAccDataSourceFabricPort_PNFV(t *testing.T) {
 	ports := GetFabricEnvPorts(t)
-	var port fabricv4.Port
+	var port fabricv4.PortResponse
 	var portType, portState, portEncapsulationType, portRedundancyPriority string
 	if len(ports) > 0 {
 		port = ports["pnfv"]["dot1q"][0]
@@ -81,7 +81,7 @@ func testDataSourceFabricPort(port_uuid string) string {
 
 func TestAccDataSourceFabricPorts_PNFV(t *testing.T) {
 	ports := GetFabricEnvPorts(t)
-	var port fabricv4.Port
+	var port fabricv4.PortResponse
 	var portType, portState, portEncapsulationType, portRedundancyPriority string
 	if len(ports) > 0 {
 		port = ports["pnfv"]["dot1q"][0]
