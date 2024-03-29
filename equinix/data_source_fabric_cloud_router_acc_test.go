@@ -24,7 +24,7 @@ func TestAccDataSourceFabricCloudRouter_PFCR(t *testing.T) {
 					resource.TestCheckResourceAttr("data.equinix_fabric_cloud_router.example", "notifications.0.emails.0", "test@equinix.com"),
 					resource.TestCheckResourceAttr("data.equinix_fabric_cloud_router.example", "order.0.purchase_order_number", "1-323292"),
 					resource.TestCheckResourceAttr("data.equinix_fabric_cloud_router.example", "location.0.metro_code", "SV"),
-					resource.TestCheckResourceAttr("data.equinix_fabric_cloud_router.example", "package.0.code", "LAB"),
+					resource.TestCheckResourceAttr("data.equinix_fabric_cloud_router.example", "package.0.code", "STANDARD"),
 					resource.TestCheckResourceAttrSet("data.equinix_fabric_cloud_router.example", "project.0.project_id"),
 					resource.TestCheckResourceAttrSet("data.equinix_fabric_cloud_router.example", "account.0.account_number"),
 					resource.TestCheckResourceAttrSet("data.equinix_fabric_cloud_router.example", "href"),
@@ -62,7 +62,7 @@ func ConfigCreateCloudRouterResource_PFCR() string {
 			metro_code= "SV"
 		}
 		package {
-			code="LAB"
+			code="STANDARD"
 		}
 		project {
 			project_id = "291639000636552"
