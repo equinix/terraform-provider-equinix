@@ -1265,20 +1265,20 @@ func virtualDevicesTerraformToGo(schemaVirtualDevices []interface{}) []fabricv4.
 	virtualDevices := make([]fabricv4.ServiceProfileAccessPointVD, len(schemaVirtualDevices))
 	for index, virtualDevice := range schemaVirtualDevices {
 		vdMap := virtualDevice.(map[string]interface{})
-		vType, _ := fabricv4.NewServiceProfileAccessPointVDTypeFromValue(vdMap["type"].(string))
+		vType := fabricv4.ServiceProfileAccessPointVDType(vdMap["type"].(string))
 		vUuid := vdMap["uuid"].(string)
 		locationList := vdMap["location"].(interface{}).(*schema.Set).List()
-		var vLocation *fabricv4.SimplifiedLocation
+		var vLocation fabricv4.SimplifiedLocation
 		if len(locationList) != 0 {
 			vLocation = equinix_fabric_schema.LocationTerraformToGo(locationList)
 		}
-		pInterfaceUuid := vdMap["interface_uuid"].(*string)
-		virtualDevices[index] = fabricv4.ServiceProfileAccessPointVD{
-			Type:          *vType,
-			Uuid:          vUuid,
-			Location:      vLocation,
-			InterfaceUuid: pInterfaceUuid,
-		}
+		vInterfaceUuid := vdMap["interface_uuid"].(string)
+		accessPointVD := fabricv4.ServiceProfileAccessPointVD{}
+		accessPointVD.SetType(vType)
+		accessPointVD.SetUuid(vUuid)
+		accessPointVD.SetLocation(vLocation)
+		accessPointVD.SetInterfaceUuid(vInterfaceUuid)
+		virtualDevices[index] = accessPointVD
 	}
 	return virtualDevices
 }

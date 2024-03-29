@@ -447,7 +447,7 @@ func waitForCloudRouterUpdateCompletion(uuid string, meta interface{}, d *schema
 	return dbConn, err
 }
 
-func waitUntilCloudRouterIsProvisioned(uuid string, meta interface{}, d *schema.ResourceData, ctx context.Context, timeout time.Duration) (fabricv4.CloudRouter, error) {
+func waitUntilCloudRouterIsProvisioned(uuid string, meta interface{}, d *schema.ResourceData, ctx context.Context, timeout time.Duration) (*fabricv4.CloudRouter, error) {
 	log.Printf("Waiting for Cloud Router to be provisioned, uuid %s", uuid)
 	stateConf := &retry.StateChangeConf{
 		Pending: []string{
