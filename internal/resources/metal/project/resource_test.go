@@ -132,12 +132,26 @@ func TestAccMetalProject_BGPBasic(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						"equinix_metal_project.foobar", "bgp_config.0.md5",
 						"2SFsdfsg43"),
+					resource.TestCheckResourceAttr(
+						"equinix_metal_project.foobar", "bgp_config.0.asn",
+						"65000"),
 				),
 			},
 			{
 				ResourceName:      "equinix_metal_project.foobar",
 				ImportState:       true,
 				ImportStateVerify: true,
+			},
+			{
+				Config: testAccMetalProjectConfig_BGPWithoutMD5(rInt),
+				Check: resource.ComposeTestCheckFunc(
+					testAccMetalProjectExists("equinix_metal_project.foobar", &project),
+					resource.TestCheckNoResourceAttr(
+						"equinix_metal_project.foobar", "bgp_config.0.md5"),
+					resource.TestCheckResourceAttr(
+						"equinix_metal_project.foobar", "bgp_config.0.asn",
+						"65000"),
+				),
 			},
 		},
 	})
@@ -340,6 +354,17 @@ func testAccMetalProjectConfig_basic(r int) string {
 	return fmt.Sprintf(`
 resource "equinix_metal_project" "foobar" {
     name = "tfacc-project-%d"
+}`, r)
+}
+
+func testAccMetalProjectConfig_BGPWithoutMD5(r int) string {
+	return fmt.Sprintf(`
+resource "equinix_metal_project" "foobar" {
+    name = "tfacc-project-%d"
+	bgp_config {
+		deployment_type = "local"
+		asn = 65000
+	}
 }`, r)
 }
 
