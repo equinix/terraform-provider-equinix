@@ -26,7 +26,7 @@ func testSweepNetworks(region string) error {
 
 func TestAccFabricNetworkCreateOnlyRequiredParameters_PFCR(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     func() { acceptance.TestAccPreCheck(t) },
+		PreCheck:     func() { acceptance.TestAccPreCheck(t); acceptance.TestAccPreCheckProviderConfigured(t) },
 		Providers:    acceptance.TestAccProviders,
 		CheckDestroy: checkNetworkDelete,
 		Steps: []resource.TestStep{
@@ -95,7 +95,7 @@ func checkNetworkDelete(s *terraform.State) error {
 
 func TestAccFabricNetworkCreateMixedParameters_PFCR(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     func() { acceptance.TestAccPreCheck(t) },
+		PreCheck:     func() { acceptance.TestAccPreCheck(t); acceptance.TestAccPreCheckProviderConfigured(t) },
 		Providers:    acceptance.TestAccProviders,
 		CheckDestroy: checkNetworkDelete,
 		Steps: []resource.TestStep{

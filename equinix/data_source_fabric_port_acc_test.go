@@ -40,7 +40,7 @@ func TestAccDataSourceFabricPort_PNFV(t *testing.T) {
 		portRedundancyPriority = string(portRedundancy.GetPriority())
 	}
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acceptance.TestAccPreCheck(t) },
+		PreCheck:          func() { acceptance.TestAccPreCheck(t); acceptance.TestAccPreCheckProviderConfigured(t) },
 		ExternalProviders: acceptance.TestExternalProviders,
 		Providers:         acceptance.TestAccProviders,
 		Steps: []resource.TestStep{
@@ -93,7 +93,7 @@ func TestAccDataSourceFabricPorts_PNFV(t *testing.T) {
 		portRedundancyPriority = string(portRedundancy.GetPriority())
 	}
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acceptance.TestAccPreCheck(t) },
+		PreCheck:          func() { acceptance.TestAccPreCheck(t); acceptance.TestAccPreCheckProviderConfigured(t) },
 		ExternalProviders: acceptance.TestExternalProviders,
 		Providers:         acceptance.TestAccProviders,
 		Steps: []resource.TestStep{

@@ -48,7 +48,7 @@ func TestAccFabricCreatePort2SPConnection_PFCR(t *testing.T) {
 		portUuid = ports["pfcr"]["dot1q"][0].GetUuid()
 	}
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     func() { acceptance.TestAccPreCheck(t) },
+		PreCheck:     func() { acceptance.TestAccPreCheck(t); acceptance.TestAccPreCheckProviderConfigured(t) },
 		Providers:    acceptance.TestAccProviders,
 		CheckDestroy: CheckConnectionDelete,
 		Steps: []resource.TestStep{
@@ -147,7 +147,7 @@ func TestAccFabricCreatePort2PortConnection_PFCR(t *testing.T) {
 		zSidePortUuid = ports["pfcr"]["dot1q"][1].GetUuid()
 	}
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     func() { acceptance.TestAccPreCheck(t) },
+		PreCheck:     func() { acceptance.TestAccPreCheck(t); acceptance.TestAccPreCheckProviderConfigured(t) },
 		Providers:    acceptance.TestAccProviders,
 		CheckDestroy: CheckConnectionDelete,
 		Steps: []resource.TestStep{
@@ -261,7 +261,7 @@ func TestAccFabricCreateCloudRouter2PortConnection_PFCR(t *testing.T) {
 		portUuid = ports["pfcr"]["dot1q"][1].GetUuid()
 	}
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     func() { acceptance.TestAccPreCheck(t) },
+		PreCheck:     func() { acceptance.TestAccPreCheck(t); acceptance.TestAccPreCheckProviderConfigured(t) },
 		Providers:    acceptance.TestAccProviders,
 		CheckDestroy: CheckConnectionDelete,
 		Steps: []resource.TestStep{
@@ -376,7 +376,7 @@ func TestAccFabricCreateVirtualDevice2NetworkConnection_PNFV(t *testing.T) {
 		virtualDevice = connectionTestData["pnfv"]["virtualDevice"]
 	}
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     func() { acceptance.TestAccPreCheck(t) },
+		PreCheck:     func() { acceptance.TestAccPreCheck(t); acceptance.TestAccPreCheckProviderConfigured(t) },
 		Providers:    acceptance.TestAccProviders,
 		CheckDestroy: CheckConnectionDelete,
 		Steps: []resource.TestStep{

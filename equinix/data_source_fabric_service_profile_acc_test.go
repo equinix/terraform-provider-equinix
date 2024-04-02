@@ -77,7 +77,7 @@ func TestAccFabricReadServiceProfileByUuid_PFCR(t *testing.T) {
 	}
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     func() { acceptance.TestAccPreCheck(t) },
+		PreCheck:     func() { acceptance.TestAccPreCheck(t); acceptance.TestAccPreCheckProviderConfigured(t) },
 		Providers:    acceptance.TestAccProviders,
 		CheckDestroy: checkServiceProfileDelete,
 		Steps: []resource.TestStep{

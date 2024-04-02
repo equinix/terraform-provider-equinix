@@ -26,7 +26,7 @@ func testSweepCloudRouters(region string) error {
 
 func TestAccCloudRouterCreateOnlyRequiredParameters_PFCR(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     func() { acceptance.TestAccPreCheck(t) },
+		PreCheck:     func() { acceptance.TestAccPreCheck(t); acceptance.TestAccPreCheckProviderConfigured(t) },
 		Providers:    acceptance.TestAccProviders,
 		CheckDestroy: checkCloudRouterDelete,
 		Steps: []resource.TestStep{
@@ -100,7 +100,7 @@ func testAccCloudRouterCreateOnlyRequiredParameterConfig_PFCR(name string) strin
 
 func TestAccCloudRouterCreateMixedParameters_PFCR(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     func() { acceptance.TestAccPreCheck(t) },
+		PreCheck:     func() { acceptance.TestAccPreCheck(t); acceptance.TestAccPreCheckProviderConfigured(t) },
 		Providers:    acceptance.TestAccProviders,
 		CheckDestroy: checkCloudRouterDelete,
 		Steps: []resource.TestStep{

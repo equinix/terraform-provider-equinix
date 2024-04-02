@@ -752,7 +752,7 @@ func resourceFabricServiceProfileDelete(ctx context.Context, d *schema.ResourceD
 	}
 
 	deleteTimeout := d.Timeout(schema.TimeoutDelete) - 30*time.Second - time.Since(start)
-	waitErr := WaitAndCheckServiceProfileDeleted(uuid, client, ctx, deleteTimeout)
+	waitErr := WaitAndCheckServiceProfileDeleted(uuid, meta, d, ctx, deleteTimeout)
 	if waitErr != nil {
 		return diag.Errorf("Error while waiting for Service Profile deletion: %v", waitErr)
 	}
@@ -760,11 +760,12 @@ func resourceFabricServiceProfileDelete(ctx context.Context, d *schema.ResourceD
 	return diags
 }
 
-func WaitAndCheckServiceProfileDeleted(uuid string, client *fabricv4.APIClient, ctx context.Context, timeout time.Duration) error {
+func WaitAndCheckServiceProfileDeleted(uuid string, meta interface{}, d *schema.ResourceData, ctx context.Context, timeout time.Duration) error {
 	log.Printf("Waiting for service profile to be in deleted, uuid %s", uuid)
 	stateConf := &retry.StateChangeConf{
 		Target: []string{string(fabricv4.SERVICEPROFILESTATEENUM_DELETED)},
 		Refresh: func() (interface{}, string, error) {
+			client := meta.(*config.Config).NewFabricClientForSDK(d)
 			dbConn, _, err := client.ServiceProfilesApi.GetServiceProfileByUuid(ctx, uuid).Execute()
 			if err != nil {
 				return "", "", equinix_errors.FormatFabricError(err)
