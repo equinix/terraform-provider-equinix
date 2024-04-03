@@ -315,7 +315,7 @@ func portDeviceRedundancyGoToTerraform(redundancy *fabricv4.PortDeviceRedundancy
 
 	mappedRedundancy := make(map[string]interface{})
 	mappedRedundancy["group"] = redundancy.GetGroup()
-	mappedRedundancy["priority"] = redundancy.GetPriority()
+	mappedRedundancy["priority"] = string(redundancy.GetPriority())
 
 	redundancySet := schema.NewSet(
 		schema.HashResource(&schema.Resource{Schema: PortRedundancySch()}),
