@@ -4,7 +4,7 @@ go 1.21
 
 require (
 	github.com/equinix/ecx-go/v2 v2.3.1
-	github.com/equinix/equinix-sdk-go v0.35.0
+	github.com/equinix/equinix-sdk-go v0.35.1
 	github.com/equinix/ne-go v1.16.0
 	github.com/equinix/oauth2-go v1.0.0
 	github.com/equinix/rest-go v1.3.0
@@ -116,5 +116,3 @@ require (
 	google.golang.org/protobuf v1.32.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
-
-replace github.com/equinix/equinix-sdk-go => github.com/equinix/equinix-sdk-go v0.35.1-0.20240403231912-1a55e726de28
