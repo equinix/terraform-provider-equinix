@@ -126,7 +126,7 @@ func fabricCloudRouterResourceSchema() map[string]*schema.Schema {
 		"project": {
 			Type:        schema.TypeSet,
 			Required:    true,
-			Description: "Customer resource hierarchy project information.Applicable to customers onboarded to Equinix Identity and Access Management. For more information see Identity and Access Management: Projects",
+			Description: "Customer resource hierarchy project information. Applicable to customers onboarded to Equinix Identity and Access Management. For more information see Identity and Access Management: Projects",
 			MaxItems:    1,
 			Elem: &schema.Resource{
 				Schema: fabricCloudRouterProjectSch(),
