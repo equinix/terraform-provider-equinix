@@ -135,6 +135,42 @@ func TestAccMetalVlan_NoDescription(t *testing.T) {
 		},
 	})
 }
+
+func TestAccMetalVlan_RemoveDescription(t *testing.T) {
+	var vlan packngo.VirtualNetwork
+	rs := acctest.RandString(10)
+	metro := "sv"
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:                 func() { acceptance.TestAccPreCheckMetal(t) },
+		ExternalProviders:        acceptance.TestExternalProviders,
+		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		CheckDestroy:             testAccMetalVlanCheckDestroyed,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckMetalVlanConfig_metro(rs, metro, "tfacc-vlan"),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckMetalVlanExists("equinix_metal_vlan.foovlan", &vlan),
+					resource.TestCheckResourceAttr(
+						"equinix_metal_vlan.foovlan", "description", "tfacc-vlan"),
+					resource.TestCheckResourceAttr(
+						"equinix_metal_vlan.foovlan", "metro", metro),
+				),
+			},
+			{
+				Config: testAccCheckMetalVlanConfig_NoDescription(rs, metro),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckMetalVlanExists("equinix_metal_vlan.foovlan", &vlan),
+					resource.TestCheckNoResourceAttr(
+						"equinix_metal_vlan.foovlan", "description"),
+					resource.TestCheckResourceAttr(
+						"equinix_metal_vlan.foovlan", "metro", metro),
+				),
+			},
+		},
+	})
+}
+
 func testAccCheckMetalVlanExists(n string, vlan *packngo.VirtualNetwork) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
