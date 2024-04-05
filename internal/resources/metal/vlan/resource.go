@@ -8,7 +8,6 @@ import (
 
 	equinix_errors "github.com/equinix/terraform-provider-equinix/internal/errors"
 	"github.com/equinix/terraform-provider-equinix/internal/framework"
-	"github.com/hashicorp/terraform-plugin-framework/types"
 
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
@@ -147,7 +146,6 @@ func (r *Resource) Update(ctx context.Context, req resource.UpdateRequest, resp 
 		return
 	}
 
-	data.Metro = types.StringValue(strings.ToLower(data.Metro.ValueString()))
 	if diag := resp.State.Set(ctx, &data); diag.HasError() {
 		resp.Diagnostics.Append(diag...)
 		return
