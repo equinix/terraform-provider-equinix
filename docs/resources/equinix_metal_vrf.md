@@ -6,7 +6,7 @@ subcategory: "Metal"
 
 Use this resource to manage a VRF.
 
-~> VRF features are not generally available. The interfaces related to VRF resources may change ahead of general availability.
+See the [Virtual Routing and Forwarding documentation](https://deploy.equinix.com/developers/docs/metal/layer2-networking/vrf/) for product details and API reference material.
 
 ## Example Usage
 

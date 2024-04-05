@@ -7,7 +7,7 @@ subcategory: "Metal"
 Use this data source to retrieve a virtual circuit resource from
 [Equinix Fabric - software-defined interconnections](https://metal.equinix.com/developers/docs/networking/fabric/)
 
-~> VRF features are not generally available. The interfaces related to VRF resources may change ahead of general availability.
+See the [Virtual Routing and Forwarding documentation](https://deploy.equinix.com/developers/docs/metal/layer2-networking/vrf/) for product details and API reference material.
 
 ## Example Usage
 
