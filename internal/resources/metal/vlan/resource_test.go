@@ -78,17 +78,16 @@ func TestAccMetalVlan_metro(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccCheckMetalVlanConfig_metro(rs, strings.ToUpper(metro), "tfacc-vlan"),
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckMetalSameVlan("equinix_metal_vlan.foovlan", &vlan),
-					resource.TestCheckResourceAttr(
-						"equinix_metal_vlan.foovlan", "description", "tfacc-vlan"),
-					resource.TestCheckResourceAttr(
-						"equinix_metal_vlan.foovlan", "metro", metro),
-				),
+				Config:   testAccCheckMetalVlanConfig_metro(rs, strings.ToUpper(metro), "tfacc-vlan"),
+				PlanOnly: true,
 			},
 			{
 				Config: testAccCheckMetalVlanConfig_metro(rs, upperMetro, "tfacc-vlan"),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction("equinix_metal_vlan.foovlan", plancheck.ResourceActionDestroyBeforeCreate),
+					},
+				},
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckMetalVlanExists("equinix_metal_vlan.foovlan", &vlan),
 					resource.TestCheckResourceAttr(
@@ -98,14 +97,8 @@ func TestAccMetalVlan_metro(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccCheckMetalVlanConfig_metro(rs, strings.ToLower(upperMetro), "tfacc-vlan"),
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckMetalSameVlan("equinix_metal_vlan.foovlan", &vlan),
-					resource.TestCheckResourceAttr(
-						"equinix_metal_vlan.foovlan", "description", "tfacc-vlan"),
-					resource.TestCheckResourceAttr(
-						"equinix_metal_vlan.foovlan", "metro", upperMetro),
-				),
+				Config:   testAccCheckMetalVlanConfig_metro(rs, strings.ToLower(upperMetro), "tfacc-vlan"),
+				PlanOnly: true,
 			},
 		},
 	})
@@ -192,24 +185,6 @@ func testAccCheckMetalVlanExists(n string, vlan *packngo.VirtualNetwork) resourc
 		}
 
 		*vlan = *foundVlan
-
-		return nil
-	}
-}
-
-func testAccCheckMetalSameVlan(n string, vlan *packngo.VirtualNetwork) resource.TestCheckFunc {
-	return func(s *terraform.State) error {
-		rs, ok := s.RootModule().Resources[n]
-		if !ok {
-			return fmt.Errorf("Not found: %s", n)
-		}
-		if rs.Primary.ID == "" {
-			return fmt.Errorf("No Record ID is set")
-		}
-
-		if vlan.ID != rs.Primary.ID {
-			return fmt.Errorf("VLAN was recreated.  Expected ID: %v ID in state: %v", vlan.ID, rs.Primary.ID)
-		}
 
 		return nil
 	}
