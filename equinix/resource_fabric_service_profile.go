@@ -525,10 +525,10 @@ func createLinkProtocolConfigSch() map[string]*schema.Schema {
 func resourceFabricServiceProfile() *schema.Resource {
 	return &schema.Resource{
 		Timeouts: &schema.ResourceTimeout{
-			Create: schema.DefaultTimeout(6 * time.Minute),
+			Create: schema.DefaultTimeout(10 * time.Minute),
 			Update: schema.DefaultTimeout(10 * time.Minute),
-			Delete: schema.DefaultTimeout(6 * time.Minute),
-			Read:   schema.DefaultTimeout(6 * time.Minute),
+			Delete: schema.DefaultTimeout(10 * time.Minute),
+			Read:   schema.DefaultTimeout(10 * time.Minute),
 		},
 		ReadContext:   resourceFabricServiceProfileRead,
 		CreateContext: resourceFabricServiceProfileCreate,
@@ -632,9 +632,11 @@ func resourceFabricServiceProfileUpdate(ctx context.Context, d *schema.ResourceD
 	uuid := d.Id()
 	updateRequest := getServiceProfileRequestPayload(d)
 
+	start := time.Now()
+	updateTimeout := d.Timeout(schema.TimeoutUpdate) - 30*time.Second - time.Since(start)
 	var err error
 	var eTag int64 = 0
-	_, err, eTag = waitForActiveServiceProfileAndPopulateETag(uuid, meta, ctx)
+	_, err, eTag = waitForActiveServiceProfileAndPopulateETag(uuid, meta, ctx, updateTimeout)
 	if err != nil {
 		if !strings.Contains(err.Error(), "500") {
 			d.SetId("")
@@ -646,8 +648,10 @@ func resourceFabricServiceProfileUpdate(ctx context.Context, d *schema.ResourceD
 	if err != nil {
 		return diag.FromErr(equinix_errors.FormatFabricError(err))
 	}
+
+	updateTimeout = d.Timeout(schema.TimeoutUpdate) - 30*time.Second - time.Since(start)
 	updatedServiceProfile := v4.ServiceProfile{}
-	updatedServiceProfile, err = waitForServiceProfileUpdateCompletion(uuid, meta, ctx)
+	updatedServiceProfile, err = waitForServiceProfileUpdateCompletion(uuid, meta, ctx, updateTimeout)
 	if err != nil {
 		if !strings.Contains(err.Error(), "500") {
 			d.SetId("")
@@ -658,7 +662,7 @@ func resourceFabricServiceProfileUpdate(ctx context.Context, d *schema.ResourceD
 	return setFabricServiceProfileMap(d, updatedServiceProfile)
 }
 
-func waitForServiceProfileUpdateCompletion(uuid string, meta interface{}, ctx context.Context) (v4.ServiceProfile, error) {
+func waitForServiceProfileUpdateCompletion(uuid string, meta interface{}, ctx context.Context, timeout time.Duration) (v4.ServiceProfile, error) {
 	log.Printf("Waiting for service profile update to complete, uuid %s", uuid)
 	stateConf := &retry.StateChangeConf{
 		Target: []string{"COMPLETED"},
@@ -671,7 +675,7 @@ func waitForServiceProfileUpdateCompletion(uuid string, meta interface{}, ctx co
 			updatableState := "COMPLETED"
 			return dbServiceProfile, updatableState, nil
 		},
-		Timeout:    1 * time.Minute,
+		Timeout:    timeout,
 		Delay:      10 * time.Second,
 		MinTimeout: 10 * time.Second,
 	}
@@ -685,7 +689,7 @@ func waitForServiceProfileUpdateCompletion(uuid string, meta interface{}, ctx co
 	return dbSp, err
 }
 
-func waitForActiveServiceProfileAndPopulateETag(uuid string, meta interface{}, ctx context.Context) (v4.ServiceProfile, error, int64) {
+func waitForActiveServiceProfileAndPopulateETag(uuid string, meta interface{}, ctx context.Context, timeout time.Duration) (v4.ServiceProfile, error, int64) {
 	log.Printf("Waiting for service profile to be in active state, uuid %s", uuid)
 	var eTag int64 = 0
 	stateConf := &retry.StateChangeConf{
@@ -709,7 +713,7 @@ func waitForActiveServiceProfileAndPopulateETag(uuid string, meta interface{}, c
 			}
 			return dbServiceProfile, updatableState, nil
 		},
-		Timeout:    1 * time.Minute,
+		Timeout:    timeout,
 		Delay:      10 * time.Second,
 		MinTimeout: 10 * time.Second,
 	}
@@ -729,12 +733,14 @@ func resourceFabricServiceProfileDelete(ctx context.Context, d *schema.ResourceD
 	if uuid == "" {
 		return diag.Errorf("No uuid found for Service Profile Deletion %v ", uuid)
 	}
+	start := time.Now()
 	_, _, err := client.ServiceProfilesApi.DeleteServiceProfileByUuid(ctx, uuid)
 	if err != nil {
 		return diag.FromErr(equinix_errors.FormatFabricError(err))
 	}
 
-	waitErr := WaitAndCheckServiceProfileDeleted(uuid, client, ctx)
+	deleteTimeout := d.Timeout(schema.TimeoutDelete) - 30*time.Second - time.Since(start)
+	waitErr := WaitAndCheckServiceProfileDeleted(uuid, client, ctx, deleteTimeout)
 	if waitErr != nil {
 		return diag.Errorf("Error while waiting for Service Profile deletion: %v", waitErr)
 	}
@@ -742,7 +748,7 @@ func resourceFabricServiceProfileDelete(ctx context.Context, d *schema.ResourceD
 	return diags
 }
 
-func WaitAndCheckServiceProfileDeleted(uuid string, client *v4.APIClient, ctx context.Context) error {
+func WaitAndCheckServiceProfileDeleted(uuid string, client *v4.APIClient, ctx context.Context, timeout time.Duration) error {
 	log.Printf("Waiting for service profile to be in deleted, uuid %s", uuid)
 	stateConf := &retry.StateChangeConf{
 		Target: []string{string(v4.DELETED_ServiceProfileStateEnum)},
@@ -757,7 +763,7 @@ func WaitAndCheckServiceProfileDeleted(uuid string, client *v4.APIClient, ctx co
 			}
 			return dbConn, updatableState, nil
 		},
-		Timeout:    1 * time.Minute,
+		Timeout:    timeout,
 		Delay:      10 * time.Second,
 		MinTimeout: 10 * time.Second,
 	}
