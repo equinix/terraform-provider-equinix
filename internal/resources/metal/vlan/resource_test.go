@@ -58,8 +58,8 @@ resource "equinix_metal_vlan" "foovlan" {
 func TestAccMetalVlan_metro(t *testing.T) {
 	var vlan packngo.VirtualNetwork
 	rs := acctest.RandString(10)
-	metro := "sv"
-	upperMetro := "DA"
+	lowerSiliconValley := "sv"
+	upperDallas := "DA"
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.TestAccPreCheckMetal(t) },
@@ -68,21 +68,24 @@ func TestAccMetalVlan_metro(t *testing.T) {
 		CheckDestroy:             testAccMetalVlanCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckMetalVlanConfig_metro(rs, metro, "tfacc-vlan"),
+				// Create VLAN with metro "sv" (lower-case)
+				Config: testAccCheckMetalVlanConfig_metro(rs, lowerSiliconValley, "tfacc-vlan"),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckMetalVlanExists("equinix_metal_vlan.foovlan", &vlan),
 					resource.TestCheckResourceAttr(
 						"equinix_metal_vlan.foovlan", "description", "tfacc-vlan"),
 					resource.TestCheckResourceAttr(
-						"equinix_metal_vlan.foovlan", "metro", metro),
+						"equinix_metal_vlan.foovlan", "metro", lowerSiliconValley),
 				),
 			},
 			{
-				Config:   testAccCheckMetalVlanConfig_metro(rs, strings.ToUpper(metro), "tfacc-vlan"),
+				// Confirm no changes if metro is changed to "SV" (upper-case)
+				Config:   testAccCheckMetalVlanConfig_metro(rs, strings.ToUpper(lowerSiliconValley), "tfacc-vlan"),
 				PlanOnly: true,
 			},
 			{
-				Config: testAccCheckMetalVlanConfig_metro(rs, upperMetro, "tfacc-vlan"),
+				// Recreate VLAN with metro "DA" (upper-case)
+				Config: testAccCheckMetalVlanConfig_metro(rs, upperDallas, "tfacc-vlan"),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction("equinix_metal_vlan.foovlan", plancheck.ResourceActionDestroyBeforeCreate),
@@ -93,11 +96,12 @@ func TestAccMetalVlan_metro(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						"equinix_metal_vlan.foovlan", "description", "tfacc-vlan"),
 					resource.TestCheckResourceAttr(
-						"equinix_metal_vlan.foovlan", "metro", upperMetro),
+						"equinix_metal_vlan.foovlan", "metro", upperDallas),
 				),
 			},
 			{
-				Config:   testAccCheckMetalVlanConfig_metro(rs, strings.ToLower(upperMetro), "tfacc-vlan"),
+				// Confirm no changes if metro is changed to "da" (lower-case)
+				Config:   testAccCheckMetalVlanConfig_metro(rs, strings.ToLower(upperDallas), "tfacc-vlan"),
 				PlanOnly: true,
 			},
 		},
