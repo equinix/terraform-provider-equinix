@@ -11,8 +11,6 @@ import (
 	"github.com/equinix/terraform-provider-equinix/internal/hashcode"
 	equinix_schema "github.com/equinix/terraform-provider-equinix/internal/schema"
 	equinix_validation "github.com/equinix/terraform-provider-equinix/internal/validation"
-	"golang.org/x/text/cases"
-	"golang.org/x/text/language"
 
 	"github.com/equinix/ne-go"
 	"github.com/hashicorp/go-cty/cty"
@@ -83,19 +81,17 @@ var networkDeviceLinkConnectionDescriptions = map[string]string{
 }
 
 var networkDeviceLinkMetroSchemaNames = map[string]string{
-	"AccountNumber":      "account_number",
-	"AccountReferenceId": "account_reference_id",
-	"MetroCode":          "metro_code",
-	"Throughput":         "throughput",
-	"ThroughputUnit":     "throughput_unit",
+	"AccountNumber":  "account_number",
+	"MetroCode":      "metro_code",
+	"Throughput":     "throughput",
+	"ThroughputUnit": "throughput_unit",
 }
 
 var networkDeviceLinkMetroDescriptions = map[string]string{
-	"AccountNumber":      "Billing account number to be used for connection charges",
-	"AccountReferenceId": "Billing account referenceId to be used for connection charges",
-	"metroCode":          "Connection source metro code",
-	"Throughput":         "Connection throughput",
-	"ThroughputUnit":     "Connection throughput unit",
+	"AccountNumber":  "Billing account number to be used for connection charges",
+	"metroCode":      "Connection source metro code",
+	"Throughput":     "Connection throughput",
+	"ThroughputUnit": "Connection throughput unit",
 }
 
 var networkDeviceLinkDeprecatedDescriptions = map[string]string{
@@ -158,7 +154,7 @@ func createNetworkDeviceLinkResourceSchema() map[string]*schema.Schema {
 			Optional:     true,
 			ForceNew:     true,
 			Default:      "Primary",
-			ValidateFunc: validation.StringInSlice([]string{"Primary", "Secondary", "Hybrid"}, true),
+			ValidateFunc: validation.StringInSlice([]string{"PRIMARY", "SECONDARY", "HYBRID"}, false),
 			Description:  networkDeviceLinkDescriptions["RedundancyType"],
 		},
 		networkDeviceLinkSchemaNames["Devices"]: {
@@ -282,12 +278,6 @@ func createNetworkDeviceLinkMetroResourceSchema() map[string]*schema.Schema {
 			ValidateFunc: validation.StringIsNotEmpty,
 			Description:  networkDeviceLinkMetroDescriptions["AccountNumber"],
 		},
-		networkDeviceLinkMetroSchemaNames["AccountReferenceId"]: {
-			Type:         schema.TypeString,
-			Optional:     true,
-			ValidateFunc: validation.StringIsNotEmpty,
-			Description:  networkDeviceLinkMetroDescriptions["AccountReferenceId"],
-		},
 		networkDeviceLinkMetroSchemaNames["MetroCode"]: {
 			Type:         schema.TypeString,
 			Required:     true,
@@ -371,7 +361,7 @@ func resourceNetworkDeviceLinkUpdate(ctx context.Context, d *schema.ResourceData
 		case networkDeviceLinkSchemaNames["Subnet"]:
 			updateReq.WithSubnet(changeValue.(string))
 		case networkDeviceLinkSchemaNames["RedundancyType"]:
-			updateReq.WithRedundancyType(cases.Title(language.Und, cases.NoLower).String(changeValue.(string)))
+			updateReq.WithRedundancyType(changeValue.(string))
 		case networkDeviceLinkSchemaNames["Devices"]:
 			deviceList := expandNetworkDeviceLinkDevices(changeValue.(*schema.Set))
 			updateReq.WithDevices(deviceList)
@@ -428,7 +418,7 @@ func createNetworkDeviceLink(d *schema.ResourceData) ne.DeviceLinkGroup {
 		link.Subnet = ne.String(v.(string))
 	}
 	if v, ok := d.GetOk(networkDeviceLinkSchemaNames["RedundancyType"]); ok {
-		link.RedundancyType = ne.String(cases.Title(language.Und, cases.NoLower).String(v.(string)))
+		link.RedundancyType = ne.String(v.(string))
 	}
 	if v, ok := d.GetOk(networkDeviceLinkSchemaNames["ProjectID"]); ok {
 		link.ProjectID = ne.String(v.(string))
@@ -529,11 +519,10 @@ func expandNetworkDeviceLinkMetroLinks(connections *schema.Set) []ne.DeviceLinkG
 	for i := range connectionList {
 		connectionMap := connectionList[i].(map[string]interface{})
 		transformed[i] = ne.DeviceLinkGroupMetroLink{
-			AccountNumber:      ne.String(connectionMap[networkDeviceLinkMetroSchemaNames["AccountNumber"]].(string)),
-			AccountReferenceId: ne.String(connectionMap[networkDeviceLinkMetroSchemaNames["AccountReferenceId"]].(string)),
-			MetroCode:          ne.String(connectionMap[networkDeviceLinkMetroSchemaNames["MetroCode"]].(string)),
-			Throughput:         ne.String(connectionMap[networkDeviceLinkMetroSchemaNames["Throughput"]].(string)),
-			ThroughputUnit:     ne.String(connectionMap[networkDeviceLinkMetroSchemaNames["ThroughputUnit"]].(string)),
+			AccountNumber:  ne.String(connectionMap[networkDeviceLinkMetroSchemaNames["AccountNumber"]].(string)),
+			MetroCode:      ne.String(connectionMap[networkDeviceLinkMetroSchemaNames["MetroCode"]].(string)),
+			Throughput:     ne.String(connectionMap[networkDeviceLinkMetroSchemaNames["Throughput"]].(string)),
+			ThroughputUnit: ne.String(connectionMap[networkDeviceLinkMetroSchemaNames["ThroughputUnit"]].(string)),
 		}
 	}
 	return transformed
@@ -573,7 +562,6 @@ func flattenNetworkDeviceLinkMetroLinks(currentConnections *schema.Set, connecti
 			currentConnectionMap := v.(map[string]interface{})
 
 			transformedConnection[networkDeviceLinkMetroSchemaNames["AccountNumber"]] = currentConnectionMap[networkDeviceLinkMetroSchemaNames["AccountNumber"]]
-			transformedConnection[networkDeviceLinkMetroSchemaNames["AccountReferenceId"]] = currentConnectionMap[networkDeviceLinkMetroSchemaNames["AccountReferenceId"]]
 		}
 
 		transformed = append(transformed, transformedConnection)

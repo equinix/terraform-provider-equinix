@@ -40,18 +40,16 @@ func TestNetworkDeviceLink_createFromResourceData(t *testing.T) {
 		},
 		MetroLinks: []ne.DeviceLinkGroupMetroLink{
 			{
-				AccountNumber:      ne.String(""),
-				AccountReferenceId: ne.String(""),
-				MetroCode:          ne.String("MX"),
-				Throughput:         ne.String("10"),
-				ThroughputUnit:     ne.String("Mbps"),
+				AccountNumber:  ne.String("1234"),
+				MetroCode:      ne.String("MX"),
+				Throughput:     ne.String("10"),
+				ThroughputUnit: ne.String("Mbps"),
 			},
 			{
-				AccountNumber:      ne.String(""),
-				AccountReferenceId: ne.String(""),
-				MetroCode:          ne.String("LD"),
-				Throughput:         ne.String("10"),
-				ThroughputUnit:     ne.String("Mbps"),
+				AccountNumber:  ne.String("5678"),
+				MetroCode:      ne.String("LD"),
+				Throughput:     ne.String("10"),
+				ThroughputUnit: ne.String("Mbps"),
 			},
 		},
 	}
@@ -105,18 +103,16 @@ func TestNetworkDeviceLink_updateResourceData(t *testing.T) {
 		},
 		MetroLinks: []ne.DeviceLinkGroupMetroLink{
 			{
-				AccountNumber:      ne.String("592205"),
-				AccountReferenceId: ne.String(""),
-				MetroCode:          ne.String("MX"),
-				Throughput:         ne.String("10"),
-				ThroughputUnit:     ne.String("Mbps"),
+				AccountNumber:  ne.String("592205"),
+				MetroCode:      ne.String("MX"),
+				Throughput:     ne.String("10"),
+				ThroughputUnit: ne.String("Mbps"),
 			},
 			{
-				AccountNumber:      ne.String("606828"),
-				AccountReferenceId: ne.String(""),
-				MetroCode:          ne.String("LD"),
-				Throughput:         ne.String("10"),
-				ThroughputUnit:     ne.String("Mbps"),
+				AccountNumber:  ne.String("606828"),
+				MetroCode:      ne.String("LD"),
+				Throughput:     ne.String("10"),
+				ThroughputUnit: ne.String("Mbps"),
 			},
 		},
 	}
