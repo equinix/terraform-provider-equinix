@@ -10,6 +10,14 @@ description: |-
 
 Fabric V4 API compatible resource allows creation and management of Equinix Fabric connection
 
+## Supporting Modules
+
+The direct usage of the resources is given in the next section "Example Usage". We also have supporting 
+Terraform Modules that can be used to assist you with common Fabric Connection use cases.
+
+You can find those modules along with their usage examples on the 
+[Terraform Registry: (Fabric Terraform Modules)](https://registry.terraform.io/modules/equinix/fabric/equinix/latest)
+
 ## Example Usage
 
 Port to Port EVPL_VC Connection:

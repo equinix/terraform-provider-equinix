@@ -11,21 +11,21 @@ import (
 func AddTestSweeper() {
 	resource.AddTestSweepers("equinix_metal_vlan", &resource.Sweeper{
 		Name:         "equinix_metal_vlan",
-		Dependencies: []string{"equinix_metal_virtual_circuit", "equinix_metal_vrf", "equinix_metal_device"},
+		Dependencies: []string{"equinix_metal_connection", "equinix_metal_virtual_circuit", "equinix_metal_vrf", "equinix_metal_device"},
 		F:            testSweepVlans,
 	})
 }
 
 func testSweepVlans(region string) error {
-	log.Printf("[DEBUG] Sweeping vlans")
+	log.Printf("[DEBUG] Sweeping vlan")
 	config, err := sweep.GetConfigForMetal()
 	if err != nil {
-		return fmt.Errorf("[INFO][SWEEPER_LOG] Error getting configuration for sweeping vlans: %s", err)
+		return fmt.Errorf("[INFO][SWEEPER_LOG] Error getting configuration for sweeping vlan: %s", err)
 	}
 	metal := config.NewMetalClient()
 	ps, _, err := metal.Projects.List(nil)
 	if err != nil {
-		return fmt.Errorf("[INFO][SWEEPER_LOG] Error getting project list for sweeping vlans: %s", err)
+		return fmt.Errorf("[INFO][SWEEPER_LOG] Error getting project list for sweeping vlan: %s", err)
 	}
 	pids := []string{}
 	for _, p := range ps {
@@ -37,7 +37,7 @@ func testSweepVlans(region string) error {
 	for _, pid := range pids {
 		ds, _, err := metal.ProjectVirtualNetworks.List(pid, nil)
 		if err != nil {
-			log.Printf("Error listing vlans to sweep: %s", err)
+			log.Printf("Error listing vlan to sweep: %s", err)
 			continue
 		}
 		for _, d := range ds.VirtualNetworks {

@@ -1,15 +1,16 @@
 package sweep_test
 
 import (
+	"github.com/equinix/terraform-provider-equinix/internal/resources/metal/vlan"
 	"testing"
 
+	"github.com/equinix/terraform-provider-equinix/internal/resources/metal/connection"
 	"github.com/equinix/terraform-provider-equinix/internal/resources/metal/device"
 	"github.com/equinix/terraform-provider-equinix/internal/resources/metal/organization"
 	"github.com/equinix/terraform-provider-equinix/internal/resources/metal/project"
 	"github.com/equinix/terraform-provider-equinix/internal/resources/metal/ssh_key"
 	"github.com/equinix/terraform-provider-equinix/internal/resources/metal/user_api_key"
 	"github.com/equinix/terraform-provider-equinix/internal/resources/metal/virtual_circuit"
-	"github.com/equinix/terraform-provider-equinix/internal/resources/metal/vlan"
 	"github.com/equinix/terraform-provider-equinix/internal/resources/metal/vrf"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
@@ -22,6 +23,7 @@ func TestMain(m *testing.M) {
 }
 
 func addTestSweepers() {
+	connection.AddTestSweeper()
 	device.AddTestSweeper()
 	organization.AddTestSweeper()
 	project.AddTestSweeper()
