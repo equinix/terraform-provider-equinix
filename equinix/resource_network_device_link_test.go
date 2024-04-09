@@ -40,15 +40,15 @@ func TestNetworkDeviceLink_createFromResourceData(t *testing.T) {
 		},
 		MetroLinks: []ne.DeviceLinkGroupMetroLink{
 			{
-				AccountNumber:  ne.String("1234"),
+				AccountNumber:  ne.String(""),
 				MetroCode:      ne.String("MX"),
 				Throughput:     ne.String("10"),
 				ThroughputUnit: ne.String("Mbps"),
 			},
 			{
-				AccountNumber:  ne.String("5678"),
-				MetroCode:      ne.String("LD"),
-				Throughput:     ne.String("10"),
+				AccountNumber:  ne.String(""),
+				MetroCode:      ne.String("SV"),
+				Throughput:     ne.String("100"),
 				ThroughputUnit: ne.String("Mbps"),
 			},
 		},

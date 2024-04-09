@@ -560,7 +560,6 @@ func flattenNetworkDeviceLinkMetroLinks(currentConnections *schema.Set, connecti
 
 		if v, ok := currentConnectionsMap[networkDeviceLinkMetroLinkHash(connections[i])]; ok {
 			currentConnectionMap := v.(map[string]interface{})
-
 			transformedConnection[networkDeviceLinkMetroSchemaNames["AccountNumber"]] = currentConnectionMap[networkDeviceLinkMetroSchemaNames["AccountNumber"]]
 		}
 
