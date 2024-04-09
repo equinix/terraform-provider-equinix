@@ -15,7 +15,7 @@ func TestNetworkDeviceLink_createFromResourceData(t *testing.T) {
 		Name:           ne.String("testGroup"),
 		Subnet:         ne.String("10.10.1.0/24"),
 		ProjectID:      ne.String("68ccfd49-39b1-478e-957a-67c72f719d7a"),
-		RedundancyType: ne.String("Primary"),
+		RedundancyType: ne.String("PRIMARY"),
 		Devices: []ne.DeviceLinkGroupDevice{
 			{
 				DeviceID:    ne.String("3eee8518-b19d-4de5-afd8-afd9b67e6e8c"),
@@ -76,7 +76,7 @@ func TestNetworkDeviceLink_updateResourceData(t *testing.T) {
 		UUID:           ne.String("aae04283-10f9-4edb-9395-33681176592b"),
 		Name:           ne.String("testGroup"),
 		Subnet:         ne.String("10.10.1.0/24"),
-		RedundancyType: ne.String("Primary"),
+		RedundancyType: ne.String("PRIMARY"),
 		Status:         ne.String(ne.DeviceLinkGroupStatusProvisioned),
 		Devices: []ne.DeviceLinkGroupDevice{
 			{

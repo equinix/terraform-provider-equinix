@@ -3,7 +3,6 @@ package equinix
 import (
 	"context"
 	"fmt"
-	"strings"
 	"time"
 
 	"github.com/equinix/terraform-provider-equinix/internal/config"
@@ -153,7 +152,7 @@ func createNetworkDeviceLinkResourceSchema() map[string]*schema.Schema {
 			Type:         schema.TypeString,
 			Optional:     true,
 			ForceNew:     true,
-			Default:      "Primary",
+			Default:      "PRIMARY",
 			ValidateFunc: validation.StringInSlice([]string{"PRIMARY", "SECONDARY", "HYBRID"}, false),
 			Description:  networkDeviceLinkDescriptions["RedundancyType"],
 		},
@@ -445,7 +444,7 @@ func updateNetworkDeviceLinkResource(link *ne.DeviceLinkGroup, d *schema.Resourc
 	if err := d.Set(networkDeviceLinkSchemaNames["Subnet"], link.Subnet); err != nil {
 		return fmt.Errorf("error setting Subnet: %s", err)
 	}
-	if err := d.Set(networkDeviceLinkSchemaNames["RedundancyType"], strings.ToLower(*link.RedundancyType)); err != nil {
+	if err := d.Set(networkDeviceLinkSchemaNames["RedundancyType"], link.RedundancyType); err != nil {
 		return fmt.Errorf("error setting RedundancyType: %s", err)
 	}
 	if err := d.Set(networkDeviceLinkSchemaNames["Status"], link.Status); err != nil {
