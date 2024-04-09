@@ -97,7 +97,7 @@ func TestAccNetworkDeviceLink(t *testing.T) {
 		"metro-link_2_metro_code":           metroSecondary.(string),
 		"metro-link_2_throughput":           10,
 		"metro-link_2_throughput_unit":      "Mbps",
-		"link_redundancy-type":              "Primary",
+		"link_redundancy-type":              "PRIMARY",
 	}
 	deviceResourceName := "equinix_network_device." + context["device-resourceName"].(string)
 	linkResourceName := "equinix_network_device_link." + context["link-resourceName"].(string)
