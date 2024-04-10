@@ -173,6 +173,7 @@ func createNetworkDeviceLinkResourceSchema() map[string]*schema.Schema {
 				Schema: createNetworkDeviceLinkConnectionResourceSchema(),
 			},
 			Set:         networkDeviceLinkConnectionHash,
+			Deprecated:  "Links is deprecated. Please use metro links instead.",
 			Description: networkDeviceLinkDescriptions["Links"],
 		},
 		networkDeviceLinkSchemaNames["MetroLinks"]: {
