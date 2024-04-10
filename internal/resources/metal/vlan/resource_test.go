@@ -29,6 +29,19 @@ resource "equinix_metal_vlan" "foovlan" {
 `, projSuffix, metro, desc)
 }
 
+func testAccCheckMetalVlanConfig_NoDescription(projSuffix, metro string) string {
+	return fmt.Sprintf(`
+resource "equinix_metal_project" "foobar" {
+    name = "tfacc-vlan-%s"
+}
+
+resource "equinix_metal_vlan" "foovlan" {
+    project_id = equinix_metal_project.foobar.id
+    metro = "%s"
+}
+`, projSuffix, metro)
+}
+
 func testAccCheckMetalVlanConfig_facility(projSuffix, facility, desc string) string {
 	return fmt.Sprintf(`
 resource "equinix_metal_project" "foobar" {
@@ -45,6 +58,84 @@ resource "equinix_metal_vlan" "foovlan" {
 func TestAccMetalVlan_metro(t *testing.T) {
 	var vlan packngo.VirtualNetwork
 	rs := acctest.RandString(10)
+	lowerSiliconValley := "sv"
+	upperDallas := "DA"
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:                 func() { acceptance.TestAccPreCheckMetal(t) },
+		ExternalProviders:        acceptance.TestExternalProviders,
+		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		CheckDestroy:             testAccMetalVlanCheckDestroyed,
+		Steps: []resource.TestStep{
+			{
+				// Create VLAN with metro "sv" (lower-case)
+				Config: testAccCheckMetalVlanConfig_metro(rs, lowerSiliconValley, "tfacc-vlan"),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckMetalVlanExists("equinix_metal_vlan.foovlan", &vlan),
+					resource.TestCheckResourceAttr(
+						"equinix_metal_vlan.foovlan", "description", "tfacc-vlan"),
+					resource.TestCheckResourceAttr(
+						"equinix_metal_vlan.foovlan", "metro", lowerSiliconValley),
+				),
+			},
+			{
+				// Confirm no changes if metro is changed to "SV" (upper-case)
+				Config:   testAccCheckMetalVlanConfig_metro(rs, strings.ToUpper(lowerSiliconValley), "tfacc-vlan"),
+				PlanOnly: true,
+			},
+			{
+				// Recreate VLAN with metro "DA" (upper-case)
+				Config: testAccCheckMetalVlanConfig_metro(rs, upperDallas, "tfacc-vlan"),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction("equinix_metal_vlan.foovlan", plancheck.ResourceActionDestroyBeforeCreate),
+					},
+				},
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckMetalVlanExists("equinix_metal_vlan.foovlan", &vlan),
+					resource.TestCheckResourceAttr(
+						"equinix_metal_vlan.foovlan", "description", "tfacc-vlan"),
+					resource.TestCheckResourceAttr(
+						"equinix_metal_vlan.foovlan", "metro", upperDallas),
+				),
+			},
+			{
+				// Confirm no changes if metro is changed to "da" (lower-case)
+				Config:   testAccCheckMetalVlanConfig_metro(rs, strings.ToLower(upperDallas), "tfacc-vlan"),
+				PlanOnly: true,
+			},
+		},
+	})
+}
+
+func TestAccMetalVlan_NoDescription(t *testing.T) {
+	var vlan packngo.VirtualNetwork
+	rs := acctest.RandString(10)
+	metro := "sv"
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:                 func() { acceptance.TestAccPreCheckMetal(t) },
+		ExternalProviders:        acceptance.TestExternalProviders,
+		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		CheckDestroy:             testAccMetalVlanCheckDestroyed,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckMetalVlanConfig_NoDescription(rs, metro),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckMetalVlanExists("equinix_metal_vlan.foovlan", &vlan),
+					resource.TestCheckNoResourceAttr(
+						"equinix_metal_vlan.foovlan", "description"),
+					resource.TestCheckResourceAttr(
+						"equinix_metal_vlan.foovlan", "metro", metro),
+				),
+			},
+		},
+	})
+}
+
+func TestAccMetalVlan_RemoveDescription(t *testing.T) {
+	var vlan packngo.VirtualNetwork
+	rs := acctest.RandString(10)
 	metro := "sv"
 
 	resource.ParallelTest(t, resource.TestCase{
@@ -59,6 +150,16 @@ func TestAccMetalVlan_metro(t *testing.T) {
 					testAccCheckMetalVlanExists("equinix_metal_vlan.foovlan", &vlan),
 					resource.TestCheckResourceAttr(
 						"equinix_metal_vlan.foovlan", "description", "tfacc-vlan"),
+					resource.TestCheckResourceAttr(
+						"equinix_metal_vlan.foovlan", "metro", metro),
+				),
+			},
+			{
+				Config: testAccCheckMetalVlanConfig_NoDescription(rs, metro),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckMetalVlanExists("equinix_metal_vlan.foovlan", &vlan),
+					resource.TestCheckNoResourceAttr(
+						"equinix_metal_vlan.foovlan", "description"),
 					resource.TestCheckResourceAttr(
 						"equinix_metal_vlan.foovlan", "metro", metro),
 				),
