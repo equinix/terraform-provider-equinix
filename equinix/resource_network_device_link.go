@@ -32,15 +32,16 @@ var networkDeviceLinkSchemaNames = map[string]string{
 }
 
 var networkDeviceLinkDescriptions = map[string]string{
-	"UUID":           "Device link unique identifier",
-	"Name":           "Device link name",
-	"Subnet":         "Device link subnet CIDR.",
-	"Devices":        "Definition of one or more devices belonging to the device link",
-	"Links":          "Definition of one or more, inter metro connections belonging to the device link",
-	"MetroLinks":     "Definition of one or more, inter or intra metro connections belonging to the device link",
-	"RedundancyType": "Device link redundancy type",
-	"Status":         "Device link provisioning status",
-	"ProjectID":      "The unique identifier of Project Resource to which device link is scoped to",
+	"UUID":       "Device link unique identifier",
+	"Name":       "Device link name",
+	"Subnet":     "Device link subnet CIDR.",
+	"Devices":    "Definition of one or more devices belonging to the device link",
+	"Links":      "Definition of one or more, inter metro connections belonging to the device link",
+	"MetroLinks": "Definition of one or more, inter or intra metro connections belonging to the device link",
+	"RedundancyType": "(Optional) Whether the connection should be created through " +
+		"Fabric's primary or secondary port. Supported values: `PRIMARY` (Default), `SECONDARY`, `HYBRID`",
+	"Status":    "Device link provisioning status",
+	"ProjectID": "The unique identifier of Project Resource to which device link is scoped to",
 }
 
 var networkDeviceLinkDeviceSchemaNames = map[string]string{
