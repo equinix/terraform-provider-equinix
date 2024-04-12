@@ -1,0 +1,3 @@
+provider "equinix" {
+  token = "someToken"
+}

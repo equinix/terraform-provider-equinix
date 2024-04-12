@@ -1,0 +1,44 @@
+---
+subcategory: "Metal"
+---
+
+{{/* This template serves as a starting point for documentation generation, and can be customized with hardcoded values and/or doc gen templates.
+
+For example, the {{ .SchemaMarkdown }} template can be used to replace manual schema documentation if descriptions of schema attributes are added in the provider source code. */ -}}
+
+# equinix_metal_ssh_key (Resource)
+
+Provides a resource to manage User SSH keys on your Equinix Metal user account. If you create a new device in a project, all the keys of the project's collaborators will be injected to the device.
+
+The link between User SSH key and device is implicit. If you want to make sure that a key will be copied to a device, you must ensure that the device resource `depends_on` the key resource.
+
+## Example Usage
+
+{{tffile "examples/resources/metal_ssh_key/example_1.tf"}}
+
+## Argument Reference
+
+The following arguments are supported:
+
+* `name` - (Required) The name of the SSH key for identification
+* `public_key` - (Required) The public key. If this is a file, it can be read using the file interpolation function
+
+## Attributes Reference
+
+In addition to all arguments above, the following attributes are exported:
+
+* `id` - The unique ID of the key.
+* `name` - The name of the SSH key.
+* `public_key` - The text of the public key.
+* `fingerprint` - The fingerprint of the SSH key.
+* `owner_id` - The UUID of the Equinix Metal API User who owns this key.
+* `created` - The timestamp for when the SSH key was created.
+* `updated` - The timestamp for the last time the SSH key was updated.
+
+## Import
+
+This resource can be imported using an existing SSH Key ID:
+
+```sh
+terraform import equinix_metal_ssh_key {existing_sshkey_id}
+```

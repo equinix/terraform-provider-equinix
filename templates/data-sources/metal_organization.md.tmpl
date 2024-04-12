@@ -1,0 +1,40 @@
+---
+subcategory: "Metal"
+---
+
+{{/* This template serves as a starting point for documentation generation, and can be customized with hardcoded values and/or doc gen templates.
+
+For example, the {{ .SchemaMarkdown }} template can be used to replace manual schema documentation if descriptions of schema attributes are added in the provider source code. */ -}}
+
+# equinix_metal_organization (Data Source)
+
+Provides an Equinix Metal organization datasource.
+
+## Example Usage
+
+{{tffile "examples/data-sources/metal_organization/example_1.tf"}}
+
+## Argument Reference
+
+The following arguments are supported:
+
+* `name` - (Optional) The organization name.
+* `organization_id` - (Optional) The UUID of the organization resource.
+
+Exactly one of `name` or `organization_id` must be given.
+
+## Attributes Reference
+
+In addition to all arguments above, the following attributes are exported:
+
+* `project_ids` - UUIDs of project resources which belong to this organization.
+* `description` - Description string.
+* `website` - Website link.
+* `twitter` - Twitter handle.
+* `logo` - Logo URL.
+* `address` - Address information
+  * `address` - Postal address.
+  * `city` - City name.
+  * `country` - Two letter country code (ISO 3166-1 alpha-2), e.g. US.
+  * `zip_code` - Zip Code.
+  * `state` - State name.

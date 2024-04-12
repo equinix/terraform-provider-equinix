@@ -1,0 +1,40 @@
+---
+subcategory: "Metal"
+---
+
+{{/* This template serves as a starting point for documentation generation, and can be customized with hardcoded values and/or doc gen templates.
+
+For example, the {{ .SchemaMarkdown }} template can be used to replace manual schema documentation if descriptions of schema attributes are added in the provider source code. */ -}}
+
+# equinix_metal_port (Data Source)
+
+Use this data source to read ports of existing devices. You can read port by either its UUID, or by a device UUID and port name.
+
+## Example Usage
+
+Create a device and read it's eth0 port to the datasource.
+
+{{tffile "examples/data-sources/metal_port/example_1.tf"}}
+
+## Argument Reference
+
+The following arguments are supported:
+
+* `port_id` - (Optional) ID of the port to read, conflicts with `device_id`.
+* `device_id` - (Optional) Device UUID where to lookup the port.
+* `name` - (Optional) Name of the port to look up, i.e. `bond0`, `eth1`.
+
+## Attributes Reference
+
+In addition to all arguments above, the following attributes are exported:
+
+* `network_type` - One of `layer2-bonded`, `layer2-individual`, `layer3`, `hybrid`, `hybrid-bonded`.
+* `type` - Type is either `NetworkBondPort` for bond ports or `NetworkPort` for bondable ethernet ports.
+* `mac` - MAC address of the port.
+* `bond_id` - UUID of the bond port.
+* `bond_name` - Name of the bond port.
+* `bonded` - Flag indicating whether the port is bonded.
+* `disbond_supported` - Flag indicating whether the port can be removed from a bond.
+* `native_vlan_id` - UUID of native VLAN of the port.
+* `vlan_ids` - UUIDs of attached VLANs.
+* `vxlan_ids` - VXLAN ids of attached VLANs.

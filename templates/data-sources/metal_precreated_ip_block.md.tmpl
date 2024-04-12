@@ -1,0 +1,38 @@
+---
+subcategory: "Metal"
+---
+
+{{/* This template serves as a starting point for documentation generation, and can be customized with hardcoded values and/or doc gen templates.
+
+For example, the {{ .SchemaMarkdown }} template can be used to replace manual schema documentation if descriptions of schema attributes are added in the provider source code. */ -}}
+
+# equinix_metal_precreated_ip_block (Data Source)
+
+Use this data source to get CIDR expression for precreated (management) IPv6 and IPv4 blocks in Equinix Metal. You can then use the cidrsubnet TF builtin function to derive subnets.
+
+~> For backward compatibility, this data source will also return reserved (elastic) IP blocks.
+
+-> Precreated (management) IP blocks for a metro will not be available until first device is created in that metro.
+
+-> Public IPv4 blocks auto-assigned (management) to a device cannot be retrieved. If you need that information, consider using the [equinix_metal_device](equinix_metal_device.md) data source instead.
+
+## Example Usage
+
+{{tffile "examples/data-sources/metal_precreated_ip_block/example_1.tf"}}
+
+## Argument Reference
+
+The following arguments are supported:
+
+* `project_id` - (Required) ID of the project where the searched block should be.
+* `address_family` - (Required) 4 or 6, depending on which block you are looking for.
+* `public` - (Required) Whether to look for public or private block.
+* `global` - (Optional) Whether to look for global block. Default is false for backward compatibility.
+* `facility` - (**Deprecated**) Facility of the searched block. (for non-global blocks). Use metro instead; read the [facility to metro migration guide](https://registry.terraform.io/providers/equinix/equinix/latest/docs/guides/migration_guide_facilities_to_metros_devices)
+* `metro` - (Optional) Metro of the searched block (for non-global blocks).
+
+## Attributes Reference
+
+In addition to all arguments above, the following attributes are exported:
+
+* `cidr_notation` - CIDR notation of the looked up block.

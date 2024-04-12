@@ -1,0 +1,54 @@
+---
+subcategory: "Metal"
+---
+
+{{/* This template serves as a starting point for documentation generation, and can be customized with hardcoded values and/or doc gen templates.
+
+For example, the {{ .SchemaMarkdown }} template can be used to replace manual schema documentation if descriptions of schema attributes are added in the provider source code. */ -}}
+
+# equinix_metal_spot_market_request (Data Source)
+
+Provides an Equinix Metal spot_market_request datasource. The datasource will contain list of device IDs created by referenced Spot Market Request.
+
+## Example Usage
+
+{{tffile "examples/data-sources/metal_spot_market_request/example_1.tf"}}
+
+With the code as `main.tf`, first create the spot market request:
+
+```shell
+terraform apply -target equinix_metal_spot_market_request.req
+```
+
+When the terraform run ends, run a full apply, and the IPv4 addresses will be printed:
+
+```shell
+$ terraform apply
+
+[...]
+
+ips = [
+  "947.85.199.231",
+  "947.85.194.181",
+]
+```
+
+## Argument Reference
+
+The following arguments are supported:
+
+* `request_id` - (Required) The id of the Spot Market Request.
+
+## Attributes Reference
+
+In addition to all arguments above, the following attributes are exported:
+
+* `device_ids` - List of IDs of devices spawned by the referenced Spot Market Request.
+* `devices_min` - Miniumum number devices to be created.
+* `devices_max` - Maximum number devices to be created.
+* `max_bid_price` - Maximum price user is willing to pay per hour per device.
+* `facilities` - (**Deprecated**) Facility IDs where devices should be created. Use metro instead; read the [facility to metro migration guide](https://registry.terraform.io/providers/equinix/equinix/latest/docs/guides/migration_guide_facilities_to_metros_devices)
+* `metro` - Metro where devices should be created.
+* `project_id` - Project ID.
+* `plan` - The device plan slug.
+* `end_at` - Date and time When the spot market request will be ended.

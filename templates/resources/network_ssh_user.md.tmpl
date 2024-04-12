@@ -1,0 +1,37 @@
+---
+subcategory: "Network Edge"
+---
+
+{{/* This template serves as a starting point for documentation generation, and can be customized with hardcoded values and/or doc gen templates.
+
+For example, the {{ .SchemaMarkdown }} template can be used to replace manual schema documentation if descriptions of schema attributes are added in the provider source code. */ -}}
+
+# equinix_network_ssh_user (Resource)
+
+Resource `equinix_network_ssh_user` allows creation and management of Equinix Network Edge SSH users.
+
+## Example Usage
+
+{{tffile "examples/resources/network_ssh_user/example_1.tf"}}
+
+## Argument Reference
+
+The following arguments are supported:
+
+* `username` - (Required) SSH user login name.
+* `password` - (Required) SSH user password.
+* `device_ids` - (Required) list of device identifiers to which user will have access.
+
+## Attributes Reference
+
+In addition to all arguments above, the following attributes are exported:
+
+* `uuid` - SSH user unique identifier.
+
+## Import
+
+This resource can be imported using an existing ID:
+
+```sh
+terraform import equinix_network_ssh_user.example {existing_id}
+```
