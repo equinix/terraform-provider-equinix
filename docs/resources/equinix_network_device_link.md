@@ -46,8 +46,12 @@ The following arguments are supported:
 between self configured devices.
 * `device` - (Required) definition of one or more devices belonging to the
 device link. See [Device](#device) section below for more details.
-* `link` - (Optional) definition of one or more, inter metro, connections belonging
+* `link` - (Deprecated) definition of one or more, inter metro, connections belonging
 to the device link. See [Link](#link) section below for more details.
+* `metro_link` - (Optional) definition of one or more, inter metro, connections belonging
+to the device link. See [Metro Link](#Metro_Link) section below for more details.
+* `redundancy_type` - (Optional) Whether the connection should be created through 
+Fabric's primary or secondary port. Supported values: `PRIMARY` (Default), `SECONDARY`, `HYBRID`
 * `project_id` - (Optional) Unique Identifier for the project resource where the device link is scoped to.If you
   leave it out, the device link will be created under the default project id of your organization.
 
@@ -72,6 +76,16 @@ connection charges
 * `dst_metro_code` - (Required) connection destination metro code.
 * `src_zone_code` - (Deprecated) connection source zone code is not required.
 * `dst_zone_code` - (Deprecated) connection destination zone code is not required.
+
+### Metro_Link
+
+The `Metro link` block supports the following arguments:
+
+* `account_number` - (Required) billing account number to be used for
+connection charges
+* `throughput` - (Required) connection throughput.
+* `throughput_unit` - (Required) connection throughput unit (Mbps or Gbps).
+* `metro_code` - (Required) connection metro code.
 
 ## Attributes Reference
 

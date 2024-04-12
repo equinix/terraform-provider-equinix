@@ -89,6 +89,15 @@ func TestAccNetworkDeviceLink(t *testing.T) {
 		"link-device_2_interface_id":        6,
 		"link-connection_1_throughput":      "50",
 		"link-connection_1_throughput_unit": "Mbps",
+		"metro-link_1_account_number":       "1234",
+		"metro-link_1_metro_code":           metro.(string),
+		"metro-link_1_throughput":           10,
+		"metro-link_1_throughput_unit":      "Mbps",
+		"metro-link_2_account_number":       "1432",
+		"metro-link_2_metro_code":           metroSecondary.(string),
+		"metro-link_2_throughput":           10,
+		"metro-link_2_throughput_unit":      "Mbps",
+		"link_redundancy-type":              "PRIMARY",
 	}
 	deviceResourceName := "equinix_network_device." + context["device-resourceName"].(string)
 	linkResourceName := "equinix_network_device_link." + context["link-resourceName"].(string)
@@ -150,6 +159,18 @@ resource "equinix_network_device_link" "%{link-resourceName}" {
 	  dst_metro_code  = equinix_network_device.%{device-resourceName}.secondary_device[0].metro_code
     }
   }
+  "metro_link" {
+	  account_number  = "%{metro-link_1_account_number}"
+	  throughput      = "%{metro-link_1_throughput}"
+	  throughput_unit = "%{metro-link_1_throughput_unit}"
+	  metro_code      = "%{metro-link_1_metro_code}"
+  }
+  "metro_link" {
+	account_number  = "%{metro-link_2_account_number}"
+	throughput      = "%{metro-link_2_throughput}"
+	throughput_unit = "%{metro-link_2_throughput_unit}"
+	metro_code      = "%{metro-link_2_metro_code}"
+}
 }`, ctx)
 	return config
 }
