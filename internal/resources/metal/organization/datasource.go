@@ -96,7 +96,10 @@ func (r *DataSource) Read(
 	}
 
 	// Set state to fully populated data
-	data.parse(ctx, orgOk)
+	resp.Diagnostics.Append(data.parse(ctx, orgOk)...)
+        if resp.Diagnostics.HasError() {
+                return
+        }
 
 	// Update the Terraform state
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
