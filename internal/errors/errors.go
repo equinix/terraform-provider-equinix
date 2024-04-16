@@ -49,41 +49,9 @@ func convertToFriendlyError(errors Errors, resp *http.Response) error {
 	return er
 }
 
-func FormatFabricv4AdditionalInfo(additionalInfo []fabricv4.PriceErrorAdditionalInfo) string {
-	var str []string
-	for _, addInfo := range additionalInfo {
-		property, reason := addInfo.GetProperty(), addInfo.GetReason()
-		if property != "" {
-			property = fmt.Sprintf("Property: %s, ", property)
-		}
-		if reason != "" {
-			reason = fmt.Sprintf("%s", reason)
-		} else {
-			reason = fmt.Sprintf("Reason: Not Provided")
-		}
-		str = append(str, fmt.Sprintf("{%s%s}", property, reason))
-	}
-	return strings.Join(str, ", ")
-}
-
 func FormatFabricError(err error) error {
-	// If in future one would like to do something with the response body of the API request
-	// The line below is how to access it with the SwaggerCodegen Fabric Go 12/7/2023 - thogarty
-	// err.(*fabricv4.GenericOpenAPIError).Body()
 	var errors Errors
 	errors = append(errors, err.Error())
-	if genericError, ok := err.(*fabricv4.GenericOpenAPIError); ok {
-		if fabricErrs, ok := genericError.Model().([]fabricv4.Error); ok {
-			for _, e := range fabricErrs {
-				errors = append(errors, fmt.Sprintf("Code: %s", e.GetErrorCode()))
-				errors = append(errors, fmt.Sprintf("Message: %s", e.GetErrorMessage()))
-				errors = append(errors, fmt.Sprintf("Details: %s", e.GetDetails()))
-				if additionalInfo := FormatFabricv4AdditionalInfo(e.GetAdditionalInfo()); additionalInfo != "" {
-					errors = append(errors, fmt.Sprintf("AdditionalInfo: [%s]", additionalInfo))
-				}
-			}
-		}
-	}
 
 	return errors
 }
