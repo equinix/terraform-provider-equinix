@@ -2,10 +2,12 @@ package vlan
 
 import (
 	"context"
+	"fmt"
+	"strings"
+
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/packethost/packngo"
-	"strings"
 )
 
 type DataSourceModel struct {
@@ -19,12 +21,15 @@ type DataSourceModel struct {
 	AssignedDevicesIds types.List   `tfsdk:"assigned_devices_ids"`
 }
 
-func (m *DataSourceModel) parse(vlan *packngo.VirtualNetwork) diag.Diagnostics {
+func (m *DataSourceModel) parse(vlan *packngo.VirtualNetwork) (d diag.Diagnostics) {
 	m.ID = types.StringValue(vlan.ID)
 	m.VlanID = types.StringValue(vlan.ID)
-	m.Description = types.StringValue(vlan.Description)
 	m.Vxlan = types.Int64Value(int64(vlan.VXLAN))
 	m.Facility = types.StringValue("")
+
+	if vlan.Description != "" {
+		m.Description = types.StringValue(vlan.Description)
+	}
 
 	if vlan.Project.ID != "" {
 		m.ProjectID = types.StringValue(vlan.Project.ID)
@@ -36,7 +41,14 @@ func (m *DataSourceModel) parse(vlan *packngo.VirtualNetwork) diag.Diagnostics {
 	}
 
 	if vlan.Metro != nil {
-		m.Metro = types.StringValue(strings.ToLower(vlan.Metro.Code))
+		if m.Metro.IsNull() {
+			m.Metro = types.StringValue(vlan.Metro.Code)
+		} else if !strings.EqualFold(m.Metro.ValueString(), vlan.Metro.Code) {
+			d.AddWarning(
+				"unexpected value for metro",
+				fmt.Sprintf("expected vlan %v to have metro %v, but metro was %v",
+					m.ID, m.Metro, vlan.Metro.Code))
+		}
 	}
 
 	deviceIds := make([]types.String, 0, len(vlan.Instances))
@@ -56,11 +68,14 @@ type ResourceModel struct {
 	Description types.String `tfsdk:"description"`
 }
 
-func (m *ResourceModel) parse(vlan *packngo.VirtualNetwork) diag.Diagnostics {
+func (m *ResourceModel) parse(vlan *packngo.VirtualNetwork) (d diag.Diagnostics) {
 	m.ID = types.StringValue(vlan.ID)
-	m.Description = types.StringValue(vlan.Description)
 	m.Vxlan = types.Int64Value(int64(vlan.VXLAN))
 	m.Facility = types.StringValue("")
+
+	if vlan.Description != "" {
+		m.Description = types.StringValue(vlan.Description)
+	}
 
 	if vlan.Project.ID != "" {
 		m.ProjectID = types.StringValue(vlan.Project.ID)
@@ -72,8 +87,14 @@ func (m *ResourceModel) parse(vlan *packngo.VirtualNetwork) diag.Diagnostics {
 	}
 
 	if vlan.Metro != nil {
-		m.Metro = types.StringValue(strings.ToLower(vlan.Metro.Code))
+		if m.Metro.IsNull() {
+			m.Metro = types.StringValue(vlan.Metro.Code)
+		} else if !strings.EqualFold(m.Metro.ValueString(), vlan.Metro.Code) {
+			d.AddError(
+				"unexpected value for metro",
+				fmt.Sprintf("expected vlan %v to have metro %v, but metro was %v",
+					m.ID, m.Metro, vlan.Metro.Code))
+		}
 	}
-
 	return nil
 }

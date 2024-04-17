@@ -339,7 +339,7 @@ func accessPointSch() *schema.Resource {
 			},
 			"provider_connection_id": {
 				Type:        schema.TypeString,
-				Optional:    true,
+				Computed:    true,
 				Description: "Provider assigned Connection Id",
 			},
 		},
