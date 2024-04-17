@@ -265,8 +265,8 @@ github.com/envoyproxy/go-control-plane v0.10.2-0.20220325020618-49ff273808a1/go.
 github.com/envoyproxy/protoc-gen-validate v0.1.0/go.mod h1:iSmxcyjqTsJpI2R4NaDN7+kN2VEUnK/pcBlmesArF7c=
 github.com/equinix/ecx-go/v2 v2.3.1 h1:gFcAIeyaEUw7S8ebqApmT7E/S7pC7Ac3wgScp89fkPU=
 github.com/equinix/ecx-go/v2 v2.3.1/go.mod h1:FvCdZ3jXU8Z4CPKig2DT+4J2HdwgRK17pIcznM7RXyk=
-github.com/equinix/equinix-sdk-go v0.35.1 h1:QY/zu10lNwdMzNRlH93zdW12SK/RJ0dCx/c5HTkT6Cg=
-github.com/equinix/equinix-sdk-go v0.35.1/go.mod h1:hEb3XLaedz7xhl/dpPIS6eOIiXNPeqNiVoyDrT6paIg=
+github.com/equinix/equinix-sdk-go v0.35.2-0.20240416230214-ff8f7039fd59 h1:cGQiiFFiEQtKQvgiBnjMWNaV0ldyP6udNLOlpv23VrU=
+github.com/equinix/equinix-sdk-go v0.35.2-0.20240416230214-ff8f7039fd59/go.mod h1:hEb3XLaedz7xhl/dpPIS6eOIiXNPeqNiVoyDrT6paIg=
 github.com/equinix/ne-go v1.16.0 h1:ZijMZxlu/2323RDfisxyeXukMn1TNv5tP5XiXZ8tWRM=
 github.com/equinix/ne-go v1.16.0/go.mod h1:eHkkxM4nbTB7DZ9X9zGnwfYnxIJWIsU3aHA+FAoZ1EI=
 github.com/equinix/oauth2-go v1.0.0 h1:fHtAPGq82PdgtK5vEThs8Vwz6f7D/8SX4tE3NJu+KcU=

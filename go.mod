@@ -4,7 +4,7 @@ go 1.21
 
 require (
 	github.com/equinix/ecx-go/v2 v2.3.1
-	github.com/equinix/equinix-sdk-go v0.35.1
+	github.com/equinix/equinix-sdk-go v0.35.2-0.20240416230214-ff8f7039fd59
 	github.com/equinix/ne-go v1.16.0
 	github.com/equinix/oauth2-go v1.0.0
 	github.com/equinix/rest-go v1.3.0
