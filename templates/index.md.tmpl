@@ -1,12 +1,8 @@
 ---
-page_title: "Provider: Equinix"
+page_title: "{{.RenderedProviderName}} Provider"
 ---
 
-{{/* This template serves as a starting point for documentation generation, and can be customized with hardcoded values and/or doc gen templates.
-
-For example, the {{ .SchemaMarkdown }} template can be used to replace manual schema documentation if descriptions of schema attributes are added in the provider source code. */ -}}
-
-# Equinix Provider
+# {{.RenderedProviderName}} Provider
 
 The Equinix provider is used to interact with the resources provided by Equinix Platform. The provider needs to be configured with the proper credentials before it can be used.
 
@@ -50,22 +46,6 @@ When testing against the [Equinix Sandbox API](https://developer.equinix.com/env
 
 The Equinix provider requires a few basic parameters. While the authentication arguments are individually optionally, either `token` or `client_id` and `client_secret` must be defined through arguments or environment settings to interact with Equinix Fabric and Network Edge services, and `auth_token` to interact with Equinix Metal.
 
-* `client_id` - (Optional) API Consumer Key available under "My Apps" in developer portal. This argument can also be specified with the `EQUINIX_API_CLIENTID` shell environment variable.
-
-* `client_secret` (Optional) API Consumer secret available under "My Apps" in developer portal. This argument can also be specified with the `EQUINIX_API_CLIENTSECRET` shell environment variable.
-
-* `token` (Optional) API tokens are generated from API Consumer clients using the [OAuth2 API](https://developer.equinix.com/dev-docs/fabric/getting-started/getting-access-token#request-access-and-refresh-tokens). This argument can also be specified with the `EQUINIX_API_TOKEN` shell environment variable.
-
-* `auth_token` - (Optional) This is your Equinix Metal API Auth token. This can also be specified with the `METAL_AUTH_TOKEN` environment variable.
-
-* `endpoint` (Optional) The Equinix API base URL to point out desired environment. This argument can also be specified with the `EQUINIX_API_ENDPOINT` shell environment variable. (Defaults to `https://api.equinix.com`)
-
-* `request_timeout` (Optional) The duration of time, in seconds, that the Equinix Platform API Client should wait before canceling an API request. Canceled requests may still result in provisioned resources. (Defaults to `30`)
-
-* `response_max_page_size` (Optional) The maximum number of records in a single response for REST queries that produce paginated responses. (Default is client specific)
-
-* `max_retries` (Optional) Maximum number of retries in case of network failure.
-
-* `max_retry_wait_seconds` (Optional) Maximum time to wait in case of network failure.
-
 These parameters can be provided in [Terraform variable files](https://www.terraform.io/docs/configuration/variables.html#variable-definitions-tfvars-files) or as environment variables. Nevertheless, please note that it is [not recommended to keep sensitive data in plain text files](https://www.terraform.io/docs/state/sensitive-data.html).
+
+{{ .SchemaMarkdown | trimspace }}
