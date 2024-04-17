@@ -30,9 +30,10 @@ func fabricServiceProfileSchema() map[string]*schema.Schema {
 			Description: "Service Profile URI response attribute",
 		},
 		"type": {
-			Type:        schema.TypeString,
-			Required:    true,
-			Description: "Service profile type - L2_PROFILE, L3_PROFILE, ECIA_PROFILE, ECMC_PROFILE",
+			Type:         schema.TypeString,
+			Required:     true,
+			ValidateFunc: validation.StringInSlice([]string{"L2_PROFILE", "L3_PROFILE", "ECIA_PROFILE", "ECMC_PROFILE", "IA_PROFILE"}, true),
+			Description:  "Service profile type - L2_PROFILE, L3_PROFILE, ECIA_PROFILE, ECMC_PROFILE, IA_PROFILE",
 		},
 		"visibility": {
 			Type:        schema.TypeString,

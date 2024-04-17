@@ -143,7 +143,8 @@ func fabricCloudRouterResourceSchema() map[string]*schema.Schema {
 		},
 		"order": {
 			Type:        schema.TypeSet,
-			Required:    true,
+			Computed:    true,
+			Optional:    true,
 			Description: "Order information related to this Fabric Cloud Router",
 			MaxItems:    1,
 			Elem: &schema.Resource{
