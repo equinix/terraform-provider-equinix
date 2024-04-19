@@ -4,7 +4,7 @@ go 1.21
 
 require (
 	github.com/antihax/optional v1.0.0
-	github.com/equinix-labs/fabric-go v0.9.0
+	github.com/equinix-labs/fabric-go v0.10.0
 	github.com/equinix/ecx-go/v2 v2.3.1
 	github.com/equinix/equinix-sdk-go v0.36.0
 	github.com/equinix/ne-go v1.17.0
@@ -29,7 +29,7 @@ require (
 	github.com/pkg/errors v0.9.1
 	github.com/stretchr/testify v1.9.0
 	golang.org/x/exp v0.0.0-20240103183307-be819d1f06fc
-	golang.org/x/oauth2 v0.18.0
+	golang.org/x/oauth2 v0.19.0
 )
 
 require (
