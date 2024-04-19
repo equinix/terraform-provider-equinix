@@ -205,7 +205,6 @@ github.com/ProtonMail/go-crypto v1.1.0-alpha.0/go.mod h1:rA3QumHc/FZ8pAHreoekgiA
 github.com/agext/levenshtein v1.2.1/go.mod h1:JEDfjyjHDjOF/1e4FlBE/PkbqA9OfWu2ki2W0IB5558=
 github.com/agext/levenshtein v1.2.3 h1:YB2fHEn0UJagG8T1rrWknE3ZQzWM06O8AMAatNn7lmo=
 github.com/agext/levenshtein v1.2.3/go.mod h1:JEDfjyjHDjOF/1e4FlBE/PkbqA9OfWu2ki2W0IB5558=
-github.com/antihax/optional v1.0.0 h1:xK2lYat7ZLaVVcIuj82J8kIro4V6kDe0AUDFboUCwcg=
 github.com/antihax/optional v1.0.0/go.mod h1:uupD/76wgC+ih3iEmQUL+0Ugr19nfwCT1kdvxnR2qWY=
 github.com/apparentlymart/go-dump v0.0.0-20180507223929-23540a00eaa3/go.mod h1:oL81AME2rN47vu18xqj1S1jPIPuN7afo62yKTNn3XMM=
 github.com/apparentlymart/go-textseg v1.0.0/go.mod h1:z96Txxhf3xSFMPmb5X/1W05FF/Nj9VFpLOpjS5yuumk=
@@ -266,16 +265,10 @@ github.com/envoyproxy/go-control-plane v0.10.2-0.20220325020618-49ff273808a1/go.
 github.com/envoyproxy/protoc-gen-validate v0.1.0/go.mod h1:iSmxcyjqTsJpI2R4NaDN7+kN2VEUnK/pcBlmesArF7c=
 github.com/envoyproxy/protoc-gen-validate v1.0.4 h1:gVPz/FMfvh57HdSJQyvBtF00j8JU4zdyUgIUNhlgg0A=
 github.com/envoyproxy/protoc-gen-validate v1.0.4/go.mod h1:qys6tmnRsYrQqIhm2bvKZH4Blx/1gTIZ2UKVY1M+Yew=
-github.com/equinix-labs/fabric-go v0.9.0 h1:BDJlVNaxpn1cSvjkTgy2zNr7srf8rF+7qOnLd2JxofU=
-github.com/equinix-labs/fabric-go v0.9.0/go.mod h1:b/fvMHgVruNItuBIs7nZbcKc2ie4ZatkDHPM47DCF08=
 github.com/equinix/ecx-go/v2 v2.3.1 h1:gFcAIeyaEUw7S8ebqApmT7E/S7pC7Ac3wgScp89fkPU=
 github.com/equinix/ecx-go/v2 v2.3.1/go.mod h1:FvCdZ3jXU8Z4CPKig2DT+4J2HdwgRK17pIcznM7RXyk=
-github.com/equinix/equinix-sdk-go v0.35.0 h1:p/uwA8QPBAuNnKGc3mQkwjw+6++qUadLNnKFQ8jw+wg=
-github.com/equinix/equinix-sdk-go v0.35.0/go.mod h1:hEb3XLaedz7xhl/dpPIS6eOIiXNPeqNiVoyDrT6paIg=
 github.com/equinix/equinix-sdk-go v0.36.0 h1:I2PxYRQqp3LLV/tPOa8922K0b901BQntO7or101M4Gw=
 github.com/equinix/equinix-sdk-go v0.36.0/go.mod h1:hEb3XLaedz7xhl/dpPIS6eOIiXNPeqNiVoyDrT6paIg=
-github.com/equinix/ne-go v1.16.0 h1:ZijMZxlu/2323RDfisxyeXukMn1TNv5tP5XiXZ8tWRM=
-github.com/equinix/ne-go v1.16.0/go.mod h1:eHkkxM4nbTB7DZ9X9zGnwfYnxIJWIsU3aHA+FAoZ1EI=
 github.com/equinix/ne-go v1.17.0 h1:+wZq0GNognpiTHTsBXtATOCphTFvnowF046NzQXj0n0=
 github.com/equinix/ne-go v1.17.0/go.mod h1:eHkkxM4nbTB7DZ9X9zGnwfYnxIJWIsU3aHA+FAoZ1EI=
 github.com/equinix/oauth2-go v1.0.0 h1:fHtAPGq82PdgtK5vEThs8Vwz6f7D/8SX4tE3NJu+KcU=
