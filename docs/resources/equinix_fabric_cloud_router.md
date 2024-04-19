@@ -51,7 +51,6 @@ resource "equinix_fabric_cloud_router" "new_cloud_router"{
 - `location` (Block Set, Min: 1, Max: 1) Fabric Cloud Router location (see [below for nested schema](#nestedblock--location))
 - `name` (String) Fabric Cloud Router name. An alpha-numeric 24 characters string which can include only hyphens and underscores
 - `notifications` (Block List, Min: 1) Preferences for notifications on Fabric Cloud Router configuration or status changes (see [below for nested schema](#nestedblock--notifications))
-- `order` (Block Set, Min: 1, Max: 1) Order information related to this Fabric Cloud Router (see [below for nested schema](#nestedblock--order))
 - `package` (Block Set, Min: 1, Max: 1) Fabric Cloud Router Package Type (see [below for nested schema](#nestedblock--package))
 - `project` (Block Set, Min: 1, Max: 1) Customer resource hierarchy project information. Applicable to customers onboarded to Equinix Identity and Access Management. For more information see Identity and Access Management: Projects (see [below for nested schema](#nestedblock--project))
 - `type` (String) Defines the FCR type like; XF_ROUTER
@@ -60,6 +59,7 @@ resource "equinix_fabric_cloud_router" "new_cloud_router"{
 
 - `description` (String) Customer-provided Fabric Cloud Router description
 - `href` (String) Fabric Cloud Router URI information
+- `order` (Block Set, Min: 1, Max: 1) Order information related to this Fabric Cloud Router (see [below for nested schema](#nestedblock--order))
 - `timeouts` (Block, Optional) (see [below for nested schema](#nestedblock--timeouts))
 - `uuid` (String) Equinix-assigned Fabric Cloud Router identifier
 
@@ -112,10 +112,13 @@ Optional:
 
 Optional:
 
+- `purchase_order_number` (String) Purchase order number
+
+Read-Only:
+
 - `billing_tier` (String) Billing tier for connection bandwidth
 - `order_id` (String) Order Identification
 - `order_number` (String) Order Reference Number
-- `purchase_order_number` (String) Purchase order number
 
 
 <a id="nestedblock--package"></a>

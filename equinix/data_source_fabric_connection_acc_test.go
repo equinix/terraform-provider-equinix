@@ -11,11 +11,11 @@ func TestAccFabricDataSourceConnection_PFCR(t *testing.T) {
 	ports := GetFabricEnvPorts(t)
 	var aSidePortUuid, zSidePortUuid string
 	if len(ports) > 0 {
-		aSidePortUuid = ports["pfcr"]["dot1q"][0].Uuid
-		zSidePortUuid = ports["pfcr"]["dot1q"][1].Uuid
+		aSidePortUuid = ports["pfcr"]["dot1q"][0].GetUuid()
+		zSidePortUuid = ports["pfcr"]["dot1q"][1].GetUuid()
 	}
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     func() { acceptance.TestAccPreCheck(t) },
+		PreCheck:     func() { acceptance.TestAccPreCheck(t); acceptance.TestAccPreCheckProviderConfigured(t) },
 		Providers:    acceptance.TestAccProviders,
 		CheckDestroy: CheckConnectionDelete,
 		Steps: []resource.TestStep{

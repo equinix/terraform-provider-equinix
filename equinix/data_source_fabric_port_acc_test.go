@@ -3,7 +3,7 @@ package equinix_test
 import (
 	"encoding/json"
 	"fmt"
-	v4 "github.com/equinix-labs/fabric-go/fabric/v4"
+	"github.com/equinix/equinix-sdk-go/services/fabricv4"
 	"os"
 	"testing"
 
@@ -15,7 +15,7 @@ const (
 	FabricDedicatedPortEnvVar = "TF_ACC_FABRIC_DEDICATED_PORTS"
 )
 
-type EnvPorts map[string]map[string][]v4.Port
+type EnvPorts map[string]map[string][]fabricv4.PortResponse
 
 func GetFabricEnvPorts(t *testing.T) EnvPorts {
 	var ports EnvPorts
@@ -28,27 +28,29 @@ func GetFabricEnvPorts(t *testing.T) EnvPorts {
 
 func TestAccDataSourceFabricPort_PNFV(t *testing.T) {
 	ports := GetFabricEnvPorts(t)
-	var port v4.Port
+	var port fabricv4.PortResponse
 	var portType, portState, portEncapsulationType, portRedundancyPriority string
 	if len(ports) > 0 {
 		port = ports["pnfv"]["dot1q"][0]
-		portType = string(*port.Type_)
-		portState = string(*port.State)
-		portEncapsulationType = port.Encapsulation.Type_
-		portRedundancyPriority = string(*port.Redundancy.Priority)
+		portType = string(port.GetType())
+		portState = string(port.GetState())
+		portEncapsulation := port.GetEncapsulation()
+		portEncapsulationType = string(portEncapsulation.GetType())
+		portRedundancy := port.GetRedundancy()
+		portRedundancyPriority = string(portRedundancy.GetPriority())
 	}
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acceptance.TestAccPreCheck(t) },
+		PreCheck:          func() { acceptance.TestAccPreCheck(t); acceptance.TestAccPreCheckProviderConfigured(t) },
 		ExternalProviders: acceptance.TestExternalProviders,
 		Providers:         acceptance.TestAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testDataSourceFabricPort(port.Uuid),
+				Config: testDataSourceFabricPort(port.GetUuid()),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(
-						"data.equinix_fabric_port.test", "id", port.Uuid),
+						"data.equinix_fabric_port.test", "id", port.GetUuid()),
 					resource.TestCheckResourceAttr(
-						"data.equinix_fabric_port.test", "name", port.Name),
+						"data.equinix_fabric_port.test", "name", port.GetName()),
 					resource.TestCheckResourceAttrSet(
 						"data.equinix_fabric_port.test", "bandwidth"),
 					resource.TestCheckResourceAttrSet(
@@ -79,27 +81,29 @@ func testDataSourceFabricPort(port_uuid string) string {
 
 func TestAccDataSourceFabricPorts_PNFV(t *testing.T) {
 	ports := GetFabricEnvPorts(t)
-	var port v4.Port
+	var port fabricv4.PortResponse
 	var portType, portState, portEncapsulationType, portRedundancyPriority string
 	if len(ports) > 0 {
 		port = ports["pnfv"]["dot1q"][0]
-		portType = string(*port.Type_)
-		portState = string(*port.State)
-		portEncapsulationType = port.Encapsulation.Type_
-		portRedundancyPriority = string(*port.Redundancy.Priority)
+		portType = string(port.GetType())
+		portState = string(port.GetState())
+		portEncapsulation := port.GetEncapsulation()
+		portEncapsulationType = string(portEncapsulation.GetType())
+		portRedundancy := port.GetRedundancy()
+		portRedundancyPriority = string(portRedundancy.GetPriority())
 	}
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acceptance.TestAccPreCheck(t) },
+		PreCheck:          func() { acceptance.TestAccPreCheck(t); acceptance.TestAccPreCheckProviderConfigured(t) },
 		ExternalProviders: acceptance.TestExternalProviders,
 		Providers:         acceptance.TestAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testDataSourceFabricPorts(port.Name),
+				Config: testDataSourceFabricPorts(port.GetName()),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(
-						"data.equinix_fabric_ports.test", "id", port.Uuid),
+						"data.equinix_fabric_ports.test", "id", port.GetUuid()),
 					resource.TestCheckResourceAttr(
-						"data.equinix_fabric_ports.test", "data.0.name", port.Name),
+						"data.equinix_fabric_ports.test", "data.0.name", port.GetName()),
 					resource.TestCheckResourceAttrSet(
 						"data.equinix_fabric_ports.test", "data.0.bandwidth"),
 					resource.TestCheckResourceAttrSet(

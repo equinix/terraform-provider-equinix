@@ -2,8 +2,9 @@ package equinix
 
 import (
 	"context"
-	"errors"
 	"fmt"
+	"github.com/equinix/equinix-sdk-go/services/fabricv4"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"log"
 	"strconv"
 	"strings"
@@ -14,10 +15,8 @@ import (
 	equinix_fabric_schema "github.com/equinix/terraform-provider-equinix/internal/fabric/schema"
 	equinix_schema "github.com/equinix/terraform-provider-equinix/internal/schema"
 
-	"github.com/antihax/optional"
 	"github.com/equinix/terraform-provider-equinix/internal/config"
 
-	v4 "github.com/equinix-labs/fabric-go/fabric/v4"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -31,9 +30,10 @@ func fabricServiceProfileSchema() map[string]*schema.Schema {
 			Description: "Service Profile URI response attribute",
 		},
 		"type": {
-			Type:        schema.TypeString,
-			Required:    true,
-			Description: "Service profile type - L2_PROFILE, L3_PROFILE, ECIA_PROFILE, ECMC_PROFILE",
+			Type:         schema.TypeString,
+			Required:     true,
+			ValidateFunc: validation.StringInSlice([]string{"L2_PROFILE", "L3_PROFILE", "ECIA_PROFILE", "ECMC_PROFILE", "IA_PROFILE"}, true),
+			Description:  "Service profile type - L2_PROFILE, L3_PROFILE, ECIA_PROFILE, ECMC_PROFILE, IA_PROFILE",
 		},
 		"visibility": {
 			Type:        schema.TypeString,
@@ -160,6 +160,12 @@ func fabricServiceProfileSchema() map[string]*schema.Schema {
 			Elem: &schema.Resource{
 				Schema: equinix_fabric_schema.ChangeLogSch(),
 			},
+		},
+		"view_point": {
+			Type:         schema.TypeString,
+			Optional:     true,
+			Description:  "Flips view between buyer and seller representation. Available values : aSide, zSide. Default value : aSide",
+			ValidateFunc: validation.StringInSlice([]string{"aSide", "zSide"}, false),
 		},
 	}
 }
@@ -543,92 +549,100 @@ func resourceFabricServiceProfile() *schema.Resource {
 }
 
 func resourceFabricServiceProfileRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := meta.(*config.Config).FabricClient
-	ctx = context.WithValue(ctx, v4.ContextAccessToken, meta.(*config.Config).FabricAuthToken)
-	serviceProfile, _, err := client.ServiceProfilesApi.GetServiceProfileByUuid(ctx, d.Id(), nil)
+	client := meta.(*config.Config).NewFabricClientForSDK(d)
+	serviceProfile, _, err := client.ServiceProfilesApi.GetServiceProfileByUuid(ctx, d.Id()).Execute()
 	if err != nil {
 		if !strings.Contains(err.Error(), "500") {
 			d.SetId("")
 		}
 		return diag.FromErr(equinix_errors.FormatFabricError(err))
 	}
-	d.SetId(serviceProfile.Uuid)
+	d.SetId(serviceProfile.GetUuid())
 	return setFabricServiceProfileMap(d, serviceProfile)
 }
 
 func resourceFabricServiceProfileCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := meta.(*config.Config).FabricClient
-	ctx = context.WithValue(ctx, v4.ContextAccessToken, meta.(*config.Config).FabricAuthToken)
+	client := meta.(*config.Config).NewFabricClientForSDK(d)
 
 	createRequest := getServiceProfileRequestPayload(d)
-	sp, _, err := client.ServiceProfilesApi.CreateServiceProfile(ctx, createRequest)
+	sp, _, err := client.ServiceProfilesApi.CreateServiceProfile(ctx).ServiceProfileRequest(createRequest).Execute()
 	if err != nil {
 		return diag.FromErr(equinix_errors.FormatFabricError(err))
 	}
-	d.SetId(sp.Uuid)
+	d.SetId(sp.GetUuid())
 	return resourceFabricServiceProfileRead(ctx, d, meta)
 }
 
-func getServiceProfileRequestPayload(d *schema.ResourceData) v4.ServiceProfileRequest {
-	spType := v4.ServiceProfileTypeEnum(d.Get("type").(string))
+func getServiceProfileRequestPayload(d *schema.ResourceData) fabricv4.ServiceProfileRequest {
+	createRequest := fabricv4.ServiceProfileRequest{}
 
-	schemaNotifications := d.Get("notifications").([]interface{})
-	notifications := equinix_fabric_schema.NotificationsToFabric(schemaNotifications)
+	createRequest.SetName(d.Get("name").(string))
 
-	var tags []string
-	if d.Get("tags") != nil {
-		schemaTags := d.Get("tags").([]interface{})
-		tags = converters.IfArrToStringArr(schemaTags)
+	if description, ok := d.GetOk("description"); ok {
+		createRequest.SetDescription(description.(string))
 	}
 
-	spVisibility := v4.ServiceProfileVisibilityEnum(d.Get("visibility").(string))
+	spType := fabricv4.ServiceProfileTypeEnum(d.Get("type").(string))
+	createRequest.SetType(spType)
 
-	var spAllowedEmails []string
-	if d.Get("allowed_emails") != nil {
-		schemaAllowedEmails := d.Get("allowed_emails").([]interface{})
-		spAllowedEmails = converters.IfArrToStringArr(schemaAllowedEmails)
+	if schemaNotifications, ok := d.GetOk("notifications"); ok {
+		notifications := equinix_fabric_schema.NotificationsTerraformToGo(schemaNotifications.([]interface{}))
+		createRequest.SetNotifications(notifications)
+	}
+
+	if tagsSchema, ok := d.GetOk("tags"); ok {
+		tags := converters.IfArrToStringArr(tagsSchema.([]interface{}))
+		createRequest.SetTags(tags)
+	}
+
+	if visibility, ok := d.GetOk("visibility"); ok {
+		spVisibility := fabricv4.ServiceProfileVisibilityEnum(visibility.(string))
+		createRequest.SetVisibility(spVisibility)
+	}
+
+	if allowedEmailsSchema, ok := d.GetOk("allowed_emails"); ok {
+		spAllowedEmails := converters.IfArrToStringArr(allowedEmailsSchema.([]interface{}))
+		createRequest.SetAllowedEmails(spAllowedEmails)
 	}
 
 	schemaAccessPointTypeConfigs := d.Get("access_point_type_configs").([]interface{})
-	spAccessPointTypeConfigs := accessPointTypeConfigsToFabric(schemaAccessPointTypeConfigs)
+	spAccessPointTypeConfigs := accessPointTypeConfigsTerraformToGo(schemaAccessPointTypeConfigs)
+	createRequest.SetAccessPointTypeConfigs(spAccessPointTypeConfigs)
 
-	schemaCustomFields := d.Get("custom_fields").([]interface{})
-	spCustomFields := customFieldsToFabric(schemaCustomFields)
-
-	schemaMarketingInfo := d.Get("marketing_info").(*schema.Set).List()
-	spMarketingInfo := marketingInfoToFabric(schemaMarketingInfo)
-
-	schemaPorts := d.Get("ports").([]interface{})
-	spPorts := portsToFabric(schemaPorts)
-
-	schemaVirtualDevices := d.Get("virtual_devices").([]interface{})
-	spVirtualDevices := virtualDevicesToFabric(schemaVirtualDevices)
-
-	schemaMetros := d.Get("metros").([]interface{})
-	spMetros := metrosToFabric(schemaMetros)
-
-	createRequest := v4.ServiceProfileRequest{
-		Name:                   d.Get("name").(string),
-		Type_:                  &spType,
-		Description:            d.Get("description").(string),
-		Notifications:          notifications,
-		Tags:                   &tags,
-		Visibility:             &spVisibility,
-		AllowedEmails:          spAllowedEmails,
-		AccessPointTypeConfigs: spAccessPointTypeConfigs,
-		CustomFields:           spCustomFields,
-		MarketingInfo:          spMarketingInfo,
-		Ports:                  spPorts,
-		VirtualDevices:         spVirtualDevices,
-		Metros:                 spMetros,
-		SelfProfile:            d.Get("self_profile").(bool),
+	if schemaCustomFields, ok := d.GetOk("custom_fields"); ok {
+		spCustomFields := customFieldsTerraformToGo(schemaCustomFields.([]interface{}))
+		createRequest.SetCustomFields(spCustomFields)
 	}
+
+	if schemaMarketingInfo, ok := d.GetOk("marketing_info"); ok {
+		spMarketingInfo := marketingInfoTerraformToGo(schemaMarketingInfo.(*schema.Set).List())
+		createRequest.SetMarketingInfo(spMarketingInfo)
+	}
+
+	if schemaPorts, ok := d.GetOk("ports"); ok {
+		spPorts := portsTerraformToGo(schemaPorts.([]interface{}))
+		createRequest.SetPorts(spPorts)
+	}
+
+	if schemaVirtualDevices, ok := d.GetOk("virtual_devices"); ok {
+		spVirtualDevices := virtualDevicesTerraformToGo(schemaVirtualDevices.([]interface{}))
+		createRequest.SetVirtualDevices(spVirtualDevices)
+	}
+
+	if schemaMetros, ok := d.GetOk("metros"); ok {
+		spMetros := metrosTerraformToGo(schemaMetros.([]interface{}))
+		createRequest.SetMetros(spMetros)
+	}
+
+	if selfProfile, ok := d.GetOk("self_profile"); ok {
+		createRequest.SetSelfProfile(selfProfile.(bool))
+	}
+
 	return createRequest
 }
 
 func resourceFabricServiceProfileUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := meta.(*config.Config).FabricClient
-	ctx = context.WithValue(ctx, v4.ContextAccessToken, meta.(*config.Config).FabricAuthToken)
+	client := meta.(*config.Config).NewFabricClientForSDK(d)
 	uuid := d.Id()
 	updateRequest := getServiceProfileRequestPayload(d)
 
@@ -636,39 +650,38 @@ func resourceFabricServiceProfileUpdate(ctx context.Context, d *schema.ResourceD
 	updateTimeout := d.Timeout(schema.TimeoutUpdate) - 30*time.Second - time.Since(start)
 	var err error
 	var eTag int64 = 0
-	_, err, eTag = waitForActiveServiceProfileAndPopulateETag(uuid, meta, ctx, updateTimeout)
+	_, err, eTag = waitForActiveServiceProfileAndPopulateETag(uuid, meta, d, ctx, updateTimeout)
 	if err != nil {
 		if !strings.Contains(err.Error(), "500") {
 			d.SetId("")
 		}
 		return diag.Errorf("Either timed out or errored out while fetching service profile for uuid %s and error %v", uuid, err)
 	}
-
-	_, _, err = client.ServiceProfilesApi.PutServiceProfileByUuid(ctx, updateRequest, strconv.FormatInt(eTag, 10), uuid)
+	_, _, err = client.ServiceProfilesApi.PutServiceProfileByUuid(ctx, uuid).IfMatch(strconv.FormatInt(eTag, 10)).ServiceProfileRequest(updateRequest).Execute()
 	if err != nil {
 		return diag.FromErr(equinix_errors.FormatFabricError(err))
 	}
 
 	updateTimeout = d.Timeout(schema.TimeoutUpdate) - 30*time.Second - time.Since(start)
-	updatedServiceProfile := v4.ServiceProfile{}
-	updatedServiceProfile, err = waitForServiceProfileUpdateCompletion(uuid, meta, ctx, updateTimeout)
+	var updatedServiceProfile *fabricv4.ServiceProfile
+	updatedServiceProfile, err = waitForServiceProfileUpdateCompletion(uuid, meta, d, ctx, updateTimeout)
 	if err != nil {
 		if !strings.Contains(err.Error(), "500") {
 			d.SetId("")
 		}
 		return diag.FromErr(fmt.Errorf("errored while waiting for successful service profile update, error %v", err))
 	}
-	d.SetId(updatedServiceProfile.Uuid)
+	d.SetId(updatedServiceProfile.GetUuid())
 	return setFabricServiceProfileMap(d, updatedServiceProfile)
 }
 
-func waitForServiceProfileUpdateCompletion(uuid string, meta interface{}, ctx context.Context, timeout time.Duration) (v4.ServiceProfile, error) {
+func waitForServiceProfileUpdateCompletion(uuid string, meta interface{}, d *schema.ResourceData, ctx context.Context, timeout time.Duration) (*fabricv4.ServiceProfile, error) {
 	log.Printf("Waiting for service profile update to complete, uuid %s", uuid)
 	stateConf := &retry.StateChangeConf{
 		Target: []string{"COMPLETED"},
 		Refresh: func() (interface{}, string, error) {
-			client := meta.(*config.Config).FabricClient
-			dbServiceProfile, _, err := client.ServiceProfilesApi.GetServiceProfileByUuid(ctx, uuid, nil)
+			client := meta.(*config.Config).NewFabricClientForSDK(d)
+			dbServiceProfile, _, err := client.ServiceProfilesApi.GetServiceProfileByUuid(ctx, uuid).Execute()
 			if err != nil {
 				return "", "", equinix_errors.FormatFabricError(err)
 			}
@@ -681,22 +694,22 @@ func waitForServiceProfileUpdateCompletion(uuid string, meta interface{}, ctx co
 	}
 
 	inter, err := stateConf.WaitForStateContext(ctx)
-	dbSp := v4.ServiceProfile{}
+	var dbSp *fabricv4.ServiceProfile
 
 	if err == nil {
-		dbSp = inter.(v4.ServiceProfile)
+		dbSp = inter.(*fabricv4.ServiceProfile)
 	}
 	return dbSp, err
 }
 
-func waitForActiveServiceProfileAndPopulateETag(uuid string, meta interface{}, ctx context.Context, timeout time.Duration) (v4.ServiceProfile, error, int64) {
+func waitForActiveServiceProfileAndPopulateETag(uuid string, meta interface{}, d *schema.ResourceData, ctx context.Context, timeout time.Duration) (*fabricv4.ServiceProfile, error, int64) {
 	log.Printf("Waiting for service profile to be in active state, uuid %s", uuid)
 	var eTag int64 = 0
 	stateConf := &retry.StateChangeConf{
-		Target: []string{string(v4.ACTIVE_ServiceProfileStateEnum)},
+		Target: []string{string(fabricv4.SERVICEPROFILESTATEENUM_ACTIVE)},
 		Refresh: func() (interface{}, string, error) {
-			client := meta.(*config.Config).FabricClient
-			dbServiceProfile, res, err := client.ServiceProfilesApi.GetServiceProfileByUuid(ctx, uuid, nil)
+			client := meta.(*config.Config).NewFabricClientForSDK(d)
+			dbServiceProfile, res, err := client.ServiceProfilesApi.GetServiceProfileByUuid(ctx, uuid).Execute()
 			if err != nil {
 				return nil, "", equinix_errors.FormatFabricError(err)
 			}
@@ -708,8 +721,8 @@ func waitForActiveServiceProfileAndPopulateETag(uuid string, meta interface{}, c
 			}
 
 			updatableState := ""
-			if *dbServiceProfile.State == v4.ACTIVE_ServiceProfileStateEnum {
-				updatableState = string(*dbServiceProfile.State)
+			if dbServiceProfile.GetState() == fabricv4.SERVICEPROFILESTATEENUM_ACTIVE {
+				updatableState = string(dbServiceProfile.GetState())
 			}
 			return dbServiceProfile, updatableState, nil
 		},
@@ -718,29 +731,29 @@ func waitForActiveServiceProfileAndPopulateETag(uuid string, meta interface{}, c
 		MinTimeout: 10 * time.Second,
 	}
 	inter, err := stateConf.WaitForStateContext(ctx)
-	dbServiceProfile := v4.ServiceProfile{}
+	var dbServiceProfile *fabricv4.ServiceProfile
 	if err == nil {
-		dbServiceProfile = inter.(v4.ServiceProfile)
+		dbServiceProfile = inter.(*fabricv4.ServiceProfile)
 	}
 	return dbServiceProfile, err, eTag
 }
 
 func resourceFabricServiceProfileDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	diags := diag.Diagnostics{}
-	client := meta.(*config.Config).FabricClient
-	ctx = context.WithValue(ctx, v4.ContextAccessToken, meta.(*config.Config).FabricAuthToken)
+	client := meta.(*config.Config).NewFabricClientForSDK(d)
 	uuid := d.Id()
 	if uuid == "" {
 		return diag.Errorf("No uuid found for Service Profile Deletion %v ", uuid)
 	}
+
 	start := time.Now()
-	_, _, err := client.ServiceProfilesApi.DeleteServiceProfileByUuid(ctx, uuid)
+	_, _, err := client.ServiceProfilesApi.DeleteServiceProfileByUuid(ctx, uuid).Execute()
 	if err != nil {
 		return diag.FromErr(equinix_errors.FormatFabricError(err))
 	}
 
 	deleteTimeout := d.Timeout(schema.TimeoutDelete) - 30*time.Second - time.Since(start)
-	waitErr := WaitAndCheckServiceProfileDeleted(uuid, client, ctx, deleteTimeout)
+	waitErr := WaitAndCheckServiceProfileDeleted(uuid, meta, d, ctx, deleteTimeout)
 	if waitErr != nil {
 		return diag.Errorf("Error while waiting for Service Profile deletion: %v", waitErr)
 	}
@@ -748,18 +761,19 @@ func resourceFabricServiceProfileDelete(ctx context.Context, d *schema.ResourceD
 	return diags
 }
 
-func WaitAndCheckServiceProfileDeleted(uuid string, client *v4.APIClient, ctx context.Context, timeout time.Duration) error {
+func WaitAndCheckServiceProfileDeleted(uuid string, meta interface{}, d *schema.ResourceData, ctx context.Context, timeout time.Duration) error {
 	log.Printf("Waiting for service profile to be in deleted, uuid %s", uuid)
 	stateConf := &retry.StateChangeConf{
-		Target: []string{string(v4.DELETED_ServiceProfileStateEnum)},
+		Target: []string{string(fabricv4.SERVICEPROFILESTATEENUM_DELETED)},
 		Refresh: func() (interface{}, string, error) {
-			dbConn, _, err := client.ServiceProfilesApi.GetServiceProfileByUuid(ctx, uuid, nil)
+			client := meta.(*config.Config).NewFabricClientForSDK(d)
+			dbConn, _, err := client.ServiceProfilesApi.GetServiceProfileByUuid(ctx, uuid).Execute()
 			if err != nil {
 				return "", "", equinix_errors.FormatFabricError(err)
 			}
 			updatableState := ""
-			if *dbConn.State == v4.DELETED_ServiceProfileStateEnum {
-				updatableState = string(*dbConn.State)
+			if dbConn.GetState() == fabricv4.SERVICEPROFILESTATEENUM_DELETED {
+				updatableState = string(dbConn.GetState())
 			}
 			return dbConn, updatableState, nil
 		},
@@ -771,7 +785,7 @@ func WaitAndCheckServiceProfileDeleted(uuid string, client *v4.APIClient, ctx co
 	return err
 }
 
-func setFabricServiceProfilesListMap(d *schema.ResourceData, spl v4.ServiceProfiles) diag.Diagnostics {
+func setFabricServiceProfilesListMap(d *schema.ResourceData, spl *fabricv4.ServiceProfiles) diag.Diagnostics {
 	diags := diag.Diagnostics{}
 	mappedServiceProfiles := make([]map[string]interface{}, len(spl.Data))
 	if spl.Data != nil {
@@ -790,70 +804,66 @@ func setFabricServiceProfilesListMap(d *schema.ResourceData, spl v4.ServiceProfi
 	return diags
 }
 
-func setFabricServiceProfileMap(d *schema.ResourceData, sp v4.ServiceProfile) diag.Diagnostics {
+func setFabricServiceProfileMap(d *schema.ResourceData, sp *fabricv4.ServiceProfile) diag.Diagnostics {
 	diags := diag.Diagnostics{}
-	err := equinix_schema.SetMap(d, fabricServiceProfileMap(&sp))
+	err := equinix_schema.SetMap(d, fabricServiceProfileMap(sp))
 	if err != nil {
 		return diag.FromErr(err)
 	}
 	return diags
 }
 
-func fabricServiceProfileMap(serviceProfile *v4.ServiceProfile) map[string]interface{} {
+func fabricServiceProfileMap(serviceProfile *fabricv4.ServiceProfile) map[string]interface{} {
 	if serviceProfile == nil {
 		return nil
 	}
+
+	marketingInfo := serviceProfile.GetMarketingInfo()
+	account := serviceProfile.GetAccount()
+	project := serviceProfile.GetProject()
+	changeLog := serviceProfile.GetChangeLog()
 	return map[string]interface{}{
-		"href":                      serviceProfile.Href,
-		"type":                      serviceProfile.Type_,
-		"name":                      serviceProfile.Name,
-		"uuid":                      serviceProfile.Uuid,
-		"description":               serviceProfile.Description,
-		"notifications":             equinix_fabric_schema.NotificationsToTerra(serviceProfile.Notifications),
-		"tags":                      tagsFabricSpToTerra(serviceProfile.Tags),
-		"visibility":                serviceProfile.Visibility,
-		"access_point_type_configs": accessPointTypeConfigToTerra(serviceProfile.AccessPointTypeConfigs),
-		"custom_fields":             customFieldFabricSpToTerra(serviceProfile.CustomFields),
-		"marketing_info":            marketingInfoMappingToTerra(serviceProfile.MarketingInfo),
-		"ports":                     accessPointColoFabricSpToTerra(serviceProfile.Ports),
-		"allowed_emails":            allowedEmailsFabricSpToTerra(serviceProfile.AllowedEmails),
-		"metros":                    serviceMetroFabricSpToTerra(serviceProfile.Metros),
-		"self_profile":              serviceProfile.SelfProfile,
-		"state":                     serviceProfile.State,
-		"account":                   equinix_fabric_schema.AccountToTerra(serviceProfile.Account),
-		"project":                   equinix_fabric_schema.ProjectToTerra(serviceProfile.Project),
-		"change_log":                equinix_fabric_schema.ChangeLogToTerra(serviceProfile.ChangeLog),
+		"href":                      serviceProfile.GetHref(),
+		"type":                      string(serviceProfile.GetType()),
+		"name":                      serviceProfile.GetName(),
+		"uuid":                      serviceProfile.GetUuid(),
+		"description":               serviceProfile.GetDescription(),
+		"notifications":             equinix_fabric_schema.NotificationsGoToTerraform(serviceProfile.GetNotifications()),
+		"tags":                      tagsGoToTerraform(serviceProfile.GetTags()),
+		"visibility":                string(serviceProfile.GetVisibility()),
+		"access_point_type_configs": accessPointTypeConfigGoToTerraform(serviceProfile.GetAccessPointTypeConfigs()),
+		"custom_fields":             customFieldGoToTerraform(serviceProfile.GetCustomFields()),
+		"marketing_info":            marketingInfoGoToTerraform(&marketingInfo),
+		"ports":                     serviceProfileAccessPointColoGoToTerraform(serviceProfile.GetPorts()),
+		"allowed_emails":            allowedEmailsGoToTerraform(serviceProfile.GetAllowedEmails()),
+		"metros":                    serviceMetroGoToTerraform(serviceProfile.GetMetros()),
+		"self_profile":              serviceProfile.GetSelfProfile(),
+		"state":                     string(serviceProfile.GetState()),
+		"account":                   equinix_fabric_schema.AccountGoToTerraform(&account),
+		"project":                   equinix_fabric_schema.ProjectGoToTerraform(&project),
+		"change_log":                equinix_fabric_schema.ChangeLogGoToTerraform(&changeLog),
 	}
 }
 
 func resourceServiceProfilesSearchRequest(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := meta.(*config.Config).FabricClient
-	ctx = context.WithValue(ctx, v4.ContextAccessToken, meta.(*config.Config).FabricAuthToken)
+	client := meta.(*config.Config).NewFabricClientForSDK(d)
+	serviceProfilesSearchRequest := fabricv4.ServiceProfileSearchRequest{}
+
 	schemaFilter := d.Get("filter").(*schema.Set).List()
-	filter := serviceProfilesSearchFilterRequestToFabric(schemaFilter)
-	var serviceProfileFlt v4.ServiceProfileFilter // Cast ServiceProfile search expression struct type to interface
-	serviceProfileFlt = filter
-	schemaSort := d.Get("sort").([]interface{})
-	sort := serviceProfilesSearchSortRequestToFabric(schemaSort)
-	schemaViewPoint := d.Get("view_point").(string)
+	filter := serviceProfilesSearchFilterRequestTerraformToGo(schemaFilter)
+	serviceProfilesSearchRequest.SetFilter(filter)
 
-	if schemaViewPoint != "" && schemaViewPoint != string(v4.A_SIDE_ViewPoint) && schemaViewPoint != string(v4.Z_SIDE_ViewPoint) {
-		return diag.FromErr(errors.New("view_point can only be set to aSide or zSide. Omitting it will default to aSide"))
+	if schemaSort, ok := d.GetOk("sort"); ok {
+		sort := serviceProfilesSearchSortRequestTerraformToGo(schemaSort.([]interface{}))
+		serviceProfilesSearchRequest.SetSort(sort)
 	}
 
-	viewPoint := &v4.ServiceProfilesApiSearchServiceProfilesOpts{
-		ViewPoint: optional.NewString(schemaViewPoint),
+	viewPoint := fabricv4.GetServiceProfilesViewPointParameter("aSide")
+	if viewPointSchema, ok := d.GetOk("view_point"); ok {
+		viewPoint = fabricv4.GetServiceProfilesViewPointParameter(viewPointSchema.(string))
 	}
 
-	if schemaViewPoint == "" {
-		viewPoint = nil
-	}
-
-	createServiceProfilesSearchRequest := v4.ServiceProfileSearchRequest{
-		Filter: &serviceProfileFlt,
-		Sort:   sort,
-	}
-	serviceProfiles, _, err := client.ServiceProfilesApi.SearchServiceProfiles(ctx, createServiceProfilesSearchRequest, viewPoint)
+	serviceProfiles, _, err := client.ServiceProfilesApi.SearchServiceProfiles(ctx).ViewPoint(viewPoint).ServiceProfileSearchRequest(serviceProfilesSearchRequest).Execute()
 	if err != nil {
 		if !strings.Contains(err.Error(), "500") {
 			d.SetId("")
@@ -865,50 +875,50 @@ func resourceServiceProfilesSearchRequest(ctx context.Context, d *schema.Resourc
 		error := fmt.Errorf("incorrect # of records are found for the service profile search criteria - %d , please change the criteria", len(serviceProfiles.Data))
 		return diag.FromErr(error)
 	}
-	d.SetId(serviceProfiles.Data[0].Uuid)
+	d.SetId(serviceProfiles.Data[0].GetUuid())
 	return setFabricServiceProfilesListMap(d, serviceProfiles)
 }
 
-func customFieldFabricSpToTerra(customFields []v4.CustomField) []interface{} {
+func customFieldGoToTerraform(customFields []fabricv4.CustomField) []interface{} {
 	if customFields == nil {
 		return nil
 	}
 	mappedCustomFields := make([]interface{}, len(customFields))
 	for index, customField := range customFields {
 		mappedCustomFields[index] = map[string]interface{}{
-			"label":       customField.Label,
-			"description": customField.Description,
-			"required":    customField.Required,
-			"data_type":   customField.DataType,
-			"options":     customField.Options,
+			"label":       customField.GetLabel(),
+			"description": customField.GetDescription(),
+			"required":    customField.GetRequired(),
+			"data_type":   customField.GetDataType(),
+			"options":     customField.GetOptions(),
 		}
 	}
 	return mappedCustomFields
 }
 
-func processStepFabricSpToTerra(processSteps []v4.ProcessStep) []interface{} {
+func processStepsGoToTerraform(processSteps []fabricv4.ProcessStep) []interface{} {
 	if processSteps == nil {
 		return nil
 	}
 	mappedProcessSteps := make([]interface{}, len(processSteps))
 	for index, processStep := range processSteps {
 		mappedProcessSteps[index] = map[string]interface{}{
-			"title":       processStep.Title,
-			"sub_title":   processStep.SubTitle,
-			"description": processStep.Description,
+			"title":       processStep.GetTitle(),
+			"sub_title":   processStep.GetSubTitle(),
+			"description": processStep.GetDescription(),
 		}
 	}
 	return mappedProcessSteps
 }
 
-func marketingInfoMappingToTerra(mkinfo *v4.MarketingInfo) *schema.Set {
+func marketingInfoGoToTerraform(mkinfo *fabricv4.MarketingInfo) *schema.Set {
 	if mkinfo == nil {
 		return nil
 	}
 	mappedMkInfo := make(map[string]interface{})
-	mappedMkInfo["logo"] = mkinfo.Logo
-	mappedMkInfo["promotion"] = mkinfo.Promotion
-	processSteps := processStepFabricSpToTerra(mkinfo.ProcessSteps)
+	mappedMkInfo["logo"] = mkinfo.GetLogo()
+	mappedMkInfo["promotion"] = mkinfo.GetPromotion()
+	processSteps := processStepsGoToTerraform(mkinfo.GetProcessSteps())
 	if processSteps != nil {
 		mappedMkInfo["process_step"] = processSteps
 	}
@@ -919,347 +929,424 @@ func marketingInfoMappingToTerra(mkinfo *v4.MarketingInfo) *schema.Set {
 	return marketingInfoSet
 }
 
-func accessPointColoFabricSpToTerra(accessPointColos []v4.ServiceProfileAccessPointColo) []interface{} {
+func serviceProfileAccessPointColoGoToTerraform(accessPointColos []fabricv4.ServiceProfileAccessPointCOLO) []interface{} {
 	if accessPointColos == nil {
 		return nil
 	}
 	mappedAccessPointColos := make([]interface{}, len(accessPointColos))
 	for index, accessPointColo := range accessPointColos {
+		location := accessPointColo.GetLocation()
 		mappedAccessPointColos[index] = map[string]interface{}{
-			"type":                      accessPointColo.Type_,
-			"uuid":                      accessPointColo.Uuid,
-			"location":                  equinix_fabric_schema.LocationToTerra(accessPointColo.Location),
-			"seller_region":             accessPointColo.SellerRegion,
-			"seller_region_description": accessPointColo.SellerRegionDescription,
-			"cross_connect_id":          accessPointColo.CrossConnectId,
+			"type":                      string(accessPointColo.GetType()),
+			"uuid":                      accessPointColo.GetUuid(),
+			"location":                  equinix_fabric_schema.LocationGoToTerraform(&location),
+			"seller_region":             accessPointColo.GetSellerRegion(),
+			"seller_region_description": accessPointColo.GetSellerRegionDescription(),
+			"cross_connect_id":          accessPointColo.GetCrossConnectId(),
 		}
 	}
 	return mappedAccessPointColos
 }
 
-func serviceMetroFabricSpToTerra(serviceMetros []v4.ServiceMetro) []interface{} {
+func serviceMetroGoToTerraform(serviceMetros []fabricv4.ServiceMetro) []interface{} {
 	if serviceMetros == nil {
 		return nil
 	}
 	mappedServiceMetros := make([]interface{}, len(serviceMetros))
 	for index, serviceMetro := range serviceMetros {
 		mappedServiceMetros[index] = map[string]interface{}{
-			"code":           serviceMetro.Code,
-			"name":           serviceMetro.Name,
-			"ibxs":           serviceMetro.Ibxs,
-			"in_trail":       serviceMetro.InTrail,
-			"display_name":   serviceMetro.DisplayName,
-			"seller_regions": serviceMetro.SellerRegions,
+			"code":           serviceMetro.GetCode(),
+			"name":           serviceMetro.GetName(),
+			"ibxs":           serviceMetro.GetIbxs(),
+			"in_trail":       serviceMetro.GetInTrail(),
+			"display_name":   serviceMetro.GetDisplayName(),
+			"seller_regions": serviceMetro.GetSellerRegions(),
 		}
 	}
 	return mappedServiceMetros
 }
 
-func tagsFabricSpToTerra(tags *[]string) []interface{} {
+func tagsGoToTerraform(tags []string) []interface{} {
 	if tags == nil {
 		return nil
 	}
-	mappedTags := make([]interface{}, len(*tags))
-	for index, tag := range *tags {
+	mappedTags := make([]interface{}, len(tags))
+	for index, tag := range tags {
 		mappedTags[index] = tag
 	}
 	return mappedTags
 }
 
-func allowedEmailsFabricSpToTerra(allowedemails []string) []interface{} {
-	if allowedemails == nil {
+func allowedEmailsGoToTerraform(allowedEmails []string) []interface{} {
+	if allowedEmails == nil {
 		return nil
 	}
-	mappedEmails := make([]interface{}, len(allowedemails))
-	for index, email := range allowedemails {
+	mappedEmails := make([]interface{}, len(allowedEmails))
+	for index, email := range allowedEmails {
 		mappedEmails[index] = email
 	}
 	return mappedEmails
 }
 
-func accessPointTypeConfigsToFabric(schemaAccessPointTypeConfigs []interface{}) []v4.ServiceProfileAccessPointType {
+func accessPointTypeConfigsTerraformToGo(schemaAccessPointTypeConfigs []interface{}) []fabricv4.ServiceProfileAccessPointType {
 	if schemaAccessPointTypeConfigs == nil {
-		return []v4.ServiceProfileAccessPointType{}
+		return nil
 	}
-	var accessPointTypeConfigs []v4.ServiceProfileAccessPointType
-	for _, accessPoint := range schemaAccessPointTypeConfigs {
-		spType := v4.ServiceProfileAccessPointTypeEnum(accessPoint.(map[string]interface{})["type"].(string))
-		spConnectionRedundancyRequired := accessPoint.(map[string]interface{})["connection_redundancy_required"].(bool)
-		spAllowBandwidthAutoApproval := accessPoint.(map[string]interface{})["allow_bandwidth_auto_approval"].(bool)
-		spAllowRemoteConnections := accessPoint.(map[string]interface{})["allow_remote_connections"].(bool)
-		spConnectionLabel := accessPoint.(map[string]interface{})["connection_label"].(string)
-		spEnableAutoGenerateServiceKey := accessPoint.(map[string]interface{})["enable_auto_generate_service_key"].(bool)
-		spBandwidthAlertThreshold := accessPoint.(map[string]interface{})["bandwidth_alert_threshold"].(float64)
-		spAllowCustomBandwidth := accessPoint.(map[string]interface{})["allow_custom_bandwidth"].(bool)
+	accessPointTypeConfigs := make([]fabricv4.ServiceProfileAccessPointType, len(schemaAccessPointTypeConfigs))
+	for index, accessPoint := range schemaAccessPointTypeConfigs {
+		apMap := accessPoint.(map[string]interface{})
+		accessPointTypeCOLO := fabricv4.ServiceProfileAccessPointTypeCOLO{}
 
-		var spApiConfig *v4.ApiConfig
-		if accessPoint.(map[string]interface{})["api_config"] != nil {
-			apiConfig := accessPoint.(map[string]interface{})["api_config"].(interface{}).(*schema.Set).List()
-			spApiConfig = apiConfigToFabric(apiConfig)
+		spType := fabricv4.ServiceProfileAccessPointTypeEnum(apMap["type"].(string))
+		accessPointTypeCOLO.SetType(spType)
+
+		spConnectionRedundancyRequired := apMap["connection_redundancy_required"].(bool)
+		accessPointTypeCOLO.SetConnectionRedundancyRequired(spConnectionRedundancyRequired)
+
+		spAllowBandwidthAutoApproval := apMap["allow_bandwidth_auto_approval"].(bool)
+		accessPointTypeCOLO.SetAllowBandwidthAutoApproval(spAllowBandwidthAutoApproval)
+
+		spAllowRemoteConnections := apMap["allow_remote_connections"].(bool)
+		accessPointTypeCOLO.SetAllowRemoteConnections(spAllowRemoteConnections)
+
+		spConnectionLabel := apMap["connection_label"].(string)
+		accessPointTypeCOLO.SetConnectionLabel(spConnectionLabel)
+
+		spEnableAutoGenerateServiceKey := apMap["enable_auto_generate_service_key"].(bool)
+		accessPointTypeCOLO.SetEnableAutoGenerateServiceKey(spEnableAutoGenerateServiceKey)
+
+		spBandwidthAlertThreshold := float32(apMap["bandwidth_alert_threshold"].(float64))
+		accessPointTypeCOLO.SetBandwidthAlertThreshold(spBandwidthAlertThreshold)
+
+		spAllowCustomBandwidth := apMap["allow_custom_bandwidth"].(bool)
+		accessPointTypeCOLO.SetAllowCustomBandwidth(spAllowCustomBandwidth)
+
+		if apMap["api_config"] != nil {
+			apiConfig := apMap["api_config"].(*schema.Set).List()
+			spApiConfig := apiConfigTerraformToGo(apiConfig)
+			accessPointTypeCOLO.SetApiConfig(spApiConfig)
 		}
 
-		var spAuthenticationKey *v4.AuthenticationKey
-		if accessPoint.(map[string]interface{})["authentication_key"] != nil {
-			authenticationKey := accessPoint.(map[string]interface{})["authentication_key"].(interface{}).(*schema.Set).List()
-			spAuthenticationKey = authenticationKeyToFabric(authenticationKey)
+		if apMap["authentication_key"] != nil {
+			authenticationKey := apMap["authentication_key"].(*schema.Set).List()
+			spAuthenticationKey := authenticationKeyTerraformToGo(authenticationKey)
+			accessPointTypeCOLO.SetAuthenticationKey(spAuthenticationKey)
 		}
 
-		supportedBandwidthsRaw := accessPoint.(map[string]interface{})["supported_bandwidths"].([]interface{})
+		supportedBandwidthsRaw := apMap["supported_bandwidths"].([]interface{})
 		spSupportedBandwidths := converters.ListToInt32List(supportedBandwidthsRaw)
+		accessPointTypeCOLO.SetSupportedBandwidths(spSupportedBandwidths)
 
-		accessPointTypeConfigs = append(accessPointTypeConfigs, v4.ServiceProfileAccessPointType{
-			Type_:                        &spType,
-			ConnectionRedundancyRequired: spConnectionRedundancyRequired,
-			AllowBandwidthAutoApproval:   spAllowBandwidthAutoApproval,
-			AllowRemoteConnections:       spAllowRemoteConnections,
-			ConnectionLabel:              spConnectionLabel,
-			EnableAutoGenerateServiceKey: spEnableAutoGenerateServiceKey,
-			BandwidthAlertThreshold:      spBandwidthAlertThreshold,
-			AllowCustomBandwidth:         spAllowCustomBandwidth,
-			ApiConfig:                    spApiConfig,
-			AuthenticationKey:            spAuthenticationKey,
-			SupportedBandwidths:          &spSupportedBandwidths,
-		})
+		accessPointType := fabricv4.ServiceProfileAccessPointTypeCOLOAsServiceProfileAccessPointType(&accessPointTypeCOLO)
+
+		accessPointTypeConfigs[index] = accessPointType
 	}
 	return accessPointTypeConfigs
 }
 
-func accessPointTypeConfigToTerra(spAccessPointTypes []v4.ServiceProfileAccessPointType) []interface{} {
+func accessPointTypeConfigGoToTerraform(spAccessPointTypes []fabricv4.ServiceProfileAccessPointType) []interface{} {
 	mappedSpAccessPointTypes := make([]interface{}, len(spAccessPointTypes))
 	for index, spAccessPointType := range spAccessPointTypes {
+		spAccessPointType := spAccessPointType.GetActualInstance().(*fabricv4.ServiceProfileAccessPointTypeCOLO)
+		apiConfig := spAccessPointType.GetApiConfig()
+		authKey := spAccessPointType.GetAuthenticationKey()
 		mappedSpAccessPointTypes[index] = map[string]interface{}{
-			"type":                             string(*spAccessPointType.Type_),
-			"uuid":                             spAccessPointType.Uuid,
-			"allow_remote_connections":         spAccessPointType.AllowRemoteConnections,
-			"allow_custom_bandwidth":           spAccessPointType.AllowCustomBandwidth,
-			"allow_bandwidth_auto_approval":    spAccessPointType.AllowBandwidthAutoApproval,
-			"enable_auto_generate_service_key": spAccessPointType.EnableAutoGenerateServiceKey,
-			"connection_redundancy_required":   spAccessPointType.ConnectionRedundancyRequired,
-			"connection_label":                 spAccessPointType.ConnectionLabel,
-			"api_config":                       apiConfigToTerra(spAccessPointType.ApiConfig),
-			"authentication_key":               authenticationKeyToTerra(spAccessPointType.AuthenticationKey),
-			"supported_bandwidths":             supportedBandwidthsToTerra(spAccessPointType.SupportedBandwidths),
+			"type":                             string(spAccessPointType.Type),
+			"uuid":                             spAccessPointType.GetUuid(),
+			"allow_remote_connections":         spAccessPointType.GetAllowRemoteConnections(),
+			"allow_custom_bandwidth":           spAccessPointType.GetAllowCustomBandwidth(),
+			"allow_bandwidth_auto_approval":    spAccessPointType.GetAllowBandwidthAutoApproval(),
+			"enable_auto_generate_service_key": spAccessPointType.GetEnableAutoGenerateServiceKey(),
+			"connection_redundancy_required":   spAccessPointType.GetConnectionRedundancyRequired(),
+			"connection_label":                 spAccessPointType.GetConnectionLabel(),
+			"api_config":                       apiConfigGoToTerraform(&apiConfig),
+			"authentication_key":               authenticationKeyGoToTerraform(&authKey),
+			"supported_bandwidths":             supportedBandwidthsGoToTerraform(spAccessPointType.GetSupportedBandwidths()),
 		}
 	}
 
 	return mappedSpAccessPointTypes
 }
 
-func apiConfigToFabric(apiConfigs []interface{}) *v4.ApiConfig {
-	if apiConfigs == nil {
-		return nil
-	}
-	var apiConfigRes *v4.ApiConfig
-	for _, apiConfig := range apiConfigs {
-		psApiAvailable := apiConfig.(map[string]interface{})["api_available"].(interface{}).(bool)
-		psEquinixManagedVlan := apiConfig.(map[string]interface{})["equinix_managed_vlan"].(interface{}).(bool)
-		psBandwidthFromApi := apiConfig.(map[string]interface{})["bandwidth_from_api"].(interface{}).(bool)
-		psIntegrationId := apiConfig.(map[string]interface{})["integration_id"].(interface{}).(string)
-		psEquinixManagedPort := apiConfig.(map[string]interface{})["equinix_managed_port"].(interface{}).(bool)
-		apiConfigRes = &v4.ApiConfig{
-			ApiAvailable:       psApiAvailable,
-			EquinixManagedVlan: psEquinixManagedVlan,
-			BandwidthFromApi:   psBandwidthFromApi,
-			IntegrationId:      psIntegrationId,
-			EquinixManagedPort: psEquinixManagedPort,
-		}
-	}
-	return apiConfigRes
+func apiConfigGoToTerraform(apiConfig *fabricv4.ApiConfig) *schema.Set {
+
+	mappedApiConfig := make(map[string]interface{})
+	mappedApiConfig["api_available"] = apiConfig.GetApiAvailable()
+	mappedApiConfig["equinix_managed_vlan"] = apiConfig.GetEquinixManagedVlan()
+	mappedApiConfig["bandwidth_from_api"] = apiConfig.GetBandwidthFromApi()
+	mappedApiConfig["integration_id"] = apiConfig.GetIntegrationId()
+	mappedApiConfig["equinix_managed_port"] = apiConfig.GetEquinixManagedPort()
+
+	apiConfigSet := schema.NewSet(
+		schema.HashResource(&schema.Resource{Schema: createApiConfigSch()}),
+		[]interface{}{mappedApiConfig})
+	return apiConfigSet
 }
 
-func authenticationKeyToFabric(authenticationKeys []interface{}) *v4.AuthenticationKey {
-	if authenticationKeys == nil {
+func authenticationKeyGoToTerraform(authenticationKey *fabricv4.AuthenticationKey) *schema.Set {
+	mappedAuthenticationKey := make(map[string]interface{})
+	mappedAuthenticationKey["required"] = authenticationKey.GetRequired()
+	mappedAuthenticationKey["label"] = authenticationKey.GetLabel()
+	mappedAuthenticationKey["description"] = authenticationKey.GetDescription()
+
+	apiConfigSet := schema.NewSet(
+		schema.HashResource(&schema.Resource{Schema: createAuthenticationKeySch()}),
+		[]interface{}{mappedAuthenticationKey})
+	return apiConfigSet
+}
+
+func supportedBandwidthsGoToTerraform(supportedBandwidths []int32) []interface{} {
+	if supportedBandwidths == nil {
 		return nil
 	}
-	var authenticationKeyRes *v4.AuthenticationKey
-	for _, authenticationKey := range authenticationKeys {
-		psRequired := authenticationKey.(map[string]interface{})["required"].(interface{}).(bool)
-		psLabel := authenticationKey.(map[string]interface{})["label"].(interface{}).(string)
-		psDescription := authenticationKey.(map[string]interface{})["description"].(interface{}).(string)
-		authenticationKeyRes = &v4.AuthenticationKey{
-			Required:    psRequired,
-			Label:       psLabel,
-			Description: psDescription,
-		}
+	mappedSupportedBandwidths := make([]interface{}, len(supportedBandwidths))
+	for index, bandwidth := range supportedBandwidths {
+		mappedSupportedBandwidths[index] = int(bandwidth)
 	}
+	return mappedSupportedBandwidths
+}
+
+func apiConfigTerraformToGo(apiConfigs []interface{}) fabricv4.ApiConfig {
+	if apiConfigs == nil {
+		return fabricv4.ApiConfig{}
+	}
+	apiConfig := fabricv4.ApiConfig{}
+	apiConfigMap := apiConfigs[0].(map[string]interface{})
+	apiAvailable := apiConfigMap["api_available"].(bool)
+	equinixManagedVlan := apiConfigMap["equinix_managed_vlan"].(bool)
+	bandwidthFromApi := apiConfigMap["bandwidth_from_api"].(bool)
+	integrationId := apiConfigMap["integration_id"].(string)
+	equinixManagedPort := apiConfigMap["equinix_managed_port"].(bool)
+	apiConfig.SetApiAvailable(apiAvailable)
+	apiConfig.SetEquinixManagedVlan(equinixManagedVlan)
+	apiConfig.SetBandwidthFromApi(bandwidthFromApi)
+	apiConfig.SetIntegrationId(integrationId)
+	apiConfig.SetEquinixManagedPort(equinixManagedPort)
+
+	return apiConfig
+}
+
+func authenticationKeyTerraformToGo(authenticationKeys []interface{}) fabricv4.AuthenticationKey {
+	if authenticationKeys == nil {
+		return fabricv4.AuthenticationKey{}
+	}
+	authenticationKeyRes := fabricv4.AuthenticationKey{}
+	authKeyMap := authenticationKeys[0].(map[string]interface{})
+	required := authKeyMap["required"].(bool)
+	label := authKeyMap["label"].(string)
+	description := authKeyMap["description"].(string)
+
+	authenticationKeyRes.SetRequired(required)
+	authenticationKeyRes.SetLabel(label)
+	authenticationKeyRes.SetDescription(description)
+
 	return authenticationKeyRes
 }
 
-func customFieldsToFabric(schemaCustomField []interface{}) []v4.CustomField {
+func customFieldsTerraformToGo(schemaCustomField []interface{}) []fabricv4.CustomField {
 	if schemaCustomField == nil {
-		return []v4.CustomField{}
+		return nil
 	}
-	var customFields []v4.CustomField
-	for _, customField := range schemaCustomField {
-		cfLabel := customField.(map[string]interface{})["label"].(string)
-		cfDescription := customField.(map[string]interface{})["description"].(string)
-		cfRequired := customField.(map[string]interface{})["required"].(bool)
-		cfDataType := customField.(map[string]interface{})["data_type"].(string)
-		optionsRaw := customField.(map[string]interface{})["options"].([]interface{})
+	customFields := make([]fabricv4.CustomField, len(schemaCustomField))
+	for index, customField := range schemaCustomField {
+		cfMap := customField.(map[string]interface{})
+		cfLabel := cfMap["label"].(string)
+		cfDescription := cfMap["description"].(string)
+		cfRequired := cfMap["required"].(bool)
+		cfDataType := fabricv4.CustomFieldDataType(cfMap["data_type"].(string))
+		optionsRaw := cfMap["options"].([]interface{})
 		cfOptions := converters.IfArrToStringArr(optionsRaw)
-		cfCaptureInEmail := customField.(map[string]interface{})["capture_in_email"].(bool)
-		customFields = append(customFields, v4.CustomField{
-			Label:          cfLabel,
-			Description:    cfDescription,
-			Required:       cfRequired,
-			DataType:       cfDataType,
-			Options:        cfOptions,
-			CaptureInEmail: cfCaptureInEmail,
-		})
+		cfCaptureInEmail := cfMap["capture_in_email"].(bool)
+		mappedCustomField := fabricv4.CustomField{}
+		mappedCustomField.SetLabel(cfLabel)
+		mappedCustomField.SetDescription(cfDescription)
+		mappedCustomField.SetRequired(cfRequired)
+		mappedCustomField.SetDataType(cfDataType)
+		mappedCustomField.SetOptions(cfOptions)
+		mappedCustomField.SetCaptureInEmail(cfCaptureInEmail)
+
+		customFields[index] = mappedCustomField
 	}
 	return customFields
 }
 
-func marketingInfoToFabric(schemaMarketingInfos []interface{}) *v4.MarketingInfo {
+func marketingInfoTerraformToGo(schemaMarketingInfos []interface{}) fabricv4.MarketingInfo {
 	if schemaMarketingInfos == nil {
-		return nil
+		return fabricv4.MarketingInfo{}
 	}
-	marketingInfoRes := v4.MarketingInfo{}
-	for _, marketingInfo := range schemaMarketingInfos {
-		miLogo := marketingInfo.(map[string]interface{})["logo"].(string)
-		miPromotion := marketingInfo.(map[string]interface{})["promotion"].(bool)
-
-		var miProcessSteps []v4.ProcessStep
-		if marketingInfo.(map[string]interface{})["process_steps"] != nil {
-			processStepsList := marketingInfo.(map[string]interface{})["process_steps"].([]interface{})
-			miProcessSteps = processStepToFabric(processStepsList)
-		}
-
-		marketingInfoRes = v4.MarketingInfo{
-			Logo:         miLogo,
-			Promotion:    miPromotion,
-			ProcessSteps: miProcessSteps,
-		}
+	marketingInfo := fabricv4.MarketingInfo{}
+	marketingInfoMap := schemaMarketingInfos[0].(map[string]interface{})
+	miLogo := marketingInfoMap["logo"].(string)
+	if miLogo != "" {
+		marketingInfo.SetLogo(miLogo)
 	}
-	return &marketingInfoRes
+
+	miPromotion := marketingInfoMap["promotion"].(bool)
+	marketingInfo.SetPromotion(miPromotion)
+
+	var miProcessSteps []fabricv4.ProcessStep
+	if marketingInfoMap["process_steps"] != nil {
+		processStepsList := marketingInfoMap["process_steps"].([]interface{})
+		miProcessSteps = processStepTerraformToGo(processStepsList)
+		marketingInfo.SetProcessSteps(miProcessSteps)
+	}
+
+	return marketingInfo
 }
 
-func processStepToFabric(processSteps []interface{}) []v4.ProcessStep {
+func processStepTerraformToGo(processSteps []interface{}) []fabricv4.ProcessStep {
 	if processSteps == nil {
 		return nil
 	}
-	processStepRes := make([]v4.ProcessStep, len(processSteps))
+	processStepRes := make([]fabricv4.ProcessStep, len(processSteps))
 	for index, processStep := range processSteps {
-		psTitle := processStep.(map[string]interface{})["title"].(interface{}).(string)
-		psSubTitle := processStep.(map[string]interface{})["sub_title"].(interface{}).(string)
-		psDescription := processStep.(map[string]interface{})["description"].(interface{}).(string)
-		processStepRes[index] = v4.ProcessStep{
-			Title:       psTitle,
-			SubTitle:    psSubTitle,
-			Description: psDescription,
-		}
+		processStepMap := processStep.(map[string]interface{})
+		psTitle := processStepMap["title"].(string)
+		psSubTitle := processStepMap["sub_title"].(string)
+		psDescription := processStepMap["description"].(string)
+		mappedProcessStep := fabricv4.ProcessStep{}
+		mappedProcessStep.SetTitle(psTitle)
+		mappedProcessStep.SetSubTitle(psSubTitle)
+		mappedProcessStep.SetDescription(psDescription)
+		processStepRes[index] = mappedProcessStep
 	}
 	return processStepRes
 }
 
-func portsToFabric(schemaPorts []interface{}) []v4.ServiceProfileAccessPointColo {
+func portsTerraformToGo(schemaPorts []interface{}) []fabricv4.ServiceProfileAccessPointCOLO {
 	if schemaPorts == nil {
 		return nil
 	}
-	serviceProfileAccessPointColos := make([]v4.ServiceProfileAccessPointColo, len(schemaPorts))
+	serviceProfileAccessPointColos := make([]fabricv4.ServiceProfileAccessPointCOLO, len(schemaPorts))
 	for index, schemaPort := range schemaPorts {
-		pType := schemaPort.(map[string]interface{})["type"].(string)
-		pUuid := schemaPort.(map[string]interface{})["uuid"].(string)
-		locationList := schemaPort.(map[string]interface{})["location"].(interface{}).(*schema.Set).List()
-		pLocation := v4.SimplifiedLocation{}
-		if len(locationList) != 0 {
-			pLocation = equinix_fabric_schema.LocationToFabric(locationList)
+		portMap := schemaPort.(map[string]interface{})
+		coloPort := fabricv4.ServiceProfileAccessPointCOLO{}
+
+		type_ := portMap["type"].(string)
+		if type_ != "" {
+			pType := fabricv4.ServiceProfileAccessPointCOLOType(type_)
+			coloPort.SetType(pType)
 		}
-		pSellerRegion := schemaPort.(map[string]interface{})["seller_region"].(string)
-		pSellerRegionDescription := schemaPort.(map[string]interface{})["seller_region_description"].(string)
-		pCrossConnectId := schemaPort.(map[string]interface{})["cross_connect_id"].(string)
-		serviceProfileAccessPointColos[index] = v4.ServiceProfileAccessPointColo{
-			Type_:                   pType,
-			Uuid:                    pUuid,
-			Location:                &pLocation,
-			SellerRegion:            pSellerRegion,
-			SellerRegionDescription: pSellerRegionDescription,
-			CrossConnectId:          pCrossConnectId,
+
+		pUuid := portMap["uuid"].(string)
+		if pUuid != "" {
+			coloPort.SetUuid(pUuid)
 		}
+
+		locationList := portMap["location"].(*schema.Set).List()
+		if locationList != nil && len(locationList) != 0 {
+			pLocation := equinix_fabric_schema.LocationTerraformToGo(locationList)
+			coloPort.SetLocation(pLocation)
+		}
+
+		pSellerRegion := portMap["seller_region"].(string)
+		if pSellerRegion != "" {
+			coloPort.SetSellerRegion(pSellerRegion)
+		}
+
+		pSellerRegionDescription := portMap["seller_region_description"].(string)
+		if pSellerRegionDescription != "" {
+			coloPort.SetSellerRegionDescription(pSellerRegionDescription)
+		}
+
+		pCrossConnectId := portMap["cross_connect_id"].(string)
+		if pCrossConnectId != "" {
+			coloPort.SetCrossConnectId(pCrossConnectId)
+		}
+
+		serviceProfileAccessPointColos[index] = coloPort
 	}
 	return serviceProfileAccessPointColos
 }
 
-func virtualDevicesToFabric(schemaVirtualDevices []interface{}) []v4.ServiceProfileAccessPointVd {
+func virtualDevicesTerraformToGo(schemaVirtualDevices []interface{}) []fabricv4.ServiceProfileAccessPointVD {
 	if schemaVirtualDevices == nil {
-		return []v4.ServiceProfileAccessPointVd{}
+		return nil
 	}
-	var virtualDevices []v4.ServiceProfileAccessPointVd
-	for _, virtualDevice := range schemaVirtualDevices {
-		vType := virtualDevice.(map[string]interface{})["type"].(string)
-		vUuid := virtualDevice.(map[string]interface{})["uuid"].(string)
-		locationList := virtualDevice.(map[string]interface{})["location"].(interface{}).(*schema.Set).List()
-		vLocation := v4.SimplifiedLocation{}
+	virtualDevices := make([]fabricv4.ServiceProfileAccessPointVD, len(schemaVirtualDevices))
+	for index, virtualDevice := range schemaVirtualDevices {
+		vdMap := virtualDevice.(map[string]interface{})
+		vType := fabricv4.ServiceProfileAccessPointVDType(vdMap["type"].(string))
+		vUuid := vdMap["uuid"].(string)
+		locationList := vdMap["location"].(interface{}).(*schema.Set).List()
+		var vLocation fabricv4.SimplifiedLocation
 		if len(locationList) != 0 {
-			vLocation = equinix_fabric_schema.LocationToFabric(locationList)
+			vLocation = equinix_fabric_schema.LocationTerraformToGo(locationList)
 		}
-		pInterfaceUuid := virtualDevice.(map[string]interface{})["interface_uuid"].(string)
-		virtualDevices = append(virtualDevices, v4.ServiceProfileAccessPointVd{
-			Type_:         vType,
-			Uuid:          vUuid,
-			Location:      &vLocation,
-			InterfaceUuid: pInterfaceUuid,
-		})
+		vInterfaceUuid := vdMap["interface_uuid"].(string)
+		accessPointVD := fabricv4.ServiceProfileAccessPointVD{}
+		accessPointVD.SetType(vType)
+		accessPointVD.SetUuid(vUuid)
+		accessPointVD.SetLocation(vLocation)
+		accessPointVD.SetInterfaceUuid(vInterfaceUuid)
+		virtualDevices[index] = accessPointVD
 	}
 	return virtualDevices
 }
 
-func metrosToFabric(schemaMetros []interface{}) []v4.ServiceMetro {
+func metrosTerraformToGo(schemaMetros []interface{}) []fabricv4.ServiceMetro {
 	if schemaMetros == nil {
-		return []v4.ServiceMetro{}
+		return nil
 	}
-	var metros []v4.ServiceMetro
-	for _, metro := range schemaMetros {
-		mCode := metro.(map[string]interface{})["code"].(string)
-		mName := metro.(map[string]interface{})["name"].(string)
-		ibxsRaw := metro.(map[string]interface{})["ibxs"].([]interface{})
+	var metros []fabricv4.ServiceMetro
+	for index, metro := range schemaMetros {
+		metroMap := metro.(map[string]interface{})
+		mCode := metroMap["code"].(string)
+		mName := metroMap["name"].(string)
+		ibxsRaw := metroMap["ibxs"].([]interface{})
 		mIbxs := converters.IfArrToStringArr(ibxsRaw)
-		mInTrail := metro.(map[string]interface{})["in_trail"].(bool)
-		mDisplayName := metro.(map[string]interface{})["display_name"].(string)
-		mSellerRegions := metro.(map[string]interface{})["seller_regions"].(map[string]string)
-		metros = append(metros, v4.ServiceMetro{
-			Code:          mCode,
-			Name:          mName,
-			Ibxs:          mIbxs,
-			InTrail:       mInTrail,
-			DisplayName:   mDisplayName,
-			SellerRegions: mSellerRegions,
-		})
+		mInTrail := metroMap["in_trail"].(bool)
+		mDisplayName := metroMap["display_name"].(string)
+		mSellerRegions := metroMap["seller_regions"].(map[string]string)
+		mappedMetro := fabricv4.ServiceMetro{}
+		mappedMetro.SetCode(mCode)
+		mappedMetro.SetName(mName)
+		mappedMetro.SetIbxs(mIbxs)
+		mappedMetro.SetInTrail(mInTrail)
+		mappedMetro.SetDisplayName(mDisplayName)
+		mappedMetro.SetSellerRegions(mSellerRegions)
+		metros[index] = mappedMetro
 	}
 	return metros
 }
 
-func serviceProfilesSearchFilterRequestToFabric(schemaServiceProfileFilterRequest []interface{}) v4.ServiceProfileSimpleExpression {
+func serviceProfilesSearchFilterRequestTerraformToGo(schemaServiceProfileFilterRequest []interface{}) fabricv4.ServiceProfileFilter {
 	if schemaServiceProfileFilterRequest == nil {
-		return v4.ServiceProfileSimpleExpression{}
+		return fabricv4.ServiceProfileFilter{}
 	}
-	mappedFilter := v4.ServiceProfileSimpleExpression{}
-	for _, s := range schemaServiceProfileFilterRequest {
-		sProperty := s.(map[string]interface{})["property"].(string)
-		operator := s.(map[string]interface{})["operator"].(string)
-		valuesRaw := s.(map[string]interface{})["values"].([]interface{})
-		values := converters.IfArrToStringArr(valuesRaw)
-		mappedFilter = v4.ServiceProfileSimpleExpression{Property: sProperty, Operator: operator, Values: values}
+	var mappedServiceProfileExpression fabricv4.ServiceProfileSimpleExpression
+	simpleExpressionMap := schemaServiceProfileFilterRequest[0].(map[string]interface{})
+	sProperty := simpleExpressionMap["property"].(string)
+	operator := simpleExpressionMap["operator"].(string)
+	valuesRaw := simpleExpressionMap["values"].([]interface{})
+	values := converters.IfArrToStringArr(valuesRaw)
+
+	mappedServiceProfileExpression.SetProperty(sProperty)
+	mappedServiceProfileExpression.SetOperator(operator)
+	mappedServiceProfileExpression.SetValues(values)
+
+	filter := fabricv4.ServiceProfileFilter{
+		ServiceProfileSimpleExpression: &mappedServiceProfileExpression,
 	}
-	return mappedFilter
+
+	return filter
 }
 
-func serviceProfilesSearchSortRequestToFabric(schemaServiceProfilesSearchSortRequest []interface{}) []v4.ServiceProfileSortCriteria {
+func serviceProfilesSearchSortRequestTerraformToGo(schemaServiceProfilesSearchSortRequest []interface{}) []fabricv4.ServiceProfileSortCriteria {
 	if schemaServiceProfilesSearchSortRequest == nil {
-		return []v4.ServiceProfileSortCriteria{}
+		return nil
 	}
-	var spSortCriteria []v4.ServiceProfileSortCriteria
-	for _, sp := range schemaServiceProfilesSearchSortRequest {
+	spSortCriteria := make([]fabricv4.ServiceProfileSortCriteria, len(schemaServiceProfilesSearchSortRequest))
+	for index, sp := range schemaServiceProfilesSearchSortRequest {
 		serviceProfileSortCriteriaMap := sp.(map[string]interface{})
-		direction := serviceProfileSortCriteriaMap["direction"]
-		directionCont := v4.ServiceProfileSortDirection(direction.(string))
-		property := serviceProfileSortCriteriaMap["property"]
-		propertyCont := v4.ServiceProfileSortBy(property.(string))
-		spSortCriteria = append(spSortCriteria, v4.ServiceProfileSortCriteria{
-			Direction: &directionCont,
-			Property:  &propertyCont,
-		})
-
+		direction := serviceProfileSortCriteriaMap["direction"].(string)
+		directionCont := fabricv4.ServiceProfileSortDirection(direction)
+		property := serviceProfileSortCriteriaMap["property"].(string)
+		propertyCont := fabricv4.ServiceProfileSortBy(property)
+		sortCriteria := fabricv4.ServiceProfileSortCriteria{}
+		sortCriteria.SetDirection(directionCont)
+		sortCriteria.SetProperty(propertyCont)
+		spSortCriteria[index] = sortCriteria
 	}
 	return spSortCriteria
 }

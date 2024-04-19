@@ -11,7 +11,7 @@ import (
 func TestAccDataSourceFabricCloudRouter_PFCR(t *testing.T) {
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acceptance.TestAccPreCheck(t) },
+		PreCheck:          func() { acceptance.TestAccPreCheck(t); acceptance.TestAccPreCheckProviderConfigured(t) },
 		ExternalProviders: acceptance.TestExternalProviders,
 		Providers:         acceptance.TestAccProviders,
 		Steps: []resource.TestStep{

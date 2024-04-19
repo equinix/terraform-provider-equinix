@@ -6,13 +6,11 @@ import (
 	"fmt"
 	"github.com/equinix/terraform-provider-equinix/equinix"
 	"github.com/equinix/terraform-provider-equinix/internal/acceptance"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"os"
 	"testing"
 	"time"
 
-	"github.com/equinix/terraform-provider-equinix/internal/config"
-
-	v4 "github.com/equinix-labs/fabric-go/fabric/v4"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 )
@@ -47,10 +45,10 @@ func TestAccFabricCreatePort2SPConnection_PFCR(t *testing.T) {
 	var publicSPName, portUuid string
 	if len(ports) > 0 && len(connectionsTestData) > 0 {
 		publicSPName = connectionsTestData["pfcr"]["publicSPName"]
-		portUuid = ports["pfcr"]["dot1q"][0].Uuid
+		portUuid = ports["pfcr"]["dot1q"][0].GetUuid()
 	}
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     func() { acceptance.TestAccPreCheck(t) },
+		PreCheck:     func() { acceptance.TestAccPreCheck(t); acceptance.TestAccPreCheckProviderConfigured(t) },
 		Providers:    acceptance.TestAccProviders,
 		CheckDestroy: CheckConnectionDelete,
 		Steps: []resource.TestStep{
@@ -145,11 +143,11 @@ func TestAccFabricCreatePort2PortConnection_PFCR(t *testing.T) {
 	ports := GetFabricEnvPorts(t)
 	var aSidePortUuid, zSidePortUuid string
 	if len(ports) > 0 {
-		aSidePortUuid = ports["pfcr"]["dot1q"][0].Uuid
-		zSidePortUuid = ports["pfcr"]["dot1q"][1].Uuid
+		aSidePortUuid = ports["pfcr"]["dot1q"][0].GetUuid()
+		zSidePortUuid = ports["pfcr"]["dot1q"][1].GetUuid()
 	}
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     func() { acceptance.TestAccPreCheck(t) },
+		PreCheck:     func() { acceptance.TestAccPreCheck(t); acceptance.TestAccPreCheckProviderConfigured(t) },
 		Providers:    acceptance.TestAccProviders,
 		CheckDestroy: CheckConnectionDelete,
 		Steps: []resource.TestStep{
@@ -260,10 +258,10 @@ func TestAccFabricCreateCloudRouter2PortConnection_PFCR(t *testing.T) {
 	ports := GetFabricEnvPorts(t)
 	var portUuid string
 	if len(ports) > 0 {
-		portUuid = ports["pfcr"]["dot1q"][1].Uuid
+		portUuid = ports["pfcr"]["dot1q"][1].GetUuid()
 	}
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     func() { acceptance.TestAccPreCheck(t) },
+		PreCheck:     func() { acceptance.TestAccPreCheck(t); acceptance.TestAccPreCheckProviderConfigured(t) },
 		Providers:    acceptance.TestAccProviders,
 		CheckDestroy: CheckConnectionDelete,
 		Steps: []resource.TestStep{
@@ -378,7 +376,7 @@ func TestAccFabricCreateVirtualDevice2NetworkConnection_PNFV(t *testing.T) {
 		virtualDevice = connectionTestData["pnfv"]["virtualDevice"]
 	}
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     func() { acceptance.TestAccPreCheck(t) },
+		PreCheck:     func() { acceptance.TestAccPreCheck(t); acceptance.TestAccPreCheckProviderConfigured(t) },
 		Providers:    acceptance.TestAccProviders,
 		CheckDestroy: CheckConnectionDelete,
 		Steps: []resource.TestStep{
@@ -412,7 +410,6 @@ func TestAccFabricCreateVirtualDevice2NetworkConnection_PNFV(t *testing.T) {
 					resource.TestCheckResourceAttrSet(
 						"equinix_fabric_connection.test", "z_side.0.access_point.0.network.0.uuid"),
 				),
-				ExpectNonEmptyPlan: true,
 			},
 		},
 	})
@@ -478,12 +475,12 @@ func testAccFabricCreateVirtualDevice2NetworkConnectionConfig(name, virtualDevic
 
 func CheckConnectionDelete(s *terraform.State) error {
 	ctx := context.Background()
-	ctx = context.WithValue(ctx, v4.ContextAccessToken, acceptance.TestAccProvider.Meta().(*config.Config).FabricAuthToken)
 	for _, rs := range s.RootModule().Resources {
 		if rs.Type != "equinix_fabric_connection" {
 			continue
 		}
-		err := equinix.WaitUntilConnectionDeprovisioned(rs.Primary.ID, acceptance.TestAccProvider.Meta(), ctx, 10*time.Minute)
+
+		err := equinix.WaitUntilConnectionDeprovisioned(rs.Primary.ID, acceptance.TestAccProvider.Meta(), &schema.ResourceData{}, ctx, 10*time.Minute)
 		if err != nil {
 			return fmt.Errorf("API call failed while waiting for resource deletion")
 		}

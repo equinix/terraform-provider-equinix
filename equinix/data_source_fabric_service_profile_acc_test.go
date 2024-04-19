@@ -70,13 +70,14 @@ func TestAccFabricReadServiceProfileByUuid_PFCR(t *testing.T) {
 	var portUuid, portMetroCode, portType string
 	if len(ports) > 0 {
 		port := ports["pfcr"]["dot1q"][0]
-		portUuid = port.Uuid
-		portMetroCode = port.Location.MetroCode
-		portType = string(*port.Type_)
+		portUuid = port.GetUuid()
+		portMetroCodeLocation := port.GetLocation()
+		portMetroCode = portMetroCodeLocation.GetMetroCode()
+		portType = string(port.GetType())
 	}
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     func() { acceptance.TestAccPreCheck(t) },
+		PreCheck:     func() { acceptance.TestAccPreCheck(t); acceptance.TestAccPreCheckProviderConfigured(t) },
 		Providers:    acceptance.TestAccProviders,
 		CheckDestroy: checkServiceProfileDelete,
 		Steps: []resource.TestStep{

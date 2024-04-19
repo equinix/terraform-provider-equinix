@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/equinix/equinix-sdk-go/services/fabricv4"
 	"log"
 	"runtime/debug"
 	"strings"
@@ -14,8 +15,6 @@ import (
 
 	"github.com/equinix/terraform-provider-equinix/internal/config"
 
-	"github.com/antihax/optional"
-	v4 "github.com/equinix-labs/fabric-go/fabric/v4"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
@@ -249,170 +248,120 @@ func readGetPortsByNameQueryParamSch() map[string]*schema.Schema {
 	}
 }
 
-func portToFabric(portList []interface{}) v4.SimplifiedPort {
-	p := v4.SimplifiedPort{}
-	for _, pl := range portList {
-		plMap := pl.(map[string]interface{})
-		uuid := plMap["uuid"].(string)
-		p = v4.SimplifiedPort{Uuid: uuid}
+func portTerraformToGo(portList []interface{}) fabricv4.SimplifiedPort {
+	if portList == nil || len(portList) == 0 {
+		return fabricv4.SimplifiedPort{}
 	}
-	return p
+	var port fabricv4.SimplifiedPort
+	portListMap := portList[0].(map[string]interface{})
+	uuid := portListMap["uuid"].(string)
+	port.SetUuid(uuid)
+
+	return port
 }
 
-func portToTerra(port *v4.SimplifiedPort) *schema.Set {
-	ports := []*v4.SimplifiedPort{port}
-	mappedPorts := make([]interface{}, len(ports))
-	for _, port := range ports {
-		mappedPort := make(map[string]interface{})
-		mappedPort["href"] = port.Href
-		mappedPort["name"] = port.Name
-		mappedPort["uuid"] = port.Uuid
-		if port.Redundancy != nil {
-			mappedPort["redundancy"] = PortRedundancyToTerra(port.Redundancy)
-		}
-		mappedPorts = append(mappedPorts, mappedPort)
+func portGoToTerraform(port *fabricv4.SimplifiedPort) *schema.Set {
+	mappedPort := make(map[string]interface{})
+	mappedPort["href"] = port.GetHref()
+	mappedPort["name"] = port.GetName()
+	mappedPort["uuid"] = port.GetUuid()
+	if port.Redundancy != nil {
+		mappedPort["redundancy"] = portRedundancyGoToTerraform(port.Redundancy)
 	}
 	portSet := schema.NewSet(
 		schema.HashResource(&schema.Resource{Schema: portSch()}),
-		mappedPorts,
+		[]interface{}{mappedPort},
 	)
 	return portSet
 }
 
-func PortRedundancyToTerra(redundancy *v4.PortRedundancy) *schema.Set {
+func portRedundancyGoToTerraform(redundancy *fabricv4.PortRedundancy) *schema.Set {
 	if redundancy == nil {
 		return nil
 	}
-	redundancies := []*v4.PortRedundancy{redundancy}
-	mappedRedundancies := make([]interface{}, 0)
-	for _, redundancy := range redundancies {
-		mappedRedundancy := make(map[string]interface{})
-		mappedRedundancy["enabled"] = redundancy.Enabled
-		mappedRedundancy["group"] = redundancy.Group
-		mappedRedundancy["priority"] = string(*redundancy.Priority)
-		mappedRedundancies = append(mappedRedundancies, mappedRedundancy)
-	}
+	mappedRedundancy := make(map[string]interface{})
+	mappedRedundancy["enabled"] = redundancy.GetEnabled()
+	mappedRedundancy["group"] = redundancy.GetGroup()
+	mappedRedundancy["priority"] = string(redundancy.GetPriority())
+
 	redundancySet := schema.NewSet(
 		schema.HashResource(&schema.Resource{Schema: PortRedundancySch()}),
-		mappedRedundancies,
+		[]interface{}{mappedRedundancy},
 	)
 	return redundancySet
 }
 
-func portOperationToTerra(operation *v4.PortOperation) *schema.Set {
+func portOperationGoToTerraform(operation *fabricv4.PortOperation) *schema.Set {
 	if operation == nil {
 		return nil
 	}
-	operations := []*v4.PortOperation{operation}
-	mappedOperations := make([]interface{}, 0)
-	for _, operation := range operations {
-		mappedOperation := make(map[string]interface{})
-		mappedOperation["operational_status"] = operation.OperationalStatus
-		mappedOperation["connection_count"] = operation.ConnectionCount
-		mappedOperation["op_status_changed_at"] = operation.OpStatusChangedAt.String()
-		mappedOperations = append(mappedOperations, mappedOperation)
-	}
+
+	mappedOperation := make(map[string]interface{})
+	mappedOperation["operational_status"] = operation.GetOperationalStatus()
+	mappedOperation["connection_count"] = operation.GetConnectionCount()
+	mappedOperation["op_status_changed_at"] = operation.GetOpStatusChangedAt().String()
+
 	operationSet := schema.NewSet(
 		schema.HashResource(&schema.Resource{Schema: operationSch()}),
-		mappedOperations,
+		[]interface{}{mappedOperation},
 	)
 	return operationSet
 }
 
-func portDeviceRedundancyToTerra(redundancy *v4.PortDeviceRedundancy) *schema.Set {
+func portDeviceRedundancyGoToTerraform(redundancy *fabricv4.PortDeviceRedundancy) *schema.Set {
 	if redundancy == nil {
 		return nil
 	}
-	redundancies := []*v4.PortDeviceRedundancy{redundancy}
-	mappedRedundancies := make([]interface{}, 0)
-	for _, redundancy := range redundancies {
-		mappedRedundancy := make(map[string]interface{})
-		mappedRedundancy["group"] = redundancy.Group
-		mappedRedundancy["priority"] = redundancy.Priority
-		mappedRedundancies = append(mappedRedundancies, mappedRedundancy)
-	}
+
+	mappedRedundancy := make(map[string]interface{})
+	mappedRedundancy["group"] = redundancy.GetGroup()
+	mappedRedundancy["priority"] = string(redundancy.GetPriority())
+
 	redundancySet := schema.NewSet(
 		schema.HashResource(&schema.Resource{Schema: PortRedundancySch()}),
-		mappedRedundancies,
+		[]interface{}{mappedRedundancy},
 	)
 	return redundancySet
 }
 
-func portDeviceToTerra(device *v4.PortDevice) *schema.Set {
+func portDeviceGoToTerraform(device *fabricv4.PortDevice) *schema.Set {
 	if device == nil {
 		return nil
 	}
-	devices := []*v4.PortDevice{device}
-	mappedDevices := make([]interface{}, 0)
-	for _, device := range devices {
-		mappedDevice := make(map[string]interface{})
-		mappedDevice["name"] = device.Name
-		if device.Redundancy != nil {
-			mappedDevice["redundancy"] = portDeviceRedundancyToTerra(device.Redundancy)
-		}
-		mappedDevices = append(mappedDevices, mappedDevice)
+
+	mappedDevice := make(map[string]interface{})
+	mappedDevice["name"] = device.GetName()
+	redundancy := device.GetRedundancy()
+	if &redundancy != nil {
+		mappedDevice["redundancy"] = portDeviceRedundancyGoToTerraform(&redundancy)
 	}
+
 	deviceSet := schema.NewSet(
 		schema.HashResource(&schema.Resource{Schema: portDeviceSch()}),
-		mappedDevices,
+		[]interface{}{mappedDevice},
 	)
 	return deviceSet
 }
 
-func portEncapsulationToTerra(portEncapsulation *v4.PortEncapsulation) *schema.Set {
+func portEncapsulationGoToTerraform(portEncapsulation *fabricv4.PortEncapsulation) *schema.Set {
 	if portEncapsulation == nil {
 		return nil
 	}
-	portEncapsulations := []*v4.PortEncapsulation{portEncapsulation}
-	mappedPortEncapsulations := make([]interface{}, 0)
-	for _, portEncapsulation := range portEncapsulations {
-		mappedPortEncapsulation := make(map[string]interface{})
-		mappedPortEncapsulation["type"] = portEncapsulation.Type_
-		mappedPortEncapsulation["tag_protocol_id"] = portEncapsulation.TagProtocolId
-		mappedPortEncapsulations = append(mappedPortEncapsulations, mappedPortEncapsulation)
-	}
+
+	mappedPortEncapsulation := make(map[string]interface{})
+	mappedPortEncapsulation["type"] = string(portEncapsulation.GetType())
+	mappedPortEncapsulation["tag_protocol_id"] = portEncapsulation.GetTagProtocolId()
+
 	portEncapsulationSet := schema.NewSet(
 		schema.HashResource(&schema.Resource{Schema: portEncapsulationSch()}),
-		mappedPortEncapsulations,
+		[]interface{}{mappedPortEncapsulation},
 	)
 	return portEncapsulationSet
 }
 
-func fabricPortsListToTerra(ports v4.AllPortsResponse) []map[string]interface{} {
-	portsl := ports.Data
-	if portsl == nil {
-		return nil
-	}
-	mappedPortsl := make([]map[string]interface{}, len(portsl))
-	for index, port := range portsl {
-		mappedPortsl[index] = map[string]interface{}{
-			"uuid":                port.Uuid,
-			"name":                port.Name,
-			"bandwidth":           port.Bandwidth,
-			"available_bandwidth": port.AvailableBandwidth,
-			"used_bandwidth":      port.UsedBandwidth,
-			"href":                port.Href,
-			"description":         port.Description,
-			"type":                port.Type_,
-			"state":               port.State,
-			"service_type":        port.ServiceType,
-			"operation":           portOperationToTerra(port.Operation),
-			"redundancy":          PortRedundancyToTerra(port.Redundancy),
-			"account":             equinix_fabric_schema.AccountToTerra(port.Account),
-			"change_log":          equinix_fabric_schema.ChangeLogToTerra(port.Changelog),
-			"location":            equinix_fabric_schema.LocationToTerra(port.Location),
-			"device":              portDeviceToTerra(port.Device),
-			"encapsulation":       portEncapsulationToTerra(port.Encapsulation),
-			"lag_enabled":         port.LagEnabled,
-		}
-	}
-	return mappedPortsl
-}
-
 func resourceFabricPortRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := meta.(*config.Config).FabricClient
-	ctx = context.WithValue(ctx, v4.ContextAccessToken, meta.(*config.Config).FabricAuthToken)
-	port, _, err := client.PortsApi.GetPortByUuid(ctx, d.Id())
+	client := meta.(*config.Config).NewFabricClientForSDK(d)
+	port, _, err := client.PortsApi.GetPortByUuid(ctx, d.Id()).Execute()
 	if err != nil {
 		log.Printf("[WARN] Port %s not found , error %s", d.Id(), err)
 		if !strings.Contains(err.Error(), "500") {
@@ -420,41 +369,62 @@ func resourceFabricPortRead(ctx context.Context, d *schema.ResourceData, meta in
 		}
 		return diag.FromErr(equinix_errors.FormatFabricError(err))
 	}
-	d.SetId(port.Uuid)
+	d.SetId(port.GetUuid())
 	return setFabricPortMap(d, port)
 }
 
-func setFabricPortMap(d *schema.ResourceData, port v4.Port) diag.Diagnostics {
+func fabricPortMap(port *fabricv4.PortResponse) map[string]interface{} {
+	operation := port.GetOperation()
+	redundancy := port.GetRedundancy()
+	account := port.GetAccount()
+	changelog := port.GetChangelog()
+	location := port.GetLocation()
+	device := port.GetDevice()
+	encapsulation := port.GetEncapsulation()
+	return map[string]interface{}{
+		"uuid":                port.GetUuid(),
+		"name":                port.GetName(),
+		"bandwidth":           port.GetBandwidth(),
+		"available_bandwidth": port.GetAvailableBandwidth(),
+		"used_bandwidth":      port.GetUsedBandwidth(),
+		"href":                port.GetHref(),
+		"description":         port.GetDescription(),
+		"type":                string(port.GetType()),
+		"state":               string(port.GetState()),
+		"service_type":        string(port.GetServiceType()),
+		"operation":           portOperationGoToTerraform(&operation),
+		"redundancy":          portRedundancyGoToTerraform(&redundancy),
+		"account":             equinix_fabric_schema.AccountGoToTerraform(&account),
+		"change_log":          equinix_fabric_schema.ChangeLogGoToTerraform(&changelog),
+		"location":            equinix_fabric_schema.LocationGoToTerraform(&location),
+		"device":              portDeviceGoToTerraform(&device),
+		"encapsulation":       portEncapsulationGoToTerraform(&encapsulation),
+		"lag_enabled":         port.GetLagEnabled(),
+	}
+}
+
+func setFabricPortMap(d *schema.ResourceData, port *fabricv4.PortResponse) diag.Diagnostics {
 	diags := diag.Diagnostics{}
-	err := equinix_schema.SetMap(d, map[string]interface{}{
-		"name":                port.Name,
-		"bandwidth":           port.Bandwidth,
-		"available_bandwidth": port.AvailableBandwidth,
-		"used_bandwidth":      port.UsedBandwidth,
-		"href":                port.Href,
-		"description":         port.Description,
-		"type":                port.Type_,
-		"state":               port.State,
-		"service_type":        port.ServiceType,
-		"operation":           portOperationToTerra(port.Operation),
-		"redundancy":          PortRedundancyToTerra(port.Redundancy),
-		"account":             equinix_fabric_schema.AccountToTerra(port.Account),
-		"change_log":          equinix_fabric_schema.ChangeLogToTerra(port.Changelog),
-		"location":            equinix_fabric_schema.LocationToTerra(port.Location),
-		"device":              portDeviceToTerra(port.Device),
-		"encapsulation":       portEncapsulationToTerra(port.Encapsulation),
-		"lag_enabled":         port.LagEnabled,
-	})
+	err := equinix_schema.SetMap(d, fabricPortMap(port))
 	if err != nil {
 		return diag.FromErr(err)
 	}
 	return diags
 }
 
-func setPortsListMap(d *schema.ResourceData, spl v4.AllPortsResponse) diag.Diagnostics {
+func setPortsListMap(d *schema.ResourceData, portResponse *fabricv4.AllPortsResponse) diag.Diagnostics {
 	diags := diag.Diagnostics{}
+	ports := portResponse.Data
+	if ports == nil {
+		return nil
+	}
+	mappedPorts := make([]map[string]interface{}, len(ports))
+	for index, port := range ports {
+		mappedPorts[index] = fabricPortMap(&port)
+	}
+
 	err := equinix_schema.SetMap(d, map[string]interface{}{
-		"data": fabricPortsListToTerra(spl),
+		"data": mappedPorts,
 	})
 	if err != nil {
 		return diag.FromErr(err)
@@ -478,11 +448,10 @@ func resourceFabricPortGetByPortName(ctx context.Context, d *schema.ResourceData
 		}
 	}()
 
-	client := meta.(*config.Config).FabricClient
-	ctx = context.WithValue(ctx, v4.ContextAccessToken, meta.(*config.Config).FabricAuthToken)
+	client := meta.(*config.Config).NewFabricClientForSDK(d)
 	portNameParam := d.Get("filters").(*schema.Set).List()
-	portName := portNameQueryParamToFabric(portNameParam)
-	ports, _, err := client.PortsApi.GetPorts(ctx, &portName)
+	portName := portName(portNameParam)
+	ports, _, err := client.PortsApi.GetPorts(ctx).Name(portName).Execute()
 	if err != nil {
 		log.Printf("[WARN] Ports not found , error %s", err)
 		if !strings.Contains(err.Error(), "500") {
@@ -496,20 +465,16 @@ func resourceFabricPortGetByPortName(ctx context.Context, d *schema.ResourceData
 		return diag.FromErr(error)
 	}
 
-	d.SetId(ports.Data[0].Uuid)
+	d.SetId(ports.Data[0].GetUuid())
 	return setPortsListMap(d, ports)
 }
 
-func portNameQueryParamToFabric(portNameParam []interface{}) v4.PortsApiGetPortsOpts {
+func portName(portNameParam []interface{}) string {
 	if len(portNameParam) == 0 {
-		return v4.PortsApiGetPortsOpts{}
+		return ""
 	}
-	mappedPn := v4.PortsApiGetPortsOpts{}
-	for _, pn := range portNameParam {
-		pnMap := pn.(map[string]interface{})
-		portName := pnMap["name"].(string)
-		pName := optional.NewString(portName)
-		mappedPn = v4.PortsApiGetPortsOpts{Name: pName}
-	}
-	return mappedPn
+
+	pnMap := portNameParam[0].(map[string]interface{})
+	portName := pnMap["name"].(string)
+	return portName
 }

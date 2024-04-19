@@ -15,8 +15,8 @@ import (
 	"strings"
 	"time"
 
-	v4 "github.com/equinix-labs/fabric-go/fabric/v4"
 	"github.com/equinix/ecx-go/v2"
+	"github.com/equinix/equinix-sdk-go/services/fabricv4"
 	"github.com/equinix/equinix-sdk-go/services/metalv1"
 	"github.com/equinix/ne-go"
 	"github.com/equinix/oauth2-go"
@@ -95,6 +95,8 @@ type Config struct {
 	PageSize       int
 	Token          string
 
+	authClient *http.Client
+
 	Ecx   ecx.Client
 	Ne    ne.Client
 	Metal *packngo.Client
@@ -104,8 +106,6 @@ type Config struct {
 	metalUserAgent string
 
 	TerraformVersion string
-	FabricClient     *v4.APIClient
-	FabricAuthToken  string
 }
 
 // Load function validates configuration structure fields and configures
@@ -135,25 +135,11 @@ func (c *Config) Load(ctx context.Context) error {
 			BaseURL:      c.BaseURL,
 		}
 		authClient = authConfig.New(ctx)
-
-		if c.ClientID != "" && c.ClientSecret != "" {
-			tke, err := authConfig.TokenSource(ctx, authClient).Token()
-			if err != nil {
-				if err != nil {
-					return err
-				}
-			}
-			if tke != nil {
-				c.FabricAuthToken = tke.AccessToken
-			}
-		}
 	}
 
-	if c.FabricAuthToken == "" {
-		c.FabricAuthToken = c.Token
-	}
 	authClient.Timeout = c.requestTimeout()
 	authClient.Transport = logging.NewTransport("Equinix", authClient.Transport)
+	c.authClient = authClient
 	ecxClient := ecx.NewClient(ctx, c.BaseURL, authClient)
 	neClient := ne.NewClient(ctx, c.BaseURL, authClient)
 
@@ -173,30 +159,47 @@ func (c *Config) Load(ctx context.Context) error {
 	c.Ecx = ecxClient
 	c.Ne = neClient
 	c.Metal = c.NewMetalClient()
-	c.FabricClient = c.NewFabricClient()
 	return nil
 }
 
-// NewFabricClient returns a new client for accessing Equinix Fabric's v4 API.
-// uncomment the funct when migrating Fabric resources to use
-// functions from internal/
-func (c *Config) NewFabricClient() *v4.APIClient {
-	transport := logging.NewTransport("Equinix Fabric", http.DefaultTransport)
-	authClient := &http.Client{
-		Transport: transport,
+// NewFabricClientForSDK returns a terraform sdkv2 plugin compatible
+// equinix-sdk-go/fabricv4 client to be used to access Fabric's V4 APIs
+func (c *Config) NewFabricClientForSDK(d *schema.ResourceData) *fabricv4.APIClient {
+	client := c.newFabricClient()
+
+	baseUserAgent := c.tfSdkUserAgent(client.GetConfig().UserAgent)
+	client.GetConfig().UserAgent = generateModuleUserAgentString(d, baseUserAgent)
+
+	return client
+}
+
+// newFabricClient returns the base fabricv4 client that is then used for either the sdkv2 or framework
+// implementations of the Terraform Provider with exported Methods
+func (c *Config) newFabricClient() *fabricv4.APIClient {
+	transport := logging.NewTransport("Equinix Fabric (fabricv4)", c.authClient.Transport)
+
+	retryClient := retryablehttp.NewClient()
+	retryClient.HTTPClient.Transport = transport
+	retryClient.HTTPClient.Timeout = c.requestTimeout()
+	retryClient.RetryMax = c.MaxRetries
+	retryClient.RetryWaitMin = time.Second
+	retryClient.RetryWaitMax = c.MaxRetryWait
+	retryClient.CheckRetry = RetryPolicy
+	standardClient := retryClient.StandardClient()
+
+	baseURL, _ := url.Parse(c.BaseURL)
+
+	configuration := fabricv4.NewConfiguration()
+	configuration.Servers = fabricv4.ServerConfigurations{
+		fabricv4.ServerConfiguration{
+			URL: baseURL.String(),
+		},
 	}
-	authClient.Timeout = c.requestTimeout()
-	fabricHeaderMap := map[string]string{
-		"X-SOURCE":         "API",
-		"X-CORRELATION-ID": correlationId(25),
-	}
-	v4Configuration := v4.Configuration{
-		BasePath:      c.BaseURL,
-		DefaultHeader: fabricHeaderMap,
-		UserAgent:     "equinix/fabric-go",
-		HTTPClient:    authClient,
-	}
-	client := v4.NewAPIClient(&v4Configuration)
+	configuration.HTTPClient = standardClient
+	configuration.AddDefaultHeader("X-SOURCE", "API")
+	configuration.AddDefaultHeader("X-CORRELATION-ID", correlationId(25))
+	client := fabricv4.NewAPIClient(configuration)
+
 	return client
 }
 
@@ -211,7 +214,7 @@ func (c *Config) NewMetalClient() *packngo.Client {
 	retryClient.RetryMax = c.MaxRetries
 	retryClient.RetryWaitMin = time.Second
 	retryClient.RetryWaitMax = c.MaxRetryWait
-	retryClient.CheckRetry = MetalRetryPolicy
+	retryClient.CheckRetry = RetryPolicy
 	standardClient := retryClient.StandardClient()
 	baseURL, _ := url.Parse(c.BaseURL)
 	baseURL.Path = path.Join(baseURL.Path, metalBasePath) + "/"
@@ -258,7 +261,7 @@ func (c *Config) newMetalClient() *metalv1.APIClient {
 	retryClient.RetryMax = c.MaxRetries
 	retryClient.RetryWaitMin = time.Second
 	retryClient.RetryWaitMax = c.MaxRetryWait
-	retryClient.CheckRetry = MetalRetryPolicy
+	retryClient.CheckRetry = RetryPolicy
 	standardClient := retryClient.StandardClient()
 
 	baseURL, _ := url.Parse(c.BaseURL)
@@ -283,7 +286,7 @@ func (c *Config) requestTimeout() time.Duration {
 	return c.RequestTimeout
 }
 
-func MetalRetryPolicy(ctx context.Context, resp *http.Response, err error) (bool, error) {
+func RetryPolicy(ctx context.Context, resp *http.Response, err error) (bool, error) {
 	if ctx.Err() != nil {
 		return false, ctx.Err()
 	}

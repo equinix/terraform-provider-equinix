@@ -663,7 +663,6 @@ Port to IBM Connections could be modified from IBM Service Provider Side by usin
 - `bandwidth` (Number) Connection bandwidth in Mbps
 - `name` (String) Connection name. An alpha-numeric 24 characters string which can include only hyphens and underscores
 - `notifications` (Block List, Min: 1) Preferences for notifications on connection configuration or status changes (see [below for nested schema](#nestedblock--notifications))
-- `order` (Block Set, Min: 1, Max: 1) Order details (see [below for nested schema](#nestedblock--order))
 - `type` (String) Defines the connection type like EVPL_VC, EPL_VC, IPWAN_VC, IP_VC, ACCESS_EPL_VC, EVPLAN_VC, EPLAN_VC, EIA_VC, EC_VC
 - `z_side` (Block Set, Min: 1, Max: 1) Destination or Provider side connection configuration object of the multi-segment connection (see [below for nested schema](#nestedblock--z_side))
 
@@ -671,6 +670,7 @@ Port to IBM Connections could be modified from IBM Service Provider Side by usin
 
 - `additional_info` (List of Map of String) Connection additional information
 - `description` (String) Customer-provided connection description
+- `order` (Block Set, Min: 1, Max: 1) Order details (see [below for nested schema](#nestedblock--order))
 - `project` (Block Set, Max: 1) Project information (see [below for nested schema](#nestedblock--project))
 - `redundancy` (Block Set, Max: 1) Connection Redundancy Configuration (see [below for nested schema](#nestedblock--redundancy))
 - `timeouts` (Block, Optional) (see [below for nested schema](#nestedblock--timeouts))
@@ -909,10 +909,13 @@ Optional:
 
 Optional:
 
+- `purchase_order_number` (String) Purchase order number
+
+Read-Only:
+
 - `billing_tier` (String) Billing tier for connection bandwidth
 - `order_id` (String) Order Identification
 - `order_number` (String) Order Reference Number
-- `purchase_order_number` (String) Purchase order number
 
 
 <a id="nestedblock--z_side"></a>

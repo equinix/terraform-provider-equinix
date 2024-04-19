@@ -5,14 +5,12 @@ import (
 	"fmt"
 	"github.com/equinix/terraform-provider-equinix/equinix"
 	"github.com/equinix/terraform-provider-equinix/internal/acceptance"
-	"github.com/equinix/terraform-provider-equinix/internal/config"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"testing"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
-
-	v4 "github.com/equinix-labs/fabric-go/fabric/v4"
 )
 
 func TestAccFabricCreateServiceProfile_PFCR(t *testing.T) {
@@ -23,16 +21,18 @@ func TestAccFabricCreateServiceProfile_PFCR(t *testing.T) {
 	if len(ports) > 0 {
 		portDot1Q := ports["pfcr"]["dot1q"][0]
 		portQinq := ports["pfcr"]["qinq"][0]
-		portUuidDot1Q = portDot1Q.Uuid
-		portMetroCodeDot1Q = portDot1Q.Location.MetroCode
-		portTypeDot1Q = string(*portDot1Q.Type_)
-		portUuidQinq = portQinq.Uuid
-		portMetroCodeQinq = portQinq.Location.MetroCode
-		portTypeQinq = string(*portQinq.Type_)
+		portUuidDot1Q = portDot1Q.GetUuid()
+		portMetroCodeDot1QLocation := portDot1Q.GetLocation()
+		portMetroCodeDot1Q = portMetroCodeDot1QLocation.GetMetroCode()
+		portTypeDot1Q = string(portDot1Q.GetType())
+		portUuidQinq = portQinq.GetUuid()
+		portMetroCodeQinqLocation := portQinq.GetLocation()
+		portMetroCodeQinq = portMetroCodeQinqLocation.GetMetroCode()
+		portTypeQinq = string(portQinq.GetType())
 	}
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     func() { acceptance.TestAccPreCheck(t) },
+		PreCheck:     func() { acceptance.TestAccPreCheck(t); acceptance.TestAccPreCheckProviderConfigured(t) },
 		Providers:    acceptance.TestAccProviders,
 		CheckDestroy: checkServiceProfileDelete,
 		Steps: []resource.TestStep{
@@ -154,14 +154,12 @@ func testAccFabricCreateServiceProfileConfig(portUUID string, portType string, p
 }
 
 func checkServiceProfileDelete(s *terraform.State) error {
-	client := acceptance.TestAccProvider.Meta().(*config.Config).FabricClient
 	ctx := context.Background()
-	ctx = context.WithValue(ctx, v4.ContextAccessToken, acceptance.TestAccProvider.Meta().(*config.Config).FabricAuthToken)
 	for _, rs := range s.RootModule().Resources {
 		if rs.Type != "equinix_fabric_service_profile" {
 			continue
 		}
-		err := equinix.WaitAndCheckServiceProfileDeleted(rs.Primary.ID, client, ctx, 10*time.Minute)
+		err := equinix.WaitAndCheckServiceProfileDeleted(rs.Primary.ID, acceptance.TestAccProvider.Meta(), &schema.ResourceData{}, ctx, 10*time.Minute)
 		if err != nil {
 			return fmt.Errorf("API call failed while waiting for resource deletion: %v", err)
 		}

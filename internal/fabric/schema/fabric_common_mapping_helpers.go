@@ -1,80 +1,88 @@
 package schema
 
 import (
-	v4 "github.com/equinix-labs/fabric-go/fabric/v4"
+	"github.com/equinix/equinix-sdk-go/services/fabricv4"
 	"github.com/equinix/terraform-provider-equinix/internal/converters"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"strconv"
 )
 
-func OrderToFabric(schemaOrder []interface{}) v4.Order {
-	if schemaOrder == nil {
-		return v4.Order{}
+func OrderTerraformToGo(orderTerraform []interface{}) fabricv4.Order {
+	if orderTerraform == nil || len(orderTerraform) == 0 {
+		return fabricv4.Order{}
 	}
-	order := v4.Order{}
-	for _, o := range schemaOrder {
-		orderMap := o.(map[string]interface{})
-		purchaseOrderNumber := orderMap["purchase_order_number"]
-		billingTier := orderMap["billing_tier"]
-		orderId := orderMap["order_id"]
-		orderNumber := orderMap["order_number"]
-		order = v4.Order{PurchaseOrderNumber: purchaseOrderNumber.(string), BillingTier: billingTier.(string), OrderId: orderId.(string), OrderNumber: orderNumber.(string)}
+	var order fabricv4.Order
+
+	orderMap := orderTerraform[0].(map[string]interface{})
+	purchaseOrderNumber := orderMap["purchase_order_number"].(string)
+	billingTier := orderMap["billing_tier"].(string)
+	orderId := orderMap["order_id"].(string)
+	orderNumber := orderMap["order_number"].(string)
+	if purchaseOrderNumber != "" {
+		order.SetPurchaseOrderNumber(purchaseOrderNumber)
 	}
+	if billingTier != "" {
+		order.SetBillingTier(billingTier)
+	}
+	if orderId != "" {
+		order.SetOrderId(orderId)
+	}
+	if orderNumber != "" {
+		order.SetOrderNumber(orderNumber)
+	}
+
 	return order
 }
 
-func OrderToTerra(order *v4.Order) *schema.Set {
+func OrderGoToTerraform(order *fabricv4.Order) *schema.Set {
 	if order == nil {
 		return nil
 	}
-	orders := []*v4.Order{order}
-	mappedOrders := make([]interface{}, len(orders))
-	for _, order := range orders {
-		mappedOrder := make(map[string]interface{})
-		mappedOrder["purchase_order_number"] = order.PurchaseOrderNumber
-		mappedOrder["billing_tier"] = order.BillingTier
-		mappedOrder["order_id"] = order.OrderId
-		mappedOrder["order_number"] = order.OrderNumber
-		mappedOrders = append(mappedOrders, mappedOrder)
-	}
+	mappedOrder := make(map[string]interface{})
+	mappedOrder["purchase_order_number"] = order.GetPurchaseOrderNumber()
+	mappedOrder["billing_tier"] = order.GetBillingTier()
+	mappedOrder["order_id"] = order.GetOrderId()
+	mappedOrder["order_number"] = order.GetOrderNumber()
 	orderSet := schema.NewSet(
 		schema.HashResource(&schema.Resource{Schema: OrderSch()}),
-		mappedOrders,
+		[]interface{}{mappedOrder},
 	)
 	return orderSet
 }
 
-func AccountToTerra[Account *v4.SimplifiedAccount | *v4.AllOfServiceProfileAccount](account Account) *schema.Set {
-	if account == nil {
+func AccountGoToTerraform[accountType *fabricv4.SimplifiedAccount | *fabricv4.SimplifiedAccountPortResponse](accountParam accountType) *schema.Set {
+	if accountParam == nil {
 		return nil
 	}
-	var mappedAccount map[string]interface{}
-	switch any(account).(type) {
-	case *v4.SimplifiedAccount:
-		simplifiedAccount := any(account).(*v4.SimplifiedAccount)
+
+	mappedAccount := map[string]interface{}{}
+
+	switch account := (interface{})(accountParam).(type) {
+	case *fabricv4.SimplifiedAccount:
 		mappedAccount = map[string]interface{}{
-			"account_number":           int(simplifiedAccount.AccountNumber),
-			"account_name":             simplifiedAccount.AccountName,
-			"org_id":                   int(simplifiedAccount.OrgId),
-			"organization_name":        simplifiedAccount.OrganizationName,
-			"global_org_id":            simplifiedAccount.GlobalOrgId,
-			"global_organization_name": simplifiedAccount.GlobalOrganizationName,
-			"global_cust_id":           simplifiedAccount.GlobalCustId,
-			"ucm_id":                   simplifiedAccount.UcmId,
+			"account_number":           int(account.GetAccountNumber()),
+			"account_name":             account.GetAccountName(),
+			"org_id":                   int(account.GetOrgId()),
+			"organization_name":        account.GetOrganizationName(),
+			"global_org_id":            account.GetGlobalOrgId(),
+			"global_organization_name": account.GetGlobalOrganizationName(),
+			"global_cust_id":           account.GetGlobalCustId(),
+			"ucm_id":                   account.GetUcmId(),
 		}
-	case *v4.AllOfServiceProfileAccount:
-		allSPAccount := any(account).(*v4.AllOfServiceProfileAccount)
+	case *fabricv4.SimplifiedAccountPortResponse:
+		accountNumber, _ := strconv.Atoi(account.GetAccountNumber())
+		orgId, _ := strconv.Atoi(account.GetOrgId())
+
 		mappedAccount = map[string]interface{}{
-			"account_number":           int(allSPAccount.AccountNumber),
-			"account_name":             allSPAccount.AccountName,
-			"org_id":                   int(allSPAccount.OrgId),
-			"organization_name":        allSPAccount.OrganizationName,
-			"global_org_id":            allSPAccount.GlobalOrgId,
-			"global_organization_name": allSPAccount.GlobalOrganizationName,
-			"global_cust_id":           allSPAccount.GlobalCustId,
-			"ucm_id":                   allSPAccount.UcmId,
+			"account_number":           accountNumber,
+			"account_name":             account.GetAccountName(),
+			"org_id":                   orgId,
+			"organization_name":        account.GetOrganizationName(),
+			"global_org_id":            account.GetGlobalOrgId(),
+			"global_organization_name": account.GetGlobalOrganizationName(),
+			"global_cust_id":           account.GetGlobalCustId(),
+			"ucm_id":                   account.GetUcmId(),
 		}
-	default:
-		return nil
 	}
 
 	accountSet := schema.NewSet(
@@ -85,66 +93,79 @@ func AccountToTerra[Account *v4.SimplifiedAccount | *v4.AllOfServiceProfileAccou
 	return accountSet
 }
 
-func NotificationsToFabric(schemaNotifications []interface{}) []v4.SimplifiedNotification {
-	if schemaNotifications == nil {
-		return []v4.SimplifiedNotification{}
+func NotificationsTerraformToGo(notificationsTerraform []interface{}) []fabricv4.SimplifiedNotification {
+	if notificationsTerraform == nil || len(notificationsTerraform) == 0 {
+		return nil
 	}
-	var notifications []v4.SimplifiedNotification
-	for _, n := range schemaNotifications {
-		ntype := n.(map[string]interface{})["type"].(string)
-		interval := n.(map[string]interface{})["send_interval"].(string)
-		emailsRaw := n.(map[string]interface{})["emails"].([]interface{})
+	notifications := make([]fabricv4.SimplifiedNotification, len(notificationsTerraform))
+	for index, notification := range notificationsTerraform {
+		notificationMap := notification.(map[string]interface{})
+		notificationType := fabricv4.SimplifiedNotificationType(notificationMap["type"].(string))
+		sendInterval := notificationMap["send_interval"].(string)
+		emailsRaw := notificationMap["emails"].([]interface{})
 		emails := converters.IfArrToStringArr(emailsRaw)
-		notifications = append(notifications, v4.SimplifiedNotification{
-			Type_:        ntype,
-			SendInterval: interval,
-			Emails:       emails,
-		})
+		simplifiedNotification := fabricv4.SimplifiedNotification{}
+		simplifiedNotification.SetType(notificationType)
+		if sendInterval != "" {
+			simplifiedNotification.SetSendInterval(sendInterval)
+		}
+		simplifiedNotification.SetEmails(emails)
+		notifications[index] = simplifiedNotification
 	}
 	return notifications
 }
 
-func NotificationsToTerra(notifications []v4.SimplifiedNotification) []map[string]interface{} {
+func NotificationsGoToTerraform(notifications []fabricv4.SimplifiedNotification) []map[string]interface{} {
 	if notifications == nil {
 		return nil
 	}
 	mappedNotifications := make([]map[string]interface{}, len(notifications))
 	for index, notification := range notifications {
 		mappedNotifications[index] = map[string]interface{}{
-			"type":          notification.Type_,
-			"send_interval": notification.SendInterval,
-			"emails":        notification.Emails,
+			"type":          string(notification.GetType()),
+			"send_interval": notification.GetSendInterval(),
+			"emails":        notification.GetEmails(),
 		}
 	}
 	return mappedNotifications
 }
 
-func LocationToFabric(locationList []interface{}) v4.SimplifiedLocation {
-	sl := v4.SimplifiedLocation{}
-	for _, ll := range locationList {
-		llMap := ll.(map[string]interface{})
-		metroName := llMap["metro_name"]
-		var metroNamestr string
-		if metroName != nil {
-			metroNamestr = metroName.(string)
-		}
-		region := llMap["region"].(string)
-		mc := llMap["metro_code"].(string)
-		ibx := llMap["ibx"].(string)
-		sl = v4.SimplifiedLocation{MetroCode: mc, Region: region, Ibx: ibx, MetroName: metroNamestr}
+func LocationTerraformToGo(locationList []interface{}) fabricv4.SimplifiedLocation {
+	if locationList == nil || len(locationList) == 0 {
+		return fabricv4.SimplifiedLocation{}
 	}
-	return sl
+
+	var location fabricv4.SimplifiedLocation
+	locationListMap := locationList[0].(map[string]interface{})
+	metroName := locationListMap["metro_name"].(string)
+	region := locationListMap["region"].(string)
+	metroCode := locationListMap["metro_code"].(string)
+	ibx := locationListMap["ibx"].(string)
+	if metroName != "" {
+		location.SetMetroName(metroName)
+	}
+	if region != "" {
+		location.SetRegion(region)
+	}
+	if metroCode != "" {
+		location.SetMetroCode(metroCode)
+	}
+	if ibx != "" {
+		location.SetIbx(ibx)
+	}
+
+	return location
 }
 
-func LocationToTerra(location *v4.SimplifiedLocation) *schema.Set {
+func LocationGoToTerraform(location *fabricv4.SimplifiedLocation) *schema.Set {
 	if location == nil {
 		return nil
 	}
 	mappedLocations := make(map[string]interface{})
-	mappedLocations["region"] = location.Region
-	mappedLocations["metro_name"] = location.MetroName
-	mappedLocations["metro_code"] = location.MetroCode
-	mappedLocations["ibx"] = location.Ibx
+	mappedLocations["region"] = location.GetRegion()
+	mappedLocations["metro_name"] = location.GetMetroName()
+	mappedLocations["metro_code"] = location.GetMetroCode()
+	mappedLocations["ibx"] = location.GetIbx()
 
 	locationSet := schema.NewSet(
 		schema.HashResource(&schema.Resource{Schema: LocationSch()}),
@@ -153,96 +174,77 @@ func LocationToTerra(location *v4.SimplifiedLocation) *schema.Set {
 	return locationSet
 }
 
-func LocationWithoutIBXToFabric(locationList []interface{}) v4.SimplifiedLocationWithoutIbx {
-	sl := v4.SimplifiedLocationWithoutIbx{}
-	for _, ll := range locationList {
-		llMap := ll.(map[string]interface{})
-		mc := llMap["metro_code"].(string)
-		sl = v4.SimplifiedLocationWithoutIbx{MetroCode: mc}
+func LocationWithoutIBXTerraformToGo(locationList []interface{}) fabricv4.SimplifiedLocationWithoutIBX {
+	if locationList == nil || len(locationList) == 0 {
+		return fabricv4.SimplifiedLocationWithoutIBX{}
 	}
-	return sl
+
+	var locationWithoutIbx fabricv4.SimplifiedLocationWithoutIBX
+	locationMap := locationList[0].(map[string]interface{})
+	metro_code := locationMap["metro_code"].(string)
+	locationWithoutIbx.SetMetroCode(metro_code)
+	return locationWithoutIbx
 }
 
-func LocationWithoutIBXToTerra(location *v4.SimplifiedLocationWithoutIbx) *schema.Set {
-	locations := []*v4.SimplifiedLocationWithoutIbx{location}
-	mappedLocations := make([]interface{}, len(locations))
-	for i, location := range locations {
-		mappedLocations[i] = map[string]interface{}{
-			"region":     location.Region,
-			"metro_name": location.MetroName,
-			"metro_code": location.MetroCode,
-		}
+func LocationWithoutIBXGoToTerraform(location *fabricv4.SimplifiedLocationWithoutIBX) *schema.Set {
+	mappedLocation := map[string]interface{}{
+		"region":     location.GetRegion(),
+		"metro_name": location.GetMetroName(),
+		"metro_code": location.GetMetroCode(),
 	}
+
 	locationSet := schema.NewSet(
 		schema.HashResource(&schema.Resource{Schema: LocationSch()}),
-		mappedLocations,
+		[]interface{}{mappedLocation},
 	)
 	return locationSet
 }
 
-func ProjectToFabric(projectRequest []interface{}) *v4.Project {
-	if len(projectRequest) == 0 {
-		return nil
+func ProjectTerraformToGo(projectTerraform []interface{}) fabricv4.Project {
+	if projectTerraform == nil || len(projectTerraform) == 0 {
+		return fabricv4.Project{}
 	}
-	mappedPr := &v4.Project{}
-	prMap := projectRequest[0].(map[string]interface{})
-	projectId := prMap["project_id"].(string)
-	mappedPr.ProjectId = projectId
+	var project fabricv4.Project
+	projectMap := projectTerraform[0].(map[string]interface{})
+	projectId := projectMap["project_id"].(string)
+	if projectId != "" {
+		project.SetProjectId(projectId)
+	}
 
-	return mappedPr
+	return project
 }
 
-func ProjectToTerra(project *v4.Project) *schema.Set {
+func ProjectGoToTerraform(project *fabricv4.Project) *schema.Set {
 	if project == nil {
 		return nil
 	}
 	mappedProject := make(map[string]interface{})
-	mappedProject["project_id"] = project.ProjectId
+	mappedProject["project_id"] = project.GetProjectId()
 	projectSet := schema.NewSet(
 		schema.HashResource(&schema.Resource{Schema: ProjectSch()}),
 		[]interface{}{mappedProject})
 	return projectSet
 }
 
-func ChangeLogToTerra[ChangeLog *v4.Changelog | *v4.AllOfServiceProfileChangeLog](changeLog ChangeLog) *schema.Set {
+func ChangeLogGoToTerraform(changeLog *fabricv4.Changelog) *schema.Set {
 	if changeLog == nil {
 		return nil
 	}
-	var mappedChangeLog map[string]interface{}
-	switch any(changeLog).(type) {
-	case *v4.Changelog:
-		baseChangeLog := any(changeLog).(*v4.Changelog)
-		mappedChangeLog = map[string]interface{}{
-			"created_by":           baseChangeLog.CreatedBy,
-			"created_by_full_name": baseChangeLog.CreatedByFullName,
-			"created_by_email":     baseChangeLog.CreatedByEmail,
-			"created_date_time":    baseChangeLog.CreatedDateTime.String(),
-			"updated_by":           baseChangeLog.UpdatedBy,
-			"updated_by_full_name": baseChangeLog.UpdatedByFullName,
-			"updated_date_time":    baseChangeLog.UpdatedDateTime.String(),
-			"deleted_by":           baseChangeLog.DeletedBy,
-			"deleted_by_full_name": baseChangeLog.DeletedByFullName,
-			"deleted_by_email":     baseChangeLog.DeletedByEmail,
-			"deleted_date_time":    baseChangeLog.DeletedDateTime.String(),
-		}
-	case *v4.AllOfServiceProfileChangeLog:
-		allOfChangeLog := any(changeLog).(*v4.AllOfServiceProfileChangeLog)
-		mappedChangeLog = map[string]interface{}{
-			"created_by":           allOfChangeLog.CreatedBy,
-			"created_by_full_name": allOfChangeLog.CreatedByFullName,
-			"created_by_email":     allOfChangeLog.CreatedByEmail,
-			"created_date_time":    allOfChangeLog.CreatedDateTime.String(),
-			"updated_by":           allOfChangeLog.UpdatedBy,
-			"updated_by_full_name": allOfChangeLog.UpdatedByFullName,
-			"updated_date_time":    allOfChangeLog.UpdatedDateTime.String(),
-			"deleted_by":           allOfChangeLog.DeletedBy,
-			"deleted_by_full_name": allOfChangeLog.DeletedByFullName,
-			"deleted_by_email":     allOfChangeLog.DeletedByEmail,
-			"deleted_date_time":    allOfChangeLog.DeletedDateTime.String(),
-		}
-	default:
-		return nil
+
+	mappedChangeLog := map[string]interface{}{
+		"created_by":           changeLog.GetCreatedBy(),
+		"created_by_full_name": changeLog.GetCreatedByFullName(),
+		"created_by_email":     changeLog.GetCreatedByEmail(),
+		"created_date_time":    changeLog.GetCreatedDateTime().String(),
+		"updated_by":           changeLog.GetUpdatedBy(),
+		"updated_by_full_name": changeLog.GetUpdatedByFullName(),
+		"updated_date_time":    changeLog.GetUpdatedDateTime().String(),
+		"deleted_by":           changeLog.GetDeletedBy(),
+		"deleted_by_full_name": changeLog.GetDeletedByFullName(),
+		"deleted_by_email":     changeLog.GetDeletedByEmail(),
+		"deleted_date_time":    changeLog.GetDeletedDateTime().String(),
 	}
+
 	changeLogSet := schema.NewSet(
 		schema.HashResource(&schema.Resource{Schema: ChangeLogSch()}),
 		[]interface{}{mappedChangeLog},
@@ -250,33 +252,33 @@ func ChangeLogToTerra[ChangeLog *v4.Changelog | *v4.AllOfServiceProfileChangeLog
 	return changeLogSet
 }
 
-func ErrorToTerra(errors []v4.ModelError) []interface{} {
-	if errors == nil {
+func ErrorGoToTerraform(errors []fabricv4.Error) []interface{} {
+	if errors == nil || len(errors) == 0 {
 		return nil
 	}
 	mappedErrors := make([]interface{}, len(errors))
 	for index, mError := range errors {
 		mappedErrors[index] = map[string]interface{}{
-			"error_code":      mError.ErrorCode,
-			"error_message":   mError.ErrorMessage,
-			"correlation_id":  mError.CorrelationId,
-			"details":         mError.Details,
-			"help":            mError.Help,
-			"additional_info": ErrorAdditionalInfoToTerra(mError.AdditionalInfo),
+			"error_code":      mError.GetErrorCode(),
+			"error_message":   mError.GetErrorMessage(),
+			"correlation_id":  mError.GetCorrelationId(),
+			"details":         mError.GetDetails(),
+			"help":            mError.GetHelp(),
+			"additional_info": ErrorAdditionalInfoGoToTerraform(mError.GetAdditionalInfo()),
 		}
 	}
 	return mappedErrors
 }
 
-func ErrorAdditionalInfoToTerra(additionalInfol []v4.PriceErrorAdditionalInfo) []interface{} {
+func ErrorAdditionalInfoGoToTerraform(additionalInfol []fabricv4.PriceErrorAdditionalInfo) []interface{} {
 	if additionalInfol == nil {
 		return nil
 	}
 	mappedAdditionalInfol := make([]interface{}, len(additionalInfol))
 	for index, additionalInfo := range additionalInfol {
 		mappedAdditionalInfol[index] = map[string]interface{}{
-			"property": additionalInfo.Property,
-			"reason":   additionalInfo.Reason,
+			"property": additionalInfo.GetProperty(),
+			"reason":   additionalInfo.GetReason(),
 		}
 	}
 	return mappedAdditionalInfol
