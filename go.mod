@@ -3,8 +3,6 @@ module github.com/equinix/terraform-provider-equinix
 go 1.21
 
 require (
-	github.com/antihax/optional v1.0.0
-	github.com/equinix-labs/fabric-go v0.9.0
 	github.com/equinix/ecx-go/v2 v2.3.1
 	github.com/equinix/equinix-sdk-go v0.36.0
 	github.com/equinix/ne-go v1.17.0
