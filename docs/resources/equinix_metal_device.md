@@ -191,9 +191,8 @@ or metadata service configuration.
 * `operating_system` - (Required) The operating system slug. To find the slug, or visit
 [Operating Systems API docs](https://metal.equinix.com/developers/api/operatingsystems), set your
 API auth token in the top of the page and see JSON from the API response.
-* `plan` - (Required) The device plan slug. To find the plan slug, visit
-[Device plans API docs](https://metal.equinix.com/developers/api/plans), set your auth token in the
-top of the page and see JSON from the API response.
+* `plan` - (Required) The device plan slug. To find the plan slug, visit the
+[bare-metal server](https://deploy.equinix.com/product/bare-metal/servers/) and [plan documentation](https://deploy.equinix.com/developers/docs/metal/hardware/standard-servers/).
 * `project_id` - (Required) The ID of the project in which to create the device
 * `project_ssh_key_ids` - (Optional) Array of IDs of the project SSH keys which should be added to the device. If you specify this array, only the listed project SSH keys (and any SSH keys for the users specified in user_ssh_key_ids) will be added. If no SSH keys are specified (both user_ssh_keys_ids and project_ssh_key_ids are empty lists or omitted), all parent project keys, parent project members keys and organization members keys will be included.  Project SSH keys can be created with the [equinix_metal_project_ssh_key](equinix_metal_project_ssh_key.md) resource.
 * `user_ssh_key_ids` - (Optional) Array of IDs of the users whose SSH keys should be added to the device. If you specify this array, only the listed users' SSH keys (and any project SSH keys specified in project_ssh_key_ids) will be added. If no SSH keys are specified (both user_ssh_keys_ids and project_ssh_key_ids are empty lists or omitted), all parent project keys, parent project members keys and organization members keys will be included. User SSH keys can be created with the [equinix_metal_ssh_key](equinix_metal_ssh_key.md) resource.
