@@ -162,7 +162,7 @@ func resourceMetalDevice() *schema.Resource {
 			},
 			"plan": {
 				Type:        schema.TypeString,
-				Description: "The device plan slug. To find the plan slug, visit [Device plans API docs](https://metal.equinix.com/developers/api/plans), set your auth token in the top of the page and see JSON from the API response",
+				Description: "The device plan slug. To find the plan slug, visit the [bare-metal server](https://deploy.equinix.com/product/bare-metal/servers/) and [plan documentation](https://deploy.equinix.com/developers/docs/metal/hardware/standard-servers/)",
 				Required:    true,
 				ForceNew:    true,
 			},
