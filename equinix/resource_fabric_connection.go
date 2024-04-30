@@ -701,35 +701,6 @@ func resourceFabricConnectionCreate(ctx context.Context, d *schema.ResourceData,
 	return resourceFabricConnectionRead(ctx, d, meta)
 }
 
-//func checkServiceProfileCustomFields(ctx context.Context, d *schema.ResourceData, meta interface{}) (bool, error) {
-//	client := meta.(*config.Config).NewFabricClientForSDK(d)
-//
-//	// Get A-side service profile
-//	//aSideServiceProfileID := d.Get("uuid").(string)
-//	//aSideServiceProfile, _, err := client.ServiceProfilesApi.GetServiceProfileByUuid(ctx, aSideServiceProfileID).Execute()
-//	//if err != nil {
-//	//	return false, err
-//	//}
-//
-//	// Get Z-side service profile
-//	ServiceProfileID := d.Get("uuid").(string)
-//	ServiceProfile, _, err := client.ServiceProfilesApi.GetServiceProfileByUuid(ctx, ServiceProfileID).Execute()
-//	if err != nil {
-//		return false, err
-//	}
-//
-//	//// Check if custom fields are set in A-side service profile
-//	//aSideCustomFields := aSideServiceProfile.GetCustomFields()
-//	//if len(aSideCustomFields) == 0 {
-//	//	return false, fmt.Errorf("custom fields are not set in A-side service profile")
-//	//}
-//
-//	// Check if custom fields are set in Z-side service profile
-//	CustomFields := ServiceProfile.GetCustomFields()
-//
-//	return true, nil
-//}
-
 func additionalInfoContainsAWSSecrets(info []interface{}) ([]interface{}, bool) {
 	var awsSecrets []interface{}
 
