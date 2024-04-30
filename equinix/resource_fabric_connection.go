@@ -644,12 +644,6 @@ func resourceFabricConnectionCreate(ctx context.Context, d *schema.ResourceData,
 		createConnectionRequest.SetProject(project)
 	}
 
-	additionalInfoTerraConfig, ok := d.GetOk("additional_info")
-	if ok {
-		additionalInfo := additionalInfoTerraformToGo(additionalInfoTerraConfig.([]interface{}))
-		createConnectionRequest.SetAdditionalInfo(additionalInfo)
-	}
-
 	aSide := d.Get("a_side").(*schema.Set).List()
 	connectionASide := connectionSideTerraformToGo(aSide)
 	createConnectionRequest.SetASide(connectionASide)
@@ -657,6 +651,19 @@ func resourceFabricConnectionCreate(ctx context.Context, d *schema.ResourceData,
 	zSide := d.Get("z_side").(*schema.Set).List()
 	connectionZSide := connectionSideTerraformToGo(zSide)
 	createConnectionRequest.SetZSide(connectionZSide)
+
+	additionalInfoTerraConfig, ok := d.GetOk("additional_info")
+	if ok {
+		zSideAccessPoint := connectionZSide.GetAccessPoint()
+		zSideAccessPointServiceProfile := zSideAccessPoint.GetProfile()
+		serviceProfile, _, _ := client.ServiceProfilesApi.GetServiceProfileByUuid(ctx, zSideAccessPointServiceProfile.GetUuid()).Execute()
+		customFields := serviceProfile.GetCustomFields()
+
+		if len(customFields) != 0 {
+			additionalInfo := additionalInfoTerraformToGo(additionalInfoTerraConfig.([]interface{}))
+			createConnectionRequest.SetAdditionalInfo(additionalInfo)
+		}
+	}
 
 	start := time.Now()
 	conn, _, err := client.ConnectionsApi.CreateConnection(ctx).ConnectionPostRequest(createConnectionRequest).Execute()
@@ -693,6 +700,35 @@ func resourceFabricConnectionCreate(ctx context.Context, d *schema.ResourceData,
 
 	return resourceFabricConnectionRead(ctx, d, meta)
 }
+
+//func checkServiceProfileCustomFields(ctx context.Context, d *schema.ResourceData, meta interface{}) (bool, error) {
+//	client := meta.(*config.Config).NewFabricClientForSDK(d)
+//
+//	// Get A-side service profile
+//	//aSideServiceProfileID := d.Get("uuid").(string)
+//	//aSideServiceProfile, _, err := client.ServiceProfilesApi.GetServiceProfileByUuid(ctx, aSideServiceProfileID).Execute()
+//	//if err != nil {
+//	//	return false, err
+//	//}
+//
+//	// Get Z-side service profile
+//	ServiceProfileID := d.Get("uuid").(string)
+//	ServiceProfile, _, err := client.ServiceProfilesApi.GetServiceProfileByUuid(ctx, ServiceProfileID).Execute()
+//	if err != nil {
+//		return false, err
+//	}
+//
+//	//// Check if custom fields are set in A-side service profile
+//	//aSideCustomFields := aSideServiceProfile.GetCustomFields()
+//	//if len(aSideCustomFields) == 0 {
+//	//	return false, fmt.Errorf("custom fields are not set in A-side service profile")
+//	//}
+//
+//	// Check if custom fields are set in Z-side service profile
+//	CustomFields := ServiceProfile.GetCustomFields()
+//
+//	return true, nil
+//}
 
 func additionalInfoContainsAWSSecrets(info []interface{}) ([]interface{}, bool) {
 	var awsSecrets []interface{}
