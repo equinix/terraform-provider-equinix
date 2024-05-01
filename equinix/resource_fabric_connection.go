@@ -994,6 +994,7 @@ func WaitUntilConnectionDeprovisioned(uuid string, meta interface{}, d *schema.R
 		Pending: []string{
 			string(fabricv4.CONNECTIONSTATE_DEPROVISIONING),
 			string(fabricv4.CONNECTIONSTATE_ACTIVE),
+			string(fabricv4.CONNECTIONSTATE_PENDING),
 		},
 		Target: []string{
 			string(fabricv4.CONNECTIONSTATE_DEPROVISIONED),
