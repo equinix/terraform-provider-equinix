@@ -5,7 +5,7 @@ import (
 	"log"
 	"time"
 
-	"golang.org/x/exp/slices"
+	"slices"
 
 	equinix_errors "github.com/equinix/terraform-provider-equinix/internal/errors"
 	equinix_schema "github.com/equinix/terraform-provider-equinix/internal/schema"

@@ -3,10 +3,9 @@ package equinix
 import (
 	"context"
 	"fmt"
+	"slices"
 	"strings"
 	"time"
-
-	"golang.org/x/exp/slices"
 
 	"github.com/equinix/terraform-provider-equinix/internal/converters"
 

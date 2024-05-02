@@ -13,7 +13,7 @@ import (
 	"strings"
 	"time"
 
-	"golang.org/x/exp/slices"
+	"slices"
 
 	"github.com/equinix/terraform-provider-equinix/internal/converters"
 	"github.com/equinix/terraform-provider-equinix/internal/network"

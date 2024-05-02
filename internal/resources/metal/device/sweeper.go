@@ -5,11 +5,12 @@ import (
 	"fmt"
 	"log"
 
+	"slices"
+
 	"github.com/equinix/equinix-sdk-go/services/metalv1"
 	"github.com/equinix/terraform-provider-equinix/internal/sweep"
 	"github.com/hashicorp/go-multierror"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
-	"golang.org/x/exp/slices"
 )
 
 func AddTestSweeper() {
