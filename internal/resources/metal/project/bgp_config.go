@@ -34,7 +34,7 @@ func expandBGPConfig(ctx context.Context, bgpConfig fwtypes.ListNestedObjectValu
 	}
 	bgpCreateRequest := metalv1.BgpConfigRequestInput{
 		DeploymentType: *bgpDeploymentType,
-		Asn:            int32(bgpConfigModel[0].ASN.ValueInt64()),
+		Asn:            bgpConfigModel[0].ASN.ValueInt64(),
 	}
 	if !bgpConfigModel[0].MD5.IsNull() {
 		bgpCreateRequest.Md5 = bgpConfigModel[0].MD5.ValueStringPointer()
