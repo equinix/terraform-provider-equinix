@@ -288,6 +288,11 @@ func (t *testAccConfig) build() string {
 	return t.config
 }
 
+// nprintf returns a string with all the placeholders replaced by the values from the params map
+//
+// Deprecated: nprintf is shared between NE resource tests and has been
+// centralized ahead of those NE resources moving to separate packages.
+// Use github.com/equinix/terraform-provider-equinix/internal/nprintf.NPrintf instead
 func nprintf(format string, params map[string]interface{}) string {
 	for key, val := range params {
 		var strVal string
