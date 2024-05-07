@@ -132,3 +132,5 @@ require (
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
+
+replace github.com/equinix/equinix-sdk-go => github.com/equinix/equinix-sdk-go v0.39.1-0.20240506214523-caea8fda690e

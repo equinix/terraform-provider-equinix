@@ -39,6 +39,55 @@ func GetFabricEnvConnectionTestData(t *testing.T) map[string]map[string]string {
 	return connectionTestData
 }
 
+func TestAccFabricCreatePort2SPConnection_PPDS(t *testing.T) {
+	ports := GetFabricEnvPorts(t)
+	connectionsTestData := GetFabricEnvConnectionTestData(t)
+	var publicSPName, portUuid string
+	if len(ports) > 0 && len(connectionsTestData) > 0 {
+		publicSPName = connectionsTestData["ppds"]["publicSPName"]
+		portUuid = ports["ppds"]["dot1q"][0].GetUuid()
+	}
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:     func() { acceptance.TestAccPreCheck(t); acceptance.TestAccPreCheckProviderConfigured(t) },
+		Providers:    acceptance.TestAccProviders,
+		CheckDestroy: CheckConnectionDelete,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccFabricCreatePort2SPConnectionConfig(publicSPName, "port2sp_PPDS", portUuid, "CH"),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttrSet("equinix_fabric_connection.test", "id"),
+					resource.TestCheckResourceAttr(
+						"equinix_fabric_connection.test", "name", "port2sp_PPDS"),
+					resource.TestCheckResourceAttr(
+						"equinix_fabric_connection.test", "bandwidth", "50"),
+					resource.TestCheckResourceAttr(
+						"equinix_fabric_connection.test", "type", "EVPL_VC"),
+					resource.TestCheckResourceAttr(
+						"equinix_fabric_connection.test", "redundancy.0.priority", "PRIMARY"),
+					resource.TestCheckResourceAttr(
+						"equinix_fabric_connection.test", "order.0.purchase_order_number", "1-323292"),
+					resource.TestCheckResourceAttr(
+						"equinix_fabric_connection.test", "a_side.0.access_point.0.type", "COLO"),
+					resource.TestCheckResourceAttr(
+						"equinix_fabric_connection.test", "a_side.0.access_point.0.link_protocol.0.type", "DOT1Q"),
+					resource.TestCheckResourceAttr(
+						"equinix_fabric_connection.test", "a_side.0.access_point.0.link_protocol.0.vlan_tag", "2019"),
+					resource.TestCheckResourceAttr(
+						"equinix_fabric_connection.test", "z_side.0.access_point.0.type", "SP"),
+					resource.TestCheckResourceAttr(
+						"equinix_fabric_connection.test", "z_side.0.access_point.0.profile.0.type", "L2_PROFILE"),
+					resource.TestCheckResourceAttr(
+						"equinix_fabric_connection.test", "z_side.0.access_point.0.profile.0.name", publicSPName),
+					resource.TestCheckResourceAttr(
+						"equinix_fabric_connection.test", "z_side.0.access_point.0.location.0.metro_code", "CH"),
+				),
+				ExpectNonEmptyPlan: false,
+			},
+		},
+	})
+
+}
+
 func TestAccFabricCreatePort2SPConnection_PFCR(t *testing.T) {
 	ports := GetFabricEnvPorts(t)
 	connectionsTestData := GetFabricEnvConnectionTestData(t)
@@ -53,7 +102,7 @@ func TestAccFabricCreatePort2SPConnection_PFCR(t *testing.T) {
 		CheckDestroy: CheckConnectionDelete,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccFabricCreatePort2SPConnectionConfig(publicSPName, "port2sp_PFCR", portUuid),
+				Config: testAccFabricCreatePort2SPConnectionConfig(publicSPName, "port2sp_PFCR", portUuid, "SV"),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("equinix_fabric_connection.test", "id"),
 					resource.TestCheckResourceAttr(
@@ -88,7 +137,7 @@ func TestAccFabricCreatePort2SPConnection_PFCR(t *testing.T) {
 
 }
 
-func testAccFabricCreatePort2SPConnectionConfig(spName, name, portUuid string) string {
+func testAccFabricCreatePort2SPConnectionConfig(spName, name, portUuid, zSideMetro string) string {
 	return fmt.Sprintf(`
 
 	data "equinix_fabric_service_profiles" "this" {
@@ -132,11 +181,11 @@ func testAccFabricCreatePort2SPConnectionConfig(spName, name, portUuid string) s
 					uuid= data.equinix_fabric_service_profiles.this.data.0.uuid
 				}
 				location {
-					metro_code= "SV"
+					metro_code= "%s"
 				}
 			}
 		}
-	}`, spName, name, portUuid)
+	}`, spName, name, portUuid, zSideMetro)
 }
 
 func TestAccFabricCreatePort2PortConnection_PFCR(t *testing.T) {
