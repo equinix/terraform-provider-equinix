@@ -381,7 +381,7 @@ Virtual Device to Azure Connection:
 ```hcl
 resource "equinix_fabric_connection" "vd2azure" {
   name = "ConnectionName"
-  type = "EVPLAN_VC"
+  type = "EVPL_VC"
   notifications {
     type   = "ALL"
     emails = ["example@equinix.com", "test1@equinix.com"]
@@ -424,7 +424,7 @@ Virtual Device to Azure Redundant Connection:
 ```hcl
 resource "equinix_fabric_connection" "vd2azure_primary" {
   name = "ConnectionName"
-  type = "EVPLAN_VC"
+  type = "EVPL_VC"
   redundancy { priority = "PRIMARY" }
   notifications {
     type   = "ALL"
@@ -465,7 +465,7 @@ resource "equinix_fabric_connection" "vd2azure_primary" {
 
 resource "equinix_fabric_connection" "vd2azure_secondary" {
   name = "ConnectionName"
-  type = "EVPLAN_VC"
+  type = "EVPL_VC"
   redundancy {
     priority = "SECONDARY"
     group = one(equinix_fabric_connection.vd2azure_primary.redundancy).group
