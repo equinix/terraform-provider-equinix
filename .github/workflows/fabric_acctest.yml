@@ -133,7 +133,7 @@ jobs:
 
       - name: Upload coverage to Codecov
         if: ${{ always() }}
-        uses: codecov/codecov-action@v3
+        uses: codecov/codecov-action@v4
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           files: ./coverage_pnfv.txt
@@ -201,7 +201,7 @@ jobs:
 
       - name: Upload coverage to Codecov
         if: ${{ always() }}
-        uses: codecov/codecov-action@v3
+        uses: codecov/codecov-action@v4
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           files: ./coverage_pfcr.txt
