@@ -1026,7 +1026,9 @@ func connectionRedundancyTerraformToGo(redundancyTerraform []interface{}) fabric
 	connectionPriority := redundancyMap["priority"].(string)
 	redundancyGroup := redundancyMap["group"].(string)
 	redundancy.SetPriority(fabricv4.ConnectionPriority(connectionPriority))
-	redundancy.SetGroup(redundancyGroup)
+	if redundancyGroup != "" {
+		redundancy.SetGroup(redundancyGroup)
+	}
 
 	return redundancy
 }
