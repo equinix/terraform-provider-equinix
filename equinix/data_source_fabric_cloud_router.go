@@ -47,8 +47,8 @@ func readFabricCloudRouterSearchSchema() map[string]*schema.Schema {
 		"filter": {
 			Type:        schema.TypeList,
 			Required:    true,
-			Description: "Filters for the Data Source Search Request",
-			MaxItems:    8,
+			Description: "Filters for the Data Source Search Request. Maximum of 8 total filters.",
+			MaxItems:    10,
 			Elem: &schema.Resource{
 				Schema: map[string]*schema.Schema{
 					"property": {
@@ -60,8 +60,8 @@ func readFabricCloudRouterSearchSchema() map[string]*schema.Schema {
 					"operator": {
 						Type:         schema.TypeString,
 						Required:     true,
-						Description:  "Possible operators to use on the filter property. Can be one of the following: = - equal\n!= - not equal\n> - greater than\n>= - greater than or equal to\n< - less than\n<= - less than or equal to\n[NOT] BETWEEN - (not) between\n[NOT] LIKE - (not) like\n[NOT] IN - (not) in\nILIKE - case-insensitive like",
-						ValidateFunc: validation.StringInSlice([]string{"=", "!=", ">", ">=", "<", "<=", "[NOT] BETWEEN", "[NOT] LIKE", "[NOT] IN", "ILIKE"}, true),
+						Description:  "Possible operators to use on the filter property. Can be one of the following: = - equal\n!= - not equal\n> - greater than\n>= - greater than or equal to\n< - less than\n<= - less than or equal to\n[NOT] BETWEEN - (not) between\n[NOT] LIKE - (not) like\n[NOT] IN - (not) in",
+						ValidateFunc: validation.StringInSlice([]string{"=", "!=", ">", ">=", "<", "<=", "[NOT] BETWEEN", "[NOT] LIKE", "[NOT] IN"}, true),
 					},
 					"values": {
 						Type:        schema.TypeList,
@@ -70,6 +70,11 @@ func readFabricCloudRouterSearchSchema() map[string]*schema.Schema {
 						Elem: &schema.Schema{
 							Type: schema.TypeString,
 						},
+					},
+					"or": {
+						Type:        schema.TypeBool,
+						Optional:    true,
+						Description: "Boolean flag indicating whether this filter is included in the OR group. There can only be one OR group and it can have a maximum of 3 filters. The OR group only counts as 1 of the 8 possible filters",
 					},
 				},
 			},
@@ -91,7 +96,7 @@ func readFabricCloudRouterSearchSchema() map[string]*schema.Schema {
 						Type:        schema.TypeInt,
 						Optional:    true,
 						Default:     20,
-						Description: "Number of elements to be requested per page. Number must be between 1 and 100, and the default is 20",
+						Description: "Number of elements to be requested per page. Number must be between 1 and 100. Default is 20",
 					},
 				},
 			},

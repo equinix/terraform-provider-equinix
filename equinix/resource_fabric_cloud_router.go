@@ -308,14 +308,18 @@ func resourceFabricCloudRouterRead(ctx context.Context, d *schema.ResourceData, 
 	return setCloudRouterMap(d, cloudRouter)
 }
 
-func cloudRouterFiltersTerraformToGo(filters []interface{}) fabricv4.CloudRouterFilters {
+func cloudRouterFiltersTerraformToGo(filters []interface{}) (fabricv4.CloudRouterFilters, error) {
 	if filters == nil || len(filters) == 0 {
-		return fabricv4.CloudRouterFilters{}
+		return fabricv4.CloudRouterFilters{}, fmt.Errorf("no filters passed to filtersTerraformToGoMethod")
 	}
-	cloudRouterFiltersList := make([]fabricv4.CloudRouterFilter, len(filters))
+	cloudRouterFiltersList := make([]fabricv4.CloudRouterFilter, 0)
+	cloudRouterOrFilter := fabricv4.CloudRouterOrFilter{}
 
-	for index, filter := range filters {
+	log.Printf("1st filter map %v", filters[0].(map[string]interface{}))
+
+	for _, filter := range filters {
 		filterMap := filter.(map[string]interface{})
+		log.Printf("Filter map %v", filterMap)
 		cloudRouterFilter := fabricv4.CloudRouterFilter{}
 		filterExpression := fabricv4.CloudRouterSimpleExpression{}
 		if property, ok := filterMap["property"]; ok {
@@ -329,15 +333,35 @@ func cloudRouterFiltersTerraformToGo(filters []interface{}) fabricv4.CloudRouter
 			filterExpression.SetValues(stringValues)
 		}
 
-		cloudRouterFilter.CloudRouterSimpleExpression = &filterExpression
+		// If the parent has any contents then all the children schema properties will be included in the map even
+		// if they aren't given a value. Still need to check for empty string for the value because of this.
+		if orGroup, ok := filterMap["or"]; ok && orGroup.(bool) {
+			orValues := cloudRouterOrFilter.GetOr()
+			orValues = append(orValues, filterExpression)
+			if len(orValues) > 3 {
+				return fabricv4.CloudRouterFilters{}, fmt.Errorf("too many OR group filters passed. Passed %d but can only have a maximum of 3", len(orValues))
+			}
+			cloudRouterOrFilter.SetOr(orValues)
+		} else {
+			cloudRouterFilter.CloudRouterSimpleExpression = &filterExpression
+			cloudRouterFiltersList = append(cloudRouterFiltersList, cloudRouterFilter)
+		}
+	}
 
-		cloudRouterFiltersList[index] = cloudRouterFilter
+	if orGroupHasValues := cloudRouterOrFilter.GetOr(); len(orGroupHasValues) > 0 {
+		cloudRouterFilter := fabricv4.CloudRouterFilter{}
+		cloudRouterFilter.CloudRouterOrFilter = &cloudRouterOrFilter
+		cloudRouterFiltersList = append(cloudRouterFiltersList, cloudRouterFilter)
 	}
 
 	cloudRouterFilters := fabricv4.CloudRouterFilters{}
 	cloudRouterFilters.SetAnd(cloudRouterFiltersList)
 
-	return cloudRouterFilters
+	if len(cloudRouterFilters.GetAnd()) > 8 {
+		return fabricv4.CloudRouterFilters{}, fmt.Errorf("too many filters are applied to the data source. The maximum is 8 and %d were provided. Please reduce your filter count to 8", len(cloudRouterFilters.GetAnd()))
+	}
+
+	return cloudRouterFilters, nil
 }
 
 func cloudRouterPaginationTerraformToGo(pagination []interface{}) fabricv4.PaginationRequest {
@@ -382,7 +406,11 @@ func resourceFabricCloudRoutersSearch(ctx context.Context, d *schema.ResourceDat
 	cloudRouterSearchRequest := fabricv4.CloudRouterSearchRequest{}
 
 	schemaFilters := d.Get("filter").([]interface{})
-	filters := cloudRouterFiltersTerraformToGo(schemaFilters)
+	filters, err := cloudRouterFiltersTerraformToGo(schemaFilters)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
 	cloudRouterSearchRequest.SetFilter(filters)
 
 	if schemaPagination, ok := d.GetOk("pagination"); ok {
@@ -402,8 +430,7 @@ func resourceFabricCloudRoutersSearch(ctx context.Context, d *schema.ResourceDat
 	}
 
 	if len(cloudRouters.Data) < 1 {
-		error := fmt.Errorf("No records are found for the cloud router search criteria  provided - %d , please change the search criteria", len(cloudRouters.Data))
-		return diag.FromErr(error)
+		return diag.FromErr(fmt.Errorf("no records are found for the cloud router search criteria provided - %d , please change the search criteria", len(cloudRouters.Data)))
 	}
 
 	d.SetId(cloudRouters.Data[0].GetUuid())
