@@ -208,46 +208,6 @@ func FabricPortResourceSchema() map[string]*schema.Schema {
 	}
 }
 
-func readFabricPortResourceSchemaUpdated() map[string]*schema.Schema {
-	sch := FabricPortResourceSchema()
-	sch["uuid"].Computed = true
-	sch["uuid"].Optional = false
-	sch["uuid"].Required = false
-	return sch
-}
-
-func readFabricPortsResponseSchema() map[string]*schema.Schema {
-	return map[string]*schema.Schema{
-		"data": {
-			Type:        schema.TypeList,
-			Computed:    true,
-			Description: "List of Ports",
-			Elem: &schema.Resource{
-				Schema: readFabricPortResourceSchemaUpdated(),
-			},
-		},
-		"filters": {
-			Type:        schema.TypeSet,
-			Required:    true,
-			Description: "name",
-			MaxItems:    1,
-			Elem: &schema.Resource{
-				Schema: readGetPortsByNameQueryParamSch(),
-			},
-		},
-	}
-}
-
-func readGetPortsByNameQueryParamSch() map[string]*schema.Schema {
-	return map[string]*schema.Schema{
-		"name": {
-			Type:        schema.TypeString,
-			Required:    true,
-			Description: "Query Parameter to Get Ports By Name",
-		},
-	}
-}
-
 func portTerraformToGo(portList []interface{}) fabricv4.SimplifiedPort {
 	if portList == nil || len(portList) == 0 {
 		return fabricv4.SimplifiedPort{}

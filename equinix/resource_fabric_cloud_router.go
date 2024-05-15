@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/equinix/equinix-sdk-go/services/fabricv4"
+	"github.com/equinix/terraform-provider-equinix/internal/converters"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
@@ -307,8 +308,109 @@ func resourceFabricCloudRouterRead(ctx context.Context, d *schema.ResourceData, 
 	return setCloudRouterMap(d, cloudRouter)
 }
 
-func setCloudRouterMap(d *schema.ResourceData, fcr *fabricv4.CloudRouter) diag.Diagnostics {
-	diags := diag.Diagnostics{}
+func cloudRouterFiltersTerraformToGo(filters []interface{}) fabricv4.CloudRouterFilters {
+	if filters == nil || len(filters) == 0 {
+		return fabricv4.CloudRouterFilters{}
+	}
+	cloudRouterFiltersList := make([]fabricv4.CloudRouterFilter, len(filters))
+
+	for index, filter := range filters {
+		filterMap := filter.(map[string]interface{})
+		cloudRouterFilter := fabricv4.CloudRouterFilter{}
+		filterExpression := fabricv4.CloudRouterSimpleExpression{}
+		if property, ok := filterMap["property"]; ok {
+			filterExpression.SetProperty(property.(string))
+		}
+		if operator, ok := filterMap["operator"]; ok {
+			filterExpression.SetOperator(operator.(string))
+		}
+		if values, ok := filterMap["values"]; ok {
+			stringValues := converters.IfArrToStringArr(values.([]interface{}))
+			filterExpression.SetValues(stringValues)
+		}
+
+		cloudRouterFilter.CloudRouterSimpleExpression = &filterExpression
+
+		cloudRouterFiltersList[index] = cloudRouterFilter
+	}
+
+	cloudRouterFilters := fabricv4.CloudRouterFilters{}
+	cloudRouterFilters.SetAnd(cloudRouterFiltersList)
+
+	return cloudRouterFilters
+}
+
+func cloudRouterPaginationTerraformToGo(pagination []interface{}) fabricv4.PaginationRequest {
+	if pagination == nil || len(pagination) == 0 {
+		return fabricv4.PaginationRequest{}
+	}
+	paginationRequest := fabricv4.PaginationRequest{}
+	for _, page := range pagination {
+		pageMap := page.(map[string]interface{})
+		if offset, ok := pageMap["offset"]; ok {
+			paginationRequest.SetOffset(int32(offset.(int)))
+		}
+		if limit, ok := pageMap["limit"]; ok {
+			paginationRequest.SetLimit(int32(limit.(int)))
+		}
+	}
+
+	return paginationRequest
+}
+
+func cloudRouterSortTerraformToGo(sort []interface{}) []fabricv4.CloudRouterSortCriteria {
+	if sort == nil || len(sort) == 0 {
+		return []fabricv4.CloudRouterSortCriteria{}
+	}
+	sortCriteria := make([]fabricv4.CloudRouterSortCriteria, len(sort))
+	for index, item := range sort {
+		sortItem := fabricv4.CloudRouterSortCriteria{}
+		pageMap := item.(map[string]interface{})
+		if direction, ok := pageMap["direction"]; ok {
+			sortItem.SetDirection(fabricv4.CloudRouterSortDirection(direction.(string)))
+		}
+		if property, ok := pageMap["property"]; ok {
+			sortItem.SetProperty(fabricv4.CloudRouterSortBy(property.(string)))
+		}
+		sortCriteria[index] = sortItem
+	}
+	return sortCriteria
+}
+
+func resourceFabricCloudRoutersSearch(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	client := meta.(*config.Config).NewFabricClientForSDK(d)
+	cloudRouterSearchRequest := fabricv4.CloudRouterSearchRequest{}
+
+	schemaFilters := d.Get("filter").([]interface{})
+	filters := cloudRouterFiltersTerraformToGo(schemaFilters)
+	cloudRouterSearchRequest.SetFilter(filters)
+
+	if schemaPagination, ok := d.GetOk("pagination"); ok {
+		pagination := cloudRouterPaginationTerraformToGo(schemaPagination.(*schema.Set).List())
+		cloudRouterSearchRequest.SetPagination(pagination)
+	}
+
+	if schemaSort, ok := d.GetOk("sort"); ok {
+		sort := cloudRouterSortTerraformToGo(schemaSort.([]interface{}))
+		cloudRouterSearchRequest.SetSort(sort)
+	}
+
+	cloudRouters, _, err := client.CloudRoutersApi.SearchCloudRouters(ctx).CloudRouterSearchRequest(cloudRouterSearchRequest).Execute()
+
+	if err != nil {
+		return diag.FromErr(equinix_errors.FormatFabricError(err))
+	}
+
+	if len(cloudRouters.Data) < 1 {
+		error := fmt.Errorf("No records are found for the cloud router search criteria  provided - %d , please change the search criteria", len(cloudRouters.Data))
+		return diag.FromErr(error)
+	}
+
+	d.SetId(cloudRouters.Data[0].GetUuid())
+	return setFabricCloudRoutersData(d, cloudRouters)
+}
+
+func fabricCloudRouterMap(fcr *fabricv4.CloudRouter) map[string]interface{} {
 	package_ := fcr.GetPackage()
 	location := fcr.GetLocation()
 	changeLog := fcr.GetChangeLog()
@@ -316,7 +418,7 @@ func setCloudRouterMap(d *schema.ResourceData, fcr *fabricv4.CloudRouter) diag.D
 	notifications := fcr.GetNotifications()
 	project := fcr.GetProject()
 	order := fcr.GetOrder()
-	err := equinix_schema.SetMap(d, map[string]interface{}{
+	return map[string]interface{}{
 		"name":                         fcr.GetName(),
 		"href":                         fcr.GetHref(),
 		"type":                         string(fcr.GetType()),
@@ -334,7 +436,32 @@ func setCloudRouterMap(d *schema.ResourceData, fcr *fabricv4.CloudRouter) diag.D
 		"distinct_ipv6_prefixes_count": fcr.GetDistinctIpv6PrefixesCount(),
 		"connections_count":            fcr.GetConnectionsCount(),
 		"order":                        equinix_fabric_schema.OrderGoToTerraform(&order),
+	}
+}
+
+func setFabricCloudRoutersData(d *schema.ResourceData, cloudRouters *fabricv4.SearchResponse) diag.Diagnostics {
+	diags := diag.Diagnostics{}
+	mappedCloudRouters := make([]map[string]interface{}, len(cloudRouters.Data))
+	if cloudRouters.Data != nil {
+		for index, cloudRouter := range cloudRouters.Data {
+			mappedCloudRouters[index] = fabricCloudRouterMap(&cloudRouter)
+		}
+	} else {
+		mappedCloudRouters = nil
+	}
+	err := equinix_schema.SetMap(d, map[string]interface{}{
+		"data": mappedCloudRouters,
 	})
+	if err != nil {
+		return diag.FromErr(err)
+	}
+	return diags
+}
+
+func setCloudRouterMap(d *schema.ResourceData, fcr *fabricv4.CloudRouter) diag.Diagnostics {
+	diags := diag.Diagnostics{}
+	cloudRouterMap := fabricCloudRouterMap(fcr)
+	err := equinix_schema.SetMap(d, cloudRouterMap)
 	if err != nil {
 		return diag.FromErr(err)
 	}

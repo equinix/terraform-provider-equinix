@@ -39,6 +39,27 @@ func TestAccDataSourceFabricCloudRouter_PFCR(t *testing.T) {
 					resource.TestCheckResourceAttrSet("data.equinix_fabric_cloud_router.example", "change_log.0.created_date_time"),
 					resource.TestCheckResourceAttrSet("data.equinix_fabric_cloud_router.example", "change_log.0.updated_date_time"),
 					resource.TestCheckResourceAttrSet("data.equinix_fabric_cloud_router.example", "change_log.0.deleted_date_time"),
+					resource.TestCheckResourceAttr("data.equinix_fabric_cloud_routers.test", "data.0.name", "Test_PFCR"),
+					resource.TestCheckResourceAttr("data.equinix_fabric_cloud_routers.test", "data.0.type", "XF_ROUTER"),
+					resource.TestCheckResourceAttr("data.equinix_fabric_cloud_routers.test", "data.0.notifications.0.type", "ALL"),
+					resource.TestCheckResourceAttr("data.equinix_fabric_cloud_routers.test", "data.0.notifications.0.emails.0", "test@equinix.com"),
+					resource.TestCheckResourceAttr("data.equinix_fabric_cloud_routers.test", "data.0.order.0.purchase_order_number", "1-323292"),
+					resource.TestCheckResourceAttr("data.equinix_fabric_cloud_routers.test", "data.0.location.0.metro_code", "SV"),
+					resource.TestCheckResourceAttr("data.equinix_fabric_cloud_routers.test", "data.0.package.0.code", "STANDARD"),
+					resource.TestCheckResourceAttrSet("data.equinix_fabric_cloud_routers.test", "data.0.project.0.project_id"),
+					resource.TestCheckResourceAttrSet("data.equinix_fabric_cloud_routers.test", "data.0.account.0.account_number"),
+					resource.TestCheckResourceAttrSet("data.equinix_fabric_cloud_routers.test", "data.0.href"),
+					resource.TestCheckResourceAttr("data.equinix_fabric_cloud_routers.test", "data.0.state", "PROVISIONED"),
+					resource.TestCheckResourceAttrSet("data.equinix_fabric_cloud_routers.test", "data.0.equinix_asn"),
+					resource.TestCheckResourceAttr("data.equinix_fabric_cloud_routers.test", "data.0.bgp_ipv4_routes_count", "0"),
+					resource.TestCheckResourceAttr("data.equinix_fabric_cloud_routers.test", "data.0.bgp_ipv6_routes_count", "0"),
+					resource.TestCheckResourceAttr("data.equinix_fabric_cloud_routers.test", "data.0.connections_count", "0"),
+					resource.TestCheckResourceAttrSet("data.equinix_fabric_cloud_routers.test", "data.0.change_log.0.created_by"),
+					resource.TestCheckResourceAttrSet("data.equinix_fabric_cloud_routers.test", "data.0.change_log.0.created_by_full_name"),
+					resource.TestCheckResourceAttrSet("data.equinix_fabric_cloud_routers.test", "data.0.change_log.0.created_by_email"),
+					resource.TestCheckResourceAttrSet("data.equinix_fabric_cloud_routers.test", "data.0.change_log.0.created_date_time"),
+					resource.TestCheckResourceAttrSet("data.equinix_fabric_cloud_routers.test", "data.0.change_log.0.updated_date_time"),
+					resource.TestCheckResourceAttrSet("data.equinix_fabric_cloud_routers.test", "data.0.change_log.0.deleted_date_time"),
 				),
 				ExpectNonEmptyPlan: false,
 			},
@@ -74,6 +95,14 @@ func ConfigCreateCloudRouterResource_PFCR() string {
 	}
 	data "equinix_fabric_cloud_router" "example"{
 		uuid = equinix_fabric_cloud_router.example.id
+	}
+
+	data "equinix_fabric_cloud_routers" "test" {
+		filter {
+			property = "/name"
+			operator = "="
+			values 	 = [equinix_fabric_cloud_router.example.name]
+		}
 	}
 `)
 }
