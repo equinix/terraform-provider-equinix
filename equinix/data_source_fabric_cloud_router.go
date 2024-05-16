@@ -145,7 +145,7 @@ func dataSourceFabricGetCloudRouters() *schema.Resource {
 	return &schema.Resource{
 		ReadContext: dataSourceFabricGetCloudRoutersRead,
 		Schema:      readFabricCloudRouterSearchSchema(),
-		Description: "Fabric V4 API compatible data resource that allow user to fetch port by name",
+		Description: "Fabric V4 API compatible data resource that allow user to fetch Fabric Cloud Routers matching custom search criteria",
 	}
 }
 
