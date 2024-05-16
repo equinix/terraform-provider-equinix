@@ -60,7 +60,7 @@ func readFabricCloudRouterSearchSchema() map[string]*schema.Schema {
 					"operator": {
 						Type:         schema.TypeString,
 						Required:     true,
-						Description:  "Possible operators to use on the filter property. Can be one of the following: = - equal\n!= - not equal\n> - greater than\n>= - greater than or equal to\n< - less than\n<= - less than or equal to\n[NOT] BETWEEN - (not) between\n[NOT] LIKE - (not) like\n[NOT] IN - (not) in",
+						Description:  "Possible operators to use on the filter property. Can be one of the following: [= - equal, != - not equal, > - greater than, >= - greater than or equal to, < - less than, <= - less than or equal to, [NOT] BETWEEN - (not) between, [NOT] LIKE - (not) like, [NOT] IN - (not) in",
 						ValidateFunc: validation.StringInSlice([]string{"=", "!=", ">", ">=", "<", "<=", "[NOT] BETWEEN", "[NOT] LIKE", "[NOT] IN"}, true),
 					},
 					"values": {

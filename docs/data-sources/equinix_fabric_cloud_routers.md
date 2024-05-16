@@ -113,15 +113,7 @@ output "type" {
 
 Required:
 
-- `operator` (String) Possible operators to use on the filter property. Can be one of the following: = - equal
-  != - not equal
-> - greater than
-    >= - greater than or equal to
-    < - less than
-    <= - less than or equal to
-    [NOT] BETWEEN - (not) between
-    [NOT] LIKE - (not) like
-    [NOT] IN - (not) in
+- `operator` (String) Possible operators to use on the filter property. Can be one of the following: [= - equal, != - not equal, > - greater than, >= - greater than or equal to, < - less than, <= - less than or equal to, [NOT] BETWEEN - (not) between, [NOT] LIKE - (not) like, [NOT] IN - (not) in
 - `property` (String) The API response property which you want to filter your request on. Can be one of the following: "/project/projectId", "/name", "/uuid", "/state", "/location/metroCode", "/location/metroName", "/package/code", "/*"
 - `values` (List of String) The values that you want to apply the property+operator combination to in order to filter your data search
 
