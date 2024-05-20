@@ -3,6 +3,7 @@ package equinix
 import (
 	"context"
 	"fmt"
+	"slices"
 	"strings"
 	"time"
 
@@ -195,7 +196,7 @@ func configureProvider(ctx context.Context, d *schema.ResourceData, p *schema.Pr
 
 func stringsFound(source []string, target []string) bool {
 	for i := range source {
-		if !isStringInSlice(source[i], target) {
+		if !slices.Contains(target, source[i]) {
 			return false
 		}
 	}
@@ -204,16 +205,7 @@ func stringsFound(source []string, target []string) bool {
 
 func atLeastOneStringFound(source []string, target []string) bool {
 	for i := range source {
-		if isStringInSlice(source[i], target) {
-			return true
-		}
-	}
-	return false
-}
-
-func isStringInSlice(needle string, hay []string) bool {
-	for i := range hay {
-		if needle == hay[i] {
+		if slices.Contains(target, source[i]) {
 			return true
 		}
 	}

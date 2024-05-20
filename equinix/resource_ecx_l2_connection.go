@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"slices"
 	"strings"
 	"time"
 
@@ -714,12 +715,12 @@ func resourceECXL2ConnectionRead(ctx context.Context, d *schema.ResourceData, m 
 	if err != nil {
 		return diag.Errorf("cannot fetch primary connection due to %v", err)
 	}
-	if isStringInSlice(ecx.StringValue(primary.Status), []string{
+	if slices.Contains([]string{
 		ecx.ConnectionStatusPendingDelete,
 		ecx.ConnectionStatusDeprovisioning,
 		ecx.ConnectionStatusDeprovisioned,
 		ecx.ConnectionStatusDeleted,
-	}) {
+	}, ecx.StringValue(primary.Status)) {
 		d.SetId("")
 		return diags
 	}
