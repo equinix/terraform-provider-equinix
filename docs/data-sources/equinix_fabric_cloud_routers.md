@@ -10,7 +10,7 @@ description: |-
 
 Fabric V4 API compatible data resource that allow user to fetch Fabric Cloud Routers matching custom search criteria
 
-Additional Fabric Cloud Router documentation:
+Additional documentation:
 * Getting Started: <https://docs.equinix.com/en-us/Content/Interconnection/FCR/FCR-intro.htm#HowItWorks>
 * API: <https://developer.equinix.com/dev-docs/fabric/api-reference/fabric-v4-apis#fabric-cloud-routers>
 
