@@ -10,7 +10,9 @@ description: |-
 
 Fabric V4 API compatible data resource that allow user to fetch Fabric Cloud Router for a given UUID
 
-API documentation can be found here - https://developer.equinix.com/dev-docs/fabric/api-reference/fabric-v4-apis#fabric-cloud-routers
+Additional documentation:
+* Getting Started: <https://docs.equinix.com/en-us/Content/Interconnection/FCR/FCR-intro.htm#HowItWorks>
+* API: <https://developer.equinix.com/dev-docs/fabric/api-reference/fabric-v4-apis#fabric-cloud-routers>
 
 ## Example Usage
 

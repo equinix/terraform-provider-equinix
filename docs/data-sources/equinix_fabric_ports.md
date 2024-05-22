@@ -10,6 +10,10 @@ description: |-
 
 Fabric V4 API compatible data resource that allow user to fetch port by name
 
+Additional documentation:
+* Getting Started: <https://docs.equinix.com/en-us/Content/Interconnection/Fabric/IMPLEMENTATION/fabric-ports-implement.htm>
+* API: <https://developer.equinix.com/dev-docs/fabric/api-reference/fabric-v4-apis#ports>
+
 ## Example Usage
 
 ```hcl
