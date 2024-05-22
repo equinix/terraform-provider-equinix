@@ -4,10 +4,8 @@ import (
 	"context"
 	"fmt"
 	"slices"
-	"strings"
 	"time"
 
-	"github.com/equinix/ecx-go/v2"
 	"github.com/equinix/terraform-provider-equinix/internal/config"
 	fabric_connection "github.com/equinix/terraform-provider-equinix/internal/resources/fabric/connection"
 	fabric_network "github.com/equinix/terraform-provider-equinix/internal/resources/fabric/network"
@@ -80,9 +78,6 @@ func Provider() *schema.Provider {
 			},
 		},
 		DataSourcesMap: map[string]*schema.Resource{
-			"equinix_ecx_port":                   dataSourceECXPort(),
-			"equinix_ecx_l2_sellerprofile":       dataSourceECXL2SellerProfile(),
-			"equinix_ecx_l2_sellerprofiles":      dataSourceECXL2SellerProfiles(),
 			"equinix_fabric_routing_protocol":    dataSourceRoutingProtocol(),
 			"equinix_fabric_connection":          fabric_connection.DataSource(),
 			"equinix_fabric_connections":         fabric_connection.DataSourceSearch(),
@@ -117,9 +112,6 @@ func Provider() *schema.Provider {
 			"equinix_metal_vrf":                  vrf.DataSource(),
 		},
 		ResourcesMap: map[string]*schema.Resource{
-			"equinix_ecx_l2_connection":          resourceECXL2Connection(),
-			"equinix_ecx_l2_connection_accepter": resourceECXL2ConnectionAccepter(),
-			"equinix_ecx_l2_serviceprofile":      resourceECXL2ServiceProfile(),
 			"equinix_fabric_network":             fabric_network.Resource(),
 			"equinix_fabric_cloud_router":        resourceFabricCloudRouter(),
 			"equinix_fabric_connection":          fabric_connection.Resource(),
@@ -209,25 +201,16 @@ func stringsFound(source []string, target []string) bool {
 	return true
 }
 
-func atLeastOneStringFound(source []string, target []string) bool {
-	for i := range source {
-		if slices.Contains(target, source[i]) {
-			return true
-		}
-	}
-	return false
-}
-
 func isEmpty(v interface{}) bool {
 	switch v := v.(type) {
 	case int:
 		return v == 0
 	case *int:
-		return ecx.IntValue(v) == 0
+		return v == nil || *v == 0
 	case string:
 		return v == ""
 	case *string:
-		return ecx.StringValue(v) == ""
+		return v == nil || *v == ""
 	case nil:
 		return true
 	default:
@@ -247,30 +230,6 @@ func slicesMatch(s1, s2 []string) bool {
 				continue
 			}
 			if s1[i] == s2[j] {
-				visited[j] = true
-				found = true
-				break
-			}
-		}
-		if !found {
-			return false
-		}
-	}
-	return true
-}
-
-func slicesMatchCaseInsensitive(s1, s2 []string) bool {
-	if len(s1) != len(s2) {
-		return false
-	}
-	visited := make([]bool, len(s1))
-	for i := 0; i < len(s1); i++ {
-		found := false
-		for j := 0; j < len(s2); j++ {
-			if visited[j] {
-				continue
-			}
-			if strings.EqualFold(s1[i], s2[j]) {
 				visited[j] = true
 				found = true
 				break

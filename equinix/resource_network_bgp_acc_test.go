@@ -14,7 +14,9 @@ import (
 )
 
 const (
-	awsSpUuid = "TF_ACC_NETWORK_FABRIC_SERVICE_UUID"
+	awsSpEnvVar      = "TF_ACC_FABRIC_L2_AWS_SP_NAME"
+	awsAuthKeyEnvVar = "TF_ACC_FABRIC_L2_AWS_ACCOUNT_ID"
+	awsSpUuid        = "TF_ACC_NETWORK_FABRIC_SERVICE_UUID"
 )
 
 func TestAccNetworkBGP_CSR1000V_Single_AWS(t *testing.T) {
