@@ -71,6 +71,7 @@ func TestProvider(t *testing.T) {
 	}
 }
 
+// Deprecated test moved to internal/comparissons/comparisons_test.go
 func TestProvider_stringsFound(t *testing.T) {
 	// given
 	needles := []string{"key1", "key5"}
@@ -81,6 +82,7 @@ func TestProvider_stringsFound(t *testing.T) {
 	assert.True(t, result, "Given strings were found")
 }
 
+// Deprecated test moved to internal/comparissons/comparisons_test.go
 func TestProvider_stringsFound_negative(t *testing.T) {
 	// given
 	needles := []string{"key1", "key6"}
@@ -91,6 +93,7 @@ func TestProvider_stringsFound_negative(t *testing.T) {
 	assert.False(t, result, "Given strings were found")
 }
 
+// Deprecated test moved to internal/comparissons/comparisons_test.go
 func TestProvider_isEmpty(t *testing.T) {
 	// given
 	input := []interface{}{
@@ -134,6 +137,7 @@ func TestProvider_setSchemaValueIfNotEmpty(t *testing.T) {
 	assert.False(t, ok, "Key was not set")
 }
 
+// Deprecated test moved to internal/comparissons/comparisons_test.go
 func TestProvider_slicesMatch(t *testing.T) {
 	// given
 	input := [][][]string{

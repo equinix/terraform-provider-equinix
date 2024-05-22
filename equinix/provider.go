@@ -193,6 +193,10 @@ func configureProvider(ctx context.Context, d *schema.ResourceData, p *schema.Pr
 	return &config, nil
 }
 
+// stringsFound returns true if all strings in source are found in target
+// Deprecated: stringsFound is shared between provider, tests, and resources
+// and is being relocated for package refactoring.
+// Use github.com/equinix/terraform-provider-equinix/internal/comparisons.Subsets
 func stringsFound(source []string, target []string) bool {
 	for i := range source {
 		if !slices.Contains(target, source[i]) {
@@ -202,6 +206,10 @@ func stringsFound(source []string, target []string) bool {
 	return true
 }
 
+// isEmpty returns true if the value is nil or zero
+// Deprecated: isEmpty is shared between provider, tests, and resources
+// and is being relocated for package refactoring.
+// Use github.com/equinix/terraform-provider-equinix/internal/comparisons.IsEmpty
 func isEmpty(v interface{}) bool {
 	switch v := v.(type) {
 	case int:
@@ -219,6 +227,10 @@ func isEmpty(v interface{}) bool {
 	}
 }
 
+// slicesMatch returns true if all strings in s1 are found in s2
+// Deprecated: slicesMatch is shared between provider, tests, and resources
+// and is being relocated for package refactoring.
+// Use github.com/equinix/terraform-provider-equinix/internal/comparisons.SlicesMatch
 func slicesMatch(s1, s2 []string) bool {
 	if len(s1) != len(s2) {
 		return false
