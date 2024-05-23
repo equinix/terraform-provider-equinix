@@ -17,7 +17,7 @@ Additional documentation:
 ## Example Usage
 
 ```hcl
-data "equinix_fabric_cloud_routers" "cloud_router_data_name" {
+data "equinix_fabric_cloud_routers" "test" {
   filter {
     property = "/name"
     operator = "="
@@ -50,44 +50,48 @@ data "equinix_fabric_cloud_routers" "cloud_router_data_name" {
   }
 }
 
-output "id" {
-  value = data.equinix_fabric_cloud_router.cloud_router_data_name.data.0.id
+output "number_of_returned_fcrs" {
+  value = length(data.equinix_fabric_cloud_routers.test.data)
 }
 
-output "name" {
-  value = data.equinix_fabric_cloud_router.cloud_router_data_name.data.0.name
+output "first_fcr_name" {
+  value = data.equinix_fabric_cloud_routers.test.data.0.name
 }
 
-output "account_number" {
-  value = data.equinix_fabric_cloud_router.cloud_router_data_name.data.0.account.0.account_number
+output "first_fcr_uuid" {
+  value = data.equinix_fabric_cloud_routers.test.data.0.uuid
 }
 
-output "equinix_asn" {
-  value = data.equinix_fabric_cloud_router.cloud_router_data_name.data.0.equinix_asn
+output "first_fcr_type" {
+  value = data.equinix_fabric_cloud_routers.test.data.0.type
 }
 
-output "metro_code" {
-  value = data.equinix_fabric_cloud_router.cloud_router_data_name.data.0.location.0.metro_code
+output "first_fcr_package_code" {
+  value = one(data.equinix_fabric_cloud_routers.test.data.0.package).code
 }
 
-output "metro_name" {
-  value = data.equinix_fabric_cloud_router.cloud_router_data_name.data.0.location.0.metro_name
+output "first_fcr_equinix_asn" {
+  value = data.equinix_fabric_cloud_routers.test.data.0.equinix_asn
 }
 
-output "region" {
-  value = data.equinix_fabric_cloud_router.cloud_router_data_name.data.0.location.0.region
+output "first_fcr_location_region" {
+  value = one(data.equinix_fabric_cloud_routers.test.data.0.location).region
 }
 
-output "package_code" {
-  value = data.equinix_fabric_cloud_router.cloud_router_data_name.data.0.package.0.code
+output "first_fcr_location_metro_name" {
+  value = one(data.equinix_fabric_cloud_routers.test.data.0.location).metro_name
 }
 
-output "project_id" {
-  value = data.equinix_fabric_cloud_router.cloud_router_data_name.data.0.project.0.project_id
+output "first_fcr_location_metro_code" {
+  value = one(data.equinix_fabric_cloud_routers.test.data.0.location).metro_code
 }
 
-output "type" {
-  value = data.equinix_fabric_cloud_router.cloud_router_data_name.data.0.type
+output "first_fcr_project_id" {
+  value = one(data.equinix_fabric_cloud_routers.test.data.0.project).project_id
+}
+
+output "first_fcr_account_number" {
+  value = one(data.equinix_fabric_cloud_routers.test.data.0.account).account_number
 }
 ```
 

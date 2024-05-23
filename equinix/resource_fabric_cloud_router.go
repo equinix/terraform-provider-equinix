@@ -317,6 +317,7 @@ func fabricCloudRouterMap(fcr *fabricv4.CloudRouter) map[string]interface{} {
 	order := fcr.GetOrder()
 	return map[string]interface{}{
 		"name":                         fcr.GetName(),
+		"uuid":                         fcr.GetUuid(),
 		"href":                         fcr.GetHref(),
 		"type":                         string(fcr.GetType()),
 		"state":                        string(fcr.GetState()),
