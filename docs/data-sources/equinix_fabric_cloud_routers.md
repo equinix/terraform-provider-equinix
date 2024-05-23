@@ -58,6 +58,10 @@ output "first_fcr_name" {
   value = data.equinix_fabric_cloud_routers.test.data.0.name
 }
 
+output "first_fcr_state" {
+  value = data.equinix_fabric_cloud_routers.test.data.0.state
+}
+
 output "first_fcr_uuid" {
   value = data.equinix_fabric_cloud_routers.test.data.0.uuid
 }
