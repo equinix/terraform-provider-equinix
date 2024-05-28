@@ -7,9 +7,9 @@ import (
 	"strings"
 	"time"
 
+	"github.com/equinix/ecx-go/v2"
 	"github.com/equinix/terraform-provider-equinix/internal/config"
 	"github.com/equinix/terraform-provider-equinix/internal/resources/metal/vrf"
-	"github.com/equinix/ecx-go/v2"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
@@ -83,6 +83,7 @@ func Provider() *schema.Provider {
 			"equinix_fabric_routing_protocol":    dataSourceRoutingProtocol(),
 			"equinix_fabric_connection":          dataSourceFabricConnection(),
 			"equinix_fabric_cloud_router":        dataSourceFabricCloudRouter(),
+			"equinix_fabric_cloud_routers":       dataSourceFabricGetCloudRouters(),
 			"equinix_fabric_network":             dataSourceFabricNetwork(),
 			"equinix_fabric_port":                dataSourceFabricPort(),
 			"equinix_fabric_ports":               dataSourceFabricGetPortsByName(),

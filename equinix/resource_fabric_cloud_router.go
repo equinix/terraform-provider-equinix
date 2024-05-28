@@ -307,8 +307,7 @@ func resourceFabricCloudRouterRead(ctx context.Context, d *schema.ResourceData, 
 	return setCloudRouterMap(d, cloudRouter)
 }
 
-func setCloudRouterMap(d *schema.ResourceData, fcr *fabricv4.CloudRouter) diag.Diagnostics {
-	diags := diag.Diagnostics{}
+func fabricCloudRouterMap(fcr *fabricv4.CloudRouter) map[string]interface{} {
 	package_ := fcr.GetPackage()
 	location := fcr.GetLocation()
 	changeLog := fcr.GetChangeLog()
@@ -316,8 +315,9 @@ func setCloudRouterMap(d *schema.ResourceData, fcr *fabricv4.CloudRouter) diag.D
 	notifications := fcr.GetNotifications()
 	project := fcr.GetProject()
 	order := fcr.GetOrder()
-	err := equinix_schema.SetMap(d, map[string]interface{}{
+	return map[string]interface{}{
 		"name":                         fcr.GetName(),
+		"uuid":                         fcr.GetUuid(),
 		"href":                         fcr.GetHref(),
 		"type":                         string(fcr.GetType()),
 		"state":                        string(fcr.GetState()),
@@ -334,7 +334,13 @@ func setCloudRouterMap(d *schema.ResourceData, fcr *fabricv4.CloudRouter) diag.D
 		"distinct_ipv6_prefixes_count": fcr.GetDistinctIpv6PrefixesCount(),
 		"connections_count":            fcr.GetConnectionsCount(),
 		"order":                        equinix_fabric_schema.OrderGoToTerraform(&order),
-	})
+	}
+}
+
+func setCloudRouterMap(d *schema.ResourceData, fcr *fabricv4.CloudRouter) diag.Diagnostics {
+	diags := diag.Diagnostics{}
+	cloudRouterMap := fabricCloudRouterMap(fcr)
+	err := equinix_schema.SetMap(d, cloudRouterMap)
 	if err != nil {
 		return diag.FromErr(err)
 	}
