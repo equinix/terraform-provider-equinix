@@ -650,7 +650,7 @@ func resourceFabricServiceProfileUpdate(ctx context.Context, d *schema.ResourceD
 	updateTimeout := d.Timeout(schema.TimeoutUpdate) - 30*time.Second - time.Since(start)
 	var err error
 	var eTag int64 = 0
-	_, err, eTag = waitForActiveServiceProfileAndPopulateETag(uuid, meta, d, ctx, updateTimeout)
+	_, eTag, err = waitForActiveServiceProfileAndPopulateETag(uuid, meta, d, ctx, updateTimeout)
 	if err != nil {
 		if !strings.Contains(err.Error(), "500") {
 			d.SetId("")
@@ -702,7 +702,7 @@ func waitForServiceProfileUpdateCompletion(uuid string, meta interface{}, d *sch
 	return dbSp, err
 }
 
-func waitForActiveServiceProfileAndPopulateETag(uuid string, meta interface{}, d *schema.ResourceData, ctx context.Context, timeout time.Duration) (*fabricv4.ServiceProfile, error, int64) {
+func waitForActiveServiceProfileAndPopulateETag(uuid string, meta interface{}, d *schema.ResourceData, ctx context.Context, timeout time.Duration) (*fabricv4.ServiceProfile, int64, error) {
 	log.Printf("Waiting for service profile to be in active state, uuid %s", uuid)
 	var eTag int64 = 0
 	stateConf := &retry.StateChangeConf{
@@ -735,7 +735,7 @@ func waitForActiveServiceProfileAndPopulateETag(uuid string, meta interface{}, d
 	if err == nil {
 		dbServiceProfile = inter.(*fabricv4.ServiceProfile)
 	}
-	return dbServiceProfile, err, eTag
+	return dbServiceProfile, eTag, err
 }
 
 func resourceFabricServiceProfileDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
@@ -922,11 +922,11 @@ func marketingInfoGoToTerraform(mkinfo *fabricv4.MarketingInfo) *schema.Set {
 	if processSteps != nil {
 		mappedMkInfo["process_step"] = processSteps
 	}
-	marketingInfoSet := schema.NewSet(
+	
+	return schema.NewSet(
 		schema.HashResource(&schema.Resource{Schema: createMarketingInfoSch()}),
 		[]interface{}{mappedMkInfo},
 	)
-	return marketingInfoSet
 }
 
 func serviceProfileAccessPointColoGoToTerraform(accessPointColos []fabricv4.ServiceProfileAccessPointCOLO) []interface{} {
@@ -1077,10 +1077,9 @@ func apiConfigGoToTerraform(apiConfig *fabricv4.ApiConfig) *schema.Set {
 	mappedApiConfig["integration_id"] = apiConfig.GetIntegrationId()
 	mappedApiConfig["equinix_managed_port"] = apiConfig.GetEquinixManagedPort()
 
-	apiConfigSet := schema.NewSet(
+	return schema.NewSet(
 		schema.HashResource(&schema.Resource{Schema: createApiConfigSch()}),
 		[]interface{}{mappedApiConfig})
-	return apiConfigSet
 }
 
 func authenticationKeyGoToTerraform(authenticationKey *fabricv4.AuthenticationKey) *schema.Set {
@@ -1089,10 +1088,9 @@ func authenticationKeyGoToTerraform(authenticationKey *fabricv4.AuthenticationKe
 	mappedAuthenticationKey["label"] = authenticationKey.GetLabel()
 	mappedAuthenticationKey["description"] = authenticationKey.GetDescription()
 
-	apiConfigSet := schema.NewSet(
+	return schema.NewSet(
 		schema.HashResource(&schema.Resource{Schema: createAuthenticationKeySch()}),
 		[]interface{}{mappedAuthenticationKey})
-	return apiConfigSet
 }
 
 func supportedBandwidthsGoToTerraform(supportedBandwidths []int32) []interface{} {
@@ -1103,6 +1101,7 @@ func supportedBandwidthsGoToTerraform(supportedBandwidths []int32) []interface{}
 	for index, bandwidth := range supportedBandwidths {
 		mappedSupportedBandwidths[index] = int(bandwidth)
 	}
+
 	return mappedSupportedBandwidths
 }
 
@@ -1234,7 +1233,7 @@ func portsTerraformToGo(schemaPorts []interface{}) []fabricv4.ServiceProfileAcce
 		}
 
 		locationList := portMap["location"].(*schema.Set).List()
-		if locationList != nil && len(locationList) != 0 {
+		if len(locationList) != 0 {
 			pLocation := equinix_fabric_schema.LocationTerraformToGo(locationList)
 			coloPort.SetLocation(pLocation)
 		}
@@ -1268,7 +1267,7 @@ func virtualDevicesTerraformToGo(schemaVirtualDevices []interface{}) []fabricv4.
 		vdMap := virtualDevice.(map[string]interface{})
 		vType := fabricv4.ServiceProfileAccessPointVDType(vdMap["type"].(string))
 		vUuid := vdMap["uuid"].(string)
-		locationList := vdMap["location"].(interface{}).(*schema.Set).List()
+		locationList := vdMap["location"].(*schema.Set).List()
 		var vLocation fabricv4.SimplifiedLocation
 		if len(locationList) != 0 {
 			vLocation = equinix_fabric_schema.LocationTerraformToGo(locationList)
@@ -1288,23 +1287,20 @@ func metrosTerraformToGo(schemaMetros []interface{}) []fabricv4.ServiceMetro {
 	if schemaMetros == nil {
 		return nil
 	}
-	var metros []fabricv4.ServiceMetro
+	metros := make([]fabricv4.ServiceMetro, len(schemaMetros))
 	for index, metro := range schemaMetros {
 		metroMap := metro.(map[string]interface{})
-		mCode := metroMap["code"].(string)
-		mName := metroMap["name"].(string)
+
 		ibxsRaw := metroMap["ibxs"].([]interface{})
 		mIbxs := converters.IfArrToStringArr(ibxsRaw)
-		mInTrail := metroMap["in_trail"].(bool)
-		mDisplayName := metroMap["display_name"].(string)
-		mSellerRegions := metroMap["seller_regions"].(map[string]string)
+
 		mappedMetro := fabricv4.ServiceMetro{}
-		mappedMetro.SetCode(mCode)
-		mappedMetro.SetName(mName)
+		mappedMetro.SetCode(metroMap["code"].(string))
+		mappedMetro.SetName(metroMap["name"].(string))
 		mappedMetro.SetIbxs(mIbxs)
-		mappedMetro.SetInTrail(mInTrail)
-		mappedMetro.SetDisplayName(mDisplayName)
-		mappedMetro.SetSellerRegions(mSellerRegions)
+		mappedMetro.SetInTrail(metroMap["in_trail"].(bool))
+		mappedMetro.SetDisplayName(metroMap["display_name"].(string))
+		mappedMetro.SetSellerRegions(metroMap["seller_regions"].(map[string]string))
 		metros[index] = mappedMetro
 	}
 	return metros

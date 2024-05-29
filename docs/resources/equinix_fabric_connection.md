@@ -913,7 +913,7 @@ Optional:
 
 Optional:
 
-- `purchase_order_number` (String) Purchase order number
+- `purchase_order_number` (String) Purchase order number. Short name/number to identify this order on the invoice
 
 Read-Only:
 

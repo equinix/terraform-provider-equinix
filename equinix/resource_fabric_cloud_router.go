@@ -29,31 +29,29 @@ func fabricCloudRouterPackageSch() map[string]*schema.Schema {
 		},
 	}
 }
+
 func fabricCloudRouterAccountSch() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
 		"account_number": {
 			Type:        schema.TypeInt,
-			Computed:    true,
-			Optional:    true,
+			Required:    true,
 			Description: "Account Number",
 		},
 	}
 }
-func fabricCloudRouterProjectSch() map[string]*schema.Schema {
-	return map[string]*schema.Schema{
-		"project_id": {
-			Type:        schema.TypeString,
-			Computed:    true,
-			Optional:    true,
-			Description: "Project Id",
-		},
-		"href": {
-			Type:        schema.TypeString,
-			Optional:    true,
-			Computed:    true,
-			Description: "Unique Resource URL",
-		},
+
+func fabricCloudRouterlocationSch() map[string]*schema.Schema {
+	sch := equinix_fabric_schema.LocationSchWithoutIbx()
+	for key := range sch {
+		if key == "metro_code" {
+			sch[key].Required = true
+			sch[key].Optional = false
+			sch[key].Computed = false
+		} else {
+			sch[key].Optional = false
+		}
 	}
+	return sch
 }
 
 func fabricCloudRouterResourceSchema() map[string]*schema.Schema {
@@ -120,7 +118,7 @@ func fabricCloudRouterResourceSchema() map[string]*schema.Schema {
 			Description: "Fabric Cloud Router location",
 			MaxItems:    1,
 			Elem: &schema.Resource{
-				Schema: equinix_fabric_schema.LocationSch(),
+				Schema: fabricCloudRouterlocationSch(),
 			},
 		},
 		"project": {
@@ -129,7 +127,7 @@ func fabricCloudRouterResourceSchema() map[string]*schema.Schema {
 			Description: "Customer resource hierarchy project information. Applicable to customers onboarded to Equinix Identity and Access Management. For more information see Identity and Access Management: Projects",
 			MaxItems:    1,
 			Elem: &schema.Resource{
-				Schema: fabricCloudRouterProjectSch(),
+				Schema:  equinix_fabric_schema.ProjectSch(),
 			},
 		},
 		"account": {
@@ -221,7 +219,7 @@ func accountCloudRouterTerraformToGo(accountList []interface{}) fabricv4.Simplif
 }
 
 func packageCloudRouterTerraformToGo(packageList []interface{}) fabricv4.CloudRouterPostRequestPackage {
-	if packageList == nil || len(packageList) == 0 {
+	if len(packageList) == 0 {
 		return fabricv4.CloudRouterPostRequestPackage{}
 	}
 
@@ -233,7 +231,7 @@ func packageCloudRouterTerraformToGo(packageList []interface{}) fabricv4.CloudRo
 	return package_
 }
 func projectCloudRouterTerraformToGo(projectTerraform []interface{}) fabricv4.Project {
-	if projectTerraform == nil || len(projectTerraform) == 0 {
+	if len(projectTerraform) == 0 {
 		return fabricv4.Project{}
 	}
 	project := fabricv4.Project{}

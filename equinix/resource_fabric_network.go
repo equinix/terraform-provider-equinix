@@ -9,10 +9,9 @@ import (
 	equinix_fabric_schema "github.com/equinix/terraform-provider-equinix/internal/fabric/schema"
 	equinix_schema "github.com/equinix/terraform-provider-equinix/internal/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
-	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"log"
 	"time"
 )
@@ -45,15 +44,7 @@ func fabricNetworkOperationSch() map[string]*schema.Schema {
 		},
 	}
 }
-func fabricNetworkProjectSch() map[string]*schema.Schema {
-	return map[string]*schema.Schema{
-		"project_id": {
-			Type:        schema.TypeString,
-			Required:    true,
-			Description: "Customer project identifier",
-		},
-	}
-}
+
 func fabricNetworkResourceSchema() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
 		"href": {
@@ -102,8 +93,9 @@ func fabricNetworkResourceSchema() map[string]*schema.Schema {
 			Type:        schema.TypeSet,
 			Required:    true,
 			Description: "Fabric Network project",
+			MaxItems:    1,
 			Elem: &schema.Resource{
-				Schema: fabricNetworkProjectSch(),
+				Schema:  equinix_fabric_schema.ProjectSch(),
 			},
 		},
 		"operation": {
@@ -222,11 +214,10 @@ func fabricNetworkOperationGoToTerraform(operation *fabricv4.NetworkOperation) *
 	mappedOperation := make(map[string]interface{})
 	mappedOperation["equinix_status"] = string(*operation.EquinixStatus)
 
-	operationSet := schema.NewSet(
+	return schema.NewSet(
 		schema.HashResource(&schema.Resource{Schema: fabricNetworkOperationSch()}),
 		[]interface{}{mappedOperation},
 	)
-	return operationSet
 }
 func simplifiedFabricNetworkChangeGoToTerraform(networkChange *fabricv4.SimplifiedNetworkChange) *schema.Set {
 
@@ -235,11 +226,10 @@ func simplifiedFabricNetworkChangeGoToTerraform(networkChange *fabricv4.Simplifi
 	mappedChange["type"] = string(networkChange.GetType())
 	mappedChange["uuid"] = networkChange.GetUuid()
 
-	changeSet := schema.NewSet(
+	return schema.NewSet(
 		schema.HashResource(&schema.Resource{Schema: fabricNetworkChangeSch()}),
 		[]interface{}{mappedChange},
 	)
-	return changeSet
 }
 
 func setFabricNetworkMap(d *schema.ResourceData, nt *fabricv4.Network) diag.Diagnostics {
@@ -316,7 +306,7 @@ func resourceFabricNetworkUpdate(ctx context.Context, d *schema.ResourceData, me
 
 func waitForFabricNetworkUpdateCompletion(uuid string, meta interface{}, d *schema.ResourceData, ctx context.Context, timeout time.Duration) (*fabricv4.Network, error) {
 	log.Printf("Waiting for Network update to complete, uuid %s", uuid)
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Target: []string{string(fabricv4.NETWORKEQUINIXSTATUS_PROVISIONED)},
 		Refresh: func() (interface{}, string, error) {
 			client := meta.(*config.Config).NewFabricClientForSDK(d)
@@ -342,7 +332,7 @@ func waitForFabricNetworkUpdateCompletion(uuid string, meta interface{}, d *sche
 
 func waitUntilFabricNetworkIsProvisioned(uuid string, meta interface{}, d *schema.ResourceData, ctx context.Context, timeout time.Duration) (*fabricv4.Network, error) {
 	log.Printf("Waiting for Fabric Network to be provisioned, uuid %s", uuid)
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Pending: []string{
 			string(fabricv4.NETWORKEQUINIXSTATUS_PROVISIONING),
 		},
@@ -398,7 +388,7 @@ func resourceFabricNetworkDelete(ctx context.Context, d *schema.ResourceData, me
 
 func WaitUntilFabricNetworkDeprovisioned(uuid string, meta interface{}, d *schema.ResourceData, ctx context.Context, timeout time.Duration) error {
 	log.Printf("Waiting for Fabric Network to be deprovisioned, uuid %s", uuid)
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Pending: []string{
 			string(fabricv4.NETWORKEQUINIXSTATUS_DEPROVISIONING),
 		},

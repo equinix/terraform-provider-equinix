@@ -31,7 +31,7 @@ func portDeviceSch() map[string]*schema.Schema {
 			Computed:    true,
 			Description: "Port device redundancy",
 			Elem: &schema.Resource{
-				Schema: PortRedundancySch(),
+				Schema: equinix_fabric_schema.PortRedundancySch(),
 			},
 		},
 	}
@@ -68,26 +68,6 @@ func portOperationSch() map[string]*schema.Schema {
 			Type:        schema.TypeString,
 			Computed:    true,
 			Description: "Date and time at which port availability changed",
-		},
-	}
-}
-
-func PortRedundancySch() map[string]*schema.Schema {
-	return map[string]*schema.Schema{
-		"enabled": {
-			Type:        schema.TypeBool,
-			Computed:    true,
-			Description: "Access point redundancy",
-		},
-		"group": {
-			Type:        schema.TypeString,
-			Computed:    true,
-			Description: "Port redundancy group",
-		},
-		"priority": {
-			Type:        schema.TypeString,
-			Computed:    true,
-			Description: "Priority type-Primary or Secondary",
 		},
 	}
 }
@@ -189,7 +169,7 @@ func FabricPortResourceSchema() map[string]*schema.Schema {
 			Computed:    true,
 			Description: "Port redundancy information",
 			Elem: &schema.Resource{
-				Schema: PortRedundancySch(),
+				Schema: equinix_fabric_schema.PortRedundancySch(),
 			},
 		},
 		"encapsulation": {
@@ -208,7 +188,7 @@ func FabricPortResourceSchema() map[string]*schema.Schema {
 	}
 }
 
-func readFabricPortResourceSchemaUpdated() map[string]*schema.Schema {
+func readFabricPortResourceSch() map[string]*schema.Schema {
 	sch := FabricPortResourceSchema()
 	sch["uuid"].Computed = true
 	sch["uuid"].Optional = false
@@ -223,7 +203,7 @@ func readFabricPortsResponseSchema() map[string]*schema.Schema {
 			Computed:    true,
 			Description: "List of Ports",
 			Elem: &schema.Resource{
-				Schema: readFabricPortResourceSchemaUpdated(),
+				Schema: readFabricPortResourceSch(),
 			},
 		},
 		"filters": {
@@ -249,7 +229,7 @@ func readGetPortsByNameQueryParamSch() map[string]*schema.Schema {
 }
 
 func portTerraformToGo(portList []interface{}) fabricv4.SimplifiedPort {
-	if portList == nil || len(portList) == 0 {
+	if len(portList) == 0 {
 		return fabricv4.SimplifiedPort{}
 	}
 	var port fabricv4.SimplifiedPort
@@ -268,11 +248,10 @@ func portGoToTerraform(port *fabricv4.SimplifiedPort) *schema.Set {
 	if port.Redundancy != nil {
 		mappedPort["redundancy"] = portRedundancyGoToTerraform(port.Redundancy)
 	}
-	portSet := schema.NewSet(
-		schema.HashResource(&schema.Resource{Schema: portSch()}),
+	return schema.NewSet(
+		schema.HashResource(&schema.Resource{Schema: equinix_fabric_schema.PortSch()}),
 		[]interface{}{mappedPort},
 	)
-	return portSet
 }
 
 func portRedundancyGoToTerraform(redundancy *fabricv4.PortRedundancy) *schema.Set {
@@ -284,11 +263,10 @@ func portRedundancyGoToTerraform(redundancy *fabricv4.PortRedundancy) *schema.Se
 	mappedRedundancy["group"] = redundancy.GetGroup()
 	mappedRedundancy["priority"] = string(redundancy.GetPriority())
 
-	redundancySet := schema.NewSet(
-		schema.HashResource(&schema.Resource{Schema: PortRedundancySch()}),
+	return schema.NewSet(
+		schema.HashResource(&schema.Resource{Schema: equinix_fabric_schema.PortRedundancySch()}),
 		[]interface{}{mappedRedundancy},
 	)
-	return redundancySet
 }
 
 func portOperationGoToTerraform(operation *fabricv4.PortOperation) *schema.Set {
@@ -301,11 +279,10 @@ func portOperationGoToTerraform(operation *fabricv4.PortOperation) *schema.Set {
 	mappedOperation["connection_count"] = operation.GetConnectionCount()
 	mappedOperation["op_status_changed_at"] = operation.GetOpStatusChangedAt().String()
 
-	operationSet := schema.NewSet(
-		schema.HashResource(&schema.Resource{Schema: operationSch()}),
+	return schema.NewSet(
+		schema.HashResource(&schema.Resource{Schema: equinix_fabric_schema.OperationSch()}),
 		[]interface{}{mappedOperation},
 	)
-	return operationSet
 }
 
 func portDeviceRedundancyGoToTerraform(redundancy *fabricv4.PortDeviceRedundancy) *schema.Set {
@@ -317,11 +294,10 @@ func portDeviceRedundancyGoToTerraform(redundancy *fabricv4.PortDeviceRedundancy
 	mappedRedundancy["group"] = redundancy.GetGroup()
 	mappedRedundancy["priority"] = string(redundancy.GetPriority())
 
-	redundancySet := schema.NewSet(
-		schema.HashResource(&schema.Resource{Schema: PortRedundancySch()}),
+	return schema.NewSet(
+		schema.HashResource(&schema.Resource{Schema: equinix_fabric_schema.PortRedundancySch()}),
 		[]interface{}{mappedRedundancy},
 	)
-	return redundancySet
 }
 
 func portDeviceGoToTerraform(device *fabricv4.PortDevice) *schema.Set {
@@ -332,15 +308,12 @@ func portDeviceGoToTerraform(device *fabricv4.PortDevice) *schema.Set {
 	mappedDevice := make(map[string]interface{})
 	mappedDevice["name"] = device.GetName()
 	redundancy := device.GetRedundancy()
-	if &redundancy != nil {
-		mappedDevice["redundancy"] = portDeviceRedundancyGoToTerraform(&redundancy)
-	}
+	mappedDevice["redundancy"] = portDeviceRedundancyGoToTerraform(&redundancy)
 
-	deviceSet := schema.NewSet(
+	return schema.NewSet(
 		schema.HashResource(&schema.Resource{Schema: portDeviceSch()}),
 		[]interface{}{mappedDevice},
 	)
-	return deviceSet
 }
 
 func portEncapsulationGoToTerraform(portEncapsulation *fabricv4.PortEncapsulation) *schema.Set {
@@ -352,11 +325,10 @@ func portEncapsulationGoToTerraform(portEncapsulation *fabricv4.PortEncapsulatio
 	mappedPortEncapsulation["type"] = string(portEncapsulation.GetType())
 	mappedPortEncapsulation["tag_protocol_id"] = portEncapsulation.GetTagProtocolId()
 
-	portEncapsulationSet := schema.NewSet(
+	return schema.NewSet(
 		schema.HashResource(&schema.Resource{Schema: portEncapsulationSch()}),
 		[]interface{}{mappedPortEncapsulation},
 	)
-	return portEncapsulationSet
 }
 
 func resourceFabricPortRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
