@@ -10,6 +10,7 @@ import (
 	equinix_errors "github.com/equinix/terraform-provider-equinix/internal/errors"
 	equinix_fabric_schema "github.com/equinix/terraform-provider-equinix/internal/fabric/schema"
 	equinix_schema "github.com/equinix/terraform-provider-equinix/internal/schema"
+	equinix_validation "github.com/equinix/terraform-provider-equinix/internal/validation"
 
 	"github.com/equinix/terraform-provider-equinix/internal/config"
 
@@ -25,8 +26,8 @@ func fabricConnectionResourceSchema() map[string]*schema.Schema {
 		"type": {
 			Type:         schema.TypeString,
 			Required:     true,
-			ValidateFunc: validation.StringInSlice([]string{"EVPL_VC", "EPL_VC", "IP_VC", "IPWAN_VC", "ACCESS_EPL_VC", "EVPLAN_VC", "EPLAN_VC", "EIA_VC", "IA_VC", "EC_VC"}, false),
-			Description:  "Defines the connection type like EVPL_VC, EPL_VC, IPWAN_VC, IP_VC, ACCESS_EPL_VC, EVPLAN_VC, EPLAN_VC, EIA_VC, IA_VC, EC_VC",
+			ValidateFunc: equinix_validation.StringInEnumSlice(fabricv4.AllowedConnectionTypeEnumValues, true),
+			Description: fmt.Sprintf("Defines the connection type. One of %v", fabricv4.AllowedConnectionTypeEnumValues),
 		},
 		"name": {
 			Type:         schema.TypeString,
@@ -200,8 +201,8 @@ func fabricConnectionServiceTokenSch() map[string]*schema.Schema {
 		"type": {
 			Type:         schema.TypeString,
 			Optional:     true,
-			ValidateFunc: validation.StringInSlice([]string{"VC_TOKEN"}, true),
-			Description:  "Token type - VC_TOKEN",
+			ValidateFunc: equinix_validation.StringInEnumSlice(fabricv4.AllowedServiceTokenTypeEnumValues, true),
+			Description: fmt.Sprintf("Token type. One of %v", fabricv4.AllowedServiceTokenTypeEnumValues),
 		},
 		"href": {
 			Type:        schema.TypeString,
@@ -227,8 +228,8 @@ func fabricConnectionAccessPointSch() *schema.Resource {
 			"type": {
 				Type:         schema.TypeString,
 				Optional:     true,
-				ValidateFunc: validation.StringInSlice([]string{"COLO", "VD", "VG", "SP", "IGW", "SUBNET", "CLOUD_ROUTER", "NETWORK", "METAL_NETWORK"}, true),
-				Description:  "Access point type - COLO, VD, VG, SP, IGW, SUBNET, CLOUD_ROUTER, NETWORK",
+				ValidateFunc: equinix_validation.StringInEnumSlice(fabricv4.AllowedAccessPointTypeEnumValues, true),
+				Description: fmt.Sprintf("Access point type. One of %v", fabricv4.AllowedAccessPointTypeEnumValues),
 			},
 			"account": {
 				Type:        schema.TypeSet,
@@ -331,8 +332,8 @@ func fabricConnectionAccessPointSch() *schema.Resource {
 			"peering_type": {
 				Type:         schema.TypeString,
 				Optional:     true,
-				ValidateFunc: validation.StringInSlice([]string{"PRIVATE", "MICROSOFT", "PUBLIC", "MANUAL"}, true),
-				Description:  "Peering Type- PRIVATE,MICROSOFT,PUBLIC, MANUAL",
+				ValidateFunc: equinix_validation.StringInEnumSlice(fabricv4.AllowedPeeringTypeEnumValues, true),
+				Description: fmt.Sprintf("Peering type. One of %v", fabricv4.AllowedPeeringTypeEnumValues),
 			},
 			"authentication_key": {
 				Type:        schema.TypeString,
@@ -372,8 +373,8 @@ func fabricConnectionServiceProfileSch() map[string]*schema.Schema {
 		"type": {
 			Type:         schema.TypeString,
 			Required:     true,
-			ValidateFunc: validation.StringInSlice([]string{"L2_PROFILE", "L3_PROFILE", "ECIA_PROFILE", "ECMC_PROFILE", "IA_PROFILE"}, true),
-			Description:  "Service profile type - L2_PROFILE, L3_PROFILE, ECIA_PROFILE, ECMC_PROFILE, IA_PROFILE",
+			ValidateFunc: equinix_validation.StringInEnumSlice(fabricv4.AllowedServiceProfileTypeEnumEnumValues, true),
+			Description: fmt.Sprintf("Service profile type. One of %v", fabricv4.AllowedServiceProfileTypeEnumEnumValues),
 		},
 		"name": {
 			Type:        schema.TypeString,
@@ -420,9 +421,9 @@ func fabricConnectionAccessPointLinkProtocolSch() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
 		"type": {
 			Type:         schema.TypeString,
-			Optional:     true,
-			Description:  "Type of the link protocol - UNTAGGED, DOT1Q, QINQ, EVPN_VXLAN",
-			ValidateFunc: validation.StringInSlice([]string{"UNTAGGED", "DOT1Q", "QINQ", "EVPN_VXLAN"}, true),
+			Required:     true,
+			ValidateFunc: equinix_validation.StringInEnumSlice(fabricv4.AllowedLinkProtocolTypeEnumValues, true),
+			Description: fmt.Sprintf("Type of the link protocol. One of %v", fabricv4.AllowedLinkProtocolTypeEnumValues),
 		},
 		"vlan_tag": {
 			Type:        schema.TypeInt,
@@ -454,17 +455,18 @@ func fabricConnectionAccessPointVirtualDeviceSch() map[string]*schema.Schema {
 		},
 		"uuid": {
 			Type:        schema.TypeString,
-			Optional:    true,
+			Required:    true,
 			Description: "Equinix-assigned Virtual Device identifier",
 		},
 		"type": {
 			Type:        schema.TypeString,
-			Optional:    true,
-			Description: "Virtual Device type",
+			Required:    true,
+			ValidateFunc: equinix_validation.StringInEnumSlice(fabricv4.AllowedVirtualDeviceTypeEnumValues, true),
+			Description: fmt.Sprintf("Virtual Device type. One of %v", fabricv4.AllowedVirtualDeviceTypeEnumValues),
 		},
 		"name": {
 			Type:        schema.TypeString,
-			Optional:    true,
+			Computed:    true,
 			Description: "Customer-assigned Virtual Device Name",
 		},
 	}
@@ -474,7 +476,7 @@ func fabricConnectionAccessPointInterfaceSch() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
 		"uuid": {
 			Type:        schema.TypeString,
-			Optional:    true,
+			Computed:    true,
 			Description: "Equinix-assigned interface identifier",
 		},
 		"id": {
@@ -485,8 +487,9 @@ func fabricConnectionAccessPointInterfaceSch() map[string]*schema.Schema {
 		},
 		"type": {
 			Type:        schema.TypeString,
-			Optional:    true,
-			Description: "Interface type",
+			Required:    true,
+			ValidateFunc: equinix_validation.StringInEnumSlice(fabricv4.AllowedInterfaceTypeEnumValues, true),
+			Description: fmt.Sprintf("Interface type. One of %v", fabricv4.AllowedInterfaceTypeEnumValues),
 		},
 	}
 }
@@ -495,7 +498,7 @@ func fabricConnectionAccessPointNetworkSch() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
 		"uuid": {
 			Type:        schema.TypeString,
-			Optional:    true,
+			Required:    true,
 			Description: "Equinix-assigned Network identifier",
 		},
 		"href": {
@@ -513,7 +516,7 @@ func fabricConnectionAccessPointTypeConfigSch() map[string]*schema.Schema {
 		"type": {
 			Type:        schema.TypeString,
 			Computed:    true,
-			Description: "Type of access point type config - VD, COLO",
+			Description: fmt.Sprintf("Type of access point type config. One of %v", fabricv4.AllowedServiceProfileAccessPointTypeEnumEnumValues),
 		},
 		"uuid": {
 			Type:        schema.TypeString,
@@ -527,12 +530,12 @@ func fabricConnectionAdditionalInfoSch() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
 		"key": {
 			Type:        schema.TypeString,
-			Optional:    true,
+			Required:    true,
 			Description: "Additional information key",
 		},
 		"value": {
 			Type:        schema.TypeString,
-			Optional:    true,
+			Required:    true,
 			Description: "Additional information value",
 		},
 	}
@@ -550,8 +553,8 @@ func fabricConnectionRedundancySch() map[string]*schema.Schema {
 			Type:         schema.TypeString,
 			Computed:     true,
 			Optional:     true,
-			ValidateFunc: validation.StringInSlice([]string{"PRIMARY", "SECONDARY"}, true),
-			Description:  "Connection priority in redundancy group - PRIMARY, SECONDARY",
+			ValidateFunc: equinix_validation.StringInEnumSlice(fabricv4.AllowedConnectionPriorityEnumValues, true),
+			Description: fmt.Sprintf("Connection priority in redundancy group. One of %v", fabricv4.AllowedConnectionPriorityEnumValues),
 		},
 	}
 }

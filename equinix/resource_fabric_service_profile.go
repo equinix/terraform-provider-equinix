@@ -14,9 +14,10 @@ import (
 	equinix_errors "github.com/equinix/terraform-provider-equinix/internal/errors"
 	equinix_fabric_schema "github.com/equinix/terraform-provider-equinix/internal/fabric/schema"
 	equinix_schema "github.com/equinix/terraform-provider-equinix/internal/schema"
+	equinix_validation "github.com/equinix/terraform-provider-equinix/internal/validation"
 
+	"github.com/equinix/equinix-sdk-go/services/fabricv4"
 	"github.com/equinix/terraform-provider-equinix/internal/config"
-
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -32,8 +33,8 @@ func fabricServiceProfileSchema() map[string]*schema.Schema {
 		"type": {
 			Type:         schema.TypeString,
 			Required:     true,
-			ValidateFunc: validation.StringInSlice([]string{"L2_PROFILE", "L3_PROFILE", "ECIA_PROFILE", "ECMC_PROFILE", "IA_PROFILE"}, true),
-			Description:  "Service profile type - L2_PROFILE, L3_PROFILE, ECIA_PROFILE, ECMC_PROFILE, IA_PROFILE",
+			ValidateFunc: equinix_validation.StringInEnumSlice(fabricv4.AllowedServiceProfileTypeEnumEnumValues, true),
+			Description: fmt.Sprintf("Service profile type. One of %v", fabricv4.AllowedServiceProfileTypeEnumEnumValues),
 		},
 		"visibility": {
 			Type:        schema.TypeString,
@@ -365,7 +366,8 @@ func createSPAccessPointTypeConfigSch() map[string]*schema.Schema {
 		"type": {
 			Type:        schema.TypeString,
 			Required:    true,
-			Description: "Type of access point type config - VD, COLO",
+			ValidateFunc: equinix_validation.StringInEnumSlice(fabricv4.AllowedServiceProfileAccessPointTypeEnumEnumValues, true),
+			Description: fmt.Sprintf("Type of access point type config. One of %v", fabricv4.AllowedServiceProfileAccessPointTypeEnumEnumValues),
 		},
 		"uuid": {
 			Type:        schema.TypeString,

@@ -8,6 +8,7 @@ import (
 	equinix_errors "github.com/equinix/terraform-provider-equinix/internal/errors"
 	equinix_fabric_schema "github.com/equinix/terraform-provider-equinix/internal/fabric/schema"
 	equinix_schema "github.com/equinix/terraform-provider-equinix/internal/schema"
+	equinix_validation "github.com/equinix/terraform-provider-equinix/internal/validation"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -71,13 +72,14 @@ func fabricNetworkResourceSchema() map[string]*schema.Schema {
 		"scope": {
 			Type:        schema.TypeString,
 			Required:    true,
-			Description: "Fabric Network scope",
+			ValidateFunc: equinix_validation.StringInEnumSlice(fabricv4.AllowedNetworkScopeEnumValues, true),
+			Description: fmt.Sprintf("Fabric Network scope. One of %v", fabricv4.AllowedNetworkScopeEnumValues),
 		},
 		"type": {
 			Type:         schema.TypeString,
 			Required:     true,
-			ValidateFunc: validation.StringInSlice([]string{"IPWAN", "EPLAN", "EVPLAN"}, true),
-			Description:  "Supported Network types - EVPLAN, EPLAN, IPWAN",
+			ValidateFunc: equinix_validation.StringInEnumSlice(fabricv4.AllowedNetworkTypeEnumValues, true),
+			Description: fmt.Sprintf("Supported Network types. One of %v", fabricv4.AllowedNetworkScopeEnumValues),
 		},
 		"location": {
 			Type:        schema.TypeSet,
@@ -137,6 +139,7 @@ func fabricNetworkResourceSchema() map[string]*schema.Schema {
 		},
 	}
 }
+
 func resourceFabricNetwork() *schema.Resource {
 	return &schema.Resource{
 		Timeouts: &schema.ResourceTimeout{
@@ -157,6 +160,8 @@ func resourceFabricNetwork() *schema.Resource {
 		Description: "Fabric V4 API compatible resource allows creation and management of Equinix Fabric Network",
 	}
 }
+
+
 
 func resourceFabricNetworkCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*config.Config).NewFabricClientForSDK(d)
@@ -219,6 +224,7 @@ func fabricNetworkOperationGoToTerraform(operation *fabricv4.NetworkOperation) *
 		[]interface{}{mappedOperation},
 	)
 }
+
 func simplifiedFabricNetworkChangeGoToTerraform(networkChange *fabricv4.SimplifiedNetworkChange) *schema.Set {
 
 	mappedChange := make(map[string]interface{})

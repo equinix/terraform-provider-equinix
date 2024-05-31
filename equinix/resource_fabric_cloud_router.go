@@ -14,6 +14,7 @@ import (
 	equinix_errors "github.com/equinix/terraform-provider-equinix/internal/errors"
 	equinix_fabric_schema "github.com/equinix/terraform-provider-equinix/internal/fabric/schema"
 	equinix_schema "github.com/equinix/terraform-provider-equinix/internal/schema"
+	equinix_validation "github.com/equinix/terraform-provider-equinix/internal/validation"
 
 	"github.com/equinix/terraform-provider-equinix/internal/config"
 
@@ -25,7 +26,8 @@ func fabricCloudRouterPackageSch() map[string]*schema.Schema {
 		"code": {
 			Type:        schema.TypeString,
 			Required:    true,
-			Description: "Fabric Cloud Router package code",
+			ValidateFunc: equinix_validation.StringInEnumSlice(fabricv4.AllowedRouterPackageCodeEnumValues, true),
+			Description: fmt.Sprintf("Fabric Cloud Router package code. One of %v", fabricv4.AllowedRouterPackageCodeEnumValues),
 		},
 	}
 }
@@ -109,8 +111,8 @@ func fabricCloudRouterResourceSchema() map[string]*schema.Schema {
 		"type": {
 			Type:         schema.TypeString,
 			Required:     true,
-			ValidateFunc: validation.StringInSlice([]string{"XF_ROUTER"}, true),
-			Description:  "Defines the FCR type like; XF_ROUTER",
+			ValidateFunc: equinix_validation.StringInEnumSlice(fabricv4.AllowedCloudRouterPostRequestTypeEnumValues, true),
+			Description: fmt.Sprintf("Defines the FCR type. One of %v", fabricv4.AllowedCloudRouterPostRequestTypeEnumValues),
 		},
 		"location": {
 			Type:        schema.TypeSet,

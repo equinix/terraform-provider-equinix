@@ -1,7 +1,11 @@
 package schema
 
 import (
+	"fmt"
+
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/equinix/equinix-sdk-go/services/fabricv4"
+	equinix_validation "github.com/equinix/terraform-provider-equinix/internal/validation"
 )
 
 func OrderSch() map[string]*schema.Schema {
@@ -34,7 +38,8 @@ func NotificationSch() map[string]*schema.Schema {
 		"type": {
 			Type:        schema.TypeString,
 			Required:    true,
-			Description: "Notification Type - ALL,CONNECTION_APPROVAL,SALES_REP_NOTIFICATIONS, NOTIFICATIONS",
+			ValidateFunc: equinix_validation.StringInEnumSlice(fabricv4.AllowedSimplifiedNotificationTypeEnumValues, true),
+			Description: fmt.Sprintf("Notification type. One of %v", fabricv4.AllowedSimplifiedNotificationTypeEnumValues),
 		},
 		"send_interval": {
 			Type:        schema.TypeString,
@@ -287,8 +292,7 @@ func PortSch() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
 		"uuid": {
 			Type:        schema.TypeString,
-			Optional:    true,
-			Computed:    true,
+			Required:    true,
 			Description: "Equinix-assigned Port identifier",
 		},
 		"href": {
@@ -327,7 +331,7 @@ func PortRedundancySch() map[string]*schema.Schema {
 		"priority": {
 			Type:        schema.TypeString,
 			Computed:    true,
-			Description: "Priority type-Primary or Secondary",
+			Description: "Priority type - Primary or Secondary",
 		},
 	}
 }
