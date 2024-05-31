@@ -80,7 +80,7 @@ func fabricConnectionResourceSchema() map[string]*schema.Schema {
 			Description: "Requester or Customer side connection configuration object of the multi-segment connection",
 			MaxItems:    1,
 			Elem:        fabricConnectionSideSch(),
-			Set:         schema.HashResource(fabricConnectionSideSch()),
+			Set:         schema.HashResource(fabricConnectionAccessPointSch()),
 		},
 		"z_side": {
 			Type:        schema.TypeSet,
@@ -88,7 +88,7 @@ func fabricConnectionResourceSchema() map[string]*schema.Schema {
 			Description: "Destination or Provider side connection configuration object of the multi-segment connection",
 			MaxItems:    1,
 			Elem:        fabricConnectionSideSch(),
-			Set:         schema.HashResource(fabricConnectionSideSch()),
+			Set:         schema.HashResource(fabricConnectionAccessPointSch()),
 		},
 		"project": {
 			Type:        schema.TypeSet,
@@ -171,6 +171,7 @@ func fabricConnectionSideSch() *schema.Resource {
 			"service_token": {
 				Type:        schema.TypeSet,
 				Optional:    true,
+				ForceNew:    true,
 				Description: "For service token based connections, Service tokens authorize users to access protected resources and services. Resource owners can distribute the tokens to trusted partners and vendors, allowing selected third parties to work directly with Equinix network assets",
 				MaxItems:    1,
 				Elem: &schema.Resource{
