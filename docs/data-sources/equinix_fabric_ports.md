@@ -137,6 +137,7 @@ Read-Only:
 - `global_organization_name` (String)
 - `org_id` (Number)
 - `organization_name` (String)
+- `ucm_id` (String)
 
 
 <a id="nestedobjatt--data--change_log"></a>
@@ -215,3 +216,5 @@ Read-Only:
 - `enabled` (Boolean)
 - `group` (String)
 - `priority` (String)
+
+

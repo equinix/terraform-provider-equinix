@@ -38,9 +38,9 @@ resource "equinix_fabric_network" "new_network" {
 
 - `name` (String) Fabric Network name. An alpha-numeric 24 characters string which can include only hyphens and underscores
 - `notifications` (Block List, Min: 1) Preferences for notifications on Fabric Network configuration or status changes (see [below for nested schema](#nestedblock--notifications))
-- `project` (Block Set, Min: 1) Fabric Network project (see [below for nested schema](#nestedblock--project))
-- `scope` (String) Fabric Network scope
-- `type` (String) Supported Network types - EVPLAN, EPLAN, IPWAN
+- `project` (Block Set, Min: 1, Max: 1) Fabric Network project (see [below for nested schema](#nestedblock--project))
+- `scope` (String) Fabric Network scope. One of [REGIONAL GLOBAL LOCAL]
+- `type` (String) Supported Network types. One of [REGIONAL GLOBAL LOCAL]
 
 ### Optional
 
@@ -64,7 +64,7 @@ resource "equinix_fabric_network" "new_network" {
 Required:
 
 - `emails` (List of String) Array of contact emails
-- `type` (String) Notification Type - ALL,CONNECTION_APPROVAL,SALES_REP_NOTIFICATIONS, NOTIFICATIONS
+- `type` (String) Notification type. One of [NOTIFICATION BANDWIDTH_ALERT CONNECTION_APPROVAL PROFILE_LIFECYCLE ALL SALES_REP_NOTIFICATIONS]
 
 Optional:
 
@@ -76,7 +76,7 @@ Optional:
 
 Required:
 
-- `project_id` (String) Customer project identifier
+- `project_id` (String) Project Id
 
 
 <a id="nestedblock--location"></a>

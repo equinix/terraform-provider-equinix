@@ -56,7 +56,7 @@ resource "equinix_fabric_service_profile" "new_service_profile" {
 
 - `description` (String) User-provided service description
 - `name` (String) Customer-assigned service profile name
-- `type` (String) Service profile type - L2_PROFILE, L3_PROFILE, ECIA_PROFILE, ECMC_PROFILE
+- `type` (String) Service profile type. One of [L2_PROFILE L3_PROFILE IA_PROFILE]
 
 ### Optional
 
@@ -72,6 +72,7 @@ resource "equinix_fabric_service_profile" "new_service_profile" {
 - `state` (String) Service profile state - ACTIVE, PENDING_APPROVAL, DELETED, REJECTED
 - `tags` (List of String) Tags attached to the connection
 - `timeouts` (Block, Optional) (see [below for nested schema](#nestedblock--timeouts))
+- `view_point` (String) Flips view between buyer and seller representation. Available values : aSide, zSide. Default value : aSide
 - `virtual_devices` (Block List) Virtual Devices (see [below for nested schema](#nestedblock--virtual_devices))
 - `visibility` (String) Service profile visibility - PUBLIC, PRIVATE
 
@@ -88,7 +89,7 @@ resource "equinix_fabric_service_profile" "new_service_profile" {
 
 Required:
 
-- `type` (String) Type of access point type config - VD, COLO
+- `type` (String) Type of access point type config. One of [VD COLO]
 
 Optional:
 
@@ -199,7 +200,7 @@ Optional:
 Required:
 
 - `emails` (List of String) Array of contact emails
-- `type` (String) Notification Type - ALL,CONNECTION_APPROVAL,SALES_REP_NOTIFICATIONS, NOTIFICATIONS
+- `type` (String) Notification type. One of [NOTIFICATION BANDWIDTH_ALERT CONNECTION_APPROVAL PROFILE_LIFECYCLE ALL SALES_REP_NOTIFICATIONS]
 
 Optional:
 
@@ -236,13 +237,9 @@ Optional:
 <a id="nestedblock--project"></a>
 ### Nested Schema for `project`
 
-Optional:
+Required:
 
 - `project_id` (String) Project Id
-
-Read-Only:
-
-- `href` (String) Unique Resource URL
 
 
 <a id="nestedblock--timeouts"></a>

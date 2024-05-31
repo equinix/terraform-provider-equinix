@@ -205,7 +205,6 @@ Read-Only:
 
 Read-Only:
 
-- `ibx` (String)
 - `metro_code` (String)
 - `metro_name` (String)
 - `region` (String)
@@ -245,5 +244,6 @@ Read-Only:
 
 Read-Only:
 
-- `href` (String)
 - `project_id` (String)
+
+

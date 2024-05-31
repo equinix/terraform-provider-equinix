@@ -91,14 +91,14 @@ resource "equinix_fabric_routing_protocol" "bgp" {
 
 ### Optional
 
-- `bfd` (Block Set) Bidirectional Forwarding Detection (see [below for nested schema](#nestedblock--bfd))
+- `bfd` (Block Set, Max: 1) Bidirectional Forwarding Detection (see [below for nested schema](#nestedblock--bfd))
 - `bgp_auth_key` (String) BGP authorization key
-- `bgp_ipv4` (Block Set) Routing Protocol BGP IPv4 (see [below for nested schema](#nestedblock--bgp_ipv4))
-- `bgp_ipv6` (Block Set) Routing Protocol BGP IPv6 (see [below for nested schema](#nestedblock--bgp_ipv6))
+- `bgp_ipv4` (Block Set, Max: 1) Routing Protocol BGP IPv4 (see [below for nested schema](#nestedblock--bgp_ipv4))
+- `bgp_ipv6` (Block Set, Max: 1) Routing Protocol BGP IPv6 (see [below for nested schema](#nestedblock--bgp_ipv6))
 - `customer_asn` (Number) Customer-provided ASN
 - `description` (String) Customer-provided Fabric Routing Protocol description
-- `direct_ipv4` (Block Set) Routing Protocol Direct IPv4 (see [below for nested schema](#nestedblock--direct_ipv4))
-- `direct_ipv6` (Block Set) Routing Protocol Direct IPv6 (see [below for nested schema](#nestedblock--direct_ipv6))
+- `direct_ipv4` (Block Set, Max: 1) Routing Protocol Direct IPv4 (see [below for nested schema](#nestedblock--direct_ipv4))
+- `direct_ipv6` (Block Set, Max: 1) Routing Protocol Direct IPv6 (see [below for nested schema](#nestedblock--direct_ipv6))
 - `name` (String) Routing Protocol name. An alpha-numeric 24 characters string which can include only hyphens and underscores
 - `timeouts` (Block, Optional) (see [below for nested schema](#nestedblock--timeouts))
 - `type` (String) Defines the routing protocol type like BGP or DIRECT

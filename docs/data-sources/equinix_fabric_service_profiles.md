@@ -126,6 +126,7 @@ Read-Only:
 - `tags` (List of String)
 - `type` (String)
 - `uuid` (String)
+- `view_point` (String)
 - `virtual_devices` (List of Object) (see [below for nested schema](#nestedobjatt--data--virtual_devices))
 - `visibility` (String)
 
@@ -303,7 +304,6 @@ Read-Only:
 
 Read-Only:
 
-- `href` (String)
 - `project_id` (String)
 
 
@@ -326,3 +326,5 @@ Read-Only:
 - `metro_code` (String)
 - `metro_name` (String)
 - `region` (String)
+
+

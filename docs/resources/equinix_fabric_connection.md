@@ -667,14 +667,14 @@ Port to IBM Connections could be modified from IBM Service Provider Side by usin
 - `bandwidth` (Number) Connection bandwidth in Mbps
 - `name` (String) Connection name. An alpha-numeric 24 characters string which can include only hyphens and underscores
 - `notifications` (Block List, Min: 1) Preferences for notifications on connection configuration or status changes (see [below for nested schema](#nestedblock--notifications))
-- `type` (String) Defines the connection type like EVPL_VC, EPL_VC, IPWAN_VC, IP_VC, ACCESS_EPL_VC, EVPLAN_VC, EPLAN_VC, EIA_VC, EC_VC
+- `type` (String) Defines the connection type. One of [EVPL_VC EPL_VC EC_VC IP_VC ACCESS_EPL_VC EIA_VC EVPLAN_VC EPLAN_VC IPWAN_VC IA_VC]
 - `z_side` (Block Set, Min: 1, Max: 1) Destination or Provider side connection configuration object of the multi-segment connection (see [below for nested schema](#nestedblock--z_side))
 
 ### Optional
 
 - `additional_info` (List of Map of String) Connection additional information
 - `description` (String) Customer-provided connection description
-- `order` (Block Set, Min: 1, Max: 1) Order details (see [below for nested schema](#nestedblock--order))
+- `order` (Block Set, Max: 1) Order details (see [below for nested schema](#nestedblock--order))
 - `project` (Block Set, Max: 1) Project information (see [below for nested schema](#nestedblock--project))
 - `redundancy` (Block Set, Max: 1) Connection Redundancy Configuration (see [below for nested schema](#nestedblock--redundancy))
 - `timeouts` (Block, Optional) (see [below for nested schema](#nestedblock--timeouts))
@@ -711,18 +711,18 @@ Optional:
 - `link_protocol` (Block Set, Max: 1) Connection link protocol (see [below for nested schema](#nestedblock--a_side--access_point--link_protocol))
 - `location` (Block Set, Max: 1) Access point location (see [below for nested schema](#nestedblock--a_side--access_point--location))
 - `network` (Block Set, Max: 1) network access point information (see [below for nested schema](#nestedblock--a_side--access_point--network))
-- `peering_type` (String) Peering Type- PRIVATE,MICROSOFT,PUBLIC, MANUAL
+- `peering_type` (String) Peering type. One of [PRIVATE MICROSOFT PUBLIC MANUAL]
 - `port` (Block Set, Max: 1) Port access point information (see [below for nested schema](#nestedblock--a_side--access_point--port))
 - `profile` (Block Set, Max: 1) Service Profile (see [below for nested schema](#nestedblock--a_side--access_point--profile))
-- `provider_connection_id` (String) Provider assigned Connection Id
 - `router` (Block Set, Max: 1) Cloud Router access point information that replaces `gateway` (see [below for nested schema](#nestedblock--a_side--access_point--router))
 - `seller_region` (String) Access point seller region
-- `type` (String) Access point type - COLO, VD, VG, SP, IGW, SUBNET, CLOUD_ROUTER, NETWORK
+- `type` (String) Access point type. One of [VD VG SP IGW COLO SUBNET CLOUD_ROUTER NETWORK METAL_NETWORK]
 - `virtual_device` (Block Set, Max: 1) Virtual device (see [below for nested schema](#nestedblock--a_side--access_point--virtual_device))
 
 Read-Only:
 
-- `account` (Block Set) Account (see [below for nested schema](#nestedblock--a_side--access_point--account))
+- `account` (Set of Object) Account (see [below for nested schema](#nestedatt--a_side--access_point--account))
+- `provider_connection_id` (String) Provider assigned Connection Id
 
 <a id="nestedblock--a_side--access_point--gateway"></a>
 ### Nested Schema for `a_side.access_point.gateway`
@@ -739,19 +739,28 @@ Read-Only:
 <a id="nestedblock--a_side--access_point--interface"></a>
 ### Nested Schema for `a_side.access_point.interface`
 
+Required:
+
+- `type` (String) Interface type. One of [CLOUD NETWORK]
+
 Optional:
 
 - `id` (Number) id
-- `type` (String) Interface type
+
+Read-Only:
+
 - `uuid` (String) Equinix-assigned interface identifier
 
 
 <a id="nestedblock--a_side--access_point--link_protocol"></a>
 ### Nested Schema for `a_side.access_point.link_protocol`
 
+Required:
+
+- `type` (String) Type of the link protocol. One of [UNTAGGED DOT1Q QINQ EVPN_VXLAN VXLAN]
+
 Optional:
 
-- `type` (String) Type of the link protocol - UNTAGGED, DOT1Q, QINQ, EVPN_VXLAN
 - `vlan_c_tag` (Number) Vlan Customer Tag information, vlanCTag value specified for QINQ connections
 - `vlan_s_tag` (Number) Vlan Provider Tag information, vlanSTag value specified for QINQ connections
 - `vlan_tag` (Number) Vlan Tag information, vlanTag value specified for DOT1Q connections
@@ -760,10 +769,13 @@ Optional:
 <a id="nestedblock--a_side--access_point--location"></a>
 ### Nested Schema for `a_side.access_point.location`
 
-Optional:
+Required:
+
+- `metro_code` (String) Access point metro code
+
+Read-Only:
 
 - `ibx` (String) IBX Code
-- `metro_code` (String) Access point metro code
 - `metro_name` (String) Access point metro name
 - `region` (String) Access point region
 
@@ -771,7 +783,7 @@ Optional:
 <a id="nestedblock--a_side--access_point--network"></a>
 ### Nested Schema for `a_side.access_point.network`
 
-Optional:
+Required:
 
 - `uuid` (String) Equinix-assigned Network identifier
 
@@ -783,7 +795,7 @@ Read-Only:
 <a id="nestedblock--a_side--access_point--port"></a>
 ### Nested Schema for `a_side.access_point.port`
 
-Optional:
+Required:
 
 - `uuid` (String) Equinix-assigned Port identifier
 
@@ -809,7 +821,7 @@ Read-Only:
 
 Required:
 
-- `type` (String) Service profile type - L2_PROFILE, L3_PROFILE, ECIA_PROFILE, ECMC_PROFILE
+- `type` (String) Service profile type. One of [L2_PROFILE L3_PROFILE IA_PROFILE]
 - `uuid` (String) Equinix assigned service profile identifier
 
 Read-Only:
@@ -844,37 +856,37 @@ Read-Only:
 <a id="nestedblock--a_side--access_point--virtual_device"></a>
 ### Nested Schema for `a_side.access_point.virtual_device`
 
-Optional:
+Required:
 
-- `name` (String) Customer-assigned Virtual Device Name
-- `type` (String) Virtual Device type
+- `type` (String) Virtual Device type. One of [EDGE]
 - `uuid` (String) Equinix-assigned Virtual Device identifier
 
 Read-Only:
 
 - `href` (String) Unique Resource Identifier
+- `name` (String) Customer-assigned Virtual Device Name
 
 
-<a id="nestedblock--a_side--access_point--account"></a>
+<a id="nestedatt--a_side--access_point--account"></a>
 ### Nested Schema for `a_side.access_point.account`
 
 Read-Only:
 
-- `account_name` (String) Legal name of the accountholder.
-- `account_number` (Number) Equinix-assigned account number.
-- `global_cust_id` (String) Equinix-assigned ID of the subscriber's parent organization.
-- `global_org_id` (String) Equinix-assigned ID of the subscriber's parent organization.
-- `global_organization_name` (String) Equinix-assigned name of the subscriber's parent organization.
-- `org_id` (Number) Equinix-assigned ID of the subscriber's organization.
-- `organization_name` (String) Equinix-assigned name of the subscriber's organization.
-- `ucm_id` (String) Enterprise datastore id
+- `account_name` (String)
+- `account_number` (Number)
+- `global_cust_id` (String)
+- `global_org_id` (String)
+- `global_organization_name` (String)
+- `org_id` (Number)
+- `organization_name` (String)
+- `ucm_id` (String)
 
 
 
 <a id="nestedblock--a_side--additional_info"></a>
 ### Nested Schema for `a_side.additional_info`
 
-Optional:
+Required:
 
 - `key` (String) Additional information key
 - `value` (String) Additional information value
@@ -885,7 +897,7 @@ Optional:
 
 Optional:
 
-- `type` (String) Token type - VC_TOKEN
+- `type` (String) Token type. One of [VC_TOKEN]
 - `uuid` (String) Equinix-assigned service token identifier
 
 Read-Only:
@@ -901,25 +913,11 @@ Read-Only:
 Required:
 
 - `emails` (List of String) Array of contact emails
-- `type` (String) Notification Type - ALL,CONNECTION_APPROVAL,SALES_REP_NOTIFICATIONS, NOTIFICATIONS
+- `type` (String) Notification type. One of [NOTIFICATION BANDWIDTH_ALERT CONNECTION_APPROVAL PROFILE_LIFECYCLE ALL SALES_REP_NOTIFICATIONS]
 
 Optional:
 
 - `send_interval` (String) Send interval
-
-
-<a id="nestedblock--order"></a>
-### Nested Schema for `order`
-
-Optional:
-
-- `purchase_order_number` (String) Purchase order number. Short name/number to identify this order on the invoice
-
-Read-Only:
-
-- `billing_tier` (String) Billing tier for connection bandwidth
-- `order_id` (String) Order Identification
-- `order_number` (String) Order Reference Number
 
 
 <a id="nestedblock--z_side"></a>
@@ -942,18 +940,18 @@ Optional:
 - `link_protocol` (Block Set, Max: 1) Connection link protocol (see [below for nested schema](#nestedblock--z_side--access_point--link_protocol))
 - `location` (Block Set, Max: 1) Access point location (see [below for nested schema](#nestedblock--z_side--access_point--location))
 - `network` (Block Set, Max: 1) network access point information (see [below for nested schema](#nestedblock--z_side--access_point--network))
-- `peering_type` (String) Peering Type- PRIVATE,MICROSOFT,PUBLIC, MANUAL
+- `peering_type` (String) Peering type. One of [PRIVATE MICROSOFT PUBLIC MANUAL]
 - `port` (Block Set, Max: 1) Port access point information (see [below for nested schema](#nestedblock--z_side--access_point--port))
 - `profile` (Block Set, Max: 1) Service Profile (see [below for nested schema](#nestedblock--z_side--access_point--profile))
-- `provider_connection_id` (String) Provider assigned Connection Id
 - `router` (Block Set, Max: 1) Cloud Router access point information that replaces `gateway` (see [below for nested schema](#nestedblock--z_side--access_point--router))
 - `seller_region` (String) Access point seller region
-- `type` (String) Access point type - COLO, VD, VG, SP, IGW, SUBNET, CLOUD_ROUTER, NETWORK
+- `type` (String) Access point type. One of [VD VG SP IGW COLO SUBNET CLOUD_ROUTER NETWORK METAL_NETWORK]
 - `virtual_device` (Block Set, Max: 1) Virtual device (see [below for nested schema](#nestedblock--z_side--access_point--virtual_device))
 
 Read-Only:
 
-- `account` (Block Set) Account (see [below for nested schema](#nestedblock--z_side--access_point--account))
+- `account` (Set of Object) Account (see [below for nested schema](#nestedatt--z_side--access_point--account))
+- `provider_connection_id` (String) Provider assigned Connection Id
 
 <a id="nestedblock--z_side--access_point--gateway"></a>
 ### Nested Schema for `z_side.access_point.gateway`
@@ -970,19 +968,28 @@ Read-Only:
 <a id="nestedblock--z_side--access_point--interface"></a>
 ### Nested Schema for `z_side.access_point.interface`
 
+Required:
+
+- `type` (String) Interface type. One of [CLOUD NETWORK]
+
 Optional:
 
 - `id` (Number) id
-- `type` (String) Interface type
+
+Read-Only:
+
 - `uuid` (String) Equinix-assigned interface identifier
 
 
 <a id="nestedblock--z_side--access_point--link_protocol"></a>
 ### Nested Schema for `z_side.access_point.link_protocol`
 
+Required:
+
+- `type` (String) Type of the link protocol. One of [UNTAGGED DOT1Q QINQ EVPN_VXLAN VXLAN]
+
 Optional:
 
-- `type` (String) Type of the link protocol - UNTAGGED, DOT1Q, QINQ, EVPN_VXLAN
 - `vlan_c_tag` (Number) Vlan Customer Tag information, vlanCTag value specified for QINQ connections
 - `vlan_s_tag` (Number) Vlan Provider Tag information, vlanSTag value specified for QINQ connections
 - `vlan_tag` (Number) Vlan Tag information, vlanTag value specified for DOT1Q connections
@@ -991,10 +998,13 @@ Optional:
 <a id="nestedblock--z_side--access_point--location"></a>
 ### Nested Schema for `z_side.access_point.location`
 
-Optional:
+Required:
+
+- `metro_code` (String) Access point metro code
+
+Read-Only:
 
 - `ibx` (String) IBX Code
-- `metro_code` (String) Access point metro code
 - `metro_name` (String) Access point metro name
 - `region` (String) Access point region
 
@@ -1002,7 +1012,7 @@ Optional:
 <a id="nestedblock--z_side--access_point--network"></a>
 ### Nested Schema for `z_side.access_point.network`
 
-Optional:
+Required:
 
 - `uuid` (String) Equinix-assigned Network identifier
 
@@ -1014,7 +1024,7 @@ Read-Only:
 <a id="nestedblock--z_side--access_point--port"></a>
 ### Nested Schema for `z_side.access_point.port`
 
-Optional:
+Required:
 
 - `uuid` (String) Equinix-assigned Port identifier
 
@@ -1040,7 +1050,7 @@ Read-Only:
 
 Required:
 
-- `type` (String) Service profile type - L2_PROFILE, L3_PROFILE, ECIA_PROFILE, ECMC_PROFILE
+- `type` (String) Service profile type. One of [L2_PROFILE L3_PROFILE IA_PROFILE]
 - `uuid` (String) Equinix assigned service profile identifier
 
 Read-Only:
@@ -1075,37 +1085,37 @@ Read-Only:
 <a id="nestedblock--z_side--access_point--virtual_device"></a>
 ### Nested Schema for `z_side.access_point.virtual_device`
 
-Optional:
+Required:
 
-- `name` (String) Customer-assigned Virtual Device Name
-- `type` (String) Virtual Device type
+- `type` (String) Virtual Device type. One of [EDGE]
 - `uuid` (String) Equinix-assigned Virtual Device identifier
 
 Read-Only:
 
 - `href` (String) Unique Resource Identifier
+- `name` (String) Customer-assigned Virtual Device Name
 
 
-<a id="nestedblock--z_side--access_point--account"></a>
+<a id="nestedatt--z_side--access_point--account"></a>
 ### Nested Schema for `z_side.access_point.account`
 
 Read-Only:
 
-- `account_name` (String) Legal name of the accountholder.
-- `account_number` (Number) Equinix-assigned account number.
-- `global_cust_id` (String) Equinix-assigned ID of the subscriber's parent organization.
-- `global_org_id` (String) Equinix-assigned ID of the subscriber's parent organization.
-- `global_organization_name` (String) Equinix-assigned name of the subscriber's parent organization.
-- `org_id` (Number) Equinix-assigned ID of the subscriber's organization.
-- `organization_name` (String) Equinix-assigned name of the subscriber's organization.
-- `ucm_id` (String) Enterprise datastore id
+- `account_name` (String)
+- `account_number` (Number)
+- `global_cust_id` (String)
+- `global_org_id` (String)
+- `global_organization_name` (String)
+- `org_id` (Number)
+- `organization_name` (String)
+- `ucm_id` (String)
 
 
 
 <a id="nestedblock--z_side--additional_info"></a>
 ### Nested Schema for `z_side.additional_info`
 
-Optional:
+Required:
 
 - `key` (String) Additional information key
 - `value` (String) Additional information value
@@ -1116,7 +1126,7 @@ Optional:
 
 Optional:
 
-- `type` (String) Token type - VC_TOKEN
+- `type` (String) Token type. One of [VC_TOKEN]
 - `uuid` (String) Equinix-assigned service token identifier
 
 Read-Only:
@@ -1126,16 +1136,26 @@ Read-Only:
 
 
 
-<a id="nestedblock--project"></a>
-### Nested Schema for `project`
+<a id="nestedblock--order"></a>
+### Nested Schema for `order`
 
 Optional:
 
-- `project_id` (String) Project Id
+- `purchase_order_number` (String) Purchase order number. Short name/number to identify this order on the invoice
 
 Read-Only:
 
-- `href` (String) Unique Resource URL
+- `billing_tier` (String) Billing tier for connection bandwidth
+- `order_id` (String) Order Identification
+- `order_number` (String) Order Reference Number
+
+
+<a id="nestedblock--project"></a>
+### Nested Schema for `project`
+
+Required:
+
+- `project_id` (String) Project Id
 
 
 <a id="nestedblock--redundancy"></a>
@@ -1144,7 +1164,7 @@ Read-Only:
 Optional:
 
 - `group` (String) Redundancy group identifier (Use the redundancy.0.group UUID of primary connection; e.g. one(equinix_fabric_connection.primary_port_connection.redundancy).group or equinix_fabric_connection.primary_port_connection.redundancy.0.group)
-- `priority` (String) Connection priority in redundancy group - PRIMARY, SECONDARY
+- `priority` (String) Connection priority in redundancy group. One of [PRIMARY SECONDARY]
 
 
 <a id="nestedblock--timeouts"></a>

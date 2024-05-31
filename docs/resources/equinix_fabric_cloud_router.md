@@ -53,13 +53,13 @@ resource "equinix_fabric_cloud_router" "new_cloud_router"{
 - `notifications` (Block List, Min: 1) Preferences for notifications on Fabric Cloud Router configuration or status changes (see [below for nested schema](#nestedblock--notifications))
 - `package` (Block Set, Min: 1, Max: 1) Fabric Cloud Router Package Type (see [below for nested schema](#nestedblock--package))
 - `project` (Block Set, Min: 1, Max: 1) Customer resource hierarchy project information. Applicable to customers onboarded to Equinix Identity and Access Management. For more information see Identity and Access Management: Projects (see [below for nested schema](#nestedblock--project))
-- `type` (String) Defines the FCR type like; XF_ROUTER
+- `type` (String) Defines the FCR type. One of [XF_ROUTER]
 
 ### Optional
 
 - `description` (String) Customer-provided Fabric Cloud Router description
 - `href` (String) Fabric Cloud Router URI information
-- `order` (Block Set, Min: 1, Max: 1) Order information related to this Fabric Cloud Router (see [below for nested schema](#nestedblock--order))
+- `order` (Block Set, Max: 1) Order information related to this Fabric Cloud Router (see [below for nested schema](#nestedblock--order))
 - `timeouts` (Block, Optional) (see [below for nested schema](#nestedblock--timeouts))
 - `uuid` (String) Equinix-assigned Fabric Cloud Router identifier
 
@@ -78,7 +78,7 @@ resource "equinix_fabric_cloud_router" "new_cloud_router"{
 <a id="nestedblock--account"></a>
 ### Nested Schema for `account`
 
-Optional:
+Required:
 
 - `account_number` (Number) Account Number
 
@@ -86,10 +86,12 @@ Optional:
 <a id="nestedblock--location"></a>
 ### Nested Schema for `location`
 
-Optional:
+Required:
 
-- `ibx` (String) IBX Code
 - `metro_code` (String) Access point metro code
+
+Read-Only:
+
 - `metro_name` (String) Access point metro name
 - `region` (String) Access point region
 
@@ -100,11 +102,27 @@ Optional:
 Required:
 
 - `emails` (List of String) Array of contact emails
-- `type` (String) Notification Type - ALL,CONNECTION_APPROVAL,SALES_REP_NOTIFICATIONS, NOTIFICATIONS
+- `type` (String) Notification type. One of [NOTIFICATION BANDWIDTH_ALERT CONNECTION_APPROVAL PROFILE_LIFECYCLE ALL SALES_REP_NOTIFICATIONS]
 
 Optional:
 
 - `send_interval` (String) Send interval
+
+
+<a id="nestedblock--package"></a>
+### Nested Schema for `package`
+
+Required:
+
+- `code` (String) Fabric Cloud Router package code. One of [LAB ADVANCED STANDARD PREMIUM]
+
+
+<a id="nestedblock--project"></a>
+### Nested Schema for `project`
+
+Required:
+
+- `project_id` (String) Project Id
 
 
 <a id="nestedblock--order"></a>
@@ -119,23 +137,6 @@ Read-Only:
 - `billing_tier` (String) Billing tier for connection bandwidth
 - `order_id` (String) Order Identification
 - `order_number` (String) Order Reference Number
-
-
-<a id="nestedblock--package"></a>
-### Nested Schema for `package`
-
-Required:
-
-- `code` (String) Fabric Cloud Router package code
-
-
-<a id="nestedblock--project"></a>
-### Nested Schema for `project`
-
-Optional:
-
-- `href` (String) Unique Resource URL
-- `project_id` (String) Project Id
 
 
 <a id="nestedblock--timeouts"></a>
