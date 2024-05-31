@@ -366,7 +366,7 @@ func createSPAccessPointTypeConfigSch() map[string]*schema.Schema {
 		"type": {
 			Type:        schema.TypeString,
 			Required:    true,
-			ValidateFunc: equinix_validation.StringInEnumSlice(fabricv4.AllowedServiceProfileAccessPointTypeEnumEnumValues, true),
+			ValidateFunc: equinix_validation.StringInEnumSlice(fabricv4.AllowedServiceProfileAccessPointTypeEnumEnumValues, false),
 			Description: fmt.Sprintf("Type of access point type config. One of %v", fabricv4.AllowedServiceProfileAccessPointTypeEnumEnumValues),
 		},
 		"uuid": {

@@ -72,7 +72,7 @@ func fabricNetworkResourceSchema() map[string]*schema.Schema {
 		"scope": {
 			Type:        schema.TypeString,
 			Required:    true,
-			ValidateFunc: equinix_validation.StringInEnumSlice(fabricv4.AllowedNetworkScopeEnumValues, true),
+			ValidateFunc: equinix_validation.StringInEnumSlice(fabricv4.AllowedNetworkScopeEnumValues, false),
 			Description: fmt.Sprintf("Fabric Network scope. One of %v", fabricv4.AllowedNetworkScopeEnumValues),
 		},
 		"type": {

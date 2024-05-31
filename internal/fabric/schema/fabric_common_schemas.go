@@ -38,7 +38,7 @@ func NotificationSch() map[string]*schema.Schema {
 		"type": {
 			Type:        schema.TypeString,
 			Required:    true,
-			ValidateFunc: equinix_validation.StringInEnumSlice(fabricv4.AllowedSimplifiedNotificationTypeEnumValues, true),
+			ValidateFunc: equinix_validation.StringInEnumSlice(fabricv4.AllowedSimplifiedNotificationTypeEnumValues, false),
 			Description: fmt.Sprintf("Notification type. One of %v", fabricv4.AllowedSimplifiedNotificationTypeEnumValues),
 		},
 		"send_interval": {

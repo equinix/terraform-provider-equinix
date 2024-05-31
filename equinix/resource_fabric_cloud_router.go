@@ -26,7 +26,7 @@ func fabricCloudRouterPackageSch() map[string]*schema.Schema {
 		"code": {
 			Type:        schema.TypeString,
 			Required:    true,
-			ValidateFunc: equinix_validation.StringInEnumSlice(fabricv4.AllowedRouterPackageCodeEnumValues, true),
+			ValidateFunc: equinix_validation.StringInEnumSlice(fabricv4.AllowedRouterPackageCodeEnumValues, false),
 			Description: fmt.Sprintf("Fabric Cloud Router package code. One of %v", fabricv4.AllowedRouterPackageCodeEnumValues),
 		},
 	}
