@@ -16,7 +16,6 @@ import (
 	equinix_schema "github.com/equinix/terraform-provider-equinix/internal/schema"
 	equinix_validation "github.com/equinix/terraform-provider-equinix/internal/validation"
 
-	"github.com/equinix/equinix-sdk-go/services/fabricv4"
 	"github.com/equinix/terraform-provider-equinix/internal/config"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
