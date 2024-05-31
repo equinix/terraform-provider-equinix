@@ -234,7 +234,6 @@ func fabricConnectionAccessPointSch() *schema.Resource {
 			},
 			"account": {
 				Type:        schema.TypeSet,
-				Optional:    true,
 				Computed:    true,
 				Description: "Account",
 				MaxItems:    1,
