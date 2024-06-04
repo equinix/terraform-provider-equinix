@@ -25,7 +25,7 @@ require (
 	github.com/packethost/packngo v0.31.0
 	github.com/pkg/errors v0.9.1
 	github.com/stretchr/testify v1.9.0
-	golang.org/x/oauth2 v0.20.0
+	golang.org/x/oauth2 v0.21.0
 )
 
 require (
