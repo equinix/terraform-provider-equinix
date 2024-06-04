@@ -47,7 +47,7 @@ func readFabricConnectionSearchSchema() map[string]*schema.Schema {
 		"filter": {
 			Type:        schema.TypeList,
 			Required:    true,
-			Description: "Filters for the Data Source Search Request. Maximum of 8 total filters.",
+			Description: "Filters for the Data Source Search Request",
 			MaxItems:    10,
 			Elem: &schema.Resource{
 				Schema: map[string]*schema.Schema{
