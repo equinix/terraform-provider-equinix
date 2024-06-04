@@ -249,6 +249,53 @@ resource "equinix_network_device" "arista-ha" {
 }
 ```
 
+```hcl
+# Add a secondary device to an existing primary device.
+
+data "equinix_network_account" "sy" {
+    name = "account-name"
+    metro_code = "SY"
+    project_id = "92cbcfd9-347b-4da5-901d-2cea82575941"
+}
+
+resource "equinix_network_device" "C8KV-SV" {
+    name            = "tf-primary"
+    project_id      = "68ccfd49-39b1-478e-957a-67c72f719d7a"
+    primary_device_id = "8b028560-4a91-4b52-87ba-9fae0fcb538c"
+    metro_code      = data.equinix_network_account.sy.metro_code
+    type_code       = "C8000V"
+    self_managed    = true
+    byol            = true
+    package_code    = "network-essentials"
+    notifications   = ["test@eq.com"]
+    hostname        = "C8KV"
+    account_number  = data.equinix_network_account.sy.number
+    version         = "17.13.1a"
+    core_count      = 2
+    term_length     = 1
+    additional_bandwidth = 5
+    ssh_key {
+        username = "test-username"
+        key_name = "test"
+    }
+    acl_template_id = "fee5e2c0-6198-4ce6-9cbd-bbe6c1dbe138"
+    secondary_device {
+        name            = "tf-secondary"
+        metro_code      = data.equinix_network_account.sy.metro_code
+        notifications   = ["test@eq.com"]
+        hostname        = "C8KV"
+        account_number  = data.equinix_network_account.sy.number
+        vendor_configuration = {"hostNamePrefix" ="C8KV-secondary"}
+        additional_bandwidth = 5
+        ssh_key {
+            username = "test-username"
+            key_name = "test"
+        }
+        acl_template_id = "fee5e2c0-6198-4ce6-9cbd-bbe6c1dbe138"
+    }
+}
+```
+
 ## Argument Reference
 
 The following arguments are supported:
@@ -302,6 +349,8 @@ leave it out, the device will be created under the default project id of your or
 * `diverse_device_id` - (Optional) Unique ID of an existing device.
 Use this field to let Equinix know if you want your new device to be in a different location from any existing virtual 
 device. This field is only meaningful for single devices.
+* `primary_device_id` - Unique ID of an existing primary device. This field is used when you are using Create Virtual 
+Device API to add a secondary device to an existing primary device. If not used it would create new HA/redundant devices
 
 ### Secondary Device
 

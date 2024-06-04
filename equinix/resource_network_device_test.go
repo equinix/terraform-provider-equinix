@@ -91,6 +91,151 @@ func TestNetworkDevice_createFromResourceData(t *testing.T) {
 	assert.Equal(t, expectedPrimary, primary, "Primary device matches expected result")
 }
 
+func TestNetworkDevice_AddSecFromResourceData(t *testing.T) {
+	expectedPrimaryUserKey := ne.DeviceUserPublicKey{
+		Username: ne.String("user"),
+		KeyName:  ne.String("key"),
+	}
+	expectedSecondaryUserKey := ne.DeviceUserPublicKey{
+		Username: ne.String("user"),
+		KeyName:  ne.String("key"),
+	}
+	expectedPrimaryVendorConfig := map[string]string{
+		"key": "value",
+	}
+	expectedSecondaryVendorConfig := map[string]string{
+		"key": "value",
+	}
+	expectedPrimary := &ne.Device{
+		Name:                ne.String("device"),
+		TypeCode:            ne.String("C8000V"),
+		MetroCode:           ne.String("SV"),
+		HostName:            ne.String("test"),
+		PackageCode:         ne.String("network-essentials"),
+		Version:             ne.String("17.13.1a"),
+		IsBYOL:              ne.Bool(true),
+		LicenseToken:        ne.String("sWf3df4gaAvbbexw45ga4f"),
+		ACLTemplateUUID:     ne.String("a624178c-6d59-4798-9a7f-2ddf2c7c5881"),
+		AccountNumber:       ne.String("123456"),
+		Notifications:       []string{"bla@bla.com"},
+		TermLength:          ne.Int(1),
+		AdditionalBandwidth: ne.Int(50),
+		OrderReference:      ne.String("12312121sddsf1231"),
+		InterfaceCount:      ne.Int(10),
+		WanInterfaceId:      ne.String("5"),
+		CoreCount:           ne.Int(2),
+		IsSelfManaged:       ne.Bool(false),
+		VendorConfiguration: expectedPrimaryVendorConfig,
+		UserPublicKey:       &expectedPrimaryUserKey,
+		Connectivity:        ne.String("INTERNET-ACCESS"),
+		ProjectID:           ne.String("68ccfd49-39b1-478e-957a-67c72f719d7a"),
+		PrimaryDeviceUUID:   ne.String("8b028560-4a91-4b52-87ba-9fae0fcb538c"),
+	}
+	expectedSecondary := &ne.Device{
+		Name: ne.String("device"),
+		//TypeCode:            ne.String("C8000V"),
+		MetroCode:           ne.String("SV"),
+		HostName:            ne.String("test"),
+		LicenseToken:        ne.String("sWf3df4gaAvbbexw45ga4f"),
+		ACLTemplateUUID:     ne.String("a624178c-6d59-4798-9a7f-2ddf2c7c5881"),
+		AccountNumber:       ne.String("123456"),
+		Notifications:       []string{"bla@bla.com"},
+		AdditionalBandwidth: ne.Int(50),
+		VendorConfiguration: expectedSecondaryVendorConfig,
+		UserPublicKey:       &expectedSecondaryUserKey,
+		ProjectID:           ne.String("68ccfd49-39b1-478e-957a-67c72f719d7a"),
+	}
+	rawData := map[string]interface{}{
+		neDeviceSchemaNames["Name"]:                ne.StringValue(expectedPrimary.Name),
+		neDeviceSchemaNames["TypeCode"]:            ne.StringValue(expectedPrimary.TypeCode),
+		neDeviceSchemaNames["MetroCode"]:           ne.StringValue(expectedPrimary.MetroCode),
+		neDeviceSchemaNames["HostName"]:            ne.StringValue(expectedPrimary.HostName),
+		neDeviceSchemaNames["PackageCode"]:         ne.StringValue(expectedPrimary.PackageCode),
+		neDeviceSchemaNames["Version"]:             ne.StringValue(expectedPrimary.Version),
+		neDeviceSchemaNames["IsBYOL"]:              ne.BoolValue(expectedPrimary.IsBYOL),
+		neDeviceSchemaNames["LicenseToken"]:        ne.StringValue(expectedPrimary.LicenseToken),
+		neDeviceSchemaNames["ACLTemplateUUID"]:     ne.StringValue(expectedPrimary.ACLTemplateUUID),
+		neDeviceSchemaNames["AccountNumber"]:       ne.StringValue(expectedPrimary.AccountNumber),
+		neDeviceSchemaNames["TermLength"]:          ne.IntValue(expectedPrimary.TermLength),
+		neDeviceSchemaNames["AdditionalBandwidth"]: ne.IntValue(expectedPrimary.AdditionalBandwidth),
+		neDeviceSchemaNames["OrderReference"]:      ne.StringValue(expectedPrimary.OrderReference),
+		neDeviceSchemaNames["InterfaceCount"]:      ne.IntValue(expectedPrimary.InterfaceCount),
+		neDeviceSchemaNames["WanInterfaceId"]:      ne.StringValue(expectedPrimary.WanInterfaceId),
+		neDeviceSchemaNames["CoreCount"]:           ne.IntValue(expectedPrimary.CoreCount),
+		neDeviceSchemaNames["IsSelfManaged"]:       ne.BoolValue(expectedPrimary.IsSelfManaged),
+		neDeviceSchemaNames["ProjectID"]:           ne.StringValue(expectedPrimary.ProjectID),
+		neDeviceSchemaNames["PrimaryDeviceUUID"]:   ne.StringValue(expectedPrimary.PrimaryDeviceUUID),
+	}
+
+	input := &ne.Device{
+		Name:                ne.String("device"),
+		MetroCode:           ne.String("SV"),
+		IBX:                 ne.String("SV5"),
+		Region:              ne.String("AMER"),
+		HostName:            ne.String("test"),
+		LicenseToken:        ne.String("sWf3df4gaAvbbexw45ga4f"),
+		ACLTemplateUUID:     ne.String("a624178c-6d59-4798-9a7f-2ddf2c7c5881"),
+		SSHIPAddress:        ne.String("1.1.1.1"),
+		SSHIPFqdn:           ne.String("test-1.1.1.1-SV.test.equinix.com"),
+		AccountNumber:       ne.String("123456"),
+		Notifications:       []string{"bla@bla.com"},
+		RedundancyType:      ne.String("SECONDARY"),
+		AdditionalBandwidth: ne.Int(50),
+		ProjectID:           ne.String("68ccfd49-39b1-478e-957a-67c72f719d7a"),
+		Interfaces: []ne.DeviceInterface{
+			{
+				ID:                ne.Int(1),
+				Name:              ne.String("GigabitEthernet1"),
+				Status:            ne.String("AVAILABLE"),
+				OperationalStatus: ne.String("UP"),
+				MACAddress:        ne.String("58-0A-C9-7A-DA-E9"),
+				IPAddress:         ne.String("2.2.2.2"),
+				AssignedType:      ne.String("test-connection(AWS Direct Connect)"),
+				Type:              ne.String("DATA"),
+			},
+		},
+		VendorConfiguration: map[string]string{
+			"key": "value",
+		},
+		UserPublicKey: &ne.DeviceUserPublicKey{
+			Username: ne.String("user"),
+			KeyName:  ne.String("key"),
+		},
+		ASN:      ne.Int(11222),
+		ZoneCode: ne.String("Zone2"),
+	}
+
+	d := schema.TestResourceDataRaw(t, createNetworkDeviceSchema(), rawData)
+	d.Set(neDeviceSchemaNames["Secondary"], flattenNetworkDeviceSecondary(input))
+	d.Set(neDeviceSchemaNames["Notifications"], expectedPrimary.Notifications)
+	d.Set(neDeviceSchemaNames["UserPublicKey"], flattenNetworkDeviceUserKeys([]*ne.DeviceUserPublicKey{&expectedPrimaryUserKey}))
+	d.Set(neDeviceSchemaNames["VendorConfiguration"], expectedPrimary.VendorConfiguration)
+	d.Set(neDeviceSchemaNames["PrimaryDeviceUUID"], expectedPrimary.PrimaryDeviceUUID)
+	d.Set(neDeviceSchemaNames["TypeCode"], expectedPrimary.TypeCode)
+	d.Set(neDeviceSchemaNames["Version"], expectedPrimary.Version)
+	d.Set(neDeviceSchemaNames["TermLength"], expectedPrimary.TermLength)
+	d.Set(neDeviceSchemaNames["OrderReference"], expectedPrimary.OrderReference)
+	d.Set(neDeviceSchemaNames["PackageCode"], expectedPrimary.PackageCode)
+	d.Set(neDeviceSchemaNames["CoreCount"], expectedPrimary.CoreCount)
+	d.Set(neDeviceSchemaNames["InterfaceCount"], expectedPrimary.InterfaceCount)
+	d.Set(neDeviceSchemaNames["Notifications"], expectedSecondary.Notifications)
+	d.Set(neDeviceSchemaNames["UserPublicKey"], flattenNetworkDeviceUserKeys([]*ne.DeviceUserPublicKey{&expectedSecondaryUserKey}))
+	d.Set(neDeviceSchemaNames["VendorConfiguration"], expectedSecondary.VendorConfiguration)
+	d.Set(neDeviceSchemaNames["Name"], expectedSecondary.Name)
+	d.Set(neDeviceSchemaNames["PurchaseOrderNumber"], nil)
+	d.Set(neDeviceSchemaNames["HostName"], expectedSecondary.HostName)
+	d.Set(neDeviceSchemaNames["ProjectID"], expectedSecondary.ProjectID)
+
+	// when
+	primary, secondary := createNetworkDevices(d)
+
+	// then
+	assert.NotNil(t, primary, "Primary device is not nil")
+	assert.NotNil(t, secondary, "Secondary device is not nil")
+	assert.Equal(t, expectedPrimary, primary, "Primary device matches expected result")
+	assert.Equal(t, expectedSecondary, secondary, "Secondary device matches expected result")
+}
+
 func TestNetworkDevice_updateResourceData(t *testing.T) {
 	// given
 	inputPrimary := &ne.Device{

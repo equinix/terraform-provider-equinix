@@ -70,6 +70,7 @@ var neDeviceSchemaNames = map[string]string{
 	"Connectivity":          "connectivity",
 	"DiverseFromDeviceUUID": "diverse_device_id",
 	"DiverseFromDeviceName": "diverse_device_name",
+	"PrimaryDeviceUUID":     "primary_device_id",
 }
 
 var neDeviceDescriptions = map[string]string{
@@ -119,6 +120,7 @@ var neDeviceDescriptions = map[string]string{
 	"ProjectID":             "The unique identifier of Project Resource to which device is scoped to",
 	"DiverseFromDeviceUUID": "Unique ID of an existing device",
 	"DiverseFromDeviceName": "Diverse Device Name of an existing device",
+	"PrimaryDeviceUUID":     "Primary Device UUID",
 }
 
 var neDeviceInterfaceSchemaNames = map[string]string{
@@ -228,6 +230,13 @@ func createNetworkDeviceSchema() map[string]*schema.Schema {
 			Type:        schema.TypeString,
 			Computed:    true,
 			Description: neDeviceDescriptions["UUID"],
+		},
+		neDeviceSchemaNames["PrimaryDeviceUUID"]: {
+			Type:         schema.TypeString,
+			Optional:     true,
+			Computed:     true,
+			ValidateFunc: validation.IsUUID,
+			Description:  neDeviceDescriptions["PrimaryDeviceUUID"],
 		},
 		neDeviceSchemaNames["Name"]: {
 			Type:     schema.TypeString,
@@ -1082,6 +1091,9 @@ func createNetworkDevices(d *schema.ResourceData) (*ne.Device, *ne.Device) {
 	}
 	if v, ok := d.GetOk(neDeviceSchemaNames["DiverseFromDeviceUUID"]); ok {
 		primary.DiverseFromDeviceUUID = ne.String(v.(string))
+	}
+	if v, ok := d.GetOk(neDeviceSchemaNames["PrimaryDeviceUUID"]); ok {
+		primary.PrimaryDeviceUUID = ne.String(v.(string))
 	}
 	if v, ok := d.GetOk(neDeviceSchemaNames["Throughput"]); ok {
 		primary.Throughput = ne.Int(v.(int))
