@@ -1,11 +1,8 @@
-package equinix_test
+package network
 
 import (
 	"fmt"
 	"github.com/equinix/terraform-provider-equinix/internal/acceptance"
-	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
-	_ "github.com/hashicorp/terraform-plugin-testing/terraform"
-	"testing"
 )
 
 func TestAccDataSourceFabricNetwork_PFCR(t *testing.T) {

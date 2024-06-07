@@ -1,150 +1,15 @@
-package equinix
+package network
 
 import (
-	"context"
-	"fmt"
 	"github.com/equinix/equinix-sdk-go/services/fabricv4"
-	"github.com/equinix/terraform-provider-equinix/internal/config"
 	equinix_errors "github.com/equinix/terraform-provider-equinix/internal/errors"
 	equinix_fabric_schema "github.com/equinix/terraform-provider-equinix/internal/fabric/schema"
-	equinix_schema "github.com/equinix/terraform-provider-equinix/internal/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
-	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"log"
 	"time"
 )
 
-func fabricNetworkChangeSch() map[string]*schema.Schema {
-	return map[string]*schema.Schema{
-		"href": {
-			Type:        schema.TypeString,
-			Computed:    true,
-			Description: "Absolute URL that returns the details of the given change.\nExample: https://api.equinix.com/fabric/v4/networks/92dc376a-a932-43aa-a6a2-c806dedbd784",
-		},
-		"uuid": {
-			Type:        schema.TypeString,
-			Computed:    true,
-			Description: "Asset change request identifier.",
-		},
-		"type": {
-			Type:        schema.TypeString,
-			Computed:    true,
-			Description: "Asset instance change request type.: NETWORK_CREATION, NETWORK_UPDATE, NETWORK_DELETION",
-		},
-	}
-}
-func fabricNetworkOperationSch() map[string]*schema.Schema {
-	return map[string]*schema.Schema{
-		"equinix_status": {
-			Type:        schema.TypeString,
-			Computed:    true,
-			Description: "Progress towards provisioning a given asset.",
-		},
-	}
-}
-func fabricNetworkProjectSch() map[string]*schema.Schema {
-	return map[string]*schema.Schema{
-		"project_id": {
-			Type:        schema.TypeString,
-			Required:    true,
-			Description: "Customer project identifier",
-		},
-	}
-}
-func fabricNetworkResourceSchema() map[string]*schema.Schema {
-	return map[string]*schema.Schema{
-		"href": {
-			Type:        schema.TypeString,
-			Computed:    true,
-			Description: "Fabric Network URI information",
-		},
-		"name": {
-			Type:         schema.TypeString,
-			Required:     true,
-			ValidateFunc: validation.StringLenBetween(1, 24),
-			Description:  "Fabric Network name. An alpha-numeric 24 characters string which can include only hyphens and underscores",
-		},
-		"uuid": {
-			Type:        schema.TypeString,
-			Computed:    true,
-			Description: "Equinix-assigned network identifier",
-		},
-		"state": {
-			Type:        schema.TypeString,
-			Computed:    true,
-			Description: "Fabric Network overall state",
-		},
-		"scope": {
-			Type:        schema.TypeString,
-			Required:    true,
-			Description: "Fabric Network scope",
-		},
-		"type": {
-			Type:         schema.TypeString,
-			Required:     true,
-			ValidateFunc: validation.StringInSlice([]string{"IPWAN", "EPLAN", "EVPLAN"}, true),
-			Description:  "Supported Network types - EVPLAN, EPLAN, IPWAN",
-		},
-		"location": {
-			Type:        schema.TypeSet,
-			Computed:    true,
-			Optional:    true,
-			Description: "Fabric Network location",
-			MaxItems:    1,
-			Elem: &schema.Resource{
-				Schema: equinix_fabric_schema.LocationSch(),
-			},
-		},
-		"project": {
-			Type:        schema.TypeSet,
-			Required:    true,
-			Description: "Fabric Network project",
-			Elem: &schema.Resource{
-				Schema: fabricNetworkProjectSch(),
-			},
-		},
-		"operation": {
-			Type:        schema.TypeSet,
-			Computed:    true,
-			Description: "Network operation information that is associated with this Fabric Network",
-			Elem: &schema.Resource{
-				Schema: fabricNetworkOperationSch(),
-			},
-		},
-		"change": {
-			Type:        schema.TypeSet,
-			Computed:    true,
-			Description: "Information on asset change operation",
-			Elem: &schema.Resource{
-				Schema: fabricNetworkChangeSch(),
-			},
-		},
-		"notifications": {
-			Type:        schema.TypeList,
-			Required:    true,
-			Description: "Preferences for notifications on Fabric Network configuration or status changes",
-			Elem: &schema.Resource{
-				Schema: equinix_fabric_schema.NotificationSch(),
-			},
-		},
-		"change_log": {
-			Type:        schema.TypeSet,
-			Computed:    true,
-			Description: "A permanent record of asset creation, modification, or deletion",
-			Elem: &schema.Resource{
-				Schema: equinix_fabric_schema.ChangeLogSch(),
-			},
-		},
-		"connections_count": {
-			Type:        schema.TypeInt,
-			Computed:    true,
-			Description: "Number of connections associated with this network",
-		},
-	}
-}
 func resourceFabricNetwork() *schema.Resource {
 	return &schema.Resource{
 		Timeouts: &schema.ResourceTimeout{
@@ -213,76 +78,6 @@ func resourceFabricNetworkRead(ctx context.Context, d *schema.ResourceData, meta
 	}
 	d.SetId(fabricNetwork.Uuid)
 	return setFabricNetworkMap(d, fabricNetwork)
-}
-
-func fabricNetworkOperationGoToTerraform(operation *fabricv4.NetworkOperation) *schema.Set {
-	if operation == nil {
-		return nil
-	}
-	mappedOperation := make(map[string]interface{})
-	mappedOperation["equinix_status"] = string(*operation.EquinixStatus)
-
-	operationSet := schema.NewSet(
-		schema.HashResource(&schema.Resource{Schema: fabricNetworkOperationSch()}),
-		[]interface{}{mappedOperation},
-	)
-	return operationSet
-}
-func simplifiedFabricNetworkChangeGoToTerraform(networkChange *fabricv4.SimplifiedNetworkChange) *schema.Set {
-
-	mappedChange := make(map[string]interface{})
-	mappedChange["href"] = networkChange.GetHref()
-	mappedChange["type"] = string(networkChange.GetType())
-	mappedChange["uuid"] = networkChange.GetUuid()
-
-	changeSet := schema.NewSet(
-		schema.HashResource(&schema.Resource{Schema: fabricNetworkChangeSch()}),
-		[]interface{}{mappedChange},
-	)
-	return changeSet
-}
-
-func setFabricNetworkMap(d *schema.ResourceData, nt *fabricv4.Network) diag.Diagnostics {
-	diags := diag.Diagnostics{}
-	operation := nt.GetOperation()
-	change := nt.GetChange()
-	location := nt.GetLocation()
-	notifications := nt.GetNotifications()
-	project := nt.GetProject()
-	changeLog := nt.GetChangeLog()
-	err := equinix_schema.SetMap(d, map[string]interface{}{
-		"name":              nt.GetName(),
-		"href":              nt.GetHref(),
-		"uuid":              nt.GetUuid(),
-		"type":              string(nt.GetType()),
-		"scope":             string(nt.GetScope()),
-		"state":             string(nt.GetState()),
-		"operation":         fabricNetworkOperationGoToTerraform(&operation),
-		"change":            simplifiedFabricNetworkChangeGoToTerraform(&change),
-		"location":          equinix_fabric_schema.LocationGoToTerraform(&location),
-		"notifications":     equinix_fabric_schema.NotificationsGoToTerraform(notifications),
-		"project":           equinix_fabric_schema.ProjectGoToTerraform(&project),
-		"change_log":        equinix_fabric_schema.ChangeLogGoToTerraform(&changeLog),
-		"connections_count": nt.GetConnectionsCount(),
-	})
-	if err != nil {
-		return diag.FromErr(err)
-	}
-	return diags
-}
-func getFabricNetworkUpdateRequest(network *fabricv4.Network, d *schema.ResourceData) (fabricv4.NetworkChangeOperation, error) {
-	changeOps := fabricv4.NetworkChangeOperation{}
-	existingName := network.GetName()
-	updateNameVal := d.Get("name").(string)
-
-	log.Printf("existing name %s, Update Name Request %s ", existingName, updateNameVal)
-
-	if existingName != updateNameVal {
-		changeOps = fabricv4.NetworkChangeOperation{Op: "replace", Path: "/name", Value: updateNameVal}
-	} else {
-		return changeOps, fmt.Errorf("nothing to update for the Fabric Network: %s", existingName)
-	}
-	return changeOps, nil
 }
 
 func resourceFabricNetworkUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
