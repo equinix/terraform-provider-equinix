@@ -41,7 +41,7 @@ func dataSourceFabricNetworkSearch(ctx context.Context, d *schema.ResourceData, 
 
 func resourceFabricNetworkSearch(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*config.Config).NewFabricClientForSDK(d)
-	connectionSearchRequest := fabricv4.SearchRequest{}
+	networkSearchRequest := fabricv4.NetworkSearchRequest{}
 
 	schemaFilters := d.Get("filter").([]interface{})
 	schemaOuterOperator := d.Get("outer_operator").(string)
@@ -50,37 +50,37 @@ func resourceFabricNetworkSearch(ctx context.Context, d *schema.ResourceData, me
 		return diag.FromErr(err)
 	}
 
-	connectionSearchRequest.SetFilter(filter)
+	networkSearchRequest.SetFilter(filter)
 
 	if schemaPagination, ok := d.GetOk("pagination"); ok {
 		pagination := networkPaginationTerraformToGo(schemaPagination.(*schema.Set).List())
-		connectionSearchRequest.SetPagination(pagination)
+		networkSearchRequest.SetPagination(pagination)
 	}
 
 	if schemaSort, ok := d.GetOk("sort"); ok {
 		sort := networkSortTerraformToGo(schemaSort.([]interface{}))
-		connectionSearchRequest.SetSort(sort)
+		networkSearchRequest.SetSort(sort)
 	}
 
-	connections, _, err := client.ConnectionsApi.SearchConnections(ctx).SearchRequest(connectionSearchRequest).Execute()
+	networks, _, err := client.NetworksApi.SearchNetworks(ctx).NetworkSearchRequest(networkSearchRequest).Execute()
 	if err != nil {
 		return diag.FromErr(equinix_errors.FormatFabricError(err))
 	}
 
-	if len(connections.Data) < 1 {
-		return diag.FromErr(fmt.Errorf("no records are found for the connection search criteria provided - %d , please change the search criteria", len(connections.Data)))
+	if len(networks.Data) < 1 {
+		return diag.FromErr(fmt.Errorf("no records are found for the network search criteria provided - %d , please change the search criteria", len(networks.Data)))
 	}
 
-	d.SetId(connections.Data[0].GetUuid())
-	return setNetworksData(d, connections)
+	d.SetId(networks.Data[0].GetUuid())
+	return setNetworksData(d, networks)
 }
 
-func setNetworksData(d *schema.ResourceData, connections *fabricv4.ConnectionSearchResponse) diag.Diagnostics {
+func setNetworksData(d *schema.ResourceData, networks *fabricv4.NetworkSearchResponse) diag.Diagnostics {
 	diags := diag.Diagnostics{}
-	mappedConnections := make([]map[string]interface{}, len(connections.Data))
-	if connections.Data != nil {
-		for index, connection := range connections.Data {
-			mappedConnections[index] = networkMap(&connection)
+	mappedConnections := make([]map[string]interface{}, len(networks.Data))
+	if networks.Data != nil {
+		for index, network := range networks.Data {
+			mappedConnections[index] = networkMap(&network)
 		}
 	} else {
 		mappedConnections = nil
@@ -94,71 +94,71 @@ func setNetworksData(d *schema.ResourceData, connections *fabricv4.ConnectionSea
 	return diags
 }
 
-func networkFiltersTerraformToGo(filters []interface{}, outerOperator string) (fabricv4.Expression, error) {
+func networkFiltersTerraformToGo(filters []interface{}, outerOperator string) (fabricv4.NetworkFilter, error) {
 	if filters == nil || len(filters) == 0 {
-		return fabricv4.Expression{}, fmt.Errorf("no filters passed to filtersTerraformToGoMethod")
+		return fabricv4.NetworkFilter{}, fmt.Errorf("no filters passed to filtersTerraformToGoMethod")
 	}
-	outerExpression := fabricv4.Expression{}
-	expressions := make([]fabricv4.Expression, 0)
-	groups := make(map[string]fabricv4.Expression)
+	outerNetworkFilter := fabricv4.NetworkFilter{}
+	networkFilters := make([]fabricv4.NetworkFilter, 0)
+	groups := make(map[string]fabricv4.NetworkFilter)
 
 	for _, filter := range filters {
 		filterMap := filter.(map[string]interface{})
-		expression := fabricv4.Expression{}
+		networkFilter := fabricv4.NetworkFilter{}
 		if property, ok := filterMap["property"]; ok {
-			expression.SetProperty(fabricv4.SearchFieldName(property.(string)))
+			networkFilter.SetProperty(fabricv4.NetworkSearchFieldName(property.(string)))
 		}
 		if operator, ok := filterMap["operator"]; ok {
-			expression.SetOperator(fabricv4.ExpressionOperator(operator.(string)))
+			networkFilter.SetOperator(fabricv4.NetworkFilterOperator(operator.(string)))
 		}
 		if values, ok := filterMap["values"]; ok {
 			stringValues := converters.IfArrToStringArr(values.([]interface{}))
-			expression.SetValues(stringValues)
+			networkFilter.SetValues(stringValues)
 		}
 
 		// If the parent has any contents then all the children schema properties will be included in the map even
 		// if they aren't given a value. Still need to check for empty string for the value because of this.
 		if groupInterface, ok := filterMap["group"]; ok && groupInterface.(string) != "" {
 			group := groupInterface.(string)
-			groupExpression := fabricv4.Expression{}
+			groupNetworkFilter := fabricv4.NetworkFilter{}
 			if _, ok := groups[group]; ok {
-				groupExpression = groups[group]
-				var expressionList []fabricv4.Expression
+				groupNetworkFilter = groups[group]
+				var networkFilterList []fabricv4.NetworkFilter
 				if strings.HasPrefix(group, "AND_") {
-					expressionList = groupExpression.GetAnd()
-					expressionList = append(expressionList, expression)
-					groupExpression.SetAnd(expressionList)
+					networkFilterList = groupNetworkFilter.GetAnd()
+					networkFilterList = append(networkFilterList, networkFilter)
+					groupNetworkFilter.SetAnd(networkFilterList)
 				} else if strings.HasPrefix(group, "OR_") {
-					expressionList = groupExpression.GetOr()
-					expressionList = append(expressionList, expression)
-					groupExpression.SetOr(expressionList)
+					networkFilterList = groupNetworkFilter.GetOr()
+					networkFilterList = append(networkFilterList, networkFilter)
+					groupNetworkFilter.SetOr(networkFilterList)
 				}
 			} else {
-				expressionList := make([]fabricv4.Expression, 1)
-				expressionList[0] = expression
+				networkFilterList := make([]fabricv4.NetworkFilter, 1)
+				networkFilterList[0] = networkFilter
 				if strings.HasPrefix(group, "AND_") {
-					groupExpression.SetAnd(expressionList)
+					groupNetworkFilter.SetAnd(networkFilterList)
 				} else if strings.HasPrefix(group, "OR_") {
-					groupExpression.SetOr(expressionList)
+					groupNetworkFilter.SetOr(networkFilterList)
 				}
 			}
-			groups[group] = groupExpression
+			groups[group] = groupNetworkFilter
 		} else {
-			expressions = append(expressions, expression)
+			networkFilters = append(networkFilters, networkFilter)
 		}
 	}
 
 	for _, value := range groups {
-		expressions = append(expressions, value)
+		networkFilters = append(networkFilters, value)
 	}
 
 	if outerOperator == "AND" {
-		outerExpression.SetAnd(expressions)
+		outerNetworkFilter.SetAnd(networkFilters)
 	} else if outerOperator == "OR" {
-		outerExpression.SetOr(expressions)
+		outerNetworkFilter.SetOr(networkFilters)
 	}
 
-	return outerExpression, nil
+	return outerNetworkFilter, nil
 }
 
 func networkPaginationTerraformToGo(pagination []interface{}) fabricv4.PaginationRequest {
