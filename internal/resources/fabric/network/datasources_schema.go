@@ -125,7 +125,7 @@ func readFabricNetworkSearchSchema() map[string]*schema.Schema {
 						Type:        schema.TypeString,
 						Optional:    true,
 						Default:     "/changeLog/updatedDateTime",
-						Description: fmt.Sprintf("The property name to use in sorting. One of %v. Defaults to /changeLog/updatedDateTime", fabricv4.AllowedSortByEnumValues),
+						Description: fmt.Sprintf("The property name to use in sorting. One of %v. Defaults to /changeLog/updatedDateTime", fabricv4.AllowedNetworkSortByEnumValues),
 					},
 				},
 			},
