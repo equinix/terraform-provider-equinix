@@ -10,15 +10,14 @@ import (
 	"log"
 )
 
-func setFabricNetworkMap(d *schema.ResourceData, nt *fabricv4.Network) diag.Diagnostics {
-	diags := diag.Diagnostics{}
+func networkMap(nt *fabricv4.Network) map[string]interface{} {
 	operation := nt.GetOperation()
 	change := nt.GetChange()
 	location := nt.GetLocation()
 	notifications := nt.GetNotifications()
 	project := nt.GetProject()
 	changeLog := nt.GetChangeLog()
-	err := equinix_schema.SetMap(d, map[string]interface{}{
+	network := map[string]interface{}{
 		"name":              nt.GetName(),
 		"href":              nt.GetHref(),
 		"uuid":              nt.GetUuid(),
@@ -32,7 +31,14 @@ func setFabricNetworkMap(d *schema.ResourceData, nt *fabricv4.Network) diag.Diag
 		"project":           equinix_fabric_schema.ProjectGoToTerraform(&project),
 		"change_log":        equinix_fabric_schema.ChangeLogGoToTerraform(&changeLog),
 		"connections_count": nt.GetConnectionsCount(),
-	})
+	}
+
+	return network
+}
+
+func setFabricNetworkMap(d *schema.ResourceData, nt *fabricv4.Network) diag.Diagnostics {
+	diags := diag.Diagnostics{}
+	err := equinix_schema.SetMap(d, networkMap(nt))
 	if err != nil {
 		return diag.FromErr(err)
 	}

@@ -1,7 +1,11 @@
 package network
 
 import (
+	"context"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
+
 	"github.com/equinix/equinix-sdk-go/services/fabricv4"
+	"github.com/equinix/terraform-provider-equinix/internal/config"
 	equinix_errors "github.com/equinix/terraform-provider-equinix/internal/errors"
 	equinix_fabric_schema "github.com/equinix/terraform-provider-equinix/internal/fabric/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -10,7 +14,7 @@ import (
 	"time"
 )
 
-func resourceFabricNetwork() *schema.Resource {
+func Resource() *schema.Resource {
 	return &schema.Resource{
 		Timeouts: &schema.ResourceTimeout{
 			Create: schema.DefaultTimeout(10 * time.Minute),
@@ -111,7 +115,7 @@ func resourceFabricNetworkUpdate(ctx context.Context, d *schema.ResourceData, me
 
 func waitForFabricNetworkUpdateCompletion(uuid string, meta interface{}, d *schema.ResourceData, ctx context.Context, timeout time.Duration) (*fabricv4.Network, error) {
 	log.Printf("Waiting for Network update to complete, uuid %s", uuid)
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Target: []string{string(fabricv4.NETWORKEQUINIXSTATUS_PROVISIONED)},
 		Refresh: func() (interface{}, string, error) {
 			client := meta.(*config.Config).NewFabricClientForSDK(d)
@@ -137,7 +141,7 @@ func waitForFabricNetworkUpdateCompletion(uuid string, meta interface{}, d *sche
 
 func waitUntilFabricNetworkIsProvisioned(uuid string, meta interface{}, d *schema.ResourceData, ctx context.Context, timeout time.Duration) (*fabricv4.Network, error) {
 	log.Printf("Waiting for Fabric Network to be provisioned, uuid %s", uuid)
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Pending: []string{
 			string(fabricv4.NETWORKEQUINIXSTATUS_PROVISIONING),
 		},
@@ -193,7 +197,7 @@ func resourceFabricNetworkDelete(ctx context.Context, d *schema.ResourceData, me
 
 func WaitUntilFabricNetworkDeprovisioned(uuid string, meta interface{}, d *schema.ResourceData, ctx context.Context, timeout time.Duration) error {
 	log.Printf("Waiting for Fabric Network to be deprovisioned, uuid %s", uuid)
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Pending: []string{
 			string(fabricv4.NETWORKEQUINIXSTATUS_DEPROVISIONING),
 		},
