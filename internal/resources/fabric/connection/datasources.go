@@ -36,8 +36,6 @@ func DataSourceSearch() *schema.Resource {
 }
 
 func dataSourceFabricConnectionSearch(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	uuid, _ := d.Get("uuid").(string)
-	d.SetId(uuid)
 	return resourceFabricConnectionSearch(ctx, d, meta)
 }
 
