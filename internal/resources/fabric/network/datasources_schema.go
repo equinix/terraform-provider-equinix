@@ -2,10 +2,12 @@ package network
 
 import (
 	"fmt"
+	"regexp"
+
 	"github.com/equinix/equinix-sdk-go/services/fabricv4"
+
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
-	"regexp"
 )
 
 func readFabricNetworkResourceSchema() map[string]*schema.Schema {
@@ -54,7 +56,7 @@ func readFabricNetworkSearchSchema() map[string]*schema.Schema {
 					"property": {
 						Type:        schema.TypeString,
 						Required:    true,
-						Description: fmt.Sprintf("Possible field names to use on filters. One of %v", fabricv4.AllowedSearchFieldNameEnumValues),
+						Description: fmt.Sprintf("Possible field names to use on filters. One of %v", fabricv4.AllowedNetworkSortByEnumValues),
 					},
 					"operator": {
 						Type:        schema.TypeString,

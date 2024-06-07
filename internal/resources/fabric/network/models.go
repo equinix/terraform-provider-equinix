@@ -2,12 +2,15 @@ package network
 
 import (
 	"fmt"
-	"github.com/equinix/equinix-sdk-go/services/fabricv4"
+	"log"
+
 	equinix_fabric_schema "github.com/equinix/terraform-provider-equinix/internal/fabric/schema"
 	equinix_schema "github.com/equinix/terraform-provider-equinix/internal/schema"
+
+	"github.com/equinix/equinix-sdk-go/services/fabricv4"
+
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"log"
 )
 
 func networkMap(nt *fabricv4.Network) map[string]interface{} {

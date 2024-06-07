@@ -3,14 +3,17 @@ package network
 import (
 	"context"
 	"fmt"
-	"github.com/equinix/equinix-sdk-go/services/fabricv4"
+	"strings"
+
 	"github.com/equinix/terraform-provider-equinix/internal/config"
 	"github.com/equinix/terraform-provider-equinix/internal/converters"
 	equinix_errors "github.com/equinix/terraform-provider-equinix/internal/errors"
 	equinix_schema "github.com/equinix/terraform-provider-equinix/internal/schema"
+
+	"github.com/equinix/equinix-sdk-go/services/fabricv4"
+
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"strings"
 )
 
 func DataSource() *schema.Resource {
@@ -179,19 +182,19 @@ func networkPaginationTerraformToGo(pagination []interface{}) fabricv4.Paginatio
 	return paginationRequest
 }
 
-func networkSortTerraformToGo(sort []interface{}) []fabricv4.SortCriteria {
+func networkSortTerraformToGo(sort []interface{}) []fabricv4.NetworkSortCriteria {
 	if sort == nil || len(sort) == 0 {
-		return []fabricv4.SortCriteria{}
+		return []fabricv4.NetworkSortCriteria{}
 	}
-	sortCriteria := make([]fabricv4.SortCriteria, len(sort))
+	sortCriteria := make([]fabricv4.NetworkSortCriteria, len(sort))
 	for index, item := range sort {
-		sortItem := fabricv4.SortCriteria{}
+		sortItem := fabricv4.NetworkSortCriteria{}
 		pageMap := item.(map[string]interface{})
 		if direction, ok := pageMap["direction"]; ok {
-			sortItem.SetDirection(fabricv4.SortDirection(direction.(string)))
+			sortItem.SetDirection(fabricv4.NetworkSortDirection(direction.(string)))
 		}
 		if property, ok := pageMap["property"]; ok {
-			sortItem.SetProperty(fabricv4.SortBy(property.(string)))
+			sortItem.SetProperty(fabricv4.NetworkSortBy(property.(string)))
 		}
 		sortCriteria[index] = sortItem
 	}
