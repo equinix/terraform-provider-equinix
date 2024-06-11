@@ -56,12 +56,12 @@ func readFabricNetworkSearchSchema() map[string]*schema.Schema {
 					"property": {
 						Type:        schema.TypeString,
 						Required:    true,
-						Description: fmt.Sprintf("Possible field names to use on filters. One of %v", fabricv4.AllowedNetworkSortByEnumValues),
+						Description: fmt.Sprintf("Possible field names to use on filters. One of %v", fabricv4.AllowedNetworkSearchFieldNameEnumValues),
 					},
 					"operator": {
 						Type:        schema.TypeString,
 						Required:    true,
-						Description: "Operators to use on your filtered field with the values given. One of [ =, !=, >, >=, <, <=, BETWEEN, NOT BETWEEN, LIKE, NOT LIKE, IN, NOT IN, IS NOT NULL, IS NULL]",
+						Description: "Operators to use on your filtered field with the values given. One of [ =, !=, >, >=, <, <=, BETWEEN, NOT BETWEEN, LIKE, NOT LIKE, ILIKE, NOT ILIKE, IN, NOT IN]",
 					},
 					"values": {
 						Type:        schema.TypeList,
