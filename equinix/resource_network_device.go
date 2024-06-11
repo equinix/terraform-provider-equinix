@@ -186,21 +186,32 @@ var neDeviceClusterNodeDescriptions = map[string]string{
 }
 
 var neDeviceVendorConfigSchemaNames = map[string]string{
-	"Hostname":       "hostname",
-	"AdminPassword":  "admin_password",
-	"Controller1":    "controller1",
-	"ActivationKey":  "activation_key",
-	"ControllerFqdn": "controller_fqdn",
-	"RootPassword":   "root_password",
+	"Hostname":        "hostname",
+	"AdminPassword":   "admin_password",
+	"Controller1":     "controller1",
+	"ActivationKey":   "activation_key",
+	"ControllerFqdn":  "controller_fqdn",
+	"RootPassword":    "root_password",
+	"PrivateAddress":  "private_address",
+	"PrivateCIDRMask": "private_cidr_mask",
+	"PrivateGateway":  "private_gateway",
+	"LicenseKey":      "license_key",
+	"LicenseID":       "license_id",
 }
 
 var neDeviceVendorConfigDescriptions = map[string]string{
-	"Hostname":       "Hostname. This is necessary for Palo Alto, Juniper, and Fortinet clusters",
-	"AdminPassword":  "The administrative password of the device. You can use it to log in to the console. This field is not available for all device types",
-	"Controller1":    "System IP Address. Mandatory for the Fortinet SDWAN cluster device",
-	"ActivationKey":  "Activation key. This is required for Velocloud clusters",
-	"ControllerFqdn": "Controller fqdn. This is required for Velocloud clusters",
-	"RootPassword":   "The CLI password of the device. This field is relevant only for the Velocloud SDWAN cluster",
+	"Hostname":          "Hostname. This is necessary for Palo Alto, Juniper, and Fortinet clusters",
+	"AdminPassword":     "The administrative password of the device. You can use it to log in to the console. This field is not available for all device types",
+	"Controller1":       "System IP Address. Mandatory for the Fortinet SDWAN cluster device",
+	"ActivationKey":     "Activation key. This is required for Velocloud clusters",
+	"ControllerFqdn":    "Controller fqdn. This is required for Velocloud clusters",
+	"RootPassword":      "The CLI password of the device. This field is relevant only for the Velocloud SDWAN cluster",
+	"PrimaryDeviceUUID": "Primary Device UUID",
+	"PrivateAddress":    "Private address. This field is relevant only for the BlueCat DNS and DHCP Server",
+	"PrivateCIDRMask":   "Private CIDR Mask. This field is relevant only for the BlueCat DNS and DHCP Server",
+	"PrivateGateway":    "Private gateway. This field is relevant only for the BlueCat DNS and DHCP Server",
+	"LicenseKey":        "License key. This field is relevant only for the BlueCat DNS and DHCP Server",
+	"LicenseID":         "License id. This field is relevant only for the BlueCat DNS and DHCP Server",
 }
 
 func resourceNetworkDevice() *schema.Resource {
@@ -907,6 +918,38 @@ func createVendorConfigurationSchema() map[string]*schema.Schema {
 			Sensitive:   true,
 			Description: neDeviceVendorConfigDescriptions["RootPassword"],
 		},
+		neDeviceVendorConfigSchemaNames["PrivateAddress"]: {
+			Type:        schema.TypeString,
+			Optional:    true,
+			ForceNew:    true,
+			Description: neDeviceVendorConfigDescriptions["PrivateAddress"],
+		},
+		neDeviceVendorConfigSchemaNames["PrivateCIDRMask"]: {
+			Type:        schema.TypeString,
+			Optional:    true,
+			ForceNew:    true,
+			Description: neDeviceVendorConfigDescriptions["PrivateCIDRMask"],
+		},
+		neDeviceVendorConfigSchemaNames["PrivateGateway"]: {
+			Type:        schema.TypeString,
+			Optional:    true,
+			ForceNew:    true,
+			Description: neDeviceVendorConfigDescriptions["PrivateGateway"],
+		},
+		neDeviceVendorConfigSchemaNames["LicenseKey"]: {
+			Type:        schema.TypeString,
+			Optional:    true,
+			Sensitive:   true,
+			ForceNew:    true,
+			Description: neDeviceVendorConfigDescriptions["LicenseKey"],
+		},
+		neDeviceVendorConfigSchemaNames["LicenseID"]: {
+			Type:        schema.TypeString,
+			Optional:    true,
+			Sensitive:   true,
+			ForceNew:    true,
+			Description: neDeviceVendorConfigDescriptions["LicenseID"],
+		},
 	}
 }
 
@@ -1483,6 +1526,21 @@ func flattenVendorConfiguration(vendorConfig map[string]string) interface{} {
 	if v, ok := vendorConfig["rootPassword"]; ok {
 		transformed[neDeviceVendorConfigSchemaNames["RootPassword"]] = v
 	}
+	if v, ok := vendorConfig["privateAddress"]; ok {
+		transformed[neDeviceVendorConfigSchemaNames["PrivateAddress"]] = v
+	}
+	if v, ok := vendorConfig["privateCidrMask"]; ok {
+		transformed[neDeviceVendorConfigSchemaNames["PrivateCIDRMask"]] = v
+	}
+	if v, ok := vendorConfig["privateGateway"]; ok {
+		transformed[neDeviceVendorConfigSchemaNames["PrivateGateway"]] = v
+	}
+	if v, ok := vendorConfig["licenseKey"]; ok {
+		transformed[neDeviceVendorConfigSchemaNames["LicenseKey"]] = v
+	}
+	if v, ok := vendorConfig["licenseId"]; ok {
+		transformed[neDeviceVendorConfigSchemaNames["LicenseID"]] = v
+	}
 	return []interface{}{transformed}
 }
 
@@ -1548,6 +1606,21 @@ func expandVendorConfiguration(vendorConfigs []interface{}) map[string]string {
 	}
 	if v, ok := vendorConfig[neDeviceVendorConfigSchemaNames["RootPassword"]]; ok && !isEmpty(v) {
 		transformed["rootPassword"] = v.(string)
+	}
+	if v, ok := vendorConfig[neDeviceVendorConfigSchemaNames["PrivateAddress"]]; ok && !isEmpty(v) {
+		transformed["privateAddress"] = v.(string)
+	}
+	if v, ok := vendorConfig[neDeviceVendorConfigSchemaNames["PrivateCIDRMask"]]; ok && !isEmpty(v) {
+		transformed["privateCidrMask"] = v.(string)
+	}
+	if v, ok := vendorConfig[neDeviceVendorConfigSchemaNames["LicenseKey"]]; ok && !isEmpty(v) {
+		transformed["licenseKey"] = v.(string)
+	}
+	if v, ok := vendorConfig[neDeviceVendorConfigSchemaNames["LicenseID"]]; ok && !isEmpty(v) {
+		transformed["licenseId"] = v.(string)
+	}
+	if v, ok := vendorConfig[neDeviceVendorConfigSchemaNames["PrivateGateway"]]; ok && !isEmpty(v) {
+		transformed["privateGateway"] = v.(string)
 	}
 	return transformed
 }
