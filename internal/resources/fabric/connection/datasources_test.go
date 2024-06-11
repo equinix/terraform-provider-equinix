@@ -135,6 +135,11 @@ data "equinix_fabric_connections" "connections" {
 		operator = "="
 		values = ["ds_con_test_PFCR"]
 	}
+	filter {
+		property = "/uuid"
+		operator = "="
+		values = [equinix_fabric_connection.test.id]
+	}
 }
 
 `, bandwidth, aSidePortUuid, zSidePortUuid)
