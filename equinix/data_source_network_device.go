@@ -634,6 +634,33 @@ func createDataSourceVendorConfigurationSchema() map[string]*schema.Schema {
 			Sensitive:   true,
 			Description: neDeviceVendorConfigDescriptions["RootPassword"],
 		},
+		neDeviceVendorConfigSchemaNames["PrivateAddress"]: {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: neDeviceVendorConfigDescriptions["PrivateAddress"],
+		},
+		neDeviceVendorConfigSchemaNames["PrivateCIDRMask"]: {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: neDeviceVendorConfigDescriptions["PrivateCIDRMask"],
+		},
+		neDeviceVendorConfigSchemaNames["PrivateGateway"]: {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: neDeviceVendorConfigDescriptions["PrivateGateway"],
+		},
+		neDeviceVendorConfigSchemaNames["LicenseKey"]: {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Sensitive:   true,
+			Description: neDeviceVendorConfigDescriptions["LicenseKey"],
+		},
+		neDeviceVendorConfigSchemaNames["LicenseID"]: {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Sensitive:   true,
+			Description: neDeviceVendorConfigDescriptions["LicenseID"],
+		},
 	}
 }
 
