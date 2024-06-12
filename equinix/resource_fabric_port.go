@@ -248,31 +248,27 @@ func readGetPortsByNameQueryParamSch() map[string]*schema.Schema {
 	}
 }
 
-func portTerraformToGo(portList []interface{}) fabricv4.SimplifiedPort {
-	if portList == nil || len(portList) == 0 {
-		return fabricv4.SimplifiedPort{}
+func operationSch() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"provider_status": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "Connection provider readiness status",
+		},
+		"equinix_status": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "Connection status",
+		},
+		"errors": {
+			Type:        schema.TypeList,
+			Computed:    true,
+			Description: "Errors occurred",
+			Elem: &schema.Resource{
+				Schema: equinix_fabric_schema.ErrorSch(),
+			},
+		},
 	}
-	var port fabricv4.SimplifiedPort
-	portListMap := portList[0].(map[string]interface{})
-	uuid := portListMap["uuid"].(string)
-	port.SetUuid(uuid)
-
-	return port
-}
-
-func portGoToTerraform(port *fabricv4.SimplifiedPort) *schema.Set {
-	mappedPort := make(map[string]interface{})
-	mappedPort["href"] = port.GetHref()
-	mappedPort["name"] = port.GetName()
-	mappedPort["uuid"] = port.GetUuid()
-	if port.Redundancy != nil {
-		mappedPort["redundancy"] = portRedundancyGoToTerraform(port.Redundancy)
-	}
-	portSet := schema.NewSet(
-		schema.HashResource(&schema.Resource{Schema: portSch()}),
-		[]interface{}{mappedPort},
-	)
-	return portSet
 }
 
 func portRedundancyGoToTerraform(redundancy *fabricv4.PortRedundancy) *schema.Set {

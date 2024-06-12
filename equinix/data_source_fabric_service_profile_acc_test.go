@@ -3,6 +3,7 @@ package equinix_test
 import (
 	"fmt"
 	"github.com/equinix/terraform-provider-equinix/internal/acceptance"
+	"github.com/equinix/terraform-provider-equinix/internal/fabric/testing_helpers"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"testing"
 )
@@ -65,7 +66,7 @@ data "equinix_fabric_service_profile" "test" {
 }
 
 func TestAccFabricReadServiceProfileByUuid_PFCR(t *testing.T) {
-	ports := GetFabricEnvPorts(t)
+	ports := testing_helpers.GetFabricEnvPorts(t)
 
 	var portUuid, portMetroCode, portType string
 	if len(ports) > 0 {
