@@ -1,11 +1,11 @@
-package equinix_test
+package network_test
 
 import (
 	"fmt"
+	"testing"
+
 	"github.com/equinix/terraform-provider-equinix/internal/acceptance"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
-	_ "github.com/hashicorp/terraform-plugin-testing/terraform"
-	"testing"
 )
 
 func TestAccDataSourceFabricNetwork_PFCR(t *testing.T) {
@@ -31,6 +31,20 @@ func TestAccDataSourceFabricNetwork_PFCR(t *testing.T) {
 					resource.TestCheckResourceAttrSet("data.equinix_fabric_network.example", "change_log.0.created_by_email"),
 					resource.TestCheckResourceAttrSet("data.equinix_fabric_network.example", "change_log.0.created_date_time"),
 					resource.TestCheckResourceAttrSet("data.equinix_fabric_network.example", "operation.0.equinix_status"),
+					resource.TestCheckResourceAttrSet("data.equinix_fabric_networks.example", "data.0.href"),
+					resource.TestCheckResourceAttrSet("data.equinix_fabric_networks.example", "data.0.uuid"),
+					resource.TestCheckResourceAttr("data.equinix_fabric_networks.example", "data.0.name", "Test_Network_PFCR"),
+					resource.TestCheckResourceAttrSet("data.equinix_fabric_networks.example", "data.0.state"),
+					resource.TestCheckResourceAttr("data.equinix_fabric_networks.example", "data.0.connections_count", "0"),
+					resource.TestCheckResourceAttr("data.equinix_fabric_networks.example", "data.0.type", "EVPLAN"),
+					resource.TestCheckResourceAttr("data.equinix_fabric_networks.example", "data.0.notifications.0.type", "ALL"),
+					resource.TestCheckResourceAttr("data.equinix_fabric_networks.example", "data.0.notifications.0.emails.0", "test@equinix.com"),
+					resource.TestCheckResourceAttr("data.equinix_fabric_networks.example", "data.0.scope", "GLOBAL"),
+					resource.TestCheckResourceAttrSet("data.equinix_fabric_networks.example", "data.0.change_log.0.created_by"),
+					resource.TestCheckResourceAttrSet("data.equinix_fabric_networks.example", "data.0.change_log.0.created_by_full_name"),
+					resource.TestCheckResourceAttrSet("data.equinix_fabric_networks.example", "data.0.change_log.0.created_by_email"),
+					resource.TestCheckResourceAttrSet("data.equinix_fabric_networks.example", "data.0.change_log.0.created_date_time"),
+					resource.TestCheckResourceAttrSet("data.equinix_fabric_networks.example", "data.0.operation.0.equinix_status"),
 				),
 				ExpectNonEmptyPlan: false,
 			},
@@ -54,6 +68,24 @@ func configCreateNetworkResource_PFCR() string {
 	}
 	data "equinix_fabric_network" "example"{
 		uuid = equinix_fabric_network.example.id
+	}
+	data "equinix_fabric_networks" "example" {
+		outer_operator = "AND"
+		filter {
+			property = "/type"
+			operator = "="
+			values 	 = ["EVPLAN"]
+		}
+		filter {
+			property = "/name"
+			operator = "="
+			values   = ["Test_Network_PFCR"]
+		}
+		filter {
+			property = "/uuid"
+			operator = "="
+			values   = [equinix_fabric_network.example.id]
+		}
 	}
 `)
 }
