@@ -10,6 +10,7 @@ import (
 	equinix_errors "github.com/equinix/terraform-provider-equinix/internal/errors"
 	equinix_fabric_schema "github.com/equinix/terraform-provider-equinix/internal/fabric/schema"
 	equinix_schema "github.com/equinix/terraform-provider-equinix/internal/schema"
+	equinix_validation "github.com/equinix/terraform-provider-equinix/internal/validation"
 
 	"github.com/equinix/terraform-provider-equinix/internal/config"
 
@@ -25,8 +26,8 @@ func fabricConnectionResourceSchema() map[string]*schema.Schema {
 		"type": {
 			Type:         schema.TypeString,
 			Required:     true,
-			ValidateFunc: validation.StringInSlice([]string{"EVPL_VC", "EPL_VC", "IP_VC", "IPWAN_VC", "ACCESS_EPL_VC", "EVPLAN_VC", "EPLAN_VC", "EIA_VC", "IA_VC", "EC_VC"}, false),
-			Description:  "Defines the connection type like EVPL_VC, EPL_VC, IPWAN_VC, IP_VC, ACCESS_EPL_VC, EVPLAN_VC, EPLAN_VC, EIA_VC, IA_VC, EC_VC",
+			ValidateFunc: equinix_validation.StringInEnumSlice(fabricv4.AllowedConnectionTypeEnumValues, true),
+			Description: fmt.Sprintf("Defines the connection type. One of %v", fabricv4.AllowedConnectionTypeEnumValues),
 		},
 		"name": {
 			Type:         schema.TypeString,
@@ -66,10 +67,11 @@ func fabricConnectionResourceSchema() map[string]*schema.Schema {
 		"redundancy": {
 			Type:        schema.TypeSet,
 			Optional:    true,
+			Computed:    true,
 			Description: "Connection Redundancy Configuration",
 			MaxItems:    1,
 			Elem: &schema.Resource{
-				Schema: connectionRedundancySch(),
+				Schema: fabricConnectionRedundancySch(),
 			},
 		},
 		"a_side": {
@@ -77,16 +79,16 @@ func fabricConnectionResourceSchema() map[string]*schema.Schema {
 			Required:    true,
 			Description: "Requester or Customer side connection configuration object of the multi-segment connection",
 			MaxItems:    1,
-			Elem:        connectionSideSch(),
-			Set:         schema.HashResource(accessPointSch()),
+			Elem:        fabricConnectionSideSch(),
+			Set:         schema.HashResource(fabricConnectionAccessPointSch()),
 		},
 		"z_side": {
 			Type:        schema.TypeSet,
 			Required:    true,
 			Description: "Destination or Provider side connection configuration object of the multi-segment connection",
 			MaxItems:    1,
-			Elem:        connectionSideSch(),
-			Set:         schema.HashResource(accessPointSch()),
+			Elem:        fabricConnectionSideSch(),
+			Set:         schema.HashResource(fabricConnectionAccessPointSch()),
 		},
 		"project": {
 			Type:        schema.TypeSet,
@@ -131,7 +133,7 @@ func fabricConnectionResourceSchema() map[string]*schema.Schema {
 			Computed:    true,
 			Description: "Connection type-specific operational data",
 			Elem: &schema.Resource{
-				Schema: operationSch(),
+				Schema: equinix_fabric_schema.OperationSch(),
 			},
 		},
 		"account": {
@@ -163,16 +165,17 @@ func fabricConnectionResourceSchema() map[string]*schema.Schema {
 	}
 }
 
-func connectionSideSch() *schema.Resource {
+func fabricConnectionSideSch() *schema.Resource {
 	return &schema.Resource{
 		Schema: map[string]*schema.Schema{
 			"service_token": {
 				Type:        schema.TypeSet,
 				Optional:    true,
+				ForceNew:    true,
 				Description: "For service token based connections, Service tokens authorize users to access protected resources and services. Resource owners can distribute the tokens to trusted partners and vendors, allowing selected third parties to work directly with Equinix network assets",
 				MaxItems:    1,
 				Elem: &schema.Resource{
-					Schema: serviceTokenSch(),
+					Schema: fabricConnectionServiceTokenSch(),
 				},
 			},
 			"access_point": {
@@ -180,27 +183,27 @@ func connectionSideSch() *schema.Resource {
 				Optional:    true,
 				Description: "Point of access details",
 				MaxItems:    1,
-				Elem:        accessPointSch(),
+				Elem:        fabricConnectionAccessPointSch(),
 			},
 			"additional_info": {
 				Type:        schema.TypeList,
 				Optional:    true,
 				Description: "Connection side additional information",
 				Elem: &schema.Resource{
-					Schema: additionalInfoSch(),
+					Schema: fabricConnectionAdditionalInfoSch(),
 				},
 			},
 		},
 	}
 }
 
-func serviceTokenSch() map[string]*schema.Schema {
+func fabricConnectionServiceTokenSch() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
 		"type": {
 			Type:         schema.TypeString,
 			Optional:     true,
-			ValidateFunc: validation.StringInSlice([]string{"VC_TOKEN"}, true),
-			Description:  "Token type - VC_TOKEN",
+			ValidateFunc: equinix_validation.StringInEnumSlice(fabricv4.AllowedServiceTokenTypeEnumValues, true),
+			Description: fmt.Sprintf("Token type. One of %v", fabricv4.AllowedServiceTokenTypeEnumValues),
 		},
 		"href": {
 			Type:        schema.TypeString,
@@ -220,20 +223,20 @@ func serviceTokenSch() map[string]*schema.Schema {
 	}
 }
 
-func accessPointSch() *schema.Resource {
+func fabricConnectionAccessPointSch() *schema.Resource {
 	return &schema.Resource{
 		Schema: map[string]*schema.Schema{
 			"type": {
 				Type:         schema.TypeString,
 				Optional:     true,
-				ValidateFunc: validation.StringInSlice([]string{"COLO", "VD", "VG", "SP", "IGW", "SUBNET", "CLOUD_ROUTER", "NETWORK", "METAL_NETWORK"}, true),
-				Description:  "Access point type - COLO, VD, VG, SP, IGW, SUBNET, CLOUD_ROUTER, NETWORK",
+				ValidateFunc: equinix_validation.StringInEnumSlice(fabricv4.AllowedAccessPointTypeEnumValues, true),
+				Description: fmt.Sprintf("Access point type. One of %v", fabricv4.AllowedAccessPointTypeEnumValues),
 			},
 			"account": {
 				Type:        schema.TypeSet,
-				Optional:    true,
 				Computed:    true,
 				Description: "Account",
+				MaxItems:    1,
 				Elem: &schema.Resource{
 					Schema: equinix_fabric_schema.AccountSch(),
 				},
@@ -245,7 +248,7 @@ func accessPointSch() *schema.Resource {
 				Description: "Access point location",
 				MaxItems:    1,
 				Elem: &schema.Resource{
-					Schema: equinix_fabric_schema.LocationSch(),
+					Schema: fabricConnectionLocationSch(),
 				},
 			},
 			"port": {
@@ -254,7 +257,7 @@ func accessPointSch() *schema.Resource {
 				Description: "Port access point information",
 				MaxItems:    1,
 				Elem: &schema.Resource{
-					Schema: portSch(),
+					Schema: equinix_fabric_schema.PortSch(),
 				},
 			},
 			"profile": {
@@ -263,7 +266,7 @@ func accessPointSch() *schema.Resource {
 				Description: "Service Profile",
 				MaxItems:    1,
 				Elem: &schema.Resource{
-					Schema: serviceProfileSch(),
+					Schema: fabricConnectionServiceProfileSch(),
 				},
 			},
 			"gateway": {
@@ -273,7 +276,7 @@ func accessPointSch() *schema.Resource {
 				Description: "**Deprecated** `gateway` Use `router` attribute instead",
 				MaxItems:    1,
 				Elem: &schema.Resource{
-					Schema: cloudRouterSch(),
+					Schema: fabricConnectionCloudRouterSch(),
 				},
 			},
 			"router": {
@@ -282,7 +285,7 @@ func accessPointSch() *schema.Resource {
 				Description: "Cloud Router access point information that replaces `gateway`",
 				MaxItems:    1,
 				Elem: &schema.Resource{
-					Schema: cloudRouterSch(),
+					Schema: fabricConnectionCloudRouterSch(),
 				},
 			},
 			"link_protocol": {
@@ -291,7 +294,7 @@ func accessPointSch() *schema.Resource {
 				Description: "Connection link protocol",
 				MaxItems:    1,
 				Elem: &schema.Resource{
-					Schema: accessPointLinkProtocolSch(),
+					Schema: fabricConnectionAccessPointLinkProtocolSch(),
 				},
 			},
 			"virtual_device": {
@@ -300,7 +303,7 @@ func accessPointSch() *schema.Resource {
 				Description: "Virtual device",
 				MaxItems:    1,
 				Elem: &schema.Resource{
-					Schema: accessPointVirtualDeviceSch(),
+					Schema: fabricConnectionAccessPointVirtualDeviceSch(),
 				},
 			},
 			"interface": {
@@ -309,7 +312,7 @@ func accessPointSch() *schema.Resource {
 				Description: "Virtual device interface",
 				MaxItems:    1,
 				Elem: &schema.Resource{
-					Schema: accessPointInterface(),
+					Schema: fabricConnectionAccessPointInterfaceSch(),
 				},
 			},
 			"network": {
@@ -318,7 +321,7 @@ func accessPointSch() *schema.Resource {
 				Description: "network access point information",
 				MaxItems:    1,
 				Elem: &schema.Resource{
-					Schema: networkSch(),
+					Schema: fabricConnectionAccessPointNetworkSch(),
 				},
 			},
 			"seller_region": {
@@ -329,8 +332,8 @@ func accessPointSch() *schema.Resource {
 			"peering_type": {
 				Type:         schema.TypeString,
 				Optional:     true,
-				ValidateFunc: validation.StringInSlice([]string{"PRIVATE", "MICROSOFT", "PUBLIC", "MANUAL"}, true),
-				Description:  "Peering Type- PRIVATE,MICROSOFT,PUBLIC, MANUAL",
+				ValidateFunc: equinix_validation.StringInEnumSlice(fabricv4.AllowedPeeringTypeEnumValues, true),
+				Description: fmt.Sprintf("Peering type. One of %v", fabricv4.AllowedPeeringTypeEnumValues),
 			},
 			"authentication_key": {
 				Type:        schema.TypeString,
@@ -346,7 +349,21 @@ func accessPointSch() *schema.Resource {
 	}
 }
 
-func serviceProfileSch() map[string]*schema.Schema {
+func fabricConnectionLocationSch() map[string]*schema.Schema {
+	sch := equinix_fabric_schema.LocationSch()
+	for key := range sch {
+		if key == "metro_code" {
+			sch[key].Required = true
+			sch[key].Optional = false
+			sch[key].Computed = false
+		} else {
+			sch[key].Optional = false
+		}
+	}
+	return sch
+}
+
+func fabricConnectionServiceProfileSch() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
 		"href": {
 			Type:        schema.TypeString,
@@ -356,8 +373,8 @@ func serviceProfileSch() map[string]*schema.Schema {
 		"type": {
 			Type:         schema.TypeString,
 			Required:     true,
-			ValidateFunc: validation.StringInSlice([]string{"L2_PROFILE", "L3_PROFILE", "ECIA_PROFILE", "ECMC_PROFILE", "IA_PROFILE"}, true),
-			Description:  "Service profile type - L2_PROFILE, L3_PROFILE, ECIA_PROFILE, ECMC_PROFILE, IA_PROFILE",
+			ValidateFunc: equinix_validation.StringInEnumSlice(fabricv4.AllowedServiceProfileTypeEnumEnumValues, true),
+			Description: fmt.Sprintf("Service profile type. One of %v", fabricv4.AllowedServiceProfileTypeEnumEnumValues),
 		},
 		"name": {
 			Type:        schema.TypeString,
@@ -379,13 +396,13 @@ func serviceProfileSch() map[string]*schema.Schema {
 			Computed:    true,
 			Description: "Access point config information",
 			Elem: &schema.Resource{
-				Schema: connectionAccessPointTypeConfigSch(),
+				Schema: fabricConnectionAccessPointTypeConfigSch(),
 			},
 		},
 	}
 }
 
-func cloudRouterSch() map[string]*schema.Schema {
+func fabricConnectionCloudRouterSch() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
 		"uuid": {
 			Type:        schema.TypeString,
@@ -400,13 +417,13 @@ func cloudRouterSch() map[string]*schema.Schema {
 	}
 }
 
-func accessPointLinkProtocolSch() map[string]*schema.Schema {
+func fabricConnectionAccessPointLinkProtocolSch() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
 		"type": {
 			Type:         schema.TypeString,
-			Optional:     true,
-			Description:  "Type of the link protocol - UNTAGGED, DOT1Q, QINQ, EVPN_VXLAN",
-			ValidateFunc: validation.StringInSlice([]string{"UNTAGGED", "DOT1Q", "QINQ", "EVPN_VXLAN"}, true),
+			Required:     true,
+			ValidateFunc: equinix_validation.StringInEnumSlice(fabricv4.AllowedLinkProtocolTypeEnumValues, true),
+			Description: fmt.Sprintf("Type of the link protocol. One of %v", fabricv4.AllowedLinkProtocolTypeEnumValues),
 		},
 		"vlan_tag": {
 			Type:        schema.TypeInt,
@@ -429,7 +446,7 @@ func accessPointLinkProtocolSch() map[string]*schema.Schema {
 	}
 }
 
-func accessPointVirtualDeviceSch() map[string]*schema.Schema {
+func fabricConnectionAccessPointVirtualDeviceSch() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
 		"href": {
 			Type:        schema.TypeString,
@@ -438,27 +455,28 @@ func accessPointVirtualDeviceSch() map[string]*schema.Schema {
 		},
 		"uuid": {
 			Type:        schema.TypeString,
-			Optional:    true,
+			Required:    true,
 			Description: "Equinix-assigned Virtual Device identifier",
 		},
 		"type": {
 			Type:        schema.TypeString,
-			Optional:    true,
-			Description: "Virtual Device type",
+			Required:    true,
+			ValidateFunc: equinix_validation.StringInEnumSlice(fabricv4.AllowedVirtualDeviceTypeEnumValues, true),
+			Description: fmt.Sprintf("Virtual Device type. One of %v", fabricv4.AllowedVirtualDeviceTypeEnumValues),
 		},
 		"name": {
 			Type:        schema.TypeString,
-			Optional:    true,
+			Computed:    true,
 			Description: "Customer-assigned Virtual Device Name",
 		},
 	}
 }
 
-func accessPointInterface() map[string]*schema.Schema {
+func fabricConnectionAccessPointInterfaceSch() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
 		"uuid": {
 			Type:        schema.TypeString,
-			Optional:    true,
+			Computed:    true,
 			Description: "Equinix-assigned interface identifier",
 		},
 		"id": {
@@ -469,17 +487,18 @@ func accessPointInterface() map[string]*schema.Schema {
 		},
 		"type": {
 			Type:        schema.TypeString,
-			Optional:    true,
-			Description: "Interface type",
+			Required:    true,
+			ValidateFunc: equinix_validation.StringInEnumSlice(fabricv4.AllowedInterfaceTypeEnumValues, true),
+			Description: fmt.Sprintf("Interface type. One of %v", fabricv4.AllowedInterfaceTypeEnumValues),
 		},
 	}
 }
 
-func networkSch() map[string]*schema.Schema {
+func fabricConnectionAccessPointNetworkSch() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
 		"uuid": {
 			Type:        schema.TypeString,
-			Optional:    true,
+			Required:    true,
 			Description: "Equinix-assigned Network identifier",
 		},
 		"href": {
@@ -490,41 +509,14 @@ func networkSch() map[string]*schema.Schema {
 	}
 }
 
-func portSch() map[string]*schema.Schema {
-	return map[string]*schema.Schema{
-		"uuid": {
-			Type:        schema.TypeString,
-			Optional:    true,
-			Computed:    true,
-			Description: "Equinix-assigned Port identifier",
-		},
-		"href": {
-			Type:        schema.TypeString,
-			Computed:    true,
-			Description: "Unique Resource Identifier",
-		},
-		"name": {
-			Type:        schema.TypeString,
-			Computed:    true,
-			Description: "Port name",
-		},
-		"redundancy": {
-			Type:        schema.TypeSet,
-			Computed:    true,
-			Description: "Redundancy Information",
-			Elem: &schema.Resource{
-				Schema: PortRedundancySch(),
-			},
-		},
-	}
-}
 
-func connectionAccessPointTypeConfigSch() map[string]*schema.Schema {
+
+func fabricConnectionAccessPointTypeConfigSch() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
 		"type": {
 			Type:        schema.TypeString,
 			Computed:    true,
-			Description: "Type of access point type config - VD, COLO",
+			Description: fmt.Sprintf("Type of access point type config. One of %v", fabricv4.AllowedServiceProfileAccessPointTypeEnumEnumValues),
 		},
 		"uuid": {
 			Type:        schema.TypeString,
@@ -534,45 +526,22 @@ func connectionAccessPointTypeConfigSch() map[string]*schema.Schema {
 	}
 }
 
-func additionalInfoSch() map[string]*schema.Schema {
+func fabricConnectionAdditionalInfoSch() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
 		"key": {
 			Type:        schema.TypeString,
-			Optional:    true,
+			Required:    true,
 			Description: "Additional information key",
 		},
 		"value": {
 			Type:        schema.TypeString,
-			Optional:    true,
+			Required:    true,
 			Description: "Additional information value",
 		},
 	}
 }
 
-func operationSch() map[string]*schema.Schema {
-	return map[string]*schema.Schema{
-		"provider_status": {
-			Type:        schema.TypeString,
-			Computed:    true,
-			Description: "Connection provider readiness status",
-		},
-		"equinix_status": {
-			Type:        schema.TypeString,
-			Computed:    true,
-			Description: "Connection status",
-		},
-		"errors": {
-			Type:        schema.TypeList,
-			Computed:    true,
-			Description: "Errors occurred",
-			Elem: &schema.Resource{
-				Schema: equinix_fabric_schema.ErrorSch(),
-			},
-		},
-	}
-}
-
-func connectionRedundancySch() map[string]*schema.Schema {
+func fabricConnectionRedundancySch() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
 		"group": {
 			Type:        schema.TypeString,
@@ -584,8 +553,8 @@ func connectionRedundancySch() map[string]*schema.Schema {
 			Type:         schema.TypeString,
 			Computed:     true,
 			Optional:     true,
-			ValidateFunc: validation.StringInSlice([]string{"PRIMARY", "SECONDARY"}, true),
-			Description:  "Connection priority in redundancy group - PRIMARY, SECONDARY",
+			ValidateFunc: equinix_validation.StringInEnumSlice(fabricv4.AllowedConnectionPriorityEnumValues, true),
+			Description: fmt.Sprintf("Connection priority in redundancy group. One of %v", fabricv4.AllowedConnectionPriorityEnumValues),
 		},
 	}
 }
@@ -705,11 +674,11 @@ func additionalInfoContainsAWSSecrets(info []interface{}) ([]interface{}, bool) 
 	var awsSecrets []interface{}
 
 	for _, item := range info {
-		if value, _ := item.(map[string]interface{})["key"]; value == "accessKey" {
+		if value := item.(map[string]interface{})["key"]; value == "accessKey" {
 			awsSecrets = append(awsSecrets, item)
 		}
 
-		if value, _ := item.(map[string]interface{})["key"]; value == "secretKey" {
+		if value := item.(map[string]interface{})["key"]; value == "secretKey" {
 			awsSecrets = append(awsSecrets, item)
 		}
 	}
@@ -765,14 +734,13 @@ func setFabricMap(d *schema.ResourceData, conn *fabricv4.Connection) diag.Diagno
 		account := conn.GetAccount()
 		connection["account"] = equinix_fabric_schema.AccountGoToTerraform(&account)
 	}
-	if &conn.ASide != nil {
-		aSide := conn.GetASide()
-		connection["a_side"] = connectionSideGoToTerraform(&aSide)
-	}
-	if &conn.ZSide != nil {
-		zSide := conn.GetZSide()
-		connection["z_side"] = connectionSideGoToTerraform(&zSide)
-	}
+	
+	aSide := conn.GetASide()
+	connection["a_side"] = connectionSideGoToTerraform(&aSide)
+
+	zSide := conn.GetZSide()
+	connection["z_side"] = connectionSideGoToTerraform(&zSide)
+
 	if conn.AdditionalInfo != nil {
 		additionalInfo := conn.GetAdditionalInfo()
 		connection["additional_info"] = additionalInfoGoToTerraform(additionalInfo)
@@ -1017,7 +985,7 @@ func WaitUntilConnectionDeprovisioned(uuid string, meta interface{}, d *schema.R
 }
 
 func connectionRedundancyTerraformToGo(redundancyTerraform []interface{}) fabricv4.ConnectionRedundancy {
-	if redundancyTerraform == nil || len(redundancyTerraform) == 0 {
+	if len(redundancyTerraform) == 0 {
 		return fabricv4.ConnectionRedundancy{}
 	}
 	var redundancy fabricv4.ConnectionRedundancy
@@ -1041,14 +1009,14 @@ func connectionRedundancyGoToTerraform(redundancy *fabricv4.ConnectionRedundancy
 	mappedRedundancy["group"] = redundancy.GetGroup()
 	mappedRedundancy["priority"] = string(redundancy.GetPriority())
 	redundancySet := schema.NewSet(
-		schema.HashResource(&schema.Resource{Schema: connectionRedundancySch()}),
+		schema.HashResource(&schema.Resource{Schema: fabricConnectionRedundancySch()}),
 		[]interface{}{mappedRedundancy},
 	)
 	return redundancySet
 }
 
 func serviceTokenTerraformToGo(serviceTokenList []interface{}) fabricv4.ServiceToken {
-	if serviceTokenList == nil || len(serviceTokenList) == 0 {
+	if len(serviceTokenList) == 0 {
 		return fabricv4.ServiceToken{}
 	}
 
@@ -1063,7 +1031,7 @@ func serviceTokenTerraformToGo(serviceTokenList []interface{}) fabricv4.ServiceT
 }
 
 func additionalInfoTerraformToGo(additionalInfoList []interface{}) []fabricv4.ConnectionSideAdditionalInfo {
-	if additionalInfoList == nil || len(additionalInfoList) == 0 {
+	if len(additionalInfoList) == 0 {
 		return nil
 	}
 
@@ -1082,7 +1050,7 @@ func additionalInfoTerraformToGo(additionalInfoList []interface{}) []fabricv4.Co
 }
 
 func connectionSideTerraformToGo(connectionSideTerraform []interface{}) fabricv4.ConnectionSide {
-	if connectionSideTerraform == nil || len(connectionSideTerraform) == 0 {
+	if len(connectionSideTerraform) == 0 {
 		return fabricv4.ConnectionSide{}
 	}
 
@@ -1109,7 +1077,7 @@ func connectionSideTerraformToGo(connectionSideTerraform []interface{}) fabricv4
 }
 
 func accessPointTerraformToGo(accessPointTerraform []interface{}) fabricv4.AccessPoint {
-	if accessPointTerraform == nil || len(accessPointTerraform) == 0 {
+	if len(accessPointTerraform) == 0 {
 		return fabricv4.AccessPoint{}
 	}
 
@@ -1200,7 +1168,7 @@ func accessPointTerraformToGo(accessPointTerraform []interface{}) fabricv4.Acces
 }
 
 func cloudRouterTerraformToGo(cloudRouterRequest []interface{}) fabricv4.CloudRouter {
-	if cloudRouterRequest == nil || len(cloudRouterRequest) == 0 {
+	if len(cloudRouterRequest) == 0 {
 		return fabricv4.CloudRouter{}
 	}
 	var cloudRouter fabricv4.CloudRouter
@@ -1212,7 +1180,7 @@ func cloudRouterTerraformToGo(cloudRouterRequest []interface{}) fabricv4.CloudRo
 }
 
 func linkProtocolTerraformToGo(linkProtocolList []interface{}) fabricv4.SimplifiedLinkProtocol {
-	if linkProtocolList == nil || len(linkProtocolList) == 0 {
+	if len(linkProtocolList) == 0 {
 		return fabricv4.SimplifiedLinkProtocol{}
 	}
 
@@ -1239,7 +1207,7 @@ func linkProtocolTerraformToGo(linkProtocolList []interface{}) fabricv4.Simplifi
 }
 
 func networkTerraformToGo(networkList []interface{}) fabricv4.SimplifiedNetwork {
-	if networkList == nil || len(networkList) == 0 {
+	if len(networkList) == 0 {
 		return fabricv4.SimplifiedNetwork{}
 	}
 	var network fabricv4.SimplifiedNetwork
@@ -1250,7 +1218,7 @@ func networkTerraformToGo(networkList []interface{}) fabricv4.SimplifiedNetwork 
 }
 
 func simplifiedServiceProfileTerraformToGo(profileList []interface{}) fabricv4.SimplifiedServiceProfile {
-	if profileList == nil || len(profileList) == 0 {
+	if len(profileList) == 0 {
 		return fabricv4.SimplifiedServiceProfile{}
 	}
 
@@ -1264,7 +1232,7 @@ func simplifiedServiceProfileTerraformToGo(profileList []interface{}) fabricv4.S
 }
 
 func virtualDeviceTerraformToGo(virtualDeviceList []interface{}) fabricv4.VirtualDevice {
-	if virtualDeviceList == nil || len(virtualDeviceList) == 0 {
+	if len(virtualDeviceList) == 0 {
 		return fabricv4.VirtualDevice{}
 	}
 
@@ -1283,7 +1251,7 @@ func virtualDeviceTerraformToGo(virtualDeviceList []interface{}) fabricv4.Virtua
 }
 
 func interfaceTerraformToGo(interfaceList []interface{}) fabricv4.Interface {
-	if interfaceList == nil || len(interfaceList) == 0 {
+	if len(interfaceList) == 0 {
 		return fabricv4.Interface{}
 	}
 
@@ -1310,11 +1278,10 @@ func connectionOperationGoToTerraform(operation *fabricv4.ConnectionOperation) *
 	if operation.Errors != nil {
 		mappedOperation["errors"] = equinix_fabric_schema.ErrorGoToTerraform(operation.GetErrors())
 	}
-	operationSet := schema.NewSet(
-		schema.HashResource(&schema.Resource{Schema: operationSch()}),
+	return schema.NewSet(
+		schema.HashResource(&schema.Resource{Schema: equinix_fabric_schema.OperationSch()}),
 		[]interface{}{mappedOperation},
 	)
-	return operationSet
 }
 
 func serviceTokenGoToTerraform(serviceToken *fabricv4.ServiceToken) *schema.Set {
@@ -1328,11 +1295,10 @@ func serviceTokenGoToTerraform(serviceToken *fabricv4.ServiceToken) *schema.Set 
 	mappedServiceToken["href"] = serviceToken.GetHref()
 	mappedServiceToken["uuid"] = serviceToken.GetUuid()
 
-	serviceTokenSet := schema.NewSet(
-		schema.HashResource(&schema.Resource{Schema: serviceTokenSch()}),
+	return schema.NewSet(
+		schema.HashResource(&schema.Resource{Schema: fabricConnectionServiceTokenSch()}),
 		[]interface{}{mappedServiceToken},
 	)
-	return serviceTokenSet
 }
 
 func connectionSideGoToTerraform(connectionSide *fabricv4.ConnectionSide) *schema.Set {
@@ -1344,11 +1310,11 @@ func connectionSideGoToTerraform(connectionSide *fabricv4.ConnectionSide) *schem
 	}
 	accessPoint := connectionSide.GetAccessPoint()
 	mappedConnectionSide["access_point"] = accessPointGoToTerraform(&accessPoint)
-	connectionSideSet := schema.NewSet(
-		schema.HashResource(connectionSideSch()),
+	
+	return schema.NewSet(
+		schema.HashResource(fabricConnectionSideSch()),
 		[]interface{}{mappedConnectionSide},
 	)
-	return connectionSideSet
 }
 
 func additionalInfoGoToTerraform(additionalInfo []fabricv4.ConnectionSideAdditionalInfo) []map[string]interface{} {
@@ -1373,10 +1339,9 @@ func cloudRouterGoToTerraform(cloudRouter *fabricv4.CloudRouter) *schema.Set {
 	mappedCloudRouter["uuid"] = cloudRouter.GetUuid()
 	mappedCloudRouter["href"] = cloudRouter.GetHref()
 
-	linkedProtocolSet := schema.NewSet(
-		schema.HashResource(&schema.Resource{Schema: equinix_fabric_schema.ProjectSch()}),
+	return schema.NewSet(
+		schema.HashResource(&schema.Resource{Schema: fabricConnectionCloudRouterSch()}),
 		[]interface{}{mappedCloudRouter})
-	return linkedProtocolSet
 }
 
 func virtualDeviceGoToTerraform(virtualDevice *fabricv4.VirtualDevice) *schema.Set {
@@ -1389,10 +1354,9 @@ func virtualDeviceGoToTerraform(virtualDevice *fabricv4.VirtualDevice) *schema.S
 	mappedVirtualDevice["type"] = string(virtualDevice.GetType())
 	mappedVirtualDevice["uuid"] = virtualDevice.GetUuid()
 
-	virtualDeviceSet := schema.NewSet(
-		schema.HashResource(&schema.Resource{Schema: accessPointVirtualDeviceSch()}),
+	return schema.NewSet(
+		schema.HashResource(&schema.Resource{Schema: fabricConnectionAccessPointVirtualDeviceSch()}),
 		[]interface{}{mappedVirtualDevice})
-	return virtualDeviceSet
 }
 
 func interfaceGoToTerraform(mInterface *fabricv4.Interface) *schema.Set {
@@ -1404,10 +1368,9 @@ func interfaceGoToTerraform(mInterface *fabricv4.Interface) *schema.Set {
 	mappedMInterface["type"] = string(mInterface.GetType())
 	mappedMInterface["uuid"] = mInterface.GetUuid()
 
-	mInterfaceSet := schema.NewSet(
-		schema.HashResource(&schema.Resource{Schema: accessPointInterface()}),
+	return schema.NewSet(
+		schema.HashResource(&schema.Resource{Schema: fabricConnectionAccessPointInterfaceSch()}),
 		[]interface{}{mappedMInterface})
-	return mInterfaceSet
 }
 
 func networkGoToTerraform(network *fabricv4.SimplifiedNetwork) *schema.Set {
@@ -1419,7 +1382,7 @@ func networkGoToTerraform(network *fabricv4.SimplifiedNetwork) *schema.Set {
 	mappedNetwork["uuid"] = network.GetUuid()
 
 	return schema.NewSet(
-		schema.HashResource(&schema.Resource{Schema: networkSch()}),
+		schema.HashResource(&schema.Resource{Schema: fabricConnectionAccessPointNetworkSch()}),
 		[]interface{}{mappedNetwork})
 }
 
@@ -1472,11 +1435,10 @@ func accessPointGoToTerraform(accessPoint *fabricv4.AccessPoint) *schema.Set {
 	mappedAccessPoint["authentication_key"] = accessPoint.GetAuthenticationKey()
 	mappedAccessPoint["provider_connection_id"] = accessPoint.GetProviderConnectionId()
 
-	accessPointSet := schema.NewSet(
-		schema.HashResource(accessPointSch()),
+	return schema.NewSet(
+		schema.HashResource(fabricConnectionAccessPointSch()),
 		[]interface{}{mappedAccessPoint},
 	)
-	return accessPointSet
 }
 
 func linkedProtocolGoToTerraform(linkedProtocol *fabricv4.SimplifiedLinkProtocol) *schema.Set {
@@ -1487,10 +1449,9 @@ func linkedProtocolGoToTerraform(linkedProtocol *fabricv4.SimplifiedLinkProtocol
 	mappedLinkedProtocol["vlan_s_tag"] = int(linkedProtocol.GetVlanSTag())
 	mappedLinkedProtocol["vlan_c_tag"] = int(linkedProtocol.GetVlanCTag())
 
-	linkedProtocolSet := schema.NewSet(
-		schema.HashResource(&schema.Resource{Schema: accessPointLinkProtocolSch()}),
+	return schema.NewSet(
+		schema.HashResource(&schema.Resource{Schema: fabricConnectionAccessPointLinkProtocolSch()}),
 		[]interface{}{mappedLinkedProtocol})
-	return linkedProtocolSet
 }
 
 func simplifiedServiceProfileGoToTerraform(profile *fabricv4.SimplifiedServiceProfile) *schema.Set {
@@ -1502,11 +1463,10 @@ func simplifiedServiceProfileGoToTerraform(profile *fabricv4.SimplifiedServicePr
 	mappedProfile["uuid"] = profile.GetName()
 	mappedProfile["access_point_type_configs"] = accessPointTypeConfigGoToTerraform(profile.AccessPointTypeConfigs)
 
-	profileSet := schema.NewSet(
-		schema.HashResource(&schema.Resource{Schema: serviceProfileSch()}),
+	return schema.NewSet(
+		schema.HashResource(&schema.Resource{Schema: fabricConnectionServiceProfileSch()}),
 		[]interface{}{mappedProfile},
 	)
-	return profileSet
 }
 
 func getUpdateRequests(conn *fabricv4.Connection, d *schema.ResourceData) ([][]fabricv4.ConnectionChangeOperation, error) {

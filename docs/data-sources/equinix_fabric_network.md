@@ -61,9 +61,9 @@ output "region" {
 - `notifications` (List of Object) Preferences for notifications on Fabric Network configuration or status changes (see [below for nested schema](#nestedatt--notifications))
 - `operation` (Set of Object) Network operation information that is associated with this Fabric Network (see [below for nested schema](#nestedatt--operation))
 - `project` (Set of Object) Fabric Network project (see [below for nested schema](#nestedatt--project))
-- `scope` (String) Fabric Network scope
+- `scope` (String) Fabric Network scope. One of [REGIONAL GLOBAL LOCAL]
 - `state` (String) Fabric Network overall state
-- `type` (String) Supported Network types - EVPLAN, EPLAN, IPWAN
+- `type` (String) Supported Network types. One of [REGIONAL GLOBAL LOCAL]
 
 <a id="nestedatt--change"></a>
 ### Nested Schema for `change`
@@ -129,4 +129,5 @@ Read-Only:
 Read-Only:
 
 - `project_id` (String)
+
 

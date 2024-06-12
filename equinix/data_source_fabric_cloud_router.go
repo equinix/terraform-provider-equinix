@@ -9,7 +9,7 @@ import (
 
 func readFabricCloudRouterResourceSchema() map[string]*schema.Schema {
 	sch := fabricCloudRouterResourceSchema()
-	for key, _ := range sch {
+	for key := range sch {
 		if key == "uuid" {
 			sch[key].Required = true
 			sch[key].Optional = false

@@ -8,7 +8,7 @@ import (
 )
 
 func OrderTerraformToGo(orderTerraform []interface{}) fabricv4.Order {
-	if orderTerraform == nil || len(orderTerraform) == 0 {
+	if len(orderTerraform) == 0 {
 		return fabricv4.Order{}
 	}
 	var order fabricv4.Order
@@ -43,11 +43,11 @@ func OrderGoToTerraform(order *fabricv4.Order) *schema.Set {
 	mappedOrder["billing_tier"] = order.GetBillingTier()
 	mappedOrder["order_id"] = order.GetOrderId()
 	mappedOrder["order_number"] = order.GetOrderNumber()
-	orderSet := schema.NewSet(
+
+	return schema.NewSet(
 		schema.HashResource(&schema.Resource{Schema: OrderSch()}),
 		[]interface{}{mappedOrder},
 	)
-	return orderSet
 }
 
 func AccountGoToTerraform[accountType *fabricv4.SimplifiedAccount | *fabricv4.SimplifiedAccountPortResponse](accountParam accountType) *schema.Set {
@@ -85,16 +85,14 @@ func AccountGoToTerraform[accountType *fabricv4.SimplifiedAccount | *fabricv4.Si
 		}
 	}
 
-	accountSet := schema.NewSet(
+	return schema.NewSet(
 		schema.HashResource(&schema.Resource{Schema: AccountSch()}),
 		[]interface{}{mappedAccount},
 	)
-
-	return accountSet
 }
 
 func NotificationsTerraformToGo(notificationsTerraform []interface{}) []fabricv4.SimplifiedNotification {
-	if notificationsTerraform == nil || len(notificationsTerraform) == 0 {
+	if len(notificationsTerraform) == 0 {
 		return nil
 	}
 	notifications := make([]fabricv4.SimplifiedNotification, len(notificationsTerraform))
@@ -131,7 +129,7 @@ func NotificationsGoToTerraform(notifications []fabricv4.SimplifiedNotification)
 }
 
 func LocationTerraformToGo(locationList []interface{}) fabricv4.SimplifiedLocation {
-	if locationList == nil || len(locationList) == 0 {
+	if len(locationList) == 0 {
 		return fabricv4.SimplifiedLocation{}
 	}
 
@@ -167,15 +165,14 @@ func LocationGoToTerraform(location *fabricv4.SimplifiedLocation) *schema.Set {
 	mappedLocations["metro_code"] = location.GetMetroCode()
 	mappedLocations["ibx"] = location.GetIbx()
 
-	locationSet := schema.NewSet(
+	return schema.NewSet(
 		schema.HashResource(&schema.Resource{Schema: LocationSch()}),
 		[]interface{}{mappedLocations},
 	)
-	return locationSet
 }
 
 func LocationWithoutIBXTerraformToGo(locationList []interface{}) fabricv4.SimplifiedLocationWithoutIBX {
-	if locationList == nil || len(locationList) == 0 {
+	if len(locationList) == 0 {
 		return fabricv4.SimplifiedLocationWithoutIBX{}
 	}
 
@@ -193,15 +190,14 @@ func LocationWithoutIBXGoToTerraform(location *fabricv4.SimplifiedLocationWithou
 		"metro_code": location.GetMetroCode(),
 	}
 
-	locationSet := schema.NewSet(
+	return schema.NewSet(
 		schema.HashResource(&schema.Resource{Schema: LocationSch()}),
 		[]interface{}{mappedLocation},
 	)
-	return locationSet
 }
 
 func ProjectTerraformToGo(projectTerraform []interface{}) fabricv4.Project {
-	if projectTerraform == nil || len(projectTerraform) == 0 {
+	if len(projectTerraform) == 0 {
 		return fabricv4.Project{}
 	}
 	var project fabricv4.Project
@@ -245,15 +241,14 @@ func ChangeLogGoToTerraform(changeLog *fabricv4.Changelog) *schema.Set {
 		"deleted_date_time":    changeLog.GetDeletedDateTime().String(),
 	}
 
-	changeLogSet := schema.NewSet(
+	return schema.NewSet(
 		schema.HashResource(&schema.Resource{Schema: ChangeLogSch()}),
 		[]interface{}{mappedChangeLog},
 	)
-	return changeLogSet
 }
 
 func ErrorGoToTerraform(errors []fabricv4.Error) []interface{} {
-	if errors == nil || len(errors) == 0 {
+	if len(errors) == 0 {
 		return nil
 	}
 	mappedErrors := make([]interface{}, len(errors))

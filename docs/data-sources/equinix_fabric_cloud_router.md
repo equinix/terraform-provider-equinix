@@ -87,9 +87,9 @@ output "type" {
 - `notifications` (List of Object) Preferences for notifications on Fabric Cloud Router configuration or status changes (see [below for nested schema](#nestedatt--notifications))
 - `order` (Set of Object) Order information related to this Fabric Cloud Router (see [below for nested schema](#nestedatt--order))
 - `package` (Set of Object) Fabric Cloud Router Package Type (see [below for nested schema](#nestedatt--package))
-- `project` (Set of Object) Customer resource hierarchy project information.Applicable to customers onboarded to Equinix Identity and Access Management. For more information see Identity and Access Management: Projects (see [below for nested schema](#nestedatt--project))
+- `project` (Set of Object) Customer resource hierarchy project information. Applicable to customers onboarded to Equinix Identity and Access Management. For more information see Identity and Access Management: Projects (see [below for nested schema](#nestedatt--project))
 - `state` (String) Fabric Cloud Router overall state
-- `type` (String) Defines the FCR type like; XF_ROUTER
+- `type` (String) Defines the FCR type. One of [XF_ROUTER]
 
 <a id="nestedatt--account"></a>
 ### Nested Schema for `account`
@@ -123,7 +123,6 @@ Read-Only:
 
 Read-Only:
 
-- `ibx` (String)
 - `metro_code` (String)
 - `metro_name` (String)
 - `region` (String)
@@ -163,6 +162,6 @@ Read-Only:
 
 Read-Only:
 
-- `href` (String)
 - `project_id` (String)
+
 

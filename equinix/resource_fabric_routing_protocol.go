@@ -191,6 +191,7 @@ func createFabricRoutingProtocolResourceSchema() map[string]*schema.Schema {
 			Type:        schema.TypeSet,
 			Optional:    true,
 			Description: "Routing Protocol Direct IPv4",
+			MaxItems:    1,
 			Elem: &schema.Resource{
 				Schema: createDirectConnectionIpv4Sch(),
 			},
@@ -199,6 +200,7 @@ func createFabricRoutingProtocolResourceSchema() map[string]*schema.Schema {
 			Type:        schema.TypeSet,
 			Optional:    true,
 			Description: "Routing Protocol Direct IPv6",
+			MaxItems:    1,
 			Elem: &schema.Resource{
 				Schema: createDirectConnectionIpv6Sch(),
 			},
@@ -207,6 +209,7 @@ func createFabricRoutingProtocolResourceSchema() map[string]*schema.Schema {
 			Type:        schema.TypeSet,
 			Optional:    true,
 			Description: "Routing Protocol BGP IPv4",
+			MaxItems:    1,
 			Elem: &schema.Resource{
 				Schema: createBgpConnectionIpv4Sch(),
 			},
@@ -215,6 +218,7 @@ func createFabricRoutingProtocolResourceSchema() map[string]*schema.Schema {
 			Type:        schema.TypeSet,
 			Optional:    true,
 			Description: "Routing Protocol BGP IPv6",
+			MaxItems:    1,
 			Elem: &schema.Resource{
 				Schema: createBgpConnectionIpv6Sch(),
 			},
@@ -238,6 +242,7 @@ func createFabricRoutingProtocolResourceSchema() map[string]*schema.Schema {
 			Type:        schema.TypeSet,
 			Optional:    true,
 			Description: "Bidirectional Forwarding Detection",
+			MaxItems:    1,
 			Elem: &schema.Resource{
 				Schema: createRoutingProtocolBfdSch(),
 			},
@@ -621,7 +626,7 @@ func waitForRoutingProtocolUpdateCompletion(rpChangeUuid string, uuid string, co
 }
 
 func routingProtocolDirectIpv4TerraformToGo(routingProtocolDirectIpv4Request []interface{}) fabricv4.DirectConnectionIpv4 {
-	if routingProtocolDirectIpv4Request == nil || len(routingProtocolDirectIpv4Request) == 0 {
+	if len(routingProtocolDirectIpv4Request) == 0 {
 		return fabricv4.DirectConnectionIpv4{}
 	}
 
@@ -637,7 +642,7 @@ func routingProtocolDirectIpv4TerraformToGo(routingProtocolDirectIpv4Request []i
 }
 
 func routingProtocolDirectIpv6TerraformToGo(routingProtocolDirectIpv6Request []interface{}) fabricv4.DirectConnectionIpv6 {
-	if routingProtocolDirectIpv6Request == nil || len(routingProtocolDirectIpv6Request) == 0 {
+	if len(routingProtocolDirectIpv6Request) == 0 {
 		return fabricv4.DirectConnectionIpv6{}
 	}
 	rpDirectIpv6 := fabricv4.DirectConnectionIpv6{}
@@ -651,7 +656,7 @@ func routingProtocolDirectIpv6TerraformToGo(routingProtocolDirectIpv6Request []i
 }
 
 func routingProtocolBgpIpv4TerraformToGo(routingProtocolBgpIpv4Request []interface{}) fabricv4.BGPConnectionIpv4 {
-	if routingProtocolBgpIpv4Request == nil || len(routingProtocolBgpIpv4Request) == 0 {
+	if len(routingProtocolBgpIpv4Request) == 0 {
 		return fabricv4.BGPConnectionIpv4{}
 	}
 
@@ -668,7 +673,7 @@ func routingProtocolBgpIpv4TerraformToGo(routingProtocolBgpIpv4Request []interfa
 }
 
 func routingProtocolBgpIpv6TerraformToGo(routingProtocolBgpIpv6Request []interface{}) fabricv4.BGPConnectionIpv6 {
-	if routingProtocolBgpIpv6Request == nil || len(routingProtocolBgpIpv6Request) == 0 {
+	if len(routingProtocolBgpIpv6Request) == 0 {
 		return fabricv4.BGPConnectionIpv6{}
 	}
 
@@ -685,7 +690,7 @@ func routingProtocolBgpIpv6TerraformToGo(routingProtocolBgpIpv6Request []interfa
 }
 
 func routingProtocolBfdTerraformToGo(routingProtocolBfdRequest []interface{}) fabricv4.RoutingProtocolBFD {
-	if routingProtocolBfdRequest == nil || len(routingProtocolBfdRequest) == 0 {
+	if len(routingProtocolBfdRequest) == 0 {
 		return fabricv4.RoutingProtocolBFD{}
 	}
 
@@ -710,11 +715,10 @@ func routingProtocolDirectConnectionIpv4GoToTerraform(routingProtocolDirectIpv4 
 		"equinix_iface_ip": routingProtocolDirectIpv4.GetEquinixIfaceIp(),
 	}
 
-	rpDirectIpv4Set := schema.NewSet(
+	return schema.NewSet(
 		schema.HashResource(&schema.Resource{Schema: createDirectConnectionIpv4Sch()}),
 		[]interface{}{mappedDirectIpv4},
 	)
-	return rpDirectIpv4Set
 }
 
 func routingProtocolDirectConnectionIpv6GoToTerraform(routingProtocolDirectIpv6 *fabricv4.DirectConnectionIpv6) *schema.Set {
@@ -726,11 +730,10 @@ func routingProtocolDirectConnectionIpv6GoToTerraform(routingProtocolDirectIpv6 
 		"equinix_iface_ip": routingProtocolDirectIpv6.GetEquinixIfaceIp(),
 	}
 
-	rpDirectIpv6Set := schema.NewSet(
+	return schema.NewSet(
 		schema.HashResource(&schema.Resource{Schema: createDirectConnectionIpv6Sch()}),
 		[]interface{}{mappedDirectIpv6},
 	)
-	return rpDirectIpv6Set
 }
 
 func routingProtocolBgpConnectionIpv4GoToTerraform(routingProtocolBgpIpv4 *fabricv4.BGPConnectionIpv4) *schema.Set {
@@ -743,11 +746,10 @@ func routingProtocolBgpConnectionIpv4GoToTerraform(routingProtocolBgpIpv4 *fabri
 		"equinix_peer_ip":  routingProtocolBgpIpv4.GetEquinixPeerIp(),
 		"enabled":          routingProtocolBgpIpv4.GetEnabled(),
 	}
-	rpBgpIpv4Set := schema.NewSet(
+	return schema.NewSet(
 		schema.HashResource(&schema.Resource{Schema: createBgpConnectionIpv4Sch()}),
 		[]interface{}{mappedBgpIpv4},
 	)
-	return rpBgpIpv4Set
 }
 
 func routingProtocolBgpConnectionIpv6GoToTerraform(routingProtocolBgpIpv6 *fabricv4.BGPConnectionIpv6) *schema.Set {
@@ -761,11 +763,10 @@ func routingProtocolBgpConnectionIpv6GoToTerraform(routingProtocolBgpIpv6 *fabri
 		"enabled":          routingProtocolBgpIpv6.GetEnabled(),
 	}
 
-	rpBgpIpv6Set := schema.NewSet(
+	return schema.NewSet(
 		schema.HashResource(&schema.Resource{Schema: createBgpConnectionIpv6Sch()}),
 		[]interface{}{mappedBgpIpv6},
 	)
-	return rpBgpIpv6Set
 }
 
 func routingProtocolBfdGoToTerraform(routingProtocolBfd *fabricv4.RoutingProtocolBFD) *schema.Set {
@@ -778,11 +779,10 @@ func routingProtocolBfdGoToTerraform(routingProtocolBfd *fabricv4.RoutingProtoco
 		"interval": routingProtocolBfd.GetInterval(),
 	}
 
-	rpBfdSet := schema.NewSet(
+	return schema.NewSet(
 		schema.HashResource(&schema.Resource{Schema: createRoutingProtocolBfdSch()}),
 		[]interface{}{mappedRpBfd},
 	)
-	return rpBfdSet
 }
 
 func routingProtocolOperationGoToTerraform(routingProtocolOperation *fabricv4.RoutingProtocolOperation) *schema.Set {
@@ -795,11 +795,10 @@ func routingProtocolOperationGoToTerraform(routingProtocolOperation *fabricv4.Ro
 		mappedRpOperation["errors"] = equinix_fabric_schema.ErrorGoToTerraform(errors)
 	}
 
-	rpOperationSet := schema.NewSet(
+	return schema.NewSet(
 		schema.HashResource(&schema.Resource{Schema: createRoutingProtocolOperationSch()}),
 		[]interface{}{mappedRpOperation},
 	)
-	return rpOperationSet
 }
 
 func routingProtocolChangeGoToTerraform(routingProtocolChange *fabricv4.RoutingProtocolChange) *schema.Set {
@@ -813,9 +812,8 @@ func routingProtocolChangeGoToTerraform(routingProtocolChange *fabricv4.RoutingP
 		"href": routingProtocolChange.GetHref(),
 	}
 
-	rpChangeSet := schema.NewSet(
+	return schema.NewSet(
 		schema.HashResource(&schema.Resource{Schema: createRoutingProtocolChangeSch()}),
 		[]interface{}{mappedRpChange},
 	)
-	return rpChangeSet
 }

@@ -14,6 +14,7 @@ import (
 	equinix_errors "github.com/equinix/terraform-provider-equinix/internal/errors"
 	equinix_fabric_schema "github.com/equinix/terraform-provider-equinix/internal/fabric/schema"
 	equinix_schema "github.com/equinix/terraform-provider-equinix/internal/schema"
+	equinix_validation "github.com/equinix/terraform-provider-equinix/internal/validation"
 
 	"github.com/equinix/terraform-provider-equinix/internal/config"
 
@@ -25,35 +26,34 @@ func fabricCloudRouterPackageSch() map[string]*schema.Schema {
 		"code": {
 			Type:        schema.TypeString,
 			Required:    true,
-			Description: "Fabric Cloud Router package code",
+			ValidateFunc: equinix_validation.StringInEnumSlice(fabricv4.AllowedRouterPackageCodeEnumValues, false),
+			Description: fmt.Sprintf("Fabric Cloud Router package code. One of %v", fabricv4.AllowedRouterPackageCodeEnumValues),
 		},
 	}
 }
+
 func fabricCloudRouterAccountSch() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
 		"account_number": {
 			Type:        schema.TypeInt,
-			Computed:    true,
-			Optional:    true,
+			Required:    true,
 			Description: "Account Number",
 		},
 	}
 }
-func fabricCloudRouterProjectSch() map[string]*schema.Schema {
-	return map[string]*schema.Schema{
-		"project_id": {
-			Type:        schema.TypeString,
-			Computed:    true,
-			Optional:    true,
-			Description: "Project Id",
-		},
-		"href": {
-			Type:        schema.TypeString,
-			Optional:    true,
-			Computed:    true,
-			Description: "Unique Resource URL",
-		},
+
+func fabricCloudRouterlocationSch() map[string]*schema.Schema {
+	sch := equinix_fabric_schema.LocationSchWithoutIbx()
+	for key := range sch {
+		if key == "metro_code" {
+			sch[key].Required = true
+			sch[key].Optional = false
+			sch[key].Computed = false
+		} else {
+			sch[key].Optional = false
+		}
 	}
+	return sch
 }
 
 func fabricCloudRouterResourceSchema() map[string]*schema.Schema {
@@ -111,8 +111,8 @@ func fabricCloudRouterResourceSchema() map[string]*schema.Schema {
 		"type": {
 			Type:         schema.TypeString,
 			Required:     true,
-			ValidateFunc: validation.StringInSlice([]string{"XF_ROUTER"}, true),
-			Description:  "Defines the FCR type like; XF_ROUTER",
+			ValidateFunc: equinix_validation.StringInEnumSlice(fabricv4.AllowedCloudRouterPostRequestTypeEnumValues, true),
+			Description: fmt.Sprintf("Defines the FCR type. One of %v", fabricv4.AllowedCloudRouterPostRequestTypeEnumValues),
 		},
 		"location": {
 			Type:        schema.TypeSet,
@@ -120,7 +120,7 @@ func fabricCloudRouterResourceSchema() map[string]*schema.Schema {
 			Description: "Fabric Cloud Router location",
 			MaxItems:    1,
 			Elem: &schema.Resource{
-				Schema: equinix_fabric_schema.LocationSch(),
+				Schema: fabricCloudRouterlocationSch(),
 			},
 		},
 		"project": {
@@ -129,7 +129,7 @@ func fabricCloudRouterResourceSchema() map[string]*schema.Schema {
 			Description: "Customer resource hierarchy project information. Applicable to customers onboarded to Equinix Identity and Access Management. For more information see Identity and Access Management: Projects",
 			MaxItems:    1,
 			Elem: &schema.Resource{
-				Schema: fabricCloudRouterProjectSch(),
+				Schema:  equinix_fabric_schema.ProjectSch(),
 			},
 		},
 		"account": {
@@ -221,7 +221,7 @@ func accountCloudRouterTerraformToGo(accountList []interface{}) fabricv4.Simplif
 }
 
 func packageCloudRouterTerraformToGo(packageList []interface{}) fabricv4.CloudRouterPostRequestPackage {
-	if packageList == nil || len(packageList) == 0 {
+	if len(packageList) == 0 {
 		return fabricv4.CloudRouterPostRequestPackage{}
 	}
 
@@ -233,7 +233,7 @@ func packageCloudRouterTerraformToGo(packageList []interface{}) fabricv4.CloudRo
 	return package_
 }
 func projectCloudRouterTerraformToGo(projectTerraform []interface{}) fabricv4.Project {
-	if projectTerraform == nil || len(projectTerraform) == 0 {
+	if len(projectTerraform) == 0 {
 		return fabricv4.Project{}
 	}
 	project := fabricv4.Project{}

@@ -1,33 +1,33 @@
 package schema
 
 import (
+	"fmt"
+
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/equinix/equinix-sdk-go/services/fabricv4"
+	equinix_validation "github.com/equinix/terraform-provider-equinix/internal/validation"
 )
 
 func OrderSch() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
 		"purchase_order_number": {
 			Type:        schema.TypeString,
-			Computed:    true,
 			Optional:    true,
-			Description: "Purchase order number",
+			Description: "Purchase order number. Short name/number to identify this order on the invoice",
 		},
 		"billing_tier": {
 			Type:        schema.TypeString,
 			Computed:    true,
-			Optional:    true,
 			Description: "Billing tier for connection bandwidth",
 		},
 		"order_id": {
 			Type:        schema.TypeString,
 			Computed:    true,
-			Optional:    true,
 			Description: "Order Identification",
 		},
 		"order_number": {
 			Type:        schema.TypeString,
 			Computed:    true,
-			Optional:    true,
 			Description: "Order Reference Number",
 		},
 	}
@@ -38,7 +38,8 @@ func NotificationSch() map[string]*schema.Schema {
 		"type": {
 			Type:        schema.TypeString,
 			Required:    true,
-			Description: "Notification Type - ALL,CONNECTION_APPROVAL,SALES_REP_NOTIFICATIONS, NOTIFICATIONS",
+			ValidateFunc: equinix_validation.StringInEnumSlice(fabricv4.AllowedSimplifiedNotificationTypeEnumValues, false),
+			Description: fmt.Sprintf("Notification type. One of %v", fabricv4.AllowedSimplifiedNotificationTypeEnumValues),
 		},
 		"send_interval": {
 			Type:        schema.TypeString,
@@ -130,18 +131,18 @@ func LocationSch() map[string]*schema.Schema {
 	}
 }
 
+func LocationSchWithoutIbx() map[string]*schema.Schema {
+	schemaMap := LocationSch()
+	delete(schemaMap, "ibx")
+	return schemaMap
+}
+
 func ProjectSch() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
 		"project_id": {
 			Type:        schema.TypeString,
-			Computed:    true,
-			Optional:    true,
+			Required:    true,
 			Description: "Project Id",
-		},
-		"href": {
-			Type:        schema.TypeString,
-			Computed:    true,
-			Description: "Unique Resource URL",
 		},
 	}
 }
@@ -211,6 +212,29 @@ func ChangeLogSch() map[string]*schema.Schema {
 	}
 }
 
+func OperationSch() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"provider_status": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "Connection provider readiness status",
+		},
+		"equinix_status": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "Connection status",
+		},
+		"errors": {
+			Type:        schema.TypeList,
+			Computed:    true,
+			Description: "Errors occurred",
+			Elem: &schema.Resource{
+				Schema: ErrorSch(),
+			},
+		},
+	}
+}
+
 func ErrorSch() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
 		"error_code": {
@@ -260,6 +284,54 @@ func ErrorAdditionalInfoSch() map[string]*schema.Schema {
 			Type:        schema.TypeString,
 			Computed:    true,
 			Description: "Reason for the error",
+		},
+	}
+}
+
+func PortSch() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"uuid": {
+			Type:        schema.TypeString,
+			Required:    true,
+			Description: "Equinix-assigned Port identifier",
+		},
+		"href": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "Unique Resource Identifier",
+		},
+		"name": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "Port name",
+		},
+		"redundancy": {
+			Type:        schema.TypeSet,
+			Computed:    true,
+			Description: "Redundancy Information",
+			Elem: &schema.Resource{
+				Schema: PortRedundancySch(),
+			},
+		},
+	}
+}
+
+func PortRedundancySch() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"enabled": {
+			Type:        schema.TypeBool,
+			Computed:    true,
+			Description: "Access point redundancy",
+		},
+		"group": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "Port redundancy group",
+		},
+		"priority": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "Priority type - Primary or Secondary",
 		},
 	}
 }
