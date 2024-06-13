@@ -9,6 +9,7 @@ import (
 
 	"github.com/equinix/ecx-go/v2"
 	"github.com/equinix/terraform-provider-equinix/internal/config"
+	fabric_connection "github.com/equinix/terraform-provider-equinix/internal/resources/fabric/connection"
 	fabric_network "github.com/equinix/terraform-provider-equinix/internal/resources/fabric/network"
 	"github.com/equinix/terraform-provider-equinix/internal/resources/metal/vrf"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -82,7 +83,8 @@ func Provider() *schema.Provider {
 			"equinix_ecx_l2_sellerprofile":       dataSourceECXL2SellerProfile(),
 			"equinix_ecx_l2_sellerprofiles":      dataSourceECXL2SellerProfiles(),
 			"equinix_fabric_routing_protocol":    dataSourceRoutingProtocol(),
-			"equinix_fabric_connection":          dataSourceFabricConnection(),
+			"equinix_fabric_connection":          fabric_connection.DataSource(),
+			"equinix_fabric_connections":         fabric_connection.DataSourceSearch(),
 			"equinix_fabric_cloud_router":        dataSourceFabricCloudRouter(),
 			"equinix_fabric_cloud_routers":       dataSourceFabricGetCloudRouters(),
 			"equinix_fabric_network":             fabric_network.DataSource(),
@@ -119,7 +121,7 @@ func Provider() *schema.Provider {
 			"equinix_ecx_l2_serviceprofile":      resourceECXL2ServiceProfile(),
 			"equinix_fabric_network":             fabric_network.Resource(),
 			"equinix_fabric_cloud_router":        resourceFabricCloudRouter(),
-			"equinix_fabric_connection":          resourceFabricConnection(),
+			"equinix_fabric_connection":          fabric_connection.Resource(),
 			"equinix_fabric_routing_protocol":    resourceFabricRoutingProtocol(),
 			"equinix_fabric_service_profile":     resourceFabricServiceProfile(),
 			"equinix_network_device":             resourceNetworkDevice(),

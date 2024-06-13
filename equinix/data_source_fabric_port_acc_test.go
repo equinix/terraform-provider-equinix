@@ -1,33 +1,17 @@
 package equinix_test
 
 import (
-	"encoding/json"
 	"fmt"
 	"github.com/equinix/equinix-sdk-go/services/fabricv4"
-	"os"
+	"github.com/equinix/terraform-provider-equinix/internal/fabric/testing_helpers"
 	"testing"
 
 	"github.com/equinix/terraform-provider-equinix/internal/acceptance"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
 
-const (
-	FabricDedicatedPortEnvVar = "TF_ACC_FABRIC_DEDICATED_PORTS"
-)
-
-type EnvPorts map[string]map[string][]fabricv4.PortResponse
-
-func GetFabricEnvPorts(t *testing.T) EnvPorts {
-	var ports EnvPorts
-	portJson := os.Getenv(FabricDedicatedPortEnvVar)
-	if err := json.Unmarshal([]byte(portJson), &ports); portJson != "" && err != nil {
-		t.Fatalf("Failed reading port data from environment: %v, %s", err, portJson)
-	}
-	return ports
-}
-
 func TestAccDataSourceFabricPort_PNFV(t *testing.T) {
-	ports := GetFabricEnvPorts(t)
+	ports := testing_helpers.GetFabricEnvPorts(t)
 	var port fabricv4.PortResponse
 	var portType, portState, portEncapsulationType, portRedundancyPriority string
 	if len(ports) > 0 {
@@ -80,7 +64,7 @@ func testDataSourceFabricPort(port_uuid string) string {
 }
 
 func TestAccDataSourceFabricPorts_PNFV(t *testing.T) {
-	ports := GetFabricEnvPorts(t)
+	ports := testing_helpers.GetFabricEnvPorts(t)
 	var port fabricv4.PortResponse
 	var portType, portState, portEncapsulationType, portRedundancyPriority string
 	if len(ports) > 0 {
@@ -135,7 +119,7 @@ func testDataSourceFabricPorts(port_name string) string {
 }
 
 func TestAccDataSourceFabricPort_PPDS(t *testing.T) {
-	ports := GetFabricEnvPorts(t)
+	ports := testing_helpers.GetFabricEnvPorts(t)
 	var port fabricv4.PortResponse
 	var portType, portState, portEncapsulationType, portRedundancyPriority string
 	if len(ports) > 0 {
@@ -180,7 +164,7 @@ func TestAccDataSourceFabricPort_PPDS(t *testing.T) {
 }
 
 func TestAccDataSourceFabricPorts_PPDS(t *testing.T) {
-	ports := GetFabricEnvPorts(t)
+	ports := testing_helpers.GetFabricEnvPorts(t)
 	var port fabricv4.PortResponse
 	var portType, portState, portEncapsulationType, portRedundancyPriority string
 	if len(ports) > 0 {

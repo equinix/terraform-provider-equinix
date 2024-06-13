@@ -3,6 +3,7 @@ package equinix_test
 import (
 	"context"
 	"fmt"
+	"github.com/equinix/terraform-provider-equinix/internal/fabric/testing_helpers"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"testing"
 	"time"
@@ -20,7 +21,7 @@ import (
 // data_source tests will just leverage the RPs there to retrieve the data and check results
 
 func TestAccFabricCreateRoutingProtocols_PFCR(t *testing.T) {
-	ports := GetFabricEnvPorts(t)
+	ports := testing_helpers.GetFabricEnvPorts(t)
 
 	var portUuid string
 

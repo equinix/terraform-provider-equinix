@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/equinix/terraform-provider-equinix/equinix"
 	"github.com/equinix/terraform-provider-equinix/internal/acceptance"
+	"github.com/equinix/terraform-provider-equinix/internal/fabric/testing_helpers"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"testing"
 	"time"
@@ -14,7 +15,7 @@ import (
 )
 
 func TestAccFabricCreateServiceProfile_PFCR(t *testing.T) {
-	ports := GetFabricEnvPorts(t)
+	ports := testing_helpers.GetFabricEnvPorts(t)
 
 	var portUuidDot1Q, portMetroCodeDot1Q, portTypeDot1Q string
 	var portUuidQinq, portMetroCodeQinq, portTypeQinq string

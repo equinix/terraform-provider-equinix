@@ -1,13 +1,12 @@
-package equinix_test
+package connection_test
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
-	"github.com/equinix/terraform-provider-equinix/equinix"
 	"github.com/equinix/terraform-provider-equinix/internal/acceptance"
+	"github.com/equinix/terraform-provider-equinix/internal/fabric/testing_helpers"
+	"github.com/equinix/terraform-provider-equinix/internal/resources/fabric/connection"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"os"
 	"testing"
 	"time"
 
@@ -26,22 +25,9 @@ func testSweepConnections(region string) error {
 	return nil
 }
 
-const (
-	FabricConnectionsTestDataEnvVar = "TF_ACC_FABRIC_CONNECTIONS_TEST_DATA"
-)
-
-func GetFabricEnvConnectionTestData(t *testing.T) map[string]map[string]string {
-	var connectionTestData map[string]map[string]string
-	connectionTestDataJson := os.Getenv(FabricConnectionsTestDataEnvVar)
-	if err := json.Unmarshal([]byte(connectionTestDataJson), &connectionTestData); connectionTestDataJson != "" && err != nil {
-		t.Fatalf("Failed reading connection data from environment: %v, %s", err, connectionTestDataJson)
-	}
-	return connectionTestData
-}
-
 func TestAccFabricCreatePort2SPConnection_PPDS(t *testing.T) {
-	ports := GetFabricEnvPorts(t)
-	connectionsTestData := GetFabricEnvConnectionTestData(t)
+	ports := testing_helpers.GetFabricEnvPorts(t)
+	connectionsTestData := testing_helpers.GetFabricEnvConnectionTestData(t)
 	var publicSPName, portUuid string
 	if len(ports) > 0 && len(connectionsTestData) > 0 {
 		publicSPName = connectionsTestData["ppds"]["publicSPName"]
@@ -89,8 +75,8 @@ func TestAccFabricCreatePort2SPConnection_PPDS(t *testing.T) {
 }
 
 func TestAccFabricCreatePort2SPConnection_PFCR(t *testing.T) {
-	ports := GetFabricEnvPorts(t)
-	connectionsTestData := GetFabricEnvConnectionTestData(t)
+	ports := testing_helpers.GetFabricEnvPorts(t)
+	connectionsTestData := testing_helpers.GetFabricEnvConnectionTestData(t)
 	var publicSPName, portUuid string
 	if len(ports) > 0 && len(connectionsTestData) > 0 {
 		publicSPName = connectionsTestData["pfcr"]["publicSPName"]
@@ -189,7 +175,7 @@ func testAccFabricCreatePort2SPConnectionConfig(spName, name, portUuid, zSideMet
 }
 
 func TestAccFabricCreatePort2PortConnection_PFCR(t *testing.T) {
-	ports := GetFabricEnvPorts(t)
+	ports := testing_helpers.GetFabricEnvPorts(t)
 	var aSidePortUuid, zSidePortUuid string
 	if len(ports) > 0 {
 		aSidePortUuid = ports["pfcr"]["dot1q"][0].GetUuid()
@@ -304,7 +290,7 @@ func testAccFabricCreatePort2PortConnectionConfig(bandwidth int32, aSidePortUuid
 }
 
 func TestAccFabricCreateCloudRouter2PortConnection_PFCR(t *testing.T) {
-	ports := GetFabricEnvPorts(t)
+	ports := testing_helpers.GetFabricEnvPorts(t)
 	var portUuid string
 	if len(ports) > 0 {
 		portUuid = ports["pfcr"]["dot1q"][1].GetUuid()
@@ -419,7 +405,7 @@ func testAccFabricCreateCloudRouter2PortConnectionConfig(name, portUuid string) 
 }
 
 func TestAccFabricCreateVirtualDevice2NetworkConnection_PNFV(t *testing.T) {
-	connectionTestData := GetFabricEnvConnectionTestData(t)
+	connectionTestData := testing_helpers.GetFabricEnvConnectionTestData(t)
 	var virtualDevice string
 	if len(connectionTestData) > 0 {
 		virtualDevice = connectionTestData["pnfv"]["virtualDevice"]
@@ -529,7 +515,7 @@ func CheckConnectionDelete(s *terraform.State) error {
 			continue
 		}
 
-		err := equinix.WaitUntilConnectionDeprovisioned(rs.Primary.ID, acceptance.TestAccProvider.Meta(), &schema.ResourceData{}, ctx, 10*time.Minute)
+		err := connection.WaitUntilConnectionDeprovisioned(rs.Primary.ID, acceptance.TestAccProvider.Meta(), &schema.ResourceData{}, ctx, 10*time.Minute)
 		if err != nil {
 			return fmt.Errorf("API call failed while waiting for resource deletion")
 		}
