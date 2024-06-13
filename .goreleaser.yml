@@ -1,5 +1,7 @@
 # Visit https://goreleaser.com for documentation on how to customize this
 # behavior.
+version: 2
+
 before:
   hooks:
     # this is just an example and not a requirement for provider building/publishing
@@ -66,7 +68,7 @@ archives:
       - LICENSE*
       - README*
       - CHANGELOG*
-      - src: 'cmd/migration-tool/*.md'
+      - src: "cmd/migration-tool/*.md"
         dst: equinix-migration-tool
         strip_parent: true
 checksum:
@@ -88,4 +90,4 @@ release:
   # If you want to manually examine the release before its live, uncomment this line:
   # draft: true
 changelog:
-  skip: true
+  disable: true
