@@ -3,6 +3,7 @@ package ssh_key
 import (
 	"context"
 	"fmt"
+	"net/http"
 
 	"github.com/equinix/equinix-sdk-go/services/metalv1"
 	equinix_errors "github.com/equinix/terraform-provider-equinix/internal/errors"
@@ -180,7 +181,7 @@ func (r *Resource) Delete(
 
 	// Use API client to delete the resource
 	deleteResp, err := client.SSHKeysApi.DeleteSSHKey(ctx, id).Execute()
-	if equinix_errors.IgnoreHttpResponseErrors(equinix_errors.HttpForbidden, equinix_errors.HttpNotFound)(deleteResp, err) != nil {
+	if equinix_errors.IgnoreHttpResponseErrors(http.StatusForbidden, http.StatusNotFound)(deleteResp, err) != nil {
 		err = equinix_errors.FriendlyError(err)
 		resp.Diagnostics.AddError(
 			fmt.Sprintf("Failed to delete SSHKey %s", id),

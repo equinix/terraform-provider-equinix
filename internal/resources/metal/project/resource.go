@@ -3,6 +3,7 @@ package project
 import (
 	"context"
 	"fmt"
+	"net/http"
 	"reflect"
 
 	"github.com/equinix/equinix-sdk-go/services/metalv1"
@@ -292,7 +293,7 @@ func (r *Resource) Delete(ctx context.Context, req resource.DeleteRequest, resp 
 
 	// API call to delete the project
 	deleteResp, err := client.ProjectsApi.DeleteProject(ctx, id).Execute()
-	if equinix_errors.IgnoreHttpResponseErrors(equinix_errors.HttpForbidden, equinix_errors.HttpNotFound)(deleteResp, err) != nil {
+	if equinix_errors.IgnoreHttpResponseErrors(http.StatusForbidden, http.StatusNotFound)(deleteResp, err) != nil {
 		err = equinix_errors.FriendlyErrorForMetalGo(err, deleteResp)
 		resp.Diagnostics.AddError(
 			fmt.Sprintf("Failed to delete Project %s", id),

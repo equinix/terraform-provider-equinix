@@ -2,9 +2,11 @@ package errors
 
 import (
 	"fmt"
-	"github.com/equinix/equinix-sdk-go/services/fabricv4"
 	"net/http"
+	"slices"
 	"strings"
+
+	"github.com/equinix/equinix-sdk-go/services/fabricv4"
 
 	"github.com/equinix/rest-go"
 	"github.com/packethost/packngo"
@@ -191,19 +193,11 @@ func HasErrorCode(errors []fabricv4.Error, code string) bool {
 	return false
 }
 
-// ignoreHttpResponseErrors ignores http response errors when matched by one of the
-// provided checks
-func IgnoreHttpResponseErrors(ignore ...func(resp *http.Response, err error) bool) func(resp *http.Response, err error) error {
+// ignoreHttpResponseErrors ignores errors if the response matches
+// one of the specified status codes
+func IgnoreHttpResponseErrors(ignore ...int) func(resp *http.Response, err error) error {
 	return func(resp *http.Response, err error) error {
-		mute := false
-		for _, ignored := range ignore {
-			if ignored(resp, err) {
-				mute = true
-				break
-			}
-		}
-
-		if mute {
+		if resp != nil && slices.Contains(ignore, resp.StatusCode) {
 			return nil
 		}
 		return err
