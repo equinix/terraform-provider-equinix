@@ -1,6 +1,7 @@
 package equinix
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"testing"
@@ -17,13 +18,13 @@ const (
 )
 
 func testAccMetalVirtualCircuitCheckDestroyed(s *terraform.State) error {
-	client := testAccProvider.Meta().(*config.Config).Metal
+	client := testAccProvider.Meta().(*config.Config).NewMetalClientForTesting()
 
 	for _, rs := range s.RootModule().Resources {
 		if rs.Type != "equinix_metal_virtual_circuit" {
 			continue
 		}
-		if _, _, err := client.VirtualCircuits.Get(rs.Primary.ID, nil); err == nil {
+		if _, _, err := client.InterconnectionsApi.GetVirtualCircuit(context.Background(), rs.Primary.ID).Execute(); err == nil {
 			return fmt.Errorf("Metal VirtualCircuit still exists")
 		}
 	}
