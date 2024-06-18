@@ -1,4 +1,4 @@
-package equinix
+package virtual_circuit
 
 import (
 	"context"
@@ -20,7 +20,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
-func resourceMetalVirtualCircuit() *schema.Resource {
+func Resource() *schema.Resource {
 	return &schema.Resource{
 		ReadWithoutTimeout:   resourceMetalVirtualCircuitRead,
 		CreateContext:        resourceMetalVirtualCircuitCreate,

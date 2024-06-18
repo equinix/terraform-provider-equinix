@@ -11,6 +11,7 @@ import (
 	"github.com/equinix/terraform-provider-equinix/internal/config"
 	fabric_connection "github.com/equinix/terraform-provider-equinix/internal/resources/fabric/connection"
 	fabric_network "github.com/equinix/terraform-provider-equinix/internal/resources/fabric/network"
+	"github.com/equinix/terraform-provider-equinix/internal/resources/metal/virtual_circuit"
 	"github.com/equinix/terraform-provider-equinix/internal/resources/metal/vrf"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -112,7 +113,7 @@ func Provider() *schema.Provider {
 			"equinix_metal_port":                 dataSourceMetalPort(),
 			"equinix_metal_reserved_ip_block":    dataSourceMetalReservedIPBlock(),
 			"equinix_metal_spot_market_request":  dataSourceMetalSpotMarketRequest(),
-			"equinix_metal_virtual_circuit":      dataSourceMetalVirtualCircuit(),
+			"equinix_metal_virtual_circuit":      virtual_circuit.DataSource(),
 			"equinix_metal_vrf":                  vrf.DataSource(),
 		},
 		ResourcesMap: map[string]*schema.Resource{
@@ -139,7 +140,7 @@ func Provider() *schema.Provider {
 			"equinix_metal_reserved_ip_block":    resourceMetalReservedIPBlock(),
 			"equinix_metal_ip_attachment":        resourceMetalIPAttachment(),
 			"equinix_metal_spot_market_request":  resourceMetalSpotMarketRequest(),
-			"equinix_metal_virtual_circuit":      resourceMetalVirtualCircuit(),
+			"equinix_metal_virtual_circuit":      virtual_circuit.Resource(),
 			"equinix_metal_vrf":                  vrf.Resource(),
 			"equinix_metal_bgp_session":          resourceMetalBGPSession(),
 			"equinix_metal_port_vlan_attachment": resourceMetalPortVlanAttachment(),
