@@ -317,6 +317,10 @@ func getVCStateWaiter(ctx context.Context, client *metalv1.APIClient, id string,
 			vc, resp, err := client.InterconnectionsApi.GetVirtualCircuit(ctx, id).Execute()
 			if err != nil {
 				if resp != nil {
+					// The resource delete function uses this waiter and relies
+					// on it to return an ErrorResponse error so it can treat
+					// a 404 as success.  This conversion is done here for now
+					// to avoid a larger refactoring.
 					err = equinix_errors.FriendlyErrorForMetalGo(err, resp)
 				}
 				return 0, "", err
@@ -422,7 +426,7 @@ func resourceMetalVirtualCircuitUpdate(ctx context.Context, d *schema.ResourceDa
 
 	if needsUpdate {
 		if _, _, err := client.InterconnectionsApi.UpdateVirtualCircuit(ctx, d.Id()).VirtualCircuitUpdateInput(ur).Execute(); err != nil {
-			return diag.FromErr(equinix_errors.FriendlyError(err))
+			return diag.FromErr(err)
 		}
 	}
 	return resourceMetalVirtualCircuitRead(ctx, d, meta)
@@ -434,10 +438,13 @@ func resourceMetalVirtualCircuitDelete(ctx context.Context, d *schema.ResourceDa
 	_, resp, err := client.InterconnectionsApi.DeleteVirtualCircuit(ctx, d.Id()).Execute()
 	if err != nil {
 		if resp != nil {
+			// equinix_error.HttpNotFound and similar do not short-circuit
+			// based on response code, so we have to convert to a FriendlyError
+			// in order to use existing checks for equinix_errors.IgnoreHttpResponseErrors
 			err = equinix_errors.FriendlyErrorForMetalGo(err, resp)
 		}
 		if equinix_errors.IgnoreHttpResponseErrors(equinix_errors.HttpForbidden, equinix_errors.HttpNotFound)(resp, err) != nil {
-			return diag.FromErr(equinix_errors.FriendlyError(err))
+			return diag.FromErr(err)
 		}
 	}
 
