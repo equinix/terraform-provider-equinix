@@ -2,6 +2,7 @@ package virtual_circuit
 
 import (
 	"context"
+	"errors"
 	"log"
 	"regexp"
 	"strconv"
@@ -14,7 +15,6 @@ import (
 
 	"github.com/equinix/terraform-provider-equinix/internal/config"
 
-	"github.com/hashicorp/go-multierror"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -268,45 +268,45 @@ func resourceMetalVirtualCircuitRead(ctx context.Context, d *schema.ResourceData
 	} else {
 		log.Printf("[DEBUG] Could not parse connection and port ID from port href %s", portHref)
 	}
-	errs := &multierror.Error{}
+	var errs []error
 
 	if connectionID != "" {
-		multierror.Append(errs, d.Set("connection_id", connectionID))
+		errs = append(errs, d.Set("connection_id", connectionID))
 	}
 	d.Set("port_id", portID)
 
 	if vc.VlanVirtualCircuit != nil {
-		multierror.Append(errs, d.Set("project_id", vc.VlanVirtualCircuit.Project.GetId()))
+		errs = append(errs, d.Set("project_id", vc.VlanVirtualCircuit.Project.GetId()))
 		// TODO: blarg, spec has virtual network as Href, so these attrs arent directly available
-		multierror.Append(errs, d.Set("vlan_id", vc.VlanVirtualCircuit.VirtualNetwork.AdditionalProperties["id"]))
-		multierror.Append(errs, d.Set("status", vc.VlanVirtualCircuit.GetStatus()))
-		multierror.Append(errs, d.Set("nni_vlan", vc.VlanVirtualCircuit.GetNniVlan()))
-		multierror.Append(errs, d.Set("vnid", vc.VlanVirtualCircuit.GetVnid()))
+		errs = append(errs, d.Set("vlan_id", vc.VlanVirtualCircuit.VirtualNetwork.AdditionalProperties["id"]))
+		errs = append(errs, d.Set("status", vc.VlanVirtualCircuit.GetStatus()))
+		errs = append(errs, d.Set("nni_vlan", vc.VlanVirtualCircuit.GetNniVlan()))
+		errs = append(errs, d.Set("vnid", vc.VlanVirtualCircuit.GetVnid()))
 		// TODO: this attribute isn't mentioned in the spec
-		multierror.Append(errs, d.Set("nni_vnid", vc.VlanVirtualCircuit.AdditionalProperties["nni_vnid"]))
-		multierror.Append(errs, d.Set("name", vc.VlanVirtualCircuit.GetName()))
-		multierror.Append(errs, d.Set("speed", strconv.Itoa(int(vc.VlanVirtualCircuit.GetSpeed()))))
-		multierror.Append(errs, d.Set("description", vc.VlanVirtualCircuit.GetDescription()))
-		multierror.Append(errs, d.Set("tags", vc.VlanVirtualCircuit.GetTags()))
+		errs = append(errs, d.Set("nni_vnid", vc.VlanVirtualCircuit.AdditionalProperties["nni_vnid"]))
+		errs = append(errs, d.Set("name", vc.VlanVirtualCircuit.GetName()))
+		errs = append(errs, d.Set("speed", strconv.Itoa(int(vc.VlanVirtualCircuit.GetSpeed()))))
+		errs = append(errs, d.Set("description", vc.VlanVirtualCircuit.GetDescription()))
+		errs = append(errs, d.Set("tags", vc.VlanVirtualCircuit.GetTags()))
 	} else {
-		multierror.Append(errs, d.Set("project_id", vc.VrfVirtualCircuit.Project.GetId()))
-		multierror.Append(errs, d.Set("vrf_id", vc.VrfVirtualCircuit.Vrf.GetId()))
-		multierror.Append(errs, d.Set("status", vc.VrfVirtualCircuit.GetStatus()))
-		multierror.Append(errs, d.Set("nni_vlan", vc.VrfVirtualCircuit.GetNniVlan()))
+		errs = append(errs, d.Set("project_id", vc.VrfVirtualCircuit.Project.GetId()))
+		errs = append(errs, d.Set("vrf_id", vc.VrfVirtualCircuit.Vrf.GetId()))
+		errs = append(errs, d.Set("status", vc.VrfVirtualCircuit.GetStatus()))
+		errs = append(errs, d.Set("nni_vlan", vc.VrfVirtualCircuit.GetNniVlan()))
 		// TODO: this attribute isn't mentioned in the spec
-		multierror.Append(errs, d.Set("nni_vnid", vc.VrfVirtualCircuit.AdditionalProperties["nni_vnid"]))
-		multierror.Append(errs, d.Set("name", vc.VrfVirtualCircuit.GetName()))
-		multierror.Append(errs, d.Set("speed", strconv.Itoa(int(vc.VrfVirtualCircuit.GetSpeed()))))
-		multierror.Append(errs, d.Set("description", vc.VrfVirtualCircuit.GetDescription()))
-		multierror.Append(errs, d.Set("tags", vc.VrfVirtualCircuit.GetTags()))
-		multierror.Append(errs, d.Set("peer_asn", vc.VrfVirtualCircuit.GetPeerAsn()))
-		multierror.Append(errs, d.Set("subnet", vc.VrfVirtualCircuit.GetSubnet()))
-		multierror.Append(errs, d.Set("metal_ip", vc.VrfVirtualCircuit.GetMetalIp()))
-		multierror.Append(errs, d.Set("customer_ip", vc.VrfVirtualCircuit.GetCustomerIp()))
-		multierror.Append(errs, d.Set("md5", vc.VrfVirtualCircuit.GetMd5()))
+		errs = append(errs, d.Set("nni_vnid", vc.VrfVirtualCircuit.AdditionalProperties["nni_vnid"]))
+		errs = append(errs, d.Set("name", vc.VrfVirtualCircuit.GetName()))
+		errs = append(errs, d.Set("speed", strconv.Itoa(int(vc.VrfVirtualCircuit.GetSpeed()))))
+		errs = append(errs, d.Set("description", vc.VrfVirtualCircuit.GetDescription()))
+		errs = append(errs, d.Set("tags", vc.VrfVirtualCircuit.GetTags()))
+		errs = append(errs, d.Set("peer_asn", vc.VrfVirtualCircuit.GetPeerAsn()))
+		errs = append(errs, d.Set("subnet", vc.VrfVirtualCircuit.GetSubnet()))
+		errs = append(errs, d.Set("metal_ip", vc.VrfVirtualCircuit.GetMetalIp()))
+		errs = append(errs, d.Set("customer_ip", vc.VrfVirtualCircuit.GetCustomerIp()))
+		errs = append(errs, d.Set("md5", vc.VrfVirtualCircuit.GetMd5()))
 	}
 
-	return diag.FromErr(errs.ErrorOrNil())
+	return diag.FromErr(errors.Join(errs...))
 }
 
 func getVCStateWaiter(ctx context.Context, client *metalv1.APIClient, id string, timeout time.Duration, pending, target []string) *retry.StateChangeConf {
