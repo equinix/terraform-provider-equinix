@@ -394,7 +394,7 @@ default number for a given device type will be used.
 * `wan_interafce_id` - (Optional) Specify the WAN/SSH interface id. If not specified, default
 WAN/SSH interface for a given device type will be used.
 * `vendor_configuration` - (Optional) Map of vendor specific configuration parameters for a device
- (controller1, activationKey, managementType, siteId, systemIpAddress, private_address, private_cidr_mask, private_gateway, license_key, license_id)
+ (controller1, activationKey, managementType, siteId, systemIpAddress, privateAddress, privateCidrMask, privateGateway, licenseKey, licenseId)
 * `ssh-key` - (Optional) Definition of SSH key that will be provisioned
 on a device (max one key).  See [SSH Key](#ssh-key) below for more details.
 * `secondary_device` - (Optional) Definition of secondary device for redundant
@@ -435,7 +435,7 @@ secondary device.
 device.
 * `vendor_configuration` - (Optional) Key/Value pairs of vendor specific configuration parameters
 for a secondary device. Key values are `controller1`, `activationKey`, `managementType`, `siteId`,
-`systemIpAddress`, `private_address`, `private_cidr_mask`, `private_gateway`, `license_key`, `license_id`.
+`systemIpAddress`, `privateAddress`, `privateCidrMask`, `privateGateway`, `licenseKey`, `licenseId`.
 * `acl_template_id` - (Optional) Identifier of a WAN interface ACL template that will be applied
 on a secondary device.
 * `mgmt_acl_template_uuid` - (Optional) Identifier of an MGMT interface ACL template that will be
