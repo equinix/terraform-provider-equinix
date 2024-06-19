@@ -29,7 +29,7 @@ func testSweepVirtualCircuits(region string) error {
 		return fmt.Errorf("error getting configuration for sweeping VirtualCircuits: %s", err)
 	}
 	metal := config.NewMetalClientForTesting()
-	orgList, err := metal.OrganizationsApi.FindOrganizations(context.Background()).ExecuteWithPagination()
+	orgList, err := metal.OrganizationsApi.FindOrganizations(context.Background()).Exclude([]string{"address", "billing_address"}).ExecuteWithPagination()
 	if err != nil {
 		return fmt.Errorf("error getting organization list for sweeping VirtualCircuits: %s", err)
 	}
