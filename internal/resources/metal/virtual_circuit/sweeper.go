@@ -51,7 +51,7 @@ func testSweepVirtualCircuits(region string) error {
 							vcId = vc.VrfVirtualCircuit.GetId()
 							vcName = vc.VlanVirtualCircuit.GetName()
 						}
-						if sweep.IsSweepableTestResource(vc.VlanVirtualCircuit.GetName()) {
+						if sweep.IsSweepableTestResource(vcName) {
 							log.Printf("[INFO][SWEEPER_LOG] Deleting VirtualCircuit: %s", vcName)
 							_, resp, err := metal.InterconnectionsApi.DeleteVirtualCircuit(context.Background(), vcId).Execute()
 							if equinix_errors.IgnoreHttpResponseErrors(equinix_errors.HttpForbidden, equinix_errors.HttpNotFound)(resp, err) != nil {
