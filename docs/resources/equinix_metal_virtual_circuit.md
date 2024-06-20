@@ -5,7 +5,7 @@ subcategory: "Metal"
 # equinix_metal_virtual_circuit (Resource)
 
 Use this resource to associate VLAN with a Dedicated Port from
-[Equinix Fabric - software-defined interconnections](https://metal.equinix.com/developers/docs/networking/fabric/#associating-a-vlan-with-a-dedicated-port).
+[Equinix Fabric - software-defined interconnections](https://deploy.equinix.com/developers/docs/metal/interconnections/introduction/#associating-a-vlan-with-a-dedicated-port).
 
 See the [Virtual Routing and Forwarding documentation](https://deploy.equinix.com/developers/docs/metal/layer2-networking/vrf/) for product details and API reference material.
 
@@ -67,8 +67,8 @@ The following arguments are supported:
 In addition to all arguments above, the following attributes are exported:
 
 * `status` - Status of the virtal circuit.
-* `vnid` - VNID VLAN parameter, see the [documentation for Equinix Fabric](https://metal.equinix.com/developers/docs/networking/fabric/).
-* `nni_vnid` - NNI VLAN parameters, see the [documentation for Equinix Fabric](https://metal.equinix.com/developers/docs/networking/fabric/).
+* `vnid` - VNID VLAN parameter, see the [documentation for Equinix Fabric](https://deploy.equinix.com/developers/docs/metal/interconnections/introduction/).
+* `nni_vnid` - NNI VLAN parameters, see the [documentation for Equinix Fabric](https://deploy.equinix.com/developers/docs/metal/interconnections/introduction/).
 
 ## Import
 
