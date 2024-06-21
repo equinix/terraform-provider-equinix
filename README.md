@@ -18,8 +18,6 @@ management of Equinix Platform resources.
 
 ---
 
-This repository is [Maintained](https://github.com/equinix-labs/equinix-labs/blob/main/maintained-statement.md) meaning that this software is supported by Equinix Metal and its community - available to use in production environments.
-
 ## Requirements
 
 - [Terraform](https://www.terraform.io/downloads.html) 0.12+
