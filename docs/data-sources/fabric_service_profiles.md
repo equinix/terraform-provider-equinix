@@ -17,56 +17,66 @@ Additional documentation:
 ## Example Usage
 
 ```terraform
-data "equinix_fabric_service_profiles" "service_profiles_data_name" {
-  filter {
-    property = "/name"
-    operator = "="
-    values   = ["<list_of_profiles_to_return>"]
-  }
+data "equinix_fabric_service_profiles" "test" {
+    and_filters = true
+    filter {
+        property = "/type"
+        operator = "="
+        values 	 = ["L2_PROFILE"]
+    }
+    filter {
+        property = "/name"
+        operator = "="
+        values   = ["SP_ResourceCreation_PFCR"]
+    }
+    pagination {
+        offset = 0
+        limit = 5
+    }
+    sort {
+        direction = "ASC"
+        property = "/name"
+    }
 }
 
-output "id" {
-  value = data.equinix_fabric_service_profile.service_profiles_data_name.data.0.id
+output "number_of_returned_service_profiles" {
+    value = length(data.equinix_fabric_service_profiles.test.data)
 }
 
-output "name" {
-  value = data.equinix_fabric_service_profile.service_profiles_data_name.data.0.name
+output "first_service_profile_name" {
+    value = data.equinix_fabric_service_profiles.test.data.0.name
 }
 
-output "type" {
-  value = data.equinix_fabric_service_profile.service_profiles_data_name.data.0.type
+output "first_service_profile_uuid" {
+    value = data.equinix_fabric_service_profiles.test.data.0.uuid
 }
 
-output "visibility" {
-  value = data.equinix_fabric_service_profile.service_profiles_data_name.data.0.visibility
+output "first_service_profile_description" {
+    value = data.equinix_fabric_service_profiles.test.data.0.description
 }
 
-output "org_name" {
-  value = data.equinix_fabric_service_profile.service_profiles_data_name.data.0.account.0.organization_name
+output "first_service_profile_state" {
+    value = data.equinix_fabric_service_profiles.test.data.0.state
 }
 
-output "access_point_type_configs_type" {
-  value = data.equinix_fabric_service_profile.service_profiles_data_name.data.0.access_point_type_configs.0.type
+output "first_service_profile_visibility" {
+    value = data.equinix_fabric_service_profiles.test.data.0.visibility
 }
 
-output "allow_remote_connections" {
-  value = data.equinix_fabric_service_profile.service_profiles_data_name.data.0.access_point_type_configs.0.allow_remote_connections
+output "first_service_profile_metros_code" {
+    value = data.equinix_fabric_service_profiles.test.data.0.metros.0.code
 }
 
-output "supported_bandwidth_0" {
-  value = data.equinix_fabric_service_profile.service_profiles_data_name.data.0.access_point_type_configs.0.supported_bandwidths.0
+output "first_service_profile_metros_name" {
+    value = data.equinix_fabric_service_profiles.test.data.0.metros.0.name
 }
 
-output "supported_bandwidth_1" {
-  value = data.equinix_fabric_service_profile.service_profiles_data_name.data.0.access_point_type_configs.0.supported_bandwidths.1
+output "first_service_profile_metros_display_name" {
+    value = data.equinix_fabric_service_profiles.test.data.0.metros.0.display_name
 }
 
-output "redundandy_required" {
-  value = data.equinix_fabric_service_profile.service_profiles_data_name.data.0.access_point_type_configs.0.connection_redundancy_required
-}
-
-output "allow_over_subscription" {
-  value = data.equinix_fabric_service_profile.service_profiles_data_name.data.0.access_point_type_configs.0.api_config.0.allow_over_subscription
+output "first_service_profile_type" {
+    value = data.equinix_fabric_service_profiles.test.data.0.type
 }
 ```
 
@@ -74,10 +84,15 @@ output "allow_over_subscription" {
 
 ## Schema
 
+### Required
+
+- `filter` (Block List, Min: 1, Max: 10) Filters for the Data Source Search Request (see [below for nested schema](#nestedblock--filter))
+
 ### Optional
 
-- `filter` (Block Set, Max: 1) Service Profile Search Filter (see [below for nested schema](#nestedblock--filter))
-- `sort` (Block List) Service Profile Sort criteria for Search Request response payload (see [below for nested schema](#nestedblock--sort))
+- `and_filters` (Boolean) Optional boolean flag to indicate if the filters will be AND'd together
+- `pagination` (Block Set, Max: 1) Pagination details for the Data Source Search Request (see [below for nested schema](#nestedblock--pagination))
+- `sort` (Block List, Max: 1) Filters for the Data Source Search Request (see [below for nested schema](#nestedblock--sort))
 - `view_point` (String) flips view between buyer and seller representation. Available values : aSide, zSide. Default value : aSide
 
 ### Read-Only
@@ -89,11 +104,20 @@ output "allow_over_subscription" {
 
 ### Nested Schema for `filter`
 
+Required:
+
+- `operator` (String) Operators to use on your filtered field with the values given. One of [=]
+- `property` (String) Property to apply operator and values to. One of [/name /uuid /state /metros/code /visibility /type /project/projectId]
+- `values` (List of String) The values that you want to apply the property+operator combination to in order to filter your data search
+
+
+<a id="nestedblock--pagination"></a>
+### Nested Schema for `pagination`
+
 Optional:
 
-- `operator` (String) Possible operator to use on filters = - equal
-- `property` (String) Search Criteria for Service Profile - /name, /uuid, /state, /metros/code, /visibility, /type
-- `values` (List of String) Values
+- `limit` (Number) Number of elements to be requested per page. Number must be between 1 and 100. Default is 20
+- `offset` (Number) The page offset for the pagination request. Index of the first element. Default is 0.
 
 <a id="nestedblock--sort"></a>
 
@@ -101,8 +125,8 @@ Optional:
 
 Optional:
 
-- `direction` (String) Priority type- DESC, ASC
-- `property` (String) Search operation sort criteria /name /state /changeLog/createdDateTime /changeLog/updatedDateTime
+- `direction` (String) The sorting direction. Can be one of: [DESC, ASC], Defaults to DESC
+- `property` (String) The property name to use in sorting. One of [/name /uuid /state /location/metroCode /location/metroName /package/code /changeLog/createdDateTime /changeLog/updatedDateTime]. Defaults to /changeLog/updatedDateTime
 
 <a id="nestedatt--data"></a>
 
@@ -128,6 +152,7 @@ Read-Only:
 - `tags` (List of String)
 - `type` (String)
 - `uuid` (String)
+- `view_point` (String)
 - `virtual_devices` (List of Object) (see [below for nested schema](#nestedobjatt--data--virtual_devices))
 - `visibility` (String)
 
