@@ -147,6 +147,7 @@ func createFabricRoutingProtocolResourceSchema() map[string]*schema.Schema {
 		"type": {
 			Type:         schema.TypeString,
 			Optional:     true,
+			Computed:     true,
 			ValidateFunc: validation.StringInSlice([]string{"BGP", "DIRECT"}, true),
 			Description:  "Defines the routing protocol type like BGP or DIRECT",
 		},
@@ -159,11 +160,13 @@ func createFabricRoutingProtocolResourceSchema() map[string]*schema.Schema {
 		"name": {
 			Type:        schema.TypeString,
 			Optional:    true,
+			Computed:    true,
 			Description: "Routing Protocol name. An alpha-numeric 24 characters string which can include only hyphens and underscores",
 		},
 		"description": {
 			Type:        schema.TypeString,
 			Optional:    true,
+			Computed:    true,
 			Description: "Customer-provided Fabric Routing Protocol description",
 		},
 		"state": {
@@ -190,6 +193,7 @@ func createFabricRoutingProtocolResourceSchema() map[string]*schema.Schema {
 		"direct_ipv4": {
 			Type:        schema.TypeSet,
 			Optional:    true,
+			Computed:    true,
 			Description: "Routing Protocol Direct IPv4",
 			Elem: &schema.Resource{
 				Schema: createDirectConnectionIpv4Sch(),
@@ -198,6 +202,7 @@ func createFabricRoutingProtocolResourceSchema() map[string]*schema.Schema {
 		"direct_ipv6": {
 			Type:        schema.TypeSet,
 			Optional:    true,
+			Computed:    true,
 			Description: "Routing Protocol Direct IPv6",
 			Elem: &schema.Resource{
 				Schema: createDirectConnectionIpv6Sch(),
@@ -206,6 +211,7 @@ func createFabricRoutingProtocolResourceSchema() map[string]*schema.Schema {
 		"bgp_ipv4": {
 			Type:        schema.TypeSet,
 			Optional:    true,
+			Computed:    true,
 			Description: "Routing Protocol BGP IPv4",
 			Elem: &schema.Resource{
 				Schema: createBgpConnectionIpv4Sch(),
@@ -214,6 +220,7 @@ func createFabricRoutingProtocolResourceSchema() map[string]*schema.Schema {
 		"bgp_ipv6": {
 			Type:        schema.TypeSet,
 			Optional:    true,
+			Computed:    true,
 			Description: "Routing Protocol BGP IPv6",
 			Elem: &schema.Resource{
 				Schema: createBgpConnectionIpv6Sch(),
@@ -222,6 +229,7 @@ func createFabricRoutingProtocolResourceSchema() map[string]*schema.Schema {
 		"customer_asn": {
 			Type:        schema.TypeInt,
 			Optional:    true,
+			Computed:    true,
 			Description: "Customer-provided ASN",
 		},
 		"equinix_asn": {
@@ -232,11 +240,13 @@ func createFabricRoutingProtocolResourceSchema() map[string]*schema.Schema {
 		"bgp_auth_key": {
 			Type:        schema.TypeString,
 			Optional:    true,
+			Computed:    true,
 			Description: "BGP authorization key",
 		},
 		"bfd": {
 			Type:        schema.TypeSet,
 			Optional:    true,
+			Computed:    true,
 			Description: "Bidirectional Forwarding Detection",
 			Elem: &schema.Resource{
 				Schema: createRoutingProtocolBfdSch(),

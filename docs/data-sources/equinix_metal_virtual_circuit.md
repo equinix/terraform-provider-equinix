@@ -5,7 +5,7 @@ subcategory: "Metal"
 # equinix_metal_virtual_circuit (Data Source)
 
 Use this data source to retrieve a virtual circuit resource from
-[Equinix Fabric - software-defined interconnections](https://metal.equinix.com/developers/docs/networking/fabric/)
+[Equinix Fabric - software-defined interconnections](https://deploy.equinix.com/developers/docs/metal/interconnections/introduction/)
 
 See the [Virtual Routing and Forwarding documentation](https://deploy.equinix.com/developers/docs/metal/layer2-networking/vrf/) for product details and API reference material.
 
@@ -38,7 +38,7 @@ In addition to all arguments above, the following attributes are exported:
 * `port_id` - UUID of the Connection Port where the VC is scoped to.
 * `project_id` - ID of project to which the VC belongs.
 * `vnid`, `nni_vlan`, `nni_nvid` - VLAN parameters, see the
-[documentation for Equinix Fabric](https://metal.equinix.com/developers/docs/networking/fabric/).
+[documentation for Equinix Fabric](https://deploy.equinix.com/developers/docs/metal/interconnections/introduction/).
 * `description` - Description for the Virtual Circuit resource.
 * `tags` - Tags for the Virtual Circuit resource.
 * `speed` - Speed of the Virtual Circuit resource.

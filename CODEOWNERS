@@ -2,10 +2,11 @@
 #
 *                       @equinix/governor-devrel-engineering
 /cmd/migration-tool     @equinix/governor-metal-client-interfaces
-*metal*                 @t0mk @equinix/governor-metal-client-interfaces
+*metal*                 @equinix/governor-metal-client-interfaces
 *fabric*                @equinix/governor-digin-fabric
 *ecx*                   @equinix/governor-digin-fabric
 *connection_e2e*        @equinix/governor-digin-fabric
 *resource_network_*     @equinix/governor-ne-network-edge-engineering
+*equinix_network_*      @equinix/governor-ne-network-edge-engineering
 *data_source_network_*  @equinix/governor-ne-network-edge-engineering
 **/edge-networking      @equinix/governor-ne-network-edge-engineering

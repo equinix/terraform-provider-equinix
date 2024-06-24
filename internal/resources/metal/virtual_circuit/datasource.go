@@ -1,4 +1,4 @@
-package equinix
+package virtual_circuit
 
 import (
 	"context"
@@ -7,7 +7,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
-func dataSourceMetalVirtualCircuit() *schema.Resource {
+func DataSource() *schema.Resource {
 	return &schema.Resource{
 		ReadContext: dataSourceMetalVirtualCircuitRead,
 
@@ -46,17 +46,17 @@ func dataSourceMetalVirtualCircuit() *schema.Resource {
 			"vnid": {
 				Type:        schema.TypeInt,
 				Computed:    true,
-				Description: "VNID VLAN parameter, see https://metal.equinix.com/developers/docs/networking/fabric/",
+				Description: "VNID VLAN parameter, see https://deploy.equinix.com/developers/docs/metal/interconnections/introduction/",
 			},
 			"nni_vnid": {
 				Type:        schema.TypeInt,
 				Computed:    true,
-				Description: "Nni VLAN ID parameter, see https://metal.equinix.com/developers/docs/networking/fabric/",
+				Description: "Nni VLAN ID parameter, see https://deploy.equinix.com/developers/docs/metal/interconnections/introduction/",
 			},
 			"nni_vlan": {
 				Type:        schema.TypeInt,
 				Computed:    true,
-				Description: "Nni VLAN parameter, see https://metal.equinix.com/developers/docs/networking/fabric/",
+				Description: "Nni VLAN parameter, see https://deploy.equinix.com/developers/docs/metal/interconnections/introduction/",
 			},
 			"project_id": {
 				Type:        schema.TypeString,
