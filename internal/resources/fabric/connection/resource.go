@@ -195,7 +195,7 @@ func resourceFabricConnectionUpdate(ctx context.Context, d *schema.ResourceData,
 func waitForConnectionUpdateCompletion(uuid string, meta interface{}, d *schema.ResourceData, ctx context.Context, timeout time.Duration) (*fabricv4.Connection, error) {
 	log.Printf("[DEBUG] Waiting for connection update to complete, uuid %s", uuid)
 	stateConf := &retry.StateChangeConf{
-		Target: []string{"COMPLETED"},
+		Target: []string{"COMPLETED", "SUBMITTED_FOR_APPROVAL"},
 		Refresh: func() (interface{}, string, error) {
 			client := meta.(*config.Config).NewFabricClientForSDK(d)
 			dbConn, _, err := client.ConnectionsApi.GetConnectionByUuid(ctx, uuid).Execute()
