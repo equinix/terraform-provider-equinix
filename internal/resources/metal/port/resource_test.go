@@ -1,6 +1,7 @@
 package port_test
 
 import (
+	"context"
 	"fmt"
 	"regexp"
 	"testing"
@@ -358,7 +359,7 @@ func TestAccMetalPort_hybridBonded(t *testing.T) {
 }
 
 func testAccMetalPortDestroyed(s *terraform.State) error {
-	client := acceptance.TestAccProvider.Meta().(*config.Config).Metal
+	client := acceptance.TestAccProvider.Meta().(*config.Config).NewMetalClientForTesting()
 
 	port_ids := []string{}
 
@@ -371,7 +372,7 @@ func testAccMetalPortDestroyed(s *terraform.State) error {
 		}
 	}
 	for _, pid := range port_ids {
-		p, _, err := client.Ports.Get(pid, nil)
+		p, _, err := client.PortsApi.FindPortById(context.Background(), pid).Execute()
 		if err != nil {
 			return fmt.Errorf("Error getting port %s during destroy check", pid)
 		}
