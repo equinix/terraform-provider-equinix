@@ -661,7 +661,7 @@ Port to IBM Connections could be modified from IBM Service Provider Side by usin
 To accept, delete, or upgrade bandwidth for IBM Connections using the 'ibm_dl_gateway_action' resource, you must update the following attribute:
 For Connection Approval:
 - Use action = "create_gateway_approve"
-For Bandwidth Upgrade:
+For Bandwidth Upgrade/Downgrade:
 - Use action = "update_attributes_approve"
 For Connection Deletion:
 - Use action = "delete_gateway_approve"
