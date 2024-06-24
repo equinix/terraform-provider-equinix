@@ -1,9 +1,10 @@
-package equinix
+package port_test
 
 import (
 	"fmt"
 	"testing"
 
+	"github.com/equinix/terraform-provider-equinix/internal/acceptance"
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
@@ -12,9 +13,9 @@ func TestAccDataSourceMetalPort_byName(t *testing.T) {
 	rs := acctest.RandString(10)
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { testAccPreCheck(t) },
-		ExternalProviders:        testExternalProviders,
-		ProtoV5ProviderFactories: testAccProtoV5ProviderFactories,
+		PreCheck:                 func() { acceptance.TestAccPreCheck(t) },
+		ExternalProviders:        acceptance.TestExternalProviders,
+		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccDataSourceMetalPortConfig_byName(rs),
@@ -50,16 +51,16 @@ data "equinix_metal_port" "test" {
     name      = "eth0"
 }
 
-`, confAccMetalDevice_base(preferable_plans, preferable_metros, preferable_os), name, testDeviceTerminationTime())
+`, acceptance.ConfAccMetalDevice_base(acceptance.Preferable_plans, acceptance.Preferable_metros, acceptance.Preferable_os), name, acceptance.TestDeviceTerminationTime())
 }
 
 func TestAccDataSourceMetalPort_byId(t *testing.T) {
 	rs := acctest.RandString(10)
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { testAccPreCheck(t) },
-		ExternalProviders:        testExternalProviders,
-		ProtoV5ProviderFactories: testAccProtoV5ProviderFactories,
+		PreCheck:                 func() { acceptance.TestAccPreCheck(t) },
+		ExternalProviders:        acceptance.TestExternalProviders,
+		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccDataSourceMetalPortConfig_byId(rs),
@@ -93,5 +94,5 @@ resource "equinix_metal_device" "test" {
 data "equinix_metal_port" "test" {
   port_id        = equinix_metal_device.test.ports[0].id
 }
-`, confAccMetalDevice_base(preferable_plans, preferable_metros, preferable_os), name, testDeviceTerminationTime())
+`, acceptance.ConfAccMetalDevice_base(acceptance.Preferable_plans, acceptance.Preferable_metros, acceptance.Preferable_os), name, acceptance.TestDeviceTerminationTime())
 }

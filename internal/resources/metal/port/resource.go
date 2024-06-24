@@ -1,7 +1,8 @@
-package equinix
+package port
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"time"
 
@@ -9,6 +10,7 @@ import (
 
 	equinix_errors "github.com/equinix/terraform-provider-equinix/internal/errors"
 	equinix_schema "github.com/equinix/terraform-provider-equinix/internal/schema"
+	"github.com/packethost/packngo"
 
 	"github.com/equinix/terraform-provider-equinix/internal/config"
 
@@ -27,7 +29,7 @@ var (
 	l3Types = []string{"layer3", "hybrid", "hybrid-bonded"}
 )
 
-func resourceMetalPort() *schema.Resource {
+func Resource() *schema.Resource {
 	return &schema.Resource{
 		Timeouts: &schema.ResourceTimeout{
 			Create: schema.DefaultTimeout(30 * time.Minute),
@@ -217,7 +219,7 @@ func resourceMetalPortDelete(ctx context.Context, d *schema.ResourceData, meta i
 		// to reset the port to defaults we iterate through helpers (used in
 		// create/update), some of which rely on resource state. reuse those helpers by
 		// setting ephemeral state.
-		port := resourceMetalPort()
+		port := Resource()
 		copy := port.Data(d.State())
 		cpr.Resource = copy
 		if err = equinix_schema.SetMap(cpr.Resource, map[string]interface{}{
@@ -239,9 +241,30 @@ func resourceMetalPortDelete(ctx context.Context, d *schema.ResourceData, meta i
 			}
 		}
 		// TODO(displague) error or warn?
-		if warn := portProperlyDestroyed(cpr.Port); warn != nil {
+		if warn := ProperlyDestroyed(cpr.Port); warn != nil {
 			log.Printf("[WARN] %s\n", warn)
 		}
 	}
+	return nil
+}
+
+func ProperlyDestroyed(port *packngo.Port) error {
+	var errs []string
+	if !port.Data.Bonded {
+		errs = append(errs, fmt.Sprintf("port %s wasn't bonded after equinix_metal_port destroy;", port.ID))
+	}
+	if port.Type == "NetworkBondPort" && port.NetworkType != "layer3" {
+		errs = append(errs, "bond port should be in layer3 type after destroy;")
+	}
+	if port.NativeVirtualNetwork != nil {
+		errs = append(errs, "port should not have native VLAN assigned after destroy;")
+	}
+	if len(port.AttachedVirtualNetworks) != 0 {
+		errs = append(errs, "port should not have VLANs attached after destroy")
+	}
+	if len(errs) > 0 {
+		return fmt.Errorf("%s", errs)
+	}
+
 	return nil
 }

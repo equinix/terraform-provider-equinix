@@ -1,4 +1,4 @@
-package equinix
+package port
 
 import (
 	"context"
@@ -336,27 +336,6 @@ func portSanityChecks(cpr *ClientPortResource) error {
 		if len(vlans) < 2 {
 			return fmt.Errorf("native VLAN can only be set if more than one VLAN are assigned to the port ")
 		}
-	}
-
-	return nil
-}
-
-func portProperlyDestroyed(port *packngo.Port) error {
-	var errs []string
-	if !port.Data.Bonded {
-		errs = append(errs, fmt.Sprintf("port %s wasn't bonded after equinix_metal_port destroy;", port.ID))
-	}
-	if port.Type == "NetworkBondPort" && port.NetworkType != "layer3" {
-		errs = append(errs, "bond port should be in layer3 type after destroy;")
-	}
-	if port.NativeVirtualNetwork != nil {
-		errs = append(errs, "port should not have native VLAN assigned after destroy;")
-	}
-	if len(port.AttachedVirtualNetworks) != 0 {
-		errs = append(errs, "port should not have VLANs attached after destroy")
-	}
-	if len(errs) > 0 {
-		return fmt.Errorf("%s", errs)
 	}
 
 	return nil

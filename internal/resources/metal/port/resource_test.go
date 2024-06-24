@@ -1,11 +1,13 @@
-package equinix
+package port_test
 
 import (
 	"fmt"
 	"regexp"
 	"testing"
 
+	"github.com/equinix/terraform-provider-equinix/internal/acceptance"
 	"github.com/equinix/terraform-provider-equinix/internal/config"
+	"github.com/equinix/terraform-provider-equinix/internal/resources/metal/port"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
@@ -42,7 +44,7 @@ locals {
   eth0_id  = [for p in equinix_metal_device.test.ports: p.id if p.name == "eth0"][0]
 }
 
-`, confAccMetalDevice_base(preferable_plans, preferable_metros, preferable_os), name, testDeviceTerminationTime())
+`, acceptance.ConfAccMetalDevice_base(acceptance.Preferable_plans, acceptance.Preferable_metros, acceptance.Preferable_os), name, acceptance.TestDeviceTerminationTime())
 }
 
 func confAccMetalPort_L3(name string) string {
@@ -237,9 +239,9 @@ resource "equinix_metal_vlan" "test" {
 func TestAccMetalPort_hybridBondedVxlan(t *testing.T) {
 	rs := acctest.RandString(10)
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { testAccPreCheck(t) },
-		ExternalProviders:        testExternalProviders,
-		ProtoV5ProviderFactories: testAccProtoV5ProviderFactories,
+		PreCheck:                 func() { acceptance.TestAccPreCheck(t) },
+		ExternalProviders:        acceptance.TestExternalProviders,
+		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
 		CheckDestroy:             testAccMetalPortDestroyed,
 		Steps: []resource.TestStep{
 			{
@@ -266,9 +268,9 @@ func TestAccMetalPort_hybridBondedVxlan(t *testing.T) {
 func TestAccMetalPort_L2IndividualNativeVlan(t *testing.T) {
 	rs := acctest.RandString(10)
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { testAccPreCheck(t) },
-		ExternalProviders:        testExternalProviders,
-		ProtoV5ProviderFactories: testAccProtoV5ProviderFactories,
+		PreCheck:                 func() { acceptance.TestAccPreCheck(t) },
+		ExternalProviders:        acceptance.TestExternalProviders,
+		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
 		CheckDestroy:             testAccMetalPortDestroyed,
 		Steps: []resource.TestStep{
 			{
@@ -299,9 +301,9 @@ func TestAccMetalPort_L2IndividualNativeVlan(t *testing.T) {
 func testAccMetalPortTemplate(t *testing.T, conf func(string) string, expectedType string) {
 	rs := acctest.RandString(10)
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { testAccPreCheck(t) },
-		ExternalProviders:        testExternalProviders,
-		ProtoV5ProviderFactories: testAccProtoV5ProviderFactories,
+		PreCheck:                 func() { acceptance.TestAccPreCheck(t) },
+		ExternalProviders:        acceptance.TestExternalProviders,
+		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
 		CheckDestroy:             testAccMetalPortDestroyed,
 		Steps: []resource.TestStep{
 			{
@@ -356,7 +358,7 @@ func TestAccMetalPort_hybridBonded(t *testing.T) {
 }
 
 func testAccMetalPortDestroyed(s *terraform.State) error {
-	client := testAccProvider.Meta().(*config.Config).Metal
+	client := acceptance.TestAccProvider.Meta().(*config.Config).Metal
 
 	port_ids := []string{}
 
@@ -373,7 +375,7 @@ func testAccMetalPortDestroyed(s *terraform.State) error {
 		if err != nil {
 			return fmt.Errorf("Error getting port %s during destroy check", pid)
 		}
-		err = portProperlyDestroyed(p)
+		err = port.ProperlyDestroyed(p)
 		if err != nil {
 			return err
 		}
@@ -391,7 +393,7 @@ func testAccWaitForPortActive(deviceName, portName string) resource.ImportStateI
 			return "", fmt.Errorf("No Record ID is set")
 		}
 
-		meta := testAccProvider.Meta()
+		meta := acceptance.TestAccProvider.Meta()
 		rd := new(schema.ResourceData)
 		meta.(*config.Config).AddModuleToMetalUserAgent(rd)
 		client := meta.(*config.Config).Metal
@@ -422,9 +424,9 @@ func TestAccMetalPortCreate_hybridBonded_timeout(t *testing.T) {
 	deviceName := "equinix_metal_device.test"
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { testAccPreCheck(t) },
-		ExternalProviders:        testExternalProviders,
-		ProtoV5ProviderFactories: testAccProtoV5ProviderFactories,
+		PreCheck:                 func() { acceptance.TestAccPreCheck(t) },
+		ExternalProviders:        acceptance.TestExternalProviders,
+		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
 		CheckDestroy:             testAccMetalPortDestroyed,
 		Steps: []resource.TestStep{
 			{
@@ -463,9 +465,9 @@ func TestAccMetalPortUpdate_hybridBonded_timeout(t *testing.T) {
 	rInt := acctest.RandInt()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { testAccPreCheck(t) },
-		ExternalProviders:        testExternalProviders,
-		ProtoV5ProviderFactories: testAccProtoV5ProviderFactories,
+		PreCheck:                 func() { acceptance.TestAccPreCheck(t) },
+		ExternalProviders:        acceptance.TestExternalProviders,
+		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
 		CheckDestroy:             testAccMetalPortDestroyed,
 		Steps: []resource.TestStep{
 			{
