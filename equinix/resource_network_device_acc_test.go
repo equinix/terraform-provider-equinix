@@ -16,6 +16,7 @@ import (
 )
 
 const (
+	networkDeviceProjectId                  = "TF_ACC_NETWORK_DEVICE_PROJECT_ID"
 	networkDeviceAccountNameEnvVar          = "TF_ACC_NETWORK_DEVICE_BILLING_ACCOUNT_NAME"
 	networkDeviceSecondaryAccountNameEnvVar = "TF_ACC_NETWORK_DEVICE_SECONDARY_BILLING_ACCOUNT_NAME"
 	networkDeviceMetroEnvVar                = "TF_ACC_NETWORK_DEVICE_METRO"
@@ -86,6 +87,7 @@ func testSweepNetworkDevice(region string) error {
 func TestAccNetworkDevice_CSR1000V_HA_Managed_Sub(t *testing.T) {
 	metro, _ := schema.EnvDefaultFunc(networkDeviceMetroEnvVar, "SV")()
 	accountName, _ := schema.EnvDefaultFunc(networkDeviceAccountNameEnvVar, "")()
+	projectId, _ := schema.EnvDefaultFunc(networkDeviceProjectId, "")()
 	context := map[string]interface{}{
 		"device-resourceName":            "test",
 		"device-account_name":            accountName.(string),
@@ -96,6 +98,7 @@ func TestAccNetworkDevice_CSR1000V_HA_Managed_Sub(t *testing.T) {
 		"device-throughput_unit":         "Mbps",
 		"device-metro_code":              metro.(string),
 		"device-type_code":               "CSR1000V",
+		"device-project_id":              projectId.(string),
 		"device-package_code":            "SEC",
 		"device-notifications":           []string{"marry@equinix.com", "john@equinix.com"},
 		"device-hostname":                fmt.Sprintf("tf-%s", acctest.RandString(41)),
@@ -1241,7 +1244,8 @@ func testAccNetworkDevice(ctx map[string]interface{}) string {
 	config += nprintf(`
 data "equinix_network_account" "test" {
   metro_code = "%{device-metro_code}"
-  status     = "Active"`, ctx)
+  status     = "Active"
+  project_id = "%{device-project_id}"`, ctx)
 	if v, ok := ctx["device-account_name"]; ok && !isEmpty(v) {
 		config += nprintf(`
   name = "%{device-account_name}"`, ctx)
@@ -1267,6 +1271,7 @@ resource "equinix_network_device" "%{device-resourceName}" {
   name                  = "%{device-name}"
   metro_code            = "%{device-metro_code}"
   type_code             = "%{device-type_code}"
+  project_id            = "%{device-project_id}"
   package_code          = "%{device-package_code}"
   notifications         = %{device-notifications}
   term_length           = %{device-term_length}
