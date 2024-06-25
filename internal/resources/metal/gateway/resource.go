@@ -166,6 +166,10 @@ func (r *Resource) Delete(ctx context.Context, req resource.DeleteRequest, resp 
 	id := state.ID.ValueString()
 
 	// API call to delete the Metal Gateway
+	// NOTE: we have to send `include` params on the delete request
+	// because the delete request returns the gateway JSON and it will
+	// only match one of MetalGateway or VrfMetalGateway if the included
+	// fields are present in the response
 	_, deleteResp, err := client.MetalGatewaysApi.DeleteMetalGateway(ctx, id).Include(includes).Execute()
 
 	if err != nil {
