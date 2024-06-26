@@ -15,7 +15,7 @@ import (
 
 var subnetSizes = []int64{8, 16, 32, 64, 128}
 
-func resourceSchema(ctx context.Context) schema.Schema {
+func resourceSchema(_ context.Context) schema.Schema {
 	return schema.Schema{
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/equinix/equinix-sdk-go/services/metalv1"
 	equinix_errors "github.com/equinix/terraform-provider-equinix/internal/errors"
 	"github.com/equinix/terraform-provider-equinix/internal/framework"
 	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
@@ -12,7 +13,10 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
-	"github.com/packethost/packngo"
+)
+
+var (
+	includes = []string{"project", "ip_reservation", "virtual_network", "vrf"}
 )
 
 func NewResource() resource.Resource {
@@ -56,31 +60,52 @@ func (r *Resource) Create(ctx context.Context, req resource.CreateRequest, resp 
 		return
 	}
 
-	// Retrieve the API client from the provider metadata
-	r.Meta.AddFwModuleToMetalUserAgent(ctx, req.ProviderMeta)
-	client := r.Meta.Metal
+	client := r.Meta.NewMetalClientForFramework(ctx, req.ProviderMeta)
 
 	// Build the create request based on the plan
-	createRequest := packngo.MetalGatewayCreateRequest{
-		VirtualNetworkID:      plan.VlanID.ValueString(),
-		IPReservationID:       plan.IPReservationID.ValueString(),
-		PrivateIPv4SubnetSize: int(plan.PrivateIPv4SubnetSize.ValueInt64()),
+	// NOTE: the API spec provides 2 separate schemas for creating a
+	// VRF Metal Gateway or a non-VRF Metal Gateway.  Since we can't
+	// tell from resource configuration which is being requested, we
+	// just use the non-VRF Metal Gateway request object.
+	createRequest := metalv1.CreateMetalGatewayRequest{
+		MetalGatewayCreateInput: &metalv1.MetalGatewayCreateInput{
+			VirtualNetworkId: plan.VlanID.ValueString(),
+		},
+	}
+
+	if reservationId := plan.IPReservationID.ValueString(); reservationId != "" {
+		createRequest.MetalGatewayCreateInput.IpReservationId = &reservationId
+	} else {
+		// PrivateIpv4SubnetSize is specified as an int32 by the API, but
+		// there is currently only an Int64 attribute defined in the plugin
+		// framework.  For now we cast to int32; when Int32 attributes are
+		// supported we can redefine the schema attribute to match the API
+		// Reference: https://github.com/hashicorp/terraform-plugin-framework/pull/1010
+		privateSubnetSize := int32(plan.PrivateIPv4SubnetSize.ValueInt64())
+		createRequest.MetalGatewayCreateInput.PrivateIpv4SubnetSize = &privateSubnetSize
 	}
 
 	// Call the API to create the resource
-	gw, _, err := client.MetalGateways.Create(plan.ProjectID.ValueString(), &createRequest)
+	gw, _, err := client.MetalGatewaysApi.CreateMetalGateway(ctx, plan.ProjectID.ValueString()).CreateMetalGatewayRequest(createRequest).Include(includes).Execute()
 	if err != nil {
 		resp.Diagnostics.AddError("Error creating MetalGateway", err.Error())
 		return
 	}
 
 	// API call to get the Metal Gateway
-	diags, err = getGatewayAndParse(client, &plan, gw.ID)
+	gwId := ""
+	if gw.MetalGateway != nil {
+		gwId = gw.MetalGateway.GetId()
+	} else {
+		gwId = gw.VrfMetalGateway.GetId()
+	}
+
+	diags, err = getGatewayAndParse(ctx, client, &plan, gwId)
 	resp.Diagnostics.Append(diags...)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error reading Metal Gateway",
-			"Could not read Metal Gateway with ID "+gw.ID+": "+err.Error(),
+			"Could not read Metal Gateway with ID "+gwId+": "+err.Error(),
 		)
 		return
 	}
@@ -97,15 +122,13 @@ func (r *Resource) Read(ctx context.Context, req resource.ReadRequest, resp *res
 		return
 	}
 
-	// Retrieve the API client from the provider metadata
-	r.Meta.AddFwModuleToMetalUserAgent(ctx, req.ProviderMeta)
-	client := r.Meta.Metal
+	client := r.Meta.NewMetalClientForFramework(ctx, req.ProviderMeta)
 
 	// Extract the ID of the resource from the state
 	id := state.ID.ValueString()
 
 	// API call to get the Metal Gateway
-	diags, err := getGatewayAndParse(client, &state, id)
+	diags, err := getGatewayAndParse(ctx, client, &state, id)
 	resp.Diagnostics.Append(diags...)
 	if err != nil {
 		resp.Diagnostics.AddError(
@@ -129,8 +152,7 @@ func (r *Resource) Update(
 
 func (r *Resource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
 	// Retrieve the API client
-	r.Meta.AddFwModuleToMetalUserAgent(ctx, req.ProviderMeta)
-	client := r.Meta.Metal
+	client := r.Meta.NewMetalClientForFramework(ctx, req.ProviderMeta)
 
 	// Retrieve the current state
 	var state ResourceModel
@@ -144,34 +166,41 @@ func (r *Resource) Delete(ctx context.Context, req resource.DeleteRequest, resp 
 	id := state.ID.ValueString()
 
 	// API call to delete the Metal Gateway
-	deleteResp, err := client.MetalGateways.Delete(id)
+	// NOTE: we have to send `include` params on the delete request
+	// because the delete request returns the gateway JSON and it will
+	// only match one of MetalGateway or VrfMetalGateway if the included
+	// fields are present in the response
+	_, deleteResp, err := client.MetalGatewaysApi.DeleteMetalGateway(ctx, id).Include(includes).Execute()
 
+	if err != nil {
+		if deleteResp != nil {
+			err = equinix_errors.FriendlyErrorForMetalGo(err, deleteResp)
+		}
+	}
 	if err == nil {
-		deleteResp = nil
 		// Wait for the deletion to be completed
 		deleteTimeout := r.DeleteTimeout(ctx, state.Timeouts)
 		deleteWaiter := getGatewayStateWaiter(
+			ctx,
 			client,
 			id,
 			deleteTimeout,
-			[]string{string(packngo.MetalGatewayDeleting)},
+			[]string{string(metalv1.METALGATEWAYSTATE_DELETING)},
 			[]string{},
 		)
 		_, err = deleteWaiter.WaitForStateContext(ctx)
 	}
 
-	if equinix_errors.IgnoreResponseErrors(equinix_errors.HttpForbidden, equinix_errors.HttpNotFound)(deleteResp, err) != nil {
+	if equinix_errors.IgnoreHttpResponseErrors(equinix_errors.HttpForbidden, equinix_errors.HttpNotFound)(nil, err) != nil {
 		resp.Diagnostics.AddError(
-			fmt.Sprintf("Failed to delete Metal Gateway %s", id),
-			equinix_errors.FriendlyError(err).Error(),
+			fmt.Sprintf("Failed to delete Metal Gateway %s", id), err.Error(),
 		)
 	}
 }
 
-func getGatewayAndParse(client *packngo.Client, state *ResourceModel, id string) (diags diag.Diagnostics, err error) {
+func getGatewayAndParse(ctx context.Context, client *metalv1.APIClient, state *ResourceModel, id string) (diags diag.Diagnostics, err error) {
 	// API call to get the Metal Gateway
-	includes := &packngo.GetOptions{Includes: []string{"project", "ip_reservation", "virtual_network", "vrf"}}
-	gw, _, err := client.MetalGateways.Get(id, includes)
+	gw, _, err := client.MetalGatewaysApi.FindMetalGatewayById(ctx, id).Include(includes).Execute()
 	if err != nil {
 		return diags, equinix_errors.FriendlyError(err)
 	}
@@ -185,18 +214,25 @@ func getGatewayAndParse(client *packngo.Client, state *ResourceModel, id string)
 	return diags, nil
 }
 
-func getGatewayStateWaiter(client *packngo.Client, id string, timeout time.Duration, pending, target []string) *retry.StateChangeConf {
+func getGatewayStateWaiter(ctx context.Context, client *metalv1.APIClient, id string, timeout time.Duration, pending, target []string) *retry.StateChangeConf {
 	return &retry.StateChangeConf{
 		Pending: pending,
 		Target:  target,
 		Refresh: func() (interface{}, string, error) {
-			getOpts := &packngo.GetOptions{Includes: []string{"project", "ip_reservation", "virtual_network", "vrf"}}
-
-			gw, _, err := client.MetalGateways.Get(id, getOpts) // TODO: we are not using the returned gw. Remove the includes?
+			gw, resp, err := client.MetalGatewaysApi.FindMetalGatewayById(ctx, id).Include(includes).Execute()
 			if err != nil {
+				if resp != nil {
+					err = equinix_errors.FriendlyErrorForMetalGo(err, resp)
+				}
 				return 0, "", err
 			}
-			return gw, string(gw.State), nil
+			state := ""
+			if gw.MetalGateway != nil {
+				state = string(gw.MetalGateway.GetState())
+			} else {
+				state = string(gw.VrfMetalGateway.GetState())
+			}
+			return gw, state, nil
 		},
 		Timeout:    timeout,
 		Delay:      10 * time.Second,

@@ -1,7 +1,6 @@
 package gateway_test
 
 import (
-	"fmt"
 	"testing"
 
 	"github.com/equinix/terraform-provider-equinix/internal/acceptance"
@@ -30,7 +29,7 @@ func TestAccDataSourceMetalGateway_privateIPv4(t *testing.T) {
 }
 
 func testAccDataSourceMetalGatewayConfig_privateIPv4() string {
-	return fmt.Sprintf(`
+	return `
 resource "equinix_metal_project" "test" {
     name = "tfacc-gateway-test"
 }
@@ -50,7 +49,7 @@ resource "equinix_metal_gateway" "test" {
 data "equinix_metal_gateway" "test" {
     gateway_id = equinix_metal_gateway.test.id
 }
-`)
+`
 }
 
 // Test to verify that switching from SDKv2 to the Framework has not affected provider's behavior

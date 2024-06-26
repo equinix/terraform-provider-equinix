@@ -1,11 +1,11 @@
 package gateway
 
 import (
+	"github.com/equinix/equinix-sdk-go/services/metalv1"
 	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
-	"github.com/packethost/packngo"
 )
 
 type ResourceModel struct {
@@ -19,26 +19,37 @@ type ResourceModel struct {
 	Timeouts              timeouts.Value `tfsdk:"timeouts"`
 }
 
-func (m *ResourceModel) parse(gw *packngo.MetalGateway) diag.Diagnostics {
+func (m *ResourceModel) parse(gw *metalv1.FindMetalGatewayById200Response) diag.Diagnostics {
 	// Convert Metal Gateway data to the Terraform state
-	m.ID = types.StringValue(gw.ID)
-	m.ProjectID = types.StringValue(gw.Project.ID)
-	m.VlanID = types.StringValue(gw.VirtualNetwork.ID)
-
-	if gw.VRF != nil {
-		m.VrfID = types.StringValue(gw.VRF.ID)
-	} else {
+	if gw.MetalGateway != nil {
+		m.ID = types.StringValue(gw.MetalGateway.GetId())
+		m.ProjectID = types.StringValue(gw.MetalGateway.Project.GetId())
+		m.VlanID = types.StringValue(gw.MetalGateway.VirtualNetwork.GetId())
 		m.VrfID = types.StringNull()
-	}
 
-	if gw.IPReservation != nil {
-		m.IPReservationID = types.StringValue(gw.IPReservation.ID)
+		if gw.MetalGateway.IpReservation != nil {
+			m.IPReservationID = types.StringValue(gw.MetalGateway.IpReservation.GetId())
+		} else {
+			m.IPReservationID = types.StringNull()
+		}
+
+		m.PrivateIPv4SubnetSize = calculateSubnetSize(gw.MetalGateway.IpReservation)
+		m.State = types.StringValue(string(gw.MetalGateway.GetState()))
 	} else {
-		m.IPReservationID = types.StringNull()
-	}
+		m.ID = types.StringValue(gw.VrfMetalGateway.GetId())
+		m.ProjectID = types.StringValue(gw.VrfMetalGateway.Project.GetId())
+		m.VlanID = types.StringValue(gw.VrfMetalGateway.VirtualNetwork.GetId())
+		m.VrfID = types.StringValue(gw.VrfMetalGateway.Vrf.GetId())
 
-	m.PrivateIPv4SubnetSize = calculateSubnetSize(gw.IPReservation)
-	m.State = types.StringValue(string(gw.State))
+		if gw.VrfMetalGateway.IpReservation != nil {
+			m.IPReservationID = types.StringValue(gw.VrfMetalGateway.IpReservation.GetId())
+		} else {
+			m.IPReservationID = types.StringNull()
+		}
+
+		m.PrivateIPv4SubnetSize = calculateSubnetSize(gw.VrfMetalGateway.IpReservation)
+		m.State = types.StringValue(string(gw.VrfMetalGateway.GetState()))
+	}
 	return nil
 }
 
@@ -53,34 +64,50 @@ type DataSourceModel struct {
 	State                 types.String `tfsdk:"state"`
 }
 
-func (m *DataSourceModel) parse(gw *packngo.MetalGateway) diag.Diagnostics {
-
-	// Convert Metal Gateway data to the Terraform state
-	m.ID = types.StringValue(gw.ID)
-	m.ProjectID = types.StringValue(gw.Project.ID)
-	m.VlanID = types.StringValue(gw.VirtualNetwork.ID)
-
-	if gw.VRF != nil {
-		m.VrfID = types.StringValue(gw.VRF.ID)
-	} else {
+func (m *DataSourceModel) parse(gw *metalv1.FindMetalGatewayById200Response) diag.Diagnostics {
+	if gw.MetalGateway != nil {
+		// Convert Metal Gateway data to the Terraform state
+		m.ID = types.StringValue(gw.MetalGateway.GetId())
+		m.ProjectID = types.StringValue(gw.MetalGateway.Project.GetId())
+		m.VlanID = types.StringValue(gw.MetalGateway.VirtualNetwork.GetId())
 		m.VrfID = types.StringNull()
-	}
 
-	if gw.IPReservation != nil {
-		m.IPReservationID = types.StringValue(gw.IPReservation.ID)
+		if gw.MetalGateway.IpReservation != nil {
+			m.IPReservationID = types.StringValue(gw.MetalGateway.IpReservation.GetId())
+		} else {
+			m.IPReservationID = types.StringNull()
+		}
+
+		m.PrivateIPv4SubnetSize = calculateSubnetSize(gw.MetalGateway.IpReservation)
+		m.State = types.StringValue(string(gw.MetalGateway.GetState()))
 	} else {
-		m.IPReservationID = types.StringNull()
-	}
+		// Convert Metal Gateway data to the Terraform state
+		m.ID = types.StringValue(gw.VrfMetalGateway.GetId())
+		m.ProjectID = types.StringValue(gw.VrfMetalGateway.Project.GetId())
+		m.VlanID = types.StringValue(gw.VrfMetalGateway.VirtualNetwork.GetId())
+		m.VrfID = types.StringValue(gw.VrfMetalGateway.Vrf.GetId())
 
-	m.PrivateIPv4SubnetSize = calculateSubnetSize(gw.IPReservation)
-	m.State = types.StringValue(string(gw.State))
+		if gw.VrfMetalGateway.IpReservation != nil {
+			m.IPReservationID = types.StringValue(gw.VrfMetalGateway.IpReservation.GetId())
+		} else {
+			m.IPReservationID = types.StringNull()
+		}
+
+		m.PrivateIPv4SubnetSize = calculateSubnetSize(gw.VrfMetalGateway.IpReservation)
+		m.State = types.StringValue(string(gw.VrfMetalGateway.GetState()))
+	}
 	return nil
 }
 
-func calculateSubnetSize(ip *packngo.IPAddressReservation) basetypes.Int64Value {
+type ipReservationCommon interface {
+	GetCidr() int32
+	GetPublic() bool
+}
+
+func calculateSubnetSize(ip ipReservationCommon) basetypes.Int64Value {
 	privateIPv4SubnetSize := uint64(0)
-	if !ip.Public {
-		privateIPv4SubnetSize = 1 << (32 - ip.CIDR)
+	if !ip.GetPublic() {
+		privateIPv4SubnetSize = 1 << (32 - ip.GetCidr())
 		return types.Int64Value(int64(privateIPv4SubnetSize))
 	}
 	return types.Int64Null()
