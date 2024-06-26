@@ -78,7 +78,9 @@ func (m *DataSourceModel) parse(gw *metalv1.FindMetalGatewayById200Response) dia
 			m.IPReservationID = types.StringNull()
 		}
 
-		m.PrivateIPv4SubnetSize = calculateSubnetSize(gw.MetalGateway.IpReservation)
+		if *gw.MetalGateway.IpReservation.AddressFamily == 4 && *gw.MetalGateway.IpReservation.Public {
+			m.PrivateIPv4SubnetSize = calculateSubnetSize(gw.MetalGateway.IpReservation)
+		}
 		m.State = types.StringValue(string(gw.MetalGateway.GetState()))
 	} else {
 		// Convert Metal Gateway data to the Terraform state
