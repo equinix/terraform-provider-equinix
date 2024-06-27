@@ -33,7 +33,9 @@ func (m *ResourceModel) parse(gw *metalv1.FindMetalGatewayById200Response) diag.
 			m.IPReservationID = types.StringNull()
 		}
 
-		m.PrivateIPv4SubnetSize = calculateSubnetSize(gw.MetalGateway.IpReservation)
+		if shouldCalculateSubnetSize(gw.MetalGateway.IpReservation) {
+			m.PrivateIPv4SubnetSize = calculateSubnetSize(gw.MetalGateway.IpReservation)
+		}
 		m.State = types.StringValue(string(gw.MetalGateway.GetState()))
 	} else {
 		m.ID = types.StringValue(gw.VrfMetalGateway.GetId())
@@ -47,7 +49,9 @@ func (m *ResourceModel) parse(gw *metalv1.FindMetalGatewayById200Response) diag.
 			m.IPReservationID = types.StringNull()
 		}
 
-		m.PrivateIPv4SubnetSize = calculateSubnetSize(gw.VrfMetalGateway.IpReservation)
+		if shouldCalculateSubnetSize(gw.VrfMetalGateway.IpReservation) {
+			m.PrivateIPv4SubnetSize = calculateSubnetSize(gw.VrfMetalGateway.IpReservation)
+		}
 		m.State = types.StringValue(string(gw.VrfMetalGateway.GetState()))
 	}
 	return nil
@@ -78,7 +82,7 @@ func (m *DataSourceModel) parse(gw *metalv1.FindMetalGatewayById200Response) dia
 			m.IPReservationID = types.StringNull()
 		}
 
-		if *gw.MetalGateway.IpReservation.AddressFamily == 4 && *gw.MetalGateway.IpReservation.Public {
+		if shouldCalculateSubnetSize(gw.MetalGateway.IpReservation) {
 			m.PrivateIPv4SubnetSize = calculateSubnetSize(gw.MetalGateway.IpReservation)
 		}
 		m.State = types.StringValue(string(gw.MetalGateway.GetState()))
@@ -95,7 +99,9 @@ func (m *DataSourceModel) parse(gw *metalv1.FindMetalGatewayById200Response) dia
 			m.IPReservationID = types.StringNull()
 		}
 
-		m.PrivateIPv4SubnetSize = calculateSubnetSize(gw.VrfMetalGateway.IpReservation)
+		if shouldCalculateSubnetSize(gw.MetalGateway.IpReservation) {
+			m.PrivateIPv4SubnetSize = calculateSubnetSize(gw.VrfMetalGateway.IpReservation)
+		}
 		m.State = types.StringValue(string(gw.VrfMetalGateway.GetState()))
 	}
 	return nil
@@ -104,6 +110,11 @@ func (m *DataSourceModel) parse(gw *metalv1.FindMetalGatewayById200Response) dia
 type ipReservationCommon interface {
 	GetCidr() int32
 	GetPublic() bool
+	GetAddressFamily() int32
+}
+
+func shouldCalculateSubnetSize(ip ipReservationCommon) bool {
+	return ip.GetAddressFamily() == 4 && ip.GetPublic()
 }
 
 func calculateSubnetSize(ip ipReservationCommon) basetypes.Int64Value {
