@@ -169,3 +169,64 @@ func TestAccMetalGateway_upgradeFromVersion(t *testing.T) {
 		},
 	})
 }
+
+func TestAccMetalGateway_IPv6Vrf(t *testing.T) {
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:                 func() { acceptance.TestAccPreCheckMetal(t) },
+		ExternalProviders:        acceptance.TestExternalProviders,
+		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		CheckDestroy:             testAccMetalGatewayCheckDestroyed,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccMetalGatewayConfig_IPv6Vrf(),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttrPair(
+						"equinix_metal_gateway.test", "project_id",
+						"equinix_metal_project.test", "id"),
+					resource.TestCheckResourceAttrPair(
+						"equinix_metal_gateway.test", "ip_reservation_id",
+						"equinix_metal_reserved_ip_block.test", "id"),
+				),
+			},
+		},
+	})
+}
+
+func testAccMetalGatewayConfig_IPv6Vrf() string {
+	return `
+resource "equinix_metal_project" "test" {
+    name = "tfacc-gateway-test"
+}
+
+resource "equinix_metal_vlan" "test" {
+    description = "tfacc-vlan VLAN in SV"
+    metro       = "sv"
+    project_id  = equinix_metal_project.test.id
+}
+
+resource "equinix_metal_vrf" "test" {
+  description = "tfacc-vrf VRF in SV"
+  name = "tfacc-vrf"
+  metro       = "sv"
+  local_asn   = "65000"
+  ip_ranges   = ["2001:d78::/59"]
+
+  project_id  = equinix_metal_project.test.id
+}
+
+resource "equinix_metal_reserved_ip_block" "test" {
+  project_id = equinix_metal_project.test.id
+  type       = "vrf"
+  vrf_id     = equinix_metal_vrf.test.id
+  network    = "2001:d78::"
+  metro      = "sv"
+  cidr       = 64
+}
+
+resource "equinix_metal_gateway" "test" {
+    project_id               = equinix_metal_project.test.id
+    vlan_id                  = equinix_metal_vlan.test.id
+    ip_reservation_id        = equinix_metal_reserved_ip_block.test.id
+}
+`
+}

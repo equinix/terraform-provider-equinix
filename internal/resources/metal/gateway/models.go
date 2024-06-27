@@ -102,11 +102,12 @@ func (m *DataSourceModel) parse(gw *metalv1.FindMetalGatewayById200Response) dia
 type ipReservationCommon interface {
 	GetCidr() int32
 	GetPublic() bool
+	GetAddressFamily() int32
 }
 
 func calculateSubnetSize(ip ipReservationCommon) basetypes.Int64Value {
 	privateIPv4SubnetSize := uint64(0)
-	if !ip.GetPublic() {
+	if !ip.GetPublic() && ip.GetAddressFamily() == 4 {
 		privateIPv4SubnetSize = 1 << (32 - ip.GetCidr())
 		return types.Int64Value(int64(privateIPv4SubnetSize))
 	}
