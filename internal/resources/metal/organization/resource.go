@@ -155,9 +155,6 @@ func (r *Resource) Update(
 		return
 	}
 
-	fmt.Printf("state: %v\n", state)
-	fmt.Printf("plan: %v\n", plan)
-
 	// Extract the ID of the resource from the state
 	id := plan.ID.ValueString()
 

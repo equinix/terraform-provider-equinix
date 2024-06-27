@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"net/http/httputil"
 	"net/url"
 	"os"
 	"path"
@@ -40,19 +39,6 @@ const (
 
 type ProviderMeta struct {
 	ModuleName string `cty:"module_name"`
-}
-
-type DumpTransport struct {
-	r http.RoundTripper
-}
-
-func (d *DumpTransport) RoundTrip(h *http.Request) (*http.Response, error) {
-	dump, _ := httputil.DumpRequestOut(h, true)
-	fmt.Printf("****REQUEST****\n%q\n", dump)
-	resp, err := d.r.RoundTrip(h)
-	dump, _ = httputil.DumpResponse(resp, true)
-	fmt.Printf("****RESPONSE****\n%q\n****************\n\n", dump)
-	return resp, err
 }
 
 const (
@@ -207,7 +193,6 @@ func (c *Config) newFabricClient() *fabricv4.APIClient {
 // Deprecated: migrate to NewMetalClientForSdk or NewMetalClientForFramework instead
 func (c *Config) NewMetalClient() *packngo.Client {
 	transport := http.DefaultTransport
-	// transport = &DumpTransport{http.DefaultTransport} // Debug only
 	transport = logging.NewTransport("Equinix Metal (packngo)", transport)
 	retryClient := retryablehttp.NewClient()
 	retryClient.HTTPClient.Transport = transport
