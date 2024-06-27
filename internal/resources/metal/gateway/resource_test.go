@@ -183,6 +183,9 @@ func TestAccMetalGateway_IPv6Vrf(t *testing.T) {
 					resource.TestCheckResourceAttrPair(
 						"equinix_metal_gateway.test", "project_id",
 						"equinix_metal_project.test", "id"),
+					resource.TestCheckResourceAttrPair(
+						"equinix_metal_gateway.test", "ip_reservation_id",
+						"equinix_metal_reserved_ip_block.test", "id"),
 				),
 			},
 		},
