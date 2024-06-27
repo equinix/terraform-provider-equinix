@@ -130,7 +130,10 @@ func serviceTokenTerraformToGo(serviceTokenList []interface{}) fabricv4.ServiceT
 	serviceTokenMap := serviceTokenList[0].(map[string]interface{})
 	serviceTokenType := serviceTokenMap["type"].(string)
 	uuid := serviceTokenMap["uuid"].(string)
-	serviceToken.SetType(fabricv4.ServiceTokenType(serviceTokenType))
+	if serviceTokenType != "" {
+		serviceToken.SetType(fabricv4.ServiceTokenType(serviceTokenType))
+	}
+
 	serviceToken.SetUuid(uuid)
 
 	return serviceToken
