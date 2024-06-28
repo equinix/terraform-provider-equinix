@@ -14,7 +14,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/equinix/ecx-go/v2"
 	"github.com/equinix/equinix-sdk-go/services/fabricv4"
 	"github.com/equinix/equinix-sdk-go/services/metalv1"
 	"github.com/equinix/ne-go"
@@ -83,11 +82,9 @@ type Config struct {
 
 	authClient *http.Client
 
-	Ecx   ecx.Client
 	Ne    ne.Client
 	Metal *packngo.Client
 
-	ecxUserAgent   string
 	neUserAgent    string
 	metalUserAgent string
 
@@ -126,23 +123,16 @@ func (c *Config) Load(ctx context.Context) error {
 	authClient.Timeout = c.requestTimeout()
 	authClient.Transport = logging.NewTransport("Equinix", authClient.Transport)
 	c.authClient = authClient
-	ecxClient := ecx.NewClient(ctx, c.BaseURL, authClient)
 	neClient := ne.NewClient(ctx, c.BaseURL, authClient)
 
 	if c.PageSize > 0 {
-		ecxClient.SetPageSize(c.PageSize)
 		neClient.SetPageSize(c.PageSize)
 	}
-	c.ecxUserAgent = c.tfSdkUserAgent("equinix/ecx-go")
-	ecxClient.SetHeaders(map[string]string{
-		"User-agent": c.ecxUserAgent,
-	})
-	c.neUserAgent = c.tfSdkUserAgent("equinix/ecx-go")
+	c.neUserAgent = c.tfSdkUserAgent("equinix/ne-go")
 	neClient.SetHeaders(map[string]string{
 		"User-agent": c.neUserAgent,
 	})
 
-	c.Ecx = ecxClient
 	c.Ne = neClient
 	c.Metal = c.NewMetalClient()
 	return nil
@@ -304,13 +294,6 @@ func appendUserAgentFromEnv(ua string) string {
 	}
 
 	return ua
-}
-
-func (c *Config) AddModuleToECXUserAgent(client *ecx.Client, d *schema.ResourceData) {
-	cli := *client
-	rc := cli.(*ecx.RestClient)
-	rc.SetHeader("User-agent", generateModuleUserAgentString(d, c.ecxUserAgent))
-	*client = rc
 }
 
 func (c *Config) AddModuleToNEUserAgent(client *ne.Client, d *schema.ResourceData) {

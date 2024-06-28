@@ -24,14 +24,14 @@ resource "equinix_metal_connection" "example" {
     contact_email      = "username@example.com"
 }
 
-data "equinix_ecx_l2_sellerprofile" "example" {
+data "equinix_fabric_sellerprofile" "example" {
   name                     = "Azure ExpressRoute"
   organization_global_name = "Microsoft"
 }
 
-resource "equinix_ecx_l2_connection" "example" {
+resource "equinix_fabric_connection" "example" {
   name              = "tf-metal-to-azure"
-  profile_uuid      = data.equinix_ecx_l2_sellerprofile.example.uuid
+  profile_uuid      = data.equinix_fabric_sellerprofile.example.uuid
   speed             = azurerm_express_route_circuit.example.bandwidth_in_mbps
   speed_unit        = "MB"
   notifications     = ["example@equinix.com"]
@@ -76,17 +76,17 @@ resource "equinix_metal_connection" "example" {
     ]
 }
 
-data "equinix_ecx_port" "example" {
+data "equinix_fabric_port" "example" {
   name = "CX-FR5-NL-Dot1q-BO-1G-PRI"
 }
 
-resource "equinix_ecx_l2_connection" "example" {
+resource "equinix_fabric_connection" "example" {
   name                = "tf-port-to-metal"
   zside_service_token = equinix_metal_connection.example.service_tokens.0.id
   speed               = "200"
   speed_unit          = "MB"
   notifications       = ["example@equinix.com"]
-  port_uuid           = data.equinix_ecx_port.example.id
+  port_uuid           = data.equinix_fabric_port.example.id
   vlan_stag           = 1020
 }
 ```
@@ -119,16 +119,16 @@ resource "equinix_metal_connection" "example" {
     ]
 }
 
-data "equinix_ecx_port" "example" {
+data "equinix_fabric_port" "example" {
   name = "CX-FR5-NL-Dot1q-BO-1G-PRI"
 }
 
-resource "equinix_ecx_l2_connection" "example" {
+resource "equinix_fabric_connection" "example" {
   name                = "tf-port-to-metal-legacy"
   speed               = "200"
   speed_unit          = "MB"
   notifications       = ["example@equinix.com"]
-  port_uuid           = data.equinix_ecx_port.example.id
+  port_uuid           = data.equinix_fabric_port.example.id
   vlan_stag           = 1020
   authorization_key   = equinix_metal_connection.example.token
 }
@@ -161,5 +161,5 @@ In addition to all arguments above, the following attributes are exported:
 * `ports` - List of connection ports - primary (`ports[0]`) and secondary (`ports[1]`). Schema of
 port is described in documentation of the
 [equinix_metal_connection datasource](../data-sources/equinix_metal_connection.md).
-* `service_tokens` - List of connection service tokens with attributes required to configure the connection in Equinix Fabric with the [equinix_ecx_l2_connection](./equinix_ecx_l2_connection.md) resource or from the [Equinix Fabric Portal](https://ecxfabric.equinix.com/dashboard). Scehma of service_token is described in documentation of the [equinix_metal_connection datasource](../data-sources/equinix_metal_connection.md).
-* `token` - (Deprecated) Fabric Token required to configure the connection in Equinix Fabric with the [equinix_ecx_l2_connection](./equinix_ecx_l2_connection.md) resource or from the [Equinix Fabric Portal](https://ecxfabric.equinix.com/dashboard). If your organization already has connection service tokens enabled, use `service_tokens` instead.
+* `service_tokens` - List of connection service tokens with attributes required to configure the connection in Equinix Fabric with the [equinix_fabric_connection](./equinix_fabric_connection.md) resource or from the [Equinix Fabric Portal](https://fabric.equinix.com/dashboard). Scehma of service_token is described in documentation of the [equinix_metal_connection datasource](../data-sources/equinix_metal_connection.md).
+* `token` - (Deprecated) Fabric Token required to configure the connection in Equinix Fabric with the [equinix_fabric_connection](./equinix_fabric_connection.md) resource or from the [Equinix Fabric Portal](https://fabric.equinix.com/dashboard). If your organization already has connection service tokens enabled, use `service_tokens` instead.

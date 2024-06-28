@@ -90,7 +90,7 @@ services, and `auth_token` to interact with Equinix Metal.
 
 * `token` (Optional) API tokens are generated from API Consumer clients using
   the [OAuth2
-  API](https://developer.equinix.com/docs/ecx-getting-started#requesting-access-and-refresh-tokens).
+  API](https://developer.equinix.com/dev-docs/fabric/getting-started/getting-access-token#request-access-and-refresh-tokens).
   This argument can also be specified with the `EQUINIX_API_TOKEN` shell
   environment variable.
 
