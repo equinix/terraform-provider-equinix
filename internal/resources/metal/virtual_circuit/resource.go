@@ -186,11 +186,14 @@ func resourceMetalVirtualCircuitCreate(ctx context.Context, d *schema.ResourceDa
 			Speed:       metalv1.PtrString(d.Get("speed").(string)),
 			Vrf:         d.Get("vrf_id").(string),
 			// TODO: woof
-			Md5:        *metalv1.NewNullableString(metalv1.PtrString(d.Get("md5").(string))),
-			PeerAsn:    int64(d.Get("peer_asn").(int)),
-			Subnet:     d.Get("subnet").(string),
-			CustomerIp: metalv1.PtrString(d.Get("customer_ip").(string)),
-			MetalIp:    metalv1.PtrString(d.Get("metal_ip").(string)),
+			Md5:          *metalv1.NewNullableString(metalv1.PtrString(d.Get("md5").(string))),
+			PeerAsn:      int64(d.Get("peer_asn").(int)),
+			Subnet:       d.Get("subnet").(string),
+			CustomerIp:   metalv1.PtrString(d.Get("customer_ip").(string)),
+			MetalIp:      metalv1.PtrString(d.Get("metal_ip").(string)),
+			SubnetIpv6:   metalv1.PtrString(d.Get("subnet_ipv6").(string)),
+			CustomerIpv6: metalv1.PtrString(d.Get("customer_ipv6").(string)),
+			MetalIpv6:    metalv1.PtrString(d.Get("metal_ipv6").(string)),
 		}
 	}
 
@@ -320,6 +323,12 @@ func resourceMetalVirtualCircuitRead(ctx context.Context, d *schema.ResourceData
 		errs = append(errs, d.Set("subnet", vc.VrfVirtualCircuit.GetSubnet()))
 		errs = append(errs, d.Set("metal_ip", vc.VrfVirtualCircuit.GetMetalIp()))
 		errs = append(errs, d.Set("customer_ip", vc.VrfVirtualCircuit.GetCustomerIp()))
+		errs = append(errs, d.Set("subnet_ipv6", vc.VrfVirtualCircuit.GetSubnetIpv6()))
+
+		// Looks like the SDK is missing GetMetalIPv6() and GetCustomerIpv6()
+		// errs = append(errs, d.Set("metal_ipv6", vc.VrfVirtualCircuit.GetMetalIpv6()))
+		// errs = append(errs, d.Set("customer_ipv6", vc.VrfVirtualCircuit.GetCustomerIpv6()))
+
 		errs = append(errs, d.Set("md5", vc.VrfVirtualCircuit.GetMd5()))
 	}
 
@@ -438,6 +447,24 @@ func resourceMetalVirtualCircuitUpdate(ctx context.Context, d *schema.ResourceDa
 			default:
 				return diag.Errorf("garbage in tags: %s", ts)
 			}
+		}
+
+		if d.HasChange("subnet_ipv6") {
+			needsUpdate = true
+			subnet_ipv6 := metalv1.PtrString(d.Get("subnet_ipv6").(string))
+			ur.VrfVirtualCircuitUpdateInput.SubnetIpv6 = subnet_ipv6
+		}
+
+		if d.HasChange("customer_ipv6") {
+			needsUpdate = true
+			customer_ipv6 := metalv1.PtrString(d.Get("customer_ipv6").(string))
+			ur.VrfVirtualCircuitUpdateInput.CustomerIpv6 = customer_ipv6
+		}
+
+		if d.HasChange("metal_ipv6") {
+			needsUpdate = true
+			metal_ipv6 := metalv1.PtrString(d.Get("metal_ipv6").(string))
+			ur.VrfVirtualCircuitUpdateInput.MetalIpv6 = metal_ipv6
 		}
 	}
 
