@@ -9,9 +9,10 @@ import (
 	equinix_errors "github.com/equinix/terraform-provider-equinix/internal/errors"
 	"github.com/equinix/terraform-provider-equinix/internal/framework"
 
+	"github.com/equinix/equinix-sdk-go/services/metalv1"
+	packngo "github.com/equinix/equinix-sdk-go/services/metalv1"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
-	"github.com/packethost/packngo"
 )
 
 var (
@@ -49,8 +50,7 @@ func (r *Resource) Schema(
 }
 
 func (r *Resource) Create(ctx context.Context, request resource.CreateRequest, response *resource.CreateResponse) {
-	r.Meta.AddFwModuleToMetalUserAgent(ctx, request.ProviderMeta)
-	client := r.Meta.Metal
+	client := r.Meta.NewMetalClientForFramework(ctx, request.ProviderMeta)
 
 	var data ResourceModel
 	response.Diagnostics.Append(request.Config.Get(ctx, &data)...)
@@ -69,25 +69,26 @@ func (r *Resource) Create(ctx context.Context, request resource.CreateRequest, r
 		return
 	}
 
-	createRequest := &packngo.VirtualNetworkCreateRequest{
-		ProjectID:   data.ProjectID.ValueString(),
-		Description: data.Description.ValueString(),
+	createRequest := packngo.VirtualNetworkCreateInput{
+		Description: data.Description.ValueStringPointer(),
 	}
 	if !data.Metro.IsNull() {
-		createRequest.Metro = strings.ToLower(data.Metro.ValueString())
-		createRequest.VXLAN = int(data.Vxlan.ValueInt64())
+		createRequest.Metro = packngo.PtrString(strings.ToLower(data.Metro.ValueString()))
+	}
+	if !data.Vxlan.IsNull() {
+		createRequest.Vxlan = metalv1.PtrInt32(int32(data.Vxlan.ValueInt64()))
 	}
 	if !data.Facility.IsNull() {
-		createRequest.Facility = data.Facility.ValueString()
+		createRequest.Facility = data.Facility.ValueStringPointer()
 	}
-	vlan, _, err := client.ProjectVirtualNetworks.Create(createRequest)
+	vlan, _, err := client.VLANsApi.CreateVirtualNetwork(ctx, data.ProjectID.ValueString()).VirtualNetworkCreateInput(createRequest).Execute()
 	if err != nil {
 		response.Diagnostics.AddError("Error creating Vlan", equinix_errors.FriendlyError(err).Error())
 		return
 	}
 
 	// get the current state of newly created vlan with default include fields
-	vlan, _, err = client.ProjectVirtualNetworks.Get(vlan.ID, &packngo.GetOptions{Includes: vlanDefaultIncludes})
+	vlan, _, err = client.VLANsApi.GetVirtualNetwork(ctx, vlan.GetId()).Include(vlanDefaultIncludes).Execute()
 	if err != nil {
 		response.Diagnostics.AddError("Error reading Vlan after create", equinix_errors.FriendlyError(err).Error())
 		return
@@ -104,8 +105,7 @@ func (r *Resource) Create(ctx context.Context, request resource.CreateRequest, r
 }
 
 func (r *Resource) Read(ctx context.Context, request resource.ReadRequest, response *resource.ReadResponse) {
-	r.Meta.AddFwModuleToMetalUserAgent(ctx, request.ProviderMeta)
-	client := r.Meta.Metal
+	client := r.Meta.NewMetalClientForFramework(ctx, request.ProviderMeta)
 
 	var data ResourceModel
 	response.Diagnostics.Append(request.State.Get(ctx, &data)...)
@@ -113,10 +113,10 @@ func (r *Resource) Read(ctx context.Context, request resource.ReadRequest, respo
 		return
 	}
 
-	vlan, _, err := client.ProjectVirtualNetworks.Get(
+	vlan, _, err := client.VLANsApi.GetVirtualNetwork(
+		ctx,
 		data.ID.ValueString(),
-		&packngo.GetOptions{Includes: vlanDefaultIncludes},
-	)
+	).Include(vlanDefaultIncludes).Execute()
 	if err != nil {
 		if equinix_errors.IsNotFound(err) {
 			response.Diagnostics.AddWarning(
@@ -153,8 +153,7 @@ func (r *Resource) Update(ctx context.Context, req resource.UpdateRequest, resp 
 }
 
 func (r *Resource) Delete(ctx context.Context, request resource.DeleteRequest, response *resource.DeleteResponse) {
-	r.Meta.AddFwModuleToMetalUserAgent(ctx, request.ProviderMeta)
-	client := r.Meta.Metal
+	client := r.Meta.NewMetalClientForFramework(ctx, request.ProviderMeta)
 
 	var data ResourceModel
 	response.Diagnostics.Append(request.State.Get(ctx, &data)...)
@@ -162,12 +161,12 @@ func (r *Resource) Delete(ctx context.Context, request resource.DeleteRequest, r
 		return
 	}
 
-	vlan, resp, err := client.ProjectVirtualNetworks.Get(
+	vlan, resp, err := client.VLANsApi.GetVirtualNetwork(
+		ctx,
 		data.ID.ValueString(),
-		&packngo.GetOptions{Includes: []string{"instances", "virtual_networks", "meta_gateway"}},
-	)
+	).Include([]string{"instances", "virtual_network", "meta_gateway"}).Execute()
 	if err != nil {
-		if equinix_errors.IgnoreResponseErrors(equinix_errors.HttpForbidden, equinix_errors.HttpNotFound)(resp, err) != nil {
+		if err := equinix_errors.IgnoreHttpResponseErrors(equinix_errors.HttpForbidden, equinix_errors.HttpNotFound)(resp, err); err != nil {
 			response.Diagnostics.AddWarning(
 				"Equinix Metal Vlan not found during delete",
 				equinix_errors.FriendlyError(err).Error(),
@@ -182,12 +181,13 @@ func (r *Resource) Delete(ctx context.Context, request resource.DeleteRequest, r
 	// all device ports must be unassigned before delete
 	for _, instance := range vlan.Instances {
 		for _, port := range instance.NetworkPorts {
-			for _, v := range port.AttachedVirtualNetworks {
-				if v.ID == vlan.ID {
-					_, resp, err = client.Ports.Unassign(port.ID, vlan.ID)
-					if equinix_errors.IgnoreResponseErrors(equinix_errors.HttpForbidden, equinix_errors.HttpNotFound)(resp, err) != nil {
-						response.Diagnostics.AddError("Error unassign port with Vlan",
-							equinix_errors.FriendlyError(err).Error())
+			for _, v := range port.GetVirtualNetworks() {
+				if v.GetId() == vlan.GetId() {
+					_, resp, err = client.PortsApi.UnassignPort(ctx, port.GetId()).PortAssignInput(metalv1.PortAssignInput{
+						Vnid: vlan.Id,
+					}).Execute()
+					if equinix_errors.IgnoreHttpResponseErrors(equinix_errors.HttpForbidden, equinix_errors.HttpNotFound)(resp, err) != nil {
+						response.Diagnostics.AddError("Error unassign port with Vlan", err.Error())
 						return
 					}
 				}
@@ -195,7 +195,8 @@ func (r *Resource) Delete(ctx context.Context, request resource.DeleteRequest, r
 		}
 	}
 
-	if err := equinix_errors.IgnoreResponseErrors(equinix_errors.HttpForbidden, equinix_errors.HttpNotFound)(client.ProjectVirtualNetworks.Delete(vlan.ID)); err != nil {
+	resp, err = client.VLANsApi.DeleteVirtualNetwork(ctx, vlan.GetId()).Execute()
+	if err := equinix_errors.IgnoreHttpResponseErrors(equinix_errors.HttpForbidden, equinix_errors.HttpNotFound)(resp, err); err != nil {
 		response.Diagnostics.AddError("Error deleting Vlan",
 			equinix_errors.FriendlyError(err).Error())
 		return
