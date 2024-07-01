@@ -458,6 +458,24 @@ func resourceMetalVirtualCircuitUpdate(ctx context.Context, d *schema.ResourceDa
 			}
 		}
 
+		if d.HasChange("subnet") {
+			needsUpdate = true
+			subnet := metalv1.PtrString(d.Get("subnet").(string))
+			ur.VrfVirtualCircuitUpdateInput.Subnet = subnet
+		}
+
+		if d.HasChange("customer_ip") {
+			needsUpdate = true
+			customer_ip := metalv1.PtrString(d.Get("customer_ip").(string))
+			ur.VrfVirtualCircuitUpdateInput.CustomerIp = customer_ip
+		}
+
+		if d.HasChange("metal_ip") {
+			needsUpdate = true
+			metal_ip := metalv1.PtrString(d.Get("metal_ip").(string))
+			ur.VrfVirtualCircuitUpdateInput.MetalIp = metal_ip
+		}
+
 		if d.HasChange("subnet_ipv6") {
 			needsUpdate = true
 			subnet_ipv6 := metalv1.PtrString(d.Get("subnet_ipv6").(string))
