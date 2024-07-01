@@ -39,7 +39,7 @@ func Resource() *schema.Resource {
 			},
 			"virtual_circuit_id": {
 				Type:        schema.TypeString,
-				Required:    false,
+				Optional:    true,
 				Description: "UUID of an existing VC to configure. Used in the case of shared interconnections where the VC has already been created.",
 			},
 			"project_id": {
