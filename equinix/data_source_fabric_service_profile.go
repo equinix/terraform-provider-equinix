@@ -57,12 +57,13 @@ func readFabricServiceProfilesSearchSchema() map[string]*schema.Schema {
 		"and_filters": {
 			Type:        schema.TypeBool,
 			Optional:    true,
-			Description: "Optional boolean flag to indicate if the filters will be AND'd together",
+			Description: "Optional boolean flag to indicate if the filters will be AND'd together. Defaults to false",
+			Default:     false,
 		},
 		"filter": {
 			Type:        schema.TypeList,
 			Required:    true,
-			Description: "Filters for the Data Source Search Request",
+			Description: "Filters for the Data Source Search Request (If and_filters is not set to true you cannot provide more than one filter block)",
 			MaxItems:    10,
 			Elem: &schema.Resource{
 				Schema: map[string]*schema.Schema{

@@ -855,6 +855,9 @@ func resourceServiceProfilesSearchRequest(ctx context.Context, d *schema.Resourc
 	}
 
 	schemaFilter := d.Get("filter").([]interface{})
+	if len(schemaFilter) > 1 && !andFilters {
+		return diag.Errorf("and_filters must be set to true when providing more than one filter block to this data source. filter blocks provided count == %d", len(schemaFilter))
+	}
 	filter := serviceProfilesSearchFilterRequestTerraformToGo(schemaFilter, andFilters)
 	serviceProfilesSearchRequest.SetFilter(filter)
 
@@ -882,7 +885,7 @@ func resourceServiceProfilesSearchRequest(ctx context.Context, d *schema.Resourc
 	}
 
 	if len(serviceProfiles.Data) < 1 {
-		return diag.FromErr(fmt.Errorf("no records are found for the service profiles search criteria provided - %d , please change the search criteria", len(serviceProfiles.Data)))
+		return diag.Errorf("%d records found for the service profiles search criteria provided, please change the search criteria", len(serviceProfiles.Data))
 	}
 
 	d.SetId(serviceProfiles.Data[0].GetUuid())
