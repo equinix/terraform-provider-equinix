@@ -170,7 +170,7 @@ func resourceSchema(ctx context.Context) schema.Schema {
 				Computed:    true,
 			},
 			"token": schema.StringAttribute{
-				Description: "Only used with shared connection. Fabric Token required to continue the setup process with [equinix_ecx_l2_connection](https://registry.terraform.io/providers/equinix/equinix/latest/docs/resources/equinix_ecx_l2_connection) or from the [Equinix Fabric Portal](https://ecxfabric.equinix.com/dashboard)",
+				Description: "Only used with shared connection. Fabric Token required to continue the setup process with [equinix_fabric_connection](https://registry.terraform.io/providers/equinix/equinix/latest/docs/resources/equinix_fabric_connection) or from the [Equinix Fabric Portal](https://fabric.equinix.com/dashboard)",
 				Computed:    true,
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.UseStateForUnknown(),
@@ -187,7 +187,7 @@ func resourceSchema(ctx context.Context) schema.Schema {
 				},
 			},
 			"service_tokens": schema.ListAttribute{
-				Description: "Only used with shared connection. List of service tokens required to continue the setup process with [equinix_ecx_l2_connection](https://registry.terraform.io/providers/equinix/equinix/latest/docs/resources/equinix_ecx_l2_connection) or from the [Equinix Fabric Portal](https://ecxfabric.equinix.com/dashboard)",
+				Description: "Only used with shared connection. List of service tokens required to continue the setup process with [equinix_fabric_connection](https://registry.terraform.io/providers/equinix/equinix/latest/docs/resources/equinix_fabric_connection) or from the [Equinix Fabric Portal](https://fabric.equinix.com/dashboard)",
 				CustomType:  fwtypes.NewListNestedObjectTypeOf[ServiceTokenModel](ctx),
 				ElementType: fwtypes.NewObjectTypeOf[ServiceTokenModel](ctx),
 				Computed:    true,

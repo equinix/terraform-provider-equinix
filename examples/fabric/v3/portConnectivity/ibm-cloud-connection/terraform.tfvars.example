@@ -1,6 +1,0 @@
-equinix_client_id     = "MyEquinixClientId"
-equinix_client_secret = "MyEquinixSecret"
-equinix_port_name     = "EQUINIX_SVC-XXX-CX-PRI-01"
-ibm_account_id        = "1956030"
-ibm_region            = "Washington 2"
-ibm_metro_code        = "DC"
