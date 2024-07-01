@@ -5,12 +5,12 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/equinix/equinix-sdk-go/services/metalv1"
 	equinix_errors "github.com/equinix/terraform-provider-equinix/internal/errors"
 	"github.com/equinix/terraform-provider-equinix/internal/framework"
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
-	"github.com/packethost/packngo"
 )
 
 func NewDataSource() datasource.DataSource {
@@ -45,8 +45,7 @@ func (r *DataSource) Read(
 	req datasource.ReadRequest,
 	resp *datasource.ReadResponse,
 ) {
-	r.Meta.AddFwModuleToMetalUserAgent(ctx, req.ProviderMeta)
-	client := r.Meta.Metal
+	client := r.Meta.NewMetalClientForFramework(ctx, req.ProviderMeta)
 
 	var data DataSourceModel
 	resp.Diagnostics.Append(req.Config.Get(ctx, &data)...)
@@ -63,24 +62,24 @@ func (r *DataSource) Read(
 		return
 	}
 
-	var vlan *packngo.VirtualNetwork
+	var vlan *metalv1.VirtualNetwork
 
 	if !data.VlanID.IsNull() {
 		var err error
-		vlan, _, err = client.ProjectVirtualNetworks.Get(
+		vlan, _, err = client.VLANsApi.GetVirtualNetwork(
+			ctx,
 			data.VlanID.ValueString(),
-			&packngo.GetOptions{Includes: []string{"assigned_to"}},
-		)
+		).Include([]string{"assigned_to"}).Execute()
 		if err != nil {
 			resp.Diagnostics.AddError("Error fetching Vlan using vlanId", equinix_errors.FriendlyError(err).Error())
 			return
 		}
 
 	} else {
-		vlans, _, err := client.ProjectVirtualNetworks.List(
+		vlans, _, err := client.VLANsApi.FindVirtualNetworks(
+			ctx,
 			data.ProjectID.ValueString(),
-			&packngo.GetOptions{Includes: []string{"assigned_to"}},
-		)
+		).Include([]string{"assigned_to"}).Execute()
 		if err != nil {
 			resp.Diagnostics.AddError("Error fetching vlan list for projectId",
 				equinix_errors.FriendlyError(err).Error())
@@ -97,7 +96,7 @@ func (r *DataSource) Read(
 
 	assignedDevices := []string{}
 	for _, d := range vlan.Instances {
-		assignedDevices = append(assignedDevices, d.ID)
+		assignedDevices = append(assignedDevices, d.GetId())
 	}
 
 	// Set state to fully populated data
@@ -110,16 +109,17 @@ func (r *DataSource) Read(
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
-func MatchingVlan(vlans []packngo.VirtualNetwork, vxlan int, projectID, facility, metro string) (*packngo.VirtualNetwork, error) {
-	matches := []packngo.VirtualNetwork{}
+func MatchingVlan(vlans []metalv1.VirtualNetwork, vxlan int, projectID, facility, metro string) (*metalv1.VirtualNetwork, error) {
+	matches := []metalv1.VirtualNetwork{}
 	for _, v := range vlans {
-		if vxlan != 0 && v.VXLAN != vxlan {
+		if vxlan != 0 && int(v.GetVxlan()) != vxlan {
 			continue
 		}
-		if facility != "" && !strings.EqualFold(v.FacilityCode, facility) {
+		facility_code, ok := v.AdditionalProperties["facility_code"].(string)
+		if ok && facility != "" && !strings.EqualFold(facility_code, facility) {
 			continue
 		}
-		if metro != "" && !strings.EqualFold(v.MetroCode, metro) {
+		if metro != "" && !strings.EqualFold(v.GetMetroCode(), metro) {
 			continue
 		}
 		matches = append(matches, v)
