@@ -37,6 +37,11 @@ func Resource() *schema.Resource {
 				Description: "UUID of Connection where the VC is scoped to",
 				ForceNew:    true,
 			},
+			"virtual_circuit_id": {
+				Type:        schema.TypeString,
+				Required:    false,
+				Description: "UUID of an existing VC to configure. Used in the case of shared interconnections where the VC has already been created.",
+			},
 			"project_id": {
 				Type:        schema.TypeString,
 				Required:    true,
@@ -162,98 +167,104 @@ func Resource() *schema.Resource {
 }
 
 func resourceMetalVirtualCircuitCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := meta.(*config.Config).NewMetalClientForSDK(d)
-	vncr := metalv1.VirtualCircuitCreateInput{}
-
-	connId := d.Get("connection_id").(string)
-	portId := d.Get("port_id").(string)
-	projectId := d.Get("project_id").(string)
-	name := d.Get("name").(string)
-
-	if _, ok := d.GetOk("vlan_id"); ok {
-		vncr.VlanVirtualCircuitCreateInput = &metalv1.VlanVirtualCircuitCreateInput{
-			ProjectId:   projectId,
-			Name:        &name,
-			Description: metalv1.PtrString(d.Get("description").(string)),
-			Speed:       metalv1.PtrString(d.Get("speed").(string)),
-			Vnid:        metalv1.PtrString(d.Get("vlan_id").(string)),
-		}
+	if _, ok := d.GetOk("virtual_circuit_id"); ok {
+		vcId := d.Get("virtual_circuit_id").(string)
+		d.SetId(vcId)
+		return resourceMetalVirtualCircuitUpdate(ctx, d, meta)
 	} else {
-		vncr.VrfVirtualCircuitCreateInput = &metalv1.VrfVirtualCircuitCreateInput{
-			ProjectId:   projectId,
-			Name:        &name,
-			Description: metalv1.PtrString(d.Get("description").(string)),
-			Speed:       metalv1.PtrString(d.Get("speed").(string)),
-			Vrf:         d.Get("vrf_id").(string),
-			// TODO: woof
-			Md5:          *metalv1.NewNullableString(metalv1.PtrString(d.Get("md5").(string))),
-			PeerAsn:      int64(d.Get("peer_asn").(int)),
-			Subnet:       d.Get("subnet").(string),
-			CustomerIp:   metalv1.PtrString(d.Get("customer_ip").(string)),
-			MetalIp:      metalv1.PtrString(d.Get("metal_ip").(string)),
-			SubnetIpv6:   metalv1.PtrString(d.Get("subnet_ipv6").(string)),
-			CustomerIpv6: metalv1.PtrString(d.Get("customer_ipv6").(string)),
-			MetalIpv6:    metalv1.PtrString(d.Get("metal_ipv6").(string)),
-		}
-	}
+		client := meta.(*config.Config).NewMetalClientForSDK(d)
+		vncr := metalv1.VirtualCircuitCreateInput{}
 
-	tags := d.Get("tags.#").(int)
-	if tags > 0 {
+		connId := d.Get("connection_id").(string)
+		portId := d.Get("port_id").(string)
+		projectId := d.Get("project_id").(string)
+		name := d.Get("name").(string)
+
 		if _, ok := d.GetOk("vlan_id"); ok {
-			vncr.VlanVirtualCircuitCreateInput.Tags = converters.IfArrToStringArr(d.Get("tags").([]interface{}))
+			vncr.VlanVirtualCircuitCreateInput = &metalv1.VlanVirtualCircuitCreateInput{
+				ProjectId:   projectId,
+				Name:        &name,
+				Description: metalv1.PtrString(d.Get("description").(string)),
+				Speed:       metalv1.PtrString(d.Get("speed").(string)),
+				Vnid:        metalv1.PtrString(d.Get("vlan_id").(string)),
+			}
 		} else {
-			vncr.VrfVirtualCircuitCreateInput.Tags = converters.IfArrToStringArr(d.Get("tags").([]interface{}))
+			vncr.VrfVirtualCircuitCreateInput = &metalv1.VrfVirtualCircuitCreateInput{
+				ProjectId:   projectId,
+				Name:        &name,
+				Description: metalv1.PtrString(d.Get("description").(string)),
+				Speed:       metalv1.PtrString(d.Get("speed").(string)),
+				Vrf:         d.Get("vrf_id").(string),
+				// TODO: woof
+				Md5:          *metalv1.NewNullableString(metalv1.PtrString(d.Get("md5").(string))),
+				PeerAsn:      int64(d.Get("peer_asn").(int)),
+				Subnet:       d.Get("subnet").(string),
+				CustomerIp:   metalv1.PtrString(d.Get("customer_ip").(string)),
+				MetalIp:      metalv1.PtrString(d.Get("metal_ip").(string)),
+				SubnetIpv6:   metalv1.PtrString(d.Get("subnet_ipv6").(string)),
+				CustomerIpv6: metalv1.PtrString(d.Get("customer_ipv6").(string)),
+				MetalIpv6:    metalv1.PtrString(d.Get("metal_ipv6").(string)),
+			}
 		}
-	}
 
-	if nniVlan, ok := d.GetOk("nni_vlan"); ok {
-		if _, ok := d.GetOk("vlan_id"); ok {
-			vncr.VlanVirtualCircuitCreateInput.NniVlan = metalv1.PtrInt32(int32(nniVlan.(int)))
+		tags := d.Get("tags.#").(int)
+		if tags > 0 {
+			if _, ok := d.GetOk("vlan_id"); ok {
+				vncr.VlanVirtualCircuitCreateInput.Tags = converters.IfArrToStringArr(d.Get("tags").([]interface{}))
+			} else {
+				vncr.VrfVirtualCircuitCreateInput.Tags = converters.IfArrToStringArr(d.Get("tags").([]interface{}))
+			}
+		}
+
+		if nniVlan, ok := d.GetOk("nni_vlan"); ok {
+			if _, ok := d.GetOk("vlan_id"); ok {
+				vncr.VlanVirtualCircuitCreateInput.NniVlan = metalv1.PtrInt32(int32(nniVlan.(int)))
+			} else {
+				vncr.VrfVirtualCircuitCreateInput.NniVlan = int32(nniVlan.(int))
+			}
+		}
+
+		conn, _, err := client.InterconnectionsApi.GetInterconnection(ctx, connId).Execute()
+		if err != nil {
+			return diag.FromErr(err)
+		}
+		if conn.GetStatus() == string(metalv1.VLANVIRTUALCIRCUITSTATUS_PENDING) {
+			return diag.Errorf("Connection request with name %s and ID %s wasn't approved yet", conn.GetName(), conn.GetId())
+		}
+
+		vc, _, err := client.InterconnectionsApi.CreateInterconnectionPortVirtualCircuit(ctx, connId, portId).VirtualCircuitCreateInput(vncr).Execute()
+		if err != nil {
+			log.Printf("[DEBUG] Error creating virtual circuit: %s", err)
+			return diag.FromErr(err)
+		}
+
+		var vcId string
+
+		if vc.VlanVirtualCircuit != nil {
+			vcId = vc.VlanVirtualCircuit.GetId()
 		} else {
-			vncr.VrfVirtualCircuitCreateInput.NniVlan = int32(nniVlan.(int))
+			vcId = vc.VrfVirtualCircuit.GetId()
 		}
+
+		// TODO: offer to wait while VCStatusPending
+		createWaiter := getVCStateWaiter(
+			ctx,
+			client,
+			vcId,
+			d.Timeout(schema.TimeoutCreate)-30*time.Second,
+			[]string{string(metalv1.VLANVIRTUALCIRCUITSTATUS_ACTIVATING)},
+			[]string{string(metalv1.VLANVIRTUALCIRCUITSTATUS_ACTIVE)},
+		)
+
+		_, err = createWaiter.WaitForStateContext(ctx)
+		if err != nil {
+			return diag.Errorf("Error waiting for virtual circuit %s to be created: %s", vcId, err.Error())
+		}
+
+		d.SetId(vcId)
+
+		return resourceMetalVirtualCircuitRead(ctx, d, meta)
 	}
-
-	conn, _, err := client.InterconnectionsApi.GetInterconnection(ctx, connId).Execute()
-	if err != nil {
-		return diag.FromErr(err)
-	}
-	if conn.GetStatus() == string(metalv1.VLANVIRTUALCIRCUITSTATUS_PENDING) {
-		return diag.Errorf("Connection request with name %s and ID %s wasn't approved yet", conn.GetName(), conn.GetId())
-	}
-
-	vc, _, err := client.InterconnectionsApi.CreateInterconnectionPortVirtualCircuit(ctx, connId, portId).VirtualCircuitCreateInput(vncr).Execute()
-	if err != nil {
-		log.Printf("[DEBUG] Error creating virtual circuit: %s", err)
-		return diag.FromErr(err)
-	}
-
-	var vcId string
-
-	if vc.VlanVirtualCircuit != nil {
-		vcId = vc.VlanVirtualCircuit.GetId()
-	} else {
-		vcId = vc.VrfVirtualCircuit.GetId()
-	}
-
-	// TODO: offer to wait while VCStatusPending
-	createWaiter := getVCStateWaiter(
-		ctx,
-		client,
-		vcId,
-		d.Timeout(schema.TimeoutCreate)-30*time.Second,
-		[]string{string(metalv1.VLANVIRTUALCIRCUITSTATUS_ACTIVATING)},
-		[]string{string(metalv1.VLANVIRTUALCIRCUITSTATUS_ACTIVE)},
-	)
-
-	_, err = createWaiter.WaitForStateContext(ctx)
-	if err != nil {
-		return diag.Errorf("Error waiting for virtual circuit %s to be created: %s", vcId, err.Error())
-	}
-
-	d.SetId(vcId)
-
-	return resourceMetalVirtualCircuitRead(ctx, d, meta)
 }
 
 func resourceMetalVirtualCircuitRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
