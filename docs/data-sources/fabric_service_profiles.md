@@ -86,11 +86,11 @@ output "first_service_profile_type" {
 
 ### Required
 
-- `filter` (Block List, Min: 1, Max: 10) Filters for the Data Source Search Request (see [below for nested schema](#nestedblock--filter))
+- `filter` (Block List, Min: 1, Max: 10) Filters for the Data Source Search Request (If and_filters is not set to true you cannot provide more than one filter block) (see [below for nested schema](#nestedblock--filter))
 
 ### Optional
 
-- `and_filters` (Boolean) Optional boolean flag to indicate if the filters will be AND'd together
+- `and_filters` (Boolean) Optional boolean flag to indicate if the filters will be AND'd together. Defaults to false
 - `pagination` (Block Set, Max: 1) Pagination details for the Data Source Search Request (see [below for nested schema](#nestedblock--pagination))
 - `sort` (Block List, Max: 1) Filters for the Data Source Search Request (see [below for nested schema](#nestedblock--sort))
 - `view_point` (String) flips view between buyer and seller representation. Available values : aSide, zSide. Default value : aSide
