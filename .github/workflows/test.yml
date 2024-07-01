@@ -6,8 +6,27 @@ on:
     branches:
     - main
 
-
 jobs:
+
+  validate_docs:
+    name: Validate docs
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out code into the Go module directory
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: './go.mod'
+        id: go
+
+      - name: Get dependencies
+        run: go mod download
+
+      - name: Check that all docs changes are committed
+        run: |
+          make docs-check
 
   test:
     name: Test
