@@ -324,10 +324,8 @@ func resourceMetalVirtualCircuitRead(ctx context.Context, d *schema.ResourceData
 		errs = append(errs, d.Set("metal_ip", vc.VrfVirtualCircuit.GetMetalIp()))
 		errs = append(errs, d.Set("customer_ip", vc.VrfVirtualCircuit.GetCustomerIp()))
 		errs = append(errs, d.Set("subnet_ipv6", vc.VrfVirtualCircuit.GetSubnetIpv6()))
-
-		// Looks like the SDK is missing GetMetalIPv6() and GetCustomerIpv6()
-		// errs = append(errs, d.Set("metal_ipv6", vc.VrfVirtualCircuit.GetMetalIpv6()))
-		// errs = append(errs, d.Set("customer_ipv6", vc.VrfVirtualCircuit.GetCustomerIpv6()))
+		errs = append(errs, d.Set("metal_ipv6", vc.VrfVirtualCircuit.GetMetalIpv6()))
+		errs = append(errs, d.Set("customer_ipv6", vc.VrfVirtualCircuit.GetCustomerIpv6()))
 
 		errs = append(errs, d.Set("md5", vc.VrfVirtualCircuit.GetMd5()))
 	}
