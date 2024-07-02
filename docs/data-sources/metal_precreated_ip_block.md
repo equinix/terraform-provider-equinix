@@ -10,7 +10,7 @@ Use this data source to get CIDR expression for precreated (management) IPv6 and
 
 -> Precreated (management) IP blocks for a metro will not be available until first device is created in that metro.
 
--> Public IPv4 blocks auto-assigned (management) to a device cannot be retrieved. If you need that information, consider using the [equinix_metal_device](equinix_metal_device.md) data source instead.
+-> Public IPv4 blocks auto-assigned (management) to a device cannot be retrieved. If you need that information, consider using the [equinix_metal_device](metal_device.md) data source instead.
 
 ## Example Usage
 
