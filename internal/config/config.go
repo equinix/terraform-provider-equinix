@@ -149,6 +149,16 @@ func (c *Config) NewFabricClientForSDK(d *schema.ResourceData) *fabricv4.APIClie
 	return client
 }
 
+// Shim for Fabric tests.
+// Deprecated: when the acceptance package starts to contain API clients for testing/cleanup this will move with them
+func (c *Config) NewFabricClientForTesting() *fabricv4.APIClient {
+	client := c.newFabricClient()
+
+	client.GetConfig().UserAgent = fmt.Sprintf("tf-acceptance-tests %v", client.GetConfig().UserAgent)
+
+	return client
+}
+
 // newFabricClient returns the base fabricv4 client that is then used for either the sdkv2 or framework
 // implementations of the Terraform Provider with exported Methods
 func (c *Config) newFabricClient() *fabricv4.APIClient {
