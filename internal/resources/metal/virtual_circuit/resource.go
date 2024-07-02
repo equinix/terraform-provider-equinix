@@ -79,10 +79,12 @@ func Resource() *schema.Resource {
 				Elem:        &schema.Schema{Type: schema.TypeString},
 			},
 			"nni_vlan": {
-				Type:        schema.TypeInt,
-				Description: "Equinix Metal network-to-network VLAN ID (optional when the connection has mode=tunnel)",
-				Optional:    true,
-				ForceNew:    true,
+				Type:          schema.TypeInt,
+				Description:   "Equinix Metal network-to-network VLAN ID (optional when the connection has mode=tunnel)",
+				Optional:      true,
+				ForceNew:      true,
+				Computed:      true,
+				ConflictsWith: []string{"virtual_circuit_id"},
 			},
 			"vlan_id": {
 				Type:         schema.TypeString,
@@ -117,12 +119,14 @@ func Resource() *schema.Resource {
 				Optional:     true,
 				RequiredWith: []string{"vrf_id"},
 				Description:  "The Metal IP address for the SVI (Switch Virtual Interface) of the VirtualCircuit. Will default to the first usable IP in the subnet.",
+				Computed:     true,
 			},
 			"customer_ip": {
 				Type:         schema.TypeString,
 				Optional:     true,
 				RequiredWith: []string{"vrf_id"},
 				Description:  "The Customer IP address which the CSR switch will peer with. Will default to the other usable IP in the subnet.",
+				Computed:     true,
 			},
 			"subnet_ipv6": {
 				Type:     schema.TypeString,
@@ -135,11 +139,13 @@ func Resource() *schema.Resource {
 				Type:        schema.TypeString,
 				Optional:    true,
 				Description: "The Metal IPv6 address for the SVI (Switch Virtual Interface) of the VirtualCircuit. Will default to the first usable IP in the IPv6 subnet.",
+				Computed:    true,
 			},
 			"customer_ipv6": {
 				Type:        schema.TypeString,
 				Optional:    true,
 				Description: "The Customer IPv6 address which the CSR switch will peer with. Will default to the other usable IP in the IPv6 subnet.",
+				Computed:    true,
 			},
 			"md5": {
 				Type:        schema.TypeString,
