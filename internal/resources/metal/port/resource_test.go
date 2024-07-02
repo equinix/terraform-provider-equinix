@@ -374,7 +374,7 @@ func testAccMetalPortDestroyed(s *terraform.State) error {
 	for _, pid := range port_ids {
 		p, _, err := client.PortsApi.FindPortById(context.Background(), pid).Execute()
 		if err != nil {
-			return fmt.Errorf("Error getting port %s during destroy check", pid)
+			return fmt.Errorf("Error getting port %s during destroy check: %v", pid, err)
 		}
 		err = port.ProperlyDestroyed(p)
 		if err != nil {
