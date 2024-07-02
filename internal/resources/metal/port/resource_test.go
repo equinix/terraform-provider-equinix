@@ -3,7 +3,9 @@ package port_test
 import (
 	"context"
 	"fmt"
+	"net/http"
 	"regexp"
+	"slices"
 	"testing"
 
 	"github.com/equinix/terraform-provider-equinix/internal/acceptance"
@@ -372,8 +374,11 @@ func testAccMetalPortDestroyed(s *terraform.State) error {
 		}
 	}
 	for _, pid := range port_ids {
-		p, _, err := client.PortsApi.FindPortById(context.Background(), pid).Execute()
+		p, resp, err := client.PortsApi.FindPortById(context.Background(), pid).Execute()
 		if err != nil {
+			if resp != nil && slices.Contains([]int{http.StatusNotFound, http.StatusForbidden}, resp.StatusCode) {
+				continue
+			}
 			return fmt.Errorf("Error getting port %s during destroy check: %v", pid, err)
 		}
 		err = port.ProperlyDestroyed(p)
