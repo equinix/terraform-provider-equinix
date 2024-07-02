@@ -115,7 +115,7 @@ func testAccFabricCreateServiceProfileConfig(portUUID string, portType string, p
   }
   tags = ["VoIP", "Saas"]
   visibility = "PRIVATE"
-  allowed_emails = ["panthers.fcr@test.com"]
+  allowed_emails = ["panthersfcr@test.com"]
   ports {
       uuid = "%s"
       type = "%s"

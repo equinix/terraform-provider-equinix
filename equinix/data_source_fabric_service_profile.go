@@ -114,7 +114,6 @@ func readFabricServiceProfilesSearchSchema() map[string]*schema.Schema {
 			Type:        schema.TypeList,
 			Optional:    true,
 			Description: "Filters for the Data Source Search Request",
-			MaxItems:    1,
 			Elem: &schema.Resource{
 				Schema: map[string]*schema.Schema{
 					"direction": {
