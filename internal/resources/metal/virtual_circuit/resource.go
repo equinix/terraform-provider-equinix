@@ -41,6 +41,7 @@ func Resource() *schema.Resource {
 				Type:        schema.TypeString,
 				Optional:    true,
 				Description: "UUID of an existing VC to configure. Used in the case of shared interconnections where the VC has already been created.",
+				ForceNew:    true,
 			},
 			"project_id": {
 				Type:        schema.TypeString,
@@ -504,6 +505,10 @@ func resourceMetalVirtualCircuitUpdate(ctx context.Context, d *schema.ResourceDa
 }
 
 func resourceMetalVirtualCircuitDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	if _, ok := d.GetOk("virtual_circuit_id"); ok {
+		return nil
+	}
+
 	client := meta.(*config.Config).NewMetalClientForSDK(d)
 
 	_, resp, err := client.InterconnectionsApi.DeleteVirtualCircuit(ctx, d.Id()).Execute()
