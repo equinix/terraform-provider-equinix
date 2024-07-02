@@ -22,7 +22,7 @@ resource "equinix_fabric_service_profile" "test" {
   }
   tags = ["VoIP", "Saas"]
   visibility = "PRIVATE"
-  allowed_emails = ["panthers.fcr@test.com"]
+  allowed_emails = ["panthersfcr@test.com"]
   ports {
       uuid = "%s"
       type = "%s"
