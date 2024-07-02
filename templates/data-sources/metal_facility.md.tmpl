@@ -1,0 +1,38 @@
+---
+subcategory: "Metal"
+---
+
+{{/* This template serves as a starting point for documentation generation, and can be customized with hardcoded values and/or doc gen templates.
+
+For example, the {{ .SchemaMarkdown }} template can be used to replace manual schema documentation if descriptions of schema attributes are added in the provider source code. */ -}}
+
+# equinix_metal_facility (Data Source)
+
+> **Deprecated** Use `equinix_metal_metro` instead. For more information, refer to the [facility to metro migration guide](https://registry.terraform.io/providers/equinix/equinix/latest/docs/guides/migration_guide_facilities_to_metros_devices).
+
+Provides an Equinix Metal facility datasource.
+
+## Example Usage
+
+{{tffile "examples/data-sources/metal_facility/example_1.tf"}}
+
+{{tffile "examples/data-sources/metal_facility/example_2.tf"}}
+
+## Argument Reference
+
+The following arguments are supported:
+
+* `code` - (Required) The facility code to search for facilities.
+* `features_required` - (Optional) Set of feature strings that the facility must have. Some possible values are `baremetal`, `ibx`, `storage`, `global_ipv4`, `backend_transfer`, `layer_2`.
+* `capacity` - (Optional) One or more device plans for which the facility must have capacity.
+  * `plan` - (Required) Device plan that must be available in selected location.
+  * `quantity` - (Optional) Minimun number of devices that must be available in selected location. Default is `1`.
+
+## Attributes Reference
+
+In addition to all arguments above, the following attributes are exported:
+
+* `id` - The ID of the facility.
+* `name` - The name of the facility.
+* `features` - The features of the facility.
+* `metro` - The metro code the facility is part of.

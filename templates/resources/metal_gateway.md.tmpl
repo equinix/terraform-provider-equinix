@@ -1,0 +1,41 @@
+---
+subcategory: "Metal"
+---
+
+{{/* This template serves as a starting point for documentation generation, and can be customized with hardcoded values and/or doc gen templates.
+
+For example, the {{ .SchemaMarkdown }} template can be used to replace manual schema documentation if descriptions of schema attributes are added in the provider source code. */ -}}
+
+# equinix_metal_gateway (Resource)
+
+Use this resource to create Metal Gateway resources in Equinix Metal.
+
+See the [Virtual Routing and Forwarding documentation](https://deploy.equinix.com/developers/docs/metal/layer2-networking/vrf/) for product details and API reference material.
+
+## Example Usage
+
+{{tffile "examples/resources/metal_gateway/example_1.tf"}}
+
+{{tffile "examples/resources/metal_gateway/example_2.tf"}}
+
+## Argument Reference
+
+The following arguments are supported:
+
+* `project_id` - (Required) UUID of the project where the gateway is scoped to.
+* `vlan_id` - (Required) UUID of the VLAN where the gateway is scoped to.
+* `ip_reservation_id` - (Optional) UUID of Public or VRF IP Reservation to associate with the gateway, the reservation must be in the same metro as the VLAN, conflicts with `private_ipv4_subnet_size`.
+* `private_ipv4_subnet_size` - (Optional) Size of the private IPv4 subnet to create for this metal gateway, must be one of `8`, `16`, `32`, `64`, `128`. Conflicts with `ip_reservation_id`.
+
+## Attributes Reference
+
+In addition to all arguments above, the following attributes are exported:
+
+* `state` - Status of the gateway resource.
+* `vrf_id` - UUID of the VRF associated with the IP Reservation
+
+## Timeouts
+
+[Configuration options](https://developer.hashicorp.com/terraform/language/resources/syntax#operation-timeouts):
+
+* `delete` - (Default `20m`)

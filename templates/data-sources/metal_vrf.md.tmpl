@@ -1,0 +1,34 @@
+---
+subcategory: "Metal"
+---
+
+{{/* This template serves as a starting point for documentation generation, and can be customized with hardcoded values and/or doc gen templates.
+
+For example, the {{ .SchemaMarkdown }} template can be used to replace manual schema documentation if descriptions of schema attributes are added in the provider source code. */ -}}
+
+# equinix_metal_virtual_circuit (Data Source)
+
+Use this data source to retrieve a VRF resource.
+
+See the [Virtual Routing and Forwarding documentation](https://deploy.equinix.com/developers/docs/metal/layer2-networking/vrf/) for product details and API reference material.
+
+## Example Usage
+
+{{tffile "examples/data-sources/metal_vrf/example_1.tf"}}
+
+## Argument Reference
+
+The following arguments are supported:
+
+* `vrf_id` - (Required) ID of the VRF resource
+
+## Attributes Reference
+
+In addition to all arguments above, the following attributes are exported:
+
+* `name` - User-supplied name of the VRF, unique to the project
+* `metro` - Metro ID or Code where the VRF will be deployed.
+* `project_id` - Project ID where the VRF will be deployed.
+* `description` - Description of the VRF.
+* `local_asn` - The 4-byte ASN set on the VRF.
+* `ip_ranges` - All IPv4 and IPv6 Ranges that will be available to BGP Peers. IPv4 addresses must be /8 or smaller with a minimum size of /29. IPv6 must be /56 or smaller with a minimum size of /64. Ranges must not overlap other ranges within the VRF.

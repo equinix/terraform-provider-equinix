@@ -1,0 +1,50 @@
+---
+subcategory: "Metal"
+---
+
+{{/* This template serves as a starting point for documentation generation, and can be customized with hardcoded values and/or doc gen templates.
+
+For example, the {{ .SchemaMarkdown }} template can be used to replace manual schema documentation if descriptions of schema attributes are added in the provider source code. */ -}}
+
+# equinix_metal_organization_member (Resource)
+
+Manage the membership of existing and new invitees within an Equinix Metal organization and its projects.
+
+## Example Usage
+
+Add a member to an organization to collaborate on given projects:
+
+{{tffile "examples/resources/metal_organization_member/example_1.tf"}}
+
+Add a member to an organization as an organization administrator:
+
+{{tffile "examples/resources/metal_organization_member/example_2.tf"}}
+
+## Argument Reference
+
+The following arguments are supported:
+
+* `invitee` - (Required) The email address of the user to invite
+* `organization_id` - (Required) The organization to invite the user to
+* `projects_ids` - (Required) Project IDs the member has access to within the organization. If the member is an 'admin', the projects list should be empty.
+* `roles` - (Required) Organization roles (admin, collaborator, limited_collaborator, billing)
+* `message` - A message to include in the emailed invitation.
+
+## Attribute Reference
+
+In addition to all arguments above, the following attributes are exported:
+
+* `id` - The unique ID of the membership.
+* `nonce` - The nonce for the invitation (only known in the invitation stage)
+* `invited_by` - The user_id of the user that sent the invitation (only known in the invitation stage)
+* `created` - When the invitation was created (only known in the invitation stage)
+* `updated` - When the invitation was updated (only known in the invitation stage)
+* `state` - The state of the membership ('invited' when an invitation is open, 'active' when the user is an organization member)
+
+## Import
+
+This resource can be imported using the `invitee` and `organization_id` as colon separated arguments:
+
+```sh
+terraform import equinix_metal_organization_member.resource_name {invitee}:{organization_id}
+```

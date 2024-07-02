@@ -1,0 +1,43 @@
+---
+subcategory: "Metal"
+---
+
+{{/* This template serves as a starting point for documentation generation, and can be customized with hardcoded values and/or doc gen templates.
+
+For example, the {{ .SchemaMarkdown }} template can be used to replace manual schema documentation if descriptions of schema attributes are added in the provider source code. */ -}}
+
+# equinix_metal_device_bgp_neighbors (Data Source)
+
+Use this datasource to retrieve list of BGP neighbors of a device in the Equinix Metal host.
+
+To have any BGP neighbors listed, the device must be in [BGP-enabled project](../r/project.html) and have a [BGP session](../r/bgp_session.html) assigned.
+
+To learn more about using BGP in Equinix Metal, see the [equinix_metal_bgp_session](../r/bgp_session.html) resource documentation.
+
+## Example Usage
+
+{{tffile "examples/data-sources/metal_device_bgp_neighbors/example_1.tf"}}
+
+## Argument Reference
+
+The following arguments are supported:
+
+* `device_id` - (Required) UUID of BGP-enabled device whose neighbors to list.
+
+## Attributes Reference
+
+In addition to all arguments above, the following attributes are exported:
+
+* `bgp_neighbors` - array of BGP neighbor records with attributes:
+  * `address_family` - IP address version, 4 or 6.
+  * `customer_as` - Local autonomous system number.
+  * `customer_ip` - Local used peer IP address.
+  * `md5_enabled` - Whether BGP session is password enabled.
+  * `md5_password` - BGP session password in plaintext (not a checksum).
+  * `multihop` - Whether the neighbor is in EBGP multihop session.
+  * `peer_as` - Peer AS number (different than customer_as for EBGP).
+  * `peer_ips` - Array of IP addresses of this neighbor's peers.
+  * `routes_in` - Array of incoming routes.
+    * `route` - CIDR expression of route (IP/mask).
+    * `exact` - (bool) Whether the route is exact.
+  * `routes_out` - Array of outgoing routes in the same format.

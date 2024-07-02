@@ -1,0 +1,35 @@
+---
+subcategory: "Network Edge"
+---
+
+{{/* This template serves as a starting point for documentation generation, and can be customized with hardcoded values and/or doc gen templates.
+
+For example, the {{ .SchemaMarkdown }} template can be used to replace manual schema documentation if descriptions of schema attributes are added in the provider source code. */ -}}
+
+# equinix_network_device_software (Data Source)
+
+Use this data source to get Equinix Network Edge device software details for a given device type. For further details, check supported [Network Edge Vendors and Devices](https://docs.equinix.com/en-us/Content/Interconnection/NE/user-guide/NE-vendors-devices.htm).
+
+## Example Usage
+
+{{tffile "examples/data-sources/network_device_software/example_1.tf"}}
+
+## Argument Reference
+
+The following arguments are supported:
+
+* `device_type` - (Required) Code of a device type.
+* `version_regex` - (Optional) A regex string to apply on returned versions and filter search results.
+* `stable` - (Optional) Boolean value to limit query results to stable versions only.
+* `packages` - (Optional) Limits returned versions to those that are supported by given software package codes.
+* `most_recent` - (Optional) Boolean value to indicate that most recent version should be used *(in case when more than one result is returned)*.
+
+## Attributes Reference
+
+In addition to all arguments above, the following attributes are exported:
+
+* `version` - Version number.
+* `image_name` - Software image name.
+* `date` - Version release date.
+* `status` - Version status.
+* `release_notes_link` - Link to version release notes.

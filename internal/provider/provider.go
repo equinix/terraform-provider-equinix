@@ -51,22 +51,22 @@ func (p *FrameworkProvider) Schema(
 		Attributes: map[string]schema.Attribute{
 			"endpoint": schema.StringAttribute{
 				Optional:    true,
-				Description: "The Equinix API base URL to point out desired environment. Defaults to " + config.DefaultBaseURL,
+				Description: fmt.Sprintf("The Equinix API base URL to point out desired environment. This argument can also be specified with the `EQUINIX_API_ENDPOINT` shell environment variable. (Defaults to `%s`)", config.DefaultBaseURL),
 				Validators: []validator.String{
 					equinix_validation.URLWithScheme("http", "https"),
 				},
 			},
 			"client_id": schema.StringAttribute{
 				Optional:    true,
-				Description: "API Consumer Key available under My Apps section in developer portal",
+				Description: "API Consumer Key available under \"My Apps\" in developer portal. This argument can also be specified with the `EQUINIX_API_CLIENTID` shell environment variable.",
 			},
 			"client_secret": schema.StringAttribute{
 				Optional:    true,
-				Description: "API Consumer secret available under My Apps section in developer portal",
+				Description: "API Consumer secret available under \"My Apps\" in developer portal. This argument can also be specified with the `EQUINIX_API_CLIENTSECRET` shell environment variable.",
 			},
 			"token": schema.StringAttribute{
 				Optional:    true,
-				Description: "API token from the developer sandbox",
+				Description: "API tokens are generated from API Consumer clients using the [OAuth2 API](https://developer.equinix.com/dev-docs/fabric/getting-started/getting-access-token#request-access-and-refresh-tokens). This argument can also be specified with the `EQUINIX_API_TOKEN` shell environment variable.",
 			},
 			"auth_token": schema.StringAttribute{
 				Optional:    true,
@@ -74,21 +74,21 @@ func (p *FrameworkProvider) Schema(
 			},
 			"request_timeout": schema.Int64Attribute{
 				Optional:    true,
-				Description: fmt.Sprintf("The duration of time, in seconds, that the Equinix Platform API Client should wait before canceling an API request.  Defaults to %d", config.DefaultTimeout),
+				Description: fmt.Sprintf("The duration of time, in seconds, that the Equinix Platform API Client should wait before canceling an API request. Canceled requests may still result in provisioned resources. (Defaults to `%d`)", config.DefaultTimeout),
 				Validators: []validator.Int64{
 					int64validator.AtLeast(1),
 				},
 			},
 			"response_max_page_size": schema.Int64Attribute{
 				Optional:    true,
-				Description: "The maximum number of records in a single response for REST queries that produce paginated responses",
+				Description: "The maximum number of records in a single response for REST queries that produce paginated responses. (Default is client specific)",
 				Validators: []validator.Int64{
 					int64validator.AtLeast(100),
 				},
 			},
 			"max_retries": schema.Int64Attribute{
 				Optional:    true,
-				Description: "Maximum number of retries.",
+				Description: "Maximum number of retries in case of network failure.",
 			},
 			"max_retry_wait_seconds": schema.Int64Attribute{
 				Optional:    true,

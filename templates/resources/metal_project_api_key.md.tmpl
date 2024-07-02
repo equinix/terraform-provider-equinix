@@ -1,0 +1,31 @@
+---
+subcategory: "Metal"
+---
+
+{{/* This template serves as a starting point for documentation generation, and can be customized with hardcoded values and/or doc gen templates.
+
+For example, the {{ .SchemaMarkdown }} template can be used to replace manual schema documentation if descriptions of schema attributes are added in the provider source code. */ -}}
+
+# equinix_metal_project_api_key (Resource)
+
+Use this resource to create Metal Project API Key resources in Equinix Metal. Project API keys can be used to create and read resources in a single project. Each API key contains a token which can be used for authentication in Equinix Metal HTTP API (in HTTP request header `X-Auth-Token`).
+
+Read-only keys only allow to list and view existing resources, read-write keys can also be used to create resources.
+
+## Example Usage
+
+{{tffile "examples/resources/metal_project_api_key/example_1.tf"}}
+
+## Argument Reference
+
+The following arguments are supported:
+
+* `project_id` - (Required) UUID of the project where the API key is scoped to.
+* `description` - (Required) Description string for the Project API Key resource.
+* `read-only` - (Optional) Flag indicating whether the API key shoud be read-only.
+
+## Attributes Reference
+
+In addition to all arguments above, the following attributes are exported:
+
+* `token` - API token which can be used in Equinix Metal API clients

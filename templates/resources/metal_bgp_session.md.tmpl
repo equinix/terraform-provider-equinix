@@ -1,0 +1,40 @@
+---
+subcategory: "Metal"
+---
+
+{{/* This template serves as a starting point for documentation generation, and can be customized with hardcoded values and/or doc gen templates.
+
+For example, the {{ .SchemaMarkdown }} template can be used to replace manual schema documentation if descriptions of schema attributes are added in the provider source code. */ -}}
+
+# equinix_metal_bgp_session (Resource)
+
+Provides a resource to manage BGP sessions in Equinix Metal Host. Refer to [Equinix Metal BGP documentation](https://metal.equinix.com/developers/docs/networking/local-global-bgp/) for more details.
+
+You need to have BGP config enabled in your project.
+
+BGP session must be linked to a device running [BIRD](https://bird.network.cz) or other BGP routing daemon which will control route advertisements via the session to Equinix Metal's upstream routers.
+
+## Example Usage
+
+Following HCL illustrates usage of the BGP features in Equinix Metal. It will
+
+* spawn a device in a new BGP-enabled project
+* reserve a floating IPv4 address in the project in the same location as the device
+* configure the floating IPv4 statically in the device
+* install and configure [BIRD](https://bird.network.cz) in the device, and make it announce the floating IPv4 locally
+
+{{tffile "examples/resources/metal_bgp_session/example_1.tf"}}
+
+## Argument Reference
+
+The following arguments are supported:
+
+* `device_id` - (Required) ID of device.
+* `address_family` - (Required) `ipv4` or `ipv6`.
+* `default_route` - (Optional) Boolean flag to set the default route policy. False by default.
+
+## Attributes Reference
+
+In addition to all arguments above, the following attributes are exported:
+
+* `status`: Status of the session - `up` or `down`

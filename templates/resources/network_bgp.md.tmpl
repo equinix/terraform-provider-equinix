@@ -1,0 +1,43 @@
+---
+subcategory: "Network Edge"
+---
+
+{{/* This template serves as a starting point for documentation generation, and can be customized with hardcoded values and/or doc gen templates.
+
+For example, the {{ .SchemaMarkdown }} template can be used to replace manual schema documentation if descriptions of schema attributes are added in the provider source code. */ -}}
+
+# equinix_network_bgp (Resource)
+
+Resource `equinix_network_bgp` allows creation and management of Equinix Network Edge BGP peering configurations.
+
+## Example Usage
+
+{{tffile "examples/resources/network_bgp/example_1.tf"}}
+
+## Argument Reference
+
+The following arguments are supported:
+
+* `connection_id` - (Required) identifier of a connection established between. network device and remote service provider that will be used for peering.
+* `local_ip_address` - (Required) IP address in CIDR format of a local device.
+* `local_asn` - (Required) Local ASN number.
+* `remote_ip_address` - (Required) IP address of remote peer.
+* `remote_asn` - (Required) Remote ASN number.
+* `authentication_key` - (Optional) shared key used for BGP peer authentication.
+
+## Attributes Reference
+
+In addition to all arguments above, the following attributes are exported:
+
+* `uuid` - BGP peering configuration unique identifier.
+* `device_id` - unique identifier of a network device that is a local peer in a given BGP peering configuration.
+* `state` - BGP peer state, one of `Idle`, `Connect`, `Active`, `OpenSent`, `OpenConfirm`, `Established`.
+* `provisioning_status` - BGP peering configuration provisioning status, one of `PROVISIONING`, `PENDING_UPDATE`, `PROVISIONED`, `FAILED`.
+
+## Import
+
+This resource can be imported using an existing ID:
+
+```sh
+terraform import equinix_network_bgp.example {existing_id}
+```

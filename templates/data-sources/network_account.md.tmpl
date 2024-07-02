@@ -1,0 +1,33 @@
+---
+subcategory: "Network Edge"
+---
+
+{{/* This template serves as a starting point for documentation generation, and can be customized with hardcoded values and/or doc gen templates.
+
+For example, the {{ .SchemaMarkdown }} template can be used to replace manual schema documentation if descriptions of schema attributes are added in the provider source code. */ -}}
+
+# equinix_network_account (Data Source)
+
+Use this data source to get number and identifier of Equinix Network Edge billing account in a given metro location.
+
+Billing account reference is required to create Network Edge virtual device in corresponding metro location.
+
+## Example Usage
+
+{{tffile "examples/data-sources/network_account/example_1.tf"}}
+
+## Argument Reference
+
+The following arguments are supported:
+
+* `metro_code` - (Required) Account location metro code.
+* `name` - (Optional) Account name for filtering.
+* `status` - (Optional) Account status for filtering. Possible values are: `Active`, `Processing`, `Submitted`, `Staged`.
+* `project_id` - (Optional) Unique Identifier for the project resource where the account is scoped to.If you leave it out, all the billing accounts under all projects in your organization will be returned and it may return more than one account.
+
+## Attributes Reference
+
+In addition to all arguments above, the following attributes are exported:
+
+* `number` - Account unique number.
+* `ucm_id` - Account unique identifier.
