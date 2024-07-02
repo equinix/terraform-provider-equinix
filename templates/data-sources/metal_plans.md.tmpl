@@ -1,0 +1,66 @@
+---
+subcategory: "Metal"
+---
+
+{{/* This template serves as a starting point for documentation generation, and can be customized with hardcoded values and/or doc gen templates.
+
+For example, the {{ .SchemaMarkdown }} template can be used to replace manual schema documentation if descriptions of schema attributes are added in the provider source code. */ -}}
+
+# equinix_metal_plans
+
+Provides an Equinix Metal plans datasource. This can be used to find plans that meet a filter criteria.
+
+## Example Usage
+
+{{tffile "examples/data-sources/metal_plans/example_1.tf"}}
+
+{{tffile "examples/data-sources/metal_plans/example_2.tf"}}
+
+### Ignoring Changes to Plans/Metro
+
+Preserve deployed device plan, facility and metro when creating a new execution plan.
+
+As described in the [`data-resource-behavior`](https://www.terraform.io/language/data-sources#data-resource-behavior), terraform reads data resources during the planning phase in both the terraform plan and terraform apply commands. If the output from the data source is different to the prior state, it will propose changes to resources where there is a reference to their attributes.
+
+For `equinix_metal_plans`, it may happen that a device plan is no longer available in a metro because there is no stock at that time or you were using a legacy server plan, and thus the returned list of plans matching your search criteria will be different from last `plan`/`apply`. Therefore, if a resource such as a `equinix_metal_device` uses the output of this data source to select a device plan or metro, the Terraform plan will report that the `equinix_metal_device` needs to be recreated.
+
+To prevent that you can take advantage of the Terraform [`lifecycle ignore_changes`](https://www.terraform.io/language/meta-arguments/lifecycle#ignore_changes) feature as shown in the example below.
+
+{{tffile "examples/data-sources/metal_plans/example_3.tf"}}
+
+If your use case requires dynamic changes of a device plan or metro you can define the lifecycle with a condition.
+
+{{tffile "examples/data-sources/metal_plans/example_4.tf"}}
+
+## Argument Reference
+
+The following arguments are supported:
+
+* `sort` - (Optional) One or more attribute/direction pairs on which to sort results. If multiple sorts are provided, they will be applied in order
+  - `attribute` - (Required) The attribute used to sort the results. Sort attributes are case-sensitive
+  - `direction` - (Optional) Sort results in ascending or descending order. Strings are sorted in alphabetical order. One of: asc, desc
+* `filter` - (Optional) One or more attribute/values pairs to filter off of
+  - `attribute` - (Required) The attribute used to filter. Filter attributes are case-sensitive
+  - `values` - (Required) The filter values. Filter values are case-sensitive. If you specify multiple values for a filter, the values are joined with an OR by default, and the request returns all results that match any of the specified values
+  - `match_by` - (Optional) The type of comparison to apply. One of: `in` , `re`, `substring`, `less_than`, `less_than_or_equal`, `greater_than`, `greater_than_or_equal`. Default is `in`.
+  - `all` - (Optional) If is set to true, the values are joined with an AND, and the requests returns only the results that match all specified values. Default is `false`.
+
+All fields in the `plans` block defined below can be used as attribute for both `sort` and `filter` blocks.
+
+## Attributes Reference
+
+In addition to all arguments above, the following attributes are exported:
+
+* `plans`
+  - `id` - id of the plan
+  - `name` - name of the plan
+  - `slug`- plan slug
+  - `description`- description of the plan
+  - `line`- plan line, e.g. baremetal
+  - `legacy`- flag showing if it's a legacy plan
+  - `class`- plan class
+  - `pricing_hour`- plan hourly price
+  - `pricing_month`- plan monthly price
+  - `deployment_types`- list of deployment types, e.g. on_demand, spot_market
+  - `available_in`- (**Deprecated**) list of facilities where the plan is available
+  - `available_in_metros`- list of metros where the plan is available

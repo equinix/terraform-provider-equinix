@@ -1,0 +1,38 @@
+---
+subcategory: "Network Edge"
+---
+
+{{/* This template serves as a starting point for documentation generation, and can be customized with hardcoded values and/or doc gen templates.
+
+For example, the {{ .SchemaMarkdown }} template can be used to replace manual schema documentation if descriptions of schema attributes are added in the provider source code. */ -}}
+
+# equinix_network_ssh_key (Resource)
+
+Resource `equinix_network_ssh_key` allows creation and management of Equinix Network Edge SSH keys.
+
+## Example Usage
+
+{{tffile "examples/resources/network_ssh_key/example_1.tf"}}
+
+## Argument Reference
+
+The following arguments are supported:
+
+* `name` - (Required) The name of SSH key used for identification.
+* `public_key` - (Required) The SSH public key. If this is a file, it can be read using the file interpolation function.
+* `type` - (Optional) The type of SSH key: `RSA` (default) or `DSA`.
+* `project_id` - (Optional) Unique Identifier for the project resource where the SSH key is scoped to.If you leave it out, the ssh key will be created under the default project id of your organization.
+
+## Attributes Reference
+
+In addition to all arguments above, the following attributes are exported:
+
+* `uuid` - The unique identifier of the key
+
+## Import
+
+This resource can be imported using an existing ID:
+
+```sh
+terraform import equinix_network_ssh_key.example {existing_id}
+```

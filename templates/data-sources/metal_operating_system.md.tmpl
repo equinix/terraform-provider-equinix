@@ -1,0 +1,31 @@
+---
+subcategory: "Metal"
+---
+
+{{/* This template serves as a starting point for documentation generation, and can be customized with hardcoded values and/or doc gen templates.
+
+For example, the {{ .SchemaMarkdown }} template can be used to replace manual schema documentation if descriptions of schema attributes are added in the provider source code. */ -}}
+
+# equinix_metal_operating_system (Data Source)
+
+Use this data source to get Equinix Metal Operating System image.
+
+## Example Usage
+
+{{tffile "examples/data-sources/metal_operating_system/example_1.tf"}}
+
+## Argument Reference
+
+The following arguments are supported:
+
+* `distro` - (Optional) Name of the OS distribution.
+* `name` - (Optional) Name or part of the name of the distribution. Case insensitive.
+* `provisionable_on` - (Optional) Plan name.
+* `version` - (Optional) Version of the distribution.
+
+## Attributes Reference
+
+In addition to all arguments above, the following attributes are exported:
+
+* `id` - Operating system slug.
+* `slug` - Operating system slug (same as `id`).

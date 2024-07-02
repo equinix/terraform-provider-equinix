@@ -73,6 +73,17 @@ test-compile:
 	fi
 	go test -c $(TEST) $(TESTARGS)
 
+.PHONY: docs docs-check
+
+docs:
+	go generate ./...
+
+docs-check: docs
+	if git status --porcelain | grep docs; then \
+		echo "Uncommitted changes detected. Run 'make docs' and commit changes."; \
+		exit 1; \
+	fi
+
 docs-lint:
 	@echo "==> Checking docs against linters..."
 	@misspell -error -source=text docs/ || (echo; \

@@ -42,6 +42,9 @@ var (
 
 func resourceMetalDevice() *schema.Resource {
 	return &schema.Resource{
+		Description: `Provides an Equinix Metal device resource. This can be used to create, modify, and delete devices.
+
+~> **NOTE:** All arguments including the ` + "`root_password` and `user_data`" + ` will be stored in the raw state as plain-text. [Read more about sensitive data in state](https://developer.hashicorp.com/terraform/language/state/sensitive-data).`,
 		Timeouts: &schema.ResourceTimeout{
 			Create: schema.DefaultTimeout(30 * time.Minute),
 			Update: schema.DefaultTimeout(30 * time.Minute),

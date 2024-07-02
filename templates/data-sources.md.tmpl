@@ -1,0 +1,19 @@
+---
+{{ if eq (index (split .Name "_") 1) "network" -}}
+subcategory: "Network Edge"
+{{- else -}} 
+subcategory: "{{ title (index (split .Name "_") 1) }}"
+{{- end }}
+---
+
+# {{.Name}} ({{.Type}})
+
+{{ .Description | trimspace }}
+
+{{ if .HasExample -}}
+## Example Usage
+
+{{tffile .ExampleFile }}
+{{- end }}
+
+{{ .SchemaMarkdown | trimspace }}

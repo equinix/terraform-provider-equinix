@@ -1,0 +1,48 @@
+---
+subcategory: "Metal"
+---
+
+{{/* This template serves as a starting point for documentation generation, and can be customized with hardcoded values and/or doc gen templates.
+
+For example, the {{ .SchemaMarkdown }} template can be used to replace manual schema documentation if descriptions of schema attributes are added in the provider source code. */ -}}
+
+# equinix_metal_port_vlan_attachment (Resource)
+
+Provides a resource to attach device ports to VLANs.
+
+Device and VLAN must be in the same metro.
+
+If you need this resource to add the port back to bond on removal, set `force_bond = true`.
+
+To learn more about Layer 2 networking in Equinix Metal, refer to
+
+* https://metal.equinix.com/developers/docs/networking/layer2/
+* https://metal.equinix.com/developers/docs/networking/layer2-configs/
+
+## Example Usage
+
+### Hybrid network type
+
+{{tffile "examples/resources/metal_port_vlan_attachment/example_1.tf"}}
+
+### Layer 2 network
+
+{{tffile "examples/resources/metal_port_vlan_attachment/example_2.tf"}}
+
+## Argument Reference
+
+The following arguments are supported:
+
+* `device_id` - (Required) ID of device to be assigned to the VLAN.
+* `port_name` - (Required) Name of network port to be assigned to the VLAN.
+* `vlan_vnid` - (Required) VXLAN Network Identifier.
+* `force_bond` - (Optional) Add port back to the bond when this resource is removed. Default is `false`.
+* `native` - (Optional) Mark this VLAN a native VLAN on the port. This can be used only if this assignment assigns second or further VLAN to the port. To ensure that this attachment is not first on a port, you can use `depends_on` pointing to another `equinix_metal_port_vlan_attachment`, just like in the layer2-individual example above.
+
+## Attribute Referece
+
+In addition to all arguments above, the following attributes are exported:
+
+* `id` - UUID of device port used in the assignment.
+* `vlan_id` - UUID of VLAN API resource.
+* `port_id` - UUID of device port.

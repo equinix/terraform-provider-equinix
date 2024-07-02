@@ -1,0 +1,15 @@
+---
+subcategory: "Metal"
+---
+
+# {{.Name}} ({{.Type}})
+
+{{ .Description | trimspace }}
+
+## Example Usage
+
+{{tffile "examples/data-sources/metal_device/example_1.tf"}}
+
+{{tffile "examples/data-sources/metal_device/example_2.tf"}}
+
+{{ .SchemaMarkdown | trimspace }}

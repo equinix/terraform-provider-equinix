@@ -6,6 +6,19 @@
 * [Go](https://golang.org/doc/install) 1.18 (to build the provider plugin)
 * [GNU Make](https://www.gnu.org/software/make) (to build and test easier)
 
+## Documenting the provider
+
+This project uses HashiCorp's [terraform-plugin-docs](https://github.com/hashicorp/terraform-plugin-docs) tool to generate docs. In particular, keep the [terraform-plugin-docs conventional paths](https://github.com/hashicorp/terraform-plugin-docs?tab=readme-ov-file#conventional-paths) in mind when adding or updating docs for a resource or data source.  The conventional paths will tell you where to put examples if you are using the default templates.
+
+Templates for documentation are stored in the `templates` directory.  The following default templates exist; try using them first and only add a resource- or data-source-specific template when needed:
+
+- Resource default template: templates/resources.md.tmpl
+- Datasource default template: templates/data-sources.md.tmpl
+
+The documentation can be generated from the `templates` and `examples` directories using the `make docs` task.  The `make check-docs` task is run in CI for every PR to ensure that all necessary docs changes have been committed and pushed to GitHub.
+
+**NOTE**: `terraform-plugin-docs` is focused on provider, resource, and datasource documentation.  Guides must be created in the `templates` directory, but they cannot use templating functions; the `templates/guides` directory is copied to the `docs` directory as-is.
+
 ## Building the provider
 
 *Note:* This project uses [Go Modules](https://blog.golang.org/using-go-modules)
