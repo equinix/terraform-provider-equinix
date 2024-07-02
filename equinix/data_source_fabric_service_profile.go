@@ -2,6 +2,7 @@ package equinix
 
 import (
 	"context"
+	"fmt"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -53,62 +54,83 @@ func readFabricServiceProfilesSearchSchema() map[string]*schema.Schema {
 			Optional:    true,
 			Description: "flips view between buyer and seller representation. Available values : aSide, zSide. Default value : aSide",
 		},
+		"and_filters": {
+			Type:        schema.TypeBool,
+			Optional:    true,
+			Description: "Optional boolean flag to indicate if the filters will be AND'd together. Defaults to false",
+			Default:     false,
+		},
 		"filter": {
+			Type:        schema.TypeList,
+			Required:    true,
+			Description: "Filters for the Data Source Search Request (If and_filters is not set to true you cannot provide more than one filter block)",
+			MaxItems:    10,
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"property": {
+						Type:        schema.TypeString,
+						Required:    true,
+						Description: fmt.Sprintf("Property to apply operator and values to. One of %v", []string{"/name", "/uuid", "/state", "/metros/code", "/visibility", "/type", "/project/projectId"}),
+					},
+					"operator": {
+						Type:        schema.TypeString,
+						Required:    true,
+						Description: fmt.Sprintf("Operators to use on your filtered field with the values given. One of %v", []string{"="}),
+					},
+					"values": {
+						Type:        schema.TypeList,
+						Required:    true,
+						Description: "The values that you want to apply the property+operator combination to in order to filter your data search",
+						Elem: &schema.Schema{
+							Type: schema.TypeString,
+						},
+					},
+				},
+			},
+		},
+		"pagination": {
 			Type:        schema.TypeSet,
 			Optional:    true,
-			Description: "Service Profile Search Filter",
+			Description: "Pagination details for the Data Source Search Request",
 			MaxItems:    1,
 			Elem: &schema.Resource{
-				Schema: createServiceProfilesSearchFilterSch(),
+				Schema: map[string]*schema.Schema{
+					"offset": {
+						Type:        schema.TypeInt,
+						Optional:    true,
+						Default:     0,
+						Description: "The page offset for the pagination request. Index of the first element. Default is 0.",
+					},
+					"limit": {
+						Type:        schema.TypeInt,
+						Optional:    true,
+						Default:     20,
+						Description: "Number of elements to be requested per page. Number must be between 1 and 100. Default is 20",
+					},
+				},
 			},
 		},
 		"sort": {
 			Type:        schema.TypeList,
 			Optional:    true,
-			Description: "Service Profile Sort criteria for Search Request response payload",
+			Description: "Filters for the Data Source Search Request",
 			Elem: &schema.Resource{
-				Schema: createServiceProfilesSearchSortCriteriaSch(),
+				Schema: map[string]*schema.Schema{
+					"direction": {
+						Type:         schema.TypeString,
+						Optional:     true,
+						Default:      "DESC",
+						Description:  "The sorting direction. Can be one of: [DESC, ASC], Defaults to DESC",
+						ValidateFunc: validation.StringInSlice([]string{"DESC", "ASC"}, true),
+					},
+					"property": {
+						Type:        schema.TypeString,
+						Optional:    true,
+						Default:     "/changeLog/updatedDateTime",
+						Description: fmt.Sprintf("The property name to use in sorting. One of %v. Defaults to /changeLog/updatedDateTime", []string{"/name", "/uuid", "/state", "/location/metroCode", "/location/metroName", "/package/code", "/changeLog/createdDateTime", "/changeLog/updatedDateTime"}),
+					},
+				},
 			},
-		},
-	}
-}
-
-func createServiceProfilesSearchFilterSch() map[string]*schema.Schema {
-	return map[string]*schema.Schema{
-		"property": {
-			Type:        schema.TypeString,
-			Optional:    true,
-			Description: "Search Criteria for Service Profile - /name, /uuid, /state, /metros/code, /visibility, /type",
-		},
-		"operator": {
-			Type:        schema.TypeString,
-			Optional:    true,
-			Description: "Possible operator to use on filters = - equal",
-		},
-		"values": {
-			Type:        schema.TypeList,
-			Optional:    true,
-			Description: "Values",
-			Elem: &schema.Schema{
-				Type: schema.TypeString,
-			},
-		},
-	}
-}
-
-func createServiceProfilesSearchSortCriteriaSch() map[string]*schema.Schema {
-	return map[string]*schema.Schema{
-		"direction": {
-			Type:         schema.TypeString,
-			Optional:     true,
-			ValidateFunc: validation.StringInSlice([]string{"DESC", "ASC"}, true),
-			Description:  "Priority type- DESC, ASC",
-		},
-		"property": {
-			Type:         schema.TypeString,
-			Optional:     true,
-			ValidateFunc: validation.StringInSlice([]string{"/name", "/state", "/changeLog/createdDateTime", "/changeLog/updatedDateTime"}, true),
-			Description:  "Search operation sort criteria /name /state /changeLog/createdDateTime /changeLog/updatedDateTime",
 		},
 	}
 }

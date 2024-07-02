@@ -22,6 +22,7 @@ resource "equinix_fabric_service_profile" "test" {
   }
   tags = ["VoIP", "Saas"]
   visibility = "PRIVATE"
+  allowed_emails = ["panthersfcr@test.com"]
   ports {
       uuid = "%s"
       type = "%s"
@@ -62,10 +63,19 @@ resource "equinix_fabric_service_profile" "test" {
 
 data "equinix_fabric_service_profile" "test" {
 		uuid = equinix_fabric_service_profile.test.uuid
+}
+
+data "equinix_fabric_service_profiles" "test" {
+	and_filters = true
+	filter {
+		property = "/name"
+		operator = "="
+		values = [equinix_fabric_service_profile.test.name]
+	}
 }`, spName, portUUID, portType, portMetroCode)
 }
 
-func TestAccFabricReadServiceProfileByUuid_PFCR(t *testing.T) {
+func TestAccFabricServiceProfileDataSources_PFCR(t *testing.T) {
 	ports := testing_helpers.GetFabricEnvPorts(t)
 
 	var portUuid, portMetroCode, portType string
@@ -109,6 +119,30 @@ func TestAccFabricReadServiceProfileByUuid_PFCR(t *testing.T) {
 					resource.TestCheckResourceAttrSet("data.equinix_fabric_service_profile.test", "metros.0.name"),
 					resource.TestCheckResourceAttrSet("data.equinix_fabric_service_profile.test", "metros.0.display_name"),
 					resource.TestCheckResourceAttrSet("data.equinix_fabric_service_profile.test", "self_profile"),
+					resource.TestCheckResourceAttr(
+						"data.equinix_fabric_service_profiles.test", "data.0.name", "SP_DataSource_PFCR"),
+					resource.TestCheckResourceAttrSet(
+						"data.equinix_fabric_service_profiles.test", "data.0.uuid"),
+					resource.TestCheckResourceAttr(
+						"data.equinix_fabric_service_profiles.test", "data.0.description", "Generic Read SP"),
+					resource.TestCheckResourceAttr(
+						"data.equinix_fabric_service_profiles.test", "data.0.state", "ACTIVE"),
+					resource.TestCheckResourceAttr(
+						"data.equinix_fabric_service_profiles.test", "data.0.visibility", "PRIVATE"),
+					resource.TestCheckResourceAttr(
+						"data.equinix_fabric_service_profiles.test", "data.0.access_point_type_configs.#", "1"),
+					resource.TestCheckResourceAttrSet("data.equinix_fabric_service_profiles.test", "data.0.href"),
+					resource.TestCheckResourceAttrSet("data.equinix_fabric_service_profiles.test", "data.0.description"),
+					resource.TestCheckResourceAttrSet("data.equinix_fabric_service_profiles.test", "data.0.access_point_type_configs.0.uuid"),
+					resource.TestCheckResourceAttrSet("data.equinix_fabric_service_profiles.test", "data.0.access_point_type_configs.0.type"),
+					resource.TestCheckResourceAttrSet("data.equinix_fabric_service_profiles.test", "data.0.access_point_type_configs.0.allow_remote_connections"),
+					resource.TestCheckResourceAttrSet("data.equinix_fabric_service_profiles.test", "data.0.access_point_type_configs.0.allow_custom_bandwidth"),
+					resource.TestCheckResourceAttrSet("data.equinix_fabric_service_profiles.test", "data.0.access_point_type_configs.0.enable_auto_generate_service_key"),
+					resource.TestCheckResourceAttrSet("data.equinix_fabric_service_profiles.test", "data.0.access_point_type_configs.0.connection_redundancy_required"),
+					resource.TestCheckResourceAttr("data.equinix_fabric_service_profiles.test", "data.0.metros.0.code", portMetroCode),
+					resource.TestCheckResourceAttrSet("data.equinix_fabric_service_profiles.test", "data.0.metros.0.name"),
+					resource.TestCheckResourceAttrSet("data.equinix_fabric_service_profiles.test", "data.0.metros.0.display_name"),
+					resource.TestCheckResourceAttrSet("data.equinix_fabric_service_profiles.test", "data.0.self_profile"),
 				),
 				ExpectNonEmptyPlan: true,
 			},

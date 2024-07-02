@@ -1,51 +1,61 @@
-data "equinix_fabric_service_profiles" "service_profiles_data_name" {
+data "equinix_fabric_service_profiles" "test" {
+  and_filters = true
+  filter {
+    property = "/type"
+    operator = "="
+    values 	 = ["L2_PROFILE"]
+  }
   filter {
     property = "/name"
     operator = "="
-    values   = ["<list_of_profiles_to_return>"]
+    values   = ["SP_ResourceCreation_PFCR"]
+  }
+  pagination {
+    offset = 0
+    limit = 5
+  }
+  sort {
+    direction = "ASC"
+    property = "/name"
   }
 }
 
-output "id" {
-  value = data.equinix_fabric_service_profile.service_profiles_data_name.data.0.id
+output "number_of_returned_service_profiles" {
+  value = length(data.equinix_fabric_service_profiles.test.data)
 }
 
-output "name" {
-  value = data.equinix_fabric_service_profile.service_profiles_data_name.data.0.name
+output "first_service_profile_name" {
+  value = data.equinix_fabric_service_profiles.test.data.0.name
 }
 
-output "type" {
-  value = data.equinix_fabric_service_profile.service_profiles_data_name.data.0.type
+output "first_service_profile_uuid" {
+  value = data.equinix_fabric_service_profiles.test.data.0.uuid
 }
 
-output "visibility" {
-  value = data.equinix_fabric_service_profile.service_profiles_data_name.data.0.visibility
+output "first_service_profile_description" {
+  value = data.equinix_fabric_service_profiles.test.data.0.description
 }
 
-output "org_name" {
-  value = data.equinix_fabric_service_profile.service_profiles_data_name.data.0.account.0.organization_name
+output "first_service_profile_state" {
+  value = data.equinix_fabric_service_profiles.test.data.0.state
 }
 
-output "access_point_type_configs_type" {
-  value = data.equinix_fabric_service_profile.service_profiles_data_name.data.0.access_point_type_configs.0.type
+output "first_service_profile_visibility" {
+  value = data.equinix_fabric_service_profiles.test.data.0.visibility
 }
 
-output "allow_remote_connections" {
-  value = data.equinix_fabric_service_profile.service_profiles_data_name.data.0.access_point_type_configs.0.allow_remote_connections
+output "first_service_profile_metros_code" {
+  value = data.equinix_fabric_service_profiles.test.data.0.metros.0.code
 }
 
-output "supported_bandwidth_0" {
-  value = data.equinix_fabric_service_profile.service_profiles_data_name.data.0.access_point_type_configs.0.supported_bandwidths.0
+output "first_service_profile_metros_name" {
+  value = data.equinix_fabric_service_profiles.test.data.0.metros.0.name
 }
 
-output "supported_bandwidth_1" {
-  value = data.equinix_fabric_service_profile.service_profiles_data_name.data.0.access_point_type_configs.0.supported_bandwidths.1
+output "first_service_profile_metros_display_name" {
+  value = data.equinix_fabric_service_profiles.test.data.0.metros.0.display_name
 }
 
-output "redundandy_required" {
-  value = data.equinix_fabric_service_profile.service_profiles_data_name.data.0.access_point_type_configs.0.connection_redundancy_required
-}
-
-output "allow_over_subscription" {
-  value = data.equinix_fabric_service_profile.service_profiles_data_name.data.0.access_point_type_configs.0.api_config.0.allow_over_subscription
+output "first_service_profile_type" {
+  value = data.equinix_fabric_service_profiles.test.data.0.type
 }

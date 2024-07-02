@@ -849,9 +849,22 @@ func resourceServiceProfilesSearchRequest(ctx context.Context, d *schema.Resourc
 	client := meta.(*config.Config).NewFabricClientForSDK(d)
 	serviceProfilesSearchRequest := fabricv4.ServiceProfileSearchRequest{}
 
-	schemaFilter := d.Get("filter").(*schema.Set).List()
-	filter := serviceProfilesSearchFilterRequestTerraformToGo(schemaFilter)
+	andFilters := false
+	if schemaAndFilters, ok := d.GetOk("and_filters"); ok {
+		andFilters = schemaAndFilters.(bool)
+	}
+
+	schemaFilter := d.Get("filter").([]interface{})
+	if len(schemaFilter) > 1 && !andFilters {
+		return diag.Errorf("and_filters must be set to true when providing more than one filter block to this data source. filter blocks provided count == %d", len(schemaFilter))
+	}
+	filter := serviceProfilesSearchFilterRequestTerraformToGo(schemaFilter, andFilters)
 	serviceProfilesSearchRequest.SetFilter(filter)
+
+	if schemaPagination, ok := d.GetOk("pagination"); ok {
+		pagination := serviceProfileSearchPaginationTerraformToGo(schemaPagination.(*schema.Set).List())
+		serviceProfilesSearchRequest.SetPagination(pagination)
+	}
 
 	if schemaSort, ok := d.GetOk("sort"); ok {
 		sort := serviceProfilesSearchSortRequestTerraformToGo(schemaSort.([]interface{}))
@@ -871,10 +884,10 @@ func resourceServiceProfilesSearchRequest(ctx context.Context, d *schema.Resourc
 		return diag.FromErr(equinix_errors.FormatFabricError(err))
 	}
 
-	if len(serviceProfiles.Data) != 1 {
-		error := fmt.Errorf("incorrect # of records are found for the service profile search criteria - %d , please change the criteria", len(serviceProfiles.Data))
-		return diag.FromErr(error)
+	if len(serviceProfiles.Data) < 1 {
+		return diag.Errorf("%d records found for the service profiles search criteria provided, please change the search criteria", len(serviceProfiles.Data))
 	}
+
 	d.SetId(serviceProfiles.Data[0].GetUuid())
 	return setFabricServiceProfilesListMap(d, serviceProfiles)
 }
@@ -1310,26 +1323,64 @@ func metrosTerraformToGo(schemaMetros []interface{}) []fabricv4.ServiceMetro {
 	return metros
 }
 
-func serviceProfilesSearchFilterRequestTerraformToGo(schemaServiceProfileFilterRequest []interface{}) fabricv4.ServiceProfileFilter {
-	if schemaServiceProfileFilterRequest == nil {
-		return fabricv4.ServiceProfileFilter{}
-	}
+func filterMapToSimpleExpression(filterMap map[string]interface{}) fabricv4.ServiceProfileSimpleExpression {
 	var mappedServiceProfileExpression fabricv4.ServiceProfileSimpleExpression
-	simpleExpressionMap := schemaServiceProfileFilterRequest[0].(map[string]interface{})
-	sProperty := simpleExpressionMap["property"].(string)
-	operator := simpleExpressionMap["operator"].(string)
-	valuesRaw := simpleExpressionMap["values"].([]interface{})
+	sProperty := filterMap["property"].(string)
+	operator := filterMap["operator"].(string)
+	valuesRaw := filterMap["values"].([]interface{})
 	values := converters.IfArrToStringArr(valuesRaw)
 
 	mappedServiceProfileExpression.SetProperty(sProperty)
 	mappedServiceProfileExpression.SetOperator(operator)
 	mappedServiceProfileExpression.SetValues(values)
+	return mappedServiceProfileExpression
+}
 
-	filter := fabricv4.ServiceProfileFilter{
-		ServiceProfileSimpleExpression: &mappedServiceProfileExpression,
+func serviceProfilesSearchFilterRequestTerraformToGo(schemaServiceProfileFilterRequest []interface{}, andFilters bool) fabricv4.ServiceProfileFilter {
+	if schemaServiceProfileFilterRequest == nil {
+		return fabricv4.ServiceProfileFilter{}
+	}
+
+	var filter fabricv4.ServiceProfileFilter
+
+	expressions := make([]fabricv4.ServiceProfileSimpleExpression, len(schemaServiceProfileFilterRequest))
+	for index, spFilter := range schemaServiceProfileFilterRequest {
+		simpleExpressionMap := spFilter.(map[string]interface{})
+		simpleExpression := filterMapToSimpleExpression(simpleExpressionMap)
+		expressions[index] = simpleExpression
+	}
+
+	if andFilters {
+		filter = fabricv4.ServiceProfileFilter{
+			ServiceProfileAndFilter: &fabricv4.ServiceProfileAndFilter{
+				And: expressions,
+			},
+		}
+	} else {
+		filter = fabricv4.ServiceProfileFilter{
+			ServiceProfileSimpleExpression: &expressions[0],
+		}
 	}
 
 	return filter
+}
+
+func serviceProfileSearchPaginationTerraformToGo(pagination []interface{}) fabricv4.PaginationRequest {
+	if pagination == nil || len(pagination) == 0 {
+		return fabricv4.PaginationRequest{}
+	}
+	paginationRequest := fabricv4.PaginationRequest{}
+	for _, page := range pagination {
+		pageMap := page.(map[string]interface{})
+		if offset, ok := pageMap["offset"]; ok {
+			paginationRequest.SetOffset(int32(offset.(int)))
+		}
+		if limit, ok := pageMap["limit"]; ok {
+			paginationRequest.SetLimit(int32(limit.(int)))
+		}
+	}
+
+	return paginationRequest
 }
 
 func serviceProfilesSearchSortRequestTerraformToGo(schemaServiceProfilesSearchSortRequest []interface{}) []fabricv4.ServiceProfileSortCriteria {

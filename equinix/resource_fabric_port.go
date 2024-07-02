@@ -455,10 +455,9 @@ func resourceFabricPortGetByPortName(ctx context.Context, d *schema.ResourceData
 		}
 		return diag.FromErr(equinix_errors.FormatFabricError(err))
 	}
-	if len(ports.Data) != 1 {
-		error := fmt.Errorf("incorrect # of records are found for the port name parameter criteria - %d , please change the criteria", len(ports.Data))
-		d.SetId("")
-		return diag.FromErr(error)
+
+	if len(ports.Data) < 1 {
+		return diag.FromErr(fmt.Errorf("no records are found for the port name provided - %d , please change the port name", len(ports.Data)))
 	}
 
 	d.SetId(ports.Data[0].GetUuid())
