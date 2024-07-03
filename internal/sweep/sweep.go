@@ -12,12 +12,27 @@ import (
 
 const (
 	// duplicated from equinix_sweeoer_test.go
-	testResourcePrefix = "tfacc"
-	missingMetalToken  = "to run sweepers of Equinix Metal Resources, you must set %s"
+	testResourcePrefix        = "tfacc"
+	cannotConvertTimeoutToInt = "cannot convert value of '%s' env variable to int"
+	missingFabricSecrets      = "missing fabric clientId - %s, and clientSecret - %s"
+	missingMetalToken         = "to run sweepers of Equinix Metal Resources, you must set %s"
+)
+
+var (
+	FabricTestResourceSuffixes = []string{"_PFCR", "_PNFV", "_PPDS"}
 )
 
 func IsSweepableTestResource(namePrefix string) bool {
 	return strings.HasPrefix(namePrefix, testResourcePrefix)
+}
+
+func IsSweepableFabricTestResource(resourceName string) bool {
+	for _, suffix := range FabricTestResourceSuffixes {
+		if strings.HasSuffix(resourceName, suffix) {
+			return true
+		}
+	}
+	return false
 }
 
 func GetConfigForFabric() (*config.Config, error) {
@@ -25,13 +40,13 @@ func GetConfigForFabric() (*config.Config, error) {
 	clientId := env.GetWithDefault(config.ClientIDEnvVar, "")
 	clientSecret := env.GetWithDefault(config.ClientSecretEnvVar, "")
 	if clientId == "" || clientSecret == "" {
-		return nil, fmt.Errorf("missing fabric clientId - %s, and clientSecret - %s", config.ClientIDEnvVar, config.ClientSecretEnvVar)
+		return nil, fmt.Errorf(missingFabricSecrets, config.ClientIDEnvVar, config.ClientSecretEnvVar)
 	}
 
 	clientTimeout := env.GetWithDefault(config.ClientTimeoutEnvVar, strconv.Itoa(config.DefaultTimeout))
 	clientTimeoutInt, err := strconv.Atoi(clientTimeout)
 	if err != nil {
-		return nil, fmt.Errorf("cannot convert value of '%s' env variable to int", config.ClientTimeoutEnvVar)
+		return nil, fmt.Errorf(cannotConvertTimeoutToInt, config.ClientTimeoutEnvVar)
 	}
 
 	return &config.Config{
@@ -47,7 +62,7 @@ func GetConfigForMetal() (*config.Config, error) {
 	clientTimeout := env.GetWithDefault(config.ClientTimeoutEnvVar, strconv.Itoa(config.DefaultTimeout))
 	clientTimeoutInt, err := strconv.Atoi(clientTimeout)
 	if err != nil {
-		return nil, fmt.Errorf("cannot convert value of '%s' env variable to int", config.ClientTimeoutEnvVar)
+		return nil, fmt.Errorf(cannotConvertTimeoutToInt, config.ClientTimeoutEnvVar)
 	}
 	metalAuthToken := env.GetWithDefault(config.MetalAuthTokenEnvVar, "")
 

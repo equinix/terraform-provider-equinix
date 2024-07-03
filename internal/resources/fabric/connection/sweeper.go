@@ -7,10 +7,8 @@ import (
 	"github.com/equinix/equinix-sdk-go/services/fabricv4"
 	equinix_errors "github.com/equinix/terraform-provider-equinix/internal/errors"
 	"github.com/equinix/terraform-provider-equinix/internal/sweep"
-	"log"
-	"strings"
-
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"log"
 )
 
 func AddTestSweeper() {
@@ -43,12 +41,12 @@ func testSweepConnections(region string) error {
 				{
 					Property: &name,
 					Operator: &likeOperator,
-					Values:   []string{"PFCR"},
+					Values:   sweep.FabricTestResourceSuffixes,
 				},
 				{
 					Property: &equinixStatus,
 					Operator: &equalOperator,
-					Values:   []string{"PROVISIONED"},
+					Values:   []string{string(fabricv4.EQUINIXSTATUS_PROVISIONED)},
 				},
 			},
 		},
@@ -63,7 +61,7 @@ func testSweepConnections(region string) error {
 	}
 
 	for _, connection := range fabricConnections.Data {
-		if strings.HasSuffix(connection.GetName(), "_PFCR") {
+		if sweep.IsSweepableFabricTestResource(connection.GetName()) {
 			log.Printf("[DEBUG] Deleting Connection: %s", connection.GetName())
 			_, resp, err := fabric.ConnectionsApi.DeleteConnectionByUuid(ctx, connection.GetUuid()).Execute()
 			if equinix_errors.IgnoreHttpResponseErrors(equinix_errors.HttpForbidden, equinix_errors.HttpNotFound)(resp, err) != nil {
