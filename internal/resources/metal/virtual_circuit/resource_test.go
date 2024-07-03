@@ -173,7 +173,7 @@ func testAccMetalConnectionConfig_SharedPrimaryVrfWithVirtualCircuit(randstr str
 		randstr, randstr, randstr, randstr, randstr)
 }
 
-func TestAccMetalConnection_sharedVrfWithVC(t *testing.T) {
+func TestAccMetalVirtualCircuit_sharedVrf(t *testing.T) {
 	rs := acctest.RandString(10)
 
 	resource.ParallelTest(t, resource.TestCase{
