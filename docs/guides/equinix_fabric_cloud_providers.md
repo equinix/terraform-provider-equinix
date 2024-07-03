@@ -17,7 +17,7 @@ for further details and other options you can check on [References](#references)
 ## Getting started - Enabling an interconnection
 
 Whether you are setting up a Multi-Cloud or Hybrid Cloud architecture, the main resource you will
-need to define is an [equinix_fabric_connection](../resources/equinix_fabric_connection.md) which
+need to define is an [equinix_fabric_connection](../resources/fabric_connection.md) which
 will let Equinix enable an interconnection on your behalf to the specified cloud provider.
 However, there are other required resources that must be configured on both Equinix and your cloud
 provider to have the interconnection up and running. Below we describe these general steps using

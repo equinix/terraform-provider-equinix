@@ -46,6 +46,6 @@ The following arguments are supported:
 
 ## Attributes Reference
 
-This datasource exposes the same attributes as the [equinix_metal_reserved_ip_block](../resources/equinix_metal_reserved_ip_block.md) resource, with the following differences:
+This datasource exposes the same attributes as the [equinix_metal_reserved_ip_block](../resources/metal_reserved_ip_block.md) resource, with the following differences:
 
 * `type` - One of `global_ipv4`, `public_ipv4`, `private_ipv4`, `public_ipv6`,or `vrf`
