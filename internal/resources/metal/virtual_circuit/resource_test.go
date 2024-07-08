@@ -131,7 +131,7 @@ func TestAccMetalVirtualCircuit_dedicated(t *testing.T) {
 	})
 }
 
-func testAccMetalConnectionConfig_SharedPrimaryVrfWithVirtualCircuit(randstr string) string {
+func testAccMetalVCCConfig_SharedPrimaryVrf(randstr string, include_ipv6 bool) string {
 	return fmt.Sprintf(`
         resource "equinix_metal_project" "test" {
             name = "tfacc-conn-pro-%s"
@@ -158,7 +158,14 @@ func testAccMetalConnectionConfig_SharedPrimaryVrfWithVirtualCircuit(randstr str
 				equinix_metal_vrf.test1.id,
 			]
         }
-			
+		
+		%s
+		`,
+		randstr, randstr, randstr, testAccMetalVCConfig_VirtualCircuit(randstr, include_ipv6))
+}
+
+func testAccMetalVCConfig_VirtualCircuit(randstr string, include_ipv6 bool) string {
+	config := fmt.Sprintf(`			
 		resource "equinix_metal_virtual_circuit" "test" {
             name = "tfacc-vc-%s"
             description = "tfacc-vc-%s"
@@ -168,9 +175,23 @@ func testAccMetalConnectionConfig_SharedPrimaryVrfWithVirtualCircuit(randstr str
             port_id = equinix_metal_connection.test.ports[0].id
             vrf_id = equinix_metal_vrf.test1.id
 			subnet = "10.0.0.0/31"
+        `,
+		randstr, randstr)
+
+	if include_ipv6 {
+		config = fmt.Sprintf(`	
+			%s		
 			subnet_ipv6 = "2604:1380:4641:a00::4/126"
         }`,
-		randstr, randstr, randstr, randstr, randstr)
+			config)
+	} else {
+		config = fmt.Sprintf(`	
+			%s		
+        }`,
+			config)
+	}
+
+	return config
 }
 
 func TestAccMetalVirtualCircuit_sharedVrf(t *testing.T) {
@@ -183,7 +204,7 @@ func TestAccMetalVirtualCircuit_sharedVrf(t *testing.T) {
 		CheckDestroy:             testAccMetalVirtualCircuitCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccMetalConnectionConfig_SharedPrimaryVrfWithVirtualCircuit(rs),
+				Config: testAccMetalVCCConfig_SharedPrimaryVrf(rs, true),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(
 						"equinix_metal_virtual_circuit.test", "subnet", "10.0.0.0/31"),
@@ -197,6 +218,23 @@ func TestAccMetalVirtualCircuit_sharedVrf(t *testing.T) {
 						"equinix_metal_virtual_circuit.test", "metal_ipv6", "2604:1380:4641:a00::5"),
 					resource.TestCheckResourceAttr(
 						"equinix_metal_virtual_circuit.test", "customer_ipv6", "2604:1380:4641:a00::6"),
+				),
+			},
+			{
+				Config: testAccMetalVCCConfig_SharedPrimaryVrf(rs, false),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(
+						"equinix_metal_virtual_circuit.test", "subnet", "10.0.0.0/31"),
+					resource.TestCheckResourceAttr(
+						"equinix_metal_virtual_circuit.test", "metal_ip", "10.0.0.0"),
+					resource.TestCheckResourceAttr(
+						"equinix_metal_virtual_circuit.test", "customer_ip", "10.0.0.1"),
+					resource.TestCheckResourceAttr(
+						"equinix_metal_virtual_circuit.test", "subnet_ipv6", ""),
+					resource.TestCheckResourceAttr(
+						"equinix_metal_virtual_circuit.test", "metal_ipv6", ""),
+					resource.TestCheckResourceAttr(
+						"equinix_metal_virtual_circuit.test", "customer_ipv6", ""),
 				),
 			},
 		},
