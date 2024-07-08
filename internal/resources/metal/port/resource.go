@@ -1,12 +1,15 @@
-package equinix
+package port
 
 import (
 	"context"
+	"fmt"
 	"log"
+	"net/http"
 	"time"
 
 	"slices"
 
+	"github.com/equinix/equinix-sdk-go/services/metalv1"
 	equinix_errors "github.com/equinix/terraform-provider-equinix/internal/errors"
 	equinix_schema "github.com/equinix/terraform-provider-equinix/internal/schema"
 
@@ -23,11 +26,11 @@ Race conditions:
 */
 
 var (
-	l2Types = []string{"layer2-individual", "layer2-bonded"}
-	l3Types = []string{"layer3", "hybrid", "hybrid-bonded"}
+	l2Types = []metalv1.PortNetworkType{"layer2-individual", "layer2-bonded"}
+	l3Types = []metalv1.PortNetworkType{"layer3", "hybrid", "hybrid-bonded"}
 )
 
-func resourceMetalPort() *schema.Resource {
+func Resource() *schema.Resource {
 	return &schema.Resource{
 		Timeouts: &schema.ResourceTimeout{
 			Create: schema.DefaultTimeout(30 * time.Minute),
@@ -127,22 +130,22 @@ func resourceMetalPort() *schema.Resource {
 
 func resourceMetalPortUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	start := time.Now()
-	cpr, _, err := getClientPortResource(d, meta)
+	cpr, _, err := getClientPortResource(ctx, d, meta)
 	if err != nil {
 		return diag.FromErr(equinix_errors.FriendlyError(err))
 	}
 
-	for _, f := range [](func(*ClientPortResource) error){
+	for _, f := range [](func(context.Context, *ClientPortResource) error){
 		portSanityChecks,
-		batchVlans(ctx, start, true),
+		batchVlans(start, true),
 		makeDisbond,
 		convertToL2,
 		makeBond,
 		convertToL3,
-		batchVlans(ctx, start, false),
+		batchVlans(start, false),
 		updateNativeVlan,
 	} {
-		if err := f(cpr); err != nil {
+		if err := f(ctx, cpr); err != nil {
 			return diag.FromErr(equinix_errors.FriendlyError(err))
 		}
 	}
@@ -151,12 +154,11 @@ func resourceMetalPortUpdate(ctx context.Context, d *schema.ResourceData, meta i
 }
 
 func resourceMetalPortRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	meta.(*config.Config).AddModuleToMetalUserAgent(d)
-	client := meta.(*config.Config).Metal
+	client := meta.(*config.Config).NewMetalClientForSDK(d)
 
-	port, err := getPortByResourceData(d, client)
+	port, resp, err := getPortByResourceData(ctx, d, client)
 	if err != nil {
-		if equinix_errors.IsNotFound(err) || equinix_errors.IsForbidden(err) {
+		if resp != nil && slices.Contains([]int{http.StatusNotFound, http.StatusForbidden}, resp.StatusCode) {
 			log.Printf("[WARN] Port (%s) not accessible, removing from state", d.Id())
 			d.SetId("")
 
@@ -165,16 +167,16 @@ func resourceMetalPortRead(ctx context.Context, d *schema.ResourceData, meta int
 		return diag.FromErr(err)
 	}
 	m := map[string]interface{}{
-		"port_id":           port.ID,
-		"type":              port.Type,
-		"name":              port.Name,
-		"network_type":      port.NetworkType,
-		"mac":               port.Data.MAC,
-		"bonded":            port.Data.Bonded,
-		"disbond_supported": port.DisbondOperationSupported,
+		"port_id":           port.GetId(),
+		"type":              port.GetType(),
+		"name":              port.GetName(),
+		"network_type":      port.GetNetworkType(),
+		"mac":               port.Data.GetMac(),
+		"bonded":            port.Data.GetBonded(),
+		"disbond_supported": port.GetDisbondOperationSupported(),
 	}
-	l2 := slices.Contains(l2Types, port.NetworkType)
-	l3 := slices.Contains(l3Types, port.NetworkType)
+	l2 := slices.Contains(l2Types, port.GetNetworkType())
+	l3 := slices.Contains(l3Types, port.GetNetworkType())
 
 	if l2 {
 		m["layer2"] = true
@@ -184,24 +186,24 @@ func resourceMetalPortRead(ctx context.Context, d *schema.ResourceData, meta int
 	}
 
 	if port.NativeVirtualNetwork != nil {
-		m["native_vlan_id"] = port.NativeVirtualNetwork.ID
+		m["native_vlan_id"] = port.NativeVirtualNetwork.GetId()
 	}
 
 	vlans := []string{}
 	vxlans := []int{}
-	for _, n := range port.AttachedVirtualNetworks {
-		vlans = append(vlans, n.ID)
-		vxlans = append(vxlans, n.VXLAN)
+	for _, n := range port.VirtualNetworks {
+		vlans = append(vlans, n.GetId())
+		vxlans = append(vxlans, int(n.GetVxlan()))
 	}
 	m["vlan_ids"] = vlans
 	m["vxlan_ids"] = vxlans
 
 	if port.Bond != nil {
-		m["bond_id"] = port.Bond.ID
-		m["bond_name"] = port.Bond.Name
+		m["bond_id"] = port.Bond.GetId()
+		m["bond_name"] = port.Bond.GetName()
 	}
 
-	d.SetId(port.ID)
+	d.SetId(port.GetId())
 	return diag.FromErr(equinix_schema.SetMap(d, m))
 }
 
@@ -209,15 +211,17 @@ func resourceMetalPortDelete(ctx context.Context, d *schema.ResourceData, meta i
 	resetRaw, resetOk := d.GetOk("reset_on_delete")
 	if resetOk && resetRaw.(bool) {
 		start := time.Now()
-		cpr, resp, err := getClientPortResource(d, meta)
-		if equinix_errors.IgnoreResponseErrors(equinix_errors.HttpForbidden, equinix_errors.HttpNotFound)(resp, err) != nil {
-			return diag.FromErr(err)
+		cpr, resp, err := getClientPortResource(ctx, d, meta)
+		if err != nil {
+			if resp != nil && !slices.Contains([]int{http.StatusForbidden, http.StatusNotFound}, resp.StatusCode) {
+				return diag.FromErr(err)
+			}
 		}
 
 		// to reset the port to defaults we iterate through helpers (used in
 		// create/update), some of which rely on resource state. reuse those helpers by
 		// setting ephemeral state.
-		port := resourceMetalPort()
+		port := Resource()
 		copy := port.Data(d.State())
 		cpr.Resource = copy
 		if err = equinix_schema.SetMap(cpr.Resource, map[string]interface{}{
@@ -229,19 +233,40 @@ func resourceMetalPortDelete(ctx context.Context, d *schema.ResourceData, meta i
 		}); err != nil {
 			return diag.FromErr(err)
 		}
-		for _, f := range [](func(*ClientPortResource) error){
-			batchVlans(ctx, start, true),
+		for _, f := range [](func(context.Context, *ClientPortResource) error){
+			batchVlans(start, true),
 			makeBond,
 			convertToL3,
 		} {
-			if err := f(cpr); err != nil {
+			if err := f(ctx, cpr); err != nil {
 				return diag.FromErr(err)
 			}
 		}
 		// TODO(displague) error or warn?
-		if warn := portProperlyDestroyed(cpr.Port); warn != nil {
+		if warn := ProperlyDestroyed(cpr.Port); warn != nil {
 			log.Printf("[WARN] %s\n", warn)
 		}
 	}
+	return nil
+}
+
+func ProperlyDestroyed(port *metalv1.Port) error {
+	var errs []string
+	if !port.Data.GetBonded() {
+		errs = append(errs, fmt.Sprintf("port %s wasn't bonded after equinix_metal_port destroy;", port.GetId()))
+	}
+	if port.GetType() == "NetworkBondPort" && port.GetNetworkType() != "layer3" {
+		errs = append(errs, "bond port should be in layer3 type after destroy;")
+	}
+	if port.NativeVirtualNetwork != nil {
+		errs = append(errs, "port should not have native VLAN assigned after destroy;")
+	}
+	if len(port.VirtualNetworks) != 0 {
+		errs = append(errs, "port should not have VLANs attached after destroy")
+	}
+	if len(errs) > 0 {
+		return fmt.Errorf("%s", errs)
+	}
+
 	return nil
 }

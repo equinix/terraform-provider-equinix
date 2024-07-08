@@ -1,11 +1,11 @@
-package equinix
+package port
 
 import (
 	"github.com/equinix/terraform-provider-equinix/internal/network"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
-func dataSourceMetalPort() *schema.Resource {
+func DataSource() *schema.Resource {
 	return &schema.Resource{
 		ReadWithoutTimeout: resourceMetalPortRead,
 
