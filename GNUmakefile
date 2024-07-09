@@ -11,6 +11,12 @@ ACCTEST_COUNT       ?= 1
 GOFMT_FILES         ?=$$(find . -name '*.go' |grep -v vendor)
 PKG_NAME            =equinix
 
+CRI=docker
+CRI_COMMAND_BASE=${CRI} run --rm -u ${CURRENT_UID}:${CURRENT_GID} $(DOCKER_EXTRA_ARGS)
+GOLANGCI_LINT_VERSION=v1.56
+GOLANGCI_LINT_IMAGE=golangci/golangci-lint:${GOLANGCI_LINT_VERSION}
+GOLANGCI_LINT=${CRI_COMMAND_BASE} -v $(CURDIR):/app -w /app -e GOLANGCI_LINT_CACHE=/tmp/.cache -e GOCACHE=/tmp/.cache ${GOLANGCI_LINT_IMAGE} golangci-lint
+
 ifneq ($(origin TESTS_REGEXP), undefined)
 	TESTARGS = -run='$(TESTS_REGEXP)'
 endif
@@ -45,6 +51,8 @@ clean:
 	${GOCMD} clean
 	rm -f ${BINARY}
 
+lint:
+	${GOLANGCI_LINT} run -v
 
 vet:
 	@echo "go vet ."
@@ -117,4 +125,4 @@ tfproviderdocs-check:
 		echo "Unexpected issues found in code with bflad/tfproviderdocs."; \
 		exit 1)
 
-.PHONY: test testacc build install clean  fmt fmtcheck errcheck test-compile docs-lint docs-lint-fix tfproviderlint tfproviderlint-fix tfproviderdocs-check
+.PHONY: test testacc build install clean lint fmt fmtcheck errcheck test-compile docs-lint docs-lint-fix tfproviderlint tfproviderlint-fix tfproviderdocs-check
