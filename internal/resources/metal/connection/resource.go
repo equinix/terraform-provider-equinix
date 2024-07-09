@@ -3,7 +3,10 @@ package connection
 import (
 	"context"
 	"fmt"
+	"net/http"
 	"reflect"
+	"slices"
+	"time"
 
 	"github.com/equinix/equinix-sdk-go/services/metalv1"
 	equinix_errors "github.com/equinix/terraform-provider-equinix/internal/errors"
@@ -12,6 +15,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 )
 
 func NewResource() resource.Resource {
@@ -245,8 +249,7 @@ func (r *Resource) Delete(
 	resp *resource.DeleteResponse,
 ) {
 	// Retrieve the API client
-	r.Meta.AddFwModuleToMetalUserAgent(ctx, req.ProviderMeta)
-	client := r.Meta.Metal
+	client := r.Meta.NewMetalClientForFramework(ctx, req.ProviderMeta)
 
 	// Retrieve the current state
 	var state ResourceModel
@@ -260,12 +263,26 @@ func (r *Resource) Delete(
 	id := state.ID.ValueString()
 
 	// API call to delete the Metal Connection
-	deleteResp, err := client.Connections.Delete(id, true)
-	if equinix_errors.IgnoreResponseErrors(equinix_errors.HttpForbidden, equinix_errors.HttpNotFound)(deleteResp, err) != nil {
+	_, deleteResp, err := client.InterconnectionsApi.DeleteInterconnection(ctx, id).Execute()
+	if err != nil {
+		if deleteResp == nil || !slices.Contains([]int{http.StatusForbidden, http.StatusNotFound}, deleteResp.StatusCode) {
+			resp.Diagnostics.AddError(
+				fmt.Sprintf("Failed to delete Metal Connection %s", id), err.Error())
+		}
+	}
+
+	// TODO: the delete timeout was previously hidden inside packngo
+	// long term, it may be preferable to hook this up to the timeouts
+	// block in terraform, but since this resource doesn't yet support
+	// the timeouts block, I opted to replicage the non-configurable
+	// timeout from packngo for now
+	deleteTimeout := 60 * time.Second
+	deleteWaiter := getDeleteWaiter(ctx, client, id, deleteTimeout)
+	_, err = deleteWaiter.WaitForStateContext(ctx)
+
+	if err != nil {
 		resp.Diagnostics.AddError(
-			fmt.Sprintf("Failed to delete Metal Connection %s", id),
-			equinix_errors.FriendlyError(err).Error(),
-		)
+			fmt.Sprintf("Failed to delete Metal Connection %s", id), err.Error())
 	}
 }
 
@@ -560,4 +577,30 @@ func getConnection(ctx context.Context, client *metalv1.APIClient, state *tfsdk.
 		return nil, diags
 	}
 	return conn, diags
+}
+
+func getDeleteWaiter(ctx context.Context, client *metalv1.APIClient, id string, timeout time.Duration) *retry.StateChangeConf {
+	// deletedMarker is a terraform-provider-only value that is used by the waiter
+	// to indicate that the connection appears to be deleted successfully based on
+	// status code
+	deletedMarker := "tf-marker-for-deleted-connection"
+
+	target := []string{deletedMarker, "deleted"}
+
+	return &retry.StateChangeConf{
+		Target: target,
+		Refresh: func() (interface{}, string, error) {
+			conn, resp, err := client.InterconnectionsApi.GetInterconnection(ctx, id).Execute()
+			if err != nil {
+				if resp != nil && slices.Contains([]int{http.StatusForbidden, http.StatusNotFound}, resp.StatusCode) {
+					return conn, deletedMarker, nil
+				}
+				return 0, "", err
+			}
+			return conn, conn.GetStatus(), nil
+		},
+		Timeout:    timeout,
+		Delay:      10 * time.Second,
+		MinTimeout: 5 * time.Second,
+	}
 }
