@@ -22,6 +22,9 @@ import (
 
 func Resource() *schema.Resource {
 	return &schema.Resource{
+		Description: `Use this resource to associate VLAN with a Dedicated Port from [Equinix Fabric - software-defined interconnections](https://deploy.equinix.com/developers/docs/metal/interconnections/introduction/#associating-a-vlan-with-a-dedicated-port).
+
+See the [Virtual Routing and Forwarding documentation](https://deploy.equinix.com/developers/docs/metal/layer2-networking/vrf/) for product details and API reference material.`,
 		ReadWithoutTimeout:   resourceMetalVirtualCircuitRead,
 		CreateContext:        resourceMetalVirtualCircuitCreate,
 		UpdateWithoutTimeout: resourceMetalVirtualCircuitUpdate,

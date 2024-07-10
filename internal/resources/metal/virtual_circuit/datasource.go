@@ -9,6 +9,10 @@ import (
 
 func DataSource() *schema.Resource {
 	return &schema.Resource{
+		Description: `Use this data source to retrieve a virtual circuit resource from [Equinix Fabric - software-defined interconnections](https://deploy.equinix.com/developers/docs/metal/interconnections/introduction/)
+
+See the [Virtual Routing and Forwarding documentation](https://deploy.equinix.com/developers/docs/metal/layer2-networking/vrf/) for product details and API reference material.
+`,
 		ReadContext: dataSourceMetalVirtualCircuitRead,
 
 		Schema: map[string]*schema.Schema{
