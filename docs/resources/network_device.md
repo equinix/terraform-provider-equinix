@@ -349,6 +349,54 @@ resource "equinix_network_device" "bluecat-edge-service-point-ha" {
 }
 ```
 
+```terraform
+# Create PA-VM firewall cluster with Panorama Server Integration
+# with Panorama Server IP and Panorama Auth Key in vendor Configuration
+
+data "equinix_network_account" "sv" {
+  metro_code = "SV"
+}
+
+resource "equinix_network_device" "panw-cluster" {
+  name            = "tf-panw"
+  metro_code      = data.equinix_network_account.sv.metro_code
+  type_code       = "PA-VM"
+  self_managed    = true
+  byol            = true
+  package_code    = "VM100"
+  notifications   = ["john@equinix.com", "marry@equinix.com", "fred@equinix.com"]
+  term_length     = 12
+  account_number  = data.equinix_network_account.sv.number
+  version         = "11.1.3"
+  interface_count = 10
+  core_count      = 2
+  ssh_key {
+    username = "test"
+    key_name = "test-key"
+  }
+  acl_template_id = "0bff6e05-f0e7-44cd-804a-25b92b835f8b"
+  cluster_details {
+    cluster_name = "tf-panw-cluster"
+    node0 {
+      vendor_configuration {
+        hostname            = "panw-node0"
+        panorama_ip_address = "x.x.x.x"
+        panorama_auth_key   = "xxxxxxxxxxx"
+      }
+      license_token = "licenseToken"
+    }
+    node1 {
+      vendor_configuration {
+        hostname            = "panw-node1"
+        panorama_ip_address = "x.x.x.x"
+        panorama_auth_key   = "xxxxxxxxxxx"
+      }
+      license_token = "licenseToken"
+    }
+  }
+}
+```
+
 ## Argument Reference
 
 The following arguments are supported:
@@ -378,7 +426,7 @@ The following arguments are supported:
 * `additional_bandwidth` - (Optional) Additional Internet bandwidth, in Mbps, that will be allocated to the device (in addition to default 15Mbps).
 * `interface_count` - (Optional) Number of network interfaces on a device. If not specified, default number for a given device type will be used.
 * `wan_interafce_id` - (Optional) Specify the WAN/SSH interface id. If not specified, default WAN/SSH interface for a given device type will be used.
-* `vendor_configuration` - (Optional) Map of vendor specific configuration parameters for a device (controller1, activationKey, managementType, siteId, systemIpAddress, privateAddress, privateCidrMask, privateGateway, licenseKey, licenseId)
+* `vendor_configuration` - (Optional) Map of vendor specific configuration parameters for a device (controller1, activationKey, managementType, siteId, systemIpAddress, privateAddress, privateCidrMask, privateGateway, licenseKey, licenseId, panoramaAuthKey, panoramaIpAddress)
 * `ssh-key` - (Optional) Definition of SSH key that will be provisioned on a device (max one key). See [SSH Key](#ssh-key) below for more details.
 * `secondary_device` - (Optional) Definition of secondary device for redundant device configurations. See [Secondary Device](#secondary-device) below for more details.
 * `cluster_details` - (Optional) An object that has the cluster details. See [Cluster Details](#cluster-details) below for more details.
@@ -402,7 +450,7 @@ The `secondary_device` block supports the following arguments:
 * `account_number` - (Required) Billing account number for secondary device.
 * `notifications` - (Required) List of email addresses that will receive notifications about secondary device.
 * `additional_bandwidth` - (Optional) Additional Internet bandwidth, in Mbps, for a secondary device.
-* `vendor_configuration` - (Optional) Key/Value pairs of vendor specific configuration parameters for a secondary device. Key values are `controller1`, `activationKey`, `managementType`, `siteId`, `systemIpAddress`, `privateAddress`, `privateCidrMask`, `privateGateway`, `licenseKey`, `licenseId`.
+* `vendor_configuration` - (Optional) Key/Value pairs of vendor specific configuration parameters for a secondary device. Key values are `controller1`, `activationKey`, `managementType`, `siteId`, `systemIpAddress`, `privateAddress`, `privateCidrMask`, `privateGateway`, `licenseKey`, `licenseId`, `panoramaAuthKey`, `panoramaIpAddress`.
 * `acl_template_id` - (Optional) Identifier of a WAN interface ACL template that will be applied on a secondary device.
 * `mgmt_acl_template_uuid` - (Optional) Identifier of an MGMT interface ACL template that will be applied on a secondary device.
 * `ssh-key` - (Optional) Up to one definition of SSH key that will be provisioned on a secondary device.
@@ -442,6 +490,8 @@ The `vendor_configuration` block supports the following arguments:
 * `activation_key` - (Optional) Activation key. This is required for Velocloud clusters.
 * `controller_fqdn` - (Optional) Controller fqdn. This is required for Velocloud clusters.
 * `root_password` - (Optional) The CLI password of the device. This field is relevant only for the Velocloud SDWAN cluster.
+* `panorama_ip_address` - (Optional) Panorama Server IP Address. This field is relevant only for the PA-VM firewall devices to have integration with Panorama Server.
+* `panorama_auth_key` - (Optional) Panorama Server Auth Key. This field is relevant only for the PA-VM firewall devices to have integration with Panorama Server.
 
 ## Attributes Reference
 
