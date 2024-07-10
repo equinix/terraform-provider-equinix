@@ -130,3 +130,112 @@ func TestAccMetalVirtualCircuit_dedicated(t *testing.T) {
 		},
 	})
 }
+
+func testAccMetalVCCConfig_SharedPrimaryVrf(randstr string, include_ipv6 bool) string {
+	return fmt.Sprintf(`
+        resource "equinix_metal_project" "test" {
+            name = "tfacc-conn-pro-%s"
+        }
+
+        resource "equinix_metal_vrf" "test1" {
+            name        = "tfacc-conn-vrf1-%s"
+            metro       = "sv"
+            local_asn   = "65001"
+            ip_ranges   = ["10.0.0.0/16", "2604:1380:4641:a00::/59"]
+            project_id  = equinix_metal_project.test.id
+        }
+
+        resource "equinix_metal_connection" "test" {
+            name               = "tfacc-conn-%s"
+            project_id         = equinix_metal_project.test.id
+            type               = "shared"
+            redundancy         = "primary"
+            metro              = "sv"
+			speed              = "200Mbps"
+			service_token_type = "a_side"
+			contact_email      = "tfacc@example.com"
+			vrfs               = [
+				equinix_metal_vrf.test1.id,
+			]
+        }
+		
+		%s
+		`,
+		randstr, randstr, randstr, testAccMetalVCConfig_VirtualCircuit(randstr, include_ipv6))
+}
+
+func testAccMetalVCConfig_VirtualCircuit(randstr string, include_ipv6 bool) string {
+	config := fmt.Sprintf(`			
+		resource "equinix_metal_virtual_circuit" "test" {
+            name = "tfacc-vc-%s"
+            description = "tfacc-vc-%s"
+			virtual_circuit_id = equinix_metal_connection.test.ports[0].virtual_circuit_ids[0]
+            project_id = equinix_metal_project.test.id
+            port_id = equinix_metal_connection.test.ports[0].id
+            vrf_id = equinix_metal_vrf.test1.id
+			subnet = "10.0.0.0/31"
+        `,
+		randstr, randstr)
+
+	if include_ipv6 {
+		config = fmt.Sprintf(`	
+			%s		
+			subnet_ipv6 = "2604:1380:4641:a00::4/126"
+        }`,
+			config)
+	} else {
+		config = fmt.Sprintf(`	
+			%s		
+        }`,
+			config)
+	}
+
+	return config
+}
+
+func TestAccMetalVirtualCircuit_sharedVrf(t *testing.T) {
+	rs := acctest.RandString(10)
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:                 func() { acceptance.TestAccPreCheckMetal(t) },
+		ExternalProviders:        acceptance.TestExternalProviders,
+		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		CheckDestroy:             testAccMetalVirtualCircuitCheckDestroyed,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccMetalVCCConfig_SharedPrimaryVrf(rs, true),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(
+						"equinix_metal_virtual_circuit.test", "subnet", "10.0.0.0/31"),
+					resource.TestCheckResourceAttr(
+						"equinix_metal_virtual_circuit.test", "metal_ip", "10.0.0.0"),
+					resource.TestCheckResourceAttr(
+						"equinix_metal_virtual_circuit.test", "customer_ip", "10.0.0.1"),
+					resource.TestCheckResourceAttr(
+						"equinix_metal_virtual_circuit.test", "subnet_ipv6", "2604:1380:4641:a00::4/126"),
+					resource.TestCheckResourceAttr(
+						"equinix_metal_virtual_circuit.test", "metal_ipv6", "2604:1380:4641:a00::5"),
+					resource.TestCheckResourceAttr(
+						"equinix_metal_virtual_circuit.test", "customer_ipv6", "2604:1380:4641:a00::6"),
+				),
+			},
+			{
+				Config: testAccMetalVCCConfig_SharedPrimaryVrf(rs, false),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(
+						"equinix_metal_virtual_circuit.test", "subnet", "10.0.0.0/31"),
+					resource.TestCheckResourceAttr(
+						"equinix_metal_virtual_circuit.test", "metal_ip", "10.0.0.0"),
+					resource.TestCheckResourceAttr(
+						"equinix_metal_virtual_circuit.test", "customer_ip", "10.0.0.1"),
+					resource.TestCheckResourceAttr(
+						"equinix_metal_virtual_circuit.test", "subnet_ipv6", ""),
+					resource.TestCheckResourceAttr(
+						"equinix_metal_virtual_circuit.test", "metal_ipv6", ""),
+					resource.TestCheckResourceAttr(
+						"equinix_metal_virtual_circuit.test", "customer_ipv6", ""),
+				),
+			},
+		},
+	})
+}

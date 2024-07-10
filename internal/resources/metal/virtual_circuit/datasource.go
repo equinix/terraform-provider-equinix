@@ -105,6 +105,23 @@ func DataSource() *schema.Resource {
 				Computed:    true,
 				Description: "The Customer IP address which the CSR switch will peer with. Will default to the other usable IP in the subnet.",
 			},
+			"subnet_ipv6": {
+				Type:     schema.TypeString,
+				Optional: true,
+				Description: `A subnet from one of the IPv6 blocks associated with the VRF that we will help create an IP reservation for. Can only be either a /126 or /127.
+				 * For a /127 block, it will only have two IP addresses, which will be used for the metal_ip and customer_ip.
+				 * For a /126 block, it will have four IP addresses, but the first and last IP addresses are not usable. We will default to the first usable IP address for the metal_ip.`,
+			},
+			"metal_ipv6": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "The Metal IPv6 address for the SVI (Switch Virtual Interface) of the VirtualCircuit. Will default to the first usable IP in the IPv6 subnet.",
+			},
+			"customer_ipv6": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "The Customer IPv6 address which the CSR switch will peer with. Will default to the other usable IP in the IPv6 subnet.",
+			},
 			"md5": {
 				Type:        schema.TypeString,
 				Computed:    true,
