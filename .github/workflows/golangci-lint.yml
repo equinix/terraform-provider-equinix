@@ -18,7 +18,7 @@ jobs:
       - name: Determine golangci-lint version
         id: golangcilint
         run: |
-          line=$(grep GOLANGCI_LINT_VERSION= Makefile)
+          line=$(grep GOLANGCI_LINT_VERSION= GNUmakefile)
           version=$(echo ${line} | cut -d = -f2)
           echo "version=$version" >> "$GITHUB_OUTPUT"
       - name: golangci-lint
