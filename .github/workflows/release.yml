@@ -1,19 +1,5 @@
-# This GitHub action can publish assets for release when a tag is created.
-# Currently its setup to run on any tag that matches the pattern "v*" (ie. v0.1.0).
-#
-# This uses an action (paultyng/ghaction-import-gpg) that assumes you set your
-# private key in the `GPG_PRIVATE_KEY` secret and passphrase in the `PASSPHRASE`
-# secret. If you would rather own your own GPG handling, please fork this action
-# or use an alternative one for key handling.
-#
-# You will need to pass the `--batch` flag to `gpg` in your signing step
-# in `goreleaser` to indicate this is being used in a non-interactive mode.
-#
-name: release
+name: Generate Next Release
 on:
-  push:
-    tags:
-      - 'v*'
   workflow_dispatch:
 
 jobs:
@@ -41,6 +27,17 @@ jobs:
       with:
         gpg_private_key: ${{ secrets.GPG_PRIVATE_KEY }}
         passphrase: ${{ secrets.PASSPHRASE }}
+
+    - name: Release
+      uses: cycjimmy/semantic-release-action@v3
+      with:
+        semantic_version: 19.0.5
+        extra_plugins: |
+          @semantic-release/exec@6.0.3
+          @semantic-release/git@10.0.0
+          conventional-changelog-conventionalcommits@4.6.3
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
     - name: Run GoReleaser
       uses: goreleaser/goreleaser-action@v6
