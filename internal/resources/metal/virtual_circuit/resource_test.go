@@ -169,7 +169,6 @@ func testAccMetalVCConfig_VirtualCircuit(randstr string, include_ipv6 bool) stri
 		resource "equinix_metal_virtual_circuit" "test" {
             name = "tfacc-vc-%s"
             description = "tfacc-vc-%s"
-            connection_id = equinix_metal_connection.test.id
 			virtual_circuit_id = equinix_metal_connection.test.ports[0].virtual_circuit_ids[0]
             project_id = equinix_metal_project.test.id
             port_id = equinix_metal_connection.test.ports[0].id

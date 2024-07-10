@@ -32,10 +32,12 @@ func Resource() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 			"connection_id": {
-				Type:        schema.TypeString,
-				Required:    true,
-				Description: "UUID of Connection where the VC is scoped to",
-				ForceNew:    true,
+				Type:         schema.TypeString,
+				Optional:     true,
+				Computed:     true,
+				ExactlyOneOf: []string{"connection_id", "virtual_circuit_id"},
+				Description:  "UUID of Connection where the VC is scoped to.  Only used for dedicated connections",
+				ForceNew:     true,
 			},
 			"virtual_circuit_id": {
 				Type:        schema.TypeString,
