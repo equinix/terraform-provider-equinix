@@ -11,11 +11,8 @@ ACCTEST_COUNT       ?= 1
 GOFMT_FILES         ?=$$(find . -name '*.go' |grep -v vendor)
 PKG_NAME            =equinix
 
-CRI=docker
-CRI_COMMAND_BASE=${CRI} run --rm -u ${CURRENT_UID}:${CURRENT_GID} $(DOCKER_EXTRA_ARGS)
 GOLANGCI_LINT_VERSION=v1.56
-GOLANGCI_LINT_IMAGE=golangci/golangci-lint:${GOLANGCI_LINT_VERSION}
-GOLANGCI_LINT=${CRI_COMMAND_BASE} -v $(CURDIR):/app -w /app -e GOLANGCI_LINT_CACHE=/tmp/.cache -e GOCACHE=/tmp/.cache ${GOLANGCI_LINT_IMAGE} golangci-lint
+GOLANGCI_LINT=go run github.com/golangci/golangci-lint/cmd/golangci-lint@${GOLANGCI_LINT_VERSION}
 
 ifneq ($(origin TESTS_REGEXP), undefined)
 	TESTARGS = -run='$(TESTS_REGEXP)'
