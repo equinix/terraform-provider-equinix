@@ -50,7 +50,7 @@ jobs:
       run: go build -v .
 
     - name: TF tests
-      run: go test -v --coverprofile coverage.txt -covermode=atomic -parallel 4 $(go list ./... |grep -v 'tests')
+      run: go test -v --coverprofile coverage.txt -covermode=atomic -parallel 4 ./...
 
     - name: Upload coverage to Codecov
       if: ${{ always() }}
