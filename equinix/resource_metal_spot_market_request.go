@@ -67,10 +67,7 @@ func resourceMetalSpotMarketRequest() *schema.Resource {
 					diffThreshold := .02
 					priceDiff := oldF / newF
 
-					if diffThreshold < priceDiff {
-						return true
-					}
-					return false
+					return diffThreshold < priceDiff
 				},
 			},
 			"facilities": {

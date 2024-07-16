@@ -3,6 +3,7 @@ package device_test
 import (
 	"context"
 	"fmt"
+	"log"
 	"net"
 	"net/http"
 	"net/http/httptest"
@@ -118,7 +119,11 @@ func TestMetalDevice_readErrorHandling(t *testing.T) {
 				BaseURL: mockAPI.URL,
 				Token:   "fakeTokenForMock",
 			}
-			meta.Load(ctx)
+
+			err := meta.Load(ctx)
+			if err != nil {
+				log.Printf("failed to load provider config during test: %v", err)
+			}
 
 			if err := device.Read(ctx, d, meta); (err != nil) != tt.wantErr {
 				t.Errorf("device.Read() error = %v, wantErr %v", err, tt.wantErr)
