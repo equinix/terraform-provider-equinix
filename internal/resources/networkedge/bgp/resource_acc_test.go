@@ -1,9 +1,11 @@
-package bgp
+package bgp_test
 
 import (
 	"fmt"
+	"maps"
 	"testing"
 
+	"github.com/equinix/terraform-provider-equinix/internal/acceptance"
 	"github.com/equinix/terraform-provider-equinix/internal/config"
 	"github.com/equinix/terraform-provider-equinix/internal/nprintf"
 
@@ -63,13 +65,13 @@ func TestAccNetworkBGP_CSR1000V_Single_AWS(t *testing.T) {
 		"bgp-remote_ip_address":         "1.1.1.2",
 		"bgp-remote_asn":                22211,
 	}
-	contextWithChanges := copyMap(context)
+	contextWithChanges := maps.Clone(context)
 	contextWithChanges["bgp-authentication_key"] = acctest.RandString(10)
 	resourceName := fmt.Sprintf("equinix_network_bgp.%s", context["bgp-resourceName"].(string))
 	var bgpConfig ne.BGPConfiguration
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:  func() { testAccPreCheck(t) },
-		Providers: testAccProviders,
+		PreCheck:  func() { acceptance.TestAccPreCheck(t) },
+		Providers: acceptance.TestAccProviders,
 		Steps: []resource.TestStep{
 			{
 				Config: newTestAccConfig(context).withDevice().withSSHUser().withVDConnection().withBGP().build(),
@@ -142,7 +144,7 @@ func testAccNeBGPExists(resourceName string, bgpConfig *ne.BGPConfiguration) res
 		if !ok {
 			return fmt.Errorf("resource not found: %s", resourceName)
 		}
-		client := testAccProvider.Meta().(*config.Config).Ne
+		client := acceptance.TestAccProvider.Meta().(*config.Config).Ne
 		if rs.Primary.ID == "" {
 			return fmt.Errorf("resource has no ID attribute set")
 		}

@@ -1,18 +1,25 @@
-package acl_template
+package acl_template_test
 
 import (
 	"context"
 	"fmt"
 	"log"
+	"maps"
 	"testing"
 
+	"github.com/equinix/terraform-provider-equinix/internal/acceptance"
 	"github.com/equinix/terraform-provider-equinix/internal/config"
 	"github.com/equinix/terraform-provider-equinix/internal/nprintf"
+	"github.com/equinix/terraform-provider-equinix/internal/sweep"
 
 	"github.com/equinix/ne-go"
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
+)
+
+const (
+	tstResourcePrefix = "tfacc"
 )
 
 func init() {
@@ -23,7 +30,7 @@ func init() {
 }
 
 func testSweepNetworkACLTemplate(region string) error {
-	config, err := sharedConfigForRegion(region)
+	config, err := sweep.SharedConfigForRegion(region)
 	if err != nil {
 		return fmt.Errorf("[INFO][SWEEPER_LOG] Error getting configuration for sweeping Network ACL Templates: %s", err)
 	}
@@ -38,7 +45,7 @@ func testSweepNetworkACLTemplate(region string) error {
 	}
 	nonSweepableCount := 0
 	for _, template := range templates {
-		if !isSweepableTestResource(ne.StringValue(template.Name)) {
+		if !sweep.IsSweepableTestResource(ne.StringValue(template.Name)) {
 			nonSweepableCount++
 			continue
 		}
@@ -73,7 +80,7 @@ func TestAccNetworkACLTemplate(t *testing.T) {
 		"inbound_rule_3_src_port":    "any",
 		"inbound_rule_3_dst_port":    "any",
 	}
-	contextWithChanges := copyMap(context)
+	contextWithChanges := maps.Clone(context)
 	contextWithChanges["description"] = acctest.RandString(50)
 	contextWithChanges["inbound_rule_1_description"] = acctest.RandString(50)
 	contextWithChanges["inbound_rule_3_subnet"] = "4.4.4.4/32"
@@ -82,8 +89,8 @@ func TestAccNetworkACLTemplate(t *testing.T) {
 	resourceName := "equinix_network_acl_template." + context["resourceName"].(string)
 	var template ne.ACLTemplate
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:  func() { testAccPreCheck(t) },
-		Providers: testAccProviders,
+		PreCheck:  func() { acceptance.TestAccPreCheck(t) },
+		Providers: acceptance.TestAccProviders,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccNetworkACLTemplate(context),
@@ -147,7 +154,7 @@ func testAccNetworkACLTemplateExists(resourceName string, template *ne.ACLTempla
 		if !ok {
 			return fmt.Errorf("resource not found: %s", resourceName)
 		}
-		client := testAccProvider.Meta().(*config.Config).Ne
+		client := acceptance.TestAccProvider.Meta().(*config.Config).Ne
 		if rs.Primary.ID == "" {
 			return fmt.Errorf("resource has no ID attribute set")
 		}
