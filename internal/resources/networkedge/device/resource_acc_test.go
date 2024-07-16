@@ -6,35 +6,16 @@ import (
 	"log"
 	"testing"
 
+	"github.com/equinix/terraform-provider-equinix/internal/acceptance"
 	"github.com/equinix/terraform-provider-equinix/internal/comparisons"
 	"github.com/equinix/terraform-provider-equinix/internal/config"
-	"github.com/equinix/terraform-provider-equinix/internal/nprintf"
+	"github.com/equinix/terraform-provider-equinix/internal/sweep"
 
 	"github.com/equinix/ne-go"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
-)
-
-const (
-	tstResourcePrefix = "tfacc"
-
-	networkDeviceProjectId                  = "TF_ACC_NETWORK_DEVICE_PROJECT_ID"
-	networkDeviceAccountNameEnvVar          = "TF_ACC_NETWORK_DEVICE_BILLING_ACCOUNT_NAME"
-	networkDeviceSecondaryAccountNameEnvVar = "TF_ACC_NETWORK_DEVICE_SECONDARY_BILLING_ACCOUNT_NAME"
-	networkDeviceMetroEnvVar                = "TF_ACC_NETWORK_DEVICE_METRO"
-	networkDeviceSecondaryMetroEnvVar       = "TF_ACC_NETWORK_DEVICE_SECONDARY_METRO"
-	networkDeviceCSRSDWANLicenseFileEnvVar  = "TF_ACC_NETWORK_DEVICE_CSRSDWAN_LICENSE_FILE"
-	networkDeviceVSRXLicenseFileEnvVar      = "TF_ACC_NETWORK_DEVICE_VSRX_LICENSE_FILE"
-	networkDeviceVersaController1EnvVar     = "TF_ACC_NETWORK_DEVICE_VERSA_CONTROLLER1"
-	networkDeviceVersaController2EnvVar     = "TF_ACC_NETWORK_DEVICE_VERSA_CONTROLLER2"
-	networkDeviceVersaLocalIDEnvVar         = "TF_ACC_NETWORK_DEVICE_VERSA_LOCALID"
-	networkDeviceVersaRemoteIDEnvVar        = "TF_ACC_NETWORK_DEVICE_VERSA_REMOTEID"
-	networkDeviceVersaSerialNumberEnvVar    = "TF_ACC_NETWORK_DEVICE_VERSA_SERIAL"
-	networkDeviceCGENIXLicenseKeyEnvVar     = "TF_ACC_NETWORK_DEVICE_CGENIX_LICENSE_KEY"
-	networkDeviceCGENIXLicenseSecretEnvVar  = "TF_ACC_NETWORK_DEVICE_CGENIX_LICENSE_SECRET"
-	networkDevicePANWLicenseTokenEnvVar     = "TF_ACC_NETWORK_DEVICE_PANW_LICENSE_TOKEN"
 )
 
 func init() {
@@ -45,8 +26,97 @@ func init() {
 	})
 }
 
+func testAccNeSSHUserExists(resourceName string, user *ne.SSHUser) resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		rs, ok := s.RootModule().Resources[resourceName]
+		if !ok {
+			return fmt.Errorf("resource not found: %s", resourceName)
+		}
+		if rs.Primary.ID == "" {
+			return fmt.Errorf("resource has no ID attribute set")
+		}
+		client := acceptance.TestAccProvider.Meta().(*config.Config).Ne
+		resp, err := client.GetSSHUser(rs.Primary.ID)
+		if err != nil {
+			return fmt.Errorf("error when fetching SSH user '%s': %s", rs.Primary.ID, err)
+		}
+		*user = *resp
+		return nil
+	}
+}
+
+func testAccNeSSHUserAttributes(user *ne.SSHUser, devices []*ne.Device, ctx map[string]interface{}) resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		if v, ok := ctx["username"]; ok && ne.StringValue(user.Username) != v.(string) {
+			return fmt.Errorf("name does not match %v - %v", ne.StringValue(user.Username), v)
+		}
+		deviceIDs := make([]string, len(devices))
+		for i := range devices {
+			deviceIDs[i] = ne.StringValue(devices[i].UUID)
+		}
+		if !comparisons.SlicesMatch(deviceIDs, user.DeviceUUIDs) {
+			return fmt.Errorf("device_ids does not match %v - %v", deviceIDs, user.DeviceUUIDs)
+		}
+		return nil
+	}
+}
+
+func testAccNetworkACLTemplateExists(resourceName string, template *ne.ACLTemplate) resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		rs, ok := s.RootModule().Resources[resourceName]
+		if !ok {
+			return fmt.Errorf("resource not found: %s", resourceName)
+		}
+		client := acceptance.TestAccProvider.Meta().(*config.Config).Ne
+		if rs.Primary.ID == "" {
+			return fmt.Errorf("resource has no ID attribute set")
+		}
+		resp, err := client.GetACLTemplate(rs.Primary.ID)
+		if err != nil {
+			return fmt.Errorf("error when fetching ACL template '%s': %s", rs.Primary.ID, err)
+		}
+		*template = *resp
+		return nil
+	}
+}
+
+func testAccNetworkACLTemplateAttributes(template *ne.ACLTemplate, ctx map[string]interface{}) resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		if v, ok := ctx["name"]; ok && ne.StringValue(template.Name) != v.(string) {
+			return fmt.Errorf("name does not match %v - %v", ne.StringValue(template.Name), v)
+		}
+		if v, ok := ctx["description"]; ok && ne.StringValue(template.Description) != v.(string) {
+			return fmt.Errorf("description does not match %v - %v", ne.StringValue(template.Description), v)
+		}
+		if len(template.InboundRules) != 3 {
+			return fmt.Errorf("number of inbound rules does not match %v - %v", len(template.InboundRules), 3)
+		}
+		for i := 0; i < 3; i++ {
+			if ne.IntValue(template.InboundRules[i].SeqNo) != i+1 {
+				return fmt.Errorf("inbound_rule %d seqNo does not match %v - %v", i+1, ne.IntValue(template.InboundRules[i].SeqNo), i+1)
+			}
+			if v, ok := ctx[fmt.Sprintf("inbound_rule_%d_subnet", i+1)]; ok && ne.StringValue(template.InboundRules[i].Subnet) != v.(string) {
+				return fmt.Errorf("inbound_rule %d subnet does not match %v - %v", i+1, ne.StringValue(template.InboundRules[i].Subnet), v)
+			}
+			if v, ok := ctx[fmt.Sprintf("inbound_rule_%d_protocol", i+1)]; ok && ne.StringValue(template.InboundRules[i].Protocol) != v.(string) {
+				return fmt.Errorf("inbound_rule %d protocol does not match %v - %v", i+1, ne.StringValue(template.InboundRules[i].Protocol), v)
+			}
+			if v, ok := ctx[fmt.Sprintf("inbound_rule_%d_src_port", i+1)]; ok && ne.StringValue(template.InboundRules[i].SrcPort) != v.(string) {
+				return fmt.Errorf("inbound_rule %d src_port does not match %v - %v", i+1, ne.StringValue(template.InboundRules[i].SrcPort), v)
+			}
+			if v, ok := ctx[fmt.Sprintf("inbound_rule_%d_dst_port", i+1)]; ok && ne.StringValue(template.InboundRules[i].DstPort) != v.(string) {
+				return fmt.Errorf("inbound_rule %d dst_port does not match %v - %v", i+1, ne.StringValue(template.InboundRules[i].DstPort), v)
+			}
+			if v, ok := ctx[fmt.Sprintf("inbound_rule_%d_description", i+1)]; ok && ne.StringValue(template.InboundRules[i].Description) != v.(string) {
+				return fmt.Errorf("inbound_rule %d description does not match %v - %v", i+1, ne.StringValue(template.InboundRules[i].Description), v)
+			}
+		}
+		return nil
+	}
+}
+
 func testSweepNetworkDevice(region string) error {
-	config, err := sharedConfigForRegion(region)
+	config, err := sweep.SharedConfigForRegion(region)
 	if err != nil {
 		return fmt.Errorf("[INFO][SWEEPER_LOG] Error getting configuration for sweeping Network devices: %s", err)
 	}
@@ -69,7 +139,7 @@ func testSweepNetworkDevice(region string) error {
 	}
 	nonSweepableCount := 0
 	for _, device := range devices {
-		if !isSweepableTestResource(ne.StringValue(device.Name)) {
+		if !sweep.IsSweepableTestResource(ne.StringValue(device.Name)) {
 			nonSweepableCount++
 			continue
 		}
@@ -136,8 +206,8 @@ func TestAccNetworkDevice_CSR1000V_HA_Managed_Sub(t *testing.T) {
 	var user ne.SSHUser
 	var primaryACL, secondaryACL ne.ACLTemplate
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:  func() { testAccPreCheck(t) },
-		Providers: testAccProviders,
+		PreCheck:  func() { acceptance.TestAccPreCheck(t) },
+		Providers: acceptance.TestAccProviders,
 		Steps: []resource.TestStep{
 			{
 				Config: newTestAccConfig(context).withDevice().withSSHUser().build(),
@@ -220,8 +290,8 @@ func TestAccNetworkDevice_CSR1000V_HA_Self_BYOL(t *testing.T) {
 	var primary, secondary ne.Device
 	var primaryACL, secondaryACL ne.ACLTemplate
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:  func() { testAccPreCheck(t) },
-		Providers: testAccProviders,
+		PreCheck:  func() { acceptance.TestAccPreCheck(t) },
+		Providers: acceptance.TestAccProviders,
 		Steps: []resource.TestStep{
 			{
 				Config: newTestAccConfig(context).withDevice().withSSHKey().build(),
@@ -287,8 +357,8 @@ func TestAccNetworkDevice_vSRX_HA_Managed_Sub(t *testing.T) {
 	var primary, secondary ne.Device
 	var user ne.SSHUser
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:  func() { testAccPreCheck(t) },
-		Providers: testAccProviders,
+		PreCheck:  func() { acceptance.TestAccPreCheck(t) },
+		Providers: acceptance.TestAccProviders,
 		Steps: []resource.TestStep{
 			{
 				Config: newTestAccConfig(context).withDevice().build(),
@@ -371,8 +441,8 @@ func TestAccNetworkDevice_vSRX_HA_Managed_BYOL(t *testing.T) {
 	var primary, secondary ne.Device
 	var user ne.SSHUser
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:  func() { testAccPreCheck(t) },
-		Providers: testAccProviders,
+		PreCheck:  func() { acceptance.TestAccPreCheck(t) },
+		Providers: acceptance.TestAccProviders,
 		Steps: []resource.TestStep{
 			{
 				Config: newTestAccConfig(context).withDevice().withACL().build(),
@@ -442,8 +512,8 @@ func TestAccNetworkDevice_vSRX_HA_Self_BYOL(t *testing.T) {
 	deviceResourceName := fmt.Sprintf("equinix_network_device.%s", context["device-resourceName"].(string))
 	var primary, secondary ne.Device
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:  func() { testAccPreCheck(t) },
-		Providers: testAccProviders,
+		PreCheck:  func() { acceptance.TestAccPreCheck(t) },
+		Providers: acceptance.TestAccProviders,
 		Steps: []resource.TestStep{
 			{
 				Config: newTestAccConfig(context).withDevice().withACL().withSSHKey().build(),
@@ -506,8 +576,8 @@ func TestAccNetworkDevice_PaloAlto_HA_Managed_Sub(t *testing.T) {
 	secACLResourceName := fmt.Sprintf("equinix_network_acl_template.%s", context["acl-secondary_resourceName"].(string))
 	userResourceName := fmt.Sprintf("equinix_network_ssh_user.%s", contextWithChanges["user-resourceName"].(string))
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:  func() { testAccPreCheck(t) },
-		Providers: testAccProviders,
+		PreCheck:  func() { acceptance.TestAccPreCheck(t) },
+		Providers: acceptance.TestAccProviders,
 		Steps: []resource.TestStep{
 			{
 				Config: newTestAccConfig(context).withDevice().withACL().build(),
@@ -586,8 +656,8 @@ func TestAccNetworkDevice_PaloAlto_HA_Self_BYOL(t *testing.T) {
 	var primary, secondary ne.Device
 	var primaryACL, secondaryACL ne.ACLTemplate
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:  func() { testAccPreCheck(t) },
-		Providers: testAccProviders,
+		PreCheck:  func() { acceptance.TestAccPreCheck(t) },
+		Providers: acceptance.TestAccProviders,
 		Steps: []resource.TestStep{
 			{
 				Config: newTestAccConfig(context).withDevice().withSSHKey().build(),
@@ -664,8 +734,8 @@ func TestAccNetworkDevice_CSRSDWAN_HA_Self_BYOL(t *testing.T) {
 	var primary, secondary ne.Device
 	var primaryACL, secondaryACL ne.ACLTemplate
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:  func() { testAccPreCheck(t) },
-		Providers: testAccProviders,
+		PreCheck:  func() { acceptance.TestAccPreCheck(t) },
+		Providers: acceptance.TestAccProviders,
 		Steps: []resource.TestStep{
 			{
 				Config: newTestAccConfig(context).withDevice().withACL().build(),
@@ -743,8 +813,8 @@ func TestAccNetworkDevice_Versa_HA_Self_BYOL(t *testing.T) {
 	var primary, secondary ne.Device
 	var primaryACL, secondaryACL ne.ACLTemplate
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:  func() { testAccPreCheck(t) },
-		Providers: testAccProviders,
+		PreCheck:  func() { acceptance.TestAccPreCheck(t) },
+		Providers: acceptance.TestAccProviders,
 		Steps: []resource.TestStep{
 			{
 				Config: newTestAccConfig(context).withDevice().withACL().build(),
@@ -811,8 +881,8 @@ func TestAccNetworkDevice_CGENIX_HA_Self_BYOL(t *testing.T) {
 	var primary, secondary ne.Device
 	var primaryACL, secondaryACL ne.ACLTemplate
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:  func() { testAccPreCheck(t) },
-		Providers: testAccProviders,
+		PreCheck:  func() { acceptance.TestAccPreCheck(t) },
+		Providers: acceptance.TestAccProviders,
 		Steps: []resource.TestStep{
 			{
 				Config: newTestAccConfig(context).withDevice().withACL().build(),
@@ -879,8 +949,8 @@ func TestAccNetworkDevice_PaloAlto_Cluster_Self_BYOL(t *testing.T) {
 	var primary ne.Device
 	var wanAcl, mgmtAcl ne.ACLTemplate
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:  func() { testAccPreCheck(t) },
-		Providers: testAccProviders,
+		PreCheck:  func() { acceptance.TestAccPreCheck(t) },
+		Providers: acceptance.TestAccProviders,
 		Steps: []resource.TestStep{
 			{
 				Config: newTestAccConfig(context).withDevice().withSSHKey().withACL().build(),
@@ -916,7 +986,7 @@ func testAccNeDeviceExists(resourceName string, device *ne.Device) resource.Test
 		if rs.Primary.ID == "" {
 			return fmt.Errorf("resource has no ID attribute set")
 		}
-		client := testAccProvider.Meta().(*config.Config).Ne
+		client := acceptance.TestAccProvider.Meta().(*config.Config).Ne
 		resp, err := client.GetDevice(rs.Primary.ID)
 		if err != nil {
 			return fmt.Errorf("error when fetching network device '%s': %s", rs.Primary.ID, err)
@@ -931,7 +1001,7 @@ func testAccNeDeviceSecondaryExists(primary, secondary *ne.Device) resource.Test
 		if ne.StringValue(primary.RedundantUUID) == "" {
 			return fmt.Errorf("secondary device UUID is not set")
 		}
-		client := testAccProvider.Meta().(*config.Config).Ne
+		client := acceptance.TestAccProvider.Meta().(*config.Config).Ne
 		resp, err := client.GetDevice(ne.StringValue(primary.RedundantUUID))
 		if err != nil {
 			return fmt.Errorf("error when fetching network device '%s': %s", ne.StringValue(primary.RedundantUUID), err)
@@ -950,7 +1020,7 @@ func testAccNeDevicePairExists(resourceName string, primary, secondary *ne.Devic
 		if rs.Primary.ID == "" {
 			return fmt.Errorf("resource has no ID attribute set")
 		}
-		client := testAccProvider.Meta().(*config.Config).Ne
+		client := acceptance.TestAccProvider.Meta().(*config.Config).Ne
 		resp, err := client.GetDevice(rs.Primary.ID)
 		if err != nil {
 			return fmt.Errorf("error when fetching primary network device '%s': %s", rs.Primary.ID, err)
@@ -1140,7 +1210,7 @@ func testAccNeDeviceACL(resourceName string, device *ne.Device) resource.TestChe
 		}
 		templateId := rs.Primary.ID
 		deviceID := ne.StringValue(device.UUID)
-		client := testAccProvider.Meta().(*config.Config).Ne
+		client := acceptance.TestAccProvider.Meta().(*config.Config).Ne
 		if ne.StringValue(device.ACLTemplateUUID) != rs.Primary.ID {
 			return fmt.Errorf("acl_template_id for device %s does not match %v - %v", deviceID, ne.StringValue(device.ACLTemplateUUID), templateId)
 		}
@@ -1226,393 +1296,4 @@ func testAccNeDeviceClusterNodeAttributes(device *ne.Device, ctx map[string]inte
 		}
 		return nil
 	}
-}
-
-func (t *testAccConfig) withDevice() *testAccConfig {
-	t.config += testAccNetworkDevice(t.ctx)
-	return t
-}
-
-func (t *testAccConfig) withACL() *testAccConfig {
-	t.config += testAccNetworkDeviceACL(t.ctx)
-	return t
-}
-
-func (t *testAccConfig) withSSHKey() *testAccConfig {
-	t.config += testAccNetworkDeviceSSHKey(t.ctx)
-	return t
-}
-
-func testAccNetworkDevice(ctx map[string]interface{}) string {
-	var config string
-	config += nprintf.Nprintf(`
-data "equinix_network_account" "test" {
-  metro_code = "%{device-metro_code}"
-  status     = "Active"
-  project_id = "%{device-project_id}"`, ctx)
-	if v, ok := ctx["device-account_name"]; ok && !comparisons.IsEmpty(v) {
-		config += nprintf.Nprintf(`
-  name = "%{device-account_name}"`, ctx)
-	}
-	config += nprintf.Nprintf(`
-}`, ctx)
-	if _, ok := ctx["device-secondary_metro_code"]; ok {
-		config += nprintf.Nprintf(`
-data "equinix_network_account" "test-secondary" {
-  metro_code = "%{device-secondary_metro_code}"
-  status     = "Active"`, ctx)
-		if v, ok := ctx["device-secondary_account_name"]; ok && !comparisons.IsEmpty(v) {
-			config += nprintf.Nprintf(`
-  name = "%{device-secondary_account_name}"`, ctx)
-		}
-		config += nprintf.Nprintf(` 
-}`, ctx)
-	}
-	config += nprintf.Nprintf(`
-resource "equinix_network_device" "%{device-resourceName}" {
-  self_managed          = %{device-self_managed}
-  byol                  = %{device-byol}
-  name                  = "%{device-name}"
-  metro_code            = "%{device-metro_code}"
-  type_code             = "%{device-type_code}"
-  project_id            = "%{device-project_id}"
-  package_code          = "%{device-package_code}"
-  notifications         = %{device-notifications}
-  term_length           = %{device-term_length}
-  account_number        = data.equinix_network_account.test.number
-  version               = "%{device-version}"
-  core_count            = %{device-core_count}`, ctx)
-	if _, ok := ctx["device-purchase_order_number"]; ok {
-		config += nprintf.Nprintf(`
-  purchase_order_number = "%{device-purchase_order_number}"`, ctx)
-	}
-	if _, ok := ctx["device-purchase_order_number"]; ok {
-		config += nprintf.Nprintf(`
-  order_reference       = "%{device-order_reference}"`, ctx)
-	}
-	if _, ok := ctx["device-additional_bandwidth"]; ok {
-		config += nprintf.Nprintf(`
-  additional_bandwidth  = %{device-additional_bandwidth}`, ctx)
-	}
-	if _, ok := ctx["device-throughput"]; ok {
-		config += nprintf.Nprintf(`
-  throughput            = %{device-throughput}
-  throughput_unit       = "%{device-throughput_unit}"`, ctx)
-	}
-	if _, ok := ctx["device-hostname"]; ok {
-		config += nprintf.Nprintf(`
-  hostname              = "%{device-hostname}"`, ctx)
-	}
-	if _, ok := ctx["device-interface_count"]; ok {
-		config += nprintf.Nprintf(`
-  interface_count       = %{device-interface_count}`, ctx)
-	}
-	if _, ok := ctx["acl-resourceName"]; ok {
-		config += nprintf.Nprintf(`
-  acl_template_id       = equinix_network_acl_template.%{acl-resourceName}.id`, ctx)
-	}
-	if _, ok := ctx["mgmtAcl-resourceName"]; ok {
-		config += nprintf.Nprintf(`
-  mgmt_acl_template_uuid = equinix_network_acl_template.%{mgmtAcl-resourceName}.id`, ctx)
-	}
-	if _, ok := ctx["sshkey-resourceName"]; ok {
-		config += nprintf.Nprintf(`
-  ssh_key {
-    username = "test"
-    key_name = equinix_network_ssh_key.%{sshkey-resourceName}.name
-  }`, ctx)
-	}
-	if _, ok := ctx["device-license_file"]; ok {
-		config += nprintf.Nprintf(`
-  license_file          = "%{device-license_file}"`, ctx)
-	}
-	if _, ok := ctx["device-vendorConfig_enabled"]; ok {
-		config += nprintf.Nprintf(`
-  vendor_configuration  = {`, ctx)
-		if _, ok := ctx["device-vendorConfig_siteId"]; ok {
-			config += nprintf.Nprintf(`
-    siteId          = "%{device-vendorConfig_siteId}"`, ctx)
-		}
-		if _, ok := ctx["device-vendorConfig_systemIpAddress"]; ok {
-			config += nprintf.Nprintf(`
-    systemIpAddress = "%{device-vendorConfig_systemIpAddress}"`, ctx)
-		}
-		if _, ok := ctx["device-vendorConfig_licenseKey"]; ok {
-			config += nprintf.Nprintf(`
-    licenseKey = "%{device-vendorConfig_licenseKey}"`, ctx)
-		}
-		if _, ok := ctx["device-vendorConfig_licenseSecret"]; ok {
-			config += nprintf.Nprintf(`
-    licenseSecret = "%{device-vendorConfig_licenseSecret}"`, ctx)
-		}
-		if _, ok := ctx["device-vendorConfig_controller1"]; ok {
-			config += nprintf.Nprintf(`
-    controller1 = "%{device-vendorConfig_controller1}"`, ctx)
-		}
-		if _, ok := ctx["device-vendorConfig_controller2"]; ok {
-			config += nprintf.Nprintf(`
-    controller2 = "%{device-vendorConfig_controller2}"`, ctx)
-		}
-		if _, ok := ctx["device-vendorConfig_localId"]; ok {
-			config += nprintf.Nprintf(`
-    localId = "%{device-vendorConfig_localId}"`, ctx)
-		}
-		if _, ok := ctx["device-vendorConfig_remoteId"]; ok {
-			config += nprintf.Nprintf(`
-    remoteId = "%{device-vendorConfig_remoteId}"`, ctx)
-		}
-		if _, ok := ctx["device-vendorConfig_serialNumber"]; ok {
-			config += nprintf.Nprintf(`
-    serialNumber = "%{device-vendorConfig_serialNumber}"`, ctx)
-		}
-		config += nprintf.Nprintf(`
-  }`, ctx)
-	}
-	if _, ok := ctx["device-secondary_name"]; ok {
-		config += nprintf.Nprintf(`
-  secondary_device {
-    name                 = "%{device-secondary_name}"`, ctx)
-		if _, ok := ctx["device-secondary_metro_code"]; ok {
-			config += nprintf.Nprintf(`
-    metro_code           = "%{device-secondary_metro_code}"
-    account_number       = data.equinix_network_account.test-secondary.number`, ctx)
-		} else {
-			config += nprintf.Nprintf(`
-    metro_code           = "%{device-metro_code}"
-    account_number       = data.equinix_network_account.test.number`, ctx)
-		}
-		config += nprintf.Nprintf(`
-    notifications        = %{device-secondary_notifications}`, ctx)
-		if _, ok := ctx["device-secondary_additional_bandwidth"]; ok {
-			config += nprintf.Nprintf(`
-    additional_bandwidth = %{device-secondary_additional_bandwidth}`, ctx)
-		}
-		if _, ok := ctx["device-secondary_hostname"]; ok {
-			config += nprintf.Nprintf(`
-    hostname             = "%{device-secondary_hostname}"`, ctx)
-		}
-		if _, ok := ctx["acl-secondary_resourceName"]; ok {
-			config += nprintf.Nprintf(`
-    acl_template_id      = equinix_network_acl_template.%{acl-secondary_resourceName}.id`, ctx)
-		}
-		if _, ok := ctx["mgmtAcl-secondary_resourceName"]; ok {
-			config += nprintf.Nprintf(`
-    mgmt_acl_template_uuid = equinix_network_acl_template.%{mgmtAcl-secondary_resourceName}.id`, ctx)
-		}
-		if _, ok := ctx["sshkey-resourceName"]; ok {
-			config += nprintf.Nprintf(`
-    ssh_key {
-      username = "test"
-      key_name = equinix_network_ssh_key.%{sshkey-resourceName}.name
-    }`, ctx)
-		}
-		if _, ok := ctx["device-secondary_license_file"]; ok {
-			config += nprintf.Nprintf(`
-    license_file         = "%{device-secondary_license_file}"`, ctx)
-		}
-		if _, ok := ctx["device-secondary_vendorConfig_enabled"]; ok {
-			config += nprintf.Nprintf(`
-    vendor_configuration  = {`, ctx)
-			if _, ok := ctx["device-secondary_vendorConfig_siteId"]; ok {
-				config += nprintf.Nprintf(`
-      siteId          = "%{device-secondary_vendorConfig_siteId}"`, ctx)
-			}
-			if _, ok := ctx["device-secondary_vendorConfig_systemIpAddress"]; ok {
-				config += nprintf.Nprintf(`
-      systemIpAddress = "%{device-secondary_vendorConfig_systemIpAddress}"`, ctx)
-			}
-			if _, ok := ctx["device-secondary_vendorConfig_licenseKey"]; ok {
-				config += nprintf.Nprintf(`
-      licenseKey = "%{device-secondary_vendorConfig_licenseKey}"`, ctx)
-			}
-			if _, ok := ctx["device-secondary_vendorConfig_licenseSecret"]; ok {
-				config += nprintf.Nprintf(`
-      licenseSecret = "%{device-secondary_vendorConfig_licenseSecret}"`, ctx)
-			}
-			if _, ok := ctx["device-secondary_vendorConfig_controller1"]; ok {
-				config += nprintf.Nprintf(`
-      controller1 = "%{device-secondary_vendorConfig_controller1}"`, ctx)
-			}
-			if _, ok := ctx["device-secondary_vendorConfig_controller2"]; ok {
-				config += nprintf.Nprintf(`
-      controller2 = "%{device-secondary_vendorConfig_controller2}"`, ctx)
-			}
-			if _, ok := ctx["device-secondary_vendorConfig_localId"]; ok {
-				config += nprintf.Nprintf(`
-      localId = "%{device-secondary_vendorConfig_localId}"`, ctx)
-			}
-			if _, ok := ctx["device-secondary_vendorConfig_remoteId"]; ok {
-				config += nprintf.Nprintf(`
-      remoteId = "%{device-secondary_vendorConfig_remoteId}"`, ctx)
-			}
-			if _, ok := ctx["device-secondary_vendorConfig_serialNumber"]; ok {
-				config += nprintf.Nprintf(`
-      serialNumber = "%{device-secondary_vendorConfig_serialNumber}"`, ctx)
-			}
-			config += nprintf.Nprintf(`
-    }`, ctx)
-		}
-		config += `
-  }`
-	}
-	if _, ok := ctx["device-cluster_name"]; ok {
-		config += nprintf.Nprintf(`
-  cluster_details {
-    cluster_name        = "%{device-cluster_name}"`, ctx)
-		config += `
-    node0 {`
-		if _, ok := ctx["device-node0_license_file_id"]; ok {
-			config += nprintf.Nprintf(`
-      license_file_id   = "%{device-node0_license_file_id}"`, ctx)
-		}
-		if _, ok := ctx["device-node0_license_token"]; ok {
-			config += nprintf.Nprintf(`
-      license_token     = "%{device-node0_license_token}"`, ctx)
-		}
-		if _, ok := ctx["device-node0_vendorConfig_enabled"]; ok {
-			config += nprintf.Nprintf(`
-      vendor_configuration {`, ctx)
-			if _, ok := ctx["device-node0_vendorConfig_hostname"]; ok {
-				config += nprintf.Nprintf(`
-        hostname        = "%{device-node0_vendorConfig_hostname}"`, ctx)
-			}
-			if _, ok := ctx["device-node0_vendorConfig_adminPassword"]; ok {
-				config += nprintf.Nprintf(`
-        admin_password  = "%{device-node0_vendorConfig_adminPassword}"`, ctx)
-			}
-			if _, ok := ctx["device-node0_vendorConfig_controller1"]; ok {
-				config += nprintf.Nprintf(`
-        controller1     = "%{device-node0_vendorConfig_controller1}"`, ctx)
-			}
-			if _, ok := ctx["device-node0_vendorConfig_activationKey"]; ok {
-				config += nprintf.Nprintf(`
-        activation_key  = "%{device-node0_vendorConfig_activationKey}"`, ctx)
-			}
-			if _, ok := ctx["device-node0_vendorConfig_controllerFqdn"]; ok {
-				config += nprintf.Nprintf(`
-        controller_fqdn = "%{device-node0_vendorConfig_controllerFqdn}"`, ctx)
-			}
-			if _, ok := ctx["device-node0_vendorConfig_rootPassword"]; ok {
-				config += nprintf.Nprintf(`
-        root_password   = "%{device-node0_vendorConfig_rootPassword}"`, ctx)
-			}
-			config += nprintf.Nprintf(`
-      }`, ctx)
-		}
-		config += `
-    }`
-		config += `
-    node1 {`
-		if _, ok := ctx["device-node1_license_file_id"]; ok {
-			config += nprintf.Nprintf(`
-      license_file_id   = "%{device-node1_license_file_id}"`, ctx)
-		}
-		if _, ok := ctx["device-node1_license_token"]; ok {
-			config += nprintf.Nprintf(`
-      license_token     = "%{device-node1_license_token}"`, ctx)
-		}
-		if _, ok := ctx["device-node1_vendorConfig_enabled"]; ok {
-			config += nprintf.Nprintf(`
-      vendor_configuration {`, ctx)
-			if _, ok := ctx["device-node1_vendorConfig_hostname"]; ok {
-				config += nprintf.Nprintf(`
-        hostname        = "%{device-node1_vendorConfig_hostname}"`, ctx)
-			}
-			if _, ok := ctx["device-node1_vendorConfig_adminPassword"]; ok {
-				config += nprintf.Nprintf(`
-        admin_password  = "%{device-node1_vendorConfig_adminPassword}"`, ctx)
-			}
-			if _, ok := ctx["device-node1_vendorConfig_controller1"]; ok {
-				config += nprintf.Nprintf(`
-        controller1     = "%{device-node1_vendorConfig_controller1}"`, ctx)
-			}
-			if _, ok := ctx["device-node1_vendorConfig_activationKey"]; ok {
-				config += nprintf.Nprintf(`
-        activation_key  = "%{device-node1_vendorConfig_activationKey}"`, ctx)
-			}
-			if _, ok := ctx["device-node1_vendorConfig_controllerFqdn"]; ok {
-				config += nprintf.Nprintf(`
-        controller_fqdn = "%{device-node1_vendorConfig_controllerFqdn}"`, ctx)
-			}
-			if _, ok := ctx["device-node1_vendorConfig_rootPassword"]; ok {
-				config += nprintf.Nprintf(`
-        root_password   = "%{device-node1_vendorConfig_rootPassword}"`, ctx)
-			}
-			config += nprintf.Nprintf(`
-      }`, ctx)
-		}
-		config += `
-    }`
-		config += `
-  }`
-	}
-	config += `
-}`
-	return config
-}
-
-func testAccNetworkDeviceACL(ctx map[string]interface{}) string {
-	var config string
-	if _, ok := ctx["acl-name"]; ok {
-		config += nprintf.Nprintf(`
-resource "equinix_network_acl_template" "%{acl-resourceName}" {
-  name          = "%{acl-name}"
-  description   = "%{acl-description}"
-  inbound_rule {
-    subnet   = "10.0.0.0/24"
-    protocol = "IP"
-    src_port = "any"
-    dst_port = "any"
-  }
-}`, ctx)
-	}
-	if _, ok := ctx["mgmtAcl-name"]; ok {
-		config += nprintf.Nprintf(`
-resource "equinix_network_acl_template" "%{mgmtAcl-resourceName}" {
-  name          = "%{mgmtAcl-name}"
-  description   = "%{mgmtAcl-description}"
-  inbound_rule {
-    subnet   = "11.0.0.0/24"
-    protocol = "IP"
-    src_port = "any"
-    dst_port = "any"
-  }
-}`, ctx)
-	}
-	if _, ok := ctx["acl-secondary_name"]; ok {
-		config += nprintf.Nprintf(`
-resource "equinix_network_acl_template" "%{acl-secondary_resourceName}" {
-  name          = "%{acl-secondary_name}"
-  description   = "%{acl-secondary_description}"
-  inbound_rule {
-    subnet   = "192.0.0.0/24"
-    protocol = "IP"
-    src_port = "any"
-    dst_port = "any"
-  }
-}`, ctx)
-	}
-	if _, ok := ctx["mgmtAcl-secondary_name"]; ok {
-		config += nprintf.Nprintf(`
-resource "equinix_network_acl_template" "%{mgmtAcl-secondary_resourceName}" {
-  name          = "%{mgmtAcl-secondary_name}"
-  description   = "%{mgmtAcl-secondary_description}"
-  inbound_rule {
-    subnet   = "193.0.0.0/24"
-    protocol = "IP"
-    src_port = "any"
-    dst_port = "any"
-  }
-}`, ctx)
-	}
-	return config
-}
-
-func testAccNetworkDeviceSSHKey(ctx map[string]interface{}) string {
-	return nprintf.Nprintf(`
-resource "equinix_network_ssh_key" "%{sshkey-resourceName}" {
-  name       = "%{sshkey-name}"
-  public_key = "%{sshkey-public_key}"
-}
-`, ctx)
 }

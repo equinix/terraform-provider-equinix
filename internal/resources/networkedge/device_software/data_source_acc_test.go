@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/equinix/terraform-provider-equinix/internal/acceptance"
 	"github.com/equinix/terraform-provider-equinix/internal/nprintf"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
@@ -18,8 +19,8 @@ func TestAccDataSourceNetworkDeviceSoftware_versionRegex(t *testing.T) {
 	}
 	resourceName := fmt.Sprintf("data.equinix_network_device_software.%s", context["resourceName"].(string))
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:  func() { testAccPreCheck(t) },
-		Providers: testAccProviders,
+		PreCheck:  func() { acceptance.TestAccPreCheck(t) },
+		Providers: acceptance.TestAccProviders,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccDataSourceNetworkDeviceSoftwareConfig_versionRegex(context),

@@ -5,9 +5,10 @@ import (
 	"fmt"
 	"log"
 
+	"github.com/equinix/terraform-provider-equinix/internal/acceptance"
 	"github.com/equinix/terraform-provider-equinix/internal/comparisons"
 	"github.com/equinix/terraform-provider-equinix/internal/config"
-	"github.com/equinix/terraform-provider-equinix/internal/nprintf"
+	"github.com/equinix/terraform-provider-equinix/internal/sweep"
 
 	"github.com/equinix/ne-go"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -24,8 +25,24 @@ func init() {
 	})
 }
 
+type testAccConfig struct {
+	ctx    map[string]interface{}
+	config string
+}
+
+func newTestAccConfig(ctx map[string]interface{}) *testAccConfig {
+	return &testAccConfig{
+		ctx:    ctx,
+		config: "",
+	}
+}
+
+func (t *testAccConfig) build() string {
+	return t.config
+}
+
 func testSweepNetworkSSHUser(region string) error {
-	config, err := sharedConfigForRegion(region)
+	config, err := sweep.SharedConfigForRegion(region)
 	if err != nil {
 		return fmt.Errorf("[INFO][SWEEPER_LOG] Error getting configuration for sweeping Network SSH users: %s", err)
 	}
@@ -39,7 +56,7 @@ func testSweepNetworkSSHUser(region string) error {
 		return err
 	}
 	for _, user := range users {
-		if !isSweepableTestResource(ne.StringValue(user.Username)) {
+		if !sweep.IsSweepableTestResource(ne.StringValue(user.Username)) {
 			continue
 		}
 		if err := config.Ne.DeleteSSHUser(ne.StringValue(user.UUID)); err != nil {
@@ -51,28 +68,6 @@ func testSweepNetworkSSHUser(region string) error {
 	return nil
 }
 
-func testAccNetworkDeviceUser(ctx map[string]interface{}) string {
-	config := nprintf.Nprintf(`
-resource "equinix_network_ssh_user" "%{user-resourceName}" {
-  username = "%{user-username}"
-  password = "%{user-password}"
-  device_ids = [
-    equinix_network_device.%{device-resourceName}.id`, ctx)
-	if _, ok := ctx["device-secondary_name"]; ok {
-		config += nprintf.Nprintf(`,
-    equinix_network_device.%{device-resourceName}.redundant_id`, ctx)
-	}
-	config += `
-  ]
-}`
-	return config
-}
-
-func (t *testAccConfig) withSSHUser() *testAccConfig {
-	t.config += testAccNetworkDeviceUser(t.ctx)
-	return t
-}
-
 func testAccNeSSHUserExists(resourceName string, user *ne.SSHUser) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[resourceName]
@@ -82,7 +77,7 @@ func testAccNeSSHUserExists(resourceName string, user *ne.SSHUser) resource.Test
 		if rs.Primary.ID == "" {
 			return fmt.Errorf("resource has no ID attribute set")
 		}
-		client := testAccProvider.Meta().(*config.Config).Ne
+		client := acceptance.TestAccProvider.Meta().(*config.Config).Ne
 		resp, err := client.GetSSHUser(rs.Primary.ID)
 		if err != nil {
 			return fmt.Errorf("error when fetching SSH user '%s': %s", rs.Primary.ID, err)

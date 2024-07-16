@@ -6,14 +6,18 @@ import (
 	"log"
 	"testing"
 
+	"github.com/equinix/terraform-provider-equinix/internal/acceptance"
 	"github.com/equinix/terraform-provider-equinix/internal/config"
 	"github.com/equinix/terraform-provider-equinix/internal/nprintf"
+	"github.com/equinix/terraform-provider-equinix/internal/sweep"
 
 	"github.com/equinix/ne-go"
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 )
+
+const tstResourcePrefix = "tfacc"
 
 func init() {
 	resource.AddTestSweepers("equinix_network_ssh_key", &resource.Sweeper{
@@ -23,7 +27,7 @@ func init() {
 }
 
 func testSweepNetworkSSHKey(region string) error {
-	config, err := sharedConfigForRegion(region)
+	config, err := sweep.SharedConfigForRegion(region)
 	if err != nil {
 		return fmt.Errorf("[INFO][SWEEPER_LOG] Error getting configuration for sweeping Network SSH keys: %s", err)
 	}
@@ -38,7 +42,7 @@ func testSweepNetworkSSHKey(region string) error {
 	}
 	nonSweepableCount := 0
 	for _, key := range keys {
-		if !isSweepableTestResource(ne.StringValue(key.Name)) {
+		if !sweep.IsSweepableTestResource(ne.StringValue(key.Name)) {
 			nonSweepableCount++
 			continue
 		}
@@ -64,8 +68,8 @@ func TestAccNetworkSSHKey(t *testing.T) {
 	resourceName := fmt.Sprintf("equinix_network_ssh_key.%s", context["resourceName"].(string))
 	var key ne.SSHPublicKey
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:  func() { testAccPreCheck(t) },
-		Providers: testAccProviders,
+		PreCheck:  func() { acceptance.TestAccPreCheck(t) },
+		Providers: acceptance.TestAccProviders,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccNetworkSSHKey(context),
@@ -100,7 +104,7 @@ func testAccNetworkSSHKeyExists(resourceName string, key *ne.SSHPublicKey) resou
 		if !ok {
 			return fmt.Errorf("resource not found: %s", resourceName)
 		}
-		client := testAccProvider.Meta().(*config.Config).Ne
+		client := acceptance.TestAccProvider.Meta().(*config.Config).Ne
 		if rs.Primary.ID == "" {
 			return fmt.Errorf("resource has no ID attribute set")
 		}

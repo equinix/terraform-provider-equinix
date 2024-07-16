@@ -6,7 +6,6 @@ import (
 	"os"
 	"testing"
 
-	"github.com/equinix/terraform-provider-equinix/internal/comparisons"
 	"github.com/equinix/terraform-provider-equinix/internal/config"
 	"github.com/equinix/terraform-provider-equinix/internal/provider"
 	"github.com/equinix/terraform-provider-equinix/version"
@@ -48,11 +47,6 @@ var (
 		},
 	}
 )
-
-type testAccConfig struct {
-	ctx    map[string]interface{}
-	config string
-}
 
 func init() {
 	testAccProvider = Provider()
@@ -99,35 +93,9 @@ func testAccPreCheck(t *testing.T) {
 	}
 }
 
-func newTestAccConfig(ctx map[string]interface{}) *testAccConfig {
-	return &testAccConfig{
-		ctx:    ctx,
-		config: "",
-	}
-}
-
-func (t *testAccConfig) build() string {
-	return t.config
-}
-
 func getFromEnv(varName string) (string, error) {
 	if v := os.Getenv(varName); v != "" {
 		return v, nil
 	}
 	return "", fmt.Errorf("environmental variable '%s' is not set", varName)
-}
-
-func getFromEnvDefault(varName string, defaultValue string) string {
-	if v := os.Getenv(varName); v != "" {
-		return v
-	}
-	return defaultValue
-}
-
-func copyMap(source map[string]interface{}) map[string]interface{} {
-	target := make(map[string]interface{})
-	for k, v := range source {
-		target[k] = v
-	}
-	return target
 }

@@ -6,8 +6,10 @@ import (
 	"log"
 	"testing"
 
+	"github.com/equinix/terraform-provider-equinix/internal/acceptance"
 	"github.com/equinix/terraform-provider-equinix/internal/config"
 	"github.com/equinix/terraform-provider-equinix/internal/nprintf"
+	"github.com/equinix/terraform-provider-equinix/internal/sweep"
 
 	"github.com/equinix/ne-go"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -23,8 +25,32 @@ func init() {
 	})
 }
 
+func testAccNeDevicePairExists(resourceName string, primary, secondary *ne.Device) resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		rs, ok := s.RootModule().Resources[resourceName]
+		if !ok {
+			return fmt.Errorf("resource not found: %s", resourceName)
+		}
+		if rs.Primary.ID == "" {
+			return fmt.Errorf("resource has no ID attribute set")
+		}
+		client := acceptance.TestAccProvider.Meta().(*config.Config).Ne
+		resp, err := client.GetDevice(rs.Primary.ID)
+		if err != nil {
+			return fmt.Errorf("error when fetching primary network device '%s': %s", rs.Primary.ID, err)
+		}
+		*primary = *resp
+		resp, err = client.GetDevice(ne.StringValue(resp.RedundantUUID))
+		if err != nil {
+			return fmt.Errorf("error when fetching secondary network device '%s': %s", rs.Primary.ID, err)
+		}
+		*secondary = *resp
+		return nil
+	}
+}
+
 func testSweepNetworkDeviceLink(region string) error {
-	config, err := sharedConfigForRegion(region)
+	config, err := sweep.SharedConfigForRegion(region)
 	if err != nil {
 		return fmt.Errorf("[INFO][SWEEPER_LOG] Error getting configuration for sweeping Network devices link: %s", err)
 	}
@@ -39,7 +65,7 @@ func testSweepNetworkDeviceLink(region string) error {
 	}
 	nonSweepableCount := 0
 	for _, link := range links {
-		if !isSweepableTestResource(ne.StringValue(link.Name)) {
+		if !sweep.IsSweepableTestResource(ne.StringValue(link.Name)) {
 			nonSweepableCount++
 			continue
 		}
@@ -105,8 +131,8 @@ func TestAccNetworkDeviceLink(t *testing.T) {
 	var deviceLink ne.DeviceLinkGroup
 	var primaryDevice, secondaryDevice ne.Device
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:  func() { testAccPreCheck(t) },
-		Providers: testAccProviders,
+		PreCheck:  func() { acceptance.TestAccPreCheck(t) },
+		Providers: acceptance.TestAccProviders,
 		Steps: []resource.TestStep{
 			{
 				Config: newTestAccConfig(context).withDevice().withDeviceLink().build(),
@@ -182,7 +208,7 @@ func testAccNeDeviceLinkExists(resourceName string, deviceLink *ne.DeviceLinkGro
 		if !ok {
 			return fmt.Errorf("resource not found: %s", resourceName)
 		}
-		client := testAccProvider.Meta().(*config.Config).Ne
+		client := acceptance.TestAccProvider.Meta().(*config.Config).Ne
 		if rs.Primary.ID == "" {
 			return fmt.Errorf("resource has no ID attribute set")
 		}

@@ -4,9 +4,14 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/equinix/terraform-provider-equinix/internal/acceptance"
 	"github.com/equinix/terraform-provider-equinix/internal/nprintf"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+)
+
+const (
+	networkDeviceMetroEnvVar = "TF_ACC_NETWORK_DEVICE_METRO"
 )
 
 func TestAccDataSourceNetworkAccount_basic(t *testing.T) {
@@ -19,8 +24,8 @@ func TestAccDataSourceNetworkAccount_basic(t *testing.T) {
 	}
 	resourceName := fmt.Sprintf("data.equinix_network_account.%s", context["resourceName"].(string))
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:  func() { testAccPreCheck(t) },
-		Providers: testAccProviders,
+		PreCheck:  func() { acceptance.TestAccPreCheck(t) },
+		Providers: acceptance.TestAccProviders,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccDataSourceNetworkAccountConfig_basic(context),
