@@ -186,17 +186,19 @@ var neDeviceClusterNodeDescriptions = map[string]string{
 }
 
 var neDeviceVendorConfigSchemaNames = map[string]string{
-	"Hostname":        "hostname",
-	"AdminPassword":   "admin_password",
-	"Controller1":     "controller1",
-	"ActivationKey":   "activation_key",
-	"ControllerFqdn":  "controller_fqdn",
-	"RootPassword":    "root_password",
-	"PrivateAddress":  "private_address",
-	"PrivateCIDRMask": "private_cidr_mask",
-	"PrivateGateway":  "private_gateway",
-	"LicenseKey":      "license_key",
-	"LicenseID":       "license_id",
+	"Hostname":          "hostname",
+	"AdminPassword":     "admin_password",
+	"Controller1":       "controller1",
+	"ActivationKey":     "activation_key",
+	"ControllerFqdn":    "controller_fqdn",
+	"RootPassword":      "root_password",
+	"PrivateAddress":    "private_address",
+	"PrivateCIDRMask":   "private_cidr_mask",
+	"PrivateGateway":    "private_gateway",
+	"LicenseKey":        "license_key",
+	"LicenseID":         "license_id",
+	"PanoramaIPAddress": "panorama_ip_address",
+	"PanoramaAuthKey":   "panorama_auth_key",
 }
 
 var neDeviceVendorConfigDescriptions = map[string]string{
@@ -212,6 +214,8 @@ var neDeviceVendorConfigDescriptions = map[string]string{
 	"PrivateGateway":    "Private gateway. This field is relevant only for the BlueCat DNS and DHCP Server",
 	"LicenseKey":        "License key. This field is relevant only for the BlueCat DNS and DHCP Server",
 	"LicenseID":         "License id. This field is relevant only for the BlueCat DNS and DHCP Server",
+	"PanoramaIPAddress": "Panorama Server IP Address. This field is relevant only for Palo Alto Networks Firewall devices",
+	"PanoramaAuthKey":   "Panorama Server Auth Key. This field is relevant only for Palo Alto Networks Firewall devices",
 }
 
 func resourceNetworkDevice() *schema.Resource {
@@ -950,6 +954,19 @@ func createVendorConfigurationSchema() map[string]*schema.Schema {
 			ForceNew:    true,
 			Description: neDeviceVendorConfigDescriptions["LicenseID"],
 		},
+		neDeviceVendorConfigSchemaNames["PanoramaIPAddress"]: {
+			Type:        schema.TypeString,
+			Optional:    true,
+			ForceNew:    true,
+			Description: neDeviceVendorConfigDescriptions["PanoramaIPAddress"],
+		},
+		neDeviceVendorConfigSchemaNames["PanoramaAuthKey"]: {
+			Type:        schema.TypeString,
+			Optional:    true,
+			Sensitive:   true,
+			ForceNew:    true,
+			Description: neDeviceVendorConfigDescriptions["PanoramaAuthKey"],
+		},
 	}
 }
 
@@ -1541,6 +1558,12 @@ func flattenVendorConfiguration(vendorConfig map[string]string) interface{} {
 	if v, ok := vendorConfig["licenseId"]; ok {
 		transformed[neDeviceVendorConfigSchemaNames["LicenseID"]] = v
 	}
+	if v, ok := vendorConfig["panoramaIpAddress"]; ok {
+		transformed[neDeviceVendorConfigSchemaNames["PanoramaIPAddress"]] = v
+	}
+	if v, ok := vendorConfig["panoramaAuthKey"]; ok {
+		transformed[neDeviceVendorConfigSchemaNames["PanoramaAuthKey"]] = v
+	}
 	return []interface{}{transformed}
 }
 
@@ -1621,6 +1644,12 @@ func expandVendorConfiguration(vendorConfigs []interface{}) map[string]string {
 	}
 	if v, ok := vendorConfig[neDeviceVendorConfigSchemaNames["PrivateGateway"]]; ok && !isEmpty(v) {
 		transformed["privateGateway"] = v.(string)
+	}
+	if v, ok := vendorConfig[neDeviceVendorConfigSchemaNames["PanoramaIPAddress"]]; ok && !isEmpty(v) {
+		transformed["panoramaIpAddress"] = v.(string)
+	}
+	if v, ok := vendorConfig[neDeviceVendorConfigSchemaNames["PanoramaAuthKey"]]; ok && !isEmpty(v) {
+		transformed["panoramaAuthKey"] = v.(string)
 	}
 	return transformed
 }
