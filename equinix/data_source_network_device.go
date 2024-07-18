@@ -661,6 +661,17 @@ func createDataSourceVendorConfigurationSchema() map[string]*schema.Schema {
 			Sensitive:   true,
 			Description: neDeviceVendorConfigDescriptions["LicenseID"],
 		},
+		neDeviceVendorConfigSchemaNames["PanoramaIPAddress"]: {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: neDeviceVendorConfigDescriptions["PanoramaIPAddress"],
+		},
+		neDeviceVendorConfigSchemaNames["PanoramaAuthKey"]: {
+			Type:        schema.TypeString,
+			Sensitive:   true,
+			Computed:    true,
+			Description: neDeviceVendorConfigDescriptions["PanoramaAuthKey"],
+		},
 	}
 }
 

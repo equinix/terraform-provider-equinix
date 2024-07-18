@@ -1,12 +1,13 @@
 # See https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners#example-of-a-codeowners-file
 #
-*                       @equinix/governor-devrel-engineering
-/cmd/migration-tool     @equinix/governor-metal-client-interfaces
-*metal*                 @equinix/governor-metal-client-interfaces
-docs/guides/network_types.md      @equinix/governor-metal-client-interfaces
-*fabric*                @equinix/governor-digin-fabric
-*connection_e2e*        @equinix/governor-digin-fabric
-*resource_network_*     @equinix/governor-ne-network-edge-engineering
-docs/**/network_*      @equinix/governor-ne-network-edge-engineering
-*data_source_network_*  @equinix/governor-ne-network-edge-engineering
-**/edge-networking      @equinix/governor-ne-network-edge-engineering
+*                            @equinix/governor-devrel-engineering
+/cmd/migration-tool          @equinix/governor-metal-client-interfaces
+*metal*                      @equinix/governor-metal-client-interfaces
+docs/guides/network_types.md @equinix/governor-metal-client-interfaces
+*fabric*                     @equinix/governor-digin-fabric
+*connection_e2e*             @equinix/governor-digin-fabric
+*resource_network_*          @equinix/governor-ne-network-edge-engineering
+*data_source_network_*       @equinix/governor-ne-network-edge-engineering
+**/edge-networking           @equinix/governor-ne-network-edge-engineering
+docs/**/network_*            @equinix/governor-ne-network-edge-engineering
+templates/**/network_*       @equinix/governor-ne-network-edge-engineering
