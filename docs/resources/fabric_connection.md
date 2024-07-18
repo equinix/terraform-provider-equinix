@@ -663,7 +663,7 @@ resource "equinix_fabric_connection" "epl" {
 }
 ```
 
-NIMF Metal to AWS EVPL_VC Connection
+NIMF Metal to AWS EVPL_VC Connection:
 
 ```terraform
 resource "equinix_fabric_connection" "metal2aws" {
@@ -700,7 +700,7 @@ resource "equinix_fabric_connection" "metal2aws" {
 }
 ```
 
-NIMF Fabric Cloud Router to Metal IP_VC Connection
+NIMF Fabric Cloud Router to Metal IP_VC Connection:
 
 ```terraform
 resource "equinix_fabric_connection" "fcr2metal" {
@@ -794,7 +794,7 @@ Optional:
 
 Optional:
 
-- `authentication_key` (String) Authentication key for provider based or Metal NIMF connections
+- `authentication_key` (String) Authentication key for provider based connections or Metal NIMF connections
 - `gateway` (Block Set, Max: 1, Deprecated) **Deprecated** `gateway` Use `router` attribute instead (see [below for nested schema](#nestedblock--a_side--access_point--gateway))
 - `interface` (Block Set, Max: 1) Virtual device interface (see [below for nested schema](#nestedblock--a_side--access_point--interface))
 - `link_protocol` (Block Set, Max: 1) Connection link protocol (see [below for nested schema](#nestedblock--a_side--access_point--link_protocol))

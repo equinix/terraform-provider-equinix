@@ -30,6 +30,14 @@ Use this resource to request the creation an Interconnection asset to connect wi
 
 {{tffile "examples/resources/metal_connection/example_3.tf"}}
 
+### Shared Connection with authorization_code Non-redundant NIMF connection from Equinix Metal to a Cloud Service Provider via Equinix Fabric Port
+
+{{tffile "examples/resources/metal_connection/example_4.tf"}}
+
+### Shared Connection with authorization_code Non-redundant NIMF connection from Equinix Fabric Cloud Router to Equinix Metal
+
+{{tffile "examples/resources/metal_connection/example_5.tf"}}
+
 ## Argument Reference
 
 The following arguments are supported:
@@ -57,3 +65,4 @@ In addition to all arguments above, the following attributes are exported:
 * `ports` - List of connection ports - primary (`ports[0]`) and secondary (`ports[1]`). Schema of port is described in documentation of the [equinix_metal_connection datasource](../data-sources/metal_connection.md).
 * `service_tokens` - List of connection service tokens with attributes required to configure the connection in Equinix Fabric with the [equinix_fabric_connection](./fabric_connection.md) resource or from the [Equinix Fabric Portal](https://fabric.equinix.com/dashboard). Scehma of service_token is described in documentation of the [equinix_metal_connection datasource](../data-sources/metal_connection.md).
 * `token` - (Deprecated) Fabric Token required to configure the connection in Equinix Fabric with the [equinix_fabric_connection](./fabric_connection.md) resource or from the [Equinix Fabric Portal](https://fabric.equinix.com/dashboard). If your organization already has connection service tokens enabled, use `service_tokens` instead.
+* `authorization_code` - Fabric Authorization code to configure the NIMF connection with Cloud Service Provider through Equinix Fabric with the [equinix_fabric_connection](./fabric_connection.md) resource from the [Equinix Developer Portal](https://developer.equinix.com/dev-docs/fabric/getting-started/fabric-v4-apis/connect-metal-to-amazon-web-services).
