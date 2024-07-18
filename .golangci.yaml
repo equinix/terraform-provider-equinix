@@ -1,0 +1,13 @@
+run:
+  modules-download-mode: readonly
+  skip-dirs:
+    - cmd/migration-tool
+linters:
+  enable:
+    - errcheck
+    - goimports
+    - gosimple
+    - govet
+    - ineffassign
+    - staticcheck
+    - unused

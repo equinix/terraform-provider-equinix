@@ -1,4 +1,4 @@
-name: Acceptance Tests
+name: Metal Acceptance Tests
 # This workflow determines whether a PR comes from an external fork
 # (which requires approval from us) or from a branch on this repository
 # (which means it was made by us and can run immediately).  Once a PR
@@ -110,7 +110,7 @@ jobs:
         METAL_AUTH_TOKEN: ${{ secrets.METAL_AUTH_TOKEN }}
         TF_ACC_METAL_DEDICATED_CONNECTION_ID: ${{ secrets.TF_ACC_METAL_DEDICATED_CONNECTION_ID }}
       run: |
-        go test ./... -v -coverprofile coverage.txt -covermode=atomic -count 1 -parallel 8 -run "(Metal)|(Provider)|(Migration)" -timeout 180m
+        go test ./... -v -coverprofile coverage.txt -covermode=atomic -count 1 -parallel 8 -run "(Metal)" -timeout 180m
 
     - name: Sweeper
       if: ${{ always() }}

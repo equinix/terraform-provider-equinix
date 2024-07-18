@@ -11,6 +11,9 @@ ACCTEST_COUNT       ?= 1
 GOFMT_FILES         ?=$$(find . -name '*.go' |grep -v vendor)
 PKG_NAME            =equinix
 
+GOLANGCI_LINT_VERSION=v1.56
+GOLANGCI_LINT=go run github.com/golangci/golangci-lint/cmd/golangci-lint@${GOLANGCI_LINT_VERSION}
+
 ifneq ($(origin TESTS_REGEXP), undefined)
 	TESTARGS = -run='$(TESTS_REGEXP)'
 endif
@@ -45,6 +48,8 @@ clean:
 	${GOCMD} clean
 	rm -f ${BINARY}
 
+lint:
+	${GOLANGCI_LINT} run -v
 
 vet:
 	@echo "go vet ."
@@ -117,4 +122,4 @@ tfproviderdocs-check:
 		echo "Unexpected issues found in code with bflad/tfproviderdocs."; \
 		exit 1)
 
-.PHONY: test testacc build install clean  fmt fmtcheck errcheck test-compile docs-lint docs-lint-fix tfproviderlint tfproviderlint-fix tfproviderdocs-check
+.PHONY: test testacc build install clean lint fmt fmtcheck errcheck test-compile docs-lint docs-lint-fix tfproviderlint tfproviderlint-fix tfproviderdocs-check
