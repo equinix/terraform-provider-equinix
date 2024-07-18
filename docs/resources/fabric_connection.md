@@ -663,6 +663,74 @@ resource "equinix_fabric_connection" "epl" {
 }
 ```
 
+NIMF Metal to AWS EVPL_VC Connection
+
+```terraform
+resource "equinix_fabric_connection" "metal2aws" {
+  name = "ConnectionName"
+  type = "EVPLAN_VC"
+  notifications {
+    type   = "ALL"
+    emails = ["example@equinix.com", "test1@equinix.com"]
+  }
+  bandwidth = 50
+  order {
+    purchase_order_number = "1-323292"
+  }
+  a_side {
+    access_point {
+      type               = "METAL_NETWORK"
+      authentication_key = "<metal_authorization_code>"
+    }
+  }
+  z_side {
+    access_point {
+      type = "SP"
+      authentication_key = "<aws_account_id>"
+      seller_region = "us-west-1"
+      profile {
+        type = "L2_PROFILE"
+        uuid = "<service_profile_uuid>"
+      }
+      location {
+        metro_code = "SV"
+      }
+    }
+  }
+}
+```
+
+NIMF Fabric Cloud Router to Metal IP_VC Connection
+
+```terraform
+resource "equinix_fabric_connection" "fcr2metal" {
+  name = "ConnectionName"
+  type = "IP_VC"
+  notifications {
+    type   = "ALL"
+    emails = ["example@equinix.com", "test1@equinix.com"]
+  }
+  bandwidth = 50
+  order {
+    purchase_order_number = "1-323292"
+  }
+  a_side {
+    access_point {
+      type = "CLOUD_ROUTER"
+      router {
+        uuid = "<cloud_router_uuid>"
+      }
+    }
+  }
+  z_side {
+    access_point {
+      type               = "METAL_NETWORK"
+      authentication_key = "<metal_authorization_code>"
+    }
+  }
+}
+```
+
 ### Notes:
 
 Port to IBM Connections could be modified from IBM Service Provider Side by using parameters passed to additional_info field:
@@ -726,7 +794,7 @@ Optional:
 
 Optional:
 
-- `authentication_key` (String) Authentication key for provider based connections
+- `authentication_key` (String) Authentication key for provider based or Metal NIMF connections
 - `gateway` (Block Set, Max: 1, Deprecated) **Deprecated** `gateway` Use `router` attribute instead (see [below for nested schema](#nestedblock--a_side--access_point--gateway))
 - `interface` (Block Set, Max: 1) Virtual device interface (see [below for nested schema](#nestedblock--a_side--access_point--interface))
 - `link_protocol` (Block Set, Max: 1) Connection link protocol (see [below for nested schema](#nestedblock--a_side--access_point--link_protocol))
@@ -738,7 +806,7 @@ Optional:
 - `provider_connection_id` (String) Provider assigned Connection Id
 - `router` (Block Set, Max: 1) Cloud Router access point information that replaces `gateway` (see [below for nested schema](#nestedblock--a_side--access_point--router))
 - `seller_region` (String) Access point seller region
-- `type` (String) Access point type - COLO, VD, VG, SP, IGW, SUBNET, CLOUD_ROUTER, NETWORK
+- `type` (String) Access point type - COLO, VD, VG, SP, IGW, SUBNET, CLOUD_ROUTER, NETWORK, METAL_NETWORK
 - `virtual_device` (Block Set, Max: 1) Virtual device (see [below for nested schema](#nestedblock--a_side--access_point--virtual_device))
 
 Read-Only:
@@ -969,7 +1037,7 @@ Optional:
 - `provider_connection_id` (String) Provider assigned Connection Id
 - `router` (Block Set, Max: 1) Cloud Router access point information that replaces `gateway` (see [below for nested schema](#nestedblock--z_side--access_point--router))
 - `seller_region` (String) Access point seller region
-- `type` (String) Access point type - COLO, VD, VG, SP, IGW, SUBNET, CLOUD_ROUTER, NETWORK
+- `type` (String) Access point type - COLO, VD, VG, SP, IGW, SUBNET, CLOUD_ROUTER, NETWORK, METAL_NETWORK
 - `virtual_device` (Block Set, Max: 1) Virtual device (see [below for nested schema](#nestedblock--z_side--access_point--virtual_device))
 
 Read-Only:

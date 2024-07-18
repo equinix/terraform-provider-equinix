@@ -128,6 +128,131 @@ resource "equinix_fabric_connection" "example" {
 }
 ```
 
+### Shared Connection with authorization_code Non-redundant NIMF connection from Equinix Metal to a Cloud Service Provider via Equinix Fabric Port
+
+```terraform
+resource "equinix_metal_vlan" "example1" {
+    project_id      = local.my_project_id
+    metro           = "SV"
+}
+
+resource "equinix_metal_connection" "example" {
+    name            = "tf-port-to-metal-legacy"
+    project_id      = local.my_project_id
+    metro           = "SV"
+    redundancy      = "redundant"
+    type            = "shared"
+    contact_email   = "username@example.com"
+    vlans              = [
+      equinix_metal_vlan.example1.vxlan,
+      equinix_metal_vlan.example2.vxlan
+    ]
+}
+
+data "equinix_fabric_service_profiles" "zside" {
+  count = var.zside_ap_type == "SP" ? 1 : 0
+  filter {
+    property = "/name"
+    operator = "="
+    values   = ["AWS Direct Connect"]
+  }
+}
+
+resource "equinix_fabric_connection" "example" {
+  name = "tf-NIMF-metal-2-aws-legacy"
+  type = "EVPL_VC"
+  notifications {
+    type   = "ALL"
+    emails = "sername@example.com"
+  }
+  project {
+      project_id = local.fabric_project_id
+  }
+  bandwidth       = "200"
+  order {
+    purchase_order_number = "1-323292"
+  }
+  a_side {
+    access_point {
+      type               = "METAL_NETWORK"
+      authentication_key = equinix_metal_connection.metal-connection.authorization_code
+    }
+  }
+  z_side {
+    access_point {
+      type               = "SP"
+      authentication_key = local.aws_account_id
+      seller_region      = "us-west-1"
+      profile {
+        type = "L2_PROFILE"
+        uuid = data.equinix_fabric_service_profiles.zside[0].id
+      }
+      location {
+        metro_code ="SV"
+      }
+    }
+  }
+}
+```
+
+### Shared Connection with authorization_code Non-redundant NIMF connection from Equinix Fabric Cloud Router to Equinix Metal
+
+```terraform
+resource "equinix_metal_vlan" "example1" {
+    project_id      = local.my_project_id
+    metro           = "SV"
+}
+
+resource "equinix_metal_connection" "example" {
+    name            = "tf-port-to-metal-legacy"
+    project_id      = local.my_project_id
+    metro           = "SV"
+    redundancy      = "redundant"
+    type            = "shared"
+    contact_email   = "username@example.com"
+    vlans              = [
+      equinix_metal_vlan.example1.vxlan,
+      equinix_metal_vlan.example2.vxlan
+    ]
+}
+
+resource "equinix_fabric_connection" "example" {
+  name = "tf-NIMF-metal-2-aws-legacy"
+  type = "EVPL_VC"
+  notifications {
+    type   = "ALL"
+    emails = "sername@example.com"
+  }
+  project {
+      project_id = local.fabric_project_id
+  }
+  bandwidth       = "200"
+  order {
+    purchase_order_number = "1-323292"
+  }
+  a_side {
+    access_point {
+      type               = "METAL_NETWORK"
+      authentication_key = equinix_metal_connection.metal-connection.authorization_code
+    }
+  }
+  z_side {
+    access_point {
+      type               = "SP"
+      authentication_key = local.aws_account_id
+      seller_region      = "us-west-1"
+      profile {
+        type = "L2_PROFILE"
+        uuid = data.equinix_fabric_service_profiles.zside[0].id
+      }
+      location {
+        metro_code ="SV"
+      }
+    }
+  }
+}
+```
+
 ## Argument Reference
 
 The following arguments are supported:
@@ -155,3 +280,4 @@ In addition to all arguments above, the following attributes are exported:
 * `ports` - List of connection ports - primary (`ports[0]`) and secondary (`ports[1]`). Schema of port is described in documentation of the [equinix_metal_connection datasource](../data-sources/metal_connection.md).
 * `service_tokens` - List of connection service tokens with attributes required to configure the connection in Equinix Fabric with the [equinix_fabric_connection](./fabric_connection.md) resource or from the [Equinix Fabric Portal](https://fabric.equinix.com/dashboard). Scehma of service_token is described in documentation of the [equinix_metal_connection datasource](../data-sources/metal_connection.md).
 * `token` - (Deprecated) Fabric Token required to configure the connection in Equinix Fabric with the [equinix_fabric_connection](./fabric_connection.md) resource or from the [Equinix Fabric Portal](https://fabric.equinix.com/dashboard). If your organization already has connection service tokens enabled, use `service_tokens` instead.
+* `authorization_code` - Fabric Authorization code to configure the NIMF connection with Cloud Service Provider through Equinix Fabric with the [equinix_fabric_connection](./fabric_connection.md) resource from the [Equinix Developer Portal](https://developer.equinix.com/dev-docs/fabric/getting-started/fabric-v4-apis/connect-metal-to-amazon-web-services).
