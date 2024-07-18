@@ -14,17 +14,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 )
 
-func init() {
-	resource.AddTestSweepers("equinix_fabric_connection_PNFV", &resource.Sweeper{
-		Name: "equinix_fabric_connection",
-		F:    testSweepConnections,
-	})
-}
-
-func testSweepConnections(region string) error {
-	return nil
-}
-
 func TestAccFabricCreatePort2SPConnection_PPDS(t *testing.T) {
 	ports := testing_helpers.GetFabricEnvPorts(t)
 	connectionsTestData := testing_helpers.GetFabricEnvConnectionTestData(t)
