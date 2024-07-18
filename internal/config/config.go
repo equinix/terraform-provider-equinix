@@ -122,6 +122,7 @@ func (c *Config) Load(ctx context.Context) error {
 
 // NewFabricClientForSDK returns a terraform sdkv2 plugin compatible
 // equinix-sdk-go/fabricv4 client to be used to access Fabric's V4 APIs
+// Deprecated: migrate to NewFabricClientForFramework instead
 func (c *Config) NewFabricClientForSDK(d *schema.ResourceData) *fabricv4.APIClient {
 	client := c.newFabricClient()
 
@@ -137,6 +138,15 @@ func (c *Config) NewFabricClientForTesting() *fabricv4.APIClient {
 	client := c.newFabricClient()
 
 	client.GetConfig().UserAgent = fmt.Sprintf("tf-acceptance-tests %v", client.GetConfig().UserAgent)
+
+	return client
+}
+
+func (c *Config) NewFabricClientForFramework(ctx context.Context, meta tfsdk.Config) *fabricv4.APIClient {
+	client := c.newFabricClient()
+
+	baseUserAgent := c.tfFrameworkUserAgent(client.GetConfig().UserAgent)
+	client.GetConfig().UserAgent = generateFwModuleUserAgentString(ctx, meta, baseUserAgent)
 
 	return client
 }
