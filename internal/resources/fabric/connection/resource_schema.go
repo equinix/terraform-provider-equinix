@@ -213,7 +213,7 @@ func accessPointSch() *schema.Resource {
 				Type:         schema.TypeString,
 				Optional:     true,
 				ValidateFunc: validation.StringInSlice([]string{"COLO", "VD", "VG", "SP", "IGW", "SUBNET", "CLOUD_ROUTER", "NETWORK", "METAL_NETWORK"}, true),
-				Description:  "Access point type - COLO, VD, VG, SP, IGW, SUBNET, CLOUD_ROUTER, NETWORK",
+				Description:  "Access point type - COLO, VD, VG, SP, IGW, SUBNET, CLOUD_ROUTER, NETWORK, METAL_NETWORK",
 			},
 			"account": {
 				Type:        schema.TypeSet,
@@ -321,7 +321,7 @@ func accessPointSch() *schema.Resource {
 			"authentication_key": {
 				Type:        schema.TypeString,
 				Optional:    true,
-				Description: "Authentication key for provider based connections",
+				Description: "Authentication key for provider based connections or Metal NIMF connections",
 			},
 			"provider_connection_id": {
 				Type:        schema.TypeString,
