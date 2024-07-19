@@ -8,7 +8,7 @@ import (
 	"github.com/equinix/terraform-provider-equinix/equinix"
 	"github.com/equinix/terraform-provider-equinix/internal/config"
 	"github.com/equinix/terraform-provider-equinix/internal/env"
-	"github.com/equinix/terraform-provider-equinix/internal/provider"
+	"github.com/equinix/terraform-provider-equinix/equinix/provider"
 	"github.com/equinix/terraform-provider-equinix/version"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	terraformsdk "github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
