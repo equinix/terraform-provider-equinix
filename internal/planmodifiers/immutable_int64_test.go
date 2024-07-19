@@ -11,8 +11,8 @@ import (
 
 func TestImmutableStringSet(t *testing.T) {
 	testCases := []struct {
-		Old, New, Expected int64 
-		ExpectError bool
+		Old, New, Expected int64
+		ExpectError        bool
 	}{
 		{
 			Old:         0,
@@ -33,7 +33,7 @@ func TestImmutableStringSet(t *testing.T) {
 	for i, testCase := range testCases {
 		stateValue := types.Int64Value(testCase.Old)
 		planValue := types.Int64Value(testCase.New)
-		expectedValue := types.Int64Null() 
+		expectedValue := types.Int64Null()
 		if testCase.Expected != 0 {
 			expectedValue = types.Int64Value(testCase.Expected)
 		}
@@ -41,7 +41,7 @@ func TestImmutableStringSet(t *testing.T) {
 		req := planmodifier.Int64Request{
 			StateValue: stateValue,
 			PlanValue:  planValue,
-			Path: path.Root("test"),
+			Path:       path.Root("test"),
 		}
 
 		var resp planmodifier.Int64Response
