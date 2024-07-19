@@ -129,7 +129,7 @@ jobs:
           SWEEP_DIR: "./equinix"
         run: |
           # Added sweep-run to filter Fabric PNFV test
-          go test ${SWEEP_DIR} -v -timeout 180m -sweep=${SWEEP} -sweep-allow-failures=${SWEEP_ALLOW_FAILURES} -sweep-run=$(grep -o 'AddTestSweepers("[^"]*PNFV"' equinix/resource_fabric_* | cut -d '"' -f2 | paste -s -d, -)
+          go test $(go list ./... | grep 'internal/sweep\|equinix/equinix') -v -timeout 180m -sweep=${SWEEP} -sweep-allow-failures=${SWEEP_ALLOW_FAILURES} -sweep-run=$(grep -or 'AddTestSweepers("[^"]*"' | grep "_fabric_" | cut -d '"' -f2 | paste -s -d, -)
 
       - name: Upload coverage to Codecov
         if: ${{ always() }}
@@ -194,10 +194,9 @@ jobs:
           METAL_AUTH_TOKEN: ${{ secrets.METAL_AUTH_TOKEN }}
           SWEEP: "all" #Flag required to define the regions that the sweeper is to be ran in
           SWEEP_ALLOW_FAILURES: "true" #Enable to allow Sweeper Tests to continue after failures
-          SWEEP_DIR: "./equinix"
         run: |
           # Added sweep-run to filter Fabric PFCR test
-          go test ${SWEEP_DIR} -v -timeout 180m -sweep=${SWEEP} -sweep-allow-failures=${SWEEP_ALLOW_FAILURES} -sweep-run=$(grep -o 'AddTestSweepers("[^"]*PFCR"' equinix/resource_fabric_* | cut -d '"' -f2 | paste -s -d, -)
+          go test $(go list ./... | grep 'internal/sweep\|equinix/equinix') -v -timeout 180m -sweep=${SWEEP} -sweep-allow-failures=${SWEEP_ALLOW_FAILURES} -sweep-run=$(grep -or 'AddTestSweepers("[^"]*"' | grep "_fabric_" | cut -d '"' -f2 | paste -s -d, -)
 
       - name: Upload coverage to Codecov
         if: ${{ always() }}
