@@ -183,6 +183,11 @@ func configureProvider(ctx context.Context, d *schema.ResourceData, p *schema.Pr
 		config.TerraformVersion = "0.11+compatible"
 	}
 
+	// We need to keep using a global stop context until
+	// all resources and data sources are updated to use
+	// context-aware CRUD functions, which should happen
+	// gradually due to linting on those files
+	// nolint:staticcheck
 	stopCtx, ok := schema.StopContext(ctx)
 	if !ok {
 		stopCtx = ctx
