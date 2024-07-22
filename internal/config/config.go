@@ -102,6 +102,7 @@ func (c *Config) Load(ctx context.Context) error {
 	}
 
 	authClient.Timeout = c.requestTimeout()
+	//nolint:staticcheck // We should move to subsystem loggers, but that is a much bigger change
 	authClient.Transport = logging.NewTransport("Equinix", authClient.Transport)
 	c.authClient = authClient
 	neClient := ne.NewClient(ctx, c.BaseURL, authClient)
@@ -143,6 +144,7 @@ func (c *Config) NewFabricClientForTesting() *fabricv4.APIClient {
 // newFabricClient returns the base fabricv4 client that is then used for either the sdkv2 or framework
 // implementations of the Terraform Provider with exported Methods
 func (c *Config) newFabricClient() *fabricv4.APIClient {
+	//nolint:staticcheck // We should move to subsystem loggers, but that is a much bigger change
 	transport := logging.NewTransport("Equinix Fabric (fabricv4)", c.authClient.Transport)
 
 	retryClient := retryablehttp.NewClient()
@@ -174,6 +176,7 @@ func (c *Config) newFabricClient() *fabricv4.APIClient {
 // Deprecated: migrate to NewMetalClientForSdk or NewMetalClientForFramework instead
 func (c *Config) NewMetalClient() *packngo.Client {
 	transport := http.DefaultTransport
+	//nolint:staticcheck // We should move to subsystem loggers, but that is a much bigger change
 	transport = logging.NewTransport("Equinix Metal (packngo)", transport)
 	retryClient := retryablehttp.NewClient()
 	retryClient.HTTPClient.Transport = transport
@@ -221,6 +224,7 @@ func (c *Config) NewMetalClientForTesting() *metalv1.APIClient {
 
 func (c *Config) newMetalClient() *metalv1.APIClient {
 	transport := http.DefaultTransport
+	//nolint:staticcheck // We should move to subsystem loggers, but that is a much bigger change
 	transport = logging.NewTransport("Equinix Metal (metal-go)", transport)
 	retryClient := retryablehttp.NewClient()
 	retryClient.HTTPClient.Transport = transport
