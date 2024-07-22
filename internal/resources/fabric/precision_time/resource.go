@@ -7,6 +7,11 @@ import (
 	equinix_errors "github.com/equinix/terraform-provider-equinix/internal/errors"
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
+	"net/http"
+	"reflect"
+	"slices"
+	"time"
 
 	"github.com/equinix/terraform-provider-equinix/internal/framework"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
@@ -88,7 +93,34 @@ func (r *Resource) Read(
 	req resource.ReadRequest,
 	resp *resource.ReadResponse,
 ) {
+	var state ResourceModel
+	diags := req.State.Get(ctx, &state)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
 
+	// Retrieve the API client from the provider metadata
+	client := r.Meta.NewFabricClientForFramework(ctx, req.ProviderMeta)
+
+	// Extract the ID of the resource from the state
+	id := state.ID.ValueString()
+
+	// Use API client to get the current state of the resource
+	ept, diags := getEpt(ctx, client, &resp.State, id)
+	if diags != nil {
+		resp.Diagnostics.Append(diags...)
+		return
+	}
+
+	// Set state to fully populated data
+	resp.Diagnostics.Append(state.parse(ctx, ept)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	// Update the Terraform state
+	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 }
 
 func (r *Resource) Update(
@@ -96,7 +128,120 @@ func (r *Resource) Update(
 	req resource.UpdateRequest,
 	resp *resource.UpdateResponse,
 ) {
+	client := r.Meta.NewFabricClientForFramework(ctx, req.ProviderMeta)
 
+	// Retrieve values from plan
+	var state, plan ResourceModel
+	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
+	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	// Extract the ID of the resource from the state
+	id := plan.ID.ValueString()
+
+	// Prepare update request based on the changes
+	updateRequest := make([]fabricv4.PrecisionTimeChangeOperation, 0)
+
+	if !state.Name.Equal(plan.Name) {
+		op := fabricv4.PRECISIONTIMECHANGEOPERATIONOP_REPLACE
+		if plan.Name.ValueString() != "" && state.Name.ValueString() == "" {
+			op = fabricv4.PRECISIONTIMECHANGEOPERATIONOP_ADD
+		} else if plan.Name.ValueString() == "" && state.Name.ValueString() != "" {
+			op = fabricv4.PRECISIONTIMECHANGEOPERATIONOP_REMOVE
+		}
+		updateRequest = append(updateRequest, fabricv4.PrecisionTimeChangeOperation{
+			Op:    op,
+			Path:  fabricv4.PRECISIONTIMECHANGEOPERATIONPATH_NAME,
+			Value: plan.Name.ValueString(),
+		})
+	}
+	if !state.Ipv4.Equal(plan.Ipv4) {
+		ipv4 := fabricv4.Ipv4{}
+		diags := plan.Ipv4.As(ctx, &ipv4, basetypes.ObjectAsOptions{})
+		if diags.HasError() {
+			resp.Diagnostics.Append(diags...)
+			return
+		}
+		updateRequest = append(updateRequest, fabricv4.PrecisionTimeChangeOperation{
+			Op:    fabricv4.PRECISIONTIMECHANGEOPERATIONOP_REPLACE,
+			Path:  fabricv4.PRECISIONTIMECHANGEOPERATIONPATH_NAME,
+			Value: ipv4,
+		})
+	}
+	if !state.AdvanceConfiguration.Equal(plan.AdvanceConfiguration) {
+		stateAdvConfig := fabricv4.AdvanceConfiguration{}
+		diags := state.AdvanceConfiguration.As(ctx, &stateAdvConfig, basetypes.ObjectAsOptions{})
+		if diags.HasError() {
+			resp.Diagnostics.Append(diags...)
+			return
+		}
+		planAdvConfig := fabricv4.AdvanceConfiguration{}
+		diags = plan.AdvanceConfiguration.As(ctx, &planAdvConfig, basetypes.ObjectAsOptions{})
+		if diags.HasError() {
+			resp.Diagnostics.Append(diags...)
+			return
+		}
+		if !reflect.DeepEqual(stateAdvConfig.Ntp, planAdvConfig.Ntp) {
+			updateRequest = append(updateRequest, fabricv4.PrecisionTimeChangeOperation{
+				Op:    fabricv4.PRECISIONTIMECHANGEOPERATIONOP_REPLACE,
+				Path:  fabricv4.PRECISIONTIMECHANGEOPERATIONPATH_NAME,
+				Value: planAdvConfig.Ntp,
+			})
+		}
+		if !reflect.DeepEqual(stateAdvConfig.Ptp, planAdvConfig.Ptp) {
+			updateRequest = append(updateRequest, fabricv4.PrecisionTimeChangeOperation{
+				Op:    fabricv4.PRECISIONTIMECHANGEOPERATIONOP_REPLACE,
+				Path:  fabricv4.PRECISIONTIMECHANGEOPERATIONPATH_NAME,
+				Value: planAdvConfig.Ntp,
+			})
+		}
+	}
+	if !state.Package.Equal(plan.Package) {
+		packageModel := PackageModel{}
+		diags := plan.Package.As(ctx, &packageModel, basetypes.ObjectAsOptions{})
+		if diags.HasError() {
+			resp.Diagnostics.Append(diags...)
+			return
+		}
+		updateRequest = append(updateRequest, fabricv4.PrecisionTimeChangeOperation{
+			Op:    fabricv4.PRECISIONTIMECHANGEOPERATIONOP_REPLACE,
+			Path:  fabricv4.PRECISIONTIMECHANGEOPERATIONPATH_NAME,
+			Value: packageModel.Code.ValueString(),
+		})
+	}
+
+	for _, update := range updateRequest {
+		if !reflect.DeepEqual(updateRequest, fabricv4.PrecisionTimeChangeOperation{}) {
+			_, _, err := client.PrecisionTimeApi.UpdateTimeServicesById(ctx, id).
+				PrecisionTimeChangeOperation([]fabricv4.PrecisionTimeChangeOperation{update}).
+				Execute()
+
+			if err != nil {
+				resp.Diagnostics.AddError(
+					"Error updating Precision Time Service",
+					equinix_errors.FormatFabricError(err).Error(),
+				)
+			}
+		}
+	}
+
+	// Use API client to get the current state of the resource
+	conn, diags := getEpt(ctx, client, &resp.State, id)
+	if diags != nil {
+		resp.Diagnostics.Append(diags...)
+		return
+	}
+
+	// Set state to fully populated data
+	resp.Diagnostics.Append(plan.parse(ctx, conn)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	// Set the updated state back into Terraform state
+	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
 
 func (r *Resource) Delete(
@@ -104,7 +249,37 @@ func (r *Resource) Delete(
 	req resource.DeleteRequest,
 	resp *resource.DeleteResponse,
 ) {
+	// Retrieve the API client
+	client := r.Meta.NewFabricClientForFramework(ctx, req.ProviderMeta)
 
+	// Retrieve the current state
+	var state ResourceModel
+	diags := req.State.Get(ctx, &state)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	// Extract the ID of the resource from the state
+	id := state.ID.ValueString()
+
+	// API call to delete the Precision Time Service
+	_, deleteResp, err := client.PrecisionTimeApi.DeleteTimeServiceById(ctx, id).Execute()
+	if err != nil {
+		if deleteResp == nil || !slices.Contains([]int{http.StatusForbidden, http.StatusNotFound}, deleteResp.StatusCode) {
+			resp.Diagnostics.AddError(
+				fmt.Sprintf("Failed to delete Precision Time Service %s", id), err.Error())
+		}
+	}
+
+	deleteTimeout := 10 * 60 * time.Second
+	deleteWaiter := getDeleteWaiter(ctx, client, id, deleteTimeout)
+	_, err = deleteWaiter.WaitForStateContext(ctx)
+
+	if err != nil {
+		resp.Diagnostics.AddError(
+			fmt.Sprintf("Failed to delete Precision Time Service %s", id), err.Error())
+	}
 }
 
 func buildCreateRequest(ctx context.Context, plan ResourceModel) (fabricv4.PrecisionTimeServiceRequest, diag.Diagnostics) {
@@ -187,22 +362,22 @@ func buildCreateRequest(ctx context.Context, plan ResourceModel) (fabricv4.Preci
 		ptp.SetPriority1(int32(priority1))
 	}
 	if priority2 := ptpModel.Priority2.ValueInt64(); priority2 != 0 {
-		ptp.SetPriority1(int32(priority2))
+		ptp.SetPriority2(int32(priority2))
 	}
 	if logAnnounceInterval := ptpModel.LogAnnounceInterval.ValueInt64(); logAnnounceInterval != 0 {
-		ptp.SetPriority1(int32(logAnnounceInterval))
+		ptp.SetLogAnnounceInterval(int32(logAnnounceInterval))
 	}
 	if logSyncInterval := ptpModel.LogSyncInterval.ValueInt64(); logSyncInterval != 0 {
-		ptp.SetPriority1(int32(logSyncInterval))
+		ptp.SetLogSyncInterval(int32(logSyncInterval))
 	}
 	if logDelayReqInterval := ptpModel.LogDelayReqInterval.ValueInt64(); logDelayReqInterval != 0 {
-		ptp.SetPriority1(int32(logDelayReqInterval))
+		ptp.SetLogDelayReqInterval(int32(logDelayReqInterval))
 	}
 	if transportMode := ptpModel.TransportMode.ValueString(); transportMode != "" {
-		ptp.SetPriority1(fabricv4.PtpAdvanceConfigurationTransportMode(transportMode))
+		ptp.SetTransportMode(fabricv4.PtpAdvanceConfigurationTransportMode(transportMode))
 	}
 	if grantTime := ptpModel.GrantTime.ValueInt64(); grantTime != 0 {
-		ptp.SetPriority1(int32(grantTime))
+		ptp.SetGrantTime(int32(grantTime))
 	}
 
 	ntpModels, diags := advConfigModel.Ntp.ToSlice(ctx)
@@ -269,4 +444,30 @@ func getEpt(ctx context.Context, client *fabricv4.APIClient, state *tfsdk.State,
 		return nil, diags
 	}
 	return ept, diags
+}
+
+func getDeleteWaiter(ctx context.Context, client *fabricv4.APIClient, id string, timeout time.Duration) *retry.StateChangeConf {
+	// deletedMarker is a terraform-provider-only value that is used by the waiter
+	// to indicate that the Precision Time Service appears to be deleted successfully based on
+	// status code
+	deletedMarker := "tf-marker-for-deleted-precision-time-service"
+
+	target := []string{deletedMarker, "deleted"}
+
+	return &retry.StateChangeConf{
+		Target: target,
+		Refresh: func() (interface{}, string, error) {
+			ept, resp, err := client.PrecisionTimeApi.GetTimeServicesById(ctx, id).Execute()
+			if err != nil {
+				if resp != nil && slices.Contains([]int{http.StatusForbidden, http.StatusNotFound}, resp.StatusCode) {
+					return ept, deletedMarker, nil
+				}
+				return 0, "", err
+			}
+			return ept, string(ept.GetState()), nil
+		},
+		Timeout:    timeout,
+		Delay:      10 * time.Second,
+		MinTimeout: 5 * time.Second,
+	}
 }

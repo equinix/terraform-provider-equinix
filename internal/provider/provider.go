@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/equinix/terraform-provider-equinix/internal/config"
+	fabricprecisiontime "github.com/equinix/terraform-provider-equinix/internal/resources/fabric/precision_time"
 	metalconnection "github.com/equinix/terraform-provider-equinix/internal/resources/metal/connection"
 	metalgateway "github.com/equinix/terraform-provider-equinix/internal/resources/metal/gateway"
 	metalorganization "github.com/equinix/terraform-provider-equinix/internal/resources/metal/organization"
@@ -114,6 +115,7 @@ func (p *FrameworkProvider) MetaSchema(
 
 func (p *FrameworkProvider) Resources(ctx context.Context) []func() resource.Resource {
 	return []func() resource.Resource{
+		fabricprecisiontime.NewResource,
 		metalgateway.NewResource,
 		metalproject.NewResource,
 		metalprojectsshkey.NewResource,
@@ -127,6 +129,7 @@ func (p *FrameworkProvider) Resources(ctx context.Context) []func() resource.Res
 
 func (p *FrameworkProvider) DataSources(ctx context.Context) []func() datasource.DataSource {
 	return []func() datasource.DataSource{
+		fabricprecisiontime.NewDataSource,
 		metalgateway.NewDataSource,
 		metalproject.NewDataSource,
 		metalprojectsshkey.NewDataSource,
