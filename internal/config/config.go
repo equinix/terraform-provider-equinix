@@ -41,24 +41,9 @@ type ProviderMeta struct {
 }
 
 const (
-	consumerToken         = "aZ9GmqHTPtxevvFq9SK3Pi2yr9YCbRzduCSXF2SNem5sjB91mDq7Th3ZwTtRqMWZ"
-	metalBasePath         = "/metal/v1/"
-	uaEnvVar              = "TF_APPEND_USER_AGENT"
-	emptyCredentialsError = `the provider needs to be configured with the proper credentials before it
-can be used.
-
-One of pair "client_id" - "client_secret" or "token" must be set in the provider
-configuration to interact with Equinix Fabric and Network Edge services, and
-"auth_token" to interact with Equinix Metal. These can also be configured using
-environment variables.
-
-Please note that while the authentication arguments are individually optional to allow
-interaction with the different services independently, trying to provision the resources
-of a service without the required credentials will return an API error referring to
-'Invalid authentication token' or 'error when acquiring token'.
-
-More information on the provider configuration can be found here:
-https://registry.terraform.io/providers/equinix/equinix/latest/docs`
+	consumerToken = "aZ9GmqHTPtxevvFq9SK3Pi2yr9YCbRzduCSXF2SNem5sjB91mDq7Th3ZwTtRqMWZ"
+	metalBasePath = "/metal/v1/"
+	uaEnvVar      = "TF_APPEND_USER_AGENT"
 )
 
 var (
@@ -98,10 +83,6 @@ func (c *Config) Load(ctx context.Context) error {
 		return fmt.Errorf("'baseURL' cannot be empty")
 	}
 
-	if c.Token == "" && (c.ClientID == "" || c.ClientSecret == "") && c.AuthToken == "" {
-		return fmt.Errorf(emptyCredentialsError)
-	}
-
 	var authClient *http.Client
 	if c.Token != "" {
 		tokenSource := xoauth2.StaticTokenSource(&xoauth2.Token{AccessToken: c.Token})
@@ -121,6 +102,7 @@ func (c *Config) Load(ctx context.Context) error {
 	}
 
 	authClient.Timeout = c.requestTimeout()
+	//nolint:staticcheck // We should move to subsystem loggers, but that is a much bigger change
 	authClient.Transport = logging.NewTransport("Equinix", authClient.Transport)
 	c.authClient = authClient
 	neClient := ne.NewClient(ctx, c.BaseURL, authClient)
@@ -162,6 +144,7 @@ func (c *Config) NewFabricClientForTesting() *fabricv4.APIClient {
 // newFabricClient returns the base fabricv4 client that is then used for either the sdkv2 or framework
 // implementations of the Terraform Provider with exported Methods
 func (c *Config) newFabricClient() *fabricv4.APIClient {
+	//nolint:staticcheck // We should move to subsystem loggers, but that is a much bigger change
 	transport := logging.NewTransport("Equinix Fabric (fabricv4)", c.authClient.Transport)
 
 	retryClient := retryablehttp.NewClient()
@@ -193,6 +176,7 @@ func (c *Config) newFabricClient() *fabricv4.APIClient {
 // Deprecated: migrate to NewMetalClientForSdk or NewMetalClientForFramework instead
 func (c *Config) NewMetalClient() *packngo.Client {
 	transport := http.DefaultTransport
+	//nolint:staticcheck // We should move to subsystem loggers, but that is a much bigger change
 	transport = logging.NewTransport("Equinix Metal (packngo)", transport)
 	retryClient := retryablehttp.NewClient()
 	retryClient.HTTPClient.Transport = transport
@@ -240,6 +224,7 @@ func (c *Config) NewMetalClientForTesting() *metalv1.APIClient {
 
 func (c *Config) newMetalClient() *metalv1.APIClient {
 	transport := http.DefaultTransport
+	//nolint:staticcheck // We should move to subsystem loggers, but that is a much bigger change
 	transport = logging.NewTransport("Equinix Metal (metal-go)", transport)
 	retryClient := retryablehttp.NewClient()
 	retryClient.HTTPClient.Transport = transport
