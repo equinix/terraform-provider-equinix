@@ -1,6 +1,6 @@
-resource "equinix_fabric_connection" "vd2token" {
+resource "equinix_fabric_connection" "eplan" {
   name = "ConnectionName"
-  type = "EVPLAN_VC"
+  type = "EPLAN_VC"
   notifications {
     type   = "ALL"
     emails = ["example@equinix.com", "test1@equinix.com"]
@@ -11,14 +11,9 @@ resource "equinix_fabric_connection" "vd2token" {
   }
   a_side {
     access_point {
-      type = "VD"
-      virtual_device {
-        type = "EDGE"
-        uuid = "<device_uuid>"
-      }
-      interface {
-        type = "CLOUD"
-        id = 7
+      type = "COLO"
+      port {
+        uuid = "<aside_port_uuid>"
       }
     }
   }

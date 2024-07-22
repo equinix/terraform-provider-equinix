@@ -1,6 +1,6 @@
-resource "equinix_fabric_connection" "epl" {
+resource "equinix_fabric_connection" "fcr2metal" {
   name = "ConnectionName"
-  type = "EPLAN_VC"
+  type = "IP_VC"
   notifications {
     type   = "ALL"
     emails = ["example@equinix.com", "test1@equinix.com"]
@@ -11,18 +11,16 @@ resource "equinix_fabric_connection" "epl" {
   }
   a_side {
     access_point {
-      type = "COLO"
-      port {
-        uuid = "<aside_port_uuid>"
+      type = "CLOUD_ROUTER"
+      router {
+        uuid = "<cloud_router_uuid>"
       }
     }
   }
   z_side {
     access_point {
-      type = "NETWORK"
-      network {
-        uuid = "<network_uuid>"
-      }
+      type               = "METAL_NETWORK"
+      authentication_key = "<metal_authorization_code>"
     }
   }
 }

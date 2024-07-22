@@ -1,4 +1,4 @@
-resource "equinix_fabric_connection" "epl" {
+resource "equinix_fabric_connection" "evplan" {
   name = "ConnectionName"
   type = "EVPLAN_VC"
   notifications {

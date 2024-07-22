@@ -56,3 +56,4 @@ In addition to all arguments above, the following attributes are exported:
   * `link_status` - Port link status.
   * `virtual_circuit_ids` - List of IDs of virtual cicruits attached to this port.
 * `token` - (Deprecated) Fabric Token required to configure the connection in Equinix Fabric with the [equinix_fabric_connection](../resources/fabric_connection.md) resource or from the [Equinix Fabric Portal](https://fabric.equinix.com/dashboard). If your organization already has connection service tokens enabled, use `service_tokens` instead.
+* `authorization_code` - Fabric Authorization Code to configure the NIMF connection in Equinix Fabric with the [equinix_fabric_connection](../resources/fabric_connection.md) resource or from the [Equinix Fabric Portal](https://fabric.equinix.com/dashboard).
