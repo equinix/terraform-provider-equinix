@@ -109,7 +109,7 @@ func dataSourceSchema(ctx context.Context) schema.Schema {
 				Computed:    true,
 			},
 			"authorization_code": schema.StringAttribute{
-				Description: "Fabric Authorization code to configure the NIMF connection with Cloud Service Provider through Equinix Fabric with the [equinix_fabric_connection](./fabric_connection.md) resource from the [Equinix Developer Portal](https://developer.equinix.com/dev-docs/fabric/getting-started/fabric-v4-apis/connect-metal-to-amazon-web-services).",
+				Description: "Only used with Fabric Shared connection. Fabric uses this token to be able to give more detailed information about the Metal end of the network, when viewing resources from within Fabric.",
 				Computed:    true,
 			},
 		},
