@@ -2,6 +2,7 @@ package precision_time
 
 import (
 	"context"
+	"fmt"
 	"github.com/equinix/equinix-sdk-go/services/fabricv4"
 	"github.com/equinix/terraform-provider-equinix/internal/framework"
 	fwtypes "github.com/equinix/terraform-provider-equinix/internal/framework/types"
@@ -16,7 +17,7 @@ func dataSourceSchema(ctx context.Context) schema.Schema {
 			"id": framework.IDAttributeDefaultDescription(),
 			"uuid": schema.StringAttribute{
 				Description: "Uuid of Precision Time Service resource; used for lookup",
-				Required:    true,
+				Computed:    true,
 			},
 			"type": schema.StringAttribute{
 				Description: "Choose type of Precision Time Service",
@@ -39,9 +40,14 @@ func dataSourceSchema(ctx context.Context) schema.Schema {
 				Description: "Optional description of time service",
 				Computed:    true,
 			},
-			"package": schema.SingleNestedAttribute{
-				Description: "An object that has the Time Precision Package code and Time Precision Package href",
+			"state": schema.StringAttribute{
+				Description: fmt.Sprintf("Indicator of the state of this Precision Time Service. One of: [%v]", fabricv4.AllowedPrecisionTimeServiceCreateResponseStateEnumValues),
 				Computed:    true,
+			},
+		},
+		Blocks: map[string]schema.Block{
+			"package": schema.SingleNestedBlock{
+				Description: "Precision Time Service Package Details",
 				CustomType:  fwtypes.NewObjectTypeOf[PackageModel](ctx),
 				Attributes: map[string]schema.Attribute{
 					"code": schema.StringAttribute{
@@ -60,17 +66,46 @@ func dataSourceSchema(ctx context.Context) schema.Schema {
 						Description: "Time Precision Package HREF link to corresponding resource in Equinix Portal",
 						Computed:    true,
 					},
+					"type": schema.StringAttribute{
+						Description: "Type of the Precision Time Service Package",
+						Computed:    true,
+					},
+					"bandwidth": schema.Int64Attribute{
+						Description: "Bandwidth of the Precision Time Service",
+						Computed:    true,
+					},
+					"clients_per_second_max": schema.Int64Attribute{
+						Description: "Maximum clients available per second for the Precision Time Service",
+						Computed:    true,
+					},
+					"redundancy_supported": schema.BoolAttribute{
+						Description: "Boolean flag indicating if this Precision Time Service supports redundancy",
+						Computed:    true,
+					},
+					"multi_subnet_supported": schema.BoolAttribute{
+						Description: "Boolean flag indicating if this Precision Time Service supports multi subnetting",
+						Computed:    true,
+					},
+					"accuracy_unit": schema.StringAttribute{
+						Description: "Time unit of accuracy for the Precision Time Service; e.g. microseconds",
+						Computed:    true,
+					},
+					"accuracy_sla": schema.Int64Attribute{
+						Description: "SLA for the accuracy provided by the Precision Time Service",
+						Computed:    true,
+					},
+					"accuracy_avg_min": schema.Int64Attribute{
+						Description: "Average minimum accuracy provided by the Precision Time Service",
+						Computed:    true,
+					},
+					"accuracy_avg_max": schema.Int64Attribute{
+						Description: "Average maximum accuracy provided by the Precision Time Service",
+						Computed:    true,
+					},
 				},
 			},
-			"connections": schema.ListAttribute{
-				Description: "An array of objects with unique identifiers of connections.",
-				Computed:    true,
-				CustomType:  fwtypes.NewListNestedObjectTypeOf[ConnectionModel](ctx),
-				ElementType: fwtypes.NewObjectTypeOf[ConnectionModel](ctx),
-			},
-			"ipv4": schema.SingleNestedAttribute{
+			"ipv4": schema.SingleNestedBlock{
 				Description: "An object that has Network IP Configurations for Timing Master Servers.",
-				Computed:    true,
 				CustomType:  fwtypes.NewObjectTypeOf[Ipv4Model](ctx),
 				Attributes: map[string]schema.Attribute{
 					"primary": schema.StringAttribute{
@@ -91,9 +126,8 @@ func dataSourceSchema(ctx context.Context) schema.Schema {
 					},
 				},
 			},
-			"advance_configuration": schema.SingleNestedAttribute{
+			"advance_configuration": schema.SingleNestedBlock{
 				Description: "An object that has advanced configuration options.",
-				Computed:    true,
 				CustomType:  fwtypes.NewObjectTypeOf[AdvanceConfigurationModel](ctx),
 				Attributes: map[string]schema.Attribute{
 					"ntp": schema.ListAttribute{
@@ -102,9 +136,10 @@ func dataSourceSchema(ctx context.Context) schema.Schema {
 						CustomType:  fwtypes.NewListNestedObjectTypeOf[MD5Model](ctx),
 						ElementType: fwtypes.NewObjectTypeOf[MD5Model](ctx),
 					},
-					"ptp": schema.SingleNestedAttribute{
+				},
+				Blocks: map[string]schema.Block{
+					"ptp": schema.SingleNestedBlock{
 						Description: "An object that has advanced PTP configuration.",
-						Computed:    true,
 						CustomType:  fwtypes.NewObjectTypeOf[PTPModel](ctx),
 						Attributes: map[string]schema.Attribute{
 							"time_scale": schema.StringAttribute{
@@ -160,14 +195,26 @@ func dataSourceSchema(ctx context.Context) schema.Schema {
 					},
 				},
 			},
-			"project": schema.SingleNestedAttribute{
+			"project": schema.SingleNestedBlock{
 				Description: "An object that contains the Equinix Fabric project_id used for linking the Time Precision Service to a specific Equinix Fabric Project",
-				Computed:    true,
 				CustomType:  fwtypes.NewObjectTypeOf[ProjectModel](ctx),
 				Attributes: map[string]schema.Attribute{
 					"project_id": schema.StringAttribute{
 						Description: "Equinix Fabric Project ID",
 						Computed:    true,
+					},
+				},
+			},
+			"connections": schema.ListNestedBlock{
+				Description: "An array of objects with unique identifiers of connections.",
+				CustomType:  fwtypes.NewListNestedObjectTypeOf[ConnectionModel](ctx),
+				NestedObject: schema.NestedBlockObject{
+					CustomType: fwtypes.NewObjectTypeOf[ConnectionModel](ctx),
+					Attributes: map[string]schema.Attribute{
+						"uuid": schema.StringAttribute{
+							Description: "Equinix Fabric Connection UUID; Precision Time Service will be connected with it",
+							Computed:    true,
+						},
 					},
 				},
 			},

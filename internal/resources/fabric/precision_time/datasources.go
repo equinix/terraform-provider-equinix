@@ -45,7 +45,7 @@ func (r *DataSource) Read(
 		return
 	}
 
-	// Extract the ID of the resource from the state
+	// Extract the ID of the resource from the config
 	id := data.Uuid.ValueString()
 
 	// Use API client to get the current state of the resource

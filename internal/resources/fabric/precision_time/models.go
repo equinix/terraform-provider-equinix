@@ -17,12 +17,12 @@ type ResourceModel struct {
 	Name                 types.String                                     `tfsdk:"name"`
 	Description          types.String                                     `tfsdk:"description"`
 	State                types.String                                     `tfsdk:"state"`
-	Package              fwtypes.ObjectValueOf[PackageModel]              `tfsdk:"package"`
+	Package              types.Set                                        `tfsdk:"package"`
 	Connections          fwtypes.ListNestedObjectValueOf[ConnectionModel] `tfsdk:"connections"`
-	Ipv4                 fwtypes.ObjectValueOf[Ipv4Model]                 `tfsdk:"ipv4"`
+	Ipv4                 types.Set                                        `tfsdk:"ipv4"`
 	Account              fwtypes.ObjectValueOf[AccountModel]              `tfsdk:"account"`
-	AdvanceConfiguration fwtypes.ObjectValueOf[AdvanceConfigurationModel] `tfsdk:"advanced_configuration"`
-	Project              fwtypes.ObjectValueOf[ProjectModel]              `tfsdk:"project"`
+	AdvanceConfiguration fwtypes.ObjectValueOf[AdvanceConfigurationModel] `tfsdk:"advance_configuration"`
+	Project              types.Set                                        `tfsdk:"project"`
 }
 
 type DataSourceModel struct {
@@ -33,17 +33,26 @@ type DataSourceModel struct {
 	Name                 types.String                                     `tfsdk:"name"`
 	Description          types.String                                     `tfsdk:"description"`
 	State                types.String                                     `tfsdk:"state"`
-	Package              fwtypes.ObjectValueOf[PackageModel]              `tfsdk:"package"`
+	Package              types.Set                                        `tfsdk:"package"`
 	Connections          fwtypes.ListNestedObjectValueOf[ConnectionModel] `tfsdk:"connections"`
-	Ipv4                 fwtypes.ObjectValueOf[Ipv4Model]                 `tfsdk:"ipv4"`
+	Ipv4                 types.Set                                        `tfsdk:"ipv4"`
 	Account              fwtypes.ObjectValueOf[AccountModel]              `tfsdk:"account"`
-	AdvanceConfiguration fwtypes.ObjectValueOf[AdvanceConfigurationModel] `tfsdk:"advanced_configuration"`
-	Project              fwtypes.ObjectValueOf[ProjectModel]              `tfsdk:"project"`
+	AdvanceConfiguration fwtypes.ObjectValueOf[AdvanceConfigurationModel] `tfsdk:"advance_configuration"`
+	Project              types.Set                                        `tfsdk:"project"`
 }
 
 type PackageModel struct {
-	Code types.String `tfsdk:"code"`
-	Href types.String `tfsdk:"href"`
+	Code                 types.String `tfsdk:"code"`
+	Href                 types.String `tfsdk:"href"`
+	Type                 types.String `tfsdk:"type"`
+	Bandwidth            types.Int64  `tfsdk:"bandwidth"`
+	ClientsPerSecondMax  types.Int64  `tfsdk:"clients_per_second_max"`
+	RedundancySupported  types.Bool   `tfsdk:"redundancy_supported"`
+	MultiSubnetSupported types.Bool   `tfsdk:"multi_subnet_supported"`
+	AccuracyUnit         types.String `tfsdk:"accuracy_unit"`
+	AccuracySla          types.Int64  `tfsdk:"accuracy_sla"`
+	AccuracyAvgMin       types.Int64  `tfsdk:"accuracy_avg_min"`
+	AccuracyAvgMax       types.Int64  `tfsdk:"accuracy_avg_max"`
 }
 
 type ConnectionModel struct {
@@ -98,8 +107,8 @@ func (m *ResourceModel) parse(ctx context.Context, ept *fabricv4.PrecisionTimeSe
 
 	diags = parsePrecisionTime(ctx, ept,
 		&m.ID, &m.Type, &m.Href, &m.Uuid, &m.Name, &m.Description,
-		&m.State, &m.Package, &m.Connections, &m.Ipv4, &m.Account,
-		&m.AdvanceConfiguration, &m.Project,
+		&m.State, &m.Package, &m.Ipv4, &m.Project,
+		&m.Account, &m.AdvanceConfiguration, &m.Connections,
 	)
 
 	return diags
@@ -110,8 +119,8 @@ func (m *DataSourceModel) parse(ctx context.Context, ept *fabricv4.PrecisionTime
 
 	diags = parsePrecisionTime(ctx, ept,
 		&m.ID, &m.Type, &m.Href, &m.Uuid, &m.Name, &m.Description,
-		&m.State, &m.Package, &m.Connections, &m.Ipv4, &m.Account,
-		&m.AdvanceConfiguration, &m.Project,
+		&m.State, &m.Package, &m.Ipv4, &m.Project,
+		&m.Account, &m.AdvanceConfiguration, &m.Connections,
 	)
 
 	return diags
@@ -121,12 +130,10 @@ func parsePrecisionTime(
 	ctx context.Context,
 	ept *fabricv4.PrecisionTimeServiceCreateResponse,
 	id, type_, href, uuid, name, description, state *basetypes.StringValue,
-	package_ *fwtypes.ObjectValueOf[PackageModel],
-	connections *fwtypes.ListNestedObjectValueOf[ConnectionModel],
-	ipv4 *fwtypes.ObjectValueOf[Ipv4Model],
+	package_, ipv4, project *basetypes.SetValue,
 	account *fwtypes.ObjectValueOf[AccountModel],
-	advancedConfiguration *fwtypes.ObjectValueOf[AdvanceConfigurationModel],
-	project *fwtypes.ObjectValueOf[ProjectModel],
+	advanceConfiguration *fwtypes.ObjectValueOf[AdvanceConfigurationModel],
+	connections *fwtypes.ListNestedObjectValueOf[ConnectionModel],
 ) diag.Diagnostics {
 	var diags diag.Diagnostics
 
@@ -170,7 +177,7 @@ func parsePrecisionTime(
 	if diags.HasError() {
 		return diags
 	}
-	*advancedConfiguration = parsedEptAdvanceConfiguration
+	*advanceConfiguration = parsedEptAdvanceConfiguration
 
 	eptProject := ept.GetProject()
 	parsedEptProject, diags := parseProject(ctx, &eptProject)
@@ -182,13 +189,18 @@ func parsePrecisionTime(
 	return diags
 }
 
-func parsePackage(ctx context.Context, package_ *fabricv4.PrecisionTimePackageResponse) (fwtypes.ObjectValueOf[PackageModel], diag.Diagnostics) {
-	var packageModel *PackageModel
+func parsePackage(ctx context.Context, package_ *fabricv4.PrecisionTimePackageResponse) (basetypes.SetValue, diag.Diagnostics) {
+	var packageModel PackageModel
 
 	packageModel.Code = types.StringValue(string(package_.GetCode()))
 	packageModel.Href = types.StringValue(package_.GetHref())
 
-	return fwtypes.NewObjectValueOf[PackageModel](ctx, packageModel), nil
+	packageSet, diags := basetypes.NewSetValueFrom(ctx, fwtypes.NewObjectTypeOf[PackageModel](ctx), []PackageModel{packageModel})
+	if diags.HasError() {
+		return basetypes.SetValue{}, diags
+	}
+
+	return packageSet, nil
 
 }
 
@@ -206,15 +218,20 @@ func parseConnections(ctx context.Context, connections []fabricv4.FabricConnecti
 	return fwtypes.NewListNestedObjectValueOfValueSlice(ctx, connectionModels), nil
 }
 
-func parseIpv4(ctx context.Context, ipv4 *fabricv4.Ipv4) (fwtypes.ObjectValueOf[Ipv4Model], diag.Diagnostics) {
-	var ipv4Model *Ipv4Model
+func parseIpv4(ctx context.Context, ipv4 *fabricv4.Ipv4) (basetypes.SetValue, diag.Diagnostics) {
+	var ipv4Model Ipv4Model
 
 	ipv4Model.Primary = types.StringValue(ipv4.GetPrimary())
 	ipv4Model.Secondary = types.StringValue(ipv4.GetSecondary())
 	ipv4Model.DefaultGateway = types.StringValue(ipv4.GetDefaultGateway())
 	ipv4Model.NetworkMask = types.StringValue(ipv4.GetNetworkMask())
 
-	return fwtypes.NewObjectValueOf[Ipv4Model](ctx, ipv4Model), nil
+	ipv4Set, diags := basetypes.NewSetValueFrom(ctx, fwtypes.NewObjectTypeOf[Ipv4Model](ctx), []Ipv4Model{ipv4Model})
+	if diags.HasError() {
+		return basetypes.SetValue{}, diags
+	}
+
+	return ipv4Set, nil
 }
 
 func parseAccount(ctx context.Context, account *fabricv4.Account) (fwtypes.ObjectValueOf[AccountModel], diag.Diagnostics) {
@@ -248,14 +265,6 @@ func parseAdvanceConfiguration(ctx context.Context, advConfig *fabricv4.AdvanceC
 	return fwtypes.NewObjectValueOf[AdvanceConfigurationModel](ctx, advConfigModel), nil
 }
 
-func parseProject(ctx context.Context, project *fabricv4.Project) (fwtypes.ObjectValueOf[ProjectModel], diag.Diagnostics) {
-	var projectModel *ProjectModel
-
-	projectModel.ProjectId = types.StringValue(project.GetProjectId())
-
-	return fwtypes.NewObjectValueOf[ProjectModel](ctx, projectModel), nil
-}
-
 func parseNtp(ctx context.Context, ntp []fabricv4.Md5) (fwtypes.ListNestedObjectValueOf[MD5Model], diag.Diagnostics) {
 	ntpModel := make([]MD5Model, len(ntp))
 
@@ -285,4 +294,17 @@ func parsePtp(ctx context.Context, ptp *fabricv4.PtpAdvanceConfiguration) (fwtyp
 
 	return fwtypes.NewObjectValueOf[PTPModel](ctx, ptpModel), nil
 
+}
+
+func parseProject(ctx context.Context, project *fabricv4.Project) (basetypes.SetValue, diag.Diagnostics) {
+	var projectModel ProjectModel
+
+	projectModel.ProjectId = types.StringValue(project.GetProjectId())
+
+	projectSet, diags := basetypes.NewSetValueFrom(ctx, fwtypes.NewObjectTypeOf[ProjectModel](ctx), []ProjectModel{projectModel})
+	if diags.HasError() {
+		return basetypes.SetValue{}, diags
+	}
+
+	return projectSet, nil
 }

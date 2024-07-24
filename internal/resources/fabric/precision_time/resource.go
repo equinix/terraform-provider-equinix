@@ -63,7 +63,7 @@ func (r *Resource) Create(
 		return
 	}
 
-	ept, _, err := client.PrecisionTimeApi.CreateTimeServices(ctx).PrecisionTimeServiceRequest(createRequest).Execute()
+	ept, _, err := client.PrecisionTimeApi.CreateTimeServices(context.Background()).PrecisionTimeServiceRequest(createRequest).Execute()
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error creating Precision Time Service",
@@ -158,8 +158,9 @@ func (r *Resource) Update(
 		})
 	}
 	if !state.Ipv4.Equal(plan.Ipv4) {
-		ipv4 := fabricv4.Ipv4{}
-		diags := plan.Ipv4.As(ctx, &ipv4, basetypes.ObjectAsOptions{})
+		ipv4Set := make([]fabricv4.Ipv4, 1)
+		diags := plan.Ipv4.ElementsAs(ctx, &ipv4Set, true)
+		ipv4 := ipv4Set[0]
 		if diags.HasError() {
 			resp.Diagnostics.Append(diags...)
 			return
@@ -199,8 +200,9 @@ func (r *Resource) Update(
 		}
 	}
 	if !state.Package.Equal(plan.Package) {
-		packageModel := PackageModel{}
-		diags := plan.Package.As(ctx, &packageModel, basetypes.ObjectAsOptions{})
+		packageSet := make([]PackageModel, 1)
+		diags := plan.Package.ElementsAs(ctx, &packageSet, true)
+		packageModel := packageSet[0]
 		if diags.HasError() {
 			resp.Diagnostics.Append(diags...)
 			return
@@ -289,9 +291,9 @@ func buildCreateRequest(ctx context.Context, plan ResourceModel) (fabricv4.Preci
 		Name: plan.Name.ValueString(),
 	}
 
-	packageModel := PackageModel{}
-
-	diags = plan.Package.As(ctx, &packageModel, basetypes.ObjectAsOptions{})
+	packageSet := make([]PackageModel, 1)
+	diags = plan.Package.ElementsAs(ctx, &packageSet, true)
+	packageModel := packageSet[0]
 	if diags.HasError() {
 		return fabricv4.PrecisionTimeServiceRequest{}, diags
 	}
@@ -324,9 +326,9 @@ func buildCreateRequest(ctx context.Context, plan ResourceModel) (fabricv4.Preci
 	}
 	request.SetConnections(connections)
 
-	ipv4Model := Ipv4Model{}
-
-	diags = plan.Ipv4.As(ctx, &ipv4Model, basetypes.ObjectAsOptions{})
+	ipv4Set := make([]Ipv4Model, 1)
+	diags = plan.Ipv4.ElementsAs(ctx, &ipv4Set, true)
+	ipv4Model := ipv4Set[0]
 	if diags.HasError() {
 		return fabricv4.PrecisionTimeServiceRequest{}, diags
 	}
@@ -339,14 +341,13 @@ func buildCreateRequest(ctx context.Context, plan ResourceModel) (fabricv4.Preci
 	request.SetIpv4(ipv4)
 
 	advConfigModel := AdvanceConfigurationModel{}
-
 	diags = plan.AdvanceConfiguration.As(ctx, &advConfigModel, basetypes.ObjectAsOptions{})
 	if diags.HasError() {
 		return fabricv4.PrecisionTimeServiceRequest{}, diags
 	}
 
 	ptpModel := PTPModel{}
-	diags = advConfigModel.Ptp.As(ctx, ptpModel, basetypes.ObjectAsOptions{})
+	diags = advConfigModel.Ptp.As(ctx, &ptpModel, basetypes.ObjectAsOptions{})
 	if diags.HasError() {
 		return fabricv4.PrecisionTimeServiceRequest{}, diags
 	}
@@ -404,9 +405,12 @@ func buildCreateRequest(ctx context.Context, plan ResourceModel) (fabricv4.Preci
 	advConfig.SetPtp(ptp)
 	request.SetAdvanceConfiguration(advConfig)
 
+	projectSet := make([]ProjectModel, 1)
+	diags = plan.Project.ElementsAs(ctx, &projectSet, true)
 	projectModel := ProjectModel{}
-
-	diags = plan.Project.As(ctx, &projectModel, basetypes.ObjectAsOptions{})
+	if len(projectSet) > 0 {
+		projectModel = projectSet[0]
+	}
 	if diags.HasError() {
 		return fabricv4.PrecisionTimeServiceRequest{}, diags
 	}
@@ -414,8 +418,8 @@ func buildCreateRequest(ctx context.Context, plan ResourceModel) (fabricv4.Preci
 	project := fabricv4.Project{}
 	if projectId := projectModel.ProjectId.ValueString(); projectId != "" {
 		project.SetProjectId(projectId)
+		request.SetProject(project)
 	}
-	request.SetProject(project)
 
 	return request, diags
 }
