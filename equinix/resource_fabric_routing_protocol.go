@@ -6,6 +6,7 @@ import (
 	"github.com/equinix/equinix-sdk-go/services/fabricv4"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"log"
+	"reflect"
 	"strconv"
 	"strings"
 	"time"
@@ -428,12 +429,14 @@ func routingProtocolPayloadFromType(type_ string, d *schema.ResourceData) fabric
 			bgpRP.SetName(name)
 		}
 
-		if customerASNSchema, ok := d.GetOk("customer_asn"); ok {
+		customerASNSchema := d.Get("customer_asn")
+		if customerASNSchema != nil {
 			customerASN := int64(customerASNSchema.(int))
 			bgpRP.SetCustomerAsn(customerASN)
 		}
 
-		if equinixASNSchema, ok := d.GetOk("equinix_asn"); ok {
+		equinixASNSchema := d.Get("equinix_asn")
+		if equinixASNSchema != nil {
 			equinixASN := int64(equinixASNSchema.(int))
 			bgpRP.SetEquinixAsn(equinixASN)
 		}
@@ -443,17 +446,24 @@ func routingProtocolPayloadFromType(type_ string, d *schema.ResourceData) fabric
 			bgpRP.SetBgpAuthKey(bgpAuthKey)
 		}
 
-		if schemaBgpIpv4, ok := d.GetOk("bgp_ipv4"); ok {
+		schemaBgpIpv4 := d.Get("bgp_ipv4")
+		if schemaBgpIpv4 != nil {
 			bgpIpv4 := routingProtocolBgpIpv4TerraformToGo(schemaBgpIpv4.(*schema.Set).List())
-			bgpRP.SetBgpIpv4(bgpIpv4)
+			if !reflect.DeepEqual(bgpIpv4, fabricv4.BGPConnectionIpv4{}) {
+				bgpRP.SetBgpIpv4(bgpIpv4)
+			}
 		}
 
-		if schemaBgpIpv6, ok := d.GetOk("bgp_ipv6"); ok {
+		schemaBgpIpv6 := d.Get("bgp_ipv6")
+		if schemaBgpIpv6 != nil {
 			bgpIpv6 := routingProtocolBgpIpv6TerraformToGo(schemaBgpIpv6.(*schema.Set).List())
-			bgpRP.SetBgpIpv6(bgpIpv6)
+			if !reflect.DeepEqual(bgpIpv6, fabricv4.BGPConnectionIpv6{}) {
+				bgpRP.SetBgpIpv6(bgpIpv6)
+			}
 		}
 
-		if bfdSchema, ok := d.GetOk("bfd"); ok {
+		bfdSchema := d.Get("bfd")
+		if bfdSchema != nil {
 			bfd := routingProtocolBfdTerraformToGo(bfdSchema.(*schema.Set).List())
 			bgpRP.SetBfd(bfd)
 		}
@@ -468,14 +478,20 @@ func routingProtocolPayloadFromType(type_ string, d *schema.ResourceData) fabric
 		if name != "" {
 			directRP.SetName(name)
 		}
-		if schemaDirectIpv4, ok := d.GetOk("direct_ipv4"); ok {
+		schemaDirectIpv4 := d.Get("direct_ipv4")
+		if schemaDirectIpv4 != nil {
 			directIpv4 := routingProtocolDirectIpv4TerraformToGo(schemaDirectIpv4.(*schema.Set).List())
-			directRP.SetDirectIpv4(directIpv4)
+			if !reflect.DeepEqual(directIpv4, fabricv4.BGPConnectionIpv6{}) {
+				directRP.SetDirectIpv4(directIpv4)
+			}
 		}
 
-		if schemaDirectIpv6, ok := d.GetOk("direct_ipv6"); ok {
+		schemaDirectIpv6 := d.Get("direct_ipv6")
+		if schemaDirectIpv6 != nil {
 			directIpv6 := routingProtocolDirectIpv6TerraformToGo(schemaDirectIpv6.(*schema.Set).List())
-			directRP.SetDirectIpv6(directIpv6)
+			if !reflect.DeepEqual(directIpv6, fabricv4.DirectConnectionIpv6{}) {
+				directRP.SetDirectIpv6(directIpv6)
+			}
 		}
 		payload = fabricv4.RoutingProtocolDirectTypeAsRoutingProtocolBase(&directRP)
 	}
@@ -484,56 +500,77 @@ func routingProtocolPayloadFromType(type_ string, d *schema.ResourceData) fabric
 
 func setFabricRoutingProtocolMap(d *schema.ResourceData, routingProtocolData *fabricv4.RoutingProtocolData) diag.Diagnostics {
 	diags := diag.Diagnostics{}
+	routingProtocol := FabricRoutingProtocolMap(routingProtocolData)
+	err := equinix_schema.SetMap(d, routingProtocol)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+	return diags
+}
 
+func FabricRoutingProtocolMap(routingProtocolData *fabricv4.RoutingProtocolData) map[string]interface{} {
+	routingProtocol := make(map[string]interface{})
 	switch rp := routingProtocolData.GetActualInstance().(type) {
 	case *fabricv4.RoutingProtocolBGPData:
-		operation := rp.GetOperation()
-		bgpIpv4 := rp.GetBgpIpv4()
-		bgpIpv6 := rp.GetBgpIpv6()
-		bfd := rp.GetBfd()
-		change := rp.GetChange()
-		changeLog := rp.GetChangelog()
-		err := equinix_schema.SetMap(d, map[string]interface{}{
-			"name":         rp.GetName(),
-			"href":         rp.GetHref(),
-			"type":         string(rp.GetType()),
-			"state":        string(rp.GetState()),
-			"operation":    routingProtocolOperationGoToTerraform(&operation),
-			"bgp_ipv4":     routingProtocolBgpConnectionIpv4GoToTerraform(&bgpIpv4),
-			"bgp_ipv6":     routingProtocolBgpConnectionIpv6GoToTerraform(&bgpIpv6),
-			"customer_asn": rp.GetCustomerAsn(),
-			"equinix_asn":  rp.GetEquinixAsn(),
-			"bfd":          routingProtocolBfdGoToTerraform(&bfd),
-			"bgp_auth_key": rp.GetBgpAuthKey(),
-			"change":       routingProtocolChangeGoToTerraform(&change),
-			"change_log":   equinix_fabric_schema.ChangeLogGoToTerraform(&changeLog),
-		})
-		if err != nil {
-			return diag.FromErr(err)
+		routingProtocol["name"] = rp.GetName()
+		routingProtocol["href"] = rp.GetHref()
+		routingProtocol["type"] = string(rp.GetType())
+		routingProtocol["state"] = string(rp.GetState())
+		routingProtocol["customer_asn"] = rp.GetCustomerAsn()
+		routingProtocol["equinix_asn"] = rp.GetCustomerAsn()
+		routingProtocol["bgp_auth_key"] = rp.GetBgpAuthKey()
+		if rp.Operation != nil {
+			operation := rp.GetOperation()
+			routingProtocol["operation"] = routingProtocolOperationGoToTerraform(&operation)
+		}
+		if rp.BgpIpv4 != nil {
+			bgpIpv4 := rp.GetBgpIpv4()
+			routingProtocol["bgp_ipv4"] = routingProtocolBgpConnectionIpv4GoToTerraform(&bgpIpv4)
+		}
+		if rp.BgpIpv6 != nil {
+			bgpIpv6 := rp.GetBgpIpv6()
+			routingProtocol["bgp_ipv6"] = routingProtocolBgpConnectionIpv6GoToTerraform(&bgpIpv6)
+		}
+		if rp.Bfd != nil {
+			bfd := rp.GetBfd()
+			routingProtocol["bfd"] = routingProtocolBfdGoToTerraform(&bfd)
+		}
+		if rp.Change != nil {
+			change := rp.GetChange()
+			routingProtocol["change"] = routingProtocolChangeGoToTerraform(&change)
+		}
+		if rp.Changelog != nil {
+			changeLog := rp.GetChangelog()
+			routingProtocol["change_log"] = equinix_fabric_schema.ChangeLogGoToTerraform(&changeLog)
 		}
 	case *fabricv4.RoutingProtocolDirectData:
-		operation := rp.GetOperation()
-		directIpv4 := rp.GetDirectIpv4()
-		directIpv6 := rp.GetDirectIpv6()
-		change := rp.GetChange()
-		changeLog := rp.GetChangelog()
-		err := equinix_schema.SetMap(d, map[string]interface{}{
-			"name":        rp.GetName(),
-			"href":        rp.GetHref(),
-			"type":        string(rp.GetType()),
-			"state":       string(rp.GetState()),
-			"operation":   routingProtocolOperationGoToTerraform(&operation),
-			"direct_ipv4": routingProtocolDirectConnectionIpv4GoToTerraform(&directIpv4),
-			"direct_ipv6": routingProtocolDirectConnectionIpv6GoToTerraform(&directIpv6),
-			"change":      routingProtocolChangeGoToTerraform(&change),
-			"change_log":  equinix_fabric_schema.ChangeLogGoToTerraform(&changeLog),
-		})
-		if err != nil {
-			return diag.FromErr(err)
+		routingProtocol["name"] = rp.GetName()
+		routingProtocol["href"] = rp.GetHref()
+		routingProtocol["type"] = string(rp.GetType())
+		routingProtocol["state"] = string(rp.GetState())
+		if rp.Operation != nil {
+			operation := rp.GetOperation()
+			routingProtocol["operation"] = routingProtocolOperationGoToTerraform(&operation)
+		}
+		if rp.DirectIpv4 != nil {
+			directIpv4 := rp.GetDirectIpv4()
+			routingProtocol["direct_ipv4"] = routingProtocolDirectConnectionIpv4GoToTerraform(&directIpv4)
+		}
+		if rp.DirectIpv6 != nil {
+			directIpv6 := rp.GetDirectIpv6()
+			routingProtocol["direct_ipv6"] = routingProtocolDirectConnectionIpv6GoToTerraform(&directIpv6)
+		}
+		if rp.Change != nil {
+			change := rp.GetChange()
+			routingProtocol["change"] = routingProtocolChangeGoToTerraform(&change)
+		}
+		if rp.Changelog != nil {
+			changeLog := rp.GetChangelog()
+			routingProtocol["change_log"] = equinix_fabric_schema.ChangeLogGoToTerraform(&changeLog)
 		}
 	}
 
-	return diags
+	return routingProtocol
 }
 func waitUntilRoutingProtocolIsProvisioned(uuid string, connUuid string, meta interface{}, d *schema.ResourceData, ctx context.Context, timeout time.Duration) (*fabricv4.RoutingProtocolData, error) {
 	log.Printf("Waiting for routing protocol to be provisioned, uuid %s", uuid)
@@ -654,6 +691,7 @@ func routingProtocolDirectIpv6TerraformToGo(routingProtocolDirectIpv6Request []i
 	directIpv6Map := routingProtocolDirectIpv6Request[0].(map[string]interface{})
 	equinixIfaceIp := directIpv6Map["equinix_iface_ip"].(string)
 	if equinixIfaceIp != "" {
+		log.Print("[DEBUG] Setting empty string to direct IPV6")
 		rpDirectIpv6.SetEquinixIfaceIp(equinixIfaceIp)
 	}
 
