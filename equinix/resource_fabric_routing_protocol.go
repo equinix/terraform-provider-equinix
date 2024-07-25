@@ -481,7 +481,7 @@ func routingProtocolPayloadFromType(type_ string, d *schema.ResourceData) fabric
 		schemaDirectIpv4 := d.Get("direct_ipv4")
 		if schemaDirectIpv4 != nil {
 			directIpv4 := routingProtocolDirectIpv4TerraformToGo(schemaDirectIpv4.(*schema.Set).List())
-			if !reflect.DeepEqual(directIpv4, fabricv4.BGPConnectionIpv6{}) {
+			if !reflect.DeepEqual(directIpv4, fabricv4.DirectConnectionIpv4{}) {
 				directRP.SetDirectIpv4(directIpv4)
 			}
 		}
@@ -691,7 +691,6 @@ func routingProtocolDirectIpv6TerraformToGo(routingProtocolDirectIpv6Request []i
 	directIpv6Map := routingProtocolDirectIpv6Request[0].(map[string]interface{})
 	equinixIfaceIp := directIpv6Map["equinix_iface_ip"].(string)
 	if equinixIfaceIp != "" {
-		log.Print("[DEBUG] Setting empty string to direct IPV6")
 		rpDirectIpv6.SetEquinixIfaceIp(equinixIfaceIp)
 	}
 
