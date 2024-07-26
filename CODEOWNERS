@@ -1,7 +1,6 @@
 # See https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners#example-of-a-codeowners-file
 #
 *                            @equinix/governor-devrel-engineering
-/cmd/migration-tool          @equinix/governor-metal-client-interfaces
 *metal*                      @equinix/governor-metal-client-interfaces
 *fabric*                     @equinix/governor-digin-fabric
 *connection_e2e*             @equinix/governor-digin-fabric
