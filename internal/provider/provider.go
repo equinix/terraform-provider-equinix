@@ -129,7 +129,7 @@ func (p *FrameworkProvider) Resources(ctx context.Context) []func() resource.Res
 
 func (p *FrameworkProvider) DataSources(ctx context.Context) []func() datasource.DataSource {
 	return []func() datasource.DataSource{
-		//fabricprecisiontime.NewDataSource,
+		fabricprecisiontime.NewDataSource,
 		metalgateway.NewDataSource,
 		metalproject.NewDataSource,
 		metalprojectsshkey.NewDataSource,

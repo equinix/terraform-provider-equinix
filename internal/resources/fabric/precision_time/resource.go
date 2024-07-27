@@ -63,7 +63,7 @@ func (r *Resource) Create(
 		return
 	}
 
-	ept, _, err := client.PrecisionTimeApi.CreateTimeServices(context.Background()).PrecisionTimeServiceRequest(createRequest).Execute()
+	ept, _, err := client.PrecisionTimeApi.CreateTimeServices(ctx).PrecisionTimeServiceRequest(createRequest).Execute()
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error creating Precision Time Service",
@@ -157,48 +157,6 @@ func (r *Resource) Update(
 			Value: plan.Name.ValueString(),
 		})
 	}
-	if !state.Ipv4.Equal(plan.Ipv4) {
-		ipv4Set := make([]fabricv4.Ipv4, 1)
-		diags := plan.Ipv4.ElementsAs(ctx, &ipv4Set, true)
-		ipv4 := ipv4Set[0]
-		if diags.HasError() {
-			resp.Diagnostics.Append(diags...)
-			return
-		}
-		updateRequest = append(updateRequest, fabricv4.PrecisionTimeChangeOperation{
-			Op:    fabricv4.PRECISIONTIMECHANGEOPERATIONOP_REPLACE,
-			Path:  fabricv4.PRECISIONTIMECHANGEOPERATIONPATH_NAME,
-			Value: ipv4,
-		})
-	}
-	if !state.AdvanceConfiguration.Equal(plan.AdvanceConfiguration) {
-		stateAdvConfig := fabricv4.AdvanceConfiguration{}
-		diags := state.AdvanceConfiguration.As(ctx, &stateAdvConfig, basetypes.ObjectAsOptions{})
-		if diags.HasError() {
-			resp.Diagnostics.Append(diags...)
-			return
-		}
-		planAdvConfig := fabricv4.AdvanceConfiguration{}
-		diags = plan.AdvanceConfiguration.As(ctx, &planAdvConfig, basetypes.ObjectAsOptions{})
-		if diags.HasError() {
-			resp.Diagnostics.Append(diags...)
-			return
-		}
-		if !reflect.DeepEqual(stateAdvConfig.Ntp, planAdvConfig.Ntp) {
-			updateRequest = append(updateRequest, fabricv4.PrecisionTimeChangeOperation{
-				Op:    fabricv4.PRECISIONTIMECHANGEOPERATIONOP_REPLACE,
-				Path:  fabricv4.PRECISIONTIMECHANGEOPERATIONPATH_NAME,
-				Value: planAdvConfig.Ntp,
-			})
-		}
-		if !reflect.DeepEqual(stateAdvConfig.Ptp, planAdvConfig.Ptp) {
-			updateRequest = append(updateRequest, fabricv4.PrecisionTimeChangeOperation{
-				Op:    fabricv4.PRECISIONTIMECHANGEOPERATIONOP_REPLACE,
-				Path:  fabricv4.PRECISIONTIMECHANGEOPERATIONPATH_NAME,
-				Value: planAdvConfig.Ntp,
-			})
-		}
-	}
 	if !state.Package.Equal(plan.Package) {
 		packageSet := make([]PackageModel, 1)
 		diags := plan.Package.ElementsAs(ctx, &packageSet, true)
@@ -209,11 +167,16 @@ func (r *Resource) Update(
 		}
 		updateRequest = append(updateRequest, fabricv4.PrecisionTimeChangeOperation{
 			Op:    fabricv4.PRECISIONTIMECHANGEOPERATIONOP_REPLACE,
-			Path:  fabricv4.PRECISIONTIMECHANGEOPERATIONPATH_NAME,
+			Path:  fabricv4.PRECISIONTIMECHANGEOPERATIONPATH_PACKAGE,
 			Value: packageModel.Code.ValueString(),
 		})
 	}
 
+	if len(updateRequest) > 1 {
+		resp.Diagnostics.AddError("Error updating Precision Time Service",
+			"This resource only accepts one attribute change at a time; please reduce changes and try again")
+		return
+	}
 	for _, update := range updateRequest {
 		if !reflect.DeepEqual(updateRequest, fabricv4.PrecisionTimeChangeOperation{}) {
 			_, _, err := client.PrecisionTimeApi.UpdateTimeServicesById(ctx, id).
@@ -341,13 +304,19 @@ func buildCreateRequest(ctx context.Context, plan ResourceModel) (fabricv4.Preci
 	request.SetIpv4(ipv4)
 
 	advConfigModel := AdvanceConfigurationModel{}
-	diags = plan.AdvanceConfiguration.As(ctx, &advConfigModel, basetypes.ObjectAsOptions{})
+	diags = plan.AdvanceConfiguration.As(ctx, &advConfigModel, basetypes.ObjectAsOptions{
+		UnhandledNullAsEmpty:    true,
+		UnhandledUnknownAsEmpty: true,
+	})
 	if diags.HasError() {
 		return fabricv4.PrecisionTimeServiceRequest{}, diags
 	}
 
 	ptpModel := PTPModel{}
-	diags = advConfigModel.Ptp.As(ctx, &ptpModel, basetypes.ObjectAsOptions{})
+	diags = advConfigModel.Ptp.As(ctx, &ptpModel, basetypes.ObjectAsOptions{
+		UnhandledNullAsEmpty:    true,
+		UnhandledUnknownAsEmpty: true,
+	})
 	if diags.HasError() {
 		return fabricv4.PrecisionTimeServiceRequest{}, diags
 	}
@@ -401,9 +370,15 @@ func buildCreateRequest(ctx context.Context, plan ResourceModel) (fabricv4.Preci
 	}
 
 	advConfig := fabricv4.AdvanceConfiguration{}
-	advConfig.SetNtp(ntps)
-	advConfig.SetPtp(ptp)
-	request.SetAdvanceConfiguration(advConfig)
+	if len(ntps) > 0 {
+		advConfig.SetNtp(ntps)
+	}
+	if !reflect.DeepEqual(ptp, fabricv4.PtpAdvanceConfiguration{}) {
+		advConfig.SetPtp(ptp)
+	}
+	if !reflect.DeepEqual(advConfig, fabricv4.AdvanceConfiguration{}) {
+		request.SetAdvanceConfiguration(advConfig)
+	}
 
 	projectSet := make([]ProjectModel, 1)
 	diags = plan.Project.ElementsAs(ctx, &projectSet, true)

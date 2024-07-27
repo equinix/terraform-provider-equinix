@@ -9,6 +9,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework-validators/setvalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/listplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/objectplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setplanmodifier"
@@ -70,6 +71,7 @@ func resourceSchema(ctx context.Context) schema.Schema {
 		Blocks: map[string]schema.Block{
 			"package": schema.SetNestedBlock{
 				Description: "Precision Time Service Package Details",
+				CustomType:  fwtypes.NewSetNestedObjectTypeOf[PackageModel](ctx),
 				Validators: []validator.Set{
 					setvalidator.SizeAtMost(1),
 				},
@@ -78,6 +80,9 @@ func resourceSchema(ctx context.Context) schema.Schema {
 				},
 				NestedObject: schema.NestedBlockObject{
 					CustomType: fwtypes.NewObjectTypeOf[PackageModel](ctx),
+					PlanModifiers: []planmodifier.Object{
+						objectplanmodifier.UseStateForUnknown(),
+					},
 					Attributes: map[string]schema.Attribute{
 						"code": schema.StringAttribute{
 							Description: "Time Precision Package Code for the desired billing package",
@@ -140,6 +145,7 @@ func resourceSchema(ctx context.Context) schema.Schema {
 			},
 			"ipv4": schema.SetNestedBlock{
 				Description: "An object that has Network IP Configurations for Timing Master Servers.",
+				CustomType:  fwtypes.NewSetNestedObjectTypeOf[Ipv4Model](ctx),
 				Validators: []validator.Set{
 					setvalidator.SizeAtMost(1),
 				},
@@ -184,6 +190,9 @@ func resourceSchema(ctx context.Context) schema.Schema {
 						Computed:    true,
 						CustomType:  fwtypes.NewListNestedObjectTypeOf[MD5Model](ctx),
 						ElementType: fwtypes.NewObjectTypeOf[MD5Model](ctx),
+						PlanModifiers: []planmodifier.List{
+							listplanmodifier.UseStateForUnknown(),
+						},
 					},
 				},
 				Blocks: map[string]schema.Block{
@@ -258,6 +267,7 @@ func resourceSchema(ctx context.Context) schema.Schema {
 			},
 			"project": schema.SetNestedBlock{
 				Description: "An object that contains the Equinix Fabric project_id used for linking the Time Precision Service to a specific Equinix Fabric Project",
+				CustomType:  fwtypes.NewSetNestedObjectTypeOf[ProjectModel](ctx),
 				Validators: []validator.Set{
 					setvalidator.SizeAtMost(1),
 				},
@@ -266,6 +276,9 @@ func resourceSchema(ctx context.Context) schema.Schema {
 				},
 				NestedObject: schema.NestedBlockObject{
 					CustomType: fwtypes.NewObjectTypeOf[ProjectModel](ctx),
+					PlanModifiers: []planmodifier.Object{
+						objectplanmodifier.UseStateForUnknown(),
+					},
 					Attributes: map[string]schema.Attribute{
 						"project_id": schema.StringAttribute{
 							Description: "Equinix Fabric Project ID",
@@ -298,6 +311,9 @@ func resourceSchema(ctx context.Context) schema.Schema {
 			"account": schema.SingleNestedBlock{
 				Description: "Equinix User Account associated with Precision Time Service",
 				CustomType:  fwtypes.NewObjectTypeOf[AccountModel](ctx),
+				PlanModifiers: []planmodifier.Object{
+					objectplanmodifier.UseStateForUnknown(),
+				},
 				Attributes: map[string]schema.Attribute{
 					"account_number": schema.Int64Attribute{
 						Description: "Equinix User account number",
