@@ -158,9 +158,11 @@ func (r *Resource) Update(
 		})
 	}
 	if !state.Package.Equal(plan.Package) {
-		packageSet := make([]PackageModel, 1)
-		diags := plan.Package.ElementsAs(ctx, &packageSet, true)
-		packageModel := packageSet[0]
+		packageModel := PackageModel{}
+		diags := plan.Package.As(ctx, &packageModel, basetypes.ObjectAsOptions{
+			UnhandledNullAsEmpty:    true,
+			UnhandledUnknownAsEmpty: true,
+		})
 		if diags.HasError() {
 			resp.Diagnostics.Append(diags...)
 			return
@@ -254,9 +256,15 @@ func buildCreateRequest(ctx context.Context, plan ResourceModel) (fabricv4.Preci
 		Name: plan.Name.ValueString(),
 	}
 
-	packageSet := make([]PackageModel, 1)
-	diags = plan.Package.ElementsAs(ctx, &packageSet, true)
-	packageModel := packageSet[0]
+	if plan.Description.ValueString() != "" {
+		request.SetDescription(plan.Description.ValueString())
+	}
+
+	packageModel := PackageModel{}
+	diags = plan.Package.As(ctx, &packageModel, basetypes.ObjectAsOptions{
+		UnhandledNullAsEmpty:    true,
+		UnhandledUnknownAsEmpty: true,
+	})
 	if diags.HasError() {
 		return fabricv4.PrecisionTimeServiceRequest{}, diags
 	}
@@ -289,9 +297,11 @@ func buildCreateRequest(ctx context.Context, plan ResourceModel) (fabricv4.Preci
 	}
 	request.SetConnections(connections)
 
-	ipv4Set := make([]Ipv4Model, 1)
-	diags = plan.Ipv4.ElementsAs(ctx, &ipv4Set, true)
-	ipv4Model := ipv4Set[0]
+	ipv4Model := Ipv4Model{}
+	diags = plan.Ipv4.As(ctx, &ipv4Model, basetypes.ObjectAsOptions{
+		UnhandledNullAsEmpty:    true,
+		UnhandledUnknownAsEmpty: true,
+	})
 	if diags.HasError() {
 		return fabricv4.PrecisionTimeServiceRequest{}, diags
 	}
@@ -380,12 +390,11 @@ func buildCreateRequest(ctx context.Context, plan ResourceModel) (fabricv4.Preci
 		request.SetAdvanceConfiguration(advConfig)
 	}
 
-	projectSet := make([]ProjectModel, 1)
-	diags = plan.Project.ElementsAs(ctx, &projectSet, true)
 	projectModel := ProjectModel{}
-	if len(projectSet) > 0 {
-		projectModel = projectSet[0]
-	}
+	diags = plan.Project.As(ctx, &projectModel, basetypes.ObjectAsOptions{
+		UnhandledNullAsEmpty:    true,
+		UnhandledUnknownAsEmpty: true,
+	})
 	if diags.HasError() {
 		return fabricv4.PrecisionTimeServiceRequest{}, diags
 	}
@@ -430,11 +439,11 @@ func getDeleteWaiter(ctx context.Context, client *fabricv4.APIClient, id string,
 	// to indicate that the Precision Time Service appears to be deleted successfully based on
 	// status code
 	deletedMarker := "tf-marker-for-deleted-precision-time-service"
-
-	target := []string{deletedMarker, "deleted"}
-
 	return &retry.StateChangeConf{
-		Target: target,
+		Target: []string{
+			deletedMarker,
+			string(fabricv4.PRECISIONTIMESERVICECREATERESPONSESTATE_DEPROVISIONED),
+		},
 		Refresh: func() (interface{}, string, error) {
 			ept, resp, err := client.PrecisionTimeApi.GetTimeServicesById(ctx, id).Execute()
 			if err != nil {

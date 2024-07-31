@@ -6,14 +6,10 @@ import (
 	"github.com/equinix/equinix-sdk-go/services/fabricv4"
 	"github.com/equinix/terraform-provider-equinix/internal/framework"
 	fwtypes "github.com/equinix/terraform-provider-equinix/internal/framework/types"
-	"github.com/hashicorp/terraform-plugin-framework-validators/setvalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/listplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/objectplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setplanmodifier"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 )
 
@@ -24,16 +20,10 @@ func resourceSchema(ctx context.Context) schema.Schema {
 			"uuid": schema.StringAttribute{
 				Description: "Equinix generated id for the Precision Time Service",
 				Computed:    true,
-				PlanModifiers: []planmodifier.String{
-					stringplanmodifier.UseStateForUnknown(),
-				},
 			},
 			"href": schema.StringAttribute{
 				Description: "Equinix generated Portal link for the created Precision Time Service",
 				Computed:    true,
-				PlanModifiers: []planmodifier.String{
-					stringplanmodifier.UseStateForUnknown(),
-				},
 			},
 			"type": schema.StringAttribute{
 				Description: "Choose type of Precision Time Service",
@@ -55,125 +45,91 @@ func resourceSchema(ctx context.Context) schema.Schema {
 			"description": schema.StringAttribute{
 				Description: "Optional description of time service",
 				Optional:    true,
-				Computed:    true,
-				PlanModifiers: []planmodifier.String{
-					stringplanmodifier.UseStateForUnknown(),
-				},
 			},
 			"state": schema.StringAttribute{
 				Description: fmt.Sprintf("Indicator of the state of this Precision Time Service. One of: [%v]", fabricv4.AllowedPrecisionTimeServiceCreateResponseStateEnumValues),
 				Computed:    true,
-				PlanModifiers: []planmodifier.String{
-					stringplanmodifier.UseStateForUnknown(),
-				},
 			},
 		},
 		Blocks: map[string]schema.Block{
-			"package": schema.SetNestedBlock{
+			"package": schema.SingleNestedBlock{
 				Description: "Precision Time Service Package Details",
-				CustomType:  fwtypes.NewSetNestedObjectTypeOf[PackageModel](ctx),
-				Validators: []validator.Set{
-					setvalidator.SizeAtMost(1),
-				},
-				PlanModifiers: []planmodifier.Set{
-					setplanmodifier.UseStateForUnknown(),
-				},
-				NestedObject: schema.NestedBlockObject{
-					CustomType: fwtypes.NewObjectTypeOf[PackageModel](ctx),
-					PlanModifiers: []planmodifier.Object{
-						objectplanmodifier.UseStateForUnknown(),
+				CustomType:  fwtypes.NewObjectTypeOf[PackageModel](ctx),
+				Attributes: map[string]schema.Attribute{
+					"code": schema.StringAttribute{
+						Description: "Time Precision Package Code for the desired billing package",
+						Required:    true,
+						Validators: []validator.String{
+							stringvalidator.OneOf(
+								string(fabricv4.GETTIMESERVICESPACKAGEBYCODEPACKAGECODEPARAMETER_NTP_STANDARD),
+								string(fabricv4.GETTIMESERVICESPACKAGEBYCODEPACKAGECODEPARAMETER_NTP_ENTERPRISE),
+								string(fabricv4.GETTIMESERVICESPACKAGEBYCODEPACKAGECODEPARAMETER_PTP_STANDARD),
+								string(fabricv4.GETTIMESERVICESPACKAGEBYCODEPACKAGECODEPARAMETER_PTP_ENTERPRISE),
+							),
+						},
 					},
-					Attributes: map[string]schema.Attribute{
-						"code": schema.StringAttribute{
-							Description: "Time Precision Package Code for the desired billing package",
-							Required:    true,
-							Validators: []validator.String{
-								stringvalidator.OneOf(
-									string(fabricv4.GETTIMESERVICESPACKAGEBYCODEPACKAGECODEPARAMETER_NTP_STANDARD),
-									string(fabricv4.GETTIMESERVICESPACKAGEBYCODEPACKAGECODEPARAMETER_NTP_ENTERPRISE),
-									string(fabricv4.GETTIMESERVICESPACKAGEBYCODEPACKAGECODEPARAMETER_PTP_STANDARD),
-									string(fabricv4.GETTIMESERVICESPACKAGEBYCODEPACKAGECODEPARAMETER_PTP_ENTERPRISE),
-								),
-							},
-						},
-						"href": schema.StringAttribute{
-							Description: "Time Precision Package HREF link to corresponding resource in Equinix Portal",
-							Optional:    true,
-							Computed:    true,
-							PlanModifiers: []planmodifier.String{
-								stringplanmodifier.UseStateForUnknown(),
-							},
-						},
-						"type": schema.StringAttribute{
-							Description: "Type of the Precision Time Service Package",
-							Computed:    true,
-						},
-						"bandwidth": schema.Int64Attribute{
-							Description: "Bandwidth of the Precision Time Service",
-							Computed:    true,
-						},
-						"clients_per_second_max": schema.Int64Attribute{
-							Description: "Maximum clients available per second for the Precision Time Service",
-							Computed:    true,
-						},
-						"redundancy_supported": schema.BoolAttribute{
-							Description: "Boolean flag indicating if this Precision Time Service supports redundancy",
-							Computed:    true,
-						},
-						"multi_subnet_supported": schema.BoolAttribute{
-							Description: "Boolean flag indicating if this Precision Time Service supports multi subnetting",
-							Computed:    true,
-						},
-						"accuracy_unit": schema.StringAttribute{
-							Description: "Time unit of accuracy for the Precision Time Service; e.g. microseconds",
-							Computed:    true,
-						},
-						"accuracy_sla": schema.Int64Attribute{
-							Description: "SLA for the accuracy provided by the Precision Time Service",
-							Computed:    true,
-						},
-						"accuracy_avg_min": schema.Int64Attribute{
-							Description: "Average minimum accuracy provided by the Precision Time Service",
-							Computed:    true,
-						},
-						"accuracy_avg_max": schema.Int64Attribute{
-							Description: "Average maximum accuracy provided by the Precision Time Service",
-							Computed:    true,
-						},
+					"href": schema.StringAttribute{
+						Description: "Time Precision Package HREF link to corresponding resource in Equinix Portal",
+						Optional:    true,
+						Computed:    true,
+					},
+					"type": schema.StringAttribute{
+						Description: "Type of the Precision Time Service Package",
+						Computed:    true,
+					},
+					"bandwidth": schema.Int64Attribute{
+						Description: "Bandwidth of the Precision Time Service",
+						Computed:    true,
+					},
+					"clients_per_second_max": schema.Int64Attribute{
+						Description: "Maximum clients available per second for the Precision Time Service",
+						Computed:    true,
+					},
+					"redundancy_supported": schema.BoolAttribute{
+						Description: "Boolean flag indicating if this Precision Time Service supports redundancy",
+						Computed:    true,
+					},
+					"multi_subnet_supported": schema.BoolAttribute{
+						Description: "Boolean flag indicating if this Precision Time Service supports multi subnetting",
+						Computed:    true,
+					},
+					"accuracy_unit": schema.StringAttribute{
+						Description: "Time unit of accuracy for the Precision Time Service; e.g. microseconds",
+						Computed:    true,
+					},
+					"accuracy_sla": schema.Int64Attribute{
+						Description: "SLA for the accuracy provided by the Precision Time Service",
+						Computed:    true,
+					},
+					"accuracy_avg_min": schema.Int64Attribute{
+						Description: "Average minimum accuracy provided by the Precision Time Service",
+						Computed:    true,
+					},
+					"accuracy_avg_max": schema.Int64Attribute{
+						Description: "Average maximum accuracy provided by the Precision Time Service",
+						Computed:    true,
 					},
 				},
 			},
-			"ipv4": schema.SetNestedBlock{
+			"ipv4": schema.SingleNestedBlock{
 				Description: "An object that has Network IP Configurations for Timing Master Servers.",
-				CustomType:  fwtypes.NewSetNestedObjectTypeOf[Ipv4Model](ctx),
-				Validators: []validator.Set{
-					setvalidator.SizeAtMost(1),
-				},
-				PlanModifiers: []planmodifier.Set{
-					setplanmodifier.UseStateForUnknown(),
-				},
-				NestedObject: schema.NestedBlockObject{
-					CustomType: fwtypes.NewObjectTypeOf[Ipv4Model](ctx),
-					PlanModifiers: []planmodifier.Object{
-						objectplanmodifier.UseStateForUnknown(),
+				CustomType:  fwtypes.NewObjectTypeOf[Ipv4Model](ctx),
+				Attributes: map[string]schema.Attribute{
+					"primary": schema.StringAttribute{
+						Description: "IPv4 address for the Primary Timing Master Server.",
+						Required:    true,
 					},
-					Attributes: map[string]schema.Attribute{
-						"primary": schema.StringAttribute{
-							Description: "IPv4 address for the Primary Timing Master Server.",
-							Required:    true,
-						},
-						"secondary": schema.StringAttribute{
-							Description: "IPv4 address for the Secondary Timing Master Server.",
-							Required:    true,
-						},
-						"network_mask": schema.StringAttribute{
-							Description: "IPv4 address that defines the range of consecutive subnets in the network.",
-							Required:    true,
-						},
-						"default_gateway": schema.StringAttribute{
-							Description: "IPv4 address that establishes the Routing Interface where traffic is directed. It serves as the next hop in the Network.",
-							Required:    true,
-						},
+					"secondary": schema.StringAttribute{
+						Description: "IPv4 address for the Secondary Timing Master Server.",
+						Required:    true,
+					},
+					"network_mask": schema.StringAttribute{
+						Description: "IPv4 address that defines the range of consecutive subnets in the network.",
+						Required:    true,
+					},
+					"default_gateway": schema.StringAttribute{
+						Description: "IPv4 address that establishes the Routing Interface where traffic is directed. It serves as the next hop in the Network.",
+						Required:    true,
 					},
 				},
 			},
@@ -190,18 +146,12 @@ func resourceSchema(ctx context.Context) schema.Schema {
 						Computed:    true,
 						CustomType:  fwtypes.NewListNestedObjectTypeOf[MD5Model](ctx),
 						ElementType: fwtypes.NewObjectTypeOf[MD5Model](ctx),
-						PlanModifiers: []planmodifier.List{
-							listplanmodifier.UseStateForUnknown(),
-						},
 					},
 				},
 				Blocks: map[string]schema.Block{
 					"ptp": schema.SingleNestedBlock{
 						Description: "An object that has advanced PTP configuration.",
 						CustomType:  fwtypes.NewObjectTypeOf[PTPModel](ctx),
-						PlanModifiers: []planmodifier.Object{
-							objectplanmodifier.UseStateForUnknown(),
-						},
 						Attributes: map[string]schema.Attribute{
 							"time_scale": schema.StringAttribute{
 								Description: "Time scale value. ARB denotes Arbitrary, and PTP denotes Precision Time Protocol.",
@@ -265,25 +215,17 @@ func resourceSchema(ctx context.Context) schema.Schema {
 					},
 				},
 			},
-			"project": schema.SetNestedBlock{
+			"project": schema.SingleNestedBlock{
 				Description: "An object that contains the Equinix Fabric project_id used for linking the Time Precision Service to a specific Equinix Fabric Project",
-				CustomType:  fwtypes.NewSetNestedObjectTypeOf[ProjectModel](ctx),
-				Validators: []validator.Set{
-					setvalidator.SizeAtMost(1),
+				CustomType:  fwtypes.NewObjectTypeOf[ProjectModel](ctx),
+				PlanModifiers: []planmodifier.Object{
+					objectplanmodifier.UseStateForUnknown(),
 				},
-				PlanModifiers: []planmodifier.Set{
-					setplanmodifier.UseStateForUnknown(),
-				},
-				NestedObject: schema.NestedBlockObject{
-					CustomType: fwtypes.NewObjectTypeOf[ProjectModel](ctx),
-					PlanModifiers: []planmodifier.Object{
-						objectplanmodifier.UseStateForUnknown(),
-					},
-					Attributes: map[string]schema.Attribute{
-						"project_id": schema.StringAttribute{
-							Description: "Equinix Fabric Project ID",
-							Required:    true,
-						},
+				Attributes: map[string]schema.Attribute{
+					"project_id": schema.StringAttribute{
+						Description: "Equinix Fabric Project ID",
+						Optional:    true,
+						Computed:    true,
 					},
 				},
 			},

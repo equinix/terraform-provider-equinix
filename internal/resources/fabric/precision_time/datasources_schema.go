@@ -6,7 +6,6 @@ import (
 	"github.com/equinix/equinix-sdk-go/services/fabricv4"
 	"github.com/equinix/terraform-provider-equinix/internal/framework"
 	fwtypes "github.com/equinix/terraform-provider-equinix/internal/framework/types"
-	"github.com/hashicorp/terraform-plugin-framework-validators/setvalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
@@ -51,87 +50,75 @@ func dataSourceSchema(ctx context.Context) schema.Schema {
 			},
 		},
 		Blocks: map[string]schema.Block{
-			"package": schema.SetNestedBlock{
+			"package": schema.SingleNestedBlock{
 				Description: "Precision Time Service Package Details",
-				CustomType:  fwtypes.NewSetNestedObjectTypeOf[PackageModel](ctx),
-				Validators: []validator.Set{
-					setvalidator.SizeAtMost(1),
-				},
-				NestedObject: schema.NestedBlockObject{
-					CustomType: fwtypes.NewObjectTypeOf[PackageModel](ctx),
-					Attributes: map[string]schema.Attribute{
-						"code": schema.StringAttribute{
-							Description: "Time Precision Package Code for the desired billing package",
-							Computed:    true,
-						},
-						"href": schema.StringAttribute{
-							Description: "Time Precision Package HREF link to corresponding resource in Equinix Portal",
-							Computed:    true,
-						},
-						"type": schema.StringAttribute{
-							Description: "Type of the Precision Time Service Package",
-							Computed:    true,
-						},
-						"bandwidth": schema.Int64Attribute{
-							Description: "Bandwidth of the Precision Time Service",
-							Computed:    true,
-						},
-						"clients_per_second_max": schema.Int64Attribute{
-							Description: "Maximum clients available per second for the Precision Time Service",
-							Computed:    true,
-						},
-						"redundancy_supported": schema.BoolAttribute{
-							Description: "Boolean flag indicating if this Precision Time Service supports redundancy",
-							Computed:    true,
-						},
-						"multi_subnet_supported": schema.BoolAttribute{
-							Description: "Boolean flag indicating if this Precision Time Service supports multi subnetting",
-							Computed:    true,
-						},
-						"accuracy_unit": schema.StringAttribute{
-							Description: "Time unit of accuracy for the Precision Time Service; e.g. microseconds",
-							Computed:    true,
-						},
-						"accuracy_sla": schema.Int64Attribute{
-							Description: "SLA for the accuracy provided by the Precision Time Service",
-							Computed:    true,
-						},
-						"accuracy_avg_min": schema.Int64Attribute{
-							Description: "Average minimum accuracy provided by the Precision Time Service",
-							Computed:    true,
-						},
-						"accuracy_avg_max": schema.Int64Attribute{
-							Description: "Average maximum accuracy provided by the Precision Time Service",
-							Computed:    true,
-						},
+				CustomType:  fwtypes.NewObjectTypeOf[PackageModel](ctx),
+				Attributes: map[string]schema.Attribute{
+					"code": schema.StringAttribute{
+						Description: "Time Precision Package Code for the desired billing package",
+						Computed:    true,
+					},
+					"href": schema.StringAttribute{
+						Description: "Time Precision Package HREF link to corresponding resource in Equinix Portal",
+						Computed:    true,
+					},
+					"type": schema.StringAttribute{
+						Description: "Type of the Precision Time Service Package",
+						Computed:    true,
+					},
+					"bandwidth": schema.Int64Attribute{
+						Description: "Bandwidth of the Precision Time Service",
+						Computed:    true,
+					},
+					"clients_per_second_max": schema.Int64Attribute{
+						Description: "Maximum clients available per second for the Precision Time Service",
+						Computed:    true,
+					},
+					"redundancy_supported": schema.BoolAttribute{
+						Description: "Boolean flag indicating if this Precision Time Service supports redundancy",
+						Computed:    true,
+					},
+					"multi_subnet_supported": schema.BoolAttribute{
+						Description: "Boolean flag indicating if this Precision Time Service supports multi subnetting",
+						Computed:    true,
+					},
+					"accuracy_unit": schema.StringAttribute{
+						Description: "Time unit of accuracy for the Precision Time Service; e.g. microseconds",
+						Computed:    true,
+					},
+					"accuracy_sla": schema.Int64Attribute{
+						Description: "SLA for the accuracy provided by the Precision Time Service",
+						Computed:    true,
+					},
+					"accuracy_avg_min": schema.Int64Attribute{
+						Description: "Average minimum accuracy provided by the Precision Time Service",
+						Computed:    true,
+					},
+					"accuracy_avg_max": schema.Int64Attribute{
+						Description: "Average maximum accuracy provided by the Precision Time Service",
+						Computed:    true,
 					},
 				},
 			},
-			"ipv4": schema.SetNestedBlock{
+			"ipv4": schema.SingleNestedBlock{
 				Description: "An object that has Network IP Configurations for Timing Master Servers.",
-				CustomType:  fwtypes.NewSetNestedObjectTypeOf[Ipv4Model](ctx),
-				Validators: []validator.Set{
-					setvalidator.SizeAtMost(1),
-				},
-				NestedObject: schema.NestedBlockObject{
-					CustomType: fwtypes.NewObjectTypeOf[Ipv4Model](ctx),
-					Attributes: map[string]schema.Attribute{
-						"primary": schema.StringAttribute{
-							Description: "IPv4 address for the Primary Timing Master Server.",
-							Computed:    true,
-						},
-						"secondary": schema.StringAttribute{
-							Description: "IPv4 address for the Secondary Timing Master Server.",
-							Computed:    true,
-						},
-						"network_mask": schema.StringAttribute{
-							Description: "IPv4 address that defines the range of consecutive subnets in the network.",
-							Computed:    true,
-						},
-						"default_gateway": schema.StringAttribute{
-							Description: "IPv4 address that establishes the Routing Interface where traffic is directed. It serves as the next hop in the Network.",
-							Computed:    true,
-						},
+				CustomType:  fwtypes.NewObjectTypeOf[Ipv4Model](ctx),
+				Attributes: map[string]schema.Attribute{
+					"primary": schema.StringAttribute{
+						Description: "IPv4 address for the Primary Timing Master Server.",
+						Computed:    true,
+					},
+					"secondary": schema.StringAttribute{
+						Description: "IPv4 address for the Secondary Timing Master Server.",
+						Computed:    true,
+					},
+					"network_mask": schema.StringAttribute{
+						Description: "IPv4 address that defines the range of consecutive subnets in the network.",
+						Computed:    true,
+					},
+					"default_gateway": schema.StringAttribute{
+						Description: "IPv4 address that establishes the Routing Interface where traffic is directed. It serves as the next hop in the Network.",
+						Computed:    true,
 					},
 				},
 			},
@@ -204,19 +191,13 @@ func dataSourceSchema(ctx context.Context) schema.Schema {
 					},
 				},
 			},
-			"project": schema.SetNestedBlock{
+			"project": schema.SingleNestedBlock{
 				Description: "An object that contains the Equinix Fabric project_id used for linking the Time Precision Service to a specific Equinix Fabric Project",
-				CustomType:  fwtypes.NewSetNestedObjectTypeOf[ProjectModel](ctx),
-				Validators: []validator.Set{
-					setvalidator.SizeAtMost(1),
-				},
-				NestedObject: schema.NestedBlockObject{
-					CustomType: fwtypes.NewObjectTypeOf[ProjectModel](ctx),
-					Attributes: map[string]schema.Attribute{
-						"project_id": schema.StringAttribute{
-							Description: "Equinix Fabric Project ID",
-							Computed:    true,
-						},
+				CustomType:  fwtypes.NewObjectTypeOf[ProjectModel](ctx),
+				Attributes: map[string]schema.Attribute{
+					"project_id": schema.StringAttribute{
+						Description: "Equinix Fabric Project ID",
+						Computed:    true,
 					},
 				},
 			},
