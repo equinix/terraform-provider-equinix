@@ -8,13 +8,13 @@ import (
 	"time"
 
 	"github.com/equinix/terraform-provider-equinix/internal/config"
-
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
 
 const tstResourcePrefix = "tfacc"
 
 func TestMain(m *testing.M) {
+	addTestSweeper()
 	resource.TestMain(m)
 }
 
@@ -47,4 +47,8 @@ func sharedConfigForRegion(region string) (*config.Config, error) {
 
 func isSweepableTestResource(namePrefix string) bool {
 	return strings.HasPrefix(namePrefix, tstResourcePrefix)
+}
+
+func addTestSweeper() {
+	AddTestSweeper()
 }
