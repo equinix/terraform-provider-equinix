@@ -38,6 +38,7 @@ func Resource() *schema.Resource {
 			"metro": {
 				Type:        schema.TypeString,
 				Required:    true,
+				ForceNew:    true,
 				Description: "Metro ID or Code where the VRF will be deployed",
 			},
 			"local_asn": {
@@ -55,6 +56,7 @@ func Resource() *schema.Resource {
 			"project_id": {
 				Type:        schema.TypeString,
 				Required:    true,
+				ForceNew:    true,
 				Description: "Project ID where the VRF will be deployed",
 			},
 			"bgp_dynamic_neighbors_enabled": {
