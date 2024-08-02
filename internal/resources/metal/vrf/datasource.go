@@ -48,6 +48,34 @@ func DataSource() *schema.Resource {
 				Computed:    true,
 				Description: "Project ID",
 			},
+			"bgp_dynamic_neighbors": {
+				Type:        schema.TypeList,
+				Description: "BGP dynamic neighbor settings for this VRF",
+				Optional:    true,
+				Computed:    true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"enabled": {
+							Type:        schema.TypeBool,
+							Optional:    true,
+							Computed:    true,
+							Description: "Toggle to enable the dynamic bgp neighbors feature on the VRF",
+						},
+						"export_route_map": {
+							Type:        schema.TypeBool,
+							Optional:    true,
+							Computed:    true,
+							Description: "Toggle to export the VRF route-map to the dynamic bgp neighbors",
+						},
+						"bfd_enabled": {
+							Type:        schema.TypeBool,
+							Optional:    true,
+							Computed:    true,
+							Description: "Toggle BFD on dynamic bgp neighbors sessions",
+						},
+					},
+				},
+			},
 		},
 	}
 }

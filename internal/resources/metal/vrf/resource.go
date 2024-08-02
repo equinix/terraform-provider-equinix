@@ -38,13 +38,13 @@ func Resource() *schema.Resource {
 			"metro": {
 				Type:        schema.TypeString,
 				Required:    true,
-				Description: "Metro Code",
+				Description: "Metro ID or Code where the VRF will be deployed",
 			},
 			"local_asn": {
 				Type:        schema.TypeInt,
 				Optional:    true,
 				Computed:    true,
-				Description: "The 4-byte ASN set on the VRF.",
+				Description: "The 4-byte ASN set on the VRF",
 			},
 			"ip_ranges": {
 				Type:        schema.TypeSet,
@@ -55,7 +55,25 @@ func Resource() *schema.Resource {
 			"project_id": {
 				Type:        schema.TypeString,
 				Required:    true,
-				Description: "Project ID",
+				Description: "Project ID where the VRF will be deployed",
+			},
+			"bgp_dynamic_neighbors_enabled": {
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Computed:    true,
+				Description: "Toggle to enable the dynamic bgp neighbors feature on the VRF",
+			},
+			"bgp_dynamic_neighbors_export_route_map": {
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Computed:    true,
+				Description: "Toggle to export the VRF route-map to the dynamic bgp neighbors",
+			},
+			"bgp_dynamic_neighbors_bfd_enabled": {
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Computed:    true,
+				Description: "Toggle BFD on dynamic bgp neighbors sessions",
 			},
 			// TODO: created_by, created_at, updated_at, href
 		},
@@ -74,6 +92,15 @@ func resourceMetalVRFCreate(ctx context.Context, d *schema.ResourceData, meta in
 
 	if value, ok := d.GetOk("local_asn"); ok {
 		createRequest.LocalAsn = metalv1.PtrInt64(int64(value.(int)))
+	}
+	if value, ok := d.GetOk("bgp_dynamic_neighbors_enabled"); ok {
+		createRequest.SetBgpDynamicNeighborsEnabled(value.(bool))
+	}
+	if value, ok := d.GetOk("bgp_dynamic_neighbors_export_route_map"); ok {
+		createRequest.SetBgpDynamicNeighborsExportRouteMap(value.(bool))
+	}
+	if value, ok := d.GetOk("bgp_dynamic_neighbors_bfd_enabled"); ok {
+		createRequest.SetBgpDynamicNeighborsBfdEnabled(value.(bool))
 	}
 
 	projectId := d.Get("project_id").(string)
@@ -107,6 +134,15 @@ func resourceMetalVRFUpdate(ctx context.Context, d *schema.ResourceData, meta in
 		ipRanges := converters.SetToStringList(d.Get("ip_ranges").(*schema.Set))
 		updateRequest.SetIpRanges(ipRanges)
 	}
+	if d.HasChange("bgp_dynamic_neighbors_enabled") {
+		updateRequest.SetBgpDynamicNeighborsEnabled(d.Get("bgp_dynamic_neighbors_enabled").(bool))
+	}
+	if d.HasChange("bgp_dynamic_neighbors_export_route_map") {
+		updateRequest.SetBgpDynamicNeighborsExportRouteMap(d.Get("bgp_dynamic_neighbors_export_route_map").(bool))
+	}
+	if d.HasChange("bgp_dynamic_neighbors_bfd_enabled") {
+		updateRequest.SetBgpDynamicNeighborsBfdEnabled(d.Get("bgp_dynamic_neighbors_bfd_enabled").(bool))
+	}
 
 	_, _, err := client.VRFsApi.
 		UpdateVrf(ctx, d.Id()).
@@ -136,12 +172,15 @@ func resourceMetalVRFRead(ctx context.Context, d *schema.ResourceData, meta inte
 		return diag.FromErr(err)
 	}
 	m := map[string]interface{}{
-		"name":        vrf.GetName(),
-		"description": vrf.GetDescription(),
-		"metro":       vrf.Metro.GetCode(),
-		"local_asn":   vrf.GetLocalAsn(),
-		"ip_ranges":   vrf.GetIpRanges(),
-		"project_id":  vrf.Project.GetId(),
+		"name":                                   vrf.GetName(),
+		"description":                            vrf.GetDescription(),
+		"metro":                                  vrf.Metro.GetCode(),
+		"local_asn":                              vrf.GetLocalAsn(),
+		"ip_ranges":                              vrf.GetIpRanges(),
+		"project_id":                             vrf.Project.GetId(),
+		"bgp_dynamic_neighbors_enabled":          vrf.GetBgpDynamicNeighborsEnabled(),
+		"bgp_dynamic_neighbors_export_route_map": vrf.GetBgpDynamicNeighborsExportRouteMap(),
+		"bgp_dynamic_neighbors_bfd_enabled":      vrf.GetBgpDynamicNeighborsBfdEnabled(),
 	}
 
 	return diag.FromErr(equinix_schema.SetMap(d, m))
