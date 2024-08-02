@@ -4,11 +4,12 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"log"
+
 	"github.com/equinix/equinix-sdk-go/services/fabricv4"
 	equinix_errors "github.com/equinix/terraform-provider-equinix/internal/errors"
 	"github.com/equinix/terraform-provider-equinix/internal/sweep"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
-	"log"
 )
 
 func AddTestSweeper() {
@@ -27,7 +28,11 @@ func testSweepCloudRouters(region string) error {
 	if err != nil {
 		return fmt.Errorf("error getting configuration for sweeping Fabric Cloud Routers: %s", err)
 	}
-	meta.Load(ctx)
+	err = meta.Load(ctx)
+	if err != nil {
+		log.Printf("Error loading meta: %v", err)
+		return err
+	}
 	fabric := meta.NewFabricClientForTesting()
 
 	equinixStatus := "/state"
