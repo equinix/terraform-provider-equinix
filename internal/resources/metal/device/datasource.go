@@ -1,8 +1,9 @@
-package equinix
+package device
 
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"path"
 	"sort"
@@ -17,7 +18,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/structure"
 )
 
-func dataSourceMetalDevice() *schema.Resource {
+func DataSource() *schema.Resource {
 	return &schema.Resource{
 		Description: `The datasource can be used to fetch a single device.
 
@@ -253,21 +254,23 @@ func dataSourceMetalDeviceRead(ctx context.Context, d *schema.ResourceData, meta
 		}
 	}
 
-	d.Set("hostname", device.GetHostname())
-	d.Set("project_id", device.Project.GetId())
-	d.Set("device_id", device.GetId())
-	d.Set("plan", device.Plan.Slug)
-	d.Set("facility", device.Facility.Code)
+	var errs []error
+
+	errs = append(errs, d.Set("hostname", device.GetHostname()))
+	errs = append(errs, d.Set("project_id", device.Project.GetId()))
+	errs = append(errs, d.Set("device_id", device.GetId()))
+	errs = append(errs, d.Set("plan", device.Plan.Slug))
+	errs = append(errs, d.Set("facility", device.Facility.Code))
 	if device.Metro != nil {
-		d.Set("metro", strings.ToLower(device.Metro.GetCode()))
+		errs = append(errs, d.Set("metro", strings.ToLower(device.Metro.GetCode())))
 	}
-	d.Set("operating_system", device.OperatingSystem.GetSlug())
-	d.Set("state", device.GetState())
-	d.Set("billing_cycle", device.GetBillingCycle())
-	d.Set("ipxe_script_url", device.GetIpxeScriptUrl())
-	d.Set("always_pxe", device.GetAlwaysPxe())
-	d.Set("root_password", device.GetRootPassword())
-	d.Set("sos_hostname", device.GetSos())
+	errs = append(errs, d.Set("operating_system", device.OperatingSystem.GetSlug()))
+	errs = append(errs, d.Set("state", device.GetState()))
+	errs = append(errs, d.Set("billing_cycle", device.GetBillingCycle()))
+	errs = append(errs, d.Set("ipxe_script_url", device.GetIpxeScriptUrl()))
+	errs = append(errs, d.Set("always_pxe", device.GetAlwaysPxe()))
+	errs = append(errs, d.Set("root_password", device.GetRootPassword()))
+	errs = append(errs, d.Set("sos_hostname", device.GetSos()))
 
 	if device.Storage != nil {
 		rawStorageBytes, err := json.Marshal(device.Storage)
@@ -279,26 +282,26 @@ func dataSourceMetalDeviceRead(ctx context.Context, d *schema.ResourceData, meta
 		if err != nil {
 			return diag.Errorf("[ERR] Error normalizing storage JSON string for device (%s): %s", d.Id(), err)
 		}
-		d.Set("storage", storageString)
+		errs = append(errs, d.Set("storage", storageString))
 	}
 
 	if device.HardwareReservation != nil {
-		d.Set("hardware_reservation_id", device.HardwareReservation.GetId())
+		errs = append(errs, d.Set("hardware_reservation_id", device.HardwareReservation.GetId()))
 	}
 	networkType, err := getNetworkType(device)
 	if err != nil {
 		return diag.Errorf("[ERR] Error computing network type for device (%s): %s", d.Id(), err)
 	}
 
-	d.Set("network_type", networkType)
+	errs = append(errs, d.Set("network_type", networkType))
 
-	d.Set("tags", device.Tags)
+	errs = append(errs, d.Set("tags", device.Tags))
 
 	keyIDs := []string{}
 	for _, k := range device.SshKeys {
 		keyIDs = append(keyIDs, path.Base(k.Href))
 	}
-	d.Set("ssh_key_ids", keyIDs)
+	errs = append(errs, d.Set("ssh_key_ids", keyIDs))
 	networkInfo := getNetworkInfo(device.IpAddresses)
 
 	sort.SliceStable(networkInfo.Networks, func(i, j int) bool {
@@ -309,15 +312,21 @@ func dataSourceMetalDeviceRead(ctx context.Context, d *schema.ResourceData, meta
 		return getNetworkRank(int(famI), pubI) < getNetworkRank(int(famJ), pubJ)
 	})
 
-	d.Set("network", networkInfo.Networks)
-	d.Set("access_public_ipv4", networkInfo.PublicIPv4)
-	d.Set("access_private_ipv4", networkInfo.PrivateIPv4)
-	d.Set("access_public_ipv6", networkInfo.PublicIPv6)
+	errs = append(errs, d.Set("network", networkInfo.Networks))
+	errs = append(errs, d.Set("access_public_ipv4", networkInfo.PublicIPv4))
+	errs = append(errs, d.Set("access_private_ipv4", networkInfo.PrivateIPv4))
+	errs = append(errs, d.Set("access_public_ipv6", networkInfo.PublicIPv6))
 
 	ports := getPorts(device.NetworkPorts)
-	d.Set("ports", ports)
+	errs = append(errs, d.Set("ports", ports))
 
 	d.SetId(device.GetId())
+
+	err = errors.Join(errs...)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
 	return nil
 }
 

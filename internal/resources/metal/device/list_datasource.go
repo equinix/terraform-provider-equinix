@@ -1,4 +1,4 @@
-package equinix
+package device
 
 import (
 	"context"
@@ -11,8 +11,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
-func dataSourceMetalDevices() *schema.Resource {
-	dsmd := dataSourceMetalDevice()
+func ListDataSource() *schema.Resource {
+	dsmd := DataSource()
 	sch := dsmd.Schema
 	for _, v := range sch {
 		if v.Optional {

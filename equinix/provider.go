@@ -9,6 +9,7 @@ import (
 	"github.com/equinix/terraform-provider-equinix/internal/config"
 	fabric_connection "github.com/equinix/terraform-provider-equinix/internal/resources/fabric/connection"
 	fabric_network "github.com/equinix/terraform-provider-equinix/internal/resources/fabric/network"
+	metal_device "github.com/equinix/terraform-provider-equinix/internal/resources/metal/device"
 	metal_port "github.com/equinix/terraform-provider-equinix/internal/resources/metal/port"
 	"github.com/equinix/terraform-provider-equinix/internal/resources/metal/virtual_circuit"
 	"github.com/equinix/terraform-provider-equinix/internal/resources/metal/vrf"
@@ -102,8 +103,8 @@ func Provider() *schema.Provider {
 			"equinix_metal_precreated_ip_block":  dataSourceMetalPreCreatedIPBlock(),
 			"equinix_metal_operating_system":     dataSourceOperatingSystem(),
 			"equinix_metal_spot_market_price":    dataSourceSpotMarketPrice(),
-			"equinix_metal_device":               dataSourceMetalDevice(),
-			"equinix_metal_devices":              dataSourceMetalDevices(),
+			"equinix_metal_device":               metal_device.DataSource(),
+			"equinix_metal_devices":              metal_device.ListDataSource(),
 			"equinix_metal_device_bgp_neighbors": dataSourceMetalDeviceBGPNeighbors(),
 			"equinix_metal_plans":                dataSourceMetalPlans(),
 			"equinix_metal_port":                 metal_port.DataSource(),
@@ -127,7 +128,7 @@ func Provider() *schema.Provider {
 			"equinix_network_file":               resourceNetworkFile(),
 			"equinix_metal_user_api_key":         resourceMetalUserAPIKey(),
 			"equinix_metal_project_api_key":      resourceMetalProjectAPIKey(),
-			"equinix_metal_device":               resourceMetalDevice(),
+			"equinix_metal_device":               metal_device.Resource(),
 			"equinix_metal_device_network_type":  resourceMetalDeviceNetworkType(),
 			"equinix_metal_port":                 metal_port.Resource(),
 			"equinix_metal_reserved_ip_block":    resourceMetalReservedIPBlock(),

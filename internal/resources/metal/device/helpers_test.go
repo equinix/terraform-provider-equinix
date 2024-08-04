@@ -1,7 +1,8 @@
-package equinix
+package device_test
 
 import (
 	"context"
+	"log"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -10,9 +11,10 @@ import (
 
 	"github.com/equinix/equinix-sdk-go/services/metalv1"
 	"github.com/equinix/terraform-provider-equinix/internal/config"
+	"github.com/equinix/terraform-provider-equinix/internal/resources/metal/device"
 )
 
-func Test_waitUntilReservationProvisionable(t *testing.T) {
+func Test_WaitUntilReservationProvisionable(t *testing.T) {
 	type args struct {
 		reservationId string
 		instanceId    string
@@ -75,7 +77,11 @@ func Test_waitUntilReservationProvisionable(t *testing.T) {
 						w.Header().Add("Content-Type", "application/json")
 						w.Header().Add("X-Request-Id", "needed for equinix_errors.FriendlyError")
 						w.WriteHeader(http.StatusOK)
-						w.Write(body)
+						_, err = w.Write(body)
+						if err != nil {
+							// This should never be reached and indicates a failure in the test itself
+							panic(err)
+						}
 					}
 				})(),
 			},
@@ -118,7 +124,11 @@ func Test_waitUntilReservationProvisionable(t *testing.T) {
 						w.Header().Add("Content-Type", "application/json")
 						w.Header().Add("X-Request-Id", "needed for equinix_errors.FriendlyError")
 						w.WriteHeader(http.StatusOK)
-						w.Write(body)
+						_, err = w.Write(body)
+						if err != nil {
+							// This should never be reached and indicates a failure in the test itself
+							panic(err)
+						}
 					}
 				})(),
 			},
@@ -143,7 +153,11 @@ func Test_waitUntilReservationProvisionable(t *testing.T) {
 					w.Header().Add("Content-Type", "application/json")
 					w.Header().Add("X-Request-Id", "needed for equinix_errors.FriendlyError")
 					w.WriteHeader(http.StatusOK)
-					w.Write(body)
+					_, err = w.Write(body)
+					if err != nil {
+						// This should never be reached and indicates a failure in the test itself
+						panic(err)
+					}
 				},
 			},
 			wantErr: true,
@@ -159,10 +173,13 @@ func Test_waitUntilReservationProvisionable(t *testing.T) {
 				BaseURL: mockAPI.URL,
 				Token:   "fakeTokenForMock",
 			}
-			meta.Load(ctx)
+			err := meta.Load(ctx)
+			if err != nil {
+				log.Printf("failed to load provider config during test: %v", err)
+			}
 
 			client := meta.NewMetalClientForTesting()
-			if err := waitUntilReservationProvisionable(ctx, client, tt.args.reservationId, tt.args.instanceId, 50*time.Millisecond, 1*time.Second, 50*time.Millisecond); (err != nil) != tt.wantErr {
+			if err := device.WaitUntilReservationProvisionable(ctx, client, tt.args.reservationId, tt.args.instanceId, 50*time.Millisecond, 1*time.Second, 50*time.Millisecond); (err != nil) != tt.wantErr {
 				t.Errorf("waitUntilReservationProvisionable() error = %v, wantErr %v", err, tt.wantErr)
 			}
 

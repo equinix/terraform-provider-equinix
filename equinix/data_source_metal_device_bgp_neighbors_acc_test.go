@@ -9,7 +9,7 @@ import (
 )
 
 func TestAccDataSourceMetalDeviceBgpNeighbors(t *testing.T) {
-	projectName := fmt.Sprintf("ds-device-%s", acctest.RandString(10))
+	projSuffix := fmt.Sprintf("ds-device-%s", acctest.RandString(10))
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { testAccPreCheck(t) },
@@ -17,7 +17,7 @@ func TestAccDataSourceMetalDeviceBgpNeighbors(t *testing.T) {
 		ProtoV5ProviderFactories: testAccProtoV5ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccDataSourceMetalDeviceBgpNeighborsConfig(projectName),
+				Config: testAccDataSourceMetalDeviceBgpNeighborsConfig(projSuffix),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(
 						"data.equinix_metal_device_bgp_neighbors.test", "bgp_neighbors.#"),
@@ -27,9 +27,28 @@ func TestAccDataSourceMetalDeviceBgpNeighbors(t *testing.T) {
 	})
 }
 
-func testAccDataSourceMetalDeviceBgpNeighborsConfig(projectName string) string {
+func testAccDataSourceMetalDeviceBgpNeighborsConfig(projSuffix string) string {
 	return fmt.Sprintf(`
 %s
+
+resource "equinix_metal_project" "test" {
+    name = "tfacc-project-%s"
+}
+
+resource "equinix_metal_device" "test" {
+  hostname         = "tfacc-test-device"
+  plan             = local.plan
+  metro            = local.metro
+  operating_system = local.os
+  billing_cycle    = "hourly"
+  project_id       = "${equinix_metal_project.test.id}"
+  termination_time = "%s"
+}
+
+data "equinix_metal_device" "test" {
+  project_id       = equinix_metal_project.test.id
+  hostname         = equinix_metal_device.test.hostname
+}
 
 data "equinix_metal_device_bgp_neighbors" "test" {
 	device_id = equinix_metal_device.test.id
@@ -37,6 +56,5 @@ data "equinix_metal_device_bgp_neighbors" "test" {
 
 output "bgp_neighbors_listing" {
 	value = data.equinix_metal_device_bgp_neighbors.test.bgp_neighbors
-}
-`, testDataSourceMetalDeviceConfig_basic(projectName))
+}`, confAccMetalDevice_base(preferable_plans, preferable_metros, preferable_os), projSuffix, testDeviceTerminationTime())
 }
