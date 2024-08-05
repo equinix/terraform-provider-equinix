@@ -1,4 +1,4 @@
-package equinix
+package cloud_router
 
 import (
 	"context"

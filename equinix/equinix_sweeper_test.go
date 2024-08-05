@@ -14,7 +14,6 @@ import (
 const tstResourcePrefix = "tfacc"
 
 func TestMain(m *testing.M) {
-	addTestSweeper()
 	resource.TestMain(m)
 }
 
@@ -47,8 +46,4 @@ func sharedConfigForRegion(region string) (*config.Config, error) {
 
 func isSweepableTestResource(namePrefix string) bool {
 	return strings.HasPrefix(namePrefix, tstResourcePrefix)
-}
-
-func addTestSweeper() {
-	AddTestSweeper()
 }
