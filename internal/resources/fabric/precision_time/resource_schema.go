@@ -6,10 +6,13 @@ import (
 	"github.com/equinix/equinix-sdk-go/services/fabricv4"
 	"github.com/equinix/terraform-provider-equinix/internal/framework"
 	fwtypes "github.com/equinix/terraform-provider-equinix/internal/framework/types"
+	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
+	"github.com/hashicorp/terraform-plugin-framework-validators/listvalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/objectplanmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/listplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 )
 
@@ -45,13 +48,52 @@ func resourceSchema(ctx context.Context) schema.Schema {
 			"description": schema.StringAttribute{
 				Description: "Optional description of time service",
 				Optional:    true,
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.UseStateForUnknown(),
+				},
 			},
 			"state": schema.StringAttribute{
 				Description: fmt.Sprintf("Indicator of the state of this Precision Time Service. One of: [%v]", fabricv4.AllowedPrecisionTimeServiceCreateResponseStateEnumValues),
 				Computed:    true,
 			},
+			"project_id": schema.StringAttribute{
+				Description: "Equinix Fabric Project ID",
+				Optional:    true,
+				Computed:    true,
+			},
+			"advance_configuration": schema.ListAttribute{
+				Description: "An object that has advanced configuration options.",
+				CustomType:  fwtypes.NewListNestedObjectTypeOf[AdvanceConfigurationModel](ctx),
+				ElementType: fwtypes.NewObjectTypeOf[AdvanceConfigurationModel](ctx),
+				Optional:    true,
+				Computed:    true,
+				PlanModifiers: []planmodifier.List{
+					listplanmodifier.UseStateForUnknown(),
+				},
+				Validators: []validator.List{
+					listvalidator.SizeAtMost(1),
+				},
+			},
+			"account": schema.ListAttribute{
+				Description: "Equinix User Account associated with Precision Time Service",
+				CustomType:  fwtypes.NewListNestedObjectTypeOf[AccountModel](ctx),
+				ElementType: fwtypes.NewObjectTypeOf[AccountModel](ctx),
+				Computed:    true,
+				PlanModifiers: []planmodifier.List{
+					listplanmodifier.UseStateForUnknown(),
+				},
+				Validators: []validator.List{
+					listvalidator.SizeAtMost(1),
+				},
+			},
 		},
 		Blocks: map[string]schema.Block{
+			"timeouts": timeouts.Block(ctx, timeouts.Opts{
+				Create: true,
+				Read:   true,
+				Update: true,
+				Delete: true,
+			}),
 			"package": schema.SingleNestedBlock{
 				Description: "Precision Time Service Package Details",
 				CustomType:  fwtypes.NewObjectTypeOf[PackageModel](ctx),
@@ -133,102 +175,6 @@ func resourceSchema(ctx context.Context) schema.Schema {
 					},
 				},
 			},
-			"advance_configuration": schema.SingleNestedBlock{
-				Description: "An object that has advanced configuration options.",
-				CustomType:  fwtypes.NewObjectTypeOf[AdvanceConfigurationModel](ctx),
-				PlanModifiers: []planmodifier.Object{
-					objectplanmodifier.UseStateForUnknown(),
-				},
-				Attributes: map[string]schema.Attribute{
-					"ntp": schema.ListAttribute{
-						Description: "Advance Configuration for NTP; a list of MD5 objects",
-						Optional:    true,
-						Computed:    true,
-						CustomType:  fwtypes.NewListNestedObjectTypeOf[MD5Model](ctx),
-						ElementType: fwtypes.NewObjectTypeOf[MD5Model](ctx),
-					},
-				},
-				Blocks: map[string]schema.Block{
-					"ptp": schema.SingleNestedBlock{
-						Description: "An object that has advanced PTP configuration.",
-						CustomType:  fwtypes.NewObjectTypeOf[PTPModel](ctx),
-						Attributes: map[string]schema.Attribute{
-							"time_scale": schema.StringAttribute{
-								Description: "Time scale value. ARB denotes Arbitrary, and PTP denotes Precision Time Protocol.",
-								Optional:    true,
-								Computed:    true,
-								Validators: []validator.String{
-									stringvalidator.OneOf(
-										string(fabricv4.PTPADVANCECONFIGURATIONTIMESCALE_ARB),
-										string(fabricv4.PTPADVANCECONFIGURATIONTIMESCALE_PTP),
-									),
-								},
-							},
-							"domain": schema.Int64Attribute{
-								Description: "Represents the domain number associated with the PTP profile. This is used to differentiate multiple PTP networks within a single physical network.",
-								Optional:    true,
-								Computed:    true,
-							},
-							"priority_1": schema.Int64Attribute{
-								Description: "Specifies the priority level 1 for the clock. The value helps in determining the best clock in the PTP network. Lower values are considered higher priority.",
-								Optional:    true,
-								Computed:    true,
-							},
-							"priority_2": schema.Int64Attribute{
-								Description: "Specifies the priority level 2 for the clock. It acts as a tie-breaker if multiple clocks have the same priority 1 value. Lower values are considered higher priority.",
-								Optional:    true,
-								Computed:    true,
-							},
-							"log_announce_interval": schema.Int64Attribute{
-								Description: "Represents the log2 interval between consecutive PTP announce messages. For example, a value of 0 implies an interval of 2^0 = 1 second.",
-								Optional:    true,
-								Computed:    true,
-							},
-							"log_sync_interval": schema.Int64Attribute{
-								Description: "Represents the log2 interval between consecutive PTP synchronization messages. A value of 0 implies an interval of 2^0 = 1 second.",
-								Optional:    true,
-								Computed:    true,
-							},
-							"log_delay_req_interval": schema.Int64Attribute{
-								Description: "Represents the log2 interval between consecutive PTP delay request messages. A value of 0 implies an interval of 2^0 = 1 second.",
-								Optional:    true,
-								Computed:    true,
-							},
-							"transport_mode": schema.StringAttribute{
-								Description: "Mode of transport for the Time Precision Service.",
-								Optional:    true,
-								Computed:    true,
-								Validators: []validator.String{
-									stringvalidator.OneOf(
-										string(fabricv4.PTPADVANCECONFIGURATIONTRANSPORTMODE_MULTICAST),
-										string(fabricv4.PTPADVANCECONFIGURATIONTRANSPORTMODE_UNICAST),
-										string(fabricv4.PTPADVANCECONFIGURATIONTRANSPORTMODE_HYBRID),
-									),
-								},
-							},
-							"grant_time": schema.Int64Attribute{
-								Description: "Unicast Grant Time in seconds. For Multicast and Hybrid transport modes, grant time defaults to 300 seconds. For Unicast mode, grant time can be between 30 to 7200.",
-								Optional:    true,
-								Computed:    true,
-							},
-						},
-					},
-				},
-			},
-			"project": schema.SingleNestedBlock{
-				Description: "An object that contains the Equinix Fabric project_id used for linking the Time Precision Service to a specific Equinix Fabric Project",
-				CustomType:  fwtypes.NewObjectTypeOf[ProjectModel](ctx),
-				PlanModifiers: []planmodifier.Object{
-					objectplanmodifier.UseStateForUnknown(),
-				},
-				Attributes: map[string]schema.Attribute{
-					"project_id": schema.StringAttribute{
-						Description: "Equinix Fabric Project ID",
-						Optional:    true,
-						Computed:    true,
-					},
-				},
-			},
 			"connections": schema.ListNestedBlock{
 				Description: "An array of objects with unique identifiers of connections.",
 				CustomType:  fwtypes.NewListNestedObjectTypeOf[ConnectionModel](ctx),
@@ -247,31 +193,6 @@ func resourceSchema(ctx context.Context) schema.Schema {
 							Description: "Type of the Equinix Fabric Connection associated with the Precision Time Service",
 							Computed:    true,
 						},
-					},
-				},
-			},
-			"account": schema.SingleNestedBlock{
-				Description: "Equinix User Account associated with Precision Time Service",
-				CustomType:  fwtypes.NewObjectTypeOf[AccountModel](ctx),
-				PlanModifiers: []planmodifier.Object{
-					objectplanmodifier.UseStateForUnknown(),
-				},
-				Attributes: map[string]schema.Attribute{
-					"account_number": schema.Int64Attribute{
-						Description: "Equinix User account number",
-						Computed:    true,
-					},
-					"is_reseller_account": schema.BoolAttribute{
-						Description: "Equinix User Boolean flag indicating if it is a reseller account",
-						Computed:    true,
-					},
-					"org_id": schema.StringAttribute{
-						Description: "Equinix User organization id",
-						Computed:    true,
-					},
-					"global_org_id": schema.StringAttribute{
-						Description: "Equinix User global organization id",
-						Computed:    true,
 					},
 				},
 			},

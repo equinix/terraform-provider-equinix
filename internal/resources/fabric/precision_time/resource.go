@@ -46,7 +46,7 @@ func (r *Resource) Create(
 	resp *resource.CreateResponse,
 ) {
 
-	var plan ResourceModel
+	var plan PrecisionTimeModel
 	diags := req.Plan.Get(ctx, &plan)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
@@ -72,14 +72,21 @@ func (r *Resource) Create(
 		return
 	}
 
-	ept, diags = getEpt(ctx, client, &resp.State, ept.GetUuid())
-	if diags != nil {
+	createTimeout, diags := plan.Timeouts.Create(ctx, 10*time.Minute)
+	if diags.HasError() {
 		resp.Diagnostics.Append(diags...)
+		return
+	}
+	createWaiter := getCreateUpdateWaiter(ctx, client, ept.GetUuid(), createTimeout)
+	eptChecked, err := createWaiter.WaitForStateContext(ctx)
+	if err != nil {
+		resp.Diagnostics.AddError(
+			fmt.Sprintf("Failed to create Precision Time Service %s", ept.GetUuid()), err.Error())
 		return
 	}
 
 	// Parse API response into the Terraform state
-	resp.Diagnostics.Append(plan.parse(ctx, ept)...)
+	resp.Diagnostics.Append(plan.parse(ctx, eptChecked.(*fabricv4.PrecisionTimeServiceCreateResponse))...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -93,7 +100,7 @@ func (r *Resource) Read(
 	req resource.ReadRequest,
 	resp *resource.ReadResponse,
 ) {
-	var state ResourceModel
+	var state PrecisionTimeModel
 	diags := req.State.Get(ctx, &state)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
@@ -106,10 +113,10 @@ func (r *Resource) Read(
 	// Extract the ID of the resource from the state
 	id := state.ID.ValueString()
 
-	// Use API client to get the current state of the resource
-	ept, diags := getEpt(ctx, client, &resp.State, id)
-	if diags != nil {
-		resp.Diagnostics.Append(diags...)
+	ept, _, err := client.PrecisionTimeApi.GetTimeServicesById(ctx, id).Execute()
+	if err != nil {
+		resp.Diagnostics.AddError(
+			fmt.Sprintf("Failed retrieving Precision Time Service %s", id), err.Error())
 		return
 	}
 
@@ -131,7 +138,7 @@ func (r *Resource) Update(
 	client := r.Meta.NewFabricClientForFramework(ctx, req.ProviderMeta)
 
 	// Retrieve values from plan
-	var state, plan ResourceModel
+	var state, plan PrecisionTimeModel
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
 	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
 	if resp.Diagnostics.HasError() {
@@ -194,15 +201,22 @@ func (r *Resource) Update(
 		}
 	}
 
-	// Use API client to get the current state of the resource
-	conn, diags := getEpt(ctx, client, &resp.State, id)
-	if diags != nil {
+	updateTimeout, diags := plan.Timeouts.Create(ctx, 10*time.Minute)
+	if diags.HasError() {
 		resp.Diagnostics.Append(diags...)
 		return
 	}
 
+	updateWaiter := getCreateUpdateWaiter(ctx, client, id, updateTimeout)
+	ept, err := updateWaiter.WaitForStateContext(ctx)
+	if err != nil {
+		resp.Diagnostics.AddError(
+			fmt.Sprintf("Failed to update Precision Time Service %s", id), err.Error())
+		return
+	}
+
 	// Set state to fully populated data
-	resp.Diagnostics.Append(plan.parse(ctx, conn)...)
+	resp.Diagnostics.Append(plan.parse(ctx, ept.(*fabricv4.PrecisionTimeServiceCreateResponse))...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -220,7 +234,7 @@ func (r *Resource) Delete(
 	client := r.Meta.NewFabricClientForFramework(ctx, req.ProviderMeta)
 
 	// Retrieve the current state
-	var state ResourceModel
+	var state PrecisionTimeModel
 	diags := req.State.Get(ctx, &state)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
@@ -239,7 +253,11 @@ func (r *Resource) Delete(
 		}
 	}
 
-	deleteTimeout := 10 * 60 * time.Second
+	deleteTimeout, diags := state.Timeouts.Create(ctx, 10*time.Minute)
+	if diags.HasError() {
+		resp.Diagnostics.Append(diags...)
+		return
+	}
 	deleteWaiter := getDeleteWaiter(ctx, client, id, deleteTimeout)
 	_, err = deleteWaiter.WaitForStateContext(ctx)
 
@@ -249,7 +267,7 @@ func (r *Resource) Delete(
 	}
 }
 
-func buildCreateRequest(ctx context.Context, plan ResourceModel) (fabricv4.PrecisionTimeServiceRequest, diag.Diagnostics) {
+func buildCreateRequest(ctx context.Context, plan PrecisionTimeModel) (fabricv4.PrecisionTimeServiceRequest, diag.Diagnostics) {
 	var diags diag.Diagnostics
 	request := fabricv4.PrecisionTimeServiceRequest{
 		Type: fabricv4.PrecisionTimeServiceRequestType(plan.Type.ValueString()),
@@ -313,95 +331,86 @@ func buildCreateRequest(ctx context.Context, plan ResourceModel) (fabricv4.Preci
 	ipv4.SetDefaultGateway(ipv4Model.DefaultGateway.ValueString())
 	request.SetIpv4(ipv4)
 
-	advConfigModel := AdvanceConfigurationModel{}
-	diags = plan.AdvanceConfiguration.As(ctx, &advConfigModel, basetypes.ObjectAsOptions{
-		UnhandledNullAsEmpty:    true,
-		UnhandledUnknownAsEmpty: true,
-	})
+	advConfigList := make([]AdvanceConfigurationModel, 0)
+	diags = plan.AdvanceConfiguration.ElementsAs(ctx, &advConfigList, true)
 	if diags.HasError() {
 		return fabricv4.PrecisionTimeServiceRequest{}, diags
 	}
 
-	ptpModel := PTPModel{}
-	diags = advConfigModel.Ptp.As(ctx, &ptpModel, basetypes.ObjectAsOptions{
-		UnhandledNullAsEmpty:    true,
-		UnhandledUnknownAsEmpty: true,
-	})
-	if diags.HasError() {
-		return fabricv4.PrecisionTimeServiceRequest{}, diags
-	}
-
-	ptp := fabricv4.PtpAdvanceConfiguration{}
-	if timeScale := ptpModel.TimeScale.ValueString(); timeScale != "" {
-		ptp.SetTimeScale(fabricv4.PtpAdvanceConfigurationTimeScale(timeScale))
-	}
-	if domain := ptpModel.Domain.ValueInt64(); domain != 0 {
-		ptp.SetPriority1(int32(domain))
-	}
-	if priority1 := ptpModel.Priority1.ValueInt64(); priority1 != 0 {
-		ptp.SetPriority1(int32(priority1))
-	}
-	if priority2 := ptpModel.Priority2.ValueInt64(); priority2 != 0 {
-		ptp.SetPriority2(int32(priority2))
-	}
-	if logAnnounceInterval := ptpModel.LogAnnounceInterval.ValueInt64(); logAnnounceInterval != 0 {
-		ptp.SetLogAnnounceInterval(int32(logAnnounceInterval))
-	}
-	if logSyncInterval := ptpModel.LogSyncInterval.ValueInt64(); logSyncInterval != 0 {
-		ptp.SetLogSyncInterval(int32(logSyncInterval))
-	}
-	if logDelayReqInterval := ptpModel.LogDelayReqInterval.ValueInt64(); logDelayReqInterval != 0 {
-		ptp.SetLogDelayReqInterval(int32(logDelayReqInterval))
-	}
-	if transportMode := ptpModel.TransportMode.ValueString(); transportMode != "" {
-		ptp.SetTransportMode(fabricv4.PtpAdvanceConfigurationTransportMode(transportMode))
-	}
-	if grantTime := ptpModel.GrantTime.ValueInt64(); grantTime != 0 {
-		ptp.SetGrantTime(int32(grantTime))
-	}
-
-	ntpModels, diags := advConfigModel.Ntp.ToSlice(ctx)
-	if diags.HasError() {
-		return fabricv4.PrecisionTimeServiceRequest{}, diags
-	}
-
-	ntps := make([]fabricv4.Md5, len(ntpModels))
-	for index, md5 := range ntpModels {
-		ntps[index] = fabricv4.Md5{}
-		if type_ := md5.Type.ValueString(); type_ != "" {
-			ntps[index].SetType(fabricv4.Md5Type(type_))
+	if len(advConfigList) != 0 {
+		advConfigModel := advConfigList[0]
+		ptpList := make([]PTPModel, 0)
+		diags = advConfigModel.Ptp.ElementsAs(ctx, &ptpList, true)
+		if diags.HasError() {
+			return fabricv4.PrecisionTimeServiceRequest{}, diags
 		}
-		if id := md5.Id.ValueString(); id != "" {
-			ntps[index].SetId(id)
+
+		ptp := fabricv4.PtpAdvanceConfiguration{}
+		if len(ptpList) != 0 {
+			ptpModel := ptpList[0]
+			if timeScale := ptpModel.TimeScale.ValueString(); timeScale != "" {
+				ptp.SetTimeScale(fabricv4.PtpAdvanceConfigurationTimeScale(timeScale))
+			}
+			if domain := ptpModel.Domain.ValueInt64(); domain != 0 {
+				ptp.SetPriority1(int32(domain))
+			}
+			if priority1 := ptpModel.Priority1.ValueInt64(); priority1 != 0 {
+				ptp.SetPriority1(int32(priority1))
+			}
+			if priority2 := ptpModel.Priority2.ValueInt64(); priority2 != 0 {
+				ptp.SetPriority2(int32(priority2))
+			}
+			if logAnnounceInterval := ptpModel.LogAnnounceInterval.ValueInt64(); logAnnounceInterval != 0 {
+				ptp.SetLogAnnounceInterval(int32(logAnnounceInterval))
+			}
+			if logSyncInterval := ptpModel.LogSyncInterval.ValueInt64(); logSyncInterval != 0 {
+				ptp.SetLogSyncInterval(int32(logSyncInterval))
+			}
+			if logDelayReqInterval := ptpModel.LogDelayReqInterval.ValueInt64(); logDelayReqInterval != 0 {
+				ptp.SetLogDelayReqInterval(int32(logDelayReqInterval))
+			}
+			if transportMode := ptpModel.TransportMode.ValueString(); transportMode != "" {
+				ptp.SetTransportMode(fabricv4.PtpAdvanceConfigurationTransportMode(transportMode))
+			}
+			if grantTime := ptpModel.GrantTime.ValueInt64(); grantTime != 0 {
+				ptp.SetGrantTime(int32(grantTime))
+			}
 		}
-		if password := md5.Password.ValueString(); password != "" {
-			ntps[index].SetPassword(password)
+
+		ntpModels, diags := advConfigModel.Ntp.ToSlice(ctx)
+		if diags.HasError() {
+			return fabricv4.PrecisionTimeServiceRequest{}, diags
+		}
+
+		ntps := make([]fabricv4.Md5, len(ntpModels))
+		for index, md5 := range ntpModels {
+			ntps[index] = fabricv4.Md5{}
+			if type_ := md5.Type.ValueString(); type_ != "" {
+				ntps[index].SetType(fabricv4.Md5Type(type_))
+			}
+			if id := md5.Id.ValueString(); id != "" {
+				ntps[index].SetId(id)
+			}
+			if password := md5.Password.ValueString(); password != "" {
+				ntps[index].SetPassword(password)
+			}
+		}
+
+		advConfig := fabricv4.AdvanceConfiguration{}
+		if len(ntps) > 0 {
+			advConfig.SetNtp(ntps)
+		}
+		if !reflect.DeepEqual(ptp, fabricv4.PtpAdvanceConfiguration{}) {
+			advConfig.SetPtp(ptp)
+		}
+		if !reflect.DeepEqual(advConfig, fabricv4.AdvanceConfiguration{}) {
+			request.SetAdvanceConfiguration(advConfig)
 		}
 	}
 
-	advConfig := fabricv4.AdvanceConfiguration{}
-	if len(ntps) > 0 {
-		advConfig.SetNtp(ntps)
-	}
-	if !reflect.DeepEqual(ptp, fabricv4.PtpAdvanceConfiguration{}) {
-		advConfig.SetPtp(ptp)
-	}
-	if !reflect.DeepEqual(advConfig, fabricv4.AdvanceConfiguration{}) {
-		request.SetAdvanceConfiguration(advConfig)
-	}
-
-	projectModel := ProjectModel{}
-	diags = plan.Project.As(ctx, &projectModel, basetypes.ObjectAsOptions{
-		UnhandledNullAsEmpty:    true,
-		UnhandledUnknownAsEmpty: true,
-	})
-	if diags.HasError() {
-		return fabricv4.PrecisionTimeServiceRequest{}, diags
-	}
-
-	project := fabricv4.Project{}
-	if projectId := projectModel.ProjectId.ValueString(); projectId != "" {
-		project.SetProjectId(projectId)
+	if plan.ProjectId.ValueString() != "" {
+		project := fabricv4.Project{}
+		project.SetProjectId(plan.ProjectId.ValueString())
 		request.SetProject(project)
 	}
 
@@ -432,6 +441,25 @@ func getEpt(ctx context.Context, client *fabricv4.APIClient, state *tfsdk.State,
 		return nil, diags
 	}
 	return ept, diags
+}
+
+func getCreateUpdateWaiter(ctx context.Context, client *fabricv4.APIClient, id string, timeout time.Duration) *retry.StateChangeConf {
+	return &retry.StateChangeConf{
+		Target: []string{
+			string(fabricv4.PRECISIONTIMESERVICECREATERESPONSESTATE_PROVISIONED),
+			string(fabricv4.PRECISIONTIMESERVICECREATERESPONSESTATE_PENDING_CONFIGURATION),
+		},
+		Refresh: func() (interface{}, string, error) {
+			ept, _, err := client.PrecisionTimeApi.GetTimeServicesById(ctx, id).Execute()
+			if err != nil {
+				return 0, "", err
+			}
+			return ept, string(ept.GetState()), nil
+		},
+		Timeout:    timeout,
+		Delay:      10 * time.Second,
+		MinTimeout: 5 * time.Second,
+	}
 }
 
 func getDeleteWaiter(ctx context.Context, client *fabricv4.APIClient, id string, timeout time.Duration) *retry.StateChangeConf {
