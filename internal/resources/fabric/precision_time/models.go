@@ -86,9 +86,7 @@ type PTPModel struct {
 }
 
 func (m *PrecisionTimeModel) parse(ctx context.Context, ept *fabricv4.PrecisionTimeServiceCreateResponse) diag.Diagnostics {
-	var diags diag.Diagnostics
-
-	diags = parsePrecisionTime(ctx, ept,
+	diags := parsePrecisionTime(ctx, ept,
 		&m.ID, &m.Type, &m.Href, &m.Uuid, &m.Name, &m.Description,
 		&m.State, &m.ProjectId, &m.Package, &m.Ipv4,
 		&m.Account,

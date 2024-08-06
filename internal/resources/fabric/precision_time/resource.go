@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"github.com/equinix/equinix-sdk-go/services/fabricv4"
 	equinix_errors "github.com/equinix/terraform-provider-equinix/internal/errors"
-	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"net/http"
@@ -415,32 +414,6 @@ func buildCreateRequest(ctx context.Context, plan PrecisionTimeModel) (fabricv4.
 	}
 
 	return request, diags
-}
-
-func getEpt(ctx context.Context, client *fabricv4.APIClient, state *tfsdk.State, id string) (*fabricv4.PrecisionTimeServiceCreateResponse, diag.Diagnostics) {
-	var diags diag.Diagnostics
-
-	// Use API client to get the current state of the resource
-	ept, _, err := client.PrecisionTimeApi.GetTimeServicesById(ctx, id).Execute()
-
-	if err != nil {
-		// If the Precision Time Service is not found, remove it from the state
-		if equinix_errors.IsNotFound(err) {
-			diags.AddWarning(
-				"Precision Time Service",
-				fmt.Sprintf("[WARN] Precision Time Service (%s) not found, removing from state", id),
-			)
-			state.RemoveResource(ctx)
-			return nil, diags
-		}
-
-		diags.AddError(
-			"Error reading Precision Time Service",
-			equinix_errors.FormatFabricError(err).Error(),
-		)
-		return nil, diags
-	}
-	return ept, diags
 }
 
 func getCreateUpdateWaiter(ctx context.Context, client *fabricv4.APIClient, id string, timeout time.Duration) *retry.StateChangeConf {
