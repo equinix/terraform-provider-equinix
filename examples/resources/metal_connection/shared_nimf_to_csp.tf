@@ -12,7 +12,6 @@ resource "equinix_metal_connection" "example" {
   vlans              = [ equinix_metal_vlan.example1.vxlan ]
 }
 data "equinix_fabric_service_profiles" "zside" {
-  count = local.zside_ap_type == "SP" ? 1 : 0
   filter {
     property = "/name"
     operator = "="
@@ -46,7 +45,7 @@ resource "equinix_fabric_connection" "example" {
       seller_region      = "us-west-1"
       profile {
         type = "L2_PROFILE"
-        uuid = data.equinix_fabric_service_profiles.zside[0].id
+        uuid = data.equinix_fabric_service_profiles.zside.id
       }
       location {
         metro_code ="SV"

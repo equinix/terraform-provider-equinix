@@ -128,7 +128,7 @@ resource "equinix_fabric_connection" "example" {
 }
 ```
 
-### Shared Connection with authorization_code Non-redundant NIMF connection from Equinix Metal to a Cloud Service Provider via Equinix Fabric Port
+### Shared Connection with authorization_code Non-redundant Metal-Fabric Integration connection from Equinix Metal to a Cloud Service Provider via Equinix Fabric Port
 
 ```terraform
 resource "equinix_metal_vlan" "example1" {
@@ -145,7 +145,6 @@ resource "equinix_metal_connection" "example" {
   vlans              = [ equinix_metal_vlan.example1.vxlan ]
 }
 data "equinix_fabric_service_profiles" "zside" {
-  count = local.zside_ap_type == "SP" ? 1 : 0
   filter {
     property = "/name"
     operator = "="
@@ -179,7 +178,7 @@ resource "equinix_fabric_connection" "example" {
       seller_region      = "us-west-1"
       profile {
         type = "L2_PROFILE"
-        uuid = data.equinix_fabric_service_profiles.zside[0].id
+        uuid = data.equinix_fabric_service_profiles.zside.id
       }
       location {
         metro_code ="SV"
@@ -189,7 +188,7 @@ resource "equinix_fabric_connection" "example" {
 }
 ```
 
-### Shared Connection with authorization_code Non-redundant NIMF connection from Equinix Fabric Cloud Router to Equinix Metal
+### Shared Connection with authorization_code Non-redundant Metal-Fabric Integration connection from Equinix Fabric Cloud Router to Equinix Metal
 
 ```terraform
 resource "equinix_metal_vlan" "example1" {
@@ -263,4 +262,4 @@ In addition to all arguments above, the following attributes are exported:
 * `ports` - List of connection ports - primary (`ports[0]`) and secondary (`ports[1]`). Schema of port is described in documentation of the [equinix_metal_connection datasource](../data-sources/metal_connection.md).
 * `service_tokens` - List of connection service tokens with attributes required to configure the connection in Equinix Fabric with the [equinix_fabric_connection](./fabric_connection.md) resource or from the [Equinix Fabric Portal](https://fabric.equinix.com/dashboard). Scehma of service_token is described in documentation of the [equinix_metal_connection datasource](../data-sources/metal_connection.md).
 * `token` - (Deprecated) Fabric Token required to configure the connection in Equinix Fabric with the [equinix_fabric_connection](./fabric_connection.md) resource or from the [Equinix Fabric Portal](https://fabric.equinix.com/dashboard). If your organization already has connection service tokens enabled, use `service_tokens` instead.
-* `authorization_code` - Fabric Authorization code to configure the NIMF connection with Cloud Service Provider through Equinix Fabric with the [equinix_fabric_connection](./fabric_connection.md) resource from the [Equinix Developer Portal](https://developer.equinix.com/dev-docs/fabric/getting-started/fabric-v4-apis/connect-metal-to-amazon-web-services).
+* `authorization_code` - Fabric Authorization code to configure the Metal-Fabric Integration connection with Cloud Service Provider through Equinix Fabric with the [equinix_fabric_connection](./fabric_connection.md) resource from the [Equinix Developer Portal](https://developer.equinix.com/dev-docs/fabric/getting-started/fabric-v4-apis/connect-metal-to-amazon-web-services).
