@@ -2,13 +2,15 @@ package precision_time
 
 import (
 	"context"
+	"reflect"
+
 	"github.com/equinix/equinix-sdk-go/services/fabricv4"
-	fwtypes "github.com/equinix/terraform-provider-equinix/internal/framework/types"
 	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
-	"reflect"
+
+	fwtypes "github.com/equinix/terraform-provider-equinix/internal/framework/types"
 )
 
 type PrecisionTimeModel struct {

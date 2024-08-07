@@ -3,13 +3,15 @@ package precision_time
 import (
 	"context"
 	"fmt"
+
 	"github.com/equinix/equinix-sdk-go/services/fabricv4"
-	"github.com/equinix/terraform-provider-equinix/internal/framework"
-	fwtypes "github.com/equinix/terraform-provider-equinix/internal/framework/types"
 	"github.com/hashicorp/terraform-plugin-framework-validators/listvalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
+
+	"github.com/equinix/terraform-provider-equinix/internal/framework"
+	fwtypes "github.com/equinix/terraform-provider-equinix/internal/framework/types"
 )
 
 func dataSourceSchema(ctx context.Context) schema.Schema {

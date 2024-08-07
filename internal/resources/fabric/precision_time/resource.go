@@ -3,18 +3,19 @@ package precision_time
 import (
 	"context"
 	"fmt"
-	"github.com/equinix/equinix-sdk-go/services/fabricv4"
-	equinix_errors "github.com/equinix/terraform-provider-equinix/internal/errors"
-	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"net/http"
 	"reflect"
 	"slices"
 	"time"
 
-	"github.com/equinix/terraform-provider-equinix/internal/framework"
+	"github.com/equinix/equinix-sdk-go/services/fabricv4"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
+	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
+
+	equinix_errors "github.com/equinix/terraform-provider-equinix/internal/errors"
+	"github.com/equinix/terraform-provider-equinix/internal/framework"
 )
 
 func NewResource() resource.Resource {
