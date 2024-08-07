@@ -3,6 +3,8 @@ package sweep_test
 import (
 	"testing"
 
+	fabric_cloud_router "github.com/equinix/terraform-provider-equinix/internal/resources/fabric/cloud_router"
+
 	fabric_connection "github.com/equinix/terraform-provider-equinix/internal/resources/fabric/connection"
 	"github.com/equinix/terraform-provider-equinix/internal/resources/metal/connection"
 	"github.com/equinix/terraform-provider-equinix/internal/resources/metal/device"
@@ -27,6 +29,7 @@ func TestMain(m *testing.M) {
 func addTestSweepers() {
 	connection.AddTestSweeper()
 	device.AddTestSweeper()
+	fabric_cloud_router.AddTestSweeper()
 	fabric_connection.AddTestSweeper()
 	organization.AddTestSweeper()
 	project.AddTestSweeper()
