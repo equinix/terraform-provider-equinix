@@ -68,30 +68,31 @@ resource "equinix_fabric_precision_time" "ntp" {
 
 ### Optional
 
-- `advance_configuration` (Block, Optional) An object that has advanced configuration options. (see [below for nested schema](#nestedblock--advance_configuration))
+- `advance_configuration` (List of Object) An object that has advanced configuration options. (see [below for nested schema](#nestedatt--advance_configuration))
 - `connections` (Block List) An array of objects with unique identifiers of connections. (see [below for nested schema](#nestedblock--connections))
 - `description` (String) Optional description of time service
-- `ipv4` (Block Set) An object that has Network IP Configurations for Timing Master Servers. (see [below for nested schema](#nestedblock--ipv4))
-- `package` (Block Set) Precision Time Service Package Details (see [below for nested schema](#nestedblock--package))
-- `project` (Block Set) An object that contains the Equinix Fabric project_id used for linking the Time Precision Service to a specific Equinix Fabric Project (see [below for nested schema](#nestedblock--project))
+- `ipv4` (Block, Optional) An object that has Network IP Configurations for Timing Master Servers. (see [below for nested schema](#nestedblock--ipv4))
+- `package` (Block, Optional) Precision Time Service Package Details (see [below for nested schema](#nestedblock--package))
+- `project_id` (String) Equinix Fabric Project ID
+- `timeouts` (Block, Optional) (see [below for nested schema](#nestedblock--timeouts))
 
 ### Read-Only
 
-- `account` (Block, Read-only) Equinix User Account associated with Precision Time Service (see [below for nested schema](#nestedblock--account))
+- `account` (List of Object) Equinix User Account associated with Precision Time Service (see [below for nested schema](#nestedatt--account))
 - `href` (String) Equinix generated Portal link for the created Precision Time Service
 - `id` (String) The unique identifier of the resource
 - `state` (String) Indicator of the state of this Precision Time Service. One of: [[PROVISIONED PROVISIONING PROVISIONING_FAILED CONFIGURING CANCELLED DEPROVISIONING_FAILED PENDING_CONFIGURATION DEPROVISIONED CONFIGURING_FAILED DEPROVISIONING]]
 - `uuid` (String) Equinix generated id for the Precision Time Service
 
-<a id="nestedblock--advance_configuration"></a>
+<a id="nestedatt--advance_configuration"></a>
 ### Nested Schema for `advance_configuration`
 
 Optional:
 
-- `ntp` (List of Object) Advance Configuration for NTP; a list of MD5 objects (see [below for nested schema](#nestedatt--advance_configuration--ntp))
-- `ptp` (Block, Optional) An object that has advanced PTP configuration. (see [below for nested schema](#nestedblock--advance_configuration--ptp))
+- `ntp` (List of Object) (see [below for nested schema](#nestedobjatt--advance_configuration--ntp))
+- `ptp` (List of Object) (see [below for nested schema](#nestedobjatt--advance_configuration--ptp))
 
-<a id="nestedatt--advance_configuration--ntp"></a>
+<a id="nestedobjatt--advance_configuration--ntp"></a>
 ### Nested Schema for `advance_configuration.ntp`
 
 Optional:
@@ -101,20 +102,20 @@ Optional:
 - `type` (String)
 
 
-<a id="nestedblock--advance_configuration--ptp"></a>
+<a id="nestedobjatt--advance_configuration--ptp"></a>
 ### Nested Schema for `advance_configuration.ptp`
 
 Optional:
 
-- `domain` (Number) Represents the domain number associated with the PTP profile. This is used to differentiate multiple PTP networks within a single physical network.
-- `grant_time` (Number) Unicast Grant Time in seconds. For Multicast and Hybrid transport modes, grant time defaults to 300 seconds. For Unicast mode, grant time can be between 30 to 7200.
-- `log_announce_interval` (Number) Represents the log2 interval between consecutive PTP announce messages. For example, a value of 0 implies an interval of 2^0 = 1 second.
-- `log_delay_req_interval` (Number) Represents the log2 interval between consecutive PTP delay request messages. A value of 0 implies an interval of 2^0 = 1 second.
-- `log_sync_interval` (Number) Represents the log2 interval between consecutive PTP synchronization messages. A value of 0 implies an interval of 2^0 = 1 second.
-- `priority_1` (Number) Specifies the priority level 1 for the clock. The value helps in determining the best clock in the PTP network. Lower values are considered higher priority.
-- `priority_2` (Number) Specifies the priority level 2 for the clock. It acts as a tie-breaker if multiple clocks have the same priority 1 value. Lower values are considered higher priority.
-- `time_scale` (String) Time scale value. ARB denotes Arbitrary, and PTP denotes Precision Time Protocol.
-- `transport_mode` (String) Mode of transport for the Time Precision Service.
+- `domain` (Number)
+- `grant_time` (Number)
+- `log_announce_interval` (Number)
+- `log_delay_req_interval` (Number)
+- `log_sync_interval` (Number)
+- `priority_1` (Number)
+- `priority_2` (Number)
+- `time_scale` (String)
+- `transport_mode` (String)
 
 
 
@@ -166,23 +167,26 @@ Read-Only:
 - `type` (String) Type of the Precision Time Service Package
 
 
-<a id="nestedblock--project"></a>
-### Nested Schema for `project`
+<a id="nestedblock--timeouts"></a>
+### Nested Schema for `timeouts`
 
-Required:
+Optional:
 
-- `project_id` (String) Equinix Fabric Project ID
+- `create` (String) A string that can be [parsed as a duration](https://pkg.go.dev/time#ParseDuration) consisting of numbers and unit suffixes, such as "30s" or "2h45m". Valid time units are "s" (seconds), "m" (minutes), "h" (hours).
+- `delete` (String) A string that can be [parsed as a duration](https://pkg.go.dev/time#ParseDuration) consisting of numbers and unit suffixes, such as "30s" or "2h45m". Valid time units are "s" (seconds), "m" (minutes), "h" (hours). Setting a timeout for a Delete operation is only applicable if changes are saved into state before the destroy operation occurs.
+- `read` (String) A string that can be [parsed as a duration](https://pkg.go.dev/time#ParseDuration) consisting of numbers and unit suffixes, such as "30s" or "2h45m". Valid time units are "s" (seconds), "m" (minutes), "h" (hours). Read operations occur during any refresh or planning operation when refresh is enabled.
+- `update` (String) A string that can be [parsed as a duration](https://pkg.go.dev/time#ParseDuration) consisting of numbers and unit suffixes, such as "30s" or "2h45m". Valid time units are "s" (seconds), "m" (minutes), "h" (hours).
 
 
-<a id="nestedblock--account"></a>
+<a id="nestedatt--account"></a>
 ### Nested Schema for `account`
 
 Read-Only:
 
-- `account_number` (Number) Equinix User account number
-- `global_org_id` (String) Equinix User global organization id
-- `is_reseller_account` (Boolean) Equinix User Boolean flag indicating if it is a reseller account
-- `org_id` (String) Equinix User organization id
+- `account_number` (Number)
+- `global_org_id` (String)
+- `is_reseller_account` (Boolean)
+- `org_id` (String)
 
 
 
