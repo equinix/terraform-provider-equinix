@@ -229,7 +229,7 @@ func (c *Config) newMetalClient() *metalv1.APIClient {
 	standardClient := retryClient.StandardClient()
 
 	baseURL, _ := url.Parse(c.BaseURL)
-	baseURL.Path = path.Join(baseURL.Path, metalBasePath) + "/"
+	baseURL.Path = path.Join(baseURL.Path, metalBasePath)
 
 	configuration := metalv1.NewConfiguration()
 	configuration.Servers = metalv1.ServerConfigurations{
