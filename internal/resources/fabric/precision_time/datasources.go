@@ -1,12 +1,13 @@
 package precision_time
 
 import (
-	equinix_errors "github.com/equinix/terraform-provider-equinix/internal/errors"
-	"github.com/equinix/terraform-provider-equinix/internal/framework"
-	"github.com/hashicorp/terraform-plugin-framework/datasource"
-
 	"context"
 	"fmt"
+
+	"github.com/hashicorp/terraform-plugin-framework/datasource"
+
+	equinix_errors "github.com/equinix/terraform-provider-equinix/internal/errors"
+	"github.com/equinix/terraform-provider-equinix/internal/framework"
 )
 
 func NewDataSource() datasource.DataSource {

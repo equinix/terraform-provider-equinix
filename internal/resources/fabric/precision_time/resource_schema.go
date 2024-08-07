@@ -3,9 +3,8 @@ package precision_time
 import (
 	"context"
 	"fmt"
+
 	"github.com/equinix/equinix-sdk-go/services/fabricv4"
-	"github.com/equinix/terraform-provider-equinix/internal/framework"
-	fwtypes "github.com/equinix/terraform-provider-equinix/internal/framework/types"
 	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
 	"github.com/hashicorp/terraform-plugin-framework-validators/listvalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
@@ -14,6 +13,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
+
+	"github.com/equinix/terraform-provider-equinix/internal/framework"
+	fwtypes "github.com/equinix/terraform-provider-equinix/internal/framework/types"
 )
 
 func resourceSchema(ctx context.Context) schema.Schema {
