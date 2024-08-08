@@ -50,13 +50,13 @@ func ToLowerIf(v interface{}) string {
 	return strings.ToLower(v.(string))
 }
 
-// from https://stackoverflow.com/a/45428032
-func Difference(a, b []string) []string {
-	mb := make(map[string]struct{}, len(b))
+// Difference returns the elements in `a` that aren't in `b`.
+func Difference[T comparable](a, b []T) []T {
+	mb := make(map[T]struct{}, len(b))
 	for _, x := range b {
 		mb[x] = struct{}{}
 	}
-	var diff []string
+	var diff []T
 	for _, x := range a {
 		if _, found := mb[x]; !found {
 			diff = append(diff, x)

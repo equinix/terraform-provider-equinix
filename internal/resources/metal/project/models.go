@@ -2,10 +2,11 @@ package project
 
 import (
 	"context"
-	"github.com/equinix/equinix-sdk-go/services/metalv1"
 	"path"
 	"strings"
 	"time"
+
+	"github.com/equinix/equinix-sdk-go/services/metalv1"
 
 	fwtypes "github.com/equinix/terraform-provider-equinix/internal/framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
@@ -116,7 +117,7 @@ func parseBGPConfig(ctx context.Context, bgpConfig *metalv1.BgpConfig) fwtypes.L
 	return fwtypes.NewListNestedObjectValueOfNull[BGPConfigModel](ctx)
 }
 
-// isEmptyBGPConfig checks if the provided BgpConfig is considered empty
+// isEmptyMetalBGPConfig checks if the provided BgpConfig is considered empty
 func isEmptyMetalBGPConfig(bgp *metalv1.BgpConfig) bool {
 	if metalv1.IsNil(bgp) {
 		return true

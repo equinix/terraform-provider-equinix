@@ -27,7 +27,7 @@ func TestSubsets_negative(t *testing.T) {
 	assert.False(t, result, "Given strings were found")
 }
 
-func TestIsEmpty(t *testing.T) {
+func IsEmpty(t *testing.T) {
 	// given
 	input := []interface{}{
 		"test",

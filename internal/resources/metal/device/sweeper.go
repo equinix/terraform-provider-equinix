@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"log"
-
 	"slices"
 
 	"github.com/equinix/equinix-sdk-go/services/metalv1"
