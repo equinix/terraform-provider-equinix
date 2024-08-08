@@ -18,10 +18,11 @@ import (
 	"github.com/equinix/equinix-sdk-go/services/metalv1"
 	"github.com/equinix/ne-go"
 	"github.com/equinix/oauth2-go"
+	"github.com/equinix/terraform-provider-equinix/internal/logging"
 	"github.com/equinix/terraform-provider-equinix/version"
+	"github.com/hashicorp/go-hclog"
 	"github.com/hashicorp/go-retryablehttp"
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/logging"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/packethost/packngo"
 	xoauth2 "golang.org/x/oauth2"
@@ -34,6 +35,17 @@ const (
 	ClientTokenEnvVar    = "EQUINIX_API_TOKEN"
 	ClientTimeoutEnvVar  = "EQUINIX_API_TIMEOUT"
 	MetalAuthTokenEnvVar = "METAL_AUTH_TOKEN"
+
+	// This is the initial env var for HTTP logging for backwards
+	// compatibility.  We could now introduce service-specific
+	// variables, if desired, for more granular control of logging
+	HTTPLoggingEnvVar = "TF_LOG"
+
+	// Subsystems for API client logging
+	packetClientSubsystem  = "Equinix Metal (packngo)"
+	equinixClientSubsystem = "Equinix"
+	metalClientSubsystem   = "Equinix Metal (metal-go)"
+	fabricClientSubsystem  = "Equinix Fabric (fabricv4)"
 )
 
 type ProviderMeta struct {
@@ -41,15 +53,19 @@ type ProviderMeta struct {
 }
 
 const (
-	consumerToken = "aZ9GmqHTPtxevvFq9SK3Pi2yr9YCbRzduCSXF2SNem5sjB91mDq7Th3ZwTtRqMWZ"
-	metalBasePath = "/metal/v1/"
-	uaEnvVar      = "TF_APPEND_USER_AGENT"
+	consumerToken        = "aZ9GmqHTPtxevvFq9SK3Pi2yr9YCbRzduCSXF2SNem5sjB91mDq7Th3ZwTtRqMWZ"
+	metalBasePath        = "/metal/v1/"
+	uaEnvVar             = "TF_APPEND_USER_AGENT"
+	authorizationHeader  = "Authorization"
+	metalAuthTokenHeader = "X-Auth-Token"
 )
 
 var (
-	DefaultBaseURL   = "https://api.equinix.com"
-	DefaultTimeout   = 30
-	redirectsErrorRe = regexp.MustCompile(`stopped after \d+ redirects\z`)
+	DefaultBaseURL       = "https://api.equinix.com"
+	DefaultTimeout       = 30
+	redirectsErrorRe     = regexp.MustCompile(`stopped after \d+ redirects\z`)
+	HTTPLogLevel         = hclog.LevelFromString(os.Getenv(HTTPLoggingEnvVar))
+	sensitiveHTTPHeaders = []string{authorizationHeader, metalAuthTokenHeader}
 )
 
 // Config is the configuration structure used to instantiate the Equinix
@@ -102,11 +118,9 @@ func (c *Config) Load(ctx context.Context) error {
 	}
 
 	authClient.Timeout = c.requestTimeout()
-	//nolint:staticcheck // We should move to subsystem loggers, but that is a much bigger change
-	authClient.Transport = logging.NewTransport("Equinix", authClient.Transport)
+	authClient.Transport = logging.NewHTTPLoggingTransport(equinixClientSubsystem, authClient.Transport, sensitiveHTTPHeaders, HTTPLogLevel)
 	c.authClient = authClient
 	neClient := ne.NewClient(ctx, c.BaseURL, authClient)
-
 	if c.PageSize > 0 {
 		neClient.SetPageSize(c.PageSize)
 	}
@@ -144,8 +158,7 @@ func (c *Config) NewFabricClientForTesting() *fabricv4.APIClient {
 // newFabricClient returns the base fabricv4 client that is then used for either the sdkv2 or framework
 // implementations of the Terraform Provider with exported Methods
 func (c *Config) newFabricClient() *fabricv4.APIClient {
-	//nolint:staticcheck // We should move to subsystem loggers, but that is a much bigger change
-	transport := logging.NewTransport("Equinix Fabric (fabricv4)", c.authClient.Transport)
+	transport := logging.NewHTTPLoggingTransport(fabricClientSubsystem, c.authClient.Transport, sensitiveHTTPHeaders, HTTPLogLevel)
 
 	retryClient := retryablehttp.NewClient()
 	retryClient.HTTPClient.Transport = transport
@@ -176,8 +189,7 @@ func (c *Config) newFabricClient() *fabricv4.APIClient {
 // Deprecated: migrate to NewMetalClientForSdk or NewMetalClientForFramework instead
 func (c *Config) NewMetalClient() *packngo.Client {
 	transport := http.DefaultTransport
-	//nolint:staticcheck // We should move to subsystem loggers, but that is a much bigger change
-	transport = logging.NewTransport("Equinix Metal (packngo)", transport)
+	transport = logging.NewHTTPLoggingTransport(packetClientSubsystem, transport, sensitiveHTTPHeaders, HTTPLogLevel)
 	retryClient := retryablehttp.NewClient()
 	retryClient.HTTPClient.Transport = transport
 	retryClient.RetryMax = c.MaxRetries
@@ -224,8 +236,7 @@ func (c *Config) NewMetalClientForTesting() *metalv1.APIClient {
 
 func (c *Config) newMetalClient() *metalv1.APIClient {
 	transport := http.DefaultTransport
-	//nolint:staticcheck // We should move to subsystem loggers, but that is a much bigger change
-	transport = logging.NewTransport("Equinix Metal (metal-go)", transport)
+	transport = logging.NewHTTPLoggingTransport(metalClientSubsystem, transport, sensitiveHTTPHeaders, HTTPLogLevel)
 	retryClient := retryablehttp.NewClient()
 	retryClient.HTTPClient.Transport = transport
 	retryClient.RetryMax = c.MaxRetries
@@ -244,7 +255,7 @@ func (c *Config) newMetalClient() *metalv1.APIClient {
 		},
 	}
 	configuration.HTTPClient = standardClient
-	configuration.AddDefaultHeader("X-Auth-Token", c.AuthToken)
+	configuration.AddDefaultHeader(metalAuthTokenHeader, c.AuthToken)
 	client := metalv1.NewAPIClient(configuration)
 	return client
 }
