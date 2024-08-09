@@ -66,7 +66,6 @@ func (r *Resource) Create(
 		Website:     plan.Website.ValueString(),
 		Description: plan.Description.ValueString(),
 		Twitter:     plan.Twitter.ValueString(),
-		Logo:        plan.Logo.ValueString(),
 		Address:     address,
 	}
 
