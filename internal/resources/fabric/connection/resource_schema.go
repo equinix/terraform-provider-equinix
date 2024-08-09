@@ -321,7 +321,7 @@ func accessPointSch() *schema.Resource {
 			"authentication_key": {
 				Type:        schema.TypeString,
 				Optional:    true,
-				Description: "Authentication key for provider based connections or Metal NIMF connections",
+				Description: "Authentication key for provider based connections or Metal-Fabric Integration connections",
 			},
 			"provider_connection_id": {
 				Type:        schema.TypeString,
