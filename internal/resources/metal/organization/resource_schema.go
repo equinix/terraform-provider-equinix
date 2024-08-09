@@ -39,12 +39,6 @@ func GetResourceSchema(ctx context.Context) schema.Schema {
 				Computed:    true,
 				Default:     stringdefault.StaticString(""),
 			},
-			"logo": schema.StringAttribute{
-				Description: "Logo URL",
-				Optional:    true,
-				Computed:    true,
-				Default:     stringdefault.StaticString(""),
-			},
 			"created": schema.StringAttribute{
 				Computed: true,
 			},

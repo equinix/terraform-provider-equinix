@@ -45,11 +45,6 @@ func dataSourceSchema(ctx context.Context) schema.Schema {
 				Description: "Twitter handle",
 				Computed:    true,
 			},
-			"logo": schema.StringAttribute{
-				Description: "Logo URL",
-				Computed:    true,
-			},
-
 			"project_ids": schema.ListAttribute{
 				Description: "UUIDs of project resources which belong to this organization",
 				Computed:    true,

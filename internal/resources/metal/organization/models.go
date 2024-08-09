@@ -24,7 +24,6 @@ type ResourceModel struct {
 	Description types.String                                          `tfsdk:"description"`
 	Website     types.String                                          `tfsdk:"website"`
 	Twitter     types.String                                          `tfsdk:"twitter"`
-	Logo        types.String                                          `tfsdk:"logo"`
 	Created     types.String                                          `tfsdk:"created"`
 	Updated     types.String                                          `tfsdk:"updated"`
 	Address     fwtypes.ListNestedObjectValueOf[AddressResourceModel] `tfsdk:"address"`
@@ -36,7 +35,6 @@ func (m *ResourceModel) parse(ctx context.Context, org *packngo.Organization) di
 	m.Description = types.StringValue(org.Description)
 	m.Website = types.StringValue(org.Website)
 	m.Twitter = types.StringValue(org.Twitter)
-	m.Logo = types.StringValue(org.Logo)
 	m.Created = types.StringValue(org.Created)
 	m.Updated = types.StringValue(org.Updated)
 
@@ -52,7 +50,6 @@ type DataSourceModel struct {
 	Description    types.String                                          `tfsdk:"description"`
 	Website        types.String                                          `tfsdk:"website"`
 	Twitter        types.String                                          `tfsdk:"twitter"`
-	Logo           types.String                                          `tfsdk:"logo"`
 	ProjectIDs     []types.List                                          `tfsdk:"project_ids"`
 	Address        fwtypes.ListNestedObjectValueOf[AddressResourceModel] `tfsdk:"address"` // List of Address
 }
@@ -66,7 +63,6 @@ func (m *DataSourceModel) parse(ctx context.Context, org *packngo.Organization) 
 	m.Description = types.StringValue(org.Description)
 	m.Website = types.StringValue(org.Website)
 	m.Twitter = types.StringValue(org.Twitter)
-	m.Logo = types.StringValue(org.Logo)
 	m.Address = parseAddress(ctx, org.Address)
 
 	projects := make([]string, len(org.Projects))
