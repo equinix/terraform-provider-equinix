@@ -36,7 +36,6 @@ In addition to all arguments above, the following attributes are exported:
 * `description` - Description string.
 * `website` - Website link.
 * `twitter` - Twitter handle.
-* `logo` - Logo URL.
 * `address` - Address information
   * `address` - Postal address.
   * `city` - City name.
