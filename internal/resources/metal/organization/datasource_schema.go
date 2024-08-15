@@ -46,7 +46,8 @@ func dataSourceSchema(ctx context.Context) schema.Schema {
 				Computed:    true,
 			},
 			"logo": schema.StringAttribute{
-				Description: "Logo URL",
+				DeprecationMessage: "Empty string is the only valid value. Support for this field has been removed from the API",
+				Description: "**Deprecated** Logo URL",
 				Computed:    true,
 			},
 

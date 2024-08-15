@@ -36,7 +36,7 @@ func (m *ResourceModel) parse(ctx context.Context, org *packngo.Organization) di
 	m.Description = types.StringValue(org.Description)
 	m.Website = types.StringValue(org.Website)
 	m.Twitter = types.StringValue(org.Twitter)
-	m.Logo = types.StringValue(org.Logo)
+	m.Logo = types.StringValue("")
 	m.Created = types.StringValue(org.Created)
 	m.Updated = types.StringValue(org.Updated)
 
@@ -66,7 +66,7 @@ func (m *DataSourceModel) parse(ctx context.Context, org *packngo.Organization) 
 	m.Description = types.StringValue(org.Description)
 	m.Website = types.StringValue(org.Website)
 	m.Twitter = types.StringValue(org.Twitter)
-	m.Logo = types.StringValue(org.Logo)
+	m.Logo = types.StringValue("")
 	m.Address = parseAddress(ctx, org.Address)
 
 	projects := make([]string, len(org.Projects))
