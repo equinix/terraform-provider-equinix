@@ -41,10 +41,10 @@ func GetResourceSchema(ctx context.Context) schema.Schema {
 			},
 			"logo": schema.StringAttribute{
 				DeprecationMessage: "The default (empty string) is the only valid value. Support for this field has been removed from the API",
-				Description: "**Deprecated** Logo URL",
-				Optional:    true,
-				Computed:    true,
-				Default:     stringdefault.StaticString(""),
+				Description:        "**Deprecated** Logo URL",
+				Optional:           true,
+				Computed:           true,
+				Default:            stringdefault.StaticString(""),
 			},
 			"created": schema.StringAttribute{
 				Computed: true,
