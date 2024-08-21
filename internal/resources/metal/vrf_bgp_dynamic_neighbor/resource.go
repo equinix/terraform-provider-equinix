@@ -71,7 +71,7 @@ func (r *Resource) Create(ctx context.Context, request resource.CreateRequest, r
 		return
 	}
 
-	neighbor, _, err := client.VRFsApi.CreateBgpDynamicNeighbor(ctx, plan.GatewayID.ValueString()).
+	neighbor, _, err := client.MetalGatewaysApi.CreateBgpDynamicNeighbor(ctx, plan.GatewayID.ValueString()).
 		BgpDynamicNeighborCreateInput(createRequest).
 		Exclude(bgpNeighborExcludes).
 		Include(bgpNeighborIncludes).
