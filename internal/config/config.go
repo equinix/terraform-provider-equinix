@@ -2,14 +2,12 @@ package config
 
 import (
 	"context"
-	"crypto/x509"
 	"fmt"
 	"log"
 	"net/http"
 	"net/url"
 	"os"
 	"path"
-	"regexp"
 	"runtime/debug"
 	"strings"
 	"time"
@@ -47,9 +45,8 @@ const (
 )
 
 var (
-	DefaultBaseURL   = "https://api.equinix.com"
-	DefaultTimeout   = 30
-	redirectsErrorRe = regexp.MustCompile(`stopped after \d+ redirects\z`)
+	DefaultBaseURL = "https://api.equinix.com"
+	DefaultTimeout = 30
 )
 
 // Config is the configuration structure used to instantiate the Equinix
@@ -153,7 +150,6 @@ func (c *Config) newFabricClient() *fabricv4.APIClient {
 	retryClient.RetryMax = c.MaxRetries
 	retryClient.RetryWaitMin = time.Second
 	retryClient.RetryWaitMax = c.MaxRetryWait
-	retryClient.CheckRetry = RetryPolicy
 	standardClient := retryClient.StandardClient()
 
 	baseURL, _ := url.Parse(c.BaseURL)
@@ -183,7 +179,6 @@ func (c *Config) NewMetalClient() *packngo.Client {
 	retryClient.RetryMax = c.MaxRetries
 	retryClient.RetryWaitMin = time.Second
 	retryClient.RetryWaitMax = c.MaxRetryWait
-	retryClient.CheckRetry = RetryPolicy
 	standardClient := retryClient.StandardClient()
 	baseURL, _ := url.Parse(c.BaseURL)
 	baseURL.Path = path.Join(baseURL.Path, metalBasePath) + "/"
@@ -231,7 +226,6 @@ func (c *Config) newMetalClient() *metalv1.APIClient {
 	retryClient.RetryMax = c.MaxRetries
 	retryClient.RetryWaitMin = time.Second
 	retryClient.RetryWaitMax = c.MaxRetryWait
-	retryClient.CheckRetry = RetryPolicy
 	standardClient := retryClient.StandardClient()
 
 	baseURL, _ := url.Parse(c.BaseURL)
@@ -254,29 +248,6 @@ func (c *Config) requestTimeout() time.Duration {
 		return 5 * time.Second
 	}
 	return c.RequestTimeout
-}
-
-func RetryPolicy(ctx context.Context, resp *http.Response, err error) (bool, error) {
-	if ctx.Err() != nil {
-		return false, ctx.Err()
-	}
-
-	if err != nil {
-		if v, ok := err.(*url.Error); ok {
-			// Don't retry if the error was due to too many redirects.
-			if redirectsErrorRe.MatchString(v.Error()) {
-				return false, nil
-			}
-
-			// Don't retry if the error was due to TLS cert verification failure.
-			if _, ok := v.Err.(x509.UnknownAuthorityError); ok {
-				return false, nil
-			}
-		}
-		// The error is likely recoverable so retry.
-		return true, nil
-	}
-	return false, nil
 }
 
 func appendUserAgentFromEnv(ua string) string {
