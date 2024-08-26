@@ -154,7 +154,7 @@ resource "equinix_metal_device" "pxe1" {
 
 ### Required
 
-- `operating_system` (String) The operating system slug. To find the slug, or visit [Operating Systems API docs](https://deploy.equinix.com/developers/docs/metal/operating-systems/supported/s), set your API auth token in the top of the page and see JSON from the API response.  By default, changing this attribute will cause your device to be deleted and recreated.  If `reinstall` is enabled, the device will be updated in-place instead of recreated.
+- `operating_system` (String) The operating system slug. To find the slug, or visit [Operating Systems API docs](https://deploy.equinix.com/developers/docs/metal/operating-systems/supported/), set your API auth token in the top of the page and see JSON from the API response.  By default, changing this attribute will cause your device to be deleted and recreated.  If `reinstall` is enabled, the device will be updated in-place instead of recreated.
 - `plan` (String) The device plan slug. To find the plan slug, visit the [bare-metal server](https://deploy.equinix.com/product/bare-metal/servers/) and [plan documentation](https://deploy.equinix.com/developers/docs/metal/hardware/standard-servers/)
 - `project_id` (String) The ID of the project in which to create the device
 
