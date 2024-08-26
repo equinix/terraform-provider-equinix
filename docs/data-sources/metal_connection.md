@@ -4,7 +4,7 @@ subcategory: "Metal"
 
 # equinix_metal_connection (Data Source)
 
-Use this data source to retrieve a [connection resource](https://developer.equinix.com/dev-docs/fabric/overview)
+Use this data source to retrieve a [connection resource](https://deploy.equinix.com/developers/docs/metal/interconnections/introduction/)
 
 ~> Equinix Metal connection with with Service Token A-side / Z-side (service_token_type) is not generally available and may not be enabled yet for your organization.
 
