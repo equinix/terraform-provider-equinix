@@ -4,9 +4,9 @@ subcategory: "Metal"
 
 # equinix_metal_connection (Resource)
 
-Use this resource to request the creation an Interconnection asset to connect with other parties using [Equinix Fabric - software-defined interconnections](https://metal.equinix.com/developers/docs/networking/fabric/).
+Use this resource to request the creation an Interconnection asset to connect with other parties using [Equinix Fabric - software-defined interconnections](https://deploy.equinix.com/developers/docs/metal/interconnections/introduction/).
 
-~> Equinix Metal connection with with Service Token A-side / Z-side (service_token_type) is not generally available and may not be enabled yet for your organization.
+~> Equinix Metal connection with Service Token A-side / Z-side (service_token_type) is not generally available and may not be enabled yet for your organization.
 
 ## Example Usage
 

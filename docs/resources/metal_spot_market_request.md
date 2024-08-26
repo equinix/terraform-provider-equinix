@@ -4,7 +4,7 @@ subcategory: "Metal"
 
 # equinix_metal_spot_market_request (Resource)
 
-Provides an Equinix Metal Spot Market Request resource to allow you to manage spot market requests on your account. For more detail on Spot Market, see [this article in Equinix Metal documentation](https://metal.equinix.com/developers/docs/deploy/spot-market/).
+Provides an Equinix Metal Spot Market Request resource to allow you to manage spot market requests on your account. For more detail on Spot Market, see [this article in Equinix Metal documentation](https://deploy.equinix.com/developers/docs/metal/deploy/spot-market/).
 
 ## Example Usage
 

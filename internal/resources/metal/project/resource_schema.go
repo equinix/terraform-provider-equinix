@@ -37,7 +37,7 @@ func resourceSchema(ctx context.Context) schema.Schema {
 				Computed:    true,
 			},
 			"backend_transfer": schema.BoolAttribute{
-				MarkdownDescription: "Enable or disable [Backend Transfer](https://metal.equinix.com/developers/docs/networking/backend-transfer/), default is false",
+				MarkdownDescription: "Enable or disable [Backend Transfer](https://deploy.equinix.com/developers/docs/metal/networking/backend-transfer/), default is false",
 				Description:         "Enable or disable Backend Transfer, default is false",
 				Optional:            true,
 				Computed:            true,

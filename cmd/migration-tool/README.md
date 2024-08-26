@@ -1,6 +1,6 @@
 # Equinix Terraform Provider Migration Tool
 
-[Equinix Metal](https://metal.equinix.com/) (formerly Packet), has been fully integrated into Platform Equinix and therefore the teraform provider changes too. Together with Equinix Fabric and Equinix Network Edge, from `v1.5.0` the Equinix Terraform Provider will be used to interact with the resources provided by Equinix Metal.
+[Equinix Metal](https://deploy.equinix.com/) (formerly Packet), has been fully integrated into Platform Equinix and therefore the teraform provider changes too. Together with Equinix Fabric and Equinix Network Edge, from `v1.5.0` the Equinix Terraform Provider will be used to interact with the resources provided by Equinix Metal.
 
 This tool will target a terraform working directory and transform all\* `metal` or `packet` names found in *.tf* and *.tfstate* files to the `equinix` provider name. It creates a backup of the target directory *\<working-directory\>.backup* as a sibling folder.
 

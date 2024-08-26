@@ -15,8 +15,8 @@ This resource controls network type of Equinix Metal devices.
 
 To learn more about Layer 2 networking in Equinix Metal, refer to
 
-* https://metal.equinix.com/developers/docs/networking/layer2/
-* https://metal.equinix.com/developers/docs/networking/layer2-configs/
+* https://deploy.equinix.com/developers/docs/metal/layer2-networking/overview/
+* https://deploy.equinix.com/developers/docs/metal/layer2-networking/overview/#network-configuration-types
 
 If you are attaching VLAN to a device (i.e. using equinix_metal_port_vlan_attachment), link the device ID from this resource, in order to make the port attachment implicitly dependent on the state of the network type. If you link the device ID from the equinix_metal_device resource, Terraform will not wait for the network type change. See examples in [equinix_metal_port_vlan_attachment](port_vlan_attachment).
 

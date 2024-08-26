@@ -57,7 +57,7 @@ func dataSourceSchema(ctx context.Context) schema.Schema {
 				Computed:    true,
 			},
 			"bgp_config": schema.ListAttribute{
-				Description: "Optional BGP settings. Refer to [Equinix Metal guide for BGP](https://metal.equinix.com/developers/docs/networking/local-global-bgp/)",
+				Description: "Optional BGP settings. Refer to [Equinix Metal guide for BGP](https://deploy.equinix.com/developers/docs/metal/bgp/bgp-on-equinix-metal/)",
 				CustomType:  fwtypes.NewListNestedObjectTypeOf[BGPConfigModel](ctx),
 				ElementType: fwtypes.NewObjectTypeOf[BGPConfigModel](ctx),
 				Computed:    true,

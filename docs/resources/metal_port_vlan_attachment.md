@@ -12,8 +12,8 @@ If you need this resource to add the port back to bond on removal, set `force_bo
 
 To learn more about Layer 2 networking in Equinix Metal, refer to
 
-* https://metal.equinix.com/developers/docs/networking/layer2/
-* https://metal.equinix.com/developers/docs/networking/layer2-configs/
+* https://deploy.equinix.com/developers/docs/metal/layer2-networking/overview/
+* https://deploy.equinix.com/developers/docs/metal/layer2-networking/overview/#network-configuration-types
 
 ## Example Usage
 

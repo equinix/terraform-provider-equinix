@@ -36,7 +36,7 @@ In addition to all arguments above, the following attributes are exported:
 * `created` - The timestamp for when the project was created.
 * `updated` - The timestamp for the last time the project was updated.
 * `user_ids` - List of UUIDs of user accounts which belong to this project.
-* `bgp_config` - Optional BGP settings. Refer to [Equinix Metal guide for BGP](https://metal.equinix.com/developers/docs/networking/local-global-bgp/).
+* `bgp_config` - Optional BGP settings. Refer to [Equinix Metal guide for BGP](https://deploy.equinix.com/developers/docs/metal/bgp/bgp-on-equinix-metal/).
 
 The `bgp_config` block contains:
 

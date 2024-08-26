@@ -154,7 +154,7 @@ resource "equinix_metal_device" "pxe1" {
 
 ### Required
 
-- `operating_system` (String) The operating system slug. To find the slug, or visit [Operating Systems API docs](https://metal.equinix.com/developers/api/operatingsystems), set your API auth token in the top of the page and see JSON from the API response.  By default, changing this attribute will cause your device to be deleted and recreated.  If `reinstall` is enabled, the device will be updated in-place instead of recreated.
+- `operating_system` (String) The operating system slug. To find the slug, or visit [Operating Systems API docs](https://deploy.equinix.com/developers/docs/metal/operating-systems/supported/s), set your API auth token in the top of the page and see JSON from the API response.  By default, changing this attribute will cause your device to be deleted and recreated.  If `reinstall` is enabled, the device will be updated in-place instead of recreated.
 - `plan` (String) The device plan slug. To find the plan slug, visit the [bare-metal server](https://deploy.equinix.com/product/bare-metal/servers/) and [plan documentation](https://deploy.equinix.com/developers/docs/metal/hardware/standard-servers/)
 - `project_id` (String) The ID of the project in which to create the device
 
@@ -165,7 +165,7 @@ resource "equinix_metal_device" "pxe1" {
 - `billing_cycle` (String) monthly or hourly
 - `custom_data` (String, Sensitive) A string of the desired Custom Data for the device.  By default, changing this attribute will cause the provider to destroy and recreate your device.  If `reinstall` is specified or `behavior.allow_changes` includes `"custom_data"`, the device will be updated in-place instead of recreated.
 - `description` (String) Description string for the device
-- `facilities` (List of String, Deprecated) List of facility codes with deployment preferences. Equinix Metal API will go through the list and will deploy your device to first facility with free capacity. List items must be facility codes or any (a wildcard). To find the facility code, visit [Facilities API docs](https://metal.equinix.com/developers/api/facilities/), set your API auth token in the top of the page and see JSON from the API response. Conflicts with metro
+- `facilities` (List of String, Deprecated) List of facility codes with deployment preferences. Equinix Metal API will go through the list and will deploy your device to first facility with free capacity. List items must be facility codes or any (a wildcard). To find the facility code, visit [Facilities API docs](https://deploy.equinix.com/developers/docs/metal/locations/facilities/), set your API auth token in the top of the page and see JSON from the API response. Conflicts with metro
 - `force_detach_volumes` (Boolean) Delete device even if it has volumes attached. Only applies for destroy action
 - `hardware_reservation_id` (String) The UUID of the hardware reservation where you want this device deployed, or next-available if you want to pick your next available reservation automatically
 - `hostname` (String) The device hostname used in deployments taking advantage of Layer3 DHCP or metadata service configuration.
@@ -175,7 +175,7 @@ resource "equinix_metal_device" "pxe1" {
 - `metro` (String) Metro area for the new device. Conflicts with facilities
 - `project_ssh_key_ids` (List of String) Array of IDs of the project SSH keys which should be added to the device. If you specify this array, only the listed project SSH keys (and any SSH keys for the users specified in user_ssh_key_ids) will be added. If no SSH keys are specified (both user_ssh_keys_ids and project_ssh_key_ids are empty lists or omitted), all parent project keys, parent project members keys and organization members keys will be included.  Project SSH keys can be created with the [equinix_metal_project_ssh_key](equinix_metal_project_ssh_key.md) resource
 - `reinstall` (Block List, Max: 1) (see [below for nested schema](#nestedblock--reinstall))
-- `storage` (String) JSON for custom partitioning. Only usable on reserved hardware. More information in in the [Custom Partitioning and RAID](https://metal.equinix.com/developers/docs/servers/custom-partitioning-raid/) doc
+- `storage` (String) JSON for custom partitioning. Only usable on reserved hardware. More information in in the [Custom Partitioning and RAID](https://deploy.equinix.com/developers/docs/metal/storage/custom-partitioning-raid/) doc
 - `tags` (List of String) Tags attached to the device
 - `termination_time` (String) Timestamp for device termination. For example "2021-09-03T16:32:00+03:00". If you don't supply timezone info, timestamp is assumed to be in UTC.
 - `timeouts` (Block, Optional) (see [below for nested schema](#nestedblock--timeouts))
@@ -193,7 +193,7 @@ resource "equinix_metal_device" "pxe1" {
 - `deployed_hardware_reservation_id` (String) ID of hardware reservation where this device was deployed. It is useful when using the next-available hardware reservation
 - `id` (String) The ID of this resource.
 - `network` (List of Object) The device's private and public IP (v4 and v6) network details. When a device is run without any special network configuration, it will have 3 addresses: public ipv4, private ipv4 and ipv6 (see [below for nested schema](#nestedatt--network))
-- `network_type` (String, Deprecated) Network type of a device, used in [Layer 2 networking](https://metal.equinix.com/developers/docs/networking/layer2/). Will be one of layer3, hybrid, hybrid-bonded, layer2-individual, layer2-bonded
+- `network_type` (String, Deprecated) Network type of a device, used in [Layer 2 networking](https://deploy.equinix.com/developers/docs/metal/layer2-networking/overview/). Will be one of layer3, hybrid, hybrid-bonded, layer2-individual, layer2-bonded
 - `ports` (List of Object) Ports assigned to the device (see [below for nested schema](#nestedatt--ports))
 - `root_password` (String, Sensitive) Root password to the server (disabled after 24 hours)
 - `sos_hostname` (String) The hostname to use for [Serial over SSH](https://deploy.equinix.com/developers/docs/metal/resilience-recovery/serial-over-ssh/) access to the device
