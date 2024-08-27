@@ -16,15 +16,15 @@ See the [Virtual Routing and Forwarding documentation](https://deploy.equinix.co
 
 Create a VRF in your desired metro and project with any IP ranges that you want the VRF to route and forward.
 
-{{tffile "examples/resources/metal_vrf/example_1.tf"}}
+{{tffile "examples/resources/equinix_metal_vrf/example_1.tf"}}
 
 Create IP reservations and assign them to a Metal Gateway resources. The Gateway will be assigned the first address in the block.
 
-{{tffile "examples/resources/metal_vrf/example_2.tf"}}
+{{tffile "examples/resources/equinix_metal_vrf/example_2.tf"}}
 
 Attach a Virtual Circuit from a Dedicated Metal Connection to the Metal Gateway.
 
-{{tffile "examples/resources/metal_vrf/example_3.tf"}}
+{{tffile "examples/resources/equinix_metal_vrf/example_3.tf"}}
 
 ## Argument Reference
 
