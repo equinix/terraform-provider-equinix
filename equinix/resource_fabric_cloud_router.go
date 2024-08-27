@@ -237,7 +237,7 @@ func resourceFabricCloudRouter() *schema.Resource {
 }
 
 func accountCloudRouterTerraformToGo(accountList []interface{}) fabricv4.SimplifiedAccount {
-	if accountList == nil || len(accountList) == 0 {
+	if len(accountList) == 0 {
 		return fabricv4.SimplifiedAccount{}
 	}
 	simplifiedAccount := fabricv4.SimplifiedAccount{}
@@ -249,7 +249,7 @@ func accountCloudRouterTerraformToGo(accountList []interface{}) fabricv4.Simplif
 }
 
 func packageCloudRouterTerraformToGo(packageList []interface{}) fabricv4.CloudRouterPostRequestPackage {
-	if packageList == nil || len(packageList) == 0 {
+	if len(packageList) == 0 {
 		return fabricv4.CloudRouterPostRequestPackage{}
 	}
 
@@ -261,7 +261,7 @@ func packageCloudRouterTerraformToGo(packageList []interface{}) fabricv4.CloudRo
 	return package_
 }
 func projectCloudRouterTerraformToGo(projectTerraform []interface{}) fabricv4.Project {
-	if projectTerraform == nil || len(projectTerraform) == 0 {
+	if len(projectTerraform) == 0 {
 		return fabricv4.Project{}
 	}
 	project := fabricv4.Project{}
@@ -272,7 +272,7 @@ func projectCloudRouterTerraformToGo(projectTerraform []interface{}) fabricv4.Pr
 	return project
 }
 func marketplaceSubscriptionCloudRouterTerraformToGo(marketplaceSubscriptionTerraform []interface{}) fabricv4.MarketplaceSubscription {
-	if marketplaceSubscriptionTerraform == nil || len(marketplaceSubscriptionTerraform) == 0 {
+	if len(marketplaceSubscriptionTerraform) == 0 {
 		return fabricv4.MarketplaceSubscription{}
 	}
 	marketplaceSubscription := fabricv4.MarketplaceSubscription{}
