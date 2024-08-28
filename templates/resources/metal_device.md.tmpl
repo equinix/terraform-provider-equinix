@@ -10,23 +10,23 @@ subcategory: "Metal"
 
 Create a device and add it to cool_project
 
-{{tffile "examples/resources/metal_device/example_1.tf"}}
+{{tffile "examples/resources/equinix_metal_device/example_1.tf"}}
 
 Same as above, but boot via iPXE initially, using the Ignition Provider for provisioning
 
-{{tffile "examples/resources/metal_device/example_2.tf"}}
+{{tffile "examples/resources/equinix_metal_device/example_2.tf"}}
 
 Create a device without a public IP address in metro ny, with only a /30 private IPv4 subnet (4 IP addresses)
 
-{{tffile "examples/resources/metal_device/example_3.tf"}}
+{{tffile "examples/resources/equinix_metal_device/example_3.tf"}}
 
 Deploy device on next-available reserved hardware and do custom partitioning.
 
-{{tffile "examples/resources/metal_device/example_4.tf"}}
+{{tffile "examples/resources/equinix_metal_device/example_4.tf"}}
 
 Create a device and allow the `user_data` and `custom_data` attributes to change in-place (i.e., without destroying and recreating the device):
 
-{{tffile "examples/resources/metal_device/example_5.tf"}}
+{{tffile "examples/resources/equinix_metal_device/example_5.tf"}}
 
 {{ .SchemaMarkdown | trimspace }}
 {{- if .HasImport }}
