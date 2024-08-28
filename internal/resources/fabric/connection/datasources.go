@@ -3,6 +3,8 @@ package connection
 import (
 	"context"
 	"fmt"
+	"strings"
+
 	"github.com/equinix/equinix-sdk-go/services/fabricv4"
 	"github.com/equinix/terraform-provider-equinix/internal/config"
 	"github.com/equinix/terraform-provider-equinix/internal/converters"
@@ -10,14 +12,17 @@ import (
 	equinix_schema "github.com/equinix/terraform-provider-equinix/internal/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"strings"
 )
 
 func DataSource() *schema.Resource {
 	return &schema.Resource{
 		ReadContext: dataSourceFabricConnectionRead,
 		Schema:      readFabricConnectionResourceSchema(),
-		Description: "Fabric V4 API compatible data resource that allow user to fetch connection for a given UUID",
+		Description: `Fabric V4 API compatible data resource that allow user to fetch connection for a given UUID 
+
+Additional documentation:
+* Getting Started: https://docs.equinix.com/en-us/Content/Interconnection/Fabric/IMPLEMENTATION/fabric-connections-implement.htm
+* API: https://developer.equinix.com/dev-docs/fabric/api-reference/fabric-v4-apis#connections`,
 	}
 }
 
@@ -31,7 +36,11 @@ func DataSourceSearch() *schema.Resource {
 	return &schema.Resource{
 		ReadContext: dataSourceFabricConnectionSearch,
 		Schema:      readFabricConnectionSearchSchema(),
-		Description: "Fabric V4 API compatible data resource that allow user to fetch connection for a given UUID",
+		Description: `Fabric V4 API compatible data resource that allow user to fetch connection for a given UUID
+
+Additional documentation:
+* Getting Started: https://docs.equinix.com/en-us/Content/Interconnection/Fabric/IMPLEMENTATION/fabric-connections-implement.htm
+* API: https://developer.equinix.com/dev-docs/fabric/api-reference/fabric-v4-apis#connections`,
 	}
 }
 

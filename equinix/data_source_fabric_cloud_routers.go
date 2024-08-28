@@ -3,6 +3,7 @@ package equinix
 import (
 	"context"
 	"fmt"
+
 	"github.com/equinix/equinix-sdk-go/services/fabricv4"
 	"github.com/equinix/terraform-provider-equinix/internal/config"
 	"github.com/equinix/terraform-provider-equinix/internal/converters"
@@ -118,7 +119,11 @@ func dataSourceFabricGetCloudRouters() *schema.Resource {
 	return &schema.Resource{
 		ReadContext: dataSourceFabricGetCloudRoutersRead,
 		Schema:      readFabricCloudRouterSearchSchema(),
-		Description: "Fabric V4 API compatible data resource that allow user to fetch Fabric Cloud Routers matching custom search criteria",
+		Description: `Fabric V4 API compatible data resource that allow user to fetch Fabric Cloud Routers matching custom search criteria
+
+Additional documentation:
+* Getting Started: https://docs.equinix.com/en-us/Content/Interconnection/FCR/FCR-intro.htm#HowItWorks
+* API: https://developer.equinix.com/dev-docs/fabric/api-reference/fabric-v4-apis#fabric-cloud-routers`,
 	}
 }
 

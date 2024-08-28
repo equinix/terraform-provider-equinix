@@ -20,7 +20,11 @@ func DataSource() *schema.Resource {
 	return &schema.Resource{
 		ReadContext: dataSourceFabricNetworkRead,
 		Schema:      readFabricNetworkResourceSchema(),
-		Description: "Fabric V4 API compatible data resource that allow user to fetch Fabric Network for a given UUID",
+		Description: `Fabric V4 API compatible data resource that allow user to fetch Fabric Network for a given UUID
+
+Additional documentation:
+* Getting Started: https://docs.equinix.com/en-us/Content/Interconnection/Fabric/IMPLEMENTATION/fabric-networks-implement.htm
+* API: https://developer.equinix.com/dev-docs/fabric/api-reference/fabric-v4-apis#fabric-networks`,
 	}
 }
 
@@ -34,7 +38,11 @@ func DataSourceSearch() *schema.Resource {
 	return &schema.Resource{
 		ReadContext: dataSourceFabricNetworkSearch,
 		Schema:      readFabricNetworkSearchSchema(),
-		Description: "Fabric V4 API compatible data resource that allow user to fetch Fabric Network for a given UUID",
+		Description: `Fabric V4 API compatible data resource that allow user to fetch Fabric Network for a given UUID
+
+Additional documentation:
+* Getting Started: https://docs.equinix.com/en-us/Content/Interconnection/Fabric/IMPLEMENTATION/fabric-networks-implement.htm
+* API: https://developer.equinix.com/dev-docs/fabric/api-reference/fabric-v4-apis#fabric-networks`,
 	}
 }
 
