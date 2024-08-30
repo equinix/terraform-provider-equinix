@@ -14,12 +14,10 @@ name: Metal Acceptance Tests
 on:
   pull_request_target:
     types: [opened, synchronize, reopened, ready_for_review]
-    paths-ignore:
-      - 'LICENSE'
-      - '**.md'
-      - 'website/**'
-      - 'docs/**'
-      - '.github/ISSUE_TEMPLATE/**'
+    paths:
+      - 'go.mod'
+      - 'go.sum'
+      - '**/*.go'
   workflow_dispatch:
 
 permissions:
