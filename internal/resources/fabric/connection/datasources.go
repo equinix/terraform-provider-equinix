@@ -104,7 +104,7 @@ func setConnectionsData(d *schema.ResourceData, connections *fabricv4.Connection
 }
 
 func connectionFiltersTerraformToGo(filters []interface{}, outerOperator string) (fabricv4.Expression, error) {
-	if filters == nil || len(filters) == 0 {
+	if len(filters) == 0 {
 		return fabricv4.Expression{}, fmt.Errorf("no filters passed to filtersTerraformToGoMethod")
 	}
 	outerExpression := fabricv4.Expression{}
@@ -171,7 +171,7 @@ func connectionFiltersTerraformToGo(filters []interface{}, outerOperator string)
 }
 
 func connectionPaginationTerraformToGo(pagination []interface{}) fabricv4.PaginationRequest {
-	if pagination == nil || len(pagination) == 0 {
+	if len(pagination) == 0 {
 		return fabricv4.PaginationRequest{}
 	}
 	paginationRequest := fabricv4.PaginationRequest{}
@@ -189,7 +189,7 @@ func connectionPaginationTerraformToGo(pagination []interface{}) fabricv4.Pagina
 }
 
 func connectionSortTerraformToGo(sort []interface{}) []fabricv4.SortCriteria {
-	if sort == nil || len(sort) == 0 {
+	if len(sort) == 0 {
 		return []fabricv4.SortCriteria{}
 	}
 	sortCriteria := make([]fabricv4.SortCriteria, len(sort))

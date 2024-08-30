@@ -653,7 +653,7 @@ func resourceFabricServiceProfileUpdate(ctx context.Context, d *schema.ResourceD
 	start := time.Now()
 	updateTimeout := d.Timeout(schema.TimeoutUpdate) - 30*time.Second - time.Since(start)
 	var err error
-	var eTag int64 = 0
+	var eTag int64
 	_, err, eTag = waitForActiveServiceProfileAndPopulateETag(uuid, meta, d, ctx, updateTimeout)
 	if err != nil {
 		if !strings.Contains(err.Error(), "500") {
@@ -1285,7 +1285,7 @@ func virtualDevicesTerraformToGo(schemaVirtualDevices []interface{}) []fabricv4.
 		vdMap := virtualDevice.(map[string]interface{})
 		vType := fabricv4.ServiceProfileAccessPointVDType(vdMap["type"].(string))
 		vUuid := vdMap["uuid"].(string)
-		locationList := vdMap["location"].(interface{}).(*schema.Set).List()
+		locationList := vdMap["location"].(*schema.Set).List()
 		var vLocation fabricv4.SimplifiedLocation
 		if len(locationList) != 0 {
 			vLocation = equinix_fabric_schema.LocationTerraformToGo(locationList)

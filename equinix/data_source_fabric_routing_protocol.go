@@ -9,7 +9,7 @@ import (
 
 func readFabricRoutingProtocolResourceSchema() map[string]*schema.Schema {
 	sch := createFabricRoutingProtocolResourceSchema()
-	for key, _ := range sch {
+	for key := range sch {
 		if key == "uuid" || key == "connection_uuid" {
 			sch[key].Required = true
 			sch[key].Optional = false
