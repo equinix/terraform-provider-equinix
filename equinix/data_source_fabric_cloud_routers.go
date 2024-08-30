@@ -168,7 +168,7 @@ func resourceFabricCloudRoutersSearch(ctx context.Context, d *schema.ResourceDat
 }
 
 func cloudRouterFiltersTerraformToGo(filters []interface{}) (fabricv4.CloudRouterFilters, error) {
-	if filters == nil || len(filters) == 0 {
+	if len(filters) == 0 {
 		return fabricv4.CloudRouterFilters{}, fmt.Errorf("no filters passed to filtersTerraformToGoMethod")
 	}
 	cloudRouterFiltersList := make([]fabricv4.CloudRouterFilter, 0)
@@ -221,7 +221,7 @@ func cloudRouterFiltersTerraformToGo(filters []interface{}) (fabricv4.CloudRoute
 }
 
 func cloudRouterPaginationTerraformToGo(pagination []interface{}) fabricv4.PaginationRequest {
-	if pagination == nil || len(pagination) == 0 {
+	if len(pagination) == 0 {
 		return fabricv4.PaginationRequest{}
 	}
 	paginationRequest := fabricv4.PaginationRequest{}
@@ -239,7 +239,7 @@ func cloudRouterPaginationTerraformToGo(pagination []interface{}) fabricv4.Pagin
 }
 
 func cloudRouterSortTerraformToGo(sort []interface{}) []fabricv4.CloudRouterSortCriteria {
-	if sort == nil || len(sort) == 0 {
+	if len(sort) == 0 {
 		return []fabricv4.CloudRouterSortCriteria{}
 	}
 	sortCriteria := make([]fabricv4.CloudRouterSortCriteria, len(sort))
