@@ -1,7 +1,5 @@
 run:
   modules-download-mode: readonly
-  skip-dirs:
-    - cmd/migration-tool
 linters:
   enable:
     - errcheck
@@ -11,3 +9,8 @@ linters:
     - ineffassign
     - staticcheck
     - unused
+issues:
+  max-issues-per-linter: 0
+  max-same-issues: 0
+  exclude-dirs:
+    - cmd/migration-tool
