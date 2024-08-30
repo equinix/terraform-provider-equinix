@@ -12,7 +12,7 @@ import (
 
 func readFabricServiceProfileResourceSchema() map[string]*schema.Schema {
 	sch := fabricServiceProfileSchema()
-	for key, _ := range sch {
+	for key := range sch {
 		if key == "uuid" {
 			sch[key].Required = true
 			sch[key].Optional = false
@@ -30,7 +30,7 @@ func readFabricServiceProfileResourceSchema() map[string]*schema.Schema {
 
 func readFabricServiceProfileSearchResourceSchema() map[string]*schema.Schema {
 	sch := fabricServiceProfileSchema()
-	for key, _ := range sch {
+	for key := range sch {
 		sch[key].Required = false
 		sch[key].Optional = false
 		sch[key].Computed = true

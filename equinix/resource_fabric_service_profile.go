@@ -3,12 +3,13 @@ package equinix
 import (
 	"context"
 	"fmt"
-	"github.com/equinix/equinix-sdk-go/services/fabricv4"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"log"
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/equinix/equinix-sdk-go/services/fabricv4"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 
 	"github.com/equinix/terraform-provider-equinix/internal/converters"
 	equinix_errors "github.com/equinix/terraform-provider-equinix/internal/errors"
@@ -1251,7 +1252,7 @@ func portsTerraformToGo(schemaPorts []interface{}) []fabricv4.ServiceProfileAcce
 		}
 
 		locationList := portMap["location"].(*schema.Set).List()
-		if locationList != nil && len(locationList) != 0 {
+		if len(locationList) != 0 {
 			pLocation := equinix_fabric_schema.LocationTerraformToGo(locationList)
 			coloPort.SetLocation(pLocation)
 		}
@@ -1370,7 +1371,7 @@ func serviceProfilesSearchFilterRequestTerraformToGo(schemaServiceProfileFilterR
 }
 
 func serviceProfileSearchPaginationTerraformToGo(pagination []interface{}) fabricv4.PaginationRequest {
-	if pagination == nil || len(pagination) == 0 {
+	if len(pagination) == 0 {
 		return fabricv4.PaginationRequest{}
 	}
 	paginationRequest := fabricv4.PaginationRequest{}

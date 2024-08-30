@@ -3,13 +3,14 @@ package equinix
 import (
 	"context"
 	"fmt"
-	"github.com/equinix/equinix-sdk-go/services/fabricv4"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"log"
 	"reflect"
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/equinix/equinix-sdk-go/services/fabricv4"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 
 	equinix_errors "github.com/equinix/terraform-provider-equinix/internal/errors"
 	equinix_fabric_schema "github.com/equinix/terraform-provider-equinix/internal/fabric/schema"
@@ -668,7 +669,7 @@ func waitForRoutingProtocolUpdateCompletion(rpChangeUuid string, uuid string, co
 }
 
 func routingProtocolDirectIpv4TerraformToGo(routingProtocolDirectIpv4Request []interface{}) fabricv4.DirectConnectionIpv4 {
-	if routingProtocolDirectIpv4Request == nil || len(routingProtocolDirectIpv4Request) == 0 {
+	if len(routingProtocolDirectIpv4Request) == 0 {
 		return fabricv4.DirectConnectionIpv4{}
 	}
 
@@ -684,7 +685,7 @@ func routingProtocolDirectIpv4TerraformToGo(routingProtocolDirectIpv4Request []i
 }
 
 func routingProtocolDirectIpv6TerraformToGo(routingProtocolDirectIpv6Request []interface{}) fabricv4.DirectConnectionIpv6 {
-	if routingProtocolDirectIpv6Request == nil || len(routingProtocolDirectIpv6Request) == 0 {
+	if len(routingProtocolDirectIpv6Request) == 0 {
 		return fabricv4.DirectConnectionIpv6{}
 	}
 	rpDirectIpv6 := fabricv4.DirectConnectionIpv6{}
@@ -698,7 +699,7 @@ func routingProtocolDirectIpv6TerraformToGo(routingProtocolDirectIpv6Request []i
 }
 
 func routingProtocolBgpIpv4TerraformToGo(routingProtocolBgpIpv4Request []interface{}) fabricv4.BGPConnectionIpv4 {
-	if routingProtocolBgpIpv4Request == nil || len(routingProtocolBgpIpv4Request) == 0 {
+	if len(routingProtocolBgpIpv4Request) == 0 {
 		return fabricv4.BGPConnectionIpv4{}
 	}
 
@@ -715,7 +716,7 @@ func routingProtocolBgpIpv4TerraformToGo(routingProtocolBgpIpv4Request []interfa
 }
 
 func routingProtocolBgpIpv6TerraformToGo(routingProtocolBgpIpv6Request []interface{}) fabricv4.BGPConnectionIpv6 {
-	if routingProtocolBgpIpv6Request == nil || len(routingProtocolBgpIpv6Request) == 0 {
+	if len(routingProtocolBgpIpv6Request) == 0 {
 		return fabricv4.BGPConnectionIpv6{}
 	}
 
@@ -732,7 +733,7 @@ func routingProtocolBgpIpv6TerraformToGo(routingProtocolBgpIpv6Request []interfa
 }
 
 func routingProtocolBfdTerraformToGo(routingProtocolBfdRequest []interface{}) fabricv4.RoutingProtocolBFD {
-	if routingProtocolBfdRequest == nil || len(routingProtocolBfdRequest) == 0 {
+	if len(routingProtocolBfdRequest) == 0 {
 		return fabricv4.RoutingProtocolBFD{}
 	}
 

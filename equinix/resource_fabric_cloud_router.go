@@ -3,13 +3,14 @@ package equinix
 import (
 	"context"
 	"fmt"
+	"log"
+	"strings"
+	"time"
+
 	"github.com/equinix/equinix-sdk-go/services/fabricv4"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
-	"log"
-	"strings"
-	"time"
 
 	equinix_errors "github.com/equinix/terraform-provider-equinix/internal/errors"
 	equinix_fabric_schema "github.com/equinix/terraform-provider-equinix/internal/fabric/schema"
@@ -225,7 +226,7 @@ func accountCloudRouterTerraformToGo(accountList []interface{}) fabricv4.Simplif
 }
 
 func packageCloudRouterTerraformToGo(packageList []interface{}) fabricv4.CloudRouterPostRequestPackage {
-	if packageList == nil || len(packageList) == 0 {
+	if len(packageList) == 0 {
 		return fabricv4.CloudRouterPostRequestPackage{}
 	}
 
@@ -237,7 +238,7 @@ func packageCloudRouterTerraformToGo(packageList []interface{}) fabricv4.CloudRo
 	return package_
 }
 func projectCloudRouterTerraformToGo(projectTerraform []interface{}) fabricv4.Project {
-	if projectTerraform == nil || len(projectTerraform) == 0 {
+	if len(projectTerraform) == 0 {
 		return fabricv4.Project{}
 	}
 	project := fabricv4.Project{}
