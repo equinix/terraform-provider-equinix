@@ -72,7 +72,7 @@ func getDevices(ctx context.Context, d *schema.ResourceData, meta interface{}, e
 		if len(search) > 0 {
 			query = query.Search(search)
 		}
-		devices, _, err = query.Execute()
+		devices, err = query.ExecuteWithPagination()
 	}
 
 	if len(orgID) > 0 {
@@ -81,7 +81,7 @@ func getDevices(ctx context.Context, d *schema.ResourceData, meta interface{}, e
 		if len(search) > 0 {
 			query = query.Search(search)
 		}
-		devices, _, err = query.Execute()
+		devices, err = query.ExecuteWithPagination()
 	}
 
 	for _, d := range devices.Devices {
