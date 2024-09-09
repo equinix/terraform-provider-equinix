@@ -16,17 +16,17 @@ Provides an Equinix Metal project resource to allow you manage devices in your p
 
 ### Create a new project
 
-{{tffile "examples/resources/metal_project/example_1.tf"}}
+{{tffile "examples/resources/equinix_metal_project/example_1.tf"}}
 
 ### Example with BGP config
 
-{{tffile "examples/resources/metal_project/example_2.tf"}}
+{{tffile "examples/resources/equinix_metal_project/example_2.tf"}}
 
 ### Enabling BGP in an existing project
 
 If you want to enable BGP in an existing Equinix Metal project, you should first create a resource in your TF config for the existing projects. Set your BGP configuration.
 
-{{tffile "examples/resources/metal_project/example_3.tf"}}
+{{tffile "examples/resources/equinix_metal_project/example_3.tf"}}
 
 Then, find out the UUID of the existing project, and import it to your TF state.
 
