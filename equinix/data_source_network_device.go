@@ -295,6 +295,11 @@ func createDataSourceNetworkDeviceSchema() map[string]*schema.Schema {
 			Computed:    true,
 			Description: neDeviceDescriptions["DiverseFromDeviceUUID"],
 		},
+		neDeviceSchemaNames["Tier"]: {
+			Type:        schema.TypeInt,
+			Computed:    true,
+			Description: neDeviceDescriptions["Tier"],
+		},
 		neDeviceSchemaNames["DiverseFromDeviceName"]: {
 			Type:        schema.TypeString,
 			Computed:    true,
@@ -852,6 +857,9 @@ func updateDataSourceNetworkDeviceResource(primary *ne.Device, secondary *ne.Dev
 	}
 	if err := d.Set(neDeviceSchemaNames["DiverseFromDeviceUUID"], primary.DiverseFromDeviceUUID); err != nil {
 		return fmt.Errorf("error reading DiverseFromDeviceUUID: %s", err)
+	}
+	if err := d.Set(neDeviceSchemaNames["Tier"], primary.Tier); err != nil {
+		return fmt.Errorf("error reading Tier: %s", err)
 	}
 	if err := d.Set(neDeviceSchemaNames["DiverseFromDeviceName"], primary.DiverseFromDeviceName); err != nil {
 		return fmt.Errorf("error reading DiverseFromDeviceName: %s", err)
