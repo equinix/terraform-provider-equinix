@@ -25,20 +25,7 @@ func resourceSchema() map[string]*schema.Schema {
 			MinItems:    1,
 			MaxItems:    1,
 			Description: "The Project object that contains project_id and href that is related to the Fabric Project containing connections the Route Filter can be attached to",
-			Elem: &schema.Resource{
-				Schema: map[string]*schema.Schema{
-					"project_id": {
-						Type:        schema.TypeString,
-						Required:    true,
-						Description: "Project id associated with Fabric Project",
-					},
-					"href": {
-						Type:        schema.TypeString,
-						Computed:    true,
-						Description: "URI of the Fabric Project",
-					},
-				},
-			},
+			Elem:        projectSch(),
 		},
 		"description": {
 			Type:        schema.TypeString,
@@ -81,25 +68,7 @@ func resourceSchema() map[string]*schema.Schema {
 			Computed:    true,
 			MaxItems:    1,
 			Description: "An object with the details of the previous change applied on the Route Filter",
-			Elem: &schema.Resource{
-				Schema: map[string]*schema.Schema{
-					"href": {
-						Type:        schema.TypeString,
-						Computed:    true,
-						Description: "The URI of the previous Route Filter Change",
-					},
-					"type": {
-						Type:        schema.TypeString,
-						Computed:    true,
-						Description: "Type of change. One of [ \"BGP_IPv4_PREFIX_FILTER_UPDATE\",\"BGP_IPv4_PREFIX_FILTER_CREATION\",\"BGP_IPv4_PREFIX_FILTER_DELETION\",\"BGP_IPv6_PREFIX_FILTER_UPDATE\",\"BGP_IPv6_PREFIX_FILTER_CREATION\",\"BGP_IPv6_PREFIX_FILTER_DELETION\" ]",
-					},
-					"uuid": {
-						Type:        schema.TypeString,
-						Computed:    true,
-						Description: "Unique identifier for the previous change",
-					},
-				},
-			},
+			Elem:        changeSch(),
 		},
 		"change_log": {
 			Type:     schema.TypeSet,
@@ -107,6 +76,45 @@ func resourceSchema() map[string]*schema.Schema {
 			MaxItems: 1,
 			Elem: &schema.Resource{
 				Schema: equinix_fabric_schema.ChangeLogSch(),
+			},
+		},
+	}
+}
+
+func projectSch() *schema.Resource {
+	return &schema.Resource{
+		Schema: map[string]*schema.Schema{
+			"project_id": {
+				Type:        schema.TypeString,
+				Required:    true,
+				Description: "Project id associated with Fabric Project",
+			},
+			"href": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "URI of the Fabric Project",
+			},
+		},
+	}
+}
+
+func changeSch() *schema.Resource {
+	return &schema.Resource{
+		Schema: map[string]*schema.Schema{
+			"href": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The URI of the previous Route Filter Change",
+			},
+			"type": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Type of change. One of [ \"BGP_IPv4_PREFIX_FILTER_UPDATE\",\"BGP_IPv4_PREFIX_FILTER_CREATION\",\"BGP_IPv4_PREFIX_FILTER_DELETION\",\"BGP_IPv6_PREFIX_FILTER_UPDATE\",\"BGP_IPv6_PREFIX_FILTER_CREATION\",\"BGP_IPv6_PREFIX_FILTER_DELETION\" ]",
+			},
+			"uuid": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Unique identifier for the previous change",
 			},
 		},
 	}
