@@ -3,6 +3,7 @@ package equinix
 import (
 	"context"
 	"fmt"
+
 	"github.com/equinix/equinix-sdk-go/services/fabricv4"
 	"github.com/equinix/terraform-provider-equinix/internal/config"
 	"github.com/equinix/terraform-provider-equinix/internal/converters"
@@ -118,7 +119,11 @@ func dataSourceFabricGetCloudRouters() *schema.Resource {
 	return &schema.Resource{
 		ReadContext: dataSourceFabricGetCloudRoutersRead,
 		Schema:      readFabricCloudRouterSearchSchema(),
-		Description: "Fabric V4 API compatible data resource that allow user to fetch Fabric Cloud Routers matching custom search criteria",
+		Description: `Fabric V4 API compatible data resource that allow user to fetch Fabric Cloud Routers matching custom search criteria
+
+Additional documentation:
+* Getting Started: https://docs.equinix.com/en-us/Content/Interconnection/FCR/FCR-intro.htm#HowItWorks
+* API: https://developer.equinix.com/dev-docs/fabric/api-reference/fabric-v4-apis#fabric-cloud-routers`,
 	}
 }
 
@@ -163,7 +168,7 @@ func resourceFabricCloudRoutersSearch(ctx context.Context, d *schema.ResourceDat
 }
 
 func cloudRouterFiltersTerraformToGo(filters []interface{}) (fabricv4.CloudRouterFilters, error) {
-	if filters == nil || len(filters) == 0 {
+	if len(filters) == 0 {
 		return fabricv4.CloudRouterFilters{}, fmt.Errorf("no filters passed to filtersTerraformToGoMethod")
 	}
 	cloudRouterFiltersList := make([]fabricv4.CloudRouterFilter, 0)
@@ -216,7 +221,7 @@ func cloudRouterFiltersTerraformToGo(filters []interface{}) (fabricv4.CloudRoute
 }
 
 func cloudRouterPaginationTerraformToGo(pagination []interface{}) fabricv4.PaginationRequest {
-	if pagination == nil || len(pagination) == 0 {
+	if len(pagination) == 0 {
 		return fabricv4.PaginationRequest{}
 	}
 	paginationRequest := fabricv4.PaginationRequest{}
@@ -234,7 +239,7 @@ func cloudRouterPaginationTerraformToGo(pagination []interface{}) fabricv4.Pagin
 }
 
 func cloudRouterSortTerraformToGo(sort []interface{}) []fabricv4.CloudRouterSortCriteria {
-	if sort == nil || len(sort) == 0 {
+	if len(sort) == 0 {
 		return []fabricv4.CloudRouterSortCriteria{}
 	}
 	sortCriteria := make([]fabricv4.CloudRouterSortCriteria, len(sort))

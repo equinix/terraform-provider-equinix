@@ -3,6 +3,8 @@ package connection
 import (
 	"context"
 	"fmt"
+	"strings"
+
 	"github.com/equinix/equinix-sdk-go/services/fabricv4"
 	"github.com/equinix/terraform-provider-equinix/internal/config"
 	"github.com/equinix/terraform-provider-equinix/internal/converters"
@@ -10,14 +12,17 @@ import (
 	equinix_schema "github.com/equinix/terraform-provider-equinix/internal/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"strings"
 )
 
 func DataSource() *schema.Resource {
 	return &schema.Resource{
 		ReadContext: dataSourceFabricConnectionRead,
 		Schema:      readFabricConnectionResourceSchema(),
-		Description: "Fabric V4 API compatible data resource that allow user to fetch connection for a given UUID",
+		Description: `Fabric V4 API compatible data resource that allow user to fetch connection for a given UUID 
+
+Additional documentation:
+* Getting Started: https://docs.equinix.com/en-us/Content/Interconnection/Fabric/IMPLEMENTATION/fabric-connections-implement.htm
+* API: https://developer.equinix.com/dev-docs/fabric/api-reference/fabric-v4-apis#connections`,
 	}
 }
 
@@ -31,7 +36,11 @@ func DataSourceSearch() *schema.Resource {
 	return &schema.Resource{
 		ReadContext: dataSourceFabricConnectionSearch,
 		Schema:      readFabricConnectionSearchSchema(),
-		Description: "Fabric V4 API compatible data resource that allow user to fetch connection for a given UUID",
+		Description: `Fabric V4 API compatible data resource that allow user to fetch connection for a given UUID
+
+Additional documentation:
+* Getting Started: https://docs.equinix.com/en-us/Content/Interconnection/Fabric/IMPLEMENTATION/fabric-connections-implement.htm
+* API: https://developer.equinix.com/dev-docs/fabric/api-reference/fabric-v4-apis#connections`,
 	}
 }
 
@@ -95,7 +104,7 @@ func setConnectionsData(d *schema.ResourceData, connections *fabricv4.Connection
 }
 
 func connectionFiltersTerraformToGo(filters []interface{}, outerOperator string) (fabricv4.Expression, error) {
-	if filters == nil || len(filters) == 0 {
+	if len(filters) == 0 {
 		return fabricv4.Expression{}, fmt.Errorf("no filters passed to filtersTerraformToGoMethod")
 	}
 	outerExpression := fabricv4.Expression{}
@@ -162,7 +171,7 @@ func connectionFiltersTerraformToGo(filters []interface{}, outerOperator string)
 }
 
 func connectionPaginationTerraformToGo(pagination []interface{}) fabricv4.PaginationRequest {
-	if pagination == nil || len(pagination) == 0 {
+	if len(pagination) == 0 {
 		return fabricv4.PaginationRequest{}
 	}
 	paginationRequest := fabricv4.PaginationRequest{}
@@ -180,7 +189,7 @@ func connectionPaginationTerraformToGo(pagination []interface{}) fabricv4.Pagina
 }
 
 func connectionSortTerraformToGo(sort []interface{}) []fabricv4.SortCriteria {
-	if sort == nil || len(sort) == 0 {
+	if len(sort) == 0 {
 		return []fabricv4.SortCriteria{}
 	}
 	sortCriteria := make([]fabricv4.SortCriteria, len(sort))
