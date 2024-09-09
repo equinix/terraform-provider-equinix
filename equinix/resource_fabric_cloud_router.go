@@ -34,8 +34,7 @@ func fabricCloudRouterAccountSch() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
 		"account_number": {
 			Type:        schema.TypeInt,
-			Computed:    true,
-			Optional:    true,
+			Required:    true,
 			Description: "Account Number",
 		},
 	}
@@ -67,8 +66,7 @@ func fabricMarketplaceSubscriptionSch() map[string]*schema.Schema {
 		},
 		"uuid": {
 			Type:        schema.TypeString,
-			Computed:    true,
-			Optional:    true,
+			Required:    true,
 			Description: "Equinix-assigned Marketplace Subscription identifier",
 		},
 	}
@@ -279,7 +277,13 @@ func marketplaceSubscriptionCloudRouterTerraformToGo(marketplaceSubscriptionTerr
 	marketplaceSubscription := fabricv4.MarketplaceSubscription{}
 	marketplaceSubscriptionMap := marketplaceSubscriptionTerraform[0].(map[string]interface{})
 	subscriptionUUID := marketplaceSubscriptionMap["uuid"].(string)
-	marketplaceSubscription.SetUuid(subscriptionUUID)
+	subscriptionType := marketplaceSubscriptionMap["type"].(string)
+	if subscriptionUUID != "" {
+		marketplaceSubscription.SetUuid(subscriptionUUID)
+	}
+	if subscriptionType != "" {
+		marketplaceSubscription.SetType(fabricv4.MarketplaceSubscriptionType(subscriptionType))
+	}
 
 	return marketplaceSubscription
 }
@@ -313,13 +317,14 @@ func resourceFabricCloudRouterCreate(ctx context.Context, d *schema.ResourceData
 	package_ := packageCloudRouterTerraformToGo(schemaPackage)
 	createCloudRouterRequest.SetPackage(package_)
 
-	schemaMarketplaceSubscription := d.Get("marketplace_subscription").(*schema.Set).List()
-	marketplaceSubscription := marketplaceSubscriptionCloudRouterTerraformToGo(schemaMarketplaceSubscription)
-	createCloudRouterRequest.SetMarketplaceSubscription(marketplaceSubscription)
-
 	if orderTerraform, ok := d.GetOk("order"); ok {
 		order := equinix_fabric_schema.OrderTerraformToGo(orderTerraform.(*schema.Set).List())
 		createCloudRouterRequest.SetOrder(order)
+	}
+
+	if marketplaceSubscriptionTerraform, ok := d.GetOk("marketplace_subscription"); ok {
+		marketplaceSubscription := marketplaceSubscriptionCloudRouterTerraformToGo(marketplaceSubscriptionTerraform.(*schema.Set).List())
+		createCloudRouterRequest.SetMarketplaceSubscription(marketplaceSubscription)
 	}
 
 	start := time.Now()
