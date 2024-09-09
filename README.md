@@ -11,7 +11,7 @@ management of Equinix Platform resources.
 [![Go Report Card](https://goreportcard.com/badge/github.com/equinix/terraform-provider-equinix)](https://goreportcard.com/report/github.com/equinix/terraform-provider-equinix)
 [![GoDoc](https://godoc.org/github.com/go-resty/resty?status.svg)](https://godoc.org/github.com/equinix/terraform-provider-equinix)
 ![GitHub](https://img.shields.io/github/license/equinix/terraform-provider-equinix)
-[![Equinix Community](https://img.shields.io/badge/Equinix%20Community-E8272C.svg)](https://[https://community.equinix.com/](https://community.equinix.com/))
+[![Equinix Community](https://img.shields.io/badge/Equinix%20Community%20-%20%23E91C24?logo=equinixmetal)](https://community.equinix.com)
 
 ---
 

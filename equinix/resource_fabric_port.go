@@ -4,10 +4,11 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/equinix/equinix-sdk-go/services/fabricv4"
 	"log"
 	"runtime/debug"
 	"strings"
+
+	"github.com/equinix/equinix-sdk-go/services/fabricv4"
 
 	equinix_errors "github.com/equinix/terraform-provider-equinix/internal/errors"
 	equinix_fabric_schema "github.com/equinix/terraform-provider-equinix/internal/fabric/schema"
@@ -328,9 +329,7 @@ func portDeviceGoToTerraform(device *fabricv4.PortDevice) *schema.Set {
 	mappedDevice := make(map[string]interface{})
 	mappedDevice["name"] = device.GetName()
 	redundancy := device.GetRedundancy()
-	if &redundancy != nil {
-		mappedDevice["redundancy"] = portDeviceRedundancyGoToTerraform(&redundancy)
-	}
+	mappedDevice["redundancy"] = portDeviceRedundancyGoToTerraform(&redundancy)
 
 	deviceSet := schema.NewSet(
 		schema.HashResource(&schema.Resource{Schema: portDeviceSch()}),

@@ -3,12 +3,13 @@ package equinix
 import (
 	"context"
 	"fmt"
-	"github.com/equinix/equinix-sdk-go/services/fabricv4"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"log"
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/equinix/equinix-sdk-go/services/fabricv4"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 
 	"github.com/equinix/terraform-provider-equinix/internal/converters"
 	equinix_errors "github.com/equinix/terraform-provider-equinix/internal/errors"
@@ -543,8 +544,12 @@ func resourceFabricServiceProfile() *schema.Resource {
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
-		Schema:      fabricServiceProfileSchema(),
-		Description: "Fabric V4 API compatible resource allows creation and management of Equinix Fabric Service Profile",
+		Schema: fabricServiceProfileSchema(),
+		Description: `Fabric V4 API compatible resource allows creation and management of Equinix Fabric Service Profile
+
+Additional documentation:
+* Getting Started: https://docs.equinix.com/en-us/Content/Interconnection/Fabric/IMPLEMENTATION/fabric-Sprofiles-implement.htm
+* API: https://developer.equinix.com/dev-docs/fabric/api-reference/fabric-v4-apis#service-profiles`,
 	}
 }
 
@@ -649,7 +654,7 @@ func resourceFabricServiceProfileUpdate(ctx context.Context, d *schema.ResourceD
 	start := time.Now()
 	updateTimeout := d.Timeout(schema.TimeoutUpdate) - 30*time.Second - time.Since(start)
 	var err error
-	var eTag int64 = 0
+	var eTag int64
 	_, err, eTag = waitForActiveServiceProfileAndPopulateETag(uuid, meta, d, ctx, updateTimeout)
 	if err != nil {
 		if !strings.Contains(err.Error(), "500") {
@@ -1247,7 +1252,7 @@ func portsTerraformToGo(schemaPorts []interface{}) []fabricv4.ServiceProfileAcce
 		}
 
 		locationList := portMap["location"].(*schema.Set).List()
-		if locationList != nil && len(locationList) != 0 {
+		if len(locationList) != 0 {
 			pLocation := equinix_fabric_schema.LocationTerraformToGo(locationList)
 			coloPort.SetLocation(pLocation)
 		}
@@ -1281,7 +1286,7 @@ func virtualDevicesTerraformToGo(schemaVirtualDevices []interface{}) []fabricv4.
 		vdMap := virtualDevice.(map[string]interface{})
 		vType := fabricv4.ServiceProfileAccessPointVDType(vdMap["type"].(string))
 		vUuid := vdMap["uuid"].(string)
-		locationList := vdMap["location"].(interface{}).(*schema.Set).List()
+		locationList := vdMap["location"].(*schema.Set).List()
 		var vLocation fabricv4.SimplifiedLocation
 		if len(locationList) != 0 {
 			vLocation = equinix_fabric_schema.LocationTerraformToGo(locationList)
@@ -1366,7 +1371,7 @@ func serviceProfilesSearchFilterRequestTerraformToGo(schemaServiceProfileFilterR
 }
 
 func serviceProfileSearchPaginationTerraformToGo(pagination []interface{}) fabricv4.PaginationRequest {
-	if pagination == nil || len(pagination) == 0 {
+	if len(pagination) == 0 {
 		return fabricv4.PaginationRequest{}
 	}
 	paginationRequest := fabricv4.PaginationRequest{}
