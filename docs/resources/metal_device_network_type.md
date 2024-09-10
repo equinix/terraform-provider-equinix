@@ -27,7 +27,7 @@ If you are attaching VLAN to a device (i.e. using equinix_metal_port_vlan_attach
 
 ### Read-Only
 
-- `id` (String) The ID of this resource.
+- `id` (String) ID of the controlled device. Use this in linked resources, if you need to wait for the network type change. It is the same as `device_id`.
 
 ## Import
 
