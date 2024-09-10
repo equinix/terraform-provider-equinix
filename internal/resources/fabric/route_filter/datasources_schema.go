@@ -132,8 +132,8 @@ func dataSourceSearchSchema() map[string]*schema.Schema {
 					"operator": {
 						Type:         schema.TypeString,
 						Required:     true,
-						Description:  "Possible operators to use on the filter property. Can be one of the following: [= - equal, != - not equal, > - greater than, >= - greater than or equal to, < - less than, <= - less than or equal to, [NOT] BETWEEN - (not) between, [NOT] LIKE - (not) like, [NOT] IN - (not) in",
-						ValidateFunc: validation.StringInSlice([]string{"=", "!=", ">", ">=", "<", "<=", "[NOT] BETWEEN", "[NOT] LIKE", "[NOT] IN"}, true),
+						Description:  "Possible operators to use on the filter property. Can be one of the following: [ \"=\", \"!=\", \"[NOT] LIKE\", \"[NOT] IN\", \"ILIKE\" ]",
+						ValidateFunc: validation.StringInSlice([]string{"=", "!=", "[NOT] LIKE", "[NOT] IN", "ILIKE"}, true),
 					},
 					"values": {
 						Type:        schema.TypeList,
