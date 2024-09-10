@@ -17,7 +17,8 @@ resource "equinix_fabric_cloud_router" "new_cloud_router"{
   project {
   	project_id = "776847000642406"
   }
-  account {
-  	account_number = "203612"
+  marketplace_subscription {
+    type = "AWS_MARKETPLACE_SUBSCRIPTION"
+    uuid = "2823b8ae07-a2a2-45b4-a658-c3542bb24e9"
   }
 }
