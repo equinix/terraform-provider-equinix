@@ -39,7 +39,7 @@ func buildUpdateRequest(d *schema.ResourceData) []fabricv4.RouteFiltersPatchRequ
 		patches = append(patches, fabricv4.RouteFiltersPatchRequestItem{
 			Op:    "replace",
 			Path:  "/name",
-			Value: map[string]interface{}{"value": newName.(string)},
+			Value: newName.(string),
 		})
 	}
 
@@ -48,7 +48,7 @@ func buildUpdateRequest(d *schema.ResourceData) []fabricv4.RouteFiltersPatchRequ
 		patches = append(patches, fabricv4.RouteFiltersPatchRequestItem{
 			Op:    "replace",
 			Path:  "/description",
-			Value: map[string]interface{}{"value": newDescription.(string)},
+			Value: newDescription.(string),
 		})
 	}
 
@@ -57,7 +57,7 @@ func buildUpdateRequest(d *schema.ResourceData) []fabricv4.RouteFiltersPatchRequ
 		patches = append(patches, fabricv4.RouteFiltersPatchRequestItem{
 			Op:    "replace",
 			Path:  "/project/projectId",
-			Value: map[string]interface{}{"value": newProjectId.(string)},
+			Value: newProjectId.(string),
 		})
 	}
 
