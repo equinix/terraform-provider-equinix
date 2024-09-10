@@ -3,6 +3,7 @@ package equinix
 import (
 	"context"
 	"fmt"
+
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -11,7 +12,7 @@ import (
 
 func readFabricServiceProfileResourceSchema() map[string]*schema.Schema {
 	sch := fabricServiceProfileSchema()
-	for key, _ := range sch {
+	for key := range sch {
 		if key == "uuid" {
 			sch[key].Required = true
 			sch[key].Optional = false
@@ -29,7 +30,7 @@ func readFabricServiceProfileResourceSchema() map[string]*schema.Schema {
 
 func readFabricServiceProfileSearchResourceSchema() map[string]*schema.Schema {
 	sch := fabricServiceProfileSchema()
-	for key, _ := range sch {
+	for key := range sch {
 		sch[key].Required = false
 		sch[key].Optional = false
 		sch[key].Computed = true
@@ -139,7 +140,11 @@ func dataSourceFabricServiceProfileReadByUuid() *schema.Resource {
 	return &schema.Resource{
 		ReadContext: dataSourceFabricServiceProfileRead,
 		Schema:      readFabricServiceProfileResourceSchema(),
-		Description: "Fabric V4 API compatible data resource that allow user to fetch Service Profile by UUID filter criteria",
+		Description: `Fabric V4 API compatible data resource that allow user to fetch Service Profile by UUID filter criteria
+
+Additional documentation:
+* Getting Started: https://docs.equinix.com/en-us/Content/Interconnection/Fabric/IMPLEMENTATION/fabric-Sprofiles-implement.htm
+* API: https://developer.equinix.com/dev-docs/fabric/api-reference/fabric-v4-apis#service-profiles`,
 	}
 }
 
@@ -153,7 +158,11 @@ func dataSourceFabricSearchServiceProfilesByName() *schema.Resource {
 	return &schema.Resource{
 		ReadContext: dataSourceFabricSearchServiceProfilesRead,
 		Schema:      readFabricServiceProfilesSearchSchema(),
-		Description: "Fabric V4 API compatible data resource that allow user to fetch Service Profile by name filter criteria",
+		Description: `Fabric V4 API compatible data resource that allow user to fetch Service Profile by name filter criteria
+
+Additional documentation:
+* Getting Started: https://docs.equinix.com/en-us/Content/Interconnection/Fabric/IMPLEMENTATION/fabric-Sprofiles-implement.htm
+* API: https://developer.equinix.com/dev-docs/fabric/api-reference/fabric-v4-apis#service-profiles`,
 	}
 }
 
