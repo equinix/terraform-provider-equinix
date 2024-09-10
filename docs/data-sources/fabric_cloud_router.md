@@ -79,6 +79,7 @@ output "type" {
 - `href` (String) Fabric Cloud Router URI information
 - `id` (String) The ID of this resource.
 - `location` (Set of Object) Fabric Cloud Router location (see [below for nested schema](#nestedatt--location))
+- `marketplace_subscription` (Set of Object) Equinix Fabric Entity for Marketplace Subscription (see [below for nested schema](#nestedatt--marketplace_subscription))
 - `name` (String) Fabric Cloud Router name. An alpha-numeric 24 characters string which can include only hyphens and underscores
 - `notifications` (List of Object) Preferences for notifications on Fabric Cloud Router configuration or status changes (see [below for nested schema](#nestedatt--notifications))
 - `order` (Set of Object) Order information related to this Fabric Cloud Router (see [below for nested schema](#nestedatt--order))
@@ -123,6 +124,15 @@ Read-Only:
 - `metro_code` (String)
 - `metro_name` (String)
 - `region` (String)
+
+
+<a id="nestedatt--marketplace_subscription"></a>
+### Nested Schema for `marketplace_subscription`
+
+Read-Only:
+
+- `type` (String)
+- `uuid` (String)
 
 
 <a id="nestedatt--notifications"></a>

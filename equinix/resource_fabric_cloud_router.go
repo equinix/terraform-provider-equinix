@@ -34,8 +34,7 @@ func fabricCloudRouterAccountSch() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
 		"account_number": {
 			Type:        schema.TypeInt,
-			Computed:    true,
-			Optional:    true,
+			Required:    true,
 			Description: "Account Number",
 		},
 	}
@@ -53,6 +52,22 @@ func fabricCloudRouterProjectSch() map[string]*schema.Schema {
 			Optional:    true,
 			Computed:    true,
 			Description: "Unique Resource URL",
+		},
+	}
+}
+
+func fabricMarketplaceSubscriptionSch() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"type": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Optional:    true,
+			Description: "Marketplace Subscription type like; AWS_MARKETPLACE_SUBSCRIPTION",
+		},
+		"uuid": {
+			Type:        schema.TypeString,
+			Required:    true,
+			Description: "Equinix-assigned Marketplace Subscription identifier",
 		},
 	}
 }
@@ -133,9 +148,20 @@ func fabricCloudRouterResourceSchema() map[string]*schema.Schema {
 				Schema: fabricCloudRouterProjectSch(),
 			},
 		},
+		"marketplace_subscription": {
+			Type:        schema.TypeSet,
+			Optional:    true,
+			Computed:    true,
+			Description: "Equinix Fabric Entity for Marketplace Subscription",
+			MaxItems:    1,
+			Elem: &schema.Resource{
+				Schema: fabricMarketplaceSubscriptionSch(),
+			},
+		},
 		"account": {
 			Type:        schema.TypeSet,
-			Required:    true,
+			Optional:    true,
+			Computed:    true,
 			Description: "Customer account information that is associated with this Fabric Cloud Router",
 			MaxItems:    1,
 			Elem: &schema.Resource{
@@ -214,7 +240,7 @@ Additional documentation:
 }
 
 func accountCloudRouterTerraformToGo(accountList []interface{}) fabricv4.SimplifiedAccount {
-	if accountList == nil {
+	if len(accountList) == 0 {
 		return fabricv4.SimplifiedAccount{}
 	}
 	simplifiedAccount := fabricv4.SimplifiedAccount{}
@@ -247,6 +273,23 @@ func projectCloudRouterTerraformToGo(projectTerraform []interface{}) fabricv4.Pr
 	project.SetProjectId(projectId)
 
 	return project
+}
+func marketplaceSubscriptionCloudRouterTerraformToGo(marketplaceSubscriptionTerraform []interface{}) fabricv4.MarketplaceSubscription {
+	if len(marketplaceSubscriptionTerraform) == 0 {
+		return fabricv4.MarketplaceSubscription{}
+	}
+	marketplaceSubscription := fabricv4.MarketplaceSubscription{}
+	marketplaceSubscriptionMap := marketplaceSubscriptionTerraform[0].(map[string]interface{})
+	subscriptionUUID := marketplaceSubscriptionMap["uuid"].(string)
+	subscriptionType := marketplaceSubscriptionMap["type"].(string)
+	if subscriptionUUID != "" {
+		marketplaceSubscription.SetUuid(subscriptionUUID)
+	}
+	if subscriptionType != "" {
+		marketplaceSubscription.SetType(fabricv4.MarketplaceSubscriptionType(subscriptionType))
+	}
+
+	return marketplaceSubscription
 }
 func resourceFabricCloudRouterCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*config.Config).NewFabricClientForSDK(d)
@@ -281,6 +324,11 @@ func resourceFabricCloudRouterCreate(ctx context.Context, d *schema.ResourceData
 	if orderTerraform, ok := d.GetOk("order"); ok {
 		order := equinix_fabric_schema.OrderTerraformToGo(orderTerraform.(*schema.Set).List())
 		createCloudRouterRequest.SetOrder(order)
+	}
+
+	if marketplaceSubscriptionTerraform, ok := d.GetOk("marketplace_subscription"); ok {
+		marketplaceSubscription := marketplaceSubscriptionCloudRouterTerraformToGo(marketplaceSubscriptionTerraform.(*schema.Set).List())
+		createCloudRouterRequest.SetMarketplaceSubscription(marketplaceSubscription)
 	}
 
 	start := time.Now()
@@ -320,6 +368,7 @@ func fabricCloudRouterMap(fcr *fabricv4.CloudRouter) map[string]interface{} {
 	notifications := fcr.GetNotifications()
 	project := fcr.GetProject()
 	order := fcr.GetOrder()
+	marketplaceSubscription := fcr.GetMarketplaceSubscription()
 	return map[string]interface{}{
 		"name":                         fcr.GetName(),
 		"uuid":                         fcr.GetUuid(),
@@ -339,6 +388,7 @@ func fabricCloudRouterMap(fcr *fabricv4.CloudRouter) map[string]interface{} {
 		"distinct_ipv6_prefixes_count": fcr.GetDistinctIpv6PrefixesCount(),
 		"connections_count":            fcr.GetConnectionsCount(),
 		"order":                        equinix_fabric_schema.OrderGoToTerraform(&order),
+		"marketplace_subscription":     marketplaceSubscriptionCloudRouterGoToTerraform(&marketplaceSubscription),
 	}
 }
 
@@ -376,6 +426,19 @@ func packageCloudRouterGoToTerraform(packageType *fabricv4.CloudRouterPostReques
 		[]interface{}{mappedPackage},
 	)
 	return packageSet
+}
+func marketplaceSubscriptionCloudRouterGoToTerraform(subscription *fabricv4.MarketplaceSubscription) *schema.Set {
+	if subscription == nil {
+		return nil
+	}
+	mappedSubscription := make(map[string]interface{})
+	mappedSubscription["type"] = string(subscription.GetType())
+	mappedSubscription["uuid"] = subscription.GetUuid()
+
+	subscriptionSet := schema.NewSet(
+		schema.HashResource(&schema.Resource{Schema: fabricMarketplaceSubscriptionSch()}),
+		[]interface{}{mappedSubscription})
+	return subscriptionSet
 }
 func getCloudRouterUpdateRequest(conn *fabricv4.CloudRouter, d *schema.ResourceData) (fabricv4.CloudRouterChangeOperation, error) {
 	changeOps := fabricv4.CloudRouterChangeOperation{}

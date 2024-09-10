@@ -160,6 +160,7 @@ Read-Only:
 - `equinix_asn` (Number)
 - `href` (String)
 - `location` (Set of Object) (see [below for nested schema](#nestedobjatt--data--location))
+- `marketplace_subscription` (Set of Object) (see [below for nested schema](#nestedobjatt--data--marketplace_subscription))
 - `name` (String)
 - `notifications` (List of Object) (see [below for nested schema](#nestedobjatt--data--notifications))
 - `order` (Set of Object) (see [below for nested schema](#nestedobjatt--data--order))
@@ -205,6 +206,15 @@ Read-Only:
 - `metro_code` (String)
 - `metro_name` (String)
 - `region` (String)
+
+
+<a id="nestedobjatt--data--marketplace_subscription"></a>
+### Nested Schema for `data.marketplace_subscription`
+
+Read-Only:
+
+- `type` (String)
+- `uuid` (String)
 
 
 <a id="nestedobjatt--data--notifications"></a>
