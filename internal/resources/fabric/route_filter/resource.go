@@ -2,8 +2,6 @@ package route_filter
 
 import (
 	"context"
-	"github.com/equinix/equinix-sdk-go/services/fabricv4"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"log"
 	"strings"
 	"time"
@@ -11,7 +9,10 @@ import (
 	"github.com/equinix/terraform-provider-equinix/internal/config"
 	equinix_errors "github.com/equinix/terraform-provider-equinix/internal/errors"
 
+	"github.com/equinix/equinix-sdk-go/services/fabricv4"
+
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
@@ -75,7 +76,7 @@ func resourceUpdate(ctx context.Context, d *schema.ResourceData, meta interface{
 	start := time.Now()
 	routeFilter, _, err := client.RouteFiltersApi.PatchRouteFilterByUuid(ctx, d.Id()).RouteFiltersPatchRequestItem(updateRequest).Execute()
 	if err != nil {
-		return diag.FromErr(equinix_errors.FormatFabricError())
+		return diag.FromErr(equinix_errors.FormatFabricError(err))
 	}
 
 	updateTimeout := d.Timeout(schema.TimeoutUpdate) - 30*time.Second - time.Since(start)
@@ -87,20 +88,28 @@ func resourceUpdate(ctx context.Context, d *schema.ResourceData, meta interface{
 }
 
 func resourceDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	diags := diag.Diagnostics{}
 	client := meta.(*config.Config).NewFabricClientForSDK(d)
 
 	start := time.Now()
-	routeFilter, _, err := client.RouteFiltersApi.DeleteRouteFilterByUuid(ctx, d.Id()).Execute()
+	_, _, err := client.RouteFiltersApi.DeleteRouteFilterByUuid(ctx, d.Id()).Execute()
 	if err != nil {
-		return diag.FromErr(equinix_errors.FormatFabricError())
+		if genericError, ok := err.(*fabricv4.GenericOpenAPIError); ok {
+			if fabricErrs, ok := genericError.Model().([]fabricv4.Error); ok {
+				// EQ-3142509 = Connection already deleted
+				if equinix_errors.HasErrorCode(fabricErrs, "EQ-3142509") {
+					return diags
+				}
+			}
+		}
+		return diag.FromErr(equinix_errors.FormatFabricError(err))
 	}
 
 	deleteTimeout := d.Timeout(schema.TimeoutDelete) - 30*time.Second - time.Since(start)
 	if err = waitForDeletion(d.Id(), meta, d, ctx, deleteTimeout); err != nil {
 		return diag.Errorf("error waiting for route filter (%s) to be updated: %s", d.Id(), err)
 	}
-	d.SetId("")
-
+	return diags
 }
 
 func waitForStability(uuid string, meta interface{}, d *schema.ResourceData, ctx context.Context, timeout time.Duration) error {

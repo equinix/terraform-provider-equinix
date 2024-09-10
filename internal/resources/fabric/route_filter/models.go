@@ -1,10 +1,12 @@
 package route_filter
 
 import (
-	"github.com/equinix/equinix-sdk-go/services/fabricv4"
 	"github.com/equinix/terraform-provider-equinix/internal/converters"
 	equinix_fabric_schema "github.com/equinix/terraform-provider-equinix/internal/fabric/schema"
 	equinix_schema "github.com/equinix/terraform-provider-equinix/internal/schema"
+
+	"github.com/equinix/equinix-sdk-go/services/fabricv4"
+
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
@@ -85,6 +87,25 @@ func setRouteFilterMap(d *schema.ResourceData, routeFilter *fabricv4.RouteFilter
 	diags := diag.Diagnostics{}
 	routeFilterMap := routeFilterResponseMap(routeFilter)
 	err := equinix_schema.SetMap(d, routeFilterMap)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+	return diags
+}
+
+func setRouteFiltersData(d *schema.ResourceData, routeFilters *fabricv4.RouteFiltersSearchResponse) diag.Diagnostics {
+	diags := diag.Diagnostics{}
+	mappedRouteFilters := make([]map[string]interface{}, len(routeFilters.Data))
+	if routeFilters.Data != nil {
+		for index, routeFilter := range routeFilters.Data {
+			mappedRouteFilters[index] = routeFilterResponseMap(&routeFilter)
+		}
+	} else {
+		mappedRouteFilters = nil
+	}
+	err := equinix_schema.SetMap(d, map[string]interface{}{
+		"data": mappedRouteFilters,
+	})
 	if err != nil {
 		return diag.FromErr(err)
 	}
