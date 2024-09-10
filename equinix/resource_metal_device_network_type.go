@@ -20,6 +20,7 @@ func resourceMetalDeviceNetworkType() *schema.Resource {
 		Delete: resourceMetalDeviceNetworkTypeDelete,
 		Update: resourceMetalDeviceNetworkTypeUpdate,
 		Importer: &schema.ResourceImporter{
+			//nolint
 			State: schema.ImportStatePassthrough,
 		},
 		DeprecationMessage: "The metal_device_network_type resource is deprecated.  Please use metal_port instead.  See the [Metal Device Network Types guide](https://registry.terraform.io/providers/equinix/equinix/latest/docs/guides/network_types) for more info",
@@ -77,6 +78,7 @@ func getAndPossiblySetNetworkType(d *schema.ResourceData, c *packngo.Client, tar
 	}
 
 	if devType != targetType {
+		//nolint
 		_, err := c.DevicePorts.DeviceToNetworkType(devID, targetType)
 		if err != nil {
 			return err
@@ -122,9 +124,9 @@ func resourceMetalDeviceNetworkTypeRead(d *schema.ResourceData, meta interface{}
 		devNType = "hybrid-bonded"
 	}
 
-	d.Set("type", devNType)
+	err = d.Set("type", devNType)
 
-	return nil
+	return err
 }
 
 func resourceMetalDeviceNetworkTypeUpdate(d *schema.ResourceData, meta interface{}) error {
