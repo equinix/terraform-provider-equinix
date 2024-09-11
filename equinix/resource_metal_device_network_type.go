@@ -23,23 +23,8 @@ func resourceMetalDeviceNetworkType() *schema.Resource {
 			//nolint
 			State: schema.ImportStatePassthrough,
 		},
-		DeprecationMessage: "The metal_device_network_type resource is deprecated.  Please use metal_port instead.  See the [Metal Device Network Types guide](https://registry.terraform.io/providers/equinix/equinix/latest/docs/guides/network_types) for more info",
-		Description: `This resource controls network type of Equinix Metal devices.
-
-To learn more about Layer 2 networking in Equinix Metal, refer to
-
-* https://metal.equinix.com/developers/docs/networking/layer2/
-* https://metal.equinix.com/developers/docs/networking/layer2-configs/
-
-If you are attaching VLAN to a device (i.e. using equinix_metal_port_vlan_attachment), link the device ID from this resource, in order to make the port attachment implicitly dependent on the state of the network type. If you link the device ID from the equinix_metal_device resource, Terraform will not wait for the network type change. See examples in [equinix_metal_port_vlan_attachment](port_vlan_attachment).
-
--> **NOTE:** This resource takes a named network type with any mode required parameters and converts a device to the named network type. This resource simulated the network type interface for Devices in the Equinix Metal Portal. That interface changed when additional network types were introduced with more diverse port configurations and it is not guaranteed to work in devices with more than two ethernet ports. See the [Network Types Guide](../guides/network_types.md) for examples of this resource and to learn about the recommended ` + "`equinix_metal_port`" + ` alternative.`,
+		DeprecationMessage: "The metal_device_network_type resource is deprecated and will be removed in v3 of this provider.  Please use metal_port instead.  See the [Metal Device Network Types guide](https://registry.terraform.io/providers/equinix/equinix/latest/docs/guides/network_types) for more info",
 		Schema: map[string]*schema.Schema{
-			"id": {
-				Type:        schema.TypeString,
-				Description: "ID of the controlled device. Use this in linked resources, if you need to wait for the network type change. It is the same as `device_id`.",
-				Computed:    true,
-			},
 			"device_id": {
 				Type:        schema.TypeString,
 				Description: "The ID of the device on which the network type should be set",

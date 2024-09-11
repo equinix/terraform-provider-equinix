@@ -1,1 +1,0 @@
-terraform import equinix_metal_device_network_type {existing device_id}
