@@ -106,7 +106,7 @@ func resourceDelete(ctx context.Context, d *schema.ResourceData, meta interface{
 	}
 
 	deleteTimeout := d.Timeout(schema.TimeoutDelete) - 30*time.Second - time.Since(start)
-	if err = waitForDeletion(d.Id(), meta, d, ctx, deleteTimeout); err != nil {
+	if err = WaitForDeletion(d.Id(), meta, d, ctx, deleteTimeout); err != nil {
 		return diag.Errorf("error waiting for route filter (%s) to be updated: %s", d.Id(), err)
 	}
 	return diags
@@ -140,7 +140,7 @@ func waitForStability(uuid string, meta interface{}, d *schema.ResourceData, ctx
 	return err
 }
 
-func waitForDeletion(uuid string, meta interface{}, d *schema.ResourceData, ctx context.Context, timeout time.Duration) error {
+func WaitForDeletion(uuid string, meta interface{}, d *schema.ResourceData, ctx context.Context, timeout time.Duration) error {
 	log.Printf("Waiting for route filter to be deleted, uuid %s", uuid)
 	stateConf := &retry.StateChangeConf{
 		Pending: []string{
