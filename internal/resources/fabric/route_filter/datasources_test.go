@@ -10,25 +10,41 @@ import (
 )
 
 func TestAccFabricRouteFilterPolicy_DataSources_PFCR(t *testing.T) {
+	routeFilterName := "RF_DS_Policy_PFCR"
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { acceptance.TestAccPreCheck(t); acceptance.TestAccPreCheckProviderConfigured(t) },
 		Providers:    acceptance.TestAccProviders,
 		CheckDestroy: CheckRouteFilterDelete,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccFabricRouteFilterPolicyDataSourcesConfig("RF_Policy_PFCR"),
+				Config: testAccFabricRouteFilterPolicyDataSourcesConfig(routeFilterName),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrSet("equinix_fabric_route_filter.test", "id"),
+					resource.TestCheckResourceAttrSet("data.equinix_fabric_route_filter.rf_policy", "id"),
 					resource.TestCheckResourceAttr(
-						"equinix_fabric_route_filter.test", "type", "BGP_IPv4_PREFIX_FILTER"),
+						"data.equinix_fabric_route_filter.rf_policy", "name", routeFilterName),
 					resource.TestCheckResourceAttr(
-						"equinix_fabric_route_filter.test", "state", "PROVISIONED"),
+						"data.equinix_fabric_route_filter.rf_policy", "type", "BGP_IPv4_PREFIX_FILTER"),
 					resource.TestCheckResourceAttr(
-						"equinix_fabric_route_filter.test", "not_matched_rules_action", "0"),
+						"data.equinix_fabric_route_filter.rf_policy", "state", "PROVISIONED"),
 					resource.TestCheckResourceAttr(
-						"equinix_fabric_route_filter.test", "rules_count", "0"),
+						"data.equinix_fabric_route_filter.rf_policy", "not_matched_rule_action", "DENY"),
 					resource.TestCheckResourceAttr(
-						"equinix_fabric_route_filter.test", "description", "Route Filter Policy for X Purpose"),
+						"data.equinix_fabric_route_filter.rf_policy", "rules_count", "0"),
+					resource.TestCheckResourceAttr(
+						"data.equinix_fabric_route_filter.rf_policy", "description", "Route Filter Policy for X Purpose"),
+					resource.TestCheckResourceAttrSet("data.equinix_fabric_route_filters.rf_policies", "id"),
+					resource.TestCheckResourceAttr(
+						"data.equinix_fabric_route_filters.rf_policies", "data.0.name", routeFilterName),
+					resource.TestCheckResourceAttr(
+						"data.equinix_fabric_route_filters.rf_policies", "data.0.type", "BGP_IPv4_PREFIX_FILTER"),
+					resource.TestCheckResourceAttr(
+						"data.equinix_fabric_route_filters.rf_policies", "data.0.state", "PROVISIONED"),
+					resource.TestCheckResourceAttr(
+						"data.equinix_fabric_route_filters.rf_policies", "data.0.not_matched_rule_action", "DENY"),
+					resource.TestCheckResourceAttr(
+						"data.equinix_fabric_route_filters.rf_policies", "data.0.rules_count", "0"),
+					resource.TestCheckResourceAttr(
+						"data.equinix_fabric_route_filters.rf_policies", "data.0.description", "Route Filter Policy for X Purpose"),
 				),
 				ExpectNonEmptyPlan: false,
 			},
@@ -40,12 +56,12 @@ func TestAccFabricRouteFilterPolicy_DataSources_PFCR(t *testing.T) {
 func testAccFabricRouteFilterPolicyDataSourcesConfig(policyName string) string {
 	return fmt.Sprintf(`
 		resource "equinix_fabric_route_filter" "test" {
-			name = "%s",
+			name = "%s"
 			project {
-				projectId = "291639000636552"
-			},
-			type = "BGP_IPv4_PREFIX_FILTER",
-			description = "Route Filter Policy for X Purpose",
+				project_id = "291639000636552"
+			}
+			type = "BGP_IPv4_PREFIX_FILTER"
+			description = "Route Filter Policy for X Purpose"
 		}
 
 		data "equinix_fabric_route_filter" "rf_policy" {
@@ -71,7 +87,7 @@ func testAccFabricRouteFilterPolicyDataSourcesConfig(policyName string) string {
 			filter {
 				property = "/name"
 				operator = "="
-				values = ["%s"]
+				values = [equinix_fabric_route_filter.test.name]
 			}
 			pagination {
 				offset = 0

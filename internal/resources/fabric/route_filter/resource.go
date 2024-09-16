@@ -107,7 +107,7 @@ func resourceDelete(ctx context.Context, d *schema.ResourceData, meta interface{
 
 	deleteTimeout := d.Timeout(schema.TimeoutDelete) - 30*time.Second - time.Since(start)
 	if err = WaitForDeletion(d.Id(), meta, d, ctx, deleteTimeout); err != nil {
-		return diag.Errorf("error waiting for route filter (%s) to be updated: %s", d.Id(), err)
+		return diag.Errorf("error waiting for route filter (%s) to be deleted: %s", d.Id(), err)
 	}
 	return diags
 }
@@ -116,11 +116,11 @@ func waitForStability(uuid string, meta interface{}, d *schema.ResourceData, ctx
 	log.Printf("Waiting for route filter to be stable, uuid %s", uuid)
 	stateConf := &retry.StateChangeConf{
 		Pending: []string{
-			string(fabricv4.ROUTEFILTERSTATE_PROVISIONED),
-		},
-		Target: []string{
 			string(fabricv4.ROUTEFILTERSTATE_PROVISIONING),
 			string(fabricv4.ROUTEFILTERSTATE_REPROVISIONING),
+		},
+		Target: []string{
+			string(fabricv4.ROUTEFILTERSTATE_PROVISIONED),
 		},
 		Refresh: func() (interface{}, string, error) {
 			client := meta.(*config.Config).NewFabricClientForSDK(d)
@@ -144,16 +144,20 @@ func WaitForDeletion(uuid string, meta interface{}, d *schema.ResourceData, ctx 
 	log.Printf("Waiting for route filter to be deleted, uuid %s", uuid)
 	stateConf := &retry.StateChangeConf{
 		Pending: []string{
-			string(fabricv4.ROUTEFILTERSTATE_DEPROVISIONED),
-		},
-		Target: []string{
 			string(fabricv4.ROUTEFILTERSTATE_PROVISIONED),
 			string(fabricv4.ROUTEFILTERSTATE_DEPROVISIONING),
 		},
+		Target: []string{
+			string(fabricv4.ROUTEFILTERSTATE_DEPROVISIONED),
+		},
 		Refresh: func() (interface{}, string, error) {
 			client := meta.(*config.Config).NewFabricClientForSDK(d)
-			routeFilter, _, err := client.RouteFiltersApi.GetRouteFilterByUuid(ctx, uuid).Execute()
+			routeFilter, body, err := client.RouteFiltersApi.GetRouteFilterByUuid(ctx, uuid).Execute()
 			if err != nil {
+				if body.StatusCode >= 400 && body.StatusCode <= 499 {
+					// Already deleted resource
+					return routeFilter, string(fabricv4.ROUTEFILTERSTATE_DEPROVISIONED), nil
+				}
 				return "", "", equinix_errors.FormatFabricError(err)
 			}
 			return routeFilter, string(routeFilter.GetState()), nil

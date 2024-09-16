@@ -15,21 +15,24 @@ import (
 )
 
 func TestAccFabricRouteFilterPolicy_PFCR(t *testing.T) {
+	routeFilterName := "RF_Policy_PFCR"
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { acceptance.TestAccPreCheck(t); acceptance.TestAccPreCheckProviderConfigured(t) },
 		Providers:    acceptance.TestAccProviders,
 		CheckDestroy: CheckRouteFilterDelete,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccFabricRouteFilterPolicyConfig("RF_Policy_PFCR"),
+				Config: testAccFabricRouteFilterPolicyConfig(routeFilterName),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("equinix_fabric_route_filter.test", "id"),
+					resource.TestCheckResourceAttr(
+						"equinix_fabric_route_filter.test", "name", routeFilterName),
 					resource.TestCheckResourceAttr(
 						"equinix_fabric_route_filter.test", "type", "BGP_IPv4_PREFIX_FILTER"),
 					resource.TestCheckResourceAttr(
 						"equinix_fabric_route_filter.test", "state", "PROVISIONED"),
 					resource.TestCheckResourceAttr(
-						"equinix_fabric_route_filter.test", "not_matched_rules_action", "0"),
+						"equinix_fabric_route_filter.test", "not_matched_rule_action", "DENY"),
 					resource.TestCheckResourceAttr(
 						"equinix_fabric_route_filter.test", "rules_count", "0"),
 					resource.TestCheckResourceAttr(
@@ -45,12 +48,12 @@ func TestAccFabricRouteFilterPolicy_PFCR(t *testing.T) {
 func testAccFabricRouteFilterPolicyConfig(policyName string) string {
 	return fmt.Sprintf(`
 		resource "equinix_fabric_route_filter" "test" {
-			name = "%s",
+			name = "%s"
 			project {
-				projectId = "291639000636552"
-			},
-			type = "BGP_IPv4_PREFIX_FILTER",
-			description = "Route Filter Policy for X Purpose",
+				project_id = "291639000636552"
+			}
+			type = "BGP_IPv4_PREFIX_FILTER"
+			description = "Route Filter Policy for X Purpose"
 		}
 	`, policyName)
 }

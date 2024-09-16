@@ -66,14 +66,12 @@ func resourceSchema() map[string]*schema.Schema {
 		"change": {
 			Type:        schema.TypeSet,
 			Computed:    true,
-			MaxItems:    1,
 			Description: "An object with the details of the previous change applied on the Route Filter",
 			Elem:        changeSch(),
 		},
 		"change_log": {
 			Type:     schema.TypeSet,
 			Computed: true,
-			MaxItems: 1,
 			Elem: &schema.Resource{
 				Schema: equinix_fabric_schema.ChangeLogSch(),
 			},

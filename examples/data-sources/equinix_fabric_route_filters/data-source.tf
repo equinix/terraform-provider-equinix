@@ -30,21 +30,21 @@ output "first_rf_uuid" {
 }
 
 output "type" {
-  value = data.equinix_fabric_route_filters.rf_policies.data.0..type
+  value = data.equinix_fabric_route_filters.rf_policies.data.0.type
 }
 
 output "state" {
-  value = data.equinix_fabric_route_filters.rf_policies.data.0..state
+  value = data.equinix_fabric_route_filters.rf_policies.data.0.state
 }
 
-output "not_matched_rules_action" {
-  value = data.equinix_fabric_route_filters.rf_policies.data.0..not_matched_rules_action
+output "not_matched_rule_action" {
+  value = data.equinix_fabric_route_filters.rf_policies.data.0.not_matched_rule_action
 }
 
 output "connections_count" {
-  value = data.equinix_fabric_route_filters.rf_policies.data.0..connections_count
+  value = data.equinix_fabric_route_filters.rf_policies.data.0.connections_count
 }
 
 output "rules_count" {
-  value = data.equinix_fabric_route_filters.rf_policies.data.0..rules_count
+  value = data.equinix_fabric_route_filters.rf_policies.data.0.rules_count
 }
