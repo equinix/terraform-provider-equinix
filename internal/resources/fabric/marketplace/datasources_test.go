@@ -10,7 +10,7 @@ import (
 	"testing"
 )
 
-func TestAccFabricDataSourceConnection_PFCR(t *testing.T) {
+func TestAccFabricDataSourceMarketPlace_PFCR(t *testing.T) {
 	susbcriptionId := testing_helpers.GetFabricMarketPlaceSubscriptionId(t)
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:  func() { acceptance.TestAccPreCheck(t) },

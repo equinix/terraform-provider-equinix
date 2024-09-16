@@ -40,7 +40,6 @@ func fabricMarketplaceSubscriptionDataSourceSchema() map[string]*schema.Schema {
 			Type:        schema.TypeSet,
 			Computed:    true,
 			Description: "Subscription Trial",
-			MaxItems:    1,
 			Elem: &schema.Resource{
 				Schema: marketplaceSubscriptionTrialSch(),
 			},
@@ -92,7 +91,6 @@ func marketplaceSubscriptionEntitlementsSch() map[string]*schema.Schema {
 			Type:        schema.TypeSet,
 			Computed:    true,
 			Description: "Asset information",
-			MaxItems:    1,
 			Elem: &schema.Resource{
 				Schema: marketplaceSubscriptionAssetSch(),
 			},
@@ -111,7 +109,6 @@ func marketplaceSubscriptionAssetSch() map[string]*schema.Schema {
 			Type:        schema.TypeSet,
 			Computed:    true,
 			Description: "Fabric Cloud Router Package Type",
-			MaxItems:    1,
 			Elem: &schema.Resource{
 				Schema: marketplaceSubscriptionPackageSch(),
 			},
