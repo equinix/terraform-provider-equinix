@@ -10,14 +10,14 @@ import (
 	"testing"
 )
 
-func TestAccFabricDataSourceConnection_MKTP(t *testing.T) {
+func TestAccFabricDataSourceConnection_PFCR(t *testing.T) {
 	susbcriptionId := testing_helpers.GetFabricMarketPlaceSubscriptionId(t)
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:  func() { acceptance.TestAccPreCheck(t) },
 		Providers: acceptance.TestAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: configGetMarketplaceSubscriptionResource_MKTP(susbcriptionId),
+				Config: configGetMarketplaceSubscriptionResource(susbcriptionId),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(
 						"data.equinix_fabric_market_place_subscription.test", "uuid"),
@@ -32,7 +32,7 @@ func TestAccFabricDataSourceConnection_MKTP(t *testing.T) {
 	})
 
 }
-func configGetMarketplaceSubscriptionResource_MKTP(subscription_id string) string {
+func configGetMarketplaceSubscriptionResource(subscription_id string) string {
 	log.Printf("!! debugging")
 	return fmt.Sprintf(`
 	data "equinix_fabric_market_place_subscription" "test"{
