@@ -2,7 +2,10 @@
 subcategory: "Metal"
 ---
 
-# equinix_metal_device_network_type (Resource)
+# equinix_metal_device_network_type (Resource, Deprecated)
+
+**NOTE:** The metal_device_network_type resource is deprecated and will be removed in v3 of this provider.  Please use metal_port instead.  See the [Metal Device Network Types guide](https://registry.terraform.io/providers/equinix/equinix/latest/docs/guides/network_types) for more info.
+		
 
 This resource controls network type of Equinix Metal devices.
 
