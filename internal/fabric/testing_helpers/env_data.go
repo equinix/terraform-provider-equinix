@@ -2,9 +2,10 @@ package testing_helpers
 
 import (
 	"encoding/json"
-	"github.com/equinix/equinix-sdk-go/services/fabricv4"
 	"os"
 	"testing"
+
+	"github.com/equinix/equinix-sdk-go/services/fabricv4"
 )
 
 const (
