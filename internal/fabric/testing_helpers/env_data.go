@@ -15,6 +15,10 @@ const (
 	FabricConnectionsTestDataEnvVar = "TF_ACC_FABRIC_CONNECTIONS_TEST_DATA"
 )
 
+const (
+	FabricSubscriptionEnvVar = "TF_ACC_FABRIC_MARKET_PLACE_SUBSCRIPTION_ID"
+)
+
 type EnvPorts map[string]map[string][]fabricv4.PortResponse
 
 func GetFabricEnvPorts(t *testing.T) EnvPorts {
@@ -33,4 +37,13 @@ func GetFabricEnvConnectionTestData(t *testing.T) map[string]map[string]string {
 		t.Fatalf("Failed reading connection data from environment: %v, %s", err, connectionTestDataJson)
 	}
 	return connectionTestData
+}
+
+func GetFabricMarketPlaceSubscriptionId(t *testing.T) string {
+	var subscriptionId string
+	subscriptionJson := os.Getenv(FabricSubscriptionEnvVar)
+	if err := json.Unmarshal([]byte(subscriptionJson), &subscriptionId); subscriptionJson != "" && err != nil {
+		t.Fatalf("Failed reading market place subscription id from environment: %v, %s", err, subscriptionJson)
+	}
+	return subscriptionId
 }

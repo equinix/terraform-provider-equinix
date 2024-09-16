@@ -28,19 +28,17 @@ func fabricMarketplaceSubscriptionDataSourceSchema() map[string]*schema.Schema {
 		},
 		"offer_type": {
 			Type:        schema.TypeString,
-			Optional:    true,
 			Computed:    true,
 			Description: "Marketplace Offer Type like; PUBLIC, PRIVATE_OFFER",
 		},
 		"is_auto_renew": {
 			Type:        schema.TypeBool,
-			Optional:    true,
 			Computed:    true,
 			Description: "Information about subscription auto renewal",
 		},
 		"trial": {
 			Type:        schema.TypeSet,
-			Optional:    true,
+			Computed:    true,
 			Description: "Subscription Trial",
 			MaxItems:    1,
 			Elem: &schema.Resource{
@@ -49,7 +47,7 @@ func fabricMarketplaceSubscriptionDataSourceSchema() map[string]*schema.Schema {
 		},
 		"entitlements": {
 			Type:        schema.TypeList,
-			Optional:    true,
+			Computed:    true,
 			Description: "Subscription entitlements",
 			Elem: &schema.Resource{
 				Schema: marketplaceSubscriptionEntitlementsSch(),
@@ -63,7 +61,6 @@ func marketplaceSubscriptionTrialSch() map[string]*schema.Schema {
 		"enabled": {
 			Type:        schema.TypeBool,
 			Computed:    true,
-			Optional:    true,
 			Description: "Marketplace Subscription Trial Enabled",
 		},
 	}
@@ -73,31 +70,26 @@ func marketplaceSubscriptionEntitlementsSch() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
 		"uuid": {
 			Type:        schema.TypeString,
-			Optional:    true,
 			Computed:    true,
 			Description: "Subscription Entitlement Id",
 		},
 		"quantity_entitled": {
 			Type:        schema.TypeInt,
-			Optional:    true,
 			Computed:    true,
 			Description: "Entitled Quantity",
 		},
 		"quantity_consumed": {
 			Type:        schema.TypeInt,
-			Optional:    true,
 			Computed:    true,
 			Description: "Consumed Quantity",
 		},
 		"quantity_available": {
 			Type:        schema.TypeInt,
-			Optional:    true,
 			Computed:    true,
 			Description: "Available Quantity",
 		},
 		"asset": {
 			Type:        schema.TypeSet,
-			Optional:    true,
 			Computed:    true,
 			Description: "Asset information",
 			MaxItems:    1,
@@ -112,13 +104,12 @@ func marketplaceSubscriptionAssetSch() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
 		"type": {
 			Type:        schema.TypeString,
-			Optional:    true,
 			Computed:    true,
 			Description: "Defines the FCR type like; XF_ROUTER",
 		},
 		"package": {
 			Type:        schema.TypeSet,
-			Required:    true,
+			Computed:    true,
 			Description: "Fabric Cloud Router Package Type",
 			MaxItems:    1,
 			Elem: &schema.Resource{
@@ -131,7 +122,6 @@ func marketplaceSubscriptionPackageSch() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
 		"code": {
 			Type:        schema.TypeString,
-			Optional:    true,
 			Computed:    true,
 			Description: "Cloud Router package code",
 		},
