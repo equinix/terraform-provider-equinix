@@ -36,55 +36,49 @@ output "is_auto_renew" {
 
 - `uuid` (String) Equinix-assigned marketplace identifier
 
-### Optional
-
-- `entitlements` (Block List) Subscription entitlements (see [below for nested schema](#nestedblock--entitlements))
-- `is_auto_renew` (Boolean) Information about subscription auto renewal
-- `offer_type` (String) Marketplace Offer Type like; PUBLIC, PRIVATE_OFFER
-- `trial` (Block Set, Max: 1) Subscription Trial (see [below for nested schema](#nestedblock--trial))
-
 ### Read-Only
 
+- `entitlements` (List of Object) Subscription entitlements (see [below for nested schema](#nestedatt--entitlements))
 - `href` (String) Subscription URI information
 - `id` (String) The ID of this resource.
+- `is_auto_renew` (Boolean) Information about subscription auto renewal
 - `marketplace` (String) Marketplace like; AWS, GCP, AZURE, REDHAT
+- `offer_type` (String) Marketplace Offer Type like; PUBLIC, PRIVATE_OFFER
 - `status` (String) Subscription Status like; ACTIVE, EXPIRED, CANCELLED, GRACE_PERIOD
+- `trial` (Set of Object) Subscription Trial (see [below for nested schema](#nestedatt--trial))
 
-<a id="nestedblock--entitlements"></a>
+<a id="nestedatt--entitlements"></a>
 ### Nested Schema for `entitlements`
 
-Optional:
+Read-Only:
 
-- `asset` (Block Set, Max: 1) Asset information (see [below for nested schema](#nestedblock--entitlements--asset))
-- `quantity_available` (Number) Available Quantity
-- `quantity_consumed` (Number) Consumed Quantity
-- `quantity_entitled` (Number) Entitled Quantity
-- `uuid` (String) Subscription Entitlement Id
+- `asset` (Set of Object) (see [below for nested schema](#nestedobjatt--entitlements--asset))
+- `quantity_available` (Number)
+- `quantity_consumed` (Number)
+- `quantity_entitled` (Number)
+- `uuid` (String)
 
-<a id="nestedblock--entitlements--asset"></a>
+<a id="nestedobjatt--entitlements--asset"></a>
 ### Nested Schema for `entitlements.asset`
 
-Required:
+Read-Only:
 
-- `package` (Block Set, Min: 1, Max: 1) Fabric Cloud Router Package Type (see [below for nested schema](#nestedblock--entitlements--asset--package))
+- `package` (Set of Object) (see [below for nested schema](#nestedobjatt--entitlements--asset--package))
+- `type` (String)
 
-Optional:
-
-- `type` (String) Defines the FCR type like; XF_ROUTER
-
-<a id="nestedblock--entitlements--asset--package"></a>
+<a id="nestedobjatt--entitlements--asset--package"></a>
 ### Nested Schema for `entitlements.asset.package`
 
-Optional:
+Read-Only:
 
-- `code` (String) Cloud Router package code
-
-
+- `code` (String)
 
 
-<a id="nestedblock--trial"></a>
+
+
+<a id="nestedatt--trial"></a>
 ### Nested Schema for `trial`
 
-Optional:
+Read-Only:
 
-- `enabled` (Boolean) Marketplace Subscription Trial Enabled
+- `enabled` (Boolean)
