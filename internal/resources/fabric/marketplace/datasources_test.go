@@ -2,12 +2,12 @@ package marketplace_test
 
 import (
 	"fmt"
+	"testing"
+
 	"github.com/equinix/terraform-provider-equinix/internal/acceptance"
 	"github.com/equinix/terraform-provider-equinix/internal/fabric/testing_helpers"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	_ "github.com/hashicorp/terraform-plugin-testing/terraform"
-	"log"
-	"testing"
 )
 
 func TestAccFabricDataSourceMarketPlace_PFCR(t *testing.T) {
@@ -33,7 +33,6 @@ func TestAccFabricDataSourceMarketPlace_PFCR(t *testing.T) {
 
 }
 func configGetMarketplaceSubscriptionResource(subscription_id string) string {
-	log.Printf("!! debugging")
 	return fmt.Sprintf(`
 	data "equinix_fabric_market_place_subscription" "test"{
 		uuid = "%s"
