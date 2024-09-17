@@ -43,8 +43,7 @@ func subscriptionTrialGoToTerraform(trial *fabricv4.SubscriptionTrial) *schema.S
 	mappedTrial := make(map[string]interface{})
 	mappedTrial["enabled"] = trial.GetEnabled()
 	trialSet := schema.NewSet(
-		schema.HashResource(&schema.Resource{
-			Schema: marketplaceSubscriptionTrialSch()}),
+		schema.HashResource(marketplaceSubscriptionTrialSch()),
 		[]interface{}{mappedTrial},
 	)
 	return trialSet
@@ -76,8 +75,7 @@ func subscriptionAssetGoToTerraform(asset *fabricv4.SubscriptionAsset) *schema.S
 	package_ := asset.GetPackage()
 	mappedAsset["package"] = subscriptionPackageGoToTerraform(&package_)
 	assetSet := schema.NewSet(
-		schema.HashResource(&schema.Resource{
-			Schema: marketplaceSubscriptionAssetSch()}),
+		schema.HashResource(marketplaceSubscriptionAssetSch()),
 		[]interface{}{mappedAsset},
 	)
 	return assetSet
@@ -90,8 +88,7 @@ func subscriptionPackageGoToTerraform(package_ *fabricv4.SubscriptionRouterPacka
 	mappedPackage := make(map[string]interface{})
 	mappedPackage["code"] = string(package_.GetCode())
 	packageSet := schema.NewSet(
-		schema.HashResource(&schema.Resource{
-			Schema: marketplaceSubscriptionPackageSch()}),
+		schema.HashResource(marketplaceSubscriptionPackageSch()),
 		[]interface{}{mappedPackage},
 	)
 	return packageSet

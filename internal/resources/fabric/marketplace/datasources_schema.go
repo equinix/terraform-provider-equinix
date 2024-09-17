@@ -40,87 +40,87 @@ func fabricMarketplaceSubscriptionDataSourceSchema() map[string]*schema.Schema {
 			Type:        schema.TypeSet,
 			Computed:    true,
 			Description: "Subscription Trial",
-			Elem: &schema.Resource{
-				Schema: marketplaceSubscriptionTrialSch(),
-			},
+			Elem:        marketplaceSubscriptionTrialSch(),
 		},
 		"entitlements": {
 			Type:        schema.TypeList,
 			Computed:    true,
 			Description: "Subscription entitlements",
-			Elem: &schema.Resource{
-				Schema: marketplaceSubscriptionEntitlementsSch(),
+			Elem:        marketplaceSubscriptionEntitlementsSch(),
+		},
+	}
+}
+
+func marketplaceSubscriptionTrialSch() *schema.Resource {
+	return &schema.Resource{
+		Schema: map[string]*schema.Schema{
+			"enabled": {
+				Type:        schema.TypeBool,
+				Computed:    true,
+				Description: "Marketplace Subscription Trial Enabled",
 			},
 		},
 	}
 }
 
-func marketplaceSubscriptionTrialSch() map[string]*schema.Schema {
-	return map[string]*schema.Schema{
-		"enabled": {
-			Type:        schema.TypeBool,
-			Computed:    true,
-			Description: "Marketplace Subscription Trial Enabled",
-		},
-	}
-}
-
-func marketplaceSubscriptionEntitlementsSch() map[string]*schema.Schema {
-	return map[string]*schema.Schema{
-		"uuid": {
-			Type:        schema.TypeString,
-			Computed:    true,
-			Description: "Subscription Entitlement Id",
-		},
-		"quantity_entitled": {
-			Type:        schema.TypeInt,
-			Computed:    true,
-			Description: "Entitled Quantity",
-		},
-		"quantity_consumed": {
-			Type:        schema.TypeInt,
-			Computed:    true,
-			Description: "Consumed Quantity",
-		},
-		"quantity_available": {
-			Type:        schema.TypeInt,
-			Computed:    true,
-			Description: "Available Quantity",
-		},
-		"asset": {
-			Type:        schema.TypeSet,
-			Computed:    true,
-			Description: "Asset information",
-			Elem: &schema.Resource{
-				Schema: marketplaceSubscriptionAssetSch(),
+func marketplaceSubscriptionEntitlementsSch() *schema.Resource {
+	return &schema.Resource{
+		Schema: map[string]*schema.Schema{
+			"uuid": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Subscription Entitlement Id",
+			},
+			"quantity_entitled": {
+				Type:        schema.TypeInt,
+				Computed:    true,
+				Description: "Entitled Quantity",
+			},
+			"quantity_consumed": {
+				Type:        schema.TypeInt,
+				Computed:    true,
+				Description: "Consumed Quantity",
+			},
+			"quantity_available": {
+				Type:        schema.TypeInt,
+				Computed:    true,
+				Description: "Available Quantity",
+			},
+			"asset": {
+				Type:        schema.TypeSet,
+				Computed:    true,
+				Description: "Asset information",
+				Elem:        marketplaceSubscriptionAssetSch(),
 			},
 		},
 	}
 }
 
-func marketplaceSubscriptionAssetSch() map[string]*schema.Schema {
-	return map[string]*schema.Schema{
-		"type": {
-			Type:        schema.TypeString,
-			Computed:    true,
-			Description: "Defines the FCR type like; XF_ROUTER",
-		},
-		"package": {
-			Type:        schema.TypeSet,
-			Computed:    true,
-			Description: "Fabric Cloud Router Package Type",
-			Elem: &schema.Resource{
-				Schema: marketplaceSubscriptionPackageSch(),
+func marketplaceSubscriptionAssetSch() *schema.Resource {
+	return &schema.Resource{
+		Schema: map[string]*schema.Schema{
+			"type": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Defines the FCR type like; XF_ROUTER",
+			},
+			"package": {
+				Type:        schema.TypeSet,
+				Computed:    true,
+				Description: "Fabric Cloud Router Package Type",
+				Elem:        marketplaceSubscriptionPackageSch(),
 			},
 		},
 	}
 }
-func marketplaceSubscriptionPackageSch() map[string]*schema.Schema {
-	return map[string]*schema.Schema{
-		"code": {
-			Type:        schema.TypeString,
-			Computed:    true,
-			Description: "Cloud Router package code",
+func marketplaceSubscriptionPackageSch() *schema.Resource {
+	return &schema.Resource{
+		Schema: map[string]*schema.Schema{
+			"code": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Cloud Router package code",
+			},
 		},
 	}
 }

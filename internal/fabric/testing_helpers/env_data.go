@@ -9,15 +9,9 @@ import (
 )
 
 const (
-	FabricDedicatedPortEnvVar = "TF_ACC_FABRIC_DEDICATED_PORTS"
-)
-
-const (
+	FabricDedicatedPortEnvVar       = "TF_ACC_FABRIC_DEDICATED_PORTS"
 	FabricConnectionsTestDataEnvVar = "TF_ACC_FABRIC_CONNECTIONS_TEST_DATA"
-)
-
-const (
-	FabricSubscriptionEnvVar = "TF_ACC_FABRIC_MARKET_PLACE_SUBSCRIPTION_ID"
+	FabricSubscriptionEnvVar        = "TF_ACC_FABRIC_MARKET_PLACE_SUBSCRIPTION_ID"
 )
 
 type EnvPorts map[string]map[string][]fabricv4.PortResponse
