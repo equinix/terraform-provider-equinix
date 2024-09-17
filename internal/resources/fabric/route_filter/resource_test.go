@@ -3,6 +3,7 @@ package route_filter_test
 import (
 	"context"
 	"fmt"
+	"github.com/equinix/equinix-sdk-go/services/fabricv4"
 	"testing"
 	"time"
 
@@ -15,14 +16,15 @@ import (
 )
 
 func TestAccFabricRouteFilterPolicy_PFCR(t *testing.T) {
-	routeFilterName := "RF_Policy_PFCR"
+	routeFilterName, routeFilterUpdatedName := "RF_Policy_PFCR", "RF_Filter_PFCR"
+	routeFilterDescription, routeFilterUpdatedDescription := "Route Filter Policy for X Purpose", "Route Filter Policy for Y Purpose"
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { acceptance.TestAccPreCheck(t); acceptance.TestAccPreCheckProviderConfigured(t) },
 		Providers:    acceptance.TestAccProviders,
 		CheckDestroy: CheckRouteFilterDelete,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccFabricRouteFilterPolicyConfig(routeFilterName),
+				Config: testAccFabricRouteFilterPolicyConfig(routeFilterName, routeFilterDescription),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("equinix_fabric_route_filter.test", "id"),
 					resource.TestCheckResourceAttr(
@@ -30,13 +32,32 @@ func TestAccFabricRouteFilterPolicy_PFCR(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						"equinix_fabric_route_filter.test", "type", "BGP_IPv4_PREFIX_FILTER"),
 					resource.TestCheckResourceAttr(
-						"equinix_fabric_route_filter.test", "state", "PROVISIONED"),
+						"equinix_fabric_route_filter.test", "state", string(fabricv4.ROUTEFILTERSTATE_PROVISIONED)),
 					resource.TestCheckResourceAttr(
 						"equinix_fabric_route_filter.test", "not_matched_rule_action", "DENY"),
 					resource.TestCheckResourceAttr(
 						"equinix_fabric_route_filter.test", "rules_count", "0"),
 					resource.TestCheckResourceAttr(
-						"equinix_fabric_route_filter.test", "description", "Route Filter Policy for X Purpose"),
+						"equinix_fabric_route_filter.test", "description", routeFilterDescription),
+				),
+				ExpectNonEmptyPlan: false,
+			},
+			{
+				Config: testAccFabricRouteFilterPolicyConfig(routeFilterUpdatedName, routeFilterUpdatedDescription),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttrSet("equinix_fabric_route_filter.test", "id"),
+					resource.TestCheckResourceAttr(
+						"equinix_fabric_route_filter.test", "name", routeFilterUpdatedName),
+					resource.TestCheckResourceAttr(
+						"equinix_fabric_route_filter.test", "type", "BGP_IPv4_PREFIX_FILTER"),
+					resource.TestCheckResourceAttr(
+						"equinix_fabric_route_filter.test", "state", string(fabricv4.ROUTEFILTERSTATE_REPROVISIONING)),
+					resource.TestCheckResourceAttr(
+						"equinix_fabric_route_filter.test", "not_matched_rule_action", "DENY"),
+					resource.TestCheckResourceAttr(
+						"equinix_fabric_route_filter.test", "rules_count", "0"),
+					resource.TestCheckResourceAttr(
+						"equinix_fabric_route_filter.test", "description", routeFilterUpdatedDescription),
 				),
 				ExpectNonEmptyPlan: false,
 			},
@@ -45,7 +66,7 @@ func TestAccFabricRouteFilterPolicy_PFCR(t *testing.T) {
 
 }
 
-func testAccFabricRouteFilterPolicyConfig(policyName string) string {
+func testAccFabricRouteFilterPolicyConfig(policyName, policyDescription string) string {
 	return fmt.Sprintf(`
 		resource "equinix_fabric_route_filter" "test" {
 			name = "%s"
@@ -53,9 +74,9 @@ func testAccFabricRouteFilterPolicyConfig(policyName string) string {
 				project_id = "291639000636552"
 			}
 			type = "BGP_IPv4_PREFIX_FILTER"
-			description = "Route Filter Policy for X Purpose"
+			description = "%s"
 		}
-	`, policyName)
+	`, policyName, policyDescription)
 }
 
 func CheckRouteFilterDelete(s *terraform.State) error {
