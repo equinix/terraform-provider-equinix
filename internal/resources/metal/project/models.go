@@ -2,10 +2,11 @@ package project
 
 import (
 	"context"
-	"github.com/equinix/equinix-sdk-go/services/metalv1"
 	"path"
 	"strings"
 	"time"
+
+	"github.com/equinix/equinix-sdk-go/services/metalv1"
 
 	fwtypes "github.com/equinix/terraform-provider-equinix/internal/framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
@@ -50,8 +51,8 @@ func (m *ResourceModel) parse(ctx context.Context, project *metalv1.Project, bgp
 	m.Name = types.StringValue(project.GetName())
 	m.Created = types.StringValue(project.GetCreatedAt().Format(time.RFC3339))
 	m.Updated = types.StringValue(project.GetUpdatedAt().Format(time.RFC3339))
-	m.BackendTransfer = types.BoolValue(project.AdditionalProperties["backend_transfer_enabled"].(bool)) // No backend_transfer_enabled property in API spec
-	m.OrganizationID = types.StringValue(path.Base(project.Organization.AdditionalProperties["href"].(string)))
+	m.BackendTransfer = types.BoolValue(project.GetBackendTransferEnabled())
+	m.OrganizationID = types.StringValue(path.Base(project.Organization.GetHref()))
 
 	m.PaymentMethodID = types.StringValue("")
 	if len(project.PaymentMethod.GetHref()) != 0 {
@@ -74,8 +75,8 @@ func (m *DataSourceModel) parse(ctx context.Context, project *metalv1.Project, b
 	m.Name = types.StringValue(project.GetName())
 	m.Created = types.StringValue(project.GetCreatedAt().Format(time.RFC3339))
 	m.Updated = types.StringValue(project.GetUpdatedAt().Format(time.RFC3339))
-	m.BackendTransfer = types.BoolValue(project.AdditionalProperties["backend_transfer_enabled"].(bool)) // No backend_transfer_enabled property in API spec
-	m.OrganizationID = types.StringValue(path.Base(project.Organization.AdditionalProperties["href"].(string)))
+	m.BackendTransfer = types.BoolValue(project.GetBackendTransferEnabled())
+	m.OrganizationID = types.StringValue(path.Base(project.Organization.GetHref()))
 
 	m.PaymentMethodID = types.StringValue("")
 	if len(project.PaymentMethod.GetHref()) != 0 {
