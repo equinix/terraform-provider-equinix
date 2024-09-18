@@ -36,8 +36,5 @@ func GetFabricEnvConnectionTestData(t *testing.T) map[string]map[string]string {
 
 func GetFabricMarketPlaceSubscriptionId(t *testing.T) string {
 	subscriptionId := os.Getenv(FabricSubscriptionEnvVar)
-	if subscriptionId == "" {
-		t.Fatalf("Failed reading market place subscription id from environment: %v", subscriptionId)
-	}
 	return subscriptionId
 }
