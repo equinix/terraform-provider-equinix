@@ -6,7 +6,6 @@ import (
 	fwtypes "github.com/equinix/terraform-provider-equinix/internal/framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	"github.com/packethost/packngo"
 )
 
@@ -53,7 +52,7 @@ type DataSourceModel struct {
 	Website        types.String                                          `tfsdk:"website"`
 	Twitter        types.String                                          `tfsdk:"twitter"`
 	Logo           types.String                                          `tfsdk:"logo"`
-	ProjectIDs     []types.List                                          `tfsdk:"project_ids"`
+	ProjectIDs     types.List                                            `tfsdk:"project_ids"`
 	Address        fwtypes.ListNestedObjectValueOf[AddressResourceModel] `tfsdk:"address"` // List of Address
 }
 
@@ -69,14 +68,11 @@ func (m *DataSourceModel) parse(ctx context.Context, org *packngo.Organization) 
 	m.Logo = types.StringValue("")
 	m.Address = parseAddress(ctx, org.Address)
 
-	projects := make([]string, len(org.Projects))
-	pList := make([]basetypes.ListValue, len(org.Projects))
-	for i, p := range org.Projects {
-		projects[i] = p.ID
-		projList, _ := types.ListValueFrom(ctx, types.StringType, p.ID)
-		pList = append(pList, projList)
+	pList := make([]string, 0, len(org.Projects))
+	for _, p := range org.Projects {
+		pList = append(pList, p.ID)
 	}
-	m.ProjectIDs = pList
+	m.ProjectIDs, diags = types.ListValueFrom(ctx, types.StringType, pList)
 
 	return diags
 }
