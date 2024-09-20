@@ -32,7 +32,7 @@ func Resource() *schema.Resource {
 			StateContext: schema.ImportStatePassthroughContext,
 		},
 		Schema:      resourceSchema(),
-		Description: "Fabric V4 API compatible resource allows creation and management of Equinix Fabric Network",
+		Description: "Fabric V4 API compatible resource allows creation and management of Equinix Fabric Route Filter Policy",
 	}
 }
 
