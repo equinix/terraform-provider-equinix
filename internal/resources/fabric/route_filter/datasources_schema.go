@@ -106,6 +106,41 @@ func dataSourceBaseSchema() map[string]*schema.Schema {
 	}
 }
 
+func paginationSchema() *schema.Resource {
+	return &schema.Resource{
+		Schema: map[string]*schema.Schema{
+			"offset": {
+				Type:        schema.TypeInt,
+				Optional:    true,
+				Computed:    true,
+				Description: "The page offset for the pagination request. Index of the first element. Default is 0.",
+			},
+			"limit": {
+				Type:        schema.TypeInt,
+				Optional:    true,
+				Computed:    true,
+				Description: "Number of elements to be requested per page. Number must be between 1 and 100. Default is 20",
+			},
+			"total": {
+				Type:        schema.TypeInt,
+				Optional:    true,
+				Computed:    true,
+				Description: "Total number of elements returned.",
+			},
+			"next": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "URL relative to the last item in the response.",
+			},
+			"previous": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "URL relative to the first item in the response.",
+			},
+		},
+	}
+}
+
 func dataSourceSearchSchema() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
 		"data": {
@@ -151,38 +186,7 @@ func dataSourceSearchSchema() map[string]*schema.Schema {
 			Optional:    true,
 			Description: "Pagination details for the Data Source Search Request",
 			MaxItems:    1,
-			Elem: &schema.Resource{
-				Schema: map[string]*schema.Schema{
-					"offset": {
-						Type:        schema.TypeInt,
-						Optional:    true,
-						Default:     0,
-						Description: "The page offset for the pagination request. Index of the first element. Default is 0.",
-					},
-					"limit": {
-						Type:        schema.TypeInt,
-						Optional:    true,
-						Default:     20,
-						Description: "Number of elements to be requested per page. Number must be between 1 and 100. Default is 20",
-					},
-					"total": {
-						Type:        schema.TypeInt,
-						Optional:    true,
-						Default:     500,
-						Description: "Total number of elements returned.",
-					},
-					"next": {
-						Type:        schema.TypeString,
-						Computed:    true,
-						Description: "URL relative to the last item in the response.",
-					},
-					"previous": {
-						Type:        schema.TypeString,
-						Computed:    true,
-						Description: "URL relative to the first item in the response.",
-					},
-				},
-			},
+			Elem:        paginationSchema(),
 		},
 		"sort": {
 			Type:        schema.TypeList,

@@ -96,6 +96,7 @@ func setRouteFilterMap(d *schema.ResourceData, routeFilter *fabricv4.RouteFilter
 func setRouteFiltersData(d *schema.ResourceData, routeFilters *fabricv4.RouteFiltersSearchResponse) diag.Diagnostics {
 	diags := diag.Diagnostics{}
 	mappedRouteFilters := make([]map[string]interface{}, len(routeFilters.Data))
+	pagination := routeFilters.GetPagination()
 	if routeFilters.Data != nil {
 		for index, routeFilter := range routeFilters.Data {
 			mappedRouteFilters[index] = routeFilterResponseMap(&routeFilter)
@@ -104,7 +105,8 @@ func setRouteFiltersData(d *schema.ResourceData, routeFilters *fabricv4.RouteFil
 		mappedRouteFilters = nil
 	}
 	err := equinix_schema.SetMap(d, map[string]interface{}{
-		"data": mappedRouteFilters,
+		"data":       mappedRouteFilters,
+		"pagination": paginationGoToTerraform(&pagination),
 	})
 	if err != nil {
 		return diag.FromErr(err)
@@ -230,6 +232,23 @@ func paginationTerraformToGo(pagination []interface{}) fabricv4.Pagination {
 	}
 
 	return paginationRequest
+}
+
+func paginationGoToTerraform(pagination *fabricv4.Pagination) *schema.Set {
+	if pagination == nil {
+		return nil
+	}
+	mappedPagination := make(map[string]interface{})
+	mappedPagination["offset"] = pagination.GetOffset()
+	mappedPagination["limit"] = pagination.GetLimit()
+	mappedPagination["total"] = pagination.GetTotal()
+	mappedPagination["next"] = pagination.GetNext()
+	mappedPagination["previous"] = pagination.GetPrevious()
+
+	return schema.NewSet(
+		schema.HashResource(paginationSchema()),
+		[]interface{}{mappedPagination},
+	)
 }
 
 func sortTerraformToGo(sort []interface{}) []fabricv4.SortItem {
