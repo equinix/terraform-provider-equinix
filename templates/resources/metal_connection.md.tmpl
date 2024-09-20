@@ -36,31 +36,4 @@ Use this resource to request the creation an Interconnection asset to connect wi
 
 {{tffile "examples/resources/equinix_metal_connection/metal_billed_metal_to_fabric_port.tf"}}
 
-## Argument Reference
-
-The following arguments are supported:
-
-* `name` - (Required) Name of the connection resource
-* `metro` - (Optional) Metro where the connection will be created.
-* `facility` - (**Deprecated**) Facility where the connection will be created. Use metro instead; read the [facility to metro migration guide](https://registry.terraform.io/providers/equinix/equinix/latest/docs/guides/migration_guide_facilities_to_metros_devices)
-* `redundancy` - (Required) Connection redundancy - redundant or primary.
-* `type` - (Required) Connection type - dedicated, shared or shared_port_vlan.
-* `contact_email` - (Optional) The preferred email used for communication and notifications about the Equinix Fabric interconnection. Required when using a Project API key. Optional and defaults to the primary user email address when using a User API key.
-* `project_id` - (Optional) ID of the project where the connection is scoped to, must be set for.
-* `speed` - (Required) Connection speed - Values must be in the format '<number>Mbps' or '<number>Gpbs', for example '100Mbps' or '50Gbps'. Actual supported values will depend on the connection type and whether the connection uses VLANs or VRF.
-* `description` - (Optional) Description for the connection resource.
-* `mode` - (Optional) Mode for connections in IBX facilities with the dedicated type - standard or tunnel. Default is standard.
-* `tags` - (Optional) String list of tags.
-* `vlans` - (Optional) Only used with shared connection. Vlans to attach. Pass one vlan for Primary/Single connection and two vlans for Redundant connection.
-* `service_token_type` - (Optional) Only used with shared connection. Type of service token to use for the connection, a_side or z_side. (**NOTE: To support the legacy non-automated way to create connections, terraform will not check if `service_token_type` is specified. If your organization already has `service_token_type` enabled, be sure to specify it or the connection will return a legacy connection token instead of a service token**)
-
-## Attributes Reference
-
-In addition to all arguments above, the following attributes are exported:
-
-* `organization_id` - ID of the organization where the connection is scoped to.
-* `status` - Status of the connection resource.
-* `ports` - List of connection ports - primary (`ports[0]`) and secondary (`ports[1]`). Schema of port is described in documentation of the [equinix_metal_connection datasource](../data-sources/metal_connection.md).
-* `service_tokens` - List of connection service tokens with attributes required to configure the connection in Equinix Fabric with the [equinix_fabric_connection](./fabric_connection.md) resource or from the [Equinix Fabric Portal](https://fabric.equinix.com/dashboard). Scehma of service_token is described in documentation of the [equinix_metal_connection datasource](../data-sources/metal_connection.md).
-* `token` - (Deprecated) Fabric Token required to configure the connection in Equinix Fabric with the [equinix_fabric_connection](./fabric_connection.md) resource or from the [Equinix Fabric Portal](https://fabric.equinix.com/dashboard). If your organization already has connection service tokens enabled, use `service_tokens` instead.
-* `authorization_code` - Fabric Authorization code to configure the Metal-Fabric Integration connection with Cloud Service Provider through Equinix Fabric with the [equinix_fabric_connection](./fabric_connection.md) resource from the [Equinix Developer Portal](https://developer.equinix.com/dev-docs/fabric/getting-started/fabric-v4-apis/connect-metal-to-amazon-web-services).
+{{ .SchemaMarkdown | trimspace }}
