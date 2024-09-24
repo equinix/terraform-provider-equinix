@@ -7,7 +7,7 @@ page_title: "Metal Device Network Types"
 
 Server network types, such as Layer-2, Layer-3, and Hybrid may be familiar to users of the Equinix Metal Portal. In the Portal, you can toggle the network type with a click of the UI. To take advantage of these features in Terraform, which closely follows the Equinix Metal API, it is important to understand that the network type is a composite string value determined by one or more port bonding, addressing, and VLAN attachment configurations. To change the network type, you must change these underlying properties of the port(s).
 
-For more details, see the Equinix Metal documentation on [Network Configuration Types](https://metal.equinix.com/developers/docs/layer2-networking/overview/#network-configuration-types).
+For more details, see the Equinix Metal documentation on [Network Configuration Types](https://deploy.equinix.com/developers/docs/metal/layer2-networking/overview/#network-configuration-types).
 
 This Terraform provider offers two ways to define the network type.
 
@@ -134,7 +134,7 @@ When using this resource, keep in mind:
 
 ### Hybrid (Unbonded) Device
 
-This example create one c3.small device and puts it into [hybrid (unbonded) network mode](https://metal.equinix.com/developers/docs/layer2-networking/hybrid-unbonded-mode/).
+This example create one c3.small device and puts it into [hybrid (unbonded) network mode](https://deploy.equinix.com/developers/docs/metal/layer2-networking/hybrid-unbonded-mode/).
 
 ```hcl
 resource "equinix_metal_device" "test" {
@@ -154,7 +154,7 @@ resource "equinix_metal_device_network_type" "test" {
 
 ### Hybrid (Unbonded) Device with a VLAN
 
-This example create two devices in [hybrid (unbonded) mode](https://metal.equinix.com/developers/docs/layer2-networking/hybrid-unbonded-mode/) and adds a VLAN to their eth1 ports.
+This example create two devices in [hybrid (unbonded) mode](https://deploy.equinix.com/developers/docs/metal/layer2-networking/hybrid-unbonded-mode/) and adds a VLAN to their eth1 ports.
 
 ```hcl
 locals {
@@ -195,7 +195,7 @@ resource "equinix_metal_port_vlan_attachment" "test" {
 
 ### Hybrid (Bonded) Device
 
-This example create one c3.small device and puts it into [hybrid-bonded network mode](https://metal.equinix.com/developers/docs/layer2-networking/hybrid-bonded-mode/). Notice, the default network type of `layer3` can be used with VLAN attachments without reconfiguring the device ports.
+This example create one c3.small device and puts it into [hybrid-bonded network mode](https://deploy.equinix.com/developers/docs/metal/layer2-networking/hybrid-bonded-mode/). Notice, the default network type of `layer3` can be used with VLAN attachments without reconfiguring the device ports.
 
 ```hcl
 resource "equinix_metal_device" "test" {

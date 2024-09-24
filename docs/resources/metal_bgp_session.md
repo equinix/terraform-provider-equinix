@@ -4,7 +4,7 @@ subcategory: "Metal"
 
 # equinix_metal_bgp_session (Resource)
 
-Provides a resource to manage BGP sessions in Equinix Metal Host. Refer to [Equinix Metal BGP documentation](https://metal.equinix.com/developers/docs/networking/local-global-bgp/) for more details.
+Provides a resource to manage BGP sessions in Equinix Metal Host. Refer to [Equinix Metal BGP documentation](https://deploy.equinix.com/developers/docs/metal/bgp/bgp-on-equinix-metal/) for more details.
 
 You need to have BGP config enabled in your project.
 

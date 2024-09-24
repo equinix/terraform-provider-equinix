@@ -8,7 +8,7 @@ The Equinix provider is used to interact with the resources provided by Equinix 
 
 For information about obtaining API key and secret required for Equinix Fabric and Network Edge refer to [Generating Client ID and Client Secret key](https://developer.equinix.com/dev-docs/fabric/getting-started/getting-access-token#generating-client-id-and-client-secret) from [Equinix Developer Platform portal](https://developer.equinix.com).
 
-Interacting with Equinix Metal requires an API auth token that can be generated at [Project-level](https://metal.equinix.com/developers/docs/accounts/projects/#api-keys) or [User-level](https://metal.equinix.com/developers/docs/accounts/users/#api-keys) tokens can be used.
+Interacting with Equinix Metal requires an API auth token that can be generated at [Project-level](https://deploy.equinix.com/developers/docs/metal/projects/project-api-keys/) or [User-level](https://deploy.equinix.com/developers/docs/metal/identity-access-management/api-keys/) tokens can be used.
 
 If you are only using Equinix Metal resources, you may omit the Client ID and Client Secret provider configuration parameters needed to access other Equinix resource types (Network Edge, Fabric, etc).
 
