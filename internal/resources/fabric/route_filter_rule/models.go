@@ -64,7 +64,7 @@ func buildUpdateRequest(d *schema.ResourceData) []fabricv4.RouteFilterRulesPatch
 	return patches
 }
 
-func setRouteFilterMap(d *schema.ResourceData, routeFilter *fabricv4.RouteFilterRulesData) diag.Diagnostics {
+func setRouteFilterRuleMap(d *schema.ResourceData, routeFilter *fabricv4.RouteFilterRulesData) diag.Diagnostics {
 	diags := diag.Diagnostics{}
 	routeFilterMap := routeFilterRuleResponseMap(routeFilter)
 	err := equinix_schema.SetMap(d, routeFilterMap)
@@ -74,7 +74,7 @@ func setRouteFilterMap(d *schema.ResourceData, routeFilter *fabricv4.RouteFilter
 	return diags
 }
 
-func setRouteFiltersData(d *schema.ResourceData, routeFilterRules *fabricv4.GetRouteFilterRulesResponse) diag.Diagnostics {
+func setRouteFilterRulesData(d *schema.ResourceData, routeFilterRules *fabricv4.GetRouteFilterRulesResponse) diag.Diagnostics {
 	diags := diag.Diagnostics{}
 	mappedRouteFilterRules := make([]map[string]interface{}, len(routeFilterRules.Data))
 	pagination := routeFilterRules.GetPagination()

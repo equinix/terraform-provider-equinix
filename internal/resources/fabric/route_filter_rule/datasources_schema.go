@@ -110,7 +110,7 @@ func paginationSchema() *schema.Resource {
 
 func dataSourceByUUIDSchema() map[string]*schema.Schema {
 	baseSchema := dataSourceBaseSchema()
-	baseSchema["route_filter_uuid"] = routeFilterSchema()
+	baseSchema["route_filter_id"] = routeFilterSchema()
 
 	return baseSchema
 }
@@ -123,7 +123,7 @@ func dataSourceAllRulesForRouteFilterSchema() map[string]*schema.Schema {
 		Description: "Equinix Assigned ID for Route Filter Rule to retrieve data for",
 	}
 	routeFilterRulesSchema := map[string]*schema.Schema{
-		"route_filter_uuid": routeFilterSchema(),
+		"route_filter_id": routeFilterSchema(),
 		"offset": {
 			Type:        schema.TypeInt,
 			Optional:    true,

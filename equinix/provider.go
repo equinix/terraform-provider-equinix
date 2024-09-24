@@ -11,6 +11,7 @@ import (
 	fabric_market_place_subscription "github.com/equinix/terraform-provider-equinix/internal/resources/fabric/marketplace"
 	fabric_network "github.com/equinix/terraform-provider-equinix/internal/resources/fabric/network"
 	fabric_route_filter "github.com/equinix/terraform-provider-equinix/internal/resources/fabric/route_filter"
+	fabric_route_filter_rule "github.com/equinix/terraform-provider-equinix/internal/resources/fabric/route_filter_rule"
 	metal_device "github.com/equinix/terraform-provider-equinix/internal/resources/metal/device"
 	metal_port "github.com/equinix/terraform-provider-equinix/internal/resources/metal/port"
 	"github.com/equinix/terraform-provider-equinix/internal/resources/metal/virtual_circuit"
@@ -94,6 +95,8 @@ func Provider() *schema.Provider {
 			"equinix_fabric_ports":                     dataSourceFabricGetPortsByName(),
 			"equinix_fabric_route_filter":              fabric_route_filter.DataSource(),
 			"equinix_fabric_route_filters":             fabric_route_filter.DataSourceSearch(),
+			"equinix_fabric_route_filter_rule":         fabric_route_filter_rule.DataSource(),
+			"equinix_fabric_route_filter_rules":        fabric_route_filter_rule.DataSourceGetAllRules(),
 			"equinix_fabric_service_profile":           dataSourceFabricServiceProfileReadByUuid(),
 			"equinix_fabric_service_profiles":          dataSourceFabricSearchServiceProfilesByName(),
 			"equinix_network_account":                  dataSourceNetworkAccount(),
@@ -123,6 +126,7 @@ func Provider() *schema.Provider {
 			"equinix_fabric_cloud_router":        resourceFabricCloudRouter(),
 			"equinix_fabric_connection":          fabric_connection.Resource(),
 			"equinix_fabric_route_filter":        fabric_route_filter.Resource(),
+			"equinix_fabric_route_filter_rule":   fabric_route_filter_rule.Resource(),
 			"equinix_fabric_routing_protocol":    resourceFabricRoutingProtocol(),
 			"equinix_fabric_service_profile":     resourceFabricServiceProfile(),
 			"equinix_network_device":             resourceNetworkDevice(),

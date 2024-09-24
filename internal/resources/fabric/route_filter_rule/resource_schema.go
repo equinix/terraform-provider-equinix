@@ -7,7 +7,7 @@ import (
 
 func resourceSchema() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
-		"route_filter_uuid": {
+		"route_filter_id": {
 			Type:        schema.TypeString,
 			Required:    true,
 			Description: "UUID of the Route Filter Policy to apply this Rule to",
