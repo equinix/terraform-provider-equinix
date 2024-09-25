@@ -29,7 +29,11 @@ func testSweepConnections(region string) error {
 	if err != nil {
 		return fmt.Errorf("error getting configuration for sweeping Conections: %s", err)
 	}
-	meta.Load(ctx)
+	err = meta.Load(ctx)
+	if err != nil {
+		log.Printf("Error loading meta: %v", err)
+		return err
+	}
 	fabric := meta.NewFabricClientForTesting()
 
 	name := fabricv4.SEARCHFIELDNAME_NAME

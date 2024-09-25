@@ -315,7 +315,7 @@ func resourceMetalVirtualCircuitRead(ctx context.Context, d *schema.ResourceData
 	if connectionID != "" {
 		errs = append(errs, d.Set("connection_id", connectionID))
 	}
-	d.Set("port_id", portID)
+	errs = append(errs, d.Set("port_id", portID))
 
 	if vc.VlanVirtualCircuit != nil {
 		errs = append(errs, d.Set("project_id", vc.VlanVirtualCircuit.Project.GetId()))
