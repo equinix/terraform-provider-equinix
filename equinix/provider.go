@@ -93,7 +93,7 @@ func Provider() *schema.Provider {
 			"equinix_fabric_port":                      dataSourceFabricPort(),
 			"equinix_fabric_ports":                     dataSourceFabricGetPortsByName(),
 			"equinix_fabric_route_filter":              fabric_route_filter.DataSource(),
-			"equinix_fabirc_route_filters":             fabric_route_filter.DataSourceSearch(),
+			"equinix_fabric_route_filters":             fabric_route_filter.DataSourceSearch(),
 			"equinix_fabric_service_profile":           dataSourceFabricServiceProfileReadByUuid(),
 			"equinix_fabric_service_profiles":          dataSourceFabricSearchServiceProfilesByName(),
 			"equinix_network_account":                  dataSourceNetworkAccount(),

@@ -4,8 +4,9 @@ import (
 	"testing"
 
 	fabric_cloud_router "github.com/equinix/terraform-provider-equinix/internal/resources/fabric/cloud_router"
-
 	fabric_connection "github.com/equinix/terraform-provider-equinix/internal/resources/fabric/connection"
+	fabric_route_filter "github.com/equinix/terraform-provider-equinix/internal/resources/fabric/route_filter"
+
 	"github.com/equinix/terraform-provider-equinix/internal/resources/metal/connection"
 	"github.com/equinix/terraform-provider-equinix/internal/resources/metal/device"
 	"github.com/equinix/terraform-provider-equinix/internal/resources/metal/organization"
@@ -31,6 +32,7 @@ func addTestSweepers() {
 	device.AddTestSweeper()
 	fabric_cloud_router.AddTestSweeper()
 	fabric_connection.AddTestSweeper()
+	fabric_route_filter.AddTestSweeper()
 	organization.AddTestSweeper()
 	project.AddTestSweeper()
 	ssh_key.AddTestSweeper()
