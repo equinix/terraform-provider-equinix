@@ -5,11 +5,9 @@ import (
 	"sync"
 	"testing"
 
-	"github.com/equinix/terraform-provider-equinix/equinix"
 	"github.com/equinix/terraform-provider-equinix/internal/config"
 	"github.com/equinix/terraform-provider-equinix/internal/env"
 	"github.com/equinix/terraform-provider-equinix/internal/provider"
-	"github.com/equinix/terraform-provider-equinix/version"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	terraformsdk "github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -32,19 +30,6 @@ var (
 	// Provider be errantly reused in ProviderFactories.
 	testAccProviderConfigure sync.Once
 )
-
-func init() {
-	TestAccProvider = equinix.Provider()
-	TestAccProviders = map[string]*schema.Provider{
-		"equinix": TestAccProvider,
-	}
-	TestExternalProviders = map[string]resource.ExternalProvider{
-		"random": {
-			Source: "hashicorp/random",
-		},
-	}
-	TestAccFrameworkProvider = provider.CreateFrameworkProvider(version.ProviderVersion).(*provider.FrameworkProvider)
-}
 
 func TestAccPreCheck(t *testing.T) {
 	var err error

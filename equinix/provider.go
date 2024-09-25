@@ -3,7 +3,6 @@ package equinix
 import (
 	"context"
 	"fmt"
-	"slices"
 	"time"
 
 	"github.com/equinix/terraform-provider-equinix/internal/config"
@@ -14,6 +13,18 @@ import (
 	metal_port "github.com/equinix/terraform-provider-equinix/internal/resources/metal/port"
 	"github.com/equinix/terraform-provider-equinix/internal/resources/metal/virtual_circuit"
 	"github.com/equinix/terraform-provider-equinix/internal/resources/metal/vrf"
+	neaccount "github.com/equinix/terraform-provider-equinix/internal/resources/networkedge/account"
+	neacltemplate "github.com/equinix/terraform-provider-equinix/internal/resources/networkedge/acl_template"
+	nebgp "github.com/equinix/terraform-provider-equinix/internal/resources/networkedge/bgp"
+	nedevice "github.com/equinix/terraform-provider-equinix/internal/resources/networkedge/device"
+	nedevicelink "github.com/equinix/terraform-provider-equinix/internal/resources/networkedge/device_link"
+	nedevicesoftware "github.com/equinix/terraform-provider-equinix/internal/resources/networkedge/device_software"
+	nedevicetype "github.com/equinix/terraform-provider-equinix/internal/resources/networkedge/device_type"
+	nefile "github.com/equinix/terraform-provider-equinix/internal/resources/networkedge/file"
+	nedeviceplatform "github.com/equinix/terraform-provider-equinix/internal/resources/networkedge/platform"
+	nesshkey "github.com/equinix/terraform-provider-equinix/internal/resources/networkedge/ssh_key"
+	nesshuser "github.com/equinix/terraform-provider-equinix/internal/resources/networkedge/ssh_user"
+
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
@@ -93,11 +104,11 @@ func Provider() *schema.Provider {
 			"equinix_fabric_ports":                     dataSourceFabricGetPortsByName(),
 			"equinix_fabric_service_profile":           dataSourceFabricServiceProfileReadByUuid(),
 			"equinix_fabric_service_profiles":          dataSourceFabricSearchServiceProfilesByName(),
-			"equinix_network_account":                  dataSourceNetworkAccount(),
-			"equinix_network_device":                   dataSourceNetworkDevice(),
-			"equinix_network_device_type":              dataSourceNetworkDeviceType(),
-			"equinix_network_device_software":          dataSourceNetworkDeviceSoftware(),
-			"equinix_network_device_platform":          dataSourceNetworkDevicePlatform(),
+			"equinix_network_account":                  neaccount.DataSource(),
+			"equinix_network_device":                   nedevice.DataSource(),
+			"equinix_network_device_type":              nedevicetype.DataSource(),
+			"equinix_network_device_software":          nedevicesoftware.DataSource(),
+			"equinix_network_device_platform":          nedeviceplatform.DataSource(),
 			"equinix_metal_hardware_reservation":       dataSourceMetalHardwareReservation(),
 			"equinix_metal_metro":                      dataSourceMetalMetro(),
 			"equinix_metal_facility":                   dataSourceMetalFacility(),
@@ -121,13 +132,13 @@ func Provider() *schema.Provider {
 			"equinix_fabric_connection":          fabric_connection.Resource(),
 			"equinix_fabric_routing_protocol":    resourceFabricRoutingProtocol(),
 			"equinix_fabric_service_profile":     resourceFabricServiceProfile(),
-			"equinix_network_device":             resourceNetworkDevice(),
-			"equinix_network_ssh_user":           resourceNetworkSSHUser(),
-			"equinix_network_bgp":                resourceNetworkBGP(),
-			"equinix_network_ssh_key":            resourceNetworkSSHKey(),
-			"equinix_network_acl_template":       resourceNetworkACLTemplate(),
-			"equinix_network_device_link":        resourceNetworkDeviceLink(),
-			"equinix_network_file":               resourceNetworkFile(),
+			"equinix_network_device":             nedevice.Resource(),
+			"equinix_network_ssh_user":           nesshuser.Resource(),
+			"equinix_network_bgp":                nebgp.Resource(),
+			"equinix_network_ssh_key":            nesshkey.Resource(),
+			"equinix_network_acl_template":       neacltemplate.Resource(),
+			"equinix_network_device_link":        nedevicelink.Resource(),
+			"equinix_network_file":               nefile.Resource(),
 			"equinix_metal_user_api_key":         resourceMetalUserAPIKey(),
 			"equinix_metal_project_api_key":      resourceMetalProjectAPIKey(),
 			"equinix_metal_device":               metal_device.Resource(),
@@ -199,66 +210,4 @@ func configureProvider(ctx context.Context, d *schema.ResourceData, p *schema.Pr
 		return nil, diag.FromErr(err)
 	}
 	return &config, nil
-}
-
-// stringsFound returns true if all strings in source are found in target
-// Deprecated: stringsFound is shared between provider, tests, and resources
-// and is being relocated for package refactoring.
-// Use github.com/equinix/terraform-provider-equinix/internal/comparisons.Subsets
-func stringsFound(source []string, target []string) bool {
-	for i := range source {
-		if !slices.Contains(target, source[i]) {
-			return false
-		}
-	}
-	return true
-}
-
-// isEmpty returns true if the value is nil or zero
-// Deprecated: isEmpty is shared between provider, tests, and resources
-// and is being relocated for package refactoring.
-// Use github.com/equinix/terraform-provider-equinix/internal/comparisons.IsEmpty
-func isEmpty(v interface{}) bool {
-	switch v := v.(type) {
-	case int:
-		return v == 0
-	case *int:
-		return v == nil || *v == 0
-	case string:
-		return v == ""
-	case *string:
-		return v == nil || *v == ""
-	case nil:
-		return true
-	default:
-		return false
-	}
-}
-
-// slicesMatch returns true if all strings in s1 are found in s2
-// Deprecated: slicesMatch is shared between provider, tests, and resources
-// and is being relocated for package refactoring.
-// Use github.com/equinix/terraform-provider-equinix/internal/comparisons.SlicesMatch
-func slicesMatch(s1, s2 []string) bool {
-	if len(s1) != len(s2) {
-		return false
-	}
-	visited := make([]bool, len(s1))
-	for i := 0; i < len(s1); i++ {
-		found := false
-		for j := 0; j < len(s2); j++ {
-			if visited[j] {
-				continue
-			}
-			if s1[i] == s2[j] {
-				visited[j] = true
-				found = true
-				break
-			}
-		}
-		if !found {
-			return false
-		}
-	}
-	return true
 }
