@@ -8,6 +8,7 @@ import (
 
 	"github.com/equinix/ne-go"
 	"github.com/equinix/rest-go"
+
 	"github.com/equinix/terraform-provider-equinix/internal/config"
 	equinix_validation "github.com/equinix/terraform-provider-equinix/internal/validation"
 

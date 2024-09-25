@@ -4,9 +4,10 @@ import (
 	"testing"
 
 	"github.com/equinix/ne-go"
-	"github.com/equinix/terraform-provider-equinix/internal/converters"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/stretchr/testify/assert"
+
+	"github.com/equinix/terraform-provider-equinix/internal/converters"
 )
 
 func TestNetworkSSHUser_resourceFromResourceData(t *testing.T) {
