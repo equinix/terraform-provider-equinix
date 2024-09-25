@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"net/http"
 	"path"
 	"reflect"
 	"regexp"
@@ -798,7 +799,7 @@ func resourceMetalDeviceDelete(ctx context.Context, d *schema.ResourceData, meta
 	start := time.Now()
 
 	resp, err := client.DevicesApi.DeleteDevice(ctx, d.Id()).ForceDelete(fdv).Execute()
-	if equinix_errors.IgnoreHttpResponseErrors(equinix_errors.HttpForbidden, equinix_errors.HttpNotFound)(resp, err) != nil {
+	if equinix_errors.IgnoreHttpResponseErrors(http.StatusForbidden, http.StatusNotFound)(resp, err) != nil {
 		return diag.FromErr(equinix_errors.FriendlyError(err))
 	}
 

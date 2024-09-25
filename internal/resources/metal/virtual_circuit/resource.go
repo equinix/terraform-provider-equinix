@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"log"
+	"net/http"
 	"regexp"
 	"strconv"
 	"time"
@@ -528,7 +529,7 @@ func resourceMetalVirtualCircuitDelete(ctx context.Context, d *schema.ResourceDa
 			// in order to use existing checks for equinix_errors.IgnoreHttpResponseErrors
 			err = equinix_errors.FriendlyErrorForMetalGo(err, resp)
 		}
-		if equinix_errors.IgnoreHttpResponseErrors(equinix_errors.HttpForbidden, equinix_errors.HttpNotFound)(resp, err) != nil {
+		if equinix_errors.IgnoreHttpResponseErrors(http.StatusForbidden, http.StatusNotFound)(resp, err) != nil {
 			return diag.FromErr(err)
 		}
 	}
@@ -543,7 +544,7 @@ func resourceMetalVirtualCircuitDelete(ctx context.Context, d *schema.ResourceDa
 	)
 
 	_, err = deleteWaiter.WaitForStateContext(ctx)
-	if equinix_errors.IgnoreHttpResponseErrors(equinix_errors.HttpForbidden, equinix_errors.HttpNotFound)(nil, err) != nil {
+	if equinix_errors.IgnoreHttpResponseErrors(http.StatusForbidden, http.StatusNotFound)(nil, err) != nil {
 		return diag.Errorf("Error deleting virtual circuit %s: %s", d.Id(), err)
 	}
 	d.SetId("")

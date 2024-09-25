@@ -3,6 +3,7 @@ package gateway
 import (
 	"context"
 	"fmt"
+	"net/http"
 	"time"
 
 	"github.com/equinix/equinix-sdk-go/services/metalv1"
@@ -191,7 +192,7 @@ func (r *Resource) Delete(ctx context.Context, req resource.DeleteRequest, resp 
 		_, err = deleteWaiter.WaitForStateContext(ctx)
 	}
 
-	if equinix_errors.IgnoreHttpResponseErrors(equinix_errors.HttpForbidden, equinix_errors.HttpNotFound)(nil, err) != nil {
+	if equinix_errors.IgnoreHttpResponseErrors(http.StatusForbidden, http.StatusNotFound)(nil, err) != nil {
 		resp.Diagnostics.AddError(
 			fmt.Sprintf("Failed to delete Metal Gateway %s", id), err.Error(),
 		)
