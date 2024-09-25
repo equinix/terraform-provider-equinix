@@ -6,8 +6,9 @@ import (
 	"log"
 
 	"github.com/equinix/ne-go"
-	"github.com/equinix/terraform-provider-equinix/internal/sweep"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+
+	"github.com/equinix/terraform-provider-equinix/internal/sweep"
 )
 
 func AddTestSweeper() {

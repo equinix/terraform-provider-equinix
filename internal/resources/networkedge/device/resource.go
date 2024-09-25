@@ -1835,16 +1835,16 @@ func expandVendorConfiguration(vendorConfigs []interface{}) map[string]string {
 	if v, ok := vendorConfig[neDeviceVendorConfigSchemaNames["PanoramaAuthKey"]]; ok && !comparisons.IsEmpty(v) {
 		transformed["panoramaAuthKey"] = v.(string)
 	}
-	if v, ok := vendorConfig[neDeviceVendorConfigSchemaNames["ManagementType"]]; ok && !isEmpty(v) {
+	if v, ok := vendorConfig[neDeviceVendorConfigSchemaNames["ManagementType"]]; ok && !comparisons.IsEmpty(v) {
 		transformed["managementType"] = v.(string)
 	}
-	if v, ok := vendorConfig[neDeviceVendorConfigSchemaNames["IPAddress"]]; ok && !isEmpty(v) {
+	if v, ok := vendorConfig[neDeviceVendorConfigSchemaNames["IPAddress"]]; ok && !comparisons.IsEmpty(v) {
 		transformed["ipAddress"] = v.(string)
 	}
-	if v, ok := vendorConfig[neDeviceVendorConfigSchemaNames["SubnetMaskIP"]]; ok && !isEmpty(v) {
+	if v, ok := vendorConfig[neDeviceVendorConfigSchemaNames["SubnetMaskIP"]]; ok && !comparisons.IsEmpty(v) {
 		transformed["subnetMaskIp"] = v.(string)
 	}
-	if v, ok := vendorConfig[neDeviceVendorConfigSchemaNames["GatewayIP"]]; ok && !isEmpty(v) {
+	if v, ok := vendorConfig[neDeviceVendorConfigSchemaNames["GatewayIP"]]; ok && !comparisons.IsEmpty(v) {
 		transformed["gatewayIp"] = v.(string)
 	}
 	return transformed
