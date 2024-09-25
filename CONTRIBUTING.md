@@ -19,10 +19,9 @@ Available via [https://github.com/equinix/terraform-provider-equinix/blob/main/.
 
 Please submit change requests and / or features via [Issues](https://github.com/equinix/terraform-provider-equinix/issues). There's no guarantee it'll be changed, but you never know until you try. We'll try to add comments as soon as possible, though.
 
+## Pull Requests
 All resource and data source changes must be reflected in the documentation, including new attributes and changes to existing attributes. The documentation is generated via `make docs`.  For more detailed instructions for updating docs, see ["Documenting the provider" in the development guide](./DEVELOPMENT.md#documenting-the-provider).
 
-## Pull Requests
-All command changes must be reflected in the documentation, this includes new commands and changes to options. To generate the updated documentation, first run `make docs` and confirm that your documentation changes render correctly. Then if it looks good, proceed to run `git` for the Pull Request.
 
 ## Titles For Pull Requests
 We require pull request titles to follow the [Conventional Commits specification](https://www.conventionalcommits.org/en/v1.0.0/)
