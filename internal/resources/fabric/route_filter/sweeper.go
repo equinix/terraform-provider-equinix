@@ -38,7 +38,7 @@ func testSweepRouteFilters(region string) error {
 
 	name := fabricv4.ROUTEFILTERSSEARCHFILTERITEMPROPERTY_NAME
 	equinixState := fabricv4.ROUTEFILTERSSEARCHFILTERITEMPROPERTY_STATE
-	likeOperator := "LIKE"
+	likeOperator := "like"
 	equalOperator := "="
 	limit := int32(100)
 	routeFiltersSearchRequest := fabricv4.RouteFiltersSearchBase{
@@ -47,7 +47,7 @@ func testSweepRouteFilters(region string) error {
 				{
 					Property: &name,
 					Operator: &likeOperator,
-					Values:   sweep.FabricTestResourceSuffixes,
+					Values:   []string{"%_PFCR"},
 				},
 				{
 					Property: &equinixState,
@@ -67,7 +67,10 @@ func testSweepRouteFilters(region string) error {
 		return fmt.Errorf("error getting route filters list for sweeping fabric route filters: %s", err)
 	}
 
+	log.Printf("route filters response %v", fabricRouteFilters.Data)
+
 	for _, routeFilter := range fabricRouteFilters.Data {
+		log.Printf(routeFilter.GetName())
 		if sweep.IsSweepableFabricTestResource(routeFilter.GetName()) {
 			log.Printf("[DEBUG] Deleting Route Filter: %s", routeFilter.GetName())
 			_, resp, err := fabric.RouteFiltersApi.DeleteRouteFilterByUuid(ctx, routeFilter.GetUuid()).Execute()
