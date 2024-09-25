@@ -15,7 +15,11 @@ func DataSource() *schema.Resource {
 	return &schema.Resource{
 		ReadContext: dataSourceRead,
 		Schema:      dataSourceBaseSchema(),
-		Description: "Fabric V4 API compatible data resource that allow user to fetch route filter for a given UUID",
+		Description: `Fabric V4 API compatible data resource that allow user to fetch route filter for a given UUID
+
+Additional Documentation:
+* Getting Started: https://docs.equinix.com/en-us/Content/Interconnection/FCR/FCR-route-filters.htm
+* API: https://developer.equinix.com/dev-docs/fabric/api-reference/fabric-v4-apis#route-filters`,
 	}
 }
 
@@ -29,7 +33,11 @@ func DataSourceSearch() *schema.Resource {
 	return &schema.Resource{
 		ReadContext: dataSourceSearch,
 		Schema:      dataSourceSearchSchema(),
-		Description: "Fabric V4 API compatible data resource that allow user to fetch route filter for a given search data set",
+		Description: `Fabric V4 API compatible data resource that allow user to fetch route filter for a given search data set
+
+Additional Documentation:
+* Getting Started: https://docs.equinix.com/en-us/Content/Interconnection/FCR/FCR-route-filters.htm
+* API: https://developer.equinix.com/dev-docs/fabric/api-reference/fabric-v4-apis#route-filters`,
 	}
 }
 

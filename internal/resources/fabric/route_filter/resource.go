@@ -31,8 +31,12 @@ func Resource() *schema.Resource {
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
-		Schema:      resourceSchema(),
-		Description: "Fabric V4 API compatible resource allows creation and management of Equinix Fabric Route Filter Policy",
+		Schema: resourceSchema(),
+		Description: `Fabric V4 API compatible resource allows creation and management of Equinix Fabric Route Filter Policy
+
+Additional Documentation:
+* Getting Started: https://docs.equinix.com/en-us/Content/Interconnection/FCR/FCR-route-filters.htm
+* API: https://developer.equinix.com/dev-docs/fabric/api-reference/fabric-v4-apis#route-filters`,
 	}
 }
 
