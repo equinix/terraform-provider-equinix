@@ -17,16 +17,35 @@ resource "equinix_metal_connection" "example" {
     ]
 }
 
-data "equinix_fabric_port" "example" {
-  name = "CX-FR5-NL-Dot1q-BO-1G-PRI"
+data "equinix_fabric_ports" "example" {
+  filters {
+    name = "CX-FR5-NL-Dot1q-BO-1G-PRI"
+  }
 }
 
 resource "equinix_fabric_connection" "example" {
-  name                = "tf-port-to-metal"
-  zside_service_token = equinix_metal_connection.example.service_tokens.0.id
-  speed               = "200"
-  speed_unit          = "MB"
-  notifications       = ["example@equinix.com"]
-  port_uuid           = data.equinix_fabric_port.example.id
-  vlan_stag           = 1020
+  name = "port-2-shared-metal-token"
+  type = "EVPL_VC"
+  notifications {
+    type   = "ALL"
+    emails = ["example@equinix.com"]
+  }
+  bandwidth = 50
+  a_side {
+    access_point {
+      type= "COLO"
+      port {
+        uuid = data.equinix_fabric_ports.example.id
+      }
+      link_protocol {
+        type = "DOT1Q"
+        vlan_tag = "1020"
+      }
+    }
+  }
+  z_side {
+    service_token {
+      uuid = equinix_metal_connection.example.service_tokens.0.id
+    }
+  }
 }
