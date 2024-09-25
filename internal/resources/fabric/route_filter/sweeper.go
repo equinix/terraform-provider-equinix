@@ -67,10 +67,7 @@ func testSweepRouteFilters(region string) error {
 		return fmt.Errorf("error getting route filters list for sweeping fabric route filters: %s", err)
 	}
 
-	log.Printf("route filters response %v", fabricRouteFilters.Data)
-
 	for _, routeFilter := range fabricRouteFilters.Data {
-		log.Printf(routeFilter.GetName())
 		if sweep.IsSweepableFabricTestResource(routeFilter.GetName()) {
 			log.Printf("[DEBUG] Deleting Route Filter: %s", routeFilter.GetName())
 			_, resp, err := fabric.RouteFiltersApi.DeleteRouteFilterByUuid(ctx, routeFilter.GetUuid()).Execute()
