@@ -20,7 +20,11 @@ func DataSource() *schema.Resource {
 	return &schema.Resource{
 		ReadContext: dataSourceFabricNetworkRead,
 		Schema:      readFabricNetworkResourceSchema(),
-		Description: "Fabric V4 API compatible data resource that allow user to fetch Fabric Network for a given UUID",
+		Description: `Fabric V4 API compatible data resource that allow user to fetch Fabric Network for a given UUID
+
+Additional documentation:
+* Getting Started: https://docs.equinix.com/en-us/Content/Interconnection/Fabric/IMPLEMENTATION/fabric-networks-implement.htm
+* API: https://developer.equinix.com/dev-docs/fabric/api-reference/fabric-v4-apis#fabric-networks`,
 	}
 }
 
@@ -34,7 +38,11 @@ func DataSourceSearch() *schema.Resource {
 	return &schema.Resource{
 		ReadContext: dataSourceFabricNetworkSearch,
 		Schema:      readFabricNetworkSearchSchema(),
-		Description: "Fabric V4 API compatible data resource that allow user to fetch Fabric Network for a given UUID",
+		Description: `Fabric V4 API compatible data resource that allow user to fetch Fabric Network for a given UUID
+
+Additional documentation:
+* Getting Started: https://docs.equinix.com/en-us/Content/Interconnection/Fabric/IMPLEMENTATION/fabric-networks-implement.htm
+* API: https://developer.equinix.com/dev-docs/fabric/api-reference/fabric-v4-apis#fabric-networks`,
 	}
 }
 
@@ -98,7 +106,7 @@ func setNetworksData(d *schema.ResourceData, networks *fabricv4.NetworkSearchRes
 }
 
 func networkFiltersTerraformToGo(filters []interface{}, outerOperator string) (fabricv4.NetworkFilter, error) {
-	if filters == nil || len(filters) == 0 {
+	if len(filters) == 0 {
 		return fabricv4.NetworkFilter{}, fmt.Errorf("no filters passed to filtersTerraformToGoMethod")
 	}
 	outerNetworkFilter := fabricv4.NetworkFilter{}
@@ -165,7 +173,7 @@ func networkFiltersTerraformToGo(filters []interface{}, outerOperator string) (f
 }
 
 func networkPaginationTerraformToGo(pagination []interface{}) fabricv4.PaginationRequest {
-	if pagination == nil || len(pagination) == 0 {
+	if len(pagination) == 0 {
 		return fabricv4.PaginationRequest{}
 	}
 	paginationRequest := fabricv4.PaginationRequest{}
@@ -183,7 +191,7 @@ func networkPaginationTerraformToGo(pagination []interface{}) fabricv4.Paginatio
 }
 
 func networkSortTerraformToGo(sort []interface{}) []fabricv4.NetworkSortCriteria {
-	if sort == nil || len(sort) == 0 {
+	if len(sort) == 0 {
 		return []fabricv4.NetworkSortCriteria{}
 	}
 	sortCriteria := make([]fabricv4.NetworkSortCriteria, len(sort))

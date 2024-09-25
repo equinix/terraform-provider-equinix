@@ -2,17 +2,16 @@ package testing_helpers
 
 import (
 	"encoding/json"
-	"github.com/equinix/equinix-sdk-go/services/fabricv4"
 	"os"
 	"testing"
+
+	"github.com/equinix/equinix-sdk-go/services/fabricv4"
 )
 
 const (
-	FabricDedicatedPortEnvVar = "TF_ACC_FABRIC_DEDICATED_PORTS"
-)
-
-const (
+	FabricDedicatedPortEnvVar       = "TF_ACC_FABRIC_DEDICATED_PORTS"
 	FabricConnectionsTestDataEnvVar = "TF_ACC_FABRIC_CONNECTIONS_TEST_DATA"
+	FabricSubscriptionEnvVar        = "TF_ACC_FABRIC_MARKET_PLACE_SUBSCRIPTION_ID"
 )
 
 type EnvPorts map[string]map[string][]fabricv4.PortResponse
@@ -33,4 +32,9 @@ func GetFabricEnvConnectionTestData(t *testing.T) map[string]map[string]string {
 		t.Fatalf("Failed reading connection data from environment: %v, %s", err, connectionTestDataJson)
 	}
 	return connectionTestData
+}
+
+func GetFabricMarketPlaceSubscriptionId(t *testing.T) string {
+	subscriptionId := os.Getenv(FabricSubscriptionEnvVar)
+	return subscriptionId
 }

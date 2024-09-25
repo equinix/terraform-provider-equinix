@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"reflect"
+	"regexp"
 	"sort"
 	"strconv"
 	"time"
@@ -20,6 +21,10 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/packethost/packngo"
+)
+
+var (
+	matchIPXEScript = regexp.MustCompile(`(?i)^#![i]?pxe`)
 )
 
 func resourceMetalSpotMarketRequest() *schema.Resource {
@@ -62,10 +67,7 @@ func resourceMetalSpotMarketRequest() *schema.Resource {
 					diffThreshold := .02
 					priceDiff := oldF / newF
 
-					if diffThreshold < priceDiff {
-						return true
-					}
-					return false
+					return diffThreshold < priceDiff
 				},
 			},
 			"facilities": {

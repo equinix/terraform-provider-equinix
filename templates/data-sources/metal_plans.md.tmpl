@@ -12,9 +12,9 @@ Provides an Equinix Metal plans datasource. This can be used to find plans that 
 
 ## Example Usage
 
-{{tffile "examples/data-sources/metal_plans/example_1.tf"}}
+{{tffile "examples/data-sources/equinix_metal_plans/example_1.tf"}}
 
-{{tffile "examples/data-sources/metal_plans/example_2.tf"}}
+{{tffile "examples/data-sources/equinix_metal_plans/example_2.tf"}}
 
 ### Ignoring Changes to Plans/Metro
 
@@ -26,11 +26,11 @@ For `equinix_metal_plans`, it may happen that a device plan is no longer availab
 
 To prevent that you can take advantage of the Terraform [`lifecycle ignore_changes`](https://www.terraform.io/language/meta-arguments/lifecycle#ignore_changes) feature as shown in the example below.
 
-{{tffile "examples/data-sources/metal_plans/example_3.tf"}}
+{{tffile "examples/data-sources/equinix_metal_plans/example_3.tf"}}
 
 If your use case requires dynamic changes of a device plan or metro you can define the lifecycle with a condition.
 
-{{tffile "examples/data-sources/metal_plans/example_4.tf"}}
+{{tffile "examples/data-sources/equinix_metal_plans/example_4.tf"}}
 
 ## Argument Reference
 

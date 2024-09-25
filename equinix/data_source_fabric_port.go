@@ -11,7 +11,11 @@ func dataSourceFabricPort() *schema.Resource {
 	return &schema.Resource{
 		ReadContext: dataSourceFabricPortRead,
 		Schema:      FabricPortResourceSchema(),
-		Description: "Fabric V4 API compatible data resource that allow user to fetch port by uuid",
+		Description: `Fabric V4 API compatible data resource that allow user to fetch port by uuid
+
+Additional documentation:
+* Getting Started: https://docs.equinix.com/en-us/Content/Interconnection/Fabric/IMPLEMENTATION/fabric-ports-implement.htm
+* API: https://developer.equinix.com/dev-docs/fabric/api-reference/fabric-v4-apis#ports`,
 	}
 }
 
@@ -25,7 +29,11 @@ func dataSourceFabricGetPortsByName() *schema.Resource {
 	return &schema.Resource{
 		ReadContext: dataSourceFabricGetPortsByNameResponseRead,
 		Schema:      readFabricPortsResponseSchema(),
-		Description: "Fabric V4 API compatible data resource that allow user to fetch port by name",
+		Description: `Fabric V4 API compatible data resource that allow user to fetch port by name
+
+Additional documentation:
+* Getting Started: https://docs.equinix.com/en-us/Content/Interconnection/Fabric/IMPLEMENTATION/fabric-ports-implement.htm
+* API: https://developer.equinix.com/dev-docs/fabric/api-reference/fabric-v4-apis#ports`,
 	}
 }
 

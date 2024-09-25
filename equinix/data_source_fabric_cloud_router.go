@@ -9,7 +9,7 @@ import (
 
 func readFabricCloudRouterResourceSchema() map[string]*schema.Schema {
 	sch := fabricCloudRouterResourceSchema()
-	for key, _ := range sch {
+	for key := range sch {
 		if key == "uuid" {
 			sch[key].Required = true
 			sch[key].Optional = false
@@ -29,7 +29,11 @@ func dataSourceFabricCloudRouter() *schema.Resource {
 	return &schema.Resource{
 		ReadContext: dataSourceFabricCloudRouterRead,
 		Schema:      readFabricCloudRouterResourceSchema(),
-		Description: "Fabric V4 API compatible data resource that allow user to fetch Fabric Cloud Router for a given UUID",
+		Description: `Fabric V4 API compatible data resource that allow user to fetch Fabric Cloud Router for a given UUID
+
+Additional documentation:
+* Getting Started: https://docs.equinix.com/en-us/Content/Interconnection/FCR/FCR-intro.htm#HowItWorks
+* API: https://developer.equinix.com/dev-docs/fabric/api-reference/fabric-v4-apis#fabric-cloud-routers`,
 	}
 }
 
