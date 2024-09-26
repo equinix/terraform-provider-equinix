@@ -12,8 +12,6 @@ import (
 
 	"github.com/equinix/terraform-provider-equinix/internal/converters"
 
-	equinix_errors "github.com/equinix/terraform-provider-equinix/internal/errors"
-
 	"github.com/equinix/equinix-sdk-go/services/metalv1"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -120,7 +118,6 @@ func hwReservationStateRefreshFunc(ctx context.Context, client *metalv1.APIClien
 		state := deprovisioning
 		switch {
 		case err != nil:
-			err = equinix_errors.FriendlyError(err)
 			state = errstate
 		case r != nil && r.GetProvisionable():
 			state = provisionable

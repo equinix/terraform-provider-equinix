@@ -3,6 +3,7 @@ package vrf
 import (
 	"context"
 	"log"
+	"net/http"
 
 	"github.com/equinix/terraform-provider-equinix/internal/converters"
 	equinix_errors "github.com/equinix/terraform-provider-equinix/internal/errors"
@@ -82,7 +83,7 @@ func resourceMetalVRFCreate(ctx context.Context, d *schema.ResourceData, meta in
 		VrfCreateInput(createRequest).
 		Execute()
 	if err != nil {
-		return diag.FromErr(equinix_errors.FriendlyError(err))
+		return diag.FromErr(err)
 	}
 
 	d.SetId(vrf.GetId())
@@ -113,7 +114,7 @@ func resourceMetalVRFUpdate(ctx context.Context, d *schema.ResourceData, meta in
 		VrfUpdateInput(updateRequest).
 		Execute()
 	if err != nil {
-		return diag.FromErr(equinix_errors.FriendlyError(err))
+		return diag.FromErr(err)
 	}
 
 	return resourceMetalVRFRead(ctx, d, meta)
@@ -148,13 +149,12 @@ func resourceMetalVRFRead(ctx context.Context, d *schema.ResourceData, meta inte
 }
 
 func resourceMetalVRFDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	meta.(*config.Config).AddModuleToMetalUserAgent(d)
-	client := meta.(*config.Config).Metal
+	client := meta.(*config.Config).NewMetalClientForSDK(d)
 
-	resp, err := client.VRFs.Delete(d.Id())
-	if equinix_errors.IgnoreResponseErrors(equinix_errors.HttpForbidden, equinix_errors.HttpNotFound)(resp, err) == nil {
+	resp, err := client.VRFsApi.DeleteVrf(ctx, d.Id()).Execute()
+	if equinix_errors.IgnoreHttpResponseErrors(http.StatusForbidden, http.StatusNotFound)(resp, err) == nil {
 		d.SetId("")
 	}
 
-	return diag.FromErr(equinix_errors.FriendlyError(err))
+	return diag.FromErr(err)
 }

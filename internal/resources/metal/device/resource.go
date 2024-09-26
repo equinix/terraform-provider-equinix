@@ -552,13 +552,12 @@ func resourceMetalDeviceCreate(ctx context.Context, d *schema.ResourceData, meta
 
 	start := time.Now()
 	projectID := d.Get("project_id").(string)
-	newDevice, _, err := client.DevicesApi.CreateDevice(ctx, projectID).CreateDeviceRequest(createRequest).Execute()
+	newDevice, resp, err := client.DevicesApi.CreateDevice(ctx, projectID).CreateDeviceRequest(createRequest).Execute()
 	if err != nil {
-		retErr := equinix_errors.FriendlyError(err)
-		if equinix_errors.IsNotFound(retErr) {
-			retErr = fmt.Errorf("%s, make sure project \"%s\" exists", retErr, projectID)
+		if resp.StatusCode == http.StatusNotFound {
+			err = fmt.Errorf("%s, make sure project \"%s\" exists", err, projectID)
 		}
-		return diag.FromErr(retErr)
+		return diag.FromErr(err)
 	}
 
 	d.SetId(newDevice.GetId())
@@ -736,7 +735,7 @@ func resourceMetalDeviceUpdate(ctx context.Context, d *schema.ResourceData, meta
 	start := time.Now()
 	if !reflect.DeepEqual(ur, metalv1.DeviceUpdateInput{}) {
 		if _, _, err := client.DevicesApi.UpdateDevice(ctx, d.Id()).DeviceUpdateInput(ur).Execute(); err != nil {
-			return diag.FromErr(equinix_errors.FriendlyError(err))
+			return diag.FromErr(err)
 		}
 	}
 
@@ -773,7 +772,7 @@ func doReinstall(ctx context.Context, client *metalv1.APIClient, d *schema.Resou
 		}
 
 		if _, err := client.DevicesApi.PerformAction(ctx, d.Id()).DeviceActionInput(reinstallOptions).Execute(); err != nil {
-			return equinix_errors.FriendlyError(err)
+			return err
 		}
 
 		updateTimeout := d.Timeout(schema.TimeoutUpdate) - 30*time.Second - time.Since(start)
@@ -798,7 +797,7 @@ func resourceMetalDeviceDelete(ctx context.Context, d *schema.ResourceData, meta
 
 	resp, err := client.DevicesApi.DeleteDevice(ctx, d.Id()).ForceDelete(fdv).Execute()
 	if equinix_errors.IgnoreHttpResponseErrors(http.StatusForbidden, http.StatusNotFound)(resp, err) != nil {
-		return diag.FromErr(equinix_errors.FriendlyError(err))
+		return diag.FromErr(err)
 	}
 
 	resId, resIdOk := d.GetOk("deployed_hardware_reservation_id")
@@ -843,13 +842,15 @@ func WaitForActiveDevice(ctx context.Context, d *schema.ResourceData, meta inter
 	state, err := waitForDeviceAttribute(ctx, d, stateConf)
 	if err != nil {
 		d.SetId("")
-		fErr := equinix_errors.FriendlyError(err)
-		if equinix_errors.IsForbidden(fErr) {
+		// TODO: this can never be true because we don't have the API response
+		// but I'm not clear if we actually need this check?  Certainly the error
+		// message seems to promise something we can't and shouldn't promise
+		if equinix_errors.IsForbidden(err) {
 			// If the device doesn't get to the active state, we can't recover it from here.
 
 			return errors.New("provisioning time limit exceeded; the Equinix Metal team will investigate")
 		}
-		return fErr
+		return err
 	}
 
 	if state != "active" {

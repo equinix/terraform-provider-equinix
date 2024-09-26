@@ -32,8 +32,6 @@ func Test_WaitUntilReservationProvisionable(t *testing.T) {
 				reservationId: "reservationId",
 				instanceId:    "instanceId",
 				handler: func(w http.ResponseWriter, r *http.Request) {
-					w.Header().Add("Content-Type", "application/json")
-					w.Header().Add("X-Request-Id", "needed for equinix_errors.FriendlyError")
 					w.WriteHeader(http.StatusInternalServerError)
 				},
 			},
@@ -75,7 +73,6 @@ func Test_WaitUntilReservationProvisionable(t *testing.T) {
 						}
 
 						w.Header().Add("Content-Type", "application/json")
-						w.Header().Add("X-Request-Id", "needed for equinix_errors.FriendlyError")
 						w.WriteHeader(http.StatusOK)
 						_, err = w.Write(body)
 						if err != nil {
@@ -122,7 +119,6 @@ func Test_WaitUntilReservationProvisionable(t *testing.T) {
 						}
 
 						w.Header().Add("Content-Type", "application/json")
-						w.Header().Add("X-Request-Id", "needed for equinix_errors.FriendlyError")
 						w.WriteHeader(http.StatusOK)
 						_, err = w.Write(body)
 						if err != nil {
@@ -151,7 +147,6 @@ func Test_WaitUntilReservationProvisionable(t *testing.T) {
 					}
 
 					w.Header().Add("Content-Type", "application/json")
-					w.Header().Add("X-Request-Id", "needed for equinix_errors.FriendlyError")
 					w.WriteHeader(http.StatusOK)
 					_, err = w.Write(body)
 					if err != nil {

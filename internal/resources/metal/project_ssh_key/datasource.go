@@ -2,7 +2,6 @@ package project_ssh_key
 
 import (
 	"github.com/equinix/equinix-sdk-go/services/metalv1"
-	equinix_errors "github.com/equinix/terraform-provider-equinix/internal/errors"
 	"github.com/equinix/terraform-provider-equinix/internal/framework"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 
@@ -51,7 +50,6 @@ func (r *DataSource) Read(
 	// Use API client to list SSH keys
 	keysList, _, err := client.SSHKeysApi.FindProjectSSHKeys(ctx, projectID).Query(search).Execute()
 	if err != nil {
-		err = equinix_errors.FriendlyError(err)
 		resp.Diagnostics.AddError(
 			"Error listing project ssh keys",
 			err.Error(),
