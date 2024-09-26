@@ -4,7 +4,6 @@ import (
 	"context"
 
 	"github.com/equinix/equinix-sdk-go/services/metalv1"
-	equinix_errors "github.com/equinix/terraform-provider-equinix/internal/errors"
 	fwtypes "github.com/equinix/terraform-provider-equinix/internal/framework/types"
 
 	"github.com/hashicorp/terraform-plugin-framework/diag"
@@ -15,10 +14,9 @@ func fetchBGPConfig(ctx context.Context, client *metalv1.APIClient, projectID st
 
 	bgpConfig, _, err := client.BGPApi.FindBgpConfigByProject(ctx, projectID).Execute()
 	if err != nil {
-		friendlyErr := equinix_errors.FriendlyError(err)
 		diags.AddError(
 			"Error reading BGP configuration",
-			"Could not read BGP configuration for project with ID "+projectID+": "+friendlyErr.Error(),
+			"Could not read BGP configuration for project with ID "+projectID+": "+err.Error(),
 		)
 		return nil, diags
 	}
@@ -64,9 +62,8 @@ func handleBGPConfigChanges(ctx context.Context, client *metalv1.APIClient, plan
 			)
 			return nil, diags
 		}
-		createResp, err := client.BGPApi.RequestBgpConfig(ctx, projectID).BgpConfigRequestInput(*bgpCreateRequest).Execute()
+		_, err = client.BGPApi.RequestBgpConfig(ctx, projectID).BgpConfigRequestInput(*bgpCreateRequest).Execute()
 		if err != nil {
-			err = equinix_errors.FriendlyErrorForMetalGo(err, createResp)
 			diags.AddError(
 				"Error creating BGP configuration",
 				"Could not create BGP configuration for project: "+err.Error(),

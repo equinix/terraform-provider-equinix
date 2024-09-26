@@ -28,11 +28,6 @@ func FriendlyError(err error) error {
 	return err
 }
 
-func FriendlyErrorForMetalGo(err error, resp *http.Response) error {
-	errors := Errors([]string{err.Error()})
-	return convertToFriendlyError(errors, resp)
-}
-
 func convertToFriendlyError(errors Errors, resp *http.Response) error {
 	er := &ErrorResponse{
 		StatusCode: resp.StatusCode,

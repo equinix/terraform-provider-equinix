@@ -576,18 +576,16 @@ func Read(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Di
 
 	device, resp, err := client.DevicesApi.FindDeviceById(ctx, d.Id()).Include(deviceCommonIncludes).Execute()
 	if err != nil {
-		err = equinix_errors.FriendlyErrorForMetalGo(err, resp)
-
 		// If the device somehow already destroyed, mark as successfully gone.
 		// Checking d.IsNewResource prevents the creation of a resource from failing
 		// silently. Note d.IsNewResource is false in resource import operations.
-		if !d.IsNewResource() && (equinix_errors.IsNotFound(err) || equinix_errors.IsForbidden(err)) {
-			log.Printf("[WARN] Device (%s) not found or in failed status, removing from state", d.Id())
-			d.SetId("")
-			return nil
+		if d.IsNewResource() || equinix_errors.IgnoreHttpResponseErrors(http.StatusNotFound, http.StatusForbidden)(resp, err) != nil {
+			return diag.FromErr(err)
 		}
 
-		return diag.FromErr(err)
+		log.Printf("[WARN] Device (%s) not found or in failed status, removing from state", d.Id())
+		d.SetId("")
+		return nil
 	}
 
 	var errs []error
