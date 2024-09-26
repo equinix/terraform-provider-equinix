@@ -42,7 +42,7 @@ Additional Documentation:
 
 func resourceRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*config.Config).NewFabricClientForSDK(d)
-	routeFilterId := d.Get("route_filter_uuid").(string)
+	routeFilterId := d.Get("route_filter_id").(string)
 	routeFilterRule, _, err := client.RouteFilterRulesApi.GetRouteFilterRuleByUuid(ctx, routeFilterId, d.Id()).Execute()
 	if err != nil {
 		log.Printf("[WARN] Route Filter Rule %s not found on Route Filter %s, error %s", d.Id(), routeFilterId, err)
@@ -51,14 +51,13 @@ func resourceRead(ctx context.Context, d *schema.ResourceData, meta interface{})
 		}
 		return diag.FromErr(equinix_errors.FormatFabricError(err))
 	}
-	d.Set("route_filter_id", routeFilterId)
 	d.SetId(routeFilterRule.GetUuid())
 	return setRouteFilterRuleMap(d, routeFilterRule)
 }
 
 func resourceCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*config.Config).NewFabricClientForSDK(d)
-	routeFilterId := d.Get("route_filter_uuid").(string)
+	routeFilterId := d.Get("route_filter_id").(string)
 	createRequest := buildCreateRequest(d)
 
 	start := time.Now()
@@ -66,6 +65,7 @@ func resourceCreate(ctx context.Context, d *schema.ResourceData, meta interface{
 	if err != nil {
 		return diag.FromErr(equinix_errors.FormatFabricError(err))
 	}
+	d.Set("route_filter_id", routeFilterId)
 	d.SetId(routeFilter.GetUuid())
 
 	createTimeout := d.Timeout(schema.TimeoutCreate) - 30*time.Second - time.Since(start)
@@ -163,7 +163,7 @@ func WaitForDeletion(routeFilterId, ruleId string, meta interface{}, d *schema.R
 			client := meta.(*config.Config).NewFabricClientForSDK(d)
 			routeFilterRule, body, err := client.RouteFilterRulesApi.GetRouteFilterRuleByUuid(ctx, routeFilterId, ruleId).Execute()
 			if err != nil {
-				if body.StatusCode >= 400 && body.StatusCode <= 499 {
+				if body != nil && body.StatusCode >= 400 && body.StatusCode <= 499 {
 					// Already deleted resource
 					return routeFilterRule, string(fabricv4.ROUTEFILTERRULESTATE_DEPROVISIONED), nil
 				}

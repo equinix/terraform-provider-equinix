@@ -14,9 +14,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 )
 
-func TestAccFabricRouteFilterPolicy_PFCR(t *testing.T) {
+func TestAccFabricRouteFilterRule_PFCR(t *testing.T) {
 	routeFilterRuleName, routeFilterRuleUpdatedName := "RF_Rule_PFCR", "RF_RuleB_PFCR"
-	routeFilterRulePrefix, routeFilterRulePrefixUpdated := "192.168.0.0/24", "192.168.0.0/24"
+	routeFilterRulePrefix, routeFilterRulePrefixUpdated := "192.168.0.0/24", "192.172.0.0/24"
 	routeFilterRuleDescription := "Route Filter Rule for X Purpose"
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { acceptance.TestAccPreCheck(t); acceptance.TestAccPreCheckProviderConfigured(t) },
@@ -24,7 +24,7 @@ func TestAccFabricRouteFilterPolicy_PFCR(t *testing.T) {
 		CheckDestroy: CheckRouteFilterRuleDelete,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccFabricRouteFilterPolicyConfig(routeFilterRuleName, routeFilterRulePrefix),
+				Config: testAccFabricRouteFilterRuleConfig(routeFilterRuleName, routeFilterRulePrefix),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("equinix_fabric_route_filter_rule.test", "id"),
 					resource.TestCheckResourceAttr(
@@ -39,7 +39,7 @@ func TestAccFabricRouteFilterPolicy_PFCR(t *testing.T) {
 				ExpectNonEmptyPlan: false,
 			},
 			{
-				Config: testAccFabricRouteFilterPolicyConfig(routeFilterRuleUpdatedName, routeFilterRuleDescription),
+				Config: testAccFabricRouteFilterRuleConfig(routeFilterRuleUpdatedName, routeFilterRulePrefixUpdated),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("equinix_fabric_route_filter_rule.test", "id"),
 					resource.TestCheckResourceAttr(
@@ -58,10 +58,10 @@ func TestAccFabricRouteFilterPolicy_PFCR(t *testing.T) {
 
 }
 
-func testAccFabricRouteFilterPolicyConfig(policyName, policyPrefix string) string {
+func testAccFabricRouteFilterRuleConfig(policyName, policyPrefix string) string {
 	return fmt.Sprintf(`
 		resource "equinix_fabric_route_filter" "test" {
-			name = "rf_ds_test_PFCR"
+			name = "rf_test_PFCR"
 			project {
 				project_id = "291639000636552"
 			}
@@ -70,7 +70,7 @@ func testAccFabricRouteFilterPolicyConfig(policyName, policyPrefix string) strin
 		}
 
 		resource "equinix_fabric_route_filter_rule" "test" {
-			route_filter_id = equinix_fabric_route_filter_rule.test.id
+			route_filter_id = equinix_fabric_route_filter.test.id
 			name = "%s"
 			prefix = "%s"
 			prefix_match = "exact"
@@ -82,7 +82,7 @@ func testAccFabricRouteFilterPolicyConfig(policyName, policyPrefix string) strin
 func CheckRouteFilterRuleDelete(s *terraform.State) error {
 	ctx := context.Background()
 	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "equinix_fabric_route_filter" {
+		if rs.Type != "equinix_fabric_route_filter_rule" {
 			continue
 		}
 

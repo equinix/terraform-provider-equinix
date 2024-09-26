@@ -14,7 +14,7 @@ import (
 func DataSource() *schema.Resource {
 	return &schema.Resource{
 		ReadContext: dataSourceRead,
-		Schema:      dataSourceBaseSchema(),
+		Schema:      dataSourceByUUIDSchema(),
 		Description: `Fabric V4 API compatible data resource that allow user to fetch route filter for a given UUID
 
 Additional Documentation:

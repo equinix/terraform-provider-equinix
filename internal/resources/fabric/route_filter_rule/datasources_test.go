@@ -9,7 +9,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
 
-func TestAccFabricRouteFilterPolicy_DataSources_PFCR(t *testing.T) {
+func TestAccFabricRouteFilterRule_DataSources_PFCR(t *testing.T) {
 	routeFilterRuleName, routeFilterRuleDescription := "RF_DS_Rule_PFCR", "Route Filter Rule"
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { acceptance.TestAccPreCheck(t); acceptance.TestAccPreCheckProviderConfigured(t) },
@@ -72,6 +72,7 @@ func testAccFabricRouteFilterRuleDataSourcesConfig(policyName, description strin
 		}
 		
 		data "equinix_fabric_route_filter_rules" "rf_rules" {
+			depends_on = [ equinix_fabric_route_filter_rule.test ]
 			route_filter_id = equinix_fabric_route_filter.test.id
 		}
 	`, policyName, description)
