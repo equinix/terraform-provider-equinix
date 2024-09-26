@@ -14,53 +14,34 @@ Use this resource to request the creation an Interconnection asset to connect wi
 
 ```terraform
 resource "equinix_metal_connection" "example" {
-    name               = "tf-metal-to-azure"
-    project_id         = local.project_id
-    type               = "shared"
-    redundancy         = "redundant"
-    metro              = "sv"
-    speed              = "1000Mbps"
-    service_token_type = "a_side"
-    contact_email      = "username@example.com"
+  name               = "tf-metal-to-azure"
+  project_id         = local.project_id
+  type               = "shared"
+  redundancy         = "redundant"
+  metro              = "sv"
+  speed              = "1000Mbps"
+  service_token_type = "a_side"
+  contact_email      = "username@example.com"
 }
 
-data "equinix_fabric_service_profiles" "example" {
-  filter {
-    property = "/name"
-    operator = "="
-    values   = ["Azure ExpressRoute"]
-  }
+data "equinix_fabric_sellerprofile" "example" {
+  name                     = "Azure ExpressRoute"
+  organization_global_name = "Microsoft"
 }
 
 resource "equinix_fabric_connection" "example" {
-  name = "shared-metal-token-2-azure"
-  type = "EVPL_VC"
-  notifications {
-    type   = "ALL"
-    emails = ["example@equinix.com", "test1@equinix.com"]
-  }
-  bandwidth = 50
-  order {
-    purchase_order_number = "1-323292"
-  }
-  a_side {
-    service_token {
-      uuid = "<service_token_uuid>"
-    }
-  }
-  z_side {
-    access_point {
-      type = "SP"
-      authentication_key = "<Azure_ExpressRouter_Auth_Key>"
-      peering_type = "PRIVATE"
-      profile {
-        type = "L2_PROFILE"
-        uuid = data.equinix_fabric_service_profiles.example[0].data.0.uuid
-      }
-      location {
-        metro_code = "SV"
-      }
-    }
+  name              = "tf-metal-to-azure"
+  profile_uuid      = data.equinix_fabric_sellerprofile.example.uuid
+  speed             = azurerm_express_route_circuit.example.bandwidth_in_mbps
+  speed_unit        = "MB"
+  notifications     = ["example@equinix.com"]
+  service_token     = equinix_metal_connection.example.service_tokens.0.id
+  seller_metro_code = "AM"
+  authorization_key = azurerm_express_route_circuit.example.service_key
+  named_tag         = "PRIVATE"
+  secondary_connection {
+    name          = "tf-metal-to-azure-sec"
+    service_token = equinix_metal_connection.example.service_tokens.1.id
   }
 }
 ```
@@ -71,59 +52,81 @@ resource "equinix_fabric_connection" "example" {
 
 ```terraform
 resource "equinix_metal_vlan" "example" {
-    project_id      = local.my_project_id
-    metro           = "FR"
+  project_id      = local.my_project_id
+  metro           = "FR"
 }
 
 resource "equinix_metal_connection" "example" {
-    name               = "tf-port-to-metal"
-    project_id         = local.project_id
-    type               = "shared"
-    redundancy         = "primary"
-    metro              = "FR"
-    speed              = "200Mbps"
-    service_token_type = "z_side"
-    contact_email      = "username@example.com"
-    vlans              = [
-      equinix_metal_vlan.example.vxlan
-    ]
+  name               = "tf-port-to-metal"
+  project_id         = local.project_id
+  type               = "shared"
+  redundancy         = "primary"
+  metro              = "FR"
+  speed              = "200Mbps"
+  service_token_type = "z_side"
+  contact_email      = "username@example.com"
+  vlans              = [
+    equinix_metal_vlan.example.vxlan
+  ]
 }
 
-data "equinix_fabric_ports" "example" {
-  filters {
-    name = "CX-FR5-NL-Dot1q-BO-1G-PRI"
-  }
+data "equinix_fabric_port" "example" {
+  name = "CX-FR5-NL-Dot1q-BO-1G-PRI"
 }
 
 resource "equinix_fabric_connection" "example" {
-  name = "port-2-shared-metal-token"
-  type = "EVPL_VC"
-  notifications {
-    type   = "ALL"
-    emails = ["example@equinix.com"]
-  }
-  bandwidth = 50
-  a_side {
-    access_point {
-      type= "COLO"
-      port {
-        uuid = data.equinix_fabric_ports.example.id
-      }
-      link_protocol {
-        type = "DOT1Q"
-        vlan_tag = "1020"
-      }
-    }
-  }
-  z_side {
-    service_token {
-      uuid = equinix_metal_connection.example.service_tokens.0.id
-    }
-  }
+  name                = "tf-port-to-metal"
+  zside_service_token = equinix_metal_connection.example.service_tokens.0.id
+  speed               = "200"
+  speed_unit          = "MB"
+  notifications       = ["example@equinix.com"]
+  port_uuid           = data.equinix_fabric_port.example.id
+  vlan_stag           = 1020
 }
 ```
 
 -> NOTE: There is an [Equinix Fabric L2 Connection To Equinix Metal Terraform module](https://registry.terraform.io/modules/equinix-labs/fabric-connection-metal/equinix/latest) available with full-fledged examples of connections from Fabric Ports, Network Edge Devices or Service Tokens. Check out the [example for shared connection with Z-side Service Token](https://registry.terraform.io/modules/equinix-labs/fabric-connection-metal/equinix/0.2.0/examples/fabric-port-connection-with-zside-token).
+
+### Shared Connection for organizations without Connection Services Token feature enabled
+
+```terraform
+resource "equinix_metal_vlan" "example1" {
+  project_id      = local.my_project_id
+  metro           = "SV"
+}
+
+resource "equinix_metal_vlan" "example2" {
+  project_id      = local.my_project_id
+  metro           = "SV"
+}
+
+resource "equinix_metal_connection" "example" {
+  name            = "tf-port-to-metal-legacy"
+  project_id      = local.my_project_id
+  metro           = "SV"
+  redundancy      = "redundant"
+  type            = "shared"
+  contact_email   = "username@example.com"
+  vlans              = [
+    equinix_metal_vlan.example1.vxlan,
+    equinix_metal_vlan.example2.vxlan
+  ]
+}
+
+data "equinix_fabric_port" "example" {
+  name = "CX-FR5-NL-Dot1q-BO-1G-PRI"
+}
+
+resource "equinix_fabric_connection" "example" {
+  name                = "tf-port-to-metal-legacy"
+  speed               = "200"
+  speed_unit          = "MB"
+  notifications       = ["example@equinix.com"]
+  port_uuid           = data.equinix_fabric_port.example.id
+  vlan_stag           = 1020
+  authorization_key   = equinix_metal_connection.example.token
+}
+```
 
 ### Shared Connection with authorization_code Non-redundant Metal-Fabric Integration connection from Equinix Metal to a Cloud Service Provider via Equinix Fabric Port
 

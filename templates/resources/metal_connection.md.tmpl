@@ -26,6 +26,10 @@ Use this resource to request the creation an Interconnection asset to connect wi
 
 -> NOTE: There is an [Equinix Fabric L2 Connection To Equinix Metal Terraform module](https://registry.terraform.io/modules/equinix-labs/fabric-connection-metal/equinix/latest) available with full-fledged examples of connections from Fabric Ports, Network Edge Devices or Service Tokens. Check out the [example for shared connection with Z-side Service Token](https://registry.terraform.io/modules/equinix-labs/fabric-connection-metal/equinix/0.2.0/examples/fabric-port-connection-with-zside-token).
 
+### Shared Connection for organizations without Connection Services Token feature enabled
+
+{{tffile "examples/resources/equinix_metal_connection/shared_no_token_metal_to_fabric.tf"}}
+
 ### Shared Connection with authorization_code Non-redundant Metal-Fabric Integration connection from Equinix Metal to a Cloud Service Provider via Equinix Fabric Port
 
 {{tffile "examples/resources/equinix_metal_connection/shared_metal_fabric_connection_to_csp.tf"}}
