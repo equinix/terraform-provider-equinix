@@ -20,7 +20,7 @@ output "state" {
 }
 
 output "not_matched_rules_action" {
-  value = equinix_fabric_route_filter.rf_policy.not_matched_rules_action
+  value = equinix_fabric_route_filter.rf_policy.not_matched_rule_action
 }
 
 output "connections_count" {
