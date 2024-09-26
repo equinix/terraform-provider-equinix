@@ -62,30 +62,7 @@ func TestAccMetalProject_errorHandling(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config:      providerConfig + "\n" + projectConfig,
-				ExpectError: regexp.MustCompile(`\bCould not create project: HTTP 422\b`),
-			},
-		},
-	})
-}
-
-// TODO(displague) How do we test this without TF_ACC set?
-func TestAccMetalProject_apiErrorHandling(t *testing.T) {
-	rInt := acctest.RandInt()
-	handler := func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Add("Content-Type", "application/json")
-		w.Header().Add("X-Request-Id", "needed for equinix_errors.FriendlyError")
-		w.WriteHeader(http.StatusUnprocessableEntity)
-	}
-	mockAPI := httptest.NewServer(http.HandlerFunc(handler))
-	providerConfig := testAccMetalProviderConfig(mockAPI.URL, "fake-for-mock-test", "fake-for-mock-test")
-	projectConfig := testAccMetalProjectConfig_basic(rInt)
-
-	resource.ParallelTest(t, resource.TestCase{
-		ProtoV5ProviderFactories: mockProviderFactories(),
-		Steps: []resource.TestStep{
-			{
-				Config:      providerConfig + "\n" + projectConfig,
-				ExpectError: regexp.MustCompile(`\bCould not create project: API Error HTTP 422\b`),
+				ExpectError: regexp.MustCompile(`\bCould not create project: 422 Unprocessable Entity\b`),
 			},
 		},
 	})
