@@ -70,7 +70,7 @@ func resourceMetalAPIKeyCreate(d *schema.ResourceData, meta interface{}) error {
 
 	apiKey, _, err := client.APIKeys.Create(createRequest)
 	if err != nil {
-		return equinix_errors.FriendlyError(err)
+		return equinix_errors.Friendly(err)
 	}
 
 	d.SetId(apiKey.ID)
@@ -106,7 +106,7 @@ func resourceMetalAPIKeyRead(d *schema.ResourceData, meta interface{}) error {
 	}
 
 	if err != nil {
-		err = equinix_errors.FriendlyError(err)
+		err = equinix_errors.Friendly(err)
 		// If the key is somehow already destroyed, mark as
 		// succesfully gone
 		if equinix_errors.IsNotFound(err) {
@@ -143,7 +143,7 @@ func resourceMetalAPIKeyDelete(d *schema.ResourceData, meta interface{}) error {
 
 	resp, err := client.APIKeys.Delete(d.Id())
 	if equinix_errors.IgnoreResponseErrors(equinix_errors.HttpForbidden, equinix_errors.HttpNotFound)(resp, err) != nil {
-		return equinix_errors.FriendlyError(err)
+		return equinix_errors.Friendly(err)
 	}
 
 	d.SetId("")

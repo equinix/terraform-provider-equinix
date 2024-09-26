@@ -553,7 +553,7 @@ func resourceMetalDeviceCreate(ctx context.Context, d *schema.ResourceData, meta
 	projectID := d.Get("project_id").(string)
 	newDevice, _, err := client.DevicesApi.CreateDevice(ctx, projectID).CreateDeviceRequest(createRequest).Execute()
 	if err != nil {
-		retErr := equinix_errors.FriendlyError(err)
+		retErr := equinix_errors.Friendly(err)
 		if equinix_errors.IsNotFound(retErr) {
 			retErr = fmt.Errorf("%s, make sure project \"%s\" exists", retErr, projectID)
 		}
@@ -737,7 +737,7 @@ func resourceMetalDeviceUpdate(ctx context.Context, d *schema.ResourceData, meta
 	start := time.Now()
 	if !reflect.DeepEqual(ur, metalv1.DeviceUpdateInput{}) {
 		if _, _, err := client.DevicesApi.UpdateDevice(ctx, d.Id()).DeviceUpdateInput(ur).Execute(); err != nil {
-			return diag.FromErr(equinix_errors.FriendlyError(err))
+			return diag.FromErr(equinix_errors.Friendly(err))
 		}
 	}
 
@@ -774,7 +774,7 @@ func doReinstall(ctx context.Context, client *metalv1.APIClient, d *schema.Resou
 		}
 
 		if _, err := client.DevicesApi.PerformAction(ctx, d.Id()).DeviceActionInput(reinstallOptions).Execute(); err != nil {
-			return equinix_errors.FriendlyError(err)
+			return equinix_errors.Friendly(err)
 		}
 
 		updateTimeout := d.Timeout(schema.TimeoutUpdate) - 30*time.Second - time.Since(start)
@@ -799,7 +799,7 @@ func resourceMetalDeviceDelete(ctx context.Context, d *schema.ResourceData, meta
 
 	resp, err := client.DevicesApi.DeleteDevice(ctx, d.Id()).ForceDelete(fdv).Execute()
 	if equinix_errors.IgnoreHttpResponseErrors(equinix_errors.HttpForbidden, equinix_errors.HttpNotFound)(resp, err) != nil {
-		return diag.FromErr(equinix_errors.FriendlyError(err))
+		return diag.FromErr(equinix_errors.Friendly(err))
 	}
 
 	resId, resIdOk := d.GetOk("deployed_hardware_reservation_id")
@@ -844,7 +844,7 @@ func WaitForActiveDevice(ctx context.Context, d *schema.ResourceData, meta inter
 	state, err := waitForDeviceAttribute(ctx, d, stateConf)
 	if err != nil {
 		d.SetId("")
-		fErr := equinix_errors.FriendlyError(err)
+		fErr := equinix_errors.Friendly(err)
 		if equinix_errors.IsForbidden(fErr) {
 			// If the device doesn't get to the active state, we can't recover it from here.
 

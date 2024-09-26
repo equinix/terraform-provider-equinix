@@ -60,12 +60,12 @@ func (r *Resource) Create(ctx context.Context, request resource.CreateRequest, r
 
 	if data.Facility.IsNull() && data.Metro.IsNull() {
 		response.Diagnostics.AddError("Invalid input params",
-			equinix_errors.FriendlyError(errors.New("one of facility or metro must be configured")).Error())
+			equinix_errors.Friendly(errors.New("one of facility or metro must be configured")).Error())
 		return
 	}
 	if !data.Facility.IsNull() && !data.Vxlan.IsNull() {
 		response.Diagnostics.AddError("Invalid input params",
-			equinix_errors.FriendlyError(errors.New("you can set vxlan only for metro vlan")).Error())
+			equinix_errors.Friendly(errors.New("you can set vxlan only for metro vlan")).Error())
 		return
 	}
 
@@ -82,14 +82,14 @@ func (r *Resource) Create(ctx context.Context, request resource.CreateRequest, r
 	}
 	vlan, _, err := client.ProjectVirtualNetworks.Create(createRequest)
 	if err != nil {
-		response.Diagnostics.AddError("Error creating Vlan", equinix_errors.FriendlyError(err).Error())
+		response.Diagnostics.AddError("Error creating Vlan", equinix_errors.Friendly(err).Error())
 		return
 	}
 
 	// get the current state of newly created vlan with default include fields
 	vlan, _, err = client.ProjectVirtualNetworks.Get(vlan.ID, &packngo.GetOptions{Includes: vlanDefaultIncludes})
 	if err != nil {
-		response.Diagnostics.AddError("Error reading Vlan after create", equinix_errors.FriendlyError(err).Error())
+		response.Diagnostics.AddError("Error reading Vlan after create", equinix_errors.Friendly(err).Error())
 		return
 	}
 
@@ -127,7 +127,7 @@ func (r *Resource) Read(ctx context.Context, request resource.ReadRequest, respo
 			return
 		}
 		response.Diagnostics.AddError("Error fetching Vlan using vlanId",
-			equinix_errors.FriendlyError(err).Error())
+			equinix_errors.Friendly(err).Error())
 		return
 	}
 
@@ -170,12 +170,12 @@ func (r *Resource) Delete(ctx context.Context, request resource.DeleteRequest, r
 		if equinix_errors.IgnoreResponseErrors(equinix_errors.HttpForbidden, equinix_errors.HttpNotFound)(resp, err) != nil {
 			response.Diagnostics.AddWarning(
 				"Equinix Metal Vlan not found during delete",
-				equinix_errors.FriendlyError(err).Error(),
+				equinix_errors.Friendly(err).Error(),
 			)
 			return
 		}
 		response.Diagnostics.AddError("Error fetching Vlan using vlanId",
-			equinix_errors.FriendlyError(err).Error())
+			equinix_errors.Friendly(err).Error())
 		return
 	}
 
@@ -187,7 +187,7 @@ func (r *Resource) Delete(ctx context.Context, request resource.DeleteRequest, r
 					_, resp, err = client.Ports.Unassign(port.ID, vlan.ID)
 					if equinix_errors.IgnoreResponseErrors(equinix_errors.HttpForbidden, equinix_errors.HttpNotFound)(resp, err) != nil {
 						response.Diagnostics.AddError("Error unassign port with Vlan",
-							equinix_errors.FriendlyError(err).Error())
+							equinix_errors.Friendly(err).Error())
 						return
 					}
 				}
@@ -197,7 +197,7 @@ func (r *Resource) Delete(ctx context.Context, request resource.DeleteRequest, r
 
 	if err := equinix_errors.IgnoreResponseErrors(equinix_errors.HttpForbidden, equinix_errors.HttpNotFound)(client.ProjectVirtualNetworks.Delete(vlan.ID)); err != nil {
 		response.Diagnostics.AddError("Error deleting Vlan",
-			equinix_errors.FriendlyError(err).Error())
+			equinix_errors.Friendly(err).Error())
 		return
 	}
 }

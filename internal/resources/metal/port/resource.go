@@ -132,7 +132,7 @@ func resourceMetalPortUpdate(ctx context.Context, d *schema.ResourceData, meta i
 	start := time.Now()
 	cpr, _, err := getClientPortResource(ctx, d, meta)
 	if err != nil {
-		return diag.FromErr(equinix_errors.FriendlyError(err))
+		return diag.FromErr(equinix_errors.Friendly(err))
 	}
 
 	for _, f := range [](func(context.Context, *ClientPortResource) error){
@@ -146,7 +146,7 @@ func resourceMetalPortUpdate(ctx context.Context, d *schema.ResourceData, meta i
 		updateNativeVlan,
 	} {
 		if err := f(ctx, cpr); err != nil {
-			return diag.FromErr(equinix_errors.FriendlyError(err))
+			return diag.FromErr(equinix_errors.Friendly(err))
 		}
 	}
 

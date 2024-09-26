@@ -202,7 +202,7 @@ func getGatewayAndParse(ctx context.Context, client *metalv1.APIClient, state *R
 	// API call to get the Metal Gateway
 	gw, _, err := client.MetalGatewaysApi.FindMetalGatewayById(ctx, id).Include(includes).Execute()
 	if err != nil {
-		return diags, equinix_errors.FriendlyError(err)
+		return diags, equinix_errors.Friendly(err)
 	}
 
 	// Parse the API response into the Terraform state

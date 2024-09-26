@@ -474,7 +474,7 @@ func resourceMetalReservedIPBlockRead(ctx context.Context, d *schema.ResourceDat
 
 	reservedBlock, _, err := client.ProjectIPs.Get(id, getOpts)
 	if err != nil {
-		err = equinix_errors.FriendlyError(err)
+		err = equinix_errors.Friendly(err)
 		if equinix_errors.IsNotFound(err) {
 			log.Printf("[WARN] Reserved IP Block (%s) not found, removing from state", d.Id())
 			d.SetId("")

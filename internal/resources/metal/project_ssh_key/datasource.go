@@ -51,7 +51,7 @@ func (r *DataSource) Read(
 	// Use API client to list SSH keys
 	keysList, _, err := client.SSHKeysApi.FindProjectSSHKeys(ctx, projectID).Query(search).Execute()
 	if err != nil {
-		err = equinix_errors.FriendlyError(err)
+		err = equinix_errors.Friendly(err)
 		resp.Diagnostics.AddError(
 			"Error listing project ssh keys",
 			err.Error(),

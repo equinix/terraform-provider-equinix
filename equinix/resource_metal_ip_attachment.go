@@ -59,7 +59,7 @@ func resourceMetalIPAttachmentRead(d *schema.ResourceData, meta interface{}) err
 	client := meta.(*config.Config).Metal
 	assignment, _, err := client.DeviceIPs.Get(d.Id(), nil)
 	if err != nil {
-		err = equinix_errors.FriendlyError(err)
+		err = equinix_errors.Friendly(err)
 
 		// If the IP attachment was already destroyed, mark as succesfully gone.
 		if equinix_errors.IsNotFound(err) {
@@ -96,7 +96,7 @@ func resourceMetalIPAttachmentDelete(d *schema.ResourceData, meta interface{}) e
 
 	resp, err := client.DeviceIPs.Unassign(d.Id())
 	if equinix_errors.IgnoreResponseErrors(equinix_errors.HttpForbidden, equinix_errors.HttpNotFound)(resp, err) != nil {
-		return equinix_errors.FriendlyError(err)
+		return equinix_errors.Friendly(err)
 	}
 
 	d.SetId("")

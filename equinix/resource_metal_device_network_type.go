@@ -96,7 +96,7 @@ func resourceMetalDeviceNetworkTypeRead(d *schema.ResourceData, meta interface{}
 
 	_, devNType, err := getDevIDandNetworkType(d, client)
 	if err != nil {
-		err = equinix_errors.FriendlyError(err)
+		err = equinix_errors.Friendly(err)
 
 		if equinix_errors.IsNotFound(err) {
 			log.Printf("[WARN] Device (%s) for Network Type request not found, removing from state", d.Id())

@@ -120,7 +120,7 @@ func hwReservationStateRefreshFunc(ctx context.Context, client *metalv1.APIClien
 		state := deprovisioning
 		switch {
 		case err != nil:
-			err = equinix_errors.FriendlyError(err)
+			err = equinix_errors.Friendly(err)
 			state = errstate
 		case r != nil && r.GetProvisionable():
 			state = provisionable
