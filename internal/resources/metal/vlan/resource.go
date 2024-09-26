@@ -10,7 +10,6 @@ import (
 	"github.com/equinix/terraform-provider-equinix/internal/framework"
 
 	"github.com/equinix/equinix-sdk-go/services/metalv1"
-	packngo "github.com/equinix/equinix-sdk-go/services/metalv1"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 )
@@ -69,11 +68,11 @@ func (r *Resource) Create(ctx context.Context, request resource.CreateRequest, r
 		return
 	}
 
-	createRequest := packngo.VirtualNetworkCreateInput{
+	createRequest := metalv1.VirtualNetworkCreateInput{
 		Description: data.Description.ValueStringPointer(),
 	}
 	if !data.Metro.IsNull() {
-		createRequest.Metro = packngo.PtrString(strings.ToLower(data.Metro.ValueString()))
+		createRequest.Metro = metalv1.PtrString(strings.ToLower(data.Metro.ValueString()))
 	}
 	if !data.Vxlan.IsNull() {
 		createRequest.Vxlan = metalv1.PtrInt32(int32(data.Vxlan.ValueInt64()))
