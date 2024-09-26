@@ -140,9 +140,9 @@ func paginationGoToTerraform(pagination *fabricv4.Pagination) *schema.Set {
 		return nil
 	}
 	mappedPagination := make(map[string]interface{})
-	mappedPagination["offset"] = pagination.GetOffset()
-	mappedPagination["limit"] = pagination.GetLimit()
-	mappedPagination["total"] = pagination.GetTotal()
+	mappedPagination["offset"] = int(pagination.GetOffset())
+	mappedPagination["limit"] = int(pagination.GetLimit())
+	mappedPagination["total"] = int(pagination.GetTotal())
 	mappedPagination["next"] = pagination.GetNext()
 	mappedPagination["previous"] = pagination.GetPrevious()
 

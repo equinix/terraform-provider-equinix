@@ -138,7 +138,7 @@ func dataSourceAllRulesForRouteFilterSchema() map[string]*schema.Schema {
 		},
 		"pagination": {
 			Type:        schema.TypeSet,
-			Optional:    true,
+			Computed:    true,
 			Description: "Pagination details for the Data Source Search Request",
 			MaxItems:    1,
 			Elem:        paginationSchema(),

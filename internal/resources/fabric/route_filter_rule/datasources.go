@@ -15,7 +15,11 @@ func DataSource() *schema.Resource {
 	return &schema.Resource{
 		ReadContext: dataSourceRead,
 		Schema:      dataSourceBaseSchema(),
-		Description: "Fabric V4 API compatible data resource that allow user to fetch route filter for a given UUID",
+		Description: `Fabric V4 API compatible data resource that allow user to fetch route filter for a given UUID
+
+Additional Documentation:
+* Getting Started: https://docs.equinix.com/en-us/Content/Interconnection/FCR/FCR-route-filters.htm
+* API: https://developer.equinix.com/dev-docs/fabric/api-reference/fabric-v4-apis#route-filter-rules`,
 	}
 }
 
@@ -29,15 +33,31 @@ func DataSourceGetAllRules() *schema.Resource {
 	return &schema.Resource{
 		ReadContext: dataSourceGetAllRules,
 		Schema:      dataSourceAllRulesForRouteFilterSchema(),
-		Description: "Fabric V4 API compatible data resource that allow user to fetch route filter for a given search data set",
+		Description: `Fabric V4 API compatible data resource that allow user to fetch route filter for a given search data set
+
+Additional Documentation:
+* Getting Started: https://docs.equinix.com/en-us/Content/Interconnection/FCR/FCR-route-filters.htm
+* API: https://developer.equinix.com/dev-docs/fabric/api-reference/fabric-v4-apis#route-filter-rules`,
 	}
 }
 
 func dataSourceGetAllRules(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*config.Config).NewFabricClientForSDK(d)
 	routeFilterId := d.Get("route_filter_id").(string)
+	getRouteFilterRulesRequest := client.RouteFilterRulesApi.GetRouteFilterRules(ctx, routeFilterId)
 
-	routeFilterRules, _, err := client.RouteFilterRulesApi.GetRouteFilterRules(ctx, routeFilterId).Execute()
+	limit := d.Get("limit").(int)
+	if limit != 0 {
+		getRouteFilterRulesRequest.Limit(int32(limit))
+		d.Set("limit", limit)
+	}
+	offset := d.Get("offset").(int)
+	if offset != 0 {
+		getRouteFilterRulesRequest.Offset(int32(offset))
+		d.Set("offset", offset)
+	}
+
+	routeFilterRules, _, err := getRouteFilterRulesRequest.Execute()
 	if err != nil {
 		return diag.FromErr(equinix_errors.FormatFabricError(err))
 	}
@@ -47,5 +67,6 @@ func dataSourceGetAllRules(ctx context.Context, d *schema.ResourceData, meta int
 	}
 
 	d.SetId(routeFilterId)
+	d.Set("route_filter_id", routeFilterId)
 	return setRouteFilterRulesData(d, routeFilterRules)
 }
