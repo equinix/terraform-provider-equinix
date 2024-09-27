@@ -41,6 +41,7 @@ output "route_filter_rule_prefix_match" {
 
 ### Required
 
+- `route_filter_id` (String) UUID of the Route Filter Policy the rule is attached to
 - `uuid` (String) Equinix Assigned ID for Route Filter Rule to retrieve data for
 
 ### Read-Only
