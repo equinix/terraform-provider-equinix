@@ -49,12 +49,18 @@ func dataSourceGetAllRules(ctx context.Context, d *schema.ResourceData, meta int
 	limit := d.Get("limit").(int)
 	if limit != 0 {
 		getRouteFilterRulesRequest.Limit(int32(limit))
-		d.Set("limit", limit)
+		err := d.Set("limit", limit)
+		if err != nil {
+			return diag.Errorf("error setting limit to state %s", err)
+		}
 	}
 	offset := d.Get("offset").(int)
 	if offset != 0 {
 		getRouteFilterRulesRequest.Offset(int32(offset))
-		d.Set("offset", offset)
+		err := d.Set("offset", offset)
+		if err != nil {
+			return diag.Errorf("error setting offset to state %s", err)
+		}
 	}
 
 	routeFilterRules, _, err := getRouteFilterRulesRequest.Execute()
@@ -67,6 +73,9 @@ func dataSourceGetAllRules(ctx context.Context, d *schema.ResourceData, meta int
 	}
 
 	d.SetId(routeFilterId)
-	d.Set("route_filter_id", routeFilterId)
+	err = d.Set("route_filter_id", routeFilterId)
+	if err != nil {
+		return diag.Errorf("error setting route_filter_id to state %s", err)
+	}
 	return setRouteFilterRulesData(d, routeFilterRules)
 }

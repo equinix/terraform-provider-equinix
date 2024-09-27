@@ -65,7 +65,10 @@ func resourceCreate(ctx context.Context, d *schema.ResourceData, meta interface{
 	if err != nil {
 		return diag.FromErr(equinix_errors.FormatFabricError(err))
 	}
-	d.Set("route_filter_id", routeFilterId)
+	err = d.Set("route_filter_id", routeFilterId)
+	if err != nil {
+		return diag.Errorf("error setting route_filter_id to state %s", err)
+	}
 	d.SetId(routeFilter.GetUuid())
 
 	createTimeout := d.Timeout(schema.TimeoutCreate) - 30*time.Second - time.Since(start)
