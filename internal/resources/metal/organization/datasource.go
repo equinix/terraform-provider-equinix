@@ -58,7 +58,7 @@ func (r *DataSource) Read(
 	if !name.IsNull() {
 		orgList, _, err := client.Organizations.List(&packngo.GetOptions{Includes: []string{"address"}})
 		if err != nil {
-			err = equinix_errors.FriendlyError(err)
+			err = equinix_errors.Friendly(err)
 			resp.Diagnostics.AddError(
 				"Error listing Organizations",
 				err.Error(),
@@ -77,7 +77,7 @@ func (r *DataSource) Read(
 		orgID := orgId.ValueString()
 		org, _, err := client.Organizations.Get(orgID, &packngo.GetOptions{Includes: []string{"address"}})
 		if err != nil {
-			err = equinix_errors.FriendlyError(err)
+			err = equinix_errors.Friendly(err)
 			resp.Diagnostics.AddError(
 				"Error getting Organization",
 				err.Error(),

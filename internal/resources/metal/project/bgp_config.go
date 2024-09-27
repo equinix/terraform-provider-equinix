@@ -15,7 +15,7 @@ func fetchBGPConfig(ctx context.Context, client *metalv1.APIClient, projectID st
 
 	bgpConfig, _, err := client.BGPApi.FindBgpConfigByProject(ctx, projectID).Execute()
 	if err != nil {
-		friendlyErr := equinix_errors.FriendlyError(err)
+		friendlyErr := equinix_errors.Friendly(err)
 		diags.AddError(
 			"Error reading BGP configuration",
 			"Could not read BGP configuration for project with ID "+projectID+": "+friendlyErr.Error(),

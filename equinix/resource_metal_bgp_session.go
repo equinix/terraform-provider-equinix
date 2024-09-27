@@ -66,7 +66,7 @@ func resourceMetalBGPSessionCreate(d *schema.ResourceData, meta interface{}) err
 			DefaultRoute:  &defaultRoute,
 		})
 	if err != nil {
-		return equinix_errors.FriendlyError(err)
+		return equinix_errors.Friendly(err)
 	}
 
 	d.SetId(bgpSession.ID)
@@ -80,7 +80,7 @@ func resourceMetalBGPSessionRead(d *schema.ResourceData, meta interface{}) error
 	bgpSession, _, err := client.BGPSessions.Get(d.Id(),
 		&packngo.GetOptions{Includes: []string{"device"}})
 	if err != nil {
-		err = equinix_errors.FriendlyError(err)
+		err = equinix_errors.Friendly(err)
 		if equinix_errors.IsNotFound(err) {
 			log.Printf("[WARN] BGP Session (%s) not found, removing from state", d.Id())
 

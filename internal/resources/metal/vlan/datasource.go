@@ -57,8 +57,8 @@ func (r *DataSource) Read(
 	if data.VlanID.IsNull() &&
 		(data.Vxlan.IsNull() && data.ProjectID.IsNull() && data.Metro.IsNull() && data.Facility.IsNull()) {
 		resp.Diagnostics.AddError("Error fetching Vlan datasource",
-			equinix_errors.
-				FriendlyError(fmt.Errorf("You must set either vlan_id or a combination of vxlan, project_id, and, metro or facility")).
+			equinix_errors.Friendly(
+				fmt.Errorf("You must set either vlan_id or a combination of vxlan, project_id, and, metro or facility")).
 				Error())
 		return
 	}
@@ -72,7 +72,7 @@ func (r *DataSource) Read(
 			&packngo.GetOptions{Includes: []string{"assigned_to"}},
 		)
 		if err != nil {
-			resp.Diagnostics.AddError("Error fetching Vlan using vlanId", equinix_errors.FriendlyError(err).Error())
+			resp.Diagnostics.AddError("Error fetching Vlan using vlanId", equinix_errors.Friendly(err).Error())
 			return
 		}
 
@@ -83,14 +83,14 @@ func (r *DataSource) Read(
 		)
 		if err != nil {
 			resp.Diagnostics.AddError("Error fetching vlan list for projectId",
-				equinix_errors.FriendlyError(err).Error())
+				equinix_errors.Friendly(err).Error())
 			return
 		}
 
 		vlan, err = MatchingVlan(vlans.VirtualNetworks, int(data.Vxlan.ValueInt64()), data.ProjectID.ValueString(),
 			data.Facility.ValueString(), data.Metro.ValueString())
 		if err != nil {
-			resp.Diagnostics.AddError("Error expected vlan not found", equinix_errors.FriendlyError(err).Error())
+			resp.Diagnostics.AddError("Error expected vlan not found", equinix_errors.Friendly(err).Error())
 			return
 		}
 	}
@@ -125,11 +125,11 @@ func MatchingVlan(vlans []packngo.VirtualNetwork, vxlan int, projectID, facility
 		matches = append(matches, v)
 	}
 	if len(matches) > 1 {
-		return nil, equinix_errors.FriendlyError(fmt.Errorf("Project %s has more than one matching VLAN", projectID))
+		return nil, equinix_errors.Friendly(fmt.Errorf("Project %s has more than one matching VLAN", projectID))
 	}
 
 	if len(matches) == 0 {
-		return nil, equinix_errors.FriendlyError(fmt.Errorf("Project %s does not have matching VLANs for vlan [%d] and metro [%s]", projectID, vxlan, metro))
+		return nil, equinix_errors.Friendly(fmt.Errorf("Project %s does not have matching VLANs for vlan [%d] and metro [%s]", projectID, vxlan, metro))
 	}
 	return &matches[0], nil
 }

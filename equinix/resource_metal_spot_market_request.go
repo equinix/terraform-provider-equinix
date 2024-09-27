@@ -371,7 +371,7 @@ func resourceMetalSpotMarketRequestRead(ctx context.Context, d *schema.ResourceD
 
 	smr, _, err := client.SpotMarketRequests.Get(d.Id(), &packngo.GetOptions{Includes: []string{"project", "devices", "facilities", "metro"}})
 	if err != nil {
-		err = equinix_errors.FriendlyError(err)
+		err = equinix_errors.Friendly(err)
 		if equinix_errors.IsNotFound(err) {
 			log.Printf("[WARN] SpotMarketRequest (%s) not found, removing from state", d.Id())
 			d.SetId("")

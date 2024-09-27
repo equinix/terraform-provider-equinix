@@ -82,7 +82,7 @@ func resourceMetalVRFCreate(ctx context.Context, d *schema.ResourceData, meta in
 		VrfCreateInput(createRequest).
 		Execute()
 	if err != nil {
-		return diag.FromErr(equinix_errors.FriendlyError(err))
+		return diag.FromErr(equinix_errors.Friendly(err))
 	}
 
 	d.SetId(vrf.GetId())
@@ -113,7 +113,7 @@ func resourceMetalVRFUpdate(ctx context.Context, d *schema.ResourceData, meta in
 		VrfUpdateInput(updateRequest).
 		Execute()
 	if err != nil {
-		return diag.FromErr(equinix_errors.FriendlyError(err))
+		return diag.FromErr(equinix_errors.Friendly(err))
 	}
 
 	return resourceMetalVRFRead(ctx, d, meta)
@@ -156,5 +156,5 @@ func resourceMetalVRFDelete(ctx context.Context, d *schema.ResourceData, meta in
 		d.SetId("")
 	}
 
-	return diag.FromErr(equinix_errors.FriendlyError(err))
+	return diag.FromErr(equinix_errors.Friendly(err))
 }

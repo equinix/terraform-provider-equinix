@@ -90,7 +90,7 @@ func dataSourceMetalSpotMarketRequestRead(ctx context.Context, d *schema.Resourc
 
 	smr, _, err := client.SpotMarketRequests.Get(id, &packngo.GetOptions{Includes: []string{"project", "devices", "facilities", "metro"}})
 	if err != nil {
-		err = equinix_errors.FriendlyError(err)
+		err = equinix_errors.Friendly(err)
 		if equinix_errors.IsNotFound(err) {
 			d.SetId("")
 			return nil

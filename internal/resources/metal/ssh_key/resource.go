@@ -51,7 +51,7 @@ func (r *Resource) Create(
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Failed to create SSH Key",
-			equinix_errors.FriendlyError(err).Error(),
+			equinix_errors.Friendly(err).Error(),
 		)
 		return
 	}
@@ -86,7 +86,7 @@ func (r *Resource) Read(
 	// Use API client to get the current state of the resource
 	key, _, err := client.SSHKeysApi.FindSSHKeyById(ctx, id).Include(nil).Execute()
 	if err != nil {
-		err = equinix_errors.FriendlyError(err)
+		err = equinix_errors.Friendly(err)
 
 		// If the key is somehow already destroyed, mark as
 		// succesfully gone
@@ -143,7 +143,7 @@ func (r *Resource) Update(
 	// Update the resource
 	key, _, err := client.SSHKeysApi.UpdateSSHKey(ctx, id).SSHKeyInput(*updateRequest).Execute()
 	if err != nil {
-		err = equinix_errors.FriendlyError(err)
+		err = equinix_errors.Friendly(err)
 		resp.Diagnostics.AddError(
 			"Error updating resource",
 			"Could not update resource with ID "+id+": "+err.Error(),
@@ -181,7 +181,7 @@ func (r *Resource) Delete(
 	// Use API client to delete the resource
 	deleteResp, err := client.SSHKeysApi.DeleteSSHKey(ctx, id).Execute()
 	if equinix_errors.IgnoreHttpResponseErrors(equinix_errors.HttpForbidden, equinix_errors.HttpNotFound)(deleteResp, err) != nil {
-		err = equinix_errors.FriendlyError(err)
+		err = equinix_errors.Friendly(err)
 		resp.Diagnostics.AddError(
 			fmt.Sprintf("Failed to delete SSHKey %s", id),
 			err.Error(),

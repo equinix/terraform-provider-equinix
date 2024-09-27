@@ -171,7 +171,7 @@ func resourceMetalPortVlanAttachmentRead(d *schema.ResourceData, meta interface{
 
 	dev, _, err := client.Devices.Get(deviceID, &packngo.GetOptions{Includes: []string{"virtual_networks,project,native_virtual_network"}})
 	if err != nil {
-		err = equinix_errors.FriendlyError(err)
+		err = equinix_errors.Friendly(err)
 
 		if equinix_errors.IsNotFound(err) {
 			log.Printf("[WARN] Device (%s) for Port Vlan Attachment not found, removing from state", d.Id())
@@ -265,11 +265,11 @@ func resourceMetalPortVlanAttachmentDelete(d *schema.ResourceData, meta interfac
 		portName := d.Get("port_name").(string)
 		port, err := client.DevicePorts.GetPortByName(deviceID, portName)
 		if err != nil {
-			return equinix_errors.FriendlyError(err)
+			return equinix_errors.Friendly(err)
 		}
 		_, _, err = client.DevicePorts.Bond(port, false)
 		if err != nil {
-			return equinix_errors.FriendlyError(err)
+			return equinix_errors.Friendly(err)
 		}
 	}
 	return nil

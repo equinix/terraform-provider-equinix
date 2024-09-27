@@ -116,7 +116,7 @@ func (r *Resource) Create(
 	listOpts := &packngo.ListOptions{Includes: []string{"user"}}
 	invitations, _, err := client.Invitations.List(orgID, listOpts)
 	if err != nil {
-		err = equinix_errors.FriendlyError(err)
+		err = equinix_errors.Friendly(err)
 		// If the org was destroyed, mark as gone.
 		if equinix_errors.IsNotFound(err) {
 			plan.OrganizationID = basetypes.NewStringNull()
@@ -131,7 +131,7 @@ func (r *Resource) Create(
 
 	members, _, err := client.Members.List(orgID, listOpts)
 	if err != nil {
-		err = equinix_errors.FriendlyError(err)
+		err = equinix_errors.Friendly(err)
 		// If the org was destroyed, mark as gone.
 		if equinix_errors.IsNotFound(err) {
 			return
@@ -189,7 +189,7 @@ func (r *Resource) Read(
 	listOpts := &packngo.ListOptions{Includes: []string{"user"}}
 	invitations, _, err := client.Invitations.List(orgID, listOpts)
 	if err != nil {
-		err = equinix_errors.FriendlyError(err)
+		err = equinix_errors.Friendly(err)
 		// If the org was destroyed, mark as gone.
 		if equinix_errors.IsNotFound(err) {
 			data.OrganizationID = basetypes.NewStringNull()
@@ -204,7 +204,7 @@ func (r *Resource) Read(
 
 	members, _, err := client.Members.List(orgID, &packngo.GetOptions{Includes: []string{"user"}})
 	if err != nil {
-		err = equinix_errors.FriendlyError(err)
+		err = equinix_errors.Friendly(err)
 		// If the org was destroyed, mark as gone.
 		if equinix_errors.IsNotFound(err) {
 			data.OrganizationID = basetypes.NewStringNull()
@@ -246,7 +246,7 @@ func (r *Resource) Delete(
 	listOpts := &packngo.ListOptions{Includes: []string{"user"}}
 	invitations, _, err := client.Invitations.List(data.OrganizationID.ValueString(), listOpts)
 	if err != nil {
-		err = equinix_errors.FriendlyError(err)
+		err = equinix_errors.Friendly(err)
 		// If the org was destroyed, mark as gone.
 		if equinix_errors.IsNotFound(err) {
 			data.OrganizationID = types.StringNull()
@@ -261,7 +261,7 @@ func (r *Resource) Delete(
 
 	org, _, err := client.Organizations.Get(data.OrganizationID.ValueString(), &packngo.GetOptions{Includes: []string{"members", "members.user"}})
 	if err != nil {
-		err = equinix_errors.FriendlyError(err)
+		err = equinix_errors.Friendly(err)
 		// If the org was destroyed, mark as gone.
 		if equinix_errors.IsNotFound(err) {
 			data.OrganizationID = types.StringNull()
@@ -284,7 +284,7 @@ func (r *Resource) Delete(
 	if member.isMember() {
 		_, err = client.Members.Delete(data.OrganizationID.ValueString(), member.Member.ID)
 		if err != nil {
-			err = equinix_errors.FriendlyError(err)
+			err = equinix_errors.Friendly(err)
 			// If the member was deleted, mark as gone.
 			if equinix_errors.IsNotFound(err) {
 				data.OrganizationID = types.StringNull()
@@ -299,7 +299,7 @@ func (r *Resource) Delete(
 	} else if member.isInvitation() {
 		_, err = client.Invitations.Delete(member.Invitation.ID)
 		if err != nil {
-			err = equinix_errors.FriendlyError(err)
+			err = equinix_errors.Friendly(err)
 			// If the invitation was deleted, mark as gone.
 			if equinix_errors.IsNotFound(err) {
 				data.OrganizationID = types.StringNull()

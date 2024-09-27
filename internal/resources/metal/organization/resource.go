@@ -74,7 +74,7 @@ func (r *Resource) Create(
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Failed to create Organizations",
-			equinix_errors.FriendlyError(err).Error(),
+			equinix_errors.Friendly(err).Error(),
 		)
 		return
 	}
@@ -117,7 +117,7 @@ func (r *Resource) Read(
 	diags, err := getOrganizationAndParse(ctx, client, &state, id)
 	resp.Diagnostics.Append(diags...)
 	if err != nil {
-		err = equinix_errors.FriendlyError(err)
+		err = equinix_errors.Friendly(err)
 
 		// If the key is somehow already destroyed, mark as
 		// succesfully gone
@@ -210,7 +210,7 @@ func (r *Resource) Update(
 	// Update the resource
 	_, _, err := client.Organizations.Update(id, updateRequest)
 	if err != nil {
-		err = equinix_errors.FriendlyError(err)
+		err = equinix_errors.Friendly(err)
 		resp.Diagnostics.AddError(
 			"Error updating resource",
 			"Could not update Metal Organization with ID "+id+": "+err.Error(),
@@ -222,7 +222,7 @@ func (r *Resource) Update(
 	diags, err := getOrganizationAndParse(ctx, client, &plan, id)
 	resp.Diagnostics.Append(diags...)
 	if err != nil {
-		err = equinix_errors.FriendlyError(err)
+		err = equinix_errors.Friendly(err)
 		resp.Diagnostics.AddError(
 			"Error updating resource",
 			"Could not read Metal Organization with ID "+id+": "+err.Error(),
@@ -255,7 +255,7 @@ func (r *Resource) Delete(
 	// Use API client to delete the resource
 	deleteResp, err := client.Organizations.Delete(id)
 	if equinix_errors.IgnoreResponseErrors(equinix_errors.HttpForbidden, equinix_errors.HttpNotFound)(deleteResp, err) != nil {
-		err = equinix_errors.FriendlyError(err)
+		err = equinix_errors.Friendly(err)
 		resp.Diagnostics.AddError(
 			fmt.Sprintf("Failed to delete Organizations %s", id),
 			err.Error(),
@@ -268,7 +268,7 @@ func getOrganizationAndParse(ctx context.Context, client *packngo.Client, state 
 	includes := &packngo.GetOptions{Includes: []string{"address"}}
 	org, _, err := client.Organizations.Get(id, includes)
 	if err != nil {
-		return diags, equinix_errors.FriendlyError(err)
+		return diags, equinix_errors.Friendly(err)
 	}
 	// Parse the API response into the Terraform state
 	diags = state.parse(ctx, org)
