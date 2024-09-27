@@ -15,7 +15,6 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/packethost/packngo"
 	"github.com/pkg/errors"
 )
 
@@ -196,8 +195,8 @@ func createAndWaitForBatch(ctx context.Context, start time.Time, cpr *ClientPort
 
 	stateChangeConf := &retry.StateChangeConf{
 		Delay:      5 * time.Second,
-		Pending:    []string{string(packngo.VLANAssignmentBatchQueued), string(packngo.VLANAssignmentBatchInProgress)},
-		Target:     []string{string(packngo.VLANAssignmentBatchCompleted)},
+		Pending:    []string{string(metalv1.PORTVLANASSIGNMENTBATCHSTATE_QUEUED), string(metalv1.PORTVLANASSIGNMENTBATCHSTATE_IN_PROGRESS)},
+		Target:     []string{string(metalv1.PORTVLANASSIGNMENTBATCHSTATE_COMPLETED)},
 		MinTimeout: 5 * time.Second,
 		Timeout:    ctxTimeout - time.Since(start) - 30*time.Second,
 		Refresh: func() (result interface{}, state string, err error) {
@@ -243,6 +242,9 @@ func updateNativeVlan(ctx context.Context, cpr *ClientPortResource) error {
 }
 
 func processBondAction(ctx context.Context, cpr *ClientPortResource, actionIsBond bool) error {
+	// There's no good alternative to GetOkExists until metal_port
+	// is converted to terraform-plugin-framework
+	// nolint:staticcheck
 	wantsBondedRaw, wantsBondedOk := cpr.Resource.GetOkExists("bonded")
 	wantsBonded := wantsBondedRaw.(bool)
 	// only act if the necessary action is the one specified in doBond
@@ -285,6 +287,9 @@ func makeDisbond(ctx context.Context, cpr *ClientPortResource) error {
 }
 
 func convertToL2(ctx context.Context, cpr *ClientPortResource) error {
+	// There's no good alternative to GetOkExists until metal_port
+	// is converted to terraform-plugin-framework
+	// nolint:staticcheck
 	l2, l2Ok := cpr.Resource.GetOkExists("layer2")
 	isLayer2 := slices.Contains(l2Types, cpr.Port.GetNetworkType())
 
@@ -299,6 +304,9 @@ func convertToL2(ctx context.Context, cpr *ClientPortResource) error {
 }
 
 func convertToL3(ctx context.Context, cpr *ClientPortResource) error {
+	// There's no good alternative to GetOkExists until metal_port
+	// is converted to terraform-plugin-framework
+	// nolint:staticcheck
 	l2, l2Ok := cpr.Resource.GetOkExists("layer2")
 	isLayer2 := slices.Contains(l2Types, cpr.Port.GetNetworkType())
 
@@ -324,6 +332,9 @@ func portSanityChecks(_ context.Context, cpr *ClientPortResource) error {
 	isBondPort := cpr.Port.GetType() == "NetworkBondPort"
 
 	// Constraint: Only bond ports have layer2 mode
+	// There's no good alternative to GetOkExists until metal_port
+	// is converted to terraform-plugin-framework
+	// nolint:staticcheck
 	l2Raw, l2Ok := cpr.Resource.GetOkExists("layer2")
 	if !isBondPort && l2Ok {
 		return fmt.Errorf("layer2 flag can be set only for bond ports")
