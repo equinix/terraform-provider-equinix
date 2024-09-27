@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"net/http"
 
 	equinix_errors "github.com/equinix/terraform-provider-equinix/internal/errors"
 	"github.com/equinix/terraform-provider-equinix/internal/sweep"
@@ -71,7 +72,7 @@ func testSweepRouteFilters(region string) error {
 		if sweep.IsSweepableFabricTestResource(routeFilter.GetName()) {
 			log.Printf("[DEBUG] Deleting Route Filter: %s", routeFilter.GetName())
 			_, resp, err := fabric.RouteFiltersApi.DeleteRouteFilterByUuid(ctx, routeFilter.GetUuid()).Execute()
-			if equinix_errors.IgnoreHttpResponseErrors(equinix_errors.HttpForbidden, equinix_errors.HttpNotFound)(resp, err) != nil {
+			if equinix_errors.IgnoreHttpResponseErrors(http.StatusForbidden, http.StatusNotFound)(resp, err) != nil {
 				errs = append(errs, fmt.Errorf("error deleting fabric route filter: %s", err))
 			}
 		}
