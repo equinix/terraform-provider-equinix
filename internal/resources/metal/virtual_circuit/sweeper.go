@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"net/http"
 
 	"github.com/equinix/equinix-sdk-go/services/metalv1"
 
@@ -54,7 +55,7 @@ func testSweepVirtualCircuits(region string) error {
 						if sweep.IsSweepableTestResource(vcName) {
 							log.Printf("[INFO][SWEEPER_LOG] Deleting VirtualCircuit: %s", vcName)
 							_, resp, err := metal.InterconnectionsApi.DeleteVirtualCircuit(context.Background(), vcId).Execute()
-							if equinix_errors.IgnoreHttpResponseErrors(equinix_errors.HttpForbidden, equinix_errors.HttpNotFound)(resp, err) != nil {
+							if equinix_errors.IgnoreHttpResponseErrors(http.StatusForbidden, http.StatusNotFound)(resp, err) != nil {
 								errs = append(errs, fmt.Errorf("error deleting VirtualCircuit: %s", err))
 							}
 						}

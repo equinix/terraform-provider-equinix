@@ -3,6 +3,7 @@ package project
 import (
 	"context"
 	"fmt"
+	"net/http"
 	"reflect"
 
 	"github.com/equinix/equinix-sdk-go/services/metalv1"
@@ -62,11 +63,11 @@ func (r *Resource) Create(
 	}
 
 	// API call to create the project
-	project, createResp, err := client.ProjectsApi.CreateProject(ctx).ProjectCreateFromRootInput(createRequest).Execute()
+	project, _, err := client.ProjectsApi.CreateProject(ctx).ProjectCreateFromRootInput(createRequest).Execute()
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error creating project",
-			"Could not create project: "+equinix_errors.FriendlyErrorForMetalGo(err, createResp).Error(),
+			"Could not create project: "+err.Error(),
 		)
 		return
 	}
@@ -82,9 +83,8 @@ func (r *Resource) Create(
 			return
 		}
 
-		createResp, err = client.BGPApi.RequestBgpConfig(ctx, project.GetId()).BgpConfigRequestInput(*bgpCreateRequest).Execute()
+		_, err = client.BGPApi.RequestBgpConfig(ctx, project.GetId()).BgpConfigRequestInput(*bgpCreateRequest).Execute()
 		if err != nil {
-			err = equinix_errors.FriendlyErrorForMetalGo(err, createResp)
 			resp.Diagnostics.AddError(
 				"Error creating BGP configuration",
 				"Could not create BGP configuration for project: "+err.Error(),
@@ -98,9 +98,8 @@ func (r *Resource) Create(
 		pur := metalv1.ProjectUpdateInput{
 			BackendTransferEnabled: plan.BackendTransfer.ValueBoolPointer(),
 		}
-		_, updateResp, err := client.ProjectsApi.UpdateProject(ctx, project.GetId()).ProjectUpdateInput(pur).Execute()
+		_, _, err := client.ProjectsApi.UpdateProject(ctx, project.GetId()).ProjectUpdateInput(pur).Execute()
 		if err != nil {
-			err = equinix_errors.FriendlyErrorForMetalGo(err, updateResp)
 			resp.Diagnostics.AddError(
 				"Error enabling Backend Transfer",
 				"Could not enable Backend Transfer for project with ID "+project.GetId()+": "+err.Error(),
@@ -185,10 +184,8 @@ func fetchProject(ctx context.Context, client *metalv1.APIClient, projectID stri
 
 	project, apiResp, err := client.ProjectsApi.FindProjectById(ctx, projectID).Execute()
 	if err != nil {
-		err = equinix_errors.FriendlyErrorForMetalGo(err, apiResp)
-
 		// Check if the Project no longer exists
-		if equinix_errors.IsNotFound(err) {
+		if apiResp.StatusCode == http.StatusNotFound {
 			diags.AddWarning(
 				"Project not found",
 				fmt.Sprintf("Project (%s) not found, removing from state", projectID),
@@ -247,12 +244,11 @@ func (r *Resource) Update(
 	// Check if any update was requested
 	if !reflect.DeepEqual(updateRequest, metalv1.ProjectUpdateInput{}) {
 		// API call to update the project
-		_, updateResp, err := client.ProjectsApi.UpdateProject(ctx, id).ProjectUpdateInput(updateRequest).Execute()
+		_, _, err := client.ProjectsApi.UpdateProject(ctx, id).ProjectUpdateInput(updateRequest).Execute()
 		if err != nil {
-			friendlyErr := equinix_errors.FriendlyErrorForMetalGo(err, updateResp)
 			resp.Diagnostics.AddError(
 				"Error updating project",
-				"Could not update project with ID "+id+": "+friendlyErr.Error(),
+				"Could not update project with ID "+id+": "+err.Error(),
 			)
 			return
 		}
@@ -292,8 +288,7 @@ func (r *Resource) Delete(ctx context.Context, req resource.DeleteRequest, resp 
 
 	// API call to delete the project
 	deleteResp, err := client.ProjectsApi.DeleteProject(ctx, id).Execute()
-	if equinix_errors.IgnoreHttpResponseErrors(equinix_errors.HttpForbidden, equinix_errors.HttpNotFound)(deleteResp, err) != nil {
-		err = equinix_errors.FriendlyErrorForMetalGo(err, deleteResp)
+	if equinix_errors.IgnoreHttpResponseErrors(http.StatusForbidden, http.StatusNotFound)(deleteResp, err) != nil {
 		resp.Diagnostics.AddError(
 			fmt.Sprintf("Failed to delete Project %s", id),
 			err.Error(),

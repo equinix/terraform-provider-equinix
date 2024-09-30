@@ -3,6 +3,7 @@ package gateway
 import (
 	"context"
 	"fmt"
+	"net/http"
 	"time"
 
 	"github.com/equinix/equinix-sdk-go/services/metalv1"
@@ -171,27 +172,26 @@ func (r *Resource) Delete(ctx context.Context, req resource.DeleteRequest, resp 
 	// only match one of MetalGateway or VrfMetalGateway if the included
 	// fields are present in the response
 	_, deleteResp, err := client.MetalGatewaysApi.DeleteMetalGateway(ctx, id).Include(includes).Execute()
-
-	if err != nil {
-		if deleteResp != nil {
-			err = equinix_errors.FriendlyErrorForMetalGo(err, deleteResp)
-		}
+	if equinix_errors.IgnoreHttpResponseErrors(http.StatusForbidden, http.StatusNotFound)(deleteResp, err) != nil {
+		resp.Diagnostics.AddError(
+			fmt.Sprintf("Failed to delete Metal Gateway %s", id), err.Error(),
+		)
 	}
+
 	if err == nil {
 		// Wait for the deletion to be completed
 		deleteTimeout := r.DeleteTimeout(ctx, state.Timeouts)
-		deleteWaiter := getGatewayStateWaiter(
+		deleteWaiter := getGatewayDeleteWaiter(
 			ctx,
 			client,
 			id,
 			deleteTimeout,
 			[]string{string(metalv1.METALGATEWAYSTATE_DELETING)},
-			[]string{},
 		)
 		_, err = deleteWaiter.WaitForStateContext(ctx)
 	}
 
-	if equinix_errors.IgnoreHttpResponseErrors(equinix_errors.HttpForbidden, equinix_errors.HttpNotFound)(nil, err) != nil {
+	if err != nil {
 		resp.Diagnostics.AddError(
 			fmt.Sprintf("Failed to delete Metal Gateway %s", id), err.Error(),
 		)
@@ -202,7 +202,7 @@ func getGatewayAndParse(ctx context.Context, client *metalv1.APIClient, state *R
 	// API call to get the Metal Gateway
 	gw, _, err := client.MetalGatewaysApi.FindMetalGatewayById(ctx, id).Include(includes).Execute()
 	if err != nil {
-		return diags, equinix_errors.FriendlyError(err)
+		return diags, err
 	}
 
 	// Parse the API response into the Terraform state
@@ -214,17 +214,25 @@ func getGatewayAndParse(ctx context.Context, client *metalv1.APIClient, state *R
 	return diags, nil
 }
 
-func getGatewayStateWaiter(ctx context.Context, client *metalv1.APIClient, id string, timeout time.Duration, pending, target []string) *retry.StateChangeConf {
+func getGatewayDeleteWaiter(ctx context.Context, client *metalv1.APIClient, id string, timeout time.Duration, pending []string) *retry.StateChangeConf {
+	// deletedMarker is a terraform-provider-only value that is used by the waiter
+	// to indicate that the gateway appears to be deleted successfully based on
+	// status code
+	deletedMarker := "tf-marker-for-deleted-gateway"
+
+	target := []string{deletedMarker}
+
 	return &retry.StateChangeConf{
 		Pending: pending,
 		Target:  target,
 		Refresh: func() (interface{}, string, error) {
 			gw, resp, err := client.MetalGatewaysApi.FindMetalGatewayById(ctx, id).Include(includes).Execute()
 			if err != nil {
-				if resp != nil {
-					err = equinix_errors.FriendlyErrorForMetalGo(err, resp)
+				if equinix_errors.IgnoreHttpResponseErrors(http.StatusForbidden, http.StatusNotFound)(resp, err) != nil {
+					return gw, "", err
+				} else {
+					return gw, deletedMarker, nil
 				}
-				return 0, "", err
 			}
 			state := ""
 			if gw.MetalGateway != nil {

@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"net/http"
 
 	"github.com/equinix/equinix-sdk-go/services/fabricv4"
 	equinix_errors "github.com/equinix/terraform-provider-equinix/internal/errors"
@@ -64,7 +65,7 @@ func testSweepCloudRouters(region string) error {
 		if sweep.IsSweepableFabricTestResource(cloudRouter.GetName()) {
 			log.Printf("[DEBUG] Deleting Cloud Routers: %s", cloudRouter.GetName())
 			resp, err := fabric.CloudRoutersApi.DeleteCloudRouterByUuid(ctx, cloudRouter.GetUuid()).Execute()
-			if equinix_errors.IgnoreHttpResponseErrors(equinix_errors.HttpForbidden, equinix_errors.HttpNotFound)(resp, err) != nil {
+			if equinix_errors.IgnoreHttpResponseErrors(http.StatusForbidden, http.StatusNotFound)(resp, err) != nil {
 				errs = append(errs, fmt.Errorf("error deleting fabric Cloud Router: %s", err))
 			}
 		}

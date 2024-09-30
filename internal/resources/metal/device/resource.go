@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"net/http"
 	"path"
 	"reflect"
 	"regexp"
@@ -551,13 +552,12 @@ func resourceMetalDeviceCreate(ctx context.Context, d *schema.ResourceData, meta
 
 	start := time.Now()
 	projectID := d.Get("project_id").(string)
-	newDevice, _, err := client.DevicesApi.CreateDevice(ctx, projectID).CreateDeviceRequest(createRequest).Execute()
+	newDevice, resp, err := client.DevicesApi.CreateDevice(ctx, projectID).CreateDeviceRequest(createRequest).Execute()
 	if err != nil {
-		retErr := equinix_errors.FriendlyError(err)
-		if equinix_errors.IsNotFound(retErr) {
-			retErr = fmt.Errorf("%s, make sure project \"%s\" exists", retErr, projectID)
+		if resp.StatusCode == http.StatusNotFound {
+			err = fmt.Errorf("%s, make sure project \"%s\" exists", err, projectID)
 		}
-		return diag.FromErr(retErr)
+		return diag.FromErr(err)
 	}
 
 	d.SetId(newDevice.GetId())
@@ -575,18 +575,16 @@ func Read(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Di
 
 	device, resp, err := client.DevicesApi.FindDeviceById(ctx, d.Id()).Include(deviceCommonIncludes).Execute()
 	if err != nil {
-		err = equinix_errors.FriendlyErrorForMetalGo(err, resp)
-
 		// If the device somehow already destroyed, mark as successfully gone.
 		// Checking d.IsNewResource prevents the creation of a resource from failing
 		// silently. Note d.IsNewResource is false in resource import operations.
-		if !d.IsNewResource() && (equinix_errors.IsNotFound(err) || equinix_errors.IsForbidden(err)) {
-			log.Printf("[WARN] Device (%s) not found or in failed status, removing from state", d.Id())
-			d.SetId("")
-			return nil
+		if d.IsNewResource() || equinix_errors.IgnoreHttpResponseErrors(http.StatusNotFound, http.StatusForbidden)(resp, err) != nil {
+			return diag.FromErr(err)
 		}
 
-		return diag.FromErr(err)
+		log.Printf("[WARN] Device (%s) not found or in failed status, removing from state", d.Id())
+		d.SetId("")
+		return nil
 	}
 
 	var errs []error
@@ -737,7 +735,7 @@ func resourceMetalDeviceUpdate(ctx context.Context, d *schema.ResourceData, meta
 	start := time.Now()
 	if !reflect.DeepEqual(ur, metalv1.DeviceUpdateInput{}) {
 		if _, _, err := client.DevicesApi.UpdateDevice(ctx, d.Id()).DeviceUpdateInput(ur).Execute(); err != nil {
-			return diag.FromErr(equinix_errors.FriendlyError(err))
+			return diag.FromErr(err)
 		}
 	}
 
@@ -774,7 +772,7 @@ func doReinstall(ctx context.Context, client *metalv1.APIClient, d *schema.Resou
 		}
 
 		if _, err := client.DevicesApi.PerformAction(ctx, d.Id()).DeviceActionInput(reinstallOptions).Execute(); err != nil {
-			return equinix_errors.FriendlyError(err)
+			return err
 		}
 
 		updateTimeout := d.Timeout(schema.TimeoutUpdate) - 30*time.Second - time.Since(start)
@@ -798,8 +796,8 @@ func resourceMetalDeviceDelete(ctx context.Context, d *schema.ResourceData, meta
 	start := time.Now()
 
 	resp, err := client.DevicesApi.DeleteDevice(ctx, d.Id()).ForceDelete(fdv).Execute()
-	if equinix_errors.IgnoreHttpResponseErrors(equinix_errors.HttpForbidden, equinix_errors.HttpNotFound)(resp, err) != nil {
-		return diag.FromErr(equinix_errors.FriendlyError(err))
+	if equinix_errors.IgnoreHttpResponseErrors(http.StatusForbidden, http.StatusNotFound)(resp, err) != nil {
+		return diag.FromErr(err)
 	}
 
 	resId, resIdOk := d.GetOk("deployed_hardware_reservation_id")
@@ -844,13 +842,15 @@ func WaitForActiveDevice(ctx context.Context, d *schema.ResourceData, meta inter
 	state, err := waitForDeviceAttribute(ctx, d, stateConf)
 	if err != nil {
 		d.SetId("")
-		fErr := equinix_errors.FriendlyError(err)
-		if equinix_errors.IsForbidden(fErr) {
+		// TODO: this can never be true because we don't have the API response
+		// but I'm not clear if we actually need this check?  Certainly the error
+		// message seems to promise something we can't and shouldn't promise
+		if equinix_errors.IsForbidden(err) {
 			// If the device doesn't get to the active state, we can't recover it from here.
 
 			return errors.New("provisioning time limit exceeded; the Equinix Metal team will investigate")
 		}
-		return fErr
+		return err
 	}
 
 	if state != "active" {

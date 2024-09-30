@@ -3,6 +3,7 @@ package project_ssh_key
 import (
 	"context"
 	"fmt"
+	"net/http"
 
 	"github.com/equinix/equinix-sdk-go/services/metalv1"
 	equinix_errors "github.com/equinix/terraform-provider-equinix/internal/errors"
@@ -53,7 +54,7 @@ func (r *Resource) Create(
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Failed to create Project SSH Key",
-			equinix_errors.FriendlyError(err).Error(),
+			err.Error(),
 		)
 		return
 	}
@@ -86,13 +87,11 @@ func (r *Resource) Read(
 	id := state.ID.ValueString()
 
 	// Use API client to get the current state of the resource
-	key, _, err := client.SSHKeysApi.FindSSHKeyById(ctx, id).Include(nil).Execute()
+	key, apiResp, err := client.SSHKeysApi.FindSSHKeyById(ctx, id).Include(nil).Execute()
 	if err != nil {
-		err = equinix_errors.FriendlyError(err)
-
 		// If the key is somehow already destroyed, mark as
 		// succesfully gone
-		if equinix_errors.IsNotFound(err) {
+		if apiResp.StatusCode == http.StatusNotFound {
 			resp.Diagnostics.AddWarning(
 				"Equinix Metal Project SSHKey not found during refresh",
 				fmt.Sprintf("[WARN] SSHKey (%s) not found, removing from state", id),
@@ -145,7 +144,6 @@ func (r *Resource) Update(
 	// Update the resource
 	key, _, err := client.SSHKeysApi.UpdateSSHKey(ctx, id).SSHKeyInput(*updateRequest).Execute()
 	if err != nil {
-		err = equinix_errors.FriendlyError(err)
 		resp.Diagnostics.AddError(
 			"Error updating resource",
 			"Could not update resource with ID "+id+": "+err.Error(),
@@ -182,8 +180,7 @@ func (r *Resource) Delete(
 
 	// Use API client to delete the resource
 	deleteResp, err := client.SSHKeysApi.DeleteSSHKey(ctx, id).Execute()
-	if equinix_errors.IgnoreHttpResponseErrors(equinix_errors.HttpForbidden, equinix_errors.HttpNotFound)(deleteResp, err) != nil {
-		err = equinix_errors.FriendlyError(err)
+	if equinix_errors.IgnoreHttpResponseErrors(http.StatusForbidden, http.StatusNotFound)(deleteResp, err) != nil {
 		resp.Diagnostics.AddError(
 			fmt.Sprintf("Failed to delete Project SSHKey %s", id),
 			err.Error(),

@@ -4,11 +4,13 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"log"
+	"net/http"
+
 	"github.com/equinix/equinix-sdk-go/services/fabricv4"
 	equinix_errors "github.com/equinix/terraform-provider-equinix/internal/errors"
 	"github.com/equinix/terraform-provider-equinix/internal/sweep"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
-	"log"
 )
 
 func AddTestSweeper() {
@@ -27,7 +29,11 @@ func testSweepConnections(region string) error {
 	if err != nil {
 		return fmt.Errorf("error getting configuration for sweeping Conections: %s", err)
 	}
-	meta.Load(ctx)
+	err = meta.Load(ctx)
+	if err != nil {
+		log.Printf("Error loading meta: %v", err)
+		return err
+	}
 	fabric := meta.NewFabricClientForTesting()
 
 	name := fabricv4.SEARCHFIELDNAME_NAME
@@ -64,7 +70,7 @@ func testSweepConnections(region string) error {
 		if sweep.IsSweepableFabricTestResource(connection.GetName()) {
 			log.Printf("[DEBUG] Deleting Connection: %s", connection.GetName())
 			_, resp, err := fabric.ConnectionsApi.DeleteConnectionByUuid(ctx, connection.GetUuid()).Execute()
-			if equinix_errors.IgnoreHttpResponseErrors(equinix_errors.HttpForbidden, equinix_errors.HttpNotFound)(resp, err) != nil {
+			if equinix_errors.IgnoreHttpResponseErrors(http.StatusForbidden, http.StatusNotFound)(resp, err) != nil {
 				errs = append(errs, fmt.Errorf("error deleting fabric connection: %s", err))
 			}
 		}

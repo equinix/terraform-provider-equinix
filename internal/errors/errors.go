@@ -2,9 +2,11 @@ package errors
 
 import (
 	"fmt"
-	"github.com/equinix/equinix-sdk-go/services/fabricv4"
 	"net/http"
+	"slices"
 	"strings"
+
+	"github.com/equinix/equinix-sdk-go/services/fabricv4"
 
 	"github.com/equinix/rest-go"
 	"github.com/packethost/packngo"
@@ -24,11 +26,6 @@ func FriendlyError(err error) error {
 		return convertToFriendlyError(errors, resp)
 	}
 	return err
-}
-
-func FriendlyErrorForMetalGo(err error, resp *http.Response) error {
-	errors := Errors([]string{err.Error()})
-	return convertToFriendlyError(errors, resp)
 }
 
 func convertToFriendlyError(errors Errors, resp *http.Response) error {
@@ -191,21 +188,14 @@ func HasErrorCode(errors []fabricv4.Error, code string) bool {
 	return false
 }
 
-// ignoreHttpResponseErrors ignores http response errors when matched by one of the
-// provided checks
-func IgnoreHttpResponseErrors(ignore ...func(resp *http.Response, err error) bool) func(resp *http.Response, err error) error {
+// IgnoreHttpResponseErrors ignores http response errors when the status
+// code of the response matches one of the status codes in the ignore list
+func IgnoreHttpResponseErrors(ignore ...int) func(resp *http.Response, err error) error {
 	return func(resp *http.Response, err error) error {
-		mute := false
-		for _, ignored := range ignore {
-			if ignored(resp, err) {
-				mute = true
-				break
-			}
-		}
-
-		if mute {
+		if resp != nil && slices.Contains(ignore, resp.StatusCode) {
 			return nil
 		}
+
 		return err
 	}
 }

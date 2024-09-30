@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"log"
+	"net/http"
 	"regexp"
 	"strconv"
 	"time"
@@ -314,7 +315,7 @@ func resourceMetalVirtualCircuitRead(ctx context.Context, d *schema.ResourceData
 	if connectionID != "" {
 		errs = append(errs, d.Set("connection_id", connectionID))
 	}
-	d.Set("port_id", portID)
+	errs = append(errs, d.Set("port_id", portID))
 
 	if vc.VlanVirtualCircuit != nil {
 		errs = append(errs, d.Set("project_id", vc.VlanVirtualCircuit.Project.GetId()))
@@ -354,19 +355,35 @@ func resourceMetalVirtualCircuitRead(ctx context.Context, d *schema.ResourceData
 	return diag.FromErr(errors.Join(errs...))
 }
 
+// Waiting for delete is different from waiting for a status, because we explicitly _want_
+// to get a 404 from the API on delete so that we know the resource is truly gone.
+// We may want to have a separate wait function for deletions so that it is easier
+// to understand the code
 func getVCStateWaiter(ctx context.Context, client *metalv1.APIClient, id string, timeout time.Duration, pending, target []string) *retry.StateChangeConf {
+	// deletedMarker is a terraform-provider-only value that is used by the waiter
+	// to indicate that the virtual circuit appears to be deleted successfully based on
+	// status code
+	deletedMarker := "tf-marker-for-deleted-virtual-circuit"
+
+	// Per current usage, when waiting for delete we pass in an empty target
+	// list; therefore, if the target list is empty we assume that a 404 or 403
+	// from the API is a success rather than a failure.
+	isWaitForDelete := len(target) == 0
+
+	if isWaitForDelete {
+		target = append(target, deletedMarker)
+	}
+
 	return &retry.StateChangeConf{
 		Pending: pending,
 		Target:  target,
 		Refresh: func() (interface{}, string, error) {
 			vc, resp, err := client.InterconnectionsApi.GetVirtualCircuit(ctx, id).Execute()
 			if err != nil {
-				if resp != nil {
-					// The resource delete function uses this waiter and relies
-					// on it to return an ErrorResponse error so it can treat
-					// a 404 as success.  This conversion is done here for now
-					// to avoid a larger refactoring.
-					err = equinix_errors.FriendlyErrorForMetalGo(err, resp)
+				if isWaitForDelete {
+					if equinix_errors.IgnoreHttpResponseErrors(http.StatusNotFound, http.StatusForbidden)(resp, err) == nil {
+						return 0, deletedMarker, nil
+					}
 				}
 				return 0, "", err
 			}
@@ -521,16 +538,8 @@ func resourceMetalVirtualCircuitDelete(ctx context.Context, d *schema.ResourceDa
 	client := meta.(*config.Config).NewMetalClientForSDK(d)
 
 	_, resp, err := client.InterconnectionsApi.DeleteVirtualCircuit(ctx, d.Id()).Execute()
-	if err != nil {
-		if resp != nil {
-			// equinix_error.HttpNotFound and similar do not short-circuit
-			// based on response code, so we have to convert to a FriendlyError
-			// in order to use existing checks for equinix_errors.IgnoreHttpResponseErrors
-			err = equinix_errors.FriendlyErrorForMetalGo(err, resp)
-		}
-		if equinix_errors.IgnoreHttpResponseErrors(equinix_errors.HttpForbidden, equinix_errors.HttpNotFound)(resp, err) != nil {
-			return diag.FromErr(err)
-		}
+	if equinix_errors.IgnoreHttpResponseErrors(http.StatusForbidden, http.StatusNotFound)(resp, err) != nil {
+		return diag.FromErr(err)
 	}
 
 	deleteWaiter := getVCStateWaiter(
@@ -543,7 +552,7 @@ func resourceMetalVirtualCircuitDelete(ctx context.Context, d *schema.ResourceDa
 	)
 
 	_, err = deleteWaiter.WaitForStateContext(ctx)
-	if equinix_errors.IgnoreHttpResponseErrors(equinix_errors.HttpForbidden, equinix_errors.HttpNotFound)(nil, err) != nil {
+	if equinix_errors.IgnoreHttpResponseErrors(http.StatusForbidden, http.StatusNotFound)(nil, err) != nil {
 		return diag.Errorf("Error deleting virtual circuit %s: %s", d.Id(), err)
 	}
 	d.SetId("")
