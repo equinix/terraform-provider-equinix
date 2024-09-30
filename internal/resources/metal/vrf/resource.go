@@ -39,7 +39,8 @@ func Resource() *schema.Resource {
 			"metro": {
 				Type:        schema.TypeString,
 				Required:    true,
-				Description: "Metro Code",
+				Description: "Metro ID or Code where the VRF will be deployed",
+				ForceNew:    true,
 			},
 			"local_asn": {
 				Type:        schema.TypeInt,
@@ -56,7 +57,8 @@ func Resource() *schema.Resource {
 			"project_id": {
 				Type:        schema.TypeString,
 				Required:    true,
-				Description: "Project ID",
+				Description: "Project ID where the VRF will be deployed",
+				ForceNew:    true,
 			},
 			// TODO: created_by, created_at, updated_at, href
 		},
