@@ -3,6 +3,7 @@ package vlan
 import (
 	"context"
 	"fmt"
+	"net/http"
 	"strings"
 
 	equinix_errors "github.com/equinix/terraform-provider-equinix/internal/errors"
@@ -164,7 +165,7 @@ func (r *Resource) Delete(ctx context.Context, request resource.DeleteRequest, r
 		data.ID.ValueString(),
 	).Include([]string{"instances", "virtual_network", "meta_gateway"}).Execute()
 	if err != nil {
-		if err := equinix_errors.IgnoreHttpResponseErrors(equinix_errors.HttpForbidden, equinix_errors.HttpNotFound)(resp, err); err != nil {
+		if err := equinix_errors.IgnoreHttpResponseErrors(http.StatusForbidden, http.StatusNotFound)(resp, err); err != nil {
 			response.Diagnostics.AddWarning(
 				"Equinix Metal Vlan not found during delete",
 				err.Error(),
@@ -184,7 +185,7 @@ func (r *Resource) Delete(ctx context.Context, request resource.DeleteRequest, r
 					_, resp, err = client.PortsApi.UnassignPort(ctx, port.GetId()).PortAssignInput(metalv1.PortAssignInput{
 						Vnid: vlan.Id,
 					}).Execute()
-					if equinix_errors.IgnoreHttpResponseErrors(equinix_errors.HttpForbidden, equinix_errors.HttpNotFound)(resp, err) != nil {
+					if equinix_errors.IgnoreHttpResponseErrors(http.StatusForbidden, http.StatusNotFound)(resp, err) != nil {
 						response.Diagnostics.AddError("Error unassign port with Vlan", err.Error())
 						return
 					}
@@ -194,7 +195,7 @@ func (r *Resource) Delete(ctx context.Context, request resource.DeleteRequest, r
 	}
 
 	resp, err = client.VLANsApi.DeleteVirtualNetwork(ctx, vlan.GetId()).Execute()
-	if err := equinix_errors.IgnoreHttpResponseErrors(equinix_errors.HttpForbidden, equinix_errors.HttpNotFound)(resp, err); err != nil {
+	if err := equinix_errors.IgnoreHttpResponseErrors(http.StatusForbidden, http.StatusNotFound)(resp, err); err != nil {
 		response.Diagnostics.AddError("Error deleting Vlan",
 			err.Error())
 		return
