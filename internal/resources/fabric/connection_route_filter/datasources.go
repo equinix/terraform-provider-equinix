@@ -14,7 +14,7 @@ func DataSource() *schema.Resource {
 	return &schema.Resource{
 		ReadContext: dataSourceRead,
 		Schema:      dataSourceByUUIDSchema(),
-		Description: `Fabric V4 API compatible data resource that allow user to fetch route filter for a given UUID
+		Description: `Fabric V4 API compatible data resource that allow user to fetch route filter policy attachment to a fabric connection
 
 Additional Documentation:
 * Getting Started: https://docs.equinix.com/en-us/Content/Interconnection/FCR/FCR-route-filters.htm
@@ -32,7 +32,7 @@ func DataSourceGetAllRules() *schema.Resource {
 	return &schema.Resource{
 		ReadContext: dataSourceGetAllFilters,
 		Schema:      dataSourceAllFiltersSchema(),
-		Description: `Fabric V4 API compatible data resource that allow user to fetch route filter for a given search data set
+		Description: `Fabric V4 API compatible data resource that allow user to fetch all route filter policies attached to a fabric connection
 
 Additional Documentation:
 * Getting Started: https://docs.equinix.com/en-us/Content/Interconnection/FCR/FCR-route-filters.htm
