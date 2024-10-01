@@ -20,6 +20,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/plancheck"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 )
 
@@ -481,6 +482,7 @@ func testAccMetalDeviceAttributes(device *metalv1.Device) resource.TestCheckFunc
 
 func testAccMetalDeviceExists(n string, device *metalv1.Device) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
+		fmt.Println("I'm testing that the device exists")
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
 			return fmt.Errorf("Not found: %s", n)
@@ -914,43 +916,34 @@ resource "equinix_metal_device" "test" {
 `, acceptance.ConfAccMetalDevice_base(acceptance.Preferable_plans, acceptance.Preferable_metros, acceptance.Preferable_os), projSuffix, acceptance.TestDeviceTerminationTime(), updateTimeout)
 }
 
-func testAccWaitForMetalDeviceActive(project, deviceHostName string) resource.ImportStateIdFunc {
-	return func(state *terraform.State) (string, error) {
-		defaultTimeout := 20 * time.Minute
+// Deprecated: deviceWaitPlanCheck is a custom PlanCheck narrowly
+// focused on enabling successful cleanup after the
+// TestAccMetalDeviceCreate_timeout test.  You probably
+// shouldn't use it for anything else.
+type deviceWaitPlanCheck struct {
+	resourceAddress string
+}
 
-		rs, ok := state.RootModule().Resources[project]
-		if !ok {
-			return "", fmt.Errorf("Project Not found in the state: %s", project)
-		}
-		if rs.Primary.ID == "" {
-			return "", fmt.Errorf("No Record ID is set")
-		}
+var _ plancheck.PlanCheck = deviceWaitPlanCheck{}
 
-		meta := acceptance.TestAccProvider.Meta()
-		rd := new(schema.ResourceData)
-		client := meta.(*config.Config).NewMetalClientForTesting()
-		resp, _, err := client.DevicesApi.FindProjectDevices(context.TODO(), rs.Primary.ID).Search(deviceHostName).Execute()
-		if err != nil {
-			return "", fmt.Errorf("error while fetching devices for project [%s], error: %w", rs.Primary.ID, err)
-		}
-		devices := resp.Devices
-		if len(devices) == 0 {
-			return "", fmt.Errorf("Not able to find devices in project [%s]", rs.Primary.ID)
-		}
-		if len(devices) > 1 {
-			return "", fmt.Errorf("Found more than one device with the hostname in project [%s]", rs.Primary.ID)
-		}
+func (d deviceWaitPlanCheck) CheckPlan(ctx context.Context, req plancheck.CheckPlanRequest, resp *plancheck.CheckPlanResponse) {
+	defaultTimeout := 20 * time.Minute
 
-		rd.SetId(devices[0].GetId())
-		return devices[0].GetId(), device.WaitForActiveDevice(context.Background(), rd, acceptance.TestAccProvider.Meta(), defaultTimeout)
+	resources := req.Plan.PriorState.Values.RootModule.Resources
+	for _, resource := range resources {
+		if resource.Address == d.resourceAddress {
+			rd := new(schema.ResourceData)
+			rd.SetId(resource.AttributeValues["id"].(string))
+			resp.Error = device.WaitForActiveDevice(context.Background(), rd, acceptance.TestAccProvider.Meta(), defaultTimeout)
+			return
+		}
 	}
+	resp.Error = fmt.Errorf("could not find a resource with address %v", d.resourceAddress)
 }
 
 func TestAccMetalDeviceCreate_timeout(t *testing.T) {
 	rs := acctest.RandString(10)
 	r := "equinix_metal_device.test"
-	hostname := "tfacc-test-device"
-	project := "equinix_metal_project.test"
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.TestAccPreCheck(t) },
@@ -963,17 +956,16 @@ func TestAccMetalDeviceCreate_timeout(t *testing.T) {
 				ExpectError: matchErrDeviceReadyTimeout,
 			},
 			{
-				/**
-				Step 1 errors out, state doesnt have device, need to import that in the state before deleting
-				*/
-				ResourceName:       r,
-				ImportState:        true,
-				ImportStateIdFunc:  testAccWaitForMetalDeviceActive(project, hostname),
-				ImportStatePersist: true,
-			},
-			{
-				Config:  testAccMetalDeviceConfig_timeout(rs, "", "", ""),
-				Destroy: true,
+				RefreshState: true,
+				// Resource errored during create and will
+				// be tainted by terraform, so the plan is
+				// guaranteed to be non-empty
+				ExpectNonEmptyPlan: true,
+				RefreshPlanChecks: resource.RefreshPlanChecks{
+					PostRefresh: []plancheck.PlanCheck{
+						deviceWaitPlanCheck{resourceAddress: r},
+					},
+				},
 			},
 		},
 	})
