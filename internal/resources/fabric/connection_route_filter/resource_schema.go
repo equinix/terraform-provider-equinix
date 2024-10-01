@@ -10,11 +10,13 @@ func resourceSchema() map[string]*schema.Schema {
 		"connection_id": {
 			Type:        schema.TypeString,
 			Required:    true,
+			ForceNew:    true,
 			Description: "Equinix Assigned UUID of the Equinix Connection to attach the Route Filter Policy to",
 		},
 		"route_filter_id": {
 			Type:        schema.TypeString,
 			Required:    true,
+			ForceNew:    true,
 			Description: "Equinix Assigned UUID of the Route Filter Policy to attach to the Equinix Connection",
 		},
 		"direction": {
