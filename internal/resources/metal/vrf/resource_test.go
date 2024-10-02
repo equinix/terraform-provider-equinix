@@ -17,6 +17,9 @@ import (
 
 const (
 	metalDedicatedConnIDEnvVar = "TF_ACC_METAL_DEDICATED_CONNECTION_ID"
+	// This used to be repeated in each config function
+	// Extracting it for now but other test suites pick a dynamic metro
+	testMetro = "da"
 )
 
 func TestAccMetalVRF_basic(t *testing.T) {
@@ -43,6 +46,58 @@ func TestAccMetalVRF_basic(t *testing.T) {
 				ResourceName:      "equinix_metal_vrf.test",
 				ImportState:       true,
 				ImportStateVerify: true,
+			},
+		},
+	})
+}
+
+func TestAccMetalVRF_bgpDynamicNeighbors(t *testing.T) {
+	var vrf metalv1.Vrf
+	rInt := acctest.RandInt()
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:                 func() { acceptance.TestAccPreCheckMetal(t) },
+		ExternalProviders:        acceptance.TestExternalProviders,
+		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		CheckDestroy:             testAccMetalVRFCheckDestroyed,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccMetalVRFConfig_bgpDynamicNeighbors(rInt, true, true, true),
+				Check: resource.ComposeTestCheckFunc(
+					testAccMetalVRFExists("equinix_metal_vrf.test", &vrf),
+					resource.TestCheckResourceAttr(
+						"equinix_metal_vrf.test", "bgp_dynamic_neighbors_enabled", "true"),
+					resource.TestCheckResourceAttr(
+						"equinix_metal_vrf.test", "bgp_dynamic_neighbors_export_route_map", "true"),
+					resource.TestCheckResourceAttr(
+						"equinix_metal_vrf.test", "bgp_dynamic_neighbors_bfd_enabled", "true"),
+				),
+			},
+			{
+				ResourceName:      "equinix_metal_vrf.test",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+			{
+				Config: testAccMetalVRFConfig_bgpDynamicNeighbors(rInt, false, false, false),
+				Check: resource.ComposeTestCheckFunc(
+					testAccMetalVRFExists("equinix_metal_vrf.test", &vrf),
+					resource.TestCheckResourceAttr(
+						"equinix_metal_vrf.test", "bgp_dynamic_neighbors_enabled", "false"),
+					resource.TestCheckResourceAttr(
+						"equinix_metal_vrf.test", "bgp_dynamic_neighbors_export_route_map", "false"),
+					resource.TestCheckResourceAttr(
+						"equinix_metal_vrf.test", "bgp_dynamic_neighbors_bfd_enabled", "false"),
+				),
+			},
+			{
+				ResourceName:      "equinix_metal_vrf.test",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+			{
+				Config:   testAccMetalVRFConfig_basic(rInt),
+				PlanOnly: true,
 			},
 		},
 	})
@@ -289,8 +344,6 @@ func testAccMetalVRFExists(n string, vrf *metalv1.Vrf) resource.TestCheckFunc {
 }
 
 func testAccMetalVRFConfig_basic(r int) string {
-	testMetro := "da"
-
 	return fmt.Sprintf(`
 resource "equinix_metal_project" "test" {
     name = "tfacc-vrfs-%d"
@@ -303,9 +356,23 @@ resource "equinix_metal_vrf" "test" {
 }`, r, r, testMetro)
 }
 
-func testAccMetalVRFConfig_withIPRanges(r int) string {
-	testMetro := "da"
+func testAccMetalVRFConfig_bgpDynamicNeighbors(r int, enabled, export_route_map, bfd_enabled bool) string {
+	return fmt.Sprintf(`
+resource "equinix_metal_project" "test" {
+    name = "tfacc-vrfs-%d"
+}
 
+resource "equinix_metal_vrf" "test" {
+	name = "tfacc-vrf-%d"
+	metro = "%s"
+	project_id = "${equinix_metal_project.test.id}"
+	bgp_dynamic_neighbors_enabled = %v
+	bgp_dynamic_neighbors_export_route_map = %v
+	bgp_dynamic_neighbors_bfd_enabled = %v
+}`, r, r, testMetro, enabled, export_route_map, bfd_enabled)
+}
+
+func testAccMetalVRFConfig_withIPRanges(r int) string {
 	return fmt.Sprintf(`
 resource "equinix_metal_project" "test" {
     name = "tfacc-vrfs-%d"
@@ -322,8 +389,6 @@ resource "equinix_metal_vrf" "test" {
 }
 
 func testAccMetalVRFConfig_withIPReservations(r int) string {
-	testMetro := "da"
-
 	return testAccMetalVRFConfig_withIPRanges(r) + fmt.Sprintf(`
 
 resource "equinix_metal_reserved_ip_block" "test" {
@@ -339,8 +404,6 @@ resource "equinix_metal_reserved_ip_block" "test" {
 }
 
 func testAccMetalVRFConfig_withGateway(r int) string {
-	testMetro := "da"
-
 	return testAccMetalVRFConfig_withIPReservations(r) + fmt.Sprintf(`
 
 resource "equinix_metal_vlan" "test" {

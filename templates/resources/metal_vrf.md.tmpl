@@ -26,20 +26,7 @@ Attach a Virtual Circuit from a Dedicated Metal Connection to the Metal Gateway.
 
 {{tffile "examples/resources/equinix_metal_vrf/example_3.tf"}}
 
-## Argument Reference
-
-The following arguments are supported:
-
-* `name` - (Required) User-supplied name of the VRF, unique to the project
-* `metro` - (Required) Metro ID or Code where the VRF will be deployed.
-* `project_id` - (Required) Project ID where the VRF will be deployed.
-* `description` - (Optional) Description of the VRF.
-* `local_asn` - (Optional) The 4-byte ASN set on the VRF.
-* `ip_ranges` - (Optional) All IPv4 and IPv6 Ranges that will be available to BGP Peers. IPv4 addresses must be /8 or smaller with a minimum size of /29. IPv6 must be /56 or smaller with a minimum size of /64. Ranges must not overlap other ranges within the VRF.
-
-## Attributes Reference
-
-No additional attributes are exported.
+{{ .SchemaMarkdown | trimspace }}
 
 ## Import
 
