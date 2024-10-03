@@ -23,7 +23,7 @@ Additional Documentation:
 }
 
 func dataSourceRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	uuid := d.Get("uuid").(string)
+	uuid := d.Get("route_filter_id").(string)
 	d.SetId(uuid)
 	return resourceRead(ctx, d, meta)
 }

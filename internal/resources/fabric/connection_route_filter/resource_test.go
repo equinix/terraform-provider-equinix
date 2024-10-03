@@ -22,9 +22,6 @@ func TestAccFabricConnectionRouteFilter_PFCR(t *testing.T) {
 	if len(ports) > 0 {
 		portUuid = ports["pfcr"]["dot1q"][0].GetUuid()
 	}
-	routeFilterRuleName, routeFilterRuleUpdatedName := "RF_Rule_PFCR", "RF_RuleB_PFCR"
-	routeFilterRulePrefix, routeFilterRulePrefixUpdated := "192.168.0.0/24", "192.172.0.0/24"
-	routeFilterRuleDescription := "Route Filter Rule for X Purpose"
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { acceptance.TestAccPreCheck(t); acceptance.TestAccPreCheckProviderConfigured(t) },
 		Providers:    acceptance.TestAccProviders,
@@ -42,7 +39,27 @@ func TestAccFabricConnectionRouteFilter_PFCR(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						"equinix_fabric_connection_route_filter.test", "type", "BGP_IPv4_PREFIX_FILTER"),
 					resource.TestCheckResourceAttr(
-						"equinix_fabric_connection_route_filter.test", "attachment_status", string(fabricv4.CONNECTIONROUTEFILTERDATAATTACHMENTSTATUS_ATTACHED)),
+						"equinix_fabric_connection_route_filter.test", "attachment_status", string(fabricv4.CONNECTIONROUTEFILTERDATAATTACHMENTSTATUS_PENDING_BGP_CONFIGURATION)),
+					resource.TestCheckResourceAttrSet("data.equinix_fabric_connection_route_filter.test", "id"),
+					resource.TestCheckResourceAttrSet("data.equinix_fabric_connection_route_filter.test", "connection_id"),
+					resource.TestCheckResourceAttrSet("data.equinix_fabric_connection_route_filter.test", "route_filter_id"),
+
+					resource.TestCheckResourceAttr(
+						"data.equinix_fabric_connection_route_filter.test", "direction", "INBOUND"),
+					resource.TestCheckResourceAttr(
+						"data.equinix_fabric_connection_route_filter.test", "type", "BGP_IPv4_PREFIX_FILTER"),
+					resource.TestCheckResourceAttr(
+						"data.equinix_fabric_connection_route_filter.test", "attachment_status", string(fabricv4.CONNECTIONROUTEFILTERDATAATTACHMENTSTATUS_PENDING_BGP_CONFIGURATION)),
+					resource.TestCheckResourceAttrSet("data.equinix_fabric_connection_route_filters.test", "id"),
+					resource.TestCheckResourceAttrSet("data.equinix_fabric_connection_route_filters.test", "connection_id"),
+					resource.TestCheckResourceAttrSet("data.equinix_fabric_connection_route_filters.test", "data.0.uuid"),
+
+					resource.TestCheckResourceAttr(
+						"data.equinix_fabric_connection_route_filters.test", "data.0.direction", "INBOUND"),
+					resource.TestCheckResourceAttr(
+						"data.equinix_fabric_connection_route_filters.test", "data.0.type", "BGP_IPv4_PREFIX_FILTER"),
+					resource.TestCheckResourceAttr(
+						"data.equinix_fabric_connection_route_filters.test", "data.0.attachment_status", string(fabricv4.CONNECTIONROUTEFILTERDATAATTACHMENTSTATUS_PENDING_BGP_CONFIGURATION)),
 				),
 				ExpectNonEmptyPlan: false,
 			},
@@ -53,26 +70,26 @@ func TestAccFabricConnectionRouteFilter_PFCR(t *testing.T) {
 
 func testAccFabricConnectionRouteFilterConfig(portUuid string) string {
 	return fmt.Sprintf(`
-		resource "equinix_fabric_cloud_router" "test"{
+		resource "equinix_fabric_cloud_router" "test" {
 			type = "XF_ROUTER"
 			name = "RF_CR_PFCR"
-			location{
-				metro_code  = "SV"
+			location {
+				metro_code  = "DC"
 			}
-			package{
-				code = "PRO"
+			package {
+				code = "STANDARD"
 			}
-			order{
+			order {
 				purchase_order_number = "1-234567"
 			}
-			notifications{
+			notifications {
 				type = "ALL"
 				emails = [
 					"test@equinix.com",
 					"test1@equinix.com"
 				]
 			}
-			project{
+			project {
 				project_id = "291639000636552"
 			}
 			account {
@@ -83,7 +100,7 @@ func testAccFabricConnectionRouteFilterConfig(portUuid string) string {
 		resource "equinix_fabric_connection" "test" {
 			type = "IP_VC"
 			name = "RF_CR_Connection_PFCR"
-			notifications{
+			notifications {
 				type = "ALL"
 				emails = ["test@equinix.com","test1@equinix.com"]
 			}
@@ -102,7 +119,7 @@ func testAccFabricConnectionRouteFilterConfig(portUuid string) string {
 					}
 				}
 			}
-			project{
+			project {
 			   project_id = "291639000636552"
 			}
 			z_side {
@@ -113,10 +130,10 @@ func testAccFabricConnectionRouteFilterConfig(portUuid string) string {
 					}
 					link_protocol {
 						type= "DOT1Q"
-						vlan_tag= 2565
+						vlan_tag= 2569
 					}
 					location {
-						metro_code = "SV"
+						metro_code = "DC"
 					}
 				}
 			}
@@ -140,10 +157,21 @@ func testAccFabricConnectionRouteFilterConfig(portUuid string) string {
 		}
 
 		resource "equinix_fabric_connection_route_filter" "test" {
-			depends_on = [ equinix_fabric_connection_route_rule.test ]
+			depends_on = [ equinix_fabric_route_filter_rule.test ]
 			connection_id = equinix_fabric_connection.test.id
 			route_filter_id = equinix_fabric_route_filter.test.id
-			direction "INBOUND"
+			direction = "INBOUND"
+		}
+
+		data "equinix_fabric_connection_route_filter" "test" {
+			depends_on = [ equinix_fabric_connection_route_filter.test ]
+			connection_id = equinix_fabric_connection.test.id
+			route_filter_id = equinix_fabric_route_filter.test.id
+		}
+
+		data "equinix_fabric_connection_route_filters" "test" {
+			depends_on = [ equinix_fabric_connection_route_filter.test ]
+			connection_id = equinix_fabric_connection.test.id
 		}
 
 	`, portUuid)
