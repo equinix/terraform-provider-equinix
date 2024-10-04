@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"path"
 	"strings"
 
 	equinix_errors "github.com/equinix/terraform-provider-equinix/internal/errors"
@@ -15,7 +16,7 @@ import (
 )
 
 var (
-	vlanDefaultIncludes = []string{"assigned_to", "facility", "metro"}
+	vlanDefaultIncludes = []string{"assigned_to", "metro"}
 )
 
 type Resource struct {
@@ -87,7 +88,7 @@ func (r *Resource) Create(ctx context.Context, request resource.CreateRequest, r
 	}
 
 	// get the current state of newly created vlan with default include fields
-	vlan, _, err = client.VLANsApi.GetVirtualNetwork(ctx, vlan.GetId()).Include(vlanDefaultIncludes).Execute()
+	vlan, err = loadVlan(ctx, client, vlan.GetId())
 	if err != nil {
 		response.Diagnostics.AddError("Error reading Vlan after create", err.Error())
 		return
@@ -112,10 +113,7 @@ func (r *Resource) Read(ctx context.Context, request resource.ReadRequest, respo
 		return
 	}
 
-	vlan, _, err := client.VLANsApi.GetVirtualNetwork(
-		ctx,
-		data.ID.ValueString(),
-	).Include(vlanDefaultIncludes).Execute()
+	vlan, err := loadVlan(ctx, client, data.ID.ValueString())
 	if err != nil {
 		if equinix_errors.IsNotFound(err) {
 			response.Diagnostics.AddWarning(
@@ -163,7 +161,7 @@ func (r *Resource) Delete(ctx context.Context, request resource.DeleteRequest, r
 	vlan, resp, err := client.VLANsApi.GetVirtualNetwork(
 		ctx,
 		data.ID.ValueString(),
-	).Include([]string{"instances", "virtual_network", "meta_gateway"}).Execute()
+	).Include([]string{"instances", "virtual_networks"}).Execute()
 	if err != nil {
 		if err := equinix_errors.IgnoreHttpResponseErrors(http.StatusForbidden, http.StatusNotFound)(resp, err); err != nil {
 			response.Diagnostics.AddWarning(
@@ -200,4 +198,28 @@ func (r *Resource) Delete(ctx context.Context, request resource.DeleteRequest, r
 			err.Error())
 		return
 	}
+}
+
+func loadVlan(ctx context.Context, client *metalv1.APIClient, id string) (*metalv1.VirtualNetwork, error) {
+	vlan, _, err := client.VLANsApi.GetVirtualNetwork(ctx, id).Include(vlanDefaultIncludes).Execute()
+
+	// If this is a facility-based VLAN we have to find the facility separately
+	// because if we include `facility`, the facility.href attribute becomes
+	// unreachable and the API response above won't validate against the VLAN schema
+	if err == nil && vlan.Facility != nil {
+		facilityId := path.Base(vlan.Facility.GetHref())
+		facilities, _, err := client.FacilitiesApi.FindFacilities(ctx).Include([]metalv1.FindFacilitiesIncludeParameterInner{"metro"}).Execute()
+		if err == nil {
+			for _, facility := range facilities.GetFacilities() {
+				if facility.GetId() == facilityId {
+					vlan.Metro = (*metalv1.Metro)(facility.Metro)
+				}
+			}
+			if vlan.Metro == nil {
+				return vlan, fmt.Errorf("could not find facility %v for VLAN %v", facilityId, vlan.GetId())
+			}
+		}
+	}
+
+	return vlan, err
 }
