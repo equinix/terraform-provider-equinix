@@ -119,24 +119,6 @@ func TestProvider_isEmpty(t *testing.T) {
 	}
 }
 
-func TestProvider_setSchemaValueIfNotEmpty(t *testing.T) {
-	// given
-	key := "test"
-	s := map[string]*schema.Schema{
-		key: {
-			Type:     schema.TypeString,
-			Optional: true,
-		},
-	}
-	var b *int = nil
-	d := schema.TestResourceDataRaw(t, s, make(map[string]interface{}))
-	// when
-	setSchemaValueIfNotEmpty(key, b, d)
-	// then
-	_, ok := d.GetOk(key)
-	assert.False(t, ok, "Key was not set")
-}
-
 // Deprecated test moved to internal/comparissons/comparisons_test.go
 func TestProvider_slicesMatch(t *testing.T) {
 	// given
@@ -249,11 +231,4 @@ func copyMap(source map[string]interface{}) map[string]interface{} {
 		target[k] = v
 	}
 	return target
-}
-
-func setSchemaValueIfNotEmpty(key string, value interface{}, d *schema.ResourceData) error {
-	if !isEmpty(value) {
-		return d.Set(key, value)
-	}
-	return nil
 }
