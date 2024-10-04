@@ -1,6 +1,7 @@
 package vlan_test
 
 import (
+	"context"
 	"fmt"
 	"reflect"
 	"testing"
@@ -278,13 +279,13 @@ func TestMetalVlan_matchingVlan(t *testing.T) {
 }
 
 func testAccMetalDatasourceVlanCheckDestroyed(s *terraform.State) error {
-	client := acceptance.TestAccProvider.Meta().(*config.Config).Metal
+	client := acceptance.TestAccProvider.Meta().(*config.Config).NewMetalClientForTesting()
 
 	for _, rs := range s.RootModule().Resources {
 		if rs.Type != "equinix_metal_vlan" {
 			continue
 		}
-		if _, _, err := client.ProjectVirtualNetworks.Get(rs.Primary.ID, nil); err == nil {
+		if _, _, err := client.VLANsApi.GetVirtualNetwork(context.Background(), rs.Primary.ID).Execute(); err == nil {
 			return fmt.Errorf("Data source VLAN still exists")
 		}
 	}
