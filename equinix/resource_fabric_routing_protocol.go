@@ -281,12 +281,6 @@ func createFabricRoutingProtocolResourceSchema() map[string]*schema.Schema {
 			Computed:    true,
 			Description: "BGP authorization key",
 		},
-		"as_override_enabled": {
-			Type:        schema.TypeBool,
-			Optional:    true,
-			Computed:    true,
-			Description: "Enable AS number override",
-		},
 		"bfd": {
 			Type:        schema.TypeSet,
 			Optional:    true,
