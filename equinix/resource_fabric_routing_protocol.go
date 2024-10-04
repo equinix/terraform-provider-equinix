@@ -61,6 +61,24 @@ func createBgpConnectionIpv4Sch() map[string]*schema.Schema {
 			Default:     true,
 			Description: "Admin status for the BGP session",
 		},
+		"outbound_as_prepend_count": {
+			Type:        schema.TypeInt,
+			Optional:    true,
+			Computed:    true,
+			Description: "AS path prepend count",
+		},
+		"inbound_med": {
+			Type:        schema.TypeInt,
+			Optional:    true,
+			Computed:    true,
+			Description: "Inbound Multi Exit Discriminator attribute",
+		},
+		"outbound_med": {
+			Type:        schema.TypeInt,
+			Optional:    true,
+			Computed:    true,
+			Description: "Outbound Multi Exit Discriminator attribute",
+		},
 	}
 }
 
@@ -81,6 +99,24 @@ func createBgpConnectionIpv6Sch() map[string]*schema.Schema {
 			Optional:    true,
 			Default:     true,
 			Description: "Admin status for the BGP session",
+		},
+		"outbound_as_prepend_count": {
+			Type:        schema.TypeInt,
+			Optional:    true,
+			Computed:    true,
+			Description: "AS path prepend count",
+		},
+		"inbound_med": {
+			Type:        schema.TypeInt,
+			Optional:    true,
+			Computed:    true,
+			Description: "Inbound Multi Exit Discriminator attribute",
+		},
+		"outbound_med": {
+			Type:        schema.TypeInt,
+			Optional:    true,
+			Computed:    true,
+			Description: "Outbound Multi Exit Discriminator attribute",
 		},
 	}
 }
@@ -244,6 +280,12 @@ func createFabricRoutingProtocolResourceSchema() map[string]*schema.Schema {
 			Optional:    true,
 			Computed:    true,
 			Description: "BGP authorization key",
+		},
+		"as_override_enabled": {
+			Type:        schema.TypeBool,
+			Optional:    true,
+			Computed:    true,
+			Description: "Enable AS number override",
 		},
 		"bfd": {
 			Type:        schema.TypeSet,
@@ -712,6 +754,16 @@ func routingProtocolBgpIpv4TerraformToGo(routingProtocolBgpIpv4Request []interfa
 	enabled := bgpIpv4Map["enabled"].(bool)
 	rpBgpIpv4.SetEnabled(enabled)
 
+	if outboundAsPrependCount := bgpIpv4Map["outbound_as_prepend_count"].(int); outboundAsPrependCount > 0 {
+		rpBgpIpv4.SetOutboundASPrependCount(int64(outboundAsPrependCount))
+	}
+	if inboundMed := bgpIpv4Map["inbound_med"].(int); inboundMed > 0 {
+		rpBgpIpv4.SetInboundMED(int64(inboundMed))
+	}
+	if outboundMed := bgpIpv4Map["outbound_med"].(int); outboundMed > 0 {
+		rpBgpIpv4.SetOutboundMED(int64(outboundMed))
+	}
+
 	return rpBgpIpv4
 }
 
@@ -728,6 +780,16 @@ func routingProtocolBgpIpv6TerraformToGo(routingProtocolBgpIpv6Request []interfa
 	}
 	enabled := bgpIpv6Map["enabled"].(bool)
 	rpBgpIpv6.SetEnabled(enabled)
+
+	if outboundAsPrependCount := bgpIpv6Map["outbound_as_prepend_count"].(int); outboundAsPrependCount > 0 {
+		rpBgpIpv6.SetOutboundASPrependCount(int64(outboundAsPrependCount))
+	}
+	if inboundMed := bgpIpv6Map["inbound_med"].(int); inboundMed > 0 {
+		rpBgpIpv6.SetInboundMED(int64(inboundMed))
+	}
+	if outboundMed := bgpIpv6Map["outbound_med"].(int); outboundMed > 0 {
+		rpBgpIpv6.SetOutboundMED(int64(outboundMed))
+	}
 
 	return rpBgpIpv6
 }
@@ -787,9 +849,12 @@ func routingProtocolBgpConnectionIpv4GoToTerraform(routingProtocolBgpIpv4 *fabri
 	}
 
 	mappedBgpIpv4 := map[string]interface{}{
-		"customer_peer_ip": routingProtocolBgpIpv4.GetCustomerPeerIp(),
-		"equinix_peer_ip":  routingProtocolBgpIpv4.GetEquinixPeerIp(),
-		"enabled":          routingProtocolBgpIpv4.GetEnabled(),
+		"customer_peer_ip":          routingProtocolBgpIpv4.GetCustomerPeerIp(),
+		"equinix_peer_ip":           routingProtocolBgpIpv4.GetEquinixPeerIp(),
+		"enabled":                   routingProtocolBgpIpv4.GetEnabled(),
+		"outbound_as_prepend_count": int(routingProtocolBgpIpv4.GetOutboundASPrependCount()),
+		"inbound_med":               int(routingProtocolBgpIpv4.GetInboundMED()),
+		"outbound_med":              int(routingProtocolBgpIpv4.GetOutboundMED()),
 	}
 	rpBgpIpv4Set := schema.NewSet(
 		schema.HashResource(&schema.Resource{Schema: createBgpConnectionIpv4Sch()}),
@@ -804,9 +869,12 @@ func routingProtocolBgpConnectionIpv6GoToTerraform(routingProtocolBgpIpv6 *fabri
 	}
 
 	mappedBgpIpv6 := map[string]interface{}{
-		"customer_peer_ip": routingProtocolBgpIpv6.GetCustomerPeerIp(),
-		"equinix_peer_ip":  routingProtocolBgpIpv6.GetEquinixPeerIp(),
-		"enabled":          routingProtocolBgpIpv6.GetEnabled(),
+		"customer_peer_ip":          routingProtocolBgpIpv6.GetCustomerPeerIp(),
+		"equinix_peer_ip":           routingProtocolBgpIpv6.GetEquinixPeerIp(),
+		"enabled":                   routingProtocolBgpIpv6.GetEnabled(),
+		"outbound_as_prepend_count": int(routingProtocolBgpIpv6.GetOutboundASPrependCount()),
+		"inbound_med":               int(routingProtocolBgpIpv6.GetInboundMED()),
+		"outbound_med":              int(routingProtocolBgpIpv6.GetOutboundMED()),
 	}
 
 	rpBgpIpv6Set := schema.NewSet(
