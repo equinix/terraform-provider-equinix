@@ -1,10 +1,12 @@
 package vlan_test
 
 import (
+	"context"
 	"fmt"
 	"strings"
 	"testing"
 
+	"github.com/equinix/equinix-sdk-go/services/metalv1"
 	"github.com/equinix/terraform-provider-equinix/internal/acceptance"
 	"github.com/equinix/terraform-provider-equinix/internal/config"
 	"github.com/hashicorp/terraform-plugin-testing/plancheck"
@@ -12,7 +14,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
-	"github.com/packethost/packngo"
 )
 
 func testAccCheckMetalVlanConfig_metro(projSuffix, metro, desc string) string {
@@ -56,7 +57,7 @@ resource "equinix_metal_vlan" "foovlan" {
 }
 
 func TestAccMetalVlan_metro(t *testing.T) {
-	var vlan packngo.VirtualNetwork
+	var vlan metalv1.VirtualNetwork
 	rs := acctest.RandString(10)
 	lowerSiliconValley := "sv"
 	upperDallas := "DA"
@@ -109,7 +110,7 @@ func TestAccMetalVlan_metro(t *testing.T) {
 }
 
 func TestAccMetalVlan_NoDescription(t *testing.T) {
-	var vlan packngo.VirtualNetwork
+	var vlan metalv1.VirtualNetwork
 	rs := acctest.RandString(10)
 	metro := "sv"
 
@@ -134,7 +135,7 @@ func TestAccMetalVlan_NoDescription(t *testing.T) {
 }
 
 func TestAccMetalVlan_RemoveDescription(t *testing.T) {
-	var vlan packngo.VirtualNetwork
+	var vlan metalv1.VirtualNetwork
 	rs := acctest.RandString(10)
 	metro := "sv"
 
@@ -168,7 +169,7 @@ func TestAccMetalVlan_RemoveDescription(t *testing.T) {
 	})
 }
 
-func testAccCheckMetalVlanExists(n string, vlan *packngo.VirtualNetwork) resource.TestCheckFunc {
+func testAccCheckMetalVlanExists(n string, vlan *metalv1.VirtualNetwork) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
@@ -178,13 +179,13 @@ func testAccCheckMetalVlanExists(n string, vlan *packngo.VirtualNetwork) resourc
 			return fmt.Errorf("No Record ID is set")
 		}
 
-		client := acceptance.TestAccProvider.Meta().(*config.Config).Metal
+		client := acceptance.TestAccProvider.Meta().(*config.Config).NewMetalClientForTesting()
 
-		foundVlan, _, err := client.ProjectVirtualNetworks.Get(rs.Primary.ID, nil)
+		foundVlan, _, err := client.VLANsApi.GetVirtualNetwork(context.Background(), rs.Primary.ID).Execute()
 		if err != nil {
 			return err
 		}
-		if foundVlan.ID != rs.Primary.ID {
+		if foundVlan.GetId() != rs.Primary.ID {
 			return fmt.Errorf("Record not found: %v - %v", rs.Primary.ID, foundVlan)
 		}
 
@@ -232,7 +233,7 @@ func TestAccMetalVlan_importBasic(t *testing.T) {
 }
 
 func TestAccMetalVlan_facility_to_metro(t *testing.T) {
-	var vlan packngo.VirtualNetwork
+	var vlan metalv1.VirtualNetwork
 	rs := acctest.RandString(10)
 	metro := "sv"
 	facility := "sv15"
@@ -273,7 +274,7 @@ func TestAccMetalVlan_facility_to_metro(t *testing.T) {
 }
 
 func TestAccMetalVlan_metro_upgradeFromVersion(t *testing.T) {
-	var vlan packngo.VirtualNetwork
+	var vlan metalv1.VirtualNetwork
 	rs := acctest.RandString(10)
 	metro := "sv"
 
@@ -311,7 +312,7 @@ func TestAccMetalVlan_metro_upgradeFromVersion(t *testing.T) {
 }
 
 func TestAccMetalVlan_metro_suppress_diff(t *testing.T) {
-	var vlan packngo.VirtualNetwork
+	var vlan metalv1.VirtualNetwork
 	rs := acctest.RandString(10)
 	metro := "sv"
 
