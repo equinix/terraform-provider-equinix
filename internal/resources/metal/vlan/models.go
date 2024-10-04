@@ -31,18 +31,13 @@ func (m *DataSourceModel) parse(vlan *metalv1.VirtualNetwork) (d diag.Diagnostic
 		m.Description = types.StringValue(vlan.GetDescription())
 	}
 
-	if vlan.AdditionalProperties["project"] != nil {
-		project := vlan.AdditionalProperties["project"].(map[string]interface{})
-		project_id := project["id"].(string)
-		m.ProjectID = types.StringValue(project_id)
+	if vlan.AssignedTo != nil {
+		m.ProjectID = types.StringValue(vlan.AssignedTo.GetId())
 	}
 
 	if vlan.Facility != nil {
-		facility_code := vlan.Facility.AdditionalProperties["code"].(string)
-		metro := vlan.Facility.AdditionalProperties["metro"].(map[string]interface{})
-		metro_code := metro["code"].(string)
+		facility_code := vlan.Facility.AdditionalProperties["facility_code"].(string)
 		m.Facility = types.StringValue(strings.ToLower(facility_code))
-		m.Metro = types.StringValue(strings.ToLower(metro_code))
 	}
 
 	if vlan.Metro != nil {
@@ -82,18 +77,13 @@ func (m *ResourceModel) parse(vlan *metalv1.VirtualNetwork) (d diag.Diagnostics)
 		m.Description = types.StringValue(vlan.GetDescription())
 	}
 
-	if vlan.AdditionalProperties["project"] != nil {
-		project := vlan.AdditionalProperties["project"].(map[string]interface{})
-		project_id := project["id"].(string)
-		m.ProjectID = types.StringValue(project_id)
+	if vlan.AssignedTo != nil {
+		m.ProjectID = types.StringValue(vlan.AssignedTo.GetId())
 	}
 
 	if vlan.Facility != nil {
-		facility_code := vlan.Facility.AdditionalProperties["code"].(string)
-		metro := vlan.Facility.AdditionalProperties["metro"].(map[string]interface{})
-		metro_code := metro["code"].(string)
+		facility_code := vlan.Facility.AdditionalProperties["facility_code"].(string)
 		m.Facility = types.StringValue(strings.ToLower(facility_code))
-		m.Metro = types.StringValue(strings.ToLower(metro_code))
 	}
 
 	if vlan.Metro != nil {
