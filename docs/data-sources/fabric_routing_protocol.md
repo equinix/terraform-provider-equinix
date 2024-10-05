@@ -79,7 +79,7 @@ output "customer_asn" {
 
 ### Read-Only
 
-- `as_override_enabled` (Boolean) Enable AS number override. One of: 0, 1, 3, 5
+- `as_override_enabled` (Boolean) Enable AS number override
 - `bfd` (Set of Object) Bidirectional Forwarding Detection (see [below for nested schema](#nestedatt--bfd))
 - `bgp_auth_key` (String) BGP authorization key
 - `bgp_ipv4` (Set of Object) Routing Protocol BGP IPv4 (see [below for nested schema](#nestedatt--bgp_ipv4))

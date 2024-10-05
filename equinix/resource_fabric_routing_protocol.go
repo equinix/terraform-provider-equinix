@@ -65,7 +65,7 @@ func createBgpConnectionIpv4Sch() map[string]*schema.Schema {
 			Type:        schema.TypeString,
 			Optional:    true,
 			Computed:    true,
-			Description: "AS path prepend count",
+			Description: "AS path prepend count. One of: 0, 1, 3, 5",
 		},
 		"inbound_med": {
 			Type:        schema.TypeInt,
@@ -104,7 +104,7 @@ func createBgpConnectionIpv6Sch() map[string]*schema.Schema {
 			Type:        schema.TypeString,
 			Optional:    true,
 			Computed:    true,
-			Description: "AS path prepend count",
+			Description: "AS path prepend count. One of: 0, 1, 3, 5",
 		},
 		"inbound_med": {
 			Type:        schema.TypeInt,
@@ -285,7 +285,7 @@ func createFabricRoutingProtocolResourceSchema() map[string]*schema.Schema {
 			Type:        schema.TypeBool,
 			Optional:    true,
 			Computed:    true,
-			Description: "Enable AS number override. One of: 0, 1, 3, 5",
+			Description: "Enable AS number override",
 		},
 		"bfd": {
 			Type:        schema.TypeSet,
