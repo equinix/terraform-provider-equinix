@@ -3,6 +3,7 @@ package connection_route_filter
 import (
 	"context"
 	"fmt"
+
 	"github.com/equinix/terraform-provider-equinix/internal/config"
 	equinix_errors "github.com/equinix/terraform-provider-equinix/internal/errors"
 
