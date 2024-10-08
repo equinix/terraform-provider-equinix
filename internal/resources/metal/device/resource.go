@@ -839,22 +839,12 @@ func WaitForActiveDevice(ctx context.Context, d *schema.ResourceData, meta inter
 	}
 
 	// Wait for the device so we can get the networking attributes that show up after a while.
-	state, err := waitForDeviceAttribute(ctx, d, stateConf)
+	state, err := stateConf.WaitForStateContext(ctx)
 	if err != nil {
-		d.SetId("")
-		// TODO: this can never be true because we don't have the API response
-		// but I'm not clear if we actually need this check?  Certainly the error
-		// message seems to promise something we can't and shouldn't promise
-		if equinix_errors.IsForbidden(err) {
-			// If the device doesn't get to the active state, we can't recover it from here.
-
-			return errors.New("provisioning time limit exceeded; the Equinix Metal team will investigate")
-		}
 		return err
 	}
 
 	if state != "active" {
-		d.SetId("")
 		return fmt.Errorf("device in non-active state \"%s\"", state)
 	}
 
