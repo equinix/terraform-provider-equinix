@@ -3,13 +3,14 @@ package equinix_test
 import (
 	"context"
 	"fmt"
-	"github.com/equinix/terraform-provider-equinix/internal/fabric/testing_helpers"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"testing"
 	"time"
 
 	"github.com/equinix/terraform-provider-equinix/equinix"
 	"github.com/equinix/terraform-provider-equinix/internal/acceptance"
+	"github.com/equinix/terraform-provider-equinix/internal/fabric/testing_helpers"
+
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 )
@@ -53,9 +54,15 @@ func TestAccFabricCreateRoutingProtocols_PFCR(t *testing.T) {
 					resource.TestCheckResourceAttr("equinix_fabric_routing_protocol.bgp", "bgp_ipv4.0.customer_peer_ip", "190.1.1.2"),
 					resource.TestCheckResourceAttr("equinix_fabric_routing_protocol.bgp", "bgp_ipv4.0.equinix_peer_ip", "190.1.1.1"),
 					resource.TestCheckResourceAttr("equinix_fabric_routing_protocol.bgp", "bgp_ipv4.0.enabled", "true"),
+					resource.TestCheckResourceAttr("equinix_fabric_routing_protocol.bgp", "bgp_ipv4.0.outbound_as_prepend_count", "1"),
+					resource.TestCheckResourceAttr("equinix_fabric_routing_protocol.bgp", "bgp_ipv4.0.inbound_med", "4"),
+					resource.TestCheckResourceAttr("equinix_fabric_routing_protocol.bgp", "bgp_ipv4.0.outbound_med", "7"),
 					resource.TestCheckResourceAttr("equinix_fabric_routing_protocol.bgp", "bgp_ipv6.0.customer_peer_ip", "190::1:2"),
 					resource.TestCheckResourceAttr("equinix_fabric_routing_protocol.bgp", "bgp_ipv6.0.equinix_peer_ip", "190::1:1"),
 					resource.TestCheckResourceAttr("equinix_fabric_routing_protocol.bgp", "bgp_ipv6.0.enabled", "true"),
+					resource.TestCheckResourceAttr("equinix_fabric_routing_protocol.bgp", "bgp_ipv6.0.outbound_as_prepend_count", "1"),
+					resource.TestCheckResourceAttr("equinix_fabric_routing_protocol.bgp", "bgp_ipv6.0.inbound_med", "4"),
+					resource.TestCheckResourceAttr("equinix_fabric_routing_protocol.bgp", "bgp_ipv6.0.outbound_med", "7"),
 					resource.TestCheckResourceAttr("equinix_fabric_routing_protocol.bgp", "customer_asn", "100"),
 
 					resource.TestCheckResourceAttrSet("data.equinix_fabric_routing_protocol.direct", "id"),
@@ -79,7 +86,6 @@ func TestAccFabricCreateRoutingProtocols_PFCR(t *testing.T) {
 					resource.TestCheckResourceAttr("data.equinix_fabric_routing_protocol.bgp", "bgp_ipv6.0.enabled", "true"),
 					resource.TestCheckResourceAttr("data.equinix_fabric_routing_protocol.bgp", "customer_asn", "100"),
 				),
-				ExpectNonEmptyPlan: true,
 			},
 		},
 	})
@@ -145,7 +151,7 @@ resource "equinix_fabric_connection" "this" {
 			}
 			link_protocol {
 				type= "DOT1Q"
-				vlan_tag= 2152
+				vlan_tag= 2011
 			}
 			location {
 				metro_code = "SV"
@@ -175,11 +181,17 @@ resource "equinix_fabric_routing_protocol" "bgp" {
 	name = "rp_bgp_PFCR"
 	bgp_ipv4{
 		customer_peer_ip = "190.1.1.2"
+		outbound_as_prepend_count = "1"
+		inbound_med = 4
+		outbound_med = 7
 	}
 	bgp_ipv6{
 		customer_peer_ip = "190::1:2"
+		outbound_as_prepend_count = "1"
+		inbound_med = 4
+		outbound_med = 7
 	}
-	customer_asn = "100"
+	customer_asn = 100
 }
 
 data "equinix_fabric_routing_protocol" "direct" {

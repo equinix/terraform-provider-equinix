@@ -61,6 +61,24 @@ func createBgpConnectionIpv4Sch() map[string]*schema.Schema {
 			Default:     true,
 			Description: "Admin status for the BGP session",
 		},
+		"outbound_as_prepend_count": {
+			Type:        schema.TypeString,
+			Optional:    true,
+			Computed:    true,
+			Description: "AS path prepend count. One of: 0, 1, 3, 5",
+		},
+		"inbound_med": {
+			Type:        schema.TypeInt,
+			Optional:    true,
+			Computed:    true,
+			Description: "Inbound Multi Exit Discriminator attribute",
+		},
+		"outbound_med": {
+			Type:        schema.TypeInt,
+			Optional:    true,
+			Computed:    true,
+			Description: "Outbound Multi Exit Discriminator attribute",
+		},
 	}
 }
 
@@ -81,6 +99,24 @@ func createBgpConnectionIpv6Sch() map[string]*schema.Schema {
 			Optional:    true,
 			Default:     true,
 			Description: "Admin status for the BGP session",
+		},
+		"outbound_as_prepend_count": {
+			Type:        schema.TypeString,
+			Optional:    true,
+			Computed:    true,
+			Description: "AS path prepend count. One of: 0, 1, 3, 5",
+		},
+		"inbound_med": {
+			Type:        schema.TypeInt,
+			Optional:    true,
+			Computed:    true,
+			Description: "Inbound Multi Exit Discriminator attribute",
+		},
+		"outbound_med": {
+			Type:        schema.TypeInt,
+			Optional:    true,
+			Computed:    true,
+			Description: "Outbound Multi Exit Discriminator attribute",
 		},
 	}
 }
@@ -245,6 +281,12 @@ func createFabricRoutingProtocolResourceSchema() map[string]*schema.Schema {
 			Computed:    true,
 			Description: "BGP authorization key",
 		},
+		"as_override_enabled": {
+			Type:        schema.TypeBool,
+			Optional:    true,
+			Computed:    true,
+			Description: "Enable AS number override",
+		},
 		"bfd": {
 			Type:        schema.TypeSet,
 			Optional:    true,
@@ -320,7 +362,10 @@ func resourceFabricRoutingProtocolCreate(ctx context.Context, d *schema.Resource
 	start := time.Now()
 	type_ := d.Get("type").(string)
 
-	createRequest := routingProtocolPayloadFromType(type_, d)
+	createRequest, err := routingProtocolPayloadFromType(type_, d)
+	if err != nil {
+		return diag.Errorf("error creating create request from Terraform configuration values: %s", err)
+	}
 
 	fabricRoutingProtocolData, _, err := client.RoutingProtocolsApi.CreateConnectionRoutingProtocol(ctx, d.Get("connection_uuid").(string)).RoutingProtocolBase(createRequest).Execute()
 
@@ -343,7 +388,10 @@ func resourceFabricRoutingProtocolUpdate(ctx context.Context, d *schema.Resource
 
 	type_ := d.Get("type").(string)
 
-	updateRequest := routingProtocolPayloadFromType(type_, d)
+	updateRequest, err := routingProtocolPayloadFromType(type_, d)
+	if err != nil {
+		return diag.Errorf("error creating update request from Terraform configuration values: %s", err)
+	}
 
 	start := time.Now()
 	updatedRpResp, _, err := client.RoutingProtocolsApi.ReplaceConnectionRoutingProtocolByUuid(ctx, d.Id(), d.Get("connection_uuid").(string)).RoutingProtocolBase(updateRequest).Execute()
@@ -418,7 +466,7 @@ func setIdFromAPIResponse(resp *fabricv4.RoutingProtocolData, isChange bool, d *
 	return changeUuid
 }
 
-func routingProtocolPayloadFromType(type_ string, d *schema.ResourceData) fabricv4.RoutingProtocolBase {
+func routingProtocolPayloadFromType(type_ string, d *schema.ResourceData) (fabricv4.RoutingProtocolBase, error) {
 	payload := fabricv4.RoutingProtocolBase{}
 	if type_ == "BGP" {
 		bgpRP := fabricv4.RoutingProtocolBGPType{}
@@ -449,7 +497,10 @@ func routingProtocolPayloadFromType(type_ string, d *schema.ResourceData) fabric
 
 		schemaBgpIpv4 := d.Get("bgp_ipv4")
 		if schemaBgpIpv4 != nil {
-			bgpIpv4 := routingProtocolBgpIpv4TerraformToGo(schemaBgpIpv4.(*schema.Set).List())
+			bgpIpv4, err := routingProtocolBgpIpv4TerraformToGo(schemaBgpIpv4.(*schema.Set).List())
+			if err != nil {
+				return fabricv4.RoutingProtocolBase{}, err
+			}
 			if !reflect.DeepEqual(bgpIpv4, fabricv4.BGPConnectionIpv4{}) {
 				bgpRP.SetBgpIpv4(bgpIpv4)
 			}
@@ -457,11 +508,17 @@ func routingProtocolPayloadFromType(type_ string, d *schema.ResourceData) fabric
 
 		schemaBgpIpv6 := d.Get("bgp_ipv6")
 		if schemaBgpIpv6 != nil {
-			bgpIpv6 := routingProtocolBgpIpv6TerraformToGo(schemaBgpIpv6.(*schema.Set).List())
+			bgpIpv6, err := routingProtocolBgpIpv6TerraformToGo(schemaBgpIpv6.(*schema.Set).List())
+			if err != nil {
+				return fabricv4.RoutingProtocolBase{}, err
+			}
 			if !reflect.DeepEqual(bgpIpv6, fabricv4.BGPConnectionIpv6{}) {
 				bgpRP.SetBgpIpv6(bgpIpv6)
 			}
 		}
+
+		asOverrideEnabled := d.Get("as_override_enabled").(bool)
+		bgpRP.SetAsOverrideEnabled(asOverrideEnabled)
 
 		bfdSchema := d.Get("bfd")
 		if bfdSchema != nil {
@@ -496,7 +553,7 @@ func routingProtocolPayloadFromType(type_ string, d *schema.ResourceData) fabric
 		}
 		payload = fabricv4.RoutingProtocolDirectTypeAsRoutingProtocolBase(&directRP)
 	}
-	return payload
+	return payload, nil
 }
 
 func setFabricRoutingProtocolMap(d *schema.ResourceData, routingProtocolData *fabricv4.RoutingProtocolData) diag.Diagnostics {
@@ -520,6 +577,7 @@ func FabricRoutingProtocolMap(routingProtocolData *fabricv4.RoutingProtocolData)
 		routingProtocol["customer_asn"] = rp.GetCustomerAsn()
 		routingProtocol["equinix_asn"] = rp.GetCustomerAsn()
 		routingProtocol["bgp_auth_key"] = rp.GetBgpAuthKey()
+		routingProtocol["as_override_enabled"] = rp.GetAsOverrideEnabled()
 		if rp.Operation != nil {
 			operation := rp.GetOperation()
 			routingProtocol["operation"] = routingProtocolOperationGoToTerraform(&operation)
@@ -698,9 +756,9 @@ func routingProtocolDirectIpv6TerraformToGo(routingProtocolDirectIpv6Request []i
 	return rpDirectIpv6
 }
 
-func routingProtocolBgpIpv4TerraformToGo(routingProtocolBgpIpv4Request []interface{}) fabricv4.BGPConnectionIpv4 {
+func routingProtocolBgpIpv4TerraformToGo(routingProtocolBgpIpv4Request []interface{}) (fabricv4.BGPConnectionIpv4, error) {
 	if len(routingProtocolBgpIpv4Request) == 0 {
-		return fabricv4.BGPConnectionIpv4{}
+		return fabricv4.BGPConnectionIpv4{}, nil
 	}
 
 	rpBgpIpv4 := fabricv4.BGPConnectionIpv4{}
@@ -712,12 +770,26 @@ func routingProtocolBgpIpv4TerraformToGo(routingProtocolBgpIpv4Request []interfa
 	enabled := bgpIpv4Map["enabled"].(bool)
 	rpBgpIpv4.SetEnabled(enabled)
 
-	return rpBgpIpv4
+	if outboundAsPrependCountStr := bgpIpv4Map["outbound_as_prepend_count"].(string); outboundAsPrependCountStr != "" {
+		outboundAsPrependCount, err := strconv.ParseInt(outboundAsPrependCountStr, 10, 64)
+		if err != nil {
+			return fabricv4.BGPConnectionIpv4{}, fmt.Errorf("error converting outbound_as_prepend_count from string to int64: %s", err)
+		}
+		rpBgpIpv4.SetOutboundASPrependCount(outboundAsPrependCount)
+	}
+	if inboundMed := bgpIpv4Map["inbound_med"].(int); inboundMed > 0 {
+		rpBgpIpv4.SetInboundMED(int64(inboundMed))
+	}
+	if outboundMed := bgpIpv4Map["outbound_med"].(int); outboundMed > 0 {
+		rpBgpIpv4.SetOutboundMED(int64(outboundMed))
+	}
+
+	return rpBgpIpv4, nil
 }
 
-func routingProtocolBgpIpv6TerraformToGo(routingProtocolBgpIpv6Request []interface{}) fabricv4.BGPConnectionIpv6 {
+func routingProtocolBgpIpv6TerraformToGo(routingProtocolBgpIpv6Request []interface{}) (fabricv4.BGPConnectionIpv6, error) {
 	if len(routingProtocolBgpIpv6Request) == 0 {
-		return fabricv4.BGPConnectionIpv6{}
+		return fabricv4.BGPConnectionIpv6{}, nil
 	}
 
 	rpBgpIpv6 := fabricv4.BGPConnectionIpv6{}
@@ -729,7 +801,21 @@ func routingProtocolBgpIpv6TerraformToGo(routingProtocolBgpIpv6Request []interfa
 	enabled := bgpIpv6Map["enabled"].(bool)
 	rpBgpIpv6.SetEnabled(enabled)
 
-	return rpBgpIpv6
+	if outboundAsPrependCountStr := bgpIpv6Map["outbound_as_prepend_count"].(string); outboundAsPrependCountStr != "" {
+		outboundAsPrependCount, err := strconv.ParseInt(outboundAsPrependCountStr, 10, 64)
+		if err != nil {
+			return fabricv4.BGPConnectionIpv6{}, err
+		}
+		rpBgpIpv6.SetOutboundASPrependCount(outboundAsPrependCount)
+	}
+	if inboundMed := bgpIpv6Map["inbound_med"].(int); inboundMed > 0 {
+		rpBgpIpv6.SetInboundMED(int64(inboundMed))
+	}
+	if outboundMed := bgpIpv6Map["outbound_med"].(int); outboundMed > 0 {
+		rpBgpIpv6.SetOutboundMED(int64(outboundMed))
+	}
+
+	return rpBgpIpv6, nil
 }
 
 func routingProtocolBfdTerraformToGo(routingProtocolBfdRequest []interface{}) fabricv4.RoutingProtocolBFD {
@@ -787,9 +873,12 @@ func routingProtocolBgpConnectionIpv4GoToTerraform(routingProtocolBgpIpv4 *fabri
 	}
 
 	mappedBgpIpv4 := map[string]interface{}{
-		"customer_peer_ip": routingProtocolBgpIpv4.GetCustomerPeerIp(),
-		"equinix_peer_ip":  routingProtocolBgpIpv4.GetEquinixPeerIp(),
-		"enabled":          routingProtocolBgpIpv4.GetEnabled(),
+		"customer_peer_ip":          routingProtocolBgpIpv4.GetCustomerPeerIp(),
+		"equinix_peer_ip":           routingProtocolBgpIpv4.GetEquinixPeerIp(),
+		"enabled":                   routingProtocolBgpIpv4.GetEnabled(),
+		"outbound_as_prepend_count": strconv.FormatInt(routingProtocolBgpIpv4.GetOutboundASPrependCount(), 10),
+		"inbound_med":               int(routingProtocolBgpIpv4.GetInboundMED()),
+		"outbound_med":              int(routingProtocolBgpIpv4.GetOutboundMED()),
 	}
 	rpBgpIpv4Set := schema.NewSet(
 		schema.HashResource(&schema.Resource{Schema: createBgpConnectionIpv4Sch()}),
@@ -804,9 +893,12 @@ func routingProtocolBgpConnectionIpv6GoToTerraform(routingProtocolBgpIpv6 *fabri
 	}
 
 	mappedBgpIpv6 := map[string]interface{}{
-		"customer_peer_ip": routingProtocolBgpIpv6.GetCustomerPeerIp(),
-		"equinix_peer_ip":  routingProtocolBgpIpv6.GetEquinixPeerIp(),
-		"enabled":          routingProtocolBgpIpv6.GetEnabled(),
+		"customer_peer_ip":          routingProtocolBgpIpv6.GetCustomerPeerIp(),
+		"equinix_peer_ip":           routingProtocolBgpIpv6.GetEquinixPeerIp(),
+		"enabled":                   routingProtocolBgpIpv6.GetEnabled(),
+		"outbound_as_prepend_count": strconv.FormatInt(routingProtocolBgpIpv6.GetOutboundASPrependCount(), 10),
+		"inbound_med":               int(routingProtocolBgpIpv6.GetInboundMED()),
+		"outbound_med":              int(routingProtocolBgpIpv6.GetOutboundMED()),
 	}
 
 	rpBgpIpv6Set := schema.NewSet(

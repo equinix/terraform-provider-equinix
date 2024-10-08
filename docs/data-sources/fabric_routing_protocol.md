@@ -79,6 +79,7 @@ output "customer_asn" {
 
 ### Read-Only
 
+- `as_override_enabled` (Boolean) Enable AS number override
 - `bfd` (Set of Object) Bidirectional Forwarding Detection (see [below for nested schema](#nestedatt--bfd))
 - `bgp_auth_key` (String) BGP authorization key
 - `bgp_ipv4` (Set of Object) Routing Protocol BGP IPv4 (see [below for nested schema](#nestedatt--bgp_ipv4))
@@ -114,6 +115,9 @@ Read-Only:
 - `customer_peer_ip` (String)
 - `enabled` (Boolean)
 - `equinix_peer_ip` (String)
+- `inbound_med` (Number)
+- `outbound_as_prepend_count` (String)
+- `outbound_med` (Number)
 
 
 <a id="nestedatt--bgp_ipv6"></a>
@@ -124,6 +128,9 @@ Read-Only:
 - `customer_peer_ip` (String)
 - `enabled` (Boolean)
 - `equinix_peer_ip` (String)
+- `inbound_med` (Number)
+- `outbound_as_prepend_count` (String)
+- `outbound_med` (Number)
 
 
 <a id="nestedatt--change"></a>
