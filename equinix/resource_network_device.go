@@ -832,7 +832,7 @@ func createNetworkDeviceUserKeySchema() map[string]*schema.Schema {
 		},
 		neDeviceUserKeySchemaNames["KeyName"]: {
 			Type:         schema.TypeString,
-			Required:     true,
+			Optional:     true,
 			ValidateFunc: validation.StringIsNotEmpty,
 			Description:  neDeviceUserKeyDescriptions["KeyName"],
 		},
