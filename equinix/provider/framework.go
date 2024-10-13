@@ -23,6 +23,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 )
 
+type Config = config.Config
+
 type FrameworkProvider struct {
 	ProviderVersion string
 	Meta            *config.Config
