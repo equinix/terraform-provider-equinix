@@ -2,11 +2,13 @@ package equinix_test
 
 import (
 	"fmt"
-	"github.com/equinix/equinix-sdk-go/services/fabricv4"
-	"github.com/equinix/terraform-provider-equinix/internal/fabric/testing_helpers"
 	"testing"
 
 	"github.com/equinix/terraform-provider-equinix/internal/acceptance"
+	"github.com/equinix/terraform-provider-equinix/internal/fabric/testing_helpers"
+
+	"github.com/equinix/equinix-sdk-go/services/fabricv4"
+
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
 

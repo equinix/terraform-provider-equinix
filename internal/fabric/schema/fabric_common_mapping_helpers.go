@@ -7,7 +7,7 @@ import (
 )
 
 func OrderTerraformToGo(orderTerraform []interface{}) fabricv4.Order {
-	if orderTerraform == nil || len(orderTerraform) == 0 {
+	if len(orderTerraform) == 0 {
 		return fabricv4.Order{}
 	}
 	var order fabricv4.Order
@@ -73,7 +73,7 @@ func AccountGoToTerraform(account *fabricv4.SimplifiedAccount) *schema.Set {
 }
 
 func NotificationsTerraformToGo(notificationsTerraform []interface{}) []fabricv4.SimplifiedNotification {
-	if notificationsTerraform == nil || len(notificationsTerraform) == 0 {
+	if len(notificationsTerraform) == 0 {
 		return nil
 	}
 	notifications := make([]fabricv4.SimplifiedNotification, len(notificationsTerraform))
@@ -110,7 +110,7 @@ func NotificationsGoToTerraform(notifications []fabricv4.SimplifiedNotification)
 }
 
 func LocationTerraformToGo(locationList []interface{}) fabricv4.SimplifiedLocation {
-	if locationList == nil || len(locationList) == 0 {
+	if len(locationList) == 0 {
 		return fabricv4.SimplifiedLocation{}
 	}
 
@@ -154,7 +154,7 @@ func LocationGoToTerraform(location *fabricv4.SimplifiedLocation) *schema.Set {
 }
 
 func LocationWithoutIBXTerraformToGo(locationList []interface{}) fabricv4.SimplifiedLocationWithoutIBX {
-	if locationList == nil || len(locationList) == 0 {
+	if len(locationList) == 0 {
 		return fabricv4.SimplifiedLocationWithoutIBX{}
 	}
 
@@ -180,7 +180,7 @@ func LocationWithoutIBXGoToTerraform(location *fabricv4.SimplifiedLocationWithou
 }
 
 func ProjectTerraformToGo(projectTerraform []interface{}) fabricv4.Project {
-	if projectTerraform == nil || len(projectTerraform) == 0 {
+	if len(projectTerraform) == 0 {
 		return fabricv4.Project{}
 	}
 	var project fabricv4.Project
@@ -232,7 +232,7 @@ func ChangeLogGoToTerraform(changeLog *fabricv4.Changelog) *schema.Set {
 }
 
 func ErrorGoToTerraform(errors []fabricv4.Error) []interface{} {
-	if errors == nil || len(errors) == 0 {
+	if len(errors) == 0 {
 		return nil
 	}
 	mappedErrors := make([]interface{}, len(errors))
