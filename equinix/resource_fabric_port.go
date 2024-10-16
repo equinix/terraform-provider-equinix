@@ -368,11 +368,11 @@ func resourceFabricPortRead(ctx context.Context, d *schema.ResourceData, meta in
 	return setFabricPortMap(d, port)
 }
 
-func fabricPortMap(port *fabricv4.PortResponse) map[string]interface{} {
+func fabricPortMap(port *fabricv4.Port) map[string]interface{} {
 	operation := port.GetOperation()
 	redundancy := port.GetRedundancy()
 	account := port.GetAccount()
-	changelog := port.GetChangelog()
+	changelog := port.GetChangeLog()
 	location := port.GetLocation()
 	device := port.GetDevice()
 	encapsulation := port.GetEncapsulation()
@@ -398,7 +398,7 @@ func fabricPortMap(port *fabricv4.PortResponse) map[string]interface{} {
 	}
 }
 
-func setFabricPortMap(d *schema.ResourceData, port *fabricv4.PortResponse) diag.Diagnostics {
+func setFabricPortMap(d *schema.ResourceData, port *fabricv4.Port) diag.Diagnostics {
 	diags := diag.Diagnostics{}
 	err := equinix_schema.SetMap(d, fabricPortMap(port))
 	if err != nil {

@@ -21,7 +21,7 @@ func subscriptionMap(subs *fabricv4.SubscriptionResponse) map[string]interface{}
 	subscription := make(map[string]interface{})
 	subscription["href"] = subs.GetHref()
 	subscription["uuid"] = subs.GetUuid()
-	subscription["status"] = subs.GetStatus()
+	subscription["status"] = subs.GetState()
 	subscription["marketplace"] = subs.GetMarketplace()
 	subscription["offer_type"] = subs.GetOfferType()
 	subscription["is_auto_renew"] = subs.GetIsAutoRenew()

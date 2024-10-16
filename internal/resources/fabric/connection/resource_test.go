@@ -3,13 +3,14 @@ package connection_test
 import (
 	"context"
 	"fmt"
-	"github.com/equinix/terraform-provider-equinix/internal/acceptance"
-	"github.com/equinix/terraform-provider-equinix/internal/fabric/testing_helpers"
-	"github.com/equinix/terraform-provider-equinix/internal/resources/fabric/connection"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"testing"
 	"time"
 
+	"github.com/equinix/terraform-provider-equinix/internal/acceptance"
+	"github.com/equinix/terraform-provider-equinix/internal/fabric/testing_helpers"
+	"github.com/equinix/terraform-provider-equinix/internal/resources/fabric/connection"
+
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 )
@@ -325,7 +326,7 @@ func testAccFabricCreateCloudRouter2PortConnectionConfig(name, portUuid string) 
 
 	resource "equinix_fabric_cloud_router" "this" {
 		type = "XF_ROUTER"
-		name = "Test_PFCR"
+		name = "Conn_Test_PFCR"
 		location{
 			metro_code  = "SV"
 		}
