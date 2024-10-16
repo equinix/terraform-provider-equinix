@@ -325,7 +325,7 @@ func testAccFabricCreateCloudRouter2PortConnectionConfig(name, portUuid string) 
 
 	resource "equinix_fabric_cloud_router" "this" {
 		type = "XF_ROUTER"
-		name = "Test_PFCR"
+		name = "Conn_Test_PFCR"
 		location{
 			metro_code  = "SV"
 		}

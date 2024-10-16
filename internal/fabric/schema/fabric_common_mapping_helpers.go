@@ -4,7 +4,6 @@ import (
 	"github.com/equinix/equinix-sdk-go/services/fabricv4"
 	"github.com/equinix/terraform-provider-equinix/internal/converters"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"strconv"
 )
 
 func OrderTerraformToGo(orderTerraform []interface{}) fabricv4.Order {
@@ -50,39 +49,19 @@ func OrderGoToTerraform(order *fabricv4.Order) *schema.Set {
 	return orderSet
 }
 
-func AccountGoToTerraform[accountType *fabricv4.SimplifiedAccount | *fabricv4.SimplifiedAccountPortResponse](accountParam accountType) *schema.Set {
-	if accountParam == nil {
+func AccountGoToTerraform(account *fabricv4.SimplifiedAccount) *schema.Set {
+	if account == nil {
 		return nil
 	}
-
-	mappedAccount := map[string]interface{}{}
-
-	switch account := (interface{})(accountParam).(type) {
-	case *fabricv4.SimplifiedAccount:
-		mappedAccount = map[string]interface{}{
-			"account_number":           int(account.GetAccountNumber()),
-			"account_name":             account.GetAccountName(),
-			"org_id":                   int(account.GetOrgId()),
-			"organization_name":        account.GetOrganizationName(),
-			"global_org_id":            account.GetGlobalOrgId(),
-			"global_organization_name": account.GetGlobalOrganizationName(),
-			"global_cust_id":           account.GetGlobalCustId(),
-			"ucm_id":                   account.GetUcmId(),
-		}
-	case *fabricv4.SimplifiedAccountPortResponse:
-		accountNumber, _ := strconv.Atoi(account.GetAccountNumber())
-		orgId, _ := strconv.Atoi(account.GetOrgId())
-
-		mappedAccount = map[string]interface{}{
-			"account_number":           accountNumber,
-			"account_name":             account.GetAccountName(),
-			"org_id":                   orgId,
-			"organization_name":        account.GetOrganizationName(),
-			"global_org_id":            account.GetGlobalOrgId(),
-			"global_organization_name": account.GetGlobalOrganizationName(),
-			"global_cust_id":           account.GetGlobalCustId(),
-			"ucm_id":                   account.GetUcmId(),
-		}
+	mappedAccount := map[string]interface{}{
+		"account_number":           int(account.GetAccountNumber()),
+		"account_name":             account.GetAccountName(),
+		"org_id":                   int(account.GetOrgId()),
+		"organization_name":        account.GetOrganizationName(),
+		"global_org_id":            account.GetGlobalOrgId(),
+		"global_organization_name": account.GetGlobalOrganizationName(),
+		"global_cust_id":           account.GetGlobalCustId(),
+		"ucm_id":                   account.GetUcmId(),
 	}
 
 	accountSet := schema.NewSet(

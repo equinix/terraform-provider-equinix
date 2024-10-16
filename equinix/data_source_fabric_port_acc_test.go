@@ -12,7 +12,7 @@ import (
 
 func TestAccDataSourceFabricPort_PNFV(t *testing.T) {
 	ports := testing_helpers.GetFabricEnvPorts(t)
-	var port fabricv4.PortResponse
+	var port fabricv4.Port
 	var portType, portState, portEncapsulationType, portRedundancyPriority string
 	if len(ports) > 0 {
 		port = ports["pnfv"]["dot1q"][0]
@@ -65,7 +65,7 @@ func testDataSourceFabricPort(port_uuid string) string {
 
 func TestAccDataSourceFabricPorts_PNFV(t *testing.T) {
 	ports := testing_helpers.GetFabricEnvPorts(t)
-	var port fabricv4.PortResponse
+	var port fabricv4.Port
 	var portType, portState, portEncapsulationType, portRedundancyPriority string
 	if len(ports) > 0 {
 		port = ports["pnfv"]["dot1q"][0]
@@ -120,7 +120,7 @@ func testDataSourceFabricPorts(port_name string) string {
 
 func TestAccDataSourceFabricPort_PPDS(t *testing.T) {
 	ports := testing_helpers.GetFabricEnvPorts(t)
-	var port fabricv4.PortResponse
+	var port fabricv4.Port
 	var portType, portState, portEncapsulationType, portRedundancyPriority string
 	if len(ports) > 0 {
 		port = ports["ppds"]["dot1q"][0]
@@ -165,7 +165,7 @@ func TestAccDataSourceFabricPort_PPDS(t *testing.T) {
 
 func TestAccDataSourceFabricPorts_PPDS(t *testing.T) {
 	ports := testing_helpers.GetFabricEnvPorts(t)
-	var port fabricv4.PortResponse
+	var port fabricv4.Port
 	var portType, portState, portEncapsulationType, portRedundancyPriority string
 	if len(ports) > 0 {
 		port = ports["ppds"]["dot1q"][0]

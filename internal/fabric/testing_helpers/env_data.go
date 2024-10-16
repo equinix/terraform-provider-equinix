@@ -14,7 +14,7 @@ const (
 	FabricSubscriptionEnvVar        = "TF_ACC_FABRIC_MARKET_PLACE_SUBSCRIPTION_ID"
 )
 
-type EnvPorts map[string]map[string][]fabricv4.PortResponse
+type EnvPorts map[string]map[string][]fabricv4.Port
 
 func GetFabricEnvPorts(t *testing.T) EnvPorts {
 	var ports EnvPorts
