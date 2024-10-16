@@ -112,14 +112,12 @@ func serviceTokenConnectionSch() *schema.Resource {
 				Type:        schema.TypeBool,
 				Optional:    true,
 				Computed:    true,
-				Default:     true,
 				Description: "Authorization to connect remotely",
 			},
 			"allow_custom_bandwidth": {
 				Type:        schema.TypeBool,
 				Optional:    true,
 				Computed:    true,
-				Default:     true,
 				Description: "Allow custom bandwidth value",
 			},
 			"bandwidth_limit": {
