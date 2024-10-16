@@ -12,6 +12,7 @@ import (
 	fabric_network "github.com/equinix/terraform-provider-equinix/internal/resources/fabric/network"
 	fabric_route_filter "github.com/equinix/terraform-provider-equinix/internal/resources/fabric/route_filter"
 	fabric_route_filter_rule "github.com/equinix/terraform-provider-equinix/internal/resources/fabric/route_filter_rule"
+	fabric_service_token "github.com/equinix/terraform-provider-equinix/internal/resources/fabric/service_token"
 	metal_device "github.com/equinix/terraform-provider-equinix/internal/resources/metal/device"
 	metal_port "github.com/equinix/terraform-provider-equinix/internal/resources/metal/port"
 	"github.com/equinix/terraform-provider-equinix/internal/resources/metal/virtual_circuit"
@@ -99,6 +100,8 @@ func Provider() *schema.Provider {
 			"equinix_fabric_route_filter_rules":        fabric_route_filter_rule.DataSourceGetAllRules(),
 			"equinix_fabric_service_profile":           dataSourceFabricServiceProfileReadByUuid(),
 			"equinix_fabric_service_profiles":          dataSourceFabricSearchServiceProfilesByName(),
+			"equinix_fabric_service_token":             fabric_service_token.DataSource(),
+			"equinix_fabric_service_tokens":            fabric_service_token.DataSourceSearch(),
 			"equinix_network_account":                  dataSourceNetworkAccount(),
 			"equinix_network_device":                   dataSourceNetworkDevice(),
 			"equinix_network_device_type":              dataSourceNetworkDeviceType(),
@@ -129,6 +132,7 @@ func Provider() *schema.Provider {
 			"equinix_fabric_route_filter_rule":   fabric_route_filter_rule.Resource(),
 			"equinix_fabric_routing_protocol":    resourceFabricRoutingProtocol(),
 			"equinix_fabric_service_profile":     resourceFabricServiceProfile(),
+			"equinix_fabric_service_token":       fabric_service_token.Resource(),
 			"equinix_network_device":             resourceNetworkDevice(),
 			"equinix_network_ssh_user":           resourceNetworkSSHUser(),
 			"equinix_network_bgp":                resourceNetworkBGP(),
