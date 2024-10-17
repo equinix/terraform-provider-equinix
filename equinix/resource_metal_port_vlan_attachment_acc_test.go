@@ -75,7 +75,7 @@ func TestAccMetalPortVlanAttachment_L2Bonded(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { testAccPreCheck(t) },
 		ExternalProviders:        testExternalProviders,
-		ProtoV5ProviderFactories: testAccProtoV5ProviderFactories,
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		CheckDestroy:             testAccMetalPortVlanAttachmentCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
@@ -163,7 +163,7 @@ func TestAccMetalPortVlanAttachment_L2Individual(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { testAccPreCheck(t) },
 		ExternalProviders:        testExternalProviders,
-		ProtoV5ProviderFactories: testAccProtoV5ProviderFactories,
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		CheckDestroy:             testAccMetalPortVlanAttachmentCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
@@ -239,7 +239,7 @@ func TestAccMetalPortVlanAttachment_hybridBasic(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { testAccPreCheck(t) },
 		ExternalProviders:        testExternalProviders,
-		ProtoV5ProviderFactories: testAccProtoV5ProviderFactories,
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		CheckDestroy:             testAccMetalPortVlanAttachmentCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
@@ -314,7 +314,7 @@ func TestAccMetalPortVlanAttachment_hybridMultipleVlans(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { testAccPreCheck(t) },
 		ExternalProviders:        testExternalProviders,
-		ProtoV5ProviderFactories: testAccProtoV5ProviderFactories,
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		CheckDestroy:             testAccMetalPortVlanAttachmentCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
@@ -445,7 +445,7 @@ func TestAccMetalPortVlanAttachment_L2Native(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { testAccPreCheck(t) },
 		ExternalProviders:        testExternalProviders,
-		ProtoV5ProviderFactories: testAccProtoV5ProviderFactories,
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		CheckDestroy:             testAccMetalPortVlanAttachmentCheckDestroyed,
 		Steps: []resource.TestStep{
 			{

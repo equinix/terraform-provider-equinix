@@ -17,7 +17,7 @@ func TestAccMetalIPAttachment_basic(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { testAccPreCheck(t) },
 		ExternalProviders:        testExternalProviders,
-		ProtoV5ProviderFactories: testAccProtoV5ProviderFactories,
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		CheckDestroy:             testAccMetalIPAttachmentCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
@@ -75,7 +75,7 @@ func TestAccMetalIPAttachment_metro(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { testAccPreCheck(t) },
 		ExternalProviders:        testExternalProviders,
-		ProtoV5ProviderFactories: testAccProtoV5ProviderFactories,
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		CheckDestroy:             testAccMetalIPAttachmentCheckDestroyed,
 		Steps: []resource.TestStep{
 			{

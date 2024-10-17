@@ -3,6 +3,7 @@ package equinix
 import (
 	"context"
 	"fmt"
+	"log"
 	"os"
 	"regexp"
 	"strings"
@@ -12,13 +13,14 @@ import (
 	"github.com/equinix/terraform-provider-equinix/internal/provider"
 	"github.com/equinix/terraform-provider-equinix/version"
 
+	"github.com/hashicorp/terraform-plugin-go/tfprotov6"
+	"github.com/hashicorp/terraform-plugin-mux/tf5to6server"
+	"github.com/hashicorp/terraform-plugin-mux/tf6muxserver"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/stretchr/testify/assert"
 
 	"github.com/hashicorp/terraform-plugin-framework/providerserver"
-	"github.com/hashicorp/terraform-plugin-go/tfprotov5"
-	"github.com/hashicorp/terraform-plugin-mux/tf5muxserver"
 )
 
 var (
@@ -27,16 +29,25 @@ var (
 	testExternalProviders    map[string]resource.ExternalProvider
 	testAccFrameworkProvider *provider.FrameworkProvider
 
-	testAccProtoV5ProviderFactories = map[string]func() (tfprotov5.ProviderServer, error){
-		"equinix": func() (tfprotov5.ProviderServer, error) {
+	testAccProtoV6ProviderFactories = map[string]func() (tfprotov6.ProviderServer, error){
+		"equinix": func() (tfprotov6.ProviderServer, error) {
 			ctx := context.Background()
-			providers := []func() tfprotov5.ProviderServer{
-				testAccProviders["equinix"].GRPCProvider,
-				providerserver.NewProtocol5(
-					testAccFrameworkProvider,
-				),
+
+			sdkv2Provider, err := tf5to6server.UpgradeServer(ctx, Provider().GRPCProvider)
+			if err != nil {
+				log.Fatal(err)
 			}
-			muxServer, err := tf5muxserver.NewMuxServer(ctx, providers...)
+
+			sdkv2ProviderFunc := func() tfprotov6.ProviderServer { return sdkv2Provider }
+			frameworkProvider := providerserver.NewProtocol6(
+				provider.CreateFrameworkProvider(version.ProviderVersion))
+
+			providers := []func() tfprotov6.ProviderServer{
+				sdkv2ProviderFunc,
+				frameworkProvider,
+			}
+
+			muxServer, err := tf6muxserver.NewMuxServer(ctx, providers...)
 			if err != nil {
 				return nil, err
 			}

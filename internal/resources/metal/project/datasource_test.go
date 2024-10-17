@@ -18,7 +18,7 @@ func TestAccDataSourceMetalProject_byId(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.TestAccPreCheck(t) },
 		ExternalProviders:        acceptance.TestExternalProviders,
-		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
 		CheckDestroy:             testAccMetalProjectCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
@@ -101,7 +101,7 @@ func TestAccDataSourceMetalProject_byName(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.TestAccPreCheck(t) },
 		ExternalProviders:        acceptance.TestExternalProviders,
-		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
 		CheckDestroy:             testAccMetalProjectCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
@@ -180,7 +180,7 @@ func TestAccDataSourceMetalProject_byId_upgradeFromVersion(t *testing.T) {
 				),
 			},
 			{
-				ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+				ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
 				Config:                   cfg,
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{

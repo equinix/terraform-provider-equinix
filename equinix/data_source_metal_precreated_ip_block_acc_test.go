@@ -14,7 +14,7 @@ func TestAccDataSourceMetalPreCreatedIPBlock_basic(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { testAccPreCheck(t) },
 		ExternalProviders:        testExternalProviders,
-		ProtoV5ProviderFactories: testAccProtoV5ProviderFactories,
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccDataSourceMetalPreCreatedIPBlockConfig_basic(rs),

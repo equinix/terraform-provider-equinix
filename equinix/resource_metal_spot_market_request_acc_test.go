@@ -24,7 +24,7 @@ func TestAccMetalSpotMarketRequest_basic(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { testAccPreCheck(t) },
 		ExternalProviders:        testExternalProviders,
-		ProtoV5ProviderFactories: testAccProtoV5ProviderFactories,
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		CheckDestroy:             testAccMetalSpotMarketRequestCheckDestroyed,
 		ErrorCheck:               skipIfOverbidOrTimedOut(t),
 		Steps: []resource.TestStep{
@@ -152,7 +152,7 @@ func TestAccMetalSpotMarketRequest_Import(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { testAccPreCheck(t) },
 		ExternalProviders:        testExternalProviders,
-		ProtoV5ProviderFactories: testAccProtoV5ProviderFactories,
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		CheckDestroy:             testAccMetalSpotMarketRequestCheckDestroyed,
 		ErrorCheck:               skipIfOverbidOrTimedOut(t),
 		Steps: []resource.TestStep{
@@ -245,7 +245,7 @@ func TestAccMetalSpotMarketRequestCreate_WithTimeout(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { testAccPreCheck(t) },
 		ExternalProviders:        testExternalProviders,
-		ProtoV5ProviderFactories: testAccProtoV5ProviderFactories,
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		CheckDestroy:             testAccMetalSpotMarketRequestCheckDestroyed,
 		ErrorCheck: func(err error) error {
 			if matchErrOverbid.MatchString(err.Error()) {

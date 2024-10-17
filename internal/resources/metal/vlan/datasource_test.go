@@ -23,7 +23,7 @@ func TestAccDataSourceMetalVlan_byVxlanMetro(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.TestAccPreCheckMetal(t) },
 		ExternalProviders:        acceptance.TestExternalProviders,
-		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
 		CheckDestroy:             testAccMetalDatasourceVlanCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
@@ -94,7 +94,7 @@ func TestAccDataSourceMetalVlan_byVlanId(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.TestAccPreCheckMetal(t) },
 		ExternalProviders:        acceptance.TestExternalProviders,
-		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
 		CheckDestroy:             testAccMetalDatasourceVlanCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
@@ -140,7 +140,7 @@ func TestAccDataSourceMetalVlan_byProjectId(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.TestAccPreCheckMetal(t) },
 		ExternalProviders:        acceptance.TestExternalProviders,
-		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
 		CheckDestroy:             testAccMetalDatasourceVlanCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
@@ -330,7 +330,7 @@ func TestAccDataSourceMetalVlan_byVxlanMetro_upgradeFromVersion(t *testing.T) {
 				),
 			},
 			{
-				ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+				ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
 				Config:                   testAccDataSourceMetalVlanConfig_byVxlanMetro(rs, metro, "tfacc-vlan"),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{

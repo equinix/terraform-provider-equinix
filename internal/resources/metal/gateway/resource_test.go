@@ -15,7 +15,7 @@ func TestAccMetalGateway_privateIPv4(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.TestAccPreCheckMetal(t) },
 		ExternalProviders:        acceptance.TestExternalProviders,
-		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
 		CheckDestroy:             testAccMetalGatewayCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
@@ -56,7 +56,7 @@ func TestAccMetalGateway_existingReservation(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.TestAccPreCheckMetal(t) },
 		ExternalProviders:        acceptance.TestExternalProviders,
-		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
 		CheckDestroy:             testAccMetalGatewayCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
@@ -119,7 +119,7 @@ func TestAccMetalGateway_importBasic(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.TestAccPreCheckMetal(t) },
 		ExternalProviders:        acceptance.TestExternalProviders,
-		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
 		CheckDestroy:             testAccMetalGatewayCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
@@ -158,7 +158,7 @@ func TestAccMetalGateway_upgradeFromVersion(t *testing.T) {
 				),
 			},
 			{
-				ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+				ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
 				Config:                   testAccMetalGatewayConfig_privateIPv4(),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
@@ -174,7 +174,7 @@ func TestAccMetalGateway_IPv6Vrf(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.TestAccPreCheckMetal(t) },
 		ExternalProviders:        acceptance.TestExternalProviders,
-		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
 		CheckDestroy:             testAccMetalGatewayCheckDestroyed,
 		Steps: []resource.TestStep{
 			{

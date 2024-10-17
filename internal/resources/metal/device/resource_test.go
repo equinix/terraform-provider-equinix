@@ -133,7 +133,7 @@ func TestAccMetalDevice_facilityList(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.TestAccPreCheck(t) },
 		ExternalProviders:        acceptance.TestExternalProviders,
-		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
 		CheckDestroy:             testAccMetalDeviceCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
@@ -160,7 +160,7 @@ func TestAccMetalDevice_sshConfig(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.TestAccPreCheck(t) },
 		ExternalProviders:        acceptance.TestExternalProviders,
-		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
 		CheckDestroy:             testAccMetalDeviceCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
@@ -192,7 +192,7 @@ func TestAccMetalDevice_basic(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.TestAccPreCheck(t) },
 		ExternalProviders:        acceptance.TestExternalProviders,
-		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
 		CheckDestroy:             testAccMetalDeviceCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
@@ -238,7 +238,7 @@ func TestAccMetalDevice_update(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.TestAccPreCheck(t) },
 		ExternalProviders:        acceptance.TestExternalProviders,
-		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
 		CheckDestroy:             testAccMetalDeviceCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
@@ -294,7 +294,7 @@ func TestAccMetalDevice_IPXEScriptUrl(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.TestAccPreCheck(t) },
 		ExternalProviders:        acceptance.TestExternalProviders,
-		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
 		CheckDestroy:             testAccMetalDeviceCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
@@ -332,7 +332,7 @@ func TestAccMetalDevice_IPXEConflictingFields(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.TestAccPreCheck(t) },
 		ExternalProviders:        acceptance.TestExternalProviders,
-		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
 		CheckDestroy:             testAccMetalDeviceCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
@@ -354,7 +354,7 @@ func TestAccMetalDevice_IPXEConfigMissing(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.TestAccPreCheck(t) },
 		ExternalProviders:        acceptance.TestExternalProviders,
-		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
 		CheckDestroy:             testAccMetalDeviceCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
@@ -380,7 +380,7 @@ func TestAccMetalDevice_allowUserdataChanges(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.TestAccPreCheck(t) },
 		ExternalProviders:        acceptance.TestExternalProviders,
-		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
 		CheckDestroy:             testAccMetalDeviceCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
@@ -414,7 +414,7 @@ func TestAccMetalDevice_allowCustomdataChanges(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.TestAccPreCheck(t) },
 		ExternalProviders:        acceptance.TestExternalProviders,
-		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
 		CheckDestroy:             testAccMetalDeviceCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
@@ -442,7 +442,7 @@ func TestAccMetalDevice_allowChangesErrorOnUnsupportedAttribute(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		ExternalProviders:        acceptance.TestExternalProviders,
-		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
 				Config:      testAccMetalDeviceConfig_allowAttributeChanges(rInt, rs, "", "", "project_id"),
@@ -582,7 +582,7 @@ func TestAccMetalDevice_importBasic(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.TestAccPreCheck(t) },
 		ExternalProviders:        acceptance.TestExternalProviders,
-		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
 		CheckDestroy:             testAccMetalDeviceCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
@@ -955,7 +955,7 @@ func TestAccMetalDeviceCreate_timeout(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.TestAccPreCheck(t) },
 		ExternalProviders:        acceptance.TestExternalProviders,
-		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
 		CheckDestroy:             testAccMetalDeviceCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
@@ -987,7 +987,7 @@ func TestAccMetalDeviceUpdate_timeout(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.TestAccPreCheck(t) },
 		ExternalProviders:        acceptance.TestExternalProviders,
-		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
 		CheckDestroy:             testAccMetalDeviceCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
@@ -1012,7 +1012,7 @@ func TestAccMetalDevice_LockingAndUnlocking(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.TestAccPreCheck(t) },
 		ExternalProviders:        acceptance.TestExternalProviders,
-		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
 		CheckDestroy:             testAccMetalDeviceCheckDestroyed,
 		Steps: []resource.TestStep{
 			{

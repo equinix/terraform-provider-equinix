@@ -244,7 +244,7 @@ func TestAccMetalPort_hybridBondedVxlan(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.TestAccPreCheck(t) },
 		ExternalProviders:        acceptance.TestExternalProviders,
-		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
 		CheckDestroy:             testAccMetalPortDestroyed,
 		Steps: []resource.TestStep{
 			{
@@ -273,7 +273,7 @@ func TestAccMetalPort_L2IndividualNativeVlan(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.TestAccPreCheck(t) },
 		ExternalProviders:        acceptance.TestExternalProviders,
-		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
 		CheckDestroy:             testAccMetalPortDestroyed,
 		Steps: []resource.TestStep{
 			{
@@ -306,7 +306,7 @@ func testAccMetalPortTemplate(t *testing.T, conf func(string) string, expectedTy
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.TestAccPreCheck(t) },
 		ExternalProviders:        acceptance.TestExternalProviders,
-		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
 		CheckDestroy:             testAccMetalPortDestroyed,
 		Steps: []resource.TestStep{
 			{
@@ -432,7 +432,7 @@ func TestAccMetalPortCreate_hybridBonded_timeout(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.TestAccPreCheck(t) },
 		ExternalProviders:        acceptance.TestExternalProviders,
-		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
 		CheckDestroy:             testAccMetalPortDestroyed,
 		Steps: []resource.TestStep{
 			{
@@ -473,7 +473,7 @@ func TestAccMetalPortUpdate_hybridBonded_timeout(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.TestAccPreCheck(t) },
 		ExternalProviders:        acceptance.TestExternalProviders,
-		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
 		CheckDestroy:             testAccMetalPortDestroyed,
 		Steps: []resource.TestStep{
 			{

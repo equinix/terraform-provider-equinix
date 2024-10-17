@@ -17,7 +17,7 @@ func TestAccResourceMetalOrganizationMember_owner(t *testing.T) {
 	org := &packngo.Organization{}
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.TestAccPreCheckMetal(t); acceptance.TestAccPreCheckProviderConfigured(t) },
-		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
 		CheckDestroy:             testAccMetalOrganizationCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
@@ -46,7 +46,7 @@ func TestAccResourceMetalOrganizationMember_basic(t *testing.T) {
 	org := &packngo.Organization{}
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.TestAccPreCheckMetal(t); acceptance.TestAccPreCheckProviderConfigured(t) },
-		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
 		CheckDestroy:             testAccMetalOrganizationCheckDestroyed,
 		Steps: []resource.TestStep{
 			{

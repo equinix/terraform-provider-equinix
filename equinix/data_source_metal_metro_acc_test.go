@@ -12,7 +12,7 @@ func TestAccDataSourceMetalMetro_basic(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{ // Step 3/4, expected an error with pattern, no match on: Error running pre-apply refresh: exit status 1
 		PreCheck:                 func() { testAccPreCheck(t) },
 		ExternalProviders:        testExternalProviders,
-		ProtoV5ProviderFactories: testAccProtoV5ProviderFactories,
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccDataSourceMetalMetroConfig_basic(testMetro),
