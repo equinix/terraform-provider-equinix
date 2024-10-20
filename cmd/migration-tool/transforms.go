@@ -8,39 +8,47 @@ import (
 )
 
 // matches block headers, ex:
-//   resource "metal_project" "fooproject" {
-//   data "packet_vlan" "foovlan" {
+//
+//	resource "metal_project" "fooproject" {
+//	data "packet_vlan" "foovlan" {
 var matchBlockHeader = regexp.MustCompile(`(resource|data)(\s+")(metal|packet)(.*?)`)
 
 // matches resource interpolation strings (Terraform v0.11 and earlier), ex:
-//   device_id = "${metal_device.foodevice.id}"
+//
+//	device_id = "${metal_device.foodevice.id}"
 var matchResourceInterpolation = regexp.MustCompile(`(.*?)(\${\s*)(metal|packet)(_.*?)`)
 
 // matches resource reference (Terraform v0.12+), ex:
-//   device_id = metal_device.foodevice.id
+//
+//	device_id = metal_device.foodevice.id
 var matchResourceReference = regexp.MustCompile(`(.*?)(=\s*)(metal|packet)(_.*?)`)
 
 // matches resource reference in function, ex:
-//   cidr_notation = join("/", [cidrhost(metal_reserved_ip_block.fooblock.cidr_notation, 0), "32"])
+//
+//	cidr_notation = join("/", [cidrhost(metal_reserved_ip_block.fooblock.cidr_notation, 0), "32"])
 var matchResourceFunction = regexp.MustCompile(`(.*?)(\(\s*)(metal|packet)(_.*?)`)
 
 // matches resource reference in conditional, ex:
-//   ip_address = "${var.network_type == "public" ? metal_device.foodevice.access_public_ipv4 : metal_device.foodevice.access_private_ipv4}"
-//   ip_address = var.network_type == "public" ? metal_device.foodevice.access_public_ipv4 : metal_device.foodevice.access_private_ipv4
+//
+//	ip_address = "${var.network_type == "public" ? metal_device.foodevice.access_public_ipv4 : metal_device.foodevice.access_private_ipv4}"
+//	ip_address = var.network_type == "public" ? metal_device.foodevice.access_public_ipv4 : metal_device.foodevice.access_private_ipv4
 var matchResourceConditional = regexp.MustCompile(`(.*?[:|\?])(\s*)(metal|packet)(_.*?)`)
 
 // matches resource reference in for loop,ex:
-//   toset([for network in metal_device.foodevice.network : network.family])
+//
+//	toset([for network in metal_device.foodevice.network : network.family])
 var matchResourceForLoop = regexp.MustCompile(`(.*?)(in\s*)(metal|packet)(_.*?)`)
 
 // matches resource in expression,ex:
-//   tolist([metal_device.foodevice[*].access_public_ipv4])
-//   !metal_ip_attachment.fooattach.public
-//   totalSpeed = metal_connection.fooconnA.speed + metal_connection.fooconnB.speed
+//
+//	tolist([metal_device.foodevice[*].access_public_ipv4])
+//	!metal_ip_attachment.fooattach.public
+//	totalSpeed = metal_connection.fooconnA.speed + metal_connection.fooconnB.speed
 var matchResourceExpression = regexp.MustCompile(`(.*?[\+|-|\*|\/|>|<|&|\|\||%|!|\[]\s*)(metal|packet)(_.*?)`)
 
 // matches datasource references, ex:
-//   address_family = "${lookup(data.packet_device_bgp_neighbors.test.bgp_neighbors[0], "address_family")}"
+//
+//	address_family = "${lookup(data.packet_device_bgp_neighbors.test.bgp_neighbors[0], "address_family")}"
 var matchDatasourceReference = regexp.MustCompile(`(.*?data)(\.)(metal|packet)(_.*?)`)
 
 // replace specific string patterns in template files
