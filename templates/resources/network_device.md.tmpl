@@ -57,7 +57,6 @@ The following arguments are supported:
 * `package_code` - (Required) Device software package code.
 * `version` - (Required) Device software software version.
 * `core_count` - (Required) Number of CPU cores used by device. (**NOTE: Use this field to resize your device. When resizing your HA devices, primary device will be upgraded first. If the upgrade failed, device will be automatically rolled back to the previous state with original core number.**)
-* `tier` - (Optional, conflicts with `throughput`,`throughput_unit` ) Select bandwidth tier for your own license, i.e., `0` or `1` or `2` or `3`. Tiers applicable only for C8000V Autonomous or C8000V SDWAN (controller) device types. If not provided, tier is defaulted to '2'.
 * `term_length` - (Required) Device term length.
 * `self_managed` - (Optional) Boolean value that determines device management mode, i.e., `self-managed` or `Equinix-managed` (default).
 * `byol` - (Optional) Boolean value that determines device licensing mode, i.e., `bring your own license` or `subscription` (default).
