@@ -398,6 +398,65 @@ resource "equinix_network_device" "panw-cluster" {
 ```
 
 ```terraform
+# Create C8000V BYOL device with bandwidth tier information
+
+data "equinix_network_account" "sv" {
+  metro_code = "SV"
+}
+
+resource "equinix_network_device" "c8000v-byol-tier" {
+  name            = "tf-c8000v-byol"
+  metro_code      = data.equinix_network_account.sv.metro_code
+  type_code       = "C8000V"
+  self_managed    = true
+  byol            = true
+  package_code    = "VM100"
+  notifications   = ["john@equinix.com", "marry@equinix.com", "fred@equinix.com"]
+  term_length     = 12
+  account_number  = data.equinix_network_account.sv.number
+  version         = "17.11.01a"
+  interface_count = 10
+  core_count      = 2
+  tier            = 1
+  ssh_key {
+    username = "test"
+    key_name = "test-key"
+  }
+  acl_template_id = "0bff6e05-f0e7-44cd-804a-25b92b835f8b"
+}
+```
+
+```terraform
+# Create C8000V BYOL device with numeric bandwidth throughput information
+
+data "equinix_network_account" "sv" {
+  metro_code = "SV"
+}
+
+resource "equinix_network_device" "c8000v-byol-throughput" {
+  name            = "tf-c8000v-byol"
+  metro_code      = data.equinix_network_account.sv.metro_code
+  type_code       = "C8000V"
+  self_managed    = true
+  byol            = true
+  package_code    = "VM100"
+  notifications   = ["john@equinix.com", "marry@equinix.com", "fred@equinix.com"]
+  term_length     = 12
+  account_number  = data.equinix_network_account.sv.number
+  version         = "17.11.01a"
+  interface_count = 10
+  core_count      = 2
+  throughput 	  = "100"
+  throughput_unit = "Mbps"
+  ssh_key {
+    username = "test"
+    key_name = "test-key"
+  }
+  acl_template_id = "0bff6e05-f0e7-44cd-804a-25b92b835f8b"
+}
+```
+
+```terraform
 # Create self configured single Aviatrix Transit Edge device with cloud init file
 
 data "equinix_network_account" "sv" {
@@ -444,6 +503,7 @@ The following arguments are supported:
 * `package_code` - (Required) Device software package code.
 * `version` - (Required) Device software software version.
 * `core_count` - (Required) Number of CPU cores used by device. (**NOTE: Use this field to resize your device. When resizing your HA devices, primary device will be upgraded first. If the upgrade failed, device will be automatically rolled back to the previous state with original core number.**)
+* `tier` - (Optional, conflicts with `throughput`,`throughput_unit` ) Select bandwidth tier for your own license, i.e., `0` or `1` or `2` or `3`. Tiers applicable only for C8000V Autonomous or C8000V SDWAN (controller) device types. If not provided, tier is defaulted to '2'.
 * `term_length` - (Required) Device term length.
 * `self_managed` - (Optional) Boolean value that determines device management mode, i.e., `self-managed` or `Equinix-managed` (default).
 * `byol` - (Optional) Boolean value that determines device licensing mode, i.e., `bring your own license` or `subscription` (default).

@@ -43,6 +43,8 @@ github.com/equinix/equinix-sdk-go v0.46.0 h1:ldQo4GtXNr+0XsThQJf/pUdx5wcLFe9QpLF
 github.com/equinix/equinix-sdk-go v0.46.0/go.mod h1:hEb3XLaedz7xhl/dpPIS6eOIiXNPeqNiVoyDrT6paIg=
 github.com/equinix/ne-go v1.17.0 h1:+wZq0GNognpiTHTsBXtATOCphTFvnowF046NzQXj0n0=
 github.com/equinix/ne-go v1.17.0/go.mod h1:eHkkxM4nbTB7DZ9X9zGnwfYnxIJWIsU3aHA+FAoZ1EI=
+github.com/equinix/ne-go v1.18.0 h1:5az4ai39y1XLNOq3+qQVT9wFG7BmaQfj941MNqqouhk=
+github.com/equinix/ne-go v1.18.0/go.mod h1:eHkkxM4nbTB7DZ9X9zGnwfYnxIJWIsU3aHA+FAoZ1EI=
 github.com/equinix/oauth2-go v1.0.0 h1:fHtAPGq82PdgtK5vEThs8Vwz6f7D/8SX4tE3NJu+KcU=
 github.com/equinix/oauth2-go v1.0.0/go.mod h1:4pulXvUNMktJlewLPnUeJyMW52iCoF1aM+A/Z5xY1ws=
 github.com/equinix/rest-go v1.3.0 h1:m38scYTOfV6N+gcrwchgVDutDffYd+QoYCMm9Jn6jyk=

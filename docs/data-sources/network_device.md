@@ -76,3 +76,4 @@ NOTE: Exactly one of either `uuid` or `name` must be specified.
 * `connectivity` - Device accessibility (INTERNET-ACCESS or PRIVATE or INTERNET-ACCESS-WITH-PRVT-MGMT)
 * `diverse_device_id` - diverse device uuid
 * `diverse_device_name` - Name of the device with diverse device UUID
+* `tier` - Throughput Tier (applicable for C8000V, C8000V-SDWAN devices)
