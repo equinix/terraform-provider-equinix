@@ -282,10 +282,6 @@ func serviceTokenResponseMap(token *fabricv4.ServiceToken) map[string]interface{
 		connection := token.GetConnection()
 		serviceToken["service_token_connection"] = connectionGoToTerraform(&connection)
 	}
-	//if token.Notifications != nil {
-	//	notifications := token.GetNotifications()
-	//	serviceToken["notifications"] = equinix_fabric_schema.NotificationsGoToTerraform(notifications)
-	//}
 	if token.Account != nil {
 		account := token.GetAccount()
 		serviceToken["account"] = equinix_fabric_schema.AccountGoToTerraform(&account)
@@ -562,6 +558,9 @@ func connectionGoToTerraform(connection *fabricv4.ServiceTokenConnection) *schem
 
 		mappedConnection["supported_bandwidths"] = interfaceBandwidths
 	}
+	if connection.BandwidthLimit != nil {
+		mappedConnection["bandwidth_limit"] = int(connection.GetBandwidthLimit())
+	}
 	if connection.ASide != nil {
 		accessPoint := connection.GetASide()
 		mappedConnection["a_side"] = accessPointGoToTerraform(&accessPoint)
@@ -663,14 +662,21 @@ func virtualDeviceGoToTerraform(virtualDevice *fabricv4.SimplifiedVirtualDevice)
 		return nil
 	}
 	mappedVirtualDevice := make(map[string]interface{})
-	mappedVirtualDevice["name"] = virtualDevice.GetName()
-	mappedVirtualDevice["href"] = virtualDevice.GetHref()
-	mappedVirtualDevice["type"] = string(virtualDevice.GetType())
-	mappedVirtualDevice["uuid"] = virtualDevice.GetUuid()
-	if virtualDevice.Cluster != nil {
+	if name := virtualDevice.GetName(); name != "" {
+		mappedVirtualDevice["name"] = name
+	}
+	if href := virtualDevice.GetHref(); href != "" {
+		mappedVirtualDevice["href"] = href
+	}
+	if virtualDevice.GetType() != "" {
+		mappedVirtualDevice["type"] = string(virtualDevice.GetType())
+	}
+	if uuid := virtualDevice.GetUuid(); uuid != "" {
+		mappedVirtualDevice["uuid"] = uuid
+	}
+	if virtualDevice.Cluster != nil && virtualDevice.GetCluster() != "" {
 		mappedVirtualDevice["cluster"] = virtualDevice.GetCluster()
 	}
-
 	virtualDeviceSet := schema.NewSet(
 		schema.HashResource(virtualDeviceSch()),
 		[]interface{}{mappedVirtualDevice},
