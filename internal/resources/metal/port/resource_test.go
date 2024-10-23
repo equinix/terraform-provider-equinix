@@ -12,11 +12,9 @@ import (
 	"github.com/equinix/terraform-provider-equinix/internal/config"
 	"github.com/equinix/terraform-provider-equinix/internal/resources/metal/port"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
-	"github.com/packethost/packngo"
 )
 
 var (
@@ -400,10 +398,8 @@ func testAccWaitForPortActive(deviceName, portName string) resource.ImportStateI
 		}
 
 		meta := acceptance.TestAccProvider.Meta()
-		rd := new(schema.ResourceData)
-		meta.(*config.Config).AddModuleToMetalUserAgent(rd)
-		client := meta.(*config.Config).Metal
-		device, _, err := client.Devices.Get(rs.Primary.ID, &packngo.GetOptions{Includes: []string{"ports"}})
+		client := meta.(*config.Config).NewMetalClientForTesting()
+		device, _, err := client.DevicesApi.FindDeviceById(context.Background(), rs.Primary.ID).Include([]string{"ports"}).Execute()
 		if err != nil {
 			return "", fmt.Errorf("error while fetching device with Id [%s], error: %w", rs.Primary.ID, err)
 		}
@@ -415,8 +411,8 @@ func testAccWaitForPortActive(deviceName, portName string) resource.ImportStateI
 		}
 
 		for _, port := range device.NetworkPorts {
-			if port.Name == portName {
-				return port.ID, nil
+			if port.GetName() == portName {
+				return port.GetId(), nil
 			}
 		}
 
