@@ -70,6 +70,7 @@ var neDeviceSchemaNames = map[string]string{
 	"Connectivity":          "connectivity",
 	"DiverseFromDeviceUUID": "diverse_device_id",
 	"DiverseFromDeviceName": "diverse_device_name",
+	"Tier":                  "tier",
 }
 
 var neDeviceDescriptions = map[string]string{
@@ -119,6 +120,7 @@ var neDeviceDescriptions = map[string]string{
 	"ProjectID":             "The unique identifier of Project Resource to which device is scoped to",
 	"DiverseFromDeviceUUID": "Unique ID of an existing device",
 	"DiverseFromDeviceName": "Diverse Device Name of an existing device",
+	"Tier":                  "Bandwidth Tiers",
 }
 
 var neDeviceInterfaceSchemaNames = map[string]string{
@@ -438,6 +440,15 @@ func createNetworkDeviceSchema() map[string]*schema.Schema {
 			ValidateFunc:  validation.IsUUID,
 			ConflictsWith: []string{neDeviceSchemaNames["Secondary"]},
 			Description:   neDeviceDescriptions["DiverseFromDeviceUUID"],
+		},
+		neDeviceSchemaNames["Tier"]: {
+			Type:          schema.TypeInt,
+			ForceNew:      true,
+			Computed:      true,
+			Optional:      true,
+			ValidateFunc:  validation.IntInSlice([]int{0, 1, 2, 3}),
+			ConflictsWith: []string{neDeviceSchemaNames["Throughput"], neDeviceSchemaNames["ThroughputUnit"]},
+			Description:   neDeviceDescriptions["Tier"],
 		},
 		neDeviceSchemaNames["DiverseFromDeviceName"]: {
 			Type:        schema.TypeString,
@@ -1137,6 +1148,9 @@ func createNetworkDevices(d *schema.ResourceData) (*ne.Device, *ne.Device) {
 	if v, ok := d.GetOk(neDeviceSchemaNames["ProjectID"]); ok {
 		primary.ProjectID = ne.String(v.(string))
 	}
+	if v, ok := d.GetOk(neDeviceSchemaNames["Tier"]); ok {
+		primary.Tier = ne.Int(v.(int))
+	}
 	if v, ok := d.GetOk(neDeviceSchemaNames["DiverseFromDeviceUUID"]); ok {
 		primary.DiverseFromDeviceUUID = ne.String(v.(string))
 	}
@@ -1230,6 +1244,9 @@ func updateNetworkDeviceResource(primary *ne.Device, secondary *ne.Device, d *sc
 	}
 	if err := d.Set(neDeviceSchemaNames["Name"], primary.Name); err != nil {
 		return fmt.Errorf("error reading Name: %s", err)
+	}
+	if err := d.Set(neDeviceSchemaNames["Tier"], primary.Tier); err != nil {
+		return fmt.Errorf("error reading Tier: %s", err)
 	}
 	if err := d.Set(neDeviceSchemaNames["ProjectID"], primary.ProjectID); err != nil {
 		return fmt.Errorf("error reading ProjectID: %s", err)
@@ -1405,6 +1422,9 @@ func expandNetworkDeviceSecondary(devices []interface{}) *ne.Device {
 	}
 	if v, ok := device[neDeviceSchemaNames["Name"]]; ok && !isEmpty(v) {
 		transformed.Name = ne.String(v.(string))
+	}
+	if v, ok := device[neDeviceSchemaNames["Tier"]]; ok && !isEmpty(v) {
+		transformed.Tier = ne.Int(v.(int))
 	}
 	if v, ok := device[neDeviceSchemaNames["ProjectID"]]; ok && !isEmpty(v) {
 		transformed.ProjectID = ne.String(v.(string))
