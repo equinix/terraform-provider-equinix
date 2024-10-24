@@ -356,7 +356,7 @@ func accessPointTerraformToGo(accessPoint []interface{}) fabricv4.ServiceTokenSi
 	var apSide fabricv4.ServiceTokenSide
 
 	accessPointMap := accessPoint[0].(map[string]interface{})
-	accessPointSelectors := accessPointMap["access_point_selectors"].(*schema.Set).List()
+	accessPointSelectors := accessPointMap["access_point_selectors"].([]interface{})
 	if len(accessPointSelectors) != 0 {
 		aps := accessPointSelectorsTerraformToGo(accessPointSelectors)
 		apSide.SetAccessPointSelectors(aps)
@@ -577,56 +577,45 @@ func connectionGoToTerraform(connection *fabricv4.ServiceTokenConnection) *schem
 }
 
 func accessPointGoToTerraform(accessPoint *fabricv4.ServiceTokenSide) *schema.Set {
-	mappedAccessPoint := make(map[string]interface{})
-	if accessPoint.AccessPointSelectors != nil {
-		accessPointSelectors := accessPoint.GetAccessPointSelectors()
-
-		apSelectorsSet := schema.NewSet(
-			schema.HashResource(accessPointSelectorsSch()),
-			nil,
-		)
-		for _, selector := range accessPointSelectors {
-			mappedSelector := accessPointSelectorsGoToTerraform(&selector)
-			apSelectorsSet.Add(mappedSelector)
-
-		}
-		mappedAccessPoint["access_point_selectors"] = apSelectorsSet
-	}
-
-	accessPointSet := schema.NewSet(
-		schema.HashResource(accessPointSelectorsSch()),
-		[]interface{}{mappedAccessPoint},
+	return schema.NewSet(
+		schema.HashResource(serviceTokenAccessPointSch()),
+		[]interface{}{map[string]interface{}{
+			"access_point_selectors": accessPointSelectorsGoToTerraform(accessPoint.GetAccessPointSelectors()),
+		}},
 	)
-	return accessPointSet
 }
 
-func accessPointSelectorsGoToTerraform(apSelectors *fabricv4.AccessPointSelector) map[string]interface{} {
-	mappedAccessPointSelectors := make(map[string]interface{})
-	if apSelectors.Type != nil {
-		mappedAccessPointSelectors["type"] = string(apSelectors.GetType())
-	}
-	if apSelectors.Port != nil {
-		port := apSelectors.GetPort()
-		mappedAccessPointSelectors["port"] = portGoToTerraform(&port)
-	}
-	if apSelectors.LinkProtocol != nil {
-		linkProtocol := apSelectors.GetLinkProtocol()
-		mappedAccessPointSelectors["link_protocol"] = linkedProtocolGoToTerraform(&linkProtocol)
-	}
-	if apSelectors.VirtualDevice != nil {
-		virtualDevice := apSelectors.GetVirtualDevice()
-		mappedAccessPointSelectors["virtual_device"] = virtualDeviceGoToTerraform(&virtualDevice)
-	}
-	if apSelectors.Interface != nil {
-		interface_ := apSelectors.GetInterface()
-		mappedAccessPointSelectors["interface"] = interfaceGoToTerraform(&interface_)
-	}
-	if apSelectors.Network != nil {
-		network := apSelectors.GetNetwork()
-		mappedAccessPointSelectors["network"] = networkGoToTerraform(&network)
+func accessPointSelectorsGoToTerraform(apSelectors []fabricv4.AccessPointSelector) []interface{} {
+	mappedSelectors := make([]interface{}, len(apSelectors))
+	for index, selector := range apSelectors {
+		mappedAccessPointSelector := make(map[string]interface{})
+		if selector.Type != nil {
+			mappedAccessPointSelector["type"] = string(selector.GetType())
+		}
+		if selector.Port != nil {
+			port := selector.GetPort()
+			mappedAccessPointSelector["port"] = portGoToTerraform(&port)
+		}
+		if selector.LinkProtocol != nil {
+			linkProtocol := selector.GetLinkProtocol()
+			mappedAccessPointSelector["link_protocol"] = linkedProtocolGoToTerraform(&linkProtocol)
+		}
+		if selector.VirtualDevice != nil {
+			virtualDevice := selector.GetVirtualDevice()
+			mappedAccessPointSelector["virtual_device"] = virtualDeviceGoToTerraform(&virtualDevice)
+		}
+		if selector.Interface != nil {
+			interface_ := selector.GetInterface()
+			mappedAccessPointSelector["interface"] = interfaceGoToTerraform(&interface_)
+		}
+		if selector.Network != nil {
+			network := selector.GetNetwork()
+			mappedAccessPointSelector["network"] = networkGoToTerraform(&network)
+		}
+		mappedSelectors[index] = mappedAccessPointSelector
 	}
 
-	return mappedAccessPointSelectors
+	return mappedSelectors
 }
 
 func portGoToTerraform(port *fabricv4.SimplifiedMetadataEntity) *schema.Set {
