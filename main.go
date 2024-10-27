@@ -6,7 +6,7 @@ import (
 	"log"
 
 	"github.com/equinix/terraform-provider-equinix/equinix"
-	"github.com/equinix/terraform-provider-equinix/internal/provider"
+	"github.com/equinix/terraform-provider-equinix/equinix/provider"
 	"github.com/equinix/terraform-provider-equinix/version"
 
 	"github.com/hashicorp/terraform-plugin-framework/providerserver"

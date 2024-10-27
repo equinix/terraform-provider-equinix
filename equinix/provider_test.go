@@ -8,8 +8,8 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/equinix/terraform-provider-equinix/equinix/provider"
 	"github.com/equinix/terraform-provider-equinix/internal/config"
-	"github.com/equinix/terraform-provider-equinix/internal/provider"
 	"github.com/equinix/terraform-provider-equinix/version"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -131,7 +131,7 @@ func TestProvider_setSchemaValueIfNotEmpty(t *testing.T) {
 	var b *int = nil
 	d := schema.TestResourceDataRaw(t, s, make(map[string]interface{}))
 	// when
-	setSchemaValueIfNotEmpty(key, b, d)
+	_ = setSchemaValueIfNotEmpty(key, b, d)
 	// then
 	_, ok := d.GetOk(key)
 	assert.False(t, ok, "Key was not set")
