@@ -13,7 +13,11 @@ func DataSource() *schema.Resource {
 	return &schema.Resource{
 		ReadContext: dataSourceRead,
 		Schema:      dataSourceBaseSchema(),
-		Description: `Fabric V4 API compatible data resource that allow user to fetch service token for a given UUID`,
+		Description: `Fabric V4 API compatible data resource that allow user to fetch service token for a given UUID
+
+Additional documentation:
+* Getting Started: https://docs.equinix.com/en-us/Content/Interconnection/Fabric/service%20tokens/Fabric-Service-Tokens.htm
+* API: https://docs.equinix.com/en-us/Content/KnowledgeCenter/Fabric/GettingStarted/Integrating-with-Fabric-V4-APIs/ConnectUsingServiceToken.htm`,
 	}
 }
 
@@ -27,7 +31,11 @@ func DataSourceSearch() *schema.Resource {
 	return &schema.Resource{
 		ReadContext: dataSourceSearch,
 		Schema:      dataSourceSearchSchema(),
-		Description: `Fabric V4 API compatible data resource that allow user to fetch service token for a given search data set`,
+		Description: `Fabric V4 API compatible data resource that allow user to fetch service token for a given search data set
+
+Additional documentation:
+* Getting Started: https://docs.equinix.com/en-us/Content/Interconnection/Fabric/service%20tokens/Fabric-Service-Tokens.htm
+* API: https://docs.equinix.com/en-us/Content/KnowledgeCenter/Fabric/GettingStarted/Integrating-with-Fabric-V4-APIs/ConnectUsingServiceToken.htm`,
 	}
 }
 

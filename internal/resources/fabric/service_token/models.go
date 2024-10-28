@@ -8,7 +8,6 @@ import (
 	equinix_schema "github.com/equinix/terraform-provider-equinix/internal/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"log"
 	"reflect"
 	"sort"
 	"time"
@@ -21,13 +20,11 @@ func buildCreateRequest(d *schema.ResourceData) fabricv4.ServiceToken {
 	serviceTokenRequest.SetType(fabricv4.ServiceTokenType(typeConfig))
 
 	expirationDateTimeConfig := d.Get("expiration_date_time").(string)
-	log.Printf("[DEBUG] !!!! Expiration Date %v", expirationDateTimeConfig)
 	const TimeFormat = "2006-01-02T15:04:05.000Z"
 	expirationTime, err := time.Parse(TimeFormat, expirationDateTimeConfig)
 	if err != nil {
 		fmt.Print("Error Parsing expiration date time: ", err)
 	}
-	log.Printf("[DEBUG] !!! Parsed expiration date %v", expirationTime)
 	serviceTokenRequest.SetExpirationDateTime(expirationTime)
 
 	connectionConfig := d.Get("service_token_connection").(*schema.Set).List()
@@ -79,7 +76,6 @@ func buildUpdateRequest(d *schema.ResourceData) []fabricv4.ServiceTokenChangeOpe
 		for _, notification := range oldNotifications.(*schema.Set).List() {
 			notificationMap := notification.(map[string]interface{})
 
-			// Extract old  emails list if it exists
 			if emails, ok := notificationMap["emails"]; ok {
 				oldEmailInterface := emails.([]interface{})
 				if len(oldEmailInterface) > 0 {
@@ -92,7 +88,6 @@ func buildUpdateRequest(d *schema.ResourceData) []fabricv4.ServiceTokenChangeOpe
 		for _, notification := range newNotifications.(*schema.Set).List() {
 			notificationMap := notification.(map[string]interface{})
 
-			// Extract old emails list if it exists
 			if emails, ok := notificationMap["emails"]; ok {
 				newEmailInterface := emails.([]interface{})
 				if len(newEmailInterface) > 0 {
@@ -102,7 +97,6 @@ func buildUpdateRequest(d *schema.ResourceData) []fabricv4.ServiceTokenChangeOpe
 		}
 	}
 
-	log.Print("!!! DEBUG value of new email", newNotificationEmails)
 	if !reflect.DeepEqual(oldNotificationEmails, newNotificationEmails) {
 		patches = append(patches, fabricv4.ServiceTokenChangeOperation{
 			Op:    "replace",
@@ -112,18 +106,13 @@ func buildUpdateRequest(d *schema.ResourceData) []fabricv4.ServiceTokenChangeOpe
 	}
 
 	oldServiceTokenConnection, newServiceTokenConnection := d.GetChange("service_token_connection")
-	log.Printf("[DEBUG] !!! old ServiceToken Connection %v", oldServiceTokenConnection)
-	log.Printf("[DEBUG] !!! new ServiceToken Connection %v", newServiceTokenConnection)
 
-	// Initialize variables for bandwidth limits
 	var oldAsideBandwidthLimit, newAsideBandwidthLimit int
 
-	// Extract old bandwidth limit
 	if oldServiceTokenConnection != nil {
 		for _, connection := range oldServiceTokenConnection.(*schema.Set).List() {
 			notificationMap := connection.(map[string]interface{})
 
-			// Extract old bandwidth limit if it exists
 			if bandwidth, ok := notificationMap["bandwidthLimit"]; ok {
 				oldBandwidthLimit := bandwidth.([]interface{})
 				if len(oldBandwidthLimit) > 0 {
@@ -134,12 +123,10 @@ func buildUpdateRequest(d *schema.ResourceData) []fabricv4.ServiceTokenChangeOpe
 		}
 	}
 
-	// Extract new bandwidth limit
 	if newServiceTokenConnection != nil {
 		for _, connection := range newServiceTokenConnection.(*schema.Set).List() {
 			notificationMap := connection.(map[string]interface{})
 
-			// Extract new bandwidth limit if it exists
 			if bandwidth, ok := notificationMap["bandwidthLimit"]; ok {
 				newBandwidthLimit := bandwidth.([]interface{})
 				if len(newBandwidthLimit) > 0 {
@@ -158,14 +145,12 @@ func buildUpdateRequest(d *schema.ResourceData) []fabricv4.ServiceTokenChangeOpe
 		})
 	}
 
-	// Get the old and new values for bandwidth limit
 	var oldZsideBandwidth, newZsideBandwidth []int
 
 	if oldServiceTokenConnection != nil {
 		for _, connection := range oldServiceTokenConnection.(*schema.Set).List() {
 			notificationMap := connection.(map[string]interface{})
 
-			// Extract old bandwidth limit if it exists
 			if bandwidth, ok := notificationMap["supported_bandwidths"]; ok {
 				oldSupportedBandwidth := bandwidth.([]interface{})
 				if len(oldSupportedBandwidth) > 0 {
@@ -179,7 +164,6 @@ func buildUpdateRequest(d *schema.ResourceData) []fabricv4.ServiceTokenChangeOpe
 		for _, connection := range newServiceTokenConnection.(*schema.Set).List() {
 			notificationMap := connection.(map[string]interface{})
 
-			// Extract new bandwidth limit if it exists
 			if bandwidth, ok := notificationMap["supported_bandwidths"]; ok {
 				newSupportedBandwidth := bandwidth.([]interface{})
 				if len(newSupportedBandwidth) > 0 {
@@ -190,8 +174,6 @@ func buildUpdateRequest(d *schema.ResourceData) []fabricv4.ServiceTokenChangeOpe
 		}
 	}
 
-	log.Print("!!! DEBUG value of new supprted bandwidth", newZsideBandwidth)
-	log.Printf("[DEBUG] Value of aresliceequal fucntion %v", areSlicesEqual(oldZsideBandwidth, newZsideBandwidth))
 	if !areSlicesEqual(oldZsideBandwidth, newZsideBandwidth) {
 		patches = append(patches, fabricv4.ServiceTokenChangeOperation{
 			Op:    "replace",
@@ -208,13 +190,9 @@ func areSlicesEqual(a, b []int) bool {
 		return false
 	}
 
-	// Sort both slices
 	sort.Ints(a)
 	sort.Ints(b)
 
-	log.Printf("value of int a %v", a)
-	log.Printf("value of int b %v", b)
-	// Compare sorted slices
 	for i := range a {
 		if a[i] != b[i] {
 			return false
@@ -324,14 +302,10 @@ func connectionTerraformToGo(connectionTerraform []interface{}) fabricv4.Service
 
 	supportedBandwidths := connectionMap["supported_bandwidths"].([]interface{})
 	if supportedBandwidths != nil {
-		// Create a new slice to hold the int32 values
 		int32Bandwidths := make([]int32, len(supportedBandwidths))
-
-		// Convert []interface{} to []int32
 		for i, v := range supportedBandwidths {
-			int32Bandwidths[i] = int32(v.(int)) // Assign directly to the slice at index i
+			int32Bandwidths[i] = int32(v.(int))
 		}
-		// Set the converted []int32 to the connection
 		connection.SetSupportedBandwidths(int32Bandwidths)
 	}
 
@@ -356,7 +330,7 @@ func accessPointTerraformToGo(accessPoint []interface{}) fabricv4.ServiceTokenSi
 	var apSide fabricv4.ServiceTokenSide
 
 	accessPointMap := accessPoint[0].(map[string]interface{})
-	accessPointSelectors := accessPointMap["access_point_selectors"].(*schema.Set).List()
+	accessPointSelectors := accessPointMap["access_point_selectors"].([]interface{})
 	if len(accessPointSelectors) != 0 {
 		aps := accessPointSelectorsTerraformToGo(accessPointSelectors)
 		apSide.SetAccessPointSelectors(aps)
@@ -577,56 +551,45 @@ func connectionGoToTerraform(connection *fabricv4.ServiceTokenConnection) *schem
 }
 
 func accessPointGoToTerraform(accessPoint *fabricv4.ServiceTokenSide) *schema.Set {
-	mappedAccessPoint := make(map[string]interface{})
-	if accessPoint.AccessPointSelectors != nil {
-		accessPointSelectors := accessPoint.GetAccessPointSelectors()
-
-		apSelectorsSet := schema.NewSet(
-			schema.HashResource(accessPointSelectorsSch()),
-			nil,
-		)
-		for _, selector := range accessPointSelectors {
-			mappedSelector := accessPointSelectorsGoToTerraform(&selector)
-			apSelectorsSet.Add(mappedSelector)
-
-		}
-		mappedAccessPoint["access_point_selectors"] = apSelectorsSet
-	}
-
-	accessPointSet := schema.NewSet(
-		schema.HashResource(accessPointSelectorsSch()),
-		[]interface{}{mappedAccessPoint},
+	return schema.NewSet(
+		schema.HashResource(serviceTokenAccessPointSch()),
+		[]interface{}{map[string]interface{}{
+			"access_point_selectors": accessPointSelectorsGoToTerraform(accessPoint.GetAccessPointSelectors()),
+		}},
 	)
-	return accessPointSet
 }
 
-func accessPointSelectorsGoToTerraform(apSelectors *fabricv4.AccessPointSelector) map[string]interface{} {
-	mappedAccessPointSelectors := make(map[string]interface{})
-	if apSelectors.Type != nil {
-		mappedAccessPointSelectors["type"] = string(apSelectors.GetType())
-	}
-	if apSelectors.Port != nil {
-		port := apSelectors.GetPort()
-		mappedAccessPointSelectors["port"] = portGoToTerraform(&port)
-	}
-	if apSelectors.LinkProtocol != nil {
-		linkProtocol := apSelectors.GetLinkProtocol()
-		mappedAccessPointSelectors["link_protocol"] = linkedProtocolGoToTerraform(&linkProtocol)
-	}
-	if apSelectors.VirtualDevice != nil {
-		virtualDevice := apSelectors.GetVirtualDevice()
-		mappedAccessPointSelectors["virtual_device"] = virtualDeviceGoToTerraform(&virtualDevice)
-	}
-	if apSelectors.Interface != nil {
-		interface_ := apSelectors.GetInterface()
-		mappedAccessPointSelectors["interface"] = interfaceGoToTerraform(&interface_)
-	}
-	if apSelectors.Network != nil {
-		network := apSelectors.GetNetwork()
-		mappedAccessPointSelectors["network"] = networkGoToTerraform(&network)
+func accessPointSelectorsGoToTerraform(apSelectors []fabricv4.AccessPointSelector) []interface{} {
+	mappedSelectors := make([]interface{}, len(apSelectors))
+	for index, selector := range apSelectors {
+		mappedAccessPointSelector := make(map[string]interface{})
+		if selector.Type != nil {
+			mappedAccessPointSelector["type"] = string(selector.GetType())
+		}
+		if selector.Port != nil {
+			port := selector.GetPort()
+			mappedAccessPointSelector["port"] = portGoToTerraform(&port)
+		}
+		if selector.LinkProtocol != nil {
+			linkProtocol := selector.GetLinkProtocol()
+			mappedAccessPointSelector["link_protocol"] = linkedProtocolGoToTerraform(&linkProtocol)
+		}
+		if selector.VirtualDevice != nil {
+			virtualDevice := selector.GetVirtualDevice()
+			mappedAccessPointSelector["virtual_device"] = virtualDeviceGoToTerraform(&virtualDevice)
+		}
+		if selector.Interface != nil {
+			interface_ := selector.GetInterface()
+			mappedAccessPointSelector["interface"] = interfaceGoToTerraform(&interface_)
+		}
+		if selector.Network != nil {
+			network := selector.GetNetwork()
+			mappedAccessPointSelector["network"] = networkGoToTerraform(&network)
+		}
+		mappedSelectors[index] = mappedAccessPointSelector
 	}
 
-	return mappedAccessPointSelectors
+	return mappedSelectors
 }
 
 func portGoToTerraform(port *fabricv4.SimplifiedMetadataEntity) *schema.Set {
