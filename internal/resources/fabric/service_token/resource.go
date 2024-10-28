@@ -98,7 +98,8 @@ func resourceDelete(ctx context.Context, d *schema.ResourceData, meta interface{
 	if err != nil {
 		if genericError, ok := err.(*fabricv4.GenericOpenAPIError); ok {
 			if fabricErrs, ok := genericError.Model().([]fabricv4.Error); ok {
-				if equinix_errors.HasErrorCode(fabricErrs, "") {
+				// EQ-3034019 = Service Token already deleted
+				if equinix_errors.HasErrorCode(fabricErrs, "EQ-3034019") {
 					return diags
 				}
 			}
