@@ -51,6 +51,7 @@ func resourceSchema() map[string]*schema.Schema {
 			Required:    true,
 			Description: "Service Token Connection Type Information",
 			Elem:        serviceTokenConnectionSch(),
+			Set:         schema.HashResource(serviceTokenConnectionSch()),
 		},
 		"state": {
 			Type:        schema.TypeString,
@@ -129,7 +130,7 @@ func serviceTokenConnectionSch() *schema.Resource {
 			"supported_bandwidths": {
 				Type:        schema.TypeList,
 				Required:    true,
-				Description: "List of permitted bandwidths",
+				Description: "List of permitted bandwidths' For Port ",
 				Elem: &schema.Schema{
 					Type: schema.TypeInt,
 				},
@@ -140,6 +141,7 @@ func serviceTokenConnectionSch() *schema.Resource {
 				Computed:    true,
 				Description: "A-Side Connection link protocol,virtual device or network configuration",
 				Elem:        serviceTokenAccessPointSch(),
+				Set:         schema.HashResource(serviceTokenAccessPointSch()),
 			},
 			"z_side": {
 				Type:        schema.TypeSet,
@@ -147,6 +149,7 @@ func serviceTokenConnectionSch() *schema.Resource {
 				Computed:    true,
 				Description: "Z-Side Connection link protocol,virtual device or network configuration",
 				Elem:        serviceTokenAccessPointSch(),
+				Set:         schema.HashResource(serviceTokenAccessPointSch()),
 			},
 		},
 	}
@@ -156,10 +159,11 @@ func serviceTokenAccessPointSch() *schema.Resource {
 	return &schema.Resource{
 		Schema: map[string]*schema.Schema{
 			"access_point_selectors": {
-				Type:        schema.TypeSet,
+				Type:        schema.TypeList,
 				Required:    true,
 				Description: "List of criteria for selecting network access points with optimal efficiency, security, compatibility, and availability",
 				Elem:        accessPointSelectorsSch(),
+				Set:         schema.HashResource(accessPointSelectorsSch()),
 			},
 		},
 	}
