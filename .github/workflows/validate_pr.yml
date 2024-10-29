@@ -11,7 +11,7 @@ permissions:
   pull-requests: write
 
 jobs:
-  main:
+  check-pr-title:
     name: Validate PR title
     runs-on: ubuntu-latest
     steps:
@@ -42,4 +42,67 @@ jobs:
         uses: marocchino/sticky-pull-request-comment@v2
         with:
           header: pr-title-lint-error
+          delete: true
+
+  enforce-packages:
+    name: Prevent new files in `equinix` package
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/github-script@v7
+        id: check_added_files
+        with:
+          result-encoding: string
+          retries: 3
+          script: |
+            const files = await github.paginate(github.rest.pulls.listFiles,{
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: context.issue.number
+            })
+
+            const blockedFiles = []
+
+            for (const file of files) {
+              if (file.status === "added" && file.filename.match(/equinix\/[^\/]*\.go/)) {
+                blockedFiles.push("- " + file.filename)
+              }
+            }
+
+            var errorMessage = ""
+
+            if (blockedFiles.length > 0) {
+               errorMessage = `The following files were added to the \`equinix\` package and must be moved somewhere else:
+            ${blockedFiles.join("\n")}
+            `
+              core.setFailed(errorMessage)
+            }
+
+            return errorMessage
+
+      - uses: marocchino/sticky-pull-request-comment@v2
+        # When the previous steps fails, the workflow would stop. By adding this
+        # condition you can continue the execution with the populated error message.
+        if: always() && (steps.check_added_files.outputs.result != '')
+        with:
+          header: files-added-to-equinix-error
+          message: |
+            We are actively working to reduce the amount of code in the `equinix`
+            package to avoid unintentional code sharing.
+
+            New files should be added in an isolated package instead of adding
+            more code to the `equinix` package.  You may need to refactor and/or
+            temporarily duplicate existing code in order to move your new code
+            to an isolated package.
+
+            Details:
+
+            ```
+            ${{ steps.check_added_files.outputs.result }}
+            ```
+
+      # Delete a previous comment when the issue has been resolved
+      - if: steps.check_added_files.outputs.result == ''
+        uses: marocchino/sticky-pull-request-comment@v2
+        with:
+          header: files-added-to-equinix-error
           delete: true
