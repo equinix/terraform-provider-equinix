@@ -76,7 +76,11 @@ func testAccMetalReservedIPBlockConfig_metro(name, tag string) string {
 		tags        = [{{.tag | printf "%q"}}]
 		{{end}}
 	}`)
-	t.Execute(&b, map[string]string{"name": name, "tag": tag})
+	err := t.Execute(&b, map[string]string{"name": name, "tag": tag})
+
+	if err != nil {
+		panic(err)
+	}
 
 	return b.String()
 }
