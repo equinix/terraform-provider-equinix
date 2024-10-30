@@ -111,9 +111,9 @@ func buildUpdateRequest(d *schema.ResourceData) []fabricv4.ServiceTokenChangeOpe
 
 	if oldServiceTokenConnection != nil {
 		for _, connection := range oldServiceTokenConnection.(*schema.Set).List() {
-			notificationMap := connection.(map[string]interface{})
+			oldBandwidthLimitMap := connection.(map[string]interface{})
 
-			if bandwidth, ok := notificationMap["bandwidthLimit"]; ok {
+			if bandwidth, ok := oldBandwidthLimitMap["bandwidthLimit"]; ok {
 				oldBandwidthLimit := bandwidth.([]interface{})
 				if len(oldBandwidthLimit) > 0 {
 					oldAsideBandwidthLimits := converters.IfArrToIntArr(oldBandwidthLimit)
@@ -125,9 +125,9 @@ func buildUpdateRequest(d *schema.ResourceData) []fabricv4.ServiceTokenChangeOpe
 
 	if newServiceTokenConnection != nil {
 		for _, connection := range newServiceTokenConnection.(*schema.Set).List() {
-			notificationMap := connection.(map[string]interface{})
+			newBandwidthLimitMap := connection.(map[string]interface{})
 
-			if bandwidth, ok := notificationMap["bandwidthLimit"]; ok {
+			if bandwidth, ok := newBandwidthLimitMap["bandwidthLimit"]; ok {
 				newBandwidthLimit := bandwidth.([]interface{})
 				if len(newBandwidthLimit) > 0 {
 					newAsideBandwidthLimits := converters.IfArrToIntArr(newBandwidthLimit)
@@ -149,9 +149,9 @@ func buildUpdateRequest(d *schema.ResourceData) []fabricv4.ServiceTokenChangeOpe
 
 	if oldServiceTokenConnection != nil {
 		for _, connection := range oldServiceTokenConnection.(*schema.Set).List() {
-			notificationMap := connection.(map[string]interface{})
+			olSupportedBandwidthMap := connection.(map[string]interface{})
 
-			if bandwidth, ok := notificationMap["supported_bandwidths"]; ok {
+			if bandwidth, ok := olSupportedBandwidthMap["supported_bandwidths"]; ok {
 				oldSupportedBandwidth := bandwidth.([]interface{})
 				if len(oldSupportedBandwidth) > 0 {
 					oldZsideBandwidth = converters.IfArrToIntArr(oldSupportedBandwidth)
@@ -162,9 +162,9 @@ func buildUpdateRequest(d *schema.ResourceData) []fabricv4.ServiceTokenChangeOpe
 
 	if newServiceTokenConnection != nil {
 		for _, connection := range newServiceTokenConnection.(*schema.Set).List() {
-			notificationMap := connection.(map[string]interface{})
+			newSupportedBandwidthMap := connection.(map[string]interface{})
 
-			if bandwidth, ok := notificationMap["supported_bandwidths"]; ok {
+			if bandwidth, ok := newSupportedBandwidthMap["supported_bandwidths"]; ok {
 				newSupportedBandwidth := bandwidth.([]interface{})
 				if len(newSupportedBandwidth) > 0 {
 					newZsideBandwidth = converters.IfArrToIntArr(newSupportedBandwidth)

@@ -4,6 +4,8 @@ import (
 	equinix_fabric_schema "github.com/equinix/terraform-provider-equinix/internal/fabric/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
+	"strconv"
+	"strings"
 )
 
 func resourceSchema() map[string]*schema.Schema {
@@ -134,6 +136,20 @@ func serviceTokenConnectionSch() *schema.Resource {
 				Elem: &schema.Schema{
 					Type: schema.TypeInt,
 				},
+				//DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
+				//	oldValues := convertStringToIntSlice(old)
+				//	newValues := convertStringToIntSlice(new)
+				//
+				//	// Sort both slices for consistent comparison
+				//	sort.Ints(oldValues)
+				//	sort.Ints(newValues)
+				//
+				//	log.Printf("!!! old value %v", oldValues)
+				//	log.Printf("!!! new Value %v", newValues)
+				//
+				//	// Suppress diff if sorted slices are identical
+				//	return reflect.DeepEqual(oldValues, newValues)
+				//},
 			},
 			"a_side": {
 				Type:        schema.TypeSet,
@@ -154,6 +170,20 @@ func serviceTokenConnectionSch() *schema.Resource {
 		},
 	}
 }
+func convertStringToIntSlice(value string) []int {
+	// Split the comma-separated string
+	strValues := strings.Split(value, ",")
+	intSlice := make([]int, 0, len(strValues))
+
+	for _, str := range strValues {
+		// Trim spaces and convert each to int
+		num, err := strconv.Atoi(strings.TrimSpace(str))
+		if err == nil {
+			intSlice = append(intSlice, num)
+		}
+	}
+	return intSlice
+}
 
 func serviceTokenAccessPointSch() *schema.Resource {
 	return &schema.Resource{
@@ -163,7 +193,6 @@ func serviceTokenAccessPointSch() *schema.Resource {
 				Required:    true,
 				Description: "List of criteria for selecting network access points with optimal efficiency, security, compatibility, and availability",
 				Elem:        accessPointSelectorsSch(),
-				Set:         schema.HashResource(accessPointSelectorsSch()),
 			},
 		},
 	}
