@@ -2,20 +2,17 @@ package service_token
 
 import (
 	"context"
-	"fmt"
+	"log"
+	"strings"
+	"time"
+
 	"github.com/equinix/equinix-sdk-go/services/fabricv4"
 	"github.com/equinix/terraform-provider-equinix/internal/config"
 	equinix_errors "github.com/equinix/terraform-provider-equinix/internal/errors"
 	equinix_fabric_schema "github.com/equinix/terraform-provider-equinix/internal/fabric/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"log"
-	"reflect"
-	"sort"
-	"strings"
-	"time"
 )
 
 func Resource() *schema.Resource {
@@ -33,93 +30,10 @@ func Resource() *schema.Resource {
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
-		Schema: resourceSchema(),
-		CustomizeDiff: customdiff.All(
-			customdiff.ValidateChange("service_token_connection", func(ctx context.Context, oldValue, newValue, meta interface{}) error {
-				var oldZsideBandwidth, newZsideBandwidth []int
-				log.Printf("service token old %v", oldValue)
-				log.Printf("service token new %v", newValue)
-
-				for _, connection := range oldValue.(*schema.Set).List() {
-					olSupportedBandwidthMap := connection.(map[string]interface{})
-
-					if bandwidth, ok := olSupportedBandwidthMap["supported_bandwidths"]; ok {
-						oldSupportedBandwidth := bandwidth.([]interface{})
-						log.Printf("old value %v", oldSupportedBandwidth)
-						if len(oldSupportedBandwidth) > 0 {
-							sort.Ints(oldZsideBandwidth)
-
-						}
-					}
-				}
-
-				for _, connection := range newValue.(*schema.Set).List() {
-					newSupportedBandwidthMap := connection.(map[string]interface{})
-
-					if bandwidth, ok := newSupportedBandwidthMap["supported_bandwidths"]; ok {
-						newSupportedBandwidth := bandwidth.([]interface{})
-						log.Printf("new value %v", newSupportedBandwidth)
-						if len(newSupportedBandwidth) > 0 {
-							sort.Ints(newZsideBandwidth)
-
-						}
-					}
-				}
-				log.Printf("!! old value %v", oldZsideBandwidth)
-				log.Printf("!! old value %v", oldZsideBandwidth)
-
-				if reflect.DeepEqual(oldZsideBandwidth, newZsideBandwidth) {
-					return nil // No diff if equivalent after sorting
-				}
-
-				return fmt.Errorf("supported_bandwidths values are different: %v", newZsideBandwidth)
-
-			}),
-		),
+		Schema:      resourceSchema(),
 		Description: `Fabric V4 API compatible resource allows creation and management of Equinix Fabric Service Token`,
 	}
 }
-
-func extractIntValues(value interface{}) []int {
-	var intSlice []int
-
-	switch v := value.(type) {
-	case *schema.Set:
-		for _, item := range v.List() {
-			if val, ok := item.(int); ok {
-				intSlice = append(intSlice, val)
-			}
-		}
-	case []interface{}:
-		for _, item := range v {
-			if val, ok := item.(int); ok {
-				intSlice = append(intSlice, val)
-			}
-		}
-	}
-
-	return intSlice
-}
-
-//func convertToIntSlice(input interface{}) ([]int, bool) {
-//	if input == nil {
-//		return []int{}, true
-//	}
-//
-//	// Type assert to a slice of interfaces, if applicable
-//	if slice, ok := input.([]interface{}); ok {
-//		intSlice := make([]int, 0, len(slice))
-//		for _, v := range slice {
-//			if intVal, ok := v.(int); ok {
-//				intSlice = append(intSlice, intVal)
-//			} else {
-//				return []int{}, false // Conversion failed
-//			}
-//		}
-//		return intSlice, true
-//	}
-//	return []int{}, false // Not a valid slice type
-//}
 
 func resourceRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*config.Config).NewFabricClientForSDK(d)

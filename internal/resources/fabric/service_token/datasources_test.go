@@ -2,48 +2,55 @@ package service_token_test
 
 import (
 	"fmt"
-	"github.com/equinix/terraform-provider-equinix/internal/acceptance"
-	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"testing"
+
+	"github.com/equinix/terraform-provider-equinix/internal/acceptance"
+	"github.com/equinix/terraform-provider-equinix/internal/fabric/testing_helpers"
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
 
 func TestAccFabricServiceTokenDataSource_PNFV(t *testing.T) {
+	connectionTestData := testing_helpers.GetFabricEnvConnectionTestData(t)
+	var virtualDevice string
+	if len(connectionTestData) > 0 {
+		virtualDevice = connectionTestData["pnfv"]["virtualDevice"]
+	}
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { acceptance.TestAccPreCheck(t) },
 		Providers:    acceptance.TestAccProviders,
 		CheckDestroy: CheckServiceTokenDelete,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccFabricServiceTokenConfigDataSourceConfig(),
+				Config: testAccFabricServiceTokenConfigDataSourceConfig(virtualDevice),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrSet("data.equinix_fabric_service_token.service-token", "uuid"),
-					resource.TestCheckResourceAttr("data.equinix_fabric_service_token.service-token", "type", "VC_TOKEN"),
-					resource.TestCheckResourceAttr("data.equinix_fabric_service_token.service-token", "expiration_date_time", "2024-11-18T06:43:49.980Z"),
-					resource.TestCheckResourceAttr("data.equinix_fabric_service_token.service-token", "service_token_connection.0.supported_bandwidths.#", "3"),
-					resource.TestCheckResourceAttr("data.equinix_fabric_service_token.service-token", "service_token_connection.0.z_side.0.access_point_selectors.0.virtual_device.0.type", "EDGE"),
-					resource.TestCheckResourceAttr("data.equinix_fabric_service_token.service-token", "service_token_connection.0.z_side.0.access_point_selectors.0.virtual_device.0.uuid", "fcf0fcec-65f6-4544-8810-ae4756fab8c4"),
-					resource.TestCheckResourceAttr("data.equinix_fabric_service_token.service-token", "service_token_connection.0.z_side.0.access_point_selectors.0.interface.0.type", "NETWORK"),
-					resource.TestCheckResourceAttr("data.equinix_fabric_service_token.service-token", "service_token_connection.0.z_side.0.access_point_selectors.0.interface.0.id", "5"),
+					resource.TestCheckResourceAttrSet("data.equinix_fabric_service_token.service-token-for-zside-virtual-device", "uuid"),
+					resource.TestCheckResourceAttr("data.equinix_fabric_service_token.service-token-for-zside-virtual-device", "type", "VC_TOKEN"),
+					resource.TestCheckResourceAttr("data.equinix_fabric_service_token.service-token-for-zside-virtual-device", "expiration_date_time", "2025-01-18T06:43:49.981Z"),
+					resource.TestCheckResourceAttr("data.equinix_fabric_service_token.service-token-for-zside-virtual-device", "service_token_connection.0.supported_bandwidths.#", "3"),
+					resource.TestCheckResourceAttr("data.equinix_fabric_service_token.service-token-for-zside-virtual-device", "service_token_connection.0.z_side.0.access_point_selectors.0.virtual_device.0.type", "EDGE"),
+					resource.TestCheckResourceAttr("data.equinix_fabric_service_token.service-token-for-zside-virtual-device", "service_token_connection.0.z_side.0.access_point_selectors.0.virtual_device.0.uuid", virtualDevice),
+					resource.TestCheckResourceAttr("data.equinix_fabric_service_token.service-token-for-zside-virtual-device", "service_token_connection.0.z_side.0.access_point_selectors.0.interface.0.type", "NETWORK"),
+					resource.TestCheckResourceAttrSet("data.equinix_fabric_service_token.service-token-for-zside-virtual-device", "service_token_connection.0.z_side.0.access_point_selectors.0.interface.0.id"),
 					resource.TestCheckResourceAttrSet("data.equinix_fabric_service_tokens.service-tokens", "data.0.uuid"),
 					resource.TestCheckResourceAttr("data.equinix_fabric_service_tokens.service-tokens", "data.0.type", "VC_TOKEN"),
-					resource.TestCheckResourceAttr("data.equinix_fabric_service_tokens.service-tokens", "data.0.expiration_date_time", "2024-11-18T06:43:49.980Z"),
+					resource.TestCheckResourceAttr("data.equinix_fabric_service_tokens.service-tokens", "data.0.expiration_date_time", "2025-01-18T06:43:49.981Z"),
 					resource.TestCheckResourceAttr("data.equinix_fabric_service_tokens.service-tokens", "data.0.service_token_connection.0.supported_bandwidths.#", "3"),
-					resource.TestCheckResourceAttr("data.equinix_fabric_service_tokens.service-tokens", "service_token_connection.0.z_side.0.access_point_selectors.0.virtual_device.0.type", "EDGE"),
-					resource.TestCheckResourceAttr("data.equinix_fabric_service_tokens.service-tokens", "data.0.service_token_connection.0.z_side.0.access_point_selectors.0.virtual_device.0.uuid", "fcf0fcec-65f6-4544-8810-ae4756fab8c4"),
-					resource.TestCheckResourceAttr("data.equinix_fabric_service_tokens.service-tokens", "service_token_connection.0.z_side.0.access_point_selectors.0.interface.0.type", "NETWORK"),
-					resource.TestCheckResourceAttr("data.equinix_fabric_service_tokens.service-tokens", "data.0.service_token_connection.0.z_side.0.access_point_selectors.0.interface.0.id", "5"),
+					resource.TestCheckResourceAttr("data.equinix_fabric_service_tokens.service-tokens", "data.0.service_token_connection.0.z_side.0.access_point_selectors.0.virtual_device.0.type", "EDGE"),
+					resource.TestCheckResourceAttr("data.equinix_fabric_service_tokens.service-tokens", "data.0.service_token_connection.0.z_side.0.access_point_selectors.0.virtual_device.0.uuid", virtualDevice),
+					resource.TestCheckResourceAttr("data.equinix_fabric_service_tokens.service-tokens", "data.0.service_token_connection.0.z_side.0.access_point_selectors.0.interface.0.type", "NETWORK"),
+					resource.TestCheckResourceAttrSet("data.equinix_fabric_service_tokens.service-tokens", "data.0.service_token_connection.0.z_side.0.access_point_selectors.0.interface.0.id"),
 				),
-				ExpectNonEmptyPlan: true,
+				ExpectNonEmptyPlan: false,
 			},
 		},
 	})
 }
 
-func testAccFabricServiceTokenConfigDataSourceConfig() string {
+func testAccFabricServiceTokenConfigDataSourceConfig(virtualDeviceUuid string) string {
 	return fmt.Sprintf(
 		`resource "equinix_fabric_service_token" "test"{
 			type = "VC_TOKEN"
-			expiration_date_time = "2024-11-18T06:43:49.980Z"
+			expiration_date_time = "2025-01-18T06:43:49.981Z"
 			service_token_connection {
 				type = "EVPL_VC"
 				supported_bandwidths = [50, 200, 10000]
@@ -52,11 +59,10 @@ func testAccFabricServiceTokenConfigDataSourceConfig() string {
 						type = "VD"
 						virtual_device{
 							type = "EDGE"
-							uuid = "fcf0fcec-65f6-4544-8810-ae4756fab8c4"
+							uuid = "%s"
 						}
 						interface{
 							type = "NETWORK"
-							id = 5
 						}
 					}
 				}
@@ -67,7 +73,7 @@ func testAccFabricServiceTokenConfigDataSourceConfig() string {
   			}
 		}
 		
-		data "equinix_fabric_service_token" "service-token" {
+		data "equinix_fabric_service_token" "service-token-for-zside-virtual-device" {
 			uuid = equinix_fabric_service_token.test.id
 		}
 		
@@ -89,5 +95,5 @@ func testAccFabricServiceTokenConfigDataSourceConfig() string {
 			}
 		}
 		
-    `)
+    `, virtualDeviceUuid)
 }

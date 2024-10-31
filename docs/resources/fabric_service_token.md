@@ -16,7 +16,7 @@ Zside Virtual Device Service Token
 ```terraform
 resource "equinix_fabric_service_token" "test" {
   type                 = "VC_TOKEN"
-  expiration_date_time = "2025-01-18T06:43:49.980Z"
+  expiration_date_time = "2025-01-18T06:43:49.986Z"
   service_token_connection {
     type                 = "EVPL_VC"
     supported_bandwidths = [50, 200, 10000]
@@ -25,7 +25,7 @@ resource "equinix_fabric_service_token" "test" {
         type = "VD"
         virtual_device {
           type = "EDGE"
-          uuid = "<device_uuid"
+          uuid = "<device_uuid>"
         }
         interface {
           type = "NETWORK"
@@ -82,7 +82,7 @@ Optional:
 
 Required:
 
-- `supported_bandwidths` (List of Number) List of permitted bandwidths' For Port
+- `supported_bandwidths` (List of Number) List of permitted bandwidths'; For Port-based Service Tokens, the maximum allowable bandwidth is 50 Gbps, while for Virtual Device-based Service Tokens, it is limited to 10 Gbps
 - `type` (String) Type of Connection supported by Service Token you will create; EVPL_VC, EVPLAN_VC, EPLAN_VC, IPWAN_VC
 
 Optional:
@@ -119,13 +119,13 @@ Optional:
 <a id="nestedblock--service_token_connection--a_side--access_point_selectors--interface"></a>
 ### Nested Schema for `service_token_connection.a_side.access_point_selectors.interface`
 
-Optional:
+Required:
 
-- `id` (Number) id
 - `type` (String) Interface type
 
 Read-Only:
 
+- `id` (Number) id
 - `uuid` (String) Equinix-assigned interface identifier
 
 
@@ -207,13 +207,13 @@ Required:
 
 Optional:
 
-- `cluster` (String) Virtual Device Cluster Information
-- `name` (String) Customer-assigned Virtual Device Name
 - `type` (String) Virtual Device type
 
 Read-Only:
 
+- `cluster` (String) Virtual Device Cluster Information
 - `href` (String) Unique Resource Identifier
+- `name` (String) Customer-assigned Virtual Device Name
 
 
 
@@ -240,13 +240,13 @@ Optional:
 <a id="nestedblock--service_token_connection--z_side--access_point_selectors--interface"></a>
 ### Nested Schema for `service_token_connection.z_side.access_point_selectors.interface`
 
-Optional:
+Required:
 
-- `id` (Number) id
 - `type` (String) Interface type
 
 Read-Only:
 
+- `id` (Number) id
 - `uuid` (String) Equinix-assigned interface identifier
 
 
@@ -328,13 +328,13 @@ Required:
 
 Optional:
 
-- `cluster` (String) Virtual Device Cluster Information
-- `name` (String) Customer-assigned Virtual Device Name
 - `type` (String) Virtual Device type
 
 Read-Only:
 
+- `cluster` (String) Virtual Device Cluster Information
 - `href` (String) Unique Resource Identifier
+- `name` (String) Customer-assigned Virtual Device Name
 
 
 

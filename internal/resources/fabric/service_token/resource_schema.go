@@ -4,8 +4,6 @@ import (
 	equinix_fabric_schema "github.com/equinix/terraform-provider-equinix/internal/fabric/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
-	"strconv"
-	"strings"
 )
 
 func resourceSchema() map[string]*schema.Schema {
@@ -132,24 +130,10 @@ func serviceTokenConnectionSch() *schema.Resource {
 			"supported_bandwidths": {
 				Type:        schema.TypeList,
 				Required:    true,
-				Description: "List of permitted bandwidths' For Port ",
+				Description: "List of permitted bandwidths'; For Port-based Service Tokens, the maximum allowable bandwidth is 50 Gbps, while for Virtual Device-based Service Tokens, it is limited to 10 Gbps",
 				Elem: &schema.Schema{
 					Type: schema.TypeInt,
 				},
-				//DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
-				//	oldValues := convertStringToIntSlice(old)
-				//	newValues := convertStringToIntSlice(new)
-				//
-				//	// Sort both slices for consistent comparison
-				//	sort.Ints(oldValues)
-				//	sort.Ints(newValues)
-				//
-				//	log.Printf("!!! old value %v", oldValues)
-				//	log.Printf("!!! new Value %v", newValues)
-				//
-				//	// Suppress diff if sorted slices are identical
-				//	return reflect.DeepEqual(oldValues, newValues)
-				//},
 			},
 			"a_side": {
 				Type:        schema.TypeSet,
@@ -169,20 +153,6 @@ func serviceTokenConnectionSch() *schema.Resource {
 			},
 		},
 	}
-}
-func convertStringToIntSlice(value string) []int {
-	// Split the comma-separated string
-	strValues := strings.Split(value, ",")
-	intSlice := make([]int, 0, len(strValues))
-
-	for _, str := range strValues {
-		// Trim spaces and convert each to int
-		num, err := strconv.Atoi(strings.TrimSpace(str))
-		if err == nil {
-			intSlice = append(intSlice, num)
-		}
-	}
-	return intSlice
 }
 
 func serviceTokenAccessPointSch() *schema.Resource {
@@ -226,7 +196,6 @@ func accessPointSelectorsSch() *schema.Resource {
 			"virtual_device": {
 				Type:        schema.TypeSet,
 				Optional:    true,
-				Computed:    true,
 				Description: "Virtual Device Configuration",
 				MaxItems:    1,
 				Elem:        virtualDeviceSch(),
@@ -341,13 +310,11 @@ func virtualDeviceSch() *schema.Resource {
 			},
 			"name": {
 				Type:        schema.TypeString,
-				Optional:    true,
 				Computed:    true,
 				Description: "Customer-assigned Virtual Device Name",
 			},
 			"cluster": {
 				Type:        schema.TypeString,
-				Optional:    true,
 				Computed:    true,
 				Description: "Virtual Device Cluster Information",
 			},
@@ -397,14 +364,12 @@ func interfaceSch() *schema.Resource {
 			},
 			"id": {
 				Type:        schema.TypeInt,
-				Optional:    true,
 				Computed:    true,
 				Description: "id",
 			},
 			"type": {
 				Type:        schema.TypeString,
-				Optional:    true,
-				Computed:    true,
+				Required:    true,
 				Description: "Interface type",
 			},
 		},

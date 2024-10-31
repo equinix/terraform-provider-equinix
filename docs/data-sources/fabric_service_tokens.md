@@ -73,7 +73,7 @@ output "first_service_token_interface_uuid" {
 
 ### Required
 
-- `filter` (Block List, Min: 1, Max: 10) Filters for the Data Source Search Request. Maximum of 8 total filters. (see [below for nested schema](#nestedblock--filter))
+- `filter` (Block List, Min: 1, Max: 10) Filters for the Data Source Search Request (see [below for nested schema](#nestedblock--filter))
 
 ### Optional
 
@@ -81,7 +81,7 @@ output "first_service_token_interface_uuid" {
 
 ### Read-Only
 
-- `data` (List of Object) List of Route Filters (see [below for nested schema](#nestedatt--data))
+- `data` (List of Object) List of Service Tokens (see [below for nested schema](#nestedatt--data))
 - `id` (String) The ID of this resource.
 
 <a id="nestedblock--filter"></a>

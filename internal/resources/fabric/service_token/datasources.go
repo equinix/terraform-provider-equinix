@@ -3,6 +3,7 @@ package service_token
 import (
 	"context"
 	"fmt"
+
 	"github.com/equinix/terraform-provider-equinix/internal/config"
 	equinix_errors "github.com/equinix/terraform-provider-equinix/internal/errors"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
