@@ -1,0 +1,23 @@
+---
+subcategory: "Fabric"
+---
+
+{{/* This template serves as a starting point for documentation generation, and can be customized with hardcoded values and/or doc gen templates.
+
+For example, the {{ .SchemaMarkdown }} template can be used to replace manual schema documentation if descriptions of schema attributes are added in the provider source code. */ -}}
+
+# equinix_fabric_service_token (Resource)
+
+Fabric V4 API compatible resource allows creation and management of [Equinix Fabric Service Token](https://docs.equinix.com/en-us/Content/Interconnection/Fabric/service%20tokens/Fabric-Service-Tokens.htm).
+
+Additional documentation:
+* Getting Started: https://docs.equinix.com/en-us/Content/Interconnection/Fabric/service%20tokens/Fabric-Service-Tokens.htm
+* API: https://docs.equinix.com/en-us/Content/KnowledgeCenter/Fabric/GettingStarted/Integrating-with-Fabric-V4-APIs/ConnectUsingServiceToken.htm
+
+## Example Usage
+
+Zside Virtual Device Service Token
+{{tffile "examples/resources/equinix_fabric_service_token/zside_vd_service_token.tf"}}
+
+
+{{ .SchemaMarkdown | trimspace }}
