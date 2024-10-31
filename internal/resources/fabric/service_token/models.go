@@ -2,15 +2,16 @@ package service_token
 
 import (
 	"fmt"
+	"reflect"
+	"sort"
+	"time"
+
 	"github.com/equinix/equinix-sdk-go/services/fabricv4"
 	"github.com/equinix/terraform-provider-equinix/internal/converters"
 	equinix_fabric_schema "github.com/equinix/terraform-provider-equinix/internal/fabric/schema"
 	equinix_schema "github.com/equinix/terraform-provider-equinix/internal/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"reflect"
-	"sort"
-	"time"
 )
 
 func buildCreateRequest(d *schema.ResourceData) fabricv4.ServiceToken {
@@ -277,7 +278,7 @@ func serviceTokenResponseMap(token *fabricv4.ServiceToken) map[string]interface{
 }
 
 func connectionTerraformToGo(connectionTerraform []interface{}) fabricv4.ServiceTokenConnection {
-	if connectionTerraform == nil || len(connectionTerraform) == 0 {
+	if len(connectionTerraform) == 0 {
 		return fabricv4.ServiceTokenConnection{}
 	}
 
@@ -306,6 +307,9 @@ func connectionTerraformToGo(connectionTerraform []interface{}) fabricv4.Service
 		for i, v := range supportedBandwidths {
 			int32Bandwidths[i] = int32(v.(int))
 		}
+		sort.Slice(int32Bandwidths, func(i, j int) bool {
+			return int32Bandwidths[i] < int32Bandwidths[j]
+		})
 		connection.SetSupportedBandwidths(int32Bandwidths)
 	}
 
@@ -323,7 +327,7 @@ func connectionTerraformToGo(connectionTerraform []interface{}) fabricv4.Service
 }
 
 func accessPointTerraformToGo(accessPoint []interface{}) fabricv4.ServiceTokenSide {
-	if accessPoint == nil || len(accessPoint) == 0 {
+	if len(accessPoint) == 0 {
 		return fabricv4.ServiceTokenSide{}
 	}
 
@@ -339,7 +343,7 @@ func accessPointTerraformToGo(accessPoint []interface{}) fabricv4.ServiceTokenSi
 }
 
 func accessPointSelectorsTerraformToGo(accessPointSelectors []interface{}) []fabricv4.AccessPointSelector {
-	if accessPointSelectors == nil || len(accessPointSelectors) == 0 {
+	if len(accessPointSelectors) == 0 {
 		return []fabricv4.AccessPointSelector{}
 	}
 
@@ -383,7 +387,7 @@ func accessPointSelectorsTerraformToGo(accessPointSelectors []interface{}) []fab
 }
 
 func portTerraformToGo(portList []interface{}) fabricv4.SimplifiedMetadataEntity {
-	if portList == nil || len(portList) == 0 {
+	if len(portList) == 0 {
 		return fabricv4.SimplifiedMetadataEntity{}
 	}
 	var port fabricv4.SimplifiedMetadataEntity
@@ -395,7 +399,7 @@ func portTerraformToGo(portList []interface{}) fabricv4.SimplifiedMetadataEntity
 }
 
 func linkProtocolTerraformToGo(linkProtocolList []interface{}) fabricv4.SimplifiedLinkProtocol {
-	if linkProtocolList == nil || len(linkProtocolList) == 0 {
+	if len(linkProtocolList) == 0 {
 		return fabricv4.SimplifiedLinkProtocol{}
 	}
 	var linkProtocol fabricv4.SimplifiedLinkProtocol
@@ -420,7 +424,7 @@ func linkProtocolTerraformToGo(linkProtocolList []interface{}) fabricv4.Simplifi
 }
 
 func virtualDeviceTerraformToGo(virtualDeviceList []interface{}) fabricv4.SimplifiedVirtualDevice {
-	if virtualDeviceList == nil || len(virtualDeviceList) == 0 {
+	if len(virtualDeviceList) == 0 {
 		return fabricv4.SimplifiedVirtualDevice{}
 	}
 
@@ -441,7 +445,7 @@ func virtualDeviceTerraformToGo(virtualDeviceList []interface{}) fabricv4.Simpli
 }
 
 func interfaceTerraformToGo(interfaceList []interface{}) fabricv4.VirtualDeviceInterface {
-	if interfaceList == nil || len(interfaceList) == 0 {
+	if len(interfaceList) == 0 {
 		return fabricv4.VirtualDeviceInterface{}
 	}
 
@@ -458,7 +462,7 @@ func interfaceTerraformToGo(interfaceList []interface{}) fabricv4.VirtualDeviceI
 }
 
 func networkTerraformToGo(networkList []interface{}) fabricv4.SimplifiedTokenNetwork {
-	if networkList == nil || len(networkList) == 0 {
+	if len(networkList) == 0 {
 		return fabricv4.SimplifiedTokenNetwork{}
 	}
 	var network fabricv4.SimplifiedTokenNetwork
@@ -529,6 +533,10 @@ func connectionGoToTerraform(connection *fabricv4.ServiceTokenConnection) *schem
 		for i, v := range supportedBandwidths {
 			interfaceBandwidths[i] = int(v) // Convert each int32 to interface{}
 		}
+
+		sort.Slice(interfaceBandwidths, func(i, j int) bool {
+			return interfaceBandwidths[i].(int) < interfaceBandwidths[j].(int)
+		})
 
 		mappedConnection["supported_bandwidths"] = interfaceBandwidths
 	}

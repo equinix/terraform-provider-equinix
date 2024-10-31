@@ -1,92 +1,34 @@
 package service_token
 
 import (
-	equinix_fabric_schema "github.com/equinix/terraform-provider-equinix/internal/fabric/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 )
 
 func dataSourceBaseSchema() map[string]*schema.Schema {
-	return map[string]*schema.Schema{
-		"type": {
-			Type:        schema.TypeString,
-			Computed:    true,
-			Description: "Service Token Type; VC_TOKEN,EPL_TOKEN",
-		},
-		"uuid": {
-			Type:        schema.TypeString,
-			Required:    true,
-			Description: "Equinix-assigned service token identifier",
-		},
-		"href": {
-			Type:        schema.TypeString,
-			Computed:    true,
-			Description: "An absolute URL that is the subject of the link's context.",
-		},
-		"issuer_side": {
-			Type:        schema.TypeString,
-			Computed:    true,
-			Description: "Information about token side; ASIDE, ZSIDE",
-		},
-		"name": {
-			Type:        schema.TypeString,
-			Computed:    true,
-			Description: "Name of the Service Token",
-		},
-		"description": {
-			Type:        schema.TypeString,
-			Computed:    true,
-			Description: "Optional Description to the Service Token you will be creating",
-		},
-		"expiration_date_time": {
-			Type:        schema.TypeString,
-			Computed:    true,
-			Description: "Expiration date and time of the service token; 2020-11-06T07:00:00Z",
-		},
-		"service_token_connection": {
-			Type:        schema.TypeSet,
-			Computed:    true,
-			Description: "Service Token Connection Type Information",
-			Elem:        serviceTokenConnectionSch(),
-		},
-		"state": {
-			Type:        schema.TypeString,
-			Computed:    true,
-			Description: "Service token state; ACTIVE, INACTIVE, EXPIRED, DELETED",
-		},
-		"notifications": {
-			Type:        schema.TypeSet,
-			Computed:    true,
-			Description: "Preferences for notifications on Service Token configuration or status changes",
-			Elem: &schema.Resource{
-				Schema: equinix_fabric_schema.NotificationSch(),
-			},
-		},
-		"account": {
-			Type:        schema.TypeSet,
-			Computed:    true,
-			Description: "Customer account information that is associated with this service token",
-			Elem: &schema.Resource{
-				Schema: equinix_fabric_schema.AccountSch(),
-			},
-		},
-		"change_log": {
-			Type:        schema.TypeSet,
-			Computed:    true,
-			Description: "Captures connection lifecycle change information",
-			Elem: &schema.Resource{
-				Schema: equinix_fabric_schema.ChangeLogSch(),
-			},
-		},
-		"project": {
-			Type:        schema.TypeSet,
-			Computed:    true,
-			Description: "Project information",
-			Elem: &schema.Resource{
-				Schema: equinix_fabric_schema.ProjectSch(),
-			},
-		},
+	sch := resourceSchema()
+	for key := range sch {
+		if key == "uuid" {
+			sch[key].Required = true
+			sch[key].Optional = false
+			sch[key].Computed = false
+		} else {
+			sch[key].Required = false
+			sch[key].Optional = false
+			sch[key].Computed = true
+			sch[key].MaxItems = 0
+			sch[key].ValidateFunc = nil
+		}
 	}
+	return sch
+}
+
+func dataSourceBaseSchemaUpdated() map[string]*schema.Schema {
+	sch := dataSourceBaseSchema()
+	sch["uuid"].Computed = true
+	sch["uuid"].Optional = false
+	sch["uuid"].Required = false
+	return sch
 }
 
 func paginationSchema() *schema.Resource {
@@ -129,15 +71,15 @@ func dataSourceSearchSchema() map[string]*schema.Schema {
 		"data": {
 			Type:        schema.TypeList,
 			Computed:    true,
-			Description: "List of Route Filters",
+			Description: "List of Service Tokens",
 			Elem: &schema.Resource{
-				Schema: dataSourceBaseSchema(),
+				Schema: dataSourceBaseSchemaUpdated(),
 			},
 		},
 		"filter": {
 			Type:        schema.TypeList,
 			Required:    true,
-			Description: "Filters for the Data Source Search Request. Maximum of 8 total filters.",
+			Description: "Filters for the Data Source Search Request",
 			MaxItems:    10,
 			Elem: &schema.Resource{
 				Schema: map[string]*schema.Schema{
