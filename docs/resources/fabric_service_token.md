@@ -12,10 +12,40 @@ Additional documentation:
 
 ## Example Usage
 
+Aside Port Service Token
+```terraform
+resource "equinix_fabric_service_token" "test" {
+  type = "VC_TOKEN"
+  description = "Aside COLO Service Token"
+  expiration_date_time = "2025-01-18T06:43:49.981Z"
+  service_token_connection {
+    type = "EVPL_VC"
+    bandwidth_limit = 1000
+    a_side {
+      access_point_selectors{
+        type = "COLO"
+        port {
+          uuid = "<port_uuid>"
+        }
+        link_protocol {
+          type = "DOT1Q"
+          vlan_tag = "2987"
+        }
+      }
+    }
+  }
+  notifications {
+    type   = "ALL"
+    emails = ["example@equinix.com", "test1@equinix.com"]
+  }
+}
+```
+
 Zside Virtual Device Service Token
 ```terraform
 resource "equinix_fabric_service_token" "test" {
   type                 = "VC_TOKEN"
+  description = "Zside VD Service Token"
   expiration_date_time = "2025-01-18T06:43:49.986Z"
   service_token_connection {
     type                 = "EVPL_VC"
@@ -32,6 +62,10 @@ resource "equinix_fabric_service_token" "test" {
         }
       }
     }
+  }
+  notifications {
+    type   = "ALL"
+    emails = ["example@equinix.com"]
   }
 }
 ```
@@ -82,7 +116,6 @@ Optional:
 
 Required:
 
-- `supported_bandwidths` (List of Number) List of permitted bandwidths'; For Port-based Service Tokens, the maximum allowable bandwidth is 50 Gbps, while for Virtual Device-based Service Tokens, it is limited to 10 Gbps
 - `type` (String) Type of Connection supported by Service Token you will create; EVPL_VC, EVPLAN_VC, EPLAN_VC, IPWAN_VC
 
 Optional:
@@ -91,6 +124,7 @@ Optional:
 - `allow_custom_bandwidth` (Boolean) Allow custom bandwidth value
 - `allow_remote_connection` (Boolean) Authorization to connect remotely
 - `bandwidth_limit` (Number) Connection bandwidth limit in Mbps
+- `supported_bandwidths` (List of Number) List of permitted bandwidths'; For Port-based Service Tokens, the maximum allowable bandwidth is 50 Gbps, while for Virtual Device-based Service Tokens, it is limited to 10 Gbps
 - `z_side` (Block Set) Z-Side Connection link protocol,virtual device or network configuration (see [below for nested schema](#nestedblock--service_token_connection--z_side))
 
 Read-Only:
@@ -170,31 +204,34 @@ Optional:
 <a id="nestedblock--service_token_connection--a_side--access_point_selectors--port"></a>
 ### Nested Schema for `service_token_connection.a_side.access_point_selectors.port`
 
+Required:
+
+- `uuid` (String) Equinix-assigned Port identifier
+
 Optional:
+
+- `type` (String) Type of Port
+
+Read-Only:
 
 - `account_name` (String) Account Name
 - `bandwidth` (Number) Port Bandwidth
 - `cvp_id` (Number) Customer virtual port Id
 - `encapsulation_protocol_type` (String) Port Encapsulation
-- `location` (Block Set) Port Location (see [below for nested schema](#nestedblock--service_token_connection--a_side--access_point_selectors--port--location))
+- `href` (String) Unique Resource Identifier
+- `location` (Set of Object) Port Location (see [below for nested schema](#nestedatt--service_token_connection--a_side--access_point_selectors--port--location))
 - `port_name` (String) Port Name
 - `priority` (String) Port Priority
-- `type` (String) Type of Port
-- `uuid` (String) Equinix-assigned Port identifier
+
+<a id="nestedatt--service_token_connection--a_side--access_point_selectors--port--location"></a>
+### Nested Schema for `service_token_connection.a_side.access_point_selectors.port.location`
 
 Read-Only:
 
-- `href` (String) Unique Resource Identifier
-
-<a id="nestedblock--service_token_connection--a_side--access_point_selectors--port--location"></a>
-### Nested Schema for `service_token_connection.a_side.access_point_selectors.port.location`
-
-Optional:
-
-- `ibx` (String) IBX Code
-- `metro_code` (String) Access point metro code
-- `metro_name` (String) Access point metro name
-- `region` (String) Access point region
+- `ibx` (String)
+- `metro_code` (String)
+- `metro_name` (String)
+- `region` (String)
 
 
 
@@ -291,31 +328,34 @@ Optional:
 <a id="nestedblock--service_token_connection--z_side--access_point_selectors--port"></a>
 ### Nested Schema for `service_token_connection.z_side.access_point_selectors.port`
 
+Required:
+
+- `uuid` (String) Equinix-assigned Port identifier
+
 Optional:
+
+- `type` (String) Type of Port
+
+Read-Only:
 
 - `account_name` (String) Account Name
 - `bandwidth` (Number) Port Bandwidth
 - `cvp_id` (Number) Customer virtual port Id
 - `encapsulation_protocol_type` (String) Port Encapsulation
-- `location` (Block Set) Port Location (see [below for nested schema](#nestedblock--service_token_connection--z_side--access_point_selectors--port--location))
+- `href` (String) Unique Resource Identifier
+- `location` (Set of Object) Port Location (see [below for nested schema](#nestedatt--service_token_connection--z_side--access_point_selectors--port--location))
 - `port_name` (String) Port Name
 - `priority` (String) Port Priority
-- `type` (String) Type of Port
-- `uuid` (String) Equinix-assigned Port identifier
+
+<a id="nestedatt--service_token_connection--z_side--access_point_selectors--port--location"></a>
+### Nested Schema for `service_token_connection.z_side.access_point_selectors.port.location`
 
 Read-Only:
 
-- `href` (String) Unique Resource Identifier
-
-<a id="nestedblock--service_token_connection--z_side--access_point_selectors--port--location"></a>
-### Nested Schema for `service_token_connection.z_side.access_point_selectors.port.location`
-
-Optional:
-
-- `ibx` (String) IBX Code
-- `metro_code` (String) Access point metro code
-- `metro_name` (String) Access point metro name
-- `region` (String) Access point region
+- `ibx` (String)
+- `metro_code` (String)
+- `metro_name` (String)
+- `region` (String)
 
 
 
