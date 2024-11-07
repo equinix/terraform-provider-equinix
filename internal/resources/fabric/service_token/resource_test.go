@@ -67,7 +67,7 @@ func TestAccFabricAsidePortServiceToken_PNFV(t *testing.T) {
 	ports := testing_helpers.GetFabricEnvPorts(t)
 	var portUuid string
 	if len(ports) > 0 {
-		portUuid = ports["ppds"]["dot1q"][0].GetUuid()
+		portUuid = ports["pnfv"]["dot1q"][0].GetUuid()
 	}
 	serviceTokenName, serviceTokenUpdatedName := "token_port_PNFV", "UP_Token_port_PNFV"
 	serviceTokenDescription, serviceTokenUpdatedDescription := "aside port token", "Updated aside port token"
