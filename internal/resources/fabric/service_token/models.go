@@ -393,7 +393,47 @@ func portTerraformToGo(portList []interface{}) fabricv4.SimplifiedMetadataEntity
 	var port fabricv4.SimplifiedMetadataEntity
 	portListMap := portList[0].(map[string]interface{})
 	uuid := portListMap["uuid"].(string)
-	port.SetUuid(uuid)
+	href := portListMap["href"].(string)
+	type_ := portListMap["type"].(string)
+	cvpId := portListMap["cvp_id"].(int)
+	bandwidth := portListMap["bandwidth"].(int)
+	portName := portListMap["port_name"].(string)
+	encapsulationProtocolType := portListMap["encapsulation_protocol_type"].(string)
+	accountName := portListMap["account_name"].(string)
+	priority := portListMap["priority"].(string)
+	locationList := portListMap["location"].(*schema.Set).List()
+
+	if uuid != "" {
+		port.SetUuid(uuid)
+	}
+	if href != "" {
+		port.SetHref(href)
+	}
+	if type_ != "" {
+		port.SetType(type_)
+	}
+	if cvpId != 0 {
+		port.SetCvpId(int32(cvpId))
+	}
+	if bandwidth != 0 {
+		port.SetBandwidth(float32(bandwidth))
+	}
+	if portName != "" {
+		port.SetPortName(portName)
+	}
+	if encapsulationProtocolType != "" {
+		port.SetEncapsulationProtocolType(encapsulationProtocolType)
+	}
+	if accountName != "" {
+		port.SetAccountName(accountName)
+	}
+	if priority != "" {
+		port.SetPriority(priority)
+	}
+	if len(locationList) != 0 {
+		location := equinix_fabric_schema.LocationTerraformToGo(locationList)
+		port.SetLocation(location)
+	}
 
 	return port
 }
@@ -601,10 +641,41 @@ func accessPointSelectorsGoToTerraform(apSelectors []fabricv4.AccessPointSelecto
 }
 
 func portGoToTerraform(port *fabricv4.SimplifiedMetadataEntity) *schema.Set {
+	if port == nil {
+		return nil
+	}
 	mappedPort := make(map[string]interface{})
-	mappedPort["href"] = port.GetHref()
-	mappedPort["type"] = port.GetType()
-	mappedPort["uuid"] = port.GetUuid()
+	if href := port.GetHref(); href != "" {
+		mappedPort["href"] = href
+	}
+	if uuid := port.GetUuid(); uuid != "" {
+		mappedPort["uuid"] = uuid
+	}
+	if port.GetType() != "" {
+		mappedPort["type"] = port.GetType()
+	}
+	if cvpId := port.GetCvpId(); cvpId != 0 {
+		mappedPort["cvp_id"] = port.GetCvpId()
+	}
+	if bandwidth := port.GetBandwidth(); bandwidth != 0 {
+		mappedPort["bandwidth"] = port.GetBandwidth()
+	}
+	if portName := port.GetPortName(); portName != "" {
+		mappedPort["port_name"] = port.GetPortName()
+	}
+	if encapsulationProtocolType := port.GetEncapsulationProtocolType(); encapsulationProtocolType != "" {
+		mappedPort["encapsulation_protocol_type"] = port.GetEncapsulationProtocolType()
+	}
+	if accountName := port.GetAccountName(); accountName != "" {
+		mappedPort["account_name"] = port.GetAccountName()
+	}
+	if priority := port.GetPriority(); priority != "" {
+		mappedPort["priority"] = port.GetPriority()
+	}
+	if port.Location != nil {
+		location := port.GetLocation()
+		mappedPort["location"] = equinix_fabric_schema.LocationGoToTerraform(&location)
+	}
 
 	portSet := schema.NewSet(
 		schema.HashResource(portSch()),

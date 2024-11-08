@@ -129,7 +129,8 @@ func serviceTokenConnectionSch() *schema.Resource {
 			},
 			"supported_bandwidths": {
 				Type:        schema.TypeList,
-				Required:    true,
+				Optional:    true,
+				Computed:    true,
 				Description: "List of permitted bandwidths'; For Port-based Service Tokens, the maximum allowable bandwidth is 50 Gbps, while for Virtual Device-based Service Tokens, it is limited to 10 Gbps",
 				Elem: &schema.Schema{
 					Type: schema.TypeInt,
@@ -230,8 +231,7 @@ func portSch() *schema.Resource {
 			},
 			"uuid": {
 				Type:        schema.TypeString,
-				Optional:    true,
-				Computed:    true,
+				Required:    true,
 				Description: "Equinix-assigned Port identifier",
 			},
 			"type": {
@@ -243,43 +243,36 @@ func portSch() *schema.Resource {
 			"cvp_id": {
 				Type:        schema.TypeInt,
 				Computed:    true,
-				Optional:    true,
 				Description: "Customer virtual port Id",
 			},
 			"bandwidth": {
 				Type:        schema.TypeInt,
 				Computed:    true,
-				Optional:    true,
 				Description: "Port Bandwidth",
 			},
 			"port_name": {
 				Type:        schema.TypeString,
 				Computed:    true,
-				Optional:    true,
 				Description: "Port Name",
 			},
 			"encapsulation_protocol_type": {
 				Type:        schema.TypeString,
 				Computed:    true,
-				Optional:    true,
 				Description: "Port Encapsulation",
 			},
 			"account_name": {
 				Type:        schema.TypeString,
 				Computed:    true,
-				Optional:    true,
 				Description: "Account Name",
 			},
 			"priority": {
 				Type:        schema.TypeString,
 				Computed:    true,
-				Optional:    true,
 				Description: "Port Priority",
 			},
 			"location": {
 				Type:        schema.TypeSet,
 				Computed:    true,
-				Optional:    true,
 				Description: "Port Location",
 				Elem: &schema.Resource{
 					Schema: equinix_fabric_schema.LocationSch(),
