@@ -116,8 +116,8 @@ func TestAccFabricZsidePortServiceToken_PNFV(t *testing.T) {
 	if len(ports) > 0 {
 		portUuid = ports["pnfv"]["dot1q"][0].GetUuid()
 	}
-	serviceTokenName, serviceTokenUpdatedName := "token_port_PNFV", "UP_Token_port_PNFV"
-	serviceTokenDescription, serviceTokenUpdatedDescription := "aside port token", "Updated aside port token"
+	serviceTokenName, serviceTokenUpdatedName := "token_zport_PNFV", "UP_Token_zport_PNFV"
+	serviceTokenDescription, serviceTokenUpdatedDescription := "zside port token", "Updated zside port token"
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { acceptance.TestAccPreCheck(t) },
 		Providers:    acceptance.TestAccProviders,
