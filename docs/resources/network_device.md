@@ -492,6 +492,66 @@ resource "equinix_network_device" "aviatrix-transit-edge-single" {
 }
 ```
 
+```terraform
+# Create ZSCALER APPC device
+
+data "equinix_network_account" "sv" {
+  metro_code = "SV"
+}
+
+resource "equinix_network_device" "zscaler-appc-single" {
+  name            = "tf-zscaler-appc"
+  project_id      = "XXXXXX"
+  metro_code      = data.equinix_network_account.sv.metro_code
+  type_code       = "ZSCALER-APPC"
+  self_managed    = true
+  byol            = true
+  connectivity    = "PRIVATE"
+  package_code    = "STD"
+  notifications   = ["john@equinix.com", "marry@equinix.com", "fred@equinix.com"]
+  term_length     = 12
+  account_number  = data.equinix_network_account.sv.number
+  version         = "23.395.1"
+  interface_count = 1
+  core_count      = 4
+  vendor_configuration   = {"provisioningKey" = "XXXXXXXXXX", "hostname" = "XXXX"}
+  ssh_key {
+    username = "test"
+    key_name = "test-key"
+  }
+}
+```
+
+```terraform
+# Create ZSCALER APPC device
+
+data "equinix_network_account" "sv" {
+  metro_code = "SV"
+}
+
+resource "equinix_network_device" "zscaler-pse-single" {
+  name            = "tf-zscaler-pse"
+  project_id      = "XXXXXX"
+  metro_code      = data.equinix_network_account.sv.metro_code
+  type_code       = "ZSCALER-PSE"
+  self_managed    = true
+  byol            = true
+  connectivity    = "PRIVATE"
+  package_code    = "STD"
+  notifications   = ["john@equinix.com", "marry@equinix.com", "fred@equinix.com"]
+  term_length     = 12
+  account_number  = data.equinix_network_account.sv.number
+  version         = "23.395.1"
+  interface_count = 1
+  core_count      = 4
+  vendor_configuration   = {"provisioningKey" = "XXXXXXXXXX", "hostname" = "XXXX"}
+  ssh_key {
+    username = "test"
+    key_name = "test-key"
+  }
+}
+```
+
 ## Argument Reference
 
 The following arguments are supported:
@@ -522,7 +582,7 @@ The following arguments are supported:
 * `additional_bandwidth` - (Optional) Additional Internet bandwidth, in Mbps, that will be allocated to the device (in addition to default 15Mbps).
 * `interface_count` - (Optional) Number of network interfaces on a device. If not specified, default number for a given device type will be used.
 * `wan_interafce_id` - (Optional) Specify the WAN/SSH interface id. If not specified, default WAN/SSH interface for a given device type will be used.
-* `vendor_configuration` - (Optional) Map of vendor specific configuration parameters for a device (controller1, activationKey, managementType, siteId, systemIpAddress, privateAddress, privateCidrMask, privateGateway, licenseKey, licenseId, panoramaAuthKey, panoramaIpAddress)
+* `vendor_configuration` - (Optional) Map of vendor specific configuration parameters for a device (controller1, activationKey, managementType, siteId, systemIpAddress, privateAddress, privateCidrMask, privateGateway, licenseKey, licenseId, panoramaAuthKey, panoramaIpAddress, provisioningKey)
 * `ssh-key` - (Optional) Definition of SSH key that will be provisioned on a device (max one key). See [SSH Key](#ssh-key) below for more details.
 * `secondary_device` - (Optional) Definition of secondary device for redundant device configurations. See [Secondary Device](#secondary-device) below for more details.
 * `cluster_details` - (Optional) An object that has the cluster details. See [Cluster Details](#cluster-details) below for more details.
@@ -588,6 +648,7 @@ The `vendor_configuration` block supports the following arguments:
 * `root_password` - (Optional) The CLI password of the device. This field is relevant only for the Velocloud SDWAN cluster.
 * `panorama_ip_address` - (Optional) Panorama Server IP Address. This field is relevant only for the PA-VM firewall devices to have integration with Panorama Server.
 * `panorama_auth_key` - (Optional) Panorama Server Auth Key. This field is relevant only for the PA-VM firewall devices to have integration with Panorama Server.
+* `provisioning_key` - (Optional) Provisioning Key. This field is relevant only for the ZSCALER APPC and ZSCALER PSE devices.
 
 ## Attributes Reference
 
