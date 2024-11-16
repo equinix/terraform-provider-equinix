@@ -41,7 +41,7 @@ resource "equinix_fabric_service_token" "test" {
 }
 ```
 
-Aside Port Service Token
+Zside Port Service Token
 ```terraform
 resource "equinix_fabric_service_token" "test"{
   type = "VC_TOKEN"
