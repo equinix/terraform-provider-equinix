@@ -76,7 +76,11 @@ func testAccMetalReservedIPBlockConfig_metro(name, tag string) string {
 		tags        = [{{.tag | printf "%q"}}]
 		{{end}}
 	}`)
-	t.Execute(&b, map[string]string{"name": name, "tag": tag})
+	err := t.Execute(&b, map[string]string{"name": name, "tag": tag})
+
+	if err != nil {
+		panic(err)
+	}
 
 	return b.String()
 }
@@ -87,7 +91,7 @@ func TestAccMetalReservedIPBlock_global(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { testAccPreCheck(t) },
 		ExternalProviders:        testExternalProviders,
-		ProtoV5ProviderFactories: testAccProtoV5ProviderFactories,
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		CheckDestroy:             testAccMetalReservedIPBlockCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
@@ -119,7 +123,7 @@ func TestAccMetalReservedIPBlock_public(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { testAccPreCheck(t) },
 		ExternalProviders:        testExternalProviders,
-		ProtoV5ProviderFactories: testAccProtoV5ProviderFactories,
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		CheckDestroy:             testAccMetalReservedIPBlockCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
@@ -154,7 +158,7 @@ func TestAccMetalReservedIPBlock_metro(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { testAccPreCheck(t) },
 		ExternalProviders:        testExternalProviders,
-		ProtoV5ProviderFactories: testAccProtoV5ProviderFactories,
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		CheckDestroy:             testAccMetalReservedIPBlockCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
@@ -193,7 +197,7 @@ func TestAccMetalReservedIPBlock_importBasic(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { testAccPreCheck(t) },
 		ExternalProviders:        testExternalProviders,
-		ProtoV5ProviderFactories: testAccProtoV5ProviderFactories,
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		CheckDestroy:             testAccMetalReservedIPBlockCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
@@ -243,7 +247,7 @@ func TestAccMetalReservedIPBlock_facilityToMetro(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { testAccPreCheck(t) },
 		ExternalProviders:        testExternalProviders,
-		ProtoV5ProviderFactories: testAccProtoV5ProviderFactories,
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		CheckDestroy:             testAccMetalReservedIPBlockCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
@@ -308,7 +312,7 @@ func TestAccMetalReservedIPBlock_device(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { testAccPreCheck(t) },
 		ExternalProviders:        testExternalProviders,
-		ProtoV5ProviderFactories: testAccProtoV5ProviderFactories,
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		CheckDestroy:             testAccMetalReservedIPBlockCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
@@ -330,7 +334,7 @@ func TestAccMetalReservedIPBlockCreate_public_timeout(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { testAccPreCheck(t) },
 		ExternalProviders:        testExternalProviders,
-		ProtoV5ProviderFactories: testAccProtoV5ProviderFactories,
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		CheckDestroy:             testAccMetalReservedIPBlockCheckDestroyed,
 		Steps: []resource.TestStep{
 			{

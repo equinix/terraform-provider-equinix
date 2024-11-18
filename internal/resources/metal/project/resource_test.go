@@ -3,6 +3,7 @@ package project_test
 import (
 	"context"
 	"fmt"
+	"log"
 	"net/http"
 	"net/http/httptest"
 	"regexp"
@@ -14,15 +15,15 @@ import (
 	"github.com/equinix/terraform-provider-equinix/internal/config"
 	"github.com/equinix/terraform-provider-equinix/internal/provider"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-go/tfprotov6"
+	"github.com/hashicorp/terraform-plugin-mux/tf5to6server"
+	"github.com/hashicorp/terraform-plugin-mux/tf6muxserver"
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/plancheck"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 
 	"github.com/hashicorp/terraform-plugin-framework/providerserver"
-	"github.com/hashicorp/terraform-plugin-go/tfprotov5"
-	"github.com/hashicorp/terraform-plugin-mux/tf5muxserver"
 )
 
 func TestAccMetalProject_basic(t *testing.T) {
@@ -32,7 +33,7 @@ func TestAccMetalProject_basic(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.TestAccPreCheck(t) },
 		ExternalProviders:        acceptance.TestExternalProviders,
-		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
 		CheckDestroy:             testAccMetalProjectCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
@@ -58,7 +59,7 @@ func TestAccMetalProject_errorHandling(t *testing.T) {
 	projectConfig := testAccMetalProjectConfig_basic(rInt)
 
 	resource.ParallelTest(t, resource.TestCase{
-		ProtoV5ProviderFactories: mockProviderFactories(),
+		ProtoV6ProviderFactories: mockProviderFactories(),
 		Steps: []resource.TestStep{
 			{
 				Config:      providerConfig + "\n" + projectConfig,
@@ -68,21 +69,28 @@ func TestAccMetalProject_errorHandling(t *testing.T) {
 	})
 }
 
-func mockProviderFactories() map[string]func() (tfprotov5.ProviderServer, error) {
-	mockProviders := map[string]*schema.Provider{
-		"equinix": equinix.Provider(),
+func mockProviderFactories() map[string]func() (tfprotov6.ProviderServer, error) {
+	mockProviders := map[string]func() tfprotov6.ProviderServer{
+		"equinix": func() tfprotov6.ProviderServer {
+			sdkv2Provider, err := tf5to6server.UpgradeServer(context.Background(), equinix.Provider().GRPCProvider)
+			if err != nil {
+				log.Fatal(err)
+			}
+			return sdkv2Provider
+		},
 	}
 	mockFrameworkProvider := provider.CreateFrameworkProvider("version")
-	mockProviderFactories := map[string]func() (tfprotov5.ProviderServer, error){
-		"equinix": func() (tfprotov5.ProviderServer, error) {
+	mockProviderFactories := map[string]func() (tfprotov6.ProviderServer, error){
+		"equinix": func() (tfprotov6.ProviderServer, error) {
 			ctx := context.Background()
-			providers := []func() tfprotov5.ProviderServer{
-				mockProviders["equinix"].GRPCProvider,
-				providerserver.NewProtocol5(
+
+			providers := []func() tfprotov6.ProviderServer{
+				mockProviders["equinix"],
+				providerserver.NewProtocol6(
 					mockFrameworkProvider,
 				),
 			}
-			muxServer, err := tf5muxserver.NewMuxServer(ctx, providers...)
+			muxServer, err := tf6muxserver.NewMuxServer(ctx, providers...)
 			if err != nil {
 				return nil, err
 			}
@@ -99,7 +107,7 @@ func TestAccMetalProject_BGPBasic(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.TestAccPreCheck(t) },
 		ExternalProviders:        acceptance.TestExternalProviders,
-		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
 		CheckDestroy:             testAccMetalProjectCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
@@ -141,7 +149,7 @@ func TestAccMetalProject_backendTransferUpdate(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.TestAccPreCheck(t) },
 		ExternalProviders:        acceptance.TestExternalProviders,
-		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
 		CheckDestroy:             testAccMetalProjectCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
@@ -184,7 +192,7 @@ func TestAccMetalProject_update(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.TestAccPreCheck(t) },
 		ExternalProviders:        acceptance.TestExternalProviders,
-		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
 		CheckDestroy:             testAccMetalProjectCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
@@ -224,7 +232,7 @@ func TestAccMetalProject_BGPUpdate(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.TestAccPreCheck(t) },
 		ExternalProviders:        acceptance.TestExternalProviders,
-		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
 		CheckDestroy:             testAccMetalProjectCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
@@ -382,7 +390,7 @@ func TestAccMetalProject_organization(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.TestAccPreCheck(t) },
 		ExternalProviders:        acceptance.TestExternalProviders,
-		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
 		CheckDestroy:             testAccMetalProjectCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
@@ -408,7 +416,7 @@ func TestAccMetalProject_importBasic(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.TestAccPreCheck(t) },
 		ExternalProviders:        acceptance.TestExternalProviders,
-		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
 		CheckDestroy:             testAccMetalProjectCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
@@ -448,7 +456,7 @@ func TestAccMetalProject_basic_upgradeFromVersion(t *testing.T) {
 				),
 			},
 			{
-				ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+				ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
 				Config:                   cfg,
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
