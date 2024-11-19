@@ -14,7 +14,7 @@ func TestAccMetalProjectAPIKey_basic(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { testAccPreCheck(t) },
 		ExternalProviders:        testExternalProviders,
-		ProtoV5ProviderFactories: testAccProtoV5ProviderFactories,
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		CheckDestroy:             testAccMetalProjectAPIKeyCheckDestroyed,
 		Steps: []resource.TestStep{
 			{
@@ -32,7 +32,7 @@ func TestAccMetalProjectAPIKey_basic(t *testing.T) {
 }
 
 func testAccMetalProjectAPIKeyConfig_basic() string {
-	return fmt.Sprintf(`
+	return `
 
 resource "equinix_metal_project" "test" {
     name = "tfacc-project-key-test"
@@ -42,7 +42,7 @@ resource "equinix_metal_project_api_key" "test" {
     project_id  = equinix_metal_project.test.id
     description = "tfacc-project-key"
     read_only   = true
-}`)
+}`
 }
 
 func testAccMetalProjectAPIKeyCheckDestroyed(s *terraform.State) error {
