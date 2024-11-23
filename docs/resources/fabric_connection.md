@@ -737,8 +737,8 @@ Port to Alibaba Connection EVPL_VC Connection:
 
 #### 1. Create and Accept the Connection
 
-* Create the connection using the Equinix Terraform provider.
-* Then manually accept the connection request in the Alibaba Portal for the created physical connection.
+* Create the connection using the Equinix Terraform provider
+* Then manually accept the connection request in the Alibaba Portal for the created physical connection
 
 #### 2. Delete Resources
 * Run `terraform destroy` to delete the Alibaba VBR
