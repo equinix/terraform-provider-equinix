@@ -731,6 +731,62 @@ resource "equinix_fabric_connection" "fcr2metal" {
 }
 ```
 
+Port to Alibaba Connection EVPL_VC Connection:
+
+### Step by Step Instructions for the Fabric Port to Fabric Alibaba Profile Connection Example Given Below
+
+#### 1. Create and Accept the Connection
+* Create the connection using the Equinix Terraform provider
+* Then manually accept the connection request in the Alibaba Portal for the created physical connection
+
+#### 2. Delete Resources
+* Run `terraform destroy` to delete the Alibaba VBR
+* Directly deleting the Equinix Fabric connection, will result in the following error: `ERR-UAA-003-00: Deletion for a provisioned connection needs to be initiated from Alibaba Portal`
+* Go to the Alibaba Portal to manually **terminate** and then **delete** the physical connection
+* This action will automatically delete the connection on the Equinix side, updating its status to Deprovisioned on both Equinix and Provider side
+
+```terraform
+resource "equinix_fabric_connection" "port2alibaba" {
+  name = "ConnectionName"
+  type = "EVPL_VC"
+  notifications {
+    type = "ALL"
+    emails = ["example@equinix.com", "test1@equinix.com"]
+  }
+  bandwidth = 50
+  redundancy { priority = "PRIMARY" }
+  order {
+    purchase_order_number = "1-323929"
+  }
+  a_side {
+    access_point {
+      type = "COLO"
+      port {
+        uuid = "<aside_port_uuid>"
+      }
+      link_protocol {
+        type     = "DOT1Q"
+        vlan_tag = "2019"
+      }
+    }
+  }
+  z_side {
+    access_point {
+      type               = "SP"
+      authentication_key = "<alibaba_account_id>"
+      seller_region      = "us-west-1"
+      profile {
+        type = "L2_PROFILE"
+        uuid = "<service_profile_uuid>"
+      }
+      location {
+        metro_code = "SV"
+      }
+    }
+  }
+}
+```
+
 ### Notes:
 
 Port to IBM Connections could be modified from IBM Service Provider Side by using parameters passed to additional_info field:
