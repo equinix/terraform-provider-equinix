@@ -735,7 +735,9 @@ Port to Alibaba Connection EVPL_VC Connection:
 
 ### Step by Step Instructions for the Fabric Port to Fabric Alibaba Profile Connection Example Given Below
 
-#### 1. Create Connection from Equinix Terraform Provider
+#### 1. Create and Accept the Connection
+
+Create the connection using the Equinix Terraform provider. Then manually accept the connection request in the Alibaba Portal for the created physical connection.
 
 **Note:** The `connection_name` must follow either one of these patterns:
 
@@ -754,19 +756,7 @@ Port to Alibaba Connection EVPL_VC Connection:
   * A Fabric Port to Alibaba Profile Connection is successfully created and displayed in the Fabric Portal
   * An Express Connect Physical Connection resource is created and becomes visible in the Alibaba Portal
 
-#### 2. Formulate main.tf and output.tf Files
-* When you run the initial `terraform apply`, the resources and data sources (from the example) are in comments
-* The comments can be removed after you accept the connection with the Alibaba portal
-
-#### 3. Accept the Connection Request
-* Manually accept the connection request in the Alibaba Portal for the created physical connection
-
-#### 4. Create the Virtual Border Router (VBR) Resource
-* Add resources and data sources to the connection example for creating the VBR resource
-* Run `terraform init` to initialize and `terraform apply` to deploy the configuration
-* The VBR resource is created successfully and linked to the physical connection
-
-#### 5. Delete Resources
+#### 2. Delete Resources
 * Run `terraform destroy` to delete the Alibaba VBR
 * Directly deleting the Equinix Fabric connection, will result in the following error: `ERR-UAA-003-00: Deletion for a provisioned connection needs to be initiated from Alibaba Portal`
 * Go to the Alibaba Portal to manually **terminate** and then **delete** the physical connection
