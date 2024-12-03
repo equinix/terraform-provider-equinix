@@ -50,6 +50,8 @@ In addition to management modes, there are two software license modes available:
 
 {{tffile "examples/resources/equinix_network_device/zscaler_pse.tf"}}
 
+{{tffile "examples/resources/equinix_network_device/c8000v_byol_without_default_password.tf"}}
+
 ## Argument Reference
 
 The following arguments are supported:
@@ -87,6 +89,9 @@ The following arguments are supported:
 * `connectivity` - (Optional) Device accessibility (INTERNET-ACCESS or PRIVATE or INTERNET-ACCESS-WITH-PRVT-MGMT). If not specified, default will be INTERNET-ACCESS
 * `project_id` - (Optional) Unique Identifier for the project resource where the device is scoped to.If you leave it out, the device will be created under the default project id of your organization.
 * `diverse_device_id` - (Optional) Unique ID of an existing device. Use this field to let Equinix know if you want your new device to be in a different location from any existing virtual device. This field is only meaningful for single devices.
+* `generate_default_password` - (Optional) Boolean value that determines to create device with or without default password. Use this field to let Equinix know if you want your new device to be create with default admin password.
+This field is only meaningful for C8000V Autonomous(single/ha) and Fortinet Firewall devices(single/ha/cluster). If not specified, by default device is created with admin password.
+
 
 ### Secondary Device
 
