@@ -4,7 +4,7 @@ go 1.23
 
 require (
 	github.com/equinix/equinix-sdk-go v0.46.0
-	github.com/equinix/ne-go v1.18.0
+	github.com/equinix/ne-go v1.19.0
 	github.com/equinix/oauth2-go v1.0.0
 	github.com/equinix/rest-go v1.3.0
 	github.com/google/uuid v1.6.0
