@@ -181,7 +181,6 @@ func accessPointSelectorsSch() *schema.Resource {
 			"port": {
 				Type:        schema.TypeSet,
 				Optional:    true,
-				Computed:    true,
 				Description: "Port Configuration",
 				MaxItems:    1,
 				Elem:        portSch(),
@@ -189,7 +188,6 @@ func accessPointSelectorsSch() *schema.Resource {
 			"link_protocol": {
 				Type:        schema.TypeSet,
 				Optional:    true,
-				Computed:    true,
 				Description: "Link protocol Configuration",
 				MaxItems:    1,
 				Elem:        linkProtocolSch(),
@@ -204,7 +202,6 @@ func accessPointSelectorsSch() *schema.Resource {
 			"interface": {
 				Type:        schema.TypeSet,
 				Optional:    true,
-				Computed:    true,
 				Description: "Virtual Device Interface Configuration",
 				MaxItems:    1,
 				Elem:        interfaceSch(),
@@ -374,8 +371,7 @@ func networkSch() *schema.Resource {
 		Schema: map[string]*schema.Schema{
 			"uuid": {
 				Type:        schema.TypeString,
-				Optional:    true,
-				Computed:    true,
+				Required:    true,
 				Description: "Equinix-assigned Network identifier",
 			},
 			"href": {
@@ -385,25 +381,21 @@ func networkSch() *schema.Resource {
 			},
 			"type": {
 				Type:        schema.TypeString,
-				Optional:    true,
 				Computed:    true,
 				Description: "Type of Network",
 			},
 			"name": {
 				Type:        schema.TypeString,
-				Optional:    true,
 				Computed:    true,
 				Description: "Network Name",
 			},
 			"scope": {
 				Type:        schema.TypeString,
-				Optional:    true,
 				Computed:    true,
 				Description: "Scope of Network",
 			},
 			"location": {
 				Type:        schema.TypeSet,
-				Optional:    true,
 				Computed:    true,
 				Description: "Location",
 				Elem: &schema.Resource{

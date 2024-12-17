@@ -28,6 +28,9 @@ func buildCreateRequest(d *schema.ResourceData) fabricv4.ServiceToken {
 	}
 	serviceTokenRequest.SetExpirationDateTime(expirationTime)
 
+	descriptionConfig := d.Get("description").(string)
+	serviceTokenRequest.SetDescription(descriptionConfig)
+
 	connectionConfig := d.Get("service_token_connection").(*schema.Set).List()
 	connection := connectionTerraformToGo(connectionConfig)
 	serviceTokenRequest.SetConnection(connection)
@@ -257,6 +260,8 @@ func serviceTokenResponseMap(token *fabricv4.ServiceToken) map[string]interface{
 	const TimeFormat = "2006-01-02T15:04:05.000Z"
 	serviceToken["expiration_date_time"] = expirationDateTime.Format(TimeFormat)
 	serviceToken["state"] = token.GetState()
+	serviceToken["description"] = token.GetDescription()
+
 	if token.Connection != nil {
 		connection := token.GetConnection()
 		serviceToken["service_token_connection"] = connectionGoToTerraform(&connection)
@@ -290,7 +295,9 @@ func connectionTerraformToGo(connectionTerraform []interface{}) fabricv4.Service
 	connection.SetType(fabricv4.ServiceTokenConnectionType(typeVal))
 
 	uuid := connectionMap["uuid"].(string)
-	connection.SetUuid(uuid)
+	if uuid != "" {
+		connection.SetUuid(uuid)
+	}
 
 	allowRemoteConnection := connectionMap["allow_remote_connection"].(bool)
 	connection.SetAllowRemoteConnection(allowRemoteConnection)
@@ -299,10 +306,12 @@ func connectionTerraformToGo(connectionTerraform []interface{}) fabricv4.Service
 	connection.SetAllowCustomBandwidth(allowCustomBandwidth)
 
 	bandwidthLimit := connectionMap["bandwidth_limit"].(int)
-	connection.SetBandwidthLimit(int32(bandwidthLimit))
+	if bandwidthLimit > 0 {
+		connection.SetBandwidthLimit(int32(bandwidthLimit))
+	}
 
 	supportedBandwidths := connectionMap["supported_bandwidths"].([]interface{})
-	if supportedBandwidths != nil {
+	if len(supportedBandwidths) > 0 {
 		int32Bandwidths := make([]int32, len(supportedBandwidths))
 		for i, v := range supportedBandwidths {
 			int32Bandwidths[i] = int32(v.(int))
@@ -508,9 +517,31 @@ func networkTerraformToGo(networkList []interface{}) fabricv4.SimplifiedTokenNet
 	var network fabricv4.SimplifiedTokenNetwork
 	networkListMap := networkList[0].(map[string]interface{})
 	uuid := networkListMap["uuid"].(string)
+	href := networkListMap["href"].(string)
 	type_ := networkListMap["type"].(string)
-	network.SetUuid(uuid)
-	network.SetType(fabricv4.SimplifiedTokenNetworkType(type_))
+	name := networkListMap["name"].(string)
+	scope := networkListMap["scope"].(string)
+	locationList := networkListMap["location"].(*schema.Set).List()
+
+	if uuid != "" {
+		network.SetUuid(uuid)
+	}
+	if href != "" {
+		network.SetHref(href)
+	}
+	if type_ != "" {
+		network.SetType(fabricv4.SimplifiedTokenNetworkType(type_))
+	}
+	if name != "" {
+		network.SetName(name)
+	}
+	if scope != "" {
+		network.SetScope(fabricv4.SimplifiedTokenNetworkScope(scope))
+	}
+	if len(locationList) != 0 {
+		location := equinix_fabric_schema.LocationTerraformToGo(locationList)
+		network.SetLocation(location)
+	}
 	return network
 }
 
@@ -748,10 +779,25 @@ func networkGoToTerraform(network *fabricv4.SimplifiedTokenNetwork) *schema.Set 
 	}
 
 	mappedNetwork := make(map[string]interface{})
-	mappedNetwork["uuid"] = network.GetUuid()
-	mappedNetwork["href"] = network.GetHref()
-	mappedNetwork["type"] = string(network.GetType())
-
+	if uuid := network.GetUuid(); uuid != "" {
+		mappedNetwork["uuid"] = uuid
+	}
+	if href := network.GetHref(); href != "" {
+		mappedNetwork["href"] = href
+	}
+	if type_ := network.GetType(); type_ != "" {
+		mappedNetwork["type"] = string(type_)
+	}
+	if name := network.GetName(); name != "" {
+		mappedNetwork["name"] = name
+	}
+	if scope := network.GetName(); scope != "" {
+		mappedNetwork["scope"] = string(network.GetScope())
+	}
+	if network.Location != nil {
+		location := network.GetLocation()
+		mappedNetwork["location"] = equinix_fabric_schema.LocationGoToTerraform(&location)
+	}
 	return schema.NewSet(
 		schema.HashResource(networkSch()),
 		[]interface{}{mappedNetwork},
