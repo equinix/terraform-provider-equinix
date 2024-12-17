@@ -32,45 +32,15 @@ builds:
       - goos: darwin
         goarch: "386"
     binary: "{{ .ProjectName }}_v{{ .Version }}"
-  - id: migration-tool
-    dir: ./cmd/migration-tool/
-    env:
-      # goreleaser does not work with CGO, it could also complicate
-      # usage by users in CI/CD systems like Terraform Cloud where
-      # they are unable to install libraries.
-      - CGO_ENABLED=0
-    mod_timestamp: "{{ .CommitTimestamp }}"
-    flags:
-      - -trimpath
-    ldflags:
-      - "-s -w -X main.Version={{.Version}}"
-    goos:
-      - freebsd
-      - windows
-      - linux
-      - darwin
-    goarch:
-      - amd64
-      - "386"
-      - arm
-      - arm64
-    ignore:
-      - goos: darwin
-        goarch: "386"
-    binary: equinix-migration-tool/equinix-migration-tool
 archives:
   - format: zip
     name_template: "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
     builds:
       - provider
-      - migration-tool
     files:
       - LICENSE*
       - README*
       - CHANGELOG*
-      - src: "cmd/migration-tool/*.md"
-        dst: equinix-migration-tool
-        strip_parent: true
 checksum:
   name_template: "{{ .ProjectName }}_{{ .Version }}_SHA256SUMS"
   algorithm: sha256
@@ -88,5 +58,6 @@ signs:
       - "${artifact}"
 release:
   mode: "keep-existing"
+  use_existing_draft: true
 changelog:
   disable: true
