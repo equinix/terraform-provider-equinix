@@ -121,7 +121,7 @@ resource "equinix_network_file" "aviatrix-cloudinit-file" {
 resource "equinix_network_device" "aviatrix-single" {
   name            = "tf-aviatrix"
   metro_code      = data.equinix_network_account.sv.metro_code
-  type_code       = "AVIATRIX_EDGE"
+  type_code       = "AVIATRIX_EDGE_10"
   self_managed    = true
   byol            = true
   package_code    = "STD"
