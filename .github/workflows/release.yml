@@ -4,16 +4,39 @@ on:
 
 jobs:
 
-  goreleaser:
+  release:
     name: Release
     runs-on: ubuntu-latest
 
-    steps:
+    outputs:
+      new_release_published: ${{ steps.release.outputs.new_release_published }}
+      new_release_git_tag: ${{ steps.release.outputs.new_release_git_tag }}
 
-    - name: Check out code into the Go module directory
+    steps:
+    - name: Check out code
       uses: actions/checkout@v4
       with:
         fetch-depth: 0
+
+    - name: Release
+      id: release
+      uses: cycjimmy/semantic-release-action@v4
+      with:
+        extra_plugins: |
+          conventional-changelog-conventionalcommits@8.0.0
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  publish:
+    name: Publish
+    needs: release
+    if: needs.release.outputs.new_release_published == 'true'
+    runs-on: ubuntu-latest
+    steps:
+    - name: Check out code
+      uses: actions/checkout@v4
+      with:
+        ref: "${{ needs.release.outputs.new_release_git_tag }}"
 
     - name: Set up Go
       uses: actions/setup-go@v5
@@ -27,17 +50,6 @@ jobs:
       with:
         gpg_private_key: ${{ secrets.GPG_PRIVATE_KEY }}
         passphrase: ${{ secrets.PASSPHRASE }}
-
-    - name: Release
-      uses: cycjimmy/semantic-release-action@v3
-      with:
-        semantic_version: 19.0.5
-        extra_plugins: |
-          @semantic-release/exec@6.0.3
-          @semantic-release/git@10.0.0
-          conventional-changelog-conventionalcommits@4.6.3
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
     - name: Run GoReleaser
       uses: goreleaser/goreleaser-action@v6
