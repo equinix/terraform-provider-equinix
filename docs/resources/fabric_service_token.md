@@ -15,8 +15,8 @@ Additional documentation:
 Aside Port Service Token
 ```terraform
 resource "equinix_fabric_service_token" "test" {
-  type = "VC_TOKEN"
-  description = "Aside COLO Service Token"
+  type                 = "VC_TOKEN"
+  description          = "Aside COLO Service Token"
   expiration_date_time = "2025-01-18T06:43:49.981Z"
   service_token_connection {
     type = "EVPL_VC"
@@ -44,8 +44,8 @@ resource "equinix_fabric_service_token" "test" {
 Zside Port Service Token
 ```terraform
 resource "equinix_fabric_service_token" "test"{
-  type = "VC_TOKEN"
-  description = "Zside COLO Service Token"
+  type                 = "VC_TOKEN"
+  description          = "Zside COLO Service Token"
   expiration_date_time = "2025-01-18T06:43:49.981Z"
   service_token_connection {
     type = "EVPL_VC"
@@ -70,11 +70,36 @@ resource "equinix_fabric_service_token" "test"{
 }
 ```
 
+Zside Network Service Token
+```terraform
+resource "equinix_fabric_service_token" "test" {
+  type                 = "VC_TOKEN"
+  description          = "Zside Network Service Token"
+  expiration_date_time = "2025-01-18T06:43:49.986Z"
+  service_token_connection {
+    type                 = "EVPL_VC"
+    supported_bandwidths = [50, 200, 10000]
+    z_side {
+      access_point_selectors {
+        type = "NETWORK"
+        network {
+          uuid = "<network_uuid>"
+        }
+      }
+    }
+  }
+  notifications {
+    type   = "ALL"
+    emails = ["example@equinix.com"]
+  }
+}
+```
+
 Zside Virtual Device Service Token
 ```terraform
 resource "equinix_fabric_service_token" "test" {
   type                 = "VC_TOKEN"
-  description = "Zside VD Service Token"
+  description          = "Zside VD Service Token"
   expiration_date_time = "2025-01-18T06:43:49.986Z"
   service_token_connection {
     type                 = "EVPL_VC"
@@ -206,27 +231,27 @@ Optional:
 <a id="nestedblock--service_token_connection--a_side--access_point_selectors--network"></a>
 ### Nested Schema for `service_token_connection.a_side.access_point_selectors.network`
 
-Optional:
+Required:
 
-- `location` (Block Set) Location (see [below for nested schema](#nestedblock--service_token_connection--a_side--access_point_selectors--network--location))
-- `name` (String) Network Name
-- `scope` (String) Scope of Network
-- `type` (String) Type of Network
 - `uuid` (String) Equinix-assigned Network identifier
 
 Read-Only:
 
 - `href` (String) Unique Resource Identifier
+- `location` (Set of Object) Location (see [below for nested schema](#nestedatt--service_token_connection--a_side--access_point_selectors--network--location))
+- `name` (String) Network Name
+- `scope` (String) Scope of Network
+- `type` (String) Type of Network
 
-<a id="nestedblock--service_token_connection--a_side--access_point_selectors--network--location"></a>
+<a id="nestedatt--service_token_connection--a_side--access_point_selectors--network--location"></a>
 ### Nested Schema for `service_token_connection.a_side.access_point_selectors.network.location`
 
-Optional:
+Read-Only:
 
-- `ibx` (String) IBX Code
-- `metro_code` (String) Access point metro code
-- `metro_name` (String) Access point metro name
-- `region` (String) Access point region
+- `ibx` (String)
+- `metro_code` (String)
+- `metro_name` (String)
+- `region` (String)
 
 
 
@@ -330,27 +355,27 @@ Optional:
 <a id="nestedblock--service_token_connection--z_side--access_point_selectors--network"></a>
 ### Nested Schema for `service_token_connection.z_side.access_point_selectors.network`
 
-Optional:
+Required:
 
-- `location` (Block Set) Location (see [below for nested schema](#nestedblock--service_token_connection--z_side--access_point_selectors--network--location))
-- `name` (String) Network Name
-- `scope` (String) Scope of Network
-- `type` (String) Type of Network
 - `uuid` (String) Equinix-assigned Network identifier
 
 Read-Only:
 
 - `href` (String) Unique Resource Identifier
+- `location` (Set of Object) Location (see [below for nested schema](#nestedatt--service_token_connection--z_side--access_point_selectors--network--location))
+- `name` (String) Network Name
+- `scope` (String) Scope of Network
+- `type` (String) Type of Network
 
-<a id="nestedblock--service_token_connection--z_side--access_point_selectors--network--location"></a>
+<a id="nestedatt--service_token_connection--z_side--access_point_selectors--network--location"></a>
 ### Nested Schema for `service_token_connection.z_side.access_point_selectors.network.location`
 
-Optional:
+Read-Only:
 
-- `ibx` (String) IBX Code
-- `metro_code` (String) Access point metro code
-- `metro_name` (String) Access point metro name
-- `region` (String) Access point region
+- `ibx` (String)
+- `metro_code` (String)
+- `metro_name` (String)
+- `region` (String)
 
 
 
