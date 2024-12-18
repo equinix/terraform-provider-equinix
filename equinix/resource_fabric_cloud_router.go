@@ -457,8 +457,8 @@ func getCloudRouterUpdateRequests(cr *fabricv4.CloudRouter, d *schema.ResourceDa
 	prevEmails, nextEmails := make([]string, len(existingNotifications[0].GetEmails())), make([]string, len(updateNotificationsVal[0].GetEmails()))
 	copy(prevEmails, existingNotifications[0].GetEmails())
 	copy(nextEmails, updateNotificationsVal[0].GetEmails())
-	sort.Sort(sort.StringSlice(prevEmails))
-	sort.Sort(sort.StringSlice(nextEmails))
+	sort.Strings(prevEmails)
+	sort.Strings(nextEmails)
 
 	notificationsNeedsUpdate := len(updateNotificationsVal) > len(existingNotifications) ||
 		string(existingNotifications[0].GetType()) != string(updateNotificationsVal[0].GetType()) ||
