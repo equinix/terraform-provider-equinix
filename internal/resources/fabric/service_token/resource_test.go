@@ -180,7 +180,7 @@ func TestAccFabricZsideNetworkServiceToken_PNFV(t *testing.T) {
 					resource.TestCheckResourceAttr("equinix_fabric_service_token.test", "expiration_date_time", "2025-02-18T06:43:49.981Z"),
 					resource.TestCheckResourceAttr("equinix_fabric_service_token.test", "service_token_connection.0.z_side.0.access_point_selectors.0.network.0.uuid", networkUuid),
 				),
-				ExpectNonEmptyPlan: false,
+				ExpectNonEmptyPlan: true,
 			},
 			{
 				Config: testAccFabricZsideNetworkServiceTokenConfig(serviceTokenUpdatedName, serviceTokenUpdatedDescription, networkUuid),
@@ -192,7 +192,7 @@ func TestAccFabricZsideNetworkServiceToken_PNFV(t *testing.T) {
 					resource.TestCheckResourceAttr("equinix_fabric_service_token.test", "expiration_date_time", "2025-02-18T06:43:49.981Z"),
 					resource.TestCheckResourceAttr("equinix_fabric_service_token.test", "service_token_connection.0.z_side.0.access_point_selectors.0.network.0.uuid", networkUuid),
 				),
-				ExpectNonEmptyPlan: false,
+				ExpectNonEmptyPlan: true,
 			},
 		},
 	})

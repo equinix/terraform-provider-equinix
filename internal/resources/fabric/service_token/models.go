@@ -2,6 +2,7 @@ package service_token
 
 import (
 	"fmt"
+	"log"
 	"reflect"
 	"sort"
 	"time"
@@ -43,33 +44,33 @@ func buildCreateRequest(d *schema.ResourceData) fabricv4.ServiceToken {
 
 }
 
-func buildUpdateRequest(d *schema.ResourceData) []fabricv4.ServiceTokenChangeOperation {
-	patches := make([]fabricv4.ServiceTokenChangeOperation, 0)
+func buildUpdateRequest(d *schema.ResourceData) ([][]fabricv4.ServiceTokenChangeOperation, error) {
+	patches := make([][]fabricv4.ServiceTokenChangeOperation, 0)
 	oldName, newName := d.GetChange("name")
 	if oldName.(string) != newName.(string) {
-		patches = append(patches, fabricv4.ServiceTokenChangeOperation{
+		patches = append(patches, []fabricv4.ServiceTokenChangeOperation{{
 			Op:    "replace",
 			Path:  "/name",
 			Value: newName.(string),
-		})
+		}})
 	}
 
 	oldDescription, newDescription := d.GetChange("description")
 	if oldDescription.(string) != newDescription.(string) {
-		patches = append(patches, fabricv4.ServiceTokenChangeOperation{
+		patches = append(patches, []fabricv4.ServiceTokenChangeOperation{{
 			Op:    "replace",
 			Path:  "/description",
 			Value: newDescription.(string),
-		})
+		}})
 	}
 
 	oldExpirationDate, newExpirationDate := d.GetChange("expiration_date_time")
 	if oldExpirationDate.(string) != newExpirationDate.(string) {
-		patches = append(patches, fabricv4.ServiceTokenChangeOperation{
+		patches = append(patches, []fabricv4.ServiceTokenChangeOperation{{
 			Op:    "replace",
 			Path:  "/expirationDateTime",
 			Value: newExpirationDate.(string),
-		})
+		}})
 	}
 
 	oldNotifications, newNotifications := d.GetChange("notifications")
@@ -102,11 +103,11 @@ func buildUpdateRequest(d *schema.ResourceData) []fabricv4.ServiceTokenChangeOpe
 	}
 
 	if !reflect.DeepEqual(oldNotificationEmails, newNotificationEmails) {
-		patches = append(patches, fabricv4.ServiceTokenChangeOperation{
+		patches = append(patches, []fabricv4.ServiceTokenChangeOperation{{
 			Op:    "replace",
 			Path:  "/notifications/emails",
 			Value: newNotificationEmails,
-		})
+		}})
 	}
 
 	oldServiceTokenConnection, newServiceTokenConnection := d.GetChange("service_token_connection")
@@ -117,11 +118,11 @@ func buildUpdateRequest(d *schema.ResourceData) []fabricv4.ServiceTokenChangeOpe
 		for _, connection := range oldServiceTokenConnection.(*schema.Set).List() {
 			oldBandwidthLimitMap := connection.(map[string]interface{})
 
-			if bandwidth, ok := oldBandwidthLimitMap["bandwidthLimit"]; ok {
-				oldBandwidthLimit := bandwidth.([]interface{})
-				if len(oldBandwidthLimit) > 0 {
-					oldAsideBandwidthLimits := converters.IfArrToIntArr(oldBandwidthLimit)
-					oldAsideBandwidthLimit = oldAsideBandwidthLimits[0]
+			if bandwidth, ok := oldBandwidthLimitMap["bandwidth_limit"]; ok {
+				if bandwidthLimitValue, ok := bandwidth.(int); ok {
+					oldAsideBandwidthLimit = bandwidthLimitValue
+				} else {
+					log.Printf("[DEBUG] Expected bandwidthLimit to be an integer, but got %T", bandwidth)
 				}
 			}
 		}
@@ -131,22 +132,22 @@ func buildUpdateRequest(d *schema.ResourceData) []fabricv4.ServiceTokenChangeOpe
 		for _, connection := range newServiceTokenConnection.(*schema.Set).List() {
 			newBandwidthLimitMap := connection.(map[string]interface{})
 
-			if bandwidth, ok := newBandwidthLimitMap["bandwidthLimit"]; ok {
-				newBandwidthLimit := bandwidth.([]interface{})
-				if len(newBandwidthLimit) > 0 {
-					newAsideBandwidthLimits := converters.IfArrToIntArr(newBandwidthLimit)
-					newAsideBandwidthLimit = newAsideBandwidthLimits[0]
+			if bandwidth, ok := newBandwidthLimitMap["bandwidth_limit"]; ok {
+				if bandwidthLimitValue, ok := bandwidth.(int); ok {
+					newAsideBandwidthLimit = bandwidthLimitValue
+				} else {
+					log.Printf("[DEBUG] Expected bandwidthLimit to be an integer, but got %T", bandwidth)
 				}
 			}
 		}
 	}
 
 	if oldAsideBandwidthLimit != newAsideBandwidthLimit {
-		patches = append(patches, fabricv4.ServiceTokenChangeOperation{
+		patches = append(patches, []fabricv4.ServiceTokenChangeOperation{{
 			Op:    "replace",
 			Path:  "/connection/bandwidthLimit",
 			Value: newAsideBandwidthLimit,
-		})
+		}})
 	}
 
 	var oldZsideBandwidth, newZsideBandwidth []int
@@ -179,14 +180,15 @@ func buildUpdateRequest(d *schema.ResourceData) []fabricv4.ServiceTokenChangeOpe
 	}
 
 	if !areSlicesEqual(oldZsideBandwidth, newZsideBandwidth) {
-		patches = append(patches, fabricv4.ServiceTokenChangeOperation{
-			Op:    "replace",
-			Path:  "/connection/supportedBandwidths",
-			Value: newZsideBandwidth,
-		})
+		patches = append(patches, []fabricv4.ServiceTokenChangeOperation{
+			{
+				Op:    "replace",
+				Path:  "/connection/supportedBandwidths",
+				Value: newZsideBandwidth,
+			}})
 	}
 
-	return patches
+	return patches, nil
 }
 
 func areSlicesEqual(a, b []int) bool {

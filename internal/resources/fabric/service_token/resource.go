@@ -2,6 +2,7 @@ package service_token
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"strings"
 	"time"
@@ -65,7 +66,7 @@ func resourceCreate(ctx context.Context, d *schema.ResourceData, meta interface{
 	}
 
 	createTimeout := d.Timeout(schema.TimeoutCreate) - 30*time.Second - time.Since(start)
-	if err = waitForStability(d.Id(), meta, d, ctx, createTimeout); err != nil {
+	if _, err = waitForStability(d.Id(), meta, d, ctx, createTimeout); err != nil {
 		return diag.Errorf("error waiting for service token (%s) to be created: %s", d.Id(), err)
 	}
 
@@ -74,20 +75,35 @@ func resourceCreate(ctx context.Context, d *schema.ResourceData, meta interface{
 
 func resourceUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*config.Config).NewFabricClientForSDK(d)
-	updateRequest := buildUpdateRequest(d)
-
 	start := time.Now()
-	serviceToken, _, err := client.ServiceTokensApi.UpdateServiceTokenByUuid(ctx, d.Id()).ServiceTokenChangeOperation(updateRequest).Execute()
-	if err != nil {
-		return diag.FromErr(equinix_errors.FormatFabricError(err))
-	}
-
 	updateTimeout := d.Timeout(schema.TimeoutUpdate) - 30*time.Second - time.Since(start)
-	if err = waitForStability(d.Id(), meta, d, ctx, updateTimeout); err != nil {
-		return diag.Errorf("error waiting for service token (%s) to be updated: %s", d.Id(), err)
+	dbToken, err := waitForStability(d.Id(), meta, d, ctx, updateTimeout)
+	if err != nil {
+		return diag.Errorf("either timed out or errored out while fetching Fabric Service Token for uuid %s and error %v", d.Id(), err)
 	}
+	diags := diag.Diagnostics{}
+	updates, err := buildUpdateRequest(d)
+	if err != nil {
+		diags = append(diags, diag.Diagnostic{Severity: 1, Summary: err.Error()})
+		return diags
+	}
+	for _, update := range updates {
+		_, _, err = client.ServiceTokensApi.UpdateServiceTokenByUuid(ctx, d.Id()).ServiceTokenChangeOperation(update).Execute()
+		if err != nil {
+			diags = append(diags, diag.Diagnostic{Severity: 0, Summary: fmt.Sprintf("service token property update request error: %v [update payload: %v] (other updates will be successful if the payload is not shown)", equinix_errors.FormatFabricError(err), update)})
+			continue
+		}
+		updateTimeout := d.Timeout(schema.TimeoutUpdate) - 30*time.Second - time.Since(start)
+		updateServiceToken, err := waitForStability(d.Id(), meta, d, ctx, updateTimeout)
+		if err != nil {
+			diags = append(diags, diag.Diagnostic{Severity: 0, Summary: fmt.Sprintf("service token property update completion timeout error: %v [update payload: %v] (other updates will be successful if the payload is not shown)", equinix_errors.FormatFabricError(err), update)})
+		} else {
+			dbToken = updateServiceToken
+		}
 
-	return setServiceTokenMap(d, serviceToken)
+	}
+	d.SetId(dbToken.GetUuid())
+	return append(diags, setServiceTokenMap(d, dbToken)...)
 }
 
 func resourceDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
@@ -115,7 +131,7 @@ func resourceDelete(ctx context.Context, d *schema.ResourceData, meta interface{
 	return diags
 }
 
-func waitForStability(uuid string, meta interface{}, d *schema.ResourceData, ctx context.Context, tieout time.Duration) error {
+func waitForStability(uuid string, meta interface{}, d *schema.ResourceData, ctx context.Context, timeout time.Duration) (*fabricv4.ServiceToken, error) {
 	log.Printf("Waiting for service token to be created, uuid %s", uuid)
 	stateConf := &retry.StateChangeConf{
 		Target: []string{
@@ -127,16 +143,27 @@ func waitForStability(uuid string, meta interface{}, d *schema.ResourceData, ctx
 			if err != nil {
 				return "", "", equinix_errors.FormatFabricError(err)
 			}
-			return serviceToken, string(serviceToken.GetState()), nil
+			currentState := string(serviceToken.GetState())
+			return serviceToken, currentState, nil
 		},
-		Timeout:    tieout,
+		Timeout:    timeout,
 		Delay:      30 * time.Second,
 		MinTimeout: 30 * time.Second,
 	}
 
-	_, err := stateConf.WaitForStateContext(ctx)
+	inter, err := stateConf.WaitForStateContext(ctx)
+	var serviceToken *fabricv4.ServiceToken
 
-	return err
+	if err != nil {
+		log.Printf("[ERROR] Error while waiting for state: %v", err)
+		return nil, err
+	}
+
+	serviceToken, ok := inter.(*fabricv4.ServiceToken)
+	if !ok {
+		return nil, fmt.Errorf("expected *fabricv4.ServiceToken, but got %T", inter)
+	}
+	return serviceToken, err
 }
 
 func WaitForDeletion(uuid string, meta interface{}, d *schema.ResourceData, ctx context.Context, timeout time.Duration) error {
