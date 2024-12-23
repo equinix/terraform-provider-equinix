@@ -252,17 +252,34 @@ func setServiceTokensData(d *schema.ResourceData, routeFilters *fabricv4.Service
 func serviceTokenResponseMap(token *fabricv4.ServiceToken) map[string]interface{} {
 	serviceToken := make(map[string]interface{})
 	serviceToken["type"] = string(token.GetType())
-	serviceToken["href"] = token.GetHref()
-	serviceToken["uuid"] = token.GetUuid()
 	expirationDateTime := token.GetExpirationDateTime()
 	const TimeFormat = "2006-01-02T15:04:05.000Z"
 	serviceToken["expiration_date_time"] = expirationDateTime.Format(TimeFormat)
-	serviceToken["state"] = token.GetState()
-	serviceToken["description"] = token.GetDescription()
-
+	if token.Href != nil {
+		serviceToken["href"] = token.GetHref()
+	}
+	if token.Uuid != nil {
+		serviceToken["uuid"] = token.GetUuid()
+	}
+	if token.State != nil {
+		serviceToken["state"] = token.GetState()
+	}
+	if token.IssuerSide != nil {
+		serviceToken["issuer_side"] = token.GetIssuerSide()
+	}
+	if token.Name != nil {
+		serviceToken["name"] = token.GetName()
+	}
+	if token.Description != nil {
+		serviceToken["description"] = token.GetDescription()
+	}
 	if token.Connection != nil {
 		connection := token.GetConnection()
 		serviceToken["service_token_connection"] = connectionGoToTerraform(&connection)
+	}
+	if token.Notifications != nil {
+		notifications := token.GetNotifications()
+		serviceToken["notifications"] = equinix_fabric_schema.NotificationsGoToTerraform(notifications)
 	}
 	if token.Account != nil {
 		account := token.GetAccount()
