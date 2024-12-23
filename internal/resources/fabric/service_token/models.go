@@ -2,7 +2,6 @@ package service_token
 
 import (
 	"fmt"
-	"log"
 	"reflect"
 	"sort"
 	"time"
@@ -30,7 +29,9 @@ func buildCreateRequest(d *schema.ResourceData) fabricv4.ServiceToken {
 	serviceTokenRequest.SetExpirationDateTime(expirationTime)
 
 	descriptionConfig := d.Get("description").(string)
-	serviceTokenRequest.SetDescription(descriptionConfig)
+	if descriptionConfig != "" {
+		serviceTokenRequest.SetDescription(descriptionConfig)
+	}
 
 	connectionConfig := d.Get("service_token_connection").(*schema.Set).List()
 	connection := connectionTerraformToGo(connectionConfig)
@@ -121,8 +122,6 @@ func buildUpdateRequest(d *schema.ResourceData) ([][]fabricv4.ServiceTokenChange
 			if bandwidth, ok := oldBandwidthLimitMap["bandwidth_limit"]; ok {
 				if bandwidthLimitValue, ok := bandwidth.(int); ok {
 					oldAsideBandwidthLimit = bandwidthLimitValue
-				} else {
-					log.Printf("[DEBUG] Expected bandwidthLimit to be an integer, but got %T", bandwidth)
 				}
 			}
 		}
@@ -135,8 +134,6 @@ func buildUpdateRequest(d *schema.ResourceData) ([][]fabricv4.ServiceTokenChange
 			if bandwidth, ok := newBandwidthLimitMap["bandwidth_limit"]; ok {
 				if bandwidthLimitValue, ok := bandwidth.(int); ok {
 					newAsideBandwidthLimit = bandwidthLimitValue
-				} else {
-					log.Printf("[DEBUG] Expected bandwidthLimit to be an integer, but got %T", bandwidth)
 				}
 			}
 		}
@@ -180,12 +177,11 @@ func buildUpdateRequest(d *schema.ResourceData) ([][]fabricv4.ServiceTokenChange
 	}
 
 	if !areSlicesEqual(oldZsideBandwidth, newZsideBandwidth) {
-		patches = append(patches, []fabricv4.ServiceTokenChangeOperation{
-			{
-				Op:    "replace",
-				Path:  "/connection/supportedBandwidths",
-				Value: newZsideBandwidth,
-			}})
+		patches = append(patches, []fabricv4.ServiceTokenChangeOperation{{
+			Op:    "replace",
+			Path:  "/connection/supportedBandwidths",
+			Value: newZsideBandwidth,
+		}})
 	}
 
 	return patches, nil
@@ -414,9 +410,7 @@ func portTerraformToGo(portList []interface{}) fabricv4.SimplifiedMetadataEntity
 	priority := portListMap["priority"].(string)
 	locationList := portListMap["location"].(*schema.Set).List()
 
-	if uuid != "" {
-		port.SetUuid(uuid)
-	}
+	port.SetUuid(uuid)
 	if href != "" {
 		port.SetHref(href)
 	}
@@ -486,11 +480,20 @@ func virtualDeviceTerraformToGo(virtualDeviceList []interface{}) fabricv4.Simpli
 	uuid := virtualDeviceMap["uuid"].(string)
 	name := virtualDeviceMap["name"].(string)
 	cluster := virtualDeviceMap["cluster"].(string)
-	virtualDevice.SetHref(href)
-	virtualDevice.SetType(fabricv4.SimplifiedVirtualDeviceType(type_))
+
+	if href != "" {
+		virtualDevice.SetHref(href)
+	}
+	if type_ != "" {
+		virtualDevice.SetType(fabricv4.SimplifiedVirtualDeviceType(type_))
+	}
 	virtualDevice.SetUuid(uuid)
-	virtualDevice.SetName(name)
-	virtualDevice.SetCluster(cluster)
+	if name != "" {
+		virtualDevice.SetName(name)
+	}
+	if cluster != "" {
+		virtualDevice.SetCluster(cluster)
+	}
 
 	return virtualDevice
 }
@@ -505,9 +508,14 @@ func interfaceTerraformToGo(interfaceList []interface{}) fabricv4.VirtualDeviceI
 	uuid := interfaceMap["uuid"].(string)
 	type_ := interfaceMap["type"].(string)
 	id := interfaceMap["id"].(int)
-	interface_.SetUuid(uuid)
+
+	if uuid != "" {
+		interface_.SetUuid(uuid)
+	}
 	interface_.SetType(fabricv4.VirtualDeviceInterfaceType(type_))
-	interface_.SetId(int32(id))
+	if id >= 0 {
+		interface_.SetId(int32(id))
+	}
 
 	return interface_
 }
@@ -525,9 +533,7 @@ func networkTerraformToGo(networkList []interface{}) fabricv4.SimplifiedTokenNet
 	scope := networkListMap["scope"].(string)
 	locationList := networkListMap["location"].(*schema.Set).List()
 
-	if uuid != "" {
-		network.SetUuid(uuid)
-	}
+	network.SetUuid(uuid)
 	if href != "" {
 		network.SetHref(href)
 	}

@@ -155,7 +155,7 @@ func waitForStability(uuid string, meta interface{}, d *schema.ResourceData, ctx
 	var serviceToken *fabricv4.ServiceToken
 
 	if err != nil {
-		log.Printf("[ERROR] Error while waiting for state: %v", err)
+		log.Printf("[ERROR] Error while waiting for service token to go to INACTIVE state: %v", err)
 		return nil, err
 	}
 
