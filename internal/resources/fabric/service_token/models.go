@@ -28,6 +28,11 @@ func buildCreateRequest(d *schema.ResourceData) fabricv4.ServiceToken {
 	}
 	serviceTokenRequest.SetExpirationDateTime(expirationTime)
 
+	descriptionConfig := d.Get("description").(string)
+	if descriptionConfig != "" {
+		serviceTokenRequest.SetDescription(descriptionConfig)
+	}
+
 	connectionConfig := d.Get("service_token_connection").(*schema.Set).List()
 	connection := connectionTerraformToGo(connectionConfig)
 	serviceTokenRequest.SetConnection(connection)
@@ -40,33 +45,33 @@ func buildCreateRequest(d *schema.ResourceData) fabricv4.ServiceToken {
 
 }
 
-func buildUpdateRequest(d *schema.ResourceData) []fabricv4.ServiceTokenChangeOperation {
-	patches := make([]fabricv4.ServiceTokenChangeOperation, 0)
+func buildUpdateRequest(d *schema.ResourceData) ([][]fabricv4.ServiceTokenChangeOperation, error) {
+	patches := make([][]fabricv4.ServiceTokenChangeOperation, 0)
 	oldName, newName := d.GetChange("name")
 	if oldName.(string) != newName.(string) {
-		patches = append(patches, fabricv4.ServiceTokenChangeOperation{
+		patches = append(patches, []fabricv4.ServiceTokenChangeOperation{{
 			Op:    "replace",
 			Path:  "/name",
 			Value: newName.(string),
-		})
+		}})
 	}
 
 	oldDescription, newDescription := d.GetChange("description")
 	if oldDescription.(string) != newDescription.(string) {
-		patches = append(patches, fabricv4.ServiceTokenChangeOperation{
+		patches = append(patches, []fabricv4.ServiceTokenChangeOperation{{
 			Op:    "replace",
 			Path:  "/description",
 			Value: newDescription.(string),
-		})
+		}})
 	}
 
 	oldExpirationDate, newExpirationDate := d.GetChange("expiration_date_time")
 	if oldExpirationDate.(string) != newExpirationDate.(string) {
-		patches = append(patches, fabricv4.ServiceTokenChangeOperation{
+		patches = append(patches, []fabricv4.ServiceTokenChangeOperation{{
 			Op:    "replace",
 			Path:  "/expirationDateTime",
 			Value: newExpirationDate.(string),
-		})
+		}})
 	}
 
 	oldNotifications, newNotifications := d.GetChange("notifications")
@@ -99,11 +104,11 @@ func buildUpdateRequest(d *schema.ResourceData) []fabricv4.ServiceTokenChangeOpe
 	}
 
 	if !reflect.DeepEqual(oldNotificationEmails, newNotificationEmails) {
-		patches = append(patches, fabricv4.ServiceTokenChangeOperation{
+		patches = append(patches, []fabricv4.ServiceTokenChangeOperation{{
 			Op:    "replace",
 			Path:  "/notifications/emails",
 			Value: newNotificationEmails,
-		})
+		}})
 	}
 
 	oldServiceTokenConnection, newServiceTokenConnection := d.GetChange("service_token_connection")
@@ -114,11 +119,9 @@ func buildUpdateRequest(d *schema.ResourceData) []fabricv4.ServiceTokenChangeOpe
 		for _, connection := range oldServiceTokenConnection.(*schema.Set).List() {
 			oldBandwidthLimitMap := connection.(map[string]interface{})
 
-			if bandwidth, ok := oldBandwidthLimitMap["bandwidthLimit"]; ok {
-				oldBandwidthLimit := bandwidth.([]interface{})
-				if len(oldBandwidthLimit) > 0 {
-					oldAsideBandwidthLimits := converters.IfArrToIntArr(oldBandwidthLimit)
-					oldAsideBandwidthLimit = oldAsideBandwidthLimits[0]
+			if bandwidth, ok := oldBandwidthLimitMap["bandwidth_limit"]; ok {
+				if bandwidthLimitValue, ok := bandwidth.(int); ok {
+					oldAsideBandwidthLimit = bandwidthLimitValue
 				}
 			}
 		}
@@ -128,22 +131,20 @@ func buildUpdateRequest(d *schema.ResourceData) []fabricv4.ServiceTokenChangeOpe
 		for _, connection := range newServiceTokenConnection.(*schema.Set).List() {
 			newBandwidthLimitMap := connection.(map[string]interface{})
 
-			if bandwidth, ok := newBandwidthLimitMap["bandwidthLimit"]; ok {
-				newBandwidthLimit := bandwidth.([]interface{})
-				if len(newBandwidthLimit) > 0 {
-					newAsideBandwidthLimits := converters.IfArrToIntArr(newBandwidthLimit)
-					newAsideBandwidthLimit = newAsideBandwidthLimits[0]
+			if bandwidth, ok := newBandwidthLimitMap["bandwidth_limit"]; ok {
+				if bandwidthLimitValue, ok := bandwidth.(int); ok {
+					newAsideBandwidthLimit = bandwidthLimitValue
 				}
 			}
 		}
 	}
 
 	if oldAsideBandwidthLimit != newAsideBandwidthLimit {
-		patches = append(patches, fabricv4.ServiceTokenChangeOperation{
+		patches = append(patches, []fabricv4.ServiceTokenChangeOperation{{
 			Op:    "replace",
 			Path:  "/connection/bandwidthLimit",
 			Value: newAsideBandwidthLimit,
-		})
+		}})
 	}
 
 	var oldZsideBandwidth, newZsideBandwidth []int
@@ -176,14 +177,14 @@ func buildUpdateRequest(d *schema.ResourceData) []fabricv4.ServiceTokenChangeOpe
 	}
 
 	if !areSlicesEqual(oldZsideBandwidth, newZsideBandwidth) {
-		patches = append(patches, fabricv4.ServiceTokenChangeOperation{
+		patches = append(patches, []fabricv4.ServiceTokenChangeOperation{{
 			Op:    "replace",
 			Path:  "/connection/supportedBandwidths",
 			Value: newZsideBandwidth,
-		})
+		}})
 	}
 
-	return patches
+	return patches, nil
 }
 
 func areSlicesEqual(a, b []int) bool {
@@ -251,15 +252,34 @@ func setServiceTokensData(d *schema.ResourceData, routeFilters *fabricv4.Service
 func serviceTokenResponseMap(token *fabricv4.ServiceToken) map[string]interface{} {
 	serviceToken := make(map[string]interface{})
 	serviceToken["type"] = string(token.GetType())
-	serviceToken["href"] = token.GetHref()
-	serviceToken["uuid"] = token.GetUuid()
 	expirationDateTime := token.GetExpirationDateTime()
 	const TimeFormat = "2006-01-02T15:04:05.000Z"
 	serviceToken["expiration_date_time"] = expirationDateTime.Format(TimeFormat)
-	serviceToken["state"] = token.GetState()
+	if token.Href != nil {
+		serviceToken["href"] = token.GetHref()
+	}
+	if token.Uuid != nil {
+		serviceToken["uuid"] = token.GetUuid()
+	}
+	if token.State != nil {
+		serviceToken["state"] = token.GetState()
+	}
+	if token.IssuerSide != nil {
+		serviceToken["issuer_side"] = token.GetIssuerSide()
+	}
+	if token.Name != nil {
+		serviceToken["name"] = token.GetName()
+	}
+	if token.Description != nil {
+		serviceToken["description"] = token.GetDescription()
+	}
 	if token.Connection != nil {
 		connection := token.GetConnection()
 		serviceToken["service_token_connection"] = connectionGoToTerraform(&connection)
+	}
+	if token.Notifications != nil {
+		notifications := token.GetNotifications()
+		serviceToken["notifications"] = equinix_fabric_schema.NotificationsGoToTerraform(notifications)
 	}
 	if token.Account != nil {
 		account := token.GetAccount()
@@ -290,7 +310,9 @@ func connectionTerraformToGo(connectionTerraform []interface{}) fabricv4.Service
 	connection.SetType(fabricv4.ServiceTokenConnectionType(typeVal))
 
 	uuid := connectionMap["uuid"].(string)
-	connection.SetUuid(uuid)
+	if uuid != "" {
+		connection.SetUuid(uuid)
+	}
 
 	allowRemoteConnection := connectionMap["allow_remote_connection"].(bool)
 	connection.SetAllowRemoteConnection(allowRemoteConnection)
@@ -299,10 +321,12 @@ func connectionTerraformToGo(connectionTerraform []interface{}) fabricv4.Service
 	connection.SetAllowCustomBandwidth(allowCustomBandwidth)
 
 	bandwidthLimit := connectionMap["bandwidth_limit"].(int)
-	connection.SetBandwidthLimit(int32(bandwidthLimit))
+	if bandwidthLimit > 0 {
+		connection.SetBandwidthLimit(int32(bandwidthLimit))
+	}
 
 	supportedBandwidths := connectionMap["supported_bandwidths"].([]interface{})
-	if supportedBandwidths != nil {
+	if len(supportedBandwidths) > 0 {
 		int32Bandwidths := make([]int32, len(supportedBandwidths))
 		for i, v := range supportedBandwidths {
 			int32Bandwidths[i] = int32(v.(int))
@@ -403,9 +427,7 @@ func portTerraformToGo(portList []interface{}) fabricv4.SimplifiedMetadataEntity
 	priority := portListMap["priority"].(string)
 	locationList := portListMap["location"].(*schema.Set).List()
 
-	if uuid != "" {
-		port.SetUuid(uuid)
-	}
+	port.SetUuid(uuid)
 	if href != "" {
 		port.SetHref(href)
 	}
@@ -475,11 +497,20 @@ func virtualDeviceTerraformToGo(virtualDeviceList []interface{}) fabricv4.Simpli
 	uuid := virtualDeviceMap["uuid"].(string)
 	name := virtualDeviceMap["name"].(string)
 	cluster := virtualDeviceMap["cluster"].(string)
-	virtualDevice.SetHref(href)
-	virtualDevice.SetType(fabricv4.SimplifiedVirtualDeviceType(type_))
+
+	if href != "" {
+		virtualDevice.SetHref(href)
+	}
+	if type_ != "" {
+		virtualDevice.SetType(fabricv4.SimplifiedVirtualDeviceType(type_))
+	}
 	virtualDevice.SetUuid(uuid)
-	virtualDevice.SetName(name)
-	virtualDevice.SetCluster(cluster)
+	if name != "" {
+		virtualDevice.SetName(name)
+	}
+	if cluster != "" {
+		virtualDevice.SetCluster(cluster)
+	}
 
 	return virtualDevice
 }
@@ -494,9 +525,14 @@ func interfaceTerraformToGo(interfaceList []interface{}) fabricv4.VirtualDeviceI
 	uuid := interfaceMap["uuid"].(string)
 	type_ := interfaceMap["type"].(string)
 	id := interfaceMap["id"].(int)
-	interface_.SetUuid(uuid)
+
+	if uuid != "" {
+		interface_.SetUuid(uuid)
+	}
 	interface_.SetType(fabricv4.VirtualDeviceInterfaceType(type_))
-	interface_.SetId(int32(id))
+	if id >= 0 {
+		interface_.SetId(int32(id))
+	}
 
 	return interface_
 }
@@ -508,9 +544,29 @@ func networkTerraformToGo(networkList []interface{}) fabricv4.SimplifiedTokenNet
 	var network fabricv4.SimplifiedTokenNetwork
 	networkListMap := networkList[0].(map[string]interface{})
 	uuid := networkListMap["uuid"].(string)
+	href := networkListMap["href"].(string)
 	type_ := networkListMap["type"].(string)
+	name := networkListMap["name"].(string)
+	scope := networkListMap["scope"].(string)
+	locationList := networkListMap["location"].(*schema.Set).List()
+
 	network.SetUuid(uuid)
-	network.SetType(fabricv4.SimplifiedTokenNetworkType(type_))
+	if href != "" {
+		network.SetHref(href)
+	}
+	if type_ != "" {
+		network.SetType(fabricv4.SimplifiedTokenNetworkType(type_))
+	}
+	if name != "" {
+		network.SetName(name)
+	}
+	if scope != "" {
+		network.SetScope(fabricv4.SimplifiedTokenNetworkScope(scope))
+	}
+	if len(locationList) != 0 {
+		location := equinix_fabric_schema.LocationTerraformToGo(locationList)
+		network.SetLocation(location)
+	}
 	return network
 }
 
@@ -748,10 +804,25 @@ func networkGoToTerraform(network *fabricv4.SimplifiedTokenNetwork) *schema.Set 
 	}
 
 	mappedNetwork := make(map[string]interface{})
-	mappedNetwork["uuid"] = network.GetUuid()
-	mappedNetwork["href"] = network.GetHref()
-	mappedNetwork["type"] = string(network.GetType())
-
+	if uuid := network.GetUuid(); uuid != "" {
+		mappedNetwork["uuid"] = uuid
+	}
+	if href := network.GetHref(); href != "" {
+		mappedNetwork["href"] = href
+	}
+	if type_ := network.GetType(); type_ != "" {
+		mappedNetwork["type"] = string(type_)
+	}
+	if name := network.GetName(); name != "" {
+		mappedNetwork["name"] = name
+	}
+	if scope := network.GetName(); scope != "" {
+		mappedNetwork["scope"] = string(network.GetScope())
+	}
+	if network.Location != nil {
+		location := network.GetLocation()
+		mappedNetwork["location"] = equinix_fabric_schema.LocationGoToTerraform(&location)
+	}
 	return schema.NewSet(
 		schema.HashResource(networkSch()),
 		[]interface{}{mappedNetwork},
