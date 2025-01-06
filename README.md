@@ -17,7 +17,7 @@ management of Equinix Platform resources.
 
 ## Requirements
 
-- [Terraform](https://www.terraform.io/downloads.html) 0.12+
+- [Terraform](https://www.terraform.io/downloads.html) >= 1.0
 
 ## Using the provider
 
