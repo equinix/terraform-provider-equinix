@@ -13,18 +13,6 @@ Before starting to migrate your Terraform templates, please upgrade
 * equinix/metal provider to the latest version (3.2.1)
 * Terraform to version at least v0.13
 
-## Fast migration with Equinix Migration Tool
-
-As part of the release v1.5.0, a migration tool has been supplied that will automatically update your `Metal` terraform plans and state files to work with the unified `Equinix` provider. The latest version of the `Equinix Migration Tool` can be found [here](https://github.com/equinix/terraform-provider-equinix/releases/latest). You will need to download the zip file corresponding to your operating system from the `Assets` section. Once unzipped you will find a folder `equinix-migration-tool` with the tool binary. Please, refer to the migration tool [readme file](https://github.com/equinix/terraform-provider-equinix/tree/main/cmd/migration-tool#readme) for further details.
-
-Once downloaded, you will need to unzip the file and use the binary corresponding to your OS. Running this tool against your terraform project directory will:
-
-* Transform all the "metal_" resource and datasource definitions and references to the "equinix_" name.
-* Transform all "metal" references in .tfstate file to the "equinix" provider name.
-* Transform the "metal" provider block and the "required_providers" section to match the latest "equinix" provider version.
-
-Alternatively, you can make the changes manually following one of the options described below.
-
 ## Fast migration with replace-provider and sed
 
 Just like the Terraform HCL templates, the Terraform state is a file containing resource names and their attributes in structured text. We can attempt the migration as a text substitution task, basically replacing `metal_` with `equinix_metal_` wherever possible, and fixing the provider source reference.
