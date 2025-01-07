@@ -2,23 +2,27 @@ package connection
 
 import (
 	"fmt"
-	"github.com/equinix/equinix-sdk-go/services/fabricv4"
+	"log"
+	"reflect"
+	"sort"
+
 	equinix_fabric_schema "github.com/equinix/terraform-provider-equinix/internal/fabric/schema"
 	equinix_schema "github.com/equinix/terraform-provider-equinix/internal/schema"
+
+	"github.com/equinix/equinix-sdk-go/services/fabricv4"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"log"
 )
 
 func additionalInfoContainsAWSSecrets(info []interface{}) ([]interface{}, bool) {
 	var awsSecrets []interface{}
 
 	for _, item := range info {
-		if value, _ := item.(map[string]interface{})["key"]; value == "accessKey" {
+		if value := item.(map[string]interface{})["key"]; value == "accessKey" {
 			awsSecrets = append(awsSecrets, item)
 		}
 
-		if value, _ := item.(map[string]interface{})["key"]; value == "secretKey" {
+		if value := item.(map[string]interface{})["key"]; value == "secretKey" {
 			awsSecrets = append(awsSecrets, item)
 		}
 	}
@@ -70,11 +74,11 @@ func connectionMap(conn *fabricv4.Connection) map[string]interface{} {
 		account := conn.GetAccount()
 		connection["account"] = equinix_fabric_schema.AccountGoToTerraform(&account)
 	}
-	if &conn.ASide != nil {
+	if !reflect.DeepEqual(conn.GetASide(), fabricv4.ConnectionSide{}) {
 		aSide := conn.GetASide()
 		connection["a_side"] = connectionSideGoToTerraform(&aSide)
 	}
-	if &conn.ZSide != nil {
+	if !reflect.DeepEqual(conn.GetZSide(), fabricv4.ConnectionSide{}) {
 		zSide := conn.GetZSide()
 		connection["z_side"] = connectionSideGoToTerraform(&zSide)
 	}
@@ -91,7 +95,7 @@ func connectionMap(conn *fabricv4.Connection) map[string]interface{} {
 }
 
 func connectionRedundancyTerraformToGo(redundancyTerraform []interface{}) fabricv4.ConnectionRedundancy {
-	if redundancyTerraform == nil || len(redundancyTerraform) == 0 {
+	if len(redundancyTerraform) == 0 {
 		return fabricv4.ConnectionRedundancy{}
 	}
 	var redundancy fabricv4.ConnectionRedundancy
@@ -122,7 +126,7 @@ func connectionRedundancyGoToTerraform(redundancy *fabricv4.ConnectionRedundancy
 }
 
 func serviceTokenTerraformToGo(serviceTokenList []interface{}) fabricv4.ServiceToken {
-	if serviceTokenList == nil || len(serviceTokenList) == 0 {
+	if len(serviceTokenList) == 0 {
 		return fabricv4.ServiceToken{}
 	}
 
@@ -140,7 +144,7 @@ func serviceTokenTerraformToGo(serviceTokenList []interface{}) fabricv4.ServiceT
 }
 
 func additionalInfoTerraformToGo(additionalInfoList []interface{}) []fabricv4.ConnectionSideAdditionalInfo {
-	if additionalInfoList == nil || len(additionalInfoList) == 0 {
+	if len(additionalInfoList) == 0 {
 		return nil
 	}
 
@@ -159,7 +163,7 @@ func additionalInfoTerraformToGo(additionalInfoList []interface{}) []fabricv4.Co
 }
 
 func connectionSideTerraformToGo(connectionSideTerraform []interface{}) fabricv4.ConnectionSide {
-	if connectionSideTerraform == nil || len(connectionSideTerraform) == 0 {
+	if len(connectionSideTerraform) == 0 {
 		return fabricv4.ConnectionSide{}
 	}
 
@@ -186,7 +190,7 @@ func connectionSideTerraformToGo(connectionSideTerraform []interface{}) fabricv4
 }
 
 func accessPointTerraformToGo(accessPointTerraform []interface{}) fabricv4.AccessPoint {
-	if accessPointTerraform == nil || len(accessPointTerraform) == 0 {
+	if len(accessPointTerraform) == 0 {
 		return fabricv4.AccessPoint{}
 	}
 
@@ -277,7 +281,7 @@ func accessPointTerraformToGo(accessPointTerraform []interface{}) fabricv4.Acces
 }
 
 func cloudRouterTerraformToGo(cloudRouterRequest []interface{}) fabricv4.CloudRouter {
-	if cloudRouterRequest == nil || len(cloudRouterRequest) == 0 {
+	if len(cloudRouterRequest) == 0 {
 		return fabricv4.CloudRouter{}
 	}
 	var cloudRouter fabricv4.CloudRouter
@@ -289,7 +293,7 @@ func cloudRouterTerraformToGo(cloudRouterRequest []interface{}) fabricv4.CloudRo
 }
 
 func linkProtocolTerraformToGo(linkProtocolList []interface{}) fabricv4.SimplifiedLinkProtocol {
-	if linkProtocolList == nil || len(linkProtocolList) == 0 {
+	if len(linkProtocolList) == 0 {
 		return fabricv4.SimplifiedLinkProtocol{}
 	}
 
@@ -316,7 +320,7 @@ func linkProtocolTerraformToGo(linkProtocolList []interface{}) fabricv4.Simplifi
 }
 
 func networkTerraformToGo(networkList []interface{}) fabricv4.SimplifiedNetwork {
-	if networkList == nil || len(networkList) == 0 {
+	if len(networkList) == 0 {
 		return fabricv4.SimplifiedNetwork{}
 	}
 	var network fabricv4.SimplifiedNetwork
@@ -327,7 +331,7 @@ func networkTerraformToGo(networkList []interface{}) fabricv4.SimplifiedNetwork 
 }
 
 func simplifiedServiceProfileTerraformToGo(profileList []interface{}) fabricv4.SimplifiedServiceProfile {
-	if profileList == nil || len(profileList) == 0 {
+	if len(profileList) == 0 {
 		return fabricv4.SimplifiedServiceProfile{}
 	}
 
@@ -341,7 +345,7 @@ func simplifiedServiceProfileTerraformToGo(profileList []interface{}) fabricv4.S
 }
 
 func virtualDeviceTerraformToGo(virtualDeviceList []interface{}) fabricv4.VirtualDevice {
-	if virtualDeviceList == nil || len(virtualDeviceList) == 0 {
+	if len(virtualDeviceList) == 0 {
 		return fabricv4.VirtualDevice{}
 	}
 
@@ -360,7 +364,7 @@ func virtualDeviceTerraformToGo(virtualDeviceList []interface{}) fabricv4.Virtua
 }
 
 func interfaceTerraformToGo(interfaceList []interface{}) fabricv4.Interface {
-	if interfaceList == nil || len(interfaceList) == 0 {
+	if len(interfaceList) == 0 {
 		return fabricv4.Interface{}
 	}
 
@@ -658,6 +662,19 @@ func getUpdateRequests(conn *fabricv4.Connection, d *schema.ResourceData) ([][]f
 
 	awsSecrets, hasAWSSecrets := additionalInfoContainsAWSSecrets(additionalInfo)
 
+	existingNotifications := conn.GetNotifications()
+	schemaNotifications := d.Get("notifications").([]interface{})
+	updateNotificationsVal := equinix_fabric_schema.NotificationsTerraformToGo(schemaNotifications)
+	prevEmails, nextEmails := make([]string, len(existingNotifications[0].GetEmails())), make([]string, len(updateNotificationsVal[0].GetEmails()))
+	copy(prevEmails, existingNotifications[0].GetEmails())
+	copy(nextEmails, updateNotificationsVal[0].GetEmails())
+	sort.Strings(prevEmails)
+	sort.Strings(nextEmails)
+
+	notificationsNeedsUpdate := len(updateNotificationsVal) > len(existingNotifications) ||
+		string(existingNotifications[0].GetType()) != string(updateNotificationsVal[0].GetType()) ||
+		!reflect.DeepEqual(prevEmails, nextEmails)
+
 	if existingName != updateNameVal {
 		changeOps = append(changeOps, []fabricv4.ConnectionChangeOperation{
 			{
@@ -688,6 +705,16 @@ func getUpdateRequests(conn *fabricv4.Connection, d *schema.ResourceData) ([][]f
 		})
 	}
 
+	if notificationsNeedsUpdate {
+		changeOps = append(changeOps, []fabricv4.ConnectionChangeOperation{
+			{
+				Op:    "replace",
+				Path:  "/notifications",
+				Value: updateNotificationsVal,
+			},
+		})
+	}
+
 	if len(changeOps) == 0 {
 		return changeOps, fmt.Errorf("nothing to update for the connection %s", existingName)
 	}
@@ -696,7 +723,7 @@ func getUpdateRequests(conn *fabricv4.Connection, d *schema.ResourceData) ([][]f
 }
 
 func portTerraformToGo(portList []interface{}) fabricv4.SimplifiedPort {
-	if portList == nil || len(portList) == 0 {
+	if len(portList) == 0 {
 		return fabricv4.SimplifiedPort{}
 	}
 	var port fabricv4.SimplifiedPort
