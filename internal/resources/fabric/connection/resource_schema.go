@@ -64,7 +64,7 @@ func fabricConnectionResourceSchema() map[string]*schema.Schema {
 			Description: "Requester or Customer side connection configuration object of the multi-segment connection",
 			MaxItems:    1,
 			Elem:        connectionSideSch(),
-			Set:         schema.HashResource(accessPointSch()),
+			Set:         schema.HashResource(connectionSideSch()),
 		},
 		"z_side": {
 			Type:        schema.TypeSet,
@@ -72,7 +72,7 @@ func fabricConnectionResourceSchema() map[string]*schema.Schema {
 			Description: "Destination or Provider side connection configuration object of the multi-segment connection",
 			MaxItems:    1,
 			Elem:        connectionSideSch(),
-			Set:         schema.HashResource(accessPointSch()),
+			Set:         schema.HashResource(connectionSideSch()),
 		},
 		"project": {
 			Type:        schema.TypeSet,
@@ -155,6 +155,7 @@ func connectionSideSch() *schema.Resource {
 			"service_token": {
 				Type:        schema.TypeSet,
 				Optional:    true,
+				Computed:    true,
 				Description: "For service token based connections, Service tokens authorize users to access protected resources and services. Resource owners can distribute the tokens to trusted partners and vendors, allowing selected third parties to work directly with Equinix network assets",
 				MaxItems:    1,
 				Elem: &schema.Resource{
@@ -164,6 +165,7 @@ func connectionSideSch() *schema.Resource {
 			"access_point": {
 				Type:        schema.TypeSet,
 				Optional:    true,
+				Computed:    true,
 				Description: "Point of access details",
 				MaxItems:    1,
 				Elem:        accessPointSch(),
@@ -171,6 +173,7 @@ func connectionSideSch() *schema.Resource {
 			"additional_info": {
 				Type:        schema.TypeList,
 				Optional:    true,
+				Computed:    true,
 				Description: "Connection side additional information",
 				Elem: &schema.Resource{
 					Schema: additionalInfoSch(),
@@ -185,6 +188,7 @@ func serviceTokenSch() map[string]*schema.Schema {
 		"type": {
 			Type:         schema.TypeString,
 			Optional:     true,
+			Computed:     true,
 			ValidateFunc: validation.StringInSlice([]string{"VC_TOKEN"}, true),
 			Description:  "Token type - VC_TOKEN",
 		},
@@ -196,6 +200,7 @@ func serviceTokenSch() map[string]*schema.Schema {
 		"uuid": {
 			Type:        schema.TypeString,
 			Optional:    true,
+			Computed:    true,
 			Description: "Equinix-assigned service token identifier",
 		},
 		"description": {
@@ -212,6 +217,7 @@ func accessPointSch() *schema.Resource {
 			"type": {
 				Type:         schema.TypeString,
 				Optional:     true,
+				Computed:     true,
 				ValidateFunc: validation.StringInSlice([]string{"COLO", "VD", "VG", "SP", "IGW", "SUBNET", "CLOUD_ROUTER", "NETWORK", "METAL_NETWORK"}, true),
 				Description:  "Access point type - COLO, VD, VG, SP, IGW, SUBNET, CLOUD_ROUTER, NETWORK, METAL_NETWORK",
 			},
@@ -237,6 +243,7 @@ func accessPointSch() *schema.Resource {
 			"port": {
 				Type:        schema.TypeSet,
 				Optional:    true,
+				Computed:    true,
 				Description: "Port access point information",
 				MaxItems:    1,
 				Elem: &schema.Resource{
@@ -246,6 +253,7 @@ func accessPointSch() *schema.Resource {
 			"profile": {
 				Type:        schema.TypeSet,
 				Optional:    true,
+				Computed:    true,
 				Description: "Service Profile",
 				MaxItems:    1,
 				Elem: &schema.Resource{
@@ -255,6 +263,7 @@ func accessPointSch() *schema.Resource {
 			"gateway": {
 				Type:        schema.TypeSet,
 				Optional:    true,
+				Computed:    true,
 				Deprecated:  "use router attribute instead; gateway is no longer a part of the supported backend",
 				Description: "**Deprecated** `gateway` Use `router` attribute instead",
 				MaxItems:    1,
@@ -265,6 +274,7 @@ func accessPointSch() *schema.Resource {
 			"router": {
 				Type:        schema.TypeSet,
 				Optional:    true,
+				Computed:    true,
 				Description: "Cloud Router access point information that replaces `gateway`",
 				MaxItems:    1,
 				Elem: &schema.Resource{
@@ -274,6 +284,7 @@ func accessPointSch() *schema.Resource {
 			"link_protocol": {
 				Type:        schema.TypeSet,
 				Optional:    true,
+				Computed:    true,
 				Description: "Connection link protocol",
 				MaxItems:    1,
 				Elem: &schema.Resource{
@@ -283,6 +294,7 @@ func accessPointSch() *schema.Resource {
 			"virtual_device": {
 				Type:        schema.TypeSet,
 				Optional:    true,
+				Computed:    true,
 				Description: "Virtual device",
 				MaxItems:    1,
 				Elem: &schema.Resource{
@@ -292,6 +304,7 @@ func accessPointSch() *schema.Resource {
 			"interface": {
 				Type:        schema.TypeSet,
 				Optional:    true,
+				Computed:    true,
 				Description: "Virtual device interface",
 				MaxItems:    1,
 				Elem: &schema.Resource{
@@ -301,6 +314,7 @@ func accessPointSch() *schema.Resource {
 			"network": {
 				Type:        schema.TypeSet,
 				Optional:    true,
+				Computed:    true,
 				Description: "network access point information",
 				MaxItems:    1,
 				Elem: &schema.Resource{
@@ -310,11 +324,13 @@ func accessPointSch() *schema.Resource {
 			"seller_region": {
 				Type:        schema.TypeString,
 				Optional:    true,
+				Computed:    true,
 				Description: "Access point seller region",
 			},
 			"peering_type": {
 				Type:         schema.TypeString,
 				Optional:     true,
+				Computed:     true,
 				ValidateFunc: validation.StringInSlice([]string{"PRIVATE", "MICROSOFT", "PUBLIC", "MANUAL"}, true),
 				Description:  "Peering Type- PRIVATE,MICROSOFT,PUBLIC, MANUAL",
 			},
@@ -376,6 +392,7 @@ func cloudRouterSch() map[string]*schema.Schema {
 		"uuid": {
 			Type:        schema.TypeString,
 			Optional:    true,
+			Computed:    true,
 			Description: "Equinix-assigned virtual gateway identifier",
 		},
 		"href": {
@@ -391,6 +408,7 @@ func accessPointLinkProtocolSch() map[string]*schema.Schema {
 		"type": {
 			Type:         schema.TypeString,
 			Optional:     true,
+			Computed:     true,
 			Description:  "Type of the link protocol - UNTAGGED, DOT1Q, QINQ, EVPN_VXLAN",
 			ValidateFunc: validation.StringInSlice([]string{"UNTAGGED", "DOT1Q", "QINQ", "EVPN_VXLAN"}, true),
 		},
@@ -425,16 +443,19 @@ func accessPointVirtualDeviceSch() map[string]*schema.Schema {
 		"uuid": {
 			Type:        schema.TypeString,
 			Optional:    true,
+			Computed:    true,
 			Description: "Equinix-assigned Virtual Device identifier",
 		},
 		"type": {
 			Type:        schema.TypeString,
 			Optional:    true,
+			Computed:    true,
 			Description: "Virtual Device type",
 		},
 		"name": {
 			Type:        schema.TypeString,
 			Optional:    true,
+			Computed:    true,
 			Description: "Customer-assigned Virtual Device Name",
 		},
 	}
@@ -445,6 +466,7 @@ func accessPointInterface() map[string]*schema.Schema {
 		"uuid": {
 			Type:        schema.TypeString,
 			Optional:    true,
+			Computed:    true,
 			Description: "Equinix-assigned interface identifier",
 		},
 		"id": {
@@ -456,6 +478,7 @@ func accessPointInterface() map[string]*schema.Schema {
 		"type": {
 			Type:        schema.TypeString,
 			Optional:    true,
+			Computed:    true,
 			Description: "Interface type",
 		},
 	}
@@ -466,6 +489,7 @@ func networkSch() map[string]*schema.Schema {
 		"uuid": {
 			Type:        schema.TypeString,
 			Optional:    true,
+			Computed:    true,
 			Description: "Equinix-assigned Network identifier",
 		},
 		"href": {
@@ -545,11 +569,13 @@ func additionalInfoSch() map[string]*schema.Schema {
 		"key": {
 			Type:        schema.TypeString,
 			Optional:    true,
+			Computed:    true,
 			Description: "Additional information key",
 		},
 		"value": {
 			Type:        schema.TypeString,
 			Optional:    true,
+			Computed:    true,
 			Description: "Additional information value",
 		},
 	}

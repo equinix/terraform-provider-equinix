@@ -355,10 +355,18 @@ func virtualDeviceTerraformToGo(virtualDeviceList []interface{}) fabricv4.Virtua
 	type_ := virtualDeviceMap["type"].(string)
 	uuid := virtualDeviceMap["uuid"].(string)
 	name := virtualDeviceMap["name"].(string)
-	virtualDevice.SetHref(href)
-	virtualDevice.SetType(fabricv4.VirtualDeviceType(type_))
-	virtualDevice.SetUuid(uuid)
-	virtualDevice.SetName(name)
+	if href != "" {
+		virtualDevice.SetHref(href)
+	}
+	if type_ != "" {
+		virtualDevice.SetType(fabricv4.VirtualDeviceType(type_))
+	}
+	if uuid != "" {
+		virtualDevice.SetUuid(uuid)
+	}
+	if name != "" {
+		virtualDevice.SetName(name)
+	}
 
 	return virtualDevice
 }
@@ -373,9 +381,15 @@ func interfaceTerraformToGo(interfaceList []interface{}) fabricv4.Interface {
 	uuid := interfaceMap["uuid"].(string)
 	type_ := interfaceMap["type"].(string)
 	id := interfaceMap["id"].(int)
-	interface_.SetUuid(uuid)
-	interface_.SetType(fabricv4.InterfaceType(type_))
-	interface_.SetId(int32(id))
+	if uuid != "" {
+		interface_.SetUuid(uuid)
+	}
+	if type_ != "" {
+		interface_.SetType(fabricv4.InterfaceType(type_))
+	}
+	if id > 0 {
+		interface_.SetId(int32(id))
+	}
 
 	return interface_
 }
@@ -658,10 +672,49 @@ func getUpdateRequests(conn *fabricv4.Connection, d *schema.ResourceData) ([][]f
 	existingBandwidth := int(conn.GetBandwidth())
 	updateNameVal := d.Get("name").(string)
 	updateBandwidthVal := d.Get("bandwidth").(int)
-	additionalInfo := d.Get("additional_info").([]interface{})
 
+	additionalInfo := d.Get("additional_info").([]interface{})
 	awsSecrets, hasAWSSecrets := additionalInfoContainsAWSSecrets(additionalInfo)
 
+	existingAside := conn.GetASide()
+	existingAsideAp := existingAside.GetAccessPoint()
+	schemaAside := d.Get("a_side").(*schema.Set).List()
+	updateAsideValue := connectionSideTerraformToGo(schemaAside)
+	updatedAsideAp := updateAsideValue.GetAccessPoint()
+	switch existingAsideAp.GetType() {
+	case fabricv4.ACCESSPOINTTYPE_COLO:
+		existingAsideApPort := existingAsideAp.GetPort()
+		updatedAsideApPort := updatedAsideAp.GetPort()
+		if existingAsideApPort.GetUuid() != updatedAsideApPort.GetUuid() {
+			changeOps = append(changeOps, []fabricv4.ConnectionChangeOperation{
+				{
+					Op:    "replace",
+					Path:  "/aSide/accessPoint/port/uuid",
+					Value: updatedAsideApPort.GetUuid(),
+				},
+			})
+		}
+	case fabricv4.ACCESSPOINTTYPE_VD:
+		existingAsideApVd := existingAsideAp.GetVirtualDevice()
+		existingAsideApInterface := existingAsideAp.GetInterface()
+		updatedAsideApVd := updatedAsideAp.GetVirtualDevice()
+		updatedAsideApInterface := updatedAsideAp.GetInterface()
+		if !reflect.DeepEqual(existingAsideApVd, updatedAsideApVd) || !reflect.DeepEqual(existingAsideApInterface, updatedAsideApInterface) {
+			changeOps = append(changeOps, []fabricv4.ConnectionChangeOperation{
+				{
+					Op:   "replace",
+					Path: "/aSide/accessPoint",
+					Value: struct {
+						VirtualDevice *fabricv4.VirtualDevice `json:"virtualDevice,omitempty"`
+						Interface     *fabricv4.Interface     `json:"interface,omitempty"`
+					}{
+						VirtualDevice: updatedAsideAp.VirtualDevice,
+						Interface:     updatedAsideAp.Interface,
+					},
+				},
+			})
+		}
+	}
 	existingNotifications := conn.GetNotifications()
 	schemaNotifications := d.Get("notifications").([]interface{})
 	updateNotificationsVal := equinix_fabric_schema.NotificationsTerraformToGo(schemaNotifications)
