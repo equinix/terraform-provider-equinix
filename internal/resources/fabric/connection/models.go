@@ -8,6 +8,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"log"
+	"reflect"
+	"sort"
 )
 
 func additionalInfoContainsAWSSecrets(info []interface{}) ([]interface{}, bool) {
@@ -658,6 +660,19 @@ func getUpdateRequests(conn *fabricv4.Connection, d *schema.ResourceData) ([][]f
 
 	awsSecrets, hasAWSSecrets := additionalInfoContainsAWSSecrets(additionalInfo)
 
+	existingNotifications := conn.GetNotifications()
+	schemaNotifications := d.Get("notifications").([]interface{})
+	updateNotificationsVal := equinix_fabric_schema.NotificationsTerraformToGo(schemaNotifications)
+	prevEmails, nextEmails := make([]string, len(existingNotifications[0].GetEmails())), make([]string, len(updateNotificationsVal[0].GetEmails()))
+	copy(prevEmails, existingNotifications[0].GetEmails())
+	copy(nextEmails, updateNotificationsVal[0].GetEmails())
+	sort.Strings(prevEmails)
+	sort.Strings(nextEmails)
+
+	notificationsNeedsUpdate := len(updateNotificationsVal) > len(existingNotifications) ||
+		string(existingNotifications[0].GetType()) != string(updateNotificationsVal[0].GetType()) ||
+		!reflect.DeepEqual(prevEmails, nextEmails)
+
 	if existingName != updateNameVal {
 		changeOps = append(changeOps, []fabricv4.ConnectionChangeOperation{
 			{
@@ -684,6 +699,16 @@ func getUpdateRequests(conn *fabricv4.Connection, d *schema.ResourceData) ([][]f
 				Op:    "add",
 				Path:  "",
 				Value: map[string]interface{}{"additionalInfo": awsSecrets},
+			},
+		})
+	}
+
+	if notificationsNeedsUpdate {
+		changeOps = append(changeOps, []fabricv4.ConnectionChangeOperation{
+			{
+				Op:    "replace",
+				Path:  "/notifications",
+				Value: updateNotificationsVal,
 			},
 		})
 	}
