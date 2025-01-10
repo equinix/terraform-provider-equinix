@@ -454,7 +454,6 @@ func accessPointVirtualDeviceSch() map[string]*schema.Schema {
 		},
 		"name": {
 			Type:        schema.TypeString,
-			Optional:    true,
 			Computed:    true,
 			Description: "Customer-assigned Virtual Device Name",
 		},

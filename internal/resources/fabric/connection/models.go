@@ -699,7 +699,10 @@ func getUpdateRequests(conn *fabricv4.Connection, d *schema.ResourceData) ([][]f
 		existingAsideApInterface := existingAsideAp.GetInterface()
 		updatedAsideApVd := updatedAsideAp.GetVirtualDevice()
 		updatedAsideApInterface := updatedAsideAp.GetInterface()
-		if !reflect.DeepEqual(existingAsideApVd, updatedAsideApVd) || !reflect.DeepEqual(existingAsideApInterface, updatedAsideApInterface) {
+		if existingAsideApVd.GetUuid() != updatedAsideApVd.GetUuid() ||
+			existingAsideApVd.GetType() != updatedAsideApVd.GetType() ||
+			(existingAsideApInterface.GetId() != updatedAsideApInterface.GetId() && updatedAsideApInterface.GetId() != 0) ||
+			(existingAsideApInterface.GetType() != updatedAsideApInterface.GetType() && string(updatedAsideApInterface.GetType()) != "") {
 			changeOps = append(changeOps, []fabricv4.ConnectionChangeOperation{
 				{
 					Op:   "replace",
