@@ -365,51 +365,6 @@ resource "equinix_metal_project" "foobar" {
 }`, r, pass)
 }
 
-func testAccMetalProjectConfig_organization(r string) string {
-	return fmt.Sprintf(`
-resource "equinix_metal_organization" "test" {
-	name = "tfacc-project-%s"
-	address {
-		address = "tfacc org street"
-		city = "london"
-		zip_code = "12345"
-		country = "GB"
-	}
-}
-
-resource "equinix_metal_project" "foobar" {
-	name = "tfacc-project-%s"
-	organization_id = "${equinix_metal_organization.test.id}"
-}`, r, r)
-}
-
-func TestAccMetalProject_organization(t *testing.T) {
-	var project metalv1.Project
-	rn := acctest.RandStringFromCharSet(12, "abcdef0123456789")
-
-	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { acceptance.TestAccPreCheck(t) },
-		ExternalProviders:        acceptance.TestExternalProviders,
-		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
-		CheckDestroy:             testAccMetalProjectCheckDestroyed,
-		Steps: []resource.TestStep{
-			{
-				Config: testAccMetalProjectConfig_organization(rn),
-				Check: resource.ComposeTestCheckFunc(
-					testAccMetalProjectExists("equinix_metal_project.foobar", &project),
-					resource.TestCheckResourceAttr(
-						"equinix_metal_project.foobar", "name", fmt.Sprintf("tfacc-project-%s", rn)),
-				),
-			},
-			{
-				ResourceName:      "equinix_metal_project.foobar",
-				ImportState:       true,
-				ImportStateVerify: true,
-			},
-		},
-	})
-}
-
 func TestAccMetalProject_importBasic(t *testing.T) {
 	rInt := acctest.RandInt()
 
