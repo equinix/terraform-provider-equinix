@@ -122,21 +122,7 @@ func (r *BaseResource) ImportState(
 		return
 	}
 
-	// Handle type conversion
-	var err error
-	var idValue any
-
-	idValue = req.ID
-
-	if err != nil {
-		resp.Diagnostics.AddError(
-			"Failed to convert ID attribute",
-			err.Error(),
-		)
-		return
-	}
-
-	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, attrPath, idValue)...)
+	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, attrPath, req.ID)...)
 }
 
 // WithTimeouts is intended to be embedded in resources which use the special "timeouts" nested block.

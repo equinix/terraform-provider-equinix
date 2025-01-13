@@ -2,10 +2,11 @@ package connection
 
 import (
 	"fmt"
+	"regexp"
+
 	"github.com/equinix/equinix-sdk-go/services/fabricv4"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
-	"regexp"
 )
 
 func readFabricConnectionResourceSchema() map[string]*schema.Schema {
