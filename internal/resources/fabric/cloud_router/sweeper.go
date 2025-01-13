@@ -34,7 +34,7 @@ func testSweepCloudRouters(region string) error {
 		log.Printf("Error loading meta: %v", err)
 		return err
 	}
-	fabric := meta.NewFabricClientForTesting()
+	fabric := meta.NewFabricClientForTesting(ctx)
 
 	equinixStatus := "/state"
 	equalOperator := string(fabricv4.EXPRESSIONOPERATOR_EQUAL)

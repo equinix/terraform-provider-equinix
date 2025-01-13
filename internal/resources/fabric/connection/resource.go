@@ -39,7 +39,7 @@ func Resource() *schema.Resource {
 }
 
 func resourceFabricConnectionCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := meta.(*config.Config).NewFabricClientForSDK(d)
+	client := meta.(*config.Config).NewFabricClientForSDK(ctx, d)
 
 	createConnectionRequest := fabricv4.ConnectionPostRequest{}
 
@@ -129,7 +129,7 @@ func resourceFabricConnectionCreate(ctx context.Context, d *schema.ResourceData,
 }
 
 func resourceFabricConnectionRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := meta.(*config.Config).NewFabricClientForSDK(d)
+	client := meta.(*config.Config).NewFabricClientForSDK(ctx, d)
 	conn, _, err := client.ConnectionsApi.GetConnectionByUuid(ctx, d.Id()).Execute()
 	if err != nil {
 		log.Printf("[WARN] Connection %s not found , error %s", d.Id(), err)
@@ -143,7 +143,7 @@ func resourceFabricConnectionRead(ctx context.Context, d *schema.ResourceData, m
 }
 
 func resourceFabricConnectionUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := meta.(*config.Config).NewFabricClientForSDK(d)
+	client := meta.(*config.Config).NewFabricClientForSDK(ctx, d)
 	start := time.Now()
 	updateTimeout := d.Timeout(schema.TimeoutUpdate) - 30*time.Second - time.Since(start)
 	dbConn, err := verifyConnectionCreated(d.Id(), meta, d, ctx, updateTimeout)
@@ -197,7 +197,7 @@ func waitForConnectionUpdateCompletion(uuid string, meta interface{}, d *schema.
 	stateConf := &retry.StateChangeConf{
 		Target: []string{"COMPLETED", "SUBMITTED_FOR_APPROVAL"},
 		Refresh: func() (interface{}, string, error) {
-			client := meta.(*config.Config).NewFabricClientForSDK(d)
+			client := meta.(*config.Config).NewFabricClientForSDK(ctx, d)
 			dbConn, _, err := client.ConnectionsApi.GetConnectionByUuid(ctx, uuid).Execute()
 			if err != nil {
 				return "", "", equinix_errors.FormatFabricError(err)
@@ -236,7 +236,7 @@ func waitUntilConnectionIsCreated(uuid string, meta interface{}, d *schema.Resou
 			string(fabricv4.CONNECTIONSTATE_ACTIVE),
 		},
 		Refresh: func() (interface{}, string, error) {
-			client := meta.(*config.Config).NewFabricClientForSDK(d)
+			client := meta.(*config.Config).NewFabricClientForSDK(ctx, d)
 			dbConn, _, err := client.ConnectionsApi.GetConnectionByUuid(ctx, uuid).Execute()
 			if err != nil {
 				return "", "", equinix_errors.FormatFabricError(err)
@@ -264,7 +264,7 @@ func waitForConnectionProviderStatusChange(uuid string, meta interface{}, d *sch
 			string(fabricv4.PROVIDERSTATUS_PROVISIONED),
 		},
 		Refresh: func() (interface{}, string, error) {
-			client := meta.(*config.Config).NewFabricClientForSDK(d)
+			client := meta.(*config.Config).NewFabricClientForSDK(ctx, d)
 			dbConn, _, err := client.ConnectionsApi.GetConnectionByUuid(ctx, uuid).Execute()
 			if err != nil {
 				return "", "", equinix_errors.FormatFabricError(err)
@@ -296,7 +296,7 @@ func verifyConnectionCreated(uuid string, meta interface{}, d *schema.ResourceDa
 			string(fabricv4.CONNECTIONSTATE_PENDING),
 		},
 		Refresh: func() (interface{}, string, error) {
-			client := meta.(*config.Config).NewFabricClientForSDK(d)
+			client := meta.(*config.Config).NewFabricClientForSDK(ctx, d)
 			dbConn, _, err := client.ConnectionsApi.GetConnectionByUuid(ctx, uuid).Execute()
 			if err != nil {
 				return "", "", equinix_errors.FormatFabricError(err)
@@ -319,7 +319,7 @@ func verifyConnectionCreated(uuid string, meta interface{}, d *schema.ResourceDa
 
 func resourceFabricConnectionDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	diags := diag.Diagnostics{}
-	client := meta.(*config.Config).NewFabricClientForSDK(d)
+	client := meta.(*config.Config).NewFabricClientForSDK(ctx, d)
 	start := time.Now()
 	_, _, err := client.ConnectionsApi.DeleteConnectionByUuid(ctx, d.Id()).Execute()
 	if err != nil {
@@ -354,7 +354,7 @@ func WaitUntilConnectionDeprovisioned(uuid string, meta interface{}, d *schema.R
 			string(fabricv4.CONNECTIONSTATE_DEPROVISIONED),
 		},
 		Refresh: func() (interface{}, string, error) {
-			client := meta.(*config.Config).NewFabricClientForSDK(d)
+			client := meta.(*config.Config).NewFabricClientForSDK(ctx, d)
 			dbConn, _, err := client.ConnectionsApi.GetConnectionByUuid(ctx, uuid).Execute()
 			if err != nil {
 				return "", "", equinix_errors.FormatFabricError(err)

@@ -42,7 +42,7 @@ Additional Documentation:
 }
 
 func dataSourceGetAllFilters(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := meta.(*config.Config).NewFabricClientForSDK(d)
+	client := meta.(*config.Config).NewFabricClientForSDK(ctx, d)
 	connectionId := d.Get("connection_id").(string)
 	connectionRouteFilters, _, err := client.RouteFiltersApi.GetConnectionRouteFilters(ctx, connectionId).Execute()
 	if err != nil {

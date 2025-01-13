@@ -37,7 +37,7 @@ func Resource() *schema.Resource {
 }
 
 func resourceRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := meta.(*config.Config).NewFabricClientForSDK(d)
+	client := meta.(*config.Config).NewFabricClientForSDK(ctx, d)
 	serviceToken, _, err := client.ServiceTokensApi.GetServiceTokenByUuid(ctx, d.Id()).Execute()
 	if err != nil {
 		log.Printf("[WARN] Service Token %s not found , error %s", d.Id(), err)
@@ -51,7 +51,7 @@ func resourceRead(ctx context.Context, d *schema.ResourceData, meta interface{})
 }
 
 func resourceCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := meta.(*config.Config).NewFabricClientForSDK(d)
+	client := meta.(*config.Config).NewFabricClientForSDK(ctx, d)
 	createRequest := buildCreateRequest(d)
 
 	start := time.Now()
@@ -74,7 +74,7 @@ func resourceCreate(ctx context.Context, d *schema.ResourceData, meta interface{
 }
 
 func resourceUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := meta.(*config.Config).NewFabricClientForSDK(d)
+	client := meta.(*config.Config).NewFabricClientForSDK(ctx, d)
 	start := time.Now()
 	updateTimeout := d.Timeout(schema.TimeoutUpdate) - 30*time.Second - time.Since(start)
 	dbToken, err := waitForStability(d.Id(), meta, d, ctx, updateTimeout)
@@ -108,7 +108,7 @@ func resourceUpdate(ctx context.Context, d *schema.ResourceData, meta interface{
 
 func resourceDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	diags := diag.Diagnostics{}
-	client := meta.(*config.Config).NewFabricClientForSDK(d)
+	client := meta.(*config.Config).NewFabricClientForSDK(ctx, d)
 
 	start := time.Now()
 	_, _, err := client.ServiceTokensApi.DeleteServiceTokenByUuid(ctx, d.Id()).Execute()
@@ -138,7 +138,7 @@ func waitForStability(uuid string, meta interface{}, d *schema.ResourceData, ctx
 			string(fabricv4.SERVICETOKENSTATE_INACTIVE),
 		},
 		Refresh: func() (interface{}, string, error) {
-			client := meta.(*config.Config).NewFabricClientForSDK(d)
+			client := meta.(*config.Config).NewFabricClientForSDK(ctx, d)
 			serviceToken, _, err := client.ServiceTokensApi.GetServiceTokenByUuid(ctx, uuid).Execute()
 			if err != nil {
 				return "", "", equinix_errors.FormatFabricError(err)
@@ -176,7 +176,7 @@ func WaitForDeletion(uuid string, meta interface{}, d *schema.ResourceData, ctx 
 			string(fabricv4.SERVICETOKENSTATE_DELETED),
 		},
 		Refresh: func() (interface{}, string, error) {
-			client := meta.(*config.Config).NewFabricClientForSDK(d)
+			client := meta.(*config.Config).NewFabricClientForSDK(ctx, d)
 			serviceToken, body, err := client.ServiceTokensApi.GetServiceTokenByUuid(ctx, uuid).Execute()
 			if err != nil {
 				if body.StatusCode >= 400 && body.StatusCode <= 499 {

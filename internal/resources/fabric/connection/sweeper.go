@@ -34,7 +34,7 @@ func testSweepConnections(region string) error {
 		log.Printf("Error loading meta: %v", err)
 		return err
 	}
-	fabric := meta.NewFabricClientForTesting()
+	fabric := meta.NewFabricClientForTesting(ctx)
 
 	name := fabricv4.SEARCHFIELDNAME_NAME
 	equinixStatus := fabricv4.SEARCHFIELDNAME_OPERATION_EQUINIX_STATUS
