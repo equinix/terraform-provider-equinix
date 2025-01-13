@@ -20,8 +20,7 @@ func resourceMetalDeviceNetworkType() *schema.Resource {
 		Delete: resourceMetalDeviceNetworkTypeDelete,
 		Update: resourceMetalDeviceNetworkTypeUpdate,
 		Importer: &schema.ResourceImporter{
-			//nolint
-			State: schema.ImportStatePassthrough,
+			StateContext: schema.ImportStatePassthroughContext,
 		},
 		DeprecationMessage: "The metal_device_network_type resource is deprecated and will be removed in v3 of this provider.  Please use metal_port instead.  See the [Metal Device Network Types guide](https://registry.terraform.io/providers/equinix/equinix/latest/docs/guides/network_types) for more info",
 		Schema: map[string]*schema.Schema{

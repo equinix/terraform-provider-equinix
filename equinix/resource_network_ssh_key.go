@@ -37,7 +37,7 @@ func resourceNetworkSSHKey() *schema.Resource {
 		ReadContext:   resourceNetworkSSHKeyRead,
 		DeleteContext: resourceNetworkSSHKeyDelete,
 		Importer: &schema.ResourceImporter{
-			State: schema.ImportStatePassthrough,
+			StateContext: schema.ImportStatePassthroughContext,
 		},
 		Schema: createNetworkSSHKeyResourceSchema(),
 		Timeouts: &schema.ResourceTimeout{

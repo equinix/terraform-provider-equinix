@@ -20,7 +20,7 @@ func resourceMetalPortVlanAttachment() *schema.Resource {
 		Delete: resourceMetalPortVlanAttachmentDelete,
 		Update: resourceMetalPortVlanAttachmentUpdate,
 		Importer: &schema.ResourceImporter{
-			State: schema.ImportStatePassthrough,
+			StateContext: schema.ImportStatePassthroughContext,
 		},
 
 		Schema: map[string]*schema.Schema{
@@ -143,6 +143,7 @@ func resourceMetalPortVlanAttachmentCreate(d *schema.ResourceData, meta interfac
 		mutexkv.Metal.Lock(lockId)
 		defer mutexkv.Metal.Unlock(lockId)
 
+		//nolint:staticcheck
 		_, _, err = client.DevicePorts.Assign(par)
 		if err != nil {
 			return err
@@ -153,6 +154,7 @@ func resourceMetalPortVlanAttachmentCreate(d *schema.ResourceData, meta interfac
 
 	native := d.Get("native").(bool)
 	if native {
+		//nolint:staticcheck
 		_, _, err = client.DevicePorts.AssignNative(par)
 		if err != nil {
 			return err
@@ -225,11 +227,13 @@ func resourceMetalPortVlanAttachmentUpdate(d *schema.ResourceData, meta interfac
 		if native {
 			vlanID := d.Get("vlan_id").(string)
 			par := &packngo.PortAssignRequest{PortID: portID, VirtualNetworkID: vlanID}
+			//nolint:staticcheck
 			_, _, err := client.DevicePorts.AssignNative(par)
 			if err != nil {
 				return err
 			}
 		} else {
+			//nolint:staticcheck
 			_, _, err := client.DevicePorts.UnassignNative(portID)
 			if err != nil {
 				return err
@@ -246,6 +250,7 @@ func resourceMetalPortVlanAttachmentDelete(d *schema.ResourceData, meta interfac
 	vlanID := d.Get("vlan_id").(string)
 	native := d.Get("native").(bool)
 	if native {
+		//nolint:staticcheck
 		_, resp, err := client.DevicePorts.UnassignNative(pID)
 		if equinix_errors.IgnoreResponseErrors(equinix_errors.HttpForbidden, equinix_errors.HttpNotFound)(resp, err) != nil {
 			return err
@@ -255,6 +260,7 @@ func resourceMetalPortVlanAttachmentDelete(d *schema.ResourceData, meta interfac
 	lockId := "vlan-detachment-" + pID
 	mutexkv.Metal.Lock(lockId)
 	defer mutexkv.Metal.Unlock(lockId)
+	//nolint:staticcheck
 	portPtr, resp, err := client.DevicePorts.Unassign(par)
 	if equinix_errors.IgnoreResponseErrors(equinix_errors.HttpForbidden, equinix_errors.HttpNotFound, equinix_errors.IsNotAssigned)(resp, err) != nil {
 		return err
@@ -263,10 +269,12 @@ func resourceMetalPortVlanAttachmentDelete(d *schema.ResourceData, meta interfac
 	if forceBond && (len(portPtr.AttachedVirtualNetworks) == 0) {
 		deviceID := d.Get("device_id").(string)
 		portName := d.Get("port_name").(string)
+		//nolint:staticcheck
 		port, err := client.DevicePorts.GetPortByName(deviceID, portName)
 		if err != nil {
 			return equinix_errors.FriendlyError(err)
 		}
+		//nolint:staticcheck
 		_, _, err = client.DevicePorts.Bond(port, false)
 		if err != nil {
 			return equinix_errors.FriendlyError(err)

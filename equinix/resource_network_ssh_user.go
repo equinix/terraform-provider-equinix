@@ -35,7 +35,7 @@ func resourceNetworkSSHUser() *schema.Resource {
 		UpdateContext: resourceNetworkSSHUserUpdate,
 		DeleteContext: resourceNetworkSSHUserDelete,
 		Importer: &schema.ResourceImporter{
-			State: schema.ImportStatePassthrough,
+			StateContext: schema.ImportStatePassthroughContext,
 		},
 		Schema:      createNetworkSSHUserResourceSchema(),
 		Description: "Resource allows creation and management of Equinix Network Edge SSH users",
@@ -82,7 +82,7 @@ func resourceNetworkSSHUserCreate(ctx context.Context, d *schema.ResourceData, m
 
 	var diags diag.Diagnostics
 	user := createNetworkSSHUser(d)
-	if len(user.DeviceUUIDs) < 0 {
+	if len(user.DeviceUUIDs) == 0 {
 		return diag.Errorf("create ssh-user failed: user needs to have at least one device defined")
 	}
 	uuid, err := client.CreateSSHUser(ne.StringValue(user.Username), ne.StringValue(user.Password), user.DeviceUUIDs[0])
