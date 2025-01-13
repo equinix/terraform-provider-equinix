@@ -554,7 +554,7 @@ Additional documentation:
 }
 
 func resourceFabricServiceProfileRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := meta.(*config.Config).NewFabricClientForSDK(d)
+	client := meta.(*config.Config).NewFabricClientForSDK(ctx, d)
 	serviceProfile, _, err := client.ServiceProfilesApi.GetServiceProfileByUuid(ctx, d.Id()).Execute()
 	if err != nil {
 		if !strings.Contains(err.Error(), "500") {
@@ -567,7 +567,7 @@ func resourceFabricServiceProfileRead(ctx context.Context, d *schema.ResourceDat
 }
 
 func resourceFabricServiceProfileCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := meta.(*config.Config).NewFabricClientForSDK(d)
+	client := meta.(*config.Config).NewFabricClientForSDK(ctx, d)
 
 	createRequest := getServiceProfileRequestPayload(d)
 	sp, _, err := client.ServiceProfilesApi.CreateServiceProfile(ctx).ServiceProfileRequest(createRequest).Execute()
@@ -647,7 +647,7 @@ func getServiceProfileRequestPayload(d *schema.ResourceData) fabricv4.ServicePro
 }
 
 func resourceFabricServiceProfileUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := meta.(*config.Config).NewFabricClientForSDK(d)
+	client := meta.(*config.Config).NewFabricClientForSDK(ctx, d)
 	uuid := d.Id()
 	updateRequest := getServiceProfileRequestPayload(d)
 
@@ -685,7 +685,7 @@ func waitForServiceProfileUpdateCompletion(uuid string, meta interface{}, d *sch
 	stateConf := &retry.StateChangeConf{
 		Target: []string{"COMPLETED"},
 		Refresh: func() (interface{}, string, error) {
-			client := meta.(*config.Config).NewFabricClientForSDK(d)
+			client := meta.(*config.Config).NewFabricClientForSDK(ctx, d)
 			dbServiceProfile, _, err := client.ServiceProfilesApi.GetServiceProfileByUuid(ctx, uuid).Execute()
 			if err != nil {
 				return "", "", equinix_errors.FormatFabricError(err)
@@ -713,7 +713,7 @@ func waitForActiveServiceProfileAndPopulateETag(uuid string, meta interface{}, d
 	stateConf := &retry.StateChangeConf{
 		Target: []string{string(fabricv4.SERVICEPROFILESTATEENUM_ACTIVE)},
 		Refresh: func() (interface{}, string, error) {
-			client := meta.(*config.Config).NewFabricClientForSDK(d)
+			client := meta.(*config.Config).NewFabricClientForSDK(ctx, d)
 			dbServiceProfile, res, err := client.ServiceProfilesApi.GetServiceProfileByUuid(ctx, uuid).Execute()
 			if err != nil {
 				return nil, "", equinix_errors.FormatFabricError(err)
@@ -745,7 +745,7 @@ func waitForActiveServiceProfileAndPopulateETag(uuid string, meta interface{}, d
 
 func resourceFabricServiceProfileDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	diags := diag.Diagnostics{}
-	client := meta.(*config.Config).NewFabricClientForSDK(d)
+	client := meta.(*config.Config).NewFabricClientForSDK(ctx, d)
 	uuid := d.Id()
 	if uuid == "" {
 		return diag.Errorf("No uuid found for Service Profile Deletion %v ", uuid)
@@ -771,7 +771,7 @@ func WaitAndCheckServiceProfileDeleted(uuid string, meta interface{}, d *schema.
 	stateConf := &retry.StateChangeConf{
 		Target: []string{string(fabricv4.SERVICEPROFILESTATEENUM_DELETED)},
 		Refresh: func() (interface{}, string, error) {
-			client := meta.(*config.Config).NewFabricClientForSDK(d)
+			client := meta.(*config.Config).NewFabricClientForSDK(ctx, d)
 			dbConn, _, err := client.ServiceProfilesApi.GetServiceProfileByUuid(ctx, uuid).Execute()
 			if err != nil {
 				return "", "", equinix_errors.FormatFabricError(err)
@@ -851,7 +851,7 @@ func fabricServiceProfileMap(serviceProfile *fabricv4.ServiceProfile) map[string
 }
 
 func resourceServiceProfilesSearchRequest(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := meta.(*config.Config).NewFabricClientForSDK(d)
+	client := meta.(*config.Config).NewFabricClientForSDK(ctx, d)
 	serviceProfilesSearchRequest := fabricv4.ServiceProfileSearchRequest{}
 
 	andFilters := false

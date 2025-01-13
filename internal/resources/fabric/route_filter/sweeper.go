@@ -35,7 +35,7 @@ func testSweepRouteFilters(region string) error {
 	if configLoadErr != nil {
 		return fmt.Errorf("error loading configuration for sweeping Route Filters: %s", err)
 	}
-	fabric := meta.NewFabricClientForTesting()
+	fabric := meta.NewFabricClientForTesting(ctx)
 
 	name := fabricv4.ROUTEFILTERSSEARCHFILTERITEMPROPERTY_NAME
 	equinixState := fabricv4.ROUTEFILTERSSEARCHFILTERITEMPROPERTY_STATE
