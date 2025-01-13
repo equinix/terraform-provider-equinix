@@ -95,11 +95,6 @@ func (r *DataSource) Read(
 		}
 	}
 
-	assignedDevices := []string{}
-	for _, d := range vlan.Instances {
-		assignedDevices = append(assignedDevices, d.ID)
-	}
-
 	// Set state to fully populated data
 	resp.Diagnostics.Append(data.parse(vlan)...)
 	if resp.Diagnostics.HasError() {

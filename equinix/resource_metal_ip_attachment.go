@@ -30,7 +30,7 @@ func resourceMetalIPAttachment() *schema.Resource {
 		Read:   resourceMetalIPAttachmentRead,
 		Delete: resourceMetalIPAttachmentDelete,
 		Importer: &schema.ResourceImporter{
-			State: schema.ImportStatePassthrough,
+			StateContext: schema.ImportStatePassthroughContext,
 		},
 
 		Schema: ipAttachmentSchema,

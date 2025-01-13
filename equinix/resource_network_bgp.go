@@ -49,7 +49,7 @@ func resourceNetworkBGP() *schema.Resource {
 		UpdateContext: resourceNetworkBGPUpdate,
 		DeleteContext: resourceNetworkBGPDelete,
 		Importer: &schema.ResourceImporter{
-			State: schema.ImportStatePassthrough,
+			StateContext: schema.ImportStatePassthroughContext,
 		},
 		Schema: createNetworkBGPResourceSchema(),
 		Timeouts: &schema.ResourceTimeout{

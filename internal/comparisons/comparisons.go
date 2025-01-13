@@ -3,7 +3,6 @@ package comparisons
 import (
 	"cmp"
 	"slices"
-	"strings"
 )
 
 // isEmpty returns true if the given value is empty
@@ -52,16 +51,4 @@ func SlicesMatch[T cmp.Ordered](s1, s2 []T) bool {
 	slices.Sort(s2Copy)
 
 	return slices.Equal(s1Copy, s2Copy)
-}
-
-// caseInsensitiveLess is a comparison function for sorting strings case-insensitively
-func caseInsensitiveLess(s1, s2 string) int {
-	switch {
-	case strings.ToLower(s1) == strings.ToLower(s2):
-		return 0
-	case strings.ToLower(s1) < strings.ToLower(s2):
-		return -1
-	default:
-		return 1
-	}
 }

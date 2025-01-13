@@ -3,9 +3,10 @@ package equinix_test
 import (
 	"context"
 	"fmt"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"testing"
 	"time"
+
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
 	"github.com/equinix/terraform-provider-equinix/equinix"
 	"github.com/equinix/terraform-provider-equinix/internal/acceptance"
@@ -137,7 +138,7 @@ func TestAccCloudRouterCreateMixedParameters_PFCR(t *testing.T) {
 	})
 }
 func testAccCloudRouterCreateMixedParameterConfig_PFCR() string {
-	return fmt.Sprintf(`resource "equinix_fabric_cloud_router" "example"{
+	return `resource "equinix_fabric_cloud_router" "example"{
 		type = "XF_ROUTER"
 		name = "fcr_acc_test_PFCR"
 		location{
@@ -164,7 +165,7 @@ func testAccCloudRouterCreateMixedParameterConfig_PFCR() string {
 		account {
 			account_number = 201257
 		}
-	}`)
+	}`
 }
 
 func checkCloudRouterDelete(s *terraform.State) error {

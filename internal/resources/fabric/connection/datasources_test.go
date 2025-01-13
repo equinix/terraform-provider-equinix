@@ -2,10 +2,11 @@ package connection_test
 
 import (
 	"fmt"
+	"testing"
+
 	"github.com/equinix/terraform-provider-equinix/internal/acceptance"
 	"github.com/equinix/terraform-provider-equinix/internal/fabric/testing_helpers"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
-	"testing"
 )
 
 func TestAccFabricDataSourceConnection_PFCR(t *testing.T) {

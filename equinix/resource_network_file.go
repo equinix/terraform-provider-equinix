@@ -45,7 +45,7 @@ func resourceNetworkFile() *schema.Resource {
 		ReadContext:   resourceNetworkFileRead,
 		DeleteContext: resourceNetworkFileDelete,
 		Importer: &schema.ResourceImporter{
-			State: schema.ImportStatePassthrough,
+			StateContext: schema.ImportStatePassthroughContext,
 		},
 		Schema:      createNetworkFileSchema(),
 		Description: "Resource allows creation and management of Equinix Network Edge device files",
