@@ -132,7 +132,7 @@ func dataSourceFabricGetCloudRoutersRead(ctx context.Context, d *schema.Resource
 }
 
 func resourceFabricCloudRoutersSearch(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := meta.(*config.Config).NewFabricClientForSDK(d)
+	client := meta.(*config.Config).NewFabricClientForSDK(ctx, d)
 	cloudRouterSearchRequest := fabricv4.CloudRouterSearchRequest{}
 
 	schemaFilters := d.Get("filter").([]interface{})

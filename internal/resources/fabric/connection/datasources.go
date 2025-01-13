@@ -49,7 +49,7 @@ func dataSourceFabricConnectionSearch(ctx context.Context, d *schema.ResourceDat
 }
 
 func resourceFabricConnectionSearch(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := meta.(*config.Config).NewFabricClientForSDK(d)
+	client := meta.(*config.Config).NewFabricClientForSDK(ctx, d)
 	connectionSearchRequest := fabricv4.SearchRequest{}
 
 	schemaFilters := d.Get("filter").([]interface{})

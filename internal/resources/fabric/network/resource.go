@@ -42,7 +42,7 @@ Additional documentation:
 }
 
 func resourceFabricNetworkCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := meta.(*config.Config).NewFabricClientForSDK(d)
+	client := meta.(*config.Config).NewFabricClientForSDK(ctx, d)
 	createRequest := fabricv4.NetworkPostRequest{}
 	createRequest.SetName(d.Get("name").(string))
 
@@ -81,7 +81,7 @@ func resourceFabricNetworkCreate(ctx context.Context, d *schema.ResourceData, me
 }
 
 func resourceFabricNetworkRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := meta.(*config.Config).NewFabricClientForSDK(d)
+	client := meta.(*config.Config).NewFabricClientForSDK(ctx, d)
 	fabricNetwork, _, err := client.NetworksApi.GetNetworkByUuid(ctx, d.Id()).Execute()
 	if err != nil {
 		return diag.FromErr(equinix_errors.FormatFabricError(err))
@@ -91,7 +91,7 @@ func resourceFabricNetworkRead(ctx context.Context, d *schema.ResourceData, meta
 }
 
 func resourceFabricNetworkUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := meta.(*config.Config).NewFabricClientForSDK(d)
+	client := meta.(*config.Config).NewFabricClientForSDK(ctx, d)
 	start := time.Now()
 	updateTimeout := d.Timeout(schema.TimeoutUpdate) - 30*time.Second - time.Since(start)
 	dbConn, waitUntilNetworkProvisionedErr := waitUntilFabricNetworkIsProvisioned(d.Id(), meta, d, ctx, updateTimeout)
@@ -124,7 +124,7 @@ func waitForFabricNetworkUpdateCompletion(uuid string, meta interface{}, d *sche
 	stateConf := &retry.StateChangeConf{
 		Target: []string{string(fabricv4.NETWORKEQUINIXSTATUS_PROVISIONED)},
 		Refresh: func() (interface{}, string, error) {
-			client := meta.(*config.Config).NewFabricClientForSDK(d)
+			client := meta.(*config.Config).NewFabricClientForSDK(ctx, d)
 			dbConn, _, err := client.NetworksApi.GetNetworkByUuid(ctx, uuid).Execute()
 			if err != nil {
 				return "", "", equinix_errors.FormatFabricError(err)
@@ -155,7 +155,7 @@ func waitUntilFabricNetworkIsProvisioned(uuid string, meta interface{}, d *schem
 			string(fabricv4.NETWORKEQUINIXSTATUS_PROVISIONED),
 		},
 		Refresh: func() (interface{}, string, error) {
-			client := meta.(*config.Config).NewFabricClientForSDK(d)
+			client := meta.(*config.Config).NewFabricClientForSDK(ctx, d)
 			dbConn, _, err := client.NetworksApi.GetNetworkByUuid(ctx, uuid).Execute()
 			if err != nil {
 				return "", "", equinix_errors.FormatFabricError(err)
@@ -178,7 +178,7 @@ func waitUntilFabricNetworkIsProvisioned(uuid string, meta interface{}, d *schem
 
 func resourceFabricNetworkDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	diags := diag.Diagnostics{}
-	client := meta.(*config.Config).NewFabricClientForSDK(d)
+	client := meta.(*config.Config).NewFabricClientForSDK(ctx, d)
 	start := time.Now()
 	_, _, err := client.NetworksApi.DeleteNetworkByUuid(ctx, d.Id()).Execute()
 	if err != nil {
@@ -211,7 +211,7 @@ func WaitUntilFabricNetworkDeprovisioned(uuid string, meta interface{}, d *schem
 			string(fabricv4.NETWORKEQUINIXSTATUS_DEPROVISIONED),
 		},
 		Refresh: func() (interface{}, string, error) {
-			client := meta.(*config.Config).NewFabricClientForSDK(d)
+			client := meta.(*config.Config).NewFabricClientForSDK(ctx, d)
 			dbConn, _, err := client.NetworksApi.GetNetworkByUuid(ctx, uuid).Execute()
 			if err != nil {
 				return "", "", equinix_errors.FormatFabricError(err)

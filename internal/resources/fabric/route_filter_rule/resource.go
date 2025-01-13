@@ -41,7 +41,7 @@ Additional Documentation:
 }
 
 func resourceRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := meta.(*config.Config).NewFabricClientForSDK(d)
+	client := meta.(*config.Config).NewFabricClientForSDK(ctx, d)
 	routeFilterId := d.Get("route_filter_id").(string)
 	routeFilterRule, _, err := client.RouteFilterRulesApi.GetRouteFilterRuleByUuid(ctx, routeFilterId, d.Id()).Execute()
 	if err != nil {
@@ -56,7 +56,7 @@ func resourceRead(ctx context.Context, d *schema.ResourceData, meta interface{})
 }
 
 func resourceCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := meta.(*config.Config).NewFabricClientForSDK(d)
+	client := meta.(*config.Config).NewFabricClientForSDK(ctx, d)
 	routeFilterId := d.Get("route_filter_id").(string)
 	createRequest := buildCreateRequest(d)
 
@@ -80,7 +80,7 @@ func resourceCreate(ctx context.Context, d *schema.ResourceData, meta interface{
 }
 
 func resourceUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := meta.(*config.Config).NewFabricClientForSDK(d)
+	client := meta.(*config.Config).NewFabricClientForSDK(ctx, d)
 	routeFilterId := d.Get("route_filter_id").(string)
 	updateRequest := buildUpdateRequest(d)
 
@@ -100,7 +100,7 @@ func resourceUpdate(ctx context.Context, d *schema.ResourceData, meta interface{
 
 func resourceDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	diags := diag.Diagnostics{}
-	client := meta.(*config.Config).NewFabricClientForSDK(d)
+	client := meta.(*config.Config).NewFabricClientForSDK(ctx, d)
 	routeFilterId := d.Get("route_filter_id").(string)
 
 	start := time.Now()
@@ -135,7 +135,7 @@ func waitForStability(routeFilterId, ruleId string, meta interface{}, d *schema.
 			string(fabricv4.ROUTEFILTERRULESTATE_PROVISIONED),
 		},
 		Refresh: func() (interface{}, string, error) {
-			client := meta.(*config.Config).NewFabricClientForSDK(d)
+			client := meta.(*config.Config).NewFabricClientForSDK(ctx, d)
 			routeFilterRule, _, err := client.RouteFilterRulesApi.GetRouteFilterRuleByUuid(ctx, routeFilterId, ruleId).Execute()
 			if err != nil {
 				return "", "", equinix_errors.FormatFabricError(err)
@@ -163,7 +163,7 @@ func WaitForDeletion(routeFilterId, ruleId string, meta interface{}, d *schema.R
 			string(fabricv4.ROUTEFILTERRULESTATE_DEPROVISIONED),
 		},
 		Refresh: func() (interface{}, string, error) {
-			client := meta.(*config.Config).NewFabricClientForSDK(d)
+			client := meta.(*config.Config).NewFabricClientForSDK(ctx, d)
 			routeFilterRule, body, err := client.RouteFilterRulesApi.GetRouteFilterRuleByUuid(ctx, routeFilterId, ruleId).Execute()
 			if err != nil {
 				if body != nil && body.StatusCode >= 400 && body.StatusCode <= 499 {

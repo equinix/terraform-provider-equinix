@@ -41,7 +41,7 @@ Additional Documentation:
 }
 
 func resourceRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := meta.(*config.Config).NewFabricClientForSDK(d)
+	client := meta.(*config.Config).NewFabricClientForSDK(ctx, d)
 	connectionId := d.Get("connection_id").(string)
 	connectionRouteFilter, _, err := client.RouteFiltersApi.GetConnectionRouteFilterByUuid(ctx, d.Id(), connectionId).Execute()
 	if err != nil {
@@ -56,7 +56,7 @@ func resourceRead(ctx context.Context, d *schema.ResourceData, meta interface{})
 }
 
 func resourceCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := meta.(*config.Config).NewFabricClientForSDK(d)
+	client := meta.(*config.Config).NewFabricClientForSDK(ctx, d)
 	connectionId := d.Get("connection_id").(string)
 	routeFilterId := d.Get("route_filter_id").(string)
 	direction := d.Get("direction").(string)
@@ -87,7 +87,7 @@ func resourceCreate(ctx context.Context, d *schema.ResourceData, meta interface{
 }
 
 func resourceUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := meta.(*config.Config).NewFabricClientForSDK(d)
+	client := meta.(*config.Config).NewFabricClientForSDK(ctx, d)
 	connectionId := d.Get("connection_id").(string)
 	routeFilterId := d.Get("route_filter_id").(string)
 	oldDirection, newDirection := d.GetChange("direction")
@@ -117,7 +117,7 @@ func resourceUpdate(ctx context.Context, d *schema.ResourceData, meta interface{
 
 func resourceDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	diags := diag.Diagnostics{}
-	client := meta.(*config.Config).NewFabricClientForSDK(d)
+	client := meta.(*config.Config).NewFabricClientForSDK(ctx, d)
 	connectionId := d.Get("connection_id").(string)
 
 	start := time.Now()
@@ -152,7 +152,7 @@ func waitForStability(connectionId, routeFilterId string, meta interface{}, d *s
 			string(fabricv4.CONNECTIONROUTEAGGREGATIONDATAATTACHMENTSTATUS_PENDING_BGP_CONFIGURATION),
 		},
 		Refresh: func() (interface{}, string, error) {
-			client := meta.(*config.Config).NewFabricClientForSDK(d)
+			client := meta.(*config.Config).NewFabricClientForSDK(ctx, d)
 			connectionRouteFilter, _, err := client.RouteFiltersApi.GetConnectionRouteFilterByUuid(ctx, routeFilterId, connectionId).Execute()
 			if err != nil {
 				return "", "", equinix_errors.FormatFabricError(err)
@@ -181,7 +181,7 @@ func WaitForDeletion(connectionId, routeFilterId string, meta interface{}, d *sc
 			string(fabricv4.CONNECTIONROUTEAGGREGATIONDATAATTACHMENTSTATUS_DETACHED),
 		},
 		Refresh: func() (interface{}, string, error) {
-			client := meta.(*config.Config).NewFabricClientForSDK(d)
+			client := meta.(*config.Config).NewFabricClientForSDK(ctx, d)
 			connectionRouteFilter, body, err := client.RouteFiltersApi.GetConnectionRouteFilterByUuid(ctx, routeFilterId, connectionId).Execute()
 			if err != nil {
 				if body.StatusCode >= 400 && body.StatusCode <= 499 {

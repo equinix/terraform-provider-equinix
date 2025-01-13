@@ -26,7 +26,7 @@ func dataSourceFabricMarketplaceSubscriptionRead(ctx context.Context, d *schema.
 }
 
 func fabricMarketplaceSubscriptionRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := meta.(*config.Config).NewFabricClientForSDK(d)
+	client := meta.(*config.Config).NewFabricClientForSDK(ctx, d)
 	subscription, _, err := client.MarketplaceSubscriptionsApi.GetSubscriptionById(ctx, d.Id()).Execute()
 	if err != nil {
 		log.Printf("[WARN] Subscription %s not found , error %s", d.Id(), err)
