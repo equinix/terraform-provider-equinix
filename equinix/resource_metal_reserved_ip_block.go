@@ -368,18 +368,6 @@ func reservedIPStateRefreshFunc(client *packngo.Client, reservedIPId string) ret
 	}
 }
 
-func getType(r *packngo.IPAddressReservation) (string, error) {
-	switch {
-	case !r.Public:
-		return fmt.Sprintf("private_ipv%d", r.AddressFamily), nil
-	case r.Public && !r.Global:
-		return fmt.Sprintf("public_ipv%d", r.AddressFamily), nil
-	case r.Public && r.Global:
-		return fmt.Sprintf("global_ipv%d", r.AddressFamily), nil
-	}
-	return "", fmt.Errorf("unknown reservation type %+v", r)
-}
-
 func loadBlock(d *schema.ResourceData, reservedBlock *packngo.IPAddressReservation) error {
 	d.SetId(reservedBlock.ID)
 
