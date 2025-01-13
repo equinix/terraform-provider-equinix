@@ -16,7 +16,7 @@ func resourceMetalUserAPIKey() *schema.Resource {
 		Read:   resourceMetalAPIKeyRead,
 		Delete: resourceMetalAPIKeyDelete,
 		Importer: &schema.ResourceImporter{
-			State: schema.ImportStatePassthrough,
+			StateContext: schema.ImportStatePassthroughContext,
 		},
 
 		Schema: userKeySchema,

@@ -69,12 +69,6 @@ var networkACLTemplateDeviceDetailSchemaNames = map[string]string{
 	"ACLStatus": "acl_status",
 }
 
-var networkACLTemplateDeviceDetailDescription = map[string]string{
-	"UUID":      "Unique Identifier for the device",
-	"Name":      "Device Name",
-	"ACLStatus": "Device ACL Provisioning status",
-}
-
 var networkACLTemplateDeprecateDescriptions = map[string]string{
 	"DeviceUUID": "Refer to device details get device information",
 	"MetroCode":  "Metro Code is no longer required",
@@ -88,7 +82,7 @@ func resourceNetworkACLTemplate() *schema.Resource {
 		UpdateContext: resourceNetworkACLTemplateUpdate,
 		DeleteContext: resourceNetworkACLTemplateDelete,
 		Importer: &schema.ResourceImporter{
-			State: schema.ImportStatePassthrough,
+			StateContext: schema.ImportStatePassthroughContext,
 		},
 		Schema:      createNetworkACLTemplateSchema(),
 		Description: "Resource allows creation and management of Equinix Network Edge device Access Control List templates",
@@ -399,7 +393,7 @@ func flattenACLTemplateInboundRules(existingRules []ne.ACLTemplateInboundRule, r
 
 func checkExistingSubnets(existingRules []ne.ACLTemplateInboundRule) bool {
 	for i := range existingRules {
-		if existingRules[i].Subnets != nil && len(existingRules[i].Subnets) > 0 {
+		if len(existingRules[i].Subnets) > 0 {
 			return true
 		}
 	}
