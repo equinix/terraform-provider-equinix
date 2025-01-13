@@ -125,7 +125,7 @@ func TestAccFabricNetworkCreateMixedParameters_PFCR(t *testing.T) {
 	})
 }
 func testAccNetworkCreateMixedParameterConfig_PFCR() string {
-	return fmt.Sprintf(`
+	return `
 	resource "equinix_fabric_network" "example2" {
 		type = "IPWAN"
 		name = "Tf_Network_PFCR"
@@ -141,5 +141,5 @@ func testAccNetworkCreateMixedParameterConfig_PFCR() string {
 			project_id = "291639000636552"
 		}
 	}
-`)
+`
 }

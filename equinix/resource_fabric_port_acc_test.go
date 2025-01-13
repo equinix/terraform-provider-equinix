@@ -17,7 +17,7 @@ func TestAccFabricReadPort(t *testing.T) {
 				Config: testAccFabricReadPortConfig(),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(
-						"data.equinix_fabric_port.test", "name", fmt.Sprint("ops-user100-CX-SV1-NL-Qinq-STD-1G-PRI-NK-349")),
+						"data.equinix_fabric_port.test", "name", "ops-user100-CX-SV1-NL-Qinq-STD-1G-PRI-NK-349"),
 				),
 			},
 		},
@@ -25,9 +25,9 @@ func TestAccFabricReadPort(t *testing.T) {
 }
 
 func testAccFabricReadPortConfig() string {
-	return fmt.Sprint(`data "equinix_fabric_port" "test" {
+	return `data "equinix_fabric_port" "test" {
 	uuid = "c4d9350e-783c-83cd-1ce0-306a5c00a600"
-	}`)
+	}`
 }
 
 // Get Ports By Name
@@ -51,9 +51,9 @@ func TestAccFabricGetPortsByName(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						"data.equinix_fabric_ports.test", "data.#", fmt.Sprint(1)),
 					resource.TestCheckResourceAttr(
-						"data.equinix_fabric_ports.test", "data.0.name", fmt.Sprint("ops-user100-CX-DC11-NL-Dot1q-BO-10G-SEC-JP-113")),
+						"data.equinix_fabric_ports.test", "data.0.name", "ops-user100-CX-DC11-NL-Dot1q-BO-10G-SEC-JP-113"),
 					resource.TestCheckResourceAttr(
-						"data.equinix_fabric_ports.test", "data.0.uuid", fmt.Sprint("c4d9350e-7791-791d-1ce0-306a5c00a600")),
+						"data.equinix_fabric_ports.test", "data.0.uuid", "c4d9350e-7791-791d-1ce0-306a5c00a600"),
 					resource.TestCheckNoResourceAttr(
 						"data.equinix_fabric_ports.test", "pagination"),
 				),
