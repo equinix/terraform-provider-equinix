@@ -4,6 +4,7 @@ import (
 	"context"
 	"github.com/equinix/equinix-sdk-go/services/fabricv4"
 	fwtypes "github.com/equinix/terraform-provider-equinix/internal/framework/types"
+	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
@@ -65,7 +66,7 @@ func parseMetros(ctx context.Context, metro *fabricv4.Metro, id, tp, href, code,
 	*tp = types.StringValue(metro.GetType())
 	*code = types.StringValue(metro.GetCode())
 	*region = types.StringValue(metro.GetRegion())
-	if metro.GetName() != "" { //Check if we need these null checks
+	if metro.GetName() != "" {
 		*name = types.StringValue(metro.GetName())
 	}
 
@@ -77,21 +78,24 @@ func parseMetros(ctx context.Context, metro *fabricv4.Metro, id, tp, href, code,
 		*localBandwidthMax = types.Int64Value(metro.GetLocalVCBandwidthMax())
 	}
 
-	geoCoord, diags := parseGeoCoordinates(ctx, metro.GeoCoordinates)
+	geoCoord, diags := parseGeoCoordinates(ctx, metro.GetGeoCoordinates())
+
 	if diags.HasError() {
 		return diags
 	}
 
-	connMetros, diags := parseconnectedMetros(ctx, metro.ConnectedMetros)
+	*geoCoordinates = geoCoord
+
+	connMetros, diags := parseconnectedMetros(ctx, metro.GetConnectedMetros())
 	if diags.HasError() {
 		return diags
 	}
-
-	geoScopes, diags := parseGeoScopes(ctx, metro.GeoScopes)
+	*connectedMetros = connMetros
+	geoScopes, diags := parseGeoScopes(ctx, metro.GetGeoScopes())
 	if diags.HasError() {
 		return diags
 	}
-
+	*gScopes = geoScopes
 	return diags
 }
 
@@ -108,34 +112,37 @@ func parseconnectedMetros(ctx context.Context, connectedMetros []fabricv4.Connec
 	return fwtypes.NewListNestedObjectValueOfValueSlice(ctx, connMetros), nil
 }
 
-func parseGeoCoordinates(ctx context.Context, coordinates *fabricv4.GeoCoordinates) (fwtypes.ObjectValueOf[GeoCoordinatesModel], diag.Diagnostics) {
+func parseGeoCoordinates(ctx context.Context, coordinates fabricv4.GeoCoordinates) (fwtypes.ObjectValueOf[GeoCoordinatesModel], diag.Diagnostics) {
 	var diags diag.Diagnostics
-	if coordinates == nil {
-		diags.AddError("Invalid Input", "Coordinates should not be nil")
-		return nil, diags
-	}
+	//if coordinates == nil {
+	//	diags.AddError("Invalid Input", "Coordinates should not be nil")
+	//	return nil, diags
+	//}
+	//
+	//if coordinates.Latitude == nil || coordinates.Longitude == nil {
+	//	diags.AddError("Invalid Input", "Latitude and Longitude should not be nil")
+	//	return nil, diags
+	//}
 
-	if coordinates.Latitude == nil || coordinates.Longitude == nil {
-		diags.AddError("Invalid Input", "Latitude and Longitude should not be nil")
-		return nil, diags
-	}
-
-	if *coordinates.Latitude < -90 || *coordinates.Latitude > 90 {
-		diags.AddError("Invalid Latitude", "Latitude should be between -90 and 90 degrees")
-		return nil, diags
-	}
-
-	if *coordinates.Longitude < -180 || *coordinates.Longitude > 180 {
-		diags.AddError("Invalid Longitude", "Longitude should be between -180 and 180 degrees")
-		return nil, diags
-	}
 	result := GeoCoordinatesModel{
 		Latitude:  types.Float64Value(*coordinates.Latitude),
 		Longitude: types.Float64Value(*coordinates.Longitude),
 	}
-	return result, nil
+
+	return fwtypes.NewObjectValueOf[GeoCoordinatesModel](ctx, &result), diags
 }
 
 func parseGeoScopes(ctx context.Context, scopes []fabricv4.GeoScopeType) (fwtypes.ListValueOf[types.String], diag.Diagnostics) {
+	var diags diag.Diagnostics
+	geoScopeTypeList := make([]attr.Value, len(scopes))
 
+	for i, scope := range scopes {
+		geoScopeTypeList[i] = types.StringValue(string(scope))
+	}
+	geoScopeValue, diags := fwtypes.NewListValueOf[types.String](ctx, geoScopeTypeList)
+
+	if diags.HasError() {
+		return fwtypes.NewListValueOfNull[types.String](ctx), diags
+	}
+	return geoScopeValue, diags
 }
