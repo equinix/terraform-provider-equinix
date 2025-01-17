@@ -30,7 +30,6 @@ func (r *DataSourceMetroCode) Schema(
 	resp.Schema = dataSourceSingleMetroSchema(ctx)
 }
 
-// READ function for GET Metro Code data source
 func (r *DataSourceMetroCode) Read(ctx context.Context, request datasource.ReadRequest, response *datasource.ReadResponse) {
 	client := r.Meta.NewFabricClientForFramework(ctx, request.ProviderMeta)
 
@@ -41,9 +40,7 @@ func (r *DataSourceMetroCode) Read(ctx context.Context, request datasource.ReadR
 	}
 
 	metroCode := data.MetroCode.ValueString()
-
 	metroByCode, _, err := client.MetrosApi.GetMetroByCode(ctx, metroCode).Execute()
-
 	if err != nil {
 		response.State.RemoveResource(ctx)
 		diag.FromErr(equinix_errors.FormatFabricError(err))

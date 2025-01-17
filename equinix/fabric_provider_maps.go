@@ -22,19 +22,18 @@ func fabricDatasources() map[string]*schema.Resource {
 		"equinix_fabric_cloud_router":              dataSourceFabricCloudRouter(),
 		"equinix_fabric_cloud_routers":             dataSourceFabricGetCloudRouters(),
 		"equinix_fabric_market_place_subscription": fabric_market_place_subscription.DataSourceFabricMarketplaceSubscription(),
-		//"equinix_fabric_metros":                    fabric_metros.DataSource(),
-		"equinix_fabric_network":            fabric_network.DataSource(),
-		"equinix_fabric_networks":           fabric_network.DataSourceSearch(),
-		"equinix_fabric_port":               dataSourceFabricPort(),
-		"equinix_fabric_ports":              dataSourceFabricGetPortsByName(),
-		"equinix_fabric_route_filter":       fabric_route_filter.DataSource(),
-		"equinix_fabric_route_filters":      fabric_route_filter.DataSourceSearch(),
-		"equinix_fabric_route_filter_rule":  fabric_route_filter_rule.DataSource(),
-		"equinix_fabric_route_filter_rules": fabric_route_filter_rule.DataSourceGetAllRules(),
-		"equinix_fabric_service_profile":    dataSourceFabricServiceProfileReadByUuid(),
-		"equinix_fabric_service_profiles":   dataSourceFabricSearchServiceProfilesByName(),
-		"equinix_fabric_service_token":      fabric_service_token.DataSource(),
-		"equinix_fabric_service_tokens":     fabric_service_token.DataSourceSearch(),
+		"equinix_fabric_network":                   fabric_network.DataSource(),
+		"equinix_fabric_networks":                  fabric_network.DataSourceSearch(),
+		"equinix_fabric_port":                      dataSourceFabricPort(),
+		"equinix_fabric_ports":                     dataSourceFabricGetPortsByName(),
+		"equinix_fabric_route_filter":              fabric_route_filter.DataSource(),
+		"equinix_fabric_route_filters":             fabric_route_filter.DataSourceSearch(),
+		"equinix_fabric_route_filter_rule":         fabric_route_filter_rule.DataSource(),
+		"equinix_fabric_route_filter_rules":        fabric_route_filter_rule.DataSourceGetAllRules(),
+		"equinix_fabric_service_profile":           dataSourceFabricServiceProfileReadByUuid(),
+		"equinix_fabric_service_profiles":          dataSourceFabricSearchServiceProfilesByName(),
+		"equinix_fabric_service_token":             fabric_service_token.DataSource(),
+		"equinix_fabric_service_tokens":            fabric_service_token.DataSourceSearch(),
 	}
 }
 
@@ -51,8 +50,3 @@ func fabricResources() map[string]*schema.Resource {
 		"equinix_fabric_service_token":           fabric_service_token.Resource(),
 	}
 }
-
-//Failed to load plugin schemas
-//│
-//│ Error while loading schemas for plugin components: Failed to obtain provider schema: Could not load the schema for provider developer.equinix.com/terraform/equinix: failed to retrieve schema from provider
-//│ "developer.equinix.com/terraform/equinix": Missing Schema: Base data source was not provided a schema. Please provide a Schema config attribute or implement, the Schema(...) function...
