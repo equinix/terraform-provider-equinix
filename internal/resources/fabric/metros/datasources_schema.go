@@ -101,7 +101,17 @@ func getMetroSchema(ctx context.Context) map[string]schema.Attribute {
 		"geo_coordinates": schema.SingleNestedAttribute{
 			Description: "Geographic location data of Fabric Metro",
 			CustomType:  fwtypes.NewObjectTypeOf[GeoCoordinatesModel](ctx),
-			Computed:    true,
+			Attributes: map[string]schema.Attribute{
+				"latitude": schema.Float64Attribute{
+					Description: "Latitude of the Metro",
+					Computed:    true,
+				},
+				"longitude": schema.Float64Attribute{
+					Description: "Longitude of the Metro",
+					Computed:    true,
+				},
+			},
+			Computed: true,
 		},
 		"connected_metros": schema.ListAttribute{
 			Description: "Arrays of objects containing latency data for the specified metros",

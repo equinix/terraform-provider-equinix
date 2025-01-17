@@ -15,6 +15,7 @@ type MetroModel struct {
 	Href                types.String                                         `tfsdk:"href"`
 	Type                types.String                                         `tfsdk:"type"`
 	Code                types.String                                         `tfsdk:"code"`
+	MetroCode           types.String                                         `tfsdk:"metro_code"`
 	Region              types.String                                         `tfsdk:"region"`
 	Name                types.String                                         `tfsdk:"name"`
 	EquinixASN          types.Int64                                          `tfsdk:"equinix_asn"`
@@ -52,14 +53,11 @@ type AllMetrosModel struct {
 }
 
 func (m *MetroModel) parseDataSourceByMetroCode(ctx context.Context, metro *fabricv4.Metro) diag.Diagnostics {
-	diags := parseMetros(ctx, metro,
-		&m.ID, &m.Type, &m.Href, &m.Code, &m.Region, &m.Name,
-		&m.EquinixASN, &m.LocalVCBandwidthMax, &m.GeoCoordinates, &m.ConnectedMetros, &m.GeoScopes)
-
+	diags := parseMetros(ctx, metro, &m.Type, &m.Href, &m.Code, &m.Region, &m.Name, &m.EquinixASN, &m.LocalVCBandwidthMax, &m.GeoCoordinates, &m.ConnectedMetros, &m.GeoScopes)
 	return diags
 }
 
-func parseMetros(ctx context.Context, metro *fabricv4.Metro, id, tp, href, code, region, name *basetypes.StringValue, equinixAsn, localBandwidthMax *basetypes.Int64Value, geoCoordinates *fwtypes.ObjectValueOf[GeoCoordinatesModel], connectedMetros *fwtypes.ListNestedObjectValueOf[ConnectedMetroModel], gScopes *fwtypes.ListValueOf[types.String]) diag.Diagnostics {
+func parseMetros(ctx context.Context, metro *fabricv4.Metro, tp, href, code, region, name *basetypes.StringValue, equinixAsn, localBandwidthMax *basetypes.Int64Value, geoCoordinates *fwtypes.ObjectValueOf[GeoCoordinatesModel], connectedMetros *fwtypes.ListNestedObjectValueOf[ConnectedMetroModel], gScopes *fwtypes.ListValueOf[types.String]) diag.Diagnostics {
 
 	var diags diag.Diagnostics
 	*href = types.StringValue(metro.GetHref())
@@ -79,57 +77,24 @@ func parseMetros(ctx context.Context, metro *fabricv4.Metro, id, tp, href, code,
 	}
 
 	geoCoord, diags := parseGeoCoordinates(ctx, metro.GetGeoCoordinates())
-
 	if diags.HasError() {
 		return diags
 	}
-
 	*geoCoordinates = geoCoord
 
-	connMetros, diags := parseconnectedMetros(ctx, metro.GetConnectedMetros())
+	connMetros, diags := parseConnectedMetros(ctx, metro.GetConnectedMetros())
 	if diags.HasError() {
 		return diags
 	}
 	*connectedMetros = connMetros
+
 	geoScopes, diags := parseGeoScopes(ctx, metro.GetGeoScopes())
 	if diags.HasError() {
 		return diags
 	}
 	*gScopes = geoScopes
+
 	return diags
-}
-
-func parseconnectedMetros(ctx context.Context, connectedMetros []fabricv4.ConnectedMetro) (fwtypes.ListNestedObjectValueOf[ConnectedMetroModel], diag.Diagnostics) {
-	connMetros := make([]ConnectedMetroModel, len(connectedMetros))
-	for i, metro := range connectedMetros {
-		connMetros[i] = ConnectedMetroModel{
-			Href:                 types.StringValue(*metro.Href),
-			Code:                 types.StringValue(*metro.Code),
-			AvgLatency:           types.Float32Value(*metro.AvgLatency),
-			RemoteVCBandwidthMax: types.Int64Value(*metro.RemoteVCBandwidthMax),
-		}
-	}
-	return fwtypes.NewListNestedObjectValueOfValueSlice(ctx, connMetros), nil
-}
-
-func parseGeoCoordinates(ctx context.Context, coordinates fabricv4.GeoCoordinates) (fwtypes.ObjectValueOf[GeoCoordinatesModel], diag.Diagnostics) {
-	var diags diag.Diagnostics
-	//if coordinates == nil {
-	//	diags.AddError("Invalid Input", "Coordinates should not be nil")
-	//	return nil, diags
-	//}
-	//
-	//if coordinates.Latitude == nil || coordinates.Longitude == nil {
-	//	diags.AddError("Invalid Input", "Latitude and Longitude should not be nil")
-	//	return nil, diags
-	//}
-
-	result := GeoCoordinatesModel{
-		Latitude:  types.Float64Value(*coordinates.Latitude),
-		Longitude: types.Float64Value(*coordinates.Longitude),
-	}
-
-	return fwtypes.NewObjectValueOf[GeoCoordinatesModel](ctx, &result), diags
 }
 
 func parseGeoScopes(ctx context.Context, scopes []fabricv4.GeoScopeType) (fwtypes.ListValueOf[types.String], diag.Diagnostics) {
@@ -145,4 +110,38 @@ func parseGeoScopes(ctx context.Context, scopes []fabricv4.GeoScopeType) (fwtype
 		return fwtypes.NewListValueOfNull[types.String](ctx), diags
 	}
 	return geoScopeValue, diags
+}
+
+func parseGeoCoordinates(ctx context.Context, coordinates fabricv4.GeoCoordinates) (fwtypes.ObjectValueOf[GeoCoordinatesModel], diag.Diagnostics) {
+	diags := diag.Diagnostics{}
+
+	result := GeoCoordinatesModel{}
+	if coordinates.Latitude != nil {
+		result.Latitude = types.Float64Value(coordinates.GetLatitude())
+	}
+
+	if coordinates.Longitude != nil {
+		result.Longitude = types.Float64Value(coordinates.GetLongitude())
+	}
+	return fwtypes.NewObjectValueOf[GeoCoordinatesModel](ctx, &result), diags
+}
+
+func parseConnectedMetros(ctx context.Context, connectedMetros []fabricv4.ConnectedMetro) (fwtypes.ListNestedObjectValueOf[ConnectedMetroModel], diag.Diagnostics) {
+	connMetros := make([]ConnectedMetroModel, len(connectedMetros))
+	for i, metro := range connectedMetros {
+		connMetros[i] = ConnectedMetroModel{}
+		if metro.Href != nil {
+			connMetros[i].Href = types.StringValue(metro.GetHref())
+		}
+		if metro.Code != nil {
+			connMetros[i].Code = types.StringValue(metro.GetCode())
+		}
+		if metro.AvgLatency != nil {
+			connMetros[i].AvgLatency = types.Float32Value(metro.GetAvgLatency())
+		}
+		if metro.RemoteVCBandwidthMax != nil {
+			connMetros[i].RemoteVCBandwidthMax = types.Int64Value(metro.GetRemoteVCBandwidthMax())
+		}
+	}
+	return fwtypes.NewListNestedObjectValueOfValueSlice(ctx, connMetros), nil
 }
