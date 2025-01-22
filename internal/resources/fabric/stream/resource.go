@@ -5,7 +5,6 @@ import (
 	"fmt"
 	equinix_errors "github.com/equinix/terraform-provider-equinix/internal/errors"
 	"net/http"
-	"reflect"
 	"slices"
 	"time"
 
@@ -154,31 +153,21 @@ func (r *Resource) Update(
 
 	updateRequest := fabricv4.StreamPutRequest{}
 
-	if !plan.Name.IsNull() {
-		if plan.Name.ValueString() != state.Name.ValueString() {
-			updateRequest.SetName(plan.Name.ValueString())
-		}
-	}
+	needsUpdate := plan.Name.ValueString() != state.Name.ValueString() ||
+		plan.Description.ValueString() != state.Description.ValueString() ||
+		plan.Enabled.ValueBool() != state.Enabled.ValueBool()
 
-	if !plan.Description.IsNull() {
-		if plan.Description.ValueString() != state.Description.ValueString() {
-			updateRequest.SetDescription(plan.Description.ValueString())
-		}
-	}
-
-	if !plan.Enabled.IsNull() {
-		if plan.Enabled.ValueBool() != state.Enabled.ValueBool() {
-			updateRequest.SetEnabled(plan.Enabled.ValueBool())
-		}
-	}
-
-	if reflect.ValueOf(updateRequest).IsZero() {
+	if !needsUpdate {
 		resp.Diagnostics.AddWarning("No updatable fields have changed",
 			"Terraform detected a config change, but it is for a field that isn't updatable for the stream resource. Please revert to prior config")
 		return
 	}
 
-	stream, _, err := client.StreamsApi.UpdateStreamByUuid(ctx, id).StreamPutRequest(updateRequest).Execute()
+	updateRequest.SetName(plan.Name.ValueString())
+	updateRequest.SetDescription(plan.Description.ValueString())
+	updateRequest.SetEnabled(plan.Enabled.ValueBool())
+
+	_, _, err := client.StreamsApi.UpdateStreamByUuid(ctx, id).StreamPutRequest(updateRequest).Execute()
 	if err != nil {
 		resp.Diagnostics.AddError(
 			fmt.Sprintf("Failed updating Stream %s", id), equinix_errors.FormatFabricError(err).Error())

@@ -2,11 +2,9 @@ package stream
 
 import (
 	"context"
-
 	"github.com/equinix/equinix-sdk-go/services/fabricv4"
 	fwtypes "github.com/equinix/terraform-provider-equinix/internal/framework/types"
 	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
-	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
@@ -39,27 +37,21 @@ type ResourceModel struct {
 }
 
 type BaseStreamModel struct {
-	Type                     types.String `tfsdk:"type"`
-	Name                     types.String `tfsdk:"name"`
-	Description              types.String `tfsdk:"description"`
-	Href                     types.String `tfsdk:"href"`
-	Uuid                     types.String `tfsdk:"uuid"`
-	State                    types.String `tfsdk:"state"`
-	Enabled                  types.Bool   `tfsdk:"enabled"`
-	AssetsCount              types.Int32  `tfsdk:"assets_count"`
-	StreamSubscriptionsCount types.Int32  `tfsdk:"stream_subscriptions_count"`
-	Project                  types.Object `tfsdk:"project"`    // Object of ProjectModel
-	ChangeLog                types.Object `tfsdk:"change_log"` // Object of ChangeLogModel
+	Type                     types.String                          `tfsdk:"type"`
+	Name                     types.String                          `tfsdk:"name"`
+	Description              types.String                          `tfsdk:"description"`
+	Href                     types.String                          `tfsdk:"href"`
+	Uuid                     types.String                          `tfsdk:"uuid"`
+	State                    types.String                          `tfsdk:"state"`
+	Enabled                  types.Bool                            `tfsdk:"enabled"`
+	AssetsCount              types.Int32                           `tfsdk:"assets_count"`
+	StreamSubscriptionsCount types.Int32                           `tfsdk:"stream_subscriptions_count"`
+	Project                  fwtypes.ObjectValueOf[ProjectModel]   `tfsdk:"project"`    // Object of ProjectModel
+	ChangeLog                fwtypes.ObjectValueOf[ChangeLogModel] `tfsdk:"change_log"` // Object of ChangeLogModel
 }
 
 type ProjectModel struct {
 	ProjectID types.String `tfsdk:"project_id"`
-}
-
-func (m ProjectModel) AttributeTypes() map[string]attr.Type {
-	return map[string]attr.Type{
-		"project_id": types.StringType,
-	}
 }
 
 type ChangeLogModel struct {
@@ -75,23 +67,6 @@ type ChangeLogModel struct {
 	DeletedByFullName types.String `tfsdk:"deleted_by_full_name"`
 	DeletedByEmail    types.String `tfsdk:"deleted_by_email"`
 	DeletedDateTime   types.String `tfsdk:"deleted_date_time"`
-}
-
-func (m ChangeLogModel) AttributeTypes() map[string]attr.Type {
-	return map[string]attr.Type{
-		"created_by":           types.StringType,
-		"created_by_full_name": types.StringType,
-		"created_by_email":     types.StringType,
-		"created_date_time":    types.StringType,
-		"updated_by":           types.StringType,
-		"updated_by_full_name": types.StringType,
-		"updated_by_email":     types.StringType,
-		"updated_date_time":    types.StringType,
-		"deleted_by":           types.StringType,
-		"deleted_by_full_name": types.StringType,
-		"deleted_by_email":     types.StringType,
-		"deleted_date_time":    types.StringType,
-	}
 }
 
 func (m *DataSourceByIdModel) parse(ctx context.Context, stream *fabricv4.Stream) diag.Diagnostics {
@@ -124,13 +99,13 @@ func (m *DataSourceAllStreamsModel) parse(ctx context.Context, streamsResponse *
 
 	data := make([]BaseStreamModel, len(streamsResponse.GetData()))
 	streams := streamsResponse.GetData()
-	for _, stream := range streams {
+	for index, stream := range streams {
 		var streamModel BaseStreamModel
 		diags = streamModel.parse(ctx, &stream)
 		if diags.HasError() {
 			return diags
 		}
-		data = append(data, streamModel)
+		data[index] = streamModel
 	}
 	responsePagination := streamsResponse.GetPagination()
 	pagination := PaginationModel{
@@ -198,7 +173,8 @@ func parseStream(ctx context.Context, stream *fabricv4.Stream,
 	type_, name, description, href, uuid, state *basetypes.StringValue,
 	enabled *basetypes.BoolValue,
 	assetsCount, streamSubscriptionCount *basetypes.Int32Value,
-	project, changeLog *basetypes.ObjectValue) diag.Diagnostics {
+	project *fwtypes.ObjectValueOf[ProjectModel],
+	changeLog *fwtypes.ObjectValueOf[ChangeLogModel]) diag.Diagnostics {
 
 	var diag diag.Diagnostics
 
@@ -216,11 +192,7 @@ func parseStream(ctx context.Context, stream *fabricv4.Stream,
 	projectModel := ProjectModel{
 		ProjectID: types.StringValue(streamProject.GetProjectId()),
 	}
-	terraformProject, diags := types.ObjectValueFrom(ctx, projectModel.AttributeTypes(), projectModel)
-	if diags.HasError() {
-		return diags
-	}
-	*project = terraformProject
+	*project = fwtypes.NewObjectValueOf[ProjectModel](ctx, &projectModel)
 
 	const TIMEFORMAT = "2006-01-02T15:04:05.000Z"
 	streamChangeLog := stream.GetChangelog()
@@ -238,10 +210,6 @@ func parseStream(ctx context.Context, stream *fabricv4.Stream,
 		DeletedByEmail:    types.StringValue(streamChangeLog.GetDeletedByEmail()),
 		DeletedDateTime:   types.StringValue(streamChangeLog.GetDeletedDateTime().Format(TIMEFORMAT)),
 	}
-	terraformChangeLog, diags := types.ObjectValueFrom(ctx, changeLogModel.AttributeTypes(), changeLogModel)
-	if diags.HasError() {
-		return diags
-	}
-	*changeLog = terraformChangeLog
+	*changeLog = fwtypes.NewObjectValueOf[ChangeLogModel](ctx, &changeLogModel)
 	return diag
 }

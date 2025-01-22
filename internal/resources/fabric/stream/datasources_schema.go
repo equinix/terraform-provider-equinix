@@ -3,6 +3,7 @@ package stream
 import (
 	"context"
 	"github.com/equinix/terraform-provider-equinix/internal/framework"
+	fwtypes "github.com/equinix/terraform-provider-equinix/internal/framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 )
 
@@ -12,16 +13,16 @@ func dataSourceAllStreamsSchema(ctx context.Context) schema.Schema {
 			"id": framework.IDAttributeDefaultDescription(),
 			"pagination": schema.SingleNestedAttribute{
 				Description: "Pagination details for the returned streams list",
-				Optional:    true,
-				Computed:    true,
+				Required:    true,
+				CustomType:  fwtypes.NewObjectTypeOf[PaginationModel](ctx),
 				Attributes: map[string]schema.Attribute{
 					"offset": schema.Int32Attribute{
-						Description: "The page offset for the returned streams list",
+						Description: "Index of the first item returned in the response. The default is 0",
 						Optional:    true,
 						Computed:    true,
 					},
 					"limit": schema.Int32Attribute{
-						Description: "The page size for the returned streams list",
+						Description: "Maximum number of search results returned per page. Number must be between 1 and 100, and the default is 20",
 						Optional:    true,
 						Computed:    true,
 					},
@@ -29,13 +30,22 @@ func dataSourceAllStreamsSchema(ctx context.Context) schema.Schema {
 						Description: "The total number of streams available to the user making the request",
 						Computed:    true,
 					},
+					"next": schema.StringAttribute{
+						Description: "The URL relative to the next item in the response",
+						Computed:    true,
+					},
+					"previous": schema.StringAttribute{
+						Description: "The URL relative to the previous item in the response",
+						Computed:    true,
+					},
 				},
 			},
 			"data": schema.ListNestedAttribute{
 				Description: "Returned list of stream objects",
 				Computed:    true,
+				CustomType:  fwtypes.NewListNestedObjectTypeOf[BaseStreamModel](ctx),
 				NestedObject: schema.NestedAttributeObject{
-					Attributes: getStreamSchema(),
+					Attributes: getStreamSchema(ctx),
 				},
 			},
 		},
@@ -43,7 +53,7 @@ func dataSourceAllStreamsSchema(ctx context.Context) schema.Schema {
 }
 
 func dataSourceSingleStreamSchema(ctx context.Context) schema.Schema {
-	baseStreamSchema := getStreamSchema()
+	baseStreamSchema := getStreamSchema(ctx)
 	baseStreamSchema["id"] = framework.IDAttributeDefaultDescription()
 	baseStreamSchema["stream_id"] = schema.StringAttribute{
 		Description: "The uuid of the stream this data source should retrieve",
@@ -54,7 +64,7 @@ func dataSourceSingleStreamSchema(ctx context.Context) schema.Schema {
 	}
 }
 
-func getStreamSchema() map[string]schema.Attribute {
+func getStreamSchema(ctx context.Context) map[string]schema.Attribute {
 	return map[string]schema.Attribute{
 		"type": schema.StringAttribute{
 			Description: "Equinix defined Streaming Type",
@@ -75,6 +85,7 @@ func getStreamSchema() map[string]schema.Attribute {
 		"project": schema.SingleNestedAttribute{
 			Description: "Equinix Project attribute object",
 			Computed:    true,
+			CustomType:  fwtypes.NewObjectTypeOf[ProjectModel](ctx),
 			Attributes: map[string]schema.Attribute{
 				"project_id": schema.StringAttribute{
 					Description: "Equinix Subscriber-assigned project ID",
@@ -105,6 +116,7 @@ func getStreamSchema() map[string]schema.Attribute {
 		"change_log": schema.SingleNestedAttribute{
 			Description: "Details of the last change on the stream resource",
 			Computed:    true,
+			CustomType:  fwtypes.NewObjectTypeOf[ChangeLogModel](ctx),
 			Attributes: map[string]schema.Attribute{
 				"created_by": schema.StringAttribute{
 					Description: "User name of creator of the stream resource",

@@ -150,7 +150,6 @@ func (c *Config) NewFabricClientForFramework(ctx context.Context, meta tfsdk.Con
 // newFabricClient returns the base fabricv4 client that is then used for either the sdkv2 or framework
 // implementations of the Terraform Provider with exported Methods
 func (c *Config) newFabricClient(ctx context.Context) *fabricv4.APIClient {
-	//nolint:staticcheck // We should move to subsystem loggers, but that is a much bigger change
 	authConfig := oauth2.Config{
 		ClientID:     c.ClientID,
 		ClientSecret: c.ClientSecret,

@@ -3,6 +3,7 @@ package stream
 import (
 	"context"
 	"github.com/equinix/terraform-provider-equinix/internal/framework"
+	fwtypes "github.com/equinix/terraform-provider-equinix/internal/framework/types"
 	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 )
@@ -36,6 +37,7 @@ func resourceSchema(ctx context.Context) schema.Schema {
 			"project": schema.SingleNestedAttribute{
 				Description: "Equinix Project attribute object",
 				Required:    true,
+				CustomType:  fwtypes.NewObjectTypeOf[ProjectModel](ctx),
 				Attributes: map[string]schema.Attribute{
 					"project_id": schema.StringAttribute{
 						Description: "Equinix Subscriber-assigned project ID",
@@ -66,6 +68,7 @@ func resourceSchema(ctx context.Context) schema.Schema {
 			"change_log": schema.SingleNestedAttribute{
 				Description: "Details of the last change on the stream resource",
 				Computed:    true,
+				CustomType:  fwtypes.NewObjectTypeOf[ChangeLogModel](ctx),
 				Attributes: map[string]schema.Attribute{
 					"created_by": schema.StringAttribute{
 						Description: "User name of creator of the stream resource",

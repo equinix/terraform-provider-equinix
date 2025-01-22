@@ -28,7 +28,7 @@ func (r *DataSourceAllStreams) Schema(
 	req datasource.SchemaRequest,
 	resp *datasource.SchemaResponse,
 ) {
-	resp.Schema = dataSourceSingleStreamSchema(ctx)
+	resp.Schema = dataSourceAllStreamsSchema(ctx)
 }
 
 func (r *DataSourceAllStreams) Read(ctx context.Context, request datasource.ReadRequest, response *datasource.ReadResponse) {
@@ -46,9 +46,14 @@ func (r *DataSourceAllStreams) Read(ctx context.Context, request datasource.Read
 	if diags.HasError() {
 		return
 	}
+	offset := pagination.Offset.ValueInt32()
+	limit := pagination.Limit.ValueInt32()
+	if limit == 0 {
+		limit = 20
+	}
 
 	// Use API client to get the current state of the resource
-	streams, _, err := client.StreamsApi.GetStreams(ctx).Execute()
+	streams, _, err := client.StreamsApi.GetStreams(ctx).Limit(limit).Offset(offset).Execute()
 
 	if err != nil {
 		response.State.RemoveResource(ctx)
