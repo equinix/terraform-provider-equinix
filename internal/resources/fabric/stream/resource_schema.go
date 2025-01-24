@@ -10,6 +10,11 @@ import (
 
 func resourceSchema(ctx context.Context) schema.Schema {
 	return schema.Schema{
+		Description: `Fabric V4 API compatible resource allows creation and management of Equinix Fabric Stream
+
+Additional Documentation:
+* Getting Started: TODO
+* API: TODO`,
 		Attributes: map[string]schema.Attribute{
 			"id": framework.IDAttributeDefaultDescription(),
 			"timeouts": timeouts.Attributes(ctx, timeouts.Opts{

@@ -9,6 +9,11 @@ import (
 
 func dataSourceAllStreamsSchema(ctx context.Context) schema.Schema {
 	return schema.Schema{
+		Description: `Fabric V4 API compatible data resource that allow user to fetch Equinix Fabric Streams with pagination details
+
+Additional Documentation:
+* Getting Started: TODO
+* API: TODO`,
 		Attributes: map[string]schema.Attribute{
 			"id": framework.IDAttributeDefaultDescription(),
 			"pagination": schema.SingleNestedAttribute{
@@ -60,6 +65,11 @@ func dataSourceSingleStreamSchema(ctx context.Context) schema.Schema {
 		Required:    true,
 	}
 	return schema.Schema{
+		Description: `Fabric V4 API compatible data resource that allow user to fetch Equinix Fabric Stream by UUID
+
+Additional Documentation:
+* Getting Started: TODO
+* API: TODO`,
 		Attributes: baseStreamSchema,
 	}
 }
