@@ -72,12 +72,11 @@ type ChangeLogModel struct {
 }
 
 func (m *DataSourceByIdModel) parse(ctx context.Context, stream *fabricv4.Stream) diag.Diagnostics {
-	var diags diag.Diagnostics
 
 	m.StreamID = types.StringValue(stream.GetUuid())
 	m.ID = types.StringValue(stream.GetUuid())
 
-	diags = parseStream(ctx, stream,
+	diags := parseStream(ctx, stream,
 		&m.Type,
 		&m.Name,
 		&m.Description,
@@ -131,11 +130,9 @@ func (m *DataSourceAllStreamsModel) parse(ctx context.Context, streamsResponse *
 }
 
 func (m *ResourceModel) parse(ctx context.Context, stream *fabricv4.Stream) diag.Diagnostics {
-	var diags diag.Diagnostics
-
 	m.ID = types.StringValue(stream.GetUuid())
 
-	diags = parseStream(ctx, stream,
+	diags := parseStream(ctx, stream,
 		&m.Type,
 		&m.Name,
 		&m.Description,
@@ -154,9 +151,7 @@ func (m *ResourceModel) parse(ctx context.Context, stream *fabricv4.Stream) diag
 }
 
 func (m *BaseStreamModel) parse(ctx context.Context, stream *fabricv4.Stream) diag.Diagnostics {
-	var diags diag.Diagnostics
-
-	diags = parseStream(ctx, stream,
+	diags := parseStream(ctx, stream,
 		&m.Type,
 		&m.Name,
 		&m.Description,
