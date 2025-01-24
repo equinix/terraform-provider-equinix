@@ -2,10 +2,16 @@ package stream
 
 import (
 	"context"
+
 	"github.com/equinix/terraform-provider-equinix/internal/framework"
 	fwtypes "github.com/equinix/terraform-provider-equinix/internal/framework/types"
+
 	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int32planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/objectplanmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 )
 
 func resourceSchema(ctx context.Context) schema.Schema {
@@ -13,8 +19,8 @@ func resourceSchema(ctx context.Context) schema.Schema {
 		Description: `Fabric V4 API compatible resource allows creation and management of Equinix Fabric Stream
 
 Additional Documentation:
-* Getting Started: TODO
-* API: TODO`,
+* Getting Started: https://docs.equinix.com/en-us/Content/KnowledgeCenter/Fabric/GettingStarted/Integrating-with-Fabric-V4-APIs/IntegrateWithSink.htm
+* API: https://developer.equinix.com/catalog/fabricv4#tag/Streams`,
 		Attributes: map[string]schema.Attribute{
 			"id": framework.IDAttributeDefaultDescription(),
 			"timeouts": timeouts.Attributes(ctx, timeouts.Opts{
@@ -39,7 +45,10 @@ Additional Documentation:
 				Description: "Equinix Project attribute object",
 				Optional:    true,
 				Computed:    true,
-				CustomType:  fwtypes.NewObjectTypeOf[ProjectModel](ctx),
+				PlanModifiers: []planmodifier.Object{
+					objectplanmodifier.UseStateForUnknown(),
+				},
+				CustomType: fwtypes.NewObjectTypeOf[ProjectModel](ctx),
 				Attributes: map[string]schema.Attribute{
 					"project_id": schema.StringAttribute{
 						Description: "Equinix Subscriber-assigned project ID",
@@ -50,27 +59,45 @@ Additional Documentation:
 			"href": schema.StringAttribute{
 				Description: "Equinix auto generated URI to the stream resource in Equinix Portal",
 				Computed:    true,
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.UseStateForUnknown(),
+				},
 			},
 			"uuid": schema.StringAttribute{
 				Description: "Equinix-assigned unique id for the stream resource",
 				Computed:    true,
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.UseStateForUnknown(),
+				},
 			},
 			"state": schema.StringAttribute{
 				Description: "Value representing provisioning status for the stream resource",
 				Computed:    true,
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.UseStateForUnknown(),
+				},
 			},
 			"assets_count": schema.Int32Attribute{
 				Description: "Count of the streaming assets attached to the stream resource",
 				Computed:    true,
+				PlanModifiers: []planmodifier.Int32{
+					int32planmodifier.UseStateForUnknown(),
+				},
 			},
 			"stream_subscriptions_count": schema.Int32Attribute{
 				Description: "Count of the client subscriptions on the stream resource",
 				Computed:    true,
+				PlanModifiers: []planmodifier.Int32{
+					int32planmodifier.UseStateForUnknown(),
+				},
 			},
 			"change_log": schema.SingleNestedAttribute{
 				Description: "Details of the last change on the stream resource",
 				Computed:    true,
-				CustomType:  fwtypes.NewObjectTypeOf[ChangeLogModel](ctx),
+				PlanModifiers: []planmodifier.Object{
+					objectplanmodifier.UseStateForUnknown(),
+				},
+				CustomType: fwtypes.NewObjectTypeOf[ChangeLogModel](ctx),
 				Attributes: map[string]schema.Attribute{
 					"created_by": schema.StringAttribute{
 						Description: "User name of creator of the stream resource",

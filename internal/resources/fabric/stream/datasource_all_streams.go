@@ -2,11 +2,12 @@ package stream
 
 import (
 	"context"
+
 	equinix_errors "github.com/equinix/terraform-provider-equinix/internal/errors"
 	"github.com/equinix/terraform-provider-equinix/internal/framework"
+
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 )
 
 func NewDataSourceAllStreams() datasource.DataSource {
@@ -57,7 +58,7 @@ func (r *DataSourceAllStreams) Read(ctx context.Context, request datasource.Read
 
 	if err != nil {
 		response.State.RemoveResource(ctx)
-		diag.FromErr(equinix_errors.FormatFabricError(err))
+		response.Diagnostics.AddError("api error retrieving streams data", equinix_errors.FormatFabricError(err).Error())
 		return
 	}
 

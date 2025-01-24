@@ -3,13 +3,15 @@ package stream
 import (
 	"context"
 	"fmt"
-	equinix_errors "github.com/equinix/terraform-provider-equinix/internal/errors"
 	"net/http"
 	"slices"
 	"time"
 
-	"github.com/equinix/equinix-sdk-go/services/fabricv4"
+	equinix_errors "github.com/equinix/terraform-provider-equinix/internal/errors"
 	"github.com/equinix/terraform-provider-equinix/internal/framework"
+
+	"github.com/equinix/equinix-sdk-go/services/fabricv4"
+
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"

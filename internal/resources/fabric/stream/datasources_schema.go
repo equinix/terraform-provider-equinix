@@ -2,8 +2,10 @@ package stream
 
 import (
 	"context"
+
 	"github.com/equinix/terraform-provider-equinix/internal/framework"
 	fwtypes "github.com/equinix/terraform-provider-equinix/internal/framework/types"
+
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 )
 
@@ -12,8 +14,8 @@ func dataSourceAllStreamsSchema(ctx context.Context) schema.Schema {
 		Description: `Fabric V4 API compatible data resource that allow user to fetch Equinix Fabric Streams with pagination details
 
 Additional Documentation:
-* Getting Started: TODO
-* API: TODO`,
+* Getting Started: https://docs.equinix.com/en-us/Content/KnowledgeCenter/Fabric/GettingStarted/Integrating-with-Fabric-V4-APIs/IntegrateWithSink.htm
+* API: https://developer.equinix.com/catalog/fabricv4#tag/Streams`,
 		Attributes: map[string]schema.Attribute{
 			"id": framework.IDAttributeDefaultDescription(),
 			"pagination": schema.SingleNestedAttribute{
@@ -68,8 +70,8 @@ func dataSourceSingleStreamSchema(ctx context.Context) schema.Schema {
 		Description: `Fabric V4 API compatible data resource that allow user to fetch Equinix Fabric Stream by UUID
 
 Additional Documentation:
-* Getting Started: TODO
-* API: TODO`,
+* Getting Started: https://docs.equinix.com/en-us/Content/KnowledgeCenter/Fabric/GettingStarted/Integrating-with-Fabric-V4-APIs/IntegrateWithSink.htm
+* API: https://developer.equinix.com/catalog/fabricv4#tag/Streams`,
 		Attributes: baseStreamSchema,
 	}
 }

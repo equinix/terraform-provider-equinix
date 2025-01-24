@@ -2,8 +2,11 @@ package stream
 
 import (
 	"context"
-	"github.com/equinix/equinix-sdk-go/services/fabricv4"
+
 	fwtypes "github.com/equinix/terraform-provider-equinix/internal/framework/types"
+
+	"github.com/equinix/equinix-sdk-go/services/fabricv4"
+
 	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -94,6 +97,12 @@ func (m *DataSourceByIdModel) parse(ctx context.Context, stream *fabricv4.Stream
 
 func (m *DataSourceAllStreamsModel) parse(ctx context.Context, streamsResponse *fabricv4.GetAllStreamResponse) diag.Diagnostics {
 	var diags diag.Diagnostics
+
+	if len(streamsResponse.GetData()) < 1 {
+		diags.AddError("no data retrieved by streams data source",
+			"either the account does not have any streams data to pull or the combination of limit and offset needs to be updated")
+		return diags
+	}
 
 	data := make([]BaseStreamModel, len(streamsResponse.GetData()))
 	streams := streamsResponse.GetData()
