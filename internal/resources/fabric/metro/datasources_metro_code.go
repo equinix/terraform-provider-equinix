@@ -5,7 +5,6 @@ import (
 	equinix_errors "github.com/equinix/terraform-provider-equinix/internal/errors"
 	"github.com/equinix/terraform-provider-equinix/internal/framework"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 )
 
 func NewDataSourceMetroCode() datasource.DataSource {
@@ -43,7 +42,7 @@ func (r *DataSourceMetroCode) Read(ctx context.Context, request datasource.ReadR
 	metroByCode, _, err := client.MetrosApi.GetMetroByCode(ctx, metroCode).Execute()
 	if err != nil {
 		response.State.RemoveResource(ctx)
-		diag.FromErr(equinix_errors.FormatFabricError(err))
+		response.Diagnostics.AddError("Get By Metro Code API Error", equinix_errors.FormatFabricError(err).Error())
 		return
 	}
 

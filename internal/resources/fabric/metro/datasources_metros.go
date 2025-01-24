@@ -2,7 +2,6 @@ package metro
 
 import (
 	"context"
-	"fmt"
 	"github.com/equinix/equinix-sdk-go/services/fabricv4"
 	equinix_errors "github.com/equinix/terraform-provider-equinix/internal/errors"
 	"github.com/equinix/terraform-provider-equinix/internal/framework"
@@ -39,7 +38,6 @@ func (r *DataSourceMetros) Read(ctx context.Context, request datasource.ReadRequ
 	var allMetrosData DataSourceAllMetrosModel
 	var pagination PaginationModel
 	response.Diagnostics.Append(request.Config.Get(ctx, &allMetrosData)...)
-
 	if response.Diagnostics.HasError() {
 		return
 	}
@@ -54,21 +52,28 @@ func (r *DataSourceMetros) Read(ctx context.Context, request datasource.ReadRequ
 	if limit == 0 {
 		limit = 20
 	}
-	response.Diagnostics.AddWarning("Error happening before metro api call", fmt.Sprintf("%+v", pagination))
-	metros, _, err := client.MetrosApi.GetMetros(ctx).
-		Limit(limit).
-		Offset(offset).
-		Presence(fabricv4.Presence(presence)).
-		Execute()
 
-	response.Diagnostics.AddWarning("Error happening after metro api call", fmt.Sprintf("%+v", metros))
+	metroRequest := client.MetrosApi.GetMetros(ctx).
+		Limit(limit).
+		Offset(offset)
+	if presence != "" {
+		metroRequest.Presence(fabricv4.Presence(presence))
+	}
+	metros, _, err := metroRequest.Execute()
+
+	if len(metros.GetData()) < 1 {
+		response.Diagnostics.AddError("no data retrieved by Get All Metros data source",
+			"either the account does not have any metros data to pull or the combination of limit and offset needs to be updated")
+		return
+	}
 
 	if err != nil {
 		response.State.RemoveResource(ctx)
+		response.Diagnostics.AddError("Get All Metros API Error", equinix_errors.FormatFabricError(err).Error())
 		diag.FromErr(equinix_errors.FormatFabricError(err))
 		return
 	}
-	response.Diagnostics.AddWarning("Error happening before parse data source method", fmt.Sprintf("%+v", metros))
+
 	response.Diagnostics.Append(allMetrosData.parse(ctx, metros)...)
 	if response.Diagnostics.HasError() {
 		return

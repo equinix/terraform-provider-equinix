@@ -25,14 +25,14 @@ func dataSourceAllMetroSchema(ctx context.Context) schema.Schema {
 				Attributes: map[string]schema.Attribute{
 					"offset": schema.Int32Attribute{
 						Description: "Index of the first item returned in the response.",
-						Optional:    true, //add default validation
+						Optional:    true,
 						Validators: []validator.Int32{
 							int32validator.AtLeast(0),
 						},
 					},
 					"limit": schema.Int32Attribute{
 						Description: "Maximum number of search results returned per page.",
-						Optional:    true, //add default validation
+						Optional:    true,
 						Validators: []validator.Int32{
 							int32validator.Between(1, 100),
 						},
