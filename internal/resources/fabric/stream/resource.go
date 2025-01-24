@@ -63,8 +63,7 @@ func (r *Resource) Create(
 
 	stream, _, err := client.StreamsApi.CreateStreams(ctx).StreamPostRequest(createRequest).Execute()
 	if err != nil {
-		resp.Diagnostics.AddError(
-			fmt.Sprintf("Failed creating Stream"), equinix_errors.FormatFabricError(err).Error())
+		resp.Diagnostics.AddError("Failed creating Stream", equinix_errors.FormatFabricError(err).Error())
 		return
 	}
 
