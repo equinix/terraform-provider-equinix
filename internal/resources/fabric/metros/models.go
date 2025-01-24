@@ -38,9 +38,9 @@ type GeoCoordinatesModel struct {
 }
 
 type PaginationModel struct {
-	Offset   types.Int64  `tfsdk:"offset"`
-	Limit    types.Int64  `tfsdk:"limit"`
-	Total    types.Int64  `tfsdk:"total"`
+	Offset   types.Int32  `tfsdk:"offset"`
+	Limit    types.Int32  `tfsdk:"limit"`
+	Total    types.Int32  `tfsdk:"total"`
 	Next     types.String `tfsdk:"next"`
 	Previous types.String `tfsdk:"previous"`
 }
@@ -48,16 +48,48 @@ type PaginationModel struct {
 type AllMetrosModel struct {
 	ID         types.String                                `tfsdk:"id"`
 	Presence   types.String                                `tfsdk:"presence"`
+	Data       fwtypes.ListNestedObjectValueOf[MetroModel] `tfsdk:"data"`
 	Pagination fwtypes.ObjectValueOf[PaginationModel]      `tfsdk:"pagination"`
-	Data       fwtypes.ListNestedObjectValueOf[MetroModel] `tfsdk:"metro_model"`
 }
 
 func (m *MetroModel) parseDataSourceByMetroCode(ctx context.Context, metro *fabricv4.Metro) diag.Diagnostics {
-	diags := parseMetros(ctx, metro, &m.Type, &m.Href, &m.Code, &m.Region, &m.Name, &m.EquinixASN, &m.LocalVCBandwidthMax, &m.GeoCoordinates, &m.ConnectedMetros, &m.GeoScopes)
+	diags := parseMetro(ctx, metro, &m.Type, &m.Href, &m.Code, &m.Region, &m.Name, &m.EquinixASN, &m.LocalVCBandwidthMax, &m.GeoCoordinates, &m.ConnectedMetros, &m.GeoScopes)
 	return diags
 }
 
-func parseMetros(ctx context.Context, metro *fabricv4.Metro, tp, href, code, region, name *basetypes.StringValue, equinixAsn, localBandwidthMax *basetypes.Int64Value, geoCoordinates *fwtypes.ObjectValueOf[GeoCoordinatesModel], connectedMetros *fwtypes.ListNestedObjectValueOf[ConnectedMetroModel], gScopes *fwtypes.ListValueOf[types.String]) diag.Diagnostics {
+func (a *AllMetrosModel) parseDataSourceAllMetros(ctx context.Context, metroResponse *fabricv4.MetroResponse) diag.Diagnostics {
+	var diags diag.Diagnostics
+
+	data := make([]MetroModel, len(metroResponse.GetData()))
+	metros := metroResponse.GetData()
+	for i, metro := range metros {
+		var metroModel MetroModel
+		//if &metro != nil {
+		diags := metroModel.parseDataSourceByMetroCode(ctx, &metro)
+		if diags.HasError() {
+			return diags
+		}
+		data[i] = metroModel
+		//}
+	}
+	responsePagination := metroResponse.GetPagination()
+	pagination := PaginationModel{
+		Offset:   types.Int32Value(responsePagination.GetOffset()),
+		Limit:    types.Int32Value(responsePagination.GetLimit()),
+		Total:    types.Int32Value(responsePagination.GetTotal()),
+		Next:     types.StringValue(responsePagination.GetNext()),
+		Previous: types.StringValue(responsePagination.GetPrevious()),
+	}
+	//if data[0].ID.ValueString() != "" {
+	a.ID = types.StringValue(data[0].ID.ValueString())
+	a.Pagination = fwtypes.NewObjectValueOf[PaginationModel](ctx, &pagination)
+	a.Data = fwtypes.NewListNestedObjectValueOfValueSlice[MetroModel](ctx, data)
+	//}
+
+	return diags
+}
+
+func parseMetro(ctx context.Context, metro *fabricv4.Metro, tp, href, code, region, name *basetypes.StringValue, equinixAsn, localBandwidthMax *basetypes.Int64Value, geoCoordinates *fwtypes.ObjectValueOf[GeoCoordinatesModel], connectedMetros *fwtypes.ListNestedObjectValueOf[ConnectedMetroModel], gScopes *fwtypes.ListValueOf[types.String]) diag.Diagnostics {
 
 	var diags diag.Diagnostics
 	*href = types.StringValue(metro.GetHref())

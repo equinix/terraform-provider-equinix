@@ -16,22 +16,23 @@ func dataSourceAllMetroSchema(ctx context.Context) schema.Schema {
 			"id": framework.IDAttributeDefaultDescription(),
 			"presence": schema.StringAttribute{
 				Description: "User On Boarded Metros based on Fabric resource availability",
+				Computed:    true,
 			},
 			"pagination": schema.SingleNestedAttribute{
 				Description: "Pagination details for the returned metros list",
-				Optional:    true,
-				Computed:    true,
+				Required:    true,
+				CustomType:  fwtypes.NewObjectTypeOf[PaginationModel](ctx),
 				Attributes: map[string]schema.Attribute{
 					"offset": schema.Int32Attribute{
 						Description: "Index of the first item returned in the response.",
-						Computed:    true, //check for  default validation
+						Optional:    true, //add default validation
 						Validators: []validator.Int32{
 							int32validator.AtLeast(0),
 						},
 					},
 					"limit": schema.Int32Attribute{
 						Description: "Maximum number of search results returned per page.",
-						Computed:    true, //check for minimum and default validation
+						Optional:    true, //add default validation
 						Validators: []validator.Int32{
 							int32validator.Between(1, 100),
 						},
@@ -43,11 +44,20 @@ func dataSourceAllMetroSchema(ctx context.Context) schema.Schema {
 							int32validator.AtLeast(0),
 						},
 					},
+					"next": schema.StringAttribute{
+						Description: "URL relative to the next item in the response.",
+						Computed:    true,
+					},
+					"previous": schema.StringAttribute{
+						Description: "URL relative to the previous item in the response.",
+						Computed:    true,
+					},
 				},
 			},
 			"data": schema.ListNestedAttribute{
 				Description: "Returned list of metro objects",
 				Computed:    true,
+				CustomType:  fwtypes.NewListNestedObjectTypeOf[MetroModel](ctx),
 				NestedObject: schema.NestedAttributeObject{
 					Attributes: getMetroSchema(ctx),
 				},
