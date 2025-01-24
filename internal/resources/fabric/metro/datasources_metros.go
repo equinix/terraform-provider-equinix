@@ -1,7 +1,8 @@
-package metros
+package metro
 
 import (
 	"context"
+	"fmt"
 	"github.com/equinix/equinix-sdk-go/services/fabricv4"
 	equinix_errors "github.com/equinix/terraform-provider-equinix/internal/errors"
 	"github.com/equinix/terraform-provider-equinix/internal/framework"
@@ -35,10 +36,10 @@ func (r *DataSourceMetros) Schema(
 func (r *DataSourceMetros) Read(ctx context.Context, request datasource.ReadRequest, response *datasource.ReadResponse) {
 	client := r.Meta.NewFabricClientForFramework(ctx, request.ProviderMeta)
 
-	var allMetrosData AllMetrosModel
+	var allMetrosData DataSourceAllMetrosModel
 	var pagination PaginationModel
-
 	response.Diagnostics.Append(request.Config.Get(ctx, &allMetrosData)...)
+
 	if response.Diagnostics.HasError() {
 		return
 	}
@@ -47,25 +48,28 @@ func (r *DataSourceMetros) Read(ctx context.Context, request datasource.ReadRequ
 	if diags.HasError() {
 		return
 	}
-
 	offset := pagination.Offset.ValueInt32()
 	limit := pagination.Limit.ValueInt32()
 	presence := allMetrosData.Presence.ValueString()
 	if limit == 0 {
 		limit = 20
 	}
+	response.Diagnostics.AddWarning("Error happening before metro api call", fmt.Sprintf("%+v", pagination))
 	metros, _, err := client.MetrosApi.GetMetros(ctx).
 		Limit(limit).
 		Offset(offset).
 		Presence(fabricv4.Presence(presence)).
 		Execute()
+
+	response.Diagnostics.AddWarning("Error happening after metro api call", fmt.Sprintf("%+v", metros))
+
 	if err != nil {
 		response.State.RemoveResource(ctx)
 		diag.FromErr(equinix_errors.FormatFabricError(err))
 		return
 	}
-
-	response.Diagnostics.Append(allMetrosData.parseDataSourceAllMetros(ctx, metros)...)
+	response.Diagnostics.AddWarning("Error happening before parse data source method", fmt.Sprintf("%+v", metros))
+	response.Diagnostics.Append(allMetrosData.parse(ctx, metros)...)
 	if response.Diagnostics.HasError() {
 		return
 	}

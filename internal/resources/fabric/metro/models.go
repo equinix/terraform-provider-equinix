@@ -1,4 +1,4 @@
-package metros
+package metro
 
 import (
 	"context"
@@ -11,11 +11,9 @@ import (
 )
 
 type MetroModel struct {
-	ID                  types.String                                         `tfsdk:"id"`
 	Href                types.String                                         `tfsdk:"href"`
 	Type                types.String                                         `tfsdk:"type"`
 	Code                types.String                                         `tfsdk:"code"`
-	MetroCode           types.String                                         `tfsdk:"metro_code"`
 	Region              types.String                                         `tfsdk:"region"`
 	Name                types.String                                         `tfsdk:"name"`
 	EquinixASN          types.Int64                                          `tfsdk:"equinix_asn"`
@@ -45,32 +43,31 @@ type PaginationModel struct {
 	Previous types.String `tfsdk:"previous"`
 }
 
-type AllMetrosModel struct {
+type DataSourceByCodeModel struct {
+	ID        types.String `tfsdk:"id"`
+	MetroCode types.String `tfsdk:"metro_code"`
+	MetroModel
+}
+
+type DataSourceAllMetrosModel struct {
 	ID         types.String                                `tfsdk:"id"`
 	Presence   types.String                                `tfsdk:"presence"`
 	Data       fwtypes.ListNestedObjectValueOf[MetroModel] `tfsdk:"data"`
 	Pagination fwtypes.ObjectValueOf[PaginationModel]      `tfsdk:"pagination"`
 }
 
-func (m *MetroModel) parseDataSourceByMetroCode(ctx context.Context, metro *fabricv4.Metro) diag.Diagnostics {
-	diags := parseMetro(ctx, metro, &m.Type, &m.Href, &m.Code, &m.Region, &m.Name, &m.EquinixASN, &m.LocalVCBandwidthMax, &m.GeoCoordinates, &m.ConnectedMetros, &m.GeoScopes)
-	return diags
-}
-
-func (a *AllMetrosModel) parseDataSourceAllMetros(ctx context.Context, metroResponse *fabricv4.MetroResponse) diag.Diagnostics {
+func (a *DataSourceAllMetrosModel) parse(ctx context.Context, metroResponse *fabricv4.MetroResponse) diag.Diagnostics {
 	var diags diag.Diagnostics
 
 	data := make([]MetroModel, len(metroResponse.GetData()))
 	metros := metroResponse.GetData()
 	for i, metro := range metros {
 		var metroModel MetroModel
-		//if &metro != nil {
-		diags := metroModel.parseDataSourceByMetroCode(ctx, &metro)
+		diags := metroModel.parse(ctx, &metro)
 		if diags.HasError() {
 			return diags
 		}
 		data[i] = metroModel
-		//}
 	}
 	responsePagination := metroResponse.GetPagination()
 	pagination := PaginationModel{
@@ -80,12 +77,34 @@ func (a *AllMetrosModel) parseDataSourceAllMetros(ctx context.Context, metroResp
 		Next:     types.StringValue(responsePagination.GetNext()),
 		Previous: types.StringValue(responsePagination.GetPrevious()),
 	}
-	//if data[0].ID.ValueString() != "" {
-	a.ID = types.StringValue(data[0].ID.ValueString())
+
+	a.ID = types.StringValue(data[0].Code.ValueString())
 	a.Pagination = fwtypes.NewObjectValueOf[PaginationModel](ctx, &pagination)
 	a.Data = fwtypes.NewListNestedObjectValueOfValueSlice[MetroModel](ctx, data)
-	//}
 
+	return diags
+}
+
+func (m *DataSourceByCodeModel) parse(ctx context.Context, metro *fabricv4.Metro) diag.Diagnostics {
+	var diags diag.Diagnostics
+
+	m.ID = types.StringValue(metro.GetCode())
+	m.MetroCode = types.StringValue(metro.GetCode())
+
+	var metroModel MetroModel
+
+	diags = metroModel.parse(ctx, metro)
+	if diags.HasError() {
+		return diags
+	}
+
+	m.MetroModel = metroModel
+
+	return diags
+}
+
+func (m *MetroModel) parse(ctx context.Context, metro *fabricv4.Metro) diag.Diagnostics {
+	diags := parseMetro(ctx, metro, &m.Type, &m.Href, &m.Code, &m.Region, &m.Name, &m.EquinixASN, &m.LocalVCBandwidthMax, &m.GeoCoordinates, &m.ConnectedMetros, &m.GeoScopes)
 	return diags
 }
 

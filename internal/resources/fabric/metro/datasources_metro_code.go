@@ -1,4 +1,4 @@
-package metros
+package metro
 
 import (
 	"context"
@@ -33,7 +33,7 @@ func (r *DataSourceMetroCode) Schema(
 func (r *DataSourceMetroCode) Read(ctx context.Context, request datasource.ReadRequest, response *datasource.ReadResponse) {
 	client := r.Meta.NewFabricClientForFramework(ctx, request.ProviderMeta)
 
-	var data MetroModel
+	var data DataSourceByCodeModel
 	response.Diagnostics.Append(request.Config.Get(ctx, &data)...)
 	if response.Diagnostics.HasError() {
 		return
@@ -47,7 +47,7 @@ func (r *DataSourceMetroCode) Read(ctx context.Context, request datasource.ReadR
 		return
 	}
 
-	response.Diagnostics.Append(data.parseDataSourceByMetroCode(ctx, metroByCode)...)
+	response.Diagnostics.Append(data.parse(ctx, metroByCode)...)
 	if response.Diagnostics.HasError() {
 		return
 	}

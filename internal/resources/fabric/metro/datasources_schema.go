@@ -1,4 +1,4 @@
-package metros
+package metro
 
 import (
 	"context"
@@ -16,10 +16,10 @@ func dataSourceAllMetroSchema(ctx context.Context) schema.Schema {
 			"id": framework.IDAttributeDefaultDescription(),
 			"presence": schema.StringAttribute{
 				Description: "User On Boarded Metros based on Fabric resource availability",
-				Computed:    true,
+				Optional:    true,
 			},
 			"pagination": schema.SingleNestedAttribute{
-				Description: "Pagination details for the returned metros list",
+				Description: "Pagination details for the returned metro list",
 				Required:    true,
 				CustomType:  fwtypes.NewObjectTypeOf[PaginationModel](ctx),
 				Attributes: map[string]schema.Attribute{
@@ -38,7 +38,7 @@ func dataSourceAllMetroSchema(ctx context.Context) schema.Schema {
 						},
 					},
 					"total": schema.Int32Attribute{
-						Description: "The total number of metros returned",
+						Description: "The total number of metro returned",
 						Computed:    true,
 						Validators: []validator.Int32{
 							int32validator.AtLeast(0),
@@ -124,7 +124,7 @@ func getMetroSchema(ctx context.Context) map[string]schema.Attribute {
 			Computed: true,
 		},
 		"connected_metros": schema.ListAttribute{
-			Description: "Arrays of objects containing latency data for the specified metros",
+			Description: "Arrays of objects containing latency data for the specified metro",
 			CustomType:  fwtypes.NewListNestedObjectTypeOf[ConnectedMetroModel](ctx),
 			ElementType: fwtypes.NewObjectTypeOf[ConnectedMetroModel](ctx),
 			Computed:    true,
