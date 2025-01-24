@@ -53,11 +53,6 @@ func (r *Resource) Create(
 
 	// Retrieve the API client from the provider metadata
 	client := r.Meta.NewFabricClientForFramework(ctx, req.ProviderMeta)
-	var project ProjectModel
-	diags = plan.Project.As(ctx, &project, basetypes.ObjectAsOptions{})
-	if diags.HasError() {
-		return
-	}
 
 	createRequest, diags := buildCreateRequest(ctx, plan)
 	if diags.HasError() {
@@ -154,8 +149,7 @@ func (r *Resource) Update(
 	updateRequest := fabricv4.StreamPutRequest{}
 
 	needsUpdate := plan.Name.ValueString() != state.Name.ValueString() ||
-		plan.Description.ValueString() != state.Description.ValueString() ||
-		plan.Enabled.ValueBool() != state.Enabled.ValueBool()
+		plan.Description.ValueString() != state.Description.ValueString()
 
 	if !needsUpdate {
 		resp.Diagnostics.AddWarning("No updatable fields have changed",
@@ -165,7 +159,6 @@ func (r *Resource) Update(
 
 	updateRequest.SetName(plan.Name.ValueString())
 	updateRequest.SetDescription(plan.Description.ValueString())
-	updateRequest.SetEnabled(plan.Enabled.ValueBool())
 
 	_, _, err := client.StreamsApi.UpdateStreamByUuid(ctx, id).StreamPutRequest(updateRequest).Execute()
 	if err != nil {
@@ -247,11 +240,9 @@ func buildCreateRequest(ctx context.Context, plan ResourceModel) (fabricv4.Strea
 	request.SetName(plan.Name.ValueString())
 	request.SetType(fabricv4.StreamPostRequestType(plan.Type.ValueString()))
 	request.SetDescription(plan.Description.ValueString())
-	if !plan.Enabled.IsNull() {
-		request.SetEnabled(plan.Enabled.ValueBool())
-	}
+
 	var project ProjectModel
-	if !plan.Project.IsNull() {
+	if !plan.Project.IsNull() && !plan.Project.IsUnknown() {
 		diags = plan.Project.As(ctx, &project, basetypes.ObjectAsOptions{})
 		if diags.HasError() {
 			return fabricv4.StreamPostRequest{}, diags

@@ -43,7 +43,6 @@ type BaseStreamModel struct {
 	Href                     types.String                          `tfsdk:"href"`
 	Uuid                     types.String                          `tfsdk:"uuid"`
 	State                    types.String                          `tfsdk:"state"`
-	Enabled                  types.Bool                            `tfsdk:"enabled"`
 	AssetsCount              types.Int32                           `tfsdk:"assets_count"`
 	StreamSubscriptionsCount types.Int32                           `tfsdk:"stream_subscriptions_count"`
 	Project                  fwtypes.ObjectValueOf[ProjectModel]   `tfsdk:"project"`    // Object of ProjectModel
@@ -82,7 +81,6 @@ func (m *DataSourceByIdModel) parse(ctx context.Context, stream *fabricv4.Stream
 		&m.Href,
 		&m.Uuid,
 		&m.State,
-		&m.Enabled,
 		&m.AssetsCount,
 		&m.StreamSubscriptionsCount,
 		&m.Project,
@@ -135,7 +133,6 @@ func (m *ResourceModel) parse(ctx context.Context, stream *fabricv4.Stream) diag
 		&m.Href,
 		&m.Uuid,
 		&m.State,
-		&m.Enabled,
 		&m.AssetsCount,
 		&m.StreamSubscriptionsCount,
 		&m.Project,
@@ -157,7 +154,6 @@ func (m *BaseStreamModel) parse(ctx context.Context, stream *fabricv4.Stream) di
 		&m.Href,
 		&m.Uuid,
 		&m.State,
-		&m.Enabled,
 		&m.AssetsCount,
 		&m.StreamSubscriptionsCount,
 		&m.Project,
@@ -171,7 +167,6 @@ func (m *BaseStreamModel) parse(ctx context.Context, stream *fabricv4.Stream) di
 
 func parseStream(ctx context.Context, stream *fabricv4.Stream,
 	type_, name, description, href, uuid, state *basetypes.StringValue,
-	enabled *basetypes.BoolValue,
 	assetsCount, streamSubscriptionCount *basetypes.Int32Value,
 	project *fwtypes.ObjectValueOf[ProjectModel],
 	changeLog *fwtypes.ObjectValueOf[ChangeLogModel]) diag.Diagnostics {
@@ -184,7 +179,6 @@ func parseStream(ctx context.Context, stream *fabricv4.Stream,
 	*href = types.StringValue(stream.GetHref())
 	*uuid = types.StringValue(stream.GetUuid())
 	*state = types.StringValue(stream.GetState())
-	*enabled = types.BoolValue(stream.GetEnabled())
 	*assetsCount = types.Int32Value(stream.GetAssetsCount())
 	*streamSubscriptionCount = types.Int32Value(stream.GetStreamSubscriptionsCount())
 

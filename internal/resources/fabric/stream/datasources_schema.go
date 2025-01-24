@@ -78,10 +78,6 @@ func getStreamSchema(ctx context.Context) map[string]schema.Attribute {
 			Description: "Customer-provided description of the stream resource",
 			Computed:    true,
 		},
-		"enabled": schema.BoolAttribute{
-			Description: "Boolean switch enabling streaming data for the stream resource",
-			Computed:    true,
-		},
 		"project": schema.SingleNestedAttribute{
 			Description: "Equinix Project attribute object",
 			Computed:    true,

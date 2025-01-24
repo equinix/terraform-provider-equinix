@@ -30,13 +30,10 @@ func resourceSchema(ctx context.Context) schema.Schema {
 				Description: "Customer-provided description of the stream resource",
 				Required:    true,
 			},
-			"enabled": schema.BoolAttribute{
-				Description: "Boolean switch enabling streaming data for the stream resource",
-				Required:    true,
-			},
 			"project": schema.SingleNestedAttribute{
 				Description: "Equinix Project attribute object",
-				Required:    true,
+				Optional:    true,
+				Computed:    true,
 				CustomType:  fwtypes.NewObjectTypeOf[ProjectModel](ctx),
 				Attributes: map[string]schema.Attribute{
 					"project_id": schema.StringAttribute{
