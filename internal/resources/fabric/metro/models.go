@@ -59,6 +59,12 @@ type DataSourceAllMetrosModel struct {
 func (a *DataSourceAllMetrosModel) parse(ctx context.Context, metroResponse *fabricv4.MetroResponse) diag.Diagnostics {
 	var diags diag.Diagnostics
 
+	if len(metroResponse.GetData()) < 1 {
+		diags.AddError("no data retrieved by metros data source",
+			"either the account does not have any metros data to pull or the combination of limit and offset needs to be updated")
+		return diags
+	}
+
 	data := make([]MetroModel, len(metroResponse.GetData()))
 	metros := metroResponse.GetData()
 	for i, metro := range metros {
@@ -78,7 +84,7 @@ func (a *DataSourceAllMetrosModel) parse(ctx context.Context, metroResponse *fab
 		Previous: types.StringValue(responsePagination.GetPrevious()),
 	}
 
-	a.ID = types.StringValue("ID-1")
+	a.ID = types.StringValue(data[0].Code.ValueString())
 	a.Pagination = fwtypes.NewObjectValueOf[PaginationModel](ctx, &pagination)
 	a.Data = fwtypes.NewListNestedObjectValueOfValueSlice[MetroModel](ctx, data)
 

@@ -1,8 +1,8 @@
 ---
-page_title: "Equinix Provider"
+page_title: "terraform-provider-equinix Provider"
 ---
 
-# Equinix Provider
+# terraform-provider-equinix Provider
 
 The Equinix provider is used to interact with the resources provided by Equinix Platform. The provider needs to be configured with the proper credentials before it can be used.
 

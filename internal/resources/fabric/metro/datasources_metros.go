@@ -7,7 +7,6 @@ import (
 	"github.com/equinix/terraform-provider-equinix/internal/framework"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 )
 
 func NewDataSourceMetros() datasource.DataSource {
@@ -61,16 +60,9 @@ func (r *DataSourceMetros) Read(ctx context.Context, request datasource.ReadRequ
 	}
 	metros, _, err := metroRequest.Execute()
 
-	if len(metros.GetData()) < 1 {
-		response.Diagnostics.AddError("no data retrieved by Get All Metros data source",
-			"either the account does not have any metros data to pull or the combination of limit and offset needs to be updated")
-		return
-	}
-
 	if err != nil {
 		response.State.RemoveResource(ctx)
-		response.Diagnostics.AddError("Get All Metros API Error", equinix_errors.FormatFabricError(err).Error())
-		diag.FromErr(equinix_errors.FormatFabricError(err))
+		response.Diagnostics.AddError("api error retrieving metros data", equinix_errors.FormatFabricError(err).Error())
 		return
 	}
 
