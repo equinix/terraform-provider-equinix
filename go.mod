@@ -3,7 +3,7 @@ module github.com/equinix/terraform-provider-equinix
 go 1.23
 
 require (
-	github.com/equinix/equinix-sdk-go v0.46.0
+	github.com/equinix/equinix-sdk-go v0.48.0
 	github.com/equinix/ne-go v1.19.0
 	github.com/equinix/oauth2-go v1.0.0
 	github.com/equinix/rest-go v1.3.0
@@ -23,7 +23,7 @@ require (
 	github.com/hashicorp/terraform-plugin-testing v1.10.0
 	github.com/packethost/packngo v0.31.0
 	github.com/pkg/errors v0.9.1
-	github.com/stretchr/testify v1.9.0
+	github.com/stretchr/testify v1.10.0
 	golang.org/x/oauth2 v0.23.0
 )
 

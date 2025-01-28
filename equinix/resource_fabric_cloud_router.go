@@ -188,26 +188,6 @@ func fabricCloudRouterResourceSchema() map[string]*schema.Schema {
 				Schema: equinix_fabric_schema.NotificationSch(),
 			},
 		},
-		"bgp_ipv4_routes_count": {
-			Type:        schema.TypeInt,
-			Computed:    true,
-			Description: "Number of IPv4 BGP routes in use (including non-distinct prefixes)",
-		},
-		"bgp_ipv6_routes_count": {
-			Type:        schema.TypeInt,
-			Computed:    true,
-			Description: "Number of IPv6 BGP routes in use (including non-distinct prefixes)",
-		},
-		"distinct_ipv4_prefixes_count": {
-			Type:        schema.TypeInt,
-			Computed:    true,
-			Description: "Number of distinct IPv4 routes",
-		},
-		"distinct_ipv6_prefixes_count": {
-			Type:        schema.TypeInt,
-			Computed:    true,
-			Description: "Number of distinct IPv6 routes",
-		},
 		"connections_count": {
 			Type:        schema.TypeInt,
 			Computed:    true,
@@ -372,25 +352,21 @@ func fabricCloudRouterMap(fcr *fabricv4.CloudRouter) map[string]interface{} {
 	order := fcr.GetOrder()
 	marketplaceSubscription := fcr.GetMarketplaceSubscription()
 	return map[string]interface{}{
-		"name":                         fcr.GetName(),
-		"uuid":                         fcr.GetUuid(),
-		"href":                         fcr.GetHref(),
-		"type":                         string(fcr.GetType()),
-		"state":                        string(fcr.GetState()),
-		"package":                      packageCloudRouterGoToTerraform(&package_),
-		"location":                     equinix_fabric_schema.LocationWithoutIBXGoToTerraform(&location),
-		"change_log":                   equinix_fabric_schema.ChangeLogGoToTerraform(&changeLog),
-		"account":                      accountCloudRouterGoToTerraform(&account),
-		"notifications":                equinix_fabric_schema.NotificationsGoToTerraform(notifications),
-		"project":                      equinix_fabric_schema.ProjectGoToTerraform(&project),
-		"equinix_asn":                  fcr.GetEquinixAsn(),
-		"bgp_ipv4_routes_count":        fcr.GetBgpIpv4RoutesCount(),
-		"bgp_ipv6_routes_count":        fcr.GetBgpIpv6RoutesCount(),
-		"distinct_ipv4_prefixes_count": fcr.GetDistinctIpv4PrefixesCount(),
-		"distinct_ipv6_prefixes_count": fcr.GetDistinctIpv6PrefixesCount(),
-		"connections_count":            fcr.GetConnectionsCount(),
-		"order":                        equinix_fabric_schema.OrderGoToTerraform(&order),
-		"marketplace_subscription":     marketplaceSubscriptionCloudRouterGoToTerraform(&marketplaceSubscription),
+		"name":                     fcr.GetName(),
+		"uuid":                     fcr.GetUuid(),
+		"href":                     fcr.GetHref(),
+		"type":                     string(fcr.GetType()),
+		"state":                    string(fcr.GetState()),
+		"package":                  packageCloudRouterGoToTerraform(&package_),
+		"location":                 equinix_fabric_schema.LocationWithoutIBXGoToTerraform(&location),
+		"change_log":               equinix_fabric_schema.ChangeLogGoToTerraform(&changeLog),
+		"account":                  accountCloudRouterGoToTerraform(&account),
+		"notifications":            equinix_fabric_schema.NotificationsGoToTerraform(notifications),
+		"project":                  equinix_fabric_schema.ProjectGoToTerraform(&project),
+		"equinix_asn":              fcr.GetEquinixAsn(),
+		"connections_count":        fcr.GetConnectionsCount(),
+		"order":                    equinix_fabric_schema.OrderGoToTerraform(&order),
+		"marketplace_subscription": marketplaceSubscriptionCloudRouterGoToTerraform(&marketplaceSubscription),
 	}
 }
 
