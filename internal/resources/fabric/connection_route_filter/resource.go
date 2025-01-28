@@ -145,11 +145,11 @@ func waitForStability(connectionId, routeFilterId string, meta interface{}, d *s
 	log.Printf("Waiting for route filter policy (%x) attachment to connection (%s) to be stable", connectionId, routeFilterId)
 	stateConf := &retry.StateChangeConf{
 		Pending: []string{
-			string(fabricv4.CONNECTIONROUTEFILTERDATAATTACHMENTSTATUS_ATTACHING),
+			string(fabricv4.CONNECTIONROUTEAGGREGATIONDATAATTACHMENTSTATUS_ATTACHING),
 		},
 		Target: []string{
-			string(fabricv4.CONNECTIONROUTEFILTERDATAATTACHMENTSTATUS_ATTACHED),
-			string(fabricv4.CONNECTIONROUTEFILTERDATAATTACHMENTSTATUS_PENDING_BGP_CONFIGURATION),
+			string(fabricv4.CONNECTIONROUTEAGGREGATIONDATAATTACHMENTSTATUS_ATTACHED),
+			string(fabricv4.CONNECTIONROUTEAGGREGATIONDATAATTACHMENTSTATUS_PENDING_BGP_CONFIGURATION),
 		},
 		Refresh: func() (interface{}, string, error) {
 			client := meta.(*config.Config).NewFabricClientForSDK(d)
@@ -173,12 +173,12 @@ func WaitForDeletion(connectionId, routeFilterId string, meta interface{}, d *sc
 	log.Printf("Waiting for route filter policy (%s) to be detached from connection (%s)", routeFilterId, connectionId)
 	stateConf := &retry.StateChangeConf{
 		Pending: []string{
-			string(fabricv4.CONNECTIONROUTEFILTERDATAATTACHMENTSTATUS_ATTACHED),
-			string(fabricv4.CONNECTIONROUTEFILTERDATAATTACHMENTSTATUS_DETACHING),
-			string(fabricv4.CONNECTIONROUTEFILTERDATAATTACHMENTSTATUS_PENDING_BGP_CONFIGURATION),
+			string(fabricv4.CONNECTIONROUTEAGGREGATIONDATAATTACHMENTSTATUS_ATTACHING),
+			string(fabricv4.CONNECTIONROUTEAGGREGATIONDATAATTACHMENTSTATUS_DETACHING),
+			string(fabricv4.CONNECTIONROUTEAGGREGATIONDATAATTACHMENTSTATUS_PENDING_BGP_CONFIGURATION),
 		},
 		Target: []string{
-			string(fabricv4.CONNECTIONROUTEFILTERDATAATTACHMENTSTATUS_DETACHED),
+			string(fabricv4.CONNECTIONROUTEAGGREGATIONDATAATTACHMENTSTATUS_DETACHED),
 		},
 		Refresh: func() (interface{}, string, error) {
 			client := meta.(*config.Config).NewFabricClientForSDK(d)

@@ -15,7 +15,7 @@ func buildCreateRequest(d *schema.ResourceData) fabricv4.RouteFiltersBase {
 	routeFilterRequest := fabricv4.RouteFiltersBase{}
 
 	typeConfig := d.Get("type").(string)
-	routeFilterRequest.SetType(fabricv4.ConnectionRouteFilterDataType(typeConfig))
+	routeFilterRequest.SetType(fabricv4.RouteFiltersBaseType(typeConfig))
 
 	nameConfig := d.Get("name").(string)
 	routeFilterRequest.SetName(nameConfig)

@@ -40,7 +40,7 @@ func TestAccFabricConnectionRouteFilter_PFCR(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						"equinix_fabric_connection_route_filter.test", "type", "BGP_IPv4_PREFIX_FILTER"),
 					resource.TestCheckResourceAttr(
-						"equinix_fabric_connection_route_filter.test", "attachment_status", string(fabricv4.CONNECTIONROUTEFILTERDATAATTACHMENTSTATUS_PENDING_BGP_CONFIGURATION)),
+						"equinix_fabric_connection_route_filter.test", "attachment_status", string(fabricv4.CONNECTIONROUTEAGGREGATIONDATAATTACHMENTSTATUS_PENDING_BGP_CONFIGURATION)),
 					resource.TestCheckResourceAttrSet("data.equinix_fabric_connection_route_filter.test", "id"),
 					resource.TestCheckResourceAttrSet("data.equinix_fabric_connection_route_filter.test", "connection_id"),
 					resource.TestCheckResourceAttrSet("data.equinix_fabric_connection_route_filter.test", "route_filter_id"),
@@ -50,7 +50,7 @@ func TestAccFabricConnectionRouteFilter_PFCR(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						"data.equinix_fabric_connection_route_filter.test", "type", "BGP_IPv4_PREFIX_FILTER"),
 					resource.TestCheckResourceAttr(
-						"data.equinix_fabric_connection_route_filter.test", "attachment_status", string(fabricv4.CONNECTIONROUTEFILTERDATAATTACHMENTSTATUS_PENDING_BGP_CONFIGURATION)),
+						"data.equinix_fabric_connection_route_filter.test", "attachment_status", string(fabricv4.CONNECTIONROUTEAGGREGATIONDATAATTACHMENTSTATUS_PENDING_BGP_CONFIGURATION)),
 					resource.TestCheckResourceAttrSet("data.equinix_fabric_connection_route_filters.test", "id"),
 					resource.TestCheckResourceAttrSet("data.equinix_fabric_connection_route_filters.test", "connection_id"),
 					resource.TestCheckResourceAttrSet("data.equinix_fabric_connection_route_filters.test", "data.0.uuid"),
@@ -60,7 +60,7 @@ func TestAccFabricConnectionRouteFilter_PFCR(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						"data.equinix_fabric_connection_route_filters.test", "data.0.type", "BGP_IPv4_PREFIX_FILTER"),
 					resource.TestCheckResourceAttr(
-						"data.equinix_fabric_connection_route_filters.test", "data.0.attachment_status", string(fabricv4.CONNECTIONROUTEFILTERDATAATTACHMENTSTATUS_PENDING_BGP_CONFIGURATION)),
+						"data.equinix_fabric_connection_route_filters.test", "data.0.attachment_status", string(fabricv4.CONNECTIONROUTEAGGREGATIONDATAATTACHMENTSTATUS_PENDING_BGP_CONFIGURATION)),
 				),
 				ExpectNonEmptyPlan: false,
 			},
