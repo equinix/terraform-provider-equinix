@@ -150,13 +150,9 @@ Optional:
 Read-Only:
 
 - `account` (Set of Object) (see [below for nested schema](#nestedobjatt--data--account))
-- `bgp_ipv4_routes_count` (Number)
-- `bgp_ipv6_routes_count` (Number)
 - `change_log` (Set of Object) (see [below for nested schema](#nestedobjatt--data--change_log))
 - `connections_count` (Number)
 - `description` (String)
-- `distinct_ipv4_prefixes_count` (Number)
-- `distinct_ipv6_prefixes_count` (Number)
 - `equinix_asn` (Number)
 - `href` (String)
 - `location` (Set of Object) (see [below for nested schema](#nestedobjatt--data--location))

@@ -91,12 +91,8 @@ resource "equinix_fabric_cloud_router" "new_cloud_router"{
 
 ### Read-Only
 
-- `bgp_ipv4_routes_count` (Number) Number of IPv4 BGP routes in use (including non-distinct prefixes)
-- `bgp_ipv6_routes_count` (Number) Number of IPv6 BGP routes in use (including non-distinct prefixes)
 - `change_log` (Set of Object) Captures Fabric Cloud Router lifecycle change information (see [below for nested schema](#nestedatt--change_log))
 - `connections_count` (Number) Number of connections associated with this Fabric Cloud Router instance
-- `distinct_ipv4_prefixes_count` (Number) Number of distinct IPv4 routes
-- `distinct_ipv6_prefixes_count` (Number) Number of distinct IPv6 routes
 - `equinix_asn` (Number) Equinix ASN
 - `id` (String) The ID of this resource.
 - `state` (String) Fabric Cloud Router overall state
