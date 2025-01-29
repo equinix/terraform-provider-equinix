@@ -95,7 +95,14 @@ func (c *Config) Load(ctx context.Context) error {
 			ClientSecret: c.ClientSecret,
 			BaseURL:      c.BaseURL,
 		}
-		authClient = authConfig.New(ctx)
+		// The `ctx` that is passed in here for the framework
+		// provider is canceled by the time we need auth.  Need
+		// to test how this change impacts shutting down the provider,
+		// but this sort of thing may be the "right" way forward
+		// for now, given the following long-standing issue for the
+		// oauth2 package:
+		//   https://github.com/golang/oauth2/issues/262
+		authClient = authConfig.New(context.TODO())
 	}
 
 	authClient.Timeout = c.requestTimeout()
