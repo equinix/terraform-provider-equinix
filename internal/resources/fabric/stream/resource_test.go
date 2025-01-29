@@ -72,7 +72,6 @@ func TestAccFabricStream_PFCR(t *testing.T) {
 					resource.TestCheckResourceAttrSet("equinix_fabric_stream.new_stream", "uuid"),
 					resource.TestCheckResourceAttrSet("equinix_fabric_stream.new_stream", "change_log.created_by"),
 				),
-				ExpectNonEmptyPlan: false,
 			},
 			{
 				Config: testAccFabricStreamConfig(updatedStreamName, updatedStreamDescription),
@@ -90,7 +89,6 @@ func TestAccFabricStream_PFCR(t *testing.T) {
 					resource.TestCheckResourceAttrSet("equinix_fabric_stream.new_stream", "uuid"),
 					resource.TestCheckResourceAttrSet("equinix_fabric_stream.new_stream", "change_log.created_by"),
 				),
-				ExpectNonEmptyPlan: false,
 			},
 		},
 	})
