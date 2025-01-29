@@ -10,7 +10,7 @@ subcategory: "Fabric"
 
 ```terraform
 data "equinix_fabric_metro" "metro" {
-  metro_code = var.metro_code
+  metro_code =  "<metro_code>"
 }
 
 output "id" {
