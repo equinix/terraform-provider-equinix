@@ -34,7 +34,7 @@ type Resource struct {
 
 func (r *Resource) Schema(
 	ctx context.Context,
-	req resource.SchemaRequest,
+	_ resource.SchemaRequest,
 	resp *resource.SchemaResponse,
 ) {
 	resp.Schema = resourceSchema(ctx)

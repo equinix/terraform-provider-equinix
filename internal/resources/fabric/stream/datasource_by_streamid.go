@@ -25,7 +25,7 @@ type DataSourceByStreamID struct {
 
 func (r *DataSourceByStreamID) Schema(
 	ctx context.Context,
-	req datasource.SchemaRequest,
+	_ datasource.SchemaRequest,
 	resp *datasource.SchemaResponse,
 ) {
 	resp.Schema = dataSourceSingleStreamSchema(ctx)
@@ -35,7 +35,7 @@ func (r *DataSourceByStreamID) Read(ctx context.Context, request datasource.Read
 	client := r.Meta.NewFabricClientForFramework(ctx, request.ProviderMeta)
 
 	// Retrieve values from plan
-	var data DataSourceByIdModel
+	var data DataSourceByIDModel
 	response.Diagnostics.Append(request.Config.Get(ctx, &data)...)
 	if response.Diagnostics.HasError() {
 		return

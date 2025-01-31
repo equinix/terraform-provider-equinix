@@ -21,7 +21,7 @@ func AddTestSweeper() {
 	})
 }
 
-func testSweepStreams(region string) error {
+func testSweepStreams(_ string) error {
 	var errs []error
 	log.Printf("[DEBUG] Sweeping Fabric Streams")
 	ctx := context.Background()

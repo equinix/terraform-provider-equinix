@@ -14,7 +14,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 )
 
-type DataSourceByIdModel struct {
+type DataSourceByIDModel struct {
 	StreamID types.String `tfsdk:"stream_id"`
 	ID       types.String `tfsdk:"id"`
 	BaseStreamModel
@@ -45,7 +45,7 @@ type BaseStreamModel struct {
 	Name                     types.String                          `tfsdk:"name"`
 	Description              types.String                          `tfsdk:"description"`
 	Href                     types.String                          `tfsdk:"href"`
-	Uuid                     types.String                          `tfsdk:"uuid"`
+	UUID                     types.String                          `tfsdk:"uuid"`
 	State                    types.String                          `tfsdk:"state"`
 	AssetsCount              types.Int32                           `tfsdk:"assets_count"`
 	StreamSubscriptionsCount types.Int32                           `tfsdk:"stream_subscriptions_count"`
@@ -72,7 +72,7 @@ type ChangeLogModel struct {
 	DeletedDateTime   types.String `tfsdk:"deleted_date_time"`
 }
 
-func (m *DataSourceByIdModel) parse(ctx context.Context, stream *fabricv4.Stream) diag.Diagnostics {
+func (m *DataSourceByIDModel) parse(ctx context.Context, stream *fabricv4.Stream) diag.Diagnostics {
 
 	m.StreamID = types.StringValue(stream.GetUuid())
 	m.ID = types.StringValue(stream.GetUuid())
@@ -82,7 +82,7 @@ func (m *DataSourceByIdModel) parse(ctx context.Context, stream *fabricv4.Stream
 		&m.Name,
 		&m.Description,
 		&m.Href,
-		&m.Uuid,
+		&m.UUID,
 		&m.State,
 		&m.AssetsCount,
 		&m.StreamSubscriptionsCount,
@@ -123,7 +123,7 @@ func (m *DataSourceAllStreamsModel) parse(ctx context.Context, streamsResponse *
 		Previous: types.StringValue(responsePagination.GetPrevious()),
 	}
 
-	m.ID = types.StringValue(data[0].Uuid.ValueString())
+	m.ID = types.StringValue(data[0].UUID.ValueString())
 	m.Pagination = fwtypes.NewObjectValueOf[PaginationModel](ctx, &pagination)
 	m.Data = fwtypes.NewListNestedObjectValueOfValueSlice[BaseStreamModel](ctx, data)
 
@@ -138,7 +138,7 @@ func (m *ResourceModel) parse(ctx context.Context, stream *fabricv4.Stream) diag
 		&m.Name,
 		&m.Description,
 		&m.Href,
-		&m.Uuid,
+		&m.UUID,
 		&m.State,
 		&m.AssetsCount,
 		&m.StreamSubscriptionsCount,
@@ -157,7 +157,7 @@ func (m *BaseStreamModel) parse(ctx context.Context, stream *fabricv4.Stream) di
 		&m.Name,
 		&m.Description,
 		&m.Href,
-		&m.Uuid,
+		&m.UUID,
 		&m.State,
 		&m.AssetsCount,
 		&m.StreamSubscriptionsCount,
@@ -171,14 +171,14 @@ func (m *BaseStreamModel) parse(ctx context.Context, stream *fabricv4.Stream) di
 }
 
 func parseStream(ctx context.Context, stream *fabricv4.Stream,
-	type_, name, description, href, uuid, state *basetypes.StringValue,
+	streamType, name, description, href, uuid, state *basetypes.StringValue,
 	assetsCount, streamSubscriptionCount *basetypes.Int32Value,
 	project *fwtypes.ObjectValueOf[ProjectModel],
 	changeLog *fwtypes.ObjectValueOf[ChangeLogModel]) diag.Diagnostics {
 
 	var diag diag.Diagnostics
 
-	*type_ = types.StringValue(string(stream.GetType()))
+	*streamType = types.StringValue(string(stream.GetType()))
 	*name = types.StringValue(stream.GetName())
 	*description = types.StringValue(stream.GetDescription())
 	*href = types.StringValue(stream.GetHref())

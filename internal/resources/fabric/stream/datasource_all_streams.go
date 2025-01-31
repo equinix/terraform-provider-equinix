@@ -26,7 +26,7 @@ type DataSourceAllStreams struct {
 
 func (r *DataSourceAllStreams) Schema(
 	ctx context.Context,
-	req datasource.SchemaRequest,
+	_ datasource.SchemaRequest,
 	resp *datasource.SchemaResponse,
 ) {
 	resp.Schema = dataSourceAllStreamsSchema(ctx)
