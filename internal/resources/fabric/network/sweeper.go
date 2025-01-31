@@ -16,7 +16,7 @@ import (
 
 func AddTestSweeper() {
 	resource.AddTestSweepers("equinix_fabric_network", &resource.Sweeper{
-		Name:         "equinix_fabric_connection",
+		Name:         "equinix_fabric_network",
 		Dependencies: []string{},
 		F:            testSweepNetworks,
 	})
@@ -49,11 +49,6 @@ func testSweepNetworks(region string) error {
 					Property: &name,
 					Operator: &likeOperator,
 					Values:   []string{"%_PFCR"},
-				},
-				{
-					Property: &name,
-					Operator: &likeOperator,
-					Values:   []string{"%_PFNV"},
 				},
 			},
 		},
