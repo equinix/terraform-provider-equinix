@@ -3,6 +3,7 @@ package stream
 import (
 	"context"
 
+	"github.com/equinix/terraform-provider-equinix/internal/fabric"
 	fwtypes "github.com/equinix/terraform-provider-equinix/internal/framework/types"
 
 	"github.com/equinix/equinix-sdk-go/services/fabricv4"
@@ -192,21 +193,20 @@ func parseStream(ctx context.Context, stream *fabricv4.Stream,
 	}
 	*project = fwtypes.NewObjectValueOf[ProjectModel](ctx, &projectModel)
 
-	const TimeFormat = "2006-01-02T15:04:05.000Z"
 	streamChangeLog := stream.GetChangeLog()
 	changeLogModel := ChangeLogModel{
 		CreatedBy:         types.StringValue(streamChangeLog.GetCreatedBy()),
 		CreatedByFullName: types.StringValue(streamChangeLog.GetCreatedByFullName()),
 		CreatedByEmail:    types.StringValue(streamChangeLog.GetCreatedByEmail()),
-		CreatedDateTime:   types.StringValue(streamChangeLog.GetCreatedDateTime().Format(TimeFormat)),
+		CreatedDateTime:   types.StringValue(streamChangeLog.GetCreatedDateTime().Format(fabric.TimeFormat)),
 		UpdatedBy:         types.StringValue(streamChangeLog.GetUpdatedBy()),
 		UpdatedByFullName: types.StringValue(streamChangeLog.GetUpdatedByFullName()),
 		UpdatedByEmail:    types.StringValue(streamChangeLog.GetUpdatedByEmail()),
-		UpdatedDateTime:   types.StringValue(streamChangeLog.GetUpdatedDateTime().Format(TimeFormat)),
+		UpdatedDateTime:   types.StringValue(streamChangeLog.GetUpdatedDateTime().Format(fabric.TimeFormat)),
 		DeletedBy:         types.StringValue(streamChangeLog.GetDeletedBy()),
 		DeletedByFullName: types.StringValue(streamChangeLog.GetDeletedByFullName()),
 		DeletedByEmail:    types.StringValue(streamChangeLog.GetDeletedByEmail()),
-		DeletedDateTime:   types.StringValue(streamChangeLog.GetDeletedDateTime().Format(TimeFormat)),
+		DeletedDateTime:   types.StringValue(streamChangeLog.GetDeletedDateTime().Format(fabric.TimeFormat)),
 	}
 	*changeLog = fwtypes.NewObjectValueOf[ChangeLogModel](ctx, &changeLogModel)
 	return diag
