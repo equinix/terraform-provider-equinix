@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-
 	"github.com/equinix/equinix-sdk-go/services/fabricv4"
 	equinix_errors "github.com/equinix/terraform-provider-equinix/internal/errors"
 	"net/http"
@@ -18,11 +17,11 @@ func AddTestSweeper() {
 	resource.AddTestSweepers("equinix_fabric_network", &resource.Sweeper{
 		Name:         "equinix_fabric_network",
 		Dependencies: []string{},
-		F:            testSweepNetworks,
+		F:            testSweeperNetworks,
 	})
 }
 
-func testSweepNetworks(region string) error {
+func testSweeperNetworks(region string) error {
 	var errs []error
 	log.Printf("[DEBUG] Sweeping Fabric Networks")
 	ctx := context.Background()
@@ -44,13 +43,10 @@ func testSweepNetworks(region string) error {
 
 	networkSearchRequest := fabricv4.NetworkSearchRequest{
 		Filter: &fabricv4.NetworkFilter{
-			And: []fabricv4.NetworkFilter{
-				{
-					Property: &name,
-					Operator: &likeOperator,
-					Values:   []string{"%_PFCR"},
-				},
-			},
+			And:      []fabricv4.NetworkFilter{},
+			Property: &name,
+			Operator: &likeOperator,
+			Values:   []string{"%_PFCR", "%_PFNV", "%_PPDS"},
 		},
 		Pagination: &fabricv4.PaginationRequest{
 			Offset: &offset,
@@ -63,7 +59,7 @@ func testSweepNetworks(region string) error {
 	}
 
 	for _, network := range networks.Data {
-		if sweep.IsSweepableFabricTestResource(network.GetName()) {
+		if network.GetState() != "DELETED" && sweep.IsSweepableFabricTestResource(network.GetName()) {
 			log.Printf("[DEBUG] Deleting Networks: %s", network.GetName())
 			_, resp, err := fabric.NetworksApi.DeleteNetworkByUuid(ctx, network.GetUuid()).Execute()
 			if equinix_errors.IgnoreHttpResponseErrors(http.StatusForbidden, http.StatusNotFound)(resp, err) != nil {
