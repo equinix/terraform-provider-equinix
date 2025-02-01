@@ -15,7 +15,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 )
 
-type DataSourceByIdsModel struct {
+type DataSourceByIDsModel struct {
 	ID             types.String `tfsdk:"id"`
 	StreamID       types.String `tfsdk:"stream_id"`
 	SubscriptionID types.String `tfsdk:"subscription_id"`
@@ -38,6 +38,7 @@ type PaginationModel struct {
 }
 
 type ResourceModel struct {
+	StreamID types.String   `tfsdk:"stream_id"`
 	ID       types.String   `tfsdk:"id"`
 	Timeouts timeouts.Value `tfsdk:"timeouts"`
 	BaseStreamSubscriptionModel
@@ -115,7 +116,7 @@ type ChangeLogModel struct {
 	DeletedDateTime   types.String `tfsdk:"deleted_date_time"`
 }
 
-func (m *DataSourceByIdsModel) parse(ctx context.Context, streamSubscription *fabricv4.StreamSubscription) diag.Diagnostics {
+func (m *DataSourceByIDsModel) parse(ctx context.Context, streamSubscription *fabricv4.StreamSubscription) diag.Diagnostics {
 	m.StreamID = types.StringValue(streamSubscription.GetUuid())
 	m.SubscriptionID = types.StringValue(streamSubscription.GetUuid())
 	m.ID = types.StringValue(streamSubscription.GetUuid())
@@ -221,7 +222,7 @@ func (m *BaseStreamSubscriptionModel) parse(ctx context.Context, streamSubscript
 }
 
 func parseStreamSubscription(ctx context.Context, streamSubscription *fabricv4.StreamSubscription,
-	type_, name, description *basetypes.StringValue,
+	streamSubscriptionType, name, description *basetypes.StringValue,
 	enabled *basetypes.BoolValue,
 	filters *fwtypes.ListNestedObjectValueOf[FilterModel],
 	metricSelector, eventSelector *fwtypes.ObjectValueOf[SelectorModel],
@@ -231,7 +232,7 @@ func parseStreamSubscription(ctx context.Context, streamSubscription *fabricv4.S
 
 	var diags diag.Diagnostics
 
-	*type_ = types.StringValue(string(streamSubscription.GetType()))
+	*streamSubscriptionType = types.StringValue(string(streamSubscription.GetType()))
 	*name = types.StringValue(streamSubscription.GetName())
 	*description = types.StringValue(streamSubscription.GetDescription())
 	*href = types.StringValue(streamSubscription.GetHref())

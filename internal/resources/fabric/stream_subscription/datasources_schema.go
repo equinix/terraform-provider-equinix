@@ -19,6 +19,10 @@ Additional Documentation:
 * API: https://developer.equinix.com/catalog/fabricv4#tag/Stream-Subscriptions`,
 		Attributes: map[string]schema.Attribute{
 			"id": framework.IDAttributeDefaultDescription(),
+			"stream_id": schema.StringAttribute{
+				Description: "The uuid of the stream that is the target of the stream subscription",
+				Required:    true,
+			},
 			"pagination": schema.SingleNestedAttribute{
 				Description: "Pagination details for the returned streams list",
 				Required:    true,
