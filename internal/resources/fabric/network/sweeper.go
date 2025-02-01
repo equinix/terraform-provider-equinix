@@ -4,13 +4,13 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/equinix/equinix-sdk-go/services/fabricv4"
-	equinix_errors "github.com/equinix/terraform-provider-equinix/internal/errors"
+	"log"
 	"net/http"
 
+	"github.com/equinix/equinix-sdk-go/services/fabricv4"
+	equinix_errors "github.com/equinix/terraform-provider-equinix/internal/errors"
 	"github.com/equinix/terraform-provider-equinix/internal/sweep"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
-	"log"
 )
 
 func AddTestSweeper() {
