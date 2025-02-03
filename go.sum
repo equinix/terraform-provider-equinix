@@ -41,6 +41,8 @@ github.com/emirpasic/gods v1.18.1 h1:FXtiHYKDGKCW2KzwZKx0iC0PQmdlorYgdFG9jPXJ1Bc
 github.com/emirpasic/gods v1.18.1/go.mod h1:8tpGGwCnJ5H4r6BWwaV6OrWmMoPhUl5jm/FMNAnJvWQ=
 github.com/equinix/equinix-sdk-go v0.48.0 h1:2iQmK8gX+PR83FqvnBDCyPlN8coxEmCKtDucf3tYc+M=
 github.com/equinix/equinix-sdk-go v0.48.0/go.mod h1:uaiNpYcy2/zq7P2TKOOLO/kwO6SSLt6zJm0XUGPKb2M=
+github.com/equinix/equinix-sdk-go v0.48.1-0.20250130155308-f4934ab22f00 h1:pIkICxnNhq6uIiK3PpIoTuW9jHhzesF4b1pc/sM8l8w=
+github.com/equinix/equinix-sdk-go v0.48.1-0.20250130155308-f4934ab22f00/go.mod h1:uaiNpYcy2/zq7P2TKOOLO/kwO6SSLt6zJm0XUGPKb2M=
 github.com/equinix/ne-go v1.19.0 h1:aueOpe8yh/t3/mjhc/R3ZGAIPYSvixNQ/fU3t2HUQZk=
 github.com/equinix/ne-go v1.19.0/go.mod h1:eHkkxM4nbTB7DZ9X9zGnwfYnxIJWIsU3aHA+FAoZ1EI=
 github.com/equinix/oauth2-go v1.0.0 h1:fHtAPGq82PdgtK5vEThs8Vwz6f7D/8SX4tE3NJu+KcU=
