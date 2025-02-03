@@ -340,7 +340,7 @@ func resourceFabricRoutingProtocol() *schema.Resource {
 }
 
 func resourceFabricRoutingProtocolRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := meta.(*config.Config).NewFabricClientForSDK(d)
+	client := meta.(*config.Config).NewFabricClientForSDK(ctx, d)
 	log.Printf("[WARN] Routing Protocol Connection uuid: %s", d.Get("connection_uuid").(string))
 	fabricRoutingProtocolData, _, err := client.RoutingProtocolsApi.GetConnectionRoutingProtocolByUuid(ctx, d.Id(), d.Get("connection_uuid").(string)).Execute()
 	if err != nil {
@@ -357,7 +357,7 @@ func resourceFabricRoutingProtocolRead(ctx context.Context, d *schema.ResourceDa
 }
 
 func resourceFabricRoutingProtocolCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := meta.(*config.Config).NewFabricClientForSDK(d)
+	client := meta.(*config.Config).NewFabricClientForSDK(ctx, d)
 
 	start := time.Now()
 	type_ := d.Get("type").(string)
@@ -384,7 +384,7 @@ func resourceFabricRoutingProtocolCreate(ctx context.Context, d *schema.Resource
 }
 
 func resourceFabricRoutingProtocolUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := meta.(*config.Config).NewFabricClientForSDK(d)
+	client := meta.(*config.Config).NewFabricClientForSDK(ctx, d)
 
 	type_ := d.Get("type").(string)
 
@@ -422,7 +422,7 @@ func resourceFabricRoutingProtocolUpdate(ctx context.Context, d *schema.Resource
 func resourceFabricRoutingProtocolDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	diags := diag.Diagnostics{}
 	start := time.Now()
-	client := meta.(*config.Config).NewFabricClientForSDK(d)
+	client := meta.(*config.Config).NewFabricClientForSDK(ctx, d)
 	_, _, err := client.RoutingProtocolsApi.DeleteConnectionRoutingProtocolByUuid(ctx, d.Id(), d.Get("connection_uuid").(string)).Execute()
 	if err != nil {
 		if genericError, ok := err.(*fabricv4.GenericOpenAPIError); ok {
@@ -642,7 +642,7 @@ func waitUntilRoutingProtocolIsProvisioned(uuid string, connUuid string, meta in
 			string(fabricv4.CONNECTIONSTATE_PROVISIONED),
 		},
 		Refresh: func() (interface{}, string, error) {
-			client := meta.(*config.Config).NewFabricClientForSDK(d)
+			client := meta.(*config.Config).NewFabricClientForSDK(ctx, d)
 			dbConn, _, err := client.RoutingProtocolsApi.GetConnectionRoutingProtocolByUuid(ctx, uuid, connUuid).Execute()
 			if err != nil {
 				return "", "", equinix_errors.FormatFabricError(err)
@@ -680,7 +680,7 @@ func WaitUntilRoutingProtocolIsDeprovisioned(uuid string, connUuid string, meta 
 			strconv.Itoa(404),
 		},
 		Refresh: func() (interface{}, string, error) {
-			client := meta.(*config.Config).NewFabricClientForSDK(d)
+			client := meta.(*config.Config).NewFabricClientForSDK(ctx, d)
 			dbConn, resp, _ := client.RoutingProtocolsApi.GetConnectionRoutingProtocolByUuid(ctx, uuid, connUuid).Execute()
 			// fixme: check for error code instead?
 			// ignore error for Target
@@ -701,7 +701,7 @@ func waitForRoutingProtocolUpdateCompletion(rpChangeUuid string, uuid string, co
 	stateConf := &retry.StateChangeConf{
 		Target: []string{"COMPLETED"},
 		Refresh: func() (interface{}, string, error) {
-			client := meta.(*config.Config).NewFabricClientForSDK(d)
+			client := meta.(*config.Config).NewFabricClientForSDK(ctx, d)
 			dbConn, _, err := client.RoutingProtocolsApi.GetConnectionRoutingProtocolsChangeByUuid(ctx, connUuid, uuid, rpChangeUuid).Execute()
 			if err != nil {
 				return "", "", equinix_errors.FormatFabricError(err)

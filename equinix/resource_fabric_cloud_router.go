@@ -274,7 +274,7 @@ func marketplaceSubscriptionCloudRouterTerraformToGo(marketplaceSubscriptionTerr
 	return marketplaceSubscription
 }
 func resourceFabricCloudRouterCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := meta.(*config.Config).NewFabricClientForSDK(d)
+	client := meta.(*config.Config).NewFabricClientForSDK(ctx, d)
 
 	createCloudRouterRequest := fabricv4.CloudRouterPostRequest{}
 
@@ -329,7 +329,7 @@ func resourceFabricCloudRouterCreate(ctx context.Context, d *schema.ResourceData
 }
 
 func resourceFabricCloudRouterRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := meta.(*config.Config).NewFabricClientForSDK(d)
+	client := meta.(*config.Config).NewFabricClientForSDK(ctx, d)
 	cloudRouter, _, err := client.CloudRoutersApi.GetCloudRouterByUuid(ctx, d.Id()).Execute()
 	if err != nil {
 		log.Printf("[WARN] Fabric Cloud Router %s not found , error %s", d.Id(), err)
@@ -465,7 +465,7 @@ func getCloudRouterUpdateRequests(cr *fabricv4.CloudRouter, d *schema.ResourceDa
 }
 
 func resourceFabricCloudRouterUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := meta.(*config.Config).NewFabricClientForSDK(d)
+	client := meta.(*config.Config).NewFabricClientForSDK(ctx, d)
 	start := time.Now()
 	updateTimeout := d.Timeout(schema.TimeoutUpdate) - 30*time.Second - time.Since(start)
 	dbCR, err := waitUntilCloudRouterIsProvisioned(d.Id(), meta, d, ctx, updateTimeout)
@@ -505,7 +505,7 @@ func waitForCloudRouterUpdateCompletion(uuid string, meta interface{}, d *schema
 	stateConf := &retry.StateChangeConf{
 		Target: []string{string(fabricv4.CLOUDROUTERACCESSPOINTSTATE_PROVISIONED)},
 		Refresh: func() (interface{}, string, error) {
-			client := meta.(*config.Config).NewFabricClientForSDK(d)
+			client := meta.(*config.Config).NewFabricClientForSDK(ctx, d)
 			dbCR, _, err := client.CloudRoutersApi.GetCloudRouterByUuid(ctx, uuid).Execute()
 			if err != nil {
 				return "", "", equinix_errors.FormatFabricError(err)
@@ -536,7 +536,7 @@ func waitUntilCloudRouterIsProvisioned(uuid string, meta interface{}, d *schema.
 			string(fabricv4.CLOUDROUTERACCESSPOINTSTATE_PROVISIONED),
 		},
 		Refresh: func() (interface{}, string, error) {
-			client := meta.(*config.Config).NewFabricClientForSDK(d)
+			client := meta.(*config.Config).NewFabricClientForSDK(ctx, d)
 			dbCR, _, err := client.CloudRoutersApi.GetCloudRouterByUuid(ctx, uuid).Execute()
 			if err != nil {
 				return "", "", equinix_errors.FormatFabricError(err)
@@ -559,7 +559,7 @@ func waitUntilCloudRouterIsProvisioned(uuid string, meta interface{}, d *schema.
 
 func resourceFabricCloudRouterDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	diags := diag.Diagnostics{}
-	client := meta.(*config.Config).NewFabricClientForSDK(d)
+	client := meta.(*config.Config).NewFabricClientForSDK(ctx, d)
 	start := time.Now()
 	_, err := client.CloudRoutersApi.DeleteCloudRouterByUuid(ctx, d.Id()).Execute()
 	if err != nil {
@@ -592,7 +592,7 @@ func WaitUntilCloudRouterDeprovisioned(uuid string, meta interface{}, d *schema.
 			string(fabricv4.CLOUDROUTERACCESSPOINTSTATE_DEPROVISIONED),
 		},
 		Refresh: func() (interface{}, string, error) {
-			client := meta.(*config.Config).NewFabricClientForSDK(d)
+			client := meta.(*config.Config).NewFabricClientForSDK(ctx, d)
 			dbCR, _, err := client.CloudRoutersApi.GetCloudRouterByUuid(ctx, uuid).Execute()
 			if err != nil {
 				return "", "", equinix_errors.FormatFabricError(err)

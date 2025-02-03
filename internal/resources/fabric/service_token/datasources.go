@@ -41,7 +41,7 @@ Additional documentation:
 }
 
 func dataSourceSearch(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := meta.(*config.Config).NewFabricClientForSDK(d)
+	client := meta.(*config.Config).NewFabricClientForSDK(ctx, d)
 	searchRequest := buildSearchRequest(d)
 
 	serviceTokens, _, err := client.ServiceTokensApi.SearchServiceTokens(ctx).ServiceTokenSearchRequest(searchRequest).Execute()

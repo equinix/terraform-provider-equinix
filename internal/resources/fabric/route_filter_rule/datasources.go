@@ -42,7 +42,7 @@ Additional Documentation:
 }
 
 func dataSourceGetAllRules(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := meta.(*config.Config).NewFabricClientForSDK(d)
+	client := meta.(*config.Config).NewFabricClientForSDK(ctx, d)
 	routeFilterId := d.Get("route_filter_id").(string)
 	getRouteFilterRulesRequest := client.RouteFilterRulesApi.GetRouteFilterRules(ctx, routeFilterId)
 

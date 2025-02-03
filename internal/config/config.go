@@ -119,8 +119,8 @@ func (c *Config) Load(ctx context.Context) error {
 
 // NewFabricClientForSDK returns a terraform sdkv2 plugin compatible
 // equinix-sdk-go/fabricv4 client to be used to access Fabric's V4 APIs
-func (c *Config) NewFabricClientForSDK(d *schema.ResourceData) *fabricv4.APIClient {
-	client := c.newFabricClient()
+func (c *Config) NewFabricClientForSDK(ctx context.Context, d *schema.ResourceData) *fabricv4.APIClient {
+	client := c.newFabricClient(ctx)
 
 	baseUserAgent := c.tfSdkUserAgent(client.GetConfig().UserAgent)
 	client.GetConfig().UserAgent = generateModuleUserAgentString(d, baseUserAgent)
@@ -130,19 +130,34 @@ func (c *Config) NewFabricClientForSDK(d *schema.ResourceData) *fabricv4.APIClie
 
 // Shim for Fabric tests.
 // Deprecated: when the acceptance package starts to contain API clients for testing/cleanup this will move with them
-func (c *Config) NewFabricClientForTesting() *fabricv4.APIClient {
-	client := c.newFabricClient()
+func (c *Config) NewFabricClientForTesting(ctx context.Context) *fabricv4.APIClient {
+	client := c.newFabricClient(ctx)
 
 	client.GetConfig().UserAgent = fmt.Sprintf("tf-acceptance-tests %v", client.GetConfig().UserAgent)
 
 	return client
 }
 
+func (c *Config) NewFabricClientForFramework(ctx context.Context, meta tfsdk.Config) *fabricv4.APIClient {
+	client := c.newFabricClient(ctx)
+
+	baseUserAgent := c.tfFrameworkUserAgent(client.GetConfig().UserAgent)
+	client.GetConfig().UserAgent = generateFwModuleUserAgentString(ctx, meta, baseUserAgent)
+
+	return client
+}
+
 // newFabricClient returns the base fabricv4 client that is then used for either the sdkv2 or framework
 // implementations of the Terraform Provider with exported Methods
-func (c *Config) newFabricClient() *fabricv4.APIClient {
+func (c *Config) newFabricClient(ctx context.Context) *fabricv4.APIClient {
+	authConfig := oauth2.Config{
+		ClientID:     c.ClientID,
+		ClientSecret: c.ClientSecret,
+		BaseURL:      c.BaseURL,
+	}
+	authClient := authConfig.New(ctx)
 	//nolint:staticcheck // We should move to subsystem loggers, but that is a much bigger change
-	transport := logging.NewTransport("Equinix Fabric (fabricv4)", c.authClient.Transport)
+	transport := logging.NewTransport("Equinix Fabric (fabricv4)", authClient.Transport)
 
 	retryClient := retryablehttp.NewClient()
 	retryClient.HTTPClient.Transport = transport
