@@ -15,14 +15,14 @@ import (
 	"github.com/equinix/equinix-sdk-go/services/fabricv4"
 	"github.com/equinix/equinix-sdk-go/services/metalv1"
 	"github.com/equinix/ne-go"
-	"github.com/equinix/oauth2-go"
+	"github.com/equinix/terraform-provider-equinix/internal/authtoken"
 	"github.com/equinix/terraform-provider-equinix/version"
 	"github.com/hashicorp/go-retryablehttp"
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/logging"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/packethost/packngo"
-	xoauth2 "golang.org/x/oauth2"
+	"golang.org/x/oauth2"
 )
 
 const (
@@ -80,36 +80,29 @@ func (c *Config) Load(ctx context.Context) error {
 		return fmt.Errorf("'baseURL' cannot be empty")
 	}
 
-	var authClient *http.Client
+	var authTransport http.RoundTripper
 	if c.Token != "" {
-		tokenSource := xoauth2.StaticTokenSource(&xoauth2.Token{AccessToken: c.Token})
-		oauthTransport := &xoauth2.Transport{
+		tokenSource := oauth2.StaticTokenSource(&oauth2.Token{AccessToken: c.Token})
+		oauthTransport := &oauth2.Transport{
 			Source: tokenSource,
 		}
-		authClient = &http.Client{
-			Transport: oauthTransport,
-		}
+		authTransport = oauthTransport
 	} else {
-		authConfig := oauth2.Config{
+		authConfig := authtoken.Config{
 			ClientID:     c.ClientID,
 			ClientSecret: c.ClientSecret,
 			BaseURL:      c.BaseURL,
 		}
-		// The `ctx` that is passed in here for the framework
-		// provider is canceled by the time we need auth.  Need
-		// to test how this change impacts shutting down the provider,
-		// but this sort of thing may be the "right" way forward
-		// for now, given the following long-standing issue for the
-		// oauth2 package:
-		//   https://github.com/golang/oauth2/issues/262
-		authClient = authConfig.New(context.TODO())
+		authTransport = authConfig.New()
 	}
 
-	authClient.Timeout = c.requestTimeout()
-	//nolint:staticcheck // We should move to subsystem loggers, but that is a much bigger change
-	authClient.Transport = logging.NewTransport("Equinix", authClient.Transport)
-	c.authClient = authClient
-	neClient := ne.NewClient(ctx, c.BaseURL, authClient)
+	authClient := http.Client{
+		Timeout: c.requestTimeout(),
+		//nolint:staticcheck // We should move to subsystem loggers, but that is a much bigger change
+		Transport: logging.NewTransport("Equinix", authTransport),
+	}
+	c.authClient = &authClient
+	neClient := ne.NewClient(ctx, c.BaseURL, c.authClient)
 
 	if c.PageSize > 0 {
 		neClient.SetPageSize(c.PageSize)
