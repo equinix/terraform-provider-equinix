@@ -14,7 +14,6 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
-	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 )
 
@@ -236,19 +235,25 @@ func (r *Resource) Delete(
 
 func buildCreateRequest(ctx context.Context, plan ResourceModel) (fabricv4.StreamSubscriptionPostRequest, diag.Diagnostics) {
 	var diags diag.Diagnostics
-	request := fabricv4.StreamPostRequest{}
+	request := fabricv4.StreamSubscriptionPostRequest{}
 
 	request.SetName(plan.Name.ValueString())
-	request.SetType(fabricv4.StreamPostRequestType(plan.Type.ValueString()))
+	request.SetType(fabricv4.StreamSubscriptionPostRequestType(plan.Type.ValueString()))
 	request.SetDescription(plan.Description.ValueString())
+	if !plan.Enabled.IsNull() && !plan.Enabled.IsUnknown() {
+		request.SetEnabled(plan.Enabled.ValueBool())
+	}
 
-	var project ProjectModel
-	if !plan.Project.IsNull() && !plan.Project.IsUnknown() {
-		diags = plan.Project.As(ctx, &project, basetypes.ObjectAsOptions{})
-		if diags.HasError() {
-			return fabricv4.StreamPostRequest{}, diags
-		}
-		request.SetProject(fabricv4.Project{ProjectId: project.ProjectID.ValueString()})
+	if !plan.MetricSelector.IsNull() && !plan.MetricSelector.IsUnknown() {
+		// Build MetricSelector
+	}
+
+	if !plan.EventSelector.IsNull() && !plan.EventSelector.IsUnknown() {
+		// Build EventSelector
+	}
+
+	if !plan.Sink.IsNull() && !plan.Sink.IsUnknown() {
+		// Update sink request
 	}
 
 	return request, diags
