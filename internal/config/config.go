@@ -80,6 +80,24 @@ func (c *Config) Load(ctx context.Context) error {
 		return fmt.Errorf("'baseURL' cannot be empty")
 	}
 
+	c.authClient = c.newAuthClient()
+
+	neClient := ne.NewClient(ctx, c.BaseURL, c.authClient)
+
+	if c.PageSize > 0 {
+		neClient.SetPageSize(c.PageSize)
+	}
+	c.neUserAgent = c.tfSdkUserAgent("equinix/ne-go")
+	neClient.SetHeaders(map[string]string{
+		"User-agent": c.neUserAgent,
+	})
+
+	c.Ne = neClient
+	c.Metal = c.NewMetalClient()
+	return nil
+}
+
+func (c *Config) newAuthClient() *http.Client {
 	var authTransport http.RoundTripper
 	if c.Token != "" {
 		tokenSource := oauth2.StaticTokenSource(&oauth2.Token{AccessToken: c.Token})
@@ -101,20 +119,7 @@ func (c *Config) Load(ctx context.Context) error {
 		//nolint:staticcheck // We should move to subsystem loggers, but that is a much bigger change
 		Transport: logging.NewTransport("Equinix", authTransport),
 	}
-	c.authClient = &authClient
-	neClient := ne.NewClient(ctx, c.BaseURL, c.authClient)
-
-	if c.PageSize > 0 {
-		neClient.SetPageSize(c.PageSize)
-	}
-	c.neUserAgent = c.tfSdkUserAgent("equinix/ne-go")
-	neClient.SetHeaders(map[string]string{
-		"User-agent": c.neUserAgent,
-	})
-
-	c.Ne = neClient
-	c.Metal = c.NewMetalClient()
-	return nil
+	return &authClient
 }
 
 // NewFabricClientForSDK returns a terraform sdkv2 plugin compatible
