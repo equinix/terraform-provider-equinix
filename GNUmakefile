@@ -13,6 +13,7 @@ PKG_NAME            =equinix
 
 GOLANGCI_LINT_VERSION=v1.60
 GOLANGCI_LINT=go run github.com/golangci/golangci-lint/cmd/golangci-lint@${GOLANGCI_LINT_VERSION}
+LINT_BASE_REF=origin/main
 
 ifneq ($(origin TESTS_REGEXP), undefined)
 	TESTARGS = -run='$(TESTS_REGEXP)'
@@ -49,7 +50,7 @@ clean:
 	rm -f ${BINARY}
 
 lint:
-	${GOLANGCI_LINT} run -v
+	${GOLANGCI_LINT} run -v --new-from-rev=${LINT_BASE_REF} --whole-files
 
 vet:
 	@echo "go vet ."
