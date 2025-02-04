@@ -3,6 +3,11 @@ package route_aggregation
 import (
 	"context"
 	"fmt"
+	"net/http"
+	"slices"
+	"strings"
+	"time"
+
 	"github.com/equinix/equinix-sdk-go/services/fabricv4"
 	equinix_errors "github.com/equinix/terraform-provider-equinix/internal/errors"
 	"github.com/equinix/terraform-provider-equinix/internal/framework"
@@ -10,10 +15,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
-	"net/http"
-	"slices"
-	"strings"
-	"time"
 )
 
 func NewResource() resource.Resource {
@@ -56,7 +57,7 @@ func (r *Resource) Create(
 	routeAggregation, _, err := client.RouteAggregationsApi.CreateRouteAggregation(ctx).RouteAggregationsBase(createRequest).Execute()
 	if err != nil {
 		resp.Diagnostics.AddError(
-			fmt.Sprintf("Failed creating route aggregation"), equinix_errors.FormatFabricError(err).Error())
+			"Failed creating route aggregation", equinix_errors.FormatFabricError(err).Error())
 		return
 	}
 

@@ -2,6 +2,7 @@ package route_aggregation
 
 import (
 	"context"
+
 	"github.com/equinix/equinix-sdk-go/services/fabricv4"
 	fwtypes "github.com/equinix/terraform-provider-equinix/internal/framework/types"
 	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
@@ -173,9 +174,7 @@ func (m *ResourceModel) parse(ctx context.Context, routeAggregation *fabricv4.Ro
 }
 
 func (m *BaseRouteAggregationModel) parse(ctx context.Context, routeAggregation *fabricv4.RouteAggregationsData) diag.Diagnostics {
-	var diags diag.Diagnostics
-
-	diags = parseRouteAggregation(ctx, routeAggregation,
+	var diags diag.Diagnostics = parseRouteAggregation(ctx, routeAggregation,
 		&m.Type,
 		&m.Name,
 		&m.Description,
