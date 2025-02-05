@@ -9,11 +9,13 @@ import (
 
 	equinix_errors "github.com/equinix/terraform-provider-equinix/internal/errors"
 	"github.com/equinix/terraform-provider-equinix/internal/framework"
+	fwtypes "github.com/equinix/terraform-provider-equinix/internal/framework/types"
 
 	"github.com/equinix/equinix-sdk-go/services/fabricv4"
 
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
+	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 )
 
@@ -60,7 +62,7 @@ func (r *Resource) Create(
 		return
 	}
 
-	stream, _, err := client.StreamSubscriptionsApi.CreateStreamSubscriptions(ctx, plan.StreamID.ValueString()).StreamSubscriptionPostRequest(createRequest).Execute()
+	streamSubscription, _, err := client.StreamSubscriptionsApi.CreateStreamSubscriptions(ctx, plan.StreamID.ValueString()).StreamSubscriptionPostRequest(createRequest).Execute()
 	if err != nil {
 		resp.Diagnostics.AddError("failed creating stream subscription", equinix_errors.FormatFabricError(err).Error())
 		return
@@ -71,11 +73,11 @@ func (r *Resource) Create(
 		resp.Diagnostics.Append(diags...)
 		return
 	}
-	createWaiter := getCreateUpdateWaiter(ctx, client, stream.GetUuid(), createTimeout)
+	createWaiter := getCreateUpdateWaiter(ctx, client, plan.StreamID.ValueString(), streamSubscription.GetUuid(), createTimeout)
 	streamChecked, err := createWaiter.WaitForStateContext(ctx)
 	if err != nil {
 		resp.Diagnostics.AddError(
-			fmt.Sprintf("failed creating stream subscription %s", stream.GetUuid()), err.Error())
+			fmt.Sprintf("failed creating stream subscription %s", streamSubscription.GetUuid()), err.Error())
 		return
 	}
 
@@ -85,7 +87,7 @@ func (r *Resource) Create(
 	}
 
 	// Parse API response into the Terraform state
-	resp.Diagnostics.Append(plan.parse(ctx, streamChecked.(*fabricv4.Stream))...)
+	resp.Diagnostics.Append(plan.parse(ctx, streamChecked.(*fabricv4.StreamSubscription))...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -111,8 +113,9 @@ func (r *Resource) Read(
 
 	// Extract the ID of the resource from the state
 	id := state.ID.ValueString()
+	streamID := state.StreamID.ValueString()
 
-	stream, _, err := client.StreamsApi.GetStreamByUuid(ctx, id).Execute()
+	streamSubscription, _, err := client.StreamSubscriptionsApi.GetStreamSubscriptionByUuid(ctx, streamID, id).Execute()
 	if err != nil {
 		resp.Diagnostics.AddError(
 			fmt.Sprintf("failed retrieving stream subscription %s", id), equinix_errors.FormatFabricError(err).Error())
@@ -120,7 +123,7 @@ func (r *Resource) Read(
 	}
 
 	// Set state to fully populated data
-	resp.Diagnostics.Append(state.parse(ctx, stream)...)
+	resp.Diagnostics.Append(state.parse(ctx, streamSubscription)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -145,22 +148,15 @@ func (r *Resource) Update(
 	}
 
 	id := state.ID.ValueString()
+	streamID := state.StreamID.ValueString()
 
-	updateRequest := fabricv4.StreamPutRequest{}
-
-	needsUpdate := plan.Name.ValueString() != state.Name.ValueString() ||
-		plan.Description.ValueString() != state.Description.ValueString()
-
-	if !needsUpdate {
-		resp.Diagnostics.AddWarning("no updatable fields have changed",
-			"terraform detected a config change, but it is for a field that isn't updatable for the stream subscription resource. please revert to prior config")
+	updateRequest, diags := buildUpdateRequest(ctx, plan)
+	if diags.HasError() {
+		resp.Diagnostics.Append(diags...)
 		return
 	}
 
-	updateRequest.SetName(plan.Name.ValueString())
-	updateRequest.SetDescription(plan.Description.ValueString())
-
-	_, _, err := client.StreamsApi.UpdateStreamByUuid(ctx, id).StreamPutRequest(updateRequest).Execute()
+	_, _, err := client.StreamSubscriptionsApi.UpdateStreamSubscriptionByUuid(ctx, streamID, id).StreamSubscriptionPutRequest(updateRequest).Execute()
 	if err != nil {
 		resp.Diagnostics.AddError(
 			fmt.Sprintf("failed updating stream subscription %s", id), equinix_errors.FormatFabricError(err).Error())
@@ -173,7 +169,7 @@ func (r *Resource) Update(
 		return
 	}
 
-	updateWaiter := getCreateUpdateWaiter(ctx, client, id, updateTimeout)
+	updateWaiter := getCreateUpdateWaiter(ctx, client, streamID, id, updateTimeout)
 	streamSubscriptionChecked, err := updateWaiter.WaitForStateContext(ctx)
 	if err != nil {
 		resp.Diagnostics.AddError(
@@ -207,8 +203,9 @@ func (r *Resource) Delete(
 	}
 
 	id := state.ID.ValueString()
+	streamID := state.StreamID.ValueString()
 
-	_, deleteResp, err := client.StreamsApi.DeleteStreamByUuid(ctx, id).Execute()
+	_, deleteResp, err := client.StreamSubscriptionsApi.DeleteStreamSubscriptionByUuid(ctx, streamID, id).Execute()
 	if err != nil {
 		if deleteResp == nil || !slices.Contains([]int{http.StatusForbidden, http.StatusNotFound}, deleteResp.StatusCode) {
 			resp.Diagnostics.AddError(
@@ -222,7 +219,7 @@ func (r *Resource) Delete(
 		resp.Diagnostics.Append(diags...)
 		return
 	}
-	deleteWaiter := getDeleteWaiter(ctx, client, id, deleteTimeout)
+	deleteWaiter := getDeleteWaiter(ctx, client, streamID, id, deleteTimeout)
 	_, err = deleteWaiter.WaitForStateContext(ctx)
 
 	if err != nil {
@@ -231,6 +228,38 @@ func (r *Resource) Delete(
 		return
 	}
 
+}
+
+func buildUpdateRequest(ctx context.Context, plan ResourceModel) (fabricv4.StreamSubscriptionPutRequest, diag.Diagnostics) {
+	var diags diag.Diagnostics
+	request := fabricv4.StreamSubscriptionPutRequest{}
+
+	postRequest, diags := buildCreateRequest(ctx, plan)
+
+	request.SetName(postRequest.GetName())
+	request.SetDescription(postRequest.GetDescription())
+
+	if !plan.Enabled.IsNull() && !plan.Enabled.IsUnknown() {
+		request.SetEnabled(postRequest.GetEnabled())
+	}
+
+	if !plan.Filters.IsNull() && !plan.Filters.IsUnknown() {
+		request.SetFilters(postRequest.GetFilters())
+	}
+
+	if !plan.MetricSelector.IsNull() && !plan.MetricSelector.IsUnknown() {
+		request.SetMetricSelector(postRequest.GetMetricSelector())
+	}
+
+	if !plan.EventSelector.IsNull() && !plan.EventSelector.IsUnknown() {
+		request.SetEventSelector(postRequest.GetEventSelector())
+	}
+
+	if !plan.Sink.IsNull() && !plan.Sink.IsUnknown() {
+		request.SetSink(postRequest.GetSink())
+	}
+
+	return request, diags
 }
 
 func buildCreateRequest(ctx context.Context, plan ResourceModel) (fabricv4.StreamSubscriptionPostRequest, diag.Diagnostics) {
@@ -244,19 +273,195 @@ func buildCreateRequest(ctx context.Context, plan ResourceModel) (fabricv4.Strea
 		request.SetEnabled(plan.Enabled.ValueBool())
 	}
 
+	if !plan.Filters.IsNull() && !plan.Filters.IsUnknown() {
+		filterModels := make([]FilterModel, len(plan.Filters.Elements()))
+		diags = plan.Filters.ElementsAs(ctx, &filterModels, false)
+		if diags.HasError() {
+			return fabricv4.StreamSubscriptionPostRequest{}, diags
+		}
+		var streamSubscriptionFilter fabricv4.StreamSubscriptionFilter
+		var filters []fabricv4.StreamFilter
+		var orFilter fabricv4.StreamFilterOrFilter
+		for _, filter := range filterModels {
+			var expression fabricv4.StreamFilterSimpleExpression
+			expression.SetOperator(filter.Operator.ValueString())
+			expression.SetProperty(filter.Property.ValueString())
+			var values []string
+			diags = filter.Values.ElementsAs(ctx, &values, false)
+			if diags.HasError() {
+				return fabricv4.StreamSubscriptionPostRequest{}, diags
+			}
+			expression.SetValues(values)
+			if filter.Or.ValueBool() {
+				orFilter.SetOr(append(orFilter.GetOr(), expression))
+			} else {
+				filters = append(filters, fabricv4.StreamFilter{
+					StreamFilterSimpleExpression: &expression,
+				})
+			}
+		}
+
+		if len(orFilter.GetOr()) > 0 {
+			filters = append(filters, fabricv4.StreamFilter{
+				StreamFilterOrFilter: &orFilter,
+			})
+		}
+		streamSubscriptionFilter.SetAnd(filters)
+		request.SetFilters(streamSubscriptionFilter)
+	}
+
 	if !plan.MetricSelector.IsNull() && !plan.MetricSelector.IsUnknown() {
 		// Build MetricSelector
+		var metricSelector fabricv4.StreamSubscriptionSelector
+		metricSelector, diags = buildStreamSubscriptionSelector(ctx, plan.MetricSelector)
+		if diags.HasError() {
+			return fabricv4.StreamSubscriptionPostRequest{}, diags
+		}
+		request.SetMetricSelector(metricSelector)
 	}
 
 	if !plan.EventSelector.IsNull() && !plan.EventSelector.IsUnknown() {
 		// Build EventSelector
+		var eventSelector fabricv4.StreamSubscriptionSelector
+		eventSelector, diags = buildStreamSubscriptionSelector(ctx, plan.EventSelector)
+		if diags.HasError() {
+			return fabricv4.StreamSubscriptionPostRequest{}, diags
+		}
+		request.SetEventSelector(eventSelector)
 	}
 
 	if !plan.Sink.IsNull() && !plan.Sink.IsUnknown() {
 		// Update sink request
+		var sink fabricv4.StreamSubscriptionSink
+		sink, diags = buildStreamSubscriptionSink(ctx, plan.Sink)
+		if diags.HasError() {
+			return fabricv4.StreamSubscriptionPostRequest{}, diags
+		}
+		request.SetSink(sink)
 	}
 
 	return request, diags
+}
+
+func buildStreamSubscriptionSelector(ctx context.Context, selector fwtypes.ObjectValueOf[SelectorModel]) (fabricv4.StreamSubscriptionSelector, diag.Diagnostics) {
+	var selectorModel SelectorModel
+	diags := selector.As(ctx, selectorModel, basetypes.ObjectAsOptions{})
+	if diags.HasError() {
+		return fabricv4.StreamSubscriptionSelector{}, diags
+	}
+
+	var streamSubscriptionSelector fabricv4.StreamSubscriptionSelector
+	if !selectorModel.Include.IsNull() && !selectorModel.Include.IsUnknown() {
+		include := []string{}
+		diags = selectorModel.Include.ElementsAs(ctx, &include, false)
+		if diags.HasError() {
+			return fabricv4.StreamSubscriptionSelector{}, diags
+		}
+		streamSubscriptionSelector.SetInclude(include)
+	}
+
+	if !selectorModel.Except.IsNull() && !selectorModel.Except.IsUnknown() {
+		except := []string{}
+		diags = selectorModel.Except.ElementsAs(ctx, &except, false)
+		if diags.HasError() {
+			return fabricv4.StreamSubscriptionSelector{}, diags
+		}
+		streamSubscriptionSelector.SetExcept(except)
+	}
+
+	return streamSubscriptionSelector, diags
+}
+
+func buildStreamSubscriptionSink(ctx context.Context, sinkObject fwtypes.ObjectValueOf[SinkModel]) (fabricv4.StreamSubscriptionSink, diag.Diagnostics) {
+	var sinkModel SinkModel
+	diags := sinkObject.As(ctx, &sinkModel, basetypes.ObjectAsOptions{})
+	if diags.HasError() {
+		return fabricv4.StreamSubscriptionSink{}, diags
+	}
+
+	var sink fabricv4.StreamSubscriptionSink
+
+	sink.SetType(fabricv4.StreamSubscriptionSinkType(sinkModel.Type.ValueString()))
+	if !sinkModel.Uri.IsNull() && !sinkModel.Uri.IsUnknown() {
+		sink.SetUri(sinkModel.Uri.ValueString())
+	}
+
+	if !sinkModel.BatchEnabled.IsNull() && !sinkModel.BatchEnabled.IsUnknown() {
+		sink.SetBatchEnabled(sinkModel.BatchEnabled.ValueBool())
+	}
+
+	if !sinkModel.BatchSizeMax.IsNull() && !sinkModel.BatchSizeMax.IsUnknown() {
+		sink.SetBatchSizeMax(sinkModel.BatchSizeMax.ValueInt32())
+	}
+
+	if !sinkModel.BatchWaitTimeMax.IsNull() && !sinkModel.BatchWaitTimeMax.IsUnknown() {
+		sink.SetBatchWaitTimeMax(sinkModel.BatchWaitTimeMax.ValueInt32())
+	}
+
+	if !sinkModel.Host.IsNull() && !sinkModel.Host.IsUnknown() {
+		sink.SetHost(sinkModel.Host.ValueString())
+	}
+
+	if !sinkModel.Credential.IsNull() && !sinkModel.Credential.IsUnknown() {
+		// Build credential
+		var credentialModel SinkCredentialModel
+		diags = sinkModel.Credential.As(ctx, &credentialModel, basetypes.ObjectAsOptions{})
+		if diags.HasError() {
+			return fabricv4.StreamSubscriptionSink{}, diags
+		}
+
+		var credential fabricv4.StreamSubscriptionSinkCredential
+		credential.SetType(fabricv4.StreamSubscriptionSinkCredentialType(credentialModel.Type.ValueString()))
+
+		switch credential.GetType() {
+		case fabricv4.STREAMSUBSCRIPTIONSINKCREDENTIALTYPE_ACCESS_TOKEN:
+			credential.SetAccessToken(credentialModel.AccessToken.ValueString())
+		case fabricv4.STREAMSUBSCRIPTIONSINKCREDENTIALTYPE_INTEGRATION_KEY:
+			credential.SetIntegrationKey(credentialModel.IntegrationKey.ValueString())
+		case fabricv4.STREAMSUBSCRIPTIONSINKCREDENTIALTYPE_API_KEY:
+			credential.SetApiKey(credentialModel.ApiKey.ValueString())
+		case fabricv4.STREAMSUBSCRIPTIONSINKCREDENTIALTYPE_USERNAME_PASSWORD:
+			credential.SetUsername(credentialModel.Username.ValueString())
+			credential.SetPassword(credentialModel.Password.ValueString())
+		default:
+			diags.AddError("sink credential type is invalid", fmt.Sprintf("update sink credential type to one of the following %v", fabricv4.AllowedStreamSubscriptionSinkCredentialTypeEnumValues))
+			return fabricv4.StreamSubscriptionSink{}, diags
+		}
+
+		sink.SetCredential(credential)
+	}
+
+	if !sinkModel.Settings.IsNull() && !sinkModel.Settings.IsUnknown() {
+		// Build settings
+		var settingsModel SinkSettingsModel
+		diags = sinkModel.Settings.As(ctx, &settingsModel, basetypes.ObjectAsOptions{})
+
+		var settings fabricv4.StreamSubscriptionSinkSetting
+		if !settingsModel.EventIndex.IsNull() && !settingsModel.EventIndex.IsUnknown() {
+			settings.SetEventIndex(settingsModel.EventIndex.ValueString())
+		}
+		if !settingsModel.MetricIndex.IsNull() && !settingsModel.MetricIndex.IsUnknown() {
+			settings.SetMetricIndex(settingsModel.MetricIndex.ValueString())
+		}
+		if !settingsModel.Source.IsNull() && !settingsModel.Source.IsUnknown() {
+			settings.SetSource(settingsModel.Source.ValueString())
+		}
+		if !settingsModel.ApplicationKey.IsNull() && !settingsModel.ApplicationKey.IsUnknown() {
+			settings.SetApplicationKey(settingsModel.ApplicationKey.ValueString())
+		}
+		if !settingsModel.EventUri.IsNull() && !settingsModel.EventUri.IsUnknown() {
+			settings.SetEventUri(settingsModel.EventUri.ValueString())
+		}
+		if !settingsModel.MetricUri.IsNull() && !settingsModel.MetricUri.IsUnknown() {
+			settings.SetMetricUri(settingsModel.MetricUri.ValueString())
+		}
+		if !settingsModel.TransformAlerts.IsNull() && !settingsModel.TransformAlerts.IsUnknown() {
+			settings.SetTransformAlerts(settingsModel.TransformAlerts.ValueBool())
+		}
+		sink.SetSettings(settings)
+	}
+
+	return sink, diags
 }
 
 func getCreateUpdateWaiter(ctx context.Context, client *fabricv4.APIClient, streamID, streamSubscriptionID string, timeout time.Duration) *retry.StateChangeConf {
