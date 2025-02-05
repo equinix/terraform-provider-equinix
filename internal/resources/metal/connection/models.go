@@ -39,28 +39,8 @@ type ResourceModel struct {
 }
 
 type DataSourceModel struct {
-	ID                types.String                                       `tfsdk:"id"`
-	ConnectionID      types.String                                       `tfsdk:"connection_id"`
-	Name              types.String                                       `tfsdk:"name"`
-	Facility          types.String                                       `tfsdk:"facility"`
-	Metro             types.String                                       `tfsdk:"metro"`
-	Redundancy        types.String                                       `tfsdk:"redundancy"`
-	ContactEmail      types.String                                       `tfsdk:"contact_email"`
-	Type              types.String                                       `tfsdk:"type"`
-	ProjectID         types.String                                       `tfsdk:"project_id"`
-	AuthorizationCode types.String                                       `tfsdk:"authorization_code"`
-	Speed             types.String                                       `tfsdk:"speed"`
-	Description       types.String                                       `tfsdk:"description"`
-	Mode              types.String                                       `tfsdk:"mode"`
-	Tags              types.List                                         `tfsdk:"tags"`  // List of strings
-	Vlans             types.List                                         `tfsdk:"vlans"` // List of ints
-	Vrfs              types.List                                         `tfsdk:"vrfs"`  // List of strings
-	ServiceTokenType  types.String                                       `tfsdk:"service_token_type"`
-	OrganizationID    types.String                                       `tfsdk:"organization_id"`
-	Status            types.String                                       `tfsdk:"status"`
-	Token             types.String                                       `tfsdk:"token"`
-	Ports             fwtypes.ListNestedObjectValueOf[PortModel]         `tfsdk:"ports"`          // List of Port
-	ServiceTokens     fwtypes.ListNestedObjectValueOf[ServiceTokenModel] `tfsdk:"service_tokens"` // List of ServiceToken
+	ResourceModel
+	ConnectionID types.String `tfsdk:"connection_id"`
 }
 
 type PortModel struct {
@@ -82,98 +62,37 @@ type ServiceTokenModel struct {
 	Type            types.String `tfsdk:"type"`
 }
 
-func (m *DataSourceModel) parse(ctx context.Context, conn *metalv1.Interconnection) diag.Diagnostics {
-	var diags diag.Diagnostics
-
-	m.ConnectionID = types.StringPointerValue(conn.Id)
-
-	parseConnection(ctx, conn,
-		&m.ID, &m.OrganizationID, &m.Name, &m.Facility, &m.Metro,
-		&m.Description, &m.ContactEmail, &m.Status, &m.Redundancy,
-		&m.Token, &m.Type, &m.Mode, &m.ServiceTokenType, &m.Speed,
-		&m.ProjectID, &m.AuthorizationCode, &m.Vlans, &m.Vrfs, &m.Ports, &m.ServiceTokens,
-	)
-
-	connTags, diags := types.ListValueFrom(ctx, types.StringType, conn.Tags)
-	if diags.HasError() {
-		return diags
-	}
-	m.Tags = connTags
-
-	return diags
-}
-
 func (m *ResourceModel) parse(ctx context.Context, conn *metalv1.Interconnection) diag.Diagnostics {
 	var diags diag.Diagnostics
 
-	parseConnection(ctx, conn,
-		&m.ID, &m.OrganizationID, &m.Name, &m.Facility, &m.Metro,
-		&m.Description, &m.ContactEmail, &m.Status, &m.Redundancy,
-		&m.Token, &m.Type, &m.Mode, &m.ServiceTokenType, &m.Speed,
-		&m.ProjectID, &m.AuthorizationCode, &m.Vlans, &m.Vrfs, &m.Ports, &m.ServiceTokens,
-	)
-
-	connTags, diags := types.ListValueFrom(ctx, types.StringType, conn.Tags)
-	if diags.HasError() {
-		return diags
-	}
-	// TODO(ocobles) workaround to keep compatibility with older releases using SDKv2
-	if m.Tags.IsNull() && len(conn.Tags) == 0 {
-		m.Tags = types.ListNull(types.StringType)
-	} else {
-		m.Tags = connTags
-	}
-
-	return diags
-}
-
-// abstractVirtualCircuit represents either a metalv1.VrfVirtualCircuit or a
-// metalv1.VlanVirtualCircuit
-type abstractVirtualCircuit interface {
-	GetId() string
-	GetProject() metalv1.Project
-}
-
-func parseConnection(
-	ctx context.Context,
-	conn *metalv1.Interconnection,
-	id, orgID, name, facility, metro, description, contactEmail, status, redundancy,
-	token, typ, mode, serviceTokenType, speed, projectID, authorizationCode *basetypes.StringValue,
-	vlans *basetypes.ListValue,
-	vrfs *basetypes.ListValue,
-	ports *fwtypes.ListNestedObjectValueOf[PortModel],
-	serviceTokens *fwtypes.ListNestedObjectValueOf[ServiceTokenModel],
-) diag.Diagnostics {
-	var diags diag.Diagnostics
-
-	*id = types.StringValue(conn.GetId())
-	*orgID = types.StringPointerValue(conn.GetOrganization().Id)
-	*name = types.StringValue(conn.GetName())
-	*facility = types.StringValue(conn.Facility.GetCode())
-	*description = types.StringValue(conn.GetDescription())
-	*contactEmail = types.StringValue(conn.GetContactEmail())
-	*status = types.StringValue(conn.GetStatus())
-	*redundancy = types.StringValue(string(conn.GetRedundancy()))
-	*token = types.StringValue(conn.GetToken())
-	*typ = types.StringValue(string(conn.GetType()))
-	*authorizationCode = types.StringValue(conn.GetAuthorizationCode())
+	m.ID = types.StringValue(conn.GetId())
+	m.OrganizationID = types.StringPointerValue(conn.GetOrganization().Id)
+	m.Name = types.StringValue(conn.GetName())
+	m.Facility = types.StringValue(conn.Facility.GetCode())
+	m.Description = types.StringValue(conn.GetDescription())
+	m.ContactEmail = types.StringValue(conn.GetContactEmail())
+	m.Status = types.StringValue(conn.GetStatus())
+	m.Redundancy = types.StringValue(string(conn.GetRedundancy()))
+	m.Token = types.StringValue(conn.GetToken())
+	m.Type = types.StringValue(string(conn.GetType()))
+	m.AuthorizationCode = types.StringValue(conn.GetAuthorizationCode())
 
 	// TODO(ocobles) we were using "StateFunc: converters.ToLowerIf" for "metro" field in the sdkv2
 	// version of this resource. StateFunc doesn't exist in terraform and it requires implementation
 	// of bespoke logic before storing state. To ensure backward compatibility we ignore lower/upper
 	// case diff for now, but we may want to require input upper case
-	if !strings.EqualFold(metro.ValueString(), *conn.Metro.Code) {
-		*metro = types.StringPointerValue(conn.GetMetro().Code)
+	if !strings.EqualFold(m.Metro.ValueString(), conn.Metro.GetCode()) {
+		m.Metro = types.StringPointerValue(conn.GetMetro().Code)
 	}
 
-	*mode = types.StringValue(string(metalv1.INTERCONNECTIONMODE_STANDARD))
+	m.Mode = types.StringValue(string(metalv1.INTERCONNECTIONMODE_STANDARD))
 	if conn.HasMode() {
-		*mode = types.StringValue(string(conn.GetMode()))
+		m.Mode = types.StringValue(string(conn.GetMode()))
 	}
 
 	// Parse Service Token Type
 	if len(conn.ServiceTokens) != 0 {
-		*serviceTokenType = types.StringValue(string(conn.ServiceTokens[0].GetServiceTokenType()))
+		m.ServiceTokenType = types.StringValue(string(conn.ServiceTokens[0].GetServiceTokenType()))
 	}
 
 	// Parse Speed
@@ -189,7 +108,7 @@ func parseConnection(
 			return diags
 		}
 	}
-	*speed = types.StringValue(connSpeed)
+	m.Speed = types.StringValue(connSpeed)
 
 	if conn.GetType() == metalv1.INTERCONNECTIONTYPE_SHARED {
 		// Note: we were using conn.Ports[0].VirtualCircuits[0].Project.ID in the sdkv2 version but
@@ -214,14 +133,14 @@ func parseConnection(
 		vc := conn.Ports[0].VirtualCircuits[0].GetActualInstance().(abstractVirtualCircuit)
 		project := vc.GetProject()
 
-		*projectID = types.StringValue(project.GetId())
+		m.ProjectID = types.StringValue(project.GetId())
 
 		connVlans, diags := parseConnectionVlans(ctx, conn)
 		if diags.HasError() {
 			return diags
 		}
 		if !connVlans.IsNull() && len(connVlans.Elements()) != 0 {
-			*vlans = *connVlans
+			m.Vlans = *connVlans
 		}
 
 		connVrfs, diags := parseConnectionVrfs(ctx, conn)
@@ -229,7 +148,7 @@ func parseConnection(
 			return diags
 		}
 		if !connVrfs.IsNull() && len(connVrfs.Elements()) != 0 {
-			*vrfs = *connVrfs
+			m.Vrfs = *connVrfs
 		}
 	}
 
@@ -237,16 +156,34 @@ func parseConnection(
 	if diags.HasError() {
 		return diags
 	}
-	*ports = connPorts
+	m.Ports = connPorts
 
 	// Parse ServiceTokens
 	connServiceTokens, diags := parseConnectionServiceTokens(ctx, conn.ServiceTokens)
 	if diags.HasError() {
 		return diags
 	}
-	*serviceTokens = connServiceTokens
+	m.ServiceTokens = connServiceTokens
+
+	connTags, diags := types.ListValueFrom(ctx, types.StringType, conn.Tags)
+	if diags.HasError() {
+		return diags
+	}
+	// TODO(ocobles) workaround to keep compatibility with older releases using SDKv2
+	if m.Tags.IsNull() && len(conn.Tags) == 0 {
+		m.Tags = types.ListNull(types.StringType)
+	} else {
+		m.Tags = connTags
+	}
 
 	return diags
+}
+
+// abstractVirtualCircuit represents either a metalv1.VrfVirtualCircuit or a
+// metalv1.VlanVirtualCircuit
+type abstractVirtualCircuit interface {
+	GetId() string
+	GetProject() metalv1.Project
 }
 
 func parseConnectionServiceTokens(ctx context.Context, fst []metalv1.FabricServiceToken) (fwtypes.ListNestedObjectValueOf[ServiceTokenModel], diag.Diagnostics) {
