@@ -34,7 +34,7 @@ func testSweeperNetworks(region string) error {
 		log.Printf("Error loading meta: %v", err)
 		return err
 	}
-	fabric := meta.NewFabricClientForTesting()
+	fabric := meta.NewFabricClientForTesting(ctx)
 
 	name := fabricv4.NETWORKSEARCHFIELDNAME_NAME
 	likeOperator := fabricv4.NETWORKFILTEROPERATOR_LIKE
