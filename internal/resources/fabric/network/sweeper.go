@@ -21,7 +21,7 @@ func AddTestSweeper() {
 	})
 }
 
-func testSweeperNetworks(region string) error {
+func testSweeperNetworks(_ string) error {
 	var errs []error
 	log.Printf("[DEBUG] Sweeping Fabric Networks")
 	ctx := context.Background()
