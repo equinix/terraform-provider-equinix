@@ -25,6 +25,6 @@ jobs:
       - name: golangci-lint
         uses: golangci/golangci-lint-action@v6
         with:
-          args: --whole-files # Remove along with only-new-issues by 2025
+          args: --whole-files
           version: ${{ steps.golangcilint.outputs.version }}
-          only-new-issues: true # Remove along with pull-requests: read permission by 2025
+          only-new-issues: true
