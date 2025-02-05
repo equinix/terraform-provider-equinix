@@ -46,28 +46,18 @@ func (m *ResourceModel) parse(ctx context.Context, org *packngo.Organization) di
 }
 
 type DataSourceModel struct {
-	ID             types.String                                          `tfsdk:"id"`
-	Name           types.String                                          `tfsdk:"name"`
-	OrganizationID types.String                                          `tfsdk:"organization_id"`
-	Description    types.String                                          `tfsdk:"description"`
-	Website        types.String                                          `tfsdk:"website"`
-	Twitter        types.String                                          `tfsdk:"twitter"`
-	Logo           types.String                                          `tfsdk:"logo"`
-	ProjectIDs     []types.List                                          `tfsdk:"project_ids"`
-	Address        fwtypes.ListNestedObjectValueOf[AddressResourceModel] `tfsdk:"address"` // List of Address
+	ResourceModel
+	OrganizationID types.String `tfsdk:"organization_id"`
+	ProjectIDs     []types.List `tfsdk:"project_ids"`
 }
 
 func (m *DataSourceModel) parse(ctx context.Context, org *packngo.Organization) diag.Diagnostics {
-	var diags diag.Diagnostics
+	diags := m.ResourceModel.parse(ctx, org)
+	if diags.HasError() {
+		return diags
+	}
 	// Convert Metal Organization data to the Terraform state
-	m.ID = types.StringValue(org.ID)
-	m.Name = types.StringValue(org.Name)
 	m.OrganizationID = types.StringValue(org.ID)
-	m.Description = types.StringValue(org.Description)
-	m.Website = types.StringValue(org.Website)
-	m.Twitter = types.StringValue(org.Twitter)
-	m.Logo = types.StringValue("")
-	m.Address = parseAddress(ctx, org.Address)
 
 	projects := make([]string, len(org.Projects))
 	pList := make([]basetypes.ListValue, len(org.Projects))
