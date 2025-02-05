@@ -72,17 +72,17 @@ type SelectorModel struct {
 }
 
 type SinkModel struct {
-	Uri              types.String                                       `tfsdk:"uri"`
-	Type             types.String                                       `tfsdk:"type"`
-	BatchEnabled     types.Bool                                         `tfsdk:"batch_enabled"`
-	BatchSizeMax     types.Int32                                        `tfsdk:"batch_size_max"`
-	BatchWaitTimeMax types.Int32                                        `tfsdk:"batch_wait_time_max"`
-	Host             types.String                                       `tfsdk:"host"`
-	Credential       fwtypes.ListNestedObjectValueOf[CredentialModel]   `tfsdk:"credential"` // Object of CredentialModel
-	Settings         fwtypes.ListNestedObjectValueOf[SinkSettingsModel] `tfsdk:"settings"`   // object of SinkSettingsModel
+	Uri              types.String                               `tfsdk:"uri"`
+	Type             types.String                               `tfsdk:"type"`
+	BatchEnabled     types.Bool                                 `tfsdk:"batch_enabled"`
+	BatchSizeMax     types.Int32                                `tfsdk:"batch_size_max"`
+	BatchWaitTimeMax types.Int32                                `tfsdk:"batch_wait_time_max"`
+	Host             types.String                               `tfsdk:"host"`
+	Credential       fwtypes.ObjectValueOf[SinkCredentialModel] `tfsdk:"credential"` // Object of CredentialModel
+	Settings         fwtypes.ObjectValueOf[SinkSettingsModel]   `tfsdk:"settings"`   // Object of SinkSettingsModel
 }
 
-type CredentialModel struct {
+type SinkCredentialModel struct {
 	Type           types.String `tfsdk:"type"`
 	AccessToken    types.String `tfsdk:"access_token"`
 	IntegrationKey types.String `tfsdk:"integration_key"`
@@ -289,6 +289,38 @@ func parseStreamSubscription(ctx context.Context, streamSubscription *fabricv4.S
 		BatchWaitTimeMax: types.Int32Value(streamSubSink.GetBatchWaitTimeMax()),
 		Host:             types.StringValue(streamSubSink.GetHost()),
 	}
+	sinkCredential := streamSubSink.GetCredential()
+	credentialModel := SinkCredentialModel{}
+	credentialModel.Type = types.StringValue(string(sinkCredential.GetType()))
+
+	switch sinkCredential.GetType() {
+	case fabricv4.STREAMSUBSCRIPTIONSINKCREDENTIALTYPE_ACCESS_TOKEN:
+		credentialModel.AccessToken = types.StringValue(sinkCredential.GetAccessToken())
+	case fabricv4.STREAMSUBSCRIPTIONSINKCREDENTIALTYPE_INTEGRATION_KEY:
+		credentialModel.IntegrationKey = types.StringValue(sinkCredential.GetIntegrationKey())
+	case fabricv4.STREAMSUBSCRIPTIONSINKCREDENTIALTYPE_API_KEY:
+		credentialModel.ApiKey = types.StringValue(sinkCredential.GetApiKey())
+		sinkCredential.SetApiKey(credentialModel.ApiKey.ValueString())
+	case fabricv4.STREAMSUBSCRIPTIONSINKCREDENTIALTYPE_USERNAME_PASSWORD:
+		credentialModel.Username = types.StringValue(sinkCredential.GetUsername())
+		credentialModel.Password = types.StringValue(sinkCredential.GetPassword())
+	}
+
+	sinkModel.Credential = fwtypes.NewObjectValueOf[SinkCredentialModel](ctx, &credentialModel)
+
+	sinkSettings := streamSubSink.GetSettings()
+	sinkSettingsModel := SinkSettingsModel{
+		EventIndex:      types.StringValue(sinkSettings.GetEventIndex()),
+		MetricIndex:     types.StringValue(sinkSettings.GetMetricIndex()),
+		Source:          types.StringValue(sinkSettings.GetSource()),
+		ApplicationKey:  types.StringValue(sinkSettings.GetApplicationKey()),
+		EventUri:        types.StringValue(sinkSettings.GetEventUri()),
+		MetricUri:       types.StringValue(sinkSettings.GetMetricUri()),
+		TransformAlerts: types.BoolValue(sinkSettings.GetTransformAlerts()),
+	}
+
+	sinkModel.Settings = fwtypes.NewObjectValueOf[SinkSettingsModel](ctx, &sinkSettingsModel)
+
 	*sink = fwtypes.NewObjectValueOf[SinkModel](ctx, &sinkModel)
 
 	// Parse ChangeLog
