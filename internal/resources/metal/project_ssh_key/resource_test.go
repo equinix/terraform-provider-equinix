@@ -1,4 +1,4 @@
-package project_ssh_key_test
+package projectsshkey_test
 
 import (
 	"fmt"

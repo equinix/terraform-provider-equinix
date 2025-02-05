@@ -1,4 +1,4 @@
-package project_ssh_key
+package projectsshkey
 
 import (
 	"context"
@@ -47,10 +47,10 @@ func (r *Resource) Create(
 		Key:   plan.PublicKey.ValueStringPointer(),
 	}
 
-	projectId := plan.ProjectID.ValueString()
+	projectID := plan.ProjectID.ValueString()
 
 	// Create API resource
-	key, _, err := client.SSHKeysApi.CreateProjectSSHKey(ctx, projectId).SSHKeyCreateInput(*createRequest).Execute()
+	key, _, err := client.SSHKeysApi.CreateProjectSSHKey(ctx, projectID).SSHKeyCreateInput(*createRequest).Execute()
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Failed to create Project SSH Key",

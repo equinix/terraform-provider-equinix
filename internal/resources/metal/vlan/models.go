@@ -13,7 +13,7 @@ import (
 type DataSourceModel struct {
 	ResourceModel
 	VlanID             types.String `tfsdk:"vlan_id"`
-	AssignedDevicesIds types.List   `tfsdk:"assigned_devices_ids"`
+	AssignedDevicesIDs types.List   `tfsdk:"assigned_devices_ids"`
 }
 
 func (m *DataSourceModel) parse(vlan *packngo.VirtualNetwork) diag.Diagnostics {
@@ -24,12 +24,12 @@ func (m *DataSourceModel) parse(vlan *packngo.VirtualNetwork) diag.Diagnostics {
 
 	m.VlanID = types.StringValue(vlan.ID)
 
-	deviceIds := make([]types.String, 0, len(vlan.Instances))
+	deviceIDs := make([]types.String, 0, len(vlan.Instances))
 	for _, device := range vlan.Instances {
-		deviceIds = append(deviceIds, types.StringValue(device.ID))
+		deviceIDs = append(deviceIDs, types.StringValue(device.ID))
 	}
 
-	return m.AssignedDevicesIds.ElementsAs(context.Background(), &deviceIds, false)
+	return m.AssignedDevicesIDs.ElementsAs(context.Background(), &deviceIDs, false)
 }
 
 type ResourceModel struct {
