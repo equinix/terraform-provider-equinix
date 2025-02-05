@@ -39,7 +39,7 @@ func testSweeperNetworks(region string) error {
 	name := fabricv4.NETWORKSEARCHFIELDNAME_NAME
 	likeOperator := fabricv4.NETWORKFILTEROPERATOR_LIKE
 	limit := int32(100)
-	offset := int32(10)
+	offset := int32(0)
 
 	networkSearchRequest := fabricv4.NetworkSearchRequest{
 		Filter: &fabricv4.NetworkFilter{
