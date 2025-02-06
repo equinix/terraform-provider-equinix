@@ -92,7 +92,7 @@ func CheckRouteAggregationDelete(s *terraform.State) error {
 
 		if routeAggregation, _, err := client.RouteAggregationsApi.GetRouteAggregationByUuid(ctx, rs.Primary.ID).Execute(); err == nil {
 			if routeAggregation.GetState() == fabricv4.ROUTEAGGREGATIONSTATE_PROVISIONED {
-				return fmt.Errorf("fabric stream %s still exists and is %s",
+				return fmt.Errorf("fabric route aggregation %s still exists and is %s",
 					rs.Primary.ID, routeAggregation.GetState())
 			}
 		}

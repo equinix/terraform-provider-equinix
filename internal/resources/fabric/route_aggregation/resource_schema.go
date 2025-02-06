@@ -90,7 +90,7 @@ func resourceSchema(ctx context.Context) schema.Schema {
 				Computed:    true,
 			},
 			"change_log": schema.SingleNestedAttribute{
-				Description: "Details of the last change on the stream resource",
+				Description: "Details of the last change on the route aggregation resource",
 				Computed:    true,
 				PlanModifiers: []planmodifier.Object{
 					objectplanmodifier.UseStateForUnknown(),
@@ -98,51 +98,51 @@ func resourceSchema(ctx context.Context) schema.Schema {
 				CustomType: fwtypes.NewObjectTypeOf[ChangeLogModel](ctx),
 				Attributes: map[string]schema.Attribute{
 					"created_by": schema.StringAttribute{
-						Description: "User name of creator of the stream resource",
+						Description: "User name of creator of the route aggregation resource",
 						Computed:    true,
 					},
 					"created_by_full_name": schema.StringAttribute{
-						Description: "Legal name of creator of the stream resource",
+						Description: "Legal name of creator of the route aggregation resource",
 						Computed:    true,
 					},
 					"created_by_email": schema.StringAttribute{
-						Description: "Email of creator of the stream resource",
+						Description: "Email of creator of the route aggregation resource",
 						Computed:    true,
 					},
 					"created_date_time": schema.StringAttribute{
-						Description: "Creation time of the stream resource",
+						Description: "Creation time of the route aggregation resource",
 						Computed:    true,
 					},
 					"updated_by": schema.StringAttribute{
-						Description: "User name of last updater of the stream resource",
+						Description: "User name of last updater of the route aggregation resource",
 						Computed:    true,
 					},
 					"updated_by_full_name": schema.StringAttribute{
-						Description: "Legal name of last updater of the stream resource",
+						Description: "Legal name of last updater of the route aggregation resource",
 						Computed:    true,
 					},
 					"updated_by_email": schema.StringAttribute{
-						Description: "Email of last updater of the stream resource",
+						Description: "Email of last updater of the route aggregation resource",
 						Computed:    true,
 					},
 					"updated_date_time": schema.StringAttribute{
-						Description: "Last update time of the stream resource",
+						Description: "Last update time of the route aggregation resource",
 						Computed:    true,
 					},
 					"deleted_by": schema.StringAttribute{
-						Description: "User name of deleter of the stream resource",
+						Description: "User name of deleter of the route aggregation resource",
 						Computed:    true,
 					},
 					"deleted_by_full_name": schema.StringAttribute{
-						Description: "Legal name of deleter of the stream resource",
+						Description: "Legal name of deleter of the route aggregation resource",
 						Computed:    true,
 					},
 					"deleted_by_email": schema.StringAttribute{
-						Description: "Email of deleter of the stream resource",
+						Description: "Email of deleter of the route aggregation resource",
 						Computed:    true,
 					},
 					"deleted_date_time": schema.StringAttribute{
-						Description: "Deletion time of the stream resource",
+						Description: "Deletion time of the route aggregation resource",
 						Computed:    true,
 					},
 				},

@@ -115,7 +115,7 @@ func (m *DatsSourceAllRouteAggregationsModel) parse(ctx context.Context, routeAg
 	var diags diag.Diagnostics
 
 	if len(routeAggregationsResponse.GetData()) < 1 {
-		diags.AddError("no data retrieved by streams data source", "either the account does not have any streams data to pull or the combination of limit and offset needs to be updated")
+		diags.AddError("no data retrieved by route aggregations data source", "either the account does not have any route aggregations data to pull or the combination of limit and offset needs to be updated")
 		return diags
 	}
 

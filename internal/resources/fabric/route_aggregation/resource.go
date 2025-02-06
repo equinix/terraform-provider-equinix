@@ -142,7 +142,7 @@ func (r *Resource) Update(
 
 	newName, oldName := plan.Name.ValueString(), plan.Name.ValueString()
 
-	if newName != oldName {
+	if newName == oldName {
 		resp.Diagnostics.AddWarning("No updatable fields have changed", "Terraform detected a config change, but it is for a field that isn't updatable for the route aggregation resource. Please revert to prior config")
 		return
 	}
@@ -205,7 +205,7 @@ func (r *Resource) Delete(
 	_, deleteResp, err := client.RouteAggregationsApi.DeleteRouteAggregationByUuid(ctx, id).Execute()
 	if err != nil {
 		if deleteResp == nil || !slices.Contains([]int{http.StatusForbidden, http.StatusNotFound}, deleteResp.StatusCode) {
-			resp.Diagnostics.AddError(fmt.Sprintf("Failed deleting Stream %s", id), equinix_errors.FormatFabricError(err).Error())
+			resp.Diagnostics.AddError(fmt.Sprintf("Failed deleting Route Aggregation %s", id), equinix_errors.FormatFabricError(err).Error())
 			return
 		}
 	}
@@ -219,7 +219,7 @@ func (r *Resource) Delete(
 	_, err = deletewaiter.WaitForStateContext(ctx)
 
 	if err != nil {
-		resp.Diagnostics.AddError(fmt.Sprintf("Failed deleting Stream %s", id), err.Error())
+		resp.Diagnostics.AddError(fmt.Sprintf("Failed deleting Route Aggregation %s", id), err.Error())
 		return
 	}
 }

@@ -15,14 +15,14 @@ import (
 
 func dataSourceAllRouteAggregationsSchema(ctx context.Context) schema.Schema {
 	return schema.Schema{
-		Description: `Fabric V4 API compatible data resource that allow user to fetch Equinix Fabric Streams with pagination details
+		Description: `Fabric V4 API compatible data resource that allow user to fetch Equinix Fabric Route Aggregations with pagination details
 Additional Documentation:
 * Getting Started: https://docs.equinix.com/en-us/Content/KnowledgeCenter/Fabric/GettingStarted/Integrating-with-Fabric-V4-APIs/IntegrateWithSink.htm
 * API: https://developer.equinix.com/catalog/fabricv4#tag/Streams`,
 		Attributes: map[string]schema.Attribute{
 			"id": framework.IDAttributeDefaultDescription(),
 			"data": schema.ListNestedAttribute{
-				Description: "Returned list of stream objects",
+				Description: "Returned list of route aggregation objects",
 				Computed:    true,
 				CustomType:  fwtypes.NewListNestedObjectTypeOf[BaseRouteAggregationModel](ctx),
 				NestedObject: schema.NestedAttributeObject{
@@ -32,7 +32,6 @@ Additional Documentation:
 			"filter": schema.SingleNestedAttribute{
 				Description: "Filters for the Data Source Search Request",
 				Required:    true,
-				//CustomType:  fwtypes.NewObjectTypeOf[FilterModel](ctx),
 				Attributes: map[string]schema.Attribute{
 					"property": schema.StringAttribute{
 						Description: fmt.Sprintf("possible field names to use on filters. One of %v", fabricv4.AllowedRouteFiltersSearchFilterItemPropertyEnumValues),
@@ -49,25 +48,6 @@ Additional Documentation:
 					},
 				},
 			},
-			//"filter": schema.ObjectAttribute{
-			//	Description: "Filters for the Data Source Search Request",
-			//	Required:    true,
-			//	AttributeTypes: map[string]attr.Type{
-			//		"property": schema.String{
-			//			Description: "The property to be used in the filter condition (e.g., 'status', 'type')",
-			//			Required:    true,
-			//		},
-			//		"operator": schema.StringAttribute{
-			//			Description: "The operator to be used in the filter condition (e.g., '=', '>', 'IN')",
-			//			Required:    true,
-			//		},
-			//		"values": schema.ListAttribute{
-			//			Description: "The values that you want to apply the property+operator combination to in order to filter your data search",
-			//			ElementType: types.StringType,
-			//			Required:    true,
-			//		},
-			//	},
-			//}
 			"pagination": schema.SingleNestedAttribute{
 				Description: "Pagination details for the returned route aggregations list",
 				Optional:    true,
@@ -84,7 +64,7 @@ Additional Documentation:
 						Computed:    true,
 					},
 					"total": schema.Int32Attribute{
-						Description: "The total number of streams available to the user making the request",
+						Description: "The total number of route aggregations available to the user making the request",
 						Computed:    true,
 					},
 					"next": schema.StringAttribute{
@@ -126,7 +106,7 @@ func dataSourceSingleRouteAggregationSchema(ctx context.Context) schema.Schema {
 		Required:    true,
 	}
 	return schema.Schema{
-		Description: `Fabric V4 API compatible data resource that allow user to fetch Equinix Fabric Stream by UUID
+		Description: `Fabric V4 API compatible data resource that allow user to fetch Equinix Fabric Route Aggregation by UUID
 Additional Documentation:
 * API: https://developer.equinix.com/catalog/fabricv4#tag/Route-Aggregations`,
 		Attributes: baseRouteAggregationSchema,
@@ -199,56 +179,56 @@ func getRouteAggregationSchema(ctx context.Context) map[string]schema.Attribute 
 			Computed:    true,
 		},
 		"change_log": schema.SingleNestedAttribute{
-			Description: "Details of the last change on the stream resource",
+			Description: "Details of the last change on the route aggregation resource",
 			Computed:    true,
 			CustomType:  fwtypes.NewObjectTypeOf[ChangeLogModel](ctx),
 			Attributes: map[string]schema.Attribute{
 				"created_by": schema.StringAttribute{
-					Description: "User name of creator of the stream resource",
+					Description: "User name of creator of the route aggregation resource",
 					Computed:    true,
 				},
 				"created_by_full_name": schema.StringAttribute{
-					Description: "Legal name of creator of the stream resource",
+					Description: "Legal name of creator of the route aggregation resource",
 					Computed:    true,
 				},
 				"created_by_email": schema.StringAttribute{
-					Description: "Email of creator of the stream resource",
+					Description: "Email of creator of the route aggregation resource",
 					Computed:    true,
 				},
 				"created_date_time": schema.StringAttribute{
-					Description: "Creation time of the stream resource",
+					Description: "Creation time of the route aggregation resource",
 					Computed:    true,
 				},
 				"updated_by": schema.StringAttribute{
-					Description: "User name of last updater of the stream resource",
+					Description: "User name of last updater of the route aggregation resource",
 					Computed:    true,
 				},
 				"updated_by_full_name": schema.StringAttribute{
-					Description: "Legal name of last updater of the stream resource",
+					Description: "Legal name of last updater of the route aggregation resource",
 					Computed:    true,
 				},
 				"updated_by_email": schema.StringAttribute{
-					Description: "Email of last updater of the stream resource",
+					Description: "Email of last updater of the route aggregation resource",
 					Computed:    true,
 				},
 				"updated_date_time": schema.StringAttribute{
-					Description: "Last update time of the stream resource",
+					Description: "Last update time of the route aggregation resource",
 					Computed:    true,
 				},
 				"deleted_by": schema.StringAttribute{
-					Description: "User name of deleter of the stream resource",
+					Description: "User name of deleter of the route aggregation resource",
 					Computed:    true,
 				},
 				"deleted_by_full_name": schema.StringAttribute{
-					Description: "Legal name of deleter of the stream resource",
+					Description: "Legal name of deleter of the route aggregation resource",
 					Computed:    true,
 				},
 				"deleted_by_email": schema.StringAttribute{
-					Description: "Email of deleter of the stream resource",
+					Description: "Email of deleter of the route aggregation resource",
 					Computed:    true,
 				},
 				"deleted_date_time": schema.StringAttribute{
-					Description: "Deletion time of the stream resource",
+					Description: "Deletion time of the route aggregation resource",
 					Computed:    true,
 				},
 			},
