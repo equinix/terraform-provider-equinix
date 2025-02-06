@@ -1,6 +1,7 @@
 package sweep_test
 
 import (
+	"github.com/equinix/terraform-provider-equinix/internal/resources/fabric/service_profile"
 	"testing"
 
 	fabric_cloud_router "github.com/equinix/terraform-provider-equinix/internal/resources/fabric/cloud_router"
@@ -41,6 +42,7 @@ func addTestSweepers() {
 	network.AddTestSweeper()
 	organization.AddTestSweeper()
 	project.AddTestSweeper()
+	service_profile.AddTestSweeper()
 	ssh_key.AddTestSweeper()
 	user_api_key.AddTestSweeper()
 	virtual_circuit.AddTestSweeper()
