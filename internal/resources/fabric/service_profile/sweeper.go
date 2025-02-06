@@ -1,0 +1,76 @@
+package service_profile
+
+import (
+	"context"
+	"errors"
+	"fmt"
+	"github.com/equinix/equinix-sdk-go/services/fabricv4"
+	equinix_errors "github.com/equinix/terraform-provider-equinix/internal/errors"
+	"net/http"
+
+	"github.com/equinix/terraform-provider-equinix/internal/sweep"
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"log"
+)
+
+func AddTestSweeper() {
+	resource.AddTestSweepers("equinix_fabric_service_profile", &resource.Sweeper{
+		Name:         "equinix_fabric_service_profile",
+		Dependencies: []string{"equinix_fabric_connection"},
+		F:            testSweepServiceProfiles,
+	})
+}
+
+func testSweepServiceProfiles(r string) error {
+	var errs []error
+	log.Printf("[DEBUG] Sweeping Service Profiles")
+	ctx := context.Background()
+	meta, err := sweep.GetConfigForFabric()
+	if err != nil {
+		return fmt.Errorf("error getting configuration for sweeping Service Profiles: %s", err)
+	}
+	configLoadErr := meta.Load(ctx)
+	if configLoadErr != nil {
+		return fmt.Errorf("error loading configuration for sweeping Service Profiles: %s", err)
+	}
+	fabric := meta.NewFabricClientForTesting(ctx)
+
+	limit := int32(100)
+	offset := int32(0)
+	equalOperator := string(fabricv4.EXPRESSIONOPERATOR_EQUAL)
+	state := string(fabricv4.SERVICEPROFILESORTBY_STATE)
+
+	serviceProfileSearchRequest := fabricv4.ServiceProfileSearchRequest{
+		Filter: &fabricv4.ServiceProfileFilter{
+			ServiceProfileAndFilter: &fabricv4.ServiceProfileAndFilter{
+				And: []fabricv4.ServiceProfileSimpleExpression{},
+			},
+			ServiceProfileSimpleExpression: &fabricv4.ServiceProfileSimpleExpression{
+				Property: &state,
+				Operator: &equalOperator,
+				Values:   []string{string(fabricv4.SERVICEPROFILESTATEENUM_ACTIVE)},
+			},
+		},
+		Pagination: &fabricv4.PaginationRequest{
+			Limit:  &limit,
+			Offset: &offset,
+		},
+	}
+	fabricServiceProfiles, _, err := fabric.ServiceProfilesApi.SearchServiceProfiles(ctx).ServiceProfileSearchRequest(serviceProfileSearchRequest).Execute()
+
+	if err != nil {
+		return fmt.Errorf("error getting service profiles list for sweeping fabric service profiles: %s", err)
+	}
+
+	for _, serviceProfile := range fabricServiceProfiles.Data {
+		if sweep.IsSweepableFabricTestResource(serviceProfile.GetName()) {
+			log.Printf("[DEBUG] Deleting Service Profiles: %s", serviceProfile.GetName())
+			_, httpResponse, err := fabric.ServiceProfilesApi.DeleteServiceProfileByUuid(ctx, serviceProfile.GetUuid()).Execute()
+			if equinix_errors.IgnoreHttpResponseErrors(http.StatusForbidden, http.StatusNotFound)(httpResponse, err) != nil {
+				errs = append(errs, fmt.Errorf("error deleting fabric Service Profiles: %s", err))
+			}
+		}
+	}
+
+	return errors.Join(errs...)
+}
