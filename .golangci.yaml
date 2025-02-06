@@ -10,6 +10,16 @@ linters:
     - ineffassign
     - staticcheck
     - unused
+    - revive
+    - stylecheck
 issues:
   max-issues-per-linter: 0
   max-same-issues: 0
+  exclude-rules:
+    # Allow underscores in names in test files because the
+    # HashiCorp-recommended/documented convention uses
+    # underscores in function names
+    - path: _test\.go
+      linters:
+        - revive
+      text: "^var-naming"
