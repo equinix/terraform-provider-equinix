@@ -36,7 +36,7 @@ resource "equinix_fabric_route_aggregation" "new-ra" {
 ### Read-Only
 
 - `change` (Attributes) Current state of latest Route Aggregation change (see [below for nested schema](#nestedatt--change))
-- `change_log` (Attributes) Details of the last change on the stream resource (see [below for nested schema](#nestedatt--change_log))
+- `change_log` (Attributes) Details of the last change on the route aggregation resource (see [below for nested schema](#nestedatt--change_log))
 - `connections_count` (Number) Number of Connections attached to route aggregation
 - `href` (String) Equinix auto generated URI to the route aggregation resource
 - `id` (String) The unique identifier of the resource
@@ -78,15 +78,15 @@ Required:
 
 Read-Only:
 
-- `created_by` (String) User name of creator of the stream resource
-- `created_by_email` (String) Email of creator of the stream resource
-- `created_by_full_name` (String) Legal name of creator of the stream resource
-- `created_date_time` (String) Creation time of the stream resource
-- `deleted_by` (String) User name of deleter of the stream resource
-- `deleted_by_email` (String) Email of deleter of the stream resource
-- `deleted_by_full_name` (String) Legal name of deleter of the stream resource
-- `deleted_date_time` (String) Deletion time of the stream resource
-- `updated_by` (String) User name of last updater of the stream resource
-- `updated_by_email` (String) Email of last updater of the stream resource
-- `updated_by_full_name` (String) Legal name of last updater of the stream resource
-- `updated_date_time` (String) Last update time of the stream resource
+- `created_by` (String) User name of creator of the route aggregation resource
+- `created_by_email` (String) Email of creator of the route aggregation resource
+- `created_by_full_name` (String) Legal name of creator of the route aggregation resource
+- `created_date_time` (String) Creation time of the route aggregation resource
+- `deleted_by` (String) User name of deleter of the route aggregation resource
+- `deleted_by_email` (String) Email of deleter of the route aggregation resource
+- `deleted_by_full_name` (String) Legal name of deleter of the route aggregation resource
+- `deleted_date_time` (String) Deletion time of the route aggregation resource
+- `updated_by` (String) User name of last updater of the route aggregation resource
+- `updated_by_email` (String) Email of last updater of the route aggregation resource
+- `updated_by_full_name` (String) Legal name of last updater of the route aggregation resource
+- `updated_date_time` (String) Last update time of the route aggregation resource
