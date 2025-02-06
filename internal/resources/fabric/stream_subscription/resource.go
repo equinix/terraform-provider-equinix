@@ -1,4 +1,4 @@
-package stream_subscription
+package streamsubscription
 
 import (
 	"context"
@@ -382,8 +382,8 @@ func buildStreamSubscriptionSink(ctx context.Context, sinkObject fwtypes.ObjectV
 	var sink fabricv4.StreamSubscriptionSink
 
 	sink.SetType(fabricv4.StreamSubscriptionSinkType(sinkModel.Type.ValueString()))
-	if !sinkModel.Uri.IsNull() && !sinkModel.Uri.IsUnknown() {
-		sink.SetUri(sinkModel.Uri.ValueString())
+	if !sinkModel.URI.IsNull() && !sinkModel.URI.IsUnknown() {
+		sink.SetUri(sinkModel.URI.ValueString())
 	}
 
 	if !sinkModel.BatchEnabled.IsNull() && !sinkModel.BatchEnabled.IsUnknown() {
@@ -419,7 +419,7 @@ func buildStreamSubscriptionSink(ctx context.Context, sinkObject fwtypes.ObjectV
 		case fabricv4.STREAMSUBSCRIPTIONSINKCREDENTIALTYPE_INTEGRATION_KEY:
 			credential.SetIntegrationKey(credentialModel.IntegrationKey.ValueString())
 		case fabricv4.STREAMSUBSCRIPTIONSINKCREDENTIALTYPE_API_KEY:
-			credential.SetApiKey(credentialModel.ApiKey.ValueString())
+			credential.SetApiKey(credentialModel.APIKey.ValueString())
 		case fabricv4.STREAMSUBSCRIPTIONSINKCREDENTIALTYPE_USERNAME_PASSWORD:
 			credential.SetUsername(credentialModel.Username.ValueString())
 			credential.SetPassword(credentialModel.Password.ValueString())
@@ -449,11 +449,11 @@ func buildStreamSubscriptionSink(ctx context.Context, sinkObject fwtypes.ObjectV
 		if !settingsModel.ApplicationKey.IsNull() && !settingsModel.ApplicationKey.IsUnknown() {
 			settings.SetApplicationKey(settingsModel.ApplicationKey.ValueString())
 		}
-		if !settingsModel.EventUri.IsNull() && !settingsModel.EventUri.IsUnknown() {
-			settings.SetEventUri(settingsModel.EventUri.ValueString())
+		if !settingsModel.EventURI.IsNull() && !settingsModel.EventURI.IsUnknown() {
+			settings.SetEventUri(settingsModel.EventURI.ValueString())
 		}
-		if !settingsModel.MetricUri.IsNull() && !settingsModel.MetricUri.IsUnknown() {
-			settings.SetMetricUri(settingsModel.MetricUri.ValueString())
+		if !settingsModel.MetricURI.IsNull() && !settingsModel.MetricURI.IsUnknown() {
+			settings.SetMetricUri(settingsModel.MetricURI.ValueString())
 		}
 		if !settingsModel.TransformAlerts.IsNull() && !settingsModel.TransformAlerts.IsUnknown() {
 			settings.SetTransformAlerts(settingsModel.TransformAlerts.ValueBool())

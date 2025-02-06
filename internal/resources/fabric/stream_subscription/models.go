@@ -1,4 +1,4 @@
-package stream_subscription
+package streamsubscription
 
 import (
 	"context"
@@ -54,7 +54,7 @@ type BaseStreamSubscriptionModel struct {
 	EventSelector  fwtypes.ObjectValueOf[SelectorModel]         `tfsdk:"event_selector"`  // Object of EventSelectorModel
 	Sink           fwtypes.ObjectValueOf[SinkModel]             `tfsdk:"sink"`            // Object of SinkModel
 	Href           types.String                                 `tfsdk:"href"`
-	Uuid           types.String                                 `tfsdk:"uuid"`
+	UUID           types.String                                 `tfsdk:"uuid"`
 	State          types.String                                 `tfsdk:"state"`
 	ChangeLog      fwtypes.ObjectValueOf[ChangeLogModel]        `tfsdk:"change_log"` // Object of ChangeLogModel
 }
@@ -72,7 +72,7 @@ type SelectorModel struct {
 }
 
 type SinkModel struct {
-	Uri              types.String                               `tfsdk:"uri"`
+	URI              types.String                               `tfsdk:"uri"`
 	Type             types.String                               `tfsdk:"type"`
 	BatchEnabled     types.Bool                                 `tfsdk:"batch_enabled"`
 	BatchSizeMax     types.Int32                                `tfsdk:"batch_size_max"`
@@ -86,7 +86,7 @@ type SinkCredentialModel struct {
 	Type           types.String `tfsdk:"type"`
 	AccessToken    types.String `tfsdk:"access_token"`
 	IntegrationKey types.String `tfsdk:"integration_key"`
-	ApiKey         types.String `tfsdk:"api_key"`
+	APIKey         types.String `tfsdk:"api_key"`
 	Username       types.String `tfsdk:"username"`
 	Password       types.String `tfsdk:"password"`
 }
@@ -96,8 +96,8 @@ type SinkSettingsModel struct {
 	MetricIndex     types.String `tfsdk:"metric_index"`
 	Source          types.String `tfsdk:"source"`
 	ApplicationKey  types.String `tfsdk:"application_key"`
-	EventUri        types.String `tfsdk:"event_uri"`
-	MetricUri       types.String `tfsdk:"metric_uri"`
+	EventURI        types.String `tfsdk:"event_uri"`
+	MetricURI       types.String `tfsdk:"metric_uri"`
 	TransformAlerts types.Bool   `tfsdk:"transform_alerts"`
 }
 
@@ -131,7 +131,7 @@ func (m *DataSourceByIDsModel) parse(ctx context.Context, streamSubscription *fa
 		&m.EventSelector,
 		&m.Sink,
 		&m.Href,
-		&m.Uuid,
+		&m.UUID,
 		&m.State,
 		&m.ChangeLog)
 	if diags.HasError() {
@@ -169,8 +169,8 @@ func (m *DataSourceAll) parse(ctx context.Context, streamSubscriptionsResponse *
 		Previous: types.StringValue(responsePagination.GetPrevious()),
 	}
 
-	m.ID = types.StringValue(data[0].Uuid.ValueString())
-	m.StreamID = types.StringValue(data[0].Uuid.ValueString())
+	m.ID = types.StringValue(data[0].UUID.ValueString())
+	m.StreamID = types.StringValue(data[0].UUID.ValueString())
 	m.Pagination = fwtypes.NewObjectValueOf[PaginationModel](ctx, &pagination)
 	m.Data = fwtypes.NewListNestedObjectValueOfValueSlice[BaseStreamSubscriptionModel](ctx, data)
 
@@ -190,7 +190,7 @@ func (m *ResourceModel) parse(ctx context.Context, streamSubscription *fabricv4.
 		&m.EventSelector,
 		&m.Sink,
 		&m.Href,
-		&m.Uuid,
+		&m.UUID,
 		&m.State,
 		&m.ChangeLog)
 	if diags.HasError() {
@@ -211,7 +211,7 @@ func (m *BaseStreamSubscriptionModel) parse(ctx context.Context, streamSubscript
 		&m.EventSelector,
 		&m.Sink,
 		&m.Href,
-		&m.Uuid,
+		&m.UUID,
 		&m.State,
 		&m.ChangeLog)
 	if diags.HasError() {
@@ -282,7 +282,7 @@ func parseStreamSubscription(ctx context.Context, streamSubscription *fabricv4.S
 	// Parse Sink
 	streamSubSink := streamSubscription.GetSink()
 	sinkModel := SinkModel{
-		Uri:              types.StringValue(streamSubSink.GetUri()),
+		URI:              types.StringValue(streamSubSink.GetUri()),
 		Type:             types.StringValue(string(streamSubSink.GetType())),
 		BatchEnabled:     types.BoolValue(streamSubSink.GetBatchEnabled()),
 		BatchSizeMax:     types.Int32Value(streamSubSink.GetBatchSizeMax()),
@@ -299,8 +299,8 @@ func parseStreamSubscription(ctx context.Context, streamSubscription *fabricv4.S
 	case fabricv4.STREAMSUBSCRIPTIONSINKCREDENTIALTYPE_INTEGRATION_KEY:
 		credentialModel.IntegrationKey = types.StringValue(sinkCredential.GetIntegrationKey())
 	case fabricv4.STREAMSUBSCRIPTIONSINKCREDENTIALTYPE_API_KEY:
-		credentialModel.ApiKey = types.StringValue(sinkCredential.GetApiKey())
-		sinkCredential.SetApiKey(credentialModel.ApiKey.ValueString())
+		credentialModel.APIKey = types.StringValue(sinkCredential.GetApiKey())
+		sinkCredential.SetApiKey(credentialModel.APIKey.ValueString())
 	case fabricv4.STREAMSUBSCRIPTIONSINKCREDENTIALTYPE_USERNAME_PASSWORD:
 		credentialModel.Username = types.StringValue(sinkCredential.GetUsername())
 		credentialModel.Password = types.StringValue(sinkCredential.GetPassword())
@@ -314,8 +314,8 @@ func parseStreamSubscription(ctx context.Context, streamSubscription *fabricv4.S
 		MetricIndex:     types.StringValue(sinkSettings.GetMetricIndex()),
 		Source:          types.StringValue(sinkSettings.GetSource()),
 		ApplicationKey:  types.StringValue(sinkSettings.GetApplicationKey()),
-		EventUri:        types.StringValue(sinkSettings.GetEventUri()),
-		MetricUri:       types.StringValue(sinkSettings.GetMetricUri()),
+		EventURI:        types.StringValue(sinkSettings.GetEventUri()),
+		MetricURI:       types.StringValue(sinkSettings.GetMetricUri()),
 		TransformAlerts: types.BoolValue(sinkSettings.GetTransformAlerts()),
 	}
 

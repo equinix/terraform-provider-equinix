@@ -1,1 +1,1 @@
-package stream_subscription_test
+package streamsubscription_test
