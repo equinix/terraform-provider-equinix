@@ -1,4 +1,4 @@
-package stream_subscription
+package streamsubscription
 
 import (
 	"context"
@@ -64,7 +64,7 @@ Additional Documentation:
 	}
 }
 
-func dataSourceStreamSubscriptionById(ctx context.Context) schema.Schema {
+func dataSourceStreamSubscriptionByID(ctx context.Context) schema.Schema {
 	baseStreamSchema := getStreamSubscriptionSchema(ctx)
 	baseStreamSchema["id"] = framework.IDAttributeDefaultDescription()
 	baseStreamSchema["stream_id"] = schema.StringAttribute{

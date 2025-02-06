@@ -1,4 +1,4 @@
-package stream_subscription
+package streamsubscription
 
 import (
 	"context"
@@ -6,6 +6,7 @@ import (
 	"github.com/equinix/terraform-provider-equinix/internal/framework"
 	fwtypes "github.com/equinix/terraform-provider-equinix/internal/framework/types"
 
+	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
@@ -19,6 +20,12 @@ Additional Documentation:
 * API: https://developer.equinix.com/catalog/fabricv4#tag/Stream-Subscriptions`,
 		Attributes: map[string]schema.Attribute{
 			"id": framework.IDAttributeDefaultDescription(),
+			"timeouts": timeouts.Attributes(ctx, timeouts.Opts{
+				Create: true,
+				Read:   true,
+				Update: true,
+				Delete: true,
+			}),
 			"stream_id": schema.StringAttribute{
 				Description: "The uuid of the stream that is the target of the stream subscription",
 				Required:    true,
@@ -66,7 +73,7 @@ Additional Documentation:
 			},
 			"metric_selector": schema.SingleNestedAttribute{
 				Description: "Lists of metrics to be included/excluded on the stream subscription",
-				Required:    true,
+				Optional:    true,
 				Attributes: map[string]schema.Attribute{
 					"include": schema.ListAttribute{
 						Description: "List of metrics to include",
@@ -82,7 +89,7 @@ Additional Documentation:
 			},
 			"event_selector": schema.SingleNestedAttribute{
 				Description: "Lists of events to be included/excluded on the stream subscription",
-				Required:    true,
+				Optional:    true,
 				Attributes: map[string]schema.Attribute{
 					"include": schema.ListAttribute{
 						Description: "List of events to include",

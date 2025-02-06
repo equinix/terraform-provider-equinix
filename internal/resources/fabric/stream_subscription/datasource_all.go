@@ -1,4 +1,4 @@
-package stream_subscription
+package streamsubscription
 
 import (
 	"context"

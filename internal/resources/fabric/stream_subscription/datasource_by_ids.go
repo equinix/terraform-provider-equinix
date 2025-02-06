@@ -1,4 +1,4 @@
-package stream_subscription
+package streamsubscription
 
 import (
 	"context"
@@ -9,7 +9,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 )
 
-func NewDataSourceByStreamID() datasource.DataSource {
+func NewDataSourceByIDs() datasource.DataSource {
 	return &DataSourceByStreamID{
 		BaseDataSource: framework.NewBaseDataSource(
 			framework.BaseDataSourceConfig{
@@ -28,7 +28,7 @@ func (r *DataSourceByStreamID) Schema(
 	_ datasource.SchemaRequest,
 	resp *datasource.SchemaResponse,
 ) {
-	resp.Schema = dataSourceStreamSubscriptionById(ctx)
+	resp.Schema = dataSourceStreamSubscriptionByID(ctx)
 }
 
 func (r *DataSourceByStreamID) Read(ctx context.Context, request datasource.ReadRequest, response *datasource.ReadResponse) {
