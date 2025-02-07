@@ -8,7 +8,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 )
 
 type MetroModel struct {
@@ -111,46 +110,30 @@ func (m *DataSourceByCodeModel) parse(ctx context.Context, metro *fabricv4.Metro
 }
 
 func (m *MetroModel) parse(ctx context.Context, metro *fabricv4.Metro) diag.Diagnostics {
-	diags := parseMetro(ctx, metro, &m.Type, &m.Href, &m.Code, &m.Region, &m.Name, &m.EquinixASN, &m.LocalVCBandwidthMax, &m.GeoCoordinates, &m.ConnectedMetros, &m.GeoScopes)
-	return diags
-}
-
-func parseMetro(ctx context.Context, metro *fabricv4.Metro, tp, href, code, region, name *basetypes.StringValue, equinixAsn, localBandwidthMax *basetypes.Int64Value, geoCoordinates *fwtypes.ObjectValueOf[GeoCoordinatesModel], connectedMetros *fwtypes.ListNestedObjectValueOf[ConnectedMetroModel], gScopes *fwtypes.ListValueOf[types.String]) diag.Diagnostics {
-
 	var diags diag.Diagnostics
-	*href = types.StringValue(metro.GetHref())
-	*tp = types.StringValue(metro.GetType())
-	*code = types.StringValue(metro.GetCode())
-	*region = types.StringValue(metro.GetRegion())
-	if metro.GetName() != "" {
-		*name = types.StringValue(metro.GetName())
-	}
 
-	if equinixAsn != nil {
-		*equinixAsn = types.Int64Value(metro.GetEquinixAsn())
-	}
+	m.Href = types.StringValue(metro.GetHref())
+	m.Type = types.StringValue(metro.GetType())
+	m.Code = types.StringValue(metro.GetCode())
+	m.Region = types.StringValue(metro.GetRegion())
+	m.Name = types.StringValue(metro.GetName())
+	m.EquinixASN = types.Int64Value(metro.GetEquinixAsn())
+	m.LocalVCBandwidthMax = types.Int64Value(metro.GetLocalVCBandwidthMax())
 
-	if localBandwidthMax != nil {
-		*localBandwidthMax = types.Int64Value(metro.GetLocalVCBandwidthMax())
-	}
-
-	geoCoord, diags := parseGeoCoordinates(ctx, metro.GetGeoCoordinates())
+	m.GeoCoordinates, diags = parseGeoCoordinates(ctx, metro.GetGeoCoordinates())
 	if diags.HasError() {
 		return diags
 	}
-	*geoCoordinates = geoCoord
 
-	connMetros, diags := parseConnectedMetros(ctx, metro.GetConnectedMetros())
+	m.ConnectedMetros, diags = parseConnectedMetros(ctx, metro.GetConnectedMetros())
 	if diags.HasError() {
 		return diags
 	}
-	*connectedMetros = connMetros
 
-	geoScopes, diags := parseGeoScopes(ctx, metro.GetGeoScopes())
+	m.GeoScopes, diags = parseGeoScopes(ctx, metro.GetGeoScopes())
 	if diags.HasError() {
 		return diags
 	}
-	*gScopes = geoScopes
 
 	return diags
 }
