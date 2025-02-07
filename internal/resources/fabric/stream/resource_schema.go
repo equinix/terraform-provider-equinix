@@ -2,6 +2,7 @@ package stream
 
 import (
 	"context"
+
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int32planmodifier"
 
 	"github.com/equinix/terraform-provider-equinix/internal/framework"
