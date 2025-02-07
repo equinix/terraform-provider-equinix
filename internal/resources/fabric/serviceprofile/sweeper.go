@@ -35,8 +35,6 @@ func testSweepServiceProfiles(_ string) error {
 	}
 	fabric := meta.NewFabricClientForTesting(ctx)
 
-	name := string(fabricv4.SERVICEPROFILESORTBY_NAME)
-	likeOperator := string(fabricv4.EXPRESSIONOPERATOR_LIKE)
 	limit := int32(100)
 	offset := int32(0)
 	equalOperator := string(fabricv4.EXPRESSIONOPERATOR_EQUAL)
@@ -52,11 +50,6 @@ func testSweepServiceProfiles(_ string) error {
 						Values:   []string{string(fabricv4.SERVICEPROFILESTATEENUM_ACTIVE)},
 					},
 				},
-			},
-			ServiceProfileSimpleExpression: &fabricv4.ServiceProfileSimpleExpression{
-				Property: &name,
-				Operator: &likeOperator,
-				Values:   []string{"%_PFCR", "%_PFNV", "%_PPDS"},
 			},
 		},
 		Pagination: &fabricv4.PaginationRequest{
