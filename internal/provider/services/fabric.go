@@ -1,6 +1,7 @@
 package services
 
 import (
+	"github.com/equinix/terraform-provider-equinix/internal/resources/fabric/route_aggregation"
 	"github.com/equinix/terraform-provider-equinix/internal/resources/fabric/stream"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
@@ -9,6 +10,7 @@ import (
 func FabricResources() []func() resource.Resource {
 	return []func() resource.Resource{
 		stream.NewResource,
+		route_aggregation.NewResource,
 	}
 }
 
@@ -16,5 +18,7 @@ func FabricDatasources() []func() datasource.DataSource {
 	return []func() datasource.DataSource{
 		stream.NewDataSourceByStreamID,
 		stream.NewDataSourceAllStreams,
+		route_aggregation.NewDataSourceByRouteAggregationID,
+		route_aggregation.NewDataSourceAllRouteAggregation,
 	}
 }
