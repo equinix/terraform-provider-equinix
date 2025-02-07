@@ -107,6 +107,7 @@ func getStreamSubscriptionSchema(ctx context.Context) map[string]schema.Attribut
 		"filters": schema.ListNestedAttribute{
 			Description: "List of filters to apply to the stream subscription selectors. Maximum of 8. All will be AND'd together with 1 of the 8 being a possible OR group of 3",
 			Computed:    true,
+			CustomType:  fwtypes.NewListNestedObjectTypeOf[FilterModel](ctx),
 			NestedObject: schema.NestedAttributeObject{
 				Attributes: map[string]schema.Attribute{
 					"property": schema.StringAttribute{
@@ -132,6 +133,7 @@ func getStreamSubscriptionSchema(ctx context.Context) map[string]schema.Attribut
 		"metric_selector": schema.SingleNestedAttribute{
 			Description: "Lists of metrics to be included/excluded on the stream subscription",
 			Computed:    true,
+			CustomType:  fwtypes.NewObjectTypeOf[SelectorModel](ctx),
 			Attributes: map[string]schema.Attribute{
 				"include": schema.ListAttribute{
 					Description: "List of metrics to include",
@@ -148,6 +150,7 @@ func getStreamSubscriptionSchema(ctx context.Context) map[string]schema.Attribut
 		"event_selector": schema.SingleNestedAttribute{
 			Description: "Lists of events to be included/excluded on the stream subscription",
 			Computed:    true,
+			CustomType:  fwtypes.NewObjectTypeOf[SelectorModel](ctx),
 			Attributes: map[string]schema.Attribute{
 				"include": schema.ListAttribute{
 					Description: "List of events to include",
@@ -164,6 +167,7 @@ func getStreamSubscriptionSchema(ctx context.Context) map[string]schema.Attribut
 		"sink": schema.SingleNestedAttribute{
 			Description: "The details of the subscriber to the Equinix Stream",
 			Computed:    true,
+			CustomType:  fwtypes.NewObjectTypeOf[SinkModel](ctx),
 			Attributes: map[string]schema.Attribute{
 				"uri": schema.StringAttribute{
 					Description: "Publicly reachable http endpoint destination for data stream",
@@ -192,6 +196,7 @@ func getStreamSubscriptionSchema(ctx context.Context) map[string]schema.Attribut
 				"credential": schema.SingleNestedAttribute{
 					Description: "Access details for the specified sink type",
 					Computed:    true,
+					CustomType:  fwtypes.NewObjectTypeOf[SinkCredentialModel](ctx),
 					Attributes: map[string]schema.Attribute{
 						"type": schema.StringAttribute{
 							Description: "Type of the credential being passed",
@@ -222,6 +227,7 @@ func getStreamSubscriptionSchema(ctx context.Context) map[string]schema.Attribut
 				"settings": schema.SingleNestedAttribute{
 					Description: "Stream subscription sink settings",
 					Computed:    true,
+					CustomType:  fwtypes.NewObjectTypeOf[SinkCredentialModel](ctx),
 					Attributes: map[string]schema.Attribute{
 						"event_index": schema.StringAttribute{
 							Computed: true,

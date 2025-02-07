@@ -468,6 +468,7 @@ func getCreateUpdateWaiter(ctx context.Context, client *fabricv4.APIClient, stre
 	return &retry.StateChangeConf{
 		Pending: []string{
 			string(fabricv4.STREAMSUBSCRIPTIONSTATE_PROVISIONING),
+			"REPROVISIONING",
 		},
 		Target: []string{
 			string(fabricv4.STREAMSUBSCRIPTIONSTATE_PROVISIONED),

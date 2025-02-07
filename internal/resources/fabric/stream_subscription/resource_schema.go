@@ -5,9 +5,14 @@ import (
 
 	"github.com/equinix/terraform-provider-equinix/internal/framework"
 	fwtypes "github.com/equinix/terraform-provider-equinix/internal/framework/types"
-
 	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/boolplanmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int32planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/listplanmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/objectplanmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
@@ -49,6 +54,11 @@ Additional Documentation:
 			"filters": schema.ListNestedAttribute{
 				Description: "List of filters to apply to the stream subscription selectors. Maximum of 8. All will be AND'd together with 1 of the 8 being a possible OR group of 3",
 				Optional:    true,
+				Computed:    true,
+				CustomType:  fwtypes.NewListNestedObjectTypeOf[FilterModel](ctx),
+				PlanModifiers: []planmodifier.List{
+					listplanmodifier.UseStateForUnknown(),
+				},
 				NestedObject: schema.NestedAttributeObject{
 					Attributes: map[string]schema.Attribute{
 						"property": schema.StringAttribute{
@@ -74,6 +84,11 @@ Additional Documentation:
 			"metric_selector": schema.SingleNestedAttribute{
 				Description: "Lists of metrics to be included/excluded on the stream subscription",
 				Optional:    true,
+				Computed:    true,
+				CustomType:  fwtypes.NewObjectTypeOf[SelectorModel](ctx),
+				PlanModifiers: []planmodifier.Object{
+					objectplanmodifier.UseStateForUnknown(),
+				},
 				Attributes: map[string]schema.Attribute{
 					"include": schema.ListAttribute{
 						Description: "List of metrics to include",
@@ -84,12 +99,18 @@ Additional Documentation:
 						Description: "List of metrics to exclude",
 						ElementType: types.StringType,
 						Optional:    true,
+						Computed:    true,
 					},
 				},
 			},
 			"event_selector": schema.SingleNestedAttribute{
 				Description: "Lists of events to be included/excluded on the stream subscription",
 				Optional:    true,
+				Computed:    true,
+				CustomType:  fwtypes.NewObjectTypeOf[SelectorModel](ctx),
+				PlanModifiers: []planmodifier.Object{
+					objectplanmodifier.UseStateForUnknown(),
+				},
 				Attributes: map[string]schema.Attribute{
 					"include": schema.ListAttribute{
 						Description: "List of events to include",
@@ -100,16 +121,25 @@ Additional Documentation:
 						Description: "List of events to exclude",
 						ElementType: types.StringType,
 						Optional:    true,
+						Computed:    true,
 					},
 				},
 			},
 			"sink": schema.SingleNestedAttribute{
 				Description: "The details of the subscriber to the Equinix Stream",
 				Required:    true,
+				CustomType:  fwtypes.NewObjectTypeOf[SinkModel](ctx),
+				PlanModifiers: []planmodifier.Object{
+					objectplanmodifier.UseStateForUnknown(),
+				},
 				Attributes: map[string]schema.Attribute{
 					"uri": schema.StringAttribute{
 						Description: "Publicly reachable http endpoint destination for data stream",
 						Optional:    true,
+						Computed:    true,
+						PlanModifiers: []planmodifier.String{
+							stringplanmodifier.UseStateForUnknown(),
+						},
 					},
 					"type": schema.StringAttribute{
 						Description: "Type of the subscriber",
@@ -118,22 +148,42 @@ Additional Documentation:
 					"batch_enabled": schema.BoolAttribute{
 						Description: "Boolean switch enabling batch delivery of data",
 						Optional:    true,
+						Computed:    true,
+						PlanModifiers: []planmodifier.Bool{
+							boolplanmodifier.UseStateForUnknown(),
+						},
 					},
 					"batch_size_max": schema.Int32Attribute{
 						Description: "Maximum size of the batch delivery if enabled",
 						Optional:    true,
+						Computed:    true,
+						PlanModifiers: []planmodifier.Int32{
+							int32planmodifier.UseStateForUnknown(),
+						},
 					},
 					"batch_wait_time_max": schema.Int32Attribute{
 						Description: "Maximum time to wait for batch delivery if enabled",
 						Optional:    true,
+						Computed:    true,
+						PlanModifiers: []planmodifier.Int32{
+							int32planmodifier.UseStateForUnknown(),
+						},
 					},
 					"host": schema.StringAttribute{
 						Description: "Known hostname of certain data stream subscription products. Not to be confused with a variable URI",
 						Optional:    true,
+						Computed:    true,
+						PlanModifiers: []planmodifier.String{
+							stringplanmodifier.UseStateForUnknown(),
+						},
 					},
 					"credential": schema.SingleNestedAttribute{
 						Description: "Access details for the specified sink type",
 						Required:    true,
+						CustomType:  fwtypes.NewObjectTypeOf[SinkCredentialModel](ctx),
+						PlanModifiers: []planmodifier.Object{
+							objectplanmodifier.UseStateForUnknown(),
+						},
 						Attributes: map[string]schema.Attribute{
 							"type": schema.StringAttribute{
 								Description: "Type of the credential being passed",
@@ -142,49 +192,101 @@ Additional Documentation:
 							"access_token": schema.StringAttribute{
 								Description: "Passed as Authorization header value",
 								Optional:    true,
+								Computed:    true,
+								PlanModifiers: []planmodifier.String{
+									stringplanmodifier.UseStateForUnknown(),
+								},
 							},
 							"integration_key": schema.StringAttribute{
 								Description: "Passed as Authorization header value",
 								Optional:    true,
+								Computed:    true,
+								PlanModifiers: []planmodifier.String{
+									stringplanmodifier.UseStateForUnknown(),
+								},
 							},
 							"api_key": schema.StringAttribute{
 								Description: "Passed as Authorization header value",
 								Optional:    true,
+								Computed:    true,
+								PlanModifiers: []planmodifier.String{
+									stringplanmodifier.UseStateForUnknown(),
+								},
 							},
 							"username": schema.StringAttribute{
 								Description: "Passed as Authorization header value",
 								Optional:    true,
+								Computed:    true,
+								PlanModifiers: []planmodifier.String{
+									stringplanmodifier.UseStateForUnknown(),
+								},
 							},
 							"password": schema.StringAttribute{
 								Description: "Passed as Authorization header value",
 								Optional:    true,
+								Computed:    true,
+								PlanModifiers: []planmodifier.String{
+									stringplanmodifier.UseStateForUnknown(),
+								},
 							},
 						},
 					},
 					"settings": schema.SingleNestedAttribute{
 						Description: "Stream subscription sink settings",
 						Optional:    true,
+						CustomType:  fwtypes.NewObjectTypeOf[SinkSettingsModel](ctx),
+						PlanModifiers: []planmodifier.Object{
+							objectplanmodifier.UseStateForUnknown(),
+						},
 						Attributes: map[string]schema.Attribute{
 							"event_index": schema.StringAttribute{
 								Optional: true,
+								Computed: true,
+								PlanModifiers: []planmodifier.String{
+									stringplanmodifier.UseStateForUnknown(),
+								},
 							},
 							"metric_index": schema.StringAttribute{
 								Optional: true,
+								Computed: true,
+								PlanModifiers: []planmodifier.String{
+									stringplanmodifier.UseStateForUnknown(),
+								},
 							},
 							"source": schema.StringAttribute{
 								Optional: true,
+								Computed: true,
+								PlanModifiers: []planmodifier.String{
+									stringplanmodifier.UseStateForUnknown(),
+								},
 							},
 							"application_key": schema.StringAttribute{
 								Optional: true,
+								Computed: true,
+								PlanModifiers: []planmodifier.String{
+									stringplanmodifier.UseStateForUnknown(),
+								},
 							},
 							"event_uri": schema.StringAttribute{
 								Optional: true,
+								Computed: true,
+								PlanModifiers: []planmodifier.String{
+									stringplanmodifier.UseStateForUnknown(),
+								},
 							},
 							"metric_uri": schema.StringAttribute{
 								Optional: true,
+								Computed: true,
+								PlanModifiers: []planmodifier.String{
+									stringplanmodifier.UseStateForUnknown(),
+								},
 							},
 							"transform_alerts": schema.BoolAttribute{
 								Optional: true,
+								Computed: true,
+								PlanModifiers: []planmodifier.Bool{
+									boolplanmodifier.UseStateForUnknown(),
+								},
 							},
 						},
 					},
@@ -193,19 +295,31 @@ Additional Documentation:
 			"href": schema.StringAttribute{
 				Description: "Equinix assigned URI of the stream subscription resource",
 				Computed:    true,
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.UseStateForUnknown(),
+				},
 			},
 			"uuid": schema.StringAttribute{
 				Description: "Equinix assigned unique identifier of the stream subscription resource",
 				Computed:    true,
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.UseStateForUnknown(),
+				},
 			},
 			"state": schema.StringAttribute{
 				Description: "Value representing provisioning status for the stream resource",
 				Computed:    true,
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.UseStateForUnknown(),
+				},
 			},
 			"change_log": schema.SingleNestedAttribute{
 				Description: "Details of the last change on the stream resource",
 				Computed:    true,
 				CustomType:  fwtypes.NewObjectTypeOf[ChangeLogModel](ctx),
+				PlanModifiers: []planmodifier.Object{
+					objectplanmodifier.UseStateForUnknown(),
+				},
 				Attributes: map[string]schema.Attribute{
 					"created_by": schema.StringAttribute{
 						Description: "User name of creator of the stream resource",

@@ -6,13 +6,13 @@ import (
 	"github.com/equinix/terraform-provider-equinix/internal/fabric"
 	int_fw "github.com/equinix/terraform-provider-equinix/internal/framework"
 	fwtypes "github.com/equinix/terraform-provider-equinix/internal/framework/types"
+	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 
 	"github.com/equinix/equinix-sdk-go/services/fabricv4"
 
 	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 )
 
 type DataSourceByIDsModel struct {
@@ -121,19 +121,7 @@ func (m *DataSourceByIDsModel) parse(ctx context.Context, streamSubscription *fa
 	m.SubscriptionID = types.StringValue(streamSubscription.GetUuid())
 	m.ID = types.StringValue(streamSubscription.GetUuid())
 
-	diags := parseStreamSubscription(ctx, streamSubscription,
-		&m.Type,
-		&m.Name,
-		&m.Description,
-		&m.Enabled,
-		&m.Filters,
-		&m.MetricSelector,
-		&m.EventSelector,
-		&m.Sink,
-		&m.Href,
-		&m.UUID,
-		&m.State,
-		&m.ChangeLog)
+	diags := m.BaseStreamSubscriptionModel.parse(ctx, streamSubscription)
 	if diags.HasError() {
 		return diags
 	}
@@ -180,19 +168,7 @@ func (m *DataSourceAll) parse(ctx context.Context, streamSubscriptionsResponse *
 func (m *ResourceModel) parse(ctx context.Context, streamSubscription *fabricv4.StreamSubscription) diag.Diagnostics {
 	m.ID = types.StringValue(streamSubscription.GetUuid())
 
-	diags := parseStreamSubscription(ctx, streamSubscription,
-		&m.Type,
-		&m.Name,
-		&m.Description,
-		&m.Enabled,
-		&m.Filters,
-		&m.MetricSelector,
-		&m.EventSelector,
-		&m.Sink,
-		&m.Href,
-		&m.UUID,
-		&m.State,
-		&m.ChangeLog)
+	diags := m.BaseStreamSubscriptionModel.parse(ctx, streamSubscription)
 	if diags.HasError() {
 		return diags
 	}
@@ -201,44 +177,16 @@ func (m *ResourceModel) parse(ctx context.Context, streamSubscription *fabricv4.
 }
 
 func (m *BaseStreamSubscriptionModel) parse(ctx context.Context, streamSubscription *fabricv4.StreamSubscription) diag.Diagnostics {
-	diags := parseStreamSubscription(ctx, streamSubscription,
-		&m.Type,
-		&m.Name,
-		&m.Description,
-		&m.Enabled,
-		&m.Filters,
-		&m.MetricSelector,
-		&m.EventSelector,
-		&m.Sink,
-		&m.Href,
-		&m.UUID,
-		&m.State,
-		&m.ChangeLog)
-	if diags.HasError() {
-		return diags
-	}
 
-	return diags
-}
+	var mDiags diag.Diagnostics
 
-func parseStreamSubscription(ctx context.Context, streamSubscription *fabricv4.StreamSubscription,
-	streamSubscriptionType, name, description *basetypes.StringValue,
-	enabled *basetypes.BoolValue,
-	filters *fwtypes.ListNestedObjectValueOf[FilterModel],
-	metricSelector, eventSelector *fwtypes.ObjectValueOf[SelectorModel],
-	sink *fwtypes.ObjectValueOf[SinkModel],
-	href, uuid, state *basetypes.StringValue,
-	changeLog *fwtypes.ObjectValueOf[ChangeLogModel]) diag.Diagnostics {
-
-	var diags diag.Diagnostics
-
-	*streamSubscriptionType = types.StringValue(string(streamSubscription.GetType()))
-	*name = types.StringValue(streamSubscription.GetName())
-	*description = types.StringValue(streamSubscription.GetDescription())
-	*href = types.StringValue(streamSubscription.GetHref())
-	*uuid = types.StringValue(streamSubscription.GetUuid())
-	*state = types.StringValue(string(streamSubscription.GetState()))
-	*enabled = types.BoolValue(streamSubscription.GetEnabled())
+	m.Type = types.StringValue(string(streamSubscription.GetType()))
+	m.Name = types.StringValue(streamSubscription.GetName())
+	m.Description = types.StringValue(streamSubscription.GetDescription())
+	m.Href = types.StringValue(streamSubscription.GetHref())
+	m.UUID = types.StringValue(streamSubscription.GetUuid())
+	m.State = types.StringValue(string(streamSubscription.GetState()))
+	m.Enabled = types.BoolValue(streamSubscription.GetEnabled())
 
 	// Parse filters
 	streamSubscriptionFilters := streamSubscription.GetFilters()
@@ -248,8 +196,13 @@ func parseStreamSubscription(ctx context.Context, streamSubscription *fabricv4.S
 			for j, orFilter := range filter.StreamFilterOrFilter.GetOr() {
 				orFilterModel, diags := parseSimpleExpression(ctx, &orFilter, true)
 				if diags.HasError() {
-					return diags
+					mDiags.Append(diags...)
+					return mDiags
 				}
+				// If the first OrGroup selector assign it to the space made in the slice
+				// Else append it to the end.
+				// We do this because we can't do the exact representation of the API model
+				// and this will be a longer list with orGroup boolean instead of a sub list
 				if j == 0 {
 					filterModels[i] = orFilterModel
 				} else {
@@ -257,27 +210,31 @@ func parseStreamSubscription(ctx context.Context, streamSubscription *fabricv4.S
 				}
 			}
 		} else {
+			var diags diag.Diagnostics
 			filterModels[i], diags = parseSimpleExpression(ctx, filter.StreamFilterSimpleExpression, false)
 			if diags.HasError() {
-				return diags
+				mDiags.Append(diags...)
+				return mDiags
 			}
 		}
 	}
-	*filters = fwtypes.NewListNestedObjectValueOfValueSlice[FilterModel](ctx, filterModels)
+	m.Filters = fwtypes.NewListNestedObjectValueOfValueSlice[FilterModel](ctx, filterModels)
 
 	// Parse MetricSelector
 	metricSelectorObject, diags := parseSelectorModel(ctx, streamSubscription.GetMetricSelector())
 	if diags.HasError() {
-		return diags
+		mDiags.Append(diags...)
+		return mDiags
 	}
-	*metricSelector = metricSelectorObject
+	m.MetricSelector = metricSelectorObject
 
 	// Parse EventSelector
 	eventSelectorObject, diags := parseSelectorModel(ctx, streamSubscription.GetEventSelector())
 	if diags.HasError() {
-		return diags
+		mDiags.Append(diags...)
+		return mDiags
 	}
-	*eventSelector = eventSelectorObject
+	m.EventSelector = eventSelectorObject
 
 	// Parse Sink
 	streamSubSink := streamSubscription.GetSink()
@@ -289,21 +246,41 @@ func parseStreamSubscription(ctx context.Context, streamSubscription *fabricv4.S
 		BatchWaitTimeMax: types.Int32Value(streamSubSink.GetBatchWaitTimeMax()),
 		Host:             types.StringValue(streamSubSink.GetHost()),
 	}
-	sinkCredential := streamSubSink.GetCredential()
-	credentialModel := SinkCredentialModel{}
-	credentialModel.Type = types.StringValue(string(sinkCredential.GetType()))
 
-	switch sinkCredential.GetType() {
-	case fabricv4.STREAMSUBSCRIPTIONSINKCREDENTIALTYPE_ACCESS_TOKEN:
-		credentialModel.AccessToken = types.StringValue(sinkCredential.GetAccessToken())
-	case fabricv4.STREAMSUBSCRIPTIONSINKCREDENTIALTYPE_INTEGRATION_KEY:
-		credentialModel.IntegrationKey = types.StringValue(sinkCredential.GetIntegrationKey())
-	case fabricv4.STREAMSUBSCRIPTIONSINKCREDENTIALTYPE_API_KEY:
-		credentialModel.APIKey = types.StringValue(sinkCredential.GetApiKey())
-		sinkCredential.SetApiKey(credentialModel.APIKey.ValueString())
-	case fabricv4.STREAMSUBSCRIPTIONSINKCREDENTIALTYPE_USERNAME_PASSWORD:
-		credentialModel.Username = types.StringValue(sinkCredential.GetUsername())
-		credentialModel.Password = types.StringValue(sinkCredential.GetPassword())
+	sinkCredential := streamSubSink.GetCredential()
+	credentialModel := SinkCredentialModel{
+		Type:           types.StringValue(string(sinkCredential.GetType())),
+		AccessToken:    types.StringValue(sinkCredential.GetAccessToken()),
+		IntegrationKey: types.StringValue(sinkCredential.GetIntegrationKey()),
+		APIKey:         types.StringValue(sinkCredential.GetApiKey()),
+		Username:       types.StringValue(sinkCredential.GetUsername()),
+		Password:       types.StringValue(sinkCredential.GetPassword()),
+	}
+
+	if !m.Sink.IsNull() && !m.Sink.IsUnknown() {
+		planSinkModel := SinkModel{}
+		diags = m.Sink.As(ctx, &planSinkModel, basetypes.ObjectAsOptions{})
+		if diags.HasError() {
+			mDiags.Append(diags...)
+			return mDiags
+		}
+		planCredentialModel := SinkCredentialModel{}
+		diags = planSinkModel.Credential.As(ctx, &planCredentialModel, basetypes.ObjectAsOptions{})
+		if diags.HasError() {
+			mDiags.Append(diags...)
+			return mDiags
+		}
+		switch fabricv4.StreamSubscriptionSinkCredentialType(planCredentialModel.Type.ValueString()) {
+		case fabricv4.STREAMSUBSCRIPTIONSINKCREDENTIALTYPE_ACCESS_TOKEN:
+			credentialModel.AccessToken = types.StringValue(planCredentialModel.AccessToken.ValueString())
+		case fabricv4.STREAMSUBSCRIPTIONSINKCREDENTIALTYPE_API_KEY:
+			credentialModel.APIKey = types.StringValue(planCredentialModel.APIKey.ValueString())
+		case fabricv4.STREAMSUBSCRIPTIONSINKCREDENTIALTYPE_INTEGRATION_KEY:
+			credentialModel.IntegrationKey = types.StringValue(planCredentialModel.IntegrationKey.ValueString())
+		case fabricv4.STREAMSUBSCRIPTIONSINKCREDENTIALTYPE_USERNAME_PASSWORD:
+			credentialModel.Username = types.StringValue(planCredentialModel.Username.ValueString())
+			credentialModel.Password = types.StringValue(planCredentialModel.Password.ValueString())
+		}
 	}
 
 	sinkModel.Credential = fwtypes.NewObjectValueOf[SinkCredentialModel](ctx, &credentialModel)
@@ -321,7 +298,7 @@ func parseStreamSubscription(ctx context.Context, streamSubscription *fabricv4.S
 
 	sinkModel.Settings = fwtypes.NewObjectValueOf[SinkSettingsModel](ctx, &sinkSettingsModel)
 
-	*sink = fwtypes.NewObjectValueOf[SinkModel](ctx, &sinkModel)
+	m.Sink = fwtypes.NewObjectValueOf[SinkModel](ctx, &sinkModel)
 
 	// Parse ChangeLog
 	streamSubscriptionChangeLog := streamSubscription.GetChangeLog()
@@ -339,9 +316,9 @@ func parseStreamSubscription(ctx context.Context, streamSubscription *fabricv4.S
 		DeletedByEmail:    types.StringValue(streamSubscriptionChangeLog.GetDeletedByEmail()),
 		DeletedDateTime:   types.StringValue(streamSubscriptionChangeLog.GetDeletedDateTime().Format(fabric.TimeFormat)),
 	}
-	*changeLog = fwtypes.NewObjectValueOf[ChangeLogModel](ctx, &changeLogModel)
+	m.ChangeLog = fwtypes.NewObjectValueOf[ChangeLogModel](ctx, &changeLogModel)
 
-	return diags
+	return mDiags
 }
 
 func parseSimpleExpression(ctx context.Context, expression *fabricv4.StreamFilterSimpleExpression, orGroup bool) (FilterModel, diag.Diagnostics) {
