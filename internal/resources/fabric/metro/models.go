@@ -10,7 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-type MetroModel struct {
+type Model struct {
 	Href                types.String                                         `tfsdk:"href"`
 	Type                types.String                                         `tfsdk:"type"`
 	Code                types.String                                         `tfsdk:"code"`
@@ -46,14 +46,14 @@ type PaginationModel struct {
 type DataSourceByCodeModel struct {
 	ID        types.String `tfsdk:"id"`
 	MetroCode types.String `tfsdk:"metro_code"`
-	MetroModel
+	Model
 }
 
 type DataSourceAllMetrosModel struct {
-	ID         types.String                                `tfsdk:"id"`
-	Presence   types.String                                `tfsdk:"presence"`
-	Data       fwtypes.ListNestedObjectValueOf[MetroModel] `tfsdk:"data"`
-	Pagination fwtypes.ObjectValueOf[PaginationModel]      `tfsdk:"pagination"`
+	ID         types.String                           `tfsdk:"id"`
+	Presence   types.String                           `tfsdk:"presence"`
+	Data       fwtypes.ListNestedObjectValueOf[Model] `tfsdk:"data"`
+	Pagination fwtypes.ObjectValueOf[PaginationModel] `tfsdk:"pagination"`
 }
 
 func (a *DataSourceAllMetrosModel) parse(ctx context.Context, metroResponse *fabricv4.MetroResponse) diag.Diagnostics {
@@ -65,10 +65,10 @@ func (a *DataSourceAllMetrosModel) parse(ctx context.Context, metroResponse *fab
 		return diags
 	}
 
-	data := make([]MetroModel, len(metroResponse.GetData()))
+	data := make([]Model, len(metroResponse.GetData()))
 	metros := metroResponse.GetData()
 	for i, metro := range metros {
-		var metroModel MetroModel
+		var metroModel Model
 		diags := metroModel.parse(ctx, &metro)
 		if diags.HasError() {
 			return diags
@@ -86,7 +86,7 @@ func (a *DataSourceAllMetrosModel) parse(ctx context.Context, metroResponse *fab
 
 	a.ID = types.StringValue(data[0].Code.ValueString())
 	a.Pagination = fwtypes.NewObjectValueOf[PaginationModel](ctx, &pagination)
-	a.Data = fwtypes.NewListNestedObjectValueOfValueSlice[MetroModel](ctx, data)
+	a.Data = fwtypes.NewListNestedObjectValueOfValueSlice[Model](ctx, data)
 
 	return diags
 }
@@ -97,19 +97,19 @@ func (m *DataSourceByCodeModel) parse(ctx context.Context, metro *fabricv4.Metro
 	m.ID = types.StringValue(metro.GetCode())
 	m.MetroCode = types.StringValue(metro.GetCode())
 
-	var metroModel MetroModel
+	var metroModel Model
 
 	diags = metroModel.parse(ctx, metro)
 	if diags.HasError() {
 		return diags
 	}
 
-	m.MetroModel = metroModel
+	m.Model = metroModel
 
 	return diags
 }
 
-func (m *MetroModel) parse(ctx context.Context, metro *fabricv4.Metro) diag.Diagnostics {
+func (m *Model) parse(ctx context.Context, metro *fabricv4.Metro) diag.Diagnostics {
 	var diags diag.Diagnostics
 
 	m.Href = types.StringValue(metro.GetHref())

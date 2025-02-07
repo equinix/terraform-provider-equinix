@@ -58,7 +58,7 @@ func dataSourceAllMetroSchema(ctx context.Context) schema.Schema {
 			"data": schema.ListNestedAttribute{
 				Description: "Returned list of metro objects",
 				Computed:    true,
-				CustomType:  fwtypes.NewListNestedObjectTypeOf[MetroModel](ctx),
+				CustomType:  fwtypes.NewListNestedObjectTypeOf[Model](ctx),
 				NestedObject: schema.NestedAttributeObject{
 					Attributes: getMetroSchema(ctx),
 				},
