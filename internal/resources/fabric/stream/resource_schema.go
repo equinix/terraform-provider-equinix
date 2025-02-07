@@ -2,6 +2,7 @@ package stream
 
 import (
 	"context"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int32planmodifier"
 
 	"github.com/equinix/terraform-provider-equinix/internal/framework"
 	fwtypes "github.com/equinix/terraform-provider-equinix/internal/framework/types"
@@ -72,19 +73,31 @@ Additional Documentation:
 			"state": schema.StringAttribute{
 				Description: "Value representing provisioning status for the stream resource",
 				Computed:    true,
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.UseStateForUnknown(),
+				},
 			},
 			"assets_count": schema.Int32Attribute{
 				Description: "Count of the streaming assets attached to the stream resource",
 				Computed:    true,
+				PlanModifiers: []planmodifier.Int32{
+					int32planmodifier.UseStateForUnknown(),
+				},
 			},
 			"stream_subscriptions_count": schema.Int32Attribute{
 				Description: "Count of the client subscriptions on the stream resource",
 				Computed:    true,
+				PlanModifiers: []planmodifier.Int32{
+					int32planmodifier.UseStateForUnknown(),
+				},
 			},
 			"change_log": schema.SingleNestedAttribute{
 				Description: "Details of the last change on the stream resource",
 				Computed:    true,
 				CustomType:  fwtypes.NewObjectTypeOf[ChangeLogModel](ctx),
+				PlanModifiers: []planmodifier.Object{
+					objectplanmodifier.UseStateForUnknown(),
+				},
 				Attributes: map[string]schema.Attribute{
 					"created_by": schema.StringAttribute{
 						Description: "User name of creator of the stream resource",
