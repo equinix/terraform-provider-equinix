@@ -24,7 +24,7 @@ type DataSourceMetroCode struct {
 
 func (r *DataSourceMetroCode) Schema(
 	ctx context.Context,
-	req datasource.SchemaRequest,
+	_ datasource.SchemaRequest,
 	resp *datasource.SchemaResponse,
 ) {
 	resp.Schema = dataSourceSingleMetroSchema(ctx)

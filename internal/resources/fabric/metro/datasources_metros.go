@@ -26,7 +26,7 @@ type DataSourceMetros struct {
 
 func (r *DataSourceMetros) Schema(
 	ctx context.Context,
-	req datasource.SchemaRequest,
+	_ datasource.SchemaRequest,
 	resp *datasource.SchemaResponse,
 ) {
 	resp.Schema = dataSourceAllMetroSchema(ctx)
