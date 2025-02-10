@@ -1,4 +1,4 @@
-package stream
+package streamattachment
 
 import (
 	"context"
@@ -24,6 +24,7 @@ type DataSourceAllAssetsModel struct {
 	ID         types.String                                    `tfsdk:"id"`
 	Filters    fwtypes.ListNestedObjectValueOf[FilterModel]    `tfsdk:"filters"`
 	Pagination fwtypes.ObjectValueOf[PaginationModel]          `tfsdk:"pagination"`
+	Sort       fwtypes.ListNestedObjectValueOf[SortModel]      `tfsdk:"sort"`
 	Data       fwtypes.ListNestedObjectValueOf[BaseAssetModel] `tfsdk:"data"`
 }
 
@@ -32,6 +33,11 @@ type FilterModel struct {
 	Operator types.String                      `tfsdk:"operator"`
 	Values   fwtypes.ListValueOf[types.String] `tfsdk:"values"`
 	Or       types.Bool                        `tfsdk:"or"`
+}
+
+type SortModel struct {
+	Direction types.String `tfsdk:"direction"`
+	Property  types.String `tfsdk:"property"`
 }
 
 type PaginationModel struct {
