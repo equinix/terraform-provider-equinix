@@ -54,7 +54,7 @@ func (r *Resource) Schema(
 }
 
 func (r *Resource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
-	var plan ResourceModel
+	var plan resourceModel
 	diags := req.Plan.Get(ctx, &plan)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
@@ -116,7 +116,7 @@ func (r *Resource) Create(ctx context.Context, req resource.CreateRequest, resp 
 }
 
 func (r *Resource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
-	var state ResourceModel
+	var state resourceModel
 	diags := req.State.Get(ctx, &state)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
@@ -156,7 +156,7 @@ func (r *Resource) Delete(ctx context.Context, req resource.DeleteRequest, resp 
 	client := r.Meta.NewMetalClientForFramework(ctx, req.ProviderMeta)
 
 	// Retrieve the current state
-	var state ResourceModel
+	var state resourceModel
 	diags := req.State.Get(ctx, &state)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
@@ -198,7 +198,7 @@ func (r *Resource) Delete(ctx context.Context, req resource.DeleteRequest, resp 
 	}
 }
 
-func getGatewayAndParse(ctx context.Context, client *metalv1.APIClient, state *ResourceModel, id string) (diags diag.Diagnostics, err error) {
+func getGatewayAndParse(ctx context.Context, client *metalv1.APIClient, state *resourceModel, id string) (diags diag.Diagnostics, err error) {
 	// API call to get the Metal Gateway
 	gw, _, err := client.MetalGatewaysApi.FindMetalGatewayById(ctx, id).Include(includes).Execute()
 	if err != nil {

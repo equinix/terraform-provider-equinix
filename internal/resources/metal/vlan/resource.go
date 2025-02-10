@@ -52,7 +52,7 @@ func (r *Resource) Create(ctx context.Context, request resource.CreateRequest, r
 	r.Meta.AddFwModuleToMetalUserAgent(ctx, request.ProviderMeta)
 	client := r.Meta.Metal
 
-	var data ResourceModel
+	var data resourceModel
 	response.Diagnostics.Append(request.Config.Get(ctx, &data)...)
 	if response.Diagnostics.HasError() {
 		return
@@ -107,7 +107,7 @@ func (r *Resource) Read(ctx context.Context, request resource.ReadRequest, respo
 	r.Meta.AddFwModuleToMetalUserAgent(ctx, request.ProviderMeta)
 	client := r.Meta.Metal
 
-	var data ResourceModel
+	var data resourceModel
 	response.Diagnostics.Append(request.State.Get(ctx, &data)...)
 	if response.Diagnostics.HasError() {
 		return
@@ -140,7 +140,7 @@ func (r *Resource) Read(ctx context.Context, request resource.ReadRequest, respo
 }
 
 func (r *Resource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
-	var data ResourceModel
+	var data resourceModel
 	if diag := req.Plan.Get(ctx, &data); diag.HasError() {
 		resp.Diagnostics.Append(diag...)
 		return
@@ -156,7 +156,7 @@ func (r *Resource) Delete(ctx context.Context, request resource.DeleteRequest, r
 	r.Meta.AddFwModuleToMetalUserAgent(ctx, request.ProviderMeta)
 	client := r.Meta.Metal
 
-	var data ResourceModel
+	var data resourceModel
 	response.Diagnostics.Append(request.State.Get(ctx, &data)...)
 	if response.Diagnostics.HasError() {
 		return

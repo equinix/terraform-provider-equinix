@@ -13,7 +13,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-type ResourceModel struct {
+type resourceModel struct {
 	ID              types.String                                    `tfsdk:"id"`
 	Name            types.String                                    `tfsdk:"name"`
 	Created         types.String                                    `tfsdk:"created"`
@@ -24,8 +24,8 @@ type ResourceModel struct {
 	BGPConfig       fwtypes.ListNestedObjectValueOf[BGPConfigModel] `tfsdk:"bgp_config"`
 }
 
-type DataSourceModel struct {
-	ResourceModel
+type dataSourceModel struct {
+	resourceModel
 	ProjectID types.String `tfsdk:"project_id"`
 	UserIDs   types.List   `tfsdk:"user_ids"`
 }
@@ -38,7 +38,7 @@ type BGPConfigModel struct {
 	MaxPrefix      types.Int64  `tfsdk:"max_prefix"`
 }
 
-func (m *ResourceModel) parse(ctx context.Context, project *metalv1.Project, bgpConfig *metalv1.BgpConfig) diag.Diagnostics {
+func (m *resourceModel) parse(ctx context.Context, project *metalv1.Project, bgpConfig *metalv1.BgpConfig) diag.Diagnostics {
 	var diags diag.Diagnostics
 	m.ID = types.StringValue(project.GetId())
 	m.Name = types.StringValue(project.GetName())
@@ -61,8 +61,8 @@ func (m *ResourceModel) parse(ctx context.Context, project *metalv1.Project, bgp
 	return diags
 }
 
-func (m *DataSourceModel) parse(ctx context.Context, project *metalv1.Project, bgpConfig *metalv1.BgpConfig) diag.Diagnostics {
-	diags := m.ResourceModel.parse(ctx, project, bgpConfig)
+func (m *dataSourceModel) parse(ctx context.Context, project *metalv1.Project, bgpConfig *metalv1.BgpConfig) diag.Diagnostics {
+	diags := m.resourceModel.parse(ctx, project, bgpConfig)
 	if diags.HasError() {
 		return diags
 	}

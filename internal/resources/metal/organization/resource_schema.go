@@ -61,7 +61,7 @@ func GetResourceSchema(ctx context.Context) schema.Schema {
 					listvalidator.SizeAtLeast(1),
 					listvalidator.SizeAtMost(1),
 				},
-				CustomType: fwtypes.NewListNestedObjectTypeOf[AddressResourceModel](ctx),
+				CustomType: fwtypes.NewListNestedObjectTypeOf[addressModel](ctx),
 				NestedObject: schema.NestedBlockObject{
 					Attributes: map[string]schema.Attribute{
 						"address": schema.StringAttribute{

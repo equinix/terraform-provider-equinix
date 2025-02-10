@@ -42,7 +42,7 @@ func (r *Resource) Create(
 	resp *resource.CreateResponse,
 ) {
 
-	var plan ResourceModel
+	var plan resourceModel
 	diags := req.Plan.Get(ctx, &plan)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
@@ -141,7 +141,7 @@ func (r *Resource) Read(
 	resp *resource.ReadResponse,
 ) {
 	// Retrieve the current state
-	var state ResourceModel
+	var state resourceModel
 	diags := req.State.Get(ctx, &state)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
@@ -208,7 +208,7 @@ func (r *Resource) Update(
 	resp *resource.UpdateResponse,
 ) {
 	// Retrieve values from plan
-	var state, plan ResourceModel
+	var state, plan resourceModel
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
 	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
 	if resp.Diagnostics.HasError() {
@@ -273,7 +273,7 @@ func (r *Resource) Update(
 
 func (r *Resource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
 	// Retrieve the current state
-	var state ResourceModel
+	var state resourceModel
 	diags := req.State.Get(ctx, &state)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
