@@ -24,8 +24,8 @@ func NewDataSource() datasource.DataSource {
 }
 
 func (r *DataSource) Schema(
-	ctx context.Context,
-	req datasource.SchemaRequest,
+	_ context.Context,
+	_ datasource.SchemaRequest,
 	resp *datasource.SchemaResponse,
 ) {
 	s := dataSourceSchema()
@@ -58,7 +58,7 @@ func (r *DataSource) Read(
 		(data.Vxlan.IsNull() && data.ProjectID.IsNull() && data.Metro.IsNull() && data.Facility.IsNull()) {
 		resp.Diagnostics.AddError("Error fetching Vlan datasource",
 			equinix_errors.
-				FriendlyError(fmt.Errorf("You must set either vlan_id or a combination of vxlan, project_id, and, metro or facility")).
+				FriendlyError(fmt.Errorf("you must set either vlan_id or a combination of vxlan, project_id, and, metro or facility")).
 				Error())
 		return
 	}
@@ -95,11 +95,6 @@ func (r *DataSource) Read(
 		}
 	}
 
-	assignedDevices := []string{}
-	for _, d := range vlan.Instances {
-		assignedDevices = append(assignedDevices, d.ID)
-	}
-
 	// Set state to fully populated data
 	resp.Diagnostics.Append(data.parse(vlan)...)
 	if resp.Diagnostics.HasError() {
@@ -125,11 +120,11 @@ func MatchingVlan(vlans []packngo.VirtualNetwork, vxlan int, projectID, facility
 		matches = append(matches, v)
 	}
 	if len(matches) > 1 {
-		return nil, equinix_errors.FriendlyError(fmt.Errorf("Project %s has more than one matching VLAN", projectID))
+		return nil, equinix_errors.FriendlyError(fmt.Errorf("project %s has more than one matching VLAN", projectID))
 	}
 
 	if len(matches) == 0 {
-		return nil, equinix_errors.FriendlyError(fmt.Errorf("Project %s does not have matching VLANs for vlan [%d] and metro [%s]", projectID, vxlan, metro))
+		return nil, equinix_errors.FriendlyError(fmt.Errorf("project %s does not have matching VLANs for vlan [%d] and metro [%s]", projectID, vxlan, metro))
 	}
 	return &matches[0], nil
 }
