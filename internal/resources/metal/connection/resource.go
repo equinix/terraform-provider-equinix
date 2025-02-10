@@ -34,7 +34,7 @@ type Resource struct {
 
 func (r *Resource) Schema(
 	ctx context.Context,
-	req resource.SchemaRequest,
+	_ resource.SchemaRequest,
 	resp *resource.SchemaResponse,
 ) {
 	resp.Schema = resourceSchema(ctx)
@@ -426,7 +426,7 @@ func buildSharedPortVCVLANCreateRequest(ctx context.Context, plan resourceModel,
 
 func getPlanTags(ctx context.Context, plan resourceModel, tags *[]string) diag.Diagnostics {
 	if len(plan.Tags.Elements()) != 0 {
-		return plan.Tags.ElementsAs(context.Background(), tags, false)
+		return plan.Tags.ElementsAs(ctx, tags, false)
 	}
 	return diag.Diagnostics{}
 }

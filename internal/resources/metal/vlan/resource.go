@@ -37,7 +37,7 @@ func NewResource() resource.Resource {
 
 func (r *Resource) Schema(
 	ctx context.Context,
-	req resource.SchemaRequest,
+	_ resource.SchemaRequest,
 	resp *resource.SchemaResponse,
 ) {
 	s := resourceSchema(ctx)

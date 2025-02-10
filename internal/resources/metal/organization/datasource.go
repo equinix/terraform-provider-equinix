@@ -26,7 +26,7 @@ type DataSource struct {
 
 func (r *DataSource) Schema(
 	ctx context.Context,
-	req datasource.SchemaRequest,
+	_ datasource.SchemaRequest,
 	resp *datasource.SchemaResponse,
 ) {
 	resp.Schema = dataSourceSchema(ctx)
@@ -48,7 +48,7 @@ func (r *DataSource) Read(
 	}
 
 	// Extract the ID of the resource from the state
-	orgId := data.OrganizationID
+	orgID := data.OrganizationID
 	name := data.Name
 
 	var (
@@ -74,7 +74,7 @@ func (r *DataSource) Read(
 		}
 
 	} else {
-		orgID := orgId.ValueString()
+		orgID := orgID.ValueString()
 		org, _, err := client.Organizations.Get(orgID, &packngo.GetOptions{Includes: []string{"address"}})
 		if err != nil {
 			err = equinix_errors.FriendlyError(err)
