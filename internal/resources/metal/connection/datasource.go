@@ -39,7 +39,7 @@ func (r *DataSource) Read(
 	client := r.Meta.NewMetalClientForFramework(ctx, req.ProviderMeta)
 
 	// Retrieve values from plan
-	var data DataSourceModel
+	var data dataSourceModel
 	resp.Diagnostics.Append(req.Config.Get(ctx, &data)...)
 	if resp.Diagnostics.HasError() {
 		return
