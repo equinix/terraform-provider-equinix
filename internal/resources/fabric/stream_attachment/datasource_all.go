@@ -1,4 +1,4 @@
-package stream
+package streamattachment
 
 import (
 	"context"
@@ -14,7 +14,7 @@ import (
 )
 
 func NewDataSourceAllStreamAttachments() datasource.DataSource {
-	return &DataSourceAllStreams{
+	return &DataSourceAllStreamAttachments{
 		BaseDataSource: framework.NewBaseDataSource(
 			framework.BaseDataSourceConfig{
 				Name: "equinix_fabric_stream_attachments",
@@ -23,19 +23,19 @@ func NewDataSourceAllStreamAttachments() datasource.DataSource {
 	}
 }
 
-type DataSourceAllStreams struct {
+type DataSourceAllStreamAttachments struct {
 	framework.BaseDataSource
 }
 
-func (r *DataSourceAllStreams) Schema(
+func (r *DataSourceAllStreamAttachments) Schema(
 	ctx context.Context,
 	_ datasource.SchemaRequest,
 	resp *datasource.SchemaResponse,
 ) {
-	resp.Schema = dataSourceAllStreamsSchema(ctx)
+	resp.Schema = dataSourceAllStreamAttachmentsSchema(ctx)
 }
 
-func (r *DataSourceAllStreams) Read(ctx context.Context, request datasource.ReadRequest, response *datasource.ReadResponse) {
+func (r *DataSourceAllStreamAttachments) Read(ctx context.Context, request datasource.ReadRequest, response *datasource.ReadResponse) {
 	client := r.Meta.NewFabricClientForFramework(ctx, request.ProviderMeta)
 
 	// Retrieve values from plan
@@ -125,6 +125,22 @@ func buildSearchRequest(ctx context.Context, plan DataSourceAllAssetsModel) (fab
 		}
 		assetFilter.SetAnd(filters)
 		searchRequest.SetFilter(assetFilter)
+	}
+
+	if !plan.Sort.IsNull() && plan.Sort.IsUnknown() {
+		sortModels := make([]SortModel, len(plan.Sort.Elements()))
+		diags = plan.Sort.ElementsAs(ctx, &sortModels, false)
+		if diags.HasError() {
+			return fabricv4.StreamAssetSearchRequest{}, diags
+		}
+		assetSort := make([]fabricv4.StreamAssetSortCriteria, len(sortModels))
+		for i, criteria := range sortModels {
+			sort := fabricv4.StreamAssetSortCriteria{}
+			sort.SetDirection(fabricv4.StreamAssetSortDirection(criteria.Direction.ValueString()))
+			sort.SetProperty(fabricv4.StreamAssetSortBy(criteria.Property.ValueString()))
+			assetSort[i] = sort
+		}
+		searchRequest.SetSort(assetSort)
 	}
 
 	return searchRequest, diags

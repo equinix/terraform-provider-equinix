@@ -1,4 +1,4 @@
-package stream
+package streamattachment
 
 import (
 	"context"
@@ -12,7 +12,7 @@ import (
 )
 
 func NewDataSourceByIDs() datasource.DataSource {
-	return &DataSourceByStreamID{
+	return &DataSourceByIDs{
 		BaseDataSource: framework.NewBaseDataSource(
 			framework.BaseDataSourceConfig{
 				Name: "equinix_fabric_stream_attachment",
@@ -21,19 +21,19 @@ func NewDataSourceByIDs() datasource.DataSource {
 	}
 }
 
-type DataSourceByStreamID struct {
+type DataSourceByIDs struct {
 	framework.BaseDataSource
 }
 
-func (r *DataSourceByStreamID) Schema(
+func (r *DataSourceByIDs) Schema(
 	ctx context.Context,
 	_ datasource.SchemaRequest,
 	resp *datasource.SchemaResponse,
 ) {
-	resp.Schema = dataSourceSingleStreamSchema(ctx)
+	resp.Schema = dataSourceByIDsSchema(ctx)
 }
 
-func (r *DataSourceByStreamID) Read(ctx context.Context, request datasource.ReadRequest, response *datasource.ReadResponse) {
+func (r *DataSourceByIDs) Read(ctx context.Context, request datasource.ReadRequest, response *datasource.ReadResponse) {
 	client := r.Meta.NewFabricClientForFramework(ctx, request.ProviderMeta)
 
 	// Retrieve values from plan

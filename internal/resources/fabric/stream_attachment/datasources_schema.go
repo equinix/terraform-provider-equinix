@@ -1,4 +1,4 @@
-package stream
+package streamattachment
 
 import (
 	"context"
@@ -10,7 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 )
 
-func dataSourceAllStreamsSchema(ctx context.Context) schema.Schema {
+func dataSourceAllStreamAttachmentsSchema(ctx context.Context) schema.Schema {
 	return schema.Schema{
 		Description: `Fabric V4 API compatible data resource that allow user to fetch Equinix Fabric Stream Attached Assets with filters and pagination details
 
@@ -42,6 +42,23 @@ Additional Documentation:
 						"or": schema.BoolAttribute{
 							Description: "Boolean value to specify if this filter is a part of the OR group. Has a maximum of 3 and only counts for 1 of the 8 possible filters",
 							Optional:    true,
+						},
+					},
+				},
+			},
+			"sort": schema.ListNestedAttribute{
+				Description: "The list of sort criteria for the stream assets search request",
+				Optional:    true,
+				CustomType:  fwtypes.NewListNestedObjectTypeOf[SortModel](ctx),
+				NestedObject: schema.NestedAttributeObject{
+					Attributes: map[string]schema.Attribute{
+						"direction": schema.StringAttribute{
+							Description: "The sorting direction of the property chosen. ASC or DESC",
+							Required:    true,
+						},
+						"property": schema.StringAttribute{
+							Description: "The field name the sorting is performed on",
+							Required:    true,
 						},
 					},
 				},
@@ -87,7 +104,7 @@ Additional Documentation:
 	}
 }
 
-func dataSourceSingleStreamSchema(ctx context.Context) schema.Schema {
+func dataSourceByIDsSchema(ctx context.Context) schema.Schema {
 	baseStreamSchema := getStreamSchema(ctx)
 	baseStreamSchema["id"] = framework.IDAttributeDefaultDescription()
 	baseStreamSchema["stream_id"] = schema.StringAttribute{
