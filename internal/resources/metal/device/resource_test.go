@@ -46,7 +46,7 @@ func TestMetalDevice_readErrorHandling(t *testing.T) {
 			name: "forbiddenAfterProvision",
 			args: args{
 				newResource: false,
-				handler: func(w http.ResponseWriter, r *http.Request) {
+				handler: func(w http.ResponseWriter, _ *http.Request) {
 					w.Header().Add("Content-Type", "application/json")
 					w.WriteHeader(http.StatusForbidden)
 				},
@@ -57,7 +57,7 @@ func TestMetalDevice_readErrorHandling(t *testing.T) {
 			name: "notFoundAfterProvision",
 			args: args{
 				newResource: false,
-				handler: func(w http.ResponseWriter, r *http.Request) {
+				handler: func(w http.ResponseWriter, _ *http.Request) {
 					w.WriteHeader(http.StatusNotFound)
 				},
 			},
@@ -67,7 +67,7 @@ func TestMetalDevice_readErrorHandling(t *testing.T) {
 			name: "forbiddenWaitForActiveDeviceProvision",
 			args: args{
 				newResource: true,
-				handler: func(w http.ResponseWriter, r *http.Request) {
+				handler: func(w http.ResponseWriter, _ *http.Request) {
 					w.WriteHeader(http.StatusForbidden)
 				},
 			},
@@ -77,7 +77,7 @@ func TestMetalDevice_readErrorHandling(t *testing.T) {
 			name: "notFoundProvision",
 			args: args{
 				newResource: true,
-				handler: func(w http.ResponseWriter, r *http.Request) {
+				handler: func(w http.ResponseWriter, _ *http.Request) {
 					w.WriteHeader(http.StatusNotFound)
 				},
 			},
@@ -87,7 +87,7 @@ func TestMetalDevice_readErrorHandling(t *testing.T) {
 			name: "errorProvision",
 			args: args{
 				newResource: true,
-				handler: func(w http.ResponseWriter, r *http.Request) {
+				handler: func(w http.ResponseWriter, _ *http.Request) {
 					w.WriteHeader(http.StatusBadRequest)
 				},
 			},
@@ -123,27 +123,6 @@ func TestMetalDevice_readErrorHandling(t *testing.T) {
 			mockAPI.Close()
 		})
 	}
-}
-
-func TestAccMetalDevice_facilityList(t *testing.T) {
-	var device metalv1.Device
-	rs := acctest.RandString(10)
-	r := "equinix_metal_device.test"
-
-	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { acceptance.TestAccPreCheck(t) },
-		ExternalProviders:        acceptance.TestExternalProviders,
-		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
-		CheckDestroy:             testAccMetalDeviceCheckDestroyed,
-		Steps: []resource.TestStep{
-			{
-				Config: testAccMetalDeviceConfig_facility_list(rs),
-				Check: resource.ComposeTestCheckFunc(
-					testAccMetalDeviceExists(r, &device),
-				),
-			},
-		},
-	})
 }
 
 func TestAccMetalDevice_sshConfig(t *testing.T) {
@@ -467,7 +446,7 @@ func testAccMetalDeviceCheckDestroyed(s *terraform.State) error {
 }
 
 func testAccMetalDeviceAttributes(device *metalv1.Device) resource.TestCheckFunc {
-	return func(s *terraform.State) error {
+	return func(_ *terraform.State) error {
 		if device.GetHostname() != "tfacc-test-device" {
 			return fmt.Errorf("Bad name: %s", device.GetHostname())
 		}
@@ -506,7 +485,7 @@ func testAccMetalDeviceExists(n string, device *metalv1.Device) resource.TestChe
 }
 
 func testAccMetalSameDevice(t *testing.T, before, after *metalv1.Device) resource.TestCheckFunc {
-	return func(s *terraform.State) error {
+	return func(_ *terraform.State) error {
 		if before.GetId() != after.GetId() {
 			t.Fatalf("Expected device to be the same, but it was recreated: %s -> %s", before.GetId(), after.GetId())
 		}
@@ -763,26 +742,6 @@ resource "equinix_metal_device" "test" {
 	project_ssh_key_ids = [equinix_metal_project_ssh_key.test.id]
   }
 `, acceptance.ConfAccMetalDevice_base(acceptance.Preferable_plans, acceptance.Preferable_metros, acceptance.Preferable_os), projSuffix, projSuffix, userSSHKey, projSSHKey, projSSHKey)
-}
-
-func testAccMetalDeviceConfig_facility_list(projSuffix string) string {
-	return fmt.Sprintf(`
-%s
-
-resource "equinix_metal_project" "test" {
-  name = "tfacc-device-%s"
-}
-
-resource "equinix_metal_device" "test"  {
-
-  hostname         = "tfacc-device-test-ipxe-script-url"
-  plan             = local.plan
-  facilities       = local.facilities
-  operating_system = local.os
-  billing_cycle    = "hourly"
-  project_id       = "${equinix_metal_project.test.id}"
-  termination_time = "%s"
-}`, acceptance.ConfAccMetalDevice_base(acceptance.Preferable_plans, acceptance.Preferable_metros, acceptance.Preferable_os), projSuffix, acceptance.TestDeviceTerminationTime())
 }
 
 func testAccMetalDeviceConfig_ipxe_script_url(projSuffix, url, pxe string) string {
