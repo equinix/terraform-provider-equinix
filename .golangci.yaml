@@ -23,3 +23,7 @@ issues:
       linters:
         - revive
       text: "^var-naming"
+    - path: _test\.go
+      linters:
+        - stylecheck
+      text: "^ST1003"
