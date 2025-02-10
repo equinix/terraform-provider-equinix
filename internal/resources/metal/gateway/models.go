@@ -8,7 +8,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 )
 
-type BaseModel struct {
+type baseModel struct {
 	ID                    types.String `tfsdk:"id"`
 	ProjectID             types.String `tfsdk:"project_id"`
 	VlanID                types.String `tfsdk:"vlan_id"`
@@ -18,12 +18,12 @@ type BaseModel struct {
 	State                 types.String `tfsdk:"state"`
 }
 
-type ResourceModel struct {
-	BaseModel
+type resourceModel struct {
+	baseModel
 	Timeouts timeouts.Value `tfsdk:"timeouts"`
 }
 
-func (m *BaseModel) parse(gw *metalv1.FindMetalGatewayById200Response) diag.Diagnostics {
+func (m *baseModel) parse(gw *metalv1.FindMetalGatewayById200Response) diag.Diagnostics {
 	// Convert Metal Gateway data to the Terraform state
 	if gw.MetalGateway != nil {
 		m.ID = types.StringValue(gw.MetalGateway.GetId())
@@ -57,8 +57,8 @@ func (m *BaseModel) parse(gw *metalv1.FindMetalGatewayById200Response) diag.Diag
 	return nil
 }
 
-type DataSourceModel struct {
-	BaseModel
+type dataSourceModel struct {
+	baseModel
 	GatewayID types.String `tfsdk:"gateway_id"`
 }
 

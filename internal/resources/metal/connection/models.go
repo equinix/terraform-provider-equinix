@@ -14,7 +14,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 )
 
-type ResourceModel struct {
+type resourceModel struct {
 	ID                types.String                                       `tfsdk:"id"`
 	Name              types.String                                       `tfsdk:"name"`
 	Facility          types.String                                       `tfsdk:"facility"`
@@ -34,16 +34,16 @@ type ResourceModel struct {
 	OrganizationID    types.String                                       `tfsdk:"organization_id"`
 	Status            types.String                                       `tfsdk:"status"`
 	Token             types.String                                       `tfsdk:"token"`
-	Ports             fwtypes.ListNestedObjectValueOf[PortModel]         `tfsdk:"ports"`          // List of Port
-	ServiceTokens     fwtypes.ListNestedObjectValueOf[ServiceTokenModel] `tfsdk:"service_tokens"` // List of ServiceToken
+	Ports             fwtypes.ListNestedObjectValueOf[portModel]         `tfsdk:"ports"`          // List of Port
+	ServiceTokens     fwtypes.ListNestedObjectValueOf[serviceTokenModel] `tfsdk:"service_tokens"` // List of ServiceToken
 }
 
-type DataSourceModel struct {
-	ResourceModel
+type dataSourceModel struct {
+	resourceModel
 	ConnectionID types.String `tfsdk:"connection_id"`
 }
 
-type PortModel struct {
+type portModel struct {
 	ID                types.String                      `tfsdk:"id"`
 	Name              types.String                      `tfsdk:"name"`
 	Role              types.String                      `tfsdk:"role"`
@@ -53,7 +53,7 @@ type PortModel struct {
 	VirtualCircuitIDs fwtypes.ListValueOf[types.String] `tfsdk:"virtual_circuit_ids"` // List of String
 }
 
-type ServiceTokenModel struct {
+type serviceTokenModel struct {
 	ID              types.String `tfsdk:"id"`
 	ExpiresAt       types.String `tfsdk:"expires_at"`
 	MaxAllowedSpeed types.String `tfsdk:"max_allowed_speed"`
@@ -62,7 +62,7 @@ type ServiceTokenModel struct {
 	Type            types.String `tfsdk:"type"`
 }
 
-func (m *ResourceModel) parse(ctx context.Context, conn *metalv1.Interconnection) diag.Diagnostics {
+func (m *resourceModel) parse(ctx context.Context, conn *metalv1.Interconnection) diag.Diagnostics {
 	var diags diag.Diagnostics
 
 	m.ID = types.StringValue(conn.GetId())
@@ -186,8 +186,8 @@ type abstractVirtualCircuit interface {
 	GetProject() metalv1.Project
 }
 
-func parseConnectionServiceTokens(ctx context.Context, fst []metalv1.FabricServiceToken) (fwtypes.ListNestedObjectValueOf[ServiceTokenModel], diag.Diagnostics) {
-	connServiceTokens := make([]ServiceTokenModel, len(fst))
+func parseConnectionServiceTokens(ctx context.Context, fst []metalv1.FabricServiceToken) (fwtypes.ListNestedObjectValueOf[serviceTokenModel], diag.Diagnostics) {
+	connServiceTokens := make([]serviceTokenModel, len(fst))
 	for i, token := range fst {
 		speed, err := speedIntToStr(token.GetMaxAllowedSpeed())
 		if err != nil {
@@ -196,10 +196,10 @@ func parseConnectionServiceTokens(ctx context.Context, fst []metalv1.FabricServi
 				fmt.Sprintf("Failed to convert token MaxAllowedSpeed (%d) to string", token.MaxAllowedSpeed),
 				err.Error(),
 			)
-			return fwtypes.NewListNestedObjectValueOfNull[ServiceTokenModel](ctx), diags
+			return fwtypes.NewListNestedObjectValueOfNull[serviceTokenModel](ctx), diags
 		}
 
-		connServiceTokens[i] = ServiceTokenModel{
+		connServiceTokens[i] = serviceTokenModel{
 			ID:              types.StringValue(token.GetId()),
 			MaxAllowedSpeed: types.StringValue(speed),
 			Role:            types.StringValue(string(token.GetRole())),
@@ -214,8 +214,8 @@ func parseConnectionServiceTokens(ctx context.Context, fst []metalv1.FabricServi
 	return fwtypes.NewListNestedObjectValueOfValueSlice(ctx, connServiceTokens), nil
 }
 
-func parseConnectionPorts(ctx context.Context, cps []metalv1.InterconnectionPort) (fwtypes.ListNestedObjectValueOf[PortModel], diag.Diagnostics) {
-	ret := make([]PortModel, len(cps))
+func parseConnectionPorts(ctx context.Context, cps []metalv1.InterconnectionPort) (fwtypes.ListNestedObjectValueOf[portModel], diag.Diagnostics) {
+	ret := make([]portModel, len(cps))
 	order := map[metalv1.InterconnectionPortRole]int{
 		metalv1.INTERCONNECTIONPORTROLE_PRIMARY:   0,
 		metalv1.INTERCONNECTIONPORTROLE_SECONDARY: 1,
@@ -230,9 +230,9 @@ func parseConnectionPorts(ctx context.Context, cps []metalv1.InterconnectionPort
 		}
 		vcIDs, diags := fwtypes.NewListValueOf[types.String](ctx, portVcIDs)
 		if diags.HasError() {
-			return fwtypes.NewListNestedObjectValueOfNull[PortModel](ctx), diags
+			return fwtypes.NewListNestedObjectValueOfNull[portModel](ctx), diags
 		}
-		connPort := PortModel{
+		connPort := portModel{
 			ID:                types.StringValue(p.GetId()),
 			Name:              types.StringValue(p.GetName()),
 			Role:              types.StringValue(string(p.GetRole())),

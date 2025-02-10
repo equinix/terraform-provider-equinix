@@ -46,7 +46,7 @@ func (r *Resource) Create(
 	resp *resource.CreateResponse,
 ) {
 
-	var plan ResourceModel
+	var plan resourceModel
 	diags := req.Plan.Get(ctx, &plan)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
@@ -142,7 +142,7 @@ func (r *Resource) Read(
 	req resource.ReadRequest,
 	resp *resource.ReadResponse,
 ) {
-	var state ResourceModel
+	var state resourceModel
 	diags := req.State.Get(ctx, &state)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
@@ -180,7 +180,7 @@ func (r *Resource) Update(
 	client := r.Meta.NewMetalClientForFramework(ctx, req.ProviderMeta)
 
 	// Retrieve values from plan
-	var state, plan ResourceModel
+	var state, plan resourceModel
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
 	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
 	if resp.Diagnostics.HasError() {
@@ -252,7 +252,7 @@ func (r *Resource) Delete(
 	client := r.Meta.NewMetalClientForFramework(ctx, req.ProviderMeta)
 
 	// Retrieve the current state
-	var state ResourceModel
+	var state resourceModel
 	diags := req.State.Get(ctx, &state)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
@@ -286,7 +286,7 @@ func (r *Resource) Delete(
 	}
 }
 
-func buildDedicatedPortCreateRequest(ctx context.Context, plan ResourceModel, req *metalv1.CreateOrganizationInterconnectionRequest) (diags diag.Diagnostics) {
+func buildDedicatedPortCreateRequest(ctx context.Context, plan resourceModel, req *metalv1.CreateOrganizationInterconnectionRequest) (diags diag.Diagnostics) {
 	mode, err := metalv1.NewDedicatedPortCreateInputModeFromValue(plan.Mode.ValueString())
 	if err != nil {
 		diags.AddError(
@@ -324,7 +324,7 @@ func buildDedicatedPortCreateRequest(ctx context.Context, plan ResourceModel, re
 	return
 }
 
-func buildVLANFabricVCCreateRequest(ctx context.Context, plan ResourceModel, req *metalv1.CreateOrganizationInterconnectionRequest) diag.Diagnostics {
+func buildVLANFabricVCCreateRequest(ctx context.Context, plan resourceModel, req *metalv1.CreateOrganizationInterconnectionRequest) diag.Diagnostics {
 	diags := validateSharedConnection(plan)
 
 	project := plan.ProjectID.ValueString()
@@ -359,7 +359,7 @@ func buildVLANFabricVCCreateRequest(ctx context.Context, plan ResourceModel, req
 	return diags
 }
 
-func buildVRFFabricVCCreateRequest(ctx context.Context, plan ResourceModel, req *metalv1.CreateOrganizationInterconnectionRequest) diag.Diagnostics {
+func buildVRFFabricVCCreateRequest(ctx context.Context, plan resourceModel, req *metalv1.CreateOrganizationInterconnectionRequest) diag.Diagnostics {
 	diags := validateSharedConnection(plan)
 
 	project := plan.ProjectID.ValueString()
@@ -394,7 +394,7 @@ func buildVRFFabricVCCreateRequest(ctx context.Context, plan ResourceModel, req 
 	return diags
 }
 
-func buildSharedPortVCVLANCreateRequest(ctx context.Context, plan ResourceModel, req *metalv1.CreateOrganizationInterconnectionRequest) diag.Diagnostics {
+func buildSharedPortVCVLANCreateRequest(ctx context.Context, plan resourceModel, req *metalv1.CreateOrganizationInterconnectionRequest) diag.Diagnostics {
 	diags := validateSharedConnection(plan)
 
 	project := plan.ProjectID.ValueString()
@@ -424,14 +424,14 @@ func buildSharedPortVCVLANCreateRequest(ctx context.Context, plan ResourceModel,
 	return diags
 }
 
-func getPlanTags(ctx context.Context, plan ResourceModel, tags *[]string) diag.Diagnostics {
+func getPlanTags(ctx context.Context, plan resourceModel, tags *[]string) diag.Diagnostics {
 	if len(plan.Tags.Elements()) != 0 {
 		return plan.Tags.ElementsAs(context.Background(), tags, false)
 	}
 	return diag.Diagnostics{}
 }
 
-func validateSharedConnection(plan ResourceModel) (diags diag.Diagnostics) {
+func validateSharedConnection(plan resourceModel) (diags diag.Diagnostics) {
 	// ensure project ID is set
 	if plan.ProjectID.ValueString() == "" {
 		diags.AddAttributeError(
@@ -476,7 +476,7 @@ func validateSharedConnection(plan ResourceModel) (diags diag.Diagnostics) {
 	return
 }
 
-func buildCreateRequest(ctx context.Context, plan ResourceModel) (request metalv1.CreateOrganizationInterconnectionRequest, diags diag.Diagnostics) {
+func buildCreateRequest(ctx context.Context, plan resourceModel) (request metalv1.CreateOrganizationInterconnectionRequest, diags diag.Diagnostics) {
 	hasVlans := len(plan.Vlans.Elements()) != 0
 	hasVrfs := len(plan.Vrfs.Elements()) != 0
 
@@ -528,7 +528,7 @@ func buildCreateRequest(ctx context.Context, plan ResourceModel) (request metalv
 		}
 	}
 
-	var requestFunc func(context.Context, ResourceModel, *metalv1.CreateOrganizationInterconnectionRequest) diag.Diagnostics
+	var requestFunc func(context.Context, resourceModel, *metalv1.CreateOrganizationInterconnectionRequest) diag.Diagnostics
 
 	switch {
 	case hasVlans && connType == metalv1.INTERCONNECTIONTYPE_SHARED_PORT_VLAN:

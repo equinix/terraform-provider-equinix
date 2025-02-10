@@ -38,7 +38,7 @@ func (r *Resource) Create(
 	req resource.CreateRequest,
 	resp *resource.CreateResponse,
 ) {
-	var plan ResourceModel
+	var plan resourceModel
 	diags := req.Plan.Get(ctx, &plan)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
@@ -99,7 +99,7 @@ func (r *Resource) Read(
 	req resource.ReadRequest,
 	resp *resource.ReadResponse,
 ) {
-	var state ResourceModel
+	var state resourceModel
 	diags := req.State.Get(ctx, &state)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
@@ -148,7 +148,7 @@ func (r *Resource) Update(
 	client := r.Meta.Metal
 
 	// Retrieve values from plan
-	var state, plan ResourceModel
+	var state, plan resourceModel
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
 	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
 	if resp.Diagnostics.HasError() {
@@ -177,7 +177,7 @@ func (r *Resource) Update(
 
 	if !state.Address.Equal(plan.Address) {
 		updateRequest.Address = &packngo.Address{}
-		addressresourcemodel := make([]AddressResourceModel, 1)
+		addressresourcemodel := make([]addressModel, 1)
 		if diags := plan.Address.ElementsAs(ctx, &addressresourcemodel, false); diags != nil {
 			resp.Diagnostics.AddError(
 				"Failed to extract resource data",
@@ -243,7 +243,7 @@ func (r *Resource) Delete(
 	client := r.Meta.Metal
 
 	// Retrieve values from plan
-	var state ResourceModel
+	var state resourceModel
 	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
 	if resp.Diagnostics.HasError() {
 		return
@@ -263,7 +263,7 @@ func (r *Resource) Delete(
 	}
 }
 
-func getOrganizationAndParse(ctx context.Context, client *packngo.Client, state *ResourceModel, id string) (diags diag.Diagnostics, err error) {
+func getOrganizationAndParse(ctx context.Context, client *packngo.Client, state *resourceModel, id string) (diags diag.Diagnostics, err error) {
 	// API call to get the Metal Organization
 	includes := &packngo.GetOptions{Includes: []string{"address"}}
 	org, _, err := client.Organizations.Get(id, includes)

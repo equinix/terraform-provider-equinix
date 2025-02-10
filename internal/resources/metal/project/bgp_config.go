@@ -41,7 +41,7 @@ func expandBGPConfig(ctx context.Context, bgpConfig fwtypes.ListNestedObjectValu
 	return &bgpCreateRequest, nil
 }
 
-func handleBGPConfigChanges(ctx context.Context, client *metalv1.APIClient, plan, state *ResourceModel, projectID string) (*metalv1.BgpConfig, diag.Diagnostics) {
+func handleBGPConfigChanges(ctx context.Context, client *metalv1.APIClient, plan, state *resourceModel, projectID string) (*metalv1.BgpConfig, diag.Diagnostics) {
 	var diags diag.Diagnostics
 	var bgpConfig *metalv1.BgpConfig
 

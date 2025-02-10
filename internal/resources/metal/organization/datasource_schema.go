@@ -58,8 +58,8 @@ func dataSourceSchema(ctx context.Context) schema.Schema {
 			},
 			"address": schema.ListAttribute{
 				Description: "Business' address",
-				CustomType:  fwtypes.NewListNestedObjectTypeOf[AddressResourceModel](ctx),
-				ElementType: fwtypes.NewObjectTypeOf[AddressResourceModel](ctx),
+				CustomType:  fwtypes.NewListNestedObjectTypeOf[addressModel](ctx),
+				ElementType: fwtypes.NewObjectTypeOf[addressModel](ctx),
 				Computed:    true,
 			},
 		},

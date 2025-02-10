@@ -48,7 +48,7 @@ func (r *DataSource) Read(
 	r.Meta.AddFwModuleToMetalUserAgent(ctx, req.ProviderMeta)
 	client := r.Meta.Metal
 
-	var data DataSourceModel
+	var data dataSourceModel
 	resp.Diagnostics.Append(req.Config.Get(ctx, &data)...)
 	if resp.Diagnostics.HasError() {
 		return

@@ -10,7 +10,7 @@ import (
 	"github.com/packethost/packngo"
 )
 
-type AddressResourceModel struct {
+type addressModel struct {
 	Address types.String `tfsdk:"address"`
 	City    types.String `tfsdk:"city"`
 	Country types.String `tfsdk:"country"`
@@ -18,19 +18,19 @@ type AddressResourceModel struct {
 	ZipCode types.String `tfsdk:"zip_code"`
 }
 
-type ResourceModel struct {
-	ID          types.String                                          `tfsdk:"id"`
-	Name        types.String                                          `tfsdk:"name"`
-	Description types.String                                          `tfsdk:"description"`
-	Website     types.String                                          `tfsdk:"website"`
-	Twitter     types.String                                          `tfsdk:"twitter"`
-	Logo        types.String                                          `tfsdk:"logo"`
-	Created     types.String                                          `tfsdk:"created"`
-	Updated     types.String                                          `tfsdk:"updated"`
-	Address     fwtypes.ListNestedObjectValueOf[AddressResourceModel] `tfsdk:"address"`
+type resourceModel struct {
+	ID          types.String                                  `tfsdk:"id"`
+	Name        types.String                                  `tfsdk:"name"`
+	Description types.String                                  `tfsdk:"description"`
+	Website     types.String                                  `tfsdk:"website"`
+	Twitter     types.String                                  `tfsdk:"twitter"`
+	Logo        types.String                                  `tfsdk:"logo"`
+	Created     types.String                                  `tfsdk:"created"`
+	Updated     types.String                                  `tfsdk:"updated"`
+	Address     fwtypes.ListNestedObjectValueOf[addressModel] `tfsdk:"address"`
 }
 
-func (m *ResourceModel) parse(ctx context.Context, org *packngo.Organization) diag.Diagnostics {
+func (m *resourceModel) parse(ctx context.Context, org *packngo.Organization) diag.Diagnostics {
 	m.ID = types.StringValue(org.ID)
 	m.Name = types.StringValue(org.Name)
 	m.Description = types.StringValue(org.Description)
@@ -45,14 +45,14 @@ func (m *ResourceModel) parse(ctx context.Context, org *packngo.Organization) di
 	return nil
 }
 
-type DataSourceModel struct {
-	ResourceModel
+type dataSourceModel struct {
+	resourceModel
 	OrganizationID types.String `tfsdk:"organization_id"`
 	ProjectIDs     []types.List `tfsdk:"project_ids"`
 }
 
-func (m *DataSourceModel) parse(ctx context.Context, org *packngo.Organization) diag.Diagnostics {
-	diags := m.ResourceModel.parse(ctx, org)
+func (m *dataSourceModel) parse(ctx context.Context, org *packngo.Organization) diag.Diagnostics {
+	diags := m.resourceModel.parse(ctx, org)
 	if diags.HasError() {
 		return diags
 	}
@@ -71,9 +71,9 @@ func (m *DataSourceModel) parse(ctx context.Context, org *packngo.Organization) 
 	return diags
 }
 
-func parseAddress(ctx context.Context, addr packngo.Address) fwtypes.ListNestedObjectValueOf[AddressResourceModel] {
-	addressresourcemodel := make([]AddressResourceModel, 1)
-	addressresourcemodel[0] = AddressResourceModel{
+func parseAddress(ctx context.Context, addr packngo.Address) fwtypes.ListNestedObjectValueOf[addressModel] {
+	addressresourcemodel := make([]addressModel, 1)
+	addressresourcemodel[0] = addressModel{
 		Address: types.StringValue(addr.Address),
 		City:    types.StringPointerValue(addr.City),
 		Country: types.StringValue(addr.Country),

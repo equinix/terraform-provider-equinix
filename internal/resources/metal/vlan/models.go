@@ -10,14 +10,14 @@ import (
 	"github.com/packethost/packngo"
 )
 
-type DataSourceModel struct {
-	ResourceModel
+type dataSourceModel struct {
+	resourceModel
 	VlanID             types.String `tfsdk:"vlan_id"`
 	AssignedDevicesIDs types.List   `tfsdk:"assigned_devices_ids"`
 }
 
-func (m *DataSourceModel) parse(vlan *packngo.VirtualNetwork) diag.Diagnostics {
-	diags := m.ResourceModel.parse(vlan)
+func (m *dataSourceModel) parse(vlan *packngo.VirtualNetwork) diag.Diagnostics {
+	diags := m.resourceModel.parse(vlan)
 	if diags.HasError() {
 		return diags
 	}
@@ -32,7 +32,7 @@ func (m *DataSourceModel) parse(vlan *packngo.VirtualNetwork) diag.Diagnostics {
 	return m.AssignedDevicesIDs.ElementsAs(context.Background(), &deviceIDs, false)
 }
 
-type ResourceModel struct {
+type resourceModel struct {
 	ID          types.String `tfsdk:"id"`
 	ProjectID   types.String `tfsdk:"project_id"`
 	Vxlan       types.Int64  `tfsdk:"vxlan"`
@@ -41,7 +41,7 @@ type ResourceModel struct {
 	Description types.String `tfsdk:"description"`
 }
 
-func (m *ResourceModel) parse(vlan *packngo.VirtualNetwork) (d diag.Diagnostics) {
+func (m *resourceModel) parse(vlan *packngo.VirtualNetwork) (d diag.Diagnostics) {
 	m.ID = types.StringValue(vlan.ID)
 	m.Vxlan = types.Int64Value(int64(vlan.VXLAN))
 	m.Facility = types.StringValue("")
