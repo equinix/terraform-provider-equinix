@@ -201,7 +201,9 @@ func (r *Resource) Delete(
 
 	_, deleteResp, err := client.StreamsApi.DeleteStreamAssetByUuid(ctx, assetID, fabricv4.Asset(asset), streamID).Execute()
 	if err != nil {
-		if deleteResp == nil || !slices.Contains([]int{http.StatusForbidden, http.StatusNotFound}, deleteResp.StatusCode) {
+
+		//Design decision from API team was to return 400 for all errors instead of 404 for not found
+		if deleteResp == nil || !slices.Contains([]int{http.StatusBadRequest, http.StatusForbidden, http.StatusNotFound}, deleteResp.StatusCode) {
 			resp.Diagnostics.AddError(
 				fmt.Sprintf("failed deleting stream attachment %s", id), equinix_errors.FormatFabricError(err).Error())
 			return
@@ -262,7 +264,8 @@ func getDeleteWaiter(ctx context.Context, client *fabricv4.APIClient, assetID, a
 		Refresh: func() (interface{}, string, error) {
 			stream, resp, err := client.StreamsApi.GetStreamAssetByUuid(ctx, assetID, fabricv4.Asset(asset), streamID).Execute()
 			if err != nil {
-				if resp != nil && slices.Contains([]int{http.StatusForbidden, http.StatusNotFound}, resp.StatusCode) {
+				//Design decision from API team was to return 400 for all errors instead of 404 for not found
+				if resp != nil && slices.Contains([]int{http.StatusBadRequest, http.StatusForbidden, http.StatusNotFound}, resp.StatusCode) {
 					return stream, deletedMarker, nil
 				}
 				return 0, "", err
