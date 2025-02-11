@@ -48,7 +48,8 @@ Additional Documentation:
 			},
 			"metrics_enabled": schema.BoolAttribute{
 				Description: "Boolean value indicating enablement of metrics for this asset stream attachment",
-				Required:    true,
+				Optional:    true,
+				Computed:    true,
 			},
 			"type": schema.StringAttribute{
 				Description: "Equinix defined type for the asset stream attachment",
