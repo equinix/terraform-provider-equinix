@@ -57,7 +57,9 @@ func testSweepServiceProfiles(_ string) error {
 			Offset: &offset,
 		},
 	}
-	fabricServiceProfiles, _, err := fabric.ServiceProfilesApi.SearchServiceProfiles(ctx).ServiceProfileSearchRequest(serviceProfileSearchRequest).Execute()
+
+	viewPoint := fabricv4.GETSERVICEPROFILESVIEWPOINTPARAMETER_Z_SIDE
+	fabricServiceProfiles, _, err := fabric.ServiceProfilesApi.SearchServiceProfiles(ctx).ServiceProfileSearchRequest(serviceProfileSearchRequest).ViewPoint(viewPoint).Execute()
 
 	if err != nil {
 		return fmt.Errorf("error getting service profiles list for sweeping fabric service profiles: %s", err)
