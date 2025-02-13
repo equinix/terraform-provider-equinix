@@ -247,43 +247,54 @@ func (m *BaseStreamSubscriptionModel) parse(ctx context.Context, streamSubscript
 		Host:             types.StringValue(streamSubSink.GetHost()),
 	}
 
-	sinkCredential := streamSubSink.GetCredential()
-	credentialModel := SinkCredentialModel{
-		Type:           types.StringValue(string(sinkCredential.GetType())),
-		AccessToken:    types.StringValue(sinkCredential.GetAccessToken()),
-		IntegrationKey: types.StringValue(sinkCredential.GetIntegrationKey()),
-		APIKey:         types.StringValue(sinkCredential.GetApiKey()),
-		Username:       types.StringValue(sinkCredential.GetUsername()),
-		Password:       types.StringValue(sinkCredential.GetPassword()),
-	}
+	if streamSubSink.Credential != nil {
+		sinkCredential := streamSubSink.GetCredential()
+		credentialModel := SinkCredentialModel{
+			Type:           types.StringValue(string(sinkCredential.GetType())),
+			AccessToken:    types.StringValue(sinkCredential.GetAccessToken()),
+			IntegrationKey: types.StringValue(sinkCredential.GetIntegrationKey()),
+			APIKey:         types.StringValue(sinkCredential.GetApiKey()),
+			Username:       types.StringValue(sinkCredential.GetUsername()),
+			Password:       types.StringValue(sinkCredential.GetPassword()),
+		}
 
-	if !m.Sink.IsNull() && !m.Sink.IsUnknown() {
-		planSinkModel := SinkModel{}
-		diags = m.Sink.As(ctx, &planSinkModel, basetypes.ObjectAsOptions{})
-		if diags.HasError() {
-			mDiags.Append(diags...)
-			return mDiags
+		if !m.Sink.IsNull() && !m.Sink.IsUnknown() {
+			planSinkModel := SinkModel{}
+			diags = m.Sink.As(ctx, &planSinkModel, basetypes.ObjectAsOptions{})
+			if diags.HasError() {
+				mDiags.Append(diags...)
+				return mDiags
+			}
+			planCredentialModel := SinkCredentialModel{}
+			diags = planSinkModel.Credential.As(ctx, &planCredentialModel, basetypes.ObjectAsOptions{})
+			if diags.HasError() {
+				mDiags.Append(diags...)
+				return mDiags
+			}
+			switch fabricv4.StreamSubscriptionSinkCredentialType(planCredentialModel.Type.ValueString()) {
+			case fabricv4.STREAMSUBSCRIPTIONSINKCREDENTIALTYPE_ACCESS_TOKEN:
+				credentialModel.AccessToken = types.StringValue(planCredentialModel.AccessToken.ValueString())
+			case fabricv4.STREAMSUBSCRIPTIONSINKCREDENTIALTYPE_API_KEY:
+				credentialModel.APIKey = types.StringValue(planCredentialModel.APIKey.ValueString())
+			case fabricv4.STREAMSUBSCRIPTIONSINKCREDENTIALTYPE_INTEGRATION_KEY:
+				credentialModel.IntegrationKey = types.StringValue(planCredentialModel.IntegrationKey.ValueString())
+			case fabricv4.STREAMSUBSCRIPTIONSINKCREDENTIALTYPE_USERNAME_PASSWORD:
+				credentialModel.Username = types.StringValue(planCredentialModel.Username.ValueString())
+				credentialModel.Password = types.StringValue(planCredentialModel.Password.ValueString())
+			}
 		}
-		planCredentialModel := SinkCredentialModel{}
-		diags = planSinkModel.Credential.As(ctx, &planCredentialModel, basetypes.ObjectAsOptions{})
-		if diags.HasError() {
-			mDiags.Append(diags...)
-			return mDiags
-		}
-		switch fabricv4.StreamSubscriptionSinkCredentialType(planCredentialModel.Type.ValueString()) {
-		case fabricv4.STREAMSUBSCRIPTIONSINKCREDENTIALTYPE_ACCESS_TOKEN:
-			credentialModel.AccessToken = types.StringValue(planCredentialModel.AccessToken.ValueString())
-		case fabricv4.STREAMSUBSCRIPTIONSINKCREDENTIALTYPE_API_KEY:
-			credentialModel.APIKey = types.StringValue(planCredentialModel.APIKey.ValueString())
-		case fabricv4.STREAMSUBSCRIPTIONSINKCREDENTIALTYPE_INTEGRATION_KEY:
-			credentialModel.IntegrationKey = types.StringValue(planCredentialModel.IntegrationKey.ValueString())
-		case fabricv4.STREAMSUBSCRIPTIONSINKCREDENTIALTYPE_USERNAME_PASSWORD:
-			credentialModel.Username = types.StringValue(planCredentialModel.Username.ValueString())
-			credentialModel.Password = types.StringValue(planCredentialModel.Password.ValueString())
-		}
-	}
 
-	sinkModel.Credential = fwtypes.NewObjectValueOf[SinkCredentialModel](ctx, &credentialModel)
+		sinkModel.Credential = fwtypes.NewObjectValueOf[SinkCredentialModel](ctx, &credentialModel)
+	} else {
+		sinkModel.Credential = fwtypes.NewObjectValueOf[SinkCredentialModel](ctx, &SinkCredentialModel{
+			Type:           types.StringValue(""),
+			AccessToken:    types.StringValue(""),
+			IntegrationKey: types.StringValue(""),
+			APIKey:         types.StringValue(""),
+			Username:       types.StringValue(""),
+			Password:       types.StringValue(""),
+		})
+	}
 
 	sinkSettings := streamSubSink.GetSettings()
 	sinkSettingsModel := SinkSettingsModel{
