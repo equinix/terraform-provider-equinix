@@ -12,6 +12,7 @@ const (
 	FabricDedicatedPortEnvVar       = "TF_ACC_FABRIC_DEDICATED_PORTS"
 	FabricConnectionsTestDataEnvVar = "TF_ACC_FABRIC_CONNECTIONS_TEST_DATA"
 	FabricSubscriptionEnvVar        = "TF_ACC_FABRIC_MARKET_PLACE_SUBSCRIPTION_ID"
+	FabricStreamEnvVar              = "TF_ACC_FABRIC_STREAM_TEST_DATA"
 )
 
 type EnvPorts map[string]map[string][]fabricv4.Port
@@ -37,4 +38,13 @@ func GetFabricEnvConnectionTestData(t *testing.T) map[string]map[string]string {
 func GetFabricMarketPlaceSubscriptionId(t *testing.T) string {
 	subscriptionId := os.Getenv(FabricSubscriptionEnvVar)
 	return subscriptionId
+}
+
+func GetFabricStreamTestData(t *testing.T) map[string]map[string]string {
+	var streamTestData map[string]map[string]string
+	streamJson := os.Getenv(FabricStreamEnvVar)
+	if err := json.Unmarshal([]byte(streamJson), &streamTestData); streamJson != "" && err != nil {
+		t.Fatalf("failed reading stream data from environment: %v, %s", err, streamJson)
+	}
+	return streamTestData
 }

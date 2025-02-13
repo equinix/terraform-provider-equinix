@@ -179,7 +179,8 @@ Additional Documentation:
 					},
 					"credential": schema.SingleNestedAttribute{
 						Description: "Access details for the specified sink type",
-						Required:    true,
+						Optional:    true,
+						Computed:    true,
 						CustomType:  fwtypes.NewObjectTypeOf[SinkCredentialModel](ctx),
 						PlanModifiers: []planmodifier.Object{
 							objectplanmodifier.UseStateForUnknown(),
@@ -234,6 +235,7 @@ Additional Documentation:
 					"settings": schema.SingleNestedAttribute{
 						Description: "Stream subscription sink settings",
 						Optional:    true,
+						Computed:    true,
 						CustomType:  fwtypes.NewObjectTypeOf[SinkSettingsModel](ctx),
 						PlanModifiers: []planmodifier.Object{
 							objectplanmodifier.UseStateForUnknown(),
