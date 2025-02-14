@@ -18,7 +18,7 @@ import (
 
 func resourceSchema(ctx context.Context) schema.Schema {
 	return schema.Schema{
-		Description: `Fabric V4 API compatible resource allows creation and management of Equinix Fabric Stream Subscription
+		Description: `Fabric V4 API compatible resource allows creation and management of Equinix Fabric Stream Subscriptions
 
 Additional Documentation:
 * Getting Started: https://docs.equinix.com/en-us/Content/KnowledgeCenter/Fabric/GettingStarted/Integrating-with-Fabric-V4-APIs/IntegrateWithSink.htm
