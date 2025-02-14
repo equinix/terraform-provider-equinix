@@ -7,7 +7,7 @@ import (
 	"time"
 
 	"github.com/equinix/terraform-provider-equinix/internal/acceptance"
-	"github.com/equinix/terraform-provider-equinix/internal/fabric/testing_helpers"
+	testinghelpers "github.com/equinix/terraform-provider-equinix/internal/fabric/testing_helpers"
 	"github.com/equinix/terraform-provider-equinix/internal/resources/fabric/servicetoken"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -15,7 +15,7 @@ import (
 )
 
 func TestAccFabricZsideVirtualDeviceServiceToken_PNFV(t *testing.T) {
-	connectionTestData := testing_helpers.GetFabricEnvConnectionTestData(t)
+	connectionTestData := testinghelpers.GetFabricEnvConnectionTestData(t)
 	var virtualDevice string
 	if len(connectionTestData) > 0 {
 		virtualDevice = connectionTestData["pnfv"]["virtualDevice"]
@@ -64,10 +64,10 @@ func TestAccFabricZsideVirtualDeviceServiceToken_PNFV(t *testing.T) {
 }
 
 func TestAccFabricAsidePortServiceToken_PNFV(t *testing.T) {
-	ports := testing_helpers.GetFabricEnvPorts(t)
-	var portUuid string
+	ports := testinghelpers.GetFabricEnvPorts(t)
+	var portUUID string
 	if len(ports) > 0 {
-		portUuid = ports["pnfv"]["dot1q"][0].GetUuid()
+		portUUID = ports["pnfv"]["dot1q"][0].GetUuid()
 	}
 	serviceTokenName, serviceTokenUpdatedName := "token_port_PNFV", "UP_Token_port_PNFV"
 	serviceTokenDescription, serviceTokenUpdatedDescription := "aside port token", "Updated aside port token"
@@ -77,7 +77,7 @@ func TestAccFabricAsidePortServiceToken_PNFV(t *testing.T) {
 		CheckDestroy: CheckServiceTokenDelete,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccFabricAsidePortServiceTokenConfig(serviceTokenName, serviceTokenDescription, portUuid),
+				Config: testAccFabricAsidePortServiceTokenConfig(serviceTokenName, serviceTokenDescription, portUUID),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("equinix_fabric_service_token.test", "uuid"),
 					resource.TestCheckResourceAttr("equinix_fabric_service_token.test", "name", serviceTokenName),
@@ -85,14 +85,14 @@ func TestAccFabricAsidePortServiceToken_PNFV(t *testing.T) {
 					resource.TestCheckResourceAttr("equinix_fabric_service_token.test", "description", serviceTokenDescription),
 					resource.TestCheckResourceAttr("equinix_fabric_service_token.test", "expiration_date_time", "2025-01-18T06:43:49.981Z"),
 					resource.TestCheckResourceAttr("equinix_fabric_service_token.test", "service_token_connection.0.bandwidth_limit", "1000"),
-					resource.TestCheckResourceAttr("equinix_fabric_service_token.test", "service_token_connection.0.a_side.0.access_point_selectors.0.port.0.uuid", portUuid),
+					resource.TestCheckResourceAttr("equinix_fabric_service_token.test", "service_token_connection.0.a_side.0.access_point_selectors.0.port.0.uuid", portUUID),
 					resource.TestCheckResourceAttr("equinix_fabric_service_token.test", "service_token_connection.0.a_side.0.access_point_selectors.0.link_protocol.0.type", "DOT1Q"),
 					resource.TestCheckResourceAttr("equinix_fabric_service_token.test", "service_token_connection.0.a_side.0.access_point_selectors.0.link_protocol.0.vlan_tag", "2987"),
 				),
 				ExpectNonEmptyPlan: false,
 			},
 			{
-				Config: testAccFabricAsidePortServiceTokenConfig(serviceTokenUpdatedName, serviceTokenUpdatedDescription, portUuid),
+				Config: testAccFabricAsidePortServiceTokenConfig(serviceTokenUpdatedName, serviceTokenUpdatedDescription, portUUID),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("equinix_fabric_service_token.test", "uuid"),
 					resource.TestCheckResourceAttr("equinix_fabric_service_token.test", "name", serviceTokenUpdatedName),
@@ -100,7 +100,7 @@ func TestAccFabricAsidePortServiceToken_PNFV(t *testing.T) {
 					resource.TestCheckResourceAttr("equinix_fabric_service_token.test", "description", serviceTokenUpdatedDescription),
 					resource.TestCheckResourceAttr("equinix_fabric_service_token.test", "expiration_date_time", "2025-01-18T06:43:49.981Z"),
 					resource.TestCheckResourceAttr("equinix_fabric_service_token.test", "service_token_connection.0.bandwidth_limit", "1000"),
-					resource.TestCheckResourceAttr("equinix_fabric_service_token.test", "service_token_connection.0.a_side.0.access_point_selectors.0.port.0.uuid", portUuid),
+					resource.TestCheckResourceAttr("equinix_fabric_service_token.test", "service_token_connection.0.a_side.0.access_point_selectors.0.port.0.uuid", portUUID),
 					resource.TestCheckResourceAttr("equinix_fabric_service_token.test", "service_token_connection.0.a_side.0.access_point_selectors.0.link_protocol.0.type", "DOT1Q"),
 					resource.TestCheckResourceAttr("equinix_fabric_service_token.test", "service_token_connection.0.a_side.0.access_point_selectors.0.link_protocol.0.vlan_tag", "2987"),
 				),
@@ -111,10 +111,10 @@ func TestAccFabricAsidePortServiceToken_PNFV(t *testing.T) {
 }
 
 func TestAccFabricZsidePortServiceToken_PNFV(t *testing.T) {
-	ports := testing_helpers.GetFabricEnvPorts(t)
-	var portUuid string
+	ports := testinghelpers.GetFabricEnvPorts(t)
+	var portUUID string
 	if len(ports) > 0 {
-		portUuid = ports["pnfv"]["dot1q"][0].GetUuid()
+		portUUID = ports["pnfv"]["dot1q"][0].GetUuid()
 	}
 	serviceTokenName, serviceTokenUpdatedName := "token_zport_PNFV", "UP_Token_zport_PNFV"
 	serviceTokenDescription, serviceTokenUpdatedDescription := "zside port token", "Updated zside port token"
@@ -124,7 +124,7 @@ func TestAccFabricZsidePortServiceToken_PNFV(t *testing.T) {
 		CheckDestroy: CheckServiceTokenDelete,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccFabricZsidePortServiceTokenConfig(serviceTokenName, serviceTokenDescription, portUuid),
+				Config: testAccFabricZsidePortServiceTokenConfig(serviceTokenName, serviceTokenDescription, portUUID),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("equinix_fabric_service_token.test", "uuid"),
 					resource.TestCheckResourceAttr("equinix_fabric_service_token.test", "name", serviceTokenName),
@@ -132,14 +132,14 @@ func TestAccFabricZsidePortServiceToken_PNFV(t *testing.T) {
 					resource.TestCheckResourceAttr("equinix_fabric_service_token.test", "description", serviceTokenDescription),
 					resource.TestCheckResourceAttr("equinix_fabric_service_token.test", "expiration_date_time", "2025-01-18T06:43:49.981Z"),
 					resource.TestCheckResourceAttr("equinix_fabric_service_token.test", "service_token_connection.0.supported_bandwidths.#", "3"),
-					resource.TestCheckResourceAttr("equinix_fabric_service_token.test", "service_token_connection.0.z_side.0.access_point_selectors.0.port.0.uuid", portUuid),
+					resource.TestCheckResourceAttr("equinix_fabric_service_token.test", "service_token_connection.0.z_side.0.access_point_selectors.0.port.0.uuid", portUUID),
 					resource.TestCheckResourceAttr("equinix_fabric_service_token.test", "service_token_connection.0.z_side.0.access_point_selectors.0.link_protocol.0.type", "DOT1Q"),
 					resource.TestCheckResourceAttr("equinix_fabric_service_token.test", "service_token_connection.0.z_side.0.access_point_selectors.0.link_protocol.0.vlan_tag", "2087"),
 				),
 				ExpectNonEmptyPlan: false,
 			},
 			{
-				Config: testAccFabricZsidePortServiceTokenConfig(serviceTokenUpdatedName, serviceTokenUpdatedDescription, portUuid),
+				Config: testAccFabricZsidePortServiceTokenConfig(serviceTokenUpdatedName, serviceTokenUpdatedDescription, portUUID),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("equinix_fabric_service_token.test", "uuid"),
 					resource.TestCheckResourceAttr("equinix_fabric_service_token.test", "name", serviceTokenUpdatedName),
@@ -147,7 +147,7 @@ func TestAccFabricZsidePortServiceToken_PNFV(t *testing.T) {
 					resource.TestCheckResourceAttr("equinix_fabric_service_token.test", "description", serviceTokenUpdatedDescription),
 					resource.TestCheckResourceAttr("equinix_fabric_service_token.test", "expiration_date_time", "2025-01-18T06:43:49.981Z"),
 					resource.TestCheckResourceAttr("equinix_fabric_service_token.test", "service_token_connection.0.supported_bandwidths.#", "3"),
-					resource.TestCheckResourceAttr("equinix_fabric_service_token.test", "service_token_connection.0.z_side.0.access_point_selectors.0.port.0.uuid", portUuid),
+					resource.TestCheckResourceAttr("equinix_fabric_service_token.test", "service_token_connection.0.z_side.0.access_point_selectors.0.port.0.uuid", portUUID),
 					resource.TestCheckResourceAttr("equinix_fabric_service_token.test", "service_token_connection.0.z_side.0.access_point_selectors.0.link_protocol.0.type", "DOT1Q"),
 					resource.TestCheckResourceAttr("equinix_fabric_service_token.test", "service_token_connection.0.z_side.0.access_point_selectors.0.link_protocol.0.vlan_tag", "2087"),
 				),
@@ -158,10 +158,10 @@ func TestAccFabricZsidePortServiceToken_PNFV(t *testing.T) {
 }
 
 func TestAccFabricZsideNetworkServiceToken_PNFV(t *testing.T) {
-	connectionTestData := testing_helpers.GetFabricEnvConnectionTestData(t)
-	var networkUuid string
+	connectionTestData := testinghelpers.GetFabricEnvConnectionTestData(t)
+	var networkUUID string
 	if len(connectionTestData) > 0 {
-		networkUuid = connectionTestData["pfcr"]["network"]
+		networkUUID = connectionTestData["pfcr"]["network"]
 	}
 	serviceTokenName, serviceTokenUpdatedName := "token_zwan_PNFV", "UP_Token_zwan_PNFV"
 	serviceTokenDescription, serviceTokenUpdatedDescription := "zside network token", "Updated zside network token"
@@ -171,26 +171,26 @@ func TestAccFabricZsideNetworkServiceToken_PNFV(t *testing.T) {
 		CheckDestroy: CheckServiceTokenDelete,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccFabricZsideNetworkServiceTokenConfig(serviceTokenName, serviceTokenDescription, networkUuid),
+				Config: testAccFabricZsideNetworkServiceTokenConfig(serviceTokenName, serviceTokenDescription, networkUUID),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("equinix_fabric_service_token.test", "uuid"),
 					resource.TestCheckResourceAttr("equinix_fabric_service_token.test", "name", serviceTokenName),
 					resource.TestCheckResourceAttr("equinix_fabric_service_token.test", "type", "VC_TOKEN"),
 					resource.TestCheckResourceAttr("equinix_fabric_service_token.test", "description", serviceTokenDescription),
 					resource.TestCheckResourceAttr("equinix_fabric_service_token.test", "expiration_date_time", "2025-02-18T06:43:49.981Z"),
-					resource.TestCheckResourceAttr("equinix_fabric_service_token.test", "service_token_connection.0.z_side.0.access_point_selectors.0.network.0.uuid", networkUuid),
+					resource.TestCheckResourceAttr("equinix_fabric_service_token.test", "service_token_connection.0.z_side.0.access_point_selectors.0.network.0.uuid", networkUUID),
 				),
 				ExpectNonEmptyPlan: true,
 			},
 			{
-				Config: testAccFabricZsideNetworkServiceTokenConfig(serviceTokenUpdatedName, serviceTokenUpdatedDescription, networkUuid),
+				Config: testAccFabricZsideNetworkServiceTokenConfig(serviceTokenUpdatedName, serviceTokenUpdatedDescription, networkUUID),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("equinix_fabric_service_token.test", "uuid"),
 					resource.TestCheckResourceAttr("equinix_fabric_service_token.test", "name", serviceTokenUpdatedName),
 					resource.TestCheckResourceAttr("equinix_fabric_service_token.test", "type", "VC_TOKEN"),
 					resource.TestCheckResourceAttr("equinix_fabric_service_token.test", "description", serviceTokenUpdatedDescription),
 					resource.TestCheckResourceAttr("equinix_fabric_service_token.test", "expiration_date_time", "2025-02-18T06:43:49.981Z"),
-					resource.TestCheckResourceAttr("equinix_fabric_service_token.test", "service_token_connection.0.z_side.0.access_point_selectors.0.network.0.uuid", networkUuid),
+					resource.TestCheckResourceAttr("equinix_fabric_service_token.test", "service_token_connection.0.z_side.0.access_point_selectors.0.network.0.uuid", networkUUID),
 				),
 				ExpectNonEmptyPlan: true,
 			},
@@ -198,7 +198,7 @@ func TestAccFabricZsideNetworkServiceToken_PNFV(t *testing.T) {
 	})
 }
 
-func testAccFabricAsidePortServiceTokenConfig(serviceTokenName string, serviceTokenDescription string, portUuid string) string {
+func testAccFabricAsidePortServiceTokenConfig(serviceTokenName string, serviceTokenDescription string, portUUID string) string {
 	return fmt.Sprintf(
 		`resource "equinix_fabric_service_token" "test"{
 			type = "VC_TOKEN"
@@ -227,10 +227,10 @@ func testAccFabricAsidePortServiceTokenConfig(serviceTokenName string, serviceTo
   			}
 
 		}
-    `, serviceTokenName, serviceTokenDescription, portUuid)
+    `, serviceTokenName, serviceTokenDescription, portUUID)
 }
 
-func testAccFabricZsidePortServiceTokenConfig(serviceTokenName string, serviceTokenDescription string, portUuid string) string {
+func testAccFabricZsidePortServiceTokenConfig(serviceTokenName string, serviceTokenDescription string, portUUID string) string {
 	return fmt.Sprintf(
 		`resource "equinix_fabric_service_token" "test"{
 			type = "VC_TOKEN"
@@ -259,10 +259,10 @@ func testAccFabricZsidePortServiceTokenConfig(serviceTokenName string, serviceTo
   			}
 
 		}
-    `, serviceTokenName, serviceTokenDescription, portUuid)
+    `, serviceTokenName, serviceTokenDescription, portUUID)
 }
 
-func testAccFabricZsideVirtualDeviceServiceTokenConfig(serviceTokenName string, serviceTokenDescription string, virtualDeviceUuid string) string {
+func testAccFabricZsideVirtualDeviceServiceTokenConfig(serviceTokenName string, serviceTokenDescription string, virtualDeviceUUID string) string {
 	return fmt.Sprintf(
 		`resource "equinix_fabric_service_token" "test"{
 			type = "VC_TOKEN"
@@ -291,10 +291,10 @@ func testAccFabricZsideVirtualDeviceServiceTokenConfig(serviceTokenName string, 
   			}
 
 		}
-    `, serviceTokenName, serviceTokenDescription, virtualDeviceUuid)
+    `, serviceTokenName, serviceTokenDescription, virtualDeviceUUID)
 }
 
-func testAccFabricZsideNetworkServiceTokenConfig(serviceTokenName string, serviceTokenDescription string, networkUuid string) string {
+func testAccFabricZsideNetworkServiceTokenConfig(serviceTokenName string, serviceTokenDescription string, networkUUID string) string {
 	return fmt.Sprintf(
 		`resource "equinix_fabric_service_token" "test" {
 						type = "VC_TOKEN"
@@ -318,7 +318,7 @@ func testAccFabricZsideNetworkServiceTokenConfig(serviceTokenName string, servic
     						emails = ["example@equinix.com", "test1@equinix.com"]
   						}
 				   }
-			`, serviceTokenName, serviceTokenDescription, networkUuid)
+			`, serviceTokenName, serviceTokenDescription, networkUUID)
 }
 
 func CheckServiceTokenDelete(s *terraform.State) error {

@@ -5,7 +5,7 @@ import (
 	"testing"
 
 	"github.com/equinix/terraform-provider-equinix/internal/acceptance"
-	"github.com/equinix/terraform-provider-equinix/internal/fabric/testing_helpers"
+	testinghelpers "github.com/equinix/terraform-provider-equinix/internal/fabric/testing_helpers"
 
 	"github.com/equinix/equinix-sdk-go/services/fabricv4"
 
@@ -13,7 +13,7 @@ import (
 )
 
 func TestAccDataSourceFabricPort_PNFV(t *testing.T) {
-	ports := testing_helpers.GetFabricEnvPorts(t)
+	ports := testinghelpers.GetFabricEnvPorts(t)
 	var port fabricv4.Port
 	var portType, portState, portEncapsulationType, portRedundancyPriority string
 	if len(ports) > 0 {
@@ -57,16 +57,16 @@ func TestAccDataSourceFabricPort_PNFV(t *testing.T) {
 	})
 }
 
-func testDataSourceFabricPort(port_uuid string) string {
+func testDataSourceFabricPort(portUUID string) string {
 	return fmt.Sprintf(`
 		data "equinix_fabric_port" "test" {
 			uuid = "%s"
 		}`,
-		port_uuid)
+		portUUID)
 }
 
 func TestAccDataSourceFabricPorts_PNFV(t *testing.T) {
-	ports := testing_helpers.GetFabricEnvPorts(t)
+	ports := testinghelpers.GetFabricEnvPorts(t)
 	var port fabricv4.Port
 	var portType, portState, portEncapsulationType, portRedundancyPriority string
 	if len(ports) > 0 {
@@ -110,18 +110,18 @@ func TestAccDataSourceFabricPorts_PNFV(t *testing.T) {
 	})
 }
 
-func testDataSourceFabricPorts(port_name string) string {
+func testDataSourceFabricPorts(portName string) string {
 	return fmt.Sprintf(`
 		data "equinix_fabric_ports" "test" {
 		  filters {
 			name = "%s"
 		  }
 		}`,
-		port_name)
+		portName)
 }
 
 func TestAccDataSourceFabricPort_PPDS(t *testing.T) {
-	ports := testing_helpers.GetFabricEnvPorts(t)
+	ports := testinghelpers.GetFabricEnvPorts(t)
 	var port fabricv4.Port
 	var portType, portState, portEncapsulationType, portRedundancyPriority string
 	if len(ports) > 0 {
@@ -166,7 +166,7 @@ func TestAccDataSourceFabricPort_PPDS(t *testing.T) {
 }
 
 func TestAccDataSourceFabricPorts_PPDS(t *testing.T) {
-	ports := testing_helpers.GetFabricEnvPorts(t)
+	ports := testinghelpers.GetFabricEnvPorts(t)
 	var port fabricv4.Port
 	var portType, portState, portEncapsulationType, portRedundancyPriority string
 	if len(ports) > 0 {
