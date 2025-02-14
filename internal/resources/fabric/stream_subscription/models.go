@@ -2,6 +2,7 @@ package streamsubscription
 
 import (
 	"context"
+
 	"github.com/equinix/terraform-provider-equinix/internal/converters"
 	"github.com/equinix/terraform-provider-equinix/internal/fabric"
 	int_fw "github.com/equinix/terraform-provider-equinix/internal/framework"

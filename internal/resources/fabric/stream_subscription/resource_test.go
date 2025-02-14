@@ -7,7 +7,7 @@ import (
 
 	"github.com/equinix/terraform-provider-equinix/internal/acceptance"
 	"github.com/equinix/terraform-provider-equinix/internal/config"
-	"github.com/equinix/terraform-provider-equinix/internal/fabric/testing_helpers"
+	testinghelpers "github.com/equinix/terraform-provider-equinix/internal/fabric/testing_helpers"
 
 	"github.com/equinix/equinix-sdk-go/services/fabricv4"
 
@@ -153,7 +153,7 @@ func testAccFabricStreamSubscriptionConfig(streamTestData map[string]map[string]
 }
 
 func TestAccFabricStreamSubscription_PFCR(t *testing.T) {
-	streamTestData := testing_helpers.GetFabricStreamTestData(t)
+	streamTestData := testinghelpers.GetFabricStreamTestData(t)
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.TestAccPreCheck(t); acceptance.TestAccPreCheckProviderConfigured(t) },
 		ExternalProviders:        acceptance.TestExternalProviders,
