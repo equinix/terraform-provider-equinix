@@ -2,7 +2,7 @@ package streamsubscription
 
 import (
 	"context"
-
+	"github.com/equinix/terraform-provider-equinix/internal/converters"
 	"github.com/equinix/terraform-provider-equinix/internal/fabric"
 	int_fw "github.com/equinix/terraform-provider-equinix/internal/framework"
 	fwtypes "github.com/equinix/terraform-provider-equinix/internal/framework/types"
@@ -210,11 +210,23 @@ func (m *BaseStreamSubscriptionModel) parse(ctx context.Context, streamSubscript
 				}
 			}
 		} else {
-			var diags diag.Diagnostics
-			filterModels[i], diags = parseSimpleExpression(ctx, filter.StreamFilterSimpleExpression, false)
+			// The unmarshal for this will always put the values in the additional properties for the
+			// StreamFilterOrFilter because it checks for that embedded struct first and
+			// the unmarshal allows it to do so without error; so it will never proceed to the
+			// StreamFilterSimpleExpression struct. So if GetOr doesn't have any values we check the additional
+			// properties map of StreamFilterOrFilter instead. Something to address at API Spec level
+			// before code generation of equinix-sdk-go/fabricv4 for long term fix
+			values := int_fw.StringSliceToAttrValue(converters.IfArrToStringArr(filter.StreamFilterOrFilter.AdditionalProperties["values"].([]interface{})))
+			fwValues, diags := fwtypes.NewListValueOf[types.String](ctx, values)
 			if diags.HasError() {
 				mDiags.Append(diags...)
 				return mDiags
+			}
+			filterModels[i] = FilterModel{
+				Property: types.StringValue(filter.StreamFilterOrFilter.AdditionalProperties["property"].(string)),
+				Operator: types.StringValue(filter.StreamFilterOrFilter.AdditionalProperties["operator"].(string)),
+				Values:   fwValues,
+				Or:       types.BoolValue(false),
 			}
 		}
 	}
