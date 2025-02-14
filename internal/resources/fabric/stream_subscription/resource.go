@@ -345,7 +345,7 @@ func buildCreateRequest(ctx context.Context, plan ResourceModel) (fabricv4.Strea
 
 func buildStreamSubscriptionSelector(ctx context.Context, selector fwtypes.ObjectValueOf[SelectorModel]) (fabricv4.StreamSubscriptionSelector, diag.Diagnostics) {
 	var selectorModel SelectorModel
-	diags := selector.As(ctx, selectorModel, basetypes.ObjectAsOptions{})
+	diags := selector.As(ctx, &selectorModel, basetypes.ObjectAsOptions{})
 	if diags.HasError() {
 		return fabricv4.StreamSubscriptionSelector{}, diags
 	}

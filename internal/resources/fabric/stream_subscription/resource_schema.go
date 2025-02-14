@@ -77,6 +77,7 @@ Additional Documentation:
 						"or": schema.BoolAttribute{
 							Description: "Boolean value to specify if this filter is a part of the OR group. Has a maximum of 3 and only counts for 1 of the 8 possible filters",
 							Optional:    true,
+							Computed:    true,
 						},
 					},
 				},
