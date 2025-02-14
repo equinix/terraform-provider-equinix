@@ -7,7 +7,7 @@ import (
 	"time"
 
 	"github.com/equinix/terraform-provider-equinix/internal/acceptance"
-	"github.com/equinix/terraform-provider-equinix/internal/fabric/testing_helpers"
+	testinghelpers "github.com/equinix/terraform-provider-equinix/internal/fabric/testing_helpers"
 	"github.com/equinix/terraform-provider-equinix/internal/resources/fabric/connection"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -16,12 +16,12 @@ import (
 )
 
 func TestAccFabricCreatePort2SPConnection_PPDS(t *testing.T) {
-	ports := testing_helpers.GetFabricEnvPorts(t)
-	connectionsTestData := testing_helpers.GetFabricEnvConnectionTestData(t)
-	var publicSPName, portUuid string
+	ports := testinghelpers.GetFabricEnvPorts(t)
+	connectionsTestData := testinghelpers.GetFabricEnvConnectionTestData(t)
+	var publicSPName, portUUID string
 	if len(ports) > 0 && len(connectionsTestData) > 0 {
 		publicSPName = connectionsTestData["ppds"]["publicSPName"]
-		portUuid = ports["ppds"]["dot1q"][0].GetUuid()
+		portUUID = ports["ppds"]["dot1q"][0].GetUuid()
 	}
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { acceptance.TestAccPreCheck(t); acceptance.TestAccPreCheckProviderConfigured(t) },
@@ -29,7 +29,7 @@ func TestAccFabricCreatePort2SPConnection_PPDS(t *testing.T) {
 		CheckDestroy: CheckConnectionDelete,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccFabricCreatePort2SPConnectionConfig(publicSPName, "port2sp_PPDS", portUuid, "CH"),
+				Config: testAccFabricCreatePort2SPConnectionConfig(publicSPName, "port2sp_PPDS", portUUID, "CH"),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("equinix_fabric_connection.test", "id"),
 					resource.TestCheckResourceAttr(
@@ -65,12 +65,12 @@ func TestAccFabricCreatePort2SPConnection_PPDS(t *testing.T) {
 }
 
 func TestAccFabricCreatePort2SPConnection_PFCR(t *testing.T) {
-	ports := testing_helpers.GetFabricEnvPorts(t)
-	connectionsTestData := testing_helpers.GetFabricEnvConnectionTestData(t)
-	var publicSPName, portUuid string
+	ports := testinghelpers.GetFabricEnvPorts(t)
+	connectionsTestData := testinghelpers.GetFabricEnvConnectionTestData(t)
+	var publicSPName, portUUID string
 	if len(ports) > 0 && len(connectionsTestData) > 0 {
 		publicSPName = connectionsTestData["pfcr"]["publicSPName"]
-		portUuid = ports["pfcr"]["dot1q"][0].GetUuid()
+		portUUID = ports["pfcr"]["dot1q"][0].GetUuid()
 	}
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { acceptance.TestAccPreCheck(t); acceptance.TestAccPreCheckProviderConfigured(t) },
@@ -78,7 +78,7 @@ func TestAccFabricCreatePort2SPConnection_PFCR(t *testing.T) {
 		CheckDestroy: CheckConnectionDelete,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccFabricCreatePort2SPConnectionConfig(publicSPName, "port2sp_PFCR", portUuid, "SV"),
+				Config: testAccFabricCreatePort2SPConnectionConfig(publicSPName, "port2sp_PFCR", portUUID, "SV"),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("equinix_fabric_connection.test", "id"),
 					resource.TestCheckResourceAttr(
@@ -113,7 +113,7 @@ func TestAccFabricCreatePort2SPConnection_PFCR(t *testing.T) {
 
 }
 
-func testAccFabricCreatePort2SPConnectionConfig(spName, name, portUuid, zSideMetro string) string {
+func testAccFabricCreatePort2SPConnectionConfig(spName, name, portUUID, zSideMetro string) string {
 	return fmt.Sprintf(`
 
 	data "equinix_fabric_service_profiles" "this" {
@@ -161,15 +161,15 @@ func testAccFabricCreatePort2SPConnectionConfig(spName, name, portUuid, zSideMet
 				}
 			}
 		}
-	}`, spName, name, portUuid, zSideMetro)
+	}`, spName, name, portUUID, zSideMetro)
 }
 
 func TestAccFabricCreatePort2PortConnection_PFCR(t *testing.T) {
-	ports := testing_helpers.GetFabricEnvPorts(t)
-	var aSidePortUuid, zSidePortUuid string
+	ports := testinghelpers.GetFabricEnvPorts(t)
+	var aSidePortUUID, zSidePortUUID string
 	if len(ports) > 0 {
-		aSidePortUuid = ports["pfcr"]["dot1q"][0].GetUuid()
-		zSidePortUuid = ports["pfcr"]["dot1q"][1].GetUuid()
+		aSidePortUUID = ports["pfcr"]["dot1q"][0].GetUuid()
+		zSidePortUUID = ports["pfcr"]["dot1q"][1].GetUuid()
 	}
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { acceptance.TestAccPreCheck(t); acceptance.TestAccPreCheckProviderConfigured(t) },
@@ -177,7 +177,7 @@ func TestAccFabricCreatePort2PortConnection_PFCR(t *testing.T) {
 		CheckDestroy: CheckConnectionDelete,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccFabricCreatePort2PortConnectionConfig(50, aSidePortUuid, zSidePortUuid),
+				Config: testAccFabricCreatePort2PortConnectionConfig(50, aSidePortUUID, zSidePortUUID),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("equinix_fabric_connection.test", "id"),
 					resource.TestCheckResourceAttr(
@@ -204,7 +204,7 @@ func TestAccFabricCreatePort2PortConnection_PFCR(t *testing.T) {
 				ExpectNonEmptyPlan: true,
 			},
 			{
-				Config: testAccFabricCreatePort2PortConnectionConfig(100, aSidePortUuid, zSidePortUuid),
+				Config: testAccFabricCreatePort2PortConnectionConfig(100, aSidePortUUID, zSidePortUUID),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(
 						"equinix_fabric_connection.test", "name", "port_test_PFCR"),
@@ -234,7 +234,7 @@ func TestAccFabricCreatePort2PortConnection_PFCR(t *testing.T) {
 
 }
 
-func testAccFabricCreatePort2PortConnectionConfig(bandwidth int32, aSidePortUuid, zSidePortUuid string) string {
+func testAccFabricCreatePort2PortConnectionConfig(bandwidth int32, aSidePortUUID, zSidePortUUID string) string {
 	return fmt.Sprintf(`resource "equinix_fabric_connection" "test" {
 		type = "EVPL_VC"
 		name = "port_test_PFCR"
@@ -276,14 +276,14 @@ func testAccFabricCreatePort2PortConnectionConfig(bandwidth int32, aSidePortUuid
 				}
 			}
 		}
-	}`, bandwidth, aSidePortUuid, zSidePortUuid)
+	}`, bandwidth, aSidePortUUID, zSidePortUUID)
 }
 
 func TestAccFabricCreateCloudRouter2PortConnection_PFCR(t *testing.T) {
-	ports := testing_helpers.GetFabricEnvPorts(t)
-	var portUuid string
+	ports := testinghelpers.GetFabricEnvPorts(t)
+	var portUUID string
 	if len(ports) > 0 {
-		portUuid = ports["pfcr"]["dot1q"][1].GetUuid()
+		portUUID = ports["pfcr"]["dot1q"][1].GetUuid()
 	}
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { acceptance.TestAccPreCheck(t); acceptance.TestAccPreCheckProviderConfigured(t) },
@@ -291,7 +291,7 @@ func TestAccFabricCreateCloudRouter2PortConnection_PFCR(t *testing.T) {
 		CheckDestroy: CheckConnectionDelete,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccFabricCreateCloudRouter2PortConnectionConfig("fcr_test_PFCR", portUuid),
+				Config: testAccFabricCreateCloudRouter2PortConnectionConfig("fcr_test_PFCR", portUUID),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(
 						"equinix_fabric_connection.test", "name", "fcr_test_PFCR"),
@@ -321,7 +321,7 @@ func TestAccFabricCreateCloudRouter2PortConnection_PFCR(t *testing.T) {
 	})
 }
 
-func testAccFabricCreateCloudRouter2PortConnectionConfig(name, portUuid string) string {
+func testAccFabricCreateCloudRouter2PortConnectionConfig(name, portUUID string) string {
 	return fmt.Sprintf(`
 
 	resource "equinix_fabric_cloud_router" "this" {
@@ -391,11 +391,11 @@ func testAccFabricCreateCloudRouter2PortConnectionConfig(name, portUuid string) 
 				}
 			}
 		}
-	}`, name, portUuid)
+	}`, name, portUUID)
 }
 
 func TestAccFabricCreateVirtualDevice2NetworkConnection_PNFV(t *testing.T) {
-	connectionTestData := testing_helpers.GetFabricEnvConnectionTestData(t)
+	connectionTestData := testinghelpers.GetFabricEnvConnectionTestData(t)
 	var virtualDevice string
 	if len(connectionTestData) > 0 {
 		virtualDevice = connectionTestData["pnfv"]["virtualDevice"]
@@ -441,7 +441,7 @@ func TestAccFabricCreateVirtualDevice2NetworkConnection_PNFV(t *testing.T) {
 
 }
 
-func testAccFabricCreateVirtualDevice2NetworkConnectionConfig(name, virtualDeviceUuid string) string {
+func testAccFabricCreateVirtualDevice2NetworkConnectionConfig(name, virtualDeviceUUID string) string {
 	return fmt.Sprintf(`
 
 	resource "equinix_fabric_network" "this" {
@@ -495,7 +495,7 @@ func testAccFabricCreateVirtualDevice2NetworkConnectionConfig(name, virtualDevic
 				}
 			}
 		}
-	}`, name, virtualDeviceUuid)
+	}`, name, virtualDeviceUUID)
 }
 
 func CheckConnectionDelete(s *terraform.State) error {

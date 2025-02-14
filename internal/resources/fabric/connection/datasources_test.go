@@ -2,18 +2,19 @@ package connection_test
 
 import (
 	"fmt"
-	"github.com/equinix/terraform-provider-equinix/internal/acceptance"
-	"github.com/equinix/terraform-provider-equinix/internal/fabric/testing_helpers"
-	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"testing"
+
+	"github.com/equinix/terraform-provider-equinix/internal/acceptance"
+	testinghelpers "github.com/equinix/terraform-provider-equinix/internal/fabric/testing_helpers"
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
 
 func TestAccFabricDataSourceConnection_PFCR(t *testing.T) {
-	ports := testing_helpers.GetFabricEnvPorts(t)
-	var aSidePortUuid, zSidePortUuid string
+	ports := testinghelpers.GetFabricEnvPorts(t)
+	var aSidePortUUID, zSidePortUUID string
 	if len(ports) > 0 {
-		aSidePortUuid = ports["pfcr"]["dot1q"][0].GetUuid()
-		zSidePortUuid = ports["pfcr"]["dot1q"][1].GetUuid()
+		aSidePortUUID = ports["pfcr"]["dot1q"][0].GetUuid()
+		zSidePortUUID = ports["pfcr"]["dot1q"][1].GetUuid()
 	}
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { acceptance.TestAccPreCheck(t); acceptance.TestAccPreCheckProviderConfigured(t) },
@@ -21,7 +22,7 @@ func TestAccFabricDataSourceConnection_PFCR(t *testing.T) {
 		CheckDestroy: CheckConnectionDelete,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccFabricDataSourceConnectionConfig(50, aSidePortUuid, zSidePortUuid),
+				Config: testAccFabricDataSourceConnectionConfig(50, aSidePortUUID, zSidePortUUID),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.equinix_fabric_connection.test", "id"),
 					resource.TestCheckResourceAttr(
@@ -84,7 +85,7 @@ func TestAccFabricDataSourceConnection_PFCR(t *testing.T) {
 	})
 }
 
-func testAccFabricDataSourceConnectionConfig(bandwidth int32, aSidePortUuid, zSidePortUuid string) string {
+func testAccFabricDataSourceConnectionConfig(bandwidth int32, aSidePortUUID, zSidePortUUID string) string {
 	return fmt.Sprintf(`
 
 resource "equinix_fabric_connection" "test" {
@@ -142,5 +143,5 @@ data "equinix_fabric_connections" "connections" {
 	}
 }
 
-`, bandwidth, aSidePortUuid, zSidePortUuid)
+`, bandwidth, aSidePortUUID, zSidePortUUID)
 }

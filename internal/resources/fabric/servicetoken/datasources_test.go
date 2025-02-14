@@ -5,12 +5,12 @@ import (
 	"testing"
 
 	"github.com/equinix/terraform-provider-equinix/internal/acceptance"
-	"github.com/equinix/terraform-provider-equinix/internal/fabric/testing_helpers"
+	testinghelpers "github.com/equinix/terraform-provider-equinix/internal/fabric/testing_helpers"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
 
 func TestAccFabricServiceTokenDataSource_PNFV(t *testing.T) {
-	connectionTestData := testing_helpers.GetFabricEnvConnectionTestData(t)
+	connectionTestData := testinghelpers.GetFabricEnvConnectionTestData(t)
 	var virtualDevice string
 	if len(connectionTestData) > 0 {
 		virtualDevice = connectionTestData["pnfv"]["virtualDevice"]
@@ -46,7 +46,7 @@ func TestAccFabricServiceTokenDataSource_PNFV(t *testing.T) {
 	})
 }
 
-func testAccFabricServiceTokenConfigDataSourceConfig(virtualDeviceUuid string) string {
+func testAccFabricServiceTokenConfigDataSourceConfig(virtualDeviceUUID string) string {
 	return fmt.Sprintf(
 		`resource "equinix_fabric_service_token" "test"{
 			type = "VC_TOKEN"
@@ -95,5 +95,5 @@ func testAccFabricServiceTokenConfigDataSourceConfig(virtualDeviceUuid string) s
 			}
 		}
 		
-    `, virtualDeviceUuid)
+    `, virtualDeviceUUID)
 }
