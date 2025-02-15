@@ -20,7 +20,7 @@ Additional Documentation:
 		Attributes: map[string]schema.Attribute{
 			"id": framework.IDAttributeDefaultDescription(),
 			"filters": schema.ListNestedAttribute{
-				Description: "List of filters to apply to the stream subscription selectors. Maximum of 8. All will be AND'd together with 1 of the 8 being a possible OR group of 3",
+				Description: "List of filters to apply to the stream attachment get request. Maximum of 8. All will be AND'd together with 1 of the 8 being a possible OR group of 3",
 				Optional:    true,
 				Computed:    true,
 				CustomType:  fwtypes.NewListNestedObjectTypeOf[FilterModel](ctx),
@@ -121,7 +121,7 @@ func dataSourceByIDsSchema(ctx context.Context) schema.Schema {
 	}
 
 	return schema.Schema{
-		Description: `Fabric V4 API compatible data resource that allow user to fetch Equinix Fabric Stream Asset
+		Description: `Fabric V4 API compatible data resource that allow user to fetch Equinix Fabric Stream Asset Attachment by IDs
 
 Additional Documentation:
 * Getting Started: https://docs.equinix.com/en-us/Content/KnowledgeCenter/Fabric/GettingStarted/Integrating-with-Fabric-V4-APIs/IntegrateWithSink.htm
