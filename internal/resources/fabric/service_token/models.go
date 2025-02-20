@@ -399,8 +399,8 @@ func accessPointSelectorsTerraformToGo(accessPointSelectors []interface{}) []fab
 	}
 
 	if len(interfaceList) != 0 {
-		interface_ := interfaceTerraformToGo(interfaceList)
-		apSelectors.SetInterface(interface_)
+		interfaceInfo := interfaceTerraformToGo(interfaceList)
+		apSelectors.SetInterface(interfaceInfo)
 	}
 
 	if len(networkList) != 0 {
@@ -419,8 +419,8 @@ func portTerraformToGo(portList []interface{}) fabricv4.SimplifiedMetadataEntity
 	portListMap := portList[0].(map[string]interface{})
 	uuid := portListMap["uuid"].(string)
 	href := portListMap["href"].(string)
-	type_ := portListMap["type"].(string)
-	cvpId := portListMap["cvp_id"].(int)
+	portType := portListMap["type"].(string)
+	cvpID := portListMap["cvp_id"].(int)
 	bandwidth := portListMap["bandwidth"].(int)
 	portName := portListMap["port_name"].(string)
 	encapsulationProtocolType := portListMap["encapsulation_protocol_type"].(string)
@@ -432,11 +432,11 @@ func portTerraformToGo(portList []interface{}) fabricv4.SimplifiedMetadataEntity
 	if href != "" {
 		port.SetHref(href)
 	}
-	if type_ != "" {
-		port.SetType(type_)
+	if portType != "" {
+		port.SetType(portType)
 	}
-	if cvpId != 0 {
-		port.SetCvpId(int32(cvpId))
+	if cvpID != 0 {
+		port.SetCvpId(int32(cvpID))
 	}
 	if bandwidth != 0 {
 		port.SetBandwidth(float32(bandwidth))
@@ -494,7 +494,7 @@ func virtualDeviceTerraformToGo(virtualDeviceList []interface{}) fabricv4.Simpli
 	var virtualDevice fabricv4.SimplifiedVirtualDevice
 	virtualDeviceMap := virtualDeviceList[0].(map[string]interface{})
 	href := virtualDeviceMap["href"].(string)
-	type_ := virtualDeviceMap["type"].(string)
+	virtualDeviceType := virtualDeviceMap["type"].(string)
 	uuid := virtualDeviceMap["uuid"].(string)
 	name := virtualDeviceMap["name"].(string)
 	cluster := virtualDeviceMap["cluster"].(string)
@@ -502,8 +502,8 @@ func virtualDeviceTerraformToGo(virtualDeviceList []interface{}) fabricv4.Simpli
 	if href != "" {
 		virtualDevice.SetHref(href)
 	}
-	if type_ != "" {
-		virtualDevice.SetType(fabricv4.SimplifiedVirtualDeviceType(type_))
+	if virtualDeviceType != "" {
+		virtualDevice.SetType(fabricv4.SimplifiedVirtualDeviceType(virtualDeviceType))
 	}
 	virtualDevice.SetUuid(uuid)
 	if name != "" {
@@ -521,21 +521,21 @@ func interfaceTerraformToGo(interfaceList []interface{}) fabricv4.VirtualDeviceI
 		return fabricv4.VirtualDeviceInterface{}
 	}
 
-	var interface_ fabricv4.VirtualDeviceInterface
+	var interfaceInfo fabricv4.VirtualDeviceInterface
 	interfaceMap := interfaceList[0].(map[string]interface{})
 	uuid := interfaceMap["uuid"].(string)
-	type_ := interfaceMap["type"].(string)
+	interfaceType := interfaceMap["type"].(string)
 	id := interfaceMap["id"].(int)
 
 	if uuid != "" {
-		interface_.SetUuid(uuid)
+		interfaceInfo.SetUuid(uuid)
 	}
-	interface_.SetType(fabricv4.VirtualDeviceInterfaceType(type_))
+	interfaceInfo.SetType(fabricv4.VirtualDeviceInterfaceType(interfaceType))
 	if id >= 0 {
-		interface_.SetId(int32(id))
+		interfaceInfo.SetId(int32(id))
 	}
 
-	return interface_
+	return interfaceInfo
 }
 
 func networkTerraformToGo(networkList []interface{}) fabricv4.SimplifiedTokenNetwork {
@@ -546,7 +546,7 @@ func networkTerraformToGo(networkList []interface{}) fabricv4.SimplifiedTokenNet
 	networkListMap := networkList[0].(map[string]interface{})
 	uuid := networkListMap["uuid"].(string)
 	href := networkListMap["href"].(string)
-	type_ := networkListMap["type"].(string)
+	networkType := networkListMap["type"].(string)
 	name := networkListMap["name"].(string)
 	scope := networkListMap["scope"].(string)
 	locationList := networkListMap["location"].(*schema.Set).List()
@@ -555,8 +555,8 @@ func networkTerraformToGo(networkList []interface{}) fabricv4.SimplifiedTokenNet
 	if href != "" {
 		network.SetHref(href)
 	}
-	if type_ != "" {
-		network.SetType(fabricv4.SimplifiedTokenNetworkType(type_))
+	if networkType != "" {
+		network.SetType(fabricv4.SimplifiedTokenNetworkType(networkType))
 	}
 	if name != "" {
 		network.SetName(name)
@@ -686,8 +686,8 @@ func accessPointSelectorsGoToTerraform(apSelectors []fabricv4.AccessPointSelecto
 			mappedAccessPointSelector["virtual_device"] = virtualDeviceGoToTerraform(&virtualDevice)
 		}
 		if selector.Interface != nil {
-			interface_ := selector.GetInterface()
-			mappedAccessPointSelector["interface"] = interfaceGoToTerraform(&interface_)
+			interfaceInfo := selector.GetInterface()
+			mappedAccessPointSelector["interface"] = interfaceGoToTerraform(&interfaceInfo)
 		}
 		if selector.Network != nil {
 			network := selector.GetNetwork()
@@ -713,7 +713,7 @@ func portGoToTerraform(port *fabricv4.SimplifiedMetadataEntity) *schema.Set {
 	if port.GetType() != "" {
 		mappedPort["type"] = port.GetType()
 	}
-	if cvpId := port.GetCvpId(); cvpId != 0 {
+	if cvpID := port.GetCvpId(); cvpID != 0 {
 		mappedPort["cvp_id"] = port.GetCvpId()
 	}
 	if bandwidth := port.GetBandwidth(); bandwidth != 0 {
@@ -813,8 +813,8 @@ func networkGoToTerraform(network *fabricv4.SimplifiedTokenNetwork) *schema.Set 
 	if href := network.GetHref(); href != "" {
 		mappedNetwork["href"] = href
 	}
-	if type_ := network.GetType(); type_ != "" {
-		mappedNetwork["type"] = string(type_)
+	if networkType := network.GetType(); networkType != "" {
+		mappedNetwork["type"] = string(networkType)
 	}
 	if name := network.GetName(); name != "" {
 		mappedNetwork["name"] = name
