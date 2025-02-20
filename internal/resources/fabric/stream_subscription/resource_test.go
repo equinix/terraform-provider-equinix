@@ -75,7 +75,7 @@ func testAccFabricStreamSubscriptionConfig(streamTestData map[string]map[string]
 		  enabled = false
 		  sink = {
 			type = "SLACK"
-			uri = "https://hooks.slack.com/services/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"
+			uri = "%s"
 		  }
 		}
 
@@ -133,12 +133,33 @@ func testAccFabricStreamSubscriptionConfig(streamTestData map[string]map[string]
 			uri = "%s"
 		  }
 		}
+
+		data "equinix_fabric_stream_subscription" "by_ids" {
+		  stream_id = equinix_fabric_stream.new_stream.id
+		  subscription_id = equinix_fabric_stream_subscription.splunk.id
+		}
+
+		data "equinix_fabric_stream_subscriptions" "all" {
+		  depends_on = [
+			equinix_fabric_stream_subscription.splunk,
+			equinix_fabric_stream_subscription.slack,
+			equinix_fabric_stream_subscription.pager_duty,
+			equinix_fabric_stream_subscription.datadog,
+			equinix_fabric_stream_subscription.msteams
+			]
+		  stream_id = equinix_fabric_stream.new_stream.id
+		  pagination = {
+			limit = 20
+			offset = 0
+		  }
+		}
 	`,
 		streamTestData["splunk"]["uri"],
 		streamTestData["splunk"]["event_index"],
 		streamTestData["splunk"]["metric_index"],
 		streamTestData["splunk"]["source"],
 		streamTestData["splunk"]["accessToken"],
+		streamTestData["slack"]["uri"],
 		streamTestData["pagerDuty"]["host"],
 		streamTestData["pagerDuty"]["change_uri"],
 		streamTestData["pagerDuty"]["alert_uri"],
@@ -164,19 +185,41 @@ func TestAccFabricStreamSubscription_PFCR(t *testing.T) {
 				Config: testAccFabricStreamSubscriptionConfig(streamTestData),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(
-						"equinix_fabric_stream.new_stream", "name", "Subscription_Test_PFCR"),
+						"equinix_fabric_stream_subscription.splunk", "name", "Splunk_PFCR"),
 					resource.TestCheckResourceAttr(
-						"equinix_fabric_stream.new_stream", "type", "TELEMETRY_STREAM"),
+						"equinix_fabric_stream_subscription.splunk", "type", "STREAM_SUBSCRIPTION"),
 					resource.TestCheckResourceAttr(
-						"equinix_fabric_stream.new_stream", "project.project_id", "291639000636552"),
+						"equinix_fabric_stream_subscription.splunk", "description", "Stream Subscription Splunk TF Testing"),
+					resource.TestCheckResourceAttr("equinix_fabric_stream_subscription.splunk", "sink.type", "SPLUNK_HEC"),
+					resource.TestCheckResourceAttr("equinix_fabric_stream_subscription.splunk", "sink.credential.type", "ACCESS_TOKEN"),
+					resource.TestCheckResourceAttrSet("equinix_fabric_stream_subscription.splunk", "stream_id"),
+					resource.TestCheckResourceAttrSet("equinix_fabric_stream_subscription.splunk", "sink.uri"),
+					resource.TestCheckResourceAttrSet("equinix_fabric_stream_subscription.splunk", "sink.credential.access_token"),
+					resource.TestCheckResourceAttrSet("equinix_fabric_stream_subscription.splunk", "sink.settings.event_index"),
+					resource.TestCheckResourceAttrSet("equinix_fabric_stream_subscription.splunk", "sink.settings.metric_index"),
+					resource.TestCheckResourceAttrSet("equinix_fabric_stream_subscription.splunk", "sink.settings.source"),
+					resource.TestCheckResourceAttrSet("equinix_fabric_stream_subscription.splunk", "uuid"),
 					resource.TestCheckResourceAttr(
-						"equinix_fabric_stream.new_stream", "description", "Testing stream subscriptions resource"),
-					resource.TestCheckResourceAttrSet("equinix_fabric_stream.new_stream", "id"),
-					resource.TestCheckResourceAttrSet("equinix_fabric_stream.new_stream", "href"),
-					resource.TestCheckResourceAttrSet("equinix_fabric_stream.new_stream", "assets_count"),
-					resource.TestCheckResourceAttrSet("equinix_fabric_stream.new_stream", "stream_subscriptions_count"),
-					resource.TestCheckResourceAttrSet("equinix_fabric_stream.new_stream", "uuid"),
-					resource.TestCheckResourceAttrSet("equinix_fabric_stream.new_stream", "change_log.created_by"),
+						"data.equinix_fabric_stream_subscription.by_ids", "name", "Splunk_PFCR"),
+					resource.TestCheckResourceAttr(
+						"data.equinix_fabric_stream_subscription.by_ids", "type", "STREAM_SUBSCRIPTION"),
+					resource.TestCheckResourceAttr(
+						"data.equinix_fabric_stream_subscription.by_ids", "description", "Stream Subscription Splunk TF Testing"),
+					resource.TestCheckResourceAttr("data.equinix_fabric_stream_subscription.by_ids", "sink.type", "SPLUNK_HEC"),
+					resource.TestCheckResourceAttr("data.equinix_fabric_stream_subscription.by_ids", "sink.credential.type", "ACCESS_TOKEN"),
+					resource.TestCheckResourceAttrSet("data.equinix_fabric_stream_subscription.by_ids", "stream_id"),
+					resource.TestCheckResourceAttrSet("data.equinix_fabric_stream_subscription.by_ids", "sink.uri"),
+					resource.TestCheckResourceAttrSet("data.equinix_fabric_stream_subscription.by_ids", "sink.credential.access_token"),
+					resource.TestCheckResourceAttrSet("data.equinix_fabric_stream_subscription.by_ids", "sink.settings.event_index"),
+					resource.TestCheckResourceAttrSet("data.equinix_fabric_stream_subscription.by_ids", "sink.settings.metric_index"),
+					resource.TestCheckResourceAttrSet("data.equinix_fabric_stream_subscription.by_ids", "sink.settings.source"),
+					resource.TestCheckResourceAttrSet("data.equinix_fabric_stream_subscription.by_ids", "uuid"),
+					resource.TestCheckResourceAttrSet("data.equinix_fabric_stream_subscriptions.all", "data.0.name"),
+					resource.TestCheckResourceAttrSet("data.equinix_fabric_stream_subscriptions.all", "data.0.type"),
+					resource.TestCheckResourceAttrSet("data.equinix_fabric_stream_subscriptions.all", "data.0.description"),
+					resource.TestCheckResourceAttrSet("data.equinix_fabric_stream_subscriptions.all", "data.0.sink.type"),
+					resource.TestCheckResourceAttrSet("data.equinix_fabric_stream_subscriptions.all", "data.0.stream_id"),
+					resource.TestCheckResourceAttrSet("data.equinix_fabric_stream_subscriptions.all", "data.0.uuid"),
 				),
 			},
 		},
