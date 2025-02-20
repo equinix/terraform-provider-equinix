@@ -1,4 +1,4 @@
-package service_token
+package serviceToken
 
 import (
 	"fmt"

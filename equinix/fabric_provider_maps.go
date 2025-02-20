@@ -7,7 +7,7 @@ import (
 	fabric_network "github.com/equinix/terraform-provider-equinix/internal/resources/fabric/network"
 	fabric_route_filter "github.com/equinix/terraform-provider-equinix/internal/resources/fabric/route_filter"
 	fabric_route_filter_rule "github.com/equinix/terraform-provider-equinix/internal/resources/fabric/route_filter_rule"
-	fabric_service_token "github.com/equinix/terraform-provider-equinix/internal/resources/fabric/service_token"
+	fabric_service_token "github.com/equinix/terraform-provider-equinix/internal/resources/fabric/serviceToken"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )

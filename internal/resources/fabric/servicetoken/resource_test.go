@@ -1,4 +1,4 @@
-package service_token_test
+package serviceToken
 
 import (
 	"context"
@@ -8,7 +8,6 @@ import (
 
 	"github.com/equinix/terraform-provider-equinix/internal/acceptance"
 	"github.com/equinix/terraform-provider-equinix/internal/fabric/testing_helpers"
-	"github.com/equinix/terraform-provider-equinix/internal/resources/fabric/service_token"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
@@ -328,7 +327,7 @@ func CheckServiceTokenDelete(s *terraform.State) error {
 			continue
 		}
 
-		err := service_token.WaitForDeletion(rs.Primary.ID, acceptance.TestAccProvider.Meta(), &schema.ResourceData{}, ctx, 10*time.Minute)
+		err := WaitForDeletion(rs.Primary.ID, acceptance.TestAccProvider.Meta(), &schema.ResourceData{}, ctx, 10*time.Minute)
 		if err != nil {
 			return fmt.Errorf("API call failed while waiting for resource deletion")
 		}

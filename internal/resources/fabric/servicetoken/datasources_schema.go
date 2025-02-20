@@ -1,4 +1,4 @@
-package service_token
+package serviceToken
 
 import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
