@@ -1,4 +1,4 @@
-package serviceToken
+package servicetoken
 
 import (
 	equinix_fabric_schema "github.com/equinix/terraform-provider-equinix/internal/fabric/schema"

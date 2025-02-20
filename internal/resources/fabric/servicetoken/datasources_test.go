@@ -1,4 +1,4 @@
-package serviceToken
+package servicetoken_test
 
 import (
 	"fmt"
