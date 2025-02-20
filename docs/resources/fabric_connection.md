@@ -1263,6 +1263,7 @@ Optional:
 - `order_id` (String) Order Identification
 - `order_number` (String) Order Reference Number
 - `purchase_order_number` (String) Purchase order number
+- `term_length` (Number) Term length in months; valid values are 1, 12, 24, 36 where 1 is the default value (for on-demand case)
 
 
 <a id="nestedblock--project"></a>

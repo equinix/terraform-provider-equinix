@@ -17,6 +17,7 @@ func OrderTerraformToGo(orderTerraform []interface{}) fabricv4.Order {
 	billingTier := orderMap["billing_tier"].(string)
 	orderId := orderMap["order_id"].(string)
 	orderNumber := orderMap["order_number"].(string)
+	termLength := orderMap["term_length"].(int)
 	if purchaseOrderNumber != "" {
 		order.SetPurchaseOrderNumber(purchaseOrderNumber)
 	}
@@ -28,6 +29,9 @@ func OrderTerraformToGo(orderTerraform []interface{}) fabricv4.Order {
 	}
 	if orderNumber != "" {
 		order.SetOrderNumber(orderNumber)
+	}
+	if termLength >= 1 {
+		order.SetTermLength(int32(termLength))
 	}
 
 	return order
@@ -42,6 +46,7 @@ func OrderGoToTerraform(order *fabricv4.Order) *schema.Set {
 	mappedOrder["billing_tier"] = order.GetBillingTier()
 	mappedOrder["order_id"] = order.GetOrderId()
 	mappedOrder["order_number"] = order.GetOrderNumber()
+	mappedOrder["term_length"] = int(order.GetTermLength())
 	orderSet := schema.NewSet(
 		schema.HashResource(&schema.Resource{Schema: OrderSch()}),
 		[]interface{}{mappedOrder},

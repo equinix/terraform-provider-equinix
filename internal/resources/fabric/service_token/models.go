@@ -307,8 +307,9 @@ func connectionTerraformToGo(connectionTerraform []interface{}) fabricv4.Service
 	connectionMap := connectionTerraform[0].(map[string]interface{})
 
 	typeVal := connectionMap["type"].(string)
-	connection.SetType(fabricv4.ServiceTokenConnectionType(typeVal))
-
+	if typeVal != "" {
+		connection.SetType(fabricv4.ServiceTokenConnectionType(typeVal))
+	}
 	uuid := connectionMap["uuid"].(string)
 	if uuid != "" {
 		connection.SetUuid(uuid)
@@ -619,7 +620,9 @@ func paginationTerraformToGo(pagination []interface{}) fabricv4.PaginationReques
 
 func connectionGoToTerraform(connection *fabricv4.ServiceTokenConnection) *schema.Set {
 	mappedConnection := make(map[string]interface{})
-	mappedConnection["type"] = string(connection.GetType())
+	if connection.Type != nil {
+		mappedConnection["type"] = string(connection.GetType())
+	}
 	mappedConnection["allow_remote_connection"] = connection.GetAllowRemoteConnection()
 	mappedConnection["allow_custom_bandwidth"] = connection.GetAllowCustomBandwidth()
 	if connection.SupportedBandwidths != nil {

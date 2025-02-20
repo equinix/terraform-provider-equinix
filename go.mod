@@ -3,7 +3,7 @@ module github.com/equinix/terraform-provider-equinix
 go 1.23
 
 require (
-	github.com/equinix/equinix-sdk-go v0.48.0
+	github.com/equinix/equinix-sdk-go v0.49.0
 	github.com/equinix/ne-go v1.19.0
 	github.com/equinix/oauth2-go v1.0.0
 	github.com/equinix/rest-go v1.3.0
@@ -95,6 +95,7 @@ require (
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20241015192408-796eee8c2d53 // indirect
 	google.golang.org/grpc v1.69.4 // indirect
 	google.golang.org/protobuf v1.36.3 // indirect
+	gopkg.in/validator.v2 v2.0.1 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )

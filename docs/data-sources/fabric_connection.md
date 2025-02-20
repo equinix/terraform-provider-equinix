@@ -378,6 +378,7 @@ Read-Only:
 - `order_id` (String)
 - `order_number` (String)
 - `purchase_order_number` (String)
+- `term_length` (Number)
 
 
 <a id="nestedatt--project"></a>
