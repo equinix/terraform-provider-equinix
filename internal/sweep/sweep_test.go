@@ -8,6 +8,7 @@ import (
 	fabric_route_filter "github.com/equinix/terraform-provider-equinix/internal/resources/fabric/route_filter"
 	fabric_stream "github.com/equinix/terraform-provider-equinix/internal/resources/fabric/stream"
 
+	"github.com/equinix/terraform-provider-equinix/internal/resources/fabric/serviceprofile"
 	"github.com/equinix/terraform-provider-equinix/internal/resources/fabric/network"
 	"github.com/equinix/terraform-provider-equinix/internal/resources/metal/connection"
 	"github.com/equinix/terraform-provider-equinix/internal/resources/metal/device"
@@ -39,6 +40,7 @@ func addTestSweepers() {
 	network.AddTestSweeper()
 	organization.AddTestSweeper()
 	project.AddTestSweeper()
+	serviceprofile.AddTestSweeper()
 	ssh_key.AddTestSweeper()
 	user_api_key.AddTestSweeper()
 	virtual_circuit.AddTestSweeper()
