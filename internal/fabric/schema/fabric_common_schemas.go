@@ -2,6 +2,7 @@ package schema
 
 import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 )
 
 func OrderSch() map[string]*schema.Schema {
@@ -29,6 +30,13 @@ func OrderSch() map[string]*schema.Schema {
 			Computed:    true,
 			Optional:    true,
 			Description: "Order Reference Number",
+		},
+		"term_length": {
+			Type:         schema.TypeInt,
+			Optional:     true,
+			Description:  "Term length in months; valid values are 1, 12, 24, 36 where 1 is the default value (for on-demand case)",
+			ValidateFunc: validation.IntBetween(1, 36),
+			Default:      1,
 		},
 	}
 }

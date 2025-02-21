@@ -15,19 +15,23 @@ func OrderTerraformToGo(orderTerraform []interface{}) fabricv4.Order {
 	orderMap := orderTerraform[0].(map[string]interface{})
 	purchaseOrderNumber := orderMap["purchase_order_number"].(string)
 	billingTier := orderMap["billing_tier"].(string)
-	orderId := orderMap["order_id"].(string)
+	orderID := orderMap["order_id"].(string)
 	orderNumber := orderMap["order_number"].(string)
+	termLength := orderMap["term_length"].(int)
 	if purchaseOrderNumber != "" {
 		order.SetPurchaseOrderNumber(purchaseOrderNumber)
 	}
 	if billingTier != "" {
 		order.SetBillingTier(billingTier)
 	}
-	if orderId != "" {
-		order.SetOrderId(orderId)
+	if orderID != "" {
+		order.SetOrderId(orderID)
 	}
 	if orderNumber != "" {
 		order.SetOrderNumber(orderNumber)
+	}
+	if termLength >= 1 {
+		order.SetTermLength(int32(termLength))
 	}
 
 	return order
@@ -42,6 +46,7 @@ func OrderGoToTerraform(order *fabricv4.Order) *schema.Set {
 	mappedOrder["billing_tier"] = order.GetBillingTier()
 	mappedOrder["order_id"] = order.GetOrderId()
 	mappedOrder["order_number"] = order.GetOrderNumber()
+	mappedOrder["term_length"] = int(order.GetTermLength())
 	orderSet := schema.NewSet(
 		schema.HashResource(&schema.Resource{Schema: OrderSch()}),
 		[]interface{}{mappedOrder},
@@ -160,8 +165,8 @@ func LocationWithoutIBXTerraformToGo(locationList []interface{}) fabricv4.Simpli
 
 	var locationWithoutIbx fabricv4.SimplifiedLocationWithoutIBX
 	locationMap := locationList[0].(map[string]interface{})
-	metro_code := locationMap["metro_code"].(string)
-	locationWithoutIbx.SetMetroCode(metro_code)
+	metroCode := locationMap["metro_code"].(string)
+	locationWithoutIbx.SetMetroCode(metroCode)
 	return locationWithoutIbx
 }
 
@@ -185,9 +190,9 @@ func ProjectTerraformToGo(projectTerraform []interface{}) fabricv4.Project {
 	}
 	var project fabricv4.Project
 	projectMap := projectTerraform[0].(map[string]interface{})
-	projectId := projectMap["project_id"].(string)
-	if projectId != "" {
-		project.SetProjectId(projectId)
+	projectID := projectMap["project_id"].(string)
+	if projectID != "" {
+		project.SetProjectId(projectID)
 	}
 
 	return project

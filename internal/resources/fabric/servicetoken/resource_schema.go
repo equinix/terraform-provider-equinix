@@ -1,4 +1,4 @@
-package service_token
+package servicetoken
 
 import (
 	equinix_fabric_schema "github.com/equinix/terraform-provider-equinix/internal/fabric/schema"
@@ -100,7 +100,7 @@ func serviceTokenConnectionSch() *schema.Resource {
 		Schema: map[string]*schema.Schema{
 			"type": {
 				Type:        schema.TypeString,
-				Required:    true,
+				Optional:    true,
 				Description: "Type of Connection supported by Service Token you will create; EVPL_VC, EVPLAN_VC, EPLAN_VC, IPWAN_VC",
 			},
 			"uuid": {
