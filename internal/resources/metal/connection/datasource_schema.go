@@ -98,14 +98,14 @@ func dataSourceSchema(ctx context.Context) schema.Schema {
 			},
 			"ports": schema.ListAttribute{
 				Description: "List of connection ports - primary (`ports[0]`) and secondary (`ports[1]`)",
-				CustomType:  fwtypes.NewListNestedObjectTypeOf[PortModel](ctx),
-				ElementType: fwtypes.NewObjectTypeOf[PortModel](ctx),
+				CustomType:  fwtypes.NewListNestedObjectTypeOf[portModel](ctx),
+				ElementType: fwtypes.NewObjectTypeOf[portModel](ctx),
 				Computed:    true,
 			},
 			"service_tokens": schema.ListAttribute{
 				Description: "Only used with shared connection. List of service tokens required to continue the setup process with [equinix_fabric_connection](https://registry.terraform.io/providers/equinix/equinix/latest/docs/resources/fabric_connection) or from the [Equinix Fabric Portal](https://fabric.equinix.com/dashboard)",
-				CustomType:  fwtypes.NewListNestedObjectTypeOf[ServiceTokenModel](ctx),
-				ElementType: fwtypes.NewObjectTypeOf[ServiceTokenModel](ctx),
+				CustomType:  fwtypes.NewListNestedObjectTypeOf[serviceTokenModel](ctx),
+				ElementType: fwtypes.NewObjectTypeOf[serviceTokenModel](ctx),
 				Computed:    true,
 			},
 			"authorization_code": schema.StringAttribute{
