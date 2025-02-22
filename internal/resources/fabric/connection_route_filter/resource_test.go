@@ -7,7 +7,7 @@ import (
 	"time"
 
 	"github.com/equinix/terraform-provider-equinix/internal/acceptance"
-	"github.com/equinix/terraform-provider-equinix/internal/fabric/testing_helpers"
+	testinghelpers "github.com/equinix/terraform-provider-equinix/internal/fabric/testing_helpers"
 	"github.com/equinix/terraform-provider-equinix/internal/resources/fabric/connection_route_filter"
 
 	"github.com/equinix/equinix-sdk-go/services/fabricv4"
@@ -18,10 +18,10 @@ import (
 )
 
 func TestAccFabricConnectionRouteFilter_PFCR(t *testing.T) {
-	ports := testing_helpers.GetFabricEnvPorts(t)
-	var portUuid string
+	ports := testinghelpers.GetFabricEnvPorts(t)
+	var portUUID string
 	if len(ports) > 0 {
-		portUuid = ports["pfcr"]["dot1q"][0].GetUuid()
+		portUUID = ports["pfcr"]["dot1q"][0].GetUuid()
 	}
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { acceptance.TestAccPreCheck(t); acceptance.TestAccPreCheckProviderConfigured(t) },
@@ -29,7 +29,7 @@ func TestAccFabricConnectionRouteFilter_PFCR(t *testing.T) {
 		CheckDestroy: CheckConnectionRouteFilterDelete,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccFabricConnectionRouteFilterConfig(portUuid),
+				Config: testAccFabricConnectionRouteFilterConfig(portUUID),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("equinix_fabric_connection_route_filter.test", "id"),
 					resource.TestCheckResourceAttrSet("equinix_fabric_connection_route_filter.test", "connection_id"),
@@ -69,7 +69,7 @@ func TestAccFabricConnectionRouteFilter_PFCR(t *testing.T) {
 
 }
 
-func testAccFabricConnectionRouteFilterConfig(portUuid string) string {
+func testAccFabricConnectionRouteFilterConfig(portUUID string) string {
 	return fmt.Sprintf(`
 		resource "equinix_fabric_cloud_router" "test" {
 			type = "XF_ROUTER"
@@ -175,7 +175,7 @@ func testAccFabricConnectionRouteFilterConfig(portUuid string) string {
 			connection_id = equinix_fabric_connection.test.id
 		}
 
-	`, portUuid)
+	`, portUUID)
 }
 
 func CheckConnectionRouteFilterDelete(s *terraform.State) error {
@@ -185,9 +185,9 @@ func CheckConnectionRouteFilterDelete(s *terraform.State) error {
 			continue
 		}
 
-		connectionId := rs.Primary.Attributes["connection_id"]
+		connectionID := rs.Primary.Attributes["connection_id"]
 
-		err := connection_route_filter.WaitForDeletion(connectionId, rs.Primary.ID, acceptance.TestAccProvider.Meta(), &schema.ResourceData{}, ctx, 10*time.Minute)
+		err := connection_route_filter.WaitForDeletion(connectionID, rs.Primary.ID, acceptance.TestAccProvider.Meta(), &schema.ResourceData{}, ctx, 10*time.Minute)
 		if err != nil {
 			return fmt.Errorf("API call failed while waiting for resource deletion")
 		}

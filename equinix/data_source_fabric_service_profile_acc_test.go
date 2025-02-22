@@ -2,10 +2,11 @@ package equinix_test
 
 import (
 	"fmt"
-	"github.com/equinix/terraform-provider-equinix/internal/acceptance"
-	"github.com/equinix/terraform-provider-equinix/internal/fabric/testing_helpers"
-	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"testing"
+
+	"github.com/equinix/terraform-provider-equinix/internal/acceptance"
+	testinghelpers "github.com/equinix/terraform-provider-equinix/internal/fabric/testing_helpers"
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
 
 func testAccFabricReadServiceProfileConfig(spName string, portUUID string, portType string, portMetroCode string) string {
@@ -76,12 +77,12 @@ data "equinix_fabric_service_profiles" "test" {
 }
 
 func TestAccFabricServiceProfileDataSources_PFCR(t *testing.T) {
-	ports := testing_helpers.GetFabricEnvPorts(t)
+	ports := testinghelpers.GetFabricEnvPorts(t)
 
-	var portUuid, portMetroCode, portType string
+	var portUUID, portMetroCode, portType string
 	if len(ports) > 0 {
 		port := ports["pfcr"]["dot1q"][0]
-		portUuid = port.GetUuid()
+		portUUID = port.GetUuid()
 		portMetroCodeLocation := port.GetLocation()
 		portMetroCode = portMetroCodeLocation.GetMetroCode()
 		portType = string(port.GetType())
@@ -93,7 +94,7 @@ func TestAccFabricServiceProfileDataSources_PFCR(t *testing.T) {
 		CheckDestroy: checkServiceProfileDelete,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccFabricReadServiceProfileConfig("SP_DataSource_PFCR", portUuid, portType, portMetroCode),
+				Config: testAccFabricReadServiceProfileConfig("SP_DataSource_PFCR", portUUID, portType, portMetroCode),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(
 						"data.equinix_fabric_service_profile.test", "name", "SP_DataSource_PFCR"),

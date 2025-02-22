@@ -3,30 +3,31 @@ package equinix_test
 import (
 	"context"
 	"fmt"
-	"github.com/equinix/terraform-provider-equinix/equinix"
-	"github.com/equinix/terraform-provider-equinix/internal/acceptance"
-	"github.com/equinix/terraform-provider-equinix/internal/fabric/testing_helpers"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"testing"
 	"time"
+
+	"github.com/equinix/terraform-provider-equinix/equinix"
+	"github.com/equinix/terraform-provider-equinix/internal/acceptance"
+	testinghelpers "github.com/equinix/terraform-provider-equinix/internal/fabric/testing_helpers"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 )
 
 func TestAccFabricCreateServiceProfile_PFCR(t *testing.T) {
-	ports := testing_helpers.GetFabricEnvPorts(t)
+	ports := testinghelpers.GetFabricEnvPorts(t)
 
-	var portUuidDot1Q, portMetroCodeDot1Q, portTypeDot1Q string
-	var portUuidQinq, portMetroCodeQinq, portTypeQinq string
+	var portUUIDDot1Q, portMetroCodeDot1Q, portTypeDot1Q string
+	var portUUIDQinq, portMetroCodeQinq, portTypeQinq string
 	if len(ports) > 0 {
 		portDot1Q := ports["pfcr"]["dot1q"][0]
 		portQinq := ports["pfcr"]["qinq"][0]
-		portUuidDot1Q = portDot1Q.GetUuid()
+		portUUIDDot1Q = portDot1Q.GetUuid()
 		portMetroCodeDot1QLocation := portDot1Q.GetLocation()
 		portMetroCodeDot1Q = portMetroCodeDot1QLocation.GetMetroCode()
 		portTypeDot1Q = string(portDot1Q.GetType())
-		portUuidQinq = portQinq.GetUuid()
+		portUUIDQinq = portQinq.GetUuid()
 		portMetroCodeQinqLocation := portQinq.GetLocation()
 		portMetroCodeQinq = portMetroCodeQinqLocation.GetMetroCode()
 		portTypeQinq = string(portQinq.GetType())
@@ -38,7 +39,7 @@ func TestAccFabricCreateServiceProfile_PFCR(t *testing.T) {
 		CheckDestroy: checkServiceProfileDelete,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccFabricCreateServiceProfileConfig(portUuidDot1Q, portTypeDot1Q, portMetroCodeDot1Q),
+				Config: testAccFabricCreateServiceProfileConfig(portUUIDDot1Q, portTypeDot1Q, portMetroCodeDot1Q),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(
 						"equinix_fabric_service_profile.test", "name", "SP_ResourceCreation_PFCR"),
@@ -70,7 +71,7 @@ func TestAccFabricCreateServiceProfile_PFCR(t *testing.T) {
 				ExpectNonEmptyPlan: true,
 			},
 			{
-				Config: testAccFabricCreateServiceProfileConfig(portUuidQinq, portTypeQinq, portMetroCodeQinq),
+				Config: testAccFabricCreateServiceProfileConfig(portUUIDQinq, portTypeQinq, portMetroCodeQinq),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(
 						"equinix_fabric_service_profile.test", "name", "SP_ResourceCreation_PFCR"),
