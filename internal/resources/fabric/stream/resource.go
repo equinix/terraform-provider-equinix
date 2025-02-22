@@ -48,8 +48,8 @@ func (r *Resource) Create(
 
 	var plan ResourceModel
 	diags := req.Plan.Get(ctx, &plan)
-	resp.Diagnostics.Append(diags...)
-	if resp.Diagnostics.HasError() {
+	if diags.HasError() {
+		resp.Diagnostics.Append(diags...)
 		return
 	}
 
@@ -58,6 +58,7 @@ func (r *Resource) Create(
 
 	createRequest, diags := buildCreateRequest(ctx, plan)
 	if diags.HasError() {
+		resp.Diagnostics.Append(diags...)
 		return
 	}
 
@@ -77,11 +78,6 @@ func (r *Resource) Create(
 	if err != nil {
 		resp.Diagnostics.AddError(
 			fmt.Sprintf("Failed creating Stream %s", stream.GetUuid()), err.Error())
-		return
-	}
-
-	resp.Diagnostics.Append(diags...)
-	if diags.HasError() {
 		return
 	}
 
@@ -154,7 +150,7 @@ func (r *Resource) Update(
 
 	if !needsUpdate {
 		resp.Diagnostics.AddWarning("No updatable fields have changed",
-			"Terraform detected a config change, but it is for a field that isn't updatable for the stream resource. Please revert to prior config")
+			"Terraform detected a config change, but it is for a field that isn't updatable for the stream attachment resource. Please revert to prior config")
 		return
 	}
 
@@ -279,7 +275,7 @@ func getDeleteWaiter(ctx context.Context, client *fabricv4.APIClient, id string,
 	// deletedMarker is a terraform-provider-only value that is used by the waiter
 	// to indicate that the connection appears to be deleted successfully based on
 	// status code
-	deletedMarker := "tf-marker-for-deleted-connection"
+	deletedMarker := "tf-marker-for-deleted-stream-attachment"
 	return &retry.StateChangeConf{
 		Pending: []string{
 			string(fabricv4.STREAMSUBSCRIPTIONSTATE_DEPROVISIONING),

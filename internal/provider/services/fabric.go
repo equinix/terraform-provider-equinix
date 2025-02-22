@@ -3,6 +3,7 @@ package services
 import (
 	"github.com/equinix/terraform-provider-equinix/internal/resources/fabric/metro"
 	"github.com/equinix/terraform-provider-equinix/internal/resources/fabric/stream"
+	streamattachment "github.com/equinix/terraform-provider-equinix/internal/resources/fabric/stream_attachment"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 )
@@ -10,6 +11,7 @@ import (
 func FabricResources() []func() resource.Resource {
 	return []func() resource.Resource{
 		stream.NewResource,
+		streamattachment.NewResource,
 	}
 }
 
@@ -19,5 +21,7 @@ func FabricDatasources() []func() datasource.DataSource {
 		metro.NewDataSourceMetros,
 		stream.NewDataSourceByStreamID,
 		stream.NewDataSourceAllStreams,
+		streamattachment.NewDataSourceAllStreamAttachments,
+		streamattachment.NewDataSourceByIDs,
 	}
 }
