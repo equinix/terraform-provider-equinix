@@ -49,8 +49,8 @@ func (r *Resource) Create(
 
 	var plan ResourceModel
 	diags := req.Plan.Get(ctx, &plan)
-	resp.Diagnostics.Append(diags...)
-	if resp.Diagnostics.HasError() {
+	if diags.HasError() {
+		resp.Diagnostics.Append(diags...)
 		return
 	}
 
@@ -78,11 +78,6 @@ func (r *Resource) Create(
 	if err != nil {
 		resp.Diagnostics.AddError(
 			fmt.Sprintf("failed creating stream subscription %s", streamSubscription.GetUuid()), err.Error())
-		return
-	}
-
-	resp.Diagnostics.Append(diags...)
-	if diags.HasError() {
 		return
 	}
 
@@ -490,7 +485,7 @@ func getDeleteWaiter(ctx context.Context, client *fabricv4.APIClient, streamID, 
 	// deletedMarker is a terraform-provider-only value that is used by the waiter
 	// to indicate that the connection appears to be deleted successfully based on
 	// status code
-	deletedMarker := "tf-marker-for-deleted-connection"
+	deletedMarker := "tf-marker-for-deleted-stream-subscription"
 	return &retry.StateChangeConf{
 		Pending: []string{
 			string(fabricv4.STREAMSUBSCRIPTIONSTATE_DEPROVISIONING),

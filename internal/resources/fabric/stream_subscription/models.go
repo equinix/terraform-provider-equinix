@@ -134,8 +134,8 @@ func (m *DataSourceAll) parse(ctx context.Context, streamSubscriptionsResponse *
 	var diags diag.Diagnostics
 
 	if len(streamSubscriptionsResponse.GetData()) < 1 {
-		diags.AddError("no data retrieved by streamSubscription subscriptions data source",
-			"either the account does not have any streamSubscription subscription data to pull or the combination of limit and offset needs to be updated")
+		diags.AddError("no data retrieved by stream subscriptions data source",
+			"either the account does not have any stream subscription data to pull or the combination of limit and offset needs to be updated")
 		return diags
 	}
 
