@@ -1,6 +1,7 @@
 package services
 
 import (
+	"github.com/equinix/terraform-provider-equinix/internal/resources/fabric/metro"
 	"github.com/equinix/terraform-provider-equinix/internal/resources/fabric/route_aggregation"
 	"github.com/equinix/terraform-provider-equinix/internal/resources/fabric/stream"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
@@ -16,9 +17,11 @@ func FabricResources() []func() resource.Resource {
 
 func FabricDatasources() []func() datasource.DataSource {
 	return []func() datasource.DataSource{
-		stream.NewDataSourceByStreamID,
-		stream.NewDataSourceAllStreams,
+		metro.NewDataSourceMetroCode,
+		metro.NewDataSourceMetros,
 		route_aggregation.NewDataSourceByRouteAggregationID,
 		route_aggregation.NewDataSourceAllRouteAggregation,
+		stream.NewDataSourceByStreamID,
+		stream.NewDataSourceAllStreams,
 	}
 }

@@ -2,9 +2,14 @@ package equinix
 
 import (
 	"fmt"
+	"regexp"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+)
+
+var (
+	matchErrNoCapacity = regexp.MustCompile(`not enough capacity.*`)
 )
 
 func TestAccDataSourceMetalMetro_basic(t *testing.T) {
