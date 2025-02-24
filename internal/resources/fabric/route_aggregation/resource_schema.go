@@ -13,6 +13,10 @@ import (
 
 func resourceSchema(ctx context.Context) schema.Schema {
 	return schema.Schema{
+		Description: `Fabric V4 API compatible resource allows creation and management of Equinix Fabric Route Aggregation
+
+Additional Documentation:
+* API: https://developer.equinix.com/catalog/fabricv4#tag/Route-Aggregations`,
 		Attributes: map[string]schema.Attribute{
 			"id": framework.IDAttributeDefaultDescription(),
 			"timeouts": timeouts.Attributes(ctx, timeouts.Opts{
@@ -62,10 +66,7 @@ func resourceSchema(ctx context.Context) schema.Schema {
 			"change": schema.SingleNestedAttribute{
 				Description: "Current state of latest Route Aggregation change",
 				Computed:    true,
-				PlanModifiers: []planmodifier.Object{
-					objectplanmodifier.UseStateForUnknown(),
-				},
-				CustomType: fwtypes.NewObjectTypeOf[ChangeModel](ctx),
+				CustomType:  fwtypes.NewObjectTypeOf[ChangeModel](ctx),
 				Attributes: map[string]schema.Attribute{
 					"uuid": schema.StringAttribute{
 						Description: "Equinix-assigned unique id for a change",
@@ -92,10 +93,7 @@ func resourceSchema(ctx context.Context) schema.Schema {
 			"change_log": schema.SingleNestedAttribute{
 				Description: "Details of the last change on the route aggregation resource",
 				Computed:    true,
-				PlanModifiers: []planmodifier.Object{
-					objectplanmodifier.UseStateForUnknown(),
-				},
-				CustomType: fwtypes.NewObjectTypeOf[ChangeLogModel](ctx),
+				CustomType:  fwtypes.NewObjectTypeOf[ChangeLogModel](ctx),
 				Attributes: map[string]schema.Attribute{
 					"created_by": schema.StringAttribute{
 						Description: "User name of creator of the route aggregation resource",

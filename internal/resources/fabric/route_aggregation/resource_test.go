@@ -2,8 +2,6 @@ package route_aggregation_test
 
 import (
 	"context"
-	"encoding/json"
-	"errors"
 	"fmt"
 	"testing"
 
@@ -30,7 +28,7 @@ func testAccFabricRouteAggregationConfig(name string) string {
 
 func TestAccFabricRouteAggregation_PFCR(t *testing.T) {
 	routeAggregationName := "stream_PFCR"
-	//upRouteAggregationName := "stream_up_PFCR"
+	upRouteAggregationName := "stream_up_PFCR"
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.TestAccPreCheck(t); acceptance.TestAccPreCheckProviderConfigured(t) },
 		ExternalProviders:        acceptance.TestExternalProviders,
@@ -50,7 +48,20 @@ func TestAccFabricRouteAggregation_PFCR(t *testing.T) {
 					resource.TestCheckResourceAttr("equinix_fabric_route_aggregation.test", "type", "BGP_IPv4_PREFIX_AGGREGATION"),
 					resource.TestCheckResourceAttr("equinix_fabric_route_aggregation.test", "description", "Test Route Aggregation"),
 				),
-				ExpectNonEmptyPlan: false,
+			},
+			{
+				Config: testAccFabricRouteAggregationConfig(upRouteAggregationName),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(
+						"equinix_fabric_route_aggregation.test", "name", upRouteAggregationName),
+					resource.TestCheckResourceAttrSet("equinix_fabric_route_aggregation.test", "uuid"),
+					resource.TestCheckResourceAttrSet("equinix_fabric_route_aggregation.test", "state"),
+					resource.TestCheckResourceAttrSet("equinix_fabric_route_aggregation.test", "href"),
+					resource.TestCheckResourceAttrSet("equinix_fabric_route_aggregation.test", "project.project_id"),
+					resource.TestCheckResourceAttr("equinix_fabric_route_aggregation.test", "name", upRouteAggregationName),
+					resource.TestCheckResourceAttr("equinix_fabric_route_aggregation.test", "type", "BGP_IPv4_PREFIX_AGGREGATION"),
+					resource.TestCheckResourceAttr("equinix_fabric_route_aggregation.test", "description", "Test Route Aggregation"),
+				),
 			},
 		},
 	})
@@ -64,30 +75,6 @@ func CheckRouteAggregationDelete(s *terraform.State) error {
 	for _, rs := range s.RootModule().Resources {
 		if rs.Type != "equinix_fabric_route_aggregation" {
 			continue
-		}
-
-		_, resp, err := client.RouteAggregationsApi.GetRouteAggregationByUuid(ctx, rs.Primary.ID).Execute()
-		if err != nil {
-			// Check if the response exists and contains status 400 or 404
-			if resp != nil && (resp.StatusCode == 400 || resp.StatusCode == 404) {
-				fmt.Printf("Resource %s not found, treating as deleted\n", rs.Primary.ID)
-				return nil
-			}
-
-			// Handle specific API error messages
-			var apiErr *fabricv4.GenericOpenAPIError
-			if errors.As(err, &apiErr) {
-				errorBody := apiErr.Body()
-				var errorResponse map[string]interface{}
-				if jsonErr := json.Unmarshal(errorBody, &errorResponse); jsonErr == nil {
-					if errorCode, exists := errorResponse["errorCode"]; exists && errorCode == "EQ-3044301" {
-						fmt.Printf("Detected EQ-3044301 for resource %s, treating as deleted\n", rs.Primary.ID)
-						return nil // Successfully handled the expected deletion case
-					}
-				}
-			}
-
-			return fmt.Errorf("unexpected API error checking deletion: %v", err)
 		}
 
 		if routeAggregation, _, err := client.RouteAggregationsApi.GetRouteAggregationByUuid(ctx, rs.Primary.ID).Execute(); err == nil {

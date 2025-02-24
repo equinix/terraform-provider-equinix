@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"net/http"
 	"slices"
-	"strings"
 	"time"
 
 	"github.com/equinix/equinix-sdk-go/services/fabricv4"
@@ -74,7 +73,6 @@ func (r *Resource) Create(
 		return
 	}
 
-	resp.Diagnostics.Append(diags...)
 	if diags.HasError() {
 		return
 	}
@@ -140,7 +138,7 @@ func (r *Resource) Update(
 
 	id := state.ID.ValueString()
 
-	newName, oldName := plan.Name.ValueString(), plan.Name.ValueString()
+	newName, oldName := plan.Name.ValueString(), state.Name.ValueString()
 
 	if newName == oldName {
 		resp.Diagnostics.AddWarning("No updatable fields have changed", "Terraform detected a config change, but it is for a field that isn't updatable for the route aggregation resource. Please revert to prior config")
@@ -150,9 +148,8 @@ func (r *Resource) Update(
 	updateRequest := []fabricv4.RouteAggregationsPatchRequestItem{{
 		Op:    "replace",
 		Path:  "/name",
-		Value: map[string]interface{}{"": newName},
-	},
-	}
+		Value: newName,
+	}}
 
 	_, _, err := client.RouteAggregationsApi.PatchRouteAggregationByUuid(ctx, id).RouteAggregationsPatchRequestItem(updateRequest).Execute()
 
@@ -274,22 +271,13 @@ func getDeleteWaiter(ctx context.Context, client *fabricv4.APIClient, id string,
 			string(fabricv4.ROUTEAGGREGATIONSTATE_DEPROVISIONING),
 		},
 		Target: []string{
-			deletedMarker,
+			string(fabricv4.ROUTEAGGREGATIONSTATE_DEPROVISIONED),
 		},
 		Refresh: func() (interface{}, string, error) {
 			routeAggregation, resp, err := client.RouteAggregationsApi.GetRouteAggregationByUuid(ctx, id).Execute()
 			if err != nil {
-				if resp != nil {
-					if slices.Contains([]int{http.StatusForbidden, http.StatusNotFound}, resp.StatusCode) {
-						return routeAggregation, deletedMarker, nil
-					}
-					apiError, ok := err.(*fabricv4.GenericOpenAPIError)
-					if ok {
-						errorBody := string(apiError.Body())
-						if strings.Contains(errorBody, "EQ-3044301") {
-							return routeAggregation, deletedMarker, nil
-						}
-					}
+				if slices.Contains([]int{http.StatusForbidden, http.StatusNotFound}, resp.StatusCode) {
+					return routeAggregation, deletedMarker, nil
 				}
 				return 0, "", err
 			}

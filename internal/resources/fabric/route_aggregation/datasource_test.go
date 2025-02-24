@@ -89,7 +89,6 @@ func TestAccFabricRouteAggregationDataSources_PFCR(t *testing.T) {
 					resource.TestCheckResourceAttr("data.equinix_fabric_route_aggregations.data_ras", "pagination.limit", "2"),
 					resource.TestCheckResourceAttr("data.equinix_fabric_route_aggregations.data_ras", "pagination.offset", "1"),
 				),
-				ExpectNonEmptyPlan: false,
 			},
 		},
 	})
