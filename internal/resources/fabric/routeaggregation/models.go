@@ -1,4 +1,4 @@
-package route_aggregation
+package routeaggregation
 
 import (
 	"context"
@@ -10,8 +10,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-type DataSourceByIdModel struct {
-	RouteAggregationId types.String `tfsdk:"route_aggregation_id"`
+type DataSourceByIDModel struct {
+	RouteAggregationID types.String `tfsdk:"route_aggregation_id"`
 	ID                 types.String `tfsdk:"id"`
 	BaseRouteAggregationModel
 }
@@ -54,7 +54,7 @@ type BaseRouteAggregationModel struct {
 	Name             types.String                          `tfsdk:"name"`
 	Description      types.String                          `tfsdk:"description"`
 	Href             types.String                          `tfsdk:"href"`
-	Uuid             types.String                          `tfsdk:"uuid"`
+	UUID             types.String                          `tfsdk:"uuid"`
 	State            types.String                          `tfsdk:"state"`
 	ConnectionsCount types.Int32                           `tfsdk:"connections_count"`
 	RulesCount       types.Int32                           `tfsdk:"rules_count"`
@@ -64,11 +64,11 @@ type BaseRouteAggregationModel struct {
 }
 
 type ProjectModel struct {
-	ProjectId types.String `tfsdk:"project_id"`
+	ProjectID types.String `tfsdk:"project_id"`
 }
 
 type ChangeModel struct {
-	Uuid types.String `tfsdk:"uuid"`
+	UUID types.String `tfsdk:"uuid"`
 	Type types.String `tfsdk:"type"`
 	Href types.String `tfsdk:"href"`
 }
@@ -88,8 +88,8 @@ type ChangeLogModel struct {
 	DeletedDateTime   types.String `tfsdk:"deleted_date_time"`
 }
 
-func (m *DataSourceByIdModel) parse(ctx context.Context, routeAggregation *fabricv4.RouteAggregationsData) diag.Diagnostics {
-	m.RouteAggregationId = types.StringValue(routeAggregation.GetUuid())
+func (m *DataSourceByIDModel) parse(ctx context.Context, routeAggregation *fabricv4.RouteAggregationsData) diag.Diagnostics {
+	m.RouteAggregationID = types.StringValue(routeAggregation.GetUuid())
 	m.ID = types.StringValue(routeAggregation.GetUuid())
 
 	if routeAggregation != nil {
@@ -97,18 +97,18 @@ func (m *DataSourceByIdModel) parse(ctx context.Context, routeAggregation *fabri
 		m.Name = types.StringValue(routeAggregation.GetName())
 		m.Description = types.StringValue(routeAggregation.GetDescription())
 		m.Href = types.StringValue(routeAggregation.GetHref())
-		m.Uuid = types.StringValue(routeAggregation.GetUuid())
+		m.UUID = types.StringValue(routeAggregation.GetUuid())
 		m.State = types.StringValue(string(routeAggregation.GetState()))
 		m.ConnectionsCount = types.Int32Value(routeAggregation.GetConnectionsCount())
 		m.RulesCount = types.Int32Value(routeAggregation.GetRulesCount())
 		routeAggregationProject := routeAggregation.GetProject()
 		projectModel := ProjectModel{
-			ProjectId: types.StringValue(routeAggregationProject.GetProjectId()),
+			ProjectID: types.StringValue(routeAggregationProject.GetProjectId()),
 		}
 		m.Project = fwtypes.NewObjectValueOf[ProjectModel](ctx, &projectModel)
 		routeAggregationChange := routeAggregation.GetChange()
 		changeModel := ChangeModel{
-			Uuid: types.StringValue(routeAggregationChange.GetUuid()),
+			UUID: types.StringValue(routeAggregationChange.GetUuid()),
 			Type: types.StringValue(string(routeAggregationChange.GetType())),
 			Href: types.StringValue(routeAggregationChange.GetHref()),
 		}
@@ -161,7 +161,7 @@ func (m *DatsSourceAllRouteAggregationsModel) parse(ctx context.Context, routeAg
 		Next:     types.StringValue(responsePagination.GetNext()),
 		Previous: types.StringValue(responsePagination.GetPrevious()),
 	}
-	m.ID = types.StringValue(data[0].Uuid.ValueString())
+	m.ID = types.StringValue(data[0].UUID.ValueString())
 	m.Pagination = fwtypes.NewObjectValueOf[PaginationModel](ctx, &pagination)
 
 	dataPtr := make([]*BaseRouteAggregationModel, len(data))
@@ -181,18 +181,18 @@ func (m *ResourceModel) parse(ctx context.Context, routeAggregation *fabricv4.Ro
 		m.Name = types.StringValue(routeAggregation.GetName())
 		m.Description = types.StringValue(routeAggregation.GetDescription())
 		m.Href = types.StringValue(routeAggregation.GetHref())
-		m.Uuid = types.StringValue(routeAggregation.GetUuid())
+		m.UUID = types.StringValue(routeAggregation.GetUuid())
 		m.State = types.StringValue(string(routeAggregation.GetState()))
 		m.ConnectionsCount = types.Int32Value(routeAggregation.GetConnectionsCount())
 		m.RulesCount = types.Int32Value(routeAggregation.GetRulesCount())
 		routeAggregationProject := routeAggregation.GetProject()
 		projectModel := ProjectModel{
-			ProjectId: types.StringValue(routeAggregationProject.GetProjectId()),
+			ProjectID: types.StringValue(routeAggregationProject.GetProjectId()),
 		}
 		m.Project = fwtypes.NewObjectValueOf[ProjectModel](ctx, &projectModel)
 		routeAggregationChange := routeAggregation.GetChange()
 		changeModel := ChangeModel{
-			Uuid: types.StringValue(routeAggregationChange.GetUuid()),
+			UUID: types.StringValue(routeAggregationChange.GetUuid()),
 			Type: types.StringValue(string(routeAggregationChange.GetType())),
 			Href: types.StringValue(routeAggregationChange.GetHref()),
 		}
@@ -226,18 +226,18 @@ func (m *BaseRouteAggregationModel) parse(ctx context.Context, routeAggregation 
 		m.Name = types.StringValue(routeAggregation.GetName())
 		m.Description = types.StringValue(routeAggregation.GetDescription())
 		m.Href = types.StringValue(routeAggregation.GetHref())
-		m.Uuid = types.StringValue(routeAggregation.GetUuid())
+		m.UUID = types.StringValue(routeAggregation.GetUuid())
 		m.State = types.StringValue(string(routeAggregation.GetState()))
 		m.ConnectionsCount = types.Int32Value(routeAggregation.GetConnectionsCount())
 		m.RulesCount = types.Int32Value(routeAggregation.GetRulesCount())
 		routeAggregationProject := routeAggregation.GetProject()
 		projectModel := ProjectModel{
-			ProjectId: types.StringValue(routeAggregationProject.GetProjectId()),
+			ProjectID: types.StringValue(routeAggregationProject.GetProjectId()),
 		}
 		m.Project = fwtypes.NewObjectValueOf[ProjectModel](ctx, &projectModel)
 		routeAggregationChange := routeAggregation.GetChange()
 		changeModel := ChangeModel{
-			Uuid: types.StringValue(routeAggregationChange.GetUuid()),
+			UUID: types.StringValue(routeAggregationChange.GetUuid()),
 			Type: types.StringValue(string(routeAggregationChange.GetType())),
 			Href: types.StringValue(routeAggregationChange.GetHref()),
 		}

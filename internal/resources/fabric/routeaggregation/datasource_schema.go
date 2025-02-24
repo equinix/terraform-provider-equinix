@@ -1,4 +1,4 @@
-package route_aggregation
+package routeaggregation
 
 import (
 	"context"

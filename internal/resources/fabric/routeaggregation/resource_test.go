@@ -1,4 +1,4 @@
-package route_aggregation_test
+package routeaggregation_test
 
 import (
 	"context"

@@ -1,4 +1,4 @@
-package route_aggregation
+package routeaggregation
 
 import (
 	"context"
@@ -30,7 +30,7 @@ type Resource struct {
 	framework.BaseResource
 }
 
-func (r Resource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
+func (r Resource) Schema(ctx context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = resourceSchema(ctx)
 }
 
@@ -235,7 +235,7 @@ func buildCreateRequest(ctx context.Context, plan ResourceModel) (fabricv4.Route
 		if diags.HasError() {
 			return fabricv4.RouteAggregationsBase{}, diags
 		}
-		request.SetProject(fabricv4.Project{ProjectId: project.ProjectId.ValueString()})
+		request.SetProject(fabricv4.Project{ProjectId: project.ProjectID.ValueString()})
 	}
 	return request, diags
 }

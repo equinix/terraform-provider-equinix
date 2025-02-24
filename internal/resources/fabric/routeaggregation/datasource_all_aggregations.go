@@ -1,4 +1,4 @@
-package route_aggregation
+package routeaggregation
 
 import (
 	"context"
@@ -26,7 +26,7 @@ type DataSourceAllRouteAggregations struct {
 
 func (r *DataSourceAllRouteAggregations) Schema(
 	ctx context.Context,
-	req datasource.SchemaRequest,
+	_ datasource.SchemaRequest,
 	resp *datasource.SchemaResponse,
 ) {
 	resp.Schema = dataSourceAllRouteAggregationsSchema(ctx)

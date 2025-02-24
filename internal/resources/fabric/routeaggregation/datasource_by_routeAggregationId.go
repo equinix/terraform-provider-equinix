@@ -1,4 +1,4 @@
-package route_aggregation
+package routeaggregation
 
 import (
 	"context"
@@ -24,7 +24,7 @@ type DataSourceByRouteAggregationID struct {
 
 func (r *DataSourceByRouteAggregationID) Schema(
 	ctx context.Context,
-	req datasource.SchemaRequest,
+	_ datasource.SchemaRequest,
 	resp *datasource.SchemaResponse,
 ) {
 	resp.Schema = dataSourceSingleRouteAggregationSchema(ctx)
@@ -33,13 +33,13 @@ func (r *DataSourceByRouteAggregationID) Schema(
 func (r *DataSourceByRouteAggregationID) Read(ctx context.Context, request datasource.ReadRequest, response *datasource.ReadResponse) {
 	client := r.Meta.NewFabricClientForFramework(ctx, request.ProviderMeta)
 
-	var data DataSourceByIdModel
+	var data DataSourceByIDModel
 	response.Diagnostics.Append(request.Config.Get(ctx, &data)...)
 	if response.Diagnostics.HasError() {
 		return
 	}
 
-	routeAggregationID := data.RouteAggregationId.ValueString()
+	routeAggregationID := data.RouteAggregationID.ValueString()
 
 	routeAggregation, _, err := client.RouteAggregationsApi.GetRouteAggregationByUuid(ctx, routeAggregationID).Execute()
 
