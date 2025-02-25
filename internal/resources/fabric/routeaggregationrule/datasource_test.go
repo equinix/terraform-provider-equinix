@@ -1,4 +1,4 @@
-package route_aggregation_rule_test
+package routeaggregationrule_test
 
 import (
 	"fmt"
@@ -11,32 +11,41 @@ import (
 func testAccFabricRouteAggregationRuleDataSourcesConfig(name, description string) string {
 	return fmt.Sprintf(`
 
-		
+		resource "equinix_fabric_route_aggregation" "test" {
+		  type = "BGP_IPv4_PREFIX_AGGREGATION"
+		  name = "test-aggregation"
+		  description = "Test Route Aggregation"
+		  project = {
+			project_id = "4f855852-eb47-4721-8e40-b386a3676abf"
+		  }
+		}
+
 		resource "equinix_fabric_route_aggregation_rule" "new-rar" {
-  			route_aggregation_id = "8f8a2ddb-25f8-416e-ad0a-202a9d2af9e1"
+  			route_aggregation_id = equinix_fabric_route_aggregation.test.id
   			name = "%[1]s"
   			description = "%[2]s"
   			prefix = "192.166.0.0/24"
 		}
 
 		data "equinix_fabric_route_aggregation_rule" "data_rar" {
-			route_aggregation_id = "8f8a2ddb-25f8-416e-ad0a-202a9d2af9e1"
+			depends_on = [equinix_fabric_route_aggregation_rule.new-rar]
+			route_aggregation_id = equinix_fabric_route_aggregation.test.id
   			route_aggregation_rule_id = equinix_fabric_route_aggregation_rule.new-rar.id
 		}
 
 		
 		data "equinix_fabric_route_aggregation_rules" "data_rars" {
-			depends_on = [equinix_fabric_route_aggregation_rule.new-rar,]
-  			route_aggregation_id = "8f8a2ddb-25f8-416e-ad0a-202a9d2af9e1"
+			depends_on = [equinix_fabric_route_aggregation_rule.new-rar]
+  			route_aggregation_id = equinix_fabric_route_aggregation.test.id
   			pagination = {
-    			limit = 2
-    			offset = 1
+    			limit = 32
+    			offset = 0
   			}
 		}
 	`, name, description)
 }
 
-func TestAccFabricRouteAggregationRuleDataSources_PFCR(t *testing.T) {
+func TestAccFabricRouteAggregationRuleDataSources_PNFV(t *testing.T) {
 	routeAggregationName := "route_agg_rule_PFCR"
 	routeAggregatioDescription := "route aggregation rule PFCR"
 	resource.ParallelTest(t, resource.TestCase{
@@ -68,8 +77,8 @@ func TestAccFabricRouteAggregationRuleDataSources_PFCR(t *testing.T) {
 					resource.TestCheckResourceAttrSet("data.equinix_fabric_route_aggregation_rules.data_rars", "data.0.change_log.created_by"),
 					resource.TestCheckResourceAttr("data.equinix_fabric_route_aggregation_rules.data_rars", "data.#", "1"),
 					resource.TestCheckResourceAttr("data.equinix_fabric_route_aggregation_rules.data_rars", "pagination.%", "5"),
-					resource.TestCheckResourceAttr("data.equinix_fabric_route_aggregation_rules.data_rars", "pagination.limit", "2"),
-					resource.TestCheckResourceAttr("data.equinix_fabric_route_aggregation_rules.data_rars", "pagination.offset", "1"),
+					resource.TestCheckResourceAttr("data.equinix_fabric_route_aggregation_rules.data_rars", "pagination.limit", "32"),
+					resource.TestCheckResourceAttr("data.equinix_fabric_route_aggregation_rules.data_rars", "pagination.offset", "0"),
 				),
 				ExpectNonEmptyPlan: false,
 			},

@@ -1,4 +1,4 @@
-package route_aggregation_rule_test
+package routeaggregationrule_test
 
 import (
 	"context"
@@ -15,12 +15,12 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 )
 
-func testAccFabricRouteAggregationRuleConfig(name string) string {
+func testAccFabricRouteAggregationRuleConfig(prefix string) string {
 	return fmt.Sprintf(`
 		
 		resource "equinix_fabric_route_aggregation" "test" {
 		  type = "BGP_IPv4_PREFIX_AGGREGATION"
-		  name = "%s"
+		  name = "test-aggregation"
 		  description = "Test Route Aggregation"
 		  project = {
 			project_id = "4f855852-eb47-4721-8e40-b386a3676abf"
@@ -29,16 +29,16 @@ func testAccFabricRouteAggregationRuleConfig(name string) string {
 
 		resource "equinix_fabric_route_aggregation_rule" "test" {
 			route_aggregation_id = equinix_fabric_route_aggregation.test.id
-			name = "%s"
+			name = "RouteAggregationRulePFCR"
   			description = "Test aggregation rule"
-  			prefix = "192.169.0.0/24"
+  			prefix = "%s"
 		}
-	`, name)
+	`, prefix)
 }
 
-func TestAccFabricRouteAggregationRule_PFCR(t *testing.T) {
-	routeAggregationRuleName := "RouteAggregationRulePFCR"
-	//upRouteAggregationName := "stream_up_PFCR"
+func TestAccFabricRouteAggregationRule_PNFV(t *testing.T) {
+	routeAggregationPrefix := "192.169.0.0/24"
+	upRouteAggregationPrefix := "192.168.0.0/24"
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.TestAccPreCheck(t); acceptance.TestAccPreCheckProviderConfigured(t) },
 		ExternalProviders:        acceptance.TestExternalProviders,
@@ -46,18 +46,30 @@ func TestAccFabricRouteAggregationRule_PFCR(t *testing.T) {
 		CheckDestroy:             CheckRouteAggregationRuleDelete,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccFabricRouteAggregationRuleConfig(routeAggregationRuleName),
+				Config: testAccFabricRouteAggregationRuleConfig(routeAggregationPrefix),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(
-						"equinix_fabric_route_aggregation_rule.test", "name", routeAggregationRuleName),
+						"equinix_fabric_route_aggregation_rule.test", "name", "RouteAggregationRulePFCR"),
 					resource.TestCheckResourceAttrSet("equinix_fabric_route_aggregation_rule.test", "uuid"),
 					resource.TestCheckResourceAttrSet("equinix_fabric_route_aggregation_rule.test", "state"),
 					resource.TestCheckResourceAttrSet("equinix_fabric_route_aggregation_rule.test", "href"),
-					resource.TestCheckResourceAttr("equinix_fabric_route_aggregation_rule.test", "name", routeAggregationRuleName),
+					resource.TestCheckResourceAttr("equinix_fabric_route_aggregation_rule.test", "prefix", "192.169.0.0/24"),
 					resource.TestCheckResourceAttr("equinix_fabric_route_aggregation_rule.test", "type", "BGP_IPv4_PREFIX_AGGREGATION_RULE"),
 					resource.TestCheckResourceAttr("equinix_fabric_route_aggregation_rule.test", "description", "Test aggregation rule"),
 				),
-				ExpectNonEmptyPlan: false,
+			},
+			{
+				Config: testAccFabricRouteAggregationRuleConfig(upRouteAggregationPrefix),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(
+						"equinix_fabric_route_aggregation_rule.test", "name", "RouteAggregationRulePFCR"),
+					resource.TestCheckResourceAttrSet("equinix_fabric_route_aggregation_rule.test", "uuid"),
+					resource.TestCheckResourceAttrSet("equinix_fabric_route_aggregation_rule.test", "state"),
+					resource.TestCheckResourceAttrSet("equinix_fabric_route_aggregation_rule.test", "href"),
+					resource.TestCheckResourceAttr("equinix_fabric_route_aggregation_rule.test", "prefix", "192.168.0.0/24"),
+					resource.TestCheckResourceAttr("equinix_fabric_route_aggregation_rule.test", "type", "BGP_IPv4_PREFIX_AGGREGATION_RULE"),
+					resource.TestCheckResourceAttr("equinix_fabric_route_aggregation_rule.test", "description", "Test aggregation rule"),
+				),
 			},
 		},
 	})
@@ -74,7 +86,7 @@ func CheckRouteAggregationRuleDelete(s *terraform.State) error {
 		}
 
 		routeAggregationId := rs.Primary.Attributes["route_aggregation_id"]
-		_, resp, err := client.RouteAggregationRulesApi.GetRouteAggregationRuleByUuid(ctx, routeAggregationId, rs.Primary.ID).Execute()
+		routeAggregationRule, resp, err := client.RouteAggregationRulesApi.GetRouteAggregationRuleByUuid(ctx, routeAggregationId, rs.Primary.ID).Execute()
 		if err != nil {
 			// Check if the response exists and contains status 400 or 404
 			if resp != nil && (resp.StatusCode == 400 || resp.StatusCode == 404) {
@@ -90,19 +102,16 @@ func CheckRouteAggregationRuleDelete(s *terraform.State) error {
 				if jsonErr := json.Unmarshal(errorBody, &errorResponse); jsonErr == nil {
 					if errorCode, exists := errorResponse["errorCode"]; exists && errorCode == "EQ-3044402" {
 						fmt.Printf("Detected EQ-3044402 for resource %s, treating as deleted\n", rs.Primary.ID)
-						return nil // Successfully handled the expected deletion case
+						return nil
 					}
 				}
 			}
-
-			return fmt.Errorf("unexpected API error checking deletion: %v", err)
-		}
-
-		if routeAggregationRule, _, err := client.RouteAggregationRulesApi.GetRouteAggregationRuleByUuid(ctx, routeAggregationId, rs.Primary.ID).Execute(); err == nil {
 			if routeAggregationRule.GetState() == fabricv4.ROUTEAGGREGATIONRULESTATE_PROVISIONED {
 				return fmt.Errorf("fabric stream %s still exists and is %s",
 					rs.Primary.ID, routeAggregationRule.GetState())
 			}
+
+			return fmt.Errorf("unexpected API error checking deletion: %v", err)
 		}
 	}
 	return nil

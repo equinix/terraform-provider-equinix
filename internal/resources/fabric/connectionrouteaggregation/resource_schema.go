@@ -1,7 +1,8 @@
-package connection_route_aggregation
+package connectionrouteaggregation
 
 import (
 	"context"
+
 	"github.com/equinix/terraform-provider-equinix/internal/framework"
 	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"

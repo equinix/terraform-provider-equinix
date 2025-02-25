@@ -1,17 +1,20 @@
-package route_aggregation_rule
+package routeaggregationrule
 
 import (
 	"context"
+
 	"github.com/equinix/terraform-provider-equinix/internal/framework"
 	fwtypes "github.com/equinix/terraform-provider-equinix/internal/framework/types"
 	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/objectplanmodifier"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 )
 
 func resourceSchema(ctx context.Context) schema.Schema {
 	return schema.Schema{
+		Description: `Fabric V4 API compatible resource allows creation and management of Equinix Fabric Route Aggregation 
+
+Additional Documentation:
+* API: https://developer.equinix.com/catalog/fabricv4#tag/Route-Aggregations`,
 		Attributes: map[string]schema.Attribute{
 			"id": framework.IDAttributeDefaultDescription(),
 			"timeouts": timeouts.Attributes(ctx, timeouts.Opts{
@@ -55,10 +58,7 @@ func resourceSchema(ctx context.Context) schema.Schema {
 			"change": schema.SingleNestedAttribute{
 				Description: "Current state of latest route aggregation rule change",
 				Computed:    true,
-				PlanModifiers: []planmodifier.Object{
-					objectplanmodifier.UseStateForUnknown(),
-				},
-				CustomType: fwtypes.NewObjectTypeOf[ChangeModel](ctx),
+				CustomType:  fwtypes.NewObjectTypeOf[changeModel](ctx),
 				Attributes: map[string]schema.Attribute{
 					"uuid": schema.StringAttribute{
 						Description: "Equinix-assigned unique id for a change",
@@ -77,10 +77,7 @@ func resourceSchema(ctx context.Context) schema.Schema {
 			"change_log": schema.SingleNestedAttribute{
 				Description: "Details of the last change on the stream resource",
 				Computed:    true,
-				PlanModifiers: []planmodifier.Object{
-					objectplanmodifier.UseStateForUnknown(),
-				},
-				CustomType: fwtypes.NewObjectTypeOf[ChangeLogModel](ctx),
+				CustomType:  fwtypes.NewObjectTypeOf[changeLogModel](ctx),
 				Attributes: map[string]schema.Attribute{
 					"created_by": schema.StringAttribute{
 						Description: "User name of creator of the stream resource",

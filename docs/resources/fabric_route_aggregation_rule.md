@@ -4,7 +4,10 @@ subcategory: "Fabric"
 
 # equinix_fabric_route_aggregation_rule (Resource)
 
+Fabric V4 API compatible resource allows creation and management of Equinix Fabric Route Aggregation 
 
+Additional Documentation:
+* API: https://developer.equinix.com/catalog/fabricv4#tag/Route-Aggregations
 
 ## Example Usage
 

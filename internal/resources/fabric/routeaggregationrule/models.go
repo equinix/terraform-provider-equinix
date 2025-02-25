@@ -1,29 +1,29 @@
-package route_aggregation_rule
+package routeaggregationrule
 
 import (
 	"context"
+
 	"github.com/equinix/equinix-sdk-go/services/fabricv4"
 	fwtypes "github.com/equinix/terraform-provider-equinix/internal/framework/types"
 	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 )
 
-type DataSourceByIdModel struct {
-	RouteAggregationRuleId types.String `tfsdk:"route_aggregation_rule_id"`
+type dataSourceByIDModel struct {
+	RouteAggregationRuleID types.String `tfsdk:"route_aggregation_rule_id"`
 	ID                     types.String `tfsdk:"id"`
-	BaseRouteAggregationRuleModel
+	baseRouteAggregationRuleModel
 }
 
-type DatsSourceAllRouteAggregationRulesModel struct {
+type datsSourceAllRouteAggregationRulesModel struct {
 	ID                 types.String                                                   `tfsdk:"id"`
-	Data               fwtypes.ListNestedObjectValueOf[BaseRouteAggregationRuleModel] `tfsdk:"data"`
-	Pagination         fwtypes.ObjectValueOf[PaginationModel]                         `tfsdk:"pagination"`
-	RouteAggregationId types.String                                                   `tfsdk:"route_aggregation_id"`
+	Data               fwtypes.ListNestedObjectValueOf[baseRouteAggregationRuleModel] `tfsdk:"data"`
+	Pagination         fwtypes.ObjectValueOf[paginationModel]                         `tfsdk:"pagination"`
+	RouteAggregationID types.String                                                   `tfsdk:"route_aggregation_id"`
 }
 
-type PaginationModel struct {
+type paginationModel struct {
 	Offset   types.Int32  `tfsdk:"offset"`
 	Limit    types.Int32  `tfsdk:"limit"`
 	Total    types.Int32  `tfsdk:"total"`
@@ -31,32 +31,32 @@ type PaginationModel struct {
 	Previous types.String `tfsdk:"previous"`
 }
 
-type ResourceModel struct {
+type resourceModel struct {
 	ID       types.String   `tfsdk:"id"`
 	Timeouts timeouts.Value `tfsdk:"timeouts"`
-	BaseRouteAggregationRuleModel
+	baseRouteAggregationRuleModel
 }
 
-type BaseRouteAggregationRuleModel struct {
+type baseRouteAggregationRuleModel struct {
 	RouteAggregationID types.String                          `tfsdk:"route_aggregation_id"`
 	Name               types.String                          `tfsdk:"name"`
 	Description        types.String                          `tfsdk:"description"`
 	Prefix             types.String                          `tfsdk:"prefix"`
 	Href               types.String                          `tfsdk:"href"`
 	Type               types.String                          `tfsdk:"type"`
-	Uuid               types.String                          `tfsdk:"uuid"`
+	UUID               types.String                          `tfsdk:"uuid"`
 	State              types.String                          `tfsdk:"state"`
-	Change             fwtypes.ObjectValueOf[ChangeModel]    `tfsdk:"change"`
-	ChangeLog          fwtypes.ObjectValueOf[ChangeLogModel] `tfsdk:"change_log"`
+	Change             fwtypes.ObjectValueOf[changeModel]    `tfsdk:"change"`
+	ChangeLog          fwtypes.ObjectValueOf[changeLogModel] `tfsdk:"change_log"`
 }
 
-type ChangeModel struct {
-	Uuid types.String `tfsdk:"uuid"`
+type changeModel struct {
+	UUID types.String `tfsdk:"uuid"`
 	Type types.String `tfsdk:"type"`
 	Href types.String `tfsdk:"href"`
 }
 
-type ChangeLogModel struct {
+type changeLogModel struct {
 	CreatedBy         types.String `tfsdk:"created_by"`
 	CreatedByFullName types.String `tfsdk:"created_by_full_name"`
 	CreatedByEmail    types.String `tfsdk:"created_by_email"`
@@ -71,27 +71,14 @@ type ChangeLogModel struct {
 	DeletedDateTime   types.String `tfsdk:"deleted_date_time"`
 }
 
-func (m *DataSourceByIdModel) parse(ctx context.Context, routeAggregationRule *fabricv4.RouteAggregationRulesData) diag.Diagnostics {
-	m.RouteAggregationRuleId = types.StringValue(routeAggregationRule.GetUuid())
+func (m *dataSourceByIDModel) parse(ctx context.Context, routeAggregationRule *fabricv4.RouteAggregationRulesData) diag.Diagnostics {
+	m.RouteAggregationRuleID = types.StringValue(routeAggregationRule.GetUuid())
 	m.ID = types.StringValue(routeAggregationRule.GetUuid())
-
-	diags := parseRouteAggregationRule(ctx, routeAggregationRule,
-		&m.Name,
-		&m.Description,
-		&m.Prefix,
-		&m.Href,
-		&m.Type,
-		&m.Uuid,
-		&m.State,
-		&m.Change,
-		&m.ChangeLog)
-	if diags.HasError() {
-		return diags
-	}
+	diags := m.baseRouteAggregationRuleModel.parse(ctx, routeAggregationRule)
 	return diags
 }
 
-func (m *DatsSourceAllRouteAggregationRulesModel) parse(ctx context.Context, routeAggregationRulesResponse *fabricv4.GetRouteAggregationRulesResponse) diag.Diagnostics {
+func (m *datsSourceAllRouteAggregationRulesModel) parse(ctx context.Context, routeAggregationRulesResponse *fabricv4.GetRouteAggregationRulesResponse) diag.Diagnostics {
 	var diags diag.Diagnostics
 
 	if len(routeAggregationRulesResponse.GetData()) < 1 {
@@ -99,10 +86,10 @@ func (m *DatsSourceAllRouteAggregationRulesModel) parse(ctx context.Context, rou
 		return diags
 	}
 
-	data := make([]BaseRouteAggregationRuleModel, len(routeAggregationRulesResponse.GetData()))
+	data := make([]baseRouteAggregationRuleModel, len(routeAggregationRulesResponse.GetData()))
 	routeAggregationRules := routeAggregationRulesResponse.GetData()
 	for index, routeAggregationRule := range routeAggregationRules {
-		var routeAggregationRuleModel BaseRouteAggregationRuleModel
+		var routeAggregationRuleModel baseRouteAggregationRuleModel
 		diags = routeAggregationRuleModel.parse(ctx, &routeAggregationRule)
 		if diags.HasError() {
 			return diags
@@ -110,88 +97,54 @@ func (m *DatsSourceAllRouteAggregationRulesModel) parse(ctx context.Context, rou
 		data[index] = routeAggregationRuleModel
 	}
 	responsePagination := routeAggregationRulesResponse.GetPagination()
-	pagination := PaginationModel{
+	pagination := paginationModel{
 		Offset:   types.Int32Value(responsePagination.GetOffset()),
 		Limit:    types.Int32Value(responsePagination.GetLimit()),
 		Total:    types.Int32Value(responsePagination.GetTotal()),
 		Next:     types.StringValue(responsePagination.GetNext()),
 		Previous: types.StringValue(responsePagination.GetPrevious()),
 	}
-	m.ID = types.StringValue(data[0].Uuid.ValueString())
-	m.Pagination = fwtypes.NewObjectValueOf[PaginationModel](ctx, &pagination)
+	m.ID = types.StringValue(data[0].UUID.ValueString())
+	m.Pagination = fwtypes.NewObjectValueOf[paginationModel](ctx, &pagination)
 
-	dataPtr := make([]*BaseRouteAggregationRuleModel, len(data))
+	dataPtr := make([]*baseRouteAggregationRuleModel, len(data))
 	for i := range data {
 		dataPtr[i] = &data[i]
 	}
-	m.Data = fwtypes.NewListNestedObjectValueOfSlice[BaseRouteAggregationRuleModel](ctx, dataPtr)
+	m.Data = fwtypes.NewListNestedObjectValueOfSlice[baseRouteAggregationRuleModel](ctx, dataPtr)
 
 	return diags
 }
 
-func (m *ResourceModel) parse(ctx context.Context, routeAggregationRule *fabricv4.RouteAggregationRulesData) diag.Diagnostics {
-	var diags diag.Diagnostics
+func (m *resourceModel) parse(ctx context.Context, routeAggregationRule *fabricv4.RouteAggregationRulesData) diag.Diagnostics {
 
 	m.ID = types.StringValue(routeAggregationRule.GetUuid())
 
-	diags = parseRouteAggregationRule(ctx, routeAggregationRule,
-		&m.Name,
-		&m.Description,
-		&m.Prefix,
-		&m.Href,
-		&m.Type,
-		&m.Uuid,
-		&m.State,
-		&m.Change,
-		&m.ChangeLog)
-	if diags.HasError() {
-		return diags
-	}
+	diags := m.baseRouteAggregationRuleModel.parse(ctx, routeAggregationRule)
 	return diags
 }
 
-func (m *BaseRouteAggregationRuleModel) parse(ctx context.Context, routeAggregationRule *fabricv4.RouteAggregationRulesData) diag.Diagnostics {
-	var diags diag.Diagnostics = parseRouteAggregationRule(ctx, routeAggregationRule,
-		&m.Name,
-		&m.Description,
-		&m.Prefix,
-		&m.Href,
-		&m.Type,
-		&m.Uuid,
-		&m.State,
-		&m.Change,
-		&m.ChangeLog)
-	if diags.HasError() {
-		return diags
-	}
-	return diags
-}
+func (m *baseRouteAggregationRuleModel) parse(ctx context.Context, routeAggregationRule *fabricv4.RouteAggregationRulesData) diag.Diagnostics {
 
-func parseRouteAggregationRule(ctx context.Context, routeAggregationRule *fabricv4.RouteAggregationRulesData,
-	name, description, prefix, href, type_, uuid, state *basetypes.StringValue,
-	change *fwtypes.ObjectValueOf[ChangeModel],
-	changeLog *fwtypes.ObjectValueOf[ChangeLogModel]) diag.Diagnostics {
 	var diag diag.Diagnostics
-
-	*name = types.StringValue(routeAggregationRule.GetName())
-	*description = types.StringValue(routeAggregationRule.GetDescription())
-	*prefix = types.StringValue(routeAggregationRule.GetPrefix())
-	*href = types.StringValue(routeAggregationRule.GetHref())
-	*type_ = types.StringValue(string(routeAggregationRule.GetType()))
-	*uuid = types.StringValue(routeAggregationRule.GetUuid())
-	*state = types.StringValue(string(routeAggregationRule.GetState()))
-
+	m.Name = types.StringValue(routeAggregationRule.GetName())
+	m.Description = types.StringValue(routeAggregationRule.GetDescription())
+	m.Prefix = types.StringValue(routeAggregationRule.GetPrefix())
+	m.Href = types.StringValue(routeAggregationRule.GetHref())
+	m.Type = types.StringValue(string(routeAggregationRule.GetType()))
+	m.UUID = types.StringValue(routeAggregationRule.GetUuid())
+	m.State = types.StringValue(string(routeAggregationRule.GetState()))
 	routeAggregationRuleChange := routeAggregationRule.GetChange()
-	changeModel := ChangeModel{
-		Uuid: types.StringValue(routeAggregationRuleChange.GetUuid()),
+	changemodel := changeModel{
+		UUID: types.StringValue(routeAggregationRuleChange.GetUuid()),
 		Type: types.StringValue(string(routeAggregationRuleChange.GetType())),
 		Href: types.StringValue(routeAggregationRuleChange.GetHref()),
 	}
-	*change = fwtypes.NewObjectValueOf[ChangeModel](ctx, &changeModel)
+	m.Change = fwtypes.NewObjectValueOf[changeModel](ctx, &changemodel)
 
 	const TIMEFORMAT = "2008-02-02T14:02:02.000Z"
 	routeAggregationRuleChangeLog := routeAggregationRule.GetChangeLog()
-	changeLogModel := ChangeLogModel{
+	changelogModel := changeLogModel{
 		CreatedBy:         types.StringValue(routeAggregationRuleChangeLog.GetCreatedBy()),
 		CreatedByFullName: types.StringValue(routeAggregationRuleChangeLog.GetCreatedByFullName()),
 		CreatedByEmail:    types.StringValue(routeAggregationRuleChangeLog.GetCreatedByEmail()),
@@ -205,6 +158,7 @@ func parseRouteAggregationRule(ctx context.Context, routeAggregationRule *fabric
 		DeletedByEmail:    types.StringValue(routeAggregationRuleChangeLog.GetDeletedByEmail()),
 		DeletedDateTime:   types.StringValue(routeAggregationRuleChangeLog.GetDeletedDateTime().Format(TIMEFORMAT)),
 	}
-	*changeLog = fwtypes.NewObjectValueOf[ChangeLogModel](ctx, &changeLogModel)
+	m.ChangeLog = fwtypes.NewObjectValueOf[changeLogModel](ctx, &changelogModel)
+
 	return diag
 }

@@ -1,14 +1,17 @@
-package connection_route_aggregation_test
+package connectionrouteaggregation_test
 
 import (
 	"context"
 	"fmt"
+	"testing"
+
+	"github.com/equinix/terraform-provider-equinix/internal/fabric/testing_helpers"
+
 	"github.com/equinix/equinix-sdk-go/services/fabricv4"
 	"github.com/equinix/terraform-provider-equinix/internal/acceptance"
 	"github.com/equinix/terraform-provider-equinix/internal/config"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
-	"testing"
 )
 
 func testAccFabricConnectionRouteAggregationConfig(portUuid string) string {
@@ -82,25 +85,53 @@ func testAccFabricConnectionRouteAggregationConfig(portUuid string) string {
 			}
 		}
 		
-		//resource "equinix_fabric_route_aggregation" "test" {
-		//  type = "BGP_IPv4_PREFIX_AGGREGATION"
-		//  name = "Route_Aggregation_Test"
-		//  description = "Test Route Aggregation"
-		//  project = {
-		//	project_id = "4f855852-eb47-4721-8e40-b386a3676abf"
-		//	}
-		//}
+		resource "equinix_fabric_routing_protocol" "direct" {
+			connection_uuid = equinix_fabric_connection.test.id
+			type = "DIRECT"
+			name = "rp_direct_PFCR"
+			direct_ipv4{
+				equinix_iface_ip = "190.1.1.1/30"
+			}
+			direct_ipv6{
+				equinix_iface_ip = "190::1:1/126"
+			}
+}
+		
+		resource "equinix_fabric_route_aggregation" "test" {
+		 type = "BGP_IPv4_PREFIX_AGGREGATION"
+		 name = "Route_Aggregation_Test"
+		 description = "Test Route Aggregation"
+		 project = {
+			project_id = "4f855852-eb47-4721-8e40-b386a3676abf"
+			}
+		}
 
 		resource "equinix_fabric_connection_route_aggregation" "test" {
-			route_aggregation_id = "8f8a2ddb-25f8-416e-ad0a-202a9d2af9e1"
+			depends_on = [equinix_fabric_routing_protocol.direct]
+			route_aggregation_id = equinix_fabric_route_aggregation.test.id
 			connection_id = equinix_fabric_connection.test.id
+		}
+
+		data "equinix_fabric_connection_route_aggregation" "data_cra" {
+  			depends_on = [equinix_fabric_connection_route_aggregation.test]
+  			route_aggregation_id = equinix_fabric_route_aggregation.test.id
+  			connection_id = equinix_fabric_connection.test.id
+		}
+
+
+		data "equinix_fabric_connection_route_aggregations" "data_cras" {
+  			depends_on = [equinix_fabric_connection_route_aggregation.test]
+  			connection_id = equinix_fabric_connection.test.id
 		}
 	`, portUuid)
 }
 
-func TestAccFabricConnectionRouteAggregation_PFCR(t *testing.T) {
-	portId := "c5720fcc-4ae6-ae6e-13e0-306a5c00adaf"
-	//upRouteAggregationName := "stream_up_PFCR"
+func TestAccFabricConnectionRouteAggregation_PNFV(t *testing.T) {
+	ports := testing_helpers.GetFabricEnvPorts(t)
+	var portUuid string
+	if len(ports) > 0 {
+		portUuid = ports["pnfv"]["dot1q"][1].GetUuid()
+	}
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.TestAccPreCheck(t); acceptance.TestAccPreCheckProviderConfigured(t) },
 		ExternalProviders:        acceptance.TestExternalProviders,
@@ -108,14 +139,27 @@ func TestAccFabricConnectionRouteAggregation_PFCR(t *testing.T) {
 		CheckDestroy:             CheckConnectionRouteAggregationDelete,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccFabricConnectionRouteAggregationConfig(portId),
+				Config: testAccFabricConnectionRouteAggregationConfig(portUuid),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("equinix_fabric_connection_route_aggregation.test", "uuid"),
 					resource.TestCheckResourceAttrSet("equinix_fabric_connection_route_aggregation.test", "attachment_status"),
 					resource.TestCheckResourceAttrSet("equinix_fabric_connection_route_aggregation.test", "href"),
 					resource.TestCheckResourceAttr("equinix_fabric_connection_route_aggregation.test", "type", "BGP_IPv4_PREFIX_AGGREGATION"),
+					resource.TestCheckResourceAttr(
+						"data.equinix_fabric_connection_route_aggregation.data_cra", "attachment_status", "ATTACHED"),
+					resource.TestCheckResourceAttr(
+						"data.equinix_fabric_connection_route_aggregation.data_cra", "type", "BGP_IPv4_PREFIX_AGGREGATION"),
+					resource.TestCheckResourceAttrSet("data.equinix_fabric_connection_route_aggregation.data_cra", "href"),
+					resource.TestCheckResourceAttrSet("data.equinix_fabric_connection_route_aggregation.data_cra", "uuid"),
+					resource.TestCheckResourceAttrSet("data.equinix_fabric_connection_route_aggregations.data_cras", "data.0.attachment_status"),
+					resource.TestCheckResourceAttrSet("data.equinix_fabric_connection_route_aggregations.data_cras", "data.0.type"),
+					resource.TestCheckResourceAttrSet("data.equinix_fabric_connection_route_aggregations.data_cras", "data.0.href"),
+					resource.TestCheckResourceAttrSet("data.equinix_fabric_connection_route_aggregations.data_cras", "data.0.uuid"),
+					resource.TestCheckResourceAttr("data.equinix_fabric_connection_route_aggregations.data_cras", "data.#", "1"),
+					resource.TestCheckResourceAttr("data.equinix_fabric_connection_route_aggregations.data_cras", "pagination.%", "5"),
+					resource.TestCheckResourceAttr("data.equinix_fabric_connection_route_aggregations.data_cras", "pagination.limit", "10"),
+					resource.TestCheckResourceAttr("data.equinix_fabric_connection_route_aggregations.data_cras", "pagination.offset", "0"),
 				),
-				ExpectNonEmptyPlan: false,
 			},
 		},
 	})

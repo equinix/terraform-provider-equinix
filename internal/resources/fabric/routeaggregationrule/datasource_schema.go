@@ -1,7 +1,8 @@
-package route_aggregation_rule
+package routeaggregationrule
 
 import (
 	"context"
+
 	"github.com/equinix/terraform-provider-equinix/internal/framework"
 	fwtypes "github.com/equinix/terraform-provider-equinix/internal/framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
@@ -21,7 +22,7 @@ Additional Documentation:
 			"data": schema.ListNestedAttribute{
 				Description: "Returned list of route aggregation rule objects",
 				Computed:    true,
-				CustomType:  fwtypes.NewListNestedObjectTypeOf[BaseRouteAggregationRuleModel](ctx),
+				CustomType:  fwtypes.NewListNestedObjectTypeOf[baseRouteAggregationRuleModel](ctx),
 				NestedObject: schema.NestedAttributeObject{
 					Attributes: getRouteAggregationRuleSchema(ctx),
 				},
@@ -29,7 +30,7 @@ Additional Documentation:
 			"pagination": schema.SingleNestedAttribute{
 				Description: "Pagination details for the returned route aggregation rules list",
 				Optional:    true,
-				CustomType:  fwtypes.NewObjectTypeOf[PaginationModel](ctx),
+				CustomType:  fwtypes.NewObjectTypeOf[paginationModel](ctx),
 				Attributes: map[string]schema.Attribute{
 					"offset": schema.Int32Attribute{
 						Description: "Index of the first item returned in the response. The default is 0",
@@ -116,7 +117,7 @@ func getRouteAggregationRuleSchema(ctx context.Context) map[string]schema.Attrib
 		"change": schema.SingleNestedAttribute{
 			Description: "Current state of latest route aggregation rule change",
 			Computed:    true,
-			CustomType:  fwtypes.NewObjectTypeOf[ChangeModel](ctx),
+			CustomType:  fwtypes.NewObjectTypeOf[changeModel](ctx),
 			Attributes: map[string]schema.Attribute{
 				"uuid": schema.StringAttribute{
 					Description: "Equinix-assigned unique id for a change",
@@ -135,7 +136,7 @@ func getRouteAggregationRuleSchema(ctx context.Context) map[string]schema.Attrib
 		"change_log": schema.SingleNestedAttribute{
 			Description: "Details of the last change on the stream resource",
 			Computed:    true,
-			CustomType:  fwtypes.NewObjectTypeOf[ChangeLogModel](ctx),
+			CustomType:  fwtypes.NewObjectTypeOf[changeLogModel](ctx),
 			Attributes: map[string]schema.Attribute{
 				"created_by": schema.StringAttribute{
 					Description: "User name of creator of the stream resource",

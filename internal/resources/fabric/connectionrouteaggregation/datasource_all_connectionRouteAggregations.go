@@ -1,7 +1,8 @@
-package connection_route_aggregation
+package connectionrouteaggregation
 
 import (
 	"context"
+
 	equinix_errors "github.com/equinix/terraform-provider-equinix/internal/errors"
 	"github.com/equinix/terraform-provider-equinix/internal/framework"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
@@ -23,7 +24,7 @@ type DataSourceAllConnectionRouteAggregations struct {
 
 func (r *DataSourceAllConnectionRouteAggregations) Schema(
 	ctx context.Context,
-	req datasource.SchemaRequest,
+	_ datasource.SchemaRequest,
 	resp *datasource.SchemaResponse,
 ) {
 	resp.Schema = dataSourceAllConnectionRouteAggregationSchema(ctx)
@@ -32,15 +33,15 @@ func (r *DataSourceAllConnectionRouteAggregations) Schema(
 func (r *DataSourceAllConnectionRouteAggregations) Read(ctx context.Context, request datasource.ReadRequest, response *datasource.ReadResponse) {
 	client := r.Meta.NewFabricClientForFramework(ctx, request.ProviderMeta)
 
-	var data DatsSourceAllConnectionRouteAggregationModel
+	var data datsSourceAllConnectionRouteAggregationModel
 	response.Diagnostics.Append(request.Config.Get(ctx, &data)...)
 	if response.Diagnostics.HasError() {
 		return
 	}
 
-	connectionId := data.ConnectionId.ValueString()
+	connectionID := data.ConnectionID.ValueString()
 
-	connectionRouteAggregations, _, err := client.RouteAggregationsApi.GetConnectionRouteAggregations(ctx, connectionId).Execute()
+	connectionRouteAggregations, _, err := client.RouteAggregationsApi.GetConnectionRouteAggregations(ctx, connectionID).Execute()
 
 	if err != nil {
 		response.State.RemoveResource(ctx)

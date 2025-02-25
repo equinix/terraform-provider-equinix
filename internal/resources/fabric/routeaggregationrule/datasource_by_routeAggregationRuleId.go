@@ -1,4 +1,4 @@
-package route_aggregation_rule
+package routeaggregationrule
 
 import (
 	"context"
@@ -24,7 +24,7 @@ type DataSourceByRouteAggregationRuleID struct {
 
 func (r *DataSourceByRouteAggregationRuleID) Schema(
 	ctx context.Context,
-	req datasource.SchemaRequest,
+	_ datasource.SchemaRequest,
 	resp *datasource.SchemaResponse,
 ) {
 	resp.Schema = dataSourceSingleRouteAggregationRuleSchema(ctx)
@@ -33,16 +33,16 @@ func (r *DataSourceByRouteAggregationRuleID) Schema(
 func (r *DataSourceByRouteAggregationRuleID) Read(ctx context.Context, request datasource.ReadRequest, response *datasource.ReadResponse) {
 	client := r.Meta.NewFabricClientForFramework(ctx, request.ProviderMeta)
 
-	var data DataSourceByIdModel
+	var data dataSourceByIDModel
 	response.Diagnostics.Append(request.Config.Get(ctx, &data)...)
 	if response.Diagnostics.HasError() {
 		return
 	}
 
-	routeAggregationRuleID := data.RouteAggregationRuleId.ValueString()
-	routeAggregationId := data.RouteAggregationID.ValueString()
+	routeAggregationRuleID := data.RouteAggregationRuleID.ValueString()
+	routeAggregationID := data.RouteAggregationID.ValueString()
 
-	routeAggregation, _, err := client.RouteAggregationRulesApi.GetRouteAggregationRuleByUuid(ctx, routeAggregationId, routeAggregationRuleID).Execute()
+	routeAggregation, _, err := client.RouteAggregationRulesApi.GetRouteAggregationRuleByUuid(ctx, routeAggregationID, routeAggregationRuleID).Execute()
 
 	if err != nil {
 		response.State.RemoveResource(ctx)

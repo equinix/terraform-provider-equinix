@@ -1,7 +1,8 @@
-package connection_route_aggregation
+package connectionrouteaggregation
 
 import (
 	"context"
+
 	"github.com/equinix/terraform-provider-equinix/internal/framework"
 	fwtypes "github.com/equinix/terraform-provider-equinix/internal/framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
@@ -21,7 +22,7 @@ Additional Documentation:
 			"data": schema.ListNestedAttribute{
 				Description: "Returned list of connection route aggregation objects",
 				Computed:    true,
-				CustomType:  fwtypes.NewListNestedObjectTypeOf[BaseConnectionRouteAggregationModel](ctx),
+				CustomType:  fwtypes.NewListNestedObjectTypeOf[baseConnectionRouteAggregationModel](ctx),
 				NestedObject: schema.NestedAttributeObject{
 					Attributes: getConnectionRouteAggregationSchema(ctx),
 				},
@@ -29,7 +30,7 @@ Additional Documentation:
 			"pagination": schema.SingleNestedAttribute{
 				Description: "Pagination details for the returned connection route aggregations list",
 				Optional:    true,
-				CustomType:  fwtypes.NewObjectTypeOf[PaginationModel](ctx),
+				CustomType:  fwtypes.NewObjectTypeOf[paginationModel](ctx),
 				Attributes: map[string]schema.Attribute{
 					"offset": schema.Int32Attribute{
 						Description: "Index of the first item returned in the response. The default is 0",
@@ -81,7 +82,7 @@ Additional Documentation:
 	}
 }
 
-func getConnectionRouteAggregationSchema(ctx context.Context) map[string]schema.Attribute {
+func getConnectionRouteAggregationSchema(_ context.Context) map[string]schema.Attribute {
 	return map[string]schema.Attribute{
 		"route_aggregation_id": schema.StringAttribute{
 			Description: "UUID of the Route Aggregation to attach this Connection to",
