@@ -35,7 +35,7 @@ func (r *DataSourceByStreamID) Read(ctx context.Context, request datasource.Read
 	client := r.Meta.NewFabricClientForFramework(ctx, request.ProviderMeta)
 
 	// Retrieve values from plan
-	var data DataSourceByIDsModel
+	var data dataSourceByIDsModel
 	response.Diagnostics.Append(request.Config.Get(ctx, &data)...)
 	if response.Diagnostics.HasError() {
 		return

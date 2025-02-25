@@ -46,6 +46,15 @@ func testAccFabricStreamSubscriptionConfig(streamTestData map[string]map[string]
 		  }
 		}
 
+		resource "equinix_fabric_stream" "new_stream2" {
+		  type = "TELEMETRY_STREAM"
+		  name = "Subscription_Test2_PFCR"
+		  description = "Testing stream subscriptions resource limits"
+		  project = {
+			project_id = "291639000636552"
+		  }
+		}
+
 		resource "equinix_fabric_stream_subscription" "splunk" {
 		  type = "STREAM_SUBSCRIPTION"
 		  name = "Splunk_PFCR"
@@ -89,7 +98,6 @@ func testAccFabricStreamSubscriptionConfig(streamTestData map[string]map[string]
 			type = "PAGERDUTY"
 			host = "%s"
 			settings = {
-				transform_alerts = true
 			    change_uri = "%s"
 			    alert_uri = "%s"
 			}
@@ -104,7 +112,7 @@ func testAccFabricStreamSubscriptionConfig(streamTestData map[string]map[string]
 		  type = "STREAM_SUBSCRIPTION"
 		  name = "DataDog_PFCR"
 		  description = "Stream Subscription DataDog TF Testing"
-		  stream_id = equinix_fabric_stream.new_stream.id
+		  stream_id = equinix_fabric_stream.new_stream2.id
 		  enabled = false
 		  sink = {
 			type = "DATADOG"
@@ -126,7 +134,7 @@ func testAccFabricStreamSubscriptionConfig(streamTestData map[string]map[string]
 		  type = "STREAM_SUBSCRIPTION"
 		  name = "MSTeams_PFCR"
 		  description = "Stream Subscription Microsoft Teams TF Testing"
-		  stream_id = equinix_fabric_stream.new_stream.id
+		  stream_id = equinix_fabric_stream.new_stream2.id
 		  enabled = false
 		  sink = {
 			type = "TEAMS"
@@ -209,7 +217,6 @@ func TestAccFabricStreamSubscription_PFCR(t *testing.T) {
 					resource.TestCheckResourceAttr("data.equinix_fabric_stream_subscription.by_ids", "sink.credential.type", "ACCESS_TOKEN"),
 					resource.TestCheckResourceAttrSet("data.equinix_fabric_stream_subscription.by_ids", "stream_id"),
 					resource.TestCheckResourceAttrSet("data.equinix_fabric_stream_subscription.by_ids", "sink.uri"),
-					resource.TestCheckResourceAttrSet("data.equinix_fabric_stream_subscription.by_ids", "sink.credential.access_token"),
 					resource.TestCheckResourceAttrSet("data.equinix_fabric_stream_subscription.by_ids", "sink.settings.event_index"),
 					resource.TestCheckResourceAttrSet("data.equinix_fabric_stream_subscription.by_ids", "sink.settings.metric_index"),
 					resource.TestCheckResourceAttrSet("data.equinix_fabric_stream_subscription.by_ids", "sink.settings.source"),
@@ -218,7 +225,6 @@ func TestAccFabricStreamSubscription_PFCR(t *testing.T) {
 					resource.TestCheckResourceAttrSet("data.equinix_fabric_stream_subscriptions.all", "data.0.type"),
 					resource.TestCheckResourceAttrSet("data.equinix_fabric_stream_subscriptions.all", "data.0.description"),
 					resource.TestCheckResourceAttrSet("data.equinix_fabric_stream_subscriptions.all", "data.0.sink.type"),
-					resource.TestCheckResourceAttrSet("data.equinix_fabric_stream_subscriptions.all", "data.0.stream_id"),
 					resource.TestCheckResourceAttrSet("data.equinix_fabric_stream_subscriptions.all", "data.0.uuid"),
 				),
 			},

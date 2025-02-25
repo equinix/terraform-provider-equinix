@@ -55,7 +55,7 @@ Additional Documentation:
 				Description: "List of filters to apply to the stream subscription selectors. Maximum of 8. All will be AND'd together with 1 of the 8 being a possible OR group of 3",
 				Optional:    true,
 				Computed:    true,
-				CustomType:  fwtypes.NewListNestedObjectTypeOf[FilterModel](ctx),
+				CustomType:  fwtypes.NewListNestedObjectTypeOf[filterModel](ctx),
 				PlanModifiers: []planmodifier.List{
 					listplanmodifier.UseStateForUnknown(),
 				},
@@ -86,7 +86,7 @@ Additional Documentation:
 				Description: "Lists of metrics to be included/excluded on the stream subscription",
 				Optional:    true,
 				Computed:    true,
-				CustomType:  fwtypes.NewObjectTypeOf[SelectorModel](ctx),
+				CustomType:  fwtypes.NewObjectTypeOf[selectorModel](ctx),
 				PlanModifiers: []planmodifier.Object{
 					objectplanmodifier.UseStateForUnknown(),
 				},
@@ -108,7 +108,7 @@ Additional Documentation:
 				Description: "Lists of events to be included/excluded on the stream subscription",
 				Optional:    true,
 				Computed:    true,
-				CustomType:  fwtypes.NewObjectTypeOf[SelectorModel](ctx),
+				CustomType:  fwtypes.NewObjectTypeOf[selectorModel](ctx),
 				PlanModifiers: []planmodifier.Object{
 					objectplanmodifier.UseStateForUnknown(),
 				},
@@ -129,7 +129,7 @@ Additional Documentation:
 			"sink": schema.SingleNestedAttribute{
 				Description: "The details of the subscriber to the Equinix Stream",
 				Required:    true,
-				CustomType:  fwtypes.NewObjectTypeOf[SinkModel](ctx),
+				CustomType:  fwtypes.NewObjectTypeOf[sinkModel](ctx),
 				PlanModifiers: []planmodifier.Object{
 					objectplanmodifier.UseStateForUnknown(),
 				},
@@ -182,7 +182,7 @@ Additional Documentation:
 						Description: "Access details for the specified sink type",
 						Optional:    true,
 						Computed:    true,
-						CustomType:  fwtypes.NewObjectTypeOf[SinkCredentialModel](ctx),
+						CustomType:  fwtypes.NewObjectTypeOf[sinkCredentialModel](ctx),
 						PlanModifiers: []planmodifier.Object{
 							objectplanmodifier.UseStateForUnknown(),
 						},
@@ -237,7 +237,7 @@ Additional Documentation:
 						Description: "Stream subscription sink settings",
 						Optional:    true,
 						Computed:    true,
-						CustomType:  fwtypes.NewObjectTypeOf[SinkSettingsModel](ctx),
+						CustomType:  fwtypes.NewObjectTypeOf[sinkSettingsModel](ctx),
 						PlanModifiers: []planmodifier.Object{
 							objectplanmodifier.UseStateForUnknown(),
 						},
@@ -284,13 +284,6 @@ Additional Documentation:
 									stringplanmodifier.UseStateForUnknown(),
 								},
 							},
-							"transform_alerts": schema.BoolAttribute{
-								Optional: true,
-								Computed: true,
-								PlanModifiers: []planmodifier.Bool{
-									boolplanmodifier.UseStateForUnknown(),
-								},
-							},
 						},
 					},
 				},
@@ -319,7 +312,7 @@ Additional Documentation:
 			"change_log": schema.SingleNestedAttribute{
 				Description: "Details of the last change on the stream resource",
 				Computed:    true,
-				CustomType:  fwtypes.NewObjectTypeOf[ChangeLogModel](ctx),
+				CustomType:  fwtypes.NewObjectTypeOf[changeLogModel](ctx),
 				PlanModifiers: []planmodifier.Object{
 					objectplanmodifier.UseStateForUnknown(),
 				},

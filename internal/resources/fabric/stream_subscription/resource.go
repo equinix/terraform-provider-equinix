@@ -47,7 +47,7 @@ func (r *Resource) Create(
 	resp *resource.CreateResponse,
 ) {
 
-	var plan ResourceModel
+	var plan resourceModel
 	diags := req.Plan.Get(ctx, &plan)
 	if diags.HasError() {
 		resp.Diagnostics.Append(diags...)
@@ -96,7 +96,7 @@ func (r *Resource) Read(
 	req resource.ReadRequest,
 	resp *resource.ReadResponse,
 ) {
-	var state ResourceModel
+	var state resourceModel
 	diags := req.State.Get(ctx, &state)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
@@ -135,7 +135,7 @@ func (r *Resource) Update(
 	client := r.Meta.NewFabricClientForFramework(ctx, req.ProviderMeta)
 
 	// Retrieve values from plan
-	var state, plan ResourceModel
+	var state, plan resourceModel
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
 	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
 	if resp.Diagnostics.HasError() {
@@ -191,7 +191,7 @@ func (r *Resource) Delete(
 	client := r.Meta.NewFabricClientForFramework(ctx, req.ProviderMeta)
 
 	// Retrieve the current state
-	var state ResourceModel
+	var state resourceModel
 	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
 	if resp.Diagnostics.HasError() {
 		return
@@ -225,7 +225,7 @@ func (r *Resource) Delete(
 
 }
 
-func buildUpdateRequest(ctx context.Context, plan ResourceModel) (fabricv4.StreamSubscriptionPutRequest, diag.Diagnostics) {
+func buildUpdateRequest(ctx context.Context, plan resourceModel) (fabricv4.StreamSubscriptionPutRequest, diag.Diagnostics) {
 	var diags diag.Diagnostics
 	request := fabricv4.StreamSubscriptionPutRequest{}
 
@@ -257,7 +257,7 @@ func buildUpdateRequest(ctx context.Context, plan ResourceModel) (fabricv4.Strea
 	return request, diags
 }
 
-func buildCreateRequest(ctx context.Context, plan ResourceModel) (fabricv4.StreamSubscriptionPostRequest, diag.Diagnostics) {
+func buildCreateRequest(ctx context.Context, plan resourceModel) (fabricv4.StreamSubscriptionPostRequest, diag.Diagnostics) {
 	var diags diag.Diagnostics
 	request := fabricv4.StreamSubscriptionPostRequest{}
 
@@ -269,7 +269,7 @@ func buildCreateRequest(ctx context.Context, plan ResourceModel) (fabricv4.Strea
 	}
 
 	if !plan.Filters.IsNull() && !plan.Filters.IsUnknown() {
-		filterModels := make([]FilterModel, len(plan.Filters.Elements()))
+		filterModels := make([]filterModel, len(plan.Filters.Elements()))
 		diags = plan.Filters.ElementsAs(ctx, &filterModels, false)
 		if diags.HasError() {
 			return fabricv4.StreamSubscriptionPostRequest{}, diags
@@ -338,26 +338,26 @@ func buildCreateRequest(ctx context.Context, plan ResourceModel) (fabricv4.Strea
 	return request, diags
 }
 
-func buildStreamSubscriptionSelector(ctx context.Context, selector fwtypes.ObjectValueOf[SelectorModel]) (fabricv4.StreamSubscriptionSelector, diag.Diagnostics) {
-	var selectorModel SelectorModel
-	diags := selector.As(ctx, &selectorModel, basetypes.ObjectAsOptions{})
+func buildStreamSubscriptionSelector(ctx context.Context, selector fwtypes.ObjectValueOf[selectorModel]) (fabricv4.StreamSubscriptionSelector, diag.Diagnostics) {
+	var selectorValue selectorModel
+	diags := selector.As(ctx, &selectorValue, basetypes.ObjectAsOptions{})
 	if diags.HasError() {
 		return fabricv4.StreamSubscriptionSelector{}, diags
 	}
 
 	var streamSubscriptionSelector fabricv4.StreamSubscriptionSelector
-	if !selectorModel.Include.IsNull() && !selectorModel.Include.IsUnknown() {
+	if !selectorValue.Include.IsNull() && !selectorValue.Include.IsUnknown() {
 		include := []string{}
-		diags = selectorModel.Include.ElementsAs(ctx, &include, false)
+		diags = selectorValue.Include.ElementsAs(ctx, &include, false)
 		if diags.HasError() {
 			return fabricv4.StreamSubscriptionSelector{}, diags
 		}
 		streamSubscriptionSelector.SetInclude(include)
 	}
 
-	if !selectorModel.Except.IsNull() && !selectorModel.Except.IsUnknown() {
+	if !selectorValue.Except.IsNull() && !selectorValue.Except.IsUnknown() {
 		except := []string{}
-		diags = selectorModel.Except.ElementsAs(ctx, &except, false)
+		diags = selectorValue.Except.ElementsAs(ctx, &except, false)
 		if diags.HasError() {
 			return fabricv4.StreamSubscriptionSelector{}, diags
 		}
@@ -367,40 +367,40 @@ func buildStreamSubscriptionSelector(ctx context.Context, selector fwtypes.Objec
 	return streamSubscriptionSelector, diags
 }
 
-func buildStreamSubscriptionSink(ctx context.Context, sinkObject fwtypes.ObjectValueOf[SinkModel]) (fabricv4.StreamSubscriptionSink, diag.Diagnostics) {
-	var sinkModel SinkModel
-	diags := sinkObject.As(ctx, &sinkModel, basetypes.ObjectAsOptions{})
+func buildStreamSubscriptionSink(ctx context.Context, sinkObject fwtypes.ObjectValueOf[sinkModel]) (fabricv4.StreamSubscriptionSink, diag.Diagnostics) {
+	var sinkValue sinkModel
+	diags := sinkObject.As(ctx, &sinkValue, basetypes.ObjectAsOptions{})
 	if diags.HasError() {
 		return fabricv4.StreamSubscriptionSink{}, diags
 	}
 
 	var sink fabricv4.StreamSubscriptionSink
 
-	sink.SetType(fabricv4.StreamSubscriptionSinkType(sinkModel.Type.ValueString()))
-	if !sinkModel.URI.IsNull() && !sinkModel.URI.IsUnknown() {
-		sink.SetUri(sinkModel.URI.ValueString())
+	sink.SetType(fabricv4.StreamSubscriptionSinkType(sinkValue.Type.ValueString()))
+	if !sinkValue.URI.IsNull() && !sinkValue.URI.IsUnknown() {
+		sink.SetUri(sinkValue.URI.ValueString())
 	}
 
-	if !sinkModel.BatchEnabled.IsNull() && !sinkModel.BatchEnabled.IsUnknown() {
-		sink.SetBatchEnabled(sinkModel.BatchEnabled.ValueBool())
+	if !sinkValue.BatchEnabled.IsNull() && !sinkValue.BatchEnabled.IsUnknown() {
+		sink.SetBatchEnabled(sinkValue.BatchEnabled.ValueBool())
 	}
 
-	if !sinkModel.BatchSizeMax.IsNull() && !sinkModel.BatchSizeMax.IsUnknown() {
-		sink.SetBatchSizeMax(sinkModel.BatchSizeMax.ValueInt32())
+	if !sinkValue.BatchSizeMax.IsNull() && !sinkValue.BatchSizeMax.IsUnknown() {
+		sink.SetBatchSizeMax(sinkValue.BatchSizeMax.ValueInt32())
 	}
 
-	if !sinkModel.BatchWaitTimeMax.IsNull() && !sinkModel.BatchWaitTimeMax.IsUnknown() {
-		sink.SetBatchWaitTimeMax(sinkModel.BatchWaitTimeMax.ValueInt32())
+	if !sinkValue.BatchWaitTimeMax.IsNull() && !sinkValue.BatchWaitTimeMax.IsUnknown() {
+		sink.SetBatchWaitTimeMax(sinkValue.BatchWaitTimeMax.ValueInt32())
 	}
 
-	if !sinkModel.Host.IsNull() && !sinkModel.Host.IsUnknown() {
-		sink.SetHost(sinkModel.Host.ValueString())
+	if !sinkValue.Host.IsNull() && !sinkValue.Host.IsUnknown() {
+		sink.SetHost(sinkValue.Host.ValueString())
 	}
 
-	if !sinkModel.Credential.IsNull() && !sinkModel.Credential.IsUnknown() {
+	if !sinkValue.Credential.IsNull() && !sinkValue.Credential.IsUnknown() {
 		// Build credential
-		var credentialModel SinkCredentialModel
-		diags = sinkModel.Credential.As(ctx, &credentialModel, basetypes.ObjectAsOptions{})
+		var credentialModel sinkCredentialModel
+		diags = sinkValue.Credential.As(ctx, &credentialModel, basetypes.ObjectAsOptions{})
 		if diags.HasError() {
 			return fabricv4.StreamSubscriptionSink{}, diags
 		}
@@ -426,10 +426,10 @@ func buildStreamSubscriptionSink(ctx context.Context, sinkObject fwtypes.ObjectV
 		sink.SetCredential(credential)
 	}
 
-	if !sinkModel.Settings.IsNull() && !sinkModel.Settings.IsUnknown() {
+	if !sinkValue.Settings.IsNull() && !sinkValue.Settings.IsUnknown() {
 		// Build settings
-		var settingsModel SinkSettingsModel
-		diags = sinkModel.Settings.As(ctx, &settingsModel, basetypes.ObjectAsOptions{})
+		var settingsModel sinkSettingsModel
+		diags = sinkValue.Settings.As(ctx, &settingsModel, basetypes.ObjectAsOptions{})
 
 		var settings fabricv4.StreamSubscriptionSinkSetting
 		if !settingsModel.EventIndex.IsNull() && !settingsModel.EventIndex.IsUnknown() {
@@ -449,9 +449,6 @@ func buildStreamSubscriptionSink(ctx context.Context, sinkObject fwtypes.ObjectV
 		}
 		if !settingsModel.MetricURI.IsNull() && !settingsModel.MetricURI.IsUnknown() {
 			settings.SetMetricUri(settingsModel.MetricURI.ValueString())
-		}
-		if !settingsModel.TransformAlerts.IsNull() && !settingsModel.TransformAlerts.IsUnknown() {
-			settings.SetTransformAlerts(settingsModel.TransformAlerts.ValueBool())
 		}
 		sink.SetSettings(settings)
 	}

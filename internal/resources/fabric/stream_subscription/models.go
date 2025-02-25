@@ -16,21 +16,21 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-type DataSourceByIDsModel struct {
+type dataSourceByIDsModel struct {
 	ID             types.String `tfsdk:"id"`
 	StreamID       types.String `tfsdk:"stream_id"`
 	SubscriptionID types.String `tfsdk:"subscription_id"`
-	BaseStreamSubscriptionModel
+	baseStreamSubscriptionModel
 }
 
-type DataSourceAll struct {
+type dataSourceAll struct {
 	ID         types.String                                                 `tfsdk:"id"`
 	StreamID   types.String                                                 `tfsdk:"stream_id"`
-	Pagination fwtypes.ObjectValueOf[PaginationModel]                       `tfsdk:"pagination"`
-	Data       fwtypes.ListNestedObjectValueOf[BaseStreamSubscriptionModel] `tfsdk:"data"`
+	Pagination fwtypes.ObjectValueOf[paginationModel]                       `tfsdk:"pagination"`
+	Data       fwtypes.ListNestedObjectValueOf[baseStreamSubscriptionModel] `tfsdk:"data"`
 }
 
-type PaginationModel struct {
+type paginationModel struct {
 	Offset   types.Int32  `tfsdk:"offset"`
 	Limit    types.Int32  `tfsdk:"limit"`
 	Total    types.Int32  `tfsdk:"total"`
@@ -38,52 +38,52 @@ type PaginationModel struct {
 	Previous types.String `tfsdk:"previous"`
 }
 
-type ResourceModel struct {
+type resourceModel struct {
 	StreamID types.String   `tfsdk:"stream_id"`
 	ID       types.String   `tfsdk:"id"`
 	Timeouts timeouts.Value `tfsdk:"timeouts"`
-	BaseStreamSubscriptionModel
+	baseStreamSubscriptionModel
 }
 
-type BaseStreamSubscriptionModel struct {
+type baseStreamSubscriptionModel struct {
 	Type           types.String                                 `tfsdk:"type"`
 	Name           types.String                                 `tfsdk:"name"`
 	Description    types.String                                 `tfsdk:"description"`
 	Enabled        types.Bool                                   `tfsdk:"enabled"`
-	Filters        fwtypes.ListNestedObjectValueOf[FilterModel] `tfsdk:"filters"`         // List of filters
-	MetricSelector fwtypes.ObjectValueOf[SelectorModel]         `tfsdk:"metric_selector"` // Object of MetricSelectorModel
-	EventSelector  fwtypes.ObjectValueOf[SelectorModel]         `tfsdk:"event_selector"`  // Object of EventSelectorModel
-	Sink           fwtypes.ObjectValueOf[SinkModel]             `tfsdk:"sink"`            // Object of SinkModel
+	Filters        fwtypes.ListNestedObjectValueOf[filterModel] `tfsdk:"filters"`         // List of filters
+	MetricSelector fwtypes.ObjectValueOf[selectorModel]         `tfsdk:"metric_selector"` // Object of MetricSelectorModel
+	EventSelector  fwtypes.ObjectValueOf[selectorModel]         `tfsdk:"event_selector"`  // Object of EventSelectorModel
+	Sink           fwtypes.ObjectValueOf[sinkModel]             `tfsdk:"sink"`            // Object of SinkModel
 	Href           types.String                                 `tfsdk:"href"`
 	UUID           types.String                                 `tfsdk:"uuid"`
 	State          types.String                                 `tfsdk:"state"`
-	ChangeLog      fwtypes.ObjectValueOf[ChangeLogModel]        `tfsdk:"change_log"` // Object of ChangeLogModel
+	ChangeLog      fwtypes.ObjectValueOf[changeLogModel]        `tfsdk:"change_log"` // Object of ChangeLogModel
 }
 
-type FilterModel struct {
+type filterModel struct {
 	Property types.String                      `tfsdk:"property"`
 	Operator types.String                      `tfsdk:"operator"`
 	Values   fwtypes.ListValueOf[types.String] `tfsdk:"values"`
 	Or       types.Bool                        `tfsdk:"or"`
 }
 
-type SelectorModel struct {
+type selectorModel struct {
 	Include fwtypes.ListValueOf[types.String] `tfsdk:"include"`
 	Except  fwtypes.ListValueOf[types.String] `tfsdk:"except"`
 }
 
-type SinkModel struct {
+type sinkModel struct {
 	URI              types.String                               `tfsdk:"uri"`
 	Type             types.String                               `tfsdk:"type"`
 	BatchEnabled     types.Bool                                 `tfsdk:"batch_enabled"`
 	BatchSizeMax     types.Int32                                `tfsdk:"batch_size_max"`
 	BatchWaitTimeMax types.Int32                                `tfsdk:"batch_wait_time_max"`
 	Host             types.String                               `tfsdk:"host"`
-	Credential       fwtypes.ObjectValueOf[SinkCredentialModel] `tfsdk:"credential"` // Object of CredentialModel
-	Settings         fwtypes.ObjectValueOf[SinkSettingsModel]   `tfsdk:"settings"`   // Object of SinkSettingsModel
+	Credential       fwtypes.ObjectValueOf[sinkCredentialModel] `tfsdk:"credential"` // Object of CredentialModel
+	Settings         fwtypes.ObjectValueOf[sinkSettingsModel]   `tfsdk:"settings"`   // Object of SinkSettingsModel
 }
 
-type SinkCredentialModel struct {
+type sinkCredentialModel struct {
 	Type           types.String `tfsdk:"type"`
 	AccessToken    types.String `tfsdk:"access_token"`
 	IntegrationKey types.String `tfsdk:"integration_key"`
@@ -92,17 +92,16 @@ type SinkCredentialModel struct {
 	Password       types.String `tfsdk:"password"`
 }
 
-type SinkSettingsModel struct {
-	EventIndex      types.String `tfsdk:"event_index"`
-	MetricIndex     types.String `tfsdk:"metric_index"`
-	Source          types.String `tfsdk:"source"`
-	ApplicationKey  types.String `tfsdk:"application_key"`
-	EventURI        types.String `tfsdk:"event_uri"`
-	MetricURI       types.String `tfsdk:"metric_uri"`
-	TransformAlerts types.Bool   `tfsdk:"transform_alerts"`
+type sinkSettingsModel struct {
+	EventIndex     types.String `tfsdk:"event_index"`
+	MetricIndex    types.String `tfsdk:"metric_index"`
+	Source         types.String `tfsdk:"source"`
+	ApplicationKey types.String `tfsdk:"application_key"`
+	EventURI       types.String `tfsdk:"event_uri"`
+	MetricURI      types.String `tfsdk:"metric_uri"`
 }
 
-type ChangeLogModel struct {
+type changeLogModel struct {
 	CreatedBy         types.String `tfsdk:"created_by"`
 	CreatedByFullName types.String `tfsdk:"created_by_full_name"`
 	CreatedByEmail    types.String `tfsdk:"created_by_email"`
@@ -117,12 +116,12 @@ type ChangeLogModel struct {
 	DeletedDateTime   types.String `tfsdk:"deleted_date_time"`
 }
 
-func (m *DataSourceByIDsModel) parse(ctx context.Context, streamSubscription *fabricv4.StreamSubscription) diag.Diagnostics {
+func (m *dataSourceByIDsModel) parse(ctx context.Context, streamSubscription *fabricv4.StreamSubscription) diag.Diagnostics {
 	m.StreamID = types.StringValue(streamSubscription.GetUuid())
 	m.SubscriptionID = types.StringValue(streamSubscription.GetUuid())
 	m.ID = types.StringValue(streamSubscription.GetUuid())
 
-	diags := m.BaseStreamSubscriptionModel.parse(ctx, streamSubscription)
+	diags := m.baseStreamSubscriptionModel.parse(ctx, streamSubscription)
 	if diags.HasError() {
 		return diags
 	}
@@ -130,7 +129,7 @@ func (m *DataSourceByIDsModel) parse(ctx context.Context, streamSubscription *fa
 	return diags
 }
 
-func (m *DataSourceAll) parse(ctx context.Context, streamSubscriptionsResponse *fabricv4.GetAllStreamSubscriptionResponse) diag.Diagnostics {
+func (m *dataSourceAll) parse(ctx context.Context, streamSubscriptionsResponse *fabricv4.GetAllStreamSubscriptionResponse) diag.Diagnostics {
 	var diags diag.Diagnostics
 
 	if len(streamSubscriptionsResponse.GetData()) < 1 {
@@ -139,10 +138,10 @@ func (m *DataSourceAll) parse(ctx context.Context, streamSubscriptionsResponse *
 		return diags
 	}
 
-	data := make([]BaseStreamSubscriptionModel, len(streamSubscriptionsResponse.GetData()))
+	data := make([]baseStreamSubscriptionModel, len(streamSubscriptionsResponse.GetData()))
 	streamSubscriptions := streamSubscriptionsResponse.GetData()
 	for index, streamSubscription := range streamSubscriptions {
-		var streamSubscriptionModel BaseStreamSubscriptionModel
+		var streamSubscriptionModel baseStreamSubscriptionModel
 		diags = streamSubscriptionModel.parse(ctx, &streamSubscription)
 		if diags.HasError() {
 			return diags
@@ -150,7 +149,7 @@ func (m *DataSourceAll) parse(ctx context.Context, streamSubscriptionsResponse *
 		data[index] = streamSubscriptionModel
 	}
 	responsePagination := streamSubscriptionsResponse.GetPagination()
-	pagination := PaginationModel{
+	pagination := paginationModel{
 		Offset:   types.Int32Value(responsePagination.GetOffset()),
 		Limit:    types.Int32Value(responsePagination.GetLimit()),
 		Total:    types.Int32Value(responsePagination.GetTotal()),
@@ -160,16 +159,16 @@ func (m *DataSourceAll) parse(ctx context.Context, streamSubscriptionsResponse *
 
 	m.ID = types.StringValue(data[0].UUID.ValueString())
 	m.StreamID = types.StringValue(data[0].UUID.ValueString())
-	m.Pagination = fwtypes.NewObjectValueOf[PaginationModel](ctx, &pagination)
-	m.Data = fwtypes.NewListNestedObjectValueOfValueSlice[BaseStreamSubscriptionModel](ctx, data)
+	m.Pagination = fwtypes.NewObjectValueOf[paginationModel](ctx, &pagination)
+	m.Data = fwtypes.NewListNestedObjectValueOfValueSlice[baseStreamSubscriptionModel](ctx, data)
 
 	return diags
 }
 
-func (m *ResourceModel) parse(ctx context.Context, streamSubscription *fabricv4.StreamSubscription) diag.Diagnostics {
+func (m *resourceModel) parse(ctx context.Context, streamSubscription *fabricv4.StreamSubscription) diag.Diagnostics {
 	m.ID = types.StringValue(streamSubscription.GetUuid())
 
-	diags := m.BaseStreamSubscriptionModel.parse(ctx, streamSubscription)
+	diags := m.baseStreamSubscriptionModel.parse(ctx, streamSubscription)
 	if diags.HasError() {
 		return diags
 	}
@@ -177,7 +176,7 @@ func (m *ResourceModel) parse(ctx context.Context, streamSubscription *fabricv4.
 	return diags
 }
 
-func (m *BaseStreamSubscriptionModel) parse(ctx context.Context, streamSubscription *fabricv4.StreamSubscription) diag.Diagnostics {
+func (m *baseStreamSubscriptionModel) parse(ctx context.Context, streamSubscription *fabricv4.StreamSubscription) diag.Diagnostics {
 
 	var mDiags diag.Diagnostics
 
@@ -191,7 +190,7 @@ func (m *BaseStreamSubscriptionModel) parse(ctx context.Context, streamSubscript
 
 	// Parse filters
 	streamSubscriptionFilters := streamSubscription.GetFilters()
-	filterModels := make([]FilterModel, len(streamSubscriptionFilters.GetAnd()))
+	filterModels := make([]filterModel, len(streamSubscriptionFilters.GetAnd()))
 	for i, filter := range streamSubscriptionFilters.GetAnd() {
 		if len(filter.StreamFilterOrFilter.GetOr()) > 0 {
 			for j, orFilter := range filter.StreamFilterOrFilter.GetOr() {
@@ -223,7 +222,7 @@ func (m *BaseStreamSubscriptionModel) parse(ctx context.Context, streamSubscript
 				mDiags.Append(diags...)
 				return mDiags
 			}
-			filterModels[i] = FilterModel{
+			filterModels[i] = filterModel{
 				Property: types.StringValue(filter.StreamFilterOrFilter.AdditionalProperties["property"].(string)),
 				Operator: types.StringValue(filter.StreamFilterOrFilter.AdditionalProperties["operator"].(string)),
 				Values:   fwValues,
@@ -231,7 +230,7 @@ func (m *BaseStreamSubscriptionModel) parse(ctx context.Context, streamSubscript
 			}
 		}
 	}
-	m.Filters = fwtypes.NewListNestedObjectValueOfValueSlice[FilterModel](ctx, filterModels)
+	m.Filters = fwtypes.NewListNestedObjectValueOfValueSlice[filterModel](ctx, filterModels)
 
 	// Parse MetricSelector
 	metricSelectorObject, diags := parseSelectorModel(ctx, streamSubscription.GetMetricSelector())
@@ -249,7 +248,7 @@ func (m *BaseStreamSubscriptionModel) parse(ctx context.Context, streamSubscript
 	}
 	m.EventSelector = eventSelectorObject
 
-	planSinkModel := SinkModel{}
+	planSinkModel := sinkModel{}
 	if !m.Sink.IsNull() && !m.Sink.IsUnknown() {
 		diags = m.Sink.As(ctx, &planSinkModel, basetypes.ObjectAsOptions{})
 		if diags.HasError() {
@@ -260,7 +259,7 @@ func (m *BaseStreamSubscriptionModel) parse(ctx context.Context, streamSubscript
 
 	// Parse Sink
 	streamSubSink := streamSubscription.GetSink()
-	sinkModel := SinkModel{
+	sink := sinkModel{
 		URI:              types.StringValue(streamSubSink.GetUri()),
 		Type:             types.StringValue(string(streamSubSink.GetType())),
 		BatchEnabled:     types.BoolValue(streamSubSink.GetBatchEnabled()),
@@ -270,11 +269,11 @@ func (m *BaseStreamSubscriptionModel) parse(ctx context.Context, streamSubscript
 	}
 
 	if planSinkModel.URI.ValueString() != "" {
-		sinkModel.URI = types.StringValue(planSinkModel.URI.ValueString())
+		sink.URI = types.StringValue(planSinkModel.URI.ValueString())
 	}
 
 	sinkCredential := streamSubSink.GetCredential()
-	credentialModel := SinkCredentialModel{
+	credentialModel := sinkCredentialModel{
 		Type:           types.StringValue(string(sinkCredential.GetType())),
 		AccessToken:    types.StringValue(sinkCredential.GetAccessToken()),
 		IntegrationKey: types.StringValue(sinkCredential.GetIntegrationKey()),
@@ -284,7 +283,7 @@ func (m *BaseStreamSubscriptionModel) parse(ctx context.Context, streamSubscript
 	}
 
 	if !planSinkModel.Credential.IsNull() && !planSinkModel.Credential.IsUnknown() {
-		planCredentialModel := SinkCredentialModel{}
+		planCredentialModel := sinkCredentialModel{}
 		diags = planSinkModel.Credential.As(ctx, &planCredentialModel, basetypes.ObjectAsOptions{})
 		if diags.HasError() {
 			mDiags.Append(diags...)
@@ -303,38 +302,37 @@ func (m *BaseStreamSubscriptionModel) parse(ctx context.Context, streamSubscript
 		}
 	}
 
-	sinkModel.Credential = fwtypes.NewObjectValueOf[SinkCredentialModel](ctx, &credentialModel)
+	sink.Credential = fwtypes.NewObjectValueOf[sinkCredentialModel](ctx, &credentialModel)
 
-	sinkSettings := streamSubSink.GetSettings()
-	sinkSettingsModel := SinkSettingsModel{
-		EventIndex:      types.StringValue(sinkSettings.GetEventIndex()),
-		MetricIndex:     types.StringValue(sinkSettings.GetMetricIndex()),
-		Source:          types.StringValue(sinkSettings.GetSource()),
-		ApplicationKey:  types.StringValue(sinkSettings.GetApplicationKey()),
-		EventURI:        types.StringValue(sinkSettings.GetEventUri()),
-		MetricURI:       types.StringValue(sinkSettings.GetMetricUri()),
-		TransformAlerts: types.BoolValue(sinkSettings.GetTransformAlerts()),
+	streamSubSinkSettings := streamSubSink.GetSettings()
+	sinkSettings := sinkSettingsModel{
+		EventIndex:     types.StringValue(streamSubSinkSettings.GetEventIndex()),
+		MetricIndex:    types.StringValue(streamSubSinkSettings.GetMetricIndex()),
+		Source:         types.StringValue(streamSubSinkSettings.GetSource()),
+		ApplicationKey: types.StringValue(streamSubSinkSettings.GetApplicationKey()),
+		EventURI:       types.StringValue(streamSubSinkSettings.GetEventUri()),
+		MetricURI:      types.StringValue(streamSubSinkSettings.GetMetricUri()),
 	}
 
 	if !planSinkModel.Settings.IsNull() && !planSinkModel.Settings.IsUnknown() {
-		planSettingsModel := SinkSettingsModel{}
+		planSettingsModel := sinkSettingsModel{}
 		diags = planSinkModel.Settings.As(ctx, &planSettingsModel, basetypes.ObjectAsOptions{})
 		if diags.HasError() {
 			mDiags.Append(diags...)
 			return mDiags
 		}
 		if planSettingsModel.ApplicationKey.ValueString() != "" {
-			sinkSettingsModel.ApplicationKey = types.StringValue(planSettingsModel.ApplicationKey.ValueString())
+			sinkSettings.ApplicationKey = types.StringValue(planSettingsModel.ApplicationKey.ValueString())
 		}
 	}
 
-	sinkModel.Settings = fwtypes.NewObjectValueOf[SinkSettingsModel](ctx, &sinkSettingsModel)
+	sink.Settings = fwtypes.NewObjectValueOf[sinkSettingsModel](ctx, &sinkSettings)
 
-	m.Sink = fwtypes.NewObjectValueOf[SinkModel](ctx, &sinkModel)
+	m.Sink = fwtypes.NewObjectValueOf[sinkModel](ctx, &sink)
 
 	// Parse ChangeLog
 	streamSubscriptionChangeLog := streamSubscription.GetChangeLog()
-	changeLogModel := ChangeLogModel{
+	changeLog := changeLogModel{
 		CreatedBy:         types.StringValue(streamSubscriptionChangeLog.GetCreatedBy()),
 		CreatedByFullName: types.StringValue(streamSubscriptionChangeLog.GetCreatedByFullName()),
 		CreatedByEmail:    types.StringValue(streamSubscriptionChangeLog.GetCreatedByEmail()),
@@ -348,18 +346,18 @@ func (m *BaseStreamSubscriptionModel) parse(ctx context.Context, streamSubscript
 		DeletedByEmail:    types.StringValue(streamSubscriptionChangeLog.GetDeletedByEmail()),
 		DeletedDateTime:   types.StringValue(streamSubscriptionChangeLog.GetDeletedDateTime().Format(fabric.TimeFormat)),
 	}
-	m.ChangeLog = fwtypes.NewObjectValueOf[ChangeLogModel](ctx, &changeLogModel)
+	m.ChangeLog = fwtypes.NewObjectValueOf[changeLogModel](ctx, &changeLog)
 
 	return mDiags
 }
 
-func parseSimpleExpression(ctx context.Context, expression *fabricv4.StreamFilterSimpleExpression, orGroup bool) (FilterModel, diag.Diagnostics) {
+func parseSimpleExpression(ctx context.Context, expression *fabricv4.StreamFilterSimpleExpression, orGroup bool) (filterModel, diag.Diagnostics) {
 	values := int_fw.StringSliceToAttrValue(expression.GetValues())
 	fwValues, diags := fwtypes.NewListValueOf[types.String](ctx, values)
 	if diags.HasError() {
-		return FilterModel{}, diags
+		return filterModel{}, diags
 	}
-	return FilterModel{
+	return filterModel{
 		Property: types.StringValue(expression.GetProperty()),
 		Operator: types.StringValue(expression.GetOperator()),
 		Values:   fwValues,
@@ -367,19 +365,19 @@ func parseSimpleExpression(ctx context.Context, expression *fabricv4.StreamFilte
 	}, nil
 }
 
-func parseSelectorModel(ctx context.Context, selector fabricv4.StreamSubscriptionSelector) (fwtypes.ObjectValueOf[SelectorModel], diag.Diagnostics) {
+func parseSelectorModel(ctx context.Context, streamSubSelector fabricv4.StreamSubscriptionSelector) (fwtypes.ObjectValueOf[selectorModel], diag.Diagnostics) {
 	var diags diag.Diagnostics
-	inclusions, diags := fwtypes.NewListValueOf[types.String](ctx, int_fw.StringSliceToAttrValue(selector.GetInclude()))
+	inclusions, diags := fwtypes.NewListValueOf[types.String](ctx, int_fw.StringSliceToAttrValue(streamSubSelector.GetInclude()))
 	if diags.HasError() {
-		return fwtypes.NewObjectValueOfNull[SelectorModel](ctx), diags
+		return fwtypes.NewObjectValueOfNull[selectorModel](ctx), diags
 	}
-	exclusions, diags := fwtypes.NewListValueOf[types.String](ctx, int_fw.StringSliceToAttrValue(selector.GetExcept()))
+	exclusions, diags := fwtypes.NewListValueOf[types.String](ctx, int_fw.StringSliceToAttrValue(streamSubSelector.GetExcept()))
 	if diags.HasError() {
-		return fwtypes.NewObjectValueOfNull[SelectorModel](ctx), diags
+		return fwtypes.NewObjectValueOfNull[selectorModel](ctx), diags
 	}
-	selectorModel := SelectorModel{
+	selector := selectorModel{
 		Include: inclusions,
 		Except:  exclusions,
 	}
-	return fwtypes.NewObjectValueOf[SelectorModel](ctx, &selectorModel), diags
+	return fwtypes.NewObjectValueOf[selectorModel](ctx, &selector), diags
 }

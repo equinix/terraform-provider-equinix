@@ -36,13 +36,13 @@ func (r *DataSourceAllStreams) Read(ctx context.Context, request datasource.Read
 	client := r.Meta.NewFabricClientForFramework(ctx, request.ProviderMeta)
 
 	// Retrieve values from plan
-	var data DataSourceAll
+	var data dataSourceAll
 	response.Diagnostics.Append(request.Config.Get(ctx, &data)...)
 	if response.Diagnostics.HasError() {
 		return
 	}
 
-	var pagination PaginationModel
+	var pagination paginationModel
 	diags := data.Pagination.As(ctx, &pagination, basetypes.ObjectAsOptions{})
 	if diags.HasError() {
 		return
