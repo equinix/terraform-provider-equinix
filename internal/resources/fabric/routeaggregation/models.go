@@ -91,48 +91,8 @@ type ChangeLogModel struct {
 func (m *DataSourceByIDModel) parse(ctx context.Context, routeAggregation *fabricv4.RouteAggregationsData) diag.Diagnostics {
 	m.RouteAggregationID = types.StringValue(routeAggregation.GetUuid())
 	m.ID = types.StringValue(routeAggregation.GetUuid())
-
-	if routeAggregation != nil {
-		m.Type = types.StringValue(string(routeAggregation.GetType()))
-		m.Name = types.StringValue(routeAggregation.GetName())
-		m.Description = types.StringValue(routeAggregation.GetDescription())
-		m.Href = types.StringValue(routeAggregation.GetHref())
-		m.UUID = types.StringValue(routeAggregation.GetUuid())
-		m.State = types.StringValue(string(routeAggregation.GetState()))
-		m.ConnectionsCount = types.Int32Value(routeAggregation.GetConnectionsCount())
-		m.RulesCount = types.Int32Value(routeAggregation.GetRulesCount())
-		routeAggregationProject := routeAggregation.GetProject()
-		projectModel := ProjectModel{
-			ProjectID: types.StringValue(routeAggregationProject.GetProjectId()),
-		}
-		m.Project = fwtypes.NewObjectValueOf[ProjectModel](ctx, &projectModel)
-		routeAggregationChange := routeAggregation.GetChange()
-		changeModel := ChangeModel{
-			UUID: types.StringValue(routeAggregationChange.GetUuid()),
-			Type: types.StringValue(string(routeAggregationChange.GetType())),
-			Href: types.StringValue(routeAggregationChange.GetHref()),
-		}
-		m.Change = fwtypes.NewObjectValueOf[ChangeModel](ctx, &changeModel)
-
-		const TIMEFORMAT = "2008-02-02T14:02:02.000Z"
-		routeAggregationChangeLog := routeAggregation.GetChangeLog()
-		changeLogModel := ChangeLogModel{
-			CreatedBy:         types.StringValue(routeAggregationChangeLog.GetCreatedBy()),
-			CreatedByFullName: types.StringValue(routeAggregationChangeLog.GetCreatedByFullName()),
-			CreatedByEmail:    types.StringValue(routeAggregationChangeLog.GetCreatedByEmail()),
-			CreatedDateTime:   types.StringValue(routeAggregationChangeLog.GetCreatedDateTime().Format(TIMEFORMAT)),
-			UpdatedBy:         types.StringValue(routeAggregationChangeLog.GetUpdatedBy()),
-			UpdatedByFullName: types.StringValue(routeAggregationChangeLog.GetUpdatedByFullName()),
-			UpdatedByEmail:    types.StringValue(routeAggregationChangeLog.GetUpdatedByEmail()),
-			UpdatedDateTime:   types.StringValue(routeAggregationChangeLog.GetUpdatedDateTime().Format(TIMEFORMAT)),
-			DeletedBy:         types.StringValue(routeAggregationChangeLog.GetDeletedBy()),
-			DeletedByFullName: types.StringValue(routeAggregationChangeLog.GetDeletedByFullName()),
-			DeletedByEmail:    types.StringValue(routeAggregationChangeLog.GetDeletedByEmail()),
-			DeletedDateTime:   types.StringValue(routeAggregationChangeLog.GetDeletedDateTime().Format(TIMEFORMAT)),
-		}
-		m.ChangeLog = fwtypes.NewObjectValueOf[ChangeLogModel](ctx, &changeLogModel)
-	}
-	return nil
+	diags := m.BaseRouteAggregationModel.parse(ctx, routeAggregation)
+	return diags
 }
 
 func (m *DatsSourceAllRouteAggregationsModel) parse(ctx context.Context, routeAggregationsResponse *fabricv4.RouteAggregationsSearchResponse) diag.Diagnostics {
@@ -173,93 +133,52 @@ func (m *DatsSourceAllRouteAggregationsModel) parse(ctx context.Context, routeAg
 	return diags
 }
 func (m *ResourceModel) parse(ctx context.Context, routeAggregation *fabricv4.RouteAggregationsData) diag.Diagnostics {
-
 	m.ID = types.StringValue(routeAggregation.GetUuid())
-
-	if routeAggregation != nil {
-		m.Type = types.StringValue(string(routeAggregation.GetType()))
-		m.Name = types.StringValue(routeAggregation.GetName())
-		m.Description = types.StringValue(routeAggregation.GetDescription())
-		m.Href = types.StringValue(routeAggregation.GetHref())
-		m.UUID = types.StringValue(routeAggregation.GetUuid())
-		m.State = types.StringValue(string(routeAggregation.GetState()))
-		m.ConnectionsCount = types.Int32Value(routeAggregation.GetConnectionsCount())
-		m.RulesCount = types.Int32Value(routeAggregation.GetRulesCount())
-		routeAggregationProject := routeAggregation.GetProject()
-		projectModel := ProjectModel{
-			ProjectID: types.StringValue(routeAggregationProject.GetProjectId()),
-		}
-		m.Project = fwtypes.NewObjectValueOf[ProjectModel](ctx, &projectModel)
-		routeAggregationChange := routeAggregation.GetChange()
-		changeModel := ChangeModel{
-			UUID: types.StringValue(routeAggregationChange.GetUuid()),
-			Type: types.StringValue(string(routeAggregationChange.GetType())),
-			Href: types.StringValue(routeAggregationChange.GetHref()),
-		}
-		m.Change = fwtypes.NewObjectValueOf[ChangeModel](ctx, &changeModel)
-
-		const TIMEFORMAT = "2008-02-02T14:02:02.000Z"
-		routeAggregationChangeLog := routeAggregation.GetChangeLog()
-		changeLogModel := ChangeLogModel{
-			CreatedBy:         types.StringValue(routeAggregationChangeLog.GetCreatedBy()),
-			CreatedByFullName: types.StringValue(routeAggregationChangeLog.GetCreatedByFullName()),
-			CreatedByEmail:    types.StringValue(routeAggregationChangeLog.GetCreatedByEmail()),
-			CreatedDateTime:   types.StringValue(routeAggregationChangeLog.GetCreatedDateTime().Format(TIMEFORMAT)),
-			UpdatedBy:         types.StringValue(routeAggregationChangeLog.GetUpdatedBy()),
-			UpdatedByFullName: types.StringValue(routeAggregationChangeLog.GetUpdatedByFullName()),
-			UpdatedByEmail:    types.StringValue(routeAggregationChangeLog.GetUpdatedByEmail()),
-			UpdatedDateTime:   types.StringValue(routeAggregationChangeLog.GetUpdatedDateTime().Format(TIMEFORMAT)),
-			DeletedBy:         types.StringValue(routeAggregationChangeLog.GetDeletedBy()),
-			DeletedByFullName: types.StringValue(routeAggregationChangeLog.GetDeletedByFullName()),
-			DeletedByEmail:    types.StringValue(routeAggregationChangeLog.GetDeletedByEmail()),
-			DeletedDateTime:   types.StringValue(routeAggregationChangeLog.GetDeletedDateTime().Format(TIMEFORMAT)),
-		}
-		m.ChangeLog = fwtypes.NewObjectValueOf[ChangeLogModel](ctx, &changeLogModel)
-	}
-	return nil
-
+	diags := m.BaseRouteAggregationModel.parse(ctx, routeAggregation)
+	return diags
 }
 
 func (m *BaseRouteAggregationModel) parse(ctx context.Context, routeAggregation *fabricv4.RouteAggregationsData) diag.Diagnostics {
-	if routeAggregation != nil {
-		m.Type = types.StringValue(string(routeAggregation.GetType()))
-		m.Name = types.StringValue(routeAggregation.GetName())
-		m.Description = types.StringValue(routeAggregation.GetDescription())
-		m.Href = types.StringValue(routeAggregation.GetHref())
-		m.UUID = types.StringValue(routeAggregation.GetUuid())
-		m.State = types.StringValue(string(routeAggregation.GetState()))
-		m.ConnectionsCount = types.Int32Value(routeAggregation.GetConnectionsCount())
-		m.RulesCount = types.Int32Value(routeAggregation.GetRulesCount())
-		routeAggregationProject := routeAggregation.GetProject()
-		projectModel := ProjectModel{
-			ProjectID: types.StringValue(routeAggregationProject.GetProjectId()),
-		}
-		m.Project = fwtypes.NewObjectValueOf[ProjectModel](ctx, &projectModel)
-		routeAggregationChange := routeAggregation.GetChange()
-		changeModel := ChangeModel{
-			UUID: types.StringValue(routeAggregationChange.GetUuid()),
-			Type: types.StringValue(string(routeAggregationChange.GetType())),
-			Href: types.StringValue(routeAggregationChange.GetHref()),
-		}
-		m.Change = fwtypes.NewObjectValueOf[ChangeModel](ctx, &changeModel)
+	var diag diag.Diagnostics
 
-		const TIMEFORMAT = "2008-02-02T14:02:02.000Z"
-		routeAggregationChangeLog := routeAggregation.GetChangeLog()
-		changeLogModel := ChangeLogModel{
-			CreatedBy:         types.StringValue(routeAggregationChangeLog.GetCreatedBy()),
-			CreatedByFullName: types.StringValue(routeAggregationChangeLog.GetCreatedByFullName()),
-			CreatedByEmail:    types.StringValue(routeAggregationChangeLog.GetCreatedByEmail()),
-			CreatedDateTime:   types.StringValue(routeAggregationChangeLog.GetCreatedDateTime().Format(TIMEFORMAT)),
-			UpdatedBy:         types.StringValue(routeAggregationChangeLog.GetUpdatedBy()),
-			UpdatedByFullName: types.StringValue(routeAggregationChangeLog.GetUpdatedByFullName()),
-			UpdatedByEmail:    types.StringValue(routeAggregationChangeLog.GetUpdatedByEmail()),
-			UpdatedDateTime:   types.StringValue(routeAggregationChangeLog.GetUpdatedDateTime().Format(TIMEFORMAT)),
-			DeletedBy:         types.StringValue(routeAggregationChangeLog.GetDeletedBy()),
-			DeletedByFullName: types.StringValue(routeAggregationChangeLog.GetDeletedByFullName()),
-			DeletedByEmail:    types.StringValue(routeAggregationChangeLog.GetDeletedByEmail()),
-			DeletedDateTime:   types.StringValue(routeAggregationChangeLog.GetDeletedDateTime().Format(TIMEFORMAT)),
-		}
-		m.ChangeLog = fwtypes.NewObjectValueOf[ChangeLogModel](ctx, &changeLogModel)
+	m.Type = types.StringValue(string(routeAggregation.GetType()))
+	m.Name = types.StringValue(routeAggregation.GetName())
+	m.Description = types.StringValue(routeAggregation.GetDescription())
+	m.Href = types.StringValue(routeAggregation.GetHref())
+	m.UUID = types.StringValue(routeAggregation.GetUuid())
+	m.State = types.StringValue(string(routeAggregation.GetState()))
+	m.ConnectionsCount = types.Int32Value(routeAggregation.GetConnectionsCount())
+	m.RulesCount = types.Int32Value(routeAggregation.GetRulesCount())
+	routeAggregationProject := routeAggregation.GetProject()
+	projectModel := ProjectModel{
+		ProjectID: types.StringValue(routeAggregationProject.GetProjectId()),
 	}
-	return nil
+	m.Project = fwtypes.NewObjectValueOf[ProjectModel](ctx, &projectModel)
+	routeAggregationChange := routeAggregation.GetChange()
+	changeModel := ChangeModel{
+		UUID: types.StringValue(routeAggregationChange.GetUuid()),
+		Type: types.StringValue(string(routeAggregationChange.GetType())),
+		Href: types.StringValue(routeAggregationChange.GetHref()),
+	}
+	m.Change = fwtypes.NewObjectValueOf[ChangeModel](ctx, &changeModel)
+
+	const TIMEFORMAT = "2008-02-02T14:02:02.000Z"
+	routeAggregationChangeLog := routeAggregation.GetChangeLog()
+	changeLogModel := ChangeLogModel{
+		CreatedBy:         types.StringValue(routeAggregationChangeLog.GetCreatedBy()),
+		CreatedByFullName: types.StringValue(routeAggregationChangeLog.GetCreatedByFullName()),
+		CreatedByEmail:    types.StringValue(routeAggregationChangeLog.GetCreatedByEmail()),
+		CreatedDateTime:   types.StringValue(routeAggregationChangeLog.GetCreatedDateTime().Format(TIMEFORMAT)),
+		UpdatedBy:         types.StringValue(routeAggregationChangeLog.GetUpdatedBy()),
+		UpdatedByFullName: types.StringValue(routeAggregationChangeLog.GetUpdatedByFullName()),
+		UpdatedByEmail:    types.StringValue(routeAggregationChangeLog.GetUpdatedByEmail()),
+		UpdatedDateTime:   types.StringValue(routeAggregationChangeLog.GetUpdatedDateTime().Format(TIMEFORMAT)),
+		DeletedBy:         types.StringValue(routeAggregationChangeLog.GetDeletedBy()),
+		DeletedByFullName: types.StringValue(routeAggregationChangeLog.GetDeletedByFullName()),
+		DeletedByEmail:    types.StringValue(routeAggregationChangeLog.GetDeletedByEmail()),
+		DeletedDateTime:   types.StringValue(routeAggregationChangeLog.GetDeletedDateTime().Format(TIMEFORMAT)),
+	}
+	m.ChangeLog = fwtypes.NewObjectValueOf[ChangeLogModel](ctx, &changeLogModel)
+
+	return diag
 }

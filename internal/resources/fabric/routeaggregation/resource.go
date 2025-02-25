@@ -50,6 +50,7 @@ func (r *Resource) Create(
 
 	createRequest, diags := buildCreateRequest(ctx, plan)
 	if diags.HasError() {
+		resp.Diagnostics.Append(diags...)
 		return
 	}
 
@@ -70,10 +71,6 @@ func (r *Resource) Create(
 	if err != nil {
 		resp.Diagnostics.AddError(
 			fmt.Sprintf("Failed creating Route Aggregation %s", routeAggregation.GetUuid()), err.Error())
-		return
-	}
-
-	if diags.HasError() {
 		return
 	}
 
@@ -271,6 +268,7 @@ func getDeleteWaiter(ctx context.Context, client *fabricv4.APIClient, id string,
 			string(fabricv4.ROUTEAGGREGATIONSTATE_DEPROVISIONING),
 		},
 		Target: []string{
+			deletedMarker,
 			string(fabricv4.ROUTEAGGREGATIONSTATE_DEPROVISIONED),
 		},
 		Refresh: func() (interface{}, string, error) {
