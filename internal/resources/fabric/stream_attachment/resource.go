@@ -77,11 +77,6 @@ func (r *Resource) Create(
 		return
 	}
 
-	resp.Diagnostics.Append(diags...)
-	if diags.HasError() {
-		return
-	}
-
 	// Parse API response into the Terraform state
 	resp.Diagnostics.Append(plan.parse(ctx, attachment.(*fabricv4.StreamAsset))...)
 	if resp.Diagnostics.HasError() {
@@ -143,7 +138,7 @@ func (r *Resource) Update(
 
 	if plan.MetricsEnabled.ValueBool() == state.MetricsEnabled.ValueBool() {
 		resp.Diagnostics.AddWarning("no updatable fields have changed",
-			"terraform detected a config change, but it is for a field that isn't updatable for the stream resource. please revert to prior config")
+			"terraform detected a config change, but it is for a field that isn't updatable for the stream attachment resource. please revert to prior config")
 		return
 	}
 
@@ -251,7 +246,7 @@ func getDeleteWaiter(ctx context.Context, client *fabricv4.APIClient, assetID, a
 	// deletedMarker is a terraform-provider-only value that is used by the waiter
 	// to indicate that the connection appears to be deleted successfully based on
 	// status code
-	deletedMarker := "tf-marker-for-deleted-connection"
+	deletedMarker := "tf-marker-for-deleted-stream-attachment"
 	return &retry.StateChangeConf{
 		Pending: []string{
 			string(fabricv4.STREAMASSETATTACHMENTSTATUS_ATTACHED),

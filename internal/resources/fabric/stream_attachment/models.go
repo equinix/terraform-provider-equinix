@@ -77,8 +77,8 @@ func (m *DataSourceAllAssetsModel) parse(ctx context.Context, streamsResponse *f
 	var diags diag.Diagnostics
 
 	if len(streamsResponse.GetData()) < 1 {
-		diags.AddError("no data retrieved by streams data source",
-			"either the account does not have any streams data to pull or the combination of limit and offset needs to be updated")
+		diags.AddError("no data retrieved by stream attachments data source",
+			"either the account does not have any stream attachments data to pull or the combination of limit and offset needs to be updated")
 		return diags
 	}
 
