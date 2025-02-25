@@ -18,7 +18,6 @@ var (
 )
 
 func TestAccMetalSpotMarketRequest_basic(t *testing.T) {
-	var key packngo.SpotMarketRequest
 	projSuffix := acctest.RandString(10)
 
 	resource.ParallelTest(t, resource.TestCase{
@@ -31,7 +30,7 @@ func TestAccMetalSpotMarketRequest_basic(t *testing.T) {
 			{
 				Config: testAccMetalSpotMarketRequestConfig_basic(projSuffix),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckMetalSpotMarketRequestExists("equinix_metal_spot_market_request.request", &key),
+					testAccCheckMetalSpotMarketRequestExists("equinix_metal_spot_market_request.request"),
 					resource.TestCheckResourceAttr("equinix_metal_spot_market_request.request", "devices_max", "1"),
 					resource.TestCheckResourceAttr("equinix_metal_spot_market_request.request", "devices_min", "1"),
 					resource.TestCheckResourceAttr("data.equinix_metal_spot_market_request.dreq", "device_ids.#", "1"),
@@ -56,7 +55,7 @@ func testAccMetalSpotMarketRequestCheckDestroyed(s *terraform.State) error {
 	return nil
 }
 
-func testAccCheckMetalSpotMarketRequestExists(n string, key *packngo.SpotMarketRequest) resource.TestCheckFunc {
+func testAccCheckMetalSpotMarketRequestExists(n string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
@@ -75,8 +74,6 @@ func testAccCheckMetalSpotMarketRequestExists(n string, key *packngo.SpotMarketR
 		if foundKey.ID != rs.Primary.ID {
 			return fmt.Errorf("Spot market request not found: %v - %v", rs.Primary.ID, foundKey)
 		}
-
-		*key = *foundKey
 
 		return nil
 	}

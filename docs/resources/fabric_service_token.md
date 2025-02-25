@@ -168,10 +168,6 @@ Optional:
 <a id="nestedblock--service_token_connection"></a>
 ### Nested Schema for `service_token_connection`
 
-Required:
-
-- `type` (String) Type of Connection supported by Service Token you will create; EVPL_VC, EVPLAN_VC, EPLAN_VC, IPWAN_VC
-
 Optional:
 
 - `a_side` (Block Set) A-Side Connection link protocol,virtual device or network configuration (see [below for nested schema](#nestedblock--service_token_connection--a_side))
@@ -179,6 +175,7 @@ Optional:
 - `allow_remote_connection` (Boolean) Authorization to connect remotely
 - `bandwidth_limit` (Number) Connection bandwidth limit in Mbps
 - `supported_bandwidths` (List of Number) List of permitted bandwidths'; For Port-based Service Tokens, the maximum allowable bandwidth is 50 Gbps, while for Virtual Device-based Service Tokens, it is limited to 10 Gbps
+- `type` (String) Type of Connection supported by Service Token you will create; EVPL_VC, EVPLAN_VC, EPLAN_VC, IPWAN_VC
 - `z_side` (Block Set) Z-Side Connection link protocol,virtual device or network configuration (see [below for nested schema](#nestedblock--service_token_connection--z_side))
 
 Read-Only:
