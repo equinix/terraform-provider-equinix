@@ -313,9 +313,6 @@ Additional Documentation:
 				Description: "Details of the last change on the stream resource",
 				Computed:    true,
 				CustomType:  fwtypes.NewObjectTypeOf[changeLogModel](ctx),
-				PlanModifiers: []planmodifier.Object{
-					objectplanmodifier.UseStateForUnknown(),
-				},
 				Attributes: map[string]schema.Attribute{
 					"created_by": schema.StringAttribute{
 						Description: "User name of creator of the stream resource",
