@@ -209,7 +209,6 @@ func createNetworkDeviceLinkDeviceResourceSchema() map[string]*schema.Schema {
 		networkDeviceLinkDeviceSchemaNames["InterfaceID"]: {
 			Type:         schema.TypeInt,
 			Optional:     true,
-			ForceNew:     true,
 			ValidateFunc: validation.IntAtLeast(1),
 			Description:  networkDeviceLinkDeviceDescriptions["InterfaceID"],
 		},
