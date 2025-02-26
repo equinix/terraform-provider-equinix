@@ -2,10 +2,10 @@ package routeaggregationrule_test
 
 import (
 	"context"
-	"encoding/json"
-	"errors"
 	"fmt"
 	"testing"
+
+	equinix_errors "github.com/equinix/terraform-provider-equinix/internal/errors"
 
 	"github.com/equinix/equinix-sdk-go/services/fabricv4"
 	"github.com/equinix/terraform-provider-equinix/internal/config"
@@ -86,22 +86,11 @@ func CheckRouteAggregationRuleDelete(s *terraform.State) error {
 		}
 
 		routeAggregationId := rs.Primary.Attributes["route_aggregation_id"]
-		routeAggregationRule, resp, err := client.RouteAggregationRulesApi.GetRouteAggregationRuleByUuid(ctx, routeAggregationId, rs.Primary.ID).Execute()
+		routeAggregationRule, _, err := client.RouteAggregationRulesApi.GetRouteAggregationRuleByUuid(ctx, routeAggregationId, rs.Primary.ID).Execute()
 		if err != nil {
-			// Check if the response exists and contains status 400 or 404
-			if resp != nil && (resp.StatusCode == 400 || resp.StatusCode == 404) {
-				fmt.Printf("Resource %s not found, treating as deleted\n", rs.Primary.ID)
-				return nil
-			}
-
-			// Handle specific API error messages
-			var apiErr *fabricv4.GenericOpenAPIError
-			if errors.As(err, &apiErr) {
-				errorBody := apiErr.Body()
-				var errorResponse map[string]interface{}
-				if jsonErr := json.Unmarshal(errorBody, &errorResponse); jsonErr == nil {
-					if errorCode, exists := errorResponse["errorCode"]; exists && errorCode == "EQ-3044402" {
-						fmt.Printf("Detected EQ-3044402 for resource %s, treating as deleted\n", rs.Primary.ID)
+			if genericError, ok := err.(*fabricv4.GenericOpenAPIError); ok {
+				if fabricErrs, ok := genericError.Model().([]fabricv4.Error); ok {
+					if equinix_errors.HasErrorCode(fabricErrs, "EQ-3044402") {
 						return nil
 					}
 				}

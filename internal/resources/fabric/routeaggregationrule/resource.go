@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"net/http"
 	"slices"
-	"strings"
 	"time"
 
 	"github.com/equinix/equinix-sdk-go/services/fabricv4"
@@ -71,7 +70,7 @@ func (r *Resource) Create(
 	createWaiter := getCreateUpdateWaiter(ctx, client, routeAggregationID, routeAggregationRule.GetUuid(), createTimeout)
 	routeAggregationRuleChecked, err := createWaiter.WaitForStateContext(ctx)
 	if err != nil {
-		resp.Diagnostics.AddError(fmt.Sprintf("Failed creating Route Aggregation %s", routeAggregationRule.GetUuid()), err.Error())
+		resp.Diagnostics.AddError(fmt.Sprintf("Failed creating Route Aggregation Rule %s", routeAggregationRule.GetUuid()), err.Error())
 		return
 	}
 
@@ -263,14 +262,11 @@ func getDeleteWaiter(ctx context.Context, client *fabricv4.APIClient, routeAggre
 			routeAggregationRule, resp, err := client.RouteAggregationRulesApi.GetRouteAggregationRuleByUuid(ctx, routeAggregationID, id).Execute()
 			if err != nil {
 				if resp != nil {
-					if slices.Contains([]int{http.StatusForbidden, http.StatusNotFound}, resp.StatusCode) {
-						return routeAggregationRule, deletedMarker, nil
-					}
-					apiError, ok := err.(*fabricv4.GenericOpenAPIError)
-					if ok {
-						errorBody := string(apiError.Body())
-						if strings.Contains(errorBody, "EQ-3044402") {
-							return routeAggregationRule, deletedMarker, nil
+					if genericError, ok := err.(*fabricv4.GenericOpenAPIError); ok {
+						if fabricErrs, ok := genericError.Model().([]fabricv4.Error); ok {
+							if equinix_errors.HasErrorCode(fabricErrs, "EQ-3044402") {
+								return routeAggregationRule, deletedMarker, nil
+							}
 						}
 					}
 				}

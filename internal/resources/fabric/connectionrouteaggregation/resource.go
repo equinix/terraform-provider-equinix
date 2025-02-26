@@ -181,7 +181,7 @@ func getDeleteWaiter(ctx context.Context, client *fabricv4.APIClient, routeAggre
 	// deletedMarker is a terraform-provider-only value that is used by the waiter
 	// to indicate that the resource appears to be deleted successfully based on
 	// status code or specific error code
-	deletedMarker := "tf-marker-for-deleted-route-aggregation-rule"
+	deletedMarker := "tf-marker-for-deleted-connection-route-aggregation"
 	return &retry.StateChangeConf{
 		Pending: []string{
 			string(fabricv4.CONNECTIONROUTEAGGREGATIONDATAATTACHMENTSTATUS_DETACHING),

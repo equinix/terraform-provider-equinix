@@ -3,6 +3,9 @@ package connectionrouteaggregation
 import (
 	"context"
 
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
+
 	"github.com/equinix/terraform-provider-equinix/internal/framework"
 	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
@@ -21,10 +24,16 @@ func resourceSchema(ctx context.Context) schema.Schema {
 			"route_aggregation_id": schema.StringAttribute{
 				Description: "UUID of the Route Aggregation to apply this Rule to",
 				Required:    true,
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.RequiresReplace(),
+				},
 			},
 			"connection_id": schema.StringAttribute{
 				Description: "Equinix Assigned UUID of the Equinix Connection to attach the Route Aggregation Policy to",
 				Required:    true,
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.RequiresReplace(),
+				},
 			},
 			"href": schema.StringAttribute{
 				Description: "URI to the attached Route Aggregation Policy on the Connection",
