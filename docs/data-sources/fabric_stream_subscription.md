@@ -129,4 +129,3 @@ Read-Only:
 - `metric_index` (String)
 - `metric_uri` (String)
 - `source` (String)
-- `transform_alerts` (Boolean)
