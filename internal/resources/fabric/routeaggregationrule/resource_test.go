@@ -86,12 +86,14 @@ func CheckRouteAggregationRuleDelete(s *terraform.State) error {
 		}
 
 		routeAggregationId := rs.Primary.Attributes["route_aggregation_id"]
-		routeAggregationRule, _, err := client.RouteAggregationRulesApi.GetRouteAggregationRuleByUuid(ctx, routeAggregationId, rs.Primary.ID).Execute()
+		routeAggregationRule, resp, err := client.RouteAggregationRulesApi.GetRouteAggregationRuleByUuid(ctx, routeAggregationId, rs.Primary.ID).Execute()
 		if err != nil {
-			if genericError, ok := err.(*fabricv4.GenericOpenAPIError); ok {
-				if fabricErrs, ok := genericError.Model().([]fabricv4.Error); ok {
-					if equinix_errors.HasErrorCode(fabricErrs, "EQ-3044402") {
-						return nil
+			if resp != nil && (resp.StatusCode == 400 || resp.StatusCode == 404) {
+				if genericError, ok := err.(*fabricv4.GenericOpenAPIError); ok {
+					if fabricErrs, ok := genericError.Model().([]fabricv4.Error); ok {
+						if equinix_errors.HasErrorCode(fabricErrs, "EQ-3044402") {
+							return nil
+						}
 					}
 				}
 			}

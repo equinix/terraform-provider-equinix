@@ -261,7 +261,7 @@ func getDeleteWaiter(ctx context.Context, client *fabricv4.APIClient, routeAggre
 		Refresh: func() (interface{}, string, error) {
 			routeAggregationRule, resp, err := client.RouteAggregationRulesApi.GetRouteAggregationRuleByUuid(ctx, routeAggregationID, id).Execute()
 			if err != nil {
-				if resp != nil {
+				if resp != nil && (resp.StatusCode == 400 || resp.StatusCode == 404) {
 					if genericError, ok := err.(*fabricv4.GenericOpenAPIError); ok {
 						if fabricErrs, ok := genericError.Model().([]fabricv4.Error); ok {
 							if equinix_errors.HasErrorCode(fabricErrs, "EQ-3044402") {
