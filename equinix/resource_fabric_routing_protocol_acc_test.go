@@ -8,7 +8,7 @@ import (
 
 	"github.com/equinix/terraform-provider-equinix/equinix"
 	"github.com/equinix/terraform-provider-equinix/internal/acceptance"
-	"github.com/equinix/terraform-provider-equinix/internal/fabric/testing_helpers"
+	testinghelpers "github.com/equinix/terraform-provider-equinix/internal/fabric/testing_helpers"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -22,12 +22,12 @@ import (
 // data_source tests will just leverage the RPs there to retrieve the data and check results
 
 func TestAccFabricCreateRoutingProtocols_PFCR(t *testing.T) {
-	ports := testing_helpers.GetFabricEnvPorts(t)
+	ports := testinghelpers.GetFabricEnvPorts(t)
 
-	var portUuid string
+	var portUUID string
 
 	if len(ports) > 0 {
-		portUuid = ports["pfcr"]["dot1q"][1].GetUuid()
+		portUUID = ports["pfcr"]["dot1q"][1].GetUuid()
 	}
 
 	resource.ParallelTest(t, resource.TestCase{
@@ -36,7 +36,7 @@ func TestAccFabricCreateRoutingProtocols_PFCR(t *testing.T) {
 		CheckDestroy: checkRoutingProtocolDelete,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccFabricCreateRoutingProtocolConfig("RP_Conn_Test_PFCR", portUuid),
+				Config: testAccFabricCreateRoutingProtocolConfig("RP_Conn_Test_PFCR", portUUID),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("equinix_fabric_routing_protocol.direct", "id"),
 					resource.TestCheckResourceAttr("equinix_fabric_routing_protocol.direct", "type", "DIRECT"),
@@ -91,7 +91,7 @@ func TestAccFabricCreateRoutingProtocols_PFCR(t *testing.T) {
 	})
 }
 
-func testAccFabricCreateRoutingProtocolConfig(name, portUuid string) string {
+func testAccFabricCreateRoutingProtocolConfig(name, portUUID string) string {
 	return fmt.Sprintf(`
 
 resource "equinix_fabric_cloud_router" "this" {
@@ -204,7 +204,7 @@ data "equinix_fabric_routing_protocol" "bgp" {
 	uuid = equinix_fabric_routing_protocol.bgp.id
 }
 
-`, name, portUuid)
+`, name, portUUID)
 }
 
 func checkRoutingProtocolDelete(s *terraform.State) error {

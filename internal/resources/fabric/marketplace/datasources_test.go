@@ -5,19 +5,19 @@ import (
 	"testing"
 
 	"github.com/equinix/terraform-provider-equinix/internal/acceptance"
-	"github.com/equinix/terraform-provider-equinix/internal/fabric/testing_helpers"
+	testinghelpers "github.com/equinix/terraform-provider-equinix/internal/fabric/testing_helpers"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	_ "github.com/hashicorp/terraform-plugin-testing/terraform"
 )
 
 func TestAccFabricDataSourceMarketPlace_PFCR(t *testing.T) {
-	susbcriptionId := testing_helpers.GetFabricMarketPlaceSubscriptionId(t)
+	susbcriptionID := testinghelpers.GetFabricMarketPlaceSubscriptionID(t)
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:  func() { acceptance.TestAccPreCheck(t) },
 		Providers: acceptance.TestAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: configGetMarketplaceSubscriptionResource(susbcriptionId),
+				Config: configGetMarketplaceSubscriptionResource(susbcriptionID),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(
 						"data.equinix_fabric_market_place_subscription.test", "uuid"),
@@ -32,10 +32,10 @@ func TestAccFabricDataSourceMarketPlace_PFCR(t *testing.T) {
 	})
 
 }
-func configGetMarketplaceSubscriptionResource(subscription_id string) string {
+func configGetMarketplaceSubscriptionResource(subscriptionID string) string {
 	return fmt.Sprintf(`
 	data "equinix_fabric_market_place_subscription" "test"{
 		uuid = "%s"
 	}
-`, subscription_id)
+`, subscriptionID)
 }

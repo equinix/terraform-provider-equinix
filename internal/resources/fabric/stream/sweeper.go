@@ -43,6 +43,17 @@ func testSweepStreams(_ string) error {
 
 	for _, stream := range streams.GetData() {
 		if sweep.IsSweepableFabricTestResource(stream.GetName()) {
+			subscriptions, _, err := fabric.StreamSubscriptionsApi.GetStreamSubscriptions(ctx, stream.GetUuid()).Execute()
+			if err != nil {
+				errs = append(errs, fmt.Errorf("error getting fabric stream subscriptions on stream %s: %s", stream.GetUuid(), err))
+			}
+			for _, subscription := range subscriptions.GetData() {
+				log.Printf("[DEBUG] deleting stream subscription: %s", subscription.GetName())
+				_, resp, err := fabric.StreamSubscriptionsApi.DeleteStreamSubscriptionByUuid(ctx, stream.GetUuid(), subscription.GetUuid()).Execute()
+				if equinix_errors.IgnoreHttpResponseErrors(http.StatusForbidden, http.StatusNotFound)(resp, err) != nil {
+					errs = append(errs, fmt.Errorf("error deleting fabric stream subscription %s on stream %s: %s", subscription.GetUuid(), stream.GetUuid(), err))
+				}
+			}
 			log.Printf("[DEBUG] Deleting stream: %s", stream.GetName())
 			_, resp, err := fabric.StreamsApi.DeleteStreamByUuid(ctx, stream.GetUuid()).Execute()
 			if equinix_errors.IgnoreHttpResponseErrors(http.StatusForbidden, http.StatusNotFound)(resp, err) != nil {
