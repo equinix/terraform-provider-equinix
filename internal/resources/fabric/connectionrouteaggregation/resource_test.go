@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/equinix/terraform-provider-equinix/internal/fabric/testing_helpers"
+	testinghelpers "github.com/equinix/terraform-provider-equinix/internal/fabric/testing_helpers"
 
 	"github.com/equinix/equinix-sdk-go/services/fabricv4"
 	"github.com/equinix/terraform-provider-equinix/internal/acceptance"
@@ -127,7 +127,7 @@ func testAccFabricConnectionRouteAggregationConfig(portUuid string) string {
 }
 
 func TestAccFabricConnectionRouteAggregation_PNFV(t *testing.T) {
-	ports := testing_helpers.GetFabricEnvPorts(t)
+	ports := testinghelpers.GetFabricEnvPorts(t)
 	var portUuid string
 	if len(ports) > 0 {
 		portUuid = ports["pnfv"]["dot1q"][1].GetUuid()
