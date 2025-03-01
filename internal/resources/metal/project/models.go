@@ -13,7 +13,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-type ResourceModel struct {
+type resourceModel struct {
 	ID              types.String                                    `tfsdk:"id"`
 	Name            types.String                                    `tfsdk:"name"`
 	Created         types.String                                    `tfsdk:"created"`
@@ -24,17 +24,10 @@ type ResourceModel struct {
 	BGPConfig       fwtypes.ListNestedObjectValueOf[BGPConfigModel] `tfsdk:"bgp_config"`
 }
 
-type DataSourceModel struct {
-	ID              types.String                                    `tfsdk:"id"`
-	Name            types.String                                    `tfsdk:"name"`
-	ProjectID       types.String                                    `tfsdk:"project_id"`
-	Created         types.String                                    `tfsdk:"created"`
-	Updated         types.String                                    `tfsdk:"updated"`
-	BackendTransfer types.Bool                                      `tfsdk:"backend_transfer"`
-	PaymentMethodID types.String                                    `tfsdk:"payment_method_id"`
-	OrganizationID  types.String                                    `tfsdk:"organization_id"`
-	UserIDs         types.List                                      `tfsdk:"user_ids"`
-	BGPConfig       fwtypes.ListNestedObjectValueOf[BGPConfigModel] `tfsdk:"bgp_config"`
+type dataSourceModel struct {
+	resourceModel
+	ProjectID types.String `tfsdk:"project_id"`
+	UserIDs   types.List   `tfsdk:"user_ids"`
 }
 
 type BGPConfigModel struct {
@@ -45,7 +38,7 @@ type BGPConfigModel struct {
 	MaxPrefix      types.Int64  `tfsdk:"max_prefix"`
 }
 
-func (m *ResourceModel) parse(ctx context.Context, project *metalv1.Project, bgpConfig *metalv1.BgpConfig) diag.Diagnostics {
+func (m *resourceModel) parse(ctx context.Context, project *metalv1.Project, bgpConfig *metalv1.BgpConfig) diag.Diagnostics {
 	var diags diag.Diagnostics
 	m.ID = types.StringValue(project.GetId())
 	m.Name = types.StringValue(project.GetName())
@@ -68,34 +61,24 @@ func (m *ResourceModel) parse(ctx context.Context, project *metalv1.Project, bgp
 	return diags
 }
 
-func (m *DataSourceModel) parse(ctx context.Context, project *metalv1.Project, bgpConfig *metalv1.BgpConfig) diag.Diagnostics {
-	var diags diag.Diagnostics
-	m.ID = types.StringValue(project.GetId())
-	m.ProjectID = types.StringValue(project.GetId())
-	m.Name = types.StringValue(project.GetName())
-	m.Created = types.StringValue(project.GetCreatedAt().Format(time.RFC3339))
-	m.Updated = types.StringValue(project.GetUpdatedAt().Format(time.RFC3339))
-	m.BackendTransfer = types.BoolValue(project.GetBackendTransferEnabled())
-	m.OrganizationID = types.StringValue(path.Base(project.Organization.GetHref()))
-
-	m.PaymentMethodID = types.StringValue("")
-	if len(project.PaymentMethod.GetHref()) != 0 {
-		m.PaymentMethodID = types.StringValue(path.Base(project.PaymentMethod.GetHref()))
+func (m *dataSourceModel) parse(ctx context.Context, project *metalv1.Project, bgpConfig *metalv1.BgpConfig) diag.Diagnostics {
+	diags := m.resourceModel.parse(ctx, project, bgpConfig)
+	if diags.HasError() {
+		return diags
 	}
+
+	m.ProjectID = types.StringValue(project.GetId())
 
 	// Parse User IDs
-	projUserIds := []string{}
+	projUserIDs := []string{}
 	for _, u := range project.GetMembers() {
-		projUserIds = append(projUserIds, path.Base(u.GetHref()))
+		projUserIDs = append(projUserIDs, path.Base(u.GetHref()))
 	}
-	userIDs, diags := types.ListValueFrom(ctx, types.StringType, projUserIds)
+	userIDs, diags := types.ListValueFrom(ctx, types.StringType, projUserIDs)
 	if diags.HasError() {
 		return diags
 	}
 	m.UserIDs = userIDs
-
-	// Handle BGP Config if present
-	m.BGPConfig = parseBGPConfig(ctx, bgpConfig)
 
 	return diags
 }

@@ -1,4 +1,4 @@
-package project_ssh_key
+package projectsshkey
 
 import (
 	"github.com/equinix/equinix-sdk-go/services/metalv1"
