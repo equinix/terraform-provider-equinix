@@ -10,7 +10,7 @@ resource "equinix_network_file" "aviatrix-cloudinit-file" {
   file_name = "TF-AVX-cloud-init-file.txt"
   content = file("${path.module}/${var.filepath}")
   metro_code = data.equinix_network_account.sv.metro_code
-  device_type_code = "AVIATRIX_EDGE"
+  device_type_code = "AVIATRIX_EDGE_10"
   process_type = "CLOUD_INIT"
   self_managed = true
   byol = true
@@ -19,7 +19,7 @@ resource "equinix_network_file" "aviatrix-cloudinit-file" {
 resource "equinix_network_device" "aviatrix-single" {
   name            = "tf-aviatrix"
   metro_code      = data.equinix_network_account.sv.metro_code
-  type_code       = "AVIATRIX_EDGE"
+  type_code       = "AVIATRIX_EDGE_10"
   self_managed    = true
   byol            = true
   package_code    = "STD"
