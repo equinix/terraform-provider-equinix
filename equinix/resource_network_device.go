@@ -203,6 +203,7 @@ var neDeviceVendorConfigSchemaNames = map[string]string{
 	"LicenseID":         "license_id",
 	"PanoramaIPAddress": "panorama_ip_address",
 	"PanoramaAuthKey":   "panorama_auth_key",
+	"ManagementType":    "management_type",
 }
 
 var neDeviceVendorConfigDescriptions = map[string]string{
@@ -220,6 +221,7 @@ var neDeviceVendorConfigDescriptions = map[string]string{
 	"LicenseID":         "License id. This field is relevant only for the BlueCat DNS and DHCP Server",
 	"PanoramaIPAddress": "Panorama Server IP Address. This field is relevant only for Palo Alto Networks Firewall devices",
 	"PanoramaAuthKey":   "Panorama Server Auth Key. This field is relevant only for Palo Alto Networks Firewall devices",
+	"ManagementType":    "Management Type. This field is relevant only for Cisco FTD Firewall devices",
 }
 
 func resourceNetworkDevice() *schema.Resource {
@@ -251,7 +253,7 @@ func createNetworkDeviceSchema() map[string]*schema.Schema {
 		neDeviceSchemaNames["Name"]: {
 			Type:     schema.TypeString,
 			Required: true,
-			DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
+			DiffSuppressFunc: func(_, old, new string, _ *schema.ResourceData) bool {
 				return old == new+"-Node0"
 			},
 			ValidateFunc: validation.StringLenBetween(3, 50),
@@ -984,6 +986,13 @@ func createVendorConfigurationSchema() map[string]*schema.Schema {
 			ForceNew:    true,
 			Description: neDeviceVendorConfigDescriptions["PanoramaAuthKey"],
 		},
+		neDeviceVendorConfigSchemaNames["ManagementType"]: {
+			Type:         schema.TypeString,
+			Optional:     true,
+			ForceNew:     true,
+			Description:  neDeviceVendorConfigDescriptions["ManagementType"],
+			ValidateFunc: validation.StringInSlice([]string{"FMC", "FDM", "CDO"}, false),
+		},
 	}
 }
 
@@ -1040,7 +1049,7 @@ func resourceNetworkDeviceCreate(ctx context.Context, d *schema.ResourceData, m 
 	return diags
 }
 
-func resourceNetworkDeviceRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceNetworkDeviceRead(_ context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	client := m.(*config.Config).Ne
 	m.(*config.Config).AddModuleToNEUserAgent(&client, d)
 	var diags diag.Diagnostics
@@ -1594,6 +1603,9 @@ func flattenVendorConfiguration(vendorConfig map[string]string) interface{} {
 	if v, ok := vendorConfig["panoramaAuthKey"]; ok {
 		transformed[neDeviceVendorConfigSchemaNames["PanoramaAuthKey"]] = v
 	}
+	if v, ok := vendorConfig["managementType"]; ok {
+		transformed[neDeviceVendorConfigSchemaNames["ManagementType"]] = v
+	}
 	return []interface{}{transformed}
 }
 
@@ -1681,6 +1693,9 @@ func expandVendorConfiguration(vendorConfigs []interface{}) map[string]string {
 	if v, ok := vendorConfig[neDeviceVendorConfigSchemaNames["PanoramaAuthKey"]]; ok && !isEmpty(v) {
 		transformed["panoramaAuthKey"] = v.(string)
 	}
+	if v, ok := vendorConfig[neDeviceVendorConfigSchemaNames["ManagementType"]]; ok && !isEmpty(v) {
+		transformed["managementType"] = v.(string)
+	}
 	return transformed
 }
 
@@ -1711,15 +1726,15 @@ func fillNetworkDeviceUpdateRequest(updateReq ne.DeviceUpdateRequest, changes ma
 func getNetworkDeviceStateChangeConfigs(c ne.Client, deviceID string, timeout time.Duration, changes map[string]interface{}) []*retry.StateChangeConf {
 	configs := make([]*retry.StateChangeConf, 0, len(changes))
 	if changeValue, found := changes[neDeviceSchemaNames["ACLTemplateUUID"]]; found {
-		aclTemplateUuid, ok := changeValue.(string)
-		if ok && aclTemplateUuid != "" {
+		aclTemplateUUID, ok := changeValue.(string)
+		if ok && aclTemplateUUID != "" {
 			configs = append(configs,
 				createNetworkDeviceACLStatusWaitConfiguration(c.GetDeviceACLDetails, deviceID, 1*time.Second, timeout),
 			)
 		}
 	} else if changeValue, found := changes[neDeviceSchemaNames["MgmtAclTemplateUuid"]]; found {
-		mgmtAclTemplateUuid, ok := changeValue.(string)
-		if ok && mgmtAclTemplateUuid != "" {
+		mgmtACLTemplateUUID, ok := changeValue.(string)
+		if ok && mgmtACLTemplateUUID != "" {
 			configs = append(configs,
 				createNetworkDeviceACLStatusWaitConfiguration(c.GetDeviceACLDetails, deviceID, 1*time.Second, timeout),
 			)

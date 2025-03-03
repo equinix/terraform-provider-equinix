@@ -112,7 +112,7 @@ resource "equinix_network_file" "aviatrix-cloudinit-file" {
   file_name = "TF-AVX-cloud-init-file.txt"
   content = file("${path.module}/${var.filepath}")
   metro_code = data.equinix_network_account.sv.metro_code
-  device_type_code = "AVIATRIX_EDGE"
+  device_type_code = "AVIATRIX_EDGE_10"
   process_type = "CLOUD_INIT"
   self_managed = true
   byol = true
@@ -121,7 +121,7 @@ resource "equinix_network_file" "aviatrix-cloudinit-file" {
 resource "equinix_network_device" "aviatrix-single" {
   name            = "tf-aviatrix"
   metro_code      = data.equinix_network_account.sv.metro_code
-  type_code       = "AVIATRIX_EDGE"
+  type_code       = "AVIATRIX_EDGE_10"
   self_managed    = true
   byol            = true
   package_code    = "STD"
@@ -579,6 +579,239 @@ resource "equinix_network_device" "c8000v-byol-withtout-default-password" {
     key_name = "test-key"
   }
   acl_template_id = "0bff6e05-f0e7-44cd-804a-25b92b835f8b"
+}
+```
+
+```terraform
+# Create Checkpoint single device
+
+data "equinix_network_account" "sv" {
+  metro_code = "SV"
+}
+
+resource "equinix_network_device" "CHECKPOINT-SV" {
+  name                 = "TF_CHECKPOINT"
+  project_id           = "XXXX"
+  metro_code           = data.equinix_network_account.sv.metro_code
+  type_code            = "CGUARD"
+  self_managed         = true
+  byol                 = true
+  package_code         = "STD"
+  notifications        = ["test@eq.com"]
+  account_number       = data.equinix_network_account.sv.number
+  version              = "R81.20"
+  hostname             = "test"
+  core_count           = 2
+  term_length          = 1
+  additional_bandwidth = 5
+  acl_template_id      = "XXXXXXX"
+  ssh_key {
+    username = "XXXXX"
+    key_name = "XXXXXX"
+  }
+}
+```
+
+```terraform
+# Create Cisco FTD Cluster with Connectivity- PRIVATE
+
+data "equinix_network_account" "sv" {
+  metro_code = "SV"
+}
+
+resource "equinix_network_device" "Cisco-FTD-SV" {
+  name            = "TF_Cisco_NGFW_CLUSTER_ZNPD"
+  project_id      = "XXXXXXX"
+  metro_code      = data.equinix_network_account.sv.metro_code
+  type_code       = "Cisco_NGFW"
+  self_managed    = true
+  connectivity    = "PRIVATE"
+  byol            = true
+  package_code    = "FTDv10"
+  notifications   = ["test@eq.com"]
+  account_number  = data.equinix_network_account.sv.number
+  version         = "7.0.4-55"
+  hostname        = "test"
+  core_count      = 4
+  term_length     = 1
+  interface_count = 10
+  cluster_details {
+    cluster_name = "tf-ftd-cluster"
+    node0 {
+      vendor_configuration {
+        hostname        = "test"
+        activation_key  = "XXXXX"
+        controller1     = "X.X.X.X"
+        management_type = "FMC"
+      }
+    }
+    node1 {
+      vendor_configuration {
+        hostname        = "test"
+        management_type = "FMC"
+      }
+    }
+  }
+}
+```
+
+```terraform
+# Create Fortinet SDWAN single device
+
+data "equinix_network_account" "sv" {
+  metro_code = "SV"
+}
+
+resource "equinix_network_device" "FTNT-SDWAN-SV" {
+  name                 = "TF_VERSA-SDWAN"
+  project_id           = "XXXXXXXXX"
+  metro_code           = data.equinix_network_account.sv.metro_code
+  type_code            = "VERSA_SDWAN"
+  self_managed         = true
+  byol                 = true
+  package_code         = "FLEX_VNF_2"
+  notifications        = ["test@eq.com"]
+  account_number       = data.equinix_network_account.sv.number
+  version              = "21.2.3"
+  core_count           = 2
+  term_length          = 1
+  additional_bandwidth = 50
+  acl_template_id      = "XXXXXXXXX"
+  vendor_configuration = {
+    controller1 = "X.X.X.X"
+    controller2 = "X.X.X.X"
+    localId     = "test@test.com"
+    remoteId    = "test@test.com"
+    serialNumber = "4"
+  }
+  secondary_device {
+    name                 = "Praveena_TF_VERSA"
+    metro_code           = data.equinix_network_account.sv.metro_code
+    account_number       = data.equinix_network_account.sv.number
+    acl_template_id      = "XXXXXXXX"
+    notifications        = ["test@eq.com"]
+    vendor_configuration = {
+      controller1 = "X.X.X.X"
+      controller2 = "X.X.X.X"
+      localId     = "test@test.com"
+      remoteId    = "test@test.com"
+      serialNumber = "4"
+    }
+  }
+}
+```
+
+```terraform
+# Create VYos Router HA device
+
+data "equinix_network_account" "sv" {
+  metro_code = "SV"
+}
+
+resource "equinix_network_device" "VYOS-AM" {
+  name                 = "TF_VYOS"
+  project_id           = "XXXXXXX"
+  metro_code           = data.equinix_network_account.sv.metro_code
+  type_code            = "VYOS-ROUTER"
+  self_managed         = true
+  byol                 = false
+  package_code         = "STD"
+  notifications        = ["test@eq.com"]
+  account_number       = data.equinix_network_account.sv.number
+  version              = "1.4.1-2501"
+  hostname             = "test"
+  core_count           = 2
+  term_length          = 1
+  additional_bandwidth = 50
+  acl_template_id      = "XXXXXXXX"
+  ssh_key {
+    username = "test"
+    key_name = "xxxxxxxx"
+  }
+  secondary_device {
+    name            = "TF_CHECKPOINT"
+    metro_code      = data.equinix_network_account.sv.metro_code
+    account_number  = data.equinix_network_account.sv.number
+    hostname        = "test"
+    acl_template_id = "XXXXXXXXXXX"
+    notifications   = ["test@eq.com"]
+  }
+}
+```
+
+```terraform
+# Create Fortinet SDWAN single device
+
+data "equinix_network_account" "sv" {
+  metro_code = "SV"
+}
+
+resource "equinix_network_device" "FTNT-SDWAN-SV" {
+  name                 = "TF_FTNT-SDWAN"
+  project_id           = "XXXXXXXXXX"
+  metro_code           = data.equinix_network_account.sv.metro_code
+  type_code            = "FG-SDWAN"
+  self_managed         = true
+  byol                 = true
+  package_code         = "VM02"
+  notifications        = ["test@eq.com"]
+  account_number       = data.equinix_network_account.sv.number
+  version              = "7.0.14"
+  hostname             = "test"
+  core_count           = 2
+  term_length          = 1
+  additional_bandwidth = 50
+  acl_template_id      = "XXXXXXXX"
+  vendor_configuration = {
+    adminPassword = "XXXXX"
+    controller1 = "X.X.X.X"
+  }
+}
+```
+
+```terraform
+# Create Aruba Edgeconnect SDWAN HA device
+
+data "equinix_network_account" "sv" {
+  metro_code = "SV"
+}
+
+
+resource "equinix_network_device" "ARUBA-EDGECONNECT-AM" {
+  name                 = "TF_Aruba_Edge_Connect"
+  project_id           = "XXXXX"
+  metro_code           = data.equinix_network_account.sv.metro_code
+  type_code            = "EDGECONNECT-SDWAN"
+  self_managed         = true
+  byol                 = true
+  package_code         = "EC-V"
+  notifications        = ["test@eq.com"]
+  account_number       = data.equinix_network_account.sv.number
+  version              = "9.4.2.3"
+  core_count           = 2
+  term_length          = 1
+  additional_bandwidth = 50
+  interface_count      = 32
+  acl_template_id      = "XXXXXXX"
+  vendor_configuration = {
+    accountKey : "xxxxx"
+    accountName : "xxxx"
+    applianceTag : "tests"
+    hostname : "test"
+  }
+  secondary_device {
+    name                 = "TF_CHECKPOINT"
+    metro_code           = data.equinix_network_account.sv.metro_code
+    account_number       = data.equinix_network_account.sv.number
+    acl_template_id      = "XXXXXXX"
+    notifications        = ["test@eq.com"]
+    vendor_configuration = {
+      accountKey : "xxxxx"
+      accountName : "xxxx"
+      applianceTag : "test"
+      hostname : "test"
+    }
+  }
 }
 ```
 
