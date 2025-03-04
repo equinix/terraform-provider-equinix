@@ -23,15 +23,15 @@ func AddTestSweeper() {
 
 func testSweepServiceProfiles(_ string) error {
 	var errs []error
-	log.Printf("[DEBUG] Sweeping Service Profiles")
+	log.Printf("[DEBUG] Sweeping Fabric Service Profiles")
 	ctx := context.Background()
 	meta, err := sweep.GetConfigForFabric()
 	if err != nil {
-		return fmt.Errorf("error getting configuration for sweeping Service Profiles: %s", err)
+		return fmt.Errorf("error getting configuration for sweeping Fabric Service Profiles: %s", err)
 	}
 	configLoadErr := meta.Load(ctx)
 	if configLoadErr != nil {
-		return fmt.Errorf("error loading configuration for sweeping Service Profiles: %s", err)
+		return fmt.Errorf("error loading configuration for sweeping Fabric Service Profiles: %s", err)
 	}
 	fabric := meta.NewFabricClientForTesting(ctx)
 
@@ -62,12 +62,12 @@ func testSweepServiceProfiles(_ string) error {
 	fabricServiceProfiles, _, err := fabric.ServiceProfilesApi.SearchServiceProfiles(ctx).ServiceProfileSearchRequest(serviceProfileSearchRequest).ViewPoint(viewPoint).Execute()
 
 	if err != nil {
-		return fmt.Errorf("error getting service profiles list for sweeping fabric service profiles: %s", err)
+		return fmt.Errorf("error getting fabric service profiles list for sweeping fabric service profiles: %s", err)
 	}
 
 	for _, serviceProfile := range fabricServiceProfiles.Data {
 		if sweep.IsSweepableFabricTestResource(serviceProfile.GetName()) {
-			log.Printf("[DEBUG] Deleting Service Profiles: %s", serviceProfile.GetName())
+			log.Printf("[DEBUG] Deleting Fabric Service Profiles: %s", serviceProfile.GetName())
 			_, httpResponse, err := fabric.ServiceProfilesApi.DeleteServiceProfileByUuid(ctx, serviceProfile.GetUuid()).Execute()
 			if equinix_errors.IgnoreHttpResponseErrors(http.StatusForbidden, http.StatusNotFound)(httpResponse, err) != nil {
 				errs = append(errs, fmt.Errorf("error deleting fabric Service Profiles: %s", err))
