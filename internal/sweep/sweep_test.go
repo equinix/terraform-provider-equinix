@@ -9,8 +9,8 @@ import (
 	fabric_route_aggregation "github.com/equinix/terraform-provider-equinix/internal/resources/fabric/routeaggregation"
 	fabric_stream "github.com/equinix/terraform-provider-equinix/internal/resources/fabric/stream"
 
-	"github.com/equinix/terraform-provider-equinix/internal/resources/fabric/serviceprofile"
 	"github.com/equinix/terraform-provider-equinix/internal/resources/fabric/network"
+	"github.com/equinix/terraform-provider-equinix/internal/resources/fabric/serviceprofile"
 	"github.com/equinix/terraform-provider-equinix/internal/resources/metal/connection"
 	"github.com/equinix/terraform-provider-equinix/internal/resources/metal/device"
 	"github.com/equinix/terraform-provider-equinix/internal/resources/metal/organization"
