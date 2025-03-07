@@ -144,7 +144,7 @@ func (r *Resource) Update(
 
 	id := state.ID.ValueString()
 	streamID := state.StreamID.ValueString()
-	
+
 	updateRequest, diags := buildUpdateRequest(ctx, plan)
 	if diags.HasError() {
 		resp.Diagnostics.Append(diags...)
