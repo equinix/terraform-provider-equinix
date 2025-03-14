@@ -815,6 +815,127 @@ resource "equinix_network_device" "ARUBA-EDGECONNECT-AM" {
 }
 ```
 
+```terraform
+# Create Infoblox Grid Member Single device
+
+data "equinix_network_account" "sv" {
+  metro_code = "SV"
+}
+
+resource "equinix_network_device" "INFOBLOX-SV" {
+  name                 = "TF_INFOBLOX"
+  project_id           = "XXXXXXXXXX"
+  metro_code           = data.equinix_network_account.sv.metro_code
+  type_code            = "INFOBLOX-GRID-MEMBER"
+  self_managed         = true
+  byol                 = true
+  connectivity         = "PRIVATE"
+  package_code         = "STD"
+  notifications        = ["test@eq.com"]
+  account_number       = data.equinix_network_account.sv.number
+  version              = "9.0.5"
+  hostname             = "test"
+  core_count           = 8
+  term_length          = 1
+  vendor_configuration = {
+    adminPassword = "X.X.X.X"
+    ipAddress     = "X.X.X.X"
+    subnetMaskIp = "X.X.X.X"
+    gatewayIp     = "X.X.X.X"
+  }
+}
+```
+
+```terraform
+# Create Infoblox Grid Member HA device
+
+data "equinix_network_account" "sv" {
+  metro_code = "SV"
+}
+
+resource "equinix_network_device" "INFOBLOX-SV" {
+  name                 = "TF_INFOBLOX"
+  project_id           = "XXXXXXXXXX"
+  metro_code           = data.equinix_network_account.sv.metro_code
+  type_code            = "INFOBLOX-GRID-MEMBER"
+  self_managed         = true
+  connectivity         = "PRIVATE"
+  byol                 = true
+  package_code         = "STD"
+  notifications        = ["test@eq.com"]
+  account_number       = data.equinix_network_account.sv.number
+  version              = "9.0.5"
+  hostname             = "test"
+  core_count           = 8
+  term_length          = 1
+  vendor_configuration = {
+    adminPassword = "X.X.X.X"
+    ipAddress     = "X.X.X.X"
+    subnetMaskIp = "X.X.X.X"
+    gatewayIp     = "X.X.X.X"
+  }
+  secondary_device {
+    name                 = "TF_INFOBLOX-Sec"
+    metro_code           = data.equinix_network_account.sv.metro_code
+    account_number       = data.equinix_network_account.sv.number
+    notifications        = ["test@eq.com"]
+    hostname             = "test"
+    vendor_configuration = {
+      adminPassword = "X.X.X.X"
+      ipAddress     = "X.X.X.X"
+      subnetMaskIp = "X.X.X.X"
+      gatewayIp     = "X.X.X.X"
+    }
+  }
+}
+```
+
+```terraform
+# Create Infoblox Grid Member HA device
+
+data "equinix_network_account" "sv" {
+  metro_code = "SV"
+}
+
+resource "equinix_network_device" "INFOBLOX-SV" {
+  name           = "TF_INFOBLOX"
+  project_id     = "XXXXXXXXXX"
+  metro_code     = data.equinix_network_account.sv.metro_code
+  type_code      = "INFOBLOX-GRID-MEMBER"
+  self_managed   = true
+  byol           = true
+  package_code   = "STD"
+  notifications  = ["test@eq.com"]
+  account_number = data.equinix_network_account.sv.number
+  version        = "9.0.5"
+  hostname       = "test"
+  connectivity   = "PRIVATE"
+  core_count     = 8
+  term_length    = 1
+  cluster_details {
+    cluster_name = "tf-infoblox-cluster"
+    node0 {
+      vendor_configuration {
+        admin_password = "Welcome@1"
+        ip_address     = "192.168.1.35"
+        subnet_mask_ip = "255.255.255.0"
+        gateway_ip     = "192.168.1.1"
+        hostname       = "test"
+      }
+    }
+    node1 {
+      vendor_configuration {
+        admin_password = "Welcome@1"
+        ip_address     = "192.168.1.35"
+        subnet_mask_ip = "255.255.255.0"
+        gateway_ip     = "192.168.1.1"
+        hostname       = "test"
+      }
+    }
+  }
+}
+```
+
 ## Argument Reference
 
 The following arguments are supported:
@@ -845,7 +966,7 @@ The following arguments are supported:
 * `additional_bandwidth` - (Optional) Additional Internet bandwidth, in Mbps, that will be allocated to the device (in addition to default 15Mbps).
 * `interface_count` - (Optional) Number of network interfaces on a device. If not specified, default number for a given device type will be used.
 * `wan_interafce_id` - (Optional) Specify the WAN/SSH interface id. If not specified, default WAN/SSH interface for a given device type will be used.
-* `vendor_configuration` - (Optional) Map of vendor specific configuration parameters for a device (controller1, activationKey, managementType, siteId, systemIpAddress, privateAddress, privateCidrMask, privateGateway, licenseKey, licenseId, panoramaAuthKey, panoramaIpAddress, provisioningKey)
+* `vendor_configuration` - (Optional) Map of vendor specific configuration parameters for a device (controller1, activationKey, managementType, siteId, systemIpAddress, privateAddress, privateCidrMask, privateGateway, licenseKey, licenseId, panoramaAuthKey, panoramaIpAddress, provisioningKey, ipAddress(applicable for infoblox only), subnetMaskIp(applicable for infoblox only), gatewayIp(applicable for infoblox only))
 * `ssh-key` - (Optional) Definition of SSH key that will be provisioned on a device (max one key). See [SSH Key](#ssh-key) below for more details.
 * `secondary_device` - (Optional) Definition of secondary device for redundant device configurations. See [Secondary Device](#secondary-device) below for more details.
 * `cluster_details` - (Optional) An object that has the cluster details. See [Cluster Details](#cluster-details) below for more details.
@@ -872,7 +993,7 @@ The `secondary_device` block supports the following arguments:
 * `account_number` - (Required) Billing account number for secondary device.
 * `notifications` - (Required) List of email addresses that will receive notifications about secondary device.
 * `additional_bandwidth` - (Optional) Additional Internet bandwidth, in Mbps, for a secondary device.
-* `vendor_configuration` - (Optional) Key/Value pairs of vendor specific configuration parameters for a secondary device. Key values are `controller1`, `activationKey`, `managementType`, `siteId`, `systemIpAddress`, `privateAddress`, `privateCidrMask`, `privateGateway`, `licenseKey`, `licenseId`, `panoramaAuthKey`, `panoramaIpAddress`.
+* `vendor_configuration` - (Optional) Key/Value pairs of vendor specific configuration parameters for a secondary device. Key values are `controller1`, `activationKey`, `managementType`, `siteId`, `systemIpAddress`, `privateAddress`, `privateCidrMask`, `privateGateway`, `licenseKey`, `licenseId`, `panoramaAuthKey`, `panoramaIpAddress`, `ipAddress`, `subnetMaskIp`, `gatewayIp`.
 * `acl_template_id` - (Optional) Identifier of a WAN interface ACL template that will be applied on a secondary device.
 * `mgmt_acl_template_uuid` - (Optional) Identifier of an MGMT interface ACL template that will be applied on a secondary device.
 * `ssh-key` - (Optional) Up to one definition of SSH key that will be provisioned on a secondary device.
@@ -915,6 +1036,9 @@ The `vendor_configuration` block supports the following arguments:
 * `panorama_ip_address` - (Optional) Panorama Server IP Address. This field is relevant only for the PA-VM firewall devices to have integration with Panorama Server.
 * `panorama_auth_key` - (Optional) Panorama Server Auth Key. This field is relevant only for the PA-VM firewall devices to have integration with Panorama Server.
 * `provisioning_key` - (Optional) Provisioning Key. This field is relevant only for the ZSCALER APPC and ZSCALER PSE devices.
+* `ip_address` - (Optional) IP Address. This field is relevant only for the Infoblox devices.
+* `subnet_mask_ip` - (Optional) Subnet Mask IP. This field is relevant only for the Infoblox devices.
+* `gateway_ip` - (Optional) Gateway IP. This field is relevant only for the Infoblox devices.
 
 ## Attributes Reference
 
