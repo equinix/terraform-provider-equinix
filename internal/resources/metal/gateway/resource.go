@@ -40,7 +40,7 @@ type Resource struct {
 
 func (r *Resource) Schema(
 	ctx context.Context,
-	req resource.SchemaRequest,
+	_ resource.SchemaRequest,
 	resp *resource.SchemaResponse,
 ) {
 	s := resourceSchema(ctx)
@@ -54,7 +54,7 @@ func (r *Resource) Schema(
 }
 
 func (r *Resource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
-	var plan ResourceModel
+	var plan resourceModel
 	diags := req.Plan.Get(ctx, &plan)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
@@ -74,8 +74,8 @@ func (r *Resource) Create(ctx context.Context, req resource.CreateRequest, resp 
 		},
 	}
 
-	if reservationId := plan.IPReservationID.ValueString(); reservationId != "" {
-		createRequest.MetalGatewayCreateInput.IpReservationId = &reservationId
+	if reservationID := plan.IPReservationID.ValueString(); reservationID != "" {
+		createRequest.MetalGatewayCreateInput.IpReservationId = &reservationID
 	} else {
 		// PrivateIpv4SubnetSize is specified as an int32 by the API, but
 		// there is currently only an Int64 attribute defined in the plugin
@@ -94,19 +94,19 @@ func (r *Resource) Create(ctx context.Context, req resource.CreateRequest, resp 
 	}
 
 	// API call to get the Metal Gateway
-	gwId := ""
+	gwID := ""
 	if gw.MetalGateway != nil {
-		gwId = gw.MetalGateway.GetId()
+		gwID = gw.MetalGateway.GetId()
 	} else {
-		gwId = gw.VrfMetalGateway.GetId()
+		gwID = gw.VrfMetalGateway.GetId()
 	}
 
-	diags, err = getGatewayAndParse(ctx, client, &plan, gwId)
+	diags, err = getGatewayAndParse(ctx, client, &plan, gwID)
 	resp.Diagnostics.Append(diags...)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error reading Metal Gateway",
-			"Could not read Metal Gateway with ID "+gwId+": "+err.Error(),
+			"Could not read Metal Gateway with ID "+gwID+": "+err.Error(),
 		)
 		return
 	}
@@ -116,7 +116,7 @@ func (r *Resource) Create(ctx context.Context, req resource.CreateRequest, resp 
 }
 
 func (r *Resource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
-	var state ResourceModel
+	var state resourceModel
 	diags := req.State.Get(ctx, &state)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
@@ -144,9 +144,9 @@ func (r *Resource) Read(ctx context.Context, req resource.ReadRequest, resp *res
 }
 
 func (r *Resource) Update(
-	ctx context.Context,
-	req resource.UpdateRequest,
-	resp *resource.UpdateResponse,
+	_ context.Context,
+	_ resource.UpdateRequest,
+	_ *resource.UpdateResponse,
 ) {
 	// This resource does not support updates
 }
@@ -156,7 +156,7 @@ func (r *Resource) Delete(ctx context.Context, req resource.DeleteRequest, resp 
 	client := r.Meta.NewMetalClientForFramework(ctx, req.ProviderMeta)
 
 	// Retrieve the current state
-	var state ResourceModel
+	var state resourceModel
 	diags := req.State.Get(ctx, &state)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
@@ -198,7 +198,7 @@ func (r *Resource) Delete(ctx context.Context, req resource.DeleteRequest, resp 
 	}
 }
 
-func getGatewayAndParse(ctx context.Context, client *metalv1.APIClient, state *ResourceModel, id string) (diags diag.Diagnostics, err error) {
+func getGatewayAndParse(ctx context.Context, client *metalv1.APIClient, state *resourceModel, id string) (diags diag.Diagnostics, err error) {
 	// API call to get the Metal Gateway
 	gw, _, err := client.MetalGatewaysApi.FindMetalGatewayById(ctx, id).Include(includes).Execute()
 	if err != nil {
@@ -230,9 +230,8 @@ func getGatewayDeleteWaiter(ctx context.Context, client *metalv1.APIClient, id s
 			if err != nil {
 				if equinix_errors.IgnoreHttpResponseErrors(http.StatusForbidden, http.StatusNotFound)(resp, err) != nil {
 					return gw, "", err
-				} else {
-					return gw, deletedMarker, nil
 				}
+				return gw, deletedMarker, nil
 			}
 			state := ""
 			if gw.MetalGateway != nil {

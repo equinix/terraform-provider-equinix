@@ -25,7 +25,7 @@ type DataSource struct {
 
 func (r *DataSource) Schema(
 	ctx context.Context,
-	req datasource.SchemaRequest,
+	_ datasource.SchemaRequest,
 	resp *datasource.SchemaResponse,
 ) {
 	resp.Schema = dataSourceSchema(ctx)
@@ -37,7 +37,7 @@ func (r *DataSource) Read(
 	resp *datasource.ReadResponse,
 ) {
 	// Retrieve values from plan
-	var data DataSourceModel
+	var data dataSourceModel
 	resp.Diagnostics.Append(req.Config.Get(ctx, &data)...)
 	if resp.Diagnostics.HasError() {
 		return
