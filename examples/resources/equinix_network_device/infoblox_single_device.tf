@@ -16,13 +16,12 @@ resource "equinix_network_device" "INFOBLOX-SV" {
   notifications        = ["test@eq.com"]
   account_number       = data.equinix_network_account.sv.number
   version              = "9.0.5"
-  hostname             = "test"
   core_count           = 8
   term_length          = 1
   vendor_configuration = {
-    adminPassword = "X.X.X.X"
+    adminPassword = "xxxxxx"
     ipAddress     = "X.X.X.X"
-    subnetMaskIp = "X.X.X.X"
+    subnetMaskIp  = "X.X.X.X"
     gatewayIp     = "X.X.X.X"
   }
 }

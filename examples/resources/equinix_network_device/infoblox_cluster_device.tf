@@ -15,7 +15,6 @@ resource "equinix_network_device" "INFOBLOX-SV" {
   notifications  = ["test@eq.com"]
   account_number = data.equinix_network_account.sv.number
   version        = "9.0.5"
-  hostname       = "test"
   connectivity   = "PRIVATE"
   core_count     = 8
   term_length    = 1
@@ -23,20 +22,18 @@ resource "equinix_network_device" "INFOBLOX-SV" {
     cluster_name = "tf-infoblox-cluster"
     node0 {
       vendor_configuration {
-        admin_password = "Welcome@1"
-        ip_address     = "192.168.1.35"
-        subnet_mask_ip = "255.255.255.0"
-        gateway_ip     = "192.168.1.1"
-        hostname       = "test"
+        admin_password = "xxxxxxx"
+        ip_address     = "X.X.X.X"
+        subnet_mask_ip = "X.X.X.X"
+        gateway_ip     = "X.X.X.X"
       }
     }
     node1 {
       vendor_configuration {
-        admin_password = "Welcome@1"
-        ip_address     = "192.168.1.35"
-        subnet_mask_ip = "255.255.255.0"
-        gateway_ip     = "192.168.1.1"
-        hostname       = "test"
+        admin_password = "xxxxxxx"
+        ip_address     = "X.X.X.X"
+        subnet_mask_ip = "X.X.X.X"
+        gateway_ip     = "X.X.X.X"
       }
     }
   }
