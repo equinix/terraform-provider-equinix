@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
+// Copied from https://github.com/golang/oauth2/blob/65c15a35147ccc5127e9f8cdf2e07837596e56b4/transport.go
+// with modification to support reusing request context
+
 package authtoken
 
 import (
@@ -45,6 +48,8 @@ func (t *Transport) RoundTrip(req *http.Request) (*http.Response, error) {
 		}()
 	}
 
+	// Original was modified here to call `TokenWithContext` instead of `Token`,
+	// passing in the existing request context
 	token, err := t.Source.TokenWithContext(req.Context())
 	if err != nil {
 		fmt.Println("error: ", err)
