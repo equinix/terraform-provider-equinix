@@ -1,3 +1,4 @@
+// Package config uses environment variables to configure API clients for the provider
 package config
 
 import (
@@ -25,6 +26,8 @@ import (
 	"golang.org/x/oauth2"
 )
 
+// These constants track environment variable names
+// that are relevant to the provider
 const (
 	EndpointEnvVar       = "EQUINIX_API_ENDPOINT"
 	ClientIDEnvVar       = "EQUINIX_API_CLIENTID"
@@ -34,6 +37,9 @@ const (
 	MetalAuthTokenEnvVar = "METAL_AUTH_TOKEN"
 )
 
+// ProviderMeta allows passing additional metadata
+// specific to our provider in provider config blocks
+// See https://developer.hashicorp.com/terraform/internals/provider-meta
 type ProviderMeta struct {
 	ModuleName string `cty:"module_name"`
 }
@@ -45,7 +51,9 @@ const (
 )
 
 var (
+	// DefaultBaseURL is the default URL to use for API requests
 	DefaultBaseURL = "https://api.equinix.com"
+	// DefaultTimeout is the default request timeout to use for API requests
 	DefaultTimeout = 30
 )
 
@@ -133,7 +141,7 @@ func (c *Config) NewFabricClientForSDK(_ context.Context, d *schema.ResourceData
 	return client
 }
 
-// Shim for Fabric tests.
+// NewFabricClientForTesting is a shim for Fabric tests.
 // Deprecated: when the acceptance package starts to contain API clients for testing/cleanup this will move with them
 func (c *Config) NewFabricClientForTesting(_ context.Context) *fabricv4.APIClient {
 	client := c.newFabricClient()
@@ -143,6 +151,8 @@ func (c *Config) NewFabricClientForTesting(_ context.Context) *fabricv4.APIClien
 	return client
 }
 
+// NewFabricClientForFramework returns a terraform framework compatible
+// equinix-sdk-go/fabricv4 client to be used to access Fabric's V4 APIs
 func (c *Config) NewFabricClientForFramework(ctx context.Context, meta tfsdk.Config) *fabricv4.APIClient {
 	client := c.newFabricClient()
 
@@ -202,6 +212,8 @@ func (c *Config) NewMetalClient() *packngo.Client {
 	return client
 }
 
+// NewMetalClientForSDK returns a new equinix-sdk-go client that enables
+// an SDK resource to interact with the Metal API
 func (c *Config) NewMetalClientForSDK(d *schema.ResourceData) *metalv1.APIClient {
 	client := c.newMetalClient()
 
@@ -211,6 +223,8 @@ func (c *Config) NewMetalClientForSDK(d *schema.ResourceData) *metalv1.APIClient
 	return client
 }
 
+// NewMetalClientForFramework returns a new equinix-sdk-go client that enables
+// an framework resource to interact with the Metal API
 func (c *Config) NewMetalClientForFramework(ctx context.Context, meta tfsdk.Config) *metalv1.APIClient {
 	client := c.newMetalClient()
 
@@ -220,7 +234,7 @@ func (c *Config) NewMetalClientForFramework(ctx context.Context, meta tfsdk.Conf
 	return client
 }
 
-// This is a short-term shim to allow tests to continue to have a client for cleanup and validation
+// NewMetalClientForTesting is a short-term shim to allow tests to continue to have a client for cleanup and validation
 // code that is outside of the resource or datasource under test
 // Deprecated: when possible, API clients for test cleanup/validation should be moved to the acceptance package
 func (c *Config) NewMetalClientForTesting() *metalv1.APIClient {
@@ -276,6 +290,7 @@ func appendUserAgentFromEnv(ua string) string {
 	return ua
 }
 
+// AddModuleToNEUserAgent injects the ModuleName into SDK resource metadata for analytics
 func (c *Config) AddModuleToNEUserAgent(client *ne.Client, d *schema.ResourceData) {
 	cli := *client
 	rc := cli.(*ne.RestClient)
@@ -283,6 +298,7 @@ func (c *Config) AddModuleToNEUserAgent(client *ne.Client, d *schema.ResourceDat
 	*client = rc
 }
 
+// AddFwModuleToMetalUserAgent injects the ModuleName into framework resource metadata for analytics
 // TODO (ocobleseqx) - known issue, Metal services are initialized using the metal client pointer
 // if two or more modules in same project interact with metal resources they will override
 // the UserAgent resulting in swapped UserAgent.
@@ -305,6 +321,7 @@ func generateFwModuleUserAgentString(ctx context.Context, meta tfsdk.Config, bas
 	return baseUserAgent
 }
 
+// AddModuleToMetalUserAgent injects the ModuleName into SDK resource metadata for analytics
 func (c *Config) AddModuleToMetalUserAgent(d *schema.ResourceData) {
 	c.Metal.UserAgent = generateModuleUserAgentString(d, c.metalUserAgent)
 }
