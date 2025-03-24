@@ -2,18 +2,22 @@ package equinix
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"io"
 	"log"
 	"os"
 	"path/filepath"
+	"reflect"
 	"slices"
 	"time"
 
+	"github.com/equinix/terraform-provider-equinix/internal/comparisons"
 	"github.com/equinix/terraform-provider-equinix/internal/config"
 	"github.com/equinix/terraform-provider-equinix/internal/converters"
 	equinix_schema "github.com/equinix/terraform-provider-equinix/internal/schema"
 	equinix_validation "github.com/equinix/terraform-provider-equinix/internal/validation"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
 
 	"github.com/equinix/ne-go"
 	"github.com/equinix/rest-go"
@@ -240,6 +244,58 @@ func resourceNetworkDevice() *schema.Resource {
 			StateContext: schema.ImportStatePassthroughContext,
 		},
 		Schema: createNetworkDeviceSchema(),
+		CustomizeDiff: customdiff.All(
+			customdiff.ForceNewIfChange("throughput", func(_ context.Context, old, newValue, _ any) bool {
+				return old != nil && old != "" && old != newValue
+			}),
+			customdiff.ForceNewIfChange("throughput_unit", func(_ context.Context, old, newValue, _ any) bool {
+				return old != newValue
+			}),
+			customdiff.ForceNewIfChange("hostname", func(_ context.Context, old, newValue, _ any) bool {
+				return old != newValue
+			}),
+			customdiff.ForceNewIfChange("vendor_configuration", func(_ context.Context, old, newValue, _ any) bool {
+				delete(old.(map[string]interface{}), neDeviceVendorConfigSchemaNames["AdminPassword"])
+				return !comparisons.CompareMaps(old.(map[string]interface{}), newValue.(map[string]interface{}))
+			}),
+			customdiff.ForceNewIfChange("ssh_key", func(_ context.Context, old, newValue, _ any) bool {
+				return reflect.DeepEqual(old, newValue)
+			}),
+			customdiff.ForceNewIfChange("cloud_init_file_id", func(_ context.Context, old, newValue, _ any) bool {
+				return old != newValue && old != nil && old != "" && newValue == nil
+			}),
+			customdiff.ForceNewIfChange("license_token", func(_ context.Context, old, newValue, _ any) bool {
+				return old != newValue && old != nil && old != ""
+			}),
+			customdiff.ForceNewIfChange("license_file_id", func(_ context.Context, old, newValue, _ any) bool {
+				return old != newValue && old != nil && old != ""
+			}),
+			customdiff.ForceNewIfChange("secondary_device.0.hostname", func(_ context.Context, old, newValue, _ any) bool {
+				return old != newValue && old != nil && old != "" && newValue == nil
+			}),
+			customdiff.ForceNewIfChange("secondary_device.0.ssh_key", func(_ context.Context, old, newValue, _ any) bool {
+				return reflect.DeepEqual(old, newValue)
+			}),
+			customdiff.ForceNewIfChange("secondary_device.0.cloud_init_file_id", func(_ context.Context, old, newValue, _ any) bool {
+				return old != newValue && old != nil && old != "" && newValue == nil
+			}),
+			customdiff.ForceNewIfChange("secondary_device.0.license_token", func(_ context.Context, old, newValue, _ any) bool {
+				return old != newValue && old != nil && old != "" && newValue == nil
+			}),
+			customdiff.ForceNewIfChange("secondary_device.0.license_file_id", func(_ context.Context, old, newValue, _ any) bool {
+				return old != newValue && old != nil && old != "" && newValue == nil
+			}),
+			customdiff.ForceNewIfChange("secondary_device.0.vendor_configuration", func(_ context.Context, old, newValue, _ any) bool {
+				delete(old.(map[string]interface{}), neDeviceVendorConfigSchemaNames["AdminPassword"])
+				return !comparisons.CompareMaps(old.(map[string]interface{}), newValue.(map[string]interface{}))
+			}),
+			customdiff.ForceNewIfChange("secondary_device.0.metro_code", func(_ context.Context, old, newValue, _ any) bool {
+				return old != nil && old != "" && old != newValue && newValue == nil
+			}),
+			customdiff.ForceNewIfChange("secondary_device.0.account_number", func(_ context.Context, old, newValue, _ any) bool {
+				return old != nil && old != "" && old != newValue && newValue == nil
+			}),
+		),
 		Timeouts: &schema.ResourceTimeout{
 			Create: schema.DefaultTimeout(90 * time.Minute),
 			Update: schema.DefaultTimeout(90 * time.Minute),
@@ -259,8 +315,8 @@ func createNetworkDeviceSchema() map[string]*schema.Schema {
 		neDeviceSchemaNames["Name"]: {
 			Type:     schema.TypeString,
 			Required: true,
-			DiffSuppressFunc: func(_, old, new string, _ *schema.ResourceData) bool {
-				return old == new+"-Node0"
+			DiffSuppressFunc: func(_, old, newName string, _ *schema.ResourceData) bool {
+				return old == newName+"-Node0"
 			},
 			ValidateFunc: validation.StringLenBetween(3, 50),
 			Description:  neDeviceDescriptions["Name"],
@@ -302,14 +358,12 @@ func createNetworkDeviceSchema() map[string]*schema.Schema {
 		neDeviceSchemaNames["Throughput"]: {
 			Type:         schema.TypeInt,
 			Optional:     true,
-			ForceNew:     true,
 			ValidateFunc: validation.IntAtLeast(1),
 			Description:  neDeviceDescriptions["Throughput"],
 		},
 		neDeviceSchemaNames["ThroughputUnit"]: {
 			Type:         schema.TypeString,
 			Optional:     true,
-			ForceNew:     true,
 			ValidateFunc: validation.StringInSlice([]string{"Mbps", "Gbps"}, false),
 			RequiredWith: []string{neDeviceSchemaNames["Throughput"]},
 			Description:  neDeviceDescriptions["ThroughputUnit"],
@@ -318,7 +372,6 @@ func createNetworkDeviceSchema() map[string]*schema.Schema {
 			Type:        schema.TypeString,
 			Optional:    true,
 			Computed:    true,
-			ForceNew:    true,
 			Description: neDeviceDescriptions["HostName"],
 		},
 		neDeviceSchemaNames["PackageCode"]: {
@@ -525,7 +578,6 @@ func createNetworkDeviceSchema() map[string]*schema.Schema {
 			Type:     schema.TypeMap,
 			Optional: true,
 			Computed: true,
-			ForceNew: true,
 			Elem: &schema.Schema{
 				Type:         schema.TypeString,
 				ValidateFunc: validation.StringIsNotEmpty,
@@ -535,7 +587,6 @@ func createNetworkDeviceSchema() map[string]*schema.Schema {
 		neDeviceSchemaNames["UserPublicKey"]: {
 			Type:     schema.TypeSet,
 			Optional: true,
-			ForceNew: true,
 			MinItems: 1,
 			MaxItems: 1,
 			Elem: &schema.Resource{
@@ -564,7 +615,6 @@ func createNetworkDeviceSchema() map[string]*schema.Schema {
 		neDeviceSchemaNames["Secondary"]: {
 			Type:        schema.TypeList,
 			Optional:    true,
-			ForceNew:    true,
 			MaxItems:    1,
 			Description: neDeviceDescriptions["Secondary"],
 			Elem: &schema.Resource{
@@ -598,7 +648,6 @@ func createNetworkDeviceSchema() map[string]*schema.Schema {
 					neDeviceSchemaNames["MetroCode"]: {
 						Type:         schema.TypeString,
 						Required:     true,
-						ForceNew:     true,
 						ValidateFunc: equinix_validation.StringIsMetroCode,
 						Description:  neDeviceDescriptions["MetroCode"],
 					},
@@ -615,13 +664,11 @@ func createNetworkDeviceSchema() map[string]*schema.Schema {
 					neDeviceSchemaNames["HostName"]: {
 						Type:        schema.TypeString,
 						Optional:    true,
-						ForceNew:    true,
 						Description: neDeviceDescriptions["HostName"],
 					},
 					neDeviceSchemaNames["LicenseToken"]: {
 						Type:          schema.TypeString,
 						Optional:      true,
-						ForceNew:      true,
 						ValidateFunc:  validation.StringIsNotEmpty,
 						ConflictsWith: []string{neDeviceSchemaNames["Secondary"] + ".0." + neDeviceSchemaNames["LicenseFile"]},
 						Description:   neDeviceDescriptions["LicenseToken"],
@@ -629,7 +676,6 @@ func createNetworkDeviceSchema() map[string]*schema.Schema {
 					neDeviceSchemaNames["LicenseFile"]: {
 						Type:         schema.TypeString,
 						Optional:     true,
-						ForceNew:     true,
 						ValidateFunc: validation.StringIsNotEmpty,
 						Description:  neDeviceDescriptions["LicenseFile"],
 					},
@@ -637,7 +683,6 @@ func createNetworkDeviceSchema() map[string]*schema.Schema {
 						Type:          schema.TypeString,
 						Optional:      true,
 						Computed:      true,
-						ForceNew:      true,
 						ValidateFunc:  validation.StringIsNotEmpty,
 						ConflictsWith: []string{neDeviceSchemaNames["Secondary"] + ".0." + neDeviceSchemaNames["LicenseFile"]},
 						Description:   neDeviceDescriptions["LicenseFileID"],
@@ -645,7 +690,6 @@ func createNetworkDeviceSchema() map[string]*schema.Schema {
 					neDeviceSchemaNames["CloudInitFileID"]: {
 						Type:         schema.TypeString,
 						Optional:     true,
-						ForceNew:     true,
 						ValidateFunc: validation.StringIsNotEmpty,
 						Description:  neDeviceDescriptions["CloudInitFileID"],
 					},
@@ -674,7 +718,6 @@ func createNetworkDeviceSchema() map[string]*schema.Schema {
 					neDeviceSchemaNames["AccountNumber"]: {
 						Type:         schema.TypeString,
 						Required:     true,
-						ForceNew:     true,
 						ValidateFunc: validation.StringIsNotEmpty,
 						Description:  neDeviceDescriptions["AccountNumber"],
 					},
@@ -723,7 +766,6 @@ func createNetworkDeviceSchema() map[string]*schema.Schema {
 						Type:     schema.TypeMap,
 						Optional: true,
 						Computed: true,
-						ForceNew: true,
 						Elem: &schema.Schema{
 							Type:         schema.TypeString,
 							ValidateFunc: validation.StringIsNotEmpty,
@@ -733,7 +775,6 @@ func createNetworkDeviceSchema() map[string]*schema.Schema {
 					neDeviceSchemaNames["UserPublicKey"]: {
 						Type:     schema.TypeSet,
 						Optional: true,
-						ForceNew: true,
 						MinItems: 1,
 						MaxItems: 1,
 						Elem: &schema.Resource{
@@ -917,7 +958,6 @@ func createVendorConfigurationSchema() map[string]*schema.Schema {
 			Type:        schema.TypeString,
 			Optional:    true,
 			Computed:    true,
-			ForceNew:    true,
 			Sensitive:   true,
 			Description: neDeviceVendorConfigDescriptions["AdminPassword"],
 		},
@@ -1121,6 +1161,37 @@ func resourceNetworkDeviceUpdate(ctx context.Context, d *schema.ResourceData, m 
 	if err := fillNetworkDeviceUpdateRequest(updateReq, primaryChanges).Execute(); err != nil {
 		return diag.FromErr(err)
 	}
+	var isSecondaryRemoved = equinix_schema.IsDataElementRemoved(neDeviceSchemaNames["Secondary"], d)
+	if isSecondaryRemoved {
+		if v, ok := d.GetOk(neDeviceSchemaNames["RedundantUUID"]); ok {
+			if err := client.DeleteSecondaryDevice(v.(string)); err != nil {
+				var restErr rest.Error
+				if errors.As(err, &restErr) {
+					for _, detailedErr := range restErr.ApplicationErrors {
+						if detailedErr.Code == ne.ErrorCodeDeviceRemoved {
+							return diags
+						}
+					}
+				}
+				return diag.FromErr(err)
+			}
+			if err := d.Set(neDeviceSchemaNames["RedundantUUID"], nil); err != nil {
+				return diag.Errorf("error updating RedundantUUID: %s", err)
+			}
+
+			waitConfigs := []*retry.StateChangeConf{
+				createNetworkDeviceStatusDeleteWaitConfiguration(client.GetDevice, v.(string), 5*time.Second, d.Timeout(schema.TimeoutDelete)),
+			}
+			for _, config := range waitConfigs {
+				if config == nil {
+					continue
+				}
+				if _, err := config.WaitForStateContext(ctx); err != nil {
+					return diag.Errorf("error waiting for network device (%s) to be deleted: %s", v.(string), err)
+				}
+			}
+		}
+	}
 	var secondaryChanges map[string]interface{}
 	if v, ok := d.GetOk(neDeviceSchemaNames["RedundantUUID"]); ok {
 		secondaryChanges = equinix_schema.GetResourceDataListElementChanges(supportedChanges, neDeviceSchemaNames["Secondary"], 0, d)
@@ -1137,6 +1208,32 @@ func resourceNetworkDeviceUpdate(ctx context.Context, d *schema.ResourceData, m 
 	for _, stateChangeConf := range getNetworkDeviceStateChangeConfigs(client, d.Get(neDeviceSchemaNames["RedundantUUID"]).(string), d.Timeout(schema.TimeoutUpdate), secondaryChanges) {
 		if _, err := stateChangeConf.WaitForStateContext(ctx); err != nil {
 			return diag.Errorf("error waiting for network device %q to be updated: %s", d.Get(neDeviceSchemaNames["RedundantUUID"]), err)
+		}
+	}
+	var isSecondaryAdded = equinix_schema.IsDataElementAdded(neDeviceSchemaNames["Secondary"], d)
+	if isSecondaryAdded {
+		var secondary *ne.Device
+		if v, ok := d.GetOk(neDeviceSchemaNames["Secondary"]); ok {
+			secondary = expandNetworkDeviceSecondary(v.([]interface{}))
+			secondaryUUID, err := client.AddSecondary(d.Id(), *secondary)
+			if err := d.Set(neDeviceSchemaNames["RedundantUUID"], secondaryUUID); err != nil {
+				return diag.Errorf("error reading RedundantUUID: %s", err)
+			}
+			if err != nil {
+				return diag.FromErr(err)
+			}
+			waitConfigs := []*retry.StateChangeConf{
+				createNetworkDeviceStatusProvisioningWaitConfiguration(client.GetDevice, ne.StringValue(secondaryUUID), 5*time.Second, d.Timeout(schema.TimeoutCreate)),
+			}
+			for _, config := range waitConfigs {
+				if config == nil {
+					continue
+				}
+				if _, err := config.WaitForStateContext(ctx); err != nil {
+					return diag.Errorf("error waiting for network device (%s) to be created: %s", ne.StringValue(secondaryUUID), err)
+				}
+			}
+
 		}
 	}
 	diags = append(diags, resourceNetworkDeviceRead(ctx, d, m)...)
