@@ -2,11 +2,14 @@ package equinix
 
 import (
 	"context"
+	"errors"
 	"fmt"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
 	"io"
 	"log"
 	"os"
 	"path/filepath"
+	"reflect"
 	"slices"
 	"time"
 
@@ -240,6 +243,56 @@ func resourceNetworkDevice() *schema.Resource {
 			StateContext: schema.ImportStatePassthroughContext,
 		},
 		Schema: createNetworkDeviceSchema(),
+		CustomizeDiff: customdiff.All(
+			customdiff.ForceNewIfChange("secondary_device.0.metro_code", func(ctx context.Context, old, new, meta any) bool {
+				return old != nil && old != "" && old != new && new == nil
+			}),
+			customdiff.ForceNewIfChange("secondary_device.0.account_number", func(ctx context.Context, old, new, meta any) bool {
+				return old != nil && old != "" && old != new && new == nil
+			}),
+			customdiff.ForceNewIfChange("throughput", func(ctx context.Context, old, new, meta any) bool {
+				log.Println((old == 0 && new == nil) || (old == new))
+				return !((old == 0 && new == nil) || (old == new))
+			}),
+			customdiff.ForceNewIfChange("throughput_unit", func(ctx context.Context, old, new, meta any) bool {
+				return old != new
+			}),
+			customdiff.ForceNewIfChange("hostName", func(ctx context.Context, old, new, meta any) bool {
+				return old != new
+			}),
+			customdiff.ForceNewIfChange("secondary_device.0.hostName", func(ctx context.Context, old, new, meta any) bool {
+				return old != new
+			}),
+			customdiff.ForceNewIfChange("secondary_device.0.ssh_key", func(ctx context.Context, old, new, meta any) bool {
+				if reflect.DeepEqual(old, new) {
+					return true
+				}
+				return false
+			}),
+			customdiff.ForceNewIfChange("secondary_device.0.cloud_init_file_id", func(ctx context.Context, old, new, meta any) bool {
+				return old != new && old != nil && old != "" && new == nil
+			}),
+			customdiff.ForceNewIfChange("secondary_device.0.license_token", func(ctx context.Context, old, new, meta any) bool {
+				return old != new && old != nil && old != ""
+			}),
+			customdiff.ForceNewIfChange("secondary_device.0.license_file_iD", func(ctx context.Context, old, new, meta any) bool {
+				return old != new && old != nil && old != ""
+			}),
+			customdiff.ForceNewIfChange("vendor_configuration", func(ctx context.Context, old, new, meta any) bool {
+				if CompareMaps(old.(map[string]interface{}), new.(map[string]interface{})) {
+					log.Println("Maps are equal")
+					return false
+				}
+				return true
+			}),
+			customdiff.ForceNewIfChange("secondary_device.0.vendor_configuration", func(ctx context.Context, old, new, meta any) bool {
+				if CompareMaps(old.(map[string]interface{}), new.(map[string]interface{})) {
+					log.Println("Maps are equal")
+					return false
+				}
+				return true
+			}),
+		),
 		Timeouts: &schema.ResourceTimeout{
 			Create: schema.DefaultTimeout(90 * time.Minute),
 			Update: schema.DefaultTimeout(90 * time.Minute),
@@ -300,25 +353,25 @@ func createNetworkDeviceSchema() map[string]*schema.Schema {
 			Description: neDeviceDescriptions["Region"],
 		},
 		neDeviceSchemaNames["Throughput"]: {
-			Type:         schema.TypeInt,
-			Optional:     true,
-			ForceNew:     true,
+			Type:     schema.TypeInt,
+			Optional: true,
+			//ForceNew:     true,
 			ValidateFunc: validation.IntAtLeast(1),
 			Description:  neDeviceDescriptions["Throughput"],
 		},
 		neDeviceSchemaNames["ThroughputUnit"]: {
-			Type:         schema.TypeString,
-			Optional:     true,
-			ForceNew:     true,
+			Type:     schema.TypeString,
+			Optional: true,
+			//ForceNew:     true,
 			ValidateFunc: validation.StringInSlice([]string{"Mbps", "Gbps"}, false),
 			RequiredWith: []string{neDeviceSchemaNames["Throughput"]},
 			Description:  neDeviceDescriptions["ThroughputUnit"],
 		},
 		neDeviceSchemaNames["HostName"]: {
-			Type:        schema.TypeString,
-			Optional:    true,
-			Computed:    true,
-			ForceNew:    true,
+			Type:     schema.TypeString,
+			Optional: true,
+			Computed: true,
+			//ForceNew:    true,
 			Description: neDeviceDescriptions["HostName"],
 		},
 		neDeviceSchemaNames["PackageCode"]: {
@@ -525,7 +578,7 @@ func createNetworkDeviceSchema() map[string]*schema.Schema {
 			Type:     schema.TypeMap,
 			Optional: true,
 			Computed: true,
-			ForceNew: true,
+			//ForceNew: true,
 			Elem: &schema.Schema{
 				Type:         schema.TypeString,
 				ValidateFunc: validation.StringIsNotEmpty,
@@ -535,7 +588,7 @@ func createNetworkDeviceSchema() map[string]*schema.Schema {
 		neDeviceSchemaNames["UserPublicKey"]: {
 			Type:     schema.TypeSet,
 			Optional: true,
-			ForceNew: true,
+			//ForceNew: true,
 			MinItems: 1,
 			MaxItems: 1,
 			Elem: &schema.Resource{
@@ -562,9 +615,9 @@ func createNetworkDeviceSchema() map[string]*schema.Schema {
 			Description:  neDeviceDescriptions["Connectivity"],
 		},
 		neDeviceSchemaNames["Secondary"]: {
-			Type:        schema.TypeList,
-			Optional:    true,
-			ForceNew:    true,
+			Type:     schema.TypeList,
+			Optional: true,
+			//ForceNew:    true,
 			MaxItems:    1,
 			Description: neDeviceDescriptions["Secondary"],
 			Elem: &schema.Resource{
@@ -596,9 +649,9 @@ func createNetworkDeviceSchema() map[string]*schema.Schema {
 						Description: neDeviceDescriptions["LicenseStatus"],
 					},
 					neDeviceSchemaNames["MetroCode"]: {
-						Type:         schema.TypeString,
-						Required:     true,
-						ForceNew:     true,
+						Type:     schema.TypeString,
+						Required: true,
+						//ForceNew:     true,
 						ValidateFunc: equinix_validation.StringIsMetroCode,
 						Description:  neDeviceDescriptions["MetroCode"],
 					},
@@ -613,39 +666,39 @@ func createNetworkDeviceSchema() map[string]*schema.Schema {
 						Description: neDeviceDescriptions["Region"],
 					},
 					neDeviceSchemaNames["HostName"]: {
-						Type:        schema.TypeString,
-						Optional:    true,
-						ForceNew:    true,
+						Type:     schema.TypeString,
+						Optional: true,
+						//ForceNew:    true,
 						Description: neDeviceDescriptions["HostName"],
 					},
 					neDeviceSchemaNames["LicenseToken"]: {
-						Type:          schema.TypeString,
-						Optional:      true,
-						ForceNew:      true,
+						Type:     schema.TypeString,
+						Optional: true,
+						//ForceNew:      true,
 						ValidateFunc:  validation.StringIsNotEmpty,
 						ConflictsWith: []string{neDeviceSchemaNames["Secondary"] + ".0." + neDeviceSchemaNames["LicenseFile"]},
 						Description:   neDeviceDescriptions["LicenseToken"],
 					},
 					neDeviceSchemaNames["LicenseFile"]: {
-						Type:         schema.TypeString,
-						Optional:     true,
-						ForceNew:     true,
+						Type:     schema.TypeString,
+						Optional: true,
+						//ForceNew:     true,
 						ValidateFunc: validation.StringIsNotEmpty,
 						Description:  neDeviceDescriptions["LicenseFile"],
 					},
 					neDeviceSchemaNames["LicenseFileID"]: {
-						Type:          schema.TypeString,
-						Optional:      true,
-						Computed:      true,
-						ForceNew:      true,
+						Type:     schema.TypeString,
+						Optional: true,
+						Computed: true,
+						//ForceNew:      true,
 						ValidateFunc:  validation.StringIsNotEmpty,
 						ConflictsWith: []string{neDeviceSchemaNames["Secondary"] + ".0." + neDeviceSchemaNames["LicenseFile"]},
 						Description:   neDeviceDescriptions["LicenseFileID"],
 					},
 					neDeviceSchemaNames["CloudInitFileID"]: {
-						Type:         schema.TypeString,
-						Optional:     true,
-						ForceNew:     true,
+						Type:     schema.TypeString,
+						Optional: true,
+						//ForceNew:     true,
 						ValidateFunc: validation.StringIsNotEmpty,
 						Description:  neDeviceDescriptions["CloudInitFileID"],
 					},
@@ -672,9 +725,9 @@ func createNetworkDeviceSchema() map[string]*schema.Schema {
 						Description: neDeviceDescriptions["SSHIPFqdn"],
 					},
 					neDeviceSchemaNames["AccountNumber"]: {
-						Type:         schema.TypeString,
-						Required:     true,
-						ForceNew:     true,
+						Type:     schema.TypeString,
+						Required: true,
+						//ForceNew:     true,
 						ValidateFunc: validation.StringIsNotEmpty,
 						Description:  neDeviceDescriptions["AccountNumber"],
 					},
@@ -705,9 +758,9 @@ func createNetworkDeviceSchema() map[string]*schema.Schema {
 						Description: neDeviceDescriptions["AdditionalBandwidth"],
 					},
 					neDeviceSchemaNames["WanInterfaceId"]: {
-						Type:         schema.TypeString,
-						Optional:     true,
-						ForceNew:     true,
+						Type:     schema.TypeString,
+						Optional: true,
+						//ForceNew:     true,
 						ValidateFunc: validation.StringIsNotEmpty,
 						Description:  neDeviceDescriptions["WanInterfaceId"],
 					},
@@ -723,7 +776,7 @@ func createNetworkDeviceSchema() map[string]*schema.Schema {
 						Type:     schema.TypeMap,
 						Optional: true,
 						Computed: true,
-						ForceNew: true,
+						//ForceNew: true,
 						Elem: &schema.Schema{
 							Type:         schema.TypeString,
 							ValidateFunc: validation.StringIsNotEmpty,
@@ -733,7 +786,7 @@ func createNetworkDeviceSchema() map[string]*schema.Schema {
 					neDeviceSchemaNames["UserPublicKey"]: {
 						Type:     schema.TypeSet,
 						Optional: true,
-						ForceNew: true,
+						//ForceNew: true,
 						MinItems: 1,
 						MaxItems: 1,
 						Elem: &schema.Resource{
@@ -917,7 +970,6 @@ func createVendorConfigurationSchema() map[string]*schema.Schema {
 			Type:        schema.TypeString,
 			Optional:    true,
 			Computed:    true,
-			ForceNew:    true,
 			Sensitive:   true,
 			Description: neDeviceVendorConfigDescriptions["AdminPassword"],
 		},
@@ -1106,7 +1158,7 @@ func resourceNetworkDeviceUpdate(ctx context.Context, d *schema.ResourceData, m 
 	supportedChanges := []string{
 		neDeviceSchemaNames["Name"], neDeviceSchemaNames["TermLength"], neDeviceSchemaNames["CoreCount"],
 		neDeviceSchemaNames["Notifications"], neDeviceSchemaNames["AdditionalBandwidth"],
-		neDeviceSchemaNames["ACLTemplateUUID"], neDeviceSchemaNames["MgmtAclTemplateUuid"],
+		neDeviceSchemaNames["ACLTemplateUUID"], neDeviceSchemaNames["MgmtAclTemplateUuid"], neDeviceSchemaNames["Secondary"],
 	}
 	updateReq := client.NewDeviceUpdateRequest(d.Id())
 	primaryChanges := equinix_schema.GetResourceDataChangedKeys(supportedChanges, d)
@@ -1120,6 +1172,27 @@ func resourceNetworkDeviceUpdate(ctx context.Context, d *schema.ResourceData, m 
 	}
 	if err := fillNetworkDeviceUpdateRequest(updateReq, primaryChanges).Execute(); err != nil {
 		return diag.FromErr(err)
+	}
+	var isSecondaryRemoved bool
+	isSecondaryRemoved = equinix_schema.IsDataElementRemoved(supportedChanges, neDeviceSchemaNames["Secondary"], d)
+	if isSecondaryRemoved == true {
+		if v, ok := d.GetOk(neDeviceSchemaNames["RedundantUUID"]); ok {
+			if err := client.DeleteSecondaryDevice(v.(string)); err != nil {
+				var restErr rest.Error
+				if errors.As(err, &restErr) {
+					for _, detailedErr := range restErr.ApplicationErrors {
+						if detailedErr.Code == ne.ErrorCodeDeviceRemoved {
+							return diags
+						}
+					}
+				}
+				return diag.FromErr(err)
+			}
+			log.Println("removing RedundantUUID")
+			if err := d.Set(neDeviceSchemaNames["RedundantUUID"], nil); err != nil {
+				return diag.Errorf("error updating RedundantUUID: %s", err)
+			}
+		}
 	}
 	var secondaryChanges map[string]interface{}
 	if v, ok := d.GetOk(neDeviceSchemaNames["RedundantUUID"]); ok {
@@ -1137,6 +1210,33 @@ func resourceNetworkDeviceUpdate(ctx context.Context, d *schema.ResourceData, m 
 	for _, stateChangeConf := range getNetworkDeviceStateChangeConfigs(client, d.Get(neDeviceSchemaNames["RedundantUUID"]).(string), d.Timeout(schema.TimeoutUpdate), secondaryChanges) {
 		if _, err := stateChangeConf.WaitForStateContext(ctx); err != nil {
 			return diag.Errorf("error waiting for network device %q to be updated: %s", d.Get(neDeviceSchemaNames["RedundantUUID"]), err)
+		}
+	}
+	var isSecondaryAdded bool
+	isSecondaryAdded = equinix_schema.IsDataElementAdded(supportedChanges, neDeviceSchemaNames["Secondary"], d)
+	if isSecondaryAdded == true {
+		var secondary *ne.Device
+		if v, ok := d.GetOk(neDeviceSchemaNames["Secondary"]); ok {
+			secondary = expandNetworkDeviceSecondary(v.([]interface{}))
+			secondaryUuid, err := client.AddSecondary(d.Id(), *secondary)
+			if err := d.Set(neDeviceSchemaNames["RedundantUUID"], secondaryUuid); err != nil {
+				return diag.Errorf("error reading RedundantUUID: %s", err)
+			}
+			if err != nil {
+				return diag.FromErr(err)
+			}
+			waitConfigs := []*retry.StateChangeConf{
+				createNetworkDeviceStatusProvisioningWaitConfiguration(client.GetDevice, ne.StringValue(secondaryUuid), 5*time.Second, d.Timeout(schema.TimeoutCreate)),
+			}
+			for _, config := range waitConfigs {
+				if config == nil {
+					continue
+				}
+				if _, err := config.WaitForStateContext(ctx); err != nil {
+					return diag.Errorf("error waiting for network device (%s) to be created: %s", ne.StringValue(secondaryUuid), err)
+				}
+			}
+
 		}
 	}
 	diags = append(diags, resourceNetworkDeviceRead(ctx, d, m)...)
@@ -1949,4 +2049,42 @@ func createNetworkDeviceAdditionalBandwidthStatusWaitConfiguration(fetchFunc get
 			return resp, ne.StringValue(resp.Status), nil
 		},
 	}
+}
+
+func CompareMaps(old, new map[string]interface{}) bool {
+	log.Println(old)
+	log.Println(new)
+
+	//deleteSystemConfigs(new_temp)
+	var oldTemp = copyMap(old)
+	var newTemp = copyMap(new)
+
+	deleteSystemConfigs(oldTemp)
+
+	if len(oldTemp) != len(newTemp) {
+		if len(oldTemp) == 0 || len(newTemp) == 0 {
+			return true
+		}
+		return false
+
+	}
+	if oldTemp != nil {
+		for key, value := range oldTemp {
+			if val, ok := newTemp[key]; !ok || val != value {
+				return false
+			}
+		}
+	}
+	return true
+}
+
+func copyMap(m map[string]interface{}) map[string]interface{} {
+	nm := make(map[string]interface{}, len(m))
+	for k, v := range m {
+		nm[k] = v
+	}
+	return nm
+}
+func deleteSystemConfigs(m map[string]interface{}) {
+	delete(m, "adminPassword")
 }
