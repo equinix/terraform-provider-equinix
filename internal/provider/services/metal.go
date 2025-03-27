@@ -6,7 +6,7 @@ import (
 	metalorganization "github.com/equinix/terraform-provider-equinix/internal/resources/metal/organization"
 	metalorganizationmember "github.com/equinix/terraform-provider-equinix/internal/resources/metal/organization_member"
 	metalproject "github.com/equinix/terraform-provider-equinix/internal/resources/metal/project"
-	metalprojectsshkey "github.com/equinix/terraform-provider-equinix/internal/resources/metal/project_ssh_key"
+	"github.com/equinix/terraform-provider-equinix/internal/resources/metal/projectsshkey"
 	metalsshkey "github.com/equinix/terraform-provider-equinix/internal/resources/metal/ssh_key"
 	"github.com/equinix/terraform-provider-equinix/internal/resources/metal/vlan"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
@@ -17,7 +17,7 @@ func MetalResources() []func() resource.Resource {
 	return []func() resource.Resource{
 		metalgateway.NewResource,
 		metalproject.NewResource,
-		metalprojectsshkey.NewResource,
+		projectsshkey.NewResource,
 		metalsshkey.NewResource,
 		metalconnection.NewResource,
 		metalorganization.NewResource,
@@ -30,7 +30,7 @@ func MetalDatasources() []func() datasource.DataSource {
 	return []func() datasource.DataSource{
 		metalgateway.NewDataSource,
 		metalproject.NewDataSource,
-		metalprojectsshkey.NewDataSource,
+		projectsshkey.NewDataSource,
 		metalconnection.NewDataSource,
 		metalorganization.NewDataSource,
 		vlan.NewDataSource,
