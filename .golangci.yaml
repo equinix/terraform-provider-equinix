@@ -10,13 +10,8 @@ linters:
     - staticcheck
     - unused
     - revive
-formatters:
-  enable:
-    - goimports
-issues:
-  max-issues-per-linter: 0
-  max-same-issues: 0
-  exclude-rules:
+  exclusions:
+    rules:
     # Allow underscores in names in test files because the
     # HashiCorp-recommended/documented convention uses
     # underscores in function names
@@ -28,3 +23,9 @@ issues:
       linters:
         - stylecheck
       text: "^ST1003"
+formatters:
+  enable:
+    - goimports
+issues:
+  max-issues-per-linter: 0
+  max-same-issues: 0
