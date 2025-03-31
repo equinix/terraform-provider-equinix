@@ -23,7 +23,7 @@ jobs:
           version=$(echo ${line} | cut -d = -f2)
           echo "version=$version" >> "$GITHUB_OUTPUT"
       - name: golangci-lint
-        uses: golangci/golangci-lint-action@v6
+        uses: golangci/golangci-lint-action@v7
         with:
           args: --whole-files
           version: ${{ steps.golangcilint.outputs.version }}
