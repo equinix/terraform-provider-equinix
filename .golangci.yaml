@@ -1,17 +1,18 @@
+version: "2"
 run:
   modules-download-mode: readonly
   timeout: 10m
 linters:
   enable:
     - errcheck
-    - goimports
-    - gosimple
     - govet
     - ineffassign
     - staticcheck
     - unused
     - revive
-    - stylecheck
+formatters:
+  enable:
+    - goimports
 issues:
   max-issues-per-linter: 0
   max-same-issues: 0
