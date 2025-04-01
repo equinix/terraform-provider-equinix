@@ -1,6 +1,9 @@
 package schema
 
-import "reflect"
+import (
+	"log"
+	"reflect"
+)
 
 // resourceDataProvider proxies interface to schema.ResourceData
 // for convenient mocking purposes
@@ -42,5 +45,29 @@ func GetResourceDataListElementChanges(keys []string, listKeyName string, listIn
 	if len(oldList) < listIndex || len(newList) < listIndex {
 		return changed
 	}
+	if len(oldList) == 0 {
+		log.Println(newList[0].(map[string]interface{}))
+		return newList[0].(map[string]interface{})
+	}
 	return getMapChangedKeys(keys, oldList[listIndex].(map[string]interface{}), newList[listIndex].(map[string]interface{}))
+}
+
+func IsDataElementAdded(keys []string, listKeyName string, d resourceDataProvider) bool {
+	if !d.HasChange(listKeyName) {
+		return false
+	}
+	old, new := d.GetChange(listKeyName)
+	oldList := old.([]interface{})
+	newList := new.([]interface{})
+	return len(oldList) == 0 && len(newList) > 0
+}
+
+func IsDataElementRemoved(keys []string, listKeyName string, d resourceDataProvider) bool {
+	if !d.HasChange(listKeyName) {
+		return false
+	}
+	old, new := d.GetChange(listKeyName)
+	oldList := old.([]interface{})
+	newList := new.([]interface{})
+	return len(newList) == 0 && len(oldList) > 0
 }
