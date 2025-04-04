@@ -1,4 +1,4 @@
-package project_ssh_key
+package projectsshkey
 
 import (
 	metal_ssh_key "github.com/equinix/terraform-provider-equinix/internal/resources/metal/ssh_key"

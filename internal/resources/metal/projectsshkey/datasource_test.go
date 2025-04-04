@@ -1,4 +1,4 @@
-package project_ssh_key_test
+package projectsshkey_test
 
 import (
 	"fmt"
@@ -36,7 +36,7 @@ func TestAccDataSourceMetalProjectSSHKey_bySearch(t *testing.T) {
 				),
 			},
 			{
-				Config:      testAccDataSourceMetalProjectSSHKeyConfig_noKey(keyName, publicKeyMaterial),
+				Config:      testAccDataSourceMetalProjectSSHKeyConfig_noKey(keyName),
 				ExpectError: regexp.MustCompile("was not found"),
 			},
 			{
@@ -78,7 +78,7 @@ func TestAccDataSourceMetalProjectSSHKeyDataSource_byID(t *testing.T) {
 				// ExpectNonEmptyPlan: true,
 			},
 			{
-				Config:      testAccDataSourceMetalProjectSSHKeyConfig_noKey(keyName, publicKeyMaterial),
+				Config:      testAccDataSourceMetalProjectSSHKeyConfig_noKey(keyName),
 				ExpectError: regexp.MustCompile("was not found"),
 			},
 			{
@@ -112,7 +112,7 @@ data "equinix_metal_project_ssh_key" "foobar" {
 	return config
 }
 
-func testAccDataSourceMetalProjectSSHKeyConfig_noKey(keyName, publicSshKey string) string {
+func testAccDataSourceMetalProjectSSHKeyConfig_noKey(keyName string) string {
 	config := fmt.Sprintf(`
 resource "equinix_metal_project" "test" {
     name = "%s"
