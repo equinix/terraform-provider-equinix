@@ -1,3 +1,4 @@
+// Package comparisons for comparison functions
 package comparisons
 
 import (
@@ -6,7 +7,7 @@ import (
 	"strings"
 )
 
-// isEmpty returns true if the given value is empty
+// IsEmpty returns true if the given value is empty
 func IsEmpty(v interface{}) bool {
 	switch v := v.(type) {
 	case int:
@@ -37,7 +38,7 @@ func Subsets[T cmp.Ordered](s1, s2 []T) bool {
 	return true
 }
 
-// comparisons.SlicesMatch returns true if the two slices contain the same elements, regardless of order
+// SlicesMatch comparisons.SlicesMatch returns true if the two slices contain the same elements, regardless of order
 func SlicesMatch[T cmp.Ordered](s1, s2 []T) bool {
 	if len(s1) != len(s2) {
 		return false
@@ -55,13 +56,42 @@ func SlicesMatch[T cmp.Ordered](s1, s2 []T) bool {
 }
 
 // caseInsensitiveLess is a comparison function for sorting strings case-insensitively
-func caseInsensitiveLess(s1, s2 string) int {
+func _(s1, s2 string) int {
 	switch {
-	case strings.ToLower(s1) == strings.ToLower(s2):
+	case strings.EqualFold(strings.ToLower(s1), strings.ToLower(s2)):
 		return 0
 	case strings.ToLower(s1) < strings.ToLower(s2):
 		return -1
 	default:
 		return 1
 	}
+}
+
+// CompareMaps is a comparison function for comparing vendor config maps
+func CompareMaps(old, newMap map[string]interface{}) bool {
+	var oldTemp = copyMap(old)
+	var newTemp = copyMap(newMap)
+	if len(oldTemp) != len(newTemp) {
+		if len(oldTemp) == 0 || len(newTemp) == 0 {
+			return true
+		}
+		return false
+
+	}
+
+	for key, value := range oldTemp {
+		if val, ok := newTemp[key]; !ok || val != value {
+			return false
+		}
+	}
+
+	return true
+}
+
+func copyMap(m map[string]interface{}) map[string]interface{} {
+	nm := make(map[string]interface{}, len(m))
+	for k, v := range m {
+		nm[k] = v
+	}
+	return nm
 }

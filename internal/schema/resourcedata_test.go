@@ -92,7 +92,7 @@ func TestProvider_mapChanges(t *testing.T) {
 		"key":    "value",
 		"keyTwo": "valueTwo",
 	}
-	new := map[string]interface{}{
+	newMap := map[string]interface{}{
 		"key":    "newValue",
 		"keyTwo": "valueTwo",
 	}
@@ -100,7 +100,65 @@ func TestProvider_mapChanges(t *testing.T) {
 		"key": "newValue",
 	}
 	// when
-	result := getMapChangedKeys(keys, old, new)
+	result := getMapChangedKeys(keys, old, newMap)
 	// then
 	assert.Equal(t, expected, result, "Function returns valid key changes")
+}
+
+func TestProvider_IsDataElementAdded(t *testing.T) {
+	// given
+	listKeyName := "myList"
+	rd := mockedResourceDataProvider{
+		old: map[string]interface{}{
+			listKeyName: []interface{}{
+				map[string]interface{}{
+					"key":      "value",
+					"keyTwo":   "valueTwo",
+					"keyThree": 50,
+				},
+			},
+		},
+		actual: map[string]interface{}{
+			listKeyName: []interface{}{
+				map[string]interface{}{
+					"key":      "value",
+					"keyTwo":   "newValueTwo",
+					"keyThree": 100,
+				},
+			},
+		},
+	}
+	// when
+	result := IsDataElementAdded(listKeyName, rd)
+	// then
+	assert.Equal(t, false, result, "Function returns valid key changes")
+}
+
+func TestProvider_IsDataElementRemoved(t *testing.T) {
+	// given
+	listKeyName := "myList"
+	rd := mockedResourceDataProvider{
+		old: map[string]interface{}{
+			listKeyName: []interface{}{
+				map[string]interface{}{
+					"key":      "value",
+					"keyTwo":   "valueTwo",
+					"keyThree": 50,
+				},
+			},
+		},
+		actual: map[string]interface{}{
+			listKeyName: []interface{}{
+				map[string]interface{}{
+					"key":      "value",
+					"keyTwo":   "newValueTwo",
+					"keyThree": 100,
+				},
+			},
+		},
+	}
+	// when
+	result := IsDataElementRemoved(listKeyName, rd)
+	// then
+	assert.Equal(t, false, result, "Function returns valid key changes")
 }
