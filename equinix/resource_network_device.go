@@ -204,6 +204,9 @@ var neDeviceVendorConfigSchemaNames = map[string]string{
 	"PanoramaIPAddress": "panorama_ip_address",
 	"PanoramaAuthKey":   "panorama_auth_key",
 	"ManagementType":    "management_type",
+	"IPAddress":         "ip_address",
+	"SubnetMaskIP":      "subnet_mask_ip",
+	"GatewayIP":         "gateway_ip",
 }
 
 var neDeviceVendorConfigDescriptions = map[string]string{
@@ -222,6 +225,9 @@ var neDeviceVendorConfigDescriptions = map[string]string{
 	"PanoramaIPAddress": "Panorama Server IP Address. This field is relevant only for Palo Alto Networks Firewall devices",
 	"PanoramaAuthKey":   "Panorama Server Auth Key. This field is relevant only for Palo Alto Networks Firewall devices",
 	"ManagementType":    "Management Type. This field is relevant only for Cisco FTD Firewall devices",
+	"IPAddress":         "LAN1 Private Network. This field is relevant only for Infoblox Grid Member devices",
+	"SubnetMaskIP":      "LAN1 Subnet Mask. This field is relevant only for Infoblox Grid Member devices",
+	"GatewayIP":         "LAN1 Gateway. This field is relevant only for Infoblox Grid Member devices",
 }
 
 func resourceNetworkDevice() *schema.Resource {
@@ -986,6 +992,24 @@ func createVendorConfigurationSchema() map[string]*schema.Schema {
 			ForceNew:    true,
 			Description: neDeviceVendorConfigDescriptions["PanoramaAuthKey"],
 		},
+		neDeviceVendorConfigSchemaNames["IPAddress"]: {
+			Type:        schema.TypeString,
+			Optional:    true,
+			ForceNew:    true,
+			Description: neDeviceVendorConfigDescriptions["IPAddress"],
+		},
+		neDeviceVendorConfigSchemaNames["SubnetMaskIP"]: {
+			Type:        schema.TypeString,
+			Optional:    true,
+			ForceNew:    true,
+			Description: neDeviceVendorConfigDescriptions["SubnetMaskIP"],
+		},
+		neDeviceVendorConfigSchemaNames["GatewayIP"]: {
+			Type:        schema.TypeString,
+			Optional:    true,
+			ForceNew:    true,
+			Description: neDeviceVendorConfigDescriptions["GatewayIP"],
+		},
 		neDeviceVendorConfigSchemaNames["ManagementType"]: {
 			Type:         schema.TypeString,
 			Optional:     true,
@@ -1603,6 +1627,15 @@ func flattenVendorConfiguration(vendorConfig map[string]string) interface{} {
 	if v, ok := vendorConfig["panoramaAuthKey"]; ok {
 		transformed[neDeviceVendorConfigSchemaNames["PanoramaAuthKey"]] = v
 	}
+	if v, ok := vendorConfig["ipAddress"]; ok {
+		transformed[neDeviceVendorConfigSchemaNames["IPAddress"]] = v
+	}
+	if v, ok := vendorConfig["subnetMaskIp"]; ok {
+		transformed[neDeviceVendorConfigSchemaNames["SubnetMaskIP"]] = v
+	}
+	if v, ok := vendorConfig["gatewayIp"]; ok {
+		transformed[neDeviceVendorConfigSchemaNames["GatewayIP"]] = v
+	}
 	if v, ok := vendorConfig["managementType"]; ok {
 		transformed[neDeviceVendorConfigSchemaNames["ManagementType"]] = v
 	}
@@ -1695,6 +1728,15 @@ func expandVendorConfiguration(vendorConfigs []interface{}) map[string]string {
 	}
 	if v, ok := vendorConfig[neDeviceVendorConfigSchemaNames["ManagementType"]]; ok && !isEmpty(v) {
 		transformed["managementType"] = v.(string)
+	}
+	if v, ok := vendorConfig[neDeviceVendorConfigSchemaNames["IPAddress"]]; ok && !isEmpty(v) {
+		transformed["ipAddress"] = v.(string)
+	}
+	if v, ok := vendorConfig[neDeviceVendorConfigSchemaNames["SubnetMaskIP"]]; ok && !isEmpty(v) {
+		transformed["subnetMaskIp"] = v.(string)
+	}
+	if v, ok := vendorConfig[neDeviceVendorConfigSchemaNames["GatewayIP"]]; ok && !isEmpty(v) {
+		transformed["gatewayIp"] = v.(string)
 	}
 	return transformed
 }
