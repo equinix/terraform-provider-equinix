@@ -158,21 +158,22 @@ func (m *dataSourceByIDModel) parse(ctx context.Context, ept *fabricv4.Precision
 }
 
 func (m *dataSourceAllEptServicesModel) parse(ctx context.Context, eptResponse *fabricv4.ServiceSearchResponse) diag.Diagnostics {
-	var diags diag.Diagnostics
+	var mDiags diag.Diagnostics
 
 	if len(eptResponse.GetData()) < 1 {
-		diags.AddError("no data retrieved by precision time services data source",
+		mDiags.AddError("no data retrieved by precision time services data source",
 			"either the account does not have any precision time services data to pull or the combination of limit and offset needs to be updated")
-		return diags
+		return mDiags
 	}
 
 	data := make([]basePrecisionTimeModel, len(eptResponse.GetData()))
 	streams := eptResponse.GetData()
 	for index, stream := range streams {
 		var streamModel basePrecisionTimeModel
-		diags = streamModel.parse(ctx, &stream)
+		diags := streamModel.parse(ctx, &stream)
 		if diags.HasError() {
-			return diags
+			mDiags.Append(diags...)
+			return mDiags
 		}
 		data[index] = streamModel
 	}
@@ -186,7 +187,7 @@ func (m *dataSourceAllEptServicesModel) parse(ctx context.Context, eptResponse *
 	m.Pagination = fwtypes.NewObjectValueOf[paginationModel](ctx, &pagination)
 	m.Data = fwtypes.NewListNestedObjectValueOfValueSlice[basePrecisionTimeModel](ctx, data)
 
-	return diags
+	return mDiags
 }
 
 func (m *resourceModel) parse(ctx context.Context, routeAggregation *fabricv4.PrecisionTimeServiceResponse) diag.Diagnostics {
@@ -196,7 +197,7 @@ func (m *resourceModel) parse(ctx context.Context, routeAggregation *fabricv4.Pr
 }
 
 func (m *basePrecisionTimeModel) parse(ctx context.Context, ept *fabricv4.PrecisionTimeServiceResponse) diag.Diagnostics {
-	var diags diag.Diagnostics
+	var mDiags, diags diag.Diagnostics
 
 	m.Type = types.StringValue(string(ept.GetType()))
 	m.Name = types.StringValue(ept.GetName())
@@ -205,27 +206,32 @@ func (m *basePrecisionTimeModel) parse(ctx context.Context, ept *fabricv4.Precis
 
 	m.Package, diags = parsePackage(ctx, ept.GetPackage())
 	if diags.HasError() {
-		return diags
+		mDiags.Append(diags...)
+		return mDiags
 	}
 
 	m.Connections, diags = parseConnections(ctx, ept.GetConnections())
 	if diags.HasError() {
-		return diags
+		mDiags.Append(diags...)
+		return mDiags
 	}
 
 	m.Ipv4, diags = parseIpv4(ctx, ept.GetIpv4())
 	if diags.HasError() {
-		return diags
+		mDiags.Append(diags...)
+		return mDiags
 	}
 
 	m.NtpAdvanceConfiguration, diags = parseNtpAdvanceConfiguration(ctx, ept.GetNtpAdvancedConfiguration())
 	if diags.HasError() {
-		return diags
+		mDiags.Append(diags...)
+		return mDiags
 	}
 
 	m.PtpAdvanceConfiguration, diags = parsePtpAdvancedConfiguration(ctx, ept.GetPtpAdvancedConfiguration())
 	if diags.HasError() {
-		return diags
+		mDiags.Append(diags...)
+		return mDiags
 	}
 
 	m.UUID = types.StringValue(ept.GetUuid())
@@ -239,25 +245,29 @@ func (m *basePrecisionTimeModel) parse(ctx context.Context, ept *fabricv4.Precis
 
 	m.Account, diags = parseAccount(ctx, ept.GetAccount())
 	if diags.HasError() {
-		return diags
+		mDiags.Append(diags...)
+		return mDiags
 	}
 
 	m.Order, diags = parseOrder(ctx, ept.GetOrder())
 	if diags.HasError() {
-		return diags
+		mDiags.Append(diags...)
+		return mDiags
 	}
 
 	m.PrecisionTimePrice, diags = parsePrecisionTimePrice(ctx, ept.GetPricing())
 	if diags.HasError() {
-		return diags
+		mDiags.Append(diags...)
+		return mDiags
 	}
 
 	m.ChangeLog, diags = parseChangeLog(ctx, ept.GetChangeLog())
 	if diags.HasError() {
-		return diags
+		mDiags.Append(diags...)
+		return mDiags
 	}
 
-	return diags
+	return mDiags
 }
 
 func parsePackage(ctx context.Context, packageEpt fabricv4.PrecisionTimePackagePostResponse) (fwtypes.ObjectValueOf[packageModel], diag.Diagnostics) {

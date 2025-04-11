@@ -43,7 +43,7 @@ func (r *Resource) Create(
 ) {
 
 	var plan resourceModel
-	diags := req.Plan.Get(ctx, &plan)
+	diags := req.Config.Get(ctx, &plan)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return
@@ -216,6 +216,7 @@ func (r *Resource) Delete(
 		if deleteResp == nil || !slices.Contains([]int{http.StatusForbidden, http.StatusNotFound}, deleteResp.StatusCode) {
 			resp.Diagnostics.AddError(
 				fmt.Sprintf("Failed to delete Precision Time Service %s", id), err.Error())
+			return
 		}
 	}
 
@@ -230,12 +231,12 @@ func (r *Resource) Delete(
 	if err != nil {
 		resp.Diagnostics.AddError(
 			fmt.Sprintf("Failed to delete Precision Time Service %s", id), err.Error())
+		return
 	}
 }
 
 func buildUpdateRequest(ctx context.Context, state resourceModel, plan resourceModel) ([]fabricv4.PrecisionTimeChangeOperation, diag.Diagnostics) {
-	var resp *resource.UpdateResponse
-	var diags diag.Diagnostics
+	var mDiags diag.Diagnostics
 
 	updateRequest := make([]fabricv4.PrecisionTimeChangeOperation, 0)
 	if !state.Name.Equal(plan.Name) {
@@ -264,8 +265,9 @@ func buildUpdateRequest(ctx context.Context, state resourceModel, plan resourceM
 			UnhandledUnknownAsEmpty: true,
 		})
 		if planDiags.HasError() || stateDiags.HasError() {
-			resp.Diagnostics.Append(planDiags...)
-			resp.Diagnostics.Append(stateDiags...)
+			mDiags.Append(planDiags...)
+			mDiags.Append(stateDiags...)
+			return []fabricv4.PrecisionTimeChangeOperation{}, mDiags
 		}
 
 		if statePackageModel.Code.ValueString() != planPackageModel.Code.ValueString() {
@@ -290,8 +292,9 @@ func buildUpdateRequest(ctx context.Context, state resourceModel, plan resourceM
 			UnhandledUnknownAsEmpty: true,
 		})
 		if planDiags.HasError() || stateDiags.HasError() {
-			resp.Diagnostics.Append(planDiags...)
-			resp.Diagnostics.Append(stateDiags...)
+			mDiags.Append(planDiags...)
+			mDiags.Append(stateDiags...)
+			return []fabricv4.PrecisionTimeChangeOperation{}, mDiags
 		}
 
 		ipv4Value := map[string]string{}
@@ -323,8 +326,9 @@ func buildUpdateRequest(ctx context.Context, state resourceModel, plan resourceM
 		stateDiags := state.NtpAdvanceConfiguration.ElementsAs(ctx, &stateNtpModel, false)
 
 		if planDiags.HasError() || stateDiags.HasError() {
-			resp.Diagnostics.Append(planDiags...)
-			resp.Diagnostics.Append(stateDiags...)
+			mDiags.Append(planDiags...)
+			mDiags.Append(stateDiags...)
+			return []fabricv4.PrecisionTimeChangeOperation{}, mDiags
 		}
 
 		var ntpList []map[string]interface{}
@@ -354,8 +358,9 @@ func buildUpdateRequest(ctx context.Context, state resourceModel, plan resourceM
 			UnhandledUnknownAsEmpty: true,
 		})
 		if planDiags.HasError() || stateDiags.HasError() {
-			resp.Diagnostics.Append(planDiags...)
-			resp.Diagnostics.Append(stateDiags...)
+			mDiags.Append(planDiags...)
+			mDiags.Append(stateDiags...)
+			return []fabricv4.PrecisionTimeChangeOperation{}, mDiags
 		}
 
 		ptpAdvancedConfigurationValue := map[string]string{}
@@ -394,10 +399,10 @@ func buildUpdateRequest(ctx context.Context, state resourceModel, plan resourceM
 		})
 	}
 
-	return updateRequest, diags
+	return updateRequest, mDiags
 }
 func buildCreateRequest(ctx context.Context, plan resourceModel) (fabricv4.PrecisionTimeServiceRequest, diag.Diagnostics) {
-	var diags diag.Diagnostics
+	var mDiags diag.Diagnostics
 
 	request := fabricv4.PrecisionTimeServiceRequest{}
 
@@ -407,18 +412,20 @@ func buildCreateRequest(ctx context.Context, plan resourceModel) (fabricv4.Preci
 	var eptPackage packageModel
 
 	if !plan.Package.IsNull() && !plan.Package.IsUnknown() {
-		diags = plan.Package.As(ctx, &eptPackage, basetypes.ObjectAsOptions{})
+		diags := plan.Package.As(ctx, &eptPackage, basetypes.ObjectAsOptions{})
 		if diags.HasError() {
-			return fabricv4.PrecisionTimeServiceRequest{}, diags
+			mDiags.Append(diags...)
+			return fabricv4.PrecisionTimeServiceRequest{}, mDiags
 		}
 		request.SetPackage(fabricv4.PrecisionTimePackageRequest{Code: fabricv4.PrecisionTimePackageRequestCode(eptPackage.Code.ValueString())})
 	}
 
 	if !plan.Connections.IsNull() && !plan.Connections.IsUnknown() {
 		connectionModels := make([]connectionModel, len(plan.Connections.Elements()))
-		diags = plan.Connections.ElementsAs(ctx, &connectionModels, false)
+		diags := plan.Connections.ElementsAs(ctx, &connectionModels, false)
 		if diags.HasError() {
-			return fabricv4.PrecisionTimeServiceRequest{}, diags
+			mDiags.Append(diags...)
+			return fabricv4.PrecisionTimeServiceRequest{}, mDiags
 		}
 		connections := make([]fabricv4.VirtualConnectionUuid, len(connectionModels))
 		for index, connection := range connectionModels {
@@ -437,9 +444,10 @@ func buildCreateRequest(ctx context.Context, plan resourceModel) (fabricv4.Preci
 
 	var ipv4 ipv4Model
 	if !plan.Ipv4.IsNull() && !plan.Ipv4.IsUnknown() {
-		diags = plan.Ipv4.As(ctx, &ipv4, basetypes.ObjectAsOptions{})
+		diags := plan.Ipv4.As(ctx, &ipv4, basetypes.ObjectAsOptions{})
 		if diags.HasError() {
-			return fabricv4.PrecisionTimeServiceRequest{}, diags
+			mDiags.Append(diags...)
+			return fabricv4.PrecisionTimeServiceRequest{}, mDiags
 		}
 		request.SetIpv4(fabricv4.Ipv4{
 			Primary:        ipv4.Primary.ValueString(),
@@ -453,35 +461,40 @@ func buildCreateRequest(ctx context.Context, plan resourceModel) (fabricv4.Preci
 		var ptpAdvanceConfiguration ptpAdvanceConfigurationModel
 		fmt.Println(plan.PtpAdvanceConfiguration)
 
-		diags = plan.PtpAdvanceConfiguration.As(ctx, &ptpAdvanceConfiguration, basetypes.ObjectAsOptions{})
+		diags := plan.PtpAdvanceConfiguration.As(ctx, &ptpAdvanceConfiguration, basetypes.ObjectAsOptions{})
 		if diags.HasError() {
-			return fabricv4.PrecisionTimeServiceRequest{}, diags
+			mDiags.Append(diags...)
+			return fabricv4.PrecisionTimeServiceRequest{}, mDiags
 		}
 		timeScaleValue, _ := fabricv4.NewPtpAdvanceConfigurationTimeScaleFromValue(ptpAdvanceConfiguration.TimeScale.ValueString())
-		request.SetPtpAdvancedConfiguration(fabricv4.PtpAdvanceConfiguration{
-			TimeScale:           timeScaleValue,
-			Domain:              getInt32Pointer(ptpAdvanceConfiguration.Domain),
-			Priority1:           getInt32Pointer(ptpAdvanceConfiguration.Priority1),
-			Priority2:           getInt32Pointer(ptpAdvanceConfiguration.Priority2),
-			LogAnnounceInterval: (*fabricv4.PtpAdvanceConfigurationLogAnnounceInterval)(getInt32Pointer(ptpAdvanceConfiguration.LogAnnounceInterval)),
-			LogSyncInterval:     (*fabricv4.PtpAdvanceConfigurationLogSyncInterval)(getInt32Pointer(ptpAdvanceConfiguration.LogSyncInterval)),
-			TransportMode:       (*fabricv4.PtpAdvanceConfigurationTransportMode)(getStringPointer(ptpAdvanceConfiguration.TransportMode)),
-			GrantTime:           getInt32Pointer(ptpAdvanceConfiguration.GrantTime),
-		})
+
+		ptpConfig := fabricv4.NewPtpAdvanceConfiguration()
+		ptpConfig.SetTimeScale(*timeScaleValue)
+		ptpConfig.SetDomain(ptpAdvanceConfiguration.Domain.ValueInt32())
+		ptpConfig.SetPriority1(ptpAdvanceConfiguration.Priority1.ValueInt32())
+		ptpConfig.SetPriority2(ptpAdvanceConfiguration.Priority2.ValueInt32())
+		ptpConfig.SetLogAnnounceInterval(fabricv4.PtpAdvanceConfigurationLogAnnounceInterval(ptpAdvanceConfiguration.LogAnnounceInterval.ValueInt32()))
+		ptpConfig.SetLogSyncInterval(fabricv4.PtpAdvanceConfigurationLogSyncInterval(ptpAdvanceConfiguration.LogSyncInterval.ValueInt32()))
+		ptpConfig.SetTransportMode(fabricv4.PtpAdvanceConfigurationTransportMode(ptpAdvanceConfiguration.TransportMode.ValueString()))
+		ptpConfig.SetGrantTime(ptpAdvanceConfiguration.GrantTime.ValueInt32())
+
+		request.SetPtpAdvancedConfiguration(*ptpConfig)
 	}
 
 	if !plan.NtpAdvanceConfiguration.IsNull() && !plan.NtpAdvanceConfiguration.IsUnknown() {
 		var ntpConfigs []ntpAdvanceConfigurationModel
-		diags = plan.NtpAdvanceConfiguration.ElementsAs(ctx, &ntpConfigs, false)
+		diags := plan.NtpAdvanceConfiguration.ElementsAs(ctx, &ntpConfigs, false)
 		if diags.HasError() {
-			return fabricv4.PrecisionTimeServiceRequest{}, diags
+			mDiags.Append(diags...)
+			return fabricv4.PrecisionTimeServiceRequest{}, mDiags
 		}
 		var convertedConfigs []fabricv4.Md5
 		for _, config := range ntpConfigs {
+			md5Type, _ := fabricv4.NewMd5TypeFromValue(config.Type.ValueString())
 			convertedConfigs = append(convertedConfigs, fabricv4.Md5{
-				Type:      (*fabricv4.Md5Type)(getStringPointer(config.Type)),
-				KeyNumber: getInt32Pointer(config.KeyNumber),
-				Key:       getStringPointer(config.Key),
+				Type:      md5Type,
+				KeyNumber: config.KeyNumber.ValueInt32Pointer(),
+				Key:       config.Key.ValueStringPointer(),
 			})
 		}
 		request.NtpAdvancedConfiguration = convertedConfigs
@@ -489,30 +502,15 @@ func buildCreateRequest(ctx context.Context, plan resourceModel) (fabricv4.Preci
 
 	var project projectModel
 	if !plan.Project.IsNull() && !plan.Project.IsUnknown() {
-		diags = plan.Project.As(ctx, &project, basetypes.ObjectAsOptions{})
+		diags := plan.Project.As(ctx, &project, basetypes.ObjectAsOptions{})
 		if diags.HasError() {
-			return fabricv4.PrecisionTimeServiceRequest{}, diags
+			mDiags.Append(diags...)
+			return fabricv4.PrecisionTimeServiceRequest{}, mDiags
 		}
 		request.SetProject(fabricv4.Project{ProjectId: project.ProjectID.ValueString()})
 	}
 
-	return request, diags
-}
-
-func getInt32Pointer(value basetypes.Int32Value) *int32 {
-	if value.IsNull() || value.IsUnknown() {
-		return nil
-	}
-	intVal := value.ValueInt32()
-	return &intVal
-}
-
-func getStringPointer(value basetypes.StringValue) *string {
-	if value.IsNull() || value.IsUnknown() {
-		return nil
-	}
-	stringVal := value.ValueString()
-	return &stringVal
+	return request, mDiags
 }
 
 func getCreateUpdateWaiter(ctx context.Context, client *fabricv4.APIClient, id string, timeout time.Duration) *retry.StateChangeConf {
