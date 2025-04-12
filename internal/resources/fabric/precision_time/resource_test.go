@@ -1,3 +1,4 @@
+// Package precisiontime_test for EPT resources and data sources tests
 package precisiontime_test
 
 import (

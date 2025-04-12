@@ -18,6 +18,7 @@ import (
 	"github.com/equinix/terraform-provider-equinix/internal/framework"
 )
 
+// NewResource creates new precision time service resource
 func NewResource() resource.Resource {
 	return &Resource{
 		BaseResource: framework.NewBaseResource(
@@ -28,14 +29,17 @@ func NewResource() resource.Resource {
 	}
 }
 
+// Resource represents precision time service resource
 type Resource struct {
 	framework.BaseResource
 }
 
+// Schema returns the resource schema
 func (r *Resource) Schema(ctx context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = resourceSchema(ctx)
 }
 
+// Create provisions a new precision time service
 func (r *Resource) Create(
 	ctx context.Context,
 	req resource.CreateRequest,
@@ -88,6 +92,7 @@ func (r *Resource) Create(
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
 
+// Read retrieves precision time service
 func (r *Resource) Read(
 	ctx context.Context,
 	req resource.ReadRequest,
@@ -123,6 +128,7 @@ func (r *Resource) Read(
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 }
 
+// Update modifies an existing precision time service
 func (r *Resource) Update(
 	ctx context.Context,
 	req resource.UpdateRequest,
@@ -191,6 +197,7 @@ func (r *Resource) Update(
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
 
+// Delete removes the precision time service
 func (r *Resource) Delete(
 	ctx context.Context,
 	req resource.DeleteRequest,

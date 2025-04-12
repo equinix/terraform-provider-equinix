@@ -1,3 +1,4 @@
+// Package precisiontime for EPT resources and data sources
 package precisiontime
 
 import (
@@ -12,6 +13,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 )
 
+// NewDataSourceAllEptServices retrieves all precision time service
 func NewDataSourceAllEptServices() datasource.DataSource {
 	return &DataSourceAllEptServices{
 		BaseDataSource: framework.NewBaseDataSource(
@@ -22,10 +24,12 @@ func NewDataSourceAllEptServices() datasource.DataSource {
 	}
 }
 
+// DataSourceAllEptServices represents all precision time service data source
 type DataSourceAllEptServices struct {
 	framework.BaseDataSource
 }
 
+// Schema returns the  data source schema
 func (r *DataSourceAllEptServices) Schema(
 	ctx context.Context,
 	_ datasource.SchemaRequest,
@@ -34,6 +38,7 @@ func (r *DataSourceAllEptServices) Schema(
 	resp.Schema = dataSourceAllEptServicesSchema(ctx)
 }
 
+// Read retrieves precision time service
 func (r *DataSourceAllEptServices) Read(ctx context.Context, request datasource.ReadRequest, response *datasource.ReadResponse) {
 	client := r.Meta.NewFabricClientForFramework(ctx, request.ProviderMeta)
 

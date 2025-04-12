@@ -4,7 +4,10 @@ subcategory: "Fabric"
 
 # equinix_fabric_precision_time_service (Resource)
 
+Fabric V4 API compatible resource allows creation and management of Equinix Fabric Precision Time Service
 
+Additional Documentation:
+* API: https://docs.equinix.com/en-us/Content/KnowledgeCenter/Fabric/API-Reference/API-Precision-Time.htm
 
 ## Example Usage
 

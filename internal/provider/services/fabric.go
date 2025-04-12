@@ -1,3 +1,4 @@
+// Package services for Fabric resources and data sources
 package services
 
 import (
@@ -14,6 +15,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 )
 
+// FabricResources represents fabric resources
 func FabricResources() []func() resource.Resource {
 	return []func() resource.Resource{
 		connectionrouteaggregation.NewResource,
@@ -26,6 +28,7 @@ func FabricResources() []func() resource.Resource {
 	}
 }
 
+// FabricDatasources represents fabric data source
 func FabricDatasources() []func() datasource.DataSource {
 	return []func() datasource.DataSource{
 		connectionrouteaggregation.NewDataSourceByConnectionRouteAggregationID,

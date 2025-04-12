@@ -1,3 +1,4 @@
+// Package precisiontime for EPT resources and data sources
 package precisiontime
 
 import (
