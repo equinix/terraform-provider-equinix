@@ -9,7 +9,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/boolplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int32planmodifier"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/listplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/objectplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
@@ -50,37 +49,6 @@ Additional Documentation:
 			"enabled": schema.BoolAttribute{
 				Description: "Stream subscription enabled status",
 				Required:    true,
-			},
-			"filters": schema.ListNestedAttribute{
-				Description: "List of filters to apply to the stream subscription selectors. Maximum of 8. All will be AND'd together with 1 of the 8 being a possible OR group of 3",
-				Optional:    true,
-				Computed:    true,
-				CustomType:  fwtypes.NewListNestedObjectTypeOf[filterModel](ctx),
-				PlanModifiers: []planmodifier.List{
-					listplanmodifier.UseStateForUnknown(),
-				},
-				NestedObject: schema.NestedAttributeObject{
-					Attributes: map[string]schema.Attribute{
-						"property": schema.StringAttribute{
-							Description: "Property to apply the filter to",
-							Required:    true,
-						},
-						"operator": schema.StringAttribute{
-							Description: "Operation applied to the values of the filter",
-							Required:    true,
-						},
-						"values": schema.ListAttribute{
-							Description: "List of values to apply the operation to for the specified property",
-							Required:    true,
-							ElementType: types.StringType,
-						},
-						"or": schema.BoolAttribute{
-							Description: "Boolean value to specify if this filter is a part of the OR group. Has a maximum of 3 and only counts for 1 of the 8 possible filters",
-							Optional:    true,
-							Computed:    true,
-						},
-					},
-				},
 			},
 			"metric_selector": schema.SingleNestedAttribute{
 				Description: "Lists of metrics to be included/excluded on the stream subscription",

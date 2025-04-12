@@ -4,13 +4,6 @@ resource "equinix_fabric_stream_subscription" "SPLUNK" {
   description = "<description>"
   stream_id   = "<stream_id>"
   enabled     = true
-  filters = [{
-    property = "/type"
-    operator = "LIKE"
-    values = [
-      "equinix.fabric.connection%"
-    ]
-  }]
   event_selector = {
     include = ["equinix.fabric.connection.*"]
   }
@@ -54,7 +47,6 @@ resource "equinix_fabric_stream_subscription" "PAGER_DUTY" {
     type = "PAGERDUTY"
     host = "<pager_duty_host"
     settings = {
-      transform_alerts = true
       change_uri       = "<pager_duty_change_uri>"
       alert_uri        = "<pager_duty_alert_uri>"
     }

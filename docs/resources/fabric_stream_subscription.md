@@ -19,13 +19,6 @@ resource "equinix_fabric_stream_subscription" "SPLUNK" {
   description = "<description>"
   stream_id   = "<stream_id>"
   enabled     = true
-  filters = [{
-    property = "/type"
-    operator = "LIKE"
-    values = [
-      "equinix.fabric.connection%"
-    ]
-  }]
   event_selector = {
     include = ["equinix.fabric.connection.*"]
   }
@@ -69,7 +62,6 @@ resource "equinix_fabric_stream_subscription" "PAGER_DUTY" {
     type = "PAGERDUTY"
     host = "<pager_duty_host"
     settings = {
-      transform_alerts = true
       change_uri       = "<pager_duty_change_uri>"
       alert_uri        = "<pager_duty_alert_uri>"
     }
@@ -130,7 +122,6 @@ resource "equinix_fabric_stream_subscription" "MSTEAMS" {
 ### Optional
 
 - `event_selector` (Attributes) Lists of events to be included/excluded on the stream subscription (see [below for nested schema](#nestedatt--event_selector))
-- `filters` (Attributes List) List of filters to apply to the stream subscription selectors. Maximum of 8. All will be AND'd together with 1 of the 8 being a possible OR group of 3 (see [below for nested schema](#nestedatt--filters))
 - `metric_selector` (Attributes) Lists of metrics to be included/excluded on the stream subscription (see [below for nested schema](#nestedatt--metric_selector))
 - `timeouts` (Attributes) (see [below for nested schema](#nestedatt--timeouts))
 
@@ -199,20 +190,6 @@ Required:
 Optional:
 
 - `except` (List of String) List of events to exclude
-
-
-<a id="nestedatt--filters"></a>
-### Nested Schema for `filters`
-
-Required:
-
-- `operator` (String) Operation applied to the values of the filter
-- `property` (String) Property to apply the filter to
-- `values` (List of String) List of values to apply the operation to for the specified property
-
-Optional:
-
-- `or` (Boolean) Boolean value to specify if this filter is a part of the OR group. Has a maximum of 3 and only counts for 1 of the 8 possible filters
 
 
 <a id="nestedatt--metric_selector"></a>
