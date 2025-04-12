@@ -3,7 +3,6 @@ package streamsubscription
 import (
 	"context"
 
-	"github.com/equinix/terraform-provider-equinix/internal/converters"
 	"github.com/equinix/terraform-provider-equinix/internal/fabric"
 	int_fw "github.com/equinix/terraform-provider-equinix/internal/framework"
 	fwtypes "github.com/equinix/terraform-provider-equinix/internal/framework/types"
@@ -46,25 +45,17 @@ type resourceModel struct {
 }
 
 type baseStreamSubscriptionModel struct {
-	Type           types.String                                 `tfsdk:"type"`
-	Name           types.String                                 `tfsdk:"name"`
-	Description    types.String                                 `tfsdk:"description"`
-	Enabled        types.Bool                                   `tfsdk:"enabled"`
-	Filters        fwtypes.ListNestedObjectValueOf[filterModel] `tfsdk:"filters"`         // List of filters
-	MetricSelector fwtypes.ObjectValueOf[selectorModel]         `tfsdk:"metric_selector"` // Object of MetricSelectorModel
-	EventSelector  fwtypes.ObjectValueOf[selectorModel]         `tfsdk:"event_selector"`  // Object of EventSelectorModel
-	Sink           fwtypes.ObjectValueOf[sinkModel]             `tfsdk:"sink"`            // Object of SinkModel
-	Href           types.String                                 `tfsdk:"href"`
-	UUID           types.String                                 `tfsdk:"uuid"`
-	State          types.String                                 `tfsdk:"state"`
-	ChangeLog      fwtypes.ObjectValueOf[changeLogModel]        `tfsdk:"change_log"` // Object of ChangeLogModel
-}
-
-type filterModel struct {
-	Property types.String                      `tfsdk:"property"`
-	Operator types.String                      `tfsdk:"operator"`
-	Values   fwtypes.ListValueOf[types.String] `tfsdk:"values"`
-	Or       types.Bool                        `tfsdk:"or"`
+	Type           types.String                          `tfsdk:"type"`
+	Name           types.String                          `tfsdk:"name"`
+	Description    types.String                          `tfsdk:"description"`
+	Enabled        types.Bool                            `tfsdk:"enabled"`
+	MetricSelector fwtypes.ObjectValueOf[selectorModel]  `tfsdk:"metric_selector"` // Object of MetricSelectorModel
+	EventSelector  fwtypes.ObjectValueOf[selectorModel]  `tfsdk:"event_selector"`  // Object of EventSelectorModel
+	Sink           fwtypes.ObjectValueOf[sinkModel]      `tfsdk:"sink"`            // Object of SinkModel
+	Href           types.String                          `tfsdk:"href"`
+	UUID           types.String                          `tfsdk:"uuid"`
+	State          types.String                          `tfsdk:"state"`
+	ChangeLog      fwtypes.ObjectValueOf[changeLogModel] `tfsdk:"change_log"` // Object of ChangeLogModel
 }
 
 type selectorModel struct {
@@ -188,50 +179,6 @@ func (m *baseStreamSubscriptionModel) parse(ctx context.Context, streamSubscript
 	m.State = types.StringValue(string(streamSubscription.GetState()))
 	m.Enabled = types.BoolValue(streamSubscription.GetEnabled())
 
-	// Parse filters
-	streamSubscriptionFilters := streamSubscription.GetFilters()
-	filterModels := make([]filterModel, len(streamSubscriptionFilters.GetAnd()))
-	for i, filter := range streamSubscriptionFilters.GetAnd() {
-		if len(filter.StreamFilterOrFilter.GetOr()) > 0 {
-			for j, orFilter := range filter.StreamFilterOrFilter.GetOr() {
-				orFilterModel, diags := parseSimpleExpression(ctx, &orFilter, true)
-				if diags.HasError() {
-					mDiags.Append(diags...)
-					return mDiags
-				}
-				// If the first OrGroup selector assign it to the space made in the slice
-				// Else append it to the end.
-				// We do this because we can't do the exact representation of the API model
-				// and this will be a longer list with orGroup boolean instead of a sub list
-				if j == 0 {
-					filterModels[i] = orFilterModel
-				} else {
-					filterModels = append(filterModels, orFilterModel)
-				}
-			}
-		} else {
-			// The unmarshal for this will always put the values in the additional properties for the
-			// StreamFilterOrFilter because it checks for that embedded struct first and
-			// the unmarshal allows it to do so without error; so it will never proceed to the
-			// StreamFilterSimpleExpression struct. So if GetOr doesn't have any values we check the additional
-			// properties map of StreamFilterOrFilter instead. Something to address at API Spec level
-			// before code generation of equinix-sdk-go/fabricv4 for long term fix
-			values := int_fw.StringSliceToAttrValue(converters.IfArrToStringArr(filter.StreamFilterOrFilter.AdditionalProperties["values"].([]interface{})))
-			fwValues, diags := fwtypes.NewListValueOf[types.String](ctx, values)
-			if diags.HasError() {
-				mDiags.Append(diags...)
-				return mDiags
-			}
-			filterModels[i] = filterModel{
-				Property: types.StringValue(filter.StreamFilterOrFilter.AdditionalProperties["property"].(string)),
-				Operator: types.StringValue(filter.StreamFilterOrFilter.AdditionalProperties["operator"].(string)),
-				Values:   fwValues,
-				Or:       types.BoolValue(false),
-			}
-		}
-	}
-	m.Filters = fwtypes.NewListNestedObjectValueOfValueSlice[filterModel](ctx, filterModels)
-
 	// Parse MetricSelector
 	metricSelectorObject, diags := parseSelectorModel(ctx, streamSubscription.GetMetricSelector())
 	if diags.HasError() {
@@ -349,20 +296,6 @@ func (m *baseStreamSubscriptionModel) parse(ctx context.Context, streamSubscript
 	m.ChangeLog = fwtypes.NewObjectValueOf[changeLogModel](ctx, &changeLog)
 
 	return mDiags
-}
-
-func parseSimpleExpression(ctx context.Context, expression *fabricv4.StreamFilterSimpleExpression, orGroup bool) (filterModel, diag.Diagnostics) {
-	values := int_fw.StringSliceToAttrValue(expression.GetValues())
-	fwValues, diags := fwtypes.NewListValueOf[types.String](ctx, values)
-	if diags.HasError() {
-		return filterModel{}, diags
-	}
-	return filterModel{
-		Property: types.StringValue(expression.GetProperty()),
-		Operator: types.StringValue(expression.GetOperator()),
-		Values:   fwValues,
-		Or:       types.BoolValue(orGroup),
-	}, nil
 }
 
 func parseSelectorModel(ctx context.Context, streamSubSelector fabricv4.StreamSubscriptionSelector) (fwtypes.ObjectValueOf[selectorModel], diag.Diagnostics) {
