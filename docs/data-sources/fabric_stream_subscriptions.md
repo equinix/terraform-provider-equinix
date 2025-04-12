@@ -59,7 +59,6 @@ Read-Only:
 - `description` (String) Customer-provided stream subscription description
 - `enabled` (Boolean) Stream subscription enabled status
 - `event_selector` (Attributes) Lists of events to be included/excluded on the stream subscription (see [below for nested schema](#nestedatt--data--event_selector))
-- `filters` (Attributes List) List of filters to apply to the stream subscription selectors. Maximum of 8. All will be AND'd together with 1 of the 8 being a possible OR group of 3 (see [below for nested schema](#nestedatt--data--filters))
 - `href` (String) Equinix assigned URI of the stream subscription resource
 - `metric_selector` (Attributes) Lists of metrics to be included/excluded on the stream subscription (see [below for nested schema](#nestedatt--data--metric_selector))
 - `name` (String) Customer-provided stream subscription name
@@ -94,17 +93,6 @@ Read-Only:
 
 - `except` (List of String) List of events to exclude
 - `include` (List of String) List of events to include
-
-
-<a id="nestedatt--data--filters"></a>
-### Nested Schema for `data.filters`
-
-Read-Only:
-
-- `operator` (String) Operation applied to the values of the filter
-- `or` (Boolean) Boolean value to specify if this filter is a part of the OR group. Has a maximum of 3 and only counts for 1 of the 8 possible filters
-- `property` (String) Property to apply the filter to
-- `values` (List of String) List of values to apply the operation to for the specified property
 
 
 <a id="nestedatt--data--metric_selector"></a>
