@@ -228,8 +228,11 @@ func (m *basePrecisionTimeModel) parse(ctx context.Context, ept *fabricv4.Precis
 		mDiags.Append(diags...)
 		return mDiags
 	}
-
-	m.PtpAdvanceConfiguration, diags = parsePtpAdvancedConfiguration(ctx, ept.GetPtpAdvancedConfiguration())
+	var userPTPAdvancedConfig bool
+	if !m.PtpAdvanceConfiguration.IsNull() && !m.PtpAdvanceConfiguration.IsUnknown() {
+		userPTPAdvancedConfig = true
+	}
+	m.PtpAdvanceConfiguration, diags = parsePtpAdvancedConfiguration(ctx, ept.GetPtpAdvancedConfiguration(), userPTPAdvancedConfig)
 	if diags.HasError() {
 		mDiags.Append(diags...)
 		return mDiags
@@ -393,35 +396,47 @@ func parseNtpAdvanceConfiguration(ctx context.Context, ntp []fabricv4.Md5) (fwty
 	return fwtypes.NewListNestedObjectValueOfValueSlice(ctx, emptySlice), diags
 }
 
-func parsePtpAdvancedConfiguration(ctx context.Context, ptp fabricv4.PtpAdvanceConfiguration) (fwtypes.ObjectValueOf[ptpAdvanceConfigurationModel], diag.Diagnostics) {
+func parsePtpAdvancedConfiguration(ctx context.Context, ptp fabricv4.PtpAdvanceConfiguration, userPTPAdvancedConfig bool) (fwtypes.ObjectValueOf[ptpAdvanceConfigurationModel], diag.Diagnostics) {
+	if !userPTPAdvancedConfig {
+		return fwtypes.NewObjectValueOfNull[ptpAdvanceConfigurationModel](ctx), nil
+	}
 	result := ptpAdvanceConfigurationModel{}
 	hasValue := false
 	if ptp.GetTimeScale() != "" {
 		result.TimeScale = types.StringValue(string(ptp.GetTimeScale()))
+		hasValue = true
 	}
-	if ptp.GetDomain() > 0 {
+	if ptp.GetDomain() >= 0 {
 		result.Domain = types.Int32Value(ptp.GetDomain())
+		hasValue = true
 	}
-	if ptp.GetPriority1() > 0 {
+	if ptp.GetPriority1() >= 0 {
 		result.Priority1 = types.Int32Value(ptp.GetPriority1())
+		hasValue = true
 	}
-	if ptp.GetPriority2() > 0 {
+	if ptp.GetPriority2() >= 0 {
 		result.Priority2 = types.Int32Value(ptp.GetPriority2())
+		hasValue = true
 	}
-	if ptp.GetLogAnnounceInterval() > 0 {
+	if ptp.GetLogAnnounceInterval() >= -3 && ptp.GetLogAnnounceInterval() <= 1 {
 		result.LogAnnounceInterval = types.Int32Value(int32(ptp.GetLogAnnounceInterval()))
+		hasValue = true
 	}
-	if ptp.GetLogSyncInterval() > 0 {
+	if ptp.GetLogSyncInterval() >= -5 && ptp.GetLogSyncInterval() <= 1 {
 		result.LogSyncInterval = types.Int32Value(int32(ptp.GetLogSyncInterval()))
+		hasValue = true
 	}
-	if ptp.GetLogDelayReqInterval() > 0 {
+	if ptp.GetLogDelayReqInterval() >= -5 && ptp.GetLogDelayReqInterval() <= 1 {
 		result.LogDelayReqInterval = types.Int32Value(int32(ptp.GetLogDelayReqInterval()))
+		hasValue = true
 	}
 	if ptp.GetTransportMode() != "" {
 		result.TransportMode = types.StringValue(string(ptp.GetTransportMode()))
+		hasValue = true
 	}
 	if ptp.GetGrantTime() > 0 {
 		result.GrantTime = types.Int32Value(ptp.GetGrantTime())
+		hasValue = true
 	}
 
 	if !hasValue {
