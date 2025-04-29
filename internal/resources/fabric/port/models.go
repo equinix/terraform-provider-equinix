@@ -33,6 +33,7 @@ type basePortModel struct {
 	PhysicalPortsSpeed     types.Int32                                          `tfsdk:"physical_ports_speed"`
 	PhysicalPortsType      types.String                                         `tfsdk:"physical_ports_type"`
 	PhysicalPortsCount     types.Int32                                          `tfsdk:"physical_ports_count"`
+	DemarcationPointIbx    types.String                                         `tfsdk:"demarcation_point_ibx"`
 	Order                  fwtypes.ObjectValueOf[orderModel]                    `tfsdk:"order"`
 	Notifications          fwtypes.ListNestedObjectValueOf[notificationModel]   `tfsdk:"notifications"`
 	AdditionalInfo         fwtypes.ListNestedObjectValueOf[additionalInfoModel] `tfsdk:"additional_info"`
@@ -47,7 +48,8 @@ type locationModel struct {
 }
 
 type settingsModel struct {
-	SharedPortType types.Bool `tfsdk:"shared_port_type"`
+	PackageType    types.String `tfsdk:"package_type"`
+	SharedPortType types.Bool   `tfsdk:"shared_port_type"`
 }
 
 type encapsulationModel struct {
@@ -155,6 +157,7 @@ func (m *basePortModel) parse(ctx context.Context, port *fabricv4.Port) diag.Dia
 	m.PhysicalPortsSpeed = types.Int32Value(port.GetPhysicalPortsSpeed())
 	m.PhysicalPortsType = types.StringValue(string(port.GetPhysicalPortsType()))
 	m.PhysicalPortsCount = types.Int32Value(port.GetPhysicalPortsCount())
+	m.DemarcationPointIbx = types.StringValue(port.GetDemarcationPointIbx())
 	m.Href = types.StringValue(port.GetHref())
 	m.UUID = types.StringValue(port.GetUuid())
 	m.State = types.StringValue(string(port.GetState()))
@@ -167,6 +170,7 @@ func (m *basePortModel) parse(ctx context.Context, port *fabricv4.Port) diag.Dia
 
 	portSettings := port.GetSettings()
 	settings := settingsModel{
+		PackageType:    types.StringValue(string(portSettings.GetPackageType())),
 		SharedPortType: types.BoolValue(portSettings.GetSharedPortType()),
 	}
 	m.Settings = fwtypes.NewObjectValueOf[settingsModel](ctx, &settings)

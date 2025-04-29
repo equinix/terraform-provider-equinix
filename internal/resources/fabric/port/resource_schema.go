@@ -51,6 +51,10 @@ Additional Documentation:
 				Required:    true,
 				CustomType:  fwtypes.NewObjectTypeOf[settingsModel](ctx),
 				Attributes: map[string]schema.Attribute{
+					"package_type": schema.StringAttribute{
+						Description: "Billing package for the port being ordered",
+						Required:    true,
+					},
 					"shared_port_type": schema.StringAttribute{
 						Description: "Indicates whether this is a dedicated customer cage or a shared neutral cage",
 						Required:    true,
@@ -189,6 +193,10 @@ Additional Documentation:
 				Description: "Number of physical ports in the Port Order",
 				Required:    true,
 			},
+			"demarcation_point_ibx": schema.StringAttribute{
+				Description: "IBX code where the port will be located",
+				Required:    true,
+			},
 			"order": schema.SingleNestedAttribute{
 				Description: "Details of the Port Order such as purchaseOrder details and signature",
 				Required:    true,
@@ -325,9 +333,6 @@ Additional Documentation:
 			"state": schema.StringAttribute{
 				Description: "Value representing provisioning status for the port resource",
 				Computed:    true,
-				PlanModifiers: []planmodifier.String{
-					stringplanmodifier.UseStateForUnknown(),
-				},
 			},
 			"change_log": schema.SingleNestedAttribute{
 				Description: "Details of the last change on the port resource",
