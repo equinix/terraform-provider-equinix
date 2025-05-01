@@ -75,8 +75,8 @@ func fabricNetworkResourceSchema() map[string]*schema.Schema {
 		"type": {
 			Type:         schema.TypeString,
 			Required:     true,
-			ValidateFunc: validation.StringInSlice([]string{"IPWAN", "EPLAN", "EVPLAN"}, true),
-			Description:  "Supported Network types - EVPLAN, EPLAN, IPWAN",
+			ValidateFunc: validation.StringInSlice([]string{"IPWAN", "EPLAN", "EVPLAN", "EVPTREE", "EPTREE"}, true),
+			Description:  "Supported Network types - EVPLAN, EPLAN, IPWAN, EVPTREE, EPTREE",
 		},
 		"location": {
 			Type:        schema.TypeSet,
