@@ -59,7 +59,7 @@ output "region" {
 - `project` (Set of Object) Fabric Network project (see [below for nested schema](#nestedatt--project))
 - `scope` (String) Fabric Network scope
 - `state` (String) Fabric Network overall state
-- `type` (String) Supported Network types - EVPLAN, EPLAN, IPWAN
+- `type` (String) Supported Network types - EVPLAN, EPLAN, IPWAN, EVPTREE, EPTREE
 
 <a id="nestedatt--change"></a>
 ### Nested Schema for `change`
