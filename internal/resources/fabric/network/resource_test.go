@@ -21,7 +21,7 @@ func init() {
 	})
 }
 
-func testSweepNetworks(region string) error {
+func testSweepNetworks(_ string) error {
 	return nil
 }
 
@@ -125,7 +125,7 @@ func TestAccFabricNetworkCreateMixedParameters_PFCR(t *testing.T) {
 	})
 }
 func testAccNetworkCreateMixedParameterConfig_PFCR() string {
-	return fmt.Sprintf(`
+	return `
 	resource "equinix_fabric_network" "example2" {
 		type = "IPWAN"
 		name = "Tf_Network_PFCR"
@@ -141,7 +141,7 @@ func testAccNetworkCreateMixedParameterConfig_PFCR() string {
 			project_id = "291639000636552"
 		}
 	}
-`)
+`
 }
 
 func TestAccFabricCreateEVPTREE_Network_PFCR(t *testing.T) {
@@ -151,7 +151,7 @@ func TestAccFabricCreateEVPTREE_Network_PFCR(t *testing.T) {
 		CheckDestroy: checkNetworkDelete,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccNetworkCreateEVPTREE_Network_Config_PFCR(),
+				Config: testAccNetworkCreateEVPTREENetworkConfig(),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("equinix_fabric_network.example3", "name", "Tf_ETree_Network_PFCR"),
 					resource.TestCheckResourceAttrSet("equinix_fabric_network.example3", "state"),
@@ -174,8 +174,8 @@ func TestAccFabricCreateEVPTREE_Network_PFCR(t *testing.T) {
 	})
 }
 
-func testAccNetworkCreateEVPTREE_Network_Config_PFCR() string {
-	return fmt.Sprintf(`
+func testAccNetworkCreateEVPTREENetworkConfig() string {
+	return `
 	resource "equinix_fabric_network" "example3" {
 		type = "EVPTREE"
 		name = "Tf_ETree_Network_PFCR"
@@ -188,5 +188,5 @@ func testAccNetworkCreateEVPTREE_Network_Config_PFCR() string {
 			project_id = "291639000636552"
 		}
 	}
-`)
+`
 }
