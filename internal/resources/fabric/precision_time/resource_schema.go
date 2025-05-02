@@ -116,6 +116,7 @@ Additional Documentation:
 			"ntp_advanced_configuration": schema.ListNestedAttribute{
 				Description: "NTP Advanced configuration",
 				Optional:    true,
+				Computed:    true,
 				CustomType:  fwtypes.NewListNestedObjectTypeOf[ntpAdvanceConfigurationModel](ctx),
 				NestedObject: schema.NestedAttributeObject{
 					Attributes: map[string]schema.Attribute{
@@ -145,6 +146,7 @@ Additional Documentation:
 			"ptp_advanced_configuration": schema.SingleNestedAttribute{
 				Description: "PTP Advanced Configuration",
 				Optional:    true,
+				Computed:    true,
 				CustomType:  fwtypes.NewObjectTypeOf[ptpAdvanceConfigurationModel](ctx),
 				Attributes: map[string]schema.Attribute{
 					"time_scale": schema.StringAttribute{

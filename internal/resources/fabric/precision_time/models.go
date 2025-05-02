@@ -3,6 +3,7 @@ package precisiontime
 
 import (
 	"context"
+	"reflect"
 
 	"github.com/equinix/equinix-sdk-go/services/fabricv4"
 	fwtypes "github.com/equinix/terraform-provider-equinix/internal/framework/types"
@@ -228,14 +229,16 @@ func (m *basePrecisionTimeModel) parse(ctx context.Context, ept *fabricv4.Precis
 		mDiags.Append(diags...)
 		return mDiags
 	}
-	var userPTPAdvancedConfig bool
+
 	if !m.PtpAdvanceConfiguration.IsNull() && !m.PtpAdvanceConfiguration.IsUnknown() {
-		userPTPAdvancedConfig = true
-	}
-	m.PtpAdvanceConfiguration, diags = parsePtpAdvancedConfiguration(ctx, ept.GetPtpAdvancedConfiguration(), userPTPAdvancedConfig)
-	if diags.HasError() {
-		mDiags.Append(diags...)
-		return mDiags
+		parsedPtpConfig, diags := parsePtpAdvancedConfiguration(ctx, ept.GetPtpAdvancedConfiguration())
+		if !reflect.ValueOf(parsedPtpConfig).IsZero() {
+			m.PtpAdvanceConfiguration = parsedPtpConfig
+		}
+		if diags.HasError() {
+			mDiags.Append(diags...)
+			return mDiags
+		}
 	}
 
 	m.UUID = types.StringValue(ept.GetUuid())
@@ -396,50 +399,38 @@ func parseNtpAdvanceConfiguration(ctx context.Context, ntp []fabricv4.Md5) (fwty
 	return fwtypes.NewListNestedObjectValueOfValueSlice(ctx, emptySlice), diags
 }
 
-func parsePtpAdvancedConfiguration(ctx context.Context, ptp fabricv4.PtpAdvanceConfiguration, userPTPAdvancedConfig bool) (fwtypes.ObjectValueOf[ptpAdvanceConfigurationModel], diag.Diagnostics) {
-	if !userPTPAdvancedConfig {
-		return fwtypes.NewObjectValueOfNull[ptpAdvanceConfigurationModel](ctx), nil
-	}
+func parsePtpAdvancedConfiguration(ctx context.Context, ptp fabricv4.PtpAdvanceConfiguration) (fwtypes.ObjectValueOf[ptpAdvanceConfigurationModel], diag.Diagnostics) {
+
 	result := ptpAdvanceConfigurationModel{}
-	hasValue := false
 	if ptp.GetTimeScale() != "" {
 		result.TimeScale = types.StringValue(string(ptp.GetTimeScale()))
-		hasValue = true
 	}
 	if ptp.GetDomain() >= 0 {
 		result.Domain = types.Int32Value(ptp.GetDomain())
-		hasValue = true
 	}
 	if ptp.GetPriority1() >= 0 {
 		result.Priority1 = types.Int32Value(ptp.GetPriority1())
-		hasValue = true
 	}
 	if ptp.GetPriority2() >= 0 {
 		result.Priority2 = types.Int32Value(ptp.GetPriority2())
-		hasValue = true
 	}
 	if ptp.GetLogAnnounceInterval() >= -3 && ptp.GetLogAnnounceInterval() <= 1 {
 		result.LogAnnounceInterval = types.Int32Value(int32(ptp.GetLogAnnounceInterval()))
-		hasValue = true
 	}
 	if ptp.GetLogSyncInterval() >= -5 && ptp.GetLogSyncInterval() <= 1 {
 		result.LogSyncInterval = types.Int32Value(int32(ptp.GetLogSyncInterval()))
-		hasValue = true
 	}
 	if ptp.GetLogDelayReqInterval() >= -5 && ptp.GetLogDelayReqInterval() <= 1 {
 		result.LogDelayReqInterval = types.Int32Value(int32(ptp.GetLogDelayReqInterval()))
-		hasValue = true
 	}
 	if ptp.GetTransportMode() != "" {
 		result.TransportMode = types.StringValue(string(ptp.GetTransportMode()))
-		hasValue = true
 	}
 	if ptp.GetGrantTime() > 0 {
 		result.GrantTime = types.Int32Value(ptp.GetGrantTime())
-		hasValue = true
 	}
 
-	if !hasValue {
+	if reflect.DeepEqual(result, ptpAdvanceConfigurationModel{}) {
 		return fwtypes.NewObjectValueOfNull[ptpAdvanceConfigurationModel](ctx), nil
 	}
 	return fwtypes.NewObjectValueOf[ptpAdvanceConfigurationModel](ctx, &result), nil
