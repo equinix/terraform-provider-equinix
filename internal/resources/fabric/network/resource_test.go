@@ -21,7 +21,7 @@ func init() {
 	})
 }
 
-func testSweepNetworks(region string) error {
+func testSweepNetworks(_ string) error {
 	return nil
 }
 
@@ -125,7 +125,7 @@ func TestAccFabricNetworkCreateMixedParameters_PFCR(t *testing.T) {
 	})
 }
 func testAccNetworkCreateMixedParameterConfig_PFCR() string {
-	return fmt.Sprintf(`
+	return `
 	resource "equinix_fabric_network" "example2" {
 		type = "IPWAN"
 		name = "Tf_Network_PFCR"
@@ -141,5 +141,52 @@ func testAccNetworkCreateMixedParameterConfig_PFCR() string {
 			project_id = "291639000636552"
 		}
 	}
-`)
+`
+}
+
+func TestAccFabricCreateEVPTREE_Network_PFCR(t *testing.T) {
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:     func() { acceptance.TestAccPreCheck(t); acceptance.TestAccPreCheckProviderConfigured(t) },
+		Providers:    acceptance.TestAccProviders,
+		CheckDestroy: checkNetworkDelete,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccNetworkCreateEVPTREENetworkConfig(),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("equinix_fabric_network.example3", "name", "Tf_ETree_Network_PFCR"),
+					resource.TestCheckResourceAttrSet("equinix_fabric_network.example3", "state"),
+					resource.TestCheckResourceAttr("equinix_fabric_network.example3", "connections_count", "0"),
+					resource.TestCheckResourceAttr("equinix_fabric_network.example3", "type", "EVPTREE"),
+					resource.TestCheckResourceAttr("equinix_fabric_network.example3", "notifications.0.type", "ALL"),
+					resource.TestCheckResourceAttr("equinix_fabric_network.example3", "notifications.0.emails.0", "test@equinix.com"),
+					resource.TestCheckResourceAttr("equinix_fabric_network.example3", "scope", "LOCAL"),
+					resource.TestCheckResourceAttrSet("equinix_fabric_network.example3", "href"),
+					resource.TestCheckResourceAttrSet("equinix_fabric_network.example3", "uuid"),
+					resource.TestCheckResourceAttrSet("equinix_fabric_network.example3", "change_log.0.created_by"),
+					resource.TestCheckResourceAttrSet("equinix_fabric_network.example3", "change_log.0.created_by_full_name"),
+					resource.TestCheckResourceAttrSet("equinix_fabric_network.example3", "change_log.0.created_by_email"),
+					resource.TestCheckResourceAttrSet("equinix_fabric_network.example3", "change_log.0.created_date_time"),
+					resource.TestCheckResourceAttrSet("equinix_fabric_network.example3", "operation.0.equinix_status"),
+				),
+				ExpectNonEmptyPlan: false,
+			},
+		},
+	})
+}
+
+func testAccNetworkCreateEVPTREENetworkConfig() string {
+	return `
+	resource "equinix_fabric_network" "example3" {
+		type = "EVPTREE"
+		name = "Tf_ETree_Network_PFCR"
+		scope = "LOCAL"
+		notifications {
+			type = "ALL"
+			emails = ["test@equinix.com","test1@equinix.com"]
+		}
+		project{
+			project_id = "291639000636552"
+		}
+	}
+`
 }

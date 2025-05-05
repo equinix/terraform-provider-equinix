@@ -36,7 +36,7 @@ resource "equinix_fabric_network" "new_network" {
 - `notifications` (Block List, Min: 1) Preferences for notifications on Fabric Network configuration or status changes (see [below for nested schema](#nestedblock--notifications))
 - `project` (Block Set, Min: 1) Fabric Network project (see [below for nested schema](#nestedblock--project))
 - `scope` (String) Fabric Network scope
-- `type` (String) Supported Network types - EVPLAN, EPLAN, IPWAN
+- `type` (String) Supported Network types - EVPLAN, EPLAN, IPWAN, EVPTREE, EPTREE
 
 ### Optional
 
