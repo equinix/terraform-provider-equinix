@@ -3,6 +3,7 @@ package precisiontime
 
 import (
 	"context"
+	"reflect"
 
 	"github.com/equinix/equinix-sdk-go/services/fabricv4"
 	fwtypes "github.com/equinix/terraform-provider-equinix/internal/framework/types"
@@ -229,10 +230,15 @@ func (m *basePrecisionTimeModel) parse(ctx context.Context, ept *fabricv4.Precis
 		return mDiags
 	}
 
-	m.PtpAdvanceConfiguration, diags = parsePtpAdvancedConfiguration(ctx, ept.GetPtpAdvancedConfiguration())
-	if diags.HasError() {
-		mDiags.Append(diags...)
-		return mDiags
+	if !m.PtpAdvanceConfiguration.IsNull() && !m.PtpAdvanceConfiguration.IsUnknown() {
+		parsedPtpConfig, diags := parsePtpAdvancedConfiguration(ctx, ept.GetPtpAdvancedConfiguration())
+		if !reflect.ValueOf(parsedPtpConfig).IsZero() {
+			m.PtpAdvanceConfiguration = parsedPtpConfig
+		}
+		if diags.HasError() {
+			mDiags.Append(diags...)
+			return mDiags
+		}
 	}
 
 	m.UUID = types.StringValue(ept.GetUuid())
@@ -394,27 +400,27 @@ func parseNtpAdvanceConfiguration(ctx context.Context, ntp []fabricv4.Md5) (fwty
 }
 
 func parsePtpAdvancedConfiguration(ctx context.Context, ptp fabricv4.PtpAdvanceConfiguration) (fwtypes.ObjectValueOf[ptpAdvanceConfigurationModel], diag.Diagnostics) {
+
 	result := ptpAdvanceConfigurationModel{}
-	hasValue := false
 	if ptp.GetTimeScale() != "" {
 		result.TimeScale = types.StringValue(string(ptp.GetTimeScale()))
 	}
-	if ptp.GetDomain() > 0 {
+	if ptp.GetDomain() >= 0 {
 		result.Domain = types.Int32Value(ptp.GetDomain())
 	}
-	if ptp.GetPriority1() > 0 {
+	if ptp.GetPriority1() >= 0 {
 		result.Priority1 = types.Int32Value(ptp.GetPriority1())
 	}
-	if ptp.GetPriority2() > 0 {
+	if ptp.GetPriority2() >= 0 {
 		result.Priority2 = types.Int32Value(ptp.GetPriority2())
 	}
-	if ptp.GetLogAnnounceInterval() > 0 {
+	if ptp.GetLogAnnounceInterval() >= -3 && ptp.GetLogAnnounceInterval() <= 1 {
 		result.LogAnnounceInterval = types.Int32Value(int32(ptp.GetLogAnnounceInterval()))
 	}
-	if ptp.GetLogSyncInterval() > 0 {
+	if ptp.GetLogSyncInterval() >= -5 && ptp.GetLogSyncInterval() <= 1 {
 		result.LogSyncInterval = types.Int32Value(int32(ptp.GetLogSyncInterval()))
 	}
-	if ptp.GetLogDelayReqInterval() > 0 {
+	if ptp.GetLogDelayReqInterval() >= -5 && ptp.GetLogDelayReqInterval() <= 1 {
 		result.LogDelayReqInterval = types.Int32Value(int32(ptp.GetLogDelayReqInterval()))
 	}
 	if ptp.GetTransportMode() != "" {
@@ -424,7 +430,7 @@ func parsePtpAdvancedConfiguration(ctx context.Context, ptp fabricv4.PtpAdvanceC
 		result.GrantTime = types.Int32Value(ptp.GetGrantTime())
 	}
 
-	if !hasValue {
+	if reflect.DeepEqual(result, ptpAdvanceConfigurationModel{}) {
 		return fwtypes.NewObjectValueOfNull[ptpAdvanceConfigurationModel](ctx), nil
 	}
 	return fwtypes.NewObjectValueOf[ptpAdvanceConfigurationModel](ctx, &result), nil
