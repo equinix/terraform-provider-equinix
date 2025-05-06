@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"time"
 
 	"github.com/equinix/equinix-sdk-go/services/fabricv4"
 	equinix_errors "github.com/equinix/terraform-provider-equinix/internal/errors"
@@ -72,6 +73,8 @@ func testSweepConnections(region string) error {
 			_, resp, err := fabric.ConnectionsApi.DeleteConnectionByUuid(ctx, connection.GetUuid()).Execute()
 			if equinix_errors.IgnoreHttpResponseErrors(http.StatusForbidden, http.StatusNotFound)(resp, err) != nil {
 				errs = append(errs, fmt.Errorf("error deleting fabric connection: %s", err))
+			} else {
+				time.Sleep(30 * time.Second)
 			}
 		}
 	}
