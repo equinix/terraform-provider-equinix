@@ -88,7 +88,7 @@ func TestAccFabricDataSourceConnection_PFCR(t *testing.T) {
 	})
 }
 
-func testAccFabricDataSourceConnectionConfig(bandwidth int32, aSidePortUUID, zSidePortUUID string, aSideVlanID string, zSideVlanID string) string {
+func testAccFabricDataSourceConnectionConfig(bandwidth int32, aSidePortUUID, aSideVlanID, zSidePortUUID, zSideVlanID string) string {
 	return fmt.Sprintf(`
 
 resource "equinix_fabric_connection" "test" {
