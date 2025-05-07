@@ -39,10 +39,10 @@ resource "equinix_metal_device" "test" {
     termination_time    = "%s"
 }
 
-`, acceptance.ConfAccMetalDevice_base(
-		acceptance.Preferable_plans,
-		acceptance.Preferable_metros,
-		acceptance.Preferable_os),
+`, acceptance.ConfAccMetalDeviceBase(
+		acceptance.PreferablePlans,
+		acceptance.PreferableMetros,
+		acceptance.PreferableOs),
 		name,
 		publicSshKey,
 		acceptance.TestDeviceTerminationTime())

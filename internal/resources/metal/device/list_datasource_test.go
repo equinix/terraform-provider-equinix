@@ -79,5 +79,5 @@ data "equinix_metal_devices" "test_search" {
   project_id = equinix_metal_project.test.id
   search     = "unlikelystring"
   depends_on = [equinix_metal_device.dev_search]
-}`, acceptance.ConfAccMetalDevice_base(acceptance.Preferable_plans, acceptance.Preferable_metros, acceptance.Preferable_os), projSuffix, acceptance.TestDeviceTerminationTime())
+}`, acceptance.ConfAccMetalDeviceBase(acceptance.PreferablePlans, acceptance.PreferableMetros, acceptance.PreferableOs), projSuffix, acceptance.TestDeviceTerminationTime())
 }
