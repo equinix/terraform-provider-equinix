@@ -26,7 +26,7 @@ func TestAccDataSourceMetalOperatingSystem_basic(t *testing.T) {
 const testAccDataSourceMetalOperatingSystemConfig_basic = `
 	data "equinix_metal_operating_system" "example" {
 		distro  = "ubuntu"
-		version = "20.04"
+		version = "24.04"
 	  }`
 
 var matchErrOSNotFound = regexp.MustCompile(".*There are no operating systems*")
