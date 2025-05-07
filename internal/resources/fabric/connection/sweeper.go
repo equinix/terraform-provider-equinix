@@ -74,7 +74,7 @@ func testSweepConnections(region string) error {
 			if equinix_errors.IgnoreHttpResponseErrors(http.StatusForbidden, http.StatusNotFound)(resp, err) != nil {
 				errs = append(errs, fmt.Errorf("error deleting fabric connection: %s", err))
 			} else {
-				time.Sleep(30 * time.Second)
+				time.Sleep(500 * time.Second)
 			}
 		}
 	}
