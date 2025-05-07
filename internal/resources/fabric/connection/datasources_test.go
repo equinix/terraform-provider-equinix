@@ -150,12 +150,6 @@ data "equinix_fabric_connections" "connections" {
 }
 
 func generateUniqueVlanId() string {
-	timestampComponent := int(time.Now().UnixNano() % 4000)
-	vlanId := 1 + (timestampComponent % 4092)
-	if vlanId < 1 {
-		vlanId = 1
-	} else if vlanId > 4092 {
-		vlanId = 4092
-	}
+	vlanId := 1 + (int(time.Now().UnixNano()) % 4092)
 	return strconv.Itoa(vlanId)
 }
