@@ -2,7 +2,9 @@ package connection_test
 
 import (
 	"fmt"
+	"strconv"
 	"testing"
+	"time"
 
 	"github.com/equinix/terraform-provider-equinix/internal/acceptance"
 	testinghelpers "github.com/equinix/terraform-provider-equinix/internal/fabric/testing_helpers"
@@ -40,7 +42,7 @@ func TestAccFabricDataSourceConnection_PFCR(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						"data.equinix_fabric_connection.test", "a_side.0.access_point.0.link_protocol.0.type", "DOT1Q"),
 					resource.TestCheckResourceAttr(
-						"data.equinix_fabric_connection.test", "a_side.0.access_point.0.link_protocol.0.vlan_tag", "2444"),
+						"data.equinix_fabric_connection.test", "a_side.0.access_point.0.link_protocol.0.vlan_tag", generateUniqueVlanId()),
 					resource.TestCheckResourceAttr(
 						"data.equinix_fabric_connection.test", "a_side.0.access_point.0.location.0.metro_code", "DC"),
 					resource.TestCheckResourceAttr(
@@ -48,7 +50,7 @@ func TestAccFabricDataSourceConnection_PFCR(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						"data.equinix_fabric_connection.test", "z_side.0.access_point.0.link_protocol.0.type", "DOT1Q"),
 					resource.TestCheckResourceAttr(
-						"data.equinix_fabric_connection.test", "z_side.0.access_point.0.link_protocol.0.vlan_tag", "2555"),
+						"data.equinix_fabric_connection.test", "z_side.0.access_point.0.link_protocol.0.vlan_tag", generateUniqueVlanId()),
 					resource.TestCheckResourceAttr(
 						"data.equinix_fabric_connection.test", "z_side.0.access_point.0.location.0.metro_code", "SV"),
 					resource.TestCheckResourceAttrSet("data.equinix_fabric_connections.connections", "id"),
@@ -144,4 +146,15 @@ data "equinix_fabric_connections" "connections" {
 }
 
 `, bandwidth, aSidePortUUID, zSidePortUUID)
+}
+
+func generateUniqueVlanId() string {
+	timestampComponent := int(time.Now().UnixNano() % 4000)
+	vlanId := 1 + (timestampComponent % 4092)
+	if vlanId < 1 {
+		vlanId = 1
+	} else if vlanId > 4092 {
+		vlanId = 4092
+	}
+	return strconv.Itoa(vlanId)
 }
