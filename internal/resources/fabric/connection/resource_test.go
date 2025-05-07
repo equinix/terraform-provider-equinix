@@ -19,7 +19,6 @@ func TestAccFabricCreatePort2SPConnection_PPDS(t *testing.T) {
 	ports := testinghelpers.GetFabricEnvPorts(t)
 	connectionsTestData := testinghelpers.GetFabricEnvConnectionTestData(t)
 	var publicSPName, portUUID string
-	vlanID := generateUniqueVlanId()
 	if len(ports) > 0 && len(connectionsTestData) > 0 {
 		publicSPName = connectionsTestData["ppds"]["publicSPName"]
 		portUUID = ports["ppds"]["dot1q"][0].GetUuid()
@@ -30,7 +29,7 @@ func TestAccFabricCreatePort2SPConnection_PPDS(t *testing.T) {
 		CheckDestroy: CheckConnectionDelete,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccFabricCreatePort2SPConnectionConfig(publicSPName, "port2sp_PPDS", portUUID, vlanID, "CH"),
+				Config: testAccFabricCreatePort2SPConnectionConfig(publicSPName, "port2sp_PPDS", portUUID, "CH"),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("equinix_fabric_connection.test", "id"),
 					resource.TestCheckResourceAttr(
@@ -48,7 +47,7 @@ func TestAccFabricCreatePort2SPConnection_PPDS(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						"equinix_fabric_connection.test", "a_side.0.access_point.0.link_protocol.0.type", "DOT1Q"),
 					resource.TestCheckResourceAttr(
-						"equinix_fabric_connection.test", "a_side.0.access_point.0.link_protocol.0.vlan_tag", vlanID),
+						"equinix_fabric_connection.test", "a_side.0.access_point.0.link_protocol.0.vlan_tag", "2019"),
 					resource.TestCheckResourceAttr(
 						"equinix_fabric_connection.test", "z_side.0.access_point.0.type", "SP"),
 					resource.TestCheckResourceAttr(
@@ -69,7 +68,6 @@ func TestAccFabricCreatePort2SPConnection_PFCR(t *testing.T) {
 	ports := testinghelpers.GetFabricEnvPorts(t)
 	connectionsTestData := testinghelpers.GetFabricEnvConnectionTestData(t)
 	var publicSPName, portUUID string
-	vlanID := generateUniqueVlanId()
 	if len(ports) > 0 && len(connectionsTestData) > 0 {
 		publicSPName = connectionsTestData["pfcr"]["publicSPName"]
 		portUUID = ports["pfcr"]["dot1q"][0].GetUuid()
@@ -80,7 +78,7 @@ func TestAccFabricCreatePort2SPConnection_PFCR(t *testing.T) {
 		CheckDestroy: CheckConnectionDelete,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccFabricCreatePort2SPConnectionConfig(publicSPName, "port2sp_PFCR", portUUID, vlanID, "SV"),
+				Config: testAccFabricCreatePort2SPConnectionConfig(publicSPName, "port2sp_PFCR", portUUID, "SV"),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("equinix_fabric_connection.test", "id"),
 					resource.TestCheckResourceAttr(
@@ -98,7 +96,7 @@ func TestAccFabricCreatePort2SPConnection_PFCR(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						"equinix_fabric_connection.test", "a_side.0.access_point.0.link_protocol.0.type", "DOT1Q"),
 					resource.TestCheckResourceAttr(
-						"equinix_fabric_connection.test", "a_side.0.access_point.0.link_protocol.0.vlan_tag", vlanID),
+						"equinix_fabric_connection.test", "a_side.0.access_point.0.link_protocol.0.vlan_tag", "2019"),
 					resource.TestCheckResourceAttr(
 						"equinix_fabric_connection.test", "z_side.0.access_point.0.type", "SP"),
 					resource.TestCheckResourceAttr(
@@ -115,7 +113,7 @@ func TestAccFabricCreatePort2SPConnection_PFCR(t *testing.T) {
 
 }
 
-func testAccFabricCreatePort2SPConnectionConfig(spName, name, portUUID, vlanID, zSideMetro string) string {
+func testAccFabricCreatePort2SPConnectionConfig(spName, name, portUUID, zSideMetro string) string {
 	return fmt.Sprintf(`
 
 	data "equinix_fabric_service_profiles" "this" {
@@ -147,7 +145,7 @@ func testAccFabricCreatePort2SPConnectionConfig(spName, name, portUUID, vlanID, 
 				}
 				link_protocol {
 					type= "DOT1Q"
-					vlan_tag= "%s"
+					vlan_tag= "2019"
 				}
 			}
 		}
@@ -163,13 +161,12 @@ func testAccFabricCreatePort2SPConnectionConfig(spName, name, portUUID, vlanID, 
 				}
 			}
 		}
-	}`, spName, name, portUUID, vlanID, zSideMetro)
+	}`, spName, name, portUUID, zSideMetro)
 }
 
 func TestAccFabricCreatePort2PortConnection_PFCR(t *testing.T) {
 	ports := testinghelpers.GetFabricEnvPorts(t)
 	var aSidePortUUID, zSidePortUUID string
-	vlanID := generateUniqueVlanId()
 	if len(ports) > 0 {
 		aSidePortUUID = ports["pfcr"]["dot1q"][0].GetUuid()
 		zSidePortUUID = ports["pfcr"]["dot1q"][1].GetUuid()
@@ -180,7 +177,7 @@ func TestAccFabricCreatePort2PortConnection_PFCR(t *testing.T) {
 		CheckDestroy: CheckConnectionDelete,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccFabricCreatePort2PortConnectionConfig(50, aSidePortUUID, vlanID, zSidePortUUID, vlanID),
+				Config: testAccFabricCreatePort2PortConnectionConfig(50, aSidePortUUID, zSidePortUUID),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("equinix_fabric_connection.test", "id"),
 					resource.TestCheckResourceAttr(
@@ -207,7 +204,7 @@ func TestAccFabricCreatePort2PortConnection_PFCR(t *testing.T) {
 				ExpectNonEmptyPlan: true,
 			},
 			{
-				Config: testAccFabricCreatePort2PortConnectionConfig(100, aSidePortUUID, vlanID, zSidePortUUID, vlanID),
+				Config: testAccFabricCreatePort2PortConnectionConfig(100, aSidePortUUID, zSidePortUUID),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(
 						"equinix_fabric_connection.test", "name", "port_test_PFCR"),
@@ -237,7 +234,7 @@ func TestAccFabricCreatePort2PortConnection_PFCR(t *testing.T) {
 
 }
 
-func testAccFabricCreatePort2PortConnectionConfig(bandwidth int32, aSidePortUUID, vlanID, zSidePortUUID, vlanID string) string {
+func testAccFabricCreatePort2PortConnectionConfig(bandwidth int32, aSidePortUUID, zSidePortUUID string) string {
 	return fmt.Sprintf(`resource "equinix_fabric_connection" "test" {
 		type = "EVPL_VC"
 		name = "port_test_PFCR"
@@ -257,7 +254,7 @@ func testAccFabricCreatePort2PortConnectionConfig(bandwidth int32, aSidePortUUID
 				}
 				link_protocol {
 					type= "DOT1Q"
-					vlan_tag= "%s"
+					vlan_tag= 2397
 				}
 				location {
 					metro_code = "SV"
@@ -272,14 +269,14 @@ func testAccFabricCreatePort2PortConnectionConfig(bandwidth int32, aSidePortUUID
 				}
 				link_protocol {
 					type= "DOT1Q"
-					vlan_tag= "%s"
+					vlan_tag= 2398
 				}
 				location {
 					metro_code= "SV"
 				}
 			}
 		}
-	}`, bandwidth, aSidePortUUID, vlanID, zSidePortUUID, vlanID)
+	}`, bandwidth, aSidePortUUID, zSidePortUUID)
 }
 
 func TestAccFabricCreateCloudRouter2PortConnection_PFCR(t *testing.T) {
