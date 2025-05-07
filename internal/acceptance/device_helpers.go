@@ -10,7 +10,7 @@ import (
 var (
 	Preferable_plans  = []string{"x1.small.x86", "t1.small.x86", "c2.medium.x86", "c3.small.x86", "c3.medium.x86", "m3.small.x86"}
 	Preferable_metros = []string{"ch", "ny", "sv", "ty", "am"}
-	Preferable_os     = []string{"ubuntu_20_04"}
+	Preferable_os     = []string{"ubuntu_24_04"}
 )
 
 func TestDeviceTerminationTime() string {

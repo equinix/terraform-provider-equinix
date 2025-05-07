@@ -10,7 +10,7 @@ import (
 var (
 	preferable_plans  = []string{"x1.small.x86", "t1.small.x86", "c2.medium.x86", "c3.small.x86", "c3.medium.x86", "m3.small.x86"}
 	preferable_metros = []string{"ch", "ny", "sv", "ty", "am"}
-	preferable_os     = []string{"ubuntu_20_04"}
+	preferable_os     = []string{"ubuntu_24_04"}
 )
 
 // Deprecated: use the identical TestDeviceTerminationTime from internal/acceptance instead
