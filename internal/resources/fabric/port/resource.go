@@ -3,10 +3,13 @@ package port
 import (
 	"context"
 	"fmt"
-	fwtypes "github.com/equinix/terraform-provider-equinix/internal/framework/types"
+	"log"
 	"net/http"
 	"slices"
+	"strings"
 	"time"
+
+	fwtypes "github.com/equinix/terraform-provider-equinix/internal/framework/types"
 
 	equinix_errors "github.com/equinix/terraform-provider-equinix/internal/errors"
 	"github.com/equinix/terraform-provider-equinix/internal/framework"
@@ -19,6 +22,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 )
 
+// NewResource Terraform necessary resource implementation method
 func NewResource() resource.Resource {
 	return &Resource{
 		BaseResource: framework.NewBaseResource(
@@ -29,10 +33,12 @@ func NewResource() resource.Resource {
 	}
 }
 
+// Resource Terraform necessary resource implementation method
 type Resource struct {
 	framework.BaseResource
 }
 
+// Schema Terraform necessary resource implementation method
 func (r *Resource) Schema(
 	ctx context.Context,
 	_ resource.SchemaRequest,
@@ -41,6 +47,7 @@ func (r *Resource) Schema(
 	resp.Schema = resourceSchema(ctx)
 }
 
+// Create Terraform necessary resource implementation method
 func (r *Resource) Create(
 	ctx context.Context,
 	req resource.CreateRequest,
@@ -53,21 +60,23 @@ func (r *Resource) Create(
 	if resp.Diagnostics.HasError() {
 		return
 	}
+	log.Printf("[DEBUG] Creating port %s", plan.Type.ValueString())
 
 	// Retrieve the API client from the provider metadata
 	client := r.Meta.NewFabricClientForFramework(ctx, req.ProviderMeta)
 
 	createRequest, diags := buildCreateRequest(ctx, plan)
 	if diags.HasError() {
+		resp.Diagnostics.Append(diags...)
 		return
 	}
-
+	log.Printf("[DEBUG] Creating port with request %v", createRequest)
 	port, _, err := client.PortsApi.CreatePort(ctx).PortRequest(createRequest).Execute()
 	if err != nil {
 		resp.Diagnostics.AddError("Failed creating port", equinix_errors.FormatFabricError(err).Error())
 		return
 	}
-
+	log.Printf("[DEBUG] Created port %s", port.GetUuid())
 	createTimeout, diags := plan.Timeouts.Create(ctx, 10*time.Minute)
 	if diags.HasError() {
 		resp.Diagnostics.Append(diags...)
@@ -76,9 +85,16 @@ func (r *Resource) Create(
 	createWaiter := getCreateUpdateWaiter(ctx, client, port.GetUuid(), createTimeout)
 	portChecked, err := createWaiter.WaitForStateContext(ctx)
 	if err != nil {
-		resp.Diagnostics.AddError(
-			fmt.Sprintf("Failed creating port %s", port.GetUuid()), err.Error())
-		return
+		_, ok := err.(*retry.NotFoundError)
+		if ok {
+			resp.Diagnostics.AddWarning("Port Order Created but Port Reservation Not Completed", "This port will not be available for use until the order is completed. It cannot be used as an immediate dependency in a connection resource. "+
+				"Please check the order status in the Equinix Fabric portal.")
+			portChecked = port
+		} else {
+			resp.Diagnostics.AddError(
+				fmt.Sprintf("Failed creating port %s", port.GetUuid()), err.Error())
+			return
+		}
 	}
 
 	resp.Diagnostics.Append(diags...)
@@ -96,6 +112,7 @@ func (r *Resource) Create(
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
 
+// Read Terraform necessary resource implementation method
 func (r *Resource) Read(
 	ctx context.Context,
 	req resource.ReadRequest,
@@ -114,8 +131,14 @@ func (r *Resource) Read(
 	// Extract the ID of the resource from the state
 	id := state.ID.ValueString()
 
-	port, _, err := client.PortsApi.GetPortByUuid(ctx, id).Execute()
+	port, portResp, err := client.PortsApi.GetPortByUuid(ctx, id).Execute()
 	if err != nil {
+		if portResp != nil && portResp.StatusCode == http.StatusBadRequest && strings.Contains(err.Error(), "Invalid PortUUID") {
+			// There's a delay between create and an available GET request for the UUID
+			// This is a workaround to avoid the 400 error while it becomes available for GET Requests
+			resp.Diagnostics.AddWarning("Port Order Not Completed", "Port Order has been received but Port has not been reserved. This port resource is not yet ready to be used as a Terraform dependency")
+			return
+		}
 		resp.Diagnostics.AddError(
 			fmt.Sprintf("Failed retrieving port %s", id), equinix_errors.FormatFabricError(err).Error())
 		return
@@ -131,6 +154,7 @@ func (r *Resource) Read(
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 }
 
+// Update Terraform necessary resource implementation method
 func (r *Resource) Update(
 	ctx context.Context,
 	req resource.UpdateRequest,
@@ -149,8 +173,8 @@ func (r *Resource) Update(
 	id := state.ID.ValueString()
 
 	if plan.Name.ValueString() == state.Name.ValueString() {
-		resp.Diagnostics.AddWarning("No updatable fields have changed",
-			"Terraform detected a config change, but it is for a field that isn't updatable for the port resource. Please revert to prior config")
+		resp.Diagnostics.AddWarning("No configurable values have changed",
+			"Terraform detected a config change, but it is just for a computed field(s). No update API call will be made.")
 		return
 	}
 
@@ -191,6 +215,7 @@ func (r *Resource) Update(
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
 
+// Delete Terraform necessary resource implementation method
 func (r *Resource) Delete(
 	ctx context.Context,
 	req resource.DeleteRequest,
@@ -243,8 +268,7 @@ func buildCreateRequest(ctx context.Context, plan resourceModel) (fabricv4.PortR
 	request.SetPhysicalPortsSpeed(plan.PhysicalPortsSpeed.ValueInt32())
 	request.SetPhysicalPortsType(fabricv4.PortPhysicalPortsType(plan.PhysicalPortsType.ValueString()))
 	request.SetPhysicalPortsCount(plan.PhysicalPortsCount.ValueInt32())
-	request.SetHref(plan.Href.ValueString())
-	request.SetUuid(plan.UUID.ValueString())
+	request.SetDemarcationPointIbx(plan.DemarcationPointIbx.ValueString())
 
 	if !plan.Location.IsNull() && !plan.Location.IsUnknown() {
 		var location locationModel
@@ -266,6 +290,7 @@ func buildCreateRequest(ctx context.Context, plan resourceModel) (fabricv4.PortR
 			return fabricv4.PortRequest{}, mDiags
 		}
 		portSettings := fabricv4.PortSettings{}
+		portSettings.SetPackageType(fabricv4.PortSettingsPackageType(settings.PackageType.ValueString()))
 		portSettings.SetSharedPortType(settings.SharedPortType.ValueBool())
 		request.SetSettings(portSettings)
 	}
@@ -280,7 +305,7 @@ func buildCreateRequest(ctx context.Context, plan resourceModel) (fabricv4.PortR
 		portEncapsulation := fabricv4.PortEncapsulation{}
 		portEncapsulation.SetType(fabricv4.PortEncapsulationType(encapsulation.Type.ValueString()))
 		portEncapsulation.SetTagProtocolId(encapsulation.TagProtocolID.ValueString())
-		request.SetEncapsulation(fabricv4.PortEncapsulation{})
+		request.SetEncapsulation(portEncapsulation)
 	}
 
 	if !plan.Account.IsNull() && !plan.Account.IsUnknown() {
@@ -292,8 +317,12 @@ func buildCreateRequest(ctx context.Context, plan resourceModel) (fabricv4.PortR
 		}
 		simplifiedAccount := fabricv4.SimplifiedAccount{}
 		simplifiedAccount.SetAccountNumber(account.AccountNumber.ValueInt64())
-		simplifiedAccount.SetAccountName(account.AccountName.ValueString())
-		simplifiedAccount.SetUcmId(account.UcmID.ValueString())
+		if !account.AccountName.IsNull() && !account.AccountName.IsUnknown() {
+			simplifiedAccount.SetAccountName(account.AccountName.ValueString())
+		}
+		if !account.UcmID.IsNull() && !account.UcmID.IsUnknown() {
+			simplifiedAccount.SetUcmId(account.UcmID.ValueString())
+		}
 		request.SetAccount(simplifiedAccount)
 	}
 
@@ -305,18 +334,6 @@ func buildCreateRequest(ctx context.Context, plan resourceModel) (fabricv4.PortR
 			return fabricv4.PortRequest{}, mDiags
 		}
 		request.SetProject(fabricv4.Project{ProjectId: project.ProjectID.ValueString()})
-	}
-
-	if !plan.Redundancy.IsNull() && !plan.Redundancy.IsUnknown() {
-		var redundancy redundancyModel
-		diags := plan.Redundancy.As(ctx, &redundancy, basetypes.ObjectAsOptions{})
-		if diags.HasError() {
-			mDiags.Append(diags...)
-			return fabricv4.PortRequest{}, mDiags
-		}
-		portRedundancy := fabricv4.PortRedundancy{}
-		portRedundancy.SetPriority(fabricv4.PortPriority(redundancy.Priority.ValueString()))
-		request.SetRedundancy(portRedundancy)
 	}
 
 	if !plan.Redundancy.IsNull() && !plan.Redundancy.IsUnknown() {
@@ -351,7 +368,7 @@ func buildCreateRequest(ctx context.Context, plan resourceModel) (fabricv4.PortR
 
 	if !plan.Notifications.IsNull() && !plan.Notifications.IsUnknown() {
 		notifications := make([]notificationModel, len(plan.Notifications.Elements()))
-		diags := plan.Notifications.ElementsAs(ctx, notifications, false)
+		diags := plan.Notifications.ElementsAs(ctx, &notifications, false)
 		if diags.HasError() {
 			mDiags.Append(diags...)
 			return fabricv4.PortRequest{}, mDiags
@@ -360,7 +377,7 @@ func buildCreateRequest(ctx context.Context, plan resourceModel) (fabricv4.PortR
 		for i, v := range notifications {
 			portNotifications[i].SetType(fabricv4.PortNotificationType(v.Type.ValueString()))
 			registeredUsers := make([]string, len(v.RegisteredUsers.Elements()))
-			diags = v.RegisteredUsers.ElementsAs(ctx, registeredUsers, false)
+			diags = v.RegisteredUsers.ElementsAs(ctx, &registeredUsers, false)
 			if diags.HasError() {
 				mDiags.Append(diags...)
 				return fabricv4.PortRequest{}, mDiags
@@ -372,7 +389,7 @@ func buildCreateRequest(ctx context.Context, plan resourceModel) (fabricv4.PortR
 
 	if !plan.AdditionalInfo.IsNull() && !plan.AdditionalInfo.IsUnknown() {
 		additionalInfo := make([]additionalInfoModel, len(plan.AdditionalInfo.Elements()))
-		diags := plan.AdditionalInfo.ElementsAs(ctx, additionalInfo, false)
+		diags := plan.AdditionalInfo.ElementsAs(ctx, &additionalInfo, false)
 		if diags.HasError() {
 			mDiags.Append(diags...)
 			return fabricv4.PortRequest{}, mDiags
@@ -390,7 +407,7 @@ func buildCreateRequest(ctx context.Context, plan resourceModel) (fabricv4.PortR
 
 func buildPhysicalPorts(ctx context.Context, physicalPortsObject fwtypes.ListNestedObjectValueOf[physicalPortModel]) ([]fabricv4.PhysicalPort, diag.Diagnostics) {
 	physicalPortModels := make([]physicalPortModel, len(physicalPortsObject.Elements()))
-	mDiags := physicalPortsObject.ElementsAs(ctx, physicalPortModels, false)
+	mDiags := physicalPortsObject.ElementsAs(ctx, &physicalPortModels, false)
 	if mDiags.HasError() {
 		return []fabricv4.PhysicalPort{}, mDiags
 	}
@@ -405,8 +422,8 @@ func buildPhysicalPorts(ctx context.Context, physicalPortsObject fwtypes.ListNes
 		}
 		fabricDemarcationPoint := fabricv4.PortDemarcationPoint{}
 		fabricDemarcationPoint.SetIbx(demarcationPoint.Ibx.ValueString())
-		fabricDemarcationPoint.SetCageUniqueSpaceId(demarcationPoint.CageUniqueSpaceId.ValueString())
-		fabricDemarcationPoint.SetCabinetUniqueSpaceId(demarcationPoint.CabinetUniqueSpaceId.ValueString())
+		fabricDemarcationPoint.SetCageUniqueSpaceId(demarcationPoint.CageUniqueSpaceID.ValueString())
+		fabricDemarcationPoint.SetCabinetUniqueSpaceId(demarcationPoint.CabinetUniqueSpaceID.ValueString())
 		fabricDemarcationPoint.SetConnectorType(demarcationPoint.ConnectorType.ValueString())
 		fabricDemarcationPoint.SetPatchPanel(demarcationPoint.PatchPanel.ValueString())
 		physicalPorts[i].SetDemarcationPoint(fabricDemarcationPoint)
@@ -424,8 +441,8 @@ func buildOrder(ctx context.Context, orderObject fwtypes.ObjectValueOf[orderMode
 
 	portOrder := fabricv4.PortOrder{}
 	portOrder.SetOrderNumber(order.OrderNumber.ValueString())
-	portOrder.SetOrderId(order.OrderId.ValueString())
-	portOrder.SetCustomerReferenceId(order.CustomerReferenceId.ValueString())
+	portOrder.SetOrderId(order.OrderID.ValueString())
+	portOrder.SetCustomerReferenceId(order.CustomerReferenceID.ValueString())
 
 	var purchaseOrder purchaseOrderModel
 	diags := order.PurchaseOrder.As(ctx, &purchaseOrder, basetypes.ObjectAsOptions{})
@@ -436,7 +453,7 @@ func buildOrder(ctx context.Context, orderObject fwtypes.ObjectValueOf[orderMode
 	portPurchaseOrder := fabricv4.PortOrderPurchaseOrder{}
 	portPurchaseOrder.SetType(fabricv4.PortOrderPurchaseOrderType(purchaseOrder.Type.ValueString()))
 	portPurchaseOrder.SetAmount(purchaseOrder.Amount.ValueString())
-	portPurchaseOrder.SetAttachmentId(purchaseOrder.AttachmentId.ValueString())
+	portPurchaseOrder.SetAttachmentId(purchaseOrder.AttachmentID.ValueString())
 	portPurchaseOrder.SetNumber(purchaseOrder.Number.ValueString())
 	portPurchaseOrder.SetStartDate(purchaseOrder.StartDate.ValueString())
 	portPurchaseOrder.SetEndDate(purchaseOrder.EndDate.ValueString())
@@ -479,15 +496,21 @@ func getCreateUpdateWaiter(ctx context.Context, client *fabricv4.APIClient, id s
 			string(fabricv4.PORTSTATE_ACTIVE),
 		},
 		Refresh: func() (interface{}, string, error) {
-			port, _, err := client.PortsApi.GetPortByUuid(ctx, id).Execute()
+			port, resp, err := client.PortsApi.GetPortByUuid(ctx, id).Execute()
 			if err != nil {
-				return 0, "", err
+				if resp != nil && resp.StatusCode == http.StatusBadRequest && strings.Contains(err.Error(), "Invalid PortUUID") {
+					// There's a delay between create and an available GET request for the UUID
+					// This is a workaround to avoid the 400 error while it becomes available for GET Requests
+					return nil, string(fabricv4.PORTSTATE_PENDING), nil
+				}
+				return port, "", err
 			}
 			return port, string(port.GetState()), nil
 		},
-		Timeout:    timeout,
-		Delay:      10 * time.Second,
-		MinTimeout: 5 * time.Second,
+		Timeout:        timeout,
+		Delay:          10 * time.Second,
+		MinTimeout:     5 * time.Second,
+		NotFoundChecks: 6,
 	}
 }
 

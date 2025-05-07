@@ -1,7 +1,9 @@
+// Package port is a Terraform resource for Equinix Fabric Port Management
 package port
 
 import (
 	"context"
+
 	"github.com/equinix/equinix-sdk-go/services/fabricv4"
 	"github.com/equinix/terraform-provider-equinix/internal/fabric"
 	int_fw "github.com/equinix/terraform-provider-equinix/internal/framework"
@@ -78,8 +80,8 @@ type physicalPortModel struct {
 
 type demarcationPointModel struct {
 	Ibx                  types.String `tfsdk:"ibx"`
-	CageUniqueSpaceId    types.String `tfsdk:"cage_unique_space_id"`
-	CabinetUniqueSpaceId types.String `tfsdk:"cabinet_unique_space_id"`
+	CageUniqueSpaceID    types.String `tfsdk:"cage_unique_space_id"`
+	CabinetUniqueSpaceID types.String `tfsdk:"cabinet_unique_space_id"`
 	PatchPanel           types.String `tfsdk:"patch_panel"`
 	ConnectorType        types.String `tfsdk:"connector_type"`
 }
@@ -87,16 +89,16 @@ type demarcationPointModel struct {
 type orderModel struct {
 	PurchaseOrder       fwtypes.ObjectValueOf[purchaseOrderModel] `tfsdk:"purchase_order"`
 	OrderNumber         types.String                              `tfsdk:"order_number"`
-	OrderId             types.String                              `tfsdk:"order_id"`
+	OrderID             types.String                              `tfsdk:"order_id"`
 	UUID                types.String                              `tfsdk:"uuid"`
-	CustomerReferenceId types.String                              `tfsdk:"customer_reference_id"`
+	CustomerReferenceID types.String                              `tfsdk:"customer_reference_id"`
 	Signature           fwtypes.ObjectValueOf[signatureModel]     `tfsdk:"signature"`
 }
 
 type purchaseOrderModel struct {
 	Number       types.String `tfsdk:"number"`
 	Amount       types.String `tfsdk:"amount"`
-	AttachmentId types.String `tfsdk:"attachment_id"`
+	AttachmentID types.String `tfsdk:"attachment_id"`
 	Type         types.String `tfsdk:"type"`
 	StartDate    types.String `tfsdk:"start_date"`
 	EndDate      types.String `tfsdk:"end_date"`
@@ -150,7 +152,9 @@ func (m *resourceModel) parse(ctx context.Context, port *fabricv4.Port) diag.Dia
 
 func (m *basePortModel) parse(ctx context.Context, port *fabricv4.Port) diag.Diagnostics {
 	var mDiags diag.Diagnostics
-	m.Type = types.StringValue(string(port.GetType()))
+	if port.GetType() != "" {
+		m.Type = types.StringValue(string(port.GetType()))
+	}
 	m.Name = types.StringValue(port.GetName())
 	m.ConnectivitySourceType = types.StringValue(string(port.GetConnectivitySourceType()))
 	m.LagEnabled = types.BoolValue(port.GetLagEnabled())
@@ -175,12 +179,14 @@ func (m *basePortModel) parse(ctx context.Context, port *fabricv4.Port) diag.Dia
 	}
 	m.Settings = fwtypes.NewObjectValueOf[settingsModel](ctx, &settings)
 
-	portEncapsulation := port.GetEncapsulation()
-	encapsulation := encapsulationModel{
-		Type:          types.StringValue(string(portEncapsulation.GetType())),
-		TagProtocolID: types.StringValue(portEncapsulation.GetTagProtocolId()),
+	if port.Encapsulation != nil {
+		portEncapsulation := port.GetEncapsulation()
+		encapsulation := encapsulationModel{
+			Type:          types.StringValue(string(portEncapsulation.GetType())),
+			TagProtocolID: types.StringValue(portEncapsulation.GetTagProtocolId()),
+		}
+		m.Encapsulation = fwtypes.NewObjectValueOf[encapsulationModel](ctx, &encapsulation)
 	}
-	m.Encapsulation = fwtypes.NewObjectValueOf[encapsulationModel](ctx, &encapsulation)
 
 	portAccount := port.GetAccount()
 	account := accountModel{
@@ -202,7 +208,9 @@ func (m *basePortModel) parse(ctx context.Context, port *fabricv4.Port) diag.Dia
 	}
 	m.Redundancy = fwtypes.NewObjectValueOf[redundancyModel](ctx, &redundancy)
 
-	m.PhysicalPorts = parsePhysicalPorts(ctx, port.GetPhysicalPorts())
+	if len(port.PhysicalPorts) > 0 {
+		m.PhysicalPorts = parsePhysicalPorts(ctx, port.GetPhysicalPorts())
+	}
 
 	m.Order = parseOrder(ctx, port.GetOrder())
 
@@ -213,7 +221,9 @@ func (m *basePortModel) parse(ctx context.Context, port *fabricv4.Port) diag.Dia
 	}
 	m.Notifications = notifications
 
-	m.AdditionalInfo = parseAdditionalInfo(ctx, port.GetAdditionalInfo())
+	if len(port.GetAdditionalInfo()) > 0 {
+		m.AdditionalInfo = parseAdditionalInfo(ctx, port.GetAdditionalInfo())
+	}
 
 	portChangeLog := port.GetChangeLog()
 	changeLog := changeLogModel{
@@ -251,8 +261,8 @@ func parsePhysicalPorts(ctx context.Context, portPhysicalPorts []fabricv4.Physic
 func parseDemarcationPoint(ctx context.Context, demPoint fabricv4.PortDemarcationPoint) fwtypes.ObjectValueOf[demarcationPointModel] {
 	demarcationPoint := demarcationPointModel{
 		Ibx:                  types.StringValue(demPoint.GetIbx()),
-		CageUniqueSpaceId:    types.StringValue(demPoint.GetCageUniqueSpaceId()),
-		CabinetUniqueSpaceId: types.StringValue(demPoint.GetCabinetUniqueSpaceId()),
+		CageUniqueSpaceID:    types.StringValue(demPoint.GetCageUniqueSpaceId()),
+		CabinetUniqueSpaceID: types.StringValue(demPoint.GetCabinetUniqueSpaceId()),
 		PatchPanel:           types.StringValue(demPoint.GetPatchPanel()),
 		ConnectorType:        types.StringValue(demPoint.GetConnectorType()),
 	}
@@ -263,16 +273,16 @@ func parseDemarcationPoint(ctx context.Context, demPoint fabricv4.PortDemarcatio
 func parseOrder(ctx context.Context, portOrder fabricv4.PortOrder) fwtypes.ObjectValueOf[orderModel] {
 	order := orderModel{
 		OrderNumber:         types.StringValue(portOrder.GetOrderNumber()),
-		OrderId:             types.StringValue(portOrder.GetOrderId()),
+		OrderID:             types.StringValue(portOrder.GetOrderId()),
 		UUID:                types.StringValue(portOrder.GetUuid()),
-		CustomerReferenceId: types.StringValue(portOrder.GetCustomerReferenceId()),
+		CustomerReferenceID: types.StringValue(portOrder.GetCustomerReferenceId()),
 	}
 
 	purchaseOrder := portOrder.GetPurchaseOrder()
 	order.PurchaseOrder = fwtypes.NewObjectValueOf[purchaseOrderModel](ctx, &purchaseOrderModel{
 		Number:       types.StringValue(purchaseOrder.GetNumber()),
 		Amount:       types.StringValue(purchaseOrder.GetAmount()),
-		AttachmentId: types.StringValue(purchaseOrder.GetAttachmentId()),
+		AttachmentID: types.StringValue(purchaseOrder.GetAttachmentId()),
 		Type:         types.StringValue(string(purchaseOrder.GetType())),
 		StartDate:    types.StringValue(purchaseOrder.GetStartDate()),
 		EndDate:      types.StringValue(purchaseOrder.GetEndDate()),

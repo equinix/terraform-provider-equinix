@@ -2,6 +2,7 @@ package port
 
 import (
 	"context"
+
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -18,7 +19,13 @@ func resourceSchema(ctx context.Context) schema.Schema {
 
 Additional Documentation:
 * Getting Started: https://docs.equinix.com/en-us/Content/Interconnection/Fabric/ports/fabric-order-port.htm
-* API: https://developer.equinix.com/catalog/fabricv4#operation/createPort`,
+* API: https://developer.equinix.com/catalog/fabricv4#operation/createPort
+
+~> ** NOTE:** This resource is in beta and is subject to change. Please use with caution. Experimental resource may contain bugs and is not recommended for production use.
+* There are no guarantees that a Port Reservation will occur after creating a port order through Terraform
+* If a Port Reservation does not occur then the Port Order is not complete and the Terraform resource will not be able to be used as a dependency
+* Port Deletions are not a short process and can take 2-5 business days to complete
+* Please be advised that a re-run of the Terraform resource with the same settings may not result in an available Port for Reservation even if the previous one was Completed`,
 		Attributes: map[string]schema.Attribute{
 			"id": framework.IDAttributeDefaultDescription(),
 			"timeouts": timeouts.Attributes(ctx, timeouts.Opts{
@@ -27,6 +34,11 @@ Additional Documentation:
 				Update: true,
 				Delete: true,
 			}),
+			"name": schema.StringAttribute{
+				Description: "Designated name of the port",
+				Optional:    true,
+				Computed:    true,
+			},
 			"type": schema.StringAttribute{
 				Description: "Type of the port order request",
 				Required:    true,
@@ -55,14 +67,14 @@ Additional Documentation:
 						Description: "Billing package for the port being ordered",
 						Required:    true,
 					},
-					"shared_port_type": schema.StringAttribute{
+					"shared_port_type": schema.BoolAttribute{
 						Description: "Indicates whether this is a dedicated customer cage or a shared neutral cage",
 						Required:    true,
 					},
 				},
 			},
 			"encapsulation": schema.SingleNestedAttribute{
-				Description: "Stream subscription enabled status",
+				Description: "Port encapsulation settings",
 				Required:    true,
 				CustomType:  fwtypes.NewObjectTypeOf[encapsulationModel](ctx),
 				Attributes: map[string]schema.Attribute{
@@ -199,7 +211,8 @@ Additional Documentation:
 			},
 			"order": schema.SingleNestedAttribute{
 				Description: "Details of the Port Order such as purchaseOrder details and signature",
-				Required:    true,
+				Optional:    true,
+				Computed:    true,
 				CustomType:  fwtypes.NewObjectTypeOf[orderModel](ctx),
 				Attributes: map[string]schema.Attribute{
 					"purchase_order": schema.SingleNestedAttribute{
@@ -235,23 +248,23 @@ Additional Documentation:
 					},
 					"order_number": schema.StringAttribute{
 						Description: "Order Reference Number",
-						Required:    true,
+						Computed:    true,
 					},
 					"order_id": schema.StringAttribute{
 						Description: "Order Identification",
-						Required:    true,
+						Computed:    true,
 					},
 					"uuid": schema.StringAttribute{
 						Description: "Equinix-assigned order identifier, this is a derived response atrribute",
-						Required:    true,
+						Computed:    true,
 					},
 					"customer_reference_id": schema.StringAttribute{
 						Description: "Customer order reference Id",
-						Required:    true,
+						Optional:    true,
 					},
 					"signature": schema.SingleNestedAttribute{
 						Description: "Port order confirmation signature details",
-						Required:    true,
+						Optional:    true,
 						CustomType:  fwtypes.NewObjectTypeOf[signatureModel](ctx),
 						Attributes: map[string]schema.Attribute{
 							"signatory": schema.StringAttribute{
@@ -265,11 +278,11 @@ Additional Documentation:
 								Attributes: map[string]schema.Attribute{
 									"first_name": schema.StringAttribute{
 										Description: "First name of the signatory",
-										Required:    true,
+										Optional:    true,
 									},
 									"last_name": schema.StringAttribute{
 										Description: "Last name of the signatory",
-										Required:    true,
+										Optional:    true,
 									},
 									"email": schema.StringAttribute{
 										Description: "Email of the signatory",
@@ -301,7 +314,7 @@ Additional Documentation:
 			},
 			"additional_info": schema.ListNestedAttribute{
 				Description: "List of key/value objects to provide additional context to the Port order",
-				Required:    true,
+				Optional:    true,
 				CustomType:  fwtypes.NewListNestedObjectTypeOf[additionalInfoModel](ctx),
 				NestedObject: schema.NestedAttributeObject{
 					Attributes: map[string]schema.Attribute{
