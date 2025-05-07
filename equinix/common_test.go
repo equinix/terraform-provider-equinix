@@ -1,3 +1,4 @@
+// Package common test
 package equinix
 
 import (
