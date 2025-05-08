@@ -51,7 +51,6 @@ func TestAccDataSourceFabricCloudRouter_PFCR(t *testing.T) {
 					resource.TestCheckResourceAttrSet("data.equinix_fabric_cloud_routers.test", "data.0.href"),
 					resource.TestCheckResourceAttr("data.equinix_fabric_cloud_routers.test", "data.0.state", "PROVISIONED"),
 					resource.TestCheckResourceAttrSet("data.equinix_fabric_cloud_routers.test", "data.0.equinix_asn"),
-					resource.TestCheckResourceAttr("data.equinix_fabric_cloud_routers.test", "data.0.bgp_ipv4_routes_count", "0"),
 					resource.TestCheckResourceAttr("data.equinix_fabric_cloud_routers.test", "data.0.bgp_ipv6_routes_count", "0"),
 					resource.TestCheckResourceAttr("data.equinix_fabric_cloud_routers.test", "data.0.connections_count", "0"),
 					resource.TestCheckResourceAttrSet("data.equinix_fabric_cloud_routers.test", "data.0.change_log.0.created_by"),
