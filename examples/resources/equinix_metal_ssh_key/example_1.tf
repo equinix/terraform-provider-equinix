@@ -10,7 +10,7 @@ resource "equinix_metal_device" "test" {
   hostname         = "test-device"
   plan             = "c3.small.x86"
   metro            = "sv"
-  operating_system = "ubuntu_20_04"
+  operating_system = "ubuntu_24_04"
   billing_cycle    = "hourly"
   project_id       = local.project_id
   depends_on       = ["equinix_metal_ssh_key.key1"]

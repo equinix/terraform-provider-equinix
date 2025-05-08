@@ -1,6 +1,6 @@
 data "equinix_metal_operating_system" "example" {
   distro           = "ubuntu"
-  version          = "20.04"
+  version          = "24.04"
   provisionable_on = "c3.medium.x86"
 }
 
