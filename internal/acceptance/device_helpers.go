@@ -13,8 +13,8 @@ var (
 	PreferableOs     = []string{"ubuntu_24_04"}
 )
 
-// TestDeviceTerminationTime returns the time 60 minutes in the future
-func TestDeviceTerminationTime() string {
+// DeviceTerminationTime returns the time 60 minutes in the future
+func DeviceTerminationTime() string {
 	return time.Now().UTC().Add(60 * time.Minute).Format(time.RFC3339)
 }
 

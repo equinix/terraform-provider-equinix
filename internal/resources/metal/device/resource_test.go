@@ -595,7 +595,7 @@ resource "equinix_metal_device" "test" {
   tags             = ["%d"]
   termination_time = "%s"
 }
-`, acceptance.ConfAccMetalDeviceBase(acceptance.PreferablePlans, acceptance.PreferableMetros, acceptance.PreferableOs), projSuffix, rInt, rInt, acceptance.TestDeviceTerminationTime())
+`, acceptance.ConfAccMetalDeviceBase(acceptance.PreferablePlans, acceptance.PreferableMetros, acceptance.PreferableOs), projSuffix, rInt, rInt, acceptance.DeviceTerminationTime())
 }
 
 func testAccMetalDeviceConfig_reinstall(rInt int, projSuffix string) string {
@@ -622,7 +622,7 @@ resource "equinix_metal_device" "test" {
 	  deprovision_fast = true
   }
 }
-`, acceptance.ConfAccMetalDeviceBase(acceptance.PreferablePlans, acceptance.PreferableMetros, acceptance.PreferableOs), projSuffix, rInt, rInt, acceptance.TestDeviceTerminationTime())
+`, acceptance.ConfAccMetalDeviceBase(acceptance.PreferablePlans, acceptance.PreferableMetros, acceptance.PreferableOs), projSuffix, rInt, rInt, acceptance.DeviceTerminationTime())
 }
 
 func testAccMetalDeviceConfig_allowAttributeChanges(rInt int, projSuffix string, userdata string, customdata string, attributeName string) string {
@@ -651,7 +651,7 @@ resource "equinix_metal_device" "test" {
     ]
   }
 }
-`, acceptance.ConfAccMetalDeviceBase(acceptance.PreferablePlans, acceptance.PreferableMetros, acceptance.PreferableOs), projSuffix, rInt, rInt, userdata, customdata, acceptance.TestDeviceTerminationTime(), attributeName)
+`, acceptance.ConfAccMetalDeviceBase(acceptance.PreferablePlans, acceptance.PreferableMetros, acceptance.PreferableOs), projSuffix, rInt, rInt, userdata, customdata, acceptance.DeviceTerminationTime(), attributeName)
 }
 
 func testAccMetalDeviceConfig_varname(rInt int, projSuffix string) string {
@@ -673,7 +673,7 @@ resource "equinix_metal_device" "test" {
   tags             = ["%d"]
   termination_time = "%s"
 }
-`, acceptance.ConfAccMetalDeviceBase(acceptance.PreferablePlans, acceptance.PreferableMetros, acceptance.PreferableOs), projSuffix, rInt, rInt, rInt, acceptance.TestDeviceTerminationTime())
+`, acceptance.ConfAccMetalDeviceBase(acceptance.PreferablePlans, acceptance.PreferableMetros, acceptance.PreferableOs), projSuffix, rInt, rInt, rInt, acceptance.DeviceTerminationTime())
 }
 
 func testAccMetalDeviceConfig_minimal(projSuffix string) string {
@@ -709,7 +709,7 @@ resource "equinix_metal_device" "test" {
   billing_cycle    = "hourly"
   project_id       = "${equinix_metal_project.test.id}"
   termination_time = "%s"
-}`, acceptance.ConfAccMetalDeviceBase(acceptance.PreferablePlans, acceptance.PreferableMetros, acceptance.PreferableOs), projSuffix, acceptance.TestDeviceTerminationTime())
+}`, acceptance.ConfAccMetalDeviceBase(acceptance.PreferablePlans, acceptance.PreferableMetros, acceptance.PreferableOs), projSuffix, acceptance.DeviceTerminationTime())
 }
 
 func testAccMetalDeviceConfig_ssh_key(projSuffix, userSSHKey, projSSHKey string) string {
@@ -764,7 +764,7 @@ resource "equinix_metal_device" "test_ipxe_script_url"  {
   ipxe_script_url  = "%s"
   always_pxe       = "%s"
   termination_time = "%s"
-}`, acceptance.ConfAccMetalDeviceBase(acceptance.PreferablePlans, acceptance.PreferableMetros, acceptance.PreferableOs), projSuffix, url, pxe, acceptance.TestDeviceTerminationTime())
+}`, acceptance.ConfAccMetalDeviceBase(acceptance.PreferablePlans, acceptance.PreferableMetros, acceptance.PreferableOs), projSuffix, url, pxe, acceptance.DeviceTerminationTime())
 }
 
 var testAccMetalDeviceConfig_ipxe_conflict = `
@@ -836,7 +836,7 @@ resource "equinix_metal_device" "test" {
     delete = "%s"
   }
 }
-`, acceptance.ConfAccMetalDeviceBase(acceptance.PreferablePlans, acceptance.PreferableMetros, acceptance.PreferableOs), projSuffix, acceptance.TestDeviceTerminationTime(), createTimeout, updateTimeout, deleteTimeout)
+`, acceptance.ConfAccMetalDeviceBase(acceptance.PreferablePlans, acceptance.PreferableMetros, acceptance.PreferableOs), projSuffix, acceptance.DeviceTerminationTime(), createTimeout, updateTimeout, deleteTimeout)
 }
 
 func testAccMetalDeviceConfig_reinstall_timeout(projSuffix, updateTimeout string) string {
@@ -870,7 +870,7 @@ resource "equinix_metal_device" "test" {
 	update = "%s"
   }
 }
-`, acceptance.ConfAccMetalDeviceBase(acceptance.PreferablePlans, acceptance.PreferableMetros, acceptance.PreferableOs), projSuffix, acceptance.TestDeviceTerminationTime(), updateTimeout)
+`, acceptance.ConfAccMetalDeviceBase(acceptance.PreferablePlans, acceptance.PreferableMetros, acceptance.PreferableOs), projSuffix, acceptance.DeviceTerminationTime(), updateTimeout)
 }
 
 func testAccWaitForMetalDeviceActive(project, deviceHostName string) resource.ImportStateIdFunc {
@@ -1017,5 +1017,5 @@ resource "equinix_metal_device" "test" {
   project_id       = "${equinix_metal_project.test.id}"
   locked           = %v
   termination_time = "%s"
-}`, acceptance.ConfAccMetalDeviceBase(acceptance.PreferablePlans, acceptance.PreferableMetros, acceptance.PreferableOs), projSuffix, locked, acceptance.TestDeviceTerminationTime())
+}`, acceptance.ConfAccMetalDeviceBase(acceptance.PreferablePlans, acceptance.PreferableMetros, acceptance.PreferableOs), projSuffix, locked, acceptance.DeviceTerminationTime())
 }

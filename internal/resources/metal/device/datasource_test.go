@@ -60,7 +60,7 @@ resource "equinix_metal_device" "test" {
 data "equinix_metal_device" "test" {
   project_id       = equinix_metal_project.test.id
   hostname         = equinix_metal_device.test.hostname
-}`, acceptance.ConfAccMetalDeviceBase(acceptance.PreferablePlans, acceptance.PreferableMetros, acceptance.PreferableOs), projSuffix, acceptance.TestDeviceTerminationTime())
+}`, acceptance.ConfAccMetalDeviceBase(acceptance.PreferablePlans, acceptance.PreferableMetros, acceptance.PreferableOs), projSuffix, acceptance.DeviceTerminationTime())
 }
 
 func TestAccDataSourceMetalDevice_byID(t *testing.T) {
@@ -113,5 +113,5 @@ resource "equinix_metal_device" "test" {
 
 data "equinix_metal_device" "test" {
   device_id       = equinix_metal_device.test.id
-}`, acceptance.ConfAccMetalDeviceBase(acceptance.PreferablePlans, acceptance.PreferableMetros, acceptance.PreferableOs), projSuffix, acceptance.TestDeviceTerminationTime())
+}`, acceptance.ConfAccMetalDeviceBase(acceptance.PreferablePlans, acceptance.PreferableMetros, acceptance.PreferableOs), projSuffix, acceptance.DeviceTerminationTime())
 }

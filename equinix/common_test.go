@@ -14,7 +14,7 @@ var (
 	preferable_os     = []string{"ubuntu_24_04"}
 )
 
-// Deprecated: use the identical TestDeviceTerminationTime from internal/acceptance instead
+// Deprecated: use the identical DeviceTerminationTime from internal/acceptance instead
 func testDeviceTerminationTime() string {
 	return time.Now().UTC().Add(60 * time.Minute).Format(time.RFC3339)
 }

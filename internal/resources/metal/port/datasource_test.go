@@ -51,7 +51,7 @@ data "equinix_metal_port" "test" {
     name      = "eth0"
 }
 
-`, acceptance.ConfAccMetalDeviceBase(acceptance.PreferablePlans, acceptance.PreferableMetros, acceptance.PreferableOs), name, acceptance.TestDeviceTerminationTime())
+`, acceptance.ConfAccMetalDeviceBase(acceptance.PreferablePlans, acceptance.PreferableMetros, acceptance.PreferableOs), name, acceptance.DeviceTerminationTime())
 }
 
 func TestAccDataSourceMetalPort_byId(t *testing.T) {
@@ -94,5 +94,5 @@ resource "equinix_metal_device" "test" {
 data "equinix_metal_port" "test" {
   port_id        = equinix_metal_device.test.ports[0].id
 }
-`, acceptance.ConfAccMetalDeviceBase(acceptance.PreferablePlans, acceptance.PreferableMetros, acceptance.PreferableOs), name, acceptance.TestDeviceTerminationTime())
+`, acceptance.ConfAccMetalDeviceBase(acceptance.PreferablePlans, acceptance.PreferableMetros, acceptance.PreferableOs), name, acceptance.DeviceTerminationTime())
 }

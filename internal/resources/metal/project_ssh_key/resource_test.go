@@ -45,7 +45,7 @@ resource "equinix_metal_device" "test" {
 		acceptance.PreferableOs),
 		name,
 		publicSshKey,
-		acceptance.TestDeviceTerminationTime())
+		acceptance.DeviceTerminationTime())
 }
 
 func TestAccMetalProjectSSHKey_basic(t *testing.T) {
