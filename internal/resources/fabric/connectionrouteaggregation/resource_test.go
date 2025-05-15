@@ -20,7 +20,7 @@ func testAccFabricConnectionRouteAggregationConfig(portUuid string) string {
 			type = "XF_ROUTER"
 			name = "RF_CR_PFCR"
 			location {
-				metro_code  = "SV"
+				metro_code  = "DC"
 			}
 			package {
 				code = "STANDARD"
