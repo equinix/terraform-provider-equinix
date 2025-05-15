@@ -14,7 +14,6 @@ import (
 func dataSourceAllMetroSchema(ctx context.Context) schema.Schema {
 	return schema.Schema{
 		Attributes: map[string]schema.Attribute{
-			"id": framework.IDAttributeDefaultDescription(),
 			"presence": schema.StringAttribute{
 				Description: "User On Boarded Metros based on Fabric resource availability",
 				Optional:    true,
