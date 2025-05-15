@@ -75,7 +75,7 @@ func fabricNetworkResourceSchema() map[string]*schema.Schema {
 			Type:     schema.TypeString,
 			Required: true,
 			ValidateFunc: validation.StringInSlice(
-				converters.NetworkScopeArrayToStringArray(fabricv4.AllowedNetworkScopeEnumValues),
+				converters.EnumArrayToStringArray(fabricv4.AllowedNetworkScopeEnumValues),
 				true,
 			),
 			Description: fmt.Sprintf("Fabric Network scope. Valid values: %v. Note: When scope is REGIONAL, the location.region field is required.",
