@@ -57,7 +57,7 @@ output "region" {
 - `notifications` (List of Object) Preferences for notifications on Fabric Network configuration or status changes (see [below for nested schema](#nestedatt--notifications))
 - `operation` (Set of Object) Network operation information that is associated with this Fabric Network (see [below for nested schema](#nestedatt--operation))
 - `project` (Set of Object) Fabric Network project (see [below for nested schema](#nestedatt--project))
-- `scope` (String) Fabric Network scope - REGIONAL, GLOBAL, LOCAL *REGIONAL requires location.region to be set*
+- `scope` (String) Fabric Network scope. Valid values: [REGIONAL GLOBAL LOCAL]. Note: When scope is REGIONAL, the location.region field is required.
 - `state` (String) Fabric Network overall state
 - `type` (String) Supported Network types - EVPLAN, EPLAN, IPWAN, EVPTREE, EPTREE
 

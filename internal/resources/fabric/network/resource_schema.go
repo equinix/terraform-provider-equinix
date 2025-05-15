@@ -1,6 +1,8 @@
 package network
 
 import (
+	"fmt"
+	"github.com/equinix/equinix-sdk-go/services/fabricv4"
 	equinix_fabric_schema "github.com/equinix/terraform-provider-equinix/internal/fabric/schema"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -68,10 +70,16 @@ func fabricNetworkResourceSchema() map[string]*schema.Schema {
 			Description: "Fabric Network overall state",
 		},
 		"scope": {
-			Type:         schema.TypeString,
-			Required:     true,
-			ValidateFunc: validation.StringInSlice([]string{"REGIONAL", "GLOBAL", "LOCAL"}, true),
-			Description:  "Fabric Network scope. Valid values: REGIONAL, GLOBAL, LOCAL. Note: When scope is REGIONAL, the location.region field is required.",
+			Type:     schema.TypeString,
+			Required: true,
+			ValidateFunc: validation.StringInSlice([]string{
+				string(fabricv4.NETWORKSCOPE_REGIONAL),
+				string(fabricv4.NETWORKSCOPE_GLOBAL),
+				string(fabricv4.NETWORKSCOPE_LOCAL),
+			}, true),
+			Description: fmt.Sprintf("Fabric Network scope. Valid values: %v. Note: When scope is REGIONAL, the location.region field is required.",
+				fabricv4.AllowedNetworkScopeEnumValues,
+			),
 		},
 		"type": {
 			Type:         schema.TypeString,
