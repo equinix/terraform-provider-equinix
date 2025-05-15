@@ -71,7 +71,7 @@ func fabricNetworkResourceSchema() map[string]*schema.Schema {
 			Type:         schema.TypeString,
 			Required:     true,
 			ValidateFunc: validation.StringInSlice([]string{"REGIONAL", "GLOBAL", "LOCAL"}, true),
-			Description:  "Fabric Network scope - REGIONAL, GLOBAL, LOCAL *REGIONAL requires location.region to be set*",
+			Description:  "Fabric Network scope. Valid values: REGIONAL, GLOBAL, LOCAL. Note: When scope is REGIONAL, the location.region field is required.",
 		},
 		"type": {
 			Type:         schema.TypeString,
