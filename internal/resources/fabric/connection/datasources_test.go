@@ -2,9 +2,7 @@ package connection_test
 
 import (
 	"fmt"
-	"strconv"
 	"testing"
-	"time"
 
 	"github.com/equinix/terraform-provider-equinix/internal/acceptance"
 	testinghelpers "github.com/equinix/terraform-provider-equinix/internal/fabric/testing_helpers"
@@ -18,14 +16,13 @@ func TestAccFabricDataSourceConnection_PFCR(t *testing.T) {
 		aSidePortUUID = ports["pfcr"]["dot1q"][0].GetUuid()
 		zSidePortUUID = ports["pfcr"]["dot1q"][1].GetUuid()
 	}
-	vlanID := generateUniqueVlanId()
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { acceptance.TestAccPreCheck(t); acceptance.TestAccPreCheckProviderConfigured(t) },
 		Providers:    acceptance.TestAccProviders,
 		CheckDestroy: CheckConnectionDelete,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccFabricDataSourceConnectionConfig(50, aSidePortUUID, zSidePortUUID, vlanID, vlanID),
+				Config: testAccFabricDataSourceConnectionConfig(50, aSidePortUUID, zSidePortUUID),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.equinix_fabric_connection.test", "id"),
 					resource.TestCheckResourceAttr(
@@ -43,7 +40,7 @@ func TestAccFabricDataSourceConnection_PFCR(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						"data.equinix_fabric_connection.test", "a_side.0.access_point.0.link_protocol.0.type", "DOT1Q"),
 					resource.TestCheckResourceAttr(
-						"data.equinix_fabric_connection.test", "a_side.0.access_point.0.link_protocol.0.vlan_tag", vlanID),
+						"data.equinix_fabric_connection.test", "a_side.0.access_point.0.link_protocol.0.vlan_tag", "2444"),
 					resource.TestCheckResourceAttr(
 						"data.equinix_fabric_connection.test", "a_side.0.access_point.0.location.0.metro_code", "DC"),
 					resource.TestCheckResourceAttr(
@@ -51,7 +48,7 @@ func TestAccFabricDataSourceConnection_PFCR(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						"data.equinix_fabric_connection.test", "z_side.0.access_point.0.link_protocol.0.type", "DOT1Q"),
 					resource.TestCheckResourceAttr(
-						"data.equinix_fabric_connection.test", "z_side.0.access_point.0.link_protocol.0.vlan_tag", vlanID),
+						"data.equinix_fabric_connection.test", "z_side.0.access_point.0.link_protocol.0.vlan_tag", "2555"),
 					resource.TestCheckResourceAttr(
 						"data.equinix_fabric_connection.test", "z_side.0.access_point.0.location.0.metro_code", "SV"),
 					resource.TestCheckResourceAttrSet("data.equinix_fabric_connections.connections", "id"),
@@ -70,7 +67,7 @@ func TestAccFabricDataSourceConnection_PFCR(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						"data.equinix_fabric_connections.connections", "data.0.a_side.0.access_point.0.link_protocol.0.type", "DOT1Q"),
 					resource.TestCheckResourceAttr(
-						"data.equinix_fabric_connections.connections", "data.0.a_side.0.access_point.0.link_protocol.0.vlan_tag", vlanID),
+						"data.equinix_fabric_connections.connections", "data.0.a_side.0.access_point.0.link_protocol.0.vlan_tag", "2444"),
 					resource.TestCheckResourceAttr(
 						"data.equinix_fabric_connections.connections", "data.0.a_side.0.access_point.0.location.0.metro_code", "DC"),
 					resource.TestCheckResourceAttr(
@@ -78,7 +75,7 @@ func TestAccFabricDataSourceConnection_PFCR(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						"data.equinix_fabric_connections.connections", "data.0.z_side.0.access_point.0.link_protocol.0.type", "DOT1Q"),
 					resource.TestCheckResourceAttr(
-						"data.equinix_fabric_connections.connections", "data.0.z_side.0.access_point.0.link_protocol.0.vlan_tag", vlanID),
+						"data.equinix_fabric_connections.connections", "data.0.z_side.0.access_point.0.link_protocol.0.vlan_tag", "2555"),
 					resource.TestCheckResourceAttr(
 						"data.equinix_fabric_connections.connections", "data.0.z_side.0.access_point.0.location.0.metro_code", "SV"),
 				),
@@ -88,7 +85,7 @@ func TestAccFabricDataSourceConnection_PFCR(t *testing.T) {
 	})
 }
 
-func testAccFabricDataSourceConnectionConfig(bandwidth int32, aSidePortUUID, aSideVlanID, zSidePortUUID, zSideVlanID string) string {
+func testAccFabricDataSourceConnectionConfig(bandwidth int32, aSidePortUUID, zSidePortUUID string) string {
 	return fmt.Sprintf(`
 
 resource "equinix_fabric_connection" "test" {
@@ -110,7 +107,7 @@ resource "equinix_fabric_connection" "test" {
 			}
 			link_protocol {
 				type= "DOT1Q"
-				vlan_tag= "%s"
+				vlan_tag= 2444
 			}
 		}
 	}
@@ -122,7 +119,7 @@ resource "equinix_fabric_connection" "test" {
 			}
 			link_protocol {
 				type= "DOT1Q"
-				vlan_tag= "%s"
+				vlan_tag= 2555
 			}
 		}
 	}
@@ -146,16 +143,5 @@ data "equinix_fabric_connections" "connections" {
 	}
 }
 
-`, bandwidth, aSidePortUUID, zSidePortUUID, aSideVlanID, zSideVlanID)
-}
-
-func generateUniqueVlanId() string {
-	timestampComponent := int(time.Now().UnixNano() % 4000)
-	vlanId := 1 + (timestampComponent % 4092)
-	if vlanId < 1 {
-		vlanId = 1
-	} else if vlanId > 4092 {
-		vlanId = 4092
-	}
-	return strconv.Itoa(vlanId)
+`, bandwidth, aSidePortUUID, zSidePortUUID)
 }
