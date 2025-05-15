@@ -6,7 +6,6 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/equinix/equinix-sdk-go/services/fabricv4"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
@@ -97,11 +96,11 @@ func InterfaceMapToStringMap(mapIn map[string]interface{}) map[string]string {
 	return mapOut
 }
 
-// NetworkScopeArrayToStringArray converts a slice of fabricv4.NetworkScope to a slice of strings
-func NetworkScopeArrayToStringArray(list []fabricv4.NetworkScope) []string {
+// EnumArrayToStringArray converts a slice of any to a slice of strings
+func EnumArrayToStringArray[T any, S ~[]T](list S) []string {
 	arr := make([]string, len(list))
-	for _, v := range list {
-		arr = append(arr, fmt.Sprint(v))
+	for i, v := range list {
+		arr[i] = fmt.Sprint(v)
 	}
 	return arr
 }
