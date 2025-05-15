@@ -1,7 +1,6 @@
 package equinix_test
 
 import (
-	"fmt"
 	"github.com/equinix/terraform-provider-equinix/internal/acceptance"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	_ "github.com/hashicorp/terraform-plugin-testing/terraform"
@@ -64,7 +63,7 @@ func TestAccDataSourceFabricCloudRouter_PFCR(t *testing.T) {
 }
 
 func ConfigCreateCloudRouterResource_PFCR() string {
-	return fmt.Sprintf(`
+	return `
 		resource "equinix_fabric_cloud_router" "example" {
 		name = "Test_PFCR"
 		type = "XF_ROUTER"
@@ -100,5 +99,5 @@ func ConfigCreateCloudRouterResource_PFCR() string {
 			values 	 = [equinix_fabric_cloud_router.example.name]
 		}
 	}
-`)
+`
 }
