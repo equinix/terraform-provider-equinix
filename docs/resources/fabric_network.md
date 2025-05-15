@@ -35,7 +35,7 @@ resource "equinix_fabric_network" "new_network" {
 - `name` (String) Fabric Network name. An alpha-numeric 24 characters string which can include only hyphens and underscores
 - `notifications` (Block List, Min: 1) Preferences for notifications on Fabric Network configuration or status changes (see [below for nested schema](#nestedblock--notifications))
 - `project` (Block Set, Min: 1) Fabric Network project (see [below for nested schema](#nestedblock--project))
-- `scope` (String) Fabric Network scope - REGIONAL, GLOBAL, LOCAL *REGIONAL requires location.region to be set*
+- `scope` (String) Fabric Network scope. Valid values: [REGIONAL GLOBAL LOCAL]. Note: When scope is REGIONAL, the location.region field is required.
 - `type` (String) Supported Network types - EVPLAN, EPLAN, IPWAN, EVPTREE, EPTREE
 
 ### Optional
