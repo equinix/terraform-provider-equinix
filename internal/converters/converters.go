@@ -96,11 +96,11 @@ func InterfaceMapToStringMap(mapIn map[string]interface{}) map[string]string {
 	return mapOut
 }
 
-// EnumArrayToStringArray converts a slice of any to a slice of strings
-func EnumArrayToStringArray[T any, S ~[]T](list S) []string {
+// EnumArrayToStringArray converts a slice of string-like enums to a slice of strings
+func EnumArrayToStringArray[T ~string, S []T](list S) []string {
 	arr := make([]string, len(list))
 	for i, v := range list {
-		arr[i] = fmt.Sprint(v)
+		arr[i] = string(v)
 	}
 	return arr
 }
