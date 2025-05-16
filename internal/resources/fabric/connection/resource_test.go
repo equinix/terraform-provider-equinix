@@ -193,13 +193,13 @@ func TestAccFabricCreatePort2PortConnection_PFCR(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						"equinix_fabric_connection.test", "a_side.0.access_point.0.link_protocol.0.type", "DOT1Q"),
 					resource.TestCheckResourceAttr(
-						"equinix_fabric_connection.test", "a_side.0.access_point.0.link_protocol.0.vlan_tag", "2397"),
+						"equinix_fabric_connection.test", "a_side.0.access_point.0.link_protocol.0.vlan_tag", "100"),
 					resource.TestCheckResourceAttr(
 						"equinix_fabric_connection.test", "z_side.0.access_point.0.type", "COLO"),
 					resource.TestCheckResourceAttr(
 						"equinix_fabric_connection.test", "z_side.0.access_point.0.link_protocol.0.type", "DOT1Q"),
 					resource.TestCheckResourceAttr(
-						"equinix_fabric_connection.test", "z_side.0.access_point.0.link_protocol.0.vlan_tag", "2398"),
+						"equinix_fabric_connection.test", "z_side.0.access_point.0.link_protocol.0.vlan_tag", "101"),
 				),
 				ExpectNonEmptyPlan: true,
 			},
@@ -219,13 +219,13 @@ func TestAccFabricCreatePort2PortConnection_PFCR(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						"equinix_fabric_connection.test", "a_side.0.access_point.0.link_protocol.0.type", "DOT1Q"),
 					resource.TestCheckResourceAttr(
-						"equinix_fabric_connection.test", "a_side.0.access_point.0.link_protocol.0.vlan_tag", "2397"),
+						"equinix_fabric_connection.test", "a_side.0.access_point.0.link_protocol.0.vlan_tag", "100"),
 					resource.TestCheckResourceAttr(
 						"equinix_fabric_connection.test", "z_side.0.access_point.0.type", "COLO"),
 					resource.TestCheckResourceAttr(
 						"equinix_fabric_connection.test", "z_side.0.access_point.0.link_protocol.0.type", "DOT1Q"),
 					resource.TestCheckResourceAttr(
-						"equinix_fabric_connection.test", "z_side.0.access_point.0.link_protocol.0.vlan_tag", "2398"),
+						"equinix_fabric_connection.test", "z_side.0.access_point.0.link_protocol.0.vlan_tag", "101"),
 				),
 				ExpectNonEmptyPlan: true,
 			},
@@ -254,7 +254,7 @@ func testAccFabricCreatePort2PortConnectionConfig(bandwidth int32, aSidePortUUID
 				}
 				link_protocol {
 					type= "DOT1Q"
-					vlan_tag= 2397
+					vlan_tag= 100
 				}
 				location {
 					metro_code = "SV"
@@ -269,7 +269,7 @@ func testAccFabricCreatePort2PortConnectionConfig(bandwidth int32, aSidePortUUID
 				}
 				link_protocol {
 					type= "DOT1Q"
-					vlan_tag= 2398
+					vlan_tag= 101
 				}
 				location {
 					metro_code= "SV"
