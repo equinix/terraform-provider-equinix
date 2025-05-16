@@ -75,6 +75,7 @@ output "first_metro_geo_scopes" {
 ### Read-Only
 
 - `data` (Attributes List) Returned list of metro objects (see [below for nested schema](#nestedatt--data))
+- `id` (String) The unique identifier of the resource
 
 <a id="nestedatt--pagination"></a>
 ### Nested Schema for `pagination`
