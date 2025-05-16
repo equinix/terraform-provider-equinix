@@ -424,7 +424,7 @@ func accessPointVirtualDeviceSch() map[string]*schema.Schema {
 		},
 		"uuid": {
 			Type:        schema.TypeString,
-			Optional:    true,
+			Required:    true,
 			Description: "Equinix-assigned Virtual Device identifier",
 		},
 		"type": {
@@ -465,7 +465,7 @@ func networkSch() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
 		"uuid": {
 			Type:        schema.TypeString,
-			Optional:    true,
+			Required:    true,
 			Description: "Equinix-assigned Network identifier",
 		},
 		"href": {
@@ -596,7 +596,7 @@ func connectionRedundancySch() map[string]*schema.Schema {
 	}
 }
 
-func createApiConfigSch() map[string]*schema.Schema {
+func createAPIConfigSch() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
 		"api_available": {
 			Type:        schema.TypeBool,

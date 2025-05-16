@@ -2,10 +2,6 @@ data "equinix_fabric_metro" "metro" {
   metro_code =  "<metro_code>"
 }
 
-output "id" {
-  value = data.equinix_fabric_metro.metro.id
-}
-
 output "type" {
   value = data.equinix_fabric_metro.metro.type
 }

@@ -913,7 +913,7 @@ Optional:
 <a id="nestedblock--a_side--access_point--network"></a>
 ### Nested Schema for `a_side.access_point.network`
 
-Optional:
+Required:
 
 - `uuid` (String) Equinix-assigned Network identifier
 
@@ -986,11 +986,14 @@ Read-Only:
 <a id="nestedblock--a_side--access_point--virtual_device"></a>
 ### Nested Schema for `a_side.access_point.virtual_device`
 
+Required:
+
+- `uuid` (String) Equinix-assigned Virtual Device identifier
+
 Optional:
 
 - `name` (String) Customer-assigned Virtual Device Name
 - `type` (String) Virtual Device type
-- `uuid` (String) Equinix-assigned Virtual Device identifier
 
 Read-Only:
 
@@ -1130,7 +1133,7 @@ Optional:
 <a id="nestedblock--z_side--access_point--network"></a>
 ### Nested Schema for `z_side.access_point.network`
 
-Optional:
+Required:
 
 - `uuid` (String) Equinix-assigned Network identifier
 
@@ -1203,11 +1206,14 @@ Read-Only:
 <a id="nestedblock--z_side--access_point--virtual_device"></a>
 ### Nested Schema for `z_side.access_point.virtual_device`
 
+Required:
+
+- `uuid` (String) Equinix-assigned Virtual Device identifier
+
 Optional:
 
 - `name` (String) Customer-assigned Virtual Device Name
 - `type` (String) Virtual Device type
-- `uuid` (String) Equinix-assigned Virtual Device identifier
 
 Read-Only:
 
