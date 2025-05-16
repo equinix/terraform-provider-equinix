@@ -3,6 +3,7 @@ package connection_test
 import (
 	"context"
 	"fmt"
+	"log"
 	"testing"
 	"time"
 
@@ -169,7 +170,9 @@ func TestAccFabricCreatePort2PortConnection_PFCR(t *testing.T) {
 	var aSidePortUUID, zSidePortUUID string
 	if len(ports) > 0 {
 		aSidePortUUID = ports["pfcr"]["dot1q"][0].GetUuid()
+		log.Printf("Aside Port UUID: %s", aSidePortUUID)
 		zSidePortUUID = ports["pfcr"]["dot1q"][1].GetUuid()
+		log.Printf("Zside Port UUID: %s", zSidePortUUID)
 	}
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { acceptance.TestAccPreCheck(t); acceptance.TestAccPreCheckProviderConfigured(t) },
