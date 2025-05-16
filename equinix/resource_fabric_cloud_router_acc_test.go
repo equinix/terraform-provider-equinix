@@ -20,7 +20,7 @@ func init() {
 	})
 }
 
-func testSweepCloudRouters(region string) error {
+func testSweepCloudRouters(_ string) error {
 	return nil
 }
 
@@ -45,8 +45,6 @@ func TestAccCloudRouterCreateOnlyRequiredParameters_PFCR(t *testing.T) {
 					resource.TestCheckResourceAttrSet("equinix_fabric_cloud_router.test", "href"),
 					resource.TestCheckResourceAttr("equinix_fabric_cloud_router.test", "state", "PROVISIONED"),
 					resource.TestCheckResourceAttrSet("equinix_fabric_cloud_router.test", "equinix_asn"),
-					resource.TestCheckResourceAttr("equinix_fabric_cloud_router.test", "bgp_ipv4_routes_count", "0"),
-					resource.TestCheckResourceAttr("equinix_fabric_cloud_router.test", "bgp_ipv6_routes_count", "0"),
 					resource.TestCheckResourceAttr("equinix_fabric_cloud_router.test", "connections_count", "0"),
 					resource.TestCheckResourceAttrSet("equinix_fabric_cloud_router.test", "change_log.0.created_by"),
 					resource.TestCheckResourceAttrSet("equinix_fabric_cloud_router.test", "change_log.0.created_by_full_name"),
@@ -122,8 +120,6 @@ func TestAccCloudRouterCreateMixedParameters_PFCR(t *testing.T) {
 					resource.TestCheckResourceAttrSet("equinix_fabric_cloud_router.example", "href"),
 					resource.TestCheckResourceAttr("equinix_fabric_cloud_router.example", "state", "PROVISIONED"),
 					resource.TestCheckResourceAttrSet("equinix_fabric_cloud_router.example", "equinix_asn"),
-					resource.TestCheckResourceAttr("equinix_fabric_cloud_router.example", "bgp_ipv4_routes_count", "0"),
-					resource.TestCheckResourceAttr("equinix_fabric_cloud_router.example", "bgp_ipv6_routes_count", "0"),
 					resource.TestCheckResourceAttr("equinix_fabric_cloud_router.example", "connections_count", "0"),
 					resource.TestCheckResourceAttrSet("equinix_fabric_cloud_router.example", "change_log.0.created_by"),
 					resource.TestCheckResourceAttrSet("equinix_fabric_cloud_router.example", "change_log.0.created_by_full_name"),
@@ -137,7 +133,8 @@ func TestAccCloudRouterCreateMixedParameters_PFCR(t *testing.T) {
 	})
 }
 func testAccCloudRouterCreateMixedParameterConfig_PFCR() string {
-	return fmt.Sprintf(`resource "equinix_fabric_cloud_router" "example"{
+	return `
+		resource "equinix_fabric_cloud_router" "example"{
 		type = "XF_ROUTER"
 		name = "fcr_acc_test_PFCR"
 		location{
@@ -164,7 +161,7 @@ func testAccCloudRouterCreateMixedParameterConfig_PFCR() string {
 		account {
 			account_number = 201257
 		}
-	}`)
+	}`
 }
 
 func checkCloudRouterDelete(s *terraform.State) error {

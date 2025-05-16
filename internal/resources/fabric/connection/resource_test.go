@@ -3,6 +3,7 @@ package connection_test
 import (
 	"context"
 	"fmt"
+	"log"
 	"testing"
 	"time"
 
@@ -169,7 +170,9 @@ func TestAccFabricCreatePort2PortConnection_PFCR(t *testing.T) {
 	var aSidePortUUID, zSidePortUUID string
 	if len(ports) > 0 {
 		aSidePortUUID = ports["pfcr"]["dot1q"][0].GetUuid()
+		log.Printf("Aside Port UUID: %s", aSidePortUUID)
 		zSidePortUUID = ports["pfcr"]["dot1q"][1].GetUuid()
+		log.Printf("Zside Port UUID: %s", zSidePortUUID)
 	}
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { acceptance.TestAccPreCheck(t); acceptance.TestAccPreCheckProviderConfigured(t) },
@@ -193,13 +196,15 @@ func TestAccFabricCreatePort2PortConnection_PFCR(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						"equinix_fabric_connection.test", "a_side.0.access_point.0.link_protocol.0.type", "DOT1Q"),
 					resource.TestCheckResourceAttr(
-						"equinix_fabric_connection.test", "a_side.0.access_point.0.link_protocol.0.vlan_tag", "2397"),
+						"equinix_fabric_connection.test", "a_side.0.access_point.0.link_protocol.0.vlan_tag", "100"),
 					resource.TestCheckResourceAttr(
 						"equinix_fabric_connection.test", "z_side.0.access_point.0.type", "COLO"),
 					resource.TestCheckResourceAttr(
 						"equinix_fabric_connection.test", "z_side.0.access_point.0.link_protocol.0.type", "DOT1Q"),
 					resource.TestCheckResourceAttr(
-						"equinix_fabric_connection.test", "z_side.0.access_point.0.link_protocol.0.vlan_tag", "2398"),
+						"equinix_fabric_connection.test", "z_side.0.access_point.0.link_protocol.0.vlan_tag", "101"),
+					resource.TestCheckResourceAttr(
+						"equinix_fabric_connection.test", "project.0.project_id", "33ec651f-cc99-48e0-94d3-47466899cd"),
 				),
 				ExpectNonEmptyPlan: true,
 			},
@@ -219,13 +224,13 @@ func TestAccFabricCreatePort2PortConnection_PFCR(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						"equinix_fabric_connection.test", "a_side.0.access_point.0.link_protocol.0.type", "DOT1Q"),
 					resource.TestCheckResourceAttr(
-						"equinix_fabric_connection.test", "a_side.0.access_point.0.link_protocol.0.vlan_tag", "2397"),
+						"equinix_fabric_connection.test", "a_side.0.access_point.0.link_protocol.0.vlan_tag", "100"),
 					resource.TestCheckResourceAttr(
 						"equinix_fabric_connection.test", "z_side.0.access_point.0.type", "COLO"),
 					resource.TestCheckResourceAttr(
 						"equinix_fabric_connection.test", "z_side.0.access_point.0.link_protocol.0.type", "DOT1Q"),
 					resource.TestCheckResourceAttr(
-						"equinix_fabric_connection.test", "z_side.0.access_point.0.link_protocol.0.vlan_tag", "2398"),
+						"equinix_fabric_connection.test", "z_side.0.access_point.0.link_protocol.0.vlan_tag", "101"),
 				),
 				ExpectNonEmptyPlan: true,
 			},
@@ -245,6 +250,9 @@ func testAccFabricCreatePort2PortConnectionConfig(bandwidth int32, aSidePortUUID
 		order {
 			purchase_order_number = "1-129105284100"
 		}
+        project{
+			project_id = "33ec651f-cc99-48e0-94d3-47466899cd"
+		}
 		bandwidth = %d
 		a_side {
 			access_point {
@@ -254,7 +262,7 @@ func testAccFabricCreatePort2PortConnectionConfig(bandwidth int32, aSidePortUUID
 				}
 				link_protocol {
 					type= "DOT1Q"
-					vlan_tag= 2397
+					vlan_tag= 100
 				}
 				location {
 					metro_code = "SV"
@@ -269,7 +277,7 @@ func testAccFabricCreatePort2PortConnectionConfig(bandwidth int32, aSidePortUUID
 				}
 				link_protocol {
 					type= "DOT1Q"
-					vlan_tag= 2398
+					vlan_tag= 101
 				}
 				location {
 					metro_code= "SV"
@@ -314,7 +322,7 @@ func TestAccFabricCreateCloudRouter2PortConnection_PFCR(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						"equinix_fabric_connection.test", "z_side.0.access_point.0.link_protocol.0.type", "DOT1Q"),
 					resource.TestCheckResourceAttr(
-						"equinix_fabric_connection.test", "z_side.0.access_point.0.link_protocol.0.vlan_tag", "2325"),
+						"equinix_fabric_connection.test", "z_side.0.access_point.0.link_protocol.0.vlan_tag", "1503"),
 				),
 			},
 		},
@@ -384,7 +392,7 @@ func testAccFabricCreateCloudRouter2PortConnectionConfig(name, portUUID string) 
 				}
 				link_protocol {
 					type= "DOT1Q"
-					vlan_tag= 2325
+					vlan_tag= 1503
 				}
 				location {
 					metro_code = "SV"
