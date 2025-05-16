@@ -200,6 +200,8 @@ func TestAccFabricCreatePort2PortConnection_PFCR(t *testing.T) {
 						"equinix_fabric_connection.test", "z_side.0.access_point.0.link_protocol.0.type", "DOT1Q"),
 					resource.TestCheckResourceAttr(
 						"equinix_fabric_connection.test", "z_side.0.access_point.0.link_protocol.0.vlan_tag", "101"),
+					resource.TestCheckResourceAttr(
+						"equinix_fabric_connection.test", "project.0.project_id", "33ec651f-cc99-48e0-94d3-47466899cd"),
 				),
 				ExpectNonEmptyPlan: true,
 			},
@@ -244,6 +246,9 @@ func testAccFabricCreatePort2PortConnectionConfig(bandwidth int32, aSidePortUUID
 		}
 		order {
 			purchase_order_number = "1-129105284100"
+		}
+        project{
+			project_id = "33ec651f-cc99-48e0-94d3-47466899cd"
 		}
 		bandwidth = %d
 		a_side {
