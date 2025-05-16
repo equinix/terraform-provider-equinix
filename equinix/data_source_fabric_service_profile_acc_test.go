@@ -14,7 +14,7 @@ func testAccFabricReadServiceProfileConfig(spName string, portUUID string, portT
 
 resource "equinix_fabric_service_profile" "test" {
   name = "%s"
-  description = "Generic Read SP"
+  description = "Generic SP Description"
   self_profile = false
   type = "L2_PROFILE"
   notifications {
@@ -94,14 +94,14 @@ func TestAccFabricServiceProfileDataSources_PFCR(t *testing.T) {
 		CheckDestroy: checkServiceProfileDelete,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccFabricReadServiceProfileConfig("SP_DataSource_PFCR", portUUID, portType, portMetroCode),
+				Config: testAccFabricReadServiceProfileConfig("DO_NOT_DELETE_PANTHERS_TEST", portUUID, portType, portMetroCode),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(
-						"data.equinix_fabric_service_profile.test", "name", "SP_DataSource_PFCR"),
+						"data.equinix_fabric_service_profile.test", "name", "DO_NOT_DELETE_PANTHERS_TEST"),
 					resource.TestCheckResourceAttrSet(
 						"data.equinix_fabric_service_profile.test", "uuid"),
 					resource.TestCheckResourceAttr(
-						"data.equinix_fabric_service_profile.test", "description", "Generic Read SP"),
+						"data.equinix_fabric_service_profile.test", "description", "Generic SP Description"),
 					resource.TestCheckResourceAttr(
 						"data.equinix_fabric_service_profile.test", "state", "ACTIVE"),
 					resource.TestCheckResourceAttr(
@@ -121,11 +121,11 @@ func TestAccFabricServiceProfileDataSources_PFCR(t *testing.T) {
 					resource.TestCheckResourceAttrSet("data.equinix_fabric_service_profile.test", "metros.0.display_name"),
 					resource.TestCheckResourceAttrSet("data.equinix_fabric_service_profile.test", "self_profile"),
 					resource.TestCheckResourceAttr(
-						"data.equinix_fabric_service_profiles.test", "data.0.name", "SP_DataSource_PFCR"),
+						"data.equinix_fabric_service_profiles.test", "data.0.name", "DO_NOT_DELETE_PANTHERS_TEST"),
 					resource.TestCheckResourceAttrSet(
 						"data.equinix_fabric_service_profiles.test", "data.0.uuid"),
 					resource.TestCheckResourceAttr(
-						"data.equinix_fabric_service_profiles.test", "data.0.description", "Generic Read SP"),
+						"data.equinix_fabric_service_profiles.test", "data.0.description", "Generic SP Description"),
 					resource.TestCheckResourceAttr(
 						"data.equinix_fabric_service_profiles.test", "data.0.state", "ACTIVE"),
 					resource.TestCheckResourceAttr(
