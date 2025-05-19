@@ -20,8 +20,8 @@ func TestAccFabricZsideVirtualDeviceServiceToken_PNFV(t *testing.T) {
 	if len(connectionTestData) > 0 {
 		virtualDevice = connectionTestData["pnfv"]["virtualDevice"]
 	}
-	serviceTokenName, serviceTokenUpdatedName := "Service_token_PNFV", "UP_Service_Token_PNFV"
-	serviceTokenDescription, serviceTokenUpdatedDescription := "zside vd token", "Updated zside vd token"
+	serviceTokenName, serviceTokenUpdatedName := "Service_token_PNFV", "Up_Service_Token_PNFV"
+	serviceTokenDescription, serviceTokenUpdatedDescription := "zside vd token", "Up zside vd token"
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { acceptance.TestAccPreCheck(t) },
 		Providers:    acceptance.TestAccProviders,
@@ -161,10 +161,10 @@ func TestAccFabricZsideNetworkServiceToken_PNFV(t *testing.T) {
 	connectionTestData := testinghelpers.GetFabricEnvConnectionTestData(t)
 	var networkUUID string
 	if len(connectionTestData) > 0 {
-		networkUUID = connectionTestData["pfcr"]["network"]
+		networkUUID = connectionTestData["pnfv"]["network"]
 	}
-	serviceTokenName, serviceTokenUpdatedName := "token_zwan_PNFV", "UP_Token_zwan_PNFV"
-	serviceTokenDescription, serviceTokenUpdatedDescription := "zside network token", "Updated zside network token"
+	serviceTokenName, serviceTokenUpdatedName := "token_PNFV", "UP_Token_PNFV"
+	serviceTokenDescription, serviceTokenUpdatedDescription := "zside network token", "Up zside network token"
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { acceptance.TestAccPreCheck(t) },
 		Providers:    acceptance.TestAccProviders,
@@ -223,7 +223,7 @@ func testAccFabricAsidePortServiceTokenConfig(serviceTokenName string, serviceTo
 			}
 			notifications {
     			type   = "ALL"
-    			emails = ["example@equinix.com", "test1@equinix.com"]
+    			emails = ["panthers_auto@equinix.com", "test1@equinix.com", "example@equinix.com"]
   			}
 
 		}
@@ -255,7 +255,7 @@ func testAccFabricZsidePortServiceTokenConfig(serviceTokenName string, serviceTo
 			}
 			notifications {
     			type   = "ALL"
-    			emails = ["example@equinix.com", "test1@equinix.com"]
+    			emails = ["panthers_auto@equinix.com", "test1@equinix.com", "example@equinix.com"]
   			}
 
 		}
@@ -287,7 +287,7 @@ func testAccFabricZsideVirtualDeviceServiceTokenConfig(serviceTokenName string, 
 			}
 			notifications {
     			type   = "ALL"
-    			emails = ["example@equinix.com", "test1@equinix.com"]
+    			emails = ["panthers_auto@equinix.com", "test1@equinix.com", "example@equinix.com"]
   			}
 
 		}

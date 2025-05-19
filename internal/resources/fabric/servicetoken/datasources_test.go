@@ -50,7 +50,7 @@ func testAccFabricServiceTokenConfigDataSourceConfig(virtualDeviceUUID string) s
 	return fmt.Sprintf(
 		`resource "equinix_fabric_service_token" "test"{
 			type = "VC_TOKEN"
-			expiration_date_time = "2025-07-18T06:43:49.981Z"
+			expiration_date_time = "2025-06-18T06:43:49.981Z"
 			service_token_connection {
 				type = "EVPL_VC"
 				supported_bandwidths = [50, 200, 10000]
@@ -69,7 +69,7 @@ func testAccFabricServiceTokenConfigDataSourceConfig(virtualDeviceUUID string) s
 			}
 			notifications {
     			type   = "ALL"
-    			emails = ["example@equinix.com", "test1@equinix.com"]
+    			emails = ["panthers_auto@equinix.com", "test1@equinix.com", "example@equinix.com"]
   			}
 		}
 		
