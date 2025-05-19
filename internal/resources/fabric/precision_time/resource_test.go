@@ -104,7 +104,7 @@ func testAccFabricCreatePort2EPTNPTConfig(spName, name, portUuid, zSideMetro str
 				}
 				link_protocol {
 					type= "DOT1Q"
-					vlan_tag= "1354"
+					vlan_tag= "1700"
 				}
 			}
 		}
@@ -184,7 +184,7 @@ func TestAccFabricCreatePort2EPT_PTPConfiguration_PFCR(t *testing.T) {
 					resource.TestCheckResourceAttrSet("data.equinix_fabric_precision_time_service.ptp", "connections.0.uuid"),
 					resource.TestCheckResourceAttrSet("data.equinix_fabric_precision_time_service.ptp", "project.project_id"),
 					resource.TestCheckResourceAttr(
-						"data.equinix_fabric_precision_time_service.ptp", "name", "tf_acc_eptptp_PFCR"),
+						"data.equinix_fabric_precision_time_service.ptp", "name", "tf_port2ept_PFCR"),
 					resource.TestCheckResourceAttr(
 						"data.equinix_fabric_precision_time_service.ptp", "type", "PTP"),
 					resource.TestCheckResourceAttr(
@@ -246,7 +246,11 @@ func testAccFabricCreatePort2EPTPTPConfig(spName, name, portUuid, zSideMetro str
 				}
 				link_protocol {
 					type= "DOT1Q"
+<<<<<<< Updated upstream
 					vlan_tag= "1502"
+=======
+					vlan_tag= "1400"
+>>>>>>> Stashed changes
 				}
 			}
 		}

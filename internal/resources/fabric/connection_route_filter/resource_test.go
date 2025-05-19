@@ -82,6 +82,7 @@ func testAccFabricConnectionRouteFilterConfig(portUUID string) string {
 			}
 			order {
 				purchase_order_number = "1-234567"
+                term_length = 1
 			}
 			notifications {
 				type = "ALL"
@@ -107,6 +108,7 @@ func testAccFabricConnectionRouteFilterConfig(portUUID string) string {
 			}
 			order {
 				purchase_order_number = "123485"
+                term_length = 1
 			}
 			bandwidth = 50
 			redundancy {
@@ -131,7 +133,11 @@ func testAccFabricConnectionRouteFilterConfig(portUUID string) string {
 					}
 					link_protocol {
 						type= "DOT1Q"
+<<<<<<< Updated upstream
 						vlan_tag= 1500
+=======
+						vlan_tag= 2100
+>>>>>>> Stashed changes
 					}
 					location {
 						metro_code = "DC"

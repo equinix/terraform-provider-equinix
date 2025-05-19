@@ -227,6 +227,7 @@ func TestAccFabricStreamSubscription_PFCR(t *testing.T) {
 					resource.TestCheckResourceAttrSet("data.equinix_fabric_stream_subscriptions.all", "data.0.sink.type"),
 					resource.TestCheckResourceAttrSet("data.equinix_fabric_stream_subscriptions.all", "data.0.uuid"),
 				),
+				ExpectNonEmptyPlan: true,
 			},
 		},
 	})
