@@ -133,11 +133,7 @@ func testAccFabricConnectionRouteFilterConfig(portUUID string) string {
 					}
 					link_protocol {
 						type= "DOT1Q"
-<<<<<<< Updated upstream
-						vlan_tag= 1500
-=======
 						vlan_tag= 2100
->>>>>>> Stashed changes
 					}
 					location {
 						metro_code = "DC"

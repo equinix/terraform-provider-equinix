@@ -246,11 +246,7 @@ func testAccFabricCreatePort2EPTPTPConfig(spName, name, portUuid, zSideMetro str
 				}
 				link_protocol {
 					type= "DOT1Q"
-<<<<<<< Updated upstream
-					vlan_tag= "1502"
-=======
 					vlan_tag= "1400"
->>>>>>> Stashed changes
 				}
 			}
 		}

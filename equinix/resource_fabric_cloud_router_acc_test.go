@@ -3,9 +3,10 @@ package equinix_test
 import (
 	"context"
 	"fmt"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"testing"
 	"time"
+
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
 	"github.com/equinix/terraform-provider-equinix/equinix"
 	"github.com/equinix/terraform-provider-equinix/internal/acceptance"

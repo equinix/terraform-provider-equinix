@@ -1,10 +1,11 @@
 package equinix_test
 
 import (
+	"testing"
+
 	"github.com/equinix/terraform-provider-equinix/internal/acceptance"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	_ "github.com/hashicorp/terraform-plugin-testing/terraform"
-	"testing"
 )
 
 func TestAccDataSourceFabricCloudRouter_PFCR(t *testing.T) {
