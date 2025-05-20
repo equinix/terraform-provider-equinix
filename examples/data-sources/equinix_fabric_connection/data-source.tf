@@ -11,7 +11,7 @@ output "name" {
 }
 
 output "account_number" {
-  value = [for acc in data.equinix_fabric_connection.connection_data_name.account: acc.account_number]
+  value = [for account in data.equinix_fabric_connection.connection_data_name.account: account.account_number]
 }
 
 output "bandwidth" {
@@ -19,15 +19,15 @@ output "bandwidth" {
 }
 
 output "project_id" {
-  value = [for proj in data.equinix_fabric_connection.connection_data_name.project: proj.project_id]
+  value = [for project in data.equinix_fabric_connection.connection_data_name.project: project.project_id]
 }
 
 output "redundancy_group" {
-  value = [for red in data.equinix_fabric_connection.connection_data_name.redundancy: red.group]
+  value = [for redundancy in data.equinix_fabric_connection.connection_data_name.redundancy: redundancy.group]
 }
 
 output "redundancy_priority" {
-  value = [for red in data.equinix_fabric_connection.connection_data_name.redundancy: red.priority]
+  value = [for redundancy in data.equinix_fabric_connection.connection_data_name.redundancy: redundancy.priority]
 }
 
 output "state" {
