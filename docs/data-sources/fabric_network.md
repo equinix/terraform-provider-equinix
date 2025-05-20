@@ -34,7 +34,7 @@ output "type" {
 }
 
 output "region" {
-  value = data.equinix_fabric_network.network_data_name.location.0.region
+  value = [for location in data.equinix_fabric_network.network_data_name.location: location.region]
 }
 ```
 
