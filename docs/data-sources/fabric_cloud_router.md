@@ -26,7 +26,7 @@ output "name" {
 }
 
 output "account_number" {
-  value = data.equinix_fabric_cloud_router.cloud_router_data_name.account.0.account_number
+  value = [for account in data.equinix_fabric_cloud_router.cloud_router_data_name.account: account.account_number]
 }
 
 output "equinix_asn" {
@@ -34,23 +34,23 @@ output "equinix_asn" {
 }
 
 output "metro_code" {
-  value = data.equinix_fabric_cloud_router.cloud_router_data_name.location.0.metro_code
+  value = [for location in data.equinix_fabric_cloud_router.cloud_router_data_name.location: location.metro_code]
 }
 
 output "metro_name" {
-  value = data.equinix_fabric_cloud_router.cloud_router_data_name.location.0.metro_name
+  value = [for location in data.equinix_fabric_cloud_router.cloud_router_data_name.location: location.metro_name]
 }
 
 output "region" {
-  value = data.equinix_fabric_cloud_router.cloud_router_data_name.location.0.region
+  value = [for location in data.equinix_fabric_cloud_router.cloud_router_data_name.location: location.region]
 }
 
 output "package_code" {
-  value = data.equinix_fabric_cloud_router.cloud_router_data_name.package.0.code
+  value = [for package in data.equinix_fabric_cloud_router.cloud_router_data_name.package: package.code]
 }
 
 output "project_id" {
-  value = data.equinix_fabric_cloud_router.cloud_router_data_name.project.0.project_id
+  value = [for project in data.equinix_fabric_cloud_router.cloud_router_data_name.project: project.project_id]
 }
 
 output "type" {
