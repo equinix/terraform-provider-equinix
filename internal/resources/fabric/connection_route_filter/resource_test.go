@@ -82,6 +82,7 @@ func testAccFabricConnectionRouteFilterConfig(portUUID string) string {
 			}
 			order {
 				purchase_order_number = "1-234567"
+                term_length = 1
 			}
 			notifications {
 				type = "ALL"
@@ -91,7 +92,7 @@ func testAccFabricConnectionRouteFilterConfig(portUUID string) string {
 				]
 			}
 			project {
-				project_id = "291639000636552"
+				project_id = "33ec651f-cc99-48e0-94d3-47466899cdc7"
 			}
 			account {
 				account_number = 201257
@@ -107,6 +108,7 @@ func testAccFabricConnectionRouteFilterConfig(portUUID string) string {
 			}
 			order {
 				purchase_order_number = "123485"
+                term_length = 1
 			}
 			bandwidth = 50
 			redundancy {
@@ -121,7 +123,7 @@ func testAccFabricConnectionRouteFilterConfig(portUUID string) string {
 				}
 			}
 			project {
-			   project_id = "291639000636552"
+			   project_id = "33ec651f-cc99-48e0-94d3-47466899cdc7"
 			}
 			z_side {
 				access_point {
@@ -131,7 +133,7 @@ func testAccFabricConnectionRouteFilterConfig(portUUID string) string {
 					}
 					link_protocol {
 						type= "DOT1Q"
-						vlan_tag= 2571
+						vlan_tag= 2100
 					}
 					location {
 						metro_code = "DC"
@@ -143,7 +145,7 @@ func testAccFabricConnectionRouteFilterConfig(portUUID string) string {
 		resource "equinix_fabric_route_filter" "test" {
 			name = "rf_test_PFCR"
 			project {
-				project_id = "291639000636552"
+				project_id = "33ec651f-cc99-48e0-94d3-47466899cdc7"
 			}
 			type = "BGP_IPv4_PREFIX_FILTER"
 			description = "Route Filter Policy for X Purpose"

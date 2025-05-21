@@ -100,8 +100,9 @@ resource "equinix_fabric_cloud_router" "this" {
 	location{
 		metro_code  = "SV"
 	}
-	order{
-		purchase_order_number = "1-234567"
+    order {
+		purchase_order_number = "123485"
+		term_length = 1
 	}
 	notifications{
 		type = "ALL"
@@ -125,8 +126,9 @@ resource "equinix_fabric_connection" "this" {
 		type = "ALL"
 		emails = ["test@equinix.com","test1@equinix.com"]
 	}
-	order {
+    order {
 		purchase_order_number = "123485"
+		term_length = 1
 	}
 	bandwidth = 50
 	redundancy {
@@ -151,7 +153,7 @@ resource "equinix_fabric_connection" "this" {
 			}
 			link_protocol {
 				type= "DOT1Q"
-				vlan_tag= 2011
+				vlan_tag= 1501
 			}
 			location {
 				metro_code = "SV"
