@@ -305,7 +305,7 @@ func TestAccFabricCreateCloudRouter2PortConnection_PFCR(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						"equinix_fabric_connection.test", "order.0.purchase_order_number", "123485"),
 					resource.TestCheckResourceAttr(
-						"equinix_fabric_connection.test", "project.0.project_id", "291639000636552"),
+						"equinix_fabric_connection.test", "project.0.project_id", "33ec651f-cc99-48e0-94d3-47466899cdc7"),
 					resource.TestCheckResourceAttr(
 						"equinix_fabric_connection.test", "a_side.0.access_point.0.type", "CLOUD_ROUTER"),
 					resource.TestCheckResourceAttrSet(
@@ -315,7 +315,7 @@ func TestAccFabricCreateCloudRouter2PortConnection_PFCR(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						"equinix_fabric_connection.test", "z_side.0.access_point.0.link_protocol.0.type", "DOT1Q"),
 					resource.TestCheckResourceAttr(
-						"equinix_fabric_connection.test", "z_side.0.access_point.0.link_protocol.0.vlan_tag", "1503"),
+						"equinix_fabric_connection.test", "z_side.0.access_point.0.link_protocol.0.vlan_tag", "1270"),
 				),
 				ExpectNonEmptyPlan: true,
 			},
@@ -343,7 +343,7 @@ func testAccFabricCreateCloudRouter2PortConnectionConfig(name, portUUID string) 
 			]
 		}
 		project{
-			project_id = "291639000636552"
+			project_id = "33ec651f-cc99-48e0-94d3-47466899cdc7"
 		}
 		account {
 			account_number = 201257
@@ -376,7 +376,7 @@ func testAccFabricCreateCloudRouter2PortConnectionConfig(name, portUUID string) 
 			}
 		}
 		project{
-		   project_id = "291639000636552"
+		   project_id = "33ec651f-cc99-48e0-94d3-47466899cdc7"
 		}
 		z_side {
 			access_point {
@@ -386,7 +386,7 @@ func testAccFabricCreateCloudRouter2PortConnectionConfig(name, portUUID string) 
 				}
 				link_protocol {
 					type= "DOT1Q"
-					vlan_tag= 2325
+					vlan_tag= 1270
 				}
 				location {
 					metro_code = "SV"
