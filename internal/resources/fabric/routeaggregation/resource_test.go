@@ -20,7 +20,7 @@ func testAccFabricRouteAggregationConfig(name string) string {
 		  name = "%s"
 		  description = "Test Route Aggregation"
 		  project = {
-			project_id = "623158000175679"
+			project_id = "33ec651f-cc99-48e0-94d3-47466899cdc7"
 		  }
 		}
 	`, name)

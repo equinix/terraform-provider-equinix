@@ -16,7 +16,7 @@ func testAccFabricRouteAggregationDataSourcesConfig(name, description string) st
 		  name = "%[1]s"
 		  description = "%[2]s"
 		  project = {
-			project_id = "623158000175679"
+			project_id = "33ec651f-cc99-48e0-94d3-47466899cd7"
 		  }
 		}
 
@@ -25,7 +25,7 @@ func testAccFabricRouteAggregationDataSourcesConfig(name, description string) st
 		  name = "%[1]s"
 		  description = "%[2]s"
 		  project = {
-			project_id = "623158000175679"
+			project_id = "33ec651f-cc99-48e0-94d3-47466899cd7"
 		  }
 		}
 
@@ -69,7 +69,7 @@ func TestAccFabricRouteAggregationDataSources_PFCR(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						"data.equinix_fabric_route_aggregation.data_ra", "type", "BGP_IPv4_PREFIX_AGGREGATION"),
 					resource.TestCheckResourceAttr(
-						"data.equinix_fabric_route_aggregation.data_ra", "project.project_id", "33ec651f-cc99-48e0-94d3-47466899cd"),
+						"data.equinix_fabric_route_aggregation.data_ra", "project.project_id", "33ec651f-cc99-48e0-94d3-47466899cd7"),
 					resource.TestCheckResourceAttr(
 						"data.equinix_fabric_route_aggregation.data_ra", "description", routeAggregatioDescription),
 					resource.TestCheckResourceAttrSet("data.equinix_fabric_route_aggregation.data_ra", "href"),
