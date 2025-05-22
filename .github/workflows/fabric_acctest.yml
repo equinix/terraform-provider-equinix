@@ -185,8 +185,18 @@ jobs:
           EQUINIX_API_CLIENTID: ${{ secrets.EQUINIX_API_CLIENTID_PFCR }}
           EQUINIX_API_CLIENTSECRET: ${{ secrets.EQUINIX_API_CLIENTSECRET_PFCR }}
           METAL_AUTH_TOKEN: ${{ secrets.METAL_AUTH_TOKEN }}
+          TF_LOG_PROVIDER: DEBUG
         run: |
-          go test ./... -v -coverprofile coverage_pfcr.txt -covermode=atomic -count 1 -parallel 8 -run "(PFCR)" -timeout 180m
+          go test ./internal/resources/fabric/... -json -v -coverprofile coverage_uat_modules.txt -covermode=atomic -count 1 -parallel 8 -run "(PFCR)" -timeout 180m | tee pfcr_test_output.log
+
+      - name: Upload PFCR Testing Log
+        uses: actions/upload-artifact@v4
+        with:
+          name: pfcr_test_logs
+          path: pfcr_test_output.log
+
+      - name: Check if Tests are passed
+        run: sh scripts/check_tests.sh pfcr_test_output.log
 
       - name: Sweeper PFCR
         if: ${{ always() }}
