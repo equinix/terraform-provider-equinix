@@ -91,6 +91,22 @@ func TestAccMetalVlan_metro(t *testing.T) {
 				Config:   testAccCheckMetalVlanConfig_metro(rs, strings.ToLower(upperDallas), "tfacc-vlan"),
 				PlanOnly: true,
 			},
+			{
+				// Update VLAN with description "tfacc-vlan-updated"
+				Config: testAccCheckMetalVlanConfig_metro(rs, strings.ToLower(upperDallas), "tfacc-vlan-updated"),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction("equinix_metal_vlan.foovlan", plancheck.ResourceActionUpdate),
+					},
+				},
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckMetalVlanExists("equinix_metal_vlan.foovlan", &vlan),
+					resource.TestCheckResourceAttr(
+						"equinix_metal_vlan.foovlan", "description", "tfacc-vlan-updated"),
+					resource.TestCheckResourceAttr(
+						"equinix_metal_vlan.foovlan", "metro", upperDallas),
+				),
+			},
 		},
 	})
 }
