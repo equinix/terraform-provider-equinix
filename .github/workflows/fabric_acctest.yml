@@ -116,7 +116,16 @@ jobs:
           EQUINIX_API_CLIENTSECRET: ${{ secrets.EQUINIX_API_CLIENTSECRET_PNFV }}
           METAL_AUTH_TOKEN: ${{ secrets.METAL_AUTH_TOKEN }}
         run: |
-          go test ./... -v -coverprofile coverage_pnfv.txt -covermode=atomic -count 1 -parallel 8 -run "(PNFV)" -timeout 180m
+          go test ./internal/resources/fabric/routeaggregationrule/... -v -coverprofile coverage_pnfv.txt -covermode=atomic -count 1 -parallel 8 -run "(PNFV)" -timeout 180m | tee pnfv_test_output.log
+
+      - name: Upload PNFV Testing Log
+        uses: actions/upload-artifact@v4
+        with:
+          name: pnfv_test_logs
+          path: pnfv_test_output.log
+
+      - name: Check if Tests are passed
+        run: sh scripts/check_tests.sh pnfv_test_output.log
 
       - name: Sweeper PNFV
         if: ${{ always() }}
@@ -165,16 +174,9 @@ jobs:
           go-version-file: './go.mod'
         id: go
 
-      - name: Set up Python3
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.13'
-
       - name: Get dependencies
         run: |
           go mod download
-          go install gotest.tools/gotestsum@latest
-          pip3 install junit2html
 
       - uses: hashicorp/setup-terraform@v3
         with:
@@ -192,21 +194,14 @@ jobs:
           EQUINIX_API_CLIENTID: ${{ secrets.EQUINIX_API_CLIENTID_PFCR }}
           EQUINIX_API_CLIENTSECRET: ${{ secrets.EQUINIX_API_CLIENTSECRET_PFCR }}
           METAL_AUTH_TOKEN: ${{ secrets.METAL_AUTH_TOKEN }}
-          TF_LOG_PROVIDER: DEBUG
         run: |
-          gotestsum --format=standard-verbose --junitfile=pfcr_results.xml -- ./internal/resources/fabric/metro -coverprofile=coverage_pfcr.txt -covermode=atomic -count=1 -parallel=8 -run="PFCR" -timeout=180m | tee pfcr_test_output.log
-
-      - name: Create HTML Testing Report
-        run: |
-          go-junit-report -parser gojson -in pfcr_test_output.log > pfcr_test_report.xml
-          python3 -m junit2htmlreport pfcr_test_report.xml pfcr_test_report.html
-
-      - name: Upload HTML Testing Report
+          go test ./internal/resources/fabric/metro/... -v -coverprofile coverage_pfcr.txt -covermode=atomic -count 1 -parallel 8 -run "(PFCR)" -timeout 180m | tee pfcr_test_output.log
+          
+      - name: Upload PFCR Testing Log
         uses: actions/upload-artifact@v4
         with:
-          name: UAT Suite Terraform Provider Acceptance Test Report
-          path: pfcr_test_report.html
-          compression-level: 0
+          name: pfcr_test_logs
+          path: pfcr_test_output.log
 
       - name: Check if Tests are passed
         run: sh scripts/check_tests.sh pfcr_test_output.log
@@ -229,3 +224,46 @@ jobs:
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           files: ./coverage_pfcr.txt
+
+  upload-test-report:
+    name: Upload Testing Report
+    if: always()
+    needs: [ test-PNFV, test-PFCR ]
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        id: go
+
+      - name: Set up Python3
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+
+      - name: Get dependencies
+        run: |
+          go install github.com/thogarty/go-junit-report/v2@latest
+          pip3 install junit2html
+
+      - name: Download PNFV Test Logs
+        uses: actions/download-artifact@v4
+        with:
+          name: pnfv_test_logs
+
+      - name: Download PFCR Test Logs
+        uses: actions/download-artifact@v4
+        with:
+          name: pfcr_test_logs
+
+      - name: Create HTML Testing Report
+        run: |
+          cat pfcr_test_output.log pnfv_test_output.log > uat_test_report.log
+          go-junit-report -parser gojson -in uat_test_report.log  > uat_test_report.xml && python3 -m junit2htmlreport uat_test_report.xml uat_test_report.html
+
+      - name: Upload HTML Testing Report
+        uses: actions/upload-artifact@v4
+        with:
+          name: UAT Terraform Modules Testing Report
+          path: uat_test_report.html
+          compression-level: 0
