@@ -194,17 +194,18 @@ jobs:
           METAL_AUTH_TOKEN: ${{ secrets.METAL_AUTH_TOKEN }}
           TF_LOG_PROVIDER: DEBUG
         run: |
-          gotestsum --format=standard-verbose --junitfile=pfcr_results.xml -- ./internal/resources/fabric/stream -coverprofile=coverage_uat_modules.txt -covermode=atomic -count=1 -parallel=8 -run="PFCR" -timeout=180m | tee pfcr_test_output.log
+          gotestsum --format=standard-verbose --junitfile=pfcr_results.xml -- ./internal/resources/fabric/metro -coverprofile=coverage_pfcr.txt -covermode=atomic -count=1 -parallel=8 -run="PFCR" -timeout=180m | tee pfcr_test_output.log
 
       - name: Create HTML Testing Report
-        run: python3 -m junit2htmlreport pfcr_results.xml pfcr_test_report.html
+        run: |
+          go-junit-report -parser gojson -in pfcr_test_output.log > pfcr_test_report.xml
+          python3 -m junit2htmlreport pfcr_test_report.xml pfcr_test_report.html
 
       - name: Upload HTML Testing Report
         uses: actions/upload-artifact@v4
         with:
           name: UAT Suite Terraform Provider Acceptance Test Report
-          path: |
-            pfcr_test_report.html
+          path: pfcr_test_report.html
           compression-level: 0
 
       - name: Check if Tests are passed
