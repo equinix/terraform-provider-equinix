@@ -11,6 +11,9 @@ import (
 	"github.com/packethost/packngo"
 )
 
+// DataSourceModel represents the schema for reading VLAN data from the Equinix Metal API
+// in a Terraform data source context. It includes fields that describe the VLAN's identity,
+// location, and associated devices, and is used to populate Terraform state during read operations.
 type DataSourceModel struct {
 	ID                 types.String `tfsdk:"id"`
 	ProjectID          types.String `tfsdk:"project_id"`
@@ -19,7 +22,7 @@ type DataSourceModel struct {
 	Facility           types.String `tfsdk:"facility"`
 	Metro              types.String `tfsdk:"metro"`
 	Description        types.String `tfsdk:"description"`
-	AssignedDevicesIds types.List   `tfsdk:"assigned_devices_ids"`
+	AssignedDevicesIDs types.List   `tfsdk:"assigned_devices_ids"`
 }
 
 func (m *DataSourceModel) parse(vlan *packngo.VirtualNetwork) (d diag.Diagnostics) {
@@ -52,14 +55,17 @@ func (m *DataSourceModel) parse(vlan *packngo.VirtualNetwork) (d diag.Diagnostic
 		}
 	}
 
-	deviceIds := make([]types.String, 0, len(vlan.Instances))
+	deviceIDs := make([]types.String, 0, len(vlan.Instances))
 	for _, device := range vlan.Instances {
-		deviceIds = append(deviceIds, types.StringValue(device.ID))
+		deviceIDs = append(deviceIDs, types.StringValue(device.ID))
 	}
 
-	return m.AssignedDevicesIds.ElementsAs(context.Background(), &deviceIds, false)
+	return m.AssignedDevicesIDs.ElementsAs(context.Background(), &deviceIDs, false)
 }
 
+// ResourceModel defines the schema for managing VLAN resources in Terraform.
+// It is used during create, read, update, and delete operations to represent
+// the desired and actual state of a VLAN in Equinix Metal.
 type ResourceModel struct {
 	ID          types.String `tfsdk:"id"`
 	ProjectID   types.String `tfsdk:"project_id"`
@@ -107,6 +113,15 @@ func (m *ResourceModel) parseMetalV1(vlan *metalv1.VirtualNetwork) (d diag.Diagn
 
 	if vlan.GetDescription() != "" {
 		m.Description = types.StringValue(vlan.GetDescription())
+	}
+
+	if vlan.AssignedTo != nil {
+		m.ProjectID = types.StringValue(vlan.AssignedTo.GetId())
+	}
+
+	if vlan.Facility != nil {
+		facilityCode := vlan.Facility.AdditionalProperties["facility_code"].(string)
+		m.Facility = types.StringValue(strings.ToLower(facilityCode))
 	}
 
 	if vlan.Metro != nil {
