@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/equinix/equinix-sdk-go/services/metalv1"
 	equinix_errors "github.com/equinix/terraform-provider-equinix/internal/errors"
 	"github.com/equinix/terraform-provider-equinix/internal/framework"
 
@@ -139,17 +140,47 @@ func (r *Resource) Read(ctx context.Context, request resource.ReadRequest, respo
 	response.Diagnostics.Append(response.State.Set(ctx, &data)...)
 }
 
-func (r *Resource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
-	var data ResourceModel
-	if diag := req.Plan.Get(ctx, &data); diag.HasError() {
-		resp.Diagnostics.Append(diag...)
+func (r *Resource) Update(
+	ctx context.Context,
+	req resource.UpdateRequest,
+	resp *resource.UpdateResponse,
+) {
+	client := r.Meta.NewMetalClientForFramework(ctx, req.ProviderMeta)
+
+	// Retrieve values from plan
+	var state, plan ResourceModel
+	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
+	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
+	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	if diag := resp.State.Set(ctx, &data); diag.HasError() {
-		resp.Diagnostics.Append(diag...)
+	// Extract the ID of the resource from the state
+	id := plan.ID.ValueString()
+
+	updateRequest := &metalv1.VirtualNetworkUpdateInput{}
+	if !state.Description.Equal(plan.Description) {
+		updateRequest.Description = plan.Description.ValueStringPointer()
+	}
+
+	// Update the resource
+	vlan, _, err := client.VLANsApi.UpdateVirtualNetwork(ctx, id).VirtualNetworkUpdateInput(*updateRequest).Execute()
+	if err != nil {
+		resp.Diagnostics.AddError(
+			"Error updating resource",
+			"Could not update resource with ID "+id+": "+err.Error(),
+		)
 		return
 	}
+
+	// Set state to fully populated data
+	resp.Diagnostics.Append(plan.parseMetalV1(vlan)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	// Read the updated state back into Terraform state
+	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
 
 func (r *Resource) Delete(ctx context.Context, request resource.DeleteRequest, response *resource.DeleteResponse) {

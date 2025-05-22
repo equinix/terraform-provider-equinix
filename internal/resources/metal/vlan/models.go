@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/equinix/equinix-sdk-go/services/metalv1"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/packethost/packngo"
@@ -96,5 +97,28 @@ func (m *ResourceModel) parse(vlan *packngo.VirtualNetwork) (d diag.Diagnostics)
 					m.ID, m.Metro, vlan.Metro.Code))
 		}
 	}
+	return nil
+}
+
+func (m *ResourceModel) parseMetalV1(vlan *metalv1.VirtualNetwork) (d diag.Diagnostics) {
+	m.ID = types.StringValue(vlan.GetId())
+	m.Vxlan = types.Int64Value(int64(vlan.GetVxlan()))
+	m.Facility = types.StringValue("")
+
+	if vlan.GetDescription() != "" {
+		m.Description = types.StringValue(vlan.GetDescription())
+	}
+
+	if vlan.Metro != nil {
+		if m.Metro.IsNull() {
+			m.Metro = types.StringValue(vlan.GetMetroCode())
+		} else if !strings.EqualFold(m.Metro.ValueString(), vlan.GetMetroCode()) {
+			d.AddError(
+				"unexpected value for metro",
+				fmt.Sprintf("expected vlan %v to have metro %v, but metro was %v",
+					m.ID, m.Metro, vlan.Metro.Code))
+		}
+	}
+
 	return nil
 }
