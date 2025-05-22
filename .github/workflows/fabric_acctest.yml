@@ -259,11 +259,20 @@ jobs:
       - name: Create HTML Testing Report
         run: |
           cat pfcr_test_output.log pnfv_test_output.log > uat_test_report.log
-          go-junit-report -parser gojson -in uat_test_report.log  > uat_test_report.xml && python3 -m junit2htmlreport uat_test_report.xml uat_test_report.html
+          
+          go-junit-report -in uat_test_report.log > uat_test_report.xml && python3 -m junit2htmlreport uat_test_report.xml uat_test_report.html
+          
+          echo "<html><head><title>UAT Terraform Modules Test Logs</title><style>pre {white-space: pre-wrap; font-family: monospace;}</style></head><body><h2>PFCR Test Logs</h2><pre>" > raw_test_logs.html
+          cat pfcr_test_output.log >> raw_test_logs.html
+          echo "</pre><h2>PNFV Test Logs</h2><pre>" >> raw_test_logs.html
+          cat pnfv_test_output.log >> raw_test_logs.html
+          echo "</pre></body></html>" >> raw_test_logs.html
 
       - name: Upload HTML Testing Report
         uses: actions/upload-artifact@v4
         with:
-          name: UAT Terraform Modules Testing Report
-          path: uat_test_report.html
+          name: UAT Terraform Modules Testing Reports
+          path: |
+            uat_test_report.html
+            raw_test_logs.html
           compression-level: 0
