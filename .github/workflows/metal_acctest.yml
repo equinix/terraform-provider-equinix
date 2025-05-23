@@ -108,7 +108,20 @@ jobs:
         METAL_AUTH_TOKEN: ${{ secrets.METAL_AUTH_TOKEN }}
         TF_ACC_METAL_DEDICATED_CONNECTION_ID: ${{ secrets.TF_ACC_METAL_DEDICATED_CONNECTION_ID }}
       run: |
-        go test ./... -v -coverprofile coverage.txt -covermode=atomic -count 1 -parallel 8 -run "(Metal)" -timeout 180m
+        go run gotest.tools/gotestsum@v1.12.2 --rerun-fails --junitfile metal-acctests.xml --packages="./..." -- -v -coverprofile coverage.txt -covermode=atomic -count 1 -parallel 8 -run "(Metal)" -timeout 180m
+
+    - name: Convert JUnit report to HTML
+      id: convert-report
+      if: ${{ always() }}
+      run: |
+        pip install junit2html
+        junit2html metal-acctests.xml metal-acctests.html
+
+    - uses: actions/upload-artifact@v4
+      if: ${{ always() && steps.convert-report.outcome == 'success' }}
+      with:
+        name: metal-acctests.html
+        path: metal-acctests.html
 
     - name: Sweeper
       if: ${{ always() }}
