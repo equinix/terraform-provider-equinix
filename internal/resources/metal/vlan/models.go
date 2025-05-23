@@ -44,6 +44,13 @@ func (m *DataSourceModel) parse(vlan *packngo.VirtualNetwork) (d diag.Diagnostic
 		m.Metro = types.StringValue(strings.ToLower(vlan.Facility.Metro.Code))
 	}
 
+	deviceIDs := make([]types.String, 0, len(vlan.Instances))
+	for _, device := range vlan.Instances {
+		deviceIDs = append(deviceIDs, types.StringValue(device.ID))
+	}
+
+	m.AssignedDevicesIDs, d = types.ListValueFrom(context.Background(), types.StringType, deviceIDs)
+
 	if vlan.Metro != nil {
 		if m.Metro.IsNull() {
 			m.Metro = types.StringValue(vlan.Metro.Code)
@@ -55,12 +62,7 @@ func (m *DataSourceModel) parse(vlan *packngo.VirtualNetwork) (d diag.Diagnostic
 		}
 	}
 
-	deviceIDs := make([]types.String, 0, len(vlan.Instances))
-	for _, device := range vlan.Instances {
-		deviceIDs = append(deviceIDs, types.StringValue(device.ID))
-	}
-
-	return m.AssignedDevicesIDs.ElementsAs(context.Background(), &deviceIDs, false)
+	return d
 }
 
 // ResourceModel defines the schema for managing VLAN resources in Terraform.
@@ -103,7 +105,7 @@ func (m *ResourceModel) parse(vlan *packngo.VirtualNetwork) (d diag.Diagnostics)
 					m.ID, m.Metro, vlan.Metro.Code))
 		}
 	}
-	return nil
+	return d
 }
 
 func (m *ResourceModel) parseMetalV1(vlan *metalv1.VirtualNetwork) (d diag.Diagnostics) {
@@ -124,16 +126,16 @@ func (m *ResourceModel) parseMetalV1(vlan *metalv1.VirtualNetwork) (d diag.Diagn
 		m.Facility = types.StringValue(strings.ToLower(facilityCode))
 	}
 
-	if vlan.Metro != nil {
+	if vlan.MetroCode != nil {
 		if m.Metro.IsNull() {
 			m.Metro = types.StringValue(vlan.GetMetroCode())
 		} else if !strings.EqualFold(m.Metro.ValueString(), vlan.GetMetroCode()) {
 			d.AddError(
 				"unexpected value for metro",
 				fmt.Sprintf("expected vlan %v to have metro %v, but metro was %v",
-					m.ID, m.Metro, vlan.Metro.Code))
+					m.ID, m.Metro, vlan.GetMetroCode()))
 		}
 	}
 
-	return nil
+	return d
 }
