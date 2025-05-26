@@ -116,7 +116,7 @@ jobs:
           EQUINIX_API_CLIENTSECRET: ${{ secrets.EQUINIX_API_CLIENTSECRET_PNFV }}
           METAL_AUTH_TOKEN: ${{ secrets.METAL_AUTH_TOKEN }}
         run: |
-          go run gotest.tools/gotestsum@v1.12.2 --rerun-fails --junitfile pnfv-acctests.xml --packages="./internal/resources/fabric/connection" -- -v -coverprofile coverage_pnfv.txt -covermode=atomic -count=1 -parallel=8 -run="PNFV" -timeout=180m
+          go run gotest.tools/gotestsum@v1.12.2 --rerun-fails --junitfile pnfv-acctests.xml --packages="./internal/resources/fabric/routeaggregationrule" -- -v -coverprofile coverage_pnfv.txt -covermode=atomic -count=1 -parallel=8 -run="PNFV" -timeout=180m
 
       - name: Debug - Check PNFV XML creation
         run: |
