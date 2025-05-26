@@ -124,6 +124,13 @@ jobs:
           ls -la *.xml || echo "No XML files found"
           ls -la pnfv-acctests.xml || echo "pnfv-acctests.xml missing"
 
+      - name: Upload PNFV Test Results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pnfv-test-results
+          path: pnfv-acctests.xml
+
       - name: Sweeper PNFV
         if: ${{ always() }}
         env:
@@ -200,6 +207,13 @@ jobs:
           ls -la *.xml || echo "No XML files found"
           ls -la pfcr-acctests.xml || echo "pfcr-acctests.xml missing"
 
+      - name: Upload PFCR Test Results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pfcr-test-results
+          path: pfcr-acctests.xml
+
       - name: Sweeper PFCR
         if: ${{ always() }}
         env:
@@ -238,6 +252,25 @@ jobs:
       - name: Get dependencies
         run: |
           pip3 install junit2html
+
+      - name: Download PFCR artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: pfcr-test-results
+          path: .
+
+      - name: Download PNFV artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: pnfv-test-results
+          path: .
+
+      - name: Debug - Check downloaded files
+        run: |
+          echo "Files downloaded:"
+          ls -la
+          echo "XML files:"
+          ls -la *.xml || echo "No XML files found"
 
       - name: Create HTML Testing Report
         run: |
