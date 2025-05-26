@@ -118,6 +118,12 @@ jobs:
         run: |
           go run gotest.tools/gotestsum@v1.12.2 --rerun-fails --junitfile=pnfv-acctests.xml --packages="./internal/resources/fabric/servicetoken" -- -v -coverprofile coverage_pnfv.txt -covermode=atomic -count=1 -parallel=8 -run="PNFV" -timeout=180m
 
+      - name: Debug - Check PNFV XML creation
+        run: |
+          echo "Checking if XML files were created..."
+          ls -la *.xml || echo "No XML files found"
+          ls -la pnfv-acctests.xml || echo "pnfv-acctests.xml missing"
+
       - name: Sweeper PNFV
         if: ${{ always() }}
         env:
@@ -186,7 +192,13 @@ jobs:
           EQUINIX_API_CLIENTSECRET: ${{ secrets.EQUINIX_API_CLIENTSECRET_PFCR }}
           METAL_AUTH_TOKEN: ${{ secrets.METAL_AUTH_TOKEN }}
         run: |
-          go run gotest.tools/gotestsum@v1.12.2 --rerun-fails --junitfile=pfcr-acctests.xml --packages="./internal/resources/fabric/metro" -- -v -coverprofile coverage_pfcr.txt -covermode=atomic -count=1 -parallel=8 -run="PFCR" -timeout=180m
+          go run gotest.tools/gotestsum@v1.12.2 --rerun-fails --junitfile pfcr-acctests.xml --packages="./internal/resources/fabric/metro" -- -v -coverprofile coverage_pfcr.txt -covermode=atomic -count=1 -parallel=8 -run="PFCR" -timeout=180m
+
+      - name: Debug - Check PFCR XML creation
+        run: |
+          echo "Checking if XML files were created..."
+          ls -la *.xml || echo "No XML files found"
+          ls -la pfcr-acctests.xml || echo "pfcr-acctests.xml missing"
 
       - name: Sweeper PFCR
         if: ${{ always() }}
