@@ -96,7 +96,7 @@ func TestAccFabricCreatePort2SPConnection_PFCR(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						"equinix_fabric_connection.test", "a_side.0.access_point.0.link_protocol.0.type", "DOT1Q"),
 					resource.TestCheckResourceAttr(
-						"equinix_fabric_connection.test", "a_side.0.access_point.0.link_protocol.0.vlan_tag", "1600"),
+						"equinix_fabric_connection.test", "a_side.0.access_point.0.link_protocol.0.vlan_tag", "2019"),
 					resource.TestCheckResourceAttr(
 						"equinix_fabric_connection.test", "z_side.0.access_point.0.type", "SP"),
 					resource.TestCheckResourceAttr(
@@ -136,7 +136,6 @@ func testAccFabricCreatePort2SPConnectionConfig(spName, name, portUUID, zSideMet
 		redundancy {priority= "PRIMARY"}
 		order {
 			purchase_order_number= "1-323292"
-            term_length = 1
 		}
 		a_side {
 			access_point {
@@ -146,7 +145,7 @@ func testAccFabricCreatePort2SPConnectionConfig(spName, name, portUUID, zSideMet
 				}
 				link_protocol {
 					type= "DOT1Q"
-					vlan_tag= "1600"
+					vlan_tag= "2019"
 				}
 			}
 		}
@@ -194,7 +193,7 @@ func TestAccFabricCreatePort2PortConnection_PFCR(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						"equinix_fabric_connection.test", "a_side.0.access_point.0.link_protocol.0.type", "DOT1Q"),
 					resource.TestCheckResourceAttr(
-						"equinix_fabric_connection.test", "a_side.0.access_point.0.link_protocol.0.vlan_tag", "1080"),
+						"equinix_fabric_connection.test", "a_side.0.access_point.0.link_protocol.0.vlan_tag", "2397"),
 					resource.TestCheckResourceAttr(
 						"equinix_fabric_connection.test", "z_side.0.access_point.0.type", "COLO"),
 					resource.TestCheckResourceAttr(
@@ -220,7 +219,7 @@ func TestAccFabricCreatePort2PortConnection_PFCR(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						"equinix_fabric_connection.test", "a_side.0.access_point.0.link_protocol.0.type", "DOT1Q"),
 					resource.TestCheckResourceAttr(
-						"equinix_fabric_connection.test", "a_side.0.access_point.0.link_protocol.0.vlan_tag", "1080"),
+						"equinix_fabric_connection.test", "a_side.0.access_point.0.link_protocol.0.vlan_tag", "2397"),
 					resource.TestCheckResourceAttr(
 						"equinix_fabric_connection.test", "z_side.0.access_point.0.type", "COLO"),
 					resource.TestCheckResourceAttr(
@@ -255,7 +254,7 @@ func testAccFabricCreatePort2PortConnectionConfig(bandwidth int32, aSidePortUUID
 				}
 				link_protocol {
 					type= "DOT1Q"
-					vlan_tag= 1080
+					vlan_tag= 2397
 				}
 				location {
 					metro_code = "SV"
@@ -303,7 +302,7 @@ func TestAccFabricCreateCloudRouter2PortConnection_PFCR(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						"equinix_fabric_connection.test", "redundancy.0.priority", "PRIMARY"),
 					resource.TestCheckResourceAttr(
-						"equinix_fabric_connection.test", "order.0.purchase_order_number", "1-234567"),
+						"equinix_fabric_connection.test", "order.0.purchase_order_number", "123485"),
 					resource.TestCheckResourceAttr(
 						"equinix_fabric_connection.test", "project.0.project_id", "291639000636552"),
 					resource.TestCheckResourceAttr(
@@ -315,9 +314,8 @@ func TestAccFabricCreateCloudRouter2PortConnection_PFCR(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						"equinix_fabric_connection.test", "z_side.0.access_point.0.link_protocol.0.type", "DOT1Q"),
 					resource.TestCheckResourceAttr(
-						"equinix_fabric_connection.test", "z_side.0.access_point.0.link_protocol.0.vlan_tag", "1350"),
+						"equinix_fabric_connection.test", "z_side.0.access_point.0.link_protocol.0.vlan_tag", "2325"),
 				),
-				ExpectNonEmptyPlan: true,
 			},
 		},
 	})
@@ -361,7 +359,7 @@ func testAccFabricCreateCloudRouter2PortConnectionConfig(name, portUUID string) 
 			emails = ["test@equinix.com","test1@equinix.com"]
 		}
 		order {
-			purchase_order_number = "1-234567"
+			purchase_order_number = "123485"
 		}
 		bandwidth = 50
 		redundancy {
@@ -386,7 +384,7 @@ func testAccFabricCreateCloudRouter2PortConnectionConfig(name, portUUID string) 
 				}
 				link_protocol {
 					type= "DOT1Q"
-					vlan_tag= 1350
+					vlan_tag= 2325
 				}
 				location {
 					metro_code = "SV"
