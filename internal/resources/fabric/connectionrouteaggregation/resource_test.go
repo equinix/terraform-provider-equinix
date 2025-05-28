@@ -77,8 +77,8 @@ func testAccFabricConnectionRouteAggregationConfig(portUuid string) string {
 					}
 					link_protocol {
 						type= "QINQ"
-						vlan_s_tag= 2571
-                        vlan_c_tag= 2572
+						vlan_s_tag= 1435
+                        vlan_c_tag= 1436
 					}
 					location {
 						metro_code = "DA"
