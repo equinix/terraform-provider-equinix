@@ -2,11 +2,12 @@ package servicetoken_test
 
 import (
 	"fmt"
-	"testing"
 
 	"github.com/equinix/terraform-provider-equinix/internal/acceptance"
 	testinghelpers "github.com/equinix/terraform-provider-equinix/internal/fabric/testing_helpers"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+
+	"testing"
 	"time"
 )
 
