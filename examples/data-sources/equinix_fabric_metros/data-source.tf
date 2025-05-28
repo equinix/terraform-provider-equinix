@@ -9,10 +9,6 @@ output "number_of_returned_metros" {
   value = length(data.equinix_fabric_metros.metros.data)
 }
 
-output "first_metro_id" {
-  value = data.equinix_fabric_metros.metros.data.0.id
-}
-
 output "first_metro_type" {
   value = data.equinix_fabric_metros.metros.data.0.type
 }

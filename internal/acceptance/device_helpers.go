@@ -8,22 +8,23 @@ import (
 
 // list of plans and metros and os used as filter criteria to find available hardware to run tests
 var (
-	Preferable_plans  = []string{"x1.small.x86", "t1.small.x86", "c2.medium.x86", "c3.small.x86", "c3.medium.x86", "m3.small.x86"}
-	Preferable_metros = []string{"ch", "ny", "sv", "ty", "am"}
-	Preferable_os     = []string{"ubuntu_20_04"}
+	PreferablePlans  = []string{"x1.small.x86", "t1.small.x86", "c2.medium.x86", "c3.small.x86", "c3.medium.x86", "m3.small.x86"}
+	PreferableMetros = []string{"ch", "ny", "sv", "ty", "am"}
+	PreferableOs     = []string{"ubuntu_24_04"}
 )
 
-func TestDeviceTerminationTime() string {
+// DeviceTerminationTime returns the time 60 minutes in the future
+func DeviceTerminationTime() string {
 	return time.Now().UTC().Add(60 * time.Minute).Format(time.RFC3339)
 }
 
-// This function should be used to find available plans in all test where a metal_device resource is needed.
+// ConfAccMetalDeviceBase should be used to find available plans in all test where a metal_device resource is needed.
 //
 // TODO consider adding a datasource for equinix_metal_operating_system and making the local.os conditional
 //
 //	https://github.com/equinix/terraform-provider-equinix/pull/220#discussion_r915418418equinix_metal_operating_system
 //	https://github.com/equinix/terraform-provider-equinix/discussions/221
-func ConfAccMetalDevice_base(plans, metros, os []string) string {
+func ConfAccMetalDeviceBase(plans, metros, os []string) string {
 	return fmt.Sprintf(`
 data "equinix_metal_plans" "test" {
     sort {

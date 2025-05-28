@@ -45,7 +45,7 @@ locals {
   eth0_id  = [for p in equinix_metal_device.test.ports: p.id if p.name == "eth0"][0]
 }
 
-`, acceptance.ConfAccMetalDevice_base(acceptance.Preferable_plans, acceptance.Preferable_metros, acceptance.Preferable_os), name, acceptance.TestDeviceTerminationTime())
+`, acceptance.ConfAccMetalDeviceBase(acceptance.PreferablePlans, acceptance.PreferableMetros, acceptance.PreferableOs), name, acceptance.DeviceTerminationTime())
 }
 
 func confAccMetalPort_L3(name string) string {

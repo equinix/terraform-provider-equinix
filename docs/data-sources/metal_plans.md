@@ -90,7 +90,7 @@ resource "equinix_metal_device" "example" {
   hostname         = "example"
   plan             = data.equinix_metal_plans.example.plans[0].name
   metro            = data.equinix_metal_plans.example.plans[0].available_in_metros[0]
-  operating_system = "ubuntu_20_04"
+  operating_system = "ubuntu_24_04"
   billing_cycle    = "hourly"
   project_id       = var.project_id
 

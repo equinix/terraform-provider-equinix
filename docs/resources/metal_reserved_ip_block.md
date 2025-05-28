@@ -63,7 +63,7 @@ resource "equinix_metal_device" "nodes" {
   project_id       = local.project_id
   metro            = "sv"
   plan             = "c3.small.x86"
-  operating_system = "ubuntu_20_04"
+  operating_system = "ubuntu_24_04"
   hostname         = "test"
   billing_cycle    = "hourly"
 

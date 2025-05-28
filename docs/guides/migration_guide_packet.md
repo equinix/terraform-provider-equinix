@@ -121,7 +121,7 @@ resource "packet_device" "example" {
   project_id       = local.project_id
   facilities       = ["sv15"]
   plan             = "c3.medium.x86"
-  operating_system = "ubuntu_20_04"
+  operating_system = "ubuntu_24_04"
   hostname         = "test"
   billing_cycle    = "hourly"
 
@@ -196,7 +196,7 @@ resource "equinix_metal_device" "example" {
   project_id       = local.project_id
   facilities       = ["sv15"]
   plan             = "c3.medium.x86"
-  operating_system = "ubuntu_20_04"
+  operating_system = "ubuntu_24_04"
   hostname         = "test"
   billing_cycle    = "hourly"
 

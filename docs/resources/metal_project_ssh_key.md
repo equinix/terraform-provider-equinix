@@ -23,7 +23,7 @@ resource "equinix_metal_device" "test" {
   hostname            = "test"
   plan                = "c3.medium.x86"
   metro               = "ny"
-  operating_system    = "ubuntu_20_04"
+  operating_system    = "ubuntu_24_04"
   billing_cycle       = "hourly"
   project_ssh_key_ids = [equinix_metal_project_ssh_key.test.id]
   project_id          = local.project_id
