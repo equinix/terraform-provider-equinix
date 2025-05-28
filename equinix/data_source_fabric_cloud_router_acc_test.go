@@ -82,7 +82,7 @@ func ConfigCreateCloudRouterResource_PFCR() string {
 			code="STANDARD"
 		}
 		project {
-			project_id = "291639000636552"
+			project_id = "33ec651f-cc99-48e0-94d3-47466899cdc7"
 		}
 		account {
 			account_number = 201257

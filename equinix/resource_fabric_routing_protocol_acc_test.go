@@ -109,7 +109,7 @@ resource "equinix_fabric_cloud_router" "this" {
 		emails = ["test@equinix.com", "test1@equinix.com"]
 	}
 	project{
-		project_id = "291639000636552"
+		project_id = "33ec651f-cc99-48e0-94d3-47466899cdc7"
 	}
 	account {
 		account_number = 201257
@@ -143,7 +143,7 @@ resource "equinix_fabric_connection" "this" {
 		}
 	}
 	project{
-		project_id = "291639000636552"
+		project_id = "33ec651f-cc99-48e0-94d3-47466899cdc7"
 	}
 	z_side {
 		access_point {
