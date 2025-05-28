@@ -154,8 +154,8 @@ func TestAccMetalVlan_NoDescription(t *testing.T) {
 				Config: testAccCheckMetalVlanConfig_NoDescription(rs, metro),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckMetalVlanExists("equinix_metal_vlan.foovlan", &vlan),
-					resource.TestCheckNoResourceAttr(
-						"equinix_metal_vlan.foovlan", "description"),
+					resource.TestCheckResourceAttr(
+						"equinix_metal_vlan.foovlan", "description", ""),
 					resource.TestCheckResourceAttr(
 						"equinix_metal_vlan.foovlan", "metro", metro),
 				),

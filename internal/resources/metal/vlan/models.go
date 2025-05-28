@@ -30,10 +30,7 @@ func (m *DataSourceModel) parse(vlan *packngo.VirtualNetwork) (d diag.Diagnostic
 	m.VlanID = types.StringValue(vlan.ID)
 	m.Vxlan = types.Int64Value(int64(vlan.VXLAN))
 	m.Facility = types.StringValue("")
-
-	if vlan.Description != "" {
-		m.Description = types.StringValue(vlan.Description)
-	}
+	m.Description = types.StringValue(vlan.Description)
 
 	if vlan.Project.ID != "" {
 		m.ProjectID = types.StringValue(vlan.Project.ID)
@@ -81,10 +78,7 @@ func (m *ResourceModel) parse(vlan *packngo.VirtualNetwork) (d diag.Diagnostics)
 	m.ID = types.StringValue(vlan.ID)
 	m.Vxlan = types.Int64Value(int64(vlan.VXLAN))
 	m.Facility = types.StringValue("")
-
-	if vlan.Description != "" {
-		m.Description = types.StringValue(vlan.Description)
-	}
+	m.Description = types.StringValue(vlan.Description)
 
 	if vlan.Project.ID != "" {
 		m.ProjectID = types.StringValue(vlan.Project.ID)
