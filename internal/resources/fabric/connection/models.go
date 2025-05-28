@@ -207,9 +207,9 @@ func accessPointTerraformToGo(accessPointTerraform []interface{}) fabricv4.Acces
 	if authenticationKey != "" {
 		accessPoint.SetAuthenticationKey(authenticationKey)
 	}
-	providerConnectionId := accessPointMap["provider_connection_id"].(string)
-	if providerConnectionId != "" {
-		accessPoint.SetProviderConnectionId(providerConnectionId)
+	providerConnectionID := accessPointMap["provider_connection_id"].(string)
+	if providerConnectionID != "" {
+		accessPoint.SetProviderConnectionId(providerConnectionID)
 	}
 	sellerRegion := accessPointMap["seller_region"].(string)
 	if sellerRegion != "" {
@@ -273,8 +273,8 @@ func accessPointTerraformToGo(accessPointTerraform []interface{}) fabricv4.Acces
 	}
 
 	if len(interfaceList) != 0 {
-		interface_ := interfaceTerraformToGo(interfaceList)
-		accessPoint.SetInterface(interface_)
+		_interface := interfaceTerraformToGo(interfaceList)
+		accessPoint.SetInterface(_interface)
 	}
 
 	return accessPoint
@@ -352,11 +352,11 @@ func virtualDeviceTerraformToGo(virtualDeviceList []interface{}) fabricv4.Virtua
 	var virtualDevice fabricv4.VirtualDevice
 	virtualDeviceMap := virtualDeviceList[0].(map[string]interface{})
 	href := virtualDeviceMap["href"].(string)
-	type_ := virtualDeviceMap["type"].(string)
+	_type := virtualDeviceMap["type"].(string)
 	uuid := virtualDeviceMap["uuid"].(string)
 	name := virtualDeviceMap["name"].(string)
 	virtualDevice.SetHref(href)
-	virtualDevice.SetType(fabricv4.VirtualDeviceType(type_))
+	virtualDevice.SetType(fabricv4.VirtualDeviceType(_type))
 	virtualDevice.SetUuid(uuid)
 	virtualDevice.SetName(name)
 
@@ -368,16 +368,16 @@ func interfaceTerraformToGo(interfaceList []interface{}) fabricv4.Interface {
 		return fabricv4.Interface{}
 	}
 
-	var interface_ fabricv4.Interface
+	var _interface fabricv4.Interface
 	interfaceMap := interfaceList[0].(map[string]interface{})
 	uuid := interfaceMap["uuid"].(string)
-	type_ := interfaceMap["type"].(string)
+	_type := interfaceMap["type"].(string)
 	id := interfaceMap["id"].(int)
-	interface_.SetUuid(uuid)
-	interface_.SetType(fabricv4.InterfaceType(type_))
-	interface_.SetId(int32(id))
+	_interface.SetUuid(uuid)
+	_interface.SetType(fabricv4.InterfaceType(_type))
+	_interface.SetId(int32(id))
 
-	return interface_
+	return _interface
 }
 
 func connectionOperationGoToTerraform(operation *fabricv4.ConnectionOperation) *schema.Set {
@@ -539,8 +539,8 @@ func accessPointGoToTerraform(accessPoint *fabricv4.AccessPoint) *schema.Set {
 		mappedAccessPoint["virtual_device"] = virtualDeviceGoToTerraform(&virtualDevice)
 	}
 	if accessPoint.Interface != nil {
-		interface_ := accessPoint.GetInterface()
-		mappedAccessPoint["interface"] = interfaceGoToTerraform(&interface_)
+		_interface := accessPoint.GetInterface()
+		mappedAccessPoint["interface"] = interfaceGoToTerraform(&_interface)
 	}
 	if accessPoint.Network != nil {
 		network := accessPoint.GetNetwork()
@@ -616,16 +616,16 @@ func accessPointTypeConfigGoToTerraform(spAccessPointTypes []fabricv4.ServicePro
 
 func apiConfigGoToTerraform(apiConfig *fabricv4.ApiConfig) *schema.Set {
 
-	mappedApiConfig := make(map[string]interface{})
-	mappedApiConfig["api_available"] = apiConfig.GetApiAvailable()
-	mappedApiConfig["equinix_managed_vlan"] = apiConfig.GetEquinixManagedVlan()
-	mappedApiConfig["bandwidth_from_api"] = apiConfig.GetBandwidthFromApi()
-	mappedApiConfig["integration_id"] = apiConfig.GetIntegrationId()
-	mappedApiConfig["equinix_managed_port"] = apiConfig.GetEquinixManagedPort()
+	mappedAPIConfig := make(map[string]interface{})
+	mappedAPIConfig["api_available"] = apiConfig.GetApiAvailable()
+	mappedAPIConfig["equinix_managed_vlan"] = apiConfig.GetEquinixManagedVlan()
+	mappedAPIConfig["bandwidth_from_api"] = apiConfig.GetBandwidthFromApi()
+	mappedAPIConfig["integration_id"] = apiConfig.GetIntegrationId()
+	mappedAPIConfig["equinix_managed_port"] = apiConfig.GetEquinixManagedPort()
 
 	apiConfigSet := schema.NewSet(
-		schema.HashResource(&schema.Resource{Schema: createApiConfigSch()}),
-		[]interface{}{mappedApiConfig})
+		schema.HashResource(&schema.Resource{Schema: createAPIConfigSch()}),
+		[]interface{}{mappedAPIConfig})
 	return apiConfigSet
 }
 
