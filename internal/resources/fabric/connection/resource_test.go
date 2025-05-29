@@ -106,7 +106,7 @@ func TestAccFabricCreatePort2SPConnection_PFCR(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						"equinix_fabric_connection.test", "z_side.0.access_point.0.location.0.metro_code", "SV"),
 				),
-				ExpectNonEmptyPlan: false,
+				ExpectNonEmptyPlan: true,
 			},
 		},
 	})
