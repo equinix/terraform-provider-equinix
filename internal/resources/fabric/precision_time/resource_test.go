@@ -104,7 +104,7 @@ func testAccFabricCreatePort2EPTNPTConfig(spName, name, portUuid, zSideMetro str
 				}
 				link_protocol {
 					type= "DOT1Q"
-					vlan_tag= "1354"
+					vlan_tag= 1700
 				}
 			}
 		}

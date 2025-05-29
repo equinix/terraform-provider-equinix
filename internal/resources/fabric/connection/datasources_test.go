@@ -40,7 +40,7 @@ func TestAccFabricDataSourceConnection_PFCR(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						"data.equinix_fabric_connection.test", "a_side.0.access_point.0.link_protocol.0.type", "DOT1Q"),
 					resource.TestCheckResourceAttr(
-						"data.equinix_fabric_connection.test", "a_side.0.access_point.0.link_protocol.0.vlan_tag", "1200"),
+						"data.equinix_fabric_connection.test", "a_side.0.access_point.0.link_protocol.0.vlan_tag", "1350"),
 					resource.TestCheckResourceAttr(
 						"data.equinix_fabric_connection.test", "a_side.0.access_point.0.location.0.metro_code", "DC"),
 					resource.TestCheckResourceAttr(
@@ -48,7 +48,7 @@ func TestAccFabricDataSourceConnection_PFCR(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						"data.equinix_fabric_connection.test", "z_side.0.access_point.0.link_protocol.0.type", "DOT1Q"),
 					resource.TestCheckResourceAttr(
-						"data.equinix_fabric_connection.test", "z_side.0.access_point.0.link_protocol.0.vlan_tag", "1201"),
+						"data.equinix_fabric_connection.test", "z_side.0.access_point.0.link_protocol.0.vlan_tag", "1360"),
 					resource.TestCheckResourceAttr(
 						"data.equinix_fabric_connection.test", "z_side.0.access_point.0.location.0.metro_code", "SV"),
 					resource.TestCheckResourceAttrSet("data.equinix_fabric_connections.connections", "id"),
@@ -67,7 +67,7 @@ func TestAccFabricDataSourceConnection_PFCR(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						"data.equinix_fabric_connections.connections", "data.0.a_side.0.access_point.0.link_protocol.0.type", "DOT1Q"),
 					resource.TestCheckResourceAttr(
-						"data.equinix_fabric_connections.connections", "data.0.a_side.0.access_point.0.link_protocol.0.vlan_tag", "1200"),
+						"data.equinix_fabric_connections.connections", "data.0.a_side.0.access_point.0.link_protocol.0.vlan_tag", "1350"),
 					resource.TestCheckResourceAttr(
 						"data.equinix_fabric_connections.connections", "data.0.a_side.0.access_point.0.location.0.metro_code", "DC"),
 					resource.TestCheckResourceAttr(
@@ -75,7 +75,7 @@ func TestAccFabricDataSourceConnection_PFCR(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						"data.equinix_fabric_connections.connections", "data.0.z_side.0.access_point.0.link_protocol.0.type", "DOT1Q"),
 					resource.TestCheckResourceAttr(
-						"data.equinix_fabric_connections.connections", "data.0.z_side.0.access_point.0.link_protocol.0.vlan_tag", "1201"),
+						"data.equinix_fabric_connections.connections", "data.0.z_side.0.access_point.0.link_protocol.0.vlan_tag", "1360"),
 					resource.TestCheckResourceAttr(
 						"data.equinix_fabric_connections.connections", "data.0.z_side.0.access_point.0.location.0.metro_code", "SV"),
 				),
@@ -107,7 +107,7 @@ resource "equinix_fabric_connection" "test" {
 			}
 			link_protocol {
 				type= "DOT1Q"
-				vlan_tag= 1200
+				vlan_tag= 1350
 			}
 		}
 	}
@@ -119,7 +119,7 @@ resource "equinix_fabric_connection" "test" {
 			}
 			link_protocol {
 				type= "DOT1Q"
-				vlan_tag= 1201
+				vlan_tag= 1360
 			}
 		}
 	}
