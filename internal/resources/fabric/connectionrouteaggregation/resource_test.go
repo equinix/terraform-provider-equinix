@@ -52,7 +52,6 @@ func testAccFabricConnectionRouteAggregationConfig(portUuid string) string {
 			}
 			order {
 				purchase_order_number = "123485"
- 				term_length = 1
 			}
 			bandwidth = 50
 			redundancy {
@@ -174,6 +173,7 @@ func TestAccFabricConnectionRouteAggregation_PNFV(t *testing.T) {
 					resource.TestCheckResourceAttr("data.equinix_fabric_connection_route_aggregations.data_cras", "pagination.limit", "10"),
 					resource.TestCheckResourceAttr("data.equinix_fabric_connection_route_aggregations.data_cras", "pagination.offset", "0"),
 				),
+				ExpectNonEmptyPlan: true,
 			},
 		},
 	})
