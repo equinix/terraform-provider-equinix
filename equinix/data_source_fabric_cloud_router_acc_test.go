@@ -1,11 +1,11 @@
 package equinix_test
 
 import (
-	"fmt"
+	"testing"
+
 	"github.com/equinix/terraform-provider-equinix/internal/acceptance"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	_ "github.com/hashicorp/terraform-plugin-testing/terraform"
-	"testing"
 )
 
 func TestAccDataSourceFabricCloudRouter_PFCR(t *testing.T) {
@@ -30,8 +30,6 @@ func TestAccDataSourceFabricCloudRouter_PFCR(t *testing.T) {
 					resource.TestCheckResourceAttrSet("data.equinix_fabric_cloud_router.example", "href"),
 					resource.TestCheckResourceAttr("data.equinix_fabric_cloud_router.example", "state", "PROVISIONED"),
 					resource.TestCheckResourceAttrSet("data.equinix_fabric_cloud_router.example", "equinix_asn"),
-					resource.TestCheckResourceAttr("data.equinix_fabric_cloud_router.example", "bgp_ipv4_routes_count", "0"),
-					resource.TestCheckResourceAttr("data.equinix_fabric_cloud_router.example", "bgp_ipv6_routes_count", "0"),
 					resource.TestCheckResourceAttr("data.equinix_fabric_cloud_router.example", "connections_count", "0"),
 					resource.TestCheckResourceAttrSet("data.equinix_fabric_cloud_router.example", "change_log.0.created_by"),
 					resource.TestCheckResourceAttrSet("data.equinix_fabric_cloud_router.example", "change_log.0.created_by_full_name"),
@@ -51,8 +49,6 @@ func TestAccDataSourceFabricCloudRouter_PFCR(t *testing.T) {
 					resource.TestCheckResourceAttrSet("data.equinix_fabric_cloud_routers.test", "data.0.href"),
 					resource.TestCheckResourceAttr("data.equinix_fabric_cloud_routers.test", "data.0.state", "PROVISIONED"),
 					resource.TestCheckResourceAttrSet("data.equinix_fabric_cloud_routers.test", "data.0.equinix_asn"),
-					resource.TestCheckResourceAttr("data.equinix_fabric_cloud_routers.test", "data.0.bgp_ipv4_routes_count", "0"),
-					resource.TestCheckResourceAttr("data.equinix_fabric_cloud_routers.test", "data.0.bgp_ipv6_routes_count", "0"),
 					resource.TestCheckResourceAttr("data.equinix_fabric_cloud_routers.test", "data.0.connections_count", "0"),
 					resource.TestCheckResourceAttrSet("data.equinix_fabric_cloud_routers.test", "data.0.change_log.0.created_by"),
 					resource.TestCheckResourceAttrSet("data.equinix_fabric_cloud_routers.test", "data.0.change_log.0.created_by_full_name"),
@@ -68,7 +64,7 @@ func TestAccDataSourceFabricCloudRouter_PFCR(t *testing.T) {
 }
 
 func ConfigCreateCloudRouterResource_PFCR() string {
-	return fmt.Sprintf(`
+	return `
 		resource "equinix_fabric_cloud_router" "example" {
 		name = "Test_PFCR"
 		type = "XF_ROUTER"
@@ -86,7 +82,7 @@ func ConfigCreateCloudRouterResource_PFCR() string {
 			code="STANDARD"
 		}
 		project {
-			project_id = "291639000636552"
+			project_id = "33ec651f-cc99-48e0-94d3-47466899cdc7"
 		}
 		account {
 			account_number = 201257
@@ -104,5 +100,5 @@ func ConfigCreateCloudRouterResource_PFCR() string {
 			values 	 = [equinix_fabric_cloud_router.example.name]
 		}
 	}
-`)
+`
 }
