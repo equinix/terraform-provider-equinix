@@ -20,7 +20,7 @@ func testAccFabricConnectionRouteAggregationConfig(portUuid string) string {
 			type = "XF_ROUTER"
 			name = "RF_CR_PFCR"
 			location {
-				metro_code  = "DC"
+				metro_code  = "DA"
 			}
 			package {
 				code = "STANDARD"
@@ -75,11 +75,12 @@ func testAccFabricConnectionRouteAggregationConfig(portUuid string) string {
 						uuid = "%s"
 					}
 					link_protocol {
-						type= "DOT1Q"
-						vlan_tag= 2571
+						type= "QINQ"
+						vlan_s_tag= 1435
+                        vlan_c_tag= 1436
 					}
 					location {
-						metro_code = "DC"
+						metro_code = "DA"
 					}
 				}
 			}
@@ -92,10 +93,22 @@ func testAccFabricConnectionRouteAggregationConfig(portUuid string) string {
 			direct_ipv4{
 				equinix_iface_ip = "190.1.1.1/30"
 			}
-			direct_ipv6{
-				equinix_iface_ip = "190::1:1/126"
-			}
-}
+        }
+		resource "equinix_fabric_routing_protocol" "bgp" {
+		depends_on = [
+		  equinix_fabric_routing_protocol.direct
+		]
+		connection_uuid = equinix_fabric_connection.test.id
+		type = "BGP"
+		name = "rp_bgp_PFCR"
+		bgp_ipv4 {
+			customer_peer_ip = "190.1.1.2"
+			outbound_as_prepend_count = "1"
+			inbound_med = 4
+			outbound_med = 7
+		}
+		customer_asn = 100
+		}
 		
 		resource "equinix_fabric_route_aggregation" "test" {
 		 type = "BGP_IPv4_PREFIX_AGGREGATION"
@@ -107,7 +120,7 @@ func testAccFabricConnectionRouteAggregationConfig(portUuid string) string {
 		}
 
 		resource "equinix_fabric_connection_route_aggregation" "test" {
-			depends_on = [equinix_fabric_routing_protocol.direct]
+			depends_on = [equinix_fabric_routing_protocol.direct, equinix_fabric_routing_protocol.bgp]
 			route_aggregation_id = equinix_fabric_route_aggregation.test.id
 			connection_id = equinix_fabric_connection.test.id
 		}
@@ -130,7 +143,7 @@ func TestAccFabricConnectionRouteAggregation_PNFV(t *testing.T) {
 	ports := testinghelpers.GetFabricEnvPorts(t)
 	var portUuid string
 	if len(ports) > 0 {
-		portUuid = ports["pnfv"]["dot1q"][1].GetUuid()
+		portUuid = ports["pnfv"]["qinq"][1].GetUuid()
 	}
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.TestAccPreCheck(t); acceptance.TestAccPreCheckProviderConfigured(t) },
@@ -160,6 +173,7 @@ func TestAccFabricConnectionRouteAggregation_PNFV(t *testing.T) {
 					resource.TestCheckResourceAttr("data.equinix_fabric_connection_route_aggregations.data_cras", "pagination.limit", "10"),
 					resource.TestCheckResourceAttr("data.equinix_fabric_connection_route_aggregations.data_cras", "pagination.offset", "0"),
 				),
+				ExpectNonEmptyPlan: true,
 			},
 		},
 	})

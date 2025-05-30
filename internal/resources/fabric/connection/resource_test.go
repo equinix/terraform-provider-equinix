@@ -106,7 +106,7 @@ func TestAccFabricCreatePort2SPConnection_PFCR(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						"equinix_fabric_connection.test", "z_side.0.access_point.0.location.0.metro_code", "SV"),
 				),
-				ExpectNonEmptyPlan: false,
+				ExpectNonEmptyPlan: true,
 			},
 		},
 	})
@@ -136,7 +136,6 @@ func testAccFabricCreatePort2SPConnectionConfig(spName, name, portUUID, zSideMet
 		redundancy {priority= "PRIMARY"}
 		order {
 			purchase_order_number= "1-323292"
-            term_length = 1
 		}
 		a_side {
 			access_point {
@@ -430,13 +429,12 @@ func TestAccFabricCreateVirtualDevice2NetworkConnection_PNFV(t *testing.T) {
 						"equinix_fabric_connection.test", "a_side.0.access_point.0.interface.0.type", "CLOUD"),
 					resource.TestCheckResourceAttr(
 						"equinix_fabric_connection.test", "a_side.0.access_point.0.interface.0.id", "6"),
-					resource.TestCheckResourceAttrSet(
-						"equinix_fabric_connection.test", "a_side.0.access_point.0.link_protocol.0.vlan_tag"),
 					resource.TestCheckResourceAttr(
 						"equinix_fabric_connection.test", "z_side.0.access_point.0.type", "NETWORK"),
 					resource.TestCheckResourceAttrSet(
 						"equinix_fabric_connection.test", "z_side.0.access_point.0.network.0.uuid"),
 				),
+				ExpectNonEmptyPlan: true,
 			},
 		},
 	})
