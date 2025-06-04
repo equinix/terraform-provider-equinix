@@ -17,9 +17,9 @@ type selectorModel struct {
 }
 
 type resourceModel struct {
-	StreamAlertRuleID types.String   `tfsdk:"stream_id"`
-	ID                types.String   `tfsdk:"id"`
-	Timeouts          timeouts.Value `tfsdk:"timeouts"`
+	StreamID types.String   `tfsdk:"stream_id"`
+	ID       types.String   `tfsdk:"id"`
+	Timeouts timeouts.Value `tfsdk:"timeouts"`
 	baseStreamAlertRulesModel
 }
 
@@ -111,15 +111,3 @@ func parseSelectorModel(ctx context.Context, alertRuleSubSelector fabricv4.Resou
 	}
 	return fwtypes.NewObjectValueOf[selectorModel](ctx, &selector), diags
 }
-
-//func parseSelectorModel(ctx context.Context, alertRuleSubSelector fabricv4.ResourceSelector) (fwtypes.ObjectValueOf[selectorModel], diag.Diagnostics) {
-//	var diags diag.Diagnostics
-//	inclusions, diags := fwtypes.NewListValueOf[types.String](ctx, int_fw.StringSliceToAttrValue(alertRuleSubSelector.GetInclude()))
-//	if diags.HasError() {
-//		return fwtypes.NewObjectValueOfNull[selectorModel](ctx), diags
-//	}
-//	selector := selectorModel{
-//		Include: inclusions,
-//	}
-//	return fwtypes.NewObjectValueOf[selectorModel](ctx, &selector), diags
-//}

@@ -47,7 +47,7 @@ Additional Documentation:
 				Optional:    true,
 			},
 			"enabled": schema.BoolAttribute{
-				Description: "Stream subscription enabled status",
+				Description: "Stream alert rule enabled status",
 				Required:    true,
 			},
 			"metric_name": schema.StringAttribute{

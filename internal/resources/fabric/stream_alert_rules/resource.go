@@ -18,7 +18,7 @@ import (
 	"time"
 )
 
-// NewResource creates ba new stream subscription
+// NewResource creates ba new stream alert rule
 func NewResource() resource.Resource {
 	return &Resource{
 		BaseResource: framework.NewBaseResource(
@@ -29,7 +29,7 @@ func NewResource() resource.Resource {
 	}
 }
 
-// Resource represents the stream subscription
+// Resource represents the stream alert rule
 type Resource struct {
 	framework.BaseResource
 }
@@ -64,9 +64,9 @@ func (r *Resource) Create(
 		resp.Diagnostics.Append(diags...)
 		return
 	}
-	log.Println("deep2" + plan.StreamAlertRuleID.ValueString())
+	log.Println("deep2" + plan.StreamID.ValueString())
 
-	streamAlertRule, _, err := client.StreamAlertRulesApi.CreateStreamAlertRules(ctx, plan.StreamAlertRuleID.ValueString()).AlertRulePostRequest(alertRulePostRequest).Execute()
+	streamAlertRule, _, err := client.StreamAlertRulesApi.CreateStreamAlertRules(ctx, plan.StreamID.ValueString()).AlertRulePostRequest(alertRulePostRequest).Execute()
 	alertRuleUuid := streamAlertRule.GetUuid()
 	plan.ID = types.StringValue(alertRuleUuid)
 	if err != nil {
@@ -79,7 +79,7 @@ func (r *Resource) Create(
 		resp.Diagnostics.Append(diags...)
 		return
 	}
-	createWaiter := getCreateUpdateWaiter(ctx, client, plan.StreamAlertRuleID.ValueString(), streamAlertRule.GetUuid(), createTimeout)
+	createWaiter := getCreateUpdateWaiter(ctx, client, plan.StreamID.ValueString(), streamAlertRule.GetUuid(), createTimeout)
 	alertRuleChecked, err := createWaiter.WaitForStateContext(ctx)
 	if err != nil {
 		resp.Diagnostics.AddError(
@@ -88,7 +88,6 @@ func (r *Resource) Create(
 	}
 
 	// Parse API response into the Terraform state
-	//plan.ID = streamAlertRule.GetUuid()
 	resp.Diagnostics.Append(plan.parse(ctx, alertRuleChecked.(*fabricv4.StreamAlertRule))...)
 	if resp.Diagnostics.HasError() {
 		return
@@ -185,7 +184,7 @@ func (r *Resource) Read(
 
 	// Extract the ID of the resource from the state
 	id := state.ID.ValueString()
-	streamAlertRuleID := state.StreamAlertRuleID.ValueString()
+	streamAlertRuleID := state.StreamID.ValueString()
 
 	streamAlertRule, _, err := client.StreamAlertRulesApi.GetStreamAlertRuleByUuid(ctx, streamAlertRuleID, id).Execute()
 	if err != nil {
@@ -204,8 +203,91 @@ func (r *Resource) Read(
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 }
 
-func (r *Resource) Update(ctx context.Context, request resource.UpdateRequest, response *resource.UpdateResponse) {
+// Update modifies an existing stream alert rule
+func (r *Resource) Update(
+	ctx context.Context,
+	req resource.UpdateRequest,
+	resp *resource.UpdateResponse,
+) {
+	client := r.Meta.NewFabricClientForFramework(ctx, req.ProviderMeta)
 
+	// Retrieve values from plan
+	var state, plan resourceModel
+	resp.Diagnostics.Append(req.Config.Get(ctx, &plan)...)
+	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	plan.ID = state.ID
+	plan.StreamID = state.StreamID
+	id := state.ID.ValueString()
+	streamID := state.StreamID.ValueString()
+	updateRequest, diags := buildUpdateRequest(ctx, plan)
+
+	if diags.HasError() {
+		resp.Diagnostics.Append(diags...)
+		return
+	}
+
+	_, _, err := client.StreamAlertRulesApi.UpdateStreamAlertRuleByUuid(ctx, streamID, id).AlertRulePutRequest(updateRequest).Execute()
+	if err != nil {
+		resp.Diagnostics.AddError(
+			fmt.Sprintf("failed updating stream alert rule %s", id), equinix_errors.FormatFabricError(err).Error())
+		return
+	}
+
+	updateTimeout, diags := plan.Timeouts.Update(ctx, 10*time.Minute)
+	if diags.HasError() {
+		resp.Diagnostics.Append(diags...)
+		return
+	}
+
+	updateWaiter := getCreateUpdateWaiter(ctx, client, streamID, id, updateTimeout)
+	streamAlertRuleChecked, err := updateWaiter.WaitForStateContext(ctx)
+	if err != nil {
+		resp.Diagnostics.AddError(
+			fmt.Sprintf("failed updating stream subscription %s", id), err.Error())
+		return
+	}
+
+	// Set state to fully populated data
+	resp.Diagnostics.Append(plan.parse(ctx, streamAlertRuleChecked.(*fabricv4.StreamAlertRule))...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	if plan.ID.IsNull() || plan.ID.ValueString() == "" {
+		plan.ID = types.StringValue(id)
+	}
+
+	// Set the updated state back into Terraform state
+	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
+}
+
+func buildUpdateRequest(ctx context.Context, plan resourceModel) (fabricv4.AlertRulePutRequest, diag.Diagnostics) {
+	var diags diag.Diagnostics
+	request := fabricv4.AlertRulePutRequest{}
+
+	postRequest, diags := buildCreateRequest(ctx, plan)
+
+	request.SetName(postRequest.GetName())
+	request.SetDescription(postRequest.GetDescription())
+	request.SetWarningThreshold(postRequest.GetWarningThreshold())
+	request.SetCriticalThreshold(postRequest.GetCriticalThreshold())
+	request.SetWindowSize(postRequest.GetWindowSize())
+	request.SetMetricName(postRequest.GetMetricName())
+	request.SetOperand(postRequest.GetOperand())
+
+	if !plan.Enabled.IsNull() && !plan.Enabled.IsUnknown() {
+		request.SetEnabled(postRequest.GetEnabled())
+	}
+
+	if !plan.ResourceSelector.IsNull() && !plan.ResourceSelector.IsUnknown() {
+		request.SetResourceSelector(postRequest.GetResourceSelector())
+	}
+
+	return request, diags
 }
 
 // Delete removes the stream alert rule
@@ -225,7 +307,7 @@ func (r *Resource) Delete(
 	}
 
 	id := state.ID.ValueString()
-	streamAlertRuleID := state.StreamAlertRuleID.ValueString()
+	streamAlertRuleID := state.StreamID.ValueString()
 
 	_, deleteResp, err := client.StreamAlertRulesApi.DeleteStreamAlertRuleByUuid(ctx, streamAlertRuleID, id).Execute()
 	if err != nil {
