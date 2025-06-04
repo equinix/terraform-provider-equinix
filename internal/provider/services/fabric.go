@@ -8,9 +8,9 @@ import (
 	"github.com/equinix/terraform-provider-equinix/internal/resources/fabric/routeaggregation"
 	"github.com/equinix/terraform-provider-equinix/internal/resources/fabric/routeaggregationrule"
 	"github.com/equinix/terraform-provider-equinix/internal/resources/fabric/stream"
-	streamalertrule "github.com/equinix/terraform-provider-equinix/internal/resources/fabric/stream_alert_rule"
 	streamattachment "github.com/equinix/terraform-provider-equinix/internal/resources/fabric/stream_attachment"
 	streamsubscription "github.com/equinix/terraform-provider-equinix/internal/resources/fabric/stream_subscription"
+	streamalertrule "github.com/equinix/terraform-provider-equinix/internal/resources/fabric/streamalertrule"
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/resource"

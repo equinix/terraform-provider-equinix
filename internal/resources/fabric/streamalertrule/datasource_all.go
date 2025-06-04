@@ -1,4 +1,4 @@
-package stream_alert_rule
+package streamalertrule
 
 import (
 	"context"
@@ -10,6 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 )
 
+// Creates a new data source for all stream alert rules
 func NewDataSourceAllStreamAlertRules() datasource.DataSource {
 	return &DataSourceAllStreamAlertRules{
 		BaseDataSource: framework.NewBaseDataSource(
@@ -20,10 +21,12 @@ func NewDataSourceAllStreamAlertRules() datasource.DataSource {
 	}
 }
 
+// Datasource represents all stream alert rules
 type DataSourceAllStreamAlertRules struct {
 	framework.BaseDataSource
 }
 
+// Schema returns the datasource schema for all stream alert rules
 func (r *DataSourceAllStreamAlertRules) Schema(
 	ctx context.Context,
 	_ datasource.SchemaRequest,

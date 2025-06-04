@@ -1,12 +1,10 @@
-package stream_alert_rule
+package streamalertrule
 
 import (
 	"context"
 
 	"github.com/equinix/terraform-provider-equinix/internal/framework"
 	fwtypes "github.com/equinix/terraform-provider-equinix/internal/framework/types"
-
-	_ "github.com/hashicorp/terraform-plugin-framework/resource/schema/boolplanmodifier"
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/types"
