@@ -1,4 +1,4 @@
-package stream_alert_rule
+package streamalertrule
 
 import (
 	"context"
@@ -19,7 +19,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 )
 
-// NewResource creates ba new stream alert rule
+// NewResource creates a new stream alert rule
 func NewResource() resource.Resource {
 	return &Resource{
 		BaseResource: framework.NewBaseResource(

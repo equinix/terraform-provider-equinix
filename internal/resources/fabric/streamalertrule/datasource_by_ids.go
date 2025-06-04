@@ -1,4 +1,4 @@
-package stream_alert_rule
+package streamalertrule
 
 import (
 	"context"
@@ -9,6 +9,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 )
 
+// Creates a new data source for stream alert rule by IDs
 func NewDataSourceByIDs() datasource.DataSource {
 	return &DataSourceByStreamAlertRuleID{
 		BaseDataSource: framework.NewBaseDataSource(
@@ -19,10 +20,12 @@ func NewDataSourceByIDs() datasource.DataSource {
 	}
 }
 
+// Datasource represents stream alert rule by IDs
 type DataSourceByStreamAlertRuleID struct {
 	framework.BaseDataSource
 }
 
+// Schema returns the datasource schema for stream alert rule by IDs
 func (r *DataSourceByStreamAlertRuleID) Schema(
 	ctx context.Context,
 	_ datasource.SchemaRequest,
