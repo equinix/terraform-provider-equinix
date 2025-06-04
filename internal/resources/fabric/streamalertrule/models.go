@@ -9,7 +9,7 @@ import (
 	fwtypes "github.com/equinix/terraform-provider-equinix/internal/framework/types"
 	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
-	_ "github.com/hashicorp/terraform-plugin-framework/resource"
+
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
