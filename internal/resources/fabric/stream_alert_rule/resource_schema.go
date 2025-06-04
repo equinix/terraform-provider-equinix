@@ -1,4 +1,4 @@
-package stream_alert_rules
+package stream_alert_rule
 
 import (
 	"context"
@@ -71,7 +71,7 @@ Additional Documentation:
 				},
 			},
 			"window_size": schema.StringAttribute{
-				Description: "Stream alert rule metric window size (e.g., PT15M)",
+				Description: "Stream alert rule metric window size",
 				Required:    true,
 			},
 			"operand": schema.StringAttribute{

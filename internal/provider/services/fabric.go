@@ -8,7 +8,7 @@ import (
 	"github.com/equinix/terraform-provider-equinix/internal/resources/fabric/routeaggregation"
 	"github.com/equinix/terraform-provider-equinix/internal/resources/fabric/routeaggregationrule"
 	"github.com/equinix/terraform-provider-equinix/internal/resources/fabric/stream"
-	streamalertrule "github.com/equinix/terraform-provider-equinix/internal/resources/fabric/stream_alert_rules"
+	streamalertrule "github.com/equinix/terraform-provider-equinix/internal/resources/fabric/stream_alert_rule"
 	streamattachment "github.com/equinix/terraform-provider-equinix/internal/resources/fabric/stream_attachment"
 	streamsubscription "github.com/equinix/terraform-provider-equinix/internal/resources/fabric/stream_subscription"
 
@@ -49,5 +49,7 @@ func FabricDatasources() []func() datasource.DataSource {
 		streamattachment.NewDataSourceByIDs,
 		streamsubscription.NewDataSourceAllStreamSubscriptions,
 		streamsubscription.NewDataSourceByIDs,
+		streamalertrule.NewDataSourceAllStreamAlertRules,
+		streamalertrule.NewDataSourceByIDs,
 	}
 }
