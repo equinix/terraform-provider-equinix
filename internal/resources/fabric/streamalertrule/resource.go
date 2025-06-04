@@ -128,9 +128,7 @@ func buildCreateRequest(ctx context.Context, plan resourceModel) (fabricv4.Alert
 	request.SetName(plan.Name.ValueString())
 	request.SetType(fabricv4.AlertRulePostRequestType(plan.Type.ValueString()))
 	request.SetDescription(plan.Description.ValueString())
-	if !plan.Enabled.IsNull() && !plan.Enabled.IsUnknown() {
-		request.SetEnabled(plan.Enabled.ValueBool())
-	}
+	request.SetEnabled(plan.Enabled.ValueBool())
 	request.SetWarningThreshold(plan.WarningThreshold.ValueString())
 	request.SetCriticalThreshold(plan.CriticalThreshold.ValueString())
 	request.SetMetricName(fabricv4.StreamAlertRuleMetricName(plan.MetricName.ValueString()))
@@ -281,9 +279,7 @@ func buildUpdateRequest(ctx context.Context, plan resourceModel) (fabricv4.Alert
 	request.SetMetricName(postRequest.GetMetricName())
 	request.SetOperand(postRequest.GetOperand())
 
-	if !plan.Enabled.IsNull() && !plan.Enabled.IsUnknown() {
-		request.SetEnabled(postRequest.GetEnabled())
-	}
+	request.SetEnabled(postRequest.GetEnabled())
 
 	if !plan.ResourceSelector.IsNull() && !plan.ResourceSelector.IsUnknown() {
 		request.SetResourceSelector(postRequest.GetResourceSelector())
