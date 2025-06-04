@@ -2,6 +2,7 @@ package streamalertrule
 
 import (
 	"context"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
 
 	"github.com/equinix/terraform-provider-equinix/internal/framework"
 	fwtypes "github.com/equinix/terraform-provider-equinix/internal/framework/types"
@@ -48,7 +49,9 @@ Additional Documentation:
 			},
 			"enabled": schema.BoolAttribute{
 				Description: "Stream alert rule enabled status",
-				Required:    true,
+				Optional:    true,
+				Default:     booldefault.StaticBool(true),
+				Computed:    true,
 			},
 			"metric_name": schema.StringAttribute{
 				Description: "Stream alert rule metric name",
