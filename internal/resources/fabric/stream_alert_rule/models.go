@@ -2,6 +2,7 @@ package stream_alert_rule
 
 import (
 	"context"
+
 	"github.com/equinix/equinix-sdk-go/services/fabricv4"
 	"github.com/equinix/terraform-provider-equinix/internal/fabric"
 	int_fw "github.com/equinix/terraform-provider-equinix/internal/framework"
