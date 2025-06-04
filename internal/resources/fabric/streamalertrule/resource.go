@@ -3,7 +3,6 @@ package streamalertrule
 import (
 	"context"
 	"fmt"
-	"log"
 	"net/http"
 	"slices"
 	"time"
@@ -60,13 +59,11 @@ func (r *Resource) Create(
 
 	client := r.Meta.NewFabricClientForFramework(ctx, req.ProviderMeta)
 	alertRulePostRequest, diags := buildCreateRequest(ctx, plan)
-	log.Println("deep1" + alertRulePostRequest.GetName())
 
 	if diags.HasError() {
 		resp.Diagnostics.Append(diags...)
 		return
 	}
-	log.Println("deep2" + plan.StreamID.ValueString())
 
 	streamAlertRule, _, err := client.StreamAlertRulesApi.CreateStreamAlertRules(ctx, plan.StreamID.ValueString()).AlertRulePostRequest(alertRulePostRequest).Execute()
 	alertRuleUUID := streamAlertRule.GetUuid()
