@@ -2,6 +2,7 @@ package stream_alert_rule
 
 import (
 	"context"
+
 	"github.com/equinix/terraform-provider-equinix/internal/framework"
 	fwtypes "github.com/equinix/terraform-provider-equinix/internal/framework/types"
 

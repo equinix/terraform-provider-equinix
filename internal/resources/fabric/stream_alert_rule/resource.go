@@ -3,6 +3,11 @@ package stream_alert_rule
 import (
 	"context"
 	"fmt"
+	"log"
+	"net/http"
+	"slices"
+	"time"
+
 	"github.com/equinix/equinix-sdk-go/services/fabricv4"
 	equinix_errors "github.com/equinix/terraform-provider-equinix/internal/errors"
 	"github.com/equinix/terraform-provider-equinix/internal/framework"
@@ -12,10 +17,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
-	"log"
-	"net/http"
-	"slices"
-	"time"
 )
 
 // NewResource creates ba new stream alert rule
