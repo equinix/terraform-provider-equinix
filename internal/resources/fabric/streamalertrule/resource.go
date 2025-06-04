@@ -44,6 +44,7 @@ func (r *Resource) Schema(
 	resp.Schema = resourceSchema(ctx)
 }
 
+// Create method creates a new stream alert rule resource
 func (r *Resource) Create(
 	ctx context.Context,
 	req resource.CreateRequest,
@@ -68,8 +69,8 @@ func (r *Resource) Create(
 	log.Println("deep2" + plan.StreamID.ValueString())
 
 	streamAlertRule, _, err := client.StreamAlertRulesApi.CreateStreamAlertRules(ctx, plan.StreamID.ValueString()).AlertRulePostRequest(alertRulePostRequest).Execute()
-	alertRuleUuid := streamAlertRule.GetUuid()
-	plan.ID = types.StringValue(alertRuleUuid)
+	alertRuleUUID := streamAlertRule.GetUuid()
+	plan.ID = types.StringValue(alertRuleUUID)
 	if err != nil {
 		resp.Diagnostics.AddError("failed creating stream alert rule", equinix_errors.FormatFabricError(err).Error())
 		return
