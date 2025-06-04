@@ -38,7 +38,6 @@ resource "equinix_fabric_stream_alert_rule" "new_stream_alert_rule" {
 ### Required
 
 - `critical_threshold` (String) Stream alert rule metric critical threshold
-- `enabled` (Boolean) Stream alert rule enabled status
 - `metric_name` (String) Stream alert rule metric name
 - `name` (String) Customer-provided stream alert rule name
 - `operand` (String) Stream alert rule metric operand
@@ -50,6 +49,7 @@ resource "equinix_fabric_stream_alert_rule" "new_stream_alert_rule" {
 ### Optional
 
 - `description` (String) Customer-provided stream alert rule description
+- `enabled` (Boolean) Stream alert rule enabled status
 - `resource_selector` (Attributes) Resource selector for the stream alert rule (see [below for nested schema](#nestedatt--resource_selector))
 - `timeouts` (Attributes) (see [below for nested schema](#nestedatt--timeouts))
 
