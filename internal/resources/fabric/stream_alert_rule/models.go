@@ -1,4 +1,4 @@
-package stream_alert_rules
+package stream_alert_rule
 
 import (
 	"context"
@@ -55,6 +55,28 @@ type changeLogModel struct {
 	DeletedDateTime   types.String `tfsdk:"deleted_date_time"`
 }
 
+type dataSourceByIDsModel struct {
+	ID          types.String `tfsdk:"id"`
+	StreamID    types.String `tfsdk:"stream_id"`
+	AlertRuleID types.String `tfsdk:"alert_rule_id"`
+	baseStreamAlertRulesModel
+}
+
+type paginationModel struct {
+	Offset   types.Int32  `tfsdk:"offset"`
+	Limit    types.Int32  `tfsdk:"limit"`
+	Total    types.Int32  `tfsdk:"total"`
+	Next     types.String `tfsdk:"next"`
+	Previous types.String `tfsdk:"previous"`
+}
+
+type dataSourceAll struct {
+	ID         types.String                                               `tfsdk:"id"`
+	StreamID   types.String                                               `tfsdk:"stream_id"`
+	Pagination fwtypes.ObjectValueOf[paginationModel]                     `tfsdk:"pagination"`
+	Data       fwtypes.ListNestedObjectValueOf[baseStreamAlertRulesModel] `tfsdk:"data"`
+}
+
 func (m *baseStreamAlertRulesModel) parse(ctx context.Context, streamAlertRule *fabricv4.StreamAlertRule) diag.Diagnostics {
 
 	var mDiags diag.Diagnostics
@@ -80,20 +102,20 @@ func (m *baseStreamAlertRulesModel) parse(ctx context.Context, streamAlertRule *
 	m.ResourceSelector = resourceSelectorObject
 
 	// Parse ChangeLog
-	streamSubscriptionChangeLog := streamAlertRule.GetChangeLog()
+	streamAlertRuleChangeLog := streamAlertRule.GetChangeLog()
 	changeLog := changeLogModel{
-		CreatedBy:         types.StringValue(streamSubscriptionChangeLog.GetCreatedBy()),
-		CreatedByFullName: types.StringValue(streamSubscriptionChangeLog.GetCreatedByFullName()),
-		CreatedByEmail:    types.StringValue(streamSubscriptionChangeLog.GetCreatedByEmail()),
-		CreatedDateTime:   types.StringValue(streamSubscriptionChangeLog.GetCreatedDateTime().Format(fabric.TimeFormat)),
-		UpdatedBy:         types.StringValue(streamSubscriptionChangeLog.GetUpdatedBy()),
-		UpdatedByFullName: types.StringValue(streamSubscriptionChangeLog.GetUpdatedByFullName()),
-		UpdatedByEmail:    types.StringValue(streamSubscriptionChangeLog.GetUpdatedByEmail()),
-		UpdatedDateTime:   types.StringValue(streamSubscriptionChangeLog.GetUpdatedDateTime().Format(fabric.TimeFormat)),
-		DeletedBy:         types.StringValue(streamSubscriptionChangeLog.GetDeletedBy()),
-		DeletedByFullName: types.StringValue(streamSubscriptionChangeLog.GetDeletedByFullName()),
-		DeletedByEmail:    types.StringValue(streamSubscriptionChangeLog.GetDeletedByEmail()),
-		DeletedDateTime:   types.StringValue(streamSubscriptionChangeLog.GetDeletedDateTime().Format(fabric.TimeFormat)),
+		CreatedBy:         types.StringValue(streamAlertRuleChangeLog.GetCreatedBy()),
+		CreatedByFullName: types.StringValue(streamAlertRuleChangeLog.GetCreatedByFullName()),
+		CreatedByEmail:    types.StringValue(streamAlertRuleChangeLog.GetCreatedByEmail()),
+		CreatedDateTime:   types.StringValue(streamAlertRuleChangeLog.GetCreatedDateTime().Format(fabric.TimeFormat)),
+		UpdatedBy:         types.StringValue(streamAlertRuleChangeLog.GetUpdatedBy()),
+		UpdatedByFullName: types.StringValue(streamAlertRuleChangeLog.GetUpdatedByFullName()),
+		UpdatedByEmail:    types.StringValue(streamAlertRuleChangeLog.GetUpdatedByEmail()),
+		UpdatedDateTime:   types.StringValue(streamAlertRuleChangeLog.GetUpdatedDateTime().Format(fabric.TimeFormat)),
+		DeletedBy:         types.StringValue(streamAlertRuleChangeLog.GetDeletedBy()),
+		DeletedByFullName: types.StringValue(streamAlertRuleChangeLog.GetDeletedByFullName()),
+		DeletedByEmail:    types.StringValue(streamAlertRuleChangeLog.GetDeletedByEmail()),
+		DeletedDateTime:   types.StringValue(streamAlertRuleChangeLog.GetDeletedDateTime().Format(fabric.TimeFormat)),
 	}
 	m.ChangeLog = fwtypes.NewObjectValueOf[changeLogModel](ctx, &changeLog)
 
@@ -110,4 +132,53 @@ func parseSelectorModel(ctx context.Context, alertRuleSubSelector fabricv4.Resou
 		Include: inclusions,
 	}
 	return fwtypes.NewObjectValueOf[selectorModel](ctx, &selector), diags
+}
+
+func (m *dataSourceAll) parse(ctx context.Context, streamAlertRulesResponse *fabricv4.GetAllStreamAlertRuleResponse) diag.Diagnostics {
+	var diags diag.Diagnostics
+
+	if len(streamAlertRulesResponse.GetData()) < 1 {
+		diags.AddError("no data retrieved by stream alert rule data source",
+			"either the account does not have any stream alert rule data to pull or the combination of limit and offset needs to be updated")
+		return diags
+	}
+
+	data := make([]baseStreamAlertRulesModel, len(streamAlertRulesResponse.GetData()))
+	streamAlertRules := streamAlertRulesResponse.GetData()
+	for index, streamAlertRule := range streamAlertRules {
+		var streamAlertRuleModel baseStreamAlertRulesModel
+		diags = streamAlertRuleModel.parse(ctx, &streamAlertRule)
+		if diags.HasError() {
+			return diags
+		}
+		data[index] = streamAlertRuleModel
+	}
+	responsePagination := streamAlertRulesResponse.GetPagination()
+	pagination := paginationModel{
+		Offset:   types.Int32Value(responsePagination.GetOffset()),
+		Limit:    types.Int32Value(responsePagination.GetLimit()),
+		Total:    types.Int32Value(responsePagination.GetTotal()),
+		Next:     types.StringValue(responsePagination.GetNext()),
+		Previous: types.StringValue(responsePagination.GetPrevious()),
+	}
+
+	m.ID = types.StringValue(data[0].UUID.ValueString())
+	m.StreamID = types.StringValue(data[0].UUID.ValueString())
+	m.Pagination = fwtypes.NewObjectValueOf[paginationModel](ctx, &pagination)
+	m.Data = fwtypes.NewListNestedObjectValueOfValueSlice[baseStreamAlertRulesModel](ctx, data)
+
+	return diags
+}
+
+func (m *dataSourceByIDsModel) parse(ctx context.Context, streamAlertRule *fabricv4.StreamAlertRule) diag.Diagnostics {
+	m.StreamID = types.StringValue(streamAlertRule.GetUuid())
+	m.AlertRuleID = types.StringValue(streamAlertRule.GetUuid())
+	m.ID = types.StringValue(streamAlertRule.GetUuid())
+
+	diags := m.baseStreamAlertRulesModel.parse(ctx, streamAlertRule)
+	if diags.HasError() {
+		return diags
+	}
+
+	return diags
 }
