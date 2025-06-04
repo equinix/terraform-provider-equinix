@@ -1,3 +1,4 @@
+// Package streamalertrule implements resource and datasources for Stream Alert Rules
 package streamalertrule
 
 import (
@@ -10,7 +11,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 )
 
-// Creates a new data source for all stream alert rules
+// NewDataSourceAllStreamAlertRules creates a new data source for all stream alert rules
 func NewDataSourceAllStreamAlertRules() datasource.DataSource {
 	return &DataSourceAllStreamAlertRules{
 		BaseDataSource: framework.NewBaseDataSource(
@@ -21,12 +22,12 @@ func NewDataSourceAllStreamAlertRules() datasource.DataSource {
 	}
 }
 
-// Datasource represents all stream alert rules
+// DataSourceAllStreamAlertRules datasource represents all stream alert rules
 type DataSourceAllStreamAlertRules struct {
 	framework.BaseDataSource
 }
 
-// Schema returns the datasource schema for all stream alert rules
+// Schema returns the datasource schema
 func (r *DataSourceAllStreamAlertRules) Schema(
 	ctx context.Context,
 	_ datasource.SchemaRequest,
