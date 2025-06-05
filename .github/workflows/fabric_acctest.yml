@@ -268,15 +268,11 @@ jobs:
         if: always()
         shell: bash
         run: |
-          xml_file=$(find . -type f -name '*test_report.xml' | head -n 1)
+          tests=$(grep '<testsuite ' uat_test_report.xml | sed -n 's/.*tests="\([0-9]*\)".*/\1/p' | awk '{s+=$1} END {print s}')
+          errors=$(grep '<testsuite ' uat_test_report.xml | sed -n 's/.*failures="\([0-9]*\)".*/\1/p' | awk '{s+=$1} END {print s}')
+
+          tests=$((tests - failures))
           
-          if [[ -z "$xml_file" ]]; then
-            echo "No file ending with prod_suite.xml found."
-          exit 1
-          fi
-          
-          tests=$(xmllint --xpath 'string(//testsuite/@tests)' "$xml_file")
-          errors=$(xmllint --xpath 'string(//testsuite/@failures)' "$xml_file")
           message="*Results:* $((tests-errors)) Passed, $errors Errors"
               echo "message<<EOF" >> $GITHUB_OUTPUT
               echo "$message" >> $GITHUB_OUTPUT
