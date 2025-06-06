@@ -40,7 +40,7 @@ func (r *DataSourceAllStreamAlertRules) Read(ctx context.Context, request dataso
 	client := r.Meta.NewFabricClientForFramework(ctx, request.ProviderMeta)
 
 	// Retrieve values from plan
-	var data dataSourceAll
+	var data dataSourceAllStreamAlertRulesModel
 	response.Diagnostics.Append(request.Config.Get(ctx, &data)...)
 	if response.Diagnostics.HasError() {
 		return

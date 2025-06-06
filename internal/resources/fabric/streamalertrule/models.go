@@ -17,7 +17,7 @@ type selectorModel struct {
 	Include fwtypes.ListValueOf[types.String] `tfsdk:"include"`
 }
 
-type resourceModel struct {
+type streamAlertRuleResourceModel struct {
 	StreamID types.String   `tfsdk:"stream_id"`
 	ID       types.String   `tfsdk:"id"`
 	Timeouts timeouts.Value `tfsdk:"timeouts"`
@@ -56,7 +56,7 @@ type changeLogModel struct {
 	DeletedDateTime   types.String `tfsdk:"deleted_date_time"`
 }
 
-type dataSourceByIDsModel struct {
+type dataSourceStreamAlertRuleByIDsModel struct {
 	ID          types.String `tfsdk:"id"`
 	StreamID    types.String `tfsdk:"stream_id"`
 	AlertRuleID types.String `tfsdk:"alert_rule_id"`
@@ -71,7 +71,7 @@ type paginationModel struct {
 	Previous types.String `tfsdk:"previous"`
 }
 
-type dataSourceAll struct {
+type dataSourceAllStreamAlertRulesModel struct {
 	ID         types.String                                               `tfsdk:"id"`
 	StreamID   types.String                                               `tfsdk:"stream_id"`
 	Pagination fwtypes.ObjectValueOf[paginationModel]                     `tfsdk:"pagination"`
@@ -135,7 +135,7 @@ func parseSelectorModel(ctx context.Context, alertRuleSubSelector fabricv4.Resou
 	return fwtypes.NewObjectValueOf[selectorModel](ctx, &selector), diags
 }
 
-func (m *dataSourceAll) parse(ctx context.Context, streamAlertRulesResponse *fabricv4.GetAllStreamAlertRuleResponse) diag.Diagnostics {
+func (m *dataSourceAllStreamAlertRulesModel) parse(ctx context.Context, streamAlertRulesResponse *fabricv4.GetAllStreamAlertRuleResponse) diag.Diagnostics {
 	var diags diag.Diagnostics
 
 	if len(streamAlertRulesResponse.GetData()) < 1 {
@@ -171,7 +171,7 @@ func (m *dataSourceAll) parse(ctx context.Context, streamAlertRulesResponse *fab
 	return diags
 }
 
-func (m *dataSourceByIDsModel) parse(ctx context.Context, streamAlertRule *fabricv4.StreamAlertRule) diag.Diagnostics {
+func (m *dataSourceStreamAlertRuleByIDsModel) parse(ctx context.Context, streamAlertRule *fabricv4.StreamAlertRule) diag.Diagnostics {
 	m.StreamID = types.StringValue(streamAlertRule.GetUuid())
 	m.AlertRuleID = types.StringValue(streamAlertRule.GetUuid())
 	m.ID = types.StringValue(streamAlertRule.GetUuid())
