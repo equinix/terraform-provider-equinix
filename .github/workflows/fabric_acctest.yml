@@ -272,10 +272,9 @@ jobs:
           errors=$(grep '<testsuite ' uat_test_report.xml | sed -n 's/.*failures="\([0-9]*\)".*/\1/p' | awk '{s+=$1} END {print s}')
 
           message="*Results:* $((tests-errors)) Passed, $errors Errors"
-              echo "message<<EOF" >> $GITHUB_OUTPUT
-              echo "$message" >> $GITHUB_OUTPUT
-              echo "EOF" >> $GITHUB_OUTPUT
-              fi    
+          echo "message<<EOF" >> $GITHUB_OUTPUT
+          echo "$message" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT    
 
       - name: Notify Slack
         uses: slackapi/slack-github-action@v2
