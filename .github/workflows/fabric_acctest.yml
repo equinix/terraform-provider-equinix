@@ -230,6 +230,8 @@ jobs:
     if: always()
     needs: [ test-PNFV, test-PFCR ]
     runs-on: ubuntu-latest
+    outputs:
+      message: ${{ steps.slack_message.outputs.message }}
 
     steps:
       - name: Set up Go
@@ -260,6 +262,37 @@ jobs:
         run: |
           cat pfcr_test_output.log pnfv_test_output.log > uat_test_report.log
           go-junit-report -in uat_test_report.log > uat_test_report.xml && python3 -m junit2htmlreport uat_test_report.xml uat_test_report.html
+
+      - name: Prepare slack message
+        id: slack_message
+        if: always()
+        shell: bash
+        run: |
+          tests=$(grep '<testsuite ' uat_test_report.xml | sed -n 's/.*tests="\([0-9]*\)".*/\1/p' | awk '{s+=$1} END {print s}')
+          errors=$(grep '<testsuite ' uat_test_report.xml | sed -n 's/.*failures="\([0-9]*\)".*/\1/p' | awk '{s+=$1} END {print s}')
+
+          message="*Results:* $((tests-errors)) Passed, $errors Errors"
+          echo "message<<EOF" >> $GITHUB_OUTPUT
+          echo "$message" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT    
+
+      - name: Notify Slack
+        uses: slackapi/slack-github-action@v2
+        if: always()
+        with:
+          method: chat.postMessage
+          token: ${{ secrets.SLACK_ACCESS_TOKEN }}
+          payload: |
+            channel: digin-panthers-gha-automation
+
+            attachments:
+              - color: ${{ job.status == 'success' && 'good' || job.status == 'failure' && 'danger' || 'warning' }}
+                text: |
+                    *Repository:* <${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|${{ github.repository }}>
+                    *Workflow:* ${{ github.workflow }}           
+                    *Status:* ${{ job.status }}
+                    *Results:* ${{ steps.slack_message.outputs.message }}
+                    *Triggered by:* <@${{ github.actor }}>       
 
       - name: Upload HTML Testing Report
         uses: actions/upload-artifact@v4
