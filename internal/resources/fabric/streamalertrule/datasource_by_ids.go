@@ -9,8 +9,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 )
 
-// NewDataSourceByIDs creates a new data source for stream alert rule by IDs
-func NewDataSourceByIDs() datasource.DataSource {
+// NewDataSourceByStreamAlertRuleIDs creates a new data source for stream alert rule by IDs
+func NewDataSourceByStreamAlertRuleIDs() datasource.DataSource {
 	return &DataSourceByStreamAlertRuleID{
 		BaseDataSource: framework.NewBaseDataSource(
 			framework.BaseDataSourceConfig{
@@ -38,7 +38,7 @@ func (r *DataSourceByStreamAlertRuleID) Read(ctx context.Context, request dataso
 	client := r.Meta.NewFabricClientForFramework(ctx, request.ProviderMeta)
 
 	// Retrieve values from plan
-	var data dataSourceByIDsModel
+	var data dataSourceStreamAlertRuleByIDsModel
 	response.Diagnostics.Append(request.Config.Get(ctx, &data)...)
 	if response.Diagnostics.HasError() {
 		return

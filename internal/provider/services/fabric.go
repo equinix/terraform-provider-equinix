@@ -50,6 +50,6 @@ func FabricDatasources() []func() datasource.DataSource {
 		streamsubscription.NewDataSourceAllStreamSubscriptions,
 		streamsubscription.NewDataSourceByIDs,
 		streamalertrule.NewDataSourceAllStreamAlertRules,
-		streamalertrule.NewDataSourceByIDs,
+		streamalertrule.NewDataSourceByStreamAlertRuleIDs,
 	}
 }

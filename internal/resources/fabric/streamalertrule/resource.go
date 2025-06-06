@@ -50,7 +50,7 @@ func (r *Resource) Create(
 	resp *resource.CreateResponse,
 ) {
 
-	var plan resourceModel
+	var plan streamAlertRuleResourceModel
 	diags := req.Plan.Get(ctx, &plan)
 	if diags.HasError() {
 		resp.Diagnostics.Append(diags...)
@@ -66,8 +66,7 @@ func (r *Resource) Create(
 	}
 
 	streamAlertRule, _, err := client.StreamAlertRulesApi.CreateStreamAlertRules(ctx, plan.StreamID.ValueString()).AlertRulePostRequest(alertRulePostRequest).Execute()
-	alertRuleUUID := streamAlertRule.GetUuid()
-	plan.ID = types.StringValue(alertRuleUUID)
+
 	if err != nil {
 		resp.Diagnostics.AddError("failed creating stream alert rule", equinix_errors.FormatFabricError(err).Error())
 		return
@@ -100,7 +99,6 @@ func getCreateUpdateWaiter(ctx context.Context, client *fabricv4.APIClient, aler
 	return &retry.StateChangeConf{
 		Pending: []string{
 			string(fabricv4.STREAMALERTRULESTATE_INACTIVE),
-			"INACTIVE",
 		},
 		Target: []string{
 			string(fabricv4.STREAMALERTRULESTATE_ACTIVE),
@@ -113,12 +111,12 @@ func getCreateUpdateWaiter(ctx context.Context, client *fabricv4.APIClient, aler
 			return streamAlertRule, string(streamAlertRule.GetState()), nil
 		},
 		Timeout:    timeout,
-		Delay:      10 * time.Second,
-		MinTimeout: 5 * time.Second,
+		Delay:      30 * time.Second,
+		MinTimeout: 30 * time.Second,
 	}
 }
 
-func buildCreateRequest(ctx context.Context, plan resourceModel) (fabricv4.AlertRulePostRequest, diag.Diagnostics) {
+func buildCreateRequest(ctx context.Context, plan streamAlertRuleResourceModel) (fabricv4.AlertRulePostRequest, diag.Diagnostics) {
 	var diags diag.Diagnostics
 	request := fabricv4.AlertRulePostRequest{}
 
@@ -169,7 +167,7 @@ func (r *Resource) Read(
 	req resource.ReadRequest,
 	resp *resource.ReadResponse,
 ) {
-	var state resourceModel
+	var state streamAlertRuleResourceModel
 	diags := req.State.Get(ctx, &state)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
@@ -209,15 +207,13 @@ func (r *Resource) Update(
 	client := r.Meta.NewFabricClientForFramework(ctx, req.ProviderMeta)
 
 	// Retrieve values from plan
-	var state, plan resourceModel
+	var state, plan streamAlertRuleResourceModel
 	resp.Diagnostics.Append(req.Config.Get(ctx, &plan)...)
 	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	plan.ID = state.ID
-	plan.StreamID = state.StreamID
 	id := state.ID.ValueString()
 	streamID := state.StreamID.ValueString()
 	updateRequest, diags := buildUpdateRequest(ctx, plan)
@@ -244,7 +240,7 @@ func (r *Resource) Update(
 	streamAlertRuleChecked, err := updateWaiter.WaitForStateContext(ctx)
 	if err != nil {
 		resp.Diagnostics.AddError(
-			fmt.Sprintf("failed updating stream subscription %s", id), err.Error())
+			fmt.Sprintf("failed updating stream alert rule %s", id), err.Error())
 		return
 	}
 
@@ -262,7 +258,7 @@ func (r *Resource) Update(
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
 
-func buildUpdateRequest(ctx context.Context, plan resourceModel) (fabricv4.AlertRulePutRequest, diag.Diagnostics) {
+func buildUpdateRequest(ctx context.Context, plan streamAlertRuleResourceModel) (fabricv4.AlertRulePutRequest, diag.Diagnostics) {
 	var diags diag.Diagnostics
 	request := fabricv4.AlertRulePutRequest{}
 
@@ -295,7 +291,7 @@ func (r *Resource) Delete(
 	client := r.Meta.NewFabricClientForFramework(ctx, req.ProviderMeta)
 
 	// Retrieve the current state
-	var state resourceModel
+	var state streamAlertRuleResourceModel
 	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
 	if resp.Diagnostics.HasError() {
 		return
