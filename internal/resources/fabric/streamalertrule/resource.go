@@ -209,22 +209,16 @@ func (r *Resource) Update(
 
 	// Retrieve values from plan
 	var state, plan streamAlertRuleResourceModel
-	resp.Diagnostics.Append(req.Config.Get(ctx, &plan)...)
+	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
 	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	id := state.ID.ValueString()
-	streamID := state.StreamID.ValueString()
-	updateRequest, diags := buildUpdateRequest(ctx, plan)
+	id, streamID := state.ID.ValueString(), plan.StreamID.ValueString()
 
-	if diags.HasError() {
-		resp.Diagnostics.Append(diags...)
-		return
-	}
-
-	_, _, err := client.StreamAlertRulesApi.UpdateStreamAlertRuleByUuid(ctx, streamID, id).AlertRulePutRequest(updateRequest).Execute()
+	putRequest := fabricv4.AlertRulePutRequest{}
+	_, _, err := client.StreamAlertRulesApi.UpdateStreamAlertRuleByUuid(ctx, streamID, id).AlertRulePutRequest(putRequest).Execute()
 	if err != nil {
 		resp.Diagnostics.AddError(
 			fmt.Sprintf("failed updating stream alert rule %s", id), equinix_errors.FormatFabricError(err).Error())
@@ -238,7 +232,7 @@ func (r *Resource) Update(
 	}
 
 	updateWaiter := getCreateUpdateWaiter(ctx, client, streamID, id, updateTimeout)
-	streamAlertRuleChecked, err := updateWaiter.WaitForStateContext(ctx)
+	attachment, err := updateWaiter.WaitForStateContext(ctx)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			fmt.Sprintf("failed updating stream alert rule %s", id), err.Error())
@@ -246,40 +240,13 @@ func (r *Resource) Update(
 	}
 
 	// Set state to fully populated data
-	resp.Diagnostics.Append(plan.parse(ctx, streamAlertRuleChecked.(*fabricv4.StreamAlertRule))...)
+	resp.Diagnostics.Append(plan.parse(ctx, attachment.(*fabricv4.StreamAlertRule))...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	if plan.ID.IsNull() || plan.ID.ValueString() == "" {
-		plan.ID = types.StringValue(id)
-	}
-
 	// Set the updated state back into Terraform state
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
-}
-
-func buildUpdateRequest(ctx context.Context, plan streamAlertRuleResourceModel) (fabricv4.AlertRulePutRequest, diag.Diagnostics) {
-	var diags diag.Diagnostics
-	request := fabricv4.AlertRulePutRequest{}
-
-	postRequest, diags := buildCreateRequest(ctx, plan)
-
-	request.SetName(postRequest.GetName())
-	request.SetDescription(postRequest.GetDescription())
-	request.SetWarningThreshold(postRequest.GetWarningThreshold())
-	request.SetCriticalThreshold(postRequest.GetCriticalThreshold())
-	request.SetWindowSize(postRequest.GetWindowSize())
-	request.SetMetricName(postRequest.GetMetricName())
-	request.SetOperand(postRequest.GetOperand())
-
-	request.SetEnabled(postRequest.GetEnabled())
-
-	if !plan.ResourceSelector.IsNull() && !plan.ResourceSelector.IsUnknown() {
-		request.SetResourceSelector(postRequest.GetResourceSelector())
-	}
-
-	return request, diags
 }
 
 // Delete removes the stream alert rule
