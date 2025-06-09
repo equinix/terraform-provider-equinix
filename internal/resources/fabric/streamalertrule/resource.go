@@ -267,13 +267,28 @@ func buildUpdateRequest(ctx context.Context, plan streamAlertRuleResourceModel) 
 
 	request.SetName(postRequest.GetName())
 	request.SetDescription(postRequest.GetDescription())
-	request.SetWarningThreshold(postRequest.GetWarningThreshold())
-	request.SetCriticalThreshold(postRequest.GetCriticalThreshold())
-	request.SetWindowSize(postRequest.GetWindowSize())
-	request.SetMetricName(postRequest.GetMetricName())
-	request.SetOperand(postRequest.GetOperand())
 
-	request.SetEnabled(postRequest.GetEnabled())
+	if !plan.WarningThreshold.IsNull() && !plan.WarningThreshold.IsUnknown() {
+		request.SetWarningThreshold(postRequest.GetWarningThreshold())
+	}
+
+	if !plan.CriticalThreshold.IsNull() && !plan.CriticalThreshold.IsUnknown() {
+		request.SetCriticalThreshold(postRequest.GetCriticalThreshold())
+	}
+
+	if !plan.WindowSize.IsNull() && !plan.WindowSize.IsUnknown() {
+		request.SetWindowSize(postRequest.GetWindowSize())
+	}
+	if !plan.MetricName.IsNull() && !plan.MetricName.IsUnknown() {
+		request.SetMetricName(postRequest.GetMetricName())
+	}
+	if !plan.Operand.IsNull() && !plan.Operand.IsUnknown() {
+		request.SetOperand(postRequest.GetOperand())
+	}
+
+	if !plan.Enabled.IsNull() && !plan.Enabled.IsUnknown() {
+		request.SetEnabled(postRequest.GetEnabled())
+	}
 
 	if !plan.ResourceSelector.IsNull() && !plan.ResourceSelector.IsUnknown() {
 		request.SetResourceSelector(postRequest.GetResourceSelector())
