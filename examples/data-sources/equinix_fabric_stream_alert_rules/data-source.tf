@@ -6,6 +6,18 @@ data "equinix_fabric_stream_alert_rules" "data_stream_alert_rules" {
   }
 }
 
-output "number_of_returned_stream_alert_rules" {
-  value = length(data.equinix_fabric_stream_alert_rules.data_stream_alert_rules.data)
+output "stream_alert_rules_type" {
+  value = data.equinix_fabric_stream_alert_rules.alert_rules.data[0].type
+}
+
+output "stream_alert_rules_id" {
+  value = data.equinix_fabric_stream_alert_rules.alert_rules.data[0].uuid
+}
+
+output "stream_alert_rules_state" {
+  value = data.equinix_fabric_stream_alert_rules.alert_rules.data[0].state
+}
+
+output "stream_alert_rules_stream_id" {
+  value = data.equinix_fabric_stream_alert_rules.alert_rules.data[0].stream_id
 }

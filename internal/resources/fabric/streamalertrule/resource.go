@@ -87,6 +87,7 @@ func (r *Resource) Create(
 
 	// Parse API response into the Terraform state
 	resp.Diagnostics.Append(plan.parse(ctx, alertRuleChecked.(*fabricv4.StreamAlertRule))...)
+	plan.ID = types.StringValue(streamAlertRule.GetUuid())
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -304,7 +305,7 @@ func (r *Resource) Delete(
 	if err != nil {
 		if deleteResp == nil || !slices.Contains([]int{http.StatusForbidden, http.StatusNotFound}, deleteResp.StatusCode) {
 			resp.Diagnostics.AddError(
-				fmt.Sprintf("Failed deleting Stream %s", id), equinix_errors.FormatFabricError(err).Error())
+				fmt.Sprintf("Failed deleting Stream Alert Rule %s", id), equinix_errors.FormatFabricError(err).Error())
 			return
 		}
 	}
@@ -319,7 +320,7 @@ func (r *Resource) Delete(
 
 	if err != nil {
 		resp.Diagnostics.AddError(
-			fmt.Sprintf("Failed deleting Stream %s", id), err.Error())
+			fmt.Sprintf("Failed deleting Stream Alert Rule %s", id), err.Error())
 		return
 	}
 
@@ -332,11 +333,11 @@ func getDeleteWaiter(ctx context.Context, client *fabricv4.APIClient, streamID, 
 	deletedMarker := "tf-marker-for-deleted-stream-alert-rule"
 	return &retry.StateChangeConf{
 		Pending: []string{
-			string(fabricv4.STREAMALERTRULESTATE_INACTIVE),
+			string(fabricv4.STREAMALERTRULESTATE_ACTIVE),
 		},
 		Target: []string{
 			deletedMarker,
-			string(fabricv4.STREAMALERTRULESTATE_ACTIVE),
+			string(fabricv4.STREAMALERTRULESTATE_INACTIVE),
 		},
 		Refresh: func() (interface{}, string, error) {
 			streamAlertRule, resp, err := client.StreamAlertRulesApi.GetStreamAlertRuleByUuid(ctx, streamID, streamAlertRuleID).Execute()
