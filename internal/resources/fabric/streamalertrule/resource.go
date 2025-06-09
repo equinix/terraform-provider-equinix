@@ -232,7 +232,7 @@ func (r *Resource) Update(
 	}
 
 	updateWaiter := getCreateUpdateWaiter(ctx, client, streamID, id, updateTimeout)
-	attachment, err := updateWaiter.WaitForStateContext(ctx)
+	alertRuleChecked, err := updateWaiter.WaitForStateContext(ctx)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			fmt.Sprintf("failed updating stream alert rule %s", id), err.Error())
@@ -240,7 +240,7 @@ func (r *Resource) Update(
 	}
 
 	// Set state to fully populated data
-	resp.Diagnostics.Append(plan.parse(ctx, attachment.(*fabricv4.StreamAlertRule))...)
+	resp.Diagnostics.Append(plan.parse(ctx, alertRuleChecked.(*fabricv4.StreamAlertRule))...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
