@@ -41,6 +41,14 @@ github.com/emirpasic/gods v1.18.1 h1:FXtiHYKDGKCW2KzwZKx0iC0PQmdlorYgdFG9jPXJ1Bc
 github.com/emirpasic/gods v1.18.1/go.mod h1:8tpGGwCnJ5H4r6BWwaV6OrWmMoPhUl5jm/FMNAnJvWQ=
 github.com/equinix/equinix-sdk-go v0.51.1 h1:23ZgbgPr2sO57DNag81gYynFqMl+ZRMkrPDEGrtgGoU=
 github.com/equinix/equinix-sdk-go v0.51.1/go.mod h1:3G7A41D7Wl9jg3EIbdh+ijt6GHfgZZFFLlx3DHq9Xsg=
+github.com/equinix/equinix-sdk-go v0.51.3-0.20250609161542-1f9749eff97c h1:LkDORozEZ8kfYo2lISUq1n3TcKC65w2ab6u15j8uf5A=
+github.com/equinix/equinix-sdk-go v0.51.3-0.20250609161542-1f9749eff97c/go.mod h1:3G7A41D7Wl9jg3EIbdh+ijt6GHfgZZFFLlx3DHq9Xsg=
+github.com/equinix/equinix-sdk-go v0.51.3-0.20250610164641-4a9a9a5e1136 h1:KTjadZBXS075zOwuKIFRWnNhpufyHG5Rs0Ad9laNCnA=
+github.com/equinix/equinix-sdk-go v0.51.3-0.20250610164641-4a9a9a5e1136/go.mod h1:3G7A41D7Wl9jg3EIbdh+ijt6GHfgZZFFLlx3DHq9Xsg=
+github.com/equinix/equinix-sdk-go v0.51.3-0.20250610190630-09e63ee89e9f h1:KHzxHRSCLT8sC6/KiWmIir56ieXXCqZP3Ne/DkA1Vs8=
+github.com/equinix/equinix-sdk-go v0.51.3-0.20250610190630-09e63ee89e9f/go.mod h1:3G7A41D7Wl9jg3EIbdh+ijt6GHfgZZFFLlx3DHq9Xsg=
+github.com/equinix/equinix-sdk-go v0.51.3-0.20250610193950-a304df8e0c8d h1:T5ItXCNDBMYrf8L9AvJkn2+PGgH6uMy5VyNkwc1uca8=
+github.com/equinix/equinix-sdk-go v0.51.3-0.20250610193950-a304df8e0c8d/go.mod h1:QokAmUtlYlD4gJ1s5UL1nZ4e6XALV0ftl5ZCwdPYp5M=
 github.com/equinix/ne-go v1.20.0 h1:dffveVCBYVAB8JjpB2OEh1EpRecRn1ShCBPJqNNrb1o=
 github.com/equinix/ne-go v1.20.0/go.mod h1:eHkkxM4nbTB7DZ9X9zGnwfYnxIJWIsU3aHA+FAoZ1EI=
 github.com/equinix/oauth2-go v1.0.0 h1:fHtAPGq82PdgtK5vEThs8Vwz6f7D/8SX4tE3NJu+KcU=
