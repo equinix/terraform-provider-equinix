@@ -1,6 +1,7 @@
 package sweep_test
 
 import (
+	"github.com/equinix/terraform-provider-equinix/internal/resources/fabric/streamalertrule"
 	"testing"
 
 	fabric_cloud_router "github.com/equinix/terraform-provider-equinix/internal/resources/fabric/cloud_router"
@@ -44,6 +45,7 @@ func addTestSweepers() {
 	project.AddTestSweeper()
 	serviceprofile.AddTestSweeper()
 	ssh_key.AddTestSweeper()
+	streamalertrule.AddTestSweeper()
 	user_api_key.AddTestSweeper()
 	virtual_circuit.AddTestSweeper()
 	vlan.AddTestSweeper()

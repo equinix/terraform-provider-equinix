@@ -93,6 +93,7 @@ func (m *baseStreamAlertRulesModel) parse(ctx context.Context, streamAlertRule *
 	m.WarningThreshold = types.StringValue(streamAlertRule.GetWarningThreshold())
 	m.CriticalThreshold = types.StringValue(streamAlertRule.GetCriticalThreshold())
 	m.Operand = types.StringValue(string(streamAlertRule.GetOperand()))
+	m.MetricName = types.StringValue(string(streamAlertRule.GetMetricName()))
 
 	// Parse ResourceSelector
 	resourceSelectorObject, diags := parseSelectorModel(ctx, streamAlertRule.GetResourceSelector())
