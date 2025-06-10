@@ -13,10 +13,10 @@ import (
 	"strings"
 	"time"
 
+	"github.com/equinix/equinix-sdk-go/extensions/equinixoauth2"
 	"github.com/equinix/equinix-sdk-go/services/fabricv4"
 	"github.com/equinix/equinix-sdk-go/services/metalv1"
 	"github.com/equinix/ne-go"
-	"github.com/equinix/terraform-provider-equinix/internal/authtoken"
 	"github.com/equinix/terraform-provider-equinix/version"
 	"github.com/hashicorp/go-retryablehttp"
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
@@ -114,7 +114,7 @@ func (c *Config) newAuthClient() *http.Client {
 		}
 		authTransport = oauthTransport
 	} else {
-		authConfig := authtoken.Config{
+		authConfig := equinixoauth2.Config{
 			ClientID:     c.ClientID,
 			ClientSecret: c.ClientSecret,
 			BaseURL:      c.BaseURL,
