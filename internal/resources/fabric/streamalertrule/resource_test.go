@@ -36,7 +36,7 @@ func CheckStreamAlertRuleDelete(s *terraform.State) error {
 	return nil
 }
 
-func testAccFabricStreamAlertRuleConfig(aSidePortUUID, zSidePortUUID, alertRuleName, alertRuleDescription string) string {
+func testAccFabricStreamAlertRuleConfig(uri, event_index, metric_index, source, access_token, aSidePortUUID, zSidePortUUID, alertRuleName, alertRuleDescription string) string {
 	return fmt.Sprintf(`
         resource "equinix_fabric_stream" "new_stream" {
 		  type = "TELEMETRY_STREAM"
@@ -60,15 +60,15 @@ func testAccFabricStreamAlertRuleConfig(aSidePortUUID, zSidePortUUID, alertRuleN
 			  enabled     = true
 			  sink = {
 				type = "SPLUNK_HEC"
-				uri  = "https://http-inputs-equinix-digin.splunkcloud.com/services/collector/event"
+				uri  = "%s"
 				settings = {
-				  event_index  = "panthers-hec-event"
-				  metric_index = "panthers-hec-metric"
-				  source       = "equinix-stream-test"
+				  event_index  = "%s"
+				  metric_index = "%s"
+				  source       = "%s"
 				}
 				credential = {
 				  type         = "ACCESS_TOKEN"
-				  access_token = "8e2b2a78-9c66-4e98-9065-233af5ac6d71"
+				  access_token = "%s"
 				}
 			  }
 			}
@@ -158,16 +158,24 @@ func testAccFabricStreamAlertRuleConfig(aSidePortUUID, zSidePortUUID, alertRuleN
 				 offset = 0
 			   }
 			 }
-	`, aSidePortUUID, zSidePortUUID, alertRuleName, alertRuleDescription)
+	`, uri, event_index, metric_index, source, access_token, aSidePortUUID, zSidePortUUID, alertRuleName, alertRuleDescription)
 }
 
 func TestAccFabricStreamAlertRule_PFCR(t *testing.T) {
+	streamData := testinghelpers.GetFabricStreamTestData(t)
+	uri := streamData["splunk"]["uri"]
+	accessToken := streamData["splunk"]["access_token"]
+	eventIndex := streamData["splunk"]["event_index"]
+	metricIndex := streamData["splunk"]["metric_index"]
+	source := streamData["splunk"]["metric_index"]
+
 	ports := testinghelpers.GetFabricEnvPorts(t)
 	var aSidePortUUID, zSidePortUUID string
 	if len(ports) > 0 {
 		aSidePortUUID = ports["pfcr"]["dot1q"][0].GetUuid()
 		zSidePortUUID = ports["pfcr"]["dot1q"][1].GetUuid()
 	}
+
 	alertRuleName, updatedAlertRuleName := "alert_rule_PFCR", "up_alert_rule_PFCR"
 	alertRuleDescription, updatedAlertRuleDescription := "stream alert rule acceptance test PFCR", "updated stream alert rule acceptance test PFCR"
 	resource.ParallelTest(t, resource.TestCase{
@@ -177,7 +185,7 @@ func TestAccFabricStreamAlertRule_PFCR(t *testing.T) {
 		CheckDestroy:             CheckStreamAlertRuleDelete,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccFabricStreamAlertRuleConfig(aSidePortUUID, zSidePortUUID, alertRuleName, alertRuleDescription),
+				Config: testAccFabricStreamAlertRuleConfig(uri, eventIndex, metricIndex, source, accessToken, aSidePortUUID, zSidePortUUID, alertRuleName, alertRuleDescription),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(
 						"equinix_fabric_stream_alert_rule.alert_rule", "name", alertRuleName),
@@ -217,7 +225,7 @@ func TestAccFabricStreamAlertRule_PFCR(t *testing.T) {
 				ExpectNonEmptyPlan: true,
 			},
 			{
-				Config: testAccFabricStreamAlertRuleConfig(aSidePortUUID, zSidePortUUID, updatedAlertRuleName, updatedAlertRuleDescription),
+				Config: testAccFabricStreamAlertRuleConfig(uri, eventIndex, metricIndex, source, accessToken, aSidePortUUID, zSidePortUUID, updatedAlertRuleName, updatedAlertRuleDescription),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(
 						"equinix_fabric_stream_alert_rule.alert_rule", "name", updatedAlertRuleName),
