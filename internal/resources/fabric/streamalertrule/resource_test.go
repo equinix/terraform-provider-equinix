@@ -164,7 +164,7 @@ func testAccFabricStreamAlertRuleConfig(uri, event_index, metric_index, source, 
 func TestAccFabricStreamAlertRule_PFCR(t *testing.T) {
 	streamData := testinghelpers.GetFabricStreamTestData(t)
 	uri := streamData["splunk"]["uri"]
-	accessToken := streamData["splunk"]["access_token"]
+	accessToken := streamData["splunk"]["accessToken"]
 	eventIndex := streamData["splunk"]["event_index"]
 	metricIndex := streamData["splunk"]["metric_index"]
 	source := streamData["splunk"]["metric_index"]
