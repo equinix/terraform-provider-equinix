@@ -87,7 +87,6 @@ func (r *Resource) Create(
 
 	// Parse API response into the Terraform state
 	resp.Diagnostics.Append(plan.parse(ctx, alertRuleChecked.(*fabricv4.StreamAlertRule))...)
-	plan.ID = types.StringValue(streamAlertRule.GetUuid())
 	if resp.Diagnostics.HasError() {
 		return
 	}
