@@ -1,13 +1,13 @@
 package acceptance
 
 import (
+	"github.com/equinix/terraform-provider-equinix/internal/env"
 	"os"
 	"sync"
 	"testing"
 
 	"github.com/equinix/terraform-provider-equinix/equinix"
 	"github.com/equinix/terraform-provider-equinix/internal/config"
-	"github.com/equinix/terraform-provider-equinix/internal/env"
 	"github.com/equinix/terraform-provider-equinix/internal/provider"
 	"github.com/equinix/terraform-provider-equinix/version"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -54,6 +54,16 @@ func TestAccPreCheck(t *testing.T) {
 		if err == nil {
 			_, err = env.Get(config.ClientSecretEnvVar)
 		}
+
+		// If neither token nor client ID/secret are configured, check for workload identity
+		if err != nil {
+			_, authScopeErr := env.Get(config.AuthScopeEnvVar)
+			_, workloadTokenErr := env.Get(config.WorkloadIdentityTokenEnvVar)
+
+			if authScopeErr == nil && workloadTokenErr == nil {
+				err = nil
+			}
+		}
 	}
 
 	if err == nil {
@@ -61,8 +71,9 @@ func TestAccPreCheck(t *testing.T) {
 	}
 
 	if err != nil {
-		t.Fatalf("To run acceptance tests, one of '%s' or pair '%s' - '%s' must be set for Equinix Fabric and Network Edge, and '%s' for Equinix Metal",
-			config.ClientTokenEnvVar, config.ClientIDEnvVar, config.ClientSecretEnvVar, config.MetalAuthTokenEnvVar)
+		t.Fatalf("To run acceptance tests, one of '%s', pair '%s' - '%s', or pair '%s' - '%s' must be set for Equinix Fabric and Network Edge, and '%s' for Equinix Metal",
+			config.ClientTokenEnvVar, config.ClientIDEnvVar, config.ClientSecretEnvVar,
+			config.AuthScopeEnvVar, config.WorkloadIdentityTokenEnvVar, config.MetalAuthTokenEnvVar)
 	}
 }
 

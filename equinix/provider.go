@@ -83,19 +83,19 @@ func Provider() *schema.Provider {
 				Default:     30,
 				Description: "Maximum number of seconds to wait before retrying a request.",
 			},
-            "auth_scope": {
-                Type:        schema.TypeString,
-                Optional:    true,
-                DefaultFunc: schema.EnvDefaultFunc(config.AuthScopeEnvVar, ""),
-                Description: "The scope of the authentication token. This argument can also be specified with the `EQUINIX_STS_AUTH_SCOPE` shell environment variable.",
-            },
-            "sts_endpoint": {
-                Type:         schema.TypeString,
-                Optional:     true,
-                DefaultFunc:  schema.EnvDefaultFunc(config.StsEndpointEnvVar, config.DefaultStsBaseURL),
-                ValidateFunc: validation.IsURLWithHTTPorHTTPS,
-                Description:  fmt.Sprintf("The STS API base URL to point out desired environment. This argument can also be specified with the `EQUINIX_STS_ENDPOINT` shell environment variable. (Defaults to `%s`)", config.DefaultStsBaseURL),
-            },
+			"auth_scope": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				DefaultFunc: schema.EnvDefaultFunc(config.AuthScopeEnvVar, ""),
+				Description: "The scope of the authentication token. This argument can also be specified with the `EQUINIX_STS_AUTH_SCOPE` shell environment variable.",
+			},
+			"sts_endpoint": {
+				Type:         schema.TypeString,
+				Optional:     true,
+				DefaultFunc:  schema.EnvDefaultFunc(config.StsEndpointEnvVar, config.DefaultStsBaseURL),
+				ValidateFunc: validation.IsURLWithHTTPorHTTPS,
+				Description:  fmt.Sprintf("The STS API base URL to point out desired environment. This argument can also be specified with the `EQUINIX_STS_ENDPOINT` shell environment variable. (Defaults to `%s`)", config.DefaultStsBaseURL),
+			},
 		},
 		DataSourcesMap: datasources,
 		ResourcesMap:   resources,
@@ -132,7 +132,7 @@ func configureProvider(ctx context.Context, d *schema.ResourceData, p *schema.Pr
 		MaxRetries:     d.Get("max_retries").(int),
 		MaxRetryWait:   time.Duration(mrws) * time.Second,
 		AuthScope:      d.Get("auth_scope").(string),
-		StsBaseURL:     d.Get("sts_endpoint").(string)
+		StsBaseURL:     d.Get("sts_endpoint").(string),
 	}
 	meta := providerMeta{}
 

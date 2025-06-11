@@ -28,15 +28,15 @@ import (
 )
 
 const (
-	EndpointEnvVar       = "EQUINIX_API_ENDPOINT"
-	ClientIDEnvVar       = "EQUINIX_API_CLIENTID"
-	ClientSecretEnvVar   = "EQUINIX_API_CLIENTSECRET"
-	ClientTokenEnvVar    = "EQUINIX_API_TOKEN"
-	ClientTimeoutEnvVar  = "EQUINIX_API_TIMEOUT"
-	MetalAuthTokenEnvVar = "METAL_AUTH_TOKEN"
-	AuthScopeEnvVar      = "EQUINIX_STS_AUTH_SCOPE"
-	WorkloadIdentityTokenEnvVar = "EQUINIX_WORKLOAD_IDENTITY_TOKEN"
-	StsEndpointEnvVar = "EQUINIX_STS_ENDPOINT"
+	EndpointEnvVar              = "EQUINIX_API_ENDPOINT"
+	ClientIDEnvVar              = "EQUINIX_API_CLIENTID"
+	ClientSecretEnvVar          = "EQUINIX_API_CLIENTSECRET"
+	ClientTokenEnvVar           = "EQUINIX_API_TOKEN"
+	ClientTimeoutEnvVar         = "EQUINIX_API_TIMEOUT"
+	MetalAuthTokenEnvVar        = "METAL_AUTH_TOKEN"
+	AuthScopeEnvVar             = "EQUINIX_STS_AUTH_SCOPE"
+	WorkloadIdentityTokenEnvVar = "TFC_WORKLOAD_IDENTITY_TOKEN"
+	StsEndpointEnvVar           = "EQUINIX_STS_ENDPOINT"
 )
 
 type ProviderMeta struct {
@@ -50,9 +50,9 @@ const (
 )
 
 var (
-	DefaultBaseURL = "https://api.equinix.com"
+	DefaultBaseURL    = "https://api.equinix.com"
 	DefaultStsBaseURL = "https://sts.equinix.com"
-	DefaultTimeout = 30
+	DefaultTimeout    = 30
 )
 
 // Config is the configuration structure used to instantiate the Equinix
@@ -88,24 +88,7 @@ func (c *Config) Load(ctx context.Context) error {
 		return fmt.Errorf("'baseURL' cannot be empty")
 	}
 
-	var authClient *http.Client
-	if c.Token != "" {
-		tokenSource := xoauth2.StaticTokenSource(&xoauth2.Token{AccessToken: c.Token})
-		oauthTransport := &xoauth2.Transport{
-			Source: tokenSource,
-		}
-		authClient = &http.Client{
-			Transport: oauthTransport,
-		}
-	} else {
-		authConfig := oauth2.Config{
-			ClientID:     c.ClientID,
-			ClientSecret: c.ClientSecret,
-			BaseURL:      c.BaseURL,
-		}
-		authClient = authConfig.New(ctx)
-	}
-
+	authClient := c.createAuthClient(ctx)
 	authClient.Timeout = c.requestTimeout()
 	//nolint:staticcheck // We should move to subsystem loggers, but that is a much bigger change
 	authClient.Transport = logging.NewTransport("Equinix", authClient.Transport)
@@ -158,38 +141,67 @@ func (c *Config) NewFabricClientForFramework(ctx context.Context, meta tfsdk.Con
 // newFabricClient returns the base fabricv4 client that is then used for either the sdkv2 or framework
 // implementations of the Terraform Provider with exported Methods
 func (c *Config) newFabricClient(ctx context.Context) *fabricv4.APIClient {
-    // Initialize the authentication client
-    var authClient *http.Client
+	authClient := c.createAuthClient(ctx)
 
-    workloadIdentityToken := os.Getenv(WorkloadIdentityTokenEnvVar)
-    if c.AuthScope != "" && workloadIdentityToken != "" {
-        // If the AuthScope and WorkloadIdentityToken are set, use Workload Identity Federation
-        httpClient := &http.Client{Timeout: c.requestTimeout()}
-        token, err := oidcTokenExchange(ctx, c.AuthScope, workloadIdentityToken, httpClient, c.StsBaseURL)
-        if err != nil {
-            log.Printf("[ERROR] Failed to exchange workload identity token: %v", err)
-            return createErroringFabricClient(fmt.Errorf("Workload identity token exchange failed: %w", err))
-        }
-        // Create a token source with the exchanged token
-        tokenSource := xoauth2.StaticTokenSource(&xoauth2.Token{AccessToken: token})
-        oauthTransport := &xoauth2.Transport{
-            Source: tokenSource,
-        }
-        authClient = &http.Client{
-            Transport: oauthTransport,
-        }
-    } else {
-        // Use regular OAuth authentication
-        authConfig := oauth2.Config{
-            ClientID:     c.ClientID,
-            ClientSecret: c.ClientSecret,
-            BaseURL:      c.BaseURL,
-        }
-        authClient = authConfig.New(ctx)
-    }
+	// Configure HTTP client with retries and logging
+	httpClient := c.configureHTTPClient(authClient)
 
-    // Set up the transport with logging
-    transport := logging.NewTransport("Equinix Fabric (fabricv4)", authClient.Transport)
+	return c.createFabricClient(httpClient)
+}
+
+func (c *Config) createAuthClient(ctx context.Context) *http.Client {
+	workloadIdentityToken := os.Getenv(WorkloadIdentityTokenEnvVar)
+
+	if c.AuthScope != "" && workloadIdentityToken != "" {
+		// If the AuthScope and WorkloadIdentityToken are set, use Workload Identity Federation
+		return c.createWorkloadIdentityClient(ctx, workloadIdentityToken)
+	}
+
+	return c.createOAuthClient(ctx)
+}
+
+func (c *Config) createWorkloadIdentityClient(ctx context.Context, workloadIdentityToken string) *http.Client {
+	httpClient := &http.Client{Timeout: c.requestTimeout()}
+
+	refreshSource := &workloadIdentityRefreshTokenSource{
+		ctx:                   ctx,
+		authScope:             c.AuthScope,
+		workloadIdentityToken: workloadIdentityToken,
+		client:                httpClient,
+		stsBaseURL:            c.StsBaseURL,
+	}
+
+	tokenSource := xoauth2.ReuseTokenSource(nil, refreshSource)
+
+	return &http.Client{
+		Transport: &xoauth2.Transport{
+			Source: tokenSource,
+		},
+	}
+}
+
+func (c *Config) createOAuthClient(ctx context.Context) *http.Client {
+	if c.Token != "" {
+		tokenSource := xoauth2.StaticTokenSource(&xoauth2.Token{AccessToken: c.Token})
+		oauthTransport := &xoauth2.Transport{
+			Source: tokenSource,
+		}
+		var authClient = &http.Client{
+			Transport: oauthTransport,
+		}
+		return authClient
+	} else {
+		authConfig := oauth2.Config{
+			ClientID:     c.ClientID,
+			ClientSecret: c.ClientSecret,
+			BaseURL:      c.BaseURL,
+		}
+		return authConfig.New(ctx)
+	}
+}
+
+func (c *Config) configureHTTPClient(authClient *http.Client) *http.Client {
+	transport := logging.NewTransport("Equinix Fabric (fabricv4)", authClient.Transport)
 
 	retryClient := retryablehttp.NewClient()
 	retryClient.HTTPClient.Transport = transport
@@ -197,9 +209,15 @@ func (c *Config) newFabricClient(ctx context.Context) *fabricv4.APIClient {
 	retryClient.RetryMax = c.MaxRetries
 	retryClient.RetryWaitMin = time.Second
 	retryClient.RetryWaitMax = c.MaxRetryWait
-	standardClient := retryClient.StandardClient()
 
-	baseURL, _ := url.Parse(c.BaseURL)
+	return retryClient.StandardClient()
+}
+
+func (c *Config) createFabricClient(httpClient *http.Client) *fabricv4.APIClient {
+	baseURL, err := url.Parse(c.BaseURL)
+	if err != nil {
+		return createErroringFabricClient(fmt.Errorf("Invalid base URL: %w", err))
+	}
 
 	configuration := fabricv4.NewConfiguration()
 	configuration.Servers = fabricv4.ServerConfigurations{
@@ -207,12 +225,11 @@ func (c *Config) newFabricClient(ctx context.Context) *fabricv4.APIClient {
 			URL: baseURL.String(),
 		},
 	}
-	configuration.HTTPClient = standardClient
+	configuration.HTTPClient = httpClient
 	configuration.AddDefaultHeader("X-SOURCE", "API")
 	configuration.AddDefaultHeader("X-CORRELATION-ID", correlationId(25))
-	client := fabricv4.NewAPIClient(configuration)
 
-	return client
+	return fabricv4.NewAPIClient(configuration)
 }
 
 // NewMetalClient returns a new packngo client for accessing Equinix Metal's API.
@@ -390,76 +407,105 @@ func moduleVersionFromBuild(modulePath string) string {
 	return "unknown-version"
 }
 
-func oidcTokenExchange(ctx context.Context, authScope string, workloadIdentityToken string, client *http.Client, stsBaseURL string) (string, error) {
-    if authScope == "" {
-        return "", fmt.Errorf("Authorization scope cannot be empty for OIDC token exchange")
-    }
+// Implement the refresh token source
+type workloadIdentityRefreshTokenSource struct {
+	ctx                   context.Context
+	authScope             string
+	workloadIdentityToken string
+	client                *http.Client
+	stsBaseURL            string
+}
 
-    if workloadIdentityToken == "" {
-        return "", fmt.Errorf("Workload identity token cannot be empty for OIDC token exchange")
-    }
+// Token implements the oauth2.TokenSource interface
+func (s *workloadIdentityRefreshTokenSource) Token() (*xoauth2.Token, error) {
+	accessToken, expiry, err := oidcTokenExchange(
+		s.ctx,
+		s.authScope,
+		s.workloadIdentityToken,
+		s.client,
+		s.stsBaseURL,
+	)
+	if err != nil {
+		return nil, err
+	}
 
-    // Construct the full token exchange URL
-    baseURL, err := url.Parse(stsBaseURL)
-    if err != nil {
-        return "", fmt.Errorf("Failed to parse STS base URL: %w", err)
-    }
-    baseURL.Path = path.Join(baseURL.Path, "/use/token")
-    tokenURL := baseURL.String()
+	return &xoauth2.Token{
+		AccessToken: accessToken,
+		Expiry:      time.Now().Add(time.Duration(expiry) * time.Second),
+	}, nil
+}
 
-    // Prepare the form data according to RFC 8693
-    form := url.Values{
-        "grant_type":         {"urn:ietf:params:oauth:grant-type:token-exchange"},
-        "scope":              {authScope},
-        "subject_token_type": {"urn:ietf:params:oauth:token-type:id_token"},
-        "subject_token":      {workloadIdentityToken},
-    }
+func oidcTokenExchange(ctx context.Context, authScope string, workloadIdentityToken string, client *http.Client, stsBaseURL string) (string, int, error) {
+	if authScope == "" {
+		return "", 0, fmt.Errorf("Authorization scope cannot be empty for OIDC token exchange")
+	}
 
-    // Create the HTTP request
-    req, err := http.NewRequestWithContext(ctx, http.MethodPost, tokenURL, strings.NewReader(form.Encode()))
-    if err != nil {
-        return "", fmt.Errorf("Failed to create token exchange request: %w", err)
-    }
+	if workloadIdentityToken == "" {
+		return "", 0, fmt.Errorf("Workload identity token cannot be empty for OIDC token exchange")
+	}
 
-    req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	// Construct the full token exchange URL
+	baseURL, err := url.Parse(stsBaseURL)
+	if err != nil {
+		return "", 0, fmt.Errorf("Failed to parse STS base URL: %w", err)
+	}
+	baseURL.Path = path.Join(baseURL.Path, "/use/token")
+	tokenURL := baseURL.String()
 
-    resp, err := client.Do(req)
-    if err != nil {
-        return "", fmt.Errorf("Token exchange request failed: %w", err)
-    }
-    defer resp.Body.Close()
+	// Prepare the form data according to RFC 8693
+	form := url.Values{
+		"grant_type":         {"urn:ietf:params:oauth:grant-type:token-exchange"},
+		"scope":              {authScope},
+		"subject_token_type": {"urn:ietf:params:oauth:token-type:id_token"},
+		"subject_token":      {workloadIdentityToken},
+	}
 
-    if resp.StatusCode != http.StatusOK {
-        body, _ := io.ReadAll(resp.Body)
-        return "", fmt.Errorf("Token exchange failed with status %d: %s", resp.StatusCode, string(body))
-    }
+	// Create the HTTP request
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, tokenURL, strings.NewReader(form.Encode()))
+	if err != nil {
+		return "", 0, fmt.Errorf("Failed to create token exchange request: %w", err)
+	}
 
-    // Parse the response
-    var response struct {
-        AccessToken string `json:"access_token"`
-    }
-    if err := json.NewDecoder(resp.Body).Decode(&response); err != nil {
-        return "", fmt.Errorf("Failed to parse token exchange response: %w", err)
-    }
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 
-    return response.AccessToken, nil
+	resp, err := client.Do(req)
+	if err != nil {
+		return "", 0, fmt.Errorf("Token exchange request failed: %w", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		body, _ := io.ReadAll(resp.Body)
+		return "", 0, fmt.Errorf("Token exchange failed with status %d: %s", resp.StatusCode, string(body))
+	}
+
+	// Parse the response
+	var response struct {
+		AccessToken string `json:"access_token"`
+		ExpiresIn   int    `json:"expires_in"`
+	}
+	if err := json.NewDecoder(resp.Body).Decode(&response); err != nil {
+		return "", 0, fmt.Errorf("Failed to parse token exchange response: %w", err)
+	}
+
+	return response.AccessToken, response.ExpiresIn, nil
 }
 
 // Helper function to create a client that will error on first use
 func createErroringFabricClient(err error) *fabricv4.APIClient {
-    errTransport := &erroringTransport{err: err}
-    errClient := &http.Client{Transport: errTransport}
+	errTransport := &erroringTransport{err: err}
+	errClient := &http.Client{Transport: errTransport}
 
-    configuration := fabricv4.NewConfiguration()
-    configuration.HTTPClient = errClient
-    return fabricv4.NewAPIClient(configuration)
+	configuration := fabricv4.NewConfiguration()
+	configuration.HTTPClient = errClient
+	return fabricv4.NewAPIClient(configuration)
 }
 
 // Custom transport that always returns an error
 type erroringTransport struct {
-    err error
+	err error
 }
 
 func (t *erroringTransport) RoundTrip(*http.Request) (*http.Response, error) {
-    return nil, t.err
+	return nil, t.err
 }
