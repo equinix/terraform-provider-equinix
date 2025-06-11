@@ -13,6 +13,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
 
+// AddTestSweeper registers the sweeper for Fabric Stream Alert Rules
 func AddTestSweeper() {
 	resource.AddTestSweepers("equinix_fabric_stream_alert_rule", &resource.Sweeper{
 		Name:         "equinix_fabric_stream_alert_rule",
