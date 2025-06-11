@@ -1,8 +1,9 @@
 package sweep_test
 
 import (
-	"github.com/equinix/terraform-provider-equinix/internal/resources/fabric/streamalertrule"
 	"testing"
+
+	"github.com/equinix/terraform-provider-equinix/internal/resources/fabric/streamalertrule"
 
 	fabric_cloud_router "github.com/equinix/terraform-provider-equinix/internal/resources/fabric/cloud_router"
 	fabric_connection "github.com/equinix/terraform-provider-equinix/internal/resources/fabric/connection"
