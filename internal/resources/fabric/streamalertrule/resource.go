@@ -217,7 +217,7 @@ func (r *Resource) Update(
 
 	id := state.ID.ValueString()
 	streamID := state.StreamID.ValueString()
-	updateRequest, diags := buildUpdateRequest(ctx, plan)
+	updateRequest, diags := buildUpdateRequest(ctx, plan, state)
 
 	if diags.HasError() {
 		resp.Diagnostics.Append(diags...)
@@ -259,41 +259,41 @@ func (r *Resource) Update(
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
 
-func buildUpdateRequest(ctx context.Context, plan streamAlertRuleResourceModel) (fabricv4.AlertRulePutRequest, diag.Diagnostics) {
+func buildUpdateRequest(ctx context.Context, state streamAlertRuleResourceModel, plan streamAlertRuleResourceModel) (fabricv4.AlertRulePutRequest, diag.Diagnostics) {
 	var diags diag.Diagnostics
 	request := fabricv4.AlertRulePutRequest{}
 
-	postRequest, diags := buildCreateRequest(ctx, plan)
-
-	request.SetName(postRequest.GetName())
-	request.SetDescription(postRequest.GetDescription())
-
-	if !plan.WarningThreshold.IsNull() && !plan.WarningThreshold.IsUnknown() {
-		request.SetWarningThreshold(postRequest.GetWarningThreshold())
+	if !state.Name.Equal(plan.Name) {
+		request.SetName(plan.Name.ValueString())
 	}
-
-	if !plan.CriticalThreshold.IsNull() && !plan.CriticalThreshold.IsUnknown() {
-		request.SetCriticalThreshold(postRequest.GetCriticalThreshold())
+	if !state.Description.Equal(plan.Description) {
+		request.SetDescription(plan.Description.ValueString())
 	}
-
-	if !plan.WindowSize.IsNull() && !plan.WindowSize.IsUnknown() {
-		request.SetWindowSize(postRequest.GetWindowSize())
+	if !state.CriticalThreshold.Equal(plan.CriticalThreshold) {
+		request.SetCriticalThreshold(plan.CriticalThreshold.ValueString())
 	}
-	if !plan.MetricName.IsNull() && !plan.MetricName.IsUnknown() {
-		request.SetMetricName(postRequest.GetMetricName())
+	if !state.WarningThreshold.Equal(plan.WarningThreshold) {
+		request.SetWarningThreshold(plan.WarningThreshold.ValueString())
 	}
-	if !plan.Operand.IsNull() && !plan.Operand.IsUnknown() {
-		request.SetOperand(postRequest.GetOperand())
+	if !state.WindowSize.Equal(plan.WindowSize) {
+		request.SetWindowSize(plan.WindowSize.ValueString())
 	}
-
-	if !plan.Enabled.IsNull() && !plan.Enabled.IsUnknown() {
-		request.SetEnabled(postRequest.GetEnabled())
+	if !state.MetricName.Equal(plan.MetricName) {
+		request.SetMetricName(fabricv4.StreamAlertRuleMetricName(plan.MetricName.ValueString()))
 	}
-
-	if !plan.ResourceSelector.IsNull() && !plan.ResourceSelector.IsUnknown() {
-		request.SetResourceSelector(postRequest.GetResourceSelector())
+	if !state.Operand.Equal(plan.Operand) {
+		request.SetOperand(fabricv4.StreamAlertRuleOperand(plan.Operand.ValueString()))
 	}
-
+	if !state.Enabled.Equal(plan.Enabled) {
+		request.SetEnabled(plan.Enabled.ValueBool())
+	}
+	if !state.ResourceSelector.Equal(plan.ResourceSelector) && !plan.ResourceSelector.IsNull() && !plan.ResourceSelector.IsUnknown() {
+		resourceSelector, diags := buildStreamAlertRuleSelector(ctx, plan.ResourceSelector)
+		if diags.HasError() {
+			return request, diags
+		}
+		request.SetResourceSelector(resourceSelector)
+	}
 	return request, diags
 }
 
