@@ -51,7 +51,7 @@ func testSweepStreamAlertRules(_ string) error {
 			for _, alertRule := range alertRules.GetData() {
 				if sweep.IsSweepableFabricTestResource(alertRule.GetName()) {
 					log.Printf("[DEBUG] Deleting stream alert rule: %s", alertRule.GetName())
-					_, resp, err := fabric.StreamAlertRulesApi.GetStreamAlertRuleByUuid(ctx, alertRule.GetUuid(), stream.GetUuid()).Execute()
+					_, resp, err := fabric.StreamAlertRulesApi.DeleteStreamAlertRuleByUuid(ctx, alertRule.GetUuid(), stream.GetUuid()).Execute()
 					if equinix_errors.IgnoreHttpResponseErrors(http.StatusForbidden, http.StatusNotFound)(resp, err) != nil {
 						errs = append(errs, fmt.Errorf("error deleting fabric stream alert rule %s on stream %s: %s", alertRule.GetUuid(), stream.GetUuid(), err))
 					}
