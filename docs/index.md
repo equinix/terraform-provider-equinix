@@ -8,6 +8,8 @@ The Equinix provider is used to interact with the resources provided by Equinix 
 
 For information about obtaining API key and secret required for Equinix Fabric and Network Edge refer to [Generating Client ID and Client Secret key](https://developer.equinix.com/dev-docs/fabric/getting-started/getting-access-token#generating-client-id-and-client-secret) from [Equinix Developer Platform portal](https://developer.equinix.com).
 
+Equinix Fabric also supports authentication using a [TFC Workload Identity Token](https://developer.hashicorp.com/terraform/cloud-docs/workspaces/dynamic-provider-credentials/workload-identity-tokens), which can be used in place of the `client_id` and `client_secret` arguments. 
+
 Interacting with Equinix Metal requires an API auth token that can be generated at [Project-level](https://metal.equinix.com/developers/docs/accounts/projects/#api-keys) or [User-level](https://metal.equinix.com/developers/docs/accounts/users/#api-keys) tokens can be used.
 
 If you are only using Equinix Metal resources, you may omit the Client ID and Client Secret provider configuration parameters needed to access other Equinix resource types (Network Edge, Fabric, etc).
@@ -34,6 +36,17 @@ provider "equinix" {
   auth_token    = "someEquinixMetalToken"
 }
 ```
+Client ID and Client Secret can be omitted when using Workload Identity Tokens for Equinix Fabric resources.
+
+```terraform
+# Credentials for using Workload Identity
+provider "equinix" {
+  # Desired scope of the requested security token. Must be an Access Policy ERN or a string of the form `roleassignments:<organization_id>`
+  auth_scope = "roleassignments:<organization_id>"
+
+  # The TFC_WORKLOAD_IDENTITY_TOKEN env variable must contain a workload identity token
+}
+```
 
 Client ID and Client Secret can be omitted when the only Equinix resources consumed are Equinix Metal resources.
 
@@ -44,11 +57,16 @@ provider "equinix" {
 }
 ```
 
-Example provider configuration using `environment variables`:
+Example provider configurations using `environment variables`:
 
 ```sh
 export EQUINIX_API_CLIENTID=someEquinixAPIClientID
 export EQUINIX_API_CLIENTSECRET=someEquinixAPIClientSecret
+export METAL_AUTH_TOKEN=someEquinixMetalToken
+```
+
+```sh
+export EQUINIX_STS_AUTH_SCOPE=someStsTokenScope
 export METAL_AUTH_TOKEN=someEquinixMetalToken
 ```
 
@@ -68,7 +86,7 @@ provider "equinix" {
 
 ## Argument Reference
 
-The Equinix provider requires a few basic parameters. While the authentication arguments are individually optionally, either `token` or `client_id` and `client_secret` must be defined through arguments or environment settings to interact with Equinix Fabric and Network Edge services, and `auth_token` to interact with Equinix Metal.
+The Equinix provider requires a few basic parameters. While the authentication arguments are individually optional, either `token`, a `client_id` and `client_secret` pair , or an `auth_scope` and a Workload Identity Token pair must be defined through arguments or environment settings to interact with Equinix Fabric and Network Edge services, and `auth_token` to interact with Equinix Metal.
 
 These parameters can be provided in [Terraform variable files](https://www.terraform.io/docs/configuration/variables.html#variable-definitions-tfvars-files) or as environment variables. Nevertheless, please note that it is [not recommended to keep sensitive data in plain text files](https://www.terraform.io/docs/state/sensitive-data.html).
 
@@ -78,6 +96,7 @@ These parameters can be provided in [Terraform variable files](https://www.terra
 ### Optional
 
 - `auth_token` (String) The Equinix Metal API auth key for API operations
+- `auth_scope` (String) The desired scope of the requested security token. Must be an Access Policy ERN or a string of the form `roleassignments:<organization_id>`. This argument can also be specified with the `EQUINIX_STS_AUTH_SCOPE` shell environment variable.
 - `client_id` (String) API Consumer Key available under "My Apps" in developer portal. This argument can also be specified with the `EQUINIX_API_CLIENTID` shell environment variable.
 - `client_secret` (String) API Consumer secret available under "My Apps" in developer portal. This argument can also be specified with the `EQUINIX_API_CLIENTSECRET` shell environment variable.
 - `endpoint` (String) The Equinix API base URL to point out desired environment. This argument can also be specified with the `EQUINIX_API_ENDPOINT` shell environment variable. (Defaults to `https://api.equinix.com`)
