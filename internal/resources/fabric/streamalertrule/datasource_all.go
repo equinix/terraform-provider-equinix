@@ -1,5 +1,5 @@
-// Package stream_alert_rule implements resource and datasources for Stream Alert Rules
-package stream_alert_rule
+// Package streamalertrule implements resource and datasources for Stream Alert Rules
+package streamalertrule
 
 import (
 	"context"

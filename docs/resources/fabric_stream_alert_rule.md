@@ -54,6 +54,7 @@ output "stream_alert_rule_state" {
 ### Required
 
 - `critical_threshold` (String) Stream alert rule metric critical threshold
+- `description` (String) Customer-provided stream alert rule description
 - `metric_name` (String) Stream alert rule metric name
 - `name` (String) Customer-provided stream alert rule name
 - `operand` (String) Stream alert rule metric operand
@@ -64,7 +65,6 @@ output "stream_alert_rule_state" {
 
 ### Optional
 
-- `description` (String) Customer-provided stream alert rule description
 - `enabled` (Boolean) Stream alert rule enabled status
 - `resource_selector` (Attributes) Resource selector for the stream alert rule (see [below for nested schema](#nestedatt--resource_selector))
 - `timeouts` (Attributes) (see [below for nested schema](#nestedatt--timeouts))
