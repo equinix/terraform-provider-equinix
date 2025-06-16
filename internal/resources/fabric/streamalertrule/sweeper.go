@@ -49,11 +49,13 @@ func testSweepStreamAlertRules(_ string) error {
 				errs = append(errs, fmt.Errorf("error getting fabric stream subscriptions on stream %s: %s", stream.GetUuid(), err))
 			}
 			for _, alertRule := range alertRules.GetData() {
+				log.Printf("[DEBUG] alert rule : %s", alertRule.GetName())
 				if sweep.IsSweepableFabricTestResource(alertRule.GetName()) {
 					log.Printf("[DEBUG] Deleting stream alert rule: %s", alertRule.GetName())
 					_, resp, err := fabric.StreamAlertRulesApi.DeleteStreamAlertRuleByUuid(ctx, alertRule.GetUuid(), stream.GetUuid()).Execute()
 					if equinix_errors.IgnoreHttpResponseErrors(http.StatusForbidden, http.StatusNotFound)(resp, err) != nil {
 						errs = append(errs, fmt.Errorf("error deleting fabric stream alert rule %s on stream %s: %s", alertRule.GetUuid(), stream.GetUuid(), err))
+						continue
 					}
 				}
 			}

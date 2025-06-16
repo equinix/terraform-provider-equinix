@@ -26,24 +26,24 @@ type streamAlertRuleResourceModel struct {
 }
 
 type baseStreamAlertRulesModel struct {
-	Type              types.String                         `tfsdk:"type"`
-	Name              types.String                         `tfsdk:"name"`
-	Description       types.String                         `tfsdk:"description"`
-	Enabled           types.Bool                           `tfsdk:"enabled"`
-	MetricName        types.String                         `tfsdk:"metric_name"`
-	ResourceSelector  fwtypes.ObjectValueOf[selectorModel] `tfsdk:"resource_selector"` // Object of selectorModel
-	WindowSize        types.String                         `tfsdk:"window_size"`
-	WarningThreshold  types.String                         `tfsdk:"warning_threshold"`
-	CriticalThreshold types.String                         `tfsdk:"critical_threshold"`
-	Operand           types.String                         `tfsdk:"operand"`
-	Href              types.String                         `tfsdk:"href"`
-	UUID              types.String                         `tfsdk:"uuid"`
-	State             types.String                         `tfsdk:"state"`
-	ChangeLog         fwtypes.ObjectValueOf[logModel]      `tfsdk:"change_log"` // Object of logModel
+	Type              types.String                          `tfsdk:"type"`
+	Name              types.String                          `tfsdk:"name"`
+	Description       types.String                          `tfsdk:"description"`
+	Enabled           types.Bool                            `tfsdk:"enabled"`
+	MetricName        types.String                          `tfsdk:"metric_name"`
+	ResourceSelector  fwtypes.ObjectValueOf[selectorModel]  `tfsdk:"resource_selector"` // Object of selectorModel
+	WindowSize        types.String                          `tfsdk:"window_size"`
+	WarningThreshold  types.String                          `tfsdk:"warning_threshold"`
+	CriticalThreshold types.String                          `tfsdk:"critical_threshold"`
+	Operand           types.String                          `tfsdk:"operand"`
+	Href              types.String                          `tfsdk:"href"`
+	UUID              types.String                          `tfsdk:"uuid"`
+	State             types.String                          `tfsdk:"state"`
+	ChangeLog         fwtypes.ObjectValueOf[changeLogModel] `tfsdk:"change_log"` // Object of changeLogModel
 }
 
-// logModel represents the change log details for a stream alert rule
-type logModel struct {
+// changeLogModel represents the change log details for a stream alert rule
+type changeLogModel struct {
 	CreatedBy         types.String `tfsdk:"created_by"`
 	CreatedByFullName types.String `tfsdk:"created_by_full_name"`
 	CreatedByEmail    types.String `tfsdk:"created_by_email"`
@@ -101,7 +101,7 @@ func parseAlertRule(ctx context.Context, streamAlertRule *fabricv4.StreamAlertRu
 	criticalThreshold, operand, metricName *basetypes.StringValue,
 	enabled *basetypes.BoolValue,
 	resourceSelector *fwtypes.ObjectValueOf[selectorModel],
-	changeLog *fwtypes.ObjectValueOf[logModel]) diag.Diagnostics {
+	changeLog *fwtypes.ObjectValueOf[changeLogModel]) diag.Diagnostics {
 
 	var mDiags diag.Diagnostics
 
@@ -131,7 +131,7 @@ func parseAlertRule(ctx context.Context, streamAlertRule *fabricv4.StreamAlertRu
 
 	// Parse ChangeLog
 	streamAlertRuleChangeLog := streamAlertRule.GetChangeLog()
-	changeLogModel := logModel{
+	logModel := changeLogModel{
 		CreatedBy:         types.StringValue(streamAlertRuleChangeLog.GetCreatedBy()),
 		CreatedByFullName: types.StringValue(streamAlertRuleChangeLog.GetCreatedByFullName()),
 		CreatedByEmail:    types.StringValue(streamAlertRuleChangeLog.GetCreatedByEmail()),
@@ -145,7 +145,7 @@ func parseAlertRule(ctx context.Context, streamAlertRule *fabricv4.StreamAlertRu
 		DeletedByEmail:    types.StringValue(streamAlertRuleChangeLog.GetDeletedByEmail()),
 		DeletedDateTime:   types.StringValue(streamAlertRuleChangeLog.GetDeletedDateTime().Format(fabric.TimeFormat)),
 	}
-	*changeLog = fwtypes.NewObjectValueOf[logModel](ctx, &changeLogModel)
+	*changeLog = fwtypes.NewObjectValueOf[changeLogModel](ctx, &logModel)
 
 	return mDiags
 }
