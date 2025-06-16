@@ -17,7 +17,7 @@ import (
 func AddTestSweeper() {
 	resource.AddTestSweepers("equinix_fabric_stream_alert_rule", &resource.Sweeper{
 		Name:         "equinix_fabric_stream_alert_rule",
-		Dependencies: []string{"equinix_fabric_stream"},
+		Dependencies: []string{},
 		F:            testSweepStreamAlertRules,
 	})
 }
