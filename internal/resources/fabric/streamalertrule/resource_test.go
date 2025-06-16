@@ -175,9 +175,11 @@ func TestAccFabricStreamAlertRule_PFCR(t *testing.T) {
 		aSidePortUUID = ports["pfcr"]["dot1q"][0].GetUuid()
 		zSidePortUUID = ports["pfcr"]["dot1q"][1].GetUuid()
 	}
-
 	alertRuleName, updatedAlertRuleName := "alert_rule_PFCR", "up_alert_rule_PFCR"
 	alertRuleDescription, updatedAlertRuleDescription := "stream alert rule acceptance test PFCR", "updated stream alert rule acceptance test PFCR"
+
+	//alertRuleName := "alert_rule_PFCR"
+	//alertRuleDescription := "stream alert rule acceptance test PFCR"
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.TestAccPreCheck(t); acceptance.TestAccPreCheckProviderConfigured(t) },
 		ExternalProviders:        acceptance.TestExternalProviders,

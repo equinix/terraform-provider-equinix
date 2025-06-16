@@ -32,7 +32,7 @@ func testSweepStreamAlertRules(_ string) error {
 	}
 	configLoadErr := meta.Load(ctx)
 	if configLoadErr != nil {
-		return fmt.Errorf("error loading configuration for sweeping Stream Alert Rules: %s", err)
+		return fmt.Errorf("error loading configuration for sweeping Stream Alert Rules: %s", configLoadErr)
 	}
 	fabric := meta.NewFabricClientForTesting(ctx)
 	limit := int32(100)
@@ -46,7 +46,7 @@ func testSweepStreamAlertRules(_ string) error {
 		if sweep.IsSweepableFabricTestResource(stream.GetName()) {
 			alertRules, _, err := fabric.StreamAlertRulesApi.GetStreamAlertRules(ctx, stream.GetUuid()).Limit(limit).Execute()
 			if err != nil {
-				return fmt.Errorf("error getting alert rules list for sweeping fabric stream alert rules: %s", err)
+				errs = append(errs, fmt.Errorf("error getting fabric stream subscriptions on stream %s: %s", stream.GetUuid(), err))
 			}
 			for _, alertRule := range alertRules.GetData() {
 				if sweep.IsSweepableFabricTestResource(alertRule.GetName()) {
@@ -55,12 +55,12 @@ func testSweepStreamAlertRules(_ string) error {
 					if equinix_errors.IgnoreHttpResponseErrors(http.StatusForbidden, http.StatusNotFound)(resp, err) != nil {
 						errs = append(errs, fmt.Errorf("error deleting fabric stream alert rule %s on stream %s: %s", alertRule.GetUuid(), stream.GetUuid(), err))
 					}
-					log.Printf("[DEBUG] Deleting stream: %s", stream.GetName())
-					_, resp, err = fabric.StreamsApi.DeleteStreamByUuid(ctx, stream.GetUuid()).Execute()
-					if equinix_errors.IgnoreHttpResponseErrors(http.StatusForbidden, http.StatusNotFound)(resp, err) != nil {
-						errs = append(errs, fmt.Errorf("error deleting fabric stream: %s", err))
-					}
 				}
+			}
+			log.Printf("[DEBUG] Deleting stream: %s", stream.GetName())
+			_, resp, err := fabric.StreamsApi.DeleteStreamByUuid(ctx, stream.GetUuid()).Execute()
+			if equinix_errors.IgnoreHttpResponseErrors(http.StatusForbidden, http.StatusNotFound)(resp, err) != nil {
+				errs = append(errs, fmt.Errorf("error deleting fabric stream: %s", err))
 			}
 		}
 	}

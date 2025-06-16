@@ -3,6 +3,7 @@ package streamalertrule
 import (
 	"context"
 	"fmt"
+	"github.com/hashicorp/terraform-plugin-framework/types"
 	"net/http"
 	"slices"
 	"time"
@@ -13,7 +14,6 @@ import (
 	fwtypes "github.com/equinix/terraform-provider-equinix/internal/framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
-	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 )
@@ -95,7 +95,7 @@ func (r *Resource) Create(
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
 
-func getCreateUpdateWaiter(ctx context.Context, client *fabricv4.APIClient, alertRuleID, streamAlertRuleID string, timeout time.Duration) *retry.StateChangeConf {
+func getCreateUpdateWaiter(ctx context.Context, client *fabricv4.APIClient, streamID, streamAlertRuleID string, timeout time.Duration) *retry.StateChangeConf {
 	return &retry.StateChangeConf{
 		Pending: []string{
 			string(fabricv4.STREAMALERTRULESTATE_INACTIVE),
@@ -104,7 +104,7 @@ func getCreateUpdateWaiter(ctx context.Context, client *fabricv4.APIClient, aler
 			string(fabricv4.STREAMALERTRULESTATE_ACTIVE),
 		},
 		Refresh: func() (interface{}, string, error) {
-			streamAlertRule, _, err := client.StreamAlertRulesApi.GetStreamAlertRuleByUuid(ctx, alertRuleID, streamAlertRuleID).Execute()
+			streamAlertRule, _, err := client.StreamAlertRulesApi.GetStreamAlertRuleByUuid(ctx, streamID, streamAlertRuleID).Execute()
 			if err != nil {
 				return 0, "", err
 			}
@@ -208,7 +208,7 @@ func (r *Resource) Update(
 
 	// Retrieve values from plan
 	var state, plan streamAlertRuleResourceModel
-	resp.Diagnostics.Append(req.Config.Get(ctx, &plan)...)
+	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
 	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
 	if resp.Diagnostics.HasError() {
 		return
@@ -216,7 +216,7 @@ func (r *Resource) Update(
 
 	id := state.ID.ValueString()
 	streamID := state.StreamID.ValueString()
-	updateRequest, diags := buildUpdateRequest(ctx, plan, state)
+	updateRequest, diags := buildUpdateRequest(ctx, plan)
 
 	if diags.HasError() {
 		resp.Diagnostics.Append(diags...)
@@ -258,40 +258,37 @@ func (r *Resource) Update(
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
 
-func buildUpdateRequest(ctx context.Context, state streamAlertRuleResourceModel, plan streamAlertRuleResourceModel) (fabricv4.AlertRulePutRequest, diag.Diagnostics) {
+func buildUpdateRequest(ctx context.Context, plan streamAlertRuleResourceModel) (fabricv4.AlertRulePutRequest, diag.Diagnostics) {
 	var diags diag.Diagnostics
 	request := fabricv4.AlertRulePutRequest{}
 
-	if !state.Name.Equal(plan.Name) {
-		request.SetName(plan.Name.ValueString())
+	request.SetName(plan.Name.ValueString())
+	request.SetDescription(plan.Description.ValueString())
+	request.SetMetricName(fabricv4.StreamAlertRuleMetricName(plan.MetricName.ValueString()))
+	request.SetOperand(fabricv4.StreamAlertRuleOperand(plan.Operand.ValueString()))
+	request.SetWindowSize(plan.WindowSize.ValueString())
+
+	if plan.CriticalThreshold.IsNull() && plan.WarningThreshold.IsNull() {
+		return request, diags
 	}
-	if !state.Description.Equal(plan.Description) {
-		request.SetDescription(plan.Description.ValueString())
-	}
-	if !state.CriticalThreshold.Equal(plan.CriticalThreshold) {
+
+	if !plan.CriticalThreshold.IsNull() {
 		request.SetCriticalThreshold(plan.CriticalThreshold.ValueString())
 	}
-	if !state.WarningThreshold.Equal(plan.WarningThreshold) {
+	if !plan.WarningThreshold.IsNull() {
 		request.SetWarningThreshold(plan.WarningThreshold.ValueString())
 	}
-	if !state.WindowSize.Equal(plan.WindowSize) {
-		request.SetWindowSize(plan.WindowSize.ValueString())
-	}
-	if !state.MetricName.Equal(plan.MetricName) {
-		request.SetMetricName(fabricv4.StreamAlertRuleMetricName(plan.MetricName.ValueString()))
-	}
-	if !state.Operand.Equal(plan.Operand) {
-		request.SetOperand(fabricv4.StreamAlertRuleOperand(plan.Operand.ValueString()))
-	}
-	if !state.Enabled.Equal(plan.Enabled) {
-		request.SetEnabled(plan.Enabled.ValueBool())
-	}
-	if !state.ResourceSelector.Equal(plan.ResourceSelector) && !plan.ResourceSelector.IsNull() && !plan.ResourceSelector.IsUnknown() {
+
+	if !plan.ResourceSelector.IsNull() && !plan.ResourceSelector.IsUnknown() {
 		resourceSelector, diags := buildStreamAlertRuleSelector(ctx, plan.ResourceSelector)
 		if diags.HasError() {
 			return request, diags
 		}
 		request.SetResourceSelector(resourceSelector)
+	}
+
+	if !plan.Enabled.IsNull() {
+		request.SetEnabled(plan.Enabled.ValueBool())
 	}
 	return request, diags
 }
