@@ -1,12 +1,13 @@
-package streamalertrule
+package stream_alert_rule
 
 import (
 	"context"
 	"fmt"
-	"github.com/hashicorp/terraform-plugin-framework/types"
 	"net/http"
 	"slices"
 	"time"
+
+	"github.com/hashicorp/terraform-plugin-framework/types"
 
 	"github.com/equinix/equinix-sdk-go/services/fabricv4"
 	equinix_errors "github.com/equinix/terraform-provider-equinix/internal/errors"

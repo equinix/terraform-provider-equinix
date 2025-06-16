@@ -1,4 +1,4 @@
-package streamalertrule
+package stream_alert_rule
 
 import (
 	"context"
@@ -152,7 +152,7 @@ func getStreamAlertRuleSchema(ctx context.Context) map[string]schema.Attribute {
 		"change_log": schema.SingleNestedAttribute{
 			Description: "Details of the last change on the stream resource",
 			Computed:    true,
-			CustomType:  fwtypes.NewObjectTypeOf[LogModel](ctx),
+			CustomType:  fwtypes.NewObjectTypeOf[logModel](ctx),
 			Attributes: map[string]schema.Attribute{
 				"created_by": schema.StringAttribute{
 					Description: "User name of creator of the stream resource",

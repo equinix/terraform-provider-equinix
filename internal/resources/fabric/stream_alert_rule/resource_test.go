@@ -1,4 +1,4 @@
-package streamalertrule_test
+package stream_alert_rule_test
 
 import (
 	"context"
@@ -167,7 +167,7 @@ func TestAccFabricStreamAlertRule_PFCR(t *testing.T) {
 	accessToken := streamData["splunk"]["accessToken"]
 	eventIndex := streamData["splunk"]["event_index"]
 	metricIndex := streamData["splunk"]["metric_index"]
-	source := streamData["splunk"]["metric_index"]
+	source := streamData["splunk"]["source"]
 
 	ports := testinghelpers.GetFabricEnvPorts(t)
 	var aSidePortUUID, zSidePortUUID string

@@ -1,4 +1,4 @@
-package streamalertrule
+package stream_alert_rule
 
 import (
 	"context"

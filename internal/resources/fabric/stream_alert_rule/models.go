@@ -1,4 +1,4 @@
-package streamalertrule
+package stream_alert_rule
 
 import (
 	"context"
@@ -30,7 +30,7 @@ type baseStreamAlertRulesModel struct {
 	Description       types.String                         `tfsdk:"description"`
 	Enabled           types.Bool                           `tfsdk:"enabled"`
 	MetricName        types.String                         `tfsdk:"metric_name"`
-	ResourceSelector  fwtypes.ObjectValueOf[selectorModel] `tfsdk:"resource_selector"` // Object of ResourceSelectorModel
+	ResourceSelector  fwtypes.ObjectValueOf[selectorModel] `tfsdk:"resource_selector"` // Object of selectorModel
 	WindowSize        types.String                         `tfsdk:"window_size"`
 	WarningThreshold  types.String                         `tfsdk:"warning_threshold"`
 	CriticalThreshold types.String                         `tfsdk:"critical_threshold"`
@@ -38,10 +38,11 @@ type baseStreamAlertRulesModel struct {
 	Href              types.String                         `tfsdk:"href"`
 	UUID              types.String                         `tfsdk:"uuid"`
 	State             types.String                         `tfsdk:"state"`
-	ChangeLog         fwtypes.ObjectValueOf[LogModel]      `tfsdk:"change_log"` // Object of LogModel
+	ChangeLog         fwtypes.ObjectValueOf[logModel]      `tfsdk:"change_log"` // Object of logModel
 }
 
-type LogModel struct {
+// logModel represents the change log details for a stream alert rule
+type logModel struct {
 	CreatedBy         types.String `tfsdk:"created_by"`
 	CreatedByFullName types.String `tfsdk:"created_by_full_name"`
 	CreatedByEmail    types.String `tfsdk:"created_by_email"`
@@ -99,7 +100,7 @@ func parseAlertRule(ctx context.Context, streamAlertRule *fabricv4.StreamAlertRu
 	criticalThreshold, operand, metricName *basetypes.StringValue,
 	enabled *basetypes.BoolValue,
 	resourceSelector *fwtypes.ObjectValueOf[selectorModel],
-	changeLog *fwtypes.ObjectValueOf[LogModel]) diag.Diagnostics {
+	changeLog *fwtypes.ObjectValueOf[logModel]) diag.Diagnostics {
 
 	var mDiags diag.Diagnostics
 
@@ -129,7 +130,7 @@ func parseAlertRule(ctx context.Context, streamAlertRule *fabricv4.StreamAlertRu
 
 	// Parse ChangeLog
 	streamAlertRuleChangeLog := streamAlertRule.GetChangeLog()
-	changeLogModel := LogModel{
+	changeLogModel := logModel{
 		CreatedBy:         types.StringValue(streamAlertRuleChangeLog.GetCreatedBy()),
 		CreatedByFullName: types.StringValue(streamAlertRuleChangeLog.GetCreatedByFullName()),
 		CreatedByEmail:    types.StringValue(streamAlertRuleChangeLog.GetCreatedByEmail()),
@@ -143,7 +144,7 @@ func parseAlertRule(ctx context.Context, streamAlertRule *fabricv4.StreamAlertRu
 		DeletedByEmail:    types.StringValue(streamAlertRuleChangeLog.GetDeletedByEmail()),
 		DeletedDateTime:   types.StringValue(streamAlertRuleChangeLog.GetDeletedDateTime().Format(fabric.TimeFormat)),
 	}
-	*changeLog = fwtypes.NewObjectValueOf[LogModel](ctx, &changeLogModel)
+	*changeLog = fwtypes.NewObjectValueOf[logModel](ctx, &changeLogModel)
 
 	return mDiags
 }

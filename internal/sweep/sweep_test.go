@@ -3,7 +3,7 @@ package sweep_test
 import (
 	"testing"
 
-	"github.com/equinix/terraform-provider-equinix/internal/resources/fabric/streamalertrule"
+	"github.com/equinix/terraform-provider-equinix/internal/resources/fabric/stream_alert_rule"
 
 	fabric_cloud_router "github.com/equinix/terraform-provider-equinix/internal/resources/fabric/cloud_router"
 	fabric_connection "github.com/equinix/terraform-provider-equinix/internal/resources/fabric/connection"
@@ -46,7 +46,7 @@ func addTestSweepers() {
 	project.AddTestSweeper()
 	serviceprofile.AddTestSweeper()
 	ssh_key.AddTestSweeper()
-	streamalertrule.AddTestSweeper()
+	stream_alert_rule.AddTestSweeper()
 	user_api_key.AddTestSweeper()
 	virtual_circuit.AddTestSweeper()
 	vlan.AddTestSweeper()
