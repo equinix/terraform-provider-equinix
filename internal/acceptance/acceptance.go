@@ -1,13 +1,17 @@
+// Package acceptance provides Utilities and test framework setup for running
+// acceptance tests for the Equinix Terraform provider. It handles provider
+// configuration, authentication verification, and prerequisite checks for
+// testing against Equinix Fabric, Network Edge, and Metal services.
 package acceptance
 
 import (
-	"github.com/equinix/terraform-provider-equinix/internal/env"
 	"os"
 	"sync"
 	"testing"
 
 	"github.com/equinix/terraform-provider-equinix/equinix"
 	"github.com/equinix/terraform-provider-equinix/internal/config"
+	"github.com/equinix/terraform-provider-equinix/internal/env"
 	"github.com/equinix/terraform-provider-equinix/internal/provider"
 	"github.com/equinix/terraform-provider-equinix/version"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -20,6 +24,7 @@ const (
 )
 
 var (
+	// TestAccProvider is the Equinix provider instance used for acceptance testing
 	TestAccProvider          *schema.Provider
 	TestAccProviders         map[string]*schema.Provider
 	TestExternalProviders    map[string]resource.ExternalProvider
@@ -46,6 +51,9 @@ func init() {
 	TestAccFrameworkProvider = provider.CreateFrameworkProvider(version.ProviderVersion).(*provider.FrameworkProvider)
 }
 
+// TestAccPreCheck verifies that the required environment variables are set
+// for running acceptance tests. It checks for authentication credentials for
+// Equinix Fabric, Network Edge, and Metal services.
 func TestAccPreCheck(t *testing.T) {
 	var err error
 
@@ -77,12 +85,17 @@ func TestAccPreCheck(t *testing.T) {
 	}
 }
 
+// TestAccPreCheckMetal specifically verifies that the Equinix Metal authentication token
+// environment variable is set for running Metal-specific acceptance tests.
 func TestAccPreCheckMetal(t *testing.T) {
 	if os.Getenv(config.MetalAuthTokenEnvVar) == "" {
 		t.Fatalf(missingMetalToken, config.MetalAuthTokenEnvVar)
 	}
 }
 
+// TestAccPreCheckProviderConfigured ensures the provider is properly configured
+// before running tests. It uses sync.Once to guarantee the provider is
+// configured exactly once across all test executions.
 func TestAccPreCheckProviderConfigured(t *testing.T) {
 	// Since we are outside the scope of the Terraform configuration we must
 	// call Configure() to properly initialize the provider configuration.

@@ -1,3 +1,9 @@
+// Package config provides configuration and client initialization for the Equinix
+// Terraform provider. It handles authentication to Equinix services (Fabric,
+// Network Edge, and Metal) via OAuth, tokens, and Workload Identity Federation.
+// The package manages HTTP client configuration including retries and timeouts,
+// and provides utility functions for generating service-specific API clients
+// compatible with both Terraform SDK v2 and Framework interfaces.
 package config
 
 import (
@@ -28,6 +34,7 @@ import (
 )
 
 const (
+	// EndpointEnvVar is the environment variable name used to override the default Equinix API endpoint.
 	EndpointEnvVar              = "EQUINIX_API_ENDPOINT"
 	ClientIDEnvVar              = "EQUINIX_API_CLIENTID"
 	ClientSecretEnvVar          = "EQUINIX_API_CLIENTSECRET"
@@ -39,6 +46,8 @@ const (
 	StsEndpointEnvVar           = "EQUINIX_STS_ENDPOINT"
 )
 
+// ProviderMeta contains metadata about the Terraform module using this provider.
+// It's primarily used to track module names for user agent identification in API requests.
 type ProviderMeta struct {
 	ModuleName string `cty:"module_name"`
 }
@@ -50,6 +59,7 @@ const (
 )
 
 var (
+	// DefaultBaseURL is the standard production API endpoint for Equinix services.
 	DefaultBaseURL    = "https://api.equinix.com"
 	DefaultStsBaseURL = "https://sts.equinix.com"
 	DefaultTimeout    = 30
@@ -119,7 +129,7 @@ func (c *Config) NewFabricClientForSDK(ctx context.Context, d *schema.ResourceDa
 	return client
 }
 
-// Shim for Fabric tests.
+// NewFabricClientForTesting creates a Fabric client configured specifically for acceptance tests.
 // Deprecated: when the acceptance package starts to contain API clients for testing/cleanup this will move with them
 func (c *Config) NewFabricClientForTesting(ctx context.Context) *fabricv4.APIClient {
 	client := c.newFabricClient(ctx)
@@ -129,6 +139,7 @@ func (c *Config) NewFabricClientForTesting(ctx context.Context) *fabricv4.APICli
 	return client
 }
 
+// NewFabricClientForFramework creates a Fabric client compatible with the Terraform Plugin Framework.
 func (c *Config) NewFabricClientForFramework(ctx context.Context, meta tfsdk.Config) *fabricv4.APIClient {
 	client := c.newFabricClient(ctx)
 
@@ -190,14 +201,13 @@ func (c *Config) createOAuthClient(ctx context.Context) *http.Client {
 			Transport: oauthTransport,
 		}
 		return authClient
-	} else {
-		authConfig := oauth2.Config{
-			ClientID:     c.ClientID,
-			ClientSecret: c.ClientSecret,
-			BaseURL:      c.BaseURL,
-		}
-		return authConfig.New(ctx)
 	}
+	authConfig := oauth2.Config{
+		ClientID:     c.ClientID,
+		ClientSecret: c.ClientSecret,
+		BaseURL:      c.BaseURL,
+	}
+	return authConfig.New(ctx)
 }
 
 func (c *Config) configureHTTPClient(authClient *http.Client) *http.Client {
@@ -216,7 +226,7 @@ func (c *Config) configureHTTPClient(authClient *http.Client) *http.Client {
 func (c *Config) createFabricClient(httpClient *http.Client) *fabricv4.APIClient {
 	baseURL, err := url.Parse(c.BaseURL)
 	if err != nil {
-		return createErroringFabricClient(fmt.Errorf("Invalid base URL: %w", err))
+		return createErroringFabricClient(fmt.Errorf("invalid base URL: %w", err))
 	}
 
 	configuration := fabricv4.NewConfiguration()
@@ -252,6 +262,7 @@ func (c *Config) NewMetalClient() *packngo.Client {
 	return client
 }
 
+// NewMetalClientForSDK returns a Metal client compatible with the Terraform Plugin SDK v2.
 func (c *Config) NewMetalClientForSDK(d *schema.ResourceData) *metalv1.APIClient {
 	client := c.newMetalClient()
 
@@ -261,6 +272,7 @@ func (c *Config) NewMetalClientForSDK(d *schema.ResourceData) *metalv1.APIClient
 	return client
 }
 
+// NewMetalClientForFramework returns a Metal client compatible with the Terraform Plugin Framework.
 func (c *Config) NewMetalClientForFramework(ctx context.Context, meta tfsdk.Config) *metalv1.APIClient {
 	client := c.newMetalClient()
 
@@ -270,7 +282,7 @@ func (c *Config) NewMetalClientForFramework(ctx context.Context, meta tfsdk.Conf
 	return client
 }
 
-// This is a short-term shim to allow tests to continue to have a client for cleanup and validation
+// NewMetalClientForTesting is a short-term shim to allow tests to continue to have a client for cleanup and validation
 // code that is outside of the resource or datasource under test
 // Deprecated: when possible, API clients for test cleanup/validation should be moved to the acceptance package
 func (c *Config) NewMetalClientForTesting() *metalv1.APIClient {
@@ -326,6 +338,7 @@ func appendUserAgentFromEnv(ua string) string {
 	return ua
 }
 
+// AddModuleToNEUserAgent updates the Network Edge client's User-Agent header to include Terraform module information.
 func (c *Config) AddModuleToNEUserAgent(client *ne.Client, d *schema.ResourceData) {
 	cli := *client
 	rc := cli.(*ne.RestClient)
@@ -333,7 +346,7 @@ func (c *Config) AddModuleToNEUserAgent(client *ne.Client, d *schema.ResourceDat
 	*client = rc
 }
 
-// TODO (ocobleseqx) - known issue, Metal services are initialized using the metal client pointer
+// AddFwModuleToMetalUserAgent TODO (ocobleseqx) - known issue, Metal services are initialized using the metal client pointer
 // if two or more modules in same project interact with metal resources they will override
 // the UserAgent resulting in swapped UserAgent.
 // This can be fixed by letting the headers be overwritten on the initialized Packngo ServiceOp
@@ -355,6 +368,7 @@ func generateFwModuleUserAgentString(ctx context.Context, meta tfsdk.Config, bas
 	return baseUserAgent
 }
 
+// AddModuleToMetalUserAgent updates the Metal client's User-Agent string to include Terraform module information.
 func (c *Config) AddModuleToMetalUserAgent(d *schema.ResourceData) {
 	c.Metal.UserAgent = generateModuleUserAgentString(d, c.metalUserAgent)
 }
@@ -437,17 +451,17 @@ func (s *workloadIdentityRefreshTokenSource) Token() (*xoauth2.Token, error) {
 
 func oidcTokenExchange(ctx context.Context, authScope string, workloadIdentityToken string, client *http.Client, stsBaseURL string) (string, int, error) {
 	if authScope == "" {
-		return "", 0, fmt.Errorf("Authorization scope cannot be empty for OIDC token exchange")
+		return "", 0, fmt.Errorf("authorization scope cannot be empty for OIDC token exchange")
 	}
 
 	if workloadIdentityToken == "" {
-		return "", 0, fmt.Errorf("Workload identity token cannot be empty for OIDC token exchange")
+		return "", 0, fmt.Errorf("workload identity token cannot be empty for OIDC token exchange")
 	}
 
 	// Construct the full token exchange URL
 	baseURL, err := url.Parse(stsBaseURL)
 	if err != nil {
-		return "", 0, fmt.Errorf("Failed to parse STS base URL: %w", err)
+		return "", 0, fmt.Errorf("failed to parse STS base URL: %w", err)
 	}
 	baseURL.Path = path.Join(baseURL.Path, "/use/token")
 	tokenURL := baseURL.String()
@@ -463,20 +477,31 @@ func oidcTokenExchange(ctx context.Context, authScope string, workloadIdentityTo
 	// Create the HTTP request
 	req, err := http.NewRequestWithContext(ctx, http.MethodPost, tokenURL, strings.NewReader(form.Encode()))
 	if err != nil {
-		return "", 0, fmt.Errorf("Failed to create token exchange request: %w", err)
+		return "", 0, fmt.Errorf("failed to create token exchange request: %w", err)
 	}
 
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 
 	resp, err := client.Do(req)
 	if err != nil {
-		return "", 0, fmt.Errorf("Token exchange request failed: %w", err)
+		return "", 0, fmt.Errorf("token exchange request failed: %w", err)
 	}
-	defer resp.Body.Close()
+	defer func() {
+		if cerr := resp.Body.Close(); cerr != nil {
+			// If there's already an error being returned, we can log this one
+			// Or combine with the existing error if needed
+			if err == nil {
+				err = fmt.Errorf("error closing response body: %w", cerr)
+			} else {
+				// Either log the close error or wrap it with the existing error
+				log.Printf("[WARN] error closing response body: %v", cerr)
+			}
+		}
+	}()
 
 	if resp.StatusCode != http.StatusOK {
 		body, _ := io.ReadAll(resp.Body)
-		return "", 0, fmt.Errorf("Token exchange failed with status %d: %s", resp.StatusCode, string(body))
+		return "", 0, fmt.Errorf("token exchange failed with status %d: %s", resp.StatusCode, string(body))
 	}
 
 	// Parse the response
@@ -485,7 +510,7 @@ func oidcTokenExchange(ctx context.Context, authScope string, workloadIdentityTo
 		ExpiresIn   int    `json:"expires_in"`
 	}
 	if err := json.NewDecoder(resp.Body).Decode(&response); err != nil {
-		return "", 0, fmt.Errorf("Failed to parse token exchange response: %w", err)
+		return "", 0, fmt.Errorf("failed to parse token exchange response: %w", err)
 	}
 
 	return response.AccessToken, response.ExpiresIn, nil
