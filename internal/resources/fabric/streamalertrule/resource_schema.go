@@ -46,7 +46,7 @@ Additional Documentation:
 			},
 			"description": schema.StringAttribute{
 				Description: "Customer-provided stream alert rule description",
-				Optional:    true,
+				Required:    true,
 			},
 			"enabled": schema.BoolAttribute{
 				Description: "Stream alert rule enabled status",

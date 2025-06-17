@@ -7,13 +7,14 @@ import (
 	"slices"
 	"time"
 
+	"github.com/hashicorp/terraform-plugin-framework/types"
+
 	"github.com/equinix/equinix-sdk-go/services/fabricv4"
 	equinix_errors "github.com/equinix/terraform-provider-equinix/internal/errors"
 	"github.com/equinix/terraform-provider-equinix/internal/framework"
 	fwtypes "github.com/equinix/terraform-provider-equinix/internal/framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
-	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 )
@@ -95,7 +96,7 @@ func (r *Resource) Create(
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
 
-func getCreateUpdateWaiter(ctx context.Context, client *fabricv4.APIClient, alertRuleID, streamAlertRuleID string, timeout time.Duration) *retry.StateChangeConf {
+func getCreateUpdateWaiter(ctx context.Context, client *fabricv4.APIClient, streamID, streamAlertRuleID string, timeout time.Duration) *retry.StateChangeConf {
 	return &retry.StateChangeConf{
 		Pending: []string{
 			string(fabricv4.STREAMALERTRULESTATE_INACTIVE),
@@ -104,7 +105,7 @@ func getCreateUpdateWaiter(ctx context.Context, client *fabricv4.APIClient, aler
 			string(fabricv4.STREAMALERTRULESTATE_ACTIVE),
 		},
 		Refresh: func() (interface{}, string, error) {
-			streamAlertRule, _, err := client.StreamAlertRulesApi.GetStreamAlertRuleByUuid(ctx, alertRuleID, streamAlertRuleID).Execute()
+			streamAlertRule, _, err := client.StreamAlertRulesApi.GetStreamAlertRuleByUuid(ctx, streamID, streamAlertRuleID).Execute()
 			if err != nil {
 				return 0, "", err
 			}
@@ -207,22 +208,37 @@ func (r *Resource) Update(
 	client := r.Meta.NewFabricClientForFramework(ctx, req.ProviderMeta)
 
 	// Retrieve values from plan
-	var state, plan streamAlertRuleResourceModel
-	resp.Diagnostics.Append(req.Config.Get(ctx, &plan)...)
+	var state, plan, config streamAlertRuleResourceModel
+	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
 	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
+	resp.Diagnostics.Append(req.Config.Get(ctx, &config)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
 	id := state.ID.ValueString()
 	streamID := state.StreamID.ValueString()
-	updateRequest, diags := buildUpdateRequest(ctx, plan, state)
 
+	needsUpdate := config.Name.ValueString() != state.Name.ValueString() ||
+		config.Description.ValueString() != state.Description.ValueString() ||
+		config.MetricName.ValueString() != state.MetricName.ValueString() ||
+		config.Operand.ValueString() != state.Operand.ValueString() ||
+		config.WindowSize.ValueString() != state.WindowSize.ValueString() ||
+		config.WarningThreshold.ValueString() != state.WarningThreshold.ValueString() ||
+		config.CriticalThreshold.ValueString() != state.CriticalThreshold.ValueString() ||
+		config.Enabled.ValueBool() != state.Enabled.ValueBool() ||
+		!config.ResourceSelector.Equal(state.ResourceSelector)
+
+	if !needsUpdate {
+		resp.Diagnostics.AddWarning("No updatable fields have changed",
+			"Terraform detected a config change, but it is for a field that isn't updatable for the stream alert rule resource. Please revert to prior config")
+		return
+	}
+	updateRequest, diags := buildUpdateRequest(ctx, plan)
 	if diags.HasError() {
 		resp.Diagnostics.Append(diags...)
 		return
 	}
-
 	_, _, err := client.StreamAlertRulesApi.UpdateStreamAlertRuleByUuid(ctx, streamID, id).AlertRulePutRequest(updateRequest).Execute()
 	if err != nil {
 		resp.Diagnostics.AddError(
@@ -258,40 +274,36 @@ func (r *Resource) Update(
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
 
-func buildUpdateRequest(ctx context.Context, state streamAlertRuleResourceModel, plan streamAlertRuleResourceModel) (fabricv4.AlertRulePutRequest, diag.Diagnostics) {
+func buildUpdateRequest(ctx context.Context, config streamAlertRuleResourceModel) (fabricv4.AlertRulePutRequest, diag.Diagnostics) {
 	var diags diag.Diagnostics
 	request := fabricv4.AlertRulePutRequest{}
+	request.SetName(config.Name.ValueString())
+	request.SetDescription(config.Description.ValueString())
+	request.SetMetricName(fabricv4.StreamAlertRuleMetricName(config.MetricName.ValueString()))
+	request.SetOperand(fabricv4.StreamAlertRuleOperand(config.Operand.ValueString()))
+	request.SetWindowSize(config.WindowSize.ValueString())
 
-	if !state.Name.Equal(plan.Name) {
-		request.SetName(plan.Name.ValueString())
+	if config.CriticalThreshold.IsNull() && config.WarningThreshold.IsNull() {
+		return request, diags
 	}
-	if !state.Description.Equal(plan.Description) {
-		request.SetDescription(plan.Description.ValueString())
+
+	if !config.CriticalThreshold.IsNull() {
+		request.SetCriticalThreshold(config.CriticalThreshold.ValueString())
 	}
-	if !state.CriticalThreshold.Equal(plan.CriticalThreshold) {
-		request.SetCriticalThreshold(plan.CriticalThreshold.ValueString())
+	if !config.WarningThreshold.IsNull() {
+		request.SetWarningThreshold(config.WarningThreshold.ValueString())
 	}
-	if !state.WarningThreshold.Equal(plan.WarningThreshold) {
-		request.SetWarningThreshold(plan.WarningThreshold.ValueString())
-	}
-	if !state.WindowSize.Equal(plan.WindowSize) {
-		request.SetWindowSize(plan.WindowSize.ValueString())
-	}
-	if !state.MetricName.Equal(plan.MetricName) {
-		request.SetMetricName(fabricv4.StreamAlertRuleMetricName(plan.MetricName.ValueString()))
-	}
-	if !state.Operand.Equal(plan.Operand) {
-		request.SetOperand(fabricv4.StreamAlertRuleOperand(plan.Operand.ValueString()))
-	}
-	if !state.Enabled.Equal(plan.Enabled) {
-		request.SetEnabled(plan.Enabled.ValueBool())
-	}
-	if !state.ResourceSelector.Equal(plan.ResourceSelector) && !plan.ResourceSelector.IsNull() && !plan.ResourceSelector.IsUnknown() {
-		resourceSelector, diags := buildStreamAlertRuleSelector(ctx, plan.ResourceSelector)
+
+	if !config.ResourceSelector.IsNull() && !config.ResourceSelector.IsUnknown() {
+		resourceSelector, diags := buildStreamAlertRuleSelector(ctx, config.ResourceSelector)
 		if diags.HasError() {
 			return request, diags
 		}
 		request.SetResourceSelector(resourceSelector)
+	}
+
+	if !config.Enabled.IsNull() {
+		request.SetEnabled(config.Enabled.ValueBool())
 	}
 	return request, diags
 }

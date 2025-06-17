@@ -9,7 +9,6 @@ import (
 	fwtypes "github.com/equinix/terraform-provider-equinix/internal/framework/types"
 	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
-
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
@@ -30,7 +29,7 @@ type baseStreamAlertRulesModel struct {
 	Description       types.String                          `tfsdk:"description"`
 	Enabled           types.Bool                            `tfsdk:"enabled"`
 	MetricName        types.String                          `tfsdk:"metric_name"`
-	ResourceSelector  fwtypes.ObjectValueOf[selectorModel]  `tfsdk:"resource_selector"` // Object of ResourceSelectorModel
+	ResourceSelector  fwtypes.ObjectValueOf[selectorModel]  `tfsdk:"resource_selector"` // Object of selectorModel
 	WindowSize        types.String                          `tfsdk:"window_size"`
 	WarningThreshold  types.String                          `tfsdk:"warning_threshold"`
 	CriticalThreshold types.String                          `tfsdk:"critical_threshold"`
@@ -38,9 +37,10 @@ type baseStreamAlertRulesModel struct {
 	Href              types.String                          `tfsdk:"href"`
 	UUID              types.String                          `tfsdk:"uuid"`
 	State             types.String                          `tfsdk:"state"`
-	ChangeLog         fwtypes.ObjectValueOf[changeLogModel] `tfsdk:"change_log"` // Object of ChangeLogModel
+	ChangeLog         fwtypes.ObjectValueOf[changeLogModel] `tfsdk:"change_log"` // Object of changeLogModel
 }
 
+// changeLogModel represents the change log details for a stream alert rule
 type changeLogModel struct {
 	CreatedBy         types.String `tfsdk:"created_by"`
 	CreatedByFullName types.String `tfsdk:"created_by_full_name"`
@@ -93,18 +93,22 @@ func (m *baseStreamAlertRulesModel) parse(ctx context.Context, streamAlertRule *
 	m.WarningThreshold = types.StringValue(streamAlertRule.GetWarningThreshold())
 	m.CriticalThreshold = types.StringValue(streamAlertRule.GetCriticalThreshold())
 	m.Operand = types.StringValue(string(streamAlertRule.GetOperand()))
+	m.MetricName = types.StringValue(string(streamAlertRule.GetMetricName()))
 
 	// Parse ResourceSelector
-	resourceSelectorObject, diags := parseSelectorModel(ctx, streamAlertRule.GetResourceSelector())
+	getResourceSelector := streamAlertRule.GetResourceSelector()
+	inclusions, diags := fwtypes.NewListValueOf[types.String](ctx, int_fw.StringSliceToAttrValue(getResourceSelector.GetInclude()))
 	if diags.HasError() {
-		mDiags.Append(diags...)
-		return mDiags
+		return diags
 	}
-	m.ResourceSelector = resourceSelectorObject
+	selector := selectorModel{
+		Include: inclusions,
+	}
+	m.ResourceSelector = fwtypes.NewObjectValueOf[selectorModel](ctx, &selector)
 
 	// Parse ChangeLog
 	streamAlertRuleChangeLog := streamAlertRule.GetChangeLog()
-	changeLog := changeLogModel{
+	logModel := changeLogModel{
 		CreatedBy:         types.StringValue(streamAlertRuleChangeLog.GetCreatedBy()),
 		CreatedByFullName: types.StringValue(streamAlertRuleChangeLog.GetCreatedByFullName()),
 		CreatedByEmail:    types.StringValue(streamAlertRuleChangeLog.GetCreatedByEmail()),
@@ -118,21 +122,18 @@ func (m *baseStreamAlertRulesModel) parse(ctx context.Context, streamAlertRule *
 		DeletedByEmail:    types.StringValue(streamAlertRuleChangeLog.GetDeletedByEmail()),
 		DeletedDateTime:   types.StringValue(streamAlertRuleChangeLog.GetDeletedDateTime().Format(fabric.TimeFormat)),
 	}
-	m.ChangeLog = fwtypes.NewObjectValueOf[changeLogModel](ctx, &changeLog)
+	m.ChangeLog = fwtypes.NewObjectValueOf[changeLogModel](ctx, &logModel)
 
 	return mDiags
 }
 
-func parseSelectorModel(ctx context.Context, alertRuleSubSelector fabricv4.ResourceSelector) (fwtypes.ObjectValueOf[selectorModel], diag.Diagnostics) {
-	var diags diag.Diagnostics
-	inclusions, diags := fwtypes.NewListValueOf[types.String](ctx, int_fw.StringSliceToAttrValue(alertRuleSubSelector.GetInclude()))
+func (m *streamAlertRuleResourceModel) parse(ctx context.Context, streamAlertRule *fabricv4.StreamAlertRule) diag.Diagnostics {
+	m.ID = types.StringValue(streamAlertRule.GetUuid())
+	diags := m.baseStreamAlertRulesModel.parse(ctx, streamAlertRule)
 	if diags.HasError() {
-		return fwtypes.NewObjectValueOfNull[selectorModel](ctx), diags
+		return diags
 	}
-	selector := selectorModel{
-		Include: inclusions,
-	}
-	return fwtypes.NewObjectValueOf[selectorModel](ctx, &selector), diags
+	return diags
 }
 
 func (m *dataSourceAllStreamAlertRulesModel) parse(ctx context.Context, streamAlertRulesResponse *fabricv4.GetAllStreamAlertRuleResponse) diag.Diagnostics {
