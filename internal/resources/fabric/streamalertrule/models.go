@@ -79,6 +79,7 @@ type dataSourceAllStreamAlertRulesModel struct {
 }
 
 func (m *baseStreamAlertRulesModel) parse(ctx context.Context, streamAlertRule *fabricv4.StreamAlertRule) diag.Diagnostics {
+
 	var mDiags diag.Diagnostics
 
 	m.Type = types.StringValue(string(streamAlertRule.GetType()))

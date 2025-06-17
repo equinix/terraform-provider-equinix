@@ -71,7 +71,10 @@ func testAccFabricStreamAlertRuleConfig(uri, event_index, metric_index, source, 
 				  access_token = "%s"
 				}
 			  }
-			}
+              lifecycle {
+					create_before_destroy = true
+  				}
+			  }
         resource "equinix_fabric_connection" "test_connection" {
 			name = "Test Connection PFCR"
 			type = "EVPL_VC"
@@ -92,7 +95,7 @@ func testAccFabricStreamAlertRuleConfig(uri, event_index, metric_index, source, 
 					}
 					link_protocol {
 						type= "DOT1Q"
-						vlan_tag= "1232"
+						vlan_tag= "876"
 					}
 				}
 			}
@@ -104,7 +107,7 @@ func testAccFabricStreamAlertRuleConfig(uri, event_index, metric_index, source, 
 				  }
 				  link_protocol {
 					type= "DOT1Q"
-					vlan_tag= "1278"
+					vlan_tag= "878"
 				  }
 				}
 		}
@@ -178,8 +181,6 @@ func TestAccFabricStreamAlertRule_PFCR(t *testing.T) {
 	alertRuleName, updatedAlertRuleName := "alert_rule_PFCR", "up_alert_rule_PFCR"
 	alertRuleDescription, updatedAlertRuleDescription := "stream alert rule acceptance test PFCR", "updated stream alert rule acceptance test PFCR"
 
-	//alertRuleName := "alert_rule_PFCR"
-	//alertRuleDescription := "stream alert rule acceptance test PFCR"
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.TestAccPreCheck(t); acceptance.TestAccPreCheckProviderConfigured(t) },
 		ExternalProviders:        acceptance.TestExternalProviders,
