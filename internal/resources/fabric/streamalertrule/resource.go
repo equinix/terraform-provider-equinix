@@ -218,7 +218,6 @@ func (r *Resource) Update(
 
 	id := state.ID.ValueString()
 	streamID := state.StreamID.ValueString()
-	request := fabricv4.AlertRulePutRequest{}
 
 	needsUpdate := config.Name.ValueString() != state.Name.ValueString() ||
 		config.Description.ValueString() != state.Description.ValueString() ||
@@ -228,14 +227,14 @@ func (r *Resource) Update(
 		config.WarningThreshold.ValueString() != state.WarningThreshold.ValueString() ||
 		config.CriticalThreshold.ValueString() != state.CriticalThreshold.ValueString() ||
 		config.Enabled.ValueBool() != state.Enabled.ValueBool() ||
-		!config.ResourceSelector.IsNull() && !config.ResourceSelector.IsUnknown()
+		!config.ResourceSelector.Equal(state.ResourceSelector)
 
 	if !needsUpdate {
 		resp.Diagnostics.AddWarning("No updatable fields have changed",
 			"Terraform detected a config change, but it is for a field that isn't updatable for the stream resource. Please revert to prior config")
 		return
 	}
-	updateRequest, diags := buildUpdateRequest(ctx, plan, request)
+	updateRequest, diags := buildUpdateRequest(ctx, plan)
 	if diags.HasError() {
 		resp.Diagnostics.Append(diags...)
 		return
@@ -275,36 +274,36 @@ func (r *Resource) Update(
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
 
-func buildUpdateRequest(ctx context.Context, plan streamAlertRuleResourceModel, request fabricv4.AlertRulePutRequest) (fabricv4.AlertRulePutRequest, diag.Diagnostics) {
+func buildUpdateRequest(ctx context.Context, config streamAlertRuleResourceModel) (fabricv4.AlertRulePutRequest, diag.Diagnostics) {
 	var diags diag.Diagnostics
+	request := fabricv4.AlertRulePutRequest{}
+	request.SetName(config.Name.ValueString())
+	request.SetDescription(config.Description.ValueString())
+	request.SetMetricName(fabricv4.StreamAlertRuleMetricName(config.MetricName.ValueString()))
+	request.SetOperand(fabricv4.StreamAlertRuleOperand(config.Operand.ValueString()))
+	request.SetWindowSize(config.WindowSize.ValueString())
 
-	request.SetName(plan.Name.ValueString())
-	request.SetDescription(plan.Description.ValueString())
-	request.SetMetricName(fabricv4.StreamAlertRuleMetricName(plan.MetricName.ValueString()))
-	request.SetOperand(fabricv4.StreamAlertRuleOperand(plan.Operand.ValueString()))
-	request.SetWindowSize(plan.WindowSize.ValueString())
-
-	if plan.CriticalThreshold.IsNull() && plan.WarningThreshold.IsNull() {
+	if config.CriticalThreshold.IsNull() && config.WarningThreshold.IsNull() {
 		return request, diags
 	}
 
-	if !plan.CriticalThreshold.IsNull() {
-		request.SetCriticalThreshold(plan.CriticalThreshold.ValueString())
+	if !config.CriticalThreshold.IsNull() {
+		request.SetCriticalThreshold(config.CriticalThreshold.ValueString())
 	}
-	if !plan.WarningThreshold.IsNull() {
-		request.SetWarningThreshold(plan.WarningThreshold.ValueString())
+	if !config.WarningThreshold.IsNull() {
+		request.SetWarningThreshold(config.WarningThreshold.ValueString())
 	}
 
-	if !plan.ResourceSelector.IsNull() && !plan.ResourceSelector.IsUnknown() {
-		resourceSelector, diags := buildStreamAlertRuleSelector(ctx, plan.ResourceSelector)
+	if !config.ResourceSelector.IsNull() && !config.ResourceSelector.IsUnknown() {
+		resourceSelector, diags := buildStreamAlertRuleSelector(ctx, config.ResourceSelector)
 		if diags.HasError() {
 			return request, diags
 		}
 		request.SetResourceSelector(resourceSelector)
 	}
 
-	if !plan.Enabled.IsNull() {
-		request.SetEnabled(plan.Enabled.ValueBool())
+	if !config.Enabled.IsNull() {
+		request.SetEnabled(config.Enabled.ValueBool())
 	}
 	return request, diags
 }
