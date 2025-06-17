@@ -231,7 +231,7 @@ func (r *Resource) Update(
 
 	if !needsUpdate {
 		resp.Diagnostics.AddWarning("No updatable fields have changed",
-			"Terraform detected a config change, but it is for a field that isn't updatable for the stream resource. Please revert to prior config")
+			"Terraform detected a config change, but it is for a field that isn't updatable for the stream alert rule resource. Please revert to prior config")
 		return
 	}
 	updateRequest, diags := buildUpdateRequest(ctx, plan)
