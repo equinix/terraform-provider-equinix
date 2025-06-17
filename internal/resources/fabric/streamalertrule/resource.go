@@ -127,9 +127,9 @@ func buildCreateRequest(ctx context.Context, plan streamAlertRuleResourceModel) 
 	request.SetEnabled(plan.Enabled.ValueBool())
 	request.SetWarningThreshold(plan.WarningThreshold.ValueString())
 	request.SetCriticalThreshold(plan.CriticalThreshold.ValueString())
-	request.SetMetricName(fabricv4.StreamAlertRuleMetricName(plan.MetricName.ValueString()))
+	request.SetMetricName(fabricv4.AlertRulePostRequestMetricName(plan.MetricName.ValueString()))
 	request.SetWindowSize(plan.WindowSize.ValueString())
-	request.SetOperand(fabricv4.StreamAlertRuleOperand(plan.Operand.ValueString()))
+	request.SetOperand(fabricv4.AlertRulePostRequestOperand(plan.Operand.ValueString()))
 
 	if !plan.ResourceSelector.IsNull() && !plan.ResourceSelector.IsUnknown() {
 		// Build ResourceSelector
@@ -279,8 +279,8 @@ func buildUpdateRequest(ctx context.Context, config streamAlertRuleResourceModel
 	request := fabricv4.AlertRulePutRequest{}
 	request.SetName(config.Name.ValueString())
 	request.SetDescription(config.Description.ValueString())
-	request.SetMetricName(fabricv4.StreamAlertRuleMetricName(config.MetricName.ValueString()))
-	request.SetOperand(fabricv4.StreamAlertRuleOperand(config.Operand.ValueString()))
+	request.SetMetricName(fabricv4.AlertRulePostRequestMetricName(config.MetricName.ValueString()))
+	request.SetOperand(fabricv4.AlertRulePostRequestOperand(config.Operand.ValueString()))
 	request.SetWindowSize(config.WindowSize.ValueString())
 
 	if config.CriticalThreshold.IsNull() && config.WarningThreshold.IsNull() {
