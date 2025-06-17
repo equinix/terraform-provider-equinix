@@ -10,6 +10,7 @@ import (
 	"github.com/equinix/terraform-provider-equinix/internal/resources/fabric/stream"
 	streamattachment "github.com/equinix/terraform-provider-equinix/internal/resources/fabric/stream_attachment"
 	streamsubscription "github.com/equinix/terraform-provider-equinix/internal/resources/fabric/stream_subscription"
+	streamalertrule "github.com/equinix/terraform-provider-equinix/internal/resources/fabric/streamalertrule"
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
@@ -25,6 +26,7 @@ func FabricResources() []func() resource.Resource {
 		stream.NewResource,
 		streamattachment.NewResource,
 		streamsubscription.NewResource,
+		streamalertrule.NewResource,
 	}
 }
 
@@ -47,5 +49,7 @@ func FabricDatasources() []func() datasource.DataSource {
 		streamattachment.NewDataSourceByIDs,
 		streamsubscription.NewDataSourceAllStreamSubscriptions,
 		streamsubscription.NewDataSourceByIDs,
+		streamalertrule.NewDataSourceAllStreamAlertRules,
+		streamalertrule.NewDataSourceByStreamAlertRuleIDs,
 	}
 }
