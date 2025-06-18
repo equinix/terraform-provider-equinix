@@ -4,6 +4,7 @@ package services
 import (
 	"github.com/equinix/terraform-provider-equinix/internal/resources/fabric/connectionrouteaggregation"
 	"github.com/equinix/terraform-provider-equinix/internal/resources/fabric/metro"
+	"github.com/equinix/terraform-provider-equinix/internal/resources/fabric/port"
 	precisiontime "github.com/equinix/terraform-provider-equinix/internal/resources/fabric/precision_time"
 	"github.com/equinix/terraform-provider-equinix/internal/resources/fabric/routeaggregation"
 	"github.com/equinix/terraform-provider-equinix/internal/resources/fabric/routeaggregationrule"
@@ -20,6 +21,7 @@ import (
 func FabricResources() []func() resource.Resource {
 	return []func() resource.Resource{
 		connectionrouteaggregation.NewResource,
+		port.NewResource,
 		precisiontime.NewResource,
 		routeaggregation.NewResource,
 		routeaggregationrule.NewResource,
