@@ -63,12 +63,12 @@ func TestAccPreCheck(t *testing.T) {
 			_, err = env.Get(config.ClientSecretEnvVar)
 		}
 
-		// If neither token nor client ID/secret are configured, check for workload identity
+		// If neither token nor client ID/secret are configured, check for STS source token
 		if err != nil {
 			_, authScopeErr := env.Get(config.AuthScopeEnvVar)
-			_, workloadTokenErr := env.Get(config.WorkloadIdentityTokenEnvVar)
+			_, stsTokenErr := env.Get(config.StsSourceTokenEnvVar)
 
-			if authScopeErr == nil && workloadTokenErr == nil {
+			if authScopeErr == nil && stsTokenErr == nil {
 				err = nil
 			}
 		}
@@ -81,7 +81,7 @@ func TestAccPreCheck(t *testing.T) {
 	if err != nil {
 		t.Fatalf("To run acceptance tests, one of '%s', pair '%s' - '%s', or pair '%s' - '%s' must be set for Equinix Fabric and Network Edge, and '%s' for Equinix Metal",
 			config.ClientTokenEnvVar, config.ClientIDEnvVar, config.ClientSecretEnvVar,
-			config.AuthScopeEnvVar, config.WorkloadIdentityTokenEnvVar, config.MetalAuthTokenEnvVar)
+			config.AuthScopeEnvVar, config.StsSourceTokenEnvVar, config.MetalAuthTokenEnvVar)
 	}
 }
 

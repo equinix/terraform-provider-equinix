@@ -83,11 +83,11 @@ func Provider() *schema.Provider {
 				Default:     30,
 				Description: "Maximum number of seconds to wait before retrying a request.",
 			},
-			"auth_scope": {
+			"sts_auth_scope": {
 				Type:        schema.TypeString,
 				Optional:    true,
 				DefaultFunc: schema.EnvDefaultFunc(config.AuthScopeEnvVar, ""),
-				Description: "The scope of the authentication token. This argument can also be specified with the `EQUINIX_STS_AUTH_SCOPE` shell environment variable.",
+				Description: "The scope of the authentication token. Must be an access policy ERN or a string of the form roleassignments:<org_id> This argument can also be specified with the `EQUINIX_STS_AUTH_SCOPE` shell environment variable.",
 			},
 			"sts_endpoint": {
 				Type:         schema.TypeString,
@@ -95,6 +95,12 @@ func Provider() *schema.Provider {
 				DefaultFunc:  schema.EnvDefaultFunc(config.StsEndpointEnvVar, config.DefaultStsBaseURL),
 				ValidateFunc: validation.IsURLWithHTTPorHTTPS,
 				Description:  fmt.Sprintf("The STS API base URL to point out desired environment. This argument can also be specified with the `EQUINIX_STS_ENDPOINT` shell environment variable. (Defaults to `%s`)", config.DefaultStsBaseURL),
+			},
+			"sts_source_token": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				DefaultFunc: schema.EnvDefaultFunc(config.StsSourceTokenEnvVar, ""),
+				Description: "The source token to use for STS authentication. Must be an OIDC ID token issued by an OIDC provider trusted by Equinix STS. This argument can also be specified with the `EQUINIX_STS_SOURCE_TOKEN` shell environment variable.",
 			},
 		},
 		DataSourcesMap: datasources,
@@ -131,8 +137,9 @@ func configureProvider(ctx context.Context, d *schema.ResourceData, p *schema.Pr
 		PageSize:       d.Get("response_max_page_size").(int),
 		MaxRetries:     d.Get("max_retries").(int),
 		MaxRetryWait:   time.Duration(mrws) * time.Second,
-		AuthScope:      d.Get("auth_scope").(string),
+		StsAuthScope:   d.Get("sts_auth_scope").(string),
 		StsBaseURL:     d.Get("sts_endpoint").(string),
+		StsSourceToken: d.Get("sts_source_token").(string),
 	}
 	meta := providerMeta{}
 

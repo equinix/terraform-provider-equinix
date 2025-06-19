@@ -8,7 +8,6 @@ package config
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"io"
 	"log"
@@ -22,6 +21,7 @@ import (
 
 	"github.com/equinix/equinix-sdk-go/services/fabricv4"
 	"github.com/equinix/equinix-sdk-go/services/metalv1"
+	"github.com/equinix/equinix-sdk-go/services/stsv1"
 	"github.com/equinix/ne-go"
 	"github.com/equinix/oauth2-go"
 	"github.com/equinix/terraform-provider-equinix/version"
@@ -35,15 +35,15 @@ import (
 
 const (
 	// EndpointEnvVar is the environment variable name used to override the default Equinix API endpoint.
-	EndpointEnvVar              = "EQUINIX_API_ENDPOINT"
-	ClientIDEnvVar              = "EQUINIX_API_CLIENTID"
-	ClientSecretEnvVar          = "EQUINIX_API_CLIENTSECRET"
-	ClientTokenEnvVar           = "EQUINIX_API_TOKEN"
-	ClientTimeoutEnvVar         = "EQUINIX_API_TIMEOUT"
-	MetalAuthTokenEnvVar        = "METAL_AUTH_TOKEN"
-	AuthScopeEnvVar             = "EQUINIX_STS_AUTH_SCOPE"
-	WorkloadIdentityTokenEnvVar = "TFC_WORKLOAD_IDENTITY_TOKEN"
-	StsEndpointEnvVar           = "EQUINIX_STS_ENDPOINT"
+	EndpointEnvVar       = "EQUINIX_API_ENDPOINT"
+	ClientIDEnvVar       = "EQUINIX_API_CLIENTID"
+	ClientSecretEnvVar   = "EQUINIX_API_CLIENTSECRET"
+	ClientTokenEnvVar    = "EQUINIX_API_TOKEN"
+	ClientTimeoutEnvVar  = "EQUINIX_API_TIMEOUT"
+	MetalAuthTokenEnvVar = "METAL_AUTH_TOKEN"
+	AuthScopeEnvVar      = "EQUINIX_STS_AUTH_SCOPE"
+	StsSourceTokenEnvVar = "EQUINIX_STS_SOURCE_TOKEN"
+	StsEndpointEnvVar    = "EQUINIX_STS_ENDPOINT"
 )
 
 // ProviderMeta contains metadata about the Terraform module using this provider.
@@ -77,8 +77,9 @@ type Config struct {
 	RequestTimeout time.Duration
 	PageSize       int
 	Token          string
-	AuthScope      string
+	StsAuthScope   string
 	StsBaseURL     string
+	StsSourceToken string
 
 	authClient *http.Client
 
@@ -96,6 +97,20 @@ type Config struct {
 func (c *Config) Load(ctx context.Context) error {
 	if c.BaseURL == "" {
 		return fmt.Errorf("'baseURL' cannot be empty")
+	}
+
+	// Validate BaseURL
+	_, err := url.Parse(c.BaseURL)
+	if err != nil {
+		return fmt.Errorf("invalid base URL: %w", err)
+	}
+
+	// If StsBaseURL is set, validate it too
+	if c.StsBaseURL != "" {
+		_, err := url.Parse(c.StsBaseURL)
+		if err != nil {
+			return fmt.Errorf("invalid STS base URL: %w", err)
+		}
 	}
 
 	authClient := c.createAuthClient(ctx)
@@ -161,25 +176,23 @@ func (c *Config) newFabricClient(ctx context.Context) *fabricv4.APIClient {
 }
 
 func (c *Config) createAuthClient(ctx context.Context) *http.Client {
-	workloadIdentityToken := os.Getenv(WorkloadIdentityTokenEnvVar)
-
-	if c.AuthScope != "" && workloadIdentityToken != "" {
-		// If the AuthScope and WorkloadIdentityToken are set, use Workload Identity Federation
-		return c.createWorkloadIdentityClient(ctx, workloadIdentityToken)
+	if c.StsAuthScope != "" && c.StsSourceToken != "" {
+		// If the StsAuthScope and StsSourceToken are set, use STS based authentication
+		return c.createStsIdentityClient(ctx, c.StsSourceToken)
 	}
 
 	return c.createOAuthClient(ctx)
 }
 
-func (c *Config) createWorkloadIdentityClient(ctx context.Context, workloadIdentityToken string) *http.Client {
+func (c *Config) createStsIdentityClient(ctx context.Context, stsSourceToken string) *http.Client {
 	httpClient := &http.Client{Timeout: c.requestTimeout()}
 
-	refreshSource := &workloadIdentityRefreshTokenSource{
-		ctx:                   ctx,
-		authScope:             c.AuthScope,
-		workloadIdentityToken: workloadIdentityToken,
-		client:                httpClient,
-		stsBaseURL:            c.StsBaseURL,
+	refreshSource := &stsRefreshTokenSource{
+		ctx:            ctx,
+		authScope:      c.StsAuthScope,
+		stsSourceToken: stsSourceToken,
+		client:         httpClient,
+		stsBaseURL:     c.StsBaseURL,
 	}
 
 	tokenSource := xoauth2.ReuseTokenSource(nil, refreshSource)
@@ -224,10 +237,7 @@ func (c *Config) configureHTTPClient(authClient *http.Client) *http.Client {
 }
 
 func (c *Config) createFabricClient(httpClient *http.Client) *fabricv4.APIClient {
-	baseURL, err := url.Parse(c.BaseURL)
-	if err != nil {
-		return createErroringFabricClient(fmt.Errorf("invalid base URL: %w", err))
-	}
+	baseURL, _ := url.Parse(c.BaseURL)
 
 	configuration := fabricv4.NewConfiguration()
 	configuration.Servers = fabricv4.ServerConfigurations{
@@ -422,20 +432,20 @@ func moduleVersionFromBuild(modulePath string) string {
 }
 
 // Implement the refresh token source
-type workloadIdentityRefreshTokenSource struct {
-	ctx                   context.Context
-	authScope             string
-	workloadIdentityToken string
-	client                *http.Client
-	stsBaseURL            string
+type stsRefreshTokenSource struct {
+	ctx            context.Context
+	authScope      string
+	stsSourceToken string
+	client         *http.Client
+	stsBaseURL     string
 }
 
 // Token implements the oauth2.TokenSource interface
-func (s *workloadIdentityRefreshTokenSource) Token() (*xoauth2.Token, error) {
+func (s *stsRefreshTokenSource) Token() (*xoauth2.Token, error) {
 	accessToken, expiry, err := oidcTokenExchange(
 		s.ctx,
 		s.authScope,
-		s.workloadIdentityToken,
+		s.stsSourceToken,
 		s.client,
 		s.stsBaseURL,
 	)
@@ -449,88 +459,54 @@ func (s *workloadIdentityRefreshTokenSource) Token() (*xoauth2.Token, error) {
 	}, nil
 }
 
-func oidcTokenExchange(ctx context.Context, authScope string, workloadIdentityToken string, client *http.Client, stsBaseURL string) (string, int, error) {
+func oidcTokenExchange(ctx context.Context, authScope string, stsSourceToken string, client *http.Client, stsBaseURL string) (string, int, error) {
 	if authScope == "" {
 		return "", 0, fmt.Errorf("authorization scope cannot be empty for OIDC token exchange")
 	}
 
-	if workloadIdentityToken == "" {
-		return "", 0, fmt.Errorf("workload identity token cannot be empty for OIDC token exchange")
+	if stsSourceToken == "" {
+		return "", 0, fmt.Errorf("sts source token cannot be empty for OIDC token exchange")
 	}
 
-	// Construct the full token exchange URL
-	baseURL, err := url.Parse(stsBaseURL)
-	if err != nil {
-		return "", 0, fmt.Errorf("failed to parse STS base URL: %w", err)
+	// Setup STS client
+	configuration := stsv1.NewConfiguration()
+	configuration.Servers = stsv1.ServerConfigurations{
+		stsv1.ServerConfiguration{
+			URL: stsBaseURL,
+		},
 	}
-	baseURL.Path = path.Join(baseURL.Path, "/use/token")
-	tokenURL := baseURL.String()
+	configuration.HTTPClient = client
+	stsClient := stsv1.NewAPIClient(configuration)
 
-	// Prepare the form data according to RFC 8693
-	form := url.Values{
-		"grant_type":         {"urn:ietf:params:oauth:grant-type:token-exchange"},
-		"scope":              {authScope},
-		"subject_token_type": {"urn:ietf:params:oauth:token-type:id_token"},
-		"subject_token":      {workloadIdentityToken},
-	}
+	// Execute token exchange
+	response, httpResp, err := stsClient.UseApi.UseTokenPost(ctx).
+		GrantType(stsv1.USETOKENPOSTREQUESTGRANTTYPE_URN_IETF_PARAMS_OAUTH_GRANT_TYPE_TOKEN_EXCHANGE).
+		Scope(authScope).
+		SubjectToken(stsSourceToken).
+		SubjectTokenType(stsv1.USETOKENPOSTREQUESTSUBJECTTOKENTYPE_URN_IETF_PARAMS_OAUTH_TOKEN_TYPE_ID_TOKEN).
+		Execute()
 
-	// Create the HTTP request
-	req, err := http.NewRequestWithContext(ctx, http.MethodPost, tokenURL, strings.NewReader(form.Encode()))
-	if err != nil {
-		return "", 0, fmt.Errorf("failed to create token exchange request: %w", err)
-	}
-
-	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
-
-	resp, err := client.Do(req)
-	if err != nil {
-		return "", 0, fmt.Errorf("token exchange request failed: %w", err)
-	}
-	defer func() {
-		if cerr := resp.Body.Close(); cerr != nil {
-			// If there's already an error being returned, we can log this one
-			// Or combine with the existing error if needed
-			if err == nil {
-				err = fmt.Errorf("error closing response body: %w", cerr)
-			} else {
-				// Either log the close error or wrap it with the existing error
-				log.Printf("[WARN] error closing response body: %v", cerr)
+	var body []byte
+	var readErr error
+	statusCode := 0
+	if httpResp != nil && httpResp.Body != nil {
+		body, readErr = io.ReadAll(httpResp.Body)
+		statusCode = httpResp.StatusCode
+		defer func() {
+			if closeErr := httpResp.Body.Close(); closeErr != nil {
+				log.Printf("[WARN] error closing response body: %v", closeErr)
 			}
+		}()
+	}
+
+	if err != nil {
+		bodyMsg := string(body)
+		if readErr != nil {
+			bodyMsg = fmt.Sprintf("error reading body: %v", readErr)
 		}
-	}()
-
-	if resp.StatusCode != http.StatusOK {
-		body, _ := io.ReadAll(resp.Body)
-		return "", 0, fmt.Errorf("token exchange failed with status %d: %s", resp.StatusCode, string(body))
+		return "", 0, fmt.Errorf("token exchange failed with status %d: %s: %w",
+			statusCode, bodyMsg, err)
 	}
 
-	// Parse the response
-	var response struct {
-		AccessToken string `json:"access_token"`
-		ExpiresIn   int    `json:"expires_in"`
-	}
-	if err := json.NewDecoder(resp.Body).Decode(&response); err != nil {
-		return "", 0, fmt.Errorf("failed to parse token exchange response: %w", err)
-	}
-
-	return response.AccessToken, response.ExpiresIn, nil
-}
-
-// Helper function to create a client that will error on first use
-func createErroringFabricClient(err error) *fabricv4.APIClient {
-	errTransport := &erroringTransport{err: err}
-	errClient := &http.Client{Transport: errTransport}
-
-	configuration := fabricv4.NewConfiguration()
-	configuration.HTTPClient = errClient
-	return fabricv4.NewAPIClient(configuration)
-}
-
-// Custom transport that always returns an error
-type erroringTransport struct {
-	err error
-}
-
-func (t *erroringTransport) RoundTrip(*http.Request) (*http.Response, error) {
-	return nil, t.err
+	return response.AccessToken, int(response.ExpiresIn), nil
 }
