@@ -3,7 +3,6 @@ package provider
 import (
 	"context"
 	"fmt"
-
 	"github.com/equinix/terraform-provider-equinix/internal/config"
 	"github.com/equinix/terraform-provider-equinix/internal/provider/services"
 	equinix_validation "github.com/equinix/terraform-provider-equinix/internal/validation"
@@ -78,6 +77,21 @@ func (p *FrameworkProvider) Schema(
 				Validators: []validator.Int64{
 					int64validator.AtLeast(100),
 				},
+			},
+			"sts_auth_scope": schema.StringAttribute{
+				Optional:    true,
+				Description: "The scope of the authentication token. Must be an access policy ERN or a string of the form roleassignments:<org_id> This argument can also be specified with the `EQUINIX_STS_AUTH_SCOPE` shell environment variable.",
+			},
+			"sts_endpoint": schema.StringAttribute{
+				Optional:    true,
+				Description: fmt.Sprintf("The STS API base URL to point out desired environment. This argument can also be specified with the `EQUINIX_STS_ENDPOINT` shell environment variable. (Defaults to `%s`)", config.DefaultStsBaseURL),
+				Validators: []validator.String{
+					equinix_validation.URLWithScheme("http", "https"),
+				},
+			},
+			"sts_source_token": schema.StringAttribute{
+				Optional:    true,
+				Description: "The source token to use for STS authentication. Must be an OIDC ID token issued by an OIDC provider trusted by Equinix STS. This argument can also be specified with the `EQUINIX_STS_SOURCE_TOKEN` shell environment variable.",
 			},
 			"max_retries": schema.Int64Attribute{
 				Optional:    true,
