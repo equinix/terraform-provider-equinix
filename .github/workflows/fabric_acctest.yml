@@ -247,6 +247,7 @@ jobs:
         run: |
           go install github.com/thogarty/go-junit-report/v2@latest
           pip3 install junit2html
+          go install gotest.tools/gotestsum@latest
 
       - name: Download PNFV Test Logs
         uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
@@ -260,8 +261,9 @@ jobs:
 
       - name: Create HTML Testing Report
         run: |
-          cat pfcr_test_output.log pnfv_test_output.log > uat_test_report.log
-          go-junit-report -parser gojson -in uat_test_report.log > uat_test_report.xml && python3 -m junit2htmlreport uat_test_report.xml uat_test_report.html
+          cat pfcr_test_output.log pnfv_test_output.log > combined.log
+          gotestsum --raw-command --junitfile uat_test_report.xml --format standard-verbose -- cat combined.log
+          python3 -m junit2htmlreport uat_test_report.xml uat_test_report.html
 
       - name: Prepare slack message
         id: slack_message
