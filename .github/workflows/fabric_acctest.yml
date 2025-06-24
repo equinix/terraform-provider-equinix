@@ -196,7 +196,7 @@ jobs:
           EQUINIX_API_CLIENTSECRET: ${{ secrets.EQUINIX_API_CLIENTSECRET_PFCR }}
           METAL_AUTH_TOKEN: ${{ secrets.METAL_AUTH_TOKEN }}
         run: |
-          go test ./internal/resources/fabric/metro/... -v -coverprofile coverage_pfcr.txt -covermode=atomic -count 1 -parallel 8 -run "(PFCR)" -timeout 180m | tee >(grep -E "^=== RUN|^--- PASS|^--- FAIL" > test_names.log) | tee pfcr_test_output.log
+          go test ./internal/resources/fabric/metro/... -v -coverprofile coverage_pfcr.txt -covermode=atomic -count 1 -parallel 8 -run "(PFCR)" -timeout 180m -test.v | tee >(grep -E "^=== RUN|^--- PASS|^--- FAIL" > test_names.log) | tee pfcr_test_output.log
 
       - name: Upload PFCR Testing Log
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
@@ -258,6 +258,11 @@ jobs:
         uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
         with:
           name: pfcr_test_logs
+
+      - name: Check XML Content
+        run: |
+          echo "=== XML content ==="
+          cat uat_test_report.xml
 
       - name: Create HTML Testing Report
         run: |
