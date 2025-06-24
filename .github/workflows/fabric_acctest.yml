@@ -197,7 +197,7 @@ jobs:
           EQUINIX_API_CLIENTSECRET: ${{ secrets.EQUINIX_API_CLIENTSECRET_PFCR }}
           METAL_AUTH_TOKEN: ${{ secrets.METAL_AUTH_TOKEN }}
         run: |
-          gotestsum --format testname --raw-command -- go test ./internal/resources/fabric/metro/... -v -coverprofile coverage_pfcr.txt -covermode=atomic -count 1 -parallel 8 -run "(PFCR)" -timeout 180m -test.v | tee pfcr_test_output.log
+          gotestsum --format testname --raw-command -- go test ./internal/resources/fabric/metro/... -v -coverprofile coverage_pfcr.txt -covermode=atomic -count 1 -parallel 8 -run "(PFCR)" -timeout 180m | tee pfcr_test_output.log
 
       - name: Upload PFCR Testing Log
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
@@ -248,7 +248,7 @@ jobs:
       - name: Get dependencies
         run: |
           go install github.com/thogarty/go-junit-report/v2@latest
-          pip3 install junit2htmlreport
+          pip3 install junit2html
 
       - name: Download PNFV Test Logs
         uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
