@@ -261,9 +261,29 @@ jobs:
 
       - name: Create HTML Testing Report
         run: |
-          cat pfcr_test_output.log pnfv_test_output.log > uat_test_report.log
-          (echo "TEST REPORT SUMMARY:"; echo "TOTAL: $(grep -c '=== RUN' uat_test_report.log)"; echo "PASSED: $(grep -c '--- PASS:' uat_test_report.log)"; echo "FAILED: $(grep -c '--- FAIL:' uat_test_report.log)"; echo ""; cat uat_test_report.log) > temp_log && mv temp_log uat_test_report.log
-          cat uat_test_report.log | go-junit-report > uat_test_report.xml && python3 -m junit2htmlreport uat_test_report.xml uat_test_report.html
+          # Create a properly formatted combined log file that preserves test status information
+          echo "TEST REPORT SUMMARY:" > uat_test_report.log
+          echo "TOTAL: $(grep -c '=== RUN' pfcr_test_output.log pnfv_test_output.log)" >> uat_test_report.log
+          echo "PASSED: $(grep -c '--- PASS:' pfcr_test_output.log pnfv_test_output.log)" >> uat_test_report.log
+          echo "FAILED: $(grep -c '--- FAIL:' pfcr_test_output.log pnfv_test_output.log)" >> uat_test_report.log
+          echo "" >> uat_test_report.log
+          
+          # Extract and preserve test structure lines first
+          grep -E "^=== (RUN|PAUSE|CONT)|^--- (PASS|FAIL)" pfcr_test_output.log >> uat_test_report.log
+          grep -E "^=== (RUN|PAUSE|CONT)|^--- (PASS|FAIL)" pnfv_test_output.log >> uat_test_report.log
+          
+          # Now append the full logs
+          echo "" >> uat_test_report.log
+          echo "==== DETAILED LOGS ====" >> uat_test_report.log
+          cat pfcr_test_output.log pnfv_test_output.log >> uat_test_report.log
+          
+          # Convert to XML and HTML with proper handling
+          cat uat_test_report.log | go-junit-report -set-exit-code > uat_test_report.xml
+          python3 -m junit2htmlreport uat_test_report.xml uat_test_report.html
+#        run: |
+#          cat pfcr_test_output.log pnfv_test_output.log > uat_test_report.log
+#          (echo "TEST REPORT SUMMARY:"; echo "TOTAL: $(grep -c '=== RUN' uat_test_report.log)"; echo "PASSED: $(grep -c '--- PASS:' uat_test_report.log)"; echo "FAILED: $(grep -c '--- FAIL:' uat_test_report.log)"; echo ""; cat uat_test_report.log) > temp_log && mv temp_log uat_test_report.log
+#          cat uat_test_report.log | go-junit-report > uat_test_report.xml && python3 -m junit2htmlreport uat_test_report.xml uat_test_report.html
 
       - name: Prepare slack message
         id: slack_message
