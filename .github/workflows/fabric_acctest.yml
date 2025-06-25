@@ -263,7 +263,7 @@ jobs:
         run: |
           cat pfcr_test_output.log pnfv_test_output.log > uat_test_report.log
           (echo "TEST REPORT SUMMARY:"; echo "TOTAL: $(grep -c '=== RUN' uat_test_report.log)"; echo "PASSED: $(grep -c '--- PASS:' uat_test_report.log)"; echo "FAILED: $(grep -c '--- FAIL:' uat_test_report.log)"; echo ""; cat uat_test_report.log) > temp_log && mv temp_log uat_test_report.log
-          go-junit-report -in uat_test_report.log > uat_test_report.xml && python3 -m junit2htmlreport uat_test_report.xml uat_test_report.html
+          cat uat_test_report.log | go-junit-report > uat_test_report.xml && python3 -m junit2htmlreport uat_test_report.xml uat_test_report.html
 
       - name: Prepare slack message
         id: slack_message
