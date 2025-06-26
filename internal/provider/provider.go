@@ -1,8 +1,11 @@
+// Package provider implements the Terraform provider for Equinix, including provider configuration,
+// resource and data source registration, and integration with the Terraform Plugin Framework.
 package provider
 
 import (
 	"context"
 	"fmt"
+
 	"github.com/equinix/terraform-provider-equinix/internal/config"
 	"github.com/equinix/terraform-provider-equinix/internal/provider/services"
 	equinix_validation "github.com/equinix/terraform-provider-equinix/internal/validation"
@@ -15,20 +18,23 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 )
 
+// FrameworkProvider implements the Terraform provider, holding version and configuration metadata.
 type FrameworkProvider struct {
 	ProviderVersion string
 	Meta            *config.Config
 }
 
+// CreateFrameworkProvider initializes a new FrameworkProvider with the specified version.
 func CreateFrameworkProvider(version string) provider.ProviderWithMetaSchema {
 	return &FrameworkProvider{
 		ProviderVersion: version,
 	}
 }
 
+// Metadata returns the provider's metadata, such as its type name, to the Terraform framework.
 func (p *FrameworkProvider) Metadata(
-	ctx context.Context,
-	req provider.MetadataRequest,
+	_ context.Context,
+	_ provider.MetadataRequest,
 	resp *provider.MetadataResponse,
 ) {
 	resp.TypeName = "equinixcloud"

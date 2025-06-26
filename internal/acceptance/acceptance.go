@@ -25,9 +25,12 @@ const (
 
 var (
 	// TestAccProvider is the Equinix provider instance used for acceptance testing
-	TestAccProvider          *schema.Provider
-	TestAccProviders         map[string]*schema.Provider
-	TestExternalProviders    map[string]resource.ExternalProvider
+	TestAccProvider *schema.Provider
+	// TestAccProviders is a map of provider names to their schema.Provider instances used in acceptance tests.
+	TestAccProviders map[string]*schema.Provider
+	// TestExternalProviders defines external providers (by name and source) required for acceptance tests.
+	TestExternalProviders map[string]resource.ExternalProvider
+	// TestAccFrameworkProvider is the FrameworkProvider instance used for advanced acceptance test scenarios.
 	TestAccFrameworkProvider *provider.FrameworkProvider
 	// testAccProviderConfigure ensures Provider is only configured once
 	//

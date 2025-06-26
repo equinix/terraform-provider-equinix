@@ -35,7 +35,8 @@ import (
 
 const (
 	// EndpointEnvVar is the environment variable name used to override the default Equinix API endpoint.
-	EndpointEnvVar       = "EQUINIX_API_ENDPOINT"
+	EndpointEnvVar = "EQUINIX_API_ENDPOINT"
+	// ClientIDEnvVar is the environment variable name for the Equinix API OAuth client ID.
 	ClientIDEnvVar       = "EQUINIX_API_CLIENTID"
 	ClientSecretEnvVar   = "EQUINIX_API_CLIENTSECRET"
 	ClientTokenEnvVar    = "EQUINIX_API_TOKEN"
@@ -60,7 +61,8 @@ const (
 
 var (
 	// DefaultBaseURL is the standard production API endpoint for Equinix services.
-	DefaultBaseURL    = "https://api.equinix.com"
+	DefaultBaseURL = "https://api.equinix.com"
+	// DefaultStsBaseURL is the default Security Token Service (STS) endpoint
 	DefaultStsBaseURL = "https://sts.eqix.equinix.com"
 	DefaultTimeout    = 30
 )
