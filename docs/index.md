@@ -52,7 +52,7 @@ Client ID and Client Secret can be omitted when using Workload Identity Tokens f
 # Configuration for using Workload Identity Federation
 provider "equinix" {
   # Desired scope of the requested security token. Must be an Access Policy ERN or a string of the form `roleassignments:<organization_id>`
-  auth_scope = "roleassignments:<organization_id>"
+  sts_auth_scope = "roleassignments:<organization_id>"
 
   # An OIDC ID token issued by a trusted OIDC provider to a trusted client.
   sts_source_token = "some_workload_identity_token"
@@ -101,6 +101,6 @@ These parameters can be provided in [Terraform variable files](https://www.terra
 - `request_timeout` (Number) The duration of time, in seconds, that the Equinix Platform API Client should wait before canceling an API request. Canceled requests may still result in provisioned resources. (Defaults to `30`)
 - `response_max_page_size` (Number) The maximum number of records in a single response for REST queries that produce paginated responses. (Default is client specific)
 - `sts_auth_scope` (String) The scope of the authentication token. Must be an access policy ERN or a string of the form roleassignments:<org_id> This argument can also be specified with the `EQUINIX_STS_AUTH_SCOPE` shell environment variable.
-- `sts_endpoint` (String) The STS API base URL to point out desired environment. This argument can also be specified with the `EQUINIX_STS_ENDPOINT` shell environment variable. (Defaults to `https://sts.equinix.com`)
+- `sts_endpoint` (String) The STS API base URL to point out desired environment. This argument can also be specified with the `EQUINIX_STS_ENDPOINT` shell environment variable. (Defaults to `https://sts.eqix.equinix.com`)
 - `sts_source_token` (String) The source token to use for STS authentication. Must be an OIDC ID token issued by an OIDC provider trusted by Equinix STS. This argument can also be specified with the `EQUINIX_STS_SOURCE_TOKEN` shell environment variable.
 - `token` (String) API tokens are generated from API Consumer clients using the [OAuth2 API](https://developer.equinix.com/dev-docs/fabric/getting-started/getting-access-token#request-access-and-refresh-tokens). This argument can also be specified with the `EQUINIX_API_TOKEN` shell environment variable.
