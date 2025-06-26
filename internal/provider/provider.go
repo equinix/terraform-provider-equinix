@@ -40,9 +40,10 @@ func (p *FrameworkProvider) Metadata(
 	resp.TypeName = "equinixcloud"
 }
 
+// Schema returns the provider's schema, which defines the configuration options available to users.
 func (p *FrameworkProvider) Schema(
-	ctx context.Context,
-	req provider.SchemaRequest,
+	_ context.Context,
+	_ provider.SchemaRequest,
 	resp *provider.SchemaResponse,
 ) {
 	resp.Schema = schema.Schema{
@@ -111,9 +112,10 @@ func (p *FrameworkProvider) Schema(
 	}
 }
 
+// MetaSchema returns the provider's metadata schema, which defines additional metadata attributes.
 func (p *FrameworkProvider) MetaSchema(
-	ctx context.Context,
-	req provider.MetaSchemaRequest,
+	_ context.Context,
+	_ provider.MetaSchemaRequest,
 	resp *provider.MetaSchemaResponse,
 ) {
 	resp.Schema = metaschema.Schema{
@@ -125,7 +127,7 @@ func (p *FrameworkProvider) MetaSchema(
 	}
 }
 
-func (p *FrameworkProvider) Resources(ctx context.Context) []func() resource.Resource {
+func (p *FrameworkProvider) Resources(_ context.Context) []func() resource.Resource {
 	resources := []func() resource.Resource{}
 	resources = append(resources, services.FabricResources()...)
 	resources = append(resources, services.MetalResources()...)
@@ -134,7 +136,7 @@ func (p *FrameworkProvider) Resources(ctx context.Context) []func() resource.Res
 	return resources
 }
 
-func (p *FrameworkProvider) DataSources(ctx context.Context) []func() datasource.DataSource {
+func (p *FrameworkProvider) DataSources(_ context.Context) []func() datasource.DataSource {
 	datasources := []func() datasource.DataSource{}
 	datasources = append(datasources, services.FabricDatasources()...)
 	datasources = append(datasources, services.MetalDatasources()...)

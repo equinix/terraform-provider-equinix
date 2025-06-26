@@ -37,14 +37,21 @@ const (
 	// EndpointEnvVar is the environment variable name used to override the default Equinix API endpoint.
 	EndpointEnvVar = "EQUINIX_API_ENDPOINT"
 	// ClientIDEnvVar is the environment variable name for the Equinix API OAuth client ID.
-	ClientIDEnvVar       = "EQUINIX_API_CLIENTID"
-	ClientSecretEnvVar   = "EQUINIX_API_CLIENTSECRET"
-	ClientTokenEnvVar    = "EQUINIX_API_TOKEN"
-	ClientTimeoutEnvVar  = "EQUINIX_API_TIMEOUT"
+	ClientIDEnvVar = "EQUINIX_API_CLIENTID"
+	// ClientSecretEnvVar is the environment variable name for the Equinix API OAuth client secret.
+	ClientSecretEnvVar = "EQUINIX_API_CLIENTSECRET"
+	// ClientTokenEnvVar is the environment variable name for the Equinix API token.
+	ClientTokenEnvVar = "EQUINIX_API_TOKEN"
+	// ClientTimeoutEnvVar is the environment variable name for the Equinix API request timeout.
+	ClientTimeoutEnvVar = "EQUINIX_API_TIMEOUT"
+	// MetalAuthTokenEnvVar is the environment variable name for the Equinix Metal API auth token.
 	MetalAuthTokenEnvVar = "METAL_AUTH_TOKEN"
-	AuthScopeEnvVar      = "EQUINIX_STS_AUTH_SCOPE"
+	// AuthScopeEnvVar is the environment variable name for the Security Token Service (STS) auth scope.
+	AuthScopeEnvVar = "EQUINIX_STS_AUTH_SCOPE"
+	// StsSourceTokenEnvVar is the environment variable name for the STS source token used in OIDC token exchange.
 	StsSourceTokenEnvVar = "EQUINIX_STS_SOURCE_TOKEN"
-	StsEndpointEnvVar    = "EQUINIX_STS_ENDPOINT"
+	// StsEndpointEnvVar is the environment variable name for the STS endpoint URL.
+	StsEndpointEnvVar = "EQUINIX_STS_ENDPOINT"
 )
 
 // ProviderMeta contains metadata about the Terraform module using this provider.
@@ -64,7 +71,8 @@ var (
 	DefaultBaseURL = "https://api.equinix.com"
 	// DefaultStsBaseURL is the default Security Token Service (STS) endpoint
 	DefaultStsBaseURL = "https://sts.eqix.equinix.com"
-	DefaultTimeout    = 30
+	// DefaultTimeout is the default timeout for API requests in seconds.
+	DefaultTimeout = 30
 )
 
 // Config is the configuration structure used to instantiate the Equinix

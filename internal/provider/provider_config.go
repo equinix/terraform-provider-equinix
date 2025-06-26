@@ -14,6 +14,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 )
 
+// FrameworkProviderConfig holds the configuration for the Equinix provider.
 type FrameworkProviderConfig struct {
 	BaseURL             types.String `tfsdk:"endpoint"`
 	ClientID            types.String `tfsdk:"client_id"`
@@ -47,6 +48,7 @@ func (c *FrameworkProviderConfig) toOldStyleConfig() *config.Config {
 	}
 }
 
+// Configure initializes the provider configuration, reading values from the provider block
 func (fp *FrameworkProvider) Configure(
 	ctx context.Context,
 	req provider.ConfigureRequest,
@@ -119,6 +121,7 @@ func (fp *FrameworkProvider) Configure(
 	fp.Meta = oldStyleConfig
 }
 
+// GetIntFromEnv retrieves an integer value from the environment variable specified by key.
 func GetIntFromEnv(
 	key string,
 	defaultValue int64,
