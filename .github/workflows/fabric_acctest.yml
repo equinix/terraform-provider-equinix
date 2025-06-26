@@ -267,7 +267,7 @@ jobs:
           echo "=== Testing Go test log ==="
           cat uat_test_report.log
           echo "=== Processing with go-junit-report ==="
-          go-junit-report < debug_output.log > debug_report.xml
+          go-junit-report < uat_test_report.log > debug_report.xml
           echo "=== Content of XML ==="
           cat debug_report.xml
           cat uat_test_report.log | head -20
