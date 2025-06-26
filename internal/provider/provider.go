@@ -127,6 +127,7 @@ func (p *FrameworkProvider) MetaSchema(
 	}
 }
 
+// Resources returns a list of resource constructors that the provider supports.
 func (p *FrameworkProvider) Resources(_ context.Context) []func() resource.Resource {
 	resources := []func() resource.Resource{}
 	resources = append(resources, services.FabricResources()...)
@@ -136,6 +137,7 @@ func (p *FrameworkProvider) Resources(_ context.Context) []func() resource.Resou
 	return resources
 }
 
+// DataSources returns a list of data source constructors that the provider supports.
 func (p *FrameworkProvider) DataSources(_ context.Context) []func() datasource.DataSource {
 	datasources := []func() datasource.DataSource{}
 	datasources = append(datasources, services.FabricDatasources()...)
