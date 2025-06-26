@@ -262,7 +262,7 @@ jobs:
       - name: Create HTML Testing Report
         run: |
           cat pfcr_test_output.log pnfv_test_output.log > uat_test_report.log
-          go-junit-report -parser gojson -in uat_test_report.log > uat_test_report.xml && python3 -m junit2htmlreport uat_test_report.xml uat_test_report.html
+          go-junit-report -parser gojson -in uat_test_report.log > uat_test_report.xml && python3 -m junit2html uat_test_report.xml uat_test_report.html
 
       - name: Prepare slack message
         id: slack_message
