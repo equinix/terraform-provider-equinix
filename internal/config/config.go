@@ -8,6 +8,7 @@ package config
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"io"
 	"log"
@@ -21,7 +22,6 @@ import (
 
 	"github.com/equinix/equinix-sdk-go/services/fabricv4"
 	"github.com/equinix/equinix-sdk-go/services/metalv1"
-	"github.com/equinix/equinix-sdk-go/services/stsv1"
 	"github.com/equinix/ne-go"
 	"github.com/equinix/oauth2-go"
 	"github.com/equinix/terraform-provider-equinix/version"
@@ -61,7 +61,7 @@ const (
 var (
 	// DefaultBaseURL is the standard production API endpoint for Equinix services.
 	DefaultBaseURL    = "https://api.equinix.com"
-	DefaultStsBaseURL = "https://sts.equinix.com"
+	DefaultStsBaseURL = "https://sts.eqix.equinix.com"
 	DefaultTimeout    = 30
 )
 
@@ -468,45 +468,51 @@ func oidcTokenExchange(ctx context.Context, authScope string, stsSourceToken str
 		return "", 0, fmt.Errorf("sts source token cannot be empty for OIDC token exchange")
 	}
 
-	// Setup STS client
-	configuration := stsv1.NewConfiguration()
-	configuration.Servers = stsv1.ServerConfigurations{
-		stsv1.ServerConfiguration{
-			URL: stsBaseURL,
-		},
-	}
-	configuration.HTTPClient = client
-	stsClient := stsv1.NewAPIClient(configuration)
-
-	// Execute token exchange
-	response, httpResp, err := stsClient.UseApi.UseTokenPost(ctx).
-		GrantType(stsv1.USETOKENPOSTREQUESTGRANTTYPE_URN_IETF_PARAMS_OAUTH_GRANT_TYPE_TOKEN_EXCHANGE).
-		Scope(authScope).
-		SubjectToken(stsSourceToken).
-		SubjectTokenType(stsv1.USETOKENPOSTREQUESTSUBJECTTOKENTYPE_URN_IETF_PARAMS_OAUTH_TOKEN_TYPE_ID_TOKEN).
-		Execute()
-
-	var body []byte
-	var readErr error
-	statusCode := 0
-	if httpResp != nil && httpResp.Body != nil {
-		body, readErr = io.ReadAll(httpResp.Body)
-		statusCode = httpResp.StatusCode
-		defer func() {
-			if closeErr := httpResp.Body.Close(); closeErr != nil {
-				log.Printf("[WARN] error closing response body: %v", closeErr)
-			}
-		}()
-	}
-
+	baseURL, err := url.Parse(stsBaseURL)
 	if err != nil {
-		bodyMsg := string(body)
-		if readErr != nil {
-			bodyMsg = fmt.Sprintf("error reading body: %v", readErr)
-		}
-		return "", 0, fmt.Errorf("token exchange failed with status %d: %s: %w",
-			statusCode, bodyMsg, err)
+		return "", 0, fmt.Errorf("failed to parse STS base URL: %w", err)
+	}
+	baseURL.Path = path.Join(baseURL.Path, "/use/token")
+	tokenURL := baseURL.String()
+
+	form := url.Values{
+		"grant_type":         {"urn:ietf:params:oauth:grant-type:token-exchange"},
+		"scope":              {authScope},
+		"subject_token_type": {"urn:ietf:params:oauth:token-type:id_token"},
+		"subject_token":      {stsSourceToken},
 	}
 
-	return response.AccessToken, int(response.ExpiresIn), nil
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, tokenURL, strings.NewReader(form.Encode()))
+	if err != nil {
+		return "", 0, fmt.Errorf("failed to create token exchange request: %w", err)
+	}
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+
+	httpResp, err := client.Do(req)
+	if err != nil {
+		return "", 0, fmt.Errorf("token exchange request failed: %w", err)
+	}
+	defer func() {
+		if cerr := httpResp.Body.Close(); cerr != nil {
+			log.Printf("[WARN] error closing token exchange response body: %v", cerr)
+		}
+	}()
+
+	body, readErr := io.ReadAll(httpResp.Body)
+	if readErr != nil {
+		return "", 0, fmt.Errorf("error reading token exchange response body: %w", readErr)
+	}
+
+	if httpResp.StatusCode != http.StatusOK {
+		return "", 0, fmt.Errorf("token exchange failed with status %d: %s", httpResp.StatusCode, string(body))
+	}
+
+	var response struct {
+		AccessToken string `json:"access_token"`
+		ExpiresIn   int    `json:"expires_in"`
+	}
+	if err := json.Unmarshal(body, &response); err != nil {
+		return "", 0, fmt.Errorf("failed to parse token exchange response: %w", err)
+	}
+	return response.AccessToken, response.ExpiresIn, nil
 }
