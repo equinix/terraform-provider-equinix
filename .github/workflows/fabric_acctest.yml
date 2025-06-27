@@ -258,10 +258,19 @@ jobs:
         with:
           name: pfcr_test_logs
 
+      #      - name: Create HTML Testing Report
+      #        run: |
+      #          cat pfcr_test_output.log pnfv_test_output.log > uat_test_report.log
+      #          go-junit-report -in uat_test_report.log > uat_test_report.xml && python3 -m junit2htmlreport uat_test_report.xml uat_test_report.html
+
       - name: Create HTML Testing Report
         run: |
+          # Combine logs but ensure they're properly formatted for go-junit-report
           cat pfcr_test_output.log pnfv_test_output.log > uat_test_report.log
-          go-junit-report -in uat_test_report.log > uat_test_report.xml && python3 -m junit2htmlreport uat_test_report.xml uat_test_report.html
+          # Convert Go test output to JUnit XML
+          cat uat_test_report.log | go-junit-report > uat_test_report.xml
+          # Generate HTML report from XML
+          python3 -m junit2htmlreport uat_test_report.xml uat_test_report.html
           
           echo "=== uat test report log file ==="
           cat uat_test_report.log
@@ -271,6 +280,14 @@ jobs:
           echo "=== debug report xml file ==="
           cat debug_report.xml
           cat uat_test_report.log | head -20
+
+#          # Extract test summary statistics from XML
+#          tests=$(grep -oP 'tests="\K[0-9]+' uat_test_report.xml | awk '{sum+=$1} END {print sum}')
+#          failures=$(grep -oP 'failures="\K[0-9]+' uat_test_report.xml | awk '{sum+=$1} END {print sum}')
+#          errors=$(grep -oP 'errors="\K[0-9]+' uat_test_report.xml | awk '{sum+=$1} END {print sum}')
+#          skipped=$(grep -oP 'skipped="\K[0-9]+' uat_test_report.xml | awk '{sum+=$1} END {print sum}')
+#
+#          message="*Results:* $((tests-failures-errors-skipped)) Passed, $failures Failures, $errors Errors, $skipped Skipped"
 
       - name: Prepare slack message
         id: slack_message
