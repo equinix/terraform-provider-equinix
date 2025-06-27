@@ -274,20 +274,12 @@ jobs:
           
           echo "=== uat test report log file ==="
           cat uat_test_report.log
-          echo "=== Processing with go-junit-report ==="
-          go-junit-report < debug_output.log > debug_report.xml
-          go-junit-report < uat_test_report.log > debug_report.xml
+          
           echo "=== debug report xml file ==="
-          cat debug_report.xml
-          cat uat_test_report.log | head -20
-
-#          # Extract test summary statistics from XML
-#          tests=$(grep -oP 'tests="\K[0-9]+' uat_test_report.xml | awk '{sum+=$1} END {print sum}')
-#          failures=$(grep -oP 'failures="\K[0-9]+' uat_test_report.xml | awk '{sum+=$1} END {print sum}')
-#          errors=$(grep -oP 'errors="\K[0-9]+' uat_test_report.xml | awk '{sum+=$1} END {print sum}')
-#          skipped=$(grep -oP 'skipped="\K[0-9]+' uat_test_report.xml | awk '{sum+=$1} END {print sum}')
-#
-#          message="*Results:* $((tests-failures-errors-skipped)) Passed, $failures Failures, $errors Errors, $skipped Skipped"
+          cat uat_test_report.xml
+          
+          echo "=== debug report html file ==="
+          cat uat_test_report.html
 
       - name: Prepare slack message
         id: slack_message
