@@ -8,6 +8,8 @@ The Equinix provider is used to interact with the resources provided by Equinix 
 
 For information about obtaining API key and secret required for Equinix Fabric and Network Edge refer to [Generating Client ID and Client Secret key](https://developer.equinix.com/dev-docs/fabric/getting-started/getting-access-token#generating-client-id-and-client-secret) from [Equinix Developer Platform portal](https://developer.equinix.com).
 
+Equinix Fabric also supports authentication using a [Workload Identity Token](https://developer.hashicorp.com/terraform/cloud-docs/workspaces/dynamic-provider-credentials/workload-identity-tokens), which can be used in place of the `client_id` and `client_secret` arguments. Requires an authorization scope and OIDC ID token.
+
 Interacting with Equinix Metal requires an API auth token that can be generated at [Project-level](https://metal.equinix.com/developers/docs/accounts/projects/#api-keys) or [User-level](https://metal.equinix.com/developers/docs/accounts/users/#api-keys) tokens can be used.
 
 If you are only using Equinix Metal resources, you may omit the Client ID and Client Secret provider configuration parameters needed to access other Equinix resource types (Network Edge, Fabric, etc).
@@ -23,6 +25,10 @@ Example HCL with [provider configuration](https://www.terraform.io/docs/configur
 Client ID and Client Secret can be omitted when the only Equinix resources consumed are Equinix Metal resources.
 
 {{tffile "examples/example_2.tf"}}
+
+Client ID and Client Secret can be omitted when using Workload Identity Tokens for Equinix Fabric resources.
+
+{{tffile "examples/example_4.tf"}}
 
 Example provider configuration using `environment variables`:
 

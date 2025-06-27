@@ -1,8 +1,16 @@
+// Package config provides configuration and client initialization for the Equinix
+// Terraform provider. It handles authentication to Equinix services (Fabric,
+// Network Edge, and Metal) via OAuth, tokens, and Workload Identity Federation.
+// The package manages HTTP client configuration including retries and timeouts,
+// and provides utility functions for generating service-specific API clients
+// compatible with both Terraform SDK v2 and Framework interfaces.
 package config
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
+	"io"
 	"log"
 	"net/http"
 	"net/url"
@@ -26,14 +34,28 @@ import (
 )
 
 const (
-	EndpointEnvVar       = "EQUINIX_API_ENDPOINT"
-	ClientIDEnvVar       = "EQUINIX_API_CLIENTID"
-	ClientSecretEnvVar   = "EQUINIX_API_CLIENTSECRET"
-	ClientTokenEnvVar    = "EQUINIX_API_TOKEN"
-	ClientTimeoutEnvVar  = "EQUINIX_API_TIMEOUT"
+	// EndpointEnvVar is the environment variable name used to override the default Equinix API endpoint.
+	EndpointEnvVar = "EQUINIX_API_ENDPOINT"
+	// ClientIDEnvVar is the environment variable name for the Equinix API OAuth client ID.
+	ClientIDEnvVar = "EQUINIX_API_CLIENTID"
+	// ClientSecretEnvVar is the environment variable name for the Equinix API OAuth client secret.
+	ClientSecretEnvVar = "EQUINIX_API_CLIENTSECRET"
+	// ClientTokenEnvVar is the environment variable name for the Equinix API token.
+	ClientTokenEnvVar = "EQUINIX_API_TOKEN"
+	// ClientTimeoutEnvVar is the environment variable name for the Equinix API request timeout.
+	ClientTimeoutEnvVar = "EQUINIX_API_TIMEOUT"
+	// MetalAuthTokenEnvVar is the environment variable name for the Equinix Metal API auth token.
 	MetalAuthTokenEnvVar = "METAL_AUTH_TOKEN"
+	// AuthScopeEnvVar is the environment variable name for the Security Token Service (STS) auth scope.
+	AuthScopeEnvVar = "EQUINIX_STS_AUTH_SCOPE"
+	// StsSourceTokenEnvVar is the environment variable name for the STS source token used in OIDC token exchange.
+	StsSourceTokenEnvVar = "EQUINIX_STS_SOURCE_TOKEN"
+	// StsEndpointEnvVar is the environment variable name for the STS endpoint URL.
+	StsEndpointEnvVar = "EQUINIX_STS_ENDPOINT"
 )
 
+// ProviderMeta contains metadata about the Terraform module using this provider.
+// It's primarily used to track module names for user agent identification in API requests.
 type ProviderMeta struct {
 	ModuleName string `cty:"module_name"`
 }
@@ -45,7 +67,11 @@ const (
 )
 
 var (
+	// DefaultBaseURL is the standard production API endpoint for Equinix services.
 	DefaultBaseURL = "https://api.equinix.com"
+	// DefaultStsBaseURL is the default Security Token Service (STS) endpoint
+	DefaultStsBaseURL = "https://sts.eqix.equinix.com"
+	// DefaultTimeout is the default timeout for API requests in seconds.
 	DefaultTimeout = 30
 )
 
@@ -61,6 +87,9 @@ type Config struct {
 	RequestTimeout time.Duration
 	PageSize       int
 	Token          string
+	StsAuthScope   string
+	StsBaseURL     string
+	StsSourceToken string
 
 	authClient *http.Client
 
@@ -80,24 +109,21 @@ func (c *Config) Load(ctx context.Context) error {
 		return fmt.Errorf("'baseURL' cannot be empty")
 	}
 
-	var authClient *http.Client
-	if c.Token != "" {
-		tokenSource := xoauth2.StaticTokenSource(&xoauth2.Token{AccessToken: c.Token})
-		oauthTransport := &xoauth2.Transport{
-			Source: tokenSource,
-		}
-		authClient = &http.Client{
-			Transport: oauthTransport,
-		}
-	} else {
-		authConfig := oauth2.Config{
-			ClientID:     c.ClientID,
-			ClientSecret: c.ClientSecret,
-			BaseURL:      c.BaseURL,
-		}
-		authClient = authConfig.New(ctx)
+	// Validate BaseURL
+	_, err := url.Parse(c.BaseURL)
+	if err != nil {
+		return fmt.Errorf("invalid base URL: %w", err)
 	}
 
+	// If StsBaseURL is set, validate it too
+	if c.StsBaseURL != "" {
+		_, err := url.Parse(c.StsBaseURL)
+		if err != nil {
+			return fmt.Errorf("invalid STS base URL: %w", err)
+		}
+	}
+
+	authClient := c.createAuthClient(ctx)
 	authClient.Timeout = c.requestTimeout()
 	//nolint:staticcheck // We should move to subsystem loggers, but that is a much bigger change
 	authClient.Transport = logging.NewTransport("Equinix", authClient.Transport)
@@ -128,7 +154,7 @@ func (c *Config) NewFabricClientForSDK(ctx context.Context, d *schema.ResourceDa
 	return client
 }
 
-// Shim for Fabric tests.
+// NewFabricClientForTesting creates a Fabric client configured specifically for acceptance tests.
 // Deprecated: when the acceptance package starts to contain API clients for testing/cleanup this will move with them
 func (c *Config) NewFabricClientForTesting(ctx context.Context) *fabricv4.APIClient {
 	client := c.newFabricClient(ctx)
@@ -138,6 +164,7 @@ func (c *Config) NewFabricClientForTesting(ctx context.Context) *fabricv4.APICli
 	return client
 }
 
+// NewFabricClientForFramework creates a Fabric client compatible with the Terraform Plugin Framework.
 func (c *Config) NewFabricClientForFramework(ctx context.Context, meta tfsdk.Config) *fabricv4.APIClient {
 	client := c.newFabricClient(ctx)
 
@@ -150,13 +177,63 @@ func (c *Config) NewFabricClientForFramework(ctx context.Context, meta tfsdk.Con
 // newFabricClient returns the base fabricv4 client that is then used for either the sdkv2 or framework
 // implementations of the Terraform Provider with exported Methods
 func (c *Config) newFabricClient(ctx context.Context) *fabricv4.APIClient {
+	authClient := c.createAuthClient(ctx)
+
+	// Configure HTTP client with retries and logging
+	httpClient := c.configureHTTPClient(authClient)
+
+	return c.createFabricClient(httpClient)
+}
+
+func (c *Config) createAuthClient(ctx context.Context) *http.Client {
+	if c.StsAuthScope != "" && c.StsSourceToken != "" {
+		// If the StsAuthScope and StsSourceToken are set, use STS based authentication
+		return c.createStsIdentityClient(ctx, c.StsSourceToken)
+	}
+
+	return c.createOAuthClient(ctx)
+}
+
+func (c *Config) createStsIdentityClient(ctx context.Context, stsSourceToken string) *http.Client {
+	httpClient := &http.Client{Timeout: c.requestTimeout()}
+
+	refreshSource := &stsRefreshTokenSource{
+		ctx:            ctx,
+		authScope:      c.StsAuthScope,
+		stsSourceToken: stsSourceToken,
+		client:         httpClient,
+		stsBaseURL:     c.StsBaseURL,
+	}
+
+	tokenSource := xoauth2.ReuseTokenSource(nil, refreshSource)
+
+	return &http.Client{
+		Transport: &xoauth2.Transport{
+			Source: tokenSource,
+		},
+	}
+}
+
+func (c *Config) createOAuthClient(ctx context.Context) *http.Client {
+	if c.Token != "" {
+		tokenSource := xoauth2.StaticTokenSource(&xoauth2.Token{AccessToken: c.Token})
+		oauthTransport := &xoauth2.Transport{
+			Source: tokenSource,
+		}
+		var authClient = &http.Client{
+			Transport: oauthTransport,
+		}
+		return authClient
+	}
 	authConfig := oauth2.Config{
 		ClientID:     c.ClientID,
 		ClientSecret: c.ClientSecret,
 		BaseURL:      c.BaseURL,
 	}
-	authClient := authConfig.New(ctx)
-	//nolint:staticcheck // We should move to subsystem loggers, but that is a much bigger change
+	return authConfig.New(ctx)
+}
+
+func (c *Config) configureHTTPClient(authClient *http.Client) *http.Client {
 	transport := logging.NewTransport("Equinix Fabric (fabricv4)", authClient.Transport)
 
 	retryClient := retryablehttp.NewClient()
@@ -165,8 +242,11 @@ func (c *Config) newFabricClient(ctx context.Context) *fabricv4.APIClient {
 	retryClient.RetryMax = c.MaxRetries
 	retryClient.RetryWaitMin = time.Second
 	retryClient.RetryWaitMax = c.MaxRetryWait
-	standardClient := retryClient.StandardClient()
 
+	return retryClient.StandardClient()
+}
+
+func (c *Config) createFabricClient(httpClient *http.Client) *fabricv4.APIClient {
 	baseURL, _ := url.Parse(c.BaseURL)
 
 	configuration := fabricv4.NewConfiguration()
@@ -175,12 +255,11 @@ func (c *Config) newFabricClient(ctx context.Context) *fabricv4.APIClient {
 			URL: baseURL.String(),
 		},
 	}
-	configuration.HTTPClient = standardClient
+	configuration.HTTPClient = httpClient
 	configuration.AddDefaultHeader("X-SOURCE", "API")
 	configuration.AddDefaultHeader("X-CORRELATION-ID", correlationId(25))
-	client := fabricv4.NewAPIClient(configuration)
 
-	return client
+	return fabricv4.NewAPIClient(configuration)
 }
 
 // NewMetalClient returns a new packngo client for accessing Equinix Metal's API.
@@ -203,6 +282,7 @@ func (c *Config) NewMetalClient() *packngo.Client {
 	return client
 }
 
+// NewMetalClientForSDK returns a Metal client compatible with the Terraform Plugin SDK v2.
 func (c *Config) NewMetalClientForSDK(d *schema.ResourceData) *metalv1.APIClient {
 	client := c.newMetalClient()
 
@@ -212,6 +292,7 @@ func (c *Config) NewMetalClientForSDK(d *schema.ResourceData) *metalv1.APIClient
 	return client
 }
 
+// NewMetalClientForFramework returns a Metal client compatible with the Terraform Plugin Framework.
 func (c *Config) NewMetalClientForFramework(ctx context.Context, meta tfsdk.Config) *metalv1.APIClient {
 	client := c.newMetalClient()
 
@@ -221,7 +302,7 @@ func (c *Config) NewMetalClientForFramework(ctx context.Context, meta tfsdk.Conf
 	return client
 }
 
-// This is a short-term shim to allow tests to continue to have a client for cleanup and validation
+// NewMetalClientForTesting is a short-term shim to allow tests to continue to have a client for cleanup and validation
 // code that is outside of the resource or datasource under test
 // Deprecated: when possible, API clients for test cleanup/validation should be moved to the acceptance package
 func (c *Config) NewMetalClientForTesting() *metalv1.APIClient {
@@ -277,6 +358,7 @@ func appendUserAgentFromEnv(ua string) string {
 	return ua
 }
 
+// AddModuleToNEUserAgent updates the Network Edge client's User-Agent header to include Terraform module information.
 func (c *Config) AddModuleToNEUserAgent(client *ne.Client, d *schema.ResourceData) {
 	cli := *client
 	rc := cli.(*ne.RestClient)
@@ -284,7 +366,7 @@ func (c *Config) AddModuleToNEUserAgent(client *ne.Client, d *schema.ResourceDat
 	*client = rc
 }
 
-// TODO (ocobleseqx) - known issue, Metal services are initialized using the metal client pointer
+// AddFwModuleToMetalUserAgent TODO (ocobleseqx) - known issue, Metal services are initialized using the metal client pointer
 // if two or more modules in same project interact with metal resources they will override
 // the UserAgent resulting in swapped UserAgent.
 // This can be fixed by letting the headers be overwritten on the initialized Packngo ServiceOp
@@ -306,6 +388,7 @@ func generateFwModuleUserAgentString(ctx context.Context, meta tfsdk.Config, bas
 	return baseUserAgent
 }
 
+// AddModuleToMetalUserAgent updates the Metal client's User-Agent string to include Terraform module information.
 func (c *Config) AddModuleToMetalUserAgent(d *schema.ResourceData) {
 	c.Metal.UserAgent = generateModuleUserAgentString(d, c.metalUserAgent)
 }
@@ -356,4 +439,90 @@ func moduleVersionFromBuild(modulePath string) string {
 	}
 
 	return "unknown-version"
+}
+
+// Implement the refresh token source
+type stsRefreshTokenSource struct {
+	ctx            context.Context
+	authScope      string
+	stsSourceToken string
+	client         *http.Client
+	stsBaseURL     string
+}
+
+// Token implements the oauth2.TokenSource interface
+func (s *stsRefreshTokenSource) Token() (*xoauth2.Token, error) {
+	accessToken, expiry, err := oidcTokenExchange(
+		s.ctx,
+		s.authScope,
+		s.stsSourceToken,
+		s.client,
+		s.stsBaseURL,
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	return &xoauth2.Token{
+		AccessToken: accessToken,
+		Expiry:      time.Now().Add(time.Duration(expiry) * time.Second),
+	}, nil
+}
+
+func oidcTokenExchange(ctx context.Context, authScope string, stsSourceToken string, client *http.Client, stsBaseURL string) (string, int, error) {
+	if authScope == "" {
+		return "", 0, fmt.Errorf("authorization scope cannot be empty for OIDC token exchange")
+	}
+
+	if stsSourceToken == "" {
+		return "", 0, fmt.Errorf("sts source token cannot be empty for OIDC token exchange")
+	}
+
+	baseURL, err := url.Parse(stsBaseURL)
+	if err != nil {
+		return "", 0, fmt.Errorf("failed to parse STS base URL: %w", err)
+	}
+	baseURL.Path = path.Join(baseURL.Path, "/use/token")
+	tokenURL := baseURL.String()
+
+	form := url.Values{
+		"grant_type":         {"urn:ietf:params:oauth:grant-type:token-exchange"},
+		"scope":              {authScope},
+		"subject_token_type": {"urn:ietf:params:oauth:token-type:id_token"},
+		"subject_token":      {stsSourceToken},
+	}
+
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, tokenURL, strings.NewReader(form.Encode()))
+	if err != nil {
+		return "", 0, fmt.Errorf("failed to create token exchange request: %w", err)
+	}
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+
+	httpResp, err := client.Do(req)
+	if err != nil {
+		return "", 0, fmt.Errorf("token exchange request failed: %w", err)
+	}
+	defer func() {
+		if cerr := httpResp.Body.Close(); cerr != nil {
+			log.Printf("[WARN] error closing token exchange response body: %v", cerr)
+		}
+	}()
+
+	body, readErr := io.ReadAll(httpResp.Body)
+	if readErr != nil {
+		return "", 0, fmt.Errorf("error reading token exchange response body: %w", readErr)
+	}
+
+	if httpResp.StatusCode != http.StatusOK {
+		return "", 0, fmt.Errorf("token exchange failed with status %d: %s", httpResp.StatusCode, string(body))
+	}
+
+	var response struct {
+		AccessToken string `json:"access_token"`
+		ExpiresIn   int    `json:"expires_in"`
+	}
+	if err := json.Unmarshal(body, &response); err != nil {
+		return "", 0, fmt.Errorf("failed to parse token exchange response: %w", err)
+	}
+	return response.AccessToken, response.ExpiresIn, nil
 }
