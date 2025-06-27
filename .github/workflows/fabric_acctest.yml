@@ -280,6 +280,17 @@ jobs:
           
           echo "=== debug report html file ==="
           cat uat_test_report.html
+          
+          # Extract total number of tests, passing tests, and failing tests
+          total_tests=$(grep -oP 'tests="\K[0-9]+' uat_test_report.xml | head -n 1)
+          echo "Total Number of Tests: $total_tests"
+      
+          total_passing_tests=$(grep -oP 'tests="\K[0-9]+' uat_test_report.xml | awk 'NR==1{total=$1} NR>1{total+=$1} END{print total}')
+          total_failing_tests=$(grep -oP 'failures="\K[0-9]+' uat_test_report.xml | awk '{sum+=$1} END{print sum}')
+          passing_tests=$((total_passing_tests - total_failing_tests))
+          echo "Total Number of Passing Tests: $passing_tests"
+      
+          echo "Total Number of Failing Tests: $total_failing_tests"
 
       - name: Prepare slack message
         id: slack_message
