@@ -265,40 +265,17 @@ jobs:
 
       - name: Create HTML Testing Report
         run: |
-          # Combine logs but ensure they're properly formatted for go-junit-report
           cat pfcr_test_output.log pnfv_test_output.log > uat_test_report.log
-          # Convert Go test output to JUnit XML
           cat uat_test_report.log | go-junit-report > uat_test_report.xml
-          # Generate HTML report from XML
+
           python3 -m junit2htmlreport uat_test_report.xml uat_test_report.html
-          
-          echo "=== uat test report log file ==="
-          cat uat_test_report.log
-          
-          echo "=== debug report xml file ==="
-          cat uat_test_report.xml
-          
-          echo "=== debug report html file ==="
-          cat uat_test_report.html
-          
-          # Extract total tests and failures from the first  tag
           total_tests=$(grep -oP 'tests="\K[0-9]+' uat_test_report.xml | head -n 1)
-          total_failing_tests=$(grep -oP 'failures="\K[0-9]+' uat_test_report.xml | head -n 1)
+          total_failing_tests=$(grep -oP 'failures="\K[0-9]+' uat_test_report.xml | head -n 1)      
       
-          # Calculate total passing tests
-          total_passing_tests=$((total_tests - total_failing_tests))
-      
-          echo "Total Number of Tests: $total_tests"
-          echo "Total Number of Failing Tests: $total_failing_tests"
-          echo "Total Number of Passing Tests: $total_passing_tests"
-      
-          # Create a summary HTML snippet
           summary_html="<h1>Test Summary</h1>
           <h2>Total Number of Tests: $total_tests</h2>
-          <h2>Total Number of Passing Tests: $total_passing_tests</h2>
-          <h2>Total Number of Failing Tests: $total_failing_tests</h2>"
-
-          # Append the summary to the beginning of the HTML report
+          <h2>Total Number of Failing Tests: $total_failing_tests</h2>"  
+          <h2>Total Number of Passing Tests: $((total_tests - total_failing_tests))</h2>
           echo "$summary_html" | cat - uat_test_report.html > temp && mv temp uat_test_report.html
 
       - name: Prepare slack message
