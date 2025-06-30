@@ -1,3 +1,5 @@
+#!/usr/bin/env bash
+
 file=$(find . -type f -iname "*$1")
 
 if grep -qi "Returning due to fatal error:" "$file"; then
