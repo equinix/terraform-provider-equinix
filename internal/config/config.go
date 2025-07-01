@@ -1,3 +1,4 @@
+// Package config uses environment variables to configure API clients for the provider
 package config
 
 import (
@@ -12,19 +13,21 @@ import (
 	"strings"
 	"time"
 
+	"github.com/equinix/equinix-sdk-go/extensions/equinixoauth2"
 	"github.com/equinix/equinix-sdk-go/services/fabricv4"
 	"github.com/equinix/equinix-sdk-go/services/metalv1"
 	"github.com/equinix/ne-go"
-	"github.com/equinix/oauth2-go"
 	"github.com/equinix/terraform-provider-equinix/version"
 	"github.com/hashicorp/go-retryablehttp"
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/logging"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/packethost/packngo"
-	xoauth2 "golang.org/x/oauth2"
+	"golang.org/x/oauth2"
 )
 
+// These constants track environment variable names
+// that are relevant to the provider
 const (
 	EndpointEnvVar       = "EQUINIX_API_ENDPOINT"
 	ClientIDEnvVar       = "EQUINIX_API_CLIENTID"
@@ -34,6 +37,9 @@ const (
 	MetalAuthTokenEnvVar = "METAL_AUTH_TOKEN"
 )
 
+// ProviderMeta allows passing additional metadata
+// specific to our provider in provider config blocks
+// See https://developer.hashicorp.com/terraform/internals/provider-meta
 type ProviderMeta struct {
 	ModuleName string `cty:"module_name"`
 }
@@ -45,7 +51,9 @@ const (
 )
 
 var (
+	// DefaultBaseURL is the default URL to use for API requests
 	DefaultBaseURL = "https://api.equinix.com"
+	// DefaultTimeout is the default request timeout to use for API requests
 	DefaultTimeout = 30
 )
 
@@ -80,29 +88,9 @@ func (c *Config) Load(ctx context.Context) error {
 		return fmt.Errorf("'baseURL' cannot be empty")
 	}
 
-	var authClient *http.Client
-	if c.Token != "" {
-		tokenSource := xoauth2.StaticTokenSource(&xoauth2.Token{AccessToken: c.Token})
-		oauthTransport := &xoauth2.Transport{
-			Source: tokenSource,
-		}
-		authClient = &http.Client{
-			Transport: oauthTransport,
-		}
-	} else {
-		authConfig := oauth2.Config{
-			ClientID:     c.ClientID,
-			ClientSecret: c.ClientSecret,
-			BaseURL:      c.BaseURL,
-		}
-		authClient = authConfig.New(ctx)
-	}
+	c.authClient = c.newAuthClient()
 
-	authClient.Timeout = c.requestTimeout()
-	//nolint:staticcheck // We should move to subsystem loggers, but that is a much bigger change
-	authClient.Transport = logging.NewTransport("Equinix", authClient.Transport)
-	c.authClient = authClient
-	neClient := ne.NewClient(ctx, c.BaseURL, authClient)
+	neClient := ne.NewClient(ctx, c.BaseURL, c.authClient)
 
 	if c.PageSize > 0 {
 		neClient.SetPageSize(c.PageSize)
@@ -117,10 +105,35 @@ func (c *Config) Load(ctx context.Context) error {
 	return nil
 }
 
+func (c *Config) newAuthClient() *http.Client {
+	var authTransport http.RoundTripper
+	if c.Token != "" {
+		tokenSource := oauth2.StaticTokenSource(&oauth2.Token{AccessToken: c.Token})
+		oauthTransport := &oauth2.Transport{
+			Source: tokenSource,
+		}
+		authTransport = oauthTransport
+	} else {
+		authConfig := equinixoauth2.Config{
+			ClientID:     c.ClientID,
+			ClientSecret: c.ClientSecret,
+			BaseURL:      c.BaseURL,
+		}
+		authTransport = authConfig.New()
+	}
+
+	authClient := http.Client{
+		Timeout: c.requestTimeout(),
+		//nolint:staticcheck // We should move to subsystem loggers, but that is a much bigger change
+		Transport: logging.NewTransport("Equinix", authTransport),
+	}
+	return &authClient
+}
+
 // NewFabricClientForSDK returns a terraform sdkv2 plugin compatible
 // equinix-sdk-go/fabricv4 client to be used to access Fabric's V4 APIs
-func (c *Config) NewFabricClientForSDK(ctx context.Context, d *schema.ResourceData) *fabricv4.APIClient {
-	client := c.newFabricClient(ctx)
+func (c *Config) NewFabricClientForSDK(_ context.Context, d *schema.ResourceData) *fabricv4.APIClient {
+	client := c.newFabricClient()
 
 	baseUserAgent := c.tfSdkUserAgent(client.GetConfig().UserAgent)
 	client.GetConfig().UserAgent = generateModuleUserAgentString(d, baseUserAgent)
@@ -128,18 +141,20 @@ func (c *Config) NewFabricClientForSDK(ctx context.Context, d *schema.ResourceDa
 	return client
 }
 
-// Shim for Fabric tests.
+// NewFabricClientForTesting is a shim for Fabric tests.
 // Deprecated: when the acceptance package starts to contain API clients for testing/cleanup this will move with them
-func (c *Config) NewFabricClientForTesting(ctx context.Context) *fabricv4.APIClient {
-	client := c.newFabricClient(ctx)
+func (c *Config) NewFabricClientForTesting(_ context.Context) *fabricv4.APIClient {
+	client := c.newFabricClient()
 
 	client.GetConfig().UserAgent = fmt.Sprintf("tf-acceptance-tests %v", client.GetConfig().UserAgent)
 
 	return client
 }
 
+// NewFabricClientForFramework returns a terraform framework compatible
+// equinix-sdk-go/fabricv4 client to be used to access Fabric's V4 APIs
 func (c *Config) NewFabricClientForFramework(ctx context.Context, meta tfsdk.Config) *fabricv4.APIClient {
-	client := c.newFabricClient(ctx)
+	client := c.newFabricClient()
 
 	baseUserAgent := c.tfFrameworkUserAgent(client.GetConfig().UserAgent)
 	client.GetConfig().UserAgent = generateFwModuleUserAgentString(ctx, meta, baseUserAgent)
@@ -149,15 +164,9 @@ func (c *Config) NewFabricClientForFramework(ctx context.Context, meta tfsdk.Con
 
 // newFabricClient returns the base fabricv4 client that is then used for either the sdkv2 or framework
 // implementations of the Terraform Provider with exported Methods
-func (c *Config) newFabricClient(ctx context.Context) *fabricv4.APIClient {
-	authConfig := oauth2.Config{
-		ClientID:     c.ClientID,
-		ClientSecret: c.ClientSecret,
-		BaseURL:      c.BaseURL,
-	}
-	authClient := authConfig.New(ctx)
+func (c *Config) newFabricClient() *fabricv4.APIClient {
 	//nolint:staticcheck // We should move to subsystem loggers, but that is a much bigger change
-	transport := logging.NewTransport("Equinix Fabric (fabricv4)", authClient.Transport)
+	transport := logging.NewTransport("Equinix Fabric (fabricv4)", c.authClient.Transport)
 
 	retryClient := retryablehttp.NewClient()
 	retryClient.HTTPClient.Transport = transport
@@ -203,6 +212,8 @@ func (c *Config) NewMetalClient() *packngo.Client {
 	return client
 }
 
+// NewMetalClientForSDK returns a new equinix-sdk-go client that enables
+// an SDK resource to interact with the Metal API
 func (c *Config) NewMetalClientForSDK(d *schema.ResourceData) *metalv1.APIClient {
 	client := c.newMetalClient()
 
@@ -212,6 +223,8 @@ func (c *Config) NewMetalClientForSDK(d *schema.ResourceData) *metalv1.APIClient
 	return client
 }
 
+// NewMetalClientForFramework returns a new equinix-sdk-go client that enables
+// an framework resource to interact with the Metal API
 func (c *Config) NewMetalClientForFramework(ctx context.Context, meta tfsdk.Config) *metalv1.APIClient {
 	client := c.newMetalClient()
 
@@ -221,7 +234,7 @@ func (c *Config) NewMetalClientForFramework(ctx context.Context, meta tfsdk.Conf
 	return client
 }
 
-// This is a short-term shim to allow tests to continue to have a client for cleanup and validation
+// NewMetalClientForTesting is a short-term shim to allow tests to continue to have a client for cleanup and validation
 // code that is outside of the resource or datasource under test
 // Deprecated: when possible, API clients for test cleanup/validation should be moved to the acceptance package
 func (c *Config) NewMetalClientForTesting() *metalv1.APIClient {
@@ -277,6 +290,7 @@ func appendUserAgentFromEnv(ua string) string {
 	return ua
 }
 
+// AddModuleToNEUserAgent injects the ModuleName into SDK resource metadata for analytics
 func (c *Config) AddModuleToNEUserAgent(client *ne.Client, d *schema.ResourceData) {
 	cli := *client
 	rc := cli.(*ne.RestClient)
@@ -284,6 +298,7 @@ func (c *Config) AddModuleToNEUserAgent(client *ne.Client, d *schema.ResourceDat
 	*client = rc
 }
 
+// AddFwModuleToMetalUserAgent injects the ModuleName into framework resource metadata for analytics
 // TODO (ocobleseqx) - known issue, Metal services are initialized using the metal client pointer
 // if two or more modules in same project interact with metal resources they will override
 // the UserAgent resulting in swapped UserAgent.
@@ -306,6 +321,7 @@ func generateFwModuleUserAgentString(ctx context.Context, meta tfsdk.Config, bas
 	return baseUserAgent
 }
 
+// AddModuleToMetalUserAgent injects the ModuleName into SDK resource metadata for analytics
 func (c *Config) AddModuleToMetalUserAgent(d *schema.ResourceData) {
 	c.Metal.UserAgent = generateModuleUserAgentString(d, c.metalUserAgent)
 }
