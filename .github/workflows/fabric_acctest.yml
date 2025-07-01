@@ -258,12 +258,6 @@ jobs:
         with:
           name: pfcr_test_logs
 
-      - name: Create HTML Testing Report
-        run: |
-          cat pfcr_test_output.log pnfv_test_output.log > uat_test_report.log
-          go-junit-report -in uat_test_report.log > uat_test_report.xml && python3 -m junit2htmlreport uat_test_report.xml uat_test_report.html
-          echo "<div class='test-summary' style='background-color: #e7f3ff; padding: 15px; margin: 10px 0; border-left: 4px solid #2196F3; font-family: Arial, sans-serif;'><strong>Test Summary:</strong> ${{ steps.slack_message.outputs.message }}</div>" | cat - uat_test_report.html > temp && mv temp uat_test_report.html
-
       - name: Prepare slack message
         id: slack_message
         if: always()
@@ -271,11 +265,17 @@ jobs:
         run: |
           tests=$(grep '<testsuite ' uat_test_report.xml | sed -n 's/.*tests="\([0-9]*\)".*/\1/p' | awk '{s+=$1} END {print s}')
           errors=$(grep '<testsuite ' uat_test_report.xml | sed -n 's/.*failures="\([0-9]*\)".*/\1/p' | awk '{s+=$1} END {print s}')
-
+          
           message="*Results:* $((tests-errors)) Passed, $errors Errors"
           echo "message<<EOF" >> $GITHUB_OUTPUT
           echo "$message" >> $GITHUB_OUTPUT
-          echo "EOF" >> $GITHUB_OUTPUT    
+          echo "EOF" >> $GITHUB_OUTPUT     
+
+      - name: Create HTML Testing Report
+        run: |
+          cat pfcr_test_output.log pnfv_test_output.log > uat_test_report.log
+          go-junit-report -in uat_test_report.log > uat_test_report.xml && python3 -m junit2htmlreport uat_test_report.xml uat_test_report.html
+          echo "<div class='test-summary' style='background-color: #e7f3ff; padding: 15px; margin: 10px 0; border-left: 4px solid #2196F3; font-family: Arial, sans-serif;'><strong>Test Summary:</strong> ${{ steps.slack_message.outputs.message }}</div>" | cat - uat_test_report.html > temp && mv temp uat_test_report.html
 
       - name: Notify Slack
         uses: slackapi/slack-github-action@b0fa283ad8fea605de13dc3f449259339835fc52 # v2
