@@ -274,12 +274,12 @@ jobs:
           echo "$message" >> $GITHUB_OUTPUT
           echo "EOF" >> $GITHUB_OUTPUT 
 
-      - name: Append test summary to report
+      - name: Create HTML Testing Report
         if: always()
         shell: bash
         run: |
           python3 -m junit2htmlreport uat_test_report.xml uat_test_report.html
-          echo "Test Summary: ${{ steps.slack_message.outputs.message }}" | cat - uat_test_report.html > temp && mv temp uat_test_report.html
+          echo "<h1><b>Results: ${{ steps.slack_message.outputs.message }}</b></h1>" | cat - uat_test_report.html > temp && mv temp uat_test_report.html
 
       - name: Notify Slack
         uses: slackapi/slack-github-action@b0fa283ad8fea605de13dc3f449259339835fc52 # v2
