@@ -272,9 +272,13 @@ jobs:
           message="*Results:* $((tests-errors)) Passed, $errors Errors"
           echo "message<<EOF" >> $GITHUB_OUTPUT
           echo "$message" >> $GITHUB_OUTPUT
-          echo "EOF" >> $GITHUB_OUTPUT   
-          
-          echo "Test Summary: ${{ steps.slack_message.outputs.message }}" | cat - uat_test_report.html > temp && mv temp uat_test_report.html
+          echo "EOF" >> $GITHUB_OUTPUT 
+
+      - name: Append test summary to report
+        if: always()
+        shell: bash
+        run: |
+          echo "Test Summary: ${{ steps.slack_message.o
 
       - name: Notify Slack
         uses: slackapi/slack-github-action@b0fa283ad8fea605de13dc3f449259339835fc52 # v2
