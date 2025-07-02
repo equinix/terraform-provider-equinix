@@ -274,8 +274,8 @@ jobs:
       - name: Create HTML Testing Report
         run: |
           cat pfcr_test_output.log pnfv_test_output.log > uat_test_report.log
-          go-junit-report -in uat_test_report.log > uat_test_report.xml && python3 -m junit2htmlreport uat_test_report.xml uat_test_report.html
-          echo "<div class='test-summary' style='background-color: #e7f3ff; padding: 15px; margin: 10px 0; border-left: 4px solid #2196F3; font-family: Arial, sans-serif;'><strong>Test Summary:</strong> ${{ steps.slack_message.outputs.message }}</div>" | cat - uat_test_report.html > temp && mv temp uat_test_report.html
+          go-junit-report -in uat_test_report.log > uat_test_report.xml && python3 -m junit2htmlreport uat_test_report.xml uat_test_report.htmlAdd commentMore actions
+          echo "Test Summary: ${{ steps.slack_message.outputs.message }}" | cat - uat_test_report.html > temp && mv temp uat_test_report.html
 
       - name: Notify Slack
         uses: slackapi/slack-github-action@b0fa283ad8fea605de13dc3f449259339835fc52 # v2
