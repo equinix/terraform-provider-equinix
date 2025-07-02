@@ -266,6 +266,9 @@ jobs:
           cat pfcr_test_output.log pnfv_test_output.log > uat_test_report.log
           go-junit-report -in uat_test_report.log > uat_test_report.xml
           
+          xmlstarlet ed -L -s "//testcase" -t elem -n "system-out" -v "" \
+          -u "//testcase/system-out" -x "concat('Test Name: ', ../@name, '\n', .)" uat_test_report.xml
+          
           tests=$(grep '<testsuite ' uat_test_report.xml | sed -n 's/.*tests="\([0-9]*\)".*/\1/p' | awk '{s+=$1} END {print s}')
           errors=$(grep '<testsuite ' uat_test_report.xml | sed -n 's/.*failures="\([0-9]*\)".*/\1/p' | awk '{s+=$1} END {print s}')
           
@@ -279,7 +282,7 @@ jobs:
         shell: bash
         run: |
           python3 -m junit2htmlreport uat_test_report.xml uat_test_report.html
-          echo "<h1><b>Results: ${{ steps.slack_message.outputs.message }}</b></h1>" | cat - uat_test_report.html > temp && mv temp uat_test_report.html
+          echo "<h1><b>${{ steps.slack_message.outputs.message }}</b></h1>" | cat - uat_test_report.html > temp && mv temp uat_test_report.html
 
       - name: Notify Slack
         uses: slackapi/slack-github-action@b0fa283ad8fea605de13dc3f449259339835fc52 # v2
