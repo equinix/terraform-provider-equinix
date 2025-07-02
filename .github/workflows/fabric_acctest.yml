@@ -266,7 +266,7 @@ jobs:
           cat pfcr_test_output.log pnfv_test_output.log > uat_test_report.log
           go-junit-report -in uat_test_report.log > uat_test_report.xml
           
-          sed -i.bak '/<testcase name="/s/<testcase name="\([^"]*\)".*/&<system-out>Test Name: \1<\/system-out>/' uat_test_report.xml
+          sed -i.bak '/<testcase name="/s/<testcase name="\([^"]*\)"/<testcase name="\1"><system-out>Test Name: \1<\/system-out>/' uat_test_report.xml
           
           tests=$(grep '<testsuite ' uat_test_report.xml | sed -n 's/.*tests="\([0-9]*\)".*/\1/p' | awk '{s+=$1} END {print s}')
           errors=$(grep '<testsuite ' uat_test_report.xml | sed -n 's/.*failures="\([0-9]*\)".*/\1/p' | awk '{s+=$1} END {print s}')
