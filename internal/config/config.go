@@ -3,9 +3,8 @@ package config
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
-	"io"
+	"github.com/equinix/terraform-provider-equinix/internal/sts"
 	"log"
 	"net/http"
 	"net/url"
@@ -37,9 +36,9 @@ const (
 	ClientTokenEnvVar    = "EQUINIX_API_TOKEN"
 	ClientTimeoutEnvVar  = "EQUINIX_API_TIMEOUT"
 	MetalAuthTokenEnvVar = "METAL_AUTH_TOKEN"
-	AuthScopeEnvVar = "EQUINIX_STS_AUTH_SCOPE"
+	AuthScopeEnvVar      = "EQUINIX_STS_AUTH_SCOPE"
 	StsSourceTokenEnvVar = "EQUINIX_STS_SOURCE_TOKEN"
-	StsEndpointEnvVar = "EQUINIX_STS_ENDPOINT"
+	StsEndpointEnvVar    = "EQUINIX_STS_ENDPOINT"
 )
 
 // ProviderMeta allows passing additional metadata
@@ -58,6 +57,8 @@ const (
 var (
 	// DefaultBaseURL is the default URL to use for API requests
 	DefaultBaseURL = "https://api.equinix.com"
+	// DefaultStsBaseURL is the default Security Token Service (STS) endpoint
+	DefaultStsBaseURL = "https://sts.eqix.equinix.com"
 	// DefaultTimeout is the default request timeout to use for API requests
 	DefaultTimeout = 30
 )
@@ -128,7 +129,14 @@ func (c *Config) Load(ctx context.Context) error {
 
 func (c *Config) newAuthClient() *http.Client {
 	var authTransport http.RoundTripper
-	if c.Token != "" {
+	if c.StsAuthScope != "" && c.StsSourceToken != "" {
+		authConfig := sts.Config{
+			StsAuthScope:   c.StsAuthScope,
+			StsSourceToken: c.StsSourceToken,
+			StsBaseURL:     c.StsBaseURL,
+		}
+		authTransport = authConfig.New()
+	} else if c.Token != "" {
 		tokenSource := oauth2.StaticTokenSource(&oauth2.Token{AccessToken: c.Token})
 		oauthTransport := &oauth2.Transport{
 			Source: tokenSource,
@@ -186,60 +194,12 @@ func (c *Config) NewFabricClientForFramework(ctx context.Context, meta tfsdk.Con
 // newFabricClient returns the base fabricv4 client that is then used for either the sdkv2 or framework
 // implementations of the Terraform Provider with exported Methods
 func (c *Config) newFabricClient() *fabricv4.APIClient {
-	authClient := c.createAuthClient(ctx)
+	authClient := c.newAuthClient()
 
 	// Configure HTTP client with retries and logging
 	httpClient := c.configureHTTPClient(authClient)
 
 	return c.createFabricClient(httpClient)
-}
-
-func (c *Config) createAuthClient(ctx context.Context) *http.Client {
-	if c.StsAuthScope != "" && c.StsSourceToken != "" {
-		// If the StsAuthScope and StsSourceToken are set, use STS based authentication
-		return c.createStsIdentityClient(ctx, c.StsSourceToken)
-	}
-
-	return c.createOAuthClient(ctx)
-}
-
-func (c *Config) createStsIdentityClient(ctx context.Context, stsSourceToken string) *http.Client {
-	httpClient := &http.Client{Timeout: c.requestTimeout()}
-
-	refreshSource := &stsRefreshTokenSource{
-		ctx:            ctx,
-		authScope:      c.StsAuthScope,
-		stsSourceToken: stsSourceToken,
-		client:         httpClient,
-		stsBaseURL:     c.StsBaseURL,
-	}
-
-	tokenSource := xoauth2.ReuseTokenSource(nil, refreshSource)
-
-	return &http.Client{
-		Transport: &xoauth2.Transport{
-			Source: tokenSource,
-		},
-	}
-}
-
-func (c *Config) createOAuthClient(ctx context.Context) *http.Client {
-	if c.Token != "" {
-		tokenSource := xoauth2.StaticTokenSource(&xoauth2.Token{AccessToken: c.Token})
-		oauthTransport := &xoauth2.Transport{
-			Source: tokenSource,
-		}
-		var authClient = &http.Client{
-			Transport: oauthTransport,
-		}
-		return authClient
-	}
-	authConfig := oauth2.Config{
-		ClientID:     c.ClientID,
-		ClientSecret: c.ClientSecret,
-		BaseURL:      c.BaseURL,
-	}
-	return authConfig.New(ctx)
 }
 
 func (c *Config) configureHTTPClient(authClient *http.Client) *http.Client {
@@ -452,90 +412,4 @@ func moduleVersionFromBuild(modulePath string) string {
 	}
 
 	return "unknown-version"
-}
-
-// Implement the refresh token source
-type stsRefreshTokenSource struct {
-	ctx            context.Context
-	authScope      string
-	stsSourceToken string
-	client         *http.Client
-	stsBaseURL     string
-}
-
-// Token implements the oauth2.TokenSource interface
-func (s *stsRefreshTokenSource) Token() (*xoauth2.Token, error) {
-	accessToken, expiry, err := oidcTokenExchange(
-		s.ctx,
-		s.authScope,
-		s.stsSourceToken,
-		s.client,
-		s.stsBaseURL,
-	)
-	if err != nil {
-		return nil, err
-	}
-
-	return &xoauth2.Token{
-		AccessToken: accessToken,
-		Expiry:      time.Now().Add(time.Duration(expiry) * time.Second),
-	}, nil
-}
-
-func oidcTokenExchange(ctx context.Context, authScope string, stsSourceToken string, client *http.Client, stsBaseURL string) (string, int, error) {
-	if authScope == "" {
-		return "", 0, fmt.Errorf("authorization scope cannot be empty for OIDC token exchange")
-	}
-
-	if stsSourceToken == "" {
-		return "", 0, fmt.Errorf("sts source token cannot be empty for OIDC token exchange")
-	}
-
-	baseURL, err := url.Parse(stsBaseURL)
-	if err != nil {
-		return "", 0, fmt.Errorf("failed to parse STS base URL: %w", err)
-	}
-	baseURL.Path = path.Join(baseURL.Path, "/use/token")
-	tokenURL := baseURL.String()
-
-	form := url.Values{
-		"grant_type":         {"urn:ietf:params:oauth:grant-type:token-exchange"},
-		"scope":              {authScope},
-		"subject_token_type": {"urn:ietf:params:oauth:token-type:id_token"},
-		"subject_token":      {stsSourceToken},
-	}
-
-	req, err := http.NewRequestWithContext(ctx, http.MethodPost, tokenURL, strings.NewReader(form.Encode()))
-	if err != nil {
-		return "", 0, fmt.Errorf("failed to create token exchange request: %w", err)
-	}
-	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
-
-	httpResp, err := client.Do(req)
-	if err != nil {
-		return "", 0, fmt.Errorf("token exchange request failed: %w", err)
-	}
-	defer func() {
-		if cerr := httpResp.Body.Close(); cerr != nil {
-			log.Printf("[WARN] error closing token exchange response body: %v", cerr)
-		}
-	}()
-
-	body, readErr := io.ReadAll(httpResp.Body)
-	if readErr != nil {
-		return "", 0, fmt.Errorf("error reading token exchange response body: %w", readErr)
-	}
-
-	if httpResp.StatusCode != http.StatusOK {
-		return "", 0, fmt.Errorf("token exchange failed with status %d: %s", httpResp.StatusCode, string(body))
-	}
-
-	var response struct {
-		AccessToken string `json:"access_token"`
-		ExpiresIn   int    `json:"expires_in"`
-	}
-	if err := json.Unmarshal(body, &response); err != nil {
-		return "", 0, fmt.Errorf("failed to parse token exchange response: %w", err)
-	}
-	return response.AccessToken, response.ExpiresIn, nil
 }

@@ -3,9 +3,8 @@ module github.com/equinix/terraform-provider-equinix
 go 1.23.0
 
 require (
-	github.com/equinix/equinix-sdk-go v0.53.0
+	github.com/equinix/equinix-sdk-go v0.54.0
 	github.com/equinix/ne-go v1.20.0
-	github.com/equinix/oauth2-go v1.0.0
 	github.com/equinix/rest-go v1.3.0
 	github.com/google/uuid v1.6.0
 	github.com/hashicorp/go-cty v1.4.1-0.20200723130312-85980079f637

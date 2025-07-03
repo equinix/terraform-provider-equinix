@@ -87,18 +87,18 @@ func (p *FrameworkProvider) Schema(
 			},
 			"sts_auth_scope": schema.StringAttribute{
 				Optional:    true,
-				Description: "The scope of the authentication token. Must be an access policy ERN or a string of the form roleassignments:<org_id> This argument can also be specified with the `EQUINIX_STS_AUTH_SCOPE` shell environment variable.",
+				Description: "The scope of the authentication token. Must be an access policy ERN or a string of the form roleassignments:<org_id> This argument can also be specified with the `EQUINIX_STS_AUTH_SCOPE` shell environment variable. Please note that Equinix STS is an alpha feature and not available for all users.",
 			},
 			"sts_endpoint": schema.StringAttribute{
 				Optional:    true,
-				Description: fmt.Sprintf("The STS API base URL to point out desired environment. This argument can also be specified with the `EQUINIX_STS_ENDPOINT` shell environment variable. (Defaults to `%s`)", config.DefaultStsBaseURL),
+				Description: fmt.Sprintf("The STS API base URL to point out desired environment. This argument can also be specified with the `EQUINIX_STS_ENDPOINT` shell environment variable. (Defaults to `%s`). Please note that STS is an alpha feature and not available for all users.", config.DefaultStsBaseURL),
 				Validators: []validator.String{
 					equinix_validation.URLWithScheme("http", "https"),
 				},
 			},
 			"sts_source_token": schema.StringAttribute{
 				Optional:    true,
-				Description: "The source token to use for STS authentication. Must be an OIDC ID token issued by an OIDC provider trusted by Equinix STS. This argument can also be specified with the `EQUINIX_STS_SOURCE_TOKEN` shell environment variable.",
+				Description: "The source token to use for STS authentication. Must be an OIDC ID token issued by an OIDC provider trusted by Equinix STS. This argument can also be specified with the `EQUINIX_STS_SOURCE_TOKEN` shell environment variable. Please note that STS is an alpha feature and not available for all users.",
 			},
 			"max_retries": schema.Int64Attribute{
 				Optional:    true,
