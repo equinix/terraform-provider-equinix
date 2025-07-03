@@ -4,6 +4,7 @@ package config
 import (
 	"context"
 	"fmt"
+	"github.com/equinix/terraform-provider-equinix/internal/sts"
 	"log"
 	"net/http"
 	"net/url"
@@ -35,6 +36,9 @@ const (
 	ClientTokenEnvVar    = "EQUINIX_API_TOKEN"
 	ClientTimeoutEnvVar  = "EQUINIX_API_TIMEOUT"
 	MetalAuthTokenEnvVar = "METAL_AUTH_TOKEN"
+	AuthScopeEnvVar      = "EQUINIX_STS_AUTH_SCOPE"
+	StsSourceTokenEnvVar = "EQUINIX_STS_SOURCE_TOKEN"
+	StsEndpointEnvVar    = "EQUINIX_STS_ENDPOINT"
 )
 
 // ProviderMeta allows passing additional metadata
@@ -53,6 +57,8 @@ const (
 var (
 	// DefaultBaseURL is the default URL to use for API requests
 	DefaultBaseURL = "https://api.equinix.com"
+	// DefaultStsBaseURL is the default Security Token Service (STS) endpoint
+	DefaultStsBaseURL = "https://sts.eqix.equinix.com"
 	// DefaultTimeout is the default request timeout to use for API requests
 	DefaultTimeout = 30
 )
@@ -69,6 +75,9 @@ type Config struct {
 	RequestTimeout time.Duration
 	PageSize       int
 	Token          string
+	StsAuthScope   string
+	StsBaseURL     string
+	StsSourceToken string
 
 	authClient *http.Client
 
@@ -88,6 +97,19 @@ func (c *Config) Load(ctx context.Context) error {
 		return fmt.Errorf("'baseURL' cannot be empty")
 	}
 
+	// Validate BaseURL
+	_, err := url.Parse(c.BaseURL)
+	if err != nil {
+		return fmt.Errorf("invalid base URL: %w", err)
+	}
+
+	// If StsBaseURL is set, validate it too
+	if c.StsBaseURL != "" {
+		_, err := url.Parse(c.StsBaseURL)
+		if err != nil {
+			return fmt.Errorf("invalid STS base URL: %w", err)
+		}
+	}
 	c.authClient = c.newAuthClient()
 
 	neClient := ne.NewClient(ctx, c.BaseURL, c.authClient)
@@ -107,7 +129,14 @@ func (c *Config) Load(ctx context.Context) error {
 
 func (c *Config) newAuthClient() *http.Client {
 	var authTransport http.RoundTripper
-	if c.Token != "" {
+	if c.StsAuthScope != "" && c.StsSourceToken != "" {
+		authConfig := sts.Config{
+			StsAuthScope:   c.StsAuthScope,
+			StsSourceToken: c.StsSourceToken,
+			StsBaseURL:     c.StsBaseURL,
+		}
+		authTransport = authConfig.New()
+	} else if c.Token != "" {
 		tokenSource := oauth2.StaticTokenSource(&oauth2.Token{AccessToken: c.Token})
 		oauthTransport := &oauth2.Transport{
 			Source: tokenSource,
@@ -165,6 +194,15 @@ func (c *Config) NewFabricClientForFramework(ctx context.Context, meta tfsdk.Con
 // newFabricClient returns the base fabricv4 client that is then used for either the sdkv2 or framework
 // implementations of the Terraform Provider with exported Methods
 func (c *Config) newFabricClient() *fabricv4.APIClient {
+	authClient := c.newAuthClient()
+
+	// Configure HTTP client with retries and logging
+	httpClient := c.configureHTTPClient(authClient)
+
+	return c.createFabricClient(httpClient)
+}
+
+func (c *Config) configureHTTPClient(authClient *http.Client) *http.Client {
 	//nolint:staticcheck // We should move to subsystem loggers, but that is a much bigger change
 	transport := logging.NewTransport("Equinix Fabric (fabricv4)", c.authClient.Transport)
 
@@ -174,8 +212,11 @@ func (c *Config) newFabricClient() *fabricv4.APIClient {
 	retryClient.RetryMax = c.MaxRetries
 	retryClient.RetryWaitMin = time.Second
 	retryClient.RetryWaitMax = c.MaxRetryWait
-	standardClient := retryClient.StandardClient()
 
+	return retryClient.StandardClient()
+}
+
+func (c *Config) createFabricClient(httpClient *http.Client) *fabricv4.APIClient {
 	baseURL, _ := url.Parse(c.BaseURL)
 
 	configuration := fabricv4.NewConfiguration()
@@ -184,12 +225,11 @@ func (c *Config) newFabricClient() *fabricv4.APIClient {
 			URL: baseURL.String(),
 		},
 	}
-	configuration.HTTPClient = standardClient
+	configuration.HTTPClient = httpClient
 	configuration.AddDefaultHeader("X-SOURCE", "API")
 	configuration.AddDefaultHeader("X-CORRELATION-ID", correlationId(25))
-	client := fabricv4.NewAPIClient(configuration)
 
-	return client
+	return fabricv4.NewAPIClient(configuration)
 }
 
 // NewMetalClient returns a new packngo client for accessing Equinix Metal's API.
