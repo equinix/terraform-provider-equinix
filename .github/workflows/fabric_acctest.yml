@@ -265,16 +265,40 @@ jobs:
         if: always()
         shell: bash
         run: |
-          cat pfcr_test_output.log pnfv_test_output.log > uat_test_report.log
-          go-junit-report -in uat_test_report.log > uat_test_report.xml
-          
-          tests=$(grep '<testsuite ' uat_test_report.xml | sed -n 's/.*tests="\([0-9]*\)".*/\1/p' | awk '{s+=$1} END {print s}')
-          errors=$(grep '<testsuite ' uat_test_report.xml | sed -n 's/.*failures="\([0-9]*\)".*/\1/p' | awk '{s+=$1} END {print s}')
-          
-          message="*Results:* $((tests-errors)) Passed, $errors Errors"
-          echo "message<<EOF" >> $GITHUB_OUTPUT
-          echo "$message" >> $GITHUB_OUTPUT
-          echo "EOF" >> $GITHUB_OUTPUT 
+            # Process each test output file separately with improved settings
+            go-junit-report -set-exit-code -in pfcr_test_output.log > pfcr_test_report.xml
+            go-junit-report -set-exit-code -in pnfv_test_output.log > pnfv_test_report.xml
+
+            echo '<?xml version="1.0" encoding="UTF-8"?>' > uat_test_report.xml
+            echo '<testsuites>' >> uat_test_report.xml
+            grep -v '<?xml' pfcr_test_report.xml | grep -v '<testsuites>' | grep -v '</testsuites>' >> uat_test_report.xml
+            grep -v '<?xml' pnfv_test_report.xml | grep -v '<testsuites>' | grep -v '</testsuites>' >> uat_test_report.xml
+            echo '</testsuites>' >> uat_test_report.xml
+    
+            # Calculate test results for Slack message
+            tests=$(grep '<testsuite ' uat_test_report.xml | sed -n 's/.*tests="\([0-9]*\)".*/\1/p' | awk '{s+=$1} END {print s}')
+            errors=$(grep '<testsuite ' uat_test_report.xml | sed -n 's/.*failures="\([0-9]*\)".*/\1/p' | awk '{s+=$1} END {print s}')
+            
+            message="*Results:* $((tests-errors)) Passed, $errors Errors"
+            echo "message<<EOF" >> $GITHUB_OUTPUT
+            echo "$message" >> $GITHUB_OUTPUT
+            echo "EOF" >> $GITHUB_OUTPUT
+
+#      - name: Prepare slack message
+#        id: slack_message
+#        if: always()
+#        shell: bash
+#        run: |
+#          cat pfcr_test_output.log pnfv_test_output.log > uat_test_report.log
+#          go-junit-report -in uat_test_report.log > uat_test_report.xml
+#
+#          tests=$(grep '<testsuite ' uat_test_report.xml | sed -n 's/.*tests="\([0-9]*\)".*/\1/p' | awk '{s+=$1} END {print s}')
+#          errors=$(grep '<testsuite ' uat_test_report.xml | sed -n 's/.*failures="\([0-9]*\)".*/\1/p' | awk '{s+=$1} END {print s}')
+#
+#          message="*Results:* $((tests-errors)) Passed, $errors Errors"
+#          echo "message<<EOF" >> $GITHUB_OUTPUT
+#          echo "$message" >> $GITHUB_OUTPUT
+#          echo "EOF" >> $GITHUB_OUTPUT
 
       - name: Create HTML Testing Report
         if: always()
