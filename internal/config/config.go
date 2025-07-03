@@ -1,9 +1,4 @@
-// Package config provides configuration and client initialization for the Equinix
-// Terraform provider. It handles authentication to Equinix services (Fabric,
-// Network Edge, and Metal) via OAuth, tokens, and Workload Identity Federation.
-// The package manages HTTP client configuration including retries and timeouts,
-// and provides utility functions for generating service-specific API clients
-// compatible with both Terraform SDK v2 and Framework interfaces.
+// Package config uses environment variables to configure API clients for the provider
 package config
 
 import (
@@ -20,42 +15,36 @@ import (
 	"strings"
 	"time"
 
+	"github.com/equinix/equinix-sdk-go/extensions/equinixoauth2"
 	"github.com/equinix/equinix-sdk-go/services/fabricv4"
 	"github.com/equinix/equinix-sdk-go/services/metalv1"
 	"github.com/equinix/ne-go"
-	"github.com/equinix/oauth2-go"
 	"github.com/equinix/terraform-provider-equinix/version"
 	"github.com/hashicorp/go-retryablehttp"
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/logging"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/packethost/packngo"
-	xoauth2 "golang.org/x/oauth2"
+	"golang.org/x/oauth2"
 )
 
+// These constants track environment variable names
+// that are relevant to the provider
 const (
-	// EndpointEnvVar is the environment variable name used to override the default Equinix API endpoint.
-	EndpointEnvVar = "EQUINIX_API_ENDPOINT"
-	// ClientIDEnvVar is the environment variable name for the Equinix API OAuth client ID.
-	ClientIDEnvVar = "EQUINIX_API_CLIENTID"
-	// ClientSecretEnvVar is the environment variable name for the Equinix API OAuth client secret.
-	ClientSecretEnvVar = "EQUINIX_API_CLIENTSECRET"
-	// ClientTokenEnvVar is the environment variable name for the Equinix API token.
-	ClientTokenEnvVar = "EQUINIX_API_TOKEN"
-	// ClientTimeoutEnvVar is the environment variable name for the Equinix API request timeout.
-	ClientTimeoutEnvVar = "EQUINIX_API_TIMEOUT"
-	// MetalAuthTokenEnvVar is the environment variable name for the Equinix Metal API auth token.
+	EndpointEnvVar       = "EQUINIX_API_ENDPOINT"
+	ClientIDEnvVar       = "EQUINIX_API_CLIENTID"
+	ClientSecretEnvVar   = "EQUINIX_API_CLIENTSECRET"
+	ClientTokenEnvVar    = "EQUINIX_API_TOKEN"
+	ClientTimeoutEnvVar  = "EQUINIX_API_TIMEOUT"
 	MetalAuthTokenEnvVar = "METAL_AUTH_TOKEN"
-	// AuthScopeEnvVar is the environment variable name for the Security Token Service (STS) auth scope.
 	AuthScopeEnvVar = "EQUINIX_STS_AUTH_SCOPE"
-	// StsSourceTokenEnvVar is the environment variable name for the STS source token used in OIDC token exchange.
 	StsSourceTokenEnvVar = "EQUINIX_STS_SOURCE_TOKEN"
-	// StsEndpointEnvVar is the environment variable name for the STS endpoint URL.
 	StsEndpointEnvVar = "EQUINIX_STS_ENDPOINT"
 )
 
-// ProviderMeta contains metadata about the Terraform module using this provider.
-// It's primarily used to track module names for user agent identification in API requests.
+// ProviderMeta allows passing additional metadata
+// specific to our provider in provider config blocks
+// See https://developer.hashicorp.com/terraform/internals/provider-meta
 type ProviderMeta struct {
 	ModuleName string `cty:"module_name"`
 }
@@ -67,11 +56,9 @@ const (
 )
 
 var (
-	// DefaultBaseURL is the standard production API endpoint for Equinix services.
+	// DefaultBaseURL is the default URL to use for API requests
 	DefaultBaseURL = "https://api.equinix.com"
-	// DefaultStsBaseURL is the default Security Token Service (STS) endpoint
-	DefaultStsBaseURL = "https://sts.eqix.equinix.com"
-	// DefaultTimeout is the default timeout for API requests in seconds.
+	// DefaultTimeout is the default request timeout to use for API requests
 	DefaultTimeout = 30
 )
 
@@ -122,13 +109,9 @@ func (c *Config) Load(ctx context.Context) error {
 			return fmt.Errorf("invalid STS base URL: %w", err)
 		}
 	}
+	c.authClient = c.newAuthClient()
 
-	authClient := c.createAuthClient(ctx)
-	authClient.Timeout = c.requestTimeout()
-	//nolint:staticcheck // We should move to subsystem loggers, but that is a much bigger change
-	authClient.Transport = logging.NewTransport("Equinix", authClient.Transport)
-	c.authClient = authClient
-	neClient := ne.NewClient(ctx, c.BaseURL, authClient)
+	neClient := ne.NewClient(ctx, c.BaseURL, c.authClient)
 
 	if c.PageSize > 0 {
 		neClient.SetPageSize(c.PageSize)
@@ -143,10 +126,35 @@ func (c *Config) Load(ctx context.Context) error {
 	return nil
 }
 
+func (c *Config) newAuthClient() *http.Client {
+	var authTransport http.RoundTripper
+	if c.Token != "" {
+		tokenSource := oauth2.StaticTokenSource(&oauth2.Token{AccessToken: c.Token})
+		oauthTransport := &oauth2.Transport{
+			Source: tokenSource,
+		}
+		authTransport = oauthTransport
+	} else {
+		authConfig := equinixoauth2.Config{
+			ClientID:     c.ClientID,
+			ClientSecret: c.ClientSecret,
+			BaseURL:      c.BaseURL,
+		}
+		authTransport = authConfig.New()
+	}
+
+	authClient := http.Client{
+		Timeout: c.requestTimeout(),
+		//nolint:staticcheck // We should move to subsystem loggers, but that is a much bigger change
+		Transport: logging.NewTransport("Equinix", authTransport),
+	}
+	return &authClient
+}
+
 // NewFabricClientForSDK returns a terraform sdkv2 plugin compatible
 // equinix-sdk-go/fabricv4 client to be used to access Fabric's V4 APIs
-func (c *Config) NewFabricClientForSDK(ctx context.Context, d *schema.ResourceData) *fabricv4.APIClient {
-	client := c.newFabricClient(ctx)
+func (c *Config) NewFabricClientForSDK(_ context.Context, d *schema.ResourceData) *fabricv4.APIClient {
+	client := c.newFabricClient()
 
 	baseUserAgent := c.tfSdkUserAgent(client.GetConfig().UserAgent)
 	client.GetConfig().UserAgent = generateModuleUserAgentString(d, baseUserAgent)
@@ -154,19 +162,20 @@ func (c *Config) NewFabricClientForSDK(ctx context.Context, d *schema.ResourceDa
 	return client
 }
 
-// NewFabricClientForTesting creates a Fabric client configured specifically for acceptance tests.
+// NewFabricClientForTesting is a shim for Fabric tests.
 // Deprecated: when the acceptance package starts to contain API clients for testing/cleanup this will move with them
-func (c *Config) NewFabricClientForTesting(ctx context.Context) *fabricv4.APIClient {
-	client := c.newFabricClient(ctx)
+func (c *Config) NewFabricClientForTesting(_ context.Context) *fabricv4.APIClient {
+	client := c.newFabricClient()
 
 	client.GetConfig().UserAgent = fmt.Sprintf("tf-acceptance-tests %v", client.GetConfig().UserAgent)
 
 	return client
 }
 
-// NewFabricClientForFramework creates a Fabric client compatible with the Terraform Plugin Framework.
+// NewFabricClientForFramework returns a terraform framework compatible
+// equinix-sdk-go/fabricv4 client to be used to access Fabric's V4 APIs
 func (c *Config) NewFabricClientForFramework(ctx context.Context, meta tfsdk.Config) *fabricv4.APIClient {
-	client := c.newFabricClient(ctx)
+	client := c.newFabricClient()
 
 	baseUserAgent := c.tfFrameworkUserAgent(client.GetConfig().UserAgent)
 	client.GetConfig().UserAgent = generateFwModuleUserAgentString(ctx, meta, baseUserAgent)
@@ -176,7 +185,7 @@ func (c *Config) NewFabricClientForFramework(ctx context.Context, meta tfsdk.Con
 
 // newFabricClient returns the base fabricv4 client that is then used for either the sdkv2 or framework
 // implementations of the Terraform Provider with exported Methods
-func (c *Config) newFabricClient(ctx context.Context) *fabricv4.APIClient {
+func (c *Config) newFabricClient() *fabricv4.APIClient {
 	authClient := c.createAuthClient(ctx)
 
 	// Configure HTTP client with retries and logging
@@ -234,7 +243,8 @@ func (c *Config) createOAuthClient(ctx context.Context) *http.Client {
 }
 
 func (c *Config) configureHTTPClient(authClient *http.Client) *http.Client {
-	transport := logging.NewTransport("Equinix Fabric (fabricv4)", authClient.Transport)
+	//nolint:staticcheck // We should move to subsystem loggers, but that is a much bigger change
+	transport := logging.NewTransport("Equinix Fabric (fabricv4)", c.authClient.Transport)
 
 	retryClient := retryablehttp.NewClient()
 	retryClient.HTTPClient.Transport = transport
@@ -282,7 +292,8 @@ func (c *Config) NewMetalClient() *packngo.Client {
 	return client
 }
 
-// NewMetalClientForSDK returns a Metal client compatible with the Terraform Plugin SDK v2.
+// NewMetalClientForSDK returns a new equinix-sdk-go client that enables
+// an SDK resource to interact with the Metal API
 func (c *Config) NewMetalClientForSDK(d *schema.ResourceData) *metalv1.APIClient {
 	client := c.newMetalClient()
 
@@ -292,7 +303,8 @@ func (c *Config) NewMetalClientForSDK(d *schema.ResourceData) *metalv1.APIClient
 	return client
 }
 
-// NewMetalClientForFramework returns a Metal client compatible with the Terraform Plugin Framework.
+// NewMetalClientForFramework returns a new equinix-sdk-go client that enables
+// an framework resource to interact with the Metal API
 func (c *Config) NewMetalClientForFramework(ctx context.Context, meta tfsdk.Config) *metalv1.APIClient {
 	client := c.newMetalClient()
 
@@ -358,7 +370,7 @@ func appendUserAgentFromEnv(ua string) string {
 	return ua
 }
 
-// AddModuleToNEUserAgent updates the Network Edge client's User-Agent header to include Terraform module information.
+// AddModuleToNEUserAgent injects the ModuleName into SDK resource metadata for analytics
 func (c *Config) AddModuleToNEUserAgent(client *ne.Client, d *schema.ResourceData) {
 	cli := *client
 	rc := cli.(*ne.RestClient)
@@ -366,7 +378,8 @@ func (c *Config) AddModuleToNEUserAgent(client *ne.Client, d *schema.ResourceDat
 	*client = rc
 }
 
-// AddFwModuleToMetalUserAgent TODO (ocobleseqx) - known issue, Metal services are initialized using the metal client pointer
+// AddFwModuleToMetalUserAgent injects the ModuleName into framework resource metadata for analytics
+// TODO (ocobleseqx) - known issue, Metal services are initialized using the metal client pointer
 // if two or more modules in same project interact with metal resources they will override
 // the UserAgent resulting in swapped UserAgent.
 // This can be fixed by letting the headers be overwritten on the initialized Packngo ServiceOp
@@ -388,7 +401,7 @@ func generateFwModuleUserAgentString(ctx context.Context, meta tfsdk.Config, bas
 	return baseUserAgent
 }
 
-// AddModuleToMetalUserAgent updates the Metal client's User-Agent string to include Terraform module information.
+// AddModuleToMetalUserAgent injects the ModuleName into SDK resource metadata for analytics
 func (c *Config) AddModuleToMetalUserAgent(d *schema.ResourceData) {
 	c.Metal.UserAgent = generateModuleUserAgentString(d, c.metalUserAgent)
 }
