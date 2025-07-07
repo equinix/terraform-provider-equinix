@@ -46,7 +46,7 @@ provider "equinix" {
 }
 ```
 
-Client ID and Client Secret can be omitted when using Workload Identity Tokens for Equinix Fabric resources.
+Workload Identity Tokens can be used in service authorization scenarios, like HCP Terraform. Other credential variables are optional for `equinix_fabric_*` resources and datasources when using this method.
 
 ```terraform
 # Configuration for using Workload Identity Federation
