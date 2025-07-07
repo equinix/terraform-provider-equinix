@@ -4,7 +4,6 @@ package config
 import (
 	"context"
 	"fmt"
-	"github.com/equinix/terraform-provider-equinix/internal/sts"
 	"log"
 	"net/http"
 	"net/url"
@@ -18,6 +17,7 @@ import (
 	"github.com/equinix/equinix-sdk-go/services/fabricv4"
 	"github.com/equinix/equinix-sdk-go/services/metalv1"
 	"github.com/equinix/ne-go"
+	"github.com/equinix/terraform-provider-equinix/internal/sts"
 	"github.com/equinix/terraform-provider-equinix/version"
 	"github.com/hashicorp/go-retryablehttp"
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
@@ -202,7 +202,7 @@ func (c *Config) newFabricClient() *fabricv4.APIClient {
 	return c.createFabricClient(httpClient)
 }
 
-func (c *Config) configureHTTPClient(authClient *http.Client) *http.Client {
+func (c *Config) configureHTTPClient(_ *http.Client) *http.Client {
 	//nolint:staticcheck // We should move to subsystem loggers, but that is a much bigger change
 	transport := logging.NewTransport("Equinix Fabric (fabricv4)", c.authClient.Transport)
 

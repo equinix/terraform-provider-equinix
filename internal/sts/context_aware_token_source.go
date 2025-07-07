@@ -1,24 +1,29 @@
+// Package sts provides a context-aware token source for Equinix STS (Secure Token Service).
 package sts
 
 import (
 	"context"
 	"fmt"
-	"github.com/equinix/equinix-sdk-go/services/stsv1alpha"
 	"golang.org/x/oauth2"
 	"io"
 	"sync"
 	"time"
+
+	"github.com/equinix/equinix-sdk-go/services/stsv1alpha"
 )
 
-// StsContextAwareTokenSource Implements the refresh token source
-type StsContextAwareTokenSource struct {
+// ContextAwareTokenSource Implements the refresh token source
+type ContextAwareTokenSource struct {
 	conf   *Config
 	client *stsv1alpha.APIClient
 	mu     sync.Mutex
 	token  *oauth2.Token
 }
 
-func (s *StsContextAwareTokenSource) OidcTokenExchange(ctx context.Context) (*oauth2.Token, error) {
+// OidcTokenExchange performs an OIDC token exchange using the configured STS client and settings.
+// It ensures thread safety, validates required configuration, and caches the token until expiry.
+// Returns a valid OAuth2 token or an error if the exchange fails.
+func (s *ContextAwareTokenSource) OidcTokenExchange(ctx context.Context) (*oauth2.Token, error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	if !s.token.Valid() {

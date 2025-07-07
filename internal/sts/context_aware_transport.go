@@ -7,25 +7,27 @@ import (
 	"sync"
 )
 
-type StsContextAwareTransport struct {
+// ContextAwareTransport is an http.RoundTripper that uses a ContextAwareTokenSource
+type ContextAwareTransport struct {
 	// Source supplies the token to add to outgoing requests'
 	// Authorization headers.
-	Source *StsContextAwareTokenSource
+	Source *ContextAwareTokenSource
 
 	// Base is the base RoundTripper used to make HTTP requests.
 	// If nil, http.DefaultTransport is used.
 	Base http.RoundTripper
 }
 
-func (c *Config) New() *StsContextAwareTransport {
-	return &StsContextAwareTransport{
+// New creates a new ContextAwareTransport using the provided Config.
+func (c *Config) New() *ContextAwareTransport {
+	return &ContextAwareTransport{
 		Source: c.StsTokenSource(),
 	}
 }
 
 // RoundTrip authorizes and authenticates the request with an
 // access token from ContextAwareTransport's Source.
-func (t *StsContextAwareTransport) RoundTrip(req *http.Request) (*http.Response, error) {
+func (t *ContextAwareTransport) RoundTrip(req *http.Request) (*http.Response, error) {
 	reqBodyClosed := false
 	if req.Body != nil {
 		defer func() {
@@ -57,13 +59,13 @@ var cancelOnce sync.Once
 // but now only it only logs on first use to warn that it's deprecated.
 //
 // Deprecated: use contexts for cancellation instead.
-func (t *StsContextAwareTransport) CancelRequest(_ *http.Request) {
+func (t *ContextAwareTransport) CancelRequest(_ *http.Request) {
 	cancelOnce.Do(func() {
-		log.Printf("deprecated: golang.org/x/oauth2: StsContextAwareTransport.CancelRequest no longer does anything; use contexts")
+		log.Printf("deprecated: golang.org/x/oauth2: ContextAwareTransport.CancelRequest no longer does anything; use contexts")
 	})
 }
 
-func (t *StsContextAwareTransport) base() http.RoundTripper {
+func (t *ContextAwareTransport) base() http.RoundTripper {
 	if t.Base != nil {
 		return t.Base
 	}

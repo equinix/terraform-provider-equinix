@@ -1,8 +1,9 @@
 package sts
 
 import (
-	"github.com/equinix/equinix-sdk-go/services/stsv1alpha"
 	"sync"
+
+	"github.com/equinix/equinix-sdk-go/services/stsv1alpha"
 )
 
 // Config describes oauth2 client credentials flow
@@ -18,7 +19,7 @@ type Config struct {
 // StsTokenSource returns a TokenSource that returns t until t expires,
 // automatically refreshing it as necessary using the provided context and the
 // client ID and client secret.
-func (c *Config) StsTokenSource() *StsContextAwareTokenSource {
+func (c *Config) StsTokenSource() *ContextAwareTokenSource {
 	config := stsv1alpha.NewConfiguration()
 	config.Servers = stsv1alpha.ServerConfigurations{
 		stsv1alpha.ServerConfiguration{
@@ -26,7 +27,7 @@ func (c *Config) StsTokenSource() *StsContextAwareTokenSource {
 		},
 	}
 	restClient := stsv1alpha.NewAPIClient(config)
-	source := StsContextAwareTokenSource{
+	source := ContextAwareTokenSource{
 		c,
 		restClient,
 		sync.Mutex{},
