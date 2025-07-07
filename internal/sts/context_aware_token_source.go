@@ -4,12 +4,12 @@ package sts
 import (
 	"context"
 	"fmt"
-	"golang.org/x/oauth2"
 	"io"
 	"sync"
 	"time"
 
 	"github.com/equinix/equinix-sdk-go/services/stsv1alpha"
+	"golang.org/x/oauth2"
 )
 
 // ContextAwareTokenSource Implements the refresh token source
