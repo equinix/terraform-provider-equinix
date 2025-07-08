@@ -87,7 +87,7 @@ func Provider() *schema.Provider {
 				Type:        schema.TypeString,
 				Optional:    true,
 				DefaultFunc: schema.EnvDefaultFunc(config.AuthScopeEnvVar, ""),
-				Description: "The scope of the authentication token. Must be an access policy ERN or a string of the form roleassignments:<org_id> This argument can also be specified with the `EQUINIX_STS_AUTH_SCOPE` shell environment variable. Please note that Equinix STS is an alpha feature and not available for all users.",
+				Description: "The scope of the authentication token. Must be an access policy ERN or a string of the form `roleassignments:<org_id>`. This argument can also be specified with the `EQUINIX_STS_AUTH_SCOPE` shell environment variable. Please note that Equinix STS is an alpha feature and not available for all users.",
 			},
 			"sts_endpoint": {
 				Type:         schema.TypeString,
