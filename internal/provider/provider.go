@@ -91,7 +91,7 @@ func (p *FrameworkProvider) Schema(
 			},
 			"sts_endpoint": schema.StringAttribute{
 				Optional:    true,
-				Description: fmt.Sprintf("The STS API base URL to point out desired environment. This argument can also be specified with the `EQUINIX_STS_ENDPOINT` shell environment variable. (Defaults to `%s`). Please note that STS is an alpha feature and not available for all users.", config.DefaultStsBaseURL),
+				Description: fmt.Sprintf("The STS API base URL to point to the desired environment. This argument can also be specified with the `EQUINIX_STS_ENDPOINT` shell environment variable. (Defaults to `%s`). Please note that STS is an alpha feature and not available for all users.", config.DefaultStsBaseURL),
 				Validators: []validator.String{
 					equinix_validation.URLWithScheme("http", "https"),
 				},

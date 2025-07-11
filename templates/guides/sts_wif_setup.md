@@ -1,12 +1,12 @@
 # Workload Identity Federation (WIF) using Equinix STS
 
-This guide will walk you through the initial setup of Workload Identity Federation using STS, allowing your workloads to securely authenticate with Equinix services without using long-lived credentials.
+This guide walks you through setting up Workload Identity Federation (WIF) using Equinix STS. It enables your workloads to securely authenticate with Equinix services without relying on long-lived credentials.
 
 ## Prerequisites
 
-- An Equinix account with an organization and project - [Sign up here](https://customerportal.equinix.com)
-- Access to the platform you want to use as an identity provider (e.g., Terraform HCP)
-- API credentials for Equinix platform - See [Generating Client ID and Client Secret key](https://developer.equinix.com/dev-docs/fabric/getting-started/getting-access-token#generating-client-id-and-client-secret) for more details
+- An Equinix account with an organization and project - [Sign up here](https://portal.equinix.com)
+- Access to your identity provider (e.g., Azura AD, Terraform HCP)
+- Equinix API credentials for an administrator user - See [Generating Client ID and Client Secret key](https://docs.equinix.com/equinix-api/api-authentication#generate-client-id-and-client-secret) for more details
 
 ## Step 1: Obtain Authentication Token
 
@@ -29,10 +29,9 @@ TOKEN=$(curl -s "https://api.equinix.com/oauth2/v1/token" \
 Create a trust relationship with your workload's identity provider:
 
 ```bash
-STS_URL="https://sts.eqix.equinix.com"
 ORG_ID="your_organization_id"
 
-OIDCP=$(curl -s "$STS_URL/use/createOidcProvider" \
+OIDCP=$(curl -s "https://sts.eqix.equinix.com/use/createOidcProvider" \
   -H "Authorization: Bearer $TOKEN" \
   --json '{
     "name": "Your Provider Name",
@@ -51,6 +50,8 @@ echo "Identity Provider ID: $IDP_ID"
 ## Step 3: Authorize Your Workloads
 
 You can authorize workloads using either role assignments or access policies:
+
+The subject in the principal name should match the sub claim of the JWT token issued by your identity provider. This ensures that the workload can be authenticated and authorized correctly.
 
 ### Option A: Using Role Assignments
 
@@ -98,8 +99,6 @@ curl -s "$ACCESS_URL/use/createAccessPolicy" \
     }]
   }'
 ```
-
-The subject in the principal name should match the sub claim of the JWT token issued by your identity provider. This ensures that the workload can be authenticated and authorized correctly.
 
 ## Troubleshooting
 
