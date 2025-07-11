@@ -14,6 +14,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 )
 
+// FrameworkProviderConfig holds the configuration for the Equinix provider.
 type FrameworkProviderConfig struct {
 	BaseURL             types.String `tfsdk:"endpoint"`
 	ClientID            types.String `tfsdk:"client_id"`
@@ -24,6 +25,9 @@ type FrameworkProviderConfig struct {
 	PageSize            types.Int64  `tfsdk:"response_max_page_size"`
 	MaxRetries          types.Int64  `tfsdk:"max_retries"`
 	MaxRetryWaitSeconds types.Int64  `tfsdk:"max_retry_wait_seconds"`
+	StsAuthScope        types.String `tfsdk:"sts_auth_scope"`
+	StsBaseURL          types.String `tfsdk:"sts_endpoint"`
+	StsSourceToken      types.String `tfsdk:"sts_source_token"`
 }
 
 func (c *FrameworkProviderConfig) toOldStyleConfig() *config.Config {
@@ -38,9 +42,13 @@ func (c *FrameworkProviderConfig) toOldStyleConfig() *config.Config {
 		PageSize:       int(c.PageSize.ValueInt64()),
 		MaxRetries:     int(c.MaxRetries.ValueInt64()),
 		MaxRetryWait:   time.Duration(c.MaxRetryWaitSeconds.ValueInt64()) * time.Second,
+		StsAuthScope:   c.StsAuthScope.ValueString(),
+		StsBaseURL:     c.StsBaseURL.ValueString(),
+		StsSourceToken: c.StsSourceToken.ValueString(),
 	}
 }
 
+// Configure initializes the provider configuration, reading values from the provider block
 func (fp *FrameworkProvider) Configure(
 	ctx context.Context,
 	req provider.ConfigureRequest,
@@ -84,6 +92,16 @@ func (fp *FrameworkProvider) Configure(
 
 	fwconfig.MaxRetryWaitSeconds = determineIntConfValue(
 		fwconfig.MaxRetryWaitSeconds, "", 30, &resp.Diagnostics)
+
+	fwconfig.StsAuthScope = determineStrConfValue(
+		fwconfig.StsAuthScope, config.AuthScopeEnvVar, "")
+
+	fwconfig.StsBaseURL = determineStrConfValue(
+		fwconfig.StsBaseURL, config.StsEndpointEnvVar, config.DefaultStsBaseURL)
+
+	fwconfig.StsSourceToken = determineStrConfValue(
+		fwconfig.StsSourceToken, config.StsSourceTokenEnvVar, "")
+
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -103,6 +121,7 @@ func (fp *FrameworkProvider) Configure(
 	fp.Meta = oldStyleConfig
 }
 
+// GetIntFromEnv retrieves an integer value from the environment variable specified by key.
 func GetIntFromEnv(
 	key string,
 	defaultValue int64,
