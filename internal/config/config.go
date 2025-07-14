@@ -202,9 +202,9 @@ func (c *Config) newFabricClient() *fabricv4.APIClient {
 	return c.createFabricClient(httpClient)
 }
 
-func (c *Config) configureHTTPClient(_ *http.Client) *http.Client {
+func (c *Config) configureHTTPClient(client *http.Client) *http.Client {
 	//nolint:staticcheck // We should move to subsystem loggers, but that is a much bigger change
-	transport := logging.NewTransport("Equinix Fabric (fabricv4)", c.authClient.Transport)
+	transport := logging.NewTransport("Equinix Fabric (fabricv4)", client.Transport)
 
 	retryClient := retryablehttp.NewClient()
 	retryClient.HTTPClient.Transport = transport
