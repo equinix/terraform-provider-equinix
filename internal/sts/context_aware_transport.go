@@ -41,8 +41,8 @@ func (t *ContextAwareTransport) RoundTrip(req *http.Request) (*http.Response, er
 	// passing in the existing request context
 	token, err := t.Source.OidcTokenExchange(req.Context())
 	if err != nil {
-		fmt.Println("error: ", err)
-		return nil, err
+		log.Printf("ContextAwareTransport: error during OIDC token exchange: %v", err)
+		return nil, fmt.Errorf("ContextAwareTransport: OIDC token exchange failed: %w", err)
 	}
 
 	req2 := cloneRequest(req) // per RoundTripper contract
