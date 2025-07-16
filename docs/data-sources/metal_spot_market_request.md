@@ -4,7 +4,6 @@ subcategory: "Metal"
 
 # equinix_metal_spot_market_request (Data Source)
 
-This endpoint has been sunset.
 Provides an Equinix Metal spot_market_request datasource. The datasource will contain list of device IDs created by referenced Spot Market Request.
 
 ## Example Usage
