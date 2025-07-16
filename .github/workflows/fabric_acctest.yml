@@ -260,6 +260,12 @@ jobs:
           terraform_version: ${{ matrix.terraform }}
           terraform_wrapper: false
 
+      - name: Debug OIDC Token Output
+        run:
+          echo "ID Token length: ${#EQUINIX_STS_SOURCE_TOKEN}"
+        env:
+          EQUINIX_STS_SOURCE_TOKEN: ${{ needs.generate-pfcr-token.outputs.id_token }}
+
       - name: TF Fabric PFCR acceptance tests STS creds
         timeout-minutes: 180
         env:
