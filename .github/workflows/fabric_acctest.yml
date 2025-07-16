@@ -50,6 +50,7 @@ jobs:
     needs: authorize
     runs-on: ubuntu-latest
     steps:
+      - run: npm install @octokit/core
       - name: Configure OIDC Subject Claim Template
         uses: actions/github-script@v6
         with:
@@ -60,17 +61,23 @@ jobs:
               auth: process.env.GITHUB_TOKEN
             });
             
-            await octokit.request('PUT /repos/{owner}/{repo}/actions/oidc/customization/sub', {
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              use_default: false,
-              include_claim_keys: [
-                'workflow'
-              ],
-              headers: {
-                'X-GitHub-Api-Version': '2022-11-28'
-              }
-            });
+            try {
+              const response = await octokit.request('PUT /repos/{owner}/{repo}/actions/oidc/customization/sub', {
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                use_default: false,
+                include_claim_keys: [
+                  'workflow'
+                ],
+                headers: {
+                  'X-GitHub-Api-Version': '2022-11-28'
+                }
+              });
+              console.log('OIDC subject claim template updated successfully with status:', response.status);
+            } catch (error) {
+              console.error('Error updating OIDC template:', error.message);
+              core.setFailed(`Failed to update OIDC template: ${error.message}`);
+            }
 
   generate-pnfv-token:
     name: Generate PNFV OIDC Token
