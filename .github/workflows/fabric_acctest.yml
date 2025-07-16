@@ -55,13 +55,22 @@ jobs:
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
-            await github.rest.actions.updateOidcCustomSubClaimForRepo({
+            const { Octokit } = require('@octokit/core');
+            const octokit = new Octokit({
+              auth: process.env.GITHUB_TOKEN
+            });
+            
+            await octokit.request('PUT /repos/{owner}/{repo}/actions/oidc/customization/sub', {
               owner: context.repo.owner,
               repo: context.repo.repo,
               use_default: false,
-              include_claim_keys: ["workflow"]
+              include_claim_keys: [
+                'workflow'
+              ],
+              headers: {
+                'X-GitHub-Api-Version': '2022-11-28'
+              }
             });
-            console.log('OIDC subject claim template updated to include only workflow name');
 
   generate-pnfv-token:
     name: Generate PNFV OIDC Token
