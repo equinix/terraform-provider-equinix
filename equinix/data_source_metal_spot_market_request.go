@@ -18,7 +18,8 @@ import (
 
 func dataSourceMetalSpotMarketRequest() *schema.Resource {
 	return &schema.Resource{
-		ReadContext: dataSourceMetalSpotMarketRequestRead,
+		DeprecationMessage: "The Spot Market Requests API has been sunset.",
+		ReadContext:        dataSourceMetalSpotMarketRequestRead,
 
 		Schema: map[string]*schema.Schema{
 			"request_id": {
@@ -85,6 +86,12 @@ func dataSourceMetalSpotMarketRequest() *schema.Resource {
 }
 
 func dataSourceMetalSpotMarketRequestRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	diags := diag.Diagnostics{}
+	diags = append(diags, diag.Diagnostic{
+		Severity: diag.Warning,
+		Summary:  "Spot Market Requests API has been sunset.",
+		Detail:   "This data source is no longer supported.",
+	})
 	client := meta.(*config.Config).Metal
 	id := d.Get("request_id").(string)
 
