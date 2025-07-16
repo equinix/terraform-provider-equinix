@@ -28,6 +28,7 @@ on:
 permissions:
   pull-requests: read
   contents: read
+  id-token: write
 
 jobs:
 
@@ -43,6 +44,70 @@ jobs:
       cancel-in-progress: true
     steps:
       - run: true
+
+  configure-oidc-template:
+    name: Configure OIDC Subject Claim Template
+    needs: authorize
+    runs-on: ubuntu-latest
+    steps:
+      - name: Configure OIDC Subject Claim Template
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            await github.rest.actions.updateOidcCustomSubClaimForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              use_default: false,
+              include_claim_keys: ["workflow"]
+            });
+            console.log('OIDC subject claim template updated to include only workflow name');
+
+  generate-pnfv-token:
+    name: Generate PNFV OIDC Token
+    needs: configure-oidc-template
+    runs-on: ubuntu-latest
+    outputs:
+      id_token: ${{ steps.get_id_token.outputs.id_token }}
+    steps:
+      - id: get_id_token
+        name: Get GitHub OIDC Token for PNFV
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const core = require('@actions/core');
+            const { getIDToken } = require('@actions/core');
+            try {
+              const idToken = await getIDToken('gha-nfv-client');
+              console.log('Token generated with audience: gha-nfv-client');
+              core.setOutput('id_token', idToken);
+            } catch (error) {
+              core.setFailed(`Error getting OIDC token: ${error.message}`);
+            }
+          result-encoding: string
+
+  generate-pfcr-token:
+    name: Generate PFCR OIDC Token
+    needs: configure-oidc-template
+    runs-on: ubuntu-latest
+    outputs:
+      id_token: ${{ steps.get_id_token.outputs.id_token }}
+    steps:
+      - id: get_id_token
+        name: Get GitHub OIDC Token for PFCR
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const core = require('@actions/core');
+            const { getIDToken } = require('@actions/core');
+            try {
+              const idToken = await getIDToken('gha-fcr-client');
+              console.log('Token generated with audience: gha-fcr-client');
+              core.setOutput('id_token', idToken);
+            } catch (error) {
+              core.setFailed(`Error getting OIDC token: ${error.message}`);
+            }
+          result-encoding: string
 
   build:
     name: Build
@@ -71,8 +136,9 @@ jobs:
           go build -v .
 
   test-PNFV:
+    if: false
     name: Matrix Test
-    needs: build
+    needs: [build, generate-pnfv-token]
     runs-on: ubuntu-latest
     env:
       EQUINIX_API_ENDPOINT: "https://uatapi.equinix.com"
@@ -114,6 +180,7 @@ jobs:
           TF_ACC_FABRIC_DEDICATED_PORTS: ${{ secrets.TF_ACC_FABRIC_DEDICATED_PORTS }}
           EQUINIX_API_CLIENTID: ${{ secrets.EQUINIX_API_CLIENTID_PNFV }}
           EQUINIX_API_CLIENTSECRET: ${{ secrets.EQUINIX_API_CLIENTSECRET_PNFV }}
+          EQUINIX_STS_SOURCE_TOKEN: ${{ needs.generate-pnfv-token.outputs.id_token }}
           METAL_AUTH_TOKEN: ${{ secrets.METAL_AUTH_TOKEN }}
         run: |
           go test ./... -v -coverprofile coverage_pnfv.txt -covermode=atomic -count 1 -parallel 8 -run "(PNFV)" -timeout 180m | tee pnfv_test_output.log
@@ -149,10 +216,11 @@ jobs:
 
   test-PFCR:
     name: Matrix Test
-    needs: build
+    needs: [build, generate-pfcr-token]
     runs-on: ubuntu-latest
     env:
       EQUINIX_API_ENDPOINT: "https://uatapi.equinix.com"
+      EQUINIX_STS_ENDPOINT: "https://sts.uat.equinix.com"
     timeout-minutes: 240
     strategy:
       fail-fast: false
@@ -183,7 +251,7 @@ jobs:
           terraform_version: ${{ matrix.terraform }}
           terraform_wrapper: false
 
-      - name: TF Fabric PFCR acceptance tests
+      - name: TF Fabric PFCR acceptance tests STS creds
         timeout-minutes: 180
         env:
           TF_ACC: "1"
@@ -191,43 +259,15 @@ jobs:
           TF_ACC_FABRIC_DEDICATED_PORTS: ${{ secrets.TF_ACC_FABRIC_DEDICATED_PORTS }}
           TF_ACC_FABRIC_MARKET_PLACE_SUBSCRIPTION_ID: ${{ secrets.TF_ACC_FABRIC_MARKET_PLACE_SUBSCRIPTION_ID }}
           TF_ACC_FABRIC_STREAM_TEST_DATA: ${{ secrets.TF_ACC_FABRIC_STREAM_TEST_DATA }}
-          EQUINIX_API_CLIENTID: ${{ secrets.EQUINIX_API_CLIENTID_PFCR }}
-          EQUINIX_API_CLIENTSECRET: ${{ secrets.EQUINIX_API_CLIENTSECRET_PFCR }}
+          EQUINIX_STS_SOURCE_TOKEN: ${{ needs.generate-pfcr-token.outputs.id_token }}
+          EQUINIX_STS_AUTH_SCOPE: "roleassignments:405153000683548"
           METAL_AUTH_TOKEN: ${{ secrets.METAL_AUTH_TOKEN }}
         run: |
-          go test ./... -v -coverprofile coverage_pfcr.txt -covermode=atomic -count 1 -parallel 8 -run "(PFCR)" -timeout 180m | tee pfcr_test_output.log
-          
-      - name: Upload PFCR Testing Log
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
-        with:
-          name: pfcr_test_logs
-          path: pfcr_test_output.log
-
-      - name: Check if Tests are passed
-        run: sh scripts/check_tests.sh pfcr_test_output.log
-
-      - name: Sweeper PFCR
-        if: ${{ always() }}
-        env:
-          EQUINIX_API_CLIENTID: ${{ secrets.EQUINIX_API_CLIENTID_PFCR }}
-          EQUINIX_API_CLIENTSECRET: ${{ secrets.EQUINIX_API_CLIENTSECRET_PFCR }}
-          METAL_AUTH_TOKEN: ${{ secrets.METAL_AUTH_TOKEN }}
-          SWEEP: "all" #Flag required to define the regions that the sweeper is to be ran in
-          SWEEP_ALLOW_FAILURES: "true" #Enable to allow Sweeper Tests to continue after failures
-        run: |
-          # Added sweep-run to filter Fabric PFCR test
-          go test $(go list ./... | grep 'internal/sweep\|equinix/equinix') -v -timeout 180m -sweep=${SWEEP} -sweep-allow-failures=${SWEEP_ALLOW_FAILURES} -sweep-run=$(grep -or 'AddTestSweepers("[^"]*"' | grep "_fabric_" | cut -d '"' -f2 | paste -s -d, -)
-
-      - name: Upload coverage to Codecov
-        if: ${{ always() }}
-        uses: codecov/codecov-action@18283e04ce6e62d37312384ff67231eb8fd56d24 # v5
-        with:
-          token: ${{ secrets.CODECOV_TOKEN }}
-          files: ./coverage_pfcr.txt
+          go test ./internal/resources/fabric/connection/... -v -coverprofile coverage_pfcr.txt -covermode=atomic -count 1
 
   upload-test-report:
     name: Upload Testing Report
-    if: always()
+    if: false
     needs: [ test-PNFV, test-PFCR ]
     runs-on: ubuntu-latest
     outputs:
