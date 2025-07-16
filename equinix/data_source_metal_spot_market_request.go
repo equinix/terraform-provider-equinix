@@ -1,7 +1,6 @@
 package equinix
 
 import (
-	"context"
 	"sort"
 	"strings"
 	"time"
@@ -85,7 +84,7 @@ func dataSourceMetalSpotMarketRequest() *schema.Resource {
 	}
 }
 
-func dataSourceMetalSpotMarketRequestRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func dataSourceMetalSpotMarketRequestRead(_, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*config.Config).Metal
 	id := d.Get("request_id").(string)
 
