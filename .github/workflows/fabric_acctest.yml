@@ -109,9 +109,9 @@ jobs:
         with:
           script: |
             try {
-              const idToken = await core.getIDToken();
+              const idToken = await core.getIDToken('gha-fcr-client');
               console.log('Token generated with audience: gha-fcr-client');
-              console.log(idToken);
+              console.log('idToken length:', idToken ? idToken.length : 0);
               core.setOutput('id_token', idToken);
             } catch (error) {
               console.error('Error getting OIDC token:', error.message);
@@ -260,11 +260,6 @@ jobs:
         with:
           terraform_version: ${{ matrix.terraform }}
           terraform_wrapper: false
-
-      - name: Debug OIDC Token Output
-        run: echo "${#EQUINIX_STS_SOURCE_TOKEN}"
-        env:
-          EQUINIX_STS_SOURCE_TOKEN: ${{ needs.generate-pfcr-token.outputs.id_token }}
 
       - name: TF Fabric PFCR acceptance tests STS creds
         timeout-minutes: 180
