@@ -26,6 +26,7 @@ on:
   workflow_dispatch:
 
 permissions:
+  actions: write
   pull-requests: read
   contents: read
   id-token: write
