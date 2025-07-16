@@ -109,8 +109,9 @@ jobs:
         with:
           script: |
             try {
-              const idToken = await core.getIDToken('gha-fcr-client');
+              const idToken = await core.getIDToken();
               console.log('Token generated with audience: gha-fcr-client');
+              console.log(idToken);
               core.setOutput('id_token', idToken);
             } catch (error) {
               console.error('Error getting OIDC token:', error.message);
