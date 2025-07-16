@@ -261,8 +261,7 @@ jobs:
           terraform_wrapper: false
 
       - name: Debug OIDC Token Output
-        run:
-          echo "ID Token length: ${#EQUINIX_STS_SOURCE_TOKEN}"
+        run: echo "${#EQUINIX_STS_SOURCE_TOKEN}"
         env:
           EQUINIX_STS_SOURCE_TOKEN: ${{ needs.generate-pfcr-token.outputs.id_token }}
 
