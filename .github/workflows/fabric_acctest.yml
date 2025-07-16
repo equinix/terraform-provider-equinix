@@ -86,13 +86,12 @@ jobs:
         uses: actions/github-script@v6
         with:
           script: |
-            const core = require('@actions/core');
-            const { getIDToken } = require('@actions/core');
             try {
-              const idToken = await getIDToken('gha-nfv-client');
+              const idToken = await core.getIDToken('gha-nfv-client');
               console.log('Token generated with audience: gha-nfv-client');
               core.setOutput('id_token', idToken);
             } catch (error) {
+              console.error('Error getting OIDC token:', error.message);
               core.setFailed(`Error getting OIDC token: ${error.message}`);
             }
           result-encoding: string
@@ -109,13 +108,12 @@ jobs:
         uses: actions/github-script@v6
         with:
           script: |
-            const core = require('@actions/core');
-            const { getIDToken } = require('@actions/core');
             try {
-              const idToken = await getIDToken('gha-fcr-client');
+              const idToken = await core.getIDToken('gha-fcr-client');
               console.log('Token generated with audience: gha-fcr-client');
               core.setOutput('id_token', idToken);
             } catch (error) {
+              console.error('Error getting OIDC token:', error.message);
               core.setFailed(`Error getting OIDC token: ${error.message}`);
             }
           result-encoding: string
