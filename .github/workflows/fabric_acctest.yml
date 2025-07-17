@@ -168,7 +168,7 @@ jobs:
           TF_ACC: "1"
           TF_ACC_FABRIC_CONNECTIONS_TEST_DATA: ${{ secrets.TF_ACC_FABRIC_CONNECTIONS_TEST_DATA }}
           TF_ACC_FABRIC_DEDICATED_PORTS: ${{ secrets.TF_ACC_FABRIC_DEDICATED_PORTS }}
-          EQUINIX_STS_AUTH_SCOPE: "roleassignments:405153000683548"
+          EQUINIX_STS_AUTH_SCOPE: "roleassignments:9ab2b92e-958a-4027-8515-e2a58be5d716"
           EQUINIX_STS_SOURCE_TOKEN: ${{ steps.get_id_token.outputs.id_token }}
           METAL_AUTH_TOKEN: ${{ secrets.METAL_AUTH_TOKEN }}
         run: |
