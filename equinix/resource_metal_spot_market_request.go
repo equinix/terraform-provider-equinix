@@ -29,9 +29,10 @@ var (
 
 func resourceMetalSpotMarketRequest() *schema.Resource {
 	return &schema.Resource{
-		CreateContext: resourceMetalSpotMarketRequestCreate,
-		ReadContext:   resourceMetalSpotMarketRequestRead,
-		DeleteContext: resourceMetalSpotMarketRequestDelete,
+		DeprecationMessage: "This resource is deprecated and does not work anymore.",
+		CreateContext:      resourceMetalSpotMarketRequestCreate,
+		ReadContext:        resourceMetalSpotMarketRequestRead,
+		DeleteContext:      resourceMetalSpotMarketRequestDelete,
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
