@@ -101,9 +101,8 @@ jobs:
           go build -v .
 
   test-PNFV:
-    if: false
     name: Matrix Test
-    needs: [build]
+    needs: build
     runs-on: ubuntu-latest
     env:
       EQUINIX_API_ENDPOINT: "https://uatapi.equinix.com"
@@ -159,10 +158,21 @@ jobs:
           TF_ACC_FABRIC_DEDICATED_PORTS: ${{ secrets.TF_ACC_FABRIC_DEDICATED_PORTS }}
           EQUINIX_API_CLIENTID: ${{ secrets.EQUINIX_API_CLIENTID_PNFV }}
           EQUINIX_API_CLIENTSECRET: ${{ secrets.EQUINIX_API_CLIENTSECRET_PNFV }}
-          EQUINIX_STS_SOURCE_TOKEN: ${{ steps.get_id_token.outputs.id_token }}
           METAL_AUTH_TOKEN: ${{ secrets.METAL_AUTH_TOKEN }}
         run: |
           go test ./... -v -coverprofile coverage_pnfv.txt -covermode=atomic -count 1 -parallel 8 -run "(PNFV)" -timeout 180m | tee pnfv_test_output.log
+
+      - name: TF Fabric PNFV acceptance tests STS creds
+        timeout-minutes: 180
+        env:
+          TF_ACC: "1"
+          TF_ACC_FABRIC_CONNECTIONS_TEST_DATA: ${{ secrets.TF_ACC_FABRIC_CONNECTIONS_TEST_DATA }}
+          TF_ACC_FABRIC_DEDICATED_PORTS: ${{ secrets.TF_ACC_FABRIC_DEDICATED_PORTS }}
+          EQUINIX_STS_AUTH_SCOPE: "roleassignments:405153000683548"
+          EQUINIX_STS_SOURCE_TOKEN: ${{ steps.get_id_token.outputs.id_token }}
+          METAL_AUTH_TOKEN: ${{ secrets.METAL_AUTH_TOKEN }}
+        run: |
+          go test github.com/equinix/terraform-provider-equinix/equinix --run TestAccDataSourceFabricPort_PNFV -v -coverprofile coverage_pfcr.txt -covermode=atomic -count 1
 
       - name: Upload PNFV Testing Log
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
@@ -195,7 +205,7 @@ jobs:
 
   test-PFCR:
     name: Matrix Test
-    needs: [build]
+    needs: build
     runs-on: ubuntu-latest
     env:
       EQUINIX_API_ENDPOINT: "https://uatapi.equinix.com"
@@ -244,6 +254,18 @@ jobs:
           terraform_version: ${{ matrix.terraform }}
           terraform_wrapper: false
 
+      - name: TF Fabric PFCR acceptance tests
+        timeout-minutes: 180
+        env:
+          TF_ACC: "1"
+          TF_ACC_FABRIC_CONNECTIONS_TEST_DATA: ${{ secrets.TF_ACC_FABRIC_CONNECTIONS_TEST_DATA }}
+          TF_ACC_FABRIC_DEDICATED_PORTS: ${{ secrets.TF_ACC_FABRIC_DEDICATED_PORTS }}
+          TF_ACC_FABRIC_MARKET_PLACE_SUBSCRIPTION_ID: ${{ secrets.TF_ACC_FABRIC_MARKET_PLACE_SUBSCRIPTION_ID }}
+          TF_ACC_FABRIC_STREAM_TEST_DATA: ${{ secrets.TF_ACC_FABRIC_STREAM_TEST_DATA }}
+          METAL_AUTH_TOKEN: ${{ secrets.METAL_AUTH_TOKEN }}
+        run: |
+          go test ./... -v -coverprofile coverage_pfcr.txt -covermode=atomic -count 1 -parallel 8 -run "(PFCR)" -timeout 180m | tee pfcr_test_output.log
+
       - name: TF Fabric PFCR acceptance tests STS creds
         timeout-minutes: 180
         env:
@@ -260,7 +282,7 @@ jobs:
 
   upload-test-report:
     name: Upload Testing Report
-    if: false
+    if: always()
     needs: [ test-PNFV, test-PFCR ]
     runs-on: ubuntu-latest
     outputs:
