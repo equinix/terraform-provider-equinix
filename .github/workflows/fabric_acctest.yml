@@ -106,6 +106,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       EQUINIX_API_ENDPOINT: "https://uatapi.equinix.com"
+      EQUINIX_STS_ENDPOINT: "https://sts.uat.equinix.com"
     timeout-minutes: 240
     strategy:
       fail-fast: false
@@ -262,6 +263,8 @@ jobs:
           TF_ACC_FABRIC_DEDICATED_PORTS: ${{ secrets.TF_ACC_FABRIC_DEDICATED_PORTS }}
           TF_ACC_FABRIC_MARKET_PLACE_SUBSCRIPTION_ID: ${{ secrets.TF_ACC_FABRIC_MARKET_PLACE_SUBSCRIPTION_ID }}
           TF_ACC_FABRIC_STREAM_TEST_DATA: ${{ secrets.TF_ACC_FABRIC_STREAM_TEST_DATA }}
+          EQUINIX_API_CLIENTID: ${{ secrets.EQUINIX_API_CLIENTID_PFCR }}
+          EQUINIX_API_CLIENTSECRET: ${{ secrets.EQUINIX_API_CLIENTSECRET_PFCR }}
           METAL_AUTH_TOKEN: ${{ secrets.METAL_AUTH_TOKEN }}
         run: |
           go test ./... -v -coverprofile coverage_pfcr.txt -covermode=atomic -count 1 -parallel 8 -run "(PFCR)" -timeout 180m | tee pfcr_test_output.log
@@ -279,6 +282,15 @@ jobs:
           METAL_AUTH_TOKEN: ${{ secrets.METAL_AUTH_TOKEN }}
         run: |
           go test ./internal/resources/fabric/connection/... -v -coverprofile coverage_pfcr.txt -covermode=atomic -count 1
+
+      - name: Upload PFCR Testing Log
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: pfcr_test_logs
+          path: pfcr_test_output.log
+
+      - name: Check if Tests are passed
+        run: sh scripts/check_tests.sh pfcr_test_output.log
 
   upload-test-report:
     name: Upload Testing Report
