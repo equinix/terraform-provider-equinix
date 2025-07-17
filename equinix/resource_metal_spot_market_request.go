@@ -1,3 +1,4 @@
+//nolint:all // These files will be removed in a future release and should never be changed before then
 package equinix
 
 import (
