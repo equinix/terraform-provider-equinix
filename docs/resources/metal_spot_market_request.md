@@ -2,7 +2,7 @@
 subcategory: "Metal"
 ---
 
-> **DEPRECATED:** This data source is deprecated and will be removed in a future release.
+> **DEPRECATED:** This resource has been deprecated and is no longer supported.
 
 # equinix_metal_spot_market_request (Resource)
 
