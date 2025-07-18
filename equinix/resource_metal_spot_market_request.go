@@ -30,7 +30,7 @@ var (
 
 func resourceMetalSpotMarketRequest() *schema.Resource {
 	return &schema.Resource{
-		DeprecationMessage: "This resource is deprecated and does not work anymore.",
+		DeprecationMessage: "This resource has been deprecated and is no longer supported.",
 		CreateContext:      resourceMetalSpotMarketRequestCreate,
 		ReadContext:        resourceMetalSpotMarketRequestRead,
 		DeleteContext:      resourceMetalSpotMarketRequestDelete,
