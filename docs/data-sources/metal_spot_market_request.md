@@ -2,6 +2,8 @@
 subcategory: "Metal"
 ---
 
+> **DEPRECATED:** This data source has been deprecated and and is no longer supported.
+
 # equinix_metal_spot_market_request (Data Source)
 
 Provides an Equinix Metal spot_market_request datasource. The datasource will contain list of device IDs created by referenced Spot Market Request.

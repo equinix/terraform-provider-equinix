@@ -1,3 +1,4 @@
+//nolint:all // These files will be removed in a future release and should never be changed before then
 package equinix
 
 import (
@@ -18,7 +19,8 @@ import (
 
 func dataSourceMetalSpotMarketRequest() *schema.Resource {
 	return &schema.Resource{
-		ReadContext: dataSourceMetalSpotMarketRequestRead,
+		DeprecationMessage: "The Spot Market Requests API has been sunset.",
+		ReadContext:        dataSourceMetalSpotMarketRequestRead,
 
 		Schema: map[string]*schema.Schema{
 			"request_id": {
