@@ -143,7 +143,7 @@ jobs:
           TF_ACC: "1"
           TF_ACC_FABRIC_CONNECTIONS_TEST_DATA: ${{ secrets.TF_ACC_FABRIC_CONNECTIONS_TEST_DATA }}
           TF_ACC_FABRIC_DEDICATED_PORTS: ${{ secrets.TF_ACC_FABRIC_DEDICATED_PORTS }}
-          EQUINIX_STS_AUTH_SCOPE: "roleassignments:9ab2b92e-958a-4027-8515-e2a58be5d716"
+          EQUINIX_STS_AUTH_SCOPE: ${{ secrets.EQUINIX_STS_AUTH_SCOPE_PNFV }}
           EQUINIX_STS_SOURCE_TOKEN: ${{ steps.get_id_token.outputs.id_token }}
           METAL_AUTH_TOKEN: ${{ secrets.METAL_AUTH_TOKEN }}
         run: |
@@ -252,10 +252,11 @@ jobs:
           TF_ACC_FABRIC_MARKET_PLACE_SUBSCRIPTION_ID: ${{ secrets.TF_ACC_FABRIC_MARKET_PLACE_SUBSCRIPTION_ID }}
           TF_ACC_FABRIC_STREAM_TEST_DATA: ${{ secrets.TF_ACC_FABRIC_STREAM_TEST_DATA }}
           EQUINIX_STS_SOURCE_TOKEN: ${{ steps.get_id_token.outputs.id_token }}
-          EQUINIX_STS_AUTH_SCOPE: "roleassignments:405153000683548"
+          EQUINIX_STS_AUTH_SCOPE: ${{ secrets.EQUINIX_STS_AUTH_SCOPE_PFCR }}
           METAL_AUTH_TOKEN: ${{ secrets.METAL_AUTH_TOKEN }}
         run: |
-          go test ./... --run "(TestAccFabricCreatePort2SPConnection_PFCR|TestAccCloudRouterCreateOnlyRequiredParameters_PFCR)" -v -coverprofile coverage_pfcr.txt -covermode=atomic -count 1
+          go test github.com/equinix/terraform-provider-equinix/equinix --run TestAccCloudRouterCreateOnlyRequiredParameters_PFCR -v -coverprofile coverage_pfcr.txt -covermode=atomic -count 1
+          go test github.com/equinix/terraform-provider-equinix/internal/resources/fabric/connection --run TestAccFabricCreatePort2SPConnection_PFCR -v -coverprofile coverage_pfcr.txt -covermode=atomic -count 1
 
       - name: Upload PFCR Testing Log
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
