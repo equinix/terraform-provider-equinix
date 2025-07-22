@@ -255,8 +255,7 @@ jobs:
           EQUINIX_STS_AUTH_SCOPE: ${{ secrets.EQUINIX_STS_AUTH_SCOPE_PFCR }}
           METAL_AUTH_TOKEN: ${{ secrets.METAL_AUTH_TOKEN }}
         run: |
-          go test github.com/equinix/terraform-provider-equinix/equinix --run TestAccCloudRouterCreateOnlyRequiredParameters_PFCR -v -coverprofile coverage_pfcr.txt -covermode=atomic -count 1
-          go test github.com/equinix/terraform-provider-equinix/internal/resources/fabric/connection --run TestAccFabricCreatePort2SPConnection_PFCR -v -coverprofile coverage_pfcr.txt -covermode=atomic -count 1
+          go test ./... --run "(TestAccFabricCreatePort2SPConnection_PFCR|TestAccCloudRouterCreateOnlyRequiredParameters_PFCR)" -v -coverprofile coverage_pfcr.txt -covermode=atomic -count 1
 
       - name: Upload PFCR Testing Log
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
