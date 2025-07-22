@@ -80,7 +80,6 @@ jobs:
     runs-on: ubuntu-latest
     env:
       EQUINIX_API_ENDPOINT: "https://uatapi.equinix.com"
-      EQUINIX_STS_ENDPOINT: "https://sts.uat.equinix.com"
     timeout-minutes: 240
     strategy:
       fail-fast: false
@@ -90,21 +89,6 @@ jobs:
         terraform:
           - '1.5'
     steps:
-      - id: get_id_token
-        name: Get GitHub OIDC Token for PNFV
-        uses: actions/github-script@v6
-        with:
-          script: |
-            try {
-              const idToken = await core.getIDToken('gha-nfv-client');
-              console.log('Token generated with audience: gha-nfv-client');
-              core.setOutput('id_token', idToken);
-            } catch (error) {
-              console.error('Error getting OIDC token:', error.message);
-              core.setFailed(`Error getting OIDC token: ${error.message}`);
-            }
-          result-encoding: string
-
       - name: Check out code into the Go module directory
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
         with:
@@ -136,18 +120,6 @@ jobs:
           METAL_AUTH_TOKEN: ${{ secrets.METAL_AUTH_TOKEN }}
         run: |
           go test ./... -v -coverprofile coverage_pnfv.txt -covermode=atomic -count 1 -parallel 8 -run "(PNFV)" -timeout 180m | tee pnfv_test_output.log
-
-      - name: TF Fabric PNFV acceptance tests STS creds
-        timeout-minutes: 180
-        env:
-          TF_ACC: "1"
-          TF_ACC_FABRIC_CONNECTIONS_TEST_DATA: ${{ secrets.TF_ACC_FABRIC_CONNECTIONS_TEST_DATA }}
-          TF_ACC_FABRIC_DEDICATED_PORTS: ${{ secrets.TF_ACC_FABRIC_DEDICATED_PORTS }}
-          EQUINIX_STS_AUTH_SCOPE: ${{ secrets.EQUINIX_STS_AUTH_SCOPE_PNFV }}
-          EQUINIX_STS_SOURCE_TOKEN: ${{ steps.get_id_token.outputs.id_token }}
-          METAL_AUTH_TOKEN: ${{ secrets.METAL_AUTH_TOKEN }}
-        run: |
-          go test github.com/equinix/terraform-provider-equinix/equinix --run TestAccDataSourceFabricPort_PNFV -v -coverprofile coverage_pfcr.txt -covermode=atomic -count 1
 
       - name: Upload PNFV Testing Log
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
