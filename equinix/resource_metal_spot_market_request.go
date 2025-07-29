@@ -1,3 +1,4 @@
+//nolint:all // These files will be removed in a future release and should never be changed before then
 package equinix
 
 import (
@@ -29,9 +30,10 @@ var (
 
 func resourceMetalSpotMarketRequest() *schema.Resource {
 	return &schema.Resource{
-		CreateContext: resourceMetalSpotMarketRequestCreate,
-		ReadContext:   resourceMetalSpotMarketRequestRead,
-		DeleteContext: resourceMetalSpotMarketRequestDelete,
+		DeprecationMessage: "This resource has been deprecated and is no longer supported.",
+		CreateContext:      resourceMetalSpotMarketRequestCreate,
+		ReadContext:        resourceMetalSpotMarketRequestRead,
+		DeleteContext:      resourceMetalSpotMarketRequestDelete,
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
