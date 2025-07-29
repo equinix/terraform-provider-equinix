@@ -2,6 +2,7 @@
 package services
 
 import (
+	fabric_service_token "github.com/equinix/terraform-provider-equinix/internal/resources/fabric/servicetoken"
 	"github.com/equinix/terraform-provider-equinix/internal/resources/fabric/streamalertrule"
 
 	fabric_cloud_router "github.com/equinix/terraform-provider-equinix/internal/resources/fabric/cloud_router"
@@ -20,6 +21,7 @@ func AddFabricTestSweepers() {
 	fabric_connection.AddTestSweeper()
 	fabric_route_filter.AddTestSweeper()
 	fabric_route_aggregation.AddTestSweeper()
+	fabric_service_token.AddTestSweeper()
 	fabric_stream.AddTestSweeper()
 	network.AddTestSweeper()
 	serviceprofile.AddTestSweeper()

@@ -46,7 +46,7 @@ func testSweeperNetworks(_ string) error {
 			And:      []fabricv4.NetworkFilter{},
 			Property: &name,
 			Operator: &likeOperator,
-			Values:   []string{"%_PFCR", "%_PFNV", "%_PPDS"},
+			Values:   sweep.FabricTestResourceSuffixes,
 		},
 		Pagination: &fabricv4.PaginationRequest{
 			Offset: &offset,
