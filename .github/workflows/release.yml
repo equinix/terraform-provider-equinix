@@ -20,7 +20,7 @@ jobs:
 
     - name: Release
       id: release
-      uses: cycjimmy/semantic-release-action@v4
+      uses: cycjimmy/semantic-release-action@9a24fc62fd6dbf0c523b81421b634ee3c2c2ad55
       with:
         extra_plugins: |
           conventional-changelog-conventionalcommits@8.0.0
