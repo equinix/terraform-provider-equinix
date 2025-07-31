@@ -13,7 +13,7 @@ name: Fabric Acceptance Tests
 
 on:
   pull_request_target:
-    types: [opened, synchronize, reopened, ready_for_review]
+    types: [ opened, synchronize, reopened, ready_for_review ]
     paths:
       - 'go.mod'
       - 'go.sum'
@@ -116,17 +116,17 @@ jobs:
           EQUINIX_API_CLIENTSECRET: ${{ secrets.EQUINIX_API_CLIENTSECRET_PNFV }}
           METAL_AUTH_TOKEN: ${{ secrets.METAL_AUTH_TOKEN }}
         run: |
-          go test ./internal/resources/fabric/servicetoken/... -v -coverprofile coverage_pnfv.txt -covermode=atomic -count 1 -parallel 8 -run "(PNFV)" -timeout 180m | tee pnfv_test_output.log
+          go test ./... -v -coverprofile coverage_pnfv.txt -covermode=atomic -count 1 -parallel 8 -run "(PNFV)" -timeout 180m | tee pnfv_test_output.log
 
       - name: Upload PNFV Testing Log
-#        if: ${{ always() }}
+        if: ${{ always() }}
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: pnfv_test_logs
           path: pnfv_test_output.log
 
-#      - name: Check if Tests are passed
-#        run: sh scripts/check_tests.sh pnfv_test_output.log
+      - name: Check if Tests are passed
+        run: sh scripts/check_tests.sh pnfv_test_output.log
 
       - name: Sweeper PNFV
         if: ${{ always() }}
@@ -196,8 +196,8 @@ jobs:
           EQUINIX_API_CLIENTSECRET: ${{ secrets.EQUINIX_API_CLIENTSECRET_PFCR }}
           METAL_AUTH_TOKEN: ${{ secrets.METAL_AUTH_TOKEN }}
         run: |
-          go test ./internal/resources/fabric/streamalertrule/... -v -coverprofile coverage_pfcr.txt -covermode=atomic -count 1 -parallel 8 -run "(PFCR)" -timeout 180m | tee pfcr_test_output.log
-
+          go test ./... -v -coverprofile coverage_pfcr.txt -covermode=atomic -count 1 -parallel 8 -run "(PFCR)" -timeout 180m | tee pfcr_test_output.log
+          
       - name: Upload PFCR Testing Log
         if: ${{ always() }}
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
