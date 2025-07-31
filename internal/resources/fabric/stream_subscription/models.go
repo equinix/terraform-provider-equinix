@@ -250,16 +250,32 @@ func (m *baseStreamSubscriptionModel) parse(ctx context.Context, streamSubscript
 	}
 
 	sink.Credential = fwtypes.NewObjectValueOf[sinkCredentialModel](ctx, &credentialModel)
-
+	var planSettingsModel sinkSettingsModel
+	if !planSinkModel.Settings.IsNull() && !planSinkModel.Settings.IsUnknown() {
+		if diags = planSinkModel.Settings.As(ctx, &planSettingsModel, basetypes.ObjectAsOptions{}); diags.HasError() {
+			mDiags.Append(diags...)
+			return mDiags
+		}
+	}
 	streamSubSinkSettings := streamSubSink.GetSettings()
+	eventURI := streamSubSinkSettings.GetEventUri()
+	if !planSettingsModel.EventURI.IsNull() && !planSettingsModel.EventURI.IsUnknown() && planSettingsModel.EventURI.ValueString() != "" {
+		eventURI = planSettingsModel.EventURI.ValueString()
+	}
+
+	metricURI := streamSubSinkSettings.GetMetricUri()
+	if !planSettingsModel.MetricURI.IsNull() && !planSettingsModel.MetricURI.IsUnknown() && planSettingsModel.MetricURI.ValueString() != "" {
+		metricURI = planSettingsModel.MetricURI.ValueString()
+	}
 	sinkSettings := sinkSettingsModel{
 		EventIndex:     types.StringValue(streamSubSinkSettings.GetEventIndex()),
 		MetricIndex:    types.StringValue(streamSubSinkSettings.GetMetricIndex()),
 		Source:         types.StringValue(streamSubSinkSettings.GetSource()),
 		ApplicationKey: types.StringValue(streamSubSinkSettings.GetApplicationKey()),
-		EventURI:       types.StringValue(streamSubSinkSettings.GetEventUri()),
-		MetricURI:      types.StringValue(streamSubSinkSettings.GetMetricUri()),
+		EventURI:       types.StringValue(eventURI),
+		MetricURI:      types.StringValue(metricURI),
 	}
+	sink.Settings = fwtypes.NewObjectValueOf[sinkSettingsModel](ctx, &sinkSettings)
 
 	if !planSinkModel.Settings.IsNull() && !planSinkModel.Settings.IsUnknown() {
 		planSettingsModel := sinkSettingsModel{}
