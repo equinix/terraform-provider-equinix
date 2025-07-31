@@ -23,7 +23,6 @@ func metalDatasources() map[string]*schema.Resource {
 		"equinix_metal_plans":                dataSourceMetalPlans(),
 		"equinix_metal_port":                 metal_port.DataSource(),
 		"equinix_metal_reserved_ip_block":    dataSourceMetalReservedIPBlock(),
-		"equinix_metal_spot_market_request":  dataSourceMetalSpotMarketRequest(),
 		"equinix_metal_virtual_circuit":      virtual_circuit.DataSource(),
 		"equinix_metal_vrf":                  vrf.DataSource(),
 	}
@@ -38,7 +37,6 @@ func metalResources() map[string]*schema.Resource {
 		"equinix_metal_port":                 metal_port.Resource(),
 		"equinix_metal_reserved_ip_block":    resourceMetalReservedIPBlock(),
 		"equinix_metal_ip_attachment":        resourceMetalIPAttachment(),
-		"equinix_metal_spot_market_request":  resourceMetalSpotMarketRequest(),
 		"equinix_metal_virtual_circuit":      virtual_circuit.Resource(),
 		"equinix_metal_vrf":                  vrf.Resource(),
 		"equinix_metal_bgp_session":          resourceMetalBGPSession(),
