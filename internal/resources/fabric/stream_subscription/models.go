@@ -250,6 +250,7 @@ func (m *baseStreamSubscriptionModel) parse(ctx context.Context, streamSubscript
 	}
 
 	sink.Credential = fwtypes.NewObjectValueOf[sinkCredentialModel](ctx, &credentialModel)
+
 	streamSubSinkSettings := streamSubSink.GetSettings()
 	sinkSettings := sinkSettingsModel{
 		EventIndex:     types.StringValue(streamSubSinkSettings.GetEventIndex()),
