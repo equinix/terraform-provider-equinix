@@ -250,7 +250,6 @@ func (m *baseStreamSubscriptionModel) parse(ctx context.Context, streamSubscript
 	}
 
 	sink.Credential = fwtypes.NewObjectValueOf[sinkCredentialModel](ctx, &credentialModel)
-
 	streamSubSinkSettings := streamSubSink.GetSettings()
 	sinkSettings := sinkSettingsModel{
 		EventIndex:     types.StringValue(streamSubSinkSettings.GetEventIndex()),
@@ -270,6 +269,12 @@ func (m *baseStreamSubscriptionModel) parse(ctx context.Context, streamSubscript
 		}
 		if planSettingsModel.ApplicationKey.ValueString() != "" {
 			sinkSettings.ApplicationKey = types.StringValue(planSettingsModel.ApplicationKey.ValueString())
+		}
+		if !planSettingsModel.EventURI.IsNull() && !planSettingsModel.EventURI.IsUnknown() && planSettingsModel.EventURI.ValueString() != "" {
+			sinkSettings.EventURI = types.StringValue(planSettingsModel.EventURI.ValueString())
+		}
+		if !planSettingsModel.MetricURI.IsNull() && !planSettingsModel.MetricURI.IsUnknown() && planSettingsModel.MetricURI.ValueString() != "" {
+			sinkSettings.MetricURI = types.StringValue(planSettingsModel.MetricURI.ValueString())
 		}
 	}
 
