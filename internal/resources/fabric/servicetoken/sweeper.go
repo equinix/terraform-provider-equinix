@@ -13,6 +13,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
 
+// AddTestSweeper /* AddTestSweeper registers a test sweeper for cleaning up resources
 func AddTestSweeper() {
 	resource.AddTestSweepers("equinix_fabric_service_token", &resource.Sweeper{
 		Name:         "equinix_fabric_service_token",
