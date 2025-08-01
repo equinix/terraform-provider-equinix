@@ -260,6 +260,7 @@ func (m *baseStreamSubscriptionModel) parse(ctx context.Context, streamSubscript
 		EventURI:       types.StringValue(streamSubSinkSettings.GetEventUri()),
 		MetricURI:      types.StringValue(streamSubSinkSettings.GetMetricUri()),
 	}
+	sink.Settings = fwtypes.NewObjectValueOf[sinkSettingsModel](ctx, &sinkSettings)
 
 	if !planSinkModel.Settings.IsNull() && !planSinkModel.Settings.IsUnknown() {
 		planSettingsModel := sinkSettingsModel{}
