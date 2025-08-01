@@ -21,7 +21,7 @@ func AddTestSweeper() {
 	})
 }
 
-func testSweepServiceToken(region string) error {
+func testSweepServiceToken(_ string) error {
 	var errs []error
 	log.Printf("[DEBUG] Sweeping Fabric Service Tokens")
 	ctx := context.Background()
