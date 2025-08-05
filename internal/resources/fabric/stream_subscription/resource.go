@@ -416,6 +416,9 @@ func buildStreamSubscriptionSink(ctx context.Context, sinkObject fwtypes.ObjectV
 		if !settingsModel.MetricURI.IsNull() && !settingsModel.MetricURI.IsUnknown() {
 			settings.SetMetricUri(settingsModel.MetricURI.ValueString())
 		}
+		if !settingsModel.Format.IsNull() && !settingsModel.Format.IsUnknown() {
+			settings.SetFormat(fabricv4.StreamSubscriptionSinkSettingFormat(settingsModel.Format.ValueString()))
+		}
 		sink.SetSettings(settings)
 	}
 

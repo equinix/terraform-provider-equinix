@@ -90,6 +90,7 @@ type sinkSettingsModel struct {
 	ApplicationKey types.String `tfsdk:"application_key"`
 	EventURI       types.String `tfsdk:"event_uri"`
 	MetricURI      types.String `tfsdk:"metric_uri"`
+	Format         types.String `tfsdk:"format"`
 }
 
 type changeLogModel struct {
@@ -259,6 +260,7 @@ func (m *baseStreamSubscriptionModel) parse(ctx context.Context, streamSubscript
 		ApplicationKey: types.StringValue(streamSubSinkSettings.GetApplicationKey()),
 		EventURI:       types.StringValue(streamSubSinkSettings.GetEventUri()),
 		MetricURI:      types.StringValue(streamSubSinkSettings.GetMetricUri()),
+		Format:         types.StringValue(string(streamSubSinkSettings.GetFormat())),
 	}
 	sink.Settings = fwtypes.NewObjectValueOf[sinkSettingsModel](ctx, &sinkSettings)
 
