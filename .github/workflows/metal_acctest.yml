@@ -108,20 +108,20 @@ jobs:
         METAL_AUTH_TOKEN: ${{ secrets.METAL_AUTH_TOKEN }}
         TF_ACC_METAL_DEDICATED_CONNECTION_ID: ${{ secrets.TF_ACC_METAL_DEDICATED_CONNECTION_ID }}
       run: |
-        go run gotest.tools/gotestsum@v1.12.2 --junitfile metal-acctests.xml --rerun-fails --raw-command --ignore-non-json-output-lines -- ./scripts/test-with-random-coverage -v -covermode=atomic -count 1 -parallel 8 -run "(Metal)" -timeout 180m
+        go run gotest.tools/gotestsum@v1.12.2 --jsonfile test-report/metal-acctests.json --junitfile test-report/metal-acctests.xml --packages="./..." -- -v -coverprofile coverage.txt -covermode=atomic -count 1 -parallel 8 -run "(Metal)" -timeout 180m
 
     - name: Convert JUnit report to HTML
       id: convert-report
       if: ${{ always() }}
       run: |
         pip install junit2html
-        junit2html metal-acctests.xml metal-acctests.html
+        junit2html test-report/metal-acctests.xml test-report/metal-acctests.html
 
     - uses: actions/upload-artifact@v4
       if: ${{ always() && steps.convert-report.outcome == 'success' }}
       with:
-        name: metal-acctests.html
-        path: metal-acctests.html
+        name: Test Report
+        path: test-report/
 
     - name: Sweeper
       if: ${{ always() }}
@@ -134,16 +134,9 @@ jobs:
         # Added sweep-run to filter Metal test
         go test $(go list ./... | grep 'internal/sweep\|equinix/equinix') -v -timeout 180m -sweep=${SWEEP} -sweep-allow-failures=${SWEEP_ALLOW_FAILURES} -sweep-run=$(grep -or 'AddTestSweepers("[^"]*"' | grep "_metal_" |cut -d '"' -f2 | paste -s -d, -)
 
-    - name: List coverage files
-      if: ${{ always() }}
-      id: coverage-files
-      run: |
-        FILE_LIST=$(ls -m coverage.*.txt)
-        echo "list=$FILE_LIST" >> "$GITHUB_OUTPUT"
-
     - name: Upload coverage to Codecov
       if: ${{ always() }}
       uses: codecov/codecov-action@18283e04ce6e62d37312384ff67231eb8fd56d24 # v5
       with:
         token: ${{ secrets.CODECOV_TOKEN }}
-        files: ${{ steps.coverage-files.outputs.list }}
+        files: ./coverage.txt
