@@ -142,6 +142,58 @@ func testAccFabricStreamSubscriptionConfig(streamTestData map[string]map[string]
 		  }
 		}
 
+		resource "equinix_fabric_stream_subscription" "servicenow" {
+		  type = "STREAM_SUBSCRIPTION"
+		  name = "Servicenow_PFCR"
+		  description = "Stream Subscription Servicenow TF Testing"
+		  stream_id = equinix_fabric_stream.new_stream2.id
+		  enabled = false
+		  sink = {
+			type = "SERVICENOW"
+			host = "%s"
+			settings = {
+			  source = "Equinix"
+			}
+			credential = {
+			  type = "USERNAME_PASSWORD"
+			  username = "%s"
+			  password = "%s"
+			}
+		  }
+		}
+
+		resource "equinix_fabric_stream_subscription" "webhook" {
+          type = "STREAM_SUBSCRIPTION"
+		  name = "Webhook_PFCR"
+		  description = "Stream Subscription Webhook TF Testing"
+		  stream_id = equinix_fabric_stream.new_stream2.id
+		  enabled = false
+		  sink = {
+			type = "WEBHOOK"
+			settings = {
+			  format     = "CLOUDEVENT"
+			  event_uri  = "%s"
+			  metric_uri = "%s"
+			}
+		  }
+		}
+
+		resource "equinix_fabric_stream_subscription" "grafana" {
+		  type = "STREAM_SUBSCRIPTION"
+		  name = "Grafana_PFCR"
+		  description = "Stream Subscription Grafana TF Testing"
+		  stream_id = equinix_fabric_stream.new_stream2.id
+		  enabled = false
+		  sink = {
+			type = "WEBHOOK"
+			settings = {
+			  format     = "OPENTELEMETRY"
+			  event_uri  = "%s"
+			  metric_uri = "%s"
+			}
+		  }
+		}
+
 		data "equinix_fabric_stream_subscription" "by_ids" {
 		  stream_id = equinix_fabric_stream.new_stream.id
 		  subscription_id = equinix_fabric_stream_subscription.splunk.id
@@ -153,7 +205,10 @@ func testAccFabricStreamSubscriptionConfig(streamTestData map[string]map[string]
 			equinix_fabric_stream_subscription.slack,
 			equinix_fabric_stream_subscription.pager_duty,
 			equinix_fabric_stream_subscription.datadog,
-			equinix_fabric_stream_subscription.msteams
+			equinix_fabric_stream_subscription.msteams,
+            equinix_fabric_stream_subscription.servicenow,
+			equinix_fabric_stream_subscription.webhook,
+			equinix_fabric_stream_subscription.grafana
 			]
 		  stream_id = equinix_fabric_stream.new_stream.id
 		  pagination = {
@@ -178,6 +233,13 @@ func testAccFabricStreamSubscriptionConfig(streamTestData map[string]map[string]
 		streamTestData["datadog"]["metric_uri"],
 		streamTestData["datadog"]["APIKey"],
 		streamTestData["msteams"]["uri"],
+		streamTestData["servicenow"]["host"],
+		streamTestData["servicenow"]["username"],
+		streamTestData["servicenow"]["password"],
+		streamTestData["webhook"]["event_uri"],
+		streamTestData["webhook"]["metric_uri"],
+		streamTestData["grafana"]["event_uri"],
+		streamTestData["grafana"]["metric_uri"],
 	)
 }
 
