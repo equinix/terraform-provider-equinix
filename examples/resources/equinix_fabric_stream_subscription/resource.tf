@@ -91,18 +91,6 @@ resource "equinix_fabric_stream_subscription" "MSTEAMS" {
   }
 }
 
-resource "equinix_fabric_stream_subscription" "MSTEAMS" {
-  type        = "STREAM_SUBSCRIPTION"
-  name        = "<name>"
-  description = "<description>"
-  stream_id   = "<stream_id>"
-  enabled     = true
-  sink = {
-    type = "TEAMS"
-    uri  = "<msteams_uri>"
-  }
-}
-
 resource "equinix_fabric_stream_subscription" "servicenow" {
   type        = "STREAM_SUBSCRIPTION"
   name        = "<name>"
