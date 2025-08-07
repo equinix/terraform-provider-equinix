@@ -252,6 +252,13 @@ Additional Documentation:
 									stringplanmodifier.UseStateForUnknown(),
 								},
 							},
+							"format": schema.StringAttribute{
+								Optional: true,
+								Computed: true,
+								PlanModifiers: []planmodifier.String{
+									stringplanmodifier.UseStateForUnknown(),
+								},
+							},
 						},
 					},
 				},
