@@ -2,16 +2,16 @@
 package services
 
 import (
+	fabric_service_token "github.com/equinix/terraform-provider-equinix/internal/resources/fabric/servicetoken"
 	"github.com/equinix/terraform-provider-equinix/internal/resources/fabric/streamalertrule"
 
 	fabric_cloud_router "github.com/equinix/terraform-provider-equinix/internal/resources/fabric/cloud_router"
 	fabric_connection "github.com/equinix/terraform-provider-equinix/internal/resources/fabric/connection"
+	fabric_network "github.com/equinix/terraform-provider-equinix/internal/resources/fabric/network"
 	fabric_route_filter "github.com/equinix/terraform-provider-equinix/internal/resources/fabric/route_filter"
 	fabric_route_aggregation "github.com/equinix/terraform-provider-equinix/internal/resources/fabric/routeaggregation"
+	fabric_service_profile "github.com/equinix/terraform-provider-equinix/internal/resources/fabric/serviceprofile"
 	fabric_stream "github.com/equinix/terraform-provider-equinix/internal/resources/fabric/stream"
-
-	"github.com/equinix/terraform-provider-equinix/internal/resources/fabric/network"
-	"github.com/equinix/terraform-provider-equinix/internal/resources/fabric/serviceprofile"
 )
 
 // AddFabricTestSweepers registers test sweepers for Fabric resources
@@ -20,8 +20,9 @@ func AddFabricTestSweepers() {
 	fabric_connection.AddTestSweeper()
 	fabric_route_filter.AddTestSweeper()
 	fabric_route_aggregation.AddTestSweeper()
+	fabric_service_token.AddTestSweeper()
 	fabric_stream.AddTestSweeper()
-	network.AddTestSweeper()
-	serviceprofile.AddTestSweeper()
+	fabric_network.AddTestSweeper()
+	fabric_service_profile.AddTestSweeper()
 	streamalertrule.AddTestSweeper()
 }
