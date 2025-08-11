@@ -297,6 +297,15 @@ func TestAccFabricStreamSubscription_PFCR(t *testing.T) {
 					resource.TestCheckResourceAttrSet("data.equinix_fabric_stream_subscriptions.all", "data.0.description"),
 					resource.TestCheckResourceAttrSet("data.equinix_fabric_stream_subscriptions.all", "data.0.sink.type"),
 					resource.TestCheckResourceAttrSet("data.equinix_fabric_stream_subscriptions.all", "data.0.uuid"),
+
+					resource.TestCheckResourceAttr("equinix_fabric_stream_subscription.servicenow", "sink.type", "SERVICENOW"),
+					resource.TestCheckResourceAttrSet("equinix_fabric_stream_subscription.servicenow", "uuid"),
+
+					resource.TestCheckResourceAttr("equinix_fabric_stream_subscription.webhook", "sink.type", "WEBHOOK"),
+					resource.TestCheckResourceAttrSet("equinix_fabric_stream_subscription.webhook", "uuid"),
+
+					resource.TestCheckResourceAttr("equinix_fabric_stream_subscription.grafana", "sink.type", "WEBHOOK"),
+					resource.TestCheckResourceAttrSet("equinix_fabric_stream_subscription.grafana", "uuid"),
 				),
 				ExpectNonEmptyPlan: true,
 			},
