@@ -11,7 +11,7 @@ ACCTEST_COUNT       ?= 1
 GOFMT_FILES         ?=$$(find . -name '*.go' |grep -v vendor)
 PKG_NAME            =equinix
 
-GOLANGCI_LINT_VERSION=v2.0.2
+GOLANGCI_LINT_VERSION=v2.3.0
 GOLANGCI_LINT=go run github.com/golangci/golangci-lint/v2/cmd/golangci-lint@${GOLANGCI_LINT_VERSION}
 LINT_BASE_REF=origin/main
 
