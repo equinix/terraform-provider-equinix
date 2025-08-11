@@ -55,6 +55,15 @@ func testAccFabricStreamSubscriptionConfig(streamTestData map[string]map[string]
 		  }
 		}
 
+        resource "equinix_fabric_stream" "new_stream3" {
+		  type = "TELEMETRY_STREAM"
+		  name = "Subscription_Test3_PFCR"
+		  description = "Testing stream subscriptions resource limits"
+		  project = {
+			project_id = "291639000636552"
+		  }
+		}
+
 		resource "equinix_fabric_stream_subscription" "splunk" {
 		  type = "STREAM_SUBSCRIPTION"
 		  name = "Splunk_PFCR"
@@ -146,7 +155,7 @@ func testAccFabricStreamSubscriptionConfig(streamTestData map[string]map[string]
 		  type = "STREAM_SUBSCRIPTION"
 		  name = "Servicenow_PFCR"
 		  description = "Stream Subscription Servicenow TF Testing"
-		  stream_id = equinix_fabric_stream.new_stream2.id
+		  stream_id = equinix_fabric_stream.new_stream3.id
 		  enabled = false
 		  sink = {
 			type = "SERVICENOW"
@@ -182,7 +191,7 @@ func testAccFabricStreamSubscriptionConfig(streamTestData map[string]map[string]
 		  type = "STREAM_SUBSCRIPTION"
 		  name = "Grafana_PFCR"
 		  description = "Stream Subscription Grafana TF Testing"
-		  stream_id = equinix_fabric_stream.new_stream2.id
+		  stream_id = equinix_fabric_stream.new_stream3.id
 		  enabled = false
 		  sink = {
 			type = "WEBHOOK"
