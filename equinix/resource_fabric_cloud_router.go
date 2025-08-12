@@ -280,7 +280,7 @@ func resourceFabricCloudRouterCreate(ctx context.Context, d *schema.ResourceData
 
 	createCloudRouterRequest.SetName(d.Get("name").(string))
 
-	type_ := fabricv4.CloudRouterPostRequestType(d.Get("type").(string))
+	type_ := fabricv4.CloudRouterPostRequestBaseType(d.Get("type").(string))
 	createCloudRouterRequest.SetType(type_)
 
 	schemaNotifications := d.Get("notifications").([]interface{})
