@@ -575,7 +575,7 @@ func resourceFabricCloudRouterDelete(ctx context.Context, d *schema.ResourceData
 	}
 
 	deleteTimeout := d.Timeout(schema.TimeoutDelete) - 30*time.Second - time.Since(start)
-	err = WaitUntilCloudRouterDeprovisioned(d.Id(), meta, d, ctx, deleteTimeout)
+	err = WaitUntilCloudRouterDeprovisioned(ctx, d.Id(), meta, d, deleteTimeout)
 	if err != nil {
 		return diag.FromErr(fmt.Errorf("API call failed while waiting for resource deletion. Error %v", err))
 	}
@@ -583,7 +583,7 @@ func resourceFabricCloudRouterDelete(ctx context.Context, d *schema.ResourceData
 }
 
 // WaitUntilCloudRouterDeprovisioned Waits until the cloud router with given UUID is fully deprovisioned
-func WaitUntilCloudRouterDeprovisioned(uuid string, meta interface{}, d *schema.ResourceData, ctx context.Context, timeout time.Duration) error {
+func WaitUntilCloudRouterDeprovisioned(ctx context.Context, uuid string, meta interface{}, d *schema.ResourceData, timeout time.Duration) error {
 	log.Printf("Waiting for Fabric Cloud Router to be deprovisioned, uuid %s", uuid)
 	stateConf := &retry.StateChangeConf{
 		Pending: []string{
