@@ -321,7 +321,7 @@ func resourceFabricCloudRouterCreate(ctx context.Context, d *schema.ResourceData
 	d.SetId(fcr.GetUuid())
 
 	createTimeout := d.Timeout(schema.TimeoutCreate) - 30*time.Second - time.Since(start)
-	if _, err = waitUntilCloudRouterIsProvisioned(d.Id(), meta, d, ctx, createTimeout); err != nil {
+	if _, err = waitUntilCloudRouterIsProvisioned(ctx, d.Id(), meta, d, createTimeout); err != nil {
 		return diag.Errorf("error waiting for Cloud Router (%s) to be created: %s", d.Id(), err)
 	}
 
@@ -468,7 +468,7 @@ func resourceFabricCloudRouterUpdate(ctx context.Context, d *schema.ResourceData
 	client := meta.(*config.Config).NewFabricClientForSDK(ctx, d)
 	start := time.Now()
 	updateTimeout := d.Timeout(schema.TimeoutUpdate) - 30*time.Second - time.Since(start)
-	dbCR, err := waitUntilCloudRouterIsProvisioned(d.Id(), meta, d, ctx, updateTimeout)
+	dbCR, err := waitUntilCloudRouterIsProvisioned(ctx, d.Id(), meta, d, updateTimeout)
 	if err != nil {
 		return diag.Errorf("either timed out or errored out while fetching Fabric Cloud Router for uuid %s and error %v", d.Id(), err)
 	}
@@ -487,7 +487,7 @@ func resourceFabricCloudRouterUpdate(ctx context.Context, d *schema.ResourceData
 		}
 
 		updateTimeout = d.Timeout(schema.TimeoutUpdate) - 30*time.Second - time.Since(start)
-		updateCloudRouter, err := waitForCloudRouterUpdateCompletion(d.Id(), meta, d, ctx, updateTimeout)
+		updateCloudRouter, err := waitForCloudRouterUpdateCompletion(ctx, d.Id(), meta, d, updateTimeout)
 
 		if err != nil {
 			diags = append(diags, diag.Diagnostic{Severity: 0, Summary: fmt.Sprintf("cloud router property update completion timeout error: %v [update payload: %v] (other updates will be successful if the payload is not shown)", equinix_errors.FormatFabricError(err), update)})
