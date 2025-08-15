@@ -13,7 +13,7 @@ name: Fabric Acceptance Tests
 
 on:
   pull_request_target:
-    types: [opened, synchronize, reopened, ready_for_review]
+    types: [ opened, synchronize, reopened, ready_for_review ]
     paths:
       - 'go.mod'
       - 'go.sum'
@@ -196,7 +196,7 @@ jobs:
           METAL_AUTH_TOKEN: ${{ secrets.METAL_AUTH_TOKEN }}
         run: |
           go test ./... -v -coverprofile coverage_pfcr.txt -covermode=atomic -count 1 -parallel 8 -run "(PFCR)" -timeout 180m | tee pfcr_test_output.log
-          
+
       - name: Upload PFCR Testing Log
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
@@ -259,22 +259,26 @@ jobs:
           name: pfcr_test_logs
 
       - name: Create HTML Testing Report
+        shell: bash
         run: |
           cat pfcr_test_output.log pnfv_test_output.log > uat_test_report.log
-          go-junit-report -in uat_test_report.log > uat_test_report.xml && python3 -m junit2htmlreport uat_test_report.xml uat_test_report.html
+          python3 generate_test_report.py uat_test_report.log uat_test_report.html
 
       - name: Prepare slack message
         id: slack_message
         if: always()
         shell: bash
         run: |
-          tests=$(grep '<testsuite ' uat_test_report.xml | sed -n 's/.*tests="\([0-9]*\)".*/\1/p' | awk '{s+=$1} END {print s}')
-          errors=$(grep '<testsuite ' uat_test_report.xml | sed -n 's/.*failures="\([0-9]*\)".*/\1/p' | awk '{s+=$1} END {print s}')
-
-          message="*Results:* $((tests-errors)) Passed, $errors Errors"
+          html_file="uat_test_report.html"
+          total=$(grep -c '<tr>' "$html_file" | awk '{print $1 - 1}')
+          failures=$(grep -c 'class="fail"' "$html_file")
+          
+          message="*Results:* $((total-failures)) Passed, $errors Errors"
           echo "message<<EOF" >> $GITHUB_OUTPUT
           echo "$message" >> $GITHUB_OUTPUT
-          echo "EOF" >> $GITHUB_OUTPUT    
+          echo "EOF" >> $GITHUB_OUTPUT
+          
+          echo "$message" >> $GITHUB_STEP_SUMMARY
 
       - name: Notify Slack
         uses: slackapi/slack-github-action@91efab103c0de0a537f72a35f6b8cda0ee76bf0a # v2
