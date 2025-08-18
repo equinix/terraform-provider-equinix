@@ -107,6 +107,7 @@ jobs:
           terraform_wrapper: false
 
       - name: TF Fabric PNFV acceptance tests
+        shell: bash
         timeout-minutes: 180
         env:
           TF_ACC: "1"
@@ -119,13 +120,11 @@ jobs:
           go test ./... -v -coverprofile coverage_pnfv.txt -covermode=atomic -count 1 -parallel 8 -run "(PNFV)" -timeout 180m | tee pnfv_test_output.log
 
       - name: Upload PNFV Testing Log
+        if: ${{ always() }}
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: pnfv_test_logs
           path: pnfv_test_output.log
-
-      - name: Check if Tests are passed
-        run: sh scripts/check_tests.sh pnfv_test_output.log
 
       - name: Sweeper PNFV
         if: ${{ always() }}
@@ -184,6 +183,7 @@ jobs:
           terraform_wrapper: false
 
       - name: TF Fabric PFCR acceptance tests
+        shell: bash
         timeout-minutes: 180
         env:
           TF_ACC: "1"
@@ -198,13 +198,11 @@ jobs:
           go test ./... -v -coverprofile coverage_pfcr.txt -covermode=atomic -count 1 -parallel 8 -run "(PFCR)" -timeout 180m | tee pfcr_test_output.log
 
       - name: Upload PFCR Testing Log
+        if: ${{ always() }}
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: pfcr_test_logs
           path: pfcr_test_output.log
-
-      - name: Check if Tests are passed
-        run: sh scripts/check_tests.sh pfcr_test_output.log
 
       - name: Sweeper PFCR
         if: ${{ always() }}
