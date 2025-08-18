@@ -108,6 +108,7 @@ jobs:
 
       - name: TF Fabric PNFV acceptance tests
         timeout-minutes: 180
+        shell: bash
         env:
           TF_ACC: "1"
           TF_ACC_FABRIC_CONNECTIONS_TEST_DATA: ${{ secrets.TF_ACC_FABRIC_CONNECTIONS_TEST_DATA }}
@@ -119,16 +120,15 @@ jobs:
           go test ./... -v -coverprofile coverage_pnfv.txt -covermode=atomic -count 1 -parallel 8 -run "(PNFV)" -timeout 180m | tee pnfv_test_output.log
 
       - name: Upload PNFV Testing Log
+        if: ${{ always() }}
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: pnfv_test_logs
           path: pnfv_test_output.log
 
-      - name: Check if Tests are passed
-        run: sh scripts/check_tests.sh pnfv_test_output.log
-
       - name: Sweeper PNFV
         if: ${{ always() }}
+        shell: bash
         env:
           EQUINIX_API_CLIENTID: ${{ secrets.EQUINIX_API_CLIENTID_PNFV }}
           EQUINIX_API_CLIENTSECRET: ${{ secrets.EQUINIX_API_CLIENTSECRET_PNFV }}
@@ -185,6 +185,7 @@ jobs:
 
       - name: TF Fabric PFCR acceptance tests
         timeout-minutes: 180
+        shell: bash
         env:
           TF_ACC: "1"
           TF_ACC_FABRIC_CONNECTIONS_TEST_DATA: ${{ secrets.TF_ACC_FABRIC_CONNECTIONS_TEST_DATA }}
@@ -198,16 +199,15 @@ jobs:
           go test ./... -v -coverprofile coverage_pfcr.txt -covermode=atomic -count 1 -parallel 8 -run "(PFCR)" -timeout 180m | tee pfcr_test_output.log
           
       - name: Upload PFCR Testing Log
+        if: ${{ always() }}
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: pfcr_test_logs
           path: pfcr_test_output.log
 
-      - name: Check if Tests are passed
-        run: sh scripts/check_tests.sh pfcr_test_output.log
-
       - name: Sweeper PFCR
         if: ${{ always() }}
+        shell: bash
         env:
           EQUINIX_API_CLIENTID: ${{ secrets.EQUINIX_API_CLIENTID_PFCR }}
           EQUINIX_API_CLIENTSECRET: ${{ secrets.EQUINIX_API_CLIENTSECRET_PFCR }}
