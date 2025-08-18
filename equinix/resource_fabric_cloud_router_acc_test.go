@@ -171,7 +171,7 @@ func checkCloudRouterDelete(s *terraform.State) error {
 		if rs.Type != "equinix_fabric_cloud_router" {
 			continue
 		}
-		err := equinix.WaitUntilCloudRouterDeprovisioned(rs.Primary.ID, acceptance.TestAccProvider.Meta(), &schema.ResourceData{}, ctx, 10*time.Minute)
+		err := equinix.WaitUntilCloudRouterDeprovisioned(ctx, rs.Primary.ID, acceptance.TestAccProvider.Meta(), &schema.ResourceData{}, 10*time.Minute)
 		if err != nil {
 			return fmt.Errorf("API call failed while waiting for resource deletion")
 		}
