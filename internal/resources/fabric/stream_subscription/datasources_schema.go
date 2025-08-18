@@ -201,7 +201,7 @@ func getStreamSubscriptionSchema(ctx context.Context) map[string]schema.Attribut
 				"settings": schema.SingleNestedAttribute{
 					Description: "Stream subscription sink settings",
 					Computed:    true,
-					CustomType:  fwtypes.NewObjectTypeOf[sinkCredentialModel](ctx),
+					CustomType:  fwtypes.NewObjectTypeOf[sinkSettingsModel](ctx),
 					Attributes: map[string]schema.Attribute{
 						"event_index": schema.StringAttribute{
 							Computed: true,
@@ -219,6 +219,9 @@ func getStreamSubscriptionSchema(ctx context.Context) map[string]schema.Attribut
 							Computed: true,
 						},
 						"metric_uri": schema.StringAttribute{
+							Computed: true,
+						},
+						"format": schema.StringAttribute{
 							Computed: true,
 						},
 					},

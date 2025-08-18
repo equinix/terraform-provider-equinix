@@ -139,6 +139,7 @@ Read-Only:
 - `application_key` (String)
 - `event_index` (String)
 - `event_uri` (String)
+- `format` (String)
 - `metric_index` (String)
 - `metric_uri` (String)
 - `source` (String)
