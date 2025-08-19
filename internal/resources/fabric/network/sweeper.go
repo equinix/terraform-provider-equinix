@@ -13,6 +13,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
 
+// AddTestSweeper /* AddTestSweeper registers a test sweeper for cleaning up resources
 func AddTestSweeper() {
 	resource.AddTestSweepers("equinix_fabric_network", &resource.Sweeper{
 		Name:         "equinix_fabric_network",
@@ -46,7 +47,7 @@ func testSweeperNetworks(_ string) error {
 			And:      []fabricv4.NetworkFilter{},
 			Property: &name,
 			Operator: &likeOperator,
-			Values:   []string{"%_PFCR", "%_PFNV", "%_PPDS"},
+			Values:   sweep.FabricTestResourceSuffixes,
 		},
 		Pagination: &fabricv4.PaginationRequest{
 			Offset: &offset,
