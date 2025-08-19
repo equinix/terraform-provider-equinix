@@ -117,14 +117,14 @@ jobs:
           EQUINIX_API_CLIENTSECRET: ${{ secrets.EQUINIX_API_CLIENTSECRET_PNFV }}
           METAL_AUTH_TOKEN: ${{ secrets.METAL_AUTH_TOKEN }}
         run: |
-          go test ./... -v -coverprofile coverage_pnfv.txt -covermode=atomic -count 1 -parallel 8 -run "(PNFV)" -timeout 180m | tee pnfv_test_output.log
+          go test -json ./... -v -coverprofile coverage_pnfv.txt -covermode=atomic -count 1 -parallel 8 -run "(PNFV)" -timeout 180m > pnfv_test_output.json
 
       - name: Upload PNFV Testing Log
         if: ${{ always() }}
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: pnfv_test_logs
-          path: pnfv_test_output.log
+          path: pnfv_test_output.json
 
       - name: Sweeper PNFV
         if: ${{ always() }}
@@ -137,7 +137,7 @@ jobs:
           SWEEP_DIR: "./equinix"
         run: |
           # Added sweep-run to filter Fabric PNFV test
-          go test $(go list ./... | grep 'internal/sweep\|equinix/equinix') -v -timeout 180m -sweep=${SWEEP} -sweep-allow-failures=${SWEEP_ALLOW_FAILURES} -sweep-run=$(grep -or 'AddTestSweepers("[^"]*"' | grep "_fabric_" | cut -d '"' -f2 | paste -s -d, -)
+          go test -json $(go list ./... | grep 'internal/sweep\|equinix/equinix') -v -timeout 180m -sweep=${SWEEP} -sweep-allow-failures=${SWEEP_ALLOW_FAILURES} -sweep-run=$(grep -or 'AddTestSweepers("[^"]*"' | grep "_fabric_" | cut -d '"' -f2 | paste -s -d, -)
 
       - name: Upload coverage to Codecov
         if: ${{ always() }}
@@ -195,14 +195,14 @@ jobs:
           EQUINIX_API_CLIENTSECRET: ${{ secrets.EQUINIX_API_CLIENTSECRET_PFCR }}
           METAL_AUTH_TOKEN: ${{ secrets.METAL_AUTH_TOKEN }}
         run: |
-          go test ./... -v -coverprofile coverage_pfcr.txt -covermode=atomic -count 1 -parallel 8 -run "(PFCR)" -timeout 180m | tee pfcr_test_output.log
+          go test -json ./... -v -coverprofile coverage_pfcr.txt -covermode=atomic -count 1 -parallel 8 -run "(PFCR)" -timeout 180m | tee pfcr_test_output.json
 
       - name: Upload PFCR Testing Log
         if: ${{ always() }}
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: pfcr_test_logs
-          path: pfcr_test_output.log
+          path: pfcr_test_output.json
 
       - name: Sweeper PFCR
         if: ${{ always() }}
@@ -259,8 +259,8 @@ jobs:
       - name: Create HTML Testing Report
         shell: bash
         run: |
-          cat pfcr_test_output.log pnfv_test_output.log > uat_test_report.log
-          python3 generate_test_report.py uat_test_report.log uat_test_report.html
+          cat pfcr_test_output.json pnfv_test_output.json > uat_test_report.json
+          python3 generate_test_report.py uat_test_report.json uat_test_report.html
 
       - name: Prepare slack message
         id: slack_message
