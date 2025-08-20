@@ -230,8 +230,14 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       message: ${{ steps.slack_message.outputs.message }}
+      test-status: ${{ steps.slack_message.outputs.test-status }}
 
     steps:
+      - name: Check out code into the Go module directory
+        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.ref }}
+
       - name: Set up Go
         uses: actions/setup-go@d35c59abb061a4a6fb18e82ac0862c26744d6ab5 # v5
         id: go
@@ -268,12 +274,22 @@ jobs:
         shell: bash
         run: |
           html_file="uat_test_report.html"
-          total=$(grep -c '<tr>' "$html_file" | awk '{print $1 - 1}')
-          failures=$(grep -c 'class="fail"' "$html_file")
-          
-          message="*Results:* $((total-failures)) Passed, $errors Errors"
+          total=$(grep -c '<tr>' "$html_file" | awk '{print $1-1}')
+          failures=$(grep -c 'class="status-fail"' "$html_file")
+  
+          message="*Results:* $((total-failures)) Passed, $failures Failures"
           echo "message<<EOF" >> $GITHUB_OUTPUT
           echo "$message" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+          
+          if [[ $failures -gt 0 ]]; then
+            test_status="failure"
+          else
+            test_status="success"
+          fi
+          
+          echo "test-status<<EOF" >> $GITHUB_OUTPUT
+          echo "$test_status" >> $GITHUB_OUTPUT
           echo "EOF" >> $GITHUB_OUTPUT
           
           echo "$message" >> $GITHUB_STEP_SUMMARY
@@ -288,11 +304,11 @@ jobs:
             channel: digin-panthers-gha-automation
 
             attachments:
-              - color: ${{ job.status == 'success' && 'good' || job.status == 'failure' && 'danger' || 'warning' }}
+              - color: ${{ steps.slack_message.outputs.test-status == 'success' || steps.slack_message.outputs.test-status == 'failure' }}
                 text: |
                     *Repository:* <${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|${{ github.repository }}>
                     *Workflow:* ${{ github.workflow }}           
-                    *Status:* ${{ job.status }}
+                    *Status:* ${{ steps.slack_message.outputs.test-status }}
                     *Results:* ${{ steps.slack_message.outputs.message }}
                     *Triggered by:* <@${{ github.actor }}>       
 
