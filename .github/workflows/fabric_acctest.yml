@@ -276,7 +276,7 @@ jobs:
           html_file="uat_test_report.html"
           total=$(grep -c '<tr>' "$html_file" | awk '{print $1-1}')
           failures=$(grep -c 'class="status-fail"' "$html_file")
-  
+          
           message="*Results:* $((total-failures)) Passed, $failures Failures"
           echo "message<<EOF" >> $GITHUB_OUTPUT
           echo "$message" >> $GITHUB_OUTPUT
@@ -304,7 +304,7 @@ jobs:
             channel: digin-panthers-gha-automation
 
             attachments:
-              - color: ${{ steps.slack_message.outputs.test-status == 'success' || steps.slack_message.outputs.test-status == 'failure' }}
+              - color: ${{ steps.slack_message.outputs.test-status == 'success' && 'good' || steps.slack_message.outputs.test-status == 'failure' && 'danger' }}
                 text: |
                     *Repository:* <${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|${{ github.repository }}>
                     *Workflow:* ${{ github.workflow }}           
