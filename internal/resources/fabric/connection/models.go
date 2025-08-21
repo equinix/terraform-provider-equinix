@@ -246,6 +246,16 @@ func accessPointTerraformToGo(accessPointTerraform []interface{}) fabricv4.Acces
 			accessPoint.SetNetwork(network)
 		}
 	}
+
+	if accessPointType := accessPointMap["type"].(string); accessPointType == "NETWORK" {
+		if role, exists := accessPointMap["role"]; exists {
+			roleStr := role.(string)
+			if roleStr != "" {
+				accessPoint.SetRole(fabricv4.AccessPointRole(roleStr))
+			}
+		}
+	}
+
 	linkProtocolList := accessPointMap["link_protocol"].(*schema.Set).List()
 
 	if len(linkProtocolList) != 0 {
@@ -545,6 +555,9 @@ func accessPointGoToTerraform(accessPoint *fabricv4.AccessPoint) *schema.Set {
 	if accessPoint.Network != nil {
 		network := accessPoint.GetNetwork()
 		mappedAccessPoint["network"] = networkGoToTerraform(&network)
+	}
+	if accessPoint.Role != nil {
+		mappedAccessPoint["role"] = string(accessPoint.GetRole())
 	}
 	mappedAccessPoint["seller_region"] = accessPoint.GetSellerRegion()
 	if accessPoint.PeeringType != nil {
