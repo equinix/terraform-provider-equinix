@@ -246,13 +246,9 @@ func accessPointTerraformToGo(accessPointTerraform []interface{}) fabricv4.Acces
 			accessPoint.SetNetwork(network)
 		}
 	}
-
-	if accessPointType := accessPointMap["type"].(string); accessPointType == "NETWORK" {
-		if role, exists := accessPointMap["role"]; exists {
-			roleStr := role.(string)
-			if roleStr != "" {
-				accessPoint.SetRole(fabricv4.AccessPointRole(roleStr))
-			}
+	if accessPointMap["type"].(string) == "NETWORK" {
+		if role, exists := accessPointMap["role"]; exists && role.(string) != "" {
+			accessPoint.SetRole(fabricv4.AccessPointRole(role.(string)))
 		}
 	}
 
