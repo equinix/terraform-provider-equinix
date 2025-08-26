@@ -266,7 +266,7 @@ jobs:
         shell: bash
         run: |
           cat pfcr_test_output.json pnfv_test_output.json > uat_test_report.json
-          python3 generate_test_report.py uat_test_report.json uat_test_report.html
+          python3 ./scripts/generate_test_report.py uat_test_report.json uat_test_report.html
 
       - name: Prepare slack message
         id: slack_message
