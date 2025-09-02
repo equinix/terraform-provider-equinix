@@ -13,7 +13,7 @@ name: Fabric Acceptance Tests
 
 on:
   pull_request_target:
-    types: [opened, synchronize, reopened, ready_for_review]
+    types: [ opened, synchronize, reopened, ready_for_review ]
     paths:
       - 'go.mod'
       - 'go.sum'
@@ -107,6 +107,7 @@ jobs:
           terraform_wrapper: false
 
       - name: TF Fabric PNFV acceptance tests
+        shell: bash
         timeout-minutes: 180
         env:
           TF_ACC: "1"
@@ -116,16 +117,14 @@ jobs:
           EQUINIX_API_CLIENTSECRET: ${{ secrets.EQUINIX_API_CLIENTSECRET_PNFV }}
           METAL_AUTH_TOKEN: ${{ secrets.METAL_AUTH_TOKEN }}
         run: |
-          go test ./... -v -coverprofile coverage_pnfv.txt -covermode=atomic -count 1 -parallel 8 -run "(PNFV)" -timeout 180m | tee pnfv_test_output.log
+          go test -json ./... -v -coverprofile coverage_pnfv.txt -covermode=atomic -count 1 -parallel 8 -run "(PNFV)" -timeout 180m > pnfv_test_output.json
 
       - name: Upload PNFV Testing Log
+        if: ${{ always() }}
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: pnfv_test_logs
-          path: pnfv_test_output.log
-
-      - name: Check if Tests are passed
-        run: sh scripts/check_tests.sh pnfv_test_output.log
+          path: pnfv_test_output.json
 
       - name: Sweeper PNFV
         if: ${{ always() }}
@@ -138,7 +137,7 @@ jobs:
           SWEEP_DIR: "./equinix"
         run: |
           # Added sweep-run to filter Fabric PNFV test
-          go test $(go list ./... | grep 'internal/sweep\|equinix/equinix') -v -timeout 180m -sweep=${SWEEP} -sweep-allow-failures=${SWEEP_ALLOW_FAILURES} -sweep-run=$(grep -or 'AddTestSweepers("[^"]*"' | grep "_fabric_" | cut -d '"' -f2 | paste -s -d, -)
+          go test -json $(go list ./... | grep 'internal/sweep\|equinix/equinix') -v -timeout 180m -sweep=${SWEEP} -sweep-allow-failures=${SWEEP_ALLOW_FAILURES} -sweep-run=$(grep -or 'AddTestSweepers("[^"]*"' | grep "_fabric_" | cut -d '"' -f2 | paste -s -d, -)
 
       - name: Upload coverage to Codecov
         if: ${{ always() }}
@@ -184,6 +183,7 @@ jobs:
           terraform_wrapper: false
 
       - name: TF Fabric PFCR acceptance tests
+        shell: bash
         timeout-minutes: 180
         env:
           TF_ACC: "1"
@@ -195,16 +195,14 @@ jobs:
           EQUINIX_API_CLIENTSECRET: ${{ secrets.EQUINIX_API_CLIENTSECRET_PFCR }}
           METAL_AUTH_TOKEN: ${{ secrets.METAL_AUTH_TOKEN }}
         run: |
-          go test ./... -v -coverprofile coverage_pfcr.txt -covermode=atomic -count 1 -parallel 8 -run "(PFCR)" -timeout 180m | tee pfcr_test_output.log
-          
+          go test -json ./... -v -coverprofile coverage_pfcr.txt -covermode=atomic -count 1 -parallel 8 -run "(PFCR)" -timeout 180m | tee pfcr_test_output.json
+
       - name: Upload PFCR Testing Log
+        if: ${{ always() }}
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: pfcr_test_logs
-          path: pfcr_test_output.log
-
-      - name: Check if Tests are passed
-        run: sh scripts/check_tests.sh pfcr_test_output.log
+          path: pfcr_test_output.json
 
       - name: Sweeper PFCR
         if: ${{ always() }}
@@ -232,8 +230,14 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       message: ${{ steps.slack_message.outputs.message }}
+      test-status: ${{ steps.slack_message.outputs.test-status }}
 
     steps:
+      - name: Check out code into the Go module directory
+        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.ref }}
+
       - name: Set up Go
         uses: actions/setup-go@d35c59abb061a4a6fb18e82ac0862c26744d6ab5 # v5
         id: go
@@ -259,22 +263,36 @@ jobs:
           name: pfcr_test_logs
 
       - name: Create HTML Testing Report
+        shell: bash
         run: |
-          cat pfcr_test_output.log pnfv_test_output.log > uat_test_report.log
-          go-junit-report -in uat_test_report.log > uat_test_report.xml && python3 -m junit2htmlreport uat_test_report.xml uat_test_report.html
+          cat pfcr_test_output.json pnfv_test_output.json > uat_test_report.json
+          python3 ./scripts/generate_test_report.py uat_test_report.json uat_test_report.html
 
       - name: Prepare slack message
         id: slack_message
         if: always()
         shell: bash
         run: |
-          tests=$(grep '<testsuite ' uat_test_report.xml | sed -n 's/.*tests="\([0-9]*\)".*/\1/p' | awk '{s+=$1} END {print s}')
-          errors=$(grep '<testsuite ' uat_test_report.xml | sed -n 's/.*failures="\([0-9]*\)".*/\1/p' | awk '{s+=$1} END {print s}')
-
-          message="*Results:* $((tests-errors)) Passed, $errors Errors"
+          html_file="uat_test_report.html"
+          total=$(grep -c '<tr>' "$html_file" | awk '{print $1-1}')
+          failures=$(grep -c 'class="status-fail"' "$html_file")
+          
+          message="*Results:* $((total-failures)) Passed, $failures Failures"
           echo "message<<EOF" >> $GITHUB_OUTPUT
           echo "$message" >> $GITHUB_OUTPUT
-          echo "EOF" >> $GITHUB_OUTPUT    
+          echo "EOF" >> $GITHUB_OUTPUT
+          
+          if [[ $failures -gt 0 ]]; then
+            test_status="failure"
+          else
+            test_status="success"
+          fi
+          
+          echo "test-status<<EOF" >> $GITHUB_OUTPUT
+          echo "$test_status" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+          
+          echo "$message" >> $GITHUB_STEP_SUMMARY
 
       - name: Notify Slack
         uses: slackapi/slack-github-action@91efab103c0de0a537f72a35f6b8cda0ee76bf0a # v2
@@ -286,11 +304,11 @@ jobs:
             channel: digin-panthers-gha-automation
 
             attachments:
-              - color: ${{ job.status == 'success' && 'good' || job.status == 'failure' && 'danger' || 'warning' }}
+              - color: ${{ steps.slack_message.outputs.test-status == 'success' && 'good' || steps.slack_message.outputs.test-status == 'failure' && 'danger' }}
                 text: |
                     *Repository:* <${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|${{ github.repository }}>
                     *Workflow:* ${{ github.workflow }}           
-                    *Status:* ${{ job.status }}
+                    *Status:* ${{ steps.slack_message.outputs.test-status }}
                     *Results:* ${{ steps.slack_message.outputs.message }}
                     *Triggered by:* <@${{ github.actor }}>       
 
