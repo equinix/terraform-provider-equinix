@@ -47,7 +47,7 @@ func TestAccFabricCreatePort2SPConnection_PPDS(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						"equinix_fabric_connection.test", "a_side.0.access_point.0.link_protocol.0.type", "DOT1Q"),
 					resource.TestCheckResourceAttr(
-						"equinix_fabric_connection.test", "a_side.0.access_point.0.link_protocol.0.vlan_tag", "2019"),
+						"equinix_fabric_connection.test", "a_side.0.access_point.0.link_protocol.0.vlan_tag", "1200"),
 					resource.TestCheckResourceAttr(
 						"equinix_fabric_connection.test", "z_side.0.access_point.0.type", "SP"),
 					resource.TestCheckResourceAttr(
@@ -145,7 +145,7 @@ func testAccFabricCreatePort2SPConnectionConfig(spName, name, portUUID, zSideMet
 				}
 				link_protocol {
 					type= "DOT1Q"
-					vlan_tag= "1500"
+					vlan_tag= "1200"
 				}
 			}
 		}
@@ -524,7 +524,7 @@ func TestAccFabricCreatePort2EtreeNetworkConnection_PFCR(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						"equinix_fabric_connection.test_etree", "order.0.purchase_order_number", "123485"),
 					resource.TestCheckResourceAttr(
-						"equinix_fabric_connection.test", "project.0.project_id", "33ec651f-cc99-48e0-94d3-47466899cdc7"),
+						"equinix_fabric_connection.test_etree", "project.0.project_id", "33ec651f-cc99-48e0-94d3-47466899cdc7"),
 					resource.TestCheckResourceAttr(
 						"equinix_fabric_connection.test_etree", "a_side.0.access_point.0.type", "COLO"),
 					resource.TestCheckResourceAttr(
@@ -533,6 +533,8 @@ func TestAccFabricCreatePort2EtreeNetworkConnection_PFCR(t *testing.T) {
 						"equinix_fabric_connection.test_etree", "z_side.0.access_point.0.type", "NETWORK"),
 					resource.TestCheckResourceAttrSet(
 						"equinix_fabric_connection.test_etree", "z_side.0.access_point.0.network.0.uuid"),
+					resource.TestCheckResourceAttr(
+						"equinix_fabric_connection.test_etree", "z_side.0.access_point.0.role", "LEAF"),
 				),
 				ExpectNonEmptyPlan: true,
 			},
@@ -583,7 +585,7 @@ func testAccFabricCreatePort2EtreeNetworkConnectionConfig(name, portUUID string)
 				}
 				link_protocol {
 					type= "DOT1Q"
-					vlan_tag= "1500"
+					vlan_tag= "980"
 				}
 			}
 		}
