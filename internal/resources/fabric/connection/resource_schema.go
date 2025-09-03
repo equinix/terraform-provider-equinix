@@ -11,7 +11,7 @@ func fabricConnectionResourceSchema() map[string]*schema.Schema {
 		"type": {
 			Type:         schema.TypeString,
 			Required:     true,
-			ValidateFunc: validation.StringInSlice([]string{"EVPL_VC", "EPL_VC", "IP_VC", "IPWAN_VC", "ACCESS_EPL_VC", "EVPLAN_VC", "EPLAN_VC", "EIA_VC", "IA_VC", "EC_VC"}, false),
+			ValidateFunc: validation.StringInSlice([]string{"EVPL_VC", "EPL_VC", "IP_VC", "IPWAN_VC", "ACCESS_EPL_VC", "EVPLAN_VC", "EPLAN_VC", "EIA_VC", "IA_VC", "EC_VC", "EVPTREE_VC"}, false),
 			Description:  "Defines the connection type like EVPL_VC, EPL_VC, IPWAN_VC, IP_VC, ACCESS_EPL_VC, EVPLAN_VC, EPLAN_VC, EIA_VC, IA_VC, EC_VC",
 		},
 		"name": {
@@ -214,6 +214,12 @@ func accessPointSch() *schema.Resource {
 				Optional:     true,
 				ValidateFunc: validation.StringInSlice([]string{"COLO", "VD", "VG", "SP", "IGW", "SUBNET", "CLOUD_ROUTER", "NETWORK", "METAL_NETWORK"}, true),
 				Description:  "Access point type - COLO, VD, VG, SP, IGW, SUBNET, CLOUD_ROUTER, NETWORK, METAL_NETWORK",
+			},
+			"role": {
+				Type:         schema.TypeString,
+				Optional:     true,
+				Description:  "Network role",
+				ValidateFunc: validation.StringInSlice([]string{"LEAF", "ROOT"}, false),
 			},
 			"account": {
 				Type:        schema.TypeSet,
