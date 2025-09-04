@@ -856,6 +856,7 @@ Optional:
 - `peering_type` (String) Peering Type- PRIVATE,MICROSOFT,PUBLIC, MANUAL
 - `port` (Block Set, Max: 1) Port access point information (see [below for nested schema](#nestedblock--a_side--access_point--port))
 - `profile` (Block Set, Max: 1) Service Profile (see [below for nested schema](#nestedblock--a_side--access_point--profile))
+- `role` (String) Network role
 - `router` (Block Set, Max: 1) Cloud Router access point information that replaces `gateway` (see [below for nested schema](#nestedblock--a_side--access_point--router))
 - `seller_region` (String) Access point seller region
 - `type` (String) Access point type - COLO, VD, VG, SP, IGW, SUBNET, CLOUD_ROUTER, NETWORK, METAL_NETWORK
@@ -1076,6 +1077,7 @@ Optional:
 - `peering_type` (String) Peering Type- PRIVATE,MICROSOFT,PUBLIC, MANUAL
 - `port` (Block Set, Max: 1) Port access point information (see [below for nested schema](#nestedblock--z_side--access_point--port))
 - `profile` (Block Set, Max: 1) Service Profile (see [below for nested schema](#nestedblock--z_side--access_point--profile))
+- `role` (String) Network role
 - `router` (Block Set, Max: 1) Cloud Router access point information that replaces `gateway` (see [below for nested schema](#nestedblock--z_side--access_point--router))
 - `seller_region` (String) Access point seller region
 - `type` (String) Access point type - COLO, VD, VG, SP, IGW, SUBNET, CLOUD_ROUTER, NETWORK, METAL_NETWORK

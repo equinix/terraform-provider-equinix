@@ -498,6 +498,109 @@ func testAccFabricCreateVirtualDevice2NetworkConnectionConfig(name, virtualDevic
 	}`, name, virtualDeviceUUID)
 }
 
+func TestAccFabricCreatePort2EtreeNetworkConnection_PFCR(t *testing.T) {
+	ports := testinghelpers.GetFabricEnvPorts(t)
+	var portUUID string
+	if len(ports) > 0 {
+		portUUID = ports["pfcr"]["dot1q"][1].GetUuid()
+	}
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:     func() { acceptance.TestAccPreCheck(t); acceptance.TestAccPreCheckProviderConfigured(t) },
+		Providers:    acceptance.TestAccProviders,
+		CheckDestroy: CheckConnectionDelete,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccFabricCreatePort2EtreeNetworkConnectionConfig("port2etreenetwork_PFCR", portUUID),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(
+						"equinix_fabric_connection.test_etree", "name", "port2etreenetwork_PFCR"),
+					resource.TestCheckResourceAttr(
+						"equinix_fabric_connection.test_etree", "bandwidth", "50"),
+					resource.TestCheckResourceAttr(
+						"equinix_fabric_connection.test_etree", "type", "EVPTREE_VC"),
+					resource.TestCheckResourceAttr(
+						"equinix_fabric_connection.test_etree", "redundancy.0.priority", "PRIMARY"),
+					resource.TestCheckResourceAttr(
+						"equinix_fabric_connection.test_etree", "order.0.purchase_order_number", "123485"),
+					resource.TestCheckResourceAttr(
+						"equinix_fabric_connection.test_etree", "project.0.project_id", "33ec651f-cc99-48e0-94d3-47466899cdc7"),
+					resource.TestCheckResourceAttr(
+						"equinix_fabric_connection.test_etree", "a_side.0.access_point.0.type", "COLO"),
+					resource.TestCheckResourceAttr(
+						"equinix_fabric_connection.test_etree", "a_side.0.access_point.0.port.0.uuid", portUUID),
+					resource.TestCheckResourceAttr(
+						"equinix_fabric_connection.test_etree", "z_side.0.access_point.0.type", "NETWORK"),
+					resource.TestCheckResourceAttrSet(
+						"equinix_fabric_connection.test_etree", "z_side.0.access_point.0.network.0.uuid"),
+					resource.TestCheckResourceAttr(
+						"equinix_fabric_connection.test_etree", "z_side.0.access_point.0.role", "LEAF"),
+				),
+				ExpectNonEmptyPlan: true,
+			},
+		},
+	})
+
+}
+
+func testAccFabricCreatePort2EtreeNetworkConnectionConfig(name, portUUID string) string {
+	return fmt.Sprintf(`
+
+
+	resource "equinix_fabric_network" "this" {
+		type = "EVPTREE"
+		name = "Tf_EtreeNetwork_PFCR"
+		scope = "REGIONAL"
+		notifications {
+			type = "ALL"
+			emails = ["test@equinix.com","test1@equinix.com"]
+		}
+		location {
+			region = "AMER"
+		}
+		project{
+			project_id = "33ec651f-cc99-48e0-94d3-47466899cdc7"
+		}
+	}
+
+	resource "equinix_fabric_connection" "test_etree" {
+		type = "EVPTREE_VC"
+		name = "%s"
+		notifications{
+			type = "ALL"
+			emails = ["test@equinix.com","test1@equinix.com"]
+		}
+		order {
+			purchase_order_number = "123485"
+		}
+		bandwidth = 50
+		redundancy {
+			priority= "PRIMARY"
+		}
+		a_side {
+			access_point {
+				type= "COLO"
+				port {
+					uuid= "%s"
+				}
+				link_protocol {
+					type= "DOT1Q"
+					vlan_tag= "980"
+				}
+			}
+		}
+		z_side {
+			access_point {
+				type = "NETWORK"
+				network {
+					uuid = equinix_fabric_network.this.id
+				}
+                role = "LEAF"
+			}
+		}
+	}`, name, portUUID)
+}
+
 func CheckConnectionDelete(s *terraform.State) error {
 	ctx := context.Background()
 	for _, rs := range s.RootModule().Resources {
