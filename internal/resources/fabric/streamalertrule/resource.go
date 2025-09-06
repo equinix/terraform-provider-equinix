@@ -277,6 +277,7 @@ func (r *Resource) Update(
 func buildUpdateRequest(ctx context.Context, config streamAlertRuleResourceModel) (fabricv4.AlertRulePutRequest, diag.Diagnostics) {
 	var diags diag.Diagnostics
 	request := fabricv4.AlertRulePutRequest{}
+	request.SetType(fabricv4.AlertRulePostRequestType(config.Type.ValueString()))
 	request.SetName(config.Name.ValueString())
 	request.SetDescription(config.Description.ValueString())
 	request.SetMetricName(config.MetricName.ValueString())
