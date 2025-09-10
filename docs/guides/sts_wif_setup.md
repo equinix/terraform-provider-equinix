@@ -31,10 +31,9 @@ Create a trust relationship with your workload's identity provider:
 ```bash
 ORG_ID="your_organization_id"
 
-OIDCP=$(curl --location 'https://sts.eqix.equinix.com/v1/oidcProviders' \
-  --header 'Authorization: Bearer $TOKEN' \
-  --header 'Content-Type: application/json' \
-  --data '{
+OIDCP=$(curl -s "https://sts.eqix.equinix.com/use/createOidcProvider" \
+  -H "Authorization: Bearer $TOKEN" \
+  --json '{
     "name": "Your Provider Name",
     "issuerLocation": "https://your-idp-issuer-url",
     "trustedClientIds": [
@@ -63,10 +62,9 @@ JWT=$(curl -s "https://api.equinix.com/oauth2/v1/userinfo" \
   | jq -r '.jwt_token')
 
 # Create role assignment
-curl --location 'https://api.equinix.com/am/v3/assignments' \
-  --header 'Authorization: Bearer $JWT' \
-  --header 'Content-Type: application/json' \
-  --data '{
+curl -s "https://api.equinix.com/am/v3/assignments" \
+  -H "Authorization: Bearer $JWT" \
+  --json '{
     "principal": {
       "type": "FEDERATED",
       "name": "principal:'$ORG_ID':'${IDP_ID:4}':{subject}"
@@ -84,10 +82,9 @@ curl --location 'https://api.equinix.com/am/v3/assignments' \
 ```bash
 ACCESS_URL="https://access.equinix.com"
 
-curl --location '$ACCESS_URL/v1/accessPolicies' \
-  --header 'Authorization: Bearer $TOKEN' \
-  --header 'Content-Type: application/json' \
-  --data '{
+curl -s "$ACCESS_URL/use/createAccessPolicy" \
+  -H "Authorization: Bearer $TOKEN" \
+  --json '{
     "accessPolicyId": "accesspolicy:your-policy-name",
     "grants": [
       "principal:'$ORG_ID':'${IDP_ID:4}':{subject}"
