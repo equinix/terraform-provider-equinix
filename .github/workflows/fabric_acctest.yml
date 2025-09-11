@@ -155,6 +155,63 @@ jobs:
     runs-on: ubuntu-latest
     env:
       EQUINIX_API_ENDPOINT: "https://uatapi.equinix.com"
+    timeout-minutes: 240
+    strategy:
+      fail-fast: false
+      matrix:
+        version:
+          - stable
+        terraform:
+          - '1.5'
+    steps:
+      - name: Check out code into the Go module directory
+        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.ref }}
+
+      - name: Set up Go
+        uses: actions/setup-go@d35c59abb061a4a6fb18e82ac0862c26744d6ab5 # v5
+        with:
+          go-version-file: './go.mod'
+        id: go
+
+      - name: Get dependencies
+        run: |
+          go mod download
+
+      - uses: hashicorp/setup-terraform@b9cd54a3c349d3f38e8881555d616ced269862dd # v3
+        with:
+          terraform_version: ${{ matrix.terraform }}
+          terraform_wrapper: false
+
+      - name: TF Fabric PFCR acceptance tests
+        shell: bash
+        timeout-minutes: 180
+        env:
+          TF_ACC: "1"
+          TF_ACC_FABRIC_CONNECTIONS_TEST_DATA: ${{ secrets.TF_ACC_FABRIC_CONNECTIONS_TEST_DATA }}
+          TF_ACC_FABRIC_DEDICATED_PORTS: ${{ secrets.TF_ACC_FABRIC_DEDICATED_PORTS }}
+          TF_ACC_FABRIC_MARKET_PLACE_SUBSCRIPTION_ID: ${{ secrets.TF_ACC_FABRIC_MARKET_PLACE_SUBSCRIPTION_ID }}
+          TF_ACC_FABRIC_STREAM_TEST_DATA: ${{ secrets.TF_ACC_FABRIC_STREAM_TEST_DATA }}
+          EQUINIX_API_CLIENTID: ${{ secrets.EQUINIX_API_CLIENTID_PFCR }}
+          EQUINIX_API_CLIENTSECRET: ${{ secrets.EQUINIX_API_CLIENTSECRET_PFCR }}
+          METAL_AUTH_TOKEN: ${{ secrets.METAL_AUTH_TOKEN }}
+        run: |
+          go test -json ./... -v -coverprofile coverage_pfcr.txt -covermode=atomic -count 1 -parallel 8 -run "(PFCR)" -timeout 180m | tee pfcr_test_output.json
+
+      - name: Upload PFCR Testing Log
+        if: ${{ always() }}
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: pfcr_test_logs
+          path: pfcr_test_output.json
+
+  test-STS-creds:
+    name: Matrix Test
+    needs: build
+    runs-on: ubuntu-latest
+    env:
+      EQUINIX_API_ENDPOINT: "https://uatapi.equinix.com"
       EQUINIX_STS_ENDPOINT: "https://sts.uat.equinix.com"
     timeout-minutes: 240
     strategy:
@@ -200,21 +257,6 @@ jobs:
           terraform_version: ${{ matrix.terraform }}
           terraform_wrapper: false
 
-      - name: TF Fabric PFCR acceptance tests
-        shell: bash
-        timeout-minutes: 180
-        env:
-          TF_ACC: "1"
-          TF_ACC_FABRIC_CONNECTIONS_TEST_DATA: ${{ secrets.TF_ACC_FABRIC_CONNECTIONS_TEST_DATA }}
-          TF_ACC_FABRIC_DEDICATED_PORTS: ${{ secrets.TF_ACC_FABRIC_DEDICATED_PORTS }}
-          TF_ACC_FABRIC_MARKET_PLACE_SUBSCRIPTION_ID: ${{ secrets.TF_ACC_FABRIC_MARKET_PLACE_SUBSCRIPTION_ID }}
-          TF_ACC_FABRIC_STREAM_TEST_DATA: ${{ secrets.TF_ACC_FABRIC_STREAM_TEST_DATA }}
-          EQUINIX_API_CLIENTID: ${{ secrets.EQUINIX_API_CLIENTID_PFCR }}
-          EQUINIX_API_CLIENTSECRET: ${{ secrets.EQUINIX_API_CLIENTSECRET_PFCR }}
-          METAL_AUTH_TOKEN: ${{ secrets.METAL_AUTH_TOKEN }}
-        run: |
-          go test -json ./... -v -coverprofile coverage_pfcr.txt -covermode=atomic -count 1 -parallel 8 -run "(PFCR)" -timeout 180m | tee pfcr_test_output.json
-
       - name: TF Fabric PFCR acceptance tests STS creds
         timeout-minutes: 180
         env:
@@ -228,13 +270,6 @@ jobs:
           METAL_AUTH_TOKEN: ${{ secrets.METAL_AUTH_TOKEN }}
         run: |
           go test ./... --run "(TestAccFabricCreatePort2SPConnection_PFCR|TestAccCloudRouterCreateOnlyRequiredParameters_PFCR)" -v -coverprofile coverage_pfcr.txt -covermode=atomic -count 1
-
-      - name: Upload PFCR Testing Log
-        if: ${{ always() }}
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
-        with:
-          name: pfcr_test_logs
-          path: pfcr_test_output.json
 
   upload-test-report:
     name: Upload Testing Report
