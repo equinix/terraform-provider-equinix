@@ -131,14 +131,9 @@ func (r *Resource) Read(
 	// Extract the ID of the resource from the state
 	id := state.ID.ValueString()
 
-	port, portResp, err := client.PortsApi.GetPortByUuid(ctx, id).Execute()
+	port, _, err := client.PortsApi.GetPortByUuid(ctx, id).Execute()
+
 	if err != nil {
-		if portResp != nil && portResp.StatusCode == http.StatusBadRequest && strings.Contains(err.Error(), "Invalid PortUUID") {
-			// There's a delay between create and an available GET request for the UUID
-			// This is a workaround to avoid the 400 error while it becomes available for GET Requests
-			resp.Diagnostics.AddWarning("Port Order Not Completed", "Port Order has been received but Port has not been reserved. This port resource is not yet ready to be used as a Terraform dependency")
-			return
-		}
 		resp.Diagnostics.AddError(
 			fmt.Sprintf("Failed retrieving port %s", id), equinix_errors.FormatFabricError(err).Error())
 		return
@@ -263,8 +258,12 @@ func buildCreateRequest(ctx context.Context, plan resourceModel) (fabricv4.PortR
 	request := fabricv4.PortRequest{}
 
 	request.SetType(fabricv4.PortType(plan.Type.ValueString()))
-	request.SetConnectivitySourceType(fabricv4.PortConnectivitySourceType(plan.ConnectivitySourceType.ValueString()))
+	if !plan.ConnectivitySourceType.IsNull() && !plan.ConnectivitySourceType.IsUnknown() {
+		request.SetConnectivitySourceType(fabricv4.PortConnectivitySourceType(plan.ConnectivitySourceType.ValueString()))
+	}
+	//request.SetConnectivitySourceType(fabricv4.PortConnectivitySourceType(plan.ConnectivitySourceType.ValueString()))
 	request.SetLagEnabled(plan.LagEnabled.ValueBool())
+	request.SetName(plan.Name.ValueString())
 	request.SetPhysicalPortsSpeed(plan.PhysicalPortsSpeed.ValueInt32())
 	request.SetPhysicalPortsType(fabricv4.PortPhysicalPortsType(plan.PhysicalPortsType.ValueString()))
 	request.SetPhysicalPortsCount(plan.PhysicalPortsCount.ValueInt32())
@@ -487,10 +486,10 @@ func buildOrder(ctx context.Context, orderObject fwtypes.ObjectValueOf[orderMode
 func getCreateUpdateWaiter(ctx context.Context, client *fabricv4.APIClient, id string, timeout time.Duration) *retry.StateChangeConf {
 	return &retry.StateChangeConf{
 		Pending: []string{
-			string(fabricv4.PORTSTATE_PROVISIONING),
 			string(fabricv4.PORTSTATE_PENDING),
 		},
 		Target: []string{
+			string(fabricv4.PORTSTATE_PROVISIONING),
 			string(fabricv4.PORTSTATE_PROVISIONED),
 			string(fabricv4.PORTSTATE_ADDED),
 			string(fabricv4.PORTSTATE_ACTIVE),
