@@ -228,7 +228,7 @@ Read-Only:
 
 - `order_id` (String) Order Identification
 - `order_number` (String) Order Reference Number
-- `uuid` (String) Equinix-assigned order identifier, this is a derived response atrribute
+- `uuid` (String) Equinix-assigned order identifier, this is a derived response attribute
 
 <a id="nestedatt--order--purchase_order"></a>
 ### Nested Schema for `order.purchase_order`
