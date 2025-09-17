@@ -152,16 +152,28 @@ func (m *resourceModel) parse(ctx context.Context, port *fabricv4.Port) diag.Dia
 
 func (m *basePortModel) parse(ctx context.Context, port *fabricv4.Port) diag.Diagnostics {
 	var mDiags diag.Diagnostics
-	if port.GetType() != "" {
-		m.Type = types.StringValue(string(port.GetType()))
+	if portType := port.GetType(); portType != "" {
+		m.Type = types.StringValue(string(portType))
 	}
-	m.Name = types.StringValue(port.GetName())
-	m.ConnectivitySourceType = types.StringValue(string(port.GetConnectivitySourceType()))
+	if name := port.GetName(); name != "" {
+		m.Name = types.StringValue(name)
+	}
+	if sourceType := port.GetConnectivitySourceType(); sourceType != "" {
+		m.Name = types.StringValue(string(sourceType))
+	}
 	m.LagEnabled = types.BoolValue(port.GetLagEnabled())
-	m.PhysicalPortsSpeed = types.Int32Value(port.GetPhysicalPortsSpeed())
-	m.PhysicalPortsType = types.StringValue(string(port.GetPhysicalPortsType()))
-	m.PhysicalPortsCount = types.Int32Value(port.GetPhysicalPortsCount())
-	m.DemarcationPointIbx = types.StringValue(port.GetDemarcationPointIbx())
+	if speed := port.GetPhysicalPortsSpeed(); speed > 0 {
+		m.PhysicalPortsSpeed = types.Int32Value(speed)
+	}
+	if portsType := port.GetPhysicalPortsType(); portsType != "" {
+		m.PhysicalPortsType = types.StringValue(string(portsType))
+	}
+	if count := port.GetPhysicalPortsCount(); count > 0 {
+		m.PhysicalPortsCount = types.Int32Value(count)
+	}
+	if demarcationPointIbx := port.GetDemarcationPointIbx(); demarcationPointIbx != "" {
+		m.DemarcationPointIbx = types.StringValue(port.GetDemarcationPointIbx())
+	}
 	m.Href = types.StringValue(port.GetHref())
 	m.UUID = types.StringValue(port.GetUuid())
 	m.State = types.StringValue(string(port.GetState()))
@@ -219,7 +231,9 @@ func (m *basePortModel) parse(ctx context.Context, port *fabricv4.Port) diag.Dia
 		mDiags.Append(diags...)
 		return mDiags
 	}
+	//if len(port.GetNotifications()) > 0 {
 	m.Notifications = notifications
+	//}
 
 	if len(port.GetAdditionalInfo()) > 0 {
 		m.AdditionalInfo = parseAdditionalInfo(ctx, port.GetAdditionalInfo())
