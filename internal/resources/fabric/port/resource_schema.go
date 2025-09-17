@@ -255,7 +255,7 @@ Additional Documentation:
 						Computed:    true,
 					},
 					"uuid": schema.StringAttribute{
-						Description: "Equinix-assigned order identifier, this is a derived response atrribute",
+						Description: "Equinix-assigned order identifier, this is a derived response attribute",
 						Computed:    true,
 					},
 					"customer_reference_id": schema.StringAttribute{
@@ -272,7 +272,7 @@ Additional Documentation:
 								Required:    true,
 							},
 							"delegate": schema.SingleNestedAttribute{
-								Description: "delegate oder details",
+								Description: "delegate order details",
 								Required:    true,
 								CustomType:  fwtypes.NewObjectTypeOf[delegateModel](ctx),
 								Attributes: map[string]schema.Attribute{

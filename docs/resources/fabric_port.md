@@ -248,7 +248,7 @@ Read-Only:
 
 Required:
 
-- `delegate` (Attributes) delegate oder details (see [below for nested schema](#nestedatt--order--signature--delegate))
+- `delegate` (Attributes) delegate order details (see [below for nested schema](#nestedatt--order--signature--delegate))
 - `signatory` (String) Port signature Type
 
 <a id="nestedatt--order--signature--delegate"></a>
