@@ -410,7 +410,7 @@ resource "equinix_network_device" "c8000v-byol-tier" {
   type_code       = "C8000V"
   self_managed    = true
   byol            = true
-  package_code    = "VM100"
+  package_code    = "network-essentials"
   notifications   = ["john@equinix.com", "marry@equinix.com", "fred@equinix.com"]
   term_length     = 12
   account_number  = data.equinix_network_account.sv.number
@@ -439,7 +439,7 @@ resource "equinix_network_device" "c8000v-byol-throughput" {
   type_code       = "C8000V"
   self_managed    = true
   byol            = true
-  package_code    = "VM100"
+  package_code    = "network-essentials"
   notifications   = ["john@equinix.com", "marry@equinix.com", "fred@equinix.com"]
   term_length     = 12
   account_number  = data.equinix_network_account.sv.number
@@ -566,7 +566,7 @@ resource "equinix_network_device" "c8000v-byol-withtout-default-password" {
   self_managed              = true
   byol                      = true
   generate_default_password = false
-  package_code              = "VM100"
+  package_code              = "network-essentials"
   notifications             = ["john@equinix.com", "marry@equinix.com", "fred@equinix.com"]
   term_length               = 12
   account_number            = data.equinix_network_account.sv.number
@@ -954,6 +954,37 @@ resource "equinix_network_device" "f5xc-single" {
   interface_count = 8
   core_count      = 8
   vendor_configuration   = {"token" = "XXXXXXXXXX", "hostname" = "XXXX"}
+}
+```
+
+```terraform
+# Create C8000V BYOL device with cloud init rest api support
+
+data "equinix_network_account" "sv" {
+  metro_code = "SV"
+}
+
+resource "equinix_network_device" "c8000v-byol-withtout-default-password" {
+  name                      = "tf-c8000v-byol"
+  metro_code                = data.equinix_network_account.sv.metro_code
+  type_code                 = "C8000V"
+  self_managed              = true
+  byol                      = true
+  generate_default_password = false
+  package_code              = "network-essentials"
+  notifications             = ["john@equinix.com", "marry@equinix.com", "fred@equinix.com"]
+  term_length               = 12
+  account_number            = data.equinix_network_account.sv.number
+  version                   = "17.11.01a"
+  interface_count           = 10
+  core_count                = 2
+  tier                      = 1
+  ssh_key {
+    username = "test"
+    key_name = "test-key"
+  }
+  vendor_configuration = { restApiSupportRequirement = "true" }
+  acl_template_id      = "0bff6e05-f0e7-44cd-804a-25b92b835f8b"
 }
 ```
 

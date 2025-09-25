@@ -1,4 +1,4 @@
-# Create C8000V BYOL device with bandwidth tier information
+# Create C8000V BYOL device with cloud init rest api support
 
 data "equinix_network_account" "sv" {
   metro_code = "SV"
@@ -23,5 +23,6 @@ resource "equinix_network_device" "c8000v-byol-withtout-default-password" {
     username = "test"
     key_name = "test-key"
   }
-  acl_template_id = "0bff6e05-f0e7-44cd-804a-25b92b835f8b"
+  vendor_configuration = { restApiSupportRequirement = "true" }
+  acl_template_id      = "0bff6e05-f0e7-44cd-804a-25b92b835f8b"
 }
