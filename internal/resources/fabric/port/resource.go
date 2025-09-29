@@ -493,6 +493,7 @@ func getCreateUpdateWaiter(ctx context.Context, client *fabricv4.APIClient, id s
 			string(fabricv4.PORTSTATE_PROVISIONED),
 			string(fabricv4.PORTSTATE_ADDED),
 			string(fabricv4.PORTSTATE_ACTIVE),
+			string(fabricv4.PORTSTATE_PENDING_CROSS_CONNECT),
 		},
 		Refresh: func() (interface{}, string, error) {
 			port, resp, err := client.PortsApi.GetPortByUuid(ctx, id).Execute()

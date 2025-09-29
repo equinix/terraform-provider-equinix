@@ -231,9 +231,9 @@ func (m *basePortModel) parse(ctx context.Context, port *fabricv4.Port) diag.Dia
 		mDiags.Append(diags...)
 		return mDiags
 	}
-	//if len(port.GetNotifications()) > 0 {
-	m.Notifications = notifications
-	//}
+	if len(port.GetNotifications()) > 0 {
+		m.Notifications = notifications
+	}
 
 	if len(port.GetAdditionalInfo()) > 0 {
 		m.AdditionalInfo = parseAdditionalInfo(ctx, port.GetAdditionalInfo())
