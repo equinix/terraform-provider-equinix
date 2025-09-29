@@ -8,5 +8,5 @@
 *data_source_network_*       @equinix/governor-ne-network-edge-engineering
 edge-networking              @equinix/governor-ne-network-edge-engineering
 network_*                    @equinix/governor-ne-network-edge-engineering
-docs/guides/network_types.md @equinix/governor-metal-client-interfaces
+*/guides/network_types.md    @equinix/governor-metal-client-interfaces
 equinix_network_*            @equinix/governor-ne-network-edge-engineering
