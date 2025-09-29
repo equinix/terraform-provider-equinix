@@ -10,7 +10,7 @@ resource "equinix_network_device" "c8000v-byol-throughput" {
   type_code       = "C8000V"
   self_managed    = true
   byol            = true
-  package_code    = "VM100"
+  package_code    = "network-essentials"
   notifications   = ["john@equinix.com", "marry@equinix.com", "fred@equinix.com"]
   term_length     = 12
   account_number  = data.equinix_network_account.sv.number
