@@ -6,7 +6,7 @@ subcategory: "Metal"
 
 Use this data source to retrieve a VRF resource.
 
-See the [Virtual Routing and Forwarding documentation](https://deploy.equinix.com/developers/docs/metal/layer2-networking/vrf/) for product details and API reference material.
+See the [Virtual Routing and Forwarding documentation](https://docs.equinix.com/metal/networking/vrf/) for product details and API reference material.
 
 ## Example Usage
 

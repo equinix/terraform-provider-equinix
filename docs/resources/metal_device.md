@@ -155,7 +155,7 @@ resource "equinix_metal_device" "pxe1" {
 ### Required
 
 - `operating_system` (String) The operating system slug. To find the slug, or visit [Operating Systems API docs](https://metal.equinix.com/developers/api/operatingsystems), set your API auth token in the top of the page and see JSON from the API response.  By default, changing this attribute will cause your device to be deleted and recreated.  If `reinstall` is enabled, the device will be updated in-place instead of recreated.
-- `plan` (String) The device plan slug. To find the plan slug, visit the [bare-metal server](https://deploy.equinix.com/product/bare-metal/servers/) and [plan documentation](https://deploy.equinix.com/developers/docs/metal/hardware/standard-servers/)
+- `plan` (String) The device plan slug. To find the plan slug, visit the [plan documentation](https://docs.equinix.com/metal/hardware/standard-servers/)
 - `project_id` (String) The ID of the project in which to create the device
 
 ### Optional
@@ -196,7 +196,7 @@ resource "equinix_metal_device" "pxe1" {
 - `network_type` (String, Deprecated) Network type of a device, used in [Layer 2 networking](https://metal.equinix.com/developers/docs/networking/layer2/). Will be one of layer3, hybrid, hybrid-bonded, layer2-individual, layer2-bonded
 - `ports` (List of Object) Ports assigned to the device (see [below for nested schema](#nestedatt--ports))
 - `root_password` (String, Sensitive) Root password to the server (disabled after 24 hours)
-- `sos_hostname` (String) The hostname to use for [Serial over SSH](https://deploy.equinix.com/developers/docs/metal/resilience-recovery/serial-over-ssh/) access to the device
+- `sos_hostname` (String) The hostname to use for [Serial over SSH](https://docs.equinix.com/metal/resilience-recovery/serial-over-ssh/) access to the device
 - `ssh_key_ids` (List of String) List of IDs of SSH keys deployed in the device, can be both user and project SSH keys
 - `state` (String) The status of the device
 - `updated` (String) The timestamp for the last time the device was updated

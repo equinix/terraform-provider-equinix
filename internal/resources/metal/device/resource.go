@@ -166,7 +166,7 @@ func Resource() *schema.Resource {
 			},
 			"plan": {
 				Type:        schema.TypeString,
-				Description: "The device plan slug. To find the plan slug, visit the [bare-metal server](https://deploy.equinix.com/product/bare-metal/servers/) and [plan documentation](https://deploy.equinix.com/developers/docs/metal/hardware/standard-servers/)",
+				Description: "The device plan slug. To find the plan slug, visit the [plan documentation](https://docs.equinix.com/metal/hardware/standard-servers/)",
 				Required:    true,
 				ForceNew:    true,
 			},
@@ -451,7 +451,7 @@ func Resource() *schema.Resource {
 			},
 			"sos_hostname": {
 				Type:        schema.TypeString,
-				Description: "The hostname to use for [Serial over SSH](https://deploy.equinix.com/developers/docs/metal/resilience-recovery/serial-over-ssh/) access to the device",
+				Description: "The hostname to use for [Serial over SSH](https://docs.equinix.com/metal/resilience-recovery/serial-over-ssh/) access to the device",
 				Computed:    true,
 			},
 		},

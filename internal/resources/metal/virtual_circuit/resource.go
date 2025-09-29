@@ -23,9 +23,9 @@ import (
 
 func Resource() *schema.Resource {
 	return &schema.Resource{
-		Description: `Use this resource to associate VLAN with a Dedicated Port from [Equinix Fabric - software-defined interconnections](https://deploy.equinix.com/developers/docs/metal/interconnections/introduction/#associating-a-vlan-with-a-dedicated-port).
+		Description: `Use this resource to associate VLAN with a Dedicated Port from [Equinix Fabric - software-defined interconnections](https://docs.equinix.com/metal/interconnections/introduction/#associating-a-vlan-with-a-dedicated-port).
 
-See the [Virtual Routing and Forwarding documentation](https://deploy.equinix.com/developers/docs/metal/layer2-networking/vrf/) for product details and API reference material.`,
+See the [Virtual Routing and Forwarding documentation](https://docs.equinix.com/metal/networking/vrf/) for product details and API reference material.`,
 		ReadWithoutTimeout:   resourceMetalVirtualCircuitRead,
 		CreateContext:        resourceMetalVirtualCircuitCreate,
 		UpdateWithoutTimeout: resourceMetalVirtualCircuitUpdate,
@@ -161,12 +161,12 @@ See the [Virtual Routing and Forwarding documentation](https://deploy.equinix.co
 			"vnid": {
 				Type:        schema.TypeInt,
 				Computed:    true,
-				Description: "VNID VLAN parameter, see https://deploy.equinix.com/developers/docs/metal/interconnections/introduction/",
+				Description: "VNID VLAN parameter, see https://docs.equinix.com/metal/interconnections/introduction/",
 			},
 			"nni_vnid": {
 				Type:        schema.TypeInt,
 				Computed:    true,
-				Description: "Nni VLAN ID parameter, see https://deploy.equinix.com/developers/docs/metal/interconnections/introduction/",
+				Description: "Nni VLAN ID parameter, see https://docs.equinix.com/metal/interconnections/introduction/",
 			},
 			"status": {
 				Type:        schema.TypeString,

@@ -4,9 +4,9 @@ subcategory: "Metal"
 
 # equinix_metal_virtual_circuit (Data Source)
 
-Use this data source to retrieve a virtual circuit resource from [Equinix Fabric - software-defined interconnections](https://deploy.equinix.com/developers/docs/metal/interconnections/introduction/)
+Use this data source to retrieve a virtual circuit resource from [Equinix Fabric - software-defined interconnections](https://docs.equinix.com/metal/interconnections/introduction/)
 
-See the [Virtual Routing and Forwarding documentation](https://deploy.equinix.com/developers/docs/metal/layer2-networking/vrf/) for product details and API reference material.
+See the [Virtual Routing and Forwarding documentation](https://docs.equinix.com/metal/networking/vrf/) for product details and API reference material.
 
 ## Example Usage
 
@@ -44,8 +44,8 @@ data "equinix_metal_virtual_circuit" "example_vc" {
 - `md5` (String, Sensitive) The password that can be set for the VRF BGP peer
 - `metal_ip` (String) The Metal IP address for the SVI (Switch Virtual Interface) of the VirtualCircuit. Will default to the first usable IP in the subnet.
 - `name` (String) Name of the virtual circuit
-- `nni_vlan` (Number) Nni VLAN parameter, see https://deploy.equinix.com/developers/docs/metal/interconnections/introduction/
-- `nni_vnid` (Number) Nni VLAN ID parameter, see https://deploy.equinix.com/developers/docs/metal/interconnections/introduction/
+- `nni_vlan` (Number) Nni VLAN parameter, see https://docs.equinix.com/metal/interconnections/introduction/
+- `nni_vnid` (Number) Nni VLAN ID parameter, see https://docs.equinix.com/metal/interconnections/introduction/
 - `peer_asn` (Number) The BGP ASN of the peer. The same ASN may be the used across several VCs, but it cannot be the same as the local_asn of the VRF.
 - `port_id` (String) UUID of the Connection Port where the VC is scoped to
 - `project_id` (String) ID of the projct to which the virtual circuit belongs
@@ -56,5 +56,5 @@ data "equinix_metal_virtual_circuit" "example_vc" {
 				 * For a /30 block, it will have four IP addresses, but the first and last IP addresses are not usable. We will default to the first usable IP address for the metal_ip.
 - `tags` (List of String) Tags attached to the virtual circuit
 - `vlan_id` (String) UUID of the associated VLAN
-- `vnid` (Number) VNID VLAN parameter, see https://deploy.equinix.com/developers/docs/metal/interconnections/introduction/
+- `vnid` (Number) VNID VLAN parameter, see https://docs.equinix.com/metal/interconnections/introduction/
 - `vrf_id` (String) UUID of the associated VRF

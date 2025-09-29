@@ -210,7 +210,7 @@ If you need to fetch a list of devices which meet filter criteria, you can use t
 			},
 			"sos_hostname": {
 				Type:        schema.TypeString,
-				Description: "The hostname to use for [Serial over SSH](https://deploy.equinix.com/developers/docs/metal/resilience-recovery/serial-over-ssh/) access to the device",
+				Description: "The hostname to use for [Serial over SSH](https://docs.equinix.com/metal/resilience-recovery/serial-over-ssh/) access to the device",
 				Computed:    true,
 			},
 		},
