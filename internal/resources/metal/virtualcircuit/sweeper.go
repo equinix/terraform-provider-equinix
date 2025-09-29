@@ -1,4 +1,4 @@
-package virtual_circuit
+package virtualcircuit
 
 import (
 	"context"
@@ -14,6 +14,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
 
+// AddTestSweeper registers the test cleanup functions for virtual
+// circuits.
 func AddTestSweeper() {
 	resource.AddTestSweepers("equinix_metal_virtual_circuit", &resource.Sweeper{
 		Name:         "equinix_metal_virtual_circuit",
@@ -22,7 +24,7 @@ func AddTestSweeper() {
 	})
 }
 
-func testSweepVirtualCircuits(region string) error {
+func testSweepVirtualCircuits(_ string) error {
 	var errs []error
 	log.Printf("[DEBUG] Sweeping VirtualCircuits")
 	config, err := sweep.GetConfigForMetal()
@@ -43,18 +45,18 @@ func testSweepVirtualCircuits(region string) error {
 			if conn.GetType() == metalv1.INTERCONNECTIONTYPE_DEDICATED {
 				for _, port := range conn.Ports {
 					for _, vc := range port.VirtualCircuits {
-						vcId := ""
+						vcID := ""
 						vcName := ""
 						if vc.VlanVirtualCircuit != nil {
-							vcId = vc.VlanVirtualCircuit.GetId()
+							vcID = vc.VlanVirtualCircuit.GetId()
 							vcName = vc.VlanVirtualCircuit.GetName()
 						} else {
-							vcId = vc.VrfVirtualCircuit.GetId()
+							vcID = vc.VrfVirtualCircuit.GetId()
 							vcName = vc.VlanVirtualCircuit.GetName()
 						}
 						if sweep.IsSweepableTestResource(vcName) {
 							log.Printf("[INFO][SWEEPER_LOG] Deleting VirtualCircuit: %s", vcName)
-							_, resp, err := metal.InterconnectionsApi.DeleteVirtualCircuit(context.Background(), vcId).Execute()
+							_, resp, err := metal.InterconnectionsApi.DeleteVirtualCircuit(context.Background(), vcID).Execute()
 							if equinix_errors.IgnoreHttpResponseErrors(http.StatusForbidden, http.StatusNotFound)(resp, err) != nil {
 								errs = append(errs, fmt.Errorf("error deleting VirtualCircuit: %s", err))
 							}

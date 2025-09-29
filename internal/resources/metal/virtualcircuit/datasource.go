@@ -1,4 +1,4 @@
-package virtual_circuit
+package virtualcircuit
 
 import (
 	"context"
@@ -7,6 +7,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
+// DataSource provides the schema definition for virtual circuit
+// resources from the Metal API.
 func DataSource() *schema.Resource {
 	return &schema.Resource{
 		Description: `Use this data source to retrieve a virtual circuit resource from [Equinix Fabric - software-defined interconnections](https://docs.equinix.com/metal/interconnections/introduction/)
@@ -136,8 +138,8 @@ See the [Virtual Routing and Forwarding documentation](https://docs.equinix.com/
 	}
 }
 
-func dataSourceMetalVirtualCircuitRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	vcId := d.Get("virtual_circuit_id").(string)
-	d.SetId(vcId)
+func dataSourceMetalVirtualCircuitRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
+	vcID := d.Get("virtual_circuit_id").(string)
+	d.SetId(vcID)
 	return resourceMetalVirtualCircuitRead(ctx, d, meta)
 }
