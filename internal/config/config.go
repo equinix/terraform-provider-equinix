@@ -16,6 +16,7 @@ import (
 	"github.com/equinix/equinix-sdk-go/extensions/equinixoauth2"
 	"github.com/equinix/equinix-sdk-go/services/fabricv4"
 	"github.com/equinix/equinix-sdk-go/services/metalv1"
+	"github.com/equinix/equinix-sdk-go/services/networkedgev1"
 	"github.com/equinix/ne-go"
 	"github.com/equinix/terraform-provider-equinix/version"
 	"github.com/hashicorp/go-retryablehttp"
@@ -268,6 +269,38 @@ func (c *Config) newMetalClient() *metalv1.APIClient {
 	configuration.HTTPClient = standardClient
 	configuration.AddDefaultHeader("X-Auth-Token", c.AuthToken)
 	client := metalv1.NewAPIClient(configuration)
+	return client
+}
+
+// NewNetworkEdgeClientForSDK returns a terraform sdkv2 plugin compatible
+// equinix-sdk-go/networkedgev1 client to be used to access Network Edge's V1 APIs
+func (c *Config) NewNetworkEdgeClientForSDK(_ context.Context, d *schema.ResourceData) *networkedgev1.APIClient {
+	//nolint:staticcheck // We should move to subsystem loggers, but that is a much bigger change
+	transport := logging.NewTransport("Equinix Network Edge (networkedgev1)", c.authClient.Transport)
+
+	retryClient := retryablehttp.NewClient()
+	retryClient.HTTPClient.Transport = transport
+	retryClient.HTTPClient.Timeout = c.requestTimeout()
+	retryClient.RetryMax = c.MaxRetries
+	retryClient.RetryWaitMin = time.Second
+	retryClient.RetryWaitMax = c.MaxRetryWait
+	standardClient := retryClient.StandardClient()
+
+	baseURL, _ := url.Parse(c.BaseURL)
+
+	configuration := networkedgev1.NewConfiguration()
+	configuration.Servers = networkedgev1.ServerConfigurations{
+		networkedgev1.ServerConfiguration{
+			URL: baseURL.String(),
+		},
+	}
+
+	configuration.HTTPClient = standardClient
+	client := networkedgev1.NewAPIClient(configuration)
+
+	baseUserAgent := c.tfSdkUserAgent(client.GetConfig().UserAgent)
+	client.GetConfig().UserAgent = generateModuleUserAgentString(d, baseUserAgent)
+
 	return client
 }
 
