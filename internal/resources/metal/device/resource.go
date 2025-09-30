@@ -41,6 +41,8 @@ var (
 	deviceCommonIncludes = []string{"project", "metro", "facility", "hardware_reservation"}
 )
 
+// Resource returns the terraform resource which corresponds to a
+// Metal Device.
 func Resource() *schema.Resource {
 	return &schema.Resource{
 		Description: `Provides an Equinix Metal device resource. This can be used to create, modify, and delete devices.
@@ -99,15 +101,15 @@ func Resource() *schema.Resource {
 				Optional:      true,
 				ForceNew:      true,
 				ConflictsWith: []string{"facilities"},
-				DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
-					if len(old) > 0 && new == "" {
+				DiffSuppressFunc: func(_, oldValue, newValue string, _ *schema.ResourceData) bool {
+					if len(oldValue) > 0 && newValue == "" {
 						// here it would be good to also test if the "old" metro
 						// contains the device facility. If yes, we'd suppress diff
 						// and if it's a different metro, we would re-create.
 						// Not sure if this is possible.
 						return true
 					}
-					return old == new
+					return oldValue == newValue
 				},
 				StateFunc: converters.ToLowerIf,
 			},
@@ -119,9 +121,9 @@ func Resource() *schema.Resource {
 				Elem:        &schema.Schema{Type: schema.TypeString},
 				ForceNew:    true,
 				MinItems:    1,
-				DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
+				DiffSuppressFunc: func(_, _, _ string, d *schema.ResourceData) bool {
 					fsRaw := d.Get("facilities")
-					fs := converters.IfArrToStringArr(fsRaw.([]interface{}))
+					fs := converters.IfArrToStringArr(fsRaw.([]any))
 					df := d.Get("deployed_facility").(string)
 					if slices.Contains(fs, df) {
 						return true
@@ -166,7 +168,7 @@ func Resource() *schema.Resource {
 			},
 			"plan": {
 				Type:        schema.TypeString,
-				Description: "The device plan slug. To find the plan slug, visit the [bare-metal server](https://deploy.equinix.com/product/bare-metal/servers/) and [plan documentation](https://deploy.equinix.com/developers/docs/metal/hardware/standard-servers/)",
+				Description: "The device plan slug. To find the plan slug, visit the [plan documentation](https://docs.equinix.com/metal/hardware/standard-servers/)",
 				Required:    true,
 				ForceNew:    true,
 			},
@@ -328,9 +330,9 @@ func Resource() *schema.Resource {
 				Description: "The UUID of the hardware reservation where you want this device deployed, or next-available if you want to pick your next available reservation automatically",
 				Optional:    true,
 				ForceNew:    true,
-				DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
+				DiffSuppressFunc: func(_, _, newValue string, d *schema.ResourceData) bool {
 					dhwr, ok := d.GetOk("deployed_hardware_reservation_id")
-					return ok && dhwr == new
+					return ok && dhwr == newValue
 				},
 			},
 			"tags": {
@@ -344,7 +346,7 @@ func Resource() *schema.Resource {
 				Description: "JSON for custom partitioning. Only usable on reserved hardware. More information in in the [Custom Partitioning and RAID](https://metal.equinix.com/developers/docs/servers/custom-partitioning-raid/) doc",
 				Optional:    true,
 				ForceNew:    true,
-				StateFunc: func(v interface{}) string {
+				StateFunc: func(v any) string {
 					s, _ := structure.NormalizeJsonString(v)
 					return s
 				},
@@ -389,7 +391,7 @@ func Resource() *schema.Resource {
 				Description: "Timestamp for device termination. For example \"2021-09-03T16:32:00+03:00\". If you don't supply timezone info, timestamp is assumed to be in UTC.",
 				Optional:    true,
 				ForceNew:    false,
-				ValidateFunc: func(val interface{}, key string) (warns []string, errs []error) {
+				ValidateFunc: func(val any, _ string) (warns []string, errs []error) {
 					_, err := time.ParseInLocation(time.RFC3339, val.(string), time.UTC)
 					if err != nil {
 						errs = []error{err}
@@ -434,7 +436,7 @@ func Resource() *schema.Resource {
 							Type: schema.TypeList,
 							Elem: &schema.Schema{
 								Type: schema.TypeString,
-								ValidateFunc: func(val interface{}, key string) (warns []string, errs []error) {
+								ValidateFunc: func(val any, _ string) (warns []string, errs []error) {
 									attribute := val.(string)
 									supportedAttributes := []string{"custom_data", "user_data"}
 									if !slices.Contains(supportedAttributes, attribute) {
@@ -451,7 +453,7 @@ func Resource() *schema.Resource {
 			},
 			"sos_hostname": {
 				Type:        schema.TypeString,
-				Description: "The hostname to use for [Serial over SSH](https://deploy.equinix.com/developers/docs/metal/resilience-recovery/serial-over-ssh/) access to the device",
+				Description: "The hostname to use for [Serial over SSH](https://docs.equinix.com/metal/resilience-recovery/serial-over-ssh/) access to the device",
 				Computed:    true,
 			},
 		},
@@ -465,7 +467,7 @@ func Resource() *schema.Resource {
 
 // This method returns true if reinstall is disabled, and false if it is enabled.
 // This is used to set ForceNew to true when reinstall is disabled
-func reinstallDisabled(_ context.Context, d *schema.ResourceDiff, meta interface{}) bool {
+func reinstallDisabled(_ context.Context, d *schema.ResourceDiff, _ any) bool {
 	reinstall, ok := d.GetOk("reinstall")
 
 	if !ok {
@@ -475,14 +477,14 @@ func reinstallDisabled(_ context.Context, d *schema.ResourceDiff, meta interface
 
 	// To reach this point, the device config had to include a `reinstall` block,
 	// so we can assume all necessary parts of that block are filled in
-	reinstall_list := reinstall.([]interface{})
-	reinstall_config := reinstall_list[0].(map[string]interface{})
+	reinstallList := reinstall.([]any)
+	reinstallConfig := reinstallList[0].(map[string]any)
 
-	return !reinstall_config["enabled"].(bool)
+	return !reinstallConfig["enabled"].(bool)
 }
 
 func reinstallDisabledAndNoChangesAllowed(attribute string) customdiff.ResourceConditionFunc {
-	return func(ctx context.Context, d *schema.ResourceDiff, meta interface{}) bool {
+	return func(ctx context.Context, d *schema.ResourceDiff, meta any) bool {
 		if reinstallDisabled(ctx, d, meta) {
 			// If reinstall is disabled, we need to see if ForceNew
 			// should be disabled due to behavior settings
@@ -496,14 +498,14 @@ func reinstallDisabledAndNoChangesAllowed(attribute string) customdiff.ResourceC
 
 			// To reach this point, the device config had to include a `behavior`
 			// block, so we can assume all necessary parts of that block are filled in
-			behavior_list := behavior.([]interface{})
-			behavior_config := behavior_list[0].(map[string]interface{})
+			behaviorList := behavior.([]any)
+			behaviorConfig := behaviorList[0].(map[string]any)
 
-			allow_changes := converters.IfArrToStringArr(behavior_config["allow_changes"].([]interface{}))
+			allowChanges := converters.IfArrToStringArr(behaviorConfig["allow_changes"].([]any))
 
 			// This means we got a valid behavior specification, so we set ForceNew
 			// to true if behavior.allow_changes includes the attribute that is changing
-			return !slices.Contains(allow_changes, attribute)
+			return !slices.Contains(allowChanges, attribute)
 		}
 
 		// This means reinstall is enabled, so it doesn't matter what the behavior
@@ -512,7 +514,7 @@ func reinstallDisabledAndNoChangesAllowed(attribute string) customdiff.ResourceC
 	}
 }
 
-func resourceMetalDeviceCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceMetalDeviceCreate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	client := meta.(*config.Config).NewMetalClientForSDK(d)
 
 	createRequest := metalv1.CreateDeviceRequest{}
@@ -526,7 +528,7 @@ func resourceMetalDeviceCreate(ctx context.Context, d *schema.ResourceData, meta
 
 	if facsOk {
 		facilityRequest := &metalv1.DeviceCreateInFacilityInput{
-			Facility: converters.IfArrToStringArr(facsRaw.([]interface{})),
+			Facility: converters.IfArrToStringArr(facsRaw.([]any)),
 		}
 
 		diagErr := setupDeviceCreateRequest(d, facilityRequest)
@@ -570,7 +572,8 @@ func resourceMetalDeviceCreate(ctx context.Context, d *schema.ResourceData, meta
 	return Read(ctx, d, meta)
 }
 
-func Read(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+// Read returns  Device resource data from the Metal API.
+func Read(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	client := meta.(*config.Config).NewMetalClientForSDK(d)
 
 	device, resp, err := client.DevicesApi.FindDeviceById(ctx, d.Id()).Include(deviceCommonIncludes).Execute()
@@ -680,7 +683,7 @@ func Read(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Di
 	return nil
 }
 
-func resourceMetalDeviceUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceMetalDeviceUpdate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	client := meta.(*config.Config).NewMetalClientForSDK(d)
 
 	ur := metalv1.DeviceUpdateInput{}
@@ -698,7 +701,7 @@ func resourceMetalDeviceUpdate(ctx context.Context, d *schema.ResourceData, meta
 		ur.Userdata = &dUserData
 	}
 	if d.HasChange("custom_data") {
-		var customdata map[string]interface{}
+		var customdata map[string]any
 		err := json.Unmarshal([]byte(d.Get("custom_data").(string)), &customdata)
 		if err != nil {
 			return diag.Errorf("error reading custom_data from state: %v", err)
@@ -714,8 +717,8 @@ func resourceMetalDeviceUpdate(ctx context.Context, d *schema.ResourceData, meta
 		sts := []string{}
 
 		switch ts.(type) {
-		case []interface{}:
-			for _, v := range ts.([]interface{}) {
+		case []any:
+			for _, v := range ts.([]any) {
 				sts = append(sts, v.(string))
 			}
 			ur.Tags = sts
@@ -724,8 +727,8 @@ func resourceMetalDeviceUpdate(ctx context.Context, d *schema.ResourceData, meta
 		}
 	}
 	if d.HasChange("ipxe_script_url") {
-		dUrl := d.Get("ipxe_script_url").(string)
-		ur.IpxeScriptUrl = &dUrl
+		dURL := d.Get("ipxe_script_url").(string)
+		ur.IpxeScriptUrl = &dURL
 	}
 	if d.HasChange("always_pxe") {
 		dPXE := d.Get("always_pxe").(bool)
@@ -746,7 +749,7 @@ func resourceMetalDeviceUpdate(ctx context.Context, d *schema.ResourceData, meta
 	return Read(ctx, d, meta)
 }
 
-func doReinstall(ctx context.Context, client *metalv1.APIClient, d *schema.ResourceData, meta interface{}, start time.Time) error {
+func doReinstall(ctx context.Context, client *metalv1.APIClient, d *schema.ResourceData, meta any, start time.Time) error {
 	if d.HasChange("operating_system") || d.HasChange("user_data") || d.HasChange("custom_data") {
 		reinstall, ok := d.GetOk("reinstall")
 
@@ -755,10 +758,10 @@ func doReinstall(ctx context.Context, client *metalv1.APIClient, d *schema.Resou
 			return nil
 		}
 
-		reinstall_list := reinstall.([]interface{})
-		reinstall_config := reinstall_list[0].(map[string]interface{})
+		reinstallList := reinstall.([]any)
+		reinstallConfig := reinstallList[0].(map[string]any)
 
-		if !reinstall_config["enabled"].(bool) {
+		if !reinstallConfig["enabled"].(bool) {
 			// This means a reinstall block was provided, but reinstall was explicitly
 			// disabled.  Assume we're here because behavior.allow_changes was set (not an error)
 			return nil
@@ -767,8 +770,8 @@ func doReinstall(ctx context.Context, client *metalv1.APIClient, d *schema.Resou
 		reinstallOptions := metalv1.DeviceActionInput{
 			Type:            metalv1.DEVICEACTIONINPUTTYPE_REINSTALL,
 			OperatingSystem: metalv1.PtrString(d.Get("operating_system").(string)),
-			PreserveData:    metalv1.PtrBool(reinstall_config["preserve_data"].(bool)),
-			DeprovisionFast: metalv1.PtrBool(reinstall_config["deprovision_fast"].(bool)),
+			PreserveData:    metalv1.PtrBool(reinstallConfig["preserve_data"].(bool)),
+			DeprovisionFast: metalv1.PtrBool(reinstallConfig["deprovision_fast"].(bool)),
 		}
 
 		if _, err := client.DevicesApi.PerformAction(ctx, d.Id()).DeviceActionInput(reinstallOptions).Execute(); err != nil {
@@ -784,14 +787,11 @@ func doReinstall(ctx context.Context, client *metalv1.APIClient, d *schema.Resou
 	return nil
 }
 
-func resourceMetalDeviceDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceMetalDeviceDelete(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	client := meta.(*config.Config).NewMetalClientForSDK(d)
 
 	fdvIf, fdvOk := d.GetOk("force_detach_volumes")
-	fdv := false
-	if fdvOk && fdvIf.(bool) {
-		fdv = true
-	}
+	fdv := fdvOk && fdvIf.(bool)
 
 	start := time.Now()
 
@@ -800,14 +800,14 @@ func resourceMetalDeviceDelete(ctx context.Context, d *schema.ResourceData, meta
 		return diag.FromErr(err)
 	}
 
-	resId, resIdOk := d.GetOk("deployed_hardware_reservation_id")
-	if resIdOk {
+	resID, resIDOK := d.GetOk("deployed_hardware_reservation_id")
+	if resIDOK {
 		wfrd, wfrdOK := d.GetOk("wait_for_reservation_deprovision")
 		if wfrdOK && wfrd.(bool) {
 			// avoid "context: deadline exceeded"
 			timeout := d.Timeout(schema.TimeoutDelete) - 30*time.Second - time.Since(start)
 
-			err := WaitUntilReservationProvisionable(ctx, client, resId.(string), d.Id(), 10*time.Second, timeout, 3*time.Second)
+			err := WaitUntilReservationProvisionable(ctx, client, resID.(string), d.Id(), 10*time.Second, timeout, 3*time.Second)
 			if err != nil {
 				return diag.FromErr(err)
 			}
@@ -816,14 +816,16 @@ func resourceMetalDeviceDelete(ctx context.Context, d *schema.ResourceData, meta
 	return nil
 }
 
-func WaitForActiveDevice(ctx context.Context, d *schema.ResourceData, meta interface{}, timeout time.Duration) error {
+// WaitForActiveDevice polls device state until it hits a terminal
+// state.
+func WaitForActiveDevice(ctx context.Context, d *schema.ResourceData, meta any, timeout time.Duration) error {
 	targets := []string{"active", "failed"}
 	pending := []string{"queued", "provisioning", "reinstalling"}
 
 	stateConf := &retry.StateChangeConf{
 		Pending: pending,
 		Target:  targets,
-		Refresh: func() (interface{}, string, error) {
+		Refresh: func() (any, string, error) {
 			client := meta.(*config.Config).NewMetalClientForSDK(d)
 
 			device, _, err := client.DevicesApi.FindDeviceById(ctx, d.Id()).Include([]string{"project"}).Execute()
@@ -864,7 +866,7 @@ func WaitForActiveDevice(ctx context.Context, d *schema.ResourceData, meta inter
 type deviceCreateRequest interface {
 	SetUserdata(string)
 	GetUserdata() string
-	SetCustomdata(map[string]interface{})
+	SetCustomdata(map[string]any)
 	SetAlwaysPxe(bool)
 	SetIpxeScriptUrl(string)
 	GetIpxeScriptUrl() string
@@ -887,7 +889,7 @@ func setupDeviceCreateRequest(d *schema.ResourceData, createRequest deviceCreate
 	var addressTypesSlice []metalv1.IPAddress
 	_, ok := d.GetOk("ip_address")
 	if ok {
-		arr := d.Get("ip_address").([]interface{})
+		arr := d.Get("ip_address").([]any)
 
 		addressTypesSlice = getNewIPAddressSlice(arr)
 	}
@@ -914,7 +916,7 @@ func setupDeviceCreateRequest(d *schema.ResourceData, createRequest deviceCreate
 	}
 
 	if attr, ok := d.GetOk("custom_data"); ok {
-		var customdata map[string]interface{}
+		var customdata map[string]any
 		err := json.Unmarshal([]byte(attr.(string)), &customdata)
 		if err != nil {
 			return diag.FromErr(err)
@@ -974,17 +976,17 @@ func setupDeviceCreateRequest(d *schema.ResourceData, createRequest deviceCreate
 
 	projectKeys := d.Get("project_ssh_key_ids.#").(int)
 	if projectKeys > 0 {
-		createRequest.SetProjectSshKeys(converters.IfArrToStringArr(d.Get("project_ssh_key_ids").([]interface{})))
+		createRequest.SetProjectSshKeys(converters.IfArrToStringArr(d.Get("project_ssh_key_ids").([]any)))
 	}
 
 	userKeys := d.Get("user_ssh_key_ids.#").(int)
 	if userKeys > 0 {
-		createRequest.SetUserSshKeys(converters.IfArrToStringArr(d.Get("user_ssh_key_ids").([]interface{})))
+		createRequest.SetUserSshKeys(converters.IfArrToStringArr(d.Get("user_ssh_key_ids").([]any)))
 	}
 
 	tags := d.Get("tags.#").(int)
 	if tags > 0 {
-		createRequest.SetTags(converters.IfArrToStringArr(d.Get("tags").([]interface{})))
+		createRequest.SetTags(converters.IfArrToStringArr(d.Get("tags").([]any)))
 	}
 
 	if attr, ok := d.GetOk("storage"); ok {
@@ -1003,7 +1005,7 @@ func setupDeviceCreateRequest(d *schema.ResourceData, createRequest deviceCreate
 	return nil
 }
 
-func getNewIPAddressSlice(arr []interface{}) []metalv1.IPAddress {
+func getNewIPAddressSlice(arr []any) []metalv1.IPAddress {
 	addressTypesSlice := make([]metalv1.IPAddress, len(arr))
 
 	for i, m := range arr {
@@ -1012,9 +1014,9 @@ func getNewIPAddressSlice(arr []interface{}) []metalv1.IPAddress {
 	return addressTypesSlice
 }
 
-func ifToIPCreateRequest(m interface{}) metalv1.IPAddress {
+func ifToIPCreateRequest(m any) metalv1.IPAddress {
 	iacr := metalv1.IPAddress{}
-	ia := m.(map[string]interface{})
+	ia := m.(map[string]any)
 	at := ia["type"].(string)
 	switch at {
 	case "public_ipv4":
@@ -1030,6 +1032,6 @@ func ifToIPCreateRequest(m interface{}) metalv1.IPAddress {
 	if cidr := ia["cidr"].(int); cidr > 0 {
 		iacr.SetCidr(int32(cidr))
 	}
-	iacr.SetIpReservations(converters.IfArrToStringArr(ia["reservation_ids"].([]interface{})))
+	iacr.SetIpReservations(converters.IfArrToStringArr(ia["reservation_ids"].([]any)))
 	return iacr
 }

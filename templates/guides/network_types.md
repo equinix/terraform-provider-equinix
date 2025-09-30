@@ -7,7 +7,7 @@ page_title: "Metal Device Network Types"
 
 Server network types, such as Layer-2, Layer-3, and Hybrid may be familiar to users of the Equinix Metal Portal. In the Portal, you can toggle the network type with a click of the UI. To take advantage of these features in Terraform, which closely follows the Equinix Metal API, it is important to understand that the network type is a composite string value determined by one or more port bonding, addressing, and VLAN attachment configurations. To change the network type, you must change these underlying properties of the port(s).
 
-For more details, see the Equinix Metal documentation on [Network Configuration Types](https://metal.equinix.com/developers/docs/layer2-networking/overview/#network-configuration-types).
+For more details, see the Equinix Metal documentation on [Network Configuration Types](https://docs.equinix.com/metal/layer2-networking/overview#network-configuration-types).
 
 This Terraform provider offers two ways to define the network type.
 
@@ -38,7 +38,7 @@ resource "equinix_metal_port" "eth1" {
 
 ### Layer 2 Unbonded Port
 
-This example configures an Equinix Metal server with a [pure layer 2 unbonded](https://deploy.equinix.com/developers/docs/metal/layer2-networking/layer2-mode/#:~:text=Layer%202%20Unbonded%20Mode) network configuration and adds two VLANs to its `eth1` port; one of them set as the [native VLAN](https://deploy.equinix.com/developers/docs/metal/layer2-networking/native-vlan/). Notice the `depends_on` meta-argument in the `equinix_metal_port.eth1` resource and the `reset_on_delete` attribute in both ports’ configuration. The `reset_on_delete` will set the port to the default settings (layer3 bonded without VLANs attached) before the terraform resource delete/destroy. It is recommended to use the `depends_on` argument here to ensure that the port resources with attached VLANs are reset first, since all VLANs must be detached before re-bonding the ports.
+This example configures an Equinix Metal server with a [pure layer 2 unbonded](https://docs.equinix.com/metal/layer2-networking/layer2-mode/#:~:text=Layer%202%20Unbonded%20Mode) network configuration and adds two VLANs to its `eth1` port; one of them set as the [native VLAN](https://docs.equinix.com/metal/layer2-networking/native-vlan/). Notice the `depends_on` meta-argument in the `equinix_metal_port.eth1` resource and the `reset_on_delete` attribute in both ports’ configuration. The `reset_on_delete` will set the port to the default settings (layer3 bonded without VLANs attached) before the terraform resource delete/destroy. It is recommended to use the `depends_on` argument here to ensure that the port resources with attached VLANs are reset first, since all VLANs must be detached before re-bonding the ports.
 
 ```hcl
 resource "equinix_metal_port" "bond0" {

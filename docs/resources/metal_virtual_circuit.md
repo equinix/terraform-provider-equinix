@@ -4,9 +4,9 @@ subcategory: "Metal"
 
 # equinix_metal_virtual_circuit (Resource)
 
-Use this resource to associate VLAN with a Dedicated Port from [Equinix Fabric - software-defined interconnections](https://deploy.equinix.com/developers/docs/metal/interconnections/introduction/#associating-a-vlan-with-a-dedicated-port).
+Use this resource to associate VLAN with a Dedicated Port from [Equinix Fabric - software-defined interconnections](https://docs.equinix.com/metal/interconnections/introduction/#associating-a-vlan-with-a-dedicated-port).
 
-See the [Virtual Routing and Forwarding documentation](https://deploy.equinix.com/developers/docs/metal/layer2-networking/vrf/) for product details and API reference material.
+See the [Virtual Routing and Forwarding documentation](https://docs.equinix.com/metal/networking/vrf/) for product details and API reference material.
 
 ## Example Usage
 
@@ -69,9 +69,9 @@ resource "equinix_metal_virtual_circuit" "test" {
 ### Read-Only
 
 - `id` (String) The ID of this resource.
-- `nni_vnid` (Number) Nni VLAN ID parameter, see https://deploy.equinix.com/developers/docs/metal/interconnections/introduction/
+- `nni_vnid` (Number) Nni VLAN ID parameter, see https://docs.equinix.com/metal/interconnections/introduction/
 - `status` (String) Status of the virtual circuit resource
-- `vnid` (Number) VNID VLAN parameter, see https://deploy.equinix.com/developers/docs/metal/interconnections/introduction/
+- `vnid` (Number) VNID VLAN parameter, see https://docs.equinix.com/metal/interconnections/introduction/
 
 ## Import
 

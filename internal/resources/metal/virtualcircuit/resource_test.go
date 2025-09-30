@@ -1,4 +1,4 @@
-package virtual_circuit_test
+package virtualcircuit_test
 
 import (
 	"context"

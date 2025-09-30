@@ -3,7 +3,7 @@ package equinix
 import (
 	metal_device "github.com/equinix/terraform-provider-equinix/internal/resources/metal/device"
 	metal_port "github.com/equinix/terraform-provider-equinix/internal/resources/metal/port"
-	"github.com/equinix/terraform-provider-equinix/internal/resources/metal/virtual_circuit"
+	"github.com/equinix/terraform-provider-equinix/internal/resources/metal/virtualcircuit"
 	"github.com/equinix/terraform-provider-equinix/internal/resources/metal/vrf"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
@@ -23,7 +23,7 @@ func metalDatasources() map[string]*schema.Resource {
 		"equinix_metal_plans":                dataSourceMetalPlans(),
 		"equinix_metal_port":                 metal_port.DataSource(),
 		"equinix_metal_reserved_ip_block":    dataSourceMetalReservedIPBlock(),
-		"equinix_metal_virtual_circuit":      virtual_circuit.DataSource(),
+		"equinix_metal_virtual_circuit":      virtualcircuit.DataSource(),
 		"equinix_metal_vrf":                  vrf.DataSource(),
 	}
 }
@@ -37,7 +37,7 @@ func metalResources() map[string]*schema.Resource {
 		"equinix_metal_port":                 metal_port.Resource(),
 		"equinix_metal_reserved_ip_block":    resourceMetalReservedIPBlock(),
 		"equinix_metal_ip_attachment":        resourceMetalIPAttachment(),
-		"equinix_metal_virtual_circuit":      virtual_circuit.Resource(),
+		"equinix_metal_virtual_circuit":      virtualcircuit.Resource(),
 		"equinix_metal_vrf":                  vrf.Resource(),
 		"equinix_metal_bgp_session":          resourceMetalBGPSession(),
 		"equinix_metal_port_vlan_attachment": resourceMetalPortVlanAttachment(),
