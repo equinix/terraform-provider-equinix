@@ -230,14 +230,16 @@ func (m *basePrecisionTimeModel) parse(ctx context.Context, ept *fabricv4.Precis
 		return mDiags
 	}
 
-	if !m.PtpAdvanceConfiguration.IsNull() && !m.PtpAdvanceConfiguration.IsUnknown() {
-		parsedPtpConfig, diags := parsePtpAdvancedConfiguration(ctx, ept.GetPtpAdvancedConfiguration())
-		if !reflect.ValueOf(parsedPtpConfig).IsZero() {
-			m.PtpAdvanceConfiguration = parsedPtpConfig
-		}
+	ptpConfigData := ept.GetPtpAdvancedConfiguration()
+
+	if !reflect.ValueOf(ptpConfigData).IsZero() {
+		parsedPtpConfig, diags := parsePtpAdvancedConfiguration(ctx, ptpConfigData)
 		if diags.HasError() {
 			mDiags.Append(diags...)
-			return mDiags
+		} else if !reflect.ValueOf(parsedPtpConfig).IsZero() {
+			m.PtpAdvanceConfiguration = parsedPtpConfig
+		} else {
+			m.PtpAdvanceConfiguration = fwtypes.NewObjectValueOfNull[ptpAdvanceConfigurationModel](ctx)
 		}
 	}
 
