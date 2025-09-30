@@ -1,4 +1,5 @@
-package equinix
+// Package account provides the network_account data source
+package account
 
 import (
 	"context"
@@ -8,7 +9,7 @@ import (
 	"github.com/equinix/terraform-provider-equinix/internal/config"
 	equinix_validation "github.com/equinix/terraform-provider-equinix/internal/validation"
 
-	"github.com/equinix/ne-go"
+	"github.com/equinix/equinix-sdk-go/services/networkedgev1"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
@@ -32,7 +33,8 @@ var networkAccountDescriptions = map[string]string{
 	"ProjectID": "The unique identifier of Project Resource to which billing account is scoped to",
 }
 
-func dataSourceNetworkAccount() *schema.Resource {
+// DataSource creates a new Terraform data source for retrieving account data
+func DataSource() *schema.Resource {
 	return &schema.Resource{
 		ReadContext: dataSourceNetworkAccountRead,
 		Description: "Use this data source to get number and identifier of Equinix Network Edge billing account in a given metro location",
@@ -79,25 +81,26 @@ func dataSourceNetworkAccount() *schema.Resource {
 }
 
 func dataSourceNetworkAccountRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	conf := m.(*config.Config)
+	client := m.(*config.Config).NewNetworkEdgeClientForSDK(ctx, d)
 	var diags diag.Diagnostics
 	metro := d.Get(networkAccountSchemaNames["MetroCode"]).(string)
 	name := d.Get(networkAccountSchemaNames["Name"]).(string)
 	status := d.Get(networkAccountSchemaNames["Status"]).(string)
-	projectId := d.Get(networkAccountSchemaNames["ProjectID"]).(string)
-	accounts, err := conf.Ne.GetAccounts(metro)
+	projectID := d.Get(networkAccountSchemaNames["ProjectID"]).(string)
+	accounts, _, err := client.SetupApi.GetAccountsWithStatusUsingGET(ctx, metro).Execute()
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	var filtered []ne.Account
-	for _, account := range accounts {
-		if name != "" && ne.StringValue(account.Name) != name {
+	var filtered []networkedgev1.MetroAccountResponse
+	for _, account := range accounts.Accounts {
+		if name != "" && account.GetAccountName() != name {
 			continue
 		}
-		if projectId != "" && ne.StringValue(account.ProjectID) != projectId {
+		// TODO: API spec doesn't declare `projectId` for the MetroAccountResponse schema
+		if projectID != "" && account.AdditionalProperties["projectId"] != projectID {
 			continue
 		}
-		if status != "" && !strings.EqualFold(ne.StringValue(account.Status), status) {
+		if status != "" && !strings.EqualFold(account.GetAccountStatus(), status) {
 			continue
 		}
 		filtered = append(filtered, account)
@@ -114,24 +117,25 @@ func dataSourceNetworkAccountRead(ctx context.Context, d *schema.ResourceData, m
 	return diags
 }
 
-func updateNetworkAccountResource(account ne.Account, metroCode string, d *schema.ResourceData) error {
-	d.SetId(fmt.Sprintf("%s-%s", metroCode, ne.StringValue(account.Name)))
-	if err := d.Set(networkAccountSchemaNames["Name"], account.Name); err != nil {
+func updateNetworkAccountResource(account networkedgev1.MetroAccountResponse, metroCode string, d *schema.ResourceData) error {
+	d.SetId(fmt.Sprintf("%s-%s", metroCode, account.GetAccountName()))
+	if err := d.Set(networkAccountSchemaNames["Name"], account.GetAccountName()); err != nil {
 		return fmt.Errorf("error reading Name: %s", err)
 	}
-	if err := d.Set(networkAccountSchemaNames["Number"], account.Number); err != nil {
+	if err := d.Set(networkAccountSchemaNames["Number"], account.GetAccountNumber()); err != nil {
 		return fmt.Errorf("error reading Number: %s", err)
 	}
-	if err := d.Set(networkAccountSchemaNames["Status"], account.Status); err != nil {
+	if err := d.Set(networkAccountSchemaNames["Status"], account.GetAccountStatus()); err != nil {
 		return fmt.Errorf("error reading Status: %s", err)
 	}
-	if err := d.Set(networkAccountSchemaNames["UCMID"], account.UCMID); err != nil {
+	if err := d.Set(networkAccountSchemaNames["UCMID"], account.GetAccountUcmId()); err != nil {
 		return fmt.Errorf("error reading UCMID: %s", err)
 	}
 	if err := d.Set(networkAccountSchemaNames["MetroCode"], metroCode); err != nil {
 		return fmt.Errorf("error reading MetroCode: %s", err)
 	}
-	if err := d.Set(networkAccountSchemaNames["ProjectID"], account.ProjectID); err != nil {
+	// TODO: API spec doesn't declare `projectId` for the MetroAccountResponse schema
+	if err := d.Set(networkAccountSchemaNames["ProjectID"], account.AdditionalProperties["projectId"]); err != nil {
 		return fmt.Errorf("error reading ProjectID: %s", err)
 	}
 	return nil

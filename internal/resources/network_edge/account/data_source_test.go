@@ -1,15 +1,17 @@
-package equinix
+package account_test
 
 import (
 	"fmt"
 	"testing"
 
+	"github.com/equinix/terraform-provider-equinix/internal/acceptance"
+	"github.com/equinix/terraform-provider-equinix/internal/nprintf"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
 
 func TestAccDataSourceNetworkAccount_basic(t *testing.T) {
-	metro, _ := schema.EnvDefaultFunc(networkDeviceMetroEnvVar, "SV")()
+	metro, _ := schema.EnvDefaultFunc(acceptance.NetworkDeviceMetroEnvVar, "SV")()
 	context := map[string]interface{}{
 		"resourceName": "tf-account",
 		"metro_code":   metro.(string),
@@ -18,8 +20,8 @@ func TestAccDataSourceNetworkAccount_basic(t *testing.T) {
 	}
 	resourceName := fmt.Sprintf("data.equinix_network_account.%s", context["resourceName"].(string))
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:  func() { testAccPreCheck(t) },
-		Providers: testAccProviders,
+		PreCheck:  func() { acceptance.TestAccPreCheck(t) },
+		Providers: acceptance.TestAccProviders,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccDataSourceNetworkAccountConfig_basic(context),
@@ -36,7 +38,7 @@ func TestAccDataSourceNetworkAccount_basic(t *testing.T) {
 }
 
 func testAccDataSourceNetworkAccountConfig_basic(ctx map[string]interface{}) string {
-	return nprintf(`
+	return nprintf.NPrintf(`
 data "equinix_network_account" "%{resourceName}" {
   metro_code = "%{metro_code}"
   status     = "%{status}"
