@@ -2,6 +2,7 @@ package equinix
 
 import (
 	"github.com/equinix/terraform-provider-equinix/internal/resources/network_edge/account"
+	"github.com/equinix/terraform-provider-equinix/internal/resources/network_edge/devicetype"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
@@ -9,7 +10,7 @@ func networkEdgeDatasources() map[string]*schema.Resource {
 	return map[string]*schema.Resource{
 		"equinix_network_account":         account.DataSource(),
 		"equinix_network_device":          dataSourceNetworkDevice(),
-		"equinix_network_device_type":     dataSourceNetworkDeviceType(),
+		"equinix_network_device_type":     devicetype.DataSource(),
 		"equinix_network_device_software": dataSourceNetworkDeviceSoftware(),
 		"equinix_network_device_platform": dataSourceNetworkDevicePlatform(),
 	}
