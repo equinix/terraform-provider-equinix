@@ -64,7 +64,7 @@ output "ipv4" {
 - `plan` (String) The hardware config of the device
 - `ports` (List of Object) Ports assigned to the device (see [below for nested schema](#nestedatt--ports))
 - `root_password` (String, Sensitive) Root password to the server (if still available)
-- `sos_hostname` (String) The hostname to use for [Serial over SSH](https://deploy.equinix.com/developers/docs/metal/resilience-recovery/serial-over-ssh/) access to the device
+- `sos_hostname` (String) The hostname to use for [Serial over SSH](https://docs.equinix.com/metal/resilience-recovery/serial-over-ssh/) access to the device
 - `ssh_key_ids` (List of String) List of IDs of SSH keys deployed in the device, can be both user or project SSH keys
 - `state` (String) The state of the device
 - `storage` (String)

@@ -1,4 +1,4 @@
-package virtual_circuit
+package virtualcircuit
 
 import (
 	"context"
@@ -7,11 +7,13 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
+// DataSource provides the schema definition for virtual circuit
+// resources from the Metal API.
 func DataSource() *schema.Resource {
 	return &schema.Resource{
-		Description: `Use this data source to retrieve a virtual circuit resource from [Equinix Fabric - software-defined interconnections](https://deploy.equinix.com/developers/docs/metal/interconnections/introduction/)
+		Description: `Use this data source to retrieve a virtual circuit resource from [Equinix Fabric - software-defined interconnections](https://docs.equinix.com/metal/interconnections/introduction/)
 
-See the [Virtual Routing and Forwarding documentation](https://deploy.equinix.com/developers/docs/metal/layer2-networking/vrf/) for product details and API reference material.
+See the [Virtual Routing and Forwarding documentation](https://docs.equinix.com/metal/networking/vrf/) for product details and API reference material.
 `,
 		ReadContext: dataSourceMetalVirtualCircuitRead,
 
@@ -50,17 +52,17 @@ See the [Virtual Routing and Forwarding documentation](https://deploy.equinix.co
 			"vnid": {
 				Type:        schema.TypeInt,
 				Computed:    true,
-				Description: "VNID VLAN parameter, see https://deploy.equinix.com/developers/docs/metal/interconnections/introduction/",
+				Description: "VNID VLAN parameter, see https://docs.equinix.com/metal/interconnections/introduction/",
 			},
 			"nni_vnid": {
 				Type:        schema.TypeInt,
 				Computed:    true,
-				Description: "Nni VLAN ID parameter, see https://deploy.equinix.com/developers/docs/metal/interconnections/introduction/",
+				Description: "Nni VLAN ID parameter, see https://docs.equinix.com/metal/interconnections/introduction/",
 			},
 			"nni_vlan": {
 				Type:        schema.TypeInt,
 				Computed:    true,
-				Description: "Nni VLAN parameter, see https://deploy.equinix.com/developers/docs/metal/interconnections/introduction/",
+				Description: "Nni VLAN parameter, see https://docs.equinix.com/metal/interconnections/introduction/",
 			},
 			"project_id": {
 				Type:        schema.TypeString,
@@ -136,8 +138,8 @@ See the [Virtual Routing and Forwarding documentation](https://deploy.equinix.co
 	}
 }
 
-func dataSourceMetalVirtualCircuitRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	vcId := d.Get("virtual_circuit_id").(string)
-	d.SetId(vcId)
+func dataSourceMetalVirtualCircuitRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
+	vcID := d.Get("virtual_circuit_id").(string)
+	d.SetId(vcID)
 	return resourceMetalVirtualCircuitRead(ctx, d, meta)
 }

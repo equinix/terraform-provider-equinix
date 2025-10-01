@@ -1,3 +1,4 @@
+// Package device handles managing Equinix Metal devices
 package device
 
 import (
@@ -18,6 +19,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/structure"
 )
 
+// DataSource provides the terraform datasource representing a Metal
+// Device as it is returned from the Metal API.
 func DataSource() *schema.Resource {
 	return &schema.Resource{
 		Description: `The datasource can be used to fetch a single device.
@@ -210,7 +213,7 @@ If you need to fetch a list of devices which meet filter criteria, you can use t
 			},
 			"sos_hostname": {
 				Type:        schema.TypeString,
-				Description: "The hostname to use for [Serial over SSH](https://deploy.equinix.com/developers/docs/metal/resilience-recovery/serial-over-ssh/) access to the device",
+				Description: "The hostname to use for [Serial over SSH](https://docs.equinix.com/metal/resilience-recovery/serial-over-ssh/) access to the device",
 				Computed:    true,
 			},
 		},
@@ -221,22 +224,22 @@ func dataSourceMetalDeviceRead(ctx context.Context, d *schema.ResourceData, meta
 	client := meta.(*config.Config).NewMetalClientForSDK(d)
 
 	hostnameRaw, hostnameOK := d.GetOk("hostname")
-	projectIdRaw, projectIdOK := d.GetOk("project_id")
-	deviceIdRaw, deviceIdOK := d.GetOk("device_id")
+	projectIDRaw, projectIDOK := d.GetOk("project_id")
+	deviceIDRaw, deviceIDOK := d.GetOk("device_id")
 
-	if !deviceIdOK && !hostnameOK {
+	if !deviceIDOK && !hostnameOK {
 		return diag.Errorf("You must supply device_id or hostname")
 	}
 	var device *metalv1.Device
 
 	if hostnameOK {
-		if !projectIdOK {
+		if !projectIDOK {
 			return diag.Errorf("If you lookup via hostname, you must supply project_id")
 		}
 		hostname := hostnameRaw.(string)
-		projectId := projectIdRaw.(string)
+		projectID := projectIDRaw.(string)
 
-		ds, _, err := client.DevicesApi.FindProjectDevices(ctx, projectId).Hostname(hostname).Include(deviceCommonIncludes).Execute()
+		ds, _, err := client.DevicesApi.FindProjectDevices(ctx, projectID).Hostname(hostname).Include(deviceCommonIncludes).Execute()
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -246,9 +249,9 @@ func dataSourceMetalDeviceRead(ctx context.Context, d *schema.ResourceData, meta
 			return diag.FromErr(err)
 		}
 	} else {
-		deviceId := deviceIdRaw.(string)
+		deviceID := deviceIDRaw.(string)
 		var err error
-		device, _, err = client.DevicesApi.FindDeviceById(ctx, deviceId).Include(deviceCommonIncludes).Execute()
+		device, _, err = client.DevicesApi.FindDeviceById(ctx, deviceID).Include(deviceCommonIncludes).Execute()
 		if err != nil {
 			return diag.FromErr(err)
 		}

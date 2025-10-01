@@ -3,7 +3,7 @@ module github.com/equinix/terraform-provider-equinix
 go 1.23.0
 
 require (
-	github.com/equinix/equinix-sdk-go v0.57.0
+	github.com/equinix/equinix-sdk-go v0.58.0
 	github.com/equinix/ne-go v1.20.0
 	github.com/equinix/rest-go v1.3.0
 	github.com/google/uuid v1.6.0
@@ -19,7 +19,7 @@ require (
 	github.com/hashicorp/terraform-plugin-log v0.9.0
 	github.com/hashicorp/terraform-plugin-mux v0.20.0
 	github.com/hashicorp/terraform-plugin-sdk/v2 v2.37.0
-	github.com/hashicorp/terraform-plugin-testing v1.13.2
+	github.com/hashicorp/terraform-plugin-testing v1.13.3
 	github.com/packethost/packngo v0.31.0
 	github.com/pkg/errors v0.9.1
 	github.com/stretchr/testify v1.10.0
