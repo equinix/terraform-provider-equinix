@@ -484,12 +484,6 @@ func routingProtocolPayloadFromType(type_ string, d *schema.ResourceData) (fabri
 			bgpRP.SetCustomerAsn(customerASN)
 		}
 
-		equinixASNSchema := d.Get("equinix_asn")
-		if equinixASNSchema != nil {
-			equinixASN := int64(equinixASNSchema.(int))
-			bgpRP.SetEquinixAsn(equinixASN)
-		}
-
 		bgpAuthKey := d.Get("bgp_auth_key").(string)
 		if bgpAuthKey != "" {
 			bgpRP.SetBgpAuthKey(bgpAuthKey)

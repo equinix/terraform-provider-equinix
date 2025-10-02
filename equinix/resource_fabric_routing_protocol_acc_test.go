@@ -153,7 +153,7 @@ resource "equinix_fabric_connection" "this" {
 			}
 			link_protocol {
 				type= "DOT1Q"
-				vlan_tag= 1501
+				vlan_tag= 1600
 			}
 			location {
 				metro_code = "SV"

@@ -314,7 +314,7 @@ func TestAccFabricCreateCloudRouter2PortConnection_PFCR(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						"equinix_fabric_connection.test", "z_side.0.access_point.0.link_protocol.0.type", "DOT1Q"),
 					resource.TestCheckResourceAttr(
-						"equinix_fabric_connection.test", "z_side.0.access_point.0.link_protocol.0.vlan_tag", "1270"),
+						"equinix_fabric_connection.test", "z_side.0.access_point.0.link_protocol.0.vlan_tag", "101"),
 				),
 				ExpectNonEmptyPlan: true,
 			},
@@ -385,7 +385,7 @@ func testAccFabricCreateCloudRouter2PortConnectionConfig(name, portUUID string) 
 				}
 				link_protocol {
 					type= "DOT1Q"
-					vlan_tag= 1270
+					vlan_tag= 101
 				}
 				location {
 					metro_code = "SV"
@@ -610,7 +610,7 @@ func CheckConnectionDelete(s *terraform.State) error {
 
 		err := connection.WaitUntilConnectionDeprovisioned(rs.Primary.ID, acceptance.TestAccProvider.Meta(), &schema.ResourceData{}, ctx, 10*time.Minute)
 		if err != nil {
-			return fmt.Errorf("API call failed while waiting for resource deletion")
+			return fmt.Errorf("connection %s was not properly deprovisioned: %v", rs.Primary.ID, err)
 		}
 	}
 	return nil
