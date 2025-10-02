@@ -5,6 +5,7 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"net/http"
 	"sync"
 	"time"
 
@@ -26,16 +27,29 @@ type ContextAwareTokenSource struct {
 func (s *ContextAwareTokenSource) OidcTokenExchange(ctx context.Context) (*oauth2.Token, error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
-	if !s.token.Valid() {
-		if s.conf.StsAuthScope == "" {
-			return nil, fmt.Errorf("authorization scope cannot be empty for OIDC token exchange")
-		}
 
-		if s.conf.StsSourceToken == "" {
-			return nil, fmt.Errorf("sts source token cannot be empty for OIDC token exchange")
-		}
+	if s.token != nil && s.token.Valid() {
+		return s.token, nil
+	}
 
-		// Execute token exchange
+	if err := s.validateConfig(); err != nil {
+		return nil, err
+	}
+
+	token, err := s.executeTokenExchangeWithRetry(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	s.token = token
+	return s.token, nil
+}
+
+func (s *ContextAwareTokenSource) executeTokenExchangeWithRetry(ctx context.Context) (*oauth2.Token, error) {
+	maxRetries := 5
+	baseDelay := 100 * time.Millisecond
+
+	for attempt := 0; attempt < maxRetries; attempt++ {
 		response, httpResp, err := s.client.UseApi.UseTokenPost(ctx).
 			GrantType(stsv1alpha.USETOKENPOSTREQUESTGRANTTYPE_URN_IETF_PARAMS_OAUTH_GRANT_TYPE_TOKEN_EXCHANGE).
 			Scope(s.conf.StsAuthScope).
@@ -43,34 +57,69 @@ func (s *ContextAwareTokenSource) OidcTokenExchange(ctx context.Context) (*oauth
 			SubjectTokenType(stsv1alpha.USETOKENPOSTREQUESTSUBJECTTOKENTYPE_URN_IETF_PARAMS_OAUTH_TOKEN_TYPE_ID_TOKEN).
 			Execute()
 
-		if err != nil {
-			var httpRespBody string
-			if httpResp != nil && httpResp.Body != nil {
-				bodyBytes, readErr := io.ReadAll(httpResp.Body)
-				if readErr == nil {
-					httpRespBody = string(bodyBytes)
-				} else {
-					httpRespBody = fmt.Sprintf("failed to read http response body: %v", readErr)
-				}
-				// Optionally reset the body if it needs to be read again elsewhere
-				err := httpResp.Body.Close()
-				if err != nil {
-					return nil, err
-				}
-			}
-			return nil, fmt.Errorf("sts token exchange failed with response body: %s and error: %s", httpRespBody, err)
+		if err == nil {
+			return s.createTokenFromResponse(response)
 		}
 
-		token := oauth2.Token{
-			AccessToken: response.AccessToken,
-			TokenType:   "Bearer",
-			Expiry:      time.Now().Add(time.Duration(response.ExpiresIn) * time.Second),
+		if !s.shouldRetry(httpResp) {
+			return nil, s.formatError(httpResp, err)
 		}
 
-		if token.AccessToken == "" {
-			return nil, fmt.Errorf("sts server response missing access token")
-		}
-		s.token = &token
+		// Apply backoff delay
+		delay := time.Duration(1<<attempt) * baseDelay
+		time.Sleep(delay)
 	}
-	return s.token, nil
+	return nil, fmt.Errorf("max retries exceeded")
+}
+
+func (s *ContextAwareTokenSource) validateConfig() error {
+	if s.conf.StsAuthScope == "" {
+		return fmt.Errorf("authorization scope cannot be empty for OIDC token exchange")
+	}
+	if s.conf.StsSourceToken == "" {
+		return fmt.Errorf("sts source token cannot be empty for OIDC token exchange")
+	}
+	return nil
+}
+
+func (s *ContextAwareTokenSource) shouldRetry(httpResp *http.Response) bool {
+	return httpResp != nil && httpResp.StatusCode == 409
+}
+
+func (s *ContextAwareTokenSource) createTokenFromResponse(response *stsv1alpha.TokenExchangeResponse) (*oauth2.Token, error) {
+	token := &oauth2.Token{
+		AccessToken: response.AccessToken,
+		TokenType:   "Bearer",
+		Expiry:      time.Now().Add(time.Duration(response.ExpiresIn) * time.Second),
+	}
+
+	if token.AccessToken == "" {
+		return nil, fmt.Errorf("sts server response missing access token")
+	}
+	return token, nil
+}
+
+func (s *ContextAwareTokenSource) formatError(httpResp *http.Response, err error) error {
+	if httpResp == nil {
+		return fmt.Errorf("STS token exchange failed: %w", err)
+	}
+
+	// Read response body for additional error details
+	var bodyBytes []byte
+	if httpResp.Body != nil {
+		bodyBytes, _ = io.ReadAll(httpResp.Body)
+		_ = httpResp.Body.Close()
+	}
+
+	errorMsg := fmt.Sprintf("STS token exchange failed with status %d", httpResp.StatusCode)
+
+	if len(bodyBytes) > 0 {
+		errorMsg += fmt.Sprintf(": %s", string(bodyBytes))
+	}
+
+	if err != nil {
+		errorMsg += fmt.Sprintf(" (underlying error: %v)", err)
+	}
+
+	return fmt.Errorf(errorMsg)
 }
