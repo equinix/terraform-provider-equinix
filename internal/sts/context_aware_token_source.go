@@ -3,6 +3,7 @@ package sts
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -121,5 +122,5 @@ func (s *ContextAwareTokenSource) formatError(httpResp *http.Response, err error
 		errorMsg += fmt.Sprintf(" (underlying error: %v)", err)
 	}
 
-	return fmt.Errorf(errorMsg)
+	return errors.New(errorMsg)
 }
