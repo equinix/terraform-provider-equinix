@@ -402,7 +402,7 @@ func resourceFabricRoutingProtocolUpdate(ctx context.Context, d *schema.Resource
 	changeUUID := setIDFromAPIResponse(updatedRpResp, true, d)
 
 	updateTimeout := d.Timeout(schema.TimeoutUpdate) - 30*time.Second - time.Since(start)
-	_, err = waitForRoutingProtocolUpdateCompletion(changeUUID, d.Id(), d.Get("connection_uuid").(string), meta, d, ctx, updateTimeout)
+	_, err = waitForRoutingProtocolUpdateCompletion(ctx, changeUUID, d.Id(), d.Get("connection_uuid").(string), meta, d, updateTimeout)
 	if err != nil {
 		if !strings.Contains(err.Error(), "500") {
 			d.SetId("")
@@ -437,7 +437,7 @@ func resourceFabricRoutingProtocolDelete(ctx context.Context, d *schema.Resource
 	}
 
 	deleteTimeout := d.Timeout(schema.TimeoutDelete) - 30*time.Second - time.Since(start)
-	err = WaitUntilRoutingProtocolIsDeprovisioned(d.Id(), d.Get("connection_uuid").(string), meta, d, ctx, deleteTimeout)
+	err = WaitUntilRoutingProtocolIsDeprovisioned(ctx, d.Id(), d.Get("connection_uuid").(string), meta, d, deleteTimeout)
 	if err != nil {
 		return diag.FromErr(fmt.Errorf("API call failed while waiting for resource deletion. Error %v", err))
 	}
@@ -667,7 +667,7 @@ func waitUntilRoutingProtocolIsProvisioned(ctx context.Context, uuid string, con
 }
 
 // WaitUntilRoutingProtocolIsDeprovisioned waits until the routing protocol resource is deprovisioned.
-func WaitUntilRoutingProtocolIsDeprovisioned(uuid string, connUUID string, meta interface{}, d *schema.ResourceData, ctx context.Context, timeout time.Duration) error {
+func WaitUntilRoutingProtocolIsDeprovisioned(ctx context.Context, uuid string, connUUID string, meta interface{}, d *schema.ResourceData, timeout time.Duration) error {
 	log.Printf("Waiting for routing protocol to be deprovisioned, uuid %s", uuid)
 
 	/* check if resource is not found */
@@ -692,7 +692,7 @@ func WaitUntilRoutingProtocolIsDeprovisioned(uuid string, connUUID string, meta 
 	return err
 }
 
-func waitForRoutingProtocolUpdateCompletion(rpChangeUUID string, uuid string, connUUID string, meta interface{}, d *schema.ResourceData, ctx context.Context, timeout time.Duration) (*fabricv4.RoutingProtocolChangeData, error) {
+func waitForRoutingProtocolUpdateCompletion(ctx context.Context, rpChangeUUID string, uuid string, connUUID string, meta interface{}, d *schema.ResourceData, timeout time.Duration) (*fabricv4.RoutingProtocolChangeData, error) {
 	log.Printf("Waiting for routing protocol update to complete, uuid %s", uuid)
 	stateConf := &retry.StateChangeConf{
 		Target: []string{"COMPLETED"},

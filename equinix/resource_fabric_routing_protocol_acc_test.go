@@ -215,7 +215,7 @@ func checkRoutingProtocolDelete(s *terraform.State) error {
 		if rs.Type != "equinix_fabric_routing_protocol" {
 			continue
 		}
-		err := equinix.WaitUntilRoutingProtocolIsDeprovisioned(rs.Primary.ID, rs.Primary.Attributes["connection_uuid"], acceptance.TestAccProvider.Meta(), &schema.ResourceData{}, ctx, 10*time.Minute)
+		err := equinix.WaitUntilRoutingProtocolIsDeprovisioned(ctx, rs.Primary.ID, rs.Primary.Attributes["connection_uuid"], acceptance.TestAccProvider.Meta(), &schema.ResourceData{}, 10*time.Minute)
 		if err != nil {
 			return fmt.Errorf("API call failed while waiting for resource deletion")
 		}
