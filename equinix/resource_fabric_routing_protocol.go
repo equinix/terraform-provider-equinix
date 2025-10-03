@@ -321,14 +321,14 @@ func resourceFabricRoutingProtocol() *schema.Resource {
 		DeleteContext: resourceFabricRoutingProtocolDelete,
 		Importer: &schema.ResourceImporter{
 			// Custom state context function, to parse import argument as  connection_uuid/rp_uuid
-			StateContext: func(ctx context.Context, d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
+			StateContext: func(_ context.Context, d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
 				parts := strings.SplitN(d.Id(), "/", 2)
 				if len(parts) != 2 || parts[0] == "" || parts[1] == "" {
 					return nil, fmt.Errorf("unexpected format of ID (%s), expected <conn-uuid>/<rp-uuid>", d.Id())
 				}
-				connectionUuid, uuid := parts[0], parts[1]
+				connectionUUID, uuid := parts[0], parts[1]
 				// set set connection uuid and rp uuid as overall id of resource
-				_ = d.Set("connection_uuid", connectionUuid)
+				_ = d.Set("connection_uuid", connectionUUID)
 				d.SetId(uuid)
 				return []*schema.ResourceData{d}, nil
 			},
@@ -360,9 +360,9 @@ func resourceFabricRoutingProtocolCreate(ctx context.Context, d *schema.Resource
 	client := meta.(*config.Config).NewFabricClientForSDK(ctx, d)
 
 	start := time.Now()
-	type_ := d.Get("type").(string)
+	routingType := d.Get("type").(string)
 
-	createRequest, err := routingProtocolPayloadFromType(type_, d)
+	createRequest, err := routingProtocolPayloadFromType(routingType, d)
 	if err != nil {
 		return diag.Errorf("error creating create request from Terraform configuration values: %s", err)
 	}
@@ -386,9 +386,9 @@ func resourceFabricRoutingProtocolCreate(ctx context.Context, d *schema.Resource
 func resourceFabricRoutingProtocolUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*config.Config).NewFabricClientForSDK(ctx, d)
 
-	type_ := d.Get("type").(string)
+	routingType := d.Get("type").(string)
 
-	updateRequest, err := routingProtocolPayloadFromType(type_, d)
+	updateRequest, err := routingProtocolPayloadFromType(routingType, d)
 	if err != nil {
 		return diag.Errorf("error creating update request from Terraform configuration values: %s", err)
 	}
@@ -399,10 +399,10 @@ func resourceFabricRoutingProtocolUpdate(ctx context.Context, d *schema.Resource
 		return diag.FromErr(equinix_errors.FormatFabricError(err))
 	}
 
-	changeUuid := setIdFromAPIResponse(updatedRpResp, true, d)
+	changeUUID := setIdFromAPIResponse(updatedRpResp, true, d)
 
 	updateTimeout := d.Timeout(schema.TimeoutUpdate) - 30*time.Second - time.Since(start)
-	_, err = waitForRoutingProtocolUpdateCompletion(changeUuid, d.Id(), d.Get("connection_uuid").(string), meta, d, ctx, updateTimeout)
+	_, err = waitForRoutingProtocolUpdateCompletion(changeUUID, d.Id(), d.Get("connection_uuid").(string), meta, d, ctx, updateTimeout)
 	if err != nil {
 		if !strings.Contains(err.Error(), "500") {
 			d.SetId("")
@@ -446,31 +446,31 @@ func resourceFabricRoutingProtocolDelete(ctx context.Context, d *schema.Resource
 }
 
 func setIdFromAPIResponse(resp *fabricv4.RoutingProtocolData, isChange bool, d *schema.ResourceData) string {
-	var changeUuid string
+	var changeUUID string
 
 	switch rpData := resp.GetActualInstance().(type) {
 	case *fabricv4.RoutingProtocolBGPData:
 		if isChange {
 			change := rpData.GetChange()
-			changeUuid = change.GetUuid()
+			changeUUID = change.GetUuid()
 		}
 		d.SetId(rpData.GetUuid())
 	case *fabricv4.RoutingProtocolDirectData:
 		if isChange {
 			change := rpData.GetChange()
-			changeUuid = change.GetUuid()
+			changeUUID = change.GetUuid()
 		}
 		d.SetId(rpData.GetUuid())
 	}
 
-	return changeUuid
+	return changeUUID
 }
 
-func routingProtocolPayloadFromType(type_ string, d *schema.ResourceData) (fabricv4.RoutingProtocolBase, error) {
+func routingProtocolPayloadFromType(routingType string, d *schema.ResourceData) (fabricv4.RoutingProtocolBase, error) {
 	payload := fabricv4.RoutingProtocolBase{}
-	if type_ == "BGP" {
+	if routingType == "BGP" {
 		bgpRP := fabricv4.RoutingProtocolBGPType{}
-		bgpType := fabricv4.RoutingProtocolBGPTypeType(type_)
+		bgpType := fabricv4.RoutingProtocolBGPTypeType(routingType)
 		bgpRP.SetType(bgpType)
 
 		name := d.Get("name").(string)
@@ -521,9 +521,9 @@ func routingProtocolPayloadFromType(type_ string, d *schema.ResourceData) (fabri
 		}
 		payload = fabricv4.RoutingProtocolBGPTypeAsRoutingProtocolBase(&bgpRP)
 	}
-	if type_ == "DIRECT" {
+	if routingType == "DIRECT" {
 		directRP := fabricv4.RoutingProtocolDirectType{}
-		directType := fabricv4.RoutingProtocolDirectTypeType(type_)
+		directType := fabricv4.RoutingProtocolDirectTypeType(routingType)
 		directRP.SetType(directType)
 
 		name := d.Get("name").(string)
@@ -560,6 +560,7 @@ func setFabricRoutingProtocolMap(d *schema.ResourceData, routingProtocolData *fa
 	return diags
 }
 
+// FabricRoutingProtocolMap maps RoutingProtocolData to a dictionary structure with key-value pairs of relevant fields
 func FabricRoutingProtocolMap(routingProtocolData *fabricv4.RoutingProtocolData) map[string]interface{} {
 	routingProtocol := make(map[string]interface{})
 	switch rp := routingProtocolData.GetActualInstance().(type) {
@@ -625,7 +626,7 @@ func FabricRoutingProtocolMap(routingProtocolData *fabricv4.RoutingProtocolData)
 
 	return routingProtocol
 }
-func waitUntilRoutingProtocolIsProvisioned(uuid string, connUuid string, meta interface{}, d *schema.ResourceData, ctx context.Context, timeout time.Duration) (*fabricv4.RoutingProtocolData, error) {
+func waitUntilRoutingProtocolIsProvisioned(uuid string, connUUID string, meta interface{}, d *schema.ResourceData, ctx context.Context, timeout time.Duration) (*fabricv4.RoutingProtocolData, error) {
 	log.Printf("Waiting for routing protocol to be provisioned, uuid %s", uuid)
 	stateConf := &retry.StateChangeConf{
 		Pending: []string{
@@ -637,7 +638,7 @@ func waitUntilRoutingProtocolIsProvisioned(uuid string, connUuid string, meta in
 		},
 		Refresh: func() (interface{}, string, error) {
 			client := meta.(*config.Config).NewFabricClientForSDK(ctx, d)
-			dbConn, _, err := client.RoutingProtocolsApi.GetConnectionRoutingProtocolByUuid(ctx, uuid, connUuid).Execute()
+			dbConn, _, err := client.RoutingProtocolsApi.GetConnectionRoutingProtocolByUuid(ctx, uuid, connUUID).Execute()
 			if err != nil {
 				return "", "", equinix_errors.FormatFabricError(err)
 			}
