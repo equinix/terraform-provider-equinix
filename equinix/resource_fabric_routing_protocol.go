@@ -484,12 +484,6 @@ func routingProtocolPayloadFromType(type_ string, d *schema.ResourceData) (fabri
 			bgpRP.SetCustomerAsn(customerASN)
 		}
 
-		equinixASNSchema := d.Get("equinix_asn")
-		if equinixASNSchema != nil {
-			equinixASN := int64(equinixASNSchema.(int))
-			bgpRP.SetEquinixAsn(equinixASN)
-		}
-
 		bgpAuthKey := d.Get("bgp_auth_key").(string)
 		if bgpAuthKey != "" {
 			bgpRP.SetBgpAuthKey(bgpAuthKey)
@@ -575,7 +569,7 @@ func FabricRoutingProtocolMap(routingProtocolData *fabricv4.RoutingProtocolData)
 		routingProtocol["type"] = string(rp.GetType())
 		routingProtocol["state"] = string(rp.GetState())
 		routingProtocol["customer_asn"] = rp.GetCustomerAsn()
-		routingProtocol["equinix_asn"] = rp.GetCustomerAsn()
+		routingProtocol["equinix_asn"] = rp.GetEquinixAsn()
 		routingProtocol["bgp_auth_key"] = rp.GetBgpAuthKey()
 		routingProtocol["as_override_enabled"] = rp.GetAsOverrideEnabled()
 		if rp.Operation != nil {
