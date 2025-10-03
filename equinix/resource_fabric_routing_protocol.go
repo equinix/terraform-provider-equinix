@@ -360,9 +360,9 @@ func resourceFabricRoutingProtocolCreate(ctx context.Context, d *schema.Resource
 	client := meta.(*config.Config).NewFabricClientForSDK(ctx, d)
 
 	start := time.Now()
-	type_ := d.Get("type").(string)
+	routingType := d.Get("type").(string)
 
-	createRequest, err := routingProtocolPayloadFromType(type_, d)
+	createRequest, err := routingProtocolPayloadFromType(routingType, d)
 	if err != nil {
 		return diag.Errorf("error creating create request from Terraform configuration values: %s", err)
 	}
@@ -376,7 +376,7 @@ func resourceFabricRoutingProtocolCreate(ctx context.Context, d *schema.Resource
 	_ = setIDFromAPIResponse(fabricRoutingProtocolData, false, d)
 
 	createTimeout := d.Timeout(schema.TimeoutCreate) - 30*time.Second - time.Since(start)
-	if _, err = waitUntilRoutingProtocolIsProvisioned(d.Id(), d.Get("connection_uuid").(string), meta, d, ctx, createTimeout); err != nil {
+	if _, err = waitUntilRoutingProtocolIsProvisioned(ctx, d.Id(), d.Get("connection_uuid").(string), meta, d, createTimeout); err != nil {
 		return diag.Errorf("error waiting for RP (%s) to be created: %s", d.Id(), err)
 	}
 
@@ -386,9 +386,9 @@ func resourceFabricRoutingProtocolCreate(ctx context.Context, d *schema.Resource
 func resourceFabricRoutingProtocolUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*config.Config).NewFabricClientForSDK(ctx, d)
 
-	type_ := d.Get("type").(string)
+	routingType := d.Get("type").(string)
 
-	updateRequest, err := routingProtocolPayloadFromType(type_, d)
+	updateRequest, err := routingProtocolPayloadFromType(routingType, d)
 	if err != nil {
 		return diag.Errorf("error creating update request from Terraform configuration values: %s", err)
 	}
@@ -411,7 +411,7 @@ func resourceFabricRoutingProtocolUpdate(ctx context.Context, d *schema.Resource
 	}
 
 	updateTimeout = d.Timeout(schema.TimeoutUpdate) - 30*time.Second - time.Since(start)
-	updatedProvisionedRpResp, err := waitUntilRoutingProtocolIsProvisioned(d.Id(), d.Get("connection_uuid").(string), meta, d, ctx, updateTimeout)
+	updatedProvisionedRpResp, err := waitUntilRoutingProtocolIsProvisioned(ctx, d.Id(), d.Get("connection_uuid").(string), meta, d, updateTimeout)
 	if err != nil {
 		return diag.Errorf("error waiting for RP (%s) to be replace updated: %s", d.Id(), err)
 	}
@@ -466,11 +466,11 @@ func setIDFromAPIResponse(resp *fabricv4.RoutingProtocolData, isChange bool, d *
 	return changeUUID
 }
 
-func routingProtocolPayloadFromType(type_ string, d *schema.ResourceData) (fabricv4.RoutingProtocolBase, error) {
+func routingProtocolPayloadFromType(routingType string, d *schema.ResourceData) (fabricv4.RoutingProtocolBase, error) {
 	payload := fabricv4.RoutingProtocolBase{}
-	if type_ == "BGP" {
+	if routingType == "BGP" {
 		bgpRP := fabricv4.RoutingProtocolBGPType{}
-		bgpType := fabricv4.RoutingProtocolBGPTypeType(type_)
+		bgpType := fabricv4.RoutingProtocolBGPTypeType(routingType)
 		bgpRP.SetType(bgpType)
 
 		name := d.Get("name").(string)
@@ -521,9 +521,9 @@ func routingProtocolPayloadFromType(type_ string, d *schema.ResourceData) (fabri
 		}
 		payload = fabricv4.RoutingProtocolBGPTypeAsRoutingProtocolBase(&bgpRP)
 	}
-	if type_ == "DIRECT" {
+	if routingType == "DIRECT" {
 		directRP := fabricv4.RoutingProtocolDirectType{}
-		directType := fabricv4.RoutingProtocolDirectTypeType(type_)
+		directType := fabricv4.RoutingProtocolDirectTypeType(routingType)
 		directRP.SetType(directType)
 
 		name := d.Get("name").(string)
@@ -626,7 +626,7 @@ func FabricRoutingProtocolMap(routingProtocolData *fabricv4.RoutingProtocolData)
 
 	return routingProtocol
 }
-func waitUntilRoutingProtocolIsProvisioned(uuid string, connUUID string, meta interface{}, d *schema.ResourceData, ctx context.Context, timeout time.Duration) (*fabricv4.RoutingProtocolData, error) {
+func waitUntilRoutingProtocolIsProvisioned(ctx context.Context, uuid string, connUUID string, meta interface{}, d *schema.ResourceData, timeout time.Duration) (*fabricv4.RoutingProtocolData, error) {
 	log.Printf("Waiting for routing protocol to be provisioned, uuid %s", uuid)
 	stateConf := &retry.StateChangeConf{
 		Pending: []string{
@@ -667,7 +667,7 @@ func waitUntilRoutingProtocolIsProvisioned(uuid string, connUUID string, meta in
 }
 
 // WaitUntilRoutingProtocolIsDeprovisioned waits until the routing protocol resource is deprovisioned.
-func WaitUntilRoutingProtocolIsDeprovisioned(uuid string, connUuid string, meta interface{}, d *schema.ResourceData, ctx context.Context, timeout time.Duration) error {
+func WaitUntilRoutingProtocolIsDeprovisioned(uuid string, connUUID string, meta interface{}, d *schema.ResourceData, ctx context.Context, timeout time.Duration) error {
 	log.Printf("Waiting for routing protocol to be deprovisioned, uuid %s", uuid)
 
 	/* check if resource is not found */
@@ -677,7 +677,7 @@ func WaitUntilRoutingProtocolIsDeprovisioned(uuid string, connUuid string, meta 
 		},
 		Refresh: func() (interface{}, string, error) {
 			client := meta.(*config.Config).NewFabricClientForSDK(ctx, d)
-			dbConn, resp, _ := client.RoutingProtocolsApi.GetConnectionRoutingProtocolByUuid(ctx, uuid, connUuid).Execute()
+			dbConn, resp, _ := client.RoutingProtocolsApi.GetConnectionRoutingProtocolByUuid(ctx, uuid, connUUID).Execute()
 			// fixme: check for error code instead?
 			// ignore error for Target
 			return dbConn, strconv.Itoa(resp.StatusCode), nil
@@ -692,13 +692,13 @@ func WaitUntilRoutingProtocolIsDeprovisioned(uuid string, connUuid string, meta 
 	return err
 }
 
-func waitForRoutingProtocolUpdateCompletion(rpChangeUUID string, uuid string, connUuid string, meta interface{}, d *schema.ResourceData, ctx context.Context, timeout time.Duration) (*fabricv4.RoutingProtocolChangeData, error) {
+func waitForRoutingProtocolUpdateCompletion(rpChangeUUID string, uuid string, connUUID string, meta interface{}, d *schema.ResourceData, ctx context.Context, timeout time.Duration) (*fabricv4.RoutingProtocolChangeData, error) {
 	log.Printf("Waiting for routing protocol update to complete, uuid %s", uuid)
 	stateConf := &retry.StateChangeConf{
 		Target: []string{"COMPLETED"},
 		Refresh: func() (interface{}, string, error) {
 			client := meta.(*config.Config).NewFabricClientForSDK(ctx, d)
-			dbConn, _, err := client.RoutingProtocolsApi.GetConnectionRoutingProtocolsChangeByUuid(ctx, connUuid, uuid, rpChangeUUID).Execute()
+			dbConn, _, err := client.RoutingProtocolsApi.GetConnectionRoutingProtocolsChangeByUuid(ctx, connUUID, uuid, rpChangeUUID).Execute()
 			if err != nil {
 				return "", "", equinix_errors.FormatFabricError(err)
 			}
